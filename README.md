@@ -39,10 +39,14 @@
 
 ```
 SKILL.md                          # 主干：三条铁律、分级标准、0→10 步流程、20 条高频错误自查表
+scripts/                          # 可直接运行，无第三方依赖
+  parse_netlist.py                #   三件套 → 结构化索引；自带自检闸门与伪网络识别
+  lint.py                         #   L0 全量扫描；内置伪网络判别与五类驱动源识别
+  solve_dividers.py               #   反馈/监控分压求解；正确处理串联臂 + 与轨名交叉校验
 references/
   methodology-v1.0.md             # 方法论完整长文档（L0~L6 各章细节、平台规则库构建方法、迁移指南）
-  netlist-parsing.md              # 网表解析规范：Cadence allegro 三件套格式 + 可运行 Python；KiCad/Altium/PADS 适配
-  lint-rules.md                   # L0 规则库 18 条（每条附案例）+ 可运行 lint 代码 + 符号/strap 审计执行法
+  netlist-parsing.md              # 网表解析规范：三件套格式、pinname 两种布局、渲染读图与旋转页坐标换算；其他 EDA 适配
+  lint-rules.md                   # L0 规则库 18 条 + NC 网络判别式 + 驱动源判定 + 符号/strap 审计执行法
   review-checklist.md             # 按电路域的通用检查表（电源/时钟/复位/接口/防护/监控/无源/连接器/热/文档）
   wca-formulas.md                 # 参数验算公式库：FB 分压、UVLO/OVLO、限流、钳位、ADC 分压、RC 复位、MLCC 偏压…
   report-template.md              # 报告骨架 + ECO 级发现项格式
@@ -79,8 +83,18 @@ git clone https://github.com/foxsheep1214/schematic-review.git ~/.claude/skills/
 
 ## 使用
 
+交给 agent：
+
 ```
 按 schematic-review 审查 <项目路径> 的原理图
+```
+
+或手工跑核心三步：
+
+```bash
+python3 scripts/parse_netlist.py <项目>/allegro -o db.json
+python3 scripts/lint.py db.json --log <项目>/allegro/netlist.log --json lint.json
+python3 scripts/solve_dividers.py db.json --vfb U1=0.815 U2=0.6 ...
 ```
 
 准备一个包含以下内容的目录：
@@ -102,10 +116,14 @@ git clone https://github.com/foxsheep1214/schematic-review.git ~/.claude/skills/
 方法论的价值不只在"找到什么"，更在**挡住误报**。以下都是实际发生过、被流程接住的：
 
 - 按单颗电阻算分压，得出"供电 5.38V 会烧模组"——追到底发现下臂是两颗**串联**，实际 3.83V
+  （该板 15 处分压**全部**含串联臂，所以这不是小概率事件；`solve_dividers.py` 就是为此存在）
 - 网表里一张挂 357 个引脚、名为 `NC` 的网络，看似隔离栅被短接——两路独立证据证明是导出工具的**伪网络**
 - 按"可调阈值"算监控点得出异常值——渲染 datasheet 订购表目检后发现该变体是**工厂固定档**
 
-对应到规则上，就是 `SKILL.md` 里那张 20 条高频错误模式自查表，每轮强制过一遍。
+对应到规则上，就是 `SKILL.md` 里那张 20 条高频错误模式自查表，每轮强制过一遍；
+能自动化的部分已固化进 `scripts/`——包括那条最要命的**静默失败**：
+引脚功能名提取失败时，依赖它的两条规则会安静地扫出 0 条并被当成"全部通过"，
+所以 `parse_netlist.py` 在覆盖率过低时**直接报错退出**，宁可中断也不交出残缺索引。
 
 ## 关于平台规则库
 

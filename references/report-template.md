@@ -66,13 +66,13 @@
 示例（合格发现项）：
 
 ```
-[F-05] [BLOCKER] RTL8208LI TEST[3:0] 全部实装上拉
-位置：05 页 Uxxx，Ryy1~Ryy4 → 3V3（TEST=1111）
-证据：datasheet Table 9 原文 "TEST[3:0]: Must be pulled down"（B 级）；
-      网表确认四颗上拉实装、下拉位 NC（A 级）
-根因：参照 demo 板上拉，违反 datasheet 强制条款
-改法：上拉四颗改 /NC，同位下拉 Rxx1~Rxx4 改实装（纯 BOM 改动）
-验证：重出网表后 grep TEST[3:0] 各节点电阻实装状态
+[E-05] [BLOCKER] <器件> TEST[3:0] 全部实装上拉，违反 datasheet 强制条款
+位置：05 页 Uxxx，Ryy1~Ryy4 → 3V3（strap 实配 = 1111）
+证据：datasheet Table N 原文 "TEST[3:0]: Reserved for internal use. Must be pulled down."（B 级）；
+      网表确认四颗上拉实装、同位下拉 Rxx1~Rxx4 全部 /NC（A 级）
+根因：参照 demo 板上拉，demo 做法不能凌驾 datasheet 强制条款
+改法：上拉四颗改 /NC，同位下拉 Rxx1~Rxx4 改实装（纯 BOM 改动，不动板）
+验证：重出网表后逐一确认 TEST[3:0] 各节点实装电阻的另一端为 GND
 ```
 
 ## 写作要求
