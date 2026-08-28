@@ -70,7 +70,7 @@ pinname = 0 条（应为 6047 条）。
 | `ref2page` | refdes → 页号 |
 | `pseudo_nets` | 工具生成的伪网络名 |
 
-只要能从任意 EDA 得到 `{nets, parts, pin2net}` 三个索引，L0~L6 全部流程原样适用；
+只要能从任意 EDA 得到 `{nets, parts, pin2net}` 三个索引，L0~L7 全部流程原样适用；
 改写 `parse_*` 函数即可，其余脚本无需改动。
 
 
@@ -92,4 +92,4 @@ pinname = 0 条（应为 6047 条）。
 - KiCad：`.kicad_sch` 本身即文本（S 表达式），可直接解析；或用 `kicad-cli sch export netlist`。
 - Altium：导出 EDIF/Protel 网表，按 `(` 分组解析。
 - PADS：ASCII 网表 `*SIGNAL*` 段。
-- 只要能得到 {nets, parts, pin2net} 三个索引，L0~L6 全部流程原样适用。
+- 只要能得到 {nets, parts, pin2net} 三个索引，L0~L7 全部流程原样适用。
