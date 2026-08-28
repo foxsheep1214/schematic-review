@@ -43,7 +43,7 @@ python3 scripts/parse_netlist.py <allegro目录> -o db.json
 | B | `NODE_NAME` → 实例行 → **紧接一行 `'NAME':;`** |
 
 只处理其中一种，另一种会得到**空的 pinname 索引**。后果是静默的：
-L0-05（电源球无驱动）与 L0-06（VSS 未入地）依赖 pinname，会扫出 0 条命中，
+Rule-05（电源球无驱动）与 Rule-06（VSS 未入地）依赖 pinname，会扫出 0 条命中，
 报告写成"数百个电源球全扫通过"而实际一个都没查过。
 
 **实测**：某板 `pstxnet.dat` 中 `CDS_PINID` 出现 0 次，只按变体 A 解析得到

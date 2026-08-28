@@ -12,7 +12,7 @@ DNP 选项、被删外设的引出脚、工具伪网络）必须人工排除。�
 
 驱动源自动识别
 --------------
-L0-04/05 判断"电源轨有无驱动"时，以下**全部**算驱动源，漏掉任何一类
+Rule-04/05 判断"电源轨有无驱动"时，以下**全部**算驱动源，漏掉任何一类
 都会产生大批假"无驱动轨"：
   - 稳压器/DCDC/LDO 的输出脚（VOUT/SW/OUT）
   - 电感、磁珠、保险丝、二极管
@@ -88,16 +88,16 @@ class Lint:
         nets, parts, pinname, pin2net = (
             self.nets, self.parts, self.pinname, self.pin2net)
 
-        # L0-01 单节点悬空网
+        # Rule-01 单节点悬空网
         for n, nds in nets.items():
             if n in self.pseudo:
                 continue
             if len(nds) == 1:
                 ref = nds[0].split('.')[0]
-                self.add('L0-01', '单节点悬空网',
+                self.add('Rule-01', '单节点悬空网',
                          f'{n} <- {nds[0]} ({parts.get(ref, {}).get("value", "")})', ref)
 
-        # L0-02 双胞胎网络名（剔除同族总线/差分对/序号兄弟）
+        # Rule-02 双胞胎网络名（剔除同族总线/差分对/序号兄弟）
         names = sorted(nets)
         for a, b in zip(names, names[1:]):
             if a == b or difflib.SequenceMatcher(None, a, b).ratio() <= 0.90:
@@ -108,45 +108,45 @@ class Lint:
                 continue          # 差分对
             if re.fullmatch(r'N\d{6,}', a) or re.fullmatch(r'N\d{6,}', b):
                 continue
-            self.add('L0-02', '疑似网络名分裂',
+            self.add('Rule-02', '疑似网络名分裂',
                      f'{a}({len(nets[a])}节点) <-> {b}({len(nets[b])}节点)')
 
-        # L0-03 自动命名网仅含无源件
+        # Rule-03 自动命名网仅含无源件
         for n, nds in nets.items():
             if not re.fullmatch(r'N\d{6,}', n):
                 continue
             rs = self.refs_of(n)
             if not any(r[0] in 'UJMY' for r in rs):
-                self.add('L0-03', '自动命名网仅含无源件', f'{n}: {sorted(rs)}')
+                self.add('Rule-03', '自动命名网仅含无源件', f'{n}: {sorted(rs)}')
 
-        # L0-04 电源轨无驱动
+        # Rule-04 电源轨无驱动
         for n, nds in nets.items():
             if n in GNDS or n in self.pseudo or not RAIL_RE.match(n):
                 continue
             if not self.driven(n):
-                self.add('L0-04', '电源轨疑似无驱动',
+                self.add('Rule-04', '电源轨疑似无驱动',
                          f'{n} ({len(nds)}节点): {sorted(self.refs_of(n))[:6]}')
 
-        # L0-05 电源球无驱动 / 无网络
+        # Rule-05 电源球无驱动 / 无网络
         for node, pn in pinname.items():
             if not re.search(r'(VDD|VCC|AVDD|DVDD|VBAT)', pn, re.I):
                 continue
             n = pin2net.get(node)
             ref = node.split('.')[0]
             if n is None:
-                self.add('L0-05', '电源球无网络', f'{node} ({pn})', ref)
+                self.add('Rule-05', '电源球无网络', f'{node} ({pn})', ref)
             elif n not in self.pseudo and not self.driven(n):
-                self.add('L0-05', '电源球所在轨无驱动', f'{node} ({pn}) <- {n}', ref)
+                self.add('Rule-05', '电源球所在轨无驱动', f'{node} ({pn}) <- {n}', ref)
 
-        # L0-06 VSS 球未入地
+        # Rule-06 VSS 球未入地
         for node, pn in pinname.items():
             if re.match(r'^(VSS|AVSS|DVSS)', pn, re.I):
                 n = pin2net.get(node)
                 if n not in GNDS:
-                    self.add('L0-06', 'VSS 球未入地',
+                    self.add('Rule-06', 'VSS 球未入地',
                              f'{node} ({pn}) <- {n}', node.split('.')[0])
 
-        # L0-10 ESD/TVS 挂残网
+        # Rule-10 ESD/TVS 挂残网
         for ref, v in parts.items():
             blob = (v.get('part', '') + ' ' + v.get('prim', '')).upper()
             if not re.search(r'ESD|TVS', blob):
@@ -154,23 +154,23 @@ class Lint:
             for node, n in ((k, x) for k, x in pin2net.items()
                             if k.startswith(ref + '.')):
                 if n and n not in self.pseudo and len(nets.get(n, [])) < 2:
-                    self.add('L0-10', 'ESD/TVS 挂残网',
+                    self.add('Rule-10', 'ESD/TVS 挂残网',
                              f'{ref} {node} -> {n} (仅{len(nets.get(n, []))}节点)', ref)
 
-        # L0-15 "NC" 网络 —— 必须先判别是真短路还是工具伪网络
+        # Rule-15 "NC" 网络 —— 必须先判别是真短路还是工具伪网络
         for n, nds in nets.items():
             if not re.fullmatch(r'NC[_\-\d]*', n, re.I) or len(nds) <= 1:
                 continue
             if n in self.pseudo:
-                self.add('L0-15-INFO', '"NC" 为工具伪网络（非缺陷）',
+                self.add('Rule-15-INFO', '"NC" 为工具伪网络（非缺陷）',
                          f'{n}: {len(nds)} 个引脚。C_SIGNAL 为裸字面量、无层次路径 '
                          '-> PSTWRITER 的 No-Connect 汇集网，不构成电气短路')
             else:
-                self.add('L0-15', '"NC" 被当作网络名导致短接',
+                self.add('Rule-15', '"NC" 被当作网络名导致短接',
                          f'{n}: {len(nds)} 个引脚被电气短接（该网带层次路径，'
                          '系设计者所画，非工具伪网络）')
 
-        # L0-18 同基名多轨
+        # Rule-18 同基名多轨
         rails = defaultdict(list)
         for n in nets:
             m = re.match(r'((?:VCC|VDD|V)[A-Z0-9]*_?\d+V\d*)', n, re.I)
@@ -178,14 +178,14 @@ class Lint:
                 rails[m.group(1).upper()].append(n)
         for base, grp in rails.items():
             if len(grp) > 1:
-                self.add('L0-18', '同基名多轨（确认非张冠李戴）',
+                self.add('Rule-18', '同基名多轨（确认非张冠李戴）',
                          f'{base}: {sorted(grp)}')
 
-        # L0-17 假闭环线索：VALUE 字段异常（前导空白等）
+        # Rule-17 假闭环线索：VALUE 字段异常（前导空白等）
         for ref, v in parts.items():
             val = v.get('value', '')
             if val != val.strip():
-                self.add('L0-17', 'VALUE 字段含首尾空白（影响 BOM 比对）',
+                self.add('Rule-17', 'VALUE 字段含首尾空白（影响 BOM 比对）',
                          f'{ref}: {val!r}', ref)
 
         # 导出日志：No_connect 被忽略 —— 免费证据，别丢
@@ -217,7 +217,8 @@ def main():
         by[f['rule']].append(f)
 
     print('=== L0 Lint 汇总（疑似清单，非判决）===')
-    for rid in sorted(by):
+    # Rule-* 在前、其余（导出日志等）在后
+    for rid in sorted(by, key=lambda r: (not r.startswith('Rule-'), r)):
         print(f'  {rid:12s} {by[rid][0]["name"]:32s} {len(by[rid]):5d} 条')
     print(f'  {"合计":45s} {len(F):5d} 条')
     print('\n  逐条人工排除后才是发现项。合法结构举例：Bob-Smith 终端、补偿网络、'

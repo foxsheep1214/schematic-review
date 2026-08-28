@@ -23,7 +23,7 @@
 1.  数据解析（三件套 → 结构化索引）
 2.  L0 自动 Lint —— 冷跑（纯网表规则全量扫描）
 3.  L1 datasheet 核实 —— Abs Max / 强制条款 / 公式常量 / 引脚语义
-    └ 回补 L0 热跑（L0-08 / L0-09 / L0-14 / L0-16）
+    └ 回补 L0 热跑（Rule-08 / Rule-09 / Rule-14 / Rule-16）
 4.  L2 供电系统审计（建电源树 = 后续一切的地图）
 5.  L3 关键链路逐条追踪（在图上走路径）
 6.  L4 参数与边界条件验算（WCA）
@@ -35,7 +35,7 @@
 贯穿（不排队）：文本层不可靠时立即渲染目检
 ```
 
-**顺序依据**：先有 datasheet 才谈得上"违反"（L1 供给 L0-16/L5 的判定依据、
+**顺序依据**：先有 datasheet 才谈得上"违反"（L1 供给 Rule-16/L5 的判定依据、
 供给 L4 的公式常量）；先有电源树才有地图可走链路（L2 → L3）；
 先走通链路才知道该算哪些点（L3 → L4）。
 
@@ -56,7 +56,22 @@
 | L5 前半 按需渲染 | **贯穿** | 不再排队 |
 | L6 后半 供应链 | **L7** | 拆分，收尾 |
 
-旧报告中的层号引用按此表换算。**规则号 L0-01~L0-18 不受影响。**
+旧报告中的层号引用按此表换算。
+
+### 0.2.2 规则号与层号解耦
+
+原规则号 `Rule-01`~`Rule-18` 带着层前缀，暗示"规则属于某一层且随层号变动"——
+这是错的：规则号是**规则的身份标识**，与它在哪一层执行无关。且随着
+Rule-08/09/14/16 明确为「L0 热跑」（需 L1 的 datasheet 结论才能判定），
+把它们钉死在 `L0-` 前缀上更容易误导。
+
+**改为 `Rule-NN`（两位数字），编号数字保持不变**：
+
+| 旧 | 新 |
+|---|---|
+| `Rule-01` ~ `Rule-18` | `Rule-01` ~ `Rule-18` |
+
+层号（L0~L7）此后只表示**执行阶段**，规则号只表示**规则身份**，两者不再耦合。
 
 ### 0.3 置信度分级（所有结论必须标注）
 
@@ -173,20 +188,20 @@ def parse_allegro(dirpath):
 
 | 规则 ID | 名称 | 检查逻辑 | 真实案例 |
 |---|---|---|---|
-| L0-01 | 单节点悬空网 | 网络节点数=1 且不在白名单（被删外设的 SoC 引脚、自动中间网） | `EFUSE2_EN_L` 只有 Rxxx.2 → 24V 输出永远无法开通 |
-| L0-02 | 双胞胎网络名 | 两网络名相似度>90%（差下划线/后缀）→ 疑似拼写分裂 | `FLT_0` vs `FLT0`、`VCC_5V0_SYS` vs `VCC5V0_SYS`（5V 主轨分裂，PMIC 无电） |
-| L0-03 | 自动命名孤岛 | N 开头自动编号网中只挂无源件（无 U/J/Q/Y/M） | 中间节点悬空筛查 |
-| L0-04 | 电源轨无驱动 | 轨名（VCC/VDD/VDDA/VCCA…）网络中无 PMIC/电感/开关类驱动 | |
-| L0-05 | 电源球无驱动 | SoC 每个含 VDD/VCC/AVDD 功能名的球，所在网络无驱动源 | 357 球全扫；`MIPI_DCPHY_AVDD→NC` 即由此暴露（后经规范裁定合法） |
-| L0-06 | VSS 未入地 | 功能名含 VSS/AVSS 的球不在 GND 网 | 268 球只抓 1 例外且与参考设计一致 |
-| L0-07 | 关键器件计数 | 按设计意图核对器件存在性（该删=0，该有≥N） | TPS16530 应×2 实×1 → 输入保护缺失 |
-| L0-08 | 参数验算不符 | 见第 5 章公式库，代入实际阻值验算 | FB 分压、限流、门限 |
-| L0-09 | 必需上拉/串阻缺失 | I2C 上拉（2.2K）、eMMC CMD 上拉（10K）、复位链、REXT（200R/8.2K）等 | 按平台规则表核对 |
-| L0-10 | ESD 挂残网 | ESD 器件所在网络节点数<2 或不含真实信号端点 | Dxx1/Dxx2 挂在废弃 USB_DP/DM 空网，活线无防护 |
-| L0-11 | 检测点选错轨 | 判压/检测类分压应挂在"源"侧而非"保护后内部轨"侧 | VBUS 判压分压错接输出侧 VOUT_24V |
-| L0-12 | 使能逻辑极性 | EN 有效电平 vs 上/下拉方向冲突；EN 脚耐压 vs 所接电源 | TPS16530 EN 低有效却被上拉至 24V VIN（耐压 5.5V，会烧） |
-| L0-13 | 钳位器件直连电源 | 稳压管/TVS 直接跨接在超过其 Vz/Vrwm 的电源轨上 | BZT52B3V0（3V）误并在 24V VBUS 上（上电即烧毁） |
-| L0-14 | 新增符号引脚映射 | 见 3.4 符号审计 | 新建连接器/IC 符号引脚号与实物不符 |
+| Rule-01 | 单节点悬空网 | 网络节点数=1 且不在白名单（被删外设的 SoC 引脚、自动中间网） | `EFUSE2_EN_L` 只有 Rxxx.2 → 24V 输出永远无法开通 |
+| Rule-02 | 双胞胎网络名 | 两网络名相似度>90%（差下划线/后缀）→ 疑似拼写分裂 | `FLT_0` vs `FLT0`、`VCC_5V0_SYS` vs `VCC5V0_SYS`（5V 主轨分裂，PMIC 无电） |
+| Rule-03 | 自动命名孤岛 | N 开头自动编号网中只挂无源件（无 U/J/Q/Y/M） | 中间节点悬空筛查 |
+| Rule-04 | 电源轨无驱动 | 轨名（VCC/VDD/VDDA/VCCA…）网络中无 PMIC/电感/开关类驱动 | |
+| Rule-05 | 电源球无驱动 | SoC 每个含 VDD/VCC/AVDD 功能名的球，所在网络无驱动源 | 357 球全扫；`MIPI_DCPHY_AVDD→NC` 即由此暴露（后经规范裁定合法） |
+| Rule-06 | VSS 未入地 | 功能名含 VSS/AVSS 的球不在 GND 网 | 268 球只抓 1 例外且与参考设计一致 |
+| Rule-07 | 关键器件计数 | 按设计意图核对器件存在性（该删=0，该有≥N） | TPS16530 应×2 实×1 → 输入保护缺失 |
+| Rule-08 | 参数验算不符 | 见第 5 章公式库，代入实际阻值验算 | FB 分压、限流、门限 |
+| Rule-09 | 必需上拉/串阻缺失 | I2C 上拉（2.2K）、eMMC CMD 上拉（10K）、复位链、REXT（200R/8.2K）等 | 按平台规则表核对 |
+| Rule-10 | ESD 挂残网 | ESD 器件所在网络节点数<2 或不含真实信号端点 | Dxx1/Dxx2 挂在废弃 USB_DP/DM 空网，活线无防护 |
+| Rule-11 | 检测点选错轨 | 判压/检测类分压应挂在"源"侧而非"保护后内部轨"侧 | VBUS 判压分压错接输出侧 VOUT_24V |
+| Rule-12 | 使能逻辑极性 | EN 有效电平 vs 上/下拉方向冲突；EN 脚耐压 vs 所接电源 | TPS16530 EN 低有效却被上拉至 24V VIN（耐压 5.5V，会烧） |
+| Rule-13 | 钳位器件直连电源 | 稳压管/TVS 直接跨接在超过其 Vz/Vrwm 的电源轨上 | BZT52B3V0（3V）误并在 24V VBUS 上（上电即烧毁） |
+| Rule-14 | 新增符号引脚映射 | 见 3.4 符号审计 | 新建连接器/IC 符号引脚号与实物不符 |
 
 ### 3.3 参考实现（核心部分，可直接运行）
 
@@ -195,39 +210,39 @@ def lint(db, DRIVER_PREFIX=('U230.', 'L23', 'Q240'), SOC_REF='U100.'):
     nets, parts, pinname, pin2net = db['nets'], db['parts'], db['pinname'], db['pin2net']
     import difflib
     F = []
-    # L0-01 单节点网络
+    # Rule-01 单节点网络
     for n, nds in nets.items():
         if len(nds) == 1 and not n.startswith(('N37', 'N31')):
-            F.append(('L0-01', '悬空网络', f'{n}: {nds[0]}'))
-    # L0-02 双胞胎网络名
+            F.append(('Rule-01', '悬空网络', f'{n}: {nds[0]}'))
+    # Rule-02 双胞胎网络名
     names = sorted(nets)
     for a, b in zip(names, names[1:]):
         if a != b and difflib.SequenceMatcher(None, a, b).ratio() > 0.9:
-            F.append(('L0-02', '疑似网络名分裂', f'{a} <-> {b}'))
-    # L0-03 自动命名孤岛
+            F.append(('Rule-02', '疑似网络名分裂', f'{a} <-> {b}'))
+    # Rule-03 自动命名孤岛
     for n, nds in nets.items():
         if n.startswith(('N37', 'N31')):
             refs = {x.split('.')[0] for x in nds}
             if not any(r[0] in 'UJQYM' for r in refs):
-                F.append(('L0-03', '孤岛中间节点', f'{n}: {refs}'))
-    # L0-04/05 电源审计（DRIVER 列表按项目 PMIC/电源芯片位号调整）
+                F.append(('Rule-03', '孤岛中间节点', f'{n}: {refs}'))
+    # Rule-04/05 电源审计（DRIVER 列表按项目 PMIC/电源芯片位号调整）
     # 示例：把本项目所有电源器件（PMIC/DCDC/LDO/电感/负载开关）的位号前缀填进来
     DRIVER_PREFIX = ('U230.', 'U240.', 'L23', 'L24', 'Q240')
     for n, nds in nets.items():
         if re.match(r'(VCC|VDD|VDDA|VCCA|VOUT)', n):
             if not any(x.startswith(DRIVER_PREFIX) for x in nds):
-                F.append(('L0-04', '电源轨疑似无驱动', f'{n} ({len(nds)} 节点)'))
+                F.append(('Rule-04', '电源轨疑似无驱动', f'{n} ({len(nds)} 节点)'))
     for node, pn in pinname.items():
         if node.startswith(SOC_REF) and any(k in pn.upper() for k in ('VDD', 'VCC', 'AVDD')):
             n = pin2net.get(node)
             if n is None:
-                F.append(('L0-05', '电源球无网络', f'{node}({pn})'))
+                F.append(('Rule-05', '电源球无网络', f'{node}({pn})'))
             elif not any(x.startswith(DRIVER_PREFIX) for x in nets[n]):
-                F.append(('L0-05', '电源球所在轨无驱动', f'{node}({pn}) <- {n}'))
-    # L0-06 VSS 未入地
+                F.append(('Rule-05', '电源球所在轨无驱动', f'{node}({pn}) <- {n}'))
+    # Rule-06 VSS 未入地
     for node, pn in pinname.items():
         if 'VSS' in pn.upper() and pin2net.get(node) != 'GND':
-            F.append(('L0-06', 'VSS 未入 GND', f'{node}({pn}) <- {pin2net.get(node)}'))
+            F.append(('Rule-06', 'VSS 未入 GND', f'{node}({pn}) <- {pin2net.get(node)}'))
     return F
 ```
 
@@ -241,7 +256,7 @@ def lint(db, DRIVER_PREFIX=('U230.', 'L23', 'Q240'), SOC_REF='U100.'):
 
 ## 第 4 章 L1 datasheet 核实（一切判断的前置）
 
-Abs Max、强制条款、公式常量、引脚语义全部来自 datasheet；没有它们，L0-16 判不了
+Abs Max、强制条款、公式常量、引脚语义全部来自 datasheet；没有它们，Rule-16 判不了
 "什么叫违反"、L4 算不出任何电压、L5 无规可对。**因此本层排在所有判断之前。**
 
 但**不必在 L0 之前**：L0 的纯网表规则先跑一遍，它会指出哪些器件有异常，
@@ -259,14 +274,14 @@ Abs Max、强制条款、公式常量、引脚语义全部来自 datasheet；没
 | 取什么 | 供给哪一层 |
 |---|---|
 | Absolute Maximum Ratings | L2 电平域匹配、L7 选型复核 |
-| **强制条款原文**（`must be pulled down` / `must be left floating` / 内部默认态） | L0-16、L5 —— **原文用词必须保留**，它是定级 BLOCKER 的唯一依据 |
+| **强制条款原文**（`must be pulled down` / `must be left floating` / 内部默认态） | Rule-16、L5 —— **原文用词必须保留**，它是定级 BLOCKER 的唯一依据 |
 | 公式常量（VFB、Vref、限流/频率系数）、**可调档 vs 工厂固定档** | L4 全部验算 |
-| 引脚语义表（方向敏感信号、多封装变体） | L3 链路追踪、L0-14 符号审计 |
+| 引脚语义表（方向敏感信号、多封装变体） | L3 链路追踪、Rule-14 符号审计 |
 
 ### 4.3 回补 L0
 
-L0 中依赖 datasheet 的规则——L0-08（参数验算）、L0-09（必需上拉）、
-L0-14（符号引脚映射）、L0-16（strap 强制条款）——在本层完成后回头补跑。
+L0 中依赖 datasheet 的规则——Rule-08（参数验算）、Rule-09（必需上拉）、
+Rule-14（符号引脚映射）、Rule-16（strap 强制条款）——在本层完成后回头补跑。
 L0 因此是**两趟**：冷跑（纯网表）→ L1 → 热跑（补齐依赖项）。
 
 ### 4.4 取值前先确认文本层可信
@@ -287,8 +302,8 @@ L0 因此是**两趟**：冷跑（纯网表）→ L1 → 热跑（补齐依赖�
 
 ### 5.2 电源球覆盖
 
-- 全部 SoC 电源球（功能名含 VDD/VCC/AVDD）：所在网络必须有驱动（L0-05）。
-- 全部 VSS/AVSS 球：必须在 GND 网（L0-06）。例外需与基线参考设计比对确认。
+- 全部 SoC 电源球（功能名含 VDD/VCC/AVDD）：所在网络必须有驱动（Rule-05）。
+- 全部 VSS/AVSS 球：必须在 GND 网（Rule-06）。例外需与基线参考设计比对确认。
 
 ### 5.3 电平域匹配（短板补全）
 
@@ -490,15 +505,15 @@ TX/RX/主从方向信号，**必须回到官方引脚语义表逐字确认**，�
 
 | 模式 | 形态 | 检查规则 |
 |---|---|---|
-| 跨页标签错字 | 两个相似名网络互不相通 | L0-02 |
-| 自动后缀孤岛 | `NETNAME_37816262` 类后缀网 | L0-02/03 |
-| 检测点接错侧 | 判压接在负载侧/保护后 | L0-11 |
-| ESD 挂残网 | 防护在空网，活线裸奔 | L0-10 |
-| EN 脚超耐压 | 逻辑脚上拉高压轨 | L0-12 + abs-max 表 |
-| 极性搞反 | 低有效当上拉、高有效当下拉 | L0-12 |
-| 钳位管并电源 | TVS/稳压管直接跨超压轨 | L0-13 |
-| 缺上拉/串阻 | I2C、CMD、复位链、REXT | L0-09 |
-| 电源轨改名分裂 | 同一轨两个名字互不相通 | L0-02 |
+| 跨页标签错字 | 两个相似名网络互不相通 | Rule-02 |
+| 自动后缀孤岛 | `NETNAME_37816262` 类后缀网 | Rule-02/03 |
+| 检测点接错侧 | 判压接在负载侧/保护后 | Rule-11 |
+| ESD 挂残网 | 防护在空网，活线裸奔 | Rule-10 |
+| EN 脚超耐压 | 逻辑脚上拉高压轨 | Rule-12 + abs-max 表 |
+| 极性搞反 | 低有效当上拉、高有效当下拉 | Rule-12 |
+| 钳位管并电源 | TVS/稳压管直接跨超压轨 | Rule-13 |
+| 缺上拉/串阻 | I2C、CMD、复位链、REXT | Rule-09 |
+| 电源轨改名分裂 | 同一轨两个名字互不相通 | Rule-02 |
 | 方向信号交叉错 | RX/TX 凭感觉交叉 | 4.2 协议 |
 | 电容只算标称 | 忽略 MLCC 直流偏压衰减 | 6.1 偏压规则 |
 | 参数够、封装错 | 电气可换物理焊不上 | 6.3 封装核查 |

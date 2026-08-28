@@ -21,7 +21,7 @@ Cadence/OrCAD allegro 三件套 -> 结构化索引
      变体 A:  NODE_NAME 之后的属性行里带 'NAME':CDS_PINID
      变体 B:  NODE_NAME -> 实例行 -> 紧接一行 'NAME':;
    本脚本两种都试。**若解析后 pinname 覆盖率过低会直接报错退出**——
-   否则 L0-05(电源球无驱动)/L0-06(VSS未入地) 会静默扫出 0 条，
+   否则 Rule-05(电源球无驱动)/Rule-06(VSS未入地) 会静默扫出 0 条，
    报告写成"电源球全扫通过"而实际一个都没查。
 
 2. **伪网络**：PSTWRITER 会把"带 No-Connect 属性且无连线"的引脚
@@ -194,7 +194,7 @@ def self_check(db, strict=True):
     if n_pin and n_name / n_pin < 0.5:
         problems.append(
             f'pinname 覆盖率仅 {n_name}/{n_pin} = {n_name/n_pin:.0%} —— '
-            '引脚功能名未被正确提取。L0-05(电源球无驱动)/L0-06(VSS未入地) '
+            '引脚功能名未被正确提取。Rule-05(电源球无驱动)/Rule-06(VSS未入地) '
             '将静默失效，扫出 0 条并被误读为"全部通过"')
     ic = [r for r in db['parts'] if r[0] in 'UM']
     if ic and not db['ref2page']:
@@ -206,7 +206,7 @@ def self_check(db, strict=True):
     if db['pseudo_nets']:
         for p in db['pseudo_nets']:
             print(f'  [伪网络] {p!r} 挂 {len(db["nets"].get(p, []))} 个引脚 —— '
-                  '工具生成的 No-Connect 汇集网，非电气短路，L0-15 不应对其告警')
+                  '工具生成的 No-Connect 汇集网，非电气短路，Rule-15 不应对其告警')
 
     if problems:
         sys.stdout.flush()
