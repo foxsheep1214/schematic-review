@@ -1,0 +1,6 @@
+# 内部真实项目报告——仅本地保留，不纳入版本管理、不公开
+examples-internal/
+
+.DS_Store
+__pycache__/
+*.pyc
