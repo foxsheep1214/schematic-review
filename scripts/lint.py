@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-L0 自动 Lint —— 机械、可穷举的规则全量扫描
+AC0 Automated Check（自动检查）——机械、可穷举的规则全量扫描
 
 用法:
     python3 lint.py db.json [--log netlist.log] [--json out.json]
 
 **输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、补偿网络、
 DNP 选项、被删外设的引出脚、工具伪网络）必须人工排除。实践中命中
-数百条而真问题为零是常态——L0 的职责是保证"没漏看"，不是"看对了"。
+数百条而真问题为零是常态——AC0 的职责是保证"没漏看"，不是"看对了"。
 
 驱动源自动识别
 --------------
@@ -202,7 +202,7 @@ class Lint:
 
 
 def main():
-    ap = argparse.ArgumentParser(description='L0 全量 Lint（输出为疑似清单）')
+    ap = argparse.ArgumentParser(description='AC0 Automated Check（输出为疑似清单）')
     ap.add_argument('db', help='parse_netlist.py 产出的 db.json')
     ap.add_argument('--log', help='netlist.log（导出日志，含 No_connect 等免费证据）')
     ap.add_argument('--json', help='把完整命中写入 JSON')
@@ -216,7 +216,7 @@ def main():
     for f in F:
         by[f['rule']].append(f)
 
-    print('=== L0 Lint 汇总（疑似清单，非判决）===')
+    print('=== AC0 Automated Check 汇总（疑似清单，非判决）===')
     # Rule-* 在前、其余（导出日志等）在后
     for rid in sorted(by, key=lambda r: (not r.startswith('Rule-'), r)):
         print(f'  {rid:12s} {by[rid][0]["name"]:32s} {len(by[rid]):5d} 条')

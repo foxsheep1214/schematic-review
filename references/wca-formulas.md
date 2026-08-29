@@ -1,4 +1,4 @@
-# L4 参数与边界条件验算（WCA）公式库
+# ER4 参数与边界条件验算（WCA）公式库
 
 > **分压类先用脚本**：`python3 scripts/solve_dividers.py db.json --vfb <REF>=<VFB>`。
 > 它沿电阻串递归求和，正确处理任意长度的串联上/下臂——这是分压算错的首要原因，

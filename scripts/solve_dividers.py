@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-L4-WCA：稳压器反馈分压 / 监控分压 自动求解
+ER4-WCA：稳压器反馈分压 / 监控分压 自动求解
 
 用法:
     python3 solve_dividers.py db.json --vfb U1=0.815 U2=0.6 ...
