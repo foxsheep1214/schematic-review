@@ -12,10 +12,14 @@
 
 | 层 | 解决什么 | 怎么做 |
 |---|---|---|
-| **AC0 Automated Check（自动检查）** | **覆盖率** | 18 条机械、无歧义、可穷举的规则全量扫描。几百条网络、几百个电源球一个不漏 |
+| **AC0 Automated Check（自动检查）** | **覆盖率** | 17 条机械、无歧义、可穷举的规则全量扫描。几百条网络、几百个电源球一个不漏 |
 | **ER1–ER7 Expert Review（专家审查）** | **正确性与风险** | datasheet 核实 → 供电建图 → 链路追踪 → 参数验算(WCA) → 平台规则 → 图形目检 → 供应链 |
 
-关键纪律：**AC0 的输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、DNP 选项、工具生成的伪网络）必须人工排除——实践中 AC0 命中数百条而真问题为零是常态，真问题往往来自需要判断的 ER3/ER4/ER5。
+关键纪律：**AC0 的输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、DNP 选项、工具生成的伪网络）由执行 agent 逐条排除并留痕——实践中 AC0 命中数百条而真问题为零是常态，真问题往往来自需要判断的 ER3/ER4/ER5。
+
+分层判据不是「能不能自动化」，而是**结论是「算出来的」还是「推出来的」**——算出来的（可复现、零幻觉、可穷举）交给脚本，推出来的（需语义理解或外部证据）交给 agent。全流程由 agent 驱动时这条线更要紧：AC0 的价值不是省人力，而是**把 LLM 不可靠的地方交给代码**（逐个核对 357 个电源球的驱动，脚本零漏检；让 agent 自己数，必漏）。
+
+AC0 按输入依赖分三档跑：**冷跑**（只吃网表）→ **冷跑·参数化**（加意图清单）→ ER1 → **热跑**（加 datasheet 结论）。冷跑除了 `FINDING`，还产出 `CANDIDATE`——待 ER1 定夺的优先级清单，**直接决定优先读哪几份 datasheet**，而不是盲读几十份。每趟末尾显式列出未执行的规则及原因：**扫出 0 条与根本没扫，绝不能长得一样。**
 
 ## 三条铁律
 
@@ -29,7 +33,7 @@
 |---|---|---|
 | **A** | 网表实证（断网、参数不符） | 可直接整改 |
 | **B** | datasheet/规范已核 | 可直接整改 |
-| **C** | 信息不足 | 列出向设计者/原厂求证，**严禁臆测** |
+| **C** | 信息不足 | 报告中成节列出待求证项，**严禁臆测** |
 
 严重度分 致命(BLOCKER) / 严重(Warning) / 建议(Info) / 观察，对应"必须修复后投板 / 必须修复或书面风险接受 / 评估后决定 / 记录跟踪"。
 
@@ -46,7 +50,7 @@ scripts/                          # 可直接运行，无第三方依赖
 references/
   methodology-v1.0.md             # 方法论完整长文档（AC0/ER1–ER7 各章细节、平台规则库构建方法、迁移指南）
   netlist-parsing.md              # 网表解析规范：三件套格式、pinname 两种布局、渲染读图与旋转页坐标换算；其他 EDA 适配
-  lint-rules.md                   # AC0 规则库 18 条 + NC 网络判别式 + 驱动源判定 + 符号/strap 审计执行法
+  lint-rules.md                   # AC0 规则库 17 条 + 三档分跑 + NC 网络判别式 + 驱动源判定 + 符号/strap 审计
   review-checklist.md             # 按电路域的通用检查表（电源/时钟/复位/接口/防护/监控/无源/连接器/热/文档）
   wca-formulas.md                 # 参数验算公式库：FB 分压、UVLO/OVLO、限流、钳位、ADC 分压、RC 复位、MLCC 偏压…
   report-template.md              # 报告骨架 + ECO 级发现项格式
@@ -105,7 +109,8 @@ git clone https://github.com/foxsheep1214/schematic-review.git ~/.claude/skills/
 
 ```bash
 python3 scripts/parse_netlist.py <项目>/allegro -o db.json
-python3 scripts/lint.py db.json --log <项目>/allegro/netlist.log --json lint.json
+python3 scripts/lint.py db.json --log <项目>/allegro/netlist.log \
+       --intent intent.json --json lint.json   # --intent 为第 0 步意图清单，Rule-07 所需
 python3 scripts/solve_dividers.py db.json --vfb U1=0.815 U2=0.6 ...
 ```
 

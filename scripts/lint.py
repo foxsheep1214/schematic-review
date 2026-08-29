@@ -7,7 +7,7 @@ AC0 Automated Check（自动检查）——机械、可穷举的规则全量扫�
     python3 lint.py db.json [--log netlist.log] [--json out.json]
 
 **输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、补偿网络、
-DNP 选项、被删外设的引出脚、工具伪网络）必须人工排除。实践中命中
+DNP 选项、被删外设的引出脚、工具伪网络）由执行 agent 逐条排除。实践中命中
 数百条而真问题为零是常态——AC0 的职责是保证"没漏看"，不是"看对了"。
 
 驱动源自动识别
@@ -31,11 +31,44 @@ from collections import defaultdict
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
 RAIL_RE = re.compile(r'^(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d)', re.I)
 OUTPIN_RE = re.compile(r'^(VOUT|SW|OUT|VO|LX|\+VO)', re.I)
+EN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN)(_|\d|$)', re.I)
+CLAMP_RE = re.compile(r'ZENER|TVS|BZT|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)
+# EN 脚耐压绝大多数 <=6V；超过此值的上拉优先送 ER1 查 Abs Max（提示，非判定）
+EN_PULL_ALERT_V = 6.0
+
+
+def _volt(s):
+    """从名字里推电压：3V3->3.3, 24V->24, 5.0V->5.0, V5P0->5.0；推不出返回 None"""
+    if not s:
+        return None
+    u = s.upper()
+    m = re.search(r'(\d{1,3})V(\d)(?![\dA-Z])', u)      # 3V3 / 24V0
+    if m:
+        return float(m.group(1)) + float(m.group(2)) / 10
+    m = re.search(r'(\d{1,3}\.\d)V', u)                 # 5.0V
+    if m:
+        return float(m.group(1))
+    m = re.search(r'(\d{1,3})V(?![\dA-Z])', u)           # 24V / _5V
+    if m:
+        return float(m.group(1))
+    m = re.search(r'V(\d{1,2})P(\d)(?![\d])', u)        # V5P0
+    if m:
+        return float(m.group(1)) + float(m.group(2)) / 10
+    return None
+
+
+def clamp_volt(blob):
+    """钳位器件的 Vz/Vrwm：先试 TVS 型号规则，再退回通用电压推断"""
+    m = re.search(r'SM[ABCF]J(\d{1,3}(?:\.\d)?)', blob.upper())   # SMBJ5.0A
+    if m:
+        return float(m.group(1))
+    return _volt(blob)
 
 
 class Lint:
-    def __init__(self, db, log_text=''):
+    def __init__(self, db, log_text='', intent=None):
         self.db = db
+        self.intent = intent or {}
         self.nets = db['nets']
         self.parts = db['parts']
         self.pinname = db['pinname']
@@ -44,6 +77,7 @@ class Lint:
         self.pseudo = set(db.get('pseudo_nets', []))
         self.log = log_text
         self.F = []
+        self.skipped = []      # 未执行的规则及原因——绝不静默跳过
         self._ends_cache = {}
 
     # -- helpers ---------------------------------------------------------
@@ -56,8 +90,9 @@ class Lint:
     def refs_of(self, net):
         return {x.split('.')[0] for x in self.nets.get(net, [])}
 
-    def add(self, rid, name, detail, ref=None):
-        self.F.append({'rule': rid, 'name': name, 'detail': detail,
+    def add(self, rid, name, detail, ref=None, kind='FINDING'):
+        """kind: FINDING=疑似缺陷，逐条排除；CANDIDATE=待 ER1 定夺的优先级清单"""
+        self.F.append({'rule': rid, 'name': name, 'detail': detail, 'kind': kind,
                        'page': self.page.get(ref, 0) if ref else 0})
 
     def driven(self, net):
@@ -188,6 +223,69 @@ class Lint:
                 self.add('Rule-17', 'VALUE 字段含首尾空白（影响 BOM 比对）',
                          f'{ref}: {val!r}', ref)
 
+        # Rule-07 关键器件计数（冷跑·参数化：需第 0 步意图清单）
+        expect = (self.intent or {}).get('expect') or {}
+        if expect:
+            for key, want in expect.items():
+                got = sorted(r for r, v in parts.items() if not v.get('nc') and key.upper()
+                             in (v.get('part', '') + ' ' + v.get('value', '') + ' '
+                                 + v.get('prim', '')).upper())
+                if len(got) != want:
+                    self.add('Rule-07', '关键器件计数不符',
+                             f'{key}: 意图 {want} 实为 {len(got)}'
+                             + (f' {got}' if got else ''))
+        else:
+            self.skipped.append(('Rule-07', '关键器件计数', '未提供 --intent 意图清单'))
+
+        # Rule-12 EN 极性/耐压 —— 冷跑只出候选，极性与耐压须 ER1 查 datasheet 定判
+        for n, nds in nets.items():
+            if n in self.pseudo or not EN_RE.search(n):
+                continue
+            pulls = []
+            for x in nds:
+                ref = x.split('.')[0]
+                if not ref.startswith('R') or parts.get(ref, {}).get('nc'):
+                    continue
+                for other in self.ends(ref):
+                    if other == n:
+                        continue
+                    if other in GNDS:
+                        pulls.append(f'{ref} 下拉->{other}')
+                    elif RAIL_RE.match(other) or _volt(other):
+                        v = _volt(other)
+                        pulls.append(f'{ref} 上拉->{other}'
+                                     + (f'({v}V)' if v else '')
+                                     + (' [优先]' if v and v >= EN_PULL_ALERT_V else ''))
+            if pulls:
+                self.add('Rule-12', 'EN 脚上拉/下拉待核（极性+Abs Max）',
+                         f'{n}: {"; ".join(sorted(set(pulls)))}',
+                         kind='CANDIDATE')
+
+        # Rule-13 钳位器件直连电源（Vz 可从型号推出即冷跑定判，推不出转候选）
+        for ref, v in parts.items():
+            if v.get('nc'):
+                continue
+            blob = (v.get('part', '') + ' ' + v.get('value', '') + ' '
+                    + v.get('prim', ''))
+            if not CLAMP_RE.search(blob):
+                continue
+            ends = self.ends(ref)
+            if len(ends) != 2 or not any(e in GNDS for e in ends):
+                continue
+            rail = [e for e in ends if e not in GNDS][0]
+            vr = _volt(rail)
+            if vr is None:
+                continue                      # 轨电压未知，交 ER2 电源树处理
+            vz = clamp_volt(blob)
+            if vz is None:
+                self.add('Rule-13', '钳位器件跨接电源轨（Vz 待查）',
+                         f'{ref} ({blob.strip()}) 跨 {rail}({vr}V)-GND，'
+                         f'型号推不出 Vz/Vrwm', ref, kind='CANDIDATE')
+            elif vz < vr:
+                self.add('Rule-13', '钳位器件 Vz 低于所跨电源轨',
+                         f'{ref} ({blob.strip()}) Vz/Vrwm≈{vz}V < {rail} 的 {vr}V'
+                         f' —— 上电即导通/烧毁', ref)
+
         # 导出日志：No_connect 被忽略 —— 免费证据，别丢
         if self.log:
             ig = re.findall(
@@ -201,31 +299,63 @@ class Lint:
         return self.F
 
 
+# 热跑项：判据来自 datasheet，冷跑阶段无法执行，须 ER1 完成后回补
+HOT_RULES = [('Rule-08', '参数验算不符'), ('Rule-09', '必需上拉/串阻缺失'),
+             ('Rule-14', '新增符号引脚映射'), ('Rule-16', 'strap 违反强制条款')]
+
+
+def _table(by, keys):
+    for k in keys:
+        print(f'  {k[0]:12s} {by[k][0]["name"]:32s} {len(by[k]):5d} 条')
+
+
 def main():
     ap = argparse.ArgumentParser(description='AC0 Automated Check（输出为疑似清单）')
     ap.add_argument('db', help='parse_netlist.py 产出的 db.json')
     ap.add_argument('--log', help='netlist.log（导出日志，含 No_connect 等免费证据）')
+    ap.add_argument('--intent', help='第 0 步意图清单 JSON（Rule-07 关键器件计数所需）')
     ap.add_argument('--json', help='把完整命中写入 JSON')
     a = ap.parse_args()
 
     db = json.load(io.open(a.db, encoding='utf-8'))
     log = io.open(a.log, encoding='utf-8', errors='replace').read() if a.log else ''
-    F = Lint(db, log).run()
+    intent = json.load(io.open(a.intent, encoding='utf-8')) if a.intent else None
 
+    lint = Lint(db, log, intent)
+    F = lint.run()
+
+    # 分组键含 kind——同一条规则可同时产出 FINDING 与 CANDIDATE（如 Rule-13）
     by = defaultdict(list)
     for f in F:
-        by[f['rule']].append(f)
+        by[(f['rule'], f['kind'])].append(f)
+    # Rule-* 在前、其余（导出日志等）在后
+    order = sorted(by, key=lambda k: (not k[0].startswith('Rule-'), k[0]))
+    find = [k for k in order if k[1] == 'FINDING']
+    cand = [k for k in order if k[1] == 'CANDIDATE']
 
     print('=== AC0 Automated Check 汇总（疑似清单，非判决）===')
-    # Rule-* 在前、其余（导出日志等）在后
-    for rid in sorted(by, key=lambda r: (not r.startswith('Rule-'), r)):
-        print(f'  {rid:12s} {by[rid][0]["name"]:32s} {len(by[rid]):5d} 条')
-    print(f'  {"合计":45s} {len(F):5d} 条')
-    print('\n  逐条人工排除后才是发现项。合法结构举例：Bob-Smith 终端、补偿网络、'
-          'DNP 选项、\n  被删外设的 SoC 引出脚、工具伪网络。')
+    _table(by, find)
+    n_find = sum(len(by[k]) for k in find)
+    print(f'  {"合计":45s} {n_find:5d} 条')
+    print('\n  逐条排除后才是发现项——由执行 agent 完成，排除依据须留痕。合法结构举例：'
+          'Bob-Smith 终端、补偿网络、DNP 选项、\n  被删外设的 SoC 引出脚、工具伪网络。')
+
+    if cand:
+        print('\n=== CANDIDATE：待 ER1 定夺（决定优先读哪几份 datasheet）===')
+        _table(by, cand)
+
+    # 未执行的规则必须报出来——扫出 0 条与根本没扫，绝不能长得一样
+    print('\n=== 本趟未执行（0 条 ≠ 通过）===')
+    for rid, name, why in lint.skipped:
+        print(f'  {rid:12s} {name:32s} {why}')
+    for rid, name in HOT_RULES:
+        print(f'  {rid:12s} {name:32s} 热跑项，须 ER1 完成 datasheet 核实后回补')
 
     if a.json:
-        json.dump(F, io.open(a.json, 'w', encoding='utf-8'),
+        json.dump({'findings': F,
+                   'skipped': [list(s) for s in lint.skipped],
+                   'hot_pending': [list(h) for h in HOT_RULES]},
+                  io.open(a.json, 'w', encoding='utf-8'),
                   ensure_ascii=False, indent=1)
         print(f'\n  -> {a.json}')
 
