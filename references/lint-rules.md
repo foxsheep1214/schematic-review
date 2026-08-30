@@ -1,16 +1,25 @@
 # AC0 Automated Check（自动检查）规则库
 
-规则号 `Rule-NN` 是**规则身份标识**，与检查标识（AC0/ER1–ER7）无关。一条规则属不属于 AC0，判据是**结论是「算出来的」还是「推出来的」**——算出来的（可复现、零幻觉、可穷举）走脚本；推出来的走 ER。至于它**在哪一趟跑**，由输入依赖决定：
+规则号 `Rule-NN` 是**规则身份标识**，与检查标识（AC0/ER1–ER7）无关。
+第一次 AC0 先运行 `plan_review.py`，把规则级和对象级的适用性、准备度、执行阶段
+写入 `review-plan.json`；输入输出契约见 `review-plan-schema.md`。一条规则属不属于
+AC0，判据是**结论是「算出来的」还是「推出来的」**——算出来的（可复现、零幻觉、
+可穷举）走脚本；推出来的走 ER。至于它**在哪一趟跑**，由输入依赖决定：
 
 | 趟次 | 吃什么 | 规则 |
 |---|---|---|
-| **冷跑** | 只吃 `db.json` | Rule-01～06、10、13、15、17、18；Rule-12 出候选 |
+| **冷跑** | 只吃 `db.json` | Rule-01～06、10、13、15、18～20；Rule-12 出候选 |
 | **冷跑·参数化** | `db.json` + 第 0 步意图清单（`--intent`） | Rule-07 |
-| **热跑** | `db.json` + ER1 的 datasheet 结论 | Rule-08、09、14、16；Rule-12 定判 |
+| **热跑** | `db.json` + ER1 的 `evidence.json` | Rule-08、09、12、14、16 |
+| **改版 Diff** | 旧/新 `db.json` + 可选闭环断言 | Rule-17 |
 
 **输出分两类**：`FINDING` = 疑似缺陷，逐条排除；`CANDIDATE` = 待 ER1 定夺的优先级清单，**直接决定优先读哪几份 datasheet**。同一条规则可同时产出两类——Rule-13 的 Vz 能从型号推出即定判（FINDING），推不出则转候选（CANDIDATE）。
 
 **未执行 ≠ 通过**：`lint.py` 每趟末尾显式列出本趟没跑的规则及原因（缺 `--intent`、待 ER1 回补）。扫出 0 条与根本没扫，绝不能长得一样。
+
+**未检出特征 ≠ NA**：网表检测不到 DDR/RF 等关键字时，计划先标
+`UNDETERMINED`；只有设计意图提供可引用的不适用依据，才能标 `NOT_APPLICABLE`
+并最终写 NA。适用但缺材料的检查结果写 `INSUFFICIENT`。
 
 > **Rule-11（检测点选错轨）已移出 AC0**，归 ER2 供电系统审计。它的判定依赖「谁是源、谁是保护后」，而这正是 ER2 电源树的产物——留在 AC0 只能写出高误报的启发式。见 `methodology-v1.0.md` §5.7。
 
@@ -35,8 +44,10 @@
 | Rule-14 | 新增符号引脚映射 | 新建/定制符号（连接器、新 IC）pin 名/号 vs 官方 datasheet 逐脚比对；沿用成熟库免检 | 45P 连接器引脚号与实物不符 |
 | Rule-15 | "NC" 网络实为真网络 | 存在名为 NC/NC_* 的多节点网络。**必须先判别真短路 vs 工具伪网络**，见下方「NC 网络判别式」 | 真短路：164 引脚被短成一张网，含晶振脚/MII 输出脚/6 个外部连接器 pin1（OrCAD 经典陷阱）。伪网络：357 引脚挂在 PSTWRITER 的 No-Connect 汇集网上，看似隔离栅被跨接，实为工具产物 |
 | Rule-16 | strap 违反强制条款 | 配置/测试脚上拉方向 vs datasheet 原文（must be pulled down / must be left floating / 内部默认态） | RTL8208 TEST[3:0] 上拉（强制下拉）；EN_PWRDWN 上拉=上电即 power-down（默认 0=Normal） |
-| Rule-17 | 假闭环 | 历史意见声称"已修改"但 pstxprt/pstchip 中 VALUE/封装未变 | "已改 RTL8326BI"回复后网表仍为 RTL8326B-CG |
+| Rule-17 | 假闭环 | `diff_netlists.py` 按历史意见断言核对旧/新器件字段、引脚换网和网络成员变化 | "已改 RTL8326BI"回复后新版仍为 RTL8326B-CG |
 | Rule-18 | 同名不同域电源轨混用 | 相似轨名（VCC_3V3 vs VCC_3V3_SOM）被监测/供电对象张冠李戴 | 监控芯片 V2 看 SOM 轨、V4 看底板轨，判定需先分清 |
+| Rule-19 | PINUSE/ERC | 多个 OUT 直连为 FINDING；全 IN 网络、GROUND 类型未入已知地网为 CANDIDATE | 利用解析器已有 PINUSE，合法开漏/三态仍须排除 |
+| Rule-20 | BOM 字段卫生 | PART/VALUE/JEDEC/primitive 首尾空白等会破坏 BOM/Diff 的字段异常 | 原 Rule-17 代码实际只做此项，现拆开避免语义错位 |
 
 ## NC 网络判别式（Rule-15 执行前必做）
 
@@ -69,7 +80,8 @@ DRIVER 前缀不必手工枚举，`scripts/lint.py` 按上述五类自动识别�
 
 ## 参考实现
 
-**可直接运行**：`python3 scripts/lint.py db.json --log netlist.log --json out.json`
+**可直接运行**：
+`python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan.json --json out.json`
 
 下方为核心逻辑摘录，供理解规则用；**执行时请用 `scripts/lint.py`**，它包含伪网络判别、五类驱动源识别、差分对/同族总线过滤等本文所述的全部处理。
 
@@ -125,7 +137,8 @@ def lint(db, DRIVER_PREFIX=('U230.', 'L23', 'Q240')):  # 按项目电源器件�
 ## 关键器件计数（Rule-07 执行方法）
 
 Rule-07 的输入不是网表，而是第 0 步的**意图清单**——由执行 agent 从需求/规格书、
-原理图修订记录、历史评审记录中提取，落成 `intent.json` 随报告留档：
+原理图修订记录、历史评审记录中提取，落成 `intent.json` 随报告留档。扩展字段和
+材料可用性见 `review-plan-schema.md`；旧版最小格式仍兼容：
 
 ```json
 {

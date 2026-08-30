@@ -1,28 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ER4-WCA：稳压器反馈分压 / 监控分压 自动求解
+ER4-WCA：反馈/监控分压自动求解。
+
+特性：
+- 穷举电阻路径，不再静默采用“找到的第一条路径”。
+- 正确处理串联臂，以及互不共享电阻的并联支路。
+- 从 VALUE 提取单颗电阻公差；未写公差时使用 --res-tol。
+- 输出 Vref 与电阻公差叠加后的 min/typ/max。
 
 用法:
-    python3 solve_dividers.py db.json --vfb U1=0.815 U2=0.6 ...
-    python3 solve_dividers.py db.json --net FB_NET --vfb 0.62      # 单点求解
-
-为什么必须用脚本
-----------------
-高频错误模式第 15 条「**串联下臂被当成单电阻**」是分压算错的首要原因，
-而它无法靠肉眼规避——一块板十几颗稳压器，只要有一颗的臂是两颗电阻串联，
-手算就会得出完全错误的电压。真实案例：某 4G 模组供电按单颗 9.1K 下臂
-算出 5.386V（模组 VBAT 上限 4.2V，看似要烧模组），追到底发现下臂是
-9.1K + 4.7K 串联 = 13.8K，实际 3.829V —— 差点报出假致命项。
-
-本脚本沿电阻串递归求和，正确处理任意长度的串联臂。
-
-交叉校验
---------
-求出的电压会与**轨名**对撞（VCC_3V3 -> 3.3V、VBAT_4G1_3V8 -> 3.8V）。
-对不上先怀疑自己的工具，而不是先怀疑板子——本脚本开发时正是靠这个
-校验抓出了一个递归终止 bug（入口网本身是电源轨时未立即终止，
-把轨上其他电阻也算进了上臂）。
+    python3 solve_dividers.py db.json --vfb U1=0.815 U2=0.6
+    python3 solve_dividers.py db.json --net FB_NET --vfb 0.62
+    python3 solve_dividers.py db.json --vfb U1=0.8 --vfb-tol 0.02 --json wca.json
 """
 import argparse
 import io
@@ -33,35 +23,110 @@ import sys
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
 RAIL_RE = re.compile(
     r'^(VCC|VBAT|VDD|VOUT|AVDD|DVDD|VIN|VBUS|3V3|5V|1V|2V|0V)', re.I)
-FB_NAMES = ('FB', 'ADJ', 'VFB', 'FBX')
+FB_NAMES = {
+    'FB', 'ADJ', 'VFB', 'FBX', 'VSENSE', 'VOSNS', 'VOUT_SENSE',
+}
+
+
+def parse_resistor(value, default_tol=0.01):
+    """解析电阻值，返回 {'kohm', 'tol'}；支持 4K7、2.49K、0R、1M0。"""
+    raw = str(value or '').strip()
+    upper = raw.upper().replace('Ω', 'R')
+    leading_unit = re.match(r'^([RKM])(\d+)', upper)
+    embedded = re.match(r'^(\d+)([RKM])(\d+)', upper)
+    if leading_unit:
+        number = float(f'0.{leading_unit.group(2)}')
+        unit = leading_unit.group(1)
+    elif embedded:
+        number = float(f'{embedded.group(1)}.{embedded.group(3)}')
+        unit = embedded.group(2)
+    else:
+        normal = re.match(r'^(\d+(?:\.\d+)?)\s*([RKM]?)', upper)
+        if not normal:
+            return None
+        number = float(normal.group(1))
+        unit = normal.group(2)
+    scale = {'R': 0.001, '': 0.001, 'K': 1.0, 'M': 1000.0}[unit]
+    tol_match = re.search(r'(?:/|±|\+/-|\s)(\d+(?:\.\d+)?)\s*%', raw)
+    tol = float(tol_match.group(1)) / 100.0 if tol_match else float(default_tol)
+    if tol < 0 or tol >= 1:
+        return None
+    return {'kohm': number * scale, 'tol': tol}
 
 
 def r_kohm(value):
-    """'4.7K/1%' -> 4.7 ; '0R/1%' -> 0.0 ; '2.49k' -> 2.49"""
-    m = re.match(r'\s*([\d.]+)\s*([KkMmRr]?)', str(value))
-    if not m:
-        return None
-    x = float(m.group(1))
-    u = m.group(2).upper()
-    return x * 1000 if u == 'M' else (x if u == 'K' else x / 1000.0)
+    """兼容旧调用：只返回标称 kΩ。"""
+    parsed = parse_resistor(value)
+    return parsed['kohm'] if parsed else None
 
 
 def rail_hint(name):
-    """从轨名推标称电压：VBAT_4G1_3V8 -> 3.8 ; VCC_3V3 -> 3.3 ; VDD_1V95 -> 1.95"""
-    m = re.search(r'(\d+)V(\d*)', name or '')
-    if not m:
+    """从轨名推标称电压：VBAT_4G1_3V8 -> 3.8；VCC_3V3 -> 3.3。"""
+    matches = list(re.finditer(r'(\d+)V(\d*)', name or ''))
+    if not matches:
         return None
-    whole, frac = m.group(1), m.group(2)
+    whole, frac = matches[-1].group(1), matches[-1].group(2)
     return float(f'{whole}.{frac}') if frac else float(whole)
 
 
+def _parallel(values):
+    if not values:
+        return None
+    if any(v <= 0 for v in values):
+        return 0.0
+    return 1.0 / sum(1.0 / v for v in values)
+
+
+def _branch_summary(branch):
+    nominal = sum(s['kohm'] for s in branch['segments'])
+    minimum = sum(s['kohm'] * (1.0 - s['tol']) for s in branch['segments'])
+    maximum = sum(s['kohm'] * (1.0 + s['tol']) for s in branch['segments'])
+    return {'nominal': nominal, 'min': minimum, 'max': maximum}
+
+
+def _combine_branches(branches):
+    """合并互不共享电阻的并联支路；共享电阻时拒绝猜测。"""
+    if not branches:
+        return None, 'missing branch'
+    used = set()
+    summaries = []
+    for branch in branches:
+        refs = {s['ref'] for s in branch['segments']}
+        if used & refs:
+            return None, 'branches share resistor(s); requires circuit analysis'
+        used |= refs
+        summaries.append(_branch_summary(branch))
+    nominal = _parallel([x['nominal'] for x in summaries])
+    minimum = _parallel([x['min'] for x in summaries])
+    maximum = _parallel([x['max'] for x in summaries])
+    if nominal is None or minimum is None or maximum is None or minimum <= 0:
+        return None, 'zero/invalid equivalent resistance'
+    return {'nominal': nominal, 'min': minimum, 'max': maximum}, None
+
+
+def divider_window(solution, vref_typ, vref_min=None, vref_max=None):
+    """按最坏方向叠加 Vref 与上下臂公差。"""
+    if solution.get('status') != 'ok':
+        raise ValueError(solution.get('reason', 'divider unresolved'))
+    vref_min = vref_typ if vref_min is None else vref_min
+    vref_max = vref_typ if vref_max is None else vref_max
+    up, lo = solution['up'], solution['lo']
+    return {
+        'typ': vref_typ * (1.0 + up['nominal'] / lo['nominal']),
+        'min': vref_min * (1.0 + up['min'] / lo['max']),
+        'max': vref_max * (1.0 + up['max'] / lo['min']),
+    }
+
+
 class Solver:
-    def __init__(self, db):
+    def __init__(self, db, default_tol=0.01, max_depth=8):
         self.nets = db['nets']
         self.parts = db['parts']
-        self.pinname = db['pinname']
+        self.pinname = db.get('pinname', {})
         self.pin2net = db['pin2net']
         self.page = db.get('ref2page', {})
+        self.default_tol = default_tol
+        self.max_depth = max_depth
         self._ends = {}
 
     def ends(self, ref):
@@ -70,149 +135,200 @@ class Solver:
                 {v for k, v in self.pin2net.items() if k.startswith(ref + '.')})
         return self._ends[ref]
 
-    def walk(self, net, seen, acc, path, depth=0):
-        """沿电阻串递归，返回 (终点, 累计kΩ, 路径)。终点为 'GND' 或电源轨名。"""
-        if net in GNDS:
-            return ('GND', acc, path)
-        if RAIL_RE.match(net):
-            return (net, acc, path)      # 入口即轨 -> 立即终止（此处曾有 bug）
-        if depth > 6 or net in seen:
-            return (None, acc, path)
-        seen = seen | {net}
-        for x in self.nets.get(net, []):
-            ref = x.split('.')[0]
-            if not ref.startswith('R'):
+    def _walk(self, net, seen_nets, seen_refs, segments, depth):
+        # 起始反馈网本身可能叫 VOUT_SENSE，不能在尚未跨过电阻时误当电源端。
+        if segments and net in GNDS:
+            return [{'terminal': 'GND', 'segments': segments}]
+        if segments and RAIL_RE.match(net):
+            return [{'terminal': net, 'segments': segments}]
+        if depth >= self.max_depth or net in seen_nets:
+            return []
+        out = []
+        next_seen_nets = seen_nets | {net}
+        for node in self.nets.get(net, []):
+            ref = node.split('.')[0]
+            if not ref.startswith('R') or ref in seen_refs:
                 continue
-            v = self.parts.get(ref, {})
-            if v.get('nc'):
-                continue             # 未贴电阻不在通路上
-            rv = r_kohm(v.get('value'))
-            if rv is None:
+            part = self.parts.get(ref, {})
+            if part.get('nc'):
                 continue
-            for e in self.ends(ref):
-                if e == net:
-                    continue
-                t, a, p = self.walk(e, seen, acc + rv,
-                                    path + [f'{ref}({rv}k)'], depth + 1)
-                if t:
-                    return (t, a, p)
-        return (None, acc, path)
+            ends = self.ends(ref)
+            if len(ends) != 2 or net not in ends:
+                continue
+            parsed = parse_resistor(part.get('value'), self.default_tol)
+            if not parsed:
+                continue
+            other = ends[0] if ends[1] == net else ends[1]
+            segment = {'ref': ref, 'kohm': parsed['kohm'], 'tol': parsed['tol']}
+            out.extend(self._walk(
+                other, next_seen_nets, seen_refs | {ref},
+                segments + [segment], depth + 1))
+        return out
+
+    @staticmethod
+    def _dedupe(paths):
+        found = {}
+        for path in paths:
+            key = (path['terminal'], tuple(s['ref'] for s in path['segments']))
+            found[key] = path
+        return list(found.values())
 
     def solve_net(self, fbnet):
-        """给定反馈节点，解出 (上臂kΩ, 下臂kΩ, 上臂终点, 上臂路径, 下臂路径)"""
-        up = lo = None
-        for x in self.nets.get(fbnet, []):
-            ref = x.split('.')[0]
-            if not ref.startswith('R'):
-                continue
-            v = self.parts.get(ref, {})
-            if v.get('nc'):
-                continue
-            rv = r_kohm(v.get('value'))
-            if rv is None:
-                continue
-            for e in self.ends(ref):
-                if e == fbnet:
-                    continue
-                t, a, p = self.walk(e, {fbnet}, rv, [f'{ref}({rv}k)'])
-                if t == 'GND' and lo is None:
-                    lo = (a, p)
-                elif t and t != 'GND' and up is None:
-                    up = (a, p, t)
-        if not (up and lo):
-            return None
-        return {'r_up': up[0], 'r_lo': lo[0], 'src': up[2],
-                'path_up': up[1], 'path_lo': lo[1]}
+        """求解反馈节点；无法无歧义归并时返回 status=ambiguous。"""
+        paths = self._dedupe(self._walk(fbnet, set(), set(), [], 0))
+        ground = [p for p in paths if p['terminal'] == 'GND' and p['segments']]
+        upper = [p for p in paths if p['terminal'] != 'GND' and p['segments']]
+        if not ground or not upper:
+            return {
+                'status': 'ambiguous',
+                'reason': '未找到完整的上臂和下臂',
+                'paths': paths,
+            }
+        sources = sorted({p['terminal'] for p in upper})
+        if len(sources) != 1:
+            return {
+                'status': 'ambiguous',
+                'reason': f'上臂连接多个电源轨: {sources}',
+                'paths': paths,
+            }
+        up, up_error = _combine_branches(upper)
+        lo, lo_error = _combine_branches(ground)
+        if up_error or lo_error:
+            return {
+                'status': 'ambiguous',
+                'reason': up_error or lo_error,
+                'paths': paths,
+            }
+        return {
+            'status': 'ok',
+            'src': sources[0],
+            'up': up,
+            'lo': lo,
+            'r_up': up['nominal'],
+            'r_lo': lo['nominal'],
+            'branches_up': upper,
+            'branches_lo': ground,
+            'path_up': self._display_paths(upper),
+            'path_lo': self._display_paths(ground),
+        }
+
+    @staticmethod
+    def _display_paths(paths):
+        rendered = []
+        for path in paths:
+            rendered.append(' + '.join(
+                f"{s['ref']}({s['kohm']:.6g}k/{s['tol']:.3%})"
+                for s in path['segments']))
+        return rendered
 
     def find_fb_nets(self):
-        """自动找出所有带 FB/ADJ 引脚的器件及其反馈网"""
         out = []
-        for node, pn in self.pinname.items():
-            if pn in FB_NAMES:
+        for node, pin_name in self.pinname.items():
+            if str(pin_name).upper() in FB_NAMES:
                 out.append((node.split('.')[0], self.pin2net.get(node)))
         return sorted(set(out))
 
 
-def fmt_path(p):
-    return ' + '.join(p) if len(p) > 1 else (p[0] if p else '-')
+def fmt_path(paths):
+    return ' || '.join(paths) if paths else '-'
+
+
+def _parse_vfb(items):
+    per_ref, single = {}, None
+    for item in items:
+        if '=' in item:
+            key, value = item.split('=', 1)
+            per_ref[key] = float(value)
+        else:
+            single = float(item)
+    return per_ref, single
+
+
+def _row(ref, fbnet, result, vref, vref_tol):
+    row = {'ref': ref, 'fbnet': fbnet, 'solution': result}
+    if result.get('status') != 'ok':
+        row['status'] = result.get('status')
+        row['reason'] = result.get('reason')
+        return row
+    row['status'] = 'ok'
+    row['factor'] = 1.0 + result['r_up'] / result['r_lo']
+    row['rail_hint'] = rail_hint(result['src'])
+    if vref is not None:
+        row['vref'] = {
+            'typ': vref,
+            'min': vref * (1.0 - vref_tol),
+            'max': vref * (1.0 + vref_tol),
+        }
+        row['voltage'] = divider_window(
+            result, vref, row['vref']['min'], row['vref']['max'])
+    return row
 
 
 def main():
-    ap = argparse.ArgumentParser(description='反馈/监控分压自动求解（含串联臂）')
-    ap.add_argument('db')
-    ap.add_argument('--vfb', nargs='*', default=[],
-                    help='REF=电压，如 U1=0.815 U2=0.6；未列出的按 --default-vfb')
-    ap.add_argument('--default-vfb', type=float, default=None,
-                    help='未在 --vfb 中列出的器件使用的基准电压')
-    ap.add_argument('--net', help='只解这一个反馈网（配合单个 --vfb 数值）')
-    ap.add_argument('--tol', type=float, default=0.06,
-                    help='与轨名标称值的允许偏差，默认 6%%')
-    a = ap.parse_args()
+    parser = argparse.ArgumentParser(
+        description='反馈/监控分压自动求解（串联、并联、公差窗口）')
+    parser.add_argument('db')
+    parser.add_argument('--vfb', nargs='*', default=[],
+                        help='REF=电压，如 U1=0.815；单网时可直接写 0.62')
+    parser.add_argument('--default-vfb', type=float, default=None)
+    parser.add_argument('--vfb-tol', type=float, default=0.0,
+                        help='Vref 相对公差，例如 0.02 表示 ±2%%')
+    parser.add_argument('--res-tol', type=float, default=0.01,
+                        help='VALUE 未写公差时采用的相对公差，默认 ±1%%')
+    parser.add_argument('--net', help='只解指定反馈网')
+    parser.add_argument('--tol', type=float, default=0.06,
+                        help='实算窗口相对轨名标称值的允许偏差，默认 6%%')
+    parser.add_argument('--json', help='写出结构化 WCA 结果')
+    args = parser.parse_args()
 
-    db = json.load(io.open(a.db, encoding='utf-8'))
-    S = Solver(db)
+    if not (0 <= args.res_tol < 1 and 0 <= args.vfb_tol < 1):
+        sys.exit('[FATAL] --res-tol/--vfb-tol 必须在 [0, 1) 内')
 
-    vfb = {}
-    single = None
-    for kv in a.vfb:
-        if '=' in kv:
-            k, v = kv.split('=', 1)
-            vfb[k] = float(v)
-        else:
-            single = float(kv)
+    db = json.load(io.open(args.db, encoding='utf-8'))
+    solver = Solver(db, default_tol=args.res_tol)
+    per_ref, single = _parse_vfb(args.vfb)
 
-    if a.net:
-        r = S.solve_net(a.net)
-        if not r:
-            sys.exit(f'[FATAL] {a.net} 上未找到完整的上/下臂')
-        k = 1 + r['r_up'] / r['r_lo']
-        print(f'  上臂 {r["r_up"]:.3f}k = {fmt_path(r["path_up"])}  -> {r["src"]}')
-        print(f'  下臂 {r["r_lo"]:.3f}k = {fmt_path(r["path_lo"])}  -> GND')
-        print(f'  系数 1+R1/R2 = {k:.4f}')
-        if single:
-            print(f'  Vout = {single} x {k:.4f} = {single * k:.3f} V')
-        return
-
+    targets = [('MANUAL', args.net)] if args.net else solver.find_fb_nets()
     rows = []
-    for ref, fbnet in S.find_fb_nets():
+    for ref, fbnet in targets:
         if not fbnet:
             continue
-        r = S.solve_net(fbnet)
-        if not r:
-            print(f'  [跳过] {ref} 反馈网 {fbnet} 未解出完整上/下臂（可能为固定输出）')
+        result = solver.solve_net(fbnet)
+        vref = single if args.net else per_ref.get(ref, args.default_vfb)
+        rows.append(_row(ref, fbnet, result, vref, args.vfb_tol))
+
+    for row in rows:
+        if row['status'] != 'ok':
+            print(f"  [未判定] {row['ref']} {row['fbnet']}: {row['reason']}")
             continue
-        vref = vfb.get(ref, a.default_vfb)
-        k = 1 + r['r_up'] / r['r_lo']
-        v = vref * k if vref else None
-        hint = rail_hint(r['src'])
-        flag = ''
-        if v is not None and hint:
-            flag = 'OK' if abs(v - hint) / hint <= a.tol else '** 与轨名不符 **'
-        rows.append((ref, r, k, vref, v, hint, flag))
+        result = row['solution']
+        print(f"{row['ref']} {row['fbnet']} -> {result['src']}")
+        print(f"  上臂 {result['r_up']:.6g}k = {fmt_path(result['path_up'])}")
+        print(f"  下臂 {result['r_lo']:.6g}k = {fmt_path(result['path_lo'])}")
+        print(f"  系数 1+R1/R2 = {row['factor']:.6f}")
+        if 'voltage' in row:
+            voltage = row['voltage']
+            print(f"  Vout = {voltage['typ']:.6f} V "
+                  f"[{voltage['min']:.6f}, {voltage['max']:.6f}] V")
+            hint = row.get('rail_hint')
+            if hint:
+                ok = (voltage['min'] >= hint * (1.0 - args.tol)
+                      and voltage['max'] <= hint * (1.0 + args.tol))
+                print(f"  轨名交叉校验 {hint:g} V: {'OK' if ok else '不符'}")
 
-    print(f'{"REF":8s}{"轨":22s}{"上臂k":>9s}{"下臂k":>9s}{"系数":>9s}'
-          f'{"VFB":>7s}{"实算V":>9s}{"轨名":>8s}  校验')
-    print('-' * 104)
-    for ref, r, k, vref, v, hint, flag in rows:
-        print(f'{ref:8s}{r["src"]:22s}{r["r_up"]:9.3f}{r["r_lo"]:9.3f}{k:9.4f}'
-              f'{(f"{vref:.3f}" if vref else "-"):>7s}'
-              f'{(f"{v:.3f}" if v else "-"):>9s}'
-              f'{(f"{hint}" if hint else "-"):>8s}  {flag}')
+    payload = {
+        'schema_version': 1,
+        'default_resistor_tolerance': args.res_tol,
+        'vref_tolerance': args.vfb_tol,
+        'results': rows,
+    }
+    if args.json:
+        json.dump(payload, io.open(args.json, 'w', encoding='utf-8'),
+                  ensure_ascii=False, indent=2)
+        print(f'  -> {args.json}')
 
-    multi = [(ref, r) for ref, r, *_ in rows
-             if len(r['path_up']) > 1 or len(r['path_lo']) > 1]
-    if multi:
-        print(f'\n  含串联臂的分压 {len(multi)} 处 —— 手算这些必错：')
-        for ref, r in multi:
-            print(f'    {ref}: 上臂={fmt_path(r["path_up"])} ／ '
-                  f'下臂={fmt_path(r["path_lo"])}')
-
-    bad = [x for x in rows if '不符' in x[6]]
-    if bad:
-        print(f'\n  [交叉校验] {len(bad)} 处实算值与轨名不符 —— '
-              '先怀疑 VFB 取值或本脚本，再怀疑板子：')
-        for ref, r, k, vref, v, hint, _ in bad:
-            print(f'    {ref} {r["src"]}: 实算 {v:.3f}V vs 轨名暗示 {hint}V')
+    if args.net and (not rows or rows[0]['status'] != 'ok'):
+        sys.exit(2)
 
 
 if __name__ == '__main__':

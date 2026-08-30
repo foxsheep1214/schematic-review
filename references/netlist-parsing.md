@@ -70,6 +70,10 @@ pinname = 0 条（应为 6047 条）。
 | `ref2page` | refdes → 页号 |
 | `pseudo_nets` | 工具生成的伪网络名 |
 
+Cadence 的 `PIN_NUMBER` 可能是 BGA 字母数字脚号，且 `PINUSE` 与 `PIN_NUMBER` 之间
+可能夹有其他属性；随附解析器按完整 pin block 提取，不依赖两行相邻。`pintype` 缺失或
+覆盖不足时，Rule-19 必须报告 SKIPPED/部分执行，不能把 0 命中写成通过。
+
 只要能从任意 EDA 得到 `{nets, parts, pin2net}` 三个索引，AC0/ER1–ER7 全部流程原样适用；
 改写 `parse_*` 函数即可，其余脚本无需改动。
 
@@ -88,6 +92,9 @@ pinname = 0 条（应为 6047 条）。
 - 比对 PDF 生成时间与网表导出时间，防止拿旧图审新版。
 
 ## 六、其他 EDA 适配
+
+本 skill 当前只随附 Cadence/OrCAD 三件套解析器；下列是适配输入路线，不代表仓内已有
+对应脚本。适配后必须生成同一 db.json 契约并建立格式 fixture/覆盖自检。
 
 - KiCad：`.kicad_sch` 本身即文本（S 表达式），可直接解析；或用 `kicad-cli sch export netlist`。
 - Altium：导出 EDIF/Protel 网表，按 `(` 分组解析。

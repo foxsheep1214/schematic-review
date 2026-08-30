@@ -114,15 +114,29 @@ def parse_pstchip(text):
             mm = re.search(k + r"='(.*?)'", body)
             return mm.group(1) if mm else ''
 
+        pins, pinuse = {}, {}
+        # PIN_NUMBER 既可能是数字，也可能是 BGA 字母数字脚号；PINUSE 与
+        # PIN_NUMBER 之间还可能夹有其他属性，不能依赖两行严格相邻。
+        pin_blocks = re.finditer(
+            r"(?ms)^[ \t]*'([^'\n]+)':\s*(.*?)"
+            r"(?=^[ \t]*'[^'\n]+':|\Z)", body)
+        for pin_match in pin_blocks:
+            pin_name, pin_body = pin_match.group(1), pin_match.group(2)
+            number = re.search(
+                r"PIN_NUMBER\s*=\s*'\(([^)]+)\)'", pin_body)
+            if not number:
+                continue
+            pins[pin_name] = number.group(1)
+            use = re.search(r"PINUSE\s*=\s*'([^']+)'", pin_body)
+            if use:
+                pinuse[pin_name] = use.group(1)
+
         prim[name] = {
             'part': g('PART_NAME'),
             'jedec': g('JEDEC_TYPE'),
             'value': g('VALUE'),
-            'pins': dict(re.findall(
-                r"'([^']+)':\s*\n\s*PIN_NUMBER='\((\d+)\)'", body)),
-            'pinuse': dict(re.findall(
-                r"'([^']+)':\s*\n\s*PIN_NUMBER='\(\d+\)';\s*\n\s*PINUSE='(\w+)'",
-                body)),
+            'pins': pins,
+            'pinuse': pinuse,
         }
     return prim
 
