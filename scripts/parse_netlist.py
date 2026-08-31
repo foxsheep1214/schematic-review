@@ -158,6 +158,16 @@ def parse_pstxprt(text):
 
 
 # --------------------------------------------------------------------------
+# NC 只在被分隔符界定时才是"不贴"标记，避免 NCP1117 这类型号被误判
+_NC_MARK = re.compile(r'(?:^|[/_\-\s])NC(?:$|[/_\-\s])')
+
+
+def is_not_populated(prim, value):
+    """primitive 名或 VALUE 带 /NC、_NC 等 NC 标记 = 该实例不贴。"""
+    return any(_NC_MARK.search((s or '').upper()) for s in (prim, value))
+
+
+# --------------------------------------------------------------------------
 def build(dirpath):
     nets, pinname, pseudo = parse_pstxnet(_read(f'{dirpath}/pstxnet.dat'))
     prim = parse_pstchip(_read(f'{dirpath}/pstchip.dat'))
@@ -176,8 +186,8 @@ def build(dirpath):
             'part': d.get('part', ''),
             'jedec': d.get('jedec', ''),
             'value': d.get('value', ''),
-            # 实例级"不贴"信息只在这里：primitive 名或 VALUE 带 /NC
-            'nc': '/NC' in p.upper() or '/NC' in d.get('value', '').upper(),
+            # 实例级"不贴"信息只在这里：primitive 名或 VALUE 带 NC 标记
+            'nc': is_not_populated(p, d.get('value', '')),
         }
 
     pintype = {}
