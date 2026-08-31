@@ -22,7 +22,7 @@
 ## 三、格式要点
 
 - `pstxnet.dat`：`NET_NAME` 行独占一行，下一行是带引号的网络名；随后 `NODE_NAME\t<refdes> <pin>` 逐节点；`CDS_PINID` 给出引脚功能名。
-- `pstxprt.dat`：` <refdes> '<primitive>':;` 每实例一行；VALUE 带 `/NC` 后缀 = 该实例不贴（实例级 NC 信息只在这里，库不含）。
+- `pstxprt.dat`：` <refdes> '<primitive>':;` 每实例一行；primitive 名或 VALUE 带 NC 标记 = 该实例不贴（实例级 NC 信息只在这里，库不含）。各家命名不同，`/NC` 与 `_NC` 后缀都在用（`0R/1%/NC`、`0R/1%_NC`），`is_not_populated()` 只在 NC 被 `/ _ - 空格` 或串首尾界定时才判为不贴——否则 `NCP1117` 这类型号会被误判成不贴。**该标志漏判会静默放大**：把不贴的 0R/上拉当成已贴，Rule-12/Rule-16 的默认态判定和 Rule-05 的驱动判定都会跟着错。
 - `pstchip.dat`：`primitive '<name>'; ... end_primitive;` 块内含 pin 名→PIN_NUMBER 映射（符号审计用）、PART_NAME/JEDEC_TYPE/VALUE。
 
 ## 四、解析实现
