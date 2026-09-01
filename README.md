@@ -2,7 +2,9 @@
 
 **一套网表驱动的电路原理图系统性审查方法论，打包成 AI Agent 可直接调用的 skill。**
 
-投板前首审、改版 diff 复审、历史评审意见闭环核验——以 EDA 导出网表为第一数据源，用可穷举的规则库解决**覆盖率**，用分层专家审查解决**正确性**，每条结论带证据链与置信度分级。
+用于原理图冻结/进入 PCB Layout 前首审、改版 diff 复审和历史意见闭环核验——以
+EDA 导出网表为第一数据源，用确定性规则解决覆盖率，用分层专家审查解决正确性。
+本 skill 不签署已布 PCB、SI/PI、EMC、热、DFM 或生产准出。
 
 ---
 
@@ -12,14 +14,19 @@
 
 | 层 | 解决什么 | 怎么做 |
 |---|---|---|
-| **AC0 Automated Check（自动检查）** | **覆盖率** | 17 条机械、无歧义、可穷举的规则全量扫描。几百条网络、几百个电源球一个不漏 |
-| **ER1–ER7 Expert Review（专家审查）** | **正确性与风险** | datasheet 核实 → 供电建图 → 链路追踪 → 参数验算(WCA) → 平台规则 → 图形目检 → 供应链 |
+| **AC0 Automated Check（自动检查）** | **覆盖率与适用性发现** | 首轮生成逐项执行计划；Lint 执行确定性规则；改版 Diff 另执行 Rule-17 |
+| **ER1–ER7 Expert Review（专家审查）** | **正确性与风险** | datasheet → 供电 → 链路 → WCA → 平台原理图规则 → 图形 → 器件身份/封装 |
 
 关键纪律：**AC0 的输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、DNP 选项、工具生成的伪网络）由执行 agent 逐条排除并留痕——实践中 AC0 命中数百条而真问题为零是常态，真问题往往来自需要判断的 ER3/ER4/ER5。
 
 分层判据不是「能不能自动化」，而是**结论是「算出来的」还是「推出来的」**——算出来的（可复现、零幻觉、可穷举）交给脚本，推出来的（需语义理解或外部证据）交给 agent。全流程由 agent 驱动时这条线更要紧：AC0 的价值不是省人力，而是**把 LLM 不可靠的地方交给代码**（逐个核对 357 个电源球的驱动，脚本零漏检；让 agent 自己数，必漏）。
 
-AC0 按输入依赖分三档跑：**冷跑**（只吃网表）→ **冷跑·参数化**（加意图清单）→ ER1 → **热跑**（加 datasheet 结论）。冷跑除了 `FINDING`，还产出 `CANDIDATE`——待 ER1 定夺的优先级清单，**直接决定优先读哪几份 datasheet**，而不是盲读几十份。每趟末尾显式列出未执行的规则及原因：**扫出 0 条与根本没扫，绝不能长得一样。**
+AC0 先做 **Applicability Discovery**：把网表特征、设计意图和材料可用性合并成
+逐项 `review-plan.json`，标出每项的适用性、准备度、执行阶段和缺失输入。随后按输入
+依赖分三档跑：**冷跑**（只吃网表）→ **冷跑·参数化**（加意图清单）→ ER1 →
+**热跑**（加结构化 evidence.json）。冷跑除了 `FINDING`，还产出 `CANDIDATE`——
+待 ER1 定夺的优先级清单，**直接决定优先读哪几份 datasheet**，而不是盲读几十份。
+每趟末尾显式列出未执行的规则及原因：**扫出 0 条与根本没扫，绝不能长得一样。**
 
 ## 三条铁律
 
@@ -33,9 +40,12 @@ AC0 按输入依赖分三档跑：**冷跑**（只吃网表）→ **冷跑·参�
 |---|---|---|
 | **A** | 网表实证（断网、参数不符） | 可直接整改 |
 | **B** | datasheet/规范已核 | 可直接整改 |
-| **C** | 信息不足 | 报告中成节列出待求证项，**严禁臆测** |
+| **C** | 证据来源不充分或未核实 | 仅用于 `evidence_confidence`，**严禁臆测** |
 
-严重度分 致命(BLOCKER) / 严重(Warning) / 建议(Info) / 观察，对应"必须修复后投板 / 必须修复或书面风险接受 / 评估后决定 / 记录跟踪"。
+严重度分 BLOCKER / Warning / Info / 观察。每个检查项独立记录
+`PASS / FAIL / INSUFFICIENT / NA`；`INSUFFICIENT` 表示本项适用但材料不足。
+`HANDOFF` 是独立的下游动作字段，不是第五种结果，可与 PASS、FAIL 或
+INSUFFICIENT 并存。所有逐项记录完成后，再聚合出原理图准出结论。
 
 ---
 
@@ -45,12 +55,19 @@ AC0 按输入依赖分三档跑：**冷跑**（只吃网表）→ **冷跑·参�
 SKILL.md                          # 主干：三条铁律、分级标准、0→10 步流程、20 条高频错误自查表
 scripts/                          # 可直接运行，无第三方依赖
   parse_netlist.py                #   三件套 → 结构化索引；自带自检闸门与伪网络识别
-  lint.py                         #   AC0 自动检查全量扫描；内置伪网络判别与五类驱动源识别
-  solve_dividers.py               #   反馈/监控分压求解；正确处理串联臂 + 与轨名交叉校验
+  plan_review.py                  #   AC0 适用性发现 → 逐项执行计划
+  lint.py                         #   AC0 冷跑 + ER1 证据热跑 + PINUSE/ERC
+  diff_netlists.py                #   新旧网表 Diff + Rule-17 历史闭环断言
+  solve_dividers.py               #   串/并联分压 + min/typ/max 公差窗口
+  tests/                           #   标准库 unittest 回归测试
 references/
+  scope-boundary.md               # 原理图可判定、HANDOFF 与范围外矩阵
+  review-plan-schema.md           # AC0 intent 输入与逐项计划输出契约
+  datasheet-evidence-schema.md    # ER1 热跑输入格式
+  diff-claims-schema.md           # 复审闭环断言格式
   methodology-v1.0.md             # 方法论完整长文档（AC0/ER1–ER7 各章细节、平台规则库构建方法、迁移指南）
   netlist-parsing.md              # 网表解析规范：三件套格式、pinname 两种布局、渲染读图与旋转页坐标换算；其他 EDA 适配
-  lint-rules.md                   # AC0 规则库 17 条 + 三档分跑 + NC 网络判别式 + 驱动源判定 + 符号/strap 审计
+  lint-rules.md                   # AC0/改版 Diff 规则身份与运行依赖
   review-checklist.md             # 按电路域的通用检查表（电源/时钟/复位/接口/防护/监控/无源/连接器/热/文档）
   wca-formulas.md                 # 参数验算公式库：FB 分压、UVLO/OVLO、限流、钳位、ADC 分压、RC 复位、MLCC 偏压…
   report-template.md              # 报告骨架 + ECO 级发现项格式
@@ -65,9 +82,9 @@ examples/
 ```
 0. 意图对齐（设计意图问卷）        5. ER3 关键链路逐条追踪
 1. 数据解析（网表→结构化索引）     6. ER4 参数与边界验算（WCA）
-2. AC0 自动检查（Lint 冷跑）        7. ER5 平台/合规规则扫描
-3. ER1 datasheet 核实 + AC0 回补     8. ER6 图形化系统目检
-4. ER2 供电系统审计（建电源树）     9. ER7 器件与供应链
+2. AC0 适用性发现 + Lint 冷跑       7. ER5 平台原理图规则扫描
+3. ER1 datasheet 核实 + AC0 热跑     8. ER6 图形化系统目检
+4. ER2 供电系统审计（建电源树）     9. ER7 器件身份与封装一致性
                                   10. 输出分级报告 + 修复-复验闭环
 ```
 
@@ -81,7 +98,8 @@ examples/
 ---
 
 > **检查标识迁移（V1.2）**：`AC0` = Automated Check（原 `L0`），`ER1`～`ER7` = Expert Review（原 `L1`～`L7`）。迁移期可写成 `AC0（原 L0）`、`ER1（原 L1）`，换算表见 `references/methodology-v1.0.md` §0.2.1。
-> **三个编号体系解耦**：步骤 0～10 表示工作流位置，AC0/ER1–ER7 表示检查模块，`Rule-01`～`Rule-18` 表示规则身份。
+> **三个编号体系解耦**：步骤 0～10 表示工作流位置，AC0/ER1–ER7 表示检查模块，`Rule-01`～`Rule-20` 表示规则身份。
+> **结果模型迁移（V1.4）**：材料不足统一写 `INSUFFICIENT`；A/B/C 只表示证据置信度；`HANDOFF` 从结果状态中拆出，作为可与审查结果并存的独立字段。
 
 ## 安装
 
@@ -105,23 +123,33 @@ git clone https://github.com/foxsheep1214/schematic-review.git ~/.claude/skills/
 按 schematic-review 审查 <项目路径> 的原理图
 ```
 
-或手工跑核心三步：
+或手工跑确定性步骤：
 
 ```bash
 python3 scripts/parse_netlist.py <项目>/allegro -o db.json
+python3 scripts/plan_review.py db.json --intent intent.json \
+       --json review-plan.json
 python3 scripts/lint.py db.json --log <项目>/allegro/netlist.log \
-       --intent intent.json --json lint.json   # --intent 为第 0 步意图清单，Rule-07 所需
-python3 scripts/solve_dividers.py db.json --vfb U1=0.815 U2=0.6 ...
+       --intent intent.json --plan-json review-plan.json --json lint-cold.json
+python3 scripts/lint.py db.json --intent intent.json \
+       --evidence evidence.json --json lint-hot.json
+python3 scripts/solve_dividers.py db.json --vfb U1=0.815 U2=0.6 \
+       --vfb-tol 0.02 --json wca.json
+python3 scripts/diff_netlists.py old-db.json db.json \
+       --claims review-claims.json --json diff.json --fail-on-open-claims
+python3 -m unittest discover -s scripts/tests -v
 ```
 
 准备一个包含以下内容的目录：
 
 | 输入 | 必需 | 说明 |
 |---|---|---|
-| 网表 | ✅ | Cadence/OrCAD 的 `pstxnet.dat` / `pstxprt.dat` / `pstchip.dat`；或 KiCad/Altium/PADS 的等效导出 |
+| 网表 | ✅ | 随附解析器支持 Cadence/OrCAD 三件套；其他 EDA 需项目适配器先生成同契约 db.json |
 | 原理图 PDF | ✅ | 用于读图复核与版本比对 |
-| datasheet 包 | ✅ | 关键器件必须齐全，否则相关结论只能标 C 级 |
-| 历史评审记录 | 建议 | 用于闭环核验 |
+| intent.json | 建议 | 声明功能适用性、材料可用性与关键器件期望；缺失项保持 `UNDETERMINED`，不自动写 NA |
+| datasheet 包 | ✅ | 关键器件必须齐全，否则相关检查项标为 `INSUFFICIENT`，不得写 PASS |
+| evidence.json | 热跑必需 | ER1 从 datasheet 提取的结构化检查证据 |
+| 旧版 db.json + 历史断言 | 复审必需 | 用于 Rule-17 真/假闭环 |
 | 需求/规格书 | 建议 | 缺失时报告会声明"规格符合性判定受限" |
 
 只要能从工具链拿到 `{nets, parts, pin2net}` 三个索引，AC0/ER1–ER7 全部流程原样适用。
