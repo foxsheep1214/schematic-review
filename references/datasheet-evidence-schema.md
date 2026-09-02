@@ -1,5 +1,8 @@
 # ER1 datasheet 结构化证据
 
+先按 datasheet-resolution-schema.md 完成逐物料覆盖审计与 agent 补取。状态不是
+AVAILABLE 的物料不能生成 B 级 ER1 证据；NOT_FOUND 保持 INSUFFICIENT/C 并提示用户。
+
 运行 “lint.py --evidence evidence.json” 只执行有明确官方出处的热跑检查。每条检查
 必须给 id、rule、kind 和 citation；引用至少包含文档名、版本、页码或表号。缺字段会
 直接退出，避免残缺判据被误读成通过。

@@ -7,6 +7,7 @@ PASS/FAIL。HANDOFF 是独立下游动作，可以与后续 PASS/FAIL/INSUFFICIE
 
 用法：
     python3 plan_review.py db.json --intent intent.json \
+        --datasheet-audit datasheet-audit.json \
         --evidence evidence.json --json review-plan.json
 """
 import argparse
@@ -16,6 +17,12 @@ import os
 import re
 import sys
 from collections import Counter
+
+from audit_datasheets import (
+    datasheet_audit_all_available,
+    datasheet_entry_for_ref,
+    validate_datasheet_audit,
+)
 
 
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
@@ -233,7 +240,9 @@ def validate_intent(intent):
     return errors
 
 
-def _material_available(intent, key):
+def _material_available(intent, key, datasheet_audit=None):
+    if key == 'datasheets' and datasheet_audit is not None:
+        return datasheet_audit_all_available(datasheet_audit)
     item = (intent or {}).get('materials', {}).get(key, {})
     return isinstance(item, dict) and item.get('available') is True
 
@@ -308,10 +317,12 @@ def _differential_pairs(db):
 
 class ReviewPlanner:
     def __init__(self, db, intent=None, evidence=None, review_mode=None,
-                 old_db_available=False, claims_available=False):
+                 old_db_available=False, claims_available=False,
+                 datasheet_audit=None):
         self.db = db
         self.intent = intent or {}
         self.evidence = evidence or {}
+        self.datasheet_audit = datasheet_audit
         self.review_mode = (
             review_mode or self.intent.get('review_mode') or 'first')
         self.old_db_available = old_db_available
@@ -411,8 +422,11 @@ class ReviewPlanner:
                 if requested == 'NOT_APPLICABLE' and hits:
                     missing.append('resolve intent/netlist conflict')
             else:
-                missing = [x for x in required
-                           if not _material_available(self.intent, x)]
+                missing = [
+                    x for x in required
+                    if not _material_available(
+                        self.intent, x, self.datasheet_audit)
+                ]
             readiness = 'WAITING_EVIDENCE' if missing else 'READY'
             if applicability == 'APPLICABLE' and requested == 'APPLICABLE' and not hits:
                 self.diagnostics.append({
@@ -511,8 +525,11 @@ class ReviewPlanner:
                 'power-rail-topology', {'net': net},
                 '确认电源轨驱动源、负载、域电压、时序与反灌路径',
                 'ER2', 'Expert Review', trigger=[f'rail-name:{net}'])
-            missing = [name for name in ('requirements', 'datasheets')
-                       if not _material_available(self.intent, name)]
+            missing = [
+                name for name in ('requirements', 'datasheets')
+                if not _material_available(
+                    self.intent, name, self.datasheet_audit)
+            ]
             self.add_check(
                 'power-rail-budget', {'net': net},
                 '按最大负载、电压范围与器件能力验证功率预算和裕量',
@@ -556,17 +573,36 @@ class ReviewPlanner:
                 trigger=[f'ref2page:{page}'])
 
         # ER7：每颗 IC/模组独立做身份与封装一致性检查。
-        datasheets_ready = _material_available(self.intent, 'datasheets')
+        datasheets_ready = _material_available(
+            self.intent, 'datasheets', self.datasheet_audit)
         for ref, part in sorted(db.get('parts', {}).items()):
             if not re.match(r'^[UM]\d', ref, re.I) or part.get('nc'):
                 continue
+            audit_entry = datasheet_entry_for_ref(self.datasheet_audit, ref)
+            if self.datasheet_audit is not None:
+                ready = bool(
+                    audit_entry and audit_entry.get('status') == 'AVAILABLE')
+                identity = (
+                    audit_entry.get('identity') if audit_entry
+                    else part.get('value') or part.get('part') or ref)
+                required_inputs = [] if ready else [f'datasheet:{identity}']
+                audit_trigger = [
+                    'datasheet-audit:'
+                    + (audit_entry.get('status') if audit_entry else 'UNLISTED')
+                ]
+            else:
+                ready = datasheets_ready
+                required_inputs = [] if ready else ['datasheets']
+                audit_trigger = []
             self.add_check(
                 'component-identity-package', {'ref': ref},
                 '核对 MPN、符号、引脚、封装字段、参数档位和替代兼容性',
                 'ER7', 'Expert Review',
-                readiness='READY' if datasheets_ready else 'WAITING_EVIDENCE',
-                required_inputs=[] if datasheets_ready else ['datasheets'],
-                trigger=[f'refdes:{ref}', f'part:{part.get("part", "")}'])
+                readiness='READY' if ready else 'WAITING_EVIDENCE',
+                required_inputs=required_inputs,
+                trigger=[
+                    f'refdes:{ref}', f'part:{part.get("part", "")}'
+                ] + audit_trigger)
 
     def plan_rules(self):
         index_requirements = {
@@ -651,6 +687,14 @@ class ReviewPlanner:
     def build(self):
         self.plan_features()
         self.plan_concrete_checks()
+        for material in (self.datasheet_audit or {}).get('materials', []):
+            if material.get('status') == 'NOT_FOUND':
+                self.diagnostics.append({
+                    'code': 'DATASHEET_NOT_FOUND',
+                    'identity': material.get('identity'),
+                    'refdes': material.get('refdes', []),
+                    'message': material.get('message'),
+                })
         self.checks.sort(key=lambda x: x['id'])
         self.plan_rules()
         self.rule_plan.sort(key=lambda x: x['rule'])
@@ -682,6 +726,21 @@ class ReviewPlanner:
                 'handoff_required': sum(
                     1 for x in self.checks if x['handoff']['required']),
                 'diagnostics': len(self.diagnostics),
+                'datasheet_unresolved': (
+                    (self.datasheet_audit or {}).get(
+                        'summary', {}).get('unresolved')),
+            },
+            'datasheet_audit': {
+                'provided': self.datasheet_audit is not None,
+                'summary': (
+                    (self.datasheet_audit or {}).get('summary')
+                    if self.datasheet_audit is not None else None),
+                'agent_requests': (
+                    (self.datasheet_audit or {}).get('agent_requests', [])
+                    if self.datasheet_audit is not None else []),
+                'user_messages': (
+                    (self.datasheet_audit or {}).get('user_messages', [])
+                    if self.datasheet_audit is not None else []),
             },
             'rule_plan': self.rule_plan,
             'checks': self.checks,
@@ -690,10 +749,11 @@ class ReviewPlanner:
 
 
 def build_review_plan(db, intent=None, evidence=None, review_mode=None,
-                      old_db_available=False, claims_available=False):
+                      old_db_available=False, claims_available=False,
+                      datasheet_audit=None):
     return ReviewPlanner(
         db, intent, evidence, review_mode, old_db_available,
-        claims_available).build()
+        claims_available, datasheet_audit).build()
 
 
 def main():
@@ -702,6 +762,9 @@ def main():
     parser.add_argument('db', help='parse_netlist.py 产出的 db.json')
     parser.add_argument('--intent', help='设计意图 JSON')
     parser.add_argument('--evidence', help='ER1 结构化证据 JSON')
+    parser.add_argument(
+        '--datasheet-audit',
+        help='audit_datasheets.py 产出的逐物料覆盖审计 JSON')
     parser.add_argument('--review-mode', choices=('first', 'revision'))
     parser.add_argument('--old-db', help='复审旧版 db.json（只判定可用性）')
     parser.add_argument('--claims', help='历史意见断言 JSON（只判定可用性）')
@@ -716,12 +779,21 @@ def main():
     intent = json.load(io.open(args.intent, encoding='utf-8')) if args.intent else None
     evidence = (json.load(io.open(args.evidence, encoding='utf-8'))
                 if args.evidence else None)
+    datasheet_audit = (
+        json.load(io.open(args.datasheet_audit, encoding='utf-8'))
+        if args.datasheet_audit else None)
     errors = validate_intent(intent)
     if errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(errors))
+    if datasheet_audit is not None:
+        errors = validate_datasheet_audit(datasheet_audit, db)
+        if errors:
+            sys.exit('[FATAL] datasheet-audit.json 无效:\n  - '
+                     + '\n  - '.join(errors))
     plan = build_review_plan(
         db, intent, evidence, args.review_mode,
-        old_db_available=bool(args.old_db), claims_available=bool(args.claims))
+        old_db_available=bool(args.old_db), claims_available=bool(args.claims),
+        datasheet_audit=datasheet_audit)
     json.dump(plan, io.open(args.json, 'w', encoding='utf-8'),
               ensure_ascii=False, indent=2)
     summary = plan['summary']

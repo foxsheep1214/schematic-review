@@ -55,6 +55,7 @@ INSUFFICIENT 并存。所有逐项记录完成后，再聚合出原理图准出�
 SKILL.md                          # 主干：三条铁律、分级标准、0→10 步流程、20 条高频错误自查表
 scripts/                          # 可直接运行，无第三方依赖
   parse_netlist.py                #   三件套 → 结构化索引；自带自检闸门与伪网络识别
+  audit_datasheets.py             #   逐物料覆盖审计 → agent 联网补取/用户提示任务
   plan_review.py                  #   AC0 适用性发现 → 逐项执行计划
   lint.py                         #   AC0 冷跑 + ER1 证据热跑 + PINUSE/ERC
   diff_netlists.py                #   新旧网表 Diff + Rule-17 历史闭环断言
@@ -63,6 +64,7 @@ scripts/                          # 可直接运行，无第三方依赖
 references/
   scope-boundary.md               # 原理图可判定、HANDOFF 与范围外矩阵
   review-plan-schema.md           # AC0 intent 输入与逐项计划输出契约
+  datasheet-resolution-schema.md  # 资料包审计、agent 补取与 FOUND/NOT_FOUND 写回
   datasheet-evidence-schema.md    # ER1 热跑输入格式
   diff-claims-schema.md           # 复审闭环断言格式
   methodology-v1.0.md             # 方法论完整长文档（AC0/ER1–ER7 各章细节、平台规则库构建方法、迁移指南）
@@ -100,6 +102,7 @@ examples/
 > **检查标识迁移（V1.2）**：`AC0` = Automated Check（原 `L0`），`ER1`～`ER7` = Expert Review（原 `L1`～`L7`）。迁移期可写成 `AC0（原 L0）`、`ER1（原 L1）`，换算表见 `references/methodology-v1.0.md` §0.2.1。
 > **三个编号体系解耦**：步骤 0～10 表示工作流位置，AC0/ER1–ER7 表示检查模块，`Rule-01`～`Rule-20` 表示规则身份。
 > **结果模型迁移（V1.4）**：材料不足统一写 `INSUFFICIENT`；A/B/C 只表示证据置信度；`HANDOFF` 从结果状态中拆出，作为可与审查结果并存的独立字段。
+> **Datasheet 闭环（V1.5）**：逐物料审计资料包；MISSING 由 agent 联网补取；NOT_FOUND 逐颗提示用户并保持 INSUFFICIENT/C。
 
 ## 安装
 
@@ -127,11 +130,15 @@ git clone https://github.com/foxsheep1214/schematic-review.git ~/.claude/skills/
 
 ```bash
 python3 scripts/parse_netlist.py <项目>/allegro -o db.json
+python3 scripts/audit_datasheets.py db.json \
+       --datasheet-dir <项目>/datasheets --json datasheet-audit.json
 python3 scripts/plan_review.py db.json --intent intent.json \
-       --json review-plan.json
+       --datasheet-audit datasheet-audit.json --json review-plan.json
 python3 scripts/lint.py db.json --log <项目>/allegro/netlist.log \
-       --intent intent.json --plan-json review-plan.json --json lint-cold.json
+       --intent intent.json --datasheet-audit datasheet-audit.json \
+       --plan-json review-plan.json --json lint-cold.json
 python3 scripts/lint.py db.json --intent intent.json \
+       --datasheet-audit datasheet-audit.json \
        --evidence evidence.json --json lint-hot.json
 python3 scripts/solve_dividers.py db.json --vfb U1=0.815 U2=0.6 \
        --vfb-tol 0.02 --json wca.json
@@ -148,6 +155,8 @@ python3 -m unittest discover -s scripts/tests -v
 | 原理图 PDF | ✅ | 用于读图复核与版本比对 |
 | intent.json | 建议 | 声明功能适用性、材料可用性与关键器件期望；缺失项保持 `UNDETERMINED`，不自动写 NA |
 | datasheet 包 | ✅ | 关键器件必须齐全，否则相关检查项标为 `INSUFFICIENT`，不得写 PASS |
+| datasheet-audit.json | ✅ | 逐物料 AVAILABLE/MISSING/NOT_FOUND 与 agent_requests |
+| datasheet-resolution.json | 缺料时必需 | Agent 联网补取后的 FOUND/NOT_FOUND 写回 |
 | evidence.json | 热跑必需 | ER1 从 datasheet 提取的结构化检查证据 |
 | 旧版 db.json + 历史断言 | 复审必需 | 用于 Rule-17 真/假闭环 |
 | 需求/规格书 | 建议 | 缺失时报告会声明"规格符合性判定受限" |

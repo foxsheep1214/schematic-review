@@ -200,6 +200,71 @@ class ReviewPlanTests(unittest.TestCase):
                       if item['rule'] == 'Rule-17')
         self.assertEqual(rule17['readiness'], 'READY')
 
+    def test_datasheet_audit_controls_each_component_readiness(self):
+        message = ('找不到这颗物料的 datasheet：SOC-X（位号：U2）。'
+                   '请提供该物料的原厂 datasheet。')
+        audit = {
+            'schema_version': 1,
+            'summary': {
+                'required_materials': 2,
+                'available': 1,
+                'needs_verification': 0,
+                'missing': 0,
+                'not_found': 1,
+                'unresolved': 1,
+                'all_required_available': False,
+            },
+            'materials': [
+                {
+                    'material_id': 'DS-REG-X',
+                    'identity': 'REG-X',
+                    'refdes': ['U1'],
+                    'status': 'AVAILABLE',
+                    'document': {
+                        'identity_verified': True,
+                        'source_kind': 'package',
+                        'path': 'REG-X.pdf',
+                        'document_model': 'REG-X',
+                        'document_version': 'Rev.A',
+                    },
+                },
+                {
+                    'material_id': 'DS-SOC-X',
+                    'identity': 'SOC-X',
+                    'refdes': ['U2'],
+                    'status': 'NOT_FOUND',
+                    'message': message,
+                    'searched_sources': [
+                        'LCSC query SOC-X',
+                        'manufacturer official website query SOC-X',
+                    ],
+                    'searched_at': '2026-09-02',
+                },
+            ],
+            'agent_requests': [{
+                'id': 'REQUEST-SOC-X',
+                'action': 'REQUEST_USER_DATASHEET',
+                'identity': 'SOC-X',
+                'refdes': ['U2'],
+                'message': message,
+            }],
+            'user_messages': [message],
+            'diagnostics': [],
+        }
+        plan = build_review_plan(sample_db(), datasheet_audit=audit)
+        checks = {
+            item['object']['ref']: item
+            for item in plan['checks']
+            if item['check'] == 'component-identity-package'
+        }
+        self.assertEqual(checks['U1']['readiness'], 'READY')
+        self.assertEqual(checks['U2']['readiness'], 'WAITING_EVIDENCE')
+        self.assertEqual(checks['U2']['required_inputs'], ['datasheet:SOC-X'])
+        self.assertEqual(plan['summary']['datasheet_unresolved'], 1)
+        self.assertEqual(plan['datasheet_audit']['user_messages'], [message])
+        self.assertTrue(any(item['code'] == 'DATASHEET_NOT_FOUND'
+                            for item in plan['diagnostics']))
+
 
 if __name__ == '__main__':
     unittest.main()

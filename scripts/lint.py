@@ -6,6 +6,7 @@ AC0 Automated Check（自动检查）——机械、可穷举的规则全量扫�
 用法:
     python3 lint.py db.json [--log netlist.log] [--intent intent.json]
     python3 lint.py db.json --evidence evidence.json \
+        [--datasheet-audit datasheet-audit.json] \
         [--plan-json review-plan.json] [--json out.json]
 
 **输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、补偿网络、
@@ -32,6 +33,7 @@ import re
 import sys
 from collections import defaultdict
 
+from audit_datasheets import validate_datasheet_audit
 from plan_review import build_review_plan, validate_intent
 from solve_dividers import Solver, divider_window, parse_resistor
 
@@ -743,6 +745,9 @@ def main():
                     help='第 0 步意图清单 JSON（适用性发现与 Rule-07 所需）')
     ap.add_argument('--evidence',
                     help='ER1 结构化 datasheet 证据 JSON；提供后执行对应热跑规则')
+    ap.add_argument(
+        '--datasheet-audit',
+        help='audit_datasheets.py 产出的逐物料覆盖审计 JSON')
     ap.add_argument('--review-mode', choices=('first', 'revision'),
                     help='首审或复审；缺省取 intent.review_mode/first')
     ap.add_argument('--old-db', help='复审旧版 db.json（用于执行计划准备度）')
@@ -755,6 +760,9 @@ def main():
     log = io.open(a.log, encoding='utf-8', errors='replace').read() if a.log else ''
     intent = json.load(io.open(a.intent, encoding='utf-8')) if a.intent else None
     evidence = json.load(io.open(a.evidence, encoding='utf-8')) if a.evidence else None
+    datasheet_audit = (
+        json.load(io.open(a.datasheet_audit, encoding='utf-8'))
+        if a.datasheet_audit else None)
     intent_errors = validate_intent(intent)
     if intent_errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(intent_errors))
@@ -762,6 +770,11 @@ def main():
         errors = validate_evidence(evidence)
         if errors:
             sys.exit('[FATAL] evidence.json 无效:\n  - ' + '\n  - '.join(errors))
+    if datasheet_audit is not None:
+        errors = validate_datasheet_audit(datasheet_audit, db)
+        if errors:
+            sys.exit('[FATAL] datasheet-audit.json 无效:\n  - '
+                     + '\n  - '.join(errors))
     for label, path in (('--old-db', a.old_db), ('--claims', a.claims)):
         if path and not os.path.isfile(path):
             sys.exit(f'[FATAL] {label} 文件不存在: {path}')
@@ -769,7 +782,8 @@ def main():
     review_plan = build_review_plan(
         db, intent, evidence, a.review_mode,
         old_db_available=bool(a.old_db),
-        claims_available=bool(a.claims))
+        claims_available=bool(a.claims),
+        datasheet_audit=datasheet_audit)
     summary = review_plan['summary']
     print('=== AC0 检查适用性与执行计划 ===')
     print(f"  checks={summary['checks_total']}  "
