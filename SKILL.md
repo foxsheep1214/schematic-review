@@ -5,7 +5,7 @@ description: "当用户要审查电路原理图、判断原理图能否冻结并
 
 # 电路原理图系统审查
 
-> V1.4｜AC0 适用性发现 + 逐项执行计划 + 双维结果/HANDOFF + ER1 热跑 + 网表 Diff。
+> V1.5｜逐物料 datasheet 覆盖审计 + Agent 联网补取闭环 + AC0/ER1–ER7 + 网表 Diff。
 
 ## 核心思想
 
@@ -92,10 +92,22 @@ ER5 无规可对。**但不必在 AC0 之前读**——AC0 的纯网表规则先
 工作清单输入，缺失项的下游结论预先按 INSUFFICIENT/C 级隔离。同时核对包内 datasheet
 自身质量：文件重复（MD5 相同）、型号档位与器件不符、扫描件/无文本层（须标记渲染目检）。
 
+该覆盖核对必须运行确定性脚本，不能只靠 agent 浏览文件名：
+
+    python3 scripts/audit_datasheets.py db.json \
+      --datasheet-dir <资料包目录> \
+      --json datasheet-audit.json
+
+文件名命中只算 NEEDS_VERIFICATION，不算资料已核。执行 agent 必须处理
+datasheet-audit.json 中的每个 agent_requests：先核验本地候选；确实缺失时自主联网
+补取；再写 datasheet-resolution.json 并重跑审计。完整状态和写回格式见
+references/datasheet-resolution-schema.md。
+
 ### 第 2 步：AC0 适用性发现 + 自动检查
 先根据网表、意图和已有 evidence 生成 `review-plan.json`：
 
-    python3 scripts/plan_review.py db.json --intent intent.json --json review-plan.json
+    python3 scripts/plan_review.py db.json --intent intent.json \
+      --datasheet-audit datasheet-audit.json --json review-plan.json
 
 计划同时包含规则级 `rule_plan` 与逐位号/网络 `checks`。每项分别记录
 `applicability`（APPLICABLE / NOT_APPLICABLE / UNDETERMINED）、`stage`、`readiness`
@@ -103,7 +115,7 @@ ER5 无规可对。**但不必在 AC0 之前读**——AC0 的纯网表规则先
 电路特征不等于 NA**；只有设计意图明确 NOT_APPLICABLE 且带出处时才可生成 NA。
 格式见 references/review-plan-schema.md。
 
-随后运行 `python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan.json`。规则库与判别式见 `references/lint-rules.md`。`FINDING` 逐条排除；`CANDIDATE` 是待 ER1 定夺的优先级清单。脚本末尾列出未执行规则及原因——0 条 ≠ 通过。
+随后运行 `python3 scripts/lint.py db.json --log netlist.log --intent intent.json --datasheet-audit datasheet-audit.json --plan-json review-plan.json`。规则库与判别式见 `references/lint-rules.md`。`FINDING` 逐条排除；`CANDIDATE` 是待 ER1 定夺的优先级清单。脚本末尾列出未执行规则及原因——0 条 ≠ 通过。
 
 ### 第 3 步：ER1 datasheet 核实（一切判断的前置）
 新 IC 介入第一步先读 **Absolute Maximum Ratings**（实例：EN 脚耐压 5.5V 被上拉 24V）。
@@ -119,7 +131,9 @@ ER5 无规可对。**但不必在 AC0 之前读**——AC0 的纯网表规则先
 **回补 AC0（热跑）**：把 ER1 结论按 references/datasheet-evidence-schema.md 写成
 evidence.json，再执行：
 
-    python3 scripts/lint.py db.json --intent intent.json --evidence evidence.json --json lint-hot.json
+    python3 scripts/lint.py db.json --intent intent.json \
+      --datasheet-audit datasheet-audit.json \
+      --evidence evidence.json --json lint-hot.json
 
 Rule-08/09/12/14/16 只在存在对应结构化证据时执行；没有输入的规则必须保留 pending，
 不得由 agent 凭阅读印象假装“已热跑”。
@@ -143,6 +157,14 @@ Rule-08/09/12/14/16 只在存在对应结构化证据时执行；没有输入的
    同系列兄弟型号）。
 5. **留痕**：报告「审查依据」分两类标注——资料包提供 / 网络补取（URL + 文档版本
    + 获取日期）；补取文件放 /tmp，不混入资料包。
+6. **Agent 闭环（强制）**：MISSING 不得直接转交用户，执行 agent 必须先按上述来源
+   顺序联网补取，并把 FOUND/NOT_FOUND 写入 datasheet-resolution.json 后重跑
+   audit_datasheets.py。只有 LCSC 与原厂渠道都检索过且仍无有效文档时，才允许
+   NOT_FOUND；单个页面失败、Cache miss 或一次搜索无结果不能证明找不到。
+
+重跑后若 datasheet-audit.json 仍有 NOT_FOUND，必须逐颗向用户显示其 user_messages，
+固定语义为：「找不到这颗物料的 datasheet：<完整型号>（位号：<refs>）。请提供该物料
+的原厂 datasheet。」同时把相关适用检查标为 INSUFFICIENT、证据置信度标为 C。
 
 ### 第 4 步：ER2 供电审计
 每轨三问：谁驱动（注意 0R 跳线选项，须追另一端找真实源）/谁负载/电平对不对。SoC 全部电源球有驱动、全部 VSS 球入 GND。电平域匹配：列出各 IO 域实际供电，核对相连两端域电平一致。每轨功率预算留 ≥20-30% 裕量——**此项网表给不出负载电流，需外部功耗数据**；拿不到时结果标 INSUFFICIENT 并索取，不得跳过后当作通过。反灌审计（**可执行判据**）：对每颗上拉/上拉性通路，比较「上拉源轨」与「被拉信号所属 IC 的供电轨」，**跨轨即候选**；再看两轨是否同时上电（同一稳压器、或有明确时序保证）。跨轨且无时序保证 = 该 IC 未上电时被倒灌。隔离域之间的任何跨轨上拉一律列为发现项。热与浪涌：高压分压电阻功耗、开关器件 I²R 耗散、热插拔浪涌 I=C·dV/dt。
@@ -248,6 +270,7 @@ BLOCKER 清零、Warning 已关闭或书面接受、关键 INSUFFICIENT 已关�
 - **自己的分析工具也会错**：每个计算结果必须与一个独立信息源对撞（算出的轨压 vs 轨名、strap 判定 vs 同页对照引脚、解析结果 vs 器件数）。对不上时**先怀疑自己的脚本**，再怀疑板子——本 skill 的分压求解器就是靠这条抓出过递归终止 bug
 - 展开网络节点时排除 GND/大电源网并设递归深度上限；一次 dump 一张挂上百节点的网会淹没有效信息
 - 本 skill 的 scripts/、references/、examples/ 均为可执行资产，审查时按需取用，不必全量加载：
+  - `scripts/audit_datasheets.py`：逐物料覆盖审计、agent 联网任务与 NOT_FOUND 提示
   - `scripts/parse_netlist.py`：三件套 → 结构化索引，**自带自检闸门**与伪网络识别
   - `scripts/lint.py`：AC0 冷跑 + ER1 证据驱动热跑 + PINUSE/ERC
   - `scripts/plan_review.py`：AC0 适用性发现、规则计划与逐项执行计划
@@ -257,6 +280,7 @@ BLOCKER 清零、Warning 已关闭或书面接受、关键 INSUFFICIENT 已关�
   - `references/scope-boundary.md`：原理图可判定、HANDOFF 与范围外边界
   - `references/review-plan-schema.md`：意图扩展、适用性、准备度、结果与 handoff schema
   - `references/datasheet-evidence-schema.md` / `diff-claims-schema.md`：热跑和复审机器输入
+  - `references/datasheet-resolution-schema.md`：资料包审计、agent 补取与 FOUND/NOT_FOUND 写回契约
   - `references/netlist-parsing.md` / `lint-rules.md` / `review-checklist.md` / `wca-formulas.md` / `report-template.md`：解析、规则库、通用检查表、验算公式、报告模板
   - `scripts/tests/`：确定性规则的标准库回归测试
   - `examples/`：报告范例，写报告时参照其详略与格式

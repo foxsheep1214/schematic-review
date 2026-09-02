@@ -9,7 +9,7 @@
 
     - 审查对象：<原理图版本、页数、网表导出时间、板卡一句话>
     - 审查依据：<datasheet、平台原理图 checklist、需求、历史记录>
-    - 输入覆盖：<器件/网络/引脚/pintype/页数；AC0 计划与热跑 executed/pending>
+    - 输入覆盖：<器件/网络/引脚/pintype/页数；datasheet available/missing/not_found；AC0 计划与热跑 executed/pending>
     - 对比基线：<复审时填旧版 db.json、Diff 和历史断言文件>
     - 范围声明：本报告结论仅为原理图准出，不代表 PCB 或整板通过
     - 日期 / 限制说明：<缺失输入和规格符合性受限项>
@@ -41,6 +41,9 @@
     ## 四、INSUFFICIENT：材料不足
     | ID | 缺失信息 | 受影响结论 | 是否阻断 | 关闭条件 |
     |---|---|---|---|---|
+
+    ### 找不到的 datasheet
+    <逐颗原样列出 datasheet-audit.json.user_messages，不得只写“资料不全”>
 
     ## 五、HANDOFF：独立 PCB/测试/结构动作
     | ID | 来源检查项 | 状态 | 接收阶段 | 约束 | 验证方法 |
@@ -90,6 +93,8 @@ A/B/C 只写在证据置信度字段中。
 - 不得把“PCB 约束已传递”写成 PCB 已通过。
 - BLOCKER 必须在原理图准出前清零；Warning 必须关闭或书面接受。
 - 每个适用检查项有自己的结果、证据和审查意见；总体准出另行聚合，不用一段总评替代逐项记录。
+- Datasheet 缺失时先由 agent 联网补取；NOT_FOUND 后逐颗提示
+  「找不到这颗物料的 datasheet：<完整型号>（位号：<refs>）。请提供该物料的原厂 datasheet。」
 - 每个 BLOCKER/Warning 给可复现证据链。
 - 被反驳后用证据复核，错误结论显式写入“更正说明”。
 - 最后一句必须是原理图准出结论，不能写“整板可以投板”。

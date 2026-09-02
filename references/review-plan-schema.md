@@ -55,11 +55,22 @@
   `UNDETERMINED`。
 - 旧版仅有 `expect` 的 intent 仍可使用。
 
+## 输入：datasheet-audit.json
+
+先运行 scripts/audit_datasheets.py。该文件提供逐物料状态和 agent_requests；
+完整格式与 agent 写回协议见 datasheet-resolution-schema.md。提供该输入后，逐物料
+状态覆盖 intent.materials.datasheets.available：
+
+- AVAILABLE：对应位号的 ER7 可进入 READY。
+- NEEDS_VERIFICATION / MISSING / NOT_FOUND：对应位号保持 WAITING_EVIDENCE。
+- NOT_FOUND：计划 diagnostics 增加 DATASHEET_NOT_FOUND，并透传 user_messages。
+
 ## 运行
 
 ```bash
 python3 scripts/plan_review.py db.json \
   --intent intent.json \
+  --datasheet-audit datasheet-audit.json \
   --evidence evidence.json \
   --json review-plan.json
 ```
@@ -69,6 +80,7 @@ python3 scripts/plan_review.py db.json \
 ```bash
 python3 scripts/lint.py db.json \
   --intent intent.json \
+  --datasheet-audit datasheet-audit.json \
   --evidence evidence.json \
   --plan-json review-plan.json \
   --json lint-result.json
@@ -98,6 +110,9 @@ python3 scripts/lint.py db.json \
 规则或专家检查实例化到具体对象。两者分别回答“这类规则要不要跑”和“具体要审哪一项”。
 `aggregate_release_gate` 只声明逐项完成后的聚合门槛，不会用总体结论覆盖任何一条
 独立审查意见。
+
+顶层 datasheet_audit 回显其 summary、agent_requests 和 user_messages；执行 agent
+必须先完成联网任务并重跑覆盖审计，再把仍为 NOT_FOUND 的 user_messages 原样提示用户。
 
 ## 判定规则
 

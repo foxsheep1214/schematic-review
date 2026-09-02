@@ -308,6 +308,22 @@ Abs Max、强制条款、公式常量、引脚语义全部来自 datasheet；没
 2. 核实选型公式常量（Vref、ILIM/频率/软启动公式、min on-time 等）后再出参数。
 3. 查不到 datasheet 的器件：证据置信度标 C，对应适用检查项标 INSUFFICIENT，列入报告待索取清单，**严禁凭印象补参数**。
 
+### 4.1.1 覆盖审计与 Agent 联网补取
+
+解析 db.json 后先运行 audit_datasheets.py，把 U/M/Q/D 等非 NC 有源物料按 value
+归并，并与资料包 PDF 对照。文件名命中只产生 NEEDS_VERIFICATION；只有 agent 打开
+PDF 并核实完整型号、后缀、封装和版本后，才能写 FOUND/AVAILABLE。
+
+资料包确实缺失时，执行 agent 必须自行联网补取，先查 LCSC/立创商城，再查原厂官网；
+不得一开始就把搜索工作转交设计者。Agent 将每颗物料的 FOUND 或 NOT_FOUND 写入
+datasheet-resolution.json，重跑 audit_datasheets.py，并把 datasheet-audit.json
+传入 plan_review.py/lint.py。完整契约见 references/datasheet-resolution-schema.md。
+
+只有上述白名单渠道都检索过且仍无有效文档时，才能写 NOT_FOUND。此时逐颗提示：
+「找不到这颗物料的 datasheet：<完整型号>（位号：<refs>）。请提供该物料的原厂
+datasheet。」并保持 INSUFFICIENT/C。单个 URL 失败、Cache miss 或网络受限不构成
+NOT_FOUND 证据。
+
 
 ### 4.2 四类信息与去向
 
@@ -596,7 +612,8 @@ TX/RX/主从方向信号，**必须回到官方引脚语义表逐字确认**，�
 
 1. 上传：原理图 PDF、三个网表文件、（可选）基线网表与 datasheet 包。
 2. 粘贴本方法论（或压缩版：第 0/1/2/3/10/11 章 + 项目规则库）。
-3. 让 ChatGPT 用 Code Interpreter 直接运行第 2 章解析代码与第 3 章计划/lint 代码，输出 AC0 逐项计划与疑似清单。
+3. 让 ChatGPT 用 Code Interpreter 先运行 datasheet 覆盖审计并处理 agent_requests，
+   再运行第 2 章解析代码与第 3 章计划/lint 代码，输出 AC0 逐项计划与疑似清单。
 4. 再逐章指令执行 ER1–ER7（链路追踪、供电审计、WCA、规则扫描、读图、器件核实）。
 5. 按第 10 章格式产出报告，修复后重新上传网表做闭环 diff。
 
