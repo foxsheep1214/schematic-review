@@ -11,6 +11,8 @@ PASS/FAIL。HANDOFF 是独立下游动作，可以与后续 PASS/FAIL/INSUFFICIE
         --evidence evidence.json --json review-plan.json
 """
 import argparse
+from copy import deepcopy
+from electrical_contract import db_fingerprint, check_matches, readiness_gaps, validate_evidence, bounded, finite
 import io
 import json
 import os
@@ -185,6 +187,52 @@ COLD_RULES = {
 }
 
 
+CIRCUIT_CHECKS = {
+    'POWER_CONVERTER': [
+        ('voltage-headroom', '按 Vin/负载/温度保证窗口核对输出及 LDO dropout；与负载推荐工作范围比较'),
+        ('current-stress', '按拓扑计算电感峰值/RMS、Isat、开关限流最小值及器件降额'),
+        ('timing-stability', '核对最小导通/关断时间、Cout 有效容量/ESR、补偿和稳定工作条件'),
+        ('loss-reverse', '核对损耗、反向电流、预偏置与放电路径；结温实现转 HANDOFF'),
+    ],
+    'POWER_PROTECTION': [
+        ('thresholds', '核对 UVLO/OVLO/限流容差与检测目的，明确保护前后采样点'),
+        ('soa', '核对 MOS VDS-I-t SOA、限流/故障计时、热态降额与重复重试能量'),
+        ('coordination', '核对 TVS VRWM/VBR/VC 对应波形及温度、熔断器时间电流/熔断能量与后级承受能力'),
+    ],
+    'ANALOG': [
+        ('dc-range', '运放输入共模/输出摆幅及偏置/失调/增益误差，含供电和温度极限'),
+        ('dynamic-load', '运放 GBW/压摆率/容性负载；ADC 源阻抗、采样保持获取时间与建立误差'),
+        ('reference-protection', 'ADC 基准驱动/误差、输入满量程及钳位/注入电流，含掉电状态'),
+    ],
+    'I2C': [
+        ('sink-rise', '逐电气段合并全部上拉公差：Rp_min=(Vpullup_max-VOL_max)/IOL_guaranteed，Rp_max=tr_max/(0.8473*Cb_max)；核对串联压降'),
+        ('domain-off', '两端 VIH/VIL、VOL、耐压及 Ioff；逐域掉电和外部设备先上电的注入路径'),
+        ('address-state', '核对地址/复用/复位态和板载及外部可选上拉的装配组合'),
+    ],
+    'STARTUP': [
+        ('sampled-level', '逐采样窗口计算 strap/EN 保证电压，含内部拉阻、LED、泄漏、电容和门限'),
+        ('reset-timing', '按 V(t) 穿越门限时刻核对复位脉宽/释放与采样 setup/hold，不能以 RC 时间常数代替'),
+        ('power-order', '检查慢爬升、棕断、短暂掉电、单域掉电、外部先供电、重试及恢复模式'),
+    ],
+    'DDR': [
+        ('calibration', '分别按控制器和 DRAM 的具体型号/代际核对 ZQ/校准脚端接与精度，禁止跨器件套用'),
+        ('termination', '逐数据/地址/时钟/VREF/VTT 电源域核对拓扑、端接、基准及上电条件'),
+    ],
+    'USB_C': [
+        ('cc-role', '按 Source/Sink/DRP 角色及 PD 模式核对 CC/Rp/Rd、方向检测、线缆 VCONN'),
+        ('vbus', '核对 VBUS 供电资格、电压档位、放电、反灌、过流及端口未供电状态'),
+    ],
+    'CAN_RS485': [
+        ('termination-bias', '按实际总线端点和节点数核对端接等效负载、空闲偏置及接收保证差分门限'),
+        ('common-mode', '核对收发器 VIO/默认态、总线共模范围、地偏差与未供电负载'),
+    ],
+    'CLOCK': [
+        ('load-startup', '按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件；寄生及实测裕量转 HANDOFF'),
+        ('oscillator-domain', '有源时钟输出幅度/电源域、使能态和上电有效时间'),
+    ],
+}
+
+
 def _text(value):
     return isinstance(value, str) and bool(value.strip())
 
@@ -237,6 +285,56 @@ def validate_intent(intent):
                 errors.append(f'{label}.available 必须为 boolean')
             if item.get('available') and not _text(item.get('citation')):
                 errors.append(f'{label}.citation 缺失')
+    rails = intent.get('power_rails', {})
+    if not isinstance(rails, dict):
+        errors.append('power_rails 必须为按网络名索引的 object')
+    else:
+        for net, budget in rails.items():
+            if not _text(net) or not isinstance(budget, dict):
+                errors.append('power_rails 每轨必须为 object')
+                continue
+            for field in ('voltage_v', 'load_a'):
+                value = budget.get(field)
+                if field in budget and (not bounded(value) or (field == 'load_a' and value['min'] < 0)):
+                    errors.append(f'power_rails.{net}.{field} 需要有效 min/max；负载电流用非负幅值')
+            if 'available_a_min' in budget and (not finite(budget['available_a_min']) or budget['available_a_min'] < 0):
+                errors.append(f'power_rails.{net}.available_a_min 需要非负有限数')
+            if 'refs' in budget and (not isinstance(budget['refs'], list) or not budget['refs']
+                    or not all(_text(x) for x in budget['refs'])):
+                errors.append(f'power_rails.{net}.refs 需要非空位号数组')
+    for field in ('power_sources', 'power_paths', 'circuits'):
+        if field in intent and (not isinstance(intent[field], list)
+                or not all(isinstance(x, dict) for x in intent[field])):
+            errors.append(f'{field} 必须为 object 数组')
+    for source in intent.get('power_sources', []) if isinstance(intent.get('power_sources', []), list) else []:
+        if not isinstance(source, dict):
+            continue
+        if not _text(source.get('node')) or not _text(source.get('citation')) or not (
+                isinstance(source.get('states'), list) and source['states']
+                and all(_text(x) for x in source['states'])):
+            errors.append('power_sources 需要 node/states/citation')
+    for edge in intent.get('power_paths', []) if isinstance(intent.get('power_paths', []), list) else []:
+        if isinstance(edge, dict) and not all(_text(edge.get(k)) for k in ('ref', 'from', 'to', 'state', 'citation')):
+            errors.append('power_paths 需要 ref/from/to/state/citation')
+    if (intent.get('power_sources') or intent.get('power_paths')) and not _text(intent.get('active_state')):
+        errors.append('电源路径需要 active_state')
+    seen_circuits = set()
+    for circuit in intent.get('circuits', []) if isinstance(intent.get('circuits', []), list) else []:
+        if not isinstance(circuit, dict):
+            continue
+        cid = circuit.get('id')
+        if not _text(cid) or cid in seen_circuits:
+            errors.append('circuits.id 缺失或重复')
+        else:
+            seen_circuits.add(cid)
+        if not isinstance(circuit.get('domain'), str) or circuit['domain'] not in CIRCUIT_CHECKS:
+            errors.append('circuits.domain 不支持')
+        for field in ('refs', 'states'):
+            values = circuit.get(field)
+            if not isinstance(values, list) or not values or not all(_text(x) for x in values):
+                errors.append(f'circuits.{field} 必须为非空字符串数组')
+        if not _text(circuit.get('citation')):
+            errors.append('circuits.citation 缺失')
     return errors
 
 
@@ -266,16 +364,6 @@ def _handoff(config, applicable):
         'constraint': config.get('constraint', ''),
         'verification': config.get('verification', ''),
     }
-
-
-def _evidence_matches(evidence, rule, obj):
-    for check in (evidence or {}).get('checks', []):
-        if check.get('rule') != rule:
-            continue
-        for key in ('node', 'net', 'ref'):
-            if obj.get(key) and check.get(key) == obj[key]:
-                return True
-    return False
 
 
 def _database_blobs(db):
@@ -320,6 +408,7 @@ class ReviewPlanner:
                  old_db_available=False, claims_available=False,
                  datasheet_audit=None):
         self.db = db
+        self.db_sha256 = db_fingerprint(db)
         self.intent = intent or {}
         self.evidence = evidence or {}
         self.datasheet_audit = datasheet_audit
@@ -331,6 +420,15 @@ class ReviewPlanner:
         self.rule_plan = []
         self.diagnostics = []
         self._ids = set()
+
+    def matching_evidence(self, rule, obj):
+        return [check for check in self.evidence.get('checks', [])
+                if check_matches(self.db, check, rule, obj)]
+
+    def evidence_ready(self, rule, obj):
+        matches = self.matching_evidence(rule, obj)
+        return bool(matches) and all(not readiness_gaps(self.db, x, self.datasheet_audit, self.db_sha256)
+                                     for x in matches)
 
     def add_check(self, check_key, obj, criterion, stage, executor,
                   applicability='APPLICABLE', readiness='READY',
@@ -362,6 +460,27 @@ class ReviewPlanner:
             'evidence_confidence': None,
             'handoff': handoff or _empty_handoff(),
         }
+        matches = self.matching_evidence(rule, obj) if executor == 'AC0-HOT' else []
+        if matches:
+            for evidence in matches:
+                child = deepcopy(item)
+                child_base = child['id'] + '.' + _slug(evidence['id'])
+                child_id, child_suffix = child_base, 2
+                while child_id in self._ids:
+                    child_id = f'{child_base}-{child_suffix}'
+                    child_suffix += 1
+                child['id'] = child_id
+                self._ids.add(child_id)
+                child['evidence_check_id'] = evidence['id']
+                child['object']['state'] = (evidence.get('basis') or {}).get('state')
+                gaps = readiness_gaps(self.db, evidence, self.datasheet_audit, self.db_sha256)
+                child['readiness'] = 'WAITING_EVIDENCE' if gaps else 'READY'
+                child['required_inputs'] = gaps
+                self.checks.append(child)
+            return self.checks[-1]
+        if check_key.startswith('feature-'):
+            item['role'] = 'coverage_parent'
+            item['aggregation'] = '逐电路/状态子检查完成后汇总，禁止整域一次性 PASS'
         self.checks.append(item)
         return item
 
@@ -447,6 +566,27 @@ class ReviewPlanner:
                     'AC0', 'AC0-COLD', readiness='READY',
                     trigger=[f'intent:{item["citation"]}'])
 
+    def plan_circuit_checks(self):
+        for circuit in self.intent.get('circuits', []):
+            domain = circuit['domain']
+            for state in circuit['states']:
+                obj = {'circuit': circuit['id'], 'ref': circuit['refs'][0],
+                       'refs': circuit['refs'], 'nets': circuit.get('nets', []), 'state': state}
+                absent = [ref for ref in circuit['refs']
+                          if ref not in self.db.get('parts', {})]
+                missing = [f'datasheet:{ref}' for ref in circuit['refs']
+                           if not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
+                missing += [f'unknown ref:{ref}' for ref in absent]
+                for key, criterion in CIRCUIT_CHECKS[domain]:
+                    item = self.add_check(
+                        f'{circuit["id"]}-{key}-{state}', obj, criterion,
+                        'ER4' if domain in ('POWER_CONVERTER', 'POWER_PROTECTION', 'ANALOG', 'I2C') else 'ER5',
+                        'Expert Review', readiness='WAITING_EVIDENCE' if missing else 'READY',
+                        required_inputs=missing, trigger=[f'intent.circuits:{circuit["citation"]}'])
+                    item['domain'] = domain
+                    item['analysis_required'] = True
+                    item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
+
     def plan_concrete_checks(self):
         db = self.db
         nets = db.get('nets', {})
@@ -461,7 +601,7 @@ class ReviewPlanner:
             ref = node.split('.')[0]
             if upper_pin in FB_NAMES and net:
                 obj = {'node': node, 'net': net, 'ref': ref}
-                ready = _evidence_matches(self.evidence, 'Rule-08', obj)
+                ready = self.evidence_ready('Rule-08', obj)
                 self.add_check(
                     'feedback-divider-wca', obj,
                     '按实际电阻与 Vref 公差验证反馈/监控分压窗口',
@@ -471,7 +611,7 @@ class ReviewPlanner:
             if net and (EN_RE.search(upper_pin) or (
                     EN_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))):
                 obj = {'node': node, 'net': net, 'ref': ref}
-                ready = _evidence_matches(self.evidence, 'Rule-12', obj)
+                ready = self.evidence_ready('Rule-12', obj)
                 self.add_check(
                     'enable-default-absmax', obj,
                     '核对 EN 有效极性、默认态、上拉轨与绝对最大额定',
@@ -481,7 +621,7 @@ class ReviewPlanner:
             if net and (STRAP_RE.search(upper_pin) or (
                     STRAP_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))):
                 obj = {'node': node, 'net': net, 'ref': ref}
-                ready = _evidence_matches(self.evidence, 'Rule-16', obj)
+                ready = self.evidence_ready('Rule-16', obj)
                 self.add_check(
                     'strap-required-state', obj,
                     '核对 BOOT/strap/test 引脚的强制态与采样窗口',
@@ -496,10 +636,10 @@ class ReviewPlanner:
                 i2c_nets.add(net)
         for net in sorted(i2c_nets - pseudo):
             obj = {'net': net}
-            ready = _evidence_matches(self.evidence, 'Rule-09', obj)
+            ready = self.evidence_ready('Rule-09', obj)
             self.add_check(
                 'i2c-required-pull', obj,
-                '核对 I2C 信号所需上拉、阻值与供电域',
+                '核对指定两网间电阻装配与等效阻值；电平/上升时间另行检查',
                 'ER1', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=[] if ready else ['datasheet/platform:I2C pull requirement'],
                 trigger=[f'net:{net}'], rule='Rule-09')
@@ -509,7 +649,7 @@ class ReviewPlanner:
             if not re.match(r'^(J|P|CN)\d', ref, re.I) or part.get('nc'):
                 continue
             obj = {'ref': ref}
-            ready = _evidence_matches(self.evidence, 'Rule-14', obj)
+            ready = self.evidence_ready('Rule-14', obj)
             self.add_check(
                 'connector-pin-map', obj,
                 '逐脚核对连接器符号与官方/对端 pinout',
@@ -525,11 +665,22 @@ class ReviewPlanner:
                 'power-rail-topology', {'net': net},
                 '确认电源轨驱动源、负载、域电压、时序与反灌路径',
                 'ER2', 'Expert Review', trigger=[f'rail-name:{net}'])
-            missing = [
-                name for name in ('requirements', 'datasheets')
-                if not _material_available(
-                    self.intent, name, self.datasheet_audit)
-            ]
+            budget = self.intent.get('power_rails', {}).get(net, {})
+            missing = []
+            for field in ('voltage_v', 'load_a'):
+                if not bounded(budget.get(field)):
+                    missing.append(f'power_rails.{net}.{field}.min/max')
+            if not finite(budget.get('available_a_min')):
+                missing.append(f'power_rails.{net}.available_a_min')
+            for field in ('state', 'citation'):
+                if not _text(budget.get(field)):
+                    missing.append(f'power_rails.{net}.{field}')
+            if not budget.get('refs'):
+                missing.append(f'power_rails.{net}.refs')
+            for ref in budget.get('refs', []):
+                entry = datasheet_entry_for_ref(self.datasheet_audit, ref)
+                if not entry or entry.get('status') != 'AVAILABLE':
+                    missing.append(f'datasheet:{ref}')
             self.add_check(
                 'power-rail-budget', {'net': net},
                 '按最大负载、电压范围与器件能力验证功率预算和裕量',
@@ -687,6 +838,7 @@ class ReviewPlanner:
     def build(self):
         self.plan_features()
         self.plan_concrete_checks()
+        self.plan_circuit_checks()
         for material in (self.datasheet_audit or {}).get('materials', []):
             if material.get('status') == 'NOT_FOUND':
                 self.diagnostics.append({
@@ -751,6 +903,10 @@ class ReviewPlanner:
 def build_review_plan(db, intent=None, evidence=None, review_mode=None,
                       old_db_available=False, claims_available=False,
                       datasheet_audit=None):
+    if evidence is not None:
+        errors = validate_evidence(evidence)
+        if errors:
+            raise ValueError('evidence.json 无效: ' + '; '.join(errors))
     return ReviewPlanner(
         db, intent, evidence, review_mode, old_db_available,
         claims_available, datasheet_audit).build()
@@ -785,6 +941,10 @@ def main():
     errors = validate_intent(intent)
     if errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(errors))
+    if evidence is not None:
+        errors = validate_evidence(evidence)
+        if errors:
+            sys.exit('[FATAL] evidence.json 无效: ' + '; '.join(errors))
     if datasheet_audit is not None:
         errors = validate_datasheet_audit(datasheet_audit, db)
         if errors:

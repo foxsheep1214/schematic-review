@@ -308,7 +308,13 @@ def validate_datasheet_audit(audit, db=None):
                 or sorted(messages) != sorted(expected_messages)):
             errors.append('datasheet audit user_messages 未逐颗覆盖 NOT_FOUND')
     if db is not None:
-        expected_groups, _diagnostics = _material_groups(db)
+        extra_refs = audit.get('required_refs', [])
+        if not isinstance(extra_refs, list) or not all(_text(x) for x in extra_refs):
+            errors.append('datasheet audit required_refs 必须为位号数组')
+            extra_refs = []
+        if any(ref not in db.get('parts', {}) for ref in extra_refs):
+            errors.append('datasheet audit required_refs 包含不存在的位号')
+        expected_groups, _diagnostics = _material_groups(db, extra_refs)
         expected_pairs = sorted(
             (normalize_identity(item.get('identity')),
              tuple(sorted(item.get('refdes', []))))
@@ -345,11 +351,11 @@ def _resolution_index(resolution, base_dir):
     return result
 
 
-def _material_groups(db):
+def _material_groups(db, required_refs=None):
     groups = {}
     diagnostics = []
     for ref, part in sorted((db.get('parts') or {}).items()):
-        if not REQUIRED_REF_RE.match(ref) or part.get('nc'):
+        if (not REQUIRED_REF_RE.match(ref) and ref not in (required_refs or [])) or part.get('nc'):
             continue
         identity, source = _identity_for(ref, part)
         key = normalize_identity(identity) or f'REF{ref.upper()}'
@@ -385,9 +391,13 @@ def _material_groups(db):
 
 
 def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
-                          resolution_base=None):
+                          resolution_base=None, required_refs=None):
     files, missing_paths = _collect_pdf_files(datasheet_dirs or [])
-    groups, diagnostics = _material_groups(db)
+    required_refs = sorted(set(required_refs or []))
+    unknown = [ref for ref in required_refs if ref not in db.get('parts', {})]
+    if unknown:
+        raise ValueError(f'额外资料依赖位号不存在: {unknown}')
+    groups, diagnostics = _material_groups(db, required_refs)
     base_dir = os.path.abspath(resolution_base or os.curdir)
     resolution_errors = validate_resolution(resolution, base_dir)
     if resolution_errors:
@@ -467,6 +477,7 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
         'schema_version': 1,
         'generated_by': 'scripts/audit_datasheets.py',
         'network_access': 'agent-only',
+        'required_refs': required_refs,
         'summary': {
             'required_materials': len(materials),
             'available': counts['AVAILABLE'],
@@ -492,6 +503,9 @@ def main():
         help='资料包目录或 PDF；可重复提供。文件名命中只作为待验证候选')
     parser.add_argument(
         '--resolution', help='agent 写回的 datasheet-resolution.json')
+    parser.add_argument('--require-ref', action='append', default=[],
+                        help='需要额定值/曲线/引脚定义的 L/F/Y/J/C/R 等关键物料；可重复')
+    parser.add_argument('--evidence', help='自动纳入 evidence 中 depends_on 和目标器件的资料依赖')
     parser.add_argument('--json', required=True, help='写出 datasheet-audit.json')
     parser.add_argument(
         '--fail-on-unresolved', action='store_true',
@@ -508,9 +522,16 @@ def main():
         if errors:
             sys.exit('[FATAL] datasheet-resolution.json 无效:\n  - '
                      + '\n  - '.join(errors))
+    required_refs = set(args.require_ref)
+    if args.evidence:
+        from electrical_contract import dependency_refs
+        with open(args.evidence, encoding='utf-8') as stream:
+            evidence = json.load(stream)
+        for check in evidence.get('checks', []):
+            required_refs.update(dependency_refs(db, check))
     try:
         audit = build_datasheet_audit(
-            db, args.datasheet_dir, resolution, resolution_base)
+            db, args.datasheet_dir, resolution, resolution_base, sorted(required_refs))
     except ValueError as error:
         sys.exit(f'[FATAL] {error}')
     errors = validate_datasheet_audit(audit, db)

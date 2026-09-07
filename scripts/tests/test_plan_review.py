@@ -140,7 +140,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertTrue(any(x['code'] == 'INTENT_NETLIST_CONFLICT'
                             for x in plan['diagnostics']))
 
-    def test_structured_evidence_makes_hot_instance_ready(self):
+    def test_unbound_structured_evidence_does_not_make_hot_instance_ready(self):
         evidence = {
             'schema_version': 1,
             'checks': [{
@@ -153,7 +153,8 @@ class ReviewPlanTests(unittest.TestCase):
         plan = build_review_plan(sample_db(), evidence=evidence)
         item = next(x for x in plan['checks']
                     if x['check'] == 'feedback-divider-wca')
-        self.assertEqual(item['readiness'], 'READY')
+        self.assertEqual(item['readiness'], 'WAITING_EVIDENCE')
+        self.assertTrue(item['required_inputs'])
 
     def test_enable_net_does_not_turn_passive_pins_into_checks(self):
         db = sample_db()

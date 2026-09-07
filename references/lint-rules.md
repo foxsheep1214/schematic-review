@@ -13,7 +13,7 @@ AC0，判据是**结论是「算出来的」还是「推出来的」**——算�
 | **热跑** | `db.json` + ER1 的 `evidence.json` | Rule-08、09、12、14、16 |
 | **改版 Diff** | 旧/新 `db.json` + 可选闭环断言 | Rule-17 |
 
-**输出分两类**：`FINDING` = 疑似缺陷，逐条排除；`CANDIDATE` = 待 ER1 定夺的优先级清单，**直接决定优先读哪几份 datasheet**。同一条规则可同时产出两类——Rule-13 的 Vz 能从型号推出即定判（FINDING），推不出则转候选（CANDIDATE）。
+**输出分两类**：`FINDING` = 疑似缺陷，逐条排除；`CANDIDATE` = 待 ER1 定夺的优先级清单，**直接决定优先读哪几份 datasheet**。Rule-13 的型号和轨名线索一律生成 CANDIDATE；VRWM、VBR 和 VC 不能混用。热跑逐项 check_results 才记录所给证据下的 PASS/FAIL/INSUFFICIENT，仍需专家核对判据。
 
 **未执行 ≠ 通过**：`lint.py` 每趟末尾显式列出本趟没跑的规则及原因（缺 `--intent`、待 ER1 回补）。扫出 0 条与根本没扫，绝不能长得一样。
 
@@ -40,10 +40,10 @@ AC0，判据是**结论是「算出来的」还是「推出来的」**——算�
 | Rule-09 | 必需上拉/串阻缺失 | I2C 上拉、eMMC CMD 上拉、复位链、REXT 等按平台规则表 | — |
 | Rule-10 | ESD 挂残网 | ESD 器件所在网络节点数<2 或不含真实信号端点 | Dxx1/Dxx2 挂在废弃 USB_DP/DM 空网，活线无防护 |
 | Rule-12 | 使能逻辑极性/耐压 | EN 有效电平 vs 上/下拉方向冲突；EN 脚耐压 vs 所接电源 | TPS16530 EN 低有效却被上拉至 24V VIN（耐压 5.5V，会烧） |
-| Rule-13 | 钳位器件直连电源 | 稳压管/TVS 直接跨接在超过其 Vz/Vrwm 的电源轨上 | BZT52B3V0（3V）误并在 24V VBUS 上（上电即烧毁） |
+| Rule-13 | 防护窗口待核 | 分别核对 VRWM/VBR/VC、波形、温度、能量和后级额定 | 名称推断不能证明导通或烧毁 |
 | Rule-14 | 新增符号引脚映射 | 新建/定制符号（连接器、新 IC）pin 名/号 vs 官方 datasheet 逐脚比对；沿用成熟库免检 | 45P 连接器引脚号与实物不符 |
 | Rule-15 | "NC" 网络实为真网络 | 存在名为 NC/NC_* 的多节点网络。**必须先判别真短路 vs 工具伪网络**，见下方「NC 网络判别式」 | 真短路：164 引脚被短成一张网，含晶振脚/MII 输出脚/6 个外部连接器 pin1（OrCAD 经典陷阱）。伪网络：357 引脚挂在 PSTWRITER 的 No-Connect 汇集网上，看似隔离栅被跨接，实为工具产物 |
-| Rule-16 | strap 违反强制条款 | 配置/测试脚上拉方向 vs datasheet 原文（must be pulled down / must be left floating / 内部默认态） | RTL8208 TEST[3:0] 上拉（强制下拉）；EN_PWRDWN 上拉=上电即 power-down（默认 0=Normal） |
+| Rule-16 | strap 违反强制条款 | 配置/测试脚采样电压保证范围或明确的无连接要求 vs datasheet 原文（must be pulled down / must be left floating / 内部默认态） | RTL8208 TEST[3:0] 上拉（强制下拉）；EN_PWRDWN 上拉=上电即 power-down（默认 0=Normal） |
 | Rule-17 | 假闭环 | `diff_netlists.py` 按历史意见断言核对旧/新器件字段、引脚换网和网络成员变化 | "已改 RTL8326BI"回复后新版仍为 RTL8326B-CG |
 | Rule-18 | 同名不同域电源轨混用 | 相似轨名（VCC_3V3 vs VCC_3V3_SOM）被监测/供电对象张冠李戴 | 监控芯片 V2 看 SOM 轨、V4 看底板轨，判定需先分清 |
 | Rule-19 | PINUSE/ERC | 多个 OUT 直连为 FINDING；全 IN 网络、GROUND 类型未入已知地网为 CANDIDATE | 利用解析器已有 PINUSE，合法开漏/三态仍须排除 |
@@ -68,72 +68,22 @@ AC0，判据是**结论是「算出来的」还是「推出来的」**——算�
 
 ## 驱动源判定（Rule-04/Rule-05 前提）
 
-判断"电源轨有无驱动"时，以下**五类全部**算驱动源。漏掉任何一类都会产生大批假"无驱动轨"——实测漏算 0R 与模组输出时，Rule-05 从 1 条真命中膨胀到 44 条：
+从负载沿已装配的电感、磁珠、保险丝和 0R 向上游追踪；这些元件本身不产生电能。
+终点是实际电源输出脚或 intent.power_sources 指定的外部来源。二极管/MOS 仅按
+intent.power_paths 中当前 active_state 的有向导通模型跨越；并联 TVS、连接器和
+未装配器件不能自行成为源。不同地网不自动合并。输出脚名称仍只是冷跑候选，
+ER2 还要核对上游供电、导通条件、额定载流及每个工作/故障状态。
 
-1. 稳压器/DCDC/LDO 的输出脚（`VOUT`/`SW`/`OUT`）
-2. 电感、磁珠、保险丝、二极管
-3. **0R 跳线**——配置用的直连，最容易漏
-4. **模组自身输出的电源**（4G/WiFi 模组给出的 1.8V 电平参考、`VDD_EXT` 等）
-5. 连接器（外部供入）
-
-DRIVER 前缀不必手工枚举，`scripts/lint.py` 按上述五类自动识别。
 
 ## 参考实现
 
 **可直接运行**：
 `python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan.json --json out.json`
 
-下方为核心逻辑摘录，供理解规则用；**执行时请用 `scripts/lint.py`**，它包含伪网络判别、五类驱动源识别、差分对/同族总线过滤等本文所述的全部处理。
+下方为核心逻辑摘录，供理解规则用；**执行时请用 `scripts/lint.py`**，它包含伪网络判别、源节点和导通路径追踪、差分对/同族总线过滤等本文所述的全部处理。
 
-<details><summary>核心逻辑摘录</summary>
+以 scripts/lint.py 的 power_path() 作为唯一执行实现，不复制按器件前缀猜驱动的旧摘录。
 
-
-```python
-import re, difflib
-
-def lint(db, DRIVER_PREFIX=('U230.', 'L23', 'Q240')):  # 按项目电源器件位号调整
-    nets, parts, pinname, pin2net = db['nets'], db['parts'], db['pinname'], db['pin2net']
-    F = []
-    # Rule-01 单节点网络
-    for n, nds in nets.items():
-        if len(nds) == 1 and not n.startswith(('N37', 'N31')):
-            F.append(('Rule-01', '悬空网络', f'{n}: {nds[0]}'))
-    # Rule-02 双胞胎网络名
-    names = sorted(nets)
-    for a, b in zip(names, names[1:]):
-        if a != b and difflib.SequenceMatcher(None, a, b).ratio() > 0.9:
-            F.append(('Rule-02', '疑似网络名分裂', f'{a} <-> {b}'))
-    # Rule-03 自动命名孤岛
-    for n, nds in nets.items():
-        if n.startswith(('N37', 'N31')):
-            refs = {x.split('.')[0] for x in nds}
-            if not any(r[0] in 'UJQYM' for r in refs):
-                F.append(('Rule-03', '孤岛中间节点', f'{n}: {refs}'))
-    # Rule-04/05 电源审计
-    for n, nds in nets.items():
-        if re.match(r'(VCC|VDD|VDDA|VCCA|VOUT)', n):
-            if not any(x.startswith(DRIVER_PREFIX) for x in nds):
-                F.append(('Rule-04', '电源轨疑似无驱动', f'{n} ({len(nds)} 节点)'))
-    for node, pn in pinname.items():
-        if any(k in pn.upper() for k in ('VDD', 'VCC', 'AVDD')):
-            n = pin2net.get(node)
-            if n is None:
-                F.append(('Rule-05', '电源球无网络', f'{node}({pn})'))
-            elif not any(x.startswith(DRIVER_PREFIX) for x in nets[n]):
-                F.append(('Rule-05', '电源球所在轨无驱动', f'{node}({pn}) <- {n}'))
-    # Rule-06 VSS 未入地
-    for node, pn in pinname.items():
-        if 'VSS' in pn.upper() and pin2net.get(node) != 'GND':
-            F.append(('Rule-06', 'VSS 未入 GND', f'{node}({pn}) <- {pin2net.get(node)}'))
-    # Rule-15 NC 网络实为真网络
-    for n, nds in nets.items():
-        if re.fullmatch(r'NC[_\d]*', n, re.I) and len(nds) > 2:
-            F.append(('Rule-15', '"NC"被当作网络名导致短接', f'{n}: {len(nds)} 节点'))
-    return F
-```
-
-
-</details>
 ## 关键器件计数（Rule-07 执行方法）
 
 Rule-07 的输入不是网表，而是第 0 步的**意图清单**——由执行 agent 从需求/规格书、

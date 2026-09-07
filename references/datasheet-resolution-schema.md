@@ -121,3 +121,15 @@ Agent 必须把 datasheet-audit.json.user_messages 原样呈现给用户，并�
 - 缺失物料、受影响检查和关闭条件
 
 不得用同系列、近似后缀、聚合站参数或模型常识替代缺失 datasheet。
+
+## V1.6 按参数依赖补齐物料
+
+默认仍审计已装配 U/M/Q/D。需要电感 Isat/DCR、保险丝时间电流曲线、晶体 ESR/CL、
+连接器组合电流/引脚、电容偏压/ESR 或电阻额定/公差时，用 --require-ref REF（可重复）
+扩展；--evidence evidence.json 也会纳入声明的 depends_on 和目标器件。audit 输出
+required_refs 并与当前 db 一起验证，未知位号不允许静默漏审。
+
+VALUE 优先仅用于生成检索候选；BOM 中仅有通用阻容值时先解析实际 MPN，不能把
+“10K”当成已核实采购型号。AVAILABLE 表示该候选的文档已核实；用于参数验算前，
+evidence.basis.sources 还须记录确切的身份解释和实际文档指纹。文档覆盖系列时按
+订货表匹配实际后缀/封装，不要求系列文档标题逐字等于每个订货号。

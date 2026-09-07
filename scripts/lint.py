@@ -13,27 +13,22 @@ AC0 Automated Check（自动检查）——机械、可穷举的规则全量扫�
 DNP 选项、被删外设的引出脚、工具伪网络）由执行 agent 逐条排除。实践中命中
 数百条而真问题为零是常态——AC0 的职责是保证"没漏看"，不是"看对了"。
 
-驱动源自动识别
---------------
-Rule-04/05 判断"电源轨有无驱动"时，以下**全部**算驱动源，漏掉任何一类
-都会产生大批假"无驱动轨"：
-  - 稳压器/DCDC/LDO 的输出脚（VOUT/SW/OUT）
-  - 电感、磁珠、保险丝、二极管
-  - **0R 跳线**（配置用的直连，最容易漏）
-  - **模组自身输出的电源**（4G/WiFi 模组给出的 1.8V 电平参考等）
-  - 连接器（外部供入）
+电源追踪只把实际输出脚或已声明的外部供电节点当作来源候选。
+电感/磁珠/保险丝/0R 是导通边；二极管和 MOS 需要对应状态的有向模型。
+冷跑路径和网络名均不是电压、载流能力或上电时序的 PASS 证据。
 """
 import argparse
 import difflib
 import io
 import json
-import math
 import os
 import re
 import sys
 from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
+from electrical_contract import db_fingerprint, readiness_gaps, validate_evidence
+from itertools import product
 from plan_review import build_review_plan, validate_intent
 from solve_dividers import Solver, divider_window, parse_resistor
 
@@ -65,144 +60,6 @@ def _pin_class(value):
     return value or 'UNSPEC'
 
 
-def validate_evidence(evidence):
-    """验证 ER1 结构化证据；拒绝让残缺判据静默进入热跑。"""
-    errors = []
-    seen_ids = set()
-
-    def number(value):
-        if isinstance(value, bool):
-            return None
-        try:
-            parsed = float(value)
-        except (TypeError, ValueError):
-            return None
-        return parsed if math.isfinite(parsed) else None
-
-    def range_errors(value, label, *, nonnegative=False):
-        if not isinstance(value, dict):
-            return [f'{label} 必须为 object']
-        found = {}
-        result = []
-        for key in ('min', 'max'):
-            if key not in value:
-                continue
-            parsed = number(value[key])
-            if parsed is None:
-                result.append(f'{label}.{key} 必须为有限数值')
-            elif nonnegative and parsed < 0:
-                result.append(f'{label}.{key} 不得小于 0')
-            else:
-                found[key] = parsed
-        if 'min' in found and 'max' in found and found['min'] > found['max']:
-            result.append(f'{label}.min 不得大于 max')
-        return result
-
-    def text_value(value):
-        return isinstance(value, str) and bool(value.strip())
-
-    if not isinstance(evidence, dict):
-        return ['根对象必须是 JSON object']
-    if evidence.get('schema_version') != 1:
-        errors.append('schema_version 必须为 1')
-    checks = evidence.get('checks')
-    if not isinstance(checks, list):
-        return errors + ['checks 必须为数组']
-    for index, check in enumerate(checks):
-        label = f'checks[{index}]'
-        if not isinstance(check, dict):
-            errors.append(f'{label} 必须为 object')
-            continue
-        rule = check.get('rule')
-        if not isinstance(rule, str) or rule not in HOT_RULE_IDS:
-            errors.append(f'{label}.rule 不支持: {rule!r}')
-        check_id = check.get('id')
-        if not text_value(check_id):
-            errors.append(f'{label}.id 缺失')
-        elif check_id in seen_ids:
-            errors.append(f'{label}.id 重复: {check_id!r}')
-        else:
-            seen_ids.add(check_id)
-        if not text_value(check.get('citation')):
-            errors.append(f'{label}.citation 缺失（需文档/版本/页码或表号）')
-        kind = check.get('kind')
-        kind_by_rule = {
-            'Rule-08': {'divider'},
-            'Rule-09': {'required_pull', 'required_series'},
-            'Rule-12': {'pin_bias'},
-            'Rule-14': {'pin_map'},
-            'Rule-16': {'strap'},
-        }
-        expected_kind = kind_by_rule.get(rule, set()) if isinstance(
-            rule, str) else set()
-        if not isinstance(kind, str) or kind not in expected_kind:
-            errors.append(f'{label}.kind={kind!r} 与 {rule} 不匹配')
-        if rule == 'Rule-08':
-            for key in ('net', 'vref', 'expected'):
-                if key not in check:
-                    errors.append(f'{label}.{key} 缺失')
-            if not text_value(check.get('net')):
-                errors.append(f'{label}.net 必须为非空字符串')
-            vref = check.get('vref')
-            if isinstance(vref, dict):
-                if 'typ' not in vref:
-                    errors.append(f'{label}.vref.typ 缺失')
-                parsed_vref = {}
-                for key in ('min', 'typ', 'max'):
-                    if key not in vref:
-                        continue
-                    parsed = number(vref[key])
-                    if parsed is None or parsed <= 0:
-                        errors.append(f'{label}.vref.{key} 必须为有限正数')
-                    else:
-                        parsed_vref[key] = parsed
-                if all(key in parsed_vref for key in ('min', 'typ', 'max')) and not (
-                        parsed_vref['min'] <= parsed_vref['typ']
-                        <= parsed_vref['max']):
-                    errors.append(f'{label}.vref 必须满足 min <= typ <= max')
-            elif number(vref) is None or number(vref) <= 0:
-                errors.append(f'{label}.vref 必须为有限正数或 object')
-            if not isinstance(check.get('expected'), dict):
-                errors.append(f'{label}.expected 必须为 object')
-            elif not ({'min', 'max'} & set(check['expected'])):
-                errors.append(f'{label}.expected 至少给 min 或 max')
-            else:
-                errors.extend(range_errors(check['expected'], f'{label}.expected'))
-            if 'resistor_tolerance' in check:
-                tolerance = number(check['resistor_tolerance'])
-                if tolerance is None or not 0 <= tolerance < 1:
-                    errors.append(
-                        f'{label}.resistor_tolerance 必须在 [0, 1) 内')
-        elif rule in ('Rule-09', 'Rule-12', 'Rule-16'):
-            if not (text_value(check.get('net'))
-                    or text_value(check.get('node'))):
-                errors.append(f'{label} 必须给 net 或 node')
-            if 'to' in check and not text_value(check.get('to')):
-                errors.append(f'{label}.to 必须为非空字符串')
-            if rule == 'Rule-09' and kind == 'required_pull' and (
-                    check.get('direction') not in ('up', 'down')):
-                errors.append(f'{label}.direction 必须为 up/down')
-            if rule == 'Rule-12' and check.get('required_default') not in (
-                    'high', 'low', 'float'):
-                errors.append(f'{label}.required_default 必须为 high/low/float')
-            if rule == 'Rule-16' and check.get('required') not in (
-                    'high', 'low', 'float'):
-                errors.append(f'{label}.required 必须为 high/low/float')
-            if rule == 'Rule-09' and 'resistance_ohm' in check:
-                errors.extend(range_errors(
-                    check['resistance_ohm'], f'{label}.resistance_ohm',
-                    nonnegative=True))
-            if rule == 'Rule-12' and 'abs_max_v' in check:
-                abs_max = number(check['abs_max_v'])
-                if abs_max is None or abs_max <= 0:
-                    errors.append(f'{label}.abs_max_v 必须为有限正数')
-        elif rule == 'Rule-14':
-            if (not text_value(check.get('ref'))
-                    or not isinstance(check.get('expected'), dict)
-                    or not check.get('expected')):
-                errors.append(f'{label} 必须给 ref 与 expected pin map')
-    return errors
-
 
 def _volt(s):
     """从名字里推电压：3V3->3.3, 24V->24, 5.0V->5.0, V5P0->5.0；推不出返回 None"""
@@ -233,8 +90,11 @@ def clamp_volt(blob):
 
 
 class Lint:
-    def __init__(self, db, log_text='', intent=None, evidence=None):
+    def __init__(self, db, log_text='', intent=None, evidence=None, datasheet_audit=None):
         self.db = db
+        self.db_sha256 = db_fingerprint(db)
+        self.datasheet_audit = datasheet_audit
+        self.results = []
         self.intent = intent or {}
         self.evidence = evidence or {}
         self.nets = db['nets']
@@ -284,6 +144,7 @@ class Lint:
                 'ref': ref,
                 'other': other,
                 'ohm': parsed['kohm'] * 1000.0 if parsed else None,
+                'tol': parsed['tol'] if parsed else None,
             })
         return links
 
@@ -302,38 +163,70 @@ class Lint:
         item = {'rule': rid, 'name': name, 'detail': detail, 'kind': kind,
                 'page': self.page.get(ref, 0) if ref else 0}
         item.update(extra)
+        if extra.get('check_id'):
+            evidence = next((x for x in self.evidence.get('checks', [])
+                             if x.get('id') == extra['check_id']), {})
+            item['state'] = (evidence.get('basis') or {}).get('state')
+            item['review_result'] = 'INSUFFICIENT' if kind == 'CANDIDATE' else 'FAIL'
+            self.results.append(item)
         self.F.append(item)
 
-    def record_pass(self, rule, check, detail):
-        self.passes.append({
-            'rule': rule,
-            'check_id': check['id'],
-            'detail': detail,
-            'citation': check['citation'],
-        })
+    def record_pass(self, rule, check, detail, scope=None, calculation=None):
+        item = {
+            'rule': rule, 'check_id': check['id'], 'detail': detail,
+            'citation': check['citation'], 'review_result': 'PASS',
+            'scope': scope or check['kind'], 'state': check.get('basis', {}).get('state'),
+        }
+        if calculation is not None:
+            item['calculation'] = calculation
+        self.passes.append(item)
+        self.results.append(item)
+
+    def power_path(self, net):
+        """Return a source-to-load candidate path, never a rail signoff."""
+        state = self.intent.get('active_state')
+        sources = {x.get('node'): x for x in self.intent.get('power_sources', [])
+                   if x.get('citation') and state in x.get('states', [])}
+        directed = [x for x in self.intent.get('power_paths', [])
+                    if x.get('citation') and x.get('state') == state]
+        queue, seen = [(net, [])], set()
+        while queue:
+            current, path = queue.pop(0)
+            if current in seen or current in GNDS:
+                continue
+            seen.add(current)
+            for node in self.nets.get(current, []):
+                ref = node.split('.')[0]
+                part = self.parts.get(ref, {})
+                if not part or part.get('nc'):
+                    continue
+                pin = str(self.pinname.get(node, ''))
+                if node in sources:
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'declared source', 'state': state}
+                if re.match(r'^[UM]\d', ref, re.I) and re.match(
+                        r'^(VOUT|VREG|VDD_EXT|VO)(?:$|[_+\d])', pin, re.I):
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'pin-name candidate; verify function and upstream power'}
+                ends = self.ends(ref)
+                if len(ends) != 2 or current not in ends:
+                    continue
+                other = ends[0] if ends[1] == current else ends[1]
+                resistor = parse_resistor(part.get('value')) if re.match(r'^R\d', ref) else None
+                if re.match(r'^(L|FB|F)\d', ref) or (resistor and resistor['kohm'] == 0):
+                    queue.append((other, path + [ref]))
+            # Multi-pin MOS models are validated by exact endpoint membership.
+            for edge in directed:
+                ref = edge.get('ref')
+                part = self.parts.get(ref, {})
+                ends = self.ends(ref) if ref else []
+                if (part and not part.get('nc') and edge.get('to') == current
+                        and edge.get('from') in ends and current in ends):
+                    queue.append((edge['from'], path + [ref]))
+        return None
 
     def driven(self, net):
-        """这条轨是否有驱动源（见模块 docstring 的五类）"""
-        for x in self.nets.get(net, []):
-            ref = x.split('.')[0]
-            v = self.parts.get(ref, {})
-            if v.get('nc'):
-                continue
-            head = re.match(r'[A-Za-z]+', ref)
-            head = head.group() if head else ''
-            if head in ('L', 'FB', 'F', 'D', 'J'):
-                return True
-            if head in ('U', 'M'):
-                # 稳压器输出脚，或模组自身输出的电源脚
-                if OUTPIN_RE.match(self.pinname.get(x, '')):
-                    return True
-                if re.match(r'^(VDD_EXT|VREG|VOUT)', self.pinname.get(x, ''), re.I):
-                    return True
-            if head == 'Q':
-                return True
-            if head == 'R' and str(v.get('value', '')).upper().startswith('0R'):
-                return True   # 0R 跳线：最容易漏的一类驱动
-        return False
+        return self.power_path(net) is not None
 
     # -- rules -----------------------------------------------------------
     def run(self):
@@ -488,7 +381,7 @@ class Lint:
                              f'{key}: 意图 {want} 实为 {len(got)}'
                              + (f' {got}' if got else ''))
         else:
-            self.skipped.append(('Rule-07', '关键器件计数', '未提供 --intent 意图清单'))
+            self.skipped.append(('Rule-07', '关键器件计数', '意图中缺少器件计数目标 intent.expect'))
 
         # Rule-12 EN 极性/耐压：网络名或引脚功能名命中；有 ER1 证据时交热跑定判
         covered_rule12_nets = {
@@ -513,30 +406,25 @@ class Lint:
                          f'{n}: {"; ".join(sorted(set(pulls)))}',
                          kind='CANDIDATE')
 
-        # Rule-13 钳位器件直连电源（Vz 可从型号推出即冷跑定判，推不出转候选）
-        for ref, v in parts.items():
-            if v.get('nc'):
+        # Rule-13: model/name-derived voltage is a retrieval hint, not breakdown data.
+        for ref, value in parts.items():
+            if value.get('nc'):
                 continue
-            blob = (v.get('part', '') + ' ' + v.get('value', '') + ' '
-                    + v.get('prim', ''))
+            blob = ' '.join(str(value.get(k, '')) for k in ('part', 'value', 'prim'))
             if not CLAMP_RE.search(blob):
                 continue
             ends = self.ends(ref)
             if len(ends) != 2 or not any(e in GNDS for e in ends):
                 continue
-            rail = [e for e in ends if e not in GNDS][0]
-            vr = _volt(rail)
-            if vr is None:
-                continue                      # 轨电压未知，交 ER2 电源树处理
-            vz = clamp_volt(blob)
-            if vz is None:
-                self.add('Rule-13', '钳位器件跨接电源轨（Vz 待查）',
-                         f'{ref} ({blob.strip()}) 跨 {rail}({vr}V)-GND，'
-                         f'型号推不出 Vz/Vrwm', ref, kind='CANDIDATE')
-            elif vz < vr:
-                self.add('Rule-13', '钳位器件 Vz 低于所跨电源轨',
-                         f'{ref} ({blob.strip()}) Vz/Vrwm≈{vz}V < {rail} 的 {vr}V'
-                         f' —— 上电即导通/烧毁', ref)
+            rails = [e for e in ends if e not in GNDS]
+            if not rails:
+                continue
+            rail = rails[0]
+            self.add('Rule-13', '防护器件工作/击穿/钳位窗口待核',
+                     f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_volt(rail)}V，'
+                     f'型号提示={clamp_volt(blob)}V。分别查 VRWM、VBR@IT、VC@Ipp、'
+                     '波形、温度与能量配合；型号不能证明导通或烧毁。',
+                     ref, kind='CANDIDATE')
 
         # 导出日志：No_connect 被忽略 —— 免费证据，别丢
         if self.log:
@@ -556,6 +444,12 @@ class Lint:
         """执行 ER1 已提供确定判据的规则；未提供的热跑规则继续保持 pending。"""
         for check in self.evidence.get('checks', []):
             rule = check['rule']
+            gaps = readiness_gaps(self.db, check, self.datasheet_audit, self.db_sha256)
+            if gaps:
+                self.add(rule, '热跑证据/模型尚未就绪', '; '.join(gaps),
+                         kind='CANDIDATE', check_id=check['id'],
+                         citation=check['citation'], required_inputs=gaps)
+                continue
             self.hot_executed.add(rule)
             {
                 'Rule-08': self._hot_divider,
@@ -570,12 +464,13 @@ class Lint:
         return f"[{check['id']}] {check['citation']}"
 
     def _hot_divider(self, check):
-        tolerance = float(check.get('resistor_tolerance', 0.01))
-        solution = Solver(self.db, default_tol=tolerance).solve_net(check['net'])
-        if solution.get('status') != 'ok':
+        tolerance = check.get('resistor_tolerance')
+        model = check.get('divider_model') or {}
+        solution = Solver(self.db, default_tol=tolerance, model=model).solve_net(check['net'])
+        if solution.get('status') != 'ok' or not solution.get('tolerances_complete'):
             self.add(
                 'Rule-08', '分压网络无法无歧义求解',
-                f"{check['net']}: {solution.get('reason')}；{self._citation(check)}",
+                f"{check['net']}: {solution.get('reason') or '电阻公差缺失'}；{self._citation(check)}",
                 kind='CANDIDATE', check_id=check['id'],
                 citation=check['citation'])
             return
@@ -587,6 +482,14 @@ class Lint:
         else:
             typ = minimum = maximum = float(vref)
         window = divider_window(solution, typ, minimum, maximum)
+        bias = model['bias_current_a']
+        corners = [v * (1 + up / lo) + current * up * 1000
+                   for v, up, lo, current in product(
+                       (minimum, maximum), (solution['up']['min'], solution['up']['max']),
+                       (solution['lo']['min'], solution['lo']['max']),
+                       (bias['min'], bias['max']))]
+        window.update(min=min(corners), max=max(corners))
+        window['typ_note'] = 'typ 为零偏置标称值；min/max 包含偏置电流'
         expected = check['expected']
         low = float(expected.get('min', float('-inf')))
         high = float(expected.get('max', float('inf')))
@@ -600,108 +503,97 @@ class Lint:
                 kind='FINDING', check_id=check['id'],
                 citation=check['citation'], calculation=window)
         else:
-            self.record_pass('Rule-08', check, detail)
-
-    @staticmethod
-    def _resistance_ok(link, check):
-        limits = check.get('resistance_ohm') or {}
-        if link['ohm'] is None:
-            return not limits
-        return (link['ohm'] >= float(limits.get('min', float('-inf')))
-                and link['ohm'] <= float(limits.get('max', float('inf'))))
+            self.record_pass('Rule-08', check, detail,
+                             scope='所给反馈/监控阈值的静态分压窗口；工作余量/启动/稳定性另查', calculation=window)
 
     def _hot_required_passive(self, check):
         net = self.target_net(check)
-        if not net:
-            self.add(
-                'Rule-09', '必需无源网络无法定位',
-                f"{check.get('node') or check.get('net')}: 无网络；"
-                f"{self._citation(check)}",
-                check_id=check['id'], citation=check['citation'])
-            return
         links = self.resistor_links(net)
-        expected_other = check.get('to')
-        if check['kind'] == 'required_pull':
-            direction = check.get('direction')
-            candidates = [
-                link for link in links
-                if ((direction == 'down' and link['other'] in GNDS)
-                    or (direction == 'up' and (
-                        RAIL_RE.match(link['other'])
-                        or _volt(link['other']) is not None)))
-            ]
+        destination = check.get('to')
+        if destination:
+            candidates = [x for x in links if x['other'] == destination]
         else:
-            # 明确给出 to 时按该网络精确查找；否则只找信号网间串阻。
-            candidates = ([link for link in links if link['other'] == expected_other]
-                          if expected_other else [
-                              link for link in links
-                              if link['other'] not in GNDS
-                              and not RAIL_RE.match(link['other'])])
-        if expected_other and check['kind'] == 'required_pull':
-            candidates = [x for x in candidates if x['other'] == expected_other]
-        valid = [x for x in candidates if self._resistance_ok(x, check)]
-        detail = (
-            f"{net}: 期望 {check['kind']} "
-            f"{check.get('direction', '')} -> {expected_other or '*'}；"
-            f"候选={candidates}；{self._citation(check)}")
-        if not valid:
-            self.add(
-                'Rule-09', '必需上拉/下拉/串阻缺失或阻值不符', detail,
-                check_id=check['id'], citation=check['citation'])
+            candidates = [x for x in links if (
+                x['other'] in GNDS if check.get('direction') == 'down'
+                else RAIL_RE.match(x['other']))]
+        limits = check.get('resistance_ohm') or {}
+        detail = f"{net}: {check['kind']} -> {destination or '*'}; candidates={candidates}"
+        if not candidates:
+            self.add('Rule-09', '未找到要求的直接电阻连接', detail,
+                     kind='CANDIDATE' if links else 'FINDING',
+                     check_id=check['id'], citation=check['citation'])
+            return
+        # A set of parallel pull-ups is one equivalent load on the bus driver.
+        if len({x['other'] for x in candidates}) != 1:
+            self.add('Rule-09', '电阻连接多个电源域，需节点分析', detail,
+                     kind='CANDIDATE', check_id=check['id'], citation=check['citation'])
+            return
+        if limits and any(x not in candidates for x in links):
+            self.add('Rule-09', '存在其他电阻支路，等效模型不完整', detail,
+                     kind='CANDIDATE', check_id=check['id'], citation=check['citation'])
+            return
+        if not limits:
+            self.record_pass('Rule-09', check, detail,
+                             scope='仅电阻装配及两端连接；电平、时序和阻值窗口未判定')
+            return
+        if any(x['ohm'] is None or x['tol'] is None or x['ohm'] <= 0 for x in candidates):
+            self.add('Rule-09', '阻值/公差不完整或含短路支路', detail,
+                     kind='CANDIDATE', check_id=check['id'], citation=check['citation'])
+            return
+        equivalent = {key: 1 / sum(1 / (x['ohm'] * (1 + sign * x['tol']))
+                                    for x in candidates)
+                      for key, sign in (('min', -1), ('typ', 0), ('max', 1))}
+        detail += f'; 等效阻值窗口={equivalent} ohm'
+        if (equivalent['min'] < float(limits.get('min', float('-inf')))
+                or equivalent['max'] > float(limits.get('max', float('inf')))):
+            self.add('Rule-09', '等效电阻窗口不满足要求', detail,
+                     check_id=check['id'], citation=check['citation'], calculation=equivalent)
         else:
-            self.record_pass('Rule-09', check, detail)
+            self.record_pass('Rule-09', check, detail,
+                             scope='指定两网间直接电阻的等效值；不含总线电平/上升时间',
+                             calculation=equivalent)
 
     def _bias_result(self, check, rule):
         net = self.target_net(check)
-        if not net:
-            self.add(
-                rule, '目标引脚无网络',
-                f"{check.get('node') or check.get('net')}；{self._citation(check)}",
-                check_id=check['id'], citation=check['citation'])
-            return False
-        pulls = self.pulls(net)
         required = check.get('required_default') or check.get('required')
-        states = {p['state'] for p in pulls}
-        problems = []
-        unknown = []
+        if not net or net not in self.nets:
+            self.add(rule, '目标引脚无网络', str(check.get('node') or net),
+                     check_id=check['id'], citation=check['citation'])
+            return False
         if required == 'float':
-            node = check.get('node')
-            others = [x for x in self.nets.get(net, []) if x != node]
+            if not check.get('node'):
+                self.add(rule, 'must-float 需要精确引脚', net, kind='CANDIDATE',
+                         check_id=check['id'], citation=check['citation'])
+                return False
+            others = [x for x in self.nets[net] if x != check['node']
+                      and not self.parts.get(x.split('.')[0], {}).get('nc')]
             if others:
-                problems.append(f'must float，但同网还有 {others}')
-        elif required in {'high', 'low'} and required not in states:
-            problems.append(f'要求默认 {required}，实际 pulls={pulls}')
-        elif required in {'high', 'low'} and states == {'high', 'low'}:
-            unknown.append('同时存在上下拉，需结合阻值与输入阈值判定默认电平')
-        abs_max = check.get('abs_max_v')
-        if abs_max is not None:
-            for pull in pulls:
-                if pull['state'] != 'high':
-                    continue
-                if pull['voltage'] is None:
-                    unknown.append(f"{pull['other']} 电压未知")
-                elif pull['voltage'] > float(abs_max):
-                    problems.append(
-                        f"{pull['ref']} 上拉 {pull['voltage']}V > Abs Max "
-                        f"{float(abs_max):g}V")
-        detail = (
-            f"{net}: required={required}, pulls={pulls}; "
-            f"{self._citation(check)}")
-        if problems:
-            self.add(
-                rule, '引脚默认态/耐压违反 datasheet',
-                detail + '; ' + '; '.join(problems),
-                ref=(check.get('node') or '').split('.')[0] or None,
-                check_id=check['id'], citation=check['citation'])
+                self.add(rule, '要求无外部连接的引脚仍有连接', f'{net}: {others}',
+                         check_id=check['id'], citation=check['citation'])
+                return False
+            self.record_pass(rule, check, f'{net}: 无已装配的外部连接',
+                             scope='仅外部连接；不推断内部上拉/电压')
+            return True
+        analysis = check['voltage_analysis']
+        voltage = analysis['voltage_v']
+        threshold = check['vih_min_v'] if required == 'high' else check['vil_max_v']
+        compliant = voltage['min'] >= threshold if required == 'high' else voltage['max'] <= threshold
+        issues = []
+        if not compliant:
+            issues.append('电压窗口不满足保证逻辑门限；不等于每颗样品必然失效')
+        if check.get('abs_min_v') is not None and voltage['min'] < check['abs_min_v']:
+            issues.append('引脚电压窗口低于给定负向绝对最大额定')
+        if check.get('abs_max_v') is not None and voltage['max'] > float(check['abs_max_v']):
+            issues.append('引脚电压窗口超过给定正向绝对最大额定')
+        detail = (f"{net}: {required}, voltage={voltage}, threshold={threshold}V; "
+                  f"sample={analysis['sample_window_s']}s; {analysis['calculation']}")
+        if issues:
+            self.add(rule, '引脚保证条件不满足', detail + '; ' + '; '.join(issues),
+                     check_id=check['id'], citation=check['citation'], calculation=analysis)
             return False
-        if unknown:
-            self.add(
-                rule, '引脚默认态/耐压仍需补充判据',
-                detail + '; ' + '; '.join(unknown),
-                kind='CANDIDATE', check_id=check['id'],
-                citation=check['citation'])
-            return False
-        self.record_pass(rule, check, detail)
+        self.record_pass(rule, check, detail,
+                         scope='仅所述状态/采样窗口及给定逻辑门限/电压额定；注入电流另查',
+                         calculation=analysis)
         return True
 
     def _hot_pin_bias(self, check):
@@ -729,7 +621,7 @@ class Lint:
                 'Rule-14', '符号引脚映射与官方定义不符', detail, ref,
                 check_id=check['id'], citation=check['citation'])
         else:
-            self.record_pass('Rule-14', check, detail)
+            self.record_pass('Rule-14', check, detail, scope='仅 expected 列出的引脚及名称')
 
 
 def _table(by, keys):
@@ -795,7 +687,7 @@ def main():
                   ensure_ascii=False, indent=2)
         print(f'  -> {a.plan_json}')
 
-    lint = Lint(db, log, intent, evidence)
+    lint = Lint(db, log, intent, evidence, datasheet_audit)
     F = lint.run()
 
     # 分组键含 kind——同一条规则可同时产出 FINDING 与 CANDIDATE（如 Rule-13）
@@ -838,6 +730,7 @@ def main():
         pending = [list(item) for item in HOT_RULES
                    if item[0] not in lint.hot_executed]
         json.dump({'findings': F,
+                   'check_results': lint.results,
                    'passes': lint.passes,
                    'skipped': [list(s) for s in lint.skipped],
                    'hot_executed': sorted(lint.hot_executed),
