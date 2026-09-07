@@ -335,6 +335,23 @@ def validate_intent(intent):
                 errors.append(f'circuits.{field} 必须为非空字符串数组')
         if not _text(circuit.get('citation')):
             errors.append('circuits.citation 缺失')
+    requirements = intent.get('requirements', [])
+    if not isinstance(requirements, list):
+        errors.append('requirements 必须为数组')
+    else:
+        seen = set()
+        for item in requirements:
+            if not isinstance(item, dict):
+                errors.append('requirement 必须为 object')
+                continue
+            for key in ('id', 'text', 'citation', 'criterion'):
+                if not _text(item.get(key)):
+                    errors.append(f'requirement.{key} 缺失')
+            rid = item.get('id')
+            if _text(rid):
+                if rid in seen:
+                    errors.append(f'requirement id 重复: {rid}')
+                seen.add(rid)
     return errors
 
 
@@ -835,7 +852,32 @@ class ReviewPlanner:
                 required_inputs=missing,
                 reason='复审必须验证新旧网表与历史意见断言')
 
+    def plan_coverage(self):
+        for name, criterion in {
+            'input_consistency': '核对本轮输入版本、哈希、导出完整性与装配配置',
+            'requirements': '需求逐条拆解并与电路检查双向追溯，缺口不得隐藏',
+            'chains': '全部接口/电源/检测/使能/复位/时钟逐路终点与返回路径覆盖',
+            'states': '逐关键电路覆盖启动、复位、运行、掉电、外部带电及需求内故障状态',
+            'datasheets': '全部关键器件适用章节/errata及官方物理脚双向差集已审',
+            'history': '首审/复审已裁定，历史意见逐条复验并保留撤回/复发',
+        }.items():
+            self.add_check('coverage-' + name, {'feature': name}, criterion,
+                           'ER7', 'Expert Review', trigger=['coverage-protocol'])
+        for item in self.intent.get('requirements', []):
+            self.add_check('requirement', {'requirement_id': item['id'], 'feature': item['id']},
+                           item['criterion'], 'ER5', 'Expert Review',
+                           trigger=[item['citation'], item['text']])
+        # The declared inventory includes symbol pins omitted from connected nets.
+        for ref, part in sorted(self.db.get('parts', {}).items()):
+            if re.match(r'^(U|M|Q|D|J|P|CN)\d', ref, re.I) and not part.get('nc'):
+                self.add_check('physical-pin-inventory', {'ref': ref},
+                               '官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源',
+                               'ER1', 'Expert Review', readiness='WAITING_EVIDENCE',
+                               required_inputs=['official full pinout + exact MPN/package'],
+                               trigger=[f'refdes:{ref}'])
+
     def build(self):
+        self.plan_coverage()
         self.plan_features()
         self.plan_concrete_checks()
         self.plan_circuit_checks()

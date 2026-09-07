@@ -55,23 +55,13 @@
   `UNDETERMINED`。
 - 旧版仅有 `expect` 的 intent 仍可使用。
 
-## 输入：datasheet-audit.json
-
-先运行 scripts/audit_datasheets.py。该文件提供逐物料状态和 agent_requests；
-完整格式与 agent 写回协议见 datasheet-resolution-schema.md。提供该输入后，逐物料
-状态覆盖 intent.materials.datasheets.available：
-
-- AVAILABLE：对应位号的 ER7 可进入 READY。
-- NEEDS_VERIFICATION / MISSING / NOT_FOUND：对应位号保持 WAITING_EVIDENCE。
-- NOT_FOUND：计划 diagnostics 增加 DATASHEET_NOT_FOUND，并透传 user_messages。
-
 ## 运行
 
 ```bash
 python3 scripts/plan_review.py db.json \
   --intent intent.json \
-  --datasheet-audit datasheet-audit.json \
   --evidence evidence.json \
+  --datasheet-audit datasheet-audit.json \
   --json review-plan.json
 ```
 
@@ -80,8 +70,8 @@ python3 scripts/plan_review.py db.json \
 ```bash
 python3 scripts/lint.py db.json \
   --intent intent.json \
-  --datasheet-audit datasheet-audit.json \
   --evidence evidence.json \
+  --datasheet-audit datasheet-audit.json \
   --plan-json review-plan.json \
   --json lint-result.json
 ```
@@ -104,15 +94,12 @@ python3 scripts/lint.py db.json \
 | `trigger` | 为什么实例化该检查项的可复现依据 |
 | `review_result` | 最终仅允许 `PASS` / `FAIL` / `INSUFFICIENT` / `NA` |
 | `evidence_confidence` | 独立证据置信度 A/B/C，不是审查结果 |
-| `handoff` | 独立下游动作，可与任一非 NA 结果并存 |
+| `handoff` | 独立下游动作，可与任一结果并存（例如原理图不适用但需下游执行） |
 
 `rule_plan[]` 给出 Rule-01～Rule-20 的规则级适用性和准备度；`checks[]` 再把
 规则或专家检查实例化到具体对象。两者分别回答“这类规则要不要跑”和“具体要审哪一项”。
 `aggregate_release_gate` 只声明逐项完成后的聚合门槛，不会用总体结论覆盖任何一条
 独立审查意见。
-
-顶层 datasheet_audit 回显其 summary、agent_requests 和 user_messages；执行 agent
-必须先完成联网任务并重跑覆盖审计，再把仍为 NOT_FOUND 的 user_messages 原样提示用户。
 
 ## 判定规则
 
@@ -147,7 +134,20 @@ python3 scripts/lint.py db.json \
 - 所有必需 handoff 已形成明确的接收方、约束和验证方法；
 - 复审时 Rule-17 的 Diff 与历史断言通过。
 
-## V1.6：电路、状态及证据依赖
+## V2 补充
+
+`intent.requirements` 可选数组，每项必须含唯一 `id`、`text`、`citation`、`criterion`。
+例如 `{"id":"REQ-01","text":"两个用户接口","citation":"需求 A §3","criterion":"两路完整链路到连接器"}`。
+计划逐条实例化；还增加 input_consistency/requirements/chains/states/datasheets/history 六类
+覆盖审计项，以及关键器件完整物理脚差集项。详细原理图检查仍须 Agent 补齐。
+READINESS 只是“可开始该步骤”，不能由全局 datasheets.available 证明每颗器件的所有条款已齐。
+ER1 完整物理脚审计须有准确型号/封装资料；同一 IC 的一个引脚证据不能把另一个引脚标 READY。
+
+原始计划允许 review_result=null；最终结果不可为 null，另存 review-results.json 并运行
+validate_review.py，见 review-results-schema.md。热跑新计划不能覆盖人工已完成结果。
+最终适用性变更需 applicability_evidence 留痕，不保留 APPLICABLE + NA 的矛盾组合。
+
+## 电气扩展：电路、状态及证据依赖
 
 hot 检查的 READY 必须通过与 lint 相同的依赖函数：当前网表指纹、实际文档指纹、
 准确型号/版本/定位、依赖物料 AVAILABLE 以及该规则必要的模型输入。缺失或过期
@@ -209,3 +209,6 @@ power-rail-budget 不再因 materials.datasheets/requirements 标为 available �
 
 数值是格式示例。可供电流要取限流最小值、温度降额、电感、连接路径等条件下的
 最弱保证能力；READY 仍需专家比较功率、瞬态及余量，不自动转为 PASS。
+
+逐物料审计通过 `--datasheet-audit` 传入时优先于全局材料布尔值。
+关键器件完整 pinout 检查仍需逐脚证据；AVAILABLE 只证明资料身份已核实。

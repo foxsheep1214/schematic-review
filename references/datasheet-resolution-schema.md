@@ -73,7 +73,7 @@ intent.materials.datasheets.available 这个全局布尔值，并按位号控制
       "status": "FOUND",
       "identity_verified": true,
       "source_kind": "network",
-      "path": "/tmp/codex-work/<task>/datasheets/LM5069.pdf",
+      "path": "<项目审查目录>/evidence/datasheets/LM5069.pdf",
       "source_url": "https://www.ti.com/lit/ds/symlink/lm5069.pdf",
       "document_model": "LM5069MM-2/NOPB",
       "document_version": "SNVS452G",
@@ -122,7 +122,7 @@ Agent 必须把 datasheet-audit.json.user_messages 原样呈现给用户，并�
 
 不得用同系列、近似后缀、聚合站参数或模型常识替代缺失 datasheet。
 
-## V1.6 按参数依赖补齐物料
+## 按参数依赖补齐物料
 
 默认仍审计已装配 U/M/Q/D。需要电感 Isat/DCR、保险丝时间电流曲线、晶体 ESR/CL、
 连接器组合电流/引脚、电容偏压/ESR 或电阻额定/公差时，用 --require-ref REF（可重复）
@@ -133,3 +133,6 @@ VALUE 优先仅用于生成检索候选；BOM 中仅有通用阻容值时先解�
 “10K”当成已核实采购型号。AVAILABLE 表示该候选的文档已核实；用于参数验算前，
 evidence.basis.sources 还须记录确切的身份解释和实际文档指纹。文档覆盖系列时按
 订货表匹配实际后缀/封装，不要求系列文档标题逐字等于每个订货号。
+
+临时下载可放 /tmp；最终引用的 PDF、审计及补取记录须保存到项目审查目录，并更新文档
+路径。文档内容不变时指纹不变；路径不存在会使热跑保持待核，不能只交临时目录中的证据。

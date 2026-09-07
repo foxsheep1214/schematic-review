@@ -1,4 +1,4 @@
-# ER1 热跑证据契约（schema_version=1，V1.6 扩展）
+# ER1 热跑证据契约（schema_version=1，V2.1 保留电气扩展）
 
 旧 JSON 可读取；缺少新依赖、保证范围或状态时不执行热跑，输出逐项
 INSUFFICIENT。不自动填 1% 电阻公差、零 Vref 误差、零偏置电流或稳态采样。

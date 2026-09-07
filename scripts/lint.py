@@ -10,8 +10,8 @@ AC0 Automated Check（自动检查）——机械、可穷举的规则全量扫�
         [--plan-json review-plan.json] [--json out.json]
 
 **输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、补偿网络、
-DNP 选项、被删外设的引出脚、工具伪网络）由执行 agent 逐条排除。实践中命中
-数百条而真问题为零是常态——AC0 的职责是保证"没漏看"，不是"看对了"。
+DNP 选项、被删外设的引出脚、工具伪网络）由执行 agent 逐条排除。
+规则依赖命名和已知图结构；零命中不表示检查完整或电气通过。
 
 电源追踪只把实际输出脚或已声明的外部供电节点当作来源候选。
 电感/磁珠/保险丝/0R 是导通边；二极管和 MOS 需要对应状态的有向模型。
@@ -192,7 +192,7 @@ class Lint:
         queue, seen = [(net, [])], set()
         while queue:
             current, path = queue.pop(0)
-            if current in seen or current in GNDS:
+            if current in seen or current in GNDS or current in self.pseudo:
                 continue
             seen.add(current)
             for node in self.nets.get(current, []):
@@ -428,6 +428,9 @@ class Lint:
 
         # 导出日志：No_connect 被忽略 —— 免费证据，别丢
         if self.log:
+            for line in self.log.splitlines():
+                if re.search(r'ERROR\s*\(|Aborting Netlisting', line, re.I):
+                    self.add('INPUT-EXPORT', '网表导出错误/中止，核实是否为本次有效导出', line)
             ig = re.findall(
                 r'"No_connect" property on Pin "([^"]+)" ignored.*?net "([^"]+)"',
                 self.log)
@@ -735,6 +738,8 @@ def main():
                    'skipped': [list(s) for s in lint.skipped],
                    'hot_executed': sorted(lint.hot_executed),
                    'hot_pending': pending,
+                   'hot_uncovered_instances': [x['id'] for x in review_plan['checks']
+                       if x.get('rule') in HOT_RULE_IDS and x['readiness'] != 'READY'],
                    'review_plan': review_plan,
                    'coverage': {
                        'pintype_available': bool(db.get('pintype')),
