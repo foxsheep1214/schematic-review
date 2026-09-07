@@ -7,6 +7,8 @@
 ## 顶层字段
 
 - `schema_version`: 2。
+- `remediation_version`: 新报告必须为1；要求每项finding包含详细`remediation`，字段及
+  示例见 [remediation-guide.md](remediation-guide.md)。旧v2报告可不填，仅用于兼容校验。
 - `plan_digest` / `db_digest`: Python `validate_review.fingerprint()` 对完整 JSON 对象排序并
   标准序列化后的 SHA-256；不是文件原始字节哈希。输入文件本身哈希另在 input-manifest 中。
 - `checks`: 与计划 ID 集合一致的全部最终结果。
@@ -65,16 +67,23 @@ P0 FAIL 即使有接受记录仍不准出。P0/P1 潜在未知默认阻断，不
 DEFECT 与 FAIL 检查的 finding_id 双向引用；一个根因只用一个 ID。
 IMPROVEMENT 仅 P3，关联的实际判据必须已 PASS；待核事项不能混为改善。
 
+`recommendation`保留为总表摘要；`remediation`是可执行的逐项修改说明，不能相互替代。
+包含准备度、前提/取得方法、旧→新操作、连接端点、规格/依据、联动ID及编辑/计算验收。
+顶层声明`remediation_version: 1`时自动校验；`--require-actionable`要求声明存在，防止
+遗漏整组字段。READY不允许未决输入、候选/TBD参数或待完成设计步骤；它只表示编辑细节齐全。
+
 ## 汇总与命令
 
 汇总分别输出检查行数/PASS/FAIL/INSUFFICIENT/NA，以及唯一缺陷数量/P0–P3 和可选改善数。
 不把多个 FAIL 行当多个致命项。历史修复/撤回记录放报告历史节，当前 findings 只保留当前项。
 
-    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --json review-gate.json
+    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --json review-gate.json
 
 退出 0 表示**台账格式/一致性有效**，即使板卡结论 NO_GO 也可正常交付报告；2 表示台账有错。
 CI/冻结门使用 `--require-release`，NO_GO 也退出 2。GO/CONDITIONAL_GO 仍须工程负责人核实。
 空计划、遗漏对象、C 写 PASS、NA 冲突、无位置/改法、虚假汇总和陈旧基线均被拒绝。
+`remediation_validation`报告是否启用详细改法校验及三类准备度数量；不计入缺陷严重度，
+也不把详细方案当已修复。脚本不能识别填满字段却仍含糊/错误的指令，Agent须逐步核对。
 
 ## AC0 候选处置核对
 

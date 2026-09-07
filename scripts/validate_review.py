@@ -8,6 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+from validate_remediation import validate_remediation, READINESS
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -35,7 +36,7 @@ def fingerprint(data):
     return hashlib.sha256(encoded).hexdigest()
 
 
-def validate_review(plan, report, db=None, lint_runs=None):
+def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -58,6 +59,11 @@ def validate_review(plan, report, db=None, lint_runs=None):
         return {"valid": False, "errors": ["plan/results must be objects"],
                 "release": "NO_GO", "blockers": ["invalid input"]}
     require(report.get("schema_version") == 2, "results.schema_version must be 2")
+    remediation_version = report.get("remediation_version")
+    actionable = require_actionable or "remediation_version" in report
+    if actionable:
+        require(type(remediation_version) is int and remediation_version == 1,
+                "remediation_version must be 1 for actionable instructions")
     require(report.get("plan_digest") == fingerprint(plan), "plan_digest mismatch")
     if db is not None:
         if db.get('integrity', {}).get('self_check_passed') is False or db.get('export_errors'):
@@ -143,6 +149,10 @@ def validate_review(plan, report, db=None, lint_runs=None):
                 require(evidence(h.get("evidence")), f"{key}: handoff acceptance/verification needs record")
 
     for fid, item in findings.items():
+        if actionable:
+            errors.extend(validate_remediation(fid, item.get("remediation"), set(findings)))
+        elif "remediation" in item:
+            require(False, f"{fid}: remediation requires top-level remediation_version")
         require(item.get("severity") in tuple(SEVERITIES), f"{fid}: invalid severity")
         require(item.get("kind") in ("DEFECT", "IMPROVEMENT"), f"{fid}: invalid finding kind")
         require(ids(item.get("check_ids")), f"{fid}: check_ids required")
@@ -236,8 +246,12 @@ def validate_review(plan, report, db=None, lint_runs=None):
     release = "NO_GO" if errors or blockers else ("CONDITIONAL_GO" if accepted else "GO")
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")
+    repair_counts = {state: sum(isinstance(x.get("remediation"), dict) and
+                    x["remediation"].get("readiness") == state for x in findings.values())
+                    for state in READINESS}
     return {"valid": not errors, "errors": errors, "blockers": blockers,
-            "release": "NO_GO" if errors else release, "summary": computed}
+            "release": "NO_GO" if errors else release, "summary": computed,
+            "remediation_validation": {"enforced": actionable, "by_readiness": repair_counts}}
 
 
 def main():
@@ -248,11 +262,14 @@ def main():
     parser.add_argument("--json")
     parser.add_argument("--lint", action="append", help="cold/hot lint JSON; repeat for each run")
     parser.add_argument("--require-release", action="store_true")
+    parser.add_argument("--require-actionable", action="store_true",
+                        help="require detailed repair instructions for every finding")
     args = parser.parse_args()
     try:
         read = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))
         result = validate_review(read(args.plan), read(args.results), read(args.db) if args.db else None,
-                                 [read(x) for x in args.lint] if args.lint else None)
+                                 [read(x) for x in args.lint] if args.lint else None,
+                                 require_actionable=args.require_actionable)
     except (ValueError, OSError, TypeError) as exc:
         result = {"valid": False, "release": "NO_GO", "errors": [str(exc)]}
     if args.json:

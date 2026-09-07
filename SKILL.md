@@ -5,7 +5,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 
 # 电路原理图系统审查
 
-> V2.0｜需求追溯、对象覆盖、工况审查、严重度校准、结果校验。
+> V2.1｜需求追溯、对象覆盖、工况审查、严重度校准、面向新手的修改步骤与结果校验。
 
 目标是在给定资料、工况和原理图边界内，系统寻找连接错误、参数/额定值不合理、功能遗漏、
 要求偏离及可预见的异常状态问题，提出能执行和复验的修改建议。不能承诺发现物理电路的
@@ -22,8 +22,10 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 3. **逐项覆盖**：需求、全部页面、器件/物理脚、电源轨、每路接口、检测/使能链、装配选项、
    运行状态及历史意见均有台账。按功能识别关键器件，不能只查 U 前缀。
    READY、热跑某规则一次、零命中都不表示完成。
-4. **修改可执行**：写清改哪个位号/脚、接哪张网、参数/精度/额定/贴装状态、修改后的验算、
-   受影响链路和复验标准。缺输入时给有条件方案，不编造精确料号/阻值。
+4. **新手能按步骤修改**：每项发现按 [remediation-guide.md](references/remediation-guide.md)
+   给修改准备度、定位、旧→新、顺序操作、参数依据和明确的通过标准。连线写到物理脚，
+   明确哪些旧连接要断开；新增件给两端接法和规格，不能止于“加上拉/加保护/参考手册”。
+   缺输入时给取得方法、计算/选择步骤及条件方案，不编造精确料号/阻值或空闲 GPIO。
 
 ## 结果与分级
 
@@ -136,12 +138,18 @@ PCB 阻抗/间距/回流和实测约束独立 HANDOFF，边界见 [scope-boundar
 
 ### 10. 报告、校验与闭环
 
+先读 [remediation-guide.md](references/remediation-guide.md)，将全部发现展开为逐项修改说明。
+简单文字修正可用一步；多支路/控制电路给修改前后连接表或小图。参数状态与修改准备度
+必须一致；“可直接修改”仅指原理图编辑细节齐全，不表示已改、可上电或整板准出。
 按 [report-template.md](references/report-template.md) 形成报告与持久化 `review-results.json`。
-契约见 [review-results-schema.md](references/review-results-schema.md)。校验覆盖及汇总后交付：
+新报告设置 `remediation_version: 1`，每项包含 `remediation`；契约见
+[review-results-schema.md](references/review-results-schema.md)。校验覆盖、修改说明及汇总后交付：
 
-    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --json review-gate.json
+    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --json review-gate.json
 
 校验器检查记录完整性/追溯/分级/准出逻辑，不替代电气判断，不证明未知缺陷为零。
+交付前再按修改说明逐步演算一次：读者能否找到位置、知道删/改/加什么、接到哪里、
+采用什么规格、核对什么结果？任一答案仍需猜测就补充说明或降低修改准备度。
 已完成可做工作但材料不足时可交受限报告，结论仍为不准出。不能把未完成关键前提藏进
 “有条件准出”。接受风险须有责任方明确记录，不能把 FAIL 改为 PASS。
 
