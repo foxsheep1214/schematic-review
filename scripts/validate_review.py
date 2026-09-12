@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import sys
 from validate_remediation import validate_remediation, READINESS
+from electrical_contract import db_fingerprint
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -220,6 +221,21 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 'lint_reviews must match supplied cold/hot runs')
         for run in lint_runs:
             digest = fingerprint(run)
+            run_checks = {}
+            if isinstance(run, dict) and 'review_plan' in run:
+                run_plan = run['review_plan']
+                require(isinstance(run_plan, dict), f'{digest}: invalid lint review_plan')
+                if isinstance(run_plan, dict):
+                    run_checks = index(run_plan.get('checks'), f'{digest}.review_plan.checks')
+                    if db is not None and 'db_sha256' in run_plan:
+                        require(run_plan['db_sha256'] == db_fingerprint(db),
+                                f'{digest}: lint plan belongs to another netlist')
+                    for key, planned in run_checks.items():
+                        require(key in expected, f'{digest}: final plan omits lint check {key}')
+                        if key in expected:
+                            fields = ('rule', 'object', 'criterion', 'evidence_check_id', 'parent_check_id')
+                            require(all(planned.get(k) == expected[key].get(k) for k in fields),
+                                    f'{key}: final plan changed the lint check identity/criterion')
             findings_list = run.get('findings', []) if isinstance(run, dict) else run
             if not isinstance(findings_list, list):
                 require(False, 'invalid lint findings list')
@@ -233,6 +249,14 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             for number, linked in dispositions.items():
                 require(ids(linked) and all(x in checks for x in linked),
                         f'{digest}[{number}]: missing/unknown result check')
+                if isinstance(number, str) and number.isdecimal() and int(number) < len(findings_list):
+                    finding = findings_list[int(number)]
+                    evidence_id = finding.get('check_id') if isinstance(finding, dict) else None
+                    if evidence_id and run_checks:
+                        targets = {k for k, item in run_checks.items()
+                                   if item.get('evidence_check_id') == evidence_id}
+                        require(bool(targets) and ids(linked) and targets.issubset(linked),
+                                f'{digest}[{number}]: hot candidate must link its state checks')
 
     counts = dict(Counter(x.get("review_result") for x in checks.values()
                           if isinstance(x.get("review_result"), str)))

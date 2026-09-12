@@ -29,23 +29,10 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 
 ## 结果与分级
 
-先读 [severity-calibration.md](references/severity-calibration.md)。各维度互不替代：
-
-| 维度 | 取值 |
-|---|---|
-| `review_result` | PASS / FAIL / INSUFFICIENT / NA |
-| 已确认缺陷 `severity` | P0 致命 / P1 严重 / P2 一般 / P3 建议 |
-| `evidence_confidence` | A 直接可复现 / B 有依据的工程推导 / C 尚缺关键证据 |
-| 待核项 `potential_severity` | 潜在后果级别，不能计入已确认缺陷数量 |
-| 关闭状态 | OPEN / FIXED_VERIFIED / ACCEPTED / RETRACTED |
-| `handoff` | 独立 OPEN / ACCEPTED / VERIFIED，可与任何结果并存 |
-
-P0：已证实的危险电气应力、损坏风险、关键安全保护失效或必需启动/核心链路断开。
-P1：必须实现的功能/性能缺失，或工作范围、启动保证、强制接口条件不满足。
-P2：局部功能、非关键裕量、测试维护或器件数据一致性的实际问题。
-P3：符合已知要求后的可选改进或不影响电气的图纸卫生。
-依据后果、暴露工况、独立保护与需求重要性定级，不能凭规则号或 must 一词定级。
-“观察/待确认”是队列，不能一律定为最低等级。PASS/FAIL 不得以 C 为依据。
+先读 [severity-calibration.md](references/severity-calibration.md)，统一使用其中的 P0–P3
+分级、A/B/C 置信度和准出政策；机器字段见 [review-results-schema.md](references/review-results-schema.md)。
+结果为 PASS / FAIL / INSUFFICIENT / NA；缺陷、潜在后果、关闭状态和 HANDOFF 分开记录。
+待核项不能计入已确认缺陷，PASS/FAIL 不得以 C 为依据，P0 不能通过接受风险放行。
 
 ## 执行流程
 
@@ -81,12 +68,11 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事。`nc` 是解析标
 
 ### 2. AC0 计划与冷跑
 
-    python3 scripts/plan_review.py db.json --intent intent.json --json review-plan.json
-    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --json lint-cold.json
+    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan-cold.json --json lint-cold.json
 
 读 [review-plan-schema.md](references/review-plan-schema.md) 和 [lint-rules.md](references/lint-rules.md)。
 补齐命名启发式未发现的对象/需求/工况。排除候选须有反证；无特征不等于 NA。
-分类错误时保留原计划，记录新适用性与出处，不能保留 APPLICABLE 又写 NA。
+人工补查项加入 review-plan-cold.json；保留 lint-cold.json 中的原始快照。适用性变更记出处。
 
 ### 3. ER1 身份、官方条款与热跑
 
@@ -106,12 +92,14 @@ strap、模式、应用计算、封装订货、errata；保留“文档章节→
 Agent 完成资料核对/补取并写出 `datasheet-resolution.json` 后，纳入判据依赖再热跑：
 
     python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --evidence evidence.json --json datasheet-audit.json
-    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --evidence evidence.json --datasheet-audit datasheet-audit.json --plan-json review-plan-hot.json --json lint-hot.json
+    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --evidence evidence.json --datasheet-audit datasheet-audit.json --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json
 
 证据格式见 [datasheet-evidence-schema.md](references/datasheet-evidence-schema.md)。自动结果只覆盖
 输入的具体对象与判据，未覆盖实例仍待查。热跑证据须绑定当前网表/物料、装配及状态、
 文档内容指纹；关键 R/C/L/F/Y/J 的参数按需纳入依赖。资料未 AVAILABLE、指纹过期、
-公差/负载/采样模型缺失时，计划和执行均保持待核。保存冷/热计划，不能覆盖已填的最终结果。
+公差/负载/采样模型缺失时，计划和执行均保持待核。合并后的 review-plan.json 是唯一最终计划：
+保留冷计划和人工补查项，热跑按状态展开子项。结果独立填写，旧结果不能自动传给新子项；
+新增人工项继续加入最终计划。跨网表版本的旧计划不能自动合并，迁移规则见 review-plan-schema。
 
 ### 4. ER2 电源树与状态
 
@@ -151,16 +139,16 @@ PCB 阻抗/间距/回流和实测约束独立 HANDOFF，边界见 [scope-boundar
 
 ### 10. 报告、校验与闭环
 
-先读 [remediation-guide.md](references/remediation-guide.md)，将全部发现展开为逐项修改说明。
-简单文字修正可用一步；多支路/控制电路给修改前后连接表或小图。参数状态与修改准备度
-必须一致；“可直接修改”仅指原理图编辑细节齐全，不表示已改、可上电或整板准出。
-按 [report-template.md](references/report-template.md) 形成报告与持久化 `review-results.json`。
+按 [remediation-guide.md](references/remediation-guide.md) 写全部发现的修改步骤，再按
+[report-template.md](references/report-template.md) 展示；参数、准备度与验收须相符。
+最终结果独立保存为 `review-results.json`，绑定合并后的最终计划，不能从 Lint 自动造 PASS。
 新报告设置 `remediation_version: 1`，每项包含 `remediation`；契约见
 [review-results-schema.md](references/review-results-schema.md)。校验覆盖、修改说明及汇总后交付：
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --json review-gate.json
 
-校验器检查记录完整性/追溯/分级/准出逻辑，不替代电气判断，不证明未知缺陷为零。
+校验器对账全部冷/热计划检查及热候选的状态关联；遗漏热跑子项或人工补查项会被拒绝。
+退出 0 只表示台账有效；冻结时再加 `--require-release`，准出条件统一见 severity-calibration。
 交付前再按修改说明逐步演算一次：读者能否找到位置、知道删/改/加什么、接到哪里、
 采用什么规格、核对什么结果？任一答案仍需猜测就补充说明或降低修改准备度。
 已完成可做工作但材料不足时可交受限报告，结论仍为不准出。不能把未完成关键前提藏进

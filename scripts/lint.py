@@ -648,6 +648,7 @@ def main():
     ap.add_argument('--old-db', help='复审旧版 db.json（用于执行计划准备度）')
     ap.add_argument('--claims', help='历史评审断言 JSON（用于执行计划准备度）')
     ap.add_argument('--plan-json', help='单独写出 AC0 逐项执行计划 JSON')
+    ap.add_argument('--merge-plan', help='合入同版旧计划的补查项；结果仍在独立台账中复核')
     ap.add_argument('--json', help='把完整命中写入 JSON')
     a = ap.parse_args()
 
@@ -674,11 +675,15 @@ def main():
         if path and not os.path.isfile(path):
             sys.exit(f'[FATAL] {label} 文件不存在: {path}')
 
-    review_plan = build_review_plan(
-        db, intent, evidence, a.review_mode,
-        old_db_available=bool(a.old_db),
-        claims_available=bool(a.claims),
-        datasheet_audit=datasheet_audit)
+    previous_plan = json.load(io.open(a.merge_plan, encoding='utf-8')) if a.merge_plan else None
+    try:
+        review_plan = build_review_plan(
+            db, intent, evidence, a.review_mode,
+            old_db_available=bool(a.old_db),
+            claims_available=bool(a.claims),
+            datasheet_audit=datasheet_audit, previous_plan=previous_plan)
+    except ValueError as error:
+        sys.exit(f'[FATAL] {error}')
     summary = review_plan['summary']
     print('=== AC0 检查适用性与执行计划 ===')
     print(f"  checks={summary['checks_total']}  "

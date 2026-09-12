@@ -22,14 +22,10 @@ basis 包含：
 
 ```sh
 python3 scripts/electrical_contract.py db.json --document /tmp/codex-work/task/datasheets/part.pdf
-python3 scripts/audit_datasheets.py db.json --evidence evidence.json \
-  --require-ref L1 --require-ref F1 --resolution datasheet-resolution.json \
-  --json datasheet-audit.json
-python3 scripts/plan_review.py db.json --intent intent.json --evidence evidence.json \
-  --datasheet-audit datasheet-audit.json --json review-plan.json
-python3 scripts/lint.py db.json --intent intent.json --evidence evidence.json \
-  --datasheet-audit datasheet-audit.json --json lint.json
 ```
+
+资料审计、计划合并与热跑命令统一见 [SKILL.md](../SKILL.md)；额外关键物料通过
+`audit_datasheets.py --require-ref L1 --require-ref F1` 加入依赖，相关来源仍须写回 evidence。
 
 audit 按需覆盖依赖位号。NOT_FOUND 必须先记录 LCSC/立创与原厂检索；MISSING/
 NEEDS_VERIFICATION/NOT_FOUND 均不能让依赖检查变 READY。无关物料缺资料不阻断

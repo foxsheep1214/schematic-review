@@ -423,12 +423,13 @@ def _differential_pairs(db):
 class ReviewPlanner:
     def __init__(self, db, intent=None, evidence=None, review_mode=None,
                  old_db_available=False, claims_available=False,
-                 datasheet_audit=None):
+                 datasheet_audit=None, previous_plan=None):
         self.db = db
         self.db_sha256 = db_fingerprint(db)
         self.intent = intent or {}
         self.evidence = evidence or {}
         self.datasheet_audit = datasheet_audit
+        self.previous_plan = previous_plan
         self.review_mode = (
             review_mode or self.intent.get('review_mode') or 'first')
         self.old_db_available = old_db_available
@@ -479,6 +480,10 @@ class ReviewPlanner:
         }
         matches = self.matching_evidence(rule, obj) if executor == 'AC0-HOT' else []
         if matches:
+            # Retain the cold check as a coverage parent; state children carry the individual verdicts.
+            item['role'] = 'coverage_parent'
+            item['aggregation'] = '逐状态子检查完成后汇总，不能替代子项结果'
+            self.checks.append(item)
             for evidence in matches:
                 child = deepcopy(item)
                 child_base = child['id'] + '.' + _slug(evidence['id'])
@@ -489,6 +494,9 @@ class ReviewPlanner:
                 child['id'] = child_id
                 self._ids.add(child_id)
                 child['evidence_check_id'] = evidence['id']
+                child['parent_check_id'] = item['id']
+                child.pop('role', None)
+                child.pop('aggregation', None)
                 child['object']['state'] = (evidence.get('basis') or {}).get('state')
                 gaps = readiness_gaps(self.db, evidence, self.datasheet_audit, self.db_sha256)
                 child['readiness'] = 'WAITING_EVIDENCE' if gaps else 'READY'
@@ -876,11 +884,67 @@ class ReviewPlanner:
                                required_inputs=['official full pinout + exact MPN/package'],
                                trigger=[f'refdes:{ref}'])
 
+    def plan_explicit_evidence(self):
+        # Explicit targets must not disappear because their nets/pins lack a familiar name.
+        for evidence in self.evidence.get('checks', []):
+            if any(x.get('evidence_check_id') == evidence['id'] for x in self.checks):
+                continue
+            obj = {k: evidence[k] for k in ('node', 'net', 'ref') if evidence.get(k)}
+            gaps = readiness_gaps(self.db, evidence, self.datasheet_audit, self.db_sha256)
+            item = self.add_check('provided-evidence', obj,
+                '按对应 evidence_check_id 的条款核对显式目标与状态',
+                'ER4' if evidence['rule'] == 'Rule-08' else 'ER1', 'AC0-HOT',
+                readiness='WAITING_EVIDENCE' if gaps else 'READY',
+                required_inputs=gaps, rule=evidence['rule'])
+            if not item.get('evidence_check_id'):
+                # Invalid coordinates remain visible as waiting work, not fabricated matches.
+                item['evidence_check_id'] = evidence['id']
+                item['object']['state'] = (evidence.get('basis') or {}).get('state')
+
+    def merge_previous_checks(self):
+        """Carry manual checks forward on the same electrical baseline, never carry results."""
+        previous = self.previous_plan
+        if previous is None:
+            return
+        if not isinstance(previous, dict) or previous.get('db_sha256') != self.db_sha256:
+            raise ValueError('merge plan must be bound to the current db_sha256; regenerate/review stale plans')
+        checks = previous.get('checks')
+        if not isinstance(checks, list):
+            raise ValueError('merge plan checks must be an array')
+        current = {item['id']: item for item in self.checks}
+        seen = set()
+        identity = ('check', 'rule', 'object', 'criterion', 'stage', 'executor', 'evidence_check_id', 'parent_check_id')
+        for item in checks:
+            if not isinstance(item, dict) or not _text(item.get('id')) or item['id'] in seen:
+                raise ValueError('merge plan contains an invalid or duplicate check id')
+            key = item['id']
+            seen.add(key)
+            if (not all(_text(item.get(k)) for k in ('check', 'criterion', 'stage', 'executor'))
+                    or not isinstance(item.get('object'), dict)
+                    or item.get('applicability') not in APPLICABILITY
+                    or item.get('readiness') not in READINESS
+                    or not isinstance(item.get('handoff'), dict)
+                    or not isinstance(item['handoff'].get('required'), bool)):
+                raise ValueError(f'{key}: incomplete merged check definition')
+            if key in current:
+                if item['handoff'] != current[key]['handoff']:
+                    raise ValueError(f'{key}: handoff details changed; resolve the plan explicitly')
+                if any(item.get(field) != current[key].get(field) for field in identity):
+                    raise ValueError(f'{key}: check identity/criterion changed; resolve the plan explicitly')
+                continue
+            # Final results live in review-results.json. Do not turn old plan annotations into verdicts.
+            retained = deepcopy(item)
+            retained['review_result'] = 'NA' if retained.get('applicability') == 'NOT_APPLICABLE' else None
+            retained['evidence_confidence'] = None
+            self.checks.append(retained)
+
     def build(self):
         self.plan_coverage()
         self.plan_features()
         self.plan_concrete_checks()
         self.plan_circuit_checks()
+        self.plan_explicit_evidence()
+        self.merge_previous_checks()
         for material in (self.datasheet_audit or {}).get('materials', []):
             if material.get('status') == 'NOT_FOUND':
                 self.diagnostics.append({
@@ -897,6 +961,7 @@ class ReviewPlanner:
         return {
             'schema_version': 1,
             'generated_by': 'AC0 Applicability Discovery',
+            'db_sha256': self.db_sha256,
             'review_mode': self.review_mode,
             'result_model': {
                 'review_result': list(RESULT_STATUSES),
@@ -908,8 +973,10 @@ class ReviewPlanner:
                 'requirements': [
                     'no_unresolved_blocking_fail',
                     'no_unresolved_blocking_insufficient',
-                    'all_applicable_checks_executed_or_accepted',
-                    'required_handoffs_have_receiver_constraint_verification',
+                    'all_applicable_checks_have_reviewed_results',
+                    'p0_requires_verified_repair',
+                    'risk_acceptance_preserves_fail_or_insufficient_with_authorized_record',
+                    'required_handoffs_accepted_with_receiver_constraint_verification_and_evidence',
                     'revision_diff_and_claims_pass_when_applicable',
                 ],
             },
@@ -944,14 +1011,14 @@ class ReviewPlanner:
 
 def build_review_plan(db, intent=None, evidence=None, review_mode=None,
                       old_db_available=False, claims_available=False,
-                      datasheet_audit=None):
+                      datasheet_audit=None, previous_plan=None):
     if evidence is not None:
         errors = validate_evidence(evidence)
         if errors:
             raise ValueError('evidence.json 无效: ' + '; '.join(errors))
     return ReviewPlanner(
         db, intent, evidence, review_mode, old_db_available,
-        claims_available, datasheet_audit).build()
+        claims_available, datasheet_audit, previous_plan).build()
 
 
 def main():

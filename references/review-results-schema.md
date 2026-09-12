@@ -1,7 +1,9 @@
 # 最终审查台账 v2 与机器校验
 
-`review-plan.json` 是待办，不是结果。最终结果另存 `review-results.json`，保证每个计划 ID
-恰好一条结果；补查项先加入计划，再记录结果。`validate_review.py` 只验证记录的一致性，
+`review-plan.json` 是合入冷跑、热跑及人工补查项的最终计划，不是结果。合并命令见
+[SKILL.md](../SKILL.md)，交接规则见 [review-plan-schema.md](review-plan-schema.md)。
+最终结果另存 `review-results.json`，每个最终计划 ID 恰好一条结果；补查先入计划再记录结果。
+`validate_review.py` 只验证记录的一致性，
 不能验证来源文字是否真实、计算是否合理或审查判据是否穷尽。
 
 ## 顶层字段
@@ -89,6 +91,9 @@ CI/冻结门使用 `--require-release`，NO_GO 也退出 2。GO/CONDITIONAL_GO �
 
 完整网表模式交付前用两次 `--lint` 提供冷/热完整 JSON；`lint_reviews` 数组每条含
 `run_digest=fingerprint(lint_json)` 与 `items`（从零开始的 finding 索引字符串→结果检查 ID 数组）。
-全部 FINDING/CANDIDATE/INFO 都有处置，不接受只复核前几项。没有热跑判据时保存运行了冷扫描
+全部 FINDING/CANDIDATE/INFO 都有处置，不接受只复核前几项。若 Lint 含 review_plan，
+其所有检查必须纳入最终计划且对象/判据保持一致；热候选还须关联 evidence_check_id 对应的
+状态子项，不能只挂到基础覆盖项。新生成的计划指纹必须匹配 --db；旧无快照的 Lint 仅兼容
+候选索引校验，不能声称核对了计划交接。没有热跑判据时保存运行了冷扫描
 但 hot_pending 未清的 lint-hot.json，相关缺证项仍为 INSUFFICIENT。
 不传 --lint 时校验器无法验证候选覆盖，不能声称通过此闸门。仅 PDF 模式明确 NA 并留依据。
