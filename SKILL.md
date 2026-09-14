@@ -143,12 +143,19 @@ PCB 阻抗/间距/回流和实测约束独立 HANDOFF，边界见 [scope-boundar
 按 [remediation-guide.md](references/remediation-guide.md) 写全部发现的修改步骤，再按
 [report-template.md](references/report-template.md) 展示；参数、准备度与验收须相符。
 最终结果独立保存为 `review-results.json`，绑定合并后的最终计划，不能从 Lint 自动造 PASS。
-新报告设置 `remediation_version: 1`，每项包含 `remediation`；契约见
+新报告设置 `remediation_version: 1` 和 `binding_version: 1`；每项发现包含 `remediation`，
+每条结果的 `binding.object`、`binding.criterion` 记录实际已审对象及判据，与最终计划逐项一致，
+同条 `evidence`、`rationale` 只支持这个对象、配置、工况和判据。复用结论/计算前核对物理脚、
+网络及要求，不能因 ID 相似、同一 IC 或同一功能组就移用。装配/等效值通过与电平失败可并存，
+总 FAIL 不能下传给未违反的窄判据。错配时返回该项原始资料重判，保留其他真实 FAIL；
+不得只复制计划字段或扩大 finding 的定位范围来迎合校验。定位同时列根因及实际受影响主对象。
+契约见
 [review-results-schema.md](references/review-results-schema.md)。校验覆盖、修改说明及汇总后交付：
 
-    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --json review-gate.json
+    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --json review-gate.json
 
 校验器对账全部冷/热计划检查及热候选的状态关联；遗漏热跑子项或人工补查项会被拒绝。
+绑定校验核对声明的对象/判据及发现定位，不读取引用原文来判断语义；字段相符仍需核实证据内容。
 退出 0 只表示台账有效；冻结时再加 `--require-release`，准出条件统一见 severity-calibration。
 交付前再按修改说明逐步演算一次：读者能否找到位置、知道删/改/加什么、接到哪里、
 采用什么规格、核对什么结果？任一答案仍需猜测就补充说明或降低修改准备度。

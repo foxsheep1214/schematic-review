@@ -37,7 +37,26 @@ def fingerprint(data):
     return hashlib.sha256(encoded).hexdigest()
 
 
-def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False):
+def primary_anchors(obj, db=None):
+    """Declared primary targets, not every contextual ref/net in a circuit group."""
+    refs, nets = set(), set()
+    if text(obj.get('ref')):
+        refs.add(obj['ref'])
+    if text(obj.get('net')):
+        nets.add(obj['net'])
+    node = obj.get('node')
+    if text(node):
+        if '.' in node:
+            refs.add(node.rsplit('.', 1)[0])
+        if isinstance(db, dict) and isinstance(db.get('pin2net'), dict):
+            net = db['pin2net'].get(node)
+            if text(net):
+                nets.add(net)
+    return refs, nets
+
+
+def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
+                    require_bindings=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -73,12 +92,35 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     expected = index(plan.get("checks"), "plan.checks")
     checks = index(report.get("checks"), "results.checks")
     findings = index(report.get("findings"), "findings")
+    bindings = require_bindings or 'binding_version' in report or any('binding' in x for x in checks.values())
+    if bindings:
+        require(type(report.get('binding_version')) is int and report['binding_version'] == 1,
+                'binding_version must be 1 for object/criterion/evidence bindings')
+    bound_count = 0
     require(bool(expected), "empty review plan")
     require(set(checks) == set(expected),
             f"check coverage mismatch: missing={sorted(set(expected)-set(checks))}, "
             f"unexpected={sorted(set(checks)-set(expected))}")
     accepted = False
     for key, item in checks.items():
+        if bindings and key in expected:
+            planned = expected[key]
+            binding = item.get('binding')
+            require(isinstance(planned.get('object'), dict) and text(planned.get('criterion')),
+                    f'{key}: bound plan requires object and non-empty criterion')
+            planned_object = planned.get('object')
+            coordinates_ok = isinstance(planned_object, dict) and all(
+                field not in planned_object or text(planned_object[field])
+                for field in ('ref', 'node', 'net'))
+            require(coordinates_ok, f'{key}: declared primary ref/node/net must be non-empty strings')
+            require(isinstance(binding, dict), f'{key}: binding requires reviewed object and criterion')
+            if isinstance(binding, dict):
+                object_ok = coordinates_ok and isinstance(binding.get('object'), dict) and (
+                    fingerprint(binding['object']) == fingerprint(planned['object']))
+                criterion_ok = text(binding.get('criterion')) and binding['criterion'] == planned.get('criterion')
+                require(object_ok, f'{key}: binding object differs from planned object/configuration/state')
+                require(criterion_ok, f'{key}: binding criterion differs from planned criterion')
+                bound_count += int(object_ok and criterion_ok)
         result, app = item.get("review_result"), item.get("applicability")
         require(isinstance(result, str) and result in RESULTS, f"{key}: invalid result")
         require(isinstance(app, str) and app in APPLICABILITY, f"{key}: invalid applicability")
@@ -168,10 +210,26 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if item.get("kind") == "DEFECT":
             require(any(checks[x].get("review_result") == "FAIL" and checks[x].get("finding_id") == fid
                         for x in linked if x in checks), f"{fid}: orphan defect")
+            if bindings:
+                require(len(linked) == len(set(linked)), f'{fid}: duplicate check link')
+                require(all(x in checks and checks[x].get('review_result') == 'FAIL' and
+                            checks[x].get('finding_id') == fid for x in linked),
+                        f'{fid}: every defect link must be its own FAIL check')
         else:
             require(item.get("severity") == "P3", f"{fid}: optional improvement must be P3")
             require(all(checks[x].get("review_result") == "PASS" for x in linked if x in checks),
                     f"{fid}: improvement requires compliant underlying check")
+        if bindings and isinstance(location, dict):
+            located_refs = set(location['refs']) if ids(location.get('refs')) else set()
+            located_nets = set(location['nets']) if ids(location.get('nets')) else set()
+            for key in linked:
+                obj = expected.get(key, {}).get('object')
+                if isinstance(obj, dict):
+                    refs, nets = primary_anchors(obj, db)
+                    require(refs.issubset(located_refs),
+                            f'{fid}/{key}: finding location omits checked ref(s) {sorted(refs-located_refs)}')
+                    require(nets.issubset(located_nets),
+                            f'{fid}/{key}: finding location omits checked net(s) {sorted(nets-located_nets)}')
 
     scope = report.get("scope_checks", {})
     require(isinstance(scope, dict) and set(scope) == SCOPE, "scope_checks must cover six audit dimensions")
@@ -275,6 +333,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     for state in READINESS}
     return {"valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
+            "binding_validation": {"enforced": bool(bindings), "bound_checks": bound_count},
             "remediation_validation": {"enforced": actionable, "by_readiness": repair_counts}}
 
 
@@ -288,12 +347,15 @@ def main():
     parser.add_argument("--require-release", action="store_true")
     parser.add_argument("--require-actionable", action="store_true",
                         help="require detailed repair instructions for every finding")
+    parser.add_argument("--require-bindings", action="store_true",
+                        help="require explicit reviewed-object/criterion bindings and finding target consistency")
     args = parser.parse_args()
     try:
         read = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))
         result = validate_review(read(args.plan), read(args.results), read(args.db) if args.db else None,
                                  [read(x) for x in args.lint] if args.lint else None,
-                                 require_actionable=args.require_actionable)
+                                 require_actionable=args.require_actionable,
+                                 require_bindings=args.require_bindings)
     except (ValueError, OSError, TypeError) as exc:
         result = {"valid": False, "release": "NO_GO", "errors": [str(exc)]}
     if args.json:

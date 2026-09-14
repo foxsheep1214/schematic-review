@@ -9,6 +9,7 @@
 ## 顶层字段
 
 - `schema_version`: 2。
+- `binding_version`: 新报告为1，逐检查声明已审对象/判据；旧报告可不填，仅用于兼容读取。
 - `remediation_version`: 新报告必须为1；要求每项finding包含详细`remediation`，字段及
   示例见 [remediation-guide.md](remediation-guide.md)。旧v2报告可不填，仅用于兼容校验。
 - `plan_digest` / `db_digest`: Python `validate_review.fingerprint()` 对完整 JSON 对象排序并
@@ -34,6 +35,10 @@
 ```json
 {
   "id": "ER3.PATH.U1-J1",
+  "binding": {
+    "object": {"refs": ["U1", "J1"], "nets": ["SENSE_A", "SENSE_B"], "state": "RUN"},
+    "criterion": "RUN 时 U1.4 与 J1.1 必须导通"
+  },
   "applicability": "APPLICABLE",
   "review_result": "FAIL",
   "evidence_confidence": "A",
@@ -46,6 +51,17 @@
   "handoff": {"required": false}
 }
 ```
+
+`binding.object`、`binding.criterion` 是实际已审范围，与同 ID 最终计划的完整 object、criterion
+一致（包括配置/状态及列表内容）；上例须有对应计划，不能移植到其他检查。`evidence` 和
+`rationale` 归属于这个范围；复用前核对原始资料，不从计划盲填绑定字段后沿用无关结论。
+计划判据需非空。只改变 `plan_digest` 不能使旧对象/旧判据的结果自动有效。
+声明的主坐标 `object.ref/node/net` 必须是非空字符串；不能用数组、空值或错误类型隐藏锚点。
+
+声明 `binding_version: 1` 或传 `--require-bindings` 时执行严格校验；版本缺失、布尔值冒充1、
+部分条目缺绑定、对象/判据错配均拒绝。出现 binding 但省略版本也拒绝，不能隐式降级。
+旧报告未声明且未传该参数时保留兼容，输出 `binding_validation.enforced=false`；
+不能把这个兼容结果描述为通过新绑定门。
 
 枚举定义见 severity-calibration.md。PASS/FAIL 只能 A/B，INSUFFICIENT 必须 C 并给
 `missing_inputs` 非空数组与 `potential_severity`；非 FAIL 不填 severity。
@@ -69,6 +85,20 @@ P0 FAIL 即使有接受记录仍不准出。P0/P1 潜在未知默认阻断，不
 DEFECT 与 FAIL 检查的 finding_id 双向引用；一个根因只用一个 ID。
 IMPROVEMENT 仅 P3，关联的实际判据必须已 PASS；待核事项不能混为改善。
 
+严格绑定模式下，DEFECT 的每个 check_ids 都必须是该 finding 的 FAIL，不能夹带 PASS、
+INSUFFICIENT 或另一个 finding 的检查；同一根因仍可关联多个真正失败的判据。
+location 除根因件还要覆盖各被检查的主对象：计划 object.ref、object.node 所属位号、
+object.net，以及提供 --db 时该 node 的当前网络。要求精确位号/网络，不能用共同电源、
+同一 IC 的其他脚或宽泛功能组代替；refs/nets 数组中的背景对象不被强制全部列入发现定位。
+无明确物理主对象的需求/覆盖检查不虚构位号，也不由此获得物理绑定证明。
+
+例如，STRAP 缺陷可关联 STRAP 判据及其需求，不能挂到已经满足的 EN 判据；发现的
+定位不能只为消除报错而补入 EN。返回 EN 的连接、阈值及工况重判该行，STRAP 的 FAIL
+和必要阻断仍保留。装配/等效值与低电平/上升时间是独立判据，不能互相代判。
+
+这是声明一致性防错，不是自然语言证据判读器：虚假/过宽定位、伪造绑定、同一物理脚的
+错误数值/参数、引用文字与主张不符仍需工程复核；不得声称能自动识别所有语义错配。
+
 `recommendation`保留为总表摘要；`remediation`是可执行的逐项修改说明，不能相互替代。
 包含准备度、前提/取得方法、旧→新操作、连接端点、规格/依据、联动ID及编辑/计算验收。
 顶层声明`remediation_version: 1`时自动校验；`--require-actionable`要求声明存在，防止
@@ -79,13 +109,14 @@ IMPROVEMENT 仅 P3，关联的实际判据必须已 PASS；待核事项不能混
 汇总分别输出检查行数/PASS/FAIL/INSUFFICIENT/NA，以及唯一缺陷数量/P0–P3 和可选改善数。
 不把多个 FAIL 行当多个致命项。历史修复/撤回记录放报告历史节，当前 findings 只保留当前项。
 
-    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --json review-gate.json
+    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --json review-gate.json
 
 退出 0 表示**台账格式/一致性有效**，即使板卡结论 NO_GO 也可正常交付报告；2 表示台账有错。
 CI/冻结门使用 `--require-release`，NO_GO 也退出 2。GO/CONDITIONAL_GO 仍须工程负责人核实。
 空计划、遗漏对象、C 写 PASS、NA 冲突、无位置/改法、虚假汇总和陈旧基线均被拒绝。
 `remediation_validation`报告是否启用详细改法校验及三类准备度数量；不计入缺陷严重度，
 也不把详细方案当已修复。脚本不能识别填满字段却仍含糊/错误的指令，Agent须逐步核对。
+`binding_validation` 报告是否启用绑定门及对象/判据一致的检查数；该数不是电气通过数。
 
 ## AC0 候选处置核对
 
