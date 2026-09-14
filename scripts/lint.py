@@ -28,9 +28,10 @@ from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
 from electrical_contract import db_fingerprint, readiness_gaps, validate_evidence
+from fractions import Fraction
 from itertools import product
 from plan_review import build_review_plan, validate_intent
-from solve_dividers import Solver, divider_window, parse_resistor
+from solve_dividers import Solver, divider_window, linear_feedback_window, parse_resistor
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
 RAIL_RE = re.compile(r'^(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d)', re.I)
@@ -469,30 +470,39 @@ class Lint:
     def _hot_divider(self, check):
         tolerance = check.get('resistor_tolerance')
         model = check.get('divider_model') or {}
-        solution = Solver(self.db, default_tol=tolerance, model=model).solve_net(check['net'])
-        if solution.get('status') != 'ok' or not solution.get('tolerances_complete'):
+        try:
+            if len({check['net'], model.get('source_net'), model.get('reference_net')}) != 3:
+                raise ValueError('FB、源端和参考地必须不同')
+            solver = Solver(self.db, default_tol=tolerance, model=model)
+            solution = solver.solve_net(check['net'])
+            vref = check['vref']
+            typ, minimum, maximum = (float(vref[k]) for k in ('typ', 'min', 'max'))
+            bias = model['bias_current_a']
+            if solution.get('status') == 'ok':
+                window = divider_window(solution, typ, minimum, maximum)
+                corners = [v * (1 + up / lo) + current * up * 1000
+                           for v, up, lo, current in product(
+                               (minimum, maximum), (solution['up']['min'], solution['up']['max']),
+                               (solution['lo']['min'], solution['lo']['max']),
+                               (bias['min'], bias['max']))]
+                window.update(min=min(corners), max=max(corners))
+                window['typ_note'] = 'typ 为零偏置标称值；min/max 包含偏置电流'
+            else:
+                network = solver.linear_network(check['net'])
+                # Newly supported networks require bindings for every resistor
+                # and ignored load, not only devices directly on the FB net.
+                expanded = dict(check, depends_on=sorted(
+                    set(check.get('depends_on') or []) | set(network['required_refs'])))
+                gaps = readiness_gaps(self.db, expanded, self.datasheet_audit, self.db_sha256)
+                if gaps:
+                    raise ValueError('节点网络参数来源未就绪：' + '; '.join(gaps))
+                window = linear_feedback_window(network, vref, bias)
+        except ValueError as error:
             self.add(
                 'Rule-08', '分压网络无法无歧义求解',
-                f"{check['net']}: {solution.get('reason') or '电阻公差缺失'}；{self._citation(check)}",
-                kind='CANDIDATE', check_id=check['id'],
-                citation=check['citation'])
+                f"{check['net']}: {error}；{self._citation(check)}",
+                kind='CANDIDATE', check_id=check['id'], citation=check['citation'])
             return
-        vref = check['vref']
-        if isinstance(vref, dict):
-            typ = float(vref['typ'])
-            minimum = float(vref.get('min', typ))
-            maximum = float(vref.get('max', typ))
-        else:
-            typ = minimum = maximum = float(vref)
-        window = divider_window(solution, typ, minimum, maximum)
-        bias = model['bias_current_a']
-        corners = [v * (1 + up / lo) + current * up * 1000
-                   for v, up, lo, current in product(
-                       (minimum, maximum), (solution['up']['min'], solution['up']['max']),
-                       (solution['lo']['min'], solution['lo']['max']),
-                       (bias['min'], bias['max']))]
-        window.update(min=min(corners), max=max(corners))
-        window['typ_note'] = 'typ 为零偏置标称值；min/max 包含偏置电流'
         expected = check['expected']
         low = float(expected.get('min', float('-inf')))
         high = float(expected.get('max', float('inf')))
@@ -500,7 +510,12 @@ class Lint:
             f"{check['net']}: Vout typ={window['typ']:.6g}V, "
             f"window=[{window['min']:.6g}, {window['max']:.6g}]V, "
             f"要求=[{low:g}, {high:g}]V；{self._citation(check)}")
-        if window['min'] < low or window['max'] > high:
+        if 'bounds_exact' in window:
+            outside = (('min' in expected and Fraction(window['bounds_exact']['min']) < Fraction(str(expected['min'])))
+                       or ('max' in expected and Fraction(window['bounds_exact']['max']) > Fraction(str(expected['max']))))
+        else:
+            outside = window['min'] < low or window['max'] > high
+        if outside:
             self.add(
                 'Rule-08', '分压最坏情况窗口不满足要求', detail,
                 kind='FINDING', check_id=check['id'],

@@ -31,4 +31,10 @@ V2.1。面向硬件原理图首审、冻结前检查和改版复审的 Agent ski
 [合成示例](examples/worked-example-industrial-gateway.md)。公开仓库只保存脱敏合成用例，
 真实原图、BOM、私有手册与过程产物留在项目目录。
 
+## 工具回归评测
+
+电路评测集、独立参考计算、ngspice 交叉验证及版本比较命令见
+[电路评测说明](evals/circuit_bench/README.md)。该评测只测声明范围内的工具能力，
+不代替真实项目审查或电路准出；首次基线保存在评测目录。
+
 MIT License，见 [LICENSE](LICENSE)。

@@ -50,8 +50,9 @@ def dependency_refs(db, check):
     """Mandatory target devices plus explicitly declared parameter dependencies.
 
 Do not fan out over a large supply rail. Extra devices on intermediate branches
-must be declared in depends_on by the analysis; the topology solver separately
-rejects unmodelled loads.
+must be declared in depends_on. The bounded Rule-08 linear fallback additionally
+extracts all resistor/ignored-load dependencies for both planning and execution;
+unsupported topology still belongs to the solver's INSUFFICIENT result.
     """
     refs = set(check.get('depends_on') or [])
     if check.get('ref'):
@@ -61,6 +62,18 @@ rejects unmodelled loads.
     net = check.get('net') or db.get('pin2net', {}).get(check.get('node'))
     refs.update(node.split('.')[0] for node in db.get('nets', {}).get(net, [])
                 if re.match(r'^(U|M|Q|D)\d', node, re.I))
+    if check.get('rule') == 'Rule-08' and isinstance(check.get('divider_model'), dict):
+        # Keep planning and hot execution aligned for the newly supported
+        # linear networks. Stop at explicit source/reference boundaries.
+        from solve_dividers import Solver
+        solver = Solver(db, default_tol=check.get('resistor_tolerance'), model=check['divider_model'])
+        try:
+            if solver.solve_net(net).get('status') != 'ok':
+                refs.update(solver.linear_network(net)['required_refs'])
+        except ValueError:
+            # Unsupported topology stays the solver's INSUFFICIENT outcome;
+            # retain all user-declared dependencies even when extraction fails.
+            pass
     return sorted(refs)
 
 

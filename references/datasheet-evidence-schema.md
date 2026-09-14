@@ -10,6 +10,8 @@ INSUFFICIENT。不自动填 1% 电阻公差、零 Vref 误差、零偏置电流�
 多个目标坐标必须一致；同网不同引脚不共享门限。depends_on 要列全参数来源，包括
 非目标 IC、输入负载、外部驱动及用于保证曲线/额定值的关键无源器件。
 脚本至少强制检查目标器件及目标网上的 U/M/Q/D；跨网的额外依赖由 agent 明确声明。
+Rule-08 新增节点分析路径对可完整提取的网络，自动将全部电阻与被忽略输入/C 纳入计划
+和热跑的来源依赖；遗漏、过期或未 AVAILABLE 均保持 WAITING_EVIDENCE/INSUFFICIENT。
 
 basis 包含：
 
@@ -65,9 +67,11 @@ NEEDS_VERIFICATION/NOT_FOUND 均不能让依赖检查变 READY。无关物料缺
 
 示例数值为合成输入，指纹和身份文字必须替换为实际证据；不能原样用于设计。
 电阻公差从各 VALUE 提取。resistor_tolerance 是有 BOM/采购规格支持时才可显式设置的
-统一回退值；不覆盖已写明的单颗公差。未知支路、多参考域、未解析电阻、共享电阻
-或递归截断会返回 INSUFFICIENT。ignored_nodes 只允许已说明输入负载的 U/M 和 DC
-下已证明可忽略的 C 节点，不支持用该字段绕过 Q/D。给定 reference_net 为计算的零点，
+统一回退值；不覆盖已写明的单颗公差。共享支路/桥式正电阻网络可在完整模型与来源绑定
+下走线性节点分析，规模、角点与数值边界见 [wca-formulas.md](wca-formulas.md)。
+未知支路、多参考域、0Ω、未解析电阻或超限继续 INSUFFICIENT。ignored_nodes 只允许
+已说明输入负载的 U/M 和 DC 下已证明可忽略的 C 节点，新节点路径的 U/M 必须位于 FB 网，
+不支持用该字段绕过中间输入电流或 Q/D。给定 reference_net 为计算的零点，
 它与实际负载地的偏差另建检查；不把 PGND/AGND 等名称视作同一网。
 
 ## Rule-09：无源连接与等效阻值
