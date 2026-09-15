@@ -82,7 +82,9 @@
 - 冷/热 Lint JSON 自带当次计划快照；最终校验要求这些检查全部出现在最终计划，热候选必须
   关联自己的状态子项。保存历史快照，不用最终计划覆盖它们。
 
-复审时增加 `--review-mode revision --old-db old-db.json --claims claims.json`。
+复审时增加 `--review-mode revision --old-db old-db.json --old-plan old-review-plan.json --claims claims.json`。
+新计划保存逐项依赖和当轮输入快照；变化关联、部分依赖扩大复验、历史消失项及结果绑定见
+[revision-impact-schema.md](revision-impact-schema.md)。旧文件“可用”的布尔值不代表已形成有效影响基线。
 
 ## 输出字段
 
@@ -163,6 +165,15 @@ CAN_RS485、CLOCK。每个具体电路、状态和判据形成独立检查，按
 由 Expert Review 填公式、角点、证据、结果、意见和复验方法。无关器件缺资料不
 改变已声明电路的准备度。新增 refs 中需要曲线/额定的无源器件用 audit 的
 --require-ref 加入；不得用全局“datasheets available”掩盖逐物料缺口。
+
+I²C 另有有界的自动连接覆盖，输入 `intent.i2c_topology`、清单及状态迁移契约见
+[i2c-topology-schema.md](i2c-topology-schema.md)。每连接区域新增覆盖和独立电气判据；
+不替代显式 `circuits` 或 Rule-09。计划中的清单需随 `--db` 重新校验，不能编辑清单消除缺口。
+
+去耦另有 `intent.decoupling` 与 `review-plan.decoupling`，完整输入和判定边界见
+[decoupling-schema.md](decoupling-schema.md)。物理脚/装配/分组覆盖与电气判据分开，
+包含零电容、共享位号、未解析容量及直接网络边界；不从清单自动生成 PASS。
+新计划带 `decoupling_version: 1`，最终校验重建清单、对象和逐条要求，变更后须重新审查。
 
 电源来源与条件导通另可声明：
 

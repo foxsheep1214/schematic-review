@@ -74,6 +74,17 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事。`nc` 是解析标
 补齐命名启发式未发现的对象/需求/工况。排除候选须有反证；无特征不等于 NA。
 人工补查项加入 review-plan-cold.json；保留 lint-cold.json 中的原始快照。适用性变更记出处。
 
+涉及 I²C 时读 [I²C 连接覆盖](references/i2c-topology-schema.md)，核对 `intent.i2c_topology`
+的物理端点及逐状态装配/跳线声明。计划自动附连接清单；可用 `--i2c-topology-json` 另存。
+只跨已确认贴装的两脚电阻和闭合跳线发现远端上拉，串阻保留节点，有源器件两侧不合并。
+名称、`nc=false`、默认 Bridged 均不是状态证据；外接模块未知/路径未覆盖保持待核，
+不能把连接发现当作 Rule-09 完整电气通过。
+
+涉及供电脚/去耦时读 [去耦覆盖清单](references/decoupling-schema.md)，补 `intent.decoupling`
+的完整官方脚表、分组/返回节点和逐状态装配。计划自动列出直接匹配电容与缺口，可用
+`--decoupling-json` 另存。零电容、未知容量和未连物理脚仍须登记；不跨 0Ω/磁珠合并，
+不以同网共享或标称总容量证明本地去耦/有效容量合格，位置与回路另交 PCB HANDOFF。
+
 ### 3. ER1 身份、官方条款与热跑
 
 先核 MPN、封装/温度/固定可调档、BOM/符号。PART/VALUE 冲突时建立身份分支，
@@ -93,6 +104,10 @@ Agent 完成资料核对/补取并写出 `datasheet-resolution.json` 后，纳�
 
     python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --evidence evidence.json --json datasheet-audit.json
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --evidence evidence.json --datasheet-audit datasheet-audit.json --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json
+
+Rule-08 需要复用已核对的 Vref 时，按 [Vref 参数复用](references/datasheet-facts-schema.md)
+把事实保存在项目内，明确精确 MPN/封装和本次完整工况，先物化为 evidence 再热跑。
+事实与电路结论分开；过期、条件不覆盖或多条适用保证均待核，不以 typ/置信度代替保证值。
 
 证据格式见 [datasheet-evidence-schema.md](references/datasheet-evidence-schema.md)。自动结果只覆盖
 输入的具体对象与判据，未覆盖实例仍待查。热跑证据须绑定当前网表/物料、装配及状态、
@@ -164,6 +179,10 @@ PCB 阻抗/间距/回流和实测约束独立 HANDOFF，边界见 [scope-boundar
 
 复审比较前轮设计和模板基线，沿变更供电/控制/保护依赖扩展复验。保留每个历史 ID，
 区分撤回、复发、接受、已修复；断言要证明期望电气状态，仅“字段变了”不足以关闭。
+读 [改版影响与复验](references/revision-impact-schema.md)：冷/热跑传同一 `--old-db` 和
+`--old-plan`，与本版 `--merge-plan` 分开；可用 `--revision-impact-json` 另存清单。
+依赖不完整时扩大为全量复验，旧项消失也须独立处置；每个必需项记录本轮方法、证据和摘要，
+不迁移旧 PASS。最终校验传相同旧基线并加 `--require-revision-impact`；缺历史快照不补造。
 
     python3 scripts/diff_netlists.py old-db.json db.json --claims review-claims.json --json diff.json --fail-on-open-claims
 

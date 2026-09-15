@@ -46,3 +46,6 @@ nc 的期望值为布尔值，其余为字符串。结构不合法时直接退�
 全部断言通过才报告该 claim 的 PASS；否则输出 Rule-17 FINDING。仅含字段/换网/成员变化的
 claim 为 INSUFFICIENT，并在 `--fail-on-open-claims` 时阻断；必须补期望状态断言。
 Diff 的 PASS 只覆盖声明的状态，不代替额定、方向、时序和其他受影响电路的工程复验。
+
+具体复验范围由计划的 [改版影响清单](revision-impact-schema.md) 关联并校验；原有结构
+Diff/断言仍独立保留。未发现结构差异不能排除装配意图、判据或资料内容变化。

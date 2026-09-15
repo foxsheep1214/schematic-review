@@ -22,6 +22,10 @@
 - `coverage`: 各维度“对象→检查 ID 数组”的完整映射。
 - `summary` / `release`: 可省略，由校验器计算；填了必须与计算一致。
 
+带新改版清单的复审另有 `revision_impact_version`、`revision_digest` 及必需项的
+`reverification`；完整字段与闸门见 [revision-impact-schema.md](revision-impact-schema.md)。
+它不迁移旧结论，不改变四态/分级/独立 HANDOFF；此模式自动强制 binding。
+
 有 `--db` 时机械检查 coverage 的 `components`（所有 parts）、`pins`（pin2net 与
 声明脚并集）、`nets`（去除已识别伪网）、`pages`（ref2page 的页号字符串），以及计划
 `object.requirement_id` 的 `requirements`。每个对象必须关联至少一条有效检查。

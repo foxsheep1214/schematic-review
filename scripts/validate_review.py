@@ -9,7 +9,9 @@ import json
 from pathlib import Path
 import sys
 from validate_remediation import validate_remediation, READINESS
-from electrical_contract import db_fingerprint
+from electrical_contract import db_fingerprint, load_json
+from plan_review import ReviewPlanner
+from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -56,7 +58,7 @@ def primary_anchors(obj, db=None):
 
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
-                    require_bindings=False):
+                    require_bindings=False, old_db=None, old_plan=None, require_revision=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -90,9 +92,106 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             blockers.append('input netlist failed integrity/export checks')
         require(report.get("db_digest") == fingerprint(db), "db_digest mismatch")
     expected = index(plan.get("checks"), "plan.checks")
+    revision_errors, revision = validate_metadata(plan, db, old_db, old_plan, require_revision)
+    errors.extend(revision_errors)
+    if revision is not None:
+        errors.extend(validate_reverification(plan, report, revision))
+    if 'revision_impact_version' in report and revision is None:
+        require(False, 'revision results require a valid revision-impact plan')
+    if 'dependency_version' in plan and db is not None:
+        # Recreate automatic checks from raw saved inputs, not the possibly
+        # edited check list. Manual additions stay independently reviewable.
+        try:
+            inputs = plan['review_inputs']
+            planner = ReviewPlanner(db, inputs['intent'], inputs['evidence'],
+                                    plan.get('review_mode'), datasheet_audit=inputs['datasheet_audit'])
+            planner.plan_coverage()
+            planner.plan_features()
+            planner.plan_concrete_checks()
+            planner.plan_circuit_checks()
+            planner.plan_i2c_topology()
+            planner.plan_decoupling()
+            planner.plan_explicit_evidence()
+            for generated in planner.checks:
+                actual = expected.get(generated['id'])
+                require(actual is not None and revision_digest(check_spec(actual)) == revision_digest(check_spec(generated)),
+                        generated['id'] + ': automatic check missing or changed from saved inputs')
+        except (ValueError, TypeError, KeyError, AttributeError) as error:
+            require(False, 'invalid generated-check inputs: ' + str(error))
+    topology_regions = {}
+    require('i2c_topology' in plan or not any(p.get('object', {}).get('i2c_region')
+            for p in expected.values() if isinstance(p.get('object'), dict)), 'I2C checks require their topology inventory')
+    if 'i2c_topology' in plan:
+        topology = plan['i2c_topology']
+        require(isinstance(topology, dict), 'I2C topology must be an object')
+        if isinstance(topology, dict):
+            if db is None:
+                require(False, 'I2C topology validation requires --db')
+            else:
+                try:
+                    context = topology.get('context')
+                    planner = ReviewPlanner(db, {'i2c_topology': context} if context is not None else None)
+                    current = planner.i2c_topology
+                    require(current == topology, 'I2C topology inventory/binding is stale or modified')
+                    topology_regions = {r['id']: r for s in current['states'] for r in s['regions']}
+                    planner.plan_i2c_topology()
+                    for generated in planner.checks:
+                        planned = expected.get(generated['id'])
+                        require(planned is not None, generated['id'] + ': incomplete I2C planned coverage')
+                        if planned:
+                            fields = ('check', 'rule', 'object', 'criterion', 'stage', 'executor')
+                            require(all(planned.get(k) == generated.get(k) for k in fields), generated['id'] + ': I2C generated criterion/object changed')
+                    actual = [p for p in expected.values() if isinstance(p.get('object'), dict) and p['object'].get('i2c_region')]
+                    for p in actual:
+                        obj = p['object']
+                        region = topology_regions.get(obj['i2c_region'])
+                        require(region is not None and obj.get('i2c_topology_digest') == current['digest'], p['id'] + ': stale I2C object binding')
+                        if region:
+                            require(obj.get('state') == region['state'] and obj.get('nets') == region['nets'] and obj.get('net') == region['nets'][0], p['id'] + ': I2C region coordinates differ')
+                except (ValueError, TypeError, KeyError, AttributeError) as error:
+                    require(False, 'invalid I2C topology: ' + str(error))
+    decoupling_checks = {}
+    require('decoupling' in plan or not ('decoupling_version' in plan or any(
+        isinstance(p.get('check'), str) and p['check'].startswith('decoupling-') or
+        isinstance(p.get('object'), dict) and ('decoupling_group' in p['object'] or 'decoupling_scope' in p['object'])
+        for p in expected.values())), 'decoupling checks require their inventory')
+    if 'decoupling' in plan:
+        require(type(plan.get('decoupling_version')) is int and plan['decoupling_version'] == 1,
+                'decoupling_version must be 1')
+        inventory = plan['decoupling']
+        require(isinstance(inventory, dict), 'decoupling inventory must be an object')
+        if isinstance(inventory, dict):
+            if db is None:
+                require(False, 'decoupling inventory validation requires --db')
+            else:
+                try:
+                    context = inventory.get('context')
+                    planner = ReviewPlanner(db, {'decoupling': context} if context is not None else None)
+                    require(planner.decoupling == inventory, 'decoupling inventory/binding is stale or modified')
+                    planner.plan_decoupling()
+                    decoupling_checks = {p['id']: p for p in planner.checks}
+                    for key, generated in decoupling_checks.items():
+                        planned = expected.get(key)
+                        require(planned is not None, key + ': incomplete decoupling planned coverage')
+                        if planned:
+                            fields = ('check', 'rule', 'object', 'criterion', 'stage', 'executor',
+                                      'readiness', 'required_inputs', 'trigger', 'inventory_gaps',
+                                      'required_material_refs', 'handoff')
+                            require(all(planned.get(k) == generated.get(k) for k in fields),
+                                    key + ': decoupling generated criterion/object changed')
+                    for key, planned in expected.items():
+                        obj = planned.get('object')
+                        if isinstance(obj, dict) and ('decoupling_group' in obj or 'decoupling_scope' in obj):
+                            require(obj.get('decoupling_inventory_digest') == planner.decoupling['digest'],
+                                    key + ': stale decoupling object binding')
+                            if key not in decoupling_checks:
+                                require(False, key + ': use an independent object for manual decoupling additions')
+                except (ValueError, TypeError, KeyError, AttributeError) as error:
+                    require(False, 'invalid decoupling inventory: ' + str(error))
     checks = index(report.get("checks"), "results.checks")
     findings = index(report.get("findings"), "findings")
-    bindings = require_bindings or 'binding_version' in report or any('binding' in x for x in checks.values())
+    bindings = (require_bindings or revision is not None or 'binding_version' in report
+                or any('binding' in x for x in checks.values()))
     if bindings:
         require(type(report.get('binding_version')) is int and report['binding_version'] == 1,
                 'binding_version must be 1 for object/criterion/evidence bindings')
@@ -122,6 +221,13 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 require(criterion_ok, f'{key}: binding criterion differs from planned criterion')
                 bound_count += int(object_ok and criterion_ok)
         result, app = item.get("review_result"), item.get("applicability")
+        if result == 'PASS' and decoupling_checks.get(key, {}).get('inventory_gaps'):
+            require(False, f'{key}: decoupling gaps must be resolved in a regenerated plan before PASS')
+        planned_obj = expected.get(key, {}).get('object')
+        region_id = planned_obj.get('i2c_region') if isinstance(planned_obj, dict) else None
+        region = topology_regions.get(region_id) if isinstance(region_id, str) else None
+        if region and region['gaps'] and result == 'PASS':
+            require(False, f'{key}: I2C topology gaps must be resolved in a regenerated plan before PASS')
         require(isinstance(result, str) and result in RESULTS, f"{key}: invalid result")
         require(isinstance(app, str) and app in APPLICABILITY, f"{key}: invalid applicability")
         require(text(item.get("rationale")), f"{key}: missing rationale")
@@ -333,6 +439,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     for state in READINESS}
     return {"valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
+            "revision_validation": {"enforced": revision is not None,
+                "required_checks": sum(e['required'] for e in revision['entries']) if revision else 0,
+                "strategy": revision['strategy'] if revision else None},
             "binding_validation": {"enforced": bool(bindings), "bound_checks": bound_count},
             "remediation_validation": {"enforced": actionable, "by_readiness": repair_counts}}
 
@@ -342,6 +451,10 @@ def main():
     parser.add_argument("plan")
     parser.add_argument("results")
     parser.add_argument("--db")
+    parser.add_argument("--old-db")
+    parser.add_argument("--old-plan")
+    parser.add_argument("--require-revision-impact", action="store_true",
+                        help="require current revision dependencies and re-verification records")
     parser.add_argument("--json")
     parser.add_argument("--lint", action="append", help="cold/hot lint JSON; repeat for each run")
     parser.add_argument("--require-release", action="store_true")
@@ -351,11 +464,14 @@ def main():
                         help="require explicit reviewed-object/criterion bindings and finding target consistency")
     args = parser.parse_args()
     try:
-        read = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))
+        read = load_json
         result = validate_review(read(args.plan), read(args.results), read(args.db) if args.db else None,
                                  [read(x) for x in args.lint] if args.lint else None,
                                  require_actionable=args.require_actionable,
-                                 require_bindings=args.require_bindings)
+                                 require_bindings=args.require_bindings,
+                                 old_db=read(args.old_db) if args.old_db else None,
+                                 old_plan=read(args.old_plan) if args.old_plan else None,
+                                 require_revision=args.require_revision_impact)
     except (ValueError, OSError, TypeError) as exc:
         result = {"valid": False, "release": "NO_GO", "errors": [str(exc)]}
     if args.json:

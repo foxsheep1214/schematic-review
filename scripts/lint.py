@@ -27,7 +27,7 @@ import sys
 from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
-from electrical_contract import db_fingerprint, readiness_gaps, validate_evidence
+from electrical_contract import db_fingerprint, load_json, readiness_gaps, validate_evidence
 from fractions import Fraction
 from itertools import product
 from plan_review import build_review_plan, validate_intent
@@ -168,6 +168,8 @@ class Lint:
             evidence = next((x for x in self.evidence.get('checks', [])
                              if x.get('id') == extra['check_id']), {})
             item['state'] = (evidence.get('basis') or {}).get('state')
+            if 'vref_binding' in evidence:
+                item['vref_binding'] = evidence['vref_binding']
             item['review_result'] = 'INSUFFICIENT' if kind == 'CANDIDATE' else 'FAIL'
             self.results.append(item)
         self.F.append(item)
@@ -180,6 +182,8 @@ class Lint:
         }
         if calculation is not None:
             item['calculation'] = calculation
+        if 'vref_binding' in check:
+            item['vref_binding'] = check['vref_binding']
         self.passes.append(item)
         self.results.append(item)
 
@@ -660,20 +664,33 @@ def main():
         help='audit_datasheets.py 产出的逐物料覆盖审计 JSON')
     ap.add_argument('--review-mode', choices=('first', 'revision'),
                     help='首审或复审；缺省取 intent.review_mode/first')
-    ap.add_argument('--old-db', help='复审旧版 db.json（用于执行计划准备度）')
+    ap.add_argument('--old-db', help='实际读取复审旧版 db.json 并生成变化清单')
+    ap.add_argument('--old-plan', help='上一设计版本最终计划；与本版 merge-plan 分开')
+    ap.add_argument('--revision-impact-json', help='另存改版影响与必需复验清单')
     ap.add_argument('--claims', help='历史评审断言 JSON（用于执行计划准备度）')
     ap.add_argument('--plan-json', help='单独写出 AC0 逐项执行计划 JSON')
+    ap.add_argument('--i2c-topology-json', help='另存本次计划中的 I2C 连接覆盖清单；不是电气判决')
+    ap.add_argument('--decoupling-json', help='另存本次计划中的去耦清单；不是电气判决')
     ap.add_argument('--merge-plan', help='合入同版旧计划的补查项；结果仍在独立台账中复核')
     ap.add_argument('--json', help='把完整命中写入 JSON')
     a = ap.parse_args()
 
-    db = json.load(io.open(a.db, encoding='utf-8'))
-    log = io.open(a.log, encoding='utf-8', errors='replace').read() if a.log else ''
-    intent = json.load(io.open(a.intent, encoding='utf-8')) if a.intent else None
-    evidence = json.load(io.open(a.evidence, encoding='utf-8')) if a.evidence else None
-    datasheet_audit = (
-        json.load(io.open(a.datasheet_audit, encoding='utf-8'))
-        if a.datasheet_audit else None)
+    try:
+        db = load_json(a.db)
+        log = io.open(a.log, encoding='utf-8', errors='replace').read() if a.log else ''
+        intent = load_json(a.intent) if a.intent else None
+        evidence = load_json(a.evidence) if a.evidence else None
+        datasheet_audit = load_json(a.datasheet_audit) if a.datasheet_audit else None
+        previous_plan = load_json(a.merge_plan) if a.merge_plan else None
+        old_db = load_json(a.old_db) if a.old_db else None
+        old_plan = load_json(a.old_plan) if a.old_plan else None
+    except (OSError, ValueError) as error:
+        ap.error(str(error))
+    if a.intent and not isinstance(intent, dict):
+        ap.error('explicit intent.json root must be an object')
+    for supplied, value, label in ((a.old_db, old_db, '--old-db'), (a.old_plan, old_plan, '--old-plan')):
+        if supplied and not isinstance(value, dict):
+            ap.error(label + ' JSON root must be an object')
     intent_errors = validate_intent(intent)
     if intent_errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(intent_errors))
@@ -690,15 +707,20 @@ def main():
         if path and not os.path.isfile(path):
             sys.exit(f'[FATAL] {label} 文件不存在: {path}')
 
-    previous_plan = json.load(io.open(a.merge_plan, encoding='utf-8')) if a.merge_plan else None
     try:
         review_plan = build_review_plan(
             db, intent, evidence, a.review_mode,
             old_db_available=bool(a.old_db),
             claims_available=bool(a.claims),
-            datasheet_audit=datasheet_audit, previous_plan=previous_plan)
+            datasheet_audit=datasheet_audit, previous_plan=previous_plan,
+            old_db=old_db, old_plan=old_plan)
     except ValueError as error:
         sys.exit(f'[FATAL] {error}')
+    if a.revision_impact_json:
+        if 'revision_impact' not in review_plan:
+            ap.error('--revision-impact-json requires revision mode')
+        with open(a.revision_impact_json, 'w', encoding='utf-8') as stream:
+            json.dump(review_plan['revision_impact'], stream, ensure_ascii=False, indent=2, allow_nan=False)
     summary = review_plan['summary']
     print('=== AC0 检查适用性与执行计划 ===')
     print(f"  checks={summary['checks_total']}  "
@@ -709,6 +731,12 @@ def main():
         json.dump(review_plan, io.open(a.plan_json, 'w', encoding='utf-8'),
                   ensure_ascii=False, indent=2)
         print(f'  -> {a.plan_json}')
+    if a.i2c_topology_json:
+        with open(a.i2c_topology_json, 'w', encoding='utf-8') as stream:
+            json.dump(review_plan['i2c_topology'], stream, ensure_ascii=False, indent=2)
+    if a.decoupling_json:
+        with open(a.decoupling_json, 'w', encoding='utf-8') as stream:
+            json.dump(review_plan['decoupling'], stream, ensure_ascii=False, indent=2, allow_nan=False)
 
     lint = Lint(db, log, intent, evidence, datasheet_audit)
     F = lint.run()

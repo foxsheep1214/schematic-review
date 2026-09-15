@@ -35,6 +35,11 @@ NEEDS_VERIFICATION/NOT_FOUND 均不能让依赖检查变 READY。无关物料缺
 
 ## Rule-08：已建模的反馈设定窗口
 
+可继续手工提供下面的 vref；重复读取同一已核实资料时，使用
+[项目内 Vref 参数复用](datasheet-facts-schema.md)。vref_request 声明本次目标/完整工况，
+目标 source 补精确 mpn/package。物化工具生成 vref 和 vref_binding；未物化不热跑。
+计划与 lint 共享事实/PDF/工况的实时失效门，不能删除绑定保留旧数值来绕过复验。
+
 ```json
 {
   "schema_version": 1,

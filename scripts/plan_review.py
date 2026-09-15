@@ -12,13 +12,16 @@ PASS/FAIL。HANDOFF 是独立下游动作，可以与后续 PASS/FAIL/INSUFFICIE
 """
 import argparse
 from copy import deepcopy
-from electrical_contract import db_fingerprint, check_matches, readiness_gaps, validate_evidence, bounded, finite
+from electrical_contract import db_fingerprint, check_matches, readiness_gaps, validate_evidence, bounded, finite, load_json
 import io
 import json
 import os
 import re
 import sys
 from collections import Counter
+from i2c_topology import build_i2c_topology, validate_i2c_intent
+from decoupling import build_decoupling_inventory, validate_decoupling_intent
+from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
 from audit_datasheets import (
     datasheet_audit_all_available,
@@ -352,6 +355,9 @@ def validate_intent(intent):
                 if rid in seen:
                     errors.append(f'requirement id 重复: {rid}')
                 seen.add(rid)
+    errors.extend(validate_i2c_intent(intent))
+    errors.extend(validate_decoupling_intent(intent))
+    errors.extend(validate_declarations(intent))
     return errors
 
 
@@ -423,16 +429,20 @@ def _differential_pairs(db):
 class ReviewPlanner:
     def __init__(self, db, intent=None, evidence=None, review_mode=None,
                  old_db_available=False, claims_available=False,
-                 datasheet_audit=None, previous_plan=None):
+                 datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None):
         self.db = db
+        self.i2c_topology = build_i2c_topology(db, intent)
+        self.decoupling = build_decoupling_inventory(db, intent)
         self.db_sha256 = db_fingerprint(db)
         self.intent = intent or {}
         self.evidence = evidence or {}
         self.datasheet_audit = datasheet_audit
         self.previous_plan = previous_plan
+        self.old_db, self.old_plan = old_db, old_plan
         self.review_mode = (
-            review_mode or self.intent.get('review_mode') or 'first')
-        self.old_db_available = old_db_available
+            review_mode or self.intent.get('review_mode') or
+            ('revision' if old_db is not None or old_plan is not None else 'first'))
+        self.old_db_available = old_db_available or old_db is not None
         self.claims_available = claims_available
         self.checks = []
         self.rule_plan = []
@@ -537,6 +547,9 @@ class ReviewPlanner:
                 'handoff': {'required': False},
             })
             hits = _feature_hits(self.db, config['pattern'])
+            if name == 'I2C' and any(b['origin'] != 'name-hint'
+                    for s in self.i2c_topology['states'] for b in s['buses']):
+                hits.append('declared I2C physical bus/port mapping')
             item = explicit.get(name)
             requested = item.get('applicability') if item else None
             trigger = [f'netlist:{x}' for x in hits]
@@ -611,6 +624,80 @@ class ReviewPlanner:
                     item['domain'] = domain
                     item['analysis_required'] = True
                     item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
+
+    def plan_i2c_topology(self):
+        """Inventory coverage is independent of the existing direct Rule-09 check."""
+        for state in self.i2c_topology['states']:
+            for region in state['regions']:
+                obj = {'net': region['nets'][0], 'nets': region['nets'], 'state': state['id'],
+                       'i2c_region': region['id'], 'i2c_topology_digest': self.i2c_topology['digest']}
+                key = region['id']
+                item = self.add_check(
+                    'i2c-topology-' + key, obj,
+                    '核对本状态 SDA/SCL 物理端点、装配/跳线、全部上拉与电源域、串阻路径及隔离/外接边界；仅连接覆盖',
+                    'ER3', 'Expert Review',
+                    readiness='WAITING_EVIDENCE' if region['gaps'] else 'READY',
+                    required_inputs=region['gaps'], trigger=['i2c-topology:' + key])
+                item['domain'] = 'I2C'
+                item['analysis_required'] = True
+                for check, criterion in CIRCUIT_CHECKS['I2C']:
+                    item = self.add_check(
+                        'i2c-region-' + key + '-' + check, deepcopy(obj),
+                        criterion + '；按拓扑清单保留串阻节点及跨段耦合，不把远端上拉直接并联或跨有源器件合并',
+                        'ER4', 'Expert Review', readiness='WAITING_EVIDENCE',
+                        required_inputs=region['gaps'] + ['I2C:' + check + ': applicable specifications and state-specific analysis'],
+                        trigger=['i2c-topology:' + key])
+                    item['domain'] = 'I2C'
+                    item['analysis_required'] = True
+
+    def plan_decoupling(self):
+        """Direct-net inventory and separate, source-bound engineering criteria."""
+        inventory = self.decoupling
+        obj = {'feature': 'DECOUPLING-INVENTORY', 'decoupling_scope': 'inventory',
+               'decoupling_inventory_digest': inventory['digest']}
+        item = self.add_check('decoupling-discovery', obj,
+            '结合完整器件/官方物理脚清单核对供电脚与去耦分组覆盖；无名称命中不代表不适用',
+            'ER1', 'Expert Review',
+            readiness='WAITING_EVIDENCE' if inventory['discovery_gaps'] else 'READY',
+            required_inputs=inventory['discovery_gaps'], trigger=['decoupling-inventory'])
+        item['inventory_gaps'] = inventory['discovery_gaps']
+        defaults = {
+            'connection': '按准确器件条款核对本组各电源脚与指定返回节点的去耦接法；同网存在电容不证明布局充分',
+            'capacitance': '按本状态器件条款分别核对数量、容量组合及适用的有效容量要求；标称总量不能替代偏压/温度/公差后的保证容量',
+            'rating': '按具体电容料号与项目工况核对耐压/降额及适用 ESR 要求；不从封装或轨名猜参数',
+        }
+        for state in inventory['states']:
+            for group in state['groups']:
+                obj = {'ref': group['ref'], 'nodes': group['supply_nodes'], 'return_nodes': group['return_nodes'],
+                       'nets': group['supply_nets'], 'return_nets': group['return_nets'], 'state': state['id'],
+                       'decoupling_group': group['id'], 'decoupling_inventory_digest': inventory['digest']}
+                if len(group['supply_nets']) == 1:
+                    obj['net'] = group['supply_nets'][0]
+                item = self.add_check('decoupling-coverage-' + group['id'], deepcopy(obj),
+                    '逐物理脚核对本状态分组、返回节点、直接连接电容和装配；保留零电容/不贴/未知项，不跨串联边界，不判断电气合格',
+                    'ER1', 'Expert Review', readiness='WAITING_EVIDENCE' if group['gaps'] else 'READY',
+                    required_inputs=group['gaps'], trigger=['decoupling-group:' + group['id']])
+                item['inventory_gaps'] = group['gaps']
+                for kind, default in defaults.items():
+                    requirements = [r for r in group['requirements'] if r['kind'] == kind]
+                    for req in requirements or [None]:
+                        gaps = group['gaps'] + (group['capacitance_gaps'] if kind == 'capacitance' else [])
+                        if req is None:
+                            gaps = gaps + ['datasheet-requirement:' + kind]
+                        key = group['id'] + '-' + kind + ('-' + _slug(req['id']) if req else '')
+                        item = self.add_check('decoupling-' + key, deepcopy(obj),
+                            req['criterion'] if req else default,
+                            'ER2' if kind == 'connection' else 'ER4', 'Expert Review',
+                            readiness='WAITING_EVIDENCE',
+                            required_inputs=gaps + ['state-specific engineering evidence: ' + kind],
+                            trigger=['decoupling-group:' + group['id']] + ([req['citation']] if req else []),
+                            handoff=_handoff({'required': kind == 'connection', 'receivers': ['PCB Layout'],
+                                'constraint': '按本组实际器件条款落实去耦位置、回流与环路；同网共享电容不证明各器件本地去耦充分',
+                                'verification': '核对本组各供电脚、实际电容与返回路径的 PCB 摆放和回路'}, 'APPLICABLE'))
+                        item['inventory_gaps'] = sorted(set(gaps))
+                        item['analysis_required'] = True
+                        item['domain'] = 'DECOUPLING'
+                        item['required_material_refs'] = sorted(set([group['ref']] + group['fitted_capacitors']))
 
     def plan_concrete_checks(self):
         db = self.db
@@ -908,6 +995,15 @@ class ReviewPlanner:
             return
         if not isinstance(previous, dict) or previous.get('db_sha256') != self.db_sha256:
             raise ValueError('merge plan must be bound to the current db_sha256; regenerate/review stale plans')
+        if ('i2c_topology' in previous and previous['i2c_topology'] != self.i2c_topology):
+            raise ValueError('I2C topology/state/assembly changed; regenerate and explicitly review/migrate prior checks')
+        if ('decoupling' in previous and previous['decoupling'] != self.decoupling):
+            raise ValueError('decoupling input/state/assembly changed; regenerate and explicitly review/migrate prior checks')
+        if previous.get('revision_impact_version') == 1:
+            baseline = {'db_digest': revision_digest(self.old_db) if self.old_db is not None else None,
+                        'plan_digest': revision_digest(self.old_plan) if self.old_plan is not None else None}
+            if self.review_mode != 'revision' or previous.get('revision_impact', {}).get('baseline') != baseline:
+                raise ValueError('merge plan revision baseline changed; supply the same old_db/old_plan')
         checks = previous.get('checks')
         if not isinstance(checks, list):
             raise ValueError('merge plan checks must be an array')
@@ -919,6 +1015,10 @@ class ReviewPlanner:
                 raise ValueError('merge plan contains an invalid or duplicate check id')
             key = item['id']
             seen.add(key)
+            if item.get('check') == 'revision-impact-coverage' and previous.get('revision_impact_version') == 1:
+                # Coverage is regenerated. Keep cold provisional removal records
+                # even if hot evidence later restores the prior state check.
+                continue
             if (not all(_text(item.get(k)) for k in ('check', 'criterion', 'stage', 'executor'))
                     or not isinstance(item.get('object'), dict)
                     or item.get('applicability') not in APPLICABILITY
@@ -943,6 +1043,8 @@ class ReviewPlanner:
         self.plan_features()
         self.plan_concrete_checks()
         self.plan_circuit_checks()
+        self.plan_i2c_topology()
+        self.plan_decoupling()
         self.plan_explicit_evidence()
         self.merge_previous_checks()
         for material in (self.datasheet_audit or {}).get('materials', []):
@@ -958,10 +1060,13 @@ class ReviewPlanner:
         self.rule_plan.sort(key=lambda x: x['rule'])
         applicability = Counter(x['applicability'] for x in self.checks)
         readiness = Counter(x['readiness'] for x in self.checks)
-        return {
+        plan = {
             'schema_version': 1,
             'generated_by': 'AC0 Applicability Discovery',
             'db_sha256': self.db_sha256,
+            'i2c_topology': self.i2c_topology,
+            'decoupling_version': 1,
+            'decoupling': self.decoupling,
             'review_mode': self.review_mode,
             'result_model': {
                 'review_result': list(RESULT_STATUSES),
@@ -1007,18 +1112,33 @@ class ReviewPlanner:
             'checks': self.checks,
             'diagnostics': self.diagnostics,
         }
+        attach_metadata(plan, self.db, self.intent, self.evidence, self.datasheet_audit,
+                        self.old_db, self.old_plan)
+        plan['summary'].update(
+            checks_total=len(plan['checks']),
+            applicability=dict(sorted(Counter(c['applicability'] for c in plan['checks']).items())),
+            readiness=dict(sorted(Counter(c['readiness'] for c in plan['checks']).items())))
+        if plan.get('revision_impact'):
+            history = next(r for r in plan['rule_plan'] if r['rule'] == 'Rule-17')
+            history['instances'] = sorted(set(history['instances']) |
+                {e['check_id'] for e in plan['revision_impact']['entries'] if e['required']})
+            if plan['revision_impact']['blocking_gaps']:
+                history['readiness'] = 'WAITING_EVIDENCE'
+                history['required_inputs'] = sorted(set(history['required_inputs']) |
+                    set(plan['revision_impact']['blocking_gaps']))
+        return plan
 
 
 def build_review_plan(db, intent=None, evidence=None, review_mode=None,
                       old_db_available=False, claims_available=False,
-                      datasheet_audit=None, previous_plan=None):
+                      datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None):
     if evidence is not None:
         errors = validate_evidence(evidence)
         if errors:
             raise ValueError('evidence.json 无效: ' + '; '.join(errors))
     return ReviewPlanner(
         db, intent, evidence, review_mode, old_db_available,
-        claims_available, datasheet_audit, previous_plan).build()
+        claims_available, datasheet_audit, previous_plan, old_db, old_plan).build()
 
 
 def main():
@@ -1031,22 +1151,33 @@ def main():
         '--datasheet-audit',
         help='audit_datasheets.py 产出的逐物料覆盖审计 JSON')
     parser.add_argument('--review-mode', choices=('first', 'revision'))
-    parser.add_argument('--old-db', help='复审旧版 db.json（只判定可用性）')
+    parser.add_argument('--old-db', help='实际读取复审旧版 db.json 并生成变化清单')
+    parser.add_argument('--old-plan', help='上一设计版本最终计划；不是本版冷跑 merge-plan')
+    parser.add_argument('--revision-impact-json', help='另存本次改版影响与必需复验清单')
     parser.add_argument('--claims', help='历史意见断言 JSON（只判定可用性）')
     parser.add_argument('--json', required=True, help='写出 review-plan.json')
+    parser.add_argument('--i2c-topology-json', help='另存本次生成的 I2C 连接覆盖清单')
+    parser.add_argument('--decoupling-json', help='另存去耦连接/装配/标称容量清单；不是电气判决')
     args = parser.parse_args()
 
     for label, path in (('--old-db', args.old_db), ('--claims', args.claims)):
         if path and not os.path.isfile(path):
             sys.exit(f'[FATAL] {label} 文件不存在: {path}')
 
-    db = json.load(io.open(args.db, encoding='utf-8'))
-    intent = json.load(io.open(args.intent, encoding='utf-8')) if args.intent else None
-    evidence = (json.load(io.open(args.evidence, encoding='utf-8'))
-                if args.evidence else None)
-    datasheet_audit = (
-        json.load(io.open(args.datasheet_audit, encoding='utf-8'))
-        if args.datasheet_audit else None)
+    try:
+        db = load_json(args.db)
+        intent = load_json(args.intent) if args.intent else None
+        evidence = load_json(args.evidence) if args.evidence else None
+        datasheet_audit = load_json(args.datasheet_audit) if args.datasheet_audit else None
+        old_db = load_json(args.old_db) if args.old_db else None
+        old_plan = load_json(args.old_plan) if args.old_plan else None
+    except (OSError, ValueError) as error:
+        parser.error(str(error))
+    if args.intent and not isinstance(intent, dict):
+        parser.error('explicit intent.json root must be an object')
+    for supplied, value, label in ((args.old_db, old_db, '--old-db'), (args.old_plan, old_plan, '--old-plan')):
+        if supplied and not isinstance(value, dict):
+            parser.error(label + ' JSON root must be an object')
     errors = validate_intent(intent)
     if errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(errors))
@@ -1059,10 +1190,24 @@ def main():
         if errors:
             sys.exit('[FATAL] datasheet-audit.json 无效:\n  - '
                      + '\n  - '.join(errors))
-    plan = build_review_plan(
-        db, intent, evidence, args.review_mode,
-        old_db_available=bool(args.old_db), claims_available=bool(args.claims),
-        datasheet_audit=datasheet_audit)
+    try:
+        plan = build_review_plan(
+            db, intent, evidence, args.review_mode,
+            old_db_available=bool(args.old_db), claims_available=bool(args.claims),
+            datasheet_audit=datasheet_audit, old_db=old_db, old_plan=old_plan)
+    except ValueError as error:
+        parser.error(str(error))
+    if args.revision_impact_json:
+        if 'revision_impact' not in plan:
+            parser.error('--revision-impact-json requires revision mode')
+        with open(args.revision_impact_json, 'w', encoding='utf-8') as stream:
+            json.dump(plan['revision_impact'], stream, ensure_ascii=False, indent=2, allow_nan=False)
+    if args.i2c_topology_json:
+        with open(args.i2c_topology_json, 'w', encoding='utf-8') as stream:
+            json.dump(plan['i2c_topology'], stream, ensure_ascii=False, indent=2)
+    if args.decoupling_json:
+        with open(args.decoupling_json, 'w', encoding='utf-8') as stream:
+            json.dump(plan['decoupling'], stream, ensure_ascii=False, indent=2, allow_nan=False)
     json.dump(plan, io.open(args.json, 'w', encoding='utf-8'),
               ensure_ascii=False, indent=2)
     summary = plan['summary']
