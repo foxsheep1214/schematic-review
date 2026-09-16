@@ -27,6 +27,7 @@ import sys
 from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
+from checkers import REGISTRY, REGISTRY_BY_ID, registry_hot_rules
 from electrical_contract import db_fingerprint, load_json, readiness_gaps, validate_evidence
 from fractions import Fraction
 from itertools import product
@@ -111,6 +112,7 @@ class Lint:
         self.skipped = []      # 未执行的规则及原因——绝不静默跳过
         self.hot_executed = set()
         self._ends_cache = {}
+        self.inventories = {checker.id: checker.build(db, self.intent) for checker in REGISTRY}
 
     # -- helpers ---------------------------------------------------------
     def ends(self, ref):
@@ -444,6 +446,11 @@ class Lint:
                 tag = '' if actual == net else f'（网表实为 {actual}）'
                 self.add('LOG-36038', 'No_connect 属性被忽略并强行连线',
                          f'{pin} -> {net}{tag}', pin.split('.')[0])
+        for checker in REGISTRY:
+            inventory = self.inventories.get(checker.id)
+            if inventory is not None:
+                checker.cold_findings(self, inventory)
+
         if self.evidence:
             self.run_hot()
         return self.F
@@ -459,13 +466,17 @@ class Lint:
                          citation=check['citation'], required_inputs=gaps)
                 continue
             self.hot_executed.add(rule)
-            {
+            builtin = {
                 'Rule-08': self._hot_divider,
                 'Rule-09': self._hot_required_passive,
                 'Rule-12': self._hot_pin_bias,
                 'Rule-14': self._hot_pin_map,
                 'Rule-16': self._hot_strap,
-            }[rule](check)
+            }
+            if rule in builtin:
+                builtin[rule](check)
+            else:
+                registry_hot_rules()[rule][1].hot_check(self, check)
 
     @staticmethod
     def _citation(check):
@@ -671,6 +682,8 @@ def main():
     ap.add_argument('--plan-json', help='单独写出 AC0 逐项执行计划 JSON')
     ap.add_argument('--i2c-topology-json', help='另存本次计划中的 I2C 连接覆盖清单；不是电气判决')
     ap.add_argument('--decoupling-json', help='另存本次计划中的去耦清单；不是电气判决')
+    ap.add_argument('--checker-json', action='append', default=[], metavar='ID=PATH',
+                    help='另存指定检查器的清单，可重复；不是电气判决')
     ap.add_argument('--merge-plan', help='合入同版旧计划的补查项；结果仍在独立台账中复核')
     ap.add_argument('--json', help='把完整命中写入 JSON')
     a = ap.parse_args()
@@ -737,6 +750,14 @@ def main():
     if a.decoupling_json:
         with open(a.decoupling_json, 'w', encoding='utf-8') as stream:
             json.dump(review_plan['decoupling'], stream, ensure_ascii=False, indent=2, allow_nan=False)
+    for spec in a.checker_json:
+        checker_id, _, path = spec.partition('=')
+        checker = REGISTRY_BY_ID.get(checker_id)
+        if checker is None or checker.plan_key not in review_plan or not path:
+            raise SystemExit('未知检查器或缺少输出路径: ' + spec)
+        with open(path, 'w', encoding='utf-8') as stream:
+            json.dump(review_plan[checker.plan_key], stream, ensure_ascii=False,
+                      indent=2, allow_nan=False)
 
     lint = Lint(db, log, intent, evidence, datasheet_audit)
     F = lint.run()

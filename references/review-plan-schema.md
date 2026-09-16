@@ -167,11 +167,11 @@ CAN_RS485、CLOCK。每个具体电路、状态和判据形成独立检查，按
 --require-ref 加入；不得用全局“datasheets available”掩盖逐物料缺口。
 
 I²C 另有有界的自动连接覆盖，输入 `intent.i2c_topology`、清单及状态迁移契约见
-[i2c-topology-schema.md](i2c-topology-schema.md)。每连接区域新增覆盖和独立电气判据；
+[checkers.md](checkers.md) 的 I²C 一节。每连接区域新增覆盖和独立电气判据；
 不替代显式 `circuits` 或 Rule-09。计划中的清单需随 `--db` 重新校验，不能编辑清单消除缺口。
 
 去耦另有 `intent.decoupling` 与 `review-plan.decoupling`，完整输入和判定边界见
-[decoupling-schema.md](decoupling-schema.md)。物理脚/装配/分组覆盖与电气判据分开，
+[checkers.md](checkers.md) 的去耦一节。物理脚/装配/分组覆盖与电气判据分开，
 包含零电容、共享位号、未解析容量及直接网络边界；不从清单自动生成 PASS。
 新计划带 `decoupling_version: 1`，最终校验重建清单、对象和逐条要求，变更后须重新审查。
 

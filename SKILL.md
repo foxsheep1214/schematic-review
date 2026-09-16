@@ -74,16 +74,21 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事。`nc` 是解析标
 补齐命名启发式未发现的对象/需求/工况。排除候选须有反证；无特征不等于 NA。
 人工补查项加入 review-plan-cold.json；保留 lint-cold.json 中的原始快照。适用性变更记出处。
 
-涉及 I²C 时读 [I²C 连接覆盖](references/i2c-topology-schema.md)，核对 `intent.i2c_topology`
+涉及 I²C 时读 [检查器契约](references/checkers.md)的 I²C 一节，核对 `intent.i2c_topology`
 的物理端点及逐状态装配/跳线声明。计划自动附连接清单；可用 `--i2c-topology-json` 另存。
 只跨已确认贴装的两脚电阻和闭合跳线发现远端上拉，串阻保留节点，有源器件两侧不合并。
 名称、`nc=false`、默认 Bridged 均不是状态证据；外接模块未知/路径未覆盖保持待核，
 不能把连接发现当作 Rule-09 完整电气通过。
 
-涉及供电脚/去耦时读 [去耦覆盖清单](references/decoupling-schema.md)，补 `intent.decoupling`
+涉及供电脚/去耦时读 [检查器契约](references/checkers.md)的去耦一节，补 `intent.decoupling`
 的完整官方脚表、分组/返回节点和逐状态装配。计划自动列出直接匹配电容与缺口，可用
 `--decoupling-json` 另存。零电容、未知容量和未连物理脚仍须登记；不跨 0Ω/磁珠合并，
 不以同网共享或标称总容量证明本地去耦/有效容量合格，位置与回路另交 PCB HANDOFF。
+
+涉及继电器/电磁阀/电机/绕组时读同文件的感性负载一节。开关驱动的线圈缺钳位路径或
+续流二极管接反直接冷跑报 IL-01/IL-02；`SW/LX/BOOT` 类节点的储能电感不属此项。
+经连接器外接的负载只按网名生成待核项，需 `intent.inductive_loads` 声明后才判定；
+钳位额定（反向耐压、关断峰值电流、开关耐压覆盖钳位电压、重复频率耗散）走 ER4。
 
 ### 3. ER1 身份、官方条款与热跑
 

@@ -19,8 +19,9 @@ import os
 import re
 import sys
 from collections import Counter
-from i2c_topology import build_i2c_topology, validate_i2c_intent
-from decoupling import build_decoupling_inventory, validate_decoupling_intent
+from checkers import REGISTRY, REGISTRY_BY_ID, registry_cold_rules
+from checkers.netgraph import GNDS, RAIL_RE
+from checkers.planutil import empty_handoff as _empty_handoff, handoff as _handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
 from audit_datasheets import (
@@ -35,10 +36,6 @@ READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
 RESULT_STATUSES = ('PASS', 'FAIL', 'INSUFFICIENT', 'NA')
 HANDOFF_STATES = ('OPEN', 'ACCEPTED', 'VERIFIED')
 
-GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
-RAIL_RE = re.compile(
-    r'^(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+V)',
-    re.I)
 EN_RE = re.compile(
     r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN|PWR_EN)(_|\d|$)', re.I)
 STRAP_RE = re.compile(
@@ -355,8 +352,8 @@ def validate_intent(intent):
                 if rid in seen:
                     errors.append(f'requirement id 重复: {rid}')
                 seen.add(rid)
-    errors.extend(validate_i2c_intent(intent))
-    errors.extend(validate_decoupling_intent(intent))
+    for checker in REGISTRY:
+        errors.extend(checker.validate_intent(intent, None))
     errors.extend(validate_declarations(intent))
     return errors
 
@@ -366,27 +363,6 @@ def _material_available(intent, key, datasheet_audit=None):
         return datasheet_audit_all_available(datasheet_audit)
     item = (intent or {}).get('materials', {}).get(key, {})
     return isinstance(item, dict) and item.get('available') is True
-
-
-def _slug(value):
-    value = re.sub(r'[^A-Za-z0-9]+', '-', str(value or '').upper()).strip('-')
-    return value[:64] or 'GLOBAL'
-
-
-def _empty_handoff():
-    return {'required': False, 'state': None}
-
-
-def _handoff(config, applicable):
-    if not config.get('required') or applicable != 'APPLICABLE':
-        return _empty_handoff()
-    return {
-        'required': True,
-        'state': 'OPEN',
-        'receivers': list(config.get('receivers', [])),
-        'constraint': config.get('constraint', ''),
-        'verification': config.get('verification', ''),
-    }
 
 
 def _database_blobs(db):
@@ -427,12 +403,15 @@ def _differential_pairs(db):
 
 
 class ReviewPlanner:
+    circuit_checks = CIRCUIT_CHECKS
+
     def __init__(self, db, intent=None, evidence=None, review_mode=None,
                  old_db_available=False, claims_available=False,
                  datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None):
         self.db = db
-        self.i2c_topology = build_i2c_topology(db, intent)
-        self.decoupling = build_decoupling_inventory(db, intent)
+        self.inventories = {checker.id: checker.build(db, intent) for checker in REGISTRY}
+        self.i2c_topology = self.inventories['i2c_topology']
+        self.decoupling = self.inventories['decoupling']
         self.db_sha256 = db_fingerprint(db)
         self.intent = intent or {}
         self.evidence = evidence or {}
@@ -625,79 +604,20 @@ class ReviewPlanner:
                     item['analysis_required'] = True
                     item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
 
+    def plan_checkers(self):
+        """遍历检查器注册表；每个检查器只生成自己的计划项。"""
+        for checker in REGISTRY:
+            inventory = self.inventories.get(checker.id)
+            if inventory is not None:
+                checker.plan(self, inventory)
+
     def plan_i2c_topology(self):
-        """Inventory coverage is independent of the existing direct Rule-09 check."""
-        for state in self.i2c_topology['states']:
-            for region in state['regions']:
-                obj = {'net': region['nets'][0], 'nets': region['nets'], 'state': state['id'],
-                       'i2c_region': region['id'], 'i2c_topology_digest': self.i2c_topology['digest']}
-                key = region['id']
-                item = self.add_check(
-                    'i2c-topology-' + key, obj,
-                    '核对本状态 SDA/SCL 物理端点、装配/跳线、全部上拉与电源域、串阻路径及隔离/外接边界；仅连接覆盖',
-                    'ER3', 'Expert Review',
-                    readiness='WAITING_EVIDENCE' if region['gaps'] else 'READY',
-                    required_inputs=region['gaps'], trigger=['i2c-topology:' + key])
-                item['domain'] = 'I2C'
-                item['analysis_required'] = True
-                for check, criterion in CIRCUIT_CHECKS['I2C']:
-                    item = self.add_check(
-                        'i2c-region-' + key + '-' + check, deepcopy(obj),
-                        criterion + '；按拓扑清单保留串阻节点及跨段耦合，不把远端上拉直接并联或跨有源器件合并',
-                        'ER4', 'Expert Review', readiness='WAITING_EVIDENCE',
-                        required_inputs=region['gaps'] + ['I2C:' + check + ': applicable specifications and state-specific analysis'],
-                        trigger=['i2c-topology:' + key])
-                    item['domain'] = 'I2C'
-                    item['analysis_required'] = True
+        """兼容入口：单独生成 I²C 连接覆盖计划项。"""
+        REGISTRY_BY_ID['i2c_topology'].plan(self, self.inventories['i2c_topology'])
 
     def plan_decoupling(self):
-        """Direct-net inventory and separate, source-bound engineering criteria."""
-        inventory = self.decoupling
-        obj = {'feature': 'DECOUPLING-INVENTORY', 'decoupling_scope': 'inventory',
-               'decoupling_inventory_digest': inventory['digest']}
-        item = self.add_check('decoupling-discovery', obj,
-            '结合完整器件/官方物理脚清单核对供电脚与去耦分组覆盖；无名称命中不代表不适用',
-            'ER1', 'Expert Review',
-            readiness='WAITING_EVIDENCE' if inventory['discovery_gaps'] else 'READY',
-            required_inputs=inventory['discovery_gaps'], trigger=['decoupling-inventory'])
-        item['inventory_gaps'] = inventory['discovery_gaps']
-        defaults = {
-            'connection': '按准确器件条款核对本组各电源脚与指定返回节点的去耦接法；同网存在电容不证明布局充分',
-            'capacitance': '按本状态器件条款分别核对数量、容量组合及适用的有效容量要求；标称总量不能替代偏压/温度/公差后的保证容量',
-            'rating': '按具体电容料号与项目工况核对耐压/降额及适用 ESR 要求；不从封装或轨名猜参数',
-        }
-        for state in inventory['states']:
-            for group in state['groups']:
-                obj = {'ref': group['ref'], 'nodes': group['supply_nodes'], 'return_nodes': group['return_nodes'],
-                       'nets': group['supply_nets'], 'return_nets': group['return_nets'], 'state': state['id'],
-                       'decoupling_group': group['id'], 'decoupling_inventory_digest': inventory['digest']}
-                if len(group['supply_nets']) == 1:
-                    obj['net'] = group['supply_nets'][0]
-                item = self.add_check('decoupling-coverage-' + group['id'], deepcopy(obj),
-                    '逐物理脚核对本状态分组、返回节点、直接连接电容和装配；保留零电容/不贴/未知项，不跨串联边界，不判断电气合格',
-                    'ER1', 'Expert Review', readiness='WAITING_EVIDENCE' if group['gaps'] else 'READY',
-                    required_inputs=group['gaps'], trigger=['decoupling-group:' + group['id']])
-                item['inventory_gaps'] = group['gaps']
-                for kind, default in defaults.items():
-                    requirements = [r for r in group['requirements'] if r['kind'] == kind]
-                    for req in requirements or [None]:
-                        gaps = group['gaps'] + (group['capacitance_gaps'] if kind == 'capacitance' else [])
-                        if req is None:
-                            gaps = gaps + ['datasheet-requirement:' + kind]
-                        key = group['id'] + '-' + kind + ('-' + _slug(req['id']) if req else '')
-                        item = self.add_check('decoupling-' + key, deepcopy(obj),
-                            req['criterion'] if req else default,
-                            'ER2' if kind == 'connection' else 'ER4', 'Expert Review',
-                            readiness='WAITING_EVIDENCE',
-                            required_inputs=gaps + ['state-specific engineering evidence: ' + kind],
-                            trigger=['decoupling-group:' + group['id']] + ([req['citation']] if req else []),
-                            handoff=_handoff({'required': kind == 'connection', 'receivers': ['PCB Layout'],
-                                'constraint': '按本组实际器件条款落实去耦位置、回流与环路；同网共享电容不证明各器件本地去耦充分',
-                                'verification': '核对本组各供电脚、实际电容与返回路径的 PCB 摆放和回路'}, 'APPLICABLE'))
-                        item['inventory_gaps'] = sorted(set(gaps))
-                        item['analysis_required'] = True
-                        item['domain'] = 'DECOUPLING'
-                        item['required_material_refs'] = sorted(set([group['ref']] + group['fitted_capacitors']))
+        """兼容入口：单独生成去耦计划项。"""
+        REGISTRY_BY_ID['decoupling'].plan(self, self.inventories['decoupling'])
 
     def plan_concrete_checks(self):
         db = self.db
@@ -883,6 +803,15 @@ class ReviewPlanner:
                 'WAITING_EVIDENCE' if missing else 'READY',
                 required_inputs=missing, reason='纯网表冷跑规则')
 
+        for rule, (name, checker) in sorted(registry_cold_rules().items()):
+            inventory = self.inventories.get(checker.id)
+            gaps = list(inventory.get('discovery_gaps', [])) if inventory else ['inventory unavailable']
+            self.add_rule(
+                rule, name, 'APPLICABLE',
+                'WAITING_EVIDENCE' if gaps else 'READY',
+                instances=checker.rule_instances(rule, inventory) if inventory else [],
+                required_inputs=gaps, reason='检查器冷跑规则')
+
         by_rule = {}
         for check in self.checks:
             if check.get('rule'):
@@ -1043,8 +972,7 @@ class ReviewPlanner:
         self.plan_features()
         self.plan_concrete_checks()
         self.plan_circuit_checks()
-        self.plan_i2c_topology()
-        self.plan_decoupling()
+        self.plan_checkers()
         self.plan_explicit_evidence()
         self.merge_previous_checks()
         for material in (self.datasheet_audit or {}).get('materials', []):
@@ -1064,9 +992,6 @@ class ReviewPlanner:
             'schema_version': 1,
             'generated_by': 'AC0 Applicability Discovery',
             'db_sha256': self.db_sha256,
-            'i2c_topology': self.i2c_topology,
-            'decoupling_version': 1,
-            'decoupling': self.decoupling,
             'review_mode': self.review_mode,
             'result_model': {
                 'review_result': list(RESULT_STATUSES),
@@ -1112,6 +1037,13 @@ class ReviewPlanner:
             'checks': self.checks,
             'diagnostics': self.diagnostics,
         }
+        for checker in REGISTRY:
+            inventory = self.inventories.get(checker.id)
+            if inventory is None or checker.plan_key is None:
+                continue
+            plan[checker.plan_key] = inventory
+            if checker.version_key is not None:
+                plan[checker.version_key] = checker.version
         attach_metadata(plan, self.db, self.intent, self.evidence, self.datasheet_audit,
                         self.old_db, self.old_plan)
         plan['summary'].update(

@@ -8,6 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+from checkers import REGISTRY, validate_inventories
 from validate_remediation import validate_remediation, READINESS
 from electrical_contract import db_fingerprint, load_json
 from plan_review import ReviewPlanner
@@ -109,8 +110,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             planner.plan_features()
             planner.plan_concrete_checks()
             planner.plan_circuit_checks()
-            planner.plan_i2c_topology()
-            planner.plan_decoupling()
+            planner.plan_checkers()
             planner.plan_explicit_evidence()
             for generated in planner.checks:
                 actual = expected.get(generated['id'])
@@ -118,76 +118,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                         generated['id'] + ': automatic check missing or changed from saved inputs')
         except (ValueError, TypeError, KeyError, AttributeError) as error:
             require(False, 'invalid generated-check inputs: ' + str(error))
-    topology_regions = {}
-    require('i2c_topology' in plan or not any(p.get('object', {}).get('i2c_region')
-            for p in expected.values() if isinstance(p.get('object'), dict)), 'I2C checks require their topology inventory')
-    if 'i2c_topology' in plan:
-        topology = plan['i2c_topology']
-        require(isinstance(topology, dict), 'I2C topology must be an object')
-        if isinstance(topology, dict):
-            if db is None:
-                require(False, 'I2C topology validation requires --db')
-            else:
-                try:
-                    context = topology.get('context')
-                    planner = ReviewPlanner(db, {'i2c_topology': context} if context is not None else None)
-                    current = planner.i2c_topology
-                    require(current == topology, 'I2C topology inventory/binding is stale or modified')
-                    topology_regions = {r['id']: r for s in current['states'] for r in s['regions']}
-                    planner.plan_i2c_topology()
-                    for generated in planner.checks:
-                        planned = expected.get(generated['id'])
-                        require(planned is not None, generated['id'] + ': incomplete I2C planned coverage')
-                        if planned:
-                            fields = ('check', 'rule', 'object', 'criterion', 'stage', 'executor')
-                            require(all(planned.get(k) == generated.get(k) for k in fields), generated['id'] + ': I2C generated criterion/object changed')
-                    actual = [p for p in expected.values() if isinstance(p.get('object'), dict) and p['object'].get('i2c_region')]
-                    for p in actual:
-                        obj = p['object']
-                        region = topology_regions.get(obj['i2c_region'])
-                        require(region is not None and obj.get('i2c_topology_digest') == current['digest'], p['id'] + ': stale I2C object binding')
-                        if region:
-                            require(obj.get('state') == region['state'] and obj.get('nets') == region['nets'] and obj.get('net') == region['nets'][0], p['id'] + ': I2C region coordinates differ')
-                except (ValueError, TypeError, KeyError, AttributeError) as error:
-                    require(False, 'invalid I2C topology: ' + str(error))
-    decoupling_checks = {}
-    require('decoupling' in plan or not ('decoupling_version' in plan or any(
-        isinstance(p.get('check'), str) and p['check'].startswith('decoupling-') or
-        isinstance(p.get('object'), dict) and ('decoupling_group' in p['object'] or 'decoupling_scope' in p['object'])
-        for p in expected.values())), 'decoupling checks require their inventory')
-    if 'decoupling' in plan:
-        require(type(plan.get('decoupling_version')) is int and plan['decoupling_version'] == 1,
-                'decoupling_version must be 1')
-        inventory = plan['decoupling']
-        require(isinstance(inventory, dict), 'decoupling inventory must be an object')
-        if isinstance(inventory, dict):
-            if db is None:
-                require(False, 'decoupling inventory validation requires --db')
-            else:
-                try:
-                    context = inventory.get('context')
-                    planner = ReviewPlanner(db, {'decoupling': context} if context is not None else None)
-                    require(planner.decoupling == inventory, 'decoupling inventory/binding is stale or modified')
-                    planner.plan_decoupling()
-                    decoupling_checks = {p['id']: p for p in planner.checks}
-                    for key, generated in decoupling_checks.items():
-                        planned = expected.get(key)
-                        require(planned is not None, key + ': incomplete decoupling planned coverage')
-                        if planned:
-                            fields = ('check', 'rule', 'object', 'criterion', 'stage', 'executor',
-                                      'readiness', 'required_inputs', 'trigger', 'inventory_gaps',
-                                      'required_material_refs', 'handoff')
-                            require(all(planned.get(k) == generated.get(k) for k in fields),
-                                    key + ': decoupling generated criterion/object changed')
-                    for key, planned in expected.items():
-                        obj = planned.get('object')
-                        if isinstance(obj, dict) and ('decoupling_group' in obj or 'decoupling_scope' in obj):
-                            require(obj.get('decoupling_inventory_digest') == planner.decoupling['digest'],
-                                    key + ': stale decoupling object binding')
-                            if key not in decoupling_checks:
-                                require(False, key + ': use an independent object for manual decoupling additions')
-                except (ValueError, TypeError, KeyError, AttributeError) as error:
-                    require(False, 'invalid decoupling inventory: ' + str(error))
+    gates = validate_inventories(REGISTRY, plan, expected, db, require,
+                                 lambda context: ReviewPlanner(db, context))
     checks = index(report.get("checks"), "results.checks")
     findings = index(report.get("findings"), "findings")
     bindings = (require_bindings or revision is not None or 'binding_version' in report
@@ -221,13 +153,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 require(criterion_ok, f'{key}: binding criterion differs from planned criterion')
                 bound_count += int(object_ok and criterion_ok)
         result, app = item.get("review_result"), item.get("applicability")
-        if result == 'PASS' and decoupling_checks.get(key, {}).get('inventory_gaps'):
-            require(False, f'{key}: decoupling gaps must be resolved in a regenerated plan before PASS')
-        planned_obj = expected.get(key, {}).get('object')
-        region_id = planned_obj.get('i2c_region') if isinstance(planned_obj, dict) else None
-        region = topology_regions.get(region_id) if isinstance(region_id, str) else None
-        if region and region['gaps'] and result == 'PASS':
-            require(False, f'{key}: I2C topology gaps must be resolved in a regenerated plan before PASS')
+        if result == 'PASS':
+            for message in gates.get(key, []):
+                require(False, message)
         require(isinstance(result, str) and result in RESULTS, f"{key}: invalid result")
         require(isinstance(app, str) and app in APPLICABILITY, f"{key}: invalid applicability")
         require(text(item.get("rationale")), f"{key}: missing rationale")
