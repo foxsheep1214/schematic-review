@@ -13,6 +13,60 @@ from checkers import states as state_lib
 from plan_review import ReviewPlanner, build_review_plan
 
 
+def whole_board():
+    """一块同时命中全部检查器的合成板，用于框架级契约测试。"""
+    db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {},
+          'pseudo_nets': [], 'ref2page': {}}
+    add = relay_fixture.add
+    # 继电器 + 低边开关 + 续流二极管：inductive_load、power_switch
+    add(db, 'K1', 'RELAY-24V', [('1', 'COIL1', 'RELAY_DRV'), ('2', 'COIL2', 'V24')])
+    add(db, 'D1', '1N4148', [('1', 'A', 'RELAY_DRV'), ('2', 'K', 'V24')])
+    add(db, 'Q1', 'AO3400', [('1', 'G', 'RELAY_EN'), ('2', 'D', 'RELAY_DRV'), ('3', 'S', 'GND')])
+    add(db, 'R1', '100K', [('1', '1', 'RELAY_EN'), ('2', '2', 'GND')])
+    # 降压变换器 + 输入磁珠：input_filter
+    add(db, 'U1', 'BUCK-3A', [('1', 'VIN', 'VIN_12'), ('2', 'SW', 'SW_NODE'),
+                              ('3', 'GND', 'GND'), ('4', 'EN', 'EN_12V')])
+    add(db, 'L1', 'IND-4U7', [('1', '1', 'SW_NODE'), ('2', '2', 'VCC_5V')])
+    add(db, 'FB1', 'BLM21', [('1', '1', 'VIN_12'), ('2', '2', 'V12_RAW')])
+    add(db, 'C1', '10uF', [('1', '1', 'VIN_12'), ('2', '2', 'GND')])
+    add(db, 'R2', '100K', [('1', '1', 'V12_RAW'), ('2', '2', 'EN_12V')])
+    add(db, 'R3', '22K', [('1', '1', 'EN_12V'), ('2', '2', 'GND')])
+    # LDO + 使能分压：power_up
+    add(db, 'U2', 'LDO-3V3', [('1', 'VIN', 'VCC_5V'), ('2', 'EN', 'EN_3V3'),
+                              ('3', 'VOUT', 'VCC_3V3'), ('4', 'GND', 'GND')])
+    add(db, 'R4', '100K', [('1', '1', 'VCC_5V'), ('2', '2', 'EN_3V3')])
+    add(db, 'R5', '22K', [('1', '1', 'EN_3V3'), ('2', '2', 'GND')])
+    # 监控器 + 复位链：supervision
+    add(db, 'U3', 'SUPERVISOR', [('1', 'VCC', 'VCC_3V3'), ('2', 'SENSE', 'SENSE_3V3'),
+                                 ('3', 'WDI', 'WDI_NET'), ('4', 'RESET', 'SYS_RST_N'),
+                                 ('5', 'GND', 'GND')])
+    add(db, 'R6', '100K', [('1', '1', 'VCC_3V3'), ('2', '2', 'SENSE_3V3')])
+    add(db, 'R7', '47K', [('1', '1', 'SENSE_3V3'), ('2', '2', 'GND')])
+    add(db, 'R8', '10K', [('1', '1', 'SYS_RST_N'), ('2', '2', 'VCC_3V3')])
+    # 主控：I²C、去耦、复位输入、差分发送
+    add(db, 'U4', 'SOC', [('1', 'VDD', 'VCC_3V3'), ('2', 'VSS', 'GND'),
+                          ('3', 'SDA', 'I2C_SDA'), ('4', 'SCL', 'I2C_SCL'),
+                          ('5', 'NRST', 'SYS_RST_N'), ('6', 'GPIO1', 'WDI_NET'),
+                          ('7', 'OUTP', 'LVDS_TX_P'), ('8', 'OUTN', 'LVDS_TX_N')])
+    db['pintype'].update({'U4.6': 'OUT', 'U4.7': 'OUT', 'U4.8': 'OUT'})
+    add(db, 'C2', '100nF', [('1', '1', 'VCC_3V3'), ('2', '2', 'GND')])
+    add(db, 'R9', '4.7K', [('1', '1', 'I2C_SDA'), ('2', '2', 'VCC_3V3')])
+    add(db, 'R10', '4.7K', [('1', '1', 'I2C_SCL'), ('2', '2', 'VCC_3V3')])
+    add(db, 'U5', 'EEPROM', [('1', 'SDA', 'I2C_SDA'), ('2', 'SCL', 'I2C_SCL'),
+                             ('3', 'VCC', 'VCC_3V3'), ('4', 'VSS', 'GND')])
+    # LVDS 差分接收：diff_levels
+    add(db, 'U6', 'LVDS-RX', [('1', 'INP', 'LVDS_TX_P'), ('2', 'INN', 'LVDS_TX_N'),
+                              ('3', 'VDD', 'VCC_3V3'), ('4', 'GND', 'GND')])
+    db['pintype'].update({'U6.1': 'IN', 'U6.2': 'IN'})
+    add(db, 'R11', '100R', [('1', '1', 'LVDS_TX_P'), ('2', '2', 'LVDS_TX_N')])
+    # 光耦：optocoupler
+    add(db, 'OK1', 'PC817', [('1', 'ANODE', 'LED_A'), ('2', 'CATHODE', 'OPTO_DRV'),
+                             ('3', 'EMITTER', 'GND'), ('4', 'COLLECTOR', 'OPTO_OUT')])
+    add(db, 'R12', '1K', [('1', '1', 'VCC_5V'), ('2', '2', 'LED_A')])
+    add(db, 'R13', '10K', [('1', '1', 'OPTO_OUT'), ('2', '2', 'VCC_3V3')])
+    return db
+
+
 def run_validation(plan, db, items=None):
     errors = []
     expected = {item['id']: item for item in (items if items is not None else plan['checks'])}
@@ -170,3 +224,48 @@ class StatesTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class WholeBoardContractTest(unittest.TestCase):
+    """全部检查器在同一块板上的框架级契约：识别、绑定、过期、缺口门。"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.db = whole_board()
+        cls.plan = build_review_plan(cls.db)
+
+    def bound_items(self, checker):
+        return [item for item in self.plan['checks'] if checker.binds(item)]
+
+    def test_every_checker_recognises_something_on_the_board(self):
+        for checker in REGISTRY:
+            with self.subTest(checker.id):
+                self.assertTrue(self.bound_items(checker),
+                                '%s recognised nothing' % checker.id)
+
+    def test_clean_plan_validates_for_all_checkers(self):
+        errors, _ = run_validation(self.plan, self.db)
+        self.assertEqual(errors, [])
+
+    def test_tampered_inventory_is_detected_for_every_checker(self):
+        for checker in REGISTRY:
+            with self.subTest(checker.id):
+                plan = copy.deepcopy(self.plan)
+                plan[checker.plan_key]['digest'] = '0' * 64
+                errors, _ = run_validation(plan, self.db)
+                self.assertIn(checker.stale_message, errors)
+
+    def test_dropped_generated_item_is_detected_for_every_checker(self):
+        for checker in REGISTRY:
+            with self.subTest(checker.id):
+                items = [x for x in self.plan['checks'] if not checker.binds(x)]
+                errors, _ = run_validation(self.plan, self.db, items)
+                self.assertTrue(any('incomplete' in message for message in errors), errors)
+
+    def test_unverified_assembly_state_blocks_pass_for_every_checker(self):
+        _, gates = run_validation(self.plan, self.db)
+        for checker in REGISTRY:
+            with self.subTest(checker.id):
+                keys = [item['id'] for item in self.bound_items(checker)]
+                self.assertTrue(any(gates.get(key) for key in keys),
+                                '%s never blocks PASS on an unverified state' % checker.id)

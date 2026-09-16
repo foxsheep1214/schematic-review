@@ -240,7 +240,8 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 - 驱动源：栅极网上的驱动输出脚（引脚名 HO/LO/OUT/DRV/GATE 或引脚类型为输出）、经串联
   电阻/磁珠一跳到达的同类脚、前级开关管漏极、连接器（外部驱动）。
 - 高/低边由源极所在网判定：地=低边，电源轨=高边，其余=浮地/半桥。
-- 吸收：漏源之间或漏到地的电容、TVS/齐纳/二极管、RC（漏→电阻→中间节点→电容→地/源）。
+- 吸收/钳位：开关节点到地、源或电源轨之间的电容、TVS/齐纳/二极管、RC（漏→电阻→中间节点→
+  电容→目标网）。跨负载接到电源轨的续流二极管同样计入，不只看漏源之间。
 - 开关节点证据：节点上的电感/变压器/继电器、对管源极、`SW/LX/PH/HS/LS` 类引脚。
 
 intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）只用于声明角色与

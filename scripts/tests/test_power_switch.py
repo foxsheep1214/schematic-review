@@ -92,6 +92,13 @@ class RecognitionTest(unittest.TestCase):
     def test_clamp_counts_as_damping(self):
         self.assertEqual(findings(switch_board(snubber='tvs')), [])
 
+    def test_freewheel_diode_across_the_load_counts_as_a_clamp(self):
+        db = switch_board()
+        add(db, 'D9', '1N4148', [('1', 'A', 'SW_OUT'), ('2', 'K', 'V12')])
+        switch = switches_of(build_inventory(db))['Q1']
+        self.assertEqual([s['ref'] for s in switch['snubbers']], ['D9'])
+        self.assertEqual(findings(db), [])
+
     def test_resistive_load_without_damping_is_silent(self):
         self.assertEqual(findings(switch_board(load=None)), [])
 

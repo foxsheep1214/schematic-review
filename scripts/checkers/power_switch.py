@@ -77,9 +77,17 @@ class _Scan:
         return found
 
     def snubbers(self, drain_net, source_net):
+        """开关节点到地/源/电源轨的吸收或钳位路径。
+
+        跨负载接到电源轨的续流二极管也是钳位路径，不能只看漏源之间。
+        """
         graph, found = self.graph, []
-        targets = sorted(self.grounds | {source_net} if source_net else self.grounds)
-        for target in targets:
+        targets = set(self.grounds)
+        if source_net:
+            targets.add(source_net)
+        targets |= {other for _, other in graph.neighbors(drain_net)
+                    if ng.is_rail(other) or other in self.grounds}
+        for target in sorted(targets):
             if target == drain_net:
                 continue
             for ref in graph.between(drain_net, target, {ng.CAPACITOR}):
@@ -87,7 +95,7 @@ class _Scan:
             for ref in graph.between(drain_net, target, CLAMP_KINDS):
                 found.append({'ref': ref, 'type': 'clamp-' + graph.kind(ref), 'to': target})
         for ref, middle in graph.neighbors(drain_net, {ng.RESISTOR}):
-            for target in targets:
+            for target in sorted(targets):
                 for cap in graph.between(middle, target, {ng.CAPACITOR}):
                     found.append({'ref': ref + '+' + cap, 'type': 'rc-snubber', 'to': target})
         return sorted(found, key=lambda item: (item['ref'], item['type']))
