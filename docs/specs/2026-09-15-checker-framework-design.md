@@ -172,3 +172,38 @@
 - 兼容风险：重构改变既有检查 ID 或计划内容。处理：注册表顺序固定，并以重构前后输出逐字比对作为 SP1 验收门。
 - 误报风险：拓扑识别在引脚名缺失的库上失效。处理：角色未知形成缺口而非结论；排除规则（稳压器储能电感）有测试。
 - 规模风险：`plan_review.py`、`lint.py` 继续增长。处理：新逻辑全部进入 `checkers/`；两文件行数只减不增作为检查项。
+
+## 10. 实施记录（2026-09-16）
+
+三个子项目均已在 `main` 上本地提交（未推送）：
+
+| 提交 | 内容 |
+|---|---|
+| `e8e9914` | SP1：检查器注册表、netgraph/states/inventory/planutil 共享层、`inductive_load`、文档合并为 `references/checkers.md` |
+| `c134a4e` | SP2：`power_switch`、`input_filter`、`power_up`、`supervision`、`diff_levels`、`optocoupler` 六个检查器与六条热跑规则 |
+| `091f7af` | SP3：`scripts/parse_kicad.py`（kicadxml → 同一 db 契约） |
+| `1070722` | 真实板复核修正：KiCad 引脚名装饰还原、新增 PU-03、反馈脚不计作输出轨 |
+| `54b580b` | 全检查器同板契约测试；PS-02 把接到电源轨的续流二极管计作钳位，消除误报 |
+
+实施期间新增的决策：
+
+| 编号 | 决策 | 理由 |
+|---|---|---|
+| D12 | 解析 KiCad 时按库符号引脚名还原 `pinfunction` 的 `_<脚号>` 装饰 | kicadxml 把引脚名写成 `EN_12`，官方库与 easyeda2kicad 库都如此；不还原则所有按引脚名识别的规则静默失效（实测一块真实板的 EN/SW/FB 全部漏识别） |
+| D13 | 新增冷跑规则 `PU-03`（使能来源不确定） | 同一块真实板上稳压器使能脚悬空，PU-01/PU-02 都不覆盖；内部上/下拉需资料证据，故为 CANDIDATE |
+| D14 | PS-02 把开关节点到任一相邻电源轨的钳位/吸收计入 | 低边继电器驱动的续流二极管跨负载接到电源轨，只看漏源之间会把标准接法报成缺吸收 |
+| D15 | circuit_bench 新家族推迟，本轮不做 | `run.py` 的 `load_dataset` 校验 `generate.py`/`oracle.py` 的哈希，就地扩展会让 1.0 数据集直接不可运行（报 “create a new versioned dataset”）。按其既定约束，新家族应作为独立版本数据集另起一轮；本轮改动改用既有 166 例做回归门，并以全检查器同板契约测试 + 逐热跑规则单元测试（PASS/FAIL/INSUFFICIENT/缺证）承接验收 |
+
+验收实际执行情况：
+
+- 单元测试 327 → 491 全绿（新增 `test_inductive_load`、`test_power_switch`、`test_input_filter`、
+  `test_power_up`、`test_supervision`、`test_diff_levels`、`test_optocoupler`、`test_parse_kicad`、
+  以及 `test_checkers_framework` 的全检查器同板契约）。
+- 重构前后逐字比对：5 个夹具的计划与 lint 输出在既有键、既有检查项与既有规则上零差异
+  （比对脚本排除新键/新检查项/新规则后仍为 0）。
+- `circuit_bench --split all --require-pass`：166/166，`regressed_ids` 为空，与改动前逐例一致。
+- KiCad 冒烟：5 个 KiCad 10 模板工程 + 1 块本机真实板，`.kicad_sch` 与已导出 XML 两条路径均通过
+  自检，并能跑完计划与 lint。
+- 真实板误报复核：六个工程上新规则仅在真实缺陷处命中一条（稳压器使能悬空）。
+
+后续项（未做）：引用原文机械校验、审查深度分级、Altium 输入、circuit_bench 独立新家族（D15）。
