@@ -1,5 +1,6 @@
 import copy
 import pathlib
+import re
 import sys
 import unittest
 
@@ -9,6 +10,9 @@ sys.path.insert(0, str(SCRIPTS))
 import test_inductive_load as relay_fixture
 from checkers import REGISTRY, REGISTRY_BY_ID, registry_cold_rules, validate_inventories
 from checkers import netgraph as ng
+from checkers import powertree
+from checkers.supervision import build_inventory as supervision_inventory
+from lint import Lint
 from checkers import states as state_lib
 from plan_review import ReviewPlanner, build_review_plan
 
@@ -224,6 +228,95 @@ class StatesTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class PinNameAliasTest(unittest.TestCase):
+    """写法差异不该让识别失效；极性标记不能被抹掉。"""
+
+    def test_exporter_and_index_decorations_are_recovered(self):
+        self.assertIn('EN', ng.pin_aliases('EN_12', '12'))
+        self.assertIn('G', ng.pin_aliases('G1', '3'))
+        self.assertIn('VDD', ng.pin_aliases('VDD_1', '1'))
+
+    def test_overbar_and_compound_names_are_recovered(self):
+        self.assertIn('RESET', ng.pin_aliases('~{RESET}', '5'))
+        self.assertIn('SCL', ng.pin_aliases('PB6/SCL', '6'))
+
+    def test_active_low_markers_are_preserved(self):
+        self.assertEqual(ng.pin_aliases('NRST', '4'), ('NRST',))
+        self.assertNotIn('RESET', ng.pin_aliases('RESET_N', '4'))
+
+    def test_raw_name_wins_over_a_stripped_alias(self):
+        db = relay_fixture.relay_board()
+        graph = ng.NetGraph(db)
+        self.assertEqual(graph.role('K1.1'), 'coil')     # A1/COIL1 类原文优先
+
+    def test_decorated_pin_names_still_resolve_roles_and_queries(self):
+        db = relay_fixture.relay_board()
+        for pin, name in (('1', 'G1'), ('2', 'D_2'), ('3', '~{S}')):
+            db['pinname']['Q1.' + pin] = name
+        graph = ng.NetGraph(db)
+        self.assertEqual(graph.role('Q1.1'), 'gate')
+        self.assertEqual(graph.role('Q1.2'), 'drain')
+        self.assertEqual(graph.role('Q1.3'), 'source')
+        self.assertEqual(sorted(graph.named_pins('Q1', re.compile(r'^G$'))), ['Q1.1'])
+
+
+class PowerTreeTest(unittest.TestCase):
+    """轨身份按来源推导，轨名只作最弱一级依据。"""
+
+    def board(self):
+        db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {},
+              'pseudo_nets': ['NC'], 'ref2page': {}}
+        add = relay_fixture.add
+        add(db, 'U1', 'BUCK', [('1', 'VIN', '+12V'), ('2', 'SW', 'SW_NODE'),
+                               ('3', 'GND', 'GND'), ('4', 'VOUT', '+3V3')])
+        add(db, 'L1', 'IND-4U7', [('1', '1', 'SW_NODE'), ('2', '2', '+3V3')])
+        add(db, 'U2', 'SOC', [('1', 'VDD', '+3V3'), ('2', 'GND', 'GND'),
+                              ('3', 'IO', 'VCC_UNFED')])
+        add(db, 'C9', '100nF', [('1', '1', 'NC'), ('2', '2', 'GND')])
+        return db, powertree.PowerTree(ng.NetGraph(db))
+
+    def test_output_pin_makes_a_rail_the_name_regex_misses(self):
+        _, tree = self.board()
+        self.assertFalse(ng.is_rail('+3V3'))             # 轨名正则认不出
+        self.assertEqual(tree.rail_basis('+3V3'), powertree.DRIVER)
+
+    def test_switch_node_is_not_a_rail_despite_reaching_the_output(self):
+        _, tree = self.board()
+        self.assertTrue(tree.driven('SW_NODE'))          # 经电感能回溯到输出脚
+        self.assertTrue(tree.is_switch_node('SW_NODE'))
+        self.assertIsNone(tree.rail_basis('SW_NODE'))
+
+    def test_familiar_name_without_a_source_stays_name_hint(self):
+        _, tree = self.board()
+        self.assertEqual(tree.rail_basis('VCC_UNFED'), powertree.NAME_HINT)
+
+    def test_ground_and_pseudo_nets_are_never_rails(self):
+        _, tree = self.board()
+        self.assertIsNone(tree.rail_basis('GND'))
+        self.assertIsNone(tree.rail_basis('NC'))
+
+    def test_lint_and_checkers_share_one_derivation(self):
+        db, tree = self.board()
+        engine = Lint(db)
+        for net in db['nets']:
+            self.assertEqual(engine.power_path(net), tree.source_of(net), net)
+
+    def test_name_only_rail_identity_is_recorded_as_a_gap(self):
+        db, _ = self.board()
+        add = relay_fixture.add
+        add(db, 'U3', 'SUPERVISOR', [('1', 'VCC', '+3V3'), ('2', 'SENSE', 'SENSE_3V3'),
+                                     ('3', 'WDI', 'WDI'), ('4', 'RESET', 'RST_N'),
+                                     ('5', 'GND', 'GND')])
+        db['pintype']['U3.4'] = 'OUT'
+        add(db, 'U4', 'SENSOR', [('1', 'VDD', 'VCC_UNFED'), ('2', 'GND', 'GND')])
+        rails = {rail['net']: rail for state in supervision_inventory(db)['states']
+                 for rail in state['rails']}
+        self.assertEqual(rails['+3V3']['basis'], powertree.DRIVER)
+        self.assertEqual(rails['+3V3']['gaps'], [])
+        self.assertEqual(rails['VCC_UNFED']['basis'], powertree.NAME_HINT)
+        self.assertEqual(rails['VCC_UNFED']['gaps'], ['rail-identity:VCC_UNFED'])
 
 
 class WholeBoardContractTest(unittest.TestCase):

@@ -11,6 +11,7 @@ import re
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
+from . import powertree
 from . import states as state_lib
 from .base import Checker
 from .planutil import handoff, slug
@@ -38,6 +39,7 @@ class _Scan:
         self.declared = declared
         self.excluded = excluded
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
+        self.tree = powertree.PowerTree(self.graph)
 
     def _pairs(self):
         """成对网名 + 共同器件；只有一侧或无共同器件的不算差分对。"""
@@ -72,7 +74,7 @@ class _Scan:
         terminations = [{'ref': ref, 'to': other}
                         for ref, other in graph.neighbors(net, {ng.RESISTOR})]
         dc_path = sorted({other for ref, other in graph.neighbors(net, DC_PATH_KINDS)
-                          if other in self.grounds or ng.is_rail(other)})
+                          if other in self.grounds or self.tree.is_rail(other)})
         direction = 'unknown'
         for node in graph.nodes_on(net):
             pintype = ng.normalize(graph.pintype.get(node))

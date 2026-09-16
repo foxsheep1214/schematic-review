@@ -10,6 +10,7 @@ import re
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
+from . import powertree
 from . import states as state_lib
 from .base import Checker
 from .planutil import handoff, slug
@@ -38,14 +39,7 @@ class _Scan:
         self.declared = declared
         self.excluded = excluded
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
-
-    def _named_pins(self, ref, pattern):
-        found = {}
-        for pin, net in self.graph.pins_of(ref).items():
-            name = ng.normalize(self.graph.pinname.get(ref + '.' + pin))
-            if name and pattern.match(name):
-                found[ref + '.' + pin] = net
-        return dict(sorted(found.items()))
+        self.tree = powertree.PowerTree(self.graph)
 
     def _reset_destinations(self, net, source_ref):
         found = []
@@ -87,16 +81,16 @@ class _Scan:
         for ref in sorted(graph.parts):
             if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) is not ng.IC:
                 continue
-            watchdogs = self._named_pins(ref, WATCHDOG_IN_RE)
-            senses = self._named_pins(ref, SENSE_RE)
-            manual = self._named_pins(ref, MANUAL_RESET_RE)
-            outputs = {node: net for node, net in self._named_pins(ref, RESET_OUT_RE).items()
+            watchdogs = self.graph.named_pins(ref, WATCHDOG_IN_RE)
+            senses = self.graph.named_pins(ref, SENSE_RE)
+            manual = self.graph.named_pins(ref, MANUAL_RESET_RE)
+            outputs = {node: net for node, net in self.graph.named_pins(ref, RESET_OUT_RE).items()
                        if ng.normalize(graph.pintype.get(node)) in OUT_PINTYPES
                        or ng.normalize(graph.pinname.get(node)) in {'WDO', 'PFO'}
                        or watchdogs or senses or manual}
             if not (watchdogs or senses or manual) or not outputs:
                 continue
-            supplies = sorted(set(self._named_pins(ref, SUPPLY_PIN_RE).values()))
+            supplies = sorted(set(self.graph.named_pins(ref, SUPPLY_PIN_RE).values()))
             found.append({
                 'id': slug(ref),
                 'ref': ref,
@@ -109,7 +103,7 @@ class _Scan:
                     {'node': node, 'net': net,
                      'destinations': self._reset_destinations(net, ref),
                      'pulls': sorted({other for _, other in graph.neighbors(net, {ng.RESISTOR})
-                                      if ng.is_rail(other)})}
+                                      if self.tree.is_rail(other)})}
                     for node, net in sorted(outputs.items())],
                 'gaps': sorted(set(self.state['gaps'])),
             })
@@ -122,7 +116,8 @@ class _Scan:
         supplied = {net for item in supervisors for net in item['supply_nets']}
         found = []
         for net in sorted(graph.nets):
-            if not ng.is_rail(net) or net in graph.pseudo:
+            basis = self.tree.rail_basis(net)
+            if basis is None:
                 continue
             loads = [node for node in graph.nodes_on(net)
                      if graph.kind(node.partition('.')[0]) is ng.IC
@@ -134,8 +129,10 @@ class _Scan:
             monitor = ('sense-pin' if net in sensed else
                        'divider' if divided else
                        'supervisor-supply' if net in supplied else None)
-            found.append({'net': net, 'monitor': monitor,
-                          'loads': sorted({node.partition('.')[0] for node in loads})})
+            found.append({'net': net, 'basis': basis, 'monitor': monitor,
+                          'loads': sorted({node.partition('.')[0] for node in loads}),
+                          'gaps': ([] if basis != powertree.NAME_HINT
+                                   else ['rail-identity:' + net])})
         return found[:MAX_RAILS]
 
 
@@ -234,7 +231,8 @@ class SupervisionChecker(Checker):
                 handoff=handoff({'required': False}, 'APPLICABLE'))
             check['domain'] = 'SUPERVISION'
             check['inventory_gaps'] = sorted(
-                'rail-unmonitored:' + rail['net'] for rail in rails if not rail['monitor'])
+                {'rail-unmonitored:' + rail['net'] for rail in rails if not rail['monitor']}
+                | {gap for rail in rails for gap in rail['gaps']})
 
     def cold_findings(self, lint, inventory):
         for state in inventory['states']:

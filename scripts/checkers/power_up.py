@@ -11,6 +11,7 @@ import re
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
+from . import powertree
 from . import states as state_lib
 from .base import Checker
 from .planutil import handoff, slug
@@ -40,15 +41,8 @@ class _Scan:
         self.declared = declared
         self.excluded = excluded
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
+        self.tree = powertree.PowerTree(self.graph)
         self._regulators = None
-
-    def _named_pins(self, ref, pattern):
-        found = {}
-        for pin, net in self.graph.pins_of(ref).items():
-            name = ng.normalize(self.graph.pinname.get(ref + '.' + pin))
-            if name and pattern.match(name):
-                found[ref + '.' + pin] = net
-        return dict(sorted(found.items()))
 
     def _enable_source(self, enable_net, input_nets):
         """使能来源形态；名字不构成结论，只按连接关系归类。"""
@@ -56,7 +50,7 @@ class _Scan:
         if enable_net in input_nets:
             return 'tied-to-input', []
         to_rail = [(ref, other) for ref, other in graph.neighbors(enable_net, {ng.RESISTOR})
-                   if ng.is_rail(other)]
+                   if self.tree.is_rail(other)]
         to_ground = [(ref, other) for ref, other in graph.neighbors(enable_net, {ng.RESISTOR})
                      if other in self.grounds]
         caps = [ref for ground in sorted(self.grounds)
@@ -91,14 +85,14 @@ class _Scan:
         for ref in sorted(graph.parts):
             if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) is not ng.IC:
                 continue
-            enables = self._named_pins(ref, ENABLE_PIN_RE)
-            outputs = self._named_pins(ref, OUTPUT_PIN_RE)
-            switches = self._named_pins(ref, SWITCH_PIN_RE)
-            feedback = self._named_pins(ref, FEEDBACK_PIN_RE)
+            enables = self.graph.named_pins(ref, ENABLE_PIN_RE)
+            outputs = self.graph.named_pins(ref, OUTPUT_PIN_RE)
+            switches = self.graph.named_pins(ref, SWITCH_PIN_RE)
+            feedback = self.graph.named_pins(ref, FEEDBACK_PIN_RE)
             # 反馈脚只用于认出稳压器，不算输出轨。
             if not enables or not (outputs or switches or feedback):
                 continue
-            inputs = self._named_pins(ref, POWER_PIN_RE)
+            inputs = self.graph.named_pins(ref, POWER_PIN_RE)
             for node, enable_net in enables.items():
                 source, evidence = self._enable_source(enable_net, set(inputs.values()))
                 found.append({
@@ -112,8 +106,8 @@ class _Scan:
                     'enable_evidence': evidence,
                     'input_nets': sorted(set(inputs.values())),
                     'output_nets': sorted(set(outputs.values())),
-                    'softstart': sorted(self._named_pins(ref, SOFTSTART_PIN_RE)),
-                    'power_good': sorted(self._named_pins(ref, GOOD_PIN_RE).values()),
+                    'softstart': sorted(self.graph.named_pins(ref, SOFTSTART_PIN_RE)),
+                    'power_good': sorted(self.graph.named_pins(ref, GOOD_PIN_RE).values()),
                     'gaps': sorted(set(self.state['gaps'])),
                 })
         self._regulators = sorted(found, key=lambda item: item['id'])[:MAX_RAILS]
@@ -131,11 +125,11 @@ class _Scan:
                 continue
             if ref in regulators:
                 continue
-            supplies = set(self._named_pins(ref, POWER_PIN_RE).values())
+            supplies = set(self.graph.named_pins(ref, POWER_PIN_RE).values())
             if not supplies:
                 continue
-            controls = dict(self._named_pins(ref, ENABLE_PIN_RE))
-            controls.update(self._named_pins(ref, RESET_IN_RE))
+            controls = dict(self.graph.named_pins(ref, ENABLE_PIN_RE))
+            controls.update(self.graph.named_pins(ref, RESET_IN_RE))
             for node, net in sorted(controls.items()):
                 if net in supplies and ng.is_rail(net):
                     found.append({'id': slug(ref + '-' + node.partition('.')[2]),

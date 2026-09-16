@@ -10,6 +10,7 @@ import re
 
 from . import inventory as inv
 from . import netgraph as ng
+from . import powertree
 from . import states as state_lib
 from .base import Checker
 from .planutil import handoff, slug
@@ -17,7 +18,6 @@ from .planutil import handoff, slug
 SWITCH_KINDS = {ng.MOSFET, ng.BJT}
 CLAMP_KINDS = {ng.DIODE, ng.TVS, ng.ZENER}
 LOAD_KINDS = {ng.RELAY, ng.INDUCTOR, ng.TRANSFORMER}
-CONVERTER_PIN_RE = re.compile(r'^(SW\d*|LX\d*|PH\d*|VSW|SWITCH|BOOT\w*|BST\w*)$', re.I)
 DRIVER_PIN_RE = re.compile(r'^(OUT\w*|DRV\w*|O\d+|HO|LO|SOURCE\d*|SINK\d*)$', re.I)
 INTEGRATED_CLAMP_RE = re.compile(r'^(COM|CLAMP\w*|VS|FREEWHEEL\w*)$', re.I)
 LOAD_NAME_RE = re.compile(r'(^|_)(MOTOR|SOLENOID|VALVE|COIL|RELAY|PUMP|BRAKE|FAN|ACTUATOR)\w*(_|$)', re.I)
@@ -37,6 +37,7 @@ class _Scan:
 
     def __init__(self, db, state, declared, excluded):
         self.graph = ng.NetGraph(db, fitted=set(state['fitted']))
+        self.tree = powertree.PowerTree(self.graph)
         self.state = state
         self.declared = declared
         self.excluded = excluded
@@ -57,15 +58,14 @@ class _Scan:
             ref = node.partition('.')[0]
             if graph.kind(ref) is not ng.IC or ref in self.excluded:
                 continue
-            name = ng.normalize(graph.pinname.get(node))
-            if name and DRIVER_PIN_RE.match(name):
+            if ng.name_matches(DRIVER_PIN_RE, graph.pinname.get(node), node.partition('.')[2]):
                 return ref, 'driver-pin:' + node
         return None, None
 
     def _is_converter_node(self, net):
         for node in self.graph.nodes_on(net):
-            name = ng.normalize(self.graph.pinname.get(node))
-            if name and CONVERTER_PIN_RE.match(name):
+            if ng.name_matches(powertree.SWITCH_NODE_PIN_RE, self.graph.pinname.get(node),
+                               node.partition('.')[2]):
                 return True
         return False
 
@@ -105,8 +105,8 @@ class _Scan:
         if switch_ref is None or graph.kind(switch_ref) is not ng.IC:
             return []
         for node, net in graph.pins_of(switch_ref).items():
-            name = ng.normalize(graph.pinname.get(switch_ref + '.' + node))
-            if name and INTEGRATED_CLAMP_RE.match(name) and net == rail_net:
+            if net == rail_net and ng.name_matches(
+                    INTEGRATED_CLAMP_RE, graph.pinname.get(switch_ref + '.' + node), node):
                 return [{'ref': switch_ref, 'type': 'integrated-clamp-candidate',
                          'orientation': 'unknown', 'across': 'driver',
                          'node': switch_ref + '.' + node}]
@@ -159,7 +159,7 @@ class _Scan:
                 continue
             if any(item['switch_net'] == net for item in found):
                 continue
-            rails = [other for _, other in graph.neighbors(net) if ng.is_rail(other)]
+            rails = [other for _, other in graph.neighbors(net) if self.tree.is_rail(other)]
             found.append(self._entry(connectors[0], 'external', net, rails[0] if rails else None,
                                      switch_ref, 'name-hint',
                                      ['intent.inductive_loads.loads: 外接负载需声明'],

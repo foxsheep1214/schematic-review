@@ -27,7 +27,8 @@ import sys
 from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
-from checkers import REGISTRY, REGISTRY_BY_ID, registry_hot_rules
+from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID, registry_hot_rules
+from checkers.netgraph import NetGraph
 from electrical_contract import db_fingerprint, load_json, readiness_gaps, validate_evidence
 from fractions import Fraction
 from itertools import product
@@ -118,6 +119,8 @@ class Lint:
         self.skipped = []      # 未执行的规则及原因——绝不静默跳过
         self.hot_executed = set()
         self._ends_cache = {}
+        self.graph = NetGraph(db)
+        self.powertree = PowerTree(self.graph, self.intent)
         self.inventories = {checker.id: checker.build(db, self.intent) for checker in REGISTRY}
 
     # -- helpers ---------------------------------------------------------
@@ -197,46 +200,7 @@ class Lint:
 
     def power_path(self, net):
         """Return a source-to-load candidate path, never a rail signoff."""
-        state = self.intent.get('active_state')
-        sources = {x.get('node'): x for x in self.intent.get('power_sources', [])
-                   if x.get('citation') and state in x.get('states', [])}
-        directed = [x for x in self.intent.get('power_paths', [])
-                    if x.get('citation') and x.get('state') == state]
-        queue, seen = [(net, [])], set()
-        while queue:
-            current, path = queue.pop(0)
-            if current in seen or current in GNDS or current in self.pseudo:
-                continue
-            seen.add(current)
-            for node in self.nets.get(current, []):
-                ref = node.split('.')[0]
-                part = self.parts.get(ref, {})
-                if not part or part.get('nc'):
-                    continue
-                pin = str(self.pinname.get(node, ''))
-                if node in sources:
-                    return {'source': node, 'path': list(reversed(path)),
-                            'basis': 'declared source', 'state': state}
-                if re.match(r'^[UM]\d', ref, re.I) and re.match(
-                        r'^(VOUT|VREG|VDD_EXT|VO)(?:$|[_+\d])', pin, re.I):
-                    return {'source': node, 'path': list(reversed(path)),
-                            'basis': 'pin-name candidate; verify function and upstream power'}
-                ends = self.ends(ref)
-                if len(ends) != 2 or current not in ends:
-                    continue
-                other = ends[0] if ends[1] == current else ends[1]
-                resistor = parse_resistor(part.get('value')) if re.match(r'^R\d', ref) else None
-                if re.match(r'^(L|FB|F)\d', ref) or (resistor and resistor['kohm'] == 0):
-                    queue.append((other, path + [ref]))
-            # Multi-pin MOS models are validated by exact endpoint membership.
-            for edge in directed:
-                ref = edge.get('ref')
-                part = self.parts.get(ref, {})
-                ends = self.ends(ref) if ref else []
-                if (part and not part.get('nc') and edge.get('to') == current
-                        and edge.get('from') in ends and current in ends):
-                    queue.append((edge['from'], path + [ref]))
-        return None
+        return self.powertree.source_of(net)
 
     def driven(self, net):
         return self.power_path(net) is not None

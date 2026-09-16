@@ -6,6 +6,7 @@
 不需要再改主流程。顺序固定，保证既有检查 ID 不变。
 """
 from .base import Checker, validate_inventories
+from .powertree import PowerTree
 from .decoupling import DecouplingChecker
 from .diff_levels import DiffLevelsChecker
 from .i2c import I2CTopologyChecker
@@ -48,5 +49,5 @@ def registry_hot_rules():
     return table
 
 
-__all__ = ['Checker', 'REGISTRY', 'REGISTRY_BY_ID', 'registry_cold_rules',
+__all__ = ['Checker', 'PowerTree', 'REGISTRY', 'REGISTRY_BY_ID', 'registry_cold_rules',
            'registry_hot_rules', 'validate_inventories']

@@ -59,6 +59,54 @@ def normalize(value):
     return str(value).strip().upper() if value is not None else ''
 
 
+OVERBAR_RE = re.compile(r'^~\{(.+)\}$')
+INDEX_SUFFIX_RE = re.compile(r'^(.*?[A-Z])[_-]?(\d+)$')
+
+
+def pin_aliases(name, pin=None):
+    """引脚名的等价写法，原文在前。
+
+    库与导出器对同一个功能名写法不一：`~{RESET}` 的上划线、`EN_12` 的脚号装饰、
+    `G1`/`VDD_1` 的序号、`SDA/A4` 的多功能合写。这里只还原**写法**，不改含义——
+    低有效标记（N 前缀、_N/_B 后缀）一律保留，极性是判据不是噪声。
+    """
+    raw = normalize(name)
+    if not raw:
+        return ()
+    found = []
+
+    def add(value):
+        value = value.strip()
+        if value and value not in found:
+            found.append(value)
+
+    add(raw)
+    for candidate in list(found):
+        # 上划线与等价的低有效写法前缀只影响写法，不影响功能名本身
+        match = OVERBAR_RE.match(candidate)
+        if match:
+            add(match.group(1))
+        elif candidate[:1] in ('~', '#', '!'):
+            add(candidate[1:])
+    for candidate in list(found):
+        if '/' in candidate:                       # SDA/A4、PB6/SCL 之类合写
+            for piece in candidate.split('/'):
+                add(piece)
+    for candidate in list(found):
+        if pin and candidate.endswith('_' + normalize(pin)):
+            add(candidate[:-(len(str(pin)) + 1)])  # 导出器附加的脚号装饰
+    for candidate in list(found):
+        match = INDEX_SUFFIX_RE.match(candidate) if '/' not in candidate else None
+        if match:
+            add(match.group(1))                    # G1/VDD_1 的序号
+    return tuple(found)
+
+
+def name_matches(pattern, name, pin=None):
+    """引脚名的任一等价写法命中即算命中。"""
+    return any(pattern.match(alias) for alias in pin_aliases(name, pin))
+
+
 def classify(ref, part, pin_count=None):
     """返回 (kind, basis)。basis 说明结论来自型号关键字还是位号前缀。"""
     blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
@@ -122,10 +170,23 @@ class NetGraph:
 
     def role(self, node):
         """引脚角色；引脚名缺失时返回 None，调用方必须登记缺口。"""
-        ref, _, _ = node.partition('.')
-        name = normalize(self.pinname.get(node))
-        if not name:
-            return None
+        ref, _, pin = node.partition('.')
+        for alias in pin_aliases(self.pinname.get(node), pin):
+            found = self._role(ref, alias)
+            if found:
+                return found
+        return None
+
+    def named_pins(self, ref, pattern):
+        """某器件上引脚名（任一等价写法）命中 pattern 的脚 -> 网络。"""
+        found = {}
+        for pin, net in self.pins_of(ref).items():
+            node = ref + '.' + pin
+            if name_matches(pattern, self.pinname.get(node), pin):
+                found[node] = net
+        return dict(sorted(found.items()))
+
+    def _role(self, ref, name):
         kind = self.kind(ref)
         if kind in (MOSFET, BJT):
             if name in GATE_NAMES or name.startswith('GATE'):
@@ -172,9 +233,12 @@ class NetGraph:
         refs = {node.partition('.')[0] for node in self.nets.get(net, [])}
         return sorted(ref for ref in refs if not fitted_only or ref in self.fitted)
 
+    def nets_of(self, ref):
+        """该器件接触到的全部网络（去重排序）。"""
+        return sorted(set(self._pins.get(ref, {}).values()))
+
     def terminals(self, ref):
-        pins = self._pins.get(ref, {})
-        nets = sorted(set(pins.values()))
+        nets = self.nets_of(ref)
         return nets if len(nets) == 2 else []
 
     def between(self, net_a, net_b, kinds=None, fitted_only=True):

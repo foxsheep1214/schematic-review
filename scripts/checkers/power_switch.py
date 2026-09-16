@@ -10,6 +10,7 @@ import re
 
 from . import inventory as inv
 from . import netgraph as ng
+from . import powertree
 from . import states as state_lib
 from . import hotmath
 from .base import Checker
@@ -19,7 +20,6 @@ SWITCH_KINDS = {ng.MOSFET, ng.BJT}
 CLAMP_KINDS = {ng.DIODE, ng.TVS, ng.ZENER}
 INDUCTIVE_KINDS = {ng.INDUCTOR, ng.TRANSFORMER, ng.RELAY}
 DRIVER_PIN_RE = re.compile(r'^(HO|LO|HB|OUT\w*|DRV\w*|GATE\w*|SRC|SINK|O\d+)$', re.I)
-SWITCH_NODE_PIN_RE = re.compile(r'^(SW\d*|LX\d*|PH\d*|VSW|SWITCH|HS|LS)$', re.I)
 OUT_PINTYPES = {'OUT', 'OUTPUT', 'BI', 'BIDI', 'BIDIR', 'BIDIRECTIONAL', 'IO', 'I/O',
                 'TRISTATE', '3STATE'}
 MAX_SWITCHES = 256
@@ -42,6 +42,7 @@ class _Scan:
         self.declared = declared
         self.excluded = excluded
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
+        self.tree = powertree.PowerTree(self.graph)
 
     def _driver_pins(self, net, via):
         """网上的驱动输出脚；引脚名或引脚类型成立才算，名字本身不构成结论。"""
@@ -51,9 +52,10 @@ class _Scan:
             if ref in self.excluded or not self.graph.is_fitted(ref):
                 continue
             kind = self.graph.kind(ref)
-            name = ng.normalize(self.graph.pinname.get(node))
+            pin = node.partition('.')[2]
             pintype = ng.normalize(self.graph.pintype.get(node))
-            if kind is ng.IC and (DRIVER_PIN_RE.match(name or '') or pintype in OUT_PINTYPES):
+            if kind is ng.IC and (ng.name_matches(DRIVER_PIN_RE, self.graph.pinname.get(node), pin)
+                                  or pintype in OUT_PINTYPES):
                 found.append({'node': node, 'via': via, 'source': 'driver-pin'})
             elif kind in SWITCH_KINDS and self.graph.role(node) == 'drain':
                 found.append({'node': node, 'via': via, 'source': 'discrete-stage'})
@@ -71,7 +73,7 @@ class _Scan:
     def pulls(self, gate_net, source_net):
         found = []
         for ref, other in self.graph.neighbors(gate_net, {ng.RESISTOR}):
-            if other == source_net or other in self.grounds or ng.is_rail(other):
+            if other == source_net or other in self.grounds or self.tree.is_rail(other):
                 found.append({'ref': ref, 'to': other,
                               'value': self.graph.parts.get(ref, {}).get('value')})
         return found
@@ -86,7 +88,7 @@ class _Scan:
         if source_net:
             targets.add(source_net)
         targets |= {other for _, other in graph.neighbors(drain_net)
-                    if ng.is_rail(other) or other in self.grounds}
+                    if self.tree.is_rail(other) or other in self.grounds}
         for target in sorted(targets):
             if target == drain_net:
                 continue
@@ -114,7 +116,8 @@ class _Scan:
                 if node and self.graph.pin2net.get(node) == drain_net:
                     reasons.append('half-bridge:' + other)
         for node in self.graph.nodes_on(drain_net):
-            if SWITCH_NODE_PIN_RE.match(ng.normalize(self.graph.pinname.get(node)) or ''):
+            if ng.name_matches(powertree.SWITCH_NODE_PIN_RE, self.graph.pinname.get(node),
+                               node.partition('.')[2]):
                 reasons.append('converter-node:' + node)
         return sorted(set(reasons))
 
@@ -132,11 +135,12 @@ class _Scan:
                 gaps.append('pin-roles:' + ref)
             nets = {role: graph.pin2net.get(node) if node else None
                     for role, node in nodes.items()}
-            topology = 'unknown'
+            topology, source_basis = 'unknown', None
             if nets['source'] in self.grounds:
                 topology = 'low-side'
-            elif nets['source'] and ng.is_rail(nets['source']):
+            elif nets['source'] and self.tree.is_rail(nets['source']):
                 topology = 'high-side'
+                source_basis = self.tree.rail_basis(nets['source'])
             elif nets['source']:
                 topology = 'floating'
             drivers = self.drivers(nets['gate']) if nets['gate'] else []
@@ -149,6 +153,7 @@ class _Scan:
                 'kind': graph.kind(ref),
                 'basis': 'declared' if ref in self.declared else 'topology',
                 'topology': topology,
+                'source_rail_basis': source_basis,
                 'gate_node': nodes['gate'],
                 'gate_net': nets['gate'],
                 'drain_net': nets['drain'],

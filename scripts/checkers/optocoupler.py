@@ -9,6 +9,7 @@
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
+from . import powertree
 from . import states as state_lib
 from .base import Checker
 from .planutil import handoff, slug
@@ -30,6 +31,7 @@ class _Scan:
         self.declared = declared
         self.excluded = excluded
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
+        self.tree = powertree.PowerTree(self.graph)
 
     def _series_resistors(self, nets):
         found = []
@@ -52,7 +54,7 @@ class _Scan:
 
     def _pullups(self, net):
         return sorted({ref for ref, other in self.graph.neighbors(net, {ng.RESISTOR})
-                       if ng.is_rail(other)})
+                       if self.tree.is_rail(other)})
 
     def optocouplers(self):
         graph, found = self.graph, []

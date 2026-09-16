@@ -13,12 +13,12 @@ from decoupling import parse_capacitance
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
+from . import powertree
 from . import states as state_lib
 from .base import Checker
 from .planutil import handoff, slug
 
 VIN_PIN_RE = re.compile(r'^(VIN|PVIN|VINA|VCC_IN|VDD_IN|VBUS_IN)\d*$', re.I)
-SWITCH_PIN_RE = re.compile(r'^(SW\d*|LX\d*|PH\d*|VSW|SWITCH|BOOT\w*|BST\w*)$', re.I)
 SERIES_KINDS = {ng.INDUCTOR, ng.FERRITE}
 BULK_RE = re.compile(r'ELEC|ALUM|TANT|POLYMER|OSCON|EEE|EEU|TPS[A-Z]|铝电解|钽', re.I)
 MAX_INPUTS = 128
@@ -40,12 +40,7 @@ class _Scan:
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
 
     def _pin_nets(self, ref, pattern):
-        nets = []
-        for pin, net in self.graph.pins_of(ref).items():
-            name = ng.normalize(self.graph.pinname.get(ref + '.' + pin))
-            if name and pattern.match(name):
-                nets.append(net)
-        return sorted(set(nets))
+        return sorted(set(self.graph.named_pins(ref, pattern).values()))
 
     def _caps_to_ground(self, net):
         found = []
@@ -84,7 +79,7 @@ class _Scan:
             if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) is not ng.IC:
                 continue
             input_nets = self._pin_nets(ref, VIN_PIN_RE)
-            if not input_nets or not self._pin_nets(ref, SWITCH_PIN_RE):
+            if not input_nets or not self._pin_nets(ref, powertree.SWITCH_NODE_PIN_RE):
                 continue
             for net in input_nets:
                 series, gaps = self._series(net)
