@@ -192,10 +192,13 @@
 | D12 | 解析 KiCad 时按库符号引脚名还原 `pinfunction` 的 `_<脚号>` 装饰 | kicadxml 把引脚名写成 `EN_12`，官方库与 easyeda2kicad 库都如此；不还原则所有按引脚名识别的规则静默失效（实测一块真实板的 EN/SW/FB 全部漏识别） |
 | D13 | 新增冷跑规则 `PU-03`（使能来源不确定） | 同一块真实板上稳压器使能脚悬空，PU-01/PU-02 都不覆盖；内部上/下拉需资料证据，故为 CANDIDATE |
 | D14 | PS-02 把开关节点到任一相邻电源轨的钳位/吸收计入 | 低边继电器驱动的续流二极管跨负载接到电源轨，只看漏源之间会把标准接法报成缺吸收 |
-| D15 | circuit_bench 新家族推迟，本轮不做 | `run.py` 的 `load_dataset` 校验 `generate.py`/`oracle.py` 的哈希，就地扩展会让 1.0 数据集直接不可运行（报 “create a new versioned dataset”）。按其既定约束，新家族应作为独立版本数据集另起一轮；本轮改动改用既有 166 例做回归门，并以全检查器同板契约测试 + 逐热跑规则单元测试（PASS/FAIL/INSUFFICIENT/缺证）承接验收 |
+| D15 | circuit_bench 新家族推迟，本轮不做 | `run.py` 的 `load_dataset` 校验 `generate.py`/`oracle.py` 的哈希，就地扩展会让 1.0 数据集直接不可运行（报 “create a new versioned dataset”）。按其既定约束，新家族应作为独立版本数据集另起一轮；本轮改动改用既有 166 例做回归门，并以全检查器同板契约测试 + 逐热跑规则单元测试承接验收：结果只有 PASS/FAIL/INSUFFICIENT 三类（缺保证值、资料未绑定、指纹过期都归 INSUFFICIENT），另有一类不产生结果的入口拒绝——`validate_evidence` 在热跑前打回结构非法的证据 |
 
 验收实际执行情况：
 
+- 每条新热跑规则的用例：PASS、逐条判据各一个 FAIL、保证值缺失的 INSUFFICIENT，以及被
+  `validate_evidence` 拒绝的非法证据。**未覆盖**：证据过期（db/文档哈希变更）导致的
+  INSUFFICIENT，目前只有 circuit_bench 对老规则覆盖。
 - 单元测试 327 → 491 全绿（新增 `test_inductive_load`、`test_power_switch`、`test_input_filter`、
   `test_power_up`、`test_supervision`、`test_diff_levels`、`test_optocoupler`、`test_parse_kicad`、
   以及 `test_checkers_framework` 的全检查器同板契约）。
