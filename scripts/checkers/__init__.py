@@ -7,13 +7,25 @@
 """
 from .base import Checker, validate_inventories
 from .decoupling import DecouplingChecker
+from .diff_levels import DiffLevelsChecker
 from .i2c import I2CTopologyChecker
 from .inductive_load import InductiveLoadChecker
+from .input_filter import InputFilterChecker
+from .optocoupler import OptocouplerChecker
+from .power_switch import PowerSwitchChecker
+from .power_up import PowerUpChecker
+from .supervision import SupervisionChecker
 
 REGISTRY = (
     I2CTopologyChecker(),
     DecouplingChecker(),
     InductiveLoadChecker(),
+    PowerSwitchChecker(),
+    InputFilterChecker(),
+    PowerUpChecker(),
+    SupervisionChecker(),
+    DiffLevelsChecker(),
+    OptocouplerChecker(),
 )
 
 REGISTRY_BY_ID = {checker.id: checker for checker in REGISTRY}

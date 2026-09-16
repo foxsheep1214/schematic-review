@@ -103,3 +103,65 @@ def resolve(db, cfg):
             'declared': True,
         })
     return resolved
+
+
+def section_errors(intent, db, label, *, item_field, item_key, fields,
+                   ref_fields=('ref',), net_fields=()):
+    """检查器 intent 段的共用校验：根字段、指纹、状态、声明条目、排除项。
+
+    没有该段时返回空列表——未声明是缺口（由清单登记），不是输入错误。
+    """
+    if intent is None or (isinstance(intent, dict) and label not in intent):
+        return []
+    if not isinstance(intent, dict) or not isinstance(intent.get(label), dict):
+        return ['%s must be an object' % label]
+    cfg, errors = intent[label], []
+
+    def require(ok, message):
+        if not ok:
+            errors.append(label + ': ' + message)
+
+    allowed = ('schema_version', 'db_sha256', 'states', item_field, 'exclusions')
+    require(not set(cfg) - set(allowed), 'root has unsupported fields')
+    require(type(cfg.get('schema_version')) is int and cfg['schema_version'] == 1,
+            'schema_version must be 1')
+    errors.extend(fingerprint_errors(cfg, db, label))
+    errors.extend(state_errors(cfg, db, label))
+    items = cfg.get(item_field, [])
+    require(isinstance(items, list), item_field + ' must be an array')
+    seen = set()
+    for item in items if isinstance(items, list) else []:
+        if not isinstance(item, dict):
+            require(False, item_key + ' must be an object')
+            continue
+        require(not set(item) - set(fields), item_key + ' has unsupported fields')
+        iid = item.get('id')
+        require(_text(iid) and iid not in seen, item_key + ' id missing/duplicate')
+        if _text(iid):
+            seen.add(iid)
+        require(_text(item.get('citation')), item_key + ' needs a citation')
+        for key in ref_fields:
+            ref = item.get(key)
+            require(isinstance(ref, str) and (db is None or ref in db.get('parts', {})),
+                    item_key + ' ' + key + ' unknown: ' + str(ref))
+        for key in net_fields:
+            net = item.get(key)
+            require(net is None or (isinstance(net, str)
+                                    and (db is None or net in db.get('nets', {}))),
+                    key + ' unknown: ' + str(net))
+    exclusions = cfg.get('exclusions', [])
+    require(isinstance(exclusions, list), 'exclusions must be an array')
+    for item in exclusions if isinstance(exclusions, list) else []:
+        require(isinstance(item, dict) and isinstance(item.get('ref'), str)
+                and _text(item.get('citation')), 'exclusion needs ref and citation')
+    return errors
+
+
+def declared_refs(cfg, item_field):
+    items = (cfg or {}).get(item_field, []) if isinstance(cfg, dict) else []
+    return {item['ref'] for item in items if isinstance(item, dict) and isinstance(item.get('ref'), str)}
+
+
+def excluded_refs(cfg):
+    items = (cfg or {}).get('exclusions', []) if isinstance(cfg, dict) else []
+    return {item['ref'] for item in items if isinstance(item, dict) and isinstance(item.get('ref'), str)}

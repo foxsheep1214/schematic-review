@@ -122,6 +122,26 @@ kind=pin_map、ref 和 expected（引脚号到名称或允许名称数组的映�
 及资料审计；连接器可通过 --require-ref 加入。PASS 仅覆盖 expected 列出的引脚，
 封装方向、全部引脚覆盖与对端定义需独立复核。
 
+## 检查器热跑规则
+
+注册表检查器自带的热跑规则与上列规则同一契约：同样要 id/rule/kind/citation、目标坐标、
+depends_on 与 basis，同样按资料审计绑定文档。差别只在各自的保证值字段——**缺任一项即
+INSUFFICIENT，不得用典型值、经验值或"常见做法"顶替**；比值/系数类门槛（体电容比、CTR
+寿命衰减）必须来自项目规定。各规则字段：
+
+| 规则 | kind | 保证值字段 |
+|---|---|---|
+| PS-10 | `gate_drive` | `channel`（n/p）、`vgs_drive_v{min,max}`、`vgs_rds_on_v`、`vgs_abs_v{min,max}`；P 沟道按量纲翻转后比较 |
+| IF-10 | `input_filter_damping` | `vin_min_v`、`pin_max_w`、`esr_bulk_ohm`、`c_bulk_f`、`c_in_f`、`l_filter_h`、`c_bulk_ratio_min`（项目规定） |
+| PU-10 | `dropout` | `vin_min_v`、`dropout_max_v`（最低温度/最大负载）、`vout_required_min_v` |
+| SV-10 | `reset_pulse` | `pulse_width_s{min,max}`、`required_width_s{min,max}`、`output_type`（open_drain/push_pull） |
+| DL-10 | `diff_level` | `coupling`（ac/dc）、`driver_swing_v`、`receiver_common_mode_v`、`receiver_input_diff_v`，直流耦合另需 `driver_common_mode_v`、交流耦合另需 `bias_common_mode_v` |
+| OC-10 | `opto_ctr` | `drive_v`、`vf_v`、`driver_drop_v`、`r_led_ohm`、`r_pullup_ohm`、`v_pullup_v`、`vol_required_v`、`ctr_min`、`ctr_derating`（项目规定，(0,1]）、`if_abs_max_a` |
+
+结果同样写入 check_results：PASS 带 scope 明示未判定的部分（开关速度、全频阻抗、瞬态、
+抖动、隔离耐压等），FAIL/INSUFFICIENT 带 calculation 保留角点。逐检查器的识别范围与边界见
+[checkers.md](checkers.md)。
+
 ## 输出与迁移
 
 lint.json 的 check_results 每条保留 check_id、review_result、detail/citation；PASS

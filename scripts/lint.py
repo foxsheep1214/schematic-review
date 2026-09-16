@@ -47,6 +47,12 @@ HOT_RULES = [('Rule-08', '参数验算不符'), ('Rule-09', '必需上拉/串阻
 HOT_RULE_IDS = {x[0] for x in HOT_RULES}
 
 
+def hot_rules():
+    """内建热跑规则加注册表热跑规则；未执行的照样要列出来。"""
+    return HOT_RULES + [(rule, name) for rule, (name, _)
+                        in sorted(registry_hot_rules().items())]
+
+
 def _pin_class(value):
     value = str(value or '').strip().upper()
     if value in {'OUT', 'OUTPUT', 'TRISTATE', '3STATE'}:
@@ -794,12 +800,12 @@ def main():
     print('\n=== 本趟未执行（0 条 ≠ 通过）===')
     for rid, name, why in lint.skipped:
         print(f'  {rid:12s} {name:32s} {why}')
-    for rid, name in HOT_RULES:
+    for rid, name in hot_rules():
         if rid not in lint.hot_executed:
             print(f'  {rid:12s} {name:32s} 未提供对应 ER1 结构化证据')
 
     if a.json:
-        pending = [list(item) for item in HOT_RULES
+        pending = [list(item) for item in hot_rules()
                    if item[0] not in lint.hot_executed]
         json.dump({'findings': F,
                    'check_results': lint.results,
@@ -808,7 +814,7 @@ def main():
                    'hot_executed': sorted(lint.hot_executed),
                    'hot_pending': pending,
                    'hot_uncovered_instances': [x['id'] for x in review_plan['checks']
-                       if x.get('rule') in HOT_RULE_IDS and x['readiness'] != 'READY'],
+                       if x.get('rule') in {r for r, _ in hot_rules()} and x['readiness'] != 'READY'],
                    'review_plan': review_plan,
                    'coverage': {
                        'pintype_available': bool(db.get('pintype')),

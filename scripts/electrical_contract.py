@@ -185,6 +185,10 @@ def model_gaps(check):
             threshold = 'vih_min_v' if required == 'high' else 'vil_max_v'
             if not finite(check.get(threshold)):
                 gaps.append(f'{threshold} 保证门限缺失')
+    else:
+        checker = _registry_hot().get(rule)
+        if checker is not None:
+            gaps.extend(checker[1].model_gaps(check))
     return gaps
 
 
@@ -239,6 +243,16 @@ def readiness_gaps(db, check, audit, db_sha256=None):
 
 HOT_RULE_IDS = {'Rule-08', 'Rule-09', 'Rule-12', 'Rule-14', 'Rule-16'}
 
+
+def _registry_hot():
+    """注册表在导入时才需要，延迟取用以免与 checkers 形成导入环。"""
+    from checkers import registry_hot_rules
+    return registry_hot_rules()
+
+
+def hot_rule_ids():
+    return HOT_RULE_IDS | set(_registry_hot())
+
 def validate_evidence(evidence):
     """验证 ER1 结构化证据；拒绝让残缺判据静默进入热跑。"""
     errors = []
@@ -288,7 +302,8 @@ def validate_evidence(evidence):
             errors.append(f'{label} 必须为 object')
             continue
         rule = check.get('rule')
-        if not isinstance(rule, str) or rule not in HOT_RULE_IDS:
+        registry = _registry_hot()
+        if not isinstance(rule, str) or (rule not in HOT_RULE_IDS and rule not in registry):
             errors.append(f'{label}.rule 不支持: {rule!r}')
         check_id = check.get('id')
         if not text_value(check_id):
@@ -363,10 +378,17 @@ def validate_evidence(evidence):
             'Rule-14': {'pin_map'},
             'Rule-16': {'strap'},
         }
+        for checker_rule, (_, checker) in registry.items():
+            kind_by_rule[checker_rule] = set(checker.evidence_kinds.get(checker_rule, ()))
         expected_kind = kind_by_rule.get(rule, set()) if isinstance(
             rule, str) else set()
         if not isinstance(kind, str) or kind not in expected_kind:
             errors.append(f'{label}.kind={kind!r} 与 {rule} 不匹配')
+        if isinstance(rule, str) and rule in registry:
+            if not (text_value(check.get('net')) or text_value(check.get('node'))
+                    or text_value(check.get('ref'))):
+                errors.append(f'{label} 必须给 node/net/ref 之一')
+            errors.extend(registry[rule][1].evidence_errors(check, label))
         if rule == 'Rule-08':
             for key in ('net', 'expected') + (() if 'vref_request' in check else ('vref',)):
                 if key not in check:

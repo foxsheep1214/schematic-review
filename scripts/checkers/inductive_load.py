@@ -6,12 +6,9 @@
 装配状态下的钳位路径。只回答"有没有、接法对不对、缺什么证据"；额定值是否
 足够由 ER4 按器件资料判定。开关电源储能电感不属于本检查器。
 """
-import hashlib
-import json
 import re
 
-from electrical_contract import db_fingerprint
-
+from . import inventory as inv
 from . import netgraph as ng
 from . import states as state_lib
 from .base import Checker
@@ -27,59 +24,12 @@ LOAD_NAME_RE = re.compile(r'(^|_)(MOTOR|SOLENOID|VALVE|COIL|RELAY|PUMP|BRAKE|FAN
 MAX_LOADS = 256
 
 
-def _digest(payload):
-    blob = json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
-    return hashlib.sha256(blob.encode('utf-8')).hexdigest()
-
-
 def validate_inductive_intent(intent, db=None):
     """校验可选的 inductive_loads 配置段。"""
-    if intent is None or (isinstance(intent, dict) and 'inductive_loads' not in intent):
-        return []
-    if not isinstance(intent, dict) or not isinstance(intent.get('inductive_loads'), dict):
-        return ['inductive_loads must be an object']
-    cfg, errors = intent['inductive_loads'], []
-
-    def require(ok, message):
-        if not ok:
-            errors.append('inductive_loads: ' + message)
-
-    allowed = ('schema_version', 'db_sha256', 'states', 'loads', 'exclusions')
-    require(not set(cfg) - set(allowed), 'root has unsupported fields')
-    require(type(cfg.get('schema_version')) is int and cfg['schema_version'] == 1,
-            'schema_version must be 1')
-    errors.extend(state_lib.fingerprint_errors(cfg, db, 'inductive_loads'))
-    errors.extend(state_lib.state_errors(cfg, db, 'inductive_loads'))
-    loads = cfg.get('loads', [])
-    require(isinstance(loads, list), 'loads must be an array')
-    seen = set()
-    for load in loads if isinstance(loads, list) else []:
-        if not isinstance(load, dict):
-            require(False, 'load must be an object')
-            continue
-        require(not set(load) - {'id', 'ref', 'kind', 'switch_net', 'rail_net', 'citation'},
-                'load has unsupported fields')
-        lid = load.get('id')
-        require(isinstance(lid, str) and bool(lid.strip()) and lid not in seen,
-                'load id missing/duplicate')
-        if isinstance(lid, str):
-            seen.add(lid)
-        ref = load.get('ref')
-        require(isinstance(ref, str) and (db is None or ref in db.get('parts', {})),
-                'load ref unknown: ' + str(ref))
-        require(isinstance(load.get('citation'), str) and bool(str(load.get('citation')).strip()),
-                'load needs a citation')
-        for key in ('switch_net', 'rail_net'):
-            net = load.get(key)
-            require(net is None or (isinstance(net, str) and (db is None or net in db.get('nets', {}))),
-                    key + ' unknown: ' + str(net))
-    exclusions = cfg.get('exclusions', [])
-    require(isinstance(exclusions, list), 'exclusions must be an array')
-    for item in exclusions if isinstance(exclusions, list) else []:
-        require(isinstance(item, dict) and isinstance(item.get('ref'), str)
-                and isinstance(item.get('citation'), str) and bool(str(item.get('citation')).strip()),
-                'exclusion needs ref and citation')
-    return errors
+    return state_lib.section_errors(
+        intent, db, 'inductive_loads', item_field='loads', item_key='load',
+        fields=('id', 'ref', 'kind', 'switch_net', 'rail_net', 'citation'),
+        net_fields=('switch_net', 'rail_net'))
 
 
 class _Scan:
@@ -242,27 +192,11 @@ class _Scan:
 def build_inventory(db, intent=None):
     """生成逐状态的感性负载与钳位清单。"""
     cfg = (intent or {}).get('inductive_loads') if isinstance(intent, dict) else None
-    resolved = state_lib.resolve(db, cfg)
-    declared = {load['ref'] for load in (cfg or {}).get('loads', []) if isinstance(load, dict)}
-    excluded = {item['ref'] for item in (cfg or {}).get('exclusions', []) if isinstance(item, dict)}
-    states = []
-    for state in resolved:
-        scan = _Scan(db, state, declared, excluded)
-        states.append({'id': state['id'], 'citation': state['citation'],
-                       'declared': state['declared'], 'gaps': state['gaps'],
-                       'loads': scan.loads()})
-    discovery_gaps = []
-    if cfg is None:
-        discovery_gaps.append('intent.inductive_loads: 未声明感性负载与装配状态')
-    inventory = {
-        'schema_version': 1,
-        'input_sha256': db_fingerprint(db),
-        'context': cfg,
-        'discovery_gaps': sorted(discovery_gaps),
-        'states': states,
-    }
-    inventory['digest'] = _digest(inventory)
-    return inventory
+    declared = state_lib.declared_refs(cfg, 'loads')
+    excluded = state_lib.excluded_refs(cfg)
+    gaps = [] if cfg else ['intent.inductive_loads: 未声明感性负载与装配状态']
+    return inv.build(db, cfg, 'loads',
+                     lambda state: _Scan(db, state, declared, excluded).loads(), gaps)
 
 
 class InductiveLoadChecker(Checker):

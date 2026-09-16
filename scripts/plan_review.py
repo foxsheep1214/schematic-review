@@ -19,7 +19,8 @@ import os
 import re
 import sys
 from collections import Counter
-from checkers import REGISTRY, REGISTRY_BY_ID, registry_cold_rules
+from checkers import (REGISTRY, REGISTRY_BY_ID, registry_cold_rules,
+                      registry_hot_rules)
 from checkers.netgraph import GNDS, RAIL_RE
 from checkers.planutil import empty_handoff as _empty_handoff, handoff as _handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
@@ -851,6 +852,16 @@ class ReviewPlanner:
                     rule, name, 'UNDETERMINED', 'WAITING_EVIDENCE',
                     required_inputs=['design intent/platform applicability'],
                     reason='网表未检测到实例，但不能据此直接判 NA')
+
+        for rule, (name, checker) in sorted(registry_hot_rules().items()):
+            instances = by_rule.get(rule, [])
+            planned = [x for x in self.checks if x['id'] in instances]
+            ready = bool(planned) and all(x['readiness'] == 'READY' for x in planned)
+            self.add_rule(
+                rule, name, 'APPLICABLE' if instances else 'UNDETERMINED',
+                'READY' if ready else 'WAITING_EVIDENCE', instances=instances,
+                required_inputs=[] if ready else ['ER1 structured evidence'],
+                reason='检查器热跑规则；未检测到实例也不得直接判 NA')
 
         pintype = self.db.get('pintype', {})
         self.add_rule(

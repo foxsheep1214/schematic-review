@@ -39,6 +39,11 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 不触发自动通过。缺口必须补齐或保持 `INSUFFICIENT`；带缺口的对象不能写 PASS。电气判据初始
 一律 `WAITING_EVIDENCE`，需专家提供适用规格、工况计算与逐项结论。
 
+**热跑**：检查器自带的热跑规则走同一条 `evidence.json` 管线（字段见
+[datasheet-evidence-schema.md](datasheet-evidence-schema.md)）。输入只接受带出处的保证值：
+缺任一项即 INSUFFICIENT，不用典型值顶替；比值与寿命系数必须来自项目规定。PASS 的 scope
+写明未判定的部分，计算角点保留在 calculation。
+
 **校验**：`validate_review.py --db` 重建清单并逐项对比，拒绝被删检查、改写判据、被篡改的
 摘要/缺口与过期绑定。人工补查项必须使用独立对象，不得复用生成项的对象。摘要只绑定被审
 输入，不验证引用文字真实，也不替代工程审查。
@@ -226,3 +231,136 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 瞬间电流，齐纳/TVS 钳位时开关器件耐压需覆盖电源电压加钳位电压，并核重复频率下的耗散。
 
 依据：`HardwareWiki:wiki/methodology/inductive-load-flyback-clamp-design.md`。
+
+## 功率开关 `power_switch`
+
+维护范围：按引脚角色识别分立 MOSFET/BJT/IGBT，登记栅极驱动源、栅源下拉、开关节点上的
+感性元件与吸收网络。引脚角色缺失时只登记缺口（`pin-roles:REF`），不推定拓扑。
+
+- 驱动源：栅极网上的驱动输出脚（引脚名 HO/LO/OUT/DRV/GATE 或引脚类型为输出）、经串联
+  电阻/磁珠一跳到达的同类脚、前级开关管漏极、连接器（外部驱动）。
+- 高/低边由源极所在网判定：地=低边，电源轨=高边，其余=浮地/半桥。
+- 吸收：漏源之间或漏到地的电容、TVS/齐纳/二极管、RC（漏→电阻→中间节点→电容→地/源）。
+- 开关节点证据：节点上的电感/变压器/继电器、对管源极、`SW/LX/PH/HS/LS` 类引脚。
+
+intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）只用于声明角色与
+装配状态；未声明时按图状态扫描并保留 `assembly state unverified` 缺口。
+
+冷跑：`PS-01` 栅极既无驱动源也无下拉/上拉（上电与驱动高阻时状态不确定）；
+`PS-02` 开关节点接感性元件或半桥中点但无吸收/钳位（CANDIDATE）。
+
+热跑 `PS-10`（`gate_drive`）：最小栅源驱动不低于 RDS(on) 保证条件的 VGS，且驱动窗口不超
+栅源绝限；P 沟道按量纲翻转后比较。PASS 不覆盖开关速度、米勒导通、SOA 与热。
+
+计划项：栅源驱动（ER4 热跑）、安全工作区与降额（ER4，HANDOFF 给热与版图：结温按实际散热
+路径，栅极与换流回路面积最小）、开关节点吸收与驱动器条款（ER3，仅在有开关节点证据时生成，
+HANDOFF 给版图）。
+
+依据：`HardwareWiki:concepts/mosfet-igbt-gate-drive-circuit.md`、`concepts/功率器件栅极驱动保护.md`、
+`concepts/功率开关安全工作区.md`、`concepts/开关节点振荡吸收.md`。
+
+## 开关电源输入滤波 `input_filter`
+
+维护范围：识别同时具备 `VIN/PVIN` 与 `SW/LX/PH/BOOT` 类引脚的开关稳压器，登记其输入网上的
+串联电感/磁珠、两侧对地电容、RC 阻尼支路与体电容候选。线性稳压器不进入本检查器。
+
+- 串联元件只认两端元件；共模扼流等多端器件记 `series-element-topology:REF` 缺口，不猜接法。
+- 体电容候选按型号/值中的 ELEC/ALUM/TANT/POLYMER 等线索给出，仅为候选，ESR 仍须资料证据。
+- 电容标称值沿用去耦模块的解析规则：只解析带明确单位的首项，裸编码不猜。
+
+冷跑：`IF-01` 输入经串联 L/磁珠滤波但既无 RC 阻尼支路也无体电容候选（CANDIDATE）。
+
+热跑 `IF-10`（`input_filter_damping`）：|R<sub>IN</sub>| = V<sub>IN,min</sub>²/P<sub>IN,max</sub>；
+判据为 ESR<sub>bulk,max</sub> < |R<sub>IN</sub>|、ESR<sub>bulk,min</sub> > L<sub>max</sub>/(C<sub>bulk,min</sub>·|R<sub>IN</sub>|)、
+C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶判据**：全频输入阻抗裕量、
+阶跃响应与温度角仍需仿真或实测，PASS 的 scope 已写明。
+
+计划项：阻尼判据（ER4 热跑）、滤波元件饱和/压降/衰减需求（ER3，HANDOFF 给版图与 EMC）。
+
+依据：`HardwareWiki:methodology/dc-dc-输入滤波稳定性评估.md`、`methodology/输入滤波稳定性与阻尼评估.md`。
+
+## 上电过程 `power_up`
+
+维护范围：识别带使能脚且有输出/开关脚的稳压器，归类使能来源，并登记使能/复位与自身供电轨
+同网的负载。时序是否满足需求由 ER3 按需求与器件条款判定。
+
+使能来源形态按连接关系归类，不按名称：`tied-to-input`（与自身输入网同网）、`uvlo-divider`
+（到轨与到地各有电阻）、`rc-delay`（到轨电阻加对地电容）、`sequenced`（PG/PGOOD 类输出驱动）、
+`controlled`（控制器输出脚）、`pulled`、`unknown`。
+
+冷跑：`PU-01` 器件的使能/复位输入与其自身供电脚同网（稳压器自身的直连由 PU-02 覆盖，不重复
+登记）；`PU-02` 稳压器使能直连输入网且无分压/RC（CANDIDATE）。
+
+热跑 `PU-10`（`dropout`）：V<sub>IN,min</sub> − V<sub>dropout,max</sub>(T<sub>min</sub>, I<sub>max</sub>)
+≥ 负载要求的 V<sub>OUT,min</sub>。PASS 不覆盖负载瞬态、启动过程与热关断。
+
+计划项：使能来源与 UVLO/时序（ER3，HANDOFF 给测试：上电/掉电单调性与台阶需实测）、线性轨的
+压差（ER4 热跑）、同步变换器的预偏置启动与软启动（ER3，需资料证据）。
+
+依据：`HardwareWiki:methodology/power-rail-startup-review.md`、`concepts/电源上电时序故障诊断.md`、
+`concepts/同步降压预偏置启动.md`、`methodology/ldo最坏条件选型验证.md`。
+
+## 监控与看门狗 `supervision`
+
+维护范围：识别监控器/看门狗（需同时具备 WDI/SENSE/MR 类引脚与复位类输出脚），登记喂狗输入
+状态、被监测网、复位输出的去向与上拉，以及给 IC 供电的电源轨及其监测覆盖。只有复位输入脚的
+主控不是监控器。
+
+- 喂狗输入状态：`tied`（直接坐在电源/地上）、`driven`（有其他 IC/连接器脚驱动）、
+  `pulled-only`（仅有上/下拉）、`floating`。
+- 轨的监测覆盖分 `sense-pin`、`divider`（经电阻到 sense 网）、`supervisor-supply`（仅供电给监控器，
+  是否等于被监测需资料证据）与未监测。
+
+冷跑：`SV-01` 喂狗输入悬空或固定电平（CANDIDATE）；`SV-02` 复位/看门狗输出未到任何复位输入
+（网上无其他器件=FINDING，只接到其他脚=CANDIDATE）；`SV-03` 在已识别监控器的前提下列出未被
+监测的轨（CANDIDATE）。**没有任何监控器时不报 SV-03**：全板是否需要监控属需求问题，由计划中的
+逐电源域覆盖项（ER2）承接。
+
+热跑 `SV-10`（`reset_pulse`）：复位输出最小脉宽不低于目标复位输入要求；`output_type=open_drain`
+时还要求该网上存在到电源轨的上拉电阻（由网表核实）。PASS 不覆盖阈值精度、迟滞与喂狗时序。
+
+计划项：复位链逐跳与喂狗策略（ER3）、复位脉宽（ER4 热跑）、逐电源域监控覆盖（ER2，逐状态一项，
+未监测的轨写进 `inventory_gaps`）。
+
+依据：`HardwareWiki:methodology/复位时序与看门狗审核.md`、`methodology/multi-rail-brownout-reset-verification.md`。
+
+## 高速差分电平 `diff_levels`
+
+维护范围：按网名成对（`_P/_N`、`_DP/_DN`、`_DP/_DM`、`P/N`、`+/-`）且**两条腿上出现同一个
+器件**识别差分对，登记耦合方式、串联耦合电容、端接与偏置、方向。交流耦合的链路按电容两侧
+各成一对登记，不把两侧短接成一个对象。
+
+- 电平标准来自 intent 声明（按对象 id 或任一条腿网名落位）或名称/型号线索；只有声明依据能让
+  计划项 `APPLICABLE`，名称线索一律 `UNDETERMINED` 并保留 `level-standard:*` 缺口。
+- 方向按引脚类型判定；两侧都未知时记 `pair-direction:*` 缺口，相关冷跑规则不触发。
+
+冷跑：`DL-01` 仅对 LVPECL/PECL 类电流型电平成立——交流耦合且发送侧无到地/到轨直流通路
+（声明依据=FINDING，名称线索=CANDIDATE）；`DL-02` 交流耦合接收侧既无端接也无偏置（CANDIDATE）。
+
+热跑 `DL-10`（`diff_level`）：直流耦合用发送端共模、交流耦合用偏置后共模，须落在接收端共模
+范围内；发送摆幅须落在接收端差分输入范围内。PASS 不覆盖抖动、低频截止、阻抗与回流。
+
+计划项：电平兼容（ER4 热跑）、端接与偏置（ER3，HANDOFF 给版图/SI：差分阻抗、等长、间距、
+参考平面连续与端接就近）。
+
+依据：`HardwareWiki:methodology/high-speed-level-interconnect-review.md`、`concepts/高速电平互连.md`。
+
+## 光耦 `optocoupler`
+
+维护范围：识别光耦器件与其 LED 回路（限流电阻、驱动源）和输出侧（集电极网、上拉电阻、发射极
+参考）。引脚角色缺失时只登记 `pin-roles:REF` 缺口。隔离耐压、爬电距离与安规等级不在本检查器
+定判，走计划项与结构/版图 HANDOFF。
+
+冷跑：`OC-01` LED 两条腿上都没有串联电阻且未声明恒流驱动（intent 中 `drive: constant-current`
+并给出处才可免除）；`OC-02` 集电极网上无到电源轨的上拉（CANDIDATE）。
+
+热跑 `OC-10`（`opto_ctr`）：
+I<sub>F,min</sub> = (V<sub>drive,min</sub> − V<sub>F,max</sub> − V<sub>drop,max</sub>)/R<sub>LED,max</sub>，
+I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>·寿命衰减系数，
+需满足 I<sub>C,可用</sub> ≥ (V<sub>pullup,max</sub> − V<sub>OL,要求</sub>)/R<sub>pullup,min</sub>，
+同时 I<sub>F,max</sub> 不超额定。寿命衰减系数必须来自项目规定，缺规定即 INSUFFICIENT。
+PASS 不覆盖开关速度、温度角与隔离耐压。
+
+计划项：传输能力（ER4 热跑）、隔离归属与耐压（ER3，HANDOFF 给版图与结构）。
+
+依据：`HardwareWiki:concepts/光耦合器隔离传输.md`。

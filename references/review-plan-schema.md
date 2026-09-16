@@ -161,7 +161,9 @@ intent.circuits，再按域内判据及状态展开。此扩展不声称自动�
 ```
 
 支持域：POWER_CONVERTER、POWER_PROTECTION、ANALOG、I2C、STARTUP、DDR、USB_C、
-CAN_RS485、CLOCK。每个具体电路、状态和判据形成独立检查，按 refs 获取各自资料，
+CAN_RS485、CLOCK，以及各检查器自带的 INDUCTIVE_LOAD、POWER_SWITCH、INPUT_FILTER、
+POWER_UP、SUPERVISION、DIFF_LEVELS、OPTOCOUPLER。每个具体电路、状态和判据形成独立
+检查，按 refs 获取各自资料，
 由 Expert Review 填公式、角点、证据、结果、意见和复验方法。无关器件缺资料不
 改变已声明电路的准备度。新增 refs 中需要曲线/额定的无源器件用 audit 的
 --require-ref 加入；不得用全局“datasheets available”掩盖逐物料缺口。
@@ -174,6 +176,11 @@ I²C 另有有界的自动连接覆盖，输入 `intent.i2c_topology`、清单�
 [checkers.md](checkers.md) 的去耦一节。物理脚/装配/分组覆盖与电气判据分开，
 包含零电容、共享位号、未解析容量及直接网络边界；不从清单自动生成 PASS。
 新计划带 `decoupling_version: 1`，最终校验重建清单、对象和逐条要求，变更后须重新审查。
+
+其余检查器同一套结构：清单写在同名顶层键并带 `<id>_version`，计划项的 `object` 带
+`<id>` 与 `<id>_digest` 绑定清单摘要，`inventory_gaps` 保留该对象的缺口——有缺口就不能判
+PASS。检查器自带规则（IL/PS/IF/PU/SV/DL/OC 前缀）与 `Rule-NN` 并列进 `rule_plan`，热跑规则
+按证据实例化。逐检查器的识别范围、intent 段与边界见 [checkers.md](checkers.md)。
 
 电源来源与条件导通另可声明：
 

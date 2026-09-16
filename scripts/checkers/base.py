@@ -17,7 +17,8 @@ class Checker:
     version = None
     intent_key = None        # intent 中的配置段
     cold_rules = {}          # 规则号 -> 名称
-    hot_rules = {}           # 规则号 -> 名称（SP2 起使用）
+    hot_rules = {}           # 规则号 -> 名称
+    evidence_kinds = {}      # 热跑规则号 -> 允许的 kind 集合
 
     generated_fields = ('check', 'rule', 'object', 'criterion', 'stage', 'executor')
     allow_manual_bound_objects = True
@@ -69,6 +70,14 @@ class Checker:
     def hot_check(self, lint, check):
         """执行本检查器的热跑规则（证据已就绪）。"""
         raise NotImplementedError(self.id + ': hot rule handler missing')
+
+    def evidence_errors(self, check, label):
+        """校验本检查器热跑证据的结构；缺字段属结构错误，数值缺口走 model_gaps。"""
+        return []
+
+    def model_gaps(self, check):
+        """缺哪些保证值就不能热跑；返回非空即 INSUFFICIENT，不得用典型值顶替。"""
+        return []
 
     def rule_instances(self, rule, inventory):
         """该规则本次扫描覆盖到的对象标识。"""
