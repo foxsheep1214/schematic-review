@@ -78,6 +78,25 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual(item['enable_source'], 'controlled')
         self.assertEqual([x['source'] for x in item['enable_evidence']], ['controller-output'])
 
+    def test_floating_enable_reports_pu03(self):
+        db = rail_board(enable=None)
+        item = regulators_of(build_inventory(db))['U1']
+        self.assertEqual(item['enable_source'], 'unknown')
+        hits = findings(db)
+        self.assertEqual([f['rule'] for f in hits], ['PU-03'])
+        self.assertEqual(hits[0]['kind'], 'CANDIDATE')
+        self.assertIn('U1.2', hits[0]['detail'])
+
+    def test_feedback_only_regulator_is_recognised_without_a_feedback_rail(self):
+        db = rail_board(enable='divider', kind='switching')
+        db['pinname']['U1.4'] = 'FB'
+        db['nets']['FB_NET'] = ['U1.4']
+        db['nets']['SW_NODE'].remove('U1.4')
+        db['pin2net']['U1.4'] = 'FB_NET'
+        item = regulators_of(build_inventory(db))['U1']
+        self.assertEqual(item['output_nets'], [])
+        self.assertEqual(item['kind'], 'linear')
+
     def test_enable_tied_to_input_reports_pu02(self):
         db = rail_board(enable='tied')
         item = regulators_of(build_inventory(db))['U1']

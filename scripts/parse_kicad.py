@@ -55,6 +55,21 @@ def _text(value):
     return '' if value in ('', NO_NAME) else value
 
 
+def _pin_function(function, declared, pin):
+    """引脚功能名：库符号的引脚名优先，导出器附加的 `_<脚号>` 装饰去掉。
+
+    KiCad 的 kicadxml 把节点 `pinfunction` 写成 `名字_脚号`（官方库与
+    easyeda2kicad 生成的库都如此）。带装饰的名字会让所有按引脚名识别的规则失效
+    （EN_12 不是 EN），因此按库符号的引脚名还原；节点上真正不同的名字属图上指定的
+    替代功能，保留不动。
+    """
+    if not declared:
+        return function
+    if not function or function in (declared, '%s_%s' % (declared, pin)):
+        return declared
+    return function
+
+
 def export_netlist(schematic, target, executable=None):
     """调用 kicad-cli 导出 kicadxml；失败时把 kicad-cli 的原文抛出来。"""
     tool = executable or os.environ.get('KICAD_CLI') or shutil.which('kicad-cli')
@@ -162,10 +177,9 @@ def parse(xml_text, export_errors=()):
             electrical = next((x for x in kinds if x != 'no_connect'), '')
             if electrical:
                 pintype[key] = PINUSE.get(electrical, electrical.upper())
-            function = _text(node.get('pinfunction'))
-            if not function:
-                function = libparts.get(ref2lib.get(ref, ''), {}).get(
-                    'pins', {}).get(pin, ('', ''))[0]
+            declared = libparts.get(ref2lib.get(ref, ''), {}).get(
+                'pins', {}).get(pin, ('', ''))[0]
+            function = _pin_function(_text(node.get('pinfunction')), declared, pin)
             if function:
                 pinname[key] = function
         nets.setdefault(name, []).extend(nodes)

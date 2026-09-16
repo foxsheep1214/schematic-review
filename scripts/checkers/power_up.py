@@ -17,7 +17,8 @@ from .planutil import handoff, slug
 
 ENABLE_PIN_RE = re.compile(r'^(EN|ENABLE|SHDN|_?SHDN|PWREN|EN\d|ENA|ON_OFF)$', re.I)
 RESET_IN_RE = re.compile(r'^(N?RESET\w*|N?RST\w*|MR|POR|XRES|RESETN)$', re.I)
-OUTPUT_PIN_RE = re.compile(r'^(VOUT\d*|OUT\d*|VO|FB|VFB)$', re.I)
+OUTPUT_PIN_RE = re.compile(r'^(VOUT\d*|OUT\d*|VO)$', re.I)
+FEEDBACK_PIN_RE = re.compile(r'^(FB\d*|VFB|VSENSE|VS_FB)$', re.I)
 SWITCH_PIN_RE = re.compile(r'^(SW\d*|LX\d*|PH\d*|HG|LG|HO|LO|BOOT\w*|BST\w*)$', re.I)
 POWER_PIN_RE = re.compile(r'^(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|VIN\d*|PVIN\d*|VBAT|VS)$', re.I)
 SOFTSTART_PIN_RE = re.compile(r'^(SS|SST|SSTART|SOFTSTART|TR|TRACK)$', re.I)
@@ -93,7 +94,9 @@ class _Scan:
             enables = self._named_pins(ref, ENABLE_PIN_RE)
             outputs = self._named_pins(ref, OUTPUT_PIN_RE)
             switches = self._named_pins(ref, SWITCH_PIN_RE)
-            if not enables or not (outputs or switches):
+            feedback = self._named_pins(ref, FEEDBACK_PIN_RE)
+            # 反馈脚只用于认出稳压器，不算输出轨。
+            if not enables or not (outputs or switches or feedback):
                 continue
             inputs = self._named_pins(ref, POWER_PIN_RE)
             for node, enable_net in enables.items():
@@ -170,7 +173,8 @@ class PowerUpChecker(Checker):
     version_key = 'power_up_version'
     version = 1
     intent_key = 'power_up'
-    cold_rules = {'PU-01': '使能/复位与供电轨同时建立', 'PU-02': '使能直连输入轨无 UVLO/延时'}
+    cold_rules = {'PU-01': '使能/复位与供电轨同时建立', 'PU-02': '使能直连输入轨无 UVLO/延时',
+                  'PU-03': '使能来源不确定'}
     hot_rules = {'PU-10': '最坏压差裕量'}
     evidence_kinds = {'PU-10': {'dropout'}}
 
@@ -243,6 +247,13 @@ class PowerUpChecker(Checker):
                          % (load['ref'], state['id'], load['node'], load['net']),
                          load['ref'], kind='CANDIDATE')
             for item in state['regulators']:
+                if item['enable_source'] == 'unknown':
+                    lint.add('PU-03', self.cold_rules['PU-03'],
+                             '%s（状态 %s）：使能脚 %s 所在网 %s 上未找到驱动源、UVLO 分压、'
+                             'RC 或任何上/下拉；悬空或来源不明时开启行为不确定'
+                             % (item['ref'], state['id'], item['enable_node'],
+                                item['enable_net']),
+                             item['ref'], kind='CANDIDATE')
                 if item['enable_source'] != 'tied-to-input':
                     continue
                 lint.add('PU-02', self.cold_rules['PU-02'],
@@ -293,8 +304,9 @@ class PowerUpChecker(Checker):
         if rule == 'PU-01':
             return sorted({load['id'] for state in inventory['states']
                            for load in state.get('coupled_loads', [])})
+        wanted = 'unknown' if rule == 'PU-03' else 'tied-to-input'
         return sorted({item['id'] for _, item in inv.walk(inventory, 'regulators')
-                       if item['enable_source'] == 'tied-to-input'})
+                       if item['enable_source'] == wanted})
 
     def binds(self, item):
         obj = item.get('object')

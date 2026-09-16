@@ -160,6 +160,16 @@ class RobustnessTest(unittest.TestCase):
                            net('SIG', ('U9', '1', 'P', 'future_type'))))
         self.assertEqual(db['pintype']['U9.1'], 'FUTURE_TYPE')
 
+    def test_exporter_pin_number_suffix_is_stripped(self):
+        db = parse(netlist(comp('U1', 'Regulator_Linear', 'LDO', 'LDO'),
+                           net('EN_3V3', ('U1', '4', 'EN_4', 'input'))))
+        self.assertEqual(db['pinname']['U1.4'], 'EN')
+
+    def test_alternate_pin_function_is_kept(self):
+        db = parse(netlist(comp('U1', 'Regulator_Linear', 'LDO', 'LDO'),
+                           net('SYS_EN', ('U1', '4', 'PWREN', 'input'))))
+        self.assertEqual(db['pinname']['U1.4'], 'PWREN')
+
     def test_pin_name_falls_back_to_the_library_symbol(self):
         db = parse(netlist(comp('U1', 'Regulator_Linear', 'LDO', 'LDO'),
                            net('VIN_5V', ('U1', '1', '', 'power_in'))))
