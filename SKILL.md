@@ -54,8 +54,12 @@ PDF 与网表时间接近不能证明同版，需核修订号和关键改动。�
 ### 1. 解析与完整性
 
     python3 scripts/parse_netlist.py <allegro目录> -o db.json
+    python3 scripts/parse_kicad.py <文件.kicad_sch|kicadxml> -o db.json
 
-随附解析器仅实现 Cadence/OrCAD 三件套；其他 EDA 需生成同契约索引并验证适配器。
+随附解析器实现 Cadence/OrCAD 三件套与 KiCad 网表（kicadxml）；其他 EDA 需生成同契约索引
+并验证适配器。KiCad 输入把 No-connect 属性、真悬空引脚与 DNP 不贴分开记：声明 NC 的引脚
+进伪网络并列入 `no_connect_nodes`，无标记的悬空引脚保持真实单节点网由 Rule-01 扫出，
+`nc` 只认 dnp 属性或 VALUE 上的 NC 标记（`exclude_from_bom` 不是装配证据）。
 读 [netlist-parsing.md](references/netlist-parsing.md)：核对重复归网、缺失 primitive、索引互反、
 符号声明引脚和网表实有引脚。解析率不等于官方封装覆盖率；对官方 pinout 双向做差集，
 包括网表完全不存在的脚、EP、隐藏电源和多单元符号。
