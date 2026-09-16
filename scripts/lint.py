@@ -750,13 +750,10 @@ def main():
         json.dump(review_plan, io.open(a.plan_json, 'w', encoding='utf-8'),
                   ensure_ascii=False, indent=2)
         print(f'  -> {a.plan_json}')
-    if a.i2c_topology_json:
-        with open(a.i2c_topology_json, 'w', encoding='utf-8') as stream:
-            json.dump(review_plan['i2c_topology'], stream, ensure_ascii=False, indent=2)
-    if a.decoupling_json:
-        with open(a.decoupling_json, 'w', encoding='utf-8') as stream:
-            json.dump(review_plan['decoupling'], stream, ensure_ascii=False, indent=2, allow_nan=False)
-    for spec in a.checker_json:
+    # 两个旧开关是通用导出的别名，走同一条路径，不另写一份导出代码
+    exports = (['i2c_topology=' + a.i2c_topology_json] if a.i2c_topology_json else []) \
+        + (['decoupling=' + a.decoupling_json] if a.decoupling_json else []) + a.checker_json
+    for spec in exports:
         checker_id, _, path = spec.partition('=')
         checker = REGISTRY_BY_ID.get(checker_id)
         if checker is None or checker.plan_key not in review_plan or not path:
