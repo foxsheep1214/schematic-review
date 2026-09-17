@@ -413,6 +413,9 @@ class Lint:
                 tag = '' if actual == net else f'（网表实为 {actual}）'
                 self.add('DOC-A02', 'No_connect 属性被忽略并强行连线',
                          f'{pin} -> {net}{tag}', pin.split('.')[0])
+        else:
+            for rule in ('DOC-A01', 'DOC-A02'):
+                self.skipped.append((rule, catalog.title(rule), '未提供导出日志（--log）或日志为空'))
         for checker in REGISTRY:
             inventory = self.inventories.get(checker.id)
             if inventory is not None:

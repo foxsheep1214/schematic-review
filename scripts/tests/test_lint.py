@@ -252,7 +252,15 @@ class LintTests(unittest.TestCase):
             item['rule'] == 'SIG-E01' and item['check_id'] == 'EN-SERIES'
             for item in lint.passes))
 
-    def test_rule20_checks_all_bom_identity_fields(self):
+    def test_export_log_rules_are_listed_as_not_executed_without_a_log(self):
+        lint = Lint(sample_db(), intent={'expect': {}})
+        lint.run()
+        self.assertTrue({'DOC-A01', 'DOC-A02'} <= {item[0] for item in lint.skipped})
+        lint = Lint(sample_db(), log_text='Netlist export completed', intent={'expect': {}})
+        lint.run()
+        self.assertFalse({'DOC-A01', 'DOC-A02'} & {item[0] for item in lint.skipped})
+
+    def test_bom_field_hygiene_checks_all_identity_fields(self):
         database = sample_db()
         database['parts']['U1']['jedec'] = ' QFN32'
         lint = Lint(database, intent={'expect': {}})

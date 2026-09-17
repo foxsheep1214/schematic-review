@@ -173,8 +173,12 @@ I2C 为 SIG-C01、SIG-C02、SIG-D01；STARTUP 的 sampled-level/reset-timing/pow
 RST-C02、RST-T03；DDR 为 SIG-D02、SIG-D03；USB_C 的 cc-role/vbus 为 SIG-D04、SIG-C05；
 CAN_RS485 为 SIG-C03、SIG-C04；CLOCK 为 CLK-C01、CLK-D01。
 
-## 6. 未在本轮处理
+## 6. 后续修正与保留项
 
-- 未提供导出日志时，DOC-A01/DOC-A02 不会出现在 Lint 的“本趟未执行”列表中（改动前即如此）。
-- README 的输入说明只提到 Cadence/OrCAD 解析器，未提 KiCad（改动前即如此）。
-- `evals/workflow_bench` 封存数据与 circuit_bench 历史记录保留旧编号，不改写。
+改编号时发现两处原有问题，已在随后的提交中修正：
+
+- 未提供导出日志时，DOC-A01/DOC-A02 没有出现在 Lint 的“本趟未执行”列表中；现在缺日志时
+  二者列入该列表，并有测试覆盖。
+- README 的输入说明只提到 Cadence/OrCAD 解析器；现已补充 KiCad。
+
+`evals/workflow_bench` 封存数据与 circuit_bench 历史记录保留旧编号，不改写。
