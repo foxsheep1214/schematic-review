@@ -3,7 +3,7 @@
 
 Traverse verified fitted two-pin resistors/closed jumpers for discovery. Keep
 finite series resistance and translator boundaries; never flatten them into a
-Rule-09 equivalent. Unverified population, names and external ports stay gaps.
+SIG-E01 equivalent. Unverified population, names and external ports stay gaps.
 """
 import argparse
 from collections import defaultdict, deque
@@ -408,7 +408,7 @@ def build_i2c_topology(db, intent=None):
     buses, confirmed = inv.seeds()
     states = (cfg or {}).get('states', [{'id': 'UNSPECIFIED', 'population': {}, 'jumpers': {}}])
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'context': deepcopy(cfg),
-              'scope': 'connectivity inventory only; no voltage/timing/Rule-09 equivalent or PASS',
+              'scope': 'connectivity inventory only; no voltage/timing/SIG-E01 equivalent or PASS',
               'states': [inv.state_inventory(s, buses, confirmed) for s in sorted(states, key=lambda x: x['id'])]}
     result['digest'] = digest(result)
     return result

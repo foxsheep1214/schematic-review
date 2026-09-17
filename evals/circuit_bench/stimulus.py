@@ -75,16 +75,16 @@ def prepare(case):
         vref = {'typ': case['vref_typ']}
         if case['vref_bounds'] is not None:
             vref.update(zip(('min', 'max'), case['vref_bounds']))
-        check.update(rule='Rule-08', kind='divider', vref=vref,
+        check.update(rule='PWR-E01', kind='divider', vref=vref,
                      expected=dict(zip(('min', 'max'), case['limits'])),
                      divider_model={'source_net': names['OUT'], 'reference_net': names['GND'],
                                     'bias_current_a': dict(zip(('min', 'max'), case['bias_a'])),
                                     'ignored_nodes': {'U1.1': 'Synthetic FB input current explicitly included in bias range'}})
     elif case['kind'] == 'pull':
-        check.update(rule='Rule-09', kind='required_pull', direction='up', to=names['SUPPLY'],
+        check.update(rule='SIG-E01', kind='required_pull', direction='up', to=names['SUPPLY'],
                      resistance_ohm=dict(zip(('min', 'max'), case['limits'])))
     else:
-        check.update(rule='Rule-16', kind='strap', required=case['required'])
+        check.update(rule='RST-E02', kind='strap', required=case['required'])
         check['vih_min_v' if case['required'] == 'high' else 'vil_max_v'] = case['threshold_v']
         evidence = rc_evidence(case)
         if evidence:

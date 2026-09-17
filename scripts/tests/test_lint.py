@@ -47,11 +47,11 @@ def sample_db():
 
 def hot_evidence():
     return {
-        'schema_version': 1,
+        'schema_version': 2,
         'checks': [
             {
                 'id': 'EN-ABS',
-                'rule': 'Rule-12',
+                'rule': 'RST-E01',
                 'kind': 'pin_bias',
                 'node': 'U3.1',
                 'required_default': 'high',
@@ -60,7 +60,7 @@ def hot_evidence():
             },
             {
                 'id': 'SCL-PULL',
-                'rule': 'Rule-09',
+                'rule': 'SIG-E01',
                 'kind': 'required_pull',
                 'net': 'I2C_SCL',
                 'direction': 'up',
@@ -70,7 +70,7 @@ def hot_evidence():
             },
             {
                 'id': 'J1-MAP',
-                'rule': 'Rule-14',
+                'rule': 'DEV-E01',
                 'kind': 'pin_map',
                 'ref': 'J1',
                 'expected': {'1': 'VBUS'},
@@ -78,7 +78,7 @@ def hot_evidence():
             },
             {
                 'id': 'BOOT-LOW',
-                'rule': 'Rule-16',
+                'rule': 'RST-E02',
                 'kind': 'strap',
                 'node': 'U5.1',
                 'required': 'low',
@@ -129,10 +129,10 @@ class LintTests(unittest.TestCase):
 
     def test_evidence_validation_rejects_duplicate_and_bad_ranges(self):
         evidence = {
-            'schema_version': 1,
+            'schema_version': 2,
             'checks': [
                 {
-                    'id': 'DUP', 'rule': 'Rule-08', 'kind': 'divider',
+                    'id': 'DUP', 'rule': 'PWR-E01', 'kind': 'divider',
                     'net': 'FB',
                     'vref': {'min': 0.81, 'typ': 0.8, 'max': 0.79},
                     'resistor_tolerance': 1.2,
@@ -140,7 +140,7 @@ class LintTests(unittest.TestCase):
                     'citation': 'REG datasheet Rev.A p.9',
                 },
                 {
-                    'id': 'DUP', 'rule': 'Rule-12', 'kind': 'pin_bias',
+                    'id': 'DUP', 'rule': 'RST-E01', 'kind': 'pin_bias',
                     'node': 'U1.1', 'required_default': 'high',
                     'citation': 'REG datasheet Rev.A p.4',
                 },
@@ -155,9 +155,9 @@ class LintTests(unittest.TestCase):
 
     def test_evidence_validation_handles_non_string_schema_values(self):
         evidence = {
-            'schema_version': 1,
+            'schema_version': 2,
             'checks': [{
-                'id': ['bad'], 'rule': ['Rule-12'], 'kind': ['pin_bias'],
+                'id': ['bad'], 'rule': ['RST-E01'], 'kind': ['pin_bias'],
                 'node': ['U1.1'], 'required_default': ['high'],
                 'citation': ['not text'],
             }],
@@ -174,22 +174,22 @@ class LintTests(unittest.TestCase):
         findings = lint.run()
         rules = {item['rule'] for item in findings
                  if item['kind'] == 'FINDING'}
-        self.assertIn('Rule-19', rules)
-        self.assertIn('Rule-12', rules)
-        self.assertIn('Rule-09', rules)
-        self.assertIn('Rule-14', rules)
-        self.assertIn('Rule-16', rules)
+        self.assertIn('NET-A06', rules)
+        self.assertIn('RST-E01', rules)
+        self.assertIn('SIG-E01', rules)
+        self.assertIn('DEV-E01', rules)
+        self.assertIn('RST-E02', rules)
         self.assertEqual(
-            lint.hot_executed, {'Rule-09', 'Rule-12', 'Rule-14', 'Rule-16'})
-        self.assertTrue(any(item[0] == 'Rule-19' for item in lint.skipped))
+            lint.hot_executed, {'SIG-E01', 'RST-E01', 'DEV-E01', 'RST-E02'})
+        self.assertTrue(any(item[0] == 'NET-A06' for item in lint.skipped))
 
     def test_hot_divider_uses_worst_case_window(self):
         evidence = {
-            'schema_version': 1,
+            'schema_version': 2,
             'checks': [
                 {
                     'id': 'FB-WCA',
-                    'rule': 'Rule-08',
+                    'rule': 'PWR-E01',
                     'kind': 'divider',
                     'net': 'FB',
                     'vref': {'typ': 0.8, 'min': 0.792, 'max': 0.808},
@@ -204,8 +204,8 @@ class LintTests(unittest.TestCase):
         evidence['checks'][0]['divider_model'] = model
         lint = self.bound_lint(divider_db(), evidence)
         findings = lint.run()
-        self.assertTrue(any(x['rule'] == 'Rule-08' for x in findings))
-        self.assertIn('Rule-08', lint.hot_executed)
+        self.assertTrue(any(x['rule'] == 'PWR-E01' for x in findings))
+        self.assertIn('PWR-E01', lint.hot_executed)
 
     def test_conflicting_pulls_remain_candidate(self):
         database = sample_db()
@@ -216,9 +216,9 @@ class LintTests(unittest.TestCase):
         database['pin2net']['R3.1'] = 'EN_NET'
         database['pin2net']['R3.2'] = 'GND'
         evidence = {
-            'schema_version': 1,
+            'schema_version': 2,
             'checks': [{
-                'id': 'EN-BIAS', 'rule': 'Rule-12', 'kind': 'pin_bias',
+                'id': 'EN-BIAS', 'rule': 'RST-E01', 'kind': 'pin_bias',
                 'node': 'U3.1', 'required_default': 'high',
                 'citation': 'U3 datasheet Rev.A p.4',
             }],
@@ -226,19 +226,19 @@ class LintTests(unittest.TestCase):
         lint = self.bound_lint(database, evidence)
         findings = lint.run()
         self.assertTrue(any(
-            item['rule'] == 'Rule-12' and item['kind'] == 'CANDIDATE'
+            item['rule'] == 'RST-E01' and item['kind'] == 'CANDIDATE'
             and item.get('review_result') == 'INSUFFICIENT'
             for item in findings))
         self.assertFalse(any(
-            item['rule'] == 'Rule-12' and item['check_id'] == 'EN-BIAS'
+            item['rule'] == 'RST-E01' and item['check_id'] == 'EN-BIAS'
             for item in lint.passes))
 
     def test_required_series_honors_explicit_rail_target(self):
         database = sample_db()
         evidence = {
-            'schema_version': 1,
+            'schema_version': 2,
             'checks': [{
-                'id': 'EN-SERIES', 'rule': 'Rule-09',
+                'id': 'EN-SERIES', 'rule': 'SIG-E01',
                 'kind': 'required_series', 'net': 'EN_NET',
                 'to': 'VCC_12V',
                 'resistance_ohm': {'min': 9000, 'max': 11000},
@@ -249,7 +249,7 @@ class LintTests(unittest.TestCase):
         lint = self.bound_lint(database, evidence)
         lint.run()
         self.assertTrue(any(
-            item['rule'] == 'Rule-09' and item['check_id'] == 'EN-SERIES'
+            item['rule'] == 'SIG-E01' and item['check_id'] == 'EN-SERIES'
             for item in lint.passes))
 
     def test_rule20_checks_all_bom_identity_fields(self):
@@ -258,7 +258,7 @@ class LintTests(unittest.TestCase):
         lint = Lint(database, intent={'expect': {}})
         findings = lint.run()
         self.assertTrue(any(
-            item['rule'] == 'Rule-20' and 'U1.jedec' in item['detail']
+            item['rule'] == 'DOC-A03' and 'U1.jedec' in item['detail']
             for item in findings))
 
 

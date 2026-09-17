@@ -3,6 +3,7 @@
 """I²C 连接覆盖检查器（清单引擎仍在 scripts/i2c_topology.py）。"""
 from copy import deepcopy
 
+import catalog
 from i2c_topology import build_i2c_topology, validate_i2c_intent
 
 from .base import Checker
@@ -33,28 +34,24 @@ class I2CTopologyChecker(Checker):
         return build_i2c_topology(db, intent)
 
     def plan(self, planner, inventory):
-        """Inventory coverage is independent of the existing direct Rule-09 check."""
+        """Inventory coverage is independent of the direct SIG-E01 pull-up check."""
         for state in inventory['states']:
             for region in state['regions']:
                 obj = {'net': region['nets'][0], 'nets': region['nets'], 'state': state['id'],
                        'i2c_region': region['id'], 'i2c_topology_digest': inventory['digest']}
                 key = region['id']
                 item = planner.add_check(
-                    'i2c-topology-' + key, obj,
-                    '核对本状态 SDA/SCL 物理端点、装配/跳线、全部上拉与电源域、串阻路径及隔离/外接边界；仅连接覆盖',
-                    'ER3', 'Expert Review',
+                    'SIG-T02', obj, key=key,
                     readiness='WAITING_EVIDENCE' if region['gaps'] else 'READY',
                     required_inputs=region['gaps'], trigger=['i2c-topology:' + key])
-                item['domain'] = 'I2C'
                 item['analysis_required'] = True
-                for check, criterion in planner.circuit_checks['I2C']:
+                for rule in catalog.CIRCUIT_TYPES['I2C']:
                     item = planner.add_check(
-                        'i2c-region-' + key + '-' + check, deepcopy(obj),
-                        criterion + '；按拓扑清单保留串阻节点及跨段耦合，不把远端上拉直接并联或跨有源器件合并',
-                        'ER4', 'Expert Review', readiness='WAITING_EVIDENCE',
-                        required_inputs=region['gaps'] + ['I2C:' + check + ': applicable specifications and state-specific analysis'],
+                        rule, deepcopy(obj), key=key,
+                        criterion=catalog.criterion(rule) + '；按拓扑清单保留串阻节点及跨段耦合，不把远端上拉直接并联或跨有源器件合并',
+                        readiness='WAITING_EVIDENCE',
+                        required_inputs=region['gaps'] + [rule + ': applicable specifications and state-specific analysis'],
                         trigger=['i2c-topology:' + key])
-                    item['domain'] = 'I2C'
                     item['analysis_required'] = True
 
     def binds(self, item):

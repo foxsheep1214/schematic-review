@@ -8,16 +8,17 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+import catalog
 from checkers import REGISTRY, validate_inventories
 from validate_remediation import validate_remediation, READINESS
-from electrical_contract import db_fingerprint, load_json
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
 from plan_review import ReviewPlanner
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
 APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
-SCOPE = {"input_consistency", "requirements", "chains", "states", "datasheets", "history"}
+SCOPE = set(catalog.COVERAGE_RULES)
 
 
 def text(value):
@@ -82,6 +83,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         return {"valid": False, "errors": ["plan/results must be objects"],
                 "release": "NO_GO", "blockers": ["invalid input"]}
     require(report.get("schema_version") == 2, "results.schema_version must be 2")
+    require(plan.get("schema_version") == PLAN_SCHEMA_VERSION,
+            f"plan.schema_version must be {PLAN_SCHEMA_VERSION}; plans with retired check IDs must be regenerated")
     remediation_version = report.get("remediation_version")
     actionable = require_actionable or "remediation_version" in report
     if actionable:
@@ -93,6 +96,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             blockers.append('input netlist failed integrity/export checks')
         require(report.get("db_digest") == fingerprint(db), "db_digest mismatch")
     expected = index(plan.get("checks"), "plan.checks")
+    for key, item in expected.items():
+        for message in catalog.spec_errors(item):
+            require(False, f"{key}: {message}")
     revision_errors, revision = validate_metadata(plan, db, old_db, old_plan, require_revision)
     errors.extend(revision_errors)
     if revision is not None:

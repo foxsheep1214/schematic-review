@@ -76,7 +76,7 @@ class DiffTests(unittest.TestCase):
         self.assertEqual(validate_claims(claims), [])
         evaluated, findings = evaluate_claims(old, new, claims)
         self.assertEqual(evaluated[0]['status'], 'FAIL')
-        self.assertEqual(findings[0]['rule'], 'Rule-17')
+        self.assertEqual(findings[0]['rule'], 'REQ-H01')
 
 
 if __name__ == '__main__':

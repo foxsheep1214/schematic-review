@@ -67,7 +67,7 @@ def evaluate(payload, sut, directory):
     elif payload['evidence_state'] == 'stale_document':
         for source in sources:
             source['sha256'] = '0' * 64
-    evidence = {'schema_version': 1, 'checks': [check]}
+    evidence = {'schema_version': 2, 'checks': [check]}
     errors = validate_evidence(evidence) + validate_datasheet_audit(audit, db)
     if errors:
         raise ValueError('; '.join(errors))

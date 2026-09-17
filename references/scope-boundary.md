@@ -31,16 +31,16 @@ A/B/C 定义以 severity-calibration.md 为准；C 表示结论证据未齐，�
 
 ## 自动产物到报告状态的映射
 
-| AC0/ER 中间产物 | 报告落点 |
+| 自动扫描/证据计算的中间产物 | 报告落点 |
 |---|---|
 | FINDING | 专家复核确认后为 FAIL；有反证排除后为 PASS，并保留排除依据 |
-| CANDIDATE | 判据未补齐前为 INSUFFICIENT；补齐 ER1/需求证据后转 PASS 或 FAIL |
+| CANDIDATE | 判据未补齐前为 INSUFFICIENT；补齐资料取证/需求证据后转 PASS 或 FAIL |
 | 自动验证 PASS | 仅该输入对象和判据的候选通过，专家核实模型/覆盖后才能写最终 PASS，保留 check id、计算和 citation |
 | SKIPPED / pending | 适用但缺输入为 INSUFFICIENT；有依据确认不适用才是 NA |
 | 依赖布局、实测、结构或生产落实的要求 | 独立 HANDOFF，写接收阶段、约束和验证方法；不替换本项结果 |
 
-因此 Lint 命中不等于 FAIL，Lint 零命中也不等于 PASS；最终状态由 ER1～ER7 在证据链
-上复核后给出。
+因此 Lint 命中不等于 FAIL，Lint 零命中也不等于 PASS；最终状态由专家审查（方式 T/C/D/V/Q）
+在证据链上复核后给出。
 
 ## 边界矩阵
 

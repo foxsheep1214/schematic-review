@@ -3,11 +3,12 @@
 """功率开关：栅极驱动、开关节点吸收与安全工作区检查器。
 
 按引脚角色识别分立开关管，登记每个装配状态下的栅极驱动源、栅源下拉、
-开关节点上的感性元件与吸收网络。栅源驱动窗口用 ER1 提供的保证值热跑；
+开关节点上的感性元件与吸收网络。栅源驱动窗口由证据计算（DRV-E01）按资料保证值判定；
 安全工作区、死区、自举欠压与热由专家按器件资料判定，本检查器不代判。
 """
 import re
 
+import catalog
 from . import inventory as inv
 from . import netgraph as ng
 from . import powertree
@@ -184,9 +185,9 @@ class PowerSwitchChecker(Checker):
     version_key = 'power_switch_version'
     version = 1
     intent_key = 'power_switches'
-    cold_rules = {'PS-01': '栅极无驱动源且无下拉', 'PS-02': '开关节点无吸收/钳位'}
-    hot_rules = {'PS-10': '栅源驱动窗口'}
-    evidence_kinds = {'PS-10': {'gate_drive'}}
+    cold_rules = catalog.titles(method='A', source='power_switch')
+    hot_rules = catalog.titles(method='E', source='power_switch')
+    evidence_kinds = {'DRV-E01': {'gate_drive'}}
 
     missing_inventory_message = 'power switch checks require their inventory'
     inventory_type_message = 'power switch inventory must be an object'
@@ -216,45 +217,33 @@ class PowerSwitchChecker(Checker):
             if switch['gate_node']:
                 obj['node'] = switch['gate_node']
             gaps = switch['gaps']
-            ready = planner.evidence_ready('PS-10', obj)
+            ready = planner.evidence_ready('DRV-E01', obj)
             item = planner.add_check(
-                'power-switch-gate-drive-' + switch['id'], dict(obj),
-                '按保证值核栅源驱动窗口：最小驱动不低于 RDS(on) 保证条件的 VGS，'
-                '最大驱动不超栅源绝限；驱动源与下拉在上电、故障与高阻态下均确定',
-                'ER4', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                'DRV-E01', dict(obj), key=switch['id'],
+                readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: PS-10 栅源驱动/绝限/RDS(on) 条件保证值']))),
-                trigger=['power-switch:' + switch['id'], 'topology:' + switch['topology']],
-                rule='PS-10')
-            item['domain'] = 'POWER_SWITCH'
+                    'evidence: DRV-E01 栅源驱动/绝限/RDS(on) 条件保证值']))),
+                trigger=['power-switch:' + switch['id'], 'topology:' + switch['topology']])
             item['inventory_gaps'] = gaps
             item = planner.add_check(
-                'power-switch-soa-' + switch['id'], dict(obj),
-                '按实际电流、电压、脉宽、换流速度与栅偏共同核安全工作区与降额；'
-                '不能只用 I²·RDS(on) 代替 SOA，重复脉冲与单次脉冲分别核',
-                'ER4', 'Expert Review', readiness='WAITING_EVIDENCE',
+                'DRV-C02', dict(obj), key=switch['id'], readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
                     'datasheet:SOA 曲线与脉宽条件', 'intent:最坏工况电流/电压/重复率'])),
                 trigger=['power-switch:' + switch['id']],
                 handoff=handoff({'required': True, 'receivers': ['Thermal', 'PCB Layout'],
                                  'constraint': '结温按实际散热路径核算，栅极回路与开关回路面积最小',
                                  'verification': '热仿真/实测结温与开关波形复核'}, 'APPLICABLE'))
-            item['domain'] = 'POWER_SWITCH'
             item['analysis_required'] = True
             item['inventory_gaps'] = gaps
             if switch['switch_node_evidence']:
                 item = planner.add_check(
-                    'power-switch-node-damping-' + switch['id'], dict(obj),
-                    '核开关节点尖峰与振铃：吸收/钳位网络的存在、参数与耗散，'
-                    '死区、自举欠压、负压与短路软关断按驱动器条款逐项核',
-                    'ER3', 'Expert Review', readiness='WAITING_EVIDENCE',
+                    'DRV-D01', dict(obj), key=switch['id'], readiness='WAITING_EVIDENCE',
                     required_inputs=sorted(set(gaps + [
                         'datasheet:开关器件耐压与驱动器条款', 'evidence:开关节点波形或仿真'])),
                     trigger=['power-switch:' + switch['id']] + switch['switch_node_evidence'],
                     handoff=handoff({'required': True, 'receivers': ['PCB Layout'],
                                      'constraint': '吸收网络紧靠开关节点，换流回路面积最小',
                                      'verification': '版图复核吸收回路与实测尖峰'}, 'APPLICABLE'))
-                item['domain'] = 'POWER_SWITCH'
                 item['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):
@@ -263,12 +252,12 @@ class PowerSwitchChecker(Checker):
                 continue
             head = '%s（%s，状态 %s）' % (switch['ref'], switch['kind'], state['id'])
             if not switch['drivers'] and not switch['gate_pulls']:
-                lint.add('PS-01', self.cold_rules['PS-01'],
+                lint.add('DRV-A03', self.cold_rules['DRV-A03'],
                          head + '：栅极网 ' + switch['gate_net']
                          + ' 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定',
                          switch['ref'])
             if switch['switch_node_evidence'] and not switch['snubbers']:
-                lint.add('PS-02', self.cold_rules['PS-02'],
+                lint.add('DRV-A04', self.cold_rules['DRV-A04'],
                          head + '：开关节点 ' + str(switch['drain_net'])
                          + ' 上有 ' + '、'.join(switch['switch_node_evidence'])
                          + '，但未见 RC/RCD 吸收或钳位；关断尖峰与振铃需按器件耐压核实',
@@ -298,11 +287,11 @@ class PowerSwitchChecker(Checker):
             target, hotmath.fmt(drive[0]), hotmath.fmt(drive[1]), hotmath.fmt(spec),
             hotmath.fmt(limits[0]), hotmath.fmt(limits[1]), lint._citation(check))
         if problems:
-            lint.add('PS-10', '栅源驱动窗口不满足保证条件', detail + '；' + '；'.join(problems),
+            lint.add('DRV-E01', '栅源驱动窗口不满足保证条件', detail + '；' + '；'.join(problems),
                      str(check.get('ref') or '').split('.')[0] or None,
                      check_id=check['id'], citation=check['citation'], calculation=calculation)
         else:
-            lint.record_pass('PS-10', check, detail,
+            lint.record_pass('DRV-E01', check, detail,
                              scope='所给保证值下的栅源驱动窗口；开关速度、米勒导通、SOA 与热未判定',
                              calculation=calculation)
 

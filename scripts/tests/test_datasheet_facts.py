@@ -34,7 +34,7 @@ class DatasheetFactsTests(unittest.TestCase):
         self.root = pathlib.Path(self.directory.name)
         self.db = divider_db()
         self.db['parts']['U1'].update(value='REG-I-QFN', jedec='QFN-16')
-        self.request = {'schema_version': 1, 'checks': [fb_check()]}
+        self.request = {'schema_version': 2, 'checks': [fb_check()]}
         self.audit = bind_evidence(self.db, self.request, self.directory.name)
         check = self.request['checks'][0]
         check.pop('vref')

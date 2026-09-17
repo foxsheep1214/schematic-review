@@ -4,10 +4,11 @@
 
 识别继电器线圈、由开关驱动的电感/绕组以及经连接器外接的感性负载，登记每个
 装配状态下的钳位路径。只回答"有没有、接法对不对、缺什么证据"；额定值是否
-足够由 ER4 按器件资料判定。开关电源储能电感不属于本检查器。
+足够由工程计算（DRV-C01）按器件资料判定。开关电源储能电感不属于本检查器。
 """
 import re
 
+import catalog
 from . import inventory as inv
 from . import netgraph as ng
 from . import powertree
@@ -206,7 +207,7 @@ class InductiveLoadChecker(Checker):
     version_key = 'inductive_load_version'
     version = 1
     intent_key = 'inductive_loads'
-    cold_rules = {'IL-01': '感性负载无续流/钳位路径', 'IL-02': '续流二极管方向接反'}
+    cold_rules = catalog.titles(method='A', source='inductive_load')
 
     missing_inventory_message = 'inductive load checks require their inventory'
     inventory_type_message = 'inductive load inventory must be an object'
@@ -237,10 +238,7 @@ class InductiveLoadChecker(Checker):
                     obj['nets'] = sorted({x for x in (load['switch_net'], load['rail_net']) if x})
                 applicability = 'UNDETERMINED' if load['basis'] == 'name-hint' else 'APPLICABLE'
                 item = planner.add_check(
-                    'inductive-load-clamp-topology-' + load['id'], dict(obj),
-                    '核对本状态该感性负载的续流/钳位路径是否存在、方向是否正确、钳位器件是否贴装；'
-                    '驱动器内部钳位须有资料证据，网名或型号不构成结论',
-                    'ER3', 'Expert Review', applicability=applicability,
+                    'DRV-T01', dict(obj), key=load['id'], applicability=applicability,
                     readiness='WAITING_EVIDENCE' if load['gaps'] else 'READY',
                     required_inputs=load['gaps'],
                     trigger=['inductive-load:' + load['id'], 'basis:' + load['basis']],
@@ -248,19 +246,14 @@ class InductiveLoadChecker(Checker):
                         'receivers': ['PCB Layout'],
                         'constraint': '钳位器件靠近负载与开关，续流回路面积最小',
                         'verification': '版图复核钳位回路与摆放'}, applicability))
-                item['domain'] = 'INDUCTIVE_LOAD'
                 item['inventory_gaps'] = load['gaps']
                 item = planner.add_check(
-                    'inductive-load-clamp-rating-' + load['id'], dict(obj),
-                    '按线圈关断瞬间电流与电源最高电压核钳位器件额定：反向耐压、峰值/重复电流、'
-                    '钳位电压加电源电压不超过开关器件耐压、重复频率下的耗散',
-                    'ER4', 'Expert Review', applicability=applicability,
+                    'DRV-C01', dict(obj), key=load['id'], applicability=applicability,
                     readiness='WAITING_EVIDENCE',
                     required_inputs=sorted(set(load['gaps'] + [
                         'datasheet:钳位器件额定值', 'datasheet:开关器件耐压',
                         'intent:线圈电阻/电感与电源最高电压'])),
                     trigger=['inductive-load:' + load['id']])
-                item['domain'] = 'INDUCTIVE_LOAD'
                 item['analysis_required'] = True
                 item['inventory_gaps'] = load['gaps']
 
@@ -272,14 +265,14 @@ class InductiveLoadChecker(Checker):
                 detail_head = '%s（%s，状态 %s）: 开关节点 %s' % (
                     load['ref'], load['kind'], state['id'], load['switch_net'])
                 if not load['clamps']:
-                    lint.add('IL-01', self.cold_rules['IL-01'],
+                    lint.add('DRV-A01', self.cold_rules['DRV-A01'],
                              detail_head + ' 与 ' + str(load['rail_net'])
                              + ' 之间未见续流二极管、钳位器件或 RC 吸收；'
                                '若由驱动器内部钳位需给出资料证据',
                              load['ref'])
                 for clamp in load['clamps']:
                     if clamp['orientation'] == 'reversed':
-                        lint.add('IL-02', self.cold_rules['IL-02'],
+                        lint.add('DRV-A02', self.cold_rules['DRV-A02'],
                                  detail_head + '：' + clamp['ref']
                                  + ' 阴极接在开关节点、阳极接电源，导通方向与续流相反',
                                  load['ref'])

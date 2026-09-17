@@ -12,7 +12,7 @@
 多功能合写 `PB6/SCL` 都还原成功能名，原文优先、逐个候选试。**低有效标记不动**——`NRST`、
 `RESET_N` 的极性是判据，不是写法噪声。
 
-**电源轨身份**由 `powertree` 统一推导，与 Rule-04/05 的来源判定共用同一套逻辑：
+**电源轨身份**由 `powertree` 统一推导，与 PWR-A01/PWR-A02 的来源判定共用同一套逻辑：
 
 | 依据 | 含义 |
 |---|---|
@@ -22,14 +22,14 @@
 
 带 `SW/LX/PH/BOOT/BST` 类引脚的网是**开关节点，不算直流轨**——它经储能电感能回溯到输出脚，
 但本身不是可监测、可挂负载的轨。只有 `name-hint` 的轨登记 `rail-identity:<net>` 缺口；
-来源候选仍需 ER2 核实功能与上游供电，推导出来不等于这条轨合格。
+来源候选仍需 PWR-T01 核实功能与上游供电，推导出来不等于这条轨合格。
 
 **识别依据**分三级，随对象一并记录：
 
 | 依据 | 来源 | 可产生 |
 |---|---|---|
-| `declared` | intent 明确声明并带出处 | 冷跑发现、计划项、热跑 |
-| `topology` | 连接关系加引脚角色成立 | 冷跑发现、计划项、热跑 |
+| `declared` | intent 明确声明并带出处 | 自动扫描发现、计划项、证据计算 |
+| `topology` | 连接关系加引脚角色成立 | 自动扫描发现、计划项、证据计算 |
 | `name-hint` | 只有网名/型号线索 | 计划项（`UNDETERMINED`，需 intent 确认） |
 
 名称、`nc=false`、库名 `Bridged`、焊盘默认图形都不是证据。无法分类的器件记为未知并形成
@@ -55,7 +55,7 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 不触发自动通过。缺口必须补齐或保持 `INSUFFICIENT`；带缺口的对象不能写 PASS。电气判据初始
 一律 `WAITING_EVIDENCE`，需专家提供适用规格、工况计算与逐项结论。
 
-**热跑**：检查器自带的热跑规则走同一条 `evidence.json` 管线（字段见
+**证据计算**：检查器的证据计算规则（方式 E）走同一条 `evidence.json` 管线（字段见
 [datasheet-evidence-schema.md](datasheet-evidence-schema.md)）。输入只接受带出处的保证值：
 缺任一项即 INSUFFICIENT，不用典型值顶替；比值与寿命系数必须来自项目规定。PASS 的 scope
 写明未判定的部分，计算角点保留在 calculation。
@@ -64,8 +64,9 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 摘要/缺口与过期绑定。人工补查项必须使用独立对象，不得复用生成项的对象。摘要只绑定被审
 输入，不验证引用文字真实，也不替代工程审查。
 
-**规则编号**：检查器自带规则用检查器前缀，01–09 为冷跑、10 起为热跑，与既有 `Rule-NN` 并存
-且互不改写。
+**规则编号**：检查器的规则与其他规则共用[规则总表](check-catalog.md)的编号（`内容域-方式序号`），
+在 `scripts/catalog.py` 以检查器 id 为来源登记；检查器类只引用编号，自动扫描（A）与证据计算（E）
+规则由 `cold_rules`/`hot_rules` 从总表取出。下文各节列出每个检查器使用的规则。
 
 ## I²C 连接覆盖（`i2c_topology`）
 
@@ -120,10 +121,10 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 每状态最多 1024 个候选网络，达上限记录缺口及 `unvisited_seed_nets/unvisited_frontier_nets`。
 `segments` 是连接分组，不证明 0Ω/跳线无压降或无限带宽。
 
-计划：每状态、每连接区域新增 1 项连接覆盖检查及 3 项 I²C 电气判据（灌电流/上升时间、
-电压域/掉电、地址/复用/装配状态）。有限串阻各段保留节点做关联分析，有源器件两侧另查传输条件。
-不能由"有一只上拉"生成 PASS。本清单与原有 Rule-09 直接连接/直接并联计算并存，不扩大后者模型，
-也不自动把清单或 state population 注入热跑；不同装配变体需各自的 db 与绑定该 db/状态的 evidence。
+计划：每状态、每连接区域新增 1 项连接覆盖检查（SIG-T02）及 3 项 I²C 电气判据（SIG-C01
+灌电流/上升时间、SIG-C02 电压域/掉电、SIG-D01 地址/复用/装配状态）。有限串阻各段保留节点做关联分析，有源器件两侧另查传输条件。
+不能由"有一只上拉"生成 PASS。本清单与 SIG-E01 的直接连接/直接并联计算并存，不扩大后者模型，
+也不自动把清单或 state population 注入证据计算；不同装配变体需各自的 db 与绑定该 db/状态的 evidence。
 
 ## 去耦覆盖（`decoupling`）
 
@@ -198,16 +199,17 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 标称值只解析有明确单位的首项（100nF、4.7u/10%/16V、4n7、1e-6F），不猜 104 等裸编码；无法解析的
 已贴电容保留数量与缺口，不当作 0，不猜耐压/介质，不自动估算 ESR 或降容系数。
 
-计划：清单完整性项 + 逐状态逐组连接覆盖项，随后分开审查接法、数量/容量与额定值。电气行的
-`required_material_refs` 列出目标器件与本组已确认贴装的电容，供 ER1 按需
+计划：清单完整性项（PWR-D01）+ 逐状态逐组连接覆盖项（PWR-T03），随后分开审查接法（PWR-D02）、
+数量/容量（PWR-C09）与额定值（PWR-C10）；`requirements` 的三类 `kind` 依次对应这三条规则。电气行的
+`required_material_refs` 列出目标器件与本组已确认贴装的电容，供资料取证时按需
 `audit_datasheets.py --require-ref C1`；参数需绑定准确电容订货码，不能用一般
 `datasheets.available` 替代逐料号证据。接法行独立形成 PCB HANDOFF。容量缺口不自动否定另一个
-已证实的窄连接结论；不含本功能标记的旧计划兼容读取，但不代表经过新去耦门。
+已证实的窄连接结论。
 
 ## 感性负载续流与钳位（`inductive_load`）
 
 维护范围：识别继电器线圈、由开关驱动的电感/绕组、经连接器外接的感性负载，登记每个装配状态下
-的钳位路径。只回答"有没有、接法对不对、缺什么证据"；额定值是否足够由 ER4 按器件资料判定。
+的钳位路径。只回答"有没有、接法对不对、缺什么证据"；额定值是否足够由 DRV-C01 按器件资料判定。
 
 识别与排除：
 
@@ -215,7 +217,7 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   芯片输出脚。
 - 开关节点上出现 `SW/LX/PH/VSW/BOOT/BST` 类引脚名时判为开关电源储能电感，不属于本检查器。
 - 网名含 `MOTOR/SOLENOID/VALVE/COIL/RELAY/PUMP/BRAKE/FAN/ACTUATOR` 且经连接器外接的负载只作
-  `name-hint` 候选，计划项为 `UNDETERMINED`，不产生冷跑发现。
+  `name-hint` 候选，计划项为 `UNDETERMINED`，不产生自动扫描发现。
 - 钳位识别：负载两端的续流二极管（按阳极/阴极角色判方向）、开关两端的 TVS/齐纳、跨负载或跨开关
   的 RC，以及驱动芯片 `COM/CLAMP/VS` 类引脚接电源轨形成的"集成钳位候选"（需资料证据）。
   引脚角色缺失时方向记 `unknown` 并形成缺口，不推定方向。
@@ -235,15 +237,15 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 }
 ```
 
-冷跑规则：
+自动扫描规则：
 
 | 规则 | 触发 |
 |---|---|
-| `IL-01` | 已识别负载在该状态下没有任何钳位路径（含钳位器件不贴）；驱动器内部钳位需资料证据 |
-| `IL-02` | 续流二极管方向接反：阴极在开关节点、阳极在电源轨 |
+| `DRV-A01` | 已识别负载在该状态下没有任何钳位路径（含钳位器件不贴）；驱动器内部钳位需资料证据 |
+| `DRV-A02` | 续流二极管方向接反：阴极在开关节点、阳极在电源轨 |
 
-计划项（逐负载、逐状态）：钳位拓扑与方向（ER3，带 PCB HANDOFF：钳位器件靠近负载与开关、
-续流回路面积最小）；钳位额定（ER4）——反向耐压不低于电源最高电压，峰值/重复电流不低于线圈关断
+计划项（逐负载、逐状态）：钳位拓扑与方向（DRV-T01，带 PCB HANDOFF：钳位器件靠近负载与开关、
+续流回路面积最小）；钳位额定（DRV-C01）——反向耐压不低于电源最高电压，峰值/重复电流不低于线圈关断
 瞬间电流，齐纳/TVS 钳位时开关器件耐压需覆盖电源电压加钳位电压，并核重复频率下的耗散。
 
 依据：`HardwareWiki:wiki/methodology/inductive-load-flyback-clamp-design.md`。
@@ -264,14 +266,14 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）只用于声明角色与
 装配状态；未声明时按图状态扫描并保留 `assembly state unverified` 缺口。
 
-冷跑：`PS-01` 栅极既无驱动源也无下拉/上拉（上电与驱动高阻时状态不确定）；
-`PS-02` 开关节点接感性元件或半桥中点但无吸收/钳位（CANDIDATE）。
+自动扫描：`DRV-A03` 栅极既无驱动源也无下拉/上拉（上电与驱动高阻时状态不确定）；
+`DRV-A04` 开关节点接感性元件或半桥中点但无吸收/钳位（CANDIDATE）。
 
-热跑 `PS-10`（`gate_drive`）：最小栅源驱动不低于 RDS(on) 保证条件的 VGS，且驱动窗口不超
+证据计算 `DRV-E01`（`gate_drive`）：最小栅源驱动不低于 RDS(on) 保证条件的 VGS，且驱动窗口不超
 栅源绝限；P 沟道按量纲翻转后比较。PASS 不覆盖开关速度、米勒导通、SOA 与热。
 
-计划项：栅源驱动（ER4 热跑）、安全工作区与降额（ER4，HANDOFF 给热与版图：结温按实际散热
-路径，栅极与换流回路面积最小）、开关节点吸收与驱动器条款（ER3，仅在有开关节点证据时生成，
+计划项：栅源驱动（DRV-E01）、安全工作区与降额（DRV-C02，HANDOFF 给热与版图：结温按实际散热
+路径，栅极与换流回路面积最小）、开关节点吸收与驱动器条款（DRV-D01，仅在有开关节点证据时生成，
 HANDOFF 给版图）。
 
 依据：`HardwareWiki:concepts/mosfet-igbt-gate-drive-circuit.md`、`concepts/功率器件栅极驱动保护.md`、
@@ -286,21 +288,21 @@ HANDOFF 给版图）。
 - 体电容候选按型号/值中的 ELEC/ALUM/TANT/POLYMER 等线索给出，仅为候选，ESR 仍须资料证据。
 - 电容标称值沿用去耦模块的解析规则：只解析带明确单位的首项，裸编码不猜。
 
-冷跑：`IF-01` 输入经串联 L/磁珠滤波但既无 RC 阻尼支路也无体电容候选（CANDIDATE）。
+自动扫描：`PWR-A05` 输入经串联 L/磁珠滤波但既无 RC 阻尼支路也无体电容候选（CANDIDATE）。
 
-热跑 `IF-10`（`input_filter_damping`）：|R<sub>IN</sub>| = V<sub>IN,min</sub>²/P<sub>IN,max</sub>；
+证据计算 `PWR-E03`（`input_filter_damping`）：|R<sub>IN</sub>| = V<sub>IN,min</sub>²/P<sub>IN,max</sub>；
 判据为 ESR<sub>bulk,max</sub> < |R<sub>IN</sub>|、ESR<sub>bulk,min</sub> > L<sub>max</sub>/(C<sub>bulk,min</sub>·|R<sub>IN</sub>|)、
 C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶判据**：全频输入阻抗裕量、
 阶跃响应与温度角仍需仿真或实测，PASS 的 scope 已写明。
 
-计划项：阻尼判据（ER4 热跑）、滤波元件饱和/压降/衰减需求（ER3，HANDOFF 给版图与 EMC）。
+计划项：阻尼判据（PWR-E03）、滤波元件饱和/压降/衰减需求（PWR-C11，HANDOFF 给版图与 EMC）。
 
 依据：`HardwareWiki:methodology/dc-dc-输入滤波稳定性评估.md`、`methodology/输入滤波稳定性与阻尼评估.md`。
 
 ## 上电过程 `power_up`
 
 维护范围：识别带使能脚且有输出/开关脚的稳压器，归类使能来源，并登记使能/复位与自身供电轨
-同网的负载。时序是否满足需求由 ER3 按需求与器件条款判定。
+同网的负载。时序是否满足需求由 RST-T01 按需求与器件条款判定。
 
 使能来源形态按连接关系归类，不按名称：`tied-to-input`（与自身输入网同网）、`uvlo-divider`
 （到轨与到地各有电阻）、`rc-delay`（到轨电阻加对地电容）、`sequenced`（PG/PGOOD 类输出驱动）、
@@ -308,15 +310,15 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 
 识别要求器件同时具备使能脚与输出/开关/反馈脚；反馈脚只用于认出稳压器，不计入输出轨。
 
-冷跑：`PU-01` 器件的使能/复位输入与其自身供电脚同网（稳压器自身的直连由 PU-02 覆盖，不重复
-登记）；`PU-02` 稳压器使能直连输入网且无分压/RC（CANDIDATE）；`PU-03` 使能网上既无驱动源也无
+自动扫描：`RST-A02` 器件的使能/复位输入与其自身供电脚同网（稳压器自身的直连由 RST-A03 覆盖，不重复
+登记）；`RST-A03` 稳压器使能直连输入网且无分压/RC（CANDIDATE）；`RST-A04` 使能网上既无驱动源也无
 分压/RC/上下拉——悬空或来源不明（CANDIDATE；器件内部上/下拉需资料证据）。
 
-热跑 `PU-10`（`dropout`）：V<sub>IN,min</sub> − V<sub>dropout,max</sub>(T<sub>min</sub>, I<sub>max</sub>)
+证据计算 `PWR-E02`（`dropout`）：V<sub>IN,min</sub> − V<sub>dropout,max</sub>(T<sub>min</sub>, I<sub>max</sub>)
 ≥ 负载要求的 V<sub>OUT,min</sub>。PASS 不覆盖负载瞬态、启动过程与热关断。
 
-计划项：使能来源与 UVLO/时序（ER3，HANDOFF 给测试：上电/掉电单调性与台阶需实测）、线性轨的
-压差（ER4 热跑）、同步变换器的预偏置启动与软启动（ER3，需资料证据）。
+计划项：使能来源与 UVLO/时序（RST-T01，HANDOFF 给测试：上电/掉电单调性与台阶需实测）、线性轨的
+压差（PWR-E02）、同步变换器的预偏置启动与软启动（PWR-D03，需资料证据）。
 
 依据：`HardwareWiki:methodology/power-rail-startup-review.md`、`concepts/电源上电时序故障诊断.md`、
 `concepts/同步降压预偏置启动.md`、`methodology/ldo最坏条件选型验证.md`。
@@ -333,15 +335,15 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
   是否等于被监测需资料证据）与未监测。轨本身按电源树识别（见共用契约），逐条记 `basis`；
   只靠轨名认出的轨另记 `rail-identity` 缺口。
 
-冷跑：`SV-01` 喂狗输入悬空或固定电平（CANDIDATE）；`SV-02` 复位/看门狗输出未到任何复位输入
-（网上无其他器件=FINDING，只接到其他脚=CANDIDATE）；`SV-03` 在已识别监控器的前提下列出未被
-监测的轨（CANDIDATE）。**没有任何监控器时不报 SV-03**：全板是否需要监控属需求问题，由计划中的
-逐电源域覆盖项（ER2）承接。
+自动扫描：`RST-A05` 喂狗输入悬空或固定电平（CANDIDATE）；`RST-A06` 复位/看门狗输出未到任何复位输入
+（网上无其他器件=FINDING，只接到其他脚=CANDIDATE）；`PWR-A06` 在已识别监控器的前提下列出未被
+监测的轨（CANDIDATE）。**没有任何监控器时不报 PWR-A06**：全板是否需要监控属需求问题，由计划中的
+逐电源域覆盖项（PWR-T04）承接。
 
-热跑 `SV-10`（`reset_pulse`）：复位输出最小脉宽不低于目标复位输入要求；`output_type=open_drain`
+证据计算 `RST-E03`（`reset_pulse`）：复位输出最小脉宽不低于目标复位输入要求；`output_type=open_drain`
 时还要求该网上存在到电源轨的上拉电阻（由网表核实）。PASS 不覆盖阈值精度、迟滞与喂狗时序。
 
-计划项：复位链逐跳与喂狗策略（ER3）、复位脉宽（ER4 热跑）、逐电源域监控覆盖（ER2，逐状态一项，
+计划项：复位链逐跳与喂狗策略（RST-T02）、复位脉宽（RST-E03）、逐电源域监控覆盖（PWR-T04，逐状态一项，
 未监测的轨写进 `inventory_gaps`）。
 
 依据：`HardwareWiki:methodology/复位时序与看门狗审核.md`、`methodology/multi-rail-brownout-reset-verification.md`。
@@ -354,15 +356,15 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 
 - 电平标准来自 intent 声明（按对象 id 或任一条腿网名落位）或名称/型号线索；只有声明依据能让
   计划项 `APPLICABLE`，名称线索一律 `UNDETERMINED` 并保留 `level-standard:*` 缺口。
-- 方向按引脚类型判定；两侧都未知时记 `pair-direction:*` 缺口，相关冷跑规则不触发。
+- 方向按引脚类型判定；两侧都未知时记 `pair-direction:*` 缺口，相关自动扫描规则不触发。
 
-冷跑：`DL-01` 仅对 LVPECL/PECL 类电流型电平成立——交流耦合且发送侧无到地/到轨直流通路
-（声明依据=FINDING，名称线索=CANDIDATE）；`DL-02` 交流耦合接收侧既无端接也无偏置（CANDIDATE）。
+自动扫描：`SIG-A01` 仅对 LVPECL/PECL 类电流型电平成立——交流耦合且发送侧无到地/到轨直流通路
+（声明依据=FINDING，名称线索=CANDIDATE）；`SIG-A02` 交流耦合接收侧既无端接也无偏置（CANDIDATE）。
 
-热跑 `DL-10`（`diff_level`）：直流耦合用发送端共模、交流耦合用偏置后共模，须落在接收端共模
+证据计算 `SIG-E02`（`diff_level`）：直流耦合用发送端共模、交流耦合用偏置后共模，须落在接收端共模
 范围内；发送摆幅须落在接收端差分输入范围内。PASS 不覆盖抖动、低频截止、阻抗与回流。
 
-计划项：电平兼容（ER4 热跑）、端接与偏置（ER3，HANDOFF 给版图/SI：差分阻抗、等长、间距、
+计划项：电平兼容（SIG-E02）、端接与偏置（SIG-T03，HANDOFF 给版图/SI：差分阻抗、等长、间距、
 参考平面连续与端接就近）。
 
 依据：`HardwareWiki:methodology/high-speed-level-interconnect-review.md`、`concepts/高速电平互连.md`。
@@ -373,16 +375,16 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 参考）。引脚角色缺失时只登记 `pin-roles:REF` 缺口。隔离耐压、爬电距离与安规等级不在本检查器
 定判，走计划项与结构/版图 HANDOFF。
 
-冷跑：`OC-01` LED 两条腿上都没有串联电阻且未声明恒流驱动（intent 中 `drive: constant-current`
-并给出处才可免除）；`OC-02` 集电极网上无到电源轨的上拉（CANDIDATE）。
+自动扫描：`PRO-A03` LED 两条腿上都没有串联电阻且未声明恒流驱动（intent 中 `drive: constant-current`
+并给出处才可免除）；`PRO-A04` 集电极网上无到电源轨的上拉（CANDIDATE）。
 
-热跑 `OC-10`（`opto_ctr`）：
+证据计算 `PRO-E01`（`opto_ctr`）：
 I<sub>F,min</sub> = (V<sub>drive,min</sub> − V<sub>F,max</sub> − V<sub>drop,max</sub>)/R<sub>LED,max</sub>，
 I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>·寿命衰减系数，
 需满足 I<sub>C,可用</sub> ≥ (V<sub>pullup,max</sub> − V<sub>OL,要求</sub>)/R<sub>pullup,min</sub>，
 同时 I<sub>F,max</sub> 不超额定。寿命衰减系数必须来自项目规定，缺规定即 INSUFFICIENT。
 PASS 不覆盖开关速度、温度角与隔离耐压。
 
-计划项：传输能力（ER4 热跑）、隔离归属与耐压（ER3，HANDOFF 给版图与结构）。
+计划项：传输能力（PRO-E01）、隔离归属与耐压（PRO-D01，HANDOFF 给版图与结构）。
 
 依据：`HardwareWiki:concepts/光耦合器隔离传输.md`。

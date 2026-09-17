@@ -5,6 +5,7 @@ import unittest
 
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import catalog
 
 from checkers.power_up import PowerUpChecker, build_inventory, validate_power_up_intent
 from electrical_contract import db_fingerprint, validate_evidence
@@ -47,12 +48,15 @@ def regulators_of(inventory, state='as-built'):
     return {item['ref']: item for item in entry['regulators']}
 
 
+CHECKER_RULES = {rule.id for rule in catalog.rules(source='power_up')}
+
+
 def findings(db, intent=None):
-    return [f for f in Lint(db, '', intent).run() if f['rule'].startswith('PU-')]
+    return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
 
 
 def dropout_check(**overrides):
-    check = {'id': 'DROPOUT', 'rule': 'PU-10', 'kind': 'dropout', 'ref': 'U1',
+    check = {'id': 'DROPOUT', 'rule': 'PWR-E02', 'kind': 'dropout', 'ref': 'U1',
              'vin_min_v': 3.6, 'dropout_max_v': 0.25, 'vout_required_min_v': 3.2,
              'citation': 'Synthetic LDO dropout at minimum temperature and maximum load'}
     check.update(overrides)
@@ -83,7 +87,7 @@ class RecognitionTest(unittest.TestCase):
         item = regulators_of(build_inventory(db))['U1']
         self.assertEqual(item['enable_source'], 'unknown')
         hits = findings(db)
-        self.assertEqual([f['rule'] for f in hits], ['PU-03'])
+        self.assertEqual([f['rule'] for f in hits], ['RST-A04'])
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
         self.assertIn('U1.2', hits[0]['detail'])
 
@@ -102,13 +106,13 @@ class RecognitionTest(unittest.TestCase):
         item = regulators_of(build_inventory(db))['U1']
         self.assertEqual(item['enable_source'], 'tied-to-input')
         hits = findings(db)
-        self.assertEqual([f['rule'] for f in hits], ['PU-02'])
+        self.assertEqual([f['rule'] for f in hits], ['RST-A03'])
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
 
     def test_load_enable_on_its_own_rail_reports_pu01(self):
         db = rail_board(load_enable='same-rail')
         hits = findings(db)
-        self.assertEqual([f['rule'] for f in hits], ['PU-01'])
+        self.assertEqual([f['rule'] for f in hits], ['RST-A02'])
         self.assertIn('U2.2', hits[0]['detail'])
 
     def test_separate_enable_net_is_silent(self):
@@ -127,20 +131,20 @@ class RecognitionTest(unittest.TestCase):
 class PlanTest(unittest.TestCase):
     def test_linear_rail_plans_a_dropout_check(self):
         plan = build_review_plan(rail_board())
-        checks = {x['check'] for x in plan['checks'] if x['object'].get('power_up')}
-        self.assertEqual(checks, {'power-up-enable-source-U1-EN-3V3', 'power-up-dropout-U1-EN-3V3'})
+        checks = {(x['rule'], x['object']['power_up']) for x in plan['checks'] if x['object'].get('power_up')}
+        self.assertEqual(checks, {('RST-T01', 'U1-EN-3V3'), ('PWR-E02', 'U1-EN-3V3')})
         self.assertEqual(plan['power_up_version'], 1)
 
     def test_switching_rail_plans_a_prebias_check(self):
         plan = build_review_plan(rail_board(kind='switching'))
-        checks = {x['check'] for x in plan['checks'] if x['object'].get('power_up')}
-        self.assertEqual(checks, {'power-up-enable-source-U1-EN-3V3', 'power-up-prebias-U1-EN-3V3'})
+        checks = {(x['rule'], x['object']['power_up']) for x in plan['checks'] if x['object'].get('power_up')}
+        self.assertEqual(checks, {('RST-T01', 'U1-EN-3V3'), ('PWR-D03', 'U1-EN-3V3')})
 
     def test_rule_instances_follow_the_triggering_objects(self):
         plan = build_review_plan(rail_board(enable='tied', load_enable='same-rail'))
         rules = {row['rule']: row for row in plan['rule_plan']}
-        self.assertEqual(rules['PU-02']['instances'], ['U1-V12'])
-        self.assertEqual(rules['PU-01']['instances'], ['U2-2'])
+        self.assertEqual(rules['RST-A03']['instances'], ['U1-V12'])
+        self.assertEqual(rules['RST-A02']['instances'], ['U2-2'])
 
     def test_stale_object_binding_is_reported(self):
         plan = build_review_plan(rail_board())
@@ -169,7 +173,7 @@ class HotRuleTest(unittest.TestCase):
 
     def run_check(self, check):
         db = rail_board()
-        evidence = {'schema_version': 1, 'checks': [check]}
+        evidence = {'schema_version': 2, 'checks': [check]}
         audit = bind_evidence(db, evidence, self.directory.name)
         self.assertEqual(validate_evidence(evidence), [])
         lint = Lint(db, evidence=evidence, datasheet_audit=audit)
@@ -196,7 +200,7 @@ class HotRuleTest(unittest.TestCase):
         self.assertIn('dropout_max_v 缺少保证值', result['detail'])
 
     def test_negative_dropout_is_rejected_by_the_contract(self):
-        evidence = {'schema_version': 1, 'checks': [dropout_check(dropout_max_v=-1)]}
+        evidence = {'schema_version': 2, 'checks': [dropout_check(dropout_max_v=-1)]}
         self.assertTrue(any('dropout_max_v 不得为负' in error for error in validate_evidence(evidence)))
 
 

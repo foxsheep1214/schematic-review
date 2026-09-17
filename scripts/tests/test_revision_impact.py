@@ -29,22 +29,23 @@ def database():
 
 
 def check(key, ref):
-    return {'id': key, 'check': 'synthetic-resistor-check', 'object': {'ref': ref},
-            'criterion': 'Evaluate this independent synthetic resistor', 'rule': None,
-            'applicability': 'APPLICABLE', 'readiness': 'READY', 'stage': 'ER4',
-            'executor': 'Expert Review', 'review_result': None, 'evidence_confidence': None,
+    # A manual engineering check (DEV-C01) on one synthetic resistor.
+    return {'id': key, 'rule': 'DEV-C01', 'method': 'C', 'domain': 'DEV', 'object': {'ref': ref},
+            'criterion': 'Evaluate this independent synthetic resistor',
+            'applicability': 'APPLICABLE', 'readiness': 'READY',
+            'review_result': None, 'evidence_confidence': None,
             'required_inputs': [], 'trigger': [], 'handoff': {'required': False}}
 
 
 def focused(db, checks=None, old_db=None, old_plan=None, complete=True, intent=None):
-    checks = deepcopy(checks if checks is not None else [check('CHECK-R1', 'R1'), check('CHECK-R10', 'R10')])
+    checks = deepcopy(checks if checks is not None else [check('DEV-C01.R1', 'R1'), check('DEV-C01.R10', 'R10')])
     intent = deepcopy(intent or {})
     declarations = intent.setdefault('review_dependencies', {})
     if complete:
         for item in checks:
             declarations.setdefault(item['id'], {'complete': True, 'citation': 'Synthetic isolated scope reviewed'})
             declarations[item['id']].update(db_digest=digest(db), check_digest=digest(check_spec(item)))
-    plan = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'checks': checks,
+    plan = {'schema_version': 2, 'db_sha256': db_fingerprint(db), 'checks': checks,
             'review_mode': 'revision' if old_db is not None or old_plan is not None else 'first'}
     return attach_metadata(plan, db, intent, old_db=old_db, old_plan=old_plan)
 
@@ -80,27 +81,27 @@ class RevisionRoutingTests(unittest.TestCase):
         self.new['parts']['R1']['value'] = '10.00001K/1%'
         plan = self.build()
         self.assertEqual(plan['revision_impact']['strategy'], 'EXACT_DEPENDENCIES')
-        self.assertTrue(entries(plan)['CHECK-R1']['required'])
-        self.assertFalse(entries(plan)['CHECK-R10']['required'])
-        self.assertEqual(entries(plan)['CHECK-R10']['change_ids'], [])
+        self.assertTrue(entries(plan)['DEV-C01.R1']['required'])
+        self.assertFalse(entries(plan)['DEV-C01.R10']['required'])
+        self.assertEqual(entries(plan)['DEV-C01.R10']['change_ids'], [])
         event = next(x for x in plan['revision_impact']['changes'] if x['kind'] == 'db.parts')
         self.assertEqual(event['new']['value'], '10.00001K/1%')
         self.assertEqual(event['refs'], ['R1'])
 
     def test_same_inputs_produce_no_recorded_change_not_pass(self):
         plan = self.build()
-        self.assertEqual(entries(plan)['CHECK-R1']['status'], 'NO_RECORDED_CHANGE')
+        self.assertEqual(entries(plan)['DEV-C01.R1']['status'], 'NO_RECORDED_CHANGE')
         self.assertTrue(all(c['review_result'] is None for c in plan['checks']))
 
     def test_part_population_change_rechecks_dependents(self):
         self.new['parts']['R1']['nc'] = True
-        self.assertTrue(entries(self.build())['CHECK-R1']['required'])
+        self.assertTrue(entries(self.build())['DEV-C01.R1']['required'])
 
     def test_pin_move_uses_both_sides(self):
         self.new['nets']['R1_A'].remove('R1.1')
         self.new['nets']['R10_A'].append('R1.1')
         self.new['pin2net']['R1.1'] = 'R10_A'
-        self.assertTrue(all(entries(self.build())[k]['required'] for k in ('CHECK-R1', 'CHECK-R10')))
+        self.assertTrue(all(entries(self.build())[k]['required'] for k in ('DEV-C01.R1', 'DEV-C01.R10')))
 
     def test_symbol_only_pin_change_retained(self):
         self.new['declared_pinname'] = {'R1.9': 'EP'}
@@ -111,7 +112,7 @@ class RevisionRoutingTests(unittest.TestCase):
             with self.subTest(field=field):
                 self.new = deepcopy(self.old)
                 self.new[field][key] = value
-                self.assertTrue(entries(self.build())['CHECK-R1']['required'])
+                self.assertTrue(entries(self.build())['DEV-C01.R1']['required'])
         self.new['parts']['R1']['manufacturer'] = 'SYNTHETIC-B'
         self.assertTrue(any(x['kind'] == 'db.parts' for x in self.build()['revision_impact']['changes']))
 
@@ -134,15 +135,15 @@ class RevisionRoutingTests(unittest.TestCase):
         self.new['parts']['R1']['value'] = '11K/1%'
         stale = deepcopy(self.base['review_inputs']['intent'])
         plan = self.build(intent=stale, complete=False)
-        self.assertIn('stale-dependency-scope-declaration', plan['check_dependencies']['CHECK-R10']['gaps'])
-        self.assertTrue(entries(plan)['CHECK-R10']['required'])
+        self.assertIn('stale-dependency-scope-declaration', plan['check_dependencies']['DEV-C01.R10']['gaps'])
+        self.assertTrue(entries(plan)['DEV-C01.R10']['required'])
 
     def test_new_criterion_and_state_trigger_reverification(self):
         for field, value in [('criterion', 'A new exact criterion'), ('object', {'ref': 'R1', 'state': 'startup'})]:
             with self.subTest(field=field):
-                checks = [check('CHECK-R1', 'R1'), check('CHECK-R10', 'R10')]
+                checks = [check('DEV-C01.R1', 'R1'), check('DEV-C01.R10', 'R10')]
                 checks[0][field] = value
-                self.assertIn('check-definition-changed', entries(self.build(checks=checks))['CHECK-R1']['reasons'])
+                self.assertIn('check-definition-changed', entries(self.build(checks=checks))['DEV-C01.R1']['reasons'])
 
     def test_intent_only_change_is_visible(self):
         plan = self.build(intent={'power_rails': {'CUSTOM': {'load_a': {'min': 0, 'max': 0.4}}}})
@@ -162,24 +163,24 @@ class RevisionRoutingTests(unittest.TestCase):
 
     def test_unknown_dependency_and_unmatched_check_declaration_remain_gaps(self):
         intent = {'review_dependencies': {'TYPO': {'complete': False, 'citation': 'Synthetic typo'},
-            'CHECK-R1': {'complete': True, 'citation': 'Synthetic bad target', 'check_ids': ['ABSENT']}}}
+            'DEV-C01.R1': {'complete': True, 'citation': 'Synthetic bad target', 'check_ids': ['ABSENT']}}}
         self.new['parts']['R1']['value'] = '11K/1%'
         plan = self.build(intent=intent)
-        self.assertIn('unknown-or-self-check:ABSENT', plan['check_dependencies']['CHECK-R1']['gaps'])
+        self.assertIn('unknown-or-self-check:ABSENT', plan['check_dependencies']['DEV-C01.R1']['gaps'])
         self.assertIn('unmatched-dependency-declaration:TYPO', plan['revision_impact']['blocking_gaps'])
 
     def test_removed_check_requires_disposition_not_automatic_resolution(self):
-        plan = self.build(checks=[check('CHECK-R10', 'R10')])
-        removed = next(c for c in plan['checks'] if c['check'] == 'revision-removed-check')
+        plan = self.build(checks=[check('DEV-C01.R10', 'R10')])
+        removed = next(c for c in plan['checks'] if c['rule'] == 'REQ-H02')
         self.assertEqual(removed['prior_check'], check_spec(self.base['checks'][0]))
         self.assertIsNone(removed['review_result'])
         self.assertTrue(entries(plan)[removed['id']]['required'])
-        later = focused(self.new, [check('CHECK-R10', 'R10')], old_db=self.new, old_plan=plan)
+        later = focused(self.new, [check('DEV-C01.R10', 'R10')], old_db=self.new, old_plan=plan)
         self.assertIn(removed['id'], entries(later))
 
     def test_new_check_is_required_without_db_change(self):
-        plan = self.build(checks=[check('CHECK-R1', 'R1'), check('CHECK-R10', 'R10'), check('NEW', 'R1')])
-        self.assertIn('new-check', entries(plan)['NEW']['reasons'])
+        plan = self.build(checks=[check('DEV-C01.R1', 'R1'), check('DEV-C01.R10', 'R10'), check('DEV-C01.NEW', 'R1')])
+        self.assertIn('new-check', entries(plan)['DEV-C01.NEW']['reasons'])
 
     def test_legacy_baseline_without_context_is_not_invented(self):
         self.base = {k: v for k, v in self.base.items() if k not in
@@ -193,7 +194,7 @@ class RevisionRoutingTests(unittest.TestCase):
         wrong['parts']['R1']['value'] = 'OTHER'
         with self.assertRaisesRegex(ValueError, 'old plan'):
             focused(self.new, old_db=wrong, old_plan=self.base)
-        self.base['check_dependencies']['CHECK-R1']['refs'] = []
+        self.base['check_dependencies']['DEV-C01.R1']['refs'] = []
         with self.assertRaisesRegex(ValueError, 'dependency catalog'):
             self.build()
 
@@ -213,11 +214,11 @@ class RevisionRoutingTests(unittest.TestCase):
             self.assertTrue(validate_metadata(bad, self.new, self.old, self.base)[0])
 
     def test_deleted_impact_entry_and_disposition_check_are_rejected(self):
-        plan = self.build(checks=[check('CHECK-R10', 'R10')])
+        plan = self.build(checks=[check('DEV-C01.R10', 'R10')])
         bad = deepcopy(plan)
         bad['revision_impact']['entries'].pop()
         self.assertTrue(validate_metadata(bad, self.new, self.old, self.base)[0])
-        plan['checks'] = [c for c in plan['checks'] if c['check'] != 'revision-removed-check']
+        plan['checks'] = [c for c in plan['checks'] if c['rule'] != 'REQ-H02']
         self.assertTrue(validate_metadata(plan, self.new, self.old, self.base)[0])
 
 
@@ -238,8 +239,8 @@ class RevisionSourceTests(unittest.TestCase):
         self.source.write_text('SYNTHETIC LIMIT B')
         os.utime(self.source, ns=(stat.st_atime_ns, stat.st_mtime_ns))
         plan = focused(self.db, intent=self.intent, old_db=self.db, old_plan=self.base)
-        self.assertTrue(entries(plan)['CHECK-R1']['required'])
-        self.assertFalse(entries(plan)['CHECK-R10']['required'])
+        self.assertTrue(entries(plan)['DEV-C01.R1']['required'])
+        self.assertFalse(entries(plan)['DEV-C01.R10']['required'])
         self.assertTrue(any(c['kind'] == 'document' for c in plan['revision_impact']['changes']))
 
     def test_document_disappears_and_old_snapshot_is_preserved(self):
@@ -309,7 +310,7 @@ class RevisionWorkflowTests(unittest.TestCase):
 
     def test_additional_lint_snapshot_prevents_omitting_manual_check(self):
         cold = deepcopy(self.plan)
-        cold['checks'].append(check('MANUAL-IN-COLD', 'R1'))
+        cold['checks'].append(check('DEV-C01.MANUAL-IN-COLD', 'R1'))
         final = build_review_plan(self.new, old_db=self.old, old_plan=self.base, previous_plan=cold)
         run = {'review_plan': cold, 'findings': []}
         report = self.report(final)
@@ -317,7 +318,7 @@ class RevisionWorkflowTests(unittest.TestCase):
         result = self.validate(final, report, lint_runs=[run])
         self.assertTrue(result['valid'], result)
         bad = deepcopy(final)
-        bad['checks'] = [c for c in bad['checks'] if c['id'] != 'MANUAL-IN-COLD']
+        bad['checks'] = [c for c in bad['checks'] if c['id'] != 'DEV-C01.MANUAL-IN-COLD']
         attach_metadata(bad, self.new, old_db=self.old, old_plan=self.base)
         missing = self.report(bad)
         missing['lint_reviews'] = report['lint_reviews']
@@ -345,9 +346,9 @@ class RevisionWorkflowTests(unittest.TestCase):
 
     def test_cannot_delete_automatic_check_and_rehash_metadata(self):
         bad = deepcopy(self.plan)
-        removed = next(c for c in bad['checks'] if c['check'] == 'physical-pin-inventory') if any(
-            c['check'] == 'physical-pin-inventory' for c in bad['checks']) else next(
-                c for c in bad['checks'] if c['check'].startswith('feature-'))
+        removed = next(c for c in bad['checks'] if c['rule'] == 'DEV-D02') if any(
+            c['rule'] == 'DEV-D02' for c in bad['checks']) else next(
+                c for c in bad['checks'] if c.get('role') == 'coverage_parent' and c['method'] == 'Q')
         bad['checks'].remove(removed)
         attach_metadata(bad, self.new, old_db=self.old, old_plan=self.base)
         result = self.validate(bad, self.report(bad))
@@ -365,7 +366,7 @@ class RevisionWorkflowTests(unittest.TestCase):
     def test_markers_cannot_be_stripped_in_strict_revision_gate(self):
         plan = {k: v for k, v in self.plan.items() if k not in
                 ('dependency_version', 'review_inputs', 'check_dependencies', 'revision_impact_version', 'revision_impact')}
-        plan['checks'] = [c for c in plan['checks'] if not c['check'].startswith('revision-')]
+        plan['checks'] = [c for c in plan['checks'] if c['rule'] not in ('REQ-Q05', 'REQ-H02')]
         self.assertTrue(validate_metadata(plan, self.new, require_revision=True)[0])
 
     def test_malformed_result_container_returns_invalid_not_exception(self):
@@ -383,24 +384,24 @@ class RevisionWorkflowTests(unittest.TestCase):
 
     def test_same_revision_merge_retains_manual_checks_not_results(self):
         cold = deepcopy(self.plan)
-        manual = check('MANUAL', 'R1')
+        manual = check('DEV-C01.MANUAL', 'R1')
         manual['review_result'] = 'PASS'
         cold['checks'].append(manual)
         final = build_review_plan(self.new, previous_plan=cold, old_db=self.old, old_plan=self.base)
-        self.assertIsNone(next(c for c in final['checks'] if c['id'] == 'MANUAL')['review_result'])
-        self.assertTrue(entries(final)['MANUAL']['required'])
+        self.assertIsNone(next(c for c in final['checks'] if c['id'] == 'DEV-C01.MANUAL')['review_result'])
+        self.assertTrue(entries(final)['DEV-C01.MANUAL']['required'])
         with self.assertRaisesRegex(ValueError, 'revision baseline changed'):
             build_review_plan(self.new, previous_plan=cold)
 
     def test_hot_restored_old_check_keeps_cold_provisional_disposition(self):
-        self.base['checks'].append(check('PRIOR-STATE', 'R1'))
+        self.base['checks'].append(check('DEV-C01.PRIOR-STATE', 'R1'))
         attach_metadata(self.base, self.old)
         cold = build_review_plan(self.new, old_db=self.old, old_plan=self.base)
         restored = deepcopy(cold)
-        restored['checks'].append(check('PRIOR-STATE', 'R1'))
+        restored['checks'].append(check('DEV-C01.PRIOR-STATE', 'R1'))
         final = build_review_plan(self.new, old_db=self.old, old_plan=self.base, previous_plan=restored)
         self.assertTrue({c['id'] for c in cold['checks']} <= {c['id'] for c in final['checks']})
-        self.assertIn('PRIOR-STATE', entries(final))
+        self.assertIn('DEV-C01.PRIOR-STATE', entries(final))
         run = {'review_plan': cold, 'findings': []}
         report = self.report(final)
         report['lint_reviews'] = [{'run_digest': digest(run), 'items': {}}]

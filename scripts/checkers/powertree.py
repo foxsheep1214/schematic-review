@@ -12,7 +12,7 @@ from solve_dividers import parse_resistor
 
 from . import netgraph as ng
 
-# 输出脚候选：型号/脚名提示，仍需 ER1 核功能与上游供电
+# 输出脚候选：型号/脚名提示，仍需资料取证核功能与上游供电
 SOURCE_PIN_RE = re.compile(r'^(VOUT|VREG|VDD_EXT|VO)(?:$|[_+\d])', re.I)
 SERIES_REF_RE = re.compile(r'^(L|FB|F)\d', re.I)
 # 开关节点：经储能电感能回溯到输出脚，但它本身不是直流轨

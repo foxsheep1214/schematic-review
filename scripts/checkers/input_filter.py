@@ -3,11 +3,12 @@
 """开关稳压器输入滤波与阻尼检查器。
 
 识别开关稳压器输入网上的串联电感/磁珠、两侧电容与阻尼支路，登记逐状态清单。
-负输入阻抗判据用 ER1 提供的保证值热跑，并声明其为一阶判据：全频阻抗裕量、
+负输入阻抗判据由证据计算（PWR-E03）按资料保证值判定，并声明其为一阶判据：全频阻抗裕量、
 阶跃响应与温度角仍需仿真或实测。
 """
 import re
 
+import catalog
 from decoupling import parse_capacitance
 
 from . import hotmath
@@ -120,9 +121,9 @@ class InputFilterChecker(Checker):
     version_key = 'input_filter_version'
     version = 1
     intent_key = 'input_filters'
-    cold_rules = {'IF-01': '输入串联滤波无阻尼元件'}
-    hot_rules = {'IF-10': '负输入阻抗与阻尼一阶判据'}
-    evidence_kinds = {'IF-10': {'input_filter_damping'}}
+    cold_rules = catalog.titles(method='A', source='input_filter')
+    hot_rules = catalog.titles(method='E', source='input_filter')
+    evidence_kinds = {'PWR-E03': {'input_filter_damping'}}
 
     missing_inventory_message = 'input filter checks require their inventory'
     inventory_type_message = 'input filter inventory must be an object'
@@ -147,37 +148,30 @@ class InputFilterChecker(Checker):
             obj = {'ref': item['ref'], 'net': item['input_net'], 'state': state['id'],
                    'input_filter': item['id'], 'input_filter_digest': inventory['digest']}
             gaps = item['gaps']
-            ready = planner.evidence_ready('IF-10', obj)
+            ready = planner.evidence_ready('PWR-E03', obj)
             check = planner.add_check(
-                'input-filter-damping-' + item['id'], dict(obj),
-                '按最低输入电压与最大输入功率求负输入阻抗，核体电容 ESR 与滤波电感的一阶阻尼'
-                '判据及体电容/输入电容比值（比值须由项目规定，不得默认）',
-                'ER4', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                'PWR-E03', dict(obj), key=item['id'],
+                readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: IF-10 输入电压/功率、ESR、电感与电容保证值',
+                    'evidence: PWR-E03 输入电压/功率、ESR、电感与电容保证值',
                     'intent: 体电容与输入电容比值的项目规定']))),
-                trigger=['input-filter:' + item['id']], rule='IF-10')
-            check['domain'] = 'INPUT_FILTER'
+                trigger=['input-filter:' + item['id']])
             check['inventory_gaps'] = gaps
             check = planner.add_check(
-                'input-filter-attenuation-' + item['id'], dict(obj),
-                '核滤波元件的饱和电流、直流压降、温升与所需衰减量；'
-                '截止频率与开关频率的关系按 EMC 需求确认，不以有磁珠即判合格',
-                'ER3', 'Expert Review', readiness='WAITING_EVIDENCE',
+                'PWR-C11', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
                     'datasheet:滤波元件阻抗/饱和曲线', 'requirements:传导发射限值与裕量'])),
                 trigger=['input-filter:' + item['id']],
                 handoff=handoff({'required': True, 'receivers': ['PCB Layout', 'EMC'],
                                  'constraint': '滤波元件与输入电容回路最短，输入回路与开关回路分离',
                                  'verification': '传导发射实测与输入阻抗测量'}, 'APPLICABLE'))
-            check['domain'] = 'INPUT_FILTER'
             check['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):
         for state, item in inv.walk(inventory, 'converters'):
             if not item['series_elements'] or item['dampers'] or item['bulk_candidates']:
                 continue
-            lint.add('IF-01', self.cold_rules['IF-01'],
+            lint.add('PWR-A05', self.cold_rules['PWR-A05'],
                      '%s（状态 %s）：输入网 %s 经 %s 串联滤波，但未见 RC 阻尼支路或带 ESR 的'
                      '体电容；负输入阻抗与滤波谐振的配合需按保证值核算'
                      % (item['ref'], state['id'], item['input_net'],
@@ -213,11 +207,11 @@ class InputFilterChecker(Checker):
             hotmath.fmt(esr[0]), hotmath.fmt(esr[1]), hotmath.fmt(esr_floor, 'Ω'),
             hotmath.fmt(ratio), hotmath.fmt(ratio_min), lint._citation(check))
         if problems:
-            lint.add('IF-10', '输入滤波阻尼一阶判据不满足', detail + '；' + '；'.join(problems),
+            lint.add('PWR-E03', '输入滤波阻尼一阶判据不满足', detail + '；' + '；'.join(problems),
                      check.get('ref'), check_id=check['id'], citation=check['citation'],
                      calculation=calculation)
         else:
-            lint.record_pass('IF-10', check, detail,
+            lint.record_pass('PWR-E03', check, detail,
                              scope='所给保证值下的一阶阻尼判据；全频输入阻抗裕量、阶跃与温度角未判定',
                              calculation=calculation)
 

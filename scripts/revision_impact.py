@@ -9,15 +9,18 @@ import hashlib
 import json
 import os
 
-from electrical_contract import db_fingerprint, dependency_refs, validate_evidence
+import catalog
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, dependency_refs, validate_evidence
 from diff_netlists import diff_databases
 from i2c_topology import validate_db_shape
 
 VERSION = 1
-COVERAGE_ID = 'ER7.revision-impact-coverage.GLOBAL'
+COVERAGE_RULE = 'REQ-Q05'
+REMOVED_RULE = 'REQ-H02'
+COVERAGE_ID = COVERAGE_RULE + '.GLOBAL'
 FIELDS = ('refs', 'nodes', 'nets', 'states', 'check_ids')
-SPEC_FIELDS = ('id', 'check', 'rule', 'object', 'criterion', 'applicability',
-               'stage', 'executor', 'domain', 'evidence_check_id', 'parent_check_id', 'handoff')
+SPEC_FIELDS = ('id', 'rule', 'method', 'domain', 'circuit_type', 'object', 'criterion', 'applicability',
+               'evidence_check_id', 'parent_check_id', 'handoff')
 
 
 def digest(value):
@@ -39,7 +42,14 @@ def check_spec(check):
 
 
 def is_revision_check(check):
-    return check.get('check') in ('revision-impact-coverage', 'revision-removed-check')
+    return check.get('rule') in (COVERAGE_RULE, REMOVED_RULE)
+
+
+def _global_scope(check):
+    """覆盖审计、需求追溯与改版处置项依赖全部输入，不按局部坐标收窄。"""
+    rule = check.get('rule')
+    return ((catalog.known(rule) and catalog.method_of(rule) == 'Q')
+            or bool(check['object'].get('requirement_id')) or is_revision_check(check))
 
 
 def index_checks(plan):
@@ -170,8 +180,7 @@ def dependency_catalog(plan, db, snapshot):
             model = source.get('divider_model') or {}
             targets['nets'].update(model[k] for k in ('source_net', 'reference_net') if text(model.get(k)))
         declaration = declarations.get(key)
-        global_scope = (check.get('check', '').startswith(('coverage-', 'feature-'))
-                        or bool(check['object'].get('requirement_id')) or is_revision_check(check))
+        global_scope = _global_scope(check)
         gaps = [] if global_scope else ['dependency-scope-not-reviewed']
         if declaration:
             for field in FIELDS:
@@ -272,10 +281,10 @@ def collect_changes(old_db, db, old_inputs, inputs):
     return changes
 
 
-def _review_check(key, kind, obj, criterion):
-    return {'id': key, 'check': kind, 'rule': 'Rule-17', 'object': obj,
-            'criterion': criterion, 'applicability': 'APPLICABLE', 'stage': 'ER7',
-            'executor': 'Expert Review', 'readiness': 'WAITING_EVIDENCE',
+def _review_check(key, rule, obj):
+    return {'id': key, 'rule': rule, 'method': catalog.method_of(rule), 'domain': catalog.domain_of(rule),
+            'object': obj, 'criterion': catalog.criterion(rule),
+            'applicability': 'APPLICABLE', 'readiness': 'WAITING_EVIDENCE',
             'required_inputs': ['current revision re-verification evidence'],
             'trigger': ['revision-impact'], 'review_result': None,
             'evidence_confidence': None, 'handoff': {'required': False}}
@@ -288,6 +297,10 @@ def _baseline(old_db, old_plan):
     if old_plan is None:
         gaps.append('missing-old-plan')
     if old_db is not None and old_plan is not None:
+        if old_plan.get('schema_version') != PLAN_SCHEMA_VERSION:
+            raise ValueError('old plan uses retired check IDs (schema_version != %d); '
+                             'regenerate the previous revision plan with the current catalog'
+                             % PLAN_SCHEMA_VERSION)
         index_checks(old_plan)
         if old_plan.get('db_sha256') != db_fingerprint(old_db):
             raise ValueError('old plan is not bound to the supplied old db')
@@ -414,7 +427,7 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
         raise ValueError('revision baseline cannot be used in first-review mode')
     current_all = index_checks(plan)
     carry = {c['object'].get('prior_check_id') for c in current_all.values()
-             if c.get('check') == 'revision-removed-check'}
+             if c.get('rule') == REMOVED_RULE}
     if plan['review_mode'] != 'revision' and any(is_revision_check(c) for c in current_all.values()):
         raise ValueError('revision checks cannot be merged into first-review mode')
     plan['checks'] = [c for c in plan['checks'] if not is_revision_check(c)]
@@ -425,13 +438,13 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
         if old_plan is not None:
             old_checks = index_checks(old_plan)
             known_history = {c['object'].get('prior_check_id') for c in old_checks.values()
-                             if c.get('check') == 'revision-removed-check'}
+                             if c.get('rule') == REMOVED_RULE}
             if carry - set(old_checks) - known_history:
                 raise ValueError('carried revision disposition has no matching old baseline check')
             for key, check in sorted(old_checks.items()):
-                if (key in current and key not in carry) or check.get('check') == 'revision-impact-coverage':
+                if (key in current and key not in carry) or check.get('rule') == COVERAGE_RULE:
                     continue
-                if check.get('check') == 'revision-removed-check':
+                if check.get('rule') == REMOVED_RULE:
                     # Preserve the historical disposition record on later
                     # revisions too, but never carry its annotated verdict.
                     retained = deepcopy(check)
@@ -439,17 +452,13 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
                     retained['evidence_confidence'] = None
                     plan['checks'].append(retained)
                     continue
-                removed_id = 'ER7.revision-removed.' + digest(key)
+                removed_id = REMOVED_RULE + '.' + digest(key)
                 if removed_id in current:
                     raise ValueError('reserved removed-check ID')
-                removed = _review_check(removed_id, 'revision-removed-check',
-                    {'feature': key, 'prior_check_id': key},
-                    '核对旧项在本版冷/热阶段的消失、恢复或替代及连带影响，不能以清单增减证明修复。')
+                removed = _review_check(removed_id, REMOVED_RULE, {'feature': key, 'prior_check_id': key})
                 removed['prior_check'] = check_spec(check)
                 plan['checks'].append(removed)
-        plan['checks'].append(_review_check(COVERAGE_ID, 'revision-impact-coverage',
-            {'feature': 'revision-impact'},
-            '核对新旧基线、变化、依赖缺口及扩大复验范围；全部必需项使用本轮证据，不迁移旧结论。'))
+        plan['checks'].append(_review_check(COVERAGE_ID, COVERAGE_RULE, {'feature': 'revision-impact'}))
     plan['checks'].sort(key=lambda c: c['id'])
     plan['dependency_version'] = VERSION
     plan['review_inputs'] = input_snapshot(db, intent, evidence, audit)

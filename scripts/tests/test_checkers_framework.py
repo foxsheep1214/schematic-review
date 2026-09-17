@@ -7,6 +7,7 @@ import unittest
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 
+import catalog
 import test_inductive_load as relay_fixture
 from checkers import REGISTRY, REGISTRY_BY_ID, registry_cold_rules, validate_inventories
 from checkers import netgraph as ng
@@ -87,9 +88,14 @@ class RegistryTest(unittest.TestCase):
         self.assertEqual(len(keys), len(set(keys)))
         self.assertEqual(set(ids), set(REGISTRY_BY_ID))
 
-    def test_cold_rule_numbers_do_not_collide_with_legacy_rules(self):
-        for rule in registry_cold_rules():
-            self.assertFalse(rule.startswith('Rule-'), rule)
+    def test_checker_rules_come_from_the_catalog(self):
+        for checker in REGISTRY:
+            with self.subTest(checker.id):
+                self.assertEqual(checker.cold_rules, catalog.titles(method='A', source=checker.id))
+                self.assertEqual(checker.hot_rules, catalog.titles(method='E', source=checker.id))
+                self.assertEqual(set(checker.evidence_kinds), set(checker.hot_rules))
+        self.assertEqual(set(registry_cold_rules()),
+                         {rule.id for rule in catalog.rules(method='A') if rule.source in REGISTRY_BY_ID})
 
     def test_every_checker_writes_its_inventory_into_the_plan(self):
         plan = build_review_plan(relay_fixture.relay_board())

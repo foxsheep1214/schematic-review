@@ -56,7 +56,7 @@ def sample_db():
 def get_feature(plan, name):
     return next(item for item in plan['checks']
                 if item['object'].get('feature') == name
-                and item['check'] == f'feature-{name.lower()}')
+                and item['method'] == 'Q')
 
 
 class ReviewPlanTests(unittest.TestCase):
@@ -68,7 +68,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(get_feature(plan, 'USB')['applicability'],
                          'APPLICABLE')
         pair = next(item for item in plan['checks']
-                    if item['check'] == 'differential-pair-connectivity')
+                    if item['rule'] == 'SIG-T01')
         self.assertTrue(pair['handoff']['required'])
         self.assertIsNone(pair['review_result'])
         self.assertNotIn('HANDOFF', plan['result_model']['review_result'])
@@ -82,17 +82,17 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(
             len({item['id'] for item in plan['checks']}),
             len(plan['checks']))
-        rule17 = next(item for item in plan['rule_plan']
-                      if item['rule'] == 'Rule-17')
-        self.assertEqual(rule17['applicability'], 'NOT_APPLICABLE')
-        rule11 = next(item for item in plan['rule_plan']
-                      if item['rule'] == 'Rule-11')
-        self.assertEqual(rule11['applicability'], 'APPLICABLE')
-        self.assertEqual(rule11['readiness'], 'READY')
+        history = next(item for item in plan['rule_plan']
+                       if item['rule'] == 'REQ-H01')
+        self.assertEqual(history['applicability'], 'NOT_APPLICABLE')
+        sampling = next(item for item in plan['rule_plan']
+                        if item['rule'] == 'PWR-T02')
+        self.assertEqual(sampling['applicability'], 'APPLICABLE')
+        self.assertEqual(sampling['readiness'], 'READY')
 
     def test_explicit_na_requires_intent_and_citation(self):
         intent = {
-            'schema_version': 1,
+            'schema_version': 2,
             'features': {
                 'DDR': {
                     'applicability': 'NOT_APPLICABLE',
@@ -108,7 +108,7 @@ class ReviewPlanTests(unittest.TestCase):
 
     def test_required_but_missing_feature_creates_ready_presence_check(self):
         intent = {
-            'schema_version': 1,
+            'schema_version': 2,
             'features': {
                 'BLUETOOTH': {
                     'applicability': 'APPLICABLE',
@@ -118,7 +118,7 @@ class ReviewPlanTests(unittest.TestCase):
         }
         plan = build_review_plan(sample_db(), intent)
         presence = next(item for item in plan['checks']
-                        if item['check'] == 'required-feature-presence'
+                        if item['rule'] == 'REQ-A02'
                         and item['object']['feature'] == 'BLUETOOTH')
         self.assertEqual(presence['readiness'], 'READY')
         self.assertTrue(any(x['code'] == 'REQUIRED_FEATURE_NOT_DETECTED'
@@ -126,7 +126,7 @@ class ReviewPlanTests(unittest.TestCase):
 
     def test_intent_netlist_conflict_is_not_na(self):
         intent = {
-            'schema_version': 1,
+            'schema_version': 2,
             'features': {
                 'USB': {
                     'applicability': 'NOT_APPLICABLE',
@@ -142,9 +142,9 @@ class ReviewPlanTests(unittest.TestCase):
 
     def test_unbound_structured_evidence_does_not_make_hot_instance_ready(self):
         evidence = {
-            'schema_version': 1,
+            'schema_version': 2,
             'checks': [{
-                'id': 'U1-FB', 'rule': 'Rule-08', 'kind': 'divider',
+                'id': 'U1-FB', 'rule': 'PWR-E01', 'kind': 'divider',
                 'net': 'REG_FB', 'vref': 0.8,
                 'expected': {'min': 2.9, 'max': 3.4},
                 'citation': 'REG-X datasheet Rev.A p.10',
@@ -152,7 +152,7 @@ class ReviewPlanTests(unittest.TestCase):
         }
         plan = build_review_plan(sample_db(), evidence=evidence)
         item = next(x for x in plan['checks']
-                    if x['check'] == 'feedback-divider-wca')
+                    if x['rule'] == 'PWR-E01')
         self.assertEqual(item['readiness'], 'WAITING_EVIDENCE')
         self.assertTrue(item['required_inputs'])
 
@@ -160,13 +160,13 @@ class ReviewPlanTests(unittest.TestCase):
         db = sample_db()
         db['pinname'].update({'R3.1': '1', 'R3.2': '2'})
         checks = [item for item in build_review_plan(db)['checks']
-                  if item['check'] == 'enable-default-absmax']
+                  if item['rule'] == 'RST-E01']
         self.assertEqual([item['object']['node'] for item in checks],
                          ['U1.2'])
 
     def test_intent_validation_rejects_unproven_na(self):
         errors = validate_intent({
-            'schema_version': 1,
+            'schema_version': 2,
             'features': {'DDR': {'applicability': 'NOT_APPLICABLE'}},
         })
         self.assertTrue(any('citation' in error for error in errors))
@@ -182,30 +182,30 @@ class ReviewPlanTests(unittest.TestCase):
                          'APPLICABLE')
         self.assertEqual(get_feature(plan, 'I2C')['applicability'],
                          'UNDETERMINED')
-        self.assertFalse(any(item['check'] == 'i2c-required-pull'
+        self.assertFalse(any(item['rule'] == 'SIG-E01'
                              for item in plan['checks']))
 
-    def test_revision_rule17_waits_for_both_inputs(self):
+    def test_revision_history_rule_waits_for_both_inputs(self):
         waiting = build_review_plan(sample_db(), review_mode='revision')
-        rule17 = next(item for item in waiting['rule_plan']
-                      if item['rule'] == 'Rule-17')
-        self.assertEqual(rule17['applicability'], 'APPLICABLE')
-        self.assertEqual(rule17['readiness'], 'WAITING_EVIDENCE')
-        self.assertEqual(rule17['required_inputs'],
+        history = next(item for item in waiting['rule_plan']
+                       if item['rule'] == 'REQ-H01')
+        self.assertEqual(history['applicability'], 'APPLICABLE')
+        self.assertEqual(history['readiness'], 'WAITING_EVIDENCE')
+        self.assertEqual(history['required_inputs'],
                          ['missing-old-db', 'missing-old-plan', 'old_db', 'review_claims'])
 
         # Availability booleans cannot stand in for actual revision inputs.
         flags_only = build_review_plan(sample_db(), review_mode='revision',
             old_db_available=True, claims_available=True)
-        self.assertEqual(next(r for r in flags_only['rule_plan'] if r['rule'] == 'Rule-17')['readiness'],
+        self.assertEqual(next(r for r in flags_only['rule_plan'] if r['rule'] == 'REQ-H01')['readiness'],
                          'WAITING_EVIDENCE')
 
         ready = build_review_plan(
             sample_db(), review_mode='revision',
             old_db=sample_db(), old_plan=build_review_plan(sample_db()), claims_available=True)
-        rule17 = next(item for item in ready['rule_plan']
-                      if item['rule'] == 'Rule-17')
-        self.assertEqual(rule17['readiness'], 'READY')
+        history = next(item for item in ready['rule_plan']
+                       if item['rule'] == 'REQ-H01')
+        self.assertEqual(history['readiness'], 'READY')
 
     def test_datasheet_audit_controls_each_component_readiness(self):
         message = ('找不到这颗物料的 datasheet：SOC-X（位号：U2）。'
@@ -262,7 +262,7 @@ class ReviewPlanTests(unittest.TestCase):
         checks = {
             item['object']['ref']: item
             for item in plan['checks']
-            if item['check'] == 'component-identity-package'
+            if item['rule'] == 'DEV-D01'
         }
         self.assertEqual(checks['U1']['readiness'], 'READY')
         self.assertEqual(checks['U2']['readiness'], 'WAITING_EVIDENCE')

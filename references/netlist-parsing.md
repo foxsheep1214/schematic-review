@@ -23,7 +23,7 @@ KiCad 已随附解析器，见下文第六节。
 ## 三、格式要点
 
 - `pstxnet.dat`：`NET_NAME` 行独占一行，下一行是带引号的网络名；随后 `NODE_NAME\t<refdes> <pin>` 逐节点；`CDS_PINID` 给出引脚功能名。
-- `pstxprt.dat`：` <refdes> '<primitive>':;` 每实例一行；primitive 名或 VALUE 带 NC 标记 = 该实例不贴（实例级 NC 信息只在这里，库不含）。各家命名不同，`/NC` 与 `_NC` 后缀都在用（`0R/1%/NC`、`0R/1%_NC`），`is_not_populated()` 只在 NC 被 `/ _ - 空格` 或串首尾界定时才判为不贴——否则 `NCP1117` 这类型号会被误判成不贴。**该标志漏判会静默放大**：把不贴的 0R/上拉当成已贴，Rule-12/Rule-16 的默认态判定和 Rule-05 的驱动判定都会跟着错。
+- `pstxprt.dat`：` <refdes> '<primitive>':;` 每实例一行；primitive 名或 VALUE 带 NC 标记 = 该实例不贴（实例级 NC 信息只在这里，库不含）。各家命名不同，`/NC` 与 `_NC` 后缀都在用（`0R/1%/NC`、`0R/1%_NC`），`is_not_populated()` 只在 NC 被 `/ _ - 空格` 或串首尾界定时才判为不贴——否则 `NCP1117` 这类型号会被误判成不贴。**该标志漏判会静默放大**：把不贴的 0R/上拉当成已贴，RST-E01/RST-E02 的默认态判定和 PWR-A02 的驱动判定都会跟着错。
 - `pstchip.dat`：`primitive '<name>'; ... end_primitive;` 块内含 pin 名→PIN_NUMBER 映射（符号审计用）、PART_NAME/JEDEC_TYPE/VALUE。
 
 ## 四、解析实现
@@ -44,7 +44,7 @@ python3 scripts/parse_netlist.py <allegro目录> -o db.json
 | B | `NODE_NAME` → 实例行 → **紧接一行 `'NAME':;`** |
 
 只处理其中一种，另一种会得到**空的 pinname 索引**。后果是静默的：
-Rule-05（电源球无驱动）与 Rule-06（VSS 未入地）依赖 pinname，会扫出 0 条命中，
+PWR-A02（电源脚无驱动）与 PWR-A03（地脚未入地）依赖 pinname，会扫出 0 条命中，
 报告写成"数百个电源球全扫通过"而实际一个都没查过。
 
 **实测**：某板 `pstxnet.dat` 中 `CDS_PINID` 出现 0 次，只按变体 A 解析得到
@@ -57,7 +57,7 @@ pinname = 0 条（应为 6047 条）。
 
 导出器会把"带 No-Connect 属性且无连线"的引脚汇集到一张名为 `NC` 的网。
 它不是电气短路。脚本按 `C_SIGNAL` 是否带层次路径自动判别，结果放进
-`pseudo_nets`（判别式详见 `lint-rules.md`）。
+`pseudo_nets`（判别式详见 `auto-checks.md`）。
 
 ### 4.3 输出索引
 
@@ -73,7 +73,7 @@ pinname = 0 条（应为 6047 条）。
 
 Cadence 的 `PIN_NUMBER` 可能是 BGA 字母数字脚号，且 `PINUSE` 与 `PIN_NUMBER` 之间
 可能夹有其他属性；随附解析器按完整 pin block 提取，不依赖两行相邻。`pintype` 缺失或
-覆盖不足时，Rule-19 必须报告 SKIPPED/部分执行，不能把 0 命中写成通过。
+覆盖不足时，NET-A06 必须报告 SKIPPED/部分执行，不能把 0 命中写成通过。
 
 最小索引只支持部分拓扑检查；完整审查还需要 pinname/物理脚/页映射、BOM 和官方条款；
 改写 `parse_*` 函数即可，其余脚本无需改动。
@@ -132,7 +132,7 @@ DNP/DNI/DNF/NC 只按分隔词识别为不贴，不能误判 NCP1117 型号。�
 | `pinname` | node 的 `pinfunction`，缺失回落 libpart 引脚名 | `~` 是 KiCad 的"无名"标记，按空处理，不伪造 |
 | `pintype` | node 的 `pintype` 基础类型 | input→IN、output→OUT、bidirectional→BI、tri_state→TRISTATE、power_in/out→POWER、passive/free→UNSPEC、open_collector→OCL、open_emitter→OCA；未知类型保留原文大写，不静默当 UNSPEC |
 | `parts[].prim` | `libsource` 的 `lib:part` | 相当于 Cadence 的 primitive 名 |
-| `parts[].part` | MPN 类字段（MPN/Manufacturer Part Number/Order Code…），否则 libsource 的 part | 符号名不是订货码，仍需 ER1 核身份 |
+| `parts[].part` | MPN 类字段（MPN/Manufacturer Part Number/Order Code…），否则 libsource 的 part | 符号名不是订货码，仍需 DEV-D01 核身份 |
 | `parts[].jedec` | `<footprint>` | KiCad 的封装库项 |
 | `parts[].nc` | `<property name="dnp"/>` 或 VALUE 带 NC 标记 | `exclude_from_bom` 是 BOM 卫生标记，不作装配证据 |
 | `ref2page` | 组件 `sheetpath.names` 对应 `design/sheet` 的编号 | 层次页按导出顺序编号 |
@@ -145,7 +145,7 @@ DNP/DNI/DNF/NC 只按分隔词识别为不贴，不能误判 NCP1117 型号。�
    `unconnected-(...)` 网。这类网登记为 `pseudo_nets`，引脚另列 `no_connect_nodes`——
    它是"图上声明不接"，仍需逐处核实该脚确实允许悬空。
 2. 没有 NC 标记却落在 `unconnected-(...)` 网里的引脚是**真悬空**，保持真实单节点网，
-   Rule-01 照常扫出，不被伪网络掩盖。
+   NET-A01 照常扫出，不被伪网络掩盖。
 3. `nc` 是装配状态，与上面两件事无关；逐装配变体仍需 intent 声明。
 
 检查器侧还有一层引脚名归一化（上划线、脚号装饰、序号、多功能合写），所以即使某个库

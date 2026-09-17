@@ -111,7 +111,7 @@ class LinearFeedbackTests(unittest.TestCase):
 
     def test_malformed_endpoint_stays_a_model_gap(self):
         for source in (['VOUT_3V3'], {'net': 'VOUT_3V3'}):
-            check = {'rule': 'Rule-08', 'net': 'FB_NET', 'divider_model': divider_model(source)}
+            check = {'rule': 'PWR-E01', 'net': 'FB_NET', 'divider_model': divider_model(source)}
             self.assertTrue(model_gaps(check))
             self.assertIn('U1', dependency_refs(shared_stem(), check))
             with self.assertRaises(ValueError):

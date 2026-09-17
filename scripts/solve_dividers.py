@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ER4-WCA：反馈/监控分压自动求解。
+反馈/监控分压最坏情况求解（PWR-E01 的计算核心，CLI 仅供探索）。
 
 特性：
 - 穷举电阻路径，不再静默采用“找到的第一条路径”。
@@ -528,8 +528,8 @@ def _row(ref, fbnet, result, vref, vref_tol):
     row['factor'] = 1.0 + result['r_up'] / result['r_lo']
     row['rail_hint'] = rail_hint(result['src'])
     row['review_result'] = 'INSUFFICIENT'
-    row['scope'] = 'exploratory calculation; source/load model requires ER4 verification'
-    row['missing_inputs'] = ['CLI 未绑定源/负载及原始证据；需 ER4 复核']
+    row['scope'] = 'exploratory calculation; source/load model requires PWR-E01 evidence review'
+    row['missing_inputs'] = ['CLI 未绑定源/负载及原始证据；需按 PWR-E01 证据复核']
     if vref is not None:
         row['voltage_nominal'] = vref * row['factor']
     else:

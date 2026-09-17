@@ -5,6 +5,7 @@ import unittest
 
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import catalog
 
 from checkers.inductive_load import InductiveLoadChecker, build_inventory, validate_inductive_intent
 from electrical_contract import db_fingerprint
@@ -53,8 +54,11 @@ def loads_of(inventory, state='as-built'):
     return {load['ref']: load for load in entry['loads']}
 
 
+CHECKER_RULES = {rule.id for rule in catalog.rules(source='inductive_load')}
+
+
 def findings(db, intent=None):
-    return [f for f in Lint(db, '', intent).run() if f['rule'].startswith('IL-')]
+    return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
 
 
 class RecognitionTest(unittest.TestCase):
@@ -75,12 +79,12 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual(load['clamps'], [])
         self.assertIn('clamp:none-found', load['gaps'])
         hits = findings(db)
-        self.assertEqual([f['rule'] for f in hits], ['IL-01'])
+        self.assertEqual([f['rule'] for f in hits], ['DRV-A01'])
         self.assertIn('RELAY_DRV', hits[0]['detail'])
 
     def test_reversed_diode_reports_il02(self):
         hits = findings(relay_board(clamp='reversed'))
-        self.assertEqual([f['rule'] for f in hits], ['IL-02'])
+        self.assertEqual([f['rule'] for f in hits], ['DRV-A02'])
 
     def test_rc_snubber_counts_as_clamp(self):
         db = relay_board(clamp='rc')
@@ -92,7 +96,7 @@ class RecognitionTest(unittest.TestCase):
         db = relay_board(clamp_nc=True)
         load = loads_of(build_inventory(db))['K1']
         self.assertEqual(load['clamps'], [])
-        self.assertEqual([f['rule'] for f in findings(db)], ['IL-01'])
+        self.assertEqual([f['rule'] for f in findings(db)], ['DRV-A01'])
 
     def test_unknown_pin_roles_do_not_manufacture_orientation(self):
         db = relay_board(clamp='unknown-roles')
@@ -123,7 +127,7 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual(load['basis'], 'name-hint')
         self.assertEqual(findings(db), [])
         plan = build_review_plan(db)
-        item = next(x for x in plan['checks'] if x['check'].startswith('inductive-load-clamp-topology'))
+        item = next(x for x in plan['checks'] if x['rule'] == 'DRV-T01')
         self.assertEqual(item['applicability'], 'UNDETERMINED')
 
 
@@ -202,9 +206,9 @@ class PlanBindingTest(unittest.TestCase):
     def test_rule_plan_lists_both_cold_rules(self):
         plan = build_review_plan(relay_board())
         rules = {row['rule']: row for row in plan['rule_plan']}
-        self.assertIn('IL-01', rules)
-        self.assertIn('IL-02', rules)
-        self.assertEqual(rules['IL-01']['instances'], ['K1-RELAY-DRV'])
+        self.assertIn('DRV-A01', rules)
+        self.assertIn('DRV-A02', rules)
+        self.assertEqual(rules['DRV-A01']['instances'], ['K1-RELAY-DRV'])
 
 
 if __name__ == '__main__':

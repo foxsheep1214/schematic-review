@@ -5,6 +5,7 @@ import unittest
 
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import catalog
 
 from checkers.power_switch import PowerSwitchChecker, build_inventory, validate_power_switch_intent
 from electrical_contract import db_fingerprint, validate_evidence
@@ -42,12 +43,15 @@ def switches_of(inventory, state='as-built'):
     return {item['ref']: item for item in entry['switches']}
 
 
+CHECKER_RULES = {rule.id for rule in catalog.rules(source='power_switch')}
+
+
 def findings(db, intent=None):
-    return [f for f in Lint(db, '', intent).run() if f['rule'].startswith('PS-')]
+    return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
 
 
 def gate_check(**overrides):
-    check = {'id': 'GATE-DRIVE', 'rule': 'PS-10', 'kind': 'gate_drive', 'node': 'Q1.1',
+    check = {'id': 'GATE-DRIVE', 'rule': 'DRV-E01', 'kind': 'gate_drive', 'node': 'Q1.1',
              'channel': 'n', 'vgs_drive_v': {'min': 9.0, 'max': 12.6},
              'vgs_rds_on_v': 4.5, 'vgs_abs_v': {'min': -20.0, 'max': 20.0},
              'citation': 'Synthetic driver supply window and MOSFET guaranteed conditions'}
@@ -72,7 +76,7 @@ class RecognitionTest(unittest.TestCase):
         switch = switches_of(build_inventory(db))['Q1']
         self.assertEqual(switch['drivers'], [])
         hits = findings(db)
-        self.assertEqual([f['rule'] for f in hits], ['PS-01'])
+        self.assertEqual([f['rule'] for f in hits], ['DRV-A03'])
         self.assertIn('GATE', hits[0]['detail'])
 
     def test_gate_pull_alone_is_not_a_finding(self):
@@ -85,7 +89,7 @@ class RecognitionTest(unittest.TestCase):
 
     def test_switch_node_without_damping_reports_ps02_candidate(self):
         hits = findings(switch_board())
-        self.assertEqual([f['rule'] for f in hits], ['PS-02'])
+        self.assertEqual([f['rule'] for f in hits], ['DRV-A04'])
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
         self.assertIn('inductive:L2', hits[0]['detail'])
 
@@ -108,7 +112,7 @@ class RecognitionTest(unittest.TestCase):
         add(db, 'R4', '100K', [('1', '1', 'GATE_H'), ('2', '2', 'SW_OUT')])
         switch = switches_of(build_inventory(db))['Q1']
         self.assertEqual(switch['switch_node_evidence'], ['half-bridge:Q2'])
-        self.assertIn('PS-02', [f['rule'] for f in findings(db)])
+        self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
 
     def test_unpopulated_switch_is_skipped(self):
         db = switch_board(snubber='rc')
@@ -130,21 +134,19 @@ class PlanTest(unittest.TestCase):
         db = switch_board()
         plan = build_review_plan(db)
         items = [x for x in plan['checks'] if x['object'].get('power_switch')]
-        self.assertEqual({x['check'] for x in items},
-                         {'power-switch-gate-drive-Q1-GATE', 'power-switch-soa-Q1-GATE',
-                          'power-switch-node-damping-Q1-GATE'})
+        self.assertEqual({(x['rule'], x['object']['power_switch']) for x in items},
+                         {('DRV-E01', 'Q1-GATE'), ('DRV-C02', 'Q1-GATE'), ('DRV-D01', 'Q1-GATE')})
         for item in items:
             self.assertEqual(item['object']['power_switch_digest'], plan['power_switch']['digest'])
         self.assertEqual(plan['power_switch_version'], 1)
         rules = {row['rule']: row for row in plan['rule_plan']}
-        self.assertEqual(rules['PS-01']['instances'], ['Q1-GATE'])
-        self.assertEqual(rules['PS-10']['applicability'], 'APPLICABLE')
-        self.assertEqual(rules['PS-10']['readiness'], 'WAITING_EVIDENCE')
+        self.assertEqual(rules['DRV-A03']['instances'], ['Q1-GATE'])
+        self.assertEqual(rules['DRV-E01']['applicability'], 'APPLICABLE')
+        self.assertEqual(rules['DRV-E01']['readiness'], 'WAITING_EVIDENCE')
 
     def test_damping_item_only_exists_with_a_switch_node(self):
         plan = build_review_plan(switch_board(load=None))
-        self.assertNotIn('power-switch-node-damping-Q1-GATE',
-                         {x['check'] for x in plan['checks']})
+        self.assertNotIn('DRV-D01', {x['rule'] for x in plan['checks']})
 
     def test_stale_object_binding_is_reported(self):
         db = switch_board()
@@ -179,7 +181,7 @@ class HotRuleTest(unittest.TestCase):
 
     def run_check(self, check, db=None):
         db = db or switch_board(snubber='rc')
-        evidence = {'schema_version': 1, 'checks': [check]}
+        evidence = {'schema_version': 2, 'checks': [check]}
         audit = bind_evidence(db, evidence, self.directory.name)
         self.assertEqual(validate_evidence(evidence), [])
         lint = Lint(db, evidence=evidence, datasheet_audit=audit)
@@ -191,7 +193,7 @@ class HotRuleTest(unittest.TestCase):
     def test_sufficient_drive_passes(self):
         result = self.run_check(gate_check())
         self.assertEqual(result['review_result'], 'PASS')
-        self.assertEqual(result['rule'], 'PS-10')
+        self.assertEqual(result['rule'], 'DRV-E01')
         self.assertIn('SOA', result['scope'])
 
     def test_drive_below_rds_on_condition_fails(self):
@@ -220,9 +222,9 @@ class HotRuleTest(unittest.TestCase):
         self.assertIn('vgs_abs_v 缺少保证 min/max', result['detail'])
 
     def test_malformed_evidence_is_rejected_by_the_contract(self):
-        evidence = {'schema_version': 1, 'checks': [gate_check(channel='x')]}
+        evidence = {'schema_version': 2, 'checks': [gate_check(channel='x')]}
         self.assertTrue(any('channel' in error for error in validate_evidence(evidence)))
-        evidence = {'schema_version': 1, 'checks': [gate_check(kind='divider')]}
+        evidence = {'schema_version': 2, 'checks': [gate_check(kind='divider')]}
         self.assertTrue(any('kind' in error for error in validate_evidence(evidence)))
 
 

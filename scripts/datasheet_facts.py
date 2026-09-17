@@ -134,11 +134,11 @@ def _target_source(db, check):
     ref = request['ref']
     if any(key in check and not _text(check[key]) for key in ('node', 'net', 'ref')):
         return None, gaps + ['Vref 目标 node/net/ref 必须为非空字符串']
-    if (check.get('rule') != 'Rule-08' or check.get('kind') != 'divider'
+    if (check.get('rule') != 'PWR-E01' or check.get('kind') != 'divider'
             or (check.get('node') and check['node'].split('.')[0] != ref)
             or (check.get('ref') and check['ref'] != ref)
             or not any(node.startswith(ref + '.') for node in db.get('nets', {}).get(check.get('net'), []))):
-        gaps.append('vref_request.ref 必须是本 Rule-08 反馈目标器件')
+        gaps.append('vref_request.ref 必须是本 PWR-E01 反馈目标器件')
     sources = (check.get('basis') or {}).get('sources') or []
     matched = [source for source in sources if isinstance(source, dict) and source.get('ref') == ref]
     if len(matched) != 1:

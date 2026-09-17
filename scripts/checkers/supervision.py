@@ -3,10 +3,11 @@
 """监控与看门狗检查器：复位链、喂狗输入与逐电源域监控覆盖。
 
 识别监控器/看门狗器件、被监测的轨、复位输出到复位输入的路径与喂狗来源。
-哪些轨必须监测由需求裁定，本检查器只登记覆盖与缺口；脉宽是否足够按保证值热跑。
+哪些轨必须监测由需求裁定，本检查器只登记覆盖与缺口；脉宽是否足够由证据计算（RST-E03）按保证值判定。
 """
 import re
 
+import catalog
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
@@ -162,11 +163,9 @@ class SupervisionChecker(Checker):
     version_key = 'supervision_version'
     version = 1
     intent_key = 'supervision'
-    cold_rules = {'SV-01': '喂狗输入悬空或固定电平',
-                  'SV-02': '复位/看门狗输出未到复位输入',
-                  'SV-03': '存在未被监测的电源轨'}
-    hot_rules = {'SV-10': '复位脉宽与上拉'}
-    evidence_kinds = {'SV-10': {'reset_pulse'}}
+    cold_rules = catalog.titles(method='A', source='supervision')
+    hot_rules = catalog.titles(method='E', source='supervision')
+    evidence_kinds = {'RST-E03': {'reset_pulse'}}
 
     missing_inventory_message = 'supervision checks require their inventory'
     inventory_type_message = 'supervision inventory must be an object'
@@ -194,24 +193,18 @@ class SupervisionChecker(Checker):
                 obj['net'] = item['reset_outputs'][0]['net']
             gaps = item['gaps']
             check = planner.add_check(
-                'supervision-reset-path-' + item['id'], dict(obj),
-                '逐跳核复位链：输出类型与上拉电源域、极性、到每个复位输入的连通、'
-                '喂狗来源在启动期与固件异常时的行为，以及手动复位/去抖接法',
-                'ER3', 'Expert Review', readiness='WAITING_EVIDENCE',
+                'RST-T02', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
                     'datasheet:监控器阈值/脉宽/输出类型', 'firmware:启动期喂狗与超时窗口'])),
                 trigger=['supervision:' + item['id']])
-            check['domain'] = 'SUPERVISION'
             check['inventory_gaps'] = gaps
-            ready = planner.evidence_ready('SV-10', obj)
+            ready = planner.evidence_ready('RST-E03', obj)
             check = planner.add_check(
-                'supervision-reset-pulse-' + item['id'], dict(obj),
-                '按保证值核复位输出最小脉宽不低于目标复位输入要求；开漏输出须有上拉且电源域正确',
-                'ER4', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                'RST-E03', dict(obj), key=item['id'],
+                readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: SV-10 复位脉宽保证值与目标器件要求']))),
-                trigger=['supervision:' + item['id']], rule='SV-10')
-            check['domain'] = 'SUPERVISION'
+                    'evidence: RST-E03 复位脉宽保证值与目标器件要求']))),
+                trigger=['supervision:' + item['id']])
             check['inventory_gaps'] = gaps
         for state in inventory['states']:
             rails = state.get('rails', [])
@@ -221,15 +214,11 @@ class SupervisionChecker(Checker):
                    'supervision': 'rails-' + slug(state['id']),
                    'supervision_digest': inventory['digest']}
             check = planner.add_check(
-                'supervision-rail-coverage-' + slug(state['id']), obj,
-                '按需求确定哪些电源域必须监测，逐轨核监测点、阈值与动作；'
-                '未监测的轨需给出书面依据，不能因为有一颗监控器就判全板覆盖',
-                'ER2', 'Expert Review', readiness='WAITING_EVIDENCE',
+                'PWR-T04', obj, key=slug(state['id']), readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(list(state['gaps']) + [
                     'requirements:必须监测的电源域与动作要求'])),
                 trigger=['supervision-rails:' + state['id']],
                 handoff=handoff({'required': False}, 'APPLICABLE'))
-            check['domain'] = 'SUPERVISION'
             check['inventory_gaps'] = sorted(
                 {'rail-unmonitored:' + rail['net'] for rail in rails if not rail['monitor']}
                 | {gap for rail in rails for gap in rail['gaps']})
@@ -240,7 +229,7 @@ class SupervisionChecker(Checker):
                 head = '%s（状态 %s）' % (item['ref'], state['id'])
                 for watchdog in item['watchdog_inputs']:
                     if watchdog['state'] in ('floating', 'tied'):
-                        lint.add('SV-01', self.cold_rules['SV-01'],
+                        lint.add('RST-A05', self.cold_rules['RST-A05'],
                                  head + '：喂狗输入网 ' + watchdog['net'] + ' 为 '
                                  + watchdog['state'] + '，看门狗可能被有意禁用，需书面确认',
                                  item['ref'], kind='CANDIDATE')
@@ -251,18 +240,18 @@ class SupervisionChecker(Checker):
                     detail = (head + '：复位/看门狗输出 ' + output['node'] + ' 所在网 '
                               + output['net'] + ' 未接到任何复位输入')
                     if output['destinations']:
-                        lint.add('SV-02', self.cold_rules['SV-02'],
+                        lint.add('RST-A06', self.cold_rules['RST-A06'],
                                  detail + '（仅接到 '
                                  + '、'.join(x['node'] for x in output['destinations'])
                                  + '），需确认由该路径完成复位', item['ref'], kind='CANDIDATE')
                     else:
-                        lint.add('SV-02', self.cold_rules['SV-02'],
+                        lint.add('RST-A06', self.cold_rules['RST-A06'],
                                  detail + '，复位链在此中断', item['ref'])
             if not state['supervisors']:
                 continue
             unmonitored = [rail['net'] for rail in state.get('rails', []) if not rail['monitor']]
             if unmonitored:
-                lint.add('SV-03', self.cold_rules['SV-03'],
+                lint.add('PWR-A06', self.cold_rules['PWR-A06'],
                          '状态 %s：%s 未见监测点（sense 脚或到 sense 的分压）；'
                          '哪些轨必须监测由需求裁定'
                          % (state['id'], '、'.join(unmonitored)), kind='CANDIDATE')
@@ -286,11 +275,11 @@ class SupervisionChecker(Checker):
             net, hotmath.fmt(pulse[0]), hotmath.fmt(pulse[1]), hotmath.fmt(required[0]),
             hotmath.fmt(required[1]), check.get('output_type'), lint._citation(check))
         if problems:
-            lint.add('SV-10', '复位脉宽/输出条件不满足要求', detail + '；' + '；'.join(problems),
+            lint.add('RST-E03', '复位脉宽/输出条件不满足要求', detail + '；' + '；'.join(problems),
                      check.get('ref'), check_id=check['id'], citation=check['citation'],
                      calculation=calculation)
         else:
-            lint.record_pass('SV-10', check, detail,
+            lint.record_pass('RST-E03', check, detail,
                              scope='所给保证值下的复位脉宽与上拉存在性；阈值精度、迟滞与喂狗时序未判定',
                              calculation=calculation)
 
@@ -304,7 +293,7 @@ class SupervisionChecker(Checker):
             check, spans=('pulse_width_s', 'required_width_s'), texts=('output_type',))
 
     def rule_instances(self, rule, inventory):
-        if rule == 'SV-03':
+        if rule == 'PWR-A06':
             return sorted({rail['net'] for state in inventory['states']
                            for rail in state.get('rails', []) if not rail['monitor']})
         return sorted({item['id'] for _, item in inv.walk(inventory, 'supervisors')})

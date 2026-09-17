@@ -5,6 +5,7 @@ The hashes bind reviewed inputs, not the truth of a datasheet interpretation.
 The agent must still verify ordering code, package, conditions and citations.
 """
 import argparse
+import catalog
 import hashlib
 import json
 import math
@@ -74,7 +75,7 @@ def dependency_refs(db, check):
     """Mandatory target devices plus explicitly declared parameter dependencies.
 
 Do not fan out over a large supply rail. Extra devices on intermediate branches
-must be declared in depends_on. The bounded Rule-08 linear fallback additionally
+must be declared in depends_on. The bounded PWR-E01 linear fallback additionally
 extracts all resistor/ignored-load dependencies for both planning and execution;
 unsupported topology still belongs to the solver's INSUFFICIENT result.
     """
@@ -89,7 +90,7 @@ unsupported topology still belongs to the solver's INSUFFICIENT result.
     net = check.get('net') or db.get('pin2net', {}).get(check.get('node'))
     refs.update(node.split('.')[0] for node in db.get('nets', {}).get(net, [])
                 if re.match(r'^(U|M|Q|D)\d', node, re.I))
-    if check.get('rule') == 'Rule-08' and isinstance(check.get('divider_model'), dict):
+    if check.get('rule') == 'PWR-E01' and isinstance(check.get('divider_model'), dict):
         # Keep planning and hot execution aligned for the newly supported
         # linear networks. Stop at explicit source/reference boundaries.
         from solve_dividers import Solver
@@ -157,7 +158,7 @@ def dependency_gaps(db, check, audit, db_sha256=None):
 def model_gaps(check):
     gaps = []
     rule = check.get('rule')
-    if rule == 'Rule-08':
+    if rule == 'PWR-E01':
         vref = check.get('vref')
         if not (bounded(vref, positive=True) and finite(vref.get('typ'))
                 and vref['min'] <= vref['typ'] <= vref['max']):
@@ -168,10 +169,10 @@ def model_gaps(check):
                 gaps.append(f'divider_model.{key} 缺失')
         if not bounded(model.get('bias_current_a')):
             gaps.append('反馈输入偏置电流范围缺失（正号表示流入 IC）')
-    elif rule in ('Rule-12', 'Rule-16'):
-        if rule == 'Rule-12' and check.get('required_default') != 'float':
+    elif rule in ('RST-E01', 'RST-E02'):
+        if rule == 'RST-E01' and check.get('required_default') != 'float':
             if not finite(check.get('abs_min_v')) or not finite(check.get('abs_max_v')):
-                gaps.append('Rule-12 需正负引脚电压绝对额定；注入电流仍独立检查')
+                gaps.append('RST-E01 需正负引脚电压绝对额定；注入电流仍独立检查')
         required = check.get('required_default') or check.get('required')
         if required != 'float':
             analysis = check.get('voltage_analysis') or {}
@@ -241,7 +242,10 @@ def readiness_gaps(db, check, audit, db_sha256=None):
                 + vref_binding_gaps(db, check, audit)))
 
 
-HOT_RULE_IDS = {'Rule-08', 'Rule-09', 'Rule-12', 'Rule-14', 'Rule-16'}
+EVIDENCE_SCHEMA_VERSION = 2
+PLAN_SCHEMA_VERSION = 2  # 计划项使用 catalog 规则编号的版本
+# 内置证据计算规则；检查器的证据计算规则由注册表提供。
+HOT_RULE_IDS = frozenset(rule.id for rule in catalog.rules(method='E', source='lint'))
 
 
 def _registry_hot():
@@ -254,7 +258,7 @@ def hot_rule_ids():
     return HOT_RULE_IDS | set(_registry_hot())
 
 def validate_evidence(evidence):
-    """验证 ER1 结构化证据；拒绝让残缺判据静默进入热跑。"""
+    """验证资料取证形成的结构化证据；拒绝让残缺判据静默进入证据计算。"""
     errors = []
     seen_ids = set()
 
@@ -291,8 +295,8 @@ def validate_evidence(evidence):
 
     if not isinstance(evidence, dict):
         return ['根对象必须是 JSON object']
-    if evidence.get('schema_version') != 1:
-        errors.append('schema_version 必须为 1')
+    if evidence.get('schema_version') != EVIDENCE_SCHEMA_VERSION:
+        errors.append('schema_version 必须为 %d（规则编号已按 check-catalog.md 重排）' % EVIDENCE_SCHEMA_VERSION)
     checks = evidence.get('checks')
     if not isinstance(checks, list):
         return errors + ['checks 必须为数组']
@@ -315,8 +319,8 @@ def validate_evidence(evidence):
         if not text_value(check.get('citation')):
             errors.append(f'{label}.citation 缺失（需文档/版本/页码或表号）')
         if 'vref_request' in check or 'vref_binding' in check:
-            if rule != 'Rule-08':
-                errors.append(f'{label}: Vref facts 仅支持 Rule-08')
+            if rule != 'PWR-E01':
+                errors.append(f'{label}: Vref facts 仅支持 PWR-E01')
             request = check.get('vref_request')
             if not isinstance(request, dict) or not text_value(request.get('ref')) or not isinstance(request.get('conditions'), dict):
                 errors.append(f'{label}.vref_request 需要 ref 和 conditions object')
@@ -372,11 +376,11 @@ def validate_evidence(evidence):
                 errors.append(f'{label}.voltage_analysis.sample_window_s 不得为负')
         kind = check.get('kind')
         kind_by_rule = {
-            'Rule-08': {'divider'},
-            'Rule-09': {'required_pull', 'required_series'},
-            'Rule-12': {'pin_bias'},
-            'Rule-14': {'pin_map'},
-            'Rule-16': {'strap'},
+            'PWR-E01': {'divider'},
+            'SIG-E01': {'required_pull', 'required_series'},
+            'RST-E01': {'pin_bias'},
+            'DEV-E01': {'pin_map'},
+            'RST-E02': {'strap'},
         }
         for checker_rule, (_, checker) in registry.items():
             kind_by_rule[checker_rule] = set(checker.evidence_kinds.get(checker_rule, ()))
@@ -389,7 +393,7 @@ def validate_evidence(evidence):
                     or text_value(check.get('ref'))):
                 errors.append(f'{label} 必须给 node/net/ref 之一')
             errors.extend(registry[rule][1].evidence_errors(check, label))
-        if rule == 'Rule-08':
+        if rule == 'PWR-E01':
             for key in ('net', 'expected') + (() if 'vref_request' in check else ('vref',)):
                 if key not in check:
                     errors.append(f'{label}.{key} 缺失')
@@ -425,30 +429,30 @@ def validate_evidence(evidence):
                 if tolerance is None or not 0 <= tolerance < 1:
                     errors.append(
                         f'{label}.resistor_tolerance 必须在 [0, 1) 内')
-        elif rule in ('Rule-09', 'Rule-12', 'Rule-16'):
+        elif rule in ('SIG-E01', 'RST-E01', 'RST-E02'):
             if not (text_value(check.get('net'))
                     or text_value(check.get('node'))):
                 errors.append(f'{label} 必须给 net 或 node')
             if 'to' in check and not text_value(check.get('to')):
                 errors.append(f'{label}.to 必须为非空字符串')
-            if rule == 'Rule-09' and kind == 'required_pull' and (
+            if rule == 'SIG-E01' and kind == 'required_pull' and (
                     check.get('direction') not in ('up', 'down')):
                 errors.append(f'{label}.direction 必须为 up/down')
-            if rule == 'Rule-12' and check.get('required_default') not in (
+            if rule == 'RST-E01' and check.get('required_default') not in (
                     'high', 'low', 'float'):
                 errors.append(f'{label}.required_default 必须为 high/low/float')
-            if rule == 'Rule-16' and check.get('required') not in (
+            if rule == 'RST-E02' and check.get('required') not in (
                     'high', 'low', 'float'):
                 errors.append(f'{label}.required 必须为 high/low/float')
-            if rule == 'Rule-09' and 'resistance_ohm' in check:
+            if rule == 'SIG-E01' and 'resistance_ohm' in check:
                 errors.extend(range_errors(
                     check['resistance_ohm'], f'{label}.resistance_ohm',
                     nonnegative=True))
-            if rule == 'Rule-12' and 'abs_max_v' in check:
+            if rule == 'RST-E01' and 'abs_max_v' in check:
                 abs_max = number(check['abs_max_v'])
                 if abs_max is None or abs_max <= 0:
                     errors.append(f'{label}.abs_max_v 必须为有限正数')
-        elif rule == 'Rule-14':
+        elif rule == 'DEV-E01':
             if (not text_value(check.get('ref'))
                     or not isinstance(check.get('expected'), dict)
                     or not check.get('expected')):

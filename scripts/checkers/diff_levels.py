@@ -3,11 +3,12 @@
 """高速差分电平互连检查器。
 
 按网名成对与共同器件识别差分对，登记耦合方式、端接与偏置网络。电平标准来自
-声明或名称线索：名称只产生待核项，不产生结论。共模/摆幅是否兼容按 ER1 提供
-的保证范围热跑；阻抗、等长、间距与回流属 PCB HANDOFF。
+声明或名称线索：名称只产生待核项，不产生结论。共模/摆幅是否兼容由证据计算
+（SIG-E02）按资料保证范围判定；阻抗、等长、间距与回流属 PCB HANDOFF。
 """
 import re
 
+import catalog
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
@@ -153,9 +154,9 @@ class DiffLevelsChecker(Checker):
     version_key = 'diff_levels_version'
     version = 1
     intent_key = 'diff_levels'
-    cold_rules = {'DL-01': '交流耦合发送端无直流通路', 'DL-02': '交流耦合接收端无偏置/端接'}
-    hot_rules = {'DL-10': '共模与摆幅兼容'}
-    evidence_kinds = {'DL-10': {'diff_level'}}
+    cold_rules = catalog.titles(method='A', source='diff_levels')
+    hot_rules = catalog.titles(method='E', source='diff_levels')
+    evidence_kinds = {'SIG-E02': {'diff_level'}}
 
     missing_inventory_message = 'diff level checks require their inventory'
     inventory_type_message = 'diff level inventory must be an object'
@@ -182,24 +183,17 @@ class DiffLevelsChecker(Checker):
                    'diff_pair': pair['id'], 'diff_levels_digest': inventory['digest']}
             applicability = 'APPLICABLE' if pair['basis'] == 'declared' else 'UNDETERMINED'
             gaps = pair['gaps']
-            ready = applicability == 'APPLICABLE' and planner.evidence_ready('DL-10', obj)
+            ready = applicability == 'APPLICABLE' and planner.evidence_ready('SIG-E02', obj)
             check = planner.add_check(
-                'diff-level-compatibility-' + pair['id'], dict(obj),
-                '按两端保证范围核电平兼容：直流耦合时发送共模与摆幅落在接收端共模/差分输入'
-                '范围内；交流耦合时核接收端偏置共模、耦合电容与低频截止',
-                'ER4', 'AC0-HOT', applicability=applicability,
+                'SIG-E02', dict(obj), key=pair['id'], applicability=applicability,
                 readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: DL-10 两端共模/摆幅保证范围',
+                    'evidence: SIG-E02 两端共模/摆幅保证范围',
                     'intent.diff_levels: 电平标准与出处']))),
-                trigger=['diff-pair:' + pair['id'], 'basis:' + pair['basis']], rule='DL-10')
-            check['domain'] = 'DIFF_LEVELS'
+                trigger=['diff-pair:' + pair['id'], 'basis:' + pair['basis']])
             check['inventory_gaps'] = gaps
             check = planner.add_check(
-                'diff-level-termination-' + pair['id'], dict(obj),
-                '核端接与偏置网络的位置、阻值与电源域：差分端接、接收端偏置、'
-                '发送端直流通路，以及未用通道与掉电状态的处置',
-                'ER3', 'Expert Review', applicability=applicability,
+                'SIG-T03', dict(obj), key=pair['id'], applicability=applicability,
                 readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
                     'datasheet:收发两端电平与端接要求'])),
@@ -207,7 +201,6 @@ class DiffLevelsChecker(Checker):
                 handoff=handoff({'required': True, 'receivers': ['PCB Layout', 'SI'],
                                  'constraint': '差分阻抗、等长、间距、参考平面连续与端接就近',
                                  'verification': 'SI 仿真或眼图实测'}, applicability))
-            check['domain'] = 'DIFF_LEVELS'
             check['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):
@@ -222,13 +215,13 @@ class DiffLevelsChecker(Checker):
             kind = 'FINDING' if pair['basis'] == 'declared' else 'CANDIDATE'
             for leg in pair['legs']:
                 if current_mode and leg['direction'] == 'driver' and not leg['dc_path']:
-                    lint.add('DL-01', self.cold_rules['DL-01'],
+                    lint.add('SIG-A01', self.cold_rules['SIG-A01'],
                              head + '：发送侧 ' + leg['net']
                              + ' 经耦合电容隔直，但未见到地/到轨的直流通路，'
                                '发射极或偏置电流路径需确认',
                              anchor, kind=kind)
                 if leg['direction'] == 'receiver' and not leg['terminations'] and not leg['dc_path']:
-                    lint.add('DL-02', self.cold_rules['DL-02'],
+                    lint.add('SIG-A02', self.cold_rules['SIG-A02'],
                              head + '：接收侧 ' + leg['net']
                              + ' 交流耦合后未见偏置或端接网络；'
                                '若由接收端内部偏置/端接需给出资料证据',
@@ -262,11 +255,11 @@ class DiffLevelsChecker(Checker):
             hotmath.fmt(swing[0]), hotmath.fmt(swing[1]),
             hotmath.fmt(receiver_diff[0]), hotmath.fmt(receiver_diff[1]), lint._citation(check))
         if problems:
-            lint.add('DL-10', '差分电平不兼容', detail + '；' + '；'.join(problems),
+            lint.add('SIG-E02', '差分电平不兼容', detail + '；' + '；'.join(problems),
                      check.get('ref'), check_id=check['id'], citation=check['citation'],
                      calculation=calculation)
         else:
-            lint.record_pass('DL-10', check, detail,
+            lint.record_pass('SIG-E02', check, detail,
                              scope='所给保证范围下的共模/摆幅兼容；抖动、低频截止、阻抗与回流未判定',
                              calculation=calculation)
 

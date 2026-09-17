@@ -131,7 +131,7 @@ class NotConnectedTest(unittest.TestCase):
         db = parse(board())
         self.assertIn('unconnected-(R2-Pad1)', db['nets'])
         self.assertNotIn('unconnected-(R2-Pad1)', db['pseudo_nets'])
-        hits = [f for f in Lint(db).run() if f['rule'] == 'Rule-01']
+        hits = [f for f in Lint(db).run() if f['rule'] == 'NET-A01']
         self.assertEqual([f['detail'].split(' <- ')[0] for f in hits],
                          ['unconnected-(R2-Pad1)'])
 

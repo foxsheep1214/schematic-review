@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import catalog
 from electrical_contract import db_fingerprint
 from i2c_topology import build_i2c_topology, validate_i2c_intent
 from lint import Lint
@@ -82,7 +83,7 @@ def pending_report(plan, db):
         if row['review_result'] == 'INSUFFICIENT':
             row.update(missing_inputs=['applicable specifications and state analysis'], potential_severity='P1')
         rows.append(row)
-    scope = {k: next(p['id'] for p in plan['checks'] if p['check'] == 'coverage-' + k) for k in SCOPE}
+    scope = {k: next(p['id'] for p in plan['checks'] if p['rule'] == catalog.COVERAGE_RULES[k]) for k in SCOPE}
     return {'schema_version': 2, 'binding_version': 1, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
             'checks': rows, 'findings': [], 'scope_checks': scope,
             'coverage': {'components': {r: [scope['chains']] for r in db['parts']},
@@ -221,7 +222,7 @@ class TopologyTests(unittest.TestCase):
         lint = Lint(db)
         lint._hot_required_passive({'id': 'direct', 'net': 'EXT_SDA_0', 'kind': 'required_pull',
             'to': 'VCC_3V3', 'citation': 'synthetic', 'resistance_ohm': {'min': 2000, 'max': 3000}})
-        self.assertEqual(lint.results[0]['review_result'], 'INSUFFICIENT')  # series branch still unsupported by Rule-09
+        self.assertEqual(lint.results[0]['review_result'], 'INSUFFICIENT')  # series branch still unsupported by SIG-E01
 
     def test_no_intent_only_produces_unconfirmed_inventory(self):
         db, intent = fixture()
@@ -243,7 +244,7 @@ class TopologyTests(unittest.TestCase):
                 db['pinname'][node] = 'GPIO'
         rebind(db, intent)
         plan = build_review_plan(db, intent)
-        feature = next(p for p in plan['checks'] if p['check'] == 'feature-i2c')
+        feature = next(p for p in plan['checks'] if p['rule'] == 'SIG-Q06')
         self.assertEqual(feature['applicability'], 'APPLICABLE')
         self.assertEqual(len(regions(plan['i2c_topology'])), 2)
 
@@ -251,7 +252,7 @@ class TopologyTests(unittest.TestCase):
         db, intent = fixture()
         del intent['i2c_topology']['states'][0]['population']['R1']
         plan = build_review_plan(db, intent)
-        item = next(p for p in plan['checks'] if p['check'].startswith('i2c-topology-') and p['object']['net'] == 'I2C_SDA')
+        item = next(p for p in plan['checks'] if p['rule'] == 'SIG-T02' and p['object']['net'] == 'I2C_SDA')
         report = report_for(plan, db)
         report['checks'] = [{'id': item['id'], 'applicability': 'APPLICABLE', 'review_result': 'PASS'}]
         outcome = validate_review(plan, report, db)
@@ -276,7 +277,7 @@ class TopologyTests(unittest.TestCase):
         db, intent = fixture(('33R',))
         plan = build_review_plan(db, intent)
         report = pending_report(plan, db)
-        ids = {p['id'] for p in plan['checks'] if p['check'].startswith('i2c-topology-')}
+        ids = {p['id'] for p in plan['checks'] if p['rule'] == 'SIG-T02'}
         for row in report['checks']:
             if row['id'] in ids:
                 row.update(review_result='PASS', evidence_confidence='B', rationale='Synthetic topology and population verified')
@@ -398,11 +399,12 @@ class TopologyTests(unittest.TestCase):
         plan = build_review_plan(db, intent)
         new = [p for p in plan['checks'] if p['object'].get('i2c_region')]
         self.assertEqual(len(new), 8)
-        self.assertEqual(sum(p['check'].startswith('i2c-topology-') for p in new), 2)
+        self.assertEqual(sum(p['rule'] == 'SIG-T02' for p in new), 2)
         self.assertTrue(all(p['review_result'] is None for p in new))
-        electrical = [p for p in new if p['stage'] == 'ER4']
+        electrical = [p for p in new if p['rule'] in catalog.CIRCUIT_TYPES['I2C']]
+        self.assertEqual(len(electrical), 6)
         self.assertTrue(all(p['readiness'] == 'WAITING_EVIDENCE' for p in electrical))
-        self.assertTrue(any(p['check'] == 'i2c-required-pull' for p in plan['checks']))
+        self.assertTrue(any(p['rule'] == 'SIG-E01' for p in plan['checks']))
 
     def test_merge_rejects_changed_state_even_when_db_is_unchanged(self):
         db, intent = fixture(('jumper',))
@@ -415,15 +417,15 @@ class TopologyTests(unittest.TestCase):
         db, intent = fixture()
         before = build_review_plan(db, intent)
         manual = copy.deepcopy(before['checks'][0])
-        manual['id'] = 'MANUAL-1'
+        manual['id'] = manual['rule'] + '.MANUAL-1'
         before['checks'].append(manual)
         after = build_review_plan(db, intent, previous_plan=before)
-        self.assertTrue(any(x['id'] == 'MANUAL-1' for x in after['checks']))
+        self.assertTrue(any(x['id'] == manual['id'] for x in after['checks']))
 
     def test_validator_recomputes_inventory_and_rejects_deleted_coverage(self):
         db, intent = fixture()
         plan = build_review_plan(db, intent)
-        plan['checks'] = [p for p in plan['checks'] if not p['check'].startswith('i2c-topology-')]
+        plan['checks'] = [p for p in plan['checks'] if p['rule'] != 'SIG-T02']
         outcome = validate_review(plan, report_for(plan, db), db)
         self.assertTrue(any('incomplete I2C planned coverage' in e for e in outcome['errors']))
         plan['i2c_topology']['states'][0]['regions'][0]['gaps'] = ['tampered']

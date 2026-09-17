@@ -1,6 +1,6 @@
-# 项目内 Vref 参数复用（schema_version=1）
+# 项目内 Vref 参数复用（事实库 schema_version=1）
 
-仅用于 Rule-08。资料事实存入项目审查目录的 `datasheets/facts.json`，原始 PDF 一并留档；
+仅用于 PWR-E01。资料事实存入项目审查目录的 `datasheets/facts.json`，原始 PDF 一并留档；
 事实记录不含位号、电阻网络、审查结论或整板 PASS。每次使用绑定当前对象/状态并重算。
 脚本不下载、不自动提取 PDF，也不按 LLM 置信度或完整性评分决定参数正确性。
 
@@ -66,7 +66,7 @@
 
 ## 2. 为本次检查声明身份与请求工况
 
-仍按 [热跑证据契约](datasheet-evidence-schema.md) 建 `basis` 和全部依赖。
+仍按 [证据计算契约](datasheet-evidence-schema.md) 建 `basis` 和全部依赖（evidence `schema_version` 为 2）。
 在目标 `basis.sources` 项添加 `mpn`、`package`：它们是按当前 BOM/订货表核实的精确
 身份，**不是**工具自动识别的结果。原 `identity_resolution` 必须解释 VALUE/PART/PRIM/
 JEDEC 与真实订货码/封装的对应及冲突解决；仅把事实里的型号复制过来不算身份核对。
@@ -77,7 +77,7 @@ PRIM 得到型号；`package` 精确等于当前 `jedec`。事实中的 package 
 与原厂封装名称的对应仍须原件核实。BOM 字段为别名、缺封装或冲突尚待解决时，
 继续走原有手工证据流程，不为通过匹配而修改原始 BOM/网表或猜测别名映射。
 
-Rule-08 检查加以下请求，可暂不填写 `vref`：
+PWR-E01 检查加以下请求，可暂不填写 `vref`：
 
 ```json
 "vref_request": {

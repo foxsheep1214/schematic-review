@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-原理图结构化网表 Diff，并按复审断言核验 Rule-17“假闭环”。
+原理图结构化网表 Diff，并按复审断言核验 REQ-H01（改版闭环，防“假闭环”）。
 
 用法:
     python3 diff_netlists.py old-db.json new-db.json
@@ -264,7 +264,7 @@ def evaluate_claims(old, new, claims):
         results.append(result)
         if not passed:
             findings.append({
-                'rule': 'Rule-17',
+                'rule': 'REQ-H01',
                 'kind': 'FINDING',
                 'name': '历史意见未被新网表证实（假闭环）',
                 'detail': (
@@ -293,7 +293,7 @@ def main():
                         help='网络成员 Diff 包含工具伪网络（默认排除）')
     parser.add_argument('--json', help='写出完整 Diff JSON')
     parser.add_argument('--fail-on-open-claims', action='store_true',
-                        help='存在 Rule-17 未闭环项时退出 2')
+                        help='存在 REQ-H01 未闭环项时退出 2')
     args = parser.parse_args()
 
     old = json.load(io.open(args.old_db, encoding='utf-8'))

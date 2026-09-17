@@ -3,9 +3,10 @@
 """光耦隔离传输检查器。
 
 识别光耦的 LED 回路（限流电阻与驱动源）与输出侧（上拉电阻与参考），登记逐状态
-清单。电流传输比与寿命衰减后的驱动能力按 ER1 提供的保证值热跑；寿命衰减系数
+清单。电流传输比与寿命衰减后的驱动能力由证据计算（PRO-E01）按资料保证值判定；寿命衰减系数
 必须来自项目规定，缺规定即 INSUFFICIENT。隔离耐压与爬电距离不在本检查器。
 """
+import catalog
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
@@ -108,9 +109,9 @@ class OptocouplerChecker(Checker):
     version_key = 'optocoupler_version'
     version = 1
     intent_key = 'optocouplers'
-    cold_rules = {'OC-01': 'LED 回路无限流元件', 'OC-02': '输出集电极无上拉'}
-    hot_rules = {'OC-10': 'CTR 与驱动能力'}
-    evidence_kinds = {'OC-10': {'opto_ctr'}}
+    cold_rules = catalog.titles(method='A', source='optocoupler')
+    hot_rules = catalog.titles(method='E', source='optocoupler')
+    evidence_kinds = {'PRO-E01': {'opto_ctr'}}
 
     missing_inventory_message = 'optocoupler checks require their inventory'
     inventory_type_message = 'optocoupler inventory must be an object'
@@ -137,42 +138,35 @@ class OptocouplerChecker(Checker):
             if item['collector_net']:
                 obj['net'] = item['collector_net']
             gaps = item['gaps']
-            ready = planner.evidence_ready('OC-10', obj)
+            ready = planner.evidence_ready('PRO-E01', obj)
             check = planner.add_check(
-                'optocoupler-transfer-' + item['id'], dict(obj),
-                '按最小正向电流、保证 CTR 与项目规定的寿命衰减系数核输出可用电流是否满足'
-                '上拉与负载要求；同时核最大正向电流不超额定',
-                'ER4', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                'PRO-E01', dict(obj), key=item['id'],
+                readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: OC-10 VF/CTR/电阻与上拉保证值',
+                    'evidence: PRO-E01 VF/CTR/电阻与上拉保证值',
                     'intent: CTR 寿命衰减系数的项目规定']))),
-                trigger=['optocoupler:' + item['id']], rule='OC-10')
-            check['domain'] = 'OPTOCOUPLER'
+                trigger=['optocoupler:' + item['id']])
             check['inventory_gaps'] = gaps
             check = planner.add_check(
-                'optocoupler-isolation-' + item['id'], dict(obj),
-                '核隔离两侧的网络归属、参考地、跨接器件与耐压，以及输出侧速度/负载条件；'
-                '爬电距离与实际隔离距离另交结构与版图',
-                'ER3', 'Expert Review', readiness='WAITING_EVIDENCE',
+                'PRO-D01', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
                     'datasheet:隔离耐压与爬电要求', 'requirements:隔离等级与安规标准'])),
                 trigger=['optocoupler:' + item['id']],
                 handoff=handoff({'required': True, 'receivers': ['PCB Layout', 'Mechanical'],
                                  'constraint': '隔离带无跨越走线/铜皮，爬电与电气间隙满足安规',
                                  'verification': '版图与结构复核隔离距离'}, 'APPLICABLE'))
-            check['domain'] = 'OPTOCOUPLER'
             check['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):
         for state, item in inv.walk(inventory, 'optocouplers'):
             head = '%s（状态 %s）' % (item['ref'], state['id'])
             if item['led_nets'] and not item['led_resistors'] and item['drive'] != 'constant-current':
-                lint.add('OC-01', self.cold_rules['OC-01'],
+                lint.add('PRO-A03', self.cold_rules['PRO-A03'],
                          head + '：LED 回路 ' + '、'.join(item['led_nets'])
                          + ' 上未见限流电阻；若为恒流驱动需在 intent 中声明并给出出处',
                          item['ref'])
             if item['collector_net'] and not item['output_pullups']:
-                lint.add('OC-02', self.cold_rules['OC-02'],
+                lint.add('PRO-A04', self.cold_rules['PRO-A04'],
                          head + '：输出集电极网 ' + item['collector_net']
                          + ' 上未见到电源轨的上拉电阻；若由接收端内部上拉或有源负载需给出证据',
                          item['ref'], kind='CANDIDATE')
@@ -210,11 +204,11 @@ class OptocouplerChecker(Checker):
             hotmath.fmt(ctr_min), hotmath.fmt(derating), hotmath.fmt(ic_available, 'A'),
             hotmath.fmt(ic_required, 'A'), lint._citation(check))
         if problems:
-            lint.add('OC-10', '光耦传输电流不满足要求', detail + '；' + '；'.join(problems),
+            lint.add('PRO-E01', '光耦传输电流不满足要求', detail + '；' + '；'.join(problems),
                      check.get('ref'), check_id=check['id'], citation=check['citation'],
                      calculation=calculation)
         else:
-            lint.record_pass('OC-10', check, detail,
+            lint.record_pass('PRO-E01', check, detail,
                              scope='所给保证值与项目衰减系数下的静态传输能力；'
                                    '开关速度、温度角与隔离耐压未判定',
                              calculation=calculation)

@@ -4,30 +4,42 @@ import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import catalog
 from validate_review import validate_review, fingerprint, SCOPE
 
 E = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
+C1, C2 = 'RST-E01.C1', 'RST-E01.C2'
+
+
+def scope_id(dimension):
+    return catalog.COVERAGE_RULES[dimension] + '.' + dimension.upper()
+
+
+def planned(key):
+    rule = key.split('.')[0]
+    return {'id': key, 'rule': rule, 'method': catalog.method_of(rule),
+            'domain': catalog.domain_of(rule), 'applicability': 'APPLICABLE', 'object': {}}
 
 
 def fixture():
-    keys = ['C1'] + sorted(SCOPE)
-    plan = {'checks': [{'id': k, 'applicability': 'APPLICABLE', 'object': {}} for k in keys]}
+    keys = [C1] + [scope_id(k) for k in sorted(SCOPE)]
+    plan = {'schema_version': 2, 'checks': [planned(k) for k in keys]}
     db = {'parts': {'R1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
           'ref2page': {'R1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
     report = {'schema_version': 2, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
         'checks': [{'id': k, 'applicability': 'APPLICABLE', 'review_result': 'PASS',
                     'evidence_confidence': 'A', 'evidence': E, 'rationale': 'stipulated compliant fixture',
                     'blocking': False, 'handoff': {'required': False}} for k in keys],
-        'findings': [], 'scope_checks': {k: k for k in SCOPE},
-        'coverage': {'components': {'R1': ['C1']}, 'pins': {'R1.1': ['C1'], 'R1.2': ['C1']},
-                     'nets': {'A': ['C1']}, 'pages': {'1': ['C1']}, 'requirements': {}}}
+        'findings': [], 'scope_checks': {k: scope_id(k) for k in SCOPE},
+        'coverage': {'components': {'R1': [C1]}, 'pins': {'R1.1': [C1], 'R1.2': [C1]},
+                     'nets': {'A': [C1]}, 'pages': {'1': [C1]}, 'requirements': {}}}
     return plan, report, db
 
 
 def fail(report, severity='P1'):
     c = report['checks'][0]
     c.update(review_result='FAIL', severity=severity, finding_id='F1')
-    report['findings'] = [{'id': 'F1', 'kind': 'DEFECT', 'severity': severity, 'check_ids': ['C1'],
+    report['findings'] = [{'id': 'F1', 'kind': 'DEFECT', 'severity': severity, 'check_ids': [C1],
         'location': {'pages': ['1'], 'refs': ['R1'], 'nets': ['A']},
         **{key: 'synthetic evidence' for key in ('title', 'observed', 'criterion', 'impact', 'scenario',
               'root_cause', 'recommendation', 'verification', 'severity_reason')}}]
@@ -35,6 +47,14 @@ def fail(report, severity='P1'):
 
 
 class ReviewGateTests(unittest.TestCase):
+    def test_retired_plan_schema_and_unknown_rules_are_rejected(self):
+        p, r, db = fixture(); del p['schema_version']; r['plan_digest'] = fingerprint(p)
+        self.assertFalse(validate_review(p, r, db)['valid'])
+        p, r, db = fixture(); p['checks'][0]['method'] = 'D'; r['plan_digest'] = fingerprint(p)
+        out = validate_review(p, r, db)
+        self.assertFalse(out['valid'])
+        self.assertTrue(any('method/domain' in x for x in out['errors']), out)
+
     def test_complete_ledger_can_release(self):
         p, r, db = fixture()
         result = validate_review(p, r, db)
@@ -100,10 +120,10 @@ class ReviewGateTests(unittest.TestCase):
 
     def test_same_defect_multiple_checks_counted_once(self):
         p, r, db = fixture(); fail(r)
-        second = copy.deepcopy(r['checks'][0]); second['id'] = 'C2'
-        p['checks'].append({'id': 'C2', 'object': {}, 'applicability': 'APPLICABLE'})
+        second = copy.deepcopy(r['checks'][0]); second['id'] = C2
+        p['checks'].append(planned(C2))
         r['plan_digest'] = fingerprint(p); r['checks'].append(second)
-        r['findings'][0]['check_ids'].append('C2')
+        r['findings'][0]['check_ids'].append(C2)
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['summary']['results']['FAIL'], 2)
@@ -126,11 +146,11 @@ class ReviewGateTests(unittest.TestCase):
 
     def test_unreviewed_lint_candidate_rejected(self):
         p, r, db = fixture()
-        run = {'findings': [{'rule': 'Rule-04', 'detail': 'candidate 1'},
-                            {'rule': 'Rule-04', 'detail': 'candidate 2'}]}
-        r['lint_reviews'] = [{'run_digest': fingerprint(run), 'items': {'0': ['C1']}}]
+        run = {'findings': [{'rule': 'PWR-A01', 'detail': 'candidate 1'},
+                            {'rule': 'PWR-A01', 'detail': 'candidate 2'}]}
+        r['lint_reviews'] = [{'run_digest': fingerprint(run), 'items': {'0': [C1]}}]
         self.assertFalse(validate_review(p, r, db, [run])['valid'])
-        r['lint_reviews'][0]['items']['1'] = ['C1']
+        r['lint_reviews'][0]['items']['1'] = [C1]
         self.assertTrue(validate_review(p, r, db, [run])['valid'])
 
     def test_malformed_result_cannot_release(self):
@@ -274,7 +294,7 @@ class ReviewBindingTests(unittest.TestCase):
         p, r = bound_fixture(); bound_fail(r)
         p['checks'][0]['object'] = {'requirement_id': 'REQ-EN'}
         r['checks'][0]['binding']['object'] = copy.deepcopy(p['checks'][0]['object'])
-        r['plan_digest'] = fingerprint(p); r['coverage']['requirements'] = {'REQ-EN': ['C1']}
+        r['plan_digest'] = fingerprint(p); r['coverage']['requirements'] = {'REQ-EN': [C1]}
         self.assertTrue(validate_review(p, r)['valid'])
 
     def test_defect_cannot_link_a_pass_check(self):

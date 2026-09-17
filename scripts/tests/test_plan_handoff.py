@@ -9,6 +9,7 @@ import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import catalog
 from electrical_fixtures import bind_evidence, pin_analysis
 from decoupling import input_fingerprint
 from plan_review import build_review_plan
@@ -26,11 +27,11 @@ class PlanHandoffTests(unittest.TestCase):
             'nets': {'CONTROL': ['U1.1']}, 'pin2net': {'U1.1': 'CONTROL'},
             'pinname': {'U1.1': 'EN'}, 'pintype': {}, 'ref2page': {'U1': 1}, 'pseudo_nets': []}
         self.cold = build_review_plan(self.db, self.inventory_context())
-        self.parent = next(c['id'] for c in self.cold['checks'] if c.get('rule') == 'Rule-12')
-        base = {'rule': 'Rule-12', 'kind': 'pin_bias', 'node': 'U1.1',
+        self.parent = next(c['id'] for c in self.cold['checks'] if c.get('rule') == 'RST-E01')
+        base = {'rule': 'RST-E01', 'kind': 'pin_bias', 'node': 'U1.1',
             'required_default': 'high', 'vih_min_v': 2.0, 'abs_min_v': -0.3,
             'abs_max_v': 5.5, 'citation': 'Synthetic IC Rev.A p.1'}
-        self.evidence = {'schema_version': 1, 'checks': [
+        self.evidence = {'schema_version': 2, 'checks': [
             dict(base, id='EN-RUN', voltage_analysis=pin_analysis(3.3, 3.3)),
             dict(base, id='EN-BOOT', voltage_analysis=pin_analysis(0.0, 0.0))]}
         self.audit = bind_evidence(self.db, self.evidence, self.root)
@@ -91,7 +92,7 @@ class PlanHandoffTests(unittest.TestCase):
         report = {'schema_version': 2, 'remediation_version': 1,
             'plan_digest': fingerprint(plan), 'db_digest': fingerprint(self.db),
             'checks': checks, 'findings': [],
-            'scope_checks': {d: next(p['id'] for p in plan['checks'] if p['check'] == 'coverage-' + d) for d in SCOPE},
+            'scope_checks': {d: next(p['id'] for p in plan['checks'] if p['rule'] == catalog.COVERAGE_RULES[d]) for d in SCOPE},
             'coverage': {'requirements': {},
                 'components': {k: [self.parent] for k in self.db['parts']},
                 'pins': {k: [self.parent] for k in self.db['pin2net']},
@@ -153,8 +154,8 @@ class PlanHandoffTests(unittest.TestCase):
 
     def test_manual_check_retained_and_old_plan_not_mutated(self):
         manual = deepcopy(self.cold['checks'][0])
-        manual.update(id='MANUAL-RETURN-PATH', check='manual-return-path', criterion='Review return path',
-                      review_result='PASS', evidence_confidence='A')
+        manual.update(id='PWR-T01.MANUAL-RETURN-PATH', rule='PWR-T01', method='T', domain='PWR',
+                      criterion='Review return path', review_result='PASS', evidence_confidence='A')
         previous = deepcopy(self.cold)
         previous['checks'].append(manual)
         snapshot = deepcopy(previous)
@@ -184,6 +185,12 @@ class PlanHandoffTests(unittest.TestCase):
         previous['checks'][-1] = {'id': 'MANUAL'}
         with self.assertRaisesRegex(ValueError, 'incomplete'):
             self.merged(previous)
+        previous['checks'][-1] = dict(deepcopy(previous['checks'][0]), id='NOT-A-RULE.MANUAL')
+        with self.assertRaisesRegex(ValueError, 'ID 必须以'):
+            self.merged(previous)
+        previous['checks'][-1] = dict(deepcopy(previous['checks'][0]), id='CLK-Q01.MANUAL', method='T')
+        with self.assertRaisesRegex(ValueError, 'method/domain'):
+            self.merged(previous)
 
     def test_manual_handoff_refinement_is_not_silently_overwritten(self):
         previous = deepcopy(self.cold)
@@ -201,7 +208,7 @@ class PlanHandoffTests(unittest.TestCase):
             'pintype': {}, 'ref2page': {'U1': 1, 'R1': 1}, 'pseudo_nets': []}
         self.cold = build_review_plan(self.db, self.inventory_context())
         self.parent = self.cold['checks'][0]['id']
-        self.evidence = {'schema_version': 1, 'checks': [{'id': 'SERIES-ALERT', 'rule': 'Rule-09',
+        self.evidence = {'schema_version': 2, 'checks': [{'id': 'SERIES-ALERT', 'rule': 'SIG-E01',
             'kind': 'required_series', 'net': 'SIGNAL_IN', 'to': 'SIGNAL_OUT',
             'resistance_ohm': {'min': 2000, 'max': 3000}, 'depends_on': ['R1'],
             'citation': 'Synthetic interface Rev.A p.1'}]}

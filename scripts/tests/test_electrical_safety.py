@@ -31,13 +31,13 @@ def pull_db(value='1K/1%'):
 
 
 def pull_check():
-    return {'id': 'PULL', 'rule': 'Rule-09', 'kind': 'required_pull', 'net': 'SDA',
+    return {'id': 'PULL', 'rule': 'SIG-E01', 'kind': 'required_pull', 'net': 'SDA',
             'direction': 'up', 'to': 'VCC_3V3', 'resistance_ohm': {'min': 1000, 'max': 4700},
             'citation': 'Synthetic bus driver sink/rise requirement'}
 
 
 def fb_check():
-    return {'id': 'FB', 'rule': 'Rule-08', 'kind': 'divider', 'net': 'FB_NET',
+    return {'id': 'FB', 'rule': 'PWR-E01', 'kind': 'divider', 'net': 'FB_NET',
             'vref': {'min': .792, 'typ': .8, 'max': .808},
             'expected': {'min': 2.3, 'max': 2.5}, 'divider_model': divider_model(),
             'citation': 'Synthetic FB reference/load guarantee specification'}
@@ -49,7 +49,7 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
 
     def run_check(self, db, check, audit=None, bind=True):
-        evidence = {'schema_version': 1, 'checks': [check]}
+        evidence = {'schema_version': 2, 'checks': [check]}
         if bind:
             audit = bind_evidence(db, evidence, self.directory.name)
         self.assertEqual(validate_evidence(evidence), [])
@@ -65,7 +65,7 @@ class ElectricalSafetyTests(unittest.TestCase):
                       {'U1.1': 'VDD', 'U1.2': 'VSS'})
         lint = Lint(db)
         self.assertFalse(lint.driven('VCC_3V3'))
-        self.assertTrue(any(x['rule'] in ('Rule-04', 'Rule-05') for x in lint.run()))
+        self.assertTrue(any(x['rule'] in ('PWR-A01', 'PWR-A02') for x in lint.run()))
 
     def test_source_path_through_fuse_ferrite_and_zero_ohm(self):
         db = database({'SOURCE': ['U1.1', 'F1.1'], 'MID1': ['F1.2', 'FB1.1'],
@@ -121,7 +121,7 @@ class ElectricalSafetyTests(unittest.TestCase):
     def test_p03_capacitive_strap_not_passed_by_pull_presence(self):
         db = database({'BOOT0': ['U1.1', 'R1.1', 'C1.1'], 'VCC_3V3': ['R1.2'],
                        'GND': ['C1.2']}, {'U1': 'MCU', 'R1': '100K/1%', 'C1': '100nF'}, {'U1.1': 'BOOT0'})
-        check = {'id': 'BOOT', 'rule': 'Rule-16', 'kind': 'strap', 'node': 'U1.1',
+        check = {'id': 'BOOT', 'rule': 'RST-E02', 'kind': 'strap', 'node': 'U1.1',
                  'required': 'high', 'citation': 'Synthetic minimum high 2V at 1ms'}
         result, _ = self.run_check(db, check)
         self.assertEqual(result['review_result'], 'INSUFFICIENT')
@@ -134,7 +134,7 @@ class ElectricalSafetyTests(unittest.TestCase):
 
     def test_guaranteed_high_window_passes_and_undefined_region_fails(self):
         db = pull_db('4K7/1%')
-        check = {'id': 'IO', 'rule': 'Rule-12', 'kind': 'pin_bias', 'node': 'U1.1',
+        check = {'id': 'IO', 'rule': 'RST-E01', 'kind': 'pin_bias', 'node': 'U1.1',
                  'required_default': 'high', 'vih_min_v': 2, 'abs_min_v': -.3, 'abs_max_v': 3.6,
                  'voltage_analysis': pin_analysis(3, 3.4), 'citation': 'synthetic guaranteed levels'}
         result, _ = self.run_check(db, check)
@@ -148,7 +148,7 @@ class ElectricalSafetyTests(unittest.TestCase):
 
     def test_internal_pull_can_meet_guaranteed_default_without_external_resistor(self):
         db = database({'BOOT': ['U1.1']}, {'U1': 'MCU'}, {'U1.1': 'BOOT0'})
-        check = {'id': 'BOOT', 'rule': 'Rule-16', 'kind': 'strap', 'node': 'U1.1',
+        check = {'id': 'BOOT', 'rule': 'RST-E02', 'kind': 'strap', 'node': 'U1.1',
                  'required': 'low', 'vil_max_v': .8, 'voltage_analysis': pin_analysis(0, .2),
                  'citation': 'Synthetic guaranteed internal pull and leakage model'}
         result, _ = self.run_check(db, check)
@@ -182,7 +182,7 @@ class ElectricalSafetyTests(unittest.TestCase):
     def test_p05_tvs_working_voltage_is_not_breakdown_or_burnout(self):
         db = database({'VCC_5V1': ['D1.1', 'J1.1'], 'GND': ['D1.2']},
                       {'D1': 'SMBJ5.0A', 'J1': 'CONN'})
-        items = [x for x in Lint(db).run() if x['rule'] == 'Rule-13']
+        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-A02']
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0]['kind'], 'CANDIDATE')
         self.assertNotIn('上电即', items[0]['detail'])
@@ -223,8 +223,8 @@ class ElectricalSafetyTests(unittest.TestCase):
         result, _ = self.run_check(db, check, audit=missing, bind=False)
         self.assertEqual(result['review_result'], 'INSUFFICIENT')
         for audit, expected in ((missing, 'WAITING_EVIDENCE'), (available, 'READY')):
-            plan = build_review_plan(db, evidence={'schema_version': 1, 'checks': [check]}, datasheet_audit=audit)
-            item = next(x for x in plan['checks'] if x['check'] == 'feedback-divider-wca')
+            plan = build_review_plan(db, evidence={'schema_version': 2, 'checks': [check]}, datasheet_audit=audit)
+            item = next(x for x in plan['checks'] if x['rule'] == 'PWR-E01')
             self.assertEqual(item['readiness'], expected)
 
     def test_stale_netlist_document_and_identity_each_block(self):
@@ -243,7 +243,7 @@ class ElectricalSafetyTests(unittest.TestCase):
     def test_unrelated_missing_material_does_not_block_ready_check(self):
         db, check = divider_db(), fb_check()
         db['parts']['U9'] = {'value': 'UNRELATED', 'nc': False}
-        evidence = {'schema_version': 1, 'checks': [check]}
+        evidence = {'schema_version': 2, 'checks': [check]}
         audit = bind_evidence(db, evidence, self.directory.name)
         unresolved = build_datasheet_audit(db)
         u9 = next(x for x in audit['materials'] if 'U9' in x['refdes'])
@@ -259,8 +259,8 @@ class ElectricalSafetyTests(unittest.TestCase):
         db, check = divider_db(), fb_check()
         check['node'] = 'U1.99'
         _, audit = self.run_check(db, check)
-        plan = build_review_plan(db, evidence={'schema_version': 1, 'checks': [check]}, datasheet_audit=audit)
-        item = next(x for x in plan['checks'] if x['check'] == 'feedback-divider-wca')
+        plan = build_review_plan(db, evidence={'schema_version': 2, 'checks': [check]}, datasheet_audit=audit)
+        item = next(x for x in plan['checks'] if x['rule'] == 'PWR-E01')
         self.assertEqual(item['readiness'], 'WAITING_EVIDENCE')
 
     def test_audit_expands_critical_passives_and_rejects_unknown_ref(self):
@@ -275,27 +275,27 @@ class ElectricalSafetyTests(unittest.TestCase):
         db = divider_db()
         first, second = fb_check(), fb_check()
         second['id'] = 'FB-HOT'
-        evidence = {'schema_version': 1, 'checks': [first, second]}
+        evidence = {'schema_version': 2, 'checks': [first, second]}
         audit = bind_evidence(db, evidence, self.directory.name)
         first['basis']['state'], second['basis']['state'] = 'cold', 'hot'
-        intent = {'circuits': [{'id': 'REGULATOR', 'domain': 'POWER_CONVERTER',
+        intent = {'circuits': [{'id': 'REGULATOR', 'type': 'POWER_CONVERTER',
                                'refs': ['U1'], 'states': ['cold', 'hot'], 'citation': 'synthetic requirement'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(db, intent, evidence, datasheet_audit=audit)
-        group = [x for x in plan['checks'] if x['check'] == 'feedback-divider-wca']
+        group = [x for x in plan['checks'] if x['rule'] == 'PWR-E01']
         hot = [x for x in group if x.get('evidence_check_id')]
         parents = [x for x in group if x.get('role') == 'coverage_parent']
         self.assertEqual(len(parents), 1)
         self.assertEqual({x['parent_check_id'] for x in hot}, {parents[0]['id']})
         self.assertEqual({x['object']['state'] for x in hot}, {'cold', 'hot'})
-        domain = [x for x in plan['checks'] if x.get('domain') == 'POWER_CONVERTER']
-        self.assertEqual(len(domain), 8)
-        self.assertTrue(all(x['review_result'] is None for x in domain))
+        circuit = [x for x in plan['checks'] if x.get('circuit_type') == 'POWER_CONVERTER']
+        self.assertEqual(len(circuit), 8)
+        self.assertTrue(all(x['review_result'] is None for x in circuit))
         self.assertEqual(len(plan['checks']), len({x['id'] for x in plan['checks']}))
 
     def test_negative_pin_rating_is_checked_independently_of_logic_low(self):
         db = pull_db()
-        check = {'id': 'IO-LOW', 'rule': 'Rule-12', 'kind': 'pin_bias', 'node': 'U1.1',
+        check = {'id': 'IO-LOW', 'rule': 'RST-E01', 'kind': 'pin_bias', 'node': 'U1.1',
                  'required_default': 'low', 'vil_max_v': .8, 'abs_min_v': -.3, 'abs_max_v': 3.6,
                  'voltage_analysis': pin_analysis(-1, -.5), 'citation': 'synthetic input ratings'}
         result, _ = self.run_check(db, check)
@@ -322,7 +322,7 @@ class ElectricalSafetyTests(unittest.TestCase):
         for extension in ({'divider_model': []}, {'basis': {'sources': [{'ref': ['U1']}]}},
                           {'depends_on': ['U1', {}]}, {'voltage_analysis': []}):
             check = dict(fb_check(), **extension)
-            evidence = {'schema_version': 1, 'checks': [check]}
+            evidence = {'schema_version': 2, 'checks': [check]}
             self.assertTrue(validate_evidence(evidence))
             with self.assertRaises(ValueError):
                 build_review_plan(divider_db(), evidence=evidence)
@@ -346,7 +346,7 @@ class ElectricalSafetyTests(unittest.TestCase):
         intent = {'materials': {'requirements': {'available': True, 'citation': 'requirement'},
                                 'datasheets': {'available': True, 'citation': 'datasheet'}}}
         plan = build_review_plan(db, intent, datasheet_audit=audit)
-        item = next(x for x in plan['checks'] if x['check'] == 'power-rail-budget')
+        item = next(x for x in plan['checks'] if x['rule'] == 'PWR-C01')
         self.assertEqual(item['readiness'], 'WAITING_EVIDENCE')
         intent['power_rails'] = {'VOUT_3V3': {
             'voltage_v': {'min': 2.3, 'max': 2.5}, 'load_a': {'min': 0, 'max': .5},
@@ -357,7 +357,7 @@ class ElectricalSafetyTests(unittest.TestCase):
         negative_rail['power_rails']['VOUT_3V3']['voltage_v'] = {'min': -5.5, 'max': -4.5}
         self.assertEqual(validate_intent(negative_rail), [])
         plan = build_review_plan(db, intent, datasheet_audit=audit)
-        item = next(x for x in plan['checks'] if x['check'] == 'power-rail-budget')
+        item = next(x for x in plan['checks'] if x['rule'] == 'PWR-C01')
         self.assertEqual(item['readiness'], 'READY')
         self.assertIsNone(item['review_result'])
 
@@ -365,7 +365,7 @@ class ElectricalSafetyTests(unittest.TestCase):
         db, check = divider_db(), fb_check()
         folder = pathlib.Path(self.directory.name)
         (folder / 'db.json').write_text(json.dumps(db))
-        (folder / 'evidence.json').write_text(json.dumps({'schema_version': 1, 'checks': [check]}))
+        (folder / 'evidence.json').write_text(json.dumps({'schema_version': 2, 'checks': [check]}))
         (folder / 'audit.json').write_text(json.dumps(build_datasheet_audit(db)))
         command = [sys.executable, '-B', str(pathlib.Path(__file__).resolve().parents[1] / 'lint.py'),
                    str(folder / 'db.json'), '--evidence', str(folder / 'evidence.json'),

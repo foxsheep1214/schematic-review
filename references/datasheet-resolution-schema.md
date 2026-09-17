@@ -42,7 +42,7 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
          --json lint-cold.json
 
 datasheet-audit.json 存在时，它覆盖
-intent.materials.datasheets.available 这个全局布尔值，并按位号控制 ER7
+intent.materials.datasheets.available 这个全局布尔值，并按位号控制 DEV-D01
 准备度。状态不是 AVAILABLE 的物料，其相关检查保持 WAITING_EVIDENCE。计划与 lint
 还会核对审计里的物料/位号是否与当前 db.json 一致，避免误用旧版本审计结果。
 
@@ -50,7 +50,7 @@ intent.materials.datasheets.available 这个全局布尔值，并按位号控制
 
 | 状态 | 含义 | Agent 动作 |
 |---|---|---|
-| AVAILABLE | 已验证本地或联网 PDF 与完整物料身份匹配 | 进入 ER1/ER7 |
+| AVAILABLE | 已验证本地或联网 PDF 与完整物料身份匹配 | 进入资料取证与 DEV-D01 |
 | NEEDS_VERIFICATION | 文件名存在候选，但尚未核实 PDF 抬头与变体 | 打开核对；不匹配则联网 |
 | MISSING | 资料包无候选且未有 agent 结论 | 联网补取 |
 | NOT_FOUND | 已按白名单渠道检索，仍无有效 datasheet | 提示用户并保持 INSUFFICIENT/C |

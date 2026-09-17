@@ -8,6 +8,7 @@
 """
 import re
 
+import catalog
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
@@ -116,7 +117,7 @@ class _Scan:
     def coupled_loads(self):
         """使能/复位输入与本器件供电轨同网的负载：上电同时建立的候选。
 
-        稳压器自身的使能直连由 PU-02 覆盖，这里不重复登记。
+        稳压器自身的使能直连由 RST-A03 覆盖，这里不重复登记。
         """
         graph, found = self.graph, []
         regulators = {item['ref'] for item in self.regulators()}
@@ -167,10 +168,9 @@ class PowerUpChecker(Checker):
     version_key = 'power_up_version'
     version = 1
     intent_key = 'power_up'
-    cold_rules = {'PU-01': '使能/复位与供电轨同时建立', 'PU-02': '使能直连输入轨无 UVLO/延时',
-                  'PU-03': '使能来源不确定'}
-    hot_rules = {'PU-10': '最坏压差裕量'}
-    evidence_kinds = {'PU-10': {'dropout'}}
+    cold_rules = catalog.titles(method='A', source='power_up')
+    hot_rules = catalog.titles(method='E', source='power_up')
+    evidence_kinds = {'PWR-E02': {'dropout'}}
 
     missing_inventory_message = 'power up checks require their inventory'
     inventory_type_message = 'power up inventory must be an object'
@@ -197,52 +197,42 @@ class PowerUpChecker(Checker):
                    'power_up_digest': inventory['digest']}
             gaps = item['gaps']
             check = planner.add_check(
-                'power-up-enable-source-' + item['id'], dict(obj),
-                '核使能来源在上电、掉电与故障恢复下的确定性：来源形态、UVLO/迟滞窗口、'
-                '延时与被供电器件的要求顺序；使能脚耐压与所接轨按绝限核',
-                'ER3', 'Expert Review', readiness='WAITING_EVIDENCE',
+                'RST-T01', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
                     'datasheet:使能门限/迟滞/耐压', 'requirements:上电顺序与时序要求'])),
                 trigger=['power-up:' + item['id'], 'enable-source:' + item['enable_source']],
                 handoff=handoff({'required': True, 'receivers': ['Test'],
                                  'constraint': '上电/掉电单调性与台阶需实测覆盖最坏负载',
                                  'verification': '上电波形实测与最坏工况复核'}, 'APPLICABLE'))
-            check['domain'] = 'POWER_UP'
             check['inventory_gaps'] = gaps
             if item['kind'] == 'linear':
-                ready = planner.evidence_ready('PU-10', obj)
+                ready = planner.evidence_ready('PWR-E02', obj)
                 check = planner.add_check(
-                    'power-up-dropout-' + item['id'], dict(obj),
-                    '按最低输入电压与最坏压差（最低温度、最大负载）核输出是否仍高于负载要求下限',
-                    'ER4', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                    'PWR-E02', dict(obj), key=item['id'],
+                    readiness='READY' if ready else 'WAITING_EVIDENCE',
                     required_inputs=sorted(set(gaps + ([] if ready else [
-                        'evidence: PU-10 输入下限、最坏压差与负载要求下限']))),
-                    trigger=['power-up:' + item['id']], rule='PU-10')
-                check['domain'] = 'POWER_UP'
+                        'evidence: PWR-E02 输入下限、最坏压差与负载要求下限']))),
+                    trigger=['power-up:' + item['id']])
                 check['inventory_gaps'] = gaps
             else:
                 check = planner.add_check(
-                    'power-up-prebias-' + item['id'], dict(obj),
-                    '核同步变换器的预偏置启动支持与软启动配置：资料是否明确支持预偏置、'
-                    '软启动时间与输入浪涌/限流的配合',
-                    'ER3', 'Expert Review', readiness='WAITING_EVIDENCE',
+                    'PWR-D03', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                     required_inputs=sorted(set(gaps + [
                         'datasheet:预偏置启动与软启动条款', 'intent:输出并联/保持电路'])),
                     trigger=['power-up:' + item['id']])
-                check['domain'] = 'POWER_UP'
                 check['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):
         for state in inventory['states']:
             for load in state.get('coupled_loads', []):
-                lint.add('PU-01', self.cold_rules['PU-01'],
+                lint.add('RST-A02', self.cold_rules['RST-A02'],
                          '%s（状态 %s）：%s 与本器件供电轨同为 %s，使能/复位随电源同时建立；'
                          '需确认器件允许该时序或另加延时'
                          % (load['ref'], state['id'], load['node'], load['net']),
                          load['ref'], kind='CANDIDATE')
             for item in state['regulators']:
                 if item['enable_source'] == 'unknown':
-                    lint.add('PU-03', self.cold_rules['PU-03'],
+                    lint.add('RST-A04', self.cold_rules['RST-A04'],
                              '%s（状态 %s）：使能脚 %s 所在网 %s 上未找到驱动源、UVLO 分压、'
                              'RC 或任何上/下拉；悬空或来源不明时开启行为不确定'
                              % (item['ref'], state['id'], item['enable_node'],
@@ -250,7 +240,7 @@ class PowerUpChecker(Checker):
                              item['ref'], kind='CANDIDATE')
                 if item['enable_source'] != 'tied-to-input':
                     continue
-                lint.add('PU-02', self.cold_rules['PU-02'],
+                lint.add('RST-A03', self.cold_rules['RST-A03'],
                          '%s（状态 %s）：使能脚 %s 直连输入网 %s，未见 UVLO 分压或 RC 延时；'
                          '输入缓慢爬升或跌落时的开启点由器件内部门限决定'
                          % (item['ref'], state['id'], item['enable_node'], item['enable_net']),
@@ -270,11 +260,11 @@ class PowerUpChecker(Checker):
             hotmath.fmt(dropout, 'V'), hotmath.fmt(available, 'V'),
             hotmath.fmt(required, 'V'), hotmath.fmt(margin, 'V'), lint._citation(check))
         if margin < 0:
-            lint.add('PU-10', '最坏压差下输出低于负载要求', detail,
+            lint.add('PWR-E02', '最坏压差下输出低于负载要求', detail,
                      check.get('ref'), check_id=check['id'], citation=check['citation'],
                      calculation=calculation)
         else:
-            lint.record_pass('PU-10', check, detail,
+            lint.record_pass('PWR-E02', check, detail,
                              scope='所给保证值下的静态压差裕量；负载瞬态、启动与热关断未判定',
                              calculation=calculation)
 
@@ -295,10 +285,10 @@ class PowerUpChecker(Checker):
             check, numbers=('vin_min_v', 'dropout_max_v', 'vout_required_min_v'))
 
     def rule_instances(self, rule, inventory):
-        if rule == 'PU-01':
+        if rule == 'RST-A02':
             return sorted({load['id'] for state in inventory['states']
                            for load in state.get('coupled_loads', [])})
-        wanted = 'unknown' if rule == 'PU-03' else 'tied-to-input'
+        wanted = 'unknown' if rule == 'RST-A04' else 'tied-to-input'
         return sorted({item['id'] for _, item in inv.walk(inventory, 'regulators')
                        if item['enable_source'] == wanted})
 

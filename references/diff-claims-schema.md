@@ -43,7 +43,7 @@ nc 的期望值为布尔值，其余为字符串。结构不合法时直接退�
   通路；不跨非零电阻、二极管、开关或电容。目标缺失/处于伪网不能证明断开。
 - `net_members_equal`：给 net 和完整 nodes 列表，核对准确成员。
 
-全部断言通过才报告该 claim 的 PASS；否则输出 Rule-17 FINDING。仅含字段/换网/成员变化的
+全部断言通过才报告该 claim 的 PASS；否则输出 REQ-H01 FINDING。仅含字段/换网/成员变化的
 claim 为 INSUFFICIENT，并在 `--fail-on-open-claims` 时阻断；必须补期望状态断言。
 Diff 的 PASS 只覆盖声明的状态，不代替额定、方向、时序和其他受影响电路的工程复验。
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""AC0 Applicability Discovery：在首轮检查时生成逐项执行计划。
+"""检查计划生成：按规则总表（scripts/catalog.py）把审查展开为逐项计划。
 
-这个脚本只回答“哪些检查需要执行、何时执行、还缺什么证据”，不提前给
-PASS/FAIL。HANDOFF 是独立下游动作，可以与后续 PASS/FAIL/INSUFFICIENT 并存。
+这个脚本只回答“哪些检查需要执行、按什么规则和方式执行、还缺什么证据”，
+不提前给 PASS/FAIL。每个计划项带规则编号、检查方式与内容域，检查 ID 以
+规则编号开头。HANDOFF 是独立下游动作，可以与后续 PASS/FAIL/INSUFFICIENT 并存。
 
 用法：
     python3 plan_review.py db.json --intent intent.json \
@@ -12,7 +13,8 @@ PASS/FAIL。HANDOFF 是独立下游动作，可以与后续 PASS/FAIL/INSUFFICIE
 """
 import argparse
 from copy import deepcopy
-from electrical_contract import db_fingerprint, check_matches, readiness_gaps, validate_evidence, bounded, finite, load_json
+import catalog
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, check_matches, readiness_gaps, validate_evidence, bounded, finite, load_json
 import io
 import json
 import os
@@ -32,6 +34,7 @@ from audit_datasheets import (
 )
 
 
+INTENT_SCHEMA_VERSION = 2
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
 RESULT_STATUSES = ('PASS', 'FAIL', 'INSUFFICIENT', 'NA')
@@ -49,7 +52,7 @@ FB_NAMES = {'FB', 'ADJ', 'VFB', 'FBX', 'VSENSE', 'VOSNS', 'VOUT_SENSE'}
 FEATURE_CATALOG = {
     'DDR': {
         'pattern': r'LPDDR|DDR[2345]?|SDRAM|DQS|\bZQ\b',
-        'criterion': '执行 DDR 供电、ZQ/ODT、时序拓扑和平台规则检查包',
+        'rule': 'SIG-Q01',
         'required_materials': ['requirements', 'datasheets', 'platform_checklist'],
         'handoff': {
             'required': True,
@@ -60,7 +63,7 @@ FEATURE_CATALOG = {
     },
     'USB': {
         'pattern': r'USB|VBUS|TYPEC|TYPE_C',
-        'criterion': '执行 USB 方向、VBUS 检测、串阻、REXT 与 ESD 检查包',
+        'rule': 'SIG-Q02',
         'required_materials': ['requirements', 'datasheets'],
         'handoff': {
             'required': True,
@@ -71,7 +74,7 @@ FEATURE_CATALOG = {
     },
     'ETHERNET': {
         'pattern': r'ETH|RGMII|RMII|SGMII|MDIO|\bMDI\d|PHY',
-        'criterion': '执行以太网 PHY、MDI、网变、时钟、strap 与管理口检查包',
+        'rule': 'SIG-Q03',
         'required_materials': ['requirements', 'datasheets', 'platform_checklist'],
         'handoff': {
             'required': True,
@@ -82,7 +85,7 @@ FEATURE_CATALOG = {
     },
     'CAN': {
         'pattern': r'CANH|CANL|CAN_TX|CAN_RX|\bCAN\d*\b',
-        'criterion': '执行 CAN 收发器、端接、偏置、隔离和防护检查包',
+        'rule': 'SIG-Q04',
         'required_materials': ['requirements', 'datasheets'],
         'handoff': {
             'required': True,
@@ -93,7 +96,7 @@ FEATURE_CATALOG = {
     },
     'RS485': {
         'pattern': r'RS485|485_TX|485_RX|485_A|485_B',
-        'criterion': '执行 RS485 方向、端接、偏置、隔离与防护检查包',
+        'rule': 'SIG-Q05',
         'required_materials': ['requirements', 'datasheets'],
         'handoff': {
             'required': True,
@@ -104,25 +107,25 @@ FEATURE_CATALOG = {
     },
     'I2C': {
         'pattern': r'(^|[:_-])(I2C\w*|SCL\d*|SDA\d*)([:_-]|$)',
-        'criterion': '执行 I2C 上拉、域电压、地址和总线连通检查包',
+        'rule': 'SIG-Q06',
         'required_materials': ['requirements', 'datasheets'],
         'handoff': {'required': False},
     },
     'SPI': {
         'pattern': r'\bSPI\w*|MOSI|MISO|SCLK',
-        'criterion': '执行 SPI 供电域、CS 默认态、时钟和串阻检查包',
+        'rule': 'SIG-Q07',
         'required_materials': ['requirements', 'datasheets'],
         'handoff': {'required': False},
     },
     'UART': {
         'pattern': r'UART|\bTXD\w*|\bRXD\w*',
-        'criterion': '执行 UART 方向、电平域、连接器与防护检查包',
+        'rule': 'SIG-Q08',
         'required_materials': ['requirements', 'datasheets'],
         'handoff': {'required': False},
     },
     'STORAGE': {
         'pattern': r'EMMC|SDIO|SDMMC|MICROSD|TF_CARD',
-        'criterion': '执行 eMMC/SDIO 供电、上拉、串阻与启动检查包',
+        'rule': 'SIG-Q09',
         'required_materials': ['requirements', 'datasheets', 'platform_checklist'],
         'handoff': {
             'required': True,
@@ -133,7 +136,7 @@ FEATURE_CATALOG = {
     },
     'RF': {
         'pattern': r'(^|[:_-])(RF|ANT|WIFI|WLAN|LTE|GNSS|SIM)([:_-]|$)',
-        'criterion': '执行射频/模组供电、控制、默认通路、SIM 与防护检查包',
+        'rule': 'SIG-Q10',
         'required_materials': ['requirements', 'datasheets'],
         'handoff': {
             'required': True,
@@ -144,7 +147,7 @@ FEATURE_CATALOG = {
     },
     'ISOLATION': {
         'pattern': r'ISOLAT|(^|_)ISO(_|$)|DIGITAL_ISO',
-        'criterion': '执行隔离域、耐压、跨域器件与接地检查包',
+        'rule': 'PRO-Q01',
         'required_materials': ['requirements', 'datasheets'],
         'handoff': {
             'required': True,
@@ -155,7 +158,7 @@ FEATURE_CATALOG = {
     },
     'CLOCK': {
         'pattern': r'CLK|CLOCK|OSC|XTAL|XIN|XOUT|32K',
-        'criterion': '执行晶振/时钟源、负载、使能和端点检查包',
+        'rule': 'CLK-Q01',
         'required_materials': ['datasheets'],
         'handoff': {
             'required': True,
@@ -166,72 +169,25 @@ FEATURE_CATALOG = {
     },
     'RESET': {
         'pattern': r'RESET|(^|_)RST|POR(_|$)',
-        'criterion': '执行复位源、默认态、脉宽与全链路连通检查包',
+        'rule': 'RST-Q01',
         'required_materials': ['requirements', 'datasheets'],
         'handoff': {'required': False},
     },
 }
 
 
-COLD_RULES = {
-    'Rule-01': '单节点悬空网',
-    'Rule-02': '疑似网络名分裂',
-    'Rule-03': '自动命名无源孤岛',
-    'Rule-04': '电源轨无驱动',
-    'Rule-05': '电源球无驱动',
-    'Rule-06': 'VSS 球未入地',
-    'Rule-10': 'ESD/TVS 挂残网',
-    'Rule-13': '钳位器件直连超压轨',
-    'Rule-15': 'NC 真网络/伪网络判别',
-    'Rule-18': '同基名多轨',
-    'Rule-20': 'BOM/库字段卫生',
-}
 
-
-CIRCUIT_CHECKS = {
-    'POWER_CONVERTER': [
-        ('voltage-headroom', '按 Vin/负载/温度保证窗口核对输出及 LDO dropout；与负载推荐工作范围比较'),
-        ('current-stress', '按拓扑计算电感峰值/RMS、Isat、开关限流最小值及器件降额'),
-        ('timing-stability', '核对最小导通/关断时间、Cout 有效容量/ESR、补偿和稳定工作条件'),
-        ('loss-reverse', '核对损耗、反向电流、预偏置与放电路径；结温实现转 HANDOFF'),
-    ],
-    'POWER_PROTECTION': [
-        ('thresholds', '核对 UVLO/OVLO/限流容差与检测目的，明确保护前后采样点'),
-        ('soa', '核对 MOS VDS-I-t SOA、限流/故障计时、热态降额与重复重试能量'),
-        ('coordination', '核对 TVS VRWM/VBR/VC 对应波形及温度、熔断器时间电流/熔断能量与后级承受能力'),
-    ],
-    'ANALOG': [
-        ('dc-range', '运放输入共模/输出摆幅及偏置/失调/增益误差，含供电和温度极限'),
-        ('dynamic-load', '运放 GBW/压摆率/容性负载；ADC 源阻抗、采样保持获取时间与建立误差'),
-        ('reference-protection', 'ADC 基准驱动/误差、输入满量程及钳位/注入电流，含掉电状态'),
-    ],
-    'I2C': [
-        ('sink-rise', '逐电气段合并全部上拉公差：Rp_min=(Vpullup_max-VOL_max)/IOL_guaranteed，Rp_max=tr_max/(0.8473*Cb_max)；核对串联压降'),
-        ('domain-off', '两端 VIH/VIL、VOL、耐压及 Ioff；逐域掉电和外部设备先上电的注入路径'),
-        ('address-state', '核对地址/复用/复位态和板载及外部可选上拉的装配组合'),
-    ],
-    'STARTUP': [
-        ('sampled-level', '逐采样窗口计算 strap/EN 保证电压，含内部拉阻、LED、泄漏、电容和门限'),
-        ('reset-timing', '按 V(t) 穿越门限时刻核对复位脉宽/释放与采样 setup/hold，不能以 RC 时间常数代替'),
-        ('power-order', '检查慢爬升、棕断、短暂掉电、单域掉电、外部先供电、重试及恢复模式'),
-    ],
-    'DDR': [
-        ('calibration', '分别按控制器和 DRAM 的具体型号/代际核对 ZQ/校准脚端接与精度，禁止跨器件套用'),
-        ('termination', '逐数据/地址/时钟/VREF/VTT 电源域核对拓扑、端接、基准及上电条件'),
-    ],
-    'USB_C': [
-        ('cc-role', '按 Source/Sink/DRP 角色及 PD 模式核对 CC/Rp/Rd、方向检测、线缆 VCONN'),
-        ('vbus', '核对 VBUS 供电资格、电压档位、放电、反灌、过流及端口未供电状态'),
-    ],
-    'CAN_RS485': [
-        ('termination-bias', '按实际总线端点和节点数核对端接等效负载、空闲偏置及接收保证差分门限'),
-        ('common-mode', '核对收发器 VIO/默认态、总线共模范围、地偏差与未供电负载'),
-    ],
-    'CLOCK': [
-        ('load-startup', '按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件；寄生及实测裕量转 HANDOFF'),
-        ('oscillator-domain', '有源时钟输出幅度/电源域、使能态和上电有效时间'),
-    ],
+# 冷跑规则所需的 db 索引；规则名称与判据在 catalog 中。
+COLD_RULE_INDEXES = {
+    'NET-A01': ['nets'], 'NET-A02': ['nets'],
+    'NET-A03': ['nets', 'parts'], 'PWR-A01': ['nets', 'parts'],
+    'PWR-A02': ['pinname'], 'PWR-A03': ['pinname'],
+    'PRO-A01': ['nets', 'parts'], 'PRO-A02': ['nets', 'parts'],
+    'NET-A04': ['nets'], 'PWR-A04': ['nets'], 'DOC-A03': ['parts'],
 }
+# 由网表实例化的内置证据计算规则。
+BUILTIN_EVIDENCE_RULES = tuple(rule.id for rule in catalog.rules(method='E', source='lint'))
+FEATURE_RULES = frozenset({config['rule'] for config in FEATURE_CATALOG.values()} | {'REQ-Q06'})
 
 
 def _text(value):
@@ -245,8 +201,8 @@ def validate_intent(intent):
     if not isinstance(intent, dict):
         return ['intent 根对象必须为 object']
     errors = []
-    if 'schema_version' in intent and intent['schema_version'] != 1:
-        errors.append('schema_version 必须为 1')
+    if 'schema_version' in intent and intent['schema_version'] != INTENT_SCHEMA_VERSION:
+        errors.append('schema_version 必须为 %d（旧版意图请按 check-catalog.md 迁移）' % INTENT_SCHEMA_VERSION)
     if intent.get('review_mode') not in (None, 'first', 'revision'):
         errors.append('review_mode 必须为 first/revision')
     expect = intent.get('expect', {})
@@ -328,8 +284,10 @@ def validate_intent(intent):
             errors.append('circuits.id 缺失或重复')
         else:
             seen_circuits.add(cid)
-        if not isinstance(circuit.get('domain'), str) or circuit['domain'] not in CIRCUIT_CHECKS:
-            errors.append('circuits.domain 不支持')
+        if 'domain' in circuit:
+            errors.append('circuits.domain 已改名为 circuits.type')
+        if not isinstance(circuit.get('type'), str) or circuit['type'] not in catalog.CIRCUIT_TYPES:
+            errors.append('circuits.type 不支持')
         for field in ('refs', 'states'):
             values = circuit.get(field)
             if not isinstance(values, list) or not values or not all(_text(x) for x in values):
@@ -404,8 +362,6 @@ def _differential_pairs(db):
 
 
 class ReviewPlanner:
-    circuit_checks = CIRCUIT_CHECKS
-
     def __init__(self, db, intent=None, evidence=None, review_mode=None,
                  old_db_available=False, claims_available=False,
                  datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None):
@@ -438,13 +394,14 @@ class ReviewPlanner:
         return bool(matches) and all(not readiness_gaps(self.db, x, self.datasheet_audit, self.db_sha256)
                                      for x in matches)
 
-    def add_check(self, check_key, obj, criterion, stage, executor,
+    def add_check(self, rule, obj, key=None, criterion=None,
                   applicability='APPLICABLE', readiness='READY',
-                  required_inputs=None, trigger=None, rule=None,
-                  handoff=None):
+                  required_inputs=None, trigger=None, handoff=None):
+        """按规则总表生成一个计划项；ID = 规则编号[.实例键].锚点。"""
+        entry = catalog.get(rule)
         anchor = (obj.get('node') or obj.get('net') or obj.get('ref')
                   or obj.get('feature') or obj.get('page') or 'GLOBAL')
-        base = f'{stage}.{_slug(check_key)}.{_slug(anchor)}'
+        base = '.'.join([rule] + ([_slug(key)] if key else []) + [_slug(anchor)])
         check_id, suffix = base, 2
         while check_id in self._ids:
             check_id = f'{base}-{suffix}'
@@ -454,13 +411,12 @@ class ReviewPlanner:
             readiness = 'NOT_SCHEDULED'
         item = {
             'id': check_id,
-            'check': check_key,
             'rule': rule,
+            'method': catalog.method_of(rule),
+            'domain': catalog.domain_of(rule),
             'object': obj,
-            'criterion': criterion,
+            'criterion': entry.criterion if criterion is None else criterion,
             'applicability': applicability,
-            'stage': stage,
-            'executor': executor,
             'readiness': readiness,
             'required_inputs': sorted(set(required_inputs or [])),
             'trigger': sorted(set(trigger or [])),
@@ -468,7 +424,7 @@ class ReviewPlanner:
             'evidence_confidence': None,
             'handoff': handoff or _empty_handoff(),
         }
-        matches = self.matching_evidence(rule, obj) if executor == 'AC0-HOT' else []
+        matches = self.matching_evidence(rule, obj) if item['method'] == 'E' else []
         if matches:
             # Retain the cold check as a coverage parent; state children carry the individual verdicts.
             item['role'] = 'coverage_parent'
@@ -493,7 +449,7 @@ class ReviewPlanner:
                 child['required_inputs'] = gaps
                 self.checks.append(child)
             return self.checks[-1]
-        if check_key.startswith('feature-'):
+        if rule in FEATURE_RULES:
             item['role'] = 'coverage_parent'
             item['aggregation'] = '逐电路/状态子检查完成后汇总，禁止整域一次性 PASS'
         self.checks.append(item)
@@ -522,6 +478,7 @@ class ReviewPlanner:
         for name in names:
             config = FEATURE_CATALOG.get(name, {
                 'pattern': r'(?!x)x',
+                'rule': 'REQ-Q06',
                 'criterion': f'执行项目自定义功能 {name} 的原理图检查包',
                 'required_materials': ['requirements'],
                 'handoff': {'required': False},
@@ -572,21 +529,18 @@ class ReviewPlanner:
                     'detail': '设计意图要求该功能，但网表未检测到对应特征',
                 })
             self.add_check(
-                f'feature-{name.lower()}', {'feature': name},
-                config['criterion'], 'ER5', 'Expert Review',
+                config['rule'], {'feature': name}, criterion=config.get('criterion'),
                 applicability=applicability, readiness=readiness,
                 required_inputs=missing, trigger=trigger,
                 handoff=_handoff(config.get('handoff', {}), applicability))
             if applicability == 'APPLICABLE' and requested == 'APPLICABLE' and not hits:
                 self.add_check(
-                    'required-feature-presence', {'feature': name},
-                    '验证设计意图要求的功能是否已在原理图中实现',
-                    'AC0', 'AC0-COLD', readiness='READY',
+                    'REQ-A02', {'feature': name}, readiness='READY',
                     trigger=[f'intent:{item["citation"]}'])
 
     def plan_circuit_checks(self):
         for circuit in self.intent.get('circuits', []):
-            domain = circuit['domain']
+            circuit_type = circuit['type']
             for state in circuit['states']:
                 obj = {'circuit': circuit['id'], 'ref': circuit['refs'][0],
                        'refs': circuit['refs'], 'nets': circuit.get('nets', []), 'state': state}
@@ -595,13 +549,12 @@ class ReviewPlanner:
                 missing = [f'datasheet:{ref}' for ref in circuit['refs']
                            if not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
                 missing += [f'unknown ref:{ref}' for ref in absent]
-                for key, criterion in CIRCUIT_CHECKS[domain]:
+                for rule in catalog.CIRCUIT_TYPES[circuit_type]:
                     item = self.add_check(
-                        f'{circuit["id"]}-{key}-{state}', obj, criterion,
-                        'ER4' if domain in ('POWER_CONVERTER', 'POWER_PROTECTION', 'ANALOG', 'I2C') else 'ER5',
-                        'Expert Review', readiness='WAITING_EVIDENCE' if missing else 'READY',
+                        rule, obj, key=f'{circuit["id"]}-{state}',
+                        readiness='WAITING_EVIDENCE' if missing else 'READY',
                         required_inputs=missing, trigger=[f'intent.circuits:{circuit["citation"]}'])
-                    item['domain'] = domain
+                    item['circuit_type'] = circuit_type
                     item['analysis_required'] = True
                     item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
 
@@ -627,40 +580,34 @@ class ReviewPlanner:
         pin2net = db.get('pin2net', {})
         pseudo = set(db.get('pseudo_nets', []))
 
-        # ER1/AC0-hot：反馈、EN、strap 与 I2C 上拉。
+        # 证据计算：反馈分压、使能、strap 与 I2C 上拉。
         for node, pin in sorted(pinname.items()):
             net = pin2net.get(node)
             upper_pin = str(pin).strip().upper()
             ref = node.split('.')[0]
             if upper_pin in FB_NAMES and net:
                 obj = {'node': node, 'net': net, 'ref': ref}
-                ready = self.evidence_ready('Rule-08', obj)
+                ready = self.evidence_ready('PWR-E01', obj)
                 self.add_check(
-                    'feedback-divider-wca', obj,
-                    '按实际电阻与 Vref 公差验证反馈/监控分压窗口',
-                    'ER4', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                    'PWR-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
                     required_inputs=[] if ready else ['datasheet:Vref/目标窗口'],
-                    trigger=[f'pinname:{pin}'], rule='Rule-08')
+                    trigger=[f'pinname:{pin}'])
             if net and (EN_RE.search(upper_pin) or (
                     EN_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))):
                 obj = {'node': node, 'net': net, 'ref': ref}
-                ready = self.evidence_ready('Rule-12', obj)
+                ready = self.evidence_ready('RST-E01', obj)
                 self.add_check(
-                    'enable-default-absmax', obj,
-                    '核对 EN 有效极性、默认态、上拉轨与绝对最大额定',
-                    'ER1', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                    'RST-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
                     required_inputs=[] if ready else ['datasheet:pin function/Abs Max'],
-                    trigger=[f'pinname:{pin}', f'net:{net}'], rule='Rule-12')
+                    trigger=[f'pinname:{pin}', f'net:{net}'])
             if net and (STRAP_RE.search(upper_pin) or (
                     STRAP_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))):
                 obj = {'node': node, 'net': net, 'ref': ref}
-                ready = self.evidence_ready('Rule-16', obj)
+                ready = self.evidence_ready('RST-E02', obj)
                 self.add_check(
-                    'strap-required-state', obj,
-                    '核对 BOOT/strap/test 引脚的强制态与采样窗口',
-                    'ER1', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                    'RST-E02', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
                     required_inputs=[] if ready else ['datasheet:strap table/mandatory wording'],
-                    trigger=[f'pinname:{pin}', f'net:{net}'], rule='Rule-16')
+                    trigger=[f'pinname:{pin}', f'net:{net}'])
 
         i2c_nets = set()
         for net, nodes in nets.items():
@@ -669,35 +616,28 @@ class ReviewPlanner:
                 i2c_nets.add(net)
         for net in sorted(i2c_nets - pseudo):
             obj = {'net': net}
-            ready = self.evidence_ready('Rule-09', obj)
+            ready = self.evidence_ready('SIG-E01', obj)
             self.add_check(
-                'i2c-required-pull', obj,
-                '核对指定两网间电阻装配与等效阻值；电平/上升时间另行检查',
-                'ER1', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                'SIG-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=[] if ready else ['datasheet/platform:I2C pull requirement'],
-                trigger=[f'net:{net}'], rule='Rule-09')
+                trigger=[f'net:{net}'])
 
-        # ER1：连接器/定制接口 pin map。是否“新增”需复审基线进一步收窄。
+        # 连接器/定制接口 pin map（证据计算）。是否“新增”需复审基线进一步收窄。
         for ref, part in sorted(db.get('parts', {}).items()):
             if not re.match(r'^(J|P|CN)\d', ref, re.I) or part.get('nc'):
                 continue
             obj = {'ref': ref}
-            ready = self.evidence_ready('Rule-14', obj)
+            ready = self.evidence_ready('DEV-E01', obj)
             self.add_check(
-                'connector-pin-map', obj,
-                '逐脚核对连接器符号与官方/对端 pinout',
-                'ER1', 'AC0-HOT', readiness='READY' if ready else 'WAITING_EVIDENCE',
+                'DEV-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=[] if ready else ['connector drawing/opposite-side pinout'],
-                trigger=[f'refdes:{ref}'], rule='Rule-14')
+                trigger=[f'refdes:{ref}'])
 
-        # ER2：每条电源轨分别检查拓扑和功耗预算。
+        # 每条电源轨分别检查拓扑（连接追踪）和功耗预算（工程计算）。
         for net in sorted(nets):
             if net in pseudo or net in GNDS or not RAIL_RE.match(net):
                 continue
-            self.add_check(
-                'power-rail-topology', {'net': net},
-                '确认电源轨驱动源、负载、域电压、时序与反灌路径',
-                'ER2', 'Expert Review', trigger=[f'rail-name:{net}'])
+            self.add_check('PWR-T01', {'net': net}, trigger=[f'rail-name:{net}'])
             budget = self.intent.get('power_rails', {}).get(net, {})
             missing = []
             for field in ('voltage_v', 'load_a'):
@@ -715,9 +655,7 @@ class ReviewPlanner:
                 if not entry or entry.get('status') != 'AVAILABLE':
                     missing.append(f'datasheet:{ref}')
             self.add_check(
-                'power-rail-budget', {'net': net},
-                '按最大负载、电压范围与器件能力验证功率预算和裕量',
-                'ER2', 'Expert Review',
+                'PWR-C01', {'net': net},
                 readiness='WAITING_EVIDENCE' if missing else 'READY',
                 required_inputs=missing, trigger=[f'rail-name:{net}'],
                 handoff={
@@ -727,13 +665,10 @@ class ReviewPlanner:
                     'verification': 'PCB 复核与温升/压降验证',
                 })
 
-        # ER3：差分连通 PASS/FAIL 与 PCB HANDOFF 可以并存。
+        # 差分连通（连接追踪）：PASS/FAIL 与 PCB HANDOFF 可以并存。
         for positive, negative in _differential_pairs(db):
             self.add_check(
-                'differential-pair-connectivity',
-                {'net_p': positive, 'net_n': negative, 'net': positive},
-                '核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通',
-                'ER3', 'Expert Review',
+                'SIG-T01', {'net_p': positive, 'net_n': negative, 'net': positive},
                 trigger=[f'pair:{positive}/{negative}'],
                 handoff={
                     'required': True, 'state': 'OPEN',
@@ -742,21 +677,19 @@ class ReviewPlanner:
                     'verification': 'PCB 约束与版图复核',
                 })
 
-        # ER6：每张实际出现器件的页面独立目检。
+        # 图面目检：每张实际出现器件的页面独立一项。
         pages = sorted(
             {page for page in db.get('ref2page', {}).values()
              if page not in (None, '')}, key=lambda value: str(value))
         pdf_ready = _material_available(self.intent, 'schematic_pdf')
         for page in pages:
             self.add_check(
-                'schematic-page-graphic-review', {'page': page},
-                '目检极性、方向、pin1、Option/NC 表和图形语义',
-                'ER6', 'Expert Review',
+                'DOC-V01', {'page': page},
                 readiness='READY' if pdf_ready else 'WAITING_EVIDENCE',
                 required_inputs=[] if pdf_ready else ['schematic_pdf'],
                 trigger=[f'ref2page:{page}'])
 
-        # ER7：每颗 IC/模组独立做身份与封装一致性检查。
+        # 条款核对：每颗 IC/模组独立做身份与封装一致性检查。
         datasheets_ready = _material_available(
             self.intent, 'datasheets', self.datasheet_audit)
         for ref, part in sorted(db.get('parts', {}).items()):
@@ -779,9 +712,7 @@ class ReviewPlanner:
                 required_inputs = [] if ready else ['datasheets']
                 audit_trigger = []
             self.add_check(
-                'component-identity-package', {'ref': ref},
-                '核对 MPN、符号、引脚、封装字段、参数档位和替代兼容性',
-                'ER7', 'Expert Review',
+                'DEV-D01', {'ref': ref},
                 readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=required_inputs,
                 trigger=[
@@ -789,18 +720,11 @@ class ReviewPlanner:
                 ] + audit_trigger)
 
     def plan_rules(self):
-        index_requirements = {
-            'Rule-01': ['nets'], 'Rule-02': ['nets'],
-            'Rule-03': ['nets', 'parts'], 'Rule-04': ['nets', 'parts'],
-            'Rule-05': ['pinname'], 'Rule-06': ['pinname'],
-            'Rule-10': ['nets', 'parts'], 'Rule-13': ['nets', 'parts'],
-            'Rule-15': ['nets'], 'Rule-18': ['nets'], 'Rule-20': ['parts'],
-        }
-        for rule, name in sorted(COLD_RULES.items()):
-            missing = [key for key in index_requirements[rule]
-                       if not self.db.get(key)]
+        """规则级台账：自动扫描、证据计算、版本比对及按实例汇总的检测点规则。"""
+        for rule, indexes in sorted(COLD_RULE_INDEXES.items()):
+            missing = [key for key in indexes if not self.db.get(key)]
             self.add_rule(
-                rule, name, 'APPLICABLE',
+                rule, catalog.title(rule), 'APPLICABLE',
                 'WAITING_EVIDENCE' if missing else 'READY',
                 required_inputs=missing, reason='纯网表冷跑规则')
 
@@ -819,25 +743,21 @@ class ReviewPlanner:
                 by_rule.setdefault(check['rule'], []).append(check['id'])
         expect = self.intent.get('expect') or {}
         self.add_rule(
-            'Rule-07', '关键器件计数',
+            'REQ-A01', catalog.title('REQ-A01'),
             'APPLICABLE' if expect else 'UNDETERMINED',
             'READY' if expect else 'WAITING_EVIDENCE',
             required_inputs=[] if expect else ['intent.expect'],
             reason='必须由设计意图定义“该有/该删”')
-        rail_instances = [
-            x['id'] for x in self.checks
-            if x['check'] == 'power-rail-topology']
+        rail_instances = by_rule.get('PWR-T01', [])
         self.add_rule(
-            'Rule-11', '检测点是否取在正确电源轨',
+            'PWR-T02', catalog.title('PWR-T02'),
             'APPLICABLE' if rail_instances else 'UNDETERMINED',
             'READY' if rail_instances else 'WAITING_EVIDENCE',
             instances=rail_instances,
             required_inputs=[] if rail_instances else ['power-tree context'],
-            reason='ER2 建电源树后逐检测点判定，非 AC0 Lint 定判')
-        for rule, name in (
-                ('Rule-08', '参数验算'), ('Rule-09', '必需上拉/串阻'),
-                ('Rule-12', 'EN 默认态/耐压'), ('Rule-14', '符号引脚映射'),
-                ('Rule-16', 'strap 强制态')):
+            reason='电源轨拓扑（PWR-T01）建立后逐检测点判定，不由自动扫描定判')
+        for rule in BUILTIN_EVIDENCE_RULES:
+            name = catalog.title(rule)
             instances = by_rule.get(rule, [])
             if instances:
                 ready = all(next(x for x in self.checks if x['id'] == cid)[
@@ -845,7 +765,7 @@ class ReviewPlanner:
                 self.add_rule(
                     rule, name, 'APPLICABLE',
                     'READY' if ready else 'WAITING_EVIDENCE', instances=instances,
-                    required_inputs=[] if ready else ['ER1 structured evidence'],
+                    required_inputs=[] if ready else ['structured evidence'],
                     reason='由网表中的具体位号/网络实例化')
             else:
                 self.add_rule(
@@ -860,19 +780,19 @@ class ReviewPlanner:
             self.add_rule(
                 rule, name, 'APPLICABLE' if instances else 'UNDETERMINED',
                 'READY' if ready else 'WAITING_EVIDENCE', instances=instances,
-                required_inputs=[] if ready else ['ER1 structured evidence'],
+                required_inputs=[] if ready else ['structured evidence'],
                 reason='检查器热跑规则；未检测到实例也不得直接判 NA')
 
         pintype = self.db.get('pintype', {})
         self.add_rule(
-            'Rule-19', 'PINUSE/ERC', 'APPLICABLE',
+            'NET-A06', catalog.title('NET-A06'), 'APPLICABLE',
             'READY' if pintype else 'WAITING_EVIDENCE',
             required_inputs=[] if pintype else ['pintype/PINUSE'],
             reason='所有原理图均适用；输入缺失只影响准备度')
 
         if self.review_mode == 'first':
             self.add_rule(
-                'Rule-17', '改版 Diff/历史意见闭环',
+                'REQ-H01', catalog.title('REQ-H01'),
                 'NOT_APPLICABLE', 'NOT_SCHEDULED',
                 reason='首审没有旧版对比基线')
         else:
@@ -882,32 +802,22 @@ class ReviewPlanner:
             if not self.claims_available:
                 missing.append('review_claims')
             self.add_rule(
-                'Rule-17', '改版 Diff/历史意见闭环',
+                'REQ-H01', catalog.title('REQ-H01'),
                 'APPLICABLE', 'WAITING_EVIDENCE' if missing else 'READY',
                 required_inputs=missing,
                 reason='复审必须验证新旧网表与历史意见断言')
 
     def plan_coverage(self):
-        for name, criterion in {
-            'input_consistency': '核对本轮输入版本、哈希、导出完整性与装配配置',
-            'requirements': '需求逐条拆解并与电路检查双向追溯，缺口不得隐藏',
-            'chains': '全部接口/电源/检测/使能/复位/时钟逐路终点与返回路径覆盖',
-            'states': '逐关键电路覆盖启动、复位、运行、掉电、外部带电及需求内故障状态',
-            'datasheets': '全部关键器件适用章节/errata及官方物理脚双向差集已审',
-            'history': '首审/复审已裁定，历史意见逐条复验并保留撤回/复发',
-        }.items():
-            self.add_check('coverage-' + name, {'feature': name}, criterion,
-                           'ER7', 'Expert Review', trigger=['coverage-protocol'])
+        for name, rule in catalog.COVERAGE_RULES.items():
+            self.add_check(rule, {'feature': name}, trigger=['coverage-protocol'])
         for item in self.intent.get('requirements', []):
-            self.add_check('requirement', {'requirement_id': item['id'], 'feature': item['id']},
-                           item['criterion'], 'ER5', 'Expert Review',
+            self.add_check('REQ-D01', {'requirement_id': item['id'], 'feature': item['id']},
+                           criterion=item['criterion'],
                            trigger=[item['citation'], item['text']])
         # The declared inventory includes symbol pins omitted from connected nets.
         for ref, part in sorted(self.db.get('parts', {}).items()):
             if re.match(r'^(U|M|Q|D|J|P|CN)\d', ref, re.I) and not part.get('nc'):
-                self.add_check('physical-pin-inventory', {'ref': ref},
-                               '官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源',
-                               'ER1', 'Expert Review', readiness='WAITING_EVIDENCE',
+                self.add_check('DEV-D02', {'ref': ref}, readiness='WAITING_EVIDENCE',
                                required_inputs=['official full pinout + exact MPN/package'],
                                trigger=[f'refdes:{ref}'])
 
@@ -918,11 +828,10 @@ class ReviewPlanner:
                 continue
             obj = {k: evidence[k] for k in ('node', 'net', 'ref') if evidence.get(k)}
             gaps = readiness_gaps(self.db, evidence, self.datasheet_audit, self.db_sha256)
-            item = self.add_check('provided-evidence', obj,
-                '按对应 evidence_check_id 的条款核对显式目标与状态',
-                'ER4' if evidence['rule'] == 'Rule-08' else 'ER1', 'AC0-HOT',
+            item = self.add_check(evidence['rule'], obj, key='PROVIDED',
+                criterion='按对应 evidence_check_id 的条款核对显式目标与状态',
                 readiness='WAITING_EVIDENCE' if gaps else 'READY',
-                required_inputs=gaps, rule=evidence['rule'])
+                required_inputs=gaps)
             if not item.get('evidence_check_id'):
                 # Invalid coordinates remain visible as waiting work, not fabricated matches.
                 item['evidence_check_id'] = evidence['id']
@@ -933,7 +842,10 @@ class ReviewPlanner:
         previous = self.previous_plan
         if previous is None:
             return
-        if not isinstance(previous, dict) or previous.get('db_sha256') != self.db_sha256:
+        if not isinstance(previous, dict) or previous.get('schema_version') != PLAN_SCHEMA_VERSION:
+            raise ValueError('merge plan schema_version must be %d; plans with retired check IDs must be regenerated'
+                             % PLAN_SCHEMA_VERSION)
+        if previous.get('db_sha256') != self.db_sha256:
             raise ValueError('merge plan must be bound to the current db_sha256; regenerate/review stale plans')
         if ('i2c_topology' in previous and previous['i2c_topology'] != self.i2c_topology):
             raise ValueError('I2C topology/state/assembly changed; regenerate and explicitly review/migrate prior checks')
@@ -949,23 +861,26 @@ class ReviewPlanner:
             raise ValueError('merge plan checks must be an array')
         current = {item['id']: item for item in self.checks}
         seen = set()
-        identity = ('check', 'rule', 'object', 'criterion', 'stage', 'executor', 'evidence_check_id', 'parent_check_id')
+        identity = ('rule', 'method', 'domain', 'object', 'criterion', 'evidence_check_id', 'parent_check_id')
         for item in checks:
             if not isinstance(item, dict) or not _text(item.get('id')) or item['id'] in seen:
                 raise ValueError('merge plan contains an invalid or duplicate check id')
             key = item['id']
             seen.add(key)
-            if item.get('check') == 'revision-impact-coverage' and previous.get('revision_impact_version') == 1:
+            if item.get('rule') == 'REQ-Q05' and previous.get('revision_impact_version') == 1:
                 # Coverage is regenerated. Keep cold provisional removal records
                 # even if hot evidence later restores the prior state check.
                 continue
-            if (not all(_text(item.get(k)) for k in ('check', 'criterion', 'stage', 'executor'))
+            if (not all(_text(item.get(k)) for k in ('rule', 'method', 'domain', 'criterion'))
                     or not isinstance(item.get('object'), dict)
                     or item.get('applicability') not in APPLICABILITY
                     or item.get('readiness') not in READINESS
                     or not isinstance(item.get('handoff'), dict)
                     or not isinstance(item['handoff'].get('required'), bool)):
                 raise ValueError(f'{key}: incomplete merged check definition')
+            spec_errors = catalog.spec_errors(item)
+            if spec_errors:
+                raise ValueError(f'{key}: ' + '; '.join(spec_errors))
             if key in current:
                 if item['handoff'] != current[key]['handoff']:
                     raise ValueError(f'{key}: handoff details changed; resolve the plan explicitly')
@@ -1000,8 +915,8 @@ class ReviewPlanner:
         applicability = Counter(x['applicability'] for x in self.checks)
         readiness = Counter(x['readiness'] for x in self.checks)
         plan = {
-            'schema_version': 1,
-            'generated_by': 'AC0 Applicability Discovery',
+            'schema_version': PLAN_SCHEMA_VERSION,
+            'generated_by': 'check-catalog planner',
             'db_sha256': self.db_sha256,
             'review_mode': self.review_mode,
             'result_model': {
@@ -1062,7 +977,7 @@ class ReviewPlanner:
             applicability=dict(sorted(Counter(c['applicability'] for c in plan['checks']).items())),
             readiness=dict(sorted(Counter(c['readiness'] for c in plan['checks']).items())))
         if plan.get('revision_impact'):
-            history = next(r for r in plan['rule_plan'] if r['rule'] == 'Rule-17')
+            history = next(r for r in plan['rule_plan'] if r['rule'] == 'REQ-H01')
             history['instances'] = sorted(set(history['instances']) |
                 {e['check_id'] for e in plan['revision_impact']['entries'] if e['required']})
             if plan['revision_impact']['blocking_gaps']:
@@ -1086,10 +1001,10 @@ def build_review_plan(db, intent=None, evidence=None, review_mode=None,
 
 def main():
     parser = argparse.ArgumentParser(
-        description='AC0 首轮检查适用性发现与逐项执行计划')
+        description='按规则总表生成逐项检查计划（适用性、准备度与证据缺口）')
     parser.add_argument('db', help='parse_netlist.py 产出的 db.json')
     parser.add_argument('--intent', help='设计意图 JSON')
-    parser.add_argument('--evidence', help='ER1 结构化证据 JSON')
+    parser.add_argument('--evidence', help='资料取证形成的结构化证据 JSON')
     parser.add_argument(
         '--datasheet-audit',
         help='audit_datasheets.py 产出的逐物料覆盖审计 JSON')
@@ -1154,7 +1069,7 @@ def main():
     json.dump(plan, io.open(args.json, 'w', encoding='utf-8'),
               ensure_ascii=False, indent=2)
     summary = plan['summary']
-    print('=== AC0 Applicability Discovery ===')
+    print('=== 检查计划（规则总表展开） ===')
     print(f"  checks={summary['checks_total']}  "
           f"applicability={summary['applicability']}")
     print(f"  readiness={summary['readiness']}  "

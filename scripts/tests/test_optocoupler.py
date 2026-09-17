@@ -5,6 +5,7 @@ import unittest
 
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import catalog
 
 from checkers.optocoupler import OptocouplerChecker, build_inventory, validate_optocoupler_intent
 from electrical_contract import db_fingerprint, validate_evidence
@@ -38,12 +39,15 @@ def optos_of(inventory, state='as-built'):
     return {item['ref']: item for item in entry['optocouplers']}
 
 
+CHECKER_RULES = {rule.id for rule in catalog.rules(source='optocoupler')}
+
+
 def findings(db, intent=None):
-    return [f for f in Lint(db, '', intent).run() if f['rule'].startswith('OC-')]
+    return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
 
 
 def ctr_check(**overrides):
-    check = {'id': 'OPTO', 'rule': 'OC-10', 'kind': 'opto_ctr', 'ref': 'OK1',
+    check = {'id': 'OPTO', 'rule': 'PRO-E01', 'kind': 'opto_ctr', 'ref': 'OK1',
              'net': 'OPTO_OUT', 'drive_v': {'min': 4.75, 'max': 5.25},
              'vf_v': {'min': 1.0, 'max': 1.4}, 'driver_drop_v': {'min': 0.0, 'max': 0.4},
              'r_led_ohm': {'min': 970.0, 'max': 1030.0},
@@ -69,7 +73,7 @@ class RecognitionTest(unittest.TestCase):
     def test_missing_series_resistor_reports_oc01(self):
         db = opto_board(led_resistor=False)
         hits = findings(db)
-        self.assertEqual([f['rule'] for f in hits], ['OC-01'])
+        self.assertEqual([f['rule'] for f in hits], ['PRO-A03'])
         self.assertEqual(hits[0]['kind'], 'FINDING')
 
     def test_declared_constant_current_drive_clears_oc01(self):
@@ -84,7 +88,7 @@ class RecognitionTest(unittest.TestCase):
 
     def test_missing_pullup_reports_oc02(self):
         hits = findings(opto_board(pullup=False))
-        self.assertEqual([f['rule'] for f in hits], ['OC-02'])
+        self.assertEqual([f['rule'] for f in hits], ['PRO-A04'])
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
 
     def test_unknown_pin_roles_keep_a_gap(self):
@@ -105,11 +109,11 @@ class RecognitionTest(unittest.TestCase):
 class PlanTest(unittest.TestCase):
     def test_plan_covers_transfer_and_isolation(self):
         plan = build_review_plan(opto_board())
-        checks = {x['check'] for x in plan['checks'] if x['object'].get('optocoupler')}
-        self.assertEqual(checks, {'optocoupler-transfer-OK1', 'optocoupler-isolation-OK1'})
+        checks = {(x['rule'], x['object']['optocoupler']) for x in plan['checks'] if x['object'].get('optocoupler')}
+        self.assertEqual(checks, {('PRO-E01', 'OK1'), ('PRO-D01', 'OK1')})
         self.assertEqual(plan['optocoupler_version'], 1)
         rules = {row['rule']: row for row in plan['rule_plan']}
-        self.assertEqual(rules['OC-01']['instances'], ['OK1'])
+        self.assertEqual(rules['PRO-A03']['instances'], ['OK1'])
 
     def test_stale_object_binding_is_reported(self):
         plan = build_review_plan(opto_board())
@@ -134,7 +138,7 @@ class HotRuleTest(unittest.TestCase):
 
     def run_check(self, check):
         db = opto_board()
-        evidence = {'schema_version': 1, 'checks': [check]}
+        evidence = {'schema_version': 2, 'checks': [check]}
         audit = bind_evidence(db, evidence, self.directory.name)
         self.assertEqual(validate_evidence(evidence), [])
         lint = Lint(db, evidence=evidence, datasheet_audit=audit)
@@ -172,7 +176,7 @@ class HotRuleTest(unittest.TestCase):
         self.assertIn('ctr_derating 缺少保证值', result['detail'])
 
     def test_out_of_range_derating_is_rejected_by_the_contract(self):
-        evidence = {'schema_version': 1, 'checks': [ctr_check(ctr_derating=1.5)]}
+        evidence = {'schema_version': 2, 'checks': [ctr_check(ctr_derating=1.5)]}
         self.assertTrue(any('ctr_derating 必须在 (0, 1] 内' in error
                             for error in validate_evidence(evidence)))
 

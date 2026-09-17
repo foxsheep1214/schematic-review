@@ -9,6 +9,7 @@ import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+from checkers.decoupling import PLAN_RULES
 from decoupling import build_decoupling_inventory, input_fingerprint, parse_capacitance, validate_decoupling_intent
 from plan_review import build_review_plan, validate_intent
 from validate_review import validate_review, fingerprint
@@ -358,7 +359,7 @@ class DecouplingPlanTests(unittest.TestCase):
     def test_plan_separates_coverage_and_three_electrical_criteria(self):
         db, intent = fixture()
         plan = build_review_plan(db, intent)
-        new = [p for p in plan['checks'] if p['check'].startswith('decoupling-')]
+        new = [p for p in plan['checks'] if p['rule'] in PLAN_RULES]
         self.assertEqual(len(new), 5)
         self.assertTrue(all(p['review_result'] is None for p in new))
         electrical = [p for p in new if p.get('analysis_required')]
@@ -378,7 +379,7 @@ class DecouplingPlanTests(unittest.TestCase):
         db, intent = fixture()
         plan = build_review_plan(db, intent)
         report = ledger(plan, db)
-        selected = {p['id'] for p in plan['checks'] if p['check'].startswith('decoupling-coverage-')}
+        selected = {p['id'] for p in plan['checks'] if p['rule'] == 'PWR-T03'}
         for row in report['checks']:
             if row['id'] in selected:
                 mark_pass(row)
@@ -391,7 +392,7 @@ class DecouplingPlanTests(unittest.TestCase):
         plan = build_review_plan(db, intent)
         report = ledger(plan, db)
         for kind in ('connection', 'capacitance'):
-            selected = next(p['id'] for p in plan['checks'] if p['check'].startswith('decoupling-DECAP-') and p['criterion'] == 'synthetic ' + kind + ' requirement')
+            selected = next(p['id'] for p in plan['checks'] if p['rule'] in PLAN_RULES and p['criterion'] == 'synthetic ' + kind + ' requirement')
             mark_pass(next(r for r in report['checks'] if r['id'] == selected))
             outcome = validate_review(plan, report, db)
             self.assertEqual(outcome['valid'], kind == 'connection', outcome['errors'])
@@ -405,7 +406,7 @@ class DecouplingPlanTests(unittest.TestCase):
                 del intent['decoupling']['states'][0]['population']['C1']
             plan = build_review_plan(db, intent)
             report = ledger(plan, db)
-            key = next(p['id'] for p in plan['checks'] if p.get('domain') == 'DECOUPLING')
+            key = next(p['id'] for p in plan['checks'] if p['rule'] == 'PWR-D02')
             mark_pass(next(r for r in report['checks'] if r['id'] == key))
             outcome = validate_review(plan, report, db)
             self.assertTrue(any('decoupling gaps must be resolved' in e for e in outcome['errors']))
@@ -425,11 +426,11 @@ class DecouplingPlanTests(unittest.TestCase):
     def test_manual_check_is_preserved_without_result_migration(self):
         db, intent = fixture()
         before = build_review_plan(db, intent)
-        manual = copy.deepcopy(next(p for p in before['checks'] if p['check'] == 'coverage-chains'))
-        manual.update(id='MANUAL-POWER', review_result='PASS', evidence_confidence='A')
+        manual = copy.deepcopy(next(p for p in before['checks'] if p['rule'] == 'REQ-Q02'))
+        manual.update(id='REQ-Q02.MANUAL-POWER', review_result='PASS', evidence_confidence='A')
         before['checks'].append(manual)
         after = build_review_plan(db, intent, previous_plan=before)
-        kept = next(p for p in after['checks'] if p['id'] == 'MANUAL-POWER')
+        kept = next(p for p in after['checks'] if p['id'] == 'REQ-Q02.MANUAL-POWER')
         self.assertIsNone(kept['review_result'])
 
     def test_tampered_inventory_deleted_check_and_changed_criterion_rejected(self):
@@ -437,7 +438,7 @@ class DecouplingPlanTests(unittest.TestCase):
         original = build_review_plan(db, intent)
         for mutation in ('inventory', 'delete', 'criterion', 'strip-inventory', 'clear-gaps'):
             plan = copy.deepcopy(original)
-            selected = next(p for p in plan['checks'] if p.get('domain') == 'DECOUPLING')
+            selected = next(p for p in plan['checks'] if p['rule'] == 'PWR-D02')
             if mutation == 'inventory':
                 plan['decoupling']['states'][0]['groups'][0]['fitted_count'] = 99
             elif mutation == 'delete':

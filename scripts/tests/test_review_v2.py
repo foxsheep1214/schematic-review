@@ -46,7 +46,7 @@ class V2Regressions(unittest.TestCase):
                      {'VDD_A': ['R1.1', 'U1.1'], 'VDD_B': ['R1.2']}, {'U1.1': 'VDD'})
         lint = Lint(db)
         self.assertFalse(lint.driven('VDD_A'))
-        self.assertTrue(any(x['rule'] == 'Rule-05' for x in lint.run()))
+        self.assertTrue(any(x['rule'] == 'PWR-A02' for x in lint.run()))
 
     def test_trace_through_bead_and_fitted_resistor_to_source(self):
         db = network({'R1': {'value': '0.1R'}, 'FB1': {'value': 'FERRITE'}, 'U1': {'value': 'REG'}},
@@ -67,13 +67,13 @@ class V2Regressions(unittest.TestCase):
 
     def test_lint_preserves_export_abort_as_input_finding(self):
         findings = Lint(sample_db(), log_text='ERROR(ORCAP-1): invalid\nAborting Netlisting').run()
-        self.assertEqual(len([x for x in findings if x['rule'] == 'INPUT-EXPORT']), 2)
+        self.assertEqual(len([x for x in findings if x['rule'] == 'DOC-A01']), 2)
 
     def test_requirement_validation_and_state_expansion_coexist(self):
         intent = {
             'requirements': [{'id': 'REQ-01', 'text': 'Startup guaranteed',
                               'criterion': 'Defined state throughout sampling', 'citation': 'SYNTHETIC REQ'}],
-            'circuits': [{'id': 'BOOT', 'domain': 'STARTUP', 'refs': ['U1'],
+            'circuits': [{'id': 'BOOT', 'type': 'STARTUP', 'refs': ['U1'],
                           'states': ['cold-start', 'brownout'], 'citation': 'SYNTHETIC states'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
@@ -88,9 +88,9 @@ class V2Regressions(unittest.TestCase):
         self.assertFalse(Lint(db).driven('VDD_A'))
 
     def test_evidence_for_one_en_does_not_cover_another(self):
-        evidence = {'checks': [{'rule': 'Rule-12', 'node': 'U1.1', 'ref': 'U1'}]}
-        self.assertFalse(check_matches(sample_db(), evidence['checks'][0], 'Rule-12', {'node': 'U1.2', 'ref': 'U1'}))
-        self.assertTrue(check_matches(sample_db(), evidence['checks'][0], 'Rule-12', {'node': 'U1.1', 'ref': 'U1'}))
+        evidence = {'checks': [{'rule': 'RST-E01', 'node': 'U1.1', 'ref': 'U1'}]}
+        self.assertFalse(check_matches(sample_db(), evidence['checks'][0], 'RST-E01', {'node': 'U1.2', 'ref': 'U1'}))
+        self.assertTrue(check_matches(sample_db(), evidence['checks'][0], 'RST-E01', {'node': 'U1.1', 'ref': 'U1'}))
 
     def test_requirement_and_full_pin_audits_are_planned(self):
         intent = {'requirements': [{'id': 'REQ-USB', 'text': 'USB port required',
@@ -98,14 +98,14 @@ class V2Regressions(unittest.TestCase):
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
         self.assertTrue(any(x['object'].get('requirement_id') == 'REQ-USB' for x in plan['checks']))
-        self.assertTrue(any(x['check'] == 'physical-pin-inventory' and x['object']['ref'] == 'U1'
+        self.assertTrue(any(x['rule'] == 'DEV-D02' and x['object']['ref'] == 'U1'
                             for x in plan['checks']))
 
     def test_source_rail_is_not_divided_pin_voltage(self):
         db = network({'U1': {}, 'R1': {'value': '100K'}, 'R2': {'value': '10K'}},
                      {'VCC_24V': ['R1.1'], 'EN': ['R1.2', 'R2.1', 'U1.1'], 'GND': ['R2.2']},
                      {'U1.1': 'EN'})
-        check = {'id': 'EN', 'rule': 'Rule-12', 'kind': 'pin_bias', 'node': 'U1.1',
+        check = {'id': 'EN', 'rule': 'RST-E01', 'kind': 'pin_bias', 'node': 'U1.1',
                  'required_default': 'high', 'abs_max_v': 5.5, 'citation': 'SYNTHETIC Rev.A p.1'}
         lint = Lint(db, evidence={'checks': [check]})
         findings = [x for x in lint.run() if x.get('check_id') == 'EN']
@@ -114,7 +114,7 @@ class V2Regressions(unittest.TestCase):
         self.assertFalse(lint.passes)
 
     def test_missing_explicit_float_net_never_passes(self):
-        check = {'id': 'F', 'rule': 'Rule-16', 'kind': 'strap', 'net': 'MISSING',
+        check = {'id': 'F', 'rule': 'RST-E02', 'kind': 'strap', 'net': 'MISSING',
                  'required': 'float', 'citation': 'SYNTHETIC Rev.A p.1'}
         lint = Lint(sample_db(), evidence={'checks': [check]})
         lint.run()
@@ -163,7 +163,7 @@ class V2Regressions(unittest.TestCase):
 
     def test_nominal_vref_cannot_be_reported_as_wca_pass(self):
         db = divider_db()
-        check = {'id': 'FB', 'rule': 'Rule-08', 'kind': 'divider', 'net': 'FB_NET',
+        check = {'id': 'FB', 'rule': 'PWR-E01', 'kind': 'divider', 'net': 'FB_NET',
                  'vref': 0.8, 'expected': {'min': 2.0, 'max': 3.0},
                  'citation': 'SYNTHETIC Rev.A p.1'}
         lint = Lint(db, evidence={'checks': [check]})
@@ -175,11 +175,11 @@ class V2Regressions(unittest.TestCase):
     def test_default_resistor_tolerance_cannot_pass_wca(self):
         db = divider_db()
         db['parts']['R1']['value'] = '20K'
-        check = {'id': 'FB', 'rule': 'Rule-08', 'kind': 'divider', 'net': 'FB_NET',
+        check = {'id': 'FB', 'rule': 'PWR-E01', 'kind': 'divider', 'net': 'FB_NET',
                  'vref': {'min': 0.792, 'typ': 0.8, 'max': 0.808},
                  'divider_model': divider_model(), 'depends_on': ['R1', 'R2'],
                  'expected': {'min': 2.0, 'max': 3.0}, 'citation': 'SYNTHETIC Rev.A p.1'}
-        evidence = {'schema_version': 1, 'checks': [check]}
+        evidence = {'schema_version': 2, 'checks': [check]}
         with tempfile.TemporaryDirectory() as directory:
             audit = bind_evidence(db, evidence, directory)
             lint = Lint(db, evidence=evidence, datasheet_audit=audit)

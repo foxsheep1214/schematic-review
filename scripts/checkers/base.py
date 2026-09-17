@@ -16,11 +16,11 @@ class Checker:
     version_key = None       # 版本字段名（可选）
     version = None
     intent_key = None        # intent 中的配置段
-    cold_rules = {}          # 规则号 -> 名称
-    hot_rules = {}           # 规则号 -> 名称
-    evidence_kinds = {}      # 热跑规则号 -> 允许的 kind 集合
+    cold_rules = {}          # 自动扫描（A）规则编号 -> 名称，取自 catalog
+    hot_rules = {}           # 证据计算（E）规则编号 -> 名称，取自 catalog
+    evidence_kinds = {}      # 证据计算规则编号 -> 允许的 kind 集合
 
-    generated_fields = ('check', 'rule', 'object', 'criterion', 'stage', 'executor')
+    generated_fields = ('rule', 'method', 'domain', 'object', 'criterion')
     allow_manual_bound_objects = True
 
     @property
@@ -68,11 +68,11 @@ class Checker:
         """通过 lint.add 输出冷跑发现。"""
 
     def hot_check(self, lint, check):
-        """执行本检查器的热跑规则（证据已就绪）。"""
+        """执行本检查器的证据计算规则（证据已就绪）。"""
         raise NotImplementedError(self.id + ': hot rule handler missing')
 
     def evidence_errors(self, check, label):
-        """校验本检查器热跑证据的结构；缺字段属结构错误，数值缺口走 model_gaps。"""
+        """校验本检查器证据的结构；缺字段属结构错误，数值缺口走 model_gaps。"""
         return []
 
     def model_gaps(self, check):

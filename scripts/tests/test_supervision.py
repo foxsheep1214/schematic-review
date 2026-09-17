@@ -5,6 +5,7 @@ import unittest
 
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import catalog
 
 from checkers.supervision import SupervisionChecker, build_inventory, validate_supervision_intent
 from electrical_contract import db_fingerprint, validate_evidence
@@ -51,12 +52,15 @@ def rails_of(inventory, state='as-built'):
     return {rail['net']: rail for rail in entry['rails']}
 
 
+CHECKER_RULES = {rule.id for rule in catalog.rules(source='supervision')}
+
+
 def findings(db, intent=None):
-    return [f for f in Lint(db, '', intent).run() if f['rule'].startswith('SV-')]
+    return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
 
 
 def pulse_check(**overrides):
-    check = {'id': 'RESET', 'rule': 'SV-10', 'kind': 'reset_pulse', 'ref': 'U3',
+    check = {'id': 'RESET', 'rule': 'RST-E03', 'kind': 'reset_pulse', 'ref': 'U3',
              'net': 'SYS_RST_N', 'output_type': 'open_drain',
              'pulse_width_s': {'min': 0.14, 'max': 0.28},
              'required_width_s': {'min': 0.001, 'max': 0.1},
@@ -81,22 +85,22 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual(supervisors_of(build_inventory(db))['U3']['watchdog_inputs'][0]['state'],
                          'floating')
         hits = findings(db)
-        self.assertEqual([f['rule'] for f in hits], ['SV-01'])
+        self.assertEqual([f['rule'] for f in hits], ['RST-A05'])
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
 
     def test_watchdog_tied_to_a_rail_reports_sv01(self):
-        self.assertEqual([f['rule'] for f in findings(supervised_board(wdi='tied'))], ['SV-01'])
+        self.assertEqual([f['rule'] for f in findings(supervised_board(wdi='tied'))], ['RST-A05'])
 
     def test_dangling_reset_output_reports_sv02_finding(self):
         db = supervised_board(reset='dangling', pullup=False)
         hits = findings(db)
-        self.assertEqual([f['rule'] for f in hits], ['SV-02'])
+        self.assertEqual([f['rule'] for f in hits], ['RST-A06'])
         self.assertEqual(hits[0]['kind'], 'FINDING')
         self.assertIn('复位链在此中断', hits[0]['detail'])
 
     def test_reset_reaching_only_a_gpio_is_a_candidate(self):
         hits = findings(supervised_board(reset='gpio-only'))
-        self.assertEqual([f['rule'] for f in hits], ['SV-02'])
+        self.assertEqual([f['rule'] for f in hits], ['RST-A06'])
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
 
     def test_unmonitored_rail_reports_sv03(self):
@@ -105,7 +109,7 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual(rails['VCC_3V3']['monitor'], 'divider')
         self.assertIsNone(rails['VCC_1V8']['monitor'])
         hits = findings(db)
-        self.assertEqual([f['rule'] for f in hits], ['SV-03'])
+        self.assertEqual([f['rule'] for f in hits], ['PWR-A06'])
         self.assertIn('VCC_1V8', hits[0]['detail'])
 
     def test_board_without_a_supervisor_reports_nothing(self):
@@ -124,19 +128,18 @@ class PlanTest(unittest.TestCase):
     def test_plan_covers_reset_path_pulse_and_rail_coverage(self):
         db = supervised_board(extra_rail=True)
         plan = build_review_plan(db)
-        checks = {x['check'] for x in plan['checks'] if x['object'].get('supervision')}
-        self.assertEqual(checks, {'supervision-reset-path-U3', 'supervision-reset-pulse-U3',
-                                  'supervision-rail-coverage-AS-BUILT'})
-        coverage = next(x for x in plan['checks']
-                        if x['check'] == 'supervision-rail-coverage-AS-BUILT')
+        checks = {x['id'] for x in plan['checks'] if x['object'].get('supervision')}
+        self.assertEqual(checks, {'RST-T02.U3.SYS-RST-N', 'RST-E03.U3.SYS-RST-N',
+                                  'PWR-T04.AS-BUILT.SUPERVISION-RAILS'})
+        coverage = next(x for x in plan['checks'] if x['rule'] == 'PWR-T04')
         self.assertIn('rail-unmonitored:VCC_1V8', coverage['inventory_gaps'])
         self.assertEqual(plan['supervision_version'], 1)
 
     def test_rule_instances_list_the_unmonitored_rails(self):
         plan = build_review_plan(supervised_board(extra_rail=True))
         rules = {row['rule']: row for row in plan['rule_plan']}
-        self.assertEqual(rules['SV-03']['instances'], ['VCC_1V8'])
-        self.assertEqual(rules['SV-01']['instances'], ['U3'])
+        self.assertEqual(rules['PWR-A06']['instances'], ['VCC_1V8'])
+        self.assertEqual(rules['RST-A05']['instances'], ['U3'])
 
     def test_stale_object_binding_is_reported(self):
         plan = build_review_plan(supervised_board())
@@ -160,7 +163,7 @@ class HotRuleTest(unittest.TestCase):
 
     def run_check(self, check, db=None):
         db = db or supervised_board()
-        evidence = {'schema_version': 1, 'checks': [check]}
+        evidence = {'schema_version': 2, 'checks': [check]}
         audit = bind_evidence(db, evidence, self.directory.name)
         self.assertEqual(validate_evidence(evidence), [])
         lint = Lint(db, evidence=evidence, datasheet_audit=audit)

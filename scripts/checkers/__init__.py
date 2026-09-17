@@ -3,7 +3,8 @@
 """检查器注册表。
 
 加一个检查器 = 加一个模块并登记到 REGISTRY；计划、lint 与校验都按注册表遍历，
-不需要再改主流程。顺序固定，保证既有检查 ID 不变。
+不需要再改主流程。检查器的规则编号、名称与判据都登记在 scripts/catalog.py，
+检查器只引用编号。
 """
 from .base import Checker, validate_inventories
 from .powertree import PowerTree
@@ -33,7 +34,7 @@ REGISTRY_BY_ID = {checker.id: checker for checker in REGISTRY}
 
 
 def registry_cold_rules():
-    """规则号 -> (名称, 检查器)。"""
+    """自动扫描规则编号 -> (名称, 检查器)。"""
     table = {}
     for checker in REGISTRY:
         for rule, name in checker.cold_rules.items():
@@ -42,6 +43,7 @@ def registry_cold_rules():
 
 
 def registry_hot_rules():
+    """证据计算规则编号 -> (名称, 检查器)。"""
     table = {}
     for checker in REGISTRY:
         for rule, name in checker.hot_rules.items():

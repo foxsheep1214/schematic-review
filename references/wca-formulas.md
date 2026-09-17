@@ -1,4 +1,4 @@
-# ER4 参数与边界条件验算（WCA）
+# 参数与边界条件验算（WCA，工程计算与证据计算共用）
 
 只使用当前装配版本的实际元件值和有出处的保证参数。E96 表示阻值系列，不能证明精度。
 未知公差、温度系数、Vref 极限或负载不是零。范围内输入缺失为 INSUFFICIENT；
@@ -10,10 +10,10 @@
 不同地网不能直接合并；DNP 按装配版本移除。内部拉阻、输入偏置、LED、钳位、
 开关以及电容在采样时段的充放电必须建模或证明可忽略。
 
-solve_dividers.py 的 CLI 仍只作串并联探索；Rule-08 对不能归并但已完整建模的正电阻网络，
+solve_dividers.py 的 CLI 仍只作串并联探索；PWR-E01 对不能归并但已完整建模的正电阻网络，
 可回退到线性节点分析。上限为 20 颗电阻、12 个网络、10 颗非零公差电阻；逐角点阻值比
 不得超过 1e10，FB 对源的增益须大于 1e-10。超限保持 INSUFFICIENT，不截断或抽样。
-Rule-08 的 divider_model 需指定 source_net、reference_net、ignored_nodes 的逐点理由和
+PWR-E01 的 divider_model 需指定 source_net、reference_net、ignored_nodes 的逐点理由和
 bias_current_a 保证范围。ignored_nodes 只适合输入负载已计入偏置范围或 DC 下开路电容；
 不能用“可忽略”文字绕过 MOS/二极管/LED。新节点路径的 U/M 忽略项仅允许位于 FB 网，
 中间节点输入电流不能并入 FB 偏置；C 的 DC 忽略仍需逐点证据。源与参考地是停止扩展边界。

@@ -1,8 +1,10 @@
-# ER1 热跑证据契约（schema_version=1，V2.1 保留电气扩展）
+# 证据计算契约（方式 E，evidence schema_version=2）
 
-旧 JSON 可读取；缺少新依赖、保证范围或状态时不执行热跑，输出逐项
-INSUFFICIENT。不自动填 1% 电阻公差、零 Vref 误差、零偏置电流或稳态采样。
-数值必须有限，min≤max；每项 id 唯一、citation 可定位。热跑结果不是整板准出。
+`evidence.json` 为证据计算规则（[规则总表](check-catalog.md)中方式为 E 的规则）提供带出处的保证值。
+`schema_version` 必须为 2；使用旧编号（Rule-NN、检查器前缀）的旧文件会被拒绝，需按总表改写
+`rule` 后重新绑定。缺少依赖、保证范围或状态时不执行计算，输出逐项 INSUFFICIENT。
+不自动填 1% 电阻公差、零 Vref 误差、零偏置电流或稳态采样。数值必须有限，min≤max；
+每项 id 唯一、citation 可定位。证据计算结果不是整板准出。
 
 ## 共有字段与依赖
 
@@ -10,8 +12,8 @@ INSUFFICIENT。不自动填 1% 电阻公差、零 Vref 误差、零偏置电流�
 多个目标坐标必须一致；同网不同引脚不共享门限。depends_on 要列全参数来源，包括
 非目标 IC、输入负载、外部驱动及用于保证曲线/额定值的关键无源器件。
 脚本至少强制检查目标器件及目标网上的 U/M/Q/D；跨网的额外依赖由 agent 明确声明。
-Rule-08 新增节点分析路径对可完整提取的网络，自动将全部电阻与被忽略输入/C 纳入计划
-和热跑的来源依赖；遗漏、过期或未 AVAILABLE 均保持 WAITING_EVIDENCE/INSUFFICIENT。
+PWR-E01 的节点分析路径对可完整提取的网络，自动将全部电阻与被忽略输入/C 纳入计划
+和计算的来源依赖；遗漏、过期或未 AVAILABLE 均保持 WAITING_EVIDENCE/INSUFFICIENT。
 
 basis 包含：
 
@@ -33,19 +35,19 @@ audit 按需覆盖依赖位号。NOT_FOUND 必须先记录 LCSC/立创与原厂�
 NEEDS_VERIFICATION/NOT_FOUND 均不能让依赖检查变 READY。无关物料缺资料不阻断
 已具备全部依赖的检查；总准出仍需处理所有适用阻断项。
 
-## Rule-08：已建模的反馈设定窗口
+## PWR-E01：已建模的反馈设定窗口
 
 可继续手工提供下面的 vref；重复读取同一已核实资料时，使用
 [项目内 Vref 参数复用](datasheet-facts-schema.md)。vref_request 声明本次目标/完整工况，
-目标 source 补精确 mpn/package。物化工具生成 vref 和 vref_binding；未物化不热跑。
+目标 source 补精确 mpn/package。物化工具生成 vref 和 vref_binding；未物化不计算。
 计划与 lint 共享事实/PDF/工况的实时失效门，不能删除绑定保留旧数值来绕过复验。
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "checks": [{
     "id": "U1-FB-STATIC",
-    "rule": "Rule-08", "kind": "divider", "node": "U1.1", "net": "FB",
+    "rule": "PWR-E01", "kind": "divider", "node": "U1.1", "net": "FB",
     "citation": "REG-X Rev.A section 7.5 and BOM Rev.B R1/R2",
     "depends_on": ["U1"],
     "vref": {"min": 0.792, "typ": 0.8, "max": 0.808},
@@ -79,7 +81,7 @@ NEEDS_VERIFICATION/NOT_FOUND 均不能让依赖检查变 READY。无关物料缺
 不支持用该字段绕过中间输入电流或 Q/D。给定 reference_net 为计算的零点，
 它与实际负载地的偏差另建检查；不把 PGND/AGND 等名称视作同一网。
 
-## Rule-09：无源连接与等效阻值
+## SIG-E01：无源连接与等效阻值
 
 kind 为 required_pull（direction=up/down）或 required_series；给精确目标 net/node，
 用 to 明确另一端。resistance_ohm 可给 min/max。直接连接在同两网间的所有已装配
@@ -87,15 +89,15 @@ kind 为 required_pull（direction=up/down）或 required_series；给精确目�
 未解析公差需节点分析，返回 INSUFFICIENT。
 
 没有 resistance_ohm 时，PASS 仅证明连接存在。该规则不计算 I2C 灌电流、上升时间、
-端点电平或掉电能力。用 intent.circuits 的 I2C 域分别建立这些检查；完整电气段不能
-漏掉经串阻/电平转换器连接的外部上拉。required_series 的结果也仅指指定两网间
-直接电阻网络，不证明它是唯一信号通路或符合布局要求。
+端点电平或掉电能力，这些由 intent.circuits 的 I2C 类型展开为 SIG-C01、SIG-C02、SIG-D01
+分别检查；完整电气段不能漏掉经串阻/电平转换器连接的外部上拉。required_series 的结果
+也仅指指定两网间直接电阻网络，不证明它是唯一信号通路或符合布局要求。
 
-## Rule-12 / Rule-16：引脚电压及采样保证
+## RST-E01 / RST-E02：引脚电压及采样保证
 
 分别用 kind=pin_bias、required_default=high/low/float，或 kind=strap、required=high/low/float。
-高电平提供 vih_min_v，低电平提供 vil_max_v；Rule-12 的非 float 项还须给 abs_min_v 和 abs_max_v，核对正负电压额定。
-非 float 检查还要 voltage_analysis：
+高电平提供 vih_min_v，低电平提供 vil_max_v；RST-E01 的非 float 项还须给 abs_min_v 和 abs_max_v，
+核对正负电压额定。非 float 检查还要 voltage_analysis：
 
 ```json
 {
@@ -116,33 +118,33 @@ kind 为 required_pull（direction=up/down）或 required_series；给精确目�
 float 必须给精确 node；仅核对没有已装配的外部连接，不推断芯片内部拉阻或电压。
 没有外部上拉不能直接证明默认电平错误，可能存在合适的内部拉阻/驱动。
 
-## Rule-14：引脚映射
+## DEV-E01：引脚映射
 
 kind=pin_map、ref 和 expected（引脚号到名称或允许名称数组的映射）。同样需要 basis
 及资料审计；连接器可通过 --require-ref 加入。PASS 仅覆盖 expected 列出的引脚，
-封装方向、全部引脚覆盖与对端定义需独立复核。
+封装方向、全部引脚覆盖（DEV-D02）与对端定义（DEV-D03）需独立复核。
 
-## 检查器热跑规则
+## 检查器的证据计算规则
 
-注册表检查器自带的热跑规则与上列规则同一契约：同样要 id/rule/kind/citation、目标坐标、
+检查器的证据计算规则与上列规则同一契约：同样要 id/rule/kind/citation、目标坐标、
 depends_on 与 basis，同样按资料审计绑定文档。差别只在各自的保证值字段——**缺任一项即
 INSUFFICIENT，不得用典型值、经验值或"常见做法"顶替**；比值/系数类门槛（体电容比、CTR
 寿命衰减）必须来自项目规定。各规则字段：
 
 | 规则 | kind | 保证值字段 |
 |---|---|---|
-| PS-10 | `gate_drive` | `channel`（n/p）、`vgs_drive_v{min,max}`、`vgs_rds_on_v`、`vgs_abs_v{min,max}`；P 沟道按量纲翻转后比较 |
-| IF-10 | `input_filter_damping` | `vin_min_v`、`pin_max_w`、`esr_bulk_ohm`、`c_bulk_f`、`c_in_f`、`l_filter_h`、`c_bulk_ratio_min`（项目规定） |
-| PU-10 | `dropout` | `vin_min_v`、`dropout_max_v`（最低温度/最大负载）、`vout_required_min_v` |
-| SV-10 | `reset_pulse` | `pulse_width_s{min,max}`、`required_width_s{min,max}`、`output_type`（open_drain/push_pull） |
-| DL-10 | `diff_level` | `coupling`（ac/dc）、`driver_swing_v`、`receiver_common_mode_v`、`receiver_input_diff_v`，直流耦合另需 `driver_common_mode_v`、交流耦合另需 `bias_common_mode_v` |
-| OC-10 | `opto_ctr` | `drive_v`、`vf_v`、`driver_drop_v`、`r_led_ohm`、`r_pullup_ohm`、`v_pullup_v`、`vol_required_v`、`ctr_min`、`ctr_derating`（项目规定，(0,1]）、`if_abs_max_a` |
+| DRV-E01 | `gate_drive` | `channel`（n/p）、`vgs_drive_v{min,max}`、`vgs_rds_on_v`、`vgs_abs_v{min,max}`；P 沟道按量纲翻转后比较 |
+| PWR-E03 | `input_filter_damping` | `vin_min_v`、`pin_max_w`、`esr_bulk_ohm`、`c_bulk_f`、`c_in_f`、`l_filter_h`、`c_bulk_ratio_min`（项目规定） |
+| PWR-E02 | `dropout` | `vin_min_v`、`dropout_max_v`（最低温度/最大负载）、`vout_required_min_v` |
+| RST-E03 | `reset_pulse` | `pulse_width_s{min,max}`、`required_width_s{min,max}`、`output_type`（open_drain/push_pull） |
+| SIG-E02 | `diff_level` | `coupling`（ac/dc）、`driver_swing_v`、`receiver_common_mode_v`、`receiver_input_diff_v`，直流耦合另需 `driver_common_mode_v`、交流耦合另需 `bias_common_mode_v` |
+| PRO-E01 | `opto_ctr` | `drive_v`、`vf_v`、`driver_drop_v`、`r_led_ohm`、`r_pullup_ohm`、`v_pullup_v`、`vol_required_v`、`ctr_min`、`ctr_derating`（项目规定，(0,1]）、`if_abs_max_a` |
 
 结果同样写入 check_results：PASS 带 scope 明示未判定的部分（开关速度、全频阻抗、瞬态、
 抖动、隔离耐压等），FAIL/INSUFFICIENT 带 calculation 保留角点。逐检查器的识别范围与边界见
 [checkers.md](checkers.md)。
 
-## 输出与迁移
+## 输出
 
 lint.json 的 check_results 每条保留 check_id、review_result、detail/citation；PASS
 含 scope/state，计算项保留 calculation。readiness 与 review_result 独立，READY

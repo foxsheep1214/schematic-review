@@ -3,6 +3,8 @@
 `review-plan.json` 是合入冷跑、热跑及人工补查项的最终计划，不是结果。合并命令见
 [SKILL.md](../SKILL.md)，交接规则见 [review-plan-schema.md](review-plan-schema.md)。
 最终结果另存 `review-results.json`，每个最终计划 ID 恰好一条结果；补查先入计划再记录结果。
+计划必须是 `schema_version` 2（规则总表编号）；校验器逐项核对计划项的 `rule`、`method`、`domain`
+与 ID 前缀是否符合[规则总表](check-catalog.md)。
 `validate_review.py` 只验证记录的一致性，
 不能验证来源文字是否真实、计算是否合理或审查判据是否穷尽。
 
@@ -17,7 +19,8 @@
 - `checks`: 与计划 ID 集合一致的全部最终结果。
 - `findings`: 唯一已确认缺陷/改善 ID，一项根因可被多个 checks 引用。
 - `scope_checks`: 六个维度各对应一个检查 ID：`input_consistency`、`requirements`、`chains`、
-  `states`、`datasheets`、`history`。默认计划已有 `coverage-*` 对应项；代表覆盖审计完成，
+  `states`、`datasheets`、`history`。默认计划已有对应的覆盖审计项（DOC-Q01、REQ-Q01、REQ-Q02、
+  REQ-Q03、DEV-Q01、REQ-Q04）；代表覆盖审计完成，
   不是该域全部电气通过。完成了有据的缺口登记也可通过“枚举完整性”检查，实际缺证结论仍为 INSUFFICIENT。
 - `coverage`: 各维度“对象→检查 ID 数组”的完整映射。
 - `summary` / `release`: 可省略，由校验器计算；填了必须与计算一致。
@@ -30,7 +33,7 @@
 声明脚并集）、`nets`（去除已识别伪网）、`pages`（ref2page 的页号字符串），以及计划
 `object.requirement_id` 的 `requirements`。每个对象必须关联至少一条有效检查。
 这能挡住漏列对象，但不能防止把一条粗略 PASS 错误挂给很多对象：Agent 仍须提供
-逐脚/逐域证据。原理图实际 PDF 页数可能多于 ref2page，额外页在 ER6 台账补齐，不能据脚本
+逐脚/逐域证据。原理图实际 PDF 页数可能多于 ref2page，额外页在图面目检（DOC-V01）台账补齐，不能据脚本
 页号集合宣称 PDF 全覆盖。仅 PDF 时不传 --db，coverage 要由页面/手工对象清单另审，
 报告声明未获机器网表覆盖，不制作伪网表。
 
@@ -38,7 +41,7 @@
 
 ```json
 {
-  "id": "ER3.PATH.U1-J1",
+  "id": "SIG-T04.PATH-U1-J1",
   "binding": {
     "object": {"refs": ["U1", "J1"], "nets": ["SENSE_A", "SENSE_B"], "state": "RUN"},
     "criterion": "RUN 时 U1.4 与 J1.1 必须导通"
@@ -122,13 +125,13 @@ CI/冻结门使用 `--require-release`，NO_GO 也退出 2。GO/CONDITIONAL_GO �
 也不把详细方案当已修复。脚本不能识别填满字段却仍含糊/错误的指令，Agent须逐步核对。
 `binding_validation` 报告是否启用绑定门及对象/判据一致的检查数；该数不是电气通过数。
 
-## AC0 候选处置核对
+## 自动扫描候选处置核对
 
 完整网表模式交付前用两次 `--lint` 提供冷/热完整 JSON；`lint_reviews` 数组每条含
 `run_digest=fingerprint(lint_json)` 与 `items`（从零开始的 finding 索引字符串→结果检查 ID 数组）。
 全部 FINDING/CANDIDATE/INFO 都有处置，不接受只复核前几项。若 Lint 含 review_plan，
-其所有检查必须纳入最终计划且对象/判据保持一致；热候选还须关联 evidence_check_id 对应的
+其所有检查必须纳入最终计划且对象/判据保持一致；证据计算的候选还须关联 evidence_check_id 对应的
 状态子项，不能只挂到基础覆盖项。新生成的计划指纹必须匹配 --db；旧无快照的 Lint 仅兼容
-候选索引校验，不能声称核对了计划交接。没有热跑判据时保存运行了冷扫描
-但 hot_pending 未清的 lint-hot.json，相关缺证项仍为 INSUFFICIENT。
+候选索引校验，不能声称核对了计划交接。没有证据时也保存一次未带证据运行、hot_pending 未清的
+lint-hot.json，相关缺证项仍为 INSUFFICIENT。
 不传 --lint 时校验器无法验证候选覆盖，不能声称通过此闸门。仅 PDF 模式明确 NA 并留依据。

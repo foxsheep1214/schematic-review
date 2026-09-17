@@ -5,6 +5,7 @@ import unittest
 
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import catalog
 
 from checkers.diff_levels import DiffLevelsChecker, build_inventory, validate_diff_levels_intent
 from electrical_contract import db_fingerprint, validate_evidence
@@ -44,8 +45,11 @@ def pairs_of(inventory, state='as-built'):
     return {pair['base']: pair for pair in entry['pairs']}
 
 
+CHECKER_RULES = {rule.id for rule in catalog.rules(source='diff_levels')}
+
+
 def findings(db, intent=None):
-    return [f for f in Lint(db, '', intent).run() if f['rule'].startswith('DL-')]
+    return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
 
 
 def declared_intent(db, standard='LVPECL'):
@@ -59,7 +63,7 @@ def declared_intent(db, standard='LVPECL'):
 
 
 def level_check(**overrides):
-    check = {'id': 'LEVELS', 'rule': 'DL-10', 'kind': 'diff_level', 'ref': 'U2',
+    check = {'id': 'LEVELS', 'rule': 'SIG-E02', 'kind': 'diff_level', 'ref': 'U2',
              'net': 'CLK_P', 'coupling': 'dc',
              'driver_common_mode_v': {'min': 1.1, 'max': 1.3},
              'driver_swing_v': {'min': 0.25, 'max': 0.45},
@@ -92,19 +96,19 @@ class RecognitionTest(unittest.TestCase):
 
     def test_missing_driver_dc_path_reports_dl01(self):
         db = link_board(driver_dc=False)
-        hits = [f for f in findings(db) if f['rule'] == 'DL-01']
+        hits = [f for f in findings(db) if f['rule'] == 'SIG-A01']
         self.assertEqual(len(hits), 2)  # 每条腿各一条
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
         self.assertIn('直流通路', hits[0]['detail'])
 
     def test_declared_standard_makes_dl01_a_finding(self):
         db = link_board(driver_dc=False)
-        hits = [f for f in findings(db, declared_intent(db)) if f['rule'] == 'DL-01']
+        hits = [f for f in findings(db, declared_intent(db)) if f['rule'] == 'SIG-A01']
         self.assertEqual({f['kind'] for f in hits}, {'FINDING'})
 
     def test_missing_receiver_bias_reports_dl02(self):
         db = link_board(receiver_bias=False)
-        hits = [f for f in findings(db) if f['rule'] == 'DL-02']
+        hits = [f for f in findings(db) if f['rule'] == 'SIG-A02']
         self.assertEqual(len(hits), 2)
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
 
@@ -113,7 +117,7 @@ class RecognitionTest(unittest.TestCase):
         pair = pairs_of(build_inventory(db))['CLK_TX']
         self.assertIsNone(pair['standard'])
         self.assertIn('level-standard:CLK_TX', pair['gaps'])
-        self.assertEqual({f['rule'] for f in findings(db)}, {'DL-02'})
+        self.assertEqual({f['rule'] for f in findings(db)}, {'SIG-A02'})
 
     def test_receiver_side_without_a_standard_keeps_a_gap(self):
         pair = pairs_of(build_inventory(link_board()))['CLK']
@@ -130,9 +134,9 @@ class PlanTest(unittest.TestCase):
     def test_name_hint_pairs_stay_undetermined(self):
         plan = build_review_plan(link_board())
         items = [x for x in plan['checks'] if x['object'].get('diff_pair')]
-        self.assertEqual({x['check'] for x in items},
-                         {'diff-level-compatibility-CLK-TX', 'diff-level-termination-CLK-TX',
-                          'diff-level-compatibility-CLK', 'diff-level-termination-CLK'})
+        self.assertEqual({(x['rule'], x['object']['diff_pair']) for x in items},
+                         {('SIG-E02', 'CLK-TX'), ('SIG-T03', 'CLK-TX'),
+                          ('SIG-E02', 'CLK'), ('SIG-T03', 'CLK')})
         self.assertEqual({x['applicability'] for x in items}, {'UNDETERMINED'})
         self.assertEqual(plan['diff_levels_version'], 1)
 
@@ -166,7 +170,7 @@ class HotRuleTest(unittest.TestCase):
 
     def run_check(self, check, db=None):
         db = db or link_board(coupling='dc')
-        evidence = {'schema_version': 1, 'checks': [check]}
+        evidence = {'schema_version': 2, 'checks': [check]}
         audit = bind_evidence(db, evidence, self.directory.name)
         self.assertEqual(validate_evidence(evidence), [])
         lint = Lint(db, evidence=evidence, datasheet_audit=audit)

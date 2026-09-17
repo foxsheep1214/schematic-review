@@ -5,6 +5,7 @@ import unittest
 
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import catalog
 
 from checkers.input_filter import InputFilterChecker, build_inventory, validate_input_filter_intent
 from electrical_contract import db_fingerprint, validate_evidence
@@ -44,12 +45,15 @@ def converters_of(inventory, state='as-built'):
     return {item['ref']: item for item in entry['converters']}
 
 
+CHECKER_RULES = {rule.id for rule in catalog.rules(source='input_filter')}
+
+
 def findings(db, intent=None):
-    return [f for f in Lint(db, '', intent).run() if f['rule'].startswith('IF-')]
+    return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
 
 
 def damping_check(**overrides):
-    check = {'id': 'IF', 'rule': 'IF-10', 'kind': 'input_filter_damping', 'ref': 'U1',
+    check = {'id': 'IF', 'rule': 'PWR-E03', 'kind': 'input_filter_damping', 'ref': 'U1',
              'net': 'VIN_12', 'vin_min_v': 10.8, 'pin_max_w': 12.0,
              'esr_bulk_ohm': {'min': 0.15, 'max': 0.6},
              'c_bulk_f': {'min': 80e-6, 'max': 120e-6},
@@ -72,7 +76,7 @@ class RecognitionTest(unittest.TestCase):
 
     def test_series_filter_without_damping_reports_if01(self):
         hits = findings(converter())
-        self.assertEqual([f['rule'] for f in hits], ['IF-01'])
+        self.assertEqual([f['rule'] for f in hits], ['PWR-A05'])
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
         self.assertIn('FB1', hits[0]['detail'])
 
@@ -107,13 +111,13 @@ class PlanTest(unittest.TestCase):
     def test_plan_items_bind_to_the_inventory_digest(self):
         plan = build_review_plan(converter())
         items = [x for x in plan['checks'] if x['object'].get('input_filter')]
-        self.assertEqual({x['check'] for x in items},
-                         {'input-filter-damping-U1-VIN-12', 'input-filter-attenuation-U1-VIN-12'})
+        self.assertEqual({(x['rule'], x['object']['input_filter']) for x in items},
+                         {('PWR-E03', 'U1-VIN-12'), ('PWR-C11', 'U1-VIN-12')})
         for item in items:
             self.assertEqual(item['object']['input_filter_digest'], plan['input_filter']['digest'])
         rules = {row['rule']: row for row in plan['rule_plan']}
-        self.assertEqual(rules['IF-01']['instances'], ['U1-VIN-12'])
-        self.assertEqual(rules['IF-10']['readiness'], 'WAITING_EVIDENCE')
+        self.assertEqual(rules['PWR-A05']['instances'], ['U1-VIN-12'])
+        self.assertEqual(rules['PWR-E03']['readiness'], 'WAITING_EVIDENCE')
 
     def test_intent_validation_rejects_unsound_configuration(self):
         db = converter()
@@ -133,7 +137,7 @@ class HotRuleTest(unittest.TestCase):
 
     def run_check(self, check, db=None):
         db = db or converter(damper='rc')
-        evidence = {'schema_version': 1, 'checks': [check]}
+        evidence = {'schema_version': 2, 'checks': [check]}
         audit = bind_evidence(db, evidence, self.directory.name)
         self.assertEqual(validate_evidence(evidence), [])
         lint = Lint(db, evidence=evidence, datasheet_audit=audit)
@@ -171,7 +175,7 @@ class HotRuleTest(unittest.TestCase):
         self.assertIn('c_bulk_ratio_min 缺少保证值', result['detail'])
 
     def test_nonpositive_inputs_are_rejected_by_the_contract(self):
-        evidence = {'schema_version': 1, 'checks': [damping_check(pin_max_w=0)]}
+        evidence = {'schema_version': 2, 'checks': [damping_check(pin_max_w=0)]}
         self.assertTrue(any('pin_max_w 必须为正数' in error for error in validate_evidence(evidence)))
 
 
