@@ -186,6 +186,9 @@ def model_gaps(check):
             threshold = 'vih_min_v' if required == 'high' else 'vil_max_v'
             if not finite(check.get(threshold)):
                 gaps.append(f'{threshold} 保证门限缺失')
+    elif rule == 'DEV-E02':
+        if not bounded(check.get('supply_v')):
+            gaps.append('DEV-E02 需要推荐工作条件的保证 min/max（supply_v）')
     else:
         checker = _registry_hot().get(rule)
         if checker is not None:
@@ -380,6 +383,7 @@ def validate_evidence(evidence):
             'SIG-E01': {'required_pull', 'required_series'},
             'RST-E01': {'pin_bias'},
             'DEV-E01': {'pin_map'},
+            'DEV-E02': {'operating_range'},
             'RST-E02': {'strap'},
         }
         for checker_rule, (_, checker) in registry.items():
@@ -457,6 +461,11 @@ def validate_evidence(evidence):
                     or not isinstance(check.get('expected'), dict)
                     or not check.get('expected')):
                 errors.append(f'{label} 必须给 ref 与 expected pin map')
+        elif rule == 'DEV-E02':
+            if not text_value(check.get('ref')) or not text_value(check.get('net')):
+                errors.append(f'{label} 必须给 ref 与所接轨 net')
+            if 'supply_v' in check:
+                errors.extend(range_errors(check['supply_v'], f'{label}.supply_v', nonnegative=True))
     return errors
 
 

@@ -19,7 +19,7 @@ from test_checkers_framework import whole_board
 RULE_TOKEN = re.compile(r'(?<![A-Za-z0-9])[A-Z]{3}-[AETCDVQH]\d{2}(?![0-9])')
 LEDGER = pathlib.Path(__file__).with_name('issued_rule_ids.txt')
 SOURCE_FILES = {
-    'lint': ['lint.py'],
+    'lint': ['lint.py', 'board_scans.py'],
     'plan': ['plan_review.py', 'catalog.py'],
     'revision': ['revision_impact.py', 'diff_netlists.py', 'plan_review.py'],
 }

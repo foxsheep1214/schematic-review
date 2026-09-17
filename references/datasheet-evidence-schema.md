@@ -124,6 +124,13 @@ kind=pin_map、ref 和 expected（引脚号到名称或允许名称数组的映�
 及资料审计；连接器可通过 --require-ref 加入。PASS 仅覆盖 expected 列出的引脚，
 封装方向、全部引脚覆盖（DEV-D02）与对端定义（DEV-D03）需独立复核。
 
+## DEV-E02：推荐工作条件
+
+kind=operating_range、`ref`、所接轨 `net` 与 `supply_v`（资料保证的推荐工作电压 min/max，
+缺任一边界即 INSUFFICIENT）。设计工况来自 `intent.power_rails.<net>.voltage_v`，两边都齐才
+比较；PASS 只覆盖该轨的直流电压窗口，温度、负载、频率、瞬态与其他推荐条件仍归 DEV-C05。
+绝对最大额定不得当作工作范围填进 `supply_v`。
+
 ## 检查器的证据计算规则
 
 检查器的证据计算规则与上列规则同一契约：同样要 id/rule/kind/citation、目标坐标、

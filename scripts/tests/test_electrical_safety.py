@@ -295,6 +295,45 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.assertTrue(all(x['review_result'] is None for x in circuit))
         self.assertEqual(len(plan['checks']), len({x['id'] for x in plan['checks']}))
 
+    def test_operating_range_uses_the_declared_rail_window(self):
+        db = database({'VCC_24V': ['U1.1'], 'GND': ['U1.2']}, {'U1': 'LOAD-24V'},
+                      {'U1.1': 'VDD', 'U1.2': 'VSS'})
+        check = {'id': 'U1-RANGE', 'rule': 'DEV-E02', 'kind': 'operating_range', 'ref': 'U1',
+                 'net': 'VCC_24V', 'supply_v': {'min': 9.0, 'max': 26.4},
+                 'citation': 'LOAD-24V datasheet Rev.A recommended operating conditions'}
+        evidence = {'schema_version': 2, 'checks': [check]}
+        self.assertEqual(validate_evidence(evidence), [])
+        audit = bind_evidence(db, evidence, self.directory.name)
+        rails = {'VCC_24V': {'voltage_v': {'min': 18.0, 'max': 30.0}}}
+        lint = Lint(db, intent={'power_rails': rails}, evidence=evidence, datasheet_audit=audit)
+        lint.run()
+        self.assertEqual(lint.results[0]['review_result'], 'FAIL')
+        self.assertEqual(lint.results[0]['calculation']['margin_high_v'], 26.4 - 30.0)
+
+        rails['VCC_24V']['voltage_v'] = {'min': 20.0, 'max': 26.0}
+        lint = Lint(db, intent={'power_rails': rails}, evidence=evidence, datasheet_audit=audit)
+        lint.run()
+        self.assertEqual(lint.results[0]['review_result'], 'PASS')
+        self.assertIn('DEV-E02', lint.hot_executed)
+
+        # 没有设计工况时保持待核，不用推荐范围反推设计。
+        lint = Lint(db, evidence=evidence, datasheet_audit=audit)
+        lint.run()
+        self.assertEqual(lint.results[0]['review_result'], 'INSUFFICIENT')
+        self.assertEqual(lint.results[0]['required_inputs'], ['power_rails.VCC_24V.voltage_v.min/max'])
+
+    def test_operating_range_evidence_needs_guaranteed_bounds(self):
+        db = database({'VCC_24V': ['U1.1'], 'GND': ['U1.2']}, {'U1': 'LOAD-24V'},
+                      {'U1.1': 'VDD', 'U1.2': 'VSS'})
+        check = {'id': 'U1-RANGE', 'rule': 'DEV-E02', 'kind': 'operating_range', 'ref': 'U1',
+                 'net': 'VCC_24V', 'supply_v': {'min': 9.0},
+                 'citation': 'LOAD-24V datasheet Rev.A partial table'}
+        self.assertEqual(validate_evidence({'schema_version': 2, 'checks': [check]}), [])
+        self.assertIn('DEV-E02 需要推荐工作条件的保证 min/max（supply_v）',
+                      readiness_gaps(db, check, None))
+        broken = dict(check, supply_v={'min': 26.0, 'max': 9.0})
+        self.assertTrue(validate_evidence({'schema_version': 2, 'checks': [broken]}))
+
     def test_negative_pin_rating_is_checked_independently_of_logic_low(self):
         db = pull_db()
         check = {'id': 'IO-LOW', 'rule': 'RST-E01', 'kind': 'pin_bias', 'node': 'U1.1',

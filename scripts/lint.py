@@ -19,6 +19,7 @@ DNP 选项、被删外设的引出脚、工具伪网络）由执行 agent 逐条
 冷跑路径和网络名均不是电压、载流能力或上电时序的 PASS 证据。
 """
 import argparse
+import board_scans
 import catalog
 import difflib
 import io
@@ -30,8 +31,8 @@ from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
 from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID, registry_hot_rules
-from checkers.netgraph import NetGraph
-from electrical_contract import db_fingerprint, load_json, readiness_gaps, validate_evidence
+from checkers.netgraph import NetGraph, rail_voltage as _volt
+from electrical_contract import bounded, db_fingerprint, load_json, readiness_gaps, validate_evidence
 from fractions import Fraction
 from itertools import product
 from plan_review import build_review_plan, validate_intent
@@ -65,26 +66,6 @@ def _pin_class(value):
         return 'POWER'
     return value or 'UNSPEC'
 
-
-
-def _volt(s):
-    """从名字里推电压：3V3->3.3, 24V->24, 5.0V->5.0, V5P0->5.0；推不出返回 None"""
-    if not s:
-        return None
-    u = s.upper()
-    m = re.search(r'(\d{1,3})V(\d)(?![\dA-Z])', u)      # 3V3 / 24V0
-    if m:
-        return float(m.group(1)) + float(m.group(2)) / 10
-    m = re.search(r'(\d{1,3}\.\d)V', u)                 # 5.0V
-    if m:
-        return float(m.group(1))
-    m = re.search(r'(\d{1,3})V(?![\dA-Z])', u)           # 24V / _5V
-    if m:
-        return float(m.group(1))
-    m = re.search(r'V(\d{1,2})P(\d)(?![\d])', u)        # V5P0
-    if m:
-        return float(m.group(1)) + float(m.group(2)) / 10
-    return None
 
 
 def clamp_volt(blob):
@@ -416,6 +397,7 @@ class Lint:
         else:
             for rule in ('DOC-A01', 'DOC-A02'):
                 self.skipped.append((rule, catalog.title(rule), '未提供导出日志（--log）或日志为空'))
+        board_scans.run(self)
         for checker in REGISTRY:
             inventory = self.inventories.get(checker.id)
             if inventory is not None:
@@ -441,6 +423,7 @@ class Lint:
                 'SIG-E01': self._hot_required_passive,
                 'RST-E01': self._hot_pin_bias,
                 'DEV-E01': self._hot_pin_map,
+                'DEV-E02': self._hot_operating_range,
                 'RST-E02': self._hot_strap,
             }
             if rule in builtin:
@@ -604,6 +587,30 @@ class Lint:
 
     def _hot_strap(self, check):
         self._bias_result(check, 'RST-E02')
+
+    def _hot_operating_range(self, check):
+        """按保证的推荐工作条件窗口核对该轨的设计电压范围；设计窗口取自 intent.power_rails。"""
+        ref, net = check['ref'], check['net']
+        design = (self.intent.get('power_rails', {}).get(net) or {}).get('voltage_v')
+        recommended = check['supply_v']
+        if not bounded(design):
+            self.add('DEV-E02', '缺少该轨的设计电压窗口',
+                     f'{ref} @ {net}: 需要 intent.power_rails.{net}.voltage_v 的 min/max；'
+                     f'{self._citation(check)}',
+                     ref, kind='CANDIDATE', check_id=check['id'], citation=check['citation'],
+                     required_inputs=[f'power_rails.{net}.voltage_v.min/max'])
+            return
+        window = {'design_v': dict(design), 'recommended_v': dict(recommended),
+                  'margin_low_v': design['min'] - recommended['min'],
+                  'margin_high_v': recommended['max'] - design['max']}
+        detail = (f"{ref} @ {net}: 设计=[{design['min']:g}, {design['max']:g}]V, "
+                  f"推荐=[{recommended['min']:g}, {recommended['max']:g}]V; {self._citation(check)}")
+        if window['margin_low_v'] < 0 or window['margin_high_v'] < 0:
+            self.add('DEV-E02', '设计电压范围超出推荐工作条件', detail, ref,
+                     check_id=check['id'], citation=check['citation'], calculation=window)
+        else:
+            self.record_pass('DEV-E02', check, detail, calculation=window,
+                             scope='仅该轨的直流电压窗口；温度、负载、频率与瞬态另查（DEV-C05）')
 
     def _hot_pin_map(self, check):
         ref = check['ref']

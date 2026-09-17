@@ -131,6 +131,29 @@ def is_rail(net):
     return bool(net) and not is_ground(net) and bool(RAIL_RE.match(str(net)))
 
 
+def rail_voltage(name):
+    """从名字里推电压：3V3->3.3, 24V->24, 5.0V->5.0, V5P0->5.0；推不出返回 None。
+
+    名字只是线索，不是轨压证据；判据仍取需求或资料保证值。
+    """
+    if not name:
+        return None
+    upper = str(name).upper()
+    match = re.search(r'(\d{1,3})V(\d)(?![\dA-Z])', upper)      # 3V3 / 24V0
+    if match:
+        return float(match.group(1)) + float(match.group(2)) / 10
+    match = re.search(r'(\d{1,3}\.\d)V', upper)                 # 5.0V
+    if match:
+        return float(match.group(1))
+    match = re.search(r'(\d{1,3})V(?![\dA-Z])', upper)           # 24V / _5V
+    if match:
+        return float(match.group(1))
+    match = re.search(r'V(\d{1,2})P(\d)(?![\d])', upper)        # V5P0
+    if match:
+        return float(match.group(1)) + float(match.group(2)) / 10
+    return None
+
+
 class NetGraph:
     """按某一装配状态给出的网表视图；未贴器件不导通、不参与识别。"""
 
