@@ -8,7 +8,7 @@ sys.path.insert(0, str(SCRIPTS))
 import catalog
 
 from checkers.supervision import SupervisionChecker, build_inventory, validate_supervision_intent
-from electrical_contract import db_fingerprint, validate_evidence
+from electrical_contract import validate_evidence
 from electrical_fixtures import bind_evidence, bound_intent
 from lint import Lint
 from plan_review import build_review_plan

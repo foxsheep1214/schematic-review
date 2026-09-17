@@ -12,7 +12,6 @@ SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import catalog
 from board_intent import input_fingerprint
-from electrical_contract import db_fingerprint
 from i2c_topology import build_i2c_topology, validate_i2c_intent
 from lint import Lint
 from plan_review import build_review_plan, validate_intent

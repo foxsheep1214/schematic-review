@@ -8,7 +8,7 @@ sys.path.insert(0, str(SCRIPTS))
 import catalog
 
 from checkers.power_switch import PowerSwitchChecker, build_inventory, validate_power_switch_intent
-from electrical_contract import db_fingerprint, validate_evidence
+from electrical_contract import validate_evidence
 from electrical_fixtures import bind_evidence, bound_intent
 from lint import Lint
 from plan_review import build_review_plan
