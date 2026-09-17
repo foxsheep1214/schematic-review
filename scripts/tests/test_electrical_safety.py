@@ -9,6 +9,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import catalog
 from audit_datasheets import build_datasheet_audit, validate_datasheet_audit
 from electrical_contract import db_fingerprint, readiness_gaps
 from electrical_fixtures import bind_evidence, divider_model, pin_analysis
@@ -288,8 +289,9 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.assertEqual(len(parents), 1)
         self.assertEqual({x['parent_check_id'] for x in hot}, {parents[0]['id']})
         self.assertEqual({x['object']['state'] for x in hot}, {'cold', 'hot'})
-        circuit = [x for x in plan['checks'] if x.get('circuit_type') == 'POWER_CONVERTER']
-        self.assertEqual(len(circuit), 8)
+        circuit = [x for x in plan['checks'] if x['object'].get('circuit') == 'REGULATOR']
+        self.assertEqual(len(circuit), 2 * len(catalog.package('POWER_CONVERTER').rules))
+        self.assertEqual({x['package'] for x in circuit}, {'POWER_CONVERTER'})
         self.assertTrue(all(x['review_result'] is None for x in circuit))
         self.assertEqual(len(plan['checks']), len({x['id'] for x in plan['checks']}))
 

@@ -244,7 +244,7 @@ class TopologyTests(unittest.TestCase):
                 db['pinname'][node] = 'GPIO'
         rebind(db, intent)
         plan = build_review_plan(db, intent)
-        feature = next(p for p in plan['checks'] if p['rule'] == 'SIG-Q06')
+        feature = next(p for p in plan['checks'] if p['rule'] == 'REQ-Q07' and p['package'] == 'I2C')
         self.assertEqual(feature['applicability'], 'APPLICABLE')
         self.assertEqual(len(regions(plan['i2c_topology'])), 2)
 
@@ -394,17 +394,21 @@ class TopologyTests(unittest.TestCase):
                 run = subprocess.run(base, text=True, capture_output=True)
                 self.assertEqual(run.returncode, 0, run.stderr)
 
-    def test_plan_has_per_region_coverage_plus_three_electrical_checks(self):
+    def test_plan_has_per_region_coverage_plus_package_electrical_checks(self):
         db, intent = fixture(('33R',))
         plan = build_review_plan(db, intent)
+        members = catalog.package('I2C').rules
         new = [p for p in plan['checks'] if p['object'].get('i2c_region')]
-        self.assertEqual(len(new), 8)
+        self.assertEqual(len(new), 2 * (1 + len(members)))
         self.assertEqual(sum(p['rule'] == 'SIG-T02' for p in new), 2)
         self.assertTrue(all(p['review_result'] is None for p in new))
-        electrical = [p for p in new if p['rule'] in catalog.CIRCUIT_TYPES['I2C']]
-        self.assertEqual(len(electrical), 6)
-        self.assertTrue(all(p['readiness'] == 'WAITING_EVIDENCE' for p in electrical))
+        electrical = [p for p in new if p['rule'] in members]
+        self.assertEqual(len(electrical), 2 * len(members))
+        self.assertTrue(all(p['readiness'] == 'WAITING_EVIDENCE' and p['package'] == 'I2C' for p in electrical))
         self.assertTrue(any(p['rule'] == 'SIG-E01' for p in plan['checks']))
+        # 区域已逐个展开时，不再按功能包重复生成一套成员项。
+        self.assertFalse([p for p in plan['checks'] if p['object'].get('package') == 'I2C'
+                          and p['rule'] != 'REQ-Q07'])
 
     def test_merge_rejects_changed_state_even_when_db_is_unchanged(self):
         db, intent = fixture(('jumper',))

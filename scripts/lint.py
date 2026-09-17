@@ -168,7 +168,7 @@ class Lint:
         return pulls
 
     def add(self, rid, name, detail, ref=None, kind='FINDING', **extra):
-        """kind: FINDING=疑似缺陷，逐条排除；CANDIDATE=待资料取证定夺的优先级清单"""
+        """kind: FINDING=疑似缺陷，逐条排除；CANDIDATE=待资料取证定夺的优先级清单；INFO=提示，不计入疑点"""
         item = {'rule': rid, 'name': name, 'detail': detail, 'kind': kind,
                 'page': self.page.get(ref, 0) if ref else 0}
         item.update(extra)
@@ -310,14 +310,14 @@ class Lint:
                     self.add('PRO-A01', 'ESD/TVS 挂残网',
                              f'{ref} {node} -> {n} (仅{len(nets.get(n, []))}节点)', ref)
 
-        # NET-A04/NET-A05 "NC" 网络 —— 必须先判别是真短路还是工具伪网络
+        # NET-A04 "NC" 网络 —— 先判别是真短路还是工具伪网络；伪网络只作提示
         for n, nds in nets.items():
             if not re.fullmatch(r'NC[_\-\d]*', n, re.I) or len(nds) <= 1:
                 continue
             if n in self.pseudo:
-                self.add('NET-A05', '"NC" 为工具伪网络（非缺陷）',
+                self.add('NET-A04', '"NC" 为工具伪网络（提示，非缺陷）',
                          f'{n}: {len(nds)} 个引脚。C_SIGNAL 为裸字面量、无层次路径 '
-                         '-> PSTWRITER 的 No-Connect 汇集网，不构成电气短路')
+                         '-> PSTWRITER 的 No-Connect 汇集网，不构成电气短路', kind='INFO')
             else:
                 self.add('NET-A04', '"NC" 被当作网络名导致短接',
                          f'{n}: {len(nds)} 个引脚被电气短接（该网带层次路径，'
@@ -737,6 +737,7 @@ def main():
     order = sorted(by, key=lambda k: catalog.order(k[0]))
     find = [k for k in order if k[1] == 'FINDING']
     cand = [k for k in order if k[1] == 'CANDIDATE']
+    info = [k for k in order if k[1] == 'INFO']
 
     print('=== 自动扫描与证据计算汇总（疑似清单，非判决）===')
     _table(by, find)
@@ -748,6 +749,10 @@ def main():
     if cand:
         print('\n=== CANDIDATE：待资料取证定夺（决定优先读哪几份 datasheet）===')
         _table(by, cand)
+
+    if info:
+        print('\n=== INFO：提示（非缺陷，准出前仍需图面或属性证据）===')
+        _table(by, info)
 
     if lint.passes:
         print('\n=== 自动验证通过（证据留痕）===')
@@ -789,6 +794,7 @@ def main():
                                              if x['kind'] == 'FINDING']),
                        'candidate_count': len([x for x in F
                                                if x['kind'] == 'CANDIDATE']),
+                       'info_count': len([x for x in F if x['kind'] == 'INFO']),
                    }},
                   io.open(a.json, 'w', encoding='utf-8'),
                   ensure_ascii=False, indent=1)

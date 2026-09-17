@@ -112,12 +112,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             inputs = plan['review_inputs']
             planner = ReviewPlanner(db, inputs['intent'], inputs['evidence'],
                                     plan.get('review_mode'), datasheet_audit=inputs['datasheet_audit'])
-            planner.plan_coverage()
-            planner.plan_features()
-            planner.plan_concrete_checks()
-            planner.plan_circuit_checks()
-            planner.plan_checkers()
-            planner.plan_explicit_evidence()
+            planner.generate()
             for generated in planner.checks:
                 actual = expected.get(generated['id'])
                 require(actual is not None and revision_digest(check_spec(actual)) == revision_digest(check_spec(generated)),

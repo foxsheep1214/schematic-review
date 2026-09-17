@@ -34,7 +34,7 @@ from audit_datasheets import (
 )
 
 
-INTENT_SCHEMA_VERSION = 2
+INTENT_SCHEMA_VERSION = 3
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
 RESULT_STATUSES = ('PASS', 'FAIL', 'INSUFFICIENT', 'NA')
@@ -47,134 +47,18 @@ STRAP_RE = re.compile(
     re.I)
 I2C_RE = re.compile(r'(^|_)(I2C\w*|SCL\d*|SDA\d*)(_|$)', re.I)
 FB_NAMES = {'FB', 'ADJ', 'VFB', 'FBX', 'VSENSE', 'VOSNS', 'VOUT_SENSE'}
-
-
-FEATURE_CATALOG = {
-    'DDR': {
-        'pattern': r'LPDDR|DDR[2345]?|SDRAM|DQS|\bZQ\b',
-        'rule': 'SIG-Q01',
-        'required_materials': ['requirements', 'datasheets', 'platform_checklist'],
-        'handoff': {
-            'required': True,
-            'receivers': ['PCB Layout', 'SI'],
-            'constraint': '阻抗、拓扑、等长、回流与布局规则按平台规范落实',
-            'verification': 'PCB 约束/DRC 与 SI 验证',
-        },
-    },
-    'USB': {
-        'pattern': r'USB|VBUS|TYPEC|TYPE_C',
-        'rule': 'SIG-Q02',
-        'required_materials': ['requirements', 'datasheets'],
-        'handoff': {
-            'required': True,
-            'receivers': ['PCB Layout'],
-            'constraint': '差分阻抗、等长、回流、stub 和防护器件顺序',
-            'verification': 'PCB 规则与版图复核',
-        },
-    },
-    'ETHERNET': {
-        'pattern': r'ETH|RGMII|RMII|SGMII|MDIO|\bMDI\d|PHY',
-        'rule': 'SIG-Q03',
-        'required_materials': ['requirements', 'datasheets', 'platform_checklist'],
-        'handoff': {
-            'required': True,
-            'receivers': ['PCB Layout', 'SI'],
-            'constraint': 'MDI/RGMII 阻抗、等长、回流及网变到接口布局规则',
-            'verification': 'PCB 规则、版图复核与必要 SI 验证',
-        },
-    },
-    'CAN': {
-        'pattern': r'CANH|CANL|CAN_TX|CAN_RX|\bCAN\d*\b',
-        'rule': 'SIG-Q04',
-        'required_materials': ['requirements', 'datasheets'],
-        'handoff': {
-            'required': True,
-            'receivers': ['PCB Layout', 'EMC/Test'],
-            'constraint': '差分走线、防护器件顺序、隔离与端接布局',
-            'verification': '版图复核与接口测试',
-        },
-    },
-    'RS485': {
-        'pattern': r'RS485|485_TX|485_RX|485_A|485_B',
-        'rule': 'SIG-Q05',
-        'required_materials': ['requirements', 'datasheets'],
-        'handoff': {
-            'required': True,
-            'receivers': ['PCB Layout', 'EMC/Test'],
-            'constraint': '差分走线、防护顺序和隔离布局要求',
-            'verification': '版图复核与接口测试',
-        },
-    },
-    'I2C': {
-        'pattern': r'(^|[:_-])(I2C\w*|SCL\d*|SDA\d*)([:_-]|$)',
-        'rule': 'SIG-Q06',
-        'required_materials': ['requirements', 'datasheets'],
-        'handoff': {'required': False},
-    },
-    'SPI': {
-        'pattern': r'\bSPI\w*|MOSI|MISO|SCLK',
-        'rule': 'SIG-Q07',
-        'required_materials': ['requirements', 'datasheets'],
-        'handoff': {'required': False},
-    },
-    'UART': {
-        'pattern': r'UART|\bTXD\w*|\bRXD\w*',
-        'rule': 'SIG-Q08',
-        'required_materials': ['requirements', 'datasheets'],
-        'handoff': {'required': False},
-    },
-    'STORAGE': {
-        'pattern': r'EMMC|SDIO|SDMMC|MICROSD|TF_CARD',
-        'rule': 'SIG-Q09',
-        'required_materials': ['requirements', 'datasheets', 'platform_checklist'],
-        'handoff': {
-            'required': True,
-            'receivers': ['PCB Layout'],
-            'constraint': '高速信号阻抗、等长、stub 与测试点规则',
-            'verification': 'PCB 规则与版图复核',
-        },
-    },
-    'RF': {
-        'pattern': r'(^|[:_-])(RF|ANT|WIFI|WLAN|LTE|GNSS|SIM)([:_-]|$)',
-        'rule': 'SIG-Q10',
-        'required_materials': ['requirements', 'datasheets'],
-        'handoff': {
-            'required': True,
-            'receivers': ['RF/PCB Layout', 'EMC/Test'],
-            'constraint': '射频阻抗、匹配、布局隔离与认证测试约束',
-            'verification': 'RF 版图复核、匹配和实测',
-        },
-    },
-    'ISOLATION': {
-        'pattern': r'ISOLAT|(^|_)ISO(_|$)|DIGITAL_ISO',
-        'rule': 'PRO-Q01',
-        'required_materials': ['requirements', 'datasheets'],
-        'handoff': {
-            'required': True,
-            'receivers': ['PCB Layout', 'Safety'],
-            'constraint': '隔离分区、爬电/电气间隙和禁布要求',
-            'verification': 'PCB 实距与安规复核',
-        },
-    },
-    'CLOCK': {
-        'pattern': r'CLK|CLOCK|OSC|XTAL|XIN|XOUT|32K',
-        'rule': 'CLK-Q01',
-        'required_materials': ['datasheets'],
-        'handoff': {
-            'required': True,
-            'receivers': ['PCB Layout'],
-            'constraint': '晶振回路、时钟走线和噪声隔离布局要求',
-            'verification': '版图复核',
-        },
-    },
-    'RESET': {
-        'pattern': r'RESET|(^|_)RST|POR(_|$)',
-        'rule': 'RST-Q01',
-        'required_materials': ['requirements', 'datasheets'],
-        'handoff': {'required': False},
-    },
+DEVICE_RE = re.compile(r'^[UM]\d', re.I)
+CONNECTOR_RE = re.compile(r'^(J|P|CN)\d', re.I)
+# 旧版意图里改了名的功能与电路类型。
+RENAMED_PACKAGES = {'RESET': 'STARTUP', 'USB_C': 'USB', 'CAN_RS485': 'CAN 或 RS485'}
+# 全板规则执行前需要的资料；未列出的规则只需网表。
+BOARD_MATERIALS = {
+    'DOC-D02': ('requirements',), 'DOC-V02': ('schematic_pdf',),
+    'DEV-C01': ('datasheets', 'requirements'), 'DEV-C02': ('datasheets', 'requirements'),
+    'DEV-C03': ('requirements',), 'DEV-C04': ('datasheets', 'requirements'),
+    'PWR-T06': ('datasheets', 'platform_checklist'),
+    'SIG-D13': ('datasheets', 'platform_checklist'), 'REQ-D02': ('requirements',),
 }
-
 
 
 # 冷跑规则所需的 db 索引；规则名称与判据在 catalog 中。
@@ -187,7 +71,6 @@ COLD_RULE_INDEXES = {
 }
 # 由网表实例化的内置证据计算规则。
 BUILTIN_EVIDENCE_RULES = tuple(rule.id for rule in catalog.rules(method='E', source='lint'))
-FEATURE_RULES = frozenset({config['rule'] for config in FEATURE_CATALOG.values()} | {'REQ-Q06'})
 
 
 def _text(value):
@@ -220,6 +103,9 @@ def validate_intent(intent):
     else:
         for key, item in features.items():
             label = f'features.{key}'
+            if str(key).upper() in RENAMED_PACKAGES:
+                errors.append(f'{label} 已改名为 {RENAMED_PACKAGES[str(key).upper()]}')
+                continue
             if not _text(key) or not isinstance(item, dict):
                 errors.append(f'{label} 必须为 object')
                 continue
@@ -286,8 +172,11 @@ def validate_intent(intent):
             seen_circuits.add(cid)
         if 'domain' in circuit:
             errors.append('circuits.domain 已改名为 circuits.type')
-        if not isinstance(circuit.get('type'), str) or circuit['type'] not in catalog.CIRCUIT_TYPES:
-            errors.append('circuits.type 不支持')
+        kind = circuit.get('type')
+        if not isinstance(kind, str) or kind not in catalog.PACKAGE_BY_NAME:
+            hint = RENAMED_PACKAGES.get(kind) if isinstance(kind, str) else None
+            errors.append('circuits.type 不支持: %r（%s）' % (
+                kind, '已改名为 ' + hint if hint else '取 check-catalog.md 中的功能包名'))
         for field in ('refs', 'states'):
             values = circuit.get(field)
             if not isinstance(values, list) or not values or not all(_text(x) for x in values):
@@ -399,8 +288,8 @@ class ReviewPlanner:
                   required_inputs=None, trigger=None, handoff=None):
         """按规则总表生成一个计划项；ID = 规则编号[.实例键].锚点。"""
         entry = catalog.get(rule)
-        anchor = (obj.get('node') or obj.get('net') or obj.get('ref')
-                  or obj.get('feature') or obj.get('page') or 'GLOBAL')
+        anchor = (obj.get('node') or obj.get('net') or obj.get('ref') or obj.get('feature')
+                  or obj.get('package') or obj.get('page') or obj.get('board') or 'GLOBAL')
         base = '.'.join([rule] + ([_slug(key)] if key else []) + [_slug(anchor)])
         check_id, suffix = base, 2
         while check_id in self._ids:
@@ -449,9 +338,9 @@ class ReviewPlanner:
                 child['required_inputs'] = gaps
                 self.checks.append(child)
             return self.checks[-1]
-        if rule in FEATURE_RULES:
+        if rule == 'REQ-Q07':
             item['role'] = 'coverage_parent'
-            item['aggregation'] = '逐电路/状态子检查完成后汇总，禁止整域一次性 PASS'
+            item['aggregation'] = '逐电路/状态成员检查完成后汇总，禁止整包一次性 PASS'
         self.checks.append(item)
         return item
 
@@ -469,94 +358,132 @@ class ReviewPlanner:
             'reason': reason,
         })
 
-    def plan_features(self):
-        explicit = {
-            str(key).upper(): value
-            for key, value in self.intent.get('features', {}).items()
-        }
-        names = sorted(set(FEATURE_CATALOG) | set(explicit))
-        for name in names:
-            config = FEATURE_CATALOG.get(name, {
-                'pattern': r'(?!x)x',
-                'rule': 'REQ-Q06',
-                'criterion': f'执行项目自定义功能 {name} 的原理图检查包',
-                'required_materials': ['requirements'],
-                'handoff': {'required': False},
-            })
-            hits = _feature_hits(self.db, config['pattern'])
+    def _materials_gap(self, materials):
+        return [x for x in materials if not _material_available(self.intent, x, self.datasheet_audit)]
+
+    def _datasheet_readiness(self, ref, part):
+        """逐位号的资料缺口：有资料审计时按审计条目，否则按 materials.datasheets。"""
+        if self.datasheet_audit is None:
+            return self._materials_gap(['datasheets']), []
+        entry = datasheet_entry_for_ref(self.datasheet_audit, ref)
+        if entry and entry.get('status') == 'AVAILABLE':
+            gaps = []
+        else:
+            identity = entry.get('identity') if entry else part.get('value') or part.get('part') or ref
+            gaps = [f'datasheet:{identity}']
+        return gaps, ['datasheet-audit:' + (entry.get('status') if entry else 'UNLISTED')]
+
+    def _ready_check(self, rule, obj, gaps, trigger, **extra):
+        return self.add_check(rule, obj, readiness='WAITING_EVIDENCE' if gaps else 'READY',
+                              required_inputs=gaps, trigger=trigger, **extra)
+
+    def plan_board(self):
+        """全板通用规则每块板一项；装配选项在同一处核对。"""
+        for rule in catalog.rules(source='board'):
+            self._ready_check(rule.id, {'board': 'BOARD'},
+                              self._materials_gap(BOARD_MATERIALS.get(rule.id, ())), ['board'])
+        self.add_check('DOC-T01', {'board': 'BOARD'}, readiness='WAITING_EVIDENCE',
+                       required_inputs=['BOM assembly options (variants/DNP/jumpers)'],
+                       trigger=['assembly-options'])
+
+    def plan_packages(self):
+        """功能包：检出或声明即生成 REQ-Q07 汇总项与全部成员规则；未检出也未声明的汇总到一项 REQ-Q08。"""
+        declared = {str(key).upper(): value for key, value in self.intent.get('features', {}).items()}
+        circuits = {}
+        for circuit in self.intent.get('circuits', []):
+            circuits.setdefault(circuit['type'], []).append(circuit)
+        custom = [catalog.Package(name, name, 'REQ', r'(?!x)x', (), ('requirements',), {'required': False})
+                  for name in sorted(set(declared) - set(catalog.PACKAGE_BY_NAME))]
+        undetected = []
+        for package in catalog.PACKAGES + tuple(custom):
+            name = package.name
+            hits = _feature_hits(self.db, package.pattern)
             if name == 'I2C' and any(b['origin'] != 'name-hint'
                     for s in self.i2c_topology['states'] for b in s['buses']):
                 hits.append('declared I2C physical bus/port mapping')
-            item = explicit.get(name)
+            declared_circuits = circuits.get(name, [])
+            found = hits + [f'intent.circuits:{c["id"]}' for c in declared_circuits]
+            item = declared.get(name)
             requested = item.get('applicability') if item else None
             trigger = [f'netlist:{x}' for x in hits]
+            trigger += [f'intent.circuits:{c["citation"]}' for c in declared_circuits]
             if item and item.get('citation'):
                 trigger.append(f'intent:{item["citation"]}')
 
-            if requested == 'NOT_APPLICABLE' and hits:
+            if requested == 'NOT_APPLICABLE' and found:
                 applicability = 'UNDETERMINED'
                 self.diagnostics.append({
                     'code': 'INTENT_NETLIST_CONFLICT',
                     'feature': name,
-                    'detail': '意图声明不适用，但网表检测到对应特征',
-                    'hits': hits,
+                    'detail': '意图声明不适用，但网表或电路声明中有该功能包',
+                    'hits': found,
                 })
             elif requested in ('APPLICABLE', 'NOT_APPLICABLE'):
                 applicability = requested
-            elif hits:
+            elif found:
                 applicability = 'APPLICABLE'
-            else:
+            elif item:
                 applicability = 'UNDETERMINED'
+            else:
+                undetected.append(name)
+                continue
 
-            required = config.get('required_materials', [])
             if applicability == 'NOT_APPLICABLE':
                 missing = []
             elif applicability == 'UNDETERMINED':
                 missing = [f'intent.features.{name}']
-                if requested == 'NOT_APPLICABLE' and hits:
+                if requested == 'NOT_APPLICABLE' and found:
                     missing.append('resolve intent/netlist conflict')
             else:
-                missing = [
-                    x for x in required
-                    if not _material_available(
-                        self.intent, x, self.datasheet_audit)
-                ]
-            readiness = 'WAITING_EVIDENCE' if missing else 'READY'
-            if applicability == 'APPLICABLE' and requested == 'APPLICABLE' and not hits:
+                missing = self._materials_gap(package.materials)
+            if applicability == 'APPLICABLE' and requested == 'APPLICABLE' and not found:
                 self.diagnostics.append({
                     'code': 'REQUIRED_FEATURE_NOT_DETECTED',
                     'feature': name,
                     'detail': '设计意图要求该功能，但网表未检测到对应特征',
                 })
-            self.add_check(
-                config['rule'], {'feature': name}, criterion=config.get('criterion'),
-                applicability=applicability, readiness=readiness,
+            summary = self.add_check(
+                'REQ-Q07', {'package': name}, criterion=catalog.package_criterion(name),
+                applicability=applicability, readiness='WAITING_EVIDENCE' if missing else 'READY',
                 required_inputs=missing, trigger=trigger,
-                handoff=_handoff(config.get('handoff', {}), applicability))
-            if applicability == 'APPLICABLE' and requested == 'APPLICABLE' and not hits:
-                self.add_check(
-                    'REQ-A02', {'feature': name}, readiness='READY',
-                    trigger=[f'intent:{item["citation"]}'])
+                handoff=_handoff(package.handoff, applicability))
+            summary['package'] = name
+            if applicability == 'APPLICABLE' and requested == 'APPLICABLE' and not found:
+                self.add_check('REQ-A02', {'package': name}, readiness='READY',
+                               trigger=[f'intent:{item["citation"]}'])
+            if applicability == 'APPLICABLE':
+                self.plan_package_members(package, declared_circuits, missing)
+        if undetected:
+            titles = [(name, catalog.package(name).title) for name in undetected]
+            self.add_check(
+                'REQ-Q08', {'board': 'BOARD', 'packages': undetected},
+                criterion=catalog.criterion('REQ-Q08') + '：' + '、'.join(
+                    name if title == name else f'{name}（{title}）' for name, title in titles),
+                readiness='WAITING_EVIDENCE',
+                required_inputs=[f'intent.features.{name}' for name in undetected],
+                trigger=['package-discovery'])
 
-    def plan_circuit_checks(self):
-        for circuit in self.intent.get('circuits', []):
-            circuit_type = circuit['type']
+    def plan_package_members(self, package, circuits, missing):
+        """声明了电路则逐电路×工况展开成员规则，否则按功能包展开一次；已有 I²C 区域时由检查器逐区域展开。"""
+        members = []
+        for circuit in circuits:
+            refs = circuit['refs']
+            gaps = [f'datasheet:{ref}' for ref in refs
+                    if not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
+            gaps += [f'unknown ref:{ref}' for ref in refs if ref not in self.db.get('parts', {})]
             for state in circuit['states']:
-                obj = {'circuit': circuit['id'], 'ref': circuit['refs'][0],
-                       'refs': circuit['refs'], 'nets': circuit.get('nets', []), 'state': state}
-                absent = [ref for ref in circuit['refs']
-                          if ref not in self.db.get('parts', {})]
-                missing = [f'datasheet:{ref}' for ref in circuit['refs']
-                           if not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
-                missing += [f'unknown ref:{ref}' for ref in absent]
-                for rule in catalog.CIRCUIT_TYPES[circuit_type]:
-                    item = self.add_check(
-                        rule, obj, key=f'{circuit["id"]}-{state}',
-                        readiness='WAITING_EVIDENCE' if missing else 'READY',
-                        required_inputs=missing, trigger=[f'intent.circuits:{circuit["citation"]}'])
-                    item['circuit_type'] = circuit_type
-                    item['analysis_required'] = True
-                    item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
+                obj = {'circuit': circuit['id'], 'ref': refs[0], 'refs': refs,
+                       'nets': circuit.get('nets', []), 'state': state}
+                members.append((obj, f'{circuit["id"]}-{state}', gaps, f'intent.circuits:{circuit["citation"]}'))
+        regions = any(state['regions'] for state in self.i2c_topology['states'])
+        if not circuits and not (package.name == 'I2C' and regions):
+            members.append(({'package': package.name}, None, missing, f'package:{package.name}'))
+        for obj, key, gaps, trigger in members:
+            for rule in package.rules:
+                item = self._ready_check(rule, dict(obj), gaps, [trigger], key=key)
+                item['package'] = package.name
+                item['analysis_required'] = True
+                item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
 
     def plan_checkers(self):
         """遍历检查器注册表；每个检查器只生成自己的计划项。"""
@@ -622,9 +549,9 @@ class ReviewPlanner:
                 required_inputs=[] if ready else ['datasheet/platform:I2C pull requirement'],
                 trigger=[f'net:{net}'])
 
-        # 连接器/定制接口 pin map（证据计算）。是否“新增”需复审基线进一步收窄。
+        # 连接器：pin map（证据计算）、对端定义、未用针处置与对外防护逐个一项。
         for ref, part in sorted(db.get('parts', {}).items()):
-            if not re.match(r'^(J|P|CN)\d', ref, re.I) or part.get('nc'):
+            if not CONNECTOR_RE.match(ref) or part.get('nc'):
                 continue
             obj = {'ref': ref}
             ready = self.evidence_ready('DEV-E01', obj)
@@ -632,6 +559,10 @@ class ReviewPlanner:
                 'DEV-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=[] if ready else ['connector drawing/opposite-side pinout'],
                 trigger=[f'refdes:{ref}'])
+            gaps, audit_trigger = self._datasheet_readiness(ref, part)
+            self._ready_check('DEV-D03', {'ref': ref}, self._materials_gap(['requirements']), [f'refdes:{ref}'])
+            self._ready_check('DEV-D05', {'ref': ref}, gaps, [f'refdes:{ref}'] + audit_trigger)
+            self.add_check('PRO-D03', {'ref': ref}, trigger=[f'refdes:{ref}'])
 
         # 每条电源轨分别检查拓扑（连接追踪）和功耗预算（工程计算）。
         for net in sorted(nets):
@@ -689,35 +620,15 @@ class ReviewPlanner:
                 required_inputs=[] if pdf_ready else ['schematic_pdf'],
                 trigger=[f'ref2page:{page}'])
 
-        # 条款核对：每颗 IC/模组独立做身份与封装一致性检查。
-        datasheets_ready = _material_available(
-            self.intent, 'datasheets', self.datasheet_audit)
+        # 每颗 IC/模组独立核对身份与封装、引脚处置和推荐工作条件。
         for ref, part in sorted(db.get('parts', {}).items()):
-            if not re.match(r'^[UM]\d', ref, re.I) or part.get('nc'):
+            if not DEVICE_RE.match(ref) or part.get('nc'):
                 continue
-            audit_entry = datasheet_entry_for_ref(self.datasheet_audit, ref)
-            if self.datasheet_audit is not None:
-                ready = bool(
-                    audit_entry and audit_entry.get('status') == 'AVAILABLE')
-                identity = (
-                    audit_entry.get('identity') if audit_entry
-                    else part.get('value') or part.get('part') or ref)
-                required_inputs = [] if ready else [f'datasheet:{identity}']
-                audit_trigger = [
-                    'datasheet-audit:'
-                    + (audit_entry.get('status') if audit_entry else 'UNLISTED')
-                ]
-            else:
-                ready = datasheets_ready
-                required_inputs = [] if ready else ['datasheets']
-                audit_trigger = []
-            self.add_check(
-                'DEV-D01', {'ref': ref},
-                readiness='READY' if ready else 'WAITING_EVIDENCE',
-                required_inputs=required_inputs,
-                trigger=[
-                    f'refdes:{ref}', f'part:{part.get("part", "")}'
-                ] + audit_trigger)
+            gaps, audit_trigger = self._datasheet_readiness(ref, part)
+            trigger = [f'refdes:{ref}', f'part:{part.get("part", "")}'] + audit_trigger
+            self._ready_check('DEV-D01', {'ref': ref}, gaps, trigger)
+            self._ready_check('DEV-D05', {'ref': ref}, gaps, trigger)
+            self._ready_check('DEV-C05', {'ref': ref}, gaps + self._materials_gap(['requirements']), trigger)
 
     def plan_rules(self):
         """规则级台账：自动扫描、证据计算、版本比对及按实例汇总的检测点规则。"""
@@ -748,14 +659,6 @@ class ReviewPlanner:
             'READY' if expect else 'WAITING_EVIDENCE',
             required_inputs=[] if expect else ['intent.expect'],
             reason='必须由设计意图定义“该有/该删”')
-        rail_instances = by_rule.get('PWR-T01', [])
-        self.add_rule(
-            'PWR-T02', catalog.title('PWR-T02'),
-            'APPLICABLE' if rail_instances else 'UNDETERMINED',
-            'READY' if rail_instances else 'WAITING_EVIDENCE',
-            instances=rail_instances,
-            required_inputs=[] if rail_instances else ['power-tree context'],
-            reason='电源轨拓扑（PWR-T01）建立后逐检测点判定，不由自动扫描定判')
         for rule in BUILTIN_EVIDENCE_RULES:
             name = catalog.title(rule)
             instances = by_rule.get(rule, [])
@@ -893,13 +796,17 @@ class ReviewPlanner:
             retained['evidence_confidence'] = None
             self.checks.append(retained)
 
-    def build(self):
+    def generate(self):
+        """生成全部自动计划项；计划构建与结果校验共用同一顺序。"""
         self.plan_coverage()
-        self.plan_features()
+        self.plan_board()
+        self.plan_packages()
         self.plan_concrete_checks()
-        self.plan_circuit_checks()
         self.plan_checkers()
         self.plan_explicit_evidence()
+
+    def build(self):
+        self.generate()
         self.merge_previous_checks()
         for material in (self.datasheet_audit or {}).get('materials', []):
             if material.get('status') == 'NOT_FOUND':

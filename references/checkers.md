@@ -121,8 +121,9 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 每状态最多 1024 个候选网络，达上限记录缺口及 `unvisited_seed_nets/unvisited_frontier_nets`。
 `segments` 是连接分组，不证明 0Ω/跳线无压降或无限带宽。
 
-计划：每状态、每连接区域新增 1 项连接覆盖检查（SIG-T02）及 3 项 I²C 电气判据（SIG-C01
-灌电流/上升时间、SIG-C02 电压域/掉电、SIG-D01 地址/复用/装配状态）。有限串阻各段保留节点做关联分析，有源器件两侧另查传输条件。
+计划：每状态、每连接区域新增 1 项连接覆盖检查（SIG-T02），并逐区域展开 I²C 功能包的电气判据（SIG-C01
+灌电流/上升时间、SIG-C07 电平与驱动、SIG-C08 掉电与跨域注入、SIG-D01 地址/复用/装配状态），
+不再按功能包重复生成一套。有限串阻各段保留节点做关联分析，有源器件两侧另查传输条件。
 不能由"有一只上拉"生成 PASS。本清单与 SIG-E01 的直接连接/直接并联计算并存，不扩大后者模型，
 也不自动把清单或 state population 注入证据计算；不同装配变体需各自的 db 与绑定该 db/状态的 evidence。
 

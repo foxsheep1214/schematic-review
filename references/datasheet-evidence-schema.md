@@ -89,7 +89,7 @@ kind 为 required_pull（direction=up/down）或 required_series；给精确目�
 未解析公差需节点分析，返回 INSUFFICIENT。
 
 没有 resistance_ohm 时，PASS 仅证明连接存在。该规则不计算 I2C 灌电流、上升时间、
-端点电平或掉电能力，这些由 intent.circuits 的 I2C 类型展开为 SIG-C01、SIG-C02、SIG-D01
+端点电平或掉电能力，这些由 I2C 功能包的 SIG-C01、SIG-C07、SIG-C08、SIG-D01
 分别检查；完整电气段不能漏掉经串阻/电平转换器连接的外部上拉。required_series 的结果
 也仅指指定两网间直接电阻网络，不证明它是唯一信号通路或符合布局要求。
 

@@ -3,7 +3,7 @@
 `review-plan.json` 是合入冷跑、热跑及人工补查项的最终计划，不是结果。合并命令见
 [SKILL.md](../SKILL.md)，交接规则见 [review-plan-schema.md](review-plan-schema.md)。
 最终结果另存 `review-results.json`，每个最终计划 ID 恰好一条结果；补查先入计划再记录结果。
-计划必须是 `schema_version` 2（规则总表编号）；校验器逐项核对计划项的 `rule`、`method`、`domain`
+计划必须是 `schema_version` 3（规则总表编号与功能包）；校验器逐项核对计划项的 `rule`、`method`、`domain`
 与 ID 前缀是否符合[规则总表](check-catalog.md)。
 `validate_review.py` 只验证记录的一致性，
 不能验证来源文字是否真实、计算是否合理或审查判据是否穷尽。

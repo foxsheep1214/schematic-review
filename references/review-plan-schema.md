@@ -1,8 +1,9 @@
-# 逐项检查计划（review-plan，schema_version=2）
+# 逐项检查计划（review-plan，schema_version=3）
 
 `scripts/plan_review.py`（冷跑时由 `lint.py --plan-json` 一并调用）按[规则总表](check-catalog.md)
 把“可能要查什么”展开为可追踪的逐项计划。它只决定每项的规则、适用性和准备度，不提前制造
-PASS/FAIL。计划 `schema_version` 为 2；用旧编号生成的计划（版本 1）不能合并或校验，需重新生成。
+PASS/FAIL。计划 `schema_version` 为 3；用旧编号（版本 1）或旧功能覆盖/电路类型（版本 2）生成的计划
+不能合并或校验，需重新生成。
 
 ## 输入：intent.json
 
@@ -10,7 +11,7 @@ PASS/FAIL。计划 `schema_version` 为 2；用旧编号生成的计划（版本
 
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "review_mode": "first",
   "requirements": [{
     "id": "REQ-USB", "text": "提供一路 USB 设备接口",
@@ -18,7 +19,7 @@ PASS/FAIL。计划 `schema_version` 为 2；用旧编号生成的计划（版本
     "criterion": "PHY 与连接器双向链路、供电及外部带电状态满足接口条件"
   }],
   "circuits": [{
-    "id": "USB-PORT", "type": "USB_C",
+    "id": "USB-PORT", "type": "USB",
     "refs": ["U1", "J1"], "nets": ["USB_DP", "USB_DM", "VBUS"],
     "states": ["startup", "run", "external-power-only"],
     "citation": "Requirements v1.2 section 4.1; schematic page 2"
@@ -65,8 +66,9 @@ PASS/FAIL。计划 `schema_version` 为 2；用旧编号生成的计划（版本
 - `materials.<name>.available=true` 必须同时给 `citation`。
 - 仅从网表“没搜到某关键字”不能推出 `NOT_APPLICABLE`；没有设计意图证据时为
   `UNDETERMINED`。
-- `schema_version` 可省略；给出时必须为 2。只含 `expect` 的最小 intent 仍可使用。
-- `circuits[].type` 取规则总表“电路类型展开”中的类型；旧字段名 `domain` 会被拒绝。
+- `schema_version` 可省略；给出时必须为 3。只含 `expect` 的最小 intent 仍可使用。
+- `features` 的键与 `circuits[].type` 取规则总表“功能包”中的包名（`features` 另可写项目自定义
+  功能）；旧名 `RESET`、`USB_C`、`CAN_RS485` 会被拒绝并提示新名，旧字段名 `domain` 同样拒绝。
 
 ## 计划与结果交接
 
@@ -101,7 +103,7 @@ PASS/FAIL。计划 `schema_version` 为 2；用旧编号生成的计划（版本
 | `rule` | 规则总表编号 |
 | `method` | 检查方式代码（A/E/T/C/D/V/Q/H），与 `rule` 一致 |
 | `domain` | 内容域代码（DOC/DEV/NET/PWR/RST/CLK/SIG/ANA/PRO/DRV/REQ），与 `rule` 一致 |
-| `object` | 该项对应的 feature、网络、位号、引脚或页码 |
+| `object` | 该项对应的覆盖维度（`feature`）、功能包（`package`）、全板（`board`）、网络、位号、引脚或页码 |
 | `criterion` | 本项通过/失败的判据 |
 | `applicability` | `APPLICABLE` / `NOT_APPLICABLE` / `UNDETERMINED` |
 | `readiness` | `READY` / `WAITING_EVIDENCE` / `NOT_SCHEDULED` |
@@ -111,9 +113,9 @@ PASS/FAIL。计划 `schema_version` 为 2；用旧编号生成的计划（版本
 | `evidence_confidence` | 独立证据置信度 A/B/C，不是审查结果 |
 | `handoff` | 独立下游动作，可与任一结果并存（例如原理图不适用但需下游执行） |
 
-`rule_plan[]` 给出自动扫描（A）、证据计算（E）、改版闭环（REQ-H01）及按实例汇总的检测点规则
-（PWR-T02）的规则级适用性和准备度；`checks[]` 再把每条规则实例化到具体对象。两者分别回答
-“这类规则要不要跑”和“具体要审哪一项”。由电路类型展开的检查另带 `circuit_type`。
+`rule_plan[]` 给出自动扫描（A）、证据计算（E）和改版闭环（REQ-H01）的规则级适用性和准备度；
+`checks[]` 再把每条规则实例化到具体对象。两者分别回答“这类规则要不要跑”和“具体要审哪一项”。
+随功能包展开的检查另带 `package`。
 `aggregate_release_gate` 只声明逐项完成后的聚合门槛，不会用总体结论覆盖任何一条
 独立审查意见。
 
@@ -132,6 +134,14 @@ PASS/FAIL。计划 `schema_version` 为 2；用旧编号生成的计划（版本
 计划仅记录适用性和准备度；最终状态字段见 [review-results-schema.md](review-results-schema.md)，
 严重度和准出政策统一见 [severity-calibration.md](severity-calibration.md)，专业边界见
 [scope-boundary.md](scope-boundary.md)。READY 不代表 PASS；HANDOFF 独立于审查结果。
+
+## 全板项与逐位号项
+
+来源为“全板通用”的规则每块板生成一项（对象 `{"board": "BOARD"}`，ID 如 `DOC-D01.BOARD`），
+装配选项一致性（DOC-T01）同样按全板一项；准备度按该规则所需资料（需求、datasheet、平台清单、
+PDF）判定。每颗 IC/模组另生成推荐工作条件（DEV-C05）与引脚处置（DEV-D05）；每个连接器生成
+对端定义（DEV-D03）、未用针处置（DEV-D05）与对外防护（PRO-D03），板内互连可按依据判不适用。
+复审时全板项和按功能包展开的项依赖全部输入，任一输入变化都要复验。
 
 ## 需求与物理引脚覆盖
 
@@ -154,9 +164,13 @@ validate_review.py，见 review-results-schema.md。热跑生成的新计划不�
 则 WAITING_EVIDENCE。每条匹配 evidence 生成独立 evidence_check_id、parent_check_id 和 object.state；
 匹配时 node/net/ref 必须一致。READY 不证明求解器支持该拓扑，也不代表 PASS。
 
-功能覆盖项（如 SIG-Q01）是 coverage_parent，只汇总覆盖。agent 应从实际电路和需求填
-intent.circuits，再按电路类型展开的规则及状态逐项检查。此扩展不声称自动识别任意电路：
-未声明的电路不能据此判 NA，需检查覆盖遗漏。示例：
+功能包汇总项（REQ-Q07，对象 `{"package": 包名}`）是 coverage_parent，只汇总覆盖。网表检出特征或
+意图声明（`features`、`circuits`）使功能包适用后，计划生成全部成员规则：声明了电路时逐电路×工况
+展开，未声明时按功能包展开一次（对象同为 `{"package": 包名}`）；已识别 I²C 连接区域时由检查器逐区域
+展开 I²C 成员。agent 应从实际电路和需求填 intent.circuits，让成员检查落到具体位号和工况。
+此扩展不声称自动识别任意电路：未检出也未声明的功能包汇总到一项 REQ-Q08（对象
+`{"board": "BOARD", "packages": [...]}`），逐个确认不适用并给出依据，或在 `features` 中声明后
+重新生成计划。示例：
 
 ```json
 {
@@ -169,8 +183,7 @@ intent.circuits，再按电路类型展开的规则及状态逐项检查。此�
 }
 ```
 
-支持的电路类型及展开的规则见规则总表“电路类型展开”（POWER_CONVERTER、POWER_PROTECTION、
-ANALOG、I2C、STARTUP、DDR、USB_C、CAN_RS485、CLOCK）；检查器按连接关系自行识别对象，不需要在
+`type` 取规则总表“功能包”中的包名，成员规则见同表；检查器按连接关系自行识别对象，不需要在
 circuits 中声明。每个具体电路、状态和规则形成独立检查，按 refs 获取各自资料，
 由 Expert Review 填公式、角点、证据、结果、意见和复验方法。无关器件缺资料不
 改变已声明电路的准备度。新增 refs 中需要曲线/额定的无源器件用 audit 的

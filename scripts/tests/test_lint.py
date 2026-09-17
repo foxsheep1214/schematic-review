@@ -260,6 +260,16 @@ class LintTests(unittest.TestCase):
         lint.run()
         self.assertFalse({'DOC-A01', 'DOC-A02'} & {item[0] for item in lint.skipped})
 
+    def test_nc_nets_split_into_short_finding_and_tool_info(self):
+        database = sample_db()
+        for net, nodes in (('NC', ['U1.2', 'U2.2']), ('NC_1', ['U3.2', 'U4.2'])):
+            database['nets'][net] = nodes
+            database['pin2net'].update({node: net for node in nodes})
+        database['pseudo_nets'] = ['NC']
+        findings = [x for x in Lint(database, intent={'expect': {}}).run() if x['rule'] == 'NET-A04']
+        self.assertEqual({x['detail'].split(':')[0]: x['kind'] for x in findings},
+                         {'NC': 'INFO', 'NC_1': 'FINDING'})
+
     def test_bom_field_hygiene_checks_all_identity_fields(self):
         database = sample_db()
         database['parts']['U1']['jedec'] = ' QFN32'

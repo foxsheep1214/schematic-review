@@ -19,7 +19,7 @@ COVERAGE_RULE = 'REQ-Q05'
 REMOVED_RULE = 'REQ-H02'
 COVERAGE_ID = COVERAGE_RULE + '.GLOBAL'
 FIELDS = ('refs', 'nodes', 'nets', 'states', 'check_ids')
-SPEC_FIELDS = ('id', 'rule', 'method', 'domain', 'circuit_type', 'object', 'criterion', 'applicability',
+SPEC_FIELDS = ('id', 'rule', 'method', 'domain', 'package', 'object', 'criterion', 'applicability',
                'evidence_check_id', 'parent_check_id', 'handoff')
 
 
@@ -46,10 +46,11 @@ def is_revision_check(check):
 
 
 def _global_scope(check):
-    """覆盖审计、需求追溯与改版处置项依赖全部输入，不按局部坐标收窄。"""
-    rule = check.get('rule')
+    """覆盖审计、全板项、按功能包展开的项、需求追溯与改版处置项依赖全部输入，不按局部坐标收窄。"""
+    rule, obj = check.get('rule'), check['object']
     return ((catalog.known(rule) and catalog.method_of(rule) == 'Q')
-            or bool(check['object'].get('requirement_id')) or is_revision_check(check))
+            or any(obj.get(key) for key in ('board', 'package', 'requirement_id'))
+            or is_revision_check(check))
 
 
 def index_checks(plan):

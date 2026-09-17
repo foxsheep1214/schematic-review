@@ -5,6 +5,7 @@ import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import catalog
+from electrical_contract import PLAN_SCHEMA_VERSION
 from validate_review import validate_review, fingerprint, SCOPE
 
 E = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
@@ -23,7 +24,7 @@ def planned(key):
 
 def fixture():
     keys = [C1] + [scope_id(k) for k in sorted(SCOPE)]
-    plan = {'schema_version': 2, 'checks': [planned(k) for k in keys]}
+    plan = {'schema_version': PLAN_SCHEMA_VERSION, 'checks': [planned(k) for k in keys]}
     db = {'parts': {'R1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
           'ref2page': {'R1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
     report = {'schema_version': 2, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),

@@ -10,7 +10,7 @@ import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
-from electrical_contract import db_fingerprint
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint
 from plan_review import build_review_plan, validate_intent
 from revision_impact import (attach_metadata, check_spec, COVERAGE_ID, digest,
                              validate_metadata, validate_reverification)
@@ -45,7 +45,7 @@ def focused(db, checks=None, old_db=None, old_plan=None, complete=True, intent=N
         for item in checks:
             declarations.setdefault(item['id'], {'complete': True, 'citation': 'Synthetic isolated scope reviewed'})
             declarations[item['id']].update(db_digest=digest(db), check_digest=digest(check_spec(item)))
-    plan = {'schema_version': 2, 'db_sha256': db_fingerprint(db), 'checks': checks,
+    plan = {'schema_version': PLAN_SCHEMA_VERSION, 'db_sha256': db_fingerprint(db), 'checks': checks,
             'review_mode': 'revision' if old_db is not None or old_plan is not None else 'first'}
     return attach_metadata(plan, db, intent, old_db=old_db, old_plan=old_plan)
 
@@ -346,9 +346,7 @@ class RevisionWorkflowTests(unittest.TestCase):
 
     def test_cannot_delete_automatic_check_and_rehash_metadata(self):
         bad = deepcopy(self.plan)
-        removed = next(c for c in bad['checks'] if c['rule'] == 'DEV-D02') if any(
-            c['rule'] == 'DEV-D02' for c in bad['checks']) else next(
-                c for c in bad['checks'] if c.get('role') == 'coverage_parent' and c['method'] == 'Q')
+        removed = next(c for c in bad['checks'] if c['rule'] == 'REQ-Q08')
         bad['checks'].remove(removed)
         attach_metadata(bad, self.new, old_db=self.old, old_plan=self.base)
         result = self.validate(bad, self.report(bad))

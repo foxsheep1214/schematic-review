@@ -41,7 +41,8 @@ python3 scripts/lint.py db.json --intent intent.json \
 - `scope`：GLOBAL / PARTIAL / DECLARED；`gaps` 与 `citation` 解释范围。
 
 对象引用和同网变化提供候选关联，不证明完整供电/控制/保护依赖。
-默认窄检查为 PARTIAL，覆盖/功能总项为 GLOBAL。只有工程人员核对完整依赖后，
+默认窄检查为 PARTIAL；覆盖审计项、全板项（对象含 `board`）和按功能包展开的项（对象含 `package`）
+为 GLOBAL。只有工程人员核对完整依赖后，
 才在 `intent.review_dependencies` 声明已确认范围；自动结果不会自行把 PARTIAL 改成完整。
 
 合成格式示例；两个摘要须分别取当前 `review_inputs.db_digest` 和该项 `check_digest`：
