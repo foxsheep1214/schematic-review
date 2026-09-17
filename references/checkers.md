@@ -306,8 +306,11 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 （到轨与到地各有电阻）、`rc-delay`（到轨电阻加对地电容）、`sequenced`（PG/PGOOD 类输出驱动）、
 `controlled`（控制器输出脚）、`pulled`、`unknown`。
 
+识别要求器件同时具备使能脚与输出/开关/反馈脚；反馈脚只用于认出稳压器，不计入输出轨。
+
 冷跑：`PU-01` 器件的使能/复位输入与其自身供电脚同网（稳压器自身的直连由 PU-02 覆盖，不重复
-登记）；`PU-02` 稳压器使能直连输入网且无分压/RC（CANDIDATE）。
+登记）；`PU-02` 稳压器使能直连输入网且无分压/RC（CANDIDATE）；`PU-03` 使能网上既无驱动源也无
+分压/RC/上下拉——悬空或来源不明（CANDIDATE；器件内部上/下拉需资料证据）。
 
 热跑 `PU-10`（`dropout`）：V<sub>IN,min</sub> − V<sub>dropout,max</sub>(T<sub>min</sub>, I<sub>max</sub>)
 ≥ 负载要求的 V<sub>OUT,min</sub>。PASS 不覆盖负载瞬态、启动过程与热关断。
