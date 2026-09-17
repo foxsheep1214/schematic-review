@@ -11,7 +11,7 @@ SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import catalog
 from electrical_fixtures import bind_evidence, pin_analysis
-from decoupling import input_fingerprint
+from board_intent import input_fingerprint
 from plan_review import build_review_plan
 from validate_review import fingerprint, validate_review, SCOPE
 from test_validate_review import E
@@ -42,11 +42,11 @@ class PlanHandoffTests(unittest.TestCase):
         # These fixtures deliberately model only a signal input, not IC supply pins.
         # Declare that limited synthetic model instead of automatically passing a
         # new unresolved physical-device inventory. Frozen circuit data is untouched.
-        return {'decoupling': {'schema_version': 1, 'input_sha256': input_fingerprint(self.db),
-            'states': [{'id': 'synthetic-signal-only', 'citation': 'Stipulated input-only test model',
-                        'population': {r: True for r in self.db['parts']}}],
-            'components': {'U1': {'kind': 'other',
-                'citation': 'Synthetic one-pin input stub; no supply terminal modeled in this ledger-handoff test'}}}}
+        return {'input_sha256': input_fingerprint(self.db),
+                'assemblies': [{'id': 'synthetic-signal-only', 'citation': 'Stipulated input-only test model',
+                                'population': {r: True for r in self.db['parts']}}],
+                'decoupling': {'schema_version': 2, 'components': {'U1': {'kind': 'other',
+                    'citation': 'Synthetic one-pin input stub; no supply terminal modeled in this ledger-handoff test'}}}}
 
     def merged(self, previous=None):
         return build_review_plan(self.db, self.inventory_context(), evidence=self.evidence, datasheet_audit=self.audit,

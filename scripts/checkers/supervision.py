@@ -153,7 +153,7 @@ def build_inventory(db, intent=None):
         scan = scans.setdefault(state['id'], _Scan(db, state, declared, excluded))
         return {'rails': scan.rails(scan.supervisors())}
 
-    return inv.build(db, cfg, 'supervisors', scanner, gaps, extra=extra)
+    return inv.build(db, intent, 'supervision', 'supervisors', scanner, gaps, extra=extra)
 
 
 class SupervisionChecker(Checker):

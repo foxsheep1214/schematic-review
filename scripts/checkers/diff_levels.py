@@ -142,8 +142,8 @@ def build_inventory(db, intent=None):
             if key:
                 declared[key] = item['standard'].upper()
     excluded = state_lib.excluded_refs(cfg)
-    gaps = [] if cfg else ['intent.diff_levels: 未声明差分电平标准与装配状态']
-    return inv.build(db, cfg, 'pairs',
+    gaps = [] if cfg else ['intent.diff_levels: 未声明差分电平标准']
+    return inv.build(db, intent, 'diff_levels', 'pairs',
                      lambda state: _Scan(db, state, declared, excluded).pairs(), gaps)
 
 

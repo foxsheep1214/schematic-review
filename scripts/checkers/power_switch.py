@@ -173,8 +173,8 @@ def build_inventory(db, intent=None):
     cfg = (intent or {}).get('power_switches') if isinstance(intent, dict) else None
     declared = state_lib.declared_refs(cfg, 'switches')
     excluded = state_lib.excluded_refs(cfg)
-    gaps = [] if cfg else ['intent.power_switches: 未声明开关角色与装配状态']
-    return inv.build(db, cfg, 'switches',
+    gaps = [] if cfg else ['intent.power_switches: 未声明开关角色']
+    return inv.build(db, intent, 'power_switches', 'switches',
                      lambda state: _Scan(db, state, declared, excluded).switches(), gaps)
 
 

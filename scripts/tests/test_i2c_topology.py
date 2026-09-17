@@ -11,6 +11,7 @@ from unittest.mock import patch
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import catalog
+from board_intent import input_fingerprint
 from electrical_contract import db_fingerprint
 from i2c_topology import build_i2c_topology, validate_i2c_intent
 from lint import Lint
@@ -43,16 +44,17 @@ def fixture(links=()):
                 jumpers[ref] = 'closed'
             net = other
         add(db, f'R{i}', '4.7K/1%', [('1', '1', net), ('2', '2', 'VCC_3V3')])
-    cfg = {'schema_version': 1, 'db_sha256': db_fingerprint(db),
-           'states': [{'id': 'run', 'citation': 'synthetic assembly B table 1',
-                       'population': {r: True for r in db['parts']}, 'jumpers': jumpers}],
+    cfg = {'schema_version': 2,
            'buses': [{'id': 'CTRL', 'sda': ['U1.1'], 'scl': ['U1.2'], 'citation': 'synthetic pin map section 1'}],
            'components': models, 'rails': {'VCC_3V3': 'synthetic power tree node A'}}
-    return db, {'i2c_topology': cfg}
+    intent = {'input_sha256': input_fingerprint(db), 'i2c_topology': cfg,
+              'assemblies': [{'id': 'run', 'citation': 'synthetic assembly B table 1',
+                              'population': {r: True for r in db['parts']}, 'jumpers': jumpers}]}
+    return db, intent
 
 
 def rebind(db, intent):
-    intent['i2c_topology']['db_sha256'] = db_fingerprint(db)
+    intent['input_sha256'] = input_fingerprint(db)
 
 
 def regions(output, state='run'):
@@ -131,7 +133,7 @@ class TopologyTests(unittest.TestCase):
 
     def test_open_jumper_cuts_conduction_but_far_side_stays_in_coverage(self):
         db, intent = fixture(('jumper',))
-        intent['i2c_topology']['states'][0]['jumpers']['JP10'] = 'open'
+        intent['assemblies'][0]['jumpers']['JP10'] = 'open'
         result = build_i2c_topology(db, intent)
         self.assertEqual(at(result)['nets'], ['I2C_SDA'])
         self.assertEqual(at(result)['pullups'], [])
@@ -140,14 +142,14 @@ class TopologyTests(unittest.TestCase):
 
     def test_not_fitted_resistor_cannot_bridge(self):
         db, intent = fixture(('0R',))
-        intent['i2c_topology']['states'][0]['population']['R10'] = False
+        intent['assemblies'][0]['population']['R10'] = False
         result = build_i2c_topology(db, intent)
         self.assertEqual(at(result)['nets'], ['I2C_SDA'])
         self.assertFalse(at(result)['pullups'])
 
     def test_unknown_population_not_inferred_from_nc_false(self):
         db, intent = fixture(('0R',))
-        del intent['i2c_topology']['states'][0]['population']['R10']
+        del intent['assemblies'][0]['population']['R10']
         r = at(build_i2c_topology(db, intent))
         self.assertEqual(r['nets'], ['I2C_SDA'])
         self.assertIn('population:R10', r['gaps'])
@@ -161,7 +163,7 @@ class TopologyTests(unittest.TestCase):
     def test_unproven_default_bridged_name_does_not_close_jumper(self):
         db, intent = fixture(('jumper',))
         db['parts']['JP10']['value'] = 'SolderJumper_2_Bridged'
-        del intent['i2c_topology']['states'][0]['jumpers']['JP10']
+        del intent['assemblies'][0]['jumpers']['JP10']
         rebind(db, intent)
         r = at(build_i2c_topology(db, intent))
         self.assertIn('jumper-state-unverified:JP10', r['gaps'])
@@ -169,10 +171,10 @@ class TopologyTests(unittest.TestCase):
 
     def test_each_state_gets_its_own_connectivity(self):
         db, intent = fixture(('jumper',))
-        other = copy.deepcopy(intent['i2c_topology']['states'][0])
+        other = copy.deepcopy(intent['assemblies'][0])
         other['id'] = 'option-open'
         other['jumpers']['JP10'] = 'open'
-        intent['i2c_topology']['states'].append(other)
+        intent['assemblies'].append(other)
         result = build_i2c_topology(db, intent)
         self.assertTrue(at(result)['pullups'])
         self.assertFalse(at(result, state='option-open')['pullups'])
@@ -187,7 +189,7 @@ class TopologyTests(unittest.TestCase):
         cfg = intent['i2c_topology']
         cfg['components']['U3'] = {'kind': 'level_shifter', 'citation': 'synthetic translator pinout',
             'ports': [{'sda': 'U3.1', 'scl': 'U3.2'}, {'sda': 'U3.3', 'scl': 'U3.4'}]}
-        cfg['states'][0]['population'].update({'U3': True, 'R3': True, 'R4': True})
+        intent['assemblies'][0]['population'].update({'U3': True, 'R3': True, 'R4': True})
         cfg['rails']['VCC_1V8'] = 'synthetic power tree B'
         rebind(db, intent)
         result = build_i2c_topology(db, intent)
@@ -199,7 +201,7 @@ class TopologyTests(unittest.TestCase):
     def test_unknown_ic_does_not_join_all_its_pins(self):
         db, intent = fixture()
         add(db, 'U9', 'UNKNOWN', [('1', 'A', 'I2C_SDA'), ('2', 'B', 'OTHER')])
-        intent['i2c_topology']['states'][0]['population']['U9'] = True
+        intent['assemblies'][0]['population']['U9'] = True
         rebind(db, intent)
         r = at(build_i2c_topology(db, intent))
         self.assertNotIn('OTHER', r['nets'])
@@ -208,14 +210,14 @@ class TopologyTests(unittest.TestCase):
     def test_connector_keeps_external_pullup_unknown(self):
         db, intent = fixture()
         add(db, 'J1', 'CONN', [('1', '1', 'I2C_SDA'), ('2', '2', 'I2C_SCL')])
-        intent['i2c_topology']['states'][0]['population']['J1'] = True
+        intent['assemblies'][0]['population']['J1'] = True
         rebind(db, intent)
         self.assertIn('external-port:J1', at(build_i2c_topology(db, intent))['gaps'])
 
     def test_parallel_pullups_are_listed_once_with_existing_equivalent_unchanged(self):
         db, intent = fixture(('0R',))
         add(db, 'R9', '4.7K/1%', [('1', '1', 'EXT_SDA_0'), ('2', '2', 'VCC_3V3')])
-        intent['i2c_topology']['states'][0]['population']['R9'] = True
+        intent['assemblies'][0]['population']['R9'] = True
         rebind(db, intent)
         r = at(build_i2c_topology(db, intent))
         self.assertEqual([p['ref'] for p in r['pullups']], ['R1', 'R9'])
@@ -250,7 +252,7 @@ class TopologyTests(unittest.TestCase):
 
     def test_pass_is_rejected_while_region_has_topology_gaps(self):
         db, intent = fixture()
-        del intent['i2c_topology']['states'][0]['population']['R1']
+        del intent['assemblies'][0]['population']['R1']
         plan = build_review_plan(db, intent)
         item = next(p for p in plan['checks'] if p['rule'] == 'SIG-T02' and p['object']['net'] == 'I2C_SDA')
         report = report_for(plan, db)
@@ -290,14 +292,14 @@ class TopologyTests(unittest.TestCase):
     def test_sda_and_scl_conductively_short_together_remain_gap(self):
         db, intent = fixture()
         add(db, 'R9', '0R', [('1', '1', 'I2C_SDA'), ('2', '2', 'I2C_SCL')])
-        intent['i2c_topology']['states'][0]['population']['R9'] = True
+        intent['assemblies'][0]['population']['R9'] = True
         rebind(db, intent)
         self.assertIn('sda-scl-connected:CTRL', at(build_i2c_topology(db, intent))['gaps'])
 
     def test_cycle_terminates_and_keeps_all_edges(self):
         db, intent = fixture(('0R', '0R'))
         add(db, 'R9', '0R', [('1', '1', 'I2C_SDA'), ('2', '2', 'EXT_SDA_1')])
-        intent['i2c_topology']['states'][0]['population']['R9'] = True
+        intent['assemblies'][0]['population']['R9'] = True
         rebind(db, intent)
         r = at(build_i2c_topology(db, intent))
         self.assertEqual(len(r['nets']), 3)
@@ -325,22 +327,30 @@ class TopologyTests(unittest.TestCase):
         db, intent = fixture()
         db['parts']['R1']['value'] = '10K'
         for build in (build_i2c_topology, build_review_plan):
-            with self.assertRaisesRegex(ValueError, 'stale db_sha256'):
+            with self.assertRaisesRegex(ValueError, 'stale input_sha256'):
                 build(db, intent)
 
     def test_invalid_inputs_are_rejected_without_guessing(self):
         db, intent = fixture()
-        changes = [('states', []), ('states', [{'id': 'run', 'citation': 'x', 'population': {'R1': 'true'}}]),
-                   ('buses', [{'id': 'X', 'sda': ['MISSING.1'], 'scl': ['U1.2'], 'citation': 'x'}]),
-                   ('components', {'U1': {'kind': ['jumper'], 'citation': 'x'}})]
+        changes = [('buses', [{'id': 'X', 'sda': ['MISSING.1'], 'scl': ['U1.2'], 'citation': 'x'}]),
+                   ('components', {'U1': {'kind': ['jumper'], 'citation': 'x'}}),
+                   ('states', [{'id': 'run', 'citation': 'x', 'population': {'R1': True}}]),
+                   ('statse', [])]
         for key, value in changes:
             modified = copy.deepcopy(intent)
             modified['i2c_topology'][key] = value
-            with self.subTest(key=key, value=value):
+            with self.subTest(section=key, value=value):
                 self.assertTrue(validate_i2c_intent(modified, db))
-        modified = copy.deepcopy(intent)
-        modified['i2c_topology']['statse'] = []
-        self.assertTrue(validate_intent(modified))
+                self.assertTrue(validate_intent(modified, db))
+        for key, value in (('assemblies', []),
+                           ('assemblies', [{'id': 'run', 'citation': 'x', 'population': {'R1': 'true'}}]),
+                           ('input_sha256', 'not-a-digest')):
+            modified = copy.deepcopy(intent)
+            modified[key] = value
+            with self.subTest(shared=key, value=value):
+                self.assertTrue(validate_intent(modified, db))
+                with self.assertRaises(ValueError):
+                    build_i2c_topology(db, modified)
 
     def test_multi_pin_ic_cannot_be_declared_a_two_pin_bridge(self):
         db, intent = fixture()
@@ -413,8 +423,8 @@ class TopologyTests(unittest.TestCase):
     def test_merge_rejects_changed_state_even_when_db_is_unchanged(self):
         db, intent = fixture(('jumper',))
         before = build_review_plan(db, intent)
-        intent['i2c_topology']['states'][0]['jumpers']['JP10'] = 'open'
-        with self.assertRaisesRegex(ValueError, 'I2C topology/state/assembly changed'):
+        intent['assemblies'][0]['jumpers']['JP10'] = 'open'
+        with self.assertRaisesRegex(ValueError, 'inventory/state/assembly changed'):
             build_review_plan(db, intent, previous_plan=before)
 
     def test_same_context_merge_preserves_manual_check(self):

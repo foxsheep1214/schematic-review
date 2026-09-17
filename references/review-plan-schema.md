@@ -13,6 +13,19 @@ PASS/FAIL。计划 `schema_version` 为 3；用旧编号（版本 1）或旧功�
 {
   "schema_version": 3,
   "review_mode": "first",
+  "input_sha256": "填写 decoupling.py 候选清单里的 input_sha256",
+  "assemblies": [{
+    "id": "run-option-A", "citation": "装配 BOM Rev.B 选项 A；跳线表 Rev.C 第 2 行",
+    "population": {"U1": true, "C1": true, "C2": false}, "jumpers": {"JP1": "closed"}
+  }],
+  "devices": {
+    "U1": {
+      "mpn": "REG-X-ADJ", "package": "QFN-16",
+      "identity_citation": "BOM 订货码与官方订货表对应行",
+      "citation": "REG-X datasheet Rev.A 第 3 页完整脚表", "pinout_complete": true,
+      "pins": {"1": {"name": "VIN", "role": "power"}, "2": {"name": "GND", "role": "return"}}
+    }
+  },
   "requirements": [{
     "id": "REQ-USB", "text": "提供一路 USB 设备接口",
     "citation": "Requirements v1.2 section 4.1",
@@ -69,6 +82,9 @@ PASS/FAIL。计划 `schema_version` 为 3；用旧编号（版本 1）或旧功�
 - `schema_version` 可省略；给出时必须为 3。只含 `expect` 的最小 intent 仍可使用。
 - `features` 的键与 `circuits[].type` 取规则总表“功能包”中的包名（`features` 另可写项目自定义
   功能）；旧名 `RESET`、`USB_C`、`CAN_RS485` 会被拒绝并提示新名，旧字段名 `domain` 同样拒绝。
+- `assemblies` 是全部检查器共用的装配状态（1–32 个，各带 `id` 与 `citation`），`devices` 是按位号
+  的官方脚表；两者与任一检查器段都要求顶层 `input_sha256`，过期即拒绝。检查器段内再写 `states`、
+  `db_sha256`、`devices` 会被拒绝并提示改写位置，段本身的 `schema_version` 为 2。
 
 ## 计划与结果交接
 
@@ -137,11 +153,14 @@ PASS/FAIL。计划 `schema_version` 为 3；用旧编号（版本 1）或旧功�
 
 ## 全板项与逐位号项
 
-来源为“全板通用”的规则每块板生成一项（对象 `{"board": "BOARD"}`，ID 如 `DOC-D01.BOARD`），
-装配选项一致性（DOC-T01）同样按全板一项；准备度按该规则所需资料（需求、datasheet、平台清单、
-PDF）判定。每颗 IC/模组另生成推荐工作条件（DEV-C05）与引脚处置（DEV-D05）；每个连接器生成
-对端定义（DEV-D03）、未用针处置（DEV-D05）与对外防护（PRO-D03），板内互连可按依据判不适用。
-复审时全板项和按功能包展开的项依赖全部输入，任一输入变化都要复验。
+来源为“全板通用”的规则每块板生成一项（对象 `{"board": "BOARD"}`，ID 如 `DOC-D01.BOARD`）；
+准备度按该规则所需资料（需求、datasheet、平台清单、PDF）判定。装配选项一致性（DOC-T01）逐
+`intent.assemblies` 声明的装配状态一项（对象 `{"assembly": "<id>"}`），未声明时留一项待补。
+每颗 IC/模组另生成推荐工作条件（DEV-C05）与引脚处置（DEV-D05）；每个连接器生成对端定义
+（DEV-D03）、未用针处置（DEV-D05）与对外防护（PRO-D03），板内互连可按依据判不适用。
+声明了 `intent.devices` 的位号，DEV-D02 带 `pin_difference`（官方/符号双向差集）且脚表完整时为
+READY，DEV-D05 带 `pin_disposition`（未接网脚与标 nc 却接了网的脚）；这些是待核清单，不是结论。
+复审时全板项、装配配置项和按功能包展开的项依赖全部输入，任一输入变化都要复验。
 
 ## 需求与物理引脚覆盖
 

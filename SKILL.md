@@ -67,6 +67,8 @@ AC0、ER1～ER7、Rule-NN 与检查器前缀早已废弃，用旧编号生成的
 不自行接受风险。
 
 按 [coverage-protocol.md](references/coverage-protocol.md) 建输入版本/哈希、装配配置和覆盖台账。
+装配配置逐个写入 `intent.assemblies`（贴装、跳线与出处），全部检查器和 DOC-T01 共用这一份；
+声明装配或器件脚表时意图须带顶层 `input_sha256` 绑定本版网表。
 PDF 与网表时间接近不能证明同版，需核修订号和关键改动。仅 PDF 时逐页读图并声明范围，
 不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装另获授权。
 
@@ -101,11 +103,11 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事。`nc` 是解析标
 三级，名称线索只生成待核项；清单绑输入指纹，改了输入要重新生成，不能编辑清单消缺口。
 `--i2c-topology-json`、`--decoupling-json` 与通用 `--checker-json <id>=out.json` 可另存清单。
 
-I²C（`intent.i2c_topology`）：只跨已确认贴装的两脚电阻和闭合跳线找远端上拉，串阻保留节点，
+I²C（`intent.i2c_topology`，装配状态取 `intent.assemblies`）：只跨已确认贴装的两脚电阻和闭合跳线找远端上拉，串阻保留节点，
 有源器件两侧不合并；名称、`nc=false`、默认 Bridged 都不是状态证据；外接模块未知或路径未覆盖
 保持待核，连接覆盖（SIG-T02）不等于 SIG-E01 或 SIG-C01 电气通过。
 
-去耦（`intent.decoupling`）：补完整官方脚表、分组/返回节点与逐状态装配；零电容、未知容量和
+去耦（`intent.decoupling` 分组 + `intent.devices` 脚表）：补完整官方脚表、分组/返回节点与逐状态装配；零电容、未知容量和
 未连物理脚都要登记；不跨 0Ω/磁珠合并，不以同网共享或标称总容量证明本地去耦/有效容量合格，
 位置与回路另交 PCB HANDOFF。
 
@@ -122,6 +124,8 @@ INSUFFICIENT，体电容比值与 CTR 寿命衰减等系数必须来自项目规
 
 每颗关键器件读完整适用章节：引脚、Abs Max、推荐条件、电气 min/max、上掉电、默认态/
 strap、模式、应用计算、封装订货、errata；保留“文档章节→规则编号”阅读记录。
+核对过的官方物理脚表写入 `intent.devices`（准确 MPN/封装、逐脚名称与角色、出处），
+DEV-D02 的双向差集与 DEV-D05 的引脚处置据此列出待核脚，去耦分组也用同一份脚表。
 不能只读 Abs Max 或只追自动扫描命中的器件。按
 [datasheet-resolution-schema.md](references/datasheet-resolution-schema.md) 先审资料包，
 缺失时完成 LCSC/立创与原厂检索，核对原厂 PDF 身份并记录补取结果。搜索摘要/聚合参数/

@@ -195,8 +195,8 @@ def build_inventory(db, intent=None):
     cfg = (intent or {}).get('inductive_loads') if isinstance(intent, dict) else None
     declared = state_lib.declared_refs(cfg, 'loads')
     excluded = state_lib.excluded_refs(cfg)
-    gaps = [] if cfg else ['intent.inductive_loads: 未声明感性负载与装配状态']
-    return inv.build(db, cfg, 'loads',
+    gaps = [] if cfg else ['intent.inductive_loads: 未声明感性负载']
+    return inv.build(db, intent, 'inductive_loads', 'loads',
                      lambda state: _Scan(db, state, declared, excluded).loads(), gaps)
 
 

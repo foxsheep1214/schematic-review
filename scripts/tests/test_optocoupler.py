@@ -9,7 +9,7 @@ import catalog
 
 from checkers.optocoupler import OptocouplerChecker, build_inventory, validate_optocoupler_intent
 from electrical_contract import db_fingerprint, validate_evidence
-from electrical_fixtures import bind_evidence
+from electrical_fixtures import bind_evidence, bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -78,12 +78,10 @@ class RecognitionTest(unittest.TestCase):
 
     def test_declared_constant_current_drive_clears_oc01(self):
         db = opto_board(led_resistor=False)
-        intent = {'optocouplers': {
-            'schema_version': 1, 'db_sha256': db_fingerprint(db),
-            'states': [{'id': 'run', 'citation': 'BOM Rev.A',
-                        'population': {ref: True for ref in db['parts']}}],
+        intent = bound_intent(db, {'optocouplers': {
+            'schema_version': 2,
             'optocouplers': [{'id': 'ok1', 'ref': 'OK1', 'drive': 'constant-current',
-                              'citation': 'constant current driver datasheet'}]}}
+                              'citation': 'constant current driver datasheet'}]}})
         self.assertEqual(findings(db, intent), [])
 
     def test_missing_pullup_reports_oc02(self):
@@ -124,10 +122,9 @@ class PlanTest(unittest.TestCase):
 
     def test_intent_validation_rejects_unknown_refs(self):
         db = opto_board()
-        section = {'schema_version': 1, 'db_sha256': db_fingerprint(db),
-                   'states': [{'id': 'run', 'citation': 'BOM Rev.A', 'population': {}}],
-                   'optocouplers': [{'id': 'x', 'ref': 'OK9', 'citation': 'y'}]}
-        errors = validate_optocoupler_intent({'optocouplers': section}, db)
+        section = {'schema_version': 2, 'optocouplers': [{'id': 'x', 'ref': 'OK9', 'citation': 'y'}]}
+        errors = validate_optocoupler_intent(
+            bound_intent(db, {'optocouplers': section}, populated=False), db)
         self.assertTrue(any('optocoupler ref unknown: OK9' in error for error in errors), errors)
 
 

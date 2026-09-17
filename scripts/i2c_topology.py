@@ -12,10 +12,13 @@ import hashlib
 import json
 import re
 
+import board_intent
+from board_intent import validate_db_shape
 from electrical_contract import db_fingerprint, finite, load_json
 from solve_dividers import parse_resistor
 
 MAX_TRACE_NETS = 1024
+SECTION_SCHEMA_VERSION = 2
 KINDS = {'resistor', 'jumper', 'endpoint', 'connector', 'level_shifter', 'isolator', 'switch'}
 BARRIERS = {'level_shifter', 'isolator', 'switch'}
 RAIL = re.compile(r'^(?:\+?\d+(?:V\d*|\.\d+V)|VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS)', re.I)
@@ -37,29 +40,6 @@ def _strings(value):
     return isinstance(value, list) and bool(value) and all(_text(x) for x in value) and len(set(value)) == len(value)
 
 
-def validate_db_shape(db):
-    """Reject malformed index containers before hashing or graph iteration."""
-    if not isinstance(db, dict):
-        return ['db must be an object']
-    errors = []
-    for field in ('parts', 'nets', 'pin2net', 'pinname', 'pintype', 'integrity'):
-        if field in db and not isinstance(db[field], dict):
-            errors.append('db.' + field + ' must be an object')
-    if errors:
-        return errors
-    if not all(_text(ref) and isinstance(part, dict) for ref, part in db.get('parts', {}).items()):
-        errors.append('db.parts requires named part objects')
-    if not all(_text(net) and isinstance(nodes, list) and all(_text(n) for n in nodes)
-               for net, nodes in db.get('nets', {}).items()):
-        errors.append('db.nets requires named arrays of physical nodes')
-    for field in ('pin2net', 'pinname', 'pintype'):
-        if not all(_text(node) and isinstance(value, str) for node, value in db.get(field, {}).items()):
-            errors.append('db.' + field + ' requires string node/value pairs')
-    if 'pseudo_nets' in db and not (isinstance(db['pseudo_nets'], list) and all(_text(n) for n in db['pseudo_nets'])):
-        errors.append('db.pseudo_nets must be a string array')
-    return errors
-
-
 def validate_i2c_intent(intent, db=None):
     """Validate the optional, explicit topology context. No best-effort typo repair."""
     if db is not None:
@@ -70,7 +50,7 @@ def validate_i2c_intent(intent, db=None):
         return []
     if not isinstance(intent, dict) or not isinstance(intent.get('i2c_topology'), dict):
         return ['i2c_topology must be an object']
-    cfg, errors = intent['i2c_topology'], []
+    cfg, errors = intent['i2c_topology'], board_intent.requires_assemblies(intent, 'i2c_topology')
     def require(ok, message):
         if not ok:
             errors.append('i2c_topology: ' + message)
@@ -81,30 +61,11 @@ def validate_i2c_intent(intent, db=None):
             node.rsplit('.', 1)[0] in db.get('parts', {}) and
             node in db.get('nets', {}).get(db.get('pin2net', {}).get(node), []) and
             db.get('pin2net', {}).get(node) not in db.get('pseudo_nets', [])))
-    fields(cfg, ('schema_version', 'db_sha256', 'states', 'buses', 'components', 'rails'), 'root')
-    require(type(cfg.get('schema_version')) is int and cfg['schema_version'] == 1, 'schema_version must be 1')
-    require(isinstance(cfg.get('db_sha256'), str) and bool(re.fullmatch('[0-9a-f]{64}', cfg['db_sha256'])), 'db_sha256 is required')
-    if db is not None:
-        require(cfg.get('db_sha256') == db_fingerprint(db), 'stale db_sha256')
-    states = cfg.get('states')
-    require(isinstance(states, list) and 0 < len(states) <= 32, 'states must contain 1..32 states')
-    seen = set()
-    for state in states if isinstance(states, list) else []:
-        if not isinstance(state, dict):
-            require(False, 'state must be an object')
-            continue
-        fields(state, ('id', 'citation', 'population', 'jumpers'), 'state')
-        sid = state.get('id')
-        require(_text(sid) and sid not in seen, 'state id missing/duplicate')
-        if _text(sid):
-            seen.add(sid)
-        require(_text(state.get('citation')), 'state needs assembly/configuration citation')
-        for key in ('population', 'jumpers'):
-            entries = state.get(key, {})
-            require(isinstance(entries, dict), key + ' must be an object')
-            for ref, value in entries.items() if isinstance(entries, dict) else []:
-                require(_text(ref) and (db is None or ref in db.get('parts', {})), key + ': unknown ref ' + str(ref))
-                require(type(value) is bool if key == 'population' else isinstance(value, str) and value in ('closed', 'open', 'unknown'), key + ': invalid value for ' + str(ref))
+    require(not {'states', 'db_sha256'} & set(cfg), 'states/db_sha256 moved to intent.assemblies/intent.input_sha256')
+    fields({k: v for k, v in cfg.items() if k not in ('states', 'db_sha256')},
+           ('schema_version', 'buses', 'components', 'rails'), 'root')
+    require(type(cfg.get('schema_version')) is int and cfg['schema_version'] == SECTION_SCHEMA_VERSION,
+            'schema_version must be %d' % SECTION_SCHEMA_VERSION)
     buses = cfg.get('buses', [])
     require(isinstance(buses, list), 'buses must be an array')
     seen = set()
@@ -400,14 +361,15 @@ class Inventory:
 
 
 def build_i2c_topology(db, intent=None):
-    errors = validate_db_shape(db) or validate_i2c_intent(intent, db)
+    errors = validate_db_shape(db) or board_intent.validate(intent, db) or validate_i2c_intent(intent, db)
     if errors:
         raise ValueError('; '.join(errors))
     cfg = (intent or {}).get('i2c_topology')
     inv = Inventory(db, cfg)
     buses, confirmed = inv.seeds()
-    states = (cfg or {}).get('states', [{'id': 'UNSPECIFIED', 'population': {}, 'jumpers': {}}])
-    result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'context': deepcopy(cfg),
+    states = (intent or {}).get('assemblies') or [{'id': 'UNSPECIFIED', 'population': {}, 'jumpers': {}}]
+    result = {'schema_version': 1, 'db_sha256': db_fingerprint(db),
+              'context': deepcopy(board_intent.context(intent, 'i2c_topology')),
               'scope': 'connectivity inventory only; no voltage/timing/SIG-E01 equivalent or PASS',
               'states': [inv.state_inventory(s, buses, confirmed) for s in sorted(states, key=lambda x: x['id'])]}
     result['digest'] = digest(result)

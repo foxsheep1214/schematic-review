@@ -9,7 +9,7 @@ import catalog
 
 from checkers.power_switch import PowerSwitchChecker, build_inventory, validate_power_switch_intent
 from electrical_contract import db_fingerprint, validate_evidence
-from electrical_fixtures import bind_evidence
+from electrical_fixtures import bind_evidence, bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -158,19 +158,19 @@ class PlanTest(unittest.TestCase):
 
     def test_intent_validation_rejects_unsound_configuration(self):
         db = switch_board()
-        base = {'schema_version': 1, 'db_sha256': db_fingerprint(db),
-                'states': [{'id': 'run', 'citation': 'BOM Rev.A', 'population': {}}],
+        base = {'schema_version': 2,
                 'switches': [{'id': 'q1', 'ref': 'Q1', 'citation': 'driver schematic'}]}
         cases = {
-            'schema_version must be 1': {'schema_version': 2},
+            'schema_version must be 2': {'schema_version': 1},
             'switch ref unknown: QX': {'switches': [{'id': 'x', 'ref': 'QX', 'citation': 'y'}]},
             'switch needs a citation': {'switches': [{'id': 'x', 'ref': 'Q1'}]},
             'gate_net unknown: NOPE': {'switches': [{'id': 'x', 'ref': 'Q1', 'citation': 'y',
                                                      'gate_net': 'NOPE'}]},
         }
-        self.assertEqual(validate_power_switch_intent({'power_switches': base}, db), [])
+        self.assertEqual(validate_power_switch_intent(bound_intent(db, {'power_switches': base}), db), [])
         for message, override in cases.items():
-            errors = validate_power_switch_intent({'power_switches': dict(base, **override)}, db)
+            errors = validate_power_switch_intent(
+                bound_intent(db, {'power_switches': dict(base, **override)}), db)
             self.assertTrue(any(message in error for error in errors), (message, errors))
 
 

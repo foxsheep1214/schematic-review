@@ -13,6 +13,7 @@
 """
 import argparse
 from copy import deepcopy
+import board_intent
 import catalog
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, check_matches, readiness_gaps, validate_evidence, bounded, finite, load_json
 import io
@@ -77,8 +78,8 @@ def _text(value):
     return isinstance(value, str) and bool(value.strip())
 
 
-def validate_intent(intent):
-    """验证扩展 intent；兼容旧版仅含 expect 的输入。"""
+def validate_intent(intent, db=None):
+    """验证扩展 intent；兼容旧版仅含 expect 的输入。给出 db 时同时核对网表绑定。"""
     if intent is None:
         return []
     if not isinstance(intent, dict):
@@ -200,8 +201,9 @@ def validate_intent(intent):
                 if rid in seen:
                     errors.append(f'requirement id 重复: {rid}')
                 seen.add(rid)
+    errors.extend(board_intent.validate(intent, db))
     for checker in REGISTRY:
-        errors.extend(checker.validate_intent(intent, None))
+        errors.extend(checker.validate_intent(intent, db))
     errors.extend(validate_declarations(intent))
     return errors
 
@@ -289,7 +291,8 @@ class ReviewPlanner:
         """按规则总表生成一个计划项；ID = 规则编号[.实例键].锚点。"""
         entry = catalog.get(rule)
         anchor = (obj.get('node') or obj.get('net') or obj.get('ref') or obj.get('feature')
-                  or obj.get('package') or obj.get('page') or obj.get('board') or 'GLOBAL')
+                  or obj.get('package') or obj.get('assembly') or obj.get('page')
+                  or obj.get('board') or 'GLOBAL')
         base = '.'.join([rule] + ([_slug(key)] if key else []) + [_slug(anchor)])
         check_id, suffix = base, 2
         while check_id in self._ids:
@@ -377,14 +380,26 @@ class ReviewPlanner:
         return self.add_check(rule, obj, readiness='WAITING_EVIDENCE' if gaps else 'READY',
                               required_inputs=gaps, trigger=trigger, **extra)
 
+    def _disposition_check(self, ref, gaps, trigger):
+        """引脚处置逐位号一项；声明了脚表时附上未接网脚与接了网的 NC 脚，供逐脚核对。"""
+        item = self._ready_check('DEV-D05', {'ref': ref}, gaps, trigger)
+        device = (self.intent.get('devices') or {}).get(ref)
+        if device:
+            unconnected, nc_connected = board_intent.pin_disposition(self.db, ref, device)
+            item['pin_disposition'] = {'unconnected': unconnected, 'nc_connected': nc_connected}
+
     def plan_board(self):
-        """全板通用规则每块板一项；装配选项在同一处核对。"""
+        """全板通用规则每块板一项；装配选项逐个声明的装配状态核对。"""
         for rule in catalog.rules(source='board'):
             self._ready_check(rule.id, {'board': 'BOARD'},
                               self._materials_gap(BOARD_MATERIALS.get(rule.id, ())), ['board'])
-        self.add_check('DOC-T01', {'board': 'BOARD'}, readiness='WAITING_EVIDENCE',
-                       required_inputs=['BOM assembly options (variants/DNP/jumpers)'],
-                       trigger=['assembly-options'])
+        assemblies = self.intent.get('assemblies') or []
+        for state in assemblies:
+            self.add_check('DOC-T01', {'assembly': state['id']},
+                           trigger=[f'intent.assemblies:{state["citation"]}'])
+        if not assemblies:
+            self.add_check('DOC-T01', {'board': 'BOARD'}, readiness='WAITING_EVIDENCE',
+                           required_inputs=['intent.assemblies'], trigger=['assembly-options'])
 
     def plan_packages(self):
         """功能包：检出或声明即生成 REQ-Q07 汇总项与全部成员规则；未检出也未声明的汇总到一项 REQ-Q08。"""
@@ -561,7 +576,7 @@ class ReviewPlanner:
                 trigger=[f'refdes:{ref}'])
             gaps, audit_trigger = self._datasheet_readiness(ref, part)
             self._ready_check('DEV-D03', {'ref': ref}, self._materials_gap(['requirements']), [f'refdes:{ref}'])
-            self._ready_check('DEV-D05', {'ref': ref}, gaps, [f'refdes:{ref}'] + audit_trigger)
+            self._disposition_check(ref, gaps, [f'refdes:{ref}'] + audit_trigger)
             self.add_check('PRO-D03', {'ref': ref}, trigger=[f'refdes:{ref}'])
 
         # 每条电源轨分别检查拓扑（连接追踪）和功耗预算（工程计算）。
@@ -627,7 +642,7 @@ class ReviewPlanner:
             gaps, audit_trigger = self._datasheet_readiness(ref, part)
             trigger = [f'refdes:{ref}', f'part:{part.get("part", "")}'] + audit_trigger
             self._ready_check('DEV-D01', {'ref': ref}, gaps, trigger)
-            self._ready_check('DEV-D05', {'ref': ref}, gaps, trigger)
+            self._disposition_check(ref, gaps, trigger)
             self._ready_check('DEV-C05', {'ref': ref}, gaps + self._materials_gap(['requirements']), trigger)
 
     def plan_rules(self):
@@ -718,11 +733,18 @@ class ReviewPlanner:
                            criterion=item['criterion'],
                            trigger=[item['citation'], item['text']])
         # The declared inventory includes symbol pins omitted from connected nets.
+        devices = self.intent.get('devices') or {}
         for ref, part in sorted(self.db.get('parts', {}).items()):
-            if re.match(r'^(U|M|Q|D|J|P|CN)\d', ref, re.I) and not part.get('nc'):
-                self.add_check('DEV-D02', {'ref': ref}, readiness='WAITING_EVIDENCE',
-                               required_inputs=['official full pinout + exact MPN/package'],
-                               trigger=[f'refdes:{ref}'])
+            if not re.match(r'^(U|M|Q|D|J|P|CN)\d', ref, re.I) or part.get('nc'):
+                continue
+            device = devices.get(ref)
+            gaps = [] if device and device['pinout_complete'] else [
+                f'intent.devices.{ref}: official full pinout + exact MPN/package']
+            trigger = [f'refdes:{ref}'] + ([f'intent.devices:{device["citation"]}'] if device else [])
+            item = self._ready_check('DEV-D02', {'ref': ref}, gaps, trigger)
+            if device:
+                official_only, symbol_only = board_intent.pin_sets(self.db, ref, device)
+                item['pin_difference'] = {'official_only': official_only, 'symbol_only': symbol_only}
 
     def plan_explicit_evidence(self):
         # Explicit targets must not disappear because their nets/pins lack a familiar name.
@@ -750,10 +772,11 @@ class ReviewPlanner:
                              % PLAN_SCHEMA_VERSION)
         if previous.get('db_sha256') != self.db_sha256:
             raise ValueError('merge plan must be bound to the current db_sha256; regenerate/review stale plans')
-        if ('i2c_topology' in previous and previous['i2c_topology'] != self.i2c_topology):
-            raise ValueError('I2C topology/state/assembly changed; regenerate and explicitly review/migrate prior checks')
-        if ('decoupling' in previous and previous['decoupling'] != self.decoupling):
-            raise ValueError('decoupling input/state/assembly changed; regenerate and explicitly review/migrate prior checks')
+        for checker in REGISTRY:
+            key = checker.plan_key
+            if key in previous and previous[key] != self.inventories.get(checker.id):
+                raise ValueError(key + ' inventory/state/assembly changed; regenerate and explicitly '
+                                 'review/migrate prior checks')
         if previous.get('revision_impact_version') == 1:
             baseline = {'db_digest': revision_digest(self.old_db) if self.old_db is not None else None,
                         'plan_digest': revision_digest(self.old_plan) if self.old_plan is not None else None}
@@ -943,7 +966,7 @@ def main():
     for supplied, value, label in ((args.old_db, old_db, '--old-db'), (args.old_plan, old_plan, '--old-plan')):
         if supplied and not isinstance(value, dict):
             parser.error(label + ' JSON root must be an object')
-    errors = validate_intent(intent)
+    errors = validate_intent(intent, db)
     if errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(errors))
     if evidence is not None:

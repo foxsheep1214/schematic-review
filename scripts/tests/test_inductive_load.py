@@ -5,10 +5,11 @@ import unittest
 
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
+import board_intent
 import catalog
 
 from checkers.inductive_load import InductiveLoadChecker, build_inventory, validate_inductive_intent
-from electrical_contract import db_fingerprint
+from electrical_fixtures import bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 
@@ -133,13 +134,11 @@ class RecognitionTest(unittest.TestCase):
 
 class IntentTest(unittest.TestCase):
     def intent(self, db, **overrides):
-        cfg = {'schema_version': 1, 'db_sha256': db_fingerprint(db),
-               'states': [{'id': 'run', 'citation': 'synthetic BOM option A',
-                           'population': {ref: True for ref in db['parts']}}],
+        cfg = {'schema_version': 2,
                'loads': [{'id': 'K1-COIL', 'ref': 'K1', 'kind': 'relay',
                           'citation': 'synthetic relay coil spec'}]}
         cfg.update(overrides)
-        return {'inductive_loads': cfg}
+        return bound_intent(db, {'inductive_loads': cfg})
 
     def test_declared_state_and_load_upgrade_basis(self):
         db = relay_board()
@@ -151,7 +150,7 @@ class IntentTest(unittest.TestCase):
     def test_undeclared_population_stays_a_gap(self):
         db = relay_board()
         intent = self.intent(db)
-        del intent['inductive_loads']['states'][0]['population']['D1']
+        del intent['assemblies'][0]['population']['D1']
         load = loads_of(build_inventory(db, intent), 'run')['K1']
         self.assertIn('population:D1', load['gaps'])
         self.assertIn('clamp:none-found', load['gaps'])
@@ -166,9 +165,7 @@ class IntentTest(unittest.TestCase):
     def test_intent_validation_rejects_unsound_configuration(self):
         db = relay_board()
         cases = {
-            'schema_version must be 1': {'schema_version': 2},
-            'state needs assembly/configuration citation':
-                {'states': [{'id': 'run', 'citation': '', 'population': {}}]},
+            'schema_version must be 2': {'schema_version': 1},
             'load ref unknown: QX': {'loads': [{'id': 'x', 'ref': 'QX', 'citation': 'y'}]},
             'load needs a citation': {'loads': [{'id': 'x', 'ref': 'K1'}]},
         }
@@ -176,11 +173,22 @@ class IntentTest(unittest.TestCase):
             errors = validate_inductive_intent(self.intent(db, **override), db)
             self.assertTrue(any(message in error for error in errors), (message, errors))
 
+    def test_assembly_states_must_live_in_the_shared_section(self):
+        db = relay_board()
+        moved = self.intent(db)
+        moved['inductive_loads']['states'] = moved.pop('assemblies')
+        errors = validate_inductive_intent(moved, db)
+        self.assertTrue(any('moved to intent.assemblies' in error for error in errors), errors)
+        self.assertTrue(any('requires intent.assemblies' in error for error in errors), errors)
+        self.assertIn('assemblies: state needs assembly/configuration citation',
+                      board_intent.validate(bound_intent(
+                          db, {}, assemblies=[{'id': 'run', 'population': {}}]), db))
+
     def test_stale_fingerprint_is_rejected(self):
         db = relay_board()
         intent = self.intent(db)
-        intent['inductive_loads']['db_sha256'] = '0' * 64
-        self.assertIn('inductive_loads: stale db_sha256', validate_inductive_intent(intent, db))
+        intent['input_sha256'] = '0' * 64
+        self.assertIn('stale input_sha256', board_intent.validate(intent, db))
 
 
 class PlanBindingTest(unittest.TestCase):

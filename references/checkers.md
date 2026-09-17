@@ -35,14 +35,18 @@
 名称、`nc=false`、库名 `Bridged`、焊盘默认图形都不是证据。无法分类的器件记为未知并形成
 缺口，不按名称推定不适用。
 
-**装配状态**：`states` 为 1–32 个唯一状态，每项必须有 `id` 与 `citation`。`population` 只接受
-JSON `true/false`，缺项表示未知；`jumpers` 按位号填 `closed/open/unknown`，跳线还需
-`population=true` 才导通。经核对的状态声明可以覆盖解析器的 `nc` 标记，输出保留原标记，
-并在 citation 说明变体依据。未提供 intent 时按网表 `nc` 形成"按图状态"，同时登记
-`assembly state unverified` 缺口。
+**装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
+与 `citation`。`population` 只接受 JSON `true/false`，缺项表示未知；`jumpers` 按位号填
+`closed/open/unknown`，跳线还需 `population=true` 才导通。经核对的状态声明可以覆盖解析器的
+`nc` 标记，输出保留原标记，并在 citation 说明变体依据。未声明时按网表 `nc` 形成"按图状态"，
+同时登记 `assembly state unverified` 缺口。检查器段里写 `states` 会被拒绝。
 
-**指纹绑定**：声明段必须带当前输入指纹（`db_sha256`，去耦用覆盖更广的 `input_sha256`），
-旧状态声明不得静默用于新网表。取值：`python3 scripts/electrical_contract.py db.json`。
+**器件脚表**：`intent.devices` 按位号声明准确 MPN/封装、身份解释与完整官方物理脚表，供去耦分组、
+官方物理脚差集（DEV-D02）与引脚处置（DEV-D05）共用。
+
+**指纹绑定**：声明了 `assemblies`、`devices` 或任一检查器段时，意图必须带顶层 `input_sha256`
+（覆盖电气指纹、符号声明脚、伪网与输入完整性），旧声明不得静默用于新网表。取值：候选清单输出
+的 `input_sha256` 字段，或 `python3 scripts/decoupling.py db.json --json candidates.json`。
 
 **清单与计划**：`plan_review.py` / `lint.py` 每次重新生成清单并嵌入 `review-plan.json` 的
 对应顶层键，不读取旧清单当事实。另存清单：
@@ -77,11 +81,11 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 
 ```json
 {
+  "input_sha256": "填写候选清单里的 input_sha256",
+  "assemblies": [{"id": "run-option-A", "citation": "装配 BOM Rev.B 选项 A；跳线配置表 Rev.C 第 2 行",
+                  "population": {"U1": true, "JP1": true}, "jumpers": {"JP1": "closed"}}],
   "i2c_topology": {
-    "schema_version": 1,
-    "db_sha256": "填写当前 db_fingerprint(db) 的 64 位哈希",
-    "states": [{"id": "run-option-A", "citation": "装配 BOM Rev.B 选项 A；跳线配置表 Rev.C 第 2 行",
-                "population": {"U1": true, "JP1": true}, "jumpers": {"JP1": "closed"}}],
+    "schema_version": 2,
     "buses": [{"id": "CONTROL", "sda": ["U1.5"], "scl": ["U1.6"],
                "citation": "已核对的 U1 物理脚表与原理图页 2"}],
     "components": {"U1": {"kind": "endpoint", "citation": "U1 接口角色核对记录"},
@@ -141,23 +145,23 @@ python3 scripts/decoupling.py db.json --json decoupling-candidates.json
 python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inventory.json
 ```
 
-`input_sha256` 取候选清单输出中的同名字段，它包含电气指纹及 `declared_pinname/declared_pintype`、
-伪网、输入完整性/导出状态；旧的 `db_sha256` 单独不足以绑定符号未连接脚。本模块不修改 db、BOM
+顶层 `input_sha256` 取候选清单输出中的同名字段，它包含电气指纹及 `declared_pinname/declared_pintype`、
+伪网、输入完整性/导出状态；只绑 `db_sha256` 不足以覆盖符号未连接脚。本模块不修改 db、BOM
 或任何电路。
 
 ```json
 {
+  "input_sha256": "替换为候选清单的 input_sha256",
+  "assemblies": [{"id": "run-option-A", "citation": "装配 BOM Rev.B 选项 A 与运行工况表第 2 行",
+                  "population": {"U1": true, "C1": true, "C2": false}}],
+  "devices": {"U1": {"mpn": "TEST-IC-EXACT", "package": "TEST-PKG-3",
+                     "identity_citation": "BOM 订货码/封装与官方订货表对应行核对记录",
+                     "citation": "准确型号完整物理脚表 Rev.A 第 3 页", "pinout_complete": true,
+                     "pins": {"1": {"name": "VDD", "role": "power"},
+                              "2": {"name": "VSS", "role": "return"},
+                              "3": {"name": "IO", "role": "other"}}}},
   "decoupling": {
-    "schema_version": 1,
-    "input_sha256": "替换为候选清单的 input_sha256",
-    "states": [{"id": "run-option-A", "citation": "装配 BOM Rev.B 选项 A 与运行工况表第 2 行",
-                "population": {"U1": true, "C1": true, "C2": false}}],
-    "devices": {"U1": {"mpn": "TEST-IC-EXACT", "package": "TEST-PKG-3",
-                        "identity_citation": "BOM 订货码/封装与官方订货表对应行核对记录",
-                        "citation": "准确型号完整物理脚表 Rev.A 第 3 页", "pinout_complete": true,
-                        "pins": {"1": {"name": "VDD", "role": "power"},
-                                 "2": {"name": "VSS", "role": "return"},
-                                 "3": {"name": "IO", "role": "other"}}}},
+    "schema_version": 2,
     "components": {"C1": {"kind": "capacitor", "citation": "BOM/符号确认 C1 为两脚电容"}},
     "groups": [{"id": "U1-VDD", "ref": "U1", "supply_nodes": ["U1.1"], "return_nodes": ["U1.2"],
                 "citation": "准确器件电源分组与返回节点要求 Rev.A 第 8 页",
@@ -168,9 +172,10 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 }
 ```
 
-- `devices`：准确 MPN/封装、身份解释、完整官方物理脚表及出处。`pins` 含全部物理脚，角色仅
-  `power/return/other`，脚号是字符串，支持 BGA/EP。`pinout_complete=false` 保持缺口。这是有出处的
-  人工声明，脚本不读 PDF 验证真实性，也不因字段齐全自动判通过。
+- `intent.devices`：准确 MPN/封装、身份解释、完整官方物理脚表及出处。`pins` 含全部物理脚，角色为
+  `power/return/nc/other`，脚号是字符串，支持 BGA/EP。`pinout_complete=false` 保持缺口。这是有出处的
+  人工声明，脚本不读 PDF 验证真实性，也不因字段齐全自动判通过。声明后计划项 DEV-D02 附双向差集、
+  DEV-D05 附未接网脚与"标 nc 却接了网"的脚，仍由审查者逐脚定判。
 - 官方脚表与符号/网表脚表做双向差集，各自记录多出的脚；官方 power 脚未入 group 时自动列候选。
   不得为消除缺口把缺失电源脚改成 `other`。
 - `groups`：按器件具体条款划分，不要求每个电源脚单独一颗电容。节点必须属于该器件对应官方角色，

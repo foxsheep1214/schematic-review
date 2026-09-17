@@ -9,7 +9,7 @@ import catalog
 
 from checkers.input_filter import InputFilterChecker, build_inventory, validate_input_filter_intent
 from electrical_contract import db_fingerprint, validate_evidence
-from electrical_fixtures import bind_evidence
+from electrical_fixtures import bind_evidence, bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -121,12 +121,11 @@ class PlanTest(unittest.TestCase):
 
     def test_intent_validation_rejects_unsound_configuration(self):
         db = converter()
-        base = {'schema_version': 1, 'db_sha256': db_fingerprint(db),
-                'states': [{'id': 'run', 'citation': 'BOM Rev.A', 'population': {}}],
+        base = {'schema_version': 2,
                 'converters': [{'id': 'u1', 'ref': 'U1', 'citation': 'power tree'}]}
-        self.assertEqual(validate_input_filter_intent({'input_filters': base}, db), [])
-        errors = validate_input_filter_intent(
-            {'input_filters': dict(base, converters=[{'id': 'u1', 'ref': 'U9', 'citation': 'x'}])}, db)
+        self.assertEqual(validate_input_filter_intent(bound_intent(db, {'input_filters': base}), db), [])
+        errors = validate_input_filter_intent(bound_intent(
+            db, {'input_filters': dict(base, converters=[{'id': 'u1', 'ref': 'U9', 'citation': 'x'}])}), db)
         self.assertTrue(any('converter ref unknown: U9' in error for error in errors), errors)
 
 

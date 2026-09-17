@@ -674,7 +674,7 @@ def main():
     for supplied, value, label in ((a.old_db, old_db, '--old-db'), (a.old_plan, old_plan, '--old-plan')):
         if supplied and not isinstance(value, dict):
             ap.error(label + ' JSON root must be an object')
-    intent_errors = validate_intent(intent)
+    intent_errors = validate_intent(intent, db)
     if intent_errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(intent_errors))
     if a.evidence:

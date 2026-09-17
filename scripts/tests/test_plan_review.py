@@ -6,6 +6,7 @@ SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 
 import catalog
+from board_intent import input_fingerprint
 from plan_review import BOARD_MATERIALS, build_review_plan, validate_intent
 
 
@@ -354,6 +355,52 @@ class ReviewPlanTests(unittest.TestCase):
             {'id': 'C1', 'type': 'USB_C', 'refs': ['J1'], 'states': ['run'], 'citation': 'old type'}]})
         self.assertTrue(any('已改名为 USB' in error for error in errors))
         self.assertTrue(validate_intent({'schema_version': 2}))
+
+    def test_declared_assemblies_and_pin_tables_feed_board_and_device_checks(self):
+        db = sample_db()
+        intent = {
+            'schema_version': 3, 'input_sha256': input_fingerprint(db),
+            'assemblies': [{'id': 'base', 'citation': 'BOM rev.B option table', 'population': {}},
+                           {'id': 'no-usb', 'citation': 'BOM rev.B option table', 'population': {'J1': False}}],
+            'devices': {
+                'U1': {'mpn': 'REG-X-1', 'package': 'QFN-6', 'identity_citation': 'BOM row U1',
+                       'citation': 'REG-X datasheet Rev.A table 1', 'pinout_complete': True,
+                       'pins': {'1': {'name': 'FB', 'role': 'other'}, '2': {'name': 'EN', 'role': 'other'},
+                                '5': {'name': 'VOUT', 'role': 'power'}, '6': {'name': 'NC', 'role': 'nc'}}},
+                'U2': {'mpn': 'SOC-X-1', 'package': 'BGA', 'identity_citation': 'BOM row U2',
+                       'citation': 'SOC-X datasheet Rev.B partial table', 'pinout_complete': False,
+                       'pins': {'1': {'name': 'BOOT0', 'role': 'nc'}}}}}
+        self.assertEqual(validate_intent(intent, db), [])
+        plan = build_review_plan(db, intent)
+        self.assertEqual(sorted(x['id'] for x in plan['checks'] if x['rule'] == 'DOC-T01'),
+                         ['DOC-T01.BASE', 'DOC-T01.NO-USB'])
+        complete = next(x for x in plan['checks'] if x['id'] == 'DEV-D02.U1')
+        self.assertEqual(complete['readiness'], 'READY')
+        self.assertEqual(complete['pin_difference'], {'official_only': ['U1.6'], 'symbol_only': []})
+        self.assertEqual(next(x for x in plan['checks'] if x['id'] == 'DEV-D05.U1')['pin_disposition'],
+                         {'unconnected': ['U1.6'], 'nc_connected': []})
+        partial = next(x for x in plan['checks'] if x['id'] == 'DEV-D02.U2')
+        self.assertEqual(partial['readiness'], 'WAITING_EVIDENCE')
+        self.assertEqual(partial['required_inputs'],
+                         ['intent.devices.U2: official full pinout + exact MPN/package'])
+        self.assertEqual(partial['pin_difference']['symbol_only'], ['U2.2', 'U2.3', 'U2.4', 'U2.5'])
+        self.assertEqual(next(x for x in plan['checks'] if x['id'] == 'DEV-D05.U2')['pin_disposition'],
+                         {'unconnected': [], 'nc_connected': ['U2.1']})
+        undeclared = next(x for x in plan['checks'] if x['id'] == 'DEV-D02.J1')
+        self.assertEqual(undeclared['required_inputs'],
+                         ['intent.devices.J1: official full pinout + exact MPN/package'])
+        self.assertNotIn('pin_difference', undeclared)
+
+    def test_shared_declarations_require_a_current_netlist_binding(self):
+        db = sample_db()
+        intent = {'schema_version': 3,
+                  'assemblies': [{'id': 'base', 'citation': 'BOM rev.B', 'population': {}}]}
+        self.assertTrue(any('input_sha256 is required' in error
+                            for error in validate_intent(intent, db)))
+        intent['input_sha256'] = '0' * 64
+        self.assertIn('stale input_sha256', validate_intent(intent, db))
+        self.assertEqual(next(x for x in build_review_plan(db)['checks']
+                              if x['rule'] == 'DOC-T01')['required_inputs'], ['intent.assemblies'])
 
 if __name__ == '__main__':
     unittest.main()

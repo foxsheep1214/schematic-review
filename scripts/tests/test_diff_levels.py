@@ -9,7 +9,7 @@ import catalog
 
 from checkers.diff_levels import DiffLevelsChecker, build_inventory, validate_diff_levels_intent
 from electrical_contract import db_fingerprint, validate_evidence
-from electrical_fixtures import bind_evidence
+from electrical_fixtures import bind_evidence, bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -54,12 +54,10 @@ def findings(db, intent=None):
 
 def declared_intent(db, standard='LVPECL'):
     """完整装配声明 + 电平标准出处，使该对成为 declared 依据。"""
-    return {'diff_levels': {
-        'schema_version': 1, 'db_sha256': db_fingerprint(db),
-        'states': [{'id': 'run', 'citation': 'BOM Rev.A',
-                    'population': {ref: True for ref in db['parts']}}],
+    return bound_intent(db, {'diff_levels': {
+        'schema_version': 2,
         'pairs': [{'id': 'CLK-TX', 'ref': 'U1', 'standard': standard,
-                   'citation': 'clock tree level definition'}]}}
+                   'citation': 'clock tree level definition'}]}})
 
 
 def level_check(**overrides):
@@ -155,11 +153,11 @@ class PlanTest(unittest.TestCase):
 
     def test_intent_validation_rejects_unknown_nets(self):
         db = link_board()
-        section = {'schema_version': 1, 'db_sha256': db_fingerprint(db),
-                   'states': [{'id': 'run', 'citation': 'BOM Rev.A', 'population': {}}],
+        section = {'schema_version': 2,
                    'pairs': [{'id': 'clk', 'ref': 'U1', 'citation': 'level definition',
                               'p_net': 'NOPE'}]}
-        errors = validate_diff_levels_intent({'diff_levels': section}, db)
+        errors = validate_diff_levels_intent(
+            bound_intent(db, {'diff_levels': section}, populated=False), db)
         self.assertTrue(any('p_net unknown: NOPE' in error for error in errors), errors)
 
 

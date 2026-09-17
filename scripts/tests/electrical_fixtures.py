@@ -1,7 +1,18 @@
 """Synthetic, explicitly bounded source documents for electrical regression tests."""
 from pathlib import Path
 from audit_datasheets import build_datasheet_audit
+from board_intent import input_fingerprint
 from electrical_contract import db_fingerprint, dependency_refs, document_fingerprint
+
+
+def bound_intent(db, sections=None, populated=True, state='run', **extra):
+    """新契约下的意图骨架：共享绑定 + 一个装配状态 + 各检查器段。"""
+    intent = {'input_sha256': input_fingerprint(db),
+              'assemblies': [{'id': state, 'citation': 'synthetic BOM option A',
+                              'population': {ref: True for ref in db['parts']} if populated else {}}]}
+    intent.update(sections or {})
+    intent.update(extra)
+    return intent
 
 
 def bind_evidence(database, evidence, directory):

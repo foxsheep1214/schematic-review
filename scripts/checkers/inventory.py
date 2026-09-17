@@ -7,6 +7,7 @@
 import hashlib
 import json
 
+import board_intent
 from electrical_contract import db_fingerprint
 
 from . import states as state_lib
@@ -17,13 +18,14 @@ def digest(payload):
     return hashlib.sha256(blob.encode('utf-8')).hexdigest()
 
 
-def build(db, cfg, key, scanner, discovery_gaps=(), extra=None):
-    """按声明的装配状态逐一扫描；未声明时用按图状态并保留缺口。
+def build(db, intent, section, key, scanner, discovery_gaps=(), extra=None):
+    """按 intent.assemblies 的装配状态逐一扫描；未声明时用按图状态并保留缺口。
 
     extra(state) 返回同一状态下的附加清单字段，避免为第二类对象重复解析状态。
     """
+    source = intent if isinstance(intent, dict) else {}
     states = []
-    for state in state_lib.resolve(db, cfg):
+    for state in state_lib.resolve(db, source.get('assemblies')):
         entry = {'id': state['id'], 'citation': state['citation'],
                  'declared': state['declared'], 'gaps': state['gaps'],
                  key: scanner(state)}
@@ -32,7 +34,7 @@ def build(db, cfg, key, scanner, discovery_gaps=(), extra=None):
     inventory = {
         'schema_version': 1,
         'input_sha256': db_fingerprint(db),
-        'context': cfg,
+        'context': board_intent.context(source, section),
         'discovery_gaps': sorted(discovery_gaps),
         'states': states,
     }

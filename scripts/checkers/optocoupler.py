@@ -97,8 +97,8 @@ def build_inventory(db, intent=None):
         if isinstance(item, dict) and isinstance(item.get('ref'), str):
             declared[item['ref']] = item.get('drive') or 'declared'
     excluded = state_lib.excluded_refs(cfg)
-    gaps = [] if cfg else ['intent.optocouplers: 未声明驱动方式与装配状态']
-    return inv.build(db, cfg, 'optocouplers',
+    gaps = [] if cfg else ['intent.optocouplers: 未声明驱动方式']
+    return inv.build(db, intent, 'optocouplers', 'optocouplers',
                      lambda state: _Scan(db, state, declared, excluded).optocouplers(), gaps)
 
 

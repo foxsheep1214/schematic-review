@@ -11,11 +11,13 @@ from decimal import Decimal, DecimalException
 import json
 import re
 
+import board_intent
+from board_intent import input_fingerprint
 from electrical_contract import db_fingerprint, finite, load_json
 from i2c_topology import digest, validate_db_shape
 
 KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other'}
-ROLES = {'power', 'return', 'other'}
+SECTION_SCHEMA_VERSION = 2
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
 POWER = re.compile(r'(^|[_/.-])(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|DVCC\w*|VIN|VOUT|VBAT|VBUS)(?=$|[_/.-])', re.I)
 GROUND = re.compile(r'(^|[_/.-])(?:GND\w*|[APD]?VSS\w*|[APD]GND\w*)(?=$|[_/.-])', re.I)
@@ -67,12 +69,6 @@ def _db_errors(db):
     return errors
 
 
-def input_fingerprint(db):
-    """Include symbol-only pins and pseudo/integrity data absent from db_fingerprint."""
-    return digest({'db_sha256': db_fingerprint(db), **{k: db.get(k) for k in (
-        'declared_pinname', 'declared_pintype', 'pseudo_nets', 'integrity', 'export_errors')}})
-
-
 def validate_decoupling_intent(intent, db=None):
     if db is not None:
         errors = _db_errors(db)
@@ -82,7 +78,7 @@ def validate_decoupling_intent(intent, db=None):
         return []
     if not isinstance(intent, dict) or not isinstance(intent.get('decoupling'), dict):
         return ['decoupling must be an object']
-    cfg, errors = intent['decoupling'], []
+    cfg, errors = intent['decoupling'], board_intent.requires_assemblies(intent, 'decoupling')
 
     def require(ok, message):
         if not ok:
@@ -94,54 +90,18 @@ def validate_decoupling_intent(intent, db=None):
     def ref_ok(ref):
         return _text(ref) and (db is None or ref in db.get('parts', {}))
 
-    fields(cfg, ('schema_version', 'input_sha256', 'states', 'devices', 'groups', 'components'), 'root')
-    require(type(cfg.get('schema_version')) is int and cfg['schema_version'] == 1, 'schema_version must be 1')
-    require(isinstance(cfg.get('input_sha256'), str) and bool(re.fullmatch('[0-9a-f]{64}', cfg['input_sha256'])), 'input_sha256 is required')
-    if db is not None:
-        require(cfg.get('input_sha256') == input_fingerprint(db), 'stale input_sha256')
-    states = cfg.get('states')
-    require(isinstance(states, list) and 0 < len(states) <= 32, 'states must contain 1..32 states')
-    seen = set()
-    for state in states if isinstance(states, list) else []:
-        if not isinstance(state, dict):
-            require(False, 'state must be an object')
-            continue
-        fields(state, ('id', 'citation', 'population'), 'state')
-        sid = state.get('id')
-        require(_text(sid) and sid not in seen, 'state id missing/duplicate')
-        if _text(sid):
-            seen.add(sid)
-        require(_text(state.get('citation')), 'state needs assembly/configuration citation')
-        population = state.get('population', {})
-        require(isinstance(population, dict), 'population must be an object')
-        for ref, fitted in population.items() if isinstance(population, dict) else []:
-            require(ref_ok(ref) and type(fitted) is bool, 'population needs known ref and boolean')
-    devices = cfg.get('devices', {})
-    require(isinstance(devices, dict), 'devices must be an object')
-    for ref, device in devices.items() if isinstance(devices, dict) else []:
-        require(ref_ok(ref), 'unknown device ' + str(ref))
-        if not isinstance(device, dict):
-            require(False, 'device must be an object')
-            continue
-        fields(device, ('mpn', 'package', 'identity_citation', 'citation', 'pinout_complete', 'pins'), 'device')
-        for key in ('mpn', 'package', 'identity_citation', 'citation'):
-            require(_text(device.get(key)), 'device ' + str(ref) + ' needs ' + key)
-        require(type(device.get('pinout_complete')) is bool, 'pinout_complete must be boolean')
-        pins = device.get('pins')
-        require(isinstance(pins, dict) and bool(pins), 'device needs full physical pin map')
-        for pin, spec in pins.items() if isinstance(pins, dict) else []:
-            require(_text(pin) and '.' not in pin and not any(c.isspace() for c in pin), 'invalid physical pin number')
-            if not isinstance(spec, dict):
-                require(False, 'pin must be an object')
-                continue
-            fields(spec, ('name', 'role'), 'pin')
-            require(_text(spec.get('name')), 'pin name missing')
-            require(isinstance(spec.get('role'), str) and spec['role'] in ROLES, 'unsupported pin role')
+    moved = {'states', 'input_sha256', 'devices'} & set(cfg)
+    require(not moved, ', '.join(sorted(moved)) + ' moved to intent.assemblies/intent.input_sha256/intent.devices')
+    fields({k: v for k, v in cfg.items() if k not in moved}, ('schema_version', 'groups', 'components'), 'root')
+    require(type(cfg.get('schema_version')) is int and cfg['schema_version'] == SECTION_SCHEMA_VERSION,
+            'schema_version must be %d' % SECTION_SCHEMA_VERSION)
+    devices = intent.get('devices', {})
+    devices = devices if isinstance(devices, dict) else {}
     components = cfg.get('components', {})
     require(isinstance(components, dict), 'components must be an object')
     for ref, comp in components.items() if isinstance(components, dict) else []:
         require(ref_ok(ref), 'unknown component ' + str(ref))
-        require(not isinstance(devices, dict) or ref not in devices, 'device cannot also be a passive/excluded component')
+        require(ref not in devices, 'device cannot also be a passive/excluded component')
         if not isinstance(comp, dict):
             require(False, 'component must be an object')
             continue
@@ -161,16 +121,17 @@ def validate_decoupling_intent(intent, db=None):
         if _text(gid):
             seen.add(gid)
         require(ref_ok(ref), 'group ref missing/unknown')
-        device = devices.get(ref) if isinstance(devices, dict) and _text(ref) else None
-        require(isinstance(device, dict), 'group needs exact device pin map')
+        device = devices.get(ref) if _text(ref) else None
+        require(isinstance(device, dict), 'group needs exact device pin map in intent.devices')
         require(_text(group.get('citation')), 'group needs grouping/return citation')
         pins = device.get('pins', {}) if isinstance(device, dict) else {}
+        pins = pins if isinstance(pins, dict) else {}
         for field, role in (('supply_nodes', 'power'), ('return_nodes', 'return')):
             nodes = group.get(field)
             require(_strings(nodes), field + ' needs unique physical nodes')
             for node in nodes if _strings(nodes) else []:
                 prefix, _, number = node.rpartition('.')
-                spec = pins.get(number) if isinstance(pins, dict) else None
+                spec = pins.get(number)
                 require(prefix == ref and isinstance(spec, dict) and spec.get('role') == role, field + ' must match device physical pin roles: ' + node)
                 if role == 'power':
                     require(node not in used, 'supply node belongs to multiple groups: ' + node)
@@ -193,13 +154,13 @@ def validate_decoupling_intent(intent, db=None):
 
 
 class Inventory:
-    def __init__(self, db, cfg):
+    def __init__(self, db, cfg, devices=None):
         self.db, self.cfg = db, cfg or {}
         self.parts, self.nets = db.get('parts', {}), db.get('nets', {})
         self.pin2net = db.get('pin2net', {})
         self.names = dict(db.get('declared_pinname', {}), **db.get('pinname', {}))
         self.types = dict(db.get('declared_pintype', {}), **db.get('pintype', {}))
-        self.devices, self.components = self.cfg.get('devices', {}), self.cfg.get('components', {})
+        self.devices, self.components = devices or {}, self.cfg.get('components', {})
         self.pseudo = set(db.get('pseudo_nets', []))
         self.nodes, self.input_gaps = defaultdict(set), set()
         for node in set(self.names) | set(self.types) | set(self.pin2net):
@@ -264,10 +225,9 @@ class Inventory:
     def device_inventory(self):
         output = []
         for ref, device in sorted(self.devices.items()):
-            official = {ref + '.' + pin for pin in device['pins']}
-            observed = {n for n in set(self.pin2net) | set(self.names) | set(self.types) if n.rpartition('.')[0] == ref}
-            output.append({'ref': ref, **deepcopy(device), 'official_only_nodes': sorted(official - observed),
-                           'symbol_only_nodes': sorted(observed - official)})
+            official_only, symbol_only = board_intent.pin_sets(self.db, ref, device)
+            output.append({'ref': ref, **deepcopy(device), 'official_only_nodes': official_only,
+                           'symbol_only_nodes': symbol_only})
         return output
 
     def state_inventory(self, state, groups, device_records):
@@ -377,11 +337,11 @@ class Inventory:
 
 
 def build_decoupling_inventory(db, intent=None):
-    errors = _db_errors(db) or validate_decoupling_intent(intent, db)
+    errors = _db_errors(db) or board_intent.validate(intent, db) or validate_decoupling_intent(intent, db)
     if errors:
         raise ValueError('; '.join(errors))
     cfg = (intent or {}).get('decoupling')
-    inv = Inventory(db, cfg)
+    inv = Inventory(db, cfg, (intent or {}).get('devices'))
     groups, device_records = inv.groups(), inv.device_inventory()
     unknown = sorted(ref for ref in inv.parts if ref not in inv.devices and
                      ref not in inv.components and not PASSIVE_PREFIX.match(ref))
@@ -391,9 +351,9 @@ def build_decoupling_inventory(db, intent=None):
             discovery_gaps.add('official-full-pinout:' + device['ref'])
         discovery_gaps.update('official-pin-absent:' + n for n in device['official_only_nodes'])
         discovery_gaps.update('pin-not-in-official-map:' + n for n in device['symbol_only_nodes'])
-    states = (cfg or {}).get('states', [{'id': 'UNSPECIFIED', 'population': {}}])
+    states = (intent or {}).get('assemblies') or [{'id': 'UNSPECIFIED', 'population': {}}]
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'input_sha256': input_fingerprint(db),
-              'context': deepcopy(cfg), 'scope': 'direct-net schematic inventory only; nominal is not effective capacitance; no electrical or PCB PASS',
+              'context': deepcopy(board_intent.context(intent, 'decoupling', extra=('devices',))), 'scope': 'direct-net schematic inventory only; nominal is not effective capacitance; no electrical or PCB PASS',
               'devices': device_records, 'unverified_device_refs': unknown, 'discovery_gaps': sorted(discovery_gaps),
               'states': [inv.state_inventory(s, groups, device_records) for s in sorted(states, key=lambda s: s['id'])]}
     result['digest'] = digest(result)

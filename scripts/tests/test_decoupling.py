@@ -16,14 +16,14 @@ from validate_review import validate_review, fingerprint
 from test_i2c_topology import add, pending_report
 
 
-def add_device(db, cfg, ref, supply='VCC_3V3', ground='GND'):
+def add_device(db, intent, ref, supply='VCC_3V3', ground='GND'):
     add(db, ref, 'TEST-IC', [('1', 'VDD', supply), ('2', 'VSS', ground), ('3', 'GPIO', ref + '_IO')])
-    cfg['devices'][ref] = {'mpn': 'TEST-IC-EXACT', 'package': 'TEST-PKG-3',
+    intent['devices'][ref] = {'mpn': 'TEST-IC-EXACT', 'package': 'TEST-PKG-3',
         'identity_citation': 'synthetic BOM identity mapping row ' + ref,
         'citation': 'synthetic full pinout table 1', 'pinout_complete': True,
         'pins': {'1': {'name': 'VDD', 'role': 'power'}, '2': {'name': 'VSS', 'role': 'return'},
                  '3': {'name': 'GPIO', 'role': 'other'}}}
-    cfg['groups'].append({'id': ref + '-VDD', 'ref': ref, 'supply_nodes': [ref + '.1'],
+    intent['decoupling']['groups'].append({'id': ref + '-VDD', 'ref': ref, 'supply_nodes': [ref + '.1'],
         'return_nodes': [ref + '.2'], 'citation': 'synthetic grouping requirement section 2',
         'requirements': [{'id': kind, 'kind': kind, 'criterion': 'synthetic ' + kind + ' requirement',
                           'citation': 'synthetic applicable specification section ' + kind}
@@ -32,20 +32,20 @@ def add_device(db, cfg, ref, supply='VCC_3V3', ground='GND'):
 
 def fixture(values=('100nF', '1uF')):
     db = {'parts': {}, 'nets': {}, 'pin2net': {}, 'pinname': {}, 'pseudo_nets': []}
-    cfg = {'schema_version': 1, 'devices': {}, 'components': {}, 'groups': [],
-           'states': [{'id': 'run', 'citation': 'synthetic BOM B option A', 'population': {}}]}
-    add_device(db, cfg, 'U1')
+    intent = {'devices': {}, 'decoupling': {'schema_version': 2, 'components': {}, 'groups': []},
+              'assemblies': [{'id': 'run', 'citation': 'synthetic BOM B option A', 'population': {}}]}
+    add_device(db, intent, 'U1')
     for i, value in enumerate(values, 1):
         ref = 'C' + str(i)
         add(db, ref, value, [('1', '1', 'VCC_3V3'), ('2', '2', 'GND')])
-        cfg['components'][ref] = {'kind': 'capacitor', 'citation': 'synthetic BOM type ' + ref}
-    cfg['states'][0]['population'] = {r: True for r in db['parts']}
-    cfg['input_sha256'] = input_fingerprint(db)
-    return db, {'decoupling': cfg}
+        intent['decoupling']['components'][ref] = {'kind': 'capacitor', 'citation': 'synthetic BOM type ' + ref}
+    intent['assemblies'][0]['population'] = {r: True for r in db['parts']}
+    intent['input_sha256'] = input_fingerprint(db)
+    return db, intent
 
 
 def rebind(db, intent):
-    intent['decoupling']['input_sha256'] = input_fingerprint(db)
+    intent['input_sha256'] = input_fingerprint(db)
 
 
 def state(inv, sid='run'):
@@ -129,9 +129,8 @@ class DecouplingInventoryTests(unittest.TestCase):
 
     def test_same_cap_shared_by_two_devices_is_one_physical_cap(self):
         db, intent = fixture(('100nF',))
-        cfg = intent['decoupling']
-        add_device(db, cfg, 'U2')
-        cfg['states'][0]['population']['U2'] = True
+        add_device(db, intent, 'U2')
+        intent['assemblies'][0]['population']['U2'] = True
         rebind(db, intent)
         inv = build_decoupling_inventory(db, intent)
         self.assertEqual(len(state(inv)['capacitors']), 1)
@@ -144,9 +143,8 @@ class DecouplingInventoryTests(unittest.TestCase):
         db['pin2net']['U1.4'] = 'VCC_3V3'
         db['pinname']['U1.4'] = 'VDD2'
         db['nets']['VCC_3V3'].append('U1.4')
-        cfg = intent['decoupling']
-        cfg['devices']['U1']['pins']['4'] = {'name': 'VDD2', 'role': 'power'}
-        cfg['groups'][0]['supply_nodes'].append('U1.4')
+        intent['devices']['U1']['pins']['4'] = {'name': 'VDD2', 'role': 'power'}
+        intent['decoupling']['groups'][0]['supply_nodes'].append('U1.4')
         rebind(db, intent)
         g = group(build_decoupling_inventory(db, intent))
         self.assertEqual(g['supply_nodes'], ['U1.1', 'U1.4'])
@@ -154,7 +152,7 @@ class DecouplingInventoryTests(unittest.TestCase):
 
     def test_official_power_pin_absent_from_netlist_becomes_candidate(self):
         db, intent = fixture()
-        intent['decoupling']['devices']['U1']['pins']['EP'] = {'name': 'VDD_EP', 'role': 'power'}
+        intent['devices']['U1']['pins']['EP'] = {'name': 'VDD_EP', 'role': 'power'}
         inv = build_decoupling_inventory(db, intent)
         candidates = [g for g in state(inv)['groups'] if g['origin'] == 'candidate']
         self.assertEqual(candidates[0]['supply_nodes'], ['U1.EP'])
@@ -187,7 +185,7 @@ class DecouplingInventoryTests(unittest.TestCase):
                 db, intent = fixture(('10uF',))
                 move_pin(db, 'U1.1', 'LOCAL')
                 add(db, ref, value, [('1', '1', 'VCC_3V3'), ('2', '2', 'LOCAL')])
-                intent['decoupling']['states'][0]['population'][ref] = True
+                intent['assemblies'][0]['population'][ref] = True
                 rebind(db, intent)
                 g = group(build_decoupling_inventory(db, intent))
                 self.assertEqual(g['fitted_count'], 0)
@@ -202,7 +200,7 @@ class DecouplingInventoryTests(unittest.TestCase):
             broken['pin2net']['U1.4'] = 'OTHER'
             broken['pinname']['U1.4'] = 'OTHER'
             broken['nets']['OTHER'] = ['U1.4']
-            cfg['decoupling']['devices']['U1']['pins']['4'] = {'name': 'OTHER', 'role': role}
+            cfg['devices']['U1']['pins']['4'] = {'name': 'OTHER', 'role': role}
             cfg['decoupling']['groups'][0][field].append('U1.4')
             rebind(broken, cfg)
             g = group(build_decoupling_inventory(broken, cfg))
@@ -219,7 +217,7 @@ class DecouplingInventoryTests(unittest.TestCase):
 
     def test_dnp_is_visible_but_not_counted(self):
         db, intent = fixture(('100nF', 'CAP_UNKNOWN'))
-        intent['decoupling']['states'][0]['population']['C2'] = False
+        intent['assemblies'][0]['population']['C2'] = False
         inv = build_decoupling_inventory(db, intent)
         self.assertEqual(group(inv)['fitted_count'], 1)
         self.assertEqual(group(inv)['capacitance_gaps'], [])
@@ -228,7 +226,7 @@ class DecouplingInventoryTests(unittest.TestCase):
 
     def test_nc_false_does_not_prove_population(self):
         db, intent = fixture(('100nF',))
-        del intent['decoupling']['states'][0]['population']['C1']
+        del intent['assemblies'][0]['population']['C1']
         g = group(build_decoupling_inventory(db, intent))
         self.assertIn('population:C1', g['gaps'])
         self.assertEqual(g['fitted_count'], 0)
@@ -254,7 +252,7 @@ class DecouplingInventoryTests(unittest.TestCase):
         db, intent = fixture(())
         add(db, 'XC_A', '220nF', [('A', 'A', 'VCC_3V3'), ('K', 'K', 'GND')])
         intent['decoupling']['components']['XC_A'] = {'kind': 'capacitor', 'citation': 'synthetic BOM'}
-        intent['decoupling']['states'][0]['population']['XC_A'] = True
+        intent['assemblies'][0]['population']['XC_A'] = True
         rebind(db, intent)
         self.assertEqual(group(build_decoupling_inventory(db, intent))['fitted_capacitors'], ['XC_A'])
 
@@ -281,10 +279,10 @@ class DecouplingInventoryTests(unittest.TestCase):
 
     def test_each_assembly_state_has_separate_inventory_and_ids(self):
         db, intent = fixture()
-        other = copy.deepcopy(intent['decoupling']['states'][0])
+        other = copy.deepcopy(intent['assemblies'][0])
         other['id'] = 'option-B'
         other['population']['C2'] = False
-        intent['decoupling']['states'].append(other)
+        intent['assemblies'].append(other)
         inv = build_decoupling_inventory(db, intent)
         self.assertEqual(group(inv)['fitted_count'], 2)
         self.assertEqual(group(inv, sid='option-B')['fitted_count'], 1)
@@ -332,15 +330,23 @@ class DecouplingInventoryTests(unittest.TestCase):
 
     def test_invalid_schema_variants_fail_without_type_errors(self):
         db, intent = fixture()
-        changes = [('states', None), ('states', [[]]), ('devices', []), ('devices', {'U1': None}),
-                   ('groups', [None]), ('groups', [{'id': [], 'ref': [], 'supply_nodes': [[]]}]),
-                   ('components', {'C1': {'kind': [], 'citation': 'x'}}), ('unknown_field', True)]
+        changes = [('groups', [None]), ('groups', [{'id': [], 'ref': [], 'supply_nodes': [[]]}]),
+                   ('components', {'C1': {'kind': [], 'citation': 'x'}}), ('unknown_field', True),
+                   ('states', [{'id': 'run', 'citation': 'x', 'population': {}}])]
         for key, value in changes:
             broken = copy.deepcopy(intent)
             broken['decoupling'][key] = value
-            with self.subTest(key=key):
+            with self.subTest(section=key):
                 self.assertTrue(validate_decoupling_intent(broken, db))
-                self.assertTrue(validate_intent(broken))
+                self.assertTrue(validate_intent(broken, db))
+                with self.assertRaises(ValueError):
+                    build_decoupling_inventory(db, broken)
+        for key, value in (('assemblies', None), ('assemblies', [[]]),
+                           ('devices', []), ('devices', {'U1': None})):
+            broken = copy.deepcopy(intent)
+            broken[key] = value
+            with self.subTest(shared=key):
+                self.assertTrue(validate_intent(broken, db))
                 with self.assertRaises(ValueError):
                     build_decoupling_inventory(db, broken)
 
@@ -403,7 +409,7 @@ class DecouplingPlanTests(unittest.TestCase):
             if missing == 'requirements':
                 intent['decoupling']['groups'][0]['requirements'] = []
             else:
-                del intent['decoupling']['states'][0]['population']['C1']
+                del intent['assemblies'][0]['population']['C1']
             plan = build_review_plan(db, intent)
             report = ledger(plan, db)
             key = next(p['id'] for p in plan['checks'] if p['rule'] == 'PWR-D02')
@@ -417,10 +423,10 @@ class DecouplingPlanTests(unittest.TestCase):
         for change in ('population', 'clause'):
             altered = copy.deepcopy(intent)
             if change == 'population':
-                altered['decoupling']['states'][0]['population']['C1'] = False
+                altered['assemblies'][0]['population']['C1'] = False
             else:
                 altered['decoupling']['groups'][0]['requirements'][0]['criterion'] = 'different'
-            with self.assertRaisesRegex(ValueError, 'decoupling input/state/assembly changed'):
+            with self.assertRaisesRegex(ValueError, 'inventory/state/assembly changed'):
                 build_review_plan(db, altered, previous_plan=before)
 
     def test_manual_check_is_preserved_without_result_migration(self):

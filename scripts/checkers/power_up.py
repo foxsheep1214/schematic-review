@@ -143,7 +143,7 @@ def build_inventory(db, intent=None):
     cfg = (intent or {}).get('power_up') if isinstance(intent, dict) else None
     declared = state_lib.declared_refs(cfg, 'regulators')
     excluded = state_lib.excluded_refs(cfg)
-    gaps = [] if cfg else ['intent.power_up: 未声明上电顺序要求与装配状态']
+    gaps = [] if cfg else ['intent.power_up: 未声明上电顺序要求']
     scans = {}
 
     def scan(state):
@@ -158,7 +158,7 @@ def build_inventory(db, intent=None):
         scanner = scans.setdefault(state['id'], _Scan(db, state, declared, excluded))
         return {'coupled_loads': scanner.coupled_loads()}
 
-    return inv.build(db, cfg, 'regulators', scan, gaps, extra=extra)
+    return inv.build(db, intent, 'power_up', 'regulators', scan, gaps, extra=extra)
 
 
 class PowerUpChecker(Checker):

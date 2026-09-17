@@ -109,8 +109,8 @@ def build_inventory(db, intent=None):
     cfg = (intent or {}).get('input_filters') if isinstance(intent, dict) else None
     declared = state_lib.declared_refs(cfg, 'converters')
     excluded = state_lib.excluded_refs(cfg)
-    gaps = [] if cfg else ['intent.input_filters: 未声明变换器输入与装配状态']
-    return inv.build(db, cfg, 'converters',
+    gaps = [] if cfg else ['intent.input_filters: 未声明变换器输入']
+    return inv.build(db, intent, 'input_filters', 'converters',
                      lambda state: _Scan(db, state, declared, excluded).converters(), gaps)
 
 

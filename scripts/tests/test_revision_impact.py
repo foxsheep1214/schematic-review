@@ -412,7 +412,7 @@ class RevisionWorkflowTests(unittest.TestCase):
         for key, value in [('population', {'R1': False}), ('jumpers', {'JP10': 'open'})]:
             with self.subTest(field=key):
                 new_intent = deepcopy(intent)
-                new_intent['i2c_topology']['states'][0][key].update(value)
+                new_intent['assemblies'][0][key].update(value)
                 plan = build_review_plan(db, new_intent, old_db=db, old_plan=base)
                 self.assertTrue(any(c['kind'] == 'intent' for c in plan['revision_impact']['changes']))
                 self.assertEqual(plan['revision_impact']['strategy'], 'FULL_REVIEW')

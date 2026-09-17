@@ -9,7 +9,7 @@ import catalog
 
 from checkers.supervision import SupervisionChecker, build_inventory, validate_supervision_intent
 from electrical_contract import db_fingerprint, validate_evidence
-from electrical_fixtures import bind_evidence
+from electrical_fixtures import bind_evidence, bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -150,10 +150,9 @@ class PlanTest(unittest.TestCase):
 
     def test_intent_validation_accepts_a_sound_section(self):
         db = supervised_board()
-        section = {'schema_version': 1, 'db_sha256': db_fingerprint(db),
-                   'states': [{'id': 'run', 'citation': 'BOM Rev.A', 'population': {}}],
+        section = {'schema_version': 2,
                    'supervisors': [{'id': 'u3', 'ref': 'U3', 'citation': 'reset scheme'}]}
-        self.assertEqual(validate_supervision_intent({'supervision': section}, db), [])
+        self.assertEqual(validate_supervision_intent(bound_intent(db, {'supervision': section}), db), [])
 
 
 class HotRuleTest(unittest.TestCase):

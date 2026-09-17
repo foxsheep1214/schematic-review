@@ -5,6 +5,7 @@
 每个检查器只声明：认什么对象、生成哪些计划项、冷跑报什么、清单怎么绑定。
 计划项结构、证据契约、准出语义仍由既有流程决定，检查器不自造结论。
 """
+from copy import deepcopy
 
 
 class Checker:
@@ -99,11 +100,10 @@ class Checker:
         return []
 
     def context_intent(self, inventory):
-        """从清单里取回重建所需的上下文，用于过期检测。"""
-        if not isinstance(inventory, dict) or self.intent_key is None:
+        """从清单里取回重建所需的意图片段（共享声明与本检查器段），用于过期检测。"""
+        if not isinstance(inventory, dict) or not isinstance(inventory.get('context'), dict):
             return None
-        context = inventory.get('context')
-        return {self.intent_key: context} if context is not None else None
+        return deepcopy(inventory['context'])
 
 
 def validate_inventories(registry, plan, expected, db, require, planner_factory):

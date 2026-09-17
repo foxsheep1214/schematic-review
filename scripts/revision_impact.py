@@ -46,10 +46,10 @@ def is_revision_check(check):
 
 
 def _global_scope(check):
-    """覆盖审计、全板项、按功能包展开的项、需求追溯与改版处置项依赖全部输入，不按局部坐标收窄。"""
+    """覆盖审计、全板项、装配配置项、按功能包展开的项、需求追溯与改版处置项依赖全部输入，不按局部坐标收窄。"""
     rule, obj = check.get('rule'), check['object']
     return ((catalog.known(rule) and catalog.method_of(rule) == 'Q')
-            or any(obj.get(key) for key in ('board', 'package', 'requirement_id'))
+            or any(obj.get(key) for key in ('board', 'package', 'assembly', 'requirement_id'))
             or is_revision_check(check))
 
 

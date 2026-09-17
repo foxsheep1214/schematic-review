@@ -7,6 +7,7 @@ import unittest
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 
+import board_intent
 import catalog
 import test_inductive_load as relay_fixture
 from checkers import REGISTRY, REGISTRY_BY_ID, registry_cold_rules, validate_inventories
@@ -15,6 +16,7 @@ from checkers import powertree
 from checkers.supervision import build_inventory as supervision_inventory
 from lint import Lint
 from checkers import states as state_lib
+from electrical_fixtures import bound_intent
 from plan_review import ReviewPlanner, build_review_plan
 
 
@@ -208,29 +210,48 @@ class StatesTest(unittest.TestCase):
     def test_declared_population_and_open_jumper(self):
         db = relay_fixture.relay_board()
         db['parts']['JP1'] = {'part': 'JUMPER', 'value': '', 'prim': '', 'jedec': '', 'nc': False}
-        cfg = {'states': [{'id': 'run', 'citation': 'x',
-                           'population': {ref: True for ref in db['parts']},
-                           'jumpers': {'JP1': 'open'}}]}
-        state = state_lib.resolve(db, cfg)[0]
+        assemblies = [{'id': 'run', 'citation': 'x',
+                       'population': {ref: True for ref in db['parts']},
+                       'jumpers': {'JP1': 'open'}}]
+        state = state_lib.resolve(db, assemblies)[0]
         self.assertNotIn('JP1', state['fitted'])
         self.assertEqual(state['gaps'], [])
 
     def test_unknown_jumper_and_undeclared_part_are_gaps(self):
         db = relay_fixture.relay_board()
-        cfg = {'states': [{'id': 'run', 'citation': 'x',
-                           'population': {'K1': True}, 'jumpers': {'Q1': 'unknown'}}]}
-        state = state_lib.resolve(db, cfg)[0]
+        assemblies = [{'id': 'run', 'citation': 'x',
+                       'population': {'K1': True}, 'jumpers': {'Q1': 'unknown'}}]
+        state = state_lib.resolve(db, assemblies)[0]
         self.assertIn('jumper:Q1', state['gaps'])
         self.assertIn('population:D1', state['gaps'])
 
-    def test_state_errors_reject_malformed_declarations(self):
+    def test_assembly_errors_reject_malformed_declarations(self):
         db = relay_fixture.relay_board()
-        errors = state_lib.state_errors({'states': [{'id': 'run', 'citation': 'x',
-                                                     'population': {'NOPE': True}}]}, db, 'demo')
-        self.assertIn('demo: population: unknown ref NOPE', errors)
-        self.assertIn('demo: states must contain 1..32 states',
-                      state_lib.state_errors({'states': []}, db, 'demo'))
+        errors = board_intent.assembly_errors(
+            [{'id': 'run', 'citation': 'x', 'population': {'NOPE': True}}], db)
+        self.assertIn('assemblies: population: unknown ref NOPE', errors)
+        self.assertIn('assemblies: must contain 1..32 assembly states',
+                      board_intent.assembly_errors([], db))
 
+
+    def test_one_assembly_declaration_feeds_every_checker(self):
+        db = whole_board()
+        planner = ReviewPlanner(db, bound_intent(db, state='variant-A'))
+        for checker in REGISTRY:
+            inventory = planner.inventories[checker.id]
+            with self.subTest(checker.id):
+                self.assertEqual([s['id'] for s in inventory['states']], ['variant-A'])
+                self.assertEqual({s['citation'] for s in inventory['states']},
+                                 {'synthetic BOM option A'})
+                self.assertNotIn('assembly state unverified: netlist nc only',
+                                 inventory['states'][0].get('gaps', []))
+        undeclared = ReviewPlanner(db, None)
+        for checker in REGISTRY:
+            if checker.id in ('i2c_topology', 'decoupling'):
+                continue
+            with self.subTest(checker.id):
+                self.assertIn('assembly state unverified: netlist nc only',
+                              undeclared.inventories[checker.id]['states'][0]['gaps'])
 
 if __name__ == '__main__':
     unittest.main()
