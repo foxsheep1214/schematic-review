@@ -24,7 +24,8 @@
 数据、答案、生成器与评分不变，改动前后 166 例的逐例结果、指标与验收结论逐项一致。
 协议指纹因此变化，`--baseline` 不能再与 [2aeaee5 基线](baselines/2aeaee5/report.md)及
 [线性反馈优化](optimizations/2026-09-14-linear-feedback/report.md)记录直接比较；这些历史记录保留
-原编号（Rule-08/09/16），比较新候选请用改编号后生成的基线。
+原编号（Rule-08/09/16）。比较新候选请用改编号后的 [07238d3 基线](baselines/07238d3/verification.md)：
+`--baseline evals/circuit_bench/baselines/07238d3/results.json`。
 
 留出集按整个拓扑/来源家族划分，同一电路变体不会跨分区；但基础电路知识仍会重叠。
 本版留出集公开且已用于本次基线，不是保密或从未见过的盲测。后续严格验收需要新家族
@@ -64,7 +65,7 @@ python3 -B evals/circuit_bench/run.py \
 python3 -B evals/circuit_bench/run.py \
   --sut /absolute/path/to/candidate-schematic-review \
   --split all --out "$BENCH_RUN/candidate" --scratch-root "$BENCH_RUN" \
-  --baseline evals/circuit_bench/baselines/2aeaee5/results.json --require-pass
+  --baseline evals/circuit_bench/baselines/07238d3/results.json --require-pass
 ```
 
 比较要求数据、答案、评测程序指纹以及所测案例完全一致；工具源码指纹允许变化。
