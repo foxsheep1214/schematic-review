@@ -35,6 +35,8 @@ from audit_datasheets import (
 )
 
 
+from review_workflow import PHASES
+
 INTENT_SCHEMA_VERSION = 3
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
@@ -91,6 +93,8 @@ def validate_intent(intent, db=None):
         errors.append('schema_version 必须为 %d（旧版意图请按 check-catalog.md 迁移）' % INTENT_SCHEMA_VERSION)
     if intent.get('review_mode') not in (None, 'first', 'revision'):
         errors.append('review_mode 必须为 first/revision')
+    if 'review_phase' in intent and intent['review_phase'] not in PHASES:
+        errors.append('review_phase 必须为 ' + '/'.join(PHASES))
     expect = intent.get('expect', {})
     if not isinstance(expect, dict):
         errors.append('expect 必须为 object')
@@ -894,7 +898,10 @@ class ReviewPlanner:
             'rule_plan': self.rule_plan,
             'checks': self.checks,
             'diagnostics': self.diagnostics,
+            'review_policy_version': 2,
         }
+        if 'review_phase' in self.intent:
+            plan['review_phase'] = self.intent['review_phase']
         for checker in REGISTRY:
             inventory = self.inventories.get(checker.id)
             if inventory is None or checker.plan_key is None:

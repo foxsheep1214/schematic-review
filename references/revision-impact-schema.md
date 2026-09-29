@@ -1,4 +1,4 @@
-# 改版影响与逐项复验 v1
+# 改版影响与逐项复验
 
 用途：在结构 Diff 之外，将新旧设计/装配/条件/资料变化关联到本轮检查项。
 这是复验范围与证据交接，不是电气求解器，也不生成修复通过、严重度或准出结论。
@@ -7,7 +7,8 @@
 
 ## 输入与操作
 
-每次新生成的计划保存 `dependency_version: 1`、`review_inputs`、`check_dependencies`。
+新计划使用 `review_policy_version: 2`；未声明的历史计划按策略 v1 重算，
+不改变旧快照。数据契约版本仍为 `dependency_version: 1`，并保存 `review_inputs`、`check_dependencies`。
 `review_inputs` 包含完整当前 db 的规范化摘要、intent、evidence、datasheet-audit 和本地
 文档的实际内容哈希；自身也有 digest。它是项目内的审查记录，不放入公共仓库。
 旧版最终计划作为 `--old-plan`；本版冷跑计划才是 `--merge-plan`，二者不能混用。
@@ -92,8 +93,10 @@ path 必须为本地绝对路径；不下载 URL，不跟踪未登记的任意�
 
 所有实际值变化均保留，包括极小数值差、贴装、物理脚定义、网名/成员和符号声明脚变化。
 不按百分比过滤放行，不把 R1 当作 R10，不假设改网名无电气影响。
-intent 条件或 evidence/audit 内容变化在 v1 中保守触发全量复验；只记录了 review_mode
-切换或更新依赖声明的出处，不将其当成电路参数变化。
+intent 实际条件或 evidence/audit 内容变化仍保守触发全量复验。策略 v2 不将
+`db.export_meta` 中 source/date/tool 及 `db.pin_name_coverage`（派生统计）、`intent.input_sha256/review_phase/review_mode/review_dependencies` 的变化
+单独视为电气变化；输入/文档指纹仍验证，实际结构、原生引脚类型、参数和 integrity 仍比较，不能借此隐藏变化。
+未标策略版本的历史计划保留 v1 的全局退回逻辑。
 
 ## 影响结果与缺口
 
@@ -105,15 +108,22 @@ intent 条件或 evidence/audit 内容变化在 v1 中保守触发全量复验�
 - `entries`：每项的 check_id、required、原因、change_ids、check_digest。
 - `strategy=EXACT_DEPENDENCIES`：在已声明范围内关联；`NO_RECORDED_CHANGE` 不等于电气 PASS，
   也不允许脚本自动继承旧结果。
-- `strategy=FULL_REVIEW`：旧/新依赖不完整、未知全局变化或基线缺失时，扩大为本轮全部检查。
-  不能用候选路径或“未匹配到变化”声明其余电路不受影响。
+- `strategy=MIXED_REVIEW`（策略 v2）：有变化时，旧/新局部依赖不完整的项标记
+  `incomplete-local-dependencies` 并复验；沿显式 check_ids 传递至依赖它的检查。
+  已完整声明且确实不受影响的其他项无需重复全部人工工作。
+- `strategy=FULL_REVIEW`：未知全局变化、缺失基线、不可读文件等阻断缺口时全量复验；
+  策略 v1 还会在有变化且任一局部依赖不完整时全量退回。
+  不能用候选路径或“未匹配到变化”声明依赖不完整的项不受影响。
 - `blocking_gaps`：旧基线/快照缺失、文件不可读、未匹配依赖声明等未决项。
   `revision-impact-coverage` 必须保持 INSUFFICIENT；先恢复材料、重建并重审，再清除缺口。
 
-部分依赖本身不永久阻止交付：可执行 FULL_REVIEW，逐项记录本轮复核结果，并由 coverage
-项说明实际采用的扩大范围。但这不消除真实缺证，不自动解除任何其他检查或 HANDOFF。
+部分依赖本身不永久阻止交付：按影响清单执行扩大后的复验，逐项记录本轮结果，并由 coverage
+项说明实际范围。但这不消除真实缺证，不自动解除任何其他检查或 HANDOFF。
 旧检查在新计划消失时新增独立 `revision-removed-check`，保留 prior_check 与旧 ID；人工
 核对删除/替代、复发/撤回及连带影响。该历史记录在后续版本继续保留，结果每轮独立填写。
+同一历史 ID 同时经“旧项消失”和“保留历史记录”生成时仅保留一个；不同 prior_check 定义
+保存在 `prior_checks` 数组，主 `prior_check` 优先保留最近基线定义。历史检查身份/判据冲突仍报错，
+不会丢弃记录或自动沿用关闭状态。
 
 ## 结果与最终闸门
 
@@ -150,3 +160,15 @@ python3 scripts/validate_review.py review-plan.json review-results.json \
 旧无标记计划可兼容读取，但 `revision_validation.enforced=false` 不代表新闸门通过。
 旧计划用于新复审时若没有历史输入快照，不能按当前文件补造历史。只能用前版真实冻结
 资料重建并记录依据，否则按缺失基线处理。首审不额外强制 revision 结果字段。
+
+## 受控复用
+
+策略 v2 每项增加 `reuse_candidate`。仅无复验原因、旧/新依赖均无缺口时为 true；
+它是证据复用候选，不是自动 PASS。所有项仍在最终计划和结果中各保留一次。
+审查者核对对象/物理脚、精确 MPN、装配、工况、判据、模型及资料版本后，才可在当前
+`evidence/rationale` 引用原受控计算，说明适用性复核范围和结论；不要求重复计算相同输入。
+required 项仍必须填写本轮 reverification，复用不能免除已经命中的受影响部分。
+
+完整依赖声明仍绑定当前 db_digest；看过真实差异并确认上下游范围后才能续签，不能脚本
+批量替换摘要。全板 BOM/资料缺少可验证的对象关联时，文件变化仍可能触发全量检查。
+本策略不承诺任何修改都能缩小范围，也不基于文字相似度缓存电气结论。

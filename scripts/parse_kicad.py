@@ -157,6 +157,7 @@ def parse(xml_text, export_errors=()):
             ref2page[ref] = page
 
     nets, pin2net, pinname, pintype = {}, {}, {}, {}
+    native_pintype = {}
     no_connect_nodes, pseudo = [], []
     for net in root.findall('./nets/net'):
         name = _text(net.get('name'))
@@ -174,8 +175,10 @@ def parse(xml_text, export_errors=()):
             if 'no_connect' in kinds:
                 declared_nc.append(key)
                 no_connect_nodes.append(key)
-            electrical = next((x for x in kinds if x != 'no_connect'), '')
+            electrical = next((x for x in kinds if x != 'no_connect'),
+                              'no_connect' if 'no_connect' in kinds else '')
             if electrical:
+                native_pintype[key] = electrical
                 pintype[key] = PINUSE.get(electrical, electrical.upper())
             declared = libparts.get(ref2lib.get(ref, ''), {}).get(
                 'pins', {}).get(pin, ('', ''))[0]
@@ -204,6 +207,7 @@ def parse(xml_text, export_errors=()):
         'export_errors': list(export_errors),
         'missing_primitives': sorted({lib for lib in ref2lib.values() if lib not in libparts}),
         'no_connect_nodes': sorted(set(no_connect_nodes)),
+        'native_pintype': native_pintype,
         'export_meta': {
             'source': (design.findtext('source') or '').strip() if design is not None else '',
             'tool': (design.findtext('tool') or '').strip() if design is not None else '',

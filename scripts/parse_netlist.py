@@ -253,7 +253,30 @@ def self_check(db, strict=True):
         problems.append('nets 为空 —— pstxnet.dat 格式未被识别')
     if not db['parts']:
         problems.append('parts 为空 —— pstxprt.dat 格式未被识别')
-    if n_pin and n_name / n_pin < 0.5:
+    if db.get('export_meta', {}).get('format') == 'kicadxml' and 'native_pintype' in db:
+        # KiCad deliberately leaves R/C/etc. pin names blank. Preserve physical
+        # connectivity checks; assess name-dependent rules on semantic pins.
+        native = db['native_pintype']
+        allowed = {'input', 'output', 'bidirectional', 'tri_state', 'passive',
+                   'free', 'unspecified', 'power_in', 'power_out',
+                   'open_collector', 'open_emitter', 'no_connect'}
+        valid = (isinstance(native, dict) and set(native) == set(db['pin2net'])
+                 and all(isinstance(v, str) and v in allowed for v in native.values()))
+        if not valid:
+            problems.append('KiCad 原生引脚类型缺失/未知，无法区分无源无名脚与功能识别缺口')
+        else:
+            exempt = {'passive', 'free', 'no_connect'}
+            required = [p for p, kind in native.items() if kind not in exempt]
+            missing = sorted(p for p in required if not db['pinname'].get(p))
+            db['pin_name_coverage'] = {
+                'required': len(required), 'named': len(required) - len(missing),
+                'missing_functional_pins': missing,
+                'legitimately_unnamed': sorted(p for p in native
+                    if native[p] in exempt and not db['pinname'].get(p)),
+                'scope': 'Parser function-name coverage, not manufacturer pinout verification'}
+            if missing:
+                problems.append('KiCad 功能引脚缺少名称（无源脚已单列）: ' + ', '.join(missing))
+    elif n_pin and n_name / n_pin < 0.5:
         problems.append(
             f'pinname 覆盖率仅 {n_name}/{n_pin} = {n_name/n_pin:.0%} —— '
             '引脚功能名未被正确提取。PWR-A02(电源脚无驱动)/PWR-A03(地脚未入地) '

@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import sys
 import catalog
+from review_workflow import workflow, decision
 from checkers import REGISTRY, validate_inventories
 from validate_remediation import validate_remediation, READINESS
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
@@ -133,6 +134,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     require(set(checks) == set(expected),
             f"check coverage mismatch: missing={sorted(set(expected)-set(checks))}, "
             f"unexpected={sorted(set(checks)-set(expected))}")
+    stage = workflow(plan, report, checks, expected)
+    errors.extend(stage['errors'])
     accepted = False
     for key, item in checks.items():
         if bindings and key in expected:
@@ -209,7 +212,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if result in ("FAIL", "INSUFFICIENT"):
             if item.get("severity") == "P0":
                 blockers.append(f"{key}: P0 requires verified repair")
-            elif (critical or item.get("blocking")) and not approval_ok:
+            elif (critical or item.get("blocking")) and not approval_ok and key not in stage['downstream_ready']:
                 blockers.append(f"{key}: unresolved blocking {result}")
         h = item.get("handoff", {"required": False})
         require(isinstance(h, dict), f"{key}: invalid handoff")
@@ -368,6 +371,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     for state in READINESS}
     return {"valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
+            "workflow": decision(stage, errors, "NO_GO" if errors else release),
             "revision_validation": {"enforced": revision is not None,
                 "required_checks": sum(e['required'] for e in revision['entries']) if revision else 0,
                 "strategy": revision['strategy'] if revision else None},

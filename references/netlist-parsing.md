@@ -154,3 +154,15 @@ DNP/DNI/DNF/NC 只按分隔词识别为不贴，不能误判 NCP1117 型号。�
 自检与 Cadence 解析器共用：重复归网、索引互反、缺失 libpart、引脚名覆盖率过低都会
 失败退出。KiCad 的无源件引脚名多为 `~`，覆盖率天然偏低，核对时按 IC 引脚看，
 不要用整体百分比代替逐脚核对。
+
+### KiCad 无名称引脚与原生类型
+
+KiCad 解析另存 `native_pintype`，保留 passive/free/no_connect 等原始电气类型。
+通过两个 CLI 共用的 `parse_netlist.self_check()` 检查时，只有原生 passive/free/no_connect 可无功能名；
+其余引脚仍须命名。类型须覆盖全部 pin2net 节点且属于已知类型，未知/缺类型不能豁免。
+纯 no_connect 类型也进入类型索引，不因剥离属性而丢失。
+`pin_name_coverage` 分别列 required、named、missing_functional_pins、legitimately_unnamed。
+
+不为无名称电阻/电容等补造 pinname，不将 passive 强行转成信号或电源脚。此处理仅修正
+解析完整性判据；不替代原厂 pinout、极性、额定值和实际连接审查。Cadence/旧适配器没有
+原生类型契约时保留原有名称覆盖率检查。使用 `parse_kicad.py` 默认严格检查，不用 `--no-strict` 掩盖缺口。

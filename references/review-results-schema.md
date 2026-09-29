@@ -11,6 +11,9 @@
 ## 顶层字段
 
 - `schema_version`: 2。
+- 分阶段报告另有 `workflow_version: 1`、`work_items`；字段、归并与关闭阶段见
+  [design-iteration.md](design-iteration.md)。计划带 review_phase 时强制校验，历史报告不补造。
+  校验输出增加 `workflow`，与原 release 并列，不把继续设计解释为冻结通过。
 - `binding_version`: 新报告为1，逐检查声明已审对象/判据；旧报告可不填，仅用于兼容读取。
 - `remediation_version`: 新报告必须为1；要求每项finding包含详细`remediation`，字段及
   示例见 [remediation-guide.md](remediation-guide.md)。旧v2报告可不填，仅用于兼容校验。
@@ -135,3 +138,7 @@ CI/冻结门使用 `--require-release`，NO_GO 也退出 2。GO/CONDITIONAL_GO �
 候选索引校验，不能声称核对了计划交接。没有证据时也保存一次未带证据运行、hot_pending 未清的
 lint-hot.json，相关缺证项仍为 INSUFFICIENT。
 不传 --lint 时校验器无法验证候选覆盖，不能声称通过此闸门。仅 PDF 模式明确 NA 并留依据。
+
+分阶段的纯下游验证项可附 `handoff.scope: downstream_verification` 和
+`handoff.schematic_prerequisites`；只有设计阶段协议列出的全部条件满足时才不额外阻断冻结。
+FAIL、潜在 P0 或原理图前提未过不能使用；检查结果仍为 INSUFFICIENT。

@@ -258,3 +258,11 @@ PWR-C01（电源轨功率预算）不因 materials.datasheets/requirements 标�
 
 逐物料审计通过 `--datasheet-audit` 传入时优先于全局材料布尔值。
 关键器件完整 pinout 检查仍需逐脚证据；AVAILABLE 只证明资料身份已核实。
+
+## 审查工作阶段与影响策略
+
+`intent.review_phase` 可取 `design_iteration`、`schematic_freeze`、`prototype_verification`，
+计划复制同名字段并绑定保存的意图。阶段协议见 [design-iteration.md](design-iteration.md)。
+它与 `review_mode=first/revision` 正交；新分阶段结果需 work_items，旧计划保守兼容。
+新生成计划使用 `review_policy_version: 2` 标识局部依赖退回策略，详情见
+[revision-impact-schema.md](revision-impact-schema.md)；计划 schema_version 仍为 3。

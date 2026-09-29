@@ -241,9 +241,11 @@ def _coordinates(old_db, new_db, refs=(), nodes=(), nets=()):
     return {'refs': refs, 'nodes': nodes, 'nets': nets}
 
 
-def collect_changes(old_db, db, old_inputs, inputs):
+def collect_changes(old_db, db, old_inputs, inputs, policy_version=1):
     changes = []
     mapped = ('parts', 'pin2net', 'pinname', 'pintype', 'declared_pinname', 'nets', 'ref2page')
+    if policy_version >= 2:
+        mapped += ('native_pintype',)
     for field in mapped:
         before, after = old_db.get(field, {}), db.get(field, {})
         for key in sorted(set(before) | set(after)):
@@ -252,10 +254,19 @@ def collect_changes(old_db, db, old_inputs, inputs):
                 continue
             coordinates = _coordinates(old_db, db,
                 refs=[key] if field in ('parts', 'ref2page') else [],
-                nodes=[key] if field in ('pin2net', 'pinname', 'pintype', 'declared_pinname') else [],
+                nodes=[key] if field in ('pin2net', 'pinname', 'pintype', 'declared_pinname', 'native_pintype') else [],
                 nets=[key] if field == 'nets' else [])
             changes.append(_event('db.' + field, key, bv, av, **coordinates))
     for field in sorted((set(old_db) | set(db)) - set(mapped)):
+        if policy_version >= 2 and field == 'pin_name_coverage':
+            continue  # derived counts; raw pin maps and integrity still compare
+        if policy_version >= 2 and field == 'export_meta':
+            before, after = old_db.get(field, {}), db.get(field, {})
+            if isinstance(before, dict) and isinstance(after, dict):
+                provenance = {'source', 'date', 'tool'}
+                if ({k: v for k, v in before.items() if k not in provenance} ==
+                        {k: v for k, v in after.items() if k not in provenance}):
+                    continue  # format/unknown metadata still invalidate globally
         if digest(old_db.get(field)) != digest(db.get(field)):
             changes.append(_event('db.metadata', field, old_db.get(field), db.get(field), global_scope=True))
     if old_inputs is None:
@@ -263,7 +274,7 @@ def collect_changes(old_db, db, old_inputs, inputs):
     # Intent can encode arbitrary upstream/downstream requirements. Without a
     # domain-specific dependency proof, changed conditions require full review.
     for field in sorted(set(old_inputs['intent']) | set(inputs['intent'])):
-        if field in ('review_mode', 'review_dependencies'):
+        if field in ('review_mode', 'review_dependencies') or (policy_version >= 2 and field in ('input_sha256', 'review_phase')):
             continue
         before, after = old_inputs['intent'].get(field), inputs['intent'].get(field)
         if digest(before) != digest(after):
@@ -343,7 +354,10 @@ def build_impact(plan, db, old_db=None, old_plan=None):
     inputs, dependencies = plan['review_inputs'], plan['check_dependencies']
     old_checks = index_checks(old_plan) if old_plan is not None else {}
     checks = index_checks(plan)
-    changes = collect_changes(old_db, db, old_inputs, inputs) if old_db is not None else []
+    policy = plan.get('review_policy_version', 1)
+    if type(policy) is not int or policy not in (1, 2):
+        raise ValueError('review_policy_version must be 1 or 2')
+    changes = collect_changes(old_db, db, old_inputs, inputs, policy) if old_db is not None else []
     gaps += ['unreadable-current-document:' + x['path'] for x in inputs['documents'] if x['status'] != 'READABLE']
     gaps += ['unmatched-dependency-declaration:' + key for key in plan.get('dependency_unmatched', [])]
     reasons, matched = {}, {}
@@ -370,8 +384,13 @@ def build_impact(plan, db, old_db=None, old_plan=None):
     partial = sorted(key for key, dep in dependencies.items() if dep['gaps'])
     partial += ['old:' + key for key, dep in old_dependencies.items() if dep['gaps']]
     definition_changes = any(why for key, why in reasons.items() if not is_revision_check(checks[key]))
-    full = bool(gaps or ((changes or definition_changes) and
-                        (partial or any(c['global'] for c in changes))))
+    uncertain_scope = bool(changes or definition_changes)
+    full = bool(gaps or (uncertain_scope and
+                (any(c['global'] for c in changes) or (policy == 1 and partial))))
+    if policy >= 2 and not full and uncertain_scope:
+        for key in checks:
+            if dependencies[key]['gaps'] or old_dependencies.get(key, {}).get('gaps'):
+                reasons[key].append('incomplete-local-dependencies')
     # Propagate explicit check-to-check dependencies to a fixed point, including
     # cycles. Only exact IDs participate; no inferred unbounded circuit traversal.
     changed = True
@@ -395,16 +414,20 @@ def build_impact(plan, db, old_db=None, old_plan=None):
                         'status': 'REVERIFY' if why else 'NO_RECORDED_CHANGE',
                         'reasons': sorted(set(why)), 'change_ids': sorted(set(matched[key])),
                         'check_digest': dependencies[key]['check_digest']})
+        if policy >= 2:
+            entries[-1]['reuse_candidate'] = not why and not dependencies[key]['gaps'] and not old_dependencies.get(key, {}).get('gaps')
     impact = {'schema_version': VERSION,
               'baseline': {'db_digest': digest(old_db) if old_db is not None else None,
                            'plan_digest': digest(old_plan) if old_plan is not None else None},
               'current': {'db_digest': digest(db), 'inputs_digest': inputs['digest'],
                           'checks_digest': digest([check_spec(checks[k]) for k in sorted(checks)])},
-              'strategy': 'FULL_REVIEW' if full else 'EXACT_DEPENDENCIES',
+              'strategy': 'FULL_REVIEW' if full else ('MIXED_REVIEW' if policy >= 2 and uncertain_scope and partial else 'EXACT_DEPENDENCIES'),
               'scope': 'Routing only. NO_RECORDED_CHANGE is not automatic reuse or electrical approval.',
               'blocking_gaps': sorted(set(gaps)), 'partial_dependencies': sorted(set(partial)),
               'changes': changes, 'entries': entries,
               'structural_diff': diff_databases(old_db, db) if old_db is not None else None}
+    if policy >= 2:
+        impact['review_policy_version'] = policy
     impact['digest'] = digest(impact)
     return impact
 
@@ -442,6 +465,27 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
                              if c.get('rule') == REMOVED_RULE}
             if carry - set(old_checks) - known_history:
                 raise ValueError('carried revision disposition has no matching old baseline check')
+            scheduled = dict(current)
+            def append_history(item):
+                key = item['id']
+                if key in scheduled:
+                    previous = scheduled[key]
+                    if check_spec(previous) != check_spec(item):
+                        raise ValueError('conflicting historical disposition: ' + key)
+                    # The same historical ID may describe an older definition
+                    # and its latest restored definition. Keep both snapshots.
+                    variants = []
+                    for record in (previous, item):
+                        for spec in [record.get('prior_check'), *record.get('prior_checks', [])]:
+                            if spec is not None and spec not in variants:
+                                if spec.get('id') != item['object']['prior_check_id']:
+                                    raise ValueError('historical snapshot identity mismatch: ' + key)
+                                variants.append(spec)
+                    if len(variants) > 1:
+                        previous['prior_checks'] = sorted(variants, key=digest)
+                    return
+                scheduled[key] = item
+                plan['checks'].append(item)
             for key, check in sorted(old_checks.items()):
                 if (key in current and key not in carry) or check.get('rule') == COVERAGE_RULE:
                     continue
@@ -451,14 +495,14 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
                     retained = deepcopy(check)
                     retained['review_result'] = None
                     retained['evidence_confidence'] = None
-                    plan['checks'].append(retained)
+                    append_history(retained)
                     continue
                 removed_id = REMOVED_RULE + '.' + digest(key)
                 if removed_id in current:
                     raise ValueError('reserved removed-check ID')
                 removed = _review_check(removed_id, REMOVED_RULE, {'feature': key, 'prior_check_id': key})
                 removed['prior_check'] = check_spec(check)
-                plan['checks'].append(removed)
+                append_history(removed)
         plan['checks'].append(_review_check(COVERAGE_ID, COVERAGE_RULE, {'feature': 'revision-impact'}))
     plan['checks'].sort(key=lambda c: c['id'])
     plan['dependency_version'] = VERSION
@@ -487,7 +531,12 @@ def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=Fal
             raise ValueError('dependency/revision validation requires --db')
         if type(plan.get('dependency_version')) is not int or plan['dependency_version'] != VERSION:
             raise ValueError('dependency_version must be 1')
+        policy = plan.get('review_policy_version', 1)
+        if type(policy) is not int or policy not in (1, 2):
+            raise ValueError('review_policy_version must be 1 or 2')
         inputs = plan['review_inputs']
+        if plan.get('review_phase') != inputs['intent'].get('review_phase'):
+            errors.append('review_phase differs from frozen intent')
         _verify_frozen_inputs(inputs, db)
         if revision and plan.get('review_mode') != 'revision':
             raise ValueError('revision impact requires revision review_mode')
