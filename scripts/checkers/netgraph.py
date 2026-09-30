@@ -212,6 +212,10 @@ class NetGraph:
     def _role(self, ref, name):
         kind = self.kind(ref)
         if kind in (MOSFET, BJT):
+            # The shared graph uses gate/drain/source coordinates for B/C/E.
+            # This alias enables tracing, not a MOS drive model for a BJT.
+            if kind == BJT and name in {'B', 'BASE'}:
+                return 'gate'
             if name in GATE_NAMES or name.startswith('GATE'):
                 return 'gate'
             if name in DRAIN_NAMES:

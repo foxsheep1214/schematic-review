@@ -74,7 +74,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertIsNone(confirm['review_result'])
         self.assertFalse(any(item['object'].get('package') == 'DDR' for item in plan['checks']))
         self.assertEqual(get_feature(plan, 'USB')['applicability'],
-                         'APPLICABLE')
+                         'UNDETERMINED')
         pair = next(item for item in plan['checks']
                     if item['rule'] == 'SIG-T01')
         self.assertTrue(pair['handoff']['required'])
@@ -138,6 +138,8 @@ class ReviewPlanTests(unittest.TestCase):
     def test_intent_netlist_conflict_is_not_na(self):
         intent = {
             'schema_version': 3,
+            'circuits': [{'id': 'PORT', 'type': 'USB', 'refs': ['U2', 'J1'],
+                          'states': ['run'], 'citation': 'synthetic confirmed USB port'}],
             'features': {
                 'USB': {
                     'applicability': 'NOT_APPLICABLE',
@@ -190,7 +192,7 @@ class ReviewPlanTests(unittest.TestCase):
         db['pintype'] = {'U2.6': 'OUT', 'J1.6': 'IN'}
         plan = build_review_plan(db)
         self.assertEqual(get_feature(plan, 'SPI')['applicability'],
-                         'APPLICABLE')
+                         'UNDETERMINED')
         self.assertIn('I2C', undetected(plan)['object']['packages'])
         self.assertFalse(any(item['rule'] == 'SIG-E01'
                              for item in plan['checks']))
@@ -314,7 +316,8 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(conditions['required_inputs'], ['datasheets', 'requirements'])
 
     def test_package_members_expand_per_circuit_or_once_per_package(self):
-        plan = build_review_plan(sample_db())
+        plan = build_review_plan(sample_db(), {'features': {
+            'USB': {'applicability': 'APPLICABLE', 'citation': 'synthetic USB function'}}})
         usb = sorted(x['rule'] for x in plan['checks']
                      if x.get('package') == 'USB' and x['rule'] != 'REQ-Q07')
         self.assertEqual(usb, sorted(catalog.package('USB').rules))

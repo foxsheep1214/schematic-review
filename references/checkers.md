@@ -32,7 +32,9 @@
 | `topology` | 连接关系加引脚角色成立 | 自动扫描发现、计划项、证据计算 |
 | `name-hint` | 只有网名/型号线索 | 计划项（`UNDETERMINED`，需 intent 确认） |
 
-名称、`nc=false`、库名 `Bridged`、焊盘默认图形都不是证据。无法分类的器件记为未知并形成
+名称线索、`nc=false`、库名 `Bridged`、焊盘默认图形不能证明装配或功能模式。
+去耦清单可使用已解析的标准 KiCad Device:C 等符号确认无源类别，仅证明类别，不证明实际料号、
+容量额定或贴装；显式类别声明优先，自定义/未知符号仍需确认。无法分类的器件记为未知并形成
 缺口，不按名称推定不适用。
 
 **装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
@@ -208,9 +210,10 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 计划：清单完整性项（PWR-D01）+ 逐状态逐组连接覆盖项（PWR-T03），随后分开审查接法（PWR-D02）、
 数量/容量（PWR-C09）与额定值（PWR-C10）；`requirements` 的三类 `kind` 依次对应这三条规则。电气行的
 `required_material_refs` 列出目标器件与本组已确认贴装的电容，供资料取证时按需
-`audit_datasheets.py --require-ref C1`；参数需绑定准确电容订货码，不能用一般
-`datasheets.available` 替代逐料号证据。接法行独立形成 PCB HANDOFF。容量缺口不自动否定另一个
-已证实的窄连接结论。
+`audit_datasheets.py --require-ref C1`；按实际判据绑定受控电容规格，依赖具体偏压/ESR/寿命特性时核准确订货码，不能用一般
+`datasheets.available` 代替适用参数。接法行独立形成 PCB HANDOFF。容量缺口不自动否定另一个
+已证实的窄连接结论。标准无源符号类别不再重复索取 components 声明；power_in 只生成候选，
+HV 启动/检测或端口储能等角色须按实际器件条款确认，不能由该类型强制本地去耦。
 
 ## 感性负载续流与钳位（`inductive_load`）
 
@@ -269,13 +272,16 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   电容→目标网）。跨负载接到电源轨的续流二极管同样计入，不只看漏源之间。
 - 开关节点证据：节点上的电感/变压器/继电器、对管源极、`SW/LX/PH/HS/LS` 类引脚。
 
-intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）只用于声明角色与
-装配状态；未声明时按图状态扫描并保留 `assembly state unverified` 缺口。
+intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）声明实际角色及出处；
+装配共用顶层 assemblies；未声明时按图扫描并保留 `assembly state unverified` 缺口。
+带出处的 role 可用 `linear/source_follower/emitter_follower` 明确线性用途：不生成 RDS(on)
+开关驱动窗口，改查实际工作点/驱动/额定；感性节点的钳位候选仍保留，按实际拓扑确认。BJT 不生成 MOS 的 DRV-E01；
+共用图坐标 gate/drain/source 对应 B/C/E，仅用于追踪。角色未知仍保留待核，不按浮地位置猜用途。
 
 自动扫描：`DRV-A03` 栅极既无驱动源也无下拉/上拉（上电与驱动高阻时状态不确定）；
 `DRV-A04` 开关节点接感性元件或半桥中点但无吸收/钳位（CANDIDATE）。
 
-证据计算 `DRV-E01`（`gate_drive`）：最小栅源驱动不低于 RDS(on) 保证条件的 VGS，且驱动窗口不超
+证据计算 `DRV-E01`（`gate_drive`）仅适用需要该 RDS(on) 保证的 MOS 开关：最小栅源驱动不低于 RDS(on) 保证条件的 VGS，且驱动窗口不超
 栅源绝限；P 沟道按量纲翻转后比较。PASS 不覆盖开关速度、米勒导通、SOA 与热。
 
 计划项：栅源驱动（DRV-E01）、安全工作区与降额（DRV-C02，HANDOFF 给热与版图：结温按实际散热

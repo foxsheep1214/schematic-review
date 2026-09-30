@@ -75,6 +75,9 @@
 
 枚举定义见 severity-calibration.md。PASS/FAIL 只能 A/B，INSUFFICIENT 必须 C 并给
 `missing_inputs` 非空数组与 `potential_severity`；非 FAIL 不填 severity。
+missing_inputs 按 [最小充分证据](evidence-proportionality.md) 写具体参数/身份/工况，rationale
+说明已有事实及受影响判断；取得方法、承担角色和关闭阶段放关联 work_item 或引用记录，不新增必填表单。
+已有资料未分析列审查待完成，下游物理验证单列移交，汇总不重复索取成员资料。
 所有结果含非空 `rationale` 与可定位 `evidence`（缺失清单本身也是定位证据）。
 NA 必须 NOT_APPLICABLE；从自动计划修改适用性需 `applicability_evidence` 同样来源/定位数组。
 UNDETERMINED 适用性只能落 INSUFFICIENT。未执行项不可填 PASS，不能用 NA 消失。

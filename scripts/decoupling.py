@@ -19,6 +19,13 @@ from i2c_topology import digest, validate_db_shape
 KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other'}
 SECTION_SCHEMA_VERSION = 2
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
+NATIVE_SYMBOL_KINDS = {
+    'Device:C': 'capacitor', 'Device:C_Polarized': 'capacitor',
+    'Device:C_Small': 'capacitor', 'Device:C_Polarized_Small': 'capacitor',
+    'Device:R': 'resistor', 'Device:R_Small': 'resistor',
+    'Device:L': 'inductor', 'Device:L_Small': 'inductor',
+    'Device:Ferrite_Bead': 'ferrite', 'Device:Ferrite_Bead_Small': 'ferrite',
+}
 POWER = re.compile(r'(^|[_/.-])(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|DVCC\w*|VIN|VOUT|VBAT|VBUS)(?=$|[_/.-])', re.I)
 GROUND = re.compile(r'(^|[_/.-])(?:GND\w*|[APD]?VSS\w*|[APD]GND\w*)(?=$|[_/.-])', re.I)
 PASSIVE_PREFIX = re.compile(r'^(?:R|C|L|FB|F|JP|TP|J|P|CN|Y)\d', re.I)
@@ -185,11 +192,21 @@ class Inventory:
     def kind(self, ref):
         if ref in self.components:
             return self.components[ref]['kind']
+        native = NATIVE_SYMBOL_KINDS.get(self.parts.get(ref, {}).get('prim'))
+        if native:
+            return native
         for pattern, kind in ((r'^C\d', 'capacitor'), (r'^R\d', 'resistor'), (r'^FB\d', 'ferrite'),
                               (r'^L\d', 'inductor'), (r'^JP\d', 'jumper')):
             if re.match(pattern, ref, re.I):
                 return kind
         return 'unmodeled'
+
+    def kind_basis(self, ref):
+        if ref in self.components:
+            return 'declared'
+        if self.parts.get(ref, {}).get('prim') in NATIVE_SYMBOL_KINDS:
+            return 'native-symbol'
+        return 'refdes-hint'
 
     def role(self, node):
         ref, _, pin = node.rpartition('.')
@@ -239,7 +256,7 @@ class Inventory:
             nodes = sorted(self.nodes[ref])
             nets = [self.pin2net.get(n) for n in nodes]
             gaps = []
-            if ref not in self.components:
+            if self.kind_basis(ref) == 'refdes-hint':
                 gaps.append('component-kind:' + ref)
             if len(nodes) != 2 or any(n is None or n in self.pseudo for n in nets):
                 gaps.append('capacitor-two-pin-connection:' + ref)
@@ -250,7 +267,9 @@ class Inventory:
             caps[ref] = {'ref': ref, 'nodes': nodes, 'nets': nets, 'value': self.parts[ref].get('value'),
                          'nominal_f': parse_capacitance(self.parts[ref].get('value')),
                          'populated': population.get(ref), 'parsed_nc': self.parts[ref].get('nc'),
-                         'kind_basis': 'declared' if ref in self.components else 'refdes-hint',
+                         'kind_basis': self.kind_basis(ref),
+                         'kind_source': self.components[ref]['citation'] if ref in self.components
+                             else 'db.parts.' + ref + '.prim=' + str(self.parts[ref].get('prim')),
                          'gaps': gaps, 'matched_groups': []}
             for net in set(nets) - {None}:
                 by_net[net].add(ref)
@@ -344,7 +363,7 @@ def build_decoupling_inventory(db, intent=None):
     inv = Inventory(db, cfg, (intent or {}).get('devices'))
     groups, device_records = inv.groups(), inv.device_inventory()
     unknown = sorted(ref for ref in inv.parts if ref not in inv.devices and
-                     ref not in inv.components and not PASSIVE_PREFIX.match(ref))
+                     inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref))
     discovery_gaps = set(inv.input_gaps) | {'unverified-device-pinout:' + r for r in unknown}
     for device in device_records:
         if not device['pinout_complete']:

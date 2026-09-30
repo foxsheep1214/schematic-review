@@ -408,7 +408,7 @@ class ReviewPlanner:
                            required_inputs=['intent.assemblies'], trigger=['assembly-options'])
 
     def plan_packages(self):
-        """功能包：检出或声明即生成 REQ-Q07 汇总项与全部成员规则；未检出也未声明的汇总到一项 REQ-Q08。"""
+        """功能包：名称仅生成待确认汇总项；声明/拓扑确认后展开成员，未发现的由 REQ-Q08 覆盖。"""
         declared = {str(key).upper(): value for key, value in self.intent.get('features', {}).items()}
         circuits = {}
         for circuit in self.intent.get('circuits', []):
@@ -419,11 +419,13 @@ class ReviewPlanner:
         for package in catalog.PACKAGES + tuple(custom):
             name = package.name
             hits = _feature_hits(self.db, package.pattern)
-            if name == 'I2C' and any(b['origin'] != 'name-hint'
-                    for s in self.i2c_topology['states'] for b in s['buses']):
+            topology_confirmed = name == 'I2C' and any(b['origin'] != 'name-hint'
+                    for s in self.i2c_topology['states'] for b in s['buses'])
+            if topology_confirmed:
                 hits.append('declared I2C physical bus/port mapping')
             declared_circuits = circuits.get(name, [])
             found = hits + [f'intent.circuits:{c["id"]}' for c in declared_circuits]
+            confirmed = bool(declared_circuits) or topology_confirmed
             item = declared.get(name)
             requested = item.get('applicability') if item else None
             trigger = [f'netlist:{x}' for x in hits]
@@ -431,18 +433,20 @@ class ReviewPlanner:
             if item and item.get('citation'):
                 trigger.append(f'intent:{item["citation"]}')
 
-            if requested == 'NOT_APPLICABLE' and found:
+            if requested == 'NOT_APPLICABLE' and confirmed:
                 applicability = 'UNDETERMINED'
                 self.diagnostics.append({
                     'code': 'INTENT_NETLIST_CONFLICT',
                     'feature': name,
-                    'detail': '意图声明不适用，但网表或电路声明中有该功能包',
+                    'detail': '不适用声明与已确认拓扑或电路声明冲突；纯名称命中不构成冲突',
                     'hits': found,
                 })
             elif requested in ('APPLICABLE', 'NOT_APPLICABLE'):
                 applicability = requested
-            elif found:
+            elif confirmed:
                 applicability = 'APPLICABLE'
+            elif found:
+                applicability = 'UNDETERMINED'
             elif item:
                 applicability = 'UNDETERMINED'
             else:
@@ -453,7 +457,7 @@ class ReviewPlanner:
                 missing = []
             elif applicability == 'UNDETERMINED':
                 missing = [f'intent.features.{name}']
-                if requested == 'NOT_APPLICABLE' and found:
+                if requested == 'NOT_APPLICABLE' and confirmed:
                     missing.append('resolve intent/netlist conflict')
             else:
                 missing = self._materials_gap(package.materials)

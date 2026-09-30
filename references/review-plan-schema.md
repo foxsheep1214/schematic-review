@@ -77,8 +77,9 @@ PASS/FAIL。计划 `schema_version` 为 3；用旧编号（版本 1）或旧功�
   `NOT_APPLICABLE`、`UNDETERMINED`。
 - 声明 `APPLICABLE` 或 `NOT_APPLICABLE` 必须同时给 `citation`。
 - `materials.<name>.available=true` 必须同时给 `citation`。
-- 仅从网表“没搜到某关键字”不能推出 `NOT_APPLICABLE`；没有设计意图证据时为
-  `UNDETERMINED`。
+- 名称命中只生成 `UNDETERMINED` 候选汇总，不展开全部成员；由实际电路声明、features
+  出处或已确认 I²C 拓扑确认后再展开。带出处的不适用声明可排除名称误命中；与已确认
+  拓扑/电路声明冲突则保留待核。没搜到关键字也不能推出 `NOT_APPLICABLE`。
 - `schema_version` 可省略；给出时必须为 3。只含 `expect` 的最小 intent 仍可使用。
 - `features` 的键与 `circuits[].type` 取规则总表“功能包”中的包名（`features` 另可写项目自定义
   功能）；旧名 `RESET`、`USB_C`、`CAN_RS485` 会被拒绝并提示新名，旧字段名 `domain` 同样拒绝。
@@ -183,8 +184,9 @@ validate_review.py，见 review-results-schema.md。热跑生成的新计划不�
 则 WAITING_EVIDENCE。每条匹配 evidence 生成独立 evidence_check_id、parent_check_id 和 object.state；
 匹配时 node/net/ref 必须一致。READY 不证明求解器支持该拓扑，也不代表 PASS。
 
-功能包汇总项（REQ-Q07，对象 `{"package": 包名}`）是 coverage_parent，只汇总覆盖。网表检出特征或
-意图声明（`features`、`circuits`）使功能包适用后，计划生成全部成员规则：声明了电路时逐电路×工况
+功能包汇总项（REQ-Q07，对象 `{"package": 包名}`）是 coverage_parent，只汇总覆盖。纯名称候选
+先确认用途，不展开成员；意图声明（`features`、`circuits`）或已确认拓扑使功能包适用后生成成员规则，
+各成员仍须按 [最小充分证据](evidence-proportionality.md) 核适用性：声明了电路时逐电路×工况
 展开，未声明时按功能包展开一次（对象同为 `{"package": 包名}`）；已识别 I²C 连接区域时由检查器逐区域
 展开 I²C 成员。agent 应从实际电路和需求填 intent.circuits，让成员检查落到具体位号和工况。
 此扩展不声称自动识别任意电路：未检出也未声明的功能包汇总到一项 REQ-Q08（对象

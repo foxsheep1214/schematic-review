@@ -24,14 +24,21 @@ DRIVER_PIN_RE = re.compile(r'^(HO|LO|HB|OUT\w*|DRV\w*|GATE\w*|SRC|SINK|O\d+)$', 
 OUT_PINTYPES = {'OUT', 'OUTPUT', 'BI', 'BIDI', 'BIDIR', 'BIDIRECTIONAL', 'IO', 'I/O',
                 'TRISTATE', '3STATE'}
 MAX_SWITCHES = 256
+LINEAR_ROLES = {'linear', 'source_follower', 'emitter_follower'}
 
 
 def validate_power_switch_intent(intent, db=None):
     """校验可选的 power_switches 配置段。"""
-    return state_lib.section_errors(
+    errors = state_lib.section_errors(
         intent, db, 'power_switches', item_field='switches', item_key='switch',
         fields=('id', 'ref', 'role', 'gate_net', 'citation'),
         net_fields=('gate_net',))
+    if errors or not isinstance(intent, dict) or 'power_switches' not in intent:
+        return errors
+    for item in intent['power_switches'].get('switches', []):
+        if 'role' in item and (not isinstance(item['role'], str) or not item['role'].strip()):
+            errors.append('power_switches: role must be a non-empty string when supplied')
+    return errors
 
 
 class _Scan:
@@ -40,7 +47,7 @@ class _Scan:
     def __init__(self, db, state, declared, excluded):
         self.graph = ng.NetGraph(db, fitted=set(state['fitted']))
         self.state = state
-        self.declared = declared
+        self.declared = declared if isinstance(declared, dict) else {ref: {} for ref in declared}
         self.excluded = excluded
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
         self.tree = powertree.PowerTree(self.graph)
@@ -153,6 +160,8 @@ class _Scan:
                 'ref': ref,
                 'kind': graph.kind(ref),
                 'basis': 'declared' if ref in self.declared else 'topology',
+                'role': self.declared.get(ref, {}).get('role'),
+                'role_citation': self.declared.get(ref, {}).get('citation'),
                 'topology': topology,
                 'source_rail_basis': source_basis,
                 'gate_node': nodes['gate'],
@@ -171,7 +180,8 @@ class _Scan:
 def build_inventory(db, intent=None):
     """生成逐状态的功率开关清单。"""
     cfg = (intent or {}).get('power_switches') if isinstance(intent, dict) else None
-    declared = state_lib.declared_refs(cfg, 'switches')
+    declared = {item['ref']: item for item in (cfg or {}).get('switches', [])
+                if isinstance(item, dict) and isinstance(item.get('ref'), str)}
     excluded = state_lib.excluded_refs(cfg)
     gaps = [] if cfg else ['intent.power_switches: 未声明开关角色']
     return inv.build(db, intent, 'power_switches', 'switches',
@@ -217,18 +227,24 @@ class PowerSwitchChecker(Checker):
             if switch['gate_node']:
                 obj['node'] = switch['gate_node']
             gaps = switch['gaps']
-            ready = planner.evidence_ready('DRV-E01', obj)
-            item = planner.add_check(
-                'DRV-E01', dict(obj), key=switch['id'],
-                readiness='READY' if ready else 'WAITING_EVIDENCE',
-                required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: DRV-E01 栅源驱动/绝限/RDS(on) 条件保证值']))),
-                trigger=['power-switch:' + switch['id'], 'topology:' + switch['topology']])
-            item['inventory_gaps'] = gaps
+            linear = switch.get('role') in LINEAR_ROLES
+            # MOS on-resistance evidence is meaningless for BJT/linear stages.
+            # DRV-C02 retains the device and its actual drive/operating-point duty.
+            if switch['kind'] == ng.MOSFET and not linear:
+                ready = planner.evidence_ready('DRV-E01', obj)
+                item = planner.add_check(
+                    'DRV-E01', dict(obj), key=switch['id'],
+                    readiness='READY' if ready else 'WAITING_EVIDENCE',
+                    required_inputs=sorted(set(gaps + ([] if ready else [
+                        'evidence: DRV-E01 栅源驱动/绝限/RDS(on) 条件保证值']))),
+                    trigger=['power-switch:' + switch['id'], 'topology:' + switch['topology']])
+                item['inventory_gaps'] = gaps
             item = planner.add_check(
                 'DRV-C02', dict(obj), key=switch['id'], readiness='WAITING_EVIDENCE',
-                required_inputs=sorted(set(gaps + [
-                    'datasheet:SOA 曲线与脉宽条件', 'intent:最坏工况电流/电压/重复率'])),
+                required_inputs=sorted(set(gaps + (
+                    ['datasheet:实际驱动与 VGS/VBE/VCE 额定', 'intent:输出范围/负载/损耗及适用 SOA']
+                    if linear or switch['kind'] == ng.BJT else
+                    ['datasheet:SOA 曲线与脉宽条件', 'intent:最坏工况电流/电压/重复率']))),
                 trigger=['power-switch:' + switch['id']],
                 handoff=handoff({'required': True, 'receivers': ['Thermal', 'PCB Layout'],
                                  'constraint': '结温按实际散热路径核算，栅极回路与开关回路面积最小',
@@ -307,7 +323,8 @@ class PowerSwitchChecker(Checker):
 
     def rule_instances(self, rule, inventory):
         return sorted({switch['id'] for _, switch in inv.walk(inventory, 'switches')
-                       if switch['gate_net']})
+                       if switch['gate_net'] and (rule != 'DRV-E01' or (
+                           switch['kind'] == ng.MOSFET and switch.get('role') not in LINEAR_ROLES))})
 
     def binds(self, item):
         obj = item.get('object')

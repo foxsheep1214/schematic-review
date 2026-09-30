@@ -12,11 +12,14 @@ Layout”，不表示 PCB 已通过审查，也不表示整板可以投板生产
 |---|---|---|
 | PASS | 原理图与 datasheet/需求证据充分且符合 | 无 |
 | FAIL | 原理图证据已证明存在问题 | P0–P3 按 severity-calibration.md 处置 |
-| INSUFFICIENT | 本项适用，但缺需求、功耗或可靠来源，无法定判 | 阻断级项未补齐或未书面接受时阻断 |
+| INSUFFICIENT | 本项适用，但缺会改变本判据的具体输入，无法定判 | 阻断级项未补齐或未书面接受时阻断 |
 | NA | 经适用性判断后确认不适用 | 无；必须写明不适用依据 |
 
 NA 不得代替 INSUFFICIENT。A/B/C 只用于独立的 `evidence_confidence` 字段，
 A/B/C 定义以 severity-calibration.md 为准；C 表示结论证据未齐，对应 INSUFFICIENT。
+
+适用性及证据尺度见 [最小充分证据](evidence-proportionality.md)。已有资料尚未分析的事项
+列“审查待完成”，不得称为外部证据缺失；不满足通用模板本身不构成电气缺陷。
 
 ## 独立 HANDOFF 动作
 
