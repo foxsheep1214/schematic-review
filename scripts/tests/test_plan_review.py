@@ -95,6 +95,29 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(history['applicability'], 'NOT_APPLICABLE')
         self.assertFalse(any(item['rule'] == 'PWR-T02' for item in plan['rule_plan']))
 
+    def test_name_hint_does_not_expand_package_members(self):
+        plan = build_review_plan(sample_db())
+        summary = get_feature(plan, 'USB')
+        self.assertEqual(summary['applicability'], 'UNDETERMINED')
+        self.assertIn('intent.features.USB', summary['required_inputs'])
+        self.assertTrue(any(t.startswith('netlist:') for t in summary['trigger']))
+        self.assertFalse([x for x in plan['checks'] if x.get('package') == 'USB'
+                          and x['rule'] != 'REQ-Q07'])
+
+    def test_cited_na_excludes_name_hint_without_inventing_conflict(self):
+        intent = {'features': {'USB': {
+            'applicability': 'NOT_APPLICABLE',
+            'citation': 'synthetic mode map: named pins serve charging detection only'}}}
+        plan = build_review_plan(sample_db(), intent)
+        summary = get_feature(plan, 'USB')
+        self.assertEqual(summary['applicability'], 'NOT_APPLICABLE')
+        self.assertEqual(summary['review_result'], 'NA')
+        self.assertTrue(any(t.startswith('netlist:') for t in summary['trigger']))
+        self.assertFalse(any(x['code'] == 'INTENT_NETLIST_CONFLICT'
+                             for x in plan['diagnostics']))
+        self.assertFalse([x for x in plan['checks'] if x.get('package') == 'USB'
+                          and x['rule'] != 'REQ-Q07'])
+
     def test_explicit_na_requires_intent_and_citation(self):
         intent = {
             'schema_version': 3,

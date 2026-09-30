@@ -240,6 +240,56 @@ class DecouplingInventoryTests(unittest.TestCase):
         self.assertEqual(group(inv)['fitted_count'], 1)
         self.assertTrue(state(inv)['capacitors'][0]['parsed_nc'])
 
+    def test_native_capacitor_symbol_confirms_category_without_duplicate_declaration(self):
+        for symbol in ('Device:C', 'Device:C_Polarized', 'Device:C_Small',
+                       'Device:C_Polarized_Small'):
+            with self.subTest(symbol=symbol):
+                db, intent = fixture(('100nF',))
+                db['parts']['C1']['prim'] = symbol
+                intent['decoupling']['components'] = {}
+                rebind(db, intent)
+                inv = build_decoupling_inventory(db, intent)
+                g = group(inv)
+                cap = state(inv)['capacitors'][0]
+                self.assertNotIn('component-kind:C1', g['gaps'])
+                self.assertEqual(g['fitted_capacitors'], ['C1'])
+                self.assertAlmostEqual(g['nominal_total_f'], 100e-9)
+                self.assertEqual(cap['kind_basis'], 'native-symbol')
+                self.assertIn(symbol, cap['kind_source'])
+                self.assertNotIn('review_result', g)
+                self.assertNotIn('effective_capacitance_f', g)
+
+    def test_native_capacitor_with_nonstandard_ref_is_not_an_unverified_ic(self):
+        db, intent = fixture(())
+        add(db, 'XC_A', '220nF', [('1', '1', 'VCC_3V3'), ('2', '2', 'GND')])
+        db['parts']['XC_A']['prim'] = 'Device:C'
+        intent['assemblies'][0]['population']['XC_A'] = True
+        rebind(db, intent)
+        inv = build_decoupling_inventory(db, intent)
+        self.assertEqual(group(inv)['fitted_capacitors'], ['XC_A'])
+        self.assertNotIn('XC_A', inv['unverified_device_refs'])
+        self.assertNotIn('unverified-device-pinout:XC_A', inv['discovery_gaps'])
+
+    def test_native_category_does_not_waive_population_or_connection_gaps(self):
+        for missing in ('population', 'connection'):
+            with self.subTest(missing=missing):
+                db, intent = fixture(('100nF',))
+                db['parts']['C1']['prim'] = 'Device:C'
+                intent['decoupling']['components'] = {}
+                if missing == 'population':
+                    del intent['assemblies'][0]['population']['C1']
+                    expected = 'population:C1'
+                else:
+                    db['nets']['GND'].remove('C1.2')
+                    del db['pin2net']['C1.2']
+                    expected = 'capacitor-two-pin-connection:C1'
+                rebind(db, intent)
+                g = group(build_decoupling_inventory(db, intent))
+                self.assertNotIn('component-kind:C1', g['gaps'])
+                self.assertIn(expected, g['gaps'])
+                self.assertEqual(g['fitted_count'], 0)
+                self.assertIsNone(g['nominal_total_f'])
+
     def test_prefix_is_hint_not_confirmed_component_kind(self):
         db, intent = fixture(('100nF',))
         intent['decoupling']['components'] = {}

@@ -144,6 +144,58 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(rules['DRV-E01']['applicability'], 'APPLICABLE')
         self.assertEqual(rules['DRV-E01']['readiness'], 'WAITING_EVIDENCE')
 
+    def test_bjt_base_is_traced_without_mos_on_resistance_requirements(self):
+        db = switch_board(load=None)
+        db['parts']['Q1'].update(part='MMBT3904', value='MMBT3904',
+                                prim='Transistor_BJT:MMBT3904')
+        db['pinname'].update({'Q1.1': 'B', 'Q1.2': 'C', 'Q1.3': 'E'})
+        inventory = build_inventory(db)
+        switch = switches_of(inventory)['Q1']
+        self.assertEqual(switch['kind'], 'bjt')
+        self.assertEqual(switch['gate_node'], 'Q1.1')
+        self.assertNotIn('pin-roles:Q1', switch['gaps'])
+        plan = build_review_plan(db)
+        items = [x for x in plan['checks'] if x['object'].get('power_switch')]
+        self.assertEqual({x['rule'] for x in items}, {'DRV-C02'})
+        self.assertFalse(any('RDS(on)' in p for x in items for p in x['required_inputs']))
+        self.assertTrue(any('VBE/VCE' in p for x in items for p in x['required_inputs']))
+
+    def test_declared_linear_mos_retains_stress_and_clamp_checks(self):
+        for role in ('linear', 'source_follower'):
+            with self.subTest(role=role):
+                db = switch_board()
+                intent = bound_intent(db, {'power_switches': {'schema_version': 2,
+                    'switches': [{'id': 'Q1-LINEAR', 'ref': 'Q1', 'role': role,
+                                  'citation': 'synthetic linear-stage mode map'}]}})
+                self.assertEqual(validate_power_switch_intent(intent, db), [])
+                switch = switches_of(build_inventory(db, intent), 'run')['Q1']
+                self.assertEqual(switch['role'], role)
+                self.assertEqual(switch['role_citation'], 'synthetic linear-stage mode map')
+                plan = build_review_plan(db, intent)
+                items = [x for x in plan['checks'] if x['object'].get('power_switch')]
+                self.assertEqual({x['rule'] for x in items}, {'DRV-C02', 'DRV-D01'})
+                self.assertIn('DRV-A04', [f['rule'] for f in findings(db, intent)])
+
+    def test_floating_source_without_declared_role_keeps_mos_drive_check(self):
+        db = switch_board(load=None)
+        db['nets']['GND'].remove('Q1.3')
+        db['nets']['FLOAT_SOURCE'] = ['Q1.3']
+        db['pin2net']['Q1.3'] = 'FLOAT_SOURCE'
+        self.assertEqual(switches_of(build_inventory(db))['Q1']['topology'], 'floating')
+        plan = build_review_plan(db)
+        items = [x for x in plan['checks'] if x['object'].get('power_switch')]
+        self.assertIn('DRV-E01', {x['rule'] for x in items})
+
+    def test_invalid_role_is_rejected_before_membership_checks(self):
+        db = switch_board()
+        for role in (None, [], {}, True, ''):
+            with self.subTest(role=role):
+                intent = bound_intent(db, {'power_switches': {'schema_version': 2,
+                    'switches': [{'id': 'Q1', 'ref': 'Q1', 'role': role,
+                                  'citation': 'synthetic role-input record'}]}})
+                errors = validate_power_switch_intent(intent, db)
+                self.assertTrue(any('role must be a non-empty string' in e for e in errors))
+
     def test_damping_item_only_exists_with_a_switch_node(self):
         plan = build_review_plan(switch_board(load=None))
         self.assertNotIn('DRV-D01', {x['rule'] for x in plan['checks']})
