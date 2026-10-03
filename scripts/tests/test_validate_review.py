@@ -93,6 +93,25 @@ class ReviewGateTests(unittest.TestCase):
         self.assertEqual(result['release'], 'NO_GO')
         self.assertEqual(result['summary']['confirmed_defects'], 0)
 
+    def test_gap_cause_is_counted_and_limited_to_insufficient(self):
+        p, r, db = fixture()
+        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['firmware OVP table'],
+                              potential_severity='P2', gap_cause='EXTERNAL_DATA')
+        result = validate_review(p, r, db)
+        self.assertTrue(result['valid'], result)
+        self.assertEqual(result['insufficient_by_cause'], {'EXTERNAL_DATA': 1})
+        r['checks'][0]['gap_cause'] = 'TOO_STRICT'
+        self.assertFalse(validate_review(p, r, db)['valid'])
+        p, r, db = fixture()
+        r['checks'][0]['gap_cause'] = 'EXTERNAL_DATA'
+        self.assertFalse(validate_review(p, r, db)['valid'])
+
+    def test_untagged_insufficient_reported_as_unspecified(self):
+        p, r, db = fixture()
+        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['magnetics Isat'],
+                              potential_severity='P2')
+        self.assertEqual(validate_review(p, r, db)['insufficient_by_cause'], {'UNSPECIFIED': 1})
+
     def test_p1_blocks_even_if_agent_sets_nonblocking(self):
         p, r, db = fixture(); fail(r)
         result = validate_review(p, r, db)

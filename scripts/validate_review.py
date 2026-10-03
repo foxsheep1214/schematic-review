@@ -19,6 +19,8 @@ from revision_impact import validate_metadata, validate_reverification, check_sp
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
 APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
+# Optional INSUFFICIENT cause (evidence-proportionality.md); over-strict checks are re-judged, not tagged.
+GAP_CAUSES = ("EXTERNAL_DATA", "DESIGN_OPEN", "REVIEW_INCOMPLETE", "DOWNSTREAM_VERIFICATION", "USER_DEFERRED")
 SCOPE = set(catalog.COVERAGE_RULES)
 
 
@@ -182,6 +184,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             require(ids(item.get("missing_inputs")), f"{key}: missing_inputs required")
             require(item.get("potential_severity") in tuple(SEVERITIES),
                     f"{key}: potential_severity required")
+        if "gap_cause" in item:
+            require(result == "INSUFFICIENT" and item["gap_cause"] in GAP_CAUSES,
+                    f"{key}: gap_cause is one of {'/'.join(GAP_CAUSES)} and only on INSUFFICIENT")
         if result == "FAIL":
             require(item.get("severity") in tuple(SEVERITIES), f"{key}: invalid severity")
             fid = item.get("finding_id")
@@ -366,11 +371,14 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     release = "NO_GO" if errors or blockers else ("CONDITIONAL_GO" if accepted else "GO")
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")
+    gap_causes = dict(Counter(x.get("gap_cause", "UNSPECIFIED") for x in checks.values()
+                              if x.get("review_result") == "INSUFFICIENT"))
     repair_counts = {state: sum(isinstance(x.get("remediation"), dict) and
                     x["remediation"].get("readiness") == state for x in findings.values())
                     for state in READINESS}
     return {"valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
+            "insufficient_by_cause": gap_causes,
             "workflow": decision(stage, errors, "NO_GO" if errors else release),
             "revision_validation": {"enforced": revision is not None,
                 "required_checks": sum(e['required'] for e in revision['entries']) if revision else 0,

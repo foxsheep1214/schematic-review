@@ -20,6 +20,10 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
      按 value 精确检索；先查 LCSC/立创商城，再查原厂官网。
    - REQUEST_USER_DATASHEET：前两类动作已经闭环且结果为 NOT_FOUND，将
      message 原样提示用户。
+   - 某个渠道拒绝访问或超时时，换下一个渠道，不要停在第一个失败上。仍取不到时，
+     按 [evidence-proportionality.md](evidence-proportionality.md) 的“原定资料取不到时”，
+     用同类资料定界或建议替代器件；替代资料不改变本物料的 AVAILABLE 判定。
+   - PDF 文本提取可能错字符（µ 显示成 m 等）；决定结论的数值对照渲染页核对。
 
 3. Agent 把结果写入 datasheet-resolution.json，再次运行审计：
 
