@@ -206,6 +206,10 @@ class Inventory:
         its correctness is polarity and orientation, checked by other rules."""
         return len(self.nodes.get(ref, set())) == 2
 
+    def supply_pin(self, node):
+        """Only power/return pins matter to decoupling; other pin-map differences are DEV-D02's job."""
+        return self.role(node) in ('power', 'return')
+
     def kind_basis(self, ref):
         if ref in self.components:
             return 'declared'
@@ -289,8 +293,8 @@ class Inventory:
             if not device or not device['pinout_complete']:
                 gaps.add('official-full-pinout:' + ref)
             if device:
-                gaps.update('official-pin-absent:' + n for n in device['official_only_nodes'])
-                gaps.update('pin-not-in-official-map:' + n for n in device['symbol_only_nodes'])
+                gaps.update('official-pin-absent:' + n for n in device['official_only_nodes'] if self.supply_pin(n))
+                gaps.update('pin-not-in-official-map:' + n for n in device['symbol_only_nodes'] if self.supply_pin(n))
             if group['origin'] != 'declared':
                 gaps.add('confirm-group-and-return:' + group['id'])
             supply_nets, return_nets = set(), set()
@@ -375,8 +379,8 @@ def build_decoupling_inventory(db, intent=None):
     for device in device_records:
         if not device['pinout_complete']:
             discovery_gaps.add('official-full-pinout:' + device['ref'])
-        discovery_gaps.update('official-pin-absent:' + n for n in device['official_only_nodes'])
-        discovery_gaps.update('pin-not-in-official-map:' + n for n in device['symbol_only_nodes'])
+        discovery_gaps.update('official-pin-absent:' + n for n in device['official_only_nodes'] if inv.supply_pin(n))
+        discovery_gaps.update('pin-not-in-official-map:' + n for n in device['symbol_only_nodes'] if inv.supply_pin(n))
     states = (intent or {}).get('assemblies') or [{'id': 'UNSPECIFIED', 'population': {}}]
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'input_sha256': input_fingerprint(db),
               'context': deepcopy(board_intent.context(intent, 'decoupling', extra=('devices',))), 'scope': 'direct-net schematic inventory only; nominal is not effective capacitance; no electrical or PCB PASS',

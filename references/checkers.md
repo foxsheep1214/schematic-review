@@ -182,7 +182,7 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   `power/return/nc/other`，脚号是字符串，支持 BGA/EP。`pinout_complete=false` 保持缺口。这是有出处的
   人工声明，脚本不读 PDF 验证真实性，也不因字段齐全自动判通过。声明后计划项 DEV-D02 附双向差集、
   DEV-D05 附未接网脚与"标 nc 却接了网"的脚，仍由审查者逐脚定判。
-- 官方脚表与符号/网表脚表做双向差集，各自记录多出的脚；官方 power 脚未入 group 时自动列候选。
+- 官方脚表与符号/网表脚表做双向差集，各自记录多出的脚（`official_only_nodes/symbol_only_nodes` 保留完整差集）；去耦缺口只对电源/地角色的差异脚计入，其他功能脚的差异由 DEV-D02 逐脚处置。官方 power 脚未入 group 时自动列候选。
   不得为消除缺口把缺失电源脚改成 `other`。
 - `groups`：按器件具体条款划分，不要求每个电源脚单独一颗电容。节点必须属于该器件对应官方角色，
   供电脚不能重复分组；每组只支持一个直接供电网和一个明确返回网。跨网分组不合并，保持缺口。

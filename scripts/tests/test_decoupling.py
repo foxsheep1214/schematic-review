@@ -168,6 +168,20 @@ class DecouplingInventoryTests(unittest.TestCase):
         self.assertTrue(any('U1.4' in g['supply_nodes'] for g in state(inv)['groups']))
         self.assertIn('pin-not-in-official-map:U1.4', group(inv)['gaps'])
 
+    def test_pin_map_differences_count_only_for_power_and_return_pins(self):
+        db, intent = fixture()
+        pins = intent['devices']['U1']['pins']
+        pins['5'] = {'name': 'CATHODE_LEAD', 'role': 'other'}
+        pins['6'] = {'name': 'PGND', 'role': 'return'}
+        db['declared_pinname'] = {'U1.4': 'GPIO2'}
+        rebind(db, intent)
+        inv = build_decoupling_inventory(db, intent)
+        for gaps in (inv['discovery_gaps'], group(inv)['gaps']):
+            self.assertNotIn('official-pin-absent:U1.5', gaps)
+            self.assertNotIn('pin-not-in-official-map:U1.4', gaps)
+            self.assertIn('official-pin-absent:U1.6', gaps)
+        self.assertEqual(next(d for d in inv['devices'] if d['ref'] == 'U1')['official_only_nodes'], ['U1.5', 'U1.6'])
+
     def test_exact_pin_map_discovers_nonstandard_names_and_negative_rail(self):
         db, intent = fixture(('100nF',))
         move_pin(db, 'U1.1', 'NEGATIVE_A')
