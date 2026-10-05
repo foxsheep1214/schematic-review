@@ -6,6 +6,11 @@
 不自动填 1% 电阻公差、零 Vref 误差、零偏置电流或稳态采样。数值必须有限，min≤max；
 每项 id 唯一、citation 可定位。证据计算结果不是整板准出。
 
+缺原厂 datasheet 时，[逐参数补证与替代](evidence-proportionality.md#原定资料取不到时)
+用于人工 T/C/D 取证与条件计算，不扩展本自动契约。相似型号参数、反算要求或样本实测值
+不能冒充本器件保证值；其他文档不满足既有 AVAILABLE/来源绑定要求时，不强行填入 E。
+人工结论引用实际证据并说明覆盖差异，自动 E 缺口如实保留。
+
 ## 共有字段与依赖
 
 每条 checks 项包含 id、rule、kind、citation、目标 node/net/ref、depends_on 和 basis。

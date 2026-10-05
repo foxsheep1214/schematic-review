@@ -18,11 +18,12 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
      候选不匹配时立即转 FETCH_DATASHEET_ONLINE。
    - FETCH_DATASHEET_ONLINE：agent 自主联网补取，不先把搜索工作转交用户。
      按 value 精确检索；先查 LCSC/立创商城，再查原厂官网。
-   - REQUEST_USER_DATASHEET：前两类动作已经闭环且结果为 NOT_FOUND，将
-     message 原样提示用户。
+   - REQUEST_USER_DATASHEET：保留此动作名以兼容现有审计格式。前两类动作已闭环且结果
+     为 NOT_FOUND 时，先执行逐参数补证流程，再向用户报告状态与仍需补充的具体资料。
    - 某个渠道拒绝访问或超时时，换下一个渠道，不要停在第一个失败上。仍取不到时，
      按 [evidence-proportionality.md](evidence-proportionality.md) 的“原定资料取不到时”，
-     用同类资料定界或建议替代器件；替代资料不改变本物料的 AVAILABLE 判定。
+     核对同型号其他证据、受控规格、反算要求与相似器件参考等路径；替代资料不改变
+     本物料的 AVAILABLE 判定。
    - PDF 文本提取可能错字符（µ 显示成 m 等）；决定结论的数值对照渲染页核对。
 
 3. Agent 把结果写入 datasheet-resolution.json，再次运行审计：
@@ -47,8 +48,9 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
 
 datasheet-audit.json 存在时，它覆盖
 intent.materials.datasheets.available 这个全局布尔值，并按位号控制 DEV-D01
-准备度。状态不是 AVAILABLE 的物料，其相关检查保持 WAITING_EVIDENCE。计划与 lint
-还会核对审计里的物料/位号是否与当前 db.json 一致，避免误用旧版本审计结果。
+准备度。状态不是 AVAILABLE 的物料，依赖其 datasheet 的自动准备度仍为 WAITING_EVIDENCE；
+这不直接判定所有人工检查的电气结果。T/C/D 按具体主张核实补充证据，自动 E 仍遵守保证值契约。
+计划与 lint 还会核对审计里的物料/位号是否与当前 db.json 一致，避免误用旧版本审计结果。
 
 ## Audit 状态
 
@@ -57,7 +59,7 @@ intent.materials.datasheets.available 这个全局布尔值，并按位号控制
 | AVAILABLE | 已验证本地或联网 PDF 与完整物料身份匹配 | 进入资料取证与 DEV-D01 |
 | NEEDS_VERIFICATION | 文件名存在候选，但尚未核实 PDF 抬头与变体 | 打开核对；不匹配则联网 |
 | MISSING | 资料包无候选且未有 agent 结论 | 联网补取 |
-| NOT_FOUND | 已按白名单渠道检索，仍无有效 datasheet | 提示用户并保持 INSUFFICIENT/C |
+| NOT_FOUND | 已按白名单渠道检索，仍无有效 datasheet | 逐参数补证；仍影响判断的缺口保持 INSUFFICIENT/C |
 
 文件名命中永远只产生 NEEDS_VERIFICATION，不能直接证明 AVAILABLE。
 
@@ -115,16 +117,17 @@ Cache miss、网络受限或一次搜索无结果都不足以写 NOT_FOUND。
 
 审计会按物料生成提示：
 
-> 找不到这颗物料的 datasheet：<完整型号>（位号：<refs>）。请提供该物料的原厂 datasheet。
+> 找不到这颗物料的 datasheet：<完整型号>（位号：<refs>）。可补充同型号原厂资料或受控规格；具体缺失参数及工况见审查待核项。
 
-Agent 必须把 datasheet-audit.json.user_messages 原样呈现给用户，并在逐项报告中
-记录：
+Agent 汇总 datasheet-audit.json.user_messages 的缺失物料/位号及检索结果，并结合逐参数补证
+结果报告，不再机械索取整本手册。历史审计中的旧提示也按此流程解释，无须篡改历史记录。
+已充分支持的人工主张给独立结果；仍影响判断的主张记录 review_result=INSUFFICIENT、
+evidence_confidence=C，以及具体参数/身份/工况、受影响检查、最小补证方法和关闭条件。
+共享缺口合并到同一 work_item，不为多个检查重复索取资料。
 
-- review_result=INSUFFICIENT
-- evidence_confidence=C
-- 缺失物料、受影响检查和关闭条件
-
-不得用同系列、近似后缀、聚合站参数或模型常识替代缺失 datasheet。
+按 [逐参数补证与替代](evidence-proportionality.md#原定资料取不到时) 记录其他证据；
+同系列、近似后缀资料可辅助分析，但不得冒充原器件 datasheet 或更改身份/保证范围。
+审计状态只描述资料覆盖；人工结论不能反向把 NOT_FOUND 改成 AVAILABLE。
 
 ## 按参数依赖补齐物料
 
