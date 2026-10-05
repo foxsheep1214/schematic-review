@@ -71,6 +71,9 @@ def workflow(plan, report, checks, expected):
         if (row.get('review_result') == 'INSUFFICIENT' and row.get('potential_severity') == 'P0'
                 and any(g.get('due_stage') != 'design_iteration' for g in groups)):
             errors.append(cid + ': potential P0 needs current investigation')
+        if (row.get('review_result') == 'INSUFFICIENT' and row.get('gap_cause') == 'REQUIREMENT_OPEN'
+                and any(g.get('due_stage') != 'design_iteration' for g in groups)):
+            errors.append(cid + ': undefined requirement goes back to the designer in the current round')
         if not all(g.get('due_stage') == 'prototype_verification' for g in groups):
             continue
         h = row.get('handoff') or {}

@@ -78,10 +78,11 @@
 missing_inputs 按 [最小充分证据](evidence-proportionality.md) 写具体参数/身份/工况，rationale
 说明已有事实及受影响判断；取得方法、承担角色和关闭阶段放关联 work_item 或引用记录，不新增必填表单。
 已有资料未分析列审查待完成，下游物理验证单列移交，汇总不重复索取成员资料。
-INSUFFICIENT 可加可选字段 `gap_cause`，取值为：EXTERNAL_DATA、DESIGN_OPEN、REVIEW_INCOMPLETE、
-DOWNSTREAM_VERIFICATION、USER_DEFERRED。含义见 evidence-proportionality。该字段只能出现在
-INSUFFICIENT 上；校验输出 `insufficient_by_cause`，未填的计为 UNSPECIFIED。检查口径过严的项
-应改判，不设对应取值。
+INSUFFICIENT 可加可选字段 `gap_cause`，取值为：REQUIREMENT_OPEN、EXTERNAL_DATA、DESIGN_OPEN、
+REVIEW_INCOMPLETE、DOWNSTREAM_VERIFICATION、USER_DEFERRED。含义见 evidence-proportionality。该字段只能出现在
+INSUFFICIENT 上；校验输出 `insufficient_by_cause`（未填的计为 UNSPECIFIED）与 `requirement_questions`
+（全部 REQUIREMENT_OPEN 项及其 missing_inputs，供报告“反馈设计者：需求待定”使用）。分阶段结果中
+REQUIREMENT_OPEN 项关联的 work_item 必须是 `design_iteration`，否则拒绝。检查口径过严的项应改判，不设对应取值。
 所有结果含非空 `rationale` 与可定位 `evidence`（缺失清单本身也是定位证据）。
 NA 必须 NOT_APPLICABLE；从自动计划修改适用性需 `applicability_evidence` 同样来源/定位数组。
 UNDETERMINED 适用性只能落 INSUFFICIENT。未执行项不可填 PASS，不能用 NA 消失。

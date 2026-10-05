@@ -56,6 +56,8 @@ OPEN 后续事项不阻止日常设计继续；本轮报告用“移交后续设
 合并依据写到 `root_cause/reason/evidence`；不能用“缺资料”把不相关问题揉成一项。
 已有 finding 根因相同的 FAIL 共用一个任务，引用 finding 的详细改法，避免再写一份操作说明。
 
+需求未定（`gap_cause: REQUIREMENT_OPEN`）的项反馈给设计者/需求方，关联任务必须放在 `design_iteration`；
+需求确定后按新需求重判，不能用缺资料或后续阶段掩盖。
 缺证不自动等于 P1。按实际受影响需求/失效条件填写 potential_severity，并在各项 rationale
 说明理由；`blocking` 表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。
 已确认阻断 FAIL（已有明确接受记录除外）和潜在 P0 不可推迟到后续阶段。

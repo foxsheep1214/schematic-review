@@ -20,7 +20,7 @@ RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
 APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
 # Optional INSUFFICIENT cause (evidence-proportionality.md); over-strict checks are re-judged, not tagged.
-GAP_CAUSES = ("EXTERNAL_DATA", "DESIGN_OPEN", "REVIEW_INCOMPLETE", "DOWNSTREAM_VERIFICATION", "USER_DEFERRED")
+GAP_CAUSES = ("REQUIREMENT_OPEN", "EXTERNAL_DATA", "DESIGN_OPEN", "REVIEW_INCOMPLETE", "DOWNSTREAM_VERIFICATION", "USER_DEFERRED")
 SCOPE = set(catalog.COVERAGE_RULES)
 
 
@@ -379,6 +379,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     return {"valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
             "insufficient_by_cause": gap_causes,
+            "requirement_questions": [{"check_id": k, "missing_inputs": x.get("missing_inputs", [])}
+                                      for k, x in sorted(checks.items())
+                                      if x.get("review_result") == "INSUFFICIENT" and x.get("gap_cause") == "REQUIREMENT_OPEN"],
             "workflow": decision(stage, errors, "NO_GO" if errors else release),
             "revision_validation": {"enforced": revision is not None,
                 "required_checks": sum(e['required'] for e in revision['entries']) if revision else 0,

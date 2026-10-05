@@ -112,6 +112,26 @@ class ReviewGateTests(unittest.TestCase):
                               potential_severity='P2')
         self.assertEqual(validate_review(p, r, db)['insufficient_by_cause'], {'UNSPECIFIED': 1})
 
+    def test_requirement_open_is_listed_for_the_designer_and_kept_in_current_round(self):
+        def staged(stage):
+            p, r, db = fixture()
+            p['review_phase'] = 'design_iteration'
+            r['plan_digest'] = fingerprint(p)
+            r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', potential_severity='P1',
+                                  missing_inputs=['operating input voltage range'], gap_cause='REQUIREMENT_OPEN')
+            r['workflow_version'] = 1
+            r['work_items'] = [{'id': 'W-REQ', 'title': 'define input range', 'root_cause': 'requirement not written',
+                                'check_ids': [C1], 'due_stage': stage, 'reason': 'blocks stress corners',
+                                'next_action': 'ask the requirement owner', 'evidence': E}]
+            return validate_review(p, r, db)
+        current = staged('design_iteration')
+        self.assertTrue(current['valid'], current)
+        self.assertEqual(current['insufficient_by_cause'], {'REQUIREMENT_OPEN': 1})
+        self.assertEqual(current['requirement_questions'], [{'check_id': C1, 'missing_inputs': ['operating input voltage range']}])
+        later = staged('schematic_freeze')
+        self.assertFalse(later['valid'])
+        self.assertTrue(any('undefined requirement' in e for e in later['errors']), later['errors'])
+
     def test_p1_blocks_even_if_agent_sets_nonblocking(self):
         p, r, db = fixture(); fail(r)
         result = validate_review(p, r, db)
