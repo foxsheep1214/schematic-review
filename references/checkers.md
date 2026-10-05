@@ -177,7 +177,8 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 }
 ```
 
-- `intent.devices`：准确 MPN/封装、身份解释、完整官方物理脚表及出处。`pins` 含全部物理脚，角色为
+- `intent.devices`：准确 MPN/封装、身份解释、完整官方物理脚表及出处。脚表取手册引脚定义的编号或名称；手册只用名称标注时
+  名称即脚号（与符号脚号一致），不另要焊盘编号图。`pins` 含全部物理脚，角色为
   `power/return/nc/other`，脚号是字符串，支持 BGA/EP。`pinout_complete=false` 保持缺口。这是有出处的
   人工声明，脚本不读 PDF 验证真实性，也不因字段齐全自动判通过。声明后计划项 DEV-D02 附双向差集、
   DEV-D05 附未接网脚与"标 nc 却接了网"的脚，仍由审查者逐脚定判。
