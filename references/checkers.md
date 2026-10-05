@@ -141,9 +141,9 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 不传 intent 时按物理脚名称/类型发现候选，并纳入符号声明但未连的脚；未核器件另列
 `unverified_device_refs`，不能因没有常见 VDD/VCC 名称便判不适用。官方脚表中网表完全不存在的
 电源脚也会生成候选，不能只检查网表实有脚。
-KiCad Device 库的标准两端分立器件（二极管/齐纳/TVS/LED、热敏/压敏电阻、保险丝）在恰好两只脚、且两脚都不是
-power/return 角色时，没有可去耦的供电脚，列入 `two_terminal_no_supply_refs` 而不产生 `unverified-device-pinout` 缺口；
-自定义库符号、三脚及以上（含双二极管、桥堆）或任一脚名/类型为电源/地的器件仍按未核器件处理。
+两端器件（二极管/齐纳/TVS/LED、热敏/压敏电阻、保险丝等）不需要供电，也没有供电/返回脚对可去耦，
+不论符号库或脚名，都列入 `two_terminal_no_supply_refs` 而不产生 `unverified-device-pinout` 缺口；它们按极性
+与方向设计，由极性、连接追踪和图面目检规则核对。三脚及以上器件（含双二极管、桥堆）仍按未核器件处理。
 
 ```sh
 python3 scripts/decoupling.py db.json --json decoupling-candidates.json

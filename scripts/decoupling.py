@@ -29,8 +29,6 @@ NATIVE_SYMBOL_KINDS = {
 POWER = re.compile(r'(^|[_/.-])(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|DVCC\w*|VIN|VOUT|VBAT|VBUS)(?=$|[_/.-])', re.I)
 GROUND = re.compile(r'(^|[_/.-])(?:GND\w*|[APD]?VSS\w*|[APD]GND\w*)(?=$|[_/.-])', re.I)
 PASSIVE_PREFIX = re.compile(r'^(?:R|C|L|FB|F|JP|TP|J|P|CN|Y)\d', re.I)
-# Standard two-terminal discretes from the KiCad Device library have no supply/return pin pair to decouple.
-TWO_TERMINAL_SYMBOL = re.compile(r'^Device:(?:D|D_[A-Za-z0-9_]+|LED[A-Za-z0-9_]*|Thermistor[A-Za-z0-9_]*|Varistor[A-Za-z0-9_]*|Fuse[A-Za-z0-9_]*|Polyfuse[A-Za-z0-9_]*)$')
 CAP_TOKEN = re.compile(r'^(?:(\d+(?:\.\d*)?|\.\d+)([eE][+-]?\d+)?\s*([pPnNuUµμm]?)[fF]|'
                        r'(\d+(?:\.\d*)?|\.\d+)\s*([pPnNuUµμm])|'
                        r'(\d+)([pPnNuUµμm])(\d+))(?:$|(?=[/;,\s]))')
@@ -203,11 +201,10 @@ class Inventory:
                 return kind
         return 'unmodeled'
 
-    def two_terminal_without_supply(self, ref):
-        """Native two-terminal discrete (diode/TVS/LED/thermistor/varistor/fuse) whose pins carry no power/return role."""
-        nodes = self.nodes.get(ref, set())
-        return (bool(TWO_TERMINAL_SYMBOL.match(self.parts.get(ref, {}).get('prim') or '')) and len(nodes) == 2
-                and all(self.role(n) == 'other' for n in nodes))
+    def two_terminal(self, ref):
+        """A two-pin part (diode/TVS/LED/thermistor/varistor/fuse...) has no supply/return pair to decouple;
+        its correctness is polarity and orientation, checked by other rules."""
+        return len(self.nodes.get(ref, set())) == 2
 
     def kind_basis(self, ref):
         if ref in self.components:
@@ -372,7 +369,7 @@ def build_decoupling_inventory(db, intent=None):
     groups, device_records = inv.groups(), inv.device_inventory()
     candidates = [ref for ref in inv.parts if ref not in inv.devices and
                   inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref)]
-    two_terminal = sorted(ref for ref in candidates if inv.two_terminal_without_supply(ref))
+    two_terminal = sorted(ref for ref in candidates if inv.two_terminal(ref))
     unknown = sorted(set(candidates) - set(two_terminal))
     discovery_gaps = set(inv.input_gaps) | {'unverified-device-pinout:' + r for r in unknown}
     for device in device_records:
