@@ -351,6 +351,33 @@ class DecouplingInventoryTests(unittest.TestCase):
         rebind(db, intent)
         self.assertIn('CUSTOM_IC', build_decoupling_inventory(db, intent)['unverified_device_refs'])
 
+    def test_native_two_terminal_discrete_without_supply_pin_is_not_an_inventory_gap(self):
+        for symbol in ('Device:D', 'Device:D_Zener', 'Device:D_TVS', 'Device:Thermistor_NTC', 'Device:Varistor'):
+            with self.subTest(symbol=symbol):
+                db, intent = fixture()
+                add(db, 'D9', 'TEST-DIODE', [('1', 'K', 'VCC_3V3'), ('2', 'A', 'U1_IO')])
+                db['parts']['D9']['prim'] = symbol
+                rebind(db, intent)
+                inv = build_decoupling_inventory(db, intent)
+                self.assertNotIn('D9', inv['unverified_device_refs'])
+                self.assertIn('D9', inv['two_terminal_no_supply_refs'])
+                self.assertNotIn('unverified-device-pinout:D9', inv['discovery_gaps'])
+
+    def test_two_terminal_exclusion_needs_native_symbol_two_pins_and_no_supply_role(self):
+        cases = {'custom-symbol': ('Charger:D_CUSTOM', [('1', 'K', 'N1'), ('2', 'A', 'N2')]),
+                 'three-pins': ('Device:D_Dual_Series_ACK', [('1', 'A', 'N1'), ('2', 'C', 'N2'), ('3', 'K', 'N3')]),
+                 'supply-pin': ('Device:D', [('1', 'VCC', 'VCC_3V3'), ('2', 'GND', 'GND')])}
+        for name, (symbol, pins) in cases.items():
+            with self.subTest(case=name):
+                db, intent = fixture()
+                add(db, 'D9', 'TEST-PART', pins)
+                db['parts']['D9']['prim'] = symbol
+                rebind(db, intent)
+                inv = build_decoupling_inventory(db, intent)
+                self.assertIn('D9', inv['unverified_device_refs'])
+                self.assertIn('unverified-device-pinout:D9', inv['discovery_gaps'])
+                self.assertNotIn('D9', inv['two_terminal_no_supply_refs'])
+
     def test_order_determinism(self):
         db, intent = fixture()
         before = build_decoupling_inventory(db, intent)

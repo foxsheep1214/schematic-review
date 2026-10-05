@@ -29,6 +29,8 @@ NATIVE_SYMBOL_KINDS = {
 POWER = re.compile(r'(^|[_/.-])(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|DVCC\w*|VIN|VOUT|VBAT|VBUS)(?=$|[_/.-])', re.I)
 GROUND = re.compile(r'(^|[_/.-])(?:GND\w*|[APD]?VSS\w*|[APD]GND\w*)(?=$|[_/.-])', re.I)
 PASSIVE_PREFIX = re.compile(r'^(?:R|C|L|FB|F|JP|TP|J|P|CN|Y)\d', re.I)
+# Standard two-terminal discretes from the KiCad Device library have no supply/return pin pair to decouple.
+TWO_TERMINAL_SYMBOL = re.compile(r'^Device:(?:D|D_[A-Za-z0-9_]+|LED[A-Za-z0-9_]*|Thermistor[A-Za-z0-9_]*|Varistor[A-Za-z0-9_]*|Fuse[A-Za-z0-9_]*|Polyfuse[A-Za-z0-9_]*)$')
 CAP_TOKEN = re.compile(r'^(?:(\d+(?:\.\d*)?|\.\d+)([eE][+-]?\d+)?\s*([pPnNuUµμm]?)[fF]|'
                        r'(\d+(?:\.\d*)?|\.\d+)\s*([pPnNuUµμm])|'
                        r'(\d+)([pPnNuUµμm])(\d+))(?:$|(?=[/;,\s]))')
@@ -201,6 +203,12 @@ class Inventory:
                 return kind
         return 'unmodeled'
 
+    def two_terminal_without_supply(self, ref):
+        """Native two-terminal discrete (diode/TVS/LED/thermistor/varistor/fuse) whose pins carry no power/return role."""
+        nodes = self.nodes.get(ref, set())
+        return (bool(TWO_TERMINAL_SYMBOL.match(self.parts.get(ref, {}).get('prim') or '')) and len(nodes) == 2
+                and all(self.role(n) == 'other' for n in nodes))
+
     def kind_basis(self, ref):
         if ref in self.components:
             return 'declared'
@@ -362,8 +370,10 @@ def build_decoupling_inventory(db, intent=None):
     cfg = (intent or {}).get('decoupling')
     inv = Inventory(db, cfg, (intent or {}).get('devices'))
     groups, device_records = inv.groups(), inv.device_inventory()
-    unknown = sorted(ref for ref in inv.parts if ref not in inv.devices and
-                     inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref))
+    candidates = [ref for ref in inv.parts if ref not in inv.devices and
+                  inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref)]
+    two_terminal = sorted(ref for ref in candidates if inv.two_terminal_without_supply(ref))
+    unknown = sorted(set(candidates) - set(two_terminal))
     discovery_gaps = set(inv.input_gaps) | {'unverified-device-pinout:' + r for r in unknown}
     for device in device_records:
         if not device['pinout_complete']:
@@ -373,7 +383,8 @@ def build_decoupling_inventory(db, intent=None):
     states = (intent or {}).get('assemblies') or [{'id': 'UNSPECIFIED', 'population': {}}]
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'input_sha256': input_fingerprint(db),
               'context': deepcopy(board_intent.context(intent, 'decoupling', extra=('devices',))), 'scope': 'direct-net schematic inventory only; nominal is not effective capacitance; no electrical or PCB PASS',
-              'devices': device_records, 'unverified_device_refs': unknown, 'discovery_gaps': sorted(discovery_gaps),
+              'devices': device_records, 'unverified_device_refs': unknown,
+              'two_terminal_no_supply_refs': two_terminal, 'discovery_gaps': sorted(discovery_gaps),
               'states': [inv.state_inventory(s, groups, device_records) for s in sorted(states, key=lambda s: s['id'])]}
     result['digest'] = digest(result)
     return result
