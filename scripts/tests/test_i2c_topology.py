@@ -66,7 +66,7 @@ def at(output, net='I2C_SDA', state='run'):
 
 def report_for(plan, db):
     # Only used to isolate validator contract errors; not an electrical review.
-    return {'schema_version': 2, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
+    return {'requirement_clarification_version': 1, 'requirement_clarifications': [], 'schema_version': 2, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
             'checks': [], 'findings': [], 'coverage': {}, 'summary': {}}
 
 
@@ -85,7 +85,7 @@ def pending_report(plan, db):
             row.update(missing_inputs=['applicable specifications and state analysis'], potential_severity='P1')
         rows.append(row)
     scope = {k: next(p['id'] for p in plan['checks'] if p['rule'] == catalog.COVERAGE_RULES[k]) for k in SCOPE}
-    return {'schema_version': 2, 'binding_version': 1, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
+    return {'requirement_clarification_version': 1, 'requirement_clarifications': [], 'schema_version': 2, 'binding_version': 1, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
             'checks': rows, 'findings': [], 'scope_checks': scope,
             'coverage': {'components': {r: [scope['chains']] for r in db['parts']},
                 'nets': {n: [scope['chains']] for n in db['nets']},

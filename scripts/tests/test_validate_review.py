@@ -27,7 +27,8 @@ def fixture(first_key=C1):
     plan = {'schema_version': PLAN_SCHEMA_VERSION, 'checks': [planned(k) for k in keys]}
     db = {'parts': {'R1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
           'ref2page': {'R1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
-    report = {'schema_version': 2, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
+    report = {'requirement_clarification_version': 1, 'requirement_clarifications': [],
+        'schema_version': 2, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
         'checks': [{'id': k, 'applicability': 'APPLICABLE', 'review_result': 'PASS',
                     'evidence_confidence': 'A', 'evidence': E, 'rationale': 'stipulated compliant fixture',
                     'blocking': False, 'handoff': {'required': False}} for k in keys],
@@ -35,6 +36,15 @@ def fixture(first_key=C1):
         'coverage': {'components': {'R1': [first_key]}, 'pins': {'R1.1': [first_key], 'R1.2': [first_key]},
                      'nets': {'A': [first_key]}, 'pages': {'1': [first_key]}, 'requirements': {}}}
     return plan, report, db
+
+
+def clarification(check_ids=None):
+    return {'id': 'CL-INPUT', 'title': 'Define input range', 'kind': 'MISSING', 'status': 'OPEN',
+            'question': 'Synthetic input range is not decided', 'decision_needed': 'Confirm operating input range',
+            'owner': 'Synthetic requirement owner', 'decision_due': 'BEFORE_DESIGN',
+            'closure_criteria': 'Controlled requirement and affected check re-review', 'evidence': E,
+            'freeze_impact': 'BLOCKING', 'impact_reason': 'Input range affects electrical rating',
+            'check_ids': check_ids or [C1]}
 
 
 def fail(report, severity='P1'):
@@ -118,6 +128,10 @@ class ReviewGateTests(unittest.TestCase):
             p['checks'][0]['object'] = dict(p['checks'][0].get('object') or {}, requirement_status=status)
             r['plan_digest'] = fingerprint(p)
             r['checks'][0].update(row)
+            if row.get('gap_cause') == 'REQUIREMENT_OPEN':
+                r['checks'][0].pop('potential_severity', None)
+                r['checks'][0]['blocking'] = True
+                r.update(workflow_version=1, work_items=[], requirement_clarifications=[clarification()])
             return validate_review(p, r, db)
         gap = dict(review_result='INSUFFICIENT', evidence_confidence='C', potential_severity='P2',
                    missing_inputs=['derating temperature points'])
@@ -129,25 +143,17 @@ class ReviewGateTests(unittest.TestCase):
         self.assertTrue(out['valid'], out)
         self.assertEqual(out['requirements_by_status'], {'PROPOSED': {'PASS': 1}})
 
-    def test_requirement_open_is_listed_for_the_designer_and_kept_in_current_round(self):
-        def staged(stage):
-            p, r, db = fixture()
-            p['review_phase'] = 'design_iteration'
-            r['plan_digest'] = fingerprint(p)
-            r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', potential_severity='P1',
-                                  missing_inputs=['operating input voltage range'], gap_cause='REQUIREMENT_OPEN')
-            r['workflow_version'] = 1
-            r['work_items'] = [{'id': 'W-REQ', 'title': 'define input range', 'root_cause': 'requirement not written',
-                                'check_ids': [C1], 'due_stage': stage, 'reason': 'blocks stress corners',
-                                'next_action': 'ask the requirement owner', 'evidence': E}]
-            return validate_review(p, r, db)
-        current = staged('design_iteration')
+    def test_requirement_open_is_listed_as_unique_current_decision(self):
+        p, r, db = fixture()
+        p['review_phase'] = 'design_iteration'; r['plan_digest'] = fingerprint(p)
+        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', blocking=True,
+                              missing_inputs=['operating input voltage range'], gap_cause='REQUIREMENT_OPEN')
+        r.update(workflow_version=1, work_items=[], requirement_clarifications=[clarification()])
+        current = validate_review(p, r, db)
         self.assertTrue(current['valid'], current)
-        self.assertEqual(current['insufficient_by_cause'], {'REQUIREMENT_OPEN': 1})
-        self.assertEqual(current['requirement_questions'], [{'check_id': C1, 'missing_inputs': ['operating input voltage range']}])
-        later = staged('schematic_freeze')
-        self.assertFalse(later['valid'])
-        self.assertTrue(any('undefined requirement' in e for e in later['errors']), later['errors'])
+        self.assertEqual(current['requirement_clarification_summary']['open'], 1)
+        self.assertEqual(current['workflow']['current_work_items'], ['CL-INPUT'])
+        self.assertNotIn('requirement_questions', current)
 
     def test_p1_blocks_even_if_agent_sets_nonblocking(self):
         p, r, db = fixture(); fail(r)

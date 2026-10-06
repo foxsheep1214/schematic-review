@@ -31,7 +31,8 @@ OPEN 后续事项不阻止日常设计继续；本轮报告用“移交后续设
 
 ## 每个共同根因对应一次任务
 
-分阶段结果新增 `workflow_version: 1` 和 `work_items`；每个 FAIL/INSUFFICIENT 至少关联一个任务，
+分阶段结果使用 `workflow_version: 1` 和 `work_items`；每个电气 FAIL/其他 INSUFFICIENT 至少关联一个任务，
+新协议的 REQUIREMENT_OPEN 由独立需求澄清记录直接生成任务，不在 work_items 重复登记；
 其余 PASS/NA 不创建待办。没有未决项时填空数组。示例中的 ID 必须替换成实际检查 ID：
 
 ```json
@@ -56,9 +57,10 @@ OPEN 后续事项不阻止日常设计继续；本轮报告用“移交后续设
 合并依据写到 `root_cause/reason/evidence`；不能用“缺资料”把不相关问题揉成一项。
 已有 finding 根因相同的 FAIL 共用一个任务，引用 finding 的详细改法，避免再写一份操作说明。
 
-需求未定（`gap_cause: REQUIREMENT_OPEN`）的项反馈给设计者/需求方，关联任务必须放在 `design_iteration`；
+需求澄清（`gap_cause: REQUIREMENT_OPEN`）按 [独立需求澄清协议](requirement-clarifications.md)
+反馈给需求责任方、生成 design_iteration 任务，用决策时点和冻结影响替代缺陷等级。
 需求确定后按新需求重判，不能用缺资料或后续阶段掩盖。
-缺证不自动等于 P1。按实际受影响需求/失效条件填写 potential_severity，并在各项 rationale
+其他缺证不自动等于 P1。按实际受影响需求/失效条件填写 potential_severity，并在各项 rationale
 说明理由；`blocking` 表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。
 已确认阻断 FAIL（已有明确接受记录除外）和潜在 P0 不可推迟到后续阶段。
 缺磁件、固件配置、补偿模型时可继续独立电路审查，但影响原理图正确性的前提须在冻结前补齐。

@@ -14,6 +14,7 @@
 - 分阶段报告另有 `workflow_version: 1`、`work_items`；字段、归并与关闭阶段见
   [design-iteration.md](design-iteration.md)。计划带 review_phase 时强制校验，历史报告不补造。
   校验输出增加 `workflow`，与原 release 并列，不把继续设计解释为冻结通过。
+- `requirement_clarification_version`: 新报告为1；`requirement_clarifications` 保存独立需求问题，详见 [需求澄清项](requirement-clarifications.md)。所有报告必须声明版本和数组，无澄清时填 []；默认校验，缺少字段直接拒绝。
 - `binding_version`: 新报告为1，逐检查声明已审对象/判据；旧报告可不填，仅用于兼容读取。
 - `remediation_version`: 新报告必须为1；要求每项finding包含详细`remediation`，字段及
   示例见 [remediation-guide.md](remediation-guide.md)。旧v2报告可不填，仅用于兼容校验。
@@ -74,15 +75,17 @@
 不能把这个兼容结果描述为通过新绑定门。
 
 枚举定义见 severity-calibration.md。PASS/FAIL 只能 A/B，INSUFFICIENT 必须 C 并给
-`missing_inputs` 非空数组与 `potential_severity`；非 FAIL 不填 severity。
+`missing_inputs` 非空数组；一般待核项另给 `potential_severity`，新需求澄清协议下 REQUIREMENT_OPEN 不填该等级，
+由独立澄清记录确定冻结影响；非 FAIL 不填 severity。
 missing_inputs 按 [最小充分证据](evidence-proportionality.md) 写具体参数/身份/工况，rationale
 说明已有事实及受影响判断；取得方法、承担角色和关闭阶段放关联 work_item 或引用记录，不新增必填表单。
 已有资料未分析列审查待完成，下游物理验证单列移交，汇总不重复索取成员资料。
 INSUFFICIENT 可加可选字段 `gap_cause`，取值为：REQUIREMENT_OPEN、EXTERNAL_DATA、DESIGN_OPEN、
 REVIEW_INCOMPLETE、DOWNSTREAM_VERIFICATION、USER_DEFERRED。含义见 evidence-proportionality。该字段只能出现在
-INSUFFICIENT 上；校验输出 `insufficient_by_cause`（未填的计为 UNSPECIFIED）与 `requirement_questions`
-（全部 REQUIREMENT_OPEN 项及其 missing_inputs，供报告“反馈设计者：需求待定”使用）。分阶段结果中
-REQUIREMENT_OPEN 项关联的 work_item 必须是 `design_iteration`，否则拒绝。检查口径过严的项应改判，不设对应取值。
+INSUFFICIENT 上；校验输出 `insufficient_by_cause`（未填的计为 UNSPECIFIED），
+需求澄清输出 requirement_clarifications 及 requirement_clarification_summary，按唯一问题归并；
+开放澄清直接生成本轮 workflow 任务，不接受逐检查问题列表替代独立记录。
+检查口径过严的项应改判，不设对应取值。
 所有结果含非空 `rationale` 与可定位 `evidence`（缺失清单本身也是定位证据）。
 NA 必须 NOT_APPLICABLE；从自动计划修改适用性需 `applicability_evidence` 同样来源/定位数组。
 UNDETERMINED 适用性只能落 INSUFFICIENT。未执行项不可填 PASS，不能用 NA 消失。
@@ -125,6 +128,7 @@ object.net，以及提供 --db 时该 node 的当前网络。要求精确位号/
 ## 汇总与命令
 
 汇总分别输出检查行数/PASS/FAIL/INSUFFICIENT/NA，以及唯一缺陷数量/P0–P3 和可选改善数。
+需求澄清另按唯一 ID 计数，不计入 confirmed_defects；insufficient_by_cause 仍是检查行计数。
 不把多个 FAIL 行当多个致命项。历史修复/撤回记录放报告历史节，当前 findings 只保留当前项。
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --json review-gate.json

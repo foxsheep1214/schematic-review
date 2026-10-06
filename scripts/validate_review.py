@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 import catalog
 from review_workflow import workflow, decision
+from requirement_clarifications import validate_clarifications
 from checkers import REGISTRY, validate_inventories
 from validate_remediation import validate_remediation, READINESS
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
@@ -139,7 +140,10 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     require(set(checks) == set(expected),
             f"check coverage mismatch: missing={sorted(set(expected)-set(checks))}, "
             f"unexpected={sorted(set(checks)-set(expected))}")
-    stage = workflow(plan, report, checks, expected)
+    clarifications = validate_clarifications(report, checks, expected)
+    errors.extend(clarifications['errors'])
+    blockers.extend(clarifications['blockers'])
+    stage = workflow(plan, report, checks, expected, clarifications)
     errors.extend(stage['errors'])
     accepted = False
     for key, item in checks.items():
@@ -185,8 +189,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if result == "INSUFFICIENT":
             require(confidence == "C", f"{key}: unresolved conclusion must remain C")
             require(ids(item.get("missing_inputs")), f"{key}: missing_inputs required")
-            require(item.get("potential_severity") in tuple(SEVERITIES),
-                    f"{key}: potential_severity required")
+            if item.get('gap_cause') != 'REQUIREMENT_OPEN':
+                require(item.get("potential_severity") in tuple(SEVERITIES),
+                        f"{key}: potential_severity required")
         if "gap_cause" in item:
             require(result == "INSUFFICIENT" and item["gap_cause"] in GAP_CAUSES,
                     f"{key}: gap_cause is one of {'/'.join(GAP_CAUSES)} and only on INSUFFICIENT")
@@ -222,7 +227,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             accepted = True
         critical = item.get("severity") in ("P0", "P1") or (
             result == "INSUFFICIENT" and item.get("potential_severity") in ("P0", "P1"))
-        if result in ("FAIL", "INSUFFICIENT"):
+        requirement_decision = item.get('gap_cause') == 'REQUIREMENT_OPEN'
+        if result in ("FAIL", "INSUFFICIENT") and not requirement_decision:
             if item.get("severity") == "P0":
                 blockers.append(f"{key}: P0 requires verified repair")
             elif (critical or item.get("blocking")) and not approval_ok and key not in stage['downstream_ready']:
@@ -387,13 +393,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     return {"valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
             "insufficient_by_cause": gap_causes,
+            "requirement_clarification_summary": clarifications['summary'],
+            "requirement_clarifications": clarifications['items'],
             # REQ-D01 results per requirement confirmation state: a PASS against PROPOSED is conditional on that proposal.
             "requirements_by_status": {st: dict(Counter(checks[k].get("review_result") for k, x in expected.items()
                                                         if k in checks and (x.get("object") or {}).get("requirement_status") == st))
                                        for st in sorted({(x.get("object") or {}).get("requirement_status") for x in expected.values()} - {None})},
-            "requirement_questions": [{"check_id": k, "missing_inputs": x.get("missing_inputs", [])}
-                                      for k, x in sorted(checks.items())
-                                      if x.get("review_result") == "INSUFFICIENT" and x.get("gap_cause") == "REQUIREMENT_OPEN"],
             "workflow": decision(stage, errors, "NO_GO" if errors else release),
             "revision_validation": {"enforced": revision is not None,
                 "required_checks": sum(e['required'] for e in revision['entries']) if revision else 0,

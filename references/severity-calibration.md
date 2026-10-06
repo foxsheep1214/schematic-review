@@ -38,7 +38,8 @@ Min/Max 直接复用；不能把特定条件值无限外推，也不把典型值
 
 A：结论能由已验证输入直接重现（网表集合、官方限值与可复算区间等）。
 B：有可定位依据和适用条件的工程推导，推导链公开。
-C：关键身份、拓扑、要求或工况缺失。相关整体结果为 INSUFFICIENT，记录 `potential_severity`。
+C：关键身份、拓扑、要求或工况缺失。相关整体结果为 INSUFFICIENT；一般缺口记录 `potential_severity`，
+新协议的需求澄清改记独立决策与冻结影响，见下节。
 证据来源另记 netlist / schematic / BOM / datasheet / requirement / calculation / test，
 A/B 不是来源类型；允许同一结论同时使用多类来源。A/B 均不保证报告结论永远正确。
 
@@ -48,6 +49,9 @@ A/B 不是来源类型；允许同一结论同时使用多类来源。A/B 均不
 所有建议也给位置/理由/验证方法；可选改善用 `kind=IMPROVEMENT`，不能把已满足要求的检查写 FAIL。
 
 ## 严重度与工作阶段分开
+
+新协议的需求澄清不套 P0–P3 或 potential_severity；按 [需求澄清项](requirement-clarifications.md)
+记录独立问题、决策时点及有证据的冻结影响。真实电气危险另建有依据的检查，不能用需求澄清降级。
 
 缺资料不自动定为 P1，不能整批使用同一个潜在后果。每项按实际需求、失效路径及工况
 说明 potential_severity；同一输入缺失可归并为一次任务，但不会改变各项证据状态。

@@ -65,6 +65,8 @@ AC0、ER1～ER7、Rule-NN 与检查器前缀早已废弃，用旧编号生成的
 分级、A/B/C 置信度和准出政策；机器字段见 [review-results-schema.md](references/review-results-schema.md)。
 结果为 PASS / FAIL / INSUFFICIENT / NA；缺陷、潜在后果、关闭状态和 HANDOFF 分开记录。
 待核项不能计入已确认缺陷，PASS/FAIL 不得以 C 为依据，P0 不能通过接受风险放行。
+需求澄清是独立问题类别，按 [需求澄清项](references/requirement-clarifications.md) 记录唯一决定、
+责任方、关闭条件和冻结影响；受影响检查仍用 INSUFFICIENT，不套电气缺陷等级。
 
 ## 审查阶段与任务归并
 
@@ -74,7 +76,7 @@ AC0、ER1～ER7、Rule-NN 与检查器前缀早已废弃，用旧编号生成的
 分别报告台账有效性、本轮设计任务、原理图冻结状态；冻结 NO_GO 时仍可继续分析和整改。
 不要把所有缺资料项批量定为 P1/本轮阻断，也不要通过降低严重度掩盖真实问题。
 
-新分阶段结果用 `workflow_version: 1`、`work_items` 将 FAIL/INSUFFICIENT 按有证据的共同根因
+新分阶段结果用 `workflow_version: 1`、`work_items` 将电气 FAIL/其他 INSUFFICIENT 按有证据的共同根因
 关联到一次补证/修改任务，标注关闭阶段。正文展示唯一任务与受影响检查数，完整逐项结果留在台账。
 只有文字相似、同一器件或同一本手册不构成共同根因；不把一组缺项整体改成 PASS。
 
@@ -247,7 +249,8 @@ PCB 阻抗/间距/回流和实测约束独立 HANDOFF，边界见 [scope-boundar
 按 [remediation-guide.md](references/remediation-guide.md) 写全部发现的修改步骤，再按
 [report-template.md](references/report-template.md) 展示；参数、准备度与验收须相符。
 最终结果独立保存为 `review-results.json`，绑定合并后的最终计划，不能从 Lint 自动造 PASS。
-新报告设置 `remediation_version: 1` 和 `binding_version: 1`；每项发现包含 `remediation`，
+新报告设置 `remediation_version: 1`、`binding_version: 1` 和 `requirement_clarification_version: 1`；
+`requirement_clarifications` 保存独立需求澄清记录（无则空数组），每项缺陷/改善包含 `remediation`，
 每条结果的 `binding.object`、`binding.criterion` 记录实际已审对象及判据，与最终计划逐项一致，
 同条 `evidence`、`rationale` 只支持这个对象、配置、工况和判据。复用结论/计算前核对物理脚、
 网络及要求，不能因 ID 相似、同一 IC 或同一功能组就移用。装配/等效值通过与电平失败可并存，
@@ -272,9 +275,10 @@ PCB 阻抗/间距/回流和实测约束独立 HANDOFF，边界见 [scope-boundar
 按 P0→P3 列唯一确认问题；待核项按 `work_items` 展示具体缺口、已有事实、根因、取得方法、承担角色与关闭阶段，附完整检查 ID 映射。
 审查尚未完成的分析与外部缺资料分列；后续设计事项单列“移交后续设计”，用简洁中文描述约束和验收。
 待核项按原因计数：需求未定、缺外部资料、设计未定、审查待完成、需下游验证、用户暂缓。可选字段 `gap_cause` 由校验器汇总为
-`insufficient_by_cause`；口径过严的项应改判，不计入。需求未定的项（输入范围、环境、适用标准/等级等未写明）
-不是缺资料，单列“反馈设计者：需求待定”，写清要决定什么及可选项，归本轮任务。
-分别计数唯一缺陷、补证任务、受影响检查，不把几百条台账解释为几百个独立缺陷。
+`insufficient_by_cause`，只表示检查行数；口径过严的项应改判，不计入。
+需求澄清项独立于缺陷和证据缺口，按唯一问题报告已核输入、待决内容、责任方、冻结影响和关闭条件；
+一项决定关联多条检查只统计一次，任务由澄清记录生成，不在 work_items 重复建待办。
+分别计数唯一缺陷、需求澄清、其他补证任务和受影响检查，不把几百条台账解释为几百个独立缺陷。
 保存输入哈希、意图、计划、结构化证据、结果、计算/关键裁图和 Diff 到项目审查目录；
 临时全文/大图放任务专用临时目录，最终证据不得只留临时目录。公开仓库只放脱敏合成用例。
 

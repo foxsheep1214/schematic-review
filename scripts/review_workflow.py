@@ -1,7 +1,7 @@
 """Stage decisions and root-cause work items; never infer electrical PASS.
 
-This is supplementary to validate_review's evidence and release checks. Old
-reports retain the conservative freeze gate. Work-item grouping is explicit,
+This is supplementary to validate_review's evidence and release checks.
+Work-item grouping is explicit,
 not a text-similarity claim that different electrical causes are equivalent.
 """
 PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
@@ -16,9 +16,9 @@ def evidence(value):
         isinstance(x, dict) and text(x.get('source')) and text(x.get('locator')) for x in value)
 
 
-def workflow(plan, report, checks, expected):
+def workflow(plan, report, checks, expected, clarifications=None):
     errors, tasks, owners = [], [], {}
-    enabled = 'review_phase' in plan or 'workflow_version' in report or 'work_items' in report
+    enabled = bool(clarifications and clarifications['tasks']) or 'review_phase' in plan or 'workflow_version' in report or 'work_items' in report
     phase = plan.get('review_phase', 'schematic_freeze')
     if not enabled:
         return {'enabled': False, 'phase': phase, 'errors': [], 'tasks': [],
@@ -29,10 +29,15 @@ def workflow(plan, report, checks, expected):
         errors.append('staged results require workflow_version: 1')
     items = report.get('work_items')
     if not isinstance(items, list):
-        errors.append('work_items must be an array (empty only when no unresolved checks)')
+        errors.append('work_items must be an array (use [] when no separate repair/evidence tasks)')
         items = []
     unresolved = {k for k, c in checks.items() if c.get('review_result') in ('FAIL', 'INSUFFICIENT')}
-    seen = set()
+    if clarifications:
+        tasks.extend(clarifications['tasks'])
+        for task in tasks:
+            for cid in task['check_ids']:
+                owners.setdefault(cid, []).append(task)
+    seen = {task['id'] for task in tasks}
     for item in items:
         if not isinstance(item, dict) or not text(item.get('id')):
             errors.append('work_items require objects with IDs')
@@ -53,6 +58,9 @@ def workflow(plan, report, checks, expected):
         if not (isinstance(linked, list) and linked and all(text(x) for x in linked)
                 and len(linked) == len(set(linked)) and set(linked) <= unresolved):
             errors.append(key + ': check_ids must name unique unresolved checks')
+            continue
+        if any(checks[cid].get('gap_cause') == 'REQUIREMENT_OPEN' for cid in linked):
+            errors.append(key + ': requirement gaps are managed by clarification records, not duplicate work_items')
             continue
         for cid in linked:
             owners.setdefault(cid, []).append(item)
