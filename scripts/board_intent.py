@@ -16,8 +16,12 @@ ASSEMBLY_FIELDS = ('id', 'citation', 'population', 'jumpers')
 JUMPER_POSITIONS = ('closed', 'open', 'unknown')
 MAX_ASSEMBLIES = 32
 DEVICE_FIELDS = ('mpn', 'package', 'identity_citation', 'citation', 'pinout_complete', 'pins')
+# Device type as stated by the manufacturer's datasheet (same strings as checkers.netgraph kinds).
+# intent.device_kinds declares it; only declarations the datasheet audit VERIFIED reach the analysis.
+DEVICE_KINDS = ('bjt', 'mosfet', 'diode', 'zener', 'tvs', 'opto', 'relay', 'ic', 'resistor', 'capacitor',
+                'inductor', 'ferrite', 'transformer', 'fuse', 'crystal', 'connector', 'switch', 'jumper')
 PIN_ROLES = ('power', 'return', 'nc', 'other')
-SHARED_KEYS = ('input_sha256', 'assemblies', 'devices')
+SHARED_KEYS = ('input_sha256', 'assemblies', 'devices', 'device_kinds')
 
 
 def _text(value):
@@ -73,6 +77,29 @@ def validate(intent, db=None):
         errors.extend(assembly_errors(intent['assemblies'], db))
     if 'devices' in intent:
         errors.extend(device_errors(intent['devices'], db))
+    if 'device_kinds' in intent:
+        errors.extend(device_kind_errors(intent['device_kinds'], db))
+    return errors
+
+
+def device_kind_errors(kinds, db):
+    """intent.device_kinds: {ref: {kind, page, quote}}; quote is verbatim from that datasheet page."""
+    errors = []
+    if not isinstance(kinds, dict):
+        return ['device_kinds: must be an object keyed by refdes']
+    for ref, item in kinds.items():
+        label = 'device_kinds.' + str(ref)
+        if not (_text(ref) and (db is None or ref in db.get('parts', {}))):
+            errors.append(label + ': unknown ref')
+        if not isinstance(item, dict) or set(item) != {'kind', 'page', 'quote'}:
+            errors.append(label + ': needs exactly kind, page and quote')
+            continue
+        if item['kind'] not in DEVICE_KINDS:
+            errors.append(label + ': kind must be one of ' + '/'.join(DEVICE_KINDS))
+        if not (type(item['page']) is int and item['page'] >= 1):
+            errors.append(label + ': page must be a 1-based integer')
+        if not _text(item['quote']):
+            errors.append(label + ': quote must be the datasheet text that states the device type')
     return errors
 
 
@@ -115,6 +142,48 @@ def assembly_errors(assemblies, db):
     return errors
 
 
+VERIFIED_KEY = 'device_kinds_verified'
+
+
+def verified_kinds(intent, datasheet_audit):
+    """{ref: {kind, citation}} for declarations the datasheet audit VERIFIED against the bound PDF."""
+    declared = (intent or {}).get('device_kinds') if isinstance(intent, dict) else None
+    section = (datasheet_audit or {}).get('device_kinds') if isinstance(datasheet_audit, dict) else None
+    out = {}
+    for ref, item in (declared or {}).items():
+        entry = (section or {}).get(ref) or {}
+        if (isinstance(item, dict) and entry.get('status') == 'VERIFIED'
+                and all(entry.get(k) == item.get(k) for k in ('kind', 'page', 'quote'))):
+            name = str(entry.get('document', '')).replace('\\', '/').rsplit('/', 1)[-1]
+            out[ref] = {'kind': item['kind'],
+                        'citation': f'{name} p{item["page"]}: "{item["quote"]}" (sha256 {entry.get("document_sha256", "")[:12]})'}
+    return dict(sorted(out.items()))
+
+
+def with_verified_kinds(intent, datasheet_audit):
+    """Analysis intent: the reviewer's intent plus the audit-verified device kinds."""
+    source = intent if isinstance(intent, dict) else {}
+    if VERIFIED_KEY in source:            # already an analysis/context intent
+        return source
+    kinds = verified_kinds(source, datasheet_audit)
+    return dict(source, **{VERIFIED_KEY: kinds}) if kinds else source
+
+
+def declared_kinds(intent):
+    """Verified kinds carried by an analysis intent or inventory context."""
+    kinds = intent.get(VERIFIED_KEY) if isinstance(intent, dict) else None
+    return kinds if isinstance(kinds, dict) else {}
+
+
+def graph_db(db, intent):
+    """Netlist view for connectivity analysis with datasheet-declared device kinds attached.
+
+    Returns a shallow copy; db_fingerprint covers only netlist keys, so digests are unchanged.
+    """
+    kinds = declared_kinds(intent)
+    return dict(db, device_kinds=kinds) if kinds else db
+
+
 def device_errors(devices, db):
     errors = []
 
@@ -147,9 +216,16 @@ def device_errors(devices, db):
 
 
 def context(intent, key, extra=()):
-    """检查器清单的重建上下文：共享声明加本检查器段，未声明的键不写。"""
+    """检查器清单的重建上下文：共享声明加本检查器段，未声明的键不写。
+
+    经手册核验的器件类型影响识别结果，随清单保存（device_kinds_verified），过期检测才能复现。
+    """
     source = intent if isinstance(intent, dict) else {}
-    return {k: source[k] for k in ('input_sha256', 'assemblies') + tuple(extra) + (key,) if k in source}
+    out = {k: source[k] for k in ('input_sha256', 'assemblies') + tuple(extra) + (key,) if k in source}
+    kinds = declared_kinds(source)
+    if kinds:
+        out[VERIFIED_KEY] = kinds
+    return out
 
 
 def pin_sets(db, ref, device):

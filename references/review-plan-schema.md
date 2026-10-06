@@ -167,6 +167,16 @@ READY，DEV-D05 带 `pin_disposition`（未接网脚与标 nc 却接了网的脚
 
 `intent.requirements` 可选数组，每项必须含唯一 `id`、`text`、`citation`、`criterion`。
 例如 `{"id":"REQ-01","text":"两个用户接口","citation":"需求 A §3","criterion":"两路完整链路到连接器"}`。
+可选 `status` 记录需求的确认状态。字段值写英文枚举，报告和文档中一律写成“中文（英文）”：
+- 已确认（CONFIRMED）：需求方已确认。
+- 提案（PROPOSED）：提出了数值，尚未确认。
+- 未定（OPEN）：判据依赖的数值或条款还没有决定。
+- 暂缓（DEFERRED）：需求方明确暂缓。
+
+按需求文档原样填写，不得省略未定项，也不得删掉暂缓项。`status` 会写入 REQ-D01 的 `object.requirement_status`，校验规则如下：
+- 未定（OPEN）的项必须为 INSUFFICIENT，`gap_cause` 为 REQUIREMENT_OPEN。
+- 暂缓（DEFERRED）的项必须为 INSUFFICIENT，`gap_cause` 为 USER_DEFERRED。
+- 提案（PROPOSED）的项可以判定，但结论以提案为前提。校验输出 `requirements_by_status` 供报告说明。
 计划逐条实例化为 REQ-D01；还增加 input_consistency/requirements/chains/states/datasheets/history 六类
 覆盖审计项（DOC-Q01、REQ-Q01、REQ-Q02、REQ-Q03、DEV-Q01、REQ-Q04），以及关键器件完整物理脚差集项
 （DEV-D02）。详细原理图检查仍须 Agent 补齐。

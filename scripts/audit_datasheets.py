@@ -14,6 +14,7 @@ Typical flow::
     python3 audit_datasheets.py db.json --datasheet-dir ./datasheets \
         --resolution datasheet-resolution.json --json datasheet-audit.json
 """
+import datasheet_kinds
 import argparse
 import io
 import json
@@ -24,7 +25,8 @@ from collections import Counter
 from electrical_contract import load_json
 
 
-REQUIRED_REF_RE = re.compile(r'^(U|M|Q|D)\d', re.I)
+# Active parts and every discrete semiconductor prefix (ZD/TVS were silently skipped before).
+REQUIRED_REF_RE = re.compile(r'^(U|M|Q|D|ZD|TVS)\d', re.I)
 AUDIT_STATUSES = ('AVAILABLE', 'NEEDS_VERIFICATION', 'MISSING', 'NOT_FOUND')
 RESOLUTION_STATUSES = ('FOUND', 'NOT_FOUND')
 SOURCE_KINDS = ('package', 'network')
@@ -293,6 +295,15 @@ def validate_datasheet_audit(audit, db=None):
             if action is not None and key not in seen_requests:
                 errors.append(
                     f'datasheet audit 缺少 {action} agent request: {key}')
+    kinds = audit.get('device_kinds', {})
+    if not isinstance(kinds, dict):
+        errors.append('datasheet audit device_kinds 必须为 object')
+    else:
+        for ref, entry in kinds.items():
+            if not isinstance(entry, dict) or entry.get('status') not in datasheet_kinds.STATUSES + ('UNDECLARED',):
+                errors.append(f'datasheet audit device_kinds.{ref} 状态无效')
+            elif entry['status'] == 'VERIFIED' and not re.fullmatch('[0-9a-f]{64}', str(entry.get('document_sha256'))):
+                errors.append(f'datasheet audit device_kinds.{ref} 核验通过但缺少手册哈希')
     messages = audit.get('user_messages')
     if not isinstance(messages, list) or not all(_text(x) for x in messages):
         errors.append('datasheet audit user_messages 必须为字符串数组')
@@ -392,7 +403,7 @@ def _material_groups(db, required_refs=None):
 
 
 def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
-                          resolution_base=None, required_refs=None):
+                          resolution_base=None, required_refs=None, device_kinds=None):
     files, missing_paths = _collect_pdf_files(datasheet_dirs or [])
     required_refs = sorted(set(required_refs or []))
     unknown = [ref for ref in required_refs if ref not in db.get('parts', {})]
@@ -474,7 +485,10 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
 
     counts = Counter(item['status'] for item in materials)
     unresolved = len(materials) - counts['AVAILABLE']
+    kinds = datasheet_kinds.audit_kinds(materials, device_kinds or {})
     return {
+        'device_kinds': kinds,
+        'device_kind_summary': dict(Counter(item['status'] for item in kinds.values())),
         'schema_version': 1,
         'generated_by': 'scripts/audit_datasheets.py',
         'network_access': 'agent-only',
@@ -507,6 +521,7 @@ def main():
     parser.add_argument('--require-ref', action='append', default=[],
                         help='需要额定值/曲线/引脚定义的 L/F/Y/J/C/R 等关键物料；可重复')
     parser.add_argument('--evidence', help='自动纳入 evidence 中 depends_on 和目标器件的资料依赖')
+    parser.add_argument('--intent', help='intent.json：按 device_kinds 声明逐条核验手册页原文')
     parser.add_argument('--json', required=True, help='写出 datasheet-audit.json')
     parser.add_argument(
         '--fail-on-unresolved', action='store_true',
@@ -517,6 +532,7 @@ def main():
         db = load_json(args.db)
         resolution = load_json(args.resolution) if args.resolution else None
         evidence = load_json(args.evidence) if args.evidence else None
+        intent = load_json(args.intent) if args.intent else {}
     except (OSError, ValueError) as error:
         parser.error(str(error))
     resolution_base = os.curdir
@@ -533,7 +549,8 @@ def main():
             required_refs.update(dependency_refs(db, check))
     try:
         audit = build_datasheet_audit(
-            db, args.datasheet_dir, resolution, resolution_base, sorted(required_refs))
+            db, args.datasheet_dir, resolution, resolution_base, sorted(required_refs),
+            (intent or {}).get('device_kinds'))
     except ValueError as error:
         sys.exit(f'[FATAL] {error}')
     errors = validate_datasheet_audit(audit, db)
@@ -555,6 +572,11 @@ def main():
         else:
             print(f"  [{request['action']}] {request['identity']} "
                   f"refs={','.join(request['refdes'])}")
+    if audit['device_kinds']:
+        print('  器件类型核验: ' + ', '.join(f'{k}={v}' for k, v in sorted(audit['device_kind_summary'].items())))
+        for ref, entry in audit['device_kinds'].items():
+            if entry['status'] not in ('VERIFIED', 'UNDECLARED'):
+                print(f"  [{entry['status']}] {ref}: {entry.get('detail', '')}")
     print(f'  -> {args.json}')
     return 2 if args.fail_on_unresolved and summary['unresolved'] else 0
 

@@ -141,6 +141,8 @@ class _Scan:
             gaps = list(self.state['gaps'])
             if not all(nodes.values()):
                 gaps.append('pin-roles:' + ref)
+            if ng.kind_gap(graph, ref):
+                gaps.append(ng.kind_gap(graph, ref))
             nets = {role: graph.pin2net.get(node) if node else None
                     for role, node in nodes.items()}
             topology, source_basis = 'unknown', None

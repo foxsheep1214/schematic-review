@@ -174,13 +174,15 @@ DEV-D02 的双向差集与 DEV-D05 的引脚处置据此列出待核脚，去耦
 资料核对/补取完成并写出 `datasheet-resolution.json` 后，把证据计算需要的保证值整理成
 `evidence.json`（`schema_version` 为 2，`rule` 取总表中方式为 E 的规则），格式见
 [datasheet-evidence-schema.md](references/datasheet-evidence-schema.md)。
+分立半导体（Q/D/ZD/TVS）的器件类型按手册填 `intent.device_kinds`（页码＋原文），由 `--intent` 核验原文后才进入分析，
+见 [检查器](references/checkers.md)“器件类型以原厂手册为准”；未声明的器件，审计会给出首页候选类型供核对。
 PWR-E01 需要复用已核对的 Vref 时，按 [Vref 参数复用](references/datasheet-facts-schema.md)
 把事实保存在项目内，明确精确 MPN/封装和本次完整工况，先物化为 evidence 再热跑。
 事实与电路结论分开；过期、条件不覆盖或多条适用保证均待核，不以 typ/置信度代替保证值。
 
 ### 4. 热跑：证据计算（E）
 
-    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --evidence evidence.json --json datasheet-audit.json
+    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --evidence evidence.json --intent intent.json --json datasheet-audit.json
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --evidence evidence.json --datasheet-audit datasheet-audit.json --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json
 
 自动结果只覆盖输入的具体对象与判据，未覆盖实例仍待查。证据须绑定当前网表/物料、装配及状态、

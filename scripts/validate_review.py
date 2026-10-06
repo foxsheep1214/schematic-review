@@ -20,6 +20,9 @@ RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
 APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
 # Optional INSUFFICIENT cause (evidence-proportionality.md); over-strict checks are re-judged, not tagged.
+REQUIREMENT_GAP = {"OPEN": "REQUIREMENT_OPEN", "DEFERRED": "USER_DEFERRED"}
+REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "PROPOSED": "提案（PROPOSED）",
+                     "OPEN": "未定（OPEN）", "DEFERRED": "暂缓（DEFERRED）"}
 GAP_CAUSES = ("REQUIREMENT_OPEN", "EXTERNAL_DATA", "DESIGN_OPEN", "REVIEW_INCOMPLETE", "DOWNSTREAM_VERIFICATION", "USER_DEFERRED")
 SCOPE = set(catalog.COVERAGE_RULES)
 
@@ -187,6 +190,11 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if "gap_cause" in item:
             require(result == "INSUFFICIENT" and item["gap_cause"] in GAP_CAUSES,
                     f"{key}: gap_cause is one of {'/'.join(GAP_CAUSES)} and only on INSUFFICIENT")
+        # A requirement the owner has not decided (OPEN) or has postponed (DEFERRED) cannot be judged.
+        req_status = (expected.get(key, {}).get("object") or {}).get("requirement_status")
+        if req_status in REQUIREMENT_GAP:
+            require(result == "INSUFFICIENT" and item.get("gap_cause") == REQUIREMENT_GAP[req_status],
+                    f"{key}: 需求状态为{REQUIREMENT_LABEL[req_status]}，结果须为 INSUFFICIENT 且 gap_cause 为 {REQUIREMENT_GAP[req_status]}")
         if result == "FAIL":
             require(item.get("severity") in tuple(SEVERITIES), f"{key}: invalid severity")
             fid = item.get("finding_id")
@@ -379,6 +387,10 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     return {"valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
             "insufficient_by_cause": gap_causes,
+            # REQ-D01 results per requirement confirmation state: a PASS against PROPOSED is conditional on that proposal.
+            "requirements_by_status": {st: dict(Counter(checks[k].get("review_result") for k, x in expected.items()
+                                                        if k in checks and (x.get("object") or {}).get("requirement_status") == st))
+                                       for st in sorted({(x.get("object") or {}).get("requirement_status") for x in expected.values()} - {None})},
             "requirement_questions": [{"check_id": k, "missing_inputs": x.get("missing_inputs", [])}
                                       for k, x in sorted(checks.items())
                                       if x.get("review_result") == "INSUFFICIENT" and x.get("gap_cause") == "REQUIREMENT_OPEN"],

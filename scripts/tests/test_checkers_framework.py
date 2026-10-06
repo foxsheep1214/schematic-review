@@ -182,6 +182,54 @@ class NetGraphTest(unittest.TestCase):
         self.assertEqual(kind, ng.UNKNOWN)
         self.assertIn('pin count', basis)
 
+    def test_kicad_library_prefix_classifies_unlisted_bjt(self):
+        part = {'part': 'BCX56-16TX', 'value': 'BCX56-16TX', 'prim': 'Transistor_BJT:BCX56-16TX', 'jedec': ''}
+        self.assertEqual(ng.classify('Q7', part, 3), (ng.BJT, 'part-keyword'))
+
+    def test_symbol_pin_names_classify_transistor_without_keyword(self):
+        part = {'part': 'XYZ123', 'value': 'XYZ123', 'prim': 'Project:SOT89_npn', 'jedec': ''}
+        bce = [('E', '1'), ('C', '2'), ('B', '3')]
+        self.assertEqual(ng.classify('Q7', part, 3, bce), (ng.BJT, 'pin-names'))
+        gds = [('G', '1'), ('D5', '5'), ('S1', '1')]
+        self.assertEqual(ng.classify('Q7', part, 3, gds), (ng.MOSFET, 'pin-names'))
+        self.assertEqual(ng.classify('Q7', part, 3, [('1', '1'), ('2', '2'), ('3', '3')]), (ng.MOSFET, 'refdes-prefix'))
+
+    def test_keyword_contradicting_symbol_pins_is_unknown(self):
+        part = {'part': 'MMBT3904', 'value': 'MMBT3904', 'prim': 'Project:SOT23', 'jedec': ''}
+        kind, basis = ng.classify('Q7', part, 3, [('G', '1'), ('D', '2'), ('S', '3')])
+        self.assertEqual(kind, ng.UNKNOWN)
+        self.assertIn('pin names', basis)
+        both = dict(part, prim='Project:Q_NMOS')
+        self.assertEqual(ng.classify('Q7', both, 3)[0], ng.UNKNOWN)
+
+    def test_graph_uses_symbol_pin_names_for_kind(self):
+        db = {'parts': {'Q7': {'part': 'XYZ123', 'value': 'XYZ123', 'prim': 'Project:SOT89', 'jedec': ''}},
+              'pin2net': {'Q7.1': 'OUT', 'Q7.2': 'VIN', 'Q7.3': 'BIAS'},
+              'pinname': {'Q7.1': 'E', 'Q7.2': 'C', 'Q7.3': 'B'}, 'nets': {}}
+        graph = ng.NetGraph(db)
+        self.assertEqual(graph.kind('Q7'), ng.BJT)
+        self.assertEqual(graph.role('Q7.3'), 'gate')
+
+    def test_datasheet_declared_kind_is_authoritative_and_cross_checked(self):
+        part = {'part': 'XYZ123', 'value': 'XYZ123', 'prim': 'Project:SOT89', 'jedec': ''}
+        bce = [('E', '1'), ('C', '2'), ('B', '3')]
+        self.assertEqual(ng.classify('Q7', part, 3, bce, declared=ng.BJT), (ng.BJT, 'datasheet'))
+        kind, basis = ng.classify('Q7', part, 3, bce, declared=ng.MOSFET)      # wrong symbol for the part
+        self.assertEqual(kind, ng.UNKNOWN)
+        self.assertIn('datasheet', basis)
+        named = dict(part, part='MMBT3904')
+        self.assertEqual(ng.classify('Q7', named, 3, (), declared=ng.MOSFET)[0], ng.UNKNOWN)
+
+    def test_kind_gap_only_for_heuristic_basis(self):
+        db = {'parts': {'Q7': {'part': 'XYZ123', 'value': 'XYZ123', 'prim': '', 'jedec': ''}},
+              'pin2net': {'Q7.1': 'OUT', 'Q7.2': 'VIN', 'Q7.3': 'BIAS'},
+              'pinname': {'Q7.1': 'E', 'Q7.2': 'C', 'Q7.3': 'B'}, 'nets': {}}
+        self.assertEqual(ng.kind_gap(ng.NetGraph(db), 'Q7'), 'datasheet-kind:Q7')
+        declared = dict(db, device_kinds={'Q7': {'kind': 'bjt', 'citation': 'DS p1 NPN transistor'}})
+        graph = ng.NetGraph(declared)
+        self.assertEqual((graph.kind('Q7'), graph.basis('Q7')), (ng.BJT, 'datasheet'))
+        self.assertIsNone(ng.kind_gap(graph, 'Q7'))
+
     def test_roles_come_from_pin_names_only(self):
         self.assertEqual(self.graph.role('Q1.2'), 'drain')
         self.assertEqual(self.graph.role('D1.1'), 'anode')

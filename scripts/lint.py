@@ -35,6 +35,7 @@ from checkers.netgraph import NetGraph, rail_voltage as _volt
 from electrical_contract import bounded, db_fingerprint, load_json, readiness_gaps, validate_evidence
 from fractions import Fraction
 from itertools import product
+import board_intent
 from plan_review import build_review_plan, validate_intent
 from solve_dividers import Solver, divider_window, linear_feedback_window, parse_resistor
 
@@ -97,9 +98,11 @@ class Lint:
         self.skipped = []      # 未执行的规则及原因——绝不静默跳过
         self.hot_executed = set()
         self._ends_cache = {}
-        self.graph = NetGraph(db)
+        analysis = board_intent.with_verified_kinds(self.intent, datasheet_audit)   # datasheet-verified kinds
+        analysis_db = board_intent.graph_db(db, analysis)
+        self.graph = NetGraph(analysis_db)
         self.powertree = PowerTree(self.graph, self.intent)
-        self.inventories = {checker.id: checker.build(db, self.intent) for checker in REGISTRY}
+        self.inventories = {checker.id: checker.build(analysis_db, analysis) for checker in REGISTRY}
 
     # -- helpers ---------------------------------------------------------
     def ends(self, ref):

@@ -31,8 +31,11 @@ KEYWORD_KINDS = (
     (r'OPTO|PC81[07]|LTV\d|TLP\d|6N13[57]|HCPL|ACPL|FOD\d|CNY17|VO6\d|光耦', OPTO),
     (r'\bTVS\b|SMAJ|SMBJ|SMCJ|P6KE|1\.5KE|ESD\d|PESD|SM712', TVS),
     (r'ZENER|BZX|MMSZ|1N47\d|稳压二极管', ZENER),
+    # KiCad symbol-library category of the symbol actually placed.
+    (r'TRANSISTOR_BJT:', BJT),
+    (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:', MOSFET),
     (r'MOSFET|\bFET\b|NMOS|PMOS|IRF|AO\d{4}|SI\d{4}|BSS\d|2N7002|IGBT', MOSFET),
-    (r'\bNPN\b|\bPNP\b|BC\d{3}|2N\d{4}|MMBT|S8050|S8550|三极管', BJT),
+    (r'\bNPN\b|\bPNP\b|BC[PXW]?\d{2,3}|2N\d{4}|MMBT|PBSS|S8050|S8550|三极管', BJT),
     (r'SCHOTTKY|DIODE|SS\d{2}|BAT\d|1N4\d{3}|1N58\d|二极管', DIODE),
     (r'FERRITE|BEAD|BLM\d|MPZ\d|磁珠', FERRITE),
     (r'INDUCTOR|CHOKE|电感', INDUCTOR),
@@ -107,14 +110,65 @@ def name_matches(pattern, name, pin=None):
     return any(pattern.match(alias) for alias in pin_aliases(name, pin))
 
 
-def classify(ref, part, pin_count=None):
-    """返回 (kind, basis)。basis 说明结论来自型号关键字还是位号前缀。"""
+HEURISTIC_BASES = ('pin-names', 'refdes-prefix')   # no datasheet or part-number evidence behind the kind
+
+
+def kind_gap(graph, ref):
+    """Gap text when a transistor/diode kind rests only on pin names or refdes prefix."""
+    if graph.basis(ref) in HEURISTIC_BASES:
+        return 'datasheet-kind:' + ref
+    return None
+
+
+def pin_signature(pin_names):
+    """Transistor family implied by the placed symbol's own pin names.
+
+    B/BASE without a gate pin -> BJT; G/GATE without a base pin -> MOSFET.
+    Numbered or mixed names give None: the symbol carries no family evidence.
+    """
+    aliases = {a for name, pin in pin_names for a in pin_aliases(name, pin)}
+    base = bool(aliases & {'B', 'BASE'})
+    gate = any(a in GATE_NAMES or a.startswith('GATE') for a in aliases)
+    if base != gate:
+        return BJT if base else MOSFET
+    return None
+
+
+def classify(ref, part, pin_count=None, pin_names=(), declared=None):
+    """返回 (kind, basis)。basis 说明结论的依据：datasheet / part-keyword / pin-names / refdes-prefix。
+
+    declared 是审查者按原厂手册记录的器件类型（intent.devices.kind + kind_citation），为权威依据；
+    型号/符号库关键字与符号引脚名只作交叉核对，与手册矛盾时返回未知（选错符号或填错型号）。
+    没有手册声明时才退回启发式：关键字 → 引脚名 → 位号前缀。调用方对 pin-names / refdes-prefix
+    依据须登记“缺手册器件类型”缺口，不能只凭引脚名或位号前缀下结论。
+    pin_names 为 (引脚名, 脚号) 序列。
+    """
+    if declared:
+        kind = declared
+        sig = pin_signature(pin_names)
+        if kind in (MOSFET, BJT) and sig and sig != kind:
+            return UNKNOWN, f'datasheet says {kind} but symbol pin names say {sig}'
+        blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
+        named = {k for pattern, k in KEYWORD_KINDS if k in (MOSFET, BJT) and re.search(pattern, blob, re.I)}
+        if kind in (MOSFET, BJT) and named and kind not in named:
+            return UNKNOWN, f'datasheet says {kind} but part/library keywords say {"/".join(sorted(named))}'
+        return kind, 'datasheet'
+    signature = pin_signature(pin_names)
     blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
+    transistor = {kind for pattern, kind in KEYWORD_KINDS
+                  if kind in (MOSFET, BJT) and re.search(pattern, blob, re.I)}
     for pattern, kind in KEYWORD_KINDS:
         if re.search(pattern, blob, re.I):
             if kind in (MOSFET, BJT) and pin_count is not None and pin_count < 3:
                 continue
+            if kind in (MOSFET, BJT):
+                if len(transistor) > 1:
+                    return UNKNOWN, 'part keywords name both mosfet and bjt'
+                if signature and signature != kind:
+                    return UNKNOWN, f'part keyword says {kind} but symbol pin names say {signature}'
             return kind, 'part-keyword'
+    if signature and (pin_count is None or pin_count >= 3):
+        return signature, 'pin-names'
     for pattern, kind in PREFIX_KINDS:
         if re.match(pattern, ref, re.I):
             if kind is MOSFET and pin_count is not None and pin_count < 3:
@@ -181,7 +235,10 @@ class NetGraph:
     def kind(self, ref):
         if ref not in self._kinds:
             part = self.parts.get(ref, {})
-            self._kinds[ref] = classify(ref, part, len(self._pins.get(ref, {})) or None)
+            pins = self._pins.get(ref, {})
+            names = [(self.pinname.get(ref + '.' + pin), pin) for pin in pins]
+            declared = (self.db.get('device_kinds') or {}).get(ref, {}).get('kind')
+            self._kinds[ref] = classify(ref, part, len(pins) or None, names, declared)
         return self._kinds[ref][0]
 
     def basis(self, ref):

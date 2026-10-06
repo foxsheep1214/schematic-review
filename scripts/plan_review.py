@@ -78,6 +78,11 @@ COLD_RULE_INDEXES = {
 BUILTIN_EVIDENCE_RULES = tuple(rule.id for rule in catalog.rules(method='E', source='lint'))
 
 
+# Confirmation state of an intent requirement: 已确认（CONFIRMED）、提案（PROPOSED）、
+# 未定（OPEN，判据依赖的数值未决定）、暂缓（DEFERRED，需求方明确暂缓）。 Both stay INSUFFICIENT with the matching gap_cause.
+REQUIREMENT_STATUSES = ('CONFIRMED', 'PROPOSED', 'OPEN', 'DEFERRED')
+
+
 def _text(value):
     return isinstance(value, str) and bool(value.strip())
 
@@ -202,11 +207,16 @@ def validate_intent(intent, db=None):
             for key in ('id', 'text', 'citation', 'criterion'):
                 if not _text(item.get(key)):
                     errors.append(f'requirement.{key} 缺失')
+            if 'status' in item and item['status'] not in REQUIREMENT_STATUSES:
+                errors.append('requirement.status 须为 已确认（CONFIRMED）/提案（PROPOSED）/未定（OPEN）/暂缓（DEFERRED）之一，字段值写英文')
             rid = item.get('id')
             if _text(rid):
                 if rid in seen:
                     errors.append(f'requirement id 重复: {rid}')
                 seen.add(rid)
+    if isinstance(intent, dict) and board_intent.VERIFIED_KEY in intent:
+        # Only the datasheet audit may mark a device kind as verified.
+        errors.append(board_intent.VERIFIED_KEY + ' 由手册核验生成，不能在 intent 中声明')
     errors.extend(board_intent.validate(intent, db))
     for checker in REGISTRY:
         errors.extend(checker.validate_intent(intent, db))
@@ -263,7 +273,9 @@ class ReviewPlanner:
                  old_db_available=False, claims_available=False,
                  datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None):
         self.db = db
-        self.inventories = {checker.id: checker.build(db, intent) for checker in REGISTRY}
+        self.kind_intent = board_intent.with_verified_kinds(intent, datasheet_audit)
+        analysis_db = board_intent.graph_db(db, self.kind_intent)
+        self.inventories = {checker.id: checker.build(analysis_db, self.kind_intent) for checker in REGISTRY}
         self.i2c_topology = self.inventories['i2c_topology']
         self.decoupling = self.inventories['decoupling']
         self.db_sha256 = db_fingerprint(db)
@@ -735,11 +747,21 @@ class ReviewPlanner:
                 required_inputs=missing,
                 reason='复审必须验证新旧网表与历史意见断言')
 
+    def _kind_gap(self, ref):
+        entry = ((self.datasheet_audit or {}).get('device_kinds') or {}).get(ref) or {}
+        status = entry.get('status', 'NOT_AUDITED')
+        hint = '; '.join(f"{c['kind']} p{c['page']} \"{c['snippet']}\"" for c in entry.get('candidates', [])[:3])
+        return (f'intent.device_kinds.{ref}: datasheet page + verbatim quote stating the device type '
+                f'(audit {status}' + (f'; candidates: {hint}' if hint else '') + (f'; {entry["detail"]}' if entry.get('detail') else '') + ')')
+
     def plan_coverage(self):
         for name, rule in catalog.COVERAGE_RULES.items():
             self.add_check(rule, {'feature': name}, trigger=['coverage-protocol'])
         for item in self.intent.get('requirements', []):
-            self.add_check('REQ-D01', {'requirement_id': item['id'], 'feature': item['id']},
+            obj = {'requirement_id': item['id'], 'feature': item['id']}
+            if 'status' in item:
+                obj['requirement_status'] = item['status']
+            self.add_check('REQ-D01', obj,
                            criterion=item['criterion'],
                            trigger=[item['citation'], item['text']])
         # The declared inventory includes symbol pins omitted from connected nets.
@@ -750,6 +772,9 @@ class ReviewPlanner:
             device = devices.get(ref)
             gaps = [] if device and device['pinout_complete'] else [
                 f'intent.devices.{ref}: official full pinout + exact MPN/package']
+            if re.match(r'^(Q|D|ZD|TVS)\d', ref, re.I) and ref not in board_intent.declared_kinds(self.kind_intent):
+                # Discrete semiconductor type comes from the datasheet, not pin names or the refdes prefix.
+                gaps.append(self._kind_gap(ref))
             trigger = [f'refdes:{ref}'] + ([f'intent.devices:{device["citation"]}'] if device else [])
             item = self._ready_check('DEV-D02', {'ref': ref}, gaps, trigger)
             if device:

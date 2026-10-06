@@ -143,3 +143,12 @@ evidence.basis.sources 还须记录确切的身份解释和实际文档指纹。
 
 临时下载可放 /tmp；最终引用的 PDF、审计及补取记录须保存到项目审查目录，并更新文档
 路径。文档内容不变时指纹不变；路径不存在会使热跑保持待核，不能只交临时目录中的证据。
+
+新下载的器件 datasheet 存入项目后，同时复制到 HardwareWiki（默认
+~/Documents/知识库/HardwareWiki）的 raw/Datasheet/<一级类>/<二级类>/：先按哈希与 raw/
+去重，已有同型号文件不再复制；命名 `Vendor - PartNumber.pdf`，Vendor 用
+raw/Datasheet/VENDORS.yaml 的简称（新厂商先补登记）；分类按
+raw/Datasheet/元器件体系/器件统一分类大表.md，无归属放 ZZ_其他 并在报告中说明。只复制原文件，
+不改项目内路径和指纹，也不触发入库。参考设计和评估板手册同样复制，放
+raw/Designexample/<拓扑>/<板号>/，命名 `Vendor - BoardName - Title.pdf`；应用笔记和标准不放入
+Datasheet 目录。

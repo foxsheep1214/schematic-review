@@ -101,6 +101,35 @@ class V2Regressions(unittest.TestCase):
         self.assertTrue(any(x['rule'] == 'DEV-D02' and x['object']['ref'] == 'U1'
                             for x in plan['checks']))
 
+    def test_requirement_status_reaches_the_planned_check(self):
+        intent = {'requirements': [{'id': 'REQ-T', 'text': 'derate by temperature', 'status': 'OPEN',
+                   'criterion': 'derating points', 'citation': 'REQ Rev.A section 2'}]}
+        self.assertEqual(validate_intent(intent), [])
+        plan = build_review_plan(sample_db(), intent)
+        row = next(x for x in plan['checks'] if x['object'].get('requirement_id') == 'REQ-T')
+        self.assertEqual(row['object']['requirement_status'], 'OPEN')
+        intent['requirements'][0]['status'] = 'MAYBE'
+        self.assertTrue(validate_intent(intent))
+
+    def test_only_audit_verified_device_kinds_reach_analysis(self):
+        import board_intent
+        decl = {'Q1': {'kind': 'bjt', 'page': 1, 'quote': 'NPN power bipolar transistor'}}
+        self.assertEqual(board_intent.device_kind_errors(decl, None), [])
+        self.assertTrue(board_intent.device_kind_errors({'Q1': {'kind': 'bjt', 'page': 1}}, None))
+        self.assertTrue(board_intent.device_kind_errors({'Q1': dict(decl['Q1'], page='1')}, None))
+        intent = {'device_kinds': decl}
+        audit = {'device_kinds': {'Q1': dict(decl['Q1'], status='VERIFIED', document='/x/BCX56.pdf',
+                                             document_sha256='a' * 64)}}
+        self.assertEqual(board_intent.with_verified_kinds(intent, None), intent)        # no audit -> not used
+        failed = {'device_kinds': {'Q1': dict(audit['device_kinds']['Q1'], status='QUOTE_NOT_FOUND')}}
+        self.assertEqual(board_intent.verified_kinds(intent, failed), {})
+        analysis = board_intent.with_verified_kinds(intent, audit)
+        self.assertEqual(board_intent.declared_kinds(analysis)['Q1']['kind'], 'bjt')
+        ctx = board_intent.context(analysis, 'power_switches')
+        self.assertEqual(board_intent.declared_kinds(ctx), board_intent.declared_kinds(analysis))
+        self.assertEqual(board_intent.graph_db({'parts': {}}, ctx)['device_kinds']['Q1']['kind'], 'bjt')
+        self.assertTrue(validate_intent(dict(intent, device_kinds_verified={})))
+
     def test_source_rail_is_not_divided_pin_voltage(self):
         db = network({'U1': {}, 'R1': {'value': '100K'}, 'R2': {'value': '10K'}},
                      {'VCC_24V': ['R1.1'], 'EN': ['R1.2', 'R2.1', 'U1.1'], 'GND': ['R2.2']},

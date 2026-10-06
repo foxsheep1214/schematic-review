@@ -112,6 +112,23 @@ class ReviewGateTests(unittest.TestCase):
                               potential_severity='P2')
         self.assertEqual(validate_review(p, r, db)['insufficient_by_cause'], {'UNSPECIFIED': 1})
 
+    def test_open_or_deferred_requirement_cannot_be_judged(self):
+        def run(status, **row):
+            p, r, db = fixture()
+            p['checks'][0]['object'] = dict(p['checks'][0].get('object') or {}, requirement_status=status)
+            r['plan_digest'] = fingerprint(p)
+            r['checks'][0].update(row)
+            return validate_review(p, r, db)
+        gap = dict(review_result='INSUFFICIENT', evidence_confidence='C', potential_severity='P2',
+                   missing_inputs=['derating temperature points'])
+        self.assertFalse(run('OPEN')['valid'])                                   # PASS on an undecided requirement
+        self.assertFalse(run('OPEN', **gap, gap_cause='EXTERNAL_DATA')['valid'])  # filed as missing data
+        self.assertTrue(run('OPEN', **gap, gap_cause='REQUIREMENT_OPEN')['valid'])
+        self.assertTrue(run('DEFERRED', **gap, gap_cause='USER_DEFERRED')['valid'])
+        out = run('PROPOSED')
+        self.assertTrue(out['valid'], out)
+        self.assertEqual(out['requirements_by_status'], {'PROPOSED': {'PASS': 1}})
+
     def test_requirement_open_is_listed_for_the_designer_and_kept_in_current_round(self):
         def staged(stage):
             p, r, db = fixture()

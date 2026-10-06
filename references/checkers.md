@@ -37,6 +37,36 @@
 容量额定或贴装；显式类别声明优先，自定义/未知符号仍需确认。无法分类的器件记为未知并形成
 缺口，不按名称推定不适用。
 
+**器件类型以原厂手册为准，由工具核验原文。**
+
+第一步，审查者读手册，在 `intent.device_kinds.<ref>` 写下声明：`kind`、`page`、`quote`。
+- `kind`：bjt/mosfet/diode/zener/tvs/opto 等，与检查器的器件类别一致。
+- `page`：手册页码，从 1 开始。
+- `quote`：该页上写明器件类型的原文，例如 BCX56-16TX 写 `{"kind":"bjt","page":1,"quote":"80 V, 1 A NPN power bipolar transistors"}`。
+
+第二步，`audit_datasheets.py --intent intent.json` 读取 datasheet 解析表绑定给该位号的那份 PDF，用 pdftotext 抽取该页文本。比较时只保留字母和数字（PDF 常丢空格），逐条核验三点：
+- 原文确实在该页上；
+- 原文本身写明了所声明的类型，例如 NPN/bipolar、MOSFET/N-channel、Zener、TVS/ESD protection、rectifier/diode/Schottky；
+- 原文没有同时指向别的类型，例如把 “ESD Protection Diode” 声明为普通二极管，判为 QUOTE_CONFLICT。
+
+核验结果写入审计的 `device_kinds` 段：
+- 状态为 VERIFIED / QUOTE_NOT_FOUND / QUOTE_LACKS_TYPE / QUOTE_CONFLICT / NO_DOCUMENT / NO_TEXT。
+- 通过时附手册 SHA-256。
+- 未声明的分立半导体标 UNDECLARED，附首页候选类型和所在行，只作提示。
+
+只有 VERIFIED 的声明会进入分析（basis `datasheet`），并随清单上下文保存为 `device_kinds_verified`。该字段由工具生成，intent 中手写会被拒绝。未核验、核验失败或抽取不到文本时，一律按缺口处理，不会因为抽取出错得出结论。
+
+型号/符号库关键字和符号引脚名（B/C/E、G/D/S）只作交叉核对，与手册矛盾时记为未知并形成缺口，因为这说明可能选错了符号或填错了型号。没有核验过的声明时，才按以下顺序退回启发式：
+1. 关键字（basis `part-keyword`）；
+2. 引脚名（basis `pin-names`）；
+3. 位号前缀（basis `refdes-prefix`）。
+
+依据为后两种时不能作为结论：
+- 功率开关登记 `datasheet-kind:<ref>` 缺口，在补上并重生成计划之前不得判 PASS；
+- Q/D/ZD/TVS 位号的 DEV-D02 登记缺口，缺口文字带审计状态和候选类型。
+
+工具不从 PDF 抽数值参数，数值仍按 datasheet-facts 的人工核对流程处理。
+
 **装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
 与 `citation`。`population` 只接受 JSON `true/false`，缺项表示未知；`jumpers` 按位号填
 `closed/open/unknown`，跳线还需 `population=true` 才导通。经核对的状态声明可以覆盖解析器的
@@ -180,7 +210,8 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 - `intent.devices`：准确 MPN/封装、身份解释、完整官方物理脚表及出处。脚表取手册引脚定义的编号或名称；手册只用名称标注时
   名称即脚号（与符号脚号一致），不另要焊盘编号图。`pins` 含全部物理脚，角色为
   `power/return/nc/other`，脚号是字符串，支持 BGA/EP。`pinout_complete=false` 保持缺口。这是有出处的
-  人工声明，脚本不读 PDF 验证真实性，也不因字段齐全自动判通过。声明后计划项 DEV-D02 附双向差集、
+  人工声明，脚本不读 PDF 验证真实性，也不因字段齐全自动判通过。器件类型另写在 `intent.device_kinds`，
+  由手册审计核验原文，见上文“器件类型以原厂手册为准，由工具核验原文”。声明后计划项 DEV-D02 附双向差集、
   DEV-D05 附未接网脚与"标 nc 却接了网"的脚，仍由审查者逐脚定判。
 - 官方脚表与符号/网表脚表做双向差集，各自记录多出的脚（`official_only_nodes/symbol_only_nodes` 保留完整差集）；去耦缺口只对电源/地角色的差异脚计入，其他功能脚的差异由 DEV-D02 逐脚处置。官方 power 脚未入 group 时自动列候选。
   不得为消除缺口把缺失电源脚改成 `other`。
