@@ -22,8 +22,8 @@ def planned(key):
             'domain': catalog.domain_of(rule), 'applicability': 'APPLICABLE', 'object': {}}
 
 
-def fixture():
-    keys = [C1] + [scope_id(k) for k in sorted(SCOPE)]
+def fixture(first_key=C1):
+    keys = [first_key] + [scope_id(k) for k in sorted(SCOPE)]
     plan = {'schema_version': PLAN_SCHEMA_VERSION, 'checks': [planned(k) for k in keys]}
     db = {'parts': {'R1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
           'ref2page': {'R1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
@@ -32,8 +32,8 @@ def fixture():
                     'evidence_confidence': 'A', 'evidence': E, 'rationale': 'stipulated compliant fixture',
                     'blocking': False, 'handoff': {'required': False}} for k in keys],
         'findings': [], 'scope_checks': {k: scope_id(k) for k in SCOPE},
-        'coverage': {'components': {'R1': [C1]}, 'pins': {'R1.1': [C1], 'R1.2': [C1]},
-                     'nets': {'A': [C1]}, 'pages': {'1': [C1]}, 'requirements': {}}}
+        'coverage': {'components': {'R1': [first_key]}, 'pins': {'R1.1': [first_key], 'R1.2': [first_key]},
+                     'nets': {'A': [first_key]}, 'pages': {'1': [first_key]}, 'requirements': {}}}
     return plan, report, db
 
 
@@ -171,6 +171,48 @@ class ReviewGateTests(unittest.TestCase):
         p, r, db = fixture()
         r['checks'][0]['handoff'] = {'required': True, 'state': 'OPEN', 'receivers': ['Layout'],
                                     'constraint': 'specified impedance', 'verification': 'layout check'}
+        result = validate_review(p, r, db)
+        self.assertTrue(result['valid'], result)
+        self.assertEqual(result['release'], 'NO_GO')
+
+    def thermal_handoff_fixture(self):
+        # Synthetic resistor power-rating review; no board thermal model or test result.
+        p, r, db = fixture('DEV-C01.BOARD')
+        p['checks'][0].update(object={'board': 'BOARD'}, criterion=catalog.criterion('DEV-C01'),
+                              handoff={'required': True})
+        r['plan_digest'] = fingerprint(p)
+        r['checks'][0].update(
+            rationale='Synthetic stipulated load and rating satisfy the electrical criterion; actual temperature unverified',
+            handoff={'required': True, 'state': 'ACCEPTED', 'receivers': ['Thermal/Test'],
+                     'constraint': 'Synthetic R1 loss <= 0.1 W, ambient <= 50 C, body <= 85 C',
+                     'verification': 'Prototype temperature test at specified load and ambient',
+                     'evidence': [{'source': 'synthetic-handoff.json', 'locator': 'thermal owner accepted constraints only'}]})
+        return p, r, db
+
+    def test_electrical_pass_with_accepted_thermal_constraints_needs_no_thermal_test(self):
+        p, r, db = self.thermal_handoff_fixture()
+        result = validate_review(p, r, db)
+        self.assertTrue(result['valid'], result)
+        self.assertEqual(result['release'], 'GO')
+        self.assertEqual(result['summary']['confirmed_defects'], 0)
+        self.assertEqual(r['checks'][0]['handoff']['state'], 'ACCEPTED')
+
+    def test_unreceived_thermal_constraints_block_handoff_without_electrical_defect(self):
+        p, r, db = self.thermal_handoff_fixture()
+        r['checks'][0]['handoff']['state'] = 'OPEN'
+        del r['checks'][0]['handoff']['evidence']
+        result = validate_review(p, r, db)
+        self.assertTrue(result['valid'], result)
+        self.assertEqual(result['release'], 'NO_GO')
+        self.assertEqual(result['summary']['confirmed_defects'], 0)
+        self.assertEqual(r['checks'][0]['review_result'], 'PASS')
+
+    def test_accepted_thermal_handoff_does_not_clear_missing_electrical_load(self):
+        p, r, db = self.thermal_handoff_fixture()
+        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C',
+                              rationale='Load is unknown, so loss and rating cannot be compared',
+                              potential_severity='P1', blocking=True,
+                              missing_inputs=['Maximum continuous current through R1'])
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['release'], 'NO_GO')

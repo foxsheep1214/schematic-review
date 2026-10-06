@@ -4,7 +4,7 @@
 
 按引脚角色识别分立开关管，登记每个装配状态下的栅极驱动源、栅源下拉、
 开关节点上的感性元件与吸收网络。栅源驱动窗口由证据计算（DRV-E01）按资料保证值判定；
-安全工作区、死区、自举欠压与热由专家按器件资料判定，本检查器不代判。
+安全工作区、死区、自举欠压及热相关电气前提由专家按器件资料判定；实际热实现移交下游。
 """
 import re
 
@@ -249,7 +249,7 @@ class PowerSwitchChecker(Checker):
                     ['datasheet:SOA 曲线与脉宽条件', 'intent:最坏工况电流/电压/重复率']))),
                 trigger=['power-switch:' + switch['id']],
                 handoff=handoff({'required': True, 'receivers': ['Thermal', 'PCB Layout'],
-                                 'constraint': '结温按实际散热路径核算，栅极回路与开关回路面积最小',
+                                 'constraint': '按损耗边界、允许结温/壳温和 SOA 起始温度约束落实散热，栅极回路与开关回路面积最小',
                                  'verification': '热仿真/实测结温与开关波形复核'}, 'APPLICABLE'))
             item['analysis_required'] = True
             item['inventory_gaps'] = gaps

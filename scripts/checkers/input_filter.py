@@ -160,11 +160,12 @@ class InputFilterChecker(Checker):
             check = planner.add_check(
                 'PWR-C11', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
-                    'datasheet:滤波元件阻抗/饱和曲线', 'requirements:传导发射限值与裕量'])),
+                    'datasheet:滤波元件阻抗/饱和曲线、DCR、温升电流额定及适用条件',
+                    'intent:滤波元件峰值/RMS 电流与温度工况', 'requirements:传导发射限值与裕量'])),
                 trigger=['input-filter:' + item['id']],
-                handoff=handoff({'required': True, 'receivers': ['PCB Layout', 'EMC'],
-                                 'constraint': '滤波元件与输入电容回路最短，输入回路与开关回路分离',
-                                 'verification': '传导发射实测与输入阻抗测量'}, 'APPLICABLE'))
+                handoff=handoff({'required': True, 'receivers': ['PCB Layout', 'EMC', 'Thermal/Test'],
+                                 'constraint': '滤波元件与输入电容回路最短，输入回路与开关回路分离；按损耗边界及允许温度落实散热',
+                                 'verification': '下游传导发射实测、输入阻抗测量与板上温升验证'}, 'APPLICABLE'))
             check['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):
