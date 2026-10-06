@@ -1,5 +1,7 @@
 """Structural checks for actionable repair instructions, not electrical approval."""
 
+from design_preflight import validate_calculations, text, evidence
+
 READINESS = ("READY", "CONDITIONAL", "DESIGN_REQUIRED")
 STEP_KINDS = ("CONNECT", "COMPONENT", "ASSEMBLY", "DOCUMENT", "DESIGN")
 STAGES = ("NETLIST", "CALCULATION", "DOCUMENT", "BENCH", "PCB")
@@ -9,7 +11,7 @@ def nonempty(value):
     return isinstance(value, str) and bool(value.strip())
 
 
-def validate_remediation(fid, value, finding_ids):
+def validate_remediation(fid, value, finding_ids, require_preflight=False):
     errors = []
 
     def require(ok, message):
@@ -76,6 +78,33 @@ def validate_remediation(fid, value, finding_ids):
             fields(item, ("needed_input", "selection_method"), "unresolved parameter")
             require(bool(prerequisites), "unresolved parameter needs a prerequisite")
             require(readiness != "READY", "READY cannot contain candidate/TBD parameters")
+
+    if require_preflight or 'calculation_preflight' in value:
+        preflight = value.get('calculation_preflight')
+        require(isinstance(preflight, dict), 'calculation_preflight required for current SR recommendations')
+        if isinstance(preflight, dict):
+            applicable = preflight.get('applicable')
+            require(type(applicable) is bool, 'calculation_preflight.applicable must be boolean')
+            if applicable is False:
+                fields(preflight, ('reason',), 'calculation exclusion')
+                require(evidence(preflight.get('evidence')),
+                        'calculation exclusion needs evidence of a nonnumeric connection/identity/document criterion')
+            elif applicable is True:
+                calculation_errors, calculated = validate_calculations(preflight.get('calculations'))
+                errors.extend(fid + '.remediation: ' + e for e in calculation_errors)
+                require(bool(calculated), 'applicable preflight needs calculations')
+                covered = set()
+                for parameter in parameters:
+                    links = parameter.get('calculation_ids')
+                    ok = isinstance(links, list) and bool(links) and all(text(k) and k in calculated for k in links)
+                    require(ok, 'each selected/candidate parameter must link its preflight calculations')
+                    if ok:
+                        covered.update(links)
+                if readiness == 'READY':
+                    require(all(c['status'] == 'SUPPORTED' for c in calculated.values()),
+                            'READY cannot depend on failed, assumed, typical or out-of-condition calculations')
+                else:
+                    require(bool(prerequisites), 'unresolved calculations need closure prerequisites')
 
     related = value.get("related_findings")
     require(isinstance(related, list) and all(nonempty(x) and x in finding_ids and x != fid for x in related),

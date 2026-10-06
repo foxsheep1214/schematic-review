@@ -234,6 +234,9 @@ class RequirementClarificationTests(unittest.TestCase):
 
     def test_cli_enforces_new_contract(self):
         p, r, db = sample()
+        from review_engine import engine_identity
+        from validate_review import fingerprint
+        p['review_engine'] = engine_identity(); r['plan_digest'] = fingerprint(p)
         script = pathlib.Path(__file__).resolve().parents[1] / 'validate_review.py'
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)

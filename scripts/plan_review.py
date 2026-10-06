@@ -15,6 +15,7 @@ import argparse
 from copy import deepcopy
 import board_intent
 import catalog
+from review_engine import engine_identity
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, check_matches, readiness_gaps, validate_evidence, bounded, finite, load_json
 import io
 import json
@@ -807,6 +808,8 @@ class ReviewPlanner:
                              % PLAN_SCHEMA_VERSION)
         if previous.get('db_sha256') != self.db_sha256:
             raise ValueError('merge plan must be bound to the current db_sha256; regenerate/review stale plans')
+        if previous.get('review_engine') != engine_identity():
+            raise ValueError('merge plan uses changed/unknown SR rules; regenerate current checks, use old_plan only for history')
         for checker in REGISTRY:
             key = checker.plan_key
             if key in previous and previous[key] != self.inventories.get(checker.id):

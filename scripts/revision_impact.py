@@ -10,6 +10,7 @@ import json
 import os
 
 import catalog
+from review_engine import engine_identity
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, dependency_refs, validate_evidence
 from diff_netlists import diff_databases
 from i2c_topology import validate_db_shape
@@ -85,7 +86,7 @@ def validate_declarations(intent):
             if source['id'] in seen:
                 errors.append('duplicate review_sources.id: ' + source['id'])
             seen.add(source['id'])
-    allowed = set(FIELDS) | {'complete', 'citation', 'db_digest', 'check_digest'}
+    allowed = set(FIELDS) | {'complete', 'citation', 'db_digest', 'check_digest', 'source_ids'}
     for key, item in declarations.items():
         if not text(key) or not isinstance(item, dict):
             errors.append('review_dependencies requires named objects')
@@ -94,7 +95,7 @@ def validate_declarations(intent):
             errors.append(key + ': unknown dependency declaration fields')
         if type(item.get('complete')) is not bool or not text(item.get('citation')):
             errors.append(key + ': dependency complete boolean and citation required')
-        for field in FIELDS:
+        for field in (*FIELDS, 'source_ids'):
             if field in item and not strings(item[field]):
                 errors.append(key + ': dependency ' + field + ' must be unique strings')
         if item.get('complete') is True and not all(
@@ -181,6 +182,8 @@ def dependency_catalog(plan, db, snapshot):
             model = source.get('divider_model') or {}
             targets['nets'].update(model[k] for k in ('source_net', 'reference_net') if text(model.get(k)))
         declaration = declarations.get(key)
+        declared_sources = (declaration or {}).get('source_ids', [])
+        source_map = {s['id']: s['path'] for s in snapshot['intent'].get('review_sources', [])}
         global_scope = _global_scope(check)
         gaps = [] if global_scope else ['dependency-scope-not-reviewed']
         if declaration:
@@ -194,6 +197,7 @@ def dependency_catalog(plan, db, snapshot):
                 gaps = ['stale-dependency-scope-declaration']
         if not global_scope and not any(targets[k] for k in ('refs', 'nodes', 'nets', 'check_ids')):
             gaps.append('no-dependency-anchors')
+        gaps.extend('unknown-source:' + sid for sid in declared_sources if sid not in source_map)
         for node in targets['nodes']:
             targets['refs'].add(node.rsplit('.', 1)[0])
             if text(db.get('pin2net', {}).get(node)):
@@ -216,7 +220,8 @@ def dependency_catalog(plan, db, snapshot):
             gaps=sorted(set(gaps)), citation=declaration.get('citation') if declaration else None,
             evidence_ids=[source['id']] if source else [],
             sources=[d['path'] for d in snapshot['documents']
-                     if global_scope or set(d['refs']) & targets['refs']])
+                     if global_scope or set(d['refs']) & targets['refs']
+                     or d['path'] in {source_map[sid] for sid in declared_sources if sid in source_map}])
     return result
 
 
@@ -352,6 +357,7 @@ def _verify_frozen_inputs(inputs, db):
 def build_impact(plan, db, old_db=None, old_plan=None):
     gaps, old_inputs, old_dependencies = _baseline(old_db, old_plan)
     inputs, dependencies = plan['review_inputs'], plan['check_dependencies']
+    fresh = old_plan is None or old_plan.get('review_engine') != plan.get('review_engine')
     old_checks = index_checks(old_plan) if old_plan is not None else {}
     checks = index_checks(plan)
     policy = plan.get('review_policy_version', 1)
@@ -375,6 +381,8 @@ def build_impact(plan, db, old_db=None, old_plan=None):
             why.append('dependency-scope-changed')
         for change in changes:
             if (change['global'] or dep['scope'] == 'GLOBAL' or previous.get('scope') == 'GLOBAL'
+                    or (change['kind'] == 'document' and change['locator'] in
+                        set(dep['sources']) | set(previous.get('sources', [])))
                     or any(set(change[field]) & (set(dep[field]) | set(previous.get(field, [])))
                            for field in ('refs', 'nodes', 'nets'))):
                 change_ids.append(change['id'])
@@ -385,7 +393,7 @@ def build_impact(plan, db, old_db=None, old_plan=None):
     partial += ['old:' + key for key, dep in old_dependencies.items() if dep['gaps']]
     definition_changes = any(why for key, why in reasons.items() if not is_revision_check(checks[key]))
     uncertain_scope = bool(changes or definition_changes)
-    full = bool(gaps or (uncertain_scope and
+    full = bool(fresh or gaps or (uncertain_scope and
                 (any(c['global'] for c in changes) or (policy == 1 and partial))))
     if policy >= 2 and not full and uncertain_scope:
         for key in checks:
@@ -406,6 +414,8 @@ def build_impact(plan, db, old_db=None, old_plan=None):
     entries = []
     for key in sorted(checks):
         why = reasons[key]
+        if fresh:
+            why.append('review-engine-changed-or-unknown')
         if full:
             why.append('full-review-fallback')
         if key == COVERAGE_ID:
@@ -422,6 +432,7 @@ def build_impact(plan, db, old_db=None, old_plan=None):
               'current': {'db_digest': digest(db), 'inputs_digest': inputs['digest'],
                           'checks_digest': digest([check_spec(checks[k]) for k in sorted(checks)])},
               'strategy': 'FULL_REVIEW' if full else ('MIXED_REVIEW' if policy >= 2 and uncertain_scope and partial else 'EXACT_DEPENDENCIES'),
+              'fresh_review_required': fresh,
               'scope': 'Routing only. NO_RECORDED_CHANGE is not automatic reuse or electrical approval.',
               'blocking_gaps': sorted(set(gaps)), 'partial_dependencies': sorted(set(partial)),
               'changes': changes, 'entries': entries,
@@ -505,6 +516,7 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
                 append_history(removed)
         plan['checks'].append(_review_check(COVERAGE_ID, COVERAGE_RULE, {'feature': 'revision-impact'}))
     plan['checks'].sort(key=lambda c: c['id'])
+    plan['review_engine'] = engine_identity()
     plan['dependency_version'] = VERSION
     plan['review_inputs'] = input_snapshot(db, intent, evidence, audit)
     plan['check_dependencies'] = dependency_catalog(plan, db, plan['review_inputs'])
@@ -542,7 +554,7 @@ def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=Fal
             raise ValueError('revision impact requires revision review_mode')
         expected = attach_metadata(deepcopy(plan), db, inputs['intent'], inputs['evidence'],
                                    inputs['datasheet_audit'], old_db, old_plan)
-        for key in ('review_inputs', 'check_dependencies', 'dependency_unmatched'):
+        for key in ('review_engine', 'review_inputs', 'check_dependencies', 'dependency_unmatched'):
             if plan.get(key) != expected[key]:
                 errors.append(key + ': stale or modified dependency/input snapshot')
         if revision:
@@ -585,6 +597,10 @@ def validate_reverification(plan, report, impact):
                   'check_digest': entry['check_digest']}
         if any(record.get(k) != v for k, v in wanted.items()):
             errors.append(key + ': stale re-verification binding')
+        if impact.get('fresh_review_required'):
+            if (record.get('evaluation_origin') != 'CURRENT_REVIEW'
+                    or record.get('engine_digest') != plan.get('review_engine', {}).get('digest')):
+                errors.append(key + ': changed SR requires CURRENT_REVIEW with current engine_digest; old verdicts are history only')
         sources = record.get('evidence')
         if not text(record.get('method')) or not (isinstance(sources, list) and sources and all(
                 isinstance(x, dict) and text(x.get('source')) and text(x.get('locator')) for x in sources)):

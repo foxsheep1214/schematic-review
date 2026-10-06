@@ -154,3 +154,7 @@ lint-hot.json，相关缺证项仍为 INSUFFICIENT。
 分阶段的纯下游验证项可附 `handoff.scope: downstream_verification` 和
 `handoff.schematic_prerequisites`；只有设计阶段协议列出的全部条件满足时才不额外阻断冻结。
 FAIL、潜在 P0 或原理图前提未过不能使用；检查结果仍为 INSUFFICIENT。
+
+当前 SR 增补：review_engine、fresh_review_required、calculation_preflight 和 scope_migration
+见 [规则演进合同](review-evolution.md)。当前 CLI 默认要求有效规则指纹；旧记录仅可用 --archive-only
+做结构审计，不能作为本版准出。门禁输出 categorized_summary，旧 summary 不再单独作为正文检查数量。

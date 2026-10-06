@@ -9,6 +9,9 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from validate_review import validate_review
 from test_validate_review import fixture, fail, E
+from test_calculation_preflight import calculation
+from review_engine import engine_identity
+from validate_review import fingerprint
 
 
 def ready():
@@ -18,7 +21,8 @@ def ready():
         'steps': [{'kind': 'ASSEMBLY', 'target': 'p1 R1', 'before': 'DNP',
                    'after': 'fitted, quantity 1', 'instruction': 'Enable R1 in configuration A and its BOM.'}],
         'parameters': [{'target': 'R1', 'specification': '10k, 1%, 0402, fitted',
-                        'status': 'SELECTED', 'basis': E}],
+                        'status': 'SELECTED', 'basis': E, 'calculation_ids': ['BIAS']}],
+        'calculation_preflight': {'applicable': True, 'calculations': [calculation()]},
         'related_findings': [], 'impact_review': 'Confirm the stipulated reset load remains within its limit.',
         'verification': [{'stage': 'NETLIST', 'method': 'Re-export configuration A and trace R1.',
                           'expected': 'R1 is fitted between A and U1.2.'}]}
@@ -114,6 +118,7 @@ class RemediationTests(unittest.TestCase):
 
     def test_cli_requires_details_and_keeps_no_go_semantics(self):
         p, r, db = actionable()
+        p['review_engine'] = engine_identity(); r['plan_digest'] = fingerprint(p)
         script = pathlib.Path(__file__).resolve().parents[1] / 'validate_review.py'
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)

@@ -120,3 +120,7 @@
 新报告必须执行 `validate_review.py ... --require-actionable`。旧v2台账不加此选项仍可做
 兼容校验；带remediation_version的台账会自动校验新字段。校验器只能检查结构和准备度
 矛盾，不能证明操作语义、计算或新手理解程度。交付前仍需按这些步骤对照真实输入逐项演算。
+
+当前规则生成的计划还必须给 calculation_preflight，使用 remediation_version: 2。
+见 [计算条件合同](calculation-preflight.md) 和 [规则演进](review-evolution.md)。
+READY 禁止依赖窄条件之外的保证值、典型值或未关闭假设；非数值判据的豁免须有证据。

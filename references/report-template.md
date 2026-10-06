@@ -100,3 +100,9 @@ OPEN 简洁写“待后续团队处理”；ACCEPTED 写“已接收，待验证
 |---|---|---|---|---|---|
 
 附 `review-gate.json` 的路径、结果和未关闭项，说明校验只验证记录一致性。
+
+## 当前检查与历史分项
+
+正文从 gate.categorized_summary 分别列出 current、history、unique_findings、unique_work_items、
+required_handoffs/handoffs_by_state；移交项与检查重叠，不累加。列出规则指纹、是否因规则变化完整重审。
+历史热判据拆分列旧 ID → 新电气检查 ID → 下游责任与约束，不把范围迁移写成缺陷已修复。

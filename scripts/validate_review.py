@@ -10,6 +10,8 @@ from pathlib import Path
 import sys
 import catalog
 from review_workflow import workflow, decision
+from review_engine import validate_engine
+from review_summary import categorized_summary, validate_migrations
 from requirement_clarifications import validate_clarifications
 from checkers import REGISTRY, validate_inventories
 from validate_remediation import validate_remediation, READINESS
@@ -67,7 +69,7 @@ def primary_anchors(obj, db=None):
 
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
-                    require_bindings=False, old_db=None, old_plan=None, require_revision=False):
+                    require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -89,14 +91,15 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if not isinstance(plan, dict) or not isinstance(report, dict):
         return {"valid": False, "errors": ["plan/results must be objects"],
                 "release": "NO_GO", "blockers": ["invalid input"]}
+    errors.extend(validate_engine(plan, require_current_engine))
     require(report.get("schema_version") == 2, "results.schema_version must be 2")
     require(plan.get("schema_version") == PLAN_SCHEMA_VERSION,
             f"plan.schema_version must be {PLAN_SCHEMA_VERSION}; plans with retired check IDs must be regenerated")
     remediation_version = report.get("remediation_version")
     actionable = require_actionable or "remediation_version" in report
     if actionable:
-        require(type(remediation_version) is int and remediation_version == 1,
-                "remediation_version must be 1 for actionable instructions")
+        require(type(remediation_version) is int and remediation_version in (1, 2),
+                "remediation_version must be 1 or 2 for actionable instructions")
     require(report.get("plan_digest") == fingerprint(plan), "plan_digest mismatch")
     if db is not None:
         if db.get('integrity', {}).get('self_check_passed') is False or db.get('export_errors'):
@@ -130,6 +133,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                                  lambda context: ReviewPlanner(db, context))
     checks = index(report.get("checks"), "results.checks")
     findings = index(report.get("findings"), "findings")
+    errors.extend(validate_migrations(report, checks, expected))
     bindings = (require_bindings or revision is not None or 'binding_version' in report
                 or any('binding' in x for x in checks.values()))
     if bindings:
@@ -250,7 +254,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
 
     for fid, item in findings.items():
         if actionable:
-            errors.extend(validate_remediation(fid, item.get("remediation"), set(findings)))
+            errors.extend(validate_remediation(fid, item.get("remediation"), set(findings), require_preflight=(remediation_version == 2 or "review_engine" in plan)))
         elif "remediation" in item:
             require(False, f"{fid}: remediation requires top-level remediation_version")
         require(item.get("severity") in tuple(SEVERITIES), f"{fid}: invalid severity")
@@ -392,6 +396,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     for state in READINESS}
     return {"valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
+            "categorized_summary": categorized_summary(checks, expected, findings, stage),
             "insufficient_by_cause": gap_causes,
             "requirement_clarification_summary": clarifications['summary'],
             "requirement_clarifications": clarifications['items'],
@@ -423,7 +428,11 @@ def main():
                         help="require detailed repair instructions for every finding")
     parser.add_argument("--require-bindings", action="store_true",
                         help="require explicit reviewed-object/criterion bindings and finding target consistency")
+    parser.add_argument("--archive-only", action="store_true",
+                        help="validate historical record structure only; never grants current release")
     args = parser.parse_args()
+    if args.archive_only and args.require_release:
+        parser.error("--archive-only cannot be used with --require-release")
     try:
         read = load_json
         result = validate_review(read(args.plan), read(args.results), read(args.db) if args.db else None,
@@ -432,9 +441,16 @@ def main():
                                  require_bindings=args.require_bindings,
                                  old_db=read(args.old_db) if args.old_db else None,
                                  old_plan=read(args.old_plan) if args.old_plan else None,
-                                 require_revision=args.require_revision_impact)
+                                 require_revision=args.require_revision_impact,
+                                 require_current_engine=not args.archive_only)
     except (ValueError, OSError, TypeError) as exc:
         result = {"valid": False, "release": "NO_GO", "errors": [str(exc)]}
+    if args.archive_only:
+        result["release"] = "NOT_EVALUATED"
+        result["archive_only"] = True
+        if isinstance(result.get("workflow"), dict):
+            result["workflow"]["schematic_release"] = "NOT_EVALUATED"
+            result["workflow"]["status"] = "ARCHIVE_ONLY"
     if args.json:
         Path(args.json).write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))
