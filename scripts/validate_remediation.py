@@ -93,13 +93,10 @@ def validate_remediation(fid, value, finding_ids, require_preflight=False):
                 calculation_errors, calculated = validate_calculations(preflight.get('calculations'))
                 errors.extend(fid + '.remediation: ' + e for e in calculation_errors)
                 require(bool(calculated), 'applicable preflight needs calculations')
-                covered = set()
                 for parameter in parameters:
                     links = parameter.get('calculation_ids')
-                    ok = isinstance(links, list) and bool(links) and all(text(k) and k in calculated for k in links)
-                    require(ok, 'each selected/candidate parameter must link its preflight calculations')
-                    if ok:
-                        covered.update(links)
+                    require(isinstance(links, list) and bool(links) and all(text(k) and k in calculated for k in links),
+                            'each selected/candidate parameter must link its preflight calculations')
                 if readiness == 'READY':
                     require(all(c['status'] == 'SUPPORTED' for c in calculated.values()),
                             'READY cannot depend on failed, assumed, typical or out-of-condition calculations')

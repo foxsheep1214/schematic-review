@@ -30,7 +30,7 @@ def ready():
 
 def actionable():
     p, r, db = fixture(); fail(r)
-    r['remediation_version'] = 1
+    r['remediation_version'] = 2
     r['findings'][0]['remediation'] = ready()
     return p, r, db
 

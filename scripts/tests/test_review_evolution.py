@@ -10,12 +10,13 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from review_engine import engine_identity, validate_engine
-from revision_impact import validate_reverification
+from revision_impact import validate_reverification, validate_metadata
 from plan_review import build_review_plan
 from review_summary import categorized_summary, validate_migrations
 from validate_remediation import validate_remediation
 from test_revision_impact import database, focused, entries, reviewed_records, check
-from test_remediation import ready
+from test_remediation import ready, actionable
+from validate_review import validate_review, fingerprint
 from test_calculation_preflight import calculation, E
 from test_validate_review import fixture
 
@@ -28,6 +29,10 @@ class EvolutionTests(unittest.TestCase):
             before = engine_identity(root)
             (root/'scripts/tests/test.py').write_text('test-only')
             self.assertEqual(before, engine_identity(root))
+            (root/'references/.DS_Store').write_bytes(b'finder')
+            (root/'scripts/.pytest_cache').mkdir(); (root/'scripts/.pytest_cache/x').write_text('cache')
+            (root/'scripts/rule.pyc').write_bytes(b'bytecode'); (root/'references/rule.md~').write_text('backup')
+            self.assertEqual(before, engine_identity(root))  # OS/editor byproducts are not rules
             (root/'references/rule.md').write_text('limit2')
             self.assertNotEqual(before['digest'], engine_identity(root)['digest'])
 
@@ -64,6 +69,29 @@ class EvolutionTests(unittest.TestCase):
         plan['review_engine']['digest'] = 'obsolete'
         self.assertTrue(validate_engine(plan, True))
         self.assertTrue(validate_engine({}, True))
+
+    def test_archive_accepts_older_fingerprint_but_never_current_release(self):
+        plan = focused(database()); plan['review_engine']['digest'] = 'obsolete'
+        self.assertEqual(validate_engine(plan, False), [])
+        self.assertTrue(validate_engine(plan, True))
+        self.assertTrue(validate_engine({'review_engine': 'tampered'}, False))
+
+    def test_archive_replays_revision_plan_under_its_recorded_fingerprint(self):
+        db = database(); base = focused(db)
+        plan = focused(db, old_db=db, old_plan=base)
+        later = dict(engine_identity(), digest='later-sr-rules')
+        with patch('revision_impact.engine_identity', return_value=later):
+            self.assertEqual(validate_metadata(plan, db, db, base, True, require_current_engine=False)[0], [])
+            current = validate_metadata(plan, db, db, base, True, require_current_engine=True)[0]
+            self.assertTrue(any(e.startswith('review_engine') for e in current), current)
+
+    def test_fingerprinted_plan_requires_remediation_version_2(self):
+        p, r, db = actionable()
+        p['review_engine'] = engine_identity(); r['plan_digest'] = fingerprint(p)
+        self.assertEqual(validate_review(p, r, db, require_actionable=True)['errors'], [])
+        r['remediation_version'] = 1
+        errors = validate_review(p, r, db, require_actionable=True)['errors']
+        self.assertTrue(any('remediation_version 2' in e for e in errors), errors)
 
     def test_model_source_reopens_unchanged_upstream_and_dependent_parts(self):
         db = database()

@@ -90,7 +90,7 @@ class PlanHandoffTests(unittest.TestCase):
                 item['handoff'].update(state='ACCEPTED', evidence=E)
             checks.append(item)
         report = {'requirement_clarification_version': 1, 'requirement_clarifications': [],
-            'schema_version': 2, 'remediation_version': 1,
+            'schema_version': 2, 'remediation_version': 2,
             'plan_digest': fingerprint(plan), 'db_digest': fingerprint(self.db),
             'checks': checks, 'findings': [],
             'scope_checks': {d: next(p['id'] for p in plan['checks'] if p['rule'] == catalog.COVERAGE_RULES[d]) for d in SCOPE},

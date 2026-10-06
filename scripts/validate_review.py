@@ -100,6 +100,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if actionable:
         require(type(remediation_version) is int and remediation_version in (1, 2),
                 "remediation_version must be 1 or 2 for actionable instructions")
+        require("review_engine" not in plan or remediation_version == 2,
+                "plans fingerprinted by current SR require remediation_version 2 with calculation_preflight")
     require(report.get("plan_digest") == fingerprint(plan), "plan_digest mismatch")
     if db is not None:
         if db.get('integrity', {}).get('self_check_passed') is False or db.get('export_errors'):
@@ -109,7 +111,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     for key, item in expected.items():
         for message in catalog.spec_errors(item):
             require(False, f"{key}: {message}")
-    revision_errors, revision = validate_metadata(plan, db, old_db, old_plan, require_revision)
+    revision_errors, revision = validate_metadata(plan, db, old_db, old_plan, require_revision,
+                                                    require_current_engine)
     errors.extend(revision_errors)
     if revision is not None:
         errors.extend(validate_reverification(plan, report, revision))

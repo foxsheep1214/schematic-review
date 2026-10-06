@@ -3,7 +3,7 @@
 ## SR 自身变化时先重新审查
 
 `plan_review.py` 将 `review_engine` 写进计划：SKILL.md、references 和运行脚本的
-逐文件 SHA256 及总摘要，包含尚未 commit 的修改，排除测试/缓存。它是规则内容身份，
+逐文件 SHA256 及总摘要，包含尚未 commit 的修改，排除测试、缓存、隐藏文件（如 .DS_Store）、.pyc 和 `~` 备份。它是规则内容身份，
 不是仅比较 Git 版本号。规则文字修正也会保守触发重审。
 
 1. 以当前需求、原理图、网表、BOM 和原始资料重新生成当前计划。
@@ -19,7 +19,8 @@
    追踪历史；逐条评估旧手工检查是否仍适用，再按当前判据创建。
 
 `validate_review.py` CLI 默认检查当前指纹。陈旧/无指纹计划不能准出；
-`--archive-only` 仅供历史记录结构检查，输出 `NOT_EVALUATED`，不能与
+`--archive-only` 仅供历史记录结构检查，按计划自身记录的指纹复算（旧指纹或无指纹均可），
+输出 `NOT_EVALUATED`，不能与
 `--require-release` 合用。库函数为旧调用保留结构检查兼容；当前交付调用须传
 `require_current_engine=True`，或使用 CLI。历史 schema/依赖结构不兼容时仍会报告结构错误。
 结构校验不能证明审查者确实重新阅读了资料；最终证据质量仍须工程复核。

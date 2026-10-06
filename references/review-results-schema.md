@@ -16,7 +16,7 @@
   校验输出增加 `workflow`，与原 release 并列，不把继续设计解释为冻结通过。
 - `requirement_clarification_version`: 新报告为1；`requirement_clarifications` 保存独立需求问题，详见 [需求澄清项](requirement-clarifications.md)。所有报告必须声明版本和数组，无澄清时填 []；默认校验，缺少字段直接拒绝。
 - `binding_version`: 新报告为1，逐检查声明已审对象/判据；旧报告可不填，仅用于兼容读取。
-- `remediation_version`: 新报告必须为1；要求每项finding包含详细`remediation`，字段及
+- `remediation_version`: 带 review_engine 的新报告必须为2（含 calculation_preflight），1 仅供旧记录兼容；要求每项finding包含详细`remediation`，字段及
   示例见 [remediation-guide.md](remediation-guide.md)。旧v2报告可不填，仅用于兼容校验。
 - `plan_digest` / `db_digest`: Python `validate_review.fingerprint()` 对完整 JSON 对象排序并
   标准序列化后的 SHA-256；不是文件原始字节哈希。输入文件本身哈希另在 input-manifest 中。
@@ -122,7 +122,7 @@ object.net，以及提供 --db 时该 node 的当前网络。要求精确位号/
 
 `recommendation`保留为总表摘要；`remediation`是可执行的逐项修改说明，不能相互替代。
 包含准备度、前提/取得方法、旧→新操作、连接端点、规格/依据、联动ID及编辑/计算验收。
-顶层声明`remediation_version: 1`时自动校验；`--require-actionable`要求声明存在，防止
+顶层声明`remediation_version`时自动校验；`--require-actionable`要求声明存在，防止
 遗漏整组字段。READY不允许未决输入、候选/TBD参数或待完成设计步骤；它只表示编辑细节齐全。
 
 ## 汇总与命令

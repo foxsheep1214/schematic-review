@@ -443,7 +443,8 @@ def build_impact(plan, db, old_db=None, old_plan=None):
     return impact
 
 
-def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=None, old_plan=None):
+def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=None, old_plan=None,
+                    recorded_engine=False):
     """Called after same-revision cold/hot/manual merging; never reads results."""
     if old_plan is not None and old_db is None:
         raise ValueError('old_plan requires old_db')
@@ -516,7 +517,8 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
                 append_history(removed)
         plan['checks'].append(_review_check(COVERAGE_ID, COVERAGE_RULE, {'feature': 'revision-impact'}))
     plan['checks'].sort(key=lambda c: c['id'])
-    plan['review_engine'] = engine_identity()
+    if not recorded_engine:  # Archive validation replays the fingerprint recorded in the plan.
+        plan['review_engine'] = engine_identity()
     plan['dependency_version'] = VERSION
     plan['review_inputs'] = input_snapshot(db, intent, evidence, audit)
     plan['check_dependencies'] = dependency_catalog(plan, db, plan['review_inputs'])
@@ -528,7 +530,7 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
     return plan
 
 
-def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=False):
+def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=False, require_current_engine=True):
     """Recompute from current db, frozen context, live documents and old baseline."""
     errors = []
     enabled = any(k in plan for k in ('dependency_version', 'review_inputs', 'check_dependencies'))
@@ -553,7 +555,8 @@ def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=Fal
         if revision and plan.get('review_mode') != 'revision':
             raise ValueError('revision impact requires revision review_mode')
         expected = attach_metadata(deepcopy(plan), db, inputs['intent'], inputs['evidence'],
-                                   inputs['datasheet_audit'], old_db, old_plan)
+                                   inputs['datasheet_audit'], old_db, old_plan,
+                                   recorded_engine=not require_current_engine)
         for key in ('review_engine', 'review_inputs', 'check_dependencies', 'dependency_unmatched'):
             if plan.get(key) != expected[key]:
                 errors.append(key + ': stale or modified dependency/input snapshot')

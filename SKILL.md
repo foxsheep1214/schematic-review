@@ -255,7 +255,7 @@ PCB 阻抗/间距/回流和实测约束独立 HANDOFF，边界见 [scope-boundar
 按 [remediation-guide.md](references/remediation-guide.md) 写全部发现的修改步骤，再按
 [report-template.md](references/report-template.md) 展示；参数、准备度与验收须相符。
 最终结果独立保存为 `review-results.json`，绑定合并后的最终计划，不能从 Lint 自动造 PASS。
-新报告设置 `remediation_version: 1`、`binding_version: 1` 和 `requirement_clarification_version: 1`；
+新报告设置 `remediation_version: 2`、`binding_version: 1` 和 `requirement_clarification_version: 1`；
 `requirement_clarifications` 保存独立需求澄清记录（无则空数组），每项缺陷/改善包含 `remediation`，
 每条结果的 `binding.object`、`binding.criterion` 记录实际已审对象及判据，与最终计划逐项一致，
 同条 `evidence`、`rationale` 只支持这个对象、配置、工况和判据。复用结论/计算前核对物理脚、

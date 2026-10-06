@@ -70,7 +70,7 @@
 
 ## 结构化字段与机器检查
 
-保持最终结果 `schema_version: 2`，新增顶层 `remediation_version: 1`。每个 finding 加：
+保持最终结果 `schema_version: 2`，新增顶层 `remediation_version: 2`（旧记录为1）。每个 finding 加：
 
 ```json
 {
