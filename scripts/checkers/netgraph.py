@@ -9,7 +9,7 @@ import re
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
 RAIL_RE = re.compile(
-    r'^(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+V)', re.I)
+    r'^(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+(?:\.[0-9]+)?V)', re.I)
 
 RESISTOR, CAPACITOR, INDUCTOR, FERRITE = 'resistor', 'capacitor', 'inductor', 'ferrite'
 DIODE, TVS, ZENER, MOSFET, BJT = 'diode', 'tvs', 'zener', 'mosfet', 'bjt'
@@ -123,12 +123,18 @@ def kind_gap(graph, ref):
 def pin_signature(pin_names):
     """Transistor family implied by the placed symbol's own pin names.
 
-    B/BASE without a gate pin -> BJT; G/GATE without a base pin -> MOSFET.
-    Numbered or mixed names give None: the symbol carries no family evidence.
+    Require the complete B/C/E or G/D/S role set. A lone B or G can be a
+    connector/jumper contact name, not transistor evidence. Numbered or
+    mixed names give None; datasheet and explicit library evidence remain
+    independent of this pin-name heuristic.
     """
     aliases = {a for name, pin in pin_names for a in pin_aliases(name, pin)}
-    base = bool(aliases & {'B', 'BASE'})
-    gate = any(a in GATE_NAMES or a.startswith('GATE') for a in aliases)
+    base = (bool(aliases & {'B', 'BASE'})
+            and bool(aliases & {'C', 'COLLECTOR', 'COL'})
+            and bool(aliases & {'E', 'EMITTER', 'EMIT'}))
+    gate = (bool(aliases & GATE_NAMES)
+            and bool(aliases & {'D', 'DRAIN'})
+            and bool(aliases & {'S', 'SOURCE', 'SRC'}))
     if base != gate:
         return BJT if base else MOSFET
     return None

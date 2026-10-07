@@ -8,6 +8,23 @@
 `validate_review.py` 只验证记录的一致性，
 不能验证来源文字是否真实、计算是否合理或审查判据是否穷尽。
 
+## 自动对账与质量提示
+
+`valid/errors` 回答记录能否对账，`release/blockers` 按已填结论计算冻结影响；二者不认证原文和推理。
+证据是否支持本项结论，在作出结论时核实；不再增加“语义正确”声明字段或独立审批。
+审查待完成已有 `insufficient_by_cause.REVIEW_INCOMPLETE` 和阻断原因可查，不重复维护完成度字段。
+
+`quality_screening` 自动提示两类疑点：跨对象/判据复用完全相同理由
+（REUSED_RATIONALE_ACROSS_SCOPES），及已知位号在理由/证据定位中与声明范围完全不相交
+（REFERENCED_OBJECT_OUTSIDE_SCOPE）。仅筛查 T/C/D/E/V，有网表时才识别位号；
+状态为 NEEDS_SEMANTIC_REVIEW / NO_PATTERN_DETECTED / NOT_RUN，candidates 含关联 check_ids。
+共享证明/依赖可能合理，结合原文核实即可，不逐提示新建任务；提示不自动增添缺陷或改变 release。
+零提示不保证正确，改措辞也不能代替纠正错配。
+
+REVIEW_INCOMPLETE 在任何潜在等级均阻断 release，风险接受和下游移交不能豁免；
+分阶段台账必须列入 design_iteration。下游就绪路径仅接受 DOWNSTREAM_VERIFICATION，
+或兼容未填原因的旧记录；仍需核实其下游语义，不能删除实际原因绕过阻断。
+
 ## 顶层字段
 
 - `schema_version`: 2。

@@ -147,7 +147,7 @@ INSUFFICIENT，不得用典型值、经验值或"常见做法"顶替**；比值/
 |---|---|---|
 | DRV-E01 | `gate_drive` | `channel`（n/p）、`vgs_drive_v{min,max}`、`vgs_rds_on_v`、`vgs_abs_v{min,max}`；P 沟道按量纲翻转后比较 |
 | PWR-E03 | `input_filter_damping` | `vin_min_v`、`pin_max_w`、`esr_bulk_ohm`、`c_bulk_f`、`c_in_f`、`l_filter_h`、`c_bulk_ratio_min`（项目规定） |
-| PWR-E02 | `dropout` | `vin_min_v`、`dropout_max_v`（最低温度/最大负载）、`vout_required_min_v` |
+| PWR-E02 | `dropout` | `vin_min_v`、`dropout_max_v`（声明温度/负载范围的保证最大值）、`vout_required_min_v` |
 | RST-E03 | `reset_pulse` | `pulse_width_s{min,max}`、`required_width_s{min,max}`、`output_type`（open_drain/push_pull） |
 | SIG-E02 | `diff_level` | `coupling`（ac/dc）、`driver_swing_v`、`receiver_common_mode_v`、`receiver_input_diff_v`，直流耦合另需 `driver_common_mode_v`、交流耦合另需 `bias_common_mode_v` |
 | PRO-E01 | `opto_ctr` | `drive_v`、`vf_v`、`driver_drop_v`、`r_led_ohm`、`r_pullup_ohm`、`v_pullup_v`、`vol_required_v`、`ctr_min`、`ctr_derating`（项目规定，(0,1]）、`if_abs_max_a` |

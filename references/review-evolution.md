@@ -1,5 +1,8 @@
 # 当前规则审查、计算预检查与范围迁移
 
+规则修改以 [SR 目的与纲要](review-charter.md) 为依据；编号与主纲要归属在 catalog.py 同处维护。
+纲要映射用于维护防漏，不增加项目审批或要求每次重复解释规则存在的理由。
+
 ## SR 自身变化时先重新审查
 
 `plan_review.py` 将 `review_engine` 写进计划：SKILL.md、references 和运行脚本的
@@ -59,7 +62,7 @@
 
 门禁增加 `categorized_summary`：current、history（REQ-H02）、unique_findings、
 unique_work_items、work_item_check_links、required_handoffs、handoffs_by_state。
-旧 summary 保持兼容，但正文优先展示新分项。HANDOFF 与检查可重叠，不相加成检查总数；
+旧 summary 保持兼容；分项计数留在台账，需要摘要时取新分项，不要求正文重复展开。HANDOFF 与检查可重叠，不相加成检查总数；
 多条检查不等于多个根因。ACCEPTED 只表示约束/责任已接收，VERIFIED 才是有验证记录。
 
 旧热判据若混合电气损耗与实际温升，移至 REQ-H02 的历史处置，并用 `scope_migration`
@@ -67,3 +70,10 @@ unique_work_items、work_item_check_links、required_handoffs、handoffs_by_stat
 历史项保留 required HANDOFF。只有纯下游验证才用 `kind:"DOWNSTREAM_ONLY"` 和空替代列表。
 历史混合判据改为 NA/NOT_APPLICABLE 表示拆分/退役，不代表电气通过；替代项照常审查，
 可保持 FAIL/INSUFFICIENT。原有 handoff 接收/验证约束不变。
+
+## 用户要求从头审查时
+
+以当前需求、设计方案及最终设计文件建立全新首审基线，不导入旧计划、结论、缺陷计数、
+整改状态或旧审查脚本。旧审查记录退出本轮输入并归档标识。设计文件中的旧审查结论也不作证据；
+原厂原始资料可重新核对后使用，派生计算重新建立。此模式不生成旧意见继承项，
+按当前规则完成全量审查；保留隔离说明以区分重新审查与改版意见闭环。

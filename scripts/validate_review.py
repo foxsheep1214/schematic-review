@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 import catalog
 from review_workflow import workflow, decision
+from review_quality import screen_quality
 from review_engine import validate_engine
 from review_summary import categorized_summary, validate_migrations
 from requirement_clarifications import validate_clarifications
@@ -90,7 +91,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
 
     if not isinstance(plan, dict) or not isinstance(report, dict):
         return {"valid": False, "errors": ["plan/results must be objects"],
-                "release": "NO_GO", "blockers": ["invalid input"]}
+                "release": "NO_GO", "blockers": ["invalid input"],
+                "quality_screening": screen_quality(plan, report, db)}
     errors.extend(validate_engine(plan, require_current_engine))
     require(report.get("schema_version") == 2, "results.schema_version must be 2")
     require(plan.get("schema_version") == PLAN_SCHEMA_VERSION,
@@ -234,6 +236,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             accepted = True
         critical = item.get("severity") in ("P0", "P1") or (
             result == "INSUFFICIENT" and item.get("potential_severity") in ("P0", "P1"))
+        if result == "INSUFFICIENT" and item.get("gap_cause") == "REVIEW_INCOMPLETE":
+            blockers.append(f"{key}: review work not completed; finish the review before release")
         requirement_decision = item.get('gap_cause') == 'REQUIREMENT_OPEN'
         if result in ("FAIL", "INSUFFICIENT") and not requirement_decision:
             if item.get("severity") == "P0":
@@ -397,7 +401,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     repair_counts = {state: sum(isinstance(x.get("remediation"), dict) and
                     x["remediation"].get("readiness") == state for x in findings.values())
                     for state in READINESS}
-    return {"valid": not errors, "errors": errors, "blockers": blockers,
+    return {"quality_screening": screen_quality(plan, report, db),
+            "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
             "categorized_summary": categorized_summary(checks, expected, findings, stage),
             "insufficient_by_cause": gap_causes,
@@ -447,7 +452,8 @@ def main():
                                  require_revision=args.require_revision_impact,
                                  require_current_engine=not args.archive_only)
     except (ValueError, OSError, TypeError) as exc:
-        result = {"valid": False, "release": "NO_GO", "errors": [str(exc)]}
+        result = {"quality_screening": screen_quality(None, None),
+                  "valid": False, "release": "NO_GO", "errors": [str(exc)]}
     if args.archive_only:
         result["release"] = "NOT_EVALUATED"
         result["archive_only"] = True

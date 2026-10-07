@@ -157,7 +157,7 @@ RULES = (
     Rule('DEV-D03', '连接器对端定义',
          'pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则', 'plan', 'device'),
     Rule('DEV-D04', '库与物料卫生',
-         '符号名与实物 MPN 一致；沿用库须有同一 MPN/封装/符号版本的验证记录', 'board', 'board'),
+         '符号名、BOM 参数与原厂 MPN 订货组合一致，包含关键无源件；候选身份不得冒充已核准；沿用库须有同一 MPN/封装/符号版本的验证记录', 'board', 'board'),
     Rule('DEV-D05', '引脚处置',
          '按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范'
          '悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；'
@@ -199,7 +199,7 @@ RULES = (
     Rule('PWR-E01', '分压窗口验算',
          '仅对实际电阻分压反馈/监控模型，按电阻与适用 Vref 公差验证窗口；光耦电流或数字设定另用实际传递模型', 'lint', 'pin'),
     Rule('PWR-E02', '线性稳压最坏压差',
-         '按最低输入电压与最坏压差（最低温度、最大负载）核输出是否仍高于负载要求下限', 'power_up', 'device'),
+         '按最低输入电压与声明温度/负载范围内的保证最大压差核输出下限；最坏温度取器件保证条件，不预设为最低温度', 'power_up', 'device'),
     Rule('PWR-E03', '输入滤波阻尼',
          '按最低输入电压与最大输入功率求负输入阻抗，核体电容 ESR 与滤波电感的一阶阻尼'
          '判据及体电容/输入电容比值（比值须由项目规定，不得默认）', 'input_filter', 'device'),
@@ -283,7 +283,8 @@ RULES = (
          '检查慢爬升、棕断、短暂掉电、单域掉电、外部先供电、重试及恢复模式', 'package', 'circuit'),
     Rule('RST-T04', '复位期间 IO 默认态',
          '核主控与外设在断电、复位、启动配置采样与固件接管前的 IO 默认态（高阻、内部上下拉、默认输出）'
-         '对继电器、电源使能、驱动器、LED 与外部总线的影响；关键控制线须有确定的外部默认电平',
+         '对继电器、电源使能、驱动器、LED 与外部总线的影响；关键控制线在适用状态下须有保证的安全默认态，内部偏置或外部电路均须有据；'
+         '断电或 IO 电源域未建立时内部偏置通常不存在，该阶段须由外部电路保证',
          'package', 'circuit'),
     Rule('RST-C01', '采样窗口电平',
          '逐采样窗口计算 strap/EN 保证电压，含内部拉阻、LED、泄漏、电容和门限', 'package', 'circuit'),
@@ -299,7 +300,7 @@ RULES = (
     Rule('CLK-D01', '有源时钟输出与使能',
          '有源时钟输出幅度/电源域、使能态和上电有效时间', 'package', 'circuit'),
     Rule('CLK-D03', 'RTC 晶体与备份电源',
-         'RTC 晶振为 32.768kHz（防丝印笔误为高频）；外部 RTC 备份电池/超级电容充电电压不超上限', 'package', 'circuit'),
+         '按实际 RTC 的时钟源、频率/负载要求及模式核晶体或外部时钟，不默认固定频率；备份电池/超级电容的充电电压/电流不超器件上限，反向电流符合器件要求', 'package', 'circuit'),
 
     # SIG 接口与信号
     Rule('SIG-A01', '交流耦合发送端无直流通路',
@@ -334,7 +335,7 @@ RULES = (
          '核对 VBUS 供电资格、电压档位、放电、反灌、过流及端口未供电状态', 'package', 'circuit'),
     Rule('SIG-C07', '逻辑电平与驱动匹配',
          '逐条链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端'
-         '门限与耐压的满足情况；跨电压域须有转换器或书面确认同域，转换器方向与使能态明确', 'package', 'link'),
+         '门限与耐压的满足情况；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确', 'package', 'link'),
     Rule('SIG-C08', '掉电与跨域注入',
          '逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；'
          '跨轨上拉先列候选，再核掉电容忍', 'package', 'link'),
@@ -350,7 +351,7 @@ RULES = (
     Rule('SIG-D04', 'USB-C 角色与 CC',
          '按 Source/Sink/DRP 角色及 PD 模式核对 CC/Rp/Rd、方向检测、线缆 VCONN', 'package', 'circuit'),
     Rule('SIG-D06', '调试接口',
-         'UART/JTAG/SWD 调试口可达，串阻与 ESD 按需配置', 'package', 'circuit'),
+         '按实际调试/烧录要求核 UART/JTAG/SWD 的信号电气引出、串阻与 ESD；接插件机械可触达性及夹具实现移交下游', 'package', 'circuit'),
     Rule('SIG-D07', 'USB 物理层',
          'REXT、DP/DM 串阻、VBUS 检测、ID 与 ESD 挂在活线上', 'package', 'circuit'),
     Rule('SIG-D08', '串口与现场总线',
@@ -362,10 +363,10 @@ RULES = (
          'eMMC/SD 的 IO 电平、CMD 上拉、CLK/STROBE 串阻与测试节点电气预留；高速测试点与 stub 限制另交 HANDOFF',
          'package', 'circuit'),
     Rule('SIG-D11', '以太网 PHY 与网变',
-         'MDI 差分对 P/N、变压器中心抽头端接、Bob Smith 75Ω+1nF/2kV、MDIO 上拉、PHY 复位与 strap',
+         '按实际 PHY、网变、接口模式及 PoE 配置核 MDI 对应、中心抽头与共模端接、MDIO、复位及 strap；外围数值与耐压取适用器件/接口要求，不套固定 Bob Smith 参数',
          'package', 'circuit'),
     Rule('SIG-D12', '射频与模组',
-         '天线路径默认通断、供电电容总量对照规格书最小值、开关机/复位驱动与参考设计一致、SIM 卡 ESD 与上拉',
+         '按实际模组要求核天线路径默认通断、供电电容、开关机/复位及适用的 SIM 接口保护；参考设计作依据线索，偏离须按本设计条件验证，不以照抄为通过条件',
          'package', 'circuit'),
     Rule('SIG-D13', '主控引脚复用与分配',
          '主控/SoC 引脚复用、功能分配与电平域符合平台约束（专用功能脚、启动相关脚、仅输入脚、5V 容忍），'
@@ -405,7 +406,7 @@ RULES = (
          '上拉与负载要求；同时核最大正向电流不超额定', 'optocoupler', 'device'),
     Rule('PRO-C01', '防护器件协调',
          'TVS 的 VRWM/VBR/VC 按实际浪涌波形、电流与温度对照后级绝限；熔断器/PTC 的额定、时间电流与熔断能量按项目'
-         '降额核对；浪涌（GDT/TSS）→ ESD → 端接 → 隔离逐段核动作电压与能量配合；缺工况不定判', 'package', 'circuit'),
+         '降额核对；按实际保护链逐段核动作电压、时序与能量配合，不强制包含 GDT/TSS、ESD、端接或隔离的固定级联；缺工况不定判', 'package', 'circuit'),
     Rule('PRO-D01', '光耦隔离与耐压',
          '核隔离两侧的网络归属、参考地、跨接器件与耐压，以及输出侧速度/负载条件；'
          '爬电距离与实际隔离距离另交结构与版图', 'optocoupler', 'device'),
@@ -468,6 +469,58 @@ RULES = (
     Rule('REQ-H02', '改版删除项复核',
          '核对旧项在本版冷/热阶段的消失、恢复或替代及连带影响，不能以清单增减证明修复。', 'revision', 'history'),
 )
+
+# 主纲要用于维护规则目的，不向项目台账新增字段；跨域关系由实际判据和 HANDOFF 保留。
+OBJECTIVES = {
+    'G1': ('需求与功能符合', '要求的功能、接口和性能是否落实到电路？'),
+    'G2': ('器件与连接正确', '实际器件、物理脚、装配与端到端连接是否正确？'),
+    'G3': ('工况下的功能与性能', '启动、运行、掉电等适用状态下，电源、控制与信号能否按要求工作？'),
+    'G4': ('参数裕量与器件应力', '保证值、公差及工作范围是否满足指标和器件能力？'),
+    'G5': ('保护与异常响应', '需求内的故障、防护及隔离是否有效，动作与恢复是否合理？'),
+    'G6': ('实施、测试与下游约束', '原理图是否可落实和验证，必要布局、热及测试约束是否明确移交？'),
+    'G7': ('证据覆盖、改进建议与复验闭环', '是否查全且结论有据，不通过项是否明确如何改进、如何复验？'),
+}
+OBJECTIVE_RULES = {
+    'G1': tuple('REQ-A01 REQ-A02 REQ-D01 REQ-D02'.split()),
+    'G2': tuple(('DOC-A02 DOC-T01 DOC-D01 DOC-V01 '
+                 'DEV-A02 DEV-E01 DEV-D01 DEV-D02 DEV-D03 DEV-D04 DEV-D05 '
+                 'NET-A01 NET-A02 NET-A03 NET-A04 NET-A06 NET-A07 '
+                 'PWR-A01 PWR-A02 PWR-A03 PWR-A04 PWR-T01 PWR-T03 PWR-T06 PWR-D02 '
+                 'SIG-E01 SIG-T01 SIG-T02 SIG-T03 SIG-T04 SIG-D13 PRO-A01').split()),
+    'G3': tuple(('PWR-C04 PWR-D03 '
+                 'RST-A01 RST-A02 RST-A03 RST-A04 RST-A05 RST-A06 RST-E01 RST-E02 RST-E03 '
+                 'RST-T01 RST-T02 RST-T03 RST-T04 RST-C01 RST-C02 '
+                 'CLK-D01 CLK-D03 SIG-A01 SIG-A02 SIG-E02 SIG-C01 SIG-C03 SIG-C04 SIG-C07 SIG-C09 '
+                 'SIG-D01 SIG-D02 SIG-D03 SIG-D04 SIG-D07 SIG-D08 SIG-D09 SIG-D10 SIG-D11 SIG-D12 SIG-D14 SIG-D15 '
+                 'ANA-T01 ANA-C01 ANA-C02 ANA-D01 PRO-A03 PRO-A04 PRO-E01 DRV-A03 DRV-E01').split()),
+    'G4': tuple(('DEV-A01 DEV-A03 DEV-E02 DEV-C01 DEV-C02 DEV-C03 DEV-C04 DEV-C05 '
+                 'PWR-A05 PWR-E01 PWR-E02 PWR-E03 PWR-C01 PWR-C02 PWR-C03 PWR-C05 '
+                 'PWR-C09 PWR-C10 PWR-C11 PWR-C14 CLK-C01 DRV-C02').split()),
+    'G5': tuple(('PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-C05 SIG-C08 ANA-C03 '
+                 'PRO-A02 PRO-C01 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01').split()),
+    'G6': tuple('DOC-D02 DOC-V02 RST-D01 SIG-D06'.split()),
+    'G7': tuple(('DOC-A01 DOC-A03 DOC-A04 DOC-Q01 DEV-Q01 PWR-D01 '
+                 'REQ-Q01 REQ-Q02 REQ-Q03 REQ-Q04 REQ-Q05 REQ-Q07 REQ-Q08 REQ-H01 REQ-H02').split()),
+}
+
+
+def build_objective_index(rule_ids, groups, objectives=OBJECTIVES):
+    """Reject unaligned, duplicated or stale maintenance mappings, without judging circuits."""
+    if set(groups) != set(objectives):
+        raise ValueError('纲要分组与已定义纲要不一致')
+    index = {}
+    for goal, members in groups.items():
+        if not members:
+            raise ValueError('纲要没有规则: ' + goal)
+        for rule_id in members:
+            if rule_id in index:
+                raise ValueError('规则重复归属纲要: ' + rule_id)
+            index[rule_id] = goal
+    missing, extra = set(rule_ids) - set(index), set(index) - set(rule_ids)
+    if missing or extra:
+        raise ValueError('纲要映射遗漏/过期: missing=%s extra=%s' % (sorted(missing), sorted(extra)))
+    return index
+
 
 # 已发布但被合并或删除的编号：不再复用，旧计划与历史报告按此查找替代规则。
 RETIRED = (
@@ -631,6 +684,7 @@ METHOD_BY_CODE = {m.code: m for m in METHODS}
 BY_ID = {}
 RETIRED_BY_ID = {}
 PACKAGE_BY_NAME = {}
+OBJECTIVE_BY_RULE = {}
 
 
 def _check_id(rule_id):
@@ -648,6 +702,7 @@ def _build_index():
                 or not rule.title.strip() or not rule.criterion.strip()):
             raise ValueError('规则定义不完整: ' + rule.id)
         BY_ID[rule.id] = rule
+    OBJECTIVE_BY_RULE.update(build_objective_index(BY_ID, OBJECTIVE_RULES))
     for item in RETIRED:
         _check_id(item.id)
         if item.id in BY_ID or item.id in RETIRED_BY_ID:
@@ -777,7 +832,13 @@ def _numbers(domain, method):
 
 
 def render_markdown():
-    lines = ['## 检查方式', '',
+    lines = ['## 审查纲要与规则归属', '',
+             '目的与取舍见 [审查纲要](review-charter.md)。每条在用规则有一个主纲要，跨域约束仍按判据与 HANDOFF 处理。',
+             '这是维护映射，不增加项目检查或填写字段；映射齐全不等于实际审查正确。', '',
+             '| 纲要 | 要回答的问题 | 主归属规则数 |', '|---|---|---|']
+    for goal, (name, question) in OBJECTIVES.items():
+        lines.append('| %s %s | %s | %d |' % (goal, name, question, len(OBJECTIVE_RULES[goal])))
+    lines += ['', '## 检查方式', '',
              '| 代码 | 方式 | 执行者 | 输入 | 输出 | 何时执行 |',
              '|---|---|---|---|---|---|']
     for m in METHODS:
@@ -813,10 +874,10 @@ def render_markdown():
         lines.append('| %s %s | %s |' % (d.code, d.name, ' | '.join(cells)))
     for d in DOMAINS:
         lines += ['', '## %s %s' % (d.code, d.name), '',
-                  '| 编号 | 方式 | 检查项 | 判据要点 | 粒度 | 来源 | 功能包 |', '|---|---|---|---|---|---|---|']
+                  '| 编号 | 纲要 | 方式 | 检查项 | 判据要点 | 粒度 | 来源 | 功能包 |', '|---|---|---|---|---|---|---|---|']
         for rule in sorted(rules(domain=d.code), key=lambda r: order(r.id)):
-            lines.append('| %s | %s | %s | %s | %s | %s | %s |' % (
-                rule.id, METHOD_BY_CODE[rule.id[4]].name, _cell(rule.title),
+            lines.append('| %s | %s | %s | %s | %s | %s | %s | %s |' % (
+                rule.id, OBJECTIVE_BY_RULE[rule.id], METHOD_BY_CODE[rule.id[4]].name, _cell(rule.title),
                 _cell(rule.criterion), SCOPES[rule.scope], SOURCES[rule.source],
                 '、'.join(packages_of(rule.id)) or '—'))
     lines += ['', '## 功能包', '',

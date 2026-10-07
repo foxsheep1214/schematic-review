@@ -361,7 +361,7 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 登记）；`RST-A03` 稳压器使能直连输入网且无分压/RC（CANDIDATE）；`RST-A04` 使能网上既无驱动源也无
 分压/RC/上下拉——悬空或来源不明（CANDIDATE；器件内部上/下拉需资料证据）。
 
-证据计算 `PWR-E02`（`dropout`）：V<sub>IN,min</sub> − V<sub>dropout,max</sub>(T<sub>min</sub>, I<sub>max</sub>)
+证据计算 `PWR-E02`（`dropout`）：V<sub>IN,min</sub> − V<sub>dropout,max</sub>(声明温度与负载范围)
 ≥ 负载要求的 V<sub>OUT,min</sub>。PASS 不覆盖负载瞬态、启动过程与热关断。
 
 计划项：使能来源与 UVLO/时序（RST-T01，HANDOFF 给测试：上电/掉电单调性与台阶需实测）、线性轨的

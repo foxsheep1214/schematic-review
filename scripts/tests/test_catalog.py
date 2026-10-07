@@ -181,5 +181,43 @@ class GeneratedOutputTest(unittest.TestCase):
         self.assertFalse(_global_scope(next(x for x in plan['checks'] if x['id'] == 'DEV-C05.U1')))
 
 
+class ObjectiveAlignmentTest(unittest.TestCase):
+    def test_every_active_rule_has_one_primary_objective(self):
+        index = catalog.build_objective_index(catalog.BY_ID, catalog.OBJECTIVE_RULES)
+        self.assertEqual(set(index), set(catalog.BY_ID))
+        self.assertEqual(index, catalog.OBJECTIVE_BY_RULE)
+        for package in catalog.PACKAGES:
+            self.assertTrue(set(package.rules) <= set(index))
+
+    def test_new_rule_without_alignment_is_rejected(self):
+        with self.assertRaises(ValueError):
+            catalog.build_objective_index(set(catalog.BY_ID) | {'NEW-RULE'}, catalog.OBJECTIVE_RULES)
+
+    def test_duplicate_alignment_is_rejected(self):
+        groups = copy.deepcopy(catalog.OBJECTIVE_RULES)
+        groups['G2'] += (groups['G1'][0],)
+        with self.assertRaises(ValueError):
+            catalog.build_objective_index(catalog.BY_ID, groups)
+
+    def test_retired_or_removed_alignment_is_rejected(self):
+        groups = copy.deepcopy(catalog.OBJECTIVE_RULES)
+        groups['G2'] += (next(iter(catalog.RETIRED_BY_ID)),)
+        with self.assertRaises(ValueError):
+            catalog.build_objective_index(catalog.BY_ID, groups)
+
+    def test_undefined_objective_is_rejected(self):
+        groups = copy.deepcopy(catalog.OBJECTIVE_RULES)
+        groups['UNDEFINED'] = groups.pop('G1')
+        with self.assertRaises(ValueError):
+            catalog.build_objective_index(catalog.BY_ID, groups)
+
+    def test_empty_objective_cannot_hide_unassigned_rules(self):
+        groups = copy.deepcopy(catalog.OBJECTIVE_RULES)
+        groups['G2'] += groups['G1']
+        groups['G1'] = ()
+        with self.assertRaises(ValueError):
+            catalog.build_objective_index(catalog.BY_ID, groups)
+
+
 if __name__ == '__main__':
     unittest.main()
