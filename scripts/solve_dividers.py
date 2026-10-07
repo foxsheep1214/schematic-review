@@ -36,12 +36,21 @@ FB_NAMES = {
 
 
 def parse_resistor(value, default_tol=None, exact=False):
-    """解析 R/K/M 与公差；exact=True 另保留原始十进制的 Ω/公差分数。"""
+    """解析 R/K/M、显式毫欧单位与公差；exact=True 保留十进制分数。"""
     raw = str(value or '').strip()
     upper = raw.upper().replace('Ω', 'R')
+    # Preserve the SI prefix's case before uppercasing: mOhm is milliohms,
+    # while MOhm is megohms. Bare/embedded M retains the legacy convention.
+    milli = re.match(r'^(\d+(?:\.\d+)?)\s*(?:m(?:[rRΩΩ]|(?i:ohms?))|'
+                     r'(?i:milliohms?))(?=$|[ /±+])', raw)
     leading_unit = re.match(r'^([RKM])(\d+)', upper)
     embedded = re.match(r'^(\d+)([RKM])(\d+)', upper)
-    if leading_unit:
+    if milli:
+        decimal_number = milli.group(1)
+        number = float(decimal_number)
+        unit = 'mR'
+        end = milli.end()
+    elif leading_unit:
         decimal_number = f'0.{leading_unit.group(2)}'
         number = float(decimal_number)
         unit = leading_unit.group(1)
@@ -61,18 +70,24 @@ def parse_resistor(value, default_tol=None, exact=False):
         end = normal.end()
     remainder = upper[end:]
     remainder = re.sub(r'^OHMS?', '', remainder)
-    if remainder and remainder[0] not in '/ ±+':
-        return None
+    # Only a single complete tolerance may follow the value/unit. Searching
+    # anywhere in the input would accept junk or skip a conflicting tolerance.
+    tol_match = None
+    if remainder.strip():
+        tol_match = re.fullmatch(r'\s*(?:(?:/|±|\+/-)\s*)?'
+                                 r'(\d+(?:\.\d+)?)\s*%\s*', remainder)
+        if not tol_match:
+            return None
     if not math.isfinite(number):
         return None
-    scale = {'R': 0.001, '': 0.001, 'K': 1.0, 'M': 1000.0}[unit]
-    tol_match = re.search(r'(?:/|±|\+/-|\s)(\d+(?:\.\d+)?)\s*%', raw)
+    scale = {'mR': 0.000001, 'R': 0.001, '': 0.001, 'K': 1.0, 'M': 1000.0}[unit]
     tol = float(tol_match.group(1)) / 100.0 if tol_match else (float(default_tol) if default_tol is not None else None)
     if tol is not None and (not math.isfinite(tol) or tol < 0 or tol >= 1):
         return None
     result = {'kohm': number * scale, 'tol': tol}
     if exact:
-        result['ohm_exact'] = str(Fraction(decimal_number) * {'R': 1, '': 1, 'K': 1000, 'M': 1000000}[unit])
+        result['ohm_exact'] = str(Fraction(decimal_number) * {
+            'mR': Fraction(1, 1000), 'R': 1, '': 1, 'K': 1000, 'M': 1000000}[unit])
         result['tol_exact'] = (str(Fraction(tol_match.group(1)) / 100) if tol_match
                                else str(Fraction(str(default_tol))) if default_tol is not None else None)
     return result
