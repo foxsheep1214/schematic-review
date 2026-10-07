@@ -112,7 +112,8 @@ UNDETERMINED 适用性只能落 INSUFFICIENT。未执行项不可填 PASS，不�
 五个非空字符串；这些必须来自实际授权记录，脚本不能验证批准人权限，Agent 不得虚构。
 P0 FAIL 即使有接受记录仍不准出。P0/P1 潜在未知默认阻断，不能写 blocking=false 绕过。
 必需 handoff 的 receivers（数组）/constraint/verification 不可空；ACCEPTED/VERIFIED
-须来源/定位形式的 evidence；OPEN 阻断。取消计划中的必需 handoff 须 handoff_evidence 留据，不能静默改 required=false。
+须来源/定位形式的 evidence；OPEN 阻断。集成约束按 scope-boundary 记为 handoff，未指定集成方时 `required: false`
+但保留 receivers/constraint/verification。取消计划中的必需 handoff 须 handoff_evidence 留据，不能静默改 required=false。
 
 ## 发现项
 

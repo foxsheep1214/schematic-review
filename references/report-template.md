@@ -27,13 +27,14 @@
 | 确认缺陷 P0 / P1 / P2 / P3 | 唯一缺陷数 | `summary.by_severity` |
 | 待核项潜在等级 P0 / P1 / P2 / P3 | INSUFFICIENT 检查行数 | `review-results.json` 中 INSUFFICIENT 行的 `potential_severity` |
 | 移交状态 OPEN / ACCEPTED / VERIFIED | 移交检查数 | `categorized_summary.handoffs_by_state` |
+| 需求澄清 开放 / 其中阻断 / 其中已覆盖 / 已解决 / 已撤回 | 唯一澄清项数 | `requirement_clarification_summary` 的 open / blocking_open / covered_open / resolved / retracted |
 
-工具输出省略的类别按 0 补齐。检查行数、唯一缺陷数和移交数口径不同，不相加。
+工具输出省略的类别按 0 补齐。检查行数、唯一缺陷数、移交数和澄清项数口径不同，不相加。
 
 ## 2. 处理清单
 
 按紧迫性列全部需处理事项。同一根因或独立决定一行，通过“类别”区分电气缺陷、需求澄清、
-证据/设计缺口、审查待完成、下游移交和可选改善；有需要时分组，不强制分别建重复表格。
+证据/设计缺口、审查待完成、下游移交、集成约束和可选改善；有需要时分组，不强制分别建重复表格。
 
 | ID / 类别 | 位置、问题及依据 | 影响 / 冻结影响 | 建议及下一步 | 关闭条件 / 时点 / 状态 |
 |---|---|---|---|---|

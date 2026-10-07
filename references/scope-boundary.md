@@ -28,9 +28,13 @@ A/B/C 定义以 severity-calibration.md 为准；C 表示结论证据未齐，�
 
 - `required`：是否需要移交；
 - `state`：`OPEN` / `ACCEPTED` / `VERIFIED`；
-- `receivers`：PCB Layout、SI、EMC/Test、结构等明确接收方；
+- `receivers`：PCB Layout、SI、EMC/Test、结构、系统集成方/模块使用者等明确接收方；
 - `constraint`：由原理图证据导出的可执行约束；
 - `verification`：下游如何关闭。
+
+集成约束（模块本体范围内导出、须由外部主机/负载/系统满足的条件）也用 HANDOFF 记录，接收方为系统集成方或
+模块使用者：需求指定了须接收约束的集成方或产品时 `required: true`，按常规阻断准出；开放模块没有指定集成方时
+`required: false`，仍填 receivers/constraint/verification 并在报告“集成约束”类别列出，不计缺陷、补证任务或移交计数。
 
 因此同一项可以是“原理图连通性 PASS + PCB 阻抗约束 HANDOFF OPEN”，也可以是
 “原理图拓扑 FAIL + 修复后仍需布局 HANDOFF”。约束未形成或无接收方时仍阻断准出。

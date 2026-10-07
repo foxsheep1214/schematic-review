@@ -38,6 +38,8 @@ bias_current_a 保证范围。ignored_nodes 只适合输入负载已计入偏置
 | 单极 RC、阶跃源 | V(t)=Vfinal+(Vinitial−Vfinal)exp(−t/(Rth·C))；t_cross=−Rth·C·ln((Vthreshold−Vfinal)/(Vinitial−Vfinal)) | 仅限源稳定且单极线性模型。检查阈值可达及对数定义域；源缓升/掉电残压/内部拉阻/泄漏和门限公差另计。τ 不是复位脉宽 |
 | I2C 上拉 | Rp_min=(Vpullup_max−VOL_max)/IOL_guaranteed；Rp_max=tr_max/(0.8473·Cb_max) | 按实际速度与每个电气段，所有并联上拉的公差窗口应在两限之间；计入外接板上拉、缓冲器、串阻压降。阻值满足不代表 VIH/VIL、Ioff 或地址已通过 |
 | Buck，理想 CCM 初算 | D≈Vout/Vin；ΔIL≈(Vin−Vout)D/(L·fs)；Ipk≈Iout+ΔIL/2；IL_rms≈sqrt(Iout²+ΔIL²/12) | 按实际拓扑与损耗修正；电感 Isat 定义和温度降额、开关限流 min/max、最小 on/off 时间均核对，禁止推广到所有变换器 |
+| Boost，理想 CCM 初算 | D≈1−Vin·η/Vout；IL_avg≈Iout/(1−D)；ΔIL≈Vin·D/(L·fs)；Ipk≈IL_avg+ΔIL/2；在 Vin_min、Iout_max 取最坏 | 异步 Boost 的输出经电感/二极管与输入直通，上电冲击和输出短路电流不受开关限流控制，另按源能力、二极管浪涌额定与需求核；最小 on/off 时间、二极管/同步管应力另核 |
+| 电感饱和与开关限流 | 正常最坏点 Isat≥Ipk_max；需求内的启动、过载、短路会进入开关限流时 Isat≥ILIM_max | Buck、Boost 等开关变换器通用。Isat 按资料定义（感量下降比例、温度）取最坏值；若允许限流时短时饱和，须有器件资料证明限流响应能在饱和电流下保护开关；温升电流另核 |
 | 随输出变化的线性供电（辅助绕组跟随器、LDO） | P=(Vaux(Vout)−Vcc)·Icc，在输出全范围扫描 | 极值通常在两路供电的交接点，不在端点；输出损耗边界及允许温度约束，实际热路径、结温与闭壳温升移交下游 |
 | LDO | P≈(Vin−Vout)·Iout+Vin·Iq | 高温/满载保证 dropout、Cout 有效值/ESR/稳定性、反向电流和放电条件逐项核对；PCB 热阻未知不宣称结温通过 |
 | MOS 保护/热插拔 | 导通 I²Rds(on)；线性态瞬时功耗 VDS·ID，能量积分 ∫VDS·ID dt | 依据相应 VDS、ID、脉宽和起始温度的 SOA 检查，不用额定电流或总能量代替 SOA；计时、重试和熔断器配合独立核对 |
