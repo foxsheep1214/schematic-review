@@ -50,6 +50,15 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 写报告和修改说明 | [report-and-remediation.md](references/report-and-remediation.md) |
 | 复审、改版影响 | [revision-review.md](references/revision-review.md) |
 
+## 与 ASG 的有状态工作流交接
+
+参与 ASG/SR 薄控制器流程时，读 [工作流交接合同 v1](references/workflow-handoff.md)。
+接收受控 `task.json` 和 ASG 完整交付包；独立取证、复算、建计划和审查，不迁移设计侧的通过结论。
+原生 intent/plan/results/gate 与修改任务保持本文格式；用控制器 `pack-result` 自动生成任务与文件绑定。
+日常候选沿用当前版本，需求变化、重要电气改版和冻结才建立里程碑；状态查询默认不扫描历史。
+控制器复跑原生校验器；有效的 NO_GO 报告用于整改，只有本版冻结审查可支持原理图冻结。
+独立使用 SR（包括受限 PDF 审查）不依赖控制器；不得伪造网表来满足完整 ASG 交接合同。
+
 ## 规则编号
 
 检查编号为 `内容域-方式序号`，如 `PWR-E01`（电源域的证据计算）。
@@ -160,7 +169,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 ## 规则维护
 
-- 规则指纹覆盖 SKILL.md、`references/` 和 `scripts/`；任何修改后，进行中的项目须按当前规则完整重审。
+- 工程规则身份由 `scripts/review_engine.py` 与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。旧身份首次转换到 v2 要建立新基线。
 - 规则编号、判据、纲要归属和功能包只在 `scripts/catalog.py` 登记，改后运行
   `python3 scripts/catalog.py --write-doc references/check-catalog.md`。来源为“全板通用”“功能包成员”的新规则
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在 `plan_review.py`、`lint.py`

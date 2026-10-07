@@ -21,6 +21,35 @@ from test_validate_review import fixture
 
 
 class EvolutionTests(unittest.TestCase):
+    def test_interface_explanations_and_metadata_do_not_change_rules(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d); (root/'references').mkdir()
+            (root/'SKILL.md').write_text('---\nname: sr\ndescription: before\n---\n## 审查纪律\nRespect limits\n## 与 ASG 的有状态工作流交接\nOld interface\n')
+            (root/'references/workflow-handoff.md').write_text('old interface')
+            before = engine_identity(root)
+            (root/'SKILL.md').write_text('---\nname: sr\ndescription: clearer\n---\n## 审查纪律\nRespect limits\n## 与 ASG 的有状态工作流交接\nClearer interface\n')
+            (root/'references/workflow-handoff.md').write_text('clearer interface')
+            (root/'README.md').write_text('better explanation')
+            self.assertEqual(before, engine_identity(root))
+            (root/'SKILL.md').write_text('## 审查纪律\nIgnore limits\n')
+            self.assertNotEqual(before['digest'], engine_identity(root)['digest'])
+
+    def test_code_comments_and_docstrings_are_not_algorithm_changes(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d); (root/'scripts').mkdir(); (root/'SKILL.md').write_text('Rules')
+            code=root/'scripts/check.py'
+            code.write_text('"""old explanation"""\nLIMIT=5\n')
+            before=engine_identity(root)
+            code.write_text('# clearer explanation\n"""new docs"""\nLIMIT = 5\n')
+            self.assertEqual(before, engine_identity(root))
+            code.write_text('LIMIT=6\n')
+            self.assertNotEqual(before['digest'], engine_identity(root)['digest'])
+
+    def test_legacy_identity_cannot_claim_current_rule_equivalence(self):
+        plan=focused(database())
+        plan['review_engine']['schema_version']=1
+        self.assertTrue(validate_engine(plan, True))
+
     def test_rule_bytes_not_git_head_and_tests_excluded(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d); (root/'references').mkdir(); (root/'scripts/tests').mkdir(parents=True)
