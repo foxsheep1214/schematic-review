@@ -171,8 +171,15 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
     transistor = {kind for pattern, kind in KEYWORD_KINDS
                   if kind in (MOSFET, BJT) and re.search(pattern, blob, re.I)}
+    # Optical libraries also contain emitters and integrated RGB controllers.
+    # Only the OPTO heuristic uses the symbol identity without its namespace;
+    # other explicit library categories (e.g. Transistor_BJT:) stay intact.
+    opto_identity = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'jedec'))
+    prim_identity = normalize(part.get('prim'))
+    opto_identity += ' ' + prim_identity.split(':', 1)[-1]
     for pattern, kind in KEYWORD_KINDS:
-        if re.search(pattern, blob, re.I):
+        keyword_blob = opto_identity if kind == OPTO else blob
+        if re.search(pattern, keyword_blob, re.I):
             if kind in (MOSFET, BJT) and pin_count is not None and pin_count < 3:
                 continue
             if kind in (MOSFET, BJT):
