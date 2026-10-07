@@ -187,6 +187,34 @@ class Lint:
         return self.power_path(net) is not None
 
     # -- rules -----------------------------------------------------------
+    def _relay_nc_contact(self, net, nodes):
+        """NC can name a normally-closed contact, without proving its ratings."""
+        relay_seen = False
+        for node in nodes:
+            ref = node.partition('.')[0]
+            if not self.graph.is_fitted(ref):
+                return False
+            if self.graph.basis(ref) not in {'datasheet', 'part-keyword'}:
+                return False
+            kind = self.graph.kind(ref)
+            if kind == 'connector':
+                continue
+            if kind != 'relay' or str(self.pinname.get(node, '')).strip().upper() != 'NC':
+                return False
+            roles = defaultdict(list)
+            for pin, pin_net in self.graph.pins_of(ref).items():
+                name = str(self.pinname.get(ref + '.' + pin, '')).strip().upper()
+                if name in {'NC', 'COM', 'NO'}:
+                    roles[name].append(pin_net)
+            if any(len(roles[name]) != 1 for name in ('NC', 'COM', 'NO')):
+                return False
+            contact_nets = [roles[name][0] for name in ('NC', 'COM', 'NO')]
+            if (contact_nets[0] != net or len(set(contact_nets)) != 3
+                    or any(not n or n in self.pseudo for n in contact_nets)):
+                return False
+            relay_seen = True
+        return relay_seen
+
     def run(self):
         nets, parts, pinname, pin2net = (
             self.nets, self.parts, self.pinname, self.pin2net)
@@ -302,6 +330,8 @@ class Lint:
                 self.add('NET-A04', '"NC" 为工具伪网络（提示，非缺陷）',
                          f'{n}: {len(nds)} 个引脚。C_SIGNAL 为裸字面量、无层次路径 '
                          '-> PSTWRITER 的 No-Connect 汇集网，不构成电气短路', kind='INFO')
+            elif self._relay_nc_contact(n, nds):
+                continue
             else:
                 self.add('NET-A04', '"NC" 被当作网络名导致短接',
                          f'{n}: {len(nds)} 个引脚被电气短接（该网带层次路径，'
