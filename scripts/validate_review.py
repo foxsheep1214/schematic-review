@@ -12,7 +12,7 @@ import catalog
 from review_workflow import workflow, decision
 from review_quality import screen_quality
 from review_engine import validate_engine
-from review_summary import categorized_summary, validate_migrations
+from review_summary import categorized_summary
 from requirement_clarifications import validate_clarifications
 from checkers import REGISTRY, validate_inventories
 from validate_remediation import validate_remediation, READINESS
@@ -100,10 +100,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     remediation_version = report.get("remediation_version")
     actionable = require_actionable or "remediation_version" in report
     if actionable:
-        require(type(remediation_version) is int and remediation_version in (1, 2),
-                "remediation_version must be 1 or 2 for actionable instructions")
-        require("review_engine" not in plan or remediation_version == 2,
-                "plans fingerprinted by current SR require remediation_version 2 with calculation_preflight")
+        require(type(remediation_version) is int and remediation_version == 2,
+                "remediation_version must be 2 (with calculation_preflight) for actionable instructions")
     require(report.get("plan_digest") == fingerprint(plan), "plan_digest mismatch")
     if db is not None:
         if db.get('integrity', {}).get('self_check_passed') is False or db.get('export_errors'):
@@ -113,8 +111,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     for key, item in expected.items():
         for message in catalog.spec_errors(item):
             require(False, f"{key}: {message}")
-    revision_errors, revision = validate_metadata(plan, db, old_db, old_plan, require_revision,
-                                                    require_current_engine)
+    revision_errors, revision = validate_metadata(plan, db, old_db, old_plan, require_revision)
     errors.extend(revision_errors)
     if revision is not None:
         errors.extend(validate_reverification(plan, report, revision))
@@ -138,7 +135,6 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                                  lambda context: ReviewPlanner(db, context))
     checks = index(report.get("checks"), "results.checks")
     findings = index(report.get("findings"), "findings")
-    errors.extend(validate_migrations(report, checks, expected))
     bindings = (require_bindings or revision is not None or 'binding_version' in report
                 or any('binding' in x for x in checks.values()))
     if bindings:
@@ -261,7 +257,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
 
     for fid, item in findings.items():
         if actionable:
-            errors.extend(validate_remediation(fid, item.get("remediation"), set(findings), require_preflight=(remediation_version == 2 or "review_engine" in plan)))
+            errors.extend(validate_remediation(fid, item.get("remediation"), set(findings), require_preflight=True))
         elif "remediation" in item:
             require(False, f"{fid}: remediation requires top-level remediation_version")
         require(item.get("severity") in tuple(SEVERITIES), f"{fid}: invalid severity")
@@ -436,11 +432,7 @@ def main():
                         help="require detailed repair instructions for every finding")
     parser.add_argument("--require-bindings", action="store_true",
                         help="require explicit reviewed-object/criterion bindings and finding target consistency")
-    parser.add_argument("--archive-only", action="store_true",
-                        help="validate historical record structure only; never grants current release")
     args = parser.parse_args()
-    if args.archive_only and args.require_release:
-        parser.error("--archive-only cannot be used with --require-release")
     try:
         read = load_json
         result = validate_review(read(args.plan), read(args.results), read(args.db) if args.db else None,
@@ -450,16 +442,10 @@ def main():
                                  old_db=read(args.old_db) if args.old_db else None,
                                  old_plan=read(args.old_plan) if args.old_plan else None,
                                  require_revision=args.require_revision_impact,
-                                 require_current_engine=not args.archive_only)
+                                 require_current_engine=True)
     except (ValueError, OSError, TypeError) as exc:
         result = {"quality_screening": screen_quality(None, None),
                   "valid": False, "release": "NO_GO", "errors": [str(exc)]}
-    if args.archive_only:
-        result["release"] = "NOT_EVALUATED"
-        result["archive_only"] = True
-        if isinstance(result.get("workflow"), dict):
-            result["workflow"]["schematic_release"] = "NOT_EVALUATED"
-            result["workflow"]["status"] = "ARCHIVE_ONLY"
     if args.json:
         Path(args.json).write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))

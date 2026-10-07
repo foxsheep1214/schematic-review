@@ -4,7 +4,7 @@
 
 对 [module-scope-cases.md](../../evals/scenarios/module-scope-cases.md) 的 7 组正例及相邻反例做桌面回放：
 只读取每例输入，按当前 [evidence-proportionality.md](../../references/evidence-proportionality.md)、
-[report-template.md](../../references/report-template.md)、[design-iteration.md](../../references/design-iteration.md)
+[report-and-remediation.md](../../references/report-and-remediation.md)、[verdicts-and-release.md](../../references/verdicts-and-release.md)
 及 SKILL.md 推导判定、计算和补证，再与预期行为对照。
 
 回放由修改这些文档的同一 Agent 执行，**不是独立模型评测**，不能证明其他审查者读同样文本必然得到同样判定；

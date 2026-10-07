@@ -123,12 +123,13 @@ class RevisionRoutingTests(unittest.TestCase):
                 self.new[field] = value
                 self.assertEqual(self.build()['revision_impact']['strategy'], 'FULL_REVIEW')
 
-    def test_incomplete_scope_falls_back_to_all_checks(self):
+    def test_incomplete_scope_reopens_every_check_with_local_gaps(self):
         self.base = focused(self.old, complete=False)
         self.new['parts']['R1']['value'] = '11K/1%'
         plan = self.build()
-        self.assertEqual(plan['revision_impact']['strategy'], 'FULL_REVIEW')
+        self.assertEqual(plan['revision_impact']['strategy'], 'MIXED_REVIEW')
         self.assertTrue(all(e['required'] for e in entries(plan).values()))
+        self.assertIn('incomplete-local-dependencies', entries(plan)['DEV-C01.R10']['reasons'])
         self.assertTrue(plan['revision_impact']['partial_dependencies'])
 
     def test_stale_scope_binding_cannot_exclude_other_checks(self):

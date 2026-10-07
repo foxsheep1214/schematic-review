@@ -246,11 +246,9 @@ def _coordinates(old_db, new_db, refs=(), nodes=(), nets=()):
     return {'refs': refs, 'nodes': nodes, 'nets': nets}
 
 
-def collect_changes(old_db, db, old_inputs, inputs, policy_version=1):
+def collect_changes(old_db, db, old_inputs, inputs):
     changes = []
-    mapped = ('parts', 'pin2net', 'pinname', 'pintype', 'declared_pinname', 'nets', 'ref2page')
-    if policy_version >= 2:
-        mapped += ('native_pintype',)
+    mapped = ('parts', 'pin2net', 'pinname', 'pintype', 'declared_pinname', 'native_pintype', 'nets', 'ref2page')
     for field in mapped:
         before, after = old_db.get(field, {}), db.get(field, {})
         for key in sorted(set(before) | set(after)):
@@ -263,9 +261,9 @@ def collect_changes(old_db, db, old_inputs, inputs, policy_version=1):
                 nets=[key] if field == 'nets' else [])
             changes.append(_event('db.' + field, key, bv, av, **coordinates))
     for field in sorted((set(old_db) | set(db)) - set(mapped)):
-        if policy_version >= 2 and field == 'pin_name_coverage':
+        if field == 'pin_name_coverage':
             continue  # derived counts; raw pin maps and integrity still compare
-        if policy_version >= 2 and field == 'export_meta':
+        if field == 'export_meta':
             before, after = old_db.get(field, {}), db.get(field, {})
             if isinstance(before, dict) and isinstance(after, dict):
                 provenance = {'source', 'date', 'tool'}
@@ -279,7 +277,7 @@ def collect_changes(old_db, db, old_inputs, inputs, policy_version=1):
     # Intent can encode arbitrary upstream/downstream requirements. Without a
     # domain-specific dependency proof, changed conditions require full review.
     for field in sorted(set(old_inputs['intent']) | set(inputs['intent'])):
-        if field in ('review_mode', 'review_dependencies') or (policy_version >= 2 and field in ('input_sha256', 'review_phase')):
+        if field in ('review_mode', 'review_dependencies', 'input_sha256', 'review_phase'):
             continue
         before, after = old_inputs['intent'].get(field), inputs['intent'].get(field)
         if digest(before) != digest(after):
@@ -360,10 +358,7 @@ def build_impact(plan, db, old_db=None, old_plan=None):
     fresh = old_plan is None or old_plan.get('review_engine') != plan.get('review_engine')
     old_checks = index_checks(old_plan) if old_plan is not None else {}
     checks = index_checks(plan)
-    policy = plan.get('review_policy_version', 1)
-    if type(policy) is not int or policy not in (1, 2):
-        raise ValueError('review_policy_version must be 1 or 2')
-    changes = collect_changes(old_db, db, old_inputs, inputs, policy) if old_db is not None else []
+    changes = collect_changes(old_db, db, old_inputs, inputs) if old_db is not None else []
     gaps += ['unreadable-current-document:' + x['path'] for x in inputs['documents'] if x['status'] != 'READABLE']
     gaps += ['unmatched-dependency-declaration:' + key for key in plan.get('dependency_unmatched', [])]
     reasons, matched = {}, {}
@@ -393,9 +388,8 @@ def build_impact(plan, db, old_db=None, old_plan=None):
     partial += ['old:' + key for key, dep in old_dependencies.items() if dep['gaps']]
     definition_changes = any(why for key, why in reasons.items() if not is_revision_check(checks[key]))
     uncertain_scope = bool(changes or definition_changes)
-    full = bool(fresh or gaps or (uncertain_scope and
-                (any(c['global'] for c in changes) or (policy == 1 and partial))))
-    if policy >= 2 and not full and uncertain_scope:
+    full = bool(fresh or gaps or (uncertain_scope and any(c['global'] for c in changes)))
+    if not full and uncertain_scope:
         for key in checks:
             if dependencies[key]['gaps'] or old_dependencies.get(key, {}).get('gaps'):
                 reasons[key].append('incomplete-local-dependencies')
@@ -424,27 +418,23 @@ def build_impact(plan, db, old_db=None, old_plan=None):
                         'status': 'REVERIFY' if why else 'NO_RECORDED_CHANGE',
                         'reasons': sorted(set(why)), 'change_ids': sorted(set(matched[key])),
                         'check_digest': dependencies[key]['check_digest']})
-        if policy >= 2:
-            entries[-1]['reuse_candidate'] = not why and not dependencies[key]['gaps'] and not old_dependencies.get(key, {}).get('gaps')
+        entries[-1]['reuse_candidate'] = not why and not dependencies[key]['gaps'] and not old_dependencies.get(key, {}).get('gaps')
     impact = {'schema_version': VERSION,
               'baseline': {'db_digest': digest(old_db) if old_db is not None else None,
                            'plan_digest': digest(old_plan) if old_plan is not None else None},
               'current': {'db_digest': digest(db), 'inputs_digest': inputs['digest'],
                           'checks_digest': digest([check_spec(checks[k]) for k in sorted(checks)])},
-              'strategy': 'FULL_REVIEW' if full else ('MIXED_REVIEW' if policy >= 2 and uncertain_scope and partial else 'EXACT_DEPENDENCIES'),
+              'strategy': 'FULL_REVIEW' if full else ('MIXED_REVIEW' if uncertain_scope and partial else 'EXACT_DEPENDENCIES'),
               'fresh_review_required': fresh,
               'scope': 'Routing only. NO_RECORDED_CHANGE is not automatic reuse or electrical approval.',
               'blocking_gaps': sorted(set(gaps)), 'partial_dependencies': sorted(set(partial)),
               'changes': changes, 'entries': entries,
               'structural_diff': diff_databases(old_db, db) if old_db is not None else None}
-    if policy >= 2:
-        impact['review_policy_version'] = policy
     impact['digest'] = digest(impact)
     return impact
 
 
-def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=None, old_plan=None,
-                    recorded_engine=False):
+def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=None, old_plan=None):
     """Called after same-revision cold/hot/manual merging; never reads results."""
     if old_plan is not None and old_db is None:
         raise ValueError('old_plan requires old_db')
@@ -517,8 +507,7 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
                 append_history(removed)
         plan['checks'].append(_review_check(COVERAGE_ID, COVERAGE_RULE, {'feature': 'revision-impact'}))
     plan['checks'].sort(key=lambda c: c['id'])
-    if not recorded_engine:  # Archive validation replays the fingerprint recorded in the plan.
-        plan['review_engine'] = engine_identity()
+    plan['review_engine'] = engine_identity()
     plan['dependency_version'] = VERSION
     plan['review_inputs'] = input_snapshot(db, intent, evidence, audit)
     plan['check_dependencies'] = dependency_catalog(plan, db, plan['review_inputs'])
@@ -530,7 +519,7 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
     return plan
 
 
-def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=False, require_current_engine=True):
+def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=False):
     """Recompute from current db, frozen context, live documents and old baseline."""
     errors = []
     enabled = any(k in plan for k in ('dependency_version', 'review_inputs', 'check_dependencies'))
@@ -545,9 +534,6 @@ def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=Fal
             raise ValueError('dependency/revision validation requires --db')
         if type(plan.get('dependency_version')) is not int or plan['dependency_version'] != VERSION:
             raise ValueError('dependency_version must be 1')
-        policy = plan.get('review_policy_version', 1)
-        if type(policy) is not int or policy not in (1, 2):
-            raise ValueError('review_policy_version must be 1 or 2')
         inputs = plan['review_inputs']
         if plan.get('review_phase') != inputs['intent'].get('review_phase'):
             errors.append('review_phase differs from frozen intent')
@@ -555,8 +541,7 @@ def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=Fal
         if revision and plan.get('review_mode') != 'revision':
             raise ValueError('revision impact requires revision review_mode')
         expected = attach_metadata(deepcopy(plan), db, inputs['intent'], inputs['evidence'],
-                                   inputs['datasheet_audit'], old_db, old_plan,
-                                   recorded_engine=not require_current_engine)
+                                   inputs['datasheet_audit'], old_db, old_plan)
         for key in ('review_engine', 'review_inputs', 'check_dependencies', 'dependency_unmatched'):
             if plan.get(key) != expected[key]:
                 errors.append(key + ': stale or modified dependency/input snapshot')

@@ -1,4 +1,4 @@
-"""规则总表的一致性：稳定编号、文档、代码引用与生成的计划项。"""
+"""规则总表的一致性：文档、代码引用与生成的计划项。"""
 import copy
 import pathlib
 import re
@@ -17,7 +17,6 @@ from revision_impact import _global_scope
 from test_checkers_framework import whole_board
 
 RULE_TOKEN = re.compile(r'(?<![A-Za-z0-9])[A-Z]{3}-[AETCDVQH]\d{2}(?![0-9])')
-LEDGER = pathlib.Path(__file__).with_name('issued_rule_ids.txt')
 SOURCE_FILES = {
     'lint': ['lint.py', 'board_scans.py'],
     'plan': ['plan_review.py', 'catalog.py'],
@@ -31,39 +30,6 @@ def source_text(source):
         module = sys.modules[type(REGISTRY_BY_ID[source]).__module__]
         return pathlib.Path(module.__file__).read_text(encoding='utf-8')
     return ''.join((SCRIPTS / name).read_text(encoding='utf-8') for name in SOURCE_FILES[source])
-
-
-def issued_ids():
-    lines = LEDGER.read_text(encoding='utf-8').splitlines()
-    return [line.strip() for line in lines if line.strip() and not line.startswith('#')]
-
-
-class StableNumberTest(unittest.TestCase):
-    def test_published_numbers_are_never_dropped_or_added_silently(self):
-        ledger = issued_ids()
-        self.assertEqual(len(ledger), len(set(ledger)))
-        issued = set(catalog.BY_ID) | set(catalog.RETIRED_BY_ID)
-        self.assertEqual(set(ledger) - issued, set(), '已发布编号只能登记为废弃，不能删除')
-        self.assertEqual(issued - set(ledger), set(),
-                         '新编号接在所在组最大序号之后，并追加到 ' + LEDGER.name)
-
-    def test_issued_numbers_are_contiguous_within_each_group(self):
-        groups = {}
-        for rule_id in list(catalog.BY_ID) + list(catalog.RETIRED_BY_ID):
-            groups.setdefault(rule_id[:5], []).append(int(rule_id[5:]))
-        for group, numbers in groups.items():
-            with self.subTest(group):
-                self.assertEqual(sorted(numbers), list(range(1, len(numbers) + 1)))
-
-    def test_retired_numbers_point_to_active_rules(self):
-        for item in catalog.RETIRED:
-            with self.subTest(item.id):
-                self.assertFalse(catalog.known(item.id))
-                self.assertTrue(all(catalog.known(x) for x in item.replaced_by))
-                with self.assertRaisesRegex(KeyError, '已废弃，改用 ' + item.replaced_by[0]):
-                    catalog.get(item.id)
-        errors = catalog.spec_errors({'id': 'NET-A05.X', 'rule': 'NET-A05', 'method': 'A', 'domain': 'NET'})
-        self.assertEqual(errors, ['规则 NET-A05 已废弃，改用 NET-A04'])
 
 
 class CatalogTest(unittest.TestCase):
@@ -103,13 +69,9 @@ class CatalogTest(unittest.TestCase):
     def test_every_rule_token_in_code_and_docs_is_registered(self):
         paths = sorted(SCRIPTS.glob('*.py')) + sorted((SCRIPTS / 'checkers').glob('*.py'))
         paths += sorted((ROOT / 'references').glob('*.md')) + [ROOT / 'SKILL.md', ROOT / 'README.md']
-        history = {'catalog.py', 'check-catalog.md'}
         for path in paths:
             with self.subTest(path.name):
-                allowed = set(catalog.BY_ID)
-                if path.name in history:
-                    allowed |= set(catalog.RETIRED_BY_ID)
-                unknown = set(RULE_TOKEN.findall(path.read_text(encoding='utf-8'))) - allowed
+                unknown = set(RULE_TOKEN.findall(path.read_text(encoding='utf-8'))) - set(catalog.BY_ID)
                 self.assertEqual(unknown, set())
 
     def test_reference_document_matches_catalog(self):
@@ -199,9 +161,9 @@ class ObjectiveAlignmentTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             catalog.build_objective_index(catalog.BY_ID, groups)
 
-    def test_retired_or_removed_alignment_is_rejected(self):
+    def test_unknown_alignment_is_rejected(self):
         groups = copy.deepcopy(catalog.OBJECTIVE_RULES)
-        groups['G2'] += (next(iter(catalog.RETIRED_BY_ID)),)
+        groups['G2'] += ('NET-A05',)
         with self.assertRaises(ValueError):
             catalog.build_objective_index(catalog.BY_ID, groups)
 

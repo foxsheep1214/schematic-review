@@ -74,21 +74,19 @@ class CompletionGuardTests(unittest.TestCase):
         self.assertTrue(any('unfinished review' in e for e in out['errors']))
 
     def test_explicit_electrical_gap_cannot_use_downstream_shortcut(self):
-        for cause in ('EXTERNAL_DATA', 'DESIGN_OPEN', 'REVIEW_INCOMPLETE', 'USER_DEFERRED'):
+        for cause in ('EXTERNAL_DATA', 'DESIGN_OPEN', 'REVIEW_INCOMPLETE', 'USER_DEFERRED', None):
             with self.subTest(cause=cause):
                 p, r, db = accepted_handoff(cause)
                 out = validate_review(p, r, db)
                 self.assertEqual(out['workflow']['downstream_handoffs_ready'], [])
                 self.assertEqual(out['release'], 'NO_GO')
 
-    def test_actual_downstream_and_legacy_handoff_remain_supported(self):
-        for cause in ('DOWNSTREAM_VERIFICATION', None):
-            with self.subTest(cause=cause):
-                p, r, db = accepted_handoff(cause)
-                out = validate_review(p, r, db)
-                self.assertTrue(out['valid'], out)
-                self.assertEqual(out['workflow']['downstream_handoffs_ready'], [r['checks'][0]['id']])
-                self.assertEqual(out['release'], 'GO')
+    def test_actual_downstream_handoff_is_supported(self):
+        p, r, db = accepted_handoff('DOWNSTREAM_VERIFICATION')
+        out = validate_review(p, r, db)
+        self.assertTrue(out['valid'], out)
+        self.assertEqual(out['workflow']['downstream_handoffs_ready'], [r['checks'][0]['id']])
+        self.assertEqual(out['release'], 'GO')
 
     def test_screening_is_integrated_without_changing_release(self):
         p, r, db = fixture()

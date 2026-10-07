@@ -108,7 +108,7 @@ blocking_open/covered_open；例如“1 项待决需求，影响 10 条检查”
 `requirement_clarifications` 输出完整唯一记录，`insufficient_by_cause` 只表示检查行数。
 
 所有报告必须声明 requirement_clarification_version: 1，并包含 requirement_clarifications 数组，
-无需求澄清时填 []。校验器默认强制检查，缺字段的旧报告直接拒绝；不提供旧逐检查列表或可选兼容开关。
+无需求澄清时填 []；校验器强制检查，缺字段直接拒绝。
 
 ## 关闭证据的例子
 

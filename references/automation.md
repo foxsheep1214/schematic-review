@@ -1,10 +1,167 @@
-# 检查器：共用契约与逐项说明
+# 自动检查：扫描、证据计算与检查器
+
+自动扫描（A）与证据计算（E）只按连接关系和带出处的保证值产生候选与计算结果；最终结论由审查者复核，映射见 [结论与准出](verdicts-and-release.md#1-四种检查结果)。
+
+## 一、自动扫描与证据计算
+
+本文说明方式 A（自动扫描）与方式 E（证据计算）怎么执行、输出怎么读。规则编号、名称和判据要点
+以 [check-catalog.md](check-catalog.md) 为准，本文不再重复规则表。
+
+### 两次运行
+
+一条规则算不算自动规则，看结论是“算出来的”还是“推出来的”：能由输入复现、可穷举的走脚本；
+需要工程判断的交专家审查（方式 T/C/D）。自动规则在哪次运行执行，由输入决定：
+
+| 运行 | 输入 | 执行 |
+|---|---|---|
+| 冷跑 | `db.json`，可选 `--intent`、`--log` | 全部 A 规则；REQ-A01 需要意图中的 `expect`；DOC-A01/DOC-A02 需要导出日志，缺日志时二者列入“本趟未执行” |
+| 热跑 | 冷跑输入 + `evidence.json` + `datasheet-audit.json` | 全部 A 规则 + 已提供证据的 E 规则 |
+| 改版比对 | 旧/新 `db.json`、旧计划、历史意见断言 | REQ-H01（`diff_netlists.py`）与改版影响清单 |
+
+**输出分三类**：`FINDING` 是疑似缺陷，逐条排除；`CANDIDATE` 是待资料取证定夺的优先级清单，直接
+决定先读哪几份 datasheet；`INFO` 是提示，不计入疑点，但准出前仍要核实（如 NET-A04 判为工具伪网络的
+NC 网）。同一条规则可同时产出多类，例如 PRO-A02 按型号或轨名推断的电压只作候选。
+E 规则的每条结果另记 `check_results`（PASS/FAIL/INSUFFICIENT）与 `passes`。
+
+**未执行不等于通过**：`lint.py` 每次在末尾列出本次没执行的规则及原因（缺 `--intent`、未提供证据）。
+扫出 0 条与根本没扫，输出必须能区分。
+
+**命名检出不等于功能适用**：名称候选先确认实际角色/模式，再展开功能包成员；
+已有资料尚未阅读或计算时列审查待完成，补证尺度见 [最小充分证据](evidence-proportionality.md)。
+
+**未检出特征不等于不适用**：网表检测不到 DDR/RF 等关键字时，对应功能包列入 REQ-Q08 待确认；
+只有设计意图给出可引用的不适用依据，功能包才标 `NOT_APPLICABLE` 并最终写 NA。适用但缺材料写
+`INSUFFICIENT`。
+
+自动扫描的输出是疑似清单，不是判决。合法结构（Bob-Smith 终端、补偿网络、DNP 选项、有意单端
+测试点）由审查者逐条排除，排除依据写入报告附录；不能按规则批量排除。
+
+### 典型案例
+
+| 规则 | 典型案例 |
+|---|---|
+| NET-A01 | `EFUSE2_EN_L` 只挂一颗电阻的一端，24V 输出永远无法开通 |
+| NET-A02 | `VCC_5V0_SYS` 与 `VCC5V0_SYS` 分裂，5V 主轨断开，PMIC 无电 |
+| NET-A04 | 164 个引脚被 “NC” 网络标号短成一张网，含晶振脚、MII 输出脚与 6 个外部连接器 pin1 |
+| NET-A04（提示） | 357 个引脚挂在导出器的 No-Connect 汇集网上，看似隔离栅被跨接，实为工具产物 |
+| NET-A06 | 解析器已有 PINUSE：多个 OUT 直连报疑点，合法开漏/三态仍须排除 |
+| PWR-A01 | 跳线本身不是电源；受控路径仍需 PWR-T01 按状态核实 |
+| PWR-A02 | SoC 357 个电源球全扫，`MIPI_DCPHY_AVDD→NC` 由此暴露（后经平台规范裁定合法） |
+| PWR-A03 | 268 个地球只抓到 1 个例外，且与参考设计一致 |
+| PWR-A04 | 监控芯片 V2 看 SOM 轨、V4 看底板轨，判定前先分清 `VCC_3V3` 与 `VCC_3V3_SOM` |
+| PRO-A01 | ESD 器件挂在废弃的 `USB_DP/DM` 空网上，活线没有防护 |
+| REQ-A01 | TPS16530 应有 2 颗实有 1 颗，输入保护缺失 |
+| RST-E01 | TPS16530 EN 低有效却被上拉至 24V VIN（耐压 5.5V） |
+| RST-E02 | RTL8208 TEST[3:0] 被上拉（要求下拉）；`EN_PWRDWN` 上拉导致上电即掉电 |
+| DEV-E01 | 45 针连接器符号引脚号与实物不符 |
+| DEV-A01 | 24V 输入轨上贴了 16V 耐压电容（耐压写在 BOM 值里，轨压按网名推断） |
+| DEV-A02 | 电解电容 + 脚接地、- 脚接 24V，方向反接 |
+| DEV-A03 | 指示 LED 直接跨在 3V3 与 GND 之间，通路上没有串联电阻 |
+| NET-A07 | 声明为输入的脚没有网络或只在单节点网上，输入悬空 |
+| DOC-A04 | 位号仍是 `R?`，无法定位与对账 |
+| REQ-H01 | 回复“已改 RTL8326BI”后，新版网表仍是 RTL8326B-CG |
+
+### NC 网络判别（NET-A04 执行前必做）
+
+名为 `NC` 的多节点网络有两种截然不同的成因，判反了后果严重：误判为伪网会漏掉真短路。
+
+| | 真短路（NET-A04 疑点） | 工具伪网络（NET-A04 提示，非缺陷） |
+|---|---|---|
+| 成因 | 设计者把 “NC” 当网络标号写在不用的引脚上 | 导出器把带 No-Connect 属性且无连线的引脚统一汇集 |
+| `C_SIGNAL` | 带层次路径 `@<设计>(SCH_1):NC` | 裸字面量 `'NC'` |
+| 实例行 | 带层次路径 | 裸字面量 |
+
+1. 取该网的 `C_SIGNAL` 与实例行，核对已验证的导出格式；没有层次路径本身不能证明是伪网。
+   解析器只对满足 NC 命名约定的平面汇集网给出候选分类，普通平面网络仍参与电气检查。
+2. 辅助核对（不能单独决定）：取导出日志中全部 DOC-A02 告警，逐条比对被连接的网。若这些引脚
+   一律落在真实网络、没有落入该 NC 网，只说明告警不反驳伪网解释；仍需已验证的导出格式或
+   图面/属性证据。
+
+`parse_netlist.py` 把启发式分类放进 `pseudo_nets`，`lint.py` 据此把 NET-A04 降为提示。审查者仍须用
+图面或属性确认分类，不能用该字段自证。
+
+### 驱动源判定（PWR-A01/PWR-A02 的前提）
+
+从负载沿已装配的电感、磁珠、保险丝和 0Ω 向上游追踪；这些元件本身不产生电能。终点是实际电源
+输出脚或 `intent.power_sources` 指定的外部来源。二极管/MOS 仅按 `intent.power_paths` 中当前
+`active_state` 的有向导通模型跨越；并联 TVS、连接器和未装配器件不能自行成为源。不同地网不自动
+合并。输出脚名称仍只是候选，PWR-T01 还要核对上游供电、导通条件、额定载流及每个工作/故障状态。
+
+### 关键器件计数（REQ-A01）
+
+REQ-A01 的输入不是网表，而是阶段 0 的意图清单：从需求/规格书、原理图修订记录、历史评审记录中
+提取，写入 `intent.json` 随报告留档。扩展字段见 [plan-and-results.md](plan-and-results.md)。
+
+```json
+{
+  "schema_version": 3,
+  "expect": {
+    "TPS16530": 2,
+    "RTL8326B-CG": 0
+  }
+}
+```
+
+`expect` 的键按子串匹配 `part`/`value`/`prim`（不区分大小写），值为期望数量：该有的写 ≥1，
+该删的写 0。标了不贴的实例不计入。缺 `expect` 时 REQ-A01 不执行，并列入“本趟未执行”。
+这份清单错了会连锁影响功能包的判定，必须留痕、可复核。
+
+### 符号引脚映射（DEV-E01）
+
+1. 从 pstchip.dat 提取需核验符号的引脚名/号映射（`'<PINNAME>': PIN_NUMBER='(<num>)'`）。
+2. 与该器件官方 datasheet 引脚定义逐脚比对，写成 `expected` 证据。
+3. 先确认实物封装变体，再看对应封装的引脚图；多封装同页时按标题逐张对应，禁止跨图引用
+   （曾把 QFN-20 脚位当 TSSOP-20 判读，产生整页误报后撤回）。
+4. 封装变体间的差异点（NC 位置、功能脚位移）是高频坑，逐脚核对而不是抽样。
+
+DEV-E01 只核证据中列出的引脚；完整物理脚差集由 DEV-D02 负责。
+
+### strap 与配置脚（RST-E02）
+
+1. 从 pstxprt/pstchip 还原每个 strap 的实装状态（实例级不贴标记只在这里）。
+2. 对照 datasheet 引脚表逐脚确认默认态（内部上/下拉）、强制条款（must 类原文）与功能真值表。
+3. 上/下拉对（一贴一不贴）属合法设计；实装了与强制方向相反的电阻才是问题。
+4. strap 节点上同时挂 LED 或其他上拉时，按复位采样窗口计算分压（例：1K 下拉 + 220Ω 串 LED 至
+   3.3V，采样电压超过 VIL(max)，不能保证低电平；不直接断言实物读到哪一位）。
+
+### 物料与引脚扫描（DEV-A01～DEV-A03、NET-A07、DOC-A04）
+
+`scripts/board_scans.py` 只用网表、BOM 值字段和引脚名/类型做确定性判别，不读 PDF、不猜降额：
+
+| 规则 | 判别依据 | 不判什么 |
+|---|---|---|
+| DEV-A01 | BOM 值里写明的耐压（`10uF/16V`）低于按网名推断的电压 | 降额比例、纹波与温度（DEV-C01/DEV-C02）；值里没写耐压就不报 |
+| DEV-A02 | `+`/`-` 脚名判别的极性电容：+ 接已知地、- 接命名轨 | 无极性脚名的器件（转图面目检 DOC-V01）；二极管方向按所在电路另判 |
+| DEV-A03 | LED 两脚直接跨命名轨与已知地 | 恒流驱动、PWM 驱动与亮度（需资料或声明证据） |
+| NET-A07 | 引脚类型为输入且无网络/单节点网（标了 No-Connect 的作候选） | 内部上下拉是否足够（需资料） |
+| DOC-A04 | 位号含 `?` 或缺序号 | 位号编排规范与 BOM 对账结论 |
+
+不贴装（解析器 `nc`）的器件不报；其他装配变体的差异由审查者按 `intent.assemblies` 排除。
+
+### 推荐工作条件验算（DEV-E02）
+
+kind=operating_range，给 `ref`、所接轨 `net` 与资料保证的 `supply_v.min/max`；设计工况取
+`intent.power_rails.<net>.voltage_v` 的 min/max。两边都齐才计算裕量：设计窗口越界为 FAIL，
+缺设计窗口保持 CANDIDATE/INSUFFICIENT，不用推荐范围反推设计。温度、负载、频率与瞬态仍由
+DEV-C05 逐项核。
+
+### 覆盖补充
+
+- `hot_executed` 只说明规则被调用；`hot_uncovered_instances` 列出计划中证据缺失、过期或模型未就绪
+  的证据计算实例。审查者仍需复核计划完整性与最终结果，它不是全板覆盖证明。
+- RST-E01/RST-E02 用包含负载与采样时序的保证电压窗口比较门限；缺模型时为 CANDIDATE，不能拿
+  上拉电源电压直接当分压后的脚压。
+- DOC-A01 提示导出错误或中止；DOC-A02 的 No-Connect 告警须逐项核，不能与真实导出失败等同。
+- 单独另存某个检查器的清单：`python3 scripts/lint.py db.json --checker-json <检查器id>=out.json`；
+  各检查器的识别依据、intent 字段与缺口语义见 [automation.md](automation.md)。
+
+## 二、检查器
 
 检查器从现有 `db.json` 发现对象、登记逐状态清单并生成审查计划。它们不是 EDA 解析器、
 不是电气求解器，也不产生准出结论。加一个检查器只需新增模块并登记到
 `scripts/checkers/__init__.py` 的 `REGISTRY`，计划、lint 与校验都按注册表遍历。
 
-## 共用契约
+### 共用契约
 
 以下规则对所有检查器一致，各节不再重复。
 
@@ -92,7 +249,7 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 一律 `WAITING_EVIDENCE`，需专家提供适用规格、工况计算与逐项结论。
 
 **证据计算**：检查器的证据计算规则（方式 E）走同一条 `evidence.json` 管线（字段见
-[datasheet-evidence-schema.md](datasheet-evidence-schema.md)）。输入只接受带出处的保证值：
+[datasheets.md](datasheets.md)）。输入只接受带出处的保证值：
 缺任一项即 INSUFFICIENT，不用典型值顶替；比值与寿命系数必须来自项目规定。PASS 的 scope
 写明未判定的部分，计算角点保留在 calculation。
 
@@ -104,7 +261,7 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 在 `scripts/catalog.py` 以检查器 id 为来源登记；检查器类只引用编号，自动扫描（A）与证据计算（E）
 规则由 `cold_rules`/`hot_rules` 从总表取出。下文各节列出每个检查器使用的规则。
 
-## I²C 连接覆盖（`i2c_topology`）
+### I²C 连接覆盖（`i2c_topology`）
 
 维护范围：发现 I²C 端点、上拉、串阻路径和边界，生成逐状态审查计划。
 
@@ -163,7 +320,7 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 不能由"有一只上拉"生成 PASS。本清单与 SIG-E01 的直接连接/直接并联计算并存，不扩大后者模型，
 也不自动把清单或 state population 注入证据计算；不同装配变体需各自的 db 与绑定该 db/状态的 evidence。
 
-## 去耦覆盖（`decoupling`）
+### 去耦覆盖（`decoupling`）
 
 维护范围：逐器件、物理电源脚、直接供电/返回网络、装配状态与电容清单。不是 PDN 求解器，
 也不判定去耦是否合格。
@@ -250,7 +407,7 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 已证实的窄连接结论。标准无源符号类别不再重复索取 components 声明；power_in 只生成候选，
 HV 启动/检测或端口储能等角色须按实际器件条款确认，不能由该类型强制本地去耦。
 
-## 感性负载续流与钳位（`inductive_load`）
+### 感性负载续流与钳位（`inductive_load`）
 
 维护范围：识别继电器线圈、由开关驱动的电感/绕组、经连接器外接的感性负载，登记每个装配状态下
 的钳位路径。只回答"有没有、接法对不对、缺什么证据"；额定值是否足够由 DRV-C01 按器件资料判定。
@@ -294,7 +451,7 @@ HV 启动/检测或端口储能等角色须按实际器件条款确认，不能�
 
 依据：`HardwareWiki:wiki/methodology/inductive-load-flyback-clamp-design.md`。
 
-## 功率开关 `power_switch`
+### 功率开关 `power_switch`
 
 维护范围：按引脚角色识别分立 MOSFET/BJT/IGBT，登记栅极驱动源、栅源下拉、开关节点上的
 感性元件与吸收网络。引脚角色缺失时只登记缺口（`pin-roles:REF`），不推定拓扑。
@@ -326,7 +483,7 @@ HANDOFF 给版图）。
 依据：`HardwareWiki:concepts/mosfet-igbt-gate-drive-circuit.md`、`concepts/功率器件栅极驱动保护.md`、
 `concepts/功率开关安全工作区.md`、`concepts/开关节点振荡吸收.md`。
 
-## 开关电源输入滤波 `input_filter`
+### 开关电源输入滤波 `input_filter`
 
 维护范围：识别同时具备 `VIN/PVIN` 与 `SW/LX/PH/BOOT` 类引脚的开关稳压器，登记其输入网上的
 串联电感/磁珠、两侧对地电容、RC 阻尼支路与体电容候选。线性稳压器不进入本检查器。
@@ -346,7 +503,7 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 
 依据：`HardwareWiki:methodology/dc-dc-输入滤波稳定性评估.md`、`methodology/输入滤波稳定性与阻尼评估.md`。
 
-## 上电过程 `power_up`
+### 上电过程 `power_up`
 
 维护范围：识别带使能脚且有输出/开关脚的稳压器，归类使能来源，并登记使能/复位与自身供电轨
 同网的负载。时序是否满足需求由 RST-T01 按需求与器件条款判定。
@@ -370,7 +527,7 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 依据：`HardwareWiki:methodology/power-rail-startup-review.md`、`concepts/电源上电时序故障诊断.md`、
 `concepts/同步降压预偏置启动.md`、`methodology/ldo最坏条件选型验证.md`。
 
-## 监控与看门狗 `supervision`
+### 监控与看门狗 `supervision`
 
 维护范围：识别监控器/看门狗（需同时具备 WDI/SENSE/MR 类引脚与复位类输出脚），登记喂狗输入
 状态、被监测网、复位输出的去向与上拉，以及给 IC 供电的电源轨及其监测覆盖。只有复位输入脚的
@@ -395,7 +552,7 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 
 依据：`HardwareWiki:methodology/复位时序与看门狗审核.md`、`methodology/multi-rail-brownout-reset-verification.md`。
 
-## 高速差分电平 `diff_levels`
+### 高速差分电平 `diff_levels`
 
 维护范围：按网名成对（`_P/_N`、`_DP/_DN`、`_DP/_DM`、`P/N`、`+/-`）且**两条腿上出现同一个
 器件**识别差分对，登记耦合方式、串联耦合电容、端接与偏置、方向。交流耦合的链路按电容两侧
@@ -416,7 +573,7 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 
 依据：`HardwareWiki:methodology/high-speed-level-interconnect-review.md`、`concepts/高速电平互连.md`。
 
-## 光耦 `optocoupler`
+### 光耦 `optocoupler`
 
 维护范围：识别光耦器件与其 LED 回路（限流电阻、驱动源）和输出侧（集电极网、上拉电阻、发射极
 参考）。引脚角色缺失时只登记 `pin-roles:REF` 缺口。隔离耐压、爬电距离与安规等级不在本检查器

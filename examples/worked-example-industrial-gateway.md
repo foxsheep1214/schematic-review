@@ -34,7 +34,7 @@ REQ-A-POWER→F-01；REQ-A-BOOT→F-02；REQ-A-MAINT→F-03；REQ-A-PORT→IS-01
 ## 面向新手的逐项修改说明
 
 下面补充的位号、引脚及数据同样是合成设定；实际报告须逐项回到原始证据。
-结构化字段见 [remediation-guide](../references/remediation-guide.md)，不能只保留上方摘要表。
+结构化字段见 [报告与修改说明](../references/report-and-remediation.md)，不能只保留上方摘要表。
 
 ### F-01：条件满足后修改
 

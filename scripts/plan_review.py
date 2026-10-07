@@ -23,8 +23,7 @@ import os
 import re
 import sys
 from collections import Counter
-from checkers import (REGISTRY, REGISTRY_BY_ID, registry_cold_rules,
-                      registry_hot_rules)
+from checkers import REGISTRY, registry_cold_rules, registry_hot_rules
 from checkers.netgraph import GNDS, RAIL_RE
 from checkers.planutil import empty_handoff as _empty_handoff, handoff as _handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
@@ -53,8 +52,6 @@ I2C_RE = re.compile(r'(^|_)(I2C\w*|SCL\d*|SDA\d*)(_|$)', re.I)
 FB_NAMES = {'FB', 'ADJ', 'VFB', 'FBX', 'VSENSE', 'VOSNS', 'VOUT_SENSE'}
 DEVICE_RE = re.compile(r'^[UM]\d', re.I)
 CONNECTOR_RE = re.compile(r'^(J|P|CN)\d', re.I)
-# 旧版意图里改了名的功能与电路类型。
-RENAMED_PACKAGES = {'RESET': 'STARTUP', 'USB_C': 'USB', 'CAN_RS485': 'CAN 或 RS485'}
 # 全板规则执行前需要的资料；未列出的规则只需网表。
 BOARD_MATERIALS = {
     'DOC-D02': ('requirements',), 'DOC-V02': ('schematic_pdf',),
@@ -89,14 +86,14 @@ def _text(value):
 
 
 def validate_intent(intent, db=None):
-    """验证扩展 intent；兼容旧版仅含 expect 的输入。给出 db 时同时核对网表绑定。"""
+    """验证 intent；给出 db 时同时核对网表绑定。"""
     if intent is None:
         return []
     if not isinstance(intent, dict):
         return ['intent 根对象必须为 object']
     errors = []
     if 'schema_version' in intent and intent['schema_version'] != INTENT_SCHEMA_VERSION:
-        errors.append('schema_version 必须为 %d（旧版意图请按 check-catalog.md 迁移）' % INTENT_SCHEMA_VERSION)
+        errors.append('schema_version 必须为 %d' % INTENT_SCHEMA_VERSION)
     if intent.get('review_mode') not in (None, 'first', 'revision'):
         errors.append('review_mode 必须为 first/revision')
     if 'review_phase' in intent and intent['review_phase'] not in PHASES:
@@ -116,8 +113,8 @@ def validate_intent(intent, db=None):
     else:
         for key, item in features.items():
             label = f'features.{key}'
-            if str(key).upper() in RENAMED_PACKAGES:
-                errors.append(f'{label} 已改名为 {RENAMED_PACKAGES[str(key).upper()]}')
+            if str(key).upper() not in catalog.PACKAGE_BY_NAME:
+                errors.append(f'{label} 不是功能包名（取 check-catalog.md 中的功能包名）')
                 continue
             if not _text(key) or not isinstance(item, dict):
                 errors.append(f'{label} 必须为 object')
@@ -183,13 +180,9 @@ def validate_intent(intent, db=None):
             errors.append('circuits.id 缺失或重复')
         else:
             seen_circuits.add(cid)
-        if 'domain' in circuit:
-            errors.append('circuits.domain 已改名为 circuits.type')
         kind = circuit.get('type')
         if not isinstance(kind, str) or kind not in catalog.PACKAGE_BY_NAME:
-            hint = RENAMED_PACKAGES.get(kind) if isinstance(kind, str) else None
-            errors.append('circuits.type 不支持: %r（%s）' % (
-                kind, '已改名为 ' + hint if hint else '取 check-catalog.md 中的功能包名'))
+            errors.append('circuits.type 不支持: %r（取 check-catalog.md 中的功能包名）' % (kind,))
         for field in ('refs', 'states'):
             values = circuit.get(field)
             if not isinstance(values, list) or not values or not all(_text(x) for x in values):
@@ -529,14 +522,6 @@ class ReviewPlanner:
             inventory = self.inventories.get(checker.id)
             if inventory is not None:
                 checker.plan(self, inventory)
-
-    def plan_i2c_topology(self):
-        """兼容入口：单独生成 I²C 连接覆盖计划项。"""
-        REGISTRY_BY_ID['i2c_topology'].plan(self, self.inventories['i2c_topology'])
-
-    def plan_decoupling(self):
-        """兼容入口：单独生成去耦计划项。"""
-        REGISTRY_BY_ID['decoupling'].plan(self, self.inventories['decoupling'])
 
     def plan_concrete_checks(self):
         db = self.db
@@ -930,7 +915,6 @@ class ReviewPlanner:
             'rule_plan': self.rule_plan,
             'checks': self.checks,
             'diagnostics': self.diagnostics,
-            'review_policy_version': 2,
         }
         if 'review_phase' in self.intent:
             plan['review_phase'] = self.intent['review_phase']

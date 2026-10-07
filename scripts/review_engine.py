@@ -25,7 +25,7 @@ def engine_identity(root=None):
 def validate_engine(plan, require_current=False):
     identity = plan.get('review_engine')
     if not require_current:
-        # Historical record validation only; CLI release always requires current rules.
+        # Library calls on synthetic fixtures check shape only; the CLI always requires current rules.
         if identity is None or (isinstance(identity, dict) and identity.get('schema_version') == 1
                                 and isinstance(identity.get('digest'), str) and isinstance(identity.get('files'), dict)):
             return []

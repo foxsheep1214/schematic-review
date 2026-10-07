@@ -3,9 +3,8 @@
 """检查规则总表：编号、检查方式、内容域、展开粒度、功能包与判据的唯一来源。
 
 编号格式为 <内容域>-<方式><序号>，例如 PWR-E01：前三个字母说明查什么，
-短横后的字母说明怎么查。编号一经发布不再改变或复用：合并或删除的规则登记在
-RETIRED，新规则接在所在组已发布的最大序号之后。计划、Lint、证据校验、结果校验
-与文档规则表都从这里取规则，不另写副本。
+短横后的字母说明怎么查。在用规则的编号不改；新规则接在所在组最大序号之后，
+删除的编号不再登记。计划、Lint、证据校验、结果校验与文档规则表都从这里取规则，不另写副本。
 
     python3 catalog.py                     打印规则总表（Markdown）
     python3 catalog.py --write-doc PATH    重写文档标记区间内的规则总表
@@ -19,7 +18,6 @@ from collections import namedtuple
 Domain = namedtuple('Domain', 'code name scope handoff')
 Method = namedtuple('Method', 'code name executor inputs output stage')
 Rule = namedtuple('Rule', 'id title criterion source scope')
-Retired = namedtuple('Retired', 'id title replaced_by note')
 Package = namedtuple('Package', 'name title domain pattern rules materials handoff')
 
 DOMAINS = (
@@ -523,36 +521,6 @@ def build_objective_index(rule_ids, groups, objectives=OBJECTIVES):
     return index
 
 
-# 已发布但被合并或删除的编号：不再复用，旧计划与历史报告按此查找替代规则。
-RETIRED = (
-    Retired('NET-A05', 'NC 工具伪网络', ('NET-A04',), '并入 NC 网络判别，伪网络作为提示级结果'),
-    Retired('PWR-T02', '检测点取样侧', ('ANA-T01',), '与监测链合并'),
-    Retired('PWR-C07', '保护器件 SOA', ('DRV-C02',), '与开关管 SOA 合并'),
-    Retired('PWR-C08', '保护器件协调', ('PRO-C01',), '与防护链配合合并'),
-    Retired('PWR-C12', '输入保险丝与限流开关', ('PWR-C06', 'PRO-C01'), '开关限流并入保护门限，熔断特性并入防护器件协调'),
-    Retired('PWR-D04', '未用电源脚处置', ('DEV-D05',), '并入引脚处置'),
-    Retired('SIG-C02', 'I²C 电压域与掉电', ('SIG-C07', 'SIG-C08'), '拆为通用的电平匹配与掉电注入'),
-    Retired('SIG-C06', '上拉轨与电平门限', ('SIG-C07',), '并入逻辑电平与驱动匹配'),
-    Retired('SIG-D05', '跨电压域接口', ('SIG-C07',), '并入逻辑电平与驱动匹配'),
-    Retired('DOC-V03', '网络命名与图框版本', ('DOC-V02',), '并入图纸卫生'),
-    Retired('CLK-D02', '晶振外围电阻', ('CLK-C01',), '并入晶体负载与起振'),
-    Retired('ANA-D02', '运放未用通道', ('DEV-D05',), '并入引脚处置'),
-    Retired('SIG-Q01', 'DDR 功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('SIG-Q02', 'USB 功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('SIG-Q03', '以太网功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('SIG-Q04', 'CAN 功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('SIG-Q05', 'RS485 功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('SIG-Q06', 'I²C 功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('SIG-Q07', 'SPI 功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('SIG-Q08', 'UART 功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('SIG-Q09', '存储功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('SIG-Q10', '射频功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('CLK-Q01', '时钟功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('RST-Q01', '复位功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('PRO-Q01', '隔离功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-    Retired('REQ-Q06', '自定义功能覆盖', ('REQ-Q07',), '功能覆盖统一为功能包覆盖'),
-)
-
 _HANDOFF_NONE = {'required': False}
 
 # 功能包：正则名称命中仅作候选；声明或已确认拓扑使其适用，再逐电路×工况
@@ -683,7 +651,6 @@ METHOD_ORDER = ''.join(m.code for m in METHODS)
 DOMAIN_BY_CODE = {d.code: d for d in DOMAINS}
 METHOD_BY_CODE = {m.code: m for m in METHODS}
 BY_ID = {}
-RETIRED_BY_ID = {}
 PACKAGE_BY_NAME = {}
 OBJECTIVE_BY_RULE = {}
 
@@ -704,13 +671,6 @@ def _build_index():
             raise ValueError('规则定义不完整: ' + rule.id)
         BY_ID[rule.id] = rule
     OBJECTIVE_BY_RULE.update(build_objective_index(BY_ID, OBJECTIVE_RULES))
-    for item in RETIRED:
-        _check_id(item.id)
-        if item.id in BY_ID or item.id in RETIRED_BY_ID:
-            raise ValueError('废弃编号与在用或其他废弃编号重复: ' + item.id)
-        if not item.replaced_by or any(x not in BY_ID for x in item.replaced_by):
-            raise ValueError('废弃编号须指向在用规则: ' + item.id)
-        RETIRED_BY_ID[item.id] = item
     for package in PACKAGES:
         if package.name in PACKAGE_BY_NAME or package.domain not in DOMAIN_BY_CODE:
             raise ValueError('功能包定义错误: ' + package.name)
@@ -732,17 +692,10 @@ def known(rule_id):
     return isinstance(rule_id, str) and rule_id in BY_ID
 
 
-def retired(rule_id):
-    return RETIRED_BY_ID.get(rule_id) if isinstance(rule_id, str) else None
-
-
 def get(rule_id):
     try:
         return BY_ID[rule_id]
     except (KeyError, TypeError):
-        old = retired(rule_id)
-        if old:
-            raise KeyError('规则 %s 已废弃，改用 %s' % (rule_id, '、'.join(old.replaced_by))) from None
         raise KeyError('规则总表中没有该编号: %r' % (rule_id,)) from None
 
 
@@ -802,9 +755,6 @@ def spec_errors(item):
     """计划项的规则、方式、内容域与编号前缀必须和本表一致。"""
     rule = item.get('rule') if isinstance(item, dict) else None
     if not known(rule):
-        old = retired(rule)
-        if old:
-            return ['规则 %s 已废弃，改用 %s' % (rule, '、'.join(old.replaced_by))]
         return ['规则编号未登记: %r' % (rule,)]
     errors = []
     if item.get('method') != method_of(rule) or item.get('domain') != domain_of(rule):
@@ -824,12 +774,6 @@ DOC_END = '<!-- catalog:end -->'
 
 def _cell(text):
     return str(text).replace('|', '\\|').replace('\n', ' ')
-
-
-def _numbers(domain, method):
-    active = [int(r.id[5:]) for r in rules(method=method, domain=domain)]
-    old = [int(r.id[5:]) for r in RETIRED if r.id[:3] == domain and r.id[4] == method]
-    return active, old
 
 
 def render_markdown():
@@ -861,17 +805,14 @@ def render_markdown():
     for code, name in SCOPES.items():
         lines.append('| %s | %s |' % (code, name))
     lines += ['', '## 总览（内容域 × 方式）', '',
-              '单元格为该组在用规则的序号，括号内为已废弃序号（不再复用）。', '',
+              '单元格为该组在用规则的序号。', '',
               '| 内容域 | ' + ' | '.join('%s %s' % (m.code, m.name) for m in METHODS) + ' |',
               '|---|' + '---|' * len(METHODS)]
     for d in DOMAINS:
         cells = []
         for m in METHODS:
-            active, old = _numbers(d.code, m.code)
-            text = ' '.join('%02d' % n for n in sorted(active))
-            if old:
-                text = (text + ' ' if text else '') + '(' + ' '.join('%02d' % n for n in sorted(old)) + ')'
-            cells.append(text or '·')
+            numbers = sorted(int(r.id[5:]) for r in rules(method=m.code, domain=d.code))
+            cells.append(' '.join('%02d' % n for n in numbers) or '·')
         lines.append('| %s %s | %s |' % (d.code, d.name, ' | '.join(cells)))
     for d in DOMAINS:
         lines += ['', '## %s %s' % (d.code, d.name), '',
@@ -892,12 +833,6 @@ def render_markdown():
     lines += ['', '## 覆盖维度', '', '| 维度（results.scope_checks 键） | 规则 |', '|---|---|']
     for name, rule in COVERAGE_RULES.items():
         lines.append('| %s | %s %s |' % (name, rule, title(rule)))
-    lines += ['', '## 已废弃编号', '',
-              '废弃编号不再复用；使用它们的计划项会被拒绝，按“改用”列换成在用规则。', '',
-              '| 编号 | 原名称 | 改用 | 说明 |', '|---|---|---|---|']
-    for item in sorted(RETIRED, key=lambda r: order(r.id)):
-        lines.append('| %s | %s | %s | %s |' % (
-            item.id, _cell(item.title), '、'.join(item.replaced_by), _cell(item.note)))
     return '\n'.join(lines) + '\n'
 
 

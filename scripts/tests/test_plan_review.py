@@ -373,13 +373,13 @@ class ReviewPlanTests(unittest.TestCase):
                           and x['rule'] != 'REQ-Q07'])
         self.assertTrue(any(x['code'] == 'INTENT_NETLIST_CONFLICT' for x in plan['diagnostics']))
 
-    def test_renamed_packages_and_unknown_circuit_types_are_rejected(self):
+    def test_unknown_package_names_are_rejected(self):
         errors = validate_intent({'schema_version': 3, 'features': {
-            'RESET': {'applicability': 'APPLICABLE', 'citation': 'old name'}}})
-        self.assertTrue(any('已改名为 STARTUP' in error for error in errors))
+            'RESET': {'applicability': 'APPLICABLE', 'citation': 'not a package'}}})
+        self.assertTrue(any('不是功能包名' in error for error in errors))
         errors = validate_intent({'schema_version': 3, 'circuits': [
-            {'id': 'C1', 'type': 'USB_C', 'refs': ['J1'], 'states': ['run'], 'citation': 'old type'}]})
-        self.assertTrue(any('已改名为 USB' in error for error in errors))
+            {'id': 'C1', 'type': 'USB_C', 'refs': ['J1'], 'states': ['run'], 'citation': 'not a package'}]})
+        self.assertTrue(any('circuits.type 不支持' in error for error in errors))
         self.assertTrue(validate_intent({'schema_version': 2}))
 
     def test_declared_assemblies_and_pin_tables_feed_board_and_device_checks(self):

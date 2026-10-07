@@ -17,7 +17,7 @@ evidence `schema_version` 2。数据、答案、生成器、参考计算与评�
 
 数值及错误分布见 [完整结果](results.json)，电路范围见 [基线报告](report.md)；
 [SPICE 记录](spice-results.json) 与 [故障注入记录](mutation-results.json) 为本次重新运行的结果。
-编号对照与改动说明见 [设计记录](../../../../docs/specs/2026-09-17-check-catalog-design.md)。
+规则编号见 [规则总表](../../../../references/check-catalog.md)。
 
 ## 可复验指纹
 

@@ -2,7 +2,7 @@
 
 来源：公开模块审查中把名义功能、未知外设和制造绑定混成待核清单。用于验证
 [evidence-proportionality.md](../../references/evidence-proportionality.md) 与
-[报告模板](../../references/report-template.md) 的适用判断；不是自动电气计算测试，也不被单元测试执行。
+[报告模板](../../references/report-and-remediation.md) 的适用判断；不是自动电气计算测试，也不被单元测试执行。
 每次回放根据给定输入产出判定、必要计算/约束和最小补证，不能只检查措辞。
 
 |案例输入|应产生的行为|相邻反例（不得被范围裁定掩盖）|

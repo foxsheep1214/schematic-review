@@ -94,7 +94,7 @@ def workflow(plan, report, checks, expected, clarifications=None):
         prerequisite_ids = h.get('schematic_prerequisites')
         ready = (
             row.get('review_result') == 'INSUFFICIENT' and row.get('potential_severity') != 'P0'
-            and row.get('gap_cause') in (None, 'DOWNSTREAM_VERIFICATION')
+            and row.get('gap_cause') == 'DOWNSTREAM_VERIFICATION'
             and planned_handoff.get('required') is True
             and h.get('required') is True and h.get('scope') == 'downstream_verification'
             and h.get('state') in ('ACCEPTED', 'VERIFIED') and evidence(h.get('evidence'))
