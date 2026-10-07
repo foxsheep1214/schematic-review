@@ -26,4 +26,34 @@ class DeclaredDeviceCoverageTests(unittest.TestCase):
         plan=build_review_plan(self.db(),i)
         self.assertEqual(len([c for c in plan['checks'] if c['rule']=='DEV-D05' and c['object'].get('ref')=='JP1']),1)
         self.assertFalse([c for c in plan['checks'] if c['rule']=='DEV-C05' and c['object'].get('ref')=='JP1'])
+
+    def critical_fixture(self, missing_symbol_pin=False):
+        db=self.db();db['parts']['R7']={'part':'TRIMMER','value':'200ohm','jedec':'THREE_TERMINAL','nc':False}
+        db['nets']['VIN']=['R7.2'];db['nets']['BIAS']=['R7.3'];db['nets']['unconnected-(R7-1)']=['R7.1']
+        db['pin2net'].update({'R7.2':'VIN','R7.3':'BIAS','R7.1':'unconnected-(R7-1)'})
+        db['declared_pinname'].update({'R7.1':'CCW','R7.2':'WIPER','R7.3':'CW'})
+        db['pinname']=dict(db['declared_pinname']);db['ref2page']['R7']=1
+        if missing_symbol_pin:
+            db['declared_pinname'].pop('R7.1');db['pinname'].pop('R7.1');db['pin2net'].pop('R7.1');db['nets'].pop('unconnected-(R7-1)')
+        intent=self.intent();intent['input_sha256']=input_fingerprint(db)
+        intent['devices']['R7']={'mpn':'synthetic-critical-trimmer','package':'THREE_TERMINAL','identity_citation':'Synthetic functional current adjustment element','citation':'Synthetic full three-terminal physical definition','pinout_complete':True,'pins':{str(n):{'name':name,'role':'other'} for n,name in [(1,'CCW'),(2,'WIPER'),(3,'CW')]}}
+        return db,intent
+
+    def test_declared_off_prefix_device_includes_unconnected_physical_terminal(self):
+        db,intent=self.critical_fixture();plan=build_review_plan(db,intent)
+        matches=[c for c in plan['checks'] if c['id']=='DEV-D02.R7']
+        self.assertEqual(len(matches),1)
+        self.assertEqual(matches[0]['pin_difference'],{'official_only':[],'symbol_only':[]})
+        self.assertIsNone(matches[0]['review_result'])
+
+    def test_declared_off_prefix_missing_physical_terminal_is_not_hidden(self):
+        db,intent=self.critical_fixture(missing_symbol_pin=True);plan=build_review_plan(db,intent)
+        check=next(c for c in plan['checks'] if c['id']=='DEV-D02.R7')
+        self.assertEqual(check['pin_difference']['official_only'],['R7.1'])
+        self.assertEqual(check['pin_difference']['symbol_only'],[])
+
+    def test_unclassified_ordinary_off_prefix_part_not_automatically_promoted(self):
+        db,intent=self.critical_fixture();intent['devices'].pop('R7')
+        ids={c['id'] for c in build_review_plan(db,intent)['checks']}
+        self.assertNotIn('DEV-D02.R7',ids)
 if __name__=='__main__':unittest.main()

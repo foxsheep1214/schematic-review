@@ -759,7 +759,8 @@ class ReviewPlanner:
         # The declared inventory includes symbol pins omitted from connected nets.
         devices = self.intent.get('devices') or {}
         for ref, part in sorted(self.db.get('parts', {}).items()):
-            if not re.match(r'^(U|M|Q|D|J|P|CN)\d', ref, re.I) or part.get('nc'):
+            if (not re.match(r'^(U|M|Q|D|J|P|CN)\d', ref, re.I)
+                    and ref not in devices) or part.get('nc'):
                 continue
             device = devices.get(ref)
             gaps = [] if device and device['pinout_complete'] else [
