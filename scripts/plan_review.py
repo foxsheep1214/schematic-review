@@ -24,7 +24,7 @@ import re
 import sys
 from collections import Counter
 from checkers import REGISTRY, registry_cold_rules, registry_hot_rules
-from checkers.netgraph import GNDS, RAIL_RE
+from checkers.netgraph import GNDS, RAIL_RE, CONNECTOR, NetGraph
 from checkers.planutil import empty_handoff as _empty_handoff, handoff as _handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
@@ -573,19 +573,22 @@ class ReviewPlanner:
                 trigger=[f'net:{net}'])
 
         # 连接器：pin map（证据计算）、对端定义、未用针处置与对外防护逐个一项。
+        connector_graph = NetGraph(db)
         for ref, part in sorted(db.get('parts', {}).items()):
-            if not CONNECTOR_RE.match(ref) or part.get('nc'):
+            if part.get('nc') or not (CONNECTOR_RE.match(ref) or connector_graph.kind(ref) == CONNECTOR):
                 continue
+            connector_trigger = [f'refdes:{ref}',
+                                 f'connector-kind:{connector_graph.basis(ref)}']
             obj = {'ref': ref}
             ready = self.evidence_ready('DEV-E01', obj)
             self.add_check(
                 'DEV-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
                 required_inputs=[] if ready else ['connector drawing/opposite-side pinout'],
-                trigger=[f'refdes:{ref}'])
+                trigger=connector_trigger)
             gaps, audit_trigger = self._datasheet_readiness(ref, part)
-            self._ready_check('DEV-D03', {'ref': ref}, self._materials_gap(['requirements']), [f'refdes:{ref}'])
-            self._disposition_check(ref, gaps, [f'refdes:{ref}'] + audit_trigger)
-            self.add_check('PRO-D03', {'ref': ref}, trigger=[f'refdes:{ref}'])
+            self._ready_check('DEV-D03', {'ref': ref}, self._materials_gap(['requirements']), connector_trigger)
+            self._disposition_check(ref, gaps, connector_trigger + audit_trigger)
+            self.add_check('PRO-D03', {'ref': ref}, trigger=connector_trigger)
 
         # 每条电源轨分别检查拓扑（连接追踪）和功耗预算（工程计算）。
         for net in sorted(nets):

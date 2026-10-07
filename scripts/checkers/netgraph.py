@@ -42,6 +42,13 @@ KEYWORD_KINDS = (
     (r'CRYSTAL|XTAL|OSC|晶振|晶体', CRYSTAL),
     (r'TRANSFORMER|变压器', TRANSFORMER),
     (r'FUSE|PTC|保险', FUSE),
+    # Explicit connector symbol/part families can use arbitrary refdes (e.g. K).
+    # Keep stronger device keywords above and do not treat a bare "terminal" or
+    # "header" in an IC description as a connector. This is role evidence only,
+    # never a connector pinout/current-rating guarantee.
+    (r'\bCONNECTOR(?:_[A-Z0-9]+)*:|\bCONN_\d+X\d+\b|'
+     r'\bPINHEADER[_:-]|\bTERMINAL_?BLOCK[_:-]|'
+     r'\bHEADER_(?:MALE|FEMALE)[_:-]|\bTERMINAL_KF\d', CONNECTOR),
 )
 
 TWO_TERMINAL = {RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER,
