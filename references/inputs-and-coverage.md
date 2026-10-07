@@ -256,3 +256,12 @@ KiCad 解析另存 `native_pintype`，保留 passive/free/no_connect 等原始�
 ### I²C外部端口与局部判据
 
 `external-port:*`保持在拓扑清单、required_inputs和WAITING_EVIDENCE中，不伪装已建模endpoint。SIG-T02连接覆盖、SIG-D01地址/选件和SIG-C08掉电路径可依据已绑定原图、端口定义、适用工况和约束人工判局部PASS，不能仅因未建模整个外部系统强制待核；如果这些局部判据自身仍无证据就保持INSUFFICIENT。此处理不自动给PASS、不证明外端电气合格，也不允许未审掉电源/地址冲突或隐藏连接通过。SIG-C01数量/上升窗口与SIG-C07电平/驱动仍对外端缺口阻止PASS；装配未知、未辨器件/角色/rail、跨SDA/SCL短接、搜索截断等其它拓扑gap在全部判据保持阻止PASS。
+
+
+### 默认闭合铜桥与多焊盘跳线
+
+库中 `JUMPER...NC_TRACE` 的 NC 指 normally closed 铜桥，不是“不装配”；解析只排除此限定词，独立 /NC、DNP、DNI、DNF 及原生 dnp 属性仍有效。型号不证明实际装配/导通。
+
+`i2c_topology.components.<ref>.links` 可给多焊盘 jumper 的实际两脚连接对，例如 `[["JP7.1","JP7.2"],["JP7.2","JP7.3"]]`，须引用实际封装铜桥/原件。节点必须属于该器件，全部物理脚覆盖且连接对不重复。每对只在该装配明确 fitted=true、jumpers[ref]=closed 时导通；open 控制全部对断开，不表示独立切桥变体，后者需另建可表达其实际连接的输入/模型。未声明多脚模型仍有 gap，不根据 NC_TRACE 猜铜桥。
+
+清单给每对唯一 edge_id，保留实际 ref/节点/边界，不跨供电轨把 SDA/SCL 合并。经铜桥到轨的偏置仍须沿实际 R→铜桥→轨人工复算；此扩展不自动给上拉等效值/电气 PASS。整链 C01/C07 未指定外端时按模块范围判适用性，不能把单个接收器自己的 VOL 与 VIL 比较当完整双端匹配；窄本体能力记录另绑明确判据/状态，保留 INT。

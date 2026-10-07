@@ -165,7 +165,12 @@ _NC_MARK = re.compile(r'(?:^|[/_\-\s])(?:NC|DNP|DNI|DNF)(?:$|[/_\-\s])')
 
 def is_not_populated(prim, value):
     """primitive 名或 VALUE 带 /NC、_NC 等 NC 标记 = 该实例不贴。"""
-    return any(_NC_MARK.search((s or '').upper()) for s in (prim, value))
+    # In jumper library names NC_TRACE denotes a normally-closed copper trace.
+    # Strip only that qualified token; a separate /NC or DNP still marks DNP.
+    texts = [(s or '').upper() for s in (prim, value)]
+    if any(re.search(r'(?:^|[:/_\-\s])JUMPER(?:$|[:/_\-\s])', s) for s in texts):
+        texts = [re.sub(r'(?<![A-Z0-9])NC_TRACE(?![A-Z0-9])', 'CLOSED_TRACE', s) for s in texts]
+    return any(_NC_MARK.search(s) for s in texts)
 
 
 # --------------------------------------------------------------------------

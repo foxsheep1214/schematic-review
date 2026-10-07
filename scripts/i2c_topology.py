@@ -92,10 +92,25 @@ def validate_i2c_intent(intent, db=None):
         if not isinstance(comp, dict):
             require(False, 'component must be an object')
             continue
-        fields(comp, ('kind', 'citation', 'ports'), 'component')
+        fields(comp, ('kind', 'citation', 'ports', 'links'), 'component')
         require(isinstance(comp.get('kind'), str) and comp['kind'] in KINDS, 'unsupported component kind')
         require(_text(comp.get('citation')), 'component needs type/model citation')
-        if db is not None and comp.get('kind') in ('resistor', 'jumper'):
+        links = comp.get('links')
+        if links is not None:
+            require(comp.get('kind') == 'jumper', 'only a jumper can declare links')
+            require(isinstance(links, list) and bool(links), 'jumper links must be a nonempty array')
+            seen_links, linked_nodes = set(), set()
+            for link in links if isinstance(links, list) else []:
+                valid = isinstance(link, list) and len(link) == 2 and all(node_ok(n) and n.rsplit('.', 1)[0] == ref for n in link) and link[0] != link[1]
+                require(valid, 'jumper link needs two distinct physical nodes on ' + ref)
+                if valid:
+                    pair = tuple(sorted(link))
+                    require(pair not in seen_links, 'duplicate jumper link: ' + ref)
+                    seen_links.add(pair)
+                    linked_nodes.update(link)
+            if db is not None:
+                require(linked_nodes == {n for n in db.get('pin2net', {}) if n.rsplit('.', 1)[0] == ref}, 'jumper links must cover every physical pin: ' + ref)
+        if db is not None and comp.get('kind') in ('resistor', 'jumper') and links is None:
             require(len([n for n in db.get('pin2net', {}) if n.rsplit('.', 1)[0] == ref]) == 2, 'pass-through must have exactly two physical pins: ' + ref)
         ports = comp.get('ports', [])
         require(isinstance(ports, list), 'ports must be an array')
@@ -195,34 +210,39 @@ class Inventory:
             return population.get(ref)  # nc=False is deliberately not assembly proof.
         for ref, nodes in sorted(self.nodes.items()):
             kind = self.kind(ref)
-            if kind not in ('resistor', 'jumper') or len(nodes) != 2:
+            links = self.components.get(ref, {}).get('links')
+            if kind not in ('resistor', 'jumper') or (links is None and len(nodes) != 2):
                 continue
-            n1, n2 = (self.pin2net[n] for n in nodes)
-            parsed = parse_resistor(self.parts[ref].get('value')) if kind == 'resistor' else None
-            ohms = parsed['kohm'] * 1000 if parsed else None
-            if ohms is not None and not finite(ohms):
-                ohms = None
-            reason = None
-            if present(ref) is not True:
-                reason = 'not-fitted' if present(ref) is False else 'population-unverified'
-            elif kind == 'jumper' and jumpers.get(ref) != 'closed':
-                reason = 'open' if jumpers.get(ref) == 'open' else 'jumper-state-unverified'
-            elif kind == 'resistor' and ohms is None:
-                reason = 'resistance-unparsed'
-            edge = {'ref': ref, 'nodes': nodes, 'nets': [n1, n2], 'kind': kind, 'ohms': ohms,
-                    'tolerance': parsed['tol'] if parsed else None, 'conductive': reason is None,
-                    'stop_reason': reason, 'assembly_citation': state.get('citation'),
-                    'model_citation': self.components.get(ref, {}).get('citation'),
-                    'parsed_nc': self.parts[ref].get('nc')}
-            edges[ref] = edge
-            if n1 != n2 and not any(self.rail(n) or n in self.pseudo for n in (n1, n2)):
-                # Potential coverage reaches both sides even when an option is open;
-                # it NEVER joins those nets in the conductive graph.
-                potential[n1].add(n2)
-                potential[n2].add(n1)
-                if edge['conductive']:
-                    adjacency[n1].append((n2, ref))
-                    adjacency[n2].append((n1, ref))
+            for number, pair in enumerate(links or [nodes]):
+                nodes = pair
+                edge_id = ref if links is None else ref + ':link:' + str(number)
+                n1, n2 = (self.pin2net[n] for n in nodes)
+                parsed = parse_resistor(self.parts[ref].get('value')) if kind == 'resistor' else None
+                ohms = parsed['kohm'] * 1000 if parsed else None
+                if ohms is not None and not finite(ohms):
+                    ohms = None
+                reason = None
+                if present(ref) is not True:
+                    reason = 'not-fitted' if present(ref) is False else 'population-unverified'
+                elif kind == 'jumper' and jumpers.get(ref) != 'closed':
+                    reason = 'open' if jumpers.get(ref) == 'open' else 'jumper-state-unverified'
+                elif kind == 'resistor' and ohms is None:
+                    reason = 'resistance-unparsed'
+                edge = {'ref': ref, 'nodes': nodes, 'nets': [n1, n2], 'kind': kind, 'ohms': ohms,
+                        'tolerance': parsed['tol'] if parsed else None, 'conductive': reason is None,
+                        'stop_reason': reason, 'assembly_citation': state.get('citation'),
+                        'model_citation': self.components.get(ref, {}).get('citation'),
+                        'edge_id': edge_id,
+                        'parsed_nc': self.parts[ref].get('nc')}
+                edges[edge_id] = edge
+                if n1 != n2 and not any(self.rail(n) or n in self.pseudo for n in (n1, n2)):
+                    # Potential coverage reaches both sides even when an option is open;
+                    # it NEVER joins those nets in the conductive graph.
+                    potential[n1].add(n2)
+                    potential[n2].add(n1)
+                    if edge['conductive']:
+                        adjacency[n1].append((n2, edge_id))
+                        adjacency[n2].append((n1, edge_id))
         starts = set()
         declared_starts = set()
         for bus in buses:
@@ -279,10 +299,11 @@ class Inventory:
             for ref in touched:
                 nodes = self.nodes.get(ref, [])
                 here = [n for n in nodes if self.pin2net[n] in members]
-                kind, edge = self.kind(ref), edges.get(ref)
+                kind = self.kind(ref)
+                ref_edges = [e for e in edges.values() if e['ref'] == ref and any(n in here for n in e['nodes'])]
                 if present(ref) is None:
                     region['gaps'].add('population:' + ref)
-                if edge:
+                for edge in ref_edges:
                     other = [n for n in edge['nets'] if n not in members]
                     if not other and edge['conductive']:
                         region['edges'].append(edge)
@@ -300,6 +321,7 @@ class Inventory:
                         region['boundaries'].append(dict(edge, boundary_kind='passive-stop'))
                         if edge['stop_reason'] not in (None, 'not-fitted', 'open'):
                             region['gaps'].add(edge['stop_reason'] + ':' + ref)
+                if ref_edges:
                     continue
                 for node in here:
                     region['endpoints'].append({'node': node, 'net': self.pin2net[node], 'pin_name': self.pinname.get(node),
