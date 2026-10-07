@@ -425,5 +425,82 @@ class ReviewBindingTests(unittest.TestCase):
         self.assertTrue(validate_review(p, r)['valid'])
 
 
+def gap_with_task(design_option=None, cause='EXTERNAL_DATA'):
+    p, r, db = fixture()
+    p['review_phase'] = 'design_iteration'; r['plan_digest'] = fingerprint(p)
+    r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', potential_severity='P2',
+                          missing_inputs=['zener voltage below its 5 mA test current'], gap_cause=cause)
+    item = {'id': 'W-BIAS', 'title': 'Bias reference outside its guaranteed current', 'check_ids': [C1],
+            'root_cause': 'Reference runs below the vendor test current', 'due_stage': 'design_iteration',
+            'reason': 'Affects minimum supply', 'next_action': 'Apply the proposed circuit change', 'evidence': E}
+    if design_option is not None:
+        item['design_option'] = design_option
+    r.update(workflow_version=1, work_items=[item], remediation_version=2)
+    return p, r, db
+
+
+def proposed_option(**overrides):
+    option = {
+        'status': 'PROPOSED',
+        'summary': 'Feed the supply from the regulated rail through a Schottky so no sub-test-current zener sets it.',
+        'preference': 'DESIGN_FIRST',
+        'preference_reason': 'Vendors do not characterise the zener below its test current, so the evidence path is unlikely to close.',
+        'remediation': {
+            'readiness': 'CONDITIONAL', 'purpose': 'Supply stays above UVLO with guaranteed parameters only.',
+            'prerequisites': [{'input': 'Diode VF at the load current', 'reason': 'Sets the minimum supply',
+                               'how_to_obtain': 'Vendor table at 10 mA', 'acceptance': 'VF max listed'}],
+            'steps': [{'kind': 'COMPONENT', 'target': 'R1', 'before': 'zener bias network',
+                       'after': 'Schottky from the regulated rail', 'instruction': 'Replace the bias network.'}],
+            'parameters': [{'target': 'D_new', 'specification': '30 V Schottky, VF<=0.4 V at 10 mA',
+                            'status': 'CANDIDATE', 'basis': E, 'needed_input': 'exact MPN',
+                            'selection_method': 'Pick a part with VF max at 10 mA'}],
+            'related_findings': [], 'impact_review': 'Minimum supply now set by rail minus VF max.',
+            'verification': [{'stage': 'CALCULATION', 'method': 'Rail min minus VF max', 'expected': '>= UVLO + margin'}],
+            'calculation_preflight': {'applicable': False, 'reason': 'synthetic structure test', 'evidence': E}},
+        'avoids': [{'problem': 'Minimum supply depends on an unguaranteed zener voltage',
+                    'after_change': 'Only datasheet maxima set the minimum supply', 'check_ids': [C1]}],
+        'tradeoffs': ['Controller dissipates more at the highest rail voltage; thermal limit handed to PCB']}
+    option.update(overrides)
+    return option
+
+
+class DesignOptionTests(unittest.TestCase):
+    def test_designable_gap_needs_a_design_option_when_actionable(self):
+        p, r, db = gap_with_task()
+        out = validate_review(p, r, db, require_actionable=True)
+        self.assertFalse(out['valid'])
+        self.assertTrue(any('design_option' in e for e in out['errors']), out['errors'])
+
+    def test_none_with_reason_is_accepted(self):
+        p, r, db = gap_with_task({'status': 'NONE', 'evidence': E,
+                                  'reason': 'Only the supplier can certify the winding; no schematic change removes it'})
+        out = validate_review(p, r, db, require_actionable=True)
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual({'PROPOSED': 0, 'NONE': 1}, out['workflow']['design_options'])
+
+    def test_proposed_option_states_what_it_avoids(self):
+        p, r, db = gap_with_task(proposed_option())
+        out = validate_review(p, r, db, require_actionable=True)
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual({'PROPOSED': 1, 'NONE': 0}, out['workflow']['design_options'])
+        self.assertEqual('PROPOSED', out['workflow']['work_items'][0]['design_option']['status'])
+
+    def test_incomplete_proposals_are_rejected(self):
+        bad = [proposed_option(avoids=[]), proposed_option(tradeoffs=[]),
+               proposed_option(preference='LATER'),
+               proposed_option(avoids=[{'problem': 'x', 'after_change': 'y', 'check_ids': ['PWR-C01.NOPE']}]),
+               proposed_option(remediation={'readiness': 'READY'}),
+               {'status': 'NONE', 'reason': 'no evidence given'}]
+        for option in bad:
+            p, r, db = gap_with_task(option)
+            self.assertFalse(validate_review(p, r, db, require_actionable=True)['valid'], option)
+
+    def test_other_gap_causes_and_legacy_results_need_no_option(self):
+        p, r, db = gap_with_task(cause='DOWNSTREAM_VERIFICATION')
+        self.assertTrue(validate_review(p, r, db, require_actionable=True)['valid'])
+        p, r, db = gap_with_task()
+        del r['remediation_version']
+        self.assertTrue(validate_review(p, r, db)['valid'])
+
 if __name__ == '__main__':
     unittest.main()

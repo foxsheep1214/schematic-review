@@ -27,6 +27,9 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
    规则见 [最小充分证据](references/evidence-proportionality.md)。
 5. **不通过必须可改**：每个 FAIL 给定位、旧→新、顺序操作、参数依据和通过标准；待核项给补证或设计路径。
    缺输入时给取得方法和条件方案，不编造料号、阻值或空闲 GPIO。见 [报告与修改说明](references/report-and-remediation.md)。
+   待核项若能通过修改原理图消除缺口（让器件回到已有资料的保证条件内、补足余量、定下未选器件），
+   直接给出电路改进建议，并按改后电路说明能规避哪个问题、关闭哪些检查、代价和残留；改不了的写明原因。
+   这条建议不改变本轮结论，改图并复审后才关闭。见 [待核项的电路改进建议](references/report-and-remediation.md#三待核项的电路改进建议)。
 6. **守住范围**：准出对象是原理图；PCB、SI/PI、EMC、实测热和生产验证形成 HANDOFF，但原理图能判定的
    电气前提不能推给下游。见 [结论与准出](references/verdicts-and-release.md)。
 

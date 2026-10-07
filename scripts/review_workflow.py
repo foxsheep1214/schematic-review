@@ -5,6 +5,9 @@ Work-item grouping is explicit,
 not a text-similarity claim that different electrical causes are equivalent.
 """
 PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
+# Gaps a schematic change can often remove: the reviewer must propose that change or say why none exists.
+DESIGNABLE_GAPS = ('EXTERNAL_DATA', 'DESIGN_OPEN')
+PREFERENCES = ('DESIGN_FIRST', 'EVIDENCE_FIRST', 'EITHER')
 
 
 def text(value):
@@ -16,7 +19,39 @@ def evidence(value):
         isinstance(x, dict) and text(x.get('source')) and text(x.get('locator')) for x in value)
 
 
-def workflow(plan, report, checks, expected, clarifications=None):
+def design_option(key, value, unresolved, finding_ids):
+    """Structure of a work item's schematic alternative; never proves the change is correct."""
+    from validate_remediation import validate_remediation
+    label = key + '.design_option'
+    if not isinstance(value, dict) or value.get('status') not in ('PROPOSED', 'NONE'):
+        return [label + ': status must be PROPOSED or NONE']
+    if value['status'] == 'NONE':
+        ok = text(value.get('reason')) and evidence(value.get('evidence'))
+        return [] if ok else [label + ': NONE needs the reason no schematic change removes the gap, with evidence']
+    errors = []
+    if not text(value.get('summary')):
+        errors.append(label + ': missing summary')
+    if value.get('preference') not in PREFERENCES or not text(value.get('preference_reason')):
+        errors.append(label + ': preference (' + '/'.join(PREFERENCES) + ') and preference_reason required')
+    errors.extend(validate_remediation(label, value.get('remediation'), finding_ids, require_preflight=True))
+    avoids = value.get('avoids')
+    if not (isinstance(avoids, list) and avoids and all(isinstance(a, dict) for a in avoids)):
+        errors.append(label + ': avoids must list the problems the changed circuit avoids')
+        avoids = []
+    for a in avoids:
+        linked = a.get('check_ids')
+        if not (text(a.get('problem')) and text(a.get('after_change'))):
+            errors.append(label + ': each avoids entry needs problem and after_change')
+        if not (isinstance(linked, list) and linked and all(text(x) for x in linked)
+                and len(linked) == len(set(linked)) and set(linked) <= unresolved):
+            errors.append(label + ': avoids.check_ids must name unique unresolved checks')
+    tradeoffs = value.get('tradeoffs')
+    if not (isinstance(tradeoffs, list) and tradeoffs and all(text(x) for x in tradeoffs)):
+        errors.append(label + ': tradeoffs must state costs, new risks and what stays open')
+    return errors
+
+
+def workflow(plan, report, checks, expected, clarifications=None, require_design_options=False):
     errors, tasks, owners = [], [], {}
     enabled = bool(clarifications and clarifications['tasks']) or 'review_phase' in plan or 'workflow_version' in report or 'work_items' in report
     phase = plan.get('review_phase', 'schematic_freeze')
@@ -62,9 +97,14 @@ def workflow(plan, report, checks, expected, clarifications=None):
         if any(checks[cid].get('gap_cause') == 'REQUIREMENT_OPEN' for cid in linked):
             errors.append(key + ': requirement gaps are managed by clarification records, not duplicate work_items')
             continue
+        designable = any(checks[cid].get('review_result') == 'INSUFFICIENT'
+                         and checks[cid].get('gap_cause') in DESIGNABLE_GAPS for cid in linked)
+        if 'design_option' in item or (require_design_options and designable):
+            errors.extend(design_option(key, item.get('design_option'), unresolved,
+                                        {f.get('id') for f in report.get('findings') or [] if isinstance(f, dict)}))
         for cid in linked:
             owners.setdefault(cid, []).append(item)
-        tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence') if k in item})
+        tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option') if k in item})
     for cid in sorted(unresolved - set(owners)):
         errors.append(cid + ': unresolved check has no root-cause work item')
     downstream = set()
@@ -126,5 +166,7 @@ def decision(state, errors, release):
             'work_items': state['tasks'],
             'check_count_in_work_items': len({k for t in state['tasks'] for k in t['check_ids']}),
             'unique_work_items': len(state['tasks']),
+            'design_options': {s: sum(1 for t in state['tasks'] if (t.get('design_option') or {}).get('status') == s)
+                               for s in ('PROPOSED', 'NONE')},
             'downstream_handoffs_ready': sorted(state['downstream_ready']),
             'scope': 'Continue design means analysis/redesign only; not permission to energize, fabricate or release hardware.'}

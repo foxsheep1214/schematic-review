@@ -157,6 +157,9 @@ ACCEPTED 表示接收约束，VERIFIED 才表示下游验证完成；冻结只�
 ```
 
 - 字段全部必填。共享的只是补证或修改动作，不是电气结论；各项仍保留自己的判据、严重度理由和证据。
+- 关联了 `gap_cause` 为 EXTERNAL_DATA 或 DESIGN_OPEN 的待核项时，任务还须带 `design_option`：
+  能改图消除缺口时写 `PROPOSED` 的电路改进建议及其规避的问题，不能时写 `NONE` 和原因。
+  字段见 [待核项的电路改进建议](report-and-remediation.md#三待核项的电路改进建议)；`--require-actionable` 时强制校验。
 - 只有文字相似、同一器件或同一本手册不构成共同根因。根因相同的 FAIL 共用一个任务，引用 finding 的改法。
 - `blocking` 表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
 - REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过。

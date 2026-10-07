@@ -25,6 +25,7 @@
 | 确认缺陷 P0 / P1 / P2 / P3 | 唯一缺陷数 | `summary.by_severity` |
 | 待核项潜在等级 P0 / P1 / P2 / P3 / 需求未定（不定级） | 当前 INSUFFICIENT 行数 | `review-results.json` 中 INSUFFICIENT 行的 `potential_severity`；`gap_cause` 为 REQUIREMENT_OPEN 的行不定级，计入“需求未定”，各项之和等于当前 INSUFFICIENT 数 |
 | 待核原因 REQUIREMENT_OPEN / EXTERNAL_DATA / DESIGN_OPEN / REVIEW_INCOMPLETE / DOWNSTREAM_VERIFICATION / USER_DEFERRED | INSUFFICIENT 行数 | `insufficient_by_cause`（未填原因的计为 UNSPECIFIED，应补填） |
+| 电路改进建议 PROPOSED / NONE | 唯一任务数 | `workflow.design_options`；只统计带 `design_option` 的任务 |
 | 移交状态 OPEN / ACCEPTED / VERIFIED | 必需移交的检查数 | `categorized_summary.handoffs_by_state`；只统计 `required: true`，集成约束（`required: false`）不计入 |
 | 需求澄清 开放 / 其中阻断 / 其中已覆盖 / 已解决 / 已撤回 | 唯一澄清项数 | `requirement_clarification_summary` 的 open / blocking_open / covered_open / resolved / retracted |
 
@@ -41,6 +42,8 @@
 - **电气缺陷**标 P0–P3，写清不满足的判据、工况和影响，链接证据与计算，按下文“修改说明”给改法。
 - **需求澄清**写已核输入、待决内容/建议、责任方和关闭依据，见 [需求澄清项](requirement-clarifications.md)；不套缺陷等级。
 - **待核**写已知什么、具体缺什么、影响哪个判断、如何关闭；先完成现有资料支持的分析，同一补证动作只列一次。
+  任务有电路改进建议时，在“建议及下一步”栏先写改法要点，再写“改后可规避”的问题和关闭的检查，
+  最后写补证路径；详细改法放下文第三部分。
 - **下游移交/集成约束**写接收角色、定量约束、验证方法与阶段，引用真实接收记录。
 - 同一问题关联多个检查只统计一次并保留关联 ID；不把检查行数或质量提示数称为缺陷数。
 
@@ -152,3 +155,47 @@ Vmax、Cmax、Vsafe、tmax、温度，按 `R ≤ tmax/[Cmax·ln(Vmax/Vsafe)]` �
 
 校验加 `--require-actionable`。校验器只检查结构和准备度矛盾，不能证明操作语义或计算正确；
 交付前按这些步骤对照真实输入逐项演算一次。
+
+## 三、待核项的电路改进建议
+
+待核项不是缺陷，但很多缺口可以靠改图直接消除，比等资料更快、更确定。凡任务关联了 EXTERNAL_DATA
+或 DESIGN_OPEN 的待核项，都要回答“改图能不能消除它”（判断方法见
+[能否用电路修改消除缺口](evidence-proportionality.md#能否用电路修改消除缺口)）。
+
+报告里每条建议写清四件事：
+
+1. **改法**：与上文修改说明同样具体，定位、旧→新、规格和依据、顺序操作。
+2. **改后可规避的问题**：按改后电路说明原来的风险为什么不再存在，例如“改后最低供电只取决于
+   VRAW 下限和二极管 VF 最大值，不再依赖亚 mA 齐纳电压，DEV-C05.U701 等 15 项可按保证值判定”。
+   写清哪些检查因此可以闭合；只是缩小缺口的，写剩下什么。
+3. **代价与新风险**：成本、体积、损耗、热、绝缘、需要修改的已确认规格；新引入的风险同样列出，
+   不能只写好处。
+4. **推荐顺序**：先改图还是先补证，理由是什么。原厂不会提供的保证（器件在测试条件外）推荐先改图。
+
+建议不改变本轮结论和计数：该项仍是 INSUFFICIENT，改图后经复审才能关闭。需要改已确认规格的建议，
+写成待用户决定的前提。
+
+结构化字段写在任务的 `design_option`：
+
+```json
+{
+  "design_option": {
+    "status": "PROPOSED",
+    "summary": "SR 控制器供电改为经肖特基取自输出，去掉低电流齐纳偏置",
+    "preference": "DESIGN_FIRST",
+    "preference_reason": "齐纳在测试电流以下的电压原厂不保证，补证路径基本不可得",
+    "remediation": { "...": "与 finding 的 remediation 相同结构，含 calculation_preflight" },
+    "avoids": [{
+      "problem": "5 V 输出时最低供电依赖无保证的亚 mA 齐纳电压",
+      "after_change": "最低供电 = VRAW 下限 − 肖特基 VF 最大值，全部来自手册保证值",
+      "check_ids": ["<实际检查ID>"]
+    }],
+    "tradeoffs": ["21 V 输出时控制器内部箝位损耗上升，热约束移交 PCB", "需修改已确认规格 BLK-xx 的下限"]
+  }
+}
+```
+
+- `status`：`PROPOSED`（有改法）或 `NONE`（无法靠改图消除，另给 `reason` 与可定位 `evidence`）。
+- `PROPOSED` 必填 `summary`、`preference`（DESIGN_FIRST / EVIDENCE_FIRST / EITHER）与 `preference_reason`、
+  `remediation`（按上文结构校验）、`avoids`（每条含 problem、after_change 和关联的未关闭检查）、`tradeoffs`。
+- 合成示例的数值和位号不可复用；实际建议必须引用本设计的器件、网络和手册条件。

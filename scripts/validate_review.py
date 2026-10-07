@@ -148,7 +148,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     clarifications = validate_clarifications(report, checks, expected)
     errors.extend(clarifications['errors'])
     blockers.extend(clarifications['blockers'])
-    stage = workflow(plan, report, checks, expected, clarifications)
+    stage = workflow(plan, report, checks, expected, clarifications, require_design_options=actionable)
     errors.extend(stage['errors'])
     accepted = False
     for key, item in checks.items():

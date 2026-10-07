@@ -147,7 +147,8 @@
   及 requirements 是否都关联至少一条检查；仅 PDF 时由页面/手工对象清单另审，不制作伪网表。
 - `binding_version: 1`、`remediation_version: 2`（见 [报告与修改说明](report-and-remediation.md)）、
   `requirement_clarification_version: 1` 与 `requirement_clarifications`（无则 `[]`）、
-  `workflow_version: 1` 与 `work_items`（见 [结论与准出](verdicts-and-release.md#共同根因归并为任务)）。
+  `workflow_version: 1` 与 `work_items`（见 [结论与准出](verdicts-and-release.md#共同根因归并为任务)）；
+  关联 EXTERNAL_DATA/DESIGN_OPEN 待核项的任务带 `design_option`（见 [报告与修改说明](report-and-remediation.md#三待核项的电路改进建议)）。
 - 复审另有 `revision_impact_version`、`revision_digest` 和必需项的 `reverification`，见 [改版复审](revision-review.md)。
 - `summary` / `release` 可省略，由校验器计算；填了必须一致。
 
