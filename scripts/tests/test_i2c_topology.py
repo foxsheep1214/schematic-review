@@ -259,6 +259,60 @@ class TopologyTests(unittest.TestCase):
         outcome = validate_review(plan, report, db)
         self.assertTrue(any('topology gaps must be resolved' in e for e in outcome['errors']))
 
+    def _external_port_fixture(self):
+        db, intent = fixture()
+        add(db, 'J1', 'CONN_TEST', [('1', 'SDA', 'I2C_SDA'), ('2', 'SCL', 'I2C_SCL')])
+        intent['i2c_topology']['components']['J1'] = {'kind': 'connector', 'citation': 'synthetic physical port map'}
+        intent['i2c_topology']['buses'][0]['sda'].append('J1.1')
+        intent['i2c_topology']['buses'][0]['scl'].append('J1.2')
+        intent['assemblies'][0]['population']['J1'] = True
+        rebind(db, intent)
+        return db, intent
+
+    def test_external_port_does_not_block_reviewed_narrow_criteria(self):
+        db, intent = self._external_port_fixture()
+        plan = build_review_plan(db, intent)
+        self.assertIn('external-port:J1', at(plan['i2c_topology'])['gaps'])
+        report = pending_report(plan, db)
+        narrow = {c['id'] for c in plan['checks'] if c['rule'] in ('SIG-T02', 'SIG-D01', 'SIG-C08') and c['object'].get('i2c_region')}
+        for row in report['checks']:
+            if row['id'] in narrow:
+                row.update(review_result='PASS', evidence_confidence='B', blocking=False,
+                           rationale='Synthetic manual review of physical map/address/off-state path only; full electrical windows unresolved')
+                row.pop('missing_inputs'); row.pop('potential_severity')
+        result = validate_review(plan, report, db, require_bindings=True)
+        self.assertTrue(result['valid'], result['errors'])
+        self.assertEqual(result['release'], 'NO_GO')
+        self.assertTrue(all(c['readiness'] == 'WAITING_EVIDENCE' for c in plan['checks'] if c['id'] in narrow))
+        self.assertTrue(any(row['review_result'] == 'INSUFFICIENT' for row in report['checks']))
+
+    def test_external_port_still_blocks_electrical_window_pass(self):
+        db, intent = self._external_port_fixture()
+        plan = build_review_plan(db, intent)
+        for rule in ('SIG-C01', 'SIG-C07'):
+            with self.subTest(rule=rule):
+                report = pending_report(plan, db)
+                key = next(c['id'] for c in plan['checks'] if c['rule'] == rule and c['object'].get('i2c_region'))
+                row = next(r for r in report['checks'] if r['id'] == key)
+                row.update(review_result='PASS', evidence_confidence='B')
+                row.pop('missing_inputs'); row.pop('potential_severity')
+                result = validate_review(plan, report, db, require_bindings=True)
+                self.assertTrue(any('topology gaps must be resolved' in e for e in result['errors']))
+
+    def test_external_port_does_not_excuse_other_topology_gap(self):
+        db, intent = self._external_port_fixture()
+        del intent['assemblies'][0]['population']['R1']
+        plan = build_review_plan(db, intent)
+        for rule in ('SIG-T02', 'SIG-D01', 'SIG-C08'):
+            with self.subTest(rule=rule):
+                report = pending_report(plan, db)
+                key = next(c['id'] for c in plan['checks'] if c['rule'] == rule and c['object'].get('i2c_region') and c['object']['net'] == 'I2C_SDA')
+                row = next(r for r in report['checks'] if r['id'] == key)
+                row.update(review_result='PASS', evidence_confidence='B')
+                row.pop('missing_inputs'); row.pop('potential_severity')
+                result = validate_review(plan, report, db, require_bindings=True)
+                self.assertTrue(any('topology gaps must be resolved' in e for e in result['errors']))
+
     def test_validator_rejects_changed_generated_criterion(self):
         db, intent = fixture()
         plan = build_review_plan(db, intent)

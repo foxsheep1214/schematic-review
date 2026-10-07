@@ -251,3 +251,8 @@ KiCad 解析另存 `native_pintype`，保留 passive/free/no_connect 等原始�
 不为无名称电阻/电容等补造 pinname，不将 passive 强行转成信号或电源脚。此处理仅修正
 解析完整性判据；不替代原厂 pinout、极性、额定值和实际连接审查。Cadence/旧适配器没有
 原生类型契约时保留原有名称覆盖率检查。使用 `parse_kicad.py` 默认严格检查，不用 `--no-strict` 掩盖缺口。
+
+
+### I²C外部端口与局部判据
+
+`external-port:*`保持在拓扑清单、required_inputs和WAITING_EVIDENCE中，不伪装已建模endpoint。SIG-T02连接覆盖、SIG-D01地址/选件和SIG-C08掉电路径可依据已绑定原图、端口定义、适用工况和约束人工判局部PASS，不能仅因未建模整个外部系统强制待核；如果这些局部判据自身仍无证据就保持INSUFFICIENT。此处理不自动给PASS、不证明外端电气合格，也不允许未审掉电源/地址冲突或隐藏连接通过。SIG-C01数量/上升窗口与SIG-C07电平/驱动仍对外端缺口阻止PASS；装配未知、未辨器件/角色/rail、跨SDA/SCL短接、搜索截断等其它拓扑gap在全部判据保持阻止PASS。
