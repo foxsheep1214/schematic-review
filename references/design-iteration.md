@@ -22,8 +22,9 @@
   `FOLLOW_UP_EXTERNAL_VERIFICATION`。记录无效一律 `REPAIR_REVIEW_RECORDS`。
 - `release` / `workflow.schematic_release`：原理图冻结的 GO / CONDITIONAL_GO / NO_GO。
 
-该冻结字段在非冻结阶段仍会计算，供未来准出使用；它不是本轮功能/校准的总判定。公开电路校准报告应展示实际
-用途下的结论、必要疑点及集成约束，不因未接受下游移交或未给完整制造资料，就将整个样本标为设计失败。
+该冻结字段在非冻结阶段（design_iteration / prototype_verification）仍会计算，供未来准出使用；它不是本轮总判定。
+非冻结阶段的报告展示实际用途下的电气结论、必要疑点及集成约束，不因未接受下游移交或未给完整制造资料，
+就将整个设计标为失败。
 
 继续设计允许做分析、补证和整改；不代表可以上电、制板或生产。冻结 NO_GO 不能解释为
 禁止继续完善设计。`--require-release` 仅在申请冻结时使用。

@@ -78,7 +78,7 @@ AC0、ER1～ER7、Rule-NN 与检查器前缀早已废弃，用旧编号生成的
 按 [设计迭代与关闭阶段](references/design-iteration.md) 设置 `intent.review_phase`：
 日常设计/修改用 `design_iteration`，明确要求冻结时用 `schematic_freeze`，样机证据回流用
 `prototype_verification`。它独立于首审/复审模式和冷跑/热跑的执行方式。
-正文按实际阶段报告电气结论及本轮处理事项；只有申请冻结时才以冻结准出作总判定，不能用工具保留的 NO_GO 代替模块校准结论。记录校验作为内部工具检查，不另列一套“审查通过”。
+正文按实际阶段报告电气结论及本轮处理事项；只有申请冻结时才以冻结准出作总判定，非冻结阶段不能用工具保留的 NO_GO 代替电气结论。记录校验作为内部工具检查，不另列一套“审查通过”。
 不要把所有缺资料项批量定为 P1/本轮阻断，也不要通过降低严重度掩盖真实问题。
 
 新分阶段结果用 `workflow_version: 1`、`work_items` 将电气 FAIL/其他 INSUFFICIENT 按有证据的共同根因
