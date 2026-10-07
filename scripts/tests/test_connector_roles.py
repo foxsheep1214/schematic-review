@@ -9,7 +9,7 @@ for option in list(sys.argv):
         SCRIPTS = pathlib.Path(option.split('=', 1)[1]) / 'scripts'
         sys.argv.remove(option)
 sys.path.insert(0, str(SCRIPTS))
-from checkers.netgraph import classify, CONNECTOR, RELAY
+from checkers.netgraph import classify, CONNECTOR, RELAY, JUMPER, IC
 from checkers.inductive_load import build_inventory
 from plan_review import build_review_plan
 from lint import Lint
@@ -63,6 +63,28 @@ class ConnectorRoles(unittest.TestCase):
         self.assertEqual(classify('K1', {'part': 'HEADER_MALE_6X1'}, 6, declared=RELAY)[0], RELAY)
         for name in ('?', 'HEADER_CONTROL', 'TERMINAL_VOLTAGE_MONITOR'):
             self.assertEqual(classify('K1', {'part': name}, 3), (RELAY, 'refdes-prefix'))
+
+    def test_eagle_dimensioned_headers_override_jumper_prefix(self):
+        for name in ('HEADER-1X10', 'microbuilder:HEADER-1X10:THICKER', 'HEADER_2X3'):
+            with self.subTest(name=name):
+                self.assertEqual(classify('JP1', {'part': name}, 10),
+                                 (CONNECTOR, 'part-keyword'))
+
+    def test_dimensioned_headers_expand_all_connector_roles(self):
+        db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pseudo_nets': []}
+        add(db, 'JP1', 'HEADER-1X10', [(str(i), str(i), 'PORT_' + str(i)) for i in range(1, 11)])
+        add(db, 'JP2', 'JUMPER', [('1', '1', 'A'), ('2', '2', 'B')])
+        plan = build_review_plan(db)
+        rules = {c['rule'] for c in plan['checks'] if c['object'].get('ref') == 'JP1'}
+        self.assertTrue({'DEV-E01', 'DEV-D03', 'DEV-D05', 'PRO-D03'} <= rules)
+        self.assertFalse([c for c in plan['checks']
+                          if c['object'].get('ref') == 'JP2' and c['rule'] == 'PRO-D03'])
+        self.assertEqual(classify('JP2', db['parts']['JP2'], 2)[0], JUMPER)
+
+    def test_header_description_does_not_override_unrelated_devices(self):
+        self.assertEqual(classify('U2', {'part': 'HEADER_CONTROL'}, 20)[0], IC)
+        self.assertEqual(classify('K2', {'part': 'HEADER-1X10 RELAY'}, 10)[0], RELAY)
+        self.assertEqual(classify('JP2', {'part': 'HEADER_CONTROL'}, 2)[0], JUMPER)
 
     def test_legacy_connector_prefix_still_expands(self):
         db = board()

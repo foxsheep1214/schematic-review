@@ -48,7 +48,8 @@ KEYWORD_KINDS = (
     # never a connector pinout/current-rating guarantee.
     (r'\bCONNECTOR(?:_[A-Z0-9]+)*:|\bCONN_\d+X\d+\b|'
      r'\bPINHEADER[_:-]|\bTERMINAL_?BLOCK[_:-]|'
-     r'\bHEADER_(?:MALE|FEMALE)[_:-]|\bTERMINAL_KF\d', CONNECTOR),
+     r'\bHEADER_(?:MALE|FEMALE)[_:-]|\bHEADER[-_]\d+X\d+(?:\b|[_:-])|'
+     r'\bTERMINAL_KF\d', CONNECTOR),
 )
 
 TWO_TERMINAL = {RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER,
