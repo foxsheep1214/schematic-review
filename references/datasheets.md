@@ -147,19 +147,10 @@ evidence.basis.sources 还须记录确切的身份解释和实际文档指纹。
 临时下载可放 /tmp；最终引用的 PDF、审计及补取记录须保存到项目审查目录，并更新文档
 路径。文档内容不变时指纹不变；路径不存在会使热跑保持待核，不能只交临时目录中的证据。
 
-新下载的器件 datasheet 存入项目后，同时复制到 HardwareWiki（默认
-~/Documents/知识库/HardwareWiki）的 raw/Datasheet/<一级类>/<二级类>/：先按哈希与 raw/
-去重，已有同型号文件不再复制；命名 `Vendor - PartNumber.pdf`，Vendor 用
-raw/Datasheet/VENDORS.yaml 的简称（新厂商先补登记）；分类按
-raw/Datasheet/元器件体系/器件统一分类大表.md，无归属放 ZZ_其他 并在报告中说明。只复制原文件，
-不改项目内路径和指纹，也不触发入库。参考设计和评估板手册同样复制，放
-raw/Designexample/<拓扑>/<板号>/，命名 `Vendor - BoardName - Title.pdf`；应用笔记和标准不放入
-Datasheet 目录。
-
 ## 二、证据计算契约（evidence schema_version 2）
 
 `evidence.json` 为证据计算规则（[规则总表](check-catalog.md)中方式为 E 的规则）提供带出处的保证值。
-`schema_version` 必须为 2。缺少依赖、保证范围或状态时不执行计算，输出逐项 INSUFFICIENT。
+`schema_version` 必须为 2。缺少依赖、保证范围或状态时不执行计算，输出逐项 INSUFFICIENT（例外见 [自动证据计算的例外](evidence-proportionality.md#自动证据计算的例外)）。
 不自动填 1% 电阻公差、零 Vref 误差、零偏置电流或稳态采样。数值必须有限，min≤max；
 每项 id 唯一、citation 可定位。证据计算结果不是整板准出。
 
@@ -198,6 +189,9 @@ NEEDS_VERIFICATION/NOT_FOUND 均不能让依赖检查变 READY。无关物料缺
 已具备全部依赖的检查；总准出仍需处理所有适用阻断项。
 
 ### PWR-E01：已建模的反馈设定窗口
+
+本规则的两个例外（边界已证明违反时同判 FAIL；无验收窗口的名义输出判 NA）见
+[自动证据计算的例外](evidence-proportionality.md#自动证据计算的例外)。
 
 可手工提供下面的 vref；重复读取同一已核实资料时，使用下文“Vref 参数复用”。vref_request 声明本次目标/完整工况，
 目标 source 补精确 mpn/package。物化工具生成 vref 和 vref_binding；未物化不计算。

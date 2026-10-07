@@ -17,14 +17,15 @@
 - 复审概括本轮新增、修复、撤回和仍开放的事项，历史数量不混入当前缺陷。
 
 结论后固定列一组计数，每类单独一行，为 0 也写出（写“FAIL 0”，不写“无 FAIL”或省略）；
-一行结论和 README 摘要重复同一组数字：
+一行结论与项目审查目录 README（如有）的摘要重复同一组数字：
 
 | 计数类别 | 取值 | 来源 |
 |---|---|---|
-| 检查结果 PASS / FAIL / INSUFFICIENT / NA | 各类检查行数 | `review-gate.json` 的 `summary.results` |
+| 检查结果 PASS / FAIL / INSUFFICIENT / NA | 当前检查行数 | `review-gate.json` 的 `categorized_summary.current.results`；复审另列 `history`（REQ-H02 历史处置），不混入当前 |
 | 确认缺陷 P0 / P1 / P2 / P3 | 唯一缺陷数 | `summary.by_severity` |
-| 待核项潜在等级 P0 / P1 / P2 / P3 | INSUFFICIENT 检查行数 | `review-results.json` 中 INSUFFICIENT 行的 `potential_severity` |
-| 移交状态 OPEN / ACCEPTED / VERIFIED | 移交检查数 | `categorized_summary.handoffs_by_state` |
+| 待核项潜在等级 P0 / P1 / P2 / P3 / 需求未定（不定级） | 当前 INSUFFICIENT 行数 | `review-results.json` 中 INSUFFICIENT 行的 `potential_severity`；`gap_cause` 为 REQUIREMENT_OPEN 的行不定级，计入“需求未定”，各项之和等于当前 INSUFFICIENT 数 |
+| 待核原因 REQUIREMENT_OPEN / EXTERNAL_DATA / DESIGN_OPEN / REVIEW_INCOMPLETE / DOWNSTREAM_VERIFICATION / USER_DEFERRED | INSUFFICIENT 行数 | `insufficient_by_cause`（未填原因的计为 UNSPECIFIED，应补填） |
+| 移交状态 OPEN / ACCEPTED / VERIFIED | 必需移交的检查数 | `categorized_summary.handoffs_by_state`；只统计 `required: true`，集成约束（`required: false`）不计入 |
 | 需求澄清 开放 / 其中阻断 / 其中已覆盖 / 已解决 / 已撤回 | 唯一澄清项数 | `requirement_clarification_summary` 的 open / blocking_open / covered_open / resolved / retracted |
 
 工具输出省略的类别按 0 补齐。检查行数、唯一缺陷数、移交数和澄清项数口径不同，不相加。

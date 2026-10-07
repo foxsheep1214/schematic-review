@@ -449,8 +449,6 @@ HV 启动/检测或端口储能等角色须按实际器件条款确认，不能�
 续流回路面积最小）；钳位额定（DRV-C01）——反向耐压不低于电源最高电压，峰值/重复电流不低于线圈关断
 瞬间电流，齐纳/TVS 钳位时开关器件耐压需覆盖电源电压加钳位电压，并核重复频率下的耗散。
 
-依据：`HardwareWiki:wiki/methodology/inductive-load-flyback-clamp-design.md`。
-
 ### 功率开关 `power_switch`
 
 维护范围：按引脚角色识别分立 MOSFET/BJT/IGBT，登记栅极驱动源、栅源下拉、开关节点上的
@@ -480,9 +478,6 @@ intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）�
 路径，栅极与换流回路面积最小）、开关节点吸收与驱动器条款（DRV-D01，仅在有开关节点证据时生成，
 HANDOFF 给版图）。
 
-依据：`HardwareWiki:concepts/mosfet-igbt-gate-drive-circuit.md`、`concepts/功率器件栅极驱动保护.md`、
-`concepts/功率开关安全工作区.md`、`concepts/开关节点振荡吸收.md`。
-
 ### 开关电源输入滤波 `input_filter`
 
 维护范围：识别同时具备 `VIN/PVIN` 与 `SW/LX/PH/BOOT` 类引脚的开关稳压器，登记其输入网上的
@@ -500,8 +495,6 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 阶跃响应与温度角仍需仿真或实测，PASS 的 scope 已写明。
 
 计划项：阻尼判据（PWR-E03）、滤波元件饱和/压降/衰减需求（PWR-C11，HANDOFF 给版图与 EMC）。
-
-依据：`HardwareWiki:methodology/dc-dc-输入滤波稳定性评估.md`、`methodology/输入滤波稳定性与阻尼评估.md`。
 
 ### 上电过程 `power_up`
 
@@ -523,9 +516,6 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 
 计划项：使能来源与 UVLO/时序（RST-T01，HANDOFF 给测试：上电/掉电单调性与台阶需实测）、线性轨的
 压差（PWR-E02）、同步变换器的预偏置启动与软启动（PWR-D03，需资料证据）。
-
-依据：`HardwareWiki:methodology/power-rail-startup-review.md`、`concepts/电源上电时序故障诊断.md`、
-`concepts/同步降压预偏置启动.md`、`methodology/ldo最坏条件选型验证.md`。
 
 ### 监控与看门狗 `supervision`
 
@@ -550,8 +540,6 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 计划项：复位链逐跳与喂狗策略（RST-T02）、复位脉宽（RST-E03）、逐电源域监控覆盖（PWR-T04，逐状态一项，
 未监测的轨写进 `inventory_gaps`）。
 
-依据：`HardwareWiki:methodology/复位时序与看门狗审核.md`、`methodology/multi-rail-brownout-reset-verification.md`。
-
 ### 高速差分电平 `diff_levels`
 
 维护范围：按网名成对（`_P/_N`、`_DP/_DN`、`_DP/_DM`、`P/N`、`+/-`）且**两条腿上出现同一个
@@ -571,8 +559,6 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 计划项：电平兼容（SIG-E02）、端接与偏置（SIG-T03，HANDOFF 给版图/SI：差分阻抗、等长、间距、
 参考平面连续与端接就近）。
 
-依据：`HardwareWiki:methodology/high-speed-level-interconnect-review.md`、`concepts/高速电平互连.md`。
-
 ### 光耦 `optocoupler`
 
 维护范围：识别光耦器件与其 LED 回路（限流电阻、驱动源）和输出侧（集电极网、上拉电阻、发射极
@@ -590,5 +576,3 @@ I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>·寿命衰减系数�
 PASS 不覆盖开关速度、温度角与隔离耐压。
 
 计划项：传输能力（PRO-E01）、隔离归属与耐压（PRO-D01，HANDOFF 给版图与结构）。
-
-依据：`HardwareWiki:concepts/光耦合器隔离传输.md`。

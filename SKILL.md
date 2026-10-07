@@ -34,6 +34,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 
 | 何时读 | 文件 |
 |---|---|
+| 审查目的、七项纲要、规则取舍 | [review-charter.md](references/review-charter.md) |
 | 规则编号、判据、功能包 | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
 | 结果、P0–P3、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
@@ -94,8 +95,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 - 先核 MPN、封装/温度/档位与 BOM/符号；关键采样电阻、保护/安规件、储能电容和磁件也按原厂订货表核对
   阻值/容量/耐压组合，不把系列范围当具体后缀的可订购范围。候选不代表身份成立。
-- PART/VALUE 冲突时建立身份分支。图面/BOM 与链接资料互相矛盾时，不一致本身判 DEV-D04 FAIL；依赖实际物料
-  参数的电气判据保持 INSUFFICIENT，逐分支给条件结论（如“若实为 Y5V 则有效容量不满足”），全部分支都违反才判电气 FAIL。
+- PART/VALUE 冲突或图面/BOM 与链接资料矛盾时，按 [身份冲突与身份分支](references/evidence-proportionality.md#身份冲突与身份分支)
+  处理：不一致本身判 DEV-D04 FAIL，电气判据逐分支给条件结论，全部分支都违反才判电气 FAIL。
 - 按实际用途读引脚、额定/推荐条件、相关 min/max、模式和 errata；“官方物理脚”指手册引脚定义的编号或名称，
   焊盘映射属于 PCB 阶段。核过的脚表写入 `intent.devices`，DEV-D02 差集和 DEV-D05 引脚处置据此列出。
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
@@ -107,8 +108,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --evidence evidence.json --datasheet-audit datasheet-audit.json --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json
 
 `review-plan.json` 是唯一最终计划。自动 E 只覆盖输入的具体对象；资料未 AVAILABLE、指纹过期或模型缺失时保持待核。
-例外：已有保证值或可信边界已证明违反判据、缺失参数取任何允许值都不改变结论时，E 实例与同一判据的人工检查同判 FAIL，
-写明理由并共用一个 finding。没有验收窗口的名义输出（无需求容限、无板上下游负载）只把输出窗口判据判 NA，调节能力照常审查。
+两个例外（边界已证明违反时与人工检查同判 FAIL；无验收窗口的名义输出只把输出窗口判 NA）见
+[自动证据计算的例外](references/evidence-proportionality.md#自动证据计算的例外)。
 
 ### 5. 专家审查：连接追踪（T）、工程计算（C）、条款核对（D）
 
@@ -157,8 +158,9 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 ## 规则维护
 
 - 规则指纹覆盖 SKILL.md、`references/` 和 `scripts/`；任何修改后，进行中的项目须按当前规则完整重审。
-- 增删规则或改判据只改 `scripts/catalog.py`（含纲要归属），再运行
-  `python3 scripts/catalog.py --write-doc references/check-catalog.md`；新增或调整规则先回答
-  [纲要中的三个问题](references/review-charter.md#用纲要指导进化)。
+- 规则编号、判据、纲要归属和功能包只在 `scripts/catalog.py` 登记，改后运行
+  `python3 scripts/catalog.py --write-doc references/check-catalog.md`。来源为“全板通用”“功能包成员”的新规则
+  登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在 `plan_review.py`、`lint.py`
+  或对应检查器里实现展开/扫描。新增或调整规则先回答 [纲要中的三个问题](references/review-charter.md#用纲要指导进化)。
 - 修改脚本后运行 `python3 -m unittest discover -s scripts/tests -q`，必要时按
   [电路评测说明](evals/circuit_bench/README.md) 跑冻结基准；评测通过不等于任何真实电路审查通过。
