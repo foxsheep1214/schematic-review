@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-07",
+  "initial_baseline_commit": "4cdbaa25704601fda81f44dd87794c0ab5c16834",
+  "integration_baseline_commit": "339fa6b",
+  "python": "3.13.13",
+  "ngspice": "47",
+  "unit_tests_before_initial": 668,
+  "unit_tests_before_integration": 671,
+  "unit_tests_after": 695,
+  "benchmark_unit_tests": 19,
+  "diff_check": "PASS",
+  "skill_validation": "PASS",
+  "import_before": {
+    "schema_version": 1,
+    "source": {
+      "repo": "https://github.com/skiselev/rpi_rtc_ds3231",
+      "commit": "e242486bdab0a8f3b1cf472a0b87f7bfa60f0d9c",
+      "license": "GPL-3.0",
+      "format": "Deterministic syntax-only XML conversion of original author KiCad 4 .net",
+      "raw_net_sha256": "af0a17f4a109e69a91406968513a525dccb166c72d6cdb18b5aaba83844d7ccf",
+      "limits": "Original names, physical partitions, values and raw library types preserved. No NC reconstruction, native current ERC or electrical approval.",
+      "raw_url": "https://raw.githubusercontent.com/skiselev/rpi_rtc_ds3231/e242486bdab0a8f3b1cf472a0b87f7bfa60f0d9c/KiCad/rpi_rtc.net"
+    },
+    "input_sha256": "c2f10fcea37462242912accc5bd6c79549ca6bf9e4dbf43cf07a61bdd85e4cf9",
+    "scope": "Import integrity only; original is not an electrically qualified golden circuit.",
+    "passed": 1,
+    "total": 4,
+    "results": [
+      {
+        "case": "original",
+        "expected": "EXACT_GRAPH",
+        "passed": true,
+        "error": null
+      },
+      {
+        "case": "empty-export",
+        "expected": "REJECT",
+        "passed": false,
+        "error": null
+      },
+      {
+        "case": "duplicate-reference",
+        "expected": "REJECT",
+        "passed": false,
+        "error": null
+      },
+      {
+        "case": "multiply-assigned-pin",
+        "expected": "REJECT",
+        "passed": false,
+        "error": null
+      }
+    ]
+  },
+  "import_after": {
+    "schema_version": 1,
+    "source": {
+      "repo": "https://github.com/skiselev/rpi_rtc_ds3231",
+      "commit": "e242486bdab0a8f3b1cf472a0b87f7bfa60f0d9c",
+      "license": "GPL-3.0",
+      "format": "Deterministic syntax-only XML conversion of original author KiCad 4 .net",
+      "raw_net_sha256": "af0a17f4a109e69a91406968513a525dccb166c72d6cdb18b5aaba83844d7ccf",
+      "limits": "Original names, physical partitions, values and raw library types preserved. No NC reconstruction, native current ERC or electrical approval.",
+      "raw_url": "https://raw.githubusercontent.com/skiselev/rpi_rtc_ds3231/e242486bdab0a8f3b1cf472a0b87f7bfa60f0d9c/KiCad/rpi_rtc.net"
+    },
+    "input_sha256": "c2f10fcea37462242912accc5bd6c79549ca6bf9e4dbf43cf07a61bdd85e4cf9",
+    "scope": "Import integrity only; original is not an electrically qualified golden circuit.",
+    "passed": 4,
+    "total": 4,
+    "results": [
+      {
+        "case": "original",
+        "expected": "EXACT_GRAPH",
+        "passed": true,
+        "error": null
+      },
+      {
+        "case": "empty-export",
+        "expected": "REJECT",
+        "passed": true,
+        "error": "空网表：没有导出器件；不能作为审查输入"
+      },
+      {
+        "case": "duplicate-reference",
+        "expected": "REJECT",
+        "passed": true,
+        "error": "缺失或重复的器件位号: 'BT1'"
+      },
+      {
+        "case": "multiply-assigned-pin",
+        "expected": "REJECT",
+        "passed": true,
+        "error": "物理引脚重复归网: U1.4"
+      }
+    ]
+  },
+  "simulation": {
+    "schema_version": 1,
+    "case": "Native KiCad RC fixture -> SR physical db -> ideal RC endpoint simulation",
+    "checked_corners": 4,
+    "max_absolute_error_v": 3.3229308327165086e-07,
+    "status": "WITHIN_SAMPLED_WINDOW",
+    "min_v": 2.967335,
+    "max_v": 3.372405,
+    "replay": {
+      "valid": true,
+      "status": "WITHIN_SAMPLED_WINDOW",
+      "checked_corners": 4
+    },
+    "scope": "Synthetic ideal model and synthetic source bounds only; not real IC guarantee or board qualification."
+  },
+  "existing_circuit_bench": {
+    "dataset_digest": "5addda6a8fc2f0cee5d78d96b06ea86354befa365ccc101ea782aaeba171bdbb",
+    "answer_digest": "43fdd3c63b3ef3f5d245e069b462ae42fcc04d4cb9116225915811fcf05fc697",
+    "protocol_digest": "b490003c47c3c58e8d93a2d61131e5162f653fc55866c937fc943a3efb4ba2e6",
+    "before_source_digest": "f74364208308bbe8854ec19853727a0323e4639df10fa7573b8c461c897c4d20",
+    "after_source_digest": "b9c85f8f0542b3d3f678e97ab8d48db1678d4e3bdbe42396181b24da38f1ed9f",
+    "before_metrics": {
+      "total": 166,
+      "passed": 166,
+      "status_exact": 166,
+      "expected_counts": {
+        "PASS": 19,
+        "FAIL": 62,
+        "INSUFFICIENT": 85
+      },
+      "confusion": {
+        "PASS": {
+          "PASS": 19,
+          "FAIL": 0,
+          "INSUFFICIENT": 0,
+          "ERROR": 0
+        },
+        "FAIL": {
+          "PASS": 0,
+          "FAIL": 62,
+          "INSUFFICIENT": 0,
+          "ERROR": 0
+        },
+        "INSUFFICIENT": {
+          "PASS": 0,
+          "FAIL": 0,
+          "INSUFFICIENT": 85,
+          "ERROR": 0
+        }
+      },
+      "false_pass": 0,
+      "false_alarm": 0,
+      "known_defect_deferred": 0,
+      "known_good_deferred": 0,
+      "unknown_overclaimed_fail": 0,
+      "numeric_mismatches": 0,
+      "errors": 0,
+      "defect_recall": 1.0,
+      "unknown_handling": 1.0
+    },
+    "after_metrics": {
+      "total": 166,
+      "passed": 166,
+      "status_exact": 166,
+      "expected_counts": {
+        "PASS": 19,
+        "FAIL": 62,
+        "INSUFFICIENT": 85
+      },
+      "confusion": {
+        "PASS": {
+          "PASS": 19,
+          "FAIL": 0,
+          "INSUFFICIENT": 0,
+          "ERROR": 0
+        },
+        "FAIL": {
+          "PASS": 0,
+          "FAIL": 62,
+          "INSUFFICIENT": 0,
+          "ERROR": 0
+        },
+        "INSUFFICIENT": {
+          "PASS": 0,
+          "FAIL": 0,
+          "INSUFFICIENT": 85,
+          "ERROR": 0
+        }
+      },
+      "false_pass": 0,
+      "false_alarm": 0,
+      "known_defect_deferred": 0,
+      "known_good_deferred": 0,
+      "unknown_overclaimed_fail": 0,
+      "numeric_mismatches": 0,
+      "errors": 0,
+      "defect_recall": 1.0,
+      "unknown_handling": 1.0
+    },
+    "comparison": {
+      "comparable": true,
+      "regressed_ids": [],
+      "improved_ids": [],
+      "promote": false,
+      "meaning": "Eligible for reviewed tool upgrade; no automatic installation or board signoff"
+    }
+  },
+  "decision": "Retain the three scoped improvements: stronger importer integrity, reproducible physically bound RC evidence, and byte-preserving ASG Value edits. Existing Circuit Bench is unchanged and does not support a claim of better full-board accuracy.",
+  "limits": [
+    "One public author graph plus three synthetic structural mutations; not four real boards.",
+    "RC simulation covers only declared ideal R/C endpoints, not real IC dynamics or worst-case interiors.",
+    "Hash replay checks consistency, not tamper-proof execution authentication.",
+    "Existing benchmark promote=false because its already-correct 166 cases did not improve; added utility/import capabilities are validated separately."
+  ]
+}

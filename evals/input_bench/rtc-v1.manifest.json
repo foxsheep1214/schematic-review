@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repo": "https://github.com/skiselev/rpi_rtc_ds3231",
+    "commit": "e242486bdab0a8f3b1cf472a0b87f7bfa60f0d9c",
+    "license": "GPL-3.0",
+    "format": "Deterministic syntax-only XML conversion of original author KiCad 4 .net",
+    "raw_net_sha256": "af0a17f4a109e69a91406968513a525dccb166c72d6cdb18b5aaba83844d7ccf",
+    "limits": "Original names, physical partitions, values and raw library types preserved. No NC reconstruction, native current ERC or electrical approval.",
+    "raw_url": "https://raw.githubusercontent.com/skiselev/rpi_rtc_ds3231/e242486bdab0a8f3b1cf472a0b87f7bfa60f0d9c/KiCad/rpi_rtc.net"
+  },
+  "input_sha256": "c2f10fcea37462242912accc5bd6c79549ca6bf9e4dbf43cf07a61bdd85e4cf9",
+  "graph": {
+    "values": {
+      "BT1": "CR2032",
+      "C1": "0.1uF",
+      "HOLE1": "HOLE",
+      "P1": "RPi_Header",
+      "R1": "10k",
+      "U1": "DS3231"
+    },
+    "partitions": [
+      [
+        "BT1.1",
+        "U1.14"
+      ],
+      [
+        "BT1.2",
+        "C1.2",
+        "P1.6",
+        "U1.10",
+        "U1.11",
+        "U1.12",
+        "U1.13",
+        "U1.5",
+        "U1.6",
+        "U1.7",
+        "U1.8",
+        "U1.9"
+      ],
+      [
+        "C1.1",
+        "P1.1",
+        "R1.2",
+        "U1.2"
+      ],
+      [
+        "HOLE1.1"
+      ],
+      [
+        "P1.2"
+      ],
+      [
+        "P1.3",
+        "U1.15"
+      ],
+      [
+        "P1.4"
+      ],
+      [
+        "P1.5",
+        "U1.16"
+      ],
+      [
+        "R1.1",
+        "U1.3"
+      ],
+      [
+        "U1.1"
+      ],
+      [
+        "U1.4"
+      ]
+    ]
+  }
+}

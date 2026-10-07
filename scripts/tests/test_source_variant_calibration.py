@@ -89,9 +89,13 @@ class SourceVariantCalibrationTests(unittest.TestCase):
         source = ('<export version="E"><design><source>legacy.sch</source>'
                                '<tool>successful export</tool></design><components/>'
                                '<libparts/><nets/></export>')
-        db = parse(source)
+        # The import boundary now rejects the empty export before a DB exists.
+        with self.assertRaisesRegex(ValueError, '空网表'):
+            parse(source)
+        # The downstream guard remains useful for other adapters.
+        empty = {'pseudo_nets': [], 'parts': {}, 'nets': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {}, 'ref2page': {}}
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as failure:
-            self_check(db)
+            self_check(empty)
         self.assertEqual(failure.exception.code, 2)
 
 

@@ -136,6 +136,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 - **工程计算**：按 [WCA 公式](references/wca-formulas.md) 先确认模型，再代入实际串并联、输入/温度/负载和公差角点；
   原厂已覆盖工况的 Min/Max 直接使用。区分设定目标与物理可达输出（FB 公式不代表升压能力、RC 不等于复位脉宽、
   有 TVS 不等于防护通过）。连续可调输出在全范围扫描应力。判“缺保护”前计入 IC 自带保护（寄存器设定的门限归固件任务）；改频率/阻值/保护管时连带复算。
+- **动态数值证据**：需要有界 R/C 工作点或瞬态时，按 [仿真证据](references/simulation-evidence.md) 从实际 db 归网生成模型、绑定参数/状态出处、保存全部角点与原始输出，再回放核对。样本在窗口内不直接等于规则 PASS；缺模型、边界或保证条件继续 INSUFFICIENT。
 - **条款核对**：每颗 IC/模组核推荐工作条件（DEV-C05）和逐脚处置（DEV-D05）；连接器核对端定义（DEV-D03）和对外防护（PRO-D03）；
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
 
@@ -175,4 +176,4 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在 `plan_review.py`、`lint.py`
   或对应检查器里实现展开/扫描。新增或调整规则先回答 [纲要中的三个问题](references/review-charter.md#用纲要指导进化)。
 - 修改脚本后运行 `python3 -m unittest discover -s scripts/tests -q`，必要时按
-  [电路评测说明](evals/circuit_bench/README.md) 跑冻结基准；评测通过不等于任何真实电路审查通过。
+  [电路评测说明](evals/circuit_bench/README.md) 跑冻结基准；改导入器时同时跑 [真实来源导入回归](evals/input_bench/README.md)。评测通过不等于任何真实电路审查通过。

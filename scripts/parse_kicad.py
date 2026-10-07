@@ -148,27 +148,32 @@ def parse(xml_text, export_errors=()):
     parts, ref2page, ref2lib = {}, {}, {}
     for comp in root.findall('./components/comp'):
         ref = _text(comp.get('ref'))
-        if not ref:
-            continue
+        if not ref or ref in parts:
+            raise ValueError('缺失或重复的器件位号: %r' % ref)
         part, page, lib = _component(comp, libparts, pages)
         parts[ref] = part
         ref2lib[ref] = lib
         if page is not None:
             ref2page[ref] = page
 
+    if not parts:
+        raise ValueError('空网表：没有导出器件；不能作为审查输入')
+
     nets, pin2net, pinname, pintype = {}, {}, {}, {}
     native_pintype = {}
     no_connect_nodes, pseudo = [], []
     for net in root.findall('./nets/net'):
         name = _text(net.get('name'))
-        if not name:
-            continue
+        if not name or name in nets:
+            raise ValueError('缺失或重复的网络名: %r' % name)
         nodes, declared_nc = [], []
         for node in net.findall('node'):
             ref, pin = _text(node.get('ref')), _text(node.get('pin'))
-            if not ref or not pin:
-                continue
+            if not ref or not pin or ref not in parts:
+                raise ValueError('节点缺失位号/脚号或引用不存在的器件')
             key = '%s.%s' % (ref, pin)
+            if key in pin2net:
+                raise ValueError('物理引脚重复归网: %s' % key)
             nodes.append(key)
             pin2net[key] = name
             kinds = [x for x in (node.get('pintype') or '').split('+') if x]
@@ -189,6 +194,9 @@ def parse(xml_text, export_errors=()):
         # 只有"图上声明不接"的汇集网算伪网络；没有 NC 标记的悬空引脚保持真实单节点网
         if UNCONNECTED.match(name) and nodes and len(declared_nc) == len(nodes):
             pseudo.append(name)
+
+    if not pin2net:
+        raise ValueError('空网表：没有导出物理引脚；不能作为审查输入')
 
     declared_pinname, declared_pintype = {}, {}
     for ref, lib in ref2lib.items():
