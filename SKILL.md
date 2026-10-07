@@ -39,7 +39,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
 | 结果、P0–P3、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
 | 需求缺失/含糊/冲突 | [requirement-clarifications.md](references/requirement-clarifications.md) |
-| intent、计划、结果字段与校验 | [plan-and-results.md](references/plan-and-results.md) |
+| intent、计划、结果字段与校验；功能包展开边界（含电平转换） | [plan-and-results.md](references/plan-and-results.md) |
 | 输入版本、解析、覆盖与留档 | [inputs-and-coverage.md](references/inputs-and-coverage.md) |
 | 自动扫描与各检查器 | [automation.md](references/automation.md) |
 | 资料补取、证据计算、Vref 复用 | [datasheets.md](references/datasheets.md) |

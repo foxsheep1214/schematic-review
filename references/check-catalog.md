@@ -261,14 +261,14 @@
 | SIG-T01 | G2 | 连接追踪 | 差分对连通 | 核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通 | 逐链路/区域 | 计划逐对象生成 | HSSERIAL |
 | SIG-T02 | G2 | 连接追踪 | I²C 连接覆盖 | 核对本状态 SDA/SCL 物理端点、装配/跳线、全部上拉与电源域、串阻路径及隔离/外接边界；仅连接覆盖 | 逐链路/区域 | 检查器·I²C 连接覆盖 | — |
 | SIG-T03 | G2 | 连接追踪 | 差分端接与偏置 | 核端接与偏置网络的位置、阻值与电源域：差分端接、接收端偏置、发送端直流通路，以及未用通道与掉电状态的处置 | 逐链路/区域 | 检查器·高速差分电平 | — |
-| SIG-T04 | G2 | 连接追踪 | 接口方向语义 | TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义复述，核对对端连接器视图与线缆针序；连通只证明导电路径 | 逐电路×工况 | 功能包成员 | UART、RS485、USB |
+| SIG-T04 | G2 | 连接追踪 | 接口方向语义 | TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义复述，核对对端连接器视图与线缆针序；连通只证明导电路径 | 逐电路×工况 | 功能包成员 | LEVEL_SHIFT、UART、RS485、USB |
 | SIG-C01 | G3 | 工程计算 | I²C 灌电流与上升时间 | 逐电气段合并全部上拉公差：Rp_min=(Vpullup_max-VOL_max)/IOL_guaranteed，Rp_max=tr_max/(0.8473*Cb_max)；核对串联压降 | 逐链路/区域 | 功能包成员 | I2C |
 | SIG-C03 | G3 | 工程计算 | 总线端接与偏置 | 按实际总线端点和节点数核对端接等效负载、空闲偏置及接收保证差分门限 | 逐电路×工况 | 功能包成员 | CAN、RS485 |
 | SIG-C04 | G3 | 工程计算 | 总线共模与未供电负载 | 核对收发器 VIO/默认态、总线共模范围、地偏差与未供电负载 | 逐电路×工况 | 功能包成员 | CAN、RS485 |
 | SIG-C05 | G5 | 工程计算 | USB VBUS 供电与保护 | 核对 VBUS 供电资格、电压档位、放电、反灌、过流及端口未供电状态 | 逐电路×工况 | 功能包成员 | USB |
-| SIG-C07 | G3 | 工程计算 | 逻辑电平与驱动匹配 | 逐条链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确 | 逐链路/区域 | 功能包成员 | I2C、SPI、UART、STORAGE、AV |
-| SIG-C08 | G5 | 工程计算 | 掉电与跨域注入 | 逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍 | 逐链路/区域 | 功能包成员 | I2C |
-| SIG-C09 | G3 | 工程计算 | 时序裕量 | 按两端保证值核传播延迟、建立/保持、时钟偏斜与电平转换器延迟，给出最坏角点裕量；布线延迟另交 SI HANDOFF | 逐链路/区域 | 功能包成员 | SPI、ETHERNET、DDR、STORAGE |
+| SIG-C07 | G3 | 工程计算 | 逻辑电平与驱动匹配 | 逐条链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确 | 逐链路/区域 | 功能包成员 | I2C、LEVEL_SHIFT、SPI、UART、STORAGE、AV |
+| SIG-C08 | G5 | 工程计算 | 掉电与跨域注入 | 逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍 | 逐链路/区域 | 功能包成员 | I2C、LEVEL_SHIFT |
+| SIG-C09 | G3 | 工程计算 | 时序裕量 | 按两端保证值核传播延迟、建立/保持、时钟偏斜与电平转换器延迟，给出最坏角点裕量；布线延迟另交 SI HANDOFF | 逐链路/区域 | 功能包成员 | LEVEL_SHIFT、SPI、ETHERNET、DDR、STORAGE |
 | SIG-D01 | G3 | 条款核对 | I²C 地址与装配组合 | 核对地址/复用/复位态和板载及外部可选上拉的装配组合 | 逐链路/区域 | 功能包成员 | I2C |
 | SIG-D02 | G3 | 条款核对 | DDR 校准端接 | 分别按控制器和 DRAM 的具体型号/代际核对 ZQ/校准脚端接与精度，禁止跨器件套用 | 逐电路×工况 | 功能包成员 | DDR |
 | SIG-D03 | G3 | 条款核对 | DDR 端接与基准 | 逐数据/地址/时钟/VREF/VTT 电源域核对拓扑、端接、基准及上电条件 | 逐电路×工况 | 功能包成员 | DDR |
@@ -352,6 +352,7 @@
 | STARTUP | 上电、复位与启动 | RST | RST-C01、RST-C02、RST-T03、RST-T04、RST-D01 | requirements、datasheets | `RESET\|(^\|_)RST\|POR(_\|$)\|(^\|[:_-])(BOOT\w*\|STRAP\w*\|PWRON\w*)([:_-]\|$)` |
 | CLOCK | 时钟 | CLK | CLK-C01、CLK-D01、CLK-D03 | datasheets | `CLK\|CLOCK\|OSC\|XTAL\|XIN\|XOUT\|32K` |
 | I2C | I²C | SIG | SIG-C01、SIG-C07、SIG-C08、SIG-D01 | requirements、datasheets | `(^\|[:_-])(I2C\w*\|SCL\d*\|SDA\d*)([:_-]\|$)` |
+| LEVEL_SHIFT | 电平转换与跨电压域互连 | SIG | SIG-C07、SIG-C08、SIG-C09、SIG-T04 | requirements、datasheets | `TXS0\d{3}\|TXB0\d{3}\|TXU0\d{3}\|PCA9306\|NVT20\d\d\|LSF0\d{3}\|GTL2003\|FXMA\d+\|FXLA\d+\|NLSX\d+\|(SN)?74(LVC\|AVC\|AXC\|ALVC)\d*T\d+\|LEVEL_?SHIFT\|LVL_?SHIFT\|TRANSLAT\|NET:\w*_(LV\|HV)(_\|$)` |
 | SPI | SPI | SIG | SIG-D09、SIG-C07、SIG-C09 | requirements、datasheets | `\bSPI\w*\|MOSI\|MISO\|SCLK` |
 | UART | UART/RS232 | SIG | SIG-D08、SIG-T04、SIG-C07 | requirements、datasheets | `UART\|\bTXD\w*\|\bRXD\w*` |
 | CAN | CAN | SIG | SIG-C03、SIG-C04、SIG-D08、PRO-C01 | requirements、datasheets | `CANH\|CANL\|CAN_TX\|CAN_RX\|\bCAN\d*\b` |

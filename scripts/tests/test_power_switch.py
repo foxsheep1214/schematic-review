@@ -176,6 +176,23 @@ class PlanTest(unittest.TestCase):
                 self.assertEqual({x['rule'] for x in items}, {'DRV-C02', 'DRV-D01'})
                 self.assertIn('DRV-A04', [f['rule'] for f in findings(db, intent)])
 
+    def test_declared_level_shifter_leaves_drive_checks_to_the_level_shift_circuit(self):
+        db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {},
+              'pseudo_nets': [], 'ref2page': {}}
+        add(db, 'Q1', 'BSS138', [('1', 'G', 'VCC_3V3'), ('2', 'S', 'SDA_LV'), ('3', 'D', 'SDA_HV')])
+        add(db, 'R1', '10K', [('1', '1', 'VCC_3V3'), ('2', '2', 'SDA_LV')])
+        add(db, 'R2', '10K', [('1', '1', 'VCC_5V'), ('2', '2', 'SDA_HV')])
+        undeclared = build_review_plan(db)
+        self.assertTrue([x for x in undeclared['checks'] if x['object'].get('power_switch')])
+        intent = bound_intent(db, {'power_switches': {'schema_version': 2,
+            'switches': [{'id': 'Q1-XLAT', 'ref': 'Q1', 'role': 'level_shifter',
+                          'citation': 'synthetic bidirectional open-drain translator'}]}})
+        self.assertEqual(validate_power_switch_intent(intent, db), [])
+        self.assertEqual(switches_of(build_inventory(db, intent), 'run')['Q1']['role'], 'level_shifter')
+        plan = build_review_plan(db, intent)
+        self.assertEqual([x for x in plan['checks'] if x['object'].get('power_switch')], [])
+        self.assertFalse([f for f in findings(db, intent) if f['rule'].startswith('DRV')])
+
     def test_floating_source_without_declared_role_keeps_mos_drive_check(self):
         db = switch_board(load=None)
         db['nets']['GND'].remove('Q1.3')

@@ -467,6 +467,9 @@ intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）�
 带出处的 role 可用 `linear/source_follower/emitter_follower` 明确线性用途：不生成 RDS(on)
 开关驱动窗口，改查实际工作点/驱动/额定；感性节点的钳位候选仍保留，按实际拓扑确认。BJT 不生成 MOS 的 DRV-E01；
 共用图坐标 gate/drain/source 对应 B/C/E，仅用于追踪。角色未知仍保留待核，不按浮地位置猜用途。
+`role: "level_shifter"` 用于栅极接低侧轨的双向开漏电平转换管：它不是功率开关，不生成 DRV-E01、DRV-C02、DRV-D01
+及 DRV-A03/A04，改按电平转换电路审查，见 [计划与结果台账](plan-and-results.md) 的“电平转换（LEVEL_SHIFT）”与
+[WCA 公式](wca-formulas.md#mosfet-双向开漏电平转换)。
 
 自动扫描：`DRV-A03` 栅极既无驱动源也无下拉/上拉（上电与驱动高阻时状态不确定）；
 `DRV-A04` 开关节点接感性元件或半桥中点但无吸收/钳位（CANDIDATE）。

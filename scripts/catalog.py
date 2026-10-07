@@ -561,6 +561,12 @@ PACKAGES = (
             r'(^|[:_-])(I2C\w*|SCL\d*|SDA\d*)([:_-]|$)',
             ('SIG-C01', 'SIG-C07', 'SIG-C08', 'SIG-D01'),
             ('requirements', 'datasheets'), _HANDOFF_NONE),
+    Package('LEVEL_SHIFT', '电平转换与跨电压域互连', 'SIG',
+            r'TXS0\d{3}|TXB0\d{3}|TXU0\d{3}|PCA9306|NVT20\d\d|LSF0\d{3}|GTL2003|FXMA\d+|FXLA\d+|NLSX\d+'
+            r'|(SN)?74(LVC|AVC|AXC|ALVC)\d*T\d+|LEVEL_?SHIFT|LVL_?SHIFT|TRANSLAT'
+            r'|NET:\w*_(LV|HV)(_|$)',
+            ('SIG-C07', 'SIG-C08', 'SIG-C09', 'SIG-T04'),
+            ('requirements', 'datasheets'), _HANDOFF_NONE),
     Package('SPI', 'SPI', 'SIG',
             r'\bSPI\w*|MOSI|MISO|SCLK',
             ('SIG-D09', 'SIG-C07', 'SIG-C09'),

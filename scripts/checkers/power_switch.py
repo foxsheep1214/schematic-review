@@ -25,6 +25,8 @@ OUT_PINTYPES = {'OUT', 'OUTPUT', 'BI', 'BIDI', 'BIDIR', 'BIDIRECTIONAL', 'IO', '
                 'TRISTATE', '3STATE'}
 MAX_SWITCHES = 256
 LINEAR_ROLES = {'linear', 'source_follower', 'emitter_follower'}
+# 栅极接低侧轨的双向开漏电平转换管：不是功率开关，按所属电平转换电路（SIG-C07/C08/C09/T04）审查。
+LEVEL_SHIFTER_ROLE = 'level_shifter'
 
 
 def validate_power_switch_intent(intent, db=None):
@@ -221,6 +223,8 @@ class PowerSwitchChecker(Checker):
 
     def plan(self, planner, inventory):
         for state, switch in inv.walk(inventory, 'switches'):
+            if switch.get('role') == LEVEL_SHIFTER_ROLE:
+                continue
             obj = {'ref': switch['ref'], 'state': state['id'],
                    'power_switch': switch['id'],
                    'power_switch_digest': inventory['digest']}
@@ -266,7 +270,7 @@ class PowerSwitchChecker(Checker):
 
     def cold_findings(self, lint, inventory):
         for state, switch in inv.walk(inventory, 'switches'):
-            if not switch['gate_net']:
+            if not switch['gate_net'] or switch.get('role') == LEVEL_SHIFTER_ROLE:
                 continue
             head = '%s（%s，状态 %s）' % (switch['ref'], switch['kind'], state['id'])
             if not switch['drivers'] and not switch['gate_pulls']:
@@ -325,7 +329,7 @@ class PowerSwitchChecker(Checker):
 
     def rule_instances(self, rule, inventory):
         return sorted({switch['id'] for _, switch in inv.walk(inventory, 'switches')
-                       if switch['gate_net'] and (rule != 'DRV-E01' or (
+                       if switch['gate_net'] and switch.get('role') != LEVEL_SHIFTER_ROLE and (rule != 'DRV-E01' or (
                            switch['kind'] == ng.MOSFET and switch.get('role') not in LINEAR_ROLES))})
 
     def binds(self, item):

@@ -360,6 +360,25 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual({x['object']['state'] for x in members}, {'host', 'unpowered'})
         self.assertIn('intent.circuits:synthetic port definition', get_feature(plan, 'USB')['trigger'])
 
+    def test_level_shift_name_hit_is_candidate_until_circuit_is_declared(self):
+        db = sample_db()
+        db['parts']['U3'] = {'part': 'TXS0102DCUR', 'value': 'TXS0102', 'prim': 'TXS0102',
+                             'jedec': 'VSSOP', 'nc': False}
+        db['nets']['GPIO_LV'] = ['U2.6', 'U3.1']
+        db['pin2net'].update({'U2.6': 'GPIO_LV', 'U3.1': 'GPIO_LV'})
+        plan = build_review_plan(db)
+        self.assertEqual(get_feature(plan, 'LEVEL_SHIFT')['applicability'], 'UNDETERMINED')
+        self.assertFalse([x for x in plan['checks'] if x.get('package') == 'LEVEL_SHIFT'
+                          and x['rule'] != 'REQ-Q07'])
+        intent = {'schema_version': 3, 'circuits': [
+            {'id': 'GPIO-XLAT', 'type': 'LEVEL_SHIFT', 'refs': ['U2', 'U3'],
+             'states': ['both-powered', 'b-side-unpowered'], 'citation': 'synthetic translator link'}]}
+        self.assertEqual(validate_intent(intent), [])
+        plan = build_review_plan(db, intent)
+        members = [x for x in plan['checks'] if x.get('package') == 'LEVEL_SHIFT' and x['rule'] != 'REQ-Q07']
+        self.assertEqual(sorted({x['rule'] for x in members}), sorted(catalog.package('LEVEL_SHIFT').rules))
+        self.assertEqual(len(members), 2 * len(catalog.package('LEVEL_SHIFT').rules))
+
     def test_declared_circuit_makes_package_applicable_and_conflicts_with_na(self):
         circuit = {'id': 'LDO', 'type': 'POWER_PROTECTION', 'refs': ['U1'], 'states': ['run'],
                    'citation': 'synthetic protection'}
