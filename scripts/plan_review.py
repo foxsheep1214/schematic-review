@@ -646,9 +646,12 @@ class ReviewPlanner:
                 required_inputs=[] if pdf_ready else ['schematic_pdf'],
                 trigger=[f'ref2page:{page}'])
 
-        # 每颗 IC/模组独立核对身份与封装、引脚处置和推荐工作条件。
+        # 每颗 IC/模组和意图显式列出的关键器件逐颗核身份、引脚处置与工况。
+        # 位号并非器件身份；连接器已有独立覆盖，不重复未用脚处置。
         for ref, part in sorted(db.get('parts', {}).items()):
-            if not DEVICE_RE.match(ref) or part.get('nc'):
+            declared = ref in (self.intent.get('devices') or {})
+            connector = CONNECTOR_RE.match(ref) or connector_graph.kind(ref) == CONNECTOR
+            if part.get('nc') or not (DEVICE_RE.match(ref) or (declared and not connector)):
                 continue
             gaps, audit_trigger = self._datasheet_readiness(ref, part)
             trigger = [f'refdes:{ref}', f'part:{part.get("part", "")}'] + audit_trigger
