@@ -382,6 +382,33 @@ class DecouplingInventoryTests(unittest.TestCase):
                 self.assertIn('D9', inv['two_terminal_no_supply_refs'])
                 self.assertNotIn('unverified-device-pinout:D9', inv['discovery_gaps'])
 
+    def test_pinless_parts_are_not_inventory_gaps(self):
+        db, intent = fixture()
+        db['declared_pinname'] = {}
+        db['parts']['H1'] = {'value': 'HOLE_3.2mm', 'part': 'HOLE_3.2mm', 'prim': 'Lib:HOLE_3.2mm', 'nc': False}
+        db['parts']['FD1'] = {'value': 'FIDUCIAL', 'part': 'FIDUCIAL', 'prim': 'Lib:FIDUCIAL', 'nc': False}
+        intent['assemblies'][0]['population'].update({r: True for r in ('H1', 'FD1')})
+        rebind(db, intent)
+        inv = build_decoupling_inventory(db, intent)
+        for ref in ('H1', 'FD1'):
+            self.assertNotIn('unverified-device-pinout:' + ref, inv['discovery_gaps'])
+            self.assertNotIn(ref, inv['unverified_device_refs'])
+
+    def test_keyword_identified_header_is_not_an_unverified_device(self):
+        db, intent = fixture()
+        add(db, 'K2', 'HEADER_MALE_4X2', [(str(i), '', 'U1_IO') for i in range(1, 9)])
+        db['parts']['K2']['prim'] = 'e-radionica.com schematics:HEADER_MALE_4X2'
+        intent['assemblies'][0]['population']['K2'] = True
+        rebind(db, intent)
+        self.assertNotIn('unverified-device-pinout:K2', build_decoupling_inventory(db, intent)['discovery_gaps'])
+
+    def test_pinless_part_stays_unverified_without_declared_pins(self):
+        db, intent = fixture()
+        db['parts']['H1'] = {'value': 'X', 'part': 'X', 'prim': 'Lib:X', 'nc': False}
+        intent['assemblies'][0]['population']['H1'] = True
+        rebind(db, intent)
+        self.assertIn('unverified-device-pinout:H1', build_decoupling_inventory(db, intent)['discovery_gaps'])
+
     def test_three_or_more_pin_parts_stay_unverified(self):
         for symbol, pins in (('Device:D_Dual_Series_ACK', [('1', 'A', 'N1'), ('2', 'C', 'N2'), ('3', 'K', 'N3')]),
                              ('Diode_Bridge:GBU4M', [('1', '+', 'N1'), ('2', '~', 'N2'), ('3', '~', 'N3'), ('4', '-', 'GND')])):

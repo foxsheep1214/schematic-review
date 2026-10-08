@@ -31,7 +31,8 @@ from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
 from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID, registry_hot_rules
-from checkers.netgraph import NetGraph, rail_voltage as _volt
+from checkers.netgraph import (CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER,
+                               TWO_TERMINAL, NetGraph, rail_voltage as _volt)
 from electrical_contract import bounded, db_fingerprint, load_json, readiness_gaps, validate_evidence
 from fractions import Fraction
 from itertools import product
@@ -46,6 +47,15 @@ EN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN)(_|\d|$)', re.I)
 CLAMP_RE = re.compile(r'ZENER|TVS|BZT|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)
 # EN 脚耐压绝大多数 <=6V；超过此值的上拉优先查 Abs Max（提示，非判定）
 EN_PULL_ALERT_V = 6.0
+GND_TOKEN_RE = re.compile(r'^([A-Z]{0,2}GND[A-Z0-9]{0,3}|[AD]?VSS[A-Z0-9]{0,3})$')
+KICAD_AUTO_NET_RE = re.compile(r'(^|/)(Net|unconnected)-\(')   # 工具按引脚生成的网名，不是手写拼写
+NET_TIE_RE = re.compile(r'NET_?TIE', re.I)
+ISOLATOR_RE = re.compile(r'ISOLAT|\bISO\d|ISOW|ADUM|SI8[46]\d|NSI\d|CA-IS|隔离', re.I)
+
+
+def _ground_like(net):
+    """网名含地记号（GND、GNDA、AGND、PGND_ISO、Net-(U1-GND)、VSS…），只作孤岛扫描的候选范围。"""
+    return any(GND_TOKEN_RE.match(t) for t in re.split(r'[^A-Z0-9]+', str(net).upper()) if t)
 
 
 def hot_rules():
@@ -215,6 +225,84 @@ class Lint:
             relay_seen = True
         return relay_seen
 
+    def _ground_islands(self):
+        """PWR-A03 地名网孤岛：IC 地脚所在的地名网经已装配的直流连接件到不了主地（节点最多的地名网组）。
+
+        直流连接件：电阻/电感/磁珠/跳线/保险（可经至多两个只有两节点的中间网串联）、NetTie、多绕组电感/共模扼流；
+        电容不算。孤岛上有连接器（外部回流）、已知隔离器件（光耦、变压器、隔离器）或地名含 SENSE/SNS/KELVIN
+        的遥测线时不报。其他多端器件同时挂在孤岛和主地上（如同一颗 IC 的 AGND 在孤岛、PGND 在主地）
+        降为候选：须按手册确认片内是否连通、外部是否必须连接。疑点按图面与手册排除。"""
+        g = self.graph
+        grounds = sorted(n for n in self.nets if n not in self.pseudo and _ground_like(n))
+        if len(grounds) < 2:
+            return
+        parent = {n: n for n in grounds}
+
+        def root(n):
+            while parent[n] != n:
+                parent[n] = parent[parent[n]]
+                n = parent[n]
+            return n
+
+        def join(a, b):
+            parent[root(a)] = root(b)
+
+        def blob(ref):
+            part = self.parts.get(ref, {})
+            return ' '.join(str(part.get(k, '')) for k in ('part', 'value', 'prim'))
+        for n in grounds:
+            frontier, seen = [(n, 0)], {n}
+            while frontier:
+                net, hops = frontier.pop()
+                for _, other in g.neighbors(net, kinds=PASSIVE_LINKS):
+                    if other in seen:
+                        continue
+                    seen.add(other)
+                    if other in parent:
+                        join(n, other)
+                    elif hops < 2 and len(self.nets.get(other, [])) == 2:
+                        frontier.append((other, hops + 1))
+        for ref in sorted(self.parts):
+            if not g.is_fitted(ref):
+                continue
+            if NET_TIE_RE.search(blob(ref)) or (g.kind(ref) in (INDUCTOR, FERRITE) and len(g.nets_of(ref)) > 2):
+                tied = [n for n in g.nets_of(ref) if n in parent]
+                for other in tied[1:]:
+                    join(tied[0], other)
+        groups = defaultdict(set)
+        for n in grounds:
+            groups[root(n)].add(n)
+        main = max(groups.values(), key=lambda nets: (sum(len(self.nets[n]) for n in nets), sorted(nets)))
+        main_refs = {ref for n in main for ref in g.refs_on(n)}
+
+        def is_ic(ref):
+            return g.kind(ref) == IC or bool(re.match(r'^(IC|A)\d', ref))
+
+        def ground_pin(node):
+            return _ground_like(self.pinname.get(node, '')) or _pin_class(self.pintype.get(node)) == 'GROUND'
+        for island in sorted(groups.values(), key=sorted):
+            if island is main:
+                continue
+            nodes = sorted(x for n in island for x in self.nets[n])
+            refs = {ref for n in island for ref in g.refs_on(n)}
+            pins = [x for x in nodes if x.split('.')[0] in refs and is_ic(x.split('.')[0]) and ground_pin(x)]
+            words = {t for x in list(island) + [self.pinname.get(x, '') for x in pins]
+                     for t in re.split(r'[^A-Z0-9]+', str(x).upper())}
+            cross = sorted(ref for ref in refs & main_refs if g.kind(ref) not in TWO_TERMINAL)
+            isolators = [ref for ref in refs
+                         if g.kind(ref) in (OPTO, TRANSFORMER) or ISOLATOR_RE.search(blob(ref))]
+            if (not pins or isolators or words & {'SENSE', 'SNS', 'KELVIN'}
+                    or any(g.kind(ref) == CONNECTOR for ref in refs)):
+                continue
+            detail = (f'{"/".join(sorted(island))} {nodes[:8]} 经已装配直流连接件到不了主地 '
+                      f'{"/".join(sorted(main))}；孤岛上 IC 地脚 {pins[:6]}，无连接器、无已知隔离器件')
+            if cross:
+                self.add('PWR-A03', '地名网孤岛（经多端器件跨接，待核片内连通）',
+                         detail + f'；{cross} 另有脚在主地，按手册核片内是否连通、外部是否必须相连',
+                         pins[0].split('.')[0], kind='CANDIDATE')
+            else:
+                self.add('PWR-A03', '地名网孤岛（IC 地脚到不了主地）', detail, pins[0].split('.')[0])
+
     def run(self):
         nets, parts, pinname, pin2net = (
             self.nets, self.parts, self.pinname, self.pin2net)
@@ -238,6 +326,8 @@ class Lint:
             if re.sub(r'_?[NP]$', '', a) == re.sub(r'_?[NP]$', '', b):
                 continue          # 差分对
             if re.fullmatch(r'N\d{6,}', a) or re.fullmatch(r'N\d{6,}', b):
+                continue
+            if KICAD_AUTO_NET_RE.search(a) or KICAD_AUTO_NET_RE.search(b):
                 continue
             self.add('NET-A02', '疑似网络名分裂',
                      f'{a}({len(nets[a])}节点) <-> {b}({len(nets[b])}节点)')
@@ -276,6 +366,7 @@ class Lint:
                 if n not in GNDS:
                     self.add('PWR-A03', 'VSS 球未入地',
                              f'{node} ({pn}) <- {n}', node.split('.')[0])
+        self._ground_islands()
 
         # NET-A06 引脚类型冲突（PINUSE/ERC）：只自动定判无歧义冲突；输入-only 作为候选
         if not self.pintype:

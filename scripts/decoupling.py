@@ -14,6 +14,7 @@ import re
 import board_intent
 from board_intent import input_fingerprint
 from electrical_contract import db_fingerprint, finite, load_json
+from checkers.netgraph import CONNECTOR, classify
 from i2c_topology import digest, validate_db_shape
 
 KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other'}
@@ -166,6 +167,7 @@ class Inventory:
         self.parts, self.nets = db.get('parts', {}), db.get('nets', {})
         self.pin2net = db.get('pin2net', {})
         self.names = dict(db.get('declared_pinname', {}), **db.get('pinname', {}))
+        self.declares_pins = 'declared_pinname' in db   # parser listed every symbol pin, so 0 pins is real
         self.types = dict(db.get('declared_pintype', {}), **db.get('pintype', {}))
         self.devices, self.components = devices or {}, self.cfg.get('components', {})
         self.pseudo = set(db.get('pseudo_nets', []))
@@ -202,9 +204,11 @@ class Inventory:
         return 'unmodeled'
 
     def two_terminal(self, ref):
-        """A two-pin part (diode/TVS/LED/thermistor/varistor/fuse...) has no supply/return pair to decouple;
-        its correctness is polarity and orientation, checked by other rules."""
-        return len(self.nodes.get(ref, set())) == 2
+        """A two-pin part (diode/TVS/LED/thermistor/varistor/fuse...) or a pinless symbol (mounting hole,
+        fiducial; only when the parser declares symbol pins) has no supply/return pair to decouple; two-pin parts are checked for polarity and
+        orientation by other rules. A one-pin part stays unverified: it may be a fragment of a larger device."""
+        count = len(self.nodes.get(ref, set()))
+        return count == 2 or (count == 0 and self.declares_pins)
 
     def supply_pin(self, node):
         """Only power/return pins matter to decoupling; other pin-map differences are DEV-D02's job."""
@@ -372,7 +376,8 @@ def build_decoupling_inventory(db, intent=None):
     inv = Inventory(db, cfg, (intent or {}).get('devices'))
     groups, device_records = inv.groups(), inv.device_inventory()
     candidates = [ref for ref in inv.parts if ref not in inv.devices and
-                  inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref)]
+                  inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref)
+                  and classify(ref, inv.parts[ref])[0] != CONNECTOR]   # keyword-identified headers/terminals
     two_terminal = sorted(ref for ref in candidates if inv.two_terminal(ref))
     unknown = sorted(set(candidates) - set(two_terminal))
     discovery_gaps = set(inv.input_gaps) | {'unverified-device-pinout:' + r for r in unknown}

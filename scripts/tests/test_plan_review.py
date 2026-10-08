@@ -436,6 +436,34 @@ class ReviewPlanTests(unittest.TestCase):
                          ['intent.devices.J1: official full pinout + exact MPN/package'])
         self.assertNotIn('pin_difference', undeclared)
 
+    def test_two_terminal_diode_on_two_terminal_package_needs_no_pinout(self):
+        def plan_with(ref, jedec, pins):
+            db = sample_db()
+            db['parts'][ref] = {'part': 'Green', 'value': 'Green', 'prim': 'Lib:LED', 'jedec': jedec, 'nc': False}
+            for pin, name, net in pins:
+                db['nets'].setdefault(net, []).append(f'{ref}.{pin}')
+                db['pin2net'][f'{ref}.{pin}'] = net
+                db['pinname'][f'{ref}.{pin}'] = name
+            plan = build_review_plan(db, {'schema_version': 3, 'input_sha256': input_fingerprint(db)})
+            return next(x for x in plan['checks'] if x['id'] == f'DEV-D02.{ref}')
+        led = plan_with('D1', 'e-radionica.com footprinti:0402LED', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')])
+        self.assertEqual(led['readiness'], 'READY')
+        self.assertEqual(led['required_inputs'], [])
+        self.assertIn('PCB-stage HANDOFF', led['pin_difference']['basis'])
+        dotted = plan_with('D8', 'Diode_SMD:D_SMA', [('1.1', 'A', 'VCC_3V3'), ('1.2', 'K', 'GND')])
+        self.assertEqual(dotted['readiness'], 'READY')
+        self.assertEqual(dotted['required_inputs'], [])
+        for ref, jedec, pins in (
+                ('D2', 'Package_TO_SOT_SMD:SOT-23', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND'), ('3', 'NC', 'GND')]),
+                ('D3', 'Diode_SMD:D_SMA', [('1', 'A1', 'VCC_3V3'), ('2', 'A2', 'GND')]),
+                ('D4', 'Custom:WEIRD', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')]),
+                ('D5', 'LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')]),
+                ('D6', 'LED_SMD:LED_Cree-XHP50_6V', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')]),
+                ('D7', 'LED_THT:LED_D5.0mm-4_RGB', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')]),
+                ('J9', 'Connector_Coaxial:SMA_Amphenol_132134', [('1', '+', 'VCC_3V3'), ('2', '-', 'GND')])):
+            with self.subTest(ref=ref):
+                self.assertEqual(plan_with(ref, jedec, pins)['readiness'], 'WAITING_EVIDENCE')
+
     def test_shared_declarations_require_a_current_netlist_binding(self):
         db = sample_db()
         intent = {'schema_version': 3,

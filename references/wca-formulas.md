@@ -44,6 +44,7 @@ bias_current_a 保证范围。ignored_nodes 只适合输入负载已计入偏置
 | 电感饱和与开关限流 | 正常最坏点 Isat≥Ipk_max；需求内的启动、过载、短路会进入开关限流时 Isat≥ILIM_max | Buck、Boost 等开关变换器通用。Isat 按资料定义（感量下降比例、温度）取最坏值；若允许限流时短时饱和，须有器件资料证明限流响应能在饱和电流下保护开关；温升电流另核 |
 | 随输出变化的线性供电（辅助绕组跟随器、LDO） | P=(Vaux(Vout)−Vcc)·Icc，在输出全范围扫描 | 极值通常在两路供电的交接点，不在端点；输出损耗边界及允许温度约束，实际热路径、结温与闭壳温升移交下游 |
 | LDO | P≈(Vin−Vout)·Iout+Vin·Iq | 高温/满载保证 dropout、Cout 有效值/ESR/稳定性、反向电流和放电条件逐项核对；PCB 热阻未知不宣称结温通过 |
+| 输入接入过冲（外部源热插拔） | 硬电压源（台架电源、适配器）经引线电感 L 接入 Cin：无阻尼上界 2·Vsrc；串联阻尼 R 时 ζ=(R/2)·√(Cin/L)，ζ<1 峰值≈Vsrc·(1+exp(−πζ/√(1−ζ²)))，ζ≥1 无过冲。限流源（太阳能板、恒流/限流电源）：仅当 Cin 远大于源侧电容（组件/电源输出电容与引线电容之和 Cp）时，ΔV≤Isc·√(L/Cin)，峰值≤Voc+ΔV；Cin 与 Cp 可比或 Cp 未知时，源侧电容经引线向 Cin 放电，峰值上界约 max(Voc, 2·Voc·Cp/(Cp+Cin))+ΔV，按此或硬源模型估算，或做仿真 | 先按需求确定源类型：需求只给太阳能板时用限流源模型，台架电源等可预见的硬源另列一个状态；不能不分源类型一律取 2·Vsrc。Cin 取同一网上全部电容（含电解）的有效最小值；阻尼 R 只能用有保证下界的 ESR/串阻，资料只给 tanδ/ESR 上限时不计阻尼；L 无资料时按引线长度与回路写明假设。峰值对绝对最大额定，稳态对推荐工作范围；原厂对高输入电压给了 RC/限流电路时，列为条件方案 |
 | MOS 保护/热插拔 | 导通 I²Rds(on)；线性态瞬时功耗 VDS·ID，能量积分 ∫VDS·ID dt | 依据相应 VDS、ID、脉宽和起始温度的 SOA 检查，不用额定电流或总能量代替 SOA；计时、重试和熔断器配合独立核对 |
 | TVS | VRWM 对正常峰值；VBR 对规定 IT；VC 对规定 Ipp/波形 | 再看漏电、温度、脉冲宽度、源阻抗/可用能量和后级承受能力。VRWM 不是击穿电压；型号数字仅用于检索 |
 | ADC / 运放 | 分压、偏置/失调/增益误差、RC 建立误差；简单模型误差约 ΔV·exp(−tacq/((Rsource+Ron)·Csample)) | 具体采样结构按 datasheet；同时检查共模范围、输出摆幅、GBW/压摆率、容性负载稳定性和参考驱动；不能只检查 ADC 直流满量程 |
@@ -96,6 +97,7 @@ ADC 的 FSR 是转换量程，模拟脚的绝限和共模窗口仍须独立核�
 - I2C 等效上拉和上升时间：[TI SLVA689 pp.2–4](https://www.ti.com/lit/an/slva689/slva689.pdf)，[NXP UM10204](https://www.nxp.com/docs/en/user-guide/UM10204.pdf)。
 - 掉电隔离需要具体 Ioff 规格，示例：[TI SN74LVC2G17 Rev.N §9.3](https://www.ti.com/lit/ds/symlink/sn74lvc2g17.pdf)；不能把某型号能力推广到所有输入。
 - 热插拔 MOS SOA：[TI LM5069 Rev.G §9.2.1.2.5](https://www.ti.com/lit/ds/symlink/lm5069.pdf)。
+- 输入接入过冲：[ADI（Linear）AN88 Ceramic Input Capacitors Can Cause Overvoltage Transients](https://www.analog.com/media/en/technical-documentation/application-notes/an88f.pdf)：硬源经引线电感接入陶瓷电容，尖峰可超过输入阶跃的两倍；电解电容 ESR 阻尼可抑制。
 - LDO 稳定条件：[TI SLVA115A](https://www.ti.com/lit/an/slva115a/slva115a.pdf)。
 - ADC 源阻抗和获取时间：[TI SPNA061](https://www.ti.com/lit/an/spna061/spna061.pdf)。
 - VRWM/VBR/VC 分列示例：[Littelfuse SMBJ 2025 v4 p.2](https://www.littelfuse.com/assetdocs/tvs-diodes-smbj-series-datasheet?assetguid=ba555e99-a12d-4f72-a0b6-86b06c67171e)。

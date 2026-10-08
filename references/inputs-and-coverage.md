@@ -248,7 +248,8 @@ KiCad 解析另存 `native_pintype`，保留 passive/free/no_connect 等原始�
 通过两个 CLI 共用的 `parse_netlist.self_check()` 检查时，只有原生 passive/free/no_connect 可无功能名；
 其余引脚仍须命名。类型须覆盖全部 pin2net 节点且属于已知类型，未知/缺类型不能豁免。
 纯 no_connect 类型也进入类型索引，不因剥离属性而丢失。
-`pin_name_coverage` 分别列 required、named、missing_functional_pins、legitimately_unnamed。
+`pin_name_coverage` 分别列 required、named、missing_functional_pins、unnamed_connector_pins、legitimately_unnamed。
+连接器（位号 J/P/CN 或库/型号关键字识别为端子、排针、JST 等）的触点按编号识别，库把它们定为 input 等类型却不命名时，列入 unnamed_connector_pins，不判解析完整性失败、不阻断去耦等下游清单；图面目检（DOC-V02）时引用该清单逐个记录。
 
 不为无名称电阻/电容等补造 pinname，不将 passive 强行转成信号或电源脚。此处理仅修正
 解析完整性判据；不替代原厂 pinout、极性、额定值和实际连接审查。Cadence/旧适配器没有
