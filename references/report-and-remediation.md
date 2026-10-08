@@ -15,6 +15,7 @@
   `valid=true` 只表示记录可对账，不作“审查通过”展示。
 - 审查未完成时写明“审查进行中”，只交进度和剩余工作。仅 PDF、外部缺证等限制直接说明影响，不写长篇免责声明。
 - 复审概括本轮新增、修复、撤回和仍开放的事项，历史数量不混入当前缺陷。
+- 有开放的需求澄清时，结论里单列“需求说明问题”一段，直接说明：本轮有 N 项证据不足是需求说明不明确造成的，不是电路缺陷，也不是缺器件资料。逐个澄清项写：需求原文（或“未提及”）→ 不明确在哪里 → 建议补入需求说明的条文 → 关联几项检查、未定前的冻结影响。N 取 `requirement_clarification_summary.insufficient_from_requirements`。
 
 结论后固定列一组计数，每类单独一行，为 0 也写出（写“FAIL 0”，不写“无 FAIL”或省略）；
 一行结论与项目审查目录 README（如有）的摘要重复同一组数字：
@@ -29,6 +30,7 @@
 | 电路改进建议 PROPOSED / NONE | 唯一任务数 | `workflow.design_options`；只统计带 `design_option` 的任务 |
 | 移交状态 OPEN / ACCEPTED / VERIFIED | 必需移交的检查数 | `categorized_summary.handoffs_by_state`；只统计 `required: true`，集成约束（`required: false`）不计入 |
 | 需求澄清 开放 / 其中阻断 / 其中已覆盖 / 已解决 / 已撤回 | 唯一澄清项数 | `requirement_clarification_summary` 的 open / blocking_open / covered_open / resolved / retracted |
+| 需求说明不明确导致的证据不足 | 当前 INSUFFICIENT 行数 | `requirement_clarification_summary.insufficient_from_requirements`（即 gap_cause 为 REQUIREMENT_OPEN 的行） |
 
 工具输出省略的类别按 0 补齐。检查行数、唯一缺陷数、移交数和澄清项数口径不同，不相加。
 
@@ -41,7 +43,7 @@
 |---|---|---|---|---|
 
 - **电气缺陷**标 P0–P3，写清不满足的判据、工况和影响，链接证据与计算，按下文“修改说明”给改法。
-- **需求澄清**写已核输入、待决内容/建议、责任方和关闭依据，见 [需求澄清项](requirement-clarifications.md)；不套缺陷等级。
+- **需求澄清**写需求原文（或“未提及”）、已核输入、建议补入的需求条文、责任方和关闭依据，见 [需求澄清项](requirement-clarifications.md)；不套缺陷等级。
 - **证据不足**写已知什么、具体缺什么、影响哪个判断、如何关闭；先完成现有资料支持的分析，同一补证动作只列一次。
   潜在 P0–P3 按 [危险度分类原则](verdicts-and-release.md#证据不足的危险度分类原则)，写实际后果路径、独立保护/排除依据及调整等级的条件；
   与冻结影响分别展示，不把补证难度或 C 置信度当危险度，也不称潜在等级为已确认缺陷等级。

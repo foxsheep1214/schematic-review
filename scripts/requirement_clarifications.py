@@ -69,6 +69,11 @@ def validate_clarifications(report, checks, expected):
                 cid + ': include requirement IDs of affected requirement checks')
         if row.get('status') == 'OPEN':
             require(set(linked) <= gaps, cid + ': open clarification links only REQUIREMENT_OPEN checks; keep independent defects separate')
+            # The report must say plainly what the requirement document says (or omits) and what to add.
+            require(text(row.get('requirement_text')),
+                    cid + ': requirement_text must quote the requirement wording or state 未提及 and what was searched')
+            require(text(row.get('proposed_requirement')),
+                    cid + ': proposed_requirement must give the clause to add to the requirement document')
             impact = row.get('freeze_impact')
             require(impact in ('BLOCKING', 'COVERED'), cid + ': freeze_impact must be BLOCKING or COVERED')
             require((impact == 'COVERED' and row.get('decision_due') == 'FOLLOW_UP')
@@ -92,7 +97,9 @@ def validate_clarifications(report, checks, expected):
                                  'root_cause': row.get('question'), 'check_ids': linked, 'due_stage': 'design_iteration',
                                  'reason': row.get('impact_reason'), 'next_action': row.get('decision_needed'),
                                  'owner': row.get('owner'), 'decision_due': row.get('decision_due'),
-                                 'closure_criteria': row.get('closure_criteria'), 'evidence': row.get('evidence')})
+                                 'closure_criteria': row.get('closure_criteria'), 'evidence': row.get('evidence'),
+                                 'requirement_text': row.get('requirement_text'),
+                                 'proposed_requirement': row.get('proposed_requirement')})
         elif row.get('status') in ('RESOLVED', 'RETRACTED'):
             closure = row.get('closure')
             require(isinstance(closure, dict), cid + ': closed clarification needs closure record')
@@ -121,6 +128,7 @@ def validate_clarifications(report, checks, expected):
     counts = Counter(row.get('status') for row in out['items'] if isinstance(row.get('status'), str))
     out['summary'] = {'total': len(out['items']), 'open': counts['OPEN'], 'resolved': counts['RESOLVED'],
                       'retracted': counts['RETRACTED'], 'affected_checks': len(out['by_check']),
+                      'insufficient_from_requirements': len(gaps),
                       'blocking_open': sum(x.get('status') == 'OPEN' and x.get('freeze_impact') == 'BLOCKING' for x in out['items']),
                       'covered_open': sum(x.get('status') == 'OPEN' and x.get('freeze_impact') == 'COVERED' for x in out['items'])}
     return out

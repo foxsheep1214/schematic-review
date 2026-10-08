@@ -41,6 +41,8 @@ def fixture(first_key=C1):
 def clarification(check_ids=None):
     return {'id': 'CL-INPUT', 'title': 'Define input range', 'kind': 'MISSING', 'status': 'OPEN',
             'question': 'Synthetic input range is not decided', 'decision_needed': 'Confirm operating input range',
+            'requirement_text': '未提及：已查 synthetic requirement Rev A 全文',
+            'proposed_requirement': 'Operating input 9–36 V DC continuous, 40 V for 100 ms',
             'owner': 'Synthetic requirement owner', 'decision_due': 'BEFORE_DESIGN',
             'closure_criteria': 'Controlled requirement and affected check re-review', 'evidence': E,
             'freeze_impact': 'BLOCKING', 'impact_reason': 'Input range affects electrical rating',

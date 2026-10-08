@@ -33,6 +33,8 @@ def sample():
                  'id': 'CL-LOAD', 'title': 'Decide maximum load', 'kind': 'MISSING', 'status': 'OPEN',
                  'question': 'Controlled requirement leaves maximum load undecided',
                  'decision_needed': 'Select and confirm the supported load range',
+                 'requirement_text': '需求 Rev A §3.2：“输出能驱动常见负载”，未给最大电流',
+                 'proposed_requirement': '输出最大连续电流 2 A，25 ℃～60 ℃ 环境下持续',
                  'owner': 'System requirements owner', 'decision_due': 'BEFORE_DESIGN',
                  'closure_criteria': 'Confirmed requirement revision and re-review of affected checks',
                  'requirement_ids': ['REQ-LOAD'], 'check_ids': [REQ, POWER], 'evidence': E,
@@ -223,6 +225,22 @@ class RequirementClarificationTests(unittest.TestCase):
         p['checks'][0]['object']['requirement_status'] = 'CONFIRMED'
         r['plan_digest'] = fingerprint(p)
         self.assertTrue(validate_review(p, r, db)['valid'])
+
+    def test_open_question_must_state_requirement_wording_and_proposed_clause(self):
+        for field in ('requirement_text', 'proposed_requirement'):
+            for value in (None, '', '  ', 3):
+                with self.subTest(field=field, value=value):
+                    p, r, db = sample()
+                    r['requirement_clarifications'][0][field] = value
+                    out = validate_review(p, r, db)
+                    self.assertFalse(out['valid'])
+                    self.assertTrue(any(field in e for e in out['errors']), out['errors'])
+
+    def test_summary_counts_gaps_caused_by_unclear_requirements(self):
+        p, r, db = sample()
+        out = validate_review(p, r, db)
+        self.assertTrue(out['valid'], out)
+        self.assertEqual(out['requirement_clarification_summary']['insufficient_from_requirements'], 2)
 
     def test_malformed_question_fields_return_validation_errors(self):
         for field in ('id', 'kind', 'status', 'owner', 'evidence', 'check_ids', 'requirement_ids', 'decision_due', 'freeze_impact'):

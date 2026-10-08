@@ -51,6 +51,8 @@
     "status": "OPEN",
     "question": "受控需求的输出电流尚未确定，当前资料未给出可用于选型的范围",
     "decision_needed": "需求责任方确定最大连续电流和适用工况；候选值及建议应附依据",
+    "requirement_text": "需求规格 Rev A §3.2：“输出能驱动常见负载”，未给出最大电流",
+    "proposed_requirement": "输出最大连续电流 2 A（25～60 ℃ 环境），峰值 3 A 持续不超过 100 ms",
     "owner": "系统需求负责人（角色，实际人员待指定）",
     "decision_due": "BEFORE_DESIGN",
     "closure_criteria": "形成受控需求修订，并按确定负载重审损耗和额定值",
@@ -67,6 +69,9 @@
 
 字段均为上例所示，仅未编号需求可省略 requirement_ids；关联检查已有 REQ ID 时必须填写，其余为必填。owner 可写真实责任角色，不虚构人员；
 question 写事实与歧义，decision_needed 写要决定什么并尽可能给有依据的选项/建议；
+OPEN 项另须填两项，供报告直接告诉需求方“需求说明哪里不明确、该怎么写”：
+`requirement_text` 引用需求原文及位置，需求未提及时写“未提及”并列出已查的文档与章节；
+`proposed_requirement` 写建议补入需求说明的条文，要具体到可验收的数值、工况或允许/禁止的行为，有多个可选口径时写推荐项并注明其他选项。建议条文只是提案，需求方确认前不作为判据。
 closure_criteria 写确认方式和复验范围。evidence 必须定位已检查的输入和待决依据。
 
 OPEN 项的 check_ids 只关联 `INSUFFICIENT + REQUIREMENT_OPEN` 检查。这些检查仍须有

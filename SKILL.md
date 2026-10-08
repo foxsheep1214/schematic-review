@@ -84,6 +84,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 判据和确认状态；装配配置写入 `intent.assemblies`；设 `review_phase`（日常设计 `design_iteration`，
 用户明确要冻结才用 `schematic_freeze`）。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
 集中提出，先做不受影响的工作，不逐颗器件打断用户，也不自行接受风险。
+确认是需求说明不明确造成的证据不足，报告结论直接写明：引用需求原文（或说明未提及），给出建议补入的需求条文。
 按 [输入与覆盖](references/inputs-and-coverage.md) 记录输入版本/哈希；PDF 与网表须核修订号证明同版。
 仅有 PDF 时逐页读图并声明范围，不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装须另获授权。
 
