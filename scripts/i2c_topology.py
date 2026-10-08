@@ -244,6 +244,33 @@ class Inventory:
                     if edge['conductive']:
                         adjacency[n1].append((n2, edge_id))
                         adjacency[n2].append((n1, edge_id))
+        # A pullup's supply pin may reach its rail through fitted 0R links or
+        # explicitly closed jumpers. This auxiliary trace must not join SDA and
+        # SCL through their common rail, nor cross finite resistors/boundaries.
+        rail_links = defaultdict(list)
+        for edge_id, edge in sorted(edges.items()):
+            if edge['conductive'] and (edge['kind'] == 'jumper' or edge['ohms'] == 0):
+                a, b = edge['nets']
+                if a != b and not ({a, b} & self.pseudo):
+                    rail_links[a].append((b, edge_id))
+                    rail_links[b].append((a, edge_id))
+
+        def supply_paths(start, excluded_edge):
+            found, seen, queue = {}, {start}, deque([(start, [])])
+            while queue:
+                net, path = queue.popleft()
+                if self.rail(net):
+                    found[net] = path
+                    continue  # never traverse a common supply into another branch
+                for other, edge_id in sorted(rail_links[net]):
+                    if edge_id != excluded_edge and other not in seen:
+                        if len(seen) >= MAX_TRACE_NETS:
+                            found['__trace_limit__'] = []
+                            return found
+                        seen.add(other)
+                        queue.append((other, path + [edge_id]))
+            return found
+
         starts = set()
         declared_starts = set()
         for bus in buses:
@@ -306,18 +333,41 @@ class Inventory:
                     region['gaps'].add('population:' + ref)
                 for edge in ref_edges:
                     other = [n for n in edge['nets'] if n not in members]
-                    if not other and edge['conductive']:
-                        region['edges'].append(edge)
-                    elif edge['conductive'] and kind == 'resistor' and len(other) == 1 and self.rail(other[0]) and not GROUND.search(other[0]):
-                        rail = other[0]
-                        net = next(n for n in edge['nets'] if n in members)
-                        region['pullups'].append({'ref': ref, 'nodes': edge['nodes'], 'signal_net': net, 'rail': rail,
-                            'ohms': edge['ohms'], 'tolerance': edge['tolerance'], 'path': paths[net],
-                            'rail_basis': 'declared' if rail in self.rails else 'name-hint'})
-                        if rail not in self.rails:
-                            region['gaps'].add('rail-identity:' + rail)
+                    pullup = None
+                    if edge['conductive'] and kind == 'resistor':
+                        ends = [supply_paths(n, edge['edge_id']) for n in edge['nets']]
+                        if any('__trace_limit__' in end for end in ends):
+                            region['gaps'].add('supply-trace-net-limit:' + ref)
+                        if any(len(set(end) - {'__trace_limit__'}) > 1 for end in ends):
+                            region['gaps'].add('multiple-supply-paths:' + ref)
+                        for side in (0, 1):
+                            rail_end, signal_end = ends[side], ends[1 - side]
+                            signal_net = edge['nets'][1 - side]
+                            if signal_net not in members or signal_end or len(rail_end) != 1:
+                                continue
+                            rail = next(iter(rail_end))
+                            if rail == '__trace_limit__' or GROUND.search(rail):
+                                continue
+                            # A 0R rail terminator reached through a finite
+                            # resistor is a supply link, not a second pullup or
+                            # proof that the bus is shorted directly to power.
+                            if edge['ohms'] == 0 and any(
+                                    edges[e]['kind'] == 'resistor' and edges[e]['ohms'] != 0
+                                    for e in paths[signal_net]):
+                                continue
+                            pullup = {'ref': ref, 'nodes': edge['nodes'], 'signal_net': signal_net,
+                                'rail': rail, 'ohms': edge['ohms'], 'tolerance': edge['tolerance'],
+                                'path': paths[signal_net], 'rail_path': rail_end[rail],
+                                'rail_basis': 'declared' if rail in self.rails else 'name-hint'}
+                            break
+                    if pullup:
+                        region['pullups'].append(pullup)
+                        if pullup['rail'] not in self.rails:
+                            region['gaps'].add('rail-identity:' + pullup['rail'])
                         if edge['ohms'] == 0:
                             region['gaps'].add('zero-ohm-to-rail:' + ref)
+                    elif not other and edge['conductive']:
+                        region['edges'].append(edge)
                     else:
                         region['boundaries'].append(dict(edge, boundary_kind='passive-stop'))
                         if edge['stop_reason'] not in (None, 'not-fitted', 'open'):
