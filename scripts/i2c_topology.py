@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """State-bound I2C connectivity inventory, never an electrical solver or verdict.
 
-Traverse verified fitted two-pin resistors/closed jumpers for discovery. Keep
+Traverse verified fitted resistor branches/closed jumpers for discovery. Keep
 finite series resistance and translator boundaries; never flatten them into a
 SIG-E01 equivalent. Unverified population, names and external ports stay gaps.
 """
@@ -97,19 +97,20 @@ def validate_i2c_intent(intent, db=None):
         require(_text(comp.get('citation')), 'component needs type/model citation')
         links = comp.get('links')
         if links is not None:
-            require(comp.get('kind') == 'jumper', 'only a jumper can declare links')
-            require(isinstance(links, list) and bool(links), 'jumper links must be a nonempty array')
+            require(comp.get('kind') in ('resistor', 'jumper'), 'only a resistor or jumper can declare links')
+            label = 'resistor' if comp.get('kind') == 'resistor' else 'jumper'
+            require(isinstance(links, list) and bool(links), label + ' links must be a nonempty array')
             seen_links, linked_nodes = set(), set()
             for link in links if isinstance(links, list) else []:
                 valid = isinstance(link, list) and len(link) == 2 and all(node_ok(n) and n.rsplit('.', 1)[0] == ref for n in link) and link[0] != link[1]
-                require(valid, 'jumper link needs two distinct physical nodes on ' + ref)
+                require(valid, label + ' link needs two distinct physical nodes on ' + ref)
                 if valid:
                     pair = tuple(sorted(link))
-                    require(pair not in seen_links, 'duplicate jumper link: ' + ref)
+                    require(pair not in seen_links, 'duplicate ' + label + ' link: ' + ref)
                     seen_links.add(pair)
                     linked_nodes.update(link)
             if db is not None:
-                require(linked_nodes == {n for n in db.get('pin2net', {}) if n.rsplit('.', 1)[0] == ref}, 'jumper links must cover every physical pin: ' + ref)
+                require(linked_nodes == {n for n in db.get('pin2net', {}) if n.rsplit('.', 1)[0] == ref}, label + ' links must cover every physical pin: ' + ref)
         if db is not None and comp.get('kind') in ('resistor', 'jumper') and links is None:
             require(len([n for n in db.get('pin2net', {}) if n.rsplit('.', 1)[0] == ref]) == 2, 'pass-through must have exactly two physical pins: ' + ref)
         ports = comp.get('ports', [])
@@ -309,7 +310,7 @@ class Inventory:
                         region['edges'].append(edge)
                     elif edge['conductive'] and kind == 'resistor' and len(other) == 1 and self.rail(other[0]) and not GROUND.search(other[0]):
                         rail = other[0]
-                        net = self.pin2net[here[0]]
+                        net = next(n for n in edge['nets'] if n in members)
                         region['pullups'].append({'ref': ref, 'nodes': edge['nodes'], 'signal_net': net, 'rail': rail,
                             'ohms': edge['ohms'], 'tolerance': edge['tolerance'], 'path': paths[net],
                             'rail_basis': 'declared' if rail in self.rails else 'name-hint'})
