@@ -204,7 +204,7 @@ def device_errors(devices, db):
         pins = device.get('pins')
         require(isinstance(pins, dict) and bool(pins), 'device needs full physical pin map')
         for pin, spec in pins.items() if isinstance(pins, dict) else []:
-            require(_text(pin) and '.' not in pin and not any(c.isspace() for c in pin),
+            require(_text(pin) and not any(c.isspace() for c in pin),
                     'invalid physical pin number')
             if not isinstance(spec, dict):
                 require(False, 'pin must be an object')
@@ -233,7 +233,7 @@ def pin_sets(db, ref, device):
     official = {ref + '.' + pin for pin in device['pins']}
     observed = set()
     for field in ('pin2net', 'pinname', 'pintype', 'declared_pinname', 'declared_pintype'):
-        observed.update(n for n in db.get(field, {}) if n.rpartition('.')[0] == ref)
+        observed.update(n for n in db.get(field, {}) if n.partition('.')[0] == ref)
     return sorted(official - observed), sorted(observed - official)
 
 

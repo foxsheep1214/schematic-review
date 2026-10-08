@@ -69,7 +69,7 @@ def prepare(db_path, spec_path):
             nominal = nominal['kohm'] * 1000 if nominal else None
         if nominal is None or not values[0] <= nominal <= values[-1]:
             raise ValueError('Schematic nominal outside declared SI bounds: ' + ref)
-        pins = {p: n for p, n in db['pin2net'].items() if p.rsplit('.', 1)[0] == ref}
+        pins = {p: n for p, n in db['pin2net'].items() if p.split('.', 1)[0] == ref}
         if set(pins) != {ref + '.1', ref + '.2'} or any(p not in db['nets'].get(n, []) for p, n in pins.items()):
             raise ValueError('Expected two mutually consistent physical pins: ' + ref)
         a, b = pins[ref + '.1'], pins[ref + '.2']

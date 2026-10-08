@@ -199,7 +199,7 @@ def dependency_catalog(plan, db, snapshot):
             gaps.append('no-dependency-anchors')
         gaps.extend('unknown-source:' + sid for sid in declared_sources if sid not in source_map)
         for node in targets['nodes']:
-            targets['refs'].add(node.rsplit('.', 1)[0])
+            targets['refs'].add(node.split('.', 1)[0])
             if text(db.get('pin2net', {}).get(node)):
                 targets['nets'].add(db['pin2net'][node])
             elif node not in db.get('declared_pinname', {}):
@@ -237,12 +237,12 @@ def _coordinates(old_db, new_db, refs=(), nodes=(), nets=()):
     refs, nodes, nets = set(refs), set(nodes), set(nets)
     for db in (old_db, new_db):
         for node, net in db.get('pin2net', {}).items():
-            if node in nodes or node.rsplit('.', 1)[0] in refs or net in nets:
+            if node in nodes or node.split('.', 1)[0] in refs or net in nets:
                 nodes.add(node)
                 nets.add(net)
         for net in tuple(nets):
             nodes.update(db.get('nets', {}).get(net, []))
-    refs.update(n.rsplit('.', 1)[0] for n in nodes)
+    refs.update(n.split('.', 1)[0] for n in nodes)
     return {'refs': refs, 'nodes': nodes, 'nets': nets}
 
 

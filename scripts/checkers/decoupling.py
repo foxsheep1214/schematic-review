@@ -13,6 +13,35 @@ REQUIREMENT_RULES = (('connection', 'PWR-D02'), ('capacitance', 'PWR-C09'), ('ra
 PLAN_RULES = frozenset({'PWR-D01', 'PWR-T03'} | {rule for _, rule in REQUIREMENT_RULES})
 
 
+def local_connection_gaps(group, inventory):
+    """Separate an explicit group's connection proof from other pinout groups.
+
+    Global inventory and source pin differences remain unchanged. Only a
+    complete source-bound device map and exact declared supply/return roles
+    allow unrelated pins of that same device to leave this narrow gate.
+    """
+    gaps = list(group['gaps'])
+    ref = group['ref']
+    device = next((d for d in inventory['devices'] if d['ref'] == ref), None)
+    if group['origin'] != 'declared' or not device or not device['pinout_complete']:
+        return gaps
+    local = set(group['supply_nodes'] + group['return_nodes'])
+    pins = device['pins']
+    for field, role in (('supply_nodes', 'power'), ('return_nodes', 'return')):
+        if not group[field] or any(node.partition('.')[0] != ref or
+                pins.get(node.partition('.')[2], {}).get('role') != role
+                for node in group[field]):
+            return gaps
+    kept = []
+    for gap in gaps:
+        kind, _, node = gap.partition(':')
+        unrelated_difference = kind in ('official-pin-absent', 'pin-not-in-official-map') and (
+            node.partition('.')[0] == ref and node.partition('.')[2] and node not in local)
+        if not unrelated_difference:
+            kept.append(gap)
+    return kept
+
+
 class DecouplingChecker(Checker):
     id = 'decoupling'
     title = '去耦覆盖'
@@ -29,7 +58,7 @@ class DecouplingChecker(Checker):
     allow_manual_bound_objects = False
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion',
                         'readiness', 'required_inputs', 'trigger', 'inventory_gaps',
-                        'required_material_refs', 'handoff')
+                        'required_material_refs', 'handoff', 'full_inventory_gaps')
 
     def incomplete_message(self, key):
         return key + ': incomplete decoupling planned coverage'
@@ -61,14 +90,16 @@ class DecouplingChecker(Checker):
                        'decoupling_group': group['id'], 'decoupling_inventory_digest': inventory['digest']}
                 if len(group['supply_nets']) == 1:
                     obj['net'] = group['supply_nets'][0]
+                connection_gaps = local_connection_gaps(group, inventory)
                 item = planner.add_check('PWR-T03', deepcopy(obj), key=group['id'],
-                    readiness='WAITING_EVIDENCE' if group['gaps'] else 'READY',
-                    required_inputs=group['gaps'], trigger=['decoupling-group:' + group['id']])
-                item['inventory_gaps'] = group['gaps']
+                    readiness='WAITING_EVIDENCE' if connection_gaps else 'READY',
+                    required_inputs=connection_gaps, trigger=['decoupling-group:' + group['id']])
+                item['inventory_gaps'] = connection_gaps
+                item['full_inventory_gaps'] = group['gaps']
                 for kind, rule in REQUIREMENT_RULES:
                     requirements = [r for r in group['requirements'] if r['kind'] == kind]
                     for req in requirements or [None]:
-                        gaps = group['gaps'] + (group['capacitance_gaps'] if kind == 'capacitance' else [])
+                        gaps = (connection_gaps if kind == 'connection' else group['gaps']) + (group['capacitance_gaps'] if kind == 'capacitance' else [])
                         if req is None:
                             gaps = gaps + ['datasheet-requirement:' + kind]
                         key = group['id'] + ('-' + slug(req['id']) if req else '')
@@ -81,6 +112,7 @@ class DecouplingChecker(Checker):
                                 'constraint': '按本组实际器件条款落实去耦位置、回流与环路；同网共享电容不证明各器件本地去耦充分',
                                 'verification': '核对本组各供电脚、实际电容与返回路径的 PCB 摆放和回路'}, 'APPLICABLE'))
                         item['inventory_gaps'] = sorted(set(gaps))
+                        item['full_inventory_gaps'] = group['gaps']
                         item['analysis_required'] = True
                         item['required_material_refs'] = sorted(set([group['ref']] + group['fitted_capacitors']))
 

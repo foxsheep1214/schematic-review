@@ -137,7 +137,7 @@ def validate_decoupling_intent(intent, db=None):
             nodes = group.get(field)
             require(_strings(nodes), field + ' needs unique physical nodes')
             for node in nodes if _strings(nodes) else []:
-                prefix, _, number = node.rpartition('.')
+                prefix, _, number = node.partition('.')
                 spec = pins.get(number)
                 require(prefix == ref and isinstance(spec, dict) and spec.get('role') == role, field + ' must match device physical pin roles: ' + node)
                 if role == 'power':
@@ -171,14 +171,14 @@ class Inventory:
         self.pseudo = set(db.get('pseudo_nets', []))
         self.nodes, self.input_gaps = defaultdict(set), set()
         for node in set(self.names) | set(self.types) | set(self.pin2net):
-            ref, dot, number = node.rpartition('.')
+            ref, dot, number = node.partition('.')
             if not dot or not number or ref not in self.parts:
                 self.input_gaps.add('invalid-physical-node:' + node)
             self.nodes[ref].add(node)
         seen = set()
         for net, nodes in self.nets.items():
             for node in nodes:
-                ref = node.rpartition('.')[0]
+                ref = node.partition('.')[0]
                 self.nodes[ref].add(node)
                 if node in seen or self.pin2net.get(node) != net or ref not in self.parts:
                     self.input_gaps.add('inconsistent-index:' + node)
@@ -218,7 +218,7 @@ class Inventory:
         return 'refdes-hint'
 
     def role(self, node):
-        ref, _, pin = node.rpartition('.')
+        ref, _, pin = node.partition('.')
         spec = self.devices.get(ref, {}).get('pins', {}).get(pin)
         if spec:
             return spec['role']
@@ -335,7 +335,7 @@ class Inventory:
                     if cap['nominal_f'] is None:
                         value_gaps.add('capacitance-unparsed:' + cap_ref)
             # Boundaries are listed, never crossed -- including 0R and closed jumpers.
-            refs = {n.rpartition('.')[0] for net in supply_nets for n in self.nets.get(net, [])}
+            refs = {n.partition('.')[0] for net in supply_nets for n in self.nets.get(net, [])}
             for other_ref in sorted(refs - {ref} - set(caps)):
                 nodes = sorted(self.nodes[other_ref])
                 kind = self.kind(other_ref)

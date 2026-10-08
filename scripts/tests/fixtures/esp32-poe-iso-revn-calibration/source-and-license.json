@@ -1,0 +1,20 @@
+{
+  "source_repo": "https://github.com/OLIMEX/ESP32-POE-ISO",
+  "source_commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01",
+  "copyright": "OLIMEX Ltd.; source open hardware",
+  "license": "CERN OHL v1.2; supplied CERN-OHL-1.2.txt",
+  "source_schematic_sha256": "9b1bfcaa70163d169e4b88dfbf200e6914d34ebd50faf48b67cda70fa8de27ad",
+  "variant_xml_sha256": "d35544d5ea2fc2d92a79f2e55a99d8392ec2711e2bef04fc5184bf21a763cbea",
+  "frozen_adapted_db_sha256": "0bb7e9735309c02ecbd90896f9669907c59742aea21bc724157163300bc55a0d",
+  "changes": "Calibration variant: TVS1.1 isolated on /RD; R29=330k/1%/R0402. Controlled official FET metadata names only were supplied before strict CLI parse. Fixture preserves entire physical graph and all values; only export_meta.source absolute temporary path shortened; JSON compacted. Not an original author design.",
+  "modification_notice": "Modified for schematic-review calibration on2026-10-08; derivative source distributed with original source/commit/license and reproducible change description.",
+  "scope": "Portable tests exercise actual frozen graph and explicit synthetic test contract. bind_evidence emits plainly synthetic documents and does not certify manufacturer availability/identity/rating. Actual manual manufacturer checks and fully bound real-PDF hot replay remain in campaign records. Repair control only25C initial1%, not full-temperature or real repaired circuit sign-off.",
+  "numerical_provenance": [
+    {
+      "url": "https://www.ti.com/lit/ds/symlink/tps62a02a.pdf",
+      "version": "SLUSEG9E",
+      "sha256": "cad0b23ab86368916991fc9bb2840df5f9b8013320eb8b62b28ae517e53f6518",
+      "locator": "p5 PWM VFB591..609mV,IFB±100nA; p9 divider formula"
+    }
+  ]
+}

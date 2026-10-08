@@ -1,0 +1,30 @@
+{
+  "id": "U7-FB-INITIAL25C",
+  "rule": "PWR-E01",
+  "kind": "divider",
+  "ref": "U7",
+  "node": "U7.5",
+  "net": "Net-(U7-FB)",
+  "citation": "Explicit regression-only numerical contract; reviewed source TPS62A02A SLUSEG9E p5/9. Source guarantees are separately audited in the campaign; synthetic document binding here.",
+  "vref": {
+    "min": 0.591,
+    "typ": 0.6,
+    "max": 0.609
+  },
+  "expected": {
+    "min": 3,
+    "max": 3.6
+  },
+  "resistor_tolerance": 0.01,
+  "divider_model": {
+    "source_net": "+3.3V",
+    "reference_net": "GND",
+    "ignored_nodes": {
+      "U7.5": "Feedbackinputcurrent included only where guarantee exists; exact IC bias is separate modeled term"
+    },
+    "bias_current_a": {
+      "min": -1e-07,
+      "max": 1e-07
+    }
+  }
+}

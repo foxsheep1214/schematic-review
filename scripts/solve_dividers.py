@@ -70,6 +70,11 @@ def parse_resistor(value, default_tol=None, exact=False):
         end = normal.end()
     remainder = upper[end:]
     remainder = re.sub(r'^OHMS?', '', remainder)
+    # Explicit trailing resistor package is metadata, not resistance/tolerance.
+    # Reject all other suffixes through the existing full tolerance match.
+    package = re.fullmatch(r'(.*?)\s*/\s*R(?:01005|0201|0402|0603|0805|1206|1210|1812|2010|2512)\s*', remainder)
+    if package:
+        remainder = package.group(1)
     # Only a single complete tolerance may follow the value/unit. Searching
     # anywhere in the input would accept junk or skip a conflicting tolerance.
     tol_match = None
@@ -91,7 +96,6 @@ def parse_resistor(value, default_tol=None, exact=False):
         result['tol_exact'] = (str(Fraction(tol_match.group(1)) / 100) if tol_match
                                else str(Fraction(str(default_tol))) if default_tol is not None else None)
     return result
-
 
 def r_kohm(value):
     """兼容旧调用：只返回标称 kΩ。"""

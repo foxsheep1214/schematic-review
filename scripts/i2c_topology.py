@@ -58,7 +58,7 @@ def validate_i2c_intent(intent, db=None):
         require(not set(obj) - set(allowed), label + ' has unsupported fields')
     def node_ok(node):
         return _text(node) and '.' in node and (db is None or (
-            node.rsplit('.', 1)[0] in db.get('parts', {}) and
+            node.split('.', 1)[0] in db.get('parts', {}) and
             node in db.get('nets', {}).get(db.get('pin2net', {}).get(node), []) and
             db.get('pin2net', {}).get(node) not in db.get('pseudo_nets', [])))
     require(not {'states', 'db_sha256'} & set(cfg), 'states/db_sha256 moved to intent.assemblies/intent.input_sha256')
@@ -102,7 +102,7 @@ def validate_i2c_intent(intent, db=None):
             require(isinstance(links, list) and bool(links), label + ' links must be a nonempty array')
             seen_links, linked_nodes = set(), set()
             for link in links if isinstance(links, list) else []:
-                valid = isinstance(link, list) and len(link) == 2 and all(node_ok(n) and n.rsplit('.', 1)[0] == ref for n in link) and link[0] != link[1]
+                valid = isinstance(link, list) and len(link) == 2 and all(node_ok(n) and n.split('.', 1)[0] == ref for n in link) and link[0] != link[1]
                 require(valid, label + ' link needs two distinct physical nodes on ' + ref)
                 if valid:
                     pair = tuple(sorted(link))
@@ -110,9 +110,9 @@ def validate_i2c_intent(intent, db=None):
                     seen_links.add(pair)
                     linked_nodes.update(link)
             if db is not None:
-                require(linked_nodes == {n for n in db.get('pin2net', {}) if n.rsplit('.', 1)[0] == ref}, label + ' links must cover every physical pin: ' + ref)
+                require(linked_nodes == {n for n in db.get('pin2net', {}) if n.split('.', 1)[0] == ref}, label + ' links must cover every physical pin: ' + ref)
         if db is not None and comp.get('kind') in ('resistor', 'jumper') and links is None:
-            require(len([n for n in db.get('pin2net', {}) if n.rsplit('.', 1)[0] == ref]) == 2, 'pass-through must have exactly two physical pins: ' + ref)
+            require(len([n for n in db.get('pin2net', {}) if n.split('.', 1)[0] == ref]) == 2, 'pass-through must have exactly two physical pins: ' + ref)
         ports = comp.get('ports', [])
         require(isinstance(ports, list), 'ports must be an array')
         if ports:
@@ -125,7 +125,7 @@ def validate_i2c_intent(intent, db=None):
             fields(port, ('sda', 'scl'), 'port')
             for signal in ('sda', 'scl'):
                 node = port.get(signal)
-                require(node_ok(node) and node.rsplit('.', 1)[0] == ref, 'port needs physical node on ' + ref)
+                require(node_ok(node) and node.split('.', 1)[0] == ref, 'port needs physical node on ' + ref)
                 if _text(node):
                     port_nodes.append(node)
         require(len(port_nodes) == len(set(port_nodes)), 'duplicate boundary port pin')
@@ -148,7 +148,7 @@ class Inventory:
         self.nodes = defaultdict(list)
         self.input_gaps = set()
         for node, net in sorted(self.pin2net.items()):
-            ref = node.rsplit('.', 1)[0]
+            ref = node.split('.', 1)[0]
             if ref not in self.parts or node not in self.nets.get(net, []):
                 self.input_gaps.add('inconsistent-index:' + node)
             else:
@@ -189,7 +189,7 @@ class Inventory:
         for net, nodes in sorted(self.nets.items()):
             if net in self.pseudo:
                 continue
-            for label, anchor in [(net, 'net:')] + [(str(self.pinname.get(n, '')), 'pin:' + n.rsplit('.', 1)[0] + ':') for n in nodes]:
+            for label, anchor in [(net, 'net:')] + [(str(self.pinname.get(n, '')), 'pin:' + n.split('.', 1)[0] + ':') for n in nodes]:
                 match = SIGNAL.search(label)
                 if match:
                     role = match[2][:3].lower()
@@ -323,7 +323,7 @@ class Inventory:
                       'gaps': set(gaps), 'buses': []}
             if any(self.rail(n) for n in members):
                 region['gaps'].add('signal-on-supply-or-ground')
-            touched = sorted({n.rsplit('.', 1)[0] for net in members for n in self.nets.get(net, [])})
+            touched = sorted({n.split('.', 1)[0] for net in members for n in self.nets.get(net, [])})
             for ref in touched:
                 nodes = self.nodes.get(ref, [])
                 here = [n for n in nodes if self.pin2net[n] in members]

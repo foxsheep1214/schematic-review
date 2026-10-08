@@ -24,7 +24,7 @@ def _rated_v(value):
 
 
 def _nodes(lint, ref):
-    return sorted(node for node in lint.pin2net if node.rpartition('.')[0] == ref)
+    return sorted(node for node in lint.pin2net if node.partition('.')[0] == ref)
 
 
 def _is_capacitor(ref, part):
@@ -95,7 +95,7 @@ def floating_inputs(lint):
     for node in sorted(types):
         if _pin_class(types[node]) != 'IN':
             continue
-        ref = node.rpartition('.')[0]
+        ref = node.partition('.')[0]
         if lint.parts.get(ref, {}).get('nc'):
             continue
         net = lint.pin2net.get(node)

@@ -61,7 +61,7 @@ def primary_anchors(obj, db=None):
     node = obj.get('node')
     if text(node):
         if '.' in node:
-            refs.add(node.rsplit('.', 1)[0])
+            refs.add(node.split('.', 1)[0])
         if isinstance(db, dict) and isinstance(db.get('pin2net'), dict):
             net = db['pin2net'].get(node)
             if text(net):
