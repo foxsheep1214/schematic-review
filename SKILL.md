@@ -21,15 +21,18 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 3. **逐项覆盖**：需求、全部页面、器件/物理脚、电源轨、每路接口、检测/使能链、装配选项、运行状态和
    历史意见都进台账；按功能识别关键器件，不只查 U 前缀。READY、执行过一次、零命中都不等于完成；
    找到几项严重问题后也不停止其余适用审查。
-4. **先算再判待核**：已有资料能回答的先读、先算、先定界；可信边界已违反就判 FAIL。
+4. **先算再判证据不足**：已有资料能回答的先读、先算、先定界；可信边界已违反就判 FAIL。
    只索取会改变本条判断的缺口，并分清缺外部资料、设计未定、需求未定和审查未完成。
    全温保证值直接复用；窄的连接判据不承担完整应力或实测证明；软目标不自动成为 P1 硬门槛。
    规则见 [最小充分证据](references/evidence-proportionality.md)。
-5. **不通过必须可改**：每个 FAIL 给定位、旧→新、顺序操作、参数依据和通过标准；待核项给补证或设计路径。
+   每项证据不足按 [危险度分类原则](references/verdicts-and-release.md#证据不足的危险度分类原则)
+   评估有物理依据且尚未排除的最严重后果：实际路径、适用工况和独立保护支持潜在 P0–P3，
+   不按“参数未知”、器件类别或整批默认值定级；等级、证据置信度和冻结影响分别记录。
+5. **不通过必须可改**：每个 FAIL 给定位、旧→新、顺序操作、参数依据和通过标准；证据不足项给补证或设计路径。
    缺输入时给取得方法和条件方案，不编造料号、阻值或空闲 GPIO。见 [报告与修改说明](references/report-and-remediation.md)。
-   待核项若能通过修改原理图消除缺口（让器件回到已有资料的保证条件内、补足余量、定下未选器件），
+   证据不足项若能通过修改原理图消除缺口（让器件回到已有资料的保证条件内、补足余量、定下未选器件），
    直接给出电路改进建议，并按改后电路说明能规避哪个问题、关闭哪些检查、代价和残留；改不了的写明原因。
-   这条建议不改变本轮结论，改图并复审后才关闭。见 [待核项的电路改进建议](references/report-and-remediation.md#三待核项的电路改进建议)。
+   这条建议不改变本轮结论，改图并复审后才关闭。见 [证据不足项的电路改进建议](references/report-and-remediation.md#三证据不足项的电路改进建议)。
 6. **守住范围**：准出对象是原理图；PCB、SI/PI、EMC、实测热和生产验证形成 HANDOFF，但原理图能判定的
    电气前提不能推给下游。见 [结论与准出](references/verdicts-and-release.md)。
 
@@ -99,7 +102,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 补齐命名启发式漏掉的对象/需求/工况，人工补查项加入 `review-plan-cold.json`。排除候选须有反证，无特征不等于 NA。
 检查器（I²C、去耦、感性负载、功率开关、输入滤波、上电、监控、差分电平、光耦等）每趟都跑；
-名称线索只生成待核项，清单绑定输入指纹，不能编辑清单消缺口。见 [自动检查](references/automation.md)。
+名称线索只生成待复核候选，清单绑定输入指纹，不能编辑清单消缺口。见 [自动检查](references/automation.md)。
 
 ### 3. 资料取证与器件身份（DEV-D01、DEV-D02）
 
@@ -119,7 +122,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
     python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --evidence evidence.json --intent intent.json --json datasheet-audit.json
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --evidence evidence.json --datasheet-audit datasheet-audit.json --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json
 
-`review-plan.json` 是唯一最终计划。自动 E 只覆盖输入的具体对象；资料未 AVAILABLE、指纹过期或模型缺失时保持待核。
+`review-plan.json` 是唯一最终计划。自动 E 只覆盖输入的具体对象；资料未 AVAILABLE、指纹过期或模型缺失时保持证据不足。
 两个例外（边界已证明违反时与人工检查同判 FAIL；无验收窗口的名义输出只把输出窗口判 NA）见
 [自动证据计算的例外](references/evidence-proportionality.md#自动证据计算的例外)。
 
@@ -139,6 +142,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 - **动态数值证据**：需要有界 R/C 工作点或瞬态时，按 [仿真证据](references/simulation-evidence.md) 从实际 db 归网生成模型、绑定参数/状态出处、保存全部角点与原始输出，再回放核对。样本在窗口内不直接等于规则 PASS；缺模型、边界或保证条件继续 INSUFFICIENT。
 - **条款核对**：每颗 IC/模组核推荐工作条件（DEV-C05）和逐脚处置（DEV-D05）；连接器核对端定义（DEV-D03）和对外防护（PRO-D03）；
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
+- **证据不足分级**：确定缺口会改变的具体判据，追踪条件性后果，核独立保护及已有边界，
+  再选潜在影响等级并写排除/调整等级所需的证据；方法和边界例子见 [危险度分类原则](references/verdicts-and-release.md#证据不足的危险度分类原则)。
 
 ### 6. 图面目检（V）
 
@@ -150,7 +155,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 结果独立保存为 `review-results.json`，绑定最终计划；每项结论核对对象、配置、工况、判据与原始证据，
 批量脚本只录入已审结论。按有证据的共同根因归并任务，不合并独立电气结论。完成后对账：
 
-    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --json review-gate.json
+    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --require-impact --json review-gate.json
 
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。
 - 已有资料尚未读算的项记 REVIEW_INCOMPLETE，完成前不放行；审查未完成时只交进度。

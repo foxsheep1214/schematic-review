@@ -379,7 +379,7 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   C/R/L/FB/JP 前缀仅为候选类型；计入确认容量前需核类型与装配。`other` 是有证据的类别排除，
   不是规避官方电源脚审查的通用开关。
 - `requirements`：唯一 `id`、`kind`（`connection/capacitance/rating`）、`criterion`、`citation`，
-  每条单独入计划；缺某类时生成对应待核项，不默认 NA。数组对声明的全部 states 适用，状态相关的
+  每条单独入计划；缺某类时生成判据未补齐的检查项，不默认 NA。数组对声明的全部 states 适用，状态相关的
   限值必须在条款中写清条件。
 
 | 字段 | 含义 |
@@ -466,7 +466,7 @@ intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）�
 装配共用顶层 assemblies；未声明时按图扫描并保留 `assembly state unverified` 缺口。
 带出处的 role 可用 `linear/source_follower/emitter_follower` 明确线性用途：不生成 RDS(on)
 开关驱动窗口，改查实际工作点/驱动/额定；感性节点的钳位候选仍保留，按实际拓扑确认。BJT 不生成 MOS 的 DRV-E01；
-共用图坐标 gate/drain/source 对应 B/C/E，仅用于追踪。角色未知仍保留待核，不按浮地位置猜用途。
+共用图坐标 gate/drain/source 对应 B/C/E，仅用于追踪。角色未知仍保留证据不足，不按浮地位置猜用途。
 `role: "level_shifter"` 用于栅极接低侧轨的双向开漏电平转换管：它不是功率开关，不生成 DRV-E01、DRV-C02、DRV-D01
 及 DRV-A03/A04，改按电平转换电路审查，见 [计划与结果台账](plan-and-results.md) 的“电平转换（LEVEL_SHIFT）”与
 [WCA 公式](wca-formulas.md#mosfet-双向开漏电平转换)。

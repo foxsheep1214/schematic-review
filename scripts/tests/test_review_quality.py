@@ -188,5 +188,45 @@ class QualityScreeningTests(unittest.TestCase):
         self.assertEqual(self.screen({'checks': [None]}, {'checks': [None]}, {})['candidates'], [])
 
 
+def impact_fixture(n=12, grade='P1', text='Shared consequence for every row'):
+    keys = [f'PWR-C02.N{i}' for i in range(n)]
+    p = {'checks': [{'id': k, 'rule': 'PWR-C02', 'method': 'C', 'object': {'net': f'N{i}'},
+                     'criterion': 'output window'} for i, k in enumerate(keys)]}
+    r = {'checks': [{'id': k, 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA',
+                     'potential_severity': grade, 'rationale': f'net N{i} lacks a bound',
+                     'impact_assessment': {'consequence': text, 'severity_reason': f'path for N{i}'},
+                     'evidence': E} for i, k in enumerate(keys)]}
+    return p, r
+
+
+class ImpactScreeningTests(unittest.TestCase):
+    def setUp(self):
+        from review_quality import screen_quality
+        self.screen = screen_quality
+
+    def codes(self, p, r):
+        return {x['code'] for x in self.screen(p, r)['candidates']}
+
+    def test_copied_consequence_and_uniform_grade_are_flagged(self):
+        p, r = impact_fixture()
+        self.assertEqual({'REUSED_IMPACT_ACROSS_SCOPES', 'UNIFORM_POTENTIAL_SEVERITY'}, self.codes(p, r))
+
+    def test_distinct_paths_and_mixed_grades_are_not_flagged(self):
+        p, r = impact_fixture()
+        for i, row in enumerate(r['checks']):
+            row['impact_assessment']['consequence'] = f'N{i} consequence'
+            row['potential_severity'] = ('P1', 'P2')[i % 2]
+        self.assertEqual(set(), self.codes(p, r))
+
+    def test_small_ledgers_and_history_rows_are_ignored(self):
+        p, r = impact_fixture(n=5, text='x')
+        for i, row in enumerate(r['checks']):
+            row['impact_assessment']['consequence'] = f'N{i}'
+        self.assertEqual(set(), self.codes(p, r))
+        p, r = impact_fixture()
+        for c in p['checks']:
+            c['rule'] = 'REQ-H02'
+        self.assertNotIn('UNIFORM_POTENTIAL_SEVERITY', self.codes(p, r))
+
 if __name__ == '__main__':
     unittest.main()

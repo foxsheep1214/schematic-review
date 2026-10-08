@@ -71,7 +71,7 @@ def _slug(value):
 def _failure_message(identity, refdes):
     refs = '、'.join(sorted(refdes))
     return (f'找不到这颗物料的 datasheet：{identity}（位号：{refs}）。'
-            '可补充同型号原厂资料或受控规格；具体缺失参数及工况见审查待核项。')
+            '可补充同型号原厂资料或受控规格；具体缺失参数及工况见审查证据不足项。')
 
 
 def _has_manufacturer_source(sources):

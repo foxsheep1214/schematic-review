@@ -62,7 +62,7 @@
 - `features` 的键与 `circuits[].type` 取 [规则总表](check-catalog.md)“功能包”中的包名，否则拒绝；
   `applicability` 为 APPLICABLE / NOT_APPLICABLE / UNDETERMINED，前两者必须带 `citation`。
 - 名称命中只生成 UNDETERMINED 候选，不展开成员；由电路声明、features 出处或已确认拓扑确认后再展开。
-  带出处的不适用声明可排除误命中；与已确认拓扑冲突则保留待核。没搜到关键字不能推出 NOT_APPLICABLE。
+  带出处的不适用声明可排除误命中；与已确认拓扑冲突则保留证据不足。没搜到关键字不能推出 NOT_APPLICABLE。
 - `materials.<name>.available=true` 必须带 `citation`。逐物料审计（`--datasheet-audit`）优先于这些全局布尔值。
 - `assemblies`（1–32 个，各带 `id` 与 `citation`）是全部检查器共用的装配状态；`devices` 是按位号的官方脚表。
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
@@ -118,7 +118,7 @@
 - **全板通用**规则每板一项（`{"board": "BOARD"}`）；准备度按该规则所需资料判定。
   DOC-T01 逐 `intent.assemblies` 声明的装配状态一项。
 - **逐位号**：每颗 IC/模组生成 DEV-C05 与 DEV-D05；每个连接器生成 DEV-D03、DEV-D05 与 PRO-D03。
-  声明了 `intent.devices` 的位号，DEV-D02 带官方/符号双向差集，DEV-D05 带待核引脚清单（不是结论）。
+  声明了 `intent.devices` 的位号，DEV-D02 带官方/符号双向差集，DEV-D05 带待复核引脚清单（不是结论）。
 - **需求与覆盖**：每条需求实例化为 REQ-D01；另有六类覆盖审计项 DOC-Q01、REQ-Q01～Q04、DEV-Q01。
 - **证据计算（E）**：READY 须当前网表指纹、文档指纹、准确型号/版本/定位、依赖物料 AVAILABLE 及必要模型输入齐全，
   否则 WAITING_EVIDENCE。每条匹配证据生成独立状态子项。
@@ -148,7 +148,7 @@
 - `binding_version: 1`、`remediation_version: 2`（见 [报告与修改说明](report-and-remediation.md)）、
   `requirement_clarification_version: 1` 与 `requirement_clarifications`（无则 `[]`）、
   `workflow_version: 1` 与 `work_items`（见 [结论与准出](verdicts-and-release.md#共同根因归并为任务)）；
-  关联 EXTERNAL_DATA/DESIGN_OPEN 待核项的任务带 `design_option`（见 [报告与修改说明](report-and-remediation.md#三待核项的电路改进建议)）。
+  关联 EXTERNAL_DATA/DESIGN_OPEN 证据不足项的任务带 `design_option`（见 [报告与修改说明](report-and-remediation.md#三证据不足项的电路改进建议)）。
 - 复审另有 `revision_impact_version`、`revision_digest` 和必需项的 `reverification`，见 [改版复审](revision-review.md)。
 - `summary` / `release` 可省略，由校验器计算；填了必须一致。
 
@@ -179,6 +179,11 @@
   不能因 ID 相似、同一 IC 或同一功能组就移用。
 - 所有结果含非空 `rationale` 与可定位 `evidence`。PASS/FAIL 只能 A/B；INSUFFICIENT 必须 C 并给
   `missing_inputs` 和 `potential_severity`（REQUIREMENT_OPEN 除外）；非 FAIL 不填 severity。
+- 新报告写 `impact_version: 1`；每项证据不足（REQUIREMENT_OPEN 除外）给 `impact_assessment` 的五项非空字段，
+  内容按 [危险度分类原则](verdicts-and-release.md#证据不足的危险度分类原则) 逐项判定；非空字段不等于危险度可靠。
+  运行校验加 `--require-impact`。
+  旧报告仍可读取，但缺少影响依据的等级须显示“分级依据未完整记录”，不能作为可靠优先级；重新分级另存复核记录，
+  不改写旧结果或工程指纹来冒充当前规则下的新完整审查。
 - INSUFFICIENT 可加 `gap_cause`：REQUIREMENT_OPEN、EXTERNAL_DATA、DESIGN_OPEN、REVIEW_INCOMPLETE、
   DOWNSTREAM_VERIFICATION、USER_DEFERRED，含义见 [最小充分证据](evidence-proportionality.md#复核每条证据不足)。
 - NA 必须 NOT_APPLICABLE；修改自动计划的适用性需 `applicability_evidence`。UNDETERMINED 只能落 INSUFFICIENT。

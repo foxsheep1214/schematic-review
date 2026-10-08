@@ -33,7 +33,7 @@
 
 每个项目至少裁定：OFF、STARTUP/RESET、RUN、BROWNOUT/POWER_DOWN、EXTERNAL_POWER_ONLY/
 HOTPLUG 的适用性；其余按需求加入待机、编程、备用源、短路/过载、反接、开路、通信丢失。
-对“设计是否需要承受该故障”缺依据时先待核，不把所有假设故障一律当成必需设计要求。
+对“设计是否需要承受该故障”缺依据时先记证据不足，不把所有假设故障一律当成必需设计要求。
 
 每个适用状态追：源/回路→开关方向/体二极管→受电域→EN/PG/RESET 默认态→外部 IO→
 保护/恢复。查掉电域注入、锁存/自动重试、MCU 未启动时的默认安全状态、软件依赖及循环启动。
@@ -255,7 +255,7 @@ KiCad 解析另存 `native_pintype`，保留 passive/free/no_connect 等原始�
 
 ### I²C外部端口与局部判据
 
-`external-port:*`保持在拓扑清单、required_inputs和WAITING_EVIDENCE中，不伪装已建模endpoint。SIG-T02连接覆盖、SIG-D01地址/选件和SIG-C08掉电路径可依据已绑定原图、端口定义、适用工况和约束人工判局部PASS，不能仅因未建模整个外部系统强制待核；如果这些局部判据自身仍无证据就保持INSUFFICIENT。此处理不自动给PASS、不证明外端电气合格，也不允许未审掉电源/地址冲突或隐藏连接通过。SIG-C01数量/上升窗口与SIG-C07电平/驱动仍对外端缺口阻止PASS；装配未知、未辨器件/角色/rail、跨SDA/SCL短接、搜索截断等其它拓扑gap在全部判据保持阻止PASS。
+`external-port:*`保持在拓扑清单、required_inputs和WAITING_EVIDENCE中，不伪装已建模endpoint。SIG-T02连接覆盖、SIG-D01地址/选件和SIG-C08掉电路径可依据已绑定原图、端口定义、适用工况和约束人工判局部PASS，不能仅因未建模整个外部系统强制判证据不足；如果这些局部判据自身仍无证据就保持INSUFFICIENT。此处理不自动给PASS、不证明外端电气合格，也不允许未审掉电源/地址冲突或隐藏连接通过。SIG-C01数量/上升窗口与SIG-C07电平/驱动仍对外端缺口阻止PASS；装配未知、未辨器件/角色/rail、跨SDA/SCL短接、搜索截断等其它拓扑gap在全部判据保持阻止PASS。
 
 
 ### 默认闭合铜桥与多焊盘跳线

@@ -316,7 +316,7 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.assertEqual(lint.results[0]['review_result'], 'PASS')
         self.assertIn('DEV-E02', lint.hot_executed)
 
-        # 没有设计工况时保持待核，不用推荐范围反推设计。
+        # 没有设计工况时保持证据不足，不用推荐范围反推设计。
         lint = Lint(db, evidence=evidence, datasheet_audit=audit)
         lint.run()
         self.assertEqual(lint.results[0]['review_result'], 'INSUFFICIENT')

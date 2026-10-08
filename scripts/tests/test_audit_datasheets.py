@@ -113,7 +113,7 @@ class DatasheetAuditTests(unittest.TestCase):
         self.assertEqual(
             audit['user_messages'],
             ['找不到这颗物料的 datasheet：SOC-X（位号：U2、U3）。'
-             '可补充同型号原厂资料或受控规格；具体缺失参数及工况见审查待核项。'])
+             '可补充同型号原厂资料或受控规格；具体缺失参数及工况见审查证据不足项。'])
         request = next(item for item in audit['agent_requests']
                        if item['identity'] == 'SOC-X')
         self.assertEqual(request['action'], 'REQUEST_USER_DATASHEET')

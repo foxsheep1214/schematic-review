@@ -390,7 +390,7 @@ class Lint:
                     + (f'({voltage}V)' if voltage is not None else '')
                     + (' [优先]' if voltage and voltage >= EN_PULL_ALERT_V else ''))
             if pulls:
-                self.add('RST-A01', 'EN 脚上拉/下拉待核（极性+Abs Max）',
+                self.add('RST-A01', 'EN 脚上拉/下拉待复核（极性+Abs Max）',
                          f'{n}: {"; ".join(sorted(set(pulls)))}',
                          kind='CANDIDATE')
 
@@ -408,7 +408,7 @@ class Lint:
             if not rails:
                 continue
             rail = rails[0]
-            self.add('PRO-A02', '防护器件工作/击穿/钳位窗口待核',
+            self.add('PRO-A02', '防护器件工作/击穿/钳位窗口待复核',
                      f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_volt(rail)}V，'
                      f'型号提示={clamp_volt(blob)}V。分别查 VRWM、VBR@IT、VC@Ipp、'
                      '波形、温度与能量配合；型号不能证明导通或烧毁。',

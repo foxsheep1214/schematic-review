@@ -21,10 +21,11 @@
 
 | 计数类别 | 取值 | 来源 |
 |---|---|---|
-| 检查结果 PASS / FAIL / INSUFFICIENT / NA | 当前检查行数 | `review-gate.json` 的 `categorized_summary.current.results`；复审另列 `history`（REQ-H02 历史处置），不混入当前 |
+| 检查结果 通过（PASS）/ 不符合（FAIL）/ 证据不足（INSUFFICIENT）/ 不适用（NA） | 当前检查行数 | `review-gate.json` 的 `categorized_summary.current.results`；复审另列 `history`（REQ-H02 历史处置），不混入当前 |
 | 确认缺陷 P0 / P1 / P2 / P3 | 唯一缺陷数 | `summary.by_severity` |
-| 待核项潜在等级 P0 / P1 / P2 / P3 / 需求未定（不定级） | 当前 INSUFFICIENT 行数 | `review-results.json` 中 INSUFFICIENT 行的 `potential_severity`；`gap_cause` 为 REQUIREMENT_OPEN 的行不定级，计入“需求未定”，各项之和等于当前 INSUFFICIENT 数 |
-| 待核原因 REQUIREMENT_OPEN / EXTERNAL_DATA / DESIGN_OPEN / REVIEW_INCOMPLETE / DOWNSTREAM_VERIFICATION / USER_DEFERRED | INSUFFICIENT 行数 | `insufficient_by_cause`（未填原因的计为 UNSPECIFIED，应补填） |
+| 证据不足项潜在等级 P0 / P1 / P2 / P3 / 需求未定（不定级） | 当前 INSUFFICIENT 行数 | `review-results.json` 中 INSUFFICIENT 行的 `potential_severity`；`gap_cause` 为 REQUIREMENT_OPEN 的行不定级，计入“需求未定”，各项之和等于当前 INSUFFICIENT 数 |
+| 证据不足原因 REQUIREMENT_OPEN / EXTERNAL_DATA / DESIGN_OPEN / REVIEW_INCOMPLETE / DOWNSTREAM_VERIFICATION / USER_DEFERRED | INSUFFICIENT 行数 | `insufficient_by_cause`（未填原因的计为 UNSPECIFIED，应补填） |
+| 影响分级依据完整 / 未完整、冻结阻断 | 当前证据不足行数 | `categorized_summary.insufficient_impact` 的 documented / undocumented / blocking；有等级无依据的行仍计入未完整 |
 | 电路改进建议 PROPOSED / NONE | 唯一任务数 | `workflow.design_options`；只统计带 `design_option` 的任务 |
 | 移交状态 OPEN / ACCEPTED / VERIFIED | 必需移交的检查数 | `categorized_summary.handoffs_by_state`；只统计 `required: true`，集成约束（`required: false`）不计入 |
 | 需求澄清 开放 / 其中阻断 / 其中已覆盖 / 已解决 / 已撤回 | 唯一澄清项数 | `requirement_clarification_summary` 的 open / blocking_open / covered_open / resolved / retracted |
@@ -41,7 +42,9 @@
 
 - **电气缺陷**标 P0–P3，写清不满足的判据、工况和影响，链接证据与计算，按下文“修改说明”给改法。
 - **需求澄清**写已核输入、待决内容/建议、责任方和关闭依据，见 [需求澄清项](requirement-clarifications.md)；不套缺陷等级。
-- **待核**写已知什么、具体缺什么、影响哪个判断、如何关闭；先完成现有资料支持的分析，同一补证动作只列一次。
+- **证据不足**写已知什么、具体缺什么、影响哪个判断、如何关闭；先完成现有资料支持的分析，同一补证动作只列一次。
+  潜在 P0–P3 按 [危险度分类原则](verdicts-and-release.md#证据不足的危险度分类原则)，写实际后果路径、独立保护/排除依据及调整等级的条件；
+  与冻结影响分别展示，不把补证难度或 C 置信度当危险度，也不称潜在等级为已确认缺陷等级。
   任务有电路改进建议时，在“建议及下一步”栏先写改法要点，再写“改后可规避”的问题和关闭的检查，
   最后写补证路径；详细改法放下文第三部分。
 - **下游移交/集成约束**写接收角色、定量约束、验证方法与阶段，引用真实接收记录。
@@ -63,7 +66,7 @@
 
 目标是让读者能根据原理图定位并完成编辑，知道哪些参数已有依据、哪些仍要确定、用什么结果验收。
 指导编辑不等于授权代改设计。真实位号/物理脚来自当前版本；新器件写“建议新增，位号待分配”，不伪称已有空闲位号。
-待核/待决项同样给补证或设计动作和关闭条件，但不冒充已确认缺陷。
+证据不足/待决项同样给补证或设计动作和关闭条件，但不冒充已确认缺陷。
 
 ### 修改准备度
 
@@ -156,10 +159,10 @@ Vmax、Cmax、Vsafe、tmax、温度，按 `R ≤ tmax/[Cmax·ln(Vmax/Vsafe)]` �
 校验加 `--require-actionable`。校验器只检查结构和准备度矛盾，不能证明操作语义或计算正确；
 交付前按这些步骤对照真实输入逐项演算一次。
 
-## 三、待核项的电路改进建议
+## 三、证据不足项的电路改进建议
 
-待核项不是缺陷，但很多缺口可以靠改图直接消除，比等资料更快、更确定。凡任务关联了 EXTERNAL_DATA
-或 DESIGN_OPEN 的待核项，都要回答“改图能不能消除它”（判断方法见
+证据不足项不是缺陷，但很多缺口可以靠改图直接消除，比等资料更快、更确定。凡任务关联了 EXTERNAL_DATA
+或 DESIGN_OPEN 的证据不足项，都要回答“改图能不能消除它”（判断方法见
 [能否用电路修改消除缺口](evidence-proportionality.md#能否用电路修改消除缺口)）。
 
 报告里每条建议写清四件事：
