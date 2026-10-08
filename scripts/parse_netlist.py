@@ -36,6 +36,8 @@ import os
 import re
 import sys
 
+from checkers.netgraph import CONNECTOR, classify
+
 
 def _read(path):
     if not os.path.isfile(path):
@@ -272,10 +274,16 @@ def self_check(db, strict=True):
         else:
             exempt = {'passive', 'free', 'no_connect'}
             required = [p for p, kind in native.items() if kind not in exempt]
-            missing = sorted(p for p in required if not db['pinname'].get(p))
+            unnamed = sorted(p for p in required if not db['pinname'].get(p))
+            # Connector contacts are identified by number; a library typing them as input without a name
+            # is drawing hygiene (DOC-V02), not a parser/function-identification gap.
+            connector = sorted(p for p in unnamed if classify(
+                p.rpartition('.')[0], db['parts'].get(p.rpartition('.')[0], {}))[0] == CONNECTOR)
+            missing = sorted(set(unnamed) - set(connector))
             db['pin_name_coverage'] = {
-                'required': len(required), 'named': len(required) - len(missing),
+                'required': len(required), 'named': len(required) - len(unnamed),
                 'missing_functional_pins': missing,
+                'unnamed_connector_pins': connector,
                 'legitimately_unnamed': sorted(p for p in native
                     if native[p] in exempt and not db['pinname'].get(p)),
                 'scope': 'Parser function-name coverage, not manufacturer pinout verification'}

@@ -96,6 +96,28 @@ class ContractTest(unittest.TestCase):
         self.assertEqual(self.db['pin2net']['U1.3'], 'VCC_3V3')
         self.assertTrue(self_check(self.db, strict=False))
 
+    def add_unnamed_input(self, ref, prim):
+        db = parse(board())
+        db['parts'][ref] = {'part': prim, 'value': prim, 'prim': prim, 'jedec': prim, 'nc': False}
+        for pin in ('1', '2'):
+            node = f'{ref}.{pin}'
+            db['nets']['VCC_3V3'].append(node)
+            db['pin2net'][node] = 'VCC_3V3'
+            db['native_pintype'][node] = 'input'
+            db['pintype'][node] = 'IN'
+        return db
+
+    def test_unnamed_connector_contacts_are_hygiene_not_integrity_failure(self):
+        db = self.add_unnamed_input('K1', 'e-radionica.com schematics:TERMINAL_KF235-5.0-2P')
+        self.assertTrue(self_check(db, strict=False))
+        self.assertEqual(db['pin_name_coverage']['unnamed_connector_pins'], ['K1.1', 'K1.2'])
+        self.assertEqual(db['pin_name_coverage']['missing_functional_pins'], [])
+
+    def test_unnamed_functional_ic_pins_still_fail_integrity(self):
+        db = self.add_unnamed_input('U9', 'Custom:MYSTERY_IC')
+        self.assertFalse(self_check(db, strict=False))
+        self.assertEqual(db['pin_name_coverage']['missing_functional_pins'], ['U9.1', 'U9.2'])
+
     def test_pin_names_come_from_pinfunction_and_ignore_the_no_name_marker(self):
         self.assertEqual(self.db['pinname']['U1.1'], 'VIN')
         self.assertNotIn('R1.1', self.db['pinname'])

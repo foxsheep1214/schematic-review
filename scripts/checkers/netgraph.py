@@ -26,6 +26,8 @@ PREFIX_KINDS = (
     (r'^S\d', SWITCH), (r'^[UM]\d', IC), (r'^(J|P|CN)\d', CONNECTOR),
 )
 
+JST_CONNECTOR_RE = r'(?:^|[\s:])JST[-_]'
+
 KEYWORD_KINDS = (
     (r'RELAY|继电器', RELAY),
     (r'OPTO|PC81[07]|LTV\d|TLP\d|6N13[57]|HCPL|ACPL|FOD\d|CNY17|VO6\d|光耦', OPTO),
@@ -50,6 +52,8 @@ KEYWORD_KINDS = (
      r'\bPINHEADER[_:-]|\bTERMINAL_?BLOCK[_:-]|'
      r'\bHEADER_(?:MALE|FEMALE)[_:-]|\bHEADER[-_]\d+X\d+(?:\b|[_:-])|'
      r'\bTERMINAL_KF\d', CONNECTOR),
+    # A bare vendor name: never re-identify an IC/module refdes by it.
+    (JST_CONNECTOR_RE, CONNECTOR),
 )
 
 TWO_TERMINAL = {RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER,
@@ -179,6 +183,8 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     opto_identity += ' ' + prim_identity.split(':', 1)[-1]
     for pattern, kind in KEYWORD_KINDS:
         keyword_blob = opto_identity if kind == OPTO else blob
+        if pattern == JST_CONNECTOR_RE and re.match(r'^(U|M|IC)\d', ref, re.I):
+            continue
         if re.search(pattern, keyword_blob, re.I):
             if kind in (MOSFET, BJT) and pin_count is not None and pin_count < 3:
                 continue

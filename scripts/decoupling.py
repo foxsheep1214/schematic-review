@@ -14,6 +14,7 @@ import re
 import board_intent
 from board_intent import input_fingerprint
 from electrical_contract import db_fingerprint, finite, load_json
+from checkers.netgraph import CONNECTOR, classify
 from i2c_topology import digest, validate_db_shape
 
 KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other'}
@@ -375,7 +376,8 @@ def build_decoupling_inventory(db, intent=None):
     inv = Inventory(db, cfg, (intent or {}).get('devices'))
     groups, device_records = inv.groups(), inv.device_inventory()
     candidates = [ref for ref in inv.parts if ref not in inv.devices and
-                  inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref)]
+                  inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref)
+                  and classify(ref, inv.parts[ref])[0] != CONNECTOR]   # keyword-identified headers/terminals
     two_terminal = sorted(ref for ref in candidates if inv.two_terminal(ref))
     unknown = sorted(set(candidates) - set(two_terminal))
     discovery_gaps = set(inv.input_gaps) | {'unverified-device-pinout:' + r for r in unknown}

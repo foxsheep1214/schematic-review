@@ -86,6 +86,12 @@ class ConnectorRoles(unittest.TestCase):
         self.assertEqual(classify('K2', {'part': 'HEADER-1X10 RELAY'}, 10)[0], RELAY)
         self.assertEqual(classify('JP2', {'part': 'HEADER_CONTROL'}, 2)[0], JUMPER)
 
+    def test_jst_battery_socket_with_k_refdes_is_a_connector(self):
+        self.assertEqual(classify('K3', {'part': 'JST-2pin-SMD', 'prim': 'e-radionica.com schematics:JST-2pin-SMD'}, 2),
+                         (CONNECTOR, 'part-keyword'))
+        self.assertEqual(classify('K1', {'part': 'RELAY JST_COIL'}, 4)[0], RELAY)
+        self.assertEqual(classify('U3', {'part': 'BQ24075', 'jedec': 'Custom:JST_STYLE_QFN'}, 16)[0], IC)
+
     def test_legacy_connector_prefix_still_expands(self):
         db = board()
         db['parts']['J3'] = {'part': '?', 'nc': False}

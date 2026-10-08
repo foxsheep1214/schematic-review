@@ -394,6 +394,14 @@ class DecouplingInventoryTests(unittest.TestCase):
             self.assertNotIn('unverified-device-pinout:' + ref, inv['discovery_gaps'])
             self.assertNotIn(ref, inv['unverified_device_refs'])
 
+    def test_keyword_identified_header_is_not_an_unverified_device(self):
+        db, intent = fixture()
+        add(db, 'K2', 'HEADER_MALE_4X2', [(str(i), '', 'U1_IO') for i in range(1, 9)])
+        db['parts']['K2']['prim'] = 'e-radionica.com schematics:HEADER_MALE_4X2'
+        intent['assemblies'][0]['population']['K2'] = True
+        rebind(db, intent)
+        self.assertNotIn('unverified-device-pinout:K2', build_decoupling_inventory(db, intent)['discovery_gaps'])
+
     def test_pinless_part_stays_unverified_without_declared_pins(self):
         db, intent = fixture()
         db['parts']['H1'] = {'value': 'X', 'part': 'X', 'prim': 'Lib:X', 'nc': False}

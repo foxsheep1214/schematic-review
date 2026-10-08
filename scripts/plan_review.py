@@ -24,7 +24,7 @@ import re
 import sys
 from collections import Counter
 from checkers import REGISTRY, registry_cold_rules, registry_hot_rules
-from checkers.netgraph import GNDS, RAIL_RE, CONNECTOR, NetGraph
+from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, NetGraph, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, handoff as _handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
@@ -261,6 +261,15 @@ def _differential_pairs(db):
                 found.add((net, other))
     return sorted(found)
 
+
+# Two-terminal SMD/THT package names (chip sizes, SOD/SMA/DO/MELF, 2-lead THT LEDs); multi-pad LED
+# packages (PLCC, RGB, thermal pad, numbered pin counts) never qualify.
+TWO_TERMINAL_PACKAGE_RE = re.compile(
+    r'(?<![0-9])(0201|0402|0603|0805|1206|1210|1812|2010|2512)(?![0-9])|SOD-?\d|(?<![A-Z])SM[ABCF](?![A-Z])|'
+    r'DO-?\d{2,3}|MELF|(?<![A-Z])LED_D\d(\.\d+)?MM', re.I)
+MULTI_PAD_PACKAGE_RE = re.compile(
+    r'PLCC|RGB|XHP|THERMAL|(?<![A-Z])EP(?![A-Z])|[-_]\d(?:[-_]|$)|5050|3535|2835|WS28|SK68|APA1', re.I)
+TWO_TERMINAL_REFDES_RE = re.compile(r'^(D|ZD|TVS|LED)\d', re.I)
 
 class ReviewPlanner:
     def __init__(self, db, intent=None, evidence=None, review_mode=None,
@@ -739,6 +748,21 @@ class ReviewPlanner:
                 required_inputs=missing,
                 reason='复审必须验证新旧网表与历史意见断言')
 
+    def _two_terminal_package(self, ref):
+        """两脚符号（一阳一阴）配两端封装时返回封装名：脚集合由封装决定，无需原厂全脚表；
+        焊盘与阴/阳极标记的对应属于 PCB 阶段。三脚及以上或封装名看不出两端时返回 None。"""
+        names = dict(self.db.get('declared_pinname') or {}, **(self.db.get('pinname') or {}))
+        nodes = {n for n in set(names) | set(self.db.get('pin2net') or {}) if n.rpartition('.')[0] == ref}
+        if len(nodes) != 2:
+            return None
+        roles = sorted('A' if normalize(names.get(n)) in ANODE_NAMES else
+                       'K' if normalize(names.get(n)) in CATHODE_NAMES else '?' for n in nodes)
+        footprint = str((self.db.get('parts', {}).get(ref) or {}).get('jedec', ''))
+        if (roles != ['A', 'K'] or not TWO_TERMINAL_REFDES_RE.match(ref)
+                or not TWO_TERMINAL_PACKAGE_RE.search(footprint) or MULTI_PAD_PACKAGE_RE.search(footprint)):
+            return None
+        return footprint
+
     def _kind_gap(self, ref):
         entry = ((self.datasheet_audit or {}).get('device_kinds') or {}).get(ref) or {}
         status = entry.get('status', 'NOT_AUDITED')
@@ -763,6 +787,13 @@ class ReviewPlanner:
                     and ref not in devices) or part.get('nc'):
                 continue
             device = devices.get(ref)
+            package = None if device else self._two_terminal_package(ref)
+            if package:
+                item = self._ready_check('DEV-D02', {'ref': ref}, [], [f'refdes:{ref}', f'two-terminal-package:{package}'])
+                item['pin_difference'] = {'official_only': [], 'symbol_only': [],
+                                          'basis': 'two-pin anode/cathode symbol on a two-terminal package; '
+                                                   'pad-to-polarity marking is a PCB-stage HANDOFF'}
+                continue
             gaps = [] if device and device['pinout_complete'] else [
                 f'intent.devices.{ref}: official full pinout + exact MPN/package']
             if re.match(r'^(Q|D|ZD|TVS)\d', ref, re.I) and ref not in board_intent.declared_kinds(self.kind_intent):
