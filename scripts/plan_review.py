@@ -582,7 +582,7 @@ class ReviewPlanner:
                 trigger=[f'net:{net}'])
 
         # 连接器：pin map（证据计算）、对端定义、未用针处置与对外防护逐个一项。
-        connector_graph = NetGraph(db)
+        connector_graph = NetGraph(board_intent.graph_db(db, self.kind_intent))
         for ref, part in sorted(db.get('parts', {}).items()):
             if part.get('nc') or not (CONNECTOR_RE.match(ref) or connector_graph.kind(ref) == CONNECTOR):
                 continue

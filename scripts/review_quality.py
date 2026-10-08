@@ -13,6 +13,40 @@ UNIFORM_GRADE_SHARE = 0.9
 IMPACT_TEXT_FIELDS = ('consequence', 'severity_reason')
 
 
+def analysis_text(text, check):
+    """Remove exact scope/criterion echoes from advisory prose comparisons.
+
+    A binding is useful metadata but does not establish the copied paragraph's
+    causal reasoning. Other JSON (such as independent calculations) is kept.
+    """
+    if not isinstance(text, str):
+        return ''
+    decoder = json.JSONDecoder()
+    obj, criterion = check.get('object'), check.get('criterion')
+    out, cursor = [], 0
+    while cursor < len(text):
+        start = text.find('{', cursor)
+        if start < 0:
+            out.append(text[cursor:])
+            break
+        out.append(text[cursor:start])
+        try:
+            value, length = decoder.raw_decode(text[start:])
+        except ValueError:
+            out.append('{')
+            cursor = start + 1
+            continue
+        if value != obj and value != {'object': obj, 'criterion': criterion}:
+            out.append(text[start:start + length])
+        cursor = start + length
+    result = ''.join(out)
+    return result.replace(criterion, '') if isinstance(criterion, str) and criterion else result
+
+
+def field_text(value):
+    return ' '.join(x for x in value if isinstance(x, str)) if isinstance(value, list) else value
+
+
 def screen_quality(plan, report, db=None):
     output = {'status': 'NOT_RUN', 'scope': 'ADVISORY_PATTERN_SCREENING_ONLY',
               'candidate_count': 0, 'flagged_check_count': 0, 'candidates': []}
@@ -73,6 +107,38 @@ def screen_quality(plan, report, db=None):
                 'check_ids': [row['id']], 'expected_refs': sorted(wanted),
                 'observed_refs': sorted(observed),
                 'message': 'Check the source and dependency: explicit refs do not overlap the declared scope.'})
+        # Inspect causal fields independently: a correct locator or scope echo
+        # must not launder a consequence copied from an unrelated circuit.
+        assessment = row.get('impact_assessment')
+        for field in IMPACT_TEXT_FIELDS:
+            text = assessment.get(field) if isinstance(assessment, dict) else None
+            actual = refs(analysis_text(text, check))
+            if wanted and actual and wanted.isdisjoint(actual):
+                candidates.append({'code': 'IMPACT_REFERENCES_OUTSIDE_SCOPE',
+                    'field': field, 'check_ids': [row['id']],
+                    'expected_refs': sorted(wanted), 'observed_refs': sorted(actual),
+                    'message': 'Trace this consequence independently of the rationale and evidence locator; shared dependencies need an explicit scope.'})
+        if check.get('rule') == 'PWR-C10':
+            targets = check.get('qualification_refs')
+            if targets is None:  # Existing plans already bind the fitted material refs.
+                materials = check.get('required_material_refs')
+                targets = [r for r in materials if isinstance(r, str) and r != obj.get('ref')] if isinstance(materials, list) else []
+            targets = {r for r in targets if isinstance(r, str)} & known if isinstance(targets, list) else set()
+            actual = refs(analysis_text(field_text(row.get('missing_inputs')), check))
+            if targets and actual and targets.isdisjoint(actual):
+                candidates.append({'code': 'QUALIFICATION_INPUT_TARGET_MISMATCH',
+                    'field': 'missing_inputs', 'check_ids': [row['id']],
+                    'expected_refs': sorted(targets), 'observed_refs': sorted(actual),
+                    'message': 'Capacitor rating evidence must qualify the fitted capacitors; connector/device identity is a separate claim.'})
+        if check.get('rule') == 'SIG-T04' and check.get('package') == 'USB':
+            text = analysis_text(rationale, check)
+            other = re.search(r'(?<![A-Za-z0-9_])(?:UART|SPI|TXD\d*|RXD\d*|PICO|POCI)(?![A-Za-z0-9_])', text, re.I)
+            usb = re.search(r'USB|D[+-]|(?<![A-Za-z0-9_])(?:DP|DM|Host|Device|Source|Sink)(?![A-Za-z0-9_])', text, re.I)
+            if other and not usb:
+                candidates.append({'code': 'INTERFACE_ANALYSIS_MODE_MISMATCH',
+                    'field': 'rationale', 'check_ids': [row['id']],
+                    'declared_package': 'USB',
+                    'message': 'USB direction reasoning only names UART/SPI roles; verify the actual USB endpoint roles instead of the scope echo.'})
     for group in groups.values():
         if len({scope for _, scope in group}) > 1:
             candidates.append({'code': 'REUSED_RATIONALE_ACROSS_SCOPES',

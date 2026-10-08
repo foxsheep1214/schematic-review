@@ -58,7 +58,7 @@ class DecouplingChecker(Checker):
     allow_manual_bound_objects = False
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion',
                         'readiness', 'required_inputs', 'trigger', 'inventory_gaps',
-                        'required_material_refs', 'handoff', 'full_inventory_gaps')
+                        'required_material_refs', 'qualification_refs', 'handoff', 'full_inventory_gaps')
 
     def incomplete_message(self, key):
         return key + ': incomplete decoupling planned coverage'
@@ -115,6 +115,10 @@ class DecouplingChecker(Checker):
                         item['full_inventory_gaps'] = group['gaps']
                         item['analysis_required'] = True
                         item['required_material_refs'] = sorted(set([group['ref']] + group['fitted_capacitors']))
+                        if kind == 'rating':
+                            item['qualification_refs'] = sorted(group['fitted_capacitors'])
+                            item['required_inputs'].extend('capacitor-qualification:' + ref
+                                                          for ref in item['qualification_refs'])
 
     def binds(self, item):
         obj = item.get('object')

@@ -162,7 +162,7 @@ def validate_decoupling_intent(intent, db=None):
 
 
 class Inventory:
-    def __init__(self, db, cfg, devices=None):
+    def __init__(self, db, cfg, devices=None, verified_kinds=None):
         self.db, self.cfg = db, cfg or {}
         self.parts, self.nets = db.get('parts', {}), db.get('nets', {})
         self.pin2net = db.get('pin2net', {})
@@ -170,6 +170,8 @@ class Inventory:
         self.declares_pins = 'declared_pinname' in db   # parser listed every symbol pin, so 0 pins is real
         self.types = dict(db.get('declared_pintype', {}), **db.get('pintype', {}))
         self.devices, self.components = devices or {}, self.cfg.get('components', {})
+        self.verified_kinds = verified_kinds or {}
+        self.non_decoupling_connectors = []
         self.pseudo = set(db.get('pseudo_nets', []))
         self.nodes, self.input_gaps = defaultdict(set), set()
         for node in set(self.names) | set(self.types) | set(self.pin2net):
@@ -240,6 +242,16 @@ class Inventory:
             self.nodes[ref].update(ref + '.' + pin for pin in device['pins'])
         for ref, nodes in sorted(self.nodes.items()):
             if self.kind(ref) != 'unmodeled':
+                continue
+            # A verified passive connector transmits power; that alone is not
+            # an IC bypass requirement. Explicit source-bound groups still win.
+            kind = self.verified_kinds.get(ref, {})
+            if kind.get('kind') == CONNECTOR and not any(g['ref'] == ref for g in groups):
+                self.non_decoupling_connectors.append({'ref': ref,
+                    'citation': kind['citation'], 'basis': 'datasheet-verified',
+                    'supply_nodes': sorted(n for n in nodes if self.role(n) == 'power'),
+                    'return_nodes': sorted(n for n in nodes if self.role(n) == 'return'),
+                    'scope': 'No implicit IC bypass obligation; connector pinout, ratings and port protection remain separate checks.'})
                 continue
             by_net = defaultdict(list)
             for node in sorted(nodes - assigned):
@@ -373,7 +385,7 @@ def build_decoupling_inventory(db, intent=None):
     if errors:
         raise ValueError('; '.join(errors))
     cfg = (intent or {}).get('decoupling')
-    inv = Inventory(db, cfg, (intent or {}).get('devices'))
+    inv = Inventory(db, cfg, (intent or {}).get('devices'), board_intent.declared_kinds(intent))
     groups, device_records = inv.groups(), inv.device_inventory()
     candidates = [ref for ref in inv.parts if ref not in inv.devices and
                   inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref)
@@ -390,6 +402,7 @@ def build_decoupling_inventory(db, intent=None):
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'input_sha256': input_fingerprint(db),
               'context': deepcopy(board_intent.context(intent, 'decoupling', extra=('devices',))), 'scope': 'direct-net schematic inventory only; nominal is not effective capacitance; no electrical or PCB PASS',
               'devices': device_records, 'unverified_device_refs': unknown,
+              'non_decoupling_connectors': inv.non_decoupling_connectors,
               'two_terminal_no_supply_refs': two_terminal, 'discovery_gaps': sorted(discovery_gaps),
               'states': [inv.state_inventory(s, groups, device_records) for s in sorted(states, key=lambda s: s['id'])]}
     result['digest'] = digest(result)

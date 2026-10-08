@@ -216,8 +216,10 @@
 - **输出**：`summary`（检查结果计数、唯一缺陷及 P0–P3）、`categorized_summary`（当前/历史检查、唯一缺陷、
   唯一任务、必需移交及其状态）、`insufficient_by_cause`、`requirement_clarification_summary`、`workflow`、
   `release`/`blockers`、`remediation_validation`、`binding_validation`。
-- **quality_screening** 提示两类疑点：跨对象/判据复用完全相同理由，及位号与声明范围不相交。
-  仅作提示，不增添缺陷、不改变 release；共享证明可一次核实，零提示不证明审完。
+- **quality_screening** 提示理由/影响跨范围复用、位号与声明范围不相交，以及补证对象和接口模式错配。
+  影响描述逐字段核对，不以正确的理由或证据位置替代因果核验；原样回显绑定对象/判据不能证明分析成立。
+  PWR-C10 的 `qualification_refs` 指向实际已贴电容，连接器身份不能替代电容额定证明；USB 方向分析不能只复用 UART/SPI 的角色。
+  仅作提示，不增添缺陷、不改变 release；共享依赖可明确加入对象范围并核对，零提示不证明审完。
 
 ## 五、规则指纹与重新审查
 
