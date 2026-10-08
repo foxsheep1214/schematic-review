@@ -166,6 +166,7 @@ class Inventory:
         self.parts, self.nets = db.get('parts', {}), db.get('nets', {})
         self.pin2net = db.get('pin2net', {})
         self.names = dict(db.get('declared_pinname', {}), **db.get('pinname', {}))
+        self.declares_pins = 'declared_pinname' in db   # parser listed every symbol pin, so 0 pins is real
         self.types = dict(db.get('declared_pintype', {}), **db.get('pintype', {}))
         self.devices, self.components = devices or {}, self.cfg.get('components', {})
         self.pseudo = set(db.get('pseudo_nets', []))
@@ -202,9 +203,11 @@ class Inventory:
         return 'unmodeled'
 
     def two_terminal(self, ref):
-        """A two-pin part (diode/TVS/LED/thermistor/varistor/fuse...) has no supply/return pair to decouple;
-        its correctness is polarity and orientation, checked by other rules."""
-        return len(self.nodes.get(ref, set())) == 2
+        """A two-pin part (diode/TVS/LED/thermistor/varistor/fuse...) or a pinless symbol (mounting hole,
+        fiducial; only when the parser declares symbol pins) has no supply/return pair to decouple; two-pin parts are checked for polarity and
+        orientation by other rules. A one-pin part stays unverified: it may be a fragment of a larger device."""
+        count = len(self.nodes.get(ref, set()))
+        return count == 2 or (count == 0 and self.declares_pins)
 
     def supply_pin(self, node):
         """Only power/return pins matter to decoupling; other pin-map differences are DEV-D02's job."""
