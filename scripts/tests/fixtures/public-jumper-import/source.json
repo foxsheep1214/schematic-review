@@ -1,0 +1,29 @@
+{
+  "repo": "SolderedElectronics/Dasduino-CORE-Solder-kit-hardware-design",
+  "commit": "e4cf580321f80af5532f2eb4df29dceabbfc6406",
+  "version": "V1.1.0",
+  "author": "Soldered Electronics",
+  "license": "TAPR Open Hardware License 1.0; complete source LICENSE.md included",
+  "source_url": "https://github.com/SolderedElectronics/Dasduino-CORE-Solder-kit-hardware-design/tree/e4cf580321f80af5532f2eb4df29dceabbfc6406",
+  "derived_work": "Blind public calibration variant, not an electrically qualified reference. Preserves two deliberately seeded defects: U3 EN floating and CH340C USB polarity reversal. Only parser/name-coverage invariants are tested. No manufacturer pinout or board approval.",
+  "derivation": "XML exported with KiCad 10.0.6; design/source, Sheetfile and library uri paths replaced by neutral names only. No connectivity, parameters, native types, assembly or pin names changed.",
+  "frozen_variant_xml_sha256": "ffbfef62a72fd330dab32896952485273efd1cab9ffc0c7163539a3d1f530351",
+  "fixture_xml_sha256": "ac525518b03057c2c89817b68aa7fa1be86b0b73f750abcadf7b839eeb2b12c3",
+  "source_license_sha256": "ae647e302f1a8023b5f490f42c4d724fafb410bd551e6086c730d8f814f5e0fe",
+  "source_schematic_sha256": "a78f0d0ed384e502277d30ada35215dd159e9fe621eda8bd5f6856a24793aa5c",
+  "expected": {
+    "parts": 59,
+    "connected_nodes": 214,
+    "nets": 66,
+    "normalized_refs": [
+      "R7",
+      "R10"
+    ],
+    "unnamed_jumper_contacts": 6,
+    "remaining_missing_functional_pins": [
+      "X1.2",
+      "X1.3",
+      "X1.4"
+    ]
+  }
+}

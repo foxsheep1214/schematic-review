@@ -1,0 +1,2275 @@
+<?xml version='1.0' encoding='utf-8'?>
+<export version="E">
+  <design>
+    <source>public-jumper-import.kicad_sch</source>
+    <date>2026-10-08T23:05:31</date>
+    <tool>Eeschema 10.0.6</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>MCU Development Kit</title>
+        <company>Hardware Design</company>
+        <rev>V1.1.0-A</rev>
+        <date>2023-07-18</date>
+        <source>board.kicad_sch</source>
+        <comment number="1" value="Design iteration" />
+        <comment number="2" value="" />
+        <comment number="3" value="" />
+        <comment number="4" value="" />
+        <comment number="5" value="" />
+        <comment number="6" value="" />
+        <comment number="7" value="" />
+        <comment number="8" value="" />
+        <comment number="9" value="" />
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:C_Ceramic_THT_5mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="C_Ceramic_THT" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>b0ea0590-af57-433a-8561-13b7a6e1f212</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C2">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:C_Ceramic_THT_5mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="C_Ceramic_THT" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>3370a62d-2704-4f44-8738-238a60f0e556</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C3">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:C_Ceramic_THT_5mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="C_Ceramic_THT" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>2112de03-ce75-4bb6-b0f6-e1625c3bfba6</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C4">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:C_Ceramic_THT_5mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="C_Ceramic_THT" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>4d78b525-526a-47fc-8090-d367a4b4cc14</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C5">
+      <value>22p</value>
+      <footprint>e-radionica.com footprinti:C_Ceramic_THT_5mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="C_Ceramic_THT" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>ede75330-f4b6-4978-bde4-9c1092c4af8b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C6">
+      <value>22p</value>
+      <footprint>e-radionica.com footprinti:C_Ceramic_THT_5mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="C_Ceramic_THT" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>8e6c3ee9-211f-4d6e-9271-e0f376b312c9</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C7">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:C_Ceramic_THT_5mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="C_Ceramic_THT" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>45a1263f-2737-4030-b61c-efb8a8126aff</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C8">
+      <value>KS225M050C07RR0VH2FP0</value>
+      <footprint>e-radionica.com footprinti:KS225M050C07RR0VH2FP0</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:KS225M050C07RR0VH2FP0</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="KS225M050C07RR0VH2FP0" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <property name="ki_keywords" value="C_elec" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>5be759ae-edcd-4550-ae8c-1f62eb8985bf</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C9">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:C_Ceramic_THT_5mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="C_Ceramic_THT" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>a2df1543-a1ae-4349-b268-8ee09f6d5b68</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C10">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:C_Ceramic_THT_5mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="C_Ceramic_THT" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>bd6f0b12-2656-41c1-8e4d-4a64e3fda63c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C11">
+      <value>KS225M050C07RR0VH2FP0</value>
+      <footprint>e-radionica.com footprinti:KS225M050C07RR0VH2FP0</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:KS225M050C07RR0VH2FP0</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="KS225M050C07RR0VH2FP0" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <property name="ki_keywords" value="C_elec" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>4fe23de6-a34f-421d-850b-c11103a2ac77</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C12">
+      <value>KS225M050C07RR0VH2FP0</value>
+      <footprint>e-radionica.com footprinti:KS225M050C07RR0VH2FP0</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:KS225M050C07RR0VH2FP0</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="KS225M050C07RR0VH2FP0" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <property name="ki_keywords" value="C_elec" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>55d3f7df-ea0c-42fe-9675-31b2d4b9fd22</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C13">
+      <value>KS225M050C07RR0VH2FP0</value>
+      <footprint>e-radionica.com footprinti:KS225M050C07RR0VH2FP0</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:KS225M050C07RR0VH2FP0</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="KS225M050C07RR0VH2FP0" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <property name="ki_keywords" value="C_elec" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>1b49ff86-7533-498b-97ff-d733fb8d87c3</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D1">
+      <value>WS2812B-2020</value>
+      <footprint>e-radionica.com footprinti:WS2812B-2020</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:WS2812B-2020</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="WS2812B-2020" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>3892ee06-73d5-4c2d-a25b-a8761fd80e74</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="3" />
+            <pin num="4" />
+            <pin num="2" />
+            <pin num="1" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D2">
+      <value>THT_LED_5MM_PURPLE</value>
+      <footprint>e-radionica.com footprinti:THT LED 5mm PURPLE</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT LED 5mm PURPLE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_LED_5MM_PURPLE" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>08d6c824-69ce-45f3-98ef-a3d607a08e3c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D4">
+      <value>BAT20J</value>
+      <footprint>e-radionica.com footprinti:SOD-323</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:SOD-323</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="BAT20J" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>21139fd5-2600-4f3b-8ffa-de1972f9dc50</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D5">
+      <value>THT_LED_5MM_RED</value>
+      <footprint>e-radionica.com footprinti:THT LED 5mm RED</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT LED 5mm RED</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_LED_5MM_RED" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>3d077b1a-dcc5-4ac2-8be9-1c9af93c1758</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D6">
+      <value>THT_LED_5MM_BLUE</value>
+      <footprint>e-radionica.com footprinti:THT_LED_5MM_BLUE</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT_LED_5MM_BLUE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_LED_5MM_BLUE" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>d7a0377f-f580-4dd6-bbfb-1dee95b2c47e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D7">
+      <value>THT_LED_5MM_WHITE</value>
+      <footprint>e-radionica.com footprinti:THT LED 5mm WHITE</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT LED 5mm WHITE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_LED_5MM_WHITE" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>ef179ff7-6266-418b-a646-2271a6cf397c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D13">
+      <value>THT_LED_5MM_ORANGE</value>
+      <footprint>e-radionica.com footprinti:THT LED 5mm ORANGE</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT LED 5mm ORANGE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_LED_5MM_ORANGE" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>0a8c2b50-a9ef-4cb1-bfaa-e37a819926db</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="F1">
+      <value>1206FUSE-500mA</value>
+      <footprint>e-radionica.com footprinti:1206FUSE</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:1206FUSE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="1206FUSE" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>2395242d-aad1-4265-8664-e26011fad928</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FD1">
+      <value>FIDUCIAL</value>
+      <footprint>e-radionica.com footprinti:FIDUCIAL_23</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:FIDUCIAL_23</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="FIDUCIAL" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <property name="exclude_from_bom" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>0b224eec-ce12-43d9-99c0-c82d6a751fd4</tstamps>
+      <units>
+        <unit name="A">
+          <pins />
+        </unit>
+      </units>
+    </comp>
+    <comp ref="H1">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:HOLE_3.2mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>1a4b5e66-99ad-408b-8389-f20db8ca9b26</tstamps>
+      <units>
+        <unit name="A">
+          <pins />
+        </unit>
+      </units>
+    </comp>
+    <comp ref="H2">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:HOLE_3.2mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>4dc019fa-33c1-4181-b7f0-7ff2297727d7</tstamps>
+      <units>
+        <unit name="A">
+          <pins />
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP1">
+      <value>SMD_JUMPER_3_PAD_TRACE</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER_3_PAD_TRACE</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER_3_PAD_TRACE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER_3_PAD_TRACE" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>63d50fba-15e0-4ef3-a56c-3c64c078a7cc</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+            <pin num="3" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP2">
+      <value>SMD_JUMPER_3_PAD_TRACE</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER_3_PAD_TRACE</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER_3_PAD_TRACE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER_3_PAD_TRACE" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>7f7c83e5-ad92-4753-85d1-8c5d0acae6d0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+            <pin num="3" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP3">
+      <value>SMD_JUMPER</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>30d908b4-1bb2-4a37-ba92-c0290b7ae530</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="K1">
+      <value>easyC-SMD</value>
+      <footprint>e-radionica.com footprinti:easyC-connector</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:easyC-connector</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="easyC-SMD" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>4a411b0f-bbc9-43cb-a847-1773c81f4af7</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="3" />
+            <pin num="1" />
+            <pin num="2" />
+            <pin num="4" />
+            <pin num="5" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="K2">
+      <value>U262-161N-4BVC11</value>
+      <footprint>e-radionica.com footprinti:U262-161N-4BVC11</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:U262-161N-4BVC11</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="U262-161N-4BVC11" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <property name="ki_keywords" value="USBC USB-C USB" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>7fe12c4e-a74b-4d5d-a6ba-377d2116213e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="A4" />
+            <pin num="B9" />
+            <pin num="A5" />
+            <pin num="A6" />
+            <pin num="A7" />
+            <pin num="A8" />
+            <pin num="A9" />
+            <pin num="B4" />
+            <pin num="B8" />
+            <pin num="B7" />
+            <pin num="B6" />
+            <pin num="B5" />
+            <pin num="A1" />
+            <pin num="A12" />
+            <pin num="B12" />
+            <pin num="B1" />
+            <pin num="SH" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="K3">
+      <value>S2B-PH-K-S(LF)(SN)</value>
+      <footprint>e-radionica.com footprinti:S2B-PH-K-S(LF)(SN)</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:S2B-PH-K-S(LF)(SN)</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="S2B-PH-K-S(LF)(SN)" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <property name="ki_keywords" value="JST 2pin 2mm battery" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>90e2d3e4-c658-4c25-b231-a64b9790de95</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="2" />
+            <pin num="1" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="K4">
+      <value>HEADER_MALE_15X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_15X1</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_15X1</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_15X1" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>df1dfced-018d-4945-a3a7-025f4b9800ea</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="15" />
+            <pin num="14" />
+            <pin num="13" />
+            <pin num="12" />
+            <pin num="11" />
+            <pin num="10" />
+            <pin num="9" />
+            <pin num="8" />
+            <pin num="7" />
+            <pin num="6" />
+            <pin num="5" />
+            <pin num="4" />
+            <pin num="3" />
+            <pin num="2" />
+            <pin num="1" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="K5">
+      <value>HEADER_MALE_15X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_15X1</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_15X1</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="" part="HEADER_MALE_15X1_1" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>69678210-8068-42bd-84d3-347d42d01393</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="15" />
+            <pin num="14" />
+            <pin num="13" />
+            <pin num="12" />
+            <pin num="11" />
+            <pin num="10" />
+            <pin num="9" />
+            <pin num="8" />
+            <pin num="7" />
+            <pin num="6" />
+            <pin num="5" />
+            <pin num="4" />
+            <pin num="3" />
+            <pin num="2" />
+            <pin num="1" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q1">
+      <value>PMOS</value>
+      <footprint>e-radionica.com footprinti:SOT-23-3</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:SOT-23-3</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="PMOS-SOT-23-3" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>594a88fb-37ee-480e-9300-4ce2c6a065ab</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="3" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R1">
+      <value>1k</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>b48a405d-8aef-44c7-9de5-724e6bf21598</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R2">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>57fe8cb0-f6c8-4333-880b-95d9264949a1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R3">
+      <value>1k</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>ef91d00e-10af-43e9-808f-f315908480ab</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R4">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>f0548328-2c4a-4580-8873-c885f0c8879e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R5">
+      <value>1k</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>c6e8796d-7d6b-489e-95c1-4bec7a74f426</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R6">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>41648858-14b0-4af5-adf8-e373bac32fd8</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R7">
+      <value>5k1</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="" part="e-radionica.com schematics:0603R_2" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>b866cc60-ba54-4ddc-ba73-041a37c2c80b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R8">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>c921a96f-63d1-4bd8-98fb-dea392e500f3</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R9">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>d89329a4-d75c-44a1-ab81-ee6e2bc21b94</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R10">
+      <value>5k1</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="" part="e-radionica.com schematics:0603R_1" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>3cb3cc87-2c9f-443f-8ec7-6725edfb9a8d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R11">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>1bd09371-61e6-42ef-b79c-31fb6f332bda</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R12">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>91a9b0e4-af11-4ca7-b421-67b915ba04c4</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R13">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>f3a0af34-e7f5-4cc4-ae46-a1d9e3c5891a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R14">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>8a2dd8e9-60d6-470c-8744-a64956a1c738</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R15">
+      <value>100k</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>58681f4a-e7f4-43b6-8d7d-8fe8b6193c24</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R16">
+      <value>3k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="0603R" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>c617753a-381d-46e6-b961-46ba41908657</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R17">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>0535059f-57db-496c-be79-a525a7da9620</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R18">
+      <value>100R</value>
+      <footprint>e-radionica.com footprinti:THT OTPORNIK</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="THT_OTPORNIK" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>30600d39-aa82-4199-ba8f-48f2766777e3</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="SW1">
+      <value>4-1437565-2</value>
+      <footprint>e-radionica.com footprinti:4-1437565-2</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:4-1437565-2</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="4-1437565-2" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>77bf4d8f-580c-4f6b-ad49-6f47cbe0ef5d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="SW2">
+      <value>4-1437565-2</value>
+      <footprint>e-radionica.com footprinti:4-1437565-2</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:4-1437565-2</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="4-1437565-2" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>7a440c89-52d2-4778-88ed-5d3f8c4601eb</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U1">
+      <value>CH340C</value>
+      <footprint>e-radionica.com footprinti:SOP-16</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:SOP-16</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="CH340C" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>256baabc-efc4-4911-96b1-8410a8a9e417</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="16" />
+            <pin num="4" />
+            <pin num="5" />
+            <pin num="6" />
+            <pin num="9" />
+            <pin num="15" />
+            <pin num="1" />
+            <pin num="3" />
+            <pin num="2" />
+            <pin num="14" />
+            <pin num="13" />
+            <pin num="12" />
+            <pin num="11" />
+            <pin num="10" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U2">
+      <value>ATmega328P-PU</value>
+      <footprint>e-radionica.com footprinti:ATmega328P-PU</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:ATmega328P-PU</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="ATmega328P-PU" description="28SPDIP Pakiranje" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <property name="ki_keywords" value="tht atmega" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>e099de55-4852-4c3d-9884-f5e67e992987</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+            <pin num="3" />
+            <pin num="4" />
+            <pin num="5" />
+            <pin num="6" />
+            <pin num="7" />
+            <pin num="8" />
+            <pin num="9" />
+            <pin num="10" />
+            <pin num="11" />
+            <pin num="12" />
+            <pin num="13" />
+            <pin num="14" />
+            <pin num="28" />
+            <pin num="27" />
+            <pin num="26" />
+            <pin num="25" />
+            <pin num="24" />
+            <pin num="23" />
+            <pin num="22" />
+            <pin num="21" />
+            <pin num="20" />
+            <pin num="19" />
+            <pin num="18" />
+            <pin num="17" />
+            <pin num="16" />
+            <pin num="15" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U3">
+      <value>TPS7A2633DRVR</value>
+      <footprint>e-radionica.com footprinti:TPS7A2633DRVR</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:TPS7A2633DRVR</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="TPS7A2633DRVR" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>22a15d8c-e7c9-4dab-bf51-003cccca1352</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="6" />
+            <pin num="4" />
+            <pin num="1" />
+            <pin num="3" />
+            <pin num="5" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U4">
+      <value>NMOS-DUAL</value>
+      <footprint>e-radionica.com footprinti:SOT-363</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:SOT-363</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="NMOS-DUAL" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>f8a13467-ca4f-4976-b88b-6835ca2e8fb8</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+            <pin num="3" />
+            <pin num="6" />
+            <pin num="5" />
+            <pin num="4" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U5">
+      <value>TP4056M</value>
+      <footprint>e-radionica.com footprinti:TP4056M-MSOP8</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:TP4056M-MSOP8</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="TP4056M" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>f5f371cd-a783-4520-b38f-c9748d7a0b41</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="4" />
+            <pin num="5" />
+            <pin num="1" />
+            <pin num="3" />
+            <pin num="2" />
+            <pin num="8" />
+            <pin num="7" />
+            <pin num="6" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="X1">
+      <value>16MHz</value>
+      <footprint>e-radionica.com footprinti:CRYSTAL_3225__4_PAD</footprint>
+      <fields>
+        <field name="Footprint">e-radionica.com footprinti:CRYSTAL_3225__4_PAD</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="CRYSTAL_3225_4_PAD" description="" />
+      <property name="Sheetname" value="根目录" />
+      <property name="Sheetfile" value="public-jumper-import.kicad_sch" />
+      <sheetpath names="/" tstamps="/" />
+      <tstamps>0eec2082-5356-4bef-8256-93ba84b9277b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1" />
+            <pin num="2" />
+            <pin num="4" />
+            <pin num="3" />
+          </pins>
+        </unit>
+      </units>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="" part="HEADER_MALE_15X1_1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_15X1_1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_15X1</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+        <pin num="3" name="" type="passive" />
+        <pin num="4" name="" type="passive" />
+        <pin num="5" name="" type="passive" />
+        <pin num="6" name="" type="passive" />
+        <pin num="7" name="" type="passive" />
+        <pin num="8" name="" type="passive" />
+        <pin num="9" name="" type="passive" />
+        <pin num="10" name="" type="passive" />
+        <pin num="11" name="" type="passive" />
+        <pin num="12" name="" type="passive" />
+        <pin num="13" name="" type="passive" />
+        <pin num="14" name="" type="passive" />
+        <pin num="15" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R_1">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R_2">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="1206FUSE">
+      <fields>
+        <field name="Reference">F</field>
+        <field name="Value">1206FUSE</field>
+        <field name="Footprint">e-radionica.com footprinti:1206FUSE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="4-1437565-2">
+      <fields>
+        <field name="Reference">SW</field>
+        <field name="Value">4-1437565-2</field>
+        <field name="Footprint">e-radionica.com footprinti:4-1437565-2</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="ATmega328P-PU">
+      <description>28SPDIP Pakiranje</description>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">ATmega328P-PU</field>
+        <field name="Footprint">e-radionica.com footprinti:ATmega328P-PU</field>
+        <field name="Datasheet" />
+        <field name="Description">28SPDIP Pakiranje</field>
+      </fields>
+      <pins>
+        <pin num="1" name="PC6/~{RESET}" type="input" />
+        <pin num="2" name="PD0/RXD" type="input" />
+        <pin num="3" name="PD1/TXD" type="input" />
+        <pin num="4" name="PD2" type="input" />
+        <pin num="5" name="PD3" type="input" />
+        <pin num="6" name="PD4" type="input" />
+        <pin num="7" name="VCC" type="input" />
+        <pin num="8" name="GND" type="input" />
+        <pin num="9" name="PB6/XTAL1" type="input" />
+        <pin num="10" name="PB7/XTAL2" type="input" />
+        <pin num="11" name="PD5" type="input" />
+        <pin num="12" name="PD6/AIN0" type="input" />
+        <pin num="13" name="PD7/AIN1" type="input" />
+        <pin num="14" name="PB0/CLKO" type="input" />
+        <pin num="15" name="PB1" type="input" />
+        <pin num="16" name="~{SS}/PB2" type="input" />
+        <pin num="17" name="MOSI/PB3" type="input" />
+        <pin num="18" name="MISO/PB4" type="input" />
+        <pin num="19" name="SCK/PB5" type="input" />
+        <pin num="20" name="AVCC" type="input" />
+        <pin num="21" name="AREF" type="input" />
+        <pin num="22" name="GND" type="input" />
+        <pin num="23" name="ADC0/PC0" type="input" />
+        <pin num="24" name="ADC1/PC1" type="input" />
+        <pin num="25" name="ADC2/PC2" type="input" />
+        <pin num="26" name="ADC3/PC3" type="input" />
+        <pin num="27" name="ADC4/SDA/PC4" type="input" />
+        <pin num="28" name="ADC5/SCL/PC5" type="input" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="BAT20J">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">BAT20J</field>
+        <field name="Footprint">e-radionica.com footprinti:SOD-323</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive" />
+        <pin num="2" name="K" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="CH340C">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">CH340C</field>
+        <field name="Footprint">e-radionica.com footprinti:SOP-16</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="passive" />
+        <pin num="2" name="TXD" type="passive" />
+        <pin num="3" name="RXD" type="passive" />
+        <pin num="4" name="V3" type="passive" />
+        <pin num="5" name="UD+" type="passive" />
+        <pin num="6" name="UD-" type="passive" />
+        <pin num="9" name="CTS#" type="passive" />
+        <pin num="10" name="DSR#" type="passive" />
+        <pin num="11" name="RI#" type="passive" />
+        <pin num="12" name="DCD#" type="passive" />
+        <pin num="13" name="DTR#" type="passive" />
+        <pin num="14" name="RTS#" type="passive" />
+        <pin num="15" name="R232" type="passive" />
+        <pin num="16" name="VCC" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="CRYSTAL_3225_4_PAD">
+      <fields>
+        <field name="Reference">X</field>
+        <field name="Value">CRYSTAL_3225_4_PAD</field>
+        <field name="Footprint">e-radionica.com footprinti:CRYSTAL_3225__4_PAD</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="power_in" />
+        <pin num="3" name="" type="output" />
+        <pin num="4" name="" type="power_in" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="C_Ceramic_THT">
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_Ceramic_THT</field>
+        <field name="Footprint">e-radionica.com footprinti:C_Ceramic_THT_5mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="FIDUCIAL">
+      <fields>
+        <field name="Reference">FD</field>
+        <field name="Value">FIDUCIAL</field>
+        <field name="Footprint">e-radionica.com footprinti:FIDUCIAL_23</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HEADER_MALE_15X1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_15X1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_15X1</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+        <pin num="3" name="" type="passive" />
+        <pin num="4" name="" type="passive" />
+        <pin num="5" name="" type="passive" />
+        <pin num="6" name="" type="passive" />
+        <pin num="7" name="" type="passive" />
+        <pin num="8" name="" type="passive" />
+        <pin num="9" name="" type="passive" />
+        <pin num="10" name="" type="passive" />
+        <pin num="11" name="" type="passive" />
+        <pin num="12" name="" type="passive" />
+        <pin num="13" name="" type="passive" />
+        <pin num="14" name="" type="passive" />
+        <pin num="15" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HOLE_3.2mm">
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">HOLE_3.2mm</field>
+        <field name="Footprint">e-radionica.com footprinti:HOLE_3.2mm</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="KS225M050C07RR0VH2FP0">
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">KS225M050C07RR0VH2FP0</field>
+        <field name="Footprint">e-radionica.com footprinti:KS225M050C07RR0VH2FP0</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="input" />
+        <pin num="2" name="-" type="input" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="NMOS-DUAL">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">NMOS-DUAL</field>
+        <field name="Footprint">e-radionica.com footprinti:SOT-363</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="S2" type="input" />
+        <pin num="2" name="G2" type="input" />
+        <pin num="3" name="D1" type="input" />
+        <pin num="4" name="S1" type="input" />
+        <pin num="5" name="G1" type="input" />
+        <pin num="6" name="D2" type="input" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="PMOS-SOT-23-3">
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">PMOS-SOT-23-3</field>
+        <field name="Footprint">e-radionica.com footprinti:SOT-23-3</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="G" type="passive" />
+        <pin num="2" name="S" type="passive" />
+        <pin num="3" name="D" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="S2B-PH-K-S(LF)(SN)">
+      <fields>
+        <field name="Reference">K?</field>
+        <field name="Value">S2B-PH-K-S(LF)(SN)</field>
+        <field name="Footprint">e-radionica.com footprinti:S2B-PH-K-S(LF)(SN)</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="passive" />
+        <pin num="2" name="-" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD_JUMPER">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD_JUMPER</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD_JUMPER_3_PAD_TRACE">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD_JUMPER_3_PAD_TRACE</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER_3_PAD_TRACE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="input" />
+        <pin num="2" name="" type="input" />
+        <pin num="3" name="" type="input" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="THT_LED_5MM_BLUE">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">THT_LED_5MM_BLUE</field>
+        <field name="Footprint">e-radionica.com footprinti:THT_LED_5MM_BLUE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="THT_LED_5MM_ORANGE">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">THT_LED_5MM_ORANGE</field>
+        <field name="Footprint">e-radionica.com footprinti:THT LED 5mm ORANGE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="THT_LED_5MM_PURPLE">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">THT_LED_5MM_PURPLE</field>
+        <field name="Footprint">e-radionica.com footprinti:THT LED 5mm PURPLE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="THT_LED_5MM_RED">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">THT_LED_5MM_RED</field>
+        <field name="Footprint">e-radionica.com footprinti:THT LED 5mm RED</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="THT_LED_5MM_WHITE">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">THT_LED_5MM_WHITE</field>
+        <field name="Footprint">e-radionica.com footprinti:THT LED 5mm WHITE</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="THT_OTPORNIK">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">THT_OTPORNIK</field>
+        <field name="Footprint">e-radionica.com footprinti:THT OTPORNIK</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive" />
+        <pin num="2" name="" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="TP4056M">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TP4056M</field>
+        <field name="Footprint">e-radionica.com footprinti:TP4056M-MSOP8</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="TEMP" type="passive" />
+        <pin num="2" name="PROG" type="passive" />
+        <pin num="3" name="GND" type="passive" />
+        <pin num="4" name="VCC" type="passive" />
+        <pin num="5" name="BAT" type="passive" />
+        <pin num="6" name="~{STDBY}" type="passive" />
+        <pin num="7" name="~{CHRG}" type="passive" />
+        <pin num="8" name="CE" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="TPS7A2633DRVR">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TPS7A2633DRVR</field>
+        <field name="Footprint">e-radionica.com footprinti:TPS7A2633DRVR</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="OUT" type="passive" />
+        <pin num="3" name="PG" type="passive" />
+        <pin num="4" name="EN" type="passive" />
+        <pin num="5" name="GND" type="passive" />
+        <pin num="6" name="IN" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="U262-161N-4BVC11">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">U262-161N-4BVC11</field>
+        <field name="Footprint">e-radionica.com footprinti:U262-161N-4BVC11</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="A1" name="GND" type="passive" />
+        <pin num="A4" name="VBUS" type="passive" />
+        <pin num="A5" name="CC1" type="passive" />
+        <pin num="A6" name="DP1" type="passive" />
+        <pin num="A7" name="DN1" type="passive" />
+        <pin num="A8" name="SBU1" type="passive" />
+        <pin num="A9" name="VBUS" type="passive" />
+        <pin num="A12" name="GND" type="passive" />
+        <pin num="B1" name="GND" type="passive" />
+        <pin num="B4" name="VBUS" type="passive" />
+        <pin num="B5" name="CC2" type="passive" />
+        <pin num="B6" name="DP2" type="passive" />
+        <pin num="B7" name="DN2" type="passive" />
+        <pin num="B8" name="SBU2" type="passive" />
+        <pin num="B9" name="VBUS" type="passive" />
+        <pin num="B12" name="GND" type="passive" />
+        <pin num="SH" name="SHIELD" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="WS2812B-2020">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">WS2812B-2020</field>
+        <field name="Footprint">e-radionica.com footprinti:WS2812B-2020</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="DO" type="passive" />
+        <pin num="2" name="GND" type="passive" />
+        <pin num="3" name="DI" type="passive" />
+        <pin num="4" name="VDD" type="passive" />
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="easyC-SMD">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">easyC-SMD</field>
+        <field name="Footprint">e-radionica.com footprinti:easyC-connector</field>
+        <field name="Datasheet" />
+        <field name="Description" />
+      </fields>
+      <pins>
+        <pin num="1" name="SCL" type="passive" />
+        <pin num="2" name="SDA" type="passive" />
+        <pin num="3" name="3V3" type="passive" />
+        <pin num="4" name="GND" type="passive" />
+        <pin num="5" name="SHIELD" type="passive" />
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries />
+  <nets>
+    <net code="1" name="+3V3" class="Default">
+      <node ref="C11" pin="1" pinfunction="+_1" pintype="input" />
+      <node ref="JP2" pin="2" pintype="input" />
+      <node ref="JP3" pin="1" pintype="passive" />
+      <node ref="K1" pin="3" pinfunction="3V3_3" pintype="passive" />
+      <node ref="K4" pin="4" pintype="passive" />
+      <node ref="R13" pin="2" pintype="passive" />
+      <node ref="U3" pin="1" pinfunction="OUT_1" pintype="passive" />
+      <node ref="U4" pin="2" pinfunction="G2_2" pintype="input" />
+      <node ref="U4" pin="5" pinfunction="G1_5" pintype="input" />
+    </net>
+    <net code="2" name="/EN_3V3" class="Default">
+      <node ref="U3" pin="4" pinfunction="EN_4" pintype="passive" />
+    </net>
+    <net code="3" name="A0" class="Default">
+      <node ref="K5" pin="10" pintype="passive" />
+      <node ref="U2" pin="23" pinfunction="ADC0/PC0_23" pintype="input" />
+    </net>
+    <net code="4" name="A1" class="Default">
+      <node ref="K5" pin="11" pintype="passive" />
+      <node ref="U2" pin="24" pinfunction="ADC1/PC1_24" pintype="input" />
+    </net>
+    <net code="5" name="A2" class="Default">
+      <node ref="K5" pin="12" pintype="passive" />
+      <node ref="U2" pin="25" pinfunction="ADC2/PC2_25" pintype="input" />
+    </net>
+    <net code="6" name="A3" class="Default">
+      <node ref="K5" pin="13" pintype="passive" />
+      <node ref="U2" pin="26" pinfunction="ADC3/PC3_26" pintype="input" />
+    </net>
+    <net code="7" name="CH-RXD" class="Default">
+      <node ref="D6" pin="2" pintype="passive" />
+      <node ref="R3" pin="2" pintype="passive" />
+      <node ref="U1" pin="3" pinfunction="RXD_3" pintype="passive" />
+    </net>
+    <net code="8" name="CH-TXD" class="Default">
+      <node ref="D7" pin="2" pintype="passive" />
+      <node ref="R1" pin="2" pintype="passive" />
+      <node ref="U1" pin="2" pinfunction="TXD_2" pintype="passive" />
+    </net>
+    <net code="9" name="D+" class="Default">
+      <node ref="K2" pin="A6" pinfunction="DP1_A6" pintype="passive" />
+      <node ref="K2" pin="B6" pinfunction="DP2_B6" pintype="passive" />
+      <node ref="U1" pin="6" pinfunction="UD-_6" pintype="passive" />
+    </net>
+    <net code="10" name="D-" class="Default">
+      <node ref="K2" pin="A7" pinfunction="DN1_A7" pintype="passive" />
+      <node ref="K2" pin="B7" pinfunction="DN2_B7" pintype="passive" />
+      <node ref="U1" pin="5" pinfunction="UD+_5" pintype="passive" />
+    </net>
+    <net code="11" name="D2" class="Default">
+      <node ref="K5" pin="5" pintype="passive" />
+      <node ref="U2" pin="4" pinfunction="PD2_4" pintype="input" />
+    </net>
+    <net code="12" name="D3" class="Default">
+      <node ref="K5" pin="4" pintype="passive" />
+      <node ref="U2" pin="5" pinfunction="PD3_5" pintype="input" />
+    </net>
+    <net code="13" name="D4" class="Default">
+      <node ref="K5" pin="3" pintype="passive" />
+      <node ref="U2" pin="6" pinfunction="PD4_6" pintype="input" />
+    </net>
+    <net code="14" name="D5" class="Default">
+      <node ref="K5" pin="2" pintype="passive" />
+      <node ref="U2" pin="11" pinfunction="PD5_11" pintype="input" />
+    </net>
+    <net code="15" name="D6" class="Default">
+      <node ref="K4" pin="6" pintype="passive" />
+      <node ref="U2" pin="12" pinfunction="PD6/AIN0_12" pintype="input" />
+    </net>
+    <net code="16" name="D7" class="Default">
+      <node ref="K4" pin="7" pintype="passive" />
+      <node ref="SW1" pin="2" pintype="passive" />
+      <node ref="U2" pin="13" pinfunction="PD7/AIN1_13" pintype="input" />
+    </net>
+    <net code="17" name="D8" class="Default">
+      <node ref="K4" pin="8" pintype="passive" />
+      <node ref="R5" pin="2" pintype="passive" />
+      <node ref="U2" pin="14" pinfunction="PB0/CLKO_14" pintype="input" />
+    </net>
+    <net code="18" name="D9" class="Default">
+      <node ref="K4" pin="9" pintype="passive" />
+      <node ref="U2" pin="15" pinfunction="PB1_15" pintype="input" />
+    </net>
+    <net code="19" name="D10" class="Default">
+      <node ref="K4" pin="10" pintype="passive" />
+      <node ref="U2" pin="16" pinfunction="~{SS}/PB2_16" pintype="input" />
+    </net>
+    <net code="20" name="D11" class="Default">
+      <node ref="K4" pin="12" pintype="passive" />
+      <node ref="U2" pin="17" pinfunction="MOSI/PB3_17" pintype="input" />
+    </net>
+    <net code="21" name="D12" class="Default">
+      <node ref="K4" pin="13" pintype="passive" />
+      <node ref="U2" pin="18" pinfunction="MISO/PB4_18" pintype="input" />
+    </net>
+    <net code="22" name="D13" class="Default">
+      <node ref="K4" pin="11" pintype="passive" />
+      <node ref="R14" pin="2" pintype="passive" />
+      <node ref="U2" pin="19" pinfunction="SCK/PB5_19" pintype="input" />
+    </net>
+    <net code="23" name="DTR" class="Default">
+      <node ref="C4" pin="1" pintype="passive" />
+      <node ref="U1" pin="13" pinfunction="DTR#_13" pintype="passive" />
+    </net>
+    <net code="24" name="GND" class="Default">
+      <node ref="C1" pin="2" pintype="passive" />
+      <node ref="C10" pin="2" pintype="passive" />
+      <node ref="C11" pin="2" pinfunction="-_2" pintype="input" />
+      <node ref="C12" pin="2" pinfunction="-_2" pintype="input" />
+      <node ref="C13" pin="2" pinfunction="-_2" pintype="input" />
+      <node ref="C2" pin="1" pintype="passive" />
+      <node ref="C3" pin="1" pintype="passive" />
+      <node ref="C5" pin="1" pintype="passive" />
+      <node ref="C6" pin="1" pintype="passive" />
+      <node ref="C7" pin="2" pintype="passive" />
+      <node ref="C8" pin="2" pinfunction="-_2" pintype="input" />
+      <node ref="C9" pin="2" pintype="passive" />
+      <node ref="D1" pin="2" pinfunction="GND_2" pintype="passive" />
+      <node ref="D13" pin="2" pintype="passive" />
+      <node ref="D2" pin="2" pintype="passive" />
+      <node ref="K1" pin="4" pinfunction="GND_4" pintype="passive" />
+      <node ref="K1" pin="5" pinfunction="SHIELD_5" pintype="passive" />
+      <node ref="K2" pin="A1" pinfunction="GND_A1" pintype="passive" />
+      <node ref="K2" pin="A12" pinfunction="GND_A12" pintype="passive" />
+      <node ref="K2" pin="B1" pinfunction="GND_B1" pintype="passive" />
+      <node ref="K2" pin="B12" pinfunction="GND_B12" pintype="passive" />
+      <node ref="K2" pin="SH" pinfunction="SHIELD_SH" pintype="passive" />
+      <node ref="K3" pin="2" pinfunction="-_2" pintype="passive" />
+      <node ref="K4" pin="3" pintype="passive" />
+      <node ref="K5" pin="1" pintype="passive" />
+      <node ref="K5" pin="6" pintype="passive" />
+      <node ref="K5" pin="7" pintype="passive" />
+      <node ref="K5" pin="8" pintype="passive" />
+      <node ref="R10" pin="2" pintype="passive" />
+      <node ref="R15" pin="2" pintype="passive" />
+      <node ref="R16" pin="2" pintype="passive" />
+      <node ref="R7" pin="2" pintype="passive" />
+      <node ref="SW1" pin="1" pintype="passive" />
+      <node ref="SW2" pin="2" pintype="passive" />
+      <node ref="U1" pin="1" pinfunction="GND_1" pintype="passive" />
+      <node ref="U2" pin="22" pinfunction="GND_22" pintype="input" />
+      <node ref="U2" pin="8" pinfunction="GND_8" pintype="input" />
+      <node ref="U3" pin="5" pinfunction="GND_5" pintype="passive" />
+      <node ref="U5" pin="1" pinfunction="TEMP_1" pintype="passive" />
+      <node ref="U5" pin="3" pinfunction="GND_3" pintype="passive" />
+      <node ref="X1" pin="2" pintype="power_in" />
+      <node ref="X1" pin="4" pintype="power_in" />
+    </net>
+    <net code="25" name="Net-(D1-DI)" class="Default">
+      <node ref="D1" pin="3" pinfunction="DI_3" pintype="passive" />
+      <node ref="R5" pin="1" pintype="passive" />
+    </net>
+    <net code="26" name="Net-(D2-Pad1)" class="Default">
+      <node ref="D2" pin="1" pintype="passive" />
+      <node ref="R6" pin="2" pintype="passive" />
+    </net>
+    <net code="27" name="Net-(D5-Pad2)" class="Default">
+      <node ref="D5" pin="2" pintype="passive" />
+      <node ref="R17" pin="2" pintype="passive" />
+    </net>
+    <net code="28" name="Net-(D6-Pad1)" class="Default">
+      <node ref="D6" pin="1" pintype="passive" />
+      <node ref="R2" pin="1" pintype="passive" />
+    </net>
+    <net code="29" name="Net-(D7-Pad1)" class="Default">
+      <node ref="D7" pin="1" pintype="passive" />
+      <node ref="R4" pin="1" pintype="passive" />
+    </net>
+    <net code="30" name="Net-(D13-Pad1)" class="Default">
+      <node ref="D13" pin="1" pintype="passive" />
+      <node ref="R14" pin="1" pintype="passive" />
+    </net>
+    <net code="31" name="Net-(F1-Pad2)" class="Default">
+      <node ref="F1" pin="2" pintype="passive" />
+      <node ref="K2" pin="A4" pinfunction="VBUS_A4" pintype="passive" />
+      <node ref="K2" pin="A9" pinfunction="VBUS_A9" pintype="passive" />
+      <node ref="K2" pin="B4" pinfunction="VBUS_B4" pintype="passive" />
+      <node ref="K2" pin="B9" pinfunction="VBUS_B9" pintype="passive" />
+    </net>
+    <net code="32" name="Net-(JP3-Pad2)" class="Default">
+      <node ref="JP3" pin="2" pintype="passive" />
+      <node ref="R6" pin="1" pintype="passive" />
+    </net>
+    <net code="33" name="Net-(K2-CC1)" class="Default">
+      <node ref="K2" pin="A5" pinfunction="CC1_A5" pintype="passive" />
+      <node ref="R10" pin="1" pintype="passive" />
+    </net>
+    <net code="34" name="Net-(K2-CC2)" class="Default">
+      <node ref="K2" pin="B5" pinfunction="CC2_B5" pintype="passive" />
+      <node ref="R7" pin="1" pintype="passive" />
+    </net>
+    <net code="35" name="Net-(U1-V3)" class="Default">
+      <node ref="C3" pin="2" pintype="passive" />
+      <node ref="U1" pin="4" pinfunction="V3_4" pintype="passive" />
+    </net>
+    <net code="36" name="Net-(U2-AREF)" class="Default">
+      <node ref="C7" pin="1" pintype="passive" />
+      <node ref="U2" pin="21" pinfunction="AREF_21" pintype="input" />
+    </net>
+    <net code="37" name="Net-(U2-AVCC)" class="Default">
+      <node ref="C9" pin="1" pintype="passive" />
+      <node ref="R18" pin="2" pintype="passive" />
+      <node ref="U2" pin="20" pinfunction="AVCC_20" pintype="input" />
+    </net>
+    <net code="38" name="Net-(U5-PROG)" class="Default">
+      <node ref="R16" pin="1" pintype="passive" />
+      <node ref="U5" pin="2" pinfunction="PROG_2" pintype="passive" />
+    </net>
+    <net code="39" name="Net-(U5-~{CHRG})" class="Default">
+      <node ref="R17" pin="1" pintype="passive" />
+      <node ref="U5" pin="7" pinfunction="~{CHRG}_7" pintype="passive" />
+    </net>
+    <net code="40" name="RESET" class="Default">
+      <node ref="C4" pin="2" pintype="passive" />
+      <node ref="K4" pin="5" pintype="passive" />
+      <node ref="R13" pin="1" pintype="passive" />
+      <node ref="SW2" pin="1" pintype="passive" />
+      <node ref="U2" pin="1" pinfunction="PC6/~{RESET}_1" pintype="input" />
+    </net>
+    <net code="41" name="RTS" class="Default">
+      <node ref="U1" pin="14" pinfunction="RTS#_14" pintype="passive" />
+    </net>
+    <net code="42" name="RXD" class="Default">
+      <node ref="K4" pin="15" pintype="passive" />
+      <node ref="R3" pin="1" pintype="passive" />
+      <node ref="U2" pin="3" pinfunction="PD1/TXD_3" pintype="input" />
+    </net>
+    <net code="43" name="SCL" class="Default">
+      <node ref="K1" pin="1" pinfunction="SCL_1" pintype="passive" />
+      <node ref="R12" pin="1" pintype="passive" />
+      <node ref="U4" pin="4" pinfunction="S1_4" pintype="input" />
+    </net>
+    <net code="44" name="SCL_5V" class="Default">
+      <node ref="K5" pin="14" pintype="passive" />
+      <node ref="R9" pin="2" pintype="passive" />
+      <node ref="U2" pin="28" pinfunction="ADC5/SCL/PC5_28" pintype="input" />
+      <node ref="U4" pin="3" pinfunction="D1_3" pintype="input" />
+    </net>
+    <net code="45" name="SCL_PULL3,3" class="Default">
+      <node ref="JP2" pin="1" pintype="input" />
+      <node ref="R12" pin="2" pintype="passive" />
+    </net>
+    <net code="46" name="SCL_PULL5" class="Default">
+      <node ref="JP1" pin="1" pintype="input" />
+      <node ref="R9" pin="1" pintype="passive" />
+    </net>
+    <net code="47" name="SDA" class="Default">
+      <node ref="K1" pin="2" pinfunction="SDA_2" pintype="passive" />
+      <node ref="R8" pin="2" pintype="passive" />
+      <node ref="U4" pin="1" pinfunction="S2_1" pintype="input" />
+    </net>
+    <net code="48" name="SDA_5V" class="Default">
+      <node ref="K5" pin="15" pintype="passive" />
+      <node ref="R11" pin="1" pintype="passive" />
+      <node ref="U2" pin="27" pinfunction="ADC4/SDA/PC4_27" pintype="input" />
+      <node ref="U4" pin="6" pinfunction="D2_6" pintype="input" />
+    </net>
+    <net code="49" name="SDA_PULL3,3" class="Default">
+      <node ref="JP2" pin="3" pintype="input" />
+      <node ref="R8" pin="1" pintype="passive" />
+    </net>
+    <net code="50" name="SDA_PULL5" class="Default">
+      <node ref="JP1" pin="3" pintype="input" />
+      <node ref="R11" pin="2" pintype="passive" />
+    </net>
+    <net code="51" name="TXD" class="Default">
+      <node ref="K4" pin="14" pintype="passive" />
+      <node ref="R1" pin="1" pintype="passive" />
+      <node ref="U2" pin="2" pinfunction="PD0/RXD_2" pintype="input" />
+    </net>
+    <net code="52" name="VBAT" class="Default">
+      <node ref="C12" pin="1" pinfunction="+_1" pintype="input" />
+      <node ref="K3" pin="1" pinfunction="+_1" pintype="passive" />
+      <node ref="K4" pin="1" pintype="passive" />
+      <node ref="Q1" pin="3" pinfunction="D_3" pintype="passive" />
+      <node ref="U5" pin="5" pinfunction="BAT_5" pintype="passive" />
+    </net>
+    <net code="53" name="VCC" class="Default">
+      <node ref="C1" pin="1" pintype="passive" />
+      <node ref="C10" pin="1" pintype="passive" />
+      <node ref="C8" pin="1" pinfunction="+_1" pintype="input" />
+      <node ref="D1" pin="4" pinfunction="VDD_4" pintype="passive" />
+      <node ref="D4" pin="2" pinfunction="K_2" pintype="passive" />
+      <node ref="JP1" pin="2" pintype="input" />
+      <node ref="K4" pin="2" pintype="passive" />
+      <node ref="K5" pin="9" pintype="passive" />
+      <node ref="Q1" pin="2" pinfunction="S_2" pintype="passive" />
+      <node ref="R18" pin="1" pintype="passive" />
+      <node ref="U2" pin="7" pinfunction="VCC_7" pintype="input" />
+      <node ref="U3" pin="6" pinfunction="IN_6" pintype="passive" />
+    </net>
+    <net code="54" name="VUSB" class="Default">
+      <node ref="C13" pin="1" pinfunction="+_1" pintype="input" />
+      <node ref="C2" pin="2" pintype="passive" />
+      <node ref="D4" pin="1" pinfunction="A_1" pintype="passive" />
+      <node ref="D5" pin="1" pintype="passive" />
+      <node ref="F1" pin="1" pintype="passive" />
+      <node ref="Q1" pin="1" pinfunction="G_1" pintype="passive" />
+      <node ref="R15" pin="1" pintype="passive" />
+      <node ref="R2" pin="2" pintype="passive" />
+      <node ref="R4" pin="2" pintype="passive" />
+      <node ref="U1" pin="16" pinfunction="VCC_16" pintype="passive" />
+      <node ref="U5" pin="4" pinfunction="VCC_4" pintype="passive" />
+      <node ref="U5" pin="8" pinfunction="CE_8" pintype="passive" />
+    </net>
+    <net code="55" name="XTAL1" class="Default">
+      <node ref="C5" pin="2" pintype="passive" />
+      <node ref="U2" pin="9" pinfunction="PB6/XTAL1_9" pintype="input" />
+      <node ref="X1" pin="3" pintype="output" />
+    </net>
+    <net code="56" name="XTAL2" class="Default">
+      <node ref="C6" pin="2" pintype="passive" />
+      <node ref="U2" pin="10" pinfunction="PB7/XTAL2_10" pintype="input" />
+      <node ref="X1" pin="1" pintype="passive" />
+    </net>
+    <net code="57" name="unconnected-(D1-DO-Pad1)" class="Default">
+      <node ref="D1" pin="1" pinfunction="DO_1" pintype="passive" />
+    </net>
+    <net code="58" name="unconnected-(K2-SBU1-PadA8)" class="Default">
+      <node ref="K2" pin="A8" pinfunction="SBU1_A8" pintype="passive" />
+    </net>
+    <net code="59" name="unconnected-(K2-SBU2-PadB8)" class="Default">
+      <node ref="K2" pin="B8" pinfunction="SBU2_B8" pintype="passive" />
+    </net>
+    <net code="60" name="unconnected-(U1-CTS#-Pad9)" class="Default">
+      <node ref="U1" pin="9" pinfunction="CTS#_9" pintype="passive" />
+    </net>
+    <net code="61" name="unconnected-(U1-DCD#-Pad12)" class="Default">
+      <node ref="U1" pin="12" pinfunction="DCD#_12" pintype="passive" />
+    </net>
+    <net code="62" name="unconnected-(U1-DSR#-Pad10)" class="Default">
+      <node ref="U1" pin="10" pinfunction="DSR#_10" pintype="passive" />
+    </net>
+    <net code="63" name="unconnected-(U1-R232-Pad15)" class="Default">
+      <node ref="U1" pin="15" pinfunction="R232_15" pintype="passive" />
+    </net>
+    <net code="64" name="unconnected-(U1-RI#-Pad11)" class="Default">
+      <node ref="U1" pin="11" pinfunction="RI#_11" pintype="passive" />
+    </net>
+    <net code="65" name="unconnected-(U3-PG-Pad3)" class="Default">
+      <node ref="U3" pin="3" pinfunction="PG_3" pintype="passive" />
+    </net>
+    <net code="66" name="unconnected-(U5-~{STDBY}-Pad6)" class="Default">
+      <node ref="U5" pin="6" pinfunction="~{STDBY}_6" pintype="passive" />
+    </net>
+  </nets>
+</export>
