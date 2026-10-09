@@ -131,6 +131,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 ### 5. 专家审查：连接追踪（T）、工程计算（C）、条款核对（D）
 
 按 PWR → RST → CLK → SIG → ANA → PRO → DRV 推进，每条规则逐对象、逐状态给结果；全板项逐条给适用性和结果。
+先按 [对象上下文录入](references/plan-and-results.md#对象上下文录入) 保存实际物理对象、状态、路径及出处、
+已核范围和未知边界，再形成结论；噪声 NA 先完成 [噪声路径资格](references/evidence-proportionality.md#噪声路径资格)。
 
 - **电源与状态**：每轨追到真实电源脚或明确外部源，再到全部负载（PWR-T01）；0Ω/磁珠/二极管不是独立电源。
   按装配、开关/体二极管方向、EN/PG、时序和地参考分析，建立断电、启动/复位、运行、待机、掉电、热插拔和故障状态表。
@@ -155,7 +157,10 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 ### 7. 结果、报告与校验
 
 结果独立保存为 `review-results.json`，绑定最终计划；每项结论核对对象、配置、工况、判据与原始证据，
-批量脚本只录入已审结论。按有证据的共同根因归并任务，不合并独立电气结论。完成后对账：
+批量脚本只录入已审结论。按有证据的共同根因归并任务，不合并独立电气结论。
+录入前用第 5 步上下文逐字段核理由、缺口、条件影响及关闭任务；共享文字须逐项适用。
+补证对象、数值和验收条件同时核结果与任务的结构化字段，方法见 [对象上下文录入](references/plan-and-results.md#对象上下文录入)。
+完成后对账：
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --require-impact --json review-gate.json
 
