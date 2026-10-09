@@ -42,8 +42,25 @@ def normalize_identity(value):
     return re.sub(r'[^A-Z0-9]+', '', str(value or '').upper())
 
 
+_NUMBER = r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?'
+_QUANTITY = _NUMBER + r'\s*(?:[fpnuµμmkKMGT]?\s*(?:F|H|V|A|W|Hz|ohms?|Ω)|[RrKkMm]\d*)'
+_PARAMETER_VALUE = re.compile(_QUANTITY + r'(?:\s*(?:[/,;]|\s)\s*(?:' + _QUANTITY + '|' + _NUMBER + r'\s*%))*', re.I)
+_GENERIC_PASSIVE = re.compile(r'^(?:[\w.-]+:)?(?:R|C|L|RESISTOR|CAPACITOR|INDUCTOR|CRYSTAL|XTAL)(?:_SMALL|_US|_\d+(?:_\d+)?(?:_PAD)?)?$', re.I)
+
+
+def _parameter_value(value):
+    # An all-numeric ordering code is not a quantity: an explicit unit or
+    # engineering resistor notation is required before changing priority.
+    return _text(value) and bool(_PARAMETER_VALUE.fullmatch(value.strip()))
+
+
 def _identity_for(ref, part):
-    """Follow the skill contract: VALUE first, then PART/PRIM as fallbacks."""
+    """Keep identity VALUE priority; use explicit PART over parameter VALUE."""
+    display, explicit = part.get('value'), part.get('part')
+    if (_parameter_value(display) and _text(explicit)
+            and explicit.strip().upper() not in {'N/A', 'NA', 'NONE', 'TBD', 'UNKNOWN'}
+            and not _parameter_value(explicit) and not _GENERIC_PASSIVE.fullmatch(explicit.strip())):
+        return explicit.strip(), 'part'
     for field in ('value', 'part', 'prim'):
         value = part.get(field)
         if _text(value) and str(value).strip().upper() not in {

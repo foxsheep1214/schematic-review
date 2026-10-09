@@ -79,6 +79,16 @@ class _Scan:
             return 'pulled', refs
         return 'unknown', refs
 
+    def _supply_inputs(self, ref):
+        inputs = self.graph.named_pins(ref, POWER_PIN_RE)
+        # VI can also mean a signal/video input. Only directional native power
+        # evidence admits this alias; canonical POWER conflates inputs/outputs.
+        native_types = self.graph.db.get('native_pintype') or {}
+        for node, net in self.graph.named_pins(ref, re.compile(r'^VI$', re.I)).items():
+            if str(native_types.get(node, '')).lower() == 'power_in':
+                inputs[node] = net
+        return inputs
+
     def regulators(self):
         if self._regulators is not None:
             return self._regulators
@@ -93,7 +103,7 @@ class _Scan:
             # 反馈脚只用于认出稳压器，不算输出轨。
             if not enables or not (outputs or switches or feedback):
                 continue
-            inputs = self.graph.named_pins(ref, POWER_PIN_RE)
+            inputs = self._supply_inputs(ref)
             for node, enable_net in enables.items():
                 source, evidence = self._enable_source(enable_net, set(inputs.values()))
                 found.append({
@@ -126,7 +136,7 @@ class _Scan:
                 continue
             if ref in regulators:
                 continue
-            supplies = set(self.graph.named_pins(ref, POWER_PIN_RE).values())
+            supplies = set(self._supply_inputs(ref).values())
             if not supplies:
                 continue
             controls = dict(self.graph.named_pins(ref, ENABLE_PIN_RE))

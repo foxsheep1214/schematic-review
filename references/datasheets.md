@@ -139,7 +139,11 @@ evidence_confidence=C，以及具体参数/身份/工况、受影响检查、最
 扩展；--evidence evidence.json 也会纳入声明的 depends_on 和目标器件。audit 输出
 required_refs 并与当前 db 一起验证，未知位号不允许静默漏审。
 
-VALUE 优先仅用于生成检索候选；BOM 中仅有通用阻容值时先解析实际 MPN，不能把
+VALUE 是型号/系列时仍优先用于生成检索候选；VALUE 明确是带单位的参数或阻值写法、
+PART 已给出非通用物料身份时，用 PART 生成候选，并保留 VALUE 为别名证据。
+带尺寸的通用符号/封装名（如 CRYSTAL_3225_4_PAD、C_0603）仍是通用身份，不能因此替代参数为精确订货码。
+纯数字 VALUE 不按参数处理，真实 VALUE/PART 型号冲突仍按身份分支审查。
+BOM 中仅有通用阻容值时先解析实际 MPN，不能把
 “10K”当成已核实采购型号。AVAILABLE 表示该候选的文档已核实；用于参数验算前，
 evidence.basis.sources 还须记录确切的身份解释和实际文档指纹。文档覆盖系列时按
 订货表匹配实际后缀/封装，不要求系列文档标题逐字等于每个订货号。
