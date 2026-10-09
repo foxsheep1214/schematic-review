@@ -67,18 +67,28 @@ RR0816（0603）1/16 W/75 V、RR1220（0805）1/10 W/100 V。
 
 ## 指示 LED、按键、连接器
 
-| 类别 | 最弱档 | 依据 |
-|---|---|---|
-| 单色指示 LED | 尚无覆盖该封装类别的已核连续电流最弱档；按受控系列/器件的连续额定与温度降额定界 | [Kingbright 0201 目录](https://www.kingbrightusa.com/category.asp?catalog_name=LED&category_name=KC0201+SMD+LED) 中 mcd @5 mA/@10 mA 是光度测试条件，不是连续电流额定下限（核对日期 2026-10-09） |
-| 轻触开关（含超小型 SMT） | 50 mA / 12 VDC（阻性） | Omron B3U 超小型轻触开关：1～50 mA、3～12 VDC |
-| 2.54 mm 排针 | 1 A / 触点（典型产品 3 A） | Amphenol FCI BergStik：3 A/触点；取 1 A 留余量 |
-| JST SH / GH（1.0 / 1.25 mm） | 1 A / 触点 | JST 系列额定（SH、GH 约 1 A） |
-| JST ZH | 1 A / 触点 | 同上 |
-| JST PH（2.0 mm） | 2 A / 触点 | JST PH 约 2 A |
-| JST XH（2.5 mm） | 3 A / 触点 | JST XH 约 3 A |
-| SD/microSD/SIM 卡座 | 0.5 A / 触点 | 常见卡座 0.5～1 A/触点（如 Amphenol 7111S 系列 1 A） |
+本节各行只覆盖所列原厂的所列系列。BOM 或采购范围写的是兼容件、仿制件、其他品牌同名封装
+（如“PH2.0”“XH2.54”“2.54 排针”这类泛称），或只有封装/间距而无系列，不直接套用本表；
+先查该范围内实际系列的额定及条件，取最低者，查不到就按本文开头的“范围未定”处理。
+库名或符号名含系列名（如 `JST_PH`）只说明封装几何，不证明采购范围就是该原厂系列。
 
-连接器的最弱档只覆盖电流。工作电压高于 30 V、需要安规间距，或多针并联承载时，仍按具体资料核对。
+| 类别 | 最弱档 | 依据（核对日期 2026-10-09） |
+|---|---|---|
+| 单色指示 LED | 尚无覆盖该封装类别的已核连续电流最弱档；按受控系列/器件的连续额定与温度降额定界 | [Kingbright 0201 目录](https://www.kingbrightusa.com/category.asp?catalog_name=LED&category_name=KC0201+SMD+LED) 中 mcd @5 mA/@10 mA 是光度测试条件，不是连续电流额定下限 |
+| 轻触开关：Omron B3U | 50 mA / 12 VDC（阻性） | [Omron B3U，Cat. No. A162-E1-07](https://omronfs.omron.com/en_US/ecb/products/pdf/en-b3u.pdf) Ratings：1～50 mA、3～12 VDC（阻性）；环境温度 −25～+70 ℃ |
+| 2.54 mm 排针：Amphenol BergStik | 1 A / 触点 | [Amphenol BergStik 数据页](https://cdn.amphenol-cs.com/media/wysiwyg/files/documentation/datasheet/boardwiretoboard/bwb_bergstik.pdf)：最大 3 A/触点；温升、通电针数等条件本次未取得原文核对，故取 1 A 留余量 |
+| JST SH（1.0 mm） | 1.0 A / 触点 | [JST eSH](https://www.jst-mfg.com/product/pdf/eng/eSH.pdf)：1.0 A AC/DC（AWG #28），50 V，−25～+85 ℃（含通电温升） |
+| JST GH（1.25 mm） | 1.0 A / 触点 | [JST eGH](https://www.jst-mfg.com/product/pdf/eng/eGH.pdf)：1.0 A AC/DC（AWG #26），50 V，−40～+105 ℃（含通电温升） |
+| JST ZH（1.5 mm） | 1.0 A / 触点 | [JST eZH](https://www.jst-mfg.com/product/pdf/eng/eZH.pdf)：1.0 A AC/DC（AWG #26），50 V，−25～+85 ℃（含通电温升） |
+| JST PH（2.0 mm） | 2 A / 触点 | [JST ePH](https://www.jst-mfg.com/product/pdf/eng/ePH.pdf)：2 A AC/DC（AWG #24），100 V，−40～+105 ℃（含通电温升） |
+| JST XH（2.5 mm） | 3 A / 触点 | [JST eXH](https://www.jst-mfg.com/product/pdf/eng/eXH.pdf)：3 A AC/DC（AWG #22），250 V，−25～+85 ℃（含通电温升） |
+| SD/microSD/SIM 卡座 | 尚无已核最弱档；按受控系列的触点额定定界 | 原表“0.5 A/触点”未找到可核的原厂依据，已撤销 |
+
+JST 额定以括号内线规为条件；线束线规更细或未定时，该额定不直接适用，
+把“线规 ≥ AWG #X”记为线束约束并汇总到 DEV-D04，或按实际线规查原厂资料。
+环境温度加通电温升超出所列温度范围时，同样不适用。
+
+连接器的最弱档只覆盖电流。工作电压高于 30 V 或超出所列系列额定电压、需要安规间距，或多针并联承载时，仍按具体资料核对。
 
 额定、测试条件和参考值须分开。LED 的光度测试电流不能用于证明可采购器件的连续额定最弱档；
 开关的额定上限也不证明低电平/小电流接触可靠性，最低适用负载若仅为参考值不能冒充保证值。
