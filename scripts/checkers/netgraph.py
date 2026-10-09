@@ -9,7 +9,7 @@ import re
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
 RAIL_RE = re.compile(
-    r'^(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+(?:\.[0-9]+)?V)', re.I)
+    r'^\+?(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+(?:\.[0-9]+)?V)', re.I)
 
 RESISTOR, CAPACITOR, INDUCTOR, FERRITE = 'resistor', 'capacitor', 'inductor', 'ferrite'
 DIODE, TVS, ZENER, MOSFET, BJT = 'diode', 'tvs', 'zener', 'mosfet', 'bjt'

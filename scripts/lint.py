@@ -41,7 +41,8 @@ from plan_review import build_review_plan, validate_intent
 from solve_dividers import Solver, divider_window, linear_feedback_window, parse_resistor
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
-RAIL_RE = re.compile(r'^(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d)', re.I)
+RAIL_RE = re.compile(
+    r'^\+?(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+(?:\.[0-9]+)?V)', re.I)
 OUTPIN_RE = re.compile(r'^(VOUT|SW|OUT|VO|LX|\+VO)', re.I)
 EN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN)(_|\d|$)', re.I)
 CLAMP_RE = re.compile(r'ZENER|TVS|BZT|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)

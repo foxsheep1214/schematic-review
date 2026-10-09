@@ -345,17 +345,17 @@ class PowerTreeTest(unittest.TestCase):
               'pseudo_nets': ['NC'], 'ref2page': {}}
         add = relay_fixture.add
         add(db, 'U1', 'BUCK', [('1', 'VIN', '+12V'), ('2', 'SW', 'SW_NODE'),
-                               ('3', 'GND', 'GND'), ('4', 'VOUT', '+3V3')])
-        add(db, 'L1', 'IND-4U7', [('1', '1', 'SW_NODE'), ('2', '2', '+3V3')])
-        add(db, 'U2', 'SOC', [('1', 'VDD', '+3V3'), ('2', 'GND', 'GND'),
+                               ('3', 'GND', 'GND'), ('4', 'VOUT', 'P3V3')])
+        add(db, 'L1', 'IND-4U7', [('1', '1', 'SW_NODE'), ('2', '2', 'P3V3')])
+        add(db, 'U2', 'SOC', [('1', 'VDD', 'P3V3'), ('2', 'GND', 'GND'),
                               ('3', 'IO', 'VCC_UNFED')])
         add(db, 'C9', '100nF', [('1', '1', 'NC'), ('2', '2', 'GND')])
         return db, powertree.PowerTree(ng.NetGraph(db))
 
     def test_output_pin_makes_a_rail_the_name_regex_misses(self):
         _, tree = self.board()
-        self.assertFalse(ng.is_rail('+3V3'))             # 轨名正则认不出
-        self.assertEqual(tree.rail_basis('+3V3'), powertree.DRIVER)
+        self.assertFalse(ng.is_rail('P3V3'))             # 轨名正则认不出
+        self.assertEqual(tree.rail_basis('P3V3'), powertree.DRIVER)
 
     def test_switch_node_is_not_a_rail_despite_reaching_the_output(self):
         _, tree = self.board()
@@ -381,17 +381,120 @@ class PowerTreeTest(unittest.TestCase):
     def test_name_only_rail_identity_is_recorded_as_a_gap(self):
         db, _ = self.board()
         add = relay_fixture.add
-        add(db, 'U3', 'SUPERVISOR', [('1', 'VCC', '+3V3'), ('2', 'SENSE', 'SENSE_3V3'),
+        add(db, 'U3', 'SUPERVISOR', [('1', 'VCC', 'P3V3'), ('2', 'SENSE', 'SENSE_3V3'),
                                      ('3', 'WDI', 'WDI'), ('4', 'RESET', 'RST_N'),
                                      ('5', 'GND', 'GND')])
         db['pintype']['U3.4'] = 'OUT'
         add(db, 'U4', 'SENSOR', [('1', 'VDD', 'VCC_UNFED'), ('2', 'GND', 'GND')])
         rails = {rail['net']: rail for state in supervision_inventory(db)['states']
                  for rail in state['rails']}
-        self.assertEqual(rails['+3V3']['basis'], powertree.DRIVER)
-        self.assertEqual(rails['+3V3']['gaps'], [])
+        self.assertEqual(rails['P3V3']['basis'], powertree.DRIVER)
+        self.assertEqual(rails['P3V3']['gaps'], [])
         self.assertEqual(rails['VCC_UNFED']['basis'], powertree.NAME_HINT)
         self.assertEqual(rails['VCC_UNFED']['gaps'], ['rail-identity:VCC_UNFED'])
+
+
+class PowerSourceCandidateTest(unittest.TestCase):
+    """新来源候选各有正例与反例；候选只带 basis，不是电源轨准出。"""
+
+    def empty(self):
+        return {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {},
+                'pseudo_nets': [], 'ref2page': {}}
+
+    def tree(self, db):
+        return powertree.PowerTree(ng.NetGraph(db))
+
+    def buck(self, vin_net='VIN_12'):
+        db = self.empty()
+        add = relay_fixture.add
+        add(db, 'U1', 'BUCK', [('1', 'VIN', vin_net), ('2', 'SW', 'SW_NODE'),
+                               ('3', 'GND', 'GND'), ('4', 'FB', 'FB_NODE')])
+        add(db, 'L1', 'IND-1U0', [('1', '1', 'SW_NODE'), ('2', '2', '+3.3V')])
+        return db
+
+    def test_buck_switch_node_via_inductor_sources_the_output(self):
+        found = self.tree(self.buck()).source_of('+3.3V')
+        self.assertEqual(found['source'], 'U1.2')
+        self.assertEqual(found['path'], ['L1'])
+        self.assertIn('switch node via storage inductor', found['basis'])
+
+    def test_boost_input_inductor_is_not_a_source(self):
+        # 电感远端就是该器件的 VIN：升压输入侧，不能把输入轨算成被开关脚驱动
+        self.assertIsNone(self.tree(self.buck(vin_net='+3.3V')).source_of('+3.3V'))
+
+    def test_switch_pin_without_inductor_is_not_a_source(self):
+        db = self.buck()
+        db['parts']['L1'].update(part='0R', value='0R')
+        db['parts']['R9'] = db['parts'].pop('L1')
+        for pin in ('1', '2'):
+            net = db['pin2net'].pop('L1.' + pin)
+            db['pin2net']['R9.' + pin] = net
+            db['nets'][net] = ['R9.' + pin if x == 'L1.' + pin else x for x in db['nets'][net]]
+            db['pinname']['R9.' + pin] = db['pinname'].pop('L1.' + pin)
+        self.assertIsNone(self.tree(db).source_of('+3.3V'))
+
+    def test_bootstrap_pin_via_inductor_is_not_a_source(self):
+        db = self.buck()
+        db['pinname']['U1.2'] = 'BOOT'
+        self.assertIsNone(self.tree(db).source_of('+3.3V'))
+
+    def module(self, pintype):
+        db = self.empty()
+        relay_fixture.add(db, 'DCDC1', 'F0505S', [('1', 'Vin+', 'VIN_5'), ('2', 'Vin-', 'GND'),
+                                                  ('6', 'Vout+', '+5VP'), ('4', 'Vout-', 'GND_ISO')])
+        db['pintype'].update({'DCDC1.' + p: pintype for p in ('1', '2', '4', '6')})
+        return db
+
+    def test_power_type_output_pin_on_module_refdes_is_a_source(self):
+        found = self.tree(self.module('POWER')).source_of('+5VP')
+        self.assertEqual(found['source'], 'DCDC1.6')
+        self.assertIn('power-type output pin name on non-IC refdes', found['basis'])
+
+    def test_output_name_on_unspecified_non_ic_pin_is_not_a_source(self):
+        self.assertIsNone(self.tree(self.module('UNSPEC')).source_of('+5VP'))
+
+    def diode_or(self, anode, cathode, part='1N5819'):
+        db = self.module('POWER')
+        relay_fixture.add(db, 'D1', part, [('1', 'K', cathode), ('2', 'A', anode)])
+        return db
+
+    def test_forward_diode_traces_cathode_rail_to_anode_source(self):
+        found = self.tree(self.diode_or('+5VP', '+5V')).source_of('+5V')
+        self.assertEqual(found['source'], 'DCDC1.6')
+        self.assertEqual(found['path'], ['D1'])
+
+    def test_reverse_diode_does_not_carry_a_source(self):
+        self.assertIsNone(self.tree(self.diode_or('+5V', '+5VP')).source_of('+5V'))
+
+    def test_tvs_is_not_an_or_path(self):
+        self.assertIsNone(self.tree(self.diode_or('+5VP', '+5V', 'SMBJ6.0A')).source_of('+5V'))
+
+    def test_out_pin_beside_in_pin_is_a_source(self):
+        db = self.empty()
+        relay_fixture.add(db, 'U3', 'TPS7A2633', [('1', 'OUT', '+3V3'), ('2', 'GND', 'GND'),
+                                                  ('3', 'EN', 'VIN_5'), ('4', 'IN', 'VIN_5')])
+        found = self.tree(db).source_of('+3V3')
+        self.assertEqual(found['source'], 'U3.1')
+        self.assertIn('OUT pin beside IN pin', found['basis'])
+
+    def test_out_pin_without_in_pin_is_not_a_source(self):
+        db = self.empty()
+        relay_fixture.add(db, 'U3', 'OPAMP', [('1', 'OUT', '+3V3'), ('2', 'IN-', 'FB'),
+                                              ('3', 'IN+', 'REF'), ('4', 'V-', 'GND')])
+        self.assertIsNone(self.tree(db).source_of('+3V3'))
+
+    def test_kicad_power_names_are_rails_for_pwr_a01(self):
+        for net in ('+5V', '+3V3', '+3.3V', '5V'):
+            self.assertTrue(ng.is_rail(net), net)
+        db = self.diode_or('+5VP', '+5V')
+        relay_fixture.add(db, 'U9', 'MCU', [('1', 'VDD', '+3V3'), ('2', 'GND', 'GND')])
+        relay_fixture.add(db, 'C1', '100nF', [('1', '1', '+5V'), ('2', '2', 'GND')])
+        engine = Lint(db)
+        engine.run()
+        undriven = {f['detail'].split(' ')[0] for f in engine.F if f['rule'] == 'PWR-A01'}
+        self.assertIn('+3V3', undriven)
+        self.assertNotIn('+5V', undriven)
+        self.assertNotIn('+5VP', undriven)
 
 
 class WholeBoardContractTest(unittest.TestCase):
