@@ -388,7 +388,8 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   不得为消除缺口把缺失电源脚改成 `other`。
 - `groups`：按器件具体条款划分，不要求每个电源脚单独一颗电容。节点必须属于该器件对应官方角色，
   供电脚不能重复分组；每组只支持一个直接供电网和一个明确返回网。跨网分组不合并，保持缺口。
-  飞跨/bootstrap/补偿电容按专用条款另审，不从"连到电容"推断属于本组。
+  飞跨/bootstrap/补偿以及内部稳压输出端的必需外接电容按专用条款另审；
+从官方逐脚外围要求核这些对象，不因符号输出类型或没有 VDD/VCC 名称而漏掉，也不从"连到电容"推断属于普通组。
 - `components`：支持 `capacitor/resistor/ferrite/inductor/jumper/switch/other`，都要有出处。
   C/R/L/FB/JP 前缀仅为候选类型；计入确认容量前需核类型与装配。`other` 是有证据的类别排除，
   不是规避官方电源脚审查的通用开关。

@@ -53,6 +53,12 @@ class Checker:
     def manual_addition_message(self, key):
         return key + ': use an independent object for manual %s additions' % self.id
 
+    def manual_context_errors(self, key, item, inventory, db):
+        return []
+
+    def manual_allowed(self, item):
+        return self.allow_manual_bound_objects
+
     # -- 钩子 ---------------------------------------------------------
     def validate_intent(self, intent, db):
         """校验 intent 中本检查器的配置段，返回错误文案列表。"""
@@ -151,8 +157,10 @@ def validate_inventories(registry, plan, expected, db, require, planner_factory)
                 obj = planned.get('object') if isinstance(planned.get('object'), dict) else {}
                 for message in checker.object_errors(key, obj, current):
                     require(False, message)
-                if key not in generated and not checker.allow_manual_bound_objects:
-                    require(False, checker.manual_addition_message(key))
+                if key not in generated:
+                    require(checker.manual_allowed(planned), checker.manual_addition_message(key))
+                    for message in checker.manual_context_errors(key, planned, current, db):
+                        require(False, message)
                 blockers = checker.pass_blockers(key, planned, generated.get(key), current)
                 if blockers:
                     gates.setdefault(key, []).extend(blockers)

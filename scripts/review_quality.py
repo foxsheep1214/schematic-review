@@ -65,6 +65,51 @@ def screen_quality(plan, report, db=None):
     def refs(value):
         return set(pattern.findall(value)) if pattern and isinstance(value, str) else set()
 
+    # Check explicit locators against named source pins, as review leads only:
+    # exporters and official docs can use legitimate aliases requiring mapping.
+    pin_names = defaultdict(set)
+    source_names = db.get('pinname', {}) if isinstance(db, dict) else {}
+    if isinstance(source_names, dict):
+        for node, name in source_names.items():
+            if isinstance(node, str) and isinstance(name, str) and name:
+                pin_names[node.partition('.')[0]].add(name)
+    actual_statuses = {r['id']: r.get('review_result') for r in report['checks']
+                       if isinstance(r, dict) and isinstance(r.get('id'), str)}
+    candidates = output['candidates']
+    for row in report['checks']:
+        if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
+            continue
+        check = expected[row['id']]
+        text = row.get('rationale')
+        if not isinstance(text, str):
+            continue
+        for ref, name in re.findall(r'(?<![A-Za-z0-9_])([A-Za-z]+[0-9]+)\.([A-Za-z][A-Za-z0-9_]*)', text):
+            names = pin_names.get(ref)
+            physical = ref + '.' + name
+            composed = re.fullmatch(r'(.+?)([0-9]+)', name)
+            # Both physical pad labels (S5/B4) and NAME+physical-pin shorthand
+            # are common exact locators. Only flag a demonstrated conflicting
+            # numbered name where the source contains the proposed base name.
+            conflicting = (composed and composed.group(1) in (names or set())
+                           and ref + '.' + composed.group(2) in source_names
+                           and source_names[ref + '.' + composed.group(2)] != composed.group(1))
+            if physical not in source_names and names and name not in names and conflicting:
+                candidates.append({'code': 'PIN_NAME_LOCATOR_NOT_IN_SOURCE',
+                    'check_ids': [row['id']], 'locator': ref + '.' + name,
+                    'source_pin_names': sorted(names),
+                    'message': 'Explicit pin name is absent from the source map; verify physical pin and document any alias.'})
+        if check.get('rule') != 'REQ-Q07':
+            continue
+        for cid, verdict in actual_statuses.items():
+            if cid == row['id']:
+                continue
+            match = re.search(re.escape(cid) + r'(?![A-Za-z0-9_.-])\s*(?:[:=：]|is)?\s*(PASS|FAIL|INSUFFICIENT|NA)\b', text)
+            if match and match.group(1) != verdict:
+                candidates.append({'code': 'AGGREGATE_CHILD_STATUS_MISMATCH',
+                    'check_ids': [row['id']], 'child_id': cid,
+                    'stated_status': match.group(1), 'final_status': verdict,
+                    'message': 'Aggregate text names a child with a different final result; reconcile the final member results.'})
+
     groups = defaultdict(list)
     impact_groups = defaultdict(list)
     grades = defaultdict(list)

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """去耦覆盖检查器（清单引擎仍在 scripts/decoupling.py）。"""
 from copy import deepcopy
+import hashlib
+from pathlib import Path
 
 from decoupling import build_decoupling_inventory, validate_decoupling_intent
 
@@ -129,12 +131,65 @@ class DecouplingChecker(Checker):
     def extra_presence_trigger(self, plan):
         return self.version_key in plan
 
+    def manual_allowed(self, item):
+        obj = item.get('object')
+        return isinstance(obj, dict) and not any(
+            k.startswith('decoupling_') for k in obj) and bool(obj.get('manual_group'))
+
     def object_errors(self, key, obj, inventory):
-        if 'decoupling_group' not in obj and 'decoupling_scope' not in obj:
+        if any(k.startswith('decoupling_') for k in obj):
+            if obj.get('decoupling_inventory_digest') != inventory['digest']:
+                return [key + ': stale decoupling object binding']
             return []
-        if obj.get('decoupling_inventory_digest') != inventory['digest']:
-            return [key + ': stale decoupling object binding']
-        return []
+        # Independent claims keep their own exact physical/state binding. They
+        # cannot edit, remove or inherit the generated coverage verdicts.
+        errors = []
+        ref = obj.get('ref')
+        device = next((d for d in inventory['devices'] if d['ref'] == ref), None)
+        states = {s['id'] for s in inventory['states']}
+        if not isinstance(obj.get('manual_group'), str) or not obj['manual_group'].strip():
+            errors.append(key + ': manual decoupling requires an independent manual_group')
+        if obj.get('state') not in states:
+            errors.append(key + ': manual decoupling requires an existing assembly state')
+        manual_roles = obj.get('manual_pin_roles')
+        role_citation = obj.get('manual_pin_citation')
+        independent_roles = isinstance(manual_roles, dict) and isinstance(role_citation, str) and bool(role_citation.strip())
+        excluded = obj.get('manual_group_role') == 'excluded_candidate'
+        refs = {d['ref'] for d in inventory['devices']} | set(inventory['unverified_device_refs'])
+        refs.update(g['ref'] for state in inventory['states'] for g in state['groups'])
+        if ref not in refs:
+            errors.append(key + ': manual decoupling requires an existing physical ref')
+        for field, role in (('nodes', 'power'), ('return_nodes', 'return')):
+            nodes = obj.get(field)
+            if not isinstance(nodes, list) or not nodes or any(
+                    not isinstance(node, str) or node.partition('.')[0] != ref or not node.partition('.')[2] or
+                    not (device['pins'].get(node.partition('.')[2], {}).get('role') == role if device else
+                         (independent_roles and (manual_roles.get(node) == role or
+                          (excluded and field == 'nodes' and manual_roles.get(node) == 'other'))))
+                    for node in nodes):
+                errors.append(key + ': manual decoupling requires exact official ' + field)
+        return errors
+
+    def manual_context_errors(self, key, item, inventory, db):
+        obj = item.get('object', {})
+        errors = []
+        nodes = obj.get('nodes', []) + obj.get('return_nodes', []) if (
+            isinstance(obj.get('nodes'), list) and isinstance(obj.get('return_nodes'), list)) else []
+        source_nodes = set(db.get('pin2net', {})) | set(db.get('declared_pinname', {}))
+        if any(not isinstance(node, str) or node not in source_nodes for node in nodes):
+            errors.append(key + ': manual decoupling endpoints absent from current source')
+        device = next((d for d in inventory['devices'] if d['ref'] == obj.get('ref')), None)
+        if not device:
+            source = obj.get('manual_pin_source')
+            try:
+                if not isinstance(source, dict) or not isinstance(source.get('locator'), str) or not source['locator'].strip():
+                    raise ValueError('missing source locator')
+                path = Path(source['path'])
+                if not path.is_absolute() or hashlib.sha256(path.read_bytes()).hexdigest() != source.get('sha256'):
+                    raise ValueError('missing/stale source file')
+            except (KeyError, TypeError, OSError, ValueError):
+                errors.append(key + ': manual pin roles require an exact source file/hash/locator')
+        return errors
 
     def pass_blockers(self, key, planned, generated, inventory):
         if generated and generated.get('inventory_gaps'):
