@@ -95,7 +95,12 @@ def _libparts(root):
         for pin in libpart.findall('./pins/pin'):
             number = _text(pin.get('num'))
             if number:
-                pins[number] = (_text(pin.get('name')), _text(pin.get('type')))
+                definition = (_text(pin.get('name')), _text(pin.get('type')))
+                if number in pins and pins[number] != definition:
+                    raise ValueError('同一 libpart 引脚定义冲突: %s.%s' % (key, number))
+                pins[number] = definition
+        if key in table and table[key]['pins'] != pins:
+            raise ValueError('同一 libpart 身份定义冲突: %s' % key)
         table[key] = {'pins': pins}
     return table
 
@@ -113,7 +118,19 @@ def _sheets(root):
 
 def _component(comp, libparts, pages):
     source = comp.find('libsource')
-    lib = '%s:%s' % (source.get('lib', ''), source.get('part', '')) if source is not None else ''
+    source_lib = source.get('lib', '') if source is not None else ''
+    source_part = source.get('part', '') if source is not None else ''
+    lib = '%s:%s' % (source_lib, source_part) if source is not None else ''
+    # Some native exports leave lib empty and put the complete identity in part.
+    # Resolve only an exact, nonempty declaration; never search by bare name.
+    normalization = None
+    if (not source_lib and lib not in libparts and ':' in source_part
+            and libparts.get(source_part, {}).get('pins')):
+        resolved_lib, resolved_part = source_part.rsplit(':', 1)
+        if resolved_lib and resolved_part:
+            normalization = {'original_lib': source_lib, 'original_part': source_part,
+                             'resolved_primitive': source_part}
+            lib, source_part = source_part, resolved_part
     fields = {(field.get('name') or '').strip(): _text(field.text)
               for field in comp.findall('./fields/field')}
     properties = {(item.get('name') or '').strip(): (item.get('value') or '')
@@ -126,13 +143,13 @@ def _component(comp, libparts, pages):
     path = sheetpath.get('names') if sheetpath is not None else None
     part = {
         'prim': lib,
-        'part': mpn or (source.get('part', '') if source is not None else ''),
+        'part': mpn or source_part,
         'jedec': footprint,
         'value': value,
         # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。
         'nc': 'dnp' in properties or is_not_populated(lib, value),
     }
-    return part, pages.get(path), lib
+    return part, pages.get(path), lib, normalization
 
 
 def parse(xml_text, export_errors=()):
@@ -145,14 +162,16 @@ def parse(xml_text, export_errors=()):
         raise ValueError('不是 kicadxml 网表（根元素为 %r）' % root.tag)
 
     libparts, pages = _libparts(root), _sheets(root)
-    parts, ref2page, ref2lib = {}, {}, {}
+    parts, ref2page, ref2lib, normalizations = {}, {}, {}, {}
     for comp in root.findall('./components/comp'):
         ref = _text(comp.get('ref'))
         if not ref or ref in parts:
             raise ValueError('缺失或重复的器件位号: %r' % ref)
-        part, page, lib = _component(comp, libparts, pages)
+        part, page, lib, normalization = _component(comp, libparts, pages)
         parts[ref] = part
         ref2lib[ref] = lib
+        if normalization:
+            normalizations[ref] = normalization
         if page is not None:
             ref2page[ref] = page
 
@@ -198,7 +217,7 @@ def parse(xml_text, export_errors=()):
     if not pin2net:
         raise ValueError('空网表：没有导出物理引脚；不能作为审查输入')
 
-    declared_pinname, declared_pintype = {}, {}
+    declared_pinname, declared_pintype, declared_native_pintype = {}, {}, {}
     for ref, lib in ref2lib.items():
         for number, (name, kind) in libparts.get(lib, {}).get('pins', {}).items():
             node = '%s.%s' % (ref, number)
@@ -206,12 +225,14 @@ def parse(xml_text, export_errors=()):
                 declared_pinname[node] = name
             if kind:
                 declared_pintype[node] = PINUSE.get(kind, kind.upper())
+                declared_native_pintype[node] = kind
 
     design = root.find('./design')
     return {
         'nets': nets, 'pin2net': pin2net, 'pinname': pinname, 'pintype': pintype,
         'parts': parts, 'ref2page': ref2page, 'pseudo_nets': sorted(set(pseudo)),
         'declared_pinname': declared_pinname, 'declared_pintype': declared_pintype,
+        'declared_native_pintype': declared_native_pintype,
         'export_errors': list(export_errors),
         'missing_primitives': sorted({lib for lib in ref2lib.values() if lib not in libparts}),
         'no_connect_nodes': sorted(set(no_connect_nodes)),
@@ -221,6 +242,7 @@ def parse(xml_text, export_errors=()):
             'tool': (design.findtext('tool') or '').strip() if design is not None else '',
             'date': (design.findtext('date') or '').strip() if design is not None else '',
             'format': 'kicadxml',
+            'libsource_normalizations': normalizations,
         },
     }
 

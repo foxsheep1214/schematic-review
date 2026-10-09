@@ -235,6 +235,33 @@ def build(dirpath):
 # --------------------------------------------------------------------------
 # 自检：宁可报错退出，也不要交出一份静默残缺的索引
 # --------------------------------------------------------------------------
+def _unnamed_jumper_contacts(db):
+    """Numbered contacts, only for fully declared anonymous 2/3-pad jumpers.
+
+    This does not establish copper bridges, population, or manufacturer pinout.
+    Active/power pin types, absent declarations and reference prefixes cannot
+    supply this exemption.
+    """
+    declared = db.get('declared_native_pintype', {})
+    native = db.get('native_pintype', {})
+    contact_types = {'input', 'passive', 'free', 'no_connect'}
+    contacts = []
+    for ref, part in db['parts'].items():
+        symbol = str(part.get('prim', '')).rsplit(':', 1)[-1].upper()
+        if not re.search(r'(?:^|[_ -])JUMPER(?:$|[_ -])', symbol):
+            continue
+        pins = {p: kind for p, kind in declared.items() if p.partition('.')[0] == ref}
+        exported = {p for p in db['pin2net'] if p.partition('.')[0] == ref}
+        if (len(pins) not in (2, 3) or set(pins) != exported
+                or any(kind not in contact_types for kind in pins.values())
+                or any(native.get(p) not in contact_types for p in exported)
+                or any(db.get('declared_pinname', {}).get(p) or db['pinname'].get(p)
+                       for p in pins)):
+            continue
+        contacts.extend(pins)
+    return sorted(contacts)
+
+
 def self_check(db, strict=True):
     problems = []
     n_pin, n_name = len(db['pin2net']), len(db['pinname'])
@@ -279,11 +306,13 @@ def self_check(db, strict=True):
             # is drawing hygiene (DOC-V02), not a parser/function-identification gap.
             connector = sorted(p for p in unnamed if classify(
                 p.partition('.')[0], db['parts'].get(p.partition('.')[0], {}))[0] == CONNECTOR)
-            missing = sorted(set(unnamed) - set(connector))
+            jumper = sorted(set(unnamed) & set(_unnamed_jumper_contacts(db)))
+            missing = sorted(set(unnamed) - set(connector) - set(jumper))
             db['pin_name_coverage'] = {
                 'required': len(required), 'named': len(required) - len(unnamed),
                 'missing_functional_pins': missing,
                 'unnamed_connector_pins': connector,
+                'unnamed_jumper_contact_pins': jumper,
                 'legitimately_unnamed': sorted(p for p in native
                     if native[p] in exempt and not db['pinname'].get(p)),
                 'scope': 'Parser function-name coverage, not manufacturer pinout verification'}

@@ -226,6 +226,10 @@ DNP/DNI/DNF/NC 只按分隔词识别为不贴，不能误判 NCP1117 型号。�
 | `declared_pinname` / `declared_pintype` | libpart 的全部引脚 | 含网表里没出现的脚，用于官方脚表双向差集 |
 | `export_meta` | `design` 的 source/tool/date | 用于核对导出版本与 PDF 是否同版 |
 
+`libsource.lib` 为空而 `part` 已含完整 `lib:part` 时，仅在该完整身份精确命中非空
+libpart 引脚声明、且原始身份未被声明时归一化，并在 `export_meta.libsource_normalizations`
+留原值；不跨库猜同名符号。冲突的同身份/同脚声明拒绝导入。
+
 **三件事必须分清**（与 Cadence 流程一致）：
 
 1. KiCad 把带 No-connect 标记的引脚写成 `pintype="passive+no_connect"` 并单独放进
@@ -250,6 +254,11 @@ KiCad 解析另存 `native_pintype`，保留 passive/free/no_connect 等原始�
 纯 no_connect 类型也进入类型索引，不因剥离属性而丢失。
 `pin_name_coverage` 分别列 required、named、missing_functional_pins、unnamed_connector_pins、legitimately_unnamed。
 连接器（位号 J/P/CN 或库/型号关键字识别为端子、排针、JST 等）的触点按编号识别，库把它们定为 input 等类型却不命名时，列入 unnamed_connector_pins，不判解析完整性失败、不阻断去耦等下游清单；图面目检（DOC-V02）时引用该清单逐个记录。
+
+符号名明确为 JUMPER、完整声明和导出同一组 2/3 个无名接点，且声明/原生类型均仅为
+input/passive/free/no_connect 时，另列 `unnamed_jumper_contact_pins`，按接点编号识别。
+声明原始类型保留在 `declared_native_pintype`；缺声明、具名功能脚、输出/电源脚及仅靠
+位号推断的器件不豁免。此清单不证明铜桥实际导通；晶振/有源时钟的无名功能脚仍须核实。
 
 不为无名称电阻/电容等补造 pinname，不将 passive 强行转成信号或电源脚。此处理仅修正
 解析完整性判据；不替代原厂 pinout、极性、额定值和实际连接审查。Cadence/旧适配器没有
