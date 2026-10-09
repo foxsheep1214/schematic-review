@@ -19,6 +19,15 @@ EN_RE = re.compile(r'^~?\{?(EN|ENABLE|CE|SHDN|ON|RUN)\}?$', re.I)
 I2C_RE = re.compile(r'(^|[/:_-])(SDA|SCL)\d*($|[:_-])', re.I)
 POLAR_RE = re.compile(r'C_?POL|\bCP\b|CP_|ELEC|TANT|POLARI[SZ]ED', re.I)
 ISO_PREFIX = 'SEED_ISO_'
+# Site selection must not inherit SR's own rail heuristics, or a gap there hides
+# whole defect classes from the bench. KiCad power symbols are +5V, +3V3, VUSB...
+RAIL_LIKE_RE = re.compile(r'^\+|^(VCC|VDD|VBUS|VUSB|VIN|VBAT|VSYS|VOUT|V\d)|\d+V\d*$', re.I)
+LED_PIN_RE = re.compile(r'^(A|ANODE|ANOD\w*|K|CATHODE|CATHOD\w*|KATOD\w*)$', re.I)
+COLLECTOR_RE = re.compile(r'^(C|COLLECTOR|COLL\w*|KOLEK\w*)$', re.I)
+
+
+def rail_like(net):
+    return bool(net) and not ng.is_ground(net) and bool(RAIL_LIKE_RE.search(str(net).lstrip('/')))
 
 
 @dataclass
@@ -131,7 +140,7 @@ def cap_vr(db):
         pins = two_pins(g, ref)
         if g.kind(ref) != ng.CAPACITOR or not pins or not fitted(db, ref):
             continue
-        volts = [ng.rail_voltage(net) for _, net in pins if ng.is_rail(net)]
+        volts = [ng.rail_voltage(net) for _, net in pins if rail_like(net)]
         volts = [v for v in volts if v and v >= 5]
         if volts and any(ng.is_ground(net) for _, net in pins):
             low = '6.3V' if max(volts) > 6.3 else '4V'
@@ -158,7 +167,7 @@ def led_r(db):
                 continue
             far = [n for p, n in rpins if rref + '.' + p != other[0]][0]
             mine = [n for p, n in pins if p != pin][0]
-            if (ng.is_rail(far) and ng.is_ground(mine)) or (ng.is_ground(far) and ng.is_rail(mine)):
+            if (rail_like(far) and ng.is_ground(mine)) or (ng.is_ground(far) and rail_like(mine)):
                 out = copy.deepcopy(db)
                 # A 0R in series is a short: merge the LED node onto the far net.
                 out['pin2net'][ref + '.' + pin] = far
@@ -219,9 +228,9 @@ def opto(db):
                    if g.kind(n.split('.', 1)[0]) == ng.RESISTOR and fitted(db, n.split('.', 1)[0])]
             if len(res) != 1:
                 continue
-            if pname in ('A', 'ANODE', 'K', 'CATHODE'):
+            if LED_PIN_RE.match(pname):
                 yield Mutation('D-OPTO-R', ('PRO-A03',), (ref, res[0]), (), res[0] + ' removed', removed(db, res[0]))
-            elif pname in ('C', 'COLLECTOR'):
+            elif COLLECTOR_RE.match(pname):
                 yield Mutation('D-OPTO-PU', ('PRO-A04',), (ref, res[0]), (), res[0] + ' removed', removed(db, res[0]))
 
 
@@ -235,7 +244,10 @@ def i2c_pu(db):
         for node in nodes:
             ref = node.split('.', 1)[0]
             pins = two_pins(g, ref)
-            if g.kind(ref) == ng.RESISTOR and pins and any(ng.is_rail(n) for _, n in pins):
+            # Pull-up: the far end is not a bus line and not ground (it may reach the
+            # rail through a solder jumper, so do not require a rail name there).
+            if (g.kind(ref) == ng.RESISTOR and pins and fitted(db, ref)
+                    and not any(ng.is_ground(n) or (n != net and I2C_RE.search(n)) for _, n in pins)):
                 pulls.append(ref)
         if pulls:
             out = db

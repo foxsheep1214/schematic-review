@@ -17,6 +17,11 @@ POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus',
 REFDES_RE = re.compile(r'^[A-Za-z]+\d+[A-Za-z]?$')
 
 
+def _named_rail(net):
+    """KiCad 电源符号常写成 +5V、+3V3 或带层次前缀；只用于“轨对地”的器件级扫描，不推导来源。"""
+    return bool(net) and (is_rail(net) or is_rail(str(net).lstrip('/').lstrip('+')))
+
+
 def _rated_v(value):
     """BOM 值里写明的耐压；写了多个取最小，写不明返回 None。"""
     ratings = [float(x) for x in RATING_RE.findall(str(value or ''))]
@@ -64,7 +69,7 @@ def capacitor_polarity(lint):
         if len(marked) != 2:
             continue
         plus, minus = lint.pin2net.get(marked['plus']), lint.pin2net.get(marked['minus'])
-        if is_ground(plus) and is_rail(minus):
+        if is_ground(plus) and _named_rail(minus):
             lint.add('DEV-A02', '极性电容方向反接',
                      f'{ref}: + 脚 {marked["plus"]} 接 {plus}，- 脚 {marked["minus"]} 接 {minus}',
                      ref)
@@ -80,7 +85,7 @@ def led_current_limit(lint):
         if len(nets) != 2 or any(net is None or net in lint.pseudo for net in nets):
             continue
         grounds = [net for net in nets if is_ground(net)]
-        rails = [net for net in nets if is_rail(net)]
+        rails = [net for net in nets if _named_rail(net)]
         if len(grounds) == 1 and len(rails) == 1:
             lint.add('DEV-A03', 'LED 无限流元件',
                      f'{ref}: {rails[0]} 与 {grounds[0]} 之间直接跨接，通路上没有串联电阻；'

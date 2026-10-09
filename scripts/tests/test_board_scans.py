@@ -57,6 +57,11 @@ class CapacitorTest(unittest.TestCase):
                         pinname={'C1.1': '+', 'C1.2': '-'})
         self.assertEqual(scans(correct, 'DEV-A02'), [])
 
+    def test_kicad_power_symbol_names_count_as_rails(self):
+        db = board({'C1': '100uF/16V'}, {'GND': ['C1.1'], '/+5V': ['C1.2']},
+                   pinname={'C1.1': '+', 'C1.2': '-'})
+        self.assertEqual(subjects(scans(db, 'DEV-A02')), ['C1'])
+
     def test_unmarked_capacitor_stays_for_visual_review(self):
         db = board({'C1': '100uF/35V'}, {'GND': ['C1.1'], 'VCC_24V': ['C1.2']},
                    pinname={'C1.1': '1', 'C1.2': '2'})
@@ -67,6 +72,10 @@ class LedTest(unittest.TestCase):
     def test_led_directly_across_rail_and_ground_is_a_finding(self):
         db = board({'D1': 'LED-RED', 'R1': '1K'},
                    {'VCC_3V3': ['D1.1'], 'GND': ['D1.2', 'R1.2'], 'NET1': ['R1.1']})
+        self.assertEqual(subjects(scans(db, 'DEV-A03')), ['D1'])
+
+    def test_led_across_kicad_power_symbol_and_ground(self):
+        db = board({'D1': 'LED-RED'}, {'+3V3': ['D1.1'], 'GND': ['D1.2']})
         self.assertEqual(subjects(scans(db, 'DEV-A03')), ['D1'])
 
     def test_series_resistor_or_driver_net_is_not_reported(self):
