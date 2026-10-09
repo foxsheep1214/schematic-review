@@ -31,7 +31,7 @@ from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
 from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID, registry_hot_rules
-from checkers.netgraph import (CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER,
+from checkers.netgraph import (CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER, TVS,
                                TWO_TERMINAL, NetGraph, rail_voltage as _volt)
 from electrical_contract import bounded, db_fingerprint, load_json, readiness_gaps, validate_evidence
 from fractions import Fraction
@@ -405,7 +405,7 @@ class Lint:
         # PRO-A01 ESD/TVS 挂残网
         for ref, v in parts.items():
             blob = (v.get('part', '') + ' ' + v.get('prim', '')).upper()
-            if not re.search(r'ESD|TVS', blob):
+            if not re.search(r'ESD|TVS', blob) and self.graph.kind(ref) != TVS:
                 continue
             for node, n in ((k, x) for k, x in pin2net.items()
                             if k.startswith(ref + '.')):

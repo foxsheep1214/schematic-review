@@ -1,0 +1,12 @@
+{
+  "note": "Public boards already scored in earlier calibration rounds; never use a board that is the subject of a pending blind round.",
+  "boards": [
+    {"id": "relay", "repo": "SolderedElectronics/1-channel-relay-board-hardware-design", "commit": "9c895d06b031ebd2fdfd5b06d9c940866e444e1c", "schematic": "CAD/V1.1.1/Modul_Relej_1CH.kicad_sch", "license": "TAPR OHL 1.0", "strict": true},
+    {"id": "dasduino", "repo": "SolderedElectronics/Dasduino-CORE-Solder-kit-hardware-design", "commit": "e4cf580321f80af5532f2eb4df29dceabbfc6406", "schematic": "CAD/V1.1.0/Dasduino CORE Solder kit.kicad_sch", "license": "TAPR OHL 1.0", "strict": false, "strict_note": "X1.2-4 crystal pins unnamed in the source library"},
+    {"id": "esp32poe", "repo": "OLIMEX/ESP32-POE-ISO", "commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01", "schematic": "HARDWARE/ESP32-PoE-ISO-Rev.N/ESP32-PoE-ISO_Rev_N.kicad_sch", "license": "CERN OHL 1.2", "strict": false, "strict_note": "FET1-3 pin 1 unnamed in the source library"},
+    {"id": "ads1015", "repo": "SolderedElectronics/ADC-12-bit-ADS1015-4-channel-with-PGA-breakout-hardware-design", "commit": "cff050bd112222aebd79cc4b2cce2bd37d3164dc", "schematic": "CAD/v1.1.1/ADS1015_ADC.kicad_sch", "license": "TAPR OHL 1.0", "strict": true},
+    {"id": "slider", "repo": "SolderedElectronics/Slider-potentiometer-breakout-hardware-design", "commit": "a67c092ad512ea55d2c5071bc4e2fcd184d4ee99", "schematic": "CAD/V1.1.1/Slider_potentiometer.kicad_sch", "license": "TAPR OHL 1.0", "strict": true},
+    {"id": "mppt", "repo": "SolderedElectronics/MPPT-Li-Ion-CN3791-charger-board-hardware-design", "commit": "1f21d67218009081f0b3eb2fc96ddcd389d58bf0", "schematic": "CAD/V1.2.1/MPPT Li-Ion CN3791 charger board.kicad_sch", "license": "TAPR OHL 1.0", "strict": true},
+    {"id": "usbiso", "fixture": "scripts/tests/fixtures/galvant-usb-connector-nc/board.json", "license": "CC BY-SA 3.0 Unported (see fixture attribution)"}
+  ]
+}

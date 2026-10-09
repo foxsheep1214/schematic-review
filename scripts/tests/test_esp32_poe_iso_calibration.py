@@ -43,6 +43,18 @@ class PublicCalibrationTests(unittest.TestCase):
         self.assertFalse([f for f in revised if f['rule'] == 'PRO-A01' and 'TVS1.1' in f['detail']])
         self.assertEqual(repaired['parts'], board['parts'])
 
+    def test_tvs_identified_by_series_keyword_is_checked_for_orphan_nets(self):
+        # D11 is an SMBJ part with no "TVS"/"ESD" text; the device classifier
+        # already calls it a TVS, so the orphan-net scan must cover it too.
+        board = frozen_database()
+        self.assertFalse([f for f in Lint(copy.deepcopy(board)).run()
+                          if f['rule'] == 'PRO-A01' and 'D11' in f['detail']])
+        board['nets']['/5V_DCDC'].remove('D11.1')
+        board['nets']['SEED_ORPHAN'] = ['D11.1']
+        board['pin2net']['D11.1'] = 'SEED_ORPHAN'
+        target = [f for f in Lint(board).run() if f['rule'] == 'PRO-A01' and 'D11.1' in f['detail']]
+        self.assertEqual(len(target), 1)
+
     def bound_results(self, board, evidence, directory):
         audit = bind_evidence(board, evidence, directory)
         findings = Lint(board, evidence=evidence, datasheet_audit=audit).run()
