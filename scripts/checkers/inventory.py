@@ -47,3 +47,30 @@ def walk(inventory, key):
     for state in inventory.get('states', []):
         for item in state.get(key, []):
             yield state, item
+
+
+def walk_distinct(inventory, key):
+    """遍历 (首个状态, 对象, 同结果状态列表)。
+
+    同一对象在多个装配状态下扫描结果逐字段相同（拓扑、连接、缺口都一样）时，检查结论不可能随状态不同，
+    只生成一项并记下全部适用状态；任何字段不同的状态仍各自成项。
+    """
+    groups, order = {}, []
+    for state in inventory.get('states', []):
+        for item in state.get(key, []):
+            sig = json.dumps(item, sort_keys=True, ensure_ascii=False)
+            if sig in groups:
+                groups[sig][2].append(state['id'])
+            else:
+                groups[sig] = (state, item, [state['id']])
+                order.append(sig)
+    for sig in order:
+        yield groups[sig]
+
+
+def state_fields(state_ids):
+    """计划对象里的状态字段：单一状态只写 state；合并时另写 states。"""
+    fields = {'state': state_ids[0]}
+    if len(state_ids) > 1:
+        fields['states'] = list(state_ids)
+    return fields

@@ -132,8 +132,8 @@ class OptocouplerChecker(Checker):
         return build_inventory(db, intent)
 
     def plan(self, planner, inventory):
-        for state, item in inv.walk(inventory, 'optocouplers'):
-            obj = {'ref': item['ref'], 'state': state['id'], 'optocoupler': item['id'],
+        for state, item, same in inv.walk_distinct(inventory, 'optocouplers'):
+            obj = {'ref': item['ref'], **inv.state_fields(same), 'optocoupler': item['id'],
                    'optocoupler_digest': inventory['digest']}
             if item['collector_net']:
                 obj['net'] = item['collector_net']

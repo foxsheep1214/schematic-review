@@ -43,6 +43,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查目的、七项纲要、规则取舍 | [review-charter.md](references/review-charter.md) |
 | 规则编号、判据、功能包 | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
+| BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
 | 结果、P0–P3、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
 | 需求缺失/含糊/冲突 | [requirement-clarifications.md](references/requirement-clarifications.md) |
 | intent、计划、结果字段与校验；功能包展开边界（含电平转换） | [plan-and-results.md](references/plan-and-results.md) |

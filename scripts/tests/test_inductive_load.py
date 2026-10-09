@@ -211,6 +211,23 @@ class PlanBindingTest(unittest.TestCase):
         self.assertEqual(checker.object_errors('X', stale, plan['inductive_load']),
                          ['X: stale inductive load object binding'])
 
+    def test_states_that_do_not_touch_the_load_share_one_check(self):
+        db = relay_board()
+        add(db, 'D9', 'LED', [('1', 'A', 'LED_A'), ('2', 'K', 'GND')])
+        intent = bound_intent(db, {'inductive_loads': {'schema_version': 2, 'loads': [
+            {'id': 'K1-COIL', 'ref': 'K1', 'kind': 'relay', 'citation': 'synthetic relay coil spec'}]}})
+        base = intent['assemblies'][0]
+        intent['assemblies'] = [base, dict(base, id='no-led', population=dict(base['population'], D9=False)),
+                                dict(base, id='no-clamp', population=dict(base['population'], D1=False))]
+        plan = build_review_plan(db, intent)
+        items = [x for x in plan['checks'] if x['rule'] == 'DRV-C01']
+        merged = [x for x in items if x['object'].get('states')]
+        self.assertEqual(len(items), 2, [x['object'] for x in items])
+        self.assertEqual(merged[0]['object']['states'], ['run', 'no-led'])
+        self.assertEqual(merged[0]['object']['state'], 'run')
+        alone = [x for x in items if not x['object'].get('states')]
+        self.assertEqual(alone[0]['object']['state'], 'no-clamp')
+
     def test_rule_plan_lists_both_cold_rules(self):
         plan = build_review_plan(relay_board())
         rules = {row['rule']: row for row in plan['rule_plan']}

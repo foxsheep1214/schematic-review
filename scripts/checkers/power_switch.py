@@ -222,10 +222,10 @@ class PowerSwitchChecker(Checker):
         return build_inventory(db, intent)
 
     def plan(self, planner, inventory):
-        for state, switch in inv.walk(inventory, 'switches'):
+        for state, switch, same in inv.walk_distinct(inventory, 'switches'):
             if switch.get('role') == LEVEL_SHIFTER_ROLE:
                 continue
-            obj = {'ref': switch['ref'], 'state': state['id'],
+            obj = {'ref': switch['ref'], **inv.state_fields(same),
                    'power_switch': switch['id'],
                    'power_switch_digest': inventory['digest']}
             if switch['gate_net']:

@@ -228,34 +228,33 @@ class InductiveLoadChecker(Checker):
         return build_inventory(db, intent)
 
     def plan(self, planner, inventory):
-        for state in inventory['states']:
-            for load in state['loads']:
-                obj = {'ref': load['ref'], 'state': state['id'],
-                       'inductive_load': load['id'],
-                       'inductive_load_digest': inventory['digest']}
-                if load['switch_net']:
-                    obj['net'] = load['switch_net']
-                    obj['nets'] = sorted({x for x in (load['switch_net'], load['rail_net']) if x})
-                applicability = 'UNDETERMINED' if load['basis'] == 'name-hint' else 'APPLICABLE'
-                item = planner.add_check(
-                    'DRV-T01', dict(obj), key=load['id'], applicability=applicability,
-                    readiness='WAITING_EVIDENCE' if load['gaps'] else 'READY',
-                    required_inputs=load['gaps'],
-                    trigger=['inductive-load:' + load['id'], 'basis:' + load['basis']],
-                    handoff=handoff({'required': applicability == 'APPLICABLE',
-                        'receivers': ['PCB Layout'],
-                        'constraint': '钳位器件靠近负载与开关，续流回路面积最小',
-                        'verification': '版图复核钳位回路与摆放'}, applicability))
-                item['inventory_gaps'] = load['gaps']
-                item = planner.add_check(
-                    'DRV-C01', dict(obj), key=load['id'], applicability=applicability,
-                    readiness='WAITING_EVIDENCE',
-                    required_inputs=sorted(set(load['gaps'] + [
-                        'datasheet:钳位器件额定值', 'datasheet:开关器件耐压',
-                        'intent:线圈电阻/电感与电源最高电压'])),
-                    trigger=['inductive-load:' + load['id']])
-                item['analysis_required'] = True
-                item['inventory_gaps'] = load['gaps']
+        for state, load, same in inv.walk_distinct(inventory, 'loads'):
+            obj = {'ref': load['ref'], **inv.state_fields(same),
+                   'inductive_load': load['id'],
+                   'inductive_load_digest': inventory['digest']}
+            if load['switch_net']:
+                obj['net'] = load['switch_net']
+                obj['nets'] = sorted({x for x in (load['switch_net'], load['rail_net']) if x})
+            applicability = 'UNDETERMINED' if load['basis'] == 'name-hint' else 'APPLICABLE'
+            item = planner.add_check(
+                'DRV-T01', dict(obj), key=load['id'], applicability=applicability,
+                readiness='WAITING_EVIDENCE' if load['gaps'] else 'READY',
+                required_inputs=load['gaps'],
+                trigger=['inductive-load:' + load['id'], 'basis:' + load['basis']],
+                handoff=handoff({'required': applicability == 'APPLICABLE',
+                    'receivers': ['PCB Layout'],
+                    'constraint': '钳位器件靠近负载与开关，续流回路面积最小',
+                    'verification': '版图复核钳位回路与摆放'}, applicability))
+            item['inventory_gaps'] = load['gaps']
+            item = planner.add_check(
+                'DRV-C01', dict(obj), key=load['id'], applicability=applicability,
+                readiness='WAITING_EVIDENCE',
+                required_inputs=sorted(set(load['gaps'] + [
+                    'datasheet:钳位器件额定值', 'datasheet:开关器件耐压',
+                    'intent:线圈电阻/电感与电源最高电压'])),
+                trigger=['inductive-load:' + load['id']])
+            item['analysis_required'] = True
+            item['inventory_gaps'] = load['gaps']
 
     def cold_findings(self, lint, inventory):
         for state in inventory['states']:
