@@ -1,0 +1,419 @@
+{
+  "parts": {
+    "C4": {
+      "prim": "usb_isolator-rescue:C",
+      "part": "C",
+      "jedec": "",
+      "value": "100nF",
+      "nc": false
+    },
+    "C5": {
+      "prim": "usb_isolator-rescue:C",
+      "part": "C",
+      "jedec": "",
+      "value": "10uF",
+      "nc": false
+    },
+    "C6": {
+      "prim": "usb_isolator-rescue:C",
+      "part": "C",
+      "jedec": "",
+      "value": "0.1uF",
+      "nc": false
+    },
+    "C7": {
+      "prim": "usb_isolator-rescue:C",
+      "part": "C",
+      "jedec": "",
+      "value": "0.1uF",
+      "nc": false
+    },
+    "C8": {
+      "prim": "usb_isolator-rescue:C",
+      "part": "C",
+      "jedec": "",
+      "value": "4.7nF",
+      "nc": false
+    },
+    "D2": {
+      "prim": "usb_isolator-rescue:LED",
+      "part": "LED",
+      "jedec": "",
+      "value": "LED",
+      "nc": false
+    },
+    "D3": {
+      "prim": "usb_isolator-rescue:DIODE",
+      "part": "DIODE",
+      "jedec": "",
+      "value": "DIODE",
+      "nc": false
+    },
+    "J1": {
+      "prim": "usb_isolator-rescue:USB_1",
+      "part": "USB_1",
+      "jedec": "",
+      "value": "USB_1",
+      "nc": false
+    },
+    "J2": {
+      "prim": "usb_isolator-rescue:JACK_2P",
+      "part": "JACK_2P",
+      "jedec": "",
+      "value": "JACK_2P",
+      "nc": false
+    },
+    "JP1": {
+      "prim": "usb_isolator-rescue:JUMPER",
+      "part": "JUMPER",
+      "jedec": "",
+      "value": "JUMPER",
+      "nc": false
+    },
+    "L1": {
+      "prim": "usb_isolator-rescue:INDUCTOR",
+      "part": "INDUCTOR",
+      "jedec": "",
+      "value": "INDUCTOR",
+      "nc": false
+    },
+    "L2": {
+      "prim": "usb_isolator-rescue:INDUCTOR",
+      "part": "INDUCTOR",
+      "jedec": "",
+      "value": "INDUCTOR",
+      "nc": false
+    },
+    "L4": {
+      "prim": "usb_isolator-rescue:INDUCTOR",
+      "part": "INDUCTOR",
+      "jedec": "",
+      "value": "INDUCTOR",
+      "nc": false
+    },
+    "R11": {
+      "prim": "usb_isolator-rescue:R",
+      "part": "R",
+      "jedec": "",
+      "value": "1M",
+      "nc": false
+    },
+    "R3": {
+      "prim": "usb_isolator-rescue:R",
+      "part": "R",
+      "jedec": "",
+      "value": "270",
+      "nc": false
+    },
+    "RP1": {
+      "prim": "r_pack2:R_PACK2",
+      "part": "R_PACK2",
+      "jedec": "",
+      "value": "24",
+      "nc": false
+    },
+    "SW1": {
+      "prim": "usb_isolator-rescue:SW_PUSH",
+      "part": "SW_PUSH",
+      "jedec": "",
+      "value": "SW_PUSH",
+      "nc": false
+    },
+    "U1": {
+      "prim": "ADUM4160:ADUM4160",
+      "part": "ADUM4160",
+      "jedec": "MODULE",
+      "value": "ADUM4160",
+      "nc": false
+    },
+    "U2": {
+      "prim": "usb_isolator-rescue:7805",
+      "part": "7805",
+      "jedec": "",
+      "value": "7805",
+      "nc": false
+    },
+    "U3": {
+      "prim": "usb_isolator-rescue:MICRO-B_USB",
+      "part": "MICRO-B_USB",
+      "jedec": "",
+      "value": "MICRO-B_USB",
+      "nc": false
+    },
+    "U4": {
+      "prim": "usb_isolator-rescue:MICRO-B_USB",
+      "part": "MICRO-B_USB",
+      "jedec": "",
+      "value": "MICRO-B_USB",
+      "nc": false
+    }
+  },
+  "nets": {
+    "AGND": [
+      "C4.2",
+      "C5.2",
+      "C6.2",
+      "C7.1",
+      "C8.2",
+      "J2.1",
+      "J2.2",
+      "L4.2",
+      "R11.2",
+      "R3.2",
+      "SW1.2",
+      "U1.15",
+      "U1.9",
+      "U2.GND",
+      "U4.5"
+    ],
+    "Net-(J1-GND)": [
+      "J1.4",
+      "L2.1",
+      "U3.5"
+    ],
+    "Net-(J1-Vbus)": [
+      "J1.1",
+      "L1.2",
+      "U3.1"
+    ],
+    "UD+": [
+      "J1.3",
+      "RP1.2",
+      "U3.3"
+    ],
+    "UD-": [
+      "J1.2",
+      "RP1.1",
+      "U3.2"
+    ],
+    "Vbus2": [
+      "C5.1",
+      "C6.1",
+      "D2.1",
+      "D3.1",
+      "JP1.2",
+      "U1.16",
+      "U2.VO",
+      "U4.1"
+    ],
+    "unconnected-(U3-ID-Pad4)": [
+      "U3.4"
+    ],
+    "unconnected-(U4-D+-Pad3)": [
+      "U4.3"
+    ],
+    "unconnected-(U4-D--Pad2)": [
+      "U4.2"
+    ],
+    "unconnected-(U4-ID-Pad4)": [
+      "U4.4"
+    ]
+  },
+  "pin2net": {
+    "C4.2": "AGND",
+    "C5.2": "AGND",
+    "C6.2": "AGND",
+    "C7.1": "AGND",
+    "C8.2": "AGND",
+    "J2.1": "AGND",
+    "J2.2": "AGND",
+    "L4.2": "AGND",
+    "R11.2": "AGND",
+    "R3.2": "AGND",
+    "SW1.2": "AGND",
+    "U1.15": "AGND",
+    "U1.9": "AGND",
+    "U2.GND": "AGND",
+    "U4.5": "AGND",
+    "J1.4": "Net-(J1-GND)",
+    "L2.1": "Net-(J1-GND)",
+    "U3.5": "Net-(J1-GND)",
+    "J1.1": "Net-(J1-Vbus)",
+    "L1.2": "Net-(J1-Vbus)",
+    "U3.1": "Net-(J1-Vbus)",
+    "J1.3": "UD+",
+    "RP1.2": "UD+",
+    "U3.3": "UD+",
+    "J1.2": "UD-",
+    "RP1.1": "UD-",
+    "U3.2": "UD-",
+    "C5.1": "Vbus2",
+    "C6.1": "Vbus2",
+    "D2.1": "Vbus2",
+    "D3.1": "Vbus2",
+    "JP1.2": "Vbus2",
+    "U1.16": "Vbus2",
+    "U2.VO": "Vbus2",
+    "U4.1": "Vbus2",
+    "U3.4": "unconnected-(U3-ID-Pad4)",
+    "U4.3": "unconnected-(U4-D+-Pad3)",
+    "U4.2": "unconnected-(U4-D--Pad2)",
+    "U4.4": "unconnected-(U4-ID-Pad4)"
+  },
+  "pinname": {
+    "C4.2": "~_2",
+    "C5.2": "~_2",
+    "C6.2": "~_2",
+    "C7.1": "~_1",
+    "C8.2": "~_2",
+    "J2.1": "~_1",
+    "J2.2": "~_2",
+    "L4.2": "2",
+    "R11.2": "~_2",
+    "R3.2": "~_2",
+    "SW1.2": "2",
+    "U1.15": "GND2",
+    "U1.9": "GND2",
+    "U2.GND": "GND",
+    "U4.5": "GND",
+    "J1.4": "GND",
+    "L2.1": "1",
+    "U3.5": "GND",
+    "J1.1": "Vbus",
+    "L1.2": "2",
+    "U3.1": "VBUS",
+    "J1.3": "D+",
+    "RP1.2": "P2",
+    "U3.3": "D+",
+    "J1.2": "D-",
+    "RP1.1": "P1",
+    "U3.2": "D-",
+    "C5.1": "~_1",
+    "C6.1": "~_1",
+    "D2.1": "A",
+    "D3.1": "A",
+    "JP1.2": "2",
+    "U1.16": "Vbus2",
+    "U2.VO": "VO",
+    "U4.1": "VBUS",
+    "U3.4": "ID",
+    "U4.3": "D+",
+    "U4.2": "D-",
+    "U4.4": "ID"
+  },
+  "pintype": {
+    "C4.2": "UNSPEC",
+    "C5.2": "UNSPEC",
+    "C6.2": "UNSPEC",
+    "C7.1": "UNSPEC",
+    "C8.2": "UNSPEC",
+    "J2.1": "UNSPEC",
+    "J2.2": "UNSPEC",
+    "L4.2": "UNSPEC",
+    "R11.2": "UNSPEC",
+    "R3.2": "UNSPEC",
+    "SW1.2": "UNSPEC",
+    "U1.15": "BI",
+    "U1.9": "BI",
+    "U2.GND": "IN",
+    "U4.5": "IN",
+    "J1.4": "POWER",
+    "L2.1": "UNSPEC",
+    "U3.5": "IN",
+    "J1.1": "POWER",
+    "L1.2": "UNSPEC",
+    "U3.1": "IN",
+    "J1.3": "BI",
+    "RP1.2": "UNSPEC",
+    "U3.3": "IN",
+    "J1.2": "BI",
+    "RP1.1": "UNSPEC",
+    "U3.2": "IN",
+    "C5.1": "UNSPEC",
+    "C6.1": "UNSPEC",
+    "D2.1": "UNSPEC",
+    "D3.1": "UNSPEC",
+    "JP1.2": "UNSPEC",
+    "U1.16": "BI",
+    "U2.VO": "POWER",
+    "U4.1": "IN",
+    "U3.4": "IN",
+    "U4.3": "IN",
+    "U4.2": "IN",
+    "U4.4": "IN"
+  },
+  "declared_pintype": {
+    "C4.2": "UNSPEC",
+    "C5.1": "UNSPEC",
+    "C5.2": "UNSPEC",
+    "C6.1": "UNSPEC",
+    "C6.2": "UNSPEC",
+    "C7.1": "UNSPEC",
+    "C8.2": "UNSPEC",
+    "D2.1": "UNSPEC",
+    "D3.1": "UNSPEC",
+    "J1.1": "POWER",
+    "J1.2": "BI",
+    "J1.3": "BI",
+    "J1.4": "POWER",
+    "J2.1": "UNSPEC",
+    "J2.2": "UNSPEC",
+    "JP1.2": "UNSPEC",
+    "L1.2": "UNSPEC",
+    "L2.1": "UNSPEC",
+    "L4.2": "UNSPEC",
+    "R3.2": "UNSPEC",
+    "R11.2": "UNSPEC",
+    "RP1.1": "UNSPEC",
+    "RP1.2": "UNSPEC",
+    "SW1.2": "UNSPEC",
+    "U1.9": "BI",
+    "U1.15": "BI",
+    "U1.16": "BI",
+    "U2.GND": "IN",
+    "U2.VO": "POWER",
+    "U3.1": "IN",
+    "U3.2": "IN",
+    "U3.3": "IN",
+    "U3.4": "IN",
+    "U3.5": "IN",
+    "U4.1": "IN",
+    "U4.2": "IN",
+    "U4.3": "IN",
+    "U4.4": "IN",
+    "U4.5": "IN"
+  },
+  "ref2page": {
+    "C4": 1,
+    "C5": 1,
+    "C6": 1,
+    "C7": 1,
+    "C8": 1,
+    "D2": 1,
+    "D3": 1,
+    "J1": 1,
+    "J2": 1,
+    "JP1": 1,
+    "L1": 1,
+    "L2": 1,
+    "L4": 1,
+    "R3": 1,
+    "R11": 1,
+    "RP1": 1,
+    "SW1": 1,
+    "U1": 1,
+    "U2": 1,
+    "U3": 1,
+    "U4": 1
+  },
+  "pseudo_nets": [
+    "unconnected-(U3-ID-Pad4)",
+    "unconnected-(U4-D+-Pad3)",
+    "unconnected-(U4-D--Pad2)",
+    "unconnected-(U4-ID-Pad4)"
+  ],
+  "no_connect_nodes": [
+    "U3.4",
+    "U4.2",
+    "U4.3",
+    "U4.4"
+  ],
+  "_source": {
+    "attribution": "Based on design by Steven Casagrande / Galvant Industries; this derived fixture is not provided or endorsed by the original author.",
+    "source": "https://github.com/Galvant/usb_isolator-pcb",
+    "commit": "38265194efa4941323ed354ee52934759f7ae420",
+    "license": "CC BY-SA 3.0 Unported",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "modifications": "Reduced normalized calibration variant, complete incidence of retained nets; attribution metadata added. This file asserts no whole-board correctness."
+  }
+}

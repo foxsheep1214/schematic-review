@@ -1,0 +1,13 @@
+{
+  "author": "Steven Casagrande / Galvant Industries",
+  "source": "https://github.com/Galvant/usb_isolator-pcb",
+  "commit": "38265194efa4941323ed354ee52934759f7ae420",
+  "license": "CC BY-SA 3.0 Unported",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "derived_by": "schematic-review calibration; not provided or endorsed by the original author",
+  "modifications": "Reduced normalized calibration variant: preserve complete incidence of every retained net; limit behavioral assertion to explicitly NC U3/U4 contacts. The variant contains separate seeded changes; this fixture makes no correctness claim about them. Attribution metadata added to the derived board JSON; electrical fields unchanged.",
+  "source_db_sha256": "0ff33963653d7e901bffe34f13069cb29ab79da7e5066c3c93930477150b2814",
+  "fixture_sha256": "7e75b0aa98f4279c18c3d384e5700f40b90f1fb361de469beac8c2310dfa3b0f",
+  "fixture_bytes": 8402,
+  "retained_net_incidence_unchanged": true
+}

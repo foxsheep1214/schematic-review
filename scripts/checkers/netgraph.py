@@ -27,6 +27,16 @@ PREFIX_KINDS = (
 )
 
 JST_CONNECTOR_RE = r'(?:^|[\s:])JST[-_]'
+USB_CONNECTOR_RE = r'(?:[^\s:]+:)?(?:MICRO|MINI)[-_](?:AB|A|B)[-_]USB'
+# NC suppression needs complete physical-family tokens, not the broad
+# discovery keywords above. Unknown model suffixes retain a review candidate.
+CONNECTOR_CONTACT_RE = (
+    r'(?:[^\s:]+:)?(?:'
+    r'(?:MICRO|MINI)[-_](?:AB|A|B)[-_]USB|'
+    r'USB[_-](?:A|B|C)(?:_Receptacle_USB[23](?:\.[0-9])?(?:_MountingPin)?)?|'
+    r'CONN_\d+X\d+|PINHEADER[_-]\d+X\d+|'
+    r'HEADER_(?:MALE|FEMALE)[_-]\d+X\d+|HEADER[-_]\d+X\d+|'
+    r'JST[-_](?:SH|GH|ZH|PH|XH))')
 
 KEYWORD_KINDS = (
     (r'RELAY|继电器', RELAY),
@@ -52,6 +62,9 @@ KEYWORD_KINDS = (
      r'\bPINHEADER[_:-]|\bTERMINAL_?BLOCK[_:-]|'
      r'\bHEADER_(?:MALE|FEMALE)[_:-]|\bHEADER[-_]\d+X\d+(?:\b|[_:-])|'
      r'\bTERMINAL_KF\d', CONNECTOR),
+    # Legacy physical USB connector symbols can have a U refdes. Match the
+    # complete connector-family token, not USB controller/PHY descriptions.
+    (USB_CONNECTOR_RE, CONNECTOR),
     # A bare vendor name: never re-identify an IC/module refdes by it.
     (JST_CONNECTOR_RE, CONNECTOR),
 )
@@ -183,6 +196,16 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     opto_identity += ' ' + prim_identity.split(':', 1)[-1]
     for pattern, kind in KEYWORD_KINDS:
         keyword_blob = opto_identity if kind == OPTO else blob
+        if pattern == USB_CONNECTOR_RE:
+            # Free-form value text cannot turn a PHY/controller into a contact.
+            # Require a physical identity field and agreement of every supplied
+            # part/symbol/value identity; conflicts retain the ordinary checks.
+            identities = [normalize(part.get(key)) for key in ('part', 'prim', 'value')
+                          if normalize(part.get(key))]
+            if (not any(normalize(part.get(key)) for key in ('part', 'prim'))
+                    or not all(re.fullmatch(USB_CONNECTOR_RE, item, re.I)
+                               for item in identities)):
+                continue
         if pattern == JST_CONNECTOR_RE and re.match(r'^(U|M|IC)\d', ref, re.I):
             continue
         if re.search(pattern, keyword_blob, re.I):
@@ -271,6 +294,45 @@ class NetGraph:
     def basis(self, ref):
         self.kind(ref)
         return self._kinds[ref][1]
+
+    def qualified_connector_contact(self, ref):
+        """Whether part identity supports an intentionally unused passive contact.
+
+        Classification of the combined part text is only a discovery hint.
+        An NC exemption needs either a verified declaration or agreement of
+        each populated identity field, including an actual symbol identity.
+        """
+        if self.kind(ref) != CONNECTOR:
+            return False
+        if self.basis(ref) == 'datasheet':
+            return True
+        if self.basis(ref) != 'part-keyword':
+            return False
+        pins = self._pins.get(ref, {})
+        names = [(self.pinname.get(ref + '.' + pin), pin) for pin in pins]
+        if pin_signature(names):
+            return False
+        part = self.parts.get(ref, {})
+        package = normalize(part.get('jedec'))
+        if (package and package.upper() != 'MODULE'
+                and not re.fullmatch(r'Connector(?:_[A-Za-z0-9.]+)*:[^\s:]+', package, re.I)
+                and not re.fullmatch(CONNECTOR_CONTACT_RE, package, re.I)):
+            # JEDEC/footprint is not an MPN. An unresolved or conflicting
+            # physical package still needs review; legacy MODULE is neutral.
+            return False
+        if not any(normalize(part.get(key)) for key in ('part', 'prim')):
+            return False
+        for key in ('part', 'prim', 'value'):
+            identity = normalize(part.get(key))
+            if not identity:
+                continue
+            # Free-form descriptions and unknown identities cannot establish
+            # a passive role merely by containing a connector keyword.
+            if not re.fullmatch(CONNECTOR_CONTACT_RE, identity, re.I):
+                return False
+            if classify('?', {'part': identity}) != (CONNECTOR, 'part-keyword'):
+                return False
+        return True
 
     def is_fitted(self, ref):
         return ref in self.fitted

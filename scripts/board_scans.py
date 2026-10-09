@@ -100,6 +100,11 @@ def floating_inputs(lint):
             continue
         net = lint.pin2net.get(node)
         declared_nc = node in no_connect or (net is not None and net in lint.pseudo)
+        # A deliberately unused passive contact has no internal input-bias
+        # obligation. Require role evidence stronger than the refdes alone;
+        # unknown parts, IC inputs and unmarked dangling nets still get checked.
+        if declared_nc and lint.graph.qualified_connector_contact(ref):
+            continue
         if net is None:
             lint.add('NET-A07', '声明输入脚无网络', f'{node}: 引脚类型为输入，网表中没有网络', ref)
         elif declared_nc:
