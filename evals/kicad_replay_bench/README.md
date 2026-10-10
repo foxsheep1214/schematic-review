@@ -56,14 +56,20 @@ python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out 
   NA 必为 0）。
 - 每例的核对记录写在 `expected.json` 的 `verification` 字段。
 
-有两类字段，核对结论与 main 现值不同，记为已知偏差（原因见交接说明“二之一”和 `sr-rehearsal-fixes.patch`）：
+最初在 main@5fa6d3b 核对时，有两类字段记为已知偏差（原因见交接说明“二之一”和 `sr-rehearsal-fixes.patch`）：
 
 1. 严格自检失败时应照写 db（`self_check_passed=false`），退出码仍为 2；main 不写 db。
 2. 给了 `--log` 但日志为空时应按零命中执行 DOC-A01/A02；main 当成没给日志并跳过。
 
 把该补丁应用到 main 副本上跑 `--sut`，全部 126 个字段一致；用 5fa6d3b 之前的 cde1054 跑，
 pinmap 用例的去耦字段和各例的 `pin_names_resolved_by_official_pinout` 报出 11 处不一致。
-补丁发布后，应删除对应的 `known_deviations`。
+这两项已在 main@03b6fde 发布。第08轮独立复核确认后退役其21条
+`known_deviations`，126个冻结字段的预期值、夹具和来源均不变；不是重新生成答案。
+当前严格失败仍写db且退出2，提供空日志仍执行两项扫描；不提供日志继续跳过。
+只保留未修复问题的已知偏差，修复发布后必须退役相应允许值并加入退化拒绝测试。
+`test_replay_retired_invariants.py` 验证必需的db保留和日志扫描回退会判MISMATCH。
+用当前基准配旧5fa6d3b三份解析/扫描脚本的隔离退化探针，会有21处MISMATCH并退出1；
+保留旧允许值时该探针曾以105 MATCH /21 KNOWN /0 MISMATCH错误退出0。
 
 ## 覆盖范围与不能推断的内容
 

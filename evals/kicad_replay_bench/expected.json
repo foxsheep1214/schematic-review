@@ -188,16 +188,7 @@
      ]
     }
    },
-   "known_deviations": {
-    "lint.DOC-A01_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    },
-    "lint.DOC-A02_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    }
-   }
+   "known_deviations": {}
   },
   "r02-dasduino-coreplus": {
    "verification": "独立扫描未命名功能脚得 X1.2/X1.3/X1.4（晶振库符号 GND 脚为 power_in、输出脚无名）及 JP5/JP6 三焊盘跳线的 6 个 input 脚；跳线触点按编号识别、单列为 unnamed_jumper_contact_pins，不计入缺名，符合 DOC-Q01 口径，故 missing_functional_pins=X1.2/3/4，严格自检失败成立。去耦 10 组电容集合与独立计算一致；自检失败故每组带 netlist-integrity/export；X1:GND 组因 power_in 脚在 GND 上、无回流网而带 need-one-explicit-return-net。K1/K2/K8（K 前缀连接器）被列为 unverified，偏保守但不错。",
@@ -372,20 +363,7 @@
      ]
     }
    },
-   "known_deviations": {
-    "parse.strict_db_written": {
-     "observed": false,
-     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
-    },
-    "lint.DOC-A01_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    },
-    "lint.DOC-A02_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    }
-   }
+   "known_deviations": {}
   },
   "r03-nrf9151-feather": {
    "verification": "独立扫描未命名功能脚只有 U8.4（TS5A3166 控制输入 IN，库符号无名），严格自检失败成立。29 组电容集合与独立计算一致；每组带 netlist-integrity/export；U7:GND 组带 supply-return-same-net。unverified 含 H3/H4（单焊盘安装孔，非两端件故列出，偏保守）。DNP 件（U6 等）在冷跑无装配状态时仍按 population:REF 记缺口，符合规则。",
@@ -734,20 +712,7 @@
      ]
     }
    },
-   "known_deviations": {
-    "parse.strict_db_written": {
-     "observed": false,
-     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
-    },
-    "lint.DOC-A01_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    },
-    "lint.DOC-A02_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    }
-   }
+   "known_deviations": {}
   },
   "r04-host-usb-pmod": {
    "verification": "独立核对：C1 跨 +3V3/GND，C2、C3 跨 +5V/GND；U1(TPS61099) 的 VI/VOUT/SW 三个 power_in/power_out 脚各成候选组，电容归属正确。SW 组是开关节点（库符号把 SW 标为 power_in），候选组带 confirm-group-and-return，须人工排除，属合同内的保守行为。检查数 49 = 板级/逐对象项 + 3 组 × 4 条去耦规则，逐行看过。",
@@ -795,16 +760,7 @@
      ]
     }
    },
-   "known_deviations": {
-    "lint.DOC-A01_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    },
-    "lint.DOC-A02_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    }
-   }
+   "known_deviations": {}
   },
   "r04-c1-return-moved": {
    "verification": "与 r04 唯一差别是 C1.2 改接 +3V3（两脚同网）。C1 不再是直连供电/回流电容，因此只从 +3V3 组的 population 缺口中消失，其余字段与 r04 相同。注意：本基准只锁定去耦清单的变化，不断言 SR 会对 C1 自身出发现。",
@@ -851,16 +807,7 @@
      ]
     }
    },
-   "known_deviations": {
-    "lint.DOC-A01_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    },
-    "lint.DOC-A02_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    }
-   }
+   "known_deviations": {}
   },
   "r05-lipo-charger": {
    "verification": "独立核对：C1 跨 USB_5V/GND，C2 跨 BAT_POS/GND，C3 跨 PROT_VDD/BAT_NEG（U2 回流在 BAT_NEG），四组电容归属正确；J1:USB_5V 因 USB 插座 VBUS 为 power_out 成候选组，带 confirm 缺口，偏保守。",
@@ -914,16 +861,7 @@
      ]
     }
    },
-   "known_deviations": {
-    "lint.DOC-A01_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    },
-    "lint.DOC-A02_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    }
-   }
+   "known_deviations": {}
   },
   "rh-ad8495-thermocouple": {
    "verification": "独立扫描未命名功能脚只有 U201.6（KiCad 库 AD8495 符号 OUT 脚无名），与演练记录一致。冷跑无脚表：U201 的 +VS/-VS 名字不匹配电源/地正则，-VS 所在的 GND 被当成候选供电组，两组都无回流网，C204/C205 被拒（not-direct-supply-return-pair），并带 netlist-integrity/export。这是没有脚表时的保守结果，正确分组见 pinmap 用例。",
@@ -970,20 +908,7 @@
      ]
     }
    },
-   "known_deviations": {
-    "parse.strict_db_written": {
-     "observed": false,
-     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
-    },
-    "lint.DOC-A01_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    },
-    "lint.DOC-A02_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    }
-   }
+   "known_deviations": {}
   },
   "rh-ad8495-thermocouple-nolog": {
    "verification": "与 rh-ad8495-thermocouple 相同，唯一差别是不给 --log：DOC-A01/A02 跳过是正确行为（无任何导出证据）。",
@@ -1030,12 +955,7 @@
      ]
     }
    },
-   "known_deviations": {
-    "parse.strict_db_written": {
-     "observed": false,
-     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
-    }
-   }
+   "known_deviations": {}
   },
   "rh-ad8495-thermocouple-pinmap": {
    "verification": "intent 只含演练 SR 主审写的 U201/U202 官方脚表（ADI Rev.D Table 5、TI SLVS543S Table 5-1，pinout_complete=true）。U201.6 在脚表中声明为 OUT/other，自检唯一问题就是这个缺名，因此按 5fa6d3b 去耦不加整网缺口、列入 pin_names_resolved_by_official_pinout；-VS 由脚表定为 return，只剩 VCC 组，C204/C205（VCC–GND，独立核对）在组内。检查数比冷跑少 4 = 少一组 × 4 条去耦规则。DOC-Q01 与 self_check_passed=false 不变。",
@@ -1072,20 +992,7 @@
      ]
     }
    },
-   "known_deviations": {
-    "parse.strict_db_written": {
-     "observed": false,
-     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
-    },
-    "lint.DOC-A01_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    },
-    "lint.DOC-A02_executed": {
-     "observed": false,
-     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
-    }
-   }
+   "known_deviations": {}
   }
  }
 }
