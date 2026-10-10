@@ -262,7 +262,11 @@ def _unnamed_jumper_contacts(db):
     return sorted(contacts)
 
 
-def self_check(db, strict=True):
+MISSING_PIN_NAMES = 'KiCad 功能引脚缺少名称（无源脚已单列）: '
+
+
+def integrity_problems(db):
+    """Self-check findings without printing or exiting; also records db['pin_name_coverage']."""
     problems = []
     n_pin, n_name = len(db['pin2net']), len(db['pinname'])
     owners = {}
@@ -317,7 +321,7 @@ def self_check(db, strict=True):
                     if native[p] in exempt and not db['pinname'].get(p)),
                 'scope': 'Parser function-name coverage, not manufacturer pinout verification'}
             if missing:
-                problems.append('KiCad 功能引脚缺少名称（无源脚已单列）: ' + ', '.join(missing))
+                problems.append(MISSING_PIN_NAMES + ', '.join(missing))
     elif n_pin and n_name / n_pin < 0.5:
         problems.append(
             f'pinname 覆盖率仅 {n_name}/{n_pin} = {n_name/n_pin:.0%} —— '
@@ -326,7 +330,12 @@ def self_check(db, strict=True):
     ic = [r for r in db['parts'] if r[0] in 'UM']
     if ic and not db['ref2page']:
         problems.append('ref2page 为空 —— 页号未提取，发现项将无法定位')
+    return problems
 
+
+def self_check(db, strict=True):
+    problems = integrity_problems(db)
+    n_pin, n_name = len(db['pin2net']), len(db['pinname'])
     print(f'  nets={len(db["nets"])}  parts={len(db["parts"])}  '
           f'pin2net={n_pin}  pinname={n_name}  '
           f'pintype={len(db["pintype"])}  pages={len(set(db["ref2page"].values()))}')

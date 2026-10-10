@@ -190,8 +190,40 @@ class Inventory:
         for node, net in self.pin2net.items():
             if node not in self.nets.get(net, []):
                 self.input_gaps.add('inconsistent-index:' + node)
-        if db.get('integrity', {}).get('self_check_passed') is False or db.get('export_errors'):
+        self.names_resolved_by_official_pinout = []
+        if db.get('export_errors'):
             self.input_gaps.add('netlist-integrity/export')
+        elif db.get('integrity', {}).get('self_check_passed') is False:
+            resolved = self.official_name_gap(db)
+            if resolved is None:
+                self.input_gaps.add('netlist-integrity/export')
+            else:
+                self.names_resolved_by_official_pinout = resolved
+
+    def official_name_gap(self, db):
+        """Unnamed functional pins whose role the official pin map already fixes, else None.
+
+        Decoupling reads a pin's role from intent.devices before its name, so a
+        self-check failure caused only by missing function names does not change
+        the inventory when every such pin is in a complete official pin map.
+        Any other self-check problem keeps the whole-netlist gap. DOC-Q01 still
+        reports the missing names.
+        """
+        from parse_netlist import MISSING_PIN_NAMES, integrity_problems  # parse_netlist imports checkers
+        copy = dict(db)
+        try:
+            problems = integrity_problems(copy)
+        except (KeyError, TypeError, AttributeError):
+            return None  # Not a full parser db: keep the whole-netlist gap.
+        if not problems or any(not p.startswith(MISSING_PIN_NAMES) for p in problems):
+            return None
+        missing = copy.get('pin_name_coverage', {}).get('missing_functional_pins', [])
+        for node in missing:
+            ref, _, pin = node.partition('.')
+            device = self.devices.get(ref, {})
+            if device.get('pinout_complete') is not True or not device.get('pins', {}).get(pin, {}).get('role'):
+                return None
+        return sorted(missing) or None
 
     def kind(self, ref):
         if ref in self.components:
@@ -402,6 +434,7 @@ def build_decoupling_inventory(db, intent=None):
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'input_sha256': input_fingerprint(db),
               'context': deepcopy(board_intent.context(intent, 'decoupling', extra=('devices',))), 'scope': 'direct-net schematic inventory only; nominal is not effective capacitance; no electrical or PCB PASS',
               'devices': device_records, 'unverified_device_refs': unknown,
+              'pin_names_resolved_by_official_pinout': inv.names_resolved_by_official_pinout,
               'non_decoupling_connectors': inv.non_decoupling_connectors,
               'two_terminal_no_supply_refs': two_terminal, 'discovery_gaps': sorted(discovery_gaps),
               'states': [inv.state_inventory(s, groups, device_records) for s in sorted(states, key=lambda s: s['id'])]}
