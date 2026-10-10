@@ -85,6 +85,8 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 判据和确认状态；装配配置写入 `intent.assemblies`；设 `review_phase`（日常设计 `design_iteration`，
 用户明确要冻结才用 `schematic_freeze`）。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
 集中提出，先做不受影响的工作，不逐颗器件打断用户，也不自行接受风险。
+录入前按 [源条目到审查义务](references/requirement-clarifications.md#源条目到审查义务) 分清真实待决、
+客观设计义务、明确排除和下游工作；保留源文及源状态，不能把源文件的 OPEN 标题机械变成责任方待决。
 确认是需求说明不明确造成的证据不足，报告结论直接写明：引用需求原文（或说明未提及），给出建议补入的需求条文。
 按 [输入与覆盖](references/inputs-and-coverage.md) 记录输入版本/哈希；PDF 与网表须核修订号证明同版。
 仅有 PDF 时逐页读图并声明范围，不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装须另获授权。
@@ -159,7 +161,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 结果独立保存为 `review-results.json`，绑定最终计划；每项结论核对对象、配置、工况、判据与原始证据，
 批量脚本只录入已审结论。按有证据的共同根因归并任务，不合并独立电气结论。
 录入前用第 5 步上下文逐字段核理由、缺口、条件影响及关闭任务；共享文字须逐项适用。
-补证对象、数值和验收条件同时核结果与任务的结构化字段，方法见 [对象上下文录入](references/plan-and-results.md#对象上下文录入)。
+补证对象、数值和验收条件同时核结果与任务的结构化字段，按 [逐行语义复核](references/plan-and-results.md#逐行语义复核)
+核对每个对象、路径、因果和关闭范围；绑定校验及质量筛查零提示不能代替这一步。
 完成后对账：
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --require-impact --json review-gate.json
