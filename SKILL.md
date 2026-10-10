@@ -163,6 +163,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 录入前用第 5 步上下文逐字段核理由、缺口、条件影响及关闭任务；共享文字须逐项适用。
 补证对象、数值和验收条件同时核结果与任务的结构化字段，按 [逐行语义复核](references/plan-and-results.md#逐行语义复核)
 核对每个对象、路径、因果和关闭范围；绑定校验及质量筛查零提示不能代替这一步。
+需求原文和判据含多个子义务时，逐一核范围排除、功能与电气前提并汇总；只核完其中一项不能
+让整条需求 PASS。按同节复合义务方法引用实际依赖和唯一任务，不传播无关风险或重复计缺陷。
 完成后对账：
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --require-impact --json review-gate.json
