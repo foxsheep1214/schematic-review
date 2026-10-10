@@ -859,7 +859,8 @@ def render_markdown():
                 '、'.join(packages_of(rule.id)) or '—'))
     lines += ['', '## 功能包', '',
               '名称命中先生成 UNDETERMINED 候选；意图声明（`features` 键、`circuits[].type` 取包名）或已确认拓扑使功能包适用，再生成 REQ-Q07 '
-              '覆盖项与成员规则，逐成员再核实际用途。未检出且未声明的功能包汇总到一项 REQ-Q08 确认。'
+              '覆盖项与成员规则，逐成员再核实际用途。未检出且未声明的功能包汇总到一项 REQ-Q08 确认；'
+              '不必为排除它们在 `features` 中逐个写 NOT_APPLICABLE，逐个声明会为每个包各生成一行 REQ-Q07。'
               '分立 MOSFET 电平转换器没有名称线索，须在 `intent.circuits` 中声明（在 I²C 等总线上则并入该总线电路），'
               '转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划与结果台账](plan-and-results.md)。', '',
               '| 功能包 | 名称 | 内容域 | 成员规则 | 必需资料 | 检出特征（正则） |',

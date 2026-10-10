@@ -89,7 +89,7 @@ def clamp_volt(blob):
 
 
 class Lint:
-    def __init__(self, db, log_text='', intent=None, evidence=None, datasheet_audit=None):
+    def __init__(self, db, log_text=None, intent=None, evidence=None, datasheet_audit=None):
         self.db = db
         self.db_sha256 = db_fingerprint(db)
         self.datasheet_audit = datasheet_audit
@@ -506,8 +506,9 @@ class Lint:
                      '波形、温度与能量配合；型号不能证明导通或烧毁。',
                      ref, kind='CANDIDATE')
 
-        # DOC-A01/DOC-A02 导出日志：错误中止与 No_connect 被忽略 —— 免费证据，别丢
-        if self.log:
+        # DOC-A01/DOC-A02 导出日志：错误中止与 No_connect 被忽略 —— 免费证据，别丢。
+        # 提供了日志即执行扫描；kicad-cli 导出成功时日志本来就是空的，空日志表示零命中而不是未提供。
+        if self.log is not None:
             for line in self.log.splitlines():
                 if re.search(r'ERROR\s*\(|Aborting Netlisting', line, re.I):
                     self.add('DOC-A01', '网表导出错误/中止，核实是否为本次有效导出', line)
@@ -521,7 +522,7 @@ class Lint:
                          f'{pin} -> {net}{tag}', pin.split('.')[0])
         else:
             for rule in ('DOC-A01', 'DOC-A02'):
-                self.skipped.append((rule, catalog.title(rule), '未提供导出日志（--log）或日志为空'))
+                self.skipped.append((rule, catalog.title(rule), '未提供导出日志（--log）'))
         board_scans.run(self)
         for checker in REGISTRY:
             inventory = self.inventories.get(checker.id)
@@ -792,7 +793,7 @@ def main():
 
     try:
         db = load_json(a.db)
-        log = io.open(a.log, encoding='utf-8', errors='replace').read() if a.log else ''
+        log = io.open(a.log, encoding='utf-8', errors='replace').read() if a.log else None
         intent = load_json(a.intent) if a.intent else None
         evidence = load_json(a.evidence) if a.evidence else None
         datasheet_audit = load_json(a.datasheet_audit) if a.datasheet_audit else None

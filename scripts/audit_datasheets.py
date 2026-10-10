@@ -31,6 +31,18 @@ AUDIT_STATUSES = ('AVAILABLE', 'NEEDS_VERIFICATION', 'MISSING', 'NOT_FOUND')
 RESOLUTION_STATUSES = ('FOUND', 'NOT_FOUND')
 SOURCE_KINDS = ('package', 'network')
 PDF_EXTENSIONS = {'.pdf'}
+DOCUMENT_FORMATS = ('pdf', 'text_extract')
+
+
+def document_format(path):
+    """Classify current content; a PDF header is not identity/graphical verification."""
+    try:
+        with open(path, 'rb') as handle:
+            return 'pdf' if handle.read(5) == b'%PDF-' else 'text_extract'
+    except (OSError, TypeError):
+        # Historical audits may outlive their local document; validation keeps
+        # their recorded format but does not treat a suffix as fresh evidence.
+        return None
 
 
 def _text(value):
@@ -241,6 +253,14 @@ def validate_datasheet_audit(audit, db=None):
                     for field in ('source_url', 'retrieved_at'):
                         if not _text(document.get(field)):
                             errors.append(f'{label}.document.{field} 缺失')
+                fmt = document.get('document_format')
+                current_format = document_format(document.get('path', ''))
+                if fmt is not None and (fmt not in DOCUMENT_FORMATS
+                                        or (current_format is not None and fmt != current_format)
+                                        or (current_format is None and fmt == 'pdf'
+                                            and os.path.splitext(str(document.get('path', '')))[1].lower()
+                                            not in PDF_EXTENSIONS)):
+                    errors.append(f'{label}.document.document_format 与文件类型不符')
         elif status == 'NOT_FOUND':
             expected_message = _failure_message(
                 str(identity or ''), material.get('refdes') or [])
@@ -457,6 +477,15 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
                     'document_model', 'document_version', 'retrieved_at')
                 if outcome.get(field) is not None
             }
+            material['document']['document_format'] = document_format(outcome.get('path'))
+            if material['document']['document_format'] == 'text_extract':
+                diagnostics.append({
+                    'code': 'DATASHEET_TEXT_ONLY',
+                    'identity': identity,
+                    'path': outcome.get('path'),
+                    'message': (f'{identity} 只有文本摘录、没有 PDF 原件：表格列可能被拍平，'
+                                '最小/典型/最大归属须核清或保留缺口，图形与曲线结论不可引用'),
+                })
             material['local_candidates'] = candidates
         elif outcome and outcome.get('status') == 'NOT_FOUND':
             material['status'] = 'NOT_FOUND'
@@ -513,6 +542,9 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
         'summary': {
             'required_materials': len(materials),
             'available': counts['AVAILABLE'],
+            'available_text_only': sum(
+                item.get('document', {}).get('document_format') == 'text_extract'
+                for item in materials if item['status'] == 'AVAILABLE'),
             'needs_verification': counts['NEEDS_VERIFICATION'],
             'missing': counts['MISSING'],
             'not_found': counts['NOT_FOUND'],

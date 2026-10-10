@@ -359,13 +359,17 @@ def main():
     ap.add_argument('dirpath', help='含 pstxnet.dat/pstxprt.dat/pstchip.dat 的目录')
     ap.add_argument('-o', '--out', default='db.json')
     ap.add_argument('--no-strict', action='store_true',
-                    help='自检失败时仅告警不退出（不建议）')
+                    help='自检失败时退出码仍为 0（不建议）；db 总会写出并标 self_check_passed')
     a = ap.parse_args()
 
     db = build(a.dirpath)
-    db['integrity'] = {'self_check_passed': self_check(db, strict=not a.no_strict)}
+    # 严格失败也写出 db（self_check_passed=false），便于定位缺口；validate_review 会据此阻断准出。
+    passed = self_check(db, strict=False)
+    db['integrity'] = {'self_check_passed': passed}
     json.dump(db, io.open(a.out, 'w', encoding='utf-8'), ensure_ascii=False)
     print(f'  -> {a.out}')
+    if not passed and not a.no_strict:
+        sys.exit(2)
 
 
 if __name__ == '__main__':

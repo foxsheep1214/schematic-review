@@ -268,18 +268,22 @@ def main():
     parser.add_argument('--kicad-cli', dest='executable', default=None,
                         help='kicad-cli 路径（默认取 KICAD_CLI 或 PATH）')
     parser.add_argument('--no-strict', action='store_true',
-                        help='自检失败时仅告警不退出（不建议）')
+                        help='自检失败时退出码仍为 0（不建议）；db 总会写出并标 self_check_passed')
     args = parser.parse_args()
     try:
         db = build(args.path, args.executable)
     except (RuntimeError, ValueError) as error:
         sys.exit('[FATAL] %s' % error)
-    db['integrity'] = {'self_check_passed': self_check(db, strict=not args.no_strict)}
+    # 严格失败也写出 db（self_check_passed=false），便于定位缺口；validate_review 会据此阻断准出。
+    passed = self_check(db, strict=False)
+    db['integrity'] = {'self_check_passed': passed}
     if db['no_connect_nodes']:
         print('  [No-connect 属性] %d 个引脚在图上声明不接；需核实每一处确实允许悬空'
               % len(db['no_connect_nodes']))
     json.dump(db, io.open(args.out, 'w', encoding='utf-8'), ensure_ascii=False)
     print(f'  -> {args.out}')
+    if not passed and not args.no_strict:
+        sys.exit(2)
 
 
 if __name__ == '__main__':

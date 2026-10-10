@@ -28,6 +28,11 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
      核对同型号其他证据、受控规格、反算要求与相似器件参考等路径；替代资料不改变
      本物料的 AVAILABLE 判定。
    - PDF 文本提取可能错字符（µ 显示成 m 等）；决定结论的数值对照渲染页核对。
+   - 原厂 PDF 取不到、只能用网页或工具抽取的文本时，`path` 指向该文本文件，审计记
+     `document.document_format = text_extract`，摘要计入 `available_text_only`，并给出 `DATASHEET_TEXT_ONLY` 诊断。
+     表格列可能被拍平：只有归属及适用条件可有据定界时才取保守值；否则保留具体参数缺口。
+     文件格式标记不证明原厂身份或内容有效，不能把文本改名为 PDF 来冒充原件；图形、曲线、极性/封装视图
+     的结论仍需可定位的原始图形证据，文本 AVAILABLE 不支持这些结论。
 
 3. Agent 把结果写入 datasheet-resolution.json，再次运行审计：
 

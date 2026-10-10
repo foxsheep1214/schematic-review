@@ -8,6 +8,7 @@
 import re
 
 import catalog
+import board_intent
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
@@ -26,11 +27,114 @@ OUT_PINTYPES = {'OUT', 'OUTPUT', 'TRISTATE', '3STATE', 'BI', 'BIDI', 'BIDIR', 'I
 MAX_RAILS = 64
 
 
-def validate_supervision_intent(intent, db=None):
-    """校验可选的 supervision 配置段。"""
+RAIL_REQUIREMENT_FIELDS = {'net', 'state', 'required', 'criterion', 'citation', 'identity'}
+SOURCE_IDENTITY_FIELDS = {'source_node', 'source_role', 'part', 'pin_name', 'native_pintypes', 'citation'}
+PART_IDENTITY_FIELDS = {'part', 'prim', 'value', 'jedec'}
+
+
+def _section_errors(intent, db):
+    # The shared schema stays v2; the optional per-rail array belongs to this checker.
+    source = intent
+    if isinstance(intent, dict) and isinstance(intent.get('supervision'), dict):
+        source = dict(intent, supervision={k: v for k, v in intent['supervision'].items()
+                                          if k != 'rail_requirements'})
     return state_lib.section_errors(
-        intent, db, 'supervision', item_field='supervisors', item_key='supervisor',
+        source, db, 'supervision', item_field='supervisors', item_key='supervisor',
         fields=('id', 'ref', 'monitored_nets', 'citation'))
+
+
+def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
+    errors = []
+
+    def require(ok, message):
+        if not ok:
+            errors.append(message)
+
+    if not isinstance(item, dict):
+        return ['rail requirement must be an object']
+    require(set(item) == RAIL_REQUIREMENT_FIELDS, 'rail requirement needs exact net/state/required/criterion/citation/identity')
+    for key in ('net', 'state', 'criterion', 'citation'):
+        require(state_lib._text(item.get(key)), 'rail requirement needs ' + key)
+    require(type(item.get('required')) is bool, 'rail requirement required must be boolean (unknown remains undeclared)')
+    identity = item.get('identity')
+    if not isinstance(identity, dict):
+        return errors + ['rail requirement needs source identity']
+    require(set(identity) == SOURCE_IDENTITY_FIELDS, 'source identity has missing/unsupported fields')
+    for key in ('source_node', 'source_role', 'pin_name', 'citation'):
+        require(state_lib._text(identity.get(key)), 'source identity needs ' + key)
+    require(identity.get('source_role') in ('external_supply', 'rail_driver'), 'unknown source role')
+    part = identity.get('part')
+    require(isinstance(part, dict) and set(part) == PART_IDENTITY_FIELDS
+            and all(isinstance(v, str) for v in part.values()) and state_lib._text(part.get('part')),
+            'source identity needs full part/prim/value/jedec snapshot')
+    require(isinstance(identity.get('native_pintypes'), dict), 'source identity needs native_pintypes snapshot')
+    if db is None or errors:
+        return errors
+    require(intent.get('input_sha256') == board_intent.input_fingerprint(db), 'stale/missing input_sha256')
+    require(state is not None and state.get('declared') and state_lib._text(state.get('citation')),
+            'unknown/unverified assembly state')
+    if scan is None:
+        return errors
+    graph = scan.graph
+    net, node = item.get('net'), identity.get('source_node')
+    require(net in {rail['net'] for rail in rails}, 'net is not an actual supply rail')
+    if not isinstance(node, str):
+        return errors
+    ref = node.partition('.')[0]
+    actual_part = {k: db.get('parts', {}).get(ref, {}).get(k, '') for k in PART_IDENTITY_FIELDS}
+    require(ref in graph.parts and graph.is_fitted(ref), 'source is absent/DNP in this assembly')
+    require(graph.pin2net.get(node) == net and node in graph.nodes_on(net), 'source node does not belong to actual net')
+    require(part == actual_part, 'source part identity differs from native input')
+    require(identity.get('pin_name') == graph.pinname.get(node), 'source pin name differs from native input')
+    actual_types = {n: t for n, t in db.get('native_pintype', {}).items() if n.partition('.')[0] == ref}
+    require(identity.get('native_pintypes') == actual_types, 'source native type snapshot differs from input')
+    if identity.get('source_role') == 'rail_driver':
+        source = scan.tree.source_of(net)
+        require(source is not None and source['source'] == node, 'source is not the actual PowerTree driver')
+        # Where native semantics are available, a load/input cannot be promoted to a driver.
+        require(not actual_types or actual_types.get(node) in ('power_out', 'output', 'bidirectional', 'tri_state'),
+                'native source pin is not an output')
+    elif identity.get('source_role') == 'external_supply':
+        observed = {n for field in ('pin2net', 'pinname', 'pintype', 'declared_pinname',
+                                    'declared_pintype', 'native_pintype', 'declared_native_pintype')
+                    for n in db.get(field, {}) if n.partition('.')[0] == ref}
+        native_contacts = bool(observed) and set(actual_types) == observed and all(
+            t == 'passive' for t in actual_types.values())
+        declared_types = {}
+        if 'declared_native_pintype' in db:
+            declared_types = {n: t for n, t in db['declared_native_pintype'].items() if n.partition('.')[0] == ref}
+            native_contacts = native_contacts and declared_types == actual_types
+        # A cited external role plus complete passive native contacts supports custom symbols;
+        # refdes alone never supplies this qualification, nor overrides an active/passive-device role.
+        qualified = graph.qualified_connector_contact(ref) or (
+            graph.kind(ref) in (ng.CONNECTOR, ng.UNKNOWN) and native_contacts)
+        require(qualified, 'external source lacks verified connector identity or complete native passive contacts')
+        require(not (actual_types or declared_types) or native_contacts, 'external source role conflicts with native pin types')
+    return errors
+
+
+def validate_supervision_intent(intent, db=None):
+    """校验可选的 supervision 配置与精确绑定的逐轨×装配状态书面范围。"""
+    errors = _section_errors(intent, db)
+    cfg = (intent or {}).get('supervision') if isinstance(intent, dict) else None
+    if not isinstance(cfg, dict) or 'rail_requirements' not in cfg:
+        return errors
+    items = cfg['rail_requirements']
+    if not isinstance(items, list):
+        return errors + ['supervision: rail_requirements must be an array']
+    states = {s['id']: s for s in state_lib.resolve(db, intent.get('assemblies'))} if db is not None else {}
+    seen = set()
+    for item in items:
+        state = states.get(item.get('state')) if isinstance(item, dict) and isinstance(item.get('state'), str) else None
+        scan = _Scan(board_intent.graph_db(db, intent), state, set(), set()) if state else None
+        rails = scan.rails(scan.supervisors()) if scan else []
+        errors.extend('supervision: ' + error for error in _requirement_errors(item, db, intent, state, scan, rails))
+        if isinstance(item, dict) and isinstance(item.get('state'), str) and isinstance(item.get('net'), str):
+            key = (item['state'], item['net'])
+            if key in seen:
+                errors.append('supervision: duplicate rail requirement for ' + str(key))
+            seen.add(key)
+    return errors
 
 
 class _Scan:
@@ -144,14 +248,36 @@ def build_inventory(db, intent=None):
     excluded = state_lib.excluded_refs(cfg)
     gaps = [] if cfg else ['intent.supervision: 未声明必须监测的电源域与喂狗策略']
     scans = {}
+    source = intent if isinstance(intent, dict) else {}
+    requirement_mode = isinstance(cfg, dict) and 'rail_requirements' in cfg
+    graph_db = board_intent.graph_db(db, source) if requirement_mode else db
+    items = cfg.get('rail_requirements', []) if requirement_mode else []
+    items = items if isinstance(items, list) else []
+    section_valid = not _section_errors(intent, db)
 
     def scanner(state):
-        scan = scans.setdefault(state['id'], _Scan(db, state, declared, excluded))
+        scan = scans.setdefault(state['id'], _Scan(graph_db, state, declared, excluded))
         return scan.supervisors()
 
     def extra(state):
-        scan = scans.setdefault(state['id'], _Scan(db, state, declared, excluded))
-        return {'rails': scan.rails(scan.supervisors())}
+        scan = scans.setdefault(state['id'], _Scan(graph_db, state, declared, excluded))
+        rails = scan.rails(scan.supervisors())
+        if requirement_mode:
+            for rail in rails:
+                rail['observation_gaps'] = sorted(rail['gaps'] + (
+                    ['rail-unmonitored:' + rail['net']] if not rail['monitor'] else []))
+                matches = [item for item in items if isinstance(item, dict)
+                           and item.get('state') == state['id'] and item.get('net') == rail['net']]
+                valid = (section_valid and len(matches) == 1
+                         and not _requirement_errors(matches[0], db, source, state, scan, rails))
+                rail['scope_qualified'] = bool(valid)
+                rail['requirement'] = matches[0] if valid else None
+                if valid:
+                    rail['gaps'] = [gap for gap in rail['gaps'] if gap != 'rail-identity:' + rail['net']]
+                else:
+                    rail['gaps'] = sorted(set(rail['gaps'] + ['rail-requirement:' + rail['net']]))
+            return {'rails': rails, 'rail_requirements_declared': True}
+        return {'rails': rails}
 
     return inv.build(db, intent, 'supervision', 'supervisors', scanner, gaps, extra=extra)
 
@@ -220,8 +346,10 @@ class SupervisionChecker(Checker):
                 trigger=['supervision-rails:' + state['id']],
                 handoff=handoff({'required': False}, 'APPLICABLE'))
             check['inventory_gaps'] = sorted(
-                {'rail-unmonitored:' + rail['net'] for rail in rails if not rail['monitor']}
-                | {gap for rail in rails for gap in rail['gaps']})
+                {'rail-unmonitored:' + rail['net'] for rail in rails if not rail['monitor']
+                 and not (rail.get('scope_qualified') and rail['requirement']['required'] is False)}
+                | {gap for rail in rails for gap in rail['gaps']}
+                | (set(state['gaps']) if state.get('rail_requirements_declared') else set()))
 
     def cold_findings(self, lint, inventory):
         for state in inventory['states']:

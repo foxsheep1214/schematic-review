@@ -194,7 +194,7 @@ Cadence 的 `PIN_NUMBER` 可能是 BGA 字母数字脚号，且 `PINUSE` 与 `PI
 解析器保留 `declared_pinname` / `declared_pintype`：来自符号 primitive 的完整脚表（含未连接脚），
 不是官方封装定义。必须与 `pin2net` 及官方 pinout 双向差集，解析过的引脚覆盖率不等于物理脚覆盖率。
 自检拒绝跨网重复物理脚、索引不互反、网络引用缺失器件、缺失 primitive 及导出日志 ERROR/中止。
-`--no-strict` 仅供诊断，输出 integrity.self_check_passed=false 的数据不能准出。
+严格模式自检失败时仍写出 `db.json`（`integrity.self_check_passed=false`）并以退出码 2 结束，可直接用它定位缺口；`--no-strict` 只把退出码改为 0。self_check_passed=false 的数据不能准出，`validate_review.py` 会将其列为阻断项。
 缺日志仍需在输入一致性项记录，不能假定导出成功；确认是历史追加日志时分离本次导出记录另行留证。
 
 严格失败先区分编号/归网丢失、功能名/类型覆盖不足、官方库存差集与导出中止；缺功能名不等于硬件断路，
@@ -275,7 +275,7 @@ input/passive/free/no_connect 时，另列 `unnamed_jumper_contact_pins`，按�
 
 不为无名称电阻/电容等补造 pinname，不将 passive 强行转成信号或电源脚。此处理仅修正
 解析完整性判据；不替代原厂 pinout、极性、额定值和实际连接审查。Cadence/旧适配器没有
-原生类型契约时保留原有名称覆盖率检查。使用 `parse_kicad.py` 默认严格检查，不用 `--no-strict` 掩盖缺口。
+原生类型契约时保留原有名称覆盖率检查。使用 `parse_kicad.py` 默认严格检查；严格失败后的 `db.json` 用来定位缺口，不用 `--no-strict` 掩盖缺口。
 
 
 ### I²C外部端口与局部判据
@@ -310,3 +310,29 @@ input/passive/free/no_connect 时，另列 `unnamed_jumper_contact_pins`，按�
 计算及下游移交必须指向同一真实通道。发现配对错误时保留旧记录，逐条修正受影响路径与
 任务，重新对账父子结果；不把记录修正当作硬件已改动或新增已发生故障。硬件可实现某个
 方向/PIO功能不证明实际固件 pinmux 或模式，配置与默认高阻/恢复顺序仍需独立受控证据。
+
+### 逐电源轨的监控要求与来源身份
+
+PWR-T04 按需求决定哪些域必须监控。`supervision.schema_version=2` 可增加
+`rail_requirements` 数组；每项只绑定一个实际 `net` 和一个 `intent.assemblies` 的 `state`，
+写 `required`（真布尔）、`criterion`（明确监控要求或不要求的范围依据）、`citation`（受控出处），
+以及 `identity`：
+
+- `source_node`：该轨实际来源的物理节点；`source_role` 为 `external_supply` 或 `rail_driver`。
+- `part`：实际来源器件的 `part`、`prim`、`value`、`jedec` 四字段快照（空字段保留空字符串）。
+- `pin_name`：该来源脚的实际名称；`native_pintypes`：来源器件全部原生节点/类型的快照，无此原生索引时写空对象。
+- `citation`：该来源角色与物理身份的定位出处。
+
+声明须绑定当前 `input_sha256`，来源须在本装配实际已贴、位于该真实电源轨，名称与身份快照吻合。
+外供源须有已核连接器类型/连接器触点身份，或明确书面外供角色加完整的原生 passive 触点结构；
+有原生类型时，声明与导出节点/类型须完整一致且全部 passive。只靠 J 位号或把 IC 的 power_in/input
+声明成外供源不成立。板内 `rail_driver` 必须匹配 PowerTree 实际回溯的来源节点；已有原生类型时须为输出。
+这些资格只证明书面声明与原生结构相符，不证明出处语义真实、精确机械变体、额定值、阈值、动作或 UVLO；
+原厂资料与受控需求仍须人工逐项核实，其他身份 OPEN 不因本声明关闭。
+
+清单保留 `observation_gaps` 原始发现，另存 `scope_qualified` 与有效 `requirement`，按新上下文重建
+清单摘要与计划。有效 `required=false` 只解除该轨×装配状态的未监测阻断；有效来源身份只解除该轨的
+名称线索身份缺口。`required=true` 无监测、数组模式下未声明/UNKNOWN、缺出处、来源不存在/DNP、
+身份不完整/错配、过期绑定或其他装配缺口仍阻止 PASS。重复声明不能任选一条，其他轨和状态不继承。
+PWR-T04 仍适用且等待人工审查，声明不自动产生 PASS；已有监控器不豁免其他轨，内部 UVLO 不伪装为
+SENSE/RESET 拓扑。没有 `rail_requirements` 的旧配置保持原扫描与阻断行为，`exclusions` 不排除轨覆盖。
