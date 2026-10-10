@@ -1,0 +1,1091 @@
+{
+ "frozen": "2026-10-10",
+ "candidate_from": "SR main@5fa6d3b",
+ "method": "候选值由 main@5fa6d3b 生成；每个字段对照原始 XML 独立重算（缺名脚、去耦组电容归属、器件清单）或按方法文档逐行审读（检查数、NA 数、DOC-Q01）后冻结。与 main 现值不同的字段记入 known_deviations。",
+ "cases": {
+  "r01-thingplus-esp32s3": {
+   "verification": "独立读原始 XML：无未命名的非无源功能脚，libpart 齐全，两页均有 sheetpath，严格自检通过成立。15 个候选去耦组的直连电容与独立计算逐组一致；component-kind 缺口来自 SparkFun-Capacitor 库（非 Device:C，不按位号推断种类），属保守合同行为。unverified 器件为 8 个三端及以上的非无源件，两端件（LED、肖特基、按键）未列，符合规则。",
+   "fields": {
+    "parse.strict_exit": 0,
+    "parse.strict_db_written": true,
+    "parse.self_check_passed": true,
+    "parse.missing_functional_pins": [],
+    "parse.parts": 66,
+    "parse.nets": 72,
+    "lint.DOC-A01_executed": true,
+    "lint.DOC-A02_executed": true,
+    "plan.DOC-Q01": [
+     {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "applicability": "APPLICABLE",
+      "readiness": "READY"
+     }
+    ],
+    "plan.checks_total": 186,
+    "plan.not_applicable": 0,
+    "decoupling.discovery_gaps": [
+     "unverified-device-pinout:D6",
+     "unverified-device-pinout:U1",
+     "unverified-device-pinout:U10",
+     "unverified-device-pinout:U2",
+     "unverified-device-pinout:U3",
+     "unverified-device-pinout:U4",
+     "unverified-device-pinout:U5",
+     "unverified-device-pinout:U6"
+    ],
+    "decoupling.pin_names_resolved_by_official_pinout": [],
+    "decoupling.group_gaps": {
+     "UNSPECIFIED/candidate:D6:3.3V_P": [
+      "component-kind:C3",
+      "component-kind:C4",
+      "component-kind:C5",
+      "component-kind:C8",
+      "confirm-group-and-return:candidate:D6:3.3V_P",
+      "official-full-pinout:D6",
+      "population:C3",
+      "population:C4",
+      "population:C5",
+      "population:C8",
+      "population:D6"
+     ],
+     "UNSPECIFIED/candidate:J1:VUSB": [
+      "component-kind:C9",
+      "confirm-group-and-return:candidate:J1:VUSB",
+      "official-full-pinout:J1",
+      "population:C9",
+      "population:J1"
+     ],
+     "UNSPECIFIED/candidate:J2:3.3V_P": [
+      "component-kind:C3",
+      "component-kind:C4",
+      "component-kind:C5",
+      "component-kind:C8",
+      "confirm-group-and-return:candidate:J2:3.3V_P",
+      "official-full-pinout:J2",
+      "population:C3",
+      "population:C4",
+      "population:C5",
+      "population:C8",
+      "population:J2"
+     ],
+     "UNSPECIFIED/candidate:U1:3.3V_P": [
+      "component-kind:C3",
+      "component-kind:C4",
+      "component-kind:C5",
+      "component-kind:C8",
+      "confirm-group-and-return:candidate:U1:3.3V_P",
+      "official-full-pinout:U1",
+      "population:C3",
+      "population:C4",
+      "population:C5",
+      "population:C8",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U1:VIN": [
+      "component-kind:C10",
+      "component-kind:C14",
+      "confirm-group-and-return:candidate:U1:VIN",
+      "official-full-pinout:U1",
+      "population:C10",
+      "population:C14",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U10:3.3V": [
+      "component-kind:C1",
+      "component-kind:C11",
+      "component-kind:C13",
+      "component-kind:C7",
+      "confirm-group-and-return:candidate:U10:3.3V",
+      "official-full-pinout:U10",
+      "population:C1",
+      "population:C11",
+      "population:C13",
+      "population:C7",
+      "population:U10"
+     ],
+     "UNSPECIFIED/candidate:U10:VBATT": [
+      "component-kind:C12",
+      "component-kind:C2",
+      "confirm-group-and-return:candidate:U10:VBATT",
+      "official-full-pinout:U10",
+      "population:C12",
+      "population:C2",
+      "population:U10"
+     ],
+     "UNSPECIFIED/candidate:U10:VUSB": [
+      "component-kind:C9",
+      "confirm-group-and-return:candidate:U10:VUSB",
+      "official-full-pinout:U10",
+      "population:C9",
+      "population:U10"
+     ],
+     "UNSPECIFIED/candidate:U2:VUSB": [
+      "component-kind:C9",
+      "confirm-group-and-return:candidate:U2:VUSB",
+      "official-full-pinout:U2",
+      "population:C9",
+      "population:U2"
+     ],
+     "UNSPECIFIED/candidate:U3:3.3V": [
+      "component-kind:C1",
+      "component-kind:C11",
+      "component-kind:C13",
+      "component-kind:C7",
+      "confirm-group-and-return:candidate:U3:3.3V",
+      "official-full-pinout:U3",
+      "population:C1",
+      "population:C11",
+      "population:C13",
+      "population:C7",
+      "population:U3"
+     ],
+     "UNSPECIFIED/candidate:U4:VBATT": [
+      "component-kind:C12",
+      "component-kind:C2",
+      "confirm-group-and-return:candidate:U4:VBATT",
+      "official-full-pinout:U4",
+      "population:C12",
+      "population:C2",
+      "population:U4"
+     ],
+     "UNSPECIFIED/candidate:U5:VBATT": [
+      "component-kind:C12",
+      "component-kind:C2",
+      "confirm-group-and-return:candidate:U5:VBATT",
+      "official-full-pinout:U5",
+      "population:C12",
+      "population:C2",
+      "population:U5"
+     ],
+     "UNSPECIFIED/candidate:U5:VUSB": [
+      "component-kind:C9",
+      "confirm-group-and-return:candidate:U5:VUSB",
+      "official-full-pinout:U5",
+      "population:C9",
+      "population:U5"
+     ],
+     "UNSPECIFIED/candidate:U6:3.3V": [
+      "component-kind:C1",
+      "component-kind:C11",
+      "component-kind:C13",
+      "component-kind:C7",
+      "confirm-group-and-return:candidate:U6:3.3V",
+      "official-full-pinout:U6",
+      "population:C1",
+      "population:C11",
+      "population:C13",
+      "population:C7",
+      "population:U6"
+     ],
+     "UNSPECIFIED/candidate:U6:VIN": [
+      "component-kind:C10",
+      "component-kind:C14",
+      "confirm-group-and-return:candidate:U6:VIN",
+      "official-full-pinout:U6",
+      "population:C10",
+      "population:C14",
+      "population:U6"
+     ]
+    }
+   },
+   "known_deviations": {
+    "lint.DOC-A01_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    },
+    "lint.DOC-A02_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    }
+   }
+  },
+  "r02-dasduino-coreplus": {
+   "verification": "独立扫描未命名功能脚得 X1.2/X1.3/X1.4（晶振库符号 GND 脚为 power_in、输出脚无名）及 JP5/JP6 三焊盘跳线的 6 个 input 脚；跳线触点按编号识别、单列为 unnamed_jumper_contact_pins，不计入缺名，符合 DOC-Q01 口径，故 missing_functional_pins=X1.2/3/4，严格自检失败成立。去耦 10 组电容集合与独立计算一致；自检失败故每组带 netlist-integrity/export；X1:GND 组因 power_in 脚在 GND 上、无回流网而带 need-one-explicit-return-net。K1/K2/K8（K 前缀连接器）被列为 unverified，偏保守但不错。",
+   "fields": {
+    "parse.strict_exit": 2,
+    "parse.strict_db_written": true,
+    "parse.self_check_passed": false,
+    "parse.missing_functional_pins": [
+     "X1.2",
+     "X1.3",
+     "X1.4"
+    ],
+    "parse.parts": 87,
+    "parse.nets": 142,
+    "lint.DOC-A01_executed": true,
+    "lint.DOC-A02_executed": true,
+    "plan.DOC-Q01": [
+     {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "applicability": "APPLICABLE",
+      "readiness": "READY"
+     }
+    ],
+    "plan.checks_total": 198,
+    "plan.not_applicable": 0,
+    "decoupling.discovery_gaps": [
+     "netlist-integrity/export",
+     "unverified-device-pinout:D4",
+     "unverified-device-pinout:K1",
+     "unverified-device-pinout:K2",
+     "unverified-device-pinout:K8",
+     "unverified-device-pinout:Q1",
+     "unverified-device-pinout:Q2",
+     "unverified-device-pinout:U1",
+     "unverified-device-pinout:U2",
+     "unverified-device-pinout:U3",
+     "unverified-device-pinout:U4",
+     "unverified-device-pinout:U5",
+     "unverified-device-pinout:U6",
+     "unverified-device-pinout:X1"
+    ],
+    "decoupling.pin_names_resolved_by_official_pinout": [],
+    "decoupling.group_gaps": {
+     "UNSPECIFIED/candidate:D4:Net-(D4-VDD)": [
+      "component-kind:C4",
+      "confirm-group-and-return:candidate:D4:Net-(D4-VDD)",
+      "netlist-integrity/export",
+      "official-full-pinout:D4",
+      "population:C4",
+      "population:D4"
+     ],
+     "UNSPECIFIED/candidate:K2:Net-(F1-Pad2)": [
+      "confirm-group-and-return:candidate:K2:Net-(F1-Pad2)",
+      "netlist-integrity/export",
+      "official-full-pinout:K2",
+      "population:K2"
+     ],
+     "UNSPECIFIED/candidate:K8:3V3_MICROSD": [
+      "component-kind:C10",
+      "component-kind:C11",
+      "component-kind:C24",
+      "component-kind:C9",
+      "confirm-group-and-return:candidate:K8:3V3_MICROSD",
+      "netlist-integrity/export",
+      "official-full-pinout:K8",
+      "population:C10",
+      "population:C11",
+      "population:C24",
+      "population:C9",
+      "population:K8"
+     ],
+     "UNSPECIFIED/candidate:U1:VUSB": [
+      "component-kind:C1",
+      "component-kind:C8",
+      "confirm-group-and-return:candidate:U1:VUSB",
+      "netlist-integrity/export",
+      "official-full-pinout:U1",
+      "population:C1",
+      "population:C8",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U3:VUSB": [
+      "component-kind:C1",
+      "component-kind:C8",
+      "confirm-group-and-return:candidate:U3:VUSB",
+      "netlist-integrity/export",
+      "official-full-pinout:U3",
+      "population:C1",
+      "population:C8",
+      "population:U3"
+     ],
+     "UNSPECIFIED/candidate:U4:Net-(U4-AVCC)": [
+      "component-kind:C22",
+      "confirm-group-and-return:candidate:U4:Net-(U4-AVCC)",
+      "netlist-integrity/export",
+      "official-full-pinout:U4",
+      "population:C22",
+      "population:U4"
+     ],
+     "UNSPECIFIED/candidate:U4:VCC": [
+      "component-kind:C12",
+      "component-kind:C13",
+      "component-kind:C14",
+      "component-kind:C15",
+      "component-kind:C18",
+      "component-kind:C19",
+      "component-kind:C20",
+      "component-kind:C21",
+      "component-kind:C25",
+      "component-kind:C3",
+      "confirm-group-and-return:candidate:U4:VCC",
+      "netlist-integrity/export",
+      "official-full-pinout:U4",
+      "population:C12",
+      "population:C13",
+      "population:C14",
+      "population:C15",
+      "population:C18",
+      "population:C19",
+      "population:C20",
+      "population:C21",
+      "population:C25",
+      "population:C3",
+      "population:U4"
+     ],
+     "UNSPECIFIED/candidate:U6:3V3_MICROSD": [
+      "component-kind:C10",
+      "component-kind:C11",
+      "component-kind:C24",
+      "component-kind:C9",
+      "confirm-group-and-return:candidate:U6:3V3_MICROSD",
+      "netlist-integrity/export",
+      "official-full-pinout:U6",
+      "population:C10",
+      "population:C11",
+      "population:C24",
+      "population:C9",
+      "population:U6"
+     ],
+     "UNSPECIFIED/candidate:U6:VCC": [
+      "component-kind:C12",
+      "component-kind:C13",
+      "component-kind:C14",
+      "component-kind:C15",
+      "component-kind:C18",
+      "component-kind:C19",
+      "component-kind:C20",
+      "component-kind:C21",
+      "component-kind:C25",
+      "component-kind:C3",
+      "confirm-group-and-return:candidate:U6:VCC",
+      "netlist-integrity/export",
+      "official-full-pinout:U6",
+      "population:C12",
+      "population:C13",
+      "population:C14",
+      "population:C15",
+      "population:C18",
+      "population:C19",
+      "population:C20",
+      "population:C21",
+      "population:C25",
+      "population:C3",
+      "population:U6"
+     ],
+     "UNSPECIFIED/candidate:X1:GND": [
+      "confirm-group-and-return:candidate:X1:GND",
+      "need-one-explicit-return-net",
+      "netlist-integrity/export",
+      "official-full-pinout:X1",
+      "population:X1"
+     ]
+    }
+   },
+   "known_deviations": {
+    "parse.strict_db_written": {
+     "observed": false,
+     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
+    },
+    "lint.DOC-A01_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    },
+    "lint.DOC-A02_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    }
+   }
+  },
+  "r03-nrf9151-feather": {
+   "verification": "独立扫描未命名功能脚只有 U8.4（TS5A3166 控制输入 IN，库符号无名），严格自检失败成立。29 组电容集合与独立计算一致；每组带 netlist-integrity/export；U7:GND 组带 supply-return-same-net。unverified 含 H3/H4（单焊盘安装孔，非两端件故列出，偏保守）。DNP 件（U6 等）在冷跑无装配状态时仍按 population:REF 记缺口，符合规则。",
+   "fields": {
+    "parse.strict_exit": 2,
+    "parse.strict_db_written": true,
+    "parse.self_check_passed": false,
+    "parse.missing_functional_pins": [
+     "U8.4"
+    ],
+    "parse.parts": 113,
+    "parse.nets": 175,
+    "lint.DOC-A01_executed": true,
+    "lint.DOC-A02_executed": true,
+    "plan.DOC-Q01": [
+     {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "applicability": "APPLICABLE",
+      "readiness": "READY"
+     }
+    ],
+    "plan.checks_total": 249,
+    "plan.not_applicable": 0,
+    "decoupling.discovery_gaps": [
+     "netlist-integrity/export",
+     "unverified-device-pinout:D1",
+     "unverified-device-pinout:D2",
+     "unverified-device-pinout:H3",
+     "unverified-device-pinout:H4",
+     "unverified-device-pinout:RN2",
+     "unverified-device-pinout:RN3",
+     "unverified-device-pinout:RN4",
+     "unverified-device-pinout:RN5",
+     "unverified-device-pinout:SW1",
+     "unverified-device-pinout:SW2",
+     "unverified-device-pinout:SW3",
+     "unverified-device-pinout:U1",
+     "unverified-device-pinout:U10",
+     "unverified-device-pinout:U11",
+     "unverified-device-pinout:U12",
+     "unverified-device-pinout:U2",
+     "unverified-device-pinout:U3",
+     "unverified-device-pinout:U4",
+     "unverified-device-pinout:U5",
+     "unverified-device-pinout:U6",
+     "unverified-device-pinout:U7",
+     "unverified-device-pinout:U8",
+     "unverified-device-pinout:U9"
+    ],
+    "decoupling.pin_names_resolved_by_official_pinout": [],
+    "decoupling.group_gaps": {
+     "UNSPECIFIED/candidate:J3:VBUS": [
+      "confirm-group-and-return:candidate:J3:VBUS",
+      "netlist-integrity/export",
+      "official-full-pinout:J3",
+      "population:C1",
+      "population:J3"
+     ],
+     "UNSPECIFIED/candidate:J5:+3V3": [
+      "confirm-group-and-return:candidate:J5:+3V3",
+      "netlist-integrity/export",
+      "official-full-pinout:J5",
+      "population:C23",
+      "population:C25",
+      "population:C30",
+      "population:C32",
+      "population:C33",
+      "population:C43",
+      "population:C8",
+      "population:J5"
+     ],
+     "UNSPECIFIED/candidate:U1:/Debugger/RP2040_VDDIO": [
+      "confirm-group-and-return:candidate:U1:/Debugger/RP2040_VDDIO",
+      "netlist-integrity/export",
+      "official-full-pinout:U1",
+      "population:C12",
+      "population:C15",
+      "population:C16",
+      "population:C19",
+      "population:C20",
+      "population:C21",
+      "population:C47",
+      "population:C5",
+      "population:C6",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U10:+3V3": [
+      "confirm-group-and-return:candidate:U10:+3V3",
+      "netlist-integrity/export",
+      "official-full-pinout:U10",
+      "population:C23",
+      "population:C25",
+      "population:C30",
+      "population:C32",
+      "population:C33",
+      "population:C43",
+      "population:C8",
+      "population:U10"
+     ],
+     "UNSPECIFIED/candidate:U11:+3V3": [
+      "confirm-group-and-return:candidate:U11:+3V3",
+      "netlist-integrity/export",
+      "official-full-pinout:U11",
+      "population:C23",
+      "population:C25",
+      "population:C30",
+      "population:C32",
+      "population:C33",
+      "population:C43",
+      "population:C8",
+      "population:U11"
+     ],
+     "UNSPECIFIED/candidate:U11:/Debugger/RP2040_VDDIO": [
+      "confirm-group-and-return:candidate:U11:/Debugger/RP2040_VDDIO",
+      "netlist-integrity/export",
+      "official-full-pinout:U11",
+      "population:C12",
+      "population:C15",
+      "population:C16",
+      "population:C19",
+      "population:C20",
+      "population:C21",
+      "population:C47",
+      "population:C5",
+      "population:C6",
+      "population:U11"
+     ],
+     "UNSPECIFIED/candidate:U12:+3V3": [
+      "confirm-group-and-return:candidate:U12:+3V3",
+      "netlist-integrity/export",
+      "official-full-pinout:U12",
+      "population:C23",
+      "population:C25",
+      "population:C30",
+      "population:C32",
+      "population:C33",
+      "population:C43",
+      "population:C8",
+      "population:U12"
+     ],
+     "UNSPECIFIED/candidate:U12:/Processor/SIM_VCC": [
+      "confirm-group-and-return:candidate:U12:/Processor/SIM_VCC",
+      "netlist-integrity/export",
+      "official-full-pinout:U12",
+      "population:C37",
+      "population:U12"
+     ],
+     "UNSPECIFIED/candidate:U12:Net-(U12-VDD)": [
+      "confirm-group-and-return:candidate:U12:Net-(U12-VDD)",
+      "netlist-integrity/export",
+      "official-full-pinout:U12",
+      "population:U12"
+     ],
+     "UNSPECIFIED/candidate:U12:unconnected-(U12-VIO-Pad29)": [
+      "confirm-group-and-return:candidate:U12:unconnected-(U12-VIO-Pad29)",
+      "netlist-integrity/export",
+      "official-full-pinout:U12",
+      "population:U12"
+     ],
+     "UNSPECIFIED/candidate:U2:+3V3": [
+      "confirm-group-and-return:candidate:U2:+3V3",
+      "netlist-integrity/export",
+      "official-full-pinout:U2",
+      "population:C23",
+      "population:C25",
+      "population:C30",
+      "population:C32",
+      "population:C33",
+      "population:C43",
+      "population:C8",
+      "population:U2"
+     ],
+     "UNSPECIFIED/candidate:U2:Net-(U2-PVDD)": [
+      "confirm-group-and-return:candidate:U2:Net-(U2-PVDD)",
+      "netlist-integrity/export",
+      "official-full-pinout:U2",
+      "population:C36",
+      "population:C4",
+      "population:C40",
+      "population:C44",
+      "population:U2"
+     ],
+     "UNSPECIFIED/candidate:U2:Net-(U2-VBUSOUT)": [
+      "confirm-group-and-return:candidate:U2:Net-(U2-VBUSOUT)",
+      "netlist-integrity/export",
+      "official-full-pinout:U2",
+      "population:C3",
+      "population:U2"
+     ],
+     "UNSPECIFIED/candidate:U2:Net-(U2-VOUT1)": [
+      "confirm-group-and-return:candidate:U2:Net-(U2-VOUT1)",
+      "netlist-integrity/export",
+      "official-full-pinout:U2",
+      "population:C11",
+      "population:C29",
+      "population:C42",
+      "population:U2"
+     ],
+     "UNSPECIFIED/candidate:U2:Net-(U2-VOUT2)": [
+      "confirm-group-and-return:candidate:U2:Net-(U2-VOUT2)",
+      "netlist-integrity/export",
+      "official-full-pinout:U2",
+      "population:C24",
+      "population:C31",
+      "population:U2"
+     ],
+     "UNSPECIFIED/candidate:U2:VBAT": [
+      "confirm-group-and-return:candidate:U2:VBAT",
+      "netlist-integrity/export",
+      "official-full-pinout:U2",
+      "population:C2",
+      "population:U2"
+     ],
+     "UNSPECIFIED/candidate:U2:VBUS": [
+      "confirm-group-and-return:candidate:U2:VBUS",
+      "netlist-integrity/export",
+      "official-full-pinout:U2",
+      "population:C1",
+      "population:U2"
+     ],
+     "UNSPECIFIED/candidate:U2:VSYS": [
+      "confirm-group-and-return:candidate:U2:VSYS",
+      "netlist-integrity/export",
+      "official-full-pinout:U2",
+      "population:C10",
+      "population:C26",
+      "population:C27",
+      "population:C28",
+      "population:C45",
+      "population:C46",
+      "population:U2"
+     ],
+     "UNSPECIFIED/candidate:U3:/Processor/SIM_VCC": [
+      "confirm-group-and-return:candidate:U3:/Processor/SIM_VCC",
+      "netlist-integrity/export",
+      "official-full-pinout:U3",
+      "population:C37",
+      "population:U3"
+     ],
+     "UNSPECIFIED/candidate:U3:unconnected-(U3-VPP-PadS5)": [
+      "confirm-group-and-return:candidate:U3:unconnected-(U3-VPP-PadS5)",
+      "netlist-integrity/export",
+      "official-full-pinout:U3",
+      "population:U3"
+     ],
+     "UNSPECIFIED/candidate:U4:+3V3": [
+      "confirm-group-and-return:candidate:U4:+3V3",
+      "netlist-integrity/export",
+      "official-full-pinout:U4",
+      "population:C23",
+      "population:C25",
+      "population:C30",
+      "population:C32",
+      "population:C33",
+      "population:C43",
+      "population:C8",
+      "population:U4"
+     ],
+     "UNSPECIFIED/candidate:U5:+1V1": [
+      "confirm-group-and-return:candidate:U5:+1V1",
+      "netlist-integrity/export",
+      "official-full-pinout:U5",
+      "population:C13",
+      "population:C14",
+      "population:C17",
+      "population:U5"
+     ],
+     "UNSPECIFIED/candidate:U5:/Debugger/RP2040_VDDIO": [
+      "confirm-group-and-return:candidate:U5:/Debugger/RP2040_VDDIO",
+      "netlist-integrity/export",
+      "official-full-pinout:U5",
+      "population:C12",
+      "population:C15",
+      "population:C16",
+      "population:C19",
+      "population:C20",
+      "population:C21",
+      "population:C47",
+      "population:C5",
+      "population:C6",
+      "population:U5"
+     ],
+     "UNSPECIFIED/candidate:U5:VCC": [
+      "confirm-group-and-return:candidate:U5:VCC",
+      "netlist-integrity/export",
+      "official-full-pinout:U5",
+      "population:C18",
+      "population:C22",
+      "population:C39",
+      "population:U5"
+     ],
+     "UNSPECIFIED/candidate:U6:/Processor/SIM_VCC": [
+      "confirm-group-and-return:candidate:U6:/Processor/SIM_VCC",
+      "netlist-integrity/export",
+      "official-full-pinout:U6",
+      "population:C37",
+      "population:U6"
+     ],
+     "UNSPECIFIED/candidate:U7:+3V3": [
+      "confirm-group-and-return:candidate:U7:+3V3",
+      "netlist-integrity/export",
+      "official-full-pinout:U7",
+      "population:C23",
+      "population:C25",
+      "population:C30",
+      "population:C32",
+      "population:C33",
+      "population:C43",
+      "population:C8",
+      "population:U7"
+     ],
+     "UNSPECIFIED/candidate:U7:GND": [
+      "confirm-group-and-return:candidate:U7:GND",
+      "netlist-integrity/export",
+      "official-full-pinout:U7",
+      "population:U7",
+      "supply-return-same-net"
+     ],
+     "UNSPECIFIED/candidate:U8:+3V3": [
+      "confirm-group-and-return:candidate:U8:+3V3",
+      "netlist-integrity/export",
+      "official-full-pinout:U8",
+      "population:C23",
+      "population:C25",
+      "population:C30",
+      "population:C32",
+      "population:C33",
+      "population:C43",
+      "population:C8",
+      "population:U8"
+     ],
+     "UNSPECIFIED/candidate:U9:/Debugger/RP2040_VDDIO": [
+      "confirm-group-and-return:candidate:U9:/Debugger/RP2040_VDDIO",
+      "netlist-integrity/export",
+      "official-full-pinout:U9",
+      "population:C12",
+      "population:C15",
+      "population:C16",
+      "population:C19",
+      "population:C20",
+      "population:C21",
+      "population:C47",
+      "population:C5",
+      "population:C6",
+      "population:U9"
+     ]
+    }
+   },
+   "known_deviations": {
+    "parse.strict_db_written": {
+     "observed": false,
+     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
+    },
+    "lint.DOC-A01_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    },
+    "lint.DOC-A02_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    }
+   }
+  },
+  "r04-host-usb-pmod": {
+   "verification": "独立核对：C1 跨 +3V3/GND，C2、C3 跨 +5V/GND；U1(TPS61099) 的 VI/VOUT/SW 三个 power_in/power_out 脚各成候选组，电容归属正确。SW 组是开关节点（库符号把 SW 标为 power_in），候选组带 confirm-group-and-return，须人工排除，属合同内的保守行为。检查数 49 = 板级/逐对象项 + 3 组 × 4 条去耦规则，逐行看过。",
+   "fields": {
+    "parse.strict_exit": 0,
+    "parse.strict_db_written": true,
+    "parse.self_check_passed": true,
+    "parse.missing_functional_pins": [],
+    "parse.parts": 12,
+    "parse.nets": 9,
+    "lint.DOC-A01_executed": true,
+    "lint.DOC-A02_executed": true,
+    "plan.DOC-Q01": [
+     {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "applicability": "APPLICABLE",
+      "readiness": "READY"
+     }
+    ],
+    "plan.checks_total": 49,
+    "plan.not_applicable": 0,
+    "decoupling.discovery_gaps": [
+     "unverified-device-pinout:D1",
+     "unverified-device-pinout:U1"
+    ],
+    "decoupling.pin_names_resolved_by_official_pinout": [],
+    "decoupling.group_gaps": {
+     "UNSPECIFIED/candidate:U1:+3V3": [
+      "confirm-group-and-return:candidate:U1:+3V3",
+      "official-full-pinout:U1",
+      "population:C1",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U1:+5V": [
+      "confirm-group-and-return:candidate:U1:+5V",
+      "official-full-pinout:U1",
+      "population:C2",
+      "population:C3",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U1:/02_boost/SW": [
+      "confirm-group-and-return:candidate:U1:/02_boost/SW",
+      "official-full-pinout:U1",
+      "population:U1"
+     ]
+    }
+   },
+   "known_deviations": {
+    "lint.DOC-A01_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    },
+    "lint.DOC-A02_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    }
+   }
+  },
+  "r04-c1-return-moved": {
+   "verification": "与 r04 唯一差别是 C1.2 改接 +3V3（两脚同网）。C1 不再是直连供电/回流电容，因此只从 +3V3 组的 population 缺口中消失，其余字段与 r04 相同。注意：本基准只锁定去耦清单的变化，不断言 SR 会对 C1 自身出发现。",
+   "fields": {
+    "parse.strict_exit": 0,
+    "parse.strict_db_written": true,
+    "parse.self_check_passed": true,
+    "parse.missing_functional_pins": [],
+    "parse.parts": 12,
+    "parse.nets": 9,
+    "lint.DOC-A01_executed": true,
+    "lint.DOC-A02_executed": true,
+    "plan.DOC-Q01": [
+     {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "applicability": "APPLICABLE",
+      "readiness": "READY"
+     }
+    ],
+    "plan.checks_total": 49,
+    "plan.not_applicable": 0,
+    "decoupling.discovery_gaps": [
+     "unverified-device-pinout:D1",
+     "unverified-device-pinout:U1"
+    ],
+    "decoupling.pin_names_resolved_by_official_pinout": [],
+    "decoupling.group_gaps": {
+     "UNSPECIFIED/candidate:U1:+3V3": [
+      "confirm-group-and-return:candidate:U1:+3V3",
+      "official-full-pinout:U1",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U1:+5V": [
+      "confirm-group-and-return:candidate:U1:+5V",
+      "official-full-pinout:U1",
+      "population:C2",
+      "population:C3",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U1:/02_boost/SW": [
+      "confirm-group-and-return:candidate:U1:/02_boost/SW",
+      "official-full-pinout:U1",
+      "population:U1"
+     ]
+    }
+   },
+   "known_deviations": {
+    "lint.DOC-A01_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    },
+    "lint.DOC-A02_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    }
+   }
+  },
+  "r05-lipo-charger": {
+   "verification": "独立核对：C1 跨 USB_5V/GND，C2 跨 BAT_POS/GND，C3 跨 PROT_VDD/BAT_NEG（U2 回流在 BAT_NEG），四组电容归属正确；J1:USB_5V 因 USB 插座 VBUS 为 power_out 成候选组，带 confirm 缺口，偏保守。",
+   "fields": {
+    "parse.strict_exit": 0,
+    "parse.strict_db_written": true,
+    "parse.self_check_passed": true,
+    "parse.missing_functional_pins": [],
+    "parse.parts": 12,
+    "parse.nets": 11,
+    "lint.DOC-A01_executed": true,
+    "lint.DOC-A02_executed": true,
+    "plan.DOC-Q01": [
+     {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "applicability": "APPLICABLE",
+      "readiness": "READY"
+     }
+    ],
+    "plan.checks_total": 63,
+    "plan.not_applicable": 0,
+    "decoupling.discovery_gaps": [
+     "unverified-device-pinout:U1",
+     "unverified-device-pinout:U2"
+    ],
+    "decoupling.pin_names_resolved_by_official_pinout": [],
+    "decoupling.group_gaps": {
+     "UNSPECIFIED/candidate:J1:USB_5V": [
+      "confirm-group-and-return:candidate:J1:USB_5V",
+      "official-full-pinout:J1",
+      "population:C1",
+      "population:J1"
+     ],
+     "UNSPECIFIED/candidate:U1:BAT_POS": [
+      "confirm-group-and-return:candidate:U1:BAT_POS",
+      "official-full-pinout:U1",
+      "population:C2",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U1:USB_5V": [
+      "confirm-group-and-return:candidate:U1:USB_5V",
+      "official-full-pinout:U1",
+      "population:C1",
+      "population:U1"
+     ],
+     "UNSPECIFIED/candidate:U2:/03_protection/PROT_VDD": [
+      "confirm-group-and-return:candidate:U2:/03_protection/PROT_VDD",
+      "official-full-pinout:U2",
+      "population:C3",
+      "population:U2"
+     ]
+    }
+   },
+   "known_deviations": {
+    "lint.DOC-A01_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    },
+    "lint.DOC-A02_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    }
+   }
+  },
+  "rh-ad8495-thermocouple": {
+   "verification": "独立扫描未命名功能脚只有 U201.6（KiCad 库 AD8495 符号 OUT 脚无名），与演练记录一致。冷跑无脚表：U201 的 +VS/-VS 名字不匹配电源/地正则，-VS 所在的 GND 被当成候选供电组，两组都无回流网，C204/C205 被拒（not-direct-supply-return-pair），并带 netlist-integrity/export。这是没有脚表时的保守结果，正确分组见 pinmap 用例。",
+   "fields": {
+    "parse.strict_exit": 2,
+    "parse.strict_db_written": true,
+    "parse.self_check_passed": false,
+    "parse.missing_functional_pins": [
+     "U201.6"
+    ],
+    "parse.parts": 13,
+    "parse.nets": 9,
+    "lint.DOC-A01_executed": true,
+    "lint.DOC-A02_executed": true,
+    "plan.DOC-Q01": [
+     {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "applicability": "APPLICABLE",
+      "readiness": "READY"
+     }
+    ],
+    "plan.checks_total": 52,
+    "plan.not_applicable": 0,
+    "decoupling.discovery_gaps": [
+     "netlist-integrity/export",
+     "unverified-device-pinout:U201",
+     "unverified-device-pinout:U202"
+    ],
+    "decoupling.pin_names_resolved_by_official_pinout": [],
+    "decoupling.group_gaps": {
+     "UNSPECIFIED/candidate:U201:GND": [
+      "confirm-group-and-return:candidate:U201:GND",
+      "need-one-explicit-return-net",
+      "netlist-integrity/export",
+      "official-full-pinout:U201",
+      "population:U201"
+     ],
+     "UNSPECIFIED/candidate:U201:VCC": [
+      "confirm-group-and-return:candidate:U201:VCC",
+      "need-one-explicit-return-net",
+      "netlist-integrity/export",
+      "official-full-pinout:U201",
+      "population:U201"
+     ]
+    }
+   },
+   "known_deviations": {
+    "parse.strict_db_written": {
+     "observed": false,
+     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
+    },
+    "lint.DOC-A01_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    },
+    "lint.DOC-A02_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    }
+   }
+  },
+  "rh-ad8495-thermocouple-nolog": {
+   "verification": "与 rh-ad8495-thermocouple 相同，唯一差别是不给 --log：DOC-A01/A02 跳过是正确行为（无任何导出证据）。",
+   "fields": {
+    "parse.strict_exit": 2,
+    "parse.strict_db_written": true,
+    "parse.self_check_passed": false,
+    "parse.missing_functional_pins": [
+     "U201.6"
+    ],
+    "parse.parts": 13,
+    "parse.nets": 9,
+    "lint.DOC-A01_executed": false,
+    "lint.DOC-A02_executed": false,
+    "plan.DOC-Q01": [
+     {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "applicability": "APPLICABLE",
+      "readiness": "READY"
+     }
+    ],
+    "plan.checks_total": 52,
+    "plan.not_applicable": 0,
+    "decoupling.discovery_gaps": [
+     "netlist-integrity/export",
+     "unverified-device-pinout:U201",
+     "unverified-device-pinout:U202"
+    ],
+    "decoupling.pin_names_resolved_by_official_pinout": [],
+    "decoupling.group_gaps": {
+     "UNSPECIFIED/candidate:U201:GND": [
+      "confirm-group-and-return:candidate:U201:GND",
+      "need-one-explicit-return-net",
+      "netlist-integrity/export",
+      "official-full-pinout:U201",
+      "population:U201"
+     ],
+     "UNSPECIFIED/candidate:U201:VCC": [
+      "confirm-group-and-return:candidate:U201:VCC",
+      "need-one-explicit-return-net",
+      "netlist-integrity/export",
+      "official-full-pinout:U201",
+      "population:U201"
+     ]
+    }
+   },
+   "known_deviations": {
+    "parse.strict_db_written": {
+     "observed": false,
+     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
+    }
+   }
+  },
+  "rh-ad8495-thermocouple-pinmap": {
+   "verification": "intent 只含演练 SR 主审写的 U201/U202 官方脚表（ADI Rev.D Table 5、TI SLVS543S Table 5-1，pinout_complete=true）。U201.6 在脚表中声明为 OUT/other，自检唯一问题就是这个缺名，因此按 5fa6d3b 去耦不加整网缺口、列入 pin_names_resolved_by_official_pinout；-VS 由脚表定为 return，只剩 VCC 组，C204/C205（VCC–GND，独立核对）在组内。检查数比冷跑少 4 = 少一组 × 4 条去耦规则。DOC-Q01 与 self_check_passed=false 不变。",
+   "fields": {
+    "parse.strict_exit": 2,
+    "parse.strict_db_written": true,
+    "parse.self_check_passed": false,
+    "parse.missing_functional_pins": [
+     "U201.6"
+    ],
+    "parse.parts": 13,
+    "parse.nets": 9,
+    "lint.DOC-A01_executed": true,
+    "lint.DOC-A02_executed": true,
+    "plan.DOC-Q01": [
+     {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "applicability": "APPLICABLE",
+      "readiness": "READY"
+     }
+    ],
+    "plan.checks_total": 48,
+    "plan.not_applicable": 0,
+    "decoupling.discovery_gaps": [],
+    "decoupling.pin_names_resolved_by_official_pinout": [
+     "U201.6"
+    ],
+    "decoupling.group_gaps": {
+     "UNSPECIFIED/candidate:U201:VCC": [
+      "confirm-group-and-return:candidate:U201:VCC",
+      "population:C204",
+      "population:C205",
+      "population:U201"
+     ]
+    }
+   },
+   "known_deviations": {
+    "parse.strict_db_written": {
+     "observed": false,
+     "reason": "严格自检失败时 main@5fa6d3b 退出 2 且不写 db；交接包 sr-rehearsal-fixes.patch（Claude交接-2026-10-10 二之一）改为照写 db（self_check_passed=false）、退出码仍为 2，尚未发布到 main"
+    },
+    "lint.DOC-A01_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    },
+    "lint.DOC-A02_executed": {
+     "observed": false,
+     "reason": "给了 --log 但日志为空（kicad-cli 干净导出时的实际情况）时 main@5fa6d3b 当作未提供日志、跳过 DOC-A01/A02；sr-rehearsal-fixes.patch 改为按零命中执行，尚未发布到 main"
+    }
+   }
+  }
+ }
+}

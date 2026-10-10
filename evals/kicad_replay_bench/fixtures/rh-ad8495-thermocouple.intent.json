@@ -1,0 +1,68 @@
+{
+ "schema_version": 3,
+ "input_sha256": "c2a1c6c3e1c39fa345d50e3637a4913ac5b95970910cc642745bd50589c61882",
+ "devices": {
+  "U201": {
+   "mpn": "AD8495ARMZ",
+   "package": "MSOP-8 (RM-8)",
+   "identity_citation": "ADI AD8494/5/6/7 Rev.D p16 Ordering Guide: AD8495ARMZ −40…+125 °C 8-Lead MSOP RM-8；实例 Value/MPN 字段 AD8495ARMZ",
+   "citation": "ADI AD8494/5/6/7 Rev.D p6 Figure 2 / Table 5 Pin Function Descriptions",
+   "pinout_complete": true,
+   "pins": {
+    "1": {
+     "name": "-IN",
+     "role": "other"
+    },
+    "2": {
+     "name": "REF",
+     "role": "other"
+    },
+    "3": {
+     "name": "-VS",
+     "role": "return"
+    },
+    "4": {
+     "name": "NC",
+     "role": "nc"
+    },
+    "5": {
+     "name": "SENSE",
+     "role": "other"
+    },
+    "6": {
+     "name": "OUT",
+     "role": "other"
+    },
+    "7": {
+     "name": "+VS",
+     "role": "power"
+    },
+    "8": {
+     "name": "+IN",
+     "role": "other"
+    }
+   }
+  },
+  "U202": {
+   "mpn": "TL431ACDBZ",
+   "package": "SOT-23-3 (DBZ)",
+   "identity_citation": "TI SLVS543S p4 DBZ 封装图与 Table 5-1；订货码 TL431ACDBZR/T（0–70 °C）见 Package Option Addendum",
+   "citation": "TI SLVS543S (May 2024) p4 Table 5-1 Pin Functions, TL431x DBZ: CATHODE=1, REF=2, ANODE=3",
+   "pinout_complete": true,
+   "pins": {
+    "1": {
+     "name": "CATHODE",
+     "role": "other"
+    },
+    "2": {
+     "name": "REF",
+     "role": "other"
+    },
+    "3": {
+     "name": "ANODE",
+     "role": "return"
+    }
+   }
+  }
+ }
+}

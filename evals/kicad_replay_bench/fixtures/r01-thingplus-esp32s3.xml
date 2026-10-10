@@ -1,0 +1,1779 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+ <design>
+  <source>/tmp/codex-work/asg-calib-10/round-01/asg-delivery/project/SparkFun_Thing_Plus_ESP32-S3.kicad_sch</source>
+  <date>2026-10-08T20:27:04</date>
+  <tool>Eeschema 10.0.6</tool>
+  <sheet number="1" name="/">
+      </sheet>
+  <sheet number="2" name="/Peripherals/">
+      </sheet>
+ </design>
+ <components>
+  <comp ref="C1">
+   <value>22uF</value>
+   <footprint>SparkFun-Capacitor:C_0603_1608Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="22uF_0603_6.3V_20%" description="Unpolarized capacitor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C6">
+   <value>1.0uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="1.0uF_0402_16V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C7">
+   <value>4.7uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="4.7uF_0402_6.3V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C10">
+   <value>2.2uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="2.2uF_0402_10V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C11">
+   <value>0.1uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="0.1uF_0402_6.3V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C13">
+   <value>1.0uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="1.0uF_0402_16V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="D1">
+   <value>Green</value>
+   <footprint>SparkFun-LED:LED_0603_1608Metric_Green</footprint>
+   <libsource lib="SparkFun-LED" part="LED_Green_0603" description="Light emitting diode" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="D2">
+   <value>BAT60A</value>
+   <footprint>SparkFun-Semiconductor-Standard:SOD-323</footprint>
+   <libsource lib="SparkFun-DiscreteSemi" part="D_Schottky_3A_10V_0.28V" description="Schottky diode" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="C" />
+      <pin num="A" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="D3">
+   <value>BAT60A</value>
+   <footprint>SparkFun-Semiconductor-Standard:SOD-323</footprint>
+   <libsource lib="SparkFun-DiscreteSemi" part="D_Schottky_3A_10V_0.28V" description="Schottky diode" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="C" />
+      <pin num="A" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="D5">
+   <value>Red</value>
+   <footprint>SparkFun-LED:LED_0603_1608Metric_Red</footprint>
+   <libsource lib="SparkFun-LED" part="LED_Red_0603" description="Light emitting diode" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="FID1">
+   <value>Fiducial_0.5mm</value>
+   <footprint>SparkFun-Aesthetic:Fiducial_0.5mm_Mask1mm</footprint>
+   <libsource lib="SparkFun-Aesthetic" part="Fiducial_0.5mm" description="Fiducial Marker" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="FID2">
+   <value>Fiducial_0.5mm</value>
+   <footprint>SparkFun-Aesthetic:Fiducial_0.5mm_Mask1mm</footprint>
+   <libsource lib="SparkFun-Aesthetic" part="Fiducial_0.5mm" description="Fiducial Marker" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="FID3">
+   <value>Fiducial_0.5mm</value>
+   <footprint>SparkFun-Aesthetic:Fiducial_0.5mm_Mask1mm</footprint>
+   <libsource lib="SparkFun-Aesthetic" part="Fiducial_0.5mm" description="Fiducial Marker" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="FID4">
+   <value>Fiducial_0.5mm</value>
+   <footprint>SparkFun-Aesthetic:Fiducial_0.5mm_Mask1mm</footprint>
+   <libsource lib="SparkFun-Aesthetic" part="Fiducial_0.5mm" description="Fiducial Marker" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="G1">
+   <value>qwiic_Logo</value>
+   <libsource lib="SparkFun-Aesthetic" part="qwiic_Logo" description="" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="G2">
+   <value>SparkFun_Logo</value>
+   <libsource lib="SparkFun-Aesthetic" part="SparkFun_Logo" description="" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="G3">
+   <value>OSHW_Logo</value>
+   <footprint>SparkFun-Aesthetic:Creative_Commons_License</footprint>
+   <libsource lib="SparkFun-Aesthetic" part="OSHW_Logo" description="" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="J1">
+   <value>USB_C_Receptacle</value>
+   <footprint>SparkFun-Connector:USB-C_16</footprint>
+   <libsource lib="SparkFun-Connector" part="USB_C_Receptacle" description="USB 2.0-only Type-C Receptacle connector" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="S" />
+      <pin num="NC1" />
+      <pin num="NC2" />
+      <pin num="NC3" />
+      <pin num="GND" />
+      <pin num="A8" />
+      <pin num="B8" />
+      <pin num="VBUS" />
+      <pin num="A6" />
+      <pin num="B6" />
+      <pin num="A7" />
+      <pin num="B7" />
+      <pin num="A5" />
+      <pin num="B5" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="JP1">
+   <value>~</value>
+   <footprint>SparkFun-Jumper:Jumper_2_NC_Trace</footprint>
+   <libsource lib="SparkFun-Jumper" part="SolderJumper_2_Bridged" description="Solder Jumper, 2-pole, closed/bridged" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R7">
+   <value>330</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="330_0402" description="Resistor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R8">
+   <value>10k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="10k_0402" description="Resistor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R9">
+   <value>4.7k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="4.7k_0402" description="Resistor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R10">
+   <value>5.1k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="5.1k_0402" description="Resistor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R11">
+   <value>5.1k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="5.1k_0402" description="Resistor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R13">
+   <value>100k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="ST1">
+   <value>Standoff</value>
+   <footprint>SparkFun-Hardware:Standoff</footprint>
+   <libsource lib="SparkFun-Hardware" part="Standoff" description="Drill holes for mechanically mounting via screws, standoffs, etc." />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="ST3">
+   <value>Standoff</value>
+   <footprint>SparkFun-Hardware:Standoff</footprint>
+   <libsource lib="SparkFun-Hardware" part="Standoff" description="Drill holes for mechanically mounting via screws, standoffs, etc." />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="SW1">
+   <value>SMD_4.6x2.8mm_h2.5mm</value>
+   <footprint>SparkFun-Switch:Push_SMD_4.6x2.8mm_h2.5mm</footprint>
+   <libsource lib="SparkFun-Switch" part="SPST_Push_SMD_4.6x2.8mm_h2.5mm" description="Single Pole Single Throw (SPST) switch" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="SW2">
+   <value>SMD_4.6x2.8mm_h2.5mm</value>
+   <footprint>SparkFun-Switch:Push_SMD_4.6x2.8mm_h2.5mm</footprint>
+   <libsource lib="SparkFun-Switch" part="SPST_Push_SMD_4.6x2.8mm_h2.5mm" description="Single Pole Single Throw (SPST) switch" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="TP2">
+   <value>1.0mm</value>
+   <footprint>SparkFun-Connector:TestPoint-1.0mm</footprint>
+   <libsource lib="SparkFun-Connector" part="TestPoint_1.0mm" description="Test Point" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U2">
+   <value>DT1042-04SO</value>
+   <footprint>SparkFun-Semiconductor-Standard:SOT23-6</footprint>
+   <libsource lib="SparkFun-DiscreteSemi" part="D_TVS_ESD_USB" description="Very low capacitance ESD protection diode, 4 data-line, SOT-23-6" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="6" />
+      <pin num="1" />
+      <pin num="5" />
+      <pin num="2" />
+      <pin num="4" />
+      <pin num="3" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U3">
+   <value>ESP32-S3-MINI</value>
+   <footprint>SparkFun-RF:ESP32-MINI</footprint>
+   <libsource lib="SparkFun-RF" part="ESP32-S3-MINI" description="" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="45" />
+      <pin num="3" />
+      <pin num="65" />
+      <pin num="64" />
+      <pin num="56" />
+      <pin num="55" />
+      <pin num="54" />
+      <pin num="53" />
+      <pin num="52" />
+      <pin num="51" />
+      <pin num="50" />
+      <pin num="49" />
+      <pin num="48" />
+      <pin num="47" />
+      <pin num="46" />
+      <pin num="2" />
+      <pin num="43" />
+      <pin num="42" />
+      <pin num="59" />
+      <pin num="60" />
+      <pin num="61" />
+      <pin num="62" />
+      <pin num="1" />
+      <pin num="58" />
+      <pin num="63" />
+      <pin num="57" />
+      <pin num="39" />
+      <pin num="40" />
+      <pin num="4" />
+      <pin num="7" />
+      <pin num="41" />
+      <pin num="44" />
+      <pin num="5" />
+      <pin num="6" />
+      <pin num="8" />
+      <pin num="9" />
+      <pin num="10" />
+      <pin num="11" />
+      <pin num="12" />
+      <pin num="13" />
+      <pin num="14" />
+      <pin num="15" />
+      <pin num="16" />
+      <pin num="17" />
+      <pin num="18" />
+      <pin num="19" />
+      <pin num="20" />
+      <pin num="21" />
+      <pin num="22" />
+      <pin num="23" />
+      <pin num="24" />
+      <pin num="25" />
+      <pin num="26" />
+      <pin num="28" />
+      <pin num="29" />
+      <pin num="31" />
+      <pin num="32" />
+      <pin num="33" />
+      <pin num="34" />
+      <pin num="35" />
+      <pin num="36" />
+      <pin num="37" />
+      <pin num="38" />
+      <pin num="27" />
+      <pin num="30" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U6">
+   <value>RT9080-3.3</value>
+   <footprint>SparkFun-Semiconductor-Standard:SOT23-5</footprint>
+   <libsource lib="SparkFun-Regulator" part="RT9080-3.3" description="600mA low dropout linear regulator, with enable pin, 3.8V-6V input voltage range, 3.3V fixed positive output, SOT-23-5" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="3" />
+      <pin num="2" />
+      <pin num="4" />
+      <pin num="5" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U9">
+   <value>~</value>
+   <footprint>SparkFun-Aesthetic:Ordering_Instructions</footprint>
+   <libsource lib="SparkFun-Aesthetic" part="Ordering_Instructions" description="" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins />
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U10">
+   <value>ThingPlus</value>
+   <footprint>SparkFun-Board:ThingPlus</footprint>
+   <libsource lib="SparkFun-Board" part="ThingPlus" description="Thing Plus Board Outline" />
+   <sheetpath names="/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="12" />
+      <pin num="10" />
+      <pin num="27" />
+      <pin num="28" />
+      <pin num="11" />
+      <pin num="26" />
+      <pin num="25" />
+      <pin num="14" />
+      <pin num="15" />
+      <pin num="1" />
+      <pin num="2" />
+      <pin num="16" />
+      <pin num="17" />
+      <pin num="18" />
+      <pin num="24" />
+      <pin num="23" />
+      <pin num="22" />
+      <pin num="21" />
+      <pin num="20" />
+      <pin num="19" />
+      <pin num="9" />
+      <pin num="8" />
+      <pin num="7" />
+      <pin num="6" />
+      <pin num="5" />
+      <pin num="4" />
+      <pin num="3" />
+      <pin num="13" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C2">
+   <value>0.1uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="0.1uF_0402_6.3V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C3">
+   <value>10uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="10uF_0402_6.3V_20%" description="Unpolarized capacitor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C4">
+   <value>10uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="10uF_0402_6.3V_20%" description="Unpolarized capacitor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C5">
+   <value>0.1uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="0.1uF_0402_6.3V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C8">
+   <value>0.1uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="0.1uF_0402_6.3V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C9">
+   <value>4.7uF</value>
+   <footprint>SparkFun-Capacitor:C_0603_1608Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="4.7uF_0603_35V_20%" description="Unpolarized capacitor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C12">
+   <value>4.7uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="4.7uF_0402_6.3V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C14">
+   <value>2.2uF</value>
+   <footprint>SparkFun-Capacitor:C_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Capacitor" part="2.2uF_0402_10V_10%" description="Unpolarized capacitor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="D4">
+   <value>Yellow</value>
+   <footprint>SparkFun-LED:LED_0603_1608Metric_Yellow</footprint>
+   <libsource lib="SparkFun-LED" part="LED_Yellow_0603" description="Light emitting diode" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="D6">
+   <value>WS2812B</value>
+   <footprint>SparkFun-LED:WS2812_2020</footprint>
+   <libsource lib="SparkFun-LED" part="WS2812B_2020" description="RGB LED with integrated controller" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="3" />
+      <pin num="4" />
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="J2">
+   <value>microSD_Friction</value>
+   <footprint>SparkFun-Connector:microSD_Friction_Fit_Common</footprint>
+   <libsource lib="SparkFun-Connector" part="microSD_Friction" description="Micro SD socket External Pin" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="4" />
+      <pin num="2" />
+      <pin num="1" />
+      <pin num="8" />
+      <pin num="7" />
+      <pin num="5" />
+      <pin num="3" />
+      <pin num="9" />
+      <pin num="10" />
+      <pin num="6" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="J3">
+   <value>JST_2mm_LiPo</value>
+   <footprint>SparkFun-Connector:JST_SMD_2.0mm-2</footprint>
+   <libsource lib="SparkFun-Connector" part="Conn_01x02_JST_2mm_LiPo" description="2 Pin 2mm JST Battery Connector" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+      <pin num="NC1" />
+      <pin num="NC2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="J4">
+   <value>Qwiic_RA</value>
+   <footprint>SparkFun-Connector:JST_SMD_1.0mm-4_RA</footprint>
+   <libsource lib="SparkFun-Connector" part="Qwiic_Right_Angle" description="4 pin JST 1mm polarized connector for I2C" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="4" />
+      <pin num="3" />
+      <pin num="2" />
+      <pin num="1" />
+      <pin num="NC1" />
+      <pin num="NC2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="JP2">
+   <value>~</value>
+   <footprint>SparkFun-Jumper:Jumper_2_NC_Trace</footprint>
+   <libsource lib="SparkFun-Jumper" part="SolderJumper_2_Bridged" description="Solder Jumper, 2-pole, closed/bridged" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="JP3">
+   <value>~</value>
+   <footprint>SparkFun-Jumper:Jumper_2_NC_Trace</footprint>
+   <libsource lib="SparkFun-Jumper" part="SolderJumper_2_Bridged" description="Solder Jumper, 2-pole, closed/bridged" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R1">
+   <value>10k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="10k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R2">
+   <value>10k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="10k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R3">
+   <value>10k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="10k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R4">
+   <value>10k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="10k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R5">
+   <value>10k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="10k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R6">
+   <value>10k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="10k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R12">
+   <value>2.2k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="2.2k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R14">
+   <value>1k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="1k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R15">
+   <value>2.2k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="2.2k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R16">
+   <value>2.0k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="2.0k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R17">
+   <value>10k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="10k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R19">
+   <value>100k</value>
+   <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+   <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="TP1">
+   <value>1.0mm</value>
+   <footprint>SparkFun-Connector:TestPoint-1.0mm</footprint>
+   <libsource lib="SparkFun-Connector" part="TestPoint_1.0mm" description="Test Point" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U1">
+   <value>RT9080-3.3</value>
+   <footprint>SparkFun-Semiconductor-Standard:SOT23-5</footprint>
+   <libsource lib="SparkFun-Regulator" part="RT9080-3.3" description="600mA low dropout linear regulator, with enable pin, 3.8V-6V input voltage range, 3.3V fixed positive output, SOT-23-5" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="3" />
+      <pin num="2" />
+      <pin num="4" />
+      <pin num="5" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U4">
+   <value>MAX17048</value>
+   <footprint>SparkFun-Semiconductor-Standard:DFN-8</footprint>
+   <libsource lib="SparkFun-IC-Power" part="MAX17048" description="Fuela Gauge IC for Batteries" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="6" />
+      <pin num="1" />
+      <pin num="3" />
+      <pin num="4" />
+      <pin num="9" />
+      <pin num="8" />
+      <pin num="7" />
+      <pin num="5" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U5">
+   <value>MCP73831</value>
+   <footprint>SparkFun-Semiconductor-Standard:SOT23-5</footprint>
+   <libsource lib="SparkFun-IC-Power" part="MCP73831" description="Single cell, Li-Ion/Li-Po charge management controller, 4.50V, Tri-State Status Output, in SOT23-5 package" />
+   <sheetpath names="/Peripherals/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="4" />
+      <pin num="2" />
+      <pin num="3" />
+      <pin num="5" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+ </components>
+ <libparts>
+  <libpart lib="SparkFun-Aesthetic" part="Fiducial_0.5mm">
+      </libpart>
+  <libpart lib="SparkFun-Aesthetic" part="OSHW_Logo">
+      </libpart>
+  <libpart lib="SparkFun-Aesthetic" part="Ordering_Instructions">
+      </libpart>
+  <libpart lib="SparkFun-Aesthetic" part="SparkFun_Logo">
+      </libpart>
+  <libpart lib="SparkFun-Aesthetic" part="qwiic_Logo">
+      </libpart>
+  <libpart lib="SparkFun-Board" part="ThingPlus">
+   <pins>
+    <pin num="1" name="SDA" type="bidirectional" />
+    <pin num="2" name="SCL" type="bidirectional" />
+    <pin num="3" name="GPIO6" type="bidirectional" />
+    <pin num="4" name="GPIO5" type="bidirectional" />
+    <pin num="5" name="GPIO4" type="bidirectional" />
+    <pin num="6" name="GPIO3" type="bidirectional" />
+    <pin num="7" name="GPIO2" type="bidirectional" />
+    <pin num="8" name="GPIO1" type="bidirectional" />
+    <pin num="9" name="GPIO0" type="bidirectional" />
+    <pin num="10" name="V_USB" type="power_in" />
+    <pin num="11" name="EN" type="input" />
+    <pin num="12" name="V_BATT" type="power_in" />
+    <pin num="13" name="FREEBIE" type="bidirectional" />
+    <pin num="14" name="TX" type="bidirectional" />
+    <pin num="15" name="RX" type="bidirectional" />
+    <pin num="16" name="POCI" type="bidirectional" />
+    <pin num="17" name="PICO" type="bidirectional" />
+    <pin num="18" name="SCK" type="bidirectional" />
+    <pin num="19" name="A5" type="bidirectional" />
+    <pin num="20" name="A4" type="bidirectional" />
+    <pin num="21" name="A3" type="bidirectional" />
+    <pin num="22" name="A2" type="bidirectional" />
+    <pin num="23" name="A1" type="bidirectional" />
+    <pin num="24" name="A0" type="bidirectional" />
+    <pin num="25" name="GND" type="power_in" />
+    <pin num="26" name="AREF/NC" type="input" />
+    <pin num="27" name="3.3V" type="power_in" />
+    <pin num="28" name="~{RESET}" type="input" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Capacitor" part="0.1uF_0402_6.3V_10%">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Capacitor" part="1.0uF_0402_16V_10%">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Capacitor" part="10uF_0402_6.3V_20%">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Capacitor" part="2.2uF_0402_10V_10%">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Capacitor" part="22uF_0603_6.3V_20%">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Capacitor" part="4.7uF_0402_6.3V_10%">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Capacitor" part="4.7uF_0603_35V_20%">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Connector" part="Conn_01x02_JST_2mm_LiPo">
+   <pins>
+    <pin num="1" name="-" type="passive" />
+    <pin num="2" name="+" type="passive" />
+    <pin num="NC1" name="NC1" type="no_connect" />
+    <pin num="NC2" name="NC2" type="no_connect" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Connector" part="Qwiic_Right_Angle">
+   <pins>
+    <pin num="1" name="Pin_1" type="passive" />
+    <pin num="2" name="Pin_2" type="passive" />
+    <pin num="3" name="Pin_3" type="passive" />
+    <pin num="4" name="Pin_4" type="passive" />
+    <pin num="NC1" name="NC" type="no_connect" />
+    <pin num="NC2" name="NC" type="no_connect" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Connector" part="TestPoint_1.0mm">
+   <pins>
+    <pin num="1" name="1" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Connector" part="USB_C_Receptacle">
+   <pins>
+    <pin num="A5" name="CC1" type="bidirectional" />
+    <pin num="A6" name="D+" type="bidirectional" />
+    <pin num="A7" name="D-" type="bidirectional" />
+    <pin num="A8" name="NC" type="no_connect" />
+    <pin num="B5" name="CC2" type="bidirectional" />
+    <pin num="B6" name="D+" type="bidirectional" />
+    <pin num="B7" name="D-" type="bidirectional" />
+    <pin num="B8" name="NC" type="no_connect" />
+    <pin num="GND" name="GND" type="passive" />
+    <pin num="NC1" name="NC" type="no_connect" />
+    <pin num="NC2" name="NC" type="no_connect" />
+    <pin num="NC3" name="NC" type="no_connect" />
+    <pin num="S" name="SHIELD" type="passive" />
+    <pin num="VBUS" name="VBUS" type="power_out" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Connector" part="microSD_Friction">
+   <pins>
+    <pin num="1" name="DAT2" type="bidirectional" />
+    <pin num="2" name="DAT3/~{CS}" type="bidirectional" />
+    <pin num="3" name="CMD/SDI" type="input" />
+    <pin num="4" name="VDD" type="power_in" />
+    <pin num="5" name="CLK/SCK" type="input" />
+    <pin num="6" name="VSS" type="power_in" />
+    <pin num="7" name="DAT0/SDO" type="bidirectional" />
+    <pin num="8" name="DAT1" type="bidirectional" />
+    <pin num="9" name="DET" type="passive" />
+    <pin num="10" name="SHIELD" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-DiscreteSemi" part="D_Schottky_3A_10V_0.28V">
+   <pins>
+    <pin num="A" name="A" type="passive" />
+    <pin num="C" name="C" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-DiscreteSemi" part="D_TVS_ESD_USB">
+   <pins>
+    <pin num="1" name="I/O1" type="passive" />
+    <pin num="2" name="GND" type="passive" />
+    <pin num="3" name="I/O2" type="passive" />
+    <pin num="4" name="I/O3" type="passive" />
+    <pin num="5" name="VCC" type="passive" />
+    <pin num="6" name="I/O4" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Hardware" part="Standoff">
+      </libpart>
+  <libpart lib="SparkFun-IC-Power" part="MAX17048">
+   <pins>
+    <pin num="1" name="CTG" type="input" />
+    <pin num="2" name="CELL" type="power_in" />
+    <pin num="3" name="VDD" type="power_in" />
+    <pin num="4" name="GND" type="power_in" />
+    <pin num="5" name="~{ALRT}" type="output" />
+    <pin num="6" name="QSTRT" type="input" />
+    <pin num="7" name="SCL" type="bidirectional" />
+    <pin num="8" name="SDA" type="bidirectional" />
+    <pin num="9" name="GND" type="power_in" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-IC-Power" part="MCP73831">
+   <pins>
+    <pin num="1" name="STAT" type="output" />
+    <pin num="2" name="GND" type="power_in" />
+    <pin num="3" name="V_{BAT}" type="power_out" />
+    <pin num="4" name="VIN" type="power_in" />
+    <pin num="5" name="PROG" type="input" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Jumper" part="SolderJumper_2_Bridged">
+   <pins>
+    <pin num="1" name="A" type="passive" />
+    <pin num="2" name="B" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-LED" part="LED_Green_0603">
+   <pins>
+    <pin num="1" name="K" type="passive" />
+    <pin num="2" name="A" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-LED" part="LED_Red_0603">
+   <pins>
+    <pin num="1" name="K" type="passive" />
+    <pin num="2" name="A" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-LED" part="LED_Yellow_0603">
+   <pins>
+    <pin num="1" name="K" type="passive" />
+    <pin num="2" name="A" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-LED" part="WS2812B_2020">
+   <pins>
+    <pin num="1" name="DOUT" type="output" />
+    <pin num="2" name="VSS" type="power_in" />
+    <pin num="3" name="DIN" type="input" />
+    <pin num="4" name="VDD" type="power_in" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-RF" part="ESP32-S3-MINI">
+   <pins>
+    <pin num="1" name="GND" type="power_in" />
+    <pin num="2" name="GND" type="passive" />
+    <pin num="3" name="3V3" type="power_in" />
+    <pin num="4" name="IO0" type="bidirectional" />
+    <pin num="5" name="IOA1" type="bidirectional" />
+    <pin num="6" name="IOA2" type="bidirectional" />
+    <pin num="7" name="IOA3" type="bidirectional" />
+    <pin num="8" name="IOA4" type="bidirectional" />
+    <pin num="9" name="IOA5" type="bidirectional" />
+    <pin num="10" name="IOA6" type="bidirectional" />
+    <pin num="11" name="IOA7" type="bidirectional" />
+    <pin num="12" name="IOA8" type="bidirectional" />
+    <pin num="13" name="IOA9" type="bidirectional" />
+    <pin num="14" name="IOA10" type="bidirectional" />
+    <pin num="15" name="IOA11" type="bidirectional" />
+    <pin num="16" name="IOA12" type="bidirectional" />
+    <pin num="17" name="IOA13" type="bidirectional" />
+    <pin num="18" name="IOA14" type="bidirectional" />
+    <pin num="19" name="IOA15" type="bidirectional" />
+    <pin num="20" name="IOA16" type="bidirectional" />
+    <pin num="21" name="IOA17" type="bidirectional" />
+    <pin num="22" name="IOA18" type="bidirectional" />
+    <pin num="23" name="IOA19" type="bidirectional" />
+    <pin num="24" name="IOA20" type="bidirectional" />
+    <pin num="25" name="IO21" type="bidirectional" />
+    <pin num="26" name="IO26" type="no_connect" />
+    <pin num="27" name="IO47" type="bidirectional" />
+    <pin num="28" name="IO33" type="bidirectional" />
+    <pin num="29" name="IO34" type="bidirectional" />
+    <pin num="30" name="IO48" type="bidirectional" />
+    <pin num="31" name="IO35" type="bidirectional" />
+    <pin num="32" name="IO36" type="bidirectional" />
+    <pin num="33" name="IO37" type="bidirectional" />
+    <pin num="34" name="IO38" type="bidirectional" />
+    <pin num="35" name="IO39" type="bidirectional" />
+    <pin num="36" name="IO40" type="bidirectional" />
+    <pin num="37" name="IO41" type="bidirectional" />
+    <pin num="38" name="IO42" type="bidirectional" />
+    <pin num="39" name="TXD0/IO43" type="bidirectional" />
+    <pin num="40" name="RXD0/IO44" type="bidirectional" />
+    <pin num="41" name="IO45" type="bidirectional" />
+    <pin num="42" name="GND" type="passive" />
+    <pin num="43" name="GND" type="passive" />
+    <pin num="44" name="IO46" type="bidirectional" />
+    <pin num="45" name="EN" type="input" />
+    <pin num="46" name="GND" type="passive" />
+    <pin num="47" name="GND" type="passive" />
+    <pin num="48" name="GND" type="passive" />
+    <pin num="49" name="GND" type="passive" />
+    <pin num="50" name="GND" type="passive" />
+    <pin num="51" name="GND" type="passive" />
+    <pin num="52" name="GND" type="passive" />
+    <pin num="53" name="GND" type="passive" />
+    <pin num="54" name="GND" type="passive" />
+    <pin num="55" name="GND" type="passive" />
+    <pin num="56" name="GND" type="passive" />
+    <pin num="57" name="GND" type="passive" />
+    <pin num="58" name="GND" type="passive" />
+    <pin num="59" name="GND" type="passive" />
+    <pin num="60" name="GND" type="passive" />
+    <pin num="61" name="GND" type="passive" />
+    <pin num="62" name="GND" type="passive" />
+    <pin num="63" name="GND" type="passive" />
+    <pin num="64" name="GND" type="passive" />
+    <pin num="65" name="GND" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Regulator" part="RT9080-3.3">
+   <pins>
+    <pin num="1" name="VIN" type="power_in" />
+    <pin num="2" name="GND" type="power_in" />
+    <pin num="3" name="EN" type="input" />
+    <pin num="4" name="NC" type="no_connect" />
+    <pin num="5" name="VOUT" type="power_out" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Resistor" part="100k_0402">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Resistor" part="10k_0402">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Resistor" part="1k_0402">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Resistor" part="2.0k_0402">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Resistor" part="2.2k_0402">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Resistor" part="330_0402">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Resistor" part="4.7k_0402">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Resistor" part="5.1k_0402">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="SparkFun-Switch" part="SPST_Push_SMD_4.6x2.8mm_h2.5mm">
+   <pins>
+    <pin num="1" name="1" type="passive" />
+    <pin num="2" name="2" type="passive" />
+   </pins>
+  </libpart>
+ </libparts>
+ <nets>
+  <net code="1" name="3.3V" class="Default">
+   <node ref="C1" pin="2" pintype="passive" />
+   <node ref="C11" pin="1" pintype="passive" />
+   <node ref="C13" pin="1" pintype="passive" />
+   <node ref="C7" pin="1" pintype="passive" />
+   <node ref="JP1" pin="2" pinfunction="B_2" pintype="passive" />
+   <node ref="JP2" pin="2" pinfunction="B_2" pintype="passive" />
+   <node ref="R8" pin="1" pintype="passive" />
+   <node ref="U10" pin="27" pinfunction="3.3V_27" pintype="power_in" />
+   <node ref="U3" pin="3" pinfunction="3V3_3" pintype="power_in" />
+   <node ref="U6" pin="5" pinfunction="VOUT_5" pintype="power_out" />
+  </net>
+  <net code="2" name="3.3V_P" class="Default">
+   <node ref="C3" pin="1" pintype="passive" />
+   <node ref="C4" pin="1" pintype="passive" />
+   <node ref="C5" pin="1" pintype="passive" />
+   <node ref="C8" pin="1" pintype="passive" />
+   <node ref="D6" pin="4" pinfunction="VDD_4" pintype="power_in" />
+   <node ref="J2" pin="4" pinfunction="VDD_4" pintype="power_in" />
+   <node ref="J4" pin="2" pinfunction="Pin_2_2" pintype="passive" />
+   <node ref="R1" pin="1" pintype="passive" />
+   <node ref="R12" pin="1" pintype="passive" />
+   <node ref="R15" pin="1" pintype="passive" />
+   <node ref="R2" pin="1" pintype="passive" />
+   <node ref="R3" pin="1" pintype="passive" />
+   <node ref="R4" pin="1" pintype="passive" />
+   <node ref="R5" pin="1" pintype="passive" />
+   <node ref="R6" pin="1" pintype="passive" />
+   <node ref="U1" pin="5" pinfunction="VOUT_5" pintype="power_out" />
+  </net>
+  <net code="3" name="EN" class="Default">
+   <node ref="R13" pin="2" pintype="passive" />
+   <node ref="U10" pin="11" pinfunction="EN_11" pintype="input" />
+   <node ref="U6" pin="3" pinfunction="EN_3" pintype="input" />
+  </net>
+  <net code="4" name="ESP0/STAT" class="Default">
+   <node ref="R7" pin="1" pintype="passive" />
+   <node ref="SW1" pin="1" pinfunction="1_1" pintype="passive" />
+   <node ref="TP2" pin="1" pinfunction="1_1" pintype="passive" />
+   <node ref="U3" pin="4" pinfunction="IO0_4" pintype="bidirectional" />
+  </net>
+  <net code="5" name="ESP1" class="Default">
+   <node ref="U10" pin="3" pinfunction="GPIO6_3" pintype="bidirectional" />
+   <node ref="U3" pin="5" pinfunction="IOA1_5" pintype="bidirectional" />
+  </net>
+  <net code="6" name="ESP2" class="Default">
+   <node ref="U10" pin="4" pinfunction="GPIO5_4" pintype="bidirectional" />
+   <node ref="U3" pin="6" pinfunction="IOA2_6" pintype="bidirectional" />
+  </net>
+  <net code="7" name="ESP4" class="Default">
+   <node ref="U10" pin="5" pinfunction="GPIO4_5" pintype="bidirectional" />
+   <node ref="U3" pin="8" pinfunction="IOA4_8" pintype="bidirectional" />
+  </net>
+  <net code="8" name="ESP5" class="Default">
+   <node ref="U10" pin="6" pinfunction="GPIO3_6" pintype="bidirectional" />
+   <node ref="U3" pin="9" pinfunction="IOA5_9" pintype="bidirectional" />
+  </net>
+  <net code="9" name="ESP6" class="Default">
+   <node ref="U10" pin="7" pinfunction="GPIO2_7" pintype="bidirectional" />
+   <node ref="U3" pin="10" pinfunction="IOA6_10" pintype="bidirectional" />
+  </net>
+  <net code="10" name="ESP7" class="Default">
+   <node ref="U10" pin="8" pinfunction="GPIO1_8" pintype="bidirectional" />
+   <node ref="U3" pin="11" pinfunction="IOA7_11" pintype="bidirectional" />
+  </net>
+  <net code="11" name="ESP8/SDA" class="Default">
+   <node ref="J4" pin="3" pinfunction="Pin_3_3" pintype="passive" />
+   <node ref="R15" pin="2" pintype="passive" />
+   <node ref="U10" pin="1" pinfunction="SDA_1" pintype="bidirectional" />
+   <node ref="U3" pin="12" pinfunction="IOA8_12" pintype="bidirectional" />
+   <node ref="U4" pin="8" pinfunction="SDA_8" pintype="bidirectional" />
+  </net>
+  <net code="12" name="ESP9/SCL" class="Default">
+   <node ref="J4" pin="4" pinfunction="Pin_4_4" pintype="passive" />
+   <node ref="R12" pin="2" pintype="passive" />
+   <node ref="U10" pin="2" pinfunction="SCL_2" pintype="bidirectional" />
+   <node ref="U3" pin="13" pinfunction="IOA9_13" pintype="bidirectional" />
+   <node ref="U4" pin="7" pinfunction="SCL_7" pintype="bidirectional" />
+  </net>
+  <net code="13" name="ESP10/A0" class="Default">
+   <node ref="U10" pin="24" pinfunction="A0_24" pintype="bidirectional" />
+   <node ref="U3" pin="14" pinfunction="IOA10_14" pintype="bidirectional" />
+  </net>
+  <net code="14" name="ESP11/PICO" class="Default">
+   <node ref="U10" pin="17" pinfunction="PICO_17" pintype="bidirectional" />
+   <node ref="U3" pin="15" pinfunction="IOA11_15" pintype="bidirectional" />
+  </net>
+  <net code="15" name="ESP12/SCK" class="Default">
+   <node ref="U10" pin="18" pinfunction="SCK_18" pintype="bidirectional" />
+   <node ref="U3" pin="16" pinfunction="IOA12_16" pintype="bidirectional" />
+  </net>
+  <net code="16" name="ESP13/POCI" class="Default">
+   <node ref="U10" pin="16" pinfunction="POCI_16" pintype="bidirectional" />
+   <node ref="U3" pin="17" pinfunction="IOA13_17" pintype="bidirectional" />
+  </net>
+  <net code="17" name="ESP14/A1" class="Default">
+   <node ref="U10" pin="23" pinfunction="A1_23" pintype="bidirectional" />
+   <node ref="U3" pin="18" pinfunction="IOA14_18" pintype="bidirectional" />
+  </net>
+  <net code="18" name="ESP15/A2" class="Default">
+   <node ref="U10" pin="22" pinfunction="A2_22" pintype="bidirectional" />
+   <node ref="U3" pin="19" pinfunction="IOA15_19" pintype="bidirectional" />
+  </net>
+  <net code="19" name="ESP16/A3" class="Default">
+   <node ref="U10" pin="21" pinfunction="A3_21" pintype="bidirectional" />
+   <node ref="U3" pin="20" pinfunction="IOA16_20" pintype="bidirectional" />
+  </net>
+  <net code="20" name="ESP17/A4" class="Default">
+   <node ref="U10" pin="20" pinfunction="A4_20" pintype="bidirectional" />
+   <node ref="U3" pin="21" pinfunction="IOA17_21" pintype="bidirectional" />
+  </net>
+  <net code="21" name="ESP18/A5" class="Default">
+   <node ref="U10" pin="19" pinfunction="A5_19" pintype="bidirectional" />
+   <node ref="U3" pin="22" pinfunction="IOA18_22" pintype="bidirectional" />
+  </net>
+  <net code="22" name="ESP19/D-" class="Default">
+   <node ref="J1" pin="A7" pinfunction="D-_A7" pintype="bidirectional" />
+   <node ref="J1" pin="B7" pinfunction="D-_B7" pintype="bidirectional" />
+   <node ref="U2" pin="4" pinfunction="I/O3_4" pintype="passive" />
+   <node ref="U3" pin="23" pinfunction="IOA19_23" pintype="bidirectional" />
+  </net>
+  <net code="23" name="ESP20/D+" class="Default">
+   <node ref="J1" pin="A6" pinfunction="D+_A6" pintype="bidirectional" />
+   <node ref="J1" pin="B6" pinfunction="D+_B6" pintype="bidirectional" />
+   <node ref="U2" pin="6" pinfunction="I/O4_6" pintype="passive" />
+   <node ref="U3" pin="24" pinfunction="IOA20_24" pintype="bidirectional" />
+  </net>
+  <net code="24" name="ESP21" class="Default">
+   <node ref="U10" pin="9" pinfunction="GPIO0_9" pintype="bidirectional" />
+   <node ref="U3" pin="25" pinfunction="IO21_25" pintype="bidirectional" />
+  </net>
+  <net code="25" name="ESP33/SDIO3" class="Default">
+   <node ref="J2" pin="2" pinfunction="DAT3/~{CS}_2" pintype="bidirectional" />
+   <node ref="R6" pin="2" pintype="passive" />
+   <node ref="U3" pin="28" pinfunction="IO33_28" pintype="bidirectional" />
+  </net>
+  <net code="26" name="ESP34/SDIO_CMD" class="Default">
+   <node ref="J2" pin="3" pinfunction="CMD/SDI_3" pintype="input" />
+   <node ref="R1" pin="2" pintype="passive" />
+   <node ref="U3" pin="29" pinfunction="IO34_29" pintype="bidirectional" />
+  </net>
+  <net code="27" name="ESP35/~{ALRT}" class="Default">
+   <node ref="U3" pin="31" pinfunction="IO35_31" pintype="bidirectional" />
+   <node ref="U4" pin="5" pinfunction="~{ALRT}_5" pintype="output" />
+  </net>
+  <net code="28" name="ESP38/SDIO_CLK" class="Default">
+   <node ref="J2" pin="5" pinfunction="CLK/SCK_5" pintype="input" />
+   <node ref="R2" pin="2" pintype="passive" />
+   <node ref="U3" pin="34" pinfunction="IO38_34" pintype="bidirectional" />
+  </net>
+  <net code="29" name="ESP39/SDIO0" class="Default">
+   <node ref="J2" pin="7" pinfunction="DAT0/SDO_7" pintype="bidirectional" />
+   <node ref="R3" pin="2" pintype="passive" />
+   <node ref="U3" pin="35" pinfunction="IO39_35" pintype="bidirectional" />
+  </net>
+  <net code="30" name="ESP40/SDIO1" class="Default">
+   <node ref="J2" pin="8" pinfunction="DAT1_8" pintype="bidirectional" />
+   <node ref="R4" pin="2" pintype="passive" />
+   <node ref="U3" pin="36" pinfunction="IO40_36" pintype="bidirectional" />
+  </net>
+  <net code="31" name="ESP41/LP_CTL" class="Default">
+   <node ref="U3" pin="37" pinfunction="IO41_37" pintype="bidirectional" />
+  </net>
+  <net code="32" name="ESP42/FREE" class="Default">
+   <node ref="U10" pin="13" pinfunction="FREEBIE_13" pintype="bidirectional" />
+   <node ref="U3" pin="38" pinfunction="IO42_38" pintype="bidirectional" />
+  </net>
+  <net code="33" name="ESP43/TXO" class="Default">
+   <node ref="U10" pin="14" pinfunction="TX_14" pintype="bidirectional" />
+   <node ref="U3" pin="39" pinfunction="TXD0/IO43_39" pintype="bidirectional" />
+  </net>
+  <net code="34" name="ESP44/RXI" class="Default">
+   <node ref="U10" pin="15" pinfunction="RX_15" pintype="bidirectional" />
+   <node ref="U3" pin="40" pinfunction="RXD0/IO44_40" pintype="bidirectional" />
+  </net>
+  <net code="35" name="ESP45/Q_EN" class="Default">
+   <node ref="R17" pin="2" pintype="passive" />
+   <node ref="R19" pin="1" pintype="passive" />
+   <node ref="U1" pin="3" pinfunction="EN_3" pintype="input" />
+   <node ref="U3" pin="41" pinfunction="IO45_41" pintype="bidirectional" />
+  </net>
+  <net code="36" name="ESP46/LED" class="Default">
+   <node ref="D6" pin="3" pinfunction="DIN_3" pintype="input" />
+   <node ref="U3" pin="44" pinfunction="IO46_44" pintype="bidirectional" />
+  </net>
+  <net code="37" name="ESP47/SDIO2" class="Default">
+   <node ref="J2" pin="1" pinfunction="DAT2_1" pintype="bidirectional" />
+   <node ref="R5" pin="2" pintype="passive" />
+   <node ref="U3" pin="27" pinfunction="IO47_27" pintype="bidirectional" />
+  </net>
+  <net code="38" name="ESP48/SDIO_~{DET}" class="Default">
+   <node ref="J2" pin="9" pinfunction="DET_9" pintype="passive" />
+   <node ref="U3" pin="30" pinfunction="IO48_30" pintype="bidirectional" />
+  </net>
+  <net code="39" name="ESP~{RST}" class="Default">
+   <node ref="C6" pin="1" pintype="passive" />
+   <node ref="R8" pin="2" pintype="passive" />
+   <node ref="SW2" pin="1" pinfunction="1_1" pintype="passive" />
+   <node ref="U10" pin="28" pinfunction="~{RESET}_28" pintype="input" />
+   <node ref="U3" pin="45" pinfunction="EN_45" pintype="input" />
+  </net>
+  <net code="40" name="GND" class="Default">
+   <node ref="C1" pin="1" pintype="passive" />
+   <node ref="C10" pin="2" pintype="passive" />
+   <node ref="C11" pin="2" pintype="passive" />
+   <node ref="C12" pin="2" pintype="passive" />
+   <node ref="C13" pin="2" pintype="passive" />
+   <node ref="C14" pin="2" pintype="passive" />
+   <node ref="C2" pin="2" pintype="passive" />
+   <node ref="C3" pin="2" pintype="passive" />
+   <node ref="C4" pin="2" pintype="passive" />
+   <node ref="C5" pin="2" pintype="passive" />
+   <node ref="C6" pin="2" pintype="passive" />
+   <node ref="C7" pin="2" pintype="passive" />
+   <node ref="C8" pin="2" pintype="passive" />
+   <node ref="C9" pin="2" pintype="passive" />
+   <node ref="D1" pin="1" pinfunction="K_1" pintype="passive" />
+   <node ref="D5" pin="1" pinfunction="K_1" pintype="passive" />
+   <node ref="D6" pin="2" pinfunction="VSS_2" pintype="power_in" />
+   <node ref="J1" pin="GND" pinfunction="GND_GND" pintype="passive" />
+   <node ref="J1" pin="S" pinfunction="SHIELD_S" pintype="passive" />
+   <node ref="J2" pin="10" pinfunction="SHIELD_10" pintype="passive" />
+   <node ref="J2" pin="6" pinfunction="VSS_6" pintype="power_in" />
+   <node ref="J3" pin="1" pinfunction="-_1" pintype="passive" />
+   <node ref="J4" pin="1" pinfunction="Pin_1_1" pintype="passive" />
+   <node ref="R10" pin="1" pintype="passive" />
+   <node ref="R11" pin="2" pintype="passive" />
+   <node ref="R16" pin="2" pintype="passive" />
+   <node ref="R19" pin="2" pintype="passive" />
+   <node ref="SW1" pin="2" pinfunction="2_2" pintype="passive" />
+   <node ref="SW2" pin="2" pinfunction="2_2" pintype="passive" />
+   <node ref="U1" pin="2" pinfunction="GND_2" pintype="power_in" />
+   <node ref="U10" pin="25" pinfunction="GND_25" pintype="power_in" />
+   <node ref="U2" pin="2" pinfunction="GND_2" pintype="passive" />
+   <node ref="U3" pin="1" pinfunction="GND_1" pintype="power_in" />
+   <node ref="U3" pin="2" pinfunction="GND_2" pintype="passive" />
+   <node ref="U3" pin="42" pinfunction="GND_42" pintype="passive" />
+   <node ref="U3" pin="43" pinfunction="GND_43" pintype="passive" />
+   <node ref="U3" pin="46" pinfunction="GND_46" pintype="passive" />
+   <node ref="U3" pin="47" pinfunction="GND_47" pintype="passive" />
+   <node ref="U3" pin="48" pinfunction="GND_48" pintype="passive" />
+   <node ref="U3" pin="49" pinfunction="GND_49" pintype="passive" />
+   <node ref="U3" pin="50" pinfunction="GND_50" pintype="passive" />
+   <node ref="U3" pin="51" pinfunction="GND_51" pintype="passive" />
+   <node ref="U3" pin="52" pinfunction="GND_52" pintype="passive" />
+   <node ref="U3" pin="53" pinfunction="GND_53" pintype="passive" />
+   <node ref="U3" pin="54" pinfunction="GND_54" pintype="passive" />
+   <node ref="U3" pin="55" pinfunction="GND_55" pintype="passive" />
+   <node ref="U3" pin="56" pinfunction="GND_56" pintype="passive" />
+   <node ref="U3" pin="57" pinfunction="GND_57" pintype="passive" />
+   <node ref="U3" pin="58" pinfunction="GND_58" pintype="passive" />
+   <node ref="U3" pin="59" pinfunction="GND_59" pintype="passive" />
+   <node ref="U3" pin="60" pinfunction="GND_60" pintype="passive" />
+   <node ref="U3" pin="61" pinfunction="GND_61" pintype="passive" />
+   <node ref="U3" pin="62" pinfunction="GND_62" pintype="passive" />
+   <node ref="U3" pin="63" pinfunction="GND_63" pintype="passive" />
+   <node ref="U3" pin="64" pinfunction="GND_64" pintype="passive" />
+   <node ref="U3" pin="65" pinfunction="GND_65" pintype="passive" />
+   <node ref="U4" pin="1" pinfunction="CTG_1" pintype="input" />
+   <node ref="U4" pin="4" pinfunction="GND_4" pintype="power_in" />
+   <node ref="U4" pin="6" pinfunction="QSTRT_6" pintype="input" />
+   <node ref="U4" pin="9" pinfunction="GND_9" pintype="power_in" />
+   <node ref="U5" pin="2" pinfunction="GND_2" pintype="power_in" />
+   <node ref="U6" pin="2" pinfunction="GND_2" pintype="power_in" />
+  </net>
+  <net code="41" name="Net-(D1-A)" class="Default">
+   <node ref="D1" pin="2" pinfunction="A_2" pintype="passive" />
+   <node ref="R7" pin="2" pintype="passive" />
+  </net>
+  <net code="42" name="Net-(D4-A)" class="Default">
+   <node ref="D4" pin="2" pinfunction="A_2" pintype="passive" />
+   <node ref="R14" pin="1" pintype="passive" />
+  </net>
+  <net code="43" name="Net-(D4-K)" class="Default">
+   <node ref="D4" pin="1" pinfunction="K_1" pintype="passive" />
+   <node ref="U5" pin="1" pinfunction="STAT_1" pintype="output" />
+  </net>
+  <net code="44" name="Net-(D5-A)" class="Default">
+   <node ref="D5" pin="2" pinfunction="A_2" pintype="passive" />
+   <node ref="R9" pin="2" pintype="passive" />
+  </net>
+  <net code="45" name="Net-(D6-DOUT)" class="Default">
+   <node ref="D6" pin="1" pinfunction="DOUT_1" pintype="output" />
+   <node ref="TP1" pin="1" pinfunction="1_1" pintype="passive" />
+  </net>
+  <net code="46" name="Net-(J1-CC1)" class="Default">
+   <node ref="J1" pin="A5" pinfunction="CC1_A5" pintype="bidirectional" />
+   <node ref="R11" pin="1" pintype="passive" />
+  </net>
+  <net code="47" name="Net-(J1-CC2)" class="Default">
+   <node ref="J1" pin="B5" pinfunction="CC2_B5" pintype="bidirectional" />
+   <node ref="R10" pin="2" pintype="passive" />
+  </net>
+  <net code="48" name="Net-(JP1-A)" class="Default">
+   <node ref="JP1" pin="1" pinfunction="A_1" pintype="passive" />
+   <node ref="R9" pin="1" pintype="passive" />
+  </net>
+  <net code="49" name="Net-(JP2-A)" class="Default">
+   <node ref="JP2" pin="1" pinfunction="A_1" pintype="passive" />
+   <node ref="R17" pin="1" pintype="passive" />
+  </net>
+  <net code="50" name="Net-(JP3-A)" class="Default">
+   <node ref="JP3" pin="1" pinfunction="A_1" pintype="passive" />
+   <node ref="R14" pin="2" pintype="passive" />
+  </net>
+  <net code="51" name="Net-(U5-PROG)" class="Default">
+   <node ref="R16" pin="1" pintype="passive" />
+   <node ref="U5" pin="5" pinfunction="PROG_5" pintype="input" />
+  </net>
+  <net code="52" name="VBATT" class="Default">
+   <node ref="C12" pin="1" pintype="passive" />
+   <node ref="C2" pin="1" pintype="passive" />
+   <node ref="D3" pin="A" pinfunction="A_A" pintype="passive" />
+   <node ref="J3" pin="2" pinfunction="+_2" pintype="passive" />
+   <node ref="U10" pin="12" pinfunction="V_BATT_12" pintype="power_in" />
+   <node ref="U4" pin="2" pinfunction="CELL_2" pintype="power_in" />
+   <node ref="U4" pin="3" pinfunction="VDD_3" pintype="power_in" />
+   <node ref="U5" pin="3" pinfunction="V_{BAT}_3" pintype="power_out" />
+  </net>
+  <net code="53" name="VIN" class="Default">
+   <node ref="C10" pin="1" pintype="passive" />
+   <node ref="C14" pin="1" pintype="passive" />
+   <node ref="D2" pin="C" pinfunction="C_C" pintype="passive" />
+   <node ref="D3" pin="C" pinfunction="C_C" pintype="passive" />
+   <node ref="R13" pin="1" pintype="passive" />
+   <node ref="U1" pin="1" pinfunction="VIN_1" pintype="power_in" />
+   <node ref="U6" pin="1" pinfunction="VIN_1" pintype="power_in" />
+  </net>
+  <net code="54" name="VUSB" class="Default">
+   <node ref="C9" pin="1" pintype="passive" />
+   <node ref="D2" pin="A" pinfunction="A_A" pintype="passive" />
+   <node ref="J1" pin="VBUS" pinfunction="VBUS_VBUS" pintype="power_out" />
+   <node ref="JP3" pin="2" pinfunction="B_2" pintype="passive" />
+   <node ref="U10" pin="10" pinfunction="V_USB_10" pintype="power_in" />
+   <node ref="U2" pin="5" pinfunction="VCC_5" pintype="passive" />
+   <node ref="U5" pin="4" pinfunction="VIN_4" pintype="power_in" />
+  </net>
+  <net code="55" name="unconnected-(J1-NC-PadA8)" class="Default">
+   <node ref="J1" pin="A8" pinfunction="NC_A8" pintype="no_connect" />
+  </net>
+  <net code="56" name="unconnected-(J1-NC-PadB8)" class="Default">
+   <node ref="J1" pin="B8" pinfunction="NC_B8" pintype="no_connect" />
+  </net>
+  <net code="57" name="unconnected-(J1-NC-PadNC1)" class="Default">
+   <node ref="J1" pin="NC1" pinfunction="NC_NC1" pintype="no_connect" />
+  </net>
+  <net code="58" name="unconnected-(J1-NC-PadNC2)" class="Default">
+   <node ref="J1" pin="NC2" pinfunction="NC_NC2" pintype="no_connect" />
+  </net>
+  <net code="59" name="unconnected-(J1-NC-PadNC3)" class="Default">
+   <node ref="J1" pin="NC3" pinfunction="NC_NC3" pintype="no_connect" />
+  </net>
+  <net code="60" name="unconnected-(J3-PadNC1)" class="Default">
+   <node ref="J3" pin="NC1" pinfunction="NC1_NC1" pintype="no_connect" />
+  </net>
+  <net code="61" name="unconnected-(J3-PadNC2)" class="Default">
+   <node ref="J3" pin="NC2" pinfunction="NC2_NC2" pintype="no_connect" />
+  </net>
+  <net code="62" name="unconnected-(J4-NC-PadNC1)" class="Default">
+   <node ref="J4" pin="NC1" pinfunction="NC_NC1" pintype="no_connect" />
+  </net>
+  <net code="63" name="unconnected-(J4-NC-PadNC2)" class="Default">
+   <node ref="J4" pin="NC2" pinfunction="NC_NC2" pintype="no_connect" />
+  </net>
+  <net code="64" name="unconnected-(U1-NC-Pad4)" class="Default">
+   <node ref="U1" pin="4" pinfunction="NC_4" pintype="no_connect" />
+  </net>
+  <net code="65" name="unconnected-(U2-I/O1-Pad1)" class="Default">
+   <node ref="U2" pin="1" pinfunction="I/O1_1" pintype="passive" />
+  </net>
+  <net code="66" name="unconnected-(U2-I/O2-Pad3)" class="Default">
+   <node ref="U2" pin="3" pinfunction="I/O2_3" pintype="passive" />
+  </net>
+  <net code="67" name="unconnected-(U3-IO26-Pad26)" class="Default">
+   <node ref="U3" pin="26" pinfunction="IO26_26" pintype="no_connect" />
+  </net>
+  <net code="68" name="unconnected-(U3-IO36-Pad32)" class="Default">
+   <node ref="U3" pin="32" pinfunction="IO36_32" pintype="bidirectional" />
+  </net>
+  <net code="69" name="unconnected-(U3-IO37-Pad33)" class="Default">
+   <node ref="U3" pin="33" pinfunction="IO37_33" pintype="bidirectional" />
+  </net>
+  <net code="70" name="unconnected-(U3-IOA3-Pad7)" class="Default">
+   <node ref="U3" pin="7" pinfunction="IOA3_7" pintype="bidirectional" />
+  </net>
+  <net code="71" name="unconnected-(U6-NC-Pad4)" class="Default">
+   <node ref="U6" pin="4" pinfunction="NC_4" pintype="no_connect" />
+  </net>
+  <net code="72" name="unconnected-(U10-AREF/NC-Pad26)" class="Default">
+   <node ref="U10" pin="26" pinfunction="AREF/NC_26" pintype="input" />
+  </net>
+ </nets>
+</export>

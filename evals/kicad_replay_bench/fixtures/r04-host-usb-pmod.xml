@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+ <design>
+  <source>/private/tmp/codex-work/asg-calib-10/round-04/designer/delivery/USB_HOST_BOOST.kicad_sch</source>
+  <date>2026-10-09T20:48:56</date>
+  <tool>Eeschema 10.0.6</tool>
+  <sheet number="1" name="/">
+      </sheet>
+  <sheet number="2" name="/02_boost/">
+      </sheet>
+  <sheet number="3" name="/03_usb_interface/">
+      </sheet>
+ </design>
+ <components>
+  <comp ref="C1">
+   <value>22uF / 10V</value>
+   <fields>
+    <field name="MPN">GRM31CR71A226KE15L</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_boost/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C2">
+   <value>22uF / 10V</value>
+   <fields>
+    <field name="MPN">GRM31CR71A226KE15L</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_boost/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C3">
+   <value>22uF / 10V</value>
+   <fields>
+    <field name="MPN">GRM31CR71A226KE15L</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_boost/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="L1">
+   <value>2.2uH</value>
+   <fields>
+    <field name="MPN">74404024022</field>
+   </fields>
+   <libsource lib="Device" part="L" description="Inductor" />
+   <sheetpath names="/02_boost/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R1">
+   <value>402k / 1%</value>
+   <fields>
+    <field name="MPN">RC0603FR-07402KL</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/02_boost/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R2">
+   <value>100k / 1%</value>
+   <fields>
+    <field name="MPN">RC0603FR-07100KL</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/02_boost/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U1">
+   <value>TPS61099DRVR</value>
+   <footprint>Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm</footprint>
+   <fields>
+    <field name="MPN">TPS61099DRVR</field>
+   </fields>
+   <libsource lib="Round04" part="TPS61099DRVR" description="Boost Converter, 0.7-5.5V Input Voltage, 1A Switch Current, Adjustable 1.8-5.5V Output Voltage, WSON-6" />
+   <sheetpath names="/02_boost/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="6" />
+      <pin num="4" />
+      <pin num="1" />
+      <pin num="5" />
+      <pin num="7" />
+      <pin num="2" />
+      <pin num="3" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="D1">
+   <value>SP0503BAHTG</value>
+   <footprint>Package_TO_SOT_SMD:SOT-143</footprint>
+   <fields>
+    <field name="MPN">SP0503BAHTG</field>
+   </fields>
+   <libsource lib="Power_Protection" part="SP0503BAHT" description="TVS Diode Array, 5.5V Standoff, 3 Channels, SOT-143 package" />
+   <sheetpath names="/03_usb_interface/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="3" />
+      <pin num="1" />
+      <pin num="4" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R3">
+   <value>33R / 1%</value>
+   <fields>
+    <field name="MPN">RC0603FR-0733RL</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/03_usb_interface/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R4">
+   <value>33R / 1%</value>
+   <fields>
+    <field name="MPN">RC0603FR-0733RL</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/03_usb_interface/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R5">
+   <value>15k / 1%</value>
+   <fields>
+    <field name="MPN">RC0603FR-0715KL</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/03_usb_interface/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R6">
+   <value>15k / 1%</value>
+   <fields>
+    <field name="MPN">RC0603FR-0715KL</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/03_usb_interface/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+ </components>
+ <libparts>
+  <libpart lib="Device" part="C">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="L">
+   <pins>
+    <pin num="1" name="1" type="passive" />
+    <pin num="2" name="2" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="R">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Power_Protection" part="SP0503BAHT">
+   <pins>
+    <pin num="1" name="A" type="passive" />
+    <pin num="2" name="K" type="passive" />
+    <pin num="3" name="K" type="passive" />
+    <pin num="4" name="K" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Round04" part="TPS61099DRVR">
+   <pins>
+    <pin num="1" name="GND" type="power_in" />
+    <pin num="2" name="VOUT" type="power_out" />
+    <pin num="3" name="FB" type="passive" />
+    <pin num="4" name="EN" type="input" />
+    <pin num="5" name="SW" type="power_in" />
+    <pin num="6" name="VI" type="power_in" />
+    <pin num="7" name="GND" type="passive" />
+   </pins>
+  </libpart>
+ </libparts>
+ <nets>
+  <net code="1" name="+3V3" class="Default">
+   <node ref="C1" pin="1" pintype="passive" />
+   <node ref="L1" pin="1" pinfunction="1_1" pintype="passive" />
+   <node ref="U1" pin="4" pinfunction="EN_4" pintype="input" />
+   <node ref="U1" pin="6" pinfunction="VI_6" pintype="power_in" />
+  </net>
+  <net code="2" name="+5V" class="Default">
+   <node ref="C2" pin="1" pintype="passive" />
+   <node ref="C3" pin="1" pintype="passive" />
+   <node ref="D1" pin="4" pinfunction="K_4" pintype="passive" />
+   <node ref="R1" pin="1" pintype="passive" />
+   <node ref="U1" pin="2" pinfunction="VOUT_2" pintype="power_out" />
+  </net>
+  <net code="3" name="/02_boost/FB" class="Default">
+   <node ref="R1" pin="2" pintype="passive" />
+   <node ref="R2" pin="1" pintype="passive" />
+   <node ref="U1" pin="3" pinfunction="FB_3" pintype="passive" />
+  </net>
+  <net code="4" name="/02_boost/SW" class="Default">
+   <node ref="L1" pin="2" pinfunction="2_2" pintype="passive" />
+   <node ref="U1" pin="5" pinfunction="SW_5" pintype="power_in" />
+  </net>
+  <net code="5" name="GND" class="Default">
+   <node ref="C1" pin="2" pintype="passive" />
+   <node ref="C2" pin="2" pintype="passive" />
+   <node ref="C3" pin="2" pintype="passive" />
+   <node ref="D1" pin="1" pinfunction="A_1" pintype="passive" />
+   <node ref="R2" pin="2" pintype="passive" />
+   <node ref="R5" pin="2" pintype="passive" />
+   <node ref="R6" pin="2" pintype="passive" />
+   <node ref="U1" pin="1" pinfunction="GND_1" pintype="power_in" />
+   <node ref="U1" pin="7" pinfunction="GND_7" pintype="passive" />
+  </net>
+  <net code="6" name="HOST_DN" class="Default">
+   <node ref="R4" pin="1" pintype="passive" />
+  </net>
+  <net code="7" name="HOST_DP" class="Default">
+   <node ref="R3" pin="1" pintype="passive" />
+  </net>
+  <net code="8" name="USB_DN" class="Default">
+   <node ref="D1" pin="3" pinfunction="K_3" pintype="passive" />
+   <node ref="R4" pin="2" pintype="passive" />
+   <node ref="R6" pin="1" pintype="passive" />
+  </net>
+  <net code="9" name="USB_DP" class="Default">
+   <node ref="D1" pin="2" pinfunction="K_2" pintype="passive" />
+   <node ref="R3" pin="2" pintype="passive" />
+   <node ref="R5" pin="1" pintype="passive" />
+  </net>
+ </nets>
+</export>

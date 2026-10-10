@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+ <design>
+  <source>/tmp/codex-work/asg-calib-10/round-05/designer/delivery/charger_board.kicad_sch</source>
+  <date>2026-10-09T23:44:14</date>
+  <tool>Eeschema 10.0.6</tool>
+  <sheet number="1" name="/">
+      </sheet>
+  <sheet number="2" name="/02_charger/">
+      </sheet>
+  <sheet number="3" name="/03_protection/">
+      </sheet>
+ </design>
+ <components>
+  <comp ref="C1">
+   <value>4.7uF 10V</value>
+   <fields>
+    <field name="MPN">GRM21BR71A475KE51L</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_charger/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C2">
+   <value>4.7uF 10V</value>
+   <fields>
+    <field name="MPN">GRM21BR71A475KE51L</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_charger/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="D1">
+   <value>NCD0805R1</value>
+   <fields>
+    <field name="MPN">NCD0805R1</field>
+   </fields>
+   <libsource lib="Device" part="LED" description="Light emitting diode" />
+   <sheetpath names="/02_charger/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="J1">
+   <value>Micro-B 5V</value>
+   <fields>
+    <field name="MPN">920-D62A2021S10100</field>
+   </fields>
+   <libsource lib="Connector" part="USB_B_Micro" description="USB Micro Type B connector" />
+   <sheetpath names="/02_charger/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="SH" />
+      <pin num="5" />
+      <pin num="1" />
+      <pin num="3" />
+      <pin num="2" />
+      <pin num="4" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R1">
+   <value>4.99k 1%</value>
+   <fields>
+    <field name="MPN">RC0603FR-074K99L</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/02_charger/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R2">
+   <value>2.2k 1%</value>
+   <fields>
+    <field name="MPN">RC0603FR-072K2L</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/02_charger/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U1">
+   <value>MCP73831-2AC</value>
+   <fields>
+    <field name="MPN">MCP73831T-2ACI/OT</field>
+   </fields>
+   <libsource lib="Local" part="MCP73831_2AC" description="" />
+   <sheetpath names="/02_charger/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="4" />
+      <pin num="5" />
+      <pin num="2" />
+      <pin num="3" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C3">
+   <value>100nF 16V</value>
+   <fields>
+    <field name="MPN">GRM188R71C104KA01D</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/03_protection/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="J2">
+   <value>Battery</value>
+   <fields>
+    <field name="MPN">S2B-PH-SM4-TB(LF)(SN)</field>
+   </fields>
+   <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)" />
+   <sheetpath names="/03_protection/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="J3">
+   <value>Load 100mA max</value>
+   <fields>
+    <field name="MPN">S2B-PH-SM4-TB(LF)(SN)</field>
+   </fields>
+   <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)" />
+   <sheetpath names="/03_protection/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R3">
+   <value>1k 1%</value>
+   <fields>
+    <field name="MPN">RC0603FR-071KL</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/03_protection/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U2">
+   <value>XB6166IS</value>
+   <fields>
+    <field name="MPN">XB6166IS</field>
+   </fields>
+   <libsource lib="Local" part="XB6166IS" description="" />
+   <sheetpath names="/03_protection/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="2" />
+      <pin num="3" />
+      <pin num="1" />
+      <pin num="7" />
+      <pin num="6" />
+      <pin num="5" />
+      <pin num="4" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+ </components>
+ <libparts>
+  <libpart lib="Connector" part="USB_B_Micro">
+   <pins>
+    <pin num="1" name="VBUS" type="power_out" />
+    <pin num="2" name="D-" type="bidirectional" />
+    <pin num="3" name="D+" type="bidirectional" />
+    <pin num="4" name="ID" type="passive" />
+    <pin num="5" name="GND" type="power_out" />
+    <pin num="SH" name="Shield" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Connector_Generic" part="Conn_01x02">
+   <pins>
+    <pin num="1" name="Pin_1" type="passive" />
+    <pin num="2" name="Pin_2" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="C">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="LED">
+   <pins>
+    <pin num="1" name="K" type="passive" />
+    <pin num="2" name="A" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="R">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Local" part="MCP73831_2AC">
+   <pins>
+    <pin num="1" name="STAT" type="tri_state" />
+    <pin num="2" name="VSS" type="power_in" />
+    <pin num="3" name="VBAT" type="power_out" />
+    <pin num="4" name="VDD" type="power_in" />
+    <pin num="5" name="PROG" type="input" />
+   </pins>
+  </libpart>
+  <libpart lib="Local" part="XB6166IS">
+   <pins>
+    <pin num="1" name="VDD" type="power_in" />
+    <pin num="2" name="GND" type="passive" />
+    <pin num="3" name="GND" type="passive" />
+    <pin num="4" name="VM" type="passive" />
+    <pin num="5" name="VM" type="passive" />
+    <pin num="6" name="VM" type="passive" />
+    <pin num="7" name="EPAD" type="passive" />
+   </pins>
+  </libpart>
+ </libparts>
+ <nets>
+  <net code="1" name="/02_charger/PROG" class="Default">
+   <node ref="R1" pin="1" pintype="passive" />
+   <node ref="U1" pin="5" pinfunction="PROG_5" pintype="input" />
+  </net>
+  <net code="2" name="/02_charger/STAT" class="Default">
+   <node ref="D1" pin="1" pinfunction="K_1" pintype="passive" />
+   <node ref="U1" pin="1" pinfunction="STAT_1" pintype="tri_state" />
+  </net>
+  <net code="3" name="/03_protection/PROT_VDD" class="Default">
+   <node ref="C3" pin="1" pintype="passive" />
+   <node ref="R3" pin="2" pintype="passive" />
+   <node ref="U2" pin="1" pinfunction="VDD_1" pintype="power_in" />
+  </net>
+  <net code="4" name="BAT_NEG" class="Default">
+   <node ref="C3" pin="2" pintype="passive" />
+   <node ref="J2" pin="2" pinfunction="Pin_2_2" pintype="passive" />
+   <node ref="U2" pin="2" pinfunction="GND_2" pintype="passive" />
+   <node ref="U2" pin="3" pinfunction="GND_3" pintype="passive" />
+   <node ref="U2" pin="7" pinfunction="EPAD_7" pintype="passive" />
+  </net>
+  <net code="5" name="BAT_POS" class="Default">
+   <node ref="C2" pin="1" pintype="passive" />
+   <node ref="J2" pin="1" pinfunction="Pin_1_1" pintype="passive" />
+   <node ref="J3" pin="1" pinfunction="Pin_1_1" pintype="passive" />
+   <node ref="R3" pin="1" pintype="passive" />
+   <node ref="U1" pin="3" pinfunction="VBAT_3" pintype="power_out" />
+  </net>
+  <net code="6" name="GND" class="Default">
+   <node ref="C1" pin="2" pintype="passive" />
+   <node ref="C2" pin="2" pintype="passive" />
+   <node ref="J1" pin="5" pinfunction="GND_5" pintype="power_out" />
+   <node ref="J1" pin="SH" pinfunction="Shield_SH" pintype="passive" />
+   <node ref="J3" pin="2" pinfunction="Pin_2_2" pintype="passive" />
+   <node ref="R1" pin="2" pintype="passive" />
+   <node ref="U1" pin="2" pinfunction="VSS_2" pintype="power_in" />
+   <node ref="U2" pin="4" pinfunction="VM_4" pintype="passive" />
+   <node ref="U2" pin="5" pinfunction="VM_5" pintype="passive" />
+   <node ref="U2" pin="6" pinfunction="VM_6" pintype="passive" />
+  </net>
+  <net code="7" name="Net-(D1-A)" class="Default">
+   <node ref="D1" pin="2" pinfunction="A_2" pintype="passive" />
+   <node ref="R2" pin="2" pintype="passive" />
+  </net>
+  <net code="8" name="USB_5V" class="Default">
+   <node ref="C1" pin="1" pintype="passive" />
+   <node ref="J1" pin="1" pinfunction="VBUS_1" pintype="power_out" />
+   <node ref="R2" pin="1" pintype="passive" />
+   <node ref="U1" pin="4" pinfunction="VDD_4" pintype="power_in" />
+  </net>
+  <net code="9" name="unconnected-(J1-D+-Pad3)" class="Default">
+   <node ref="J1" pin="3" pinfunction="D+_3" pintype="bidirectional+no_connect" />
+  </net>
+  <net code="10" name="unconnected-(J1-D--Pad2)" class="Default">
+   <node ref="J1" pin="2" pinfunction="D-_2" pintype="bidirectional+no_connect" />
+  </net>
+  <net code="11" name="unconnected-(J1-ID-Pad4)" class="Default">
+   <node ref="J1" pin="4" pinfunction="ID_4" pintype="passive+no_connect" />
+  </net>
+ </nets>
+</export>

@@ -1,0 +1,77 @@
+{
+ "note": "log: empty = 给 --log 且日志为空（kicad-cli 干净导出的实际情况）；none = 不给 --log。intent 为空表示冷跑。",
+ "cases": [
+  {
+   "id": "r01-thingplus-esp32s3",
+   "source": "r01-thingplus-esp32s3",
+   "fixture": "fixtures/r01-thingplus-esp32s3.xml",
+   "log": "empty",
+   "intent": null,
+   "purpose": "ASG 第 01 轮最终交付冷跑；kicad-cli 成功导出时日志为空"
+  },
+  {
+   "id": "r02-dasduino-coreplus",
+   "source": "r02-dasduino-coreplus",
+   "fixture": "fixtures/r02-dasduino-coreplus.xml",
+   "log": "empty",
+   "intent": null,
+   "purpose": "ASG 第 02 轮最终交付冷跑"
+  },
+  {
+   "id": "r03-nrf9151-feather",
+   "source": "r03-nrf9151-feather",
+   "fixture": "fixtures/r03-nrf9151-feather.xml",
+   "log": "empty",
+   "intent": null,
+   "purpose": "ASG 第 03 轮最终交付冷跑（6 页层次图）"
+  },
+  {
+   "id": "r04-host-usb-pmod",
+   "source": "r04-host-usb-pmod",
+   "fixture": "fixtures/r04-host-usb-pmod.xml",
+   "log": "empty",
+   "intent": null,
+   "purpose": "ASG 第 04 轮最终交付冷跑"
+  },
+  {
+   "id": "r04-c1-return-moved",
+   "source": "r04-c1-return-moved",
+   "fixture": "fixtures/r04-c1-return-moved.xml",
+   "log": "empty",
+   "intent": null,
+   "purpose": "第 04 轮门禁反例：C1 回流脚移离 GND，去耦清单应随之变化"
+  },
+  {
+   "id": "r05-lipo-charger",
+   "source": "r05-lipo-charger",
+   "fixture": "fixtures/r05-lipo-charger.xml",
+   "log": "empty",
+   "intent": null,
+   "purpose": "ASG 第 05 轮最终交付冷跑"
+  },
+  {
+   "id": "rh-ad8495-thermocouple",
+   "source": "rh-ad8495-thermocouple",
+   "fixture": "fixtures/rh-ad8495-thermocouple.xml",
+   "log": "empty",
+   "intent": null,
+   "purpose": "演练板冷跑：AD8494 库符号 OUT 脚无名，严格自检失败；空导出日志"
+  },
+  {
+   "id": "rh-ad8495-thermocouple-nolog",
+   "source": "rh-ad8495-thermocouple",
+   "fixture": "fixtures/rh-ad8495-thermocouple.xml",
+   "log": "none",
+   "intent": null,
+   "purpose": "演练板冷跑、不给 --log：DOC-A01/A02 应跳过"
+  },
+  {
+   "id": "rh-ad8495-thermocouple-pinmap",
+   "source": "rh-ad8495-thermocouple",
+   "fixture": "fixtures/rh-ad8495-thermocouple.xml",
+   "log": "empty",
+   "intent": "fixtures/rh-ad8495-thermocouple.intent.json",
+   "purpose": "演练板 + 只含官方脚表的 intent：缺名脚由官方脚表解决（5fa6d3b）"
+  }
+ ]
+}

@@ -1,0 +1,168 @@
+{
+ "note": "第三方电路的来源清单。原始导出只留在 ASG 批次目录（只读），仓库里只存 make_fixtures.py 生成的精简夹具；精简夹具与原始导出解析出的 db 完全相同。",
+ "sources": [
+  {
+   "id": "r01-thingplus-esp32s3",
+   "description": "ASG 第 01 轮（A 题，电源路径，重画）最终原生导出",
+   "upstream": {
+    "repo": "https://github.com/sparkfun/SparkFun_Thing_Plus_ESP32-S3",
+    "commit": "c9fc69fc1d79e1f3e45f7f2e50d5e357b4dd9242",
+    "license": "CC-BY-SA-4.0",
+    "attribution": "SparkFun Electronics; schematic designed by N. Seidle",
+    "version": null
+   },
+   "original": {
+    "path": "round-01/asg-delivery/native-final/netlist.xml",
+    "sha256": "9b3f3d83f27af0646225729aafe88349fa0b9f15c091e417bcf3062142ccf007",
+    "bytes": 148100
+   },
+   "fixture": {
+    "path": "fixtures/r01-thingplus-esp32s3.xml",
+    "sha256": "a255c0f61efa3bc57219340c1d720c7cfc0a7a479c99a86d72d4d95bc1b90b7b",
+    "bytes": 61484,
+    "license": "CC-BY-SA-4.0"
+   }
+  },
+  {
+   "id": "r02-dasduino-coreplus",
+   "description": "ASG 第 02 轮（A 题，MCU 控制器，重画）最终原生导出",
+   "upstream": {
+    "repo": "https://github.com/SolderedElectronics/Dasduino-COREPLUS-hardware-design",
+    "commit": "594827b0da1de9ab67cb1be660b44319dd2b5af8",
+    "license": "TAPR-OHL-1.0",
+    "attribution": "Soldered Electronics",
+    "version": "V1.1.0"
+   },
+   "original": {
+    "path": "round-02/asg-delivery/verification-final/netlist.xml",
+    "sha256": "8e98c74f6609cb957c93adaaa6b717c26685a58eb97b62ab44b3dda488005fd7",
+    "bytes": 150935
+   },
+   "fixture": {
+    "path": "fixtures/r02-dasduino-coreplus.xml",
+    "sha256": "ec99539668c802515d806ad4d28731e5f0a19cbc173e002c0ff2e8381585de25",
+    "bytes": 88585,
+    "license": "TAPR-OHL-1.0"
+   }
+  },
+  {
+   "id": "r03-nrf9151-feather",
+   "description": "ASG 第 03 轮（A 题，多页接口防护，重画）最终原生导出",
+   "upstream": {
+    "repo": "https://github.com/circuitdojo/nrf9151-feather",
+    "commit": "43c5345c791a2980d2780249f40804ea39342cf9",
+    "license": "CERN-OHL-S-2.0",
+    "attribution": "Circuit Dojo",
+    "version": "v1"
+   },
+   "original": {
+    "path": "round-03/asg-delivery/verification/netlist.xml",
+    "sha256": "3600cebdbed555af5f27bcc379a478ebc94e095427b6fadbc6cbf1a12df0e2a4",
+    "bytes": 242593
+   },
+   "fixture": {
+    "path": "fixtures/r03-nrf9151-feather.xml",
+    "sha256": "a3f7ea2ce4880b29ab4a13eb0760c8c808e193d6be507f1b2c0e963291966089",
+    "bytes": 124018,
+    "license": "CERN-OHL-S-2.0"
+   }
+  },
+  {
+   "id": "r04-host-usb-pmod",
+   "description": "ASG 第 04 轮（B 题，USB 主机及升压，从需求生成）最终原生导出",
+   "upstream": {
+    "repo": "https://github.com/sparkengineering/host-usb-pmod",
+    "commit": "f8b902ab19584f1614cff6c1ae0c39752c612407",
+    "license": "CERN-OHL-P-2.0",
+    "attribution": "sparkengineering",
+    "version": null
+   },
+   "original": {
+    "path": "round-04/asg-delivery/verify-04/netlist.xml",
+    "sha256": "787aadb571b8b2f114790f8a7e475698f1367703c4396af1f404bf59e93896a7",
+    "bytes": 22011
+   },
+   "fixture": {
+    "path": "fixtures/r04-host-usb-pmod.xml",
+    "sha256": "01299cfee1405f6e83b149eb8c607ceb0b76ef5f3049215a4308d0e3ed53b9a5",
+    "bytes": 8564,
+    "license": "CERN-OHL-P-2.0"
+   }
+  },
+  {
+   "id": "r04-c1-return-moved",
+   "description": "ASG 第 04 轮门禁反例：最终导出的编辑副本，把 C1 的回流脚移离 GND（不是实际电路导出）",
+   "upstream": {
+    "repo": "https://github.com/sparkengineering/host-usb-pmod",
+    "commit": "f8b902ab19584f1614cff6c1ae0c39752c612407",
+    "license": "CERN-OHL-P-2.0",
+    "attribution": "sparkengineering",
+    "version": null
+   },
+   "original": {
+    "path": "round-04/asg-delivery/negative-case/C1-return-moved.xml",
+    "sha256": "081486d1832d4d6cb6c88ae3ea4dff8f9c33450714330c38ac34c2927d827f21",
+    "bytes": 22256
+   },
+   "fixture": {
+    "path": "fixtures/r04-c1-return-moved.xml",
+    "sha256": "73edc92df1d8e89bfe1cee774fda9a377ffa0d9dcc5dcc715e6e4e08dfec03b2",
+    "bytes": 8564,
+    "license": "CERN-OHL-P-2.0"
+   }
+  },
+  {
+   "id": "r05-lipo-charger",
+   "description": "ASG 第 05 轮（B 题，电源充电，从需求生成）最终原生导出",
+   "upstream": {
+    "repo": "https://github.com/bablokb/pcb-lipo-charger",
+    "commit": "5a9ef45338d130616a599df9897cf3b1250d248a",
+    "license": "CC-BY-SA-4.0",
+    "attribution": "bablokb（GitHub 账户）",
+    "version": "Rev1.10"
+   },
+   "original": {
+    "path": "round-05/asg-delivery/verify-final/netlist.xml",
+    "sha256": "d0fecf761a194aa158b881416b6adfb591eb4c108799854fa5c3556ac401941f",
+    "bytes": 27014
+   },
+   "fixture": {
+    "path": "fixtures/r05-lipo-charger.xml",
+    "sha256": "c2c6d9f1043ba3d1463aa7b46acd8282aaf6b8a703e5288b9aa58a963237ed04",
+    "bytes": 9984,
+    "license": "CC-BY-SA-4.0"
+   }
+  },
+  {
+   "id": "rh-ad8495-thermocouple",
+   "description": "Claude 2026-10-10 不计数演练（B 题，ASG f34ba8d 出图）的设计方一键验证导出 designer/kicad/verify/netlist.xml（kicad-cli 10.0.6）；SR 主审在隔离副本中的独立重导（sha256 6e6ffde1…）与它只差 design/source 和 date 两行",
+   "upstream": {
+    "repo": "https://github.com/SolderedElectronics/Thermocouple-sensor-AD8495-breakout-hardware-design",
+    "commit": "43ac86f8ad07097b3e328b3bb34b7f33e897bfda",
+    "license": "TAPR-OHL-1.0",
+    "attribution": "Soldered Electronics",
+    "version": "V1.0.0"
+   },
+   "original": {
+    "path": null,
+    "location": "Claude 演练会话临时目录 scratchpad/asg-rh/designer/kicad/verify/netlist.xml（不保证保留；重建用 make_fixtures.py --override）",
+    "sha256": "23bf0edf215e8cc3d45e8089dc28e5c727bea60776a93db837faa54037fd2395",
+    "bytes": 29331
+   },
+   "fixture": {
+    "path": "fixtures/rh-ad8495-thermocouple.xml",
+    "sha256": "969ddf3e20bb8024cc7e193b012e0fabf29a2b32cb35d3a63dc4b64e59da79be",
+    "bytes": 9718,
+    "license": "TAPR-OHL-1.0"
+   }
+  }
+ ],
+ "intents": [
+  {
+   "path": "fixtures/rh-ad8495-thermocouple.intent.json",
+   "sha256": "0f83452d277511fce2543d0351b15c9a94d6e2bb208f48fcbd470c44612a7be2",
+   "origin": "Claude 演练 SR 主审 intent.json 中的 schema_version、input_sha256 与 devices（U201/U202 官方脚表），其余段落删去",
+   "license": "MIT（本仓库）；脚表内容引用 ADI AD8494/5/6/7 Rev.D 与 TI SLVS543S 的引脚定义"
+  }
+ ]
+}

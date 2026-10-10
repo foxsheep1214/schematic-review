@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+ <design>
+  <source>/private/tmp/claude-501/-Users-skyfend--agents-skills-schematic-review/15a923fb-f3df-4690-948a-b44bfd085a4b/scratchpad/asg-rh/designer/kicad/tc_ad8495.kicad_sch</source>
+  <date>2026-10-10T09:54:43</date>
+  <tool>Eeschema 10.0.6</tool>
+  <sheet number="1" name="/">
+      </sheet>
+  <sheet number="2" name="/02_tc_amp/">
+      </sheet>
+ </design>
+ <components>
+  <comp ref="C201">
+   <value>100n</value>
+   <fields>
+    <field name="MPN">GENERIC-C0603-100N-50V</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C202">
+   <value>10n</value>
+   <fields>
+    <field name="MPN">GENERIC-C0603-10N-C0G-50V</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C203">
+   <value>10n</value>
+   <fields>
+    <field name="MPN">GENERIC-C0603-10N-C0G-50V</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C204">
+   <value>100n</value>
+   <fields>
+    <field name="MPN">GENERIC-C0603-100N-16V</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="C205">
+   <value>10u</value>
+   <fields>
+    <field name="MPN">GENERIC-C0805-10U-16V</field>
+   </fields>
+   <libsource lib="Device" part="C" description="Unpolarized capacitor" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="J201">
+   <value>KF235-5.0-2P</value>
+   <fields>
+    <field name="MPN">KF235-5.0-2P</field>
+   </fields>
+   <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="J202">
+   <value>Conn_1x03</value>
+   <fields>
+    <field name="MPN">GENERIC-HDR-1X03-P2.54</field>
+   </fields>
+   <libsource lib="Connector" part="Conn_01x03_Pin" description="Generic connector, single row, 01x03, script generated" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+      <pin num="3" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R201">
+   <value>4.7k</value>
+   <fields>
+    <field name="MPN">GENERIC-R0603-4K7-1%</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R202">
+   <value>4.7k</value>
+   <fields>
+    <field name="MPN">GENERIC-R0603-4K7-1%</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R203">
+   <value>1M</value>
+   <fields>
+    <field name="MPN">GENERIC-R0603-1M-1%</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="R204">
+   <value>560</value>
+   <fields>
+    <field name="MPN">GENERIC-R0603-560R-1%</field>
+   </fields>
+   <libsource lib="Device" part="R" description="Resistor" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="2" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U201">
+   <value>AD8495ARMZ</value>
+   <footprint>Package_SO:MSOP-8_3x3mm_P0.65mm</footprint>
+   <fields>
+    <field name="MPN">AD8495ARMZ</field>
+   </fields>
+   <libsource lib="Sensor_Temperature" part="AD8495" description="Precision Thermocouple Amplifiers with Cold Junction Compensation, K-Type Thermocouple, 0 to 50C, MSOP-8" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="1" />
+      <pin num="8" />
+      <pin num="4" />
+      <pin num="7" />
+      <pin num="3" />
+      <pin num="5" />
+      <pin num="2" />
+      <pin num="6" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+  <comp ref="U202">
+   <value>TL431ACDBZ</value>
+   <footprint>Package_TO_SOT_SMD:SOT-23-3</footprint>
+   <fields>
+    <field name="MPN">TL431ACDBZ</field>
+   </fields>
+   <libsource lib="Reference_Voltage" part="TL431DBZ" description="Shunt Regulator, SOT-23" />
+   <sheetpath names="/02_tc_amp/" />
+   <units>
+    <unit name="A">
+     <pins>
+      <pin num="3" />
+      <pin num="2" />
+      <pin num="1" />
+     </pins>
+    </unit>
+   </units>
+  </comp>
+ </components>
+ <libparts>
+  <libpart lib="Connector" part="Conn_01x03_Pin">
+   <pins>
+    <pin num="1" name="Pin_1" type="passive" />
+    <pin num="2" name="Pin_2" type="passive" />
+    <pin num="3" name="Pin_3" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Connector" part="Screw_Terminal_01x02">
+   <pins>
+    <pin num="1" name="Pin_1" type="passive" />
+    <pin num="2" name="Pin_2" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="C">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="R">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Reference_Voltage" part="TL431DBZ">
+   <pins>
+    <pin num="1" name="K" type="passive" />
+    <pin num="2" name="REF" type="passive" />
+    <pin num="3" name="A" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Sensor_Temperature" part="AD8495">
+   <pins>
+    <pin num="1" name="-IN" type="input" />
+    <pin num="2" name="REF" type="input" />
+    <pin num="3" name="-Vs" type="power_in" />
+    <pin num="4" name="NC" type="no_connect" />
+    <pin num="5" name="SENSE" type="passive" />
+    <pin num="6" name="" type="output" />
+    <pin num="7" name="+Vs" type="power_in" />
+    <pin num="8" name="+IN" type="input" />
+   </pins>
+  </libpart>
+ </libparts>
+ <nets>
+  <net code="1" name="/02_tc_amp/IN_N" class="Default">
+   <node ref="C201" pin="2" pintype="passive" />
+   <node ref="C203" pin="1" pintype="passive" />
+   <node ref="R202" pin="2" pintype="passive" />
+   <node ref="U201" pin="1" pinfunction="-IN_1" pintype="input" />
+  </net>
+  <net code="2" name="/02_tc_amp/IN_P" class="Default">
+   <node ref="C201" pin="1" pintype="passive" />
+   <node ref="C202" pin="1" pintype="passive" />
+   <node ref="R201" pin="2" pintype="passive" />
+   <node ref="U201" pin="8" pinfunction="+IN_8" pintype="input" />
+  </net>
+  <net code="3" name="/02_tc_amp/TEMP_OUT" class="Default">
+   <node ref="J202" pin="1" pinfunction="Pin_1_1" pintype="passive" />
+   <node ref="U201" pin="5" pinfunction="SENSE_5" pintype="passive" />
+   <node ref="U201" pin="6" pintype="output" />
+  </net>
+  <net code="4" name="/02_tc_amp/VREF_2V5" class="Default">
+   <node ref="R204" pin="2" pintype="passive" />
+   <node ref="U201" pin="2" pinfunction="REF_2" pintype="input" />
+   <node ref="U202" pin="1" pinfunction="K_1" pintype="passive" />
+   <node ref="U202" pin="2" pinfunction="REF_2" pintype="passive" />
+  </net>
+  <net code="5" name="GND" class="Default">
+   <node ref="C202" pin="2" pintype="passive" />
+   <node ref="C203" pin="2" pintype="passive" />
+   <node ref="C204" pin="2" pintype="passive" />
+   <node ref="C205" pin="2" pintype="passive" />
+   <node ref="J202" pin="2" pinfunction="Pin_2_2" pintype="passive" />
+   <node ref="R203" pin="2" pintype="passive" />
+   <node ref="U201" pin="3" pinfunction="-Vs_3" pintype="power_in" />
+   <node ref="U202" pin="3" pinfunction="A_3" pintype="passive" />
+  </net>
+  <net code="6" name="Net-(J201-Pin_1)" class="Default">
+   <node ref="J201" pin="1" pinfunction="Pin_1_1" pintype="passive" />
+   <node ref="R202" pin="1" pintype="passive" />
+   <node ref="R203" pin="1" pintype="passive" />
+  </net>
+  <net code="7" name="Net-(J201-Pin_2)" class="Default">
+   <node ref="J201" pin="2" pinfunction="Pin_2_2" pintype="passive" />
+   <node ref="R201" pin="1" pintype="passive" />
+  </net>
+  <net code="8" name="VCC" class="Default">
+   <node ref="C204" pin="1" pintype="passive" />
+   <node ref="C205" pin="1" pintype="passive" />
+   <node ref="J202" pin="3" pinfunction="Pin_3_3" pintype="passive" />
+   <node ref="R204" pin="1" pintype="passive" />
+   <node ref="U201" pin="7" pinfunction="+Vs_7" pintype="power_in" />
+  </net>
+  <net code="9" name="unconnected-(U201-NC-Pad4)" class="Default">
+   <node ref="U201" pin="4" pinfunction="NC_4" pintype="no_connect" />
+  </net>
+ </nets>
+</export>
