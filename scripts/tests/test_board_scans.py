@@ -84,6 +84,33 @@ class LedTest(unittest.TestCase):
         self.assertEqual(scans(db, 'DEV-A03'), [])
 
 
+class I2cPullupTest(unittest.TestCase):
+    def bus(self, extra_parts=None, extra_nets=None):
+        parts = {'U1': 'SENSOR', 'J1': 'CONN'}
+        parts.update(extra_parts or {})
+        nets = {'SDA': ['U1.1', 'J1.1'], 'SCL': ['U1.2', 'J1.2'], 'GND': ['U1.3', 'J1.3'], 'VCC': ['U1.4', 'J1.4']}
+        for net, nodes in (extra_nets or {}).items():
+            nets.setdefault(net, []).extend(nodes)
+        return board(parts, nets)
+
+    def test_bus_line_without_any_pullup_is_a_candidate(self):
+        hits = scans(self.bus(), 'SIG-A03')
+        self.assertEqual(sorted(subjects(hits)), ['SCL', 'SDA'])
+        self.assertEqual({f['kind'] for f in hits}, {'CANDIDATE'})
+
+    def test_pullups_series_resistors_and_jumper_fed_pullups_are_not_reported(self):
+        pulled = self.bus({'R1': '4K7', 'R2': '4K7'},
+                          {'SDA': ['R1.1'], 'SCL': ['R2.1'], 'VCC': ['R1.2', 'R2.2']})
+        self.assertEqual(scans(pulled, 'SIG-A03'), [])
+        jumper = self.bus({'R1': '4K7', 'R2': '4K7'},
+                          {'SDA': ['R1.1'], 'SCL': ['R2.1'], 'PULL': ['R1.2', 'R2.2']})
+        self.assertEqual(scans(jumper, 'SIG-A03'), [])
+
+    def test_resistor_to_ground_is_not_a_pullup(self):
+        db = self.bus({'R1': '10K'}, {'SDA': ['R1.1'], 'GND': ['R1.2']})
+        self.assertEqual(subjects(scans(db, 'SIG-A03')), ['SCL', 'SDA'])
+
+
 class FloatingInputTest(unittest.TestCase):
     def test_declared_input_pins_without_a_real_net(self):
         db = board({'U1': 'SOC'}, {'GND': ['U1.4'], 'LONE': ['U1.2'], 'BUS': ['U1.3', 'U1.5']},

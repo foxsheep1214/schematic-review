@@ -8,13 +8,14 @@
 """
 import re
 
-from checkers.netgraph import is_ground, is_rail, rail_voltage
+from checkers.netgraph import IC, RESISTOR, is_ground, is_rail, rail_voltage
 
 # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 RATING_RE = re.compile(r'(?<![\d.])(\d+(?:\.\d+)?)\s*V(?![\dA-Z])', re.I)
 LED_RE = re.compile(r'(^|[^A-Z])LED(S|[^A-Z]|$)', re.I)
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
 REFDES_RE = re.compile(r'^[A-Za-z]+\d+[A-Za-z]?$')
+I2C_LINE_RE = re.compile(r'^(SDA|SCL)\d*$')
 
 
 def _named_rail(net):
@@ -92,6 +93,24 @@ def led_current_limit(lint):
                      '恒流驱动须有资料或声明证据', ref)
 
 
+def i2c_pullups(lint):
+    """SIG-A03：SDA/SCL 网上没有任何接到非地网的已装配电阻（串阻也算有电阻，宁可漏报）。"""
+    for net, nodes in sorted(lint.nets.items()):
+        tokens = re.split(r'[^A-Z0-9]+', str(net).upper())
+        if net in lint.pseudo or not any(I2C_LINE_RE.match(t) for t in tokens) or len(nodes) < 2:
+            continue
+        refs = sorted({node.partition('.')[0] for node in nodes})
+        if not any(lint.graph.kind(ref) == IC for ref in refs):
+            continue
+        resistors = [ref for ref in refs if lint.graph.kind(ref) == RESISTOR
+                     and not lint.parts.get(ref, {}).get('nc')
+                     and not any(is_ground(other) for other in lint.graph.nets_of(ref) if other != net)]
+        if not resistors:
+            lint.add('SIG-A03', 'I²C 线无上拉',
+                     f'{net}: {refs[:8]} 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，'
+                     '否则补上拉（阻值按 SIG-C01）', refs[0], kind='CANDIDATE')
+
+
 def floating_inputs(lint):
     """NET-A07：声明为输入的引脚悬空或只在单节点网上。"""
     from lint import _pin_class      # 延迟取用：lint 导入本模块
@@ -133,4 +152,5 @@ def run(lint):
     capacitor_ratings(lint)
     capacitor_polarity(lint)
     led_current_limit(lint)
+    i2c_pullups(lint)
     floating_inputs(lint)

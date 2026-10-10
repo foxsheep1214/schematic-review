@@ -63,6 +63,22 @@ class _Scan:
                 return ref, 'driver-pin:' + node
         return None, None
 
+    def _inferred_coil(self, ref):
+        """符号无脚名的继电器：恰好一个脚网是开关节点，且其余脚网中恰好一个是电源轨或经单个
+        二端无源件接到电源轨（线圈串联电阻），才把这两网当线圈端；否则不猜。"""
+        graph = self.graph
+        pins = graph.pins_of(ref)
+        if any(graph.pinname.get(ref + '.' + pin) for pin in pins):
+            return None
+        nets = set(pins.values())
+        switched = sorted(net for net in nets if self._switch_on(net)[0] is not None)
+        if len(switched) != 1:
+            return None
+        high = {net for net in nets - set(switched)
+                if self.tree.is_rail(net)
+                or any(self.tree.is_rail(other) for _, other in graph.neighbors(net, ng.PASSIVE_LINKS))}
+        return sorted(switched + sorted(high)) if len(high) == 1 else None
+
     def _is_converter_node(self, net):
         for node in self.graph.nodes_on(net):
             if ng.name_matches(powertree.SWITCH_NODE_PIN_RE, self.graph.pinname.get(node),
@@ -128,6 +144,10 @@ class _Scan:
                     coil = [graph.pin2net[node] for node in sorted(graph.pin2net)
                             if node.startswith(ref + '.') and graph.role(node) == 'coil']
                     terminals = sorted(set(coil))
+                    if len(terminals) != 2:
+                        terminals = self._inferred_coil(ref) or terminals
+                        if len(terminals) == 2:
+                            gaps.append('pin-roles-inferred:' + ref + '（符号无脚名，线圈脚按拓扑推断，按手册核对）')
                 if len(terminals) != 2:
                     gaps.append('pin-roles:' + ref)
                     found.append(self._entry(ref, kind, None, None, None, 'topology', gaps))

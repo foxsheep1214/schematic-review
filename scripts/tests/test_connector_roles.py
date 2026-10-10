@@ -64,6 +64,49 @@ class ConnectorRoles(unittest.TestCase):
         for name in ('?', 'HEADER_CONTROL', 'TERMINAL_VOLTAGE_MONITOR'):
             self.assertEqual(classify('K1', {'part': name}, 3), (RELAY, 'refdes-prefix'))
 
+    def test_two_pin_k_is_not_a_relay(self):
+        # 两脚器件不可能同时有线圈和触点：部分库把电池座/连接器编为 K
+        self.assertEqual(classify('K3', {'part': 'S2B-PH-K-S(LF)(SN)'}, 2)[0], 'unknown')
+
+    def unnamed_relay(self, diode=None):
+        db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pseudo_nets': []}
+        add(db, 'K1', 'SRD-05VDC-SL-C RELAY', [('1', None, 'COIL_HI'), ('2', None, 'COIL_LO'),
+                                               ('3', None, 'NO'), ('4', None, 'COM'), ('5', None, 'NC')])
+        add(db, 'R4', '10R', [('1', '1', 'COIL_HI'), ('2', '2', 'VCC')])
+        add(db, 'Q1', 'NPN', [('1', 'B', 'BASE'), ('2', 'E', 'GND'), ('3', 'C', 'COIL_LO')])
+        add(db, 'J1', 'TERMINAL_KF235-5.0-3P', [('1', '1', 'NO'), ('2', '2', 'COM'), ('3', '3', 'NC')])
+        add(db, 'U1', 'LDO', [('1', 'VIN', 'VIN'), ('2', 'VOUT', 'VCC'), ('3', 'GND', 'GND')])
+        if diode:
+            add(db, 'D2', 'DIODE', [('1', 'A', diode[0]), ('2', 'K', diode[1])])
+        db['pinname'] = {node: name for node, name in db['pinname'].items() if name}   # 符号无脚名
+        return db
+
+    def test_relay_coil_inferred_from_topology_when_symbol_has_no_pin_names(self):
+        rules = lambda db: [f['rule'] for f in Lint(db, '').run() if f['rule'] in ('DRV-A01', 'DRV-A02')]
+        self.assertEqual(rules(self.unnamed_relay()), ['DRV-A01'])
+        self.assertEqual(rules(self.unnamed_relay(('COIL_HI', 'COIL_LO'))), ['DRV-A02'])
+        self.assertEqual(rules(self.unnamed_relay(('COIL_LO', 'COIL_HI'))), [])
+        loads = [l for s in build_inventory(self.unnamed_relay())['states'] for l in s['loads']]
+        self.assertTrue(any(g.startswith('pin-roles-inferred:K1') for g in loads[0]['gaps']))
+
+    def test_relay_coil_is_not_guessed_when_two_pins_reach_a_rail(self):
+        db = self.unnamed_relay()
+        db['nets']['COM'].remove('K1.4')
+        db['nets']['VCC'].append('K1.4')
+        db['pin2net']['K1.4'] = 'VCC'
+        loads = [l for s in build_inventory(db)['states'] for l in s['loads']]
+        self.assertIn('pin-roles:K1', loads[0]['gaps'])
+
+    def test_slavic_optocoupler_pin_names_resolve_roles(self):
+        from checkers.netgraph import NetGraph
+        db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pseudo_nets': []}
+        add(db, 'U1', 'PC357_OPTO', [('1', 'anoda', 'IN'), ('2', 'katoda', 'GND'),
+                                     ('3', 'emiter', 'GND'), ('4', 'kolektor', 'OUT')])
+        graph = NetGraph(db)
+        self.assertEqual([graph.role('U1.' + p) for p in '1234'],
+                         ['led_anode', 'led_cathode', 'out_emitter', 'out_collector'])
+        self.assertIn('PRO-A03', [f['rule'] for f in Lint(db, '').run()])
+
     def test_eagle_dimensioned_headers_override_jumper_prefix(self):
         for name in ('HEADER-1X10', 'microbuilder:HEADER-1X10:THICKER', 'HEADER_2X3'):
             with self.subTest(name=name):

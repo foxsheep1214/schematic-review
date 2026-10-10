@@ -74,13 +74,14 @@ TWO_TERMINAL = {RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER,
 PASSIVE_LINKS = {RESISTOR, INDUCTOR, FERRITE, JUMPER, FUSE}
 
 GATE_NAMES = {'G', 'GATE', 'GT'}
-DRAIN_NAMES = {'D', 'DRAIN', 'C', 'COLLECTOR', 'COL'}
-SOURCE_NAMES = {'S', 'SOURCE', 'SRC', 'E', 'EMITTER', 'EMIT'}
-ANODE_NAMES = {'A', 'ANODE', 'AN', '+', 'P'}
-CATHODE_NAMES = {'K', 'C', 'CATHODE', 'CATH', '-', 'N'}
+# 斯拉夫语库（如 e-radionica/Soldered）写作 ANODA/KATODA/KOLEKTOR/EMITER/BAZA
+DRAIN_NAMES = {'D', 'DRAIN', 'C', 'COLLECTOR', 'COL', 'KOLEKTOR'}
+SOURCE_NAMES = {'S', 'SOURCE', 'SRC', 'E', 'EMITTER', 'EMIT', 'EMITER'}
+ANODE_NAMES = {'A', 'ANODE', 'AN', '+', 'P', 'ANODA'}
+CATHODE_NAMES = {'K', 'C', 'CATHODE', 'CATH', '-', 'N', 'KATODA'}
 COIL_NAMES = {'COIL', 'COIL1', 'COIL2', 'A1', 'A2', 'L1', 'L2', '+', '-'}
-LED_ANODE_NAMES = {'A', 'ANODE', 'LED+', 'LEDA'}
-LED_CATHODE_NAMES = {'K', 'CATHODE', 'LED-', 'LEDK'}
+LED_ANODE_NAMES = {'A', 'ANODE', 'LED+', 'LEDA', 'ANODA'}
+LED_CATHODE_NAMES = {'K', 'CATHODE', 'LED-', 'LEDK', 'KATODA'}
 
 
 def normalize(value):
@@ -223,6 +224,10 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         if re.match(pattern, ref, re.I):
             if kind is MOSFET and pin_count is not None and pin_count < 3:
                 return UNKNOWN, 'refdes-prefix conflicts with pin count'
+            # 只有两脚的 K 位号不可能同时有线圈和触点（部分库把连接器编为 K）；
+            # 三脚以上名称不明的 K 仍按继电器保留，不掩盖真继电器
+            if kind is RELAY and pin_count is not None and pin_count < 3:
+                return UNKNOWN, 'refdes-prefix conflicts with pin count'
             return kind, 'refdes-prefix'
     return UNKNOWN, 'no classification evidence'
 
@@ -360,7 +365,7 @@ class NetGraph:
         if kind in (MOSFET, BJT):
             # The shared graph uses gate/drain/source coordinates for B/C/E.
             # This alias enables tracing, not a MOS drive model for a BJT.
-            if kind == BJT and name in {'B', 'BASE'}:
+            if kind == BJT and name in {'B', 'BASE', 'BAZA'}:
                 return 'gate'
             if name in GATE_NAMES or name.startswith('GATE'):
                 return 'gate'

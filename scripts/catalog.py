@@ -321,6 +321,9 @@ RULES = (
          'diff_levels', 'link'),
     Rule('SIG-A02', '交流耦合接收端无偏置/端接',
          '交流耦合后的接收侧既无端接也无偏置', 'diff_levels', 'link'),
+    Rule('SIG-A03', 'I²C 线无上拉',
+         'SDA/SCL 网（≥2 节点、含 IC 脚）上没有任何接到非地网的已装配电阻；上拉可能由主机侧、片内'
+         '（如 TXS 类电平转换器）或其他段提供，按需求与资料确认后关闭，阻值与上升时间另按 SIG-C01', 'lint', 'net'),
     Rule('SIG-E01', '必需上拉与串阻',
          '核对指定两网间电阻装配与等效阻值；电平/上升时间另行检查', 'lint', 'net'),
     Rule('SIG-E02', '差分电平兼容',
@@ -504,7 +507,7 @@ OBJECTIVE_RULES = {
     'G3': tuple(('PWR-C04 PWR-D03 '
                  'RST-A01 RST-A02 RST-A03 RST-A04 RST-A05 RST-A06 RST-E01 RST-E02 RST-E03 '
                  'RST-T01 RST-T02 RST-T03 RST-T04 RST-C01 RST-C02 '
-                 'CLK-D01 CLK-D03 SIG-A01 SIG-A02 SIG-E02 SIG-C01 SIG-C03 SIG-C04 SIG-C07 SIG-C09 '
+                 'CLK-D01 CLK-D03 SIG-A01 SIG-A02 SIG-A03 SIG-E02 SIG-C01 SIG-C03 SIG-C04 SIG-C07 SIG-C09 '
                  'SIG-D01 SIG-D02 SIG-D03 SIG-D04 SIG-D07 SIG-D08 SIG-D09 SIG-D10 SIG-D11 SIG-D12 SIG-D14 SIG-D15 '
                  'ANA-T01 ANA-C01 ANA-C02 ANA-D01 PRO-A03 PRO-A04 PRO-E01 DRV-A03 DRV-E01').split()),
     'G4': tuple(('DEV-A01 DEV-A03 DEV-E02 DEV-C01 DEV-C02 DEV-C03 DEV-C04 DEV-C05 '

@@ -253,7 +253,7 @@ def i2c_pu(db):
             out = db
             for ref in pulls:
                 out = removed(out, ref)
-            yield Mutation('D-I2C-PU', ('SIG-E01', 'SIG-C01'), tuple(pulls), (net,),
+            yield Mutation('D-I2C-PU', ('SIG-A03', 'SIG-E01', 'SIG-C01'), tuple(pulls), (net,),
                            'removed ' + ','.join(pulls), out)
 
 
