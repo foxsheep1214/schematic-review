@@ -100,15 +100,41 @@ def screen_quality(plan, report, db=None):
                     'message': 'Explicit pin name is absent from the source map; verify physical pin and document any alias.'})
         if check.get('rule') != 'REQ-Q07':
             continue
+        listed = set()
         for cid, verdict in actual_statuses.items():
             if cid == row['id']:
                 continue
             match = re.search(re.escape(cid) + r'(?![A-Za-z0-9_.-])\s*(?:[:=：]|is)?\s*(PASS|FAIL|INSUFFICIENT|NA)\b', text)
+            if match:
+                listed.add(cid)
             if match and match.group(1) != verdict:
                 candidates.append({'code': 'AGGREGATE_CHILD_STATUS_MISMATCH',
                     'check_ids': [row['id']], 'child_id': cid,
                     'stated_status': match.group(1), 'final_status': verdict,
                     'message': 'Aggregate text names a child with a different final result; reconcile the final member results.'})
+        obj = check.get('object')
+        package = check.get('package') or (obj.get('package') if isinstance(obj, dict) else None)
+        if isinstance(package, str) and package and listed:
+            def child_package(child):
+                obj = child.get('object')
+                return child.get('package') or (obj.get('package') if isinstance(obj, dict) else None)
+            # Explicit plan scope only. Unpackaged physical dependencies cannot
+            # be assigned by a shared rule prefix or a prose keyword.
+            wrong = sorted(cid for cid in listed if cid in expected
+                           and child_package(expected[cid])
+                           and child_package(expected[cid]) != package)
+            if wrong:
+                candidates.append({'code': 'AGGREGATE_CHILD_PACKAGE_MISMATCH',
+                    'check_ids': [row['id']], 'package': package, 'child_ids': wrong,
+                    'message': 'Listed checks have another explicit package. Verify membership or document the real cross-package dependency; this advisory does not reject legitimate shared proofs.'})
+            members = {cid for cid, child in expected.items()
+                       if cid != row['id'] and child.get('rule') != 'REQ-Q07'
+                       and child_package(child) == package}
+            missing = sorted(members - listed)
+            if missing:
+                candidates.append({'code': 'AGGREGATE_PACKAGE_MEMBERS_MISSING',
+                    'check_ids': [row['id']], 'package': package, 'child_ids': missing,
+                    'message': 'An explicit child/status list omits checks bound to this package. Reconcile the complete plan scope; unbound electrical dependencies still require expert tracing.'})
 
     groups = defaultdict(list)
     impact_groups = defaultdict(list)

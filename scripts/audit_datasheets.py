@@ -16,6 +16,7 @@ Typical flow::
 """
 import datasheet_kinds
 import argparse
+import hashlib
 import io
 import json
 import os
@@ -51,11 +52,16 @@ def _text(value):
 
 def normalize_identity(value):
     """Normalize a material identity for exact cross-file joins."""
+    if _parameter_value(value):
+        # Preserve magnitude and SI prefix case. A quantity is not an MPN:
+        # punctuation removal conflates 1.0/10 and exponent/sign variants.
+        quantity = re.sub(r'\s+', '', value.strip()).replace('µ', 'u').replace('μ', 'u')
+        return 'Q:' + quantity
     return re.sub(r'[^A-Z0-9]+', '', str(value or '').upper())
 
 
 _NUMBER = r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?'
-_QUANTITY = _NUMBER + r'\s*(?:[fpnuµμmkKMGT]?\s*(?:F|H|V|A|W|Hz|ohms?|Ω)|[RrKkMm]\d*)'
+_QUANTITY = _NUMBER + r'\s*(?:[fpnuµμmkKMGT]?\s*(?:F|H|V|A|W|Hz|ohms?|Ω)|[RrKkMm]\d*|[fpnuµμ])'
 _PARAMETER_VALUE = re.compile(_QUANTITY + r'(?:\s*(?:[/,;]|\s)\s*(?:' + _QUANTITY + '|' + _NUMBER + r'\s*%))*', re.I)
 _GENERIC_PASSIVE = re.compile(r'^(?:[\w.-]+:)?(?:R|C|L|RESISTOR|CAPACITOR|INDUCTOR|CRYSTAL|XTAL)(?:_SMALL|_US|_\d+(?:_\d+)?(?:_PAD)?)?$', re.I)
 
@@ -94,6 +100,10 @@ def _alternate_identities(part, identity):
 
 def _slug(value):
     text = re.sub(r'[^A-Za-z0-9]+', '-', str(value or '').upper()).strip('-')
+    if _parameter_value(value):
+        # Human-readable IDs must not erase distinctions retained by the key.
+        digest = hashlib.sha256(normalize_identity(value).encode()).hexdigest()[:8]
+        return (text[:55] or 'QUANTITY') + '-' + digest
     return text[:64] or 'UNKNOWN'
 
 

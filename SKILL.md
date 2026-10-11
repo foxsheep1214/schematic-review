@@ -133,6 +133,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 ### 5. 专家审查：连接追踪（T）、工程计算（C）、条款核对（D）
 
 按 PWR → RST → CLK → SIG → ANA → PRO → DRV 推进，每条规则逐对象、逐状态给结果；全板项逐条给适用性和结果。
+功能包按实际 package/circuit/state/ref 归组并列必需成员 ID，跨包依赖说明真实路径；不能只按规则编号归组。
+按 [功能包依赖与状态核对](references/plan-and-results.md#功能包依赖与状态核对) 核全部实际成员、外围选值窗口与掉电路径。
 先按 [对象上下文录入](references/plan-and-results.md#对象上下文录入) 保存实际物理对象、状态、路径及出处、
 已核范围和未知边界，再形成结论；噪声 NA 先完成 [噪声路径资格](references/evidence-proportionality.md#噪声路径资格)。
 
