@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "license": "CC0-1.0",
+  "created_for": "SRO-ASG-03-002",
+  "source": "Self-authored synthetic pin-name drawings; no third-party schematic or manufacturer page copied.",
+  "cases": [
+    {
+      "id": "overlap",
+      "pin_names": [
+        "FSW",
+        "AGND"
+      ],
+      "name_origins_mm": [
+        [
+          25,
+          25
+        ],
+        [
+          25.45,
+          25
+        ]
+      ],
+      "expected": "FAIL",
+      "mechanism": "Distinct functional names have touching/overlapping stroke ink; electrical same-GND is independently unchanged."
+    },
+    {
+      "id": "close-but-separated",
+      "pin_names": [
+        "FSW",
+        "AGND"
+      ],
+      "name_origins_mm": [
+        [
+          25,
+          25
+        ],
+        [
+          27.5,
+          25
+        ]
+      ],
+      "expected": "PASS",
+      "mechanism": "Names remain legible and separated even though nearby; proximity is not the failure criterion."
+    },
+    {
+      "id": "no-native-render",
+      "pin_names": [
+        "FSW",
+        "AGND"
+      ],
+      "name_origins_mm": null,
+      "expected": "NOT_EXECUTED",
+      "mechanism": "Missing native rendering does not become a graphical PASS/FAIL from netlist alone."
+    }
+  ]
+}
