@@ -146,6 +146,9 @@ def _component(comp, libparts, pages):
         'part': mpn or source_part,
         'jedec': footprint,
         'value': value,
+        # Instance documentation is design data, not a verified part identity.
+        # Do not borrow the cached libpart's link when this declaration is empty.
+        'datasheet': _text(comp.findtext('datasheet')),
         # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。
         'nc': 'dnp' in properties or is_not_populated(lib, value),
     }

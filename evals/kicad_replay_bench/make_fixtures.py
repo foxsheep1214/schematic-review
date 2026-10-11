@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Rebuild the slimmed KiCad XML fixtures from the frozen deliveries listed in sources.json.
 
-Only elements parse_kicad.py does not read are dropped (title blocks, datasheet and
+Only elements parse_kicad.py does not read are dropped (title blocks,
 description text, timestamps, library lists, non-dnp properties, non-MPN fields).
+Instance datasheet declarations are retained as part of the parsed input.
 A fixture is written only if parsing it gives exactly the same db as parsing the
 original export, so the fixture is a lossless stand-in for the SR input layer.
 Third-party originals stay where they are; only the slimmed copy enters the repo.
@@ -23,7 +24,7 @@ from parse_netlist import integrity_problems  # noqa: E402
 
 LIMIT = 200 * 1024
 # design/source keeps the original export path and date; db.export_meta reads them.
-DROP_COMP = ('datasheet', 'description', 'tstamps')
+DROP_COMP = ('description', 'tstamps')
 DROP_LIBPART = ('description', 'docs', 'footprints', 'fields')
 
 

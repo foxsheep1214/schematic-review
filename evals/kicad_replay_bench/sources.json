@@ -160,8 +160,8 @@
  "intents": [
   {
    "path": "fixtures/rh-ad8495-thermocouple.intent.json",
-   "sha256": "0f83452d277511fce2543d0351b15c9a94d6e2bb208f48fcbd470c44612a7be2",
-   "origin": "Claude 演练 SR 主审 intent.json 中的 schema_version、input_sha256 与 devices（U201/U202 官方脚表），其余段落删去",
+   "sha256": "d050f98d464afc4cc30479ef1598c77523cc7555532217165267eda122171e7d",
+   "origin": "Claude 演练 SR 主审 intent.json 中的 schema_version、input_sha256 与 devices（U201/U202 官方脚表），其余段落删去；input_sha256按当前解析合同（含实例datasheet）重新绑定同一XML，devices内容不变",
    "license": "MIT（本仓库）；脚表内容引用 ADI AD8494/5/6/7 Rev.D 与 TI SLVS543S 的引脚定义"
   }
  ]

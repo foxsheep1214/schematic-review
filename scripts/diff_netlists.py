@@ -15,7 +15,7 @@ import sys
 
 from solve_dividers import parse_resistor
 
-PART_FIELDS = ('part', 'value', 'jedec', 'prim', 'nc')
+PART_FIELDS = ('part', 'value', 'jedec', 'prim', 'nc', 'datasheet')
 
 
 def _net_members(db, include_pseudo=False):
@@ -37,6 +37,10 @@ def diff_databases(old, new, include_pseudo=False):
         for field in PART_FIELDS:
             before = old_parts[ref].get(field)
             after = new_parts[ref].get(field)
+            if field == 'datasheet':
+                # Absence and empty text both mean no instance declaration,
+                # rather than a synthetic document change.
+                before, after = before or '', after or ''
             if before != after:
                 fields[field] = {'old': before, 'new': after}
         if fields:

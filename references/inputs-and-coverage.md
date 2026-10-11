@@ -260,6 +260,7 @@ DNP/DNI/DNF/NC 只按分隔词识别为不贴，不能误判 NCP1117 型号。�
 | `parts[].prim` | `libsource` 的 `lib:part` | 相当于 Cadence 的 primitive 名 |
 | `parts[].part` | MPN 类字段（MPN/Manufacturer Part Number/Order Code…），否则 libsource 的 part | 符号名不是订货码，仍需 DEV-D01 核身份 |
 | `parts[].jedec` | `<footprint>` | KiCad 的封装库项 |
+| `parts[].datasheet` | 实例 `<comp><datasheet>` | 空、缺失或 `~` 记空字符串；不借 libpart 缓存链接，不按 URL/文件名推定型号或用途，链接与实际身份另核 DEV-D04；链接变更/删除进入复审 Diff |
 | `parts[].nc` | `<property name="dnp"/>` 或 VALUE 带 NC 标记 | `exclude_from_bom` 是 BOM 卫生标记，不作装配证据 |
 | `ref2page` | 组件 `sheetpath.names` 对应 `design/sheet` 的编号 | 层次页按导出顺序编号 |
 | `declared_pinname` / `declared_pintype` | libpart 的全部引脚 | 含网表里没出现的脚，用于官方脚表双向差集 |

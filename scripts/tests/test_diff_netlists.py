@@ -1,4 +1,5 @@
 import pathlib
+import copy
 import sys
 import unittest
 
@@ -23,6 +24,26 @@ def db(part, net):
 
 
 class DiffTests(unittest.TestCase):
+    def test_document_link_change_and_removal_are_revision_changes(self):
+        old = db('SYN-IC', 'NET_A')
+        old['parts']['U1']['datasheet'] = 'https://example.invalid/rev-a.pdf'
+        for link in ('https://example.invalid/rev-b.pdf', ''):
+            with self.subTest(link=link):
+                new = copy.deepcopy(old)
+                new['parts']['U1']['datasheet'] = link
+                diff = diff_databases(old, new)
+                self.assertEqual(diff['summary']['parts_changed'], 1)
+                self.assertEqual(diff['parts']['changed'][0]['fields'],
+                                 {'datasheet': {'old': old['parts']['U1']['datasheet'], 'new': link}})
+                self.assertEqual(diff['summary']['pins_changed'], 0)
+                self.assertEqual(diff['summary']['nets_changed'], 0)
+
+    def test_absent_link_and_empty_link_are_equivalent(self):
+        old = db('SYN-IC', 'NET_A')
+        new = copy.deepcopy(old)
+        new['parts']['U1']['datasheet'] = ''
+        self.assertEqual(diff_databases(old, new)['summary']['parts_changed'], 0)
+
     def test_claim_validation_rejects_duplicate_and_missing_fields(self):
         claims = {
             'schema_version': 1,

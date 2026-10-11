@@ -150,6 +150,38 @@ class ContractTest(unittest.TestCase):
         self.assertEqual(self.db['export_meta']['format'], 'kicadxml')
 
 
+class InstanceDocumentationTest(unittest.TestCase):
+    def xml(self, declaration):
+        # An unrelated cached URL must neither replace the instance link nor
+        # supply a missing instance declaration. All names/links are synthetic.
+        library = LIBPARTS.replace('<libpart lib="Device" part="R">',
+                                  '<libpart lib="Device" part="R">'
+                                  '<docs><doc>https://example.invalid/CACHED.pdf</doc></docs>')
+        component = comp('R1', 'Device', 'R', '10k',
+                         fields='<field name="MPN">SYN-R10K</field>')
+        component = component.replace('</comp>', declaration + '</comp>')
+        return netlist(component, net('SIG', ('R1', '1', '~', 'passive')),
+                       libparts=library)
+
+    def test_instance_link_retained_without_identity_inference(self):
+        db = parse(self.xml('<datasheet> https://example.invalid/OTHER-DEVICE.pdf </datasheet>'))
+        self.assertEqual(db['parts']['R1']['datasheet'],
+                         'https://example.invalid/OTHER-DEVICE.pdf')
+        self.assertEqual(db['parts']['R1']['part'], 'SYN-R10K')
+        self.assertEqual(db['parts']['R1']['value'], '10k')
+        self.assertEqual(db['parts']['R1']['prim'], 'Device:R')
+
+    def test_absent_blank_and_no_name_links_do_not_borrow_cache(self):
+        for declaration in ('', '<datasheet/>', '<datasheet> </datasheet>',
+                            '<datasheet> ~ </datasheet>'):
+            with self.subTest(declaration=declaration):
+                self.assertEqual(parse(self.xml(declaration))['parts']['R1']['datasheet'], '')
+
+    def test_link_keeps_xml_text_without_fetching_or_rewriting(self):
+        db = parse(self.xml('<datasheet>../docs/spec.pdf?variant=A&amp;rev=2</datasheet>'))
+        self.assertEqual(db['parts']['R1']['datasheet'], '../docs/spec.pdf?variant=A&rev=2')
+
+
 class NotConnectedTest(unittest.TestCase):
     def test_declared_no_connect_becomes_a_pseudo_net(self):
         db = parse(board())

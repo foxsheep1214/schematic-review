@@ -142,6 +142,35 @@ class GeneratedOutputTest(unittest.TestCase):
                     self.assertTrue(_global_scope(copy.deepcopy(item)))
         self.assertFalse(_global_scope(next(x for x in plan['checks'] if x['id'] == 'DEV-C05.U1')))
 
+    def test_generated_stress_criteria_expose_estimate_and_scope_limits(self):
+        # Reviewers receive actual generated criteria, including each circuit
+        # state, rather than discovering decisive limits in a separate reference.
+        intent = {'schema_version': 3, 'circuits': [
+            {'id': 'C-REG', 'type': 'POWER_CONVERTER', 'refs': ['U1'],
+             'states': ['run', 'startup'], 'citation': 'synthetic'},
+            {'id': 'C-DRIVE', 'type': 'POWER_PROTECTION', 'refs': ['U1'],
+             'states': ['run', 'fault'], 'citation': 'synthetic'}]}
+        checks = build_review_plan(self.board(), intent)['checks']
+        for rule in ('DEV-C05', 'DRV-C02'):
+            generated = [item for item in checks if item['rule'] == rule]
+            self.assertTrue(generated, rule)
+            for item in generated:
+                with self.subTest(check=item['id']):
+                    self.assertIn('典型±30%', item['criterion'])
+                    self.assertIn('后果不超过P2', item['criterion'])
+                    self.assertIn('P1核心反馈', item['criterion'])
+                    self.assertIn('受控身份全分支均适用的保证边界', item['criterion'])
+        stability = [item for item in checks if item['rule'] == 'PWR-C04']
+        self.assertEqual(len(stability), 2)
+        for item in stability:
+            self.assertIn('原厂明确不要求Cout', item['criterion'])
+            self.assertIn('独立电容额定或反向能量', item['criterion'])
+            self.assertIn('仅凭典型应用等效', item['criterion'])
+            self.assertIn('后果不超过P2', item['criterion'])
+        passive = next(item for item in checks if item['rule'] == 'DEV-C01')
+        self.assertIn('活动轨段、滑臂与端点', passive['criterion'])
+        self.assertIn('不能把整轨功率额定用于任意局部轨段', passive['criterion'])
+
 
 class ObjectiveAlignmentTest(unittest.TestCase):
     def test_every_active_rule_has_one_primary_objective(self):

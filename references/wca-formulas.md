@@ -63,6 +63,23 @@ bias_current_a 保证范围。ignored_nodes 只适合输入负载已计入偏置
 | 电阻/泄放 | P=V²/R、I²R，电阻工作电压；放电 t=RC ln(Vstart/Vsafe) | 改 24V 泄放电阻同时算满压常态功耗和温度降额；不得仅按放电速度给封装 |
 | 跨域/掉电 | 分别核接收端门限、允许输入/注入电流、Ioff、VDD=0 条件、转换器供电顺序 | 不固定接“较高域”或“较低域”；没有直接兼容窗口时用合适转换器/隔离器 |
 
+### 电位器的活动轨段与滑臂
+
+先记录物理端子与滑臂、是否将滑臂短接一端，以及实际分压或两端 rheostat 接法。
+整轨额定功率不能直接作为任意局部轨段的允许功率。均匀轨段模型中，令整轨电阻为
+Rtotal、按温度/项目降额后的整轨允许功率为 Pallow，活动段电阻为 r>0，则
+Psegment,allow=Pallow·r/Rtotal；Itrack,allow=sqrt(Pallow/Rtotal)。活动段实际耗散为 Itrack²·r，
+应与本段限值比较。非均匀轨道或厂家另有额定方法时按实际型号条款，不能默认此模型适用。
+
+串联限流电阻 Rs 与理想活动段 r 承受电压 V 时，I=V/(Rs+r)，Psegment=V²·r/(Rs+r)²；
+Rs>0 时功耗极值可能在 r=Rs，电流极值趋近最小活动电阻处，不能只核最大阻值或最大总功耗。
+近零/端点、接触电阻、滑臂电流及脉冲/重复率另核；滑臂短接一端不自动证明滑臂被旁路，
+须按接触与剩余轨段的实际并联路径定界。上述轨段公式不证明端点或滑臂安全。
+没有实际器件或适用轨道/滑臂保证时保留具体缺口；候选系列和未定外接电位器不借用普通电阻最弱档。
+
+方法依据：[Bourns Potentiometer Handbook，印刷 p.66 “Power Rating as a Rheostat”](https://www.bourns.com/docs/technical-documents/technical-library/corporate/OnlinePotentiometerHandbook.pdf)。
+该方法不把手册示例的电流上限或某候选功率推广为所有电位器的额定。
+
 ### MOSFET 双向开漏电平转换
 
 结构：单颗 N 沟道 MOSFET，栅极接低侧轨 VL，源极接低侧信号（上拉 RL 到 VL），漏极接高侧信号（上拉 RH 到 VH）。

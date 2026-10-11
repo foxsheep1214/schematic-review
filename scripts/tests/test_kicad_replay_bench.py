@@ -14,6 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import make_fixtures  # noqa: E402
 import run  # noqa: E402
 from parse_kicad import parse  # noqa: E402
+from parse_netlist import integrity_problems  # noqa: E402
+from board_intent import input_fingerprint  # noqa: E402
 from test_parse_kicad import comp, net, netlist  # noqa: E402
 
 REQUIRED = {'parse.strict_exit', 'parse.strict_db_written', 'parse.self_check_passed',
@@ -54,7 +56,20 @@ class FrozenInputsTests(unittest.TestCase):
                       + comp('R1', 'Device', 'R', '10k', properties='<property name="dnp"/>'),
                       net('VIN', ('U1', '1', 'VIN_1', 'power_in'), ('R1', '1', '', 'passive'))
                       + net('VOUT', ('U1', '3', 'VOUT', 'power_out'), ('R1', '2', '', 'passive')))
+        xml = xml.replace('<comp ref="U1">',
+                          '<comp ref="U1"><datasheet>https://example.invalid/instance.pdf</datasheet>')
+        self.assertEqual(parse(make_fixtures.slim(xml))['parts']['U1']['datasheet'],
+                         'https://example.invalid/instance.pdf')
         self.assertEqual(parse(make_fixtures.slim(xml)), parse(xml))
+
+    def test_fixture_intents_bind_the_current_parsed_input(self):
+        for case in load('cases.json')['cases']:
+            if not case.get('intent'):
+                continue
+            with self.subTest(case=case['id']):
+                db = parse((BENCH / case['fixture']).read_text(encoding='utf-8'))
+                db['integrity'] = {'self_check_passed': not integrity_problems(db)}
+                self.assertEqual(load(case['intent'])['input_sha256'], input_fingerprint(db))
 
 
 class JudgeTests(unittest.TestCase):
