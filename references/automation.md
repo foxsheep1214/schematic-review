@@ -563,6 +563,15 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 状态、被监测网、复位输出的去向与上拉，以及给 IC 供电的电源轨及其监测覆盖。只有复位输入脚的
 主控不是监控器。
 
+型号专用角色要求已放置的 `part` 和 `value` 均非空且一致确认精确型号；非空 `prim` 只作相符交叉核，
+不能补齐缺失的已放置身份。仅有 part、value 或 prim 的单一提示均不启用；prim 缺失但 part/value
+精确一致时可启用。允许首尾空白、大小写和有效库命名空间的等价写法，不从 footprint 或 datasheet 链接猜型号：
+TPL5010 的 DONE4 是喂狗输入、RST6 是开漏复位输出（TI SNAS651A，2018-09，p4）；
+ESP32-C3-MINI-1-N4 的 EN8 是复位接收输入（模组 datasheet v2.2，Table 3-1、§4.3）。
+普通 MCU/LDO 的 DONE/EN 不继承这些角色。物理脚号、名称或方向不符、DNP 时不启用模型。
+复位名用共享 `pin_aliases` 识别（包括原生 `~{RST}`）；接收端还须有明确 input/bidirectional
+电气方向。native、归一及声明类型冲突、未知或纯输出（含 open-collector/tri-state）不算真实接收端。
+
 - 喂狗输入状态：`tied`（直接坐在电源/地上）、`driven`（有其他 IC/连接器脚驱动）、
   `pulled-only`（仅有上/下拉）、`floating`。
 - 轨的监测覆盖分 `sense-pin`、`divider`（经电阻到 sense 网）、`supervisor-supply`（仅供电给监控器，
@@ -587,15 +596,27 @@ PWR-T04 按需求决定哪些域必须监控。`supervision.schema_version=2` �
 写 `required`（真布尔）、`criterion`（明确监控要求或不要求的范围依据）、`citation`（受控出处），
 以及 `identity`：
 
-- `source_node`：该轨实际来源的物理节点；`source_role` 为 `external_supply` 或 `rail_driver`。
+- `source_node`：该轨实际来源的物理节点；`source_role` 为 `external_supply`、`upstream_external_supply` 或 `rail_driver`。
 - `part`：实际来源器件的 `part`、`prim`、`value`、`jedec` 四字段快照（空字段保留空字符串）。
 - `pin_name`：该来源脚的实际名称；`native_pintypes`：来源器件全部原生节点/类型的快照，无此原生索引时写空对象。
 - `citation`：该来源角色与物理身份的定位出处。
 
-声明须绑定当前 `input_sha256`，来源须在本装配实际已贴、位于该真实电源轨，名称与身份快照吻合。
-外供源须有已核连接器类型/连接器触点身份，或明确书面外供角色加完整的原生 passive 触点结构；
-有原生类型时，声明与导出节点/类型须完整一致且全部 passive。只靠 J 位号或把 IC 的 power_in/input
-声明成外供源不成立。板内 `rail_driver` 必须匹配 PowerTree 实际回溯的来源节点；已有原生类型时须为输出。
+声明须绑定当前 `input_sha256`，来源须在本装配实际已贴，名称与完整身份快照吻合。
+`external_supply` 与 `rail_driver` 的来源节点须位于该真实电源轨。
+外供源须有已核连接器触点身份，或书面外供角色加完整原生 passive 触点结构；选中的供入节点
+始终须为实际 passive 触点且互反归网，不能是地、伪网、NC 或 active 脚。全部原生节点须完整，
+原生/声明类型须一致；仅允许真实导出 no_connect、声明一致、NC 索引一致且位于独占 NC 伪网的
+非供电脚。无声明对照的 NC、实体电源网/地上的 NC 都不例外。只靠 J 位号或把 IC 的 power_in/input、
+二极管端或有源器件声明成外供源不成立。
+`upstream_external_supply` 允许同样已资格的外供触点位于真正上游网：用 PowerTree 从目标轨回溯，
+必须到达该来源且有非空路径，再逐跳核两端真实 passive、互反归网、已贴状态与非伪网/非地；
+只接受 PowerTree 已支持的 0Ω/电感/磁珠/保险串联路径和身份有依据的正向二极管。
+逐跳按实际已核器件 kind 判定：若为 resistor，其值必须能精确解析为严格 0Ω，不以 F/L/FB 位号
+代替电阻数值；未知、缺值、负值、错单位及浮点下溢的非零电阻均不成立。真正的电感/磁珠/保险
+保留自己的非零参数标签，不按电阻单位重新解释。
+反向、DNP、断开、open、非零串联电阻、有源/NC 路径、同网空路径都不成立；生成的 `source_path`
+保留逐跳物理脚与网络。此可选资格不修改共享 PowerTree，也不证明二极管压降、供电能力或动态保证。
+板内 `rail_driver` 必须匹配 PowerTree 实际回溯的来源节点；已有原生类型时须为输出。
 这些资格只证明书面声明与原生结构相符，不证明出处语义真实、精确机械变体、额定值、阈值、动作或 UVLO；
 原厂资料与受控需求仍须人工逐项核实，其他身份 OPEN 不因本声明关闭。
 

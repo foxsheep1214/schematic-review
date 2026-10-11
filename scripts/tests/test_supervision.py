@@ -32,6 +32,7 @@ def supervised_board(wdi='driven', reset='connected', extra_rail=False, pullup=T
     soc.append(('2', 'NRST', 'SYS_RST_N') if reset == 'connected' else
                ('2', 'GPIO3', 'SYS_RST_N') if reset == 'gpio-only' else ('2', 'NRST', 'OTHER_RST'))
     add(db, 'U4', 'SOC', soc)
+    db['pintype']['U4.2'] = 'IN'
     if wdi == 'driven':
         add(db, 'U5', 'MCU', [('1', 'GPIO1', 'WDI_NET'), ('2', 'VDD', 'VCC_3V3'),
                               ('3', 'GND', 'GND')])

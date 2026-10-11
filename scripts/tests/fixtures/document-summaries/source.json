@@ -1,0 +1,6 @@
+{
+  "origin": "Self-authored minimal schema fixture for document reconciliation, 2026-10-11",
+  "inspiration": "SRO-ASG-01-1 publicly registered observation: frozen README summary disagreed with inventory count",
+  "rights": "All fixture rows and IDs are newly authored, licensed under the repository MIT license. No original ASG schematic, calculation expressions, values or source prose copied. Original frozen files are read-only runtime replay inputs and are not bundled in this fixture.",
+  "scope": "Document consistency only; row status FAIL is a fixture value, not a circuit assessment."
+}

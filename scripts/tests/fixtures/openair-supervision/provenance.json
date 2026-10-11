@@ -1,0 +1,29 @@
+{
+  "upstream": "https://github.com/Open-Air-Foundation/pcb-openair-main",
+  "commit": "999e77c939f75e3b221c081043ae044904f089cd",
+  "attribution": "AirGradient hardware team",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "schematic": "openair-main/openair-main.kicad_sch",
+  "schematic_sha256": "0aecb66380ef467587903c01507774ecfcef1ff736e3a56f67e0c4096ce12060",
+  "training_export_sha256": "d29d69930c79dc7731def82e674b76c2f0bb35af030441f125131aaa25b3a954",
+  "derivation": "Native KiCad XML subset retaining U1/U2/R6/R7/C4 components, their original pin names/types and only their contacts; design source changed to repository-relative path. No connected retained contact has been moved.",
+  "retained_refs": [
+    "C4",
+    "R6",
+    "R7",
+    "U1",
+    "U2"
+  ],
+  "fixture_sha256": "8beb99589d6346006362b5bf871aaba8314a8190ad6db2d9fd3e2bdf5188049a",
+  "independent_identity_counterexamples": {
+    "prim-only-U1.json": {
+      "sha256": "0f6f717daa0b43c6229e6376919a325ab6e616ba6e47f9adecaaf47f10102e9c",
+      "derivation": "Unmodified audit-01 counterexample parsed from the authorized native OpenAir training source; clears target part/value/jedec/datasheet while retaining prim, pin semantics and connections."
+    },
+    "prim-only-U2.json": {
+      "sha256": "e6d84e79b03d264f638fdf0617d14c91b084667cb814c06201c45340a08120fe",
+      "derivation": "Unmodified audit-01 counterexample parsed from the authorized native OpenAir training source; clears target part/value/jedec/datasheet while retaining prim, pin semantics and connections."
+    }
+  }
+}

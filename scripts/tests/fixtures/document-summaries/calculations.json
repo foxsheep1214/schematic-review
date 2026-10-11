@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "calculations": [
+    {
+      "id": "A",
+      "claim": "SUPPORTED"
+    },
+    {
+      "id": "B",
+      "claim": "CONDITIONAL"
+    },
+    {
+      "id": "C",
+      "claim": "FAIL"
+    }
+  ]
+}

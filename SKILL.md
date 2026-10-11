@@ -93,11 +93,16 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 
 核对重复归网、缺失 primitive、索引互反、符号声明脚与网表实有脚；导出日志有错误或中止（DOC-A01）先作为输入阻断。
 NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联通路视为断开，多配置分别分析。
+原生输入受阻仍按 [受限输入中的独立主张](references/inputs-and-coverage.md#受限输入中的独立主张)
+审查可读材料；记录具体资料矛盾或保证缺口，不用全板通用阻断代替逐项结论。
 逐页提取 PDF 文本并建页码/页名/网表路径映射；极性、旋转不清时渲染局部放大。
 
 ### 2. 冷跑：自动扫描与计划
 
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan-cold.json --json lint-cold.json
+
+交付含计算库存、preflight 与 README/报告摘要时，冷跑另执行 [派生摘要核对](references/document-summaries.md)；
+热跑及报告定稿后用最终文件重放，候选按 DOC-Q01 单独入计划，不迁移局部输入资格 PASS。
 
 补齐命名启发式漏掉的对象/需求/工况，人工补查项加入 `review-plan-cold.json`。排除候选须有反证，无特征不等于 NA。
 检查器（I²C、去耦、感性负载、功率开关、输入滤波、上电、监控、差分电平、光耦等）每趟都跑；

@@ -7,6 +7,8 @@
 """
 import re
 
+from solve_dividers import parse_resistor
+
 import catalog
 import board_intent
 from . import hotmath
@@ -26,6 +28,53 @@ SUPPLY_PIN_RE = re.compile(r'^(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|VIN\d*|PVIN
 OUT_PINTYPES = {'OUT', 'OUTPUT', 'TRISTATE', '3STATE', 'BI', 'BIDI', 'BIDIR', 'IO', 'I/O'}
 MAX_RAILS = 64
 
+# Only physical roles confirmed by the manufacturer are model-specific.
+# TI SNAS651A (Sep 2018), p4: DONE4 input, RST6 open-drain output.
+# ESP32-C3-MINI-1 datasheet v2.2, Table 3-1/section 4.3: EN8 input/reset.
+MODEL_WATCHDOG = 'TPL5010'
+MODEL_RESET_RECEIVER = 'ESP32-C3-MINI-1-N4'
+PIN_DIRECTIONS = {
+    'input': {'IN', 'INPUT'},
+    'bidirectional': {'BI', 'BIDI', 'BIDIR', 'BIDIRECTIONAL', 'IO', 'I/O'},
+    'output': {'OUT', 'OUTPUT'},
+    'open_collector': {'OCL', 'OPEN_COLLECTOR'},
+    'open_emitter': {'OCA', 'OPEN_EMITTER'},
+    'tri_state': {'TRISTATE', '3STATE', 'TRI_STATE'},
+}
+
+
+def _exact_model(part, model):
+    """Placed part AND value must prove the MPN; prim only cross-checks it."""
+    identities = {key: ng.normalize(part.get(key)) for key in ('part', 'value', 'prim')}
+    pattern = r'(?:[^:\s]+:)?' + re.escape(model)
+    return (bool(identities['part'] and identities['value']) and all(
+        re.fullmatch(pattern, value) for value in identities.values() if value))
+
+
+def _pin_direction(graph, node):
+    """Unknown or conflicting native/normalized/declaration semantics stay unknown."""
+    if node in graph.db.get('no_connect_nodes', []):
+        return None
+    directions = set()
+    for field in ('pintype', 'native_pintype', 'declared_pintype', 'declared_native_pintype'):
+        if node not in graph.db.get(field, {}):
+            continue
+        value = ng.normalize(graph.db[field][node])
+        direction = next((key for key, aliases in PIN_DIRECTIONS.items() if value in aliases), None)
+        if direction is None:
+            return None
+        directions.add(direction)
+    return next(iter(directions)) if len(directions) == 1 else None
+
+
+def _physical_pin(graph, ref, pin, names, directions):
+    node = ref + '.' + pin
+    aliases = set(ng.pin_aliases(graph.pinname.get(node), pin))
+    declared = graph.db.get('declared_pinname', {}).get(node)
+    return (node in graph.pin2net and bool(aliases & names)
+            and (declared is None or bool(set(ng.pin_aliases(declared, pin)) & names))
+            and _pin_direction(graph, node) in directions)
+
 
 RAIL_REQUIREMENT_FIELDS = {'net', 'state', 'required', 'criterion', 'citation', 'identity'}
 SOURCE_IDENTITY_FIELDS = {'source_node', 'source_role', 'part', 'pin_name', 'native_pintypes', 'citation'}
@@ -41,6 +90,97 @@ def _section_errors(intent, db):
     return state_lib.section_errors(
         source, db, 'supervision', item_field='supervisors', item_key='supervisor',
         fields=('id', 'ref', 'monitored_nets', 'citation'))
+
+
+def _native_contacts(graph, ref, *, allow_nc=False):
+    """Full native/declaration agreement; NC is never a supply contact."""
+    db = graph.db
+    observed = {n for field in ('pin2net', 'pinname', 'pintype', 'declared_pinname',
+                                'declared_pintype', 'native_pintype', 'declared_native_pintype')
+                for n in db.get(field, {}) if n.partition('.')[0] == ref}
+    native = {n: t for n, t in db.get('native_pintype', {}).items() if n.partition('.')[0] == ref}
+    declared = {n: t for n, t in db.get('declared_native_pintype', {}).items()
+                if n.partition('.')[0] == ref}
+    if not observed or set(native) != observed:
+        return False
+    if 'declared_native_pintype' in db and declared != native:
+        return False
+    for node, pintype in native.items():
+        net = graph.pin2net.get(node)
+        if net is None or node not in graph.nodes_on(net):
+            return False
+        if node in db.get('declared_pinname', {}) and db['declared_pinname'][node] != graph.pinname.get(node):
+            return False
+        if pintype == 'passive':
+            if (node in db.get('no_connect_nodes', []) or net in graph.pseudo
+                    or any(ng.normalize(db.get(field, {}).get(node)) not in ('UNSPEC', 'UNSPECIFIED', 'PASSIVE')
+                           for field in ('pintype', 'declared_pintype') if node in db.get(field, {}))):
+                return False
+        elif (not allow_nc or pintype != 'no_connect' or declared.get(node) != 'no_connect'
+              or node not in db.get('no_connect_nodes', []) or net not in graph.pseudo
+              or ng.is_ground(net) or ng.is_rail(net)
+              or graph.nodes_on(net) != [node]
+              or any(ng.normalize(db.get(field, {}).get(node)) != 'NC'
+                     for field in ('pintype', 'declared_pintype') if node in db.get(field, {}))):
+            return False
+    return True
+
+
+def _external_source_qualified(graph, node):
+    ref = node.partition('.')[0]
+    net = graph.pin2net.get(node)
+    # A connector may have isolated mechanical NC pads, but the selected supply
+    # node itself must be a real native passive contact, never a load/output/NC.
+    return (graph.db.get('native_pintype', {}).get(node) == 'passive'
+            and node not in graph.db.get('no_connect_nodes', [])
+            and net is not None and not ng.is_ground(net) and net not in graph.pseudo
+            and node in graph.nodes_on(net) and _native_contacts(graph, ref, allow_nc=True)
+            and (graph.qualified_connector_contact(ref)
+                 or graph.kind(ref) in (ng.CONNECTOR, ng.UNKNOWN)))
+
+
+def _upstream_external_path(scan, node, net, citation):
+    """Use PowerTree for discovery, then constrain its path to actual passive links."""
+    graph = scan.graph
+    state_id = scan.state['id']
+    tree = powertree.PowerTree(graph, {'active_state': state_id, 'power_sources': [
+        {'node': node, 'states': [state_id], 'citation': citation}]})
+    found = tree.source_of(net)
+    if (not found or found['source'] != node or not found['path']
+            or not _external_source_qualified(graph, node)):
+        return None
+    current, path = graph.pin2net[node], []
+    for ref in found['path']:
+        ends = graph.nets_of(ref)
+        nodes = [ref + '.' + pin for pin in graph.pins_of(ref)]
+        kind = graph.kind(ref)
+        if (not graph.is_fitted(ref) or len(ends) != 2 or current not in ends
+                or len(nodes) != 2 or not _native_contacts(graph, ref)
+                or kind not in (ng.DIODE, ng.RESISTOR, ng.INDUCTOR, ng.FERRITE, ng.FUSE)):
+            return None
+        other = ends[0] if ends[1] == current else ends[1]
+        if any(ng.is_ground(n) or n in graph.pseudo for n in (current, other)):
+            return None
+        if kind == ng.RESISTOR:
+            try:
+                resistance = parse_resistor(graph.parts[ref].get('value'), exact=True)
+            except (ValueError, OverflowError):
+                return None
+            if resistance is None or resistance.get('ohm_exact') != '0':
+                return None
+        if kind == ng.DIODE:
+            anode, cathode = graph.node_named(ref, 'anode'), graph.node_named(ref, 'cathode')
+            if (ng.kind_gap(graph, ref) or not anode or not cathode
+                    or graph.pin2net.get(anode) != current or graph.pin2net.get(cathode) != other):
+                return None
+        start = next((n for n in nodes if graph.pin2net[n] == current), None)
+        end = next((n for n in nodes if graph.pin2net[n] == other), None)
+        if not start or not end or start not in graph.nodes_on(current) or end not in graph.nodes_on(other):
+            return None
+        path.append({'ref': ref, 'from_node': start, 'from_net': current,
+                     'to_node': end, 'to_net': other})
+        current = other
+    return path if current == net else None
 
 
 def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
@@ -62,7 +202,7 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
     require(set(identity) == SOURCE_IDENTITY_FIELDS, 'source identity has missing/unsupported fields')
     for key in ('source_node', 'source_role', 'pin_name', 'citation'):
         require(state_lib._text(identity.get(key)), 'source identity needs ' + key)
-    require(identity.get('source_role') in ('external_supply', 'rail_driver'), 'unknown source role')
+    require(identity.get('source_role') in ('external_supply', 'upstream_external_supply', 'rail_driver'), 'unknown source role')
     part = identity.get('part')
     require(isinstance(part, dict) and set(part) == PART_IDENTITY_FIELDS
             and all(isinstance(v, str) for v in part.values()) and state_lib._text(part.get('part')),
@@ -83,7 +223,8 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
     ref = node.partition('.')[0]
     actual_part = {k: db.get('parts', {}).get(ref, {}).get(k, '') for k in PART_IDENTITY_FIELDS}
     require(ref in graph.parts and graph.is_fitted(ref), 'source is absent/DNP in this assembly')
-    require(graph.pin2net.get(node) == net and node in graph.nodes_on(net), 'source node does not belong to actual net')
+    if identity.get('source_role') != 'upstream_external_supply':
+        require(graph.pin2net.get(node) == net and node in graph.nodes_on(net), 'source node does not belong to actual net')
     require(part == actual_part, 'source part identity differs from native input')
     require(identity.get('pin_name') == graph.pinname.get(node), 'source pin name differs from native input')
     actual_types = {n: t for n, t in db.get('native_pintype', {}).items() if n.partition('.')[0] == ref}
@@ -94,22 +235,12 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
         # Where native semantics are available, a load/input cannot be promoted to a driver.
         require(not actual_types or actual_types.get(node) in ('power_out', 'output', 'bidirectional', 'tri_state'),
                 'native source pin is not an output')
-    elif identity.get('source_role') == 'external_supply':
-        observed = {n for field in ('pin2net', 'pinname', 'pintype', 'declared_pinname',
-                                    'declared_pintype', 'native_pintype', 'declared_native_pintype')
-                    for n in db.get(field, {}) if n.partition('.')[0] == ref}
-        native_contacts = bool(observed) and set(actual_types) == observed and all(
-            t == 'passive' for t in actual_types.values())
-        declared_types = {}
-        if 'declared_native_pintype' in db:
-            declared_types = {n: t for n, t in db['declared_native_pintype'].items() if n.partition('.')[0] == ref}
-            native_contacts = native_contacts and declared_types == actual_types
-        # A cited external role plus complete passive native contacts supports custom symbols;
-        # refdes alone never supplies this qualification, nor overrides an active/passive-device role.
-        qualified = graph.qualified_connector_contact(ref) or (
-            graph.kind(ref) in (ng.CONNECTOR, ng.UNKNOWN) and native_contacts)
-        require(qualified, 'external source lacks verified connector identity or complete native passive contacts')
-        require(not (actual_types or declared_types) or native_contacts, 'external source role conflicts with native pin types')
+    elif identity.get('source_role') in ('external_supply', 'upstream_external_supply'):
+        require(_external_source_qualified(graph, node),
+                'external source lacks complete native passive contacts with isolated, declaration-matched NC pads')
+        if identity.get('source_role') == 'upstream_external_supply':
+            require(_upstream_external_path(scan, node, net, identity['citation']) is not None,
+                    'upstream external source lacks a nonempty fitted forward passive supply path')
     return errors
 
 
@@ -153,8 +284,13 @@ class _Scan:
             if ref == source_ref or not self.graph.is_fitted(ref):
                 continue
             kind = self.graph.kind(ref)
-            name = ng.normalize(self.graph.pinname.get(node))
-            if kind is ng.IC and name and RESET_IN_RE.match(name):
+            pin = node.partition('.')[2]
+            named_reset = ng.name_matches(RESET_IN_RE, self.graph.pinname.get(node), pin)
+            model_reset = (_exact_model(self.graph.parts[ref], MODEL_RESET_RECEIVER)
+                           and _physical_pin(self.graph, ref, '8', {'EN'}, {'input'})
+                           and pin == '8')
+            if (kind is ng.IC and _pin_direction(self.graph, node) in ('input', 'bidirectional')
+                    and (named_reset or model_reset)):
                 found.append({'node': node, 'role': 'reset-input'})
             elif kind is ng.IC:
                 found.append({'node': node, 'role': 'other-pin'})
@@ -193,6 +329,11 @@ class _Scan:
                        if ng.normalize(graph.pintype.get(node)) in OUT_PINTYPES
                        or ng.normalize(graph.pinname.get(node)) in {'WDO', 'PFO'}
                        or watchdogs or senses or manual}
+            if (_exact_model(graph.parts[ref], MODEL_WATCHDOG)
+                    and _physical_pin(graph, ref, '4', {'DONE'}, {'input'})
+                    and _physical_pin(graph, ref, '6', {'RST', 'RSTN'}, {'open_collector', 'output'})):
+                watchdogs[ref + '.4'] = graph.pin2net[ref + '.4']
+                outputs[ref + '.6'] = graph.pin2net[ref + '.6']
             if not (watchdogs or senses or manual) or not outputs:
                 continue
             supplies = sorted(set(self.graph.named_pins(ref, SUPPLY_PIN_RE).values()))
@@ -273,6 +414,10 @@ def build_inventory(db, intent=None):
                 rail['scope_qualified'] = bool(valid)
                 rail['requirement'] = matches[0] if valid else None
                 if valid:
+                    identity = matches[0]['identity']
+                    rail['source_path'] = (_upstream_external_path(
+                        scan, identity['source_node'], rail['net'], identity['citation'])
+                        if identity['source_role'] == 'upstream_external_supply' else [])
                     rail['gaps'] = [gap for gap in rail['gaps'] if gap != 'rail-identity:' + rail['net']]
                 else:
                     rail['gaps'] = sorted(set(rail['gaps'] + ['rail-requirement:' + rail['net']]))
