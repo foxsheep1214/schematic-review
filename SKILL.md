@@ -23,16 +23,12 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
    找到几项严重问题后也不停止其余适用审查。
 4. **先算再判证据不足**：已有资料能回答的先读、先算、先定界；可信边界已违反就判 FAIL。
    只索取会改变本条判断的缺口，并分清缺外部资料、设计未定、需求未定和审查未完成。
-   全温保证值直接复用；窄的连接判据不承担完整应力或实测证明；软目标不自动成为 P1 硬门槛。
-   规则见 [最小充分证据](references/evidence-proportionality.md)。
-   每项证据不足按 [危险度分类原则](references/verdicts-and-release.md#证据不足的危险度分类原则)
-   评估有物理依据且尚未排除的最严重后果：实际路径、适用工况和独立保护支持潜在 P0–P3，
+   规则见 [最小充分证据](references/evidence-proportionality.md)。每项证据不足按
+   [危险度分类原则](references/verdicts-and-release.md#证据不足的危险度分类原则) 评估有物理依据且尚未排除的最严重后果，
    不按“参数未知”、器件类别或整批默认值定级；等级、证据置信度和冻结影响分别记录。
 5. **不通过必须可改**：每个 FAIL 给定位、旧→新、顺序操作、参数依据和通过标准；证据不足项给补证或设计路径。
-   缺输入时给取得方法和条件方案，不编造料号、阻值或空闲 GPIO。见 [报告与修改说明](references/report-and-remediation.md)。
-   证据不足项若能通过修改原理图消除缺口（让器件回到已有资料的保证条件内、补足余量、定下未选器件），
-   直接给出电路改进建议，并按改后电路说明能规避哪个问题、关闭哪些检查、代价和残留；改不了的写明原因。
-   这条建议不改变本轮结论，改图并复审后才关闭。见 [证据不足项的电路改进建议](references/report-and-remediation.md#三证据不足项的电路改进建议)。
+   缺输入时给取得方法和条件方案，不编造料号、阻值或空闲 GPIO。能靠改原理图消除的证据不足，直接给电路改进建议；
+   建议不改变本轮结论，改图并复审后才关闭。见 [报告与修改说明](references/report-and-remediation.md)。
 6. **守住范围**：准出对象是原理图；PCB、SI/PI、EMC、实测热和生产验证形成 HANDOFF，但原理图能判定的
    电气前提不能推给下游。见 [结论与准出](references/verdicts-and-release.md)。
 
@@ -86,8 +82,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 用户明确要冻结才用 `schematic_freeze`）。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
 集中提出，先做不受影响的工作，不逐颗器件打断用户，也不自行接受风险。
 录入前按 [源条目到审查义务](references/requirement-clarifications.md#源条目到审查义务) 分清真实待决、
-客观设计义务、明确排除和下游工作；保留源文及源状态，不能把源文件的 OPEN 标题机械变成责任方待决。
-确认是需求说明不明确造成的证据不足，报告结论直接写明：引用需求原文（或说明未提及），给出建议补入的需求条文。
+客观设计义务、明确排除和下游工作；不能把源文件的 OPEN 标题机械变成责任方待决。
 按 [输入与覆盖](references/inputs-and-coverage.md) 记录输入版本/哈希；PDF 与网表须核修订号证明同版。
 仅有 PDF 时逐页读图并声明范围，不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装须另获授权。
 
@@ -126,9 +121,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
     python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --evidence evidence.json --intent intent.json --json datasheet-audit.json
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --evidence evidence.json --datasheet-audit datasheet-audit.json --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json
 
-`review-plan.json` 是唯一最终计划。自动 E 只覆盖输入的具体对象；资料未 AVAILABLE、指纹过期或模型缺失时保持证据不足。
-两个例外（边界已证明违反时与人工检查同判 FAIL；无验收窗口的名义输出只把输出窗口判 NA）见
-[自动证据计算的例外](references/evidence-proportionality.md#自动证据计算的例外)。
+`review-plan.json` 是唯一最终计划。自动 E 只覆盖输入的具体对象；资料未 AVAILABLE、指纹过期或模型缺失时保持证据不足，
+例外见 [自动证据计算的例外](references/evidence-proportionality.md#自动证据计算的例外)。
 
 ### 5. 专家审查：连接追踪（T）、工程计算（C）、条款核对（D）
 
@@ -147,11 +141,9 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 - **工程计算**：按 [WCA 公式](references/wca-formulas.md) 先确认模型，再代入实际串并联、输入/温度/负载和公差角点；
   原厂已覆盖工况的 Min/Max 直接使用。区分设定目标与物理可达输出（FB 公式不代表升压能力、RC 不等于复位脉宽、
   有 TVS 不等于防护通过）。连续可调输出在全范围扫描应力。判“缺保护”前计入 IC 自带保护（寄存器设定的门限归固件任务）；改频率/阻值/保护管时连带复算。
-- **动态数值证据**：需要有界 R/C 工作点或瞬态时，按 [仿真证据](references/simulation-evidence.md) 从实际 db 归网生成模型、绑定参数/状态出处、保存全部角点与原始输出，再回放核对。样本在窗口内不直接等于规则 PASS；缺模型、边界或保证条件继续 INSUFFICIENT。
+- **动态数值证据**：需要有界 R/C 工作点或瞬态时按 [仿真证据](references/simulation-evidence.md)；样本在窗口内不直接等于规则 PASS。
 - **条款核对**：每颗 IC/模组核推荐工作条件（DEV-C05）和逐脚处置（DEV-D05）；连接器核对端定义（DEV-D03）和对外防护（PRO-D03）；
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
-- **证据不足分级**：确定缺口会改变的具体判据，追踪条件性后果，核独立保护及已有边界，
-  再选潜在影响等级并写排除/调整等级所需的证据；方法和边界例子见 [危险度分类原则](references/verdicts-and-release.md#证据不足的危险度分类原则)。
 
 ### 6. 图面目检（V）
 
@@ -160,13 +152,9 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 ### 7. 结果、报告与校验
 
-结果独立保存为 `review-results.json`，绑定最终计划；每项结论核对对象、配置、工况、判据与原始证据，
-批量脚本只录入已审结论。按有证据的共同根因归并任务，不合并独立电气结论。
-录入前用第 5 步上下文逐字段核理由、缺口、条件影响及关闭任务；共享文字须逐项适用。
-补证对象、数值和验收条件同时核结果与任务的结构化字段，按 [逐行语义复核](references/plan-and-results.md#逐行语义复核)
-核对每个对象、路径、因果和关闭范围；绑定校验及质量筛查零提示不能代替这一步。
-需求原文和判据含多个子义务时，逐一核范围排除、功能与电气前提并汇总；只核完其中一项不能
-让整条需求 PASS。按同节复合义务方法引用实际依赖和唯一任务，不传播无关风险或重复计缺陷。
+结果独立保存为 `review-results.json`，绑定最终计划；批量脚本只录入已审结论。按有证据的共同根因归并任务，
+不合并独立电气结论。录入前按 [逐行语义复核](references/plan-and-results.md#逐行语义复核) 逐行核对象、路径、因果、
+关闭范围和需求子义务（含多个子义务的需求只有全部适用子义务通过才 PASS）；绑定校验及质量筛查零提示不能代替这一步。
 完成后对账：
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --require-impact --json review-gate.json
@@ -175,10 +163,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 - 已有资料尚未读算的项记 REVIEW_INCOMPLETE，完成前不放行；审查未完成时只交进度。
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
 - 报告按 [报告与修改说明](references/report-and-remediation.md)：结论与固定计数（0 也写）、处理清单、证据附录。
-- 输入哈希、意图、计划、证据、结果、计算/关键裁图和 Diff 保存到项目审查目录；临时文件放任务临时目录，
-  最终证据不能只留在临时目录。公开仓库只放脱敏合成用例。
-- 证据封存按 [留档](references/inputs-and-coverage.md#留档)：全部记录与清单核验完成后才宣告冻结，
-  保存清单原字节；后续补充另存版本，不覆盖旧封存或凭自报证明未改。
+- 输入哈希、意图、计划、证据、结果、计算/关键裁图和 Diff 保存到项目审查目录，最终证据不能只留在临时目录；
+  冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。公开仓库只放脱敏合成用例。
 
 ### 8. 改版复审（H）
 
@@ -191,10 +177,10 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 ## 规则维护
 
-- 工程规则身份由 `scripts/review_engine.py` 与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。旧身份首次转换到 v2 要建立新基线。
+- 工程规则身份由 `scripts/review_engine.py` 与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。
 - 规则编号、判据、纲要归属和功能包只在 `scripts/catalog.py` 登记，改后运行
   `python3 scripts/catalog.py --write-doc references/check-catalog.md`。来源为“全板通用”“功能包成员”的新规则
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在 `plan_review.py`、`lint.py`
   或对应检查器里实现展开/扫描。新增或调整规则先回答 [纲要中的三个问题](references/review-charter.md#用纲要指导进化)。
 - 修改脚本后运行 `python3 -m unittest discover -s scripts/tests -q`，必要时按
-  [电路评测说明](evals/circuit_bench/README.md) 跑冻结基准；改导入器时同时跑 [真实来源导入回归](evals/input_bench/README.md)；改 KiCad 解析、自检、日志扫描、去耦清单或计划展开时跑 [KiCad 原生交付回放](evals/kicad_replay_bench/README.md)。评测通过不等于任何真实电路审查通过。
+  [电路评测说明](evals/circuit_bench/README.md) 跑冻结基准；改导入器时同时跑 [真实来源导入回归](evals/input_bench/README.md)；改 KiCad 解析、自检、日志扫描、去耦清单或计划展开时跑 [KiCad 原生交付回放](evals/kicad_replay_bench/README.md)。改检查器或规则后可跑 [种子基准](evals/seeded_bench/README.md) 看自动层检出；审查方法的合成评价在 `evals/workflow_guidance/`、`evals/scenarios/`。评测通过不等于任何真实电路审查通过。
