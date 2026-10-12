@@ -6,6 +6,13 @@
 哪些轨必须监测由需求裁定，本检查器只登记覆盖与缺口；脉宽是否足够由证据计算（RST-E03）按保证值判定。
 """
 import re
+import hashlib
+from fractions import Fraction
+from functools import lru_cache
+from pathlib import Path
+import subprocess
+import unicodedata
+import copy
 
 from solve_dividers import parse_resistor
 
@@ -46,7 +53,7 @@ PIN_DIRECTIONS = {
 def _exact_model(part, model):
     """Placed part AND value must prove the MPN; prim only cross-checks it."""
     identities = {key: ng.normalize(part.get(key)) for key in ('part', 'value', 'prim')}
-    pattern = r'(?:[^:\s]+:)?' + re.escape(model)
+    pattern = r'(?:[^:\s]+:)?' + re.escape(ng.normalize(model))
     return (bool(identities['part'] and identities['value']) and all(
         re.fullmatch(pattern, value) for value in identities.values() if value))
 
@@ -79,6 +86,328 @@ def _physical_pin(graph, ref, pin, names, directions):
 RAIL_REQUIREMENT_FIELDS = {'net', 'state', 'required', 'criterion', 'citation', 'identity'}
 SOURCE_IDENTITY_FIELDS = {'source_node', 'source_role', 'part', 'pin_name', 'native_pintypes', 'citation'}
 PART_IDENTITY_FIELDS = {'part', 'prim', 'value', 'jedec'}
+SHUNT_FEED_FIELDS = {'upstream_node', 'upstream_part', 'upstream_pins', 'receiver_pins',
+                     'feed', 'receiver_source', 'citation'}
+FEED_FIELDS = {'ref', 'from_node', 'to_node', 'part', 'pins', 'resistance_ohm_exact'}
+RECEIVER_SOURCE_FIELDS = {'path', 'sha256', 'format', 'publisher', 'source_url',
+                         'document_model', 'document_version', 'role_page', 'pin_page',
+                         'identity_quote', 'role_quote', 'pin_quote', 'citation'}
+
+
+def _physical_snapshot(graph, ref):
+    """Snapshot every observed physical node, including declaration-only nodes."""
+    fields = ('pin2net', 'pinname', 'native_pintype', 'declared_native_pintype',
+              'pintype', 'declared_pintype', 'declared_pinname')
+    nodes = {n for field in fields for n in graph.db.get(field, {})
+             if n.partition('.')[0] == ref}
+    return {n: {**{field: graph.db.get(field, {}).get(n) for field in fields},
+                'no_connect': n in graph.db.get('no_connect_nodes', [])}
+            for n in sorted(nodes)}
+
+
+def _snapshot_complete(graph, ref):
+    snapshot = _physical_snapshot(graph, ref)
+    return bool(snapshot) and all(
+        node in graph.pin2net and node in graph.nodes_on(graph.pin2net[node])
+        and data['pinname'] is not None and data['native_pintype'] is not None
+        and data['declared_native_pintype'] == data['native_pintype']
+        and data['declared_pinname'] == data['pinname']
+        and data['declared_pintype'] == data['pintype']
+        for node, data in snapshot.items())
+
+
+def _shunt_upstream_contact(graph, node):
+    """Only this role admits unused passive pads with actual isolated NC marks."""
+    ref = node.partition('.')[0]
+    if (not _snapshot_complete(graph, ref) or graph.kind(ref) not in (ng.CONNECTOR, ng.UNKNOWN)
+            or graph.db['native_pintype'].get(node) != 'passive'
+            or node in graph.db.get('no_connect_nodes', [])
+            or ng.is_ground(graph.pin2net.get(node)) or graph.pin2net.get(node) in graph.pseudo):
+        return False
+    for pad, data in _physical_snapshot(graph, ref).items():
+        net = data['pin2net']
+        if data['native_pintype'] not in ('passive', 'no_connect'):
+            return False
+        expected = ('UNSPEC', 'UNSPECIFIED', 'PASSIVE') if data['native_pintype'] == 'passive' else ('NC',)
+        if any(ng.normalize(data[field]) not in expected for field in ('pintype', 'declared_pintype')):
+            return False
+        if data['no_connect']:
+            if (net not in graph.pseudo or graph.nodes_on(net) != [pad]
+                    or ng.is_ground(net) or ng.is_rail(net)):
+                return False
+        elif data['native_pintype'] != 'passive' or net in graph.pseudo:
+            return False
+    return True
+
+
+def _quote_key(text):
+    return ''.join(c for c in unicodedata.normalize('NFKC', text).casefold() if c.isalnum())
+
+
+def _identifier_in(identifier, text):
+    """Literal identifier boundaries survive punctuation; 1 != 11, MPN != MPN-42."""
+    identifier = unicodedata.normalize('NFKC', identifier).casefold()
+    text = unicodedata.normalize('NFKC', text).casefold()
+    return bool(identifier) and re.search(
+        r'(?<![a-z0-9_.+\-])' + re.escape(identifier) + r'(?![a-z0-9_.+\-])', text) is not None
+
+
+def _literal_identifier_bound(identifier, quote, page):
+    """Exact token must occur at the actual literal quote location on the page.
+
+    Keep an offset map when ignoring whitespace/punctuation: callers cannot cut
+    '1' out of '11', or an MPN prefix out of an extended variant on the raw page.
+    A correct token elsewhere on the page cannot rescue the wrong quoted span.
+    """
+    page = unicodedata.normalize('NFKC', page).casefold()
+    identifier = unicodedata.normalize('NFKC', identifier).casefold()
+    offsets = [i for i, c in enumerate(page) if c.isalnum()]
+    normalized, literal = ''.join(page[i] for i in offsets), _quote_key(quote)
+    if not identifier or not literal:
+        return False
+    tokens = list(re.finditer(r'(?<![a-z0-9_.+\-])' + re.escape(identifier)
+                             + r'(?![a-z0-9_.+\-])', page))
+    start = normalized.find(literal)
+    while start >= 0:
+        lo, hi = offsets[start], offsets[start + len(literal) - 1] + 1
+        if any(lo <= token.start() and token.end() <= hi for token in tokens):
+            return True
+        start = normalized.find(literal, start + 1)
+    return False
+
+
+def _feed_edges(graph, omitted=()):
+    """Conservative possible DC conduction, local to this strict provenance role.
+
+    No voltage/current/drive guarantee, no equivalent-net links. Unknown switch
+    control never proves off; MOS gates and IC signal pins are not conduction pairs.
+    Connectors alone do not create an independently energized source.
+    """
+    edges = {}
+    def edge(a, b, bidirectional=True):
+        if a == b or any(n is None or ng.is_ground(n) or n in graph.pseudo for n in (a, b)):
+            return
+        edges.setdefault(a, set()).add(b)
+        if bidirectional:
+            edges.setdefault(b, set()).add(a)
+    for ref in graph.parts:
+        if ref in omitted or not graph.is_fitted(ref):
+            continue
+        kind = graph.kind(ref)
+        nodes = [ref + '.' + p for p in graph.pins_of(ref)
+                 if ref + '.' + p not in graph.db.get('no_connect_nodes', [])]
+        if kind in (ng.MOSFET, ng.BJT):
+            # All duplicate physical S/D (or E/C) pads participate; gate/base do not.
+            left = [n for n in nodes if graph.role(n) == 'source']
+            right = [n for n in nodes if graph.role(n) == 'drain']
+            if left and right:
+                for a in left:
+                    for b in right:
+                        edge(graph.pin2net[a], graph.pin2net[b])
+            else:
+                # An unresolved transistor mapping cannot establish isolation.
+                contacts = [n for n in nodes if graph.role(n) != 'gate'
+                            and graph.db.get('native_pintype', {}).get(n) == 'passive']
+                for a in contacts:
+                    for b in contacts:
+                        edge(graph.pin2net[a], graph.pin2net[b])
+        elif kind in (ng.SWITCH, ng.RELAY) or (kind == ng.UNKNOWN and len(nodes) > 2):
+            # Unknown multi-terminal passive devices may conduct between contacts;
+            # controls/coils are excluded. This is rejection coverage, not a model.
+            contacts = [n for n in nodes if graph.role(n) != 'coil'
+                        and graph.db.get('native_pintype', {}).get(n) == 'passive']
+            for a in contacts:
+                for b in contacts:
+                    edge(graph.pin2net[a], graph.pin2net[b])
+        elif kind == ng.DIODE:
+            a, b = graph.node_named(ref, 'anode'), graph.node_named(ref, 'cathode')
+            if a in nodes and b in nodes:
+                edge(graph.pin2net[a], graph.pin2net[b], False)
+            elif len(nodes) == 2:
+                # Missing polarity is uncertainty, not evidence of reverse blocking.
+                edge(graph.pin2net[nodes[0]], graph.pin2net[nodes[1]])
+        elif len(nodes) == 2 and kind in (ng.RESISTOR, ng.INDUCTOR, ng.FERRITE,
+                                         ng.FUSE, ng.JUMPER, ng.UNKNOWN):
+            edge(graph.pin2net[nodes[0]], graph.pin2net[nodes[1]])
+    return edges
+
+
+def _feed_reaches(edges, start, target):
+    pending, visited = [start], set()
+    while pending:
+        current = pending.pop()
+        if current == target:
+            return True
+        if current not in visited:
+            visited.add(current)
+            pending.extend(edges.get(current, set()) - visited)
+    return False
+
+
+def _feed_resistance(value):
+    """Keep native text intact; allow one explicit trailing watt rating as metadata."""
+    parsed = parse_resistor(value, exact=True)
+    if parsed is None and isinstance(value, str):
+        match = re.fullmatch(r'(.+?)\s+\d+(?:\.\d+)?(?:mW|W)', value)
+        if match:
+            parsed = parse_resistor(match[1], exact=True)
+    return parsed
+
+
+@lru_cache(maxsize=64)
+def _source_page(raw, fmt, page):
+    """Cache by actual bytes, never timestamp; no writes or network acquisition."""
+    if fmt == 'text':
+        return raw.decode('utf-8') if page == 1 and not raw.startswith(b'%PDF') else ''
+    if fmt != 'pdf' or not raw.startswith(b'%PDF'):
+        return ''
+    completed = subprocess.run(['pdftotext', '-f', str(page), '-l', str(page),
+                                '-layout', '-', '-'], input=raw, capture_output=True,
+                               timeout=30)
+    return completed.stdout.decode('utf-8', errors='replace') if completed.returncode == 0 else ''
+
+
+def _receiver_source_errors(source, graph, node):
+    """Bind literal OEM evidence; meaning/applicability remain expert obligations."""
+    if not isinstance(source, dict) or set(source) != RECEIVER_SOURCE_FIELDS:
+        return ['internal shunt receiver source fields missing/unsupported']
+    errors = []
+    texts = RECEIVER_SOURCE_FIELDS - {'role_page', 'pin_page'}
+    if not all(state_lib._text(source.get(k)) for k in texts):
+        return ['internal shunt receiver source metadata/quotes/citation missing']
+    if (source['format'] not in ('pdf', 'text')
+            or any(type(source.get(k)) is not int or source[k] < 1
+                   for k in ('role_page', 'pin_page'))):
+        return ['internal shunt receiver source format/page invalid']
+    try:
+        path = Path(source['path'])
+        if not path.is_absolute() or not path.is_file() or path.stat().st_size > 10 * 1024 * 1024:
+            return ['internal shunt receiver source file unavailable/nonabsolute/too large']
+        raw = path.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != source['sha256']:
+            return ['internal shunt receiver source hash mismatch']
+        role_page = _source_page(raw, source['format'], source['role_page'])
+        pin_page = _source_page(raw, source['format'], source['pin_page'])
+        role_text, pin_text = _quote_key(role_page), _quote_key(pin_page)
+    except (OSError, UnicodeError, subprocess.SubprocessError):
+        return ['internal shunt receiver source unreadable']
+    ref, _, pin = node.partition('.')
+    mpn = ng.normalize(graph.parts[ref].get('part', '')).rsplit(':', 1)[-1]
+    name = graph.pinname.get(node, '')
+    identity_quote, role_quote, pin_quote = (
+        _quote_key(source[k]) for k in ('identity_quote', 'role_quote', 'pin_quote'))
+    if (not _identifier_in(mpn, source['identity_quote'])
+            or not _literal_identifier_bound(mpn, source['identity_quote'], role_page)):
+        errors.append('internal shunt receiver identity quote does not match source/actual MPN')
+    if (not _identifier_in(name, source['role_quote'])
+            or not _literal_identifier_bound(name, source['role_quote'], role_page)
+            or not any(word in role_quote for word in ('shunt', '并联稳压'))):
+        errors.append('internal shunt receiver role quote does not match source/pin/shunt role')
+    if (not _identifier_in(pin, source['pin_quote']) or not _identifier_in(name, source['pin_quote'])
+            or not _literal_identifier_bound(pin, source['pin_quote'], pin_page)
+            or not _literal_identifier_bound(name, source['pin_quote'], pin_page)):
+        errors.append('internal shunt receiver physical pin quote does not match source')
+    return errors
+
+
+def _internal_shunt_feed(scan, item, intent):
+    """Finite resistive feed provenance only; never a PowerTree link or ideal driver."""
+    graph = scan.graph
+    identity = item['identity']
+    receiver, net = identity['source_node'], item['net']
+    proof = identity.get('feed_provenance')
+    if not isinstance(proof, dict) or set(proof) != SHUNT_FEED_FIELDS:
+        return ['internal shunt feed provenance fields missing/unsupported'], None
+    if not state_lib._text(proof.get('citation')):
+        return ['internal shunt feed provenance citation missing'], None
+    source, feed = proof.get('upstream_node'), proof.get('feed')
+    if not isinstance(source, str) or not isinstance(feed, dict) or set(feed) != FEED_FIELDS:
+        return ['internal shunt upstream/feed declaration malformed'], None
+    if not all(state_lib._text(feed.get(k)) for k in ('ref', 'from_node', 'to_node', 'resistance_ohm_exact')):
+        return ['internal shunt feed physical nodes/resistance missing'], None
+    errors = []
+    upstream_ref, receiver_ref = source.partition('.')[0], receiver.partition('.')[0]
+    feed_ref = feed['ref']
+    if not all(ref in graph.parts and graph.is_fitted(ref)
+               for ref in (upstream_ref, receiver_ref, feed_ref)):
+        return ['internal shunt source/receiver/feed absent or DNP'], None
+    receiver_part = graph.parts[receiver_ref]
+    receiver_model = ng.normalize(receiver_part.get('part', '')).rsplit(':', 1)[-1]
+    if not _exact_model(receiver_part, receiver_model):
+        errors.append('internal shunt receiver part/value/symbol identity conflict')
+    expected_part = {k: graph.parts[upstream_ref].get(k, '') for k in PART_IDENTITY_FIELDS}
+    if proof['upstream_part'] != expected_part:
+        errors.append('internal shunt upstream part identity mismatch')
+    if (proof['upstream_pins'] != _physical_snapshot(graph, upstream_ref)
+            or not _snapshot_complete(graph, upstream_ref)
+            or not _shunt_upstream_contact(graph, source)):
+        errors.append('internal shunt upstream physical pin/NC/contact qualification mismatch')
+    if (proof['receiver_pins'] != _physical_snapshot(graph, receiver_ref)
+            or not _snapshot_complete(graph, receiver_ref)
+            or graph.db.get('native_pintype', {}).get(receiver) != 'power_in'
+            or any(ng.normalize(graph.db.get(field, {}).get(receiver)) not in ('POWER', 'PWR', 'POWER_IN', 'POWER_INPUT')
+                   for field in ('pintype', 'declared_pintype'))
+            or receiver in graph.db.get('no_connect_nodes', [])
+            or graph.pin2net.get(receiver) != net or net in graph.pseudo or ng.is_ground(net)):
+        errors.append('internal shunt receiver is not the actual complete power_in rail pin')
+    expected_feed_part = {k: graph.parts[feed_ref].get(k, '') for k in PART_IDENTITY_FIELDS}
+    if (feed['part'] != expected_feed_part or feed['pins'] != _physical_snapshot(graph, feed_ref)
+            or not _snapshot_complete(graph, feed_ref) or not _native_contacts(graph, feed_ref)
+            or graph.kind(feed_ref) != ng.RESISTOR):
+        errors.append('internal shunt feed is not the actual complete passive resistor')
+    try:
+        resistance = _feed_resistance(graph.parts[feed_ref].get('value'))
+        exact = Fraction(resistance['ohm_exact']) if resistance else None
+        if (exact is None or exact <= 0 or resistance.get('kohm', 0) <= 0
+                or feed['resistance_ohm_exact'] != str(exact)):
+            errors.append('internal shunt feed resistance is not exact finite positive nonzero')
+    except (ValueError, OverflowError, TypeError, KeyError, ZeroDivisionError):
+        errors.append('internal shunt feed resistance is not exact finite positive nonzero')
+    start, end = feed['from_node'], feed['to_node']
+    upstream_net = graph.pin2net.get(source)
+    if (start.partition('.')[0] != feed_ref or end.partition('.')[0] != feed_ref
+            or start == end or set((start, end)) != set(_physical_snapshot(graph, feed_ref))
+            or graph.pin2net.get(start) != upstream_net or graph.pin2net.get(end) != net
+            or upstream_net == net or upstream_net in graph.pseudo or ng.is_ground(upstream_net)):
+        errors.append('internal shunt feed is not a single direct upstream-to-receiver path')
+    declarations = intent.get('power_sources', [])
+    if not isinstance(declarations, list) or any(
+            not isinstance(x, dict) or not state_lib._text(x.get('node'))
+            or not state_lib._text(x.get('citation')) or not isinstance(x.get('states'), list)
+            or not x['states'] or not all(state_lib._text(s) for s in x['states'])
+            or x['node'] not in graph.pin2net for x in declarations):
+        return ['internal shunt upstream state/source declarations malformed'], None
+    active_sources = [x for x in declarations if scan.state['id'] in x['states']
+                      and graph.is_fitted(x['node'].partition('.')[0])]
+    if not any(x.get('node') == source and state_lib._text(x.get('citation')) for x in active_sources):
+        errors.append('internal shunt upstream source is not declared in this state')
+    edges = _feed_edges(graph)
+    if any(_feed_reaches(edges, graph.pin2net[x['node']], net)
+           and (x['node'].partition('.')[0] != upstream_ref
+                or graph.pin2net[x['node']] != upstream_net) for x in active_sources):
+        errors.append('internal shunt feed has another independently declared source')
+    # A connector without an external-source state declaration can be a load port;
+    # physical contacts alone do not prove an independently energized source.
+    if any(graph.is_fitted(n.partition('.')[0])
+           and n not in graph.db.get('no_connect_nodes', [])
+           and t in ('power_out', 'output') and _feed_reaches(edges, graph.pin2net.get(n), net)
+           for n, t in graph.db.get('native_pintype', {}).items()) or scan.tree.source_of(net) is not None:
+        errors.append('internal shunt receiver rail has another supported source')
+    # A second fitted DC passive supply path, including a serial bypass, cannot be
+    # silently omitted. Ground and capacitors are not alternative DC supply paths.
+    if _feed_reaches(_feed_edges(graph, (feed_ref,)), upstream_net, net):
+        errors.append('internal shunt feed has an additional parallel/serial/bypass path; unknown control is not off')
+    errors.extend(_receiver_source_errors(proof['receiver_source'], graph, receiver))
+    if errors:
+        return errors, None
+    path = {'ref': feed_ref, 'from_node': start, 'from_net': upstream_net,
+            'to_node': end, 'to_net': net, 'resistance_ohm_exact': feed['resistance_ohm_exact'],
+            'native_value': graph.parts[feed_ref].get('value'),
+            'receiver_node': receiver, 'receiver_native_type': 'power_in',
+            'receiver_source_sha256': proof['receiver_source'].get('sha256'),
+            'source_role': 'internal_shunt_feed', 'electrical_equivalence': False,
+            'performance_guarantee': False}
+    return [], [path]
 
 
 def _section_errors(intent, db):
@@ -199,10 +528,13 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
     identity = item.get('identity')
     if not isinstance(identity, dict):
         return errors + ['rail requirement needs source identity']
-    require(set(identity) == SOURCE_IDENTITY_FIELDS, 'source identity has missing/unsupported fields')
+    shunt = identity.get('source_role') == 'internal_shunt_feed'
+    require(set(identity) == SOURCE_IDENTITY_FIELDS | ({'feed_provenance'} if shunt else set()),
+            'source identity has missing/unsupported fields')
     for key in ('source_node', 'source_role', 'pin_name', 'citation'):
         require(state_lib._text(identity.get(key)), 'source identity needs ' + key)
-    require(identity.get('source_role') in ('external_supply', 'upstream_external_supply', 'rail_driver'), 'unknown source role')
+    require(identity.get('source_role') in ('external_supply', 'upstream_external_supply', 'rail_driver',
+                                           'internal_shunt_feed'), 'unknown source role')
     part = identity.get('part')
     require(isinstance(part, dict) and set(part) == PART_IDENTITY_FIELDS
             and all(isinstance(v, str) for v in part.values()) and state_lib._text(part.get('part')),
@@ -241,6 +573,9 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
         if identity.get('source_role') == 'upstream_external_supply':
             require(_upstream_external_path(scan, node, net, identity['citation']) is not None,
                     'upstream external source lacks a nonempty fitted forward passive supply path')
+    elif shunt:
+        feed_errors, _ = _internal_shunt_feed(scan, item, intent)
+        errors.extend(feed_errors)
     return errors
 
 
@@ -417,14 +752,24 @@ def build_inventory(db, intent=None):
                     identity = matches[0]['identity']
                     rail['source_path'] = (_upstream_external_path(
                         scan, identity['source_node'], rail['net'], identity['citation'])
-                        if identity['source_role'] == 'upstream_external_supply' else [])
+                        if identity['source_role'] == 'upstream_external_supply'
+                        else _internal_shunt_feed(scan, matches[0], source)[1]
+                        if identity['source_role'] == 'internal_shunt_feed' else [])
                     rail['gaps'] = [gap for gap in rail['gaps'] if gap != 'rail-identity:' + rail['net']]
                 else:
                     rail['gaps'] = sorted(set(rail['gaps'] + ['rail-requirement:' + rail['net']]))
             return {'rails': rails, 'rail_requirements_declared': True}
         return {'rails': rails}
 
-    return inv.build(db, intent, 'supervision', 'supervisors', scanner, gaps, extra=extra)
+    result = inv.build(db, intent, 'supervision', 'supervisors', scanner, gaps, extra=extra)
+    if any(isinstance(item, dict) and isinstance(item.get('identity'), dict)
+           and item['identity'].get('source_role') == 'internal_shunt_feed' for item in items):
+        # This new role consumes upstream state declarations; preserve them for
+        # deterministic validation/rebuild without changing legacy contexts.
+        result['context']['power_sources'] = copy.deepcopy(source.get('power_sources', []))
+        result.pop('digest')
+        result['digest'] = inv.digest(result)
+    return result
 
 
 class SupervisionChecker(Checker):

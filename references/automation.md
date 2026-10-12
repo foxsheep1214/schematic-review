@@ -627,6 +627,59 @@ PWR-T04 按需求决定哪些域必须监控。`supervision.schema_version=2` �
 PWR-T04 仍适用且等待人工审查，声明不自动产生 PASS；已有监控器不豁免其他轨，内部 UVLO 不伪装为
 SENSE/RESET 拓扑。没有 `rail_requirements` 的旧配置保持原扫描与阻断行为，`exclusions` 不排除轨覆盖。
 
+#### 内部并联稳压器的非零电阻供入来源
+
+可选 `identity.source_role: internal_shunt_feed` 仅表达已核的来源身份：外供连接器触点经一颗
+严格正值、有限的实际电阻供入原厂明确内部并联稳压器的实际 `power_in` 物理脚。
+它不加入共享 PowerTree 的等价连通，不改变原生脚型，不把接收脚改成 `power_out`，
+也不证明 VDD、最小偏置、ICC、PG、UVLO、门限、动作、时序或原生零 ERC。
+原有三种来源角色及 0Ω 上游路径的资格保持原合同。
+
+新角色保留已有完整来源器件 `part/prim/value/jedec`、脚名、全原生脚型与出处字段，
+并增加唯一 `feed_provenance` 对象：
+
+- `upstream_node`、`upstream_part`、`upstream_pins`：真实外供 passive 触点、源器件四字段身份和
+  全物理脚快照；该源须在当前装配状态的 `intent.power_sources` 有非空受控出处。
+- `receiver_pins`：内部并联稳压器的全物理脚快照，实际接收脚须是 `power_in`，位于目标轨且非 NC。
+  接收 IC 的实际 part/value 和非空 symbol prim 须在两端先去首尾空白、忽略大小写，并去除可选单层库名前缀后证明同一精确型号；
+  来源引用匹配也使用正规化后的实际 PART 型号，型号内部字符、前后缀及引用位置边界仍严格保留；
+  重新绑定完整快照不能使互相矛盾的型号成立。连接器的描述性 Value 不受此 IC 型号等式限制。
+- `feed`：`ref/from_node/to_node/part/pins/resistance_ohm_exact`，只接受一颗已贴的实际 passive
+  resistor，两端直接分别归到供入网和目标网；严格精确解析非零正欧姆值。原生 Value 可附一项明确
+  十进制 `W/mW` 功率标签，其原文仍完整保存，标签不证明功率资格。未知、零、负值、无穷、
+  错单位、非零数值下溢、串联链或额外并联/串联 bypass 不成立。
+- `receiver_source`：本器件原厂来源 `path/sha256/format/publisher/source_url/document_model/
+  document_version/role_page/pin_page/identity_quote/role_quote/pin_quote/citation`。
+  `path` 为存在的绝对本地路径，格式 `pdf/text`；文本来源页为 1。每次读取源字节重核 SHA，
+  PDF 必须 `%PDF`，从实际页提取文字；精确型号声明和含实际脚名的 shunt/并联稳压角色原文须在
+  `role_page`，物理脚号与脚名原文须在 `pin_page`。引用按 Unicode NFKC、忽略空白与标点核实际页原文，
+  型号/脚号本身另按保留分隔符的标识符边界核对：物理 1 不匹配 11，型号 MPN 不匹配 MPN-42。
+  此边界须在实际原页的引用所在位置成立；调用者截短 quote 不可从 11 或 MPN-42 内取出
+  所需子串，原页其他位置出现正确 token 也不支持错误引用位置。
+  文档可覆盖型号 family，但 identity_quote 必须包含本接收器精确变体；
+  不因同型号其他器件/章节出现一个词就自动认定当前角色适用。
+- `citation`：该供入路径与身份声明的受控出处；监控 `required/criterion/citation` 仍逐轨逐状态独立声明。
+
+全物理脚快照键是各真实 `ref.pin`；每脚保留 `pin2net/pinname/native_pintype/declared_native_pintype/
+pintype/declared_pintype/declared_pinname/no_connect`。脚集合、互反归网、原生与声明必须完整一致。
+仅本角色允许未选供入的 passive 触点带真实 NC marker：它须位于独占 NC 伪网且全声明一致。
+选中的供入触点不得 NC、地、伪网或 active；实体电源网的 NC、不完整或冲突声明不成立。
+同一外供连接器的多个并联供电触点不当作独立多源；另一有受控外供状态声明的连接器/独立来源
+或原生输出源经当前已贴非零电阻、正向二极管及供入链可达目标域也拒绝本单来源合同，
+不局限于源触点直接位于供入/目标网；装配状态及源带电状态逐一生效。
+额外 MOS/BJT 的 S/D（E/C）及多接点开关可能导通的 bypass 也拒绝，未知控制不等于关断。
+gate/base、继电器线圈、普通 IC 信号脚不当作导通端；未解析的多端 passive 器件跨域可能通路
+保守拒绝资格，待人工补核，工具不模拟其控制或电气性能。不从连接器的存在推断外部带电；未声明为
+外供的输出接口和正常目标轨负载分支不当作额外供入路径，本资格也不证明它们的反灌安全。
+
+文件哈希、型号/脚位原文和快照核对只证明资料与原生身份绑定；原厂语义、变体、引用所在表/图的
+适用范围及本轮受控监控要求仍由专家逐项读核，任意字段字符串或引用匹配不能替代此步。
+资格成立时 `source_path` 保留原非零值、实际 receiver `power_in` 与来源 SHA，明确
+`electrical_equivalence=false/performance_guarantee=false`；原 `observation_gaps` 留档。
+清单上下文额外保存实际 `power_sources` 以便重建与过期拒绝，不改变旧角色上下文。
+这仅解除来源身份及明确 `required=false` 的书面监控义务对应缺口，PWR-T04 仍等待人工核验；
+`required=true` 无实际监控、其他轨/状态、调节与 PG 等独立缺口仍保留，绝不自动形成电气 PASS。
+
 ### 高速差分电平 `diff_levels`
 
 维护范围：按网名成对（`_P/_N`、`_DP/_DN`、`_DP/_DM`、`P/N`、`+/-`）且**两条腿上出现同一个
