@@ -7,6 +7,15 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率
 
 ## 运行
 
+当前候选的页面库存行为使用独立 `page-inventory-v1` 契约，位于
+`revisions/page-inventory-v1/`。原 `expected.json`、`cases.json`、`sources.json`、
+原脚表 intent 和所有原 XML 夹具保持原字节；`manifest.json` 同时绑定历史父项
+与新派生项的 SHA256。独立读取原有公开 XML 的 sheet 声明与组件路径，确认
+6 种回放模式遗漏真实空根页；新契约只使它们的 DOC-V01 检查数加 1，
+其他电气/完整性冻结字段不变。脚表声明仅绑定新输入指纹，不迁移旧审查结果。
+默认 `--contract page-inventory-v1`；`--contract legacy` 用于重放历史契约，
+新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
+
 ```sh
 python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out <输出目录>] [--compare <旧 results.json>] [--case <用例>]
 ```

@@ -20,6 +20,12 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+CONTRACT_REVISION = 'page-inventory-v1'
+
+
+def contract_path(name, revision=CONTRACT_REVISION):
+    """Historical expectations remain frozen; changed obligations have a new identity."""
+    return HERE / ('revisions/' + revision + '/' + name if revision != 'legacy' else name)
 
 
 def _run(cmd):
@@ -179,9 +185,11 @@ def main():
     ap.add_argument('--out', type=Path, help='directory for results.json and report.md')
     ap.add_argument('--compare', type=Path, help='earlier results.json; list every observed field that changed')
     ap.add_argument('--case', action='append', help='run only these case ids')
+    ap.add_argument('--contract', choices=('legacy', CONTRACT_REVISION), default=CONTRACT_REVISION,
+                    help='explicit contract revision; legacy files remain unchanged')
     args = ap.parse_args()
-    cases = json.loads((HERE / 'cases.json').read_text(encoding='utf-8'))['cases']
-    expected = json.loads((HERE / 'expected.json').read_text(encoding='utf-8'))
+    cases = json.loads(contract_path('cases.json', args.contract).read_text(encoding='utf-8'))['cases']
+    expected = json.loads(contract_path('expected.json', args.contract).read_text(encoding='utf-8'))
     if args.case:
         cases = [c for c in cases if c['id'] in args.case]
     sut = args.sut.resolve()
@@ -195,7 +203,8 @@ def main():
     if args.compare:
         diff = changes(json.loads(args.compare.read_text(encoding='utf-8'))['observed'], observed)
     text, totals = report(verdicts, diff)
-    result = {'sut': str(sut), 'seconds': round(time.time() - start, 1), 'totals': totals,
+    result = {'sut': str(sut), 'contract_revision': args.contract,
+              'seconds': round(time.time() - start, 1), 'totals': totals,
               'observed': observed, 'verdicts': verdicts, 'changes': diff}
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)

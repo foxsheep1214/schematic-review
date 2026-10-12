@@ -291,9 +291,18 @@ DNP/DNI/DNF/NC 只按分隔词识别为不贴，不能误判 NCP1117 型号。�
 | `parts[].jedec` | `<footprint>` | KiCad 的封装库项 |
 | `parts[].datasheet` | 实例 `<comp><datasheet>` | 空、缺失或 `~` 记空字符串；不借 libpart 缓存链接，不按 URL/文件名推定型号或用途，链接与实际身份另核 DEV-D04；链接变更/删除进入复审 Diff |
 | `parts[].nc` | `<property name="dnp"/>` 或 VALUE 带 NC 标记 | `exclude_from_bom` 是 BOM 卫生标记，不作装配证据 |
-| `ref2page` | 组件 `sheetpath.names` 对应 `design/sheet` 的编号 | 层次页按导出顺序编号 |
+| `ref2page` | 组件 `sheetpath.names` 对应 `design/sheet` 的明确编号 | 不按顺序重编号，不从路径前缀推导页面 |
+| `page_inventory` | 全部原生 `design/sheet` 的 number/name/tstamps，v1 | 包括没有功能器件的根页；页号可不连续，页面身份按真实编号和路径绑定 |
 | `declared_pinname` / `declared_pintype` | libpart 的全部引脚 | 含网表里没出现的脚，用于官方脚表双向差集 |
 | `export_meta` | `design` 的 source/tool/date | 用于核对导出版本与 PDF 是否同版 |
+
+`page_inventory.scope=native_declared_sheets` 时，DOC-V01 对库存每页唯一展开，
+`coverage.pages` 必须全量列出并链接本页的 DOC-V01；空根页只要求图面目检，
+不据此伪造电气对象或执行。没有原生 sheet 元数据的 XML，以及没有此字段的旧
+Cadence/受限 db，只能声明 `component_pages_only`：按已有 `ref2page` 目检，
+未知空页/根页须另核原图，不能猜页 1、补连续空页或以路径前缀建立虚构页。
+声明存在但缺明确页号/路径、重复编号/路径/非空 tstamps，或组件路径超出声明范围时拒绝解析。
+库存与定位进入新原生 db 的计划指纹；重建当前计划并逐页审查，不能迁移旧结果。
 
 `libsource.lib` 为空而 `part` 已含完整 `lib:part` 时，仅在该完整身份精确命中非空
 libpart 引脚声明、且原始身份未被声明时归一化，并在 `export_meta.libsource_normalizations`

@@ -18,6 +18,11 @@ def db_fingerprint(db):
     data = {key: db.get(key, {}) for key in
             ('parts', 'pin2net', 'pinname', 'pintype')}
     data['nets'] = {net: sorted(nodes) for net, nodes in db.get('nets', {}).items()}
+    if 'page_inventory' in db:
+        # Native document inventory and component locations bind a new plan;
+        # an electrically unchanged empty page is still a review obligation.
+        data['page_inventory'] = db['page_inventory']
+        data['ref2page'] = db.get('ref2page', {})
     return hashlib.sha256(json.dumps(data, sort_keys=True, ensure_ascii=False,
                                     separators=(',', ':')).encode()).hexdigest()
 

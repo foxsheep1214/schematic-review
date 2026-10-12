@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: MIT; original synthetic fixture, no third-party design. -->
+<export version="E">
+  <design>
+    <source>synthetic-pages.kicad_sch</source><tool>Synthetic native XML</tool>
+    <sheet number="7" name="/" tstamps="/"/>
+    <sheet number="42" name="/Power α/" tstamps="/uuid-power/"/>
+    <sheet number="99" name="/Other/Deep control/" tstamps="/uuid-other/uuid-control/"/>
+  </design>
+  <components>
+    <comp ref="R1"><value>10k</value><libsource lib="Device" part="R"/>
+      <sheetpath names="/Power α/" tstamps="/uuid-power/"/>
+    </comp>
+    <comp ref="R2"><value>4.7k</value><libsource lib="Device" part="R"/>
+      <sheetpath names="/Other/Deep control/" tstamps="/uuid-other/uuid-control/"/>
+    </comp>
+  </components>
+  <libparts><libpart lib="Device" part="R"><pins>
+    <pin num="1" name="~" type="passive"/><pin num="2" name="~" type="passive"/>
+  </pins></libpart></libparts>
+  <nets>
+    <net name="A"><node ref="R1" pin="1" pintype="passive"/><node ref="R2" pin="1" pintype="passive"/></net>
+    <net name="B"><node ref="R1" pin="2" pintype="passive"/><node ref="R2" pin="2" pintype="passive"/></net>
+  </nets>
+</export>

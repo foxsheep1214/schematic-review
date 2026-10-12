@@ -17,6 +17,7 @@ import board_intent
 import catalog
 from review_engine import engine_identity
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, check_matches, readiness_gaps, validate_evidence, bounded, finite, load_json
+from page_inventory import inventory as document_inventory, LIMITED
 import io
 import json
 import os
@@ -276,6 +277,7 @@ class ReviewPlanner:
                  old_db_available=False, claims_available=False,
                  datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None):
         self.db = db
+        self.document_inventory = document_inventory(db)
         self.kind_intent = board_intent.with_verified_kinds(intent, datasheet_audit)
         analysis_db = board_intent.graph_db(db, self.kind_intent)
         self.inventories = {checker.id: checker.build(analysis_db, self.kind_intent) for checker in REGISTRY}
@@ -643,17 +645,21 @@ class ReviewPlanner:
                     'verification': 'PCB 约束与版图复核',
                 })
 
-        # 图面目检：每张实际出现器件的页面独立一项。
-        pages = sorted(
-            {page for page in db.get('ref2page', {}).values()
-             if page not in (None, '')}, key=lambda value: str(value))
+        # 原生声明的页面独立于器件；旧格式只能覆盖已定位器件所在页。
         pdf_ready = _material_available(self.intent, 'schematic_pdf')
-        for page in pages:
+        for row in self.document_inventory['pages']:
+            page = row['page']
+            obj = {'page': page}
+            if 'sheet_path' in row:
+                obj['sheet_path'] = row['sheet_path']
             self.add_check(
-                'DOC-V01', {'page': page},
+                'DOC-V01', obj,
                 readiness='READY' if pdf_ready else 'WAITING_EVIDENCE',
                 required_inputs=[] if pdf_ready else ['schematic_pdf'],
-                trigger=[f'ref2page:{page}'])
+                trigger=[f"{self.document_inventory['source']}:{page}"])
+        if self.document_inventory['scope'] == LIMITED:
+            self.diagnostics.append({'code': 'LIMITED_PAGE_INVENTORY',
+                'message': 'Only component pages are known; native empty/root pages cannot be inferred.'})
 
         # 每颗 IC/模组和意图显式列出的关键器件逐颗核身份、引脚处置与工况。
         # 位号并非器件身份；连接器已有独立覆盖，不重复未用脚处置。
@@ -909,6 +915,7 @@ class ReviewPlanner:
             'schema_version': PLAN_SCHEMA_VERSION,
             'generated_by': 'check-catalog planner',
             'db_sha256': self.db_sha256,
+            'page_inventory': self.document_inventory,
             'review_mode': self.review_mode,
             'result_model': {
                 'review_result': list(RESULT_STATUSES),

@@ -35,7 +35,8 @@ def slim(xml_text):
         for sheet in design.findall('sheet'):
             for child in list(sheet):
                 sheet.remove(child)
-            sheet.attrib.pop('tstamps', None)
+            # Sheet identity is part of the document inventory; retain the
+            # exact native declaration, including an absent tstamps value.
         for child in design.findall('textvar'):
             design.remove(child)
     for comp in root.findall('./components/comp'):
@@ -52,9 +53,7 @@ def slim(xml_text):
                     fields.remove(field)
             if not len(fields):
                 comp.remove(fields)
-        path = comp.find('sheetpath')
-        if path is not None:
-            path.attrib.pop('tstamps', None)
+        # Keep sheetpath identity for exact comparison with native sheets.
     for libpart in root.findall('./libparts/libpart'):
         for tag in DROP_LIBPART:
             for child in libpart.findall(tag):

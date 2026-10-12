@@ -19,6 +19,7 @@ from validate_remediation import validate_remediation, READINESS
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
 from plan_review import ReviewPlanner
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
+from page_inventory import validate_document_pages
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -113,6 +114,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             blockers.append('input netlist failed integrity/export checks')
         require(report.get("db_digest") == fingerprint(db), "db_digest mismatch")
     expected = index(plan.get("checks"), "plan.checks")
+    document_pages, page_checks = None, {}
+    if db is not None:
+        try:
+            document_pages, page_checks = validate_document_pages(plan, expected, db, require)
+        except (ValueError, TypeError, KeyError) as error:
+            require(False, 'invalid page inventory: ' + str(error))
     for key, item in expected.items():
         for message in catalog.spec_errors(item):
             require(False, f"{key}: {message}")
@@ -321,7 +328,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "components": set(db.get("parts", {})),
             "pins": set(db.get("pin2net", {})) | set(db.get("declared_pinname", {})),
             "nets": set(db.get("nets", {})) - set(db.get("pseudo_nets", [])),
-            "pages": {str(x) for x in db.get("ref2page", {}).values()},
+            "pages": {str(x['page']) for x in document_pages['pages']} if document_pages else set(),
         })
     if isinstance(coverage, dict):
         for dimension, objects in wanted.items():
@@ -334,6 +341,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             for obj, linked in entries.items():
                 require(ids(linked) and all(x in checks for x in linked),
                         f"coverage.{dimension}.{obj}: missing/unknown check references")
+                if dimension == 'pages' and obj in page_checks:
+                    require(ids(linked) and page_checks[obj] in linked,
+                            f'coverage.pages.{obj}: must link its own DOC-V01 page view')
 
     if lint_runs is not None:
         reviews = report.get('lint_reviews', [])

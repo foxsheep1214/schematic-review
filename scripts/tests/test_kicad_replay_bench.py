@@ -25,10 +25,16 @@ REQUIRED = {'parse.strict_exit', 'parse.strict_db_written', 'parse.self_check_pa
 
 
 def load(name):
-    return json.loads((BENCH / name).read_text(encoding='utf-8'))
+    path = run.contract_path(name) if name in ('cases.json', 'expected.json', 'sources.json') else BENCH / name
+    return json.loads(path.read_text(encoding='utf-8'))
 
 
 class FrozenInputsTests(unittest.TestCase):
+    def test_historical_contract_is_unchanged_and_new_revision_is_bound(self):
+        revision = json.loads(run.contract_path('manifest.json').read_text())
+        self.assertEqual(revision['revision'], run.CONTRACT_REVISION)
+        for path, wanted in {**revision['parents'], **revision['derived_files']}.items():
+            self.assertEqual(hashlib.sha256((BENCH / path).read_bytes()).hexdigest(), wanted, path)
     def test_fixtures_match_the_manifest_and_size_limit(self):
         sources = load('sources.json')
         for item in sources['sources'] + sources['intents']:

@@ -35,6 +35,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 
 from parse_netlist import is_not_populated, self_check
+from page_inventory import native_inventory, NATIVE
 
 # KiCad 电气类型 -> 既有 PINUSE 词汇；未知类型保留原文，不静默当作 UNSPEC
 PINUSE = {
@@ -106,14 +107,9 @@ def _libparts(root):
 
 
 def _sheets(root):
-    """sheetpath names -> 页号；层次页按导出顺序编号。"""
-    pages = {}
-    for sheet in root.findall('./design/sheet'):
-        name = sheet.get('name')
-        number = sheet.get('number')
-        if name and number and number.isdigit():
-            pages[name] = int(number)
-    return pages
+    """Keep native sheet declarations even when no component occupies a page."""
+    declared = native_inventory([dict(s.attrib) for s in root.findall('./design/sheet')])
+    return {row['sheet_path']: row['page'] for row in declared['pages']}, declared
 
 
 def _component(comp, libparts, pages):
@@ -164,13 +160,22 @@ def parse(xml_text, export_errors=()):
     if root.tag != 'export':
         raise ValueError('不是 kicadxml 网表（根元素为 %r）' % root.tag)
 
-    libparts, pages = _libparts(root), _sheets(root)
+    libparts = _libparts(root)
+    pages, page_inventory = _sheets(root)
+    sheet_stamps = {row['sheet_path']: row['tstamps'] for row in page_inventory['pages']}
     parts, ref2page, ref2lib, normalizations = {}, {}, {}, {}
     for comp in root.findall('./components/comp'):
         ref = _text(comp.get('ref'))
         if not ref or ref in parts:
             raise ValueError('缺失或重复的器件位号: %r' % ref)
         part, page, lib, normalization = _component(comp, libparts, pages)
+        if page_inventory['scope'] == NATIVE and page is None:
+            raise ValueError('component %s sheetpath is outside native sheet scope' % ref)
+        path = comp.find('sheetpath')
+        stamp = path.get('tstamps', '') if path is not None else ''
+        declared_stamp = sheet_stamps.get(path.get('names')) if path is not None else ''
+        if stamp and declared_stamp and stamp != declared_stamp:
+            raise ValueError('component %s sheetpath tstamps conflicts with native sheet scope' % ref)
         parts[ref] = part
         ref2lib[ref] = lib
         if normalization:
@@ -233,7 +238,8 @@ def parse(xml_text, export_errors=()):
     design = root.find('./design')
     return {
         'nets': nets, 'pin2net': pin2net, 'pinname': pinname, 'pintype': pintype,
-        'parts': parts, 'ref2page': ref2page, 'pseudo_nets': sorted(set(pseudo)),
+        'parts': parts, 'ref2page': ref2page, 'page_inventory': page_inventory,
+        'pseudo_nets': sorted(set(pseudo)),
         'declared_pinname': declared_pinname, 'declared_pintype': declared_pintype,
         'declared_native_pintype': declared_native_pintype,
         'export_errors': list(export_errors),

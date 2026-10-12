@@ -1,0 +1,166 @@
+{
+  "revision": "page-inventory-v1",
+  "parents": {
+    "expected.json": "0967faedb86c149cc914db183185b6cbd9b50b6778a363785935bc38bf143284",
+    "cases.json": "3d1c0f6abf2e9cc3162ceff00e04f547a2e5bd64500781d03747a2153a1ae1c9",
+    "sources.json": "a482cab528f7bc213763465d9240cafab475fa2e3ad5e84327383bdd1890f4b3",
+    "fixtures/rh-ad8495-thermocouple.intent.json": "d050f98d464afc4cc30479ef1598c77523cc7555532217165267eda122171e7d"
+  },
+  "derived_files": {
+    "revisions/page-inventory-v1/expected.json": "61f0ce5634ed1282b7a0f1e14985b9f44599c15854e9e020ef499cebf16e93b9",
+    "revisions/page-inventory-v1/sources.json": "c6b9cfc66ae2605637fcafcad3e6e3817b3c2f25e242f5572c9277d0ac3ef070",
+    "revisions/page-inventory-v1/cases.json": "8c9b95cd9957ecd106589a1beef41a9ca9c0955ebc0e607702a0658f222e3f6a",
+    "fixtures/rh-ad8495-thermocouple.page-inventory-v1.intent.json": "626d4a1d62c21cf4108d3768a06d6aa53964c9f92167497f8b384d4cf81e4c3a"
+  },
+  "scope": "New document inventory obligations. Historical frozen expectations, fixtures and intent remain byte-identical.",
+  "independent_xml_page_audit": [
+    {
+      "case": "r01-thingplus-esp32s3",
+      "native_pages": [
+        1,
+        2
+      ],
+      "occupied_pages": [
+        1,
+        2
+      ],
+      "added_document_pages": [],
+      "before_total": 186,
+      "after_total": 186
+    },
+    {
+      "case": "r02-dasduino-coreplus",
+      "native_pages": [
+        1,
+        2,
+        3
+      ],
+      "occupied_pages": [
+        1,
+        2,
+        3
+      ],
+      "added_document_pages": [],
+      "before_total": 198,
+      "after_total": 198
+    },
+    {
+      "case": "r03-nrf9151-feather",
+      "native_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "occupied_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "added_document_pages": [],
+      "before_total": 249,
+      "after_total": 249
+    },
+    {
+      "case": "r04-host-usb-pmod",
+      "native_pages": [
+        1,
+        2,
+        3
+      ],
+      "occupied_pages": [
+        2,
+        3
+      ],
+      "added_document_pages": [
+        1
+      ],
+      "before_total": 49,
+      "after_total": 50
+    },
+    {
+      "case": "r04-c1-return-moved",
+      "native_pages": [
+        1,
+        2,
+        3
+      ],
+      "occupied_pages": [
+        2,
+        3
+      ],
+      "added_document_pages": [
+        1
+      ],
+      "before_total": 49,
+      "after_total": 50
+    },
+    {
+      "case": "r05-lipo-charger",
+      "native_pages": [
+        1,
+        2,
+        3
+      ],
+      "occupied_pages": [
+        2,
+        3
+      ],
+      "added_document_pages": [
+        1
+      ],
+      "before_total": 63,
+      "after_total": 64
+    },
+    {
+      "case": "rh-ad8495-thermocouple",
+      "native_pages": [
+        1,
+        2
+      ],
+      "occupied_pages": [
+        2
+      ],
+      "added_document_pages": [
+        1
+      ],
+      "before_total": 52,
+      "after_total": 53
+    },
+    {
+      "case": "rh-ad8495-thermocouple-nolog",
+      "native_pages": [
+        1,
+        2
+      ],
+      "occupied_pages": [
+        2
+      ],
+      "added_document_pages": [
+        1
+      ],
+      "before_total": 52,
+      "after_total": 53
+    },
+    {
+      "case": "rh-ad8495-thermocouple-pinmap",
+      "native_pages": [
+        1,
+        2
+      ],
+      "occupied_pages": [
+        2
+      ],
+      "added_document_pages": [
+        1
+      ],
+      "before_total": 48,
+      "after_total": 49
+    }
+  ]
+}
