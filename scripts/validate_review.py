@@ -20,6 +20,7 @@ from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
 from plan_review import ReviewPlanner
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
+from execution_audit import validate_execution_audit
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -72,7 +73,7 @@ def primary_anchors(obj, db=None):
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
                     require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
-                    require_impact=False):
+                    require_impact=False, execution_audit=None, require_execution_audit=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -397,6 +398,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                         require(bool(targets) and ids(linked) and targets.issubset(linked),
                                 f'{digest}[{number}]: hot candidate must link its state checks')
 
+    execution = validate_execution_audit(plan, report, db, execution_audit, require_execution_audit)
+    errors.extend(execution['errors'])
     counts = dict(Counter(x.get("review_result") for x in checks.values()
                           if isinstance(x.get("review_result"), str)))
     severity_counts = {s: sum(x.get("severity") == s and x.get("kind") == "DEFECT"
@@ -415,6 +418,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     x["remediation"].get("readiness") == state for x in findings.values())
                     for state in READINESS}
     return {"quality_screening": screen_quality(plan, report, db),
+            "execution_audit": execution,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
             "categorized_summary": categorized_summary(checks, expected, findings, stage),
@@ -451,6 +455,9 @@ def main():
                         help="require detailed repair instructions for every finding")
     parser.add_argument("--require-bindings", action="store_true",
                         help="require explicit reviewed-object/criterion bindings and finding target consistency")
+    parser.add_argument("--execution-audit", help="source-bound v1 execution-audit.json")
+    parser.add_argument("--require-execution-audit", action="store_true",
+                        help="require source-bound execution reconciliation (not electrical approval)")
     args = parser.parse_args()
     try:
         read = load_json
@@ -459,6 +466,8 @@ def main():
                                  require_actionable=args.require_actionable,
                                  require_bindings=args.require_bindings,
                                  require_impact=args.require_impact,
+                                 execution_audit=read(args.execution_audit) if args.execution_audit else None,
+                                 require_execution_audit=args.require_execution_audit,
                                  old_db=read(args.old_db) if args.old_db else None,
                                  old_plan=read(args.old_plan) if args.old_plan else None,
                                  require_revision=args.require_revision_impact,
