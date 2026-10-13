@@ -102,7 +102,9 @@ class DecouplingChecker(Checker):
                     requirements = [r for r in group['requirements'] if r['kind'] == kind]
                     for req in requirements or [None]:
                         gaps = (connection_gaps if kind == 'connection' else group['gaps']) + (group['capacitance_gaps'] if kind == 'capacitance' else [])
-                        if req is None:
+                        if req is None and kind != 'rating':
+                            # Capacitance/connection need the device clause; voltage
+                            # rating against the rail uses the catalog default criterion.
                             gaps = gaps + ['datasheet-requirement:' + kind]
                         key = group['id'] + ('-' + slug(req['id']) if req else '')
                         item = planner.add_check(rule, deepcopy(obj), key=key,
