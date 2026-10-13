@@ -13,8 +13,13 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率
 与新派生项的 SHA256。独立读取原有公开 XML 的 sheet 声明与组件路径，确认
 6 种回放模式遗漏真实空根页；新契约只使它们的 DOC-V01 检查数加 1，
 其他电气/完整性冻结字段不变。脚表声明仅绑定新输入指纹，不迁移旧审查结果。
-默认 `--contract page-inventory-v1`；`--contract legacy` 用于重放历史契约，
+`--contract legacy` 用于重放历史契约，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
+
+当前默认契约是 `name-gap-scope-v1`（`revisions/name-gap-scope-v1/`，2026-10-13）：严格自检仅因缺功能名失败、
+且缺名脚没有完整官方脚表时，缺口只记在缺名器件自身的去耦组和 `discovery_gaps`（`pin-name-unresolved:<脚>`），
+不再给每个去耦组加整网缺口 `netlist-integrity/export`。缺名只改变该器件引脚角色，不改变网络连通。
+其余字段与 `page-inventory-v1` 相同；后者文件保持原字节，可用 `--contract page-inventory-v1` 重放。
 
 ```sh
 python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out <输出目录>] [--compare <旧 results.json>] [--case <用例>]
@@ -34,7 +39,7 @@ python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out 
 | 用例 | 来源 | 主要锁定的行为 |
 |---|---|---|
 | r01-thingplus-esp32s3 | ASG 第 01 轮最终导出 | 严格自检通过；SparkFun 电容库不按位号推断种类（component-kind 缺口） |
-| r02-dasduino-coreplus | ASG 第 02 轮最终导出 | 晶振 X1 缺名脚算功能缺名；三焊盘跳线触点不算；自检失败给每个去耦组加整网缺口 |
+| r02-dasduino-coreplus | ASG 第 02 轮最终导出 | 晶振 X1 缺名脚算功能缺名；三焊盘跳线触点不算；缺名缺口只落在 X1 自身去耦组（name-gap-scope-v1） |
 | r03-nrf9151-feather | ASG 第 03 轮最终导出（6 页） | 单个缺名控制脚 U8.4；29 个去耦组；DNP 件在冷跑中的缺口 |
 | r04-host-usb-pmod | ASG 第 04 轮最终导出 | 小板基线 |
 | r04-c1-return-moved | 第 04 轮门禁反例（C1 回流脚改接 +3V3） | 电容离开直连供电/回流对后从去耦组消失 |

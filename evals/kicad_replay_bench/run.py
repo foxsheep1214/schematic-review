@@ -20,7 +20,8 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CONTRACT_REVISION = 'page-inventory-v1'
+CONTRACT_REVISION = 'name-gap-scope-v1'
+REVISIONS = ('legacy', 'page-inventory-v1', CONTRACT_REVISION)
 
 
 def contract_path(name, revision=CONTRACT_REVISION):
@@ -185,7 +186,7 @@ def main():
     ap.add_argument('--out', type=Path, help='directory for results.json and report.md')
     ap.add_argument('--compare', type=Path, help='earlier results.json; list every observed field that changed')
     ap.add_argument('--case', action='append', help='run only these case ids')
-    ap.add_argument('--contract', choices=('legacy', CONTRACT_REVISION), default=CONTRACT_REVISION,
+    ap.add_argument('--contract', choices=REVISIONS, default=CONTRACT_REVISION,
                     help='explicit contract revision; legacy files remain unchanged')
     args = ap.parse_args()
     cases = json.loads(contract_path('cases.json', args.contract).read_text(encoding='utf-8'))['cases']

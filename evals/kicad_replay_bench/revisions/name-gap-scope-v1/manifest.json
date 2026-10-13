@@ -1,0 +1,55 @@
+{
+ "revision": "name-gap-scope-v1",
+ "parents": {
+  "revisions/page-inventory-v1/expected.json": "61f0ce5634ed1282b7a0f1e14985b9f44599c15854e9e020ef499cebf16e93b9",
+  "revisions/page-inventory-v1/cases.json": "8c9b95cd9957ecd106589a1beef41a9ca9c0955ebc0e607702a0658f222e3f6a",
+  "revisions/page-inventory-v1/sources.json": "c6b9cfc66ae2605637fcafcad3e6e3817b3c2f25e242f5572c9277d0ac3ef070",
+  "revisions/page-inventory-v1/manifest.json": "e5fc8491caab74c5900dfd2343dea114a658ebc19ee913253518a31df0e9bb0f"
+ },
+ "derived_files": {
+  "revisions/name-gap-scope-v1/expected.json": "bbe05d9a6d38c2e4bc80fa58ecf3598b08e898b161888d60311649df58b78938",
+  "revisions/name-gap-scope-v1/cases.json": "13d7161864509484c3b3e7be5dc054a0e1d894d854b236de6376fc709c0b13c5",
+  "revisions/name-gap-scope-v1/sources.json": "c6b9cfc66ae2605637fcafcad3e6e3817b3c2f25e242f5572c9277d0ac3ef070"
+ },
+ "scope": "Unresolved missing pin names become a gap of their own device and of discovery, not of every decoupling group. page-inventory-v1 files remain byte-identical.",
+ "independent_group_audit": [
+  {
+   "case": "r02-dasduino-coreplus",
+   "missing_functional_pins": [
+    "X1.2",
+    "X1.3",
+    "X1.4"
+   ],
+   "groups": 10,
+   "own_device_groups": 1,
+   "groups_freed_of_whole_net_gap": 9
+  },
+  {
+   "case": "r03-nrf9151-feather",
+   "missing_functional_pins": [
+    "U8.4"
+   ],
+   "groups": 29,
+   "own_device_groups": 1,
+   "groups_freed_of_whole_net_gap": 28
+  },
+  {
+   "case": "rh-ad8495-thermocouple",
+   "missing_functional_pins": [
+    "U201.6"
+   ],
+   "groups": 2,
+   "own_device_groups": 2,
+   "groups_freed_of_whole_net_gap": 0
+  },
+  {
+   "case": "rh-ad8495-thermocouple-nolog",
+   "missing_functional_pins": [
+    "U201.6"
+   ],
+   "groups": 2,
+   "own_device_groups": 2,
+   "groups_freed_of_whole_net_gap": 0
+  }
+ ]
+}

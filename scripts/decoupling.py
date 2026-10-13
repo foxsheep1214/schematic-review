@@ -190,24 +190,25 @@ class Inventory:
         for node, net in self.pin2net.items():
             if node not in self.nets.get(net, []):
                 self.input_gaps.add('inconsistent-index:' + node)
-        self.names_resolved_by_official_pinout = []
+        self.names_resolved_by_official_pinout, self.unresolved_pin_names = [], []
         if db.get('export_errors'):
             self.input_gaps.add('netlist-integrity/export')
         elif db.get('integrity', {}).get('self_check_passed') is False:
-            resolved = self.official_name_gap(db)
-            if resolved is None:
+            split = self.official_name_gap(db)
+            if split is None:
                 self.input_gaps.add('netlist-integrity/export')
             else:
-                self.names_resolved_by_official_pinout = resolved
+                self.names_resolved_by_official_pinout, self.unresolved_pin_names = split
 
     def official_name_gap(self, db):
-        """Unnamed functional pins whose role the official pin map already fixes, else None.
+        """(resolved, unresolved) unnamed functional pins, or None for any other problem.
 
         Decoupling reads a pin's role from intent.devices before its name, so a
-        self-check failure caused only by missing function names does not change
-        the inventory when every such pin is in a complete official pin map.
-        Any other self-check problem keeps the whole-netlist gap. DOC-Q01 still
-        reports the missing names.
+        pin in a complete official pin map is resolved. A missing name only
+        changes the role of that device's own pins, never net connectivity, so
+        an unresolved name stays a gap of its own device (and of discovery),
+        not of every group. Any other self-check problem keeps the
+        whole-netlist gap. DOC-Q01 still reports the missing names.
         """
         from parse_netlist import MISSING_PIN_NAMES, integrity_problems  # parse_netlist imports checkers
         copy = dict(db)
@@ -218,12 +219,15 @@ class Inventory:
         if not problems or any(not p.startswith(MISSING_PIN_NAMES) for p in problems):
             return None
         missing = copy.get('pin_name_coverage', {}).get('missing_functional_pins', [])
-        for node in missing:
+        if not missing:
+            return None
+        resolved, unresolved = [], []
+        for node in sorted(missing):
             ref, _, pin = node.partition('.')
             device = self.devices.get(ref, {})
-            if device.get('pinout_complete') is not True or not device.get('pins', {}).get(pin, {}).get('role'):
-                return None
-        return sorted(missing) or None
+            known = device.get('pinout_complete') is True and device.get('pins', {}).get(pin, {}).get('role')
+            (resolved if known else unresolved).append(node)
+        return resolved, unresolved
 
     def kind(self, ref):
         if ref in self.components:
@@ -335,6 +339,7 @@ class Inventory:
         for group in sorted(groups, key=lambda g: (g['ref'], g['id'], g['origin'])):
             ref = group['ref']
             gaps, value_gaps = set(self.input_gaps), set()
+            gaps.update('pin-name-unresolved:' + n for n in self.unresolved_pin_names if n.partition('.')[0] == ref)
             if ref not in population:
                 gaps.add('population:' + ref)
             device = devices.get(ref)
@@ -425,6 +430,7 @@ def build_decoupling_inventory(db, intent=None):
     two_terminal = sorted(ref for ref in candidates if inv.two_terminal(ref))
     unknown = sorted(set(candidates) - set(two_terminal))
     discovery_gaps = set(inv.input_gaps) | {'unverified-device-pinout:' + r for r in unknown}
+    discovery_gaps.update('pin-name-unresolved:' + n for n in inv.unresolved_pin_names)
     for device in device_records:
         if not device['pinout_complete']:
             discovery_gaps.add('official-full-pinout:' + device['ref'])
