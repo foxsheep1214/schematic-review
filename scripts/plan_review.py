@@ -24,7 +24,7 @@ import os
 import re
 import sys
 from collections import Counter
-from checkers import REGISTRY, registry_cold_rules, registry_hot_rules
+from checkers import REGISTRY, passive_stress, registry_cold_rules, registry_hot_rules
 from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, NetGraph, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, handoff as _handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
@@ -1098,6 +1098,10 @@ def main():
           f"applicability={summary['applicability']}")
     print(f"  readiness={summary['readiness']}  "
           f"handoff_required={summary['handoff_required']}")
+    gaps = passive_stress.rail_gaps(plan)
+    if gaps:
+        print('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))
+        print('    能从稳压器手册或需求定出时补 intent.power_rails.<轨>.voltage_v 后重跑')
     print(f'  -> {args.json}')
 
 

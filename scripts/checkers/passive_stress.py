@@ -144,6 +144,24 @@ class _Bounds:
         return result
 
 
+def _signal_series(graph, nets):
+    """一端只接连接器触点、另一端接 IC 非电源脚的串阻（USB/高速线串阻）。"""
+    def ends(net):
+        found = set()
+        for node in graph.nodes_on(net):
+            ref = node.partition('.')[0]
+            kind = graph.kind(ref) if graph.is_fitted(ref) else None
+            if kind is ng.CONNECTOR:
+                found.add('connector')
+            elif kind is ng.IC and graph.pintype.get(node) not in POWER_PINTYPES:
+                found.add('ic-signal')
+        return frozenset(found)
+    if any(ng.is_rail(net) for net in nets):
+        return False
+    a, b = (ends(net) for net in nets)
+    return {a, b} == {frozenset({'connector'}), frozenset({'ic-signal'})}
+
+
 def _scan(db, intent, state):
     graph = ng.NetGraph(db, fitted=set(state['fitted']))
     bounds = _Bounds(graph, _declared_rails(intent))
@@ -157,6 +175,8 @@ def _scan(db, intent, state):
             continue
         entry = {'ref': ref, 'kind': kind, 'package': package, 'value': part.get('value'),
                  'nets': sorted(pins.values())}
+        if kind is ng.RESISTOR and not any(ng.is_ground(net) for net in entry['nets']):
+            entry['signal_series'] = _signal_series(graph, entry['nets'])
         windows = []
         for net in entry['nets']:
             window, basis = bounds.window(net)
@@ -173,7 +193,11 @@ def _proposal(entry):
     """返回 (建议结论或 None, 计算, 说明)。"""
     v = entry.get('v_across_max')
     if v is None:
-        return None, {}, '两端电压上界算不出：' + '；'.join(entry['bases'])
+        note = '两端电压上界算不出：' + '；'.join(entry['bases'])
+        if entry.get('signal_series'):
+            note += ('。信号串阻：按 wca-formulas.md“信号串联电阻”行定界（直流 I²R 加动态 ½·C·ΔV²·N_tr），'
+                     '不用跨轨 V²/R，也不只算稳态电流')
+        return None, {}, note
     if entry['kind'] == ng.RESISTOR:
         parsed = parse_resistor(entry['value'], default_tol=DEFAULT_TOL)
         if not parsed or parsed['kohm'] * 1000 < 1:
@@ -208,6 +232,16 @@ def proposal_for(inventory, state_id, ref):
                 return None
             return (None, {}, '装配状态未核实') if state['gaps'] else _proposal(entry)
     return None
+
+
+def rail_gaps(plan):
+    """统计因轨电压未声明而没有预判的行：{轨: 行数}，供计划命令提示补 intent。"""
+    counts = {}
+    for check in plan.get('checks', []):
+        note = (check.get('proposal') or {}).get('note') or ''
+        for rail in set(re.findall(r'power_rails\.(.+?)\.voltage_v', note)):
+            counts[rail] = counts.get(rail, 0) + 1
+    return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
 
 
 def override_errors(key, item):

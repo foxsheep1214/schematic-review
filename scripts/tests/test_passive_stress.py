@@ -85,6 +85,18 @@ class ProposalTests(unittest.TestCase):
         self.assertEqual(rows['R2']['proposal']['calculation']['v_across_max'], 3.465)
         self.assertEqual(rows['R1']['proposal']['calculation']['v_across_max'], 6.93)
 
+    def test_signal_series_resistor_points_to_dynamic_model(self):
+        db, intent = board()
+        add(db, 'R2', '27', [('1', '1', 'U1_IO'), ('2', '2', 'USB_DP')])
+        add(db, 'J1', 'USB_B_Micro', [('1', '1', 'USB_DP'), ('2', '2', 'GND')])
+        db['parts']['R2']['jedec'] = R0402
+        intent['assemblies'][0]['population'].update(R2=True, J1=True)
+        rebind(db, intent)
+        _, rows = proposals(db, intent)
+        self.assertIsNone(rows['R2']['proposal']['result'])
+        self.assertIn('信号串阻', rows['R2']['proposal']['note'])
+        self.assertNotIn('信号串阻', rows['R1']['proposal']['note'])
+
 
 class OverrideGateTests(unittest.TestCase):
     def setUp(self):
