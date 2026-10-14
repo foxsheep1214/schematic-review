@@ -326,7 +326,8 @@ RULES = (
          '断电或 IO 电源域未建立时内部偏置通常不存在，该阶段须由外部电路保证',
          'package', 'circuit'),
     Rule('RST-C01', '采样窗口电平',
-         '逐采样窗口计算 strap/EN 保证电压，含内部拉阻、LED、泄漏、电容和门限', 'package', 'circuit'),
+         '逐采样窗口计算 strap/EN 保证电压，含内部拉阻、LED、泄漏、电容和门限；'
+         '带 state 的行只判该状态窗口内要求或被采样的电平，其他窗口的采样归对应状态行、RST-D01 或需求行', 'package', 'circuit'),
     Rule('RST-C02', '复位时序',
          '按 V(t) 穿越门限时刻核对复位脉宽/释放与采样 setup/hold，不能以 RC 时间常数代替', 'package', 'circuit'),
     Rule('RST-D01', '救砖通道',
