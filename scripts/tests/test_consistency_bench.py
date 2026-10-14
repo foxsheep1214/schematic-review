@@ -12,12 +12,13 @@ from build_pack import reviewer_output
 
 
 class ScoreTests(unittest.TestCase):
-    def run_score(self, runs):
+    def run_score(self, runs, extra_specs=()):
+        extra_specs = list(extra_specs)
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
             (tmp / 'pack').mkdir()
             specs = [{'id': 'DEV-C01.R1', 'spec': {'rule': 'DEV-C01', 'proposal': {'result': 'PASS'}}},
-                     {'id': 'DEV-C03.U1', 'spec': {'rule': 'DEV-C03'}}]
+                     {'id': 'DEV-C03.U1', 'spec': {'rule': 'DEV-C03'}}] + extra_specs
             (tmp / 'pack' / 'rows.json').write_text(json.dumps({'rows': specs}))
             args = [sys.executable, '-B', str(SCORE), '--pack', str(tmp / 'pack'), '--out', str(tmp / 'out')]
             for label, verdicts in runs.items():
@@ -44,6 +45,17 @@ class ScoreTests(unittest.TestCase):
             'DEV-C01.R1': {'verdict': 'FAIL', 'proposal_override': {'code': 'STRESS_ABOVE_BOUND', 'reason': '12 V 外部输入'}},
             'DEV-C03.U1': {'verdict': 'PASS'}}})
         self.assertEqual(result['runs']['b/1']['gate_violations'], [])
+
+    def test_requirement_rows_need_clause_aggregation(self):
+        spec = {'id': 'REQ-D01.REQ-1', 'spec': {'rule': 'REQ-D01', 'criterion': 'A须≤1V。按手册审查。',
+                                                'object': {'requirement_status': 'CONFIRMED'}}}
+        good = [{'text': 'A须≤1V。', 'kind': 'OBLIGATION', 'result': 'PASS'}, {'text': '按手册审查。', 'kind': 'PREMISE'}]
+        result = self.run_score({'a/1': {'DEV-C01.R1': {'verdict': 'PASS'}, 'DEV-C03.U1': {'verdict': 'PASS'},
+                                         'REQ-D01.REQ-1': {'verdict': 'PASS', 'requirement_clauses': good}},
+                                 'b/1': {'DEV-C01.R1': {'verdict': 'PASS'}, 'DEV-C03.U1': {'verdict': 'PASS'},
+                                         'REQ-D01.REQ-1': {'verdict': 'FAIL', 'requirement_clauses': good}}}, [spec])
+        self.assertEqual(result['runs']['a/1']['gate_violations'], [])
+        self.assertEqual(result['runs']['b/1']['gate_violations'], ['REQ-D01.REQ-1'])
 
 
 class PackHygieneTests(unittest.TestCase):

@@ -13,7 +13,8 @@
 
 ## 任务
 按技能规则，对 rows.json 的每一行：查阅 db/intent/资料完成该项审查，给出结论 PASS、FAIL、INSUFFICIENT、NA 之一。
-INSUFFICIENT 须给 gap_cause 和具体 missing_inputs；技能要求时给 proposal_override；每行一句理由（含关键数值或依据）。
+INSUFFICIENT 须给 gap_cause 和具体 missing_inputs；技能对结果行要求的其他字段（如 proposal_override、requirement_clauses）一并给出；
+每行一句理由（含关键数值或依据）。
 不需要重跑解析或生成新计划，也不需要写报告。
 
 ## 输出

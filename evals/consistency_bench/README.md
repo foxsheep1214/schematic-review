@@ -8,7 +8,7 @@
 | 跨 agent 一致率 | 不同 agent 之间结论相同的行比例 | 改动后上升，接近同 agent 一致率 |
 | PASS↔FAIL 互翻 | 任意两次运行一判 PASS、一判 FAIL 的行 | 0 |
 | 按规则的分歧 | 有分歧的行按规则统计，分歧最多的规则进入下一轮训练 | 下降 |
-| 门禁违规 | 预判 PASS 被改判 FAIL/INSUFFICIENT 而无有效 proposal_override 的行（validate_review 会拒绝） | 0 |
+| 门禁违规 | 预判 PASS 被改判 FAIL/INSUFFICIENT 而无有效 proposal_override 的行，以及 REQ-D01 条款拆分/汇总不合规的行（validate_review 会拒绝） | 0 |
 | INS 率 | 每次运行 INSUFFICIENT 行占比 | 下降 |
 
 跨 agent 一致率只说明读法是否收敛，不说明谁对；改判方向要回到具体行核对依据。

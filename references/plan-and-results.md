@@ -297,6 +297,16 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   运行校验加 `--require-impact`。
   旧报告仍可读取，但缺少影响依据的等级须显示“分级依据未完整记录”，不能作为可靠优先级；重新分级另存复核记录，
   不改写旧结果或工程指纹来冒充当前规则下的新完整审查。
+- 新报告写 `requirement_clauses_version: 1`：每个 REQ-D01（需求状态 OPEN/DEFERRED 与 NA 除外）给 `requirement_clauses`，
+  把需求原文按顺序完整拆成条款（拼接后等于原文），逐条标类别：
+
+  | 条款形式 | kind | 结论 |
+  |---|---|---|
+  | 规定本设计应达到的量值、功能或状态（=、≤、≥、±、须、不得、支持、保持、可靠进入） | OBLIGATION | 逐条给 PASS/FAIL/INSUFFICIENT/NA，可附 `check_ids` |
+  | 工况与前提（允许…、输入…范围、给定的器件参数）、审查方法与输入取值（按…审查、公差取…、先读…再登记、移交下游）、范围说明 | PREMISE | 不带结论；作用于所有相关行 |
+
+  行结论 = 义务条款中最差的结论（FAIL > INSUFFICIENT > PASS > NA），校验强制。前提条款里的要求由相关器件/电路行执行，
+  其他行发现的缺陷不连带本行；需求原文把该缺陷写成义务（如“各连续受电元件不得超出持续功率额定”）时才在本行判。
 - INSUFFICIENT 可加 `gap_cause`：REQUIREMENT_OPEN、EXTERNAL_DATA、DESIGN_OPEN、REVIEW_INCOMPLETE、
   DOWNSTREAM_VERIFICATION、USER_DEFERRED，含义见 [最小充分证据](evidence-proportionality.md#复核每条证据不足)。
 - 计划行带 `proposal.result = PASS` 而结论为 FAIL/INSUFFICIENT 时，须给 `proposal_override`（code 与 reason），

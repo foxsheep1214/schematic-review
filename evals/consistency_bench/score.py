@@ -14,6 +14,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from checkers.passive_stress import OVERRIDE_CODES
+from validate_review import requirement_clause_errors
 
 VERDICTS = ('PASS', 'FAIL', 'INSUFFICIENT', 'NA')
 
@@ -42,6 +43,10 @@ def gate_violations(run, specs):
         if (proposal.get('result') == 'PASS' and row['verdict'] in ('FAIL', 'INSUFFICIENT')
                 and (override.get('code') not in OVERRIDE_CODES or not str(override.get('reason') or '').strip())):
             bad.append(rid)
+        if spec.get('rule') == 'REQ-D01' and row['verdict'] != 'NA' and (spec.get('object') or {}).get(
+                'requirement_status') not in ('OPEN', 'DEFERRED'):
+            if requirement_clause_errors(rid, dict(row, review_result=row['verdict']), spec.get('criterion')):
+                bad.append(rid)
     return bad
 
 

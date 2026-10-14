@@ -453,9 +453,26 @@ class ReviewPlanTests(unittest.TestCase):
         dotted = plan_with('D8', 'Diode_SMD:D_SMA', [('1.1', 'A', 'VCC_3V3'), ('1.2', 'K', 'GND')])
         self.assertEqual(dotted['readiness'], 'READY')
         self.assertEqual(dotted['required_inputs'], [])
+        bidirectional = plan_with('D3', 'Diode_SMD:D_SMA', [('1', 'A1', 'VCC_3V3'), ('2', 'A2', 'GND')])
+        self.assertEqual(bidirectional['readiness'], 'READY')
+        self.assertIn('non-polar', bidirectional['pin_difference']['basis'])
+        for ref, jedec, pins in (
+                ('J7', 'TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2_1x02_P5.00mm_Horizontal',
+                 [('1', 'Pin_1', 'VCC_3V3'), ('2', 'Pin_2', 'GND')]),
+                ('J8', 'Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical', [('1', 'Pin_1', 'GND')])):
+            with self.subTest(ref=ref):
+                row = plan_with(ref, jedec, pins)
+                self.assertEqual((row['readiness'], row['required_inputs']), ('READY', []))
+                self.assertIn('single-row connector', row['pin_difference']['basis'])
         for ref, jedec, pins in (
                 ('D2', 'Package_TO_SOT_SMD:SOT-23', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND'), ('3', 'NC', 'GND')]),
-                ('D3', 'Diode_SMD:D_SMA', [('1', 'A1', 'VCC_3V3'), ('2', 'A2', 'GND')]),
+                ('D3', 'Diode_SMD:D_SMA', [('1', 'A1', 'VCC_3V3'), ('2', 'X', 'GND')]),
+                ('J3', 'Connector_JST:JST_PH_B4B-PH-K_1x04_P2.00mm_Vertical',
+                 [('1', 'Pin_1', 'VCC_3V3'), ('2', 'Pin_2', 'GND')]),
+                ('J4', 'Connector_JST:JST_SH_SM02B-SRSS-TB_1x02-1MP_P1.00mm_Horizontal',
+                 [('1', 'Pin_1', 'VCC_3V3'), ('2', 'Pin_2', 'GND')]),
+                ('J5', 'Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical',
+                 [('1', 'Pin_1', 'VCC_3V3'), ('3', 'Pin_3', 'GND')]),
                 ('D4', 'Custom:WEIRD', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')]),
                 ('D5', 'LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')]),
                 ('D6', 'LED_SMD:LED_Cree-XHP50_6V', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')]),

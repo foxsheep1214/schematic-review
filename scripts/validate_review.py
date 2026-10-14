@@ -6,6 +6,7 @@ import argparse
 from collections import Counter
 import hashlib
 import json
+import re
 from pathlib import Path
 import sys
 import catalog
@@ -27,6 +28,37 @@ SEVERITIES = {"P0", "P1", "P2", "P3"}
 APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
 # Optional INSUFFICIENT cause (evidence-proportionality.md); over-strict checks are re-judged, not tagged.
 REQUIREMENT_GAP = {"OPEN": "REQUIREMENT_OPEN", "DEFERRED": "USER_DEFERRED"}
+CLAUSE_KINDS = ("OBLIGATION", "PREMISE")
+CLAUSE_ORDER = {"NA": 0, "PASS": 1, "INSUFFICIENT": 2, "FAIL": 3}
+CLAUSE_TEXT_STRIP = re.compile(r"[\s，。；;,.、：:（）()]")
+
+
+def requirement_clause_errors(key, item, criterion):
+    """REQ-D01：需求全文按原文顺序拆成条款，只有义务条款带结论，行结论 = 义务条款中最差的结论。"""
+    clauses = item.get("requirement_clauses")
+    if not isinstance(clauses, list) or not clauses or not all(isinstance(c, dict) for c in clauses):
+        return [f"{key}: REQ-D01 须给 requirement_clauses（按原文顺序拆分的条款，kind 为 OBLIGATION/PREMISE）"]
+    errors = []
+    texts = [c.get("text") if isinstance(c.get("text"), str) else "" for c in clauses]
+    if CLAUSE_TEXT_STRIP.sub("", "".join(texts)) != CLAUSE_TEXT_STRIP.sub("", criterion or ""):
+        errors.append(f"{key}: requirement_clauses 的 text 按顺序拼接须等于需求原文（不遗漏、不改写）")
+    worst = None
+    for i, clause in enumerate(clauses, 1):
+        kind, result = clause.get("kind"), clause.get("result")
+        if kind not in CLAUSE_KINDS:
+            errors.append(f"{key}: 条款 {i} 的 kind 须为 OBLIGATION 或 PREMISE")
+        elif kind == "PREMISE" and result is not None:
+            errors.append(f"{key}: 条款 {i} 是前提（条件/方法/范围），不带结论")
+        elif kind == "OBLIGATION":
+            if result not in CLAUSE_ORDER:
+                errors.append(f"{key}: 义务条款 {i} 须给 PASS/FAIL/INSUFFICIENT/NA 结论")
+            elif worst is None or CLAUSE_ORDER[result] > CLAUSE_ORDER[worst]:
+                worst = result
+    if worst is None and not errors:
+        errors.append(f"{key}: 至少一条义务条款；整条都是前提时按适用性改判 NA 并给依据")
+    elif worst is not None and item.get("review_result") != worst:
+        errors.append(f"{key}: 行结论须等于义务条款中最差的结论（{worst}）；前提条款与其他行的缺陷不连带本行")
+    return errors
 REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "PROPOSED": "提案（PROPOSED）",
                      "OPEN": "未定（OPEN）", "DEFERRED": "暂缓（DEFERRED）"}
 GAP_CAUSES = ("REQUIREMENT_OPEN", "EXTERNAL_DATA", "DESIGN_OPEN", "REVIEW_INCOMPLETE", "DOWNSTREAM_VERIFICATION", "USER_DEFERRED")
@@ -99,6 +131,10 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     errors.extend(validate_engine(plan, require_current_engine))
     require(report.get("schema_version") == 2, "results.schema_version must be 2")
     impact_required = require_impact or 'impact_version' in report
+    clauses_required = 'requirement_clauses_version' in report
+    if clauses_required:
+        require(type(report.get('requirement_clauses_version')) is int and report['requirement_clauses_version'] == 1,
+                'requirement_clauses_version must be 1')
     if impact_required:
         require(type(report.get('impact_version')) is int and report['impact_version'] == 1,
                 'impact_version must be 1 for documented potential impact')
@@ -223,6 +259,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if req_status in REQUIREMENT_GAP:
             require(result == "INSUFFICIENT" and item.get("gap_cause") == REQUIREMENT_GAP[req_status],
                     f"{key}: 需求状态为{REQUIREMENT_LABEL[req_status]}，结果须为 INSUFFICIENT 且 gap_cause 为 {REQUIREMENT_GAP[req_status]}")
+        elif clauses_required and expected.get(key, {}).get("rule") == "REQ-D01" and result != "NA":
+            errors.extend(requirement_clause_errors(key, item, expected[key].get("criterion")))
         if result == "FAIL":
             require(item.get("severity") in tuple(SEVERITIES), f"{key}: invalid severity")
             fid = item.get("finding_id")

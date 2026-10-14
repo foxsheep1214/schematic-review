@@ -271,6 +271,11 @@ TWO_TERMINAL_PACKAGE_RE = re.compile(
 MULTI_PAD_PACKAGE_RE = re.compile(
     r'PLCC|RGB|XHP|THERMAL|(?<![A-Z])EP(?![A-Z])|[-_]\d(?:[-_]|$)|5050|3535|2835|WS28|SK68|APA1', re.I)
 TWO_TERMINAL_REFDES_RE = re.compile(r'^(D|ZD|TVS|LED)\d', re.I)
+NONPOLAR_PIN_NAMES = ({'A1', 'A2'}, {'1', '2'})
+# Single-row 1/2-position connector footprints (pin header, screw terminal, wire-to-board);
+# mounting/shield pads add physical pins the symbol may not show, so they never qualify.
+SINGLE_ROW_CONNECTOR_RE = re.compile(r'(?<![0-9X])1X0?([12])(?![0-9])', re.I)
+CONNECTOR_EXTRA_PAD_RE = re.compile(r'MOUNT|SHIELD|(?<![A-Z])MP(?![A-Z])|THERMAL|(?<![A-Z])EP(?![A-Z])', re.I)
 
 class ReviewPlanner:
     def __init__(self, db, intent=None, evidence=None, review_mode=None,
@@ -764,10 +769,30 @@ class ReviewPlanner:
         roles = sorted('A' if normalize(names.get(n)) in ANODE_NAMES else
                        'K' if normalize(names.get(n)) in CATHODE_NAMES else '?' for n in nodes)
         footprint = str((self.db.get('parts', {}).get(ref) or {}).get('jedec', ''))
-        if (roles != ['A', 'K'] or not TWO_TERMINAL_REFDES_RE.match(ref)
-                or not TWO_TERMINAL_PACKAGE_RE.search(footprint) or MULTI_PAD_PACKAGE_RE.search(footprint)):
+        if (not TWO_TERMINAL_REFDES_RE.match(ref) or not TWO_TERMINAL_PACKAGE_RE.search(footprint)
+                or MULTI_PAD_PACKAGE_RE.search(footprint)):
             return None
-        return footprint
+        if roles == ['A', 'K']:
+            return footprint, ('two-pin anode/cathode symbol on a two-terminal package; '
+                               'pad-to-polarity marking is a PCB-stage HANDOFF')
+        if {normalize(names.get(n)) for n in nodes} in NONPOLAR_PIN_NAMES:
+            return footprint, ('two-pin non-polar symbol (bidirectional) on a two-terminal package; '
+                               'type and ratings are judged by their own checks')
+        return None
+
+    def _single_row_connector(self, ref):
+        """1/2 位单排连接器：封装位数与符号脚号 1..N 一致、无安装/屏蔽焊盘时，脚集合由封装决定。"""
+        footprint = str((self.db.get('parts', {}).get(ref) or {}).get('jedec', ''))
+        match = SINGLE_ROW_CONNECTOR_RE.search(footprint)
+        if not CONNECTOR_RE.match(ref) or not match or CONNECTOR_EXTRA_PAD_RE.search(footprint):
+            return None
+        names = dict(self.db.get('declared_pinname') or {}, **(self.db.get('pinname') or {}))
+        pins = {n.partition('.')[2] for n in set(names) | set(self.db.get('pin2net') or {})
+                if n.partition('.')[0] == ref}
+        if pins != {str(i) for i in range(1, int(match.group(1)) + 1)}:
+            return None
+        return footprint, ('%s-position single-row connector footprint; symbol pins 1..%s match its '
+                           'positions; signal meaning is judged by DEV-D03/DEV-E01' % (match.group(1), match.group(1)))
 
     def _kind_gap(self, ref):
         entry = ((self.datasheet_audit or {}).get('device_kinds') or {}).get(ref) or {}
@@ -793,12 +818,11 @@ class ReviewPlanner:
                     and ref not in devices) or part.get('nc'):
                 continue
             device = devices.get(ref)
-            package = None if device else self._two_terminal_package(ref)
+            package = None if device else (self._two_terminal_package(ref) or self._single_row_connector(ref))
             if package:
-                item = self._ready_check('DEV-D02', {'ref': ref}, [], [f'refdes:{ref}', f'two-terminal-package:{package}'])
-                item['pin_difference'] = {'official_only': [], 'symbol_only': [],
-                                          'basis': 'two-pin anode/cathode symbol on a two-terminal package; '
-                                                   'pad-to-polarity marking is a PCB-stage HANDOFF'}
+                footprint, basis = package
+                item = self._ready_check('DEV-D02', {'ref': ref}, [], [f'refdes:{ref}', f'two-terminal-package:{footprint}'])
+                item['pin_difference'] = {'official_only': [], 'symbol_only': [], 'basis': basis}
                 continue
             gaps = [] if device and device['pinout_complete'] else [
                 f'intent.devices.{ref}: official full pinout + exact MPN/package']
