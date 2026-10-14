@@ -7,6 +7,8 @@ import tempfile
 import unittest
 
 SCORE = Path(__file__).resolve().parents[2] / 'evals' / 'consistency_bench' / 'score.py'
+sys.path.insert(0, str(SCORE.parent))
+from build_pack import reviewer_output
 
 
 class ScoreTests(unittest.TestCase):
@@ -42,6 +44,21 @@ class ScoreTests(unittest.TestCase):
             'DEV-C01.R1': {'verdict': 'FAIL', 'proposal_override': {'code': 'STRESS_ABOVE_BOUND', 'reason': '12 V 外部输入'}},
             'DEV-C03.U1': {'verdict': 'PASS'}}})
         self.assertEqual(result['runs']['b/1']['gate_violations'], [])
+
+
+class PackHygieneTests(unittest.TestCase):
+    def test_prior_review_outputs_are_detected(self):
+        samples = {'a.tsv': 'id\tobject\tresult\n', 'b.log': '{"quality_screening": {}}',
+                   'c.json': '{"generated_by": "check-catalog planner"}', 'd.json': '{"checks": [{"review_result": "PASS"}]}',
+                   'ds.json': '{"file": "DRV8874.pdf", "title": "DRV8874"}', 'e.tsv': 'ref\tvalue\n'}
+        with tempfile.TemporaryDirectory() as tmp:
+            found = {}
+            for name, text in samples.items():
+                path = Path(tmp) / name
+                path.write_text(text)
+                found[name] = reviewer_output(path) is not None
+        self.assertEqual(found, {'a.tsv': True, 'b.log': True, 'c.json': True, 'd.json': True,
+                                 'ds.json': False, 'e.tsv': False})
 
 
 if __name__ == '__main__':
