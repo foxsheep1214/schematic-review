@@ -302,9 +302,10 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 
   | 条款形式 | kind | 结论 |
   |---|---|---|
-  | 规定本设计应达到的量值、功能或状态（=、≤、≥、±、须、不得、支持、保持、可靠进入） | OBLIGATION | 逐条给 PASS/FAIL/INSUFFICIENT/NA，可附 `check_ids` |
+  | 规定本设计应达到的量值、功能或状态（=、≤、≥、±、须、不得、支持、保持、可靠进入） | OBLIGATION | `result` 取 PASS/FAIL/INSUFFICIENT/NA，可附 `check_ids` |
   | 工况与前提（允许…、输入…范围、给定的器件参数）、审查方法与输入取值（按…审查、公差取…、先读…再登记、移交下游）、范围说明 | PREMISE | 不带结论；作用于所有相关行 |
 
+  格式：`[{"text": "原文片段", "kind": "OBLIGATION", "result": "PASS", "check_ids": [...]}, {"text": "原文片段", "kind": "PREMISE"}]`。
   行结论 = 义务条款中最差的结论（FAIL > INSUFFICIENT > PASS > NA），校验强制。前提条款里的要求由相关器件/电路行执行，
   其他行发现的缺陷不连带本行；需求原文把该缺陷写成义务（如“各连续受电元件不得超出持续功率额定”）时才在本行判。
 - INSUFFICIENT 可加 `gap_cause`：REQUIREMENT_OPEN、EXTERNAL_DATA、DESIGN_OPEN、REVIEW_INCOMPLETE、
