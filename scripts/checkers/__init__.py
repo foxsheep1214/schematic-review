@@ -14,6 +14,7 @@ from .i2c import I2CTopologyChecker
 from .inductive_load import InductiveLoadChecker
 from .input_filter import InputFilterChecker
 from .optocoupler import OptocouplerChecker
+from .passive_stress import PassiveStressChecker
 from .power_switch import PowerSwitchChecker
 from .power_up import PowerUpChecker
 from .supervision import SupervisionChecker
@@ -28,6 +29,7 @@ REGISTRY = (
     SupervisionChecker(),
     DiffLevelsChecker(),
     OptocouplerChecker(),
+    PassiveStressChecker(),
 )
 
 REGISTRY_BY_ID = {checker.id: checker for checker in REGISTRY}

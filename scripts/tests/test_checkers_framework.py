@@ -71,6 +71,8 @@ def whole_board():
                              ('3', 'EMITTER', 'GND'), ('4', 'COLLECTOR', 'OPTO_OUT')])
     add(db, 'R12', '1K', [('1', '1', 'VCC_5V'), ('2', '2', 'LED_A')])
     add(db, 'R13', '10K', [('1', '1', 'OPTO_OUT'), ('2', '2', 'VCC_3V3')])
+    # 片式电阻：passive_stress
+    db['parts']['R8']['jedec'] = 'Resistor_SMD:R_0402_1005Metric'
     return db
 
 

@@ -1,0 +1,15 @@
+{
+ "revision": "passive-stress-v1",
+ "parents": {
+  "revisions/name-gap-scope-v1/expected.json": "bbe05d9a6d38c2e4bc80fa58ecf3598b08e898b161888d60311649df58b78938",
+  "revisions/name-gap-scope-v1/cases.json": "13d7161864509484c3b3e7be5dc054a0e1d894d854b236de6376fc709c0b13c5",
+  "revisions/name-gap-scope-v1/sources.json": "c6b9cfc66ae2605637fcafcad3e6e3817b3c2f25e242f5572c9277d0ac3ef070",
+  "revisions/name-gap-scope-v1/manifest.json": "64e18e6c1bbbfb3e29a9cc02babc773d9c3056e2510174d4438e4c1b56ae6eef"
+ },
+ "derived_files": {
+  "revisions/passive-stress-v1/expected.json": "d5de2dcb2a60df95427d4664dde8e46410e612fb2387ddc82193c345bc66c2d6",
+  "revisions/passive-stress-v1/cases.json": "13d7161864509484c3b3e7be5dc054a0e1d894d854b236de6376fc709c0b13c5",
+  "revisions/passive-stress-v1/sources.json": "c6b9cfc66ae2605637fcafcad3e6e3817b3c2f25e242f5572c9277d0ac3ef070"
+ },
+ "scope": "Per-part DEV-C01 proposal rows for fitted two-pin standard-footprint chip resistors and MLCCs. Only r03 has such parts (61, counted independently from the raw XML). name-gap-scope-v1 files remain byte-identical."
+}

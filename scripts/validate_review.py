@@ -14,7 +14,7 @@ from review_quality import screen_quality
 from review_engine import validate_engine
 from review_summary import categorized_summary, validate_impact
 from requirement_clarifications import validate_clarifications
-from checkers import REGISTRY, validate_inventories
+from checkers import REGISTRY, passive_stress, validate_inventories
 from validate_remediation import validate_remediation, READINESS
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
 from plan_review import ReviewPlanner
@@ -187,6 +187,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if result == 'PASS':
             for message in gates.get(key, []):
                 require(False, message)
+        proposal = expected.get(key, {}).get('proposal')
+        if isinstance(proposal, dict) and proposal.get('result') == 'PASS' and result in ('FAIL', 'INSUFFICIENT'):
+            errors.extend(passive_stress.override_errors(key, item))
         require(isinstance(result, str) and result in RESULTS, f"{key}: invalid result")
         require(isinstance(app, str) and app in APPLICABILITY, f"{key}: invalid applicability")
         require(text(item.get("rationale")), f"{key}: missing rationale")
