@@ -132,5 +132,35 @@ class OverrideGateTests(unittest.TestCase):
         self.assertTrue(any('passive_stress' in e or 'changed' in e for e in gate['errors']), gate['errors'])
 
 
+class DecouplingRatingProposalTests(unittest.TestCase):
+    def rating_row(self, footprint=C0402):
+        db, intent = board()
+        db['parts']['C1']['jedec'] = footprint
+        group = intent['decoupling']['groups'][0]
+        group['requirements'] = [r for r in group['requirements'] if r['kind'] != 'rating']
+        rebind(db, intent)
+        plan = build_review_plan(db, intent)
+        return db, plan, next(c for c in plan['checks'] if c['rule'] == 'PWR-C10')
+
+    def test_rating_row_reuses_capacitor_proposals(self):
+        _, _, row = self.rating_row()
+        self.assertEqual(row['proposal']['result'], 'PASS')
+        self.assertEqual(row['proposal']['basis'], {'C1': 'PASS'})
+
+    def test_capacitor_outside_proposal_scope_gives_no_rating_proposal(self):
+        _, _, row = self.rating_row('Capacitor_THT:CP_Radial_D8.0mm_P3.50mm')
+        self.assertIsNone(row['proposal']['result'])
+
+    def test_rating_override_needs_a_code(self):
+        db, plan, row = self.rating_row()
+        report = ledger(plan, db)
+        entry = next(c for c in report['checks'] if c['id'] == row['id'])
+        mark_pass(entry)
+        entry.update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['C1 受控耐压'],
+                     potential_severity='P3', gap_cause='DESIGN_OPEN')
+        errors = validate_review(plan, report, db)['errors']
+        self.assertTrue(any(row['id'] in e and 'proposal_override' in e for e in errors))
+
+
 if __name__ == '__main__':
     unittest.main()

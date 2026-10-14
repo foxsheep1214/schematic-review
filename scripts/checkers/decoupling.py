@@ -8,6 +8,7 @@ from pathlib import Path
 from decoupling import build_decoupling_inventory, validate_decoupling_intent
 
 from .base import Checker
+from .passive_stress import OVERRIDE_CODES, proposal_for
 from .planutil import handoff, slug
 
 # 器件条款的三类要求各对应一条规则；缺条款时用规则总表里的默认判据。
@@ -44,6 +45,17 @@ def local_connection_gaps(group, inventory):
     return kept
 
 
+def rating_proposal(planner, state_id, refs):
+    """无器件额定条款时，组内全部电容都有 DEV-C01 预判 PASS 才预判本行 PASS；电解等不在预判范围的电容不预判。"""
+    results = {ref: proposal_for(planner.inventories.get('passive_stress'), state_id, ref) for ref in refs}
+    passed = bool(refs) and all(r and r[0] == 'PASS' for r in results.values())
+    return {'result': 'PASS' if passed else None,
+            'basis': {ref: (r[0] if r else 'not-in-passive-stress-scope') for ref, r in results.items()},
+            'note': ('组内电容耐压均在可订购档内（同 DEV-C01 预判）；耐压约束记 DEV-D04，ESR/有效容量只在器件条款或稳定性判据要求时由 PWR-C09/DEV-C02 核'
+                     if passed else '组内有电容无 DEV-C01 预判 PASS，按 commodity-floors 判定'),
+            'override_codes': sorted(OVERRIDE_CODES)}
+
+
 class DecouplingChecker(Checker):
     id = 'decoupling'
     title = '去耦覆盖'
@@ -60,7 +72,8 @@ class DecouplingChecker(Checker):
     allow_manual_bound_objects = False
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion',
                         'readiness', 'required_inputs', 'trigger', 'inventory_gaps',
-                        'required_material_refs', 'qualification_refs', 'handoff', 'full_inventory_gaps')
+                        'required_material_refs', 'qualification_refs', 'handoff', 'full_inventory_gaps',
+                        'proposal')
 
     def incomplete_message(self, key):
         return key + ': incomplete decoupling planned coverage'
@@ -123,6 +136,8 @@ class DecouplingChecker(Checker):
                             item['qualification_refs'] = sorted(group['fitted_capacitors'])
                             item['required_inputs'].extend('capacitor-qualification:' + ref
                                                           for ref in item['qualification_refs'])
+                            if req is None and not item['inventory_gaps']:
+                                item['proposal'] = rating_proposal(planner, state['id'], item['qualification_refs'])
 
     def binds(self, item):
         obj = item.get('object')

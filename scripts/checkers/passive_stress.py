@@ -199,6 +199,17 @@ def _proposal(entry):
     return None, calc, '可订购档表未覆盖该封装/容值/耐压，由审查者按目录判定'
 
 
+def proposal_for(inventory, state_id, ref):
+    """供其他检查器复用：该状态下某位号的 (建议结论, 计算, 说明)；不在本检查器范围返回 None。"""
+    for state in (inventory or {}).get('states', []):
+        if state['id'] == state_id:
+            entry = next((p for p in state['parts'] if p['ref'] == ref), None)
+            if entry is None:
+                return None
+            return (None, {}, '装配状态未核实') if state['gaps'] else _proposal(entry)
+    return None
+
+
 def override_errors(key, item):
     """建议 PASS 被改判为 FAIL/INSUFFICIENT 时的理由检查。"""
     override = item.get('proposal_override')
