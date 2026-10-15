@@ -28,11 +28,12 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
    不按“参数未知”、器件类别或整批默认值定级；等级、证据置信度和冻结影响分别记录。
    保护动态先按[动作窗口与裕量](references/evidence-proportionality.md#保护动作窗口与裕量)确定故障后果和允许窗口，
    再比较响应与裕量；不把缺全温最大参数本身设为冻结阻断。
-5. **不通过必须可改**：每个 FAIL 给定位、旧→新、顺序操作、参数依据和通过标准；证据不足项给具体缺失输入、决定性影响、所需范围、取得方法及复审关闭条件，不能只写“待确认”。
+5. **不通过必须可改**：每个 FAIL 给定位、旧→新、顺序操作、参数依据和通过标准；证据不足项写具体缺失输入，不能只写“待确认”；缺外部资料或设计未定的再给决定性影响、所需范围、取得方法及复审关闭条件。
    缺输入时给取得方法和条件方案，不编造料号、阻值或空闲 GPIO。能靠改原理图消除的证据不足，直接给电路改进建议；
    建议不改变本轮结论，改图并复审后才关闭。见 [报告与修改说明](references/report-and-remediation.md)。
 6. **守住范围**：准出对象是原理图；PCB、SI/PI、EMC、实测热和生产验证形成 HANDOFF，但原理图能判定的
-   电气前提不能推给下游。纯下游测试记本阶段 NA，产品要求及移交任务仍保留；实际负载/保护配置等决定性输入未知仍为 INSUFFICIENT。见 [结论与准出](references/verdicts-and-release.md)。
+   电气前提不能推给下游。分流只问一句：拿到这个数，今天能否在原理图上重判？能 → INSUFFICIENT（如实际负载、保护配置未知）；
+   只能由样机/PCB/结构/试验产生 → 阶段 NA + HANDOFF，产品要求仍待验证。见 [纯下游验证项](references/verdicts-and-release.md#纯下游验证项)。
 
 ## 参考文件
 
@@ -170,7 +171,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 批量脚本不能用一句固定兜底语给全部证据不足定级。
 完成后对账：
 
-    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --require-impact --require-stage-scope --json review-gate.json
+    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --require-impact --json review-gate.json
 
 - 执行审计（`--execution-audit`）是可选自检，不是交付门槛；用法见 [执行一致性](references/execution-consistency.md#可选的机器自检)。
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。

@@ -78,15 +78,12 @@ class CompletionGuardTests(unittest.TestCase):
             with self.subTest(cause=cause):
                 p, r, db = accepted_handoff(cause)
                 out = validate_review(p, r, db)
-                self.assertEqual(out['workflow']['downstream_handoffs_ready'], [])
                 self.assertEqual(out['release'], 'NO_GO')
 
-    def test_actual_downstream_handoff_is_supported(self):
+    def test_retired_downstream_gap_cause_is_rejected(self):
+        # Pure downstream tests are stage NA (test_review_stage_scope); there is no INSUFFICIENT shortcut.
         p, r, db = accepted_handoff('DOWNSTREAM_VERIFICATION')
-        out = validate_review(p, r, db)
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['workflow']['downstream_handoffs_ready'], [r['checks'][0]['id']])
-        self.assertEqual(out['release'], 'GO')
+        self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_screening_is_integrated_without_changing_release(self):
         p, r, db = fixture()
@@ -264,15 +261,6 @@ class DownstreamTriageTests(unittest.TestCase):
         self.assertEqual([r['checks'][0]['id']], self.codes(p, r)['OPTIMIZATION_TARGET_AS_BLOCKING_GAP']['check_ids'])
         r['checks'][0]['potential_severity'] = 'P3'
         self.assertNotIn('OPTIMIZATION_TARGET_AS_BLOCKING_GAP', self.codes(p, r))
-
-    def test_downstream_rows_in_current_iteration_task_are_flagged(self):
-        p, r = impact_fixture(n=2)
-        r['checks'][0]['gap_cause'] = 'DOWNSTREAM_VERIFICATION'
-        r['work_items'] = [{'id': 'W1', 'due_stage': 'design_iteration', 'check_ids': [c['id'] for c in r['checks']]}]
-        found = self.codes(p, r)['DOWNSTREAM_IN_CURRENT_ITERATION']
-        self.assertEqual(([r['checks'][0]['id']], 'W1'), (found['check_ids'], found['work_item']))
-        r['work_items'][0]['due_stage'] = 'prototype_verification'
-        self.assertNotIn('DOWNSTREAM_IN_CURRENT_ITERATION', self.codes(p, r))
 
 
 class FreezeGradingGateTests(unittest.TestCase):

@@ -4,8 +4,6 @@ This is supplementary to validate_review's evidence and release checks.
 Work-item grouping is explicit,
 not a text-similarity claim that different electrical causes are equivalent.
 """
-from review_stage_scope import outside_stage
-
 PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
 # Gaps a schematic change can often remove: the reviewer must propose that change or say why none exists.
 DESIGNABLE_GAPS = ('EXTERNAL_DATA', 'DESIGN_OPEN')
@@ -53,15 +51,13 @@ def design_option(key, value, unresolved, finding_ids):
     return errors
 
 
-def workflow(plan, report, checks, expected, clarifications=None, require_design_options=False):
+def workflow(plan, report, checks, clarifications=None, require_design_options=False):
     errors, tasks, owners = [], [], {}
-    enabled = (bool(clarifications and clarifications['tasks']) or 'review_phase' in plan
-               or 'workflow_version' in report or 'work_items' in report
-               or any(outside_stage(c) for c in checks.values()))
+    enabled = bool(clarifications and clarifications['tasks']) or 'review_phase' in plan or 'workflow_version' in report or 'work_items' in report
     phase = plan.get('review_phase', 'schematic_freeze')
     if not enabled:
         return {'enabled': False, 'phase': phase, 'errors': [], 'tasks': [],
-                'downstream_ready': set(), 'current_work_items': []}
+                'current_work_items': []}
     if phase not in PHASES:
         errors.append('review_phase must be one of ' + '/'.join(PHASES))
     if type(report.get('workflow_version')) is not int or report['workflow_version'] != 1:
@@ -71,7 +67,6 @@ def workflow(plan, report, checks, expected, clarifications=None, require_design
         errors.append('work_items must be an array (use [] when no separate repair/evidence tasks)')
         items = []
     unresolved = {k for k, c in checks.items() if c.get('review_result') in ('FAIL', 'INSUFFICIENT')}
-    tracked = unresolved | {k for k, c in checks.items() if outside_stage(c)}
     if clarifications:
         tasks.extend(clarifications['tasks'])
         for task in tasks:
@@ -96,11 +91,9 @@ def workflow(plan, report, checks, expected, clarifications=None, require_design
             errors.append(key + ': stage/grouping reason needs locatable evidence')
         linked = item.get('check_ids')
         if not (isinstance(linked, list) and linked and all(text(x) for x in linked)
-                and len(linked) == len(set(linked)) and set(linked) <= tracked):
-            errors.append(key + ': check_ids must name unique unresolved checks or stage-NA handoffs')
+                and len(linked) == len(set(linked)) and set(linked) <= unresolved):
+            errors.append(key + ': check_ids must name unique unresolved checks (stage-NA tests are tracked by their handoff)')
             continue
-        if any(outside_stage(checks[cid]) for cid in linked) and stage != 'prototype_verification':
-            errors.append(key + ': stage-NA handoff tasks must be due at prototype_verification')
         if any(checks[cid].get('gap_cause') == 'REQUIREMENT_OPEN' for cid in linked):
             errors.append(key + ': requirement gaps are managed by clarification records, not duplicate work_items')
             continue
@@ -112,9 +105,8 @@ def workflow(plan, report, checks, expected, clarifications=None, require_design
         for cid in linked:
             owners.setdefault(cid, []).append(item)
         tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option') if k in item})
-    for cid in sorted(tracked - set(owners)):
+    for cid in sorted(unresolved - set(owners)):
         errors.append(cid + ': unresolved check has no root-cause work item')
-    downstream = set()
     for cid, groups in owners.items():
         row = checks[cid]
         # Blocking failures need current repair; minor issues may be scheduled.
@@ -132,32 +124,11 @@ def workflow(plan, report, checks, expected, clarifications=None, require_design
         if (row.get('review_result') == 'INSUFFICIENT' and row.get('gap_cause') == 'REVIEW_INCOMPLETE'
                 and any(g.get('due_stage') != 'design_iteration' for g in groups)):
             errors.append(cid + ': unfinished review must enter the current review queue')
-        if not all(g.get('due_stage') == 'prototype_verification' for g in groups):
-            continue
-        h = row.get('handoff') or {}
-        planned_handoff = expected.get(cid, {}).get('handoff') or {}
-        if not isinstance(h, dict) or not isinstance(planned_handoff, dict):
-            continue  # the main validator reports the malformed handoff
-        prerequisite_ids = h.get('schematic_prerequisites')
-        ready = (
-            (outside_stage(row) or (
-                row.get('review_result') == 'INSUFFICIENT' and row.get('potential_severity') != 'P0'
-                and row.get('gap_cause') == 'DOWNSTREAM_VERIFICATION'
-                and planned_handoff.get('required') is True))
-            and h.get('required') is True and h.get('scope') == 'downstream_verification'
-            and h.get('state') in ('ACCEPTED', 'VERIFIED') and evidence(h.get('evidence'))
-            and isinstance(prerequisite_ids, list)
-            and (bool(prerequisite_ids) or (outside_stage(row) and text(h.get('no_schematic_prerequisites_reason'))))
-            and all(text(k) and k != cid and checks.get(k, {}).get('review_result') == 'PASS'
-                    for k in prerequisite_ids)
-            and len(prerequisite_ids) == len(set(prerequisite_ids)))
-        if ready:
-            downstream.add(cid)
     rank = PHASES.index(phase) if phase in PHASES else 0
     current = [t['id'] for t in tasks if t.get('due_stage') in PHASES
                and PHASES.index(t['due_stage']) <= rank]
     return {'enabled': True, 'phase': phase, 'errors': errors, 'tasks': tasks,
-            'downstream_ready': downstream, 'current_work_items': current}
+            'current_work_items': current}
 
 
 def decision(state, errors, release):
@@ -177,5 +148,4 @@ def decision(state, errors, release):
             'unique_work_items': len(state['tasks']),
             'design_options': {s: sum(1 for t in state['tasks'] if (t.get('design_option') or {}).get('status') == s)
                                for s in ('PROPOSED', 'NONE')},
-            'downstream_handoffs_ready': sorted(state['downstream_ready']),
             'scope': 'Continue design means analysis/redesign only; not permission to energize, fabricate or release hardware.'}

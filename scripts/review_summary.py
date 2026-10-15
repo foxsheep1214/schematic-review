@@ -1,8 +1,9 @@
 """Keep present checks, historical dispositions and handoffs separately visible."""
 from collections import Counter
+from review_stage_scope import outside_stage
 
 RESULT_LABELS = {'PASS': '通过（PASS）', 'FAIL': '不符合（FAIL）', 'INSUFFICIENT': '证据不足（INSUFFICIENT）',
-                 'NA': '不适用（NA）'}
+                 'NA': '不适用（NA）', 'NA_OUTSIDE_STAGE': '本阶段不判，移交下游（NA）'}
 IMPACT_FIELDS = ('affected_function', 'operating_condition', 'consequence',
                  'severity_reason', 'blocking_reason')
 
@@ -26,7 +27,10 @@ def validate_impact(item):
 
 def categorized_summary(checks, expected, findings, stage):
     def count(keys):
-        return {'checks': len(keys), 'results': dict(Counter(checks[k].get('review_result') for k in keys if isinstance(checks[k].get('review_result'), str)))}
+        # Stage NA is counted apart: the product requirement still applies and awaits downstream verification.
+        return {'checks': len(keys), 'results': dict(Counter(
+            'NA_OUTSIDE_STAGE' if outside_stage(checks[k]) else checks[k].get('review_result')
+            for k in keys if isinstance(checks[k].get('review_result'), str)))}
     history = {k for k in checks if expected.get(k, {}).get('rule') == 'REQ-H02'}
     current = set(checks) - history
     gaps = [checks[k] for k in current if checks[k].get('review_result') == 'INSUFFICIENT']

@@ -22,7 +22,7 @@ from plan_review import ReviewPlanner
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
 from execution_audit import validate_execution_audit
-from review_stage_scope import validate_stage_scope
+from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -62,7 +62,6 @@ def requirement_clause_errors(key, item, criterion):
     return errors
 REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "PROPOSED": "提案（PROPOSED）",
                      "OPEN": "未定（OPEN）", "DEFERRED": "暂缓（DEFERRED）"}
-GAP_CAUSES = ("REQUIREMENT_OPEN", "EXTERNAL_DATA", "DESIGN_OPEN", "REVIEW_INCOMPLETE", "DOWNSTREAM_VERIFICATION", "USER_DEFERRED")
 SCOPE = set(catalog.COVERAGE_RULES)
 
 
@@ -106,8 +105,7 @@ def primary_anchors(obj, db=None):
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
                     require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
-                    require_impact=False, execution_audit=None, require_execution_audit=False,
-                    require_stage_scope=False):
+                    require_impact=False, execution_audit=None, require_execution_audit=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -185,9 +183,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     gates = validate_inventories(REGISTRY, plan, expected, db, require,
                                  lambda context: ReviewPlanner(db, context))
     checks = index(report.get("checks"), "results.checks")
-    scope_errors, scope_blockers, stage_scope = validate_stage_scope(report, checks, expected, require_stage_scope)
+    scope_errors, stage_scope = validate_stage_scope(checks, expected, impact_required)
     errors.extend(scope_errors)
-    blockers.extend(scope_blockers)
     findings = index(report.get("findings"), "findings")
     bindings = (require_bindings or revision is not None or 'binding_version' in report
                 or any('binding' in x for x in checks.values()))
@@ -202,7 +199,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     clarifications = validate_clarifications(report, checks, expected)
     errors.extend(clarifications['errors'])
     blockers.extend(clarifications['blockers'])
-    stage = workflow(plan, report, checks, expected, clarifications, require_design_options=actionable)
+    stage = workflow(plan, report, checks, clarifications, require_design_options=actionable)
     errors.extend(stage['errors'])
     accepted = False
     for key, item in checks.items():
@@ -239,7 +236,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if key in expected and app != expected[key].get("applicability"):
             require(evidence(item.get("applicability_evidence")),
                     f"{key}: applicability changed without evidence")
-        if result == "NA":
+        if result == "NA" and not outside_stage(item):  # stage NA keeps APPLICABLE (review_stage_scope)
             require(app == "NOT_APPLICABLE", f"{key}: NA requires NOT_APPLICABLE")
         elif app == "NOT_APPLICABLE":
             require(False, f"{key}: NOT_APPLICABLE requires NA")
@@ -299,7 +296,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if result in ("FAIL", "INSUFFICIENT") and not requirement_decision:
             if item.get("severity") == "P0":
                 blockers.append(f"{key}: P0 requires verified repair")
-            elif (critical or item.get("blocking")) and not approval_ok and key not in stage['downstream_ready']:
+            elif (critical or item.get("blocking")) and not approval_ok:
                 blockers.append(f"{key}: unresolved blocking {result}")
         h = item.get("handoff", {"required": False})
         require(isinstance(h, dict), f"{key}: invalid handoff")
@@ -502,8 +499,6 @@ def main():
     parser.add_argument("--require-release", action="store_true")
     parser.add_argument("--require-impact", action="store_true",
                         help="require per-check potential impact and separate freeze rationale")
-    parser.add_argument("--require-stage-scope", action="store_true",
-                        help="require stage-NA handoffs and actionable requests for every evidence gap")
     parser.add_argument("--require-actionable", action="store_true",
                         help="require detailed repair instructions for every finding")
     parser.add_argument("--require-bindings", action="store_true",
@@ -519,7 +514,6 @@ def main():
                                  require_actionable=args.require_actionable,
                                  require_bindings=args.require_bindings,
                                  require_impact=args.require_impact,
-                                 require_stage_scope=args.require_stage_scope,
                                  execution_audit=read(args.execution_audit) if args.execution_audit else None,
                                  require_execution_audit=args.require_execution_audit,
                                  old_db=read(args.old_db) if args.old_db else None,

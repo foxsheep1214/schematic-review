@@ -46,7 +46,12 @@ class ImpactTests(unittest.TestCase):
         p, r, db = fixture()
         row = r['checks'][0]
         row.update(gap()); row['id'] = p['checks'][0]['id']
-        row.update(evidence_confidence='C', missing_inputs=['Guaranteed diagnostic timing'])
+        row.update(evidence_confidence='C', missing_inputs=['Guaranteed diagnostic timing'],
+                   input_requests={'Guaranteed diagnostic timing': {
+                       'why_decisive': 'Timing decides whether the diagnostic is valid at cold startup',
+                       'required_scope': 'Maximum delay at cold startup supply limits',
+                       'acquisition': 'Read supplier timing table',
+                       'closure_criterion': 'Compare maximum delay with the diagnostic window'}})
         r['impact_version'] = 1
         out = validate_review(p, r, db, require_impact=True)
         self.assertTrue(out['valid'], out['errors'])

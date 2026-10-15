@@ -498,7 +498,7 @@ class DesignOptionTests(unittest.TestCase):
             self.assertFalse(validate_review(p, r, db, require_actionable=True)['valid'], option)
 
     def test_other_gap_causes_and_legacy_results_need_no_option(self):
-        p, r, db = gap_with_task(cause='DOWNSTREAM_VERIFICATION')
+        p, r, db = gap_with_task(cause='USER_DEFERRED')
         self.assertTrue(validate_review(p, r, db, require_actionable=True)['valid'])
         p, r, db = gap_with_task()
         del r['remediation_version']

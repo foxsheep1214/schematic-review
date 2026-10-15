@@ -27,10 +27,10 @@
 
 | 计数类别 | 取值 | 来源 |
 |---|---|---|
-| 检查结果 通过（PASS）/ 不符合（FAIL）/ 证据不足（INSUFFICIENT）/ 不适用（NA） | 当前检查行数 | `review-gate.json` 的 `categorized_summary.current.results`；复审另列 `history`（REQ-H02 历史处置），不混入当前 |
+| 检查结果 通过（PASS）/ 不符合（FAIL）/ 证据不足（INSUFFICIENT）/ 不适用（NA）/ 本阶段不判，移交下游（NA_OUTSIDE_STAGE） | 当前检查行数 | `review-gate.json` 的 `categorized_summary.current.results`；复审另列 `history`（REQ-H02 历史处置），不混入当前 |
 | 确认缺陷 P0 / P1 / P2 / P3 | 唯一缺陷数 | `summary.by_severity` |
 | 证据不足项潜在等级 P0 / P1 / P2 / P3 / 需求未定（不定级） | 当前 INSUFFICIENT 行数 | `review-results.json` 中 INSUFFICIENT 行的 `potential_severity`；`gap_cause` 为 REQUIREMENT_OPEN 的行不定级，计入“需求未定”，各项之和等于当前 INSUFFICIENT 数 |
-| 证据不足原因 REQUIREMENT_OPEN / EXTERNAL_DATA / DESIGN_OPEN / REVIEW_INCOMPLETE / USER_DEFERRED（旧报告另含 DOWNSTREAM_VERIFICATION） | INSUFFICIENT 行数 | `insufficient_by_cause`（未填原因的计为 UNSPECIFIED，应补填） |
+| 证据不足原因 REQUIREMENT_OPEN / EXTERNAL_DATA / DESIGN_OPEN / REVIEW_INCOMPLETE / USER_DEFERRED | INSUFFICIENT 行数 | `insufficient_by_cause`（未填原因的计为 UNSPECIFIED，应补填） |
 | 影响分级依据完整 / 未完整、冻结阻断 | 当前证据不足行数 | `categorized_summary.insufficient_impact` 的 documented / undocumented / blocking；有等级无依据的行仍计入未完整 |
 | 电路改进建议 PROPOSED / NONE | 唯一任务数 | `workflow.design_options`；只统计带 `design_option` 的任务 |
 | 移交状态 OPEN / ACCEPTED / VERIFIED | 必需移交的检查数 | `categorized_summary.handoffs_by_state`；只统计 `required: true`，集成约束（`required: false`）不计入 |
@@ -43,8 +43,9 @@
 
 按紧迫性列全部需处理事项。同一根因或独立决定一行，用“类别”区分：电气缺陷、需求澄清、
 证据/设计缺口、审查待完成、下游移交、集成约束、可选改善。
-阶段 NA 单列数量（`stage_scope.outside_schematic_stage`），与产品无关的 NA 分开；产品待验及移交待接收单列，
-不能把它们当作设计缺证数量。每项 INSUFFICIENT 展示具体补证要求及复审关闭条件，见 input_requests。
+阶段 NA 单列为“本阶段不判，移交下游”（结果计数键 `NA_OUTSIDE_STAGE`），与普通 NA 分开，不计入设计缺证；
+需求追溯表中 `stage_scope.requirements_pending_downstream` 的需求行标“待下游验证”，不写“不适用”。
+EXTERNAL_DATA / DESIGN_OPEN 项展示 input_requests 的补证要求及复审关闭条件。
 
 | ID / 类别 | 位置、问题及依据 | 影响 / 冻结影响 | 建议及下一步 | 关闭条件 / 时点 / 状态 |
 |---|---|---|---|---|

@@ -17,7 +17,7 @@
 及任务，逐项台账数量只是覆盖规模。名称候选不展开成一组已确认适用的计算义务。
 批量录入必须来自逐项判断，不能把某功能组的一段理由套到不同判据。共享计算可引用同一记录，
 但每项须说明与本对象、额定值、工况的关系。已有资料未读算是 REVIEW_INCOMPLETE，
-不冒充 EXTERNAL_DATA 或 DOWNSTREAM_VERIFICATION；此类未完成项在本轮关闭，放行始终阻断。
+不冒充 EXTERNAL_DATA 或下游验证；此类未完成项在本轮关闭，放行始终阻断。
 
 ## 将判据绑定受控范围与可达状态
 
@@ -346,13 +346,13 @@ PART/VALUE 冲突，或图面/BOM 与链接资料互相矛盾时，建立身份�
 沿用四态检查结果；需求澄清按 [独立需求澄清协议](requirement-clarifications.md) 单独报告。
 下表为检查尚不能判断的原因，不是独立问题数量：
 
-| 原因 | 可选 `gap_cause` | 处理 |
+| 原因 | `gap_cause`（新报告必填） | 处理 |
 |---|---|---|
 | 需求待澄清 | REQUIREMENT_OPEN | 判据所依赖的需求缺失、含糊、冲突或待确认，例如输入电压范围与频率、环境（海拔、气候）、适用标准与抗扰度等级、能效版本、目标市场认证。不当作缺资料，反馈给需求责任方：按独立需求澄清协议记录唯一问题、已核输入、待决内容和关闭依据；归本轮任务（`design_iteration`）。需求定了但标准正文未取得，属 EXTERNAL_DATA。先按 [源条目到审查义务](requirement-clarifications.md#源条目到审查义务) 核实际语义；真正待需求责任方决定的条目在 intent 中写 `status: OPEN`（真实暂缓写 `status: DEFERRED`，归“用户明确暂缓”），校验据此归类。源标题 OPEN 下的已有要求、真实外部资料缺口及明确排除不机械录为 OPEN；只依赖真正待决要求的检查才归本类。复审时不得沿用上一版的 gap_cause，必须逐条重新归类。 |
 | 真实资料缺口 | EXTERNAL_DATA | 指出缺哪一参数/身份/工况、影响哪一判断，列最小取得方法和关闭阶段。 |
 | 设计尚未决定 | DESIGN_OPEN | 列需定型的规格/配置及约束；AI 先完成可做的选型/计算，到真实取舍点再请人决策。 |
 | 审查尚未完成 | REVIEW_INCOMPLETE | 明示还未执行的阅读、计算或录入并继续做，不说成外部资料不存在。临时台账可记证据不足，不能据此宣称审查完成。 |
-| 纯下游验证 | NA / OUTSIDE_SCHEMATIC_STAGE | 原理图前提单独判；结构、PCB、样机测试保留 HANDOFF，产品要求仍待验证。历史 DOWNSTREAM_VERIFICATION 逐项拆分，不直接批改。 |
+| 纯下游验证 | 不设（不是 INSUFFICIENT） | 按 [判定顺序](verdicts-and-release.md#纯下游验证项) 拆出原理图前提单独判；只能由样机/PCB/结构/试验产生的结果记阶段 NA + HANDOFF，产品要求仍待验证。 |
 | 用户明确暂缓 | USER_DEFERRED | 引用用户的暂缓指示，写明恢复时要补的内容；不当作缺资料。 |
 | 检查口径过严 | 不设 | 现有资料已够判定，或不属原理图判定范围：改判 PASS/NA 或改为移交，不保留证据不足。 |
 | 不适用/重复汇总 | 不设 | 有依据则 NA；汇总引用具体成员缺口，不生成重复补证任务。 |
@@ -361,10 +361,19 @@ PART/VALUE 冲突，或图面/BOM 与链接资料互相矛盾时，建立身份�
 
 报告按原因给出受影响检查条数，需求澄清按唯一问题另计，回答“哪些要设计者先定需求、哪些是真缺资料、哪些是设计或审查没做完”。
 
-每条保留的 INSUFFICIENT 都必须回答“缺什么、为什么影响判断、需要哪种范围的数据、谁从哪里取得、
-取得后怎样复审”。新报告以 `input_requests` 逐项对应 `missing_inputs`，每项含：
+每条保留的 INSUFFICIENT 在 missing_inputs 写具体缺口，例如“缺输入浪涌电流及持续时间，无法比较保险丝与桥堆 I²t”；
+不要写“缺完整手册/全部应力证据”或只写“待确认/待实测”。
 
-- `missing_input`：具体未知量/配置，和 missing_inputs 的一项完全一致。
+`gap_cause` 为 EXTERNAL_DATA 或 DESIGN_OPEN 的行另写 `input_requests`：以 missing_inputs 的每一项原文为键
+（键集合与 missing_inputs 完全相同，可直接复制），值含以下四个字段。其他原因不写 input_requests：
+REQUIREMENT_OPEN 走需求澄清记录，REVIEW_INCOMPLETE 本轮自己做完，USER_DEFERRED 引用暂缓指示。
+
+```json
+"missing_inputs": ["5V 轨启动峰值电流及持续时间"],
+"input_requests": {"5V 轨启动峰值电流及持续时间": {
+  "why_decisive": "…", "required_scope": "…", "acquisition": "…", "closure_criterion": "…"}}
+```
+
 - `why_decisive`：哪个判断因它不能成立；已有事实与未知边界分开，不泛称“影响安全”。
 - `required_scope`：所需数值范围、单位、模式、版本、对象、工况或状态；只索取能改变该判据的条件，
   不默认扩大到全温全工况。既有受控负载包络已足够时，不再要求每个用户的实际负载实测。

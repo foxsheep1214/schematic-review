@@ -295,16 +295,6 @@ def screen_quality(plan, report, db=None):
         candidates.append({'code': 'OPTIMIZATION_TARGET_AS_BLOCKING_GAP', 'check_ids': sorted(optimization_ids),
             'message': 'A cost/volume/optimization target is graded P0/P1. If the requirement is a goal rather than a '
                        'mandatory limit, record it as IMPROVEMENT or P3 once mandatory requirements pass.'})
-    tasks = report.get('work_items') if isinstance(report.get('work_items'), list) else []
-    causes = {r['id']: r.get('gap_cause') for r in report['checks'] if isinstance(r, dict) and isinstance(r.get('id'), str)}
-    for task in tasks:
-        if isinstance(task, dict) and task.get('due_stage') == 'design_iteration' and isinstance(task.get('check_ids'), list):
-            linked = [cid for cid in task['check_ids'] if causes.get(cid) == 'DOWNSTREAM_VERIFICATION']
-            if linked:
-                candidates.append({'code': 'DOWNSTREAM_IN_CURRENT_ITERATION', 'work_item': task.get('id'),
-                    'check_ids': sorted(linked),
-                    'message': 'Downstream-only gaps are scheduled into the current design iteration; move them to a '
-                               'prototype_verification task so the design queue holds only design work.'})
     for rule, group in rule_grades.items():
         levels = {grade for _, grade in group}
         if len(group) >= RULE_UNIFORM_MIN_ROWS and len(levels) == 1:

@@ -11,7 +11,7 @@
 | PASS | 原理图与资料/需求证据充分且符合 | 无 |
 | FAIL | 原理图证据已证明存在问题 | 按 P0–P3 处置 |
 | INSUFFICIENT（证据不足） | 本项适用，但缺会改变本判据的具体输入，无法定判 | 阻断级项未补齐或未书面接受时阻断 |
-| NA | 对本产品不适用，或纯下游判据对原理图阶段不适用 | 不构成电气缺证；须有依据，阶段 NA 仍保留产品待验及独立移交闸门 |
+| NA | 对本产品不适用（`NOT_APPLICABLE`）；或纯下游判据本阶段不判（阶段 NA，`APPLICABLE` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`） | 不构成电气缺证；须有依据。阶段 NA 单独统计，保留产品待验及移交闸门，见[纯下游验证项](#纯下游验证项) |
 
 - NA 不得代替 INSUFFICIENT；未执行项不能填 PASS，也不能用 NA 消失。
 - 已有资料尚未读算的事项记“审查待完成”（REVIEW_INCOMPLETE），不得称为外部资料缺失。
@@ -246,39 +246,47 @@ ACCEPTED 表示接收约束，VERIFIED 才表示下游验证完成；冻结只�
 
 ### 纯下游验证项
 
-**纯实物/下游判据在原理图审查中记 NA（本阶段不适用），并保留必需 HANDOFF。**
+**纯实物/下游判据在原理图审查中记阶段 NA（本阶段不判），并保留必需 HANDOFF。**
 这是检查的阶段归属，不是产品需求不适用，也不代表试验通过。样机温升、整机能效、EMC、结构耐久、
 PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原理图 INSUFFICIENT 或要求 ASG 增加电路。
 
-先拆清原理图判据与实物判据。连接、额定、负载边界、保护配置、损耗预算及必要设计裕量仍单独判
-PASS / FAIL / INSUFFICIENT。缺决定性输入不是下游验证：实际负载未知、保护门限/故障输出配置未知，
-必须写具体补证要求。复合 REQ-D01、功能包汇总或 PRO-C01 不能整行改 NA；按原有判据保留设计结论，
-另立纯测试义务并关联。生成计划的自动判据不得删改来绕过这一拆分。
+**判定顺序**（每条检查按序执行，不跳步；第 1 步命中即结束）：
 
-新报告使用 `stage_scope_version: 1`，纯下游行要求：
+1. 本产品是否需要这条？不需要 → 普通 NA（`NOT_APPLICABLE` + 依据）。
+2. 判据里有没有原理图能判的部分：连接、额定、负载边界、保护配置、损耗预算、必要设计裕量、
+   保守参数下的吸收/钳位计算？有 → 拆成独立检查，按 PASS / FAIL / INSUFFICIENT 判，不随测试项移交。
+3. 剩余部分问一句：**拿到这个数，审查者今天能否在原理图上重判这一条？**
+   能（数来自手册、需求、系统设计、配置表或计算）→ INSUFFICIENT，按[最小充分证据](evidence-proportionality.md#复核每条证据不足)写 gap_cause 及补证要求；
+   不能（数只能由样机、PCB、结构或试验产生）→ 阶段 NA + HANDOFF。
 
-1. `review_result: NA`、`applicability: NOT_APPLICABLE`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，
-   `blocking: false`；依据须证明本条只有下游判据。自动计划的适用性变化仍须 `applicability_evidence`。
-2. `handoff.required: true`、`scope: downstream_verification`；写清接收角色、约束、验证方法，
-   `product_requirement_status: PENDING_VERIFICATION`。不填潜在缺陷等级、gap_cause 或 missing_inputs。
-3. `handoff.schematic_prerequisites` 引用单独审查的适用原理图前提；确无前提可填空列表并给
-   `no_schematic_prerequisites_reason`。前提未闭合不改变测试行的阶段归属，但仍阻断冻结；不能通过 NA 隐藏。
-4. 关联 `due_stage: prototype_verification` 的 work_item，允许任务关联阶段 NA；保留原产品试验义务。
-   设计阶段形成 OPEN 移交即可继续工作。冻结仍检查必需移交的真实接收记录；未接收列为**移交待接收**，
-   不重分类为电气证据不足，不伪造 ACCEPTED。NA 行不因后续接收而变 PASS；实测结果由下游报告另行证明。
+实际负载未知、保护门限/故障输出配置未知，都是第 3 步的“能”，记 INSUFFICIENT，不是下游验证。
+复合 REQ-D01、功能包汇总或 PRO-C01 不能整行改 NA；设计义务照常判，纯测试义务另立检查并关联。
+生成计划的自动判据不得删改来绕过这一拆分。
+
+阶段 NA 行的固定写法（校验强制）：
+
+1. `review_result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`、`blocking: false`；
+   `applicability` **保持 `APPLICABLE`**（产品需求仍适用），不写 applicability_evidence；
+   不填 potential_severity、gap_cause、missing_inputs、input_requests。
+2. `handoff.required: true`、`scope: downstream_verification`、`product_requirement_status: PENDING_VERIFICATION`，
+   写清接收角色、约束、验证方法。
+3. `handoff.schematic_prerequisites` 列第 2 步拆出的检查 ID；确无前提填 `[]` 并给 `no_schematic_prerequisites_reason`。
+   前提项按它自己的结果和等级处理（FAIL/INSUFFICIENT 由前提行自身阻断或不阻断），测试行不重复阻断、不升级。
+4. 由 HANDOFF 跟踪，**不建 work_item**。冻结检查必需移交的真实接收记录；未接收列为**移交待接收**，
+   不伪造 ACCEPTED。NA 行不因接收而变 PASS；实测结果由下游报告另行证明。
 
 | 情况 | 原理图审查处置 |
 |---|---|
 | 只能靠样机取得的能效、EMC、闭壳热、寿命/环境、协议一致性及结构试验结果 | 纯测试行阶段 NA + HANDOFF，产品验收仍待完成 |
 | 实际漏感/PCB 寄生尖峰，已有适用的保守参数和吸收/钳位设计依据 | 设计子判据单独判定，实际波形测试阶段 NA；保守界限不足或算不过不能移交消失 |
-| 实际负载不明、保护配置未知、保证边界足以改变选型结论 | INSUFFICIENT + 具体 input_requests，见最小充分证据；已证实违反则 FAIL |
+| 实际负载不明、保护配置未知、保证边界足以改变选型结论 | INSUFFICIENT + 具体 input_requests；已证实违反则 FAIL |
 | 成本、体积、效率等明确的优化目标 | 必须要求满足后列 IMPROVEMENT 或 P3，不制造未知项 |
-| 需求同时含设计与“通过某测试” | 分别记录设计义务与阶段 NA 测试义务；父项仅汇总本阶段适用结论，并注明不代表产品验收通过 |
+| 需求同时含设计与“通过某测试” | 设计义务照常判；测试义务条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE` 并链接阶段 NA 检查 |
 
-历史报告的 DOWNSTREAM_VERIFICATION / INSUFFICIENT 保留可读，复核时逐项迁移，不能按关键词或批量
-把历史全部下游行改 NA。新版校验 `--require-stage-scope` 拒绝该旧写法，要求完成拆分。
-报告分别展示设计缺证、阶段 NA、产品待验及移交待接收；`quality_screening` 的下游分流提示只辅助判断，
-不能替代逐项审查。工具映射失败也不是产品不适用，不用阶段 NA 隐藏工具覆盖缺口。
+`gap_cause: DOWNSTREAM_VERIFICATION` 已取消，校验拒绝；纯下游项只能走阶段 NA。
+统计中阶段 NA 单列为 `NA_OUTSIDE_STAGE`，不计入普通 NA；含阶段 NA 条款的需求行列在
+`stage_scope.requirements_pending_downstream`，报告标“待下游验证”，不得写成“不适用”。
+`quality_screening` 的下游分流提示只辅助判断；工具映射失败不是产品不适用，不用阶段 NA 隐藏覆盖缺口。
 
 ## 6. 准出
 

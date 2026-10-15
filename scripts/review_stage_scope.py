@@ -1,11 +1,17 @@
 """Separate schematic evidence gaps from downstream test obligations.
 
 Checks are structural guards, not proof that the declared scope is truthful.
-Legacy ledgers stay readable; new reviews opt into version 1 explicitly.
+A pure downstream test stays applicable to the product: it is NA only for this stage,
+keeps applicability APPLICABLE and a downstream handoff, and never blocks through its prerequisites
+(each prerequisite is a separate check graded on its own).
 """
 
 OUTSIDE_STAGE = 'OUTSIDE_SCHEMATIC_STAGE'
-REQUEST_FIELDS = ('missing_input', 'why_decisive', 'required_scope', 'acquisition', 'closure_criterion')
+GAP_CAUSES = ('REQUIREMENT_OPEN', 'EXTERNAL_DATA', 'DESIGN_OPEN', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
+# Only real input/design gaps need a request; requirement gaps use clarification records,
+# unfinished review is done in this round, user deferral cites the user's instruction.
+REQUEST_CAUSES = ('EXTERNAL_DATA', 'DESIGN_OPEN')
+REQUEST_FIELDS = ('why_decisive', 'required_scope', 'acquisition', 'closure_criterion')
 
 
 def text(value):
@@ -16,33 +22,33 @@ def outside_stage(row):
     return row.get('review_result') == 'NA' and row.get('na_reason') == OUTSIDE_STAGE
 
 
-def validate_stage_scope(report, checks, expected, required=False):
-    errors, blockers = [], []
-    enabled = required or 'stage_scope_version' in report or any(
-        c.get('na_reason') == OUTSIDE_STAGE or 'input_requests' in c or any(
-            isinstance(clause, dict) and clause.get('na_reason') == OUTSIDE_STAGE
-            for clause in (c.get('requirement_clauses') if isinstance(c.get('requirement_clauses'), list) else []))
-        for c in checks.values())
-    summary = {'enforced': enabled, 'outside_schematic_stage': [], 'other_na': [],
-               'input_request_count': 0, 'legacy_insufficient_without_requests': []}
-    if enabled and (type(report.get('stage_scope_version')) is not int or report['stage_scope_version'] != 1):
-        errors.append('stage_scope_version must be 1 for stage exclusions and actionable input requests')
+def validate_stage_scope(checks, expected, gap_contract=False):
+    """gap_contract (on with the impact contract) makes gap_cause and real-gap input_requests mandatory."""
+    errors = []
+    summary = {'outside_schematic_stage': [], 'not_applicable': [],
+               'requirements_pending_downstream': [], 'input_request_count': 0}
     for cid, row in checks.items():
         result = row.get('review_result')
         clauses = row.get('requirement_clauses')
+        staged_clause = False
         for clause in clauses if isinstance(clauses, list) else []:
             if not isinstance(clause, dict) or clause.get('na_reason') != OUTSIDE_STAGE:
                 continue
+            staged_clause = True
             linked = clause.get('check_ids')
             if not (clause.get('result') == 'NA' and isinstance(linked, list) and linked
                     and all(text(k) and k != cid and k in expected and outside_stage(checks.get(k, {}))
                             for k in linked)):
                 errors.append(cid + ': downstream NA clause must link separate stage-NA checks with retained handoffs')
+        if staged_clause:
+            summary['requirements_pending_downstream'].append(cid)
         if result == 'NA':
-            summary['outside_schematic_stage' if outside_stage(row) else 'other_na'].append(cid)
+            summary['outside_schematic_stage' if outside_stage(row) else 'not_applicable'].append(cid)
         if row.get('na_reason') == OUTSIDE_STAGE and not outside_stage(row):
             errors.append(cid + ': OUTSIDE_SCHEMATIC_STAGE requires NA')
         if outside_stage(row):
+            if row.get('applicability') != 'APPLICABLE':
+                errors.append(cid + ': stage NA keeps applicability APPLICABLE; the product requirement still applies')
             if row.get('blocking') is not False or any(k in row for k in
                     ('missing_inputs', 'input_requests', 'gap_cause', 'potential_severity')):
                 errors.append(cid + ': stage NA is not an evidence gap; keep prerequisite gaps in separate checks')
@@ -63,31 +69,28 @@ def validate_stage_scope(report, checks, expected, required=False):
             for key in prerequisites:
                 if key == cid or key not in expected or key not in checks or checks[key].get('review_result') == 'NA':
                     errors.append(cid + ': prerequisite must name a separate applicable schematic check: ' + key)
-                elif checks[key].get('review_result') != 'PASS':
-                    blockers.append(cid + ': schematic prerequisite unresolved: ' + key)
         if result != 'INSUFFICIENT':
             if 'input_requests' in row:
                 errors.append(cid + ': input_requests only belongs to INSUFFICIENT')
             continue
+        cause = row.get('gap_cause')
+        if not gap_contract or expected.get(cid, {}).get('rule') == 'REQ-H02':
+            continue  # history dispositions are counted apart
+        if cause not in GAP_CAUSES:
+            errors.append(cid + ': INSUFFICIENT requires gap_cause ' + '/'.join(GAP_CAUSES))
+            continue
         requests = row.get('input_requests')
-        if not enabled:
-            summary['legacy_insufficient_without_requests'].append(cid)
+        if cause not in REQUEST_CAUSES:
+            if 'input_requests' in row:
+                errors.append(cid + ': input_requests only belongs to ' + '/'.join(REQUEST_CAUSES))
             continue
-        if row.get('gap_cause') == 'DOWNSTREAM_VERIFICATION':
-            errors.append(cid + ': split schematic prerequisites from downstream tests; pure tests use stage NA')
-        if not isinstance(requests, list) or not requests or not all(isinstance(r, dict) for r in requests):
-            errors.append(cid + ': INSUFFICIENT requires actionable input_requests')
-            continue
-        requested = []
-        for request in requests:
-            if not all(text(request.get(field)) for field in REQUEST_FIELDS):
-                errors.append(cid + ': input request needs ' + '/'.join(REQUEST_FIELDS))
-            if text(request.get('missing_input')):
-                requested.append(request['missing_input'])
         missing = row.get('missing_inputs')
-        if not isinstance(missing, list) or not all(text(x) for x in missing) or (
-                len(requested) != len(set(requested)) or len(missing) != len(set(missing))
-                or set(requested) != set(missing)):
-            errors.append(cid + ': input_requests must cover each missing_inputs entry exactly once')
+        if not (isinstance(requests, dict) and requests and isinstance(missing, list)
+                and all(text(x) for x in missing) and len(missing) == len(set(missing)) and set(requests) == set(missing)):
+            errors.append(cid + ': input_requests must be an object keyed by each missing_inputs entry')
+            continue
+        for key, request in requests.items():
+            if not (isinstance(request, dict) and all(text(request.get(f)) for f in REQUEST_FIELDS)):
+                errors.append(cid + ': input_requests[' + key + '] needs ' + '/'.join(REQUEST_FIELDS))
         summary['input_request_count'] += len(requests)
-    return errors, blockers, summary
+    return errors, summary
