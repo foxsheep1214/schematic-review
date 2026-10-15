@@ -18,7 +18,17 @@ finding 的 remediation、handoff）后重新生成。下文各节规定这些�
 notes 不能改结论或计数，不写内部代码名（gap_cause、documented 等），不重复任务字段已有的内容。
 任务的 title / root_cause / reason / next_action、input_requests 和 handoff 会原样进报告，按写给硬件工程师的白话写：
 用器件位号、网络名和物理量说事，不写 SR 内部的规则号、字段名、工具名或“伪填”“签 PASS”这类审查行话；
-一个字段一两句，细节放检查行的 rationale。
+一个字段一两句，细节放检查行的 rationale。finding 的 title / observed / impact / recommendation / verification
+和 remediation 的 purpose / steps 同样原样进报告。
+
+- 这些词读者看不懂，进报告的文字不能出现：冻结、闸门、原生、下游、移交、接收方、闭合、绑定、本行、证据不足、
+  技能、remediation、handoff、fit。分别改说：定稿、KiCad 导出的、后续环节、交给、负责方、解决/算完、对应、
+  （写出位号）、资料不足、（不写）、修改方案、交给后续环节的要求、装配/要装。`pack_review.py` 检查报告正文，
+  出现就打包失败，改记录或 notes 后重新生成。
+- handoff 的 `constraint` / `verification` 要能脱离检查行单独读懂：写出具体位号、网络和数值，不写“本行”“本项”。
+  报告按负责方合并这些要求，并自动列出涉及的位号；同一负责方下的要求写法一致时只显示一次。
+- `highlights` 只写对设计有用的核对结论（某个应力、门限、路径已经算清），不写审查过程、技能版本、
+  与上一轮的数量比较或审查范围说明。
 审查目录只有 `审查报告.md` 与 `record/`（见 [留档](inputs-and-coverage.md#留档)），不另写 README、说明或 HTML。
 
 ## 一、报告结构

@@ -36,7 +36,7 @@ class RenderReportTests(unittest.TestCase):
         self.assertEqual(lines[1], '## 结论')
         self.assertTrue(lines[2].startswith('- **检查结果**：共 %d 条。通过（PASS） ' % len(r['checks'])))
         self.assertIn('资料不足无法判断（INSUFFICIENT） 1 条', lines[2])
-        self.assertEqual(lines[3], '- **发现的电路错误**：0 处。')
+        self.assertEqual(lines[3], '- **发现的错误**：0 处。')
         self.assertTrue(lines[4].startswith('- **能否定稿**：还不能定稿。还差：'))
         self.assertIn('1 条检查缺资料或设计依据', lines[5])
         section = text.split('## 待办')[1]
@@ -125,7 +125,7 @@ class RenderReportTests(unittest.TestCase):
         section = text.split('## 审查工具的不足（设计者不用处理）')[1]
         for phrase in ('**SR 为什么做不到**：Kelvin source pins not mapped',
                        '**建议怎么改进 SR**：Accept S1_KELVIN/S2_POWER',
-                       '**这次人工怎么核对的**：Traced pins on the vendor drawing'):
+                       '**这次怎么核对的**：Traced pins on the vendor drawing'):
             self.assertIn(phrase, section)
         self.assertNotIn('## 待办', text)
 
@@ -141,11 +141,12 @@ class RenderReportTests(unittest.TestCase):
         p, r, db = fixture()
         fail(r)
         text, _ = report(p, r, db)
-        section = body(text).split('## 电路错误')[1]
+        section = body(text).split('## 发现的错误')[1]
         self.assertIn('F1', section)
         self.assertIn('（P1：必需功能可能不达标）', section)
         self.assertIn('**怎么改**', section)
-        self.assertIn('- **发现的电路错误**：1 处（P1 1 处）', text)
+        self.assertIn('- **发现的错误**：电路错误 1 处，文档错误 0 处（P1 1 处）', text)
+        self.assertIn('类型：电路错误', section)
 
     def test_invalid_records_are_flagged_before_anything_else(self):
         p, r, db = decisive()
@@ -153,6 +154,52 @@ class RenderReportTests(unittest.TestCase):
         text, gate = report(p, r, db)
         self.assertFalse(gate['valid'])
         self.assertIn('审查记录本身有错', text.splitlines()[2])
+
+
+class ReportWordingTests(unittest.TestCase):
+    """Problems readers hit in the v0.17 report, fixed in the skill rather than by hand."""
+
+    def test_document_only_defect_is_not_called_a_circuit_error(self):
+        from render_report import is_document, item_kind
+        self.assertTrue(is_document(['DOC-T01.AS-DRAWN', 'DEV-D04.BOARD']))
+        self.assertFalse(is_document(['DOC-T01.AS-DRAWN', 'PWR-C01.U1']))
+        self.assertEqual(item_kind([{'id': 'DEV-D04.BOARD', 'review_result': 'FAIL'}]), '文档错误')
+        p, r, db = fixture()
+        fail(r)
+        r['findings'][0]['check_ids'] = [r['checks'][0]['id']]
+        with mock.patch('render_report.is_document', return_value=True):
+            text, _ = report(p, r, db)
+        self.assertIn('电路错误 0 处，文档错误 1 处', text)
+        self.assertIn('类型：文档错误', text)
+
+    def test_scope_blocker_names_the_check_and_finding(self):
+        from render_report import blocker_reasons
+        results = {'scope_checks': {'input_consistency': 'DOC-Q01.X'},
+                   'checks': [{'id': 'DOC-Q01.X', 'review_result': 'FAIL', 'finding_id': 'F-DOC-01'}]}
+        reasons = blocker_reasons(['scope input_consistency: coverage audit not PASS'], results)
+        self.assertEqual(reasons, ['输入资料一致性核对没通过（检查 DOC-Q01.X，问题见 F-DOC-01）'])
+        self.assertNotIn('其他定稿条件', '；'.join(reasons))
+
+    def test_handoffs_list_where_they_apply_and_tool_gaps_merge(self):
+        p, r, db = downstream()
+        key = r['checks'][0]['id']
+        next(c for c in p['checks'] if c['id'] == key)['object']['ref'] = 'U7'
+        text, _ = report(p, r, db)
+        self.assertIn('| 负责方 | 条数 | 涉及位号/网络 |', text)
+        self.assertIn('| U7 |', text.split('## 交给后续环节的要求')[1])
+        from render_report import render
+        gate = {'valid': True, 'release': 'GO', 'blockers': [], 'sr_improvements': [
+            {'check_id': 'A.1', 'tool_limitation': 'x', 'sr_improvement': 'y', 'method': 'z'},
+            {'check_id': 'B.1', 'tool_limitation': 'x', 'sr_improvement': 'y', 'method': 'z'}]}
+        merged = render({}, {'checks': []}, gate)
+        self.assertIn('### A.1、B.1', merged)
+        self.assertEqual(merged.count('**SR 为什么做不到**'), 1)
+        self.assertNotIn('人工', merged)
+
+    def test_jargon_is_detected_only_as_whole_ascii_words(self):
+        from render_report import jargon_in
+        self.assertEqual(jargon_in('按remediation同步fit清单，交下游'), ['下游', 'remediation', 'fit'])
+        self.assertEqual(jargon_in('Q201 栅极经 R203 到 PFC_GATE，fitted 状态'), [])
 
 
 class PackReviewTests(unittest.TestCase):
@@ -200,6 +247,13 @@ class PackReviewTests(unittest.TestCase):
         (self.work / 'review-results.json').write_text(json.dumps(results))
         errors, _ = self.run_pack()
         self.assertTrue(any('review not finished' in e and row['id'] in e for e in errors), errors)
+
+    def test_jargon_in_report_body_fails_the_pack(self):
+        (self.out / REPORT).write_text('# r\n\n## 结论\n\n- 还不能冻结，见本行。\n\n## 审查工具的不足（设计者不用处理）\n\n- 原生映射\n')
+        errors, _ = self.run_pack()
+        hits = [e for e in errors if 'plain words' in e]
+        self.assertEqual(len(hits), 1, errors)
+        self.assertIn('冻结/本行', hits[0])
 
     def test_extra_top_level_files_fail(self):
         (self.out / 'README.md').write_text('extra')

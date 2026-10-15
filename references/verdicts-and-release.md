@@ -151,7 +151,8 @@ HANDOFF 不是检查结果，而是原理图审查形成的下游动作。每项
 
 - `required`：是否需要移交；`state`：`OPEN` / `ACCEPTED` / `VERIFIED`；
 - `receivers`：PCB Layout、SI、EMC/Test、结构、系统集成方/模块使用者等明确接收方；
-- `constraint`：由原理图证据导出的可执行约束；`verification`：下游如何关闭。
+- `constraint`：由原理图证据导出的可执行约束；`verification`：下游如何关闭。两者都要写出具体位号、网络和数值，
+  脱离检查行也能读懂，不写“本行”“本项”。
 
 同一项可以是“连通性 PASS + PCB 阻抗约束 HANDOFF OPEN”，也可以是“拓扑 FAIL + 修复后仍需布局 HANDOFF”。
 ACCEPTED 表示接收约束，VERIFIED 才表示下游验证完成。HANDOFF 随原理图作为清单交出，**不卡冻结**：
@@ -244,7 +245,7 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 - 只有文字相似、同一器件或同一本手册不构成共同根因。根因相同的 FAIL 共用一个任务，引用 finding 的改法。
 - `blocking` 表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
 - REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过。
-  只剩 SR 工具自身限制、审查人已人工核对完的，不记 REVIEW_INCOMPLETE，按人工结论判定并写 `manual_verification`
+  只剩 SR 工具自身限制、审查时已对照网表和原厂资料核对完的，不记 REVIEW_INCOMPLETE，按核对结论判定并写 `manual_verification`
   （见 [计划与结果台账](plan-and-results.md)），工具限制列入 `sr_improvements`，不进设计者待办。
 
 ### 纯下游验证项

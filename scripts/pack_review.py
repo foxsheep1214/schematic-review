@@ -22,9 +22,25 @@ from pathlib import Path
 
 REPORT = '审查报告.md'
 RECORD = 'record'
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from render_report import jargon_in  # noqa: E402
+
 HISTORY_RULE = 'REQ-H02'
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
           'lint-cold.json', 'lint-hot.json')
+
+
+def plain_language_errors(report):
+    """Text written for the designer (everything above the tool-gap and count sections) must be plain."""
+    body = report.split('\n## 审查工具的不足')[0].split('\n## 数字一览')[0]
+    errors = []
+    for number, line in enumerate(body.splitlines()[1:], 2):
+        words = jargon_in(line)
+        if words:
+            errors.append('%s line %d uses %s; rewrite the record text or notes in plain words and re-render: %s'
+                          % (REPORT, number, '/'.join(words), line.strip()[:80]))
+    return errors
 
 
 def sha256(path):
@@ -75,6 +91,8 @@ def pack(out, ledger, evidence_root, inputs):
     record = out / RECORD
     if not (out / REPORT).is_file():
         errors.append('missing %s; run render_report.py first' % REPORT)
+    else:
+        errors += plain_language_errors((out / REPORT).read_text(encoding='utf-8'))
     extra = sorted(p.name for p in out.iterdir() if p.name not in (REPORT, RECORD) and not p.name.startswith('.')) \
         if out.is_dir() else []
     if extra:

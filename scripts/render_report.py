@@ -12,6 +12,7 @@ notes.json (optional):
 """
 import argparse
 import json
+import re
 import sys
 from collections import Counter, OrderedDict
 from pathlib import Path
@@ -31,10 +32,21 @@ HISTORY_RULE = 'REQ-H02'
 RESULT_WORDS = (('PASS', '通过（PASS）'), ('FAIL', '发现错误（FAIL）'), ('INSUFFICIENT', '资料不足无法判断（INSUFFICIENT）'),
                 ('NA', '与本产品无关（NA）'), ('NA_OUTSIDE_STAGE', '原理图阶段不判、交给后续环节'))
 # Why the schematic cannot be finalised yet, in the order a reader should act on them.
-BLOCKERS = (('fail', '%d 条检查发现的电路错误还没改'),
+BLOCKERS = (('fail', '%d 条检查发现的错误还没改'),
             ('gap', '%d 条检查缺资料或设计依据，对应下面列出的待办'),
-            ('review', '%d 条检查审查人还没做完'),
-            ('other', '%d 项其他定稿条件没满足'))
+            ('requirement', '%d 条需求还要用户拍板'),
+            ('review', '%d 条检查审查还没做完'),
+            ('grading', '%d 组资料不足的检查还没逐条判断后果'),
+            ('netlist', '原理图导出的网表不完整或导出失败'))
+SCOPES = {'input_consistency': '输入资料一致性核对', 'requirements': '需求逐条覆盖核对',
+          'chains': '功能链覆盖核对', 'states': '工作状态覆盖核对',
+          'datasheets': '器件资料覆盖核对', 'history': '上一版问题处理核对'}
+# Checks about drawings, BOM and library fields rather than the circuit itself.
+DOCUMENT_RULES = {'DOC-A01', 'DOC-A02', 'DOC-A03', 'DOC-A04', 'DOC-T01', 'DOC-D01',
+                  'DOC-V01', 'DOC-V02', 'DOC-Q01', 'DEV-D04'}
+# Words readers found obscure; record text that reaches the report must not use them.
+JARGON = ('冻结', '闸门', '原生', '下游', '移交', '接收方', '闭合', '绑定', '本行', '证据不足', '技能',
+          'remediation', 'handoff', 'fit')
 
 
 def cell(text):
@@ -46,8 +58,19 @@ def worst(levels):
     return found[0] if found else None
 
 
-def blocker_counts(blockers):
-    kinds = Counter()
+def rule_of(key):
+    return key.split('.', 1)[0]
+
+
+def is_document(check_ids):
+    return bool(check_ids) and all(rule_of(k) in DOCUMENT_RULES for k in check_ids)
+
+
+def blocker_reasons(blockers, results):
+    """Every blocker in plain words; scope audits name the check and the finding behind them."""
+    kinds, scopes, unknown = Counter(), [], []
+    scope_checks = results.get('scope_checks') or {}
+    checks = {c.get('id'): c for c in results.get('checks') or [] if isinstance(c, dict)}
     for b in blockers:
         if 'review work not completed' in b:
             kinds['review'] += 1
@@ -55,17 +78,55 @@ def blocker_counts(blockers):
             kinds['fail'] += 1
         elif 'unresolved blocking INSUFFICIENT' in b:
             kinds['gap'] += 1
+        elif 'unresolved requirement decision' in b:
+            kinds['requirement'] += 1
+        elif 'need individual grading' in b:
+            kinds['grading'] += 1
+        elif 'input netlist failed' in b:
+            kinds['netlist'] = 1
+        elif b.startswith('scope ') and ': coverage audit not PASS' in b:
+            dim = b[len('scope '):].split(':', 1)[0]
+            key = scope_checks.get(dim, '')
+            finding = (checks.get(key) or {}).get('finding_id')
+            scopes.append('%s没通过（检查 %s%s）' % (SCOPES.get(dim, dim), key,
+                                                  '，问题见 %s' % finding if finding else ''))
         else:
-            kinds['other'] += 1
-    return [text % kinds[key] for key, text in BLOCKERS if kinds[key]]
+            unknown.append(b)
+    out = [(text % kinds[key]) if '%d' in text else text for key, text in BLOCKERS if kinds[key]]
+    out += scopes
+    if unknown:
+        out.append('另有 %d 项定稿条件没满足，原文见 record/review-gate.json 的 blockers：%s'
+                   % (len(unknown), '；'.join(unknown[:3])))
+    return out
+
+
+def jargon_in(text):
+    found = []
+    for word in JARGON:
+        pattern = r'(?<![A-Za-z])%s(?![A-Za-z])' % word if word.isascii() else re.escape(word)
+        if re.search(pattern, text, re.I if word.isascii() else 0):
+            found.append(word)
+    return found
 
 
 def item_kind(rows):
     kinds = {r.get('review_result') if r.get('review_result') == 'FAIL' else r.get('gap_cause') for r in rows}
     for key, label in KINDS.items():
         if key in kinds:
+            if key == 'FAIL' and is_document([r.get('id', '') for r in rows if r.get('review_result') == 'FAIL']):
+                return '文档错误'
             return label
     return '待处理'
+
+
+def anchors(obj):
+    """Refs and nets a planned check is about, for telling the reader where a requirement applies."""
+    if not isinstance(obj, dict):
+        return []
+    def pick(one, many):
+        return ([obj[one]] if isinstance(obj.get(one), str) else []) + \
+            [x for x in obj.get(many) or [] if isinstance(x, str)]
+    return pick('ref', 'refs') or pick('net', 'nets')
 
 
 def unique(values):
@@ -121,7 +182,9 @@ def render(plan, results, gate, notes=None, title=None):
     release = gate.get('release', 'NO_GO')
     handoffs = [c for c in current_rows.values() if (c.get('handoff') or {}).get('required')]
     by_sev = (gate.get('summary') or {}).get('by_severity') or {}
-    defects = sum(by_sev.get(s, 0) for s in SEVERITIES)
+    defect_list = [f for f in findings if f.get('kind') == 'DEFECT']
+    doc_defects = [f for f in defect_list if is_document(f.get('check_ids') or [])]
+    defects = len(defect_list)
 
     out = ['# %s' % (title or '原理图审查报告'), '']
     if not gate.get('valid'):
@@ -132,11 +195,12 @@ def render(plan, results, gate, notes=None, title=None):
     out.append('- **检查结果**：共 %d 条。%s。' % (total, '，'.join('%s %d 条' % (label, counts.get(key, 0))
                for key, label in RESULT_WORDS)))
     if defects:
-        out.append('- **发现的电路错误**：%d 处（%s），见“电路错误”一节。' % (
-            defects, '、'.join('%s %d 处' % (s, by_sev[s]) for s in SEVERITIES if by_sev.get(s))))
+        out.append('- **发现的错误**：电路错误 %d 处，文档错误 %d 处（%s），见“发现的错误”一节。' % (
+            defects - len(doc_defects), len(doc_defects),
+            '、'.join('%s %d 处' % (s, by_sev[s]) for s in SEVERITIES if by_sev.get(s))))
     else:
-        out.append('- **发现的电路错误**：0 处。')
-    reasons = blocker_counts(gate.get('blockers') or []) if release != 'GO' else []
+        out.append('- **发现的错误**：0 处。')
+    reasons = blocker_reasons(gate.get('blockers') or [], results) if release != 'GO' else []
     if reasons:
         out.append('- **能否定稿**：%s。还差：' % RELEASE.get(release, release))
         out += ['  %d. %s；' % (i, r) for i, r in enumerate(reasons, 1)]
@@ -152,11 +216,14 @@ def render(plan, results, gate, notes=None, title=None):
         out += [notes['summary'], '']
 
     if findings:
-        out += ['## 电路错误', '', SEVERITY_LEGEND, '']
+        out += ['## 发现的错误', '', SEVERITY_LEGEND, '']
         for f in sorted(findings, key=lambda f: SEVERITIES.index(f['severity']) if f.get('severity') in SEVERITIES else 9):
             fix = f.get('remediation') or {}
             level = f.get('severity')
             out.append('### %s　%s（%s：%s）' % (f.get('id'), f.get('title') or '', level, SEVERITY_WORDS.get(level, '')))
+            out.append('')
+            out.append('类型：%s' % ('文档错误（图纸、BOM 或库字段与电路不一致，电路本身不用改）'
+                                    if f in doc_defects else '电路错误'))
             out.append('')
             if item_notes.get(f.get('id')):
                 out += [item_notes[f['id']], '']
@@ -186,13 +253,16 @@ def render(plan, results, gate, notes=None, title=None):
         out += ['## 交给后续环节的要求', '',
                 '下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，'
                 '也不影响原理图定稿。原理图交出时把这张表一起交给对应负责方即可。', '',
-                '| 负责方 | 条数 | 要落实的要求 | 怎么验证 |', '|---|---:|---|---|']
+                '| 负责方 | 条数 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |', '|---|---:|---|---|---|']
+        planned = {c.get('id'): c for c in plan.get('checks') or [] if isinstance(c, dict)}
         groups = OrderedDict()
         for c in handoffs:
-            h = c['handoff']
-            groups.setdefault('、'.join(h.get('receivers') or ['未指定']), []).append(h)
-        for who, hs in sorted(groups.items(), key=lambda kv: -len(kv[1])):
-            out.append('| %s | %d | %s | %s |' % (cell(who), len(hs),
+            groups.setdefault('、'.join(c['handoff'].get('receivers') or ['未指定']), []).append(c)
+        for who, rows in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+            hs = [c['handoff'] for c in rows]
+            where = unique(x for c in rows for x in anchors((planned.get(c['id']) or {}).get('object')))
+            shown = '、'.join(where[:12]) + ('等 %d 处' % len(where) if len(where) > 12 else '')
+            out.append('| %s | %d | %s | %s | %s |' % (cell(who), len(hs), cell(shown or '整板'),
                        cell('；'.join(unique(h.get('constraint') for h in hs))),
                        cell('；'.join(unique(h.get('verification') for h in hs)))))
         pending = (gate.get('stage_scope') or {}).get('requirements_pending_downstream') or []
@@ -206,13 +276,17 @@ def render(plan, results, gate, notes=None, title=None):
     tool_gaps = gate.get('sr_improvements') or []
     if tool_gaps:
         out += ['## 审查工具的不足（设计者不用处理）', '',
-                '下面 %d 条检查，SR 的自动工具判断不了，审查人已经人工核对，结论按人工结果算。'
+                '下面 %d 条检查，SR 的自动检查工具判断不了，审查时改为逐项对照网表和原厂资料核对，结论按核对结果算。'
                 '这里记录 SR 为什么做不到、该怎么改进 SR，留给 SR 维护。' % len(tool_gaps), '']
+        same = OrderedDict()
         for t in tool_gaps:
-            out += ['### ' + t['check_id'], '',
-                    '- **SR 为什么做不到**：' + cell(t.get('tool_limitation') or ''),
-                    '- **建议怎么改进 SR**：' + cell(t.get('sr_improvement') or ''),
-                    '- **这次人工怎么核对的**：' + cell(t.get('method') or ''), '']
+            key = tuple(cell(t.get(f) or '') for f in ('tool_limitation', 'sr_improvement', 'method'))
+            same.setdefault(key, []).append(t['check_id'])
+        for (limit, improve, method), ids in same.items():
+            out += ['### ' + '、'.join(ids), '',
+                    '- **SR 为什么做不到**：' + limit,
+                    '- **建议怎么改进 SR**：' + improve,
+                    '- **这次怎么核对的**：' + method, '']
 
     gaps = [c for c in current_rows.values() if c.get('review_result') == 'INSUFFICIENT']
     pot = Counter(c.get('potential_severity') for c in gaps)
@@ -223,7 +297,8 @@ def render(plan, results, gate, notes=None, title=None):
             '| 通过 / 发现错误 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
             '| 与本产品无关（NA） | %d |' % counts.get('NA', 0),
             '| 原理图阶段不判、交给后续环节 | %d |' % counts.get('NA_OUTSIDE_STAGE', 0),
-            '| 电路错误，按严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(by_sev.get(s, 0)) for s in SEVERITIES),
+            '| 发现的错误，按严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(by_sev.get(s, 0)) for s in SEVERITIES),
+            '| 其中文档错误 | %d |' % len(doc_defects),
             '| 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(pot.get(s, 0)) for s in SEVERITIES),
             '| 资料不足的原因：%s | %s |' % (' / '.join(CAUSES.values()), ' / '.join(str(cause.get(k, 0)) for k in CAUSES)),
             '| 交给后续环节的要求 | %d |' % len(handoffs),
