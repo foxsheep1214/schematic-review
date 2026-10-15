@@ -65,6 +65,10 @@ REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "PROPOSED": "提�
 SCOPE = set(catalog.COVERAGE_RULES)
 
 
+# Why SR could not decide, how to teach SR to decide it, and how the reviewer decided it by hand.
+MANUAL_FIELDS = ('tool_limitation', 'sr_improvement', 'method')
+
+
 def text(value):
     return isinstance(value, str) and bool(value.strip())
 
@@ -198,6 +202,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     stage = workflow(plan, report, checks, clarifications, require_design_options=actionable)
     errors.extend(stage['errors'])
     accepted = False
+    sr_improvements = []
     for key, item in checks.items():
         if bindings and key in expected:
             planned = expected[key]
@@ -218,9 +223,20 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 require(criterion_ok, f'{key}: binding criterion differs from planned criterion')
                 bound_count += int(object_ok and criterion_ok)
         result, app = item.get("review_result"), item.get("applicability")
-        if result == 'PASS':
+        manual = item.get('manual_verification')
+        if 'manual_verification' in item:
+            require(bool(gates.get(key)) and result in ('PASS', 'FAIL'),
+                    f'{key}: manual_verification only applies to a PASS/FAIL that the tool cannot confirm')
+            require(isinstance(manual, dict) and all(text(manual.get(f)) for f in MANUAL_FIELDS)
+                    and evidence(manual.get('evidence')),
+                    f'{key}: manual_verification needs ' + ', '.join(MANUAL_FIELDS) + ' and evidence')
+        if result in ('PASS', 'FAIL') and gates.get(key) and isinstance(manual, dict):
+            # The reviewer's evidenced conclusion stands; the tool gap is an SR improvement, not design work.
+            sr_improvements.append({'check_id': key, 'tool_messages': gates[key],
+                                    **{f: manual.get(f) for f in MANUAL_FIELDS}})
+        elif result == 'PASS':
             for message in gates.get(key, []):
-                require(False, message)
+                require(False, message + ' (or record manual_verification if a reviewer verified it by hand)')
         proposal = expected.get(key, {}).get('proposal')
         if isinstance(proposal, dict) and proposal.get('result') == 'PASS' and result in ('FAIL', 'INSUFFICIENT'):
             errors.extend(passive_stress.override_errors(key, item))
@@ -304,9 +320,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             require(h.get("state") in ("OPEN", "ACCEPTED", "VERIFIED"), f"{key}: invalid handoff state")
             require(ids(h.get("receivers")) and text(h.get("constraint")) and text(h.get("verification")),
                     f"{key}: handoff lacks receiver/constraint/verification")
-            if h.get("state") not in ("ACCEPTED", "VERIFIED"):
-                blockers.append(f"{key}: required handoff not accepted")
-            else:
+            # Handoffs travel with the schematic as a list; acceptance never gates finalisation.
+            if h.get("state") in ("ACCEPTED", "VERIFIED"):
                 require(evidence(h.get("evidence")), f"{key}: handoff acceptance/verification needs record")
 
     for fid, item in findings.items():
@@ -467,6 +482,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "categorized_summary": categorized_summary(checks, expected, findings, stage),
             "insufficient_by_cause": gap_causes,
             "stage_scope": stage_scope,
+            "sr_improvements": sr_improvements,
             "requirement_clarification_summary": clarifications['summary'],
             "requirement_clarifications": clarifications['items'],
             # REQ-D01 results per requirement confirmation state: a PASS against PROPOSED is conditional on that proposal.

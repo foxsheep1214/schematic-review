@@ -175,11 +175,19 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 - 执行审计（`--execution-audit`）是可选自检，不是交付门槛；用法见 [执行一致性](references/execution-consistency.md#可选的机器自检)。
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。
-- 已有资料尚未读算的项记 REVIEW_INCOMPLETE，完成前不放行；审查未完成时只交进度。
+- 已有资料尚未读算的项记 REVIEW_INCOMPLETE，本轮自己读算完；审查未完成时只交进度，`pack_review.py` 拒绝打包。
+  只剩 SR 工具自身限制、审查人已人工核对的，按人工结论判定并写 `manual_verification`，不记 REVIEW_INCOMPLETE。
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
-- 报告按 [报告与修改说明](references/report-and-remediation.md)：结论与固定计数（0 也写）、处理清单、证据附录。
-- 输入哈希、意图、计划、证据、结果、计算/关键裁图和 Diff 保存到项目审查目录，最终证据不能只留在临时目录；
-  冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。公开仓库只放脱敏合成用例。
+- **交付只有两样**：项目审查目录顶层只放 `审查报告.md` 和 `record/`，其余中间文件留在工作目录。
+  报告由脚本从台账生成，agent 只在 `notes.json` 里补白话说明（格式见 [报告与修改说明](references/report-and-remediation.md)）：
+
+      python3 scripts/render_report.py review-plan.json review-results.json review-gate.json --notes notes.json -o <审查目录>/审查报告.md
+      python3 scripts/pack_review.py <审查目录> --review-plan … --review-results … --review-gate … --db … --intent … \
+        --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
+
+  `pack_review.py` 只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`，不复制。
+  顶层有其他文件或引用的证据找不到时打包失败。不另写 README、说明文档或 HTML。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
+  公开仓库只放脱敏合成用例。
 
 ### 8. 改版复审（H）
 

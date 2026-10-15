@@ -141,7 +141,7 @@ COVERED 额外提供 `coverage`：candidate_scope（完整候选范围及来源�
 软件核对引用和状态，工程审查者核对证据是否真正覆盖所有候选，不宣称机器能判断自然语言证明。
 
 受影响检查的 blocking 等于所有关联 OPEN 项中是否有 BLOCKING；一项阻断就不能填 false。
-确认记录不齐不能用 disposition=ACCEPTED 冒充需求已决定。其他真实缺陷、证据缺口、必需 HANDOFF
+确认记录不齐不能用 disposition=ACCEPTED 冒充需求已决定。其他真实缺陷、证据缺口
 和输入完整性继续独立约束冻结，需求 COVERED 不豁免它们。
 
 ## 关闭与复审

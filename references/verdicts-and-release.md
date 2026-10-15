@@ -154,10 +154,11 @@ HANDOFF 不是检查结果，而是原理图审查形成的下游动作。每项
 - `constraint`：由原理图证据导出的可执行约束；`verification`：下游如何关闭。
 
 同一项可以是“连通性 PASS + PCB 阻抗约束 HANDOFF OPEN”，也可以是“拓扑 FAIL + 修复后仍需布局 HANDOFF”。
-ACCEPTED 表示接收约束，VERIFIED 才表示下游验证完成；冻结只要求必需 HANDOFF 已 ACCEPTED。
+ACCEPTED 表示接收约束，VERIFIED 才表示下游验证完成。HANDOFF 随原理图作为清单交出，**不卡冻结**：
+OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不代填。
 
 **集成约束**（模块本体范围内导出、须由外部主机/负载/系统满足的条件）也用 HANDOFF 记录，
-接收方为系统集成方或模块使用者：需求指定了须接收约束的集成方时 `required: true`，按常规阻断准出；
+接收方为系统集成方或模块使用者：需求指定了须接收约束的集成方时 `required: true`，随图交出、不阻断准出；
 开放模块没有指定集成方时 `required: false`，仍填 receivers/constraint/verification，在报告“集成约束”
 类别列出，不计缺陷、补证任务或移交数。
 
@@ -243,6 +244,8 @@ ACCEPTED 表示接收约束，VERIFIED 才表示下游验证完成；冻结只�
 - 只有文字相似、同一器件或同一本手册不构成共同根因。根因相同的 FAIL 共用一个任务，引用 finding 的改法。
 - `blocking` 表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
 - REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过。
+  只剩 SR 工具自身限制、审查人已人工核对完的，不记 REVIEW_INCOMPLETE，按人工结论判定并写 `manual_verification`
+  （见 [计划与结果台账](plan-and-results.md)），工具限制列入 `sr_improvements`，不进设计者待办。
 
 ### 纯下游验证项
 
@@ -272,8 +275,8 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
    写清接收角色、约束、验证方法。
 3. `handoff.schematic_prerequisites` 列第 2 步拆出的检查 ID；确无前提填 `[]` 并给 `no_schematic_prerequisites_reason`。
    前提项按它自己的结果和等级处理（FAIL/INSUFFICIENT 由前提行自身阻断或不阻断），测试行不重复阻断、不升级。
-4. 由 HANDOFF 跟踪，**不建 work_item**。冻结检查必需移交的真实接收记录；未接收列为**移交待接收**，
-   不伪造 ACCEPTED。NA 行不因接收而变 PASS；实测结果由下游报告另行证明。
+4. 由 HANDOFF 跟踪，**不建 work_item**，随原理图作为清单交出，不卡冻结；不伪造 ACCEPTED。
+   NA 行不因接收而变 PASS；实测结果由下游报告另行证明。
 
 | 情况 | 原理图审查处置 |
 |---|---|
@@ -291,10 +294,10 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 ## 6. 准出
 
 - **不准出**：P0 未修；未接受的阻断 FAIL/INSUFFICIENT；适用项未执行；版本/完整性关键缺口；
-  必需 HANDOFF 未形成可执行约束或未被接收；开放的阻断需求澄清。
+  必需 HANDOFF 未形成可执行约束（接收方/约束/验证方法缺失）；开放的阻断需求澄清。
 - **有条件准出**：所有检查已形成有效结论；无 P0；剩余阻断级 P1/P2 或未知项已由有权责任方按本版
   记录明确接受，约束和责任人已落实。报告保留 FAIL/INSUFFICIENT，不改写为 PASS。
-- **准出**：无开放阻断项；覆盖完整、证据充分，必需 HANDOFF 已被接收。
+- **准出**：无开放阻断项；覆盖完整、证据充分，必需 HANDOFF 已写成可执行清单（是否已被接收不影响准出）。
 
 关闭状态：`FIXED_VERIFIED` 须给新版证据和复验标准；`ACCEPTED` 须批准人、日期、版本/配置范围、
 理由与记录；`RETRACTED` 须反证与更正说明。Agent 不得自行填写批准人或替人接受。

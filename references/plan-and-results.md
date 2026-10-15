@@ -324,7 +324,12 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 - `disposition`：FIXED_VERIFIED / RETRACTED 只用于当前 PASS/NA 并须 `closure_evidence`；ACCEPTED 保留
   FAIL/INSUFFICIENT，附 `acceptance`（by/date/scope/reason/record，来自真实授权记录）。P0/P1 潜在未知默认阻断。
 - 必需 handoff 的 receivers/constraint/verification 不可空；ACCEPTED/VERIFIED 须有 evidence；
-  取消计划中的必需 handoff 须 `handoff_evidence` 留据。
+  取消计划中的必需 handoff 须 `handoff_evidence` 留据。handoff 随图交出，OPEN 不阻断冻结。
+- `manual_verification`：自动工具因自身限制（映射不全、模型不支持等）不让某项判 PASS，而审查人已逐项人工核对时，
+  按人工结论判 PASS/FAIL，附 `manual_verification: {tool_limitation, sr_improvement, method, evidence}`：
+  SR 为什么做不到（哪个检查器、缺什么映射或模型）、建议怎么改进 SR（具体到规则、别名或模型）、这次人工怎么核对的。只能用在工具确实拦了的行上；
+  这类行不算 REVIEW_INCOMPLETE、不建 work_item，gate 把工具限制列入 `sr_improvements`，不影响准出。
+  资料或设计本身没给出的数值不是工具限制，仍按 EXTERNAL_DATA / DESIGN_OPEN 处理。
 
 ### 发现项
 

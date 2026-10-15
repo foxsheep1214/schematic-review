@@ -181,13 +181,13 @@ class ReviewGateTests(unittest.TestCase):
         p, r, db = fixture(); fail(r).update(disposition='ACCEPTED')
         self.assertFalse(validate_review(p, r, db)['valid'])
 
-    def test_handoff_open_does_not_change_pass_but_blocks_release(self):
+    def test_open_handoff_keeps_pass_and_does_not_block_release(self):
         p, r, db = fixture()
         r['checks'][0]['handoff'] = {'required': True, 'state': 'OPEN', 'receivers': ['Layout'],
                                     'constraint': 'specified impedance', 'verification': 'layout check'}
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
-        self.assertEqual(result['release'], 'NO_GO')
+        self.assertEqual(result['release'], 'GO')
 
     def thermal_handoff_fixture(self):
         # Synthetic resistor power-rating review; no board thermal model or test result.
@@ -211,13 +211,13 @@ class ReviewGateTests(unittest.TestCase):
         self.assertEqual(result['summary']['confirmed_defects'], 0)
         self.assertEqual(r['checks'][0]['handoff']['state'], 'ACCEPTED')
 
-    def test_unreceived_thermal_constraints_block_handoff_without_electrical_defect(self):
+    def test_unreceived_thermal_constraints_travel_with_schematic_without_blocking(self):
         p, r, db = self.thermal_handoff_fixture()
         r['checks'][0]['handoff']['state'] = 'OPEN'
         del r['checks'][0]['handoff']['evidence']
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
-        self.assertEqual(result['release'], 'NO_GO')
+        self.assertEqual(result['release'], 'GO')
         self.assertEqual(result['summary']['confirmed_defects'], 0)
         self.assertEqual(r['checks'][0]['review_result'], 'PASS')
 

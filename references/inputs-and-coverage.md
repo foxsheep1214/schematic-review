@@ -117,9 +117,11 @@ DOC-V01 同时核原生图面的文字可读性。功能脚名、标签或关键
 
 ### 留档
 
-项目审查目录保留 `input-manifest.json`、`intent.json`、`db.json`、冷跑计划快照及合并后的最终计划、
-`evidence.json`、lint、`review-results.json`、`review-gate.json`、计算、关键图形证据及复审 Diff。
-临时 OCR/大图放任务临时目录（例如 /tmp/codex-work/<任务>/）；最终结论的唯一证据不能随临时目录消失。不要把客户原图、BOM、
+项目审查目录固定为 `审查报告.md` 加 `record/`，由 `scripts/pack_review.py` 生成：`record/` 含最终计划、结果、
+gate、`db.json`、`intent.json`、冷热 lint、`manifest.json`，以及 `evidence/` 下被检查证据引用的计算、裁图和复审 Diff。
+原理图工程、数据手册、需求和旧审查只按路径与 SHA-256 记入 manifest，不复制；冷跑计划快照、日志、页面截图、
+脚本副本等中间文件留在工作目录（例如 /tmp/codex-work/<任务>/）。最终结论引用的证据必须进 `record/evidence/`，
+不能只留在临时目录：打包时引用找不到就失败。不要把客户原图、BOM、
 私有手册、人员姓名或项目路径复制到公开 skill 仓库，用最小脱敏 fixture 做回归。
 
 冻结审查证据时，先完成报告、逐行复核与校验，再生成注明路径基准的 SHA-256 清单并保存原始清单字节，

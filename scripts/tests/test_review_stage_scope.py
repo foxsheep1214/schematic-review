@@ -55,8 +55,8 @@ class StageScopeTests(unittest.TestCase):
         self.assertEqual(out['categorized_summary']['current']['results'].get('NA_OUTSIDE_STAGE'), 1)
         self.assertNotIn('NA', out['categorized_summary']['current']['results'])
         self.assertEqual(out['workflow']['current_work_items'], [])
-        self.assertEqual(out['release'], 'NO_GO')  # handoff has not been accepted
-        self.assertTrue(any('handoff not accepted' in b for b in out['blockers']))
+        self.assertEqual(out['release'], 'GO')  # an open handoff travels with the schematic, it does not block
+        self.assertEqual(out['blockers'], [])
 
     def test_accepted_handoff_can_release_schematic_not_product(self):
         p, r, db = downstream()
