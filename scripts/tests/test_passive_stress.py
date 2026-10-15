@@ -57,6 +57,21 @@ class ProposalTests(unittest.TestCase):
         self.assertIsNone(rows['R1']['proposal']['result'])
         self.assertGreater(rows['R1']['proposal']['calculation']['power_ratio'], 1)
 
+    def test_untracked_resistor_up_to_half_floor_passes_with_procurement_constraint(self):
+        # 3.465 V across: 10k is under 25% of the 0402 floor, 620R is 33%, 330R is 61%.
+        for value, result, constraint in (('10k', 'PASS', False), ('620', 'PASS', True), ('330', None, False)):
+            with self.subTest(value=value):
+                db, intent = board()
+                db['parts']['R1']['value'] = value
+                rebind(db, intent)
+                proposal = proposals(db, intent)[1]['R1']['proposal']
+                self.assertEqual(proposal['result'], result)
+                calc = proposal['calculation']
+                self.assertEqual('procurement_min_power_w' in calc, constraint)
+                if constraint:
+                    self.assertAlmostEqual(calc['procurement_min_power_w'], 2 * calc['p_max_w'], places=9)
+                    self.assertIn('DEV-D04', proposal['note'])
+
     def test_rating_beyond_orderable_tier_is_not_proposed(self):
         _, rows = proposals(*board({'VCC_3V3': {'voltage_v': {'min': 55, 'max': 60}}}))
         self.assertIsNone(rows['C1']['proposal']['result'])

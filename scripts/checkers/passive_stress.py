@@ -22,8 +22,9 @@ RESISTOR_FLOORS = {
     '0201': (0.05, 15.0), '0402': (1 / 16, 25.0), '0603': (1 / 16, 50.0), '0805': (0.1, 100.0),
     '1206': (0.125, 150.0), '1210': (0.25, 200.0), '2010': (0.5, 200.0), '2512': (1.0, 200.0),
 }
-# 采购范围未受控时的边界：功率取最弱档的 25%（覆盖 RG1005 0.032 W 反例的 50%），电压取 50%。
-POWER_LIMIT, VOLTAGE_LIMIT = 0.25, 0.5
+# 采购范围未受控时的边界：功率 ≤ 最弱档 50%、电压 ≤ 50% 判 PASS。功率超过 25%（RG1005 0.032 W 反例的 50%）时，
+# 封装最弱档不足以覆盖全部可采购档，PASS 附带“额定 ≥ 2×应力”的采购约束，由 DEV-D04 汇总，不记证据不足。
+POWER_LIMIT, VOLTAGE_LIMIT, CATEGORY_SAFE_POWER = 0.5, 0.5, 0.25
 DEFAULT_TOL = 0.05
 # commodity-floors「陶瓷电容」可订购档：(封装, 最大容值 F, 耐压 V, 依据料号)。
 # 同封装同耐压下更小容值视为同样可订购。
@@ -244,9 +245,13 @@ def _proposal(entry):
                 'p_floor_w': p_floor, 'v_floor_v': v_floor,
                 'power_ratio': round(v * v / r_min / p_floor, 6), 'voltage_ratio': round(v / v_floor, 6)}
         ok = calc['power_ratio'] <= POWER_LIMIT and calc['voltage_ratio'] <= VOLTAGE_LIMIT
-        note = ('功率 ≤ 最弱档 %d%%、电压 ≤ %d%%' % (POWER_LIMIT * 100, VOLTAGE_LIMIT * 100) if ok
-                else '超出未受控采购范围的预判边界，按 commodity-floors 判定表由审查者判定')
-        return ('PASS' if ok else None), calc, note
+        if not ok:
+            return None, calc, '超出未受控采购范围的预判边界，按 commodity-floors 判定表由审查者判定'
+        note = '功率 ≤ 最弱档 %d%%、电压 ≤ %d%%' % (POWER_LIMIT * 100, VOLTAGE_LIMIT * 100)
+        if calc['power_ratio'] > CATEGORY_SAFE_POWER:
+            calc['procurement_min_power_w'] = round(2 * calc['p_max_w'], 9)
+            note += '；采购约束：额定功率 ≥ %.4g W（应力 2 倍），记 DEV-D04' % calc['procurement_min_power_w']
+        return 'PASS', calc, note
     farads = parse_capacitance(entry['value'])
     if farads is None:
         return None, {'v_across_max': v}, '容值不可解析'

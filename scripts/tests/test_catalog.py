@@ -170,6 +170,17 @@ class GeneratedOutputTest(unittest.TestCase):
         passive = next(item for item in checks if item['rule'] == 'DEV-C01')
         self.assertIn('活动轨段、滑臂与端点', passive['criterion'])
         self.assertIn('不能把整轨功率额定用于任意局部轨段', passive['criterion'])
+        # A connector library name naming a vendor series is design intent, not a missing MPN.
+        self.assertIn('连接器库名/封装名指向具体原厂系列或料号', passive['criterion'])
+        self.assertIn('不因无 MPN 记 INSUFFICIENT', passive['criterion'])
+        self.assertIn('泛称排针/间距不适用', passive['criterion'])
+
+    def test_timing_accepts_vendor_qualified_pairing_but_not_deviations(self):
+        # A host datasheet without interface timing is not a gap when the host vendor names the part and wiring.
+        criterion = catalog.get('SIG-C09').criterion
+        self.assertIn('主控厂商设计指南明确指定该器件型号、接法与时钟配置', criterion)
+        self.assertIn('不因主控手册缺接口时序记 INSUFFICIENT', criterion)
+        self.assertIn('换型号/改接法/提高时钟时仍按两端保证值计算', criterion)
 
 
 class ObjectiveAlignmentTest(unittest.TestCase):
