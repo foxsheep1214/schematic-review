@@ -132,7 +132,8 @@ def pack(out, ledger, evidence_root, inputs):
         if candidate and candidate.is_file():
             target = record / 'evidence' / source
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(candidate, target)
+            if candidate.resolve() != target.resolve():  # re-packing an already packed review
+                shutil.copyfile(candidate, target)
             packed[RECORD + '/evidence/' + source] = sha256(target)
         else:
             unresolved.append(source)

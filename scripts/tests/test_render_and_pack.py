@@ -255,6 +255,15 @@ class PackReviewTests(unittest.TestCase):
         self.assertEqual(len(hits), 1, errors)
         self.assertIn('冻结/本行', hits[0])
 
+    def test_packed_review_can_be_repacked_in_place(self):
+        errors, _ = self.run_pack()
+        self.assertEqual(errors, [])
+        record = self.out / RECORD
+        ledger = {name: str(record / name) for name in LEDGER}
+        errors, manifest = pack(self.out, ledger, str(record / 'evidence'), {'requirements': str(self.inputs)})
+        self.assertEqual(errors, [])
+        self.assertIn(RECORD + '/evidence/calc/startup.md', manifest['packed'])
+
     def test_extra_top_level_files_fail(self):
         (self.out / 'README.md').write_text('extra')
         errors, _ = self.run_pack()
