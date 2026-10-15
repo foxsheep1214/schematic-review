@@ -15,7 +15,7 @@ from . import netgraph as ng
 from . import powertree
 from . import states as state_lib
 from .base import Checker
-from .planutil import handoff, slug
+from .planutil import slug
 
 ENABLE_PIN_RE = re.compile(r'^(EN|ENABLE|SHDN|_?SHDN|PWREN|EN\d|ENA|ON_OFF)$', re.I)
 RESET_IN_RE = re.compile(r'^(N?RESET\w*|N?RST\w*|MR|POR|XRES|RESETN)$', re.I)
@@ -210,10 +210,7 @@ class PowerUpChecker(Checker):
                 'RST-T01', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
                     'datasheet:使能门限/迟滞/耐压', 'requirements:上电顺序与时序要求'])),
-                trigger=['power-up:' + item['id'], 'enable-source:' + item['enable_source']],
-                handoff=handoff({'required': True, 'receivers': ['Test'],
-                                 'constraint': '上电/掉电单调性与台阶需实测覆盖最坏负载',
-                                 'verification': '上电波形实测与最坏工况复核'}, 'APPLICABLE'))
+                trigger=['power-up:' + item['id'], 'enable-source:' + item['enable_source']],)
             check['inventory_gaps'] = gaps
             if item['kind'] == 'linear':
                 ready = planner.evidence_ready('PWR-E02', obj)

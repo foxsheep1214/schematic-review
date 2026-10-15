@@ -26,7 +26,7 @@ import sys
 from collections import Counter
 from checkers import REGISTRY, passive_stress, registry_cold_rules, registry_hot_rules
 from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, NetGraph, normalize
-from checkers.planutil import empty_handoff as _empty_handoff, handoff as _handoff, slug as _slug
+from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
 from audit_datasheets import (
@@ -435,7 +435,7 @@ class ReviewPlanner:
         circuits = {}
         for circuit in self.intent.get('circuits', []):
             circuits.setdefault(circuit['type'], []).append(circuit)
-        custom = [catalog.Package(name, name, 'REQ', r'(?!x)x', (), ('requirements',), {'required': False})
+        custom = [catalog.Package(name, name, 'REQ', r'(?!x)x', (), ('requirements',))
                   for name in sorted(set(declared) - set(catalog.PACKAGE_BY_NAME))]
         undetected = []
         for package in catalog.PACKAGES + tuple(custom):
@@ -492,8 +492,7 @@ class ReviewPlanner:
             summary = self.add_check(
                 'REQ-Q07', {'package': name}, criterion=catalog.package_criterion(name),
                 applicability=applicability, readiness='WAITING_EVIDENCE' if missing else 'READY',
-                required_inputs=missing, trigger=trigger,
-                handoff=_handoff(package.handoff, applicability))
+                required_inputs=missing, trigger=trigger)
             summary['package'] = name
             if applicability == 'APPLICABLE' and requested == 'APPLICABLE' and not found:
                 self.add_check('REQ-A02', {'package': name}, readiness='READY',
@@ -630,25 +629,13 @@ class ReviewPlanner:
             self.add_check(
                 'PWR-C01', {'net': net},
                 readiness='WAITING_EVIDENCE' if missing else 'READY',
-                required_inputs=missing, trigger=[f'rail-name:{net}'],
-                handoff={
-                    'required': True, 'state': 'OPEN',
-                    'receivers': ['PCB Layout', 'Thermal/Test'],
-                    'constraint': '大电流载流、压降、去耦与散热要求',
-                    'verification': 'PCB 复核与温升/压降验证',
-                })
+                required_inputs=missing, trigger=[f'rail-name:{net}'])
 
-        # 差分连通（连接追踪）：PASS/FAIL 与 PCB HANDOFF 可以并存。
+        # 差分连通（连接追踪）。
         for positive, negative in _differential_pairs(db):
             self.add_check(
                 'SIG-T01', {'net_p': positive, 'net_n': negative, 'net': positive},
-                trigger=[f'pair:{positive}/{negative}'],
-                handoff={
-                    'required': True, 'state': 'OPEN',
-                    'receivers': ['PCB Layout'],
-                    'constraint': '按接口规范落实差分阻抗、等长、间距与回流',
-                    'verification': 'PCB 约束与版图复核',
-                })
+                trigger=[f'pair:{positive}/{negative}'])
 
         # 原生声明的页面独立于器件；旧格式只能覆盖已定位器件所在页。
         pdf_ready = _material_available(self.intent, 'schematic_pdf')

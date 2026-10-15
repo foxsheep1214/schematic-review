@@ -15,7 +15,7 @@ from . import netgraph as ng
 from . import powertree
 from . import states as state_lib
 from .base import Checker
-from .planutil import handoff, slug
+from .planutil import slug
 
 SUFFIXES = (('_P', '_N'), ('_DP', '_DN'), ('_DP', '_DM'), ('P', 'N'), ('+', '-'))
 STANDARD_RE = re.compile(r'(LVDS|LVPECL|PECL|CML|HCSL|SSTL|HSTL)', re.I)
@@ -197,10 +197,7 @@ class DiffLevelsChecker(Checker):
                 readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
                     'datasheet:收发两端电平与端接要求'])),
-                trigger=['diff-pair:' + pair['id']],
-                handoff=handoff({'required': True, 'receivers': ['PCB Layout', 'SI'],
-                                 'constraint': '差分阻抗、等长、间距、参考平面连续与端接就近',
-                                 'verification': 'SI 仿真或眼图实测'}, applicability))
+                trigger=['diff-pair:' + pair['id']],)
             check['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):

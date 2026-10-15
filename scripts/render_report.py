@@ -29,7 +29,7 @@ SEVERITY_WORDS = {'P0': '可能损坏器件或危及安全', 'P1': '必需功能
                   'P2': '局部或次要问题', 'P3': '可选优化'}
 SEVERITY_LEGEND = '严重程度：P0 可能损坏器件或危及安全；P1 必需功能可能不达标；P2 局部或次要问题；P3 可选优化。'
 HISTORY_RULE = 'REQ-H02'
-RESULT_WORDS = (('PASS', '通过（PASS）'), ('FAIL', '发现错误（FAIL）'), ('INSUFFICIENT', '资料不足无法判断（INSUFFICIENT）'),
+RESULT_WORDS = (('PASS', '通过（PASS）'), ('FAIL', '没通过（FAIL）'), ('INSUFFICIENT', '资料不足无法判断（INSUFFICIENT）'),
                 ('NA', '与本产品无关（NA）'), ('NA_OUTSIDE_STAGE', '原理图阶段不判、交给后续环节'))
 # Why the schematic cannot be finalised yet, in the order a reader should act on them.
 BLOCKERS = (('fail', '%d 条检查发现的错误还没改'),
@@ -192,8 +192,13 @@ def render(plan, results, gate, notes=None, title=None):
                 '；'.join(cell(e) for e in (gate.get('errors') or [])[:5]), '']
     out += ['## 结论', '']
     total = (summary.get('current') or {}).get('checks', len(current_rows))
-    out.append('- **检查结果**：共 %d 条。%s。' % (total, '，'.join('%s %d 条' % (label, counts.get(key, 0))
-               for key, label in RESULT_WORDS)))
+    parts = []
+    for key, label in RESULT_WORDS:
+        part = '%s %d 条' % (label, counts.get(key, 0))
+        if key == 'FAIL' and counts.get(key):
+            part += '（对应 %d 处问题，见下一行）' % defects
+        parts.append(part)
+    out.append('- **检查结果**：共 %d 条。%s。' % (total, '，'.join(parts)))
     if defects:
         out.append('- **发现的错误**：电路错误 %d 处，文档错误 %d 处（%s），见“发现的错误”一节。' % (
             defects - len(doc_defects), len(doc_defects),
@@ -294,7 +299,7 @@ def render(plan, results, gate, notes=None, title=None):
     history = (summary.get('history') or {}).get('checks', 0)
     out += ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
-            '| 通过 / 发现错误 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
+            '| 通过 / 没通过 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
             '| 与本产品无关（NA） | %d |' % counts.get('NA', 0),
             '| 原理图阶段不判、交给后续环节 | %d |' % counts.get('NA_OUTSIDE_STAGE', 0),
             '| 发现的错误，按严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(by_sev.get(s, 0)) for s in SEVERITIES),

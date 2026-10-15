@@ -11,15 +11,3 @@ def slug(value):
 
 def empty_handoff():
     return {'required': False, 'state': None}
-
-
-def handoff(config, applicable):
-    if not config.get('required') or applicable != 'APPLICABLE':
-        return empty_handoff()
-    return {
-        'required': True,
-        'state': 'OPEN',
-        'receivers': list(config.get('receivers', [])),
-        'constraint': config.get('constraint', ''),
-        'verification': config.get('verification', ''),
-    }

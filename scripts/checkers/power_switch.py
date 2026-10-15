@@ -15,7 +15,7 @@ from . import powertree
 from . import states as state_lib
 from . import hotmath
 from .base import Checker
-from .planutil import handoff, slug
+from .planutil import slug
 
 SWITCH_KINDS = {ng.MOSFET, ng.BJT}
 CLAMP_KINDS = {ng.DIODE, ng.TVS, ng.ZENER}
@@ -251,10 +251,7 @@ class PowerSwitchChecker(Checker):
                     ['datasheet:实际驱动与 VGS/VBE/VCE 额定', 'intent:输出范围/负载/损耗及适用 SOA']
                     if linear or switch['kind'] == ng.BJT else
                     ['datasheet:SOA 曲线与脉宽条件', 'intent:最坏工况电流/电压/重复率']))),
-                trigger=['power-switch:' + switch['id']],
-                handoff=handoff({'required': True, 'receivers': ['Thermal', 'PCB Layout'],
-                                 'constraint': '按损耗边界、允许结温/壳温和 SOA 起始温度约束落实散热，栅极回路与开关回路面积最小',
-                                 'verification': '热仿真/实测结温与开关波形复核'}, 'APPLICABLE'))
+                trigger=['power-switch:' + switch['id']],)
             item['analysis_required'] = True
             item['inventory_gaps'] = gaps
             if switch['switch_node_evidence']:
@@ -262,10 +259,7 @@ class PowerSwitchChecker(Checker):
                     'DRV-D01', dict(obj), key=switch['id'], readiness='WAITING_EVIDENCE',
                     required_inputs=sorted(set(gaps + [
                         'datasheet:开关器件耐压与驱动器条款', 'evidence:开关节点波形或仿真'])),
-                    trigger=['power-switch:' + switch['id']] + switch['switch_node_evidence'],
-                    handoff=handoff({'required': True, 'receivers': ['PCB Layout'],
-                                     'constraint': '吸收网络紧靠开关节点，换流回路面积最小',
-                                     'verification': '版图复核吸收回路与实测尖峰'}, 'APPLICABLE'))
+                    trigger=['power-switch:' + switch['id']] + switch['switch_node_evidence'],)
                 item['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):

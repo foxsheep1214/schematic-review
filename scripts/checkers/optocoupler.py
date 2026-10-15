@@ -13,7 +13,7 @@ from . import netgraph as ng
 from . import powertree
 from . import states as state_lib
 from .base import Checker
-from .planutil import handoff, slug
+from .planutil import slug
 
 MAX_OPTOS = 128
 
@@ -151,10 +151,7 @@ class OptocouplerChecker(Checker):
                 'PRO-D01', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
                     'datasheet:隔离耐压与爬电要求', 'requirements:隔离等级与安规标准'])),
-                trigger=['optocoupler:' + item['id']],
-                handoff=handoff({'required': True, 'receivers': ['PCB Layout', 'Mechanical'],
-                                 'constraint': '隔离带无跨越走线/铜皮，爬电与电气间隙满足安规',
-                                 'verification': '版图与结构复核隔离距离'}, 'APPLICABLE'))
+                trigger=['optocoupler:' + item['id']],)
             check['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):

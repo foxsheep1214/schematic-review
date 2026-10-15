@@ -14,7 +14,7 @@ from . import netgraph as ng
 from . import powertree
 from . import states as state_lib
 from .base import Checker
-from .planutil import handoff, slug
+from .planutil import slug
 
 SWITCH_KINDS = {ng.MOSFET, ng.BJT}
 CLAMP_KINDS = {ng.DIODE, ng.TVS, ng.ZENER}
@@ -260,11 +260,7 @@ class InductiveLoadChecker(Checker):
                 'DRV-T01', dict(obj), key=load['id'], applicability=applicability,
                 readiness='WAITING_EVIDENCE' if load['gaps'] else 'READY',
                 required_inputs=load['gaps'],
-                trigger=['inductive-load:' + load['id'], 'basis:' + load['basis']],
-                handoff=handoff({'required': applicability == 'APPLICABLE',
-                    'receivers': ['PCB Layout'],
-                    'constraint': '钳位器件靠近负载与开关，续流回路面积最小',
-                    'verification': '版图复核钳位回路与摆放'}, applicability))
+                trigger=['inductive-load:' + load['id'], 'basis:' + load['basis']],)
             item['inventory_gaps'] = load['gaps']
             item = planner.add_check(
                 'DRV-C01', dict(obj), key=load['id'], applicability=applicability,

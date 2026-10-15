@@ -62,7 +62,6 @@ class CatalogTest(unittest.TestCase):
                 self.assertEqual(len(package.rules), len(set(package.rules)))
                 self.assertTrue(all(catalog.method_of(rule) in 'TCDV' for rule in package.rules))
                 self.assertTrue(set(package.materials) <= {'requirements', 'datasheets', 'platform_checklist'})
-                self.assertIsInstance(package.handoff.get('required'), bool)
         members = {rule for package in catalog.PACKAGES for rule in package.rules}
         self.assertEqual({r.id for r in catalog.rules(source='package')} - members, set())
 

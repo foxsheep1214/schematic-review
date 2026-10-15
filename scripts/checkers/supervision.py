@@ -24,7 +24,7 @@ from . import netgraph as ng
 from . import powertree
 from . import states as state_lib
 from .base import Checker
-from .planutil import handoff, slug
+from .planutil import slug
 
 WATCHDOG_IN_RE = re.compile(r'^(WDI|WDT_IN|WD_IN|WATCHDOG_IN|SET\d?)$', re.I)
 RESET_OUT_RE = re.compile(r'^(N?RESET\w*|N?RST\w*|WDO|POR|PFO|RESETB|RESET_N)$', re.I)
@@ -833,8 +833,7 @@ class SupervisionChecker(Checker):
                 'PWR-T04', obj, key=slug(state['id']), readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(list(state['gaps']) + [
                     'requirements:必须监测的电源域与动作要求'])),
-                trigger=['supervision-rails:' + state['id']],
-                handoff=handoff({'required': False}, 'APPLICABLE'))
+                trigger=['supervision-rails:' + state['id']],)
             check['inventory_gaps'] = sorted(
                 {'rail-unmonitored:' + rail['net'] for rail in rails if not rail['monitor']
                  and not (rail.get('scope_qualified') and rail['requirement']['required'] is False)}

@@ -494,7 +494,7 @@ class DecouplingPlanTests(unittest.TestCase):
         self.assertEqual(len(electrical), 3)
         self.assertTrue(all(p['readiness'] == 'WAITING_EVIDENCE' for p in electrical))
         self.assertTrue(all(p['required_material_refs'] == ['C1', 'C2', 'U1'] for p in electrical))
-        self.assertEqual(sum(p['handoff']['required'] for p in new), 1)
+        self.assertEqual(sum(p['handoff']['required'] for p in new), 0)  # plans never pre-fill layout reminders
 
     def test_pending_ledger_is_valid_no_go(self):
         db, intent = fixture()

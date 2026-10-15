@@ -77,7 +77,7 @@ class ReviewPlanTests(unittest.TestCase):
                          'UNDETERMINED')
         pair = next(item for item in plan['checks']
                     if item['rule'] == 'SIG-T01')
-        self.assertTrue(pair['handoff']['required'])
+        self.assertFalse(pair['handoff']['required'])  # generic layout rules are not review output
         self.assertIsNone(pair['review_result'])
         self.assertNotIn('HANDOFF', plan['result_model']['review_result'])
         self.assertNotIn('C', plan['result_model']['review_result'])

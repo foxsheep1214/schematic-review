@@ -9,7 +9,7 @@ from decoupling import build_decoupling_inventory, validate_decoupling_intent
 
 from .base import Checker
 from .passive_stress import OVERRIDE_CODES, proposal_for
-from .planutil import handoff, slug
+from .planutil import slug
 
 # 器件条款的三类要求各对应一条规则；缺条款时用规则总表里的默认判据。
 REQUIREMENT_RULES = (('connection', 'PWR-D02'), ('capacitance', 'PWR-C09'), ('rating', 'PWR-C10'))
@@ -124,10 +124,7 @@ class DecouplingChecker(Checker):
                             criterion=req['criterion'] if req else None,
                             readiness='WAITING_EVIDENCE',
                             required_inputs=gaps + ['state-specific engineering evidence: ' + kind],
-                            trigger=['decoupling-group:' + group['id']] + ([req['citation']] if req else []),
-                            handoff=handoff({'required': kind == 'connection', 'receivers': ['PCB Layout'],
-                                'constraint': '按本组实际器件条款落实去耦位置、回流与环路；同网共享电容不证明各器件本地去耦充分',
-                                'verification': '核对本组各供电脚、实际电容与返回路径的 PCB 摆放和回路'}, 'APPLICABLE'))
+                            trigger=['decoupling-group:' + group['id']] + ([req['citation']] if req else []),)
                         item['inventory_gaps'] = sorted(set(gaps))
                         item['full_inventory_gaps'] = group['gaps']
                         item['analysis_required'] = True
