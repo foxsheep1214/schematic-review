@@ -289,7 +289,8 @@ def screen_quality(plan, report, db=None):
     if downstream_ids:
         candidates.append({'code': 'DOWNSTREAM_RECORDED_AS_DESIGN_GAP', 'check_ids': sorted(downstream_ids),
             'message': 'Missing inputs only name prototype/test results. Judge the schematic prerequisites in their own '
-                       'checks; record the test obligation as DOWNSTREAM_VERIFICATION with a handoff, not DESIGN_OPEN.'})
+                       'checks; record the pure test obligation as NA / OUTSIDE_SCHEMATIC_STAGE with a handoff. '
+                       'Keep decisive schematic input gaps INSUFFICIENT with specific input requests.'})
     if optimization_ids:
         candidates.append({'code': 'OPTIMIZATION_TARGET_AS_BLOCKING_GAP', 'check_ids': sorted(optimization_ids),
             'message': 'A cost/volume/optimization target is graded P0/P1. If the requirement is a goal rather than a '

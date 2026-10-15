@@ -4,6 +4,8 @@ This is supplementary to validate_review's evidence and release checks.
 Work-item grouping is explicit,
 not a text-similarity claim that different electrical causes are equivalent.
 """
+from review_stage_scope import outside_stage
+
 PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
 # Gaps a schematic change can often remove: the reviewer must propose that change or say why none exists.
 DESIGNABLE_GAPS = ('EXTERNAL_DATA', 'DESIGN_OPEN')
@@ -53,7 +55,9 @@ def design_option(key, value, unresolved, finding_ids):
 
 def workflow(plan, report, checks, expected, clarifications=None, require_design_options=False):
     errors, tasks, owners = [], [], {}
-    enabled = bool(clarifications and clarifications['tasks']) or 'review_phase' in plan or 'workflow_version' in report or 'work_items' in report
+    enabled = (bool(clarifications and clarifications['tasks']) or 'review_phase' in plan
+               or 'workflow_version' in report or 'work_items' in report
+               or any(outside_stage(c) for c in checks.values()))
     phase = plan.get('review_phase', 'schematic_freeze')
     if not enabled:
         return {'enabled': False, 'phase': phase, 'errors': [], 'tasks': [],
@@ -67,6 +71,7 @@ def workflow(plan, report, checks, expected, clarifications=None, require_design
         errors.append('work_items must be an array (use [] when no separate repair/evidence tasks)')
         items = []
     unresolved = {k for k, c in checks.items() if c.get('review_result') in ('FAIL', 'INSUFFICIENT')}
+    tracked = unresolved | {k for k, c in checks.items() if outside_stage(c)}
     if clarifications:
         tasks.extend(clarifications['tasks'])
         for task in tasks:
@@ -91,9 +96,11 @@ def workflow(plan, report, checks, expected, clarifications=None, require_design
             errors.append(key + ': stage/grouping reason needs locatable evidence')
         linked = item.get('check_ids')
         if not (isinstance(linked, list) and linked and all(text(x) for x in linked)
-                and len(linked) == len(set(linked)) and set(linked) <= unresolved):
-            errors.append(key + ': check_ids must name unique unresolved checks')
+                and len(linked) == len(set(linked)) and set(linked) <= tracked):
+            errors.append(key + ': check_ids must name unique unresolved checks or stage-NA handoffs')
             continue
+        if any(outside_stage(checks[cid]) for cid in linked) and stage != 'prototype_verification':
+            errors.append(key + ': stage-NA handoff tasks must be due at prototype_verification')
         if any(checks[cid].get('gap_cause') == 'REQUIREMENT_OPEN' for cid in linked):
             errors.append(key + ': requirement gaps are managed by clarification records, not duplicate work_items')
             continue
@@ -105,7 +112,7 @@ def workflow(plan, report, checks, expected, clarifications=None, require_design
         for cid in linked:
             owners.setdefault(cid, []).append(item)
         tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option') if k in item})
-    for cid in sorted(unresolved - set(owners)):
+    for cid in sorted(tracked - set(owners)):
         errors.append(cid + ': unresolved check has no root-cause work item')
     downstream = set()
     for cid, groups in owners.items():
@@ -133,12 +140,14 @@ def workflow(plan, report, checks, expected, clarifications=None, require_design
             continue  # the main validator reports the malformed handoff
         prerequisite_ids = h.get('schematic_prerequisites')
         ready = (
-            row.get('review_result') == 'INSUFFICIENT' and row.get('potential_severity') != 'P0'
-            and row.get('gap_cause') == 'DOWNSTREAM_VERIFICATION'
-            and planned_handoff.get('required') is True
+            (outside_stage(row) or (
+                row.get('review_result') == 'INSUFFICIENT' and row.get('potential_severity') != 'P0'
+                and row.get('gap_cause') == 'DOWNSTREAM_VERIFICATION'
+                and planned_handoff.get('required') is True))
             and h.get('required') is True and h.get('scope') == 'downstream_verification'
             and h.get('state') in ('ACCEPTED', 'VERIFIED') and evidence(h.get('evidence'))
-            and isinstance(prerequisite_ids, list) and bool(prerequisite_ids)
+            and isinstance(prerequisite_ids, list)
+            and (bool(prerequisite_ids) or (outside_stage(row) and text(h.get('no_schematic_prerequisites_reason'))))
             and all(text(k) and k != cid and checks.get(k, {}).get('review_result') == 'PASS'
                     for k in prerequisite_ids)
             and len(prerequisite_ids) == len(set(prerequisite_ids)))

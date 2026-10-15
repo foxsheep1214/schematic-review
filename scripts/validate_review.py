@@ -22,6 +22,7 @@ from plan_review import ReviewPlanner
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
 from execution_audit import validate_execution_audit
+from review_stage_scope import validate_stage_scope
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -105,7 +106,8 @@ def primary_anchors(obj, db=None):
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
                     require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
-                    require_impact=False, execution_audit=None, require_execution_audit=False):
+                    require_impact=False, execution_audit=None, require_execution_audit=False,
+                    require_stage_scope=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -183,6 +185,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     gates = validate_inventories(REGISTRY, plan, expected, db, require,
                                  lambda context: ReviewPlanner(db, context))
     checks = index(report.get("checks"), "results.checks")
+    scope_errors, scope_blockers, stage_scope = validate_stage_scope(report, checks, expected, require_stage_scope)
+    errors.extend(scope_errors)
+    blockers.extend(scope_blockers)
     findings = index(report.get("findings"), "findings")
     bindings = (require_bindings or revision is not None or 'binding_version' in report
                 or any('binding' in x for x in checks.values()))
@@ -468,6 +473,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "release": "NO_GO" if errors else release, "summary": computed,
             "categorized_summary": categorized_summary(checks, expected, findings, stage),
             "insufficient_by_cause": gap_causes,
+            "stage_scope": stage_scope,
             "requirement_clarification_summary": clarifications['summary'],
             "requirement_clarifications": clarifications['items'],
             # REQ-D01 results per requirement confirmation state: a PASS against PROPOSED is conditional on that proposal.
@@ -496,6 +502,8 @@ def main():
     parser.add_argument("--require-release", action="store_true")
     parser.add_argument("--require-impact", action="store_true",
                         help="require per-check potential impact and separate freeze rationale")
+    parser.add_argument("--require-stage-scope", action="store_true",
+                        help="require stage-NA handoffs and actionable requests for every evidence gap")
     parser.add_argument("--require-actionable", action="store_true",
                         help="require detailed repair instructions for every finding")
     parser.add_argument("--require-bindings", action="store_true",
@@ -511,6 +519,7 @@ def main():
                                  require_actionable=args.require_actionable,
                                  require_bindings=args.require_bindings,
                                  require_impact=args.require_impact,
+                                 require_stage_scope=args.require_stage_scope,
                                  execution_audit=read(args.execution_audit) if args.execution_audit else None,
                                  require_execution_audit=args.require_execution_audit,
                                  old_db=read(args.old_db) if args.old_db else None,
