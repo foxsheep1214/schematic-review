@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 import catalog
 from review_workflow import workflow, decision
-from review_quality import screen_quality
+from review_quality import FREEZE_BLOCKING_CODES, screen_quality
 from review_engine import validate_engine
 from review_summary import categorized_summary, validate_impact
 from requirement_clarifications import validate_clarifications
@@ -450,6 +450,10 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 "improvements": sum(x.get("kind") == "IMPROVEMENT" for x in findings.values())}
     if "summary" in report:
         require(report["summary"] == computed, "summary does not match unique findings/check results")
+    if plan.get("review_phase", "schematic_freeze") == "schematic_freeze":
+        for item in screen_quality(plan, report, db)["candidates"]:
+            if item["code"] in FREEZE_BLOCKING_CODES:
+                blockers.append(f"{item['code']}: {len(item['check_ids'])} evidence gaps need individual grading before freeze")
     release = "NO_GO" if errors or blockers else ("CONDITIONAL_GO" if accepted else "GO")
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")

@@ -97,6 +97,51 @@ class ProposalTests(unittest.TestCase):
         self.assertIn('信号串阻', rows['R2']['proposal']['note'])
         self.assertNotIn('信号串阻', rows['R1']['proposal']['note'])
 
+    def test_split_return_nets_bound_like_ground(self):
+        # 隔离电源的分域地（PORT_GND/SR_RETURN）经连接器外引，不能让地网本身成为“无界”
+        db, intent = board()
+        add(db, 'C2', '100nF', [('1', '1', 'VCC_3V3'), ('2', '2', 'PORT_GND')])
+        add(db, 'J1', 'USB_C', [('1', '1', 'PORT_GND'), ('2', '2', 'SR_RETURN')])
+        db['parts']['C2']['jedec'] = C0402
+        intent['assemblies'][0]['population'].update(C2=True, J1=True)
+        intent['power_rails']['PORT_GND'] = {'voltage_v': {'min': 0, 'max': 0}, 'domain': 'GND'}
+        rebind(db, intent)
+        _, rows = proposals(db, intent)
+        self.assertEqual(rows['C2']['proposal']['result'], 'PASS')
+        self.assertEqual(rows['C2']['proposal']['calculation']['v_across_max'], 3.465)
+
+    def test_part_across_two_ground_domains_gets_no_proposal(self):
+        db, intent = board()
+        add(db, 'C2', '1nF', [('1', '1', 'P_GND'), ('2', '2', 'GND')])
+        add(db, 'R2', '10M', [('1', '1', 'PRI_RTN'), ('2', '2', 'GND')])
+        db['parts']['C2']['jedec'] = C0402
+        db['parts']['R2']['jedec'] = R0402
+        intent['assemblies'][0]['population'].update(C2=True, R2=True)
+        rebind(db, intent)
+        _, rows = proposals(db, intent)
+        for ref in ('C2', 'R2'):
+            self.assertIsNone(rows[ref]['proposal']['result'])
+            self.assertIn('cross-domain', rows[ref]['proposal']['note'])
+
+    def test_ground_domains_are_listed_for_review(self):
+        from checkers.passive_stress import ground_domains
+        db, intent = board()
+        add(db, 'C2', '1nF', [('1', '1', 'P_GND'), ('2', '2', 'SR_RETURN')])
+        intent['power_rails']['SR_RETURN'] = {'voltage_v': {'min': 0, 'max': 0}, 'domain': 'SEC'}
+        self.assertEqual({'GND': ['GND'], 'P_GND': ['P_GND'], 'SEC': ['SR_RETURN']}, ground_domains(db, intent))
+
+    def test_declared_shared_domain_joins_ground_names(self):
+        db, intent = board()
+        add(db, 'R2', '0R', [('1', '1', 'AGND'), ('2', '2', 'GND')])
+        add(db, 'R3', '10k', [('1', '1', 'VCC_3V3'), ('2', '2', 'AGND')])
+        db['parts']['R3']['jedec'] = R0402
+        intent['assemblies'][0]['population'].update(R2=True, R3=True)
+        intent['power_rails'].update({'AGND': {'voltage_v': {'min': 0, 'max': 0}, 'domain': 'LV'},
+                                      'GND': {'voltage_v': {'min': 0, 'max': 0}, 'domain': 'LV'}})
+        rebind(db, intent)
+        _, rows = proposals(db, intent)
+        self.assertEqual(rows['R3']['proposal']['result'], 'PASS')
+
 
 class OverrideGateTests(unittest.TestCase):
     def setUp(self):

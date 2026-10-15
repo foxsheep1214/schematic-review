@@ -209,7 +209,23 @@ class ImpactScreeningTests(unittest.TestCase):
 
     def test_copied_consequence_and_uniform_grade_are_flagged(self):
         p, r = impact_fixture()
-        self.assertEqual({'REUSED_IMPACT_ACROSS_SCOPES', 'UNIFORM_POTENTIAL_SEVERITY'}, self.codes(p, r))
+        self.assertEqual({'REUSED_IMPACT_ACROSS_SCOPES', 'UNIFORM_POTENTIAL_SEVERITY',
+                          'UNIFORM_SEVERITY_WITHIN_RULE'}, self.codes(p, r))
+
+    def test_templated_grade_sentence_across_rules_is_flagged(self):
+        p, r = impact_fixture()
+        rules = ('DEV-C01', 'PWR-C10', 'DRV-C02')
+        for i, (c, row) in enumerate(zip(p['checks'], r['checks'])):
+            c['rule'] = rules[i % 3]
+            row['impact_assessment']['consequence'] = f'N{i} consequence'
+            row['potential_severity'] = ('P1', 'P2')[i % 2]
+            row['impact_assessment']['severity_reason'] = f'N{i} path。本行未建立独立损坏路径，按必需性能P1。'
+        found = [x for x in self.screen(p, r)['candidates'] if x['code'] == 'TEMPLATED_SEVERITY_REASON']
+        self.assertEqual(1, len(found))
+        self.assertEqual(12, len(found[0]['check_ids']))
+        for i, row in enumerate(r['checks']):
+            row['impact_assessment']['severity_reason'] = f'N{i} 漏电经R{i}使门限偏移，按P1。'
+        self.assertNotIn('TEMPLATED_SEVERITY_REASON', self.codes(p, r))
 
     def test_distinct_paths_and_mixed_grades_are_not_flagged(self):
         p, r = impact_fixture()
@@ -227,6 +243,61 @@ class ImpactScreeningTests(unittest.TestCase):
         for c in p['checks']:
             c['rule'] = 'REQ-H02'
         self.assertNotIn('UNIFORM_POTENTIAL_SEVERITY', self.codes(p, r))
+
+class DownstreamTriageTests(unittest.TestCase):
+    def codes(self, p, r):
+        from review_quality import screen_quality
+        return {x['code']: x for x in screen_quality(p, r)['candidates']}
+
+    def test_test_only_gap_recorded_as_design_open_is_flagged(self):
+        p, r = impact_fixture(n=2)
+        r['checks'][0]['gap_cause'] = 'DESIGN_OPEN'
+        r['checks'][0]['missing_inputs'] = ['闭壳温升与EMC传导实测结果']
+        r['checks'][1]['gap_cause'] = 'DESIGN_OPEN'
+        r['checks'][1]['missing_inputs'] = ['U1 偏置电阻未选，需样机前确定']
+        found = self.codes(p, r)['DOWNSTREAM_RECORDED_AS_DESIGN_GAP']
+        self.assertEqual([r['checks'][0]['id']], found['check_ids'])
+
+    def test_optimization_goal_graded_p1_is_flagged(self):
+        p, r = impact_fixture(n=2)
+        p['checks'][0]['criterion'] = '万台物料成本优化目标60元'
+        self.assertEqual([r['checks'][0]['id']], self.codes(p, r)['OPTIMIZATION_TARGET_AS_BLOCKING_GAP']['check_ids'])
+        r['checks'][0]['potential_severity'] = 'P3'
+        self.assertNotIn('OPTIMIZATION_TARGET_AS_BLOCKING_GAP', self.codes(p, r))
+
+    def test_downstream_rows_in_current_iteration_task_are_flagged(self):
+        p, r = impact_fixture(n=2)
+        r['checks'][0]['gap_cause'] = 'DOWNSTREAM_VERIFICATION'
+        r['work_items'] = [{'id': 'W1', 'due_stage': 'design_iteration', 'check_ids': [c['id'] for c in r['checks']]}]
+        found = self.codes(p, r)['DOWNSTREAM_IN_CURRENT_ITERATION']
+        self.assertEqual(([r['checks'][0]['id']], 'W1'), (found['check_ids'], found['work_item']))
+        r['work_items'][0]['due_stage'] = 'prototype_verification'
+        self.assertNotIn('DOWNSTREAM_IN_CURRENT_ITERATION', self.codes(p, r))
+
+
+class FreezeGradingGateTests(unittest.TestCase):
+    """Templated grading blocks release only in schematic_freeze; valid is unaffected."""
+
+    def gate(self, phase):
+        from unittest import mock
+        import validate_review as vr
+        from test_passive_stress import board, proposals
+        from test_decoupling import ledger
+        db, intent = board()
+        if phase:
+            intent['review_phase'] = phase
+        plan, _ = proposals(db, intent)
+        flagged = {'code': 'TEMPLATED_SEVERITY_REASON', 'check_ids': ['X'] * 12}
+        fake = lambda *a, **k: {'candidates': [flagged]}
+        with mock.patch.object(vr, 'screen_quality', fake):
+            return vr.validate_review(plan, ledger(plan, db), db)
+
+    def test_freeze_blocks_and_iteration_does_not(self):
+        freeze = self.gate('schematic_freeze')
+        self.assertTrue(any(b.startswith('TEMPLATED_SEVERITY_REASON') for b in freeze['blockers']))
+        iteration = self.gate('design_iteration')
+        self.assertFalse(any(b.startswith('TEMPLATED_SEVERITY_REASON') for b in iteration['blockers']))
+
 
 if __name__ == '__main__':
     unittest.main()

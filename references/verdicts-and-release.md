@@ -86,6 +86,10 @@
    不适用/无界模型或任意参数探索的越限结果不能单独支持潜在 P0。
    拓扑、工作点及器件边界支持的绝限/关键保护缺口可以支持潜在 P0，无需先证明实物必然损坏。
    连对象关键性和后果路径都未厘清时，先追踪或澄清，报告标审查未完成，不强行发布有确定等级的完整结论。
+对于动作速度相关的后果，先按[动作窗口与裕量](evidence-proportionality.md#保护动作窗口与裕量)形成比较。
+缺少全温最大值、尚未实测或某个时间没有精确数值，均不能单独决定P0/P1及冻结影响；
+已证实的绝限违反、无有效保护路径及决定保护有效性的关键未知仍按实际后果保留。
+
 5. **单独记录冻结影响与闭合条件。** 写清排除后果或调整等级需要的最小证据、取得方法和复验判据。
    是否阻断冻结、何时处理、是否用户暂停分别记录；不能用“暂不处理”降低危险度。
    补证/改版后重判，升级或降级均留具体依据，原等级不是永远不变的标签。
@@ -134,6 +138,10 @@
 `quality_screening` 另给两类提示（不阻断）：不同判据共用完全相同的 `consequence`/`severity_reason`
 （`REUSED_IMPACT_ACROSS_SCOPES`），以及至少 10 项证据不足中九成以上落在同一潜在等级（`UNIFORM_POTENTIAL_SEVERITY`）。
 收到提示时逐项复核后果路径，确属共用分析的写明它与各判据的关系。
+另有两类定级提示：同一句带 P0–P3 的话作为 ≥10 行、≥3 条规则的定级理由（`TEMPLATED_SEVERITY_REASON`），
+以及同一规则 ≥10 行证据不足全部同级（`UNIFORM_SEVERITY_WITHIN_RULE`）。设计迭代阶段只提示；
+`schematic_freeze` 阶段二者计入放行阻断（`valid` 不变），须逐行按本对象后果路径重新定级后才能放行。
+批量录入脚本不得用一句固定兜底语给全部证据不足定级。
 审查者按上述步骤核理由与本项判据；补齐证据后重新判断，可能成为 PASS 或任意等级的 FAIL。
 需求未定（REQUIREMENT_OPEN）的检查不填等级，改由 [需求澄清项](requirement-clarifications.md) 记录决策时点和冻结影响。
 
@@ -250,6 +258,22 @@ ACCEPTED 表示接收约束，VERIFIED 才表示下游验证完成；冻结只�
 6. `gap_cause` 为 DOWNSTREAM_VERIFICATION。
 
 这不是风险接受，只是已完成原理图前提后的阶段归属。
+
+**录入时先分流**，不要把下游工作记成 DESIGN_OPEN：
+
+| 剩余缺口只有 | gap_cause / 处置 | 设计迭代中 |
+|---|---|---|
+| 整机能效、EMC、闭壳热、寿命、环境、协议一致性/认证等**只能靠样机或试验产生的结果** | DOWNSTREAM_VERIFICATION，`due_stage: prototype_verification`，写 HANDOFF；原理图前提拆成其他检查单独判 | 不进入本轮设计任务，不要求 ASG 改图 |
+| 漏感、绕组寄生、PCB 寄生下的实际尖峰，且原理图已有按保守参数算过的吸收/钳位设计 | 同上；保守参数下算不过才是 DESIGN_OPEN | 同上 |
+| 成本、体积、效率等**优化目标**（需求写明“目标/尽量/优化”，不是必须指标） | 不判 INSUFFICIENT；必须项已满足时记 `kind=IMPROVEMENT` 或 P3 | 不阻断 |
+| 需求本身就是“通过某项测试/认证” | REQ-D01 拆成原理图前提（判 PASS/FAIL）与测试义务（DOWNSTREAM_VERIFICATION） | 测试义务不阻断设计迭代 |
+
+冻结时以上 DOWNSTREAM_VERIFICATION 项仍按本节六个条件处理，接收记录只能来自真实接收方。
+设计迭代阶段的报告与 `current_work_items` 只把 DESIGN_OPEN / EXTERNAL_DATA / REVIEW_INCOMPLETE 和 FAIL 列为本轮动作。
+`quality_screening` 给三类分流提示（只提示，不改结论）：缺口文字只指向样机/试验结果却记为 DESIGN_OPEN/EXTERNAL_DATA
+（`DOWNSTREAM_RECORDED_AS_DESIGN_GAP`）；成本/体积等优化目标定为 P0/P1（`OPTIMIZATION_TARGET_AS_BLOCKING_GAP`）；
+DOWNSTREAM_VERIFICATION 行挂在 `design_iteration` 任务里（`DOWNSTREAM_IN_CURRENT_ITERATION`）。逐行确认后改分流，
+确有原理图前提未闭合的保留原记录并写明前提。
 
 ## 6. 准出
 

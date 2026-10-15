@@ -26,6 +26,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
    规则见 [最小充分证据](references/evidence-proportionality.md)。每项证据不足按
    [危险度分类原则](references/verdicts-and-release.md#证据不足的危险度分类原则) 评估有物理依据且尚未排除的最严重后果，
    不按“参数未知”、器件类别或整批默认值定级；等级、证据置信度和冻结影响分别记录。
+   保护动态先按[动作窗口与裕量](references/evidence-proportionality.md#保护动作窗口与裕量)确定故障后果和允许窗口，
+   再比较响应与裕量；不把缺全温最大参数本身设为冻结阻断。
 5. **不通过必须可改**：每个 FAIL 给定位、旧→新、顺序操作、参数依据和通过标准；证据不足项给补证或设计路径。
    缺输入时给取得方法和条件方案，不编造料号、阻值或空闲 GPIO。能靠改原理图消除的证据不足，直接给电路改进建议；
    建议不改变本轮结论，改图并复审后才关闭。见 [报告与修改说明](references/report-and-remediation.md)。
@@ -108,6 +110,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 补齐命名启发式漏掉的对象/需求/工况，人工补查项加入 `review-plan-cold.json`。排除候选须有反证，无特征不等于 NA。
 检查器（I²C、去耦、感性负载、功率开关、输入滤波、上电、监控、差分电平、光耦等）每趟都跑；
 名称线索只生成待复核候选，清单绑定输入指纹，不能编辑清单消缺口。见 [自动检查](references/automation.md)。
+计划命令列出“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考域 `domain`
+（由审查者按需求、稳压器/钳位手册和设计计算书自行定界，逐条写 `citation`），再热跑；空的 `power_rails` 会让全部阻容预判失效。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
 
 ### 3. 资料取证与器件身份（DEV-D01、DEV-D02）
 
@@ -162,6 +166,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 结果独立保存为 `review-results.json`，绑定最终计划；批量脚本只录入已审结论。按有证据的共同根因归并任务，
 不合并独立电气结论。录入前按 [逐行语义复核](references/plan-and-results.md#逐行语义复核) 逐行核对象、路径、因果、
 关闭范围和需求子义务（含多个子义务的需求只有全部适用子义务通过才 PASS）；绑定校验及质量筛查零提示不能代替这一步。
+证据不足先按 [下游分流](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
+批量脚本不能用一句固定兜底语给全部证据不足定级。
 完成后对账：
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --require-impact --json review-gate.json

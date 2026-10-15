@@ -49,6 +49,8 @@ UNBOUNDED_PIN_RE = re.compile(
 LINK_KINDS = {ng.RESISTOR, ng.CAPACITOR, ng.FERRITE, ng.DIODE, ng.ZENER, ng.TVS,
               ng.JUMPER, ng.FUSE, ng.SWITCH, ng.CRYSTAL, ng.TESTPOINT}
 POWER_PINTYPES = {'power_in', 'power_out'}
+# 分类器未识别、但两脚且不升压的 LED/热敏电阻：只作定界连通件，本身不生成预判行。
+TWO_TERMINAL_LINK_RE = re.compile(r'^(LED|TH|NTC|RT)\d', re.I)
 
 
 def _package(part, prefix):
@@ -56,12 +58,24 @@ def _package(part, prefix):
     return match.group(2) if match and match.group(1)[0].upper() == prefix else None
 
 
+# 隔离电源常见的分域地/回流网：PORT_GND、P_GND、SR_RETURN、GND_ISO。只在本预判里当 0 V，
+# 并按名字各成一个参考域；跨域（Y 电容、隔离电阻）的两端件不给上界。
+GROUND_TOKENS = {'GND', 'PGND', 'AGND', 'DGND', 'SGND', 'EGND', 'RTN', 'RETURN'}
+
+
+def _ground_name(net):
+    tokens = ng.normalize(net).split('_')
+    return ng.is_ground(net) or tokens[-1] in GROUND_TOKENS or (len(tokens) == 2 and tokens[0] in GROUND_TOKENS)
+
+
 def _declared_rails(intent):
+    """{net: ((min, max), domain)}；domain 取 power_rails.<net>.domain，未声明为 None。"""
     rails = {}
     for net, rail in ((intent or {}).get('power_rails') or {}).items():
         window = rail.get('voltage_v') if isinstance(rail, dict) else None
         if isinstance(window, dict) and all(isinstance(window.get(k), (int, float)) for k in ('min', 'max')):
-            rails[net] = (float(window['min']), float(window['max']))
+            domain = rail.get('domain') if isinstance(rail.get('domain'), str) and rail['domain'].strip() else None
+            rails[net] = ((float(window['min']), float(window['max'])), domain)
     return rails
 
 
@@ -73,9 +87,22 @@ class _Bounds:
         self._cluster, self._ic = {}, {}
 
     def _fixed(self, net):
-        if ng.is_ground(net):
+        if net in self.rails:
+            return self.rails[net][0]
+        if _ground_name(net):
             return (0.0, 0.0)
-        return self.rails.get(net)
+        return None
+
+    def domain(self, net):
+        """参考域：声明的 domain 优先；GND/AGND 等通用地名同属 GND 域，其余地名（P_GND、PORT_GND）
+        各成一域；其他为 None（不参与跨域判断）。"""
+        if net in self.rails:
+            declared = self.rails[net][1]
+            if declared or self.rails[net][0] != (0.0, 0.0):
+                return declared
+        if ng.is_ground(net):
+            return 'GND'          # 通用地名沿用旧行为：视为同一参考
+        return ng.normalize(net) if _ground_name(net) else None
 
     def ic_supply(self, ref):
         if ref not in self._ic:
@@ -91,14 +118,15 @@ class _Bounds:
         return self._ic[ref]
 
     def window(self, net):
-        """返回 ((lo, hi), 依据) 或 (None, 缺口)。"""
+        """返回 ((lo, hi), 依据, 参考域集合) 或 (None, 缺口, 参考域集合)。"""
         fixed = self._fixed(net)
         if fixed is not None:
-            return fixed, ('ground' if ng.is_ground(net) else 'declared-rail:' + net)
+            domain = self.domain(net)
+            return fixed, ('ground' if net not in self.rails else 'declared-rail:' + net), {domain} - {None}
         if net in self._cluster:
             return self._cluster[net]
         graph = self.graph
-        seen, queue, tops, ac, gap = {net}, [net], [], False, None
+        seen, queue, tops, ac, gap, domains = {net}, [net], [], False, None, set()
         while queue and gap is None:
             current = queue.pop()
             if current in graph.pseudo or not current:
@@ -109,6 +137,8 @@ class _Bounds:
                 if not graph.is_fitted(ref):
                     continue
                 kind = graph.kind(ref)
+                if kind is ng.UNKNOWN and TWO_TERMINAL_LINK_RE.match(ref) and len(graph.pins_of(ref)) == 2:
+                    kind = ng.RESISTOR
                 if ng.name_matches(UNBOUNDED_PIN_RE, graph.pinname.get(node), pin):
                     gap = 'unbounded-pin:' + node
                     break
@@ -118,6 +148,8 @@ class _Bounds:
                         gap = 'undeclared-supply:%s(%s)' % (ref, supply or 'no-declared-rail')
                         break
                     tops.append(supply)
+                    domains |= {self.domain(n) for n in graph.pins_of(ref).values()
+                                if self._fixed(n) is not None} - {None}
                 elif kind in LINK_KINDS:
                     for other in graph.nets_of(ref):
                         if other == current or other in seen:
@@ -125,6 +157,7 @@ class _Bounds:
                         fixed = self._fixed(other)
                         if fixed is not None:
                             tops.append(fixed[1])
+                            domains |= {self.domain(other)} - {None}
                             continue
                         ac = ac or kind is ng.CAPACITOR
                         seen.add(other)
@@ -136,9 +169,9 @@ class _Bounds:
             gap = 'no-declared-source'
         if gap is None:
             hi = max(tops)
-            result = ((-hi if ac else 0.0, hi), 'cluster-of-declared-supplies')
+            result = ((-hi if ac else 0.0, hi), 'cluster-of-declared-supplies', domains)
         else:
-            result = (None, gap)
+            result = (None, gap, domains)
         for item in seen:
             self._cluster[item] = result
         return result
@@ -175,14 +208,17 @@ def _scan(db, intent, state):
             continue
         entry = {'ref': ref, 'kind': kind, 'package': package, 'value': part.get('value'),
                  'nets': sorted(pins.values())}
-        if kind is ng.RESISTOR and not any(ng.is_ground(net) for net in entry['nets']):
+        if kind is ng.RESISTOR and not any(_ground_name(net) for net in entry['nets']):
             entry['signal_series'] = _signal_series(graph, entry['nets'])
-        windows = []
+        windows, domains = [], set()
         for net in entry['nets']:
-            window, basis = bounds.window(net)
+            window, basis, found = bounds.window(net)
             windows.append(window)
+            domains |= found
             entry.setdefault('bases', []).append(basis)
-        if None not in windows:
+        if len(domains) > 1:
+            entry['bases'].append('cross-domain:' + '|'.join(sorted(domains)))
+        elif None not in windows:
             (lo_a, hi_a), (lo_b, hi_b) = windows
             entry['v_across_max'] = round(max(hi_a - lo_b, hi_b - lo_a), 6)
         parts.append(entry)
@@ -244,6 +280,27 @@ def rail_gaps(plan):
     return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
 
 
+def ground_domains(db, intent):
+    """{参考域: [地网]}：本预判按 0 V 处理的全部网及其参考域，供审查者核对与改正 domain。"""
+    nets = set((db or {}).get('nets') or {})
+    bounds = _Bounds(None, _declared_rails(intent))
+    found = {}
+    for net in sorted(nets):
+        if bounds._fixed(net) == (0.0, 0.0):
+            found.setdefault(bounds.domain(net) or '(未声明域)', []).append(net)
+    return dict(sorted(found.items()))
+
+
+def node_gaps(plan):
+    """统计因多端件/连接器/跨域而无界的行：{缺口: 行数}，供计划命令提示补节点电压窗口或参考域。"""
+    counts = {}
+    for check in plan.get('checks', []):
+        for basis in (check.get('proposal') or {}).get('bases') or []:
+            if basis.startswith(('unbounded-', 'cross-domain:')):
+                counts[basis] = counts.get(basis, 0) + 1
+    return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
+
+
 def override_errors(key, item):
     """建议 PASS 被改判为 FAIL/INSUFFICIENT 时的理由检查。"""
     override = item.get('proposal_override')
@@ -260,7 +317,7 @@ class PassiveStressChecker(Checker):
     title = '通用阻容应力预判'
     plan_key = 'passive_stress'
     version_key = 'passive_stress_version'
-    version = 1
+    version = 2
     allow_manual_bound_objects = False
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion', 'readiness',
                         'inventory_gaps', 'proposal')
