@@ -148,6 +148,15 @@ class RenderReportTests(unittest.TestCase):
         self.assertIn('- **发现的错误**：电路错误 1 处，文档错误 0 处（P1 1 处）', text)
         self.assertIn('类型：电路错误', section)
 
+    def test_failed_checks_are_named_with_their_problem(self):
+        p, r, db = fixture()
+        fail(r)
+        key = r['checks'][0]['id']
+        r['findings'][0]['check_ids'] = [key]
+        text, _ = report(p, r, db)
+        self.assertIn('没通过（FAIL） 1 条（%s → 问题 F1）' % key, text)
+        self.assertIn('- **涉及的检查**：%s（没通过）' % key, text)
+
     def test_invalid_records_are_flagged_before_anything_else(self):
         p, r, db = decisive()
         del r['checks'][0]['input_requests']

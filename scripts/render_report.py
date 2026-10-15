@@ -31,6 +31,8 @@ SEVERITY_LEGEND = '严重程度：P0 可能损坏器件或危及安全；P1 必�
 HISTORY_RULE = 'REQ-H02'
 RESULT_WORDS = (('PASS', '通过（PASS）'), ('FAIL', '没通过（FAIL）'), ('INSUFFICIENT', '资料不足无法判断（INSUFFICIENT）'),
                 ('NA', '与本产品无关（NA）'), ('NA_OUTSIDE_STAGE', '原理图阶段不判、交给后续环节'))
+RESULT_SHORT = {'PASS': '通过', 'FAIL': '没通过', 'INSUFFICIENT': '资料不足', 'NA': '无关',
+                'NA_OUTSIDE_STAGE': '交给后续环节'}
 # Why the schematic cannot be finalised yet, in the order a reader should act on them.
 BLOCKERS = (('fail', '%d 条检查发现的错误还没改'),
             ('gap', '%d 条检查缺资料或设计依据，对应下面列出的待办'),
@@ -168,6 +170,20 @@ def render_item(task, checks, notes):
     return lines
 
 
+def failed_checks(rows, findings):
+    """Name every failed check and the problem it belongs to, so the count can be traced."""
+    owner = {}
+    for f in findings:
+        for k in f.get('check_ids') or []:
+            owner.setdefault(k, f.get('id'))
+    groups = {}
+    for k, c in rows.items():
+        if c.get('review_result') == 'FAIL':
+            groups.setdefault(owner.get(k) or c.get('finding_id'), []).append(k)
+    return '；'.join('%s → 问题 %s' % ('、'.join(ids), fid) if fid else '、'.join(ids) + ' → 未写成问题'
+                    for fid, ids in groups.items())
+
+
 def render(plan, results, gate, notes=None, title=None):
     notes = notes or {}
     item_notes = notes.get('items') or {}
@@ -196,7 +212,7 @@ def render(plan, results, gate, notes=None, title=None):
     for key, label in RESULT_WORDS:
         part = '%s %d 条' % (label, counts.get(key, 0))
         if key == 'FAIL' and counts.get(key):
-            part += '（对应 %d 处问题，见下一行）' % defects
+            part += '（%s）' % failed_checks(current_rows, findings)
         parts.append(part)
     out.append('- **检查结果**：共 %d 条。%s。' % (total, '，'.join(parts)))
     if defects:
@@ -238,7 +254,9 @@ def render(plan, results, gate, notes=None, title=None):
                                  ('问题', f.get('observed')), ('后果', f.get('impact')),
                                  ('怎么改', f.get('recommendation')), ('改的目的', fix.get('purpose')),
                                  ('改完怎么验证', f.get('verification')),
-                                 ('涉及的检查', '、'.join(f.get('check_ids') or []))):
+                                 ('涉及的检查', '、'.join(
+                                     '%s（%s）' % (k, RESULT_SHORT.get((checks.get(k) or {}).get('review_result'), '记录中没有'))
+                                     for k in f.get('check_ids') or []))):
                 if value:
                     out.append('- **%s**：%s' % (label, value))
             for step in fix.get('steps') or []:
