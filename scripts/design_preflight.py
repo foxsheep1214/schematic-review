@@ -1,6 +1,6 @@
-"""Shared ASG/SR calculation-condition contract, v1. No electrical signoff.
+"""Calculation-condition record, v1. No electrical signoff.
 
-Vendored identically in both skills so either skill works independently.
+Self-contained so it can be vendored unchanged wherever it is needed.
 Arithmetic is bounded AST evaluation, never eval or executable source input.
 """
 import ast
