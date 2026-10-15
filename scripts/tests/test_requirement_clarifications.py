@@ -9,6 +9,8 @@ import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from validate_review import validate_review, fingerprint
+from gap_fixture import validating
+validate_review = validating(validate_review)  # gap records are not this file's subject
 from test_validate_review import fixture, planned, E
 
 REQ = 'REQ-D01.REQ-LOAD'

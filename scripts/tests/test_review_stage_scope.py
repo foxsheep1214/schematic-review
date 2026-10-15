@@ -11,7 +11,7 @@ INPUT = 'startup load current envelope'
 def downstream():
     p, r, db = staged('EXTERNAL_DATA', 'prototype_verification')
     row = r['checks'][0]
-    for field in ('missing_inputs', 'potential_severity', 'gap_cause'):
+    for field in ('missing_inputs', 'potential_severity', 'gap_cause', 'impact_assessment'):
         row.pop(field, None)
     r['work_items'] = []
     row.update(review_result='NA', applicability='APPLICABLE', na_reason=OUTSIDE_STAGE, blocking=False, handoff={
@@ -42,9 +42,7 @@ def decisive():
 
 
 def gate(p, r, db):
-    # The gap contract rides on the impact contract used by every new review.
-    r['impact_version'] = 1
-    return validate_review(p, r, db, require_impact=True)
+    return validate_review(p, r, db)
 
 
 class StageScopeTests(unittest.TestCase):
@@ -144,15 +142,14 @@ class StageScopeTests(unittest.TestCase):
                 del r['checks'][0]['input_requests']
                 self.assertTrue(gate(p, r, db)['valid'], gate(p, r, db)['errors'])
 
-    def test_gap_cause_is_mandatory_under_contract_and_downstream_cause_is_retired(self):
+    def test_gap_cause_is_mandatory_and_downstream_cause_is_retired(self):
         p, r, db = decisive(); del r['checks'][0]['gap_cause']
         self.assertFalse(gate(p, r, db)['valid'])
         p, r, db = decisive(); r['checks'][0]['gap_cause'] = 'DOWNSTREAM_VERIFICATION'
         self.assertFalse(validate_review(p, r, db)['valid'])
 
-    def test_without_contract_requests_are_not_required(self):
+    def test_requests_are_always_required_for_real_gaps(self):
         p, r, db = decisive(); del r['checks'][0]['input_requests']
-        self.assertTrue(validate_review(p, r, db)['valid'], validate_review(p, r, db)['errors'])
         self.assertFalse(gate(p, r, db)['valid'])
 
     def test_malformed_requests_report_errors_without_crashing(self):

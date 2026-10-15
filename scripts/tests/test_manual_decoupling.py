@@ -11,6 +11,8 @@ from test_i2c_topology import add
 from plan_review import build_review_plan
 from revision_impact import dependency_catalog
 from validate_review import validate_review
+from gap_fixture import validating
+validate_review = validating(validate_review)  # gap records are not this file's subject
 
 
 def independent(plan, db, rule='PWR-T03'):

@@ -105,7 +105,7 @@ def primary_anchors(obj, db=None):
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
                     require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
-                    require_impact=False, execution_audit=None, require_execution_audit=False):
+                    execution_audit=None, require_execution_audit=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -130,14 +130,10 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 "quality_screening": screen_quality(plan, report, db)}
     errors.extend(validate_engine(plan, require_current_engine))
     require(report.get("schema_version") == 2, "results.schema_version must be 2")
-    impact_required = require_impact or 'impact_version' in report
     clauses_required = 'requirement_clauses_version' in report
     if clauses_required:
         require(type(report.get('requirement_clauses_version')) is int and report['requirement_clauses_version'] == 1,
                 'requirement_clauses_version must be 1')
-    if impact_required:
-        require(type(report.get('impact_version')) is int and report['impact_version'] == 1,
-                'impact_version must be 1 for documented potential impact')
     require(plan.get("schema_version") == PLAN_SCHEMA_VERSION,
             f"plan.schema_version must be {PLAN_SCHEMA_VERSION}; plans with retired check IDs must be regenerated")
     remediation_version = report.get("remediation_version")
@@ -183,7 +179,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     gates = validate_inventories(REGISTRY, plan, expected, db, require,
                                  lambda context: ReviewPlanner(db, context))
     checks = index(report.get("checks"), "results.checks")
-    scope_errors, stage_scope = validate_stage_scope(checks, expected, impact_required)
+    scope_errors, stage_scope = validate_stage_scope(checks, expected)
     errors.extend(scope_errors)
     findings = index(report.get("findings"), "findings")
     bindings = (require_bindings or revision is not None or 'binding_version' in report
@@ -246,7 +242,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if result in ("PASS", "FAIL"):
             require(confidence in ("A", "B"), f"{key}: PASS/FAIL needs A/B evidence")
         if result == "INSUFFICIENT":
-            if impact_required and expected.get(key, {}).get('rule') != 'REQ-H02':
+            if expected.get(key, {}).get('rule') != 'REQ-H02':
                 errors.extend(validate_impact(item))  # history dispositions are counted apart
             require(confidence == "C", f"{key}: unresolved conclusion must remain C")
             require(ids(item.get("missing_inputs")), f"{key}: missing_inputs required")
@@ -497,8 +493,6 @@ def main():
     parser.add_argument("--json")
     parser.add_argument("--lint", action="append", help="cold/hot lint JSON; repeat for each run")
     parser.add_argument("--require-release", action="store_true")
-    parser.add_argument("--require-impact", action="store_true",
-                        help="require per-check potential impact and separate freeze rationale")
     parser.add_argument("--require-actionable", action="store_true",
                         help="require detailed repair instructions for every finding")
     parser.add_argument("--require-bindings", action="store_true",
@@ -513,7 +507,6 @@ def main():
                                  [read(x) for x in args.lint] if args.lint else None,
                                  require_actionable=args.require_actionable,
                                  require_bindings=args.require_bindings,
-                                 require_impact=args.require_impact,
                                  execution_audit=read(args.execution_audit) if args.execution_audit else None,
                                  require_execution_audit=args.require_execution_audit,
                                  old_db=read(args.old_db) if args.old_db else None,

@@ -7,6 +7,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import catalog
 from electrical_contract import PLAN_SCHEMA_VERSION
 from validate_review import validate_review, fingerprint, SCOPE
+from gap_fixture import complete_gap
 
 E = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
 C1, C2 = 'RST-E01.C1', 'RST-E01.C2'
@@ -100,6 +101,7 @@ class ReviewGateTests(unittest.TestCase):
         p, r, db = fixture()
         r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C',
                               missing_inputs=['assembly BOM'], potential_severity='P0')
+        complete_gap(r['checks'][0], cause='EXTERNAL_DATA')
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['release'], 'NO_GO')
@@ -109,6 +111,7 @@ class ReviewGateTests(unittest.TestCase):
         p, r, db = fixture()
         r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['firmware OVP table'],
                               potential_severity='P2', gap_cause='EXTERNAL_DATA')
+        complete_gap(r['checks'][0])
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['insufficient_by_cause'], {'EXTERNAL_DATA': 1})
@@ -122,7 +125,9 @@ class ReviewGateTests(unittest.TestCase):
         p, r, db = fixture()
         r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['magnetics Isat'],
                               potential_severity='P2')
-        self.assertEqual(validate_review(p, r, db)['insufficient_by_cause'], {'UNSPECIFIED': 1})
+        out = validate_review(p, r, db)
+        self.assertFalse(out['valid'])  # gap_cause is mandatory; the count still shows what is missing
+        self.assertEqual(out['insufficient_by_cause'], {'UNSPECIFIED': 1})
 
     def test_open_or_deferred_requirement_cannot_be_judged(self):
         def run(status, **row):
@@ -134,6 +139,7 @@ class ReviewGateTests(unittest.TestCase):
                 r['checks'][0].pop('potential_severity', None)
                 r['checks'][0]['blocking'] = True
                 r.update(workflow_version=1, work_items=[], requirement_clarifications=[clarification()])
+            complete_gap(r['checks'][0])
             return validate_review(p, r, db)
         gap = dict(review_result='INSUFFICIENT', evidence_confidence='C', potential_severity='P2',
                    missing_inputs=['derating temperature points'])
@@ -221,6 +227,7 @@ class ReviewGateTests(unittest.TestCase):
                               rationale='Load is unknown, so loss and rating cannot be compared',
                               potential_severity='P1', blocking=True,
                               missing_inputs=['Maximum continuous current through R1'])
+        complete_gap(r['checks'][0], cause='EXTERNAL_DATA')
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['release'], 'NO_GO')
@@ -420,6 +427,7 @@ class ReviewBindingTests(unittest.TestCase):
         p, r = bound_fixture()
         r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C',
                               missing_inputs=['guaranteed startup peak'], potential_severity='P1')
+        complete_gap(r['checks'][0], cause='EXTERNAL_DATA')
         out = validate_review(p, r)
         self.assertTrue(out['valid'], out); self.assertEqual(out['release'], 'NO_GO')
         p, r = bound_fixture()
@@ -432,6 +440,7 @@ def gap_with_task(design_option=None, cause='EXTERNAL_DATA'):
     p['review_phase'] = 'design_iteration'; r['plan_digest'] = fingerprint(p)
     r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', potential_severity='P2',
                           missing_inputs=['zener voltage below its 5 mA test current'], gap_cause=cause)
+    complete_gap(r['checks'][0])
     item = {'id': 'W-BIAS', 'title': 'Bias reference outside its guaranteed current', 'check_ids': [C1],
             'root_cause': 'Reference runs below the vendor test current', 'due_stage': 'design_iteration',
             'reason': 'Affects minimum supply', 'next_action': 'Apply the proposed circuit change', 'evidence': E}

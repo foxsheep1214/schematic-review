@@ -15,6 +15,8 @@ from plan_review import build_review_plan, validate_intent
 from revision_impact import (attach_metadata, check_spec, COVERAGE_ID, digest,
                              validate_metadata, validate_reverification)
 from validate_review import validate_review
+from gap_fixture import validating, complete_gaps
+validate_review = validating(validate_review)  # gap records are not this file's subject
 from test_i2c_topology import add, fixture as i2c_fixture, pending_report
 
 
@@ -277,7 +279,7 @@ class RevisionWorkflowTests(unittest.TestCase):
 
     def report(self, plan=None):
         plan = plan or self.plan
-        return reviewed_records(plan, pending_report(plan, self.new))
+        return complete_gaps(reviewed_records(plan, pending_report(plan, self.new)))
 
     def validate(self, plan, report, **kwargs):
         return validate_review(plan, report, self.new, old_db=self.old, old_plan=self.base,
@@ -294,8 +296,8 @@ class RevisionWorkflowTests(unittest.TestCase):
         scope = next(row for row in report['checks'] if row['id'] == COVERAGE_ID)
         scope.update(review_result='PASS', evidence_confidence='B',
                      rationale='Synthetic exercise reviewed the expanded scope; electrical evidence gaps remain below')
-        scope.pop('missing_inputs')
-        scope.pop('potential_severity')
+        for field in ('missing_inputs', 'potential_severity', 'gap_cause', 'impact_assessment'):
+            scope.pop(field)
         result = self.validate(self.plan, report)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['summary']['results']['PASS'], 1)

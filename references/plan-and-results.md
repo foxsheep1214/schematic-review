@@ -296,11 +296,9 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   不能因 ID 相似、同一 IC 或同一功能组就移用。
 - 所有结果含非空 `rationale` 与可定位 `evidence`。PASS/FAIL 只能 A/B；INSUFFICIENT 必须 C 并给
   `missing_inputs` 和 `potential_severity`（REQUIREMENT_OPEN 除外）；非 FAIL 不填 severity。
-- 新报告写 `impact_version: 1`；每项证据不足（REQUIREMENT_OPEN 除外）给 `impact_assessment` 的五项非空字段，
+- 每项证据不足（REQUIREMENT_OPEN 与 REQ-H02 历史处置除外）给 `impact_assessment` 的五项非空字段，校验始终强制；
   内容按 [危险度分类原则](verdicts-and-release.md#证据不足的危险度分类原则) 逐项判定；非空字段不等于危险度可靠。
-  运行校验加 `--require-impact`。
-  旧报告仍可读取，但缺少影响依据的等级须显示“分级依据未完整记录”，不能作为可靠优先级；重新分级另存复核记录，
-  不改写旧结果或工程指纹来冒充当前规则下的新完整审查。
+  缺影响依据的旧报告校验不通过，须按当前规则重新分级，不改写旧结果或工程指纹来冒充新审查。
 - 新报告写 `requirement_clauses_version: 1`：每个 REQ-D01（需求状态 OPEN/DEFERRED 与 NA 除外）给 `requirement_clauses`，
   把需求原文按顺序完整拆成条款（拼接后等于原文），逐条标类别：
 
@@ -312,7 +310,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   格式：`[{"text": "原文片段", "kind": "OBLIGATION", "result": "PASS", "check_ids": [...]}, {"text": "原文片段", "kind": "PREMISE"}]`。
   行结论 = 义务条款中最差的结论（FAIL > INSUFFICIENT > PASS > NA），校验强制。前提条款里的要求由相关器件/电路行执行，
   其他行发现的缺陷不连带本行；需求原文把该缺陷写成义务（如“各连续受电元件不得超出持续功率额定”）时才在本行判。
-- INSUFFICIENT 必填 `gap_cause`（随 `--require-impact` 强制）：REQUIREMENT_OPEN、EXTERNAL_DATA、DESIGN_OPEN、
+- INSUFFICIENT 必填 `gap_cause`（校验始终强制）：REQUIREMENT_OPEN、EXTERNAL_DATA、DESIGN_OPEN、
   REVIEW_INCOMPLETE、USER_DEFERRED，含义见 [最小充分证据](evidence-proportionality.md#复核每条证据不足)。
   纯下游项不是 INSUFFICIENT，用阶段 NA。EXTERNAL_DATA / DESIGN_OPEN 另写以 missing_inputs 原文为键的
   `input_requests`（why_decisive / required_scope / acquisition / closure_criterion），其他原因不写。

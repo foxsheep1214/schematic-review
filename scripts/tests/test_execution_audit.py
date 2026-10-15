@@ -9,16 +9,21 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from execution_audit import digest, validate_execution_audit
 from validate_review import validate_review
+from gap_fixture import validating, complete_gaps
+validate_review = validating(validate_review)  # gap records are not this file's subject
 
 FIXTURE = Path(__file__).parent / 'fixtures/execution-audit/synthetic.json'
 
 
 def fixture():
     data = json.loads(FIXTURE.read_text())
-    return data['plan'], data['results'], data['db'], data['audit']
+    p, r, db, a = data['plan'], data['results'], data['db'], data['audit']
+    rebind(p, r, db, a)
+    return p, r, db, a
 
 
 def rebind(p, r, db, a):
+    complete_gaps(r)  # before the digest, so the audit binds the complete gap records
     r['plan_digest'], r['db_digest'] = digest(p), digest(db)
     a.update(plan_digest=digest(p), results_digest=digest(r), db_digest=digest(db))
 

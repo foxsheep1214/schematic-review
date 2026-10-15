@@ -13,6 +13,8 @@ from checkers.decoupling import PLAN_RULES
 from decoupling import build_decoupling_inventory, input_fingerprint, parse_capacitance, validate_decoupling_intent
 from plan_review import build_review_plan, validate_intent
 from validate_review import validate_review, fingerprint
+from gap_fixture import validating
+validate_review = validating(validate_review)  # gap records are not this file's subject
 from test_i2c_topology import add, pending_report
 
 

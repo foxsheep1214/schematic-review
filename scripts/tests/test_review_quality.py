@@ -7,6 +7,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from test_validate_review import fixture, E
 from validate_review import validate_review, fingerprint
+from gap_fixture import complete_gap
 from review_workflow import workflow
 
 
@@ -15,6 +16,7 @@ def unfinished():
     r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C',
                          missing_inputs=['Synthetic calculation not performed'],
                          potential_severity='P2', gap_cause='REVIEW_INCOMPLETE')
+    complete_gap(r['checks'][0])
     return p, r, db
 
 

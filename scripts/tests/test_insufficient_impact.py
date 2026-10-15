@@ -42,7 +42,7 @@ class ImpactTests(unittest.TestCase):
         self.assertEqual(out['requirement_open'], 1)
         self.assertEqual(out['undocumented'], 0)
 
-    def test_new_report_enforces_impact_without_changing_evidence_or_release(self):
+    def test_impact_is_always_enforced_without_changing_evidence_or_release(self):
         p, r, db = fixture()
         row = r['checks'][0]
         row.update(gap()); row['id'] = p['checks'][0]['id']
@@ -52,16 +52,12 @@ class ImpactTests(unittest.TestCase):
                        'required_scope': 'Maximum delay at cold startup supply limits',
                        'acquisition': 'Read supplier timing table',
                        'closure_criterion': 'Compare maximum delay with the diagnostic window'}})
-        r['impact_version'] = 1
-        out = validate_review(p, r, db, require_impact=True)
+        out = validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
         self.assertEqual(out['release'], 'NO_GO')  # P2 can independently block freeze.
         self.assertEqual(row['evidence_confidence'], 'C')
         del row['impact_assessment']
-        self.assertFalse(validate_review(p, r, db)['valid'])
-        del r['impact_version']
-        self.assertTrue(validate_review(p, r, db)['valid'])  # Existing ledgers remain readable.
-        self.assertFalse(validate_review(p, r, db, require_impact=True)['valid'])
+        self.assertFalse(validate_review(p, r, db)['valid'])  # No switch or version marker can skip it.
 
 
     def test_history_rows_are_not_required_to_carry_impact(self):
@@ -71,9 +67,8 @@ class ImpactTests(unittest.TestCase):
         row.update(gap()); row['id'] = p['checks'][0]['id']
         row.update(evidence_confidence='C', missing_inputs=['Historical item evidence'])
         del row['impact_assessment']
-        r['impact_version'] = 1
-        errors = validate_review(p, r, db, require_impact=True)['errors']
-        self.assertFalse([e for e in errors if 'impact_assessment' in e], errors)
+        errors = validate_review(p, r, db)['errors']
+        self.assertFalse([e for e in errors if 'impact_assessment' in e or 'input_requests' in e], errors)
 
 
 if __name__ == '__main__':

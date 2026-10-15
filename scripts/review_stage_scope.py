@@ -22,8 +22,7 @@ def outside_stage(row):
     return row.get('review_result') == 'NA' and row.get('na_reason') == OUTSIDE_STAGE
 
 
-def validate_stage_scope(checks, expected, gap_contract=False):
-    """gap_contract (on with the impact contract) makes gap_cause and real-gap input_requests mandatory."""
+def validate_stage_scope(checks, expected):
     errors = []
     summary = {'outside_schematic_stage': [], 'not_applicable': [],
                'requirements_pending_downstream': [], 'input_request_count': 0}
@@ -74,7 +73,7 @@ def validate_stage_scope(checks, expected, gap_contract=False):
                 errors.append(cid + ': input_requests only belongs to INSUFFICIENT')
             continue
         cause = row.get('gap_cause')
-        if not gap_contract or expected.get(cid, {}).get('rule') == 'REQ-H02':
+        if expected.get(cid, {}).get('rule') == 'REQ-H02':
             continue  # history dispositions are counted apart
         if cause not in GAP_CAUSES:
             errors.append(cid + ': INSUFFICIENT requires gap_cause ' + '/'.join(GAP_CAUSES))
