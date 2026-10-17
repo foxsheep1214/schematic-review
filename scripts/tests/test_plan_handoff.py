@@ -157,6 +157,7 @@ class PlanHandoffTests(unittest.TestCase):
         manual = deepcopy(self.cold['checks'][0])
         manual.update(id='PWR-T01.MANUAL-RETURN-PATH', rule='PWR-T01', method='T', domain='PWR',
                       criterion='Review return path', review_result='PASS', evidence_confidence='A')
+        manual['check_explanation'] = catalog.explanation('PWR-T01')
         previous = deepcopy(self.cold)
         previous['checks'].append(manual)
         snapshot = deepcopy(previous)

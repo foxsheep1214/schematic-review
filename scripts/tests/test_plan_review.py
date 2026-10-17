@@ -55,6 +55,34 @@ def sample_db():
     }
 
 
+def threshold_db():
+    """辅助绕组齐纳经电阻到 FAULT、NTC 接控制器 RT 脚、浪涌 NTC 只在功率路径、普通二极管。"""
+    pins = {
+        'D1': [('1', 'K', 'AUX_DC'), ('2', 'A', 'D1_A')],
+        'R1': [('1', '1', 'D1_A'), ('2', '2', 'FAULT')],
+        'U1': [('1', 'FAULT', 'FAULT'), ('2', 'GND', 'PGND'), ('3', 'VCC', 'AUX_DC')],
+        'TH1': [('1', '1', 'TEMP'), ('2', '2', 'SGND')],
+        'U2': [('1', 'RT', 'TEMP'), ('2', 'GND', 'SGND')],
+        'TH2': [('1', '1', 'AC_L'), ('2', '2', 'AC_L_F')],
+        'D2': [('1', 'A', 'AC_L_F'), ('2', 'K', 'AUX_DC')],
+    }
+    parts = {'D1': ('BZT52H-B68', 'Device:D_Zener'), 'R1': ('1k', 'Device:R'),
+             'U1': ('NCP1343', 'PD:NCP1343'), 'U2': ('RT7209', 'PD:RT7209'),
+             'TH1': ('100k/B4250', 'Device:Thermistor_NTC'), 'TH2': ('5R/3A', 'Device:Thermistor_NTC'),
+             'D2': ('US1M', 'Device:D')}
+    db = {'nets': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {}, 'pseudo_nets': [],
+          'parts': {ref: {'part': v, 'value': v, 'prim': prim, 'jedec': '', 'nc': False}
+                    for ref, (v, prim) in parts.items()}}
+    for ref, rows in pins.items():
+        for pin, name, net in rows:
+            node = ref + '.' + pin
+            db['nets'].setdefault(net, []).append(node)
+            db['pin2net'][node] = net
+            db['pinname'][node] = name
+    db['ref2page'] = {ref: 1 for ref in parts}
+    return db
+
+
 def get_feature(plan, name):
     return next(item for item in plan['checks']
                 if item['rule'] == 'REQ-Q07' and item['object'].get('package') == name)
@@ -337,6 +365,24 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(refs['PRO-D03'], ['J1'])
         conditions = next(x for x in plan['checks'] if x['id'] == 'DEV-C05.U1')
         self.assertEqual(conditions['required_inputs'], ['datasheets', 'requirements'])
+
+    def test_threshold_protection_expands_both_window_sides(self):
+        checks = {x['id']: x for x in build_review_plan(threshold_db())['checks'] if x['rule'] == 'PRO-C02'}
+        self.assertEqual(sorted(checks), ['PRO-C02.NOTRIP.D1', 'PRO-C02.NOTRIP.U1-1',
+                                          'PRO-C02.TRIP.D1', 'PRO-C02.TRIP.U1-1'])
+        self.assertIn('不误动作侧', checks['PRO-C02.NOTRIP.D1']['criterion'])
+        self.assertIn('峰值整流', checks['PRO-C02.NOTRIP.D1']['criterion'])
+        self.assertIn('动作有效侧', checks['PRO-C02.TRIP.U1-1']['criterion'])
+        self.assertEqual(checks['PRO-C02.TRIP.D1']['method'], 'C')
+        self.assertIn('requirements', checks['PRO-C02.TRIP.D1']['required_inputs'])
+
+    def test_sensor_discrimination_is_planned_per_controller_pin(self):
+        checks = [x for x in build_review_plan(threshold_db())['checks'] if x['rule'] == 'ANA-C04']
+        # 浪涌 NTC 不接 IC 脚，地侧的 U2.GND 也不成项。
+        self.assertEqual([x['id'] for x in checks], ['ANA-C04.TH1.U2-1'])
+        self.assertEqual(checks[0]['object'], {'ref': 'TH1', 'node': 'U2.1', 'net': 'TEMP'})
+        self.assertIn('偏置电流档', checks[0]['criterion'])
+        self.assertEqual(checks[0]['readiness'], 'WAITING_EVIDENCE')
 
     def test_package_members_expand_per_circuit_or_once_per_package(self):
         plan = build_review_plan(sample_db(), {'features': {

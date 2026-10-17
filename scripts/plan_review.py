@@ -25,7 +25,7 @@ import re
 import sys
 from collections import Counter
 from checkers import REGISTRY, passive_stress, registry_cold_rules, registry_hot_rules
-from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, NetGraph, normalize
+from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, IC, TVS, ZENER, NetGraph, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
@@ -53,6 +53,17 @@ I2C_RE = re.compile(r'(^|_)(I2C\w*|SCL\d*|SDA\d*)(_|$)', re.I)
 FB_NAMES = {'FB', 'ADJ', 'VFB', 'FBX', 'VSENSE', 'VOSNS', 'VOUT_SENSE'}
 DEVICE_RE = re.compile(r'^[UM]\d', re.I)
 CONNECTOR_RE = re.compile(r'^(J|P|CN)\d', re.I)
+# 保护门限脚与传感器只作发现线索：命中即生成计算项，不据名称判定门限或传感器类型。
+PROTECT_PIN_RE = re.compile(
+    r'^(FAULT\w*|FLT\w*|OVP\w*|UVP\w*|OV|UV|OVLO|UVLO|OCP\w*|OTP\w*|ILIM\w*|PROT\w*|TRIP\w*)$', re.I)
+SENSOR_RE = re.compile(r'THERMISTOR|NTC|PTC|\bRTD\b|PT100|THERMOCOUPLE|热敏', re.I)
+GROUND_RE = re.compile(r'^([A-Z]{0,2}GND[A-Z0-9]{0,3}|[AD]?VSS[A-Z0-9]{0,3}|EP|PAD)$', re.I)
+# 阈值型保护两侧分别成项，避免只核一侧即通过。
+WINDOW_SIDES = (
+    ('NOTRIP', '不误动作侧：正常工况被测量最大值（全部输出档位、瞬态与上电/掉电、公差、温度、漏电，'
+               '含峰值整流或滤波捕获的尖峰）低于门限最小值并留裕量；也可用有据的滤波/消隐及波形证明不形成有效触发'),
+    ('TRIP', '动作有效侧：按受控故障及可接受终态核检测、执行、剩余能量和适用的保持/复位；正常及要求无损恢复的工况满足额定，允许破坏性安全失效的工况按其安全判据关闭'),
+)
 # 全板规则执行前需要的资料；未列出的规则只需网表。
 BOARD_MATERIALS = {
     'DOC-D02': ('requirements',), 'DOC-V02': ('schematic_pdf',),
@@ -336,6 +347,7 @@ class ReviewPlanner:
             'domain': catalog.domain_of(rule),
             'object': obj,
             'criterion': entry.criterion if criterion is None else criterion,
+            'check_explanation': catalog.explanation(rule),
             'applicability': applicability,
             'readiness': readiness,
             'required_inputs': sorted(set(required_inputs or [])),
@@ -666,6 +678,56 @@ class ReviewPlanner:
             self._disposition_check(ref, gaps, trigger)
             self._ready_check('DEV-C05', {'ref': ref}, gaps + self._materials_gap(['requirements']), trigger)
 
+        self.plan_threshold_checks(connector_graph)
+
+    def plan_threshold_checks(self, graph):
+        """阈值型保护器件/门限脚两侧窗口（PRO-C02）与传感器开短路判别（ANA-C04），逐对象一项。"""
+        db = self.db
+        nets, pin2net = db.get('nets', {}), db.get('pin2net', {})
+        names = dict(db.get('declared_pinname') or {}, **(db.get('pinname') or {}))
+        parts = db.get('parts', {})
+        requirements = self._materials_gap(['requirements'])
+
+        def grounded(net):
+            return net in GNDS or bool(GROUND_RE.match(str(net).rsplit('/', 1)[-1]))
+
+        def window(obj, gaps, trigger):
+            for side, criterion in WINDOW_SIDES:
+                self._ready_check('PRO-C02', obj, gaps + requirements, trigger, key=side, criterion=criterion)
+
+        for ref, part in sorted(parts.items()):
+            if part.get('nc'):
+                continue
+            kind = graph.kind(ref)
+            if kind in (ZENER, TVS):
+                gaps, audit = self._datasheet_readiness(ref, part)
+                window({'ref': ref}, gaps, [f'refdes:{ref}', f'device-kind:{kind}:{graph.basis(ref)}'] + audit)
+                continue
+            if not SENSOR_RE.search(' '.join(str(part.get(k, '')) for k in ('part', 'value', 'prim'))):
+                continue
+            for net in sorted(set(graph.pins_of(ref).values())):
+                if not net or grounded(net) or net in db.get('pseudo_nets', []):
+                    continue
+                for node in sorted(nets.get(net, [])):
+                    owner = node.split('.')[0]
+                    if owner == ref or graph.kind(owner) != IC or GROUND_RE.match(normalize(names.get(node))):
+                        continue
+                    sensor_gaps, audit = self._datasheet_readiness(ref, part)
+                    ic_gaps, ic_audit = self._datasheet_readiness(owner, parts.get(owner, {}))
+                    self._ready_check(
+                        'ANA-C04', {'ref': ref, 'node': node, 'net': net}, sensor_gaps + ic_gaps + requirements,
+                        [f'sensor:{ref}', f'pinname:{names.get(node, "")}', f'net:{net}'] + audit + ic_audit,
+                        key=ref)
+
+        for node, pin in sorted(names.items()):
+            ref, net = node.split('.')[0], pin2net.get(node)
+            part = parts.get(ref) or {}
+            if (not net or part.get('nc') or grounded(net) or graph.kind(ref) != IC
+                    or not PROTECT_PIN_RE.match(normalize(pin))):
+                continue
+            gaps, audit = self._datasheet_readiness(ref, part)
+            window({'node': node, 'net': net, 'ref': ref}, gaps, [f'pinname:{pin}', f'net:{net}'] + audit)
+
     def plan_rules(self):
         """规则级台账：自动扫描、证据计算、版本比对及按实例汇总的检测点规则。"""
         for rule, indexes in sorted(COLD_RULE_INDEXES.items()):
@@ -893,6 +955,7 @@ class ReviewPlanner:
                 continue
             # Final results live in review-results.json. Do not turn old plan annotations into verdicts.
             retained = deepcopy(item)
+            retained['check_explanation'] = catalog.explanation(retained['rule'])
             retained['review_result'] = 'NA' if retained.get('applicability') == 'NOT_APPLICABLE' else None
             retained['evidence_confidence'] = None
             self.checks.append(retained)
@@ -995,6 +1058,8 @@ class ReviewPlanner:
                 history['readiness'] = 'WAITING_EVIDENCE'
                 history['required_inputs'] = sorted(set(history['required_inputs']) |
                     set(plan['revision_impact']['blocking_gaps']))
+        for check in plan['checks']:
+            check['check_explanation'] = catalog.explanation(check['rule'])
         return plan
 
 

@@ -449,6 +449,45 @@ HV 启动/检测或端口储能等角色须按实际器件条款确认，不能�
   条件不唯一时不猜，保留 `pin-roles` 缺口。只凭 `K` 位号识别、只有两脚的器件不当继电器（部分库把连接器编为 K）。
 - 斯拉夫语库的脚名（ANODA/KATODA/KOLEKTOR/EMITER/BAZA）与英文脚名等价。
 - 开关节点上出现 `SW/LX/PH/VSW/BOOT/BST` 类引脚名时判为开关电源储能电感，不属于本检查器。
+- 对外置 MOS 的低边升压形状，按实际引脚连接生成 `boost_converter` 候选：电感输入端有输入电容，
+  另一端连接唯一 MOS 漏极和二极管；二极管另一端有输出电容，两侧电容共用返回网，MOS 源极直接
+  或经最多三只已贴电阻/跳线返回该网，栅/漏/源及二极管阳/阴极角色明确。多个二极管输出候选、
+  并联开关、缺脚名或缺贴装路径时保留原待核，不能凭 PFC/BOOST 网名豁免。此识别局限于局部连接，
+  不证明 MOS 沟道极性、稳压功能、工作模式或上下游供电条件。
+  清单保留导通 `输入→电感→MOS→采样电阻→返回` 和关断 `输入→电感→升压二极管→输出` 路径，
+  输出电容分别作为返回支路；关断路径不穿过 MOS 主通道，输入供电回路闭合须另核。
+  保留 DRV-T01/DRV-C01 两项并改用升压用途判据，不再索取线圈电阻，也不删除额定审查：T 核路径、
+  方向、贴装与工作状态；C 独立核二极管反压/重复峰值/平均/RMS/损耗、MOS、电感及母线电容应力。
+  识别出拓扑不自动 PASS；非重复浪涌额定不能替代重复工作保证。反向升压二极管仍报 DRV-A02，
+  二极管不贴或不存在时仍保留缺路径检查；装配缺口仍阻止 PASS。
+- 两绕组共模输入滤波器可在 `loads` 中声明 `kind: common_mode_input_filter`，同时提供有出处的用途及
+  **物理脚配对** `windings`（恰好两对、四个不同引脚，覆盖全部实际引脚）。检查器核对四端为不同的
+  非地、非伪网、非 NC 网络；已有原生脚型必须为 passive。再沿已贴装的二端串联无源路径检查
+  MOSFET/BJT 或 IC 驱动/SW 引脚的矛盾证据。有缺口、重复声明或矛盾时保留待核，不能仅凭名称排除。
+  配对和用途来自引用资料，检查器不会自行从四个引脚猜绕组，也不向共享图添加绕组边或合并 L/N。
+  满足上述条件时，清单保留出处与配对，DRV-T01/DRV-C01 计划为 `NOT_APPLICABLE` / `NA`，
+  不再要求普通被切换线圈的钳位计算；这仅是适用性判断，不证明载流、绝缘、温升或 EMI 合格，
+  也不覆盖未知器件内部的驱动行为。首次遇到此类器件仍需审查员核实用途和配对后再作声明。
+- 多绕组反激可声明 `kind: flyback_transformer`，`windings` 每项为
+  `{"role":"primary", "pins":["1","2"], "dot":"1"}`；其他项的 role 为 secondary/auxiliary。
+  须有当前受控绕组图出处；恰好一个初级、至少一个次级、配对覆盖全部实际物理脚且不重复，
+  每绕组两个不同的非伪网/非NC端点，dot 是其中一个脚；已有原生脚型应为 passive。
+  初次级同网会报输入错误，绕组配对不向共享图添加导电边；这不代替其他路径和制造绝缘审查。
+  当前支持初级同名端接供入、另一端有唯一已识别开关节点的常见低边反激，反向同名端或不明角色保留缺口。
+  RCD 按 `开关节点→二极管→钳位节点`、该节点经已贴电容及并联电阻返回初级供入网识别，
+  支持多只并联阻容并保留实际贴装清单；缺件、未知/反向二极管或多条不明支路不能当作拓扑通过。
+  T 清单区分导通磁化储能、关断向次级/辅助绕组的耦合送能候选和独立的漏感吸收路径；
+  次级整流、同名端及返回仍需审查，不把RCD当作全部磁化能量的去向。
+  C 单独要求漏感/峰流/频率/反射电压与正常/保护状态，算钳位纹波、MOS峰压、阻容和二极管应力。
+  有RCD支路不自动PASS，不用 `0.5*Lm*Ipk^2` 代替漏感能量；
+  `0.5*Llk*Ipk^2*f` 也只是漏感释放功率，实际RCD耗散还受反射电压和钳位区间影响。
+  对返回输入母线的RCD、三角漏感电流及近似恒定钳位电压，先用
+  `K=0.5*Llk*Ipk^2*f`、`Vc=(Vr+sqrt(Vr^2+4*K*Req))/2`、`PR=Vc^2/Req`
+  复算平均值；Vc 是钳位电容相对母线的电压，不是 MOS 漏源绝对峰值。
+  再核 `tclamp≈Llk*Ipk/(Vc−Vr)`、`ΔVc≈Ipk*tclamp/(2*Ceff)` 与阻容公差；
+  MOS 峰压还含母线、钳位峰值、二极管正向和寄生过冲。纹波不可忽略时用有条件的逐周期模型，
+  并说明保护动作期间是否达到周期稳态；不能只算平均值或把任意振铃预算当保证。
+  普通料可导出有效容量、电压、平均/脉冲功率等采购下限，不因缺准确MPN自动判不通过。
 - 网名含 `MOTOR/SOLENOID/VALVE/COIL/RELAY/PUMP/BRAKE/FAN/ACTUATOR` 且经连接器外接的负载只作
   `name-hint` 候选，计划项为 `UNDETERMINED`，不产生自动扫描发现。
 - 钳位识别：负载两端的续流二极管（按阳极/阴极角色判方向）、开关两端的 TVS/齐纳、跨负载或跨开关
@@ -457,14 +496,17 @@ HV 启动/检测或端口储能等角色须按实际器件条款确认，不能�
 
 ```json
 {
+  "input_sha256": "填写当前 db_fingerprint(db) 的 64 位哈希",
+  "assemblies": [{"id": "run", "citation": "装配 BOM Rev.B 选项 A",
+                  "population": {"K1": true, "D1": true, "Q1": true, "L1": true}}],
   "inductive_loads": {
-    "schema_version": 1,
-    "db_sha256": "填写当前 db_fingerprint(db) 的 64 位哈希",
-    "states": [{"id": "run", "citation": "装配 BOM Rev.B 选项 A",
-                "population": {"K1": true, "D1": true, "Q1": true}}],
+    "schema_version": 2,
     "loads": [{"id": "K1-COIL", "ref": "K1", "kind": "relay",
                "switch_net": "RELAY_DRV", "rail_net": "V24",
-               "citation": "继电器线圈参数与驱动方式核对记录"}],
+               "citation": "继电器线圈参数与驱动方式核对记录"},
+              {"id": "AC-CMC", "ref": "L1", "kind": "common_mode_input_filter",
+               "windings": [["1", "2"], ["3", "4"]],
+               "citation": "当前输入滤波设计记录及对应器件官方绕组脚表，注明版本/页码"}],
     "exclusions": [{"ref": "L7", "citation": "已另行按变压器条款审查"}]
   }
 }
@@ -493,7 +535,7 @@ HV 启动/检测或端口储能等角色须按实际器件条款确认，不能�
   电容→目标网）。跨负载接到电源轨的续流二极管同样计入，不只看漏源之间。
 - 开关节点证据：节点上的电感/变压器/继电器、对管源极、`SW/LX/PH/HS/LS` 类引脚。
 
-intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）声明实际角色及出处；
+intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation/source_return`）声明实际角色及出处；
 装配共用顶层 assemblies；未声明时按图扫描并保留 `assembly state unverified` 缺口。
 带出处的 role 可用 `linear/source_follower/emitter_follower` 明确线性用途：不生成 RDS(on)
 开关驱动窗口，改查实际工作点/驱动/额定；感性节点的钳位候选仍保留，按实际拓扑确认。BJT 不生成 MOS 的 DRV-E01；
@@ -501,6 +543,28 @@ intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation`）�
 `role: "level_shifter"` 用于栅极接低侧轨的双向开漏电平转换管：它不是功率开关，不生成 DRV-E01、DRV-C02、DRV-D01
 及 DRV-A03/A04，改按电平转换电路审查，见 [计划与结果台账](plan-and-results.md) 的“电平转换（LEVEL_SHIFT）”与
 [WCA 公式](wca-formulas.md#mosfet-双向开漏电平转换)。
+
+源极经单只采样电阻回地时，可声明 `source_return: {"ref":"R201","ground_net":"PGND","citation":"图纸/采样用途出处"}`。
+只在该电阻实际贴装、二端确实连接源网与地、阻值可解析且源网不是电源轨时登记低边；DNP、开路跳线或错误返回保留缺口。
+不从任意接地电阻自动猜用途，不把高边负载电阻当源极参考。当前有意只支持单电阻路径；复杂返回保留待核。
+清单保留原源网、阻值和 `Vs=Is*R`，不会合并地网或据此放行VGS/SOA。
+器件类型沿用前述 `device_kinds` 的准确PDF/页码/原文审计；仅经核验的声明才清除 `datasheet-kind`，不按料号白名单补齐。
+
+DRV-C02 的MOS开关计划分别要求关断峰压、导通损耗、转换期间VDS(t)-ID(t)轨迹以及正常/启动/故障的重复率。
+SOA须对照壳温、脉宽和单次/重复条件，不能用单脉冲曲线放行重复工作，也不能把整段低VDS导通时间当作高压线性脉冲。
+典型Qg、tr/tf只可作估算；实际驱动/栅阻不同须给适用模型、容差或可验证的设计约束。重复损耗按Zth/温度边界推导允许散热条件，
+原理图阶段可给明确下游约束；不把无PCB/无实测本身变成FAIL，也不自动产生PASS。
+
+低侧N沟道反激同步整流可声明 `role: "synchronous_rectifier"`，并附同名字段：
+`controller_ref/sense_node/return_node/winding_nodes(两个物理节点)/output_net/channel:"n"/citation`。
+其中绕组必须匹配 `inductive_loads` 已校验的有出处反激次级/同名端；控制器的驱动须实际到达栅极，
+CS接漏极、返回脚接源极，次级同名端接漏极、另一端接输出，输出电容返回源网；所有并联S/D/G脚也须一致。
+不贴、NC、反接、错误检测/返回、缺绕组或输出电容都保留缺口，角色声明不能代替真实连接。
+清单绑定用于复现的绕组声明上下文，绕组/装配改变使旧绑定失效。清单记 `low-side-local-return` 和实际参考网，不把SEC_RTN等名称全局视为地，不跨隔离添加导电边。
+当前只支持上述有出处的低侧N沟道反激结构；其他SR结构保留待核，不按位号猜拓扑。
+DRV-C02据此追加次级峰值/RMS与S到D导通、体二极管区间、初级导通反向阻断、控制器准确后缀的
+CS/触发/消隐/最小导通及关断关联条件。核CrM/DCM/CCM和故障的可达I-V-t-f组合，输出平均电流不是MOS峰流；
+按电流/电压象限选择适用SOA，不把正向偏置曲线直接套到整个S到D整流周期；门极电荷或驱动连接正确不等于重复损耗通过。TRIG接低不自行判错，应按该后缀允许模式与CS换流核对。
 
 自动扫描：`DRV-A03` 栅极既无驱动源也无下拉/上拉（上电与驱动高阻时状态不确定）；
 `DRV-A04` 开关节点接感性元件或半桥中点但无吸收/钳位（CANDIDATE）。
@@ -713,3 +777,22 @@ I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>·寿命衰减系数�
 PASS 不覆盖开关速度、温度角与隔离耐压。
 
 计划项：传输能力（PRO-E01）、隔离归属与耐压（PRO-D01）。
+
+## 条件性故障能量工具
+
+`fault_energy.packet_bound()` 与 `capacitor_energy_window()` 用于已限定起点的反激停能分析，
+输出能量、电压和允许事件数；所有输出标记为 `CONDITIONAL_ON_CALLER_BOUNDS`，不生成电气结论。
+输入的储能单列，时间为零也不自动抹掉已有磁能。使用范围与证据责任见
+[故障停能与器件耐受的同一时间轴](evidence-proportionality.md#故障停能与器件耐受的同一时间轴)。
+
+### 条件 boost 开关损耗
+
+`scripts/boost_switch_loss.py` 提供 `boost_cycle` 与 `conditional_losses`：按输入平均电流、母线、L 和死区联解三角周期的峰流/频率/RMS，再分列导通、线性重叠和残余 Coss 能量。调用者须核实际控制模式、脉宽、限流和输入适用性；工具不生成 SOA、严重度或通过结论。见[实际栅压与关联损耗](evidence-proportionality.md#功率开关实际栅压关联损耗和-soa)。
+
+### 反激停能后的电容电压与整流管阶段
+
+`scripts/flyback_stop.py` 的 `post_stop_capacitor_bound` 按已停能时的电容电压、有效容量和可达输出的全部剩余能量求条件边界；`primary_on_sr_platform` 只接受同一初级导通事件的输入，拒绝用于停能后的状态。未知值不按0处理，两者都不自动生成实际尖峰或审查结论。见[假设与故障证据门槛](evidence-proportionality.md#假设上界与实际故障的证据门槛)。
+
+### 齐纳门限与锁定保持计算
+
+`scripts/zener_fault.py`只接受调用者已建立适用性的数值界限：`trip_drive`联解内部吸流及充电余量，`no_trip_budget`求正常时可容许的外部注入，`hold_charge`核供电缺口期间的电荷余量。无默认尖峰、温度、延迟或电容公差；负余量不等于实际故障已经发生，须复核输入是否是可达轨迹或仅充分条件。

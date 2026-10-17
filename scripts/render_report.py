@@ -184,6 +184,33 @@ def failed_checks(rows, findings):
                     for fid, ids in groups.items())
 
 
+def render_check_explanations(plan, results):
+    planned = {c['id']: c for c in plan.get('checks') or [] if isinstance(c, dict) and 'id' in c}
+    reviewed = {c['id']: c for c in results.get('checks') or [] if isinstance(c, dict) and 'id' in c}
+    keys = sorted(set(planned) | set(reviewed))
+    if not any('check_explanation' in c for c in list(planned.values()) + list(reviewed.values())):
+        return []  # Historical records stay historical; no live-catalog substitution.
+    out = ['## 逐项检查说明', '',
+           '“漏查风险”解释为什么要检查，不代表已经发现该问题，也不决定风险等级。'
+           '规则通用衔接仅提示可复用的证据；本次实际依赖见逐项理由和证据。', '',
+           '<details>', '<summary>展开全部 %d 条检查的目的、风险和衔接</summary>' % len(keys), '']
+    for key in keys:
+        p, r = planned.get(key, {}), reviewed.get(key, {})
+        specific = 'check_explanation' in r
+        exp = r.get('check_explanation') if specific else p.get('check_explanation')
+        exp = exp if isinstance(exp, dict) else {}
+        result = RESULT_SHORT.get(r.get('review_result'), '未审结')
+        where = '、'.join(anchors(p.get('object'))) or '见检查对象'
+        out += ['### %s（%s）' % (key, result), '', '- **对象**：' + cell(where),
+                '- **说明来源**：' + ('本次对象说明' if specific else '计划中的规则通用说明，适用范围见本次理由')]
+        for field, label in (('purpose', '在检查什么'), ('risk_if_omitted', '不查可能漏掉什么'),
+                             ('connections', '与其他检查怎样衔接')):
+            out.append('- **%s**：%s' % (label, cell(exp.get(field) or '记录未提供，不能据此推断本次风险')))
+        out.append('- **本次结论依据**：' + cell(r.get('rationale') or '尚未形成结论'))
+        out.append('')
+    return out + ['</details>', '']
+
+
 def render(plan, results, gate, notes=None, title=None):
     notes = notes or {}
     item_notes = notes.get('items') or {}
@@ -327,6 +354,7 @@ def render(plan, results, gate, notes=None, title=None):
             '| 交给后续环节的要求 | %d |' % len(handoffs),
             '| 上一版问题的处理记录（不计入上面各行） | %d |' % history, '',
             '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']
+    out += render_check_explanations(plan, results)
     out += ['## 详细记录', '',
             '每条检查的结论、依据和计算都在 `record/` 里：`review-results.json` 是逐条结论，`review-gate.json` 是校验结果和计数，'
             '`review-plan.json` 是检查清单，`manifest.json` 记录用到的原理图、手册、需求的位置和校验码，'

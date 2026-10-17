@@ -299,3 +299,207 @@ class HotRuleTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class SourceReturnTest(unittest.TestCase):
+    def fixture(self, value='0.11/1%/1W'):
+        db = switch_board()
+        db['parts']['Q1'].update(part='HVFET', value='HVFET', prim='Custom:HVFET')
+        db['nets']['GND'].remove('Q1.3')
+        db['nets']['SENSE'] = ['Q1.3']
+        db['pin2net']['Q1.3'] = 'SENSE'
+        add(db, 'R9', value, [('1', '1', 'SENSE'), ('2', '2', 'GND')])
+        intent = bound_intent(db, {'power_switches': {'schema_version': 2, 'switches': [
+            {'id': 'Q1-SW', 'ref': 'Q1', 'role': 'switching', 'citation': 'fixture switching map',
+             'source_return': {'ref': 'R9', 'ground_net': 'GND', 'citation': 'fixture current sense'}}]}})
+        return db, intent
+
+    def test_cited_fitted_return_retains_resistance_and_source_offset(self):
+        db, intent = self.fixture()
+        self.assertEqual(validate_power_switch_intent(intent, db), [])
+        q = switches_of(build_inventory(db, intent), 'run')['Q1']
+        self.assertEqual(q['topology'], 'low-side')
+        self.assertEqual(q['source_net'], 'SENSE')
+        self.assertAlmostEqual(q['source_return']['resistance_ohm'], .11)
+        self.assertIn('Isource', q['source_return']['source_offset_model'])
+        self.assertEqual(db['pin2net']['Q1.3'], 'SENSE')
+
+    def test_no_declaration_does_not_infer_from_any_ground_resistor(self):
+        db, intent = self.fixture('100K')
+        intent['power_switches']['switches'][0].pop('source_return')
+        self.assertEqual(switches_of(build_inventory(db, intent), 'run')['Q1']['topology'], 'floating')
+
+    def test_unfitted_or_open_return_keeps_gap(self):
+        for mode in ('dnp', 'open'):
+            db, intent = self.fixture()
+            if mode == 'dnp':
+                intent['assemblies'][0]['population']['R9'] = False
+            else:
+                intent['assemblies'][0].setdefault('jumpers', {})['R9'] = 'open'
+            q = switches_of(build_inventory(db, intent), 'run')['Q1']
+            self.assertEqual(q['topology'], 'floating')
+            self.assertIn('source-return:Q1', q['gaps'])
+
+    def test_wrong_resistor_or_return_is_not_accepted(self):
+        db, intent = self.fixture()
+        intent['power_switches']['switches'][0]['source_return']['ref'] = 'R1'
+        q = switches_of(build_inventory(db, intent), 'run')['Q1']
+        self.assertIsNone(q['source_return'])
+        self.assertIn('source-return:Q1', q['gaps'])
+        intent['power_switches']['switches'][0]['source_return']['ground_net'] = 'V12'
+        self.assertTrue(validate_power_switch_intent(intent, db))
+
+    def test_missing_citation_and_unsupported_shape_rejected(self):
+        db, intent = self.fixture()
+        ret = intent['power_switches']['switches'][0]['source_return']
+        ret['citation'] = ''
+        self.assertTrue(validate_power_switch_intent(intent, db))
+        ret['citation'] = 'fixture'; ret['via'] = ['R9']
+        self.assertTrue(validate_power_switch_intent(intent, db))
+
+    def test_unparseable_resistance_keeps_gap(self):
+        db, intent = self.fixture('unknown')
+        q = switches_of(build_inventory(db, intent), 'run')['Q1']
+        self.assertIn('source-return-resistance:Q1', q['gaps'])
+
+    def test_high_side_rail_with_load_resistor_is_not_low_side(self):
+        db, intent = self.fixture()
+        add(db, 'U9', 'REGULATOR', [('1', 'VOUT', 'SENSE'), ('2', 'VIN', 'V12'), ('3', 'GND', 'GND')])
+        intent['assemblies'][0]['population']['U9'] = True
+        q = switches_of(build_inventory(db, intent), 'run')['Q1']
+        self.assertEqual(q['topology'], 'high-side')
+        self.assertIsNone(q['source_return'])
+
+    def test_switching_soa_requires_trajectory_and_repetition_not_auto_pass(self):
+        db, intent = self.fixture()
+        plan = build_review_plan(db, intent)
+        row = next(x for x in plan['checks'] if x['rule'] == 'DRV-C02')
+        self.assertEqual(row['readiness'], 'WAITING_EVIDENCE')
+        self.assertTrue(row['analysis_required'])
+        self.assertIn('单脉冲SOA', row['criterion'])
+        self.assertTrue(any('VDS(t)-ID(t)' in x for x in row['required_inputs']))
+        self.assertIsNone(row['review_result'])
+
+    def test_raw_kind_declaration_cannot_remove_datasheet_gap(self):
+        db, intent = self.fixture()
+        intent['device_kinds'] = {'Q1': {'kind': 'mosfet', 'page': 1, 'quote': 'MOSFET'}}
+        plan = build_review_plan(db, intent)
+        q = switches_of(plan['power_switch'], 'run')['Q1']
+        self.assertIn('datasheet-kind:Q1', q['gaps'])
+        self.assertNotEqual(q['kind_basis'], 'datasheet')
+        self.assertIsNone(q['kind_citation'])
+
+
+class SynchronousRectifierTest(unittest.TestCase):
+    def fixture(self):
+        from test_inductive_load import flyback_board, flyback_intent
+        db = flyback_board()
+        add(db, 'Q8', 'NMOS', [('1','S','SEC_RTN'),('2','S','SEC_RTN'),('3','S','SEC_RTN'),
+            ('4','G','SR_G'),('5','D','SR_D'),('6','D','SR_D'),('7','D','SR_D'),('8','D','SR_D')])
+        add(db, 'U8', 'SR-CONTROLLER', [('1','DRV','SR_DRV'),('2','GND','SEC_RTN'),
+             ('3','CS','SR_D'),('4','VCC','SR_VCC')])
+        add(db, 'R8', '2R2', [('1','1','SR_DRV'),('2','2','SR_G')])
+        add(db, 'R9', '100K', [('1','1','SR_G'),('2','2','SEC_RTN')])
+        add(db, 'C8', '330uF', [('1','1','OUT'),('2','2','SEC_RTN')])
+        intent = flyback_intent(db)
+        intent['power_switches'] = {'schema_version':2,'switches':[
+            {'id':'SR8','ref':'Q8','role':'synchronous_rectifier','citation':'fixture SR usage',
+             'synchronous_rectifier': {'controller_ref':'U8','sense_node':'U8.3','return_node':'U8.2',
+                'winding_nodes':['T1.3','T1.4'],'output_net':'OUT','channel':'n','citation':'fixture physical map'}}]}
+        return db, intent
+
+    def item(self, db, intent):
+        return switches_of(build_inventory(db, intent), 'run')['Q8']
+
+    def move(self, db, node, net):
+        db['nets'][db['pin2net'][node]].remove(node)
+        db['nets'].setdefault(net, []).append(node)
+        db['pin2net'][node] = net
+
+    def test_physical_sr_map_preserves_local_return_and_intervals(self):
+        db, intent = self.fixture()
+        self.assertEqual(validate_power_switch_intent(intent, db), [])
+        q = self.item(db, intent)
+        self.assertEqual(q['topology'], 'low-side-local-return')
+        sr = q['synchronous_rectifier']
+        self.assertEqual(sr['return_net'], 'SEC_RTN')
+        self.assertEqual(sr['secondary_dot_node'], 'T1.4')
+        self.assertEqual(sr['output_capacitors'], ['C8'])
+        self.assertIn('not verified', sr['dynamic_status'])
+        self.assertEqual(db['pin2net']['Q8.1'], 'SEC_RTN')
+
+    def test_name_alone_does_not_classify_secondary_return(self):
+        db, intent = self.fixture()
+        intent.pop('power_switches')
+        q = self.item(db, intent)
+        self.assertEqual(q['topology'], 'floating')
+        self.assertIsNone(q['synchronous_rectifier'])
+
+    def test_controller_sense_or_reference_wrong_net_is_rejected(self):
+        for node in ('U8.3','U8.2'):
+            db, intent = self.fixture();self.move(db,node,'GND')
+            q = self.item(db, intent)
+            self.assertIsNone(q['synchronous_rectifier'])
+            self.assertIn('synchronous-rectifier-map:Q8',q['gaps'])
+
+    def test_every_parallel_terminal_is_checked(self):
+        for node in ('Q8.2','Q8.8'):
+            db, intent = self.fixture();self.move(db,node,'WRONG')
+            self.assertIsNone(self.item(db,intent)['synchronous_rectifier'])
+
+    def test_unfitted_controller_transformer_or_gate_resistor_breaks_map(self):
+        for ref in ('U8','T1','R8'):
+            db, intent = self.fixture();intent['assemblies'][0]['population'][ref]=False
+            self.assertIsNone(self.item(db,intent)['synchronous_rectifier'])
+
+    def test_missing_or_wrong_winding_mapping_is_not_guessed(self):
+        for mode in ('missing','wrong-dot','primary-pair','duplicate'):
+            db, intent = self.fixture()
+            if mode=='missing':intent.pop('inductive_loads')
+            elif mode=='wrong-dot':intent['inductive_loads']['loads'][0]['windings'][1]['dot']='3'
+            elif mode=='duplicate':
+                import copy
+                intent['inductive_loads']['loads'].append(copy.deepcopy(intent['inductive_loads']['loads'][0]))
+            else:intent['power_switches']['switches'][0]['synchronous_rectifier']['winding_nodes']=['T1.1','T1.2']
+            self.assertIsNone(self.item(db,intent)['synchronous_rectifier'])
+
+    def test_dnp_output_capacitor_does_not_prove_rectification_loop(self):
+        db, intent = self.fixture();intent['assemblies'][0]['population']['C8']=False
+        self.assertIsNone(self.item(db,intent)['synchronous_rectifier'])
+
+    def test_nc_sense_or_power_pin_cannot_be_accepted(self):
+        for node in ('U8.3','Q8.3'):
+            db,intent=self.fixture();db['no_connect_nodes']=[node]
+            self.assertIsNone(self.item(db,intent)['synchronous_rectifier'])
+
+    def test_unsupported_channel_or_incomplete_declaration_is_invalid(self):
+        db,intent=self.fixture();cfg=intent['power_switches']['switches'][0]['synchronous_rectifier']
+        cfg['channel']='p'
+        self.assertTrue(validate_power_switch_intent(intent,db))
+        cfg['channel']='n';cfg.pop('citation')
+        self.assertTrue(validate_power_switch_intent(intent,db))
+
+    def test_local_return_cannot_be_primary_return(self):
+        db,intent=self.fixture()
+        for node in ('Q8.1','Q8.2','Q8.3','U8.2','R9.2','C8.2'):self.move(db,node,'GND')
+        self.assertIsNone(self.item(db,intent)['synchronous_rectifier'])
+
+    def test_plan_keeps_timing_thermal_and_soa_pending(self):
+        db,intent=self.fixture();p=build_review_plan(db,intent)
+        row=next(x for x in p['checks'] if x['rule']=='DRV-C02' and x['object'].get('ref')=='Q8')
+        self.assertIsNone(row['review_result'])
+        self.assertEqual(row['readiness'],'WAITING_EVIDENCE')
+        self.assertTrue(row['analysis_required'])
+        self.assertTrue(any('次级模式' in x for x in row['required_inputs']))
+        self.assertTrue(any('反向电流' in x for x in row['required_inputs']))
+        self.assertIn('体二极管区间',row['criterion'])
+
+
+    def test_winding_dependency_is_bound_and_inventory_reconstructs(self):
+        import copy
+        db,intent=self.fixture();inventory=build_inventory(db,intent)
+        self.assertEqual(build_inventory(db,inventory['context']),inventory)
+        changed=copy.deepcopy(intent)
+        changed['inductive_loads']['loads'][0]['windings'][1]['dot']='3'
+        self.assertNotEqual(build_inventory(db,changed)['digest'],inventory['digest'])
+        self.assertIn('inductive_loads',inventory['context'])

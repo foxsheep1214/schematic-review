@@ -1,0 +1,15 @@
+{
+ "revision": "threshold-window-v1",
+ "parents": {
+  "revisions/passive-stress-v1/expected.json": "d5de2dcb2a60df95427d4664dde8e46410e612fb2387ddc82193c345bc66c2d6",
+  "revisions/passive-stress-v1/cases.json": "13d7161864509484c3b3e7be5dc054a0e1d894d854b236de6376fc709c0b13c5",
+  "revisions/passive-stress-v1/sources.json": "c6b9cfc66ae2605637fcafcad3e6e3817b3c2f25e242f5572c9277d0ac3ef070",
+  "revisions/passive-stress-v1/manifest.json": "803a2d3e6b937f5590810fdcbba60cc4f6125341cdd847b898a243b318ebecea"
+ },
+ "derived_files": {
+  "revisions/threshold-window-v1/expected.json": "fa0282ca77b11aec23cfe13afcc82bc376c5678c694cb26346f9b1cc32484460",
+  "revisions/threshold-window-v1/cases.json": "13d7161864509484c3b3e7be5dc054a0e1d894d854b236de6376fc709c0b13c5",
+  "revisions/threshold-window-v1/sources.json": "c6b9cfc66ae2605637fcafcad3e6e3817b3c2f25e242f5572c9277d0ac3ef070"
+ },
+ "scope": "PRO-C02 two-sided window rows for zener/TVS devices and protection-threshold IC pins; ANA-C04 open/short discrimination per sensor-to-IC pin. Only r03 has such an object (TH1 on U2.18 NTC, counted independently from the raw XML). passive-stress-v1 files remain byte-identical."
+}

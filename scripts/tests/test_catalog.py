@@ -98,6 +98,14 @@ class GeneratedOutputTest(unittest.TestCase):
         db['nets']['EXT_IO'] = ['J9.1', 'U4.9']
         db['pin2net'].update({'J9.1': 'EXT_IO', 'U4.9': 'EXT_IO'})
         db['pinname'].update({'J9.1': '1', 'U4.9': 'GPIO2'})
+        # 阈值型保护与传感器：齐纳经电阻到 FAULT 门限脚，NTC 接控制器测温脚。
+        db['parts'].update({ref: {'value': v, 'part': v, 'nc': False} for ref, v in
+                            (('D9', 'BZT52H-B68'), ('TH9', 'NTC-100K'))})
+        db['nets'].update({'FAULT_IN': ['D9.1', 'U4.10'], 'TEMP_SENSE': ['TH9.1', 'U4.11']})
+        db['nets']['GND'] += ['D9.2', 'TH9.2']
+        db['pin2net'].update({'D9.1': 'FAULT_IN', 'U4.10': 'FAULT_IN', 'TH9.1': 'TEMP_SENSE',
+                              'U4.11': 'TEMP_SENSE', 'D9.2': 'GND', 'TH9.2': 'GND'})
+        db['pinname'].update({'D9.1': 'K', 'D9.2': 'A', 'U4.10': 'FAULT', 'U4.11': 'ADC0'})
         db['ref2page'] = {ref: 1 for ref in db['parts']}
         return db
 

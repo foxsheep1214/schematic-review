@@ -14,6 +14,7 @@ from . import netgraph as ng
 from . import powertree
 from . import states as state_lib
 from . import hotmath
+from solve_dividers import parse_resistor
 from .base import Checker
 from .planutil import slug
 
@@ -27,30 +28,60 @@ MAX_SWITCHES = 256
 LINEAR_ROLES = {'linear', 'source_follower', 'emitter_follower'}
 # 栅极接低侧轨的双向开漏电平转换管：不是功率开关，按所属电平转换电路（SIG-C07/C08/C09/T04）审查。
 LEVEL_SHIFTER_ROLE = 'level_shifter'
+SYNC_RECTIFIER_ROLE = 'synchronous_rectifier'
 
 
 def validate_power_switch_intent(intent, db=None):
     """校验可选的 power_switches 配置段。"""
     errors = state_lib.section_errors(
         intent, db, 'power_switches', item_field='switches', item_key='switch',
-        fields=('id', 'ref', 'role', 'gate_net', 'citation'),
+        fields=('id', 'ref', 'role', 'gate_net', 'citation', 'source_return', 'synchronous_rectifier'),
         net_fields=('gate_net',))
     if errors or not isinstance(intent, dict) or 'power_switches' not in intent:
         return errors
     for item in intent['power_switches'].get('switches', []):
         if 'role' in item and (not isinstance(item['role'], str) or not item['role'].strip()):
             errors.append('power_switches: role must be a non-empty string when supplied')
+        sync = item.get('synchronous_rectifier')
+        if sync is not None or item.get('role') == SYNC_RECTIFIER_ROLE:
+            required = {'controller_ref', 'sense_node', 'return_node', 'winding_nodes',
+                        'output_net', 'channel', 'citation'}
+            valid = (isinstance(sync, dict) and set(sync) == required
+                     and all(isinstance(sync.get(k), str) and sync[k].strip()
+                             for k in required - {'winding_nodes'})
+                     and sync['channel'] == 'n'
+                     and isinstance(sync.get('winding_nodes'), list)
+                     and len(sync['winding_nodes']) == 2
+                     and all(isinstance(n, str) and n.strip() for n in sync['winding_nodes'])
+                     and len(set(sync['winding_nodes'])) == 2)
+            if item.get('role') != SYNC_RECTIFIER_ROLE or not valid:
+                errors.append('power_switches: synchronous_rectifier needs cited N-channel physical map')
+            elif db is not None and (sync['controller_ref'] not in db.get('parts', {})
+                    or any(n not in db.get('pin2net', {}) for n in
+                           [sync['sense_node'], sync['return_node']] + sync['winding_nodes'])
+                    or sync['output_net'] not in db.get('nets', {})):
+                errors.append('power_switches: synchronous_rectifier has unknown ref/node/net')
+        ret = item.get('source_return')
+        if ret is not None:
+            valid = (isinstance(ret, dict) and set(ret) == {'ref', 'ground_net', 'citation'}
+                     and all(isinstance(ret.get(k), str) and ret[k].strip() for k in ret))
+            if not valid:
+                errors.append('power_switches: source_return requires ref/ground_net/citation')
+            elif (not ng.is_ground(ret['ground_net']) or (db is not None and
+                  (ret['ref'] not in db.get('parts', {}) or ret['ground_net'] not in db.get('nets', {})))):
+                errors.append('power_switches: source_return ref/ground_net unknown or not ground')
     return errors
 
 
 class _Scan:
     """单一装配状态下的开关识别。"""
 
-    def __init__(self, db, state, declared, excluded):
+    def __init__(self, db, state, declared, excluded, winding_maps=None):
         self.graph = ng.NetGraph(db, fitted=set(state['fitted']))
         self.state = state
         self.declared = declared if isinstance(declared, dict) else {ref: {} for ref in declared}
         self.excluded = excluded
+        self.winding_maps = winding_maps or []
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
         self.tree = powertree.PowerTree(self.graph)
 
@@ -131,6 +162,94 @@ class _Scan:
                 reasons.append('converter-node:' + node)
         return sorted(set(reasons))
 
+    def source_return(self, ref, source_net):
+        """Cited single fitted sense resistor; never merge the source with ground."""
+        cfg = self.declared.get(ref, {}).get('source_return')
+        if cfg is None:
+            return None, []
+        graph = self.graph
+        if not isinstance(cfg, dict) or not all(isinstance(cfg.get(k), str) and cfg[k].strip()
+                                                for k in ('ref', 'ground_net', 'citation')):
+            return None, ['source-return:' + ref]
+        resistor, ground = cfg['ref'], cfg['ground_net']
+        # A resistor hanging off a rail/high-side output is not a source reference.
+        if (source_net in self.grounds or not ng.is_ground(ground) or
+                self.tree.is_rail(source_net) or
+                resistor not in graph.between(source_net, ground, {ng.RESISTOR})):
+            return None, ['source-return:' + ref]
+        value = str(graph.parts.get(resistor, {}).get('value', '')).split('/')[0]
+        parsed = parse_resistor(value)
+        if parsed is None or parsed['kohm'] < 0:
+            return None, ['source-return-resistance:' + ref]
+        return {'ref': resistor, 'ground_net': ground, 'source_net': source_net,
+                'resistance_ohm': parsed['kohm'] * 1000,
+                'citation': cfg['citation'], 'basis': 'cited-fitted-resistor-path',
+                'source_offset_model': 'Vsource - Vground = Isource * Rreturn'}, []
+
+    def synchronous_rectifier(self, ref, nets, drivers):
+        """Cited low-side N-MOS flyback SR map; electrical timing remains unproved."""
+        declared = self.declared.get(ref, {})
+        if declared.get('role') != SYNC_RECTIFIER_ROLE:
+            return None, []
+        cfg, graph = declared.get('synchronous_rectifier'), self.graph
+        gap = ['synchronous-rectifier-map:' + ref]
+        if not isinstance(cfg, dict) or cfg.get('channel') != 'n' or not cfg.get('citation'):
+            return None, gap
+        wn = cfg.get('winding_nodes', [])
+        nodes = [cfg.get('sense_node'), cfg.get('return_node')] + (wn if isinstance(wn, list) else [])
+        if (len(nodes) != 4 or any(n not in graph.pin2net or n in
+                graph.db.get('no_connect_nodes', []) or graph.pin2net.get(n) in graph.pseudo
+                for n in nodes)):
+            return None, gap
+        controller = cfg.get('controller_ref')
+        if (not graph.is_fitted(controller) or graph.kind(controller) != ng.IC
+                or any(n.partition('.')[0] != controller for n in nodes[:2])
+                or graph.pin2net[nodes[0]] != nets['drain']
+                or graph.pin2net[nodes[1]] != nets['source']
+                or not any(d['node'].partition('.')[0] == controller for d in drivers)):
+            return None, gap
+        if (graph.kind(ref) != ng.MOSFET or not all(nets.values())
+                or len(set(nets.values())) != 3):
+            return None, gap
+        # Every parallel physical S/D/G pin must agree, not just the first pin.
+        for pin in graph.pins_of(ref):
+            node = ref + '.' + pin
+            role = graph.role(node)
+            if (role not in nets or graph.pin2net.get(node) != nets[role]
+                    or node in graph.db.get('no_connect_nodes', [])):
+                return None, gap
+        from .inductive_load import _flyback_winding_errors, FLYBACK_TRANSFORMER
+        matches = []
+        for declaration in self.winding_maps:
+            tr = declaration.get('ref')
+            if (declaration.get('kind') != FLYBACK_TRANSFORMER or not graph.is_fitted(tr)
+                    or _flyback_winding_errors(declaration, graph.db)):
+                continue
+            for w in declaration['windings']:
+                if w['role'] == 'secondary' and {tr + '.' + pin for pin in w['pins']} == set(wn):
+                    matches.append((declaration, w))
+        if len(matches) != 1:
+            return None, gap
+        declaration, winding = matches[0]
+        tr = declaration['ref']; dot = tr + '.' + winding['dot']
+        other = next(n for n in wn if n != dot)
+        output = cfg.get('output_net')
+        nonsecondary = {graph.pin2net[tr + '.' + pin] for w in declaration['windings']
+                        if w['role'] != 'secondary' for pin in w['pins']}
+        if (graph.pin2net[dot] != nets['drain'] or graph.pin2net[other] != output
+                or nets['source'] in nonsecondary or nets['source'] == output
+                or not graph.between(output, nets['source'], {ng.CAPACITOR})):
+            return None, gap
+        return {'controller_ref': controller, 'sense_node': nodes[0], 'return_node': nodes[1],
+                'return_net': nets['source'], 'output_net': output, 'winding_nodes': wn,
+                'secondary_dot_node': dot, 'winding_citation': declaration['citation'],
+                'citation': cfg['citation'], 'basis': 'cited-fitted-secondary-controller-map',
+                'output_capacitors': graph.between(output, nets['source'], {ng.CAPACITOR}),
+                'rectifying_path': [nets['source'], ref + ':body-diode/S-to-D-channel',
+                                    nets['drain'], wn, output, 'load/capacitor', nets['source']],
+                'primary_on_duty': 'reverse blocking; channel must be off',
+                'dynamic_status': 'not verified: diode intervals, turn-off overlap/reverse current, repetition and thermal duty'}, []
+
     def switches(self):
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
@@ -147,8 +266,12 @@ class _Scan:
                 gaps.append(ng.kind_gap(graph, ref))
             nets = {role: graph.pin2net.get(node) if node else None
                     for role, node in nodes.items()}
+            source_return, return_gaps = self.source_return(ref, nets['source'])
+            gaps.extend(return_gaps)
             topology, source_basis = 'unknown', None
             if nets['source'] in self.grounds:
+                topology = 'low-side'
+            elif source_return:
                 topology = 'low-side'
             elif nets['source'] and self.tree.is_rail(nets['source']):
                 topology = 'high-side'
@@ -156,6 +279,10 @@ class _Scan:
             elif nets['source']:
                 topology = 'floating'
             drivers = self.drivers(nets['gate']) if nets['gate'] else []
+            sync, sync_gaps = self.synchronous_rectifier(ref, nets, drivers)
+            gaps.extend(sync_gaps)
+            if sync:
+                topology = 'low-side-local-return'
             pulls = self.pulls(nets['gate'], nets['source']) if nets['gate'] else []
             snubbers = self.snubbers(nets['drain'], nets['source']) if nets['drain'] else []
             switch_node = self._switch_node_evidence(nets['drain'], ref) if nets['drain'] else []
@@ -163,11 +290,16 @@ class _Scan:
                 'id': slug(ref + '-' + (nets['gate'] or 'unresolved')),
                 'ref': ref,
                 'kind': graph.kind(ref),
+                'kind_basis': graph.basis(ref),
+                'kind_citation': (graph.db.get('device_kinds') or {}).get(ref, {}).get('citation')
+                                 if graph.basis(ref) == 'datasheet' else None,
                 'basis': 'declared' if ref in self.declared else 'topology',
                 'role': self.declared.get(ref, {}).get('role'),
                 'role_citation': self.declared.get(ref, {}).get('citation'),
                 'topology': topology,
                 'source_rail_basis': source_basis,
+                'source_return': source_return,
+                'synchronous_rectifier': sync,
                 'gate_node': nodes['gate'],
                 'gate_net': nets['gate'],
                 'drain_net': nets['drain'],
@@ -188,8 +320,13 @@ def build_inventory(db, intent=None):
                 if isinstance(item, dict) and isinstance(item.get('ref'), str)}
     excluded = state_lib.excluded_refs(cfg)
     gaps = [] if cfg else ['intent.power_switches: 未声明开关角色']
-    return inv.build(db, intent, 'power_switches', 'switches',
-                     lambda state: _Scan(db, state, declared, excluded).switches(), gaps)
+    inventory = inv.build(db, intent, 'power_switches', 'switches',
+                     lambda state: _Scan(db, state, declared, excluded,
+                                        ((intent or {}).get('inductive_loads') or {}).get('loads', [])).switches(), gaps)
+    if any(item.get('role') == SYNC_RECTIFIER_ROLE for item in declared.values()) and (intent or {}).get('inductive_loads'):
+        inventory['context']['inductive_loads'] = intent['inductive_loads']
+        inventory['digest'] = inv.digest({k: v for k, v in inventory.items() if k != 'digest'})
+    return inventory
 
 
 class PowerSwitchChecker(Checker):
@@ -250,8 +387,21 @@ class PowerSwitchChecker(Checker):
                 required_inputs=sorted(set(gaps + (
                     ['datasheet:实际驱动与 VGS/VBE/VCE 额定', 'intent:输出范围/负载/损耗及适用 SOA']
                     if linear or switch['kind'] == ng.BJT else
-                    ['datasheet:SOA 曲线与脉宽条件', 'intent:最坏工况电流/电压/重复率']))),
+                    ['datasheet:SOA 温度/脉宽/单次或重复条件及 Zth',
+                     'intent:正常/启动/故障 VDS(t)-ID(t) 轨迹与重复率',
+                     'evidence:实际 VGS 下导通与开关损耗、温度边界及允许散热条件']))),
                 trigger=['power-switch:' + switch['id']],)
+            if switch['kind'] == ng.MOSFET and not linear:
+                item['criterion'] += ('；MOS开关分别核关断峰压、导通电流/损耗和转换期间VDS-ID重叠轨迹；'
+                                      '不把整个导通周期当高压线性脉冲，不以单脉冲SOA或典型开关时间'
+                                      '证明重复安全；按实际栅源驱动、温度及Zth/散热边界核重复损耗。')
+            if switch.get('role') == SYNC_RECTIFIER_ROLE:
+                item['criterion'] += ('；同步整流另核次级峰值/RMS及S到D导通、体二极管区间、'
+                                      '初级导通时反向阻断、CS/触发/消隐/最小导通时间与栅极关断关联；'
+                                      '按电流/电压象限选适用SOA，不能用输出平均电流、门极电荷或驱动连接替代重复损耗证明。')
+                item['required_inputs'] = sorted(set(item['required_inputs'] + [
+                    'intent:同步整流绕组/控制器物理映射及次级模式、关联电流和频率',
+                    'evidence:体二极管/反向电流与初次级换流时序、故障反压和热态重复损耗']))
             item['analysis_required'] = True
             item['inventory_gaps'] = gaps
             if switch['switch_node_evidence']:

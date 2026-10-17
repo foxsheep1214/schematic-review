@@ -178,6 +178,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 actual = expected.get(generated['id'])
                 require(actual is not None and revision_digest(check_spec(actual)) == revision_digest(check_spec(generated)),
                         generated['id'] + ': automatic check missing or changed from saved inputs')
+                require(actual is not None and actual.get('check_explanation') == generated.get('check_explanation'),
+                        generated['id'] + ': automatic check explanation missing or changed from saved inputs')
         except (ValueError, TypeError, KeyError, AttributeError) as error:
             require(False, 'invalid generated-check inputs: ' + str(error))
     gates = validate_inventories(REGISTRY, plan, expected, db, require,
@@ -242,6 +244,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             errors.extend(passive_stress.override_errors(key, item))
         require(isinstance(result, str) and result in RESULTS, f"{key}: invalid result")
         require(isinstance(app, str) and app in APPLICABILITY, f"{key}: invalid applicability")
+        if 'check_explanation' in item:
+            errors.extend(f'{key}: {message}' for message in catalog.explanation_errors(item['check_explanation']))
         require(text(item.get("rationale")), f"{key}: missing rationale")
         require(evidence(item.get("evidence")), f"{key}: missing locatable evidence")
         require(isinstance(item.get("blocking"), bool), f"{key}: blocking must be boolean")
