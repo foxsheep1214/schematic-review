@@ -7,6 +7,7 @@ import math
 
 
 def boost_cycle(vin, vbus, inductance, input_current, dead_time=0.0):
+    """One triangular CrM/DCM cycle at the stated average input current and dead time."""
     values = (vin, vbus, inductance, input_current, dead_time)
     if not all(math.isfinite(x) for x in values):
         raise ValueError('finite inputs required')
