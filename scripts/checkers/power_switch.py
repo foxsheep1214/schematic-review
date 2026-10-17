@@ -29,6 +29,8 @@ LINEAR_ROLES = {'linear', 'source_follower', 'emitter_follower'}
 # 栅极接低侧轨的双向开漏电平转换管：不是功率开关，按所属电平转换电路（SIG-C07/C08/C09/T04）审查。
 LEVEL_SHIFTER_ROLE = 'level_shifter'
 SYNC_RECTIFIER_ROLE = 'synchronous_rectifier'
+SR_PIN_NAMES = {'sense_node': re.compile(r'^(VD|VDS|DRAIN|D|DS|VDET|SENSE|CS)$', re.I),
+                'return_node': re.compile(r'^(VS|VSS|SOURCE|SRC|S|GND|PGND|SGND)$', re.I)}
 
 
 def validate_power_switch_intent(intent, db=None):
@@ -212,6 +214,11 @@ class _Scan:
                 return cfg[field]
             found = [controller + '.' + pin for pin, n in graph.pins_of(controller).items() if n == net]
             derived.append(field)
+            if len(found) > 1:
+                # Several pins on one net (e.g. VS and TRIG both on the source): the official
+                # sense/return name decides; still ambiguous means no guess.
+                named = [n for n in found if SR_PIN_NAMES[field].match(ng.normalize(graph.pinname.get(n)) or '')]
+                found = named
             return found[0] if len(found) == 1 else None
 
         from .inductive_load import _flyback_winding_errors, FLYBACK_TRANSFORMER

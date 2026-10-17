@@ -439,6 +439,16 @@ class SynchronousRectifierTest(unittest.TestCase):
         self.assertEqual(sorted(sr['winding_nodes']), ['T1.3', 'T1.4'])
         self.assertEqual(sr['derived_fields'], ['output_net', 'return_node', 'sense_node', 'winding_nodes'])
 
+    def test_official_pin_name_picks_return_when_trigger_shares_the_source_net(self):
+        # 100W PD 复审：U501 的 VS(.2) 与 TRIG(.4) 都在源极网，最小声明曾因两个候选失败。
+        db, intent = self.fixture()
+        cfg = intent['power_switches']['switches'][0]['synchronous_rectifier']
+        for key in ('sense_node', 'return_node', 'winding_nodes', 'output_net'):
+            cfg.pop(key)
+        db['nets']['SEC_RTN'].append('U8.5'); db['pin2net']['U8.5'] = 'SEC_RTN'; db['pinname']['U8.5'] = 'TRIG'
+        sr = self.item(db, intent)['synchronous_rectifier']
+        self.assertEqual(sr['return_node'], 'U8.2')
+
     def test_ambiguous_controller_pin_is_not_guessed(self):
         db, intent = self.fixture()
         cfg = intent['power_switches']['switches'][0]['synchronous_rectifier']
