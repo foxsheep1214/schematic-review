@@ -13,6 +13,8 @@
 | r04-c1-return-moved.xml | 同上（门禁反例的编辑副本） | f8b902a | CERN-OHL-P-2.0 | sparkengineering |
 | r05-lipo-charger.xml | bablokb/pcb-lipo-charger | 5a9ef45 | CC-BY-SA-4.0 | bablokb（GitHub 账户） |
 | rh-ad8495-thermocouple.xml | SolderedElectronics/Thermocouple-sensor-AD8495-breakout-hardware-design | 43ac86f | TAPR Open Hardware License 1.0 | Soldered Electronics |
+| rf1-c2000-float-flyback.xml | Nicolboy/KICAD-C2000-float-flyback | 29fb9d9 | CERN-OHL-S-2.0 | Nicolboy（GitHub 账户） |
+| rf2-hv-flyback-lt3957a.xml | newell/hv-flyback-converter | c3d49c9 | CERN-OHL-W-2.0 | newell（GitHub 账户） |
 
 修改说明（各许可证要求注明）：电路由 ASG 按上游原理图重画或按需求重新生成，位号和图页可能与上游不同；
 精简时删去了标题栏、数据手册与描述文字、时间戳、库列表、非 dnp 属性和非 MPN 字段，连接关系、
@@ -20,3 +22,9 @@
 
 `rh-ad8495-thermocouple.intent.json` 是本仓库作者写的审查输入（MIT），其中的脚表内容引用
 ADI AD8494/5/6/7 Rev.D 与 TI SLVS543S 的引脚定义。
+
+rf1/rf2 的修改说明：上游原理图分别为 KiCad 10/8 格式，先用 HubertHQH/kicad-version-converter 逐级降为 KiCad 7 格式
+（只改格式记号，空引脚名 "" 写成 "~"），rf2 另按电源符号的 Value 给其隐藏电源脚命名（KiCad 7 按脚名连接电源符号），
+再由 kicad-cli 7.0.11 原生导出并经 make_fixtures.py 的同一精简。原始 KiCad 文件上自算的连通与导出网表逐网相同
+（`../tools/geo_netlist.py`）。器件、连接、引脚名与类型均未改。
+`rf1-c2000-float-flyback.intent.json` 是本仓库作者写的审查输入（MIT），引用上游位号与引脚。

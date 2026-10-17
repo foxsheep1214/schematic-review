@@ -1,0 +1,1051 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+ <design>
+  <source>/tmp/claude-0/-home-user-schematic-review/1bbb23e1-9f79-52fe-9130-015d6a2b0161/scratchpad/work/nicol/alim-flyback-filament.kicad_sch</source>
+  <date>Sat Oct 17 07:50:42 2026</date>
+  <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+  <sheet number="1" name="/" tstamps="/">
+      </sheet>
+  <sheet number="2" name="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/">
+      </sheet>
+  <sheet number="3" name="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/">
+      </sheet>
+  <sheet number="4" name="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/">
+      </sheet>
+  <sheet number="5" name="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/">
+      </sheet>
+ </design>
+ <components>
+  <comp ref="C1">
+   <value>470u</value>
+   <footprint>A786:A786MW_VChip</footprint>
+   <libsource lib="Device" part="C_Polarized" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="C9">
+   <value>1u</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="C10">
+   <value>10u</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="C13">
+   <value>1u</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="C14">
+   <value>1u</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="In1">
+   <value>VIN</value>
+   <footprint>Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical</footprint>
+   <libsource lib="Connector_Generic" part="Conn_01x02" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="R1">
+   <value>100</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="R2">
+   <value>560</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="Reg1">
+   <value>LM317M</value>
+   <footprint>Package_TO_SOT_SMD:SOT-223-3_TabPin2</footprint>
+   <libsource lib="Regulator_Linear" part="LM317_SOT-223" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="Reg2">
+   <value>MCP1703-3302</value>
+   <footprint>Package_TO_SOT_SMD:SOT-23-3</footprint>
+   <libsource lib="Regulator_Linear" part="MCP1703Ax-330xxTT" description="" />
+   <sheetpath names="/Alimentation/" tstamps="/4222d5eb-1966-4c25-91d0-a2dfc8338ee2/" />
+  </comp>
+  <comp ref="C3">
+   <value>330u</value>
+   <footprint>Capacitor_SMD:CP_Elec_6.3x9.9</footprint>
+   <libsource lib="Device" part="C_Polarized" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="C4">
+   <value>330u</value>
+   <footprint>Capacitor_SMD:CP_Elec_6.3x9.9</footprint>
+   <libsource lib="Device" part="C_Polarized" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="C44">
+   <value>1u</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="C45">
+   <value>1u</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="D1">
+   <value>SMCJ43A</value>
+   <footprint>Diode_SMD:D_SMC</footprint>
+   <libsource lib="Device" part="D_TVS" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="D4">
+   <value>SMCJ54A</value>
+   <footprint>Diode_SMD:D_SMC</footprint>
+   <datasheet>${KIPRJMOD}/../composants-datasheets/datasheets/bourns-smcj-series.pdf</datasheet>
+   <libsource lib="Device" part="D_TVS" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="Out1">
+   <value>VOUT</value>
+   <footprint>Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical</footprint>
+   <libsource lib="Connector_Generic" part="Conn_01x02" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="Q1">
+   <value>IPD050N10N5</value>
+   <footprint>TO252:TO252-3_TabPin2</footprint>
+   <libsource lib="custom_parts" part="MOSFET_3PIN_TAB2" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="Q2">
+   <value>IPD050N10N5</value>
+   <footprint>TO252:TO252-3_TabPin2</footprint>
+   <libsource lib="custom_parts" part="MOSFET_3PIN_TAB2" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="R7">
+   <value>100k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="R8">
+   <value>100k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="R9">
+   <value>100k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="R10">
+   <value>100k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="R19">
+   <value>7m5</value>
+   <footprint>Resistor_SMD:R_1210_3225Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="Reg3">
+   <value>MCP1703-3302</value>
+   <footprint>Package_TO_SOT_SMD:SOT-23-3</footprint>
+   <libsource lib="Regulator_Linear" part="MCP1703Ax-330xxTT" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="T1">
+   <value>MSD1514-103ME</value>
+   <footprint>MSD1514:MSD1514</footprint>
+   <libsource lib="custom_parts" part="MSD1514" description="" />
+   <sheetpath names="/Flyback/" tstamps="/d1aa561e-ad66-47ab-8ae9-07ed41f103a3/" />
+  </comp>
+  <comp ref="C15">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C16">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C18">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C19">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C21">
+   <value>10u</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C23">
+   <value>100p</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C24">
+   <value>1n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C25">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C26">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C28">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C29">
+   <value>100p</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C30">
+   <value>1n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C31">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C32">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C33">
+   <value>1n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C42">
+   <value>10u</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C43">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="CpuIn1">
+   <value>CTRL_C2000_IN</value>
+   <footprint>Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical</footprint>
+   <libsource lib="Connector_Generic" part="Conn_01x16" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="CpuOut1">
+   <value>CTRL_C2000_OUT</value>
+   <footprint>Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical</footprint>
+   <libsource lib="Connector_Generic" part="Conn_01x16" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R3">
+   <value>470</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R4">
+   <value>10k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R5">
+   <value>100k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R11">
+   <value>1</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R12">
+   <value>1</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R13">
+   <value>51k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R14">
+   <value>10k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R15">
+   <value>100</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R16">
+   <value>10k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R17">
+   <value>100</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="R18">
+   <value>100</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="TH1">
+   <value>10k_B4000</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="Thermistor_NTC" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="U1">
+   <value>UCC27517</value>
+   <footprint>Package_TO_SOT_SMD:SOT-23-5</footprint>
+   <libsource lib="custom_parts" part="UCC27517" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="U3">
+   <value>ISO7710</value>
+   <footprint>Package_SO:SOIC-8_3.9x4.9mm_P1.27mm</footprint>
+   <libsource lib="custom_parts" part="ISO7710" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="U5">
+   <value>DPC817</value>
+   <footprint>Package_DIP:SMDIP-4_W7.62mm</footprint>
+   <libsource lib="Isolator" part="PC817" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="U7">
+   <value>AMC0311R</value>
+   <footprint>SOIC_DWV:SOIC-8_DWV_5.85x11.5mm_P1.27mm</footprint>
+   <libsource lib="custom_parts" part="AMC0311R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="U8">
+   <value>AMC0311R</value>
+   <footprint>SOIC_DWV:SOIC-8_DWV_5.85x11.5mm_P1.27mm</footprint>
+   <libsource lib="custom_parts" part="AMC0311R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="U9">
+   <value>AMC0302R</value>
+   <footprint>SOIC_DWV:SOIC-8_DWV_5.85x11.5mm_P1.27mm</footprint>
+   <libsource lib="custom_parts" part="AMC0302R" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="U12">
+   <value>UCC24612</value>
+   <footprint>Package_TO_SOT_SMD:SOT-23-5</footprint>
+   <datasheet>${KIPRJMOD}/../composants-datasheets/datasheets/ucc24612.pdf</datasheet>
+   <libsource lib="custom_parts" part="UCC24612" description="" />
+   <sheetpath names="/Isolation_Drivers/" tstamps="/2c364a36-1706-47ba-a3af-9fe08e477799/" />
+  </comp>
+  <comp ref="C34">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="C35">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="C36">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="C38">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="C39">
+   <value>100n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="C40">
+   <value>100p</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="C41">
+   <value>1n</value>
+   <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+   <libsource lib="Device" part="C" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="D3">
+   <value>SMCJ100A</value>
+   <footprint>Diode_SMD:D_SMC</footprint>
+   <libsource lib="Device" part="D_TVS" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="J1">
+   <value>HV80_IN</value>
+   <footprint>Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical</footprint>
+   <libsource lib="Connector_Generic" part="Conn_01x02" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="Q3">
+   <value>BSS127I</value>
+   <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+   <libsource lib="custom_parts" part="BSS127I" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="Q4">
+   <value>MMBT2222</value>
+   <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+   <libsource lib="custom_parts" part="MMBT2222" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="Q5">
+   <value>BSS127I</value>
+   <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+   <libsource lib="custom_parts" part="BSS127I" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="R20">
+   <value>10k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="R21">
+   <value>1M</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="R22">
+   <value>470k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="R23">
+   <value>10k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="R24">
+   <value>100</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="R25">
+   <value>2k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="R26">
+   <value>75k</value>
+   <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+   <libsource lib="Device" part="R" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="U10">
+   <value>ISO7710</value>
+   <footprint>Package_SO:SOIC-8_3.9x4.9mm_P1.27mm</footprint>
+   <libsource lib="custom_parts" part="ISO7710" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+  <comp ref="U11">
+   <value>AMC0311R</value>
+   <footprint>SOIC_DWV:SOIC-8_DWV_5.85x11.5mm_P1.27mm</footprint>
+   <libsource lib="custom_parts" part="AMC0311R" description="" />
+   <sheetpath names="/Polarisation/" tstamps="/94a61bea-1545-4ab4-b296-7d1dc7a0de10/" />
+  </comp>
+ </components>
+ <libparts>
+  <libpart lib="Connector_Generic" part="Conn_01x02">
+   <pins>
+    <pin num="1" name="Pin_1" type="passive" />
+    <pin num="2" name="Pin_2" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Connector_Generic" part="Conn_01x16">
+   <pins>
+    <pin num="1" name="Pin_1" type="passive" />
+    <pin num="2" name="Pin_2" type="passive" />
+    <pin num="3" name="Pin_3" type="passive" />
+    <pin num="4" name="Pin_4" type="passive" />
+    <pin num="5" name="Pin_5" type="passive" />
+    <pin num="6" name="Pin_6" type="passive" />
+    <pin num="7" name="Pin_7" type="passive" />
+    <pin num="8" name="Pin_8" type="passive" />
+    <pin num="9" name="Pin_9" type="passive" />
+    <pin num="10" name="Pin_10" type="passive" />
+    <pin num="11" name="Pin_11" type="passive" />
+    <pin num="12" name="Pin_12" type="passive" />
+    <pin num="13" name="Pin_13" type="passive" />
+    <pin num="14" name="Pin_14" type="passive" />
+    <pin num="15" name="Pin_15" type="passive" />
+    <pin num="16" name="Pin_16" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="C">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="C_Polarized">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="D_TVS">
+   <pins>
+    <pin num="1" name="A1" type="passive" />
+    <pin num="2" name="A2" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="R">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Device" part="Thermistor_NTC">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Isolator" part="PC817">
+   <pins>
+    <pin num="1" name="" type="passive" />
+    <pin num="2" name="" type="passive" />
+    <pin num="3" name="" type="passive" />
+    <pin num="4" name="" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="Regulator_Linear" part="LM317_SOT-223">
+   <pins>
+    <pin num="1" name="ADJ" type="input" />
+    <pin num="2" name="VO" type="power_out" />
+    <pin num="3" name="VI" type="power_in" />
+   </pins>
+  </libpart>
+  <libpart lib="Regulator_Linear" part="MCP1703Ax-330xxTT">
+   <pins>
+    <pin num="1" name="GND" type="power_in" />
+    <pin num="2" name="VO" type="power_out" />
+    <pin num="3" name="VI" type="power_in" />
+   </pins>
+  </libpart>
+  <libpart lib="custom_parts" part="AMC0302R">
+   <pins>
+    <pin num="1" name="VDD1" type="power_in" />
+    <pin num="2" name="INP" type="input" />
+    <pin num="3" name="INN" type="input" />
+    <pin num="4" name="GND1" type="power_in" />
+    <pin num="5" name="GND2" type="power_in" />
+    <pin num="6" name="REFIN" type="input" />
+    <pin num="7" name="OUT" type="output" />
+    <pin num="8" name="VDD2" type="power_in" />
+   </pins>
+  </libpart>
+  <libpart lib="custom_parts" part="AMC0311R">
+   <pins>
+    <pin num="1" name="VDD1" type="power_in" />
+    <pin num="2" name="INP" type="input" />
+    <pin num="3" name="SNSN" type="input" />
+    <pin num="4" name="GND1" type="power_in" />
+    <pin num="5" name="GND2" type="power_in" />
+    <pin num="6" name="REFIN" type="input" />
+    <pin num="7" name="OUT" type="output" />
+    <pin num="8" name="VDD2" type="power_in" />
+   </pins>
+  </libpart>
+  <libpart lib="custom_parts" part="BSS127I">
+   <pins>
+    <pin num="1" name="G" type="input" />
+    <pin num="2" name="S" type="passive" />
+    <pin num="3" name="D" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="custom_parts" part="ISO7710">
+   <pins>
+    <pin num="1" name="VCC1" type="power_in" />
+    <pin num="2" name="IN" type="input" />
+    <pin num="3" name="VCC1" type="power_in" />
+    <pin num="4" name="GND1" type="power_in" />
+    <pin num="5" name="GND2" type="power_in" />
+    <pin num="6" name="OUT" type="output" />
+    <pin num="7" name="NC" type="no_connect" />
+    <pin num="8" name="VCC2" type="power_in" />
+   </pins>
+  </libpart>
+  <libpart lib="custom_parts" part="MMBT2222">
+   <pins>
+    <pin num="1" name="B" type="input" />
+    <pin num="2" name="E" type="passive" />
+    <pin num="3" name="C" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="custom_parts" part="MOSFET_3PIN_TAB2">
+   <pins>
+    <pin num="1" name="G" type="input" />
+    <pin num="2" name="D" type="passive" />
+    <pin num="3" name="S" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="custom_parts" part="MSD1514">
+   <pins>
+    <pin num="1" name="L1.1" type="passive" />
+    <pin num="2" name="L2.1" type="passive" />
+    <pin num="3" name="L1.2" type="passive" />
+    <pin num="4" name="L2.2" type="passive" />
+   </pins>
+  </libpart>
+  <libpart lib="custom_parts" part="UCC24612">
+   <pins>
+    <pin num="1" name="VG" type="output" />
+    <pin num="2" name="VS" type="power_in" />
+    <pin num="3" name="REG" type="passive" />
+    <pin num="4" name="VDD" type="power_in" />
+    <pin num="5" name="VD" type="input" />
+   </pins>
+  </libpart>
+  <libpart lib="custom_parts" part="UCC27517">
+   <pins>
+    <pin num="1" name="VDD" type="power_in" />
+    <pin num="2" name="GND" type="power_in" />
+    <pin num="3" name="IN+" type="input" />
+    <pin num="4" name="IN-" type="input" />
+    <pin num="5" name="OUT" type="output" />
+   </pins>
+  </libpart>
+ </libparts>
+ <nets>
+  <net code="1" name="3V3_CTRL">
+   <node ref="C15" pin="1" pintype="passive" />
+   <node ref="C26" pin="1" pintype="passive" />
+   <node ref="C28" pin="1" pintype="passive" />
+   <node ref="C32" pin="1" pintype="passive" />
+   <node ref="C34" pin="1" pintype="passive" />
+   <node ref="C39" pin="1" pintype="passive" />
+   <node ref="CpuIn1" pin="1" pinfunction="Pin_1" pintype="passive" />
+   <node ref="CpuOut1" pin="1" pinfunction="Pin_1" pintype="passive" />
+   <node ref="U10" pin="1" pinfunction="VCC1" pintype="power_in" />
+   <node ref="U10" pin="3" pinfunction="VCC1" pintype="power_in" />
+   <node ref="U11" pin="8" pinfunction="VDD2" pintype="power_in" />
+   <node ref="U3" pin="1" pinfunction="VCC1" pintype="power_in" />
+   <node ref="U3" pin="3" pinfunction="VCC1" pintype="power_in" />
+   <node ref="U7" pin="8" pinfunction="VDD2" pintype="power_in" />
+   <node ref="U8" pin="8" pinfunction="VDD2" pintype="power_in" />
+   <node ref="U9" pin="8" pinfunction="VDD2" pintype="power_in" />
+  </net>
+  <net code="2" name="BIAS_FBACK">
+   <node ref="C41" pin="1" pintype="passive" />
+   <node ref="CpuIn1" pin="9" pinfunction="Pin_9" pintype="passive" />
+   <node ref="R24" pin="1" pintype="passive" />
+  </net>
+  <net code="3" name="BIAS_SENSE">
+   <node ref="C40" pin="1" pintype="passive" />
+   <node ref="R22" pin="2" pintype="passive" />
+   <node ref="R23" pin="1" pintype="passive" />
+   <node ref="U11" pin="2" pinfunction="INP" pintype="input" />
+  </net>
+  <net code="4" name="CS_EMIT">
+   <node ref="Q4" pin="2" pinfunction="E" pintype="passive" />
+   <node ref="R25" pin="1" pintype="passive" />
+  </net>
+  <net code="5" name="CS_GATE">
+   <node ref="Q3" pin="1" pinfunction="G" pintype="input" />
+   <node ref="Q4" pin="3" pinfunction="C" pintype="passive" />
+   <node ref="R26" pin="2" pintype="passive" />
+  </net>
+  <net code="6" name="CS_TOP">
+   <node ref="Q3" pin="2" pinfunction="S" pintype="passive" />
+   <node ref="Q4" pin="1" pinfunction="B" pintype="input" />
+  </net>
+  <net code="7" name="EN_PRI_IN">
+   <node ref="CpuOut1" pin="5" pinfunction="Pin_5" pintype="passive" />
+   <node ref="R3" pin="1" pintype="passive" />
+  </net>
+  <net code="8" name="EN_PRI_OUT">
+   <node ref="R4" pin="2" pintype="passive" />
+   <node ref="U1" pin="3" pinfunction="IN+" pintype="input" />
+   <node ref="U5" pin="4" pintype="passive" />
+  </net>
+  <net code="9" name="GATE_Q1">
+   <node ref="Q1" pin="1" pinfunction="G" pintype="input" />
+   <node ref="R11" pin="2" pintype="passive" />
+   <node ref="R7" pin="1" pintype="passive" />
+  </net>
+  <net code="10" name="GATE_Q2">
+   <node ref="Q2" pin="1" pinfunction="G" pintype="input" />
+   <node ref="R12" pin="2" pintype="passive" />
+   <node ref="R8" pin="1" pintype="passive" />
+  </net>
+  <net code="11" name="GND">
+   <node ref="C1" pin="2" pintype="passive" />
+   <node ref="C10" pin="2" pintype="passive" />
+   <node ref="C13" pin="2" pintype="passive" />
+   <node ref="C14" pin="2" pintype="passive" />
+   <node ref="C16" pin="2" pintype="passive" />
+   <node ref="C19" pin="2" pintype="passive" />
+   <node ref="C21" pin="2" pintype="passive" />
+   <node ref="C25" pin="2" pintype="passive" />
+   <node ref="C29" pin="2" pintype="passive" />
+   <node ref="C31" pin="2" pintype="passive" />
+   <node ref="C35" pin="2" pintype="passive" />
+   <node ref="C36" pin="2" pintype="passive" />
+   <node ref="C38" pin="2" pintype="passive" />
+   <node ref="C40" pin="2" pintype="passive" />
+   <node ref="C9" pin="2" pintype="passive" />
+   <node ref="D1" pin="2" pinfunction="A2" pintype="passive" />
+   <node ref="D3" pin="1" pinfunction="A1" pintype="passive" />
+   <node ref="In1" pin="2" pinfunction="Pin_2" pintype="passive" />
+   <node ref="J1" pin="2" pinfunction="Pin_2" pintype="passive" />
+   <node ref="Q5" pin="2" pinfunction="S" pintype="passive" />
+   <node ref="R1" pin="1" pintype="passive" />
+   <node ref="R16" pin="2" pintype="passive" />
+   <node ref="R19" pin="2" pintype="passive" />
+   <node ref="R23" pin="2" pintype="passive" />
+   <node ref="R7" pin="2" pintype="passive" />
+   <node ref="Reg2" pin="1" pinfunction="GND" pintype="power_in" />
+   <node ref="U1" pin="2" pinfunction="GND" pintype="power_in" />
+   <node ref="U10" pin="5" pinfunction="GND2" pintype="power_in" />
+   <node ref="U11" pin="3" pinfunction="SNSN" pintype="input" />
+   <node ref="U11" pin="4" pinfunction="GND1" pintype="power_in" />
+   <node ref="U3" pin="5" pinfunction="GND2" pintype="power_in" />
+   <node ref="U5" pin="3" pintype="passive" />
+   <node ref="U8" pin="3" pinfunction="SNSN" pintype="input" />
+   <node ref="U8" pin="4" pinfunction="GND1" pintype="power_in" />
+   <node ref="U9" pin="3" pinfunction="INN" pintype="input" />
+   <node ref="U9" pin="4" pinfunction="GND1" pintype="power_in" />
+  </net>
+  <net code="12" name="GND_CTRL">
+   <node ref="C15" pin="2" pintype="passive" />
+   <node ref="C24" pin="2" pintype="passive" />
+   <node ref="C26" pin="2" pintype="passive" />
+   <node ref="C28" pin="2" pintype="passive" />
+   <node ref="C30" pin="2" pintype="passive" />
+   <node ref="C32" pin="2" pintype="passive" />
+   <node ref="C33" pin="2" pintype="passive" />
+   <node ref="C34" pin="2" pintype="passive" />
+   <node ref="C39" pin="2" pintype="passive" />
+   <node ref="C41" pin="2" pintype="passive" />
+   <node ref="CpuIn1" pin="10" pinfunction="Pin_10" pintype="passive" />
+   <node ref="CpuIn1" pin="12" pinfunction="Pin_12" pintype="passive" />
+   <node ref="CpuIn1" pin="14" pinfunction="Pin_14" pintype="passive" />
+   <node ref="CpuIn1" pin="16" pinfunction="Pin_16" pintype="passive" />
+   <node ref="CpuIn1" pin="2" pinfunction="Pin_2" pintype="passive" />
+   <node ref="CpuIn1" pin="4" pinfunction="Pin_4" pintype="passive" />
+   <node ref="CpuIn1" pin="6" pinfunction="Pin_6" pintype="passive" />
+   <node ref="CpuIn1" pin="8" pinfunction="Pin_8" pintype="passive" />
+   <node ref="CpuOut1" pin="10" pinfunction="Pin_10" pintype="passive" />
+   <node ref="CpuOut1" pin="12" pinfunction="Pin_12" pintype="passive" />
+   <node ref="CpuOut1" pin="14" pinfunction="Pin_14" pintype="passive" />
+   <node ref="CpuOut1" pin="16" pinfunction="Pin_16" pintype="passive" />
+   <node ref="CpuOut1" pin="2" pinfunction="Pin_2" pintype="passive" />
+   <node ref="CpuOut1" pin="4" pinfunction="Pin_4" pintype="passive" />
+   <node ref="CpuOut1" pin="6" pinfunction="Pin_6" pintype="passive" />
+   <node ref="CpuOut1" pin="8" pinfunction="Pin_8" pintype="passive" />
+   <node ref="R5" pin="2" pintype="passive" />
+   <node ref="U10" pin="4" pinfunction="GND1" pintype="power_in" />
+   <node ref="U11" pin="5" pinfunction="GND2" pintype="power_in" />
+   <node ref="U11" pin="6" pinfunction="REFIN" pintype="input" />
+   <node ref="U3" pin="4" pinfunction="GND1" pintype="power_in" />
+   <node ref="U5" pin="2" pintype="passive" />
+   <node ref="U7" pin="5" pinfunction="GND2" pintype="power_in" />
+   <node ref="U7" pin="6" pinfunction="REFIN" pintype="input" />
+   <node ref="U8" pin="5" pinfunction="GND2" pintype="power_in" />
+   <node ref="U8" pin="6" pinfunction="REFIN" pintype="input" />
+   <node ref="U9" pin="5" pinfunction="GND2" pintype="power_in" />
+   <node ref="U9" pin="6" pinfunction="REFIN" pintype="input" />
+  </net>
+  <net code="13" name="HV80_IN">
+   <node ref="J1" pin="1" pinfunction="Pin_1" pintype="passive" />
+   <node ref="Q3" pin="3" pinfunction="D" pintype="passive" />
+   <node ref="R26" pin="1" pintype="passive" />
+  </net>
+  <net code="14" name="HV_BIAS">
+   <node ref="D3" pin="2" pinfunction="A2" pintype="passive" />
+   <node ref="Q5" pin="3" pinfunction="D" pintype="passive" />
+   <node ref="R10" pin="1" pintype="passive" />
+   <node ref="R22" pin="1" pintype="passive" />
+   <node ref="R25" pin="2" pintype="passive" />
+   <node ref="R9" pin="1" pintype="passive" />
+  </net>
+  <net code="15" name="ISENSE_P">
+   <node ref="Q1" pin="3" pinfunction="S" pintype="passive" />
+   <node ref="R19" pin="1" pintype="passive" />
+   <node ref="U9" pin="2" pinfunction="INP" pintype="input" />
+  </net>
+  <net code="16" name="ISENSE_PRI_FBACK">
+   <node ref="C33" pin="1" pintype="passive" />
+   <node ref="CpuIn1" pin="7" pinfunction="Pin_7" pintype="passive" />
+   <node ref="R18" pin="2" pintype="passive" />
+  </net>
+  <net code="17" name="Net-(R3-Pad2)">
+   <node ref="R3" pin="2" pintype="passive" />
+   <node ref="U5" pin="1" pintype="passive" />
+  </net>
+  <net code="18" name="Net-(Reg1-ADJ)">
+   <node ref="R1" pin="2" pintype="passive" />
+   <node ref="R2" pin="1" pintype="passive" />
+   <node ref="Reg1" pin="1" pinfunction="ADJ" pintype="input" />
+  </net>
+  <net code="19" name="Net-(U1-OUT)">
+   <node ref="R11" pin="1" pintype="passive" />
+   <node ref="U1" pin="5" pinfunction="OUT" pintype="output" />
+  </net>
+  <net code="20" name="Net-(U8-OUT)">
+   <node ref="R17" pin="1" pintype="passive" />
+   <node ref="U8" pin="7" pinfunction="OUT" pintype="output" />
+  </net>
+  <net code="21" name="Net-(U9-OUT)">
+   <node ref="R18" pin="1" pintype="passive" />
+   <node ref="U9" pin="7" pinfunction="OUT" pintype="output" />
+  </net>
+  <net code="22" name="Net-(U10-OUT)">
+   <node ref="R20" pin="2" pintype="passive" />
+   <node ref="U10" pin="6" pinfunction="OUT" pintype="output" />
+  </net>
+  <net code="23" name="Net-(U11-OUT)">
+   <node ref="R24" pin="2" pintype="passive" />
+   <node ref="U11" pin="7" pinfunction="OUT" pintype="output" />
+  </net>
+  <net code="24" name="Net-(U12-VG)">
+   <node ref="R12" pin="1" pintype="passive" />
+   <node ref="U12" pin="1" pinfunction="VG" pintype="output" />
+  </net>
+  <net code="25" name="PWM_BIAS_IN">
+   <node ref="CpuOut1" pin="7" pinfunction="Pin_7" pintype="passive" />
+   <node ref="U10" pin="2" pinfunction="IN" pintype="input" />
+  </net>
+  <net code="26" name="PWM_PRI_IN">
+   <node ref="CpuOut1" pin="3" pinfunction="Pin_3" pintype="passive" />
+   <node ref="R5" pin="1" pintype="passive" />
+   <node ref="U3" pin="2" pinfunction="IN" pintype="input" />
+  </net>
+  <net code="27" name="PWM_PRI_OUT">
+   <node ref="U1" pin="4" pinfunction="IN-" pintype="input" />
+   <node ref="U3" pin="6" pinfunction="OUT" pintype="output" />
+  </net>
+  <net code="28" name="RAIL_3V3_PRI">
+   <node ref="C14" pin="1" pintype="passive" />
+   <node ref="C16" pin="1" pintype="passive" />
+   <node ref="C25" pin="1" pintype="passive" />
+   <node ref="C31" pin="1" pintype="passive" />
+   <node ref="C35" pin="1" pintype="passive" />
+   <node ref="C38" pin="1" pintype="passive" />
+   <node ref="R21" pin="1" pintype="passive" />
+   <node ref="Reg2" pin="2" pinfunction="VO" pintype="power_out" />
+   <node ref="TH1" pin="1" pintype="passive" />
+   <node ref="U10" pin="8" pinfunction="VCC2" pintype="power_in" />
+   <node ref="U11" pin="1" pinfunction="VDD1" pintype="power_in" />
+   <node ref="U3" pin="8" pinfunction="VCC2" pintype="power_in" />
+   <node ref="U8" pin="1" pinfunction="VDD1" pintype="power_in" />
+   <node ref="U9" pin="1" pinfunction="VDD1" pintype="power_in" />
+  </net>
+  <net code="29" name="RAIL_3V3_SEC">
+   <node ref="C18" pin="1" pintype="passive" />
+   <node ref="C45" pin="1" pintype="passive" />
+   <node ref="Reg3" pin="2" pinfunction="VO" pintype="power_out" />
+   <node ref="U7" pin="1" pinfunction="VDD1" pintype="power_in" />
+  </net>
+  <net code="30" name="RAIL_8V25">
+   <node ref="C10" pin="1" pintype="passive" />
+   <node ref="C13" pin="1" pintype="passive" />
+   <node ref="C19" pin="1" pintype="passive" />
+   <node ref="C21" pin="1" pintype="passive" />
+   <node ref="R2" pin="2" pintype="passive" />
+   <node ref="R4" pin="1" pintype="passive" />
+   <node ref="Reg1" pin="2" pinfunction="VO" pintype="power_out" />
+   <node ref="Reg2" pin="3" pinfunction="VI" pintype="power_in" />
+   <node ref="U1" pin="1" pinfunction="VDD" pintype="power_in" />
+  </net>
+  <net code="31" name="REG_SR">
+   <node ref="C42" pin="2" pintype="passive" />
+   <node ref="U12" pin="3" pinfunction="REG" pintype="passive" />
+  </net>
+  <net code="32" name="SW_PRI">
+   <node ref="D1" pin="1" pinfunction="A1" pintype="passive" />
+   <node ref="Q1" pin="2" pinfunction="D" pintype="passive" />
+   <node ref="T1" pin="3" pinfunction="L1.2" pintype="passive" />
+  </net>
+  <net code="33" name="SW_SEC">
+   <node ref="D4" pin="1" pinfunction="A1" pintype="passive" />
+   <node ref="Q2" pin="2" pinfunction="D" pintype="passive" />
+   <node ref="T1" pin="2" pinfunction="L2.1" pintype="passive" />
+   <node ref="U12" pin="5" pinfunction="VD" pintype="input" />
+  </net>
+  <net code="34" name="TEMP">
+   <node ref="C29" pin="1" pintype="passive" />
+   <node ref="R16" pin="1" pintype="passive" />
+   <node ref="TH1" pin="2" pintype="passive" />
+   <node ref="U8" pin="2" pinfunction="INP" pintype="input" />
+  </net>
+  <net code="35" name="TEMP_PRI_FBACK">
+   <node ref="C30" pin="1" pintype="passive" />
+   <node ref="CpuIn1" pin="5" pinfunction="Pin_5" pintype="passive" />
+   <node ref="R17" pin="2" pintype="passive" />
+  </net>
+  <net code="36" name="VAR_GATE">
+   <node ref="C36" pin="1" pintype="passive" />
+   <node ref="Q5" pin="1" pinfunction="G" pintype="input" />
+   <node ref="R20" pin="1" pintype="passive" />
+   <node ref="R21" pin="2" pintype="passive" />
+  </net>
+  <net code="37" name="VIN">
+   <node ref="C1" pin="1" pintype="passive" />
+   <node ref="C9" pin="1" pintype="passive" />
+   <node ref="In1" pin="1" pinfunction="Pin_1" pintype="passive" />
+   <node ref="Reg1" pin="3" pinfunction="VI" pintype="power_in" />
+   <node ref="T1" pin="1" pinfunction="L1.1" pintype="passive" />
+  </net>
+  <net code="38" name="VOUT_FBACK">
+   <node ref="C24" pin="1" pintype="passive" />
+   <node ref="CpuIn1" pin="3" pinfunction="Pin_3" pintype="passive" />
+   <node ref="R15" pin="2" pintype="passive" />
+  </net>
+  <net code="39" name="VOUT_FBACK_RAW">
+   <node ref="R15" pin="1" pintype="passive" />
+   <node ref="U7" pin="7" pinfunction="OUT" pintype="output" />
+  </net>
+  <net code="40" name="VOUT_N">
+   <node ref="C18" pin="2" pintype="passive" />
+   <node ref="C23" pin="2" pintype="passive" />
+   <node ref="C3" pin="2" pintype="passive" />
+   <node ref="C4" pin="2" pintype="passive" />
+   <node ref="C42" pin="1" pintype="passive" />
+   <node ref="C43" pin="1" pintype="passive" />
+   <node ref="C44" pin="2" pintype="passive" />
+   <node ref="C45" pin="2" pintype="passive" />
+   <node ref="D4" pin="2" pinfunction="A2" pintype="passive" />
+   <node ref="Out1" pin="2" pinfunction="Pin_2" pintype="passive" />
+   <node ref="Q2" pin="3" pinfunction="S" pintype="passive" />
+   <node ref="R10" pin="2" pintype="passive" />
+   <node ref="R14" pin="2" pintype="passive" />
+   <node ref="R8" pin="2" pintype="passive" />
+   <node ref="Reg3" pin="1" pinfunction="GND" pintype="power_in" />
+   <node ref="U12" pin="2" pinfunction="VS" pintype="power_in" />
+   <node ref="U7" pin="3" pinfunction="SNSN" pintype="input" />
+   <node ref="U7" pin="4" pinfunction="GND1" pintype="power_in" />
+  </net>
+  <net code="41" name="VOUT_P">
+   <node ref="C3" pin="1" pintype="passive" />
+   <node ref="C4" pin="1" pintype="passive" />
+   <node ref="C43" pin="2" pintype="passive" />
+   <node ref="C44" pin="1" pintype="passive" />
+   <node ref="Out1" pin="1" pinfunction="Pin_1" pintype="passive" />
+   <node ref="R13" pin="1" pintype="passive" />
+   <node ref="R9" pin="2" pintype="passive" />
+   <node ref="Reg3" pin="3" pinfunction="VI" pintype="power_in" />
+   <node ref="T1" pin="4" pinfunction="L2.2" pintype="passive" />
+   <node ref="U12" pin="4" pinfunction="VDD" pintype="power_in" />
+  </net>
+  <net code="42" name="VOUT_SENSE">
+   <node ref="C23" pin="1" pintype="passive" />
+   <node ref="R13" pin="2" pintype="passive" />
+   <node ref="R14" pin="1" pintype="passive" />
+   <node ref="U7" pin="2" pinfunction="INP" pintype="input" />
+  </net>
+  <net code="43" name="unconnected-(CpuIn1-Pin_11-Pad11)">
+   <node ref="CpuIn1" pin="11" pinfunction="Pin_11" pintype="passive" />
+  </net>
+  <net code="44" name="unconnected-(CpuIn1-Pin_13-Pad13)">
+   <node ref="CpuIn1" pin="13" pinfunction="Pin_13" pintype="passive" />
+  </net>
+  <net code="45" name="unconnected-(CpuIn1-Pin_15-Pad15)">
+   <node ref="CpuIn1" pin="15" pinfunction="Pin_15" pintype="passive" />
+  </net>
+  <net code="46" name="unconnected-(CpuOut1-Pin_9-Pad9)">
+   <node ref="CpuOut1" pin="9" pinfunction="Pin_9" pintype="passive" />
+  </net>
+  <net code="47" name="unconnected-(CpuOut1-Pin_11-Pad11)">
+   <node ref="CpuOut1" pin="11" pinfunction="Pin_11" pintype="passive" />
+  </net>
+  <net code="48" name="unconnected-(CpuOut1-Pin_13-Pad13)">
+   <node ref="CpuOut1" pin="13" pinfunction="Pin_13" pintype="passive" />
+  </net>
+  <net code="49" name="unconnected-(CpuOut1-Pin_15-Pad15)">
+   <node ref="CpuOut1" pin="15" pinfunction="Pin_15" pintype="passive" />
+  </net>
+  <net code="50" name="unconnected-(U3-NC-Pad7)">
+   <node ref="U3" pin="7" pinfunction="NC" pintype="no_connect" />
+  </net>
+  <net code="51" name="unconnected-(U10-NC-Pad7)">
+   <node ref="U10" pin="7" pinfunction="NC" pintype="no_connect" />
+  </net>
+ </nets>
+</export>

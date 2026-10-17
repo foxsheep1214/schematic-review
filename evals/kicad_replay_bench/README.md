@@ -16,7 +16,13 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率
 `--contract legacy` 用于重放历史契约，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认契约是 `name-gap-scope-v1`（`revisions/name-gap-scope-v1/`，2026-10-13）：严格自检仅因缺功能名失败、
+当前默认契约是 `real-flyback-v1`（`revisions/real-flyback-v1/`，2026-10-17）：在 `threshold-window-v1` 的 9 个用例上
+新增两块公开反激板的 3 个用例，父版本答案逐字段不变。上游为 KiCad 10/8 格式，降级与导出步骤及独立核对工具见
+`tools/`：`downgrade.mjs`（调用 HubertHQH/kicad-version-converter，GPL-3.0，不随仓库分发）、`k7_power_pins.py`、
+`conn_compare.py`（降级前后连接相关内容逐项比对）、`geo_netlist.py`（在原始文件上自算连通并与导出网表比对）、
+`indep_check.py`（不调用 SR，直接读 XML 重算器件/网数、缺名脚与去耦组，输入为 `run.py --out` 的 results.json）。
+
+此前的默认契约是 `name-gap-scope-v1`（`revisions/name-gap-scope-v1/`，2026-10-13）：严格自检仅因缺功能名失败、
 且缺名脚没有完整官方脚表时，缺口只记在缺名器件自身的去耦组和 `discovery_gaps`（`pin-name-unresolved:<脚>`），
 不再给每个去耦组加整网缺口 `netlist-integrity/export`。缺名只改变该器件引脚角色，不改变网络连通。
 其余字段与 `page-inventory-v1` 相同；后者文件保持原字节，可用 `--contract page-inventory-v1` 重放。
@@ -47,6 +53,9 @@ python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out 
 | rh-ad8495-thermocouple | 2026-10-10 Claude 演练板 | AD8494 库符号 OUT 脚无名 → 严格自检失败；空导出日志 |
 | rh-ad8495-thermocouple-nolog | 同上，不给 `--log` | 没有导出证据时 DOC-A01/A02 必须跳过 |
 | rh-ad8495-thermocouple-pinmap | 同上，intent 只含官方脚表 | 缺名脚由完整官方脚表解决（5fa6d3b），去耦不再带整网缺口 |
+| rf1-c2000-float-flyback | 公开同步整流反激板（CERN-OHL-S-2.0） | 4 子图 85 器件；Reg 位号稳压器按原生电源脚识别；RAIL_/HV 轨名、VOUT_N 回流、VOUT_FBACK 反馈线；TVS 开关节点钳位保留 PRO-C02；NTC 只在检测脚生成 ANA-C04 |
+| rf1-c2000-float-flyback-intent | 同上 + 带出处 intent | 反激绕组映射与 TVS 漏感钳位、R19 源极采样回地、UCC24612 同步整流最小声明 |
+| rf2-hv-flyback-lt3957a | 公开 LT3957A 高压反激板（CERN-OHL-W-2.0） | 连接器信号针 ESD 归入 PRO-D03；电源轨 TVS 与开关节点齐纳保留 PRO-C02；HV 输出按轨审查 |
 
 日志模式 `empty` 指给 `--log` 但文件为空，这是 kicad-cli 干净导出时的实际情况；`none` 指不给 `--log`。
 
