@@ -37,9 +37,8 @@ class CatalogExplanationTests(unittest.TestCase):
 
     def test_rewritten_entries_follow_the_writing_rules(self):
         for rule, value in catalog.EXPLANATIONS.items():
-            if isinstance(value, tuple):
-                continue
             with self.subTest(rule=rule):
+                self.assertIsInstance(value, dict)
                 self.assertLessEqual(set(value), set(catalog.EXPLANATION_FIELDS))
                 for field in catalog.REQUIRED_EXPLANATION_FIELDS:
                     self.assertTrue(value.get(field, '').strip())

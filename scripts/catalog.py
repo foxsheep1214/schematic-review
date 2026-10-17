@@ -711,7 +711,7 @@ EXPLANATION_VERSION = 2
 EXPLANATION_FIELDS = ('risk_if_omitted', 'closes_when', 'inputs', 'false_alarms')
 REQUIRED_EXPLANATION_FIELDS = ('risk_if_omitted', 'closes_when')
 EXPLANATION_LIMITS = {'risk_if_omitted': 40, 'closes_when': 50, 'inputs': 40, 'false_alarms': 50}
-# 第 1 版字段：迁移期间未改写的条目及旧计划仍按此结构读取。
+# 第 1 版字段：只用于读取和校验旧计划、旧结果中的说明。
 LEGACY_EXPLANATION_FIELDS = ('purpose', 'risk_if_omitted', 'connections')
 
 
@@ -900,10 +900,7 @@ def plan_explanation_errors(plan):
 
 def explanation(rule_id):
     """Return an independent snapshot for plans; never infer a verdict."""
-    value = EXPLANATIONS[rule_id]
-    if isinstance(value, tuple):  # 迁移期间尚未改写的第 1 版条目
-        return dict(zip(LEGACY_EXPLANATION_FIELDS, value))
-    return dict(value)
+    return dict(EXPLANATIONS[rule_id])
 
 
 def explanation_errors(value, partial=False):
@@ -926,9 +923,8 @@ def explanation_errors(value, partial=False):
 def catalog_explanation_errors(rule_id):
     """目录条目的写法约束：必填项、A 类常见误报、长度上限与引用规则存在。"""
     value = EXPLANATIONS[rule_id]
-    if isinstance(value, tuple):
-        errors = [] if len(value) == len(LEGACY_EXPLANATION_FIELDS) else ['legacy explanation needs 3 fields']
-        return errors + explanation_errors(explanation(rule_id))
+    if not isinstance(value, dict) or set(value) - set(EXPLANATION_FIELDS):
+        return ['目录说明须为第 2 版字段']
     errors = explanation_errors(value)
     if method_of(rule_id) == 'A' and not value.get('false_alarms'):
         errors.append('自动扫描规则须写 false_alarms')
@@ -1128,8 +1124,8 @@ def render_markdown():
                   '|---|---|---|---|---|']
         for rule in sorted(rules(domain=domain.code), key=lambda r: order(r.id)):
             value = explanation(rule.id)
-            cells = (rule.id, value.get('risk_if_omitted'), value.get('closes_when', '待改写'),
-                     value.get('inputs') or value.get('connections') or '—', value.get('false_alarms') or '—')
+            cells = (rule.id, value['risk_if_omitted'], value['closes_when'],
+                     value.get('inputs') or '—', value.get('false_alarms') or '—')
             lines.append('| ' + ' | '.join(_cell(v) for v in cells) + ' |')
         lines.append('')
     lines += ['', '## 功能包', '',
