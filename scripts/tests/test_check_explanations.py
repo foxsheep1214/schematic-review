@@ -25,8 +25,10 @@ class CheckExplanationTests(unittest.TestCase):
 
     def test_new_plans_explain_every_check_without_setting_verdicts(self):
         plan = build_review_plan(sample_db())
+        self.assertEqual(sorted(plan['check_explanations']), sorted({c['rule'] for c in plan['checks']}))
         for check in plan['checks']:
-            self.assertEqual(check['check_explanation'], catalog.explanation(check['rule']))
+            self.assertNotIn('check_explanation', check)  # 每条规则只存一份
+            self.assertEqual(plan['check_explanations'][check['rule']], catalog.explanation(check['rule']))
             if check['applicability'] != 'NOT_APPLICABLE':
                 self.assertIsNone(check['review_result'])
             self.assertNotIn('potential_severity', check)
@@ -36,11 +38,34 @@ class CheckExplanationTests(unittest.TestCase):
         old = build_review_plan(db)
         row = copy.deepcopy(next(c for c in old['checks'] if c['rule'] == 'DEV-C01'))
         row['id'] = 'DEV-C01.MANUAL_EXTRA'
-        row.pop('check_explanation')
+        row['check_explanation'] = catalog.explanation('DEV-C01')  # 旧版逐行说明
         old['checks'].append(row)
         new = build_review_plan(db, previous_plan=old)
         retained = next(c for c in new['checks'] if c['id'] == row['id'])
-        self.assertEqual(retained['check_explanation'], catalog.explanation('DEV-C01'))
+        self.assertNotIn('check_explanation', retained)
+        self.assertEqual(new['check_explanations']['DEV-C01'], catalog.explanation('DEV-C01'))
+
+    def test_shared_plan_explanation_cannot_be_changed_or_dropped(self):
+        p, r, db = fixture()
+        p['check_explanations'] = catalog.explanations_for(c['rule'] for c in p['checks'])
+        r['plan_digest'] = fingerprint(p)
+        self.assertTrue(validate_review(p, r, db)['valid'])
+        rule = p['checks'][0]['rule']
+        p['check_explanations'][rule] = dict(p['check_explanations'][rule], risk_if_omitted='nothing')
+        r['plan_digest'] = fingerprint(p)
+        self.assertTrue(any('check_explanations' in e for e in validate_review(p, r, db)['errors']))
+        del p['check_explanations'][rule]
+        r['plan_digest'] = fingerprint(p)
+        self.assertTrue(any('缺少规则' in e for e in validate_review(p, r, db)['errors']))
+
+    def test_shared_explanation_renders_per_check(self):
+        p, r, db = fixture()
+        p['check_explanations'] = catalog.explanations_for(c['rule'] for c in p['checks'])
+        text = '\n'.join(render_check_explanations(p, r))
+        for check in p['checks']:
+            self.assertIn(check['id'], text)
+        self.assertIn(catalog.explanation(p['checks'][0]['rule'])['purpose'], text)
+        self.assertNotIn('记录未提供', text)
 
     def test_plan_explanation_cannot_be_changed_to_hide_risk(self):
         p, r, db = fixture()

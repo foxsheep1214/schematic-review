@@ -348,7 +348,6 @@ class ReviewPlanner:
             'domain': catalog.domain_of(rule),
             'object': obj,
             'criterion': entry.criterion if criterion is None else criterion,
-            'check_explanation': catalog.explanation(rule),
             'applicability': applicability,
             'readiness': readiness,
             'required_inputs': sorted(set(required_inputs or [])),
@@ -976,7 +975,7 @@ class ReviewPlanner:
                 continue
             # Final results live in review-results.json. Do not turn old plan annotations into verdicts.
             retained = deepcopy(item)
-            retained['check_explanation'] = catalog.explanation(retained['rule'])
+            retained.pop('check_explanation', None)
             retained['review_result'] = 'NA' if retained.get('applicability') == 'NOT_APPLICABLE' else None
             retained['evidence_confidence'] = None
             self.checks.append(retained)
@@ -1079,8 +1078,10 @@ class ReviewPlanner:
                 history['readiness'] = 'WAITING_EVIDENCE'
                 history['required_inputs'] = sorted(set(history['required_inputs']) |
                     set(plan['revision_impact']['blocking_gaps']))
+        # 规则说明每条规则存一份；对象化说明写在结果行。
         for check in plan['checks']:
-            check['check_explanation'] = catalog.explanation(check['rule'])
+            check.pop('check_explanation', None)
+        plan['check_explanations'] = catalog.explanations_for(c['rule'] for c in plan['checks'])
         return plan
 
 

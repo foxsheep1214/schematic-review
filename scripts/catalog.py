@@ -855,6 +855,28 @@ EXPLANATIONS = {
 }
 
 
+def explanations_for(rule_ids):
+    """计划级规则说明：每条出现的规则一份，按编号排序。"""
+    return {rule: explanation(rule) for rule in sorted(set(rule_ids))}
+
+
+def plan_explanation_errors(plan):
+    """计划级说明须覆盖每个检查的规则，且与规则说明一致；旧计划没有该字段时不检查。"""
+    saved = plan.get('check_explanations')
+    if saved is None:
+        return []
+    if not isinstance(saved, dict):
+        return ['check_explanations must be an object keyed by rule']
+    errors = []
+    for rule in sorted({c.get('rule') for c in plan.get('checks') or [] if isinstance(c, dict)} - {None}):
+        if rule not in saved:
+            errors.append('check_explanations 缺少规则 %s' % rule)
+        elif saved[rule] != explanation(rule):
+            errors.extend(explanation_errors(saved[rule]) or
+                          ['计划 check_explanations.%s 与规则说明不同；对象化说明写入结果行' % rule])
+    return errors
+
+
 def explanation(rule_id):
     """Return an independent snapshot for plans; never infer a verdict."""
     return dict(zip(EXPLANATION_FIELDS, EXPLANATIONS[rule_id]))

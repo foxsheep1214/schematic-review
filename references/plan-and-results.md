@@ -104,7 +104,6 @@
 | `rule` / `method` / `domain` | 规则编号、方式代码、内容域代码，须与总表一致 |
 | `object` | 对象：覆盖维度、功能包、全板、网络、位号、引脚或页码 |
 | `criterion` | 本项判据 |
-| `check_explanation` | 本项检查的目的、漏查风险及证据衔接；由规则说明生成并随计划保存 |
 | `applicability` | APPLICABLE / NOT_APPLICABLE / UNDETERMINED |
 | `readiness` | READY / WAITING_EVIDENCE / NOT_SCHEDULED |
 | `required_inputs` | 当前缺失的输入 |
@@ -186,7 +185,8 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 
 ### 每项检查的目的与衔接
 
-计划项的 `check_explanation` 由 `scripts/catalog.py` 逐规则生成并随计划保存，三个非空文本字段为：
+计划顶层的 `check_explanations` 按规则编号各存一份说明（由 `scripts/catalog.py` 生成，计划中出现的每条规则都要有），
+计划项本身不重复携带。每份说明的三个非空文本字段为：
 
 | 字段 | 要回答的问题 |
 |---|---|

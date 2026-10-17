@@ -299,7 +299,6 @@ def collect_changes(old_db, db, old_inputs, inputs):
 def _review_check(key, rule, obj):
     return {'id': key, 'rule': rule, 'method': catalog.method_of(rule), 'domain': catalog.domain_of(rule),
             'object': obj, 'criterion': catalog.criterion(rule),
-            'check_explanation': catalog.explanation(rule),
             'applicability': 'APPLICABLE', 'readiness': 'WAITING_EVIDENCE',
             'required_inputs': ['current revision re-verification evidence'],
             'trigger': ['revision-impact'], 'review_result': None,

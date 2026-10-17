@@ -160,6 +160,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     for key, item in expected.items():
         for message in catalog.spec_errors(item):
             require(False, f"{key}: {message}")
+    for message in catalog.plan_explanation_errors(plan):
+        require(False, message)
     revision_errors, revision = validate_metadata(plan, db, old_db, old_plan, require_revision)
     errors.extend(revision_errors)
     if revision is not None:
@@ -178,8 +180,10 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 actual = expected.get(generated['id'])
                 require(actual is not None and revision_digest(check_spec(actual)) == revision_digest(check_spec(generated)),
                         generated['id'] + ': automatic check missing or changed from saved inputs')
-                require(actual is not None and actual.get('check_explanation') == generated.get('check_explanation'),
-                        generated['id'] + ': automatic check explanation missing or changed from saved inputs')
+            saved = plan.get('check_explanations') or {}
+            for rule in sorted({generated['rule'] for generated in planner.checks}):
+                require(saved.get(rule) == catalog.explanation(rule),
+                        rule + ': automatic check explanation missing or changed from saved inputs')
         except (ValueError, TypeError, KeyError, AttributeError) as error:
             require(False, 'invalid generated-check inputs: ' + str(error))
     gates = validate_inventories(REGISTRY, plan, expected, db, require,

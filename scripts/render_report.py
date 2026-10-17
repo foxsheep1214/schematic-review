@@ -188,7 +188,8 @@ def render_check_explanations(plan, results):
     planned = {c['id']: c for c in plan.get('checks') or [] if isinstance(c, dict) and 'id' in c}
     reviewed = {c['id']: c for c in results.get('checks') or [] if isinstance(c, dict) and 'id' in c}
     keys = sorted(set(planned) | set(reviewed))
-    if not any('check_explanation' in c for c in list(planned.values()) + list(reviewed.values())):
+    shared = plan.get('check_explanations') if isinstance(plan.get('check_explanations'), dict) else {}
+    if not shared and not any('check_explanation' in c for c in list(planned.values()) + list(reviewed.values())):
         return []  # Historical records stay historical; no live-catalog substitution.
     out = ['## 逐项检查说明', '',
            '“漏查风险”解释为什么要检查，不代表已经发现该问题，也不决定风险等级。'
@@ -197,7 +198,9 @@ def render_check_explanations(plan, results):
     for key in keys:
         p, r = planned.get(key, {}), reviewed.get(key, {})
         specific = 'check_explanation' in r
-        exp = r.get('check_explanation') if specific else p.get('check_explanation')
+        rule = p.get('rule') or r.get('rule')
+        exp = (r.get('check_explanation') if specific else
+               p['check_explanation'] if 'check_explanation' in p else shared.get(rule))
         exp = exp if isinstance(exp, dict) else {}
         result = RESULT_SHORT.get(r.get('review_result'), '未审结')
         where = '、'.join(anchors(p.get('object'))) or '见检查对象'
