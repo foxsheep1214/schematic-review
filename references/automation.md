@@ -673,7 +673,9 @@ ESP32-C3-MINI-1-N4 的 EN8 是复位接收输入（模组 datasheet v2.2，Table
 PWR-T04 按需求决定哪些域必须监控。`supervision.schema_version=2` 可增加
 `rail_requirements` 数组；每项只绑定一个实际 `net` 和一个 `intent.assemblies` 的 `state`，
 写 `required`（真布尔）、`criterion`（明确监控要求或不要求的范围依据）、`citation`（受控出处），
-以及 `identity`：
+以及 `identity`；可选 `internal_monitor`：`{"node": "U402.8", "function": "VCC UVLO 及迟滞", "citation": "手册页码/章节"}`，
+表示负载 IC 片内的 UVLO/欠压/掉电检测监测本轨（节点须是该轨上已贴装 IC 的脚）。声明有效时本轨按已监测计，
+PWR-T04 不再报 `rail-unmonitored`；门限、迟滞与动作是否满足需求仍由 PWR-C06/RST-T03 另核。`identity` 字段：
 
 - `source_node`：该轨实际来源的物理节点；`source_role` 为 `external_supply`、`upstream_external_supply` 或 `rail_driver`。
 - `part`：实际来源器件的 `part`、`prim`、`value`、`jedec` 四字段快照（空字段保留空字符串）。

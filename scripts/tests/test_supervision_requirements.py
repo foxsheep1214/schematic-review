@@ -82,6 +82,23 @@ class RailRequirementsTest(unittest.TestCase):
         self.assertEqual(checks['A']['inventory_gaps'], ['rail-unmonitored:VCC_A'])
         self.assertEqual(checks['B']['inventory_gaps'], [])
 
+    def test_cited_on_chip_uvlo_monitors_a_required_rail(self):
+        # 100W PD 复审：控制器片内 UVLO/欠压检测在监控清单里不被认作监控。
+        item = self.intent['supervision']['rail_requirements'][0]
+        item['required'] = True
+        item['internal_monitor'] = {'node': 'U1.1', 'function': 'VDD UVLO with hysteresis',
+                                    'citation': 'Synthetic datasheet UVLO section 7.3'}
+        self.assertEqual(validate_supervision_intent(self.intent, self.db), [])
+        plan, checks = coverage(self.db, self.intent)
+        self.assertEqual(checks['A']['inventory_gaps'], [])
+        rail = next(r for s in plan['supervision']['states'] if s['id'] == 'A'
+                    for r in s['rails'] if r['net'] == 'VCC_A')
+        self.assertEqual(rail['monitor'], 'internal:U1.1')
+        item['internal_monitor']['node'] = 'U1.2'   # pin on another rail
+        self.assertTrue(any('internal_monitor' in e for e in validate_supervision_intent(self.intent, self.db)))
+        item['internal_monitor'] = {'node': 'U1.1'}
+        self.assertTrue(any('internal_monitor' in e for e in validate_supervision_intent(self.intent, self.db)))
+
     def test_one_declaration_does_not_cover_other_rail_or_state(self):
         self.intent['supervision']['rail_requirements'] = self.intent['supervision']['rail_requirements'][:1]
         _, checks = coverage(self.db, self.intent)

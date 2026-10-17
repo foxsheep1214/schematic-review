@@ -84,6 +84,8 @@ def _physical_pin(graph, ref, pin, names, directions):
 
 
 RAIL_REQUIREMENT_FIELDS = {'net', 'state', 'required', 'criterion', 'citation', 'identity'}
+# 可选：负载 IC 片内监测（UVLO/欠压/掉电检测）作为本轨的监控，须有出处；门限与动作仍另审。
+INTERNAL_MONITOR_FIELDS = {'node', 'function', 'citation'}
 SOURCE_IDENTITY_FIELDS = {'source_node', 'source_role', 'part', 'pin_name', 'native_pintypes', 'citation'}
 PART_IDENTITY_FIELDS = {'part', 'prim', 'value', 'jedec'}
 SHUNT_FEED_FIELDS = {'upstream_node', 'upstream_part', 'upstream_pins', 'receiver_pins',
@@ -521,7 +523,13 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
 
     if not isinstance(item, dict):
         return ['rail requirement must be an object']
-    require(set(item) == RAIL_REQUIREMENT_FIELDS, 'rail requirement needs exact net/state/required/criterion/citation/identity')
+    require(set(item) - {'internal_monitor'} == RAIL_REQUIREMENT_FIELDS,
+            'rail requirement needs exact net/state/required/criterion/citation/identity')
+    monitor = item.get('internal_monitor')
+    if 'internal_monitor' in item:
+        require(isinstance(monitor, dict) and set(monitor) == INTERNAL_MONITOR_FIELDS
+                and all(state_lib._text(monitor.get(k)) for k in INTERNAL_MONITOR_FIELDS),
+                'internal_monitor needs node/function/citation')
     for key in ('net', 'state', 'criterion', 'citation'):
         require(state_lib._text(item.get(key)), 'rail requirement needs ' + key)
     require(type(item.get('required')) is bool, 'rail requirement required must be boolean (unknown remains undeclared)')
@@ -576,6 +584,11 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
     elif shunt:
         feed_errors, _ = _internal_shunt_feed(scan, item, intent)
         errors.extend(feed_errors)
+    if isinstance(monitor, dict) and isinstance(monitor.get('node'), str):
+        mref = monitor['node'].partition('.')[0]
+        require(graph.pin2net.get(monitor['node']) == net and graph.is_fitted(mref)
+                and graph.kind(mref) is ng.IC,
+                'internal_monitor node must be a fitted IC pin on this rail')
     return errors
 
 
@@ -750,6 +763,11 @@ def build_inventory(db, intent=None):
                 rail['requirement'] = matches[0] if valid else None
                 if valid:
                     identity = matches[0]['identity']
+                    if matches[0].get('internal_monitor') and not rail['monitor']:
+                        rail['monitor'] = 'internal:' + matches[0]['internal_monitor']['node']
+                        rail['internal_monitor'] = matches[0]['internal_monitor']
+                        rail['observation_gaps'] = [g for g in rail['observation_gaps']
+                                                    if g != 'rail-unmonitored:' + rail['net']]
                     rail['source_path'] = (_upstream_external_path(
                         scan, identity['source_node'], rail['net'], identity['citation'])
                         if identity['source_role'] == 'upstream_external_supply'
