@@ -26,7 +26,7 @@ import sys
 from collections import Counter
 from checkers import REGISTRY, passive_stress, registry_cold_rules, registry_hot_rules
 from checkers import powertree
-from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, IC, TVS, UNKNOWN, ZENER, NetGraph, normalize
+from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, IC, MOSFET, TVS, UNKNOWN, ZENER, NetGraph, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
@@ -62,9 +62,13 @@ GROUND_RE = re.compile(r'^([A-Z]{0,2}GND[A-Z0-9]{0,3}|[AD]?VSS[A-Z0-9]{0,3}|EP|P
 # 阈值型保护两侧分别成项，避免只核一侧即通过。
 WINDOW_SIDES = (
     ('NOTRIP', '不误动作侧：正常工况被测量最大值（全部输出档位、瞬态与上电/掉电、公差、温度、漏电，'
-               '含峰值整流或滤波捕获的尖峰）低于门限最小值并留裕量；也可用有据的滤波/消隐及波形证明不形成有效触发'),
+               '含峰值整流或滤波捕获的尖峰）低于门限最小值并留裕量，门限脚计入接收端内部钳位/上下拉的吸流；'
+               '也可用有据的滤波/消隐及波形证明不形成有效触发'),
     ('TRIP', '动作有效侧：按受控故障及可接受终态核检测、执行、剩余能量和适用的保持/复位；正常及要求无损恢复的工况满足额定，允许破坏性安全失效的工况按其安全判据关闭'),
 )
+# 栅源稳压管/TVS 在正常驱动中允许限幅：不误动作侧改核“不妨碍规定导通”。
+GATE_CLAMP_NOTRIP = ('不误动作侧（栅源限幅，正常驱动中允许钳位）：正常驱动窗口内钳位不妨碍所需导通栅压，'
+                     '钳位电流与功耗（含驱动源限流）在器件额定内；不要求正常工作永不导通')
 # 全板规则执行前需要的资料；未列出的规则只需网表。
 BOARD_MATERIALS = {
     'DOC-D02': ('requirements',), 'DOC-V02': ('schematic_pdf',),
@@ -702,9 +706,21 @@ class ReviewPlanner:
         def grounded(net):
             return net in GNDS or bool(GROUND_RE.match(str(net).rsplit('/', 1)[-1]))
 
-        def window(obj, gaps, trigger):
+        def window(obj, gaps, trigger, gate_clamp=False):
             for side, criterion in WINDOW_SIDES:
+                if gate_clamp and side == 'NOTRIP':
+                    criterion = GATE_CLAMP_NOTRIP
                 self._ready_check('PRO-C02', obj, gaps + requirements, trigger, key=side, criterion=criterion)
+
+        def gate_source_clamp(ref):
+            """两端分别在某只 MOS 的栅极网和源极网上。"""
+            pins = set(graph.pins_of(ref).values())
+            for other in parts:
+                gate, source = (graph.node_named(other, role) for role in ('gate', 'source'))
+                if (other != ref and graph.kind(other) == MOSFET and gate and source
+                        and pins == {pin2net.get(gate), pin2net.get(source)}):
+                    return other
+            return None
 
         rails = powertree.PowerTree(graph)
 
@@ -735,7 +751,9 @@ class ReviewPlanner:
                 continue
             if kind in (ZENER, TVS):
                 gaps, audit = self._datasheet_readiness(ref, part)
-                window({'ref': ref}, gaps, [f'refdes:{ref}', f'device-kind:{kind}:{graph.basis(ref)}'] + audit)
+                switch = gate_source_clamp(ref)
+                window({'ref': ref}, gaps, [f'refdes:{ref}', f'device-kind:{kind}:{graph.basis(ref)}'] + audit
+                       + ([f'gate-source-clamp:{switch}'] if switch else []), gate_clamp=bool(switch))
                 continue
             if not SENSOR_RE.search(' '.join(str(part.get(k, '')) for k in ('part', 'value', 'prim'))):
                 continue

@@ -376,6 +376,23 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(checks['PRO-C02.TRIP.D1']['method'], 'C')
         self.assertIn('requirements', checks['PRO-C02.TRIP.D1']['required_inputs'])
 
+    def test_gate_source_zener_may_clamp_in_normal_drive(self):
+        # 100W PD 复审：Q701 栅源稳压管 D701 正常驱动中允许限幅，不能要求永不导通。
+        db = threshold_db()
+        for ref, value, rows in (('Q9', 'NMOS', [('1', 'G', 'G9'), ('2', 'D', 'D9N'), ('3', 'S', 'S9')]),
+                                 ('D9', 'MMSZ5248B', [('1', 'K', 'G9'), ('2', 'A', 'S9')])):
+            db['parts'][ref] = {'part': value, 'value': value, 'prim': 'X', 'jedec': '', 'nc': False}
+            db['ref2page'][ref] = 1
+            for pin, name, net in rows:
+                db['nets'].setdefault(net, []).append(ref + '.' + pin)
+                db['pin2net'][ref + '.' + pin] = net
+                db['pinname'][ref + '.' + pin] = name
+        checks = {x['id']: x for x in build_review_plan(db)['checks'] if x['rule'] == 'PRO-C02'}
+        self.assertIn('允许钳位', checks['PRO-C02.NOTRIP.D9']['criterion'])
+        self.assertIn('gate-source-clamp:Q9', checks['PRO-C02.NOTRIP.D9']['trigger'])
+        self.assertNotIn('允许钳位', checks['PRO-C02.NOTRIP.D1']['criterion'])
+        self.assertIn('内部钳位', checks['PRO-C02.NOTRIP.U1-1']['criterion'])
+
     def test_sensor_rail_end_and_ic_supply_pins_are_not_sensing_inputs(self):
         # rf1 公开板：NTC 上端接 3V3 轨，轨上各 IC 的 VDD 脚曾各生成一条 ANA-C04。
         db = threshold_db()
