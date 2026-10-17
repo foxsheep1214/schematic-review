@@ -8,7 +8,9 @@ through an optional notes file; it cannot change verdicts or counts here.
 notes.json (optional):
   {"summary": "1-3 sentences for a hardware engineer",
    "items": {"<work item or finding id>": "one or two plain sentences"},
-   "highlights": ["at most 8 short lines on what was actually verified"]}
+   "highlights": ["at most 8 short lines on what was actually verified"],
+   "sr_feedback": [{"kind": "false_alarm|over_strict|missed|unclear", "rules": ["PRO-C02"],
+                    "instance": "what happened on this board", "suggestion": "how SR should change"}]}
 """
 import argparse
 import json
@@ -184,6 +186,45 @@ def covered_by_findings(task, checks, findings):
     if not ids or any((checks.get(k) or {}).get('review_result') != 'FAIL' or k not in owned for k in ids):
         return []
     return unique([owned[k] for k in ids])
+
+
+SR_FEEDBACK_KINDS = (('false_alarm', '误报'), ('over_strict', '规则过严或关闭条件不合理'),
+                     ('missed', '漏报'), ('unclear', '说明不清或互相矛盾'))
+
+
+def sr_feedback_errors(items):
+    """notes.sr_feedback: [{kind, rules, instance, suggestion}]，每条都要点名规则和实例。"""
+    if items is None:
+        return []
+    if not isinstance(items, list):
+        return ['sr_feedback must be a list']
+    errors = []
+    kinds = dict(SR_FEEDBACK_KINDS)
+    for i, item in enumerate(items):
+        ok = (isinstance(item, dict) and set(item) == {'kind', 'rules', 'instance', 'suggestion'}
+              and item.get('kind') in kinds and isinstance(item.get('rules'), list) and item['rules']
+              and all(isinstance(r, str) and re.match(r'^[A-Z]{3}-[A-Z]\d{2}$', r) for r in item['rules'])
+              and all(isinstance(item.get(k), str) and item[k].strip() for k in ('instance', 'suggestion')))
+        if not ok:
+            errors.append('sr_feedback[%d] needs kind (%s), rule IDs, instance and suggestion'
+                          % (i, '/'.join(kinds)))
+    return errors
+
+
+def render_sr_feedback(items):
+    """审查者对 SR 技能的反馈：误报、过严、漏报、说明不清，按类分组，给 SR 维护用。"""
+    if not items or sr_feedback_errors(items):
+        return []
+    out = ['## 对 SR 技能的反馈（设计者不用处理）', '',
+           '审查中发现的 SR 规则误报、过严、漏报或说明问题，逐条写明规则、本板实例和改进建议，留给 SR 维护。', '']
+    for kind, label in SR_FEEDBACK_KINDS:
+        rows = [i for i in items if i['kind'] == kind]
+        if rows:
+            out += ['### ' + label, '']
+            out += ['%d. **%s**：%s 建议：%s' % (n, '、'.join(r['rules']), cell(r['instance']), cell(r['suggestion']))
+                    for n, r in enumerate(rows, 1)]
+            out.append('')
+    return out
 
 
 def same_text(a, b):
@@ -382,6 +423,8 @@ def render(plan, results, gate, notes=None, title=None):
                     '- **建议怎么改进 SR**：' + improve,
                     '- **这次怎么核对的**：' + method, '']
 
+    out += render_sr_feedback(notes.get('sr_feedback'))
+
     gaps = [c for c in current_rows.values() if c.get('review_result') == 'INSUFFICIENT']
     pot = Counter(c.get('potential_severity') for c in gaps)
     cause = Counter(c.get('gap_cause') for c in gaps)
@@ -416,8 +459,12 @@ def main(argv=None):
     parser.add_argument('-o', '--out', required=True)
     args = parser.parse_args(argv)
     load = lambda p: json.loads(Path(p).read_text(encoding='utf-8'))
-    text = render(load(args.plan), load(args.results), load(args.gate),
-                  load(args.notes) if args.notes else None, args.title)
+    notes = load(args.notes) if args.notes else None
+    problems = sr_feedback_errors((notes or {}).get('sr_feedback'))
+    if problems:
+        print('notes.json: ' + '; '.join(problems), file=sys.stderr)
+        return 2
+    text = render(load(args.plan), load(args.results), load(args.gate), notes, args.title)
     Path(args.out).write_text(text, encoding='utf-8')
     print('wrote', args.out)
     return 0

@@ -1,4 +1,6 @@
 """The delivery is one generated report plus a small record; numbers come only from the ledger."""
+import contextlib
+import io
 import json
 import tempfile
 import unittest
@@ -223,6 +225,29 @@ class ReportWordingTests(unittest.TestCase):
         self.assertEqual(covered_by_findings({'check_ids': ['A', 'B']}, checks, findings), [])
         self.assertTrue(same_text('改正13个PWR_FLAG的编号', '改正13个PWR_FLAG的编号'))
         self.assertFalse(same_text('使分段积分与实际限流一致', '修正计算记录'))
+
+    def test_sr_feedback_is_grouped_by_kind_and_malformed_items_are_rejected(self):
+        from render_report import render_sr_feedback, sr_feedback_errors, main
+        items = [{'kind': 'false_alarm', 'rules': ['SIG-T01'], 'instance': 'CS_P/CS_N 被当成差分对',
+                  'suggestion': '按采样对排除'},
+                 {'kind': 'unclear', 'rules': ['DRV-E01'], 'instance': '关闭条件与证据尺度矛盾',
+                  'suggestion': '改成实际栅压下导通有保证'}]
+        text = '\n'.join(render_sr_feedback(items))
+        self.assertIn('### 误报', text)
+        self.assertIn('### 说明不清或互相矛盾', text)
+        self.assertIn('**SIG-T01**', text)
+        self.assertEqual(sr_feedback_errors(items), [])
+        self.assertTrue(sr_feedback_errors([{'kind': 'other', 'rules': ['X'], 'instance': 'a', 'suggestion': 'b'}]))
+        self.assertTrue(sr_feedback_errors([{'kind': 'missed', 'rules': [], 'instance': 'a', 'suggestion': 'b'}]))
+        with tempfile.TemporaryDirectory() as tmp:
+            notes = Path(tmp) / 'notes.json'
+            notes.write_text(json.dumps({'sr_feedback': [{'kind': 'missed'}]}), encoding='utf-8')
+            for name in ('plan', 'results', 'gate'):
+                (Path(tmp) / name).write_text('{}', encoding='utf-8')
+            with contextlib.redirect_stderr(io.StringIO()):
+                code = main([str(Path(tmp) / 'plan'), str(Path(tmp) / 'results'), str(Path(tmp) / 'gate'),
+                             '--notes', str(notes), '-o', str(Path(tmp) / 'out.md')])
+            self.assertEqual(code, 2)
 
     def test_jargon_is_detected_only_as_whole_ascii_words(self):
         from render_report import jargon_in

@@ -5,15 +5,22 @@
 
 **报告由 `scripts/render_report.py` 从台账生成**，顺序固定：结论（电路错误数、能否定稿及还差什么）→
 电路错误 → 待办（一个列表，按可能后果从重到轻）→ 交给后续环节的要求（随图交出，不卡定稿）→ 已核对的重点 →
-审查工具的不足（`sr_improvements`，设计者不用处理）→ 数字一览 → 详细记录。
+审查工具的不足（`sr_improvements`，设计者不用处理）→ 对 SR 技能的反馈（`notes.sr_feedback`）→ 数字一览 → 详细记录。
 结构和数字只来自台账，不手改报告；要改内容就改台账（任务的 title/root_cause/reason/next_action、检查的 input_requests、
 finding 的 remediation、handoff）后重新生成。下文各节规定这些字段写什么。agent 只通过 `notes.json` 补白话：
 
 ```json
 {"summary": "1–3 句：这一轮的状态和最要紧的一件事，写给硬件工程师",
  "items": {"<任务或 finding ID>": "一两句白话：这件事是什么、为什么要做"},
- "highlights": ["最多 8 行：实际复核过、读者需要知道的关键结论，每行一句"]}
+ "highlights": ["最多 8 行：实际复核过、读者需要知道的关键结论，每行一句"],
+ "sr_feedback": [{"kind": "false_alarm", "rules": ["SIG-T01"], "instance": "本板实例：哪个对象、SR 怎么判、实际是什么",
+                  "suggestion": "SR 该怎么改（规则、别名、模型或说明）"}]}
 ```
+
+`sr_feedback` 记录审查中发现的 SR 自身问题，按 `kind` 分四类：`false_alarm`（误报）、`over_strict`（规则过严或关闭
+条件不合理）、`missed`（漏报：问题是审查者自己找到的）、`unclear`（说明不清或互相矛盾）。每条必须点名规则编号、
+本板实例和建议；格式不对时 `render_report.py` 报错退出，不静默丢弃。它渲染为“对 SR 技能的反馈”一节，
+与“审查工具的不足”分开：后者只收工具拦住、审查者已手工判定的检查（`manual_verification`）。
 
 notes 不能改结论或计数，不写内部代码名（gap_cause、documented 等），不重复任务字段已有的内容。
 任务的 title / root_cause / reason / next_action、input_requests 和 handoff 会原样进报告，按写给硬件工程师的白话写：
