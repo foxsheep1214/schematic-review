@@ -44,7 +44,7 @@ CONNECTOR_CONTACT_RE = (
 
 KEYWORD_KINDS = (
     (r'RELAY|继电器', RELAY),
-    (r'OPTO|PC81[07]|LTV\d|TLP\d|6N13[57]|HCPL|ACPL|FOD\d|CNY17|VO6\d|光耦', OPTO),
+    (r'OPTO|PC81[07]|LTV\d|TLP\d|6N13[57]|HCPL|ACPL|FOD\d|CNY17|VO6\d|SFH6\d{2,3}|EL8\d\d|PS2[5-9]\d\d|TCMT\d|KPC\d|H11[A-Z]\d|光耦', OPTO),
     (r'\bTVS\b|SMAJ|SMBJ|SMCJ|P6KE|1\.5KE|ESD\d|PESD|SM712', TVS),
     (r'ZENER|BZX|MMSZ|1N47\d|稳压二极管', ZENER),
     # KiCad symbol-library category of the symbol actually placed.

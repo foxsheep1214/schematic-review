@@ -174,6 +174,11 @@ class NetGraphTest(unittest.TestCase):
     def setUp(self):
         self.graph = ng.NetGraph(relay_fixture.relay_board())
 
+    def test_common_optocoupler_part_numbers_are_classified(self):
+        for part in ('SFH6186-3', 'EL817', 'PS2561', 'TCMT1100', 'PC817'):
+            kind, _ = ng.classify('U9', {'part': part, 'value': part, 'prim': 'X', 'jedec': ''}, 4)
+            self.assertEqual(kind, ng.OPTO, part)
+
     def test_return_named_nets_are_not_rails(self):
         # rf1 公开板：Q2 源极在 VOUT_N（输出负端回流），曾按名字判成高边。
         for net in ('VOUT_N', 'VIN-', 'VBAT_NEG', 'V3V3_RTN'):

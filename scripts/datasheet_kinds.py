@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify reviewer-declared device kinds against the bound datasheet text.
 
-The reviewer states each discrete semiconductor's kind with the datasheet page and a verbatim
+The reviewer states each discrete semiconductor's or optocoupler's kind with the datasheet page and a verbatim
 quote (intent.device_kinds). This module reads that page of the PDF the datasheet audit bound to
 the ref and checks that the quote is really there and that the quote itself names the declared kind.
 It also proposes candidates for undeclared parts. It never turns extracted text into a conclusion:
@@ -15,6 +15,7 @@ import subprocess
 
 # Cue words on ASCII-alphanumeric text with spaces removed (PDF extraction often drops spaces).
 KIND_CUES = (
+    ('opto', ('optocoupler', 'photocoupler', 'optoisolator', 'opticallycoupled', 'opticalisolator', 'opticalcoupler')),
     ('bjt', ('npn', 'pnp', 'bipolar')),
     ('mosfet', ('mosfet', 'nchannel', 'pchannel', 'superjunction')),
     ('tvs', ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress')),
@@ -36,6 +37,9 @@ def cues(text, specific=True):
     found = {kind for kind, words in KIND_CUES if any(w in flat for w in words)}
     if specific and found & SPECIFIC_DIODES:
         found.discard('diode')
+    if specific and 'opto' in found:
+        # An optocoupler quote names its emitter diode and phototransistor too.
+        found -= {'diode', 'bjt'}
     return found
 
 
