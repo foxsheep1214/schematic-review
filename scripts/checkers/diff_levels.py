@@ -60,6 +60,8 @@ class _Scan:
                 # 同一器件同时出现在两条腿上才算一对；交流耦合的两侧各自成对。
                 if not set(self._devices(net)) & set(self._devices(partner)):
                     continue
+                if ng.is_analog_sense_pair(net):  # 电流/电压采样对归模拟检查
+                    break
                 found.append((base or net, net, partner))
                 break
         return found

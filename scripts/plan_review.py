@@ -26,7 +26,7 @@ import sys
 from collections import Counter
 from checkers import REGISTRY, passive_stress, registry_cold_rules, registry_hot_rules
 from checkers import powertree
-from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, IC, MOSFET, TVS, UNKNOWN, ZENER, NetGraph, normalize
+from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, IC, MOSFET, TVS, UNKNOWN, ZENER, NetGraph, is_analog_sense_pair, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
@@ -274,7 +274,7 @@ def _differential_pairs(db):
         if net.upper().endswith('_DP'):
             candidates.append(net[:-3] + '_DM')
         for other in candidates:
-            if other in nets:
+            if other in nets and not is_analog_sense_pair(net):
                 found.add((net, other))
     return sorted(found)
 

@@ -409,6 +409,12 @@ class ReviewPlanTests(unittest.TestCase):
         rows = [x['object']['node'] for x in build_review_plan(db)['checks'] if x['rule'] == 'ANA-C04']
         self.assertEqual(rows, ['U2.1'])
 
+    def test_current_sense_pair_is_not_a_differential_link(self):
+        # 100W PD 复审：CS_P/CS_N 是 R503 电流采样，不套差分数据链路规则。
+        from plan_review import _differential_pairs
+        db = {'nets': {'CS_P': [], 'CS_N': [], 'TX_P': [], 'TX_N': [], 'ISENSE+': [], 'ISENSE-': []}}
+        self.assertEqual(_differential_pairs(db), [('TX_P', 'TX_N')])
+
     def test_regulator_without_u_prefix_is_found_by_native_power_pins(self):
         # rf1 公开板：Reg1/Reg2/Reg3（LM317M、MCP1703）曾因位号不是 U 而没有 DEV-D01/DEV-C05。
         db = threshold_db()

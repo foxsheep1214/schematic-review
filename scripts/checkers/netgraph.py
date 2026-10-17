@@ -240,6 +240,17 @@ def is_ground(net):
     return normalize(net) in GNDS
 
 
+# _P/_N 命名的电流/电压采样对（CS_P/CS_N、ISENSE+/-、SNS_P 等）是模拟测量，不是差分数据链路。
+ANALOG_PAIR_BASE_RE = re.compile(
+    r'(^|[_/.-])(CS|CSP|CSN|ISENSE|ISENS|ISNS|ISEN|SENSE|SNS|IMON|VSENSE|VSNS|SHUNT|IS|CUR|CURRENT|ISET)$', re.I)
+
+
+def is_analog_sense_pair(positive):
+    """按正腿网名去掉 _P/-P/+/P 后缀判断是不是采样对。"""
+    base = re.sub(r'(_P|-P|\+|_DP|P)$', '', str(positive).rsplit('/', 1)[-1], flags=re.I)
+    return bool(ANALOG_PAIR_BASE_RE.search(base))
+
+
 def is_rail(net):
     return bool(net) and not is_ground(net) and bool(RAIL_RE.match(str(net)))
 

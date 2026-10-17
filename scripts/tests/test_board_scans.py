@@ -106,6 +106,14 @@ class I2cPullupTest(unittest.TestCase):
                           {'SDA': ['R1.1'], 'SCL': ['R2.1'], 'PULL': ['R1.2', 'R2.2']})
         self.assertEqual(scans(jumper, 'SIG-A03'), [])
 
+    def test_single_ic_with_test_points_only_is_fixture_access(self):
+        # 100W PD 复审：CFG_SDA 只接 U601 和测试点，对端与上拉在生产夹具。
+        db = board({'U1': 'PD-CTRL', 'TP1': 'TESTPOINT', 'TP2': 'TESTPOINT'},
+                   {'CFG_SDA': ['U1.1', 'TP1.1'], 'CFG_SCL': ['U1.2', 'TP2.1'], 'GND': ['U1.3']})
+        hits = scans(db, 'SIG-A03')
+        self.assertEqual({f['kind'] for f in hits}, {'INFO'})
+        self.assertIn('夹具', hits[0]['detail'])
+
     def test_resistor_to_ground_is_not_a_pullup(self):
         db = self.bus({'R1': '10K'}, {'SDA': ['R1.1'], 'GND': ['R1.2']})
         self.assertEqual(subjects(scans(db, 'SIG-A03')), ['SCL', 'SDA'])

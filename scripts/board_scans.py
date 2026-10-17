@@ -8,7 +8,7 @@
 """
 import re
 
-from checkers.netgraph import IC, RESISTOR, is_ground, is_rail, rail_voltage
+from checkers.netgraph import IC, RESISTOR, TESTPOINT, is_ground, is_rail, rail_voltage
 
 # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 RATING_RE = re.compile(r'(?<![\d.])(\d+(?:\.\d+)?)\s*V(?![\dA-Z])', re.I)
@@ -105,6 +105,14 @@ def i2c_pullups(lint):
         resistors = [ref for ref in refs if lint.graph.kind(ref) == RESISTOR
                      and not lint.parts.get(ref, {}).get('nc')
                      and not any(is_ground(other) for other in lint.graph.nets_of(ref) if other != net)]
+        ics = [ref for ref in refs if lint.graph.kind(ref) == IC]
+        access = [ref for ref in refs if lint.graph.kind(ref) == TESTPOINT]
+        if not resistors and len(ics) == 1 and len(ics) + len(access) == len(refs):
+            # 只有一颗 IC，其余是测试点：对端和上拉在生产/调试夹具上（连接器仍按候选，板外主机未必有上拉）。
+            lint.add('SIG-A03', 'I²C 线无上拉',
+                     f'{net}: 只有 {ics[0]} 和测试点 {access[:6]}，对端与上拉在生产/调试夹具；'
+                     '按接口条款核外部上拉与电平，不为此补板载上拉', ics[0], kind='INFO')
+            continue
         if not resistors:
             lint.add('SIG-A03', 'I²C 线无上拉',
                      f'{net}: {refs[:8]} 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，'
