@@ -462,7 +462,7 @@ class PowerSwitchChecker(Checker):
             drive, limits, spec = hotmath.negate(drive), hotmath.negate(limits), -spec
         problems = []
         if drive[0] < spec:
-            problems.append('最小栅源驱动 %s 低于 RDS(on) 保证条件 %s'
+            problems.append('最小栅源驱动 %s 低于所需导通栅压 %s（RDS(on) 条件或有据曲线点）'
                             % (hotmath.fmt(drive[0], 'V'), hotmath.fmt(spec, 'V')))
         if drive[1] > limits[1] or drive[0] < limits[0]:
             problems.append('栅源驱动窗口 [%s, %s] 超出绝对最大范围 [%s, %s]'

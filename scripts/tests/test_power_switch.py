@@ -268,7 +268,7 @@ class HotRuleTest(unittest.TestCase):
     def test_drive_below_rds_on_condition_fails(self):
         result = self.run_check(gate_check(vgs_drive_v={'min': 3.0, 'max': 5.0}))
         self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('低于 RDS(on) 保证条件', result['detail'])
+        self.assertIn('低于所需导通栅压', result['detail'])
 
     def test_drive_above_absolute_maximum_fails(self):
         result = self.run_check(gate_check(vgs_drive_v={'min': 9.0, 'max': 25.0}))
