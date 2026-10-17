@@ -376,6 +376,29 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(checks['PRO-C02.TRIP.D1']['method'], 'C')
         self.assertIn('requirements', checks['PRO-C02.TRIP.D1']['required_inputs'])
 
+    def test_connector_signal_esd_folds_into_connector_protection(self):
+        db = threshold_db()
+        extra = {'J1': [('1', '1', 'USB_DP'), ('2', '2', 'VBUS'), ('3', '3', 'PGND')],
+                 'D3': [('1', 'K', 'USB_DP'), ('2', 'A', 'PGND')],
+                 'D4': [('1', 'K', 'VBUS'), ('2', 'A', 'PGND')],
+                 'D5': [('1', 'K', 'INT_SIG'), ('2', 'A', 'PGND')],
+                 'U3': [('1', 'IO', 'INT_SIG'), ('2', 'GND', 'PGND')]}
+        for ref, value in (('J1', 'USB_C'), ('D3', 'PESD5V0'), ('D4', 'SMAJ5.0A'),
+                           ('D5', 'PESD5V0'), ('U3', 'MCU')):
+            db['parts'][ref] = {'part': value, 'value': value, 'prim': 'X', 'jedec': '', 'nc': False}
+            db['ref2page'][ref] = 1
+        for ref, rows in extra.items():
+            for pin, name, net in rows:
+                db['nets'].setdefault(net, []).append(ref + '.' + pin)
+                db['pin2net'][ref + '.' + pin] = net
+                db['pinname'][ref + '.' + pin] = name
+        checks = build_review_plan(db)['checks']
+        refs = sorted({x['object']['ref'] for x in checks if x['rule'] == 'PRO-C02'})
+        # 信号线 ESD 不逐颗双侧核算；电源轨 TVS 与板内钳位仍需要。
+        self.assertEqual(refs, ['D1', 'D4', 'D5', 'U1'])
+        connector = next(x for x in checks if x['rule'] == 'PRO-D03' and x['object']['ref'] == 'J1')
+        self.assertEqual(connector['clamp_refs'], ['D3'])
+
     def test_sensor_discrimination_is_planned_per_controller_pin(self):
         checks = [x for x in build_review_plan(threshold_db())['checks'] if x['rule'] == 'ANA-C04']
         # 浪涌 NTC 不接 IC 脚，地侧的 U2.GND 也不成项。

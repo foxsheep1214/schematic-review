@@ -124,7 +124,8 @@
 - **全板通用**规则每板一项（`{"board": "BOARD"}`）；准备度按该规则所需资料判定。
   DOC-T01 逐 `intent.assemblies` 声明的装配状态一项。
 - **逐位号**：每颗 IC/模组生成 DEV-C05 与 DEV-D05；每个连接器生成 DEV-D03、DEV-D05 与 PRO-D03。
-  每颗齐纳/TVS 与每个保护门限脚（FAULT/OVP/UVLO/OCP/OTP 等）生成 PRO-C02 不误动作（NOTRIP）、动作有效（TRIP）两项；
+  每颗齐纳、电源轨或板内 TVS 与每个保护门限脚（FAULT/OVP/UVLO/OCP/OTP 等）生成 PRO-C02 不误动作（NOTRIP）、动作有效（TRIP）两项；
+  非地端全是信号网且直达连接器的 ESD/TVS 不另生成，记入该连接器 PRO-D03 的 `clamp_refs` 一并核对；
   热敏等传感器每个接到 IC 的检测脚生成 ANA-C04（开短路判别）。
   声明了 `intent.devices` 的位号，DEV-D02 带官方/符号双向差集，DEV-D05 带待复核引脚清单（不是结论）。
 - **需求与覆盖**：每条需求实例化为 REQ-D01；另有六类覆盖审计项 DOC-Q01、REQ-Q01～Q04、DEV-Q01。

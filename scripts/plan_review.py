@@ -25,6 +25,7 @@ import re
 import sys
 from collections import Counter
 from checkers import REGISTRY, passive_stress, registry_cold_rules, registry_hot_rules
+from checkers import powertree
 from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, IC, TVS, ZENER, NetGraph, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
@@ -695,10 +696,30 @@ class ReviewPlanner:
             for side, criterion in WINDOW_SIDES:
                 self._ready_check('PRO-C02', obj, gaps + requirements, trigger, key=side, criterion=criterion)
 
+        rails = powertree.PowerTree(graph)
+
+        def connectors_on(net):
+            return {node.split('.')[0] for node in nets.get(net, [])
+                    if CONNECTOR_RE.match(node.split('.')[0]) or graph.kind(node.split('.')[0]) == CONNECTOR}
+
+        def io_clamp_connectors(ref):
+            """对外信号线 ESD 钳位：各非地端都是信号网且至少一端直达连接器；由 PRO-D03 逐针覆盖。"""
+            live = [net for net in set(graph.pins_of(ref).values())
+                    if net and not grounded(net) and net not in db.get('pseudo_nets', [])]
+            if not live or any(rails.is_rail(net) for net in live):
+                return set()
+            return set().union(*(connectors_on(net) for net in live))
+
         for ref, part in sorted(parts.items()):
             if part.get('nc'):
                 continue
             kind = graph.kind(ref)
+            covering = [check for check in self.checks if check['rule'] == 'PRO-D03'
+                        and check['object'].get('ref') in io_clamp_connectors(ref)] if kind == TVS else []
+            if covering:
+                for check in covering:
+                    check['clamp_refs'] = sorted(set(check.get('clamp_refs', [])) | {ref})
+                continue
             if kind in (ZENER, TVS):
                 gaps, audit = self._datasheet_readiness(ref, part)
                 window({'ref': ref}, gaps, [f'refdes:{ref}', f'device-kind:{kind}:{graph.basis(ref)}'] + audit)
