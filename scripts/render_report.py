@@ -184,34 +184,47 @@ def failed_checks(rows, findings):
                     for fid, ids in groups.items())
 
 
+EXPLANATION_LABELS = (('risk_if_omitted', '不查会漏掉什么'), ('closes_when', '关闭条件'),
+                      ('false_alarms', '常见误报/合法结构'),
+                      ('purpose', '在检查什么'), ('connections', '与其他检查怎样衔接'))  # 后两项为第 1 版记录
+
+
 def render_check_explanations(plan, results):
+    """只为没通过和资料不足的检查展开说明，不适用的写一句理由，通过项不展开。"""
     planned = {c['id']: c for c in plan.get('checks') or [] if isinstance(c, dict) and 'id' in c}
     reviewed = {c['id']: c for c in results.get('checks') or [] if isinstance(c, dict) and 'id' in c}
     keys = sorted(set(planned) | set(reviewed))
     shared = plan.get('check_explanations') if isinstance(plan.get('check_explanations'), dict) else {}
     if not shared and not any('check_explanation' in c for c in list(planned.values()) + list(reviewed.values())):
         return []  # Historical records stay historical; no live-catalog substitution.
+    status = {k: (reviewed.get(k) or {}).get('review_result') for k in keys}
+    open_keys = [k for k in keys if status[k] in ('FAIL', 'INSUFFICIENT')]
+    na_keys = [k for k in keys if status[k] == 'NA']
     out = ['## 逐项检查说明', '',
-           '“漏查风险”解释为什么要检查，不代表已经发现该问题，也不决定风险等级。'
-           '规则通用衔接仅提示可复用的证据；本次实际依赖见逐项理由和证据。', '',
-           '<details>', '<summary>展开全部 %d 条检查的目的、风险和衔接</summary>' % len(keys), '']
-    for key in keys:
+           '“不查会漏掉什么”是检查的理由，不代表已经发现该问题，也不决定风险等级。'
+           '没通过和资料不足的检查逐项给出关闭条件；不适用的只写理由；其余 %d 项通过或未审结，不展开。'
+           % (len(keys) - len(open_keys) - len(na_keys)), '']
+    for key in open_keys:
         p, r = planned.get(key, {}), reviewed.get(key, {})
-        specific = 'check_explanation' in r
         rule = p.get('rule') or r.get('rule')
-        exp = (r.get('check_explanation') if specific else
-               p['check_explanation'] if 'check_explanation' in p else shared.get(rule))
-        exp = exp if isinstance(exp, dict) else {}
-        result = RESULT_SHORT.get(r.get('review_result'), '未审结')
+        base = p['check_explanation'] if 'check_explanation' in p else shared.get(rule)
+        base = dict(base) if isinstance(base, dict) else {}
+        override = r.get('check_explanation') if isinstance(r.get('check_explanation'), dict) else {}
         where = '、'.join(anchors(p.get('object'))) or '见检查对象'
-        out += ['### %s（%s）' % (key, result), '', '- **对象**：' + cell(where),
-                '- **说明来源**：' + ('本次对象说明' if specific else '计划中的规则通用说明，适用范围见本次理由')]
-        for field, label in (('purpose', '在检查什么'), ('risk_if_omitted', '不查可能漏掉什么'),
-                             ('connections', '与其他检查怎样衔接')):
-            out.append('- **%s**：%s' % (label, cell(exp.get(field) or '记录未提供，不能据此推断本次风险')))
-        out.append('- **本次结论依据**：' + cell(r.get('rationale') or '尚未形成结论'))
+        out += ['### %s（%s）' % (key, RESULT_SHORT[status[key]]), '', '- **对象**：' + cell(where)]
+        for field, label in EXPLANATION_LABELS:
+            if field in override:
+                out.append('- **%s**（本次对象说明）：%s' % (label, cell(override[field])))
+            elif base.get(field):
+                out.append('- **%s**：%s' % (label, cell(base[field])))
+        if not base and not override:
+            out.append('- **说明**：记录未提供，不能据此推断本次风险')
+        out += ['- **本次结论依据**：' + cell(r.get('rationale') or '尚未形成结论'), '']
+    if na_keys:
+        out += ['### 不适用', '']
+        out += ['- %s：%s' % (k, cell((reviewed.get(k) or {}).get('rationale') or '记录未写理由')) for k in na_keys]
         out.append('')
-    return out + ['</details>', '']
+    return out
 
 
 def render(plan, results, gate, notes=None, title=None):

@@ -1099,6 +1099,7 @@ class ReviewPlanner:
         for check in plan['checks']:
             check.pop('check_explanation', None)
         plan['check_explanations'] = catalog.explanations_for(c['rule'] for c in plan['checks'])
+        plan['check_explanations_version'] = catalog.EXPLANATION_VERSION
         return plan
 
 

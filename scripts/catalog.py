@@ -701,9 +701,26 @@ ID_RE = re.compile(r'^([A-Z]{3})-([A-Z])(\d{2})$')
 METHOD_ORDER = ''.join(m.code for m in METHODS)
 DOMAIN_BY_CODE = {d.code: d for d in DOMAINS}
 METHOD_BY_CODE = {m.code: m for m in METHODS}
-# 每条规则的目的、漏查风险和证据衔接。风险描述不是本次缺陷或自动严重度。
-# 衔接中的规则是复用方向，只有同一实际对象/状态的证据才构成项目依赖。
-EXPLANATION_FIELDS = ('purpose', 'risk_if_omitted', 'connections')
+# 每条规则的检查说明（第 2 版）。风险描述是检查理由，不是本次缺陷或自动严重度；
+# inputs 中的规则只是复用方向，只有同一实际对象/状态的证据才构成项目依赖。
+#   risk_if_omitted 盲区：朴素检查会漏掉什么（必填）
+#   closes_when     关闭条件及不归本项的边界（必填）
+#   inputs          复用哪个检查的哪个已核事实（只写上游，可空）
+#   false_alarms    会合法触发本规则的结构（自动扫描 A 类必填）
+EXPLANATION_VERSION = 2
+EXPLANATION_FIELDS = ('risk_if_omitted', 'closes_when', 'inputs', 'false_alarms')
+REQUIRED_EXPLANATION_FIELDS = ('risk_if_omitted', 'closes_when')
+EXPLANATION_LIMITS = {'risk_if_omitted': 40, 'closes_when': 50, 'inputs': 40, 'false_alarms': 50}
+# 第 1 版字段：迁移期间未改写的条目及旧计划仍按此结构读取。
+LEGACY_EXPLANATION_FIELDS = ('purpose', 'risk_if_omitted', 'connections')
+
+
+def _x(risk, closes, inputs='', false_alarms=''):
+    """一条第 2 版说明；空的可选字段不写入。"""
+    values = dict(zip(EXPLANATION_FIELDS, (risk, closes, inputs, false_alarms)))
+    return {key: value for key, value in values.items() if value}
+
+
 EXPLANATIONS = {
     'DOC-A01': ('确认网表完整来自本轮成功导出。', '可能在残缺或旧连接上审查，漏掉整段电路。', '先于连接和计算检查；导出范围由 DOC-Q01 对账。'),
     'DOC-A02': ('核实标为不连接的脚是否被导出器意外连上。', '无意连接可能造成冲突，或让审查误以为悬空已解决。', '与 NET-A04 核实际网络，再由 DEV-D05 核该脚允许的处置。'),
@@ -861,32 +878,62 @@ def explanations_for(rule_ids):
 
 
 def plan_explanation_errors(plan):
-    """计划级说明须覆盖每个检查的规则，且与规则说明一致；旧计划没有该字段时不检查。"""
+    """计划级说明须覆盖每个检查的规则。当前版本须与规则说明逐字一致；
+    旧版本计划只核结构，不拿现行文字改写历史记录。没有该字段的旧计划不检查。"""
     saved = plan.get('check_explanations')
     if saved is None:
         return []
     if not isinstance(saved, dict):
         return ['check_explanations must be an object keyed by rule']
+    current = plan.get('check_explanations_version') == EXPLANATION_VERSION
     errors = []
     for rule in sorted({c.get('rule') for c in plan.get('checks') or [] if isinstance(c, dict)} - {None}):
         if rule not in saved:
             errors.append('check_explanations 缺少规则 %s' % rule)
-        elif saved[rule] != explanation(rule):
+        elif current and saved[rule] != explanation(rule):
             errors.extend(explanation_errors(saved[rule]) or
                           ['计划 check_explanations.%s 与规则说明不同；对象化说明写入结果行' % rule])
+        elif not current:
+            errors.extend('check_explanations.%s: %s' % (rule, e) for e in explanation_errors(saved[rule]))
     return errors
 
 
 def explanation(rule_id):
     """Return an independent snapshot for plans; never infer a verdict."""
-    return dict(zip(EXPLANATION_FIELDS, EXPLANATIONS[rule_id]))
+    value = EXPLANATIONS[rule_id]
+    if isinstance(value, tuple):  # 迁移期间尚未改写的第 1 版条目
+        return dict(zip(LEGACY_EXPLANATION_FIELDS, value))
+    return dict(value)
 
 
-def explanation_errors(value):
+def explanation_errors(value, partial=False):
+    """结构检查。partial=True 用于结果行的对象化覆盖：只写需要改的字段。"""
     if not isinstance(value, dict):
         return ["check_explanation must be an object"]
-    return ["check_explanation needs non-empty " + key for key in EXPLANATION_FIELDS
-            if not isinstance(value.get(key), str) or not value[key].strip()]
+    if set(value) <= set(LEGACY_EXPLANATION_FIELDS) and set(value) - set(EXPLANATION_FIELDS):
+        fields, required = LEGACY_EXPLANATION_FIELDS, LEGACY_EXPLANATION_FIELDS
+    else:
+        fields, required = EXPLANATION_FIELDS, REQUIRED_EXPLANATION_FIELDS
+    errors = ["check_explanation has unknown field " + key for key in sorted(set(value) - set(fields))]
+    errors += ["check_explanation needs non-empty " + key for key in fields
+               if (key in value or (key in required and not partial))
+               and (not isinstance(value.get(key), str) or not value[key].strip())]
+    if partial and not value:
+        errors.append("check_explanation override needs at least one field")
+    return errors
+
+
+def catalog_explanation_errors(rule_id):
+    """目录条目的写法约束：必填项、A 类常见误报、长度上限与引用规则存在。"""
+    value = EXPLANATIONS[rule_id]
+    if isinstance(value, tuple):
+        errors = [] if len(value) == len(LEGACY_EXPLANATION_FIELDS) else ['legacy explanation needs 3 fields']
+        return errors + explanation_errors(explanation(rule_id))
+    errors = explanation_errors(value)
+    if method_of(rule_id) == 'A' and not value.get('false_alarms'):
+        errors.append('自动扫描规则须写 false_alarms')
+    errors += ['%s 超过 %d 字' % (k, n) for k, n in EXPLANATION_LIMITS.items() if len(value.get(k, '')) > n]
+    return errors
 
 
 BY_ID = {}
@@ -911,12 +958,12 @@ def _build_index():
         BY_ID[rule.id] = rule
     if set(EXPLANATIONS) != set(BY_ID):
         raise ValueError('检查目的说明有遗漏或过期规则: ' + str(set(EXPLANATIONS) ^ set(BY_ID)))
-    for rule_id, values in EXPLANATIONS.items():
-        if len(values) != len(EXPLANATION_FIELDS) or explanation_errors(explanation(rule_id)):
-            raise ValueError('检查目的说明不完整: ' + rule_id)
-        linked = set(re.findall(r'\b[A-Z]{3}-[A-Z]\d{2}\b', values[2]))
+    for rule_id in EXPLANATIONS:
+        if catalog_explanation_errors(rule_id):
+            raise ValueError('检查说明不合要求: %s %s' % (rule_id, catalog_explanation_errors(rule_id)))
+        linked = set(re.findall(r'\b[A-Z]{3}-[A-Z]\d{2}\b', ' '.join(explanation(rule_id).values())))
         if linked - set(BY_ID):
-            raise ValueError('检查衔接引用未知规则: ' + rule_id)
+            raise ValueError('检查说明引用未知规则: ' + rule_id)
     OBJECTIVE_BY_RULE.update(build_objective_index(BY_ID, OBJECTIVE_RULES))
     for package in PACKAGES:
         if package.name in PACKAGE_BY_NAME or package.domain not in DOMAIN_BY_CODE:
@@ -1008,10 +1055,8 @@ def spec_errors(item):
         errors.append('method/domain 与规则 %s 不一致' % rule)
     if not str(item.get('id', '')).startswith(rule + '.'):
         errors.append('检查 ID 必须以 %s. 开头' % rule)
-    if 'check_explanation' in item:
+    if 'check_explanation' in item:  # 旧版逐行说明：只核结构
         errors.extend(explanation_errors(item['check_explanation']))
-        if item['check_explanation'] != explanation(rule):
-            errors.append('计划 check_explanation 与规则说明不同；对象化说明写入结果行')
     return errors
 
 

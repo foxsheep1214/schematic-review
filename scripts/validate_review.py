@@ -181,8 +181,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 require(actual is not None and revision_digest(check_spec(actual)) == revision_digest(check_spec(generated)),
                         generated['id'] + ': automatic check missing or changed from saved inputs')
             saved = plan.get('check_explanations') or {}
+            current = plan.get('check_explanations_version') == catalog.EXPLANATION_VERSION
             for rule in sorted({generated['rule'] for generated in planner.checks}):
-                require(saved.get(rule) == catalog.explanation(rule),
+                require(rule in saved and (not current or saved[rule] == catalog.explanation(rule)),
                         rule + ': automatic check explanation missing or changed from saved inputs')
         except (ValueError, TypeError, KeyError, AttributeError) as error:
             require(False, 'invalid generated-check inputs: ' + str(error))
@@ -249,7 +250,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         require(isinstance(result, str) and result in RESULTS, f"{key}: invalid result")
         require(isinstance(app, str) and app in APPLICABILITY, f"{key}: invalid applicability")
         if 'check_explanation' in item:
-            errors.extend(f'{key}: {message}' for message in catalog.explanation_errors(item['check_explanation']))
+            errors.extend(f'{key}: {message}' for message in
+                          catalog.explanation_errors(item['check_explanation'], partial=True))
         require(text(item.get("rationale")), f"{key}: missing rationale")
         require(evidence(item.get("evidence")), f"{key}: missing locatable evidence")
         require(isinstance(item.get("blocking"), bool), f"{key}: blocking must be boolean")
