@@ -376,6 +376,37 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(checks['PRO-C02.TRIP.D1']['method'], 'C')
         self.assertIn('requirements', checks['PRO-C02.TRIP.D1']['required_inputs'])
 
+    def test_sensor_rail_end_and_ic_supply_pins_are_not_sensing_inputs(self):
+        # rf1 公开板：NTC 上端接 3V3 轨，轨上各 IC 的 VDD 脚曾各生成一条 ANA-C04。
+        db = threshold_db()
+        for node, net, name in (('TH1.2', 'V3V3', '2'), ('U2.3', 'V3V3', 'VDD'), ('U4.1', 'V3V3', 'VCC'),
+                                ('U4.2', 'SGND', 'GND'), ('U9.1', 'V3V3', 'VO'), ('U9.2', 'SGND', 'GND')):
+            old = db['pin2net'].get(node)
+            if old:
+                db['nets'][old].remove(node)
+            db['nets'].setdefault(net, []).append(node); db['pin2net'][node] = net; db['pinname'][node] = name
+        for ref, value in (('U4', 'ADC'), ('U9', 'LDO')):
+            db['parts'][ref] = {'part': value, 'value': value, 'prim': 'X', 'jedec': '', 'nc': False}
+            db['ref2page'][ref] = 1
+        db['native_pintype'] = {'U2.3': 'power_in', 'U4.1': 'power_in', 'U9.1': 'power_out'}
+        rows = [x['object']['node'] for x in build_review_plan(db)['checks'] if x['rule'] == 'ANA-C04']
+        self.assertEqual(rows, ['U2.1'])
+
+    def test_regulator_without_u_prefix_is_found_by_native_power_pins(self):
+        # rf1 公开板：Reg1/Reg2/Reg3（LM317M、MCP1703）曾因位号不是 U 而没有 DEV-D01/DEV-C05。
+        db = threshold_db()
+        for pin, name, net, kind in (('1', 'GND', 'PGND', 'power_in'), ('2', 'VO', 'V3V3', 'power_out'),
+                                     ('3', 'VI', 'AUX_DC', 'power_in')):
+            node = 'Reg1.' + pin
+            db['nets'].setdefault(net, []).append(node); db['pin2net'][node] = net; db['pinname'][node] = name
+            db.setdefault('native_pintype', {})[node] = kind
+        db['parts']['Reg1'] = {'part': 'MCP1703', 'value': 'MCP1703', 'prim': 'X', 'jedec': '', 'nc': False}
+        db['ref2page']['Reg1'] = 1
+        checks = build_review_plan(db)['checks']
+        identity = next(x for x in checks if x['rule'] == 'DEV-D01' and x['object']['ref'] == 'Reg1')
+        self.assertIn('native-power-pins:active-device', identity['trigger'])
+        self.assertTrue(any(x['rule'] == 'DEV-C05' and x['object']['ref'] == 'Reg1' for x in checks))
+
     def test_connector_signal_esd_folds_into_connector_protection(self):
         db = threshold_db()
         extra = {'J1': [('1', '1', 'USB_DP'), ('2', '2', 'VBUS'), ('3', '3', 'PGND')],

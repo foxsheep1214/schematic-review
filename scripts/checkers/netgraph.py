@@ -8,8 +8,12 @@
 import re
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
+# 可带 RAIL_ 前缀（RAIL_3V3_PRI）；HV/HV80_IN/HV_BIAS 是高压轨（HVEN、HV_EN 是使能）；
+# 含 _FB/_FBACK/_SENSE/_SNS 段的是反馈或检测线；以 _N/_NEG/_RTN/_RET/- 结尾的是回流
+# （如 VOUT_N、VIN-、VBAT_NEG），不是电源轨。
 RAIL_RE = re.compile(
-    r'^\+?(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+(?:\.[0-9]+)?V)', re.I)
+    r'^\+?(?:RAIL_)?(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+(?:\.[0-9]+)?V|HV(?=$|\d|[_+](?!EN)))'
+    r'(?!.*(?:[_-](?:N|NEG|RTN|RET|MINUS)|-)$)(?!.*[_-](?:FB|FBACK|FEEDBACK|SENSE|SNS)(?:$|[_-]))', re.I)
 
 RESISTOR, CAPACITOR, INDUCTOR, FERRITE = 'resistor', 'capacitor', 'inductor', 'ferrite'
 DIODE, TVS, ZENER, MOSFET, BJT = 'diode', 'tvs', 'zener', 'mosfet', 'bjt'

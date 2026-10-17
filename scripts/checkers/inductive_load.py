@@ -206,9 +206,18 @@ class _Scan:
             rcd.append({'ref': diode, 'type': 'flyback-rcd', 'orientation': orientation,
                         'across': 'primary', 'capacitors': capacitors, 'resistors': resistors,
                         'clamp_net': middle, 'return_net': rail_net})
+        # Without an RCD, a TVS/zener across the switch or the primary is the leakage clamp;
+        # its clamp voltage must exceed Vin + reflected voltage (rated in DRV-C01).
+        leakage = rcd or [dict(c, leakage_clamp=True) for c in entry['clamps']
+                          if c['type'].endswith(('-' + ng.TVS, '-' + ng.ZENER))]
         if rcd:
             entry['clamps'] = rcd
             entry['gaps'] = [gap for gap in entry['gaps'] if gap != 'clamp:none-found']
+        elif leakage:
+            entry['clamps'] = leakage
+            entry['gaps'] = [gap for gap in entry['gaps'] if gap != 'clamp:none-found']
+            entry['gaps'] += ['flyback-tvs-clamp-polarity:unknown:' + c['ref'] for c in leakage
+                              if c['orientation'] == 'unknown']
         else:
             entry['gaps'].append('flyback-rcd:not-recognised')
         if len(rcd) > 1:
@@ -224,7 +233,7 @@ class _Scan:
                          'off_main': {'switch_channel': 'open', 'blocked_refs': [switch_ref],
                                       'to_windings': [w['nodes'] for w in windings if w['role'] != 'primary'],
                                       'action': 'coupled-energy-transfer; rectifiers/polarity/returns need review'},
-                         'off_leakage': {'from': switch_net, 'to': rail_net, 'branches': rcd,
+                         'off_leakage': {'from': switch_net, 'to': rail_net, 'branches': leakage,
                                          'action': 'leakage-clamp; not the entire magnetizing energy'},
                          'isolation': 'winding maps are local evidence only; no conductive graph edges added'})
         entry['gaps'] = sorted(set(entry['gaps']))
@@ -623,8 +632,8 @@ class InductiveLoadChecker(Checker):
                 criterion=('按升压用途逐物理脚核导通储能、关断经升压二极管送能及输出返回路径；'
                            '关断路径不得经过已关断MOS主通道，核二极管方向、贴装和真实工作模式；'
                            '路径存在不等于额定通过' if boost else
-                           '按有出处的绕组/同名端核反激储能和关断次级送能，独立核漏感RCD吸收的方向、'
-                           '贴装及返回初级供电轨；不得把全部磁化能量算进RCD或将绕组并成导电网络'
+                           '按有出处的绕组/同名端核反激储能和关断次级送能，独立核漏感RCD吸收（或跨开关/初级的TVS钳位）的方向、'
+                           '贴装及返回路径；不得把全部磁化能量算进RCD或将绕组并成导电网络'
                            if flyback else None),
                 readiness='WAITING_EVIDENCE' if load['gaps'] else 'READY',
                 required_inputs=load['gaps'],
@@ -635,7 +644,7 @@ class InductiveLoadChecker(Checker):
                 criterion=('按升压实际工况分别核二极管反向耐压、重复峰值/平均/RMS电流与损耗，'
                            'MOS耐压/电流、储能电感饱和及母线电容应力；'
                            '非重复浪涌额定不能代替重复工作保证，拓扑识别不自动通过额定' if boost else
-                           '按反激漏感、关断峰流、反射电压和重复频率计算RCD钳位电压及纹波、MOS峰压、'
+                           '按反激漏感、关断峰流、反射电压和重复频率计算RCD钳位电压及纹波（TVS钳位则核钳位电压高于输入+反射电压且低于MOS耐压）、MOS峰压、'
                            '电阻平均/脉冲损耗和二极管/电容应力；区分磁化与漏感能量、正常与保护状态，'
                            '受控假设不当作已保证边界' if flyback else None),
                 readiness='READY' if passive_filter else 'WAITING_EVIDENCE',

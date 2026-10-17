@@ -174,6 +174,17 @@ class NetGraphTest(unittest.TestCase):
     def setUp(self):
         self.graph = ng.NetGraph(relay_fixture.relay_board())
 
+    def test_return_named_nets_are_not_rails(self):
+        # rf1 公开板：Q2 源极在 VOUT_N（输出负端回流），曾按名字判成高边。
+        for net in ('VOUT_N', 'VIN-', 'VBAT_NEG', 'V3V3_RTN'):
+            self.assertFalse(ng.is_rail(net), net)
+        for net in ('VOUT_P', 'VCC_EN', '+5V', 'VBUS', '12V', 'HV', 'HV80_IN', 'HV_BIAS', 'RAIL_3V3_PRI', 'RAIL_8V25'):
+            self.assertTrue(ng.is_rail(net), net)
+        # rf2 公开板：180 V 输出名为 HV，曾不被当作电源轨；HVEN 是使能信号。
+        # rf1：VOUT_FBACK/VOUT_SENSE 是反馈与检测线，RAIL_3V3_PRI 才是稳压输出。
+        for net in ('HVEN', 'HV_EN', 'HVAC', 'VOUT_FBACK', 'VOUT_FBACK_RAW', 'VOUT_SENSE', 'VCC_SNS', 'VIN_FB'):
+            self.assertFalse(ng.is_rail(net), net)
+
     def test_classification_prefers_part_keyword_over_prefix(self):
         self.assertEqual(self.graph.kind('Q1'), ng.MOSFET)
         self.assertEqual(self.graph.basis('Q1'), 'part-keyword')

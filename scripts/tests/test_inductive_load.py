@@ -417,6 +417,16 @@ class FlybackWindingTest(unittest.TestCase):
         self.assertTrue(InductiveLoadChecker().pass_blockers('X', None,
                         {'inventory_gaps': load['gaps']}, None))
 
+    def test_tvs_across_switch_is_the_leakage_clamp_without_rcd(self):
+        # rf1 公开板：无 RCD，SMCJ43A 跨漏极到地钳位漏感；双向符号画单向管，极性待核。
+        db = flyback_board(None)
+        add(db, 'D9', 'SMCJ43A TVS', [('1', 'A1', 'DRAIN'), ('2', 'A2', 'GND')])
+        load = self.load(db)
+        self.assertNotIn('flyback-rcd:not-recognised', load['gaps'])
+        self.assertIn('flyback-tvs-clamp-polarity:unknown:D9', load['gaps'])
+        self.assertEqual([(c['ref'], c['leakage_clamp']) for c in load['clamps']], [('D9', True)])
+        self.assertEqual(load['energy_paths']['off_leakage']['branches'][0]['ref'], 'D9')
+
     def test_missing_or_dnp_rcd_parts_cannot_be_counted_as_a_path(self):
         for mutation in ('diode-missing', 'diode-dnp', 'capacitor-dnp', 'all-resistors-dnp'):
             with self.subTest(mutation=mutation):

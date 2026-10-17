@@ -26,7 +26,7 @@ import sys
 from collections import Counter
 from checkers import REGISTRY, passive_stress, registry_cold_rules, registry_hot_rules
 from checkers import powertree
-from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, IC, TVS, ZENER, NetGraph, normalize
+from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, IC, TVS, UNKNOWN, ZENER, NetGraph, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
@@ -667,13 +667,24 @@ class ReviewPlanner:
 
         # 每颗 IC/模组和意图显式列出的关键器件逐颗核身份、引脚处置与工况。
         # 位号并非器件身份；连接器已有独立覆盖，不重复未用脚处置。
+        # 位号不是 U/M 的有源器件（如 Reg1 稳压器）按原生电源脚识别：三脚以上、有 power_in/out、
+        # 未归为分立器件或连接器。
+        native = db.get('native_pintype') or {}
+        powered = {node.split('.')[0] for node, kind in native.items() if kind in ('power_in', 'power_out')}
+
+        def active_by_function(ref):
+            return (ref in powered and len(connector_graph.pins_of(ref)) >= 3
+                    and connector_graph.kind(ref) in (IC, UNKNOWN))
+
         for ref, part in sorted(db.get('parts', {}).items()):
             declared = ref in (self.intent.get('devices') or {})
             connector = CONNECTOR_RE.match(ref) or connector_graph.kind(ref) == CONNECTOR
-            if part.get('nc') or not (DEVICE_RE.match(ref) or (declared and not connector)):
+            by_function = not DEVICE_RE.match(ref) and active_by_function(ref)
+            if part.get('nc') or not (DEVICE_RE.match(ref) or by_function or (declared and not connector)):
                 continue
             gaps, audit_trigger = self._datasheet_readiness(ref, part)
-            trigger = [f'refdes:{ref}', f'part:{part.get("part", "")}'] + audit_trigger
+            trigger = ([f'refdes:{ref}', f'part:{part.get("part", "")}'] + audit_trigger
+                       + (['native-power-pins:active-device'] if by_function else []))
             self._ready_check('DEV-D01', {'ref': ref}, gaps, trigger)
             self._disposition_check(ref, gaps, trigger)
             self._ready_check('DEV-C05', {'ref': ref}, gaps + self._materials_gap(['requirements']), trigger)
@@ -702,10 +713,13 @@ class ReviewPlanner:
                     if CONNECTOR_RE.match(node.split('.')[0]) or graph.kind(node.split('.')[0]) == CONNECTOR}
 
         def io_clamp_connectors(ref):
-            """对外信号线 ESD 钳位：各非地端都是信号网且至少一端直达连接器；由 PRO-D03 逐针覆盖。"""
-            live = [net for net in set(graph.pins_of(ref).values())
+            """对外信号线 ESD 钳位：一端接地，其余端都是信号网（非轨、非开关节点）且直达连接器；
+            由 PRO-D03 逐针覆盖。跨开关节点或浮地回流的 TVS 是能量钳位，仍按 PRO-C02 两侧核。"""
+            pins = set(graph.pins_of(ref).values())
+            live = [net for net in pins
                     if net and not grounded(net) and net not in db.get('pseudo_nets', [])]
-            if not live or any(rails.is_rail(net) for net in live):
+            if (not live or len(live) == len(pins)
+                    or any(rails.is_rail(net) or rails.is_switch_node(net) for net in live)):
                 return set()
             return set().union(*(connectors_on(net) for net in live))
 
@@ -725,12 +739,15 @@ class ReviewPlanner:
                 continue
             if not SENSOR_RE.search(' '.join(str(part.get(k, '')) for k in ('part', 'value', 'prim'))):
                 continue
+            # 传感器接电源轨的一端只是偏置，不是检测脚；轨上 IC 的供电脚也不判别开短路。
             for net in sorted(set(graph.pins_of(ref).values())):
-                if not net or grounded(net) or net in db.get('pseudo_nets', []):
+                if (not net or grounded(net) or net in db.get('pseudo_nets', [])
+                        or rails.is_rail(net)):
                     continue
                 for node in sorted(nets.get(net, [])):
                     owner = node.split('.')[0]
-                    if owner == ref or graph.kind(owner) != IC or GROUND_RE.match(normalize(names.get(node))):
+                    if (owner == ref or graph.kind(owner) != IC or GROUND_RE.match(normalize(names.get(node)))
+                            or (db.get('native_pintype') or {}).get(node) in ('power_in', 'power_out')):
                         continue
                     sensor_gaps, audit = self._datasheet_readiness(ref, part)
                     ic_gaps, ic_audit = self._datasheet_readiness(owner, parts.get(owner, {}))
