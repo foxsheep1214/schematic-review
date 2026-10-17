@@ -57,10 +57,14 @@ class LocalConnectionScopeTests(unittest.TestCase):
             self.assertTrue(any('decoupling gaps' in e for e in gate['errors']), gate['errors'])
 
     def test_incomplete_official_pinout_cannot_borrow_local_pass(self):
+        # 组内供电/返回脚有出处时，整颗器件脚表不全只留在 PWR-D01，不再挡本组；
+        # 但本组未核实的同器件供电脚差异仍然挡住本组。
         db, intent = with_foreign_group_pin(); intent['devices']['U1']['pinout_complete'] = False
         plan = build_review_plan(db, intent)
+        self.assertIn('official-full-pinout:U1', plan['decoupling']['discovery_gaps'])
         for row in local_rows(plan):
-            self.assertIn('official-full-pinout:U1', row['inventory_gaps'])
+            self.assertNotIn('official-full-pinout:U1', row['inventory_gaps'])
+            self.assertIn('pin-not-in-official-map:U1.4', row['inventory_gaps'])
         report = ledger(plan, db)
         for row in report['checks']:
             if row['id'] in {c['id'] for c in local_rows(plan)}:

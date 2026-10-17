@@ -111,7 +111,18 @@ class DecouplingChecker(Checker):
                     required_inputs=connection_gaps, trigger=['decoupling-group:' + group['id']])
                 item['inventory_gaps'] = connection_gaps
                 item['full_inventory_gaps'] = group['gaps']
+                no_cap = group.get('purpose') == 'no_direct_capacitor' and not group['fitted_capacitors']
+                if group.get('purpose', 'bypass') != 'bypass':
+                    item['trigger'] = sorted(set(item['trigger']) | {'decoupling-purpose:' + group['purpose']})
                 for kind, rule in REQUIREMENT_RULES:
+                    if no_cap and kind in ('capacitance', 'rating'):
+                        # 原厂条款说不需要直接电容且图上也没有：容量与额定无对象，按 NA 记出处。
+                        cite = next(r['citation'] for r in group['requirements'] if r['kind'] == 'connection')
+                        item = planner.add_check(rule, deepcopy(obj), key=group['id'], applicability='NOT_APPLICABLE',
+                            criterion='本组按原厂条款不需要直接电容，图上也没有：%s；无容量/额定对象' % cite,
+                            trigger=['decoupling-group:' + group['id'], 'decoupling-purpose:no_direct_capacitor'])
+                        item['inventory_gaps'] = []
+                        continue
                     requirements = [r for r in group['requirements'] if r['kind'] == kind]
                     for req in requirements or [None]:
                         gaps = (connection_gaps if kind == 'connection' else group['gaps']) + (group['capacitance_gaps'] if kind == 'capacitance' else [])

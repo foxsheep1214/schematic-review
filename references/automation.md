@@ -403,6 +403,11 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 - `groups`：按器件具体条款划分，不要求每个电源脚单独一颗电容。节点必须属于该器件对应官方角色，
   供电脚不能重复分组；每组只支持一个直接供电网和一个明确返回网。跨网分组不合并，保持缺口。
   飞跨/bootstrap/补偿以及内部稳压输出端的必需外接电容按专用条款另审；
+  组可加 `purpose`：默认 `bypass`；`no_direct_capacitor` 表示按原厂条款该脚不需要直接电容（如高压启动/检测脚 HV），
+  图上也没有直接电容时 PWR-C09/PWR-C10 记不适用，PWR-T03/PWR-D02 仍核接法；`regulator_output` 表示片内稳压器
+  输出电容（如 V5/VCAP/REG）。两者都必须有带出处的 `connection` 条款。
+  声明组只需本组供电/返回脚在 `intent.devices.pins` 里有角色和出处：整颗器件脚表不完整时
+  `official-full-pinout` 只留在 PWR-D01，不再挡这一组；本组器件上未核实的供电脚差异仍挡本组。
 从官方逐脚外围要求核这些对象，不因符号输出类型或没有 VDD/VCC 名称而漏掉，也不从"连到电容"推断属于普通组。
 - `components`：支持 `capacitor/resistor/ferrite/inductor/jumper/switch/other`，都要有出处。
   C/R/L/FB/JP 前缀仅为候选类型；计入确认容量前需核类型与装配。`other` 是有证据的类别排除，

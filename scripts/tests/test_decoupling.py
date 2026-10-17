@@ -484,6 +484,39 @@ class DecouplingInventoryTests(unittest.TestCase):
 
 
 class DecouplingPlanTests(unittest.TestCase):
+    def test_no_direct_capacitor_group_has_no_capacitance_or_rating_object(self):
+        # 100W PD 复审：U402 HV 启动/检测脚按原厂条款不接旁路电容。
+        db, intent = fixture(())
+        group_cfg = intent['decoupling']['groups'][0]
+        group_cfg['purpose'] = 'no_direct_capacitor'
+        group_cfg['requirements'] = [{'id': 'hv', 'kind': 'connection', 'criterion': 'HV pin needs no bypass capacitor',
+                                      'citation': 'synthetic datasheet HV pin description'}]
+        self.assertEqual(validate_decoupling_intent(intent, db), [])
+        plan = build_review_plan(db, intent)
+        rows = {p['rule']: p for p in plan['checks'] if p['rule'] in PLAN_RULES and p['object'].get('nodes') == ['U1.1']}
+        for rule in ('PWR-C09', 'PWR-C10'):
+            self.assertEqual(rows[rule]['applicability'], 'NOT_APPLICABLE')
+            self.assertIn('synthetic datasheet HV pin description', rows[rule]['criterion'])
+        self.assertEqual(rows['PWR-T03']['applicability'], 'APPLICABLE')
+        self.assertIn('decoupling-purpose:no_direct_capacitor', rows['PWR-T03']['trigger'])
+
+    def test_special_purpose_needs_a_cited_connection_clause(self):
+        db, intent = fixture()
+        group_cfg = intent['decoupling']['groups'][0]
+        group_cfg['purpose'] = 'regulator_output'
+        group_cfg['requirements'] = [r for r in group_cfg['requirements'] if r['kind'] != 'connection']
+        self.assertTrue(any('connection requirement' in e for e in validate_decoupling_intent(intent, db)))
+        group_cfg['purpose'] = 'other'
+        self.assertTrue(any('purpose' in e for e in validate_decoupling_intent(intent, db)))
+
+    def test_no_direct_capacitor_with_a_fitted_capacitor_keeps_its_rating(self):
+        db, intent = fixture(('100nF',))
+        group_cfg = intent['decoupling']['groups'][0]
+        group_cfg['purpose'] = 'no_direct_capacitor'
+        plan = build_review_plan(db, intent)
+        rating = [p for p in plan['checks'] if p['rule'] == 'PWR-C10' and p['object'].get('nodes') == ['U1.1']]
+        self.assertTrue(rating and all(p['applicability'] == 'APPLICABLE' for p in rating))
+
     def test_plan_separates_coverage_and_three_electrical_criteria(self):
         db, intent = fixture()
         plan = build_review_plan(db, intent)

@@ -20,6 +20,9 @@ from i2c_topology import digest, validate_db_shape
 KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other'}
 SECTION_SCHEMA_VERSION = 2
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
+# 组用途：普通旁路；按原厂条款不需要直接电容（如高压启动/检测脚）；片内稳压器输出电容（如 V5/VCAP）。
+# 后两类必须有对应的 connection 条款作出处。
+GROUP_PURPOSES = {'bypass', 'no_direct_capacitor', 'regulator_output'}
 NATIVE_SYMBOL_KINDS = {
     'Device:C': 'capacitor', 'Device:C_Polarized': 'capacitor',
     'Device:C_Small': 'capacitor', 'Device:C_Polarized_Small': 'capacitor',
@@ -123,7 +126,13 @@ def validate_decoupling_intent(intent, db=None):
         if not isinstance(group, dict):
             require(False, 'group must be an object')
             continue
-        fields(group, ('id', 'ref', 'supply_nodes', 'return_nodes', 'citation', 'requirements'), 'group')
+        fields(group, ('id', 'ref', 'supply_nodes', 'return_nodes', 'citation', 'requirements', 'purpose'), 'group')
+        purpose = group.get('purpose', 'bypass')
+        require(purpose in GROUP_PURPOSES, 'unsupported group purpose')
+        if purpose != 'bypass':
+            reqs = group.get('requirements') if isinstance(group.get('requirements'), list) else []
+            require(any(isinstance(r, dict) and r.get('kind') == 'connection' and _text(r.get('citation'))
+                        for r in reqs), purpose + ' group needs a cited connection requirement')
         gid, ref = group.get('id'), group.get('ref')
         require(_text(gid) and gid not in seen, 'group id missing/duplicate')
         if _text(gid):
@@ -271,6 +280,16 @@ class Inventory:
             return 'power'
         return 'other'
 
+    @staticmethod
+    def locally_cited(group, device):
+        """Declared group whose own supply/return pins carry cited roles: an incomplete map of
+        the rest of the device stays a discovery gap (PWR-D01), not this group's gate."""
+        pins = device.get('pins', {})
+        return (group['origin'] == 'declared' and bool(device.get('citation'))
+                and all(pins.get(n.partition('.')[2], {}).get('role') == role
+                        for field, role in (('supply_nodes', 'power'), ('return_nodes', 'return'))
+                        for n in group[field]) and bool(group['supply_nodes']) and bool(group['return_nodes']))
+
     def groups(self):
         groups = [dict(deepcopy(g), origin='declared') for g in self.cfg.get('groups', [])]
         assigned = {n for g in groups for n in g['supply_nodes']}
@@ -343,7 +362,7 @@ class Inventory:
             if ref not in population:
                 gaps.add('population:' + ref)
             device = devices.get(ref)
-            if not device or not device['pinout_complete']:
+            if not device or not (device['pinout_complete'] or self.locally_cited(group, device)):
                 gaps.add('official-full-pinout:' + ref)
             if device:
                 gaps.update('official-pin-absent:' + n for n in device['official_only_nodes'] if self.supply_pin(n))
@@ -412,7 +431,8 @@ class Inventory:
                 'gaps': sorted(gaps), 'capacitance_gaps': sorted(value_gaps),
                 'coverage': 'INCOMPLETE' if gaps else 'DISCOVERED',
                 'observations': [] if fitted else ['no-confirmed-fitted-matching-capacitor'],
-                'requirements': deepcopy(group.get('requirements', [])), 'citation': group.get('citation')})
+                'requirements': deepcopy(group.get('requirements', [])), 'citation': group.get('citation'),
+                'purpose': group.get('purpose', 'bypass')})
         return {'id': sid, 'citation': state.get('citation'), 'groups': output,
                 'capacitors': list(caps.values())}
 
