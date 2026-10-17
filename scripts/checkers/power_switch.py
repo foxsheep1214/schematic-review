@@ -15,6 +15,7 @@ from . import powertree
 from . import states as state_lib
 from . import hotmath
 from solve_dividers import parse_resistor
+from decoupling import parse_capacitance
 from .base import Checker
 from .planutil import slug
 
@@ -144,7 +145,31 @@ class _Scan:
             for target in sorted(targets):
                 for cap in graph.between(middle, target, {ng.CAPACITOR}):
                     found.append({'ref': ref + '+' + cap, 'type': 'rc-snubber', 'to': target})
+        # RCD: switch node -> diode -> clamp node returned through a capacitor to a rail/ground
+        # (the same branch the inductive-load inventory reports for a flyback primary).
+        for diode, middle in graph.neighbors(drain_net, {ng.DIODE}):
+            if middle in targets:
+                continue
+            for target in sorted(targets - {drain_net}):
+                caps = graph.between(middle, target, {ng.CAPACITOR})
+                if caps:
+                    found.append({'ref': '+'.join([diode] + caps + graph.between(middle, target, {ng.RESISTOR})),
+                                  'type': 'rcd-clamp', 'to': target})
+        for item in found:
+            # Boost: anode on the switch node, cathode on a rail fed from another rail through an
+            # inductor on the same node. This is the main power path, not a parasitic snubber.
+            if item['type'] == 'clamp-' + ng.DIODE and self._boost_transfer(item['ref'], drain_net, item['to']):
+                item['type'] = 'boost-transfer-diode'
         return sorted(found, key=lambda item: (item['ref'], item['type']))
+
+    def _boost_transfer(self, diode, drain_net, target):
+        graph = self.graph
+        anode, cathode = graph.node_named(diode, 'anode'), graph.node_named(diode, 'cathode')
+        if not (anode and cathode and graph.pin2net.get(anode) == drain_net
+                and graph.pin2net.get(cathode) == target and self.tree.is_rail(target)):
+            return False
+        return any(other != target and self.tree.is_rail(other)
+                   for _, other in graph.neighbors(drain_net, {ng.INDUCTOR}))
 
     def _switch_node_evidence(self, drain_net, ref):
         """开关节点上是否有感性负载或半桥对管。"""
@@ -153,7 +178,7 @@ class _Scan:
             if other == ref or other in self.excluded:
                 continue
             kind = self.graph.kind(other)
-            if kind in INDUCTIVE_KINDS:
+            if kind in INDUCTIVE_KINDS and not self._other_flyback_winding(other, drain_net):
                 reasons.append('inductive:' + other)
             elif kind in SWITCH_KINDS:
                 node = self.graph.node_named(other, 'source')
@@ -164,6 +189,21 @@ class _Scan:
                                node.partition('.')[2]):
                 reasons.append('converter-node:' + node)
         return sorted(set(reasons))
+
+    def _other_flyback_winding(self, ref, net):
+        """A declared flyback transformer's winding on a DC net (the rectified output: a rail or a
+        net with direct uF-class storage capacitance) is not a switching node; the primary switch
+        net and an SR drain on a secondary still are."""
+        if not any(d.get('kind') == 'flyback_transformer' and d.get('ref') == ref for d in self.winding_maps):
+            return False
+        if self.tree.is_rail(net):
+            return True
+        for cap in self.graph.refs_on(net):
+            if self.graph.kind(cap) == ng.CAPACITOR:
+                value = parse_capacitance(self.graph.parts.get(cap, {}).get('value'))
+                if value is not None and value >= 1e-6:
+                    return True
+        return False
 
     def source_return(self, ref, source_net):
         """Cited single fitted sense resistor; never merge the source with ground."""
@@ -441,7 +481,8 @@ class PowerSwitchChecker(Checker):
                     'DRV-D01', dict(obj), key=switch['id'], readiness='WAITING_EVIDENCE',
                     required_inputs=sorted(set(gaps + [
                         'datasheet:开关器件耐压与驱动器条款', 'evidence:开关节点波形或仿真'])),
-                    trigger=['power-switch:' + switch['id']] + switch['switch_node_evidence'],)
+                    trigger=['power-switch:' + switch['id']] + switch['switch_node_evidence']
+                            + ['clamp:%s:%s' % (s['type'], s['ref']) for s in switch['snubbers']],)
                 item['inventory_gaps'] = gaps
 
     def cold_findings(self, lint, inventory):
@@ -454,7 +495,8 @@ class PowerSwitchChecker(Checker):
                          head + '：栅极网 ' + switch['gate_net']
                          + ' 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定',
                          switch['ref'])
-            if switch['switch_node_evidence'] and not switch['snubbers']:
+            if switch['switch_node_evidence'] and not [s for s in switch['snubbers']
+                                                        if s['type'] != 'boost-transfer-diode']:
                 lint.add('DRV-A04', self.cold_rules['DRV-A04'],
                          head + '：开关节点 ' + str(switch['drain_net'])
                          + ' 上有 ' + '、'.join(switch['switch_node_evidence'])

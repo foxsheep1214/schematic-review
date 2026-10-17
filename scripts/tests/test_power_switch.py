@@ -35,6 +35,14 @@ def switch_board(driver='ic', pull=True, snubber=None, load='inductor'):
         add(db, 'C3', '1nF', [('1', '1', 'SNUB'), ('2', '2', 'GND')])
     elif snubber == 'tvs':
         add(db, 'D3', 'SMBJ30A', [('1', 'K', 'SW_OUT'), ('2', 'A', 'GND')])
+    elif snubber == 'rcd':
+        add(db, 'D3', 'US1M', [('1', 'A', 'SW_OUT'), ('2', 'K', 'CLAMP')])
+        add(db, 'C3', '2.2nF', [('1', '1', 'CLAMP'), ('2', '2', 'V12')])
+        add(db, 'R3', '100K', [('1', '1', 'CLAMP'), ('2', '2', 'V12')])
+    elif snubber == 'boost':
+        add(db, 'D3', 'US1M', [('1', 'A', 'SW_OUT'), ('2', 'K', 'VOUT')])
+        add(db, 'C3', '100uF', [('1', '1', 'VOUT'), ('2', '2', 'GND')])
+        add(db, 'U3', 'LOAD', [('1', 'VDD', 'VOUT'), ('2', 'GND', 'GND')])
     return db
 
 
@@ -388,6 +396,35 @@ class SourceReturnTest(unittest.TestCase):
         self.assertIn('datasheet-kind:Q1', q['gaps'])
         self.assertNotEqual(q['kind_basis'], 'datasheet')
         self.assertIsNone(q['kind_citation'])
+
+
+class SharedClampTopologyTest(unittest.TestCase):
+    """100W PD 复审：功率开关检查器要认得感性负载清单已认出的吸收，并把升压主二极管单列。"""
+
+    def test_rcd_clamp_returned_to_the_supply_counts_as_snubber(self):
+        db = switch_board(snubber='rcd')
+        q1 = switches_of(build_inventory(db))['Q1']
+        self.assertEqual([s['type'] for s in q1['snubbers']], ['rcd-clamp'])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+        row = next(c for c in build_review_plan(db)['checks'] if c['rule'] == 'DRV-D01')
+        self.assertIn('clamp:rcd-clamp:D3+C3+R3', row['trigger'])
+
+    def test_boost_transfer_diode_is_not_a_snubber(self):
+        db = switch_board(snubber='boost')
+        q1 = switches_of(build_inventory(db))['Q1']
+        self.assertIn('boost-transfer-diode', [s['type'] for s in q1['snubbers']])
+        self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
+
+    def test_flyback_secondary_net_is_not_the_switch_node_of_another_mosfet(self):
+        from test_inductive_load import flyback_board, flyback_intent
+        db = flyback_board()
+        add(db, 'Q7', 'NMOS', [('1', 'G', 'PORT_G'), ('2', 'D', 'OUT'), ('3', 'S', 'VBUS')])
+        add(db, 'C7', '470uF', [('1', '1', 'OUT'), ('2', '2', 'GND')])
+        intent = flyback_intent(db)
+        q7 = switches_of(build_inventory(db, intent), 'run')['Q7']
+        self.assertNotIn('inductive:T1', q7['switch_node_evidence'])
+        q1 = switches_of(build_inventory(db, intent), 'run')['Q1']
+        self.assertIn('inductive:T1', q1['switch_node_evidence'])
 
 
 class SynchronousRectifierTest(unittest.TestCase):
