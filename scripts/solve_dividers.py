@@ -39,13 +39,19 @@ def parse_resistor(value, default_tol=None, exact=False):
     """解析 R/K/M、显式毫欧单位与公差；exact=True 保留十进制分数。"""
     raw = str(value or '').strip()
     upper = raw.upper().replace('Ω', 'R')
-    # Preserve the SI prefix's case before uppercasing: mOhm is milliohms,
-    # while MOhm is megohms. Bare/embedded M retains the legacy convention.
-    milli = re.match(r'^(\d+(?:\.\d+)?)\s*(?:m(?:[rRΩΩ]|(?i:ohms?))|'
+    # Preserve the SI prefix's case before uppercasing: lowercase m is milli
+    # (10mR, 10mohm, bare 10m, RKM 7m5 = 7.5 mOhm); uppercase M is mega (4M7).
+    milli = re.match(r'^(\d+(?:\.\d+)?)\s*(?:m(?:[rRΩΩ]|(?i:ohms?))?|'
                      r'(?i:milliohms?))(?=$|[ /±+])', raw)
+    milli_rkm = re.match(r'^(\d+)m(\d+)(?=$|[ /±+])', raw)
     leading_unit = re.match(r'^([RKM])(\d+)', upper)
     embedded = re.match(r'^(\d+)([RKM])(\d+)', upper)
-    if milli:
+    if milli_rkm:
+        decimal_number = f'{milli_rkm.group(1)}.{milli_rkm.group(2)}'
+        number = float(decimal_number)
+        unit = 'mR'
+        end = milli_rkm.end()
+    elif milli:
         decimal_number = milli.group(1)
         number = float(decimal_number)
         unit = 'mR'

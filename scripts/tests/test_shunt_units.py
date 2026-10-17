@@ -17,6 +17,13 @@ class ShuntUnitTests(unittest.TestCase):
                 self.assertAlmostEqual(result['kohm'], 0.000015)
                 self.assertIsNone(result['tol'])
 
+    def test_lowercase_m_is_milli_in_rkm_and_bare_forms(self):
+        # rf1 公开板 R19='7m5'（7.5 mΩ 采样电阻）曾被读成 7.5 MΩ。
+        for value, ohm in (('7m5', Fraction(15, 2000)), ('10m', Fraction(1, 100)), ('4m7 1%', Fraction(47, 10000))):
+            with self.subTest(value=value):
+                self.assertEqual(Fraction(parse_resistor(value, exact=True)['ohm_exact']), ohm)
+        self.assertEqual(Fraction(parse_resistor('4M7', exact=True)['ohm_exact']), 4700000)
+
     def test_milliohm_tolerance_remains_explicit(self):
         result = parse_resistor('15mR/1%', exact=True)
         self.assertIsNotNone(result)
