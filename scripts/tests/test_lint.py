@@ -260,6 +260,18 @@ class LintTests(unittest.TestCase):
         lint.run()
         self.assertFalse({'DOC-A01', 'DOC-A02'} & {item[0] for item in lint.skipped})
 
+    def test_export_log_is_classified_in_english_and_chinese(self):
+        # 100W PD 复审：中文界面的“原理图存在批注错误”没有生成候选，退出码 0 被当作无告警。
+        log = '\n'.join(['原理图存在批注错误。', 'ERROR (U3): pin not found', '错误（第 2 页）：网表导出已中止',
+                         'Warning: footprint library not found', '网表导出完成'])
+        lint = Lint(sample_db(), log_text=log, intent={'expect': {}})
+        hits = [(f['kind'], f['detail']) for f in lint.run() if f['rule'] == 'DOC-A01']
+        self.assertIn(('CANDIDATE', '原理图存在批注错误。'), hits)
+        self.assertIn(('FINDING', 'ERROR (U3): pin not found'), hits)
+        self.assertIn(('FINDING', '错误（第 2 页）：网表导出已中止'), hits)
+        self.assertIn(('INFO', 'Warning: footprint library not found'), hits)
+        self.assertNotIn('网表导出完成', [d for _, d in hits])
+
     @staticmethod
     def ground_island_db():
         """精简自 SolderedElectronics MPPT-Li-Ion-CN3791 V1.2.1（TAPR OHL）的盲植变体：

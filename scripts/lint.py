@@ -41,6 +41,25 @@ from plan_review import build_review_plan, validate_intent
 from solve_dividers import Solver, divider_window, linear_feedback_window, parse_resistor
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
+# 导出日志分级（英文与中文界面）：导出错误/中止、批注错误、其他告警。退出码 0 不等于没有告警。
+EXPORT_ERROR_RE = re.compile(r'ERROR\s*\(|Aborting Netlisting|错误\s*[（(]|中止|已终止', re.I)
+EXPORT_ANNOTATION_RE = re.compile(r'annotation error|not (?:fully )?annotated|批注错误|标注错误|未(?:完全)?标注', re.I)
+EXPORT_WARNING_RE = re.compile(r'\b(?:warning|error)\b|警告|错误', re.I)
+NO_CONNECT_IGNORED_RE = re.compile(r'"No_connect" property on Pin', re.I)
+
+
+def export_log_kind(line):
+    if NO_CONNECT_IGNORED_RE.search(line):
+        return None  # DOC-A02 parses these separately
+    if EXPORT_ANNOTATION_RE.search(line):
+        return 'CANDIDATE'
+    if EXPORT_ERROR_RE.search(line):
+        return 'FINDING'
+    if EXPORT_WARNING_RE.search(line):
+        return 'INFO'
+    return None
+
+
 RAIL_RE = re.compile(
     r'^\+?(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+(?:\.[0-9]+)?V)', re.I)
 OUTPIN_RE = re.compile(r'^(VOUT|SW|OUT|VO|LX|\+VO)', re.I)
@@ -510,8 +529,14 @@ class Lint:
         # 提供了日志即执行扫描；kicad-cli 导出成功时日志本来就是空的，空日志表示零命中而不是未提供。
         if self.log is not None:
             for line in self.log.splitlines():
-                if re.search(r'ERROR\s*\(|Aborting Netlisting', line, re.I):
+                kind = export_log_kind(line)
+                if kind == 'FINDING':
                     self.add('DOC-A01', '网表导出错误/中止，核实是否为本次有效导出', line)
+                elif kind == 'CANDIDATE':
+                    self.add('DOC-A01', '导出时报批注（位号）错误，网表已写出但位号可能重复或未定',
+                             line, kind='CANDIDATE')
+                elif kind == 'INFO':
+                    self.add('DOC-A01', '导出日志中的其他告警，逐条确认不影响本次网表', line, kind='INFO')
             ig = re.findall(
                 r'"No_connect" property on Pin "([^"]+)" ignored.*?net "([^"]+)"',
                 self.log)
