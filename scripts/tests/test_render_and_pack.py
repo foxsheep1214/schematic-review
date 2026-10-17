@@ -205,6 +205,25 @@ class ReportWordingTests(unittest.TestCase):
         self.assertEqual(merged.count('**SR 为什么做不到**'), 1)
         self.assertNotIn('人工', merged)
 
+    def test_merged_todo_lists_only_the_first_few_requests(self):
+        # 100W PD 复审：W-CONFIG 把 37 条检查的缺口用分号拼成一长串。
+        from render_report import render_item
+        checks = {'C%d' % i: {'input_requests': {'x': {'required_scope': 'scope %d' % i}}} for i in range(6)}
+        lines = render_item({'id': 'W-X', 'title': 't', 'check_ids': list(checks)}, checks, {})
+        line = next(l for l in lines if l.startswith('- **需要提供的内容**'))
+        self.assertIn('scope 2', line)
+        self.assertNotIn('scope 3', line)
+        self.assertIn('另有 3 条', line)
+
+    def test_todo_that_only_fixes_a_listed_problem_points_to_it(self):
+        from render_report import covered_by_findings, same_text
+        checks = {'A': {'review_result': 'FAIL'}, 'B': {'review_result': 'INSUFFICIENT'}}
+        findings = [{'id': 'F-1', 'check_ids': ['A']}]
+        self.assertEqual(covered_by_findings({'check_ids': ['A']}, checks, findings), ['F-1'])
+        self.assertEqual(covered_by_findings({'check_ids': ['A', 'B']}, checks, findings), [])
+        self.assertTrue(same_text('改正13个PWR_FLAG的编号', '改正13个PWR_FLAG的编号'))
+        self.assertFalse(same_text('使分段积分与实际限流一致', '修正计算记录'))
+
     def test_jargon_is_detected_only_as_whole_ascii_words(self):
         from render_report import jargon_in
         self.assertEqual(jargon_in('按remediation同步fit清单，交下游'), ['下游', 'remediation', 'fit'])

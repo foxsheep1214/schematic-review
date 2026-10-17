@@ -144,6 +144,9 @@ def task_level(task, checks):
     return worst({r.get('severity') or r.get('potential_severity') for r in rows})
 
 
+FIELD_ITEMS_SHOWN = 3
+
+
 def render_item(task, checks, notes):
     rows = [checks[c] for c in task.get('check_ids') or [] if c in checks]
     level = task_level(task, checks)
@@ -165,9 +168,28 @@ def render_item(task, checks, notes):
     for label, values in fields:
         values = unique(values)
         if values:
-            lines.append('- **%s**：%s' % (label, '；'.join(values)))
+            # 合并了很多检查的待办只列前几条，避免把每条检查的缺口拼成一长串。
+            shown = values[:FIELD_ITEMS_SHOWN]
+            more = len(values) - len(shown)
+            lines.append('- **%s**：%s' % (label, '；'.join(shown)) +
+                         ('（另有 %d 条，见涉及检查的资料需求）' % more if more else ''))
     lines.append('')
     return lines
+
+
+def covered_by_findings(task, checks, findings):
+    """待办只是“改正已列出的错误”：全部检查都是 FAIL 且已归入某个问题。"""
+    ids = task.get('check_ids') or []
+    owned = {k: f.get('id') for f in findings for k in f.get('check_ids') or []}
+    if not ids or any((checks.get(k) or {}).get('review_result') != 'FAIL' or k not in owned for k in ids):
+        return []
+    return unique([owned[k] for k in ids])
+
+
+def same_text(a, b):
+    """改的目的只是复述标题时不再单列。"""
+    norm = lambda s: re.sub(r'[\s，。；、,.;:：]', '', str(s or ''))
+    return bool(a) and bool(b) and (norm(a) == norm(b) or norm(a) in norm(b))
 
 
 def failed_checks(rows, findings):
@@ -295,7 +317,8 @@ def render(plan, results, gate, notes=None, title=None):
             for label, value in (('位置', '、'.join(('第%s页' % x) for x in where.get('pages') or []) +
                                   ('　' + '、'.join(where.get('refs') or []) if where.get('refs') else '')),
                                  ('问题', f.get('observed')), ('后果', f.get('impact')),
-                                 ('怎么改', f.get('recommendation')), ('改的目的', fix.get('purpose')),
+                                 ('怎么改', f.get('recommendation')),
+                                 ('改的目的', fix.get('purpose') if not same_text(fix.get('purpose'), f.get('title')) else None),
                                  ('改完怎么验证', f.get('verification')),
                                  ('涉及的检查', '、'.join(
                                      '%s（%s）' % (k, RESULT_SHORT.get((checks.get(k) or {}).get('review_result'), '记录中没有'))
@@ -313,6 +336,11 @@ def render(plan, results, gate, notes=None, title=None):
         rank = lambda t: (SEVERITIES.index(task_level(t, checks)) if task_level(t, checks) else len(SEVERITIES),
                           -len(t.get('check_ids') or []))
         for task in sorted(tasks, key=rank):
+            owners = covered_by_findings(task, checks, findings)
+            if owners:
+                out += ['### %s　%s' % (task['id'], task.get('title') or task.get('root_cause') or ''), '',
+                        '按上文“发现的错误”中问题 %s 的改法处理，这里不重复。' % '、'.join(owners), '']
+                continue
             out += render_item(task, checks, item_notes)
 
     if handoffs:
