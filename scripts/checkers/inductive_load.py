@@ -57,8 +57,14 @@ def _flyback_winding_errors(item, db):
     if not isinstance(ref, str) or ref not in db.get('parts', {}):
         return ['flyback winding map has an unknown transformer reference']
     graph = ng.NetGraph(db)
-    if graph.kind(ref) != ng.TRANSFORMER or set(pins) != set(graph.pins_of(ref)):
-        return ['flyback winding map must cover every actual transformer pin exactly once']
+    actual = graph.pins_of(ref)
+    # Unmapped pins are allowed only when they connect to nothing (NC or a single-pin net).
+    unmapped = [pin for pin in actual if pin not in pins]
+    if (graph.kind(ref) != ng.TRANSFORMER or not set(pins) <= set(actual)
+            or any(ref + '.' + pin not in db.get('no_connect_nodes', [])
+                   and actual[pin] not in graph.pseudo
+                   and len(graph.nodes_on(actual[pin])) > 1 for pin in unmapped)):
+        return ['flyback winding map must cover every connected transformer pin exactly once']
     primary = next(w for w in ws if w['role'] == 'primary')
     primary_nets = {graph.pin2net[ref + '.' + pin] for pin in primary['pins']}
     supply = graph.pin2net[ref + '.' + primary['dot']]

@@ -359,6 +359,14 @@ class FlybackWindingTest(unittest.TestCase):
     def load(self, db, intent=None):
         return loads_of(build_inventory(db, intent or flyback_intent(db)), 'run')['T1']
 
+    def test_unconnected_extra_pin_may_stay_unmapped(self):
+        db = flyback_board()
+        db['nets']['NC_T1_7'] = ['T1.7']; db['pin2net']['T1.7'] = 'NC_T1_7'
+        self.assertEqual(validate_inductive_intent(flyback_intent(db), db), [])
+        db['nets']['GND'].append('T1.7'); db['nets'].pop('NC_T1_7'); db['pin2net']['T1.7'] = 'GND'
+        # 接了网的未映射脚可能是绕组或屏蔽，不能忽略。
+        self.assertTrue(validate_inductive_intent(flyback_intent(db), db))
+
     def test_cited_map_recognises_primary_rcd_without_joining_windings(self):
         db = flyback_board()
         intent = flyback_intent(db)

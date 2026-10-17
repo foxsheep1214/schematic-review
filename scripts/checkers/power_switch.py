@@ -44,22 +44,23 @@ def validate_power_switch_intent(intent, db=None):
             errors.append('power_switches: role must be a non-empty string when supplied')
         sync = item.get('synchronous_rectifier')
         if sync is not None or item.get('role') == SYNC_RECTIFIER_ROLE:
-            required = {'controller_ref', 'sense_node', 'return_node', 'winding_nodes',
-                        'output_net', 'channel', 'citation'}
-            valid = (isinstance(sync, dict) and set(sync) == required
-                     and all(isinstance(sync.get(k), str) and sync[k].strip()
-                             for k in required - {'winding_nodes'})
+            required = {'controller_ref', 'channel', 'citation'}
+            optional = {'sense_node', 'return_node', 'output_net', 'winding_nodes'}
+            given = (lambda k: isinstance(sync, dict) and sync.get(k) is not None)
+            wn = sync.get('winding_nodes') if isinstance(sync, dict) else None
+            valid = (isinstance(sync, dict) and required <= set(sync) <= required | optional
+                     and all(isinstance(sync[k], str) and sync[k].strip()
+                             for k in (required | optional) - {'winding_nodes'} if given(k))
                      and sync['channel'] == 'n'
-                     and isinstance(sync.get('winding_nodes'), list)
-                     and len(sync['winding_nodes']) == 2
-                     and all(isinstance(n, str) and n.strip() for n in sync['winding_nodes'])
-                     and len(set(sync['winding_nodes'])) == 2)
+                     and (wn is None or (isinstance(wn, list) and len(wn) == 2
+                          and all(isinstance(n, str) and n.strip() for n in wn)
+                          and len(set(wn)) == 2)))
             if item.get('role') != SYNC_RECTIFIER_ROLE or not valid:
                 errors.append('power_switches: synchronous_rectifier needs cited N-channel physical map')
             elif db is not None and (sync['controller_ref'] not in db.get('parts', {})
                     or any(n not in db.get('pin2net', {}) for n in
-                           [sync['sense_node'], sync['return_node']] + sync['winding_nodes'])
-                    or sync['output_net'] not in db.get('nets', {})):
+                           [sync.get(k) for k in ('sense_node', 'return_node') if given(k)] + (wn or []))
+                    or (given('output_net') and sync['output_net'] not in db.get('nets', {}))):
                 errors.append('power_switches: synchronous_rectifier has unknown ref/node/net')
         ret = item.get('source_return')
         if ret is not None:
@@ -187,7 +188,11 @@ class _Scan:
                 'source_offset_model': 'Vsource - Vground = Isource * Rreturn'}, []
 
     def synchronous_rectifier(self, ref, nets, drivers):
-        """Cited low-side N-MOS flyback SR map; electrical timing remains unproved."""
+        """Cited low-side N-MOS flyback SR map; electrical timing remains unproved.
+
+        Controller sense/return pins, the secondary winding and the output net
+        may be omitted when the netlist gives exactly one candidate for each.
+        """
         declared = self.declared.get(ref, {})
         if declared.get('role') != SYNC_RECTIFIER_ROLE:
             return None, []
@@ -195,21 +200,50 @@ class _Scan:
         gap = ['synchronous-rectifier-map:' + ref]
         if not isinstance(cfg, dict) or cfg.get('channel') != 'n' or not cfg.get('citation'):
             return None, gap
-        wn = cfg.get('winding_nodes', [])
-        nodes = [cfg.get('sense_node'), cfg.get('return_node')] + (wn if isinstance(wn, list) else [])
-        if (len(nodes) != 4 or any(n not in graph.pin2net or n in
-                graph.db.get('no_connect_nodes', []) or graph.pin2net.get(n) in graph.pseudo
-                for n in nodes)):
-            return None, gap
         controller = cfg.get('controller_ref')
         if (not graph.is_fitted(controller) or graph.kind(controller) != ng.IC
-                or any(n.partition('.')[0] != controller for n in nodes[:2])
+                or graph.kind(ref) != ng.MOSFET or not all(nets.values())
+                or len(set(nets.values())) != 3):
+            return None, gap
+        derived = []
+
+        def controller_pin(field, net):
+            if cfg.get(field) is not None:
+                return cfg[field]
+            found = [controller + '.' + pin for pin, n in graph.pins_of(controller).items() if n == net]
+            derived.append(field)
+            return found[0] if len(found) == 1 else None
+
+        from .inductive_load import _flyback_winding_errors, FLYBACK_TRANSFORMER
+        secondaries = []
+        for declaration in self.winding_maps:
+            tr = declaration.get('ref')
+            if (declaration.get('kind') != FLYBACK_TRANSFORMER or not graph.is_fitted(tr)
+                    or _flyback_winding_errors(declaration, graph.db)):
+                continue
+            secondaries += [(declaration, w) for w in declaration['windings'] if w['role'] == 'secondary']
+        wn = cfg.get('winding_nodes')
+        if wn is None:
+            derived.append('winding_nodes')
+            matches = [(d, w) for d, w in secondaries
+                       if graph.pin2net.get(d['ref'] + '.' + w['dot']) == nets['drain']]
+        else:
+            matches = [(d, w) for d, w in secondaries if isinstance(wn, list)
+                       and {d['ref'] + '.' + pin for pin in w['pins']} == set(wn)]
+        if len(matches) != 1:
+            return None, gap
+        declaration, winding = matches[0]
+        tr = declaration['ref']
+        wn = [tr + '.' + pin for pin in winding['pins']]
+        nodes = [controller_pin('sense_node', nets['drain']),
+                 controller_pin('return_node', nets['source'])] + wn
+        if (any(n not in graph.pin2net or n in graph.db.get('no_connect_nodes', [])
+                or graph.pin2net.get(n) in graph.pseudo for n in nodes)):
+            return None, gap
+        if (any(n.partition('.')[0] != controller for n in nodes[:2])
                 or graph.pin2net[nodes[0]] != nets['drain']
                 or graph.pin2net[nodes[1]] != nets['source']
                 or not any(d['node'].partition('.')[0] == controller for d in drivers)):
-            return None, gap
-        if (graph.kind(ref) != ng.MOSFET or not all(nets.values())
-                or len(set(nets.values())) != 3):
             return None, gap
         # Every parallel physical S/D/G pin must agree, not just the first pin.
         for pin in graph.pins_of(ref):
@@ -218,22 +252,12 @@ class _Scan:
             if (role not in nets or graph.pin2net.get(node) != nets[role]
                     or node in graph.db.get('no_connect_nodes', [])):
                 return None, gap
-        from .inductive_load import _flyback_winding_errors, FLYBACK_TRANSFORMER
-        matches = []
-        for declaration in self.winding_maps:
-            tr = declaration.get('ref')
-            if (declaration.get('kind') != FLYBACK_TRANSFORMER or not graph.is_fitted(tr)
-                    or _flyback_winding_errors(declaration, graph.db)):
-                continue
-            for w in declaration['windings']:
-                if w['role'] == 'secondary' and {tr + '.' + pin for pin in w['pins']} == set(wn):
-                    matches.append((declaration, w))
-        if len(matches) != 1:
-            return None, gap
-        declaration, winding = matches[0]
-        tr = declaration['ref']; dot = tr + '.' + winding['dot']
+        dot = tr + '.' + winding['dot']
         other = next(n for n in wn if n != dot)
         output = cfg.get('output_net')
+        if output is None:
+            derived.append('output_net')
+            output = graph.pin2net[other]
         nonsecondary = {graph.pin2net[tr + '.' + pin] for w in declaration['windings']
                         if w['role'] != 'secondary' for pin in w['pins']}
         if (graph.pin2net[dot] != nets['drain'] or graph.pin2net[other] != output
@@ -242,6 +266,7 @@ class _Scan:
             return None, gap
         return {'controller_ref': controller, 'sense_node': nodes[0], 'return_node': nodes[1],
                 'return_net': nets['source'], 'output_net': output, 'winding_nodes': wn,
+                'derived_fields': sorted(derived),
                 'secondary_dot_node': dot, 'winding_citation': declaration['citation'],
                 'citation': cfg['citation'], 'basis': 'cited-fitted-secondary-controller-map',
                 'output_capacitors': graph.between(output, nets['source'], {ng.CAPACITOR}),

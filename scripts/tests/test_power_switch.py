@@ -428,6 +428,26 @@ class SynchronousRectifierTest(unittest.TestCase):
         self.assertIn('not verified', sr['dynamic_status'])
         self.assertEqual(db['pin2net']['Q8.1'], 'SEC_RTN')
 
+    def test_minimal_declaration_derives_unique_pins_winding_and_output(self):
+        db, intent = self.fixture()
+        cfg = intent['power_switches']['switches'][0]['synchronous_rectifier']
+        for key in ('sense_node', 'return_node', 'winding_nodes', 'output_net'):
+            cfg.pop(key)
+        self.assertEqual(validate_power_switch_intent(intent, db), [])
+        sr = self.item(db, intent)['synchronous_rectifier']
+        self.assertEqual((sr['sense_node'], sr['return_node'], sr['output_net']), ('U8.3', 'U8.2', 'OUT'))
+        self.assertEqual(sorted(sr['winding_nodes']), ['T1.3', 'T1.4'])
+        self.assertEqual(sr['derived_fields'], ['output_net', 'return_node', 'sense_node', 'winding_nodes'])
+
+    def test_ambiguous_controller_pin_is_not_guessed(self):
+        db, intent = self.fixture()
+        cfg = intent['power_switches']['switches'][0]['synchronous_rectifier']
+        cfg.pop('return_node')
+        db['nets']['SEC_RTN'].append('U8.5'); db['pin2net']['U8.5'] = 'SEC_RTN'; db['pinname']['U8.5'] = 'VS'
+        q = self.item(db, intent)
+        self.assertIsNone(q['synchronous_rectifier'])
+        self.assertIn('synchronous-rectifier-map:Q8', q['gaps'])
+
     def test_name_alone_does_not_classify_secondary_return(self):
         db, intent = self.fixture()
         intent.pop('power_switches')
