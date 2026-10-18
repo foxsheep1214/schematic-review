@@ -523,9 +523,12 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
 
     if not isinstance(item, dict):
         return ['rail requirement must be an object']
-    require(set(item) - {'internal_monitor'} == RAIL_REQUIREMENT_FIELDS,
-            'rail requirement needs exact net/state/required/criterion/citation/identity')
     monitor = item.get('internal_monitor')
+    # A rail its own load monitors (cited UVLO on that load's supply pin) needs no
+    # source identity: source followers, self-supply and series-R feeds stay expressible.
+    self_monitored = 'identity' not in item and 'internal_monitor' in item
+    require(set(item) - {'internal_monitor'} == RAIL_REQUIREMENT_FIELDS - ({'identity'} if self_monitored else set()),
+            'rail requirement needs exact net/state/required/criterion/citation/identity')
     if 'internal_monitor' in item:
         require(isinstance(monitor, dict) and set(monitor) == INTERNAL_MONITOR_FIELDS
                 and all(state_lib._text(monitor.get(k)) for k in INTERNAL_MONITOR_FIELDS),
@@ -534,6 +537,8 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
         require(state_lib._text(item.get(key)), 'rail requirement needs ' + key)
     require(type(item.get('required')) is bool, 'rail requirement required must be boolean (unknown remains undeclared)')
     identity = item.get('identity')
+    if self_monitored:
+        return errors + _self_monitor_errors(item, db, intent, state, scan, rails)
     if not isinstance(identity, dict):
         return errors + ['rail requirement needs source identity']
     shunt = identity.get('source_role') == 'internal_shunt_feed'
@@ -589,6 +594,28 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
         require(graph.pin2net.get(monitor['node']) == net and graph.is_fitted(mref)
                 and graph.kind(mref) == ng.IC,
                 'internal_monitor node must be a fitted IC pin on this rail')
+    return errors
+
+
+def _self_monitor_errors(item, db, intent, state, scan, rails):
+    """Requirement without source identity: the monitor must sit on a load supply pin of the rail."""
+    if db is None:
+        return []
+    errors = []
+    if intent.get('input_sha256') != board_intent.input_fingerprint(db):
+        errors.append('stale/missing input_sha256')
+    if not (state is not None and state.get('declared') and state_lib._text(state.get('citation'))):
+        errors.append('unknown/unverified assembly state')
+    if scan is None or errors:
+        return errors
+    graph, net, node = scan.graph, item.get('net'), item['internal_monitor'].get('node')
+    rail = next((r for r in rails if r['net'] == net), None)
+    if rail is None:
+        return ['net is not an actual supply rail']
+    ref = node.partition('.')[0] if isinstance(node, str) else None
+    if not (ref in rail['loads'] and graph.pin2net.get(node) == net and graph.is_fitted(ref)
+            and SUPPLY_PIN_RE.match(ng.normalize(graph.pinname.get(node)) or '')):
+        errors.append('internal_monitor without identity must be a fitted load supply pin on this rail')
     return errors
 
 
@@ -761,7 +788,15 @@ def build_inventory(db, intent=None):
                          and not _requirement_errors(matches[0], db, source, state, scan, rails))
                 rail['scope_qualified'] = bool(valid)
                 rail['requirement'] = matches[0] if valid else None
-                if valid:
+                if valid and 'identity' not in matches[0]:
+                    monitor = matches[0]['internal_monitor']
+                    rail['monitor'] = rail['monitor'] or 'internal:' + monitor['node']
+                    rail['internal_monitor'] = monitor
+                    rail['observation_gaps'] = [g for g in rail['observation_gaps']
+                                                if g != 'rail-unmonitored:' + rail['net']]
+                    rail['source_path'] = []
+                    rail['gaps'] = [gap for gap in rail['gaps'] if gap != 'rail-identity:' + rail['net']]
+                elif valid:
                     identity = matches[0]['identity']
                     if matches[0].get('internal_monitor') and not rail['monitor']:
                         rail['monitor'] = 'internal:' + matches[0]['internal_monitor']['node']

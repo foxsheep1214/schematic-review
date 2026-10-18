@@ -99,6 +99,37 @@ class RailRequirementsTest(unittest.TestCase):
         item['internal_monitor'] = {'node': 'U1.1'}
         self.assertTrue(any('internal_monitor' in e for e in validate_supervision_intent(self.intent, self.db)))
 
+    def test_self_monitored_rail_needs_no_source_identity(self):
+        # 100W PD 复审：源跟随、自供或串阻供电的轨无法写来源身份，但负载自身 UVLO 已监测本轨。
+        for item in self.intent['supervision']['rail_requirements']:
+            if item['net'] == 'VCC_A':
+                item['required'] = True
+                del item['identity']
+                item['internal_monitor'] = {'node': 'U1.1', 'function': 'VDD UVLO with hysteresis',
+                                            'citation': 'Synthetic datasheet UVLO section 7.3'}
+        self.assertEqual(validate_supervision_intent(self.intent, self.db), [])
+        plan, checks = coverage(self.db, self.intent)
+        self.assertEqual(checks['A']['inventory_gaps'], [])
+        rail = next(r for s in plan['supervision']['states'] if s['id'] == 'A'
+                    for r in s['rails'] if r['net'] == 'VCC_A')
+        self.assertEqual(rail['monitor'], 'internal:U1.1')
+        self.assertNotIn('rail-identity:VCC_A', rail['gaps'])
+
+    def test_identity_free_monitor_must_be_a_load_supply_pin(self):
+        self.db['pinname']['U1.3'] = 'UV'
+        self.db['pin2net']['U1.3'] = 'VCC_A'
+        self.db['nets']['GND'].remove('U1.3')
+        self.db['nets']['VCC_A'].append('U1.3')
+        self.intent = intent_for(self.db)
+        item = self.intent['supervision']['rail_requirements'][0]
+        del item['identity']
+        self.assertTrue(validate_supervision_intent(self.intent, self.db))   # no monitor: identity required
+        item['internal_monitor'] = {'node': 'U1.3', 'function': 'UV comparator',
+                                    'citation': 'Synthetic datasheet section 7.4'}
+        self.assertTrue(any('load supply pin' in e for e in validate_supervision_intent(self.intent, self.db)))
+        item['internal_monitor']['node'] = 'U1.1'
+        self.assertEqual(validate_supervision_intent(self.intent, self.db), [])
+
     def test_one_declaration_does_not_cover_other_rail_or_state(self):
         self.intent['supervision']['rail_requirements'] = self.intent['supervision']['rail_requirements'][:1]
         _, checks = coverage(self.db, self.intent)
