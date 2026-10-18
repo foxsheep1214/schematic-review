@@ -261,6 +261,8 @@ def render_check_explanations(plan, results):
     if not shared and not any('check_explanation' in c for c in list(planned.values()) + list(reviewed.values())):
         return []  # Historical records stay historical; no live-catalog substitution.
     status = {k: (reviewed.get(k) or {}).get('review_result') for k in keys}
+    parents = {child: k for k, r in reviewed.items() for child in (r.get('split_out') or [])
+               if isinstance(child, str)}
     open_keys = [k for k in keys if status[k] in ('FAIL', 'INSUFFICIENT')]
     na_keys = [k for k in keys if status[k] == 'NA']
     out = ['## 逐项检查说明', '',
@@ -282,6 +284,10 @@ def render_check_explanations(plan, results):
                 out.append('- **%s**：%s' % (label, cell(base[field])))
         if not base and not override:
             out.append('- **说明**：记录未提供，不能据此推断本次风险')
+        if key in parents:
+            parent = parents[key]
+            out.append('- **所属汇总项**：%s（其余对象%s）' % (
+                parent, RESULT_SHORT.get(status.get(parent), '未审结')))
         out += ['- **本次结论依据**：' + cell(r.get('rationale') or '尚未形成结论'), '']
     if na_keys:
         out += ['### 不适用', '']

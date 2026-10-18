@@ -513,5 +513,33 @@ class DesignOptionTests(unittest.TestCase):
         del r['remediation_version']
         self.assertTrue(validate_review(p, r, db)['valid'])
 
+
+class SplitOutTests(unittest.TestCase):
+    """100W PD 复审：一颗 C201 缺规格让 DEV-C01.BOARD 整板资料不足。"""
+
+    def ledger(self):
+        p, r, db = fixture()
+        p['checks'].append(planned(C2))
+        r['checks'].append(dict(copy.deepcopy(r['checks'][0]), id=C2, review_result='INSUFFICIENT',
+                                evidence_confidence='C', missing_inputs=['C2 ripple rating']))
+        complete_gap(r['checks'][-1], cause='EXTERNAL_DATA')
+        r['plan_digest'] = fingerprint(p)
+        return p, r, db
+
+    def test_residual_aggregate_can_pass_while_split_instance_is_insufficient(self):
+        p, r, db = self.ledger()
+        r['checks'][0]['split_out'] = [C2]
+        out = validate_review(p, r, db)
+        self.assertEqual([e for e in out['errors'] if 'split_out' in e], [])
+        self.assertEqual(out['summary']['results'].get('INSUFFICIENT'), 1)
+
+    def test_split_out_must_name_same_rule_checks_once(self):
+        for split in ([C1], ['RST-E01.NOPE'], [scope_id(sorted(SCOPE)[0])], [C2, C2]):
+            p, r, db = self.ledger()
+            r['checks'][0]['split_out'] = split
+            out = validate_review(p, r, db)
+            self.assertTrue(any('split_out' in e for e in out['errors']), (split, out['errors']))
+
+
 if __name__ == '__main__':
     unittest.main()

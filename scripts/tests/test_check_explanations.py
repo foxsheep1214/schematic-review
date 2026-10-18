@@ -140,6 +140,12 @@ class RenderExplanationTests(unittest.TestCase):
         self.assertIn(V2['risk_if_omitted'], text)
         self.assertNotIn(V2['closes_when'], text)
 
+    def test_split_instance_names_its_residual_aggregate(self):
+        plan, result = synthetic(['PASS', 'INSUFFICIENT'])
+        result['checks'][0]['split_out'] = ['DRV-C01.INSUFFICIENT']
+        text = '\n'.join(render_check_explanations(plan, result))
+        self.assertIn('所属汇总项**：DRV-C01.PASS（其余对象通过）', text)
+
     def test_legacy_explanations_still_render(self):
         legacy = {'purpose': '旧目的', 'risk_if_omitted': '旧风险', 'connections': '旧衔接'}
         text = '\n'.join(render_check_explanations(*synthetic(['FAIL'], legacy)))

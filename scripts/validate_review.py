@@ -60,6 +60,31 @@ def requirement_clause_errors(key, item, criterion):
     elif worst is not None and item.get("review_result") != worst:
         errors.append(f"{key}: 行结论须等于义务条款中最差的结论（{worst}）；前提条款与其他行的缺陷不连带本行")
     return errors
+def split_out_errors(checks, expected):
+    """split_out：汇总行的结论只覆盖拆出实例以外的对象；拆出实例同规则、各自给结论、只属一个汇总行。"""
+    errors, owner = [], {}
+    rule = lambda k: (expected.get(k) or checks.get(k) or {}).get('rule') or k.split('.', 1)[0]
+    for key, item in checks.items():
+        if 'split_out' not in item:
+            continue
+        split = item['split_out']
+        if not ids(split) or len(set(split)) != len(split):
+            errors.append(f"{key}: split_out must be a non-empty list of distinct check IDs")
+            continue
+        for child in split:
+            if child == key or child not in checks:
+                errors.append(f"{key}: split_out {child} is not another check in the results")
+            elif rule(child) != rule(key):
+                errors.append(f"{key}: split_out {child} belongs to another rule")
+            elif 'split_out' in checks[child]:
+                errors.append(f"{key}: split_out {child} is itself an aggregate; split one level only")
+            elif child in owner:
+                errors.append(f"{child}: split out of both {owner[child]} and {key}")
+            else:
+                owner[child] = key
+    return errors
+
+
 REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "PROPOSED": "提案（PROPOSED）",
                      "OPEN": "未定（OPEN）", "DEFERRED": "暂缓（DEFERRED）"}
 SCOPE = set(catalog.COVERAGE_RULES)
@@ -333,6 +358,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             # Handoffs travel with the schematic as a list; acceptance never gates finalisation.
             if h.get("state") in ("ACCEPTED", "VERIFIED"):
                 require(evidence(h.get("evidence")), f"{key}: handoff acceptance/verification needs record")
+
+    errors.extend(split_out_errors(checks, expected))
 
     for fid, item in findings.items():
         if actionable:
