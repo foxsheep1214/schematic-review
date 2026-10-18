@@ -822,6 +822,17 @@ PASS 不覆盖开关速度、温度角与隔离耐压。
 `cc_discharge_with_tail` 把恒流放电在合规交界 I×(串阻+尾段电阻) 处切成恒流段与 RC 尾段，尾段电阻须取自器件 I-V 资料。
 DOC-Q01 重放计算合同只说明格式与输入可追溯，**合同有效不等于模型正确**：温度单调方向、公差角点和分段模型的适用区间要另行复算。
 
+### 常用电路的最坏角点与设计数值复算
+
+`scripts/circuit_bounds.py` 覆盖各类板子都有的计算：`divider_bounds`（普通/反馈分压窗口及上臂功耗）、`rc_crossing_time`
+（RC 节点跨阈值窗口的最短/最长时间）、`linear_regulator_thermal`（线性稳压功耗与结温）、`logic_level_margins`
+（VIH 按电源比例给出时取接收端电源最大值，VIL 取最小值）、`capacitor_ripple_capability`（按手册频率/温度系数表取
+较低的相邻系数、表外不外推）、`resistor_power`、`series_resistor_current`（LED/光耦串阻电流）。每项输出注明取了哪个角点。
+
+`scripts/calc_claims.py` 把设计文档里的数值写成 claim 逐条复算：每条给 `id/source/locator/calculation/inputs/claimed`
+与可选 `rel_tol`（默认 1%），输出 MATCH / MISMATCH / NOT_COMPUTED / ERROR 及相对差，可直接存为证据。
+MISMATCH 只说明在 SR 的模型下所称数值不能由所称输入推出，确认原文和模型适用后才记文档错误。
+
 ### 齐纳门限与锁定保持计算
 
 `scripts/zener_fault.py`只接受调用者已建立适用性的数值界限：`trip_drive`联解内部吸流及充电余量，`no_trip_budget`求正常时可容许的外部注入，`hold_charge`核供电缺口期间的电荷余量。无默认尖峰、温度、延迟或电容公差；负余量不等于实际故障已经发生，须复核输入是否是可达轨迹或仅充分条件。

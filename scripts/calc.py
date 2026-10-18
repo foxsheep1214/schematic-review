@@ -10,12 +10,20 @@ import json
 import sys
 
 import boost_switch_loss
+import circuit_bounds
 import fault_energy
 import flyback_stop
 import model_bounds
 import zener_fault
 
 FUNCTIONS = {
+    'circuit_bounds.divider_bounds': circuit_bounds.divider_bounds,
+    'circuit_bounds.rc_crossing_time': circuit_bounds.rc_crossing_time,
+    'circuit_bounds.linear_regulator_thermal': circuit_bounds.linear_regulator_thermal,
+    'circuit_bounds.logic_level_margins': circuit_bounds.logic_level_margins,
+    'circuit_bounds.capacitor_ripple_capability': circuit_bounds.capacitor_ripple_capability,
+    'circuit_bounds.resistor_power': circuit_bounds.resistor_power,
+    'circuit_bounds.series_resistor_current': circuit_bounds.series_resistor_current,
     'boost_switch_loss.boost_cycle': boost_switch_loss.boost_cycle,
     'boost_switch_loss.conditional_losses': boost_switch_loss.conditional_losses,
     'fault_energy.packet_bound': fault_energy.packet_bound,
