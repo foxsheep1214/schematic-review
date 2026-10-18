@@ -281,6 +281,14 @@ DNP/DNI/DNF/NC 只按分隔词识别为不贴，不能误判 NCP1117 型号。�
 导出命令等价于 `kicad-cli sch export netlist --format kicadxml`；`kicad-cli` 路径可用
 `KICAD_CLI` 指定。导出失败时把 kicad-cli 原文抛出，不吞错继续。
 
+- **版本**：kicad-cli 只能读不新于自身版本的原理图。KiCad 8/9 工程（文件头 `(version …)` 大于 20230121）
+  在只有 KiCad 7 的环境里，用 `python3 scripts/install_kicad_cli.py --prefix <目录>` 从 Ubuntu 新版仓库
+  解出一份私有的 KiCad 9 kicad-cli（不改系统、不需要 root 或 Docker），再 `export KICAD_CLI=<目录>/kicad-cli`。
+- **KiCad 5 旧格式（`.sch`）**：各版 kicad-cli 读入后都没有器件，不能用。改用工程里 KiCad 5 导出的网表
+  `.net`（s-expression），`parse_kicad.py` 直接解析，并按 libparts 补全引脚类型；先核对 `.net` 的位号集合
+  与 `.sch` 的 `$Comp` 一致，不一致说明网表过期，须让设计方重新导出。kicad-cli 用 `--format kicadsexpr`
+  导出的网表同样可读，与 kicadxml 解析结果一致。
+
 字段映射：
 
 | db 字段 | 来源 | 说明 |

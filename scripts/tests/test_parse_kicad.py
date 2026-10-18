@@ -209,6 +209,28 @@ class NotConnectedTest(unittest.TestCase):
         self.assertEqual(db['stacked_unit_pins'],
                          [{'node': 'U1.4', 'kept': 'V-', 'dropped': 'unconnected-(U1A-V--Pad4)'}])
 
+    def test_kicad5_sexpr_netlist_matches_the_xml_export(self):
+        # KiCad 5 工程只留 .net（s-expression）；kicad-cli 不能载入 KiCad 5 的 .sch。
+        sexpr = """(export (version D)
+  (design (source demo.sch) (tool "Eeschema 5.1") (sheet (number 1) (name /) (tstamps /)))
+  (components
+    (comp (ref U1) (value LDO-3V3) (libsource (lib Regulator) (part LDO) (description "x \\"q\\""))
+      (sheetpath (names /) (tstamps /)) (tstamp 5874A8EB))
+    (comp (ref C1) (value 1uF) (libsource (lib Device) (part C)) (sheetpath (names /) (tstamps /))))
+  (libparts
+    (libpart (lib Regulator) (part LDO)
+      (pins (pin (num 1) (name VIN) (type power_in)) (pin (num 2) (name VOUT) (type power_out))))
+    (libpart (lib Device) (part C) (pins (pin (num 1) (name ~) (type passive)) (pin (num 2) (name ~) (type passive)))))
+  (nets
+    (net (code 1) (name /VIN) (node (ref U1) (pin 1)))
+    (net (code 2) (name +3V3) (node (ref U1) (pin 2)) (node (ref C1) (pin 1)))
+    (net (code 3) (name GND) (node (ref C1) (pin 2)))))"""
+        db = parse(sexpr)
+        self.assertEqual(db['pin2net']['U1.2'], '+3V3')
+        self.assertEqual(db['native_pintype']['U1.2'], 'power_out')   # node type filled from libparts
+        self.assertEqual(db['pinname']['U1.1'], 'VIN')
+        self.assertEqual(sorted(db['parts']), ['C1', 'U1'])
+
     def test_dnp_property_marks_the_part_unpopulated(self):
         db = parse(netlist(
             comp('R3', 'Device', 'R', '4.7k', properties='<property name="dnp"/>')

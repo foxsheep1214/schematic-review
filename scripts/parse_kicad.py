@@ -151,8 +151,80 @@ def _component(comp, libparts, pages):
     return part, pages.get(path), lib, normalization
 
 
+SEXPR_TOKEN = re.compile(r'\s*(?:(\()|(\))|"((?:[^"\\]|\\.)*)"|([^\s()"]+))')
+# s-expression children that the XML export writes as attributes of their parent element.
+SEXPR_ATTRIBUTES = {
+    'comp': {'ref'}, 'libsource': {'lib', 'part', 'description'}, 'sheetpath': {'names', 'tstamps'},
+    'property': {'name', 'value'}, 'libpart': {'lib', 'part'}, 'pin': {'num', 'name', 'type'},
+    'net': {'code', 'name', 'class'}, 'node': {'ref', 'pin', 'pinfunction', 'pintype'},
+    'sheet': {'number', 'name', 'tstamps'}, 'field': {'name'}, 'comment': {'number', 'value'},
+    'library': {'logical'}, 'textvar': {'name'},
+}
+
+
+def _sexpr(text):
+    """Nested lists of strings; quoted atoms are unescaped."""
+    stack, pos = [[]], 0
+    while pos < len(text):
+        match = SEXPR_TOKEN.match(text, pos)
+        if not match or match.end() == pos:
+            if text[pos:].strip():
+                raise ValueError('s-expression 网表无法分词: %r' % text[pos:pos + 40])
+            break
+        pos = match.end()
+        if match.group(1):
+            stack.append([])
+        elif match.group(2):
+            if len(stack) < 2:
+                raise ValueError('s-expression 网表括号不配对')
+            done = stack.pop()
+            stack[-1].append(done)
+        elif match.group(3) is not None:
+            stack[-1].append(re.sub(r'\\(.)', r'\1', match.group(3)))
+        else:
+            stack[-1].append(match.group(4))
+    if len(stack) != 1 or len(stack[0]) != 1:
+        raise ValueError('s-expression 网表括号不配对')
+    return stack[0][0]
+
+
+def _sexpr_element(node):
+    tag = node[0]
+    element = ET.Element(tag)
+    texts = []
+    for child in node[1:]:
+        if isinstance(child, list) and child:
+            scalar = len(child) == 2 and not isinstance(child[1], list)
+            if scalar and child[0] in SEXPR_ATTRIBUTES.get(tag, ()):
+                element.set(child[0], child[1])
+            elif len(child) == 1:
+                ET.SubElement(element, child[0])
+            elif scalar:
+                ET.SubElement(element, child[0]).text = child[1]
+            else:
+                element.append(_sexpr_element(child))
+        elif isinstance(child, str):
+            texts.append(child)
+    if texts:
+        element.text = ' '.join(texts)
+    return element
+
+
+def sexpr_to_xml(text):
+    """KiCad s-expression netlist ('(export (version D|E) ...)', KiCad 5's .net or kicad-cli
+    --format kicadsexpr) -> the equivalent kicadxml text, so one parser serves both."""
+    tree = _sexpr(text)
+    if not (isinstance(tree, list) and tree and tree[0] == 'export'):
+        raise ValueError('不是 KiCad s-expression 网表（根不是 export）')
+    root = _sexpr_element(tree)
+    return ET.tostring(root, encoding='unicode')
+
+
 def parse(xml_text, export_errors=()):
-    """kicadxml 文本 -> db 契约。"""
+    """kicadxml 文本（或 KiCad s-expression 网表）-> db 契约。"""
+    head = xml_text.lstrip()[:7]
+    if head in ('(export', b'(export'):
+        xml_text = sexpr_to_xml(xml_text.decode('utf-8') if isinstance(xml_text, bytes) else xml_text)
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError as error:
@@ -207,6 +279,10 @@ def parse(xml_text, export_errors=()):
             nodes.append(key)
             pin2net[key] = name
             kinds = [x for x in (node.get('pintype') or '').split('+') if x]
+            if not kinds:
+                # KiCad 5 netlists type pins only in libparts; use the placed symbol's declared type.
+                declared_kind = libparts.get(ref2lib.get(ref, ''), {}).get('pins', {}).get(pin, ('', ''))[1]
+                kinds = [declared_kind] if declared_kind else []
             if 'no_connect' in kinds:
                 declared_nc.append(key)
                 no_connect_nodes.append(key)
@@ -285,7 +361,7 @@ def _stacked_unit_pins(root):
 
 
 def build(path, executable=None):
-    """输入 .kicad_sch 或 kicadxml；返回 db 契约。"""
+    """输入 .kicad_sch、kicadxml 或 KiCad s-expression 网表（KiCad 5 的 .net）；返回 db 契约。"""
     if not os.path.isfile(path):
         raise RuntimeError('缺少输入文件: %s' % path)
     if path.lower().endswith('.kicad_sch'):
@@ -300,7 +376,7 @@ def build(path, executable=None):
 
 def main():
     parser = argparse.ArgumentParser(description='解析 KiCad 网表为结构化索引')
-    parser.add_argument('path', help='.kicad_sch 原理图，或已导出的 kicadxml')
+    parser.add_argument('path', help='.kicad_sch 原理图，或已导出的 kicadxml / KiCad s-expression 网表（.net）')
     parser.add_argument('-o', '--out', default='db.json')
     parser.add_argument('--kicad-cli', dest='executable', default=None,
                         help='kicad-cli 路径（默认取 KICAD_CLI 或 PATH）')
