@@ -134,6 +134,9 @@ class _Scan:
             targets.add(source_net)
         targets |= {other for _, other in graph.neighbors(drain_net)
                     if self.tree.is_rail(other) or other in self.grounds}
+        # The far end of the inductor/primary winding is the supply side even when it is not a
+        # recognised rail (e.g. a PFC bulk named BULK); RCD clamps return there.
+        targets |= self._winding_supply_nets(drain_net)
         for target in sorted(targets):
             if target == drain_net:
                 continue
@@ -150,6 +153,9 @@ class _Scan:
         for diode, middle in graph.neighbors(drain_net, {ng.DIODE}):
             if middle in targets:
                 continue
+            if self._boost_transfer(diode, drain_net, middle):
+                found.append({'ref': diode, 'type': 'boost-transfer-diode', 'to': middle})
+                continue
             for target in sorted(targets - {drain_net}):
                 caps = graph.between(middle, target, {ng.CAPACITOR})
                 if caps:
@@ -163,13 +169,38 @@ class _Scan:
         return sorted(found, key=lambda item: (item['ref'], item['type']))
 
     def _boost_transfer(self, diode, drain_net, target):
+        """Anode on the switch node, cathode on an output with storage (a rail or >=1 uF to a
+        ground/return), and an inductor feeding the node from a different net."""
         graph = self.graph
         anode, cathode = graph.node_named(diode, 'anode'), graph.node_named(diode, 'cathode')
         if not (anode and cathode and graph.pin2net.get(anode) == drain_net
-                and graph.pin2net.get(cathode) == target and self.tree.is_rail(target)):
+                and graph.pin2net.get(cathode) == target):
             return False
-        return any(other != target and self.tree.is_rail(other)
-                   for _, other in graph.neighbors(drain_net, {ng.INDUCTOR}))
+        if not (self.tree.is_rail(target) or self._has_storage(target)):
+            return False
+        return any(other != target for _, other in graph.neighbors(drain_net, {ng.INDUCTOR}))
+
+    def _has_storage(self, net):
+        for cap in self.graph.refs_on(net):
+            if self.graph.kind(cap) == ng.CAPACITOR:
+                value = parse_capacitance(self.graph.parts.get(cap, {}).get('value'))
+                if value is not None and value >= 1e-6:
+                    return True
+        return False
+
+    def _winding_supply_nets(self, drain_net):
+        nets = {other for _, other in self.graph.neighbors(drain_net, {ng.INDUCTOR})}
+        for declaration in self.winding_maps:
+            if declaration.get('kind') != 'flyback_transformer':
+                continue
+            ref = declaration.get('ref')
+            primary = next((w for w in declaration.get('windings', []) if w.get('role') == 'primary'), None)
+            if not primary:
+                continue
+            pnets = [self.graph.pin2net.get(ref + '.' + p) for p in primary['pins']]
+            if drain_net in pnets:
+                nets.update(n for n in pnets if n and n != drain_net)
+        return nets
 
     def _switch_node_evidence(self, drain_net, ref):
         """开关节点上是否有感性负载或半桥对管。"""
@@ -196,14 +227,7 @@ class _Scan:
         net and an SR drain on a secondary still are."""
         if not any(d.get('kind') == 'flyback_transformer' and d.get('ref') == ref for d in self.winding_maps):
             return False
-        if self.tree.is_rail(net):
-            return True
-        for cap in self.graph.refs_on(net):
-            if self.graph.kind(cap) == ng.CAPACITOR:
-                value = parse_capacitance(self.graph.parts.get(cap, {}).get('value'))
-                if value is not None and value >= 1e-6:
-                    return True
-        return False
+        return self.tree.is_rail(net) or self._has_storage(net)
 
     def source_return(self, ref, source_net):
         """Cited single fitted sense resistor; never merge the source with ground."""

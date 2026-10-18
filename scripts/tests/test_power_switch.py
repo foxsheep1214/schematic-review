@@ -415,6 +415,30 @@ class SharedClampTopologyTest(unittest.TestCase):
         self.assertIn('boost-transfer-diode', [s['type'] for s in q1['snubbers']])
         self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
 
+    @staticmethod
+    def rename(db, old, new):
+        for node, net in list(db['pin2net'].items()):
+            if net == old:
+                db['pin2net'][node] = new
+        db['nets'][new] = db['nets'].pop(old)
+        return db
+
+    def test_rcd_clamp_to_an_unnamed_bulk_bus_counts_as_snubber(self):
+        db = self.rename(switch_board(snubber='rcd'), 'V12', 'BULK')
+        add(db, 'C9', '47uF', [('1', '1', 'BULK'), ('2', '2', 'GND')])
+        q1 = switches_of(build_inventory(db))['Q1']
+        self.assertEqual([s['type'] for s in q1['snubbers']], ['rcd-clamp'])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+
+    def test_boost_diode_into_an_unnamed_storage_bus_is_not_an_rcd(self):
+        db = self.rename(switch_board(snubber='boost'), 'VOUT', 'BULK')
+        db = self.rename(db, 'V12', 'RECT')
+        q1 = switches_of(build_inventory(db))['Q1']
+        types = [s['type'] for s in q1['snubbers']]
+        self.assertIn('boost-transfer-diode', types)
+        self.assertNotIn('rcd-clamp', types)
+        self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
+
     def test_flyback_secondary_net_is_not_the_switch_node_of_another_mosfet(self):
         from test_inductive_load import flyback_board, flyback_intent
         db = flyback_board()
