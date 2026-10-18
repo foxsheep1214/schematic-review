@@ -147,6 +147,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 按 PWR → RST → CLK → SIG → ANA → PRO → DRV 推进，每条规则逐对象、逐状态给结果；全板项逐条给适用性和结果。
 功能包按实际 package/circuit/state/ref 归组并列必需成员 ID，跨包依赖说明真实路径；不能只按规则编号归组。
+隔离器件能否用于实际工作条件、电源反馈是否稳定，按[隔离器件与电源反馈的检查要求](references/closure-obligations.md)记录。报告直接写器件或环路“缺什么、怎么补、怎样算通过”；同一对象、同一补充动作和通过标准可合并，不同环路保留各自标准。
 按 [功能包依赖与状态核对](references/plan-and-results.md#功能包依赖与状态核对) 核全部实际成员、外围选值窗口与掉电路径。
 遇到共享控制网、多供源/状态、功能父项或共享整改任务，先读 [执行一致性](references/execution-consistency.md)。
 先按 [对象上下文录入](references/plan-and-results.md#对象上下文录入) 保存实际物理对象、状态、路径及出处、
@@ -199,7 +200,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
       python3 scripts/pack_review.py <审查目录> --review-plan … --review-results … --review-gate … --db … --intent … \
         --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
 
-  默认简洁报告保留全部缺陷、任务、关闭条件及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
+  默认简洁报告保留全部缺陷、任务、通过标准及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
   `pack_review.py` 只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
   顶层有其他文件或引用的证据找不到时打包失败。不另写 README、说明文档或 HTML。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。

@@ -23,6 +23,7 @@ from revision_impact import validate_metadata, validate_reverification, check_sp
 from page_inventory import validate_document_pages
 from execution_audit import validate_execution_audit
 from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
+from review_obligations import validate_obligations
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -394,6 +395,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
 
     errors.extend(split_out_errors(checks, expected))
     errors.extend(history_citation_errors(report, checks, expected))
+    errors.extend(validate_obligations(expected, checks, report.get('work_items') or []))
 
     for fid, item in findings.items():
         if actionable:

@@ -152,11 +152,18 @@ def unique(values):
     return seen
 
 
+def join_statements(values):
+    """Join prose without stacking a separator after a full stop."""
+    out = ''
+    for value in values:
+        if out and not out.endswith(('。', '；', '！', '？', ';', '!', '?')):
+            out += '；'
+        out += value
+    return out
+
+
 def task_level(task, checks, owners=None):
     return task_view(task, checks, owners)['level']
-
-
-FIELD_ITEMS_SHOWN = 3
 
 
 def render_item(task, checks, notes, owners=None):
@@ -173,22 +180,34 @@ def render_item(task, checks, notes, owners=None):
     if notes.get(task['id']):
         lines += [notes[task['id']], '']
     requests = [req for _, _, req in view['requests']]
-    fields = [('缺什么', [task.get('root_cause')]),
-              ('为什么要紧', [task.get('reason')]),
-              ('需要提供的内容', [q.get('required_scope') for q in requests]),
-              ('找谁、怎么拿', [q.get('acquisition') for q in requests] or [task.get('next_action')]),
-              ('做到什么算解决', [q.get('closure_criterion') for q in requests])]
+    scopes = unique(q.get('required_scope') for q in requests)
+    criteria = unique(q.get('closure_criterion') for q in requests)
+    reason = (task.get('reason') or '').strip()
+    # Old records sometimes put the scope in the impact field verbatim.
+    # Remove only that exact duplicate, never infer equivalence from similarity.
+    if reason in scopes or reason in ['本任务只关闭：' + scope for scope in scopes]:
+        reason = ''
+    missing = unique([task.get('root_cause'), reason])
+    if scopes:
+        missing.append('适用范围：' + join_statements(scopes))
+    action = (task.get('next_action') or '').strip()
+    # Keep the acceptance text once, in its own field, if it is an exact suffix.
+    for criterion in sorted(criteria, key=len, reverse=True):
+        if action == criterion:
+            action = ''
+        elif action.endswith('；' + criterion):
+            action = action[:-len(criterion)-1]
+    fields = [('缺什么', missing),
+              ('怎么补', [action] + [q.get('acquisition') for q in requests]),
+              ('怎样算通过', criteria)]
     option = task.get('design_option') or {}
     if option.get('status') == 'PROPOSED':
         fields.append(('建议的电路改法', [option.get('summary')]))
     for label, values in fields:
         values = unique(values)
         if values:
-            # 合并了很多检查的待办只列前几条，避免把每条检查的缺口拼成一长串。
-            shown = values[:FIELD_ITEMS_SHOWN]
-            more = len(values) - len(shown)
-            lines.append('- **%s**：%s' % (label, '；'.join(shown)) +
-                         ('（另有 %d 条，见涉及检查的资料需求）' % more if more else ''))
+            # Repeated requests share one line; every distinct acceptance stays visible.
+            lines.append('- **%s**：%s' % (label, join_statements(values)))
     lines.append('')
     return lines
 
@@ -262,7 +281,7 @@ def failed_checks(rows, findings):
                     for fid, ids in groups.items())
 
 
-EXPLANATION_LABELS = (('risk_if_omitted', '不查会漏掉什么'), ('closes_when', '关闭条件'),
+EXPLANATION_LABELS = (('risk_if_omitted', '不查会漏掉什么'), ('closes_when', '怎样算通过'),
                       ('false_alarms', '常见误报/合法结构'),
                       ('purpose', '在检查什么'), ('connections', '与其他检查怎样衔接'))  # 后两项为第 1 版记录
 
@@ -282,7 +301,7 @@ def render_check_explanations(plan, results):
     na_keys = [k for k in keys if status[k] == 'NA']
     out = ['## 逐项检查说明', '',
            '“不查会漏掉什么”是检查的理由，不代表已经发现该问题，也不决定风险等级。'
-           '没通过和资料不足的检查逐项给出关闭条件；不适用的只写理由；其余 %d 项通过或未审结，不展开。'
+           '没通过和资料不足的检查逐项给出通过标准；不适用的只写理由；其余 %d 项通过或未审结，不展开。'
            % (len(keys) - len(open_keys) - len(na_keys)), '']
     for key in open_keys:
         p, r = planned.get(key, {}), reviewed.get(key, {})
@@ -487,7 +506,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']
     explanations = render_check_explanations(plan, results) if detail == 'full' else []
     if explanations:
-        out += ['<details>', '<summary>展开逐项依据与关闭条件（完整保留）</summary>', ''] + explanations + ['</details>', '']
+        out += ['<details>', '<summary>展开逐项依据与通过标准（完整保留）</summary>', ''] + explanations + ['</details>', '']
     out += ['## 详细记录', '',
             '逐项结论、资料需求、修改条件及引用保存在[检查结果](record/review-results.json)，'
             '通用盲区和完整覆盖保存在[检查计划](record/review-plan.json)，计数见[校验记录](record/review-gate.json)。'

@@ -136,7 +136,7 @@ class RenderExplanationTests(unittest.TestCase):
         plan, result = synthetic(['FAIL'])
         result['checks'][0]['check_explanation'] = {'closes_when': '本板 D1 钳位电压有界即关闭'}
         text = '\n'.join(render_check_explanations(plan, result))
-        self.assertIn('关闭条件**（本次对象说明）：本板 D1 钳位电压有界即关闭', text)
+        self.assertIn('怎样算通过**（本次对象说明）：本板 D1 钳位电压有界即关闭', text)
         self.assertIn(V2['risk_if_omitted'], text)
         self.assertNotIn(V2['closes_when'], text)
 

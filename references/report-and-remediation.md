@@ -29,7 +29,15 @@ finding 的 remediation、handoff）后重新生成。下文各节规定这些�
 简洁不通过删除未解决项、降低等级或截断唯一关闭条件来实现。
 
 notes 不能改结论或计数，不写内部代码名（gap_cause、documented 等），不重复任务字段已有的内容。
-任务的 title / root_cause / reason / next_action、input_requests 和 handoff 会原样进报告，按写给硬件工程师的白话写：
+任务默认只显示“缺什么、怎么补、怎样算通过”三行，标题直接点名器件或环路。
+沿用现有字段：root_cause 写具体缺口，reason 只补实际影响；required_scope 写适用器件与工况；
+next_action 和 acquisition 写具体动作及资料取得方法；closure_criterion 写可复核的通过标准。
+不用“隔离资格、独立关闭义务、角点闭合”等说法；分别写器件允许的工作条件、需要补的具体内容、各输入/负载/温度组合怎样才算通过。
+不同工作条件重复索取同一资料时合并，保留所有不同的通过标准；不能只显示前三条而隐藏其余要求。
+同一动作、同一范围、同一通过标准才合并任务；仅资料来源相同可以合并取资料动作，不能合并不同电源环路的判定。
+优先复用审查时已取得的资料和计算，仅整理报告时不增加检查、试验、填表或补资料要求。
+
+任务的 title / root_cause / reason / next_action、input_requests 和 handoff 按写给硬件工程师的白话写：
 用器件位号、网络名和物理量说事，不写 SR 内部的规则号、字段名、工具名或“伪填”“签 PASS”这类审查行话；
 一个字段一两句，细节放检查行的 rationale。finding 的 title / observed / impact / recommendation / verification
 和 remediation 的 purpose / steps 同样原样进报告。
@@ -64,7 +72,7 @@ notes 不能改结论或计数，不写内部代码名（gap_cause、documented 
 - 复审概括本轮新增、修复、撤回和仍开放的事项，历史数量不混入当前缺陷。
 - 有开放的需求澄清时，结论里单列“需求说明问题”一段，直接说明：本轮有 N 项证据不足是需求说明不明确造成的，不是电路缺陷，也不是缺器件资料。逐个澄清项写：需求原文（或“未提及”）→ 不明确在哪里 → 建议补入需求说明的条文 → 关联几项检查、未定前的冻结影响。N 取 `requirement_clarification_summary.insufficient_from_requirements`。
 
-默认 `--detail compact`：正文列全部唯一缺陷、任务及各自关闭条件，逐项依据链接到保存的台账；
+默认 `--detail compact`：正文列全部唯一缺陷、任务及各自通过标准，逐项依据链接到保存的台账；
 `--detail full` 另展开逐条说明。两种模式使用同一结果和计数，不省略未决项、不替换结论。
 任务风险和补证要求按 `request_keys` 的归属显示；未明确归属时提示待整理，不传播复合行的最高等级。
 

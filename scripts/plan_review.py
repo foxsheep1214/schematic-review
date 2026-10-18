@@ -546,6 +546,9 @@ class ReviewPlanner:
                 item['package'] = package.name
                 item['analysis_required'] = True
                 item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
+                from review_obligations import contract
+                if contract(rule):
+                    item['closure_contract'] = contract(rule)
 
     def plan_checkers(self):
         """遍历检查器注册表；每个检查器只生成自己的计划项。"""

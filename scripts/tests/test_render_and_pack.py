@@ -240,15 +240,32 @@ class ReportWordingTests(unittest.TestCase):
         self.assertEqual(merged.count('**SR 为什么做不到**'), 1)
         self.assertNotIn('人工', merged)
 
-    def test_merged_todo_lists_only_the_first_few_requests(self):
-        # 100W PD 复审：W-CONFIG 把 37 条检查的缺口用分号拼成一长串。
+    def test_merged_todo_keeps_every_distinct_request_and_acceptance(self):
         from render_report import render_item
-        checks = {'C%d' % i: {'input_requests': {'x': {'required_scope': 'scope %d' % i}}} for i in range(6)}
-        lines = render_item({'id': 'W-X', 'title': 't', 'check_ids': list(checks)}, checks, {})
-        line = next(l for l in lines if l.startswith('- **需要提供的内容**'))
-        self.assertIn('scope 2', line)
-        self.assertNotIn('scope 3', line)
-        self.assertIn('另有 3 条', line)
+        checks = {'C%d' % i: {'input_requests': {'x': {
+            'required_scope': 'scope %d' % i, 'acquisition': 'shared source',
+            'closure_criterion': 'limit %d' % i}}} for i in range(6)}
+        task = {'id': 'W-X', 'title': 'U1', 'check_ids': list(checks),
+                'next_action': 'calculate U1'}
+        text = '\n'.join(render_item(task, checks, {}))
+        for i in range(6):
+            self.assertIn('scope %d' % i, text)
+            self.assertIn('limit %d' % i, text)
+        self.assertEqual(text.count('shared source'), 1)
+        self.assertIn('calculate U1', text)
+
+    def test_duplicate_scope_and_acceptance_are_not_repeated(self):
+        from render_report import render_item
+        checks = {'C': {'input_requests': {'x': {'required_scope': 'range',
+            'closure_criterion': 'limit', 'acquisition': 'vendor curve'}}}}
+        task = {'id': 'W', 'check_ids': ['C'], 'reason': '本任务只关闭：range',
+                'next_action': 'calculate；limit'}
+        text = '\n'.join(render_item(task, checks, {}))
+        self.assertEqual(text.count('range'), 1)
+        self.assertEqual(text.count('limit'), 1)
+        self.assertIn('calculate', text)
+        task['reason'] = 'range includes hazardous restart'
+        self.assertIn(task['reason'], '\n'.join(render_item(task, checks, {})))
 
     def test_todo_that_only_fixes_a_listed_problem_points_to_it(self):
         from render_report import covered_by_findings, same_text
@@ -297,7 +314,7 @@ class ReportWordingTests(unittest.TestCase):
                       {'sr_feedback': [{'kind': 'software_bug', 'rules': ['DOC-Q01'],
                                         'instance': 'path error', 'suggestion': 'verify archive'}]}, detail='full')
         self.assertIn('仍待确认**：1 件事项，其中 1 件', text)
-        self.assertIn('<summary>展开逐项依据与关闭条件（完整保留）</summary>', text)
+        self.assertIn('<summary>展开逐项依据与通过标准（完整保留）</summary>', text)
         self.assertIn('本次结论依据', text)
         self.assertEqual(text.count('<details>'), text.count('</details>'))
         self.assertIn('已复现的程序错误', text)

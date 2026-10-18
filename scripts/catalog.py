@@ -266,14 +266,17 @@ RULES = (
          'package', 'circuit'),
     Rule('PWR-C03', '变换器电流应力',
          '按实际拓扑核电流应力：开关变换器查电感峰值/RMS、Isat 与限流；线性/跟随器查偏置与负载能力，不强加储能电感模型', 'package', 'circuit'),
-    Rule('PWR-C04', '变换器时序与稳定性',
-         '开关变换器核最小导通/关断时间、Cout 与补偿；线性电路按实际稳定条件查，不强加 PWM；'
+    Rule('PWR-C04', '变换器时序与输出电容条件',
+         '开关变换器核最小导通/关断时间和Cout适用条件；反馈模型与补偿独立归PWR-C15，不能由峰流或吸收应力关闭；线性电路按实际条件查，不强加 PWM；'
          '原厂明确不要求Cout维持稳定且实际条件满足其条款时，可仅对本体稳定性判PASS，不能关闭独立电容额定或反向能量；'
          '仅凭典型应用等效的路径限后果不超过P2，不能放行P1核心功能或损坏/保护保证；'
          '允许失调节的故障/关断状态查动作与恢复', 'package', 'circuit'),
     Rule('PWR-C05', '损耗与反向电流',
          '核对声明工况下的损耗、反向电流、预偏置与放电路径，输出损耗边界与允许温度约束；'
          '实际结温、散热路径及闭壳温升转 HANDOFF，缺下游热数据不推翻已有电气结论', 'package', 'circuit'),
+    Rule('PWR-C15', '反馈模型与补偿资格',
+         '按实际拓扑独立核反馈模型、补偿配置及规定角点的稳定性/动态边界；内部补偿也须匹配厂家适用条件，'
+         '无反馈环的电路可据实际拓扑判NA；峰值电流、RCD或栅极应力不能代替本项，样机Bode测试不代替原理图补偿条件', 'package', 'circuit'),
     Rule('PWR-C06', '保护门限',
          '存在主动门限时核 UVLO/OVLO/限流容差、检测目的与采样侧；被动输入按保险丝/MOV/NTC 等实际保护协调查，'
          '不强加检测使能链；连续电流、限流、快断与热保护不能互代', 'package', 'circuit'),
@@ -486,7 +489,10 @@ RULES = (
          '核隔离两侧的网络归属、参考地、跨接器件与耐压，以及输出侧速度/负载条件；'
          '爬电距离与实际隔离距离另交结构与版图', 'optocoupler', 'device'),
     Rule('PRO-D02', '隔离带跨接',
-         '跨隔离带器件与网络归属、跨接电容耐压；实际爬电距离另交 HANDOFF', 'package', 'circuit'),
+         '跨隔离带器件与网络归属及跨接用途；元件工作电压与绝缘资格独立归PRO-C03；实际爬电距离另交 HANDOFF', 'package', 'circuit'),
+    Rule('PRO-C03', '隔离器件工作条件与资格',
+         '逐个跨隔离器件核实际工作电压、重复峰值/频率、绝缘类别和厂家资格适用条件；耐压试验数值或无直流跨接'
+         '不能代替工作资格。缺少元件选型前提保留原理图缺口，实际PCB/机构距离与实物耐压另验', 'package', 'circuit'),
     Rule('PRO-D03', '对外连接器防护',
          '对外连接器逐针考虑防护，ESD 器件挂在活线上，并核所列信号线钳位（clamp_refs）的工作电压不低于信号摆幅、钳位电压不超过被保护脚耐受；板内互连器件可按依据判不适用', 'plan', 'device'),
 
@@ -565,7 +571,7 @@ OBJECTIVE_RULES = {
                  'NET-A01 NET-A02 NET-A03 NET-A04 NET-A06 NET-A07 '
                  'PWR-A01 PWR-A02 PWR-A03 PWR-A04 PWR-T01 PWR-T03 PWR-T06 PWR-D02 '
                  'SIG-E01 SIG-T01 SIG-T02 SIG-T03 SIG-T04 SIG-D13 PRO-A01').split()),
-    'G3': tuple(('PWR-C04 PWR-D03 '
+    'G3': tuple(('PWR-C04 PWR-C15 PWR-D03 '
                  'RST-A01 RST-A02 RST-A03 RST-A04 RST-A05 RST-A06 RST-E01 RST-E02 RST-E03 '
                  'RST-T01 RST-T02 RST-T03 RST-T04 RST-C01 RST-C02 '
                  'CLK-D01 CLK-D03 SIG-A01 SIG-A02 SIG-A03 SIG-E02 SIG-C01 SIG-C03 SIG-C04 SIG-C07 SIG-C09 '
@@ -575,7 +581,7 @@ OBJECTIVE_RULES = {
                  'PWR-A05 PWR-E01 PWR-E02 PWR-E03 PWR-C01 PWR-C02 PWR-C03 PWR-C05 '
                  'PWR-C09 PWR-C10 PWR-C11 PWR-C14 CLK-C01 DRV-C02').split()),
     'G5': tuple(('PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
-                 'PRO-A02 PRO-C01 PRO-C02 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01').split()),
+                 'PRO-A02 PRO-C01 PRO-C02 PRO-C03 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01').split()),
     'G6': tuple('DOC-D02 DOC-V02 RST-D01 SIG-D06'.split()),
     'G7': tuple(('DOC-A01 DOC-A03 DOC-A04 DOC-Q01 DEV-Q01 PWR-D01 '
                  'REQ-Q01 REQ-Q02 REQ-Q03 REQ-Q04 REQ-Q05 REQ-Q07 REQ-Q08 REQ-H01 REQ-H02').split()),
@@ -605,7 +611,7 @@ def build_objective_index(rule_ids, groups, objectives=OBJECTIVES):
 PACKAGES = (
     Package('POWER_CONVERTER', '变换器与稳压器', 'PWR',
             r'(^|[:_-])(FB|VFB|LX\d*|PGOOD|PWRGD|VOUT\d*)([:_-]|$)|LDO|BUCK|BOOST|DC-?DC|PMIC',
-            ('PWR-C02', 'PWR-C03', 'PWR-C04', 'PWR-C05', 'PWR-C14'),
+            ('PWR-C02', 'PWR-C03', 'PWR-C04', 'PWR-C05', 'PWR-C14', 'PWR-C15'),
             ('requirements', 'datasheets')),
     Package('POWER_PROTECTION', '电源输入保护', 'PWR',
             r'FUSE|HOT-?SWAP|SURGE|PART:F\d+:|(^|[:_-])(OVP|UVP|OCP|ILIM)([:_-]|$)|SMBJ|SMAJ|SMCJ',
@@ -679,7 +685,7 @@ PACKAGES = (
             ('requirements', 'datasheets')),
     Package('ISOLATION', '隔离', 'PRO',
             r'ISOLAT|(^|_)ISO(_|$)|DIGITAL_ISO',
-            ('PRO-D02', 'PRO-C01'),
+            ('PRO-D02', 'PRO-C01', 'PRO-C03'),
             ('requirements', 'datasheets')),
     Package('DEBUG', '调试与烧录', 'SIG',
             r'JTAG|SWDIO|SWCLK|(^|[:_-])(SWD|TCK|TMS|TDI|TDO|TRST\w*)([:_-]|$)|(^|[:_-])(DEBUG|DBG)',
@@ -771,7 +777,8 @@ EXPLANATIONS = {
     'PWR-C01': _x('逐个负载都在额定内，组合起来仍可能超过电源能力', '按最重工作模式的负载合计不超过来源能力并留裕量即关闭', inputs='PWR-T01 的来源与负载'),
     'PWR-C02': _x('反馈设定正确，占空比、压差或拓扑能力不够时输出仍达不到', '要求调节的输入、负载和温度角点下输出都在窗口内即关闭', inputs='PWR-E01/PWR-E02 的窗口'),
     'PWR-C03': _x('平均电流在额定内，峰值仍可能使电感饱和或误触发限流', '峰值、RMS 对 Isat、限流和器件额定都有裕量即关闭', inputs='PWR-C01/PWR-C02 的工况'),
-    'PWR-C04': _x('静态工作点都对，最小导通时间、补偿或输出电容不当仍会振荡', '按实际拓扑核完最小导通/关断与稳定条件即关闭；波形验证交下游', inputs='PWR-C02 的工作点'),
+    'PWR-C04': _x('静态工作点都对，最小导通时间或输出电容条件仍可能不适用', '按实际拓扑核完最小导通/关断与输出电容条件；反馈模型与补偿另核PWR-C15', inputs='PWR-C02 的工作点'),
+    'PWR-C15': _x('峰流或RCD应力通过不能证明闭环稳定；内部补偿不等于任意输出电容都可用', '分别核反馈模型、实际补偿配置与全部规定角点的稳定性/动态边界；无反馈环凭拓扑排除，实物测试另验', inputs='PWR-C02工作点、实际反馈路径与原厂补偿条件'),
     'PWR-C05': _x('效率估算只看稳态，掉电和预偏置时的反向电流可能损坏器件', '损耗边界和反向电流路径都有界即关闭；实际结温交下游', inputs='PWR-T05 的反流路径'),
     'PWR-C06': _x('门限中心值合理，容差叠加后可能正常工作时误动作或故障时动作过晚', '门限容差带与正常工作窗口不重叠且有裕量即关闭；协同归 PRO-C01', inputs='PWR-C01/PWR-C02 的工作范围'),
     'PWR-C09': _x('标称总容量够，串联边界另一侧的电容或降额后的容量并不算数', '直接供电段的数量、容量组合满足器件条款即关闭', inputs='PWR-T03 的分组、DEV-C02 的有效容量'),
@@ -845,7 +852,8 @@ EXPLANATIONS = {
     'PRO-C01': _x('单个保护器件合格，整条链的动作电压、时序和能量仍可能配合不上', '按实际保护链逐段核动作电压、时序与能量配合即关闭；缺工况不定判', inputs='PRO-C02 的门限、DRV-C01/C02 的耐受'),
     'PRO-C02': _x('只核一侧窗口：可能正常工作时误触发，或故障时触发不了', '两侧各有保证值或有据上界与门限比较且有裕量即关闭；不要求全温曲线', inputs='ANA-T01 的检测路径', false_alarms='连接器信号线 ESD 归 PRO-D03；栅源稳压管正常限幅属允许用途；跨开关 TVS 是能量钳位'),
     'PRO-D01': _x('光耦能传信号，隔离等级、工作电压或参考地归属仍可能不满足要求', '两侧网络归属、参考地、跨接器件和耐压都核实即关闭；爬电距离交版图', inputs='DEV-D01 的器件身份'),
-    'PRO-D02': _x('跨隔离带的 Y 电容或误连网络可能绕过加强绝缘', '每个跨隔离器件和网络的归属与耐压都核实即关闭；实际爬电交下游', inputs='PWR-T06 的参考域'),
+    'PRO-D02': _x('跨隔离带的 Y 电容或误连网络可能绕过加强绝缘', '每个跨隔离器件与网络归属核实；不能代替PRO-C03工作资格，实际爬电另验', inputs='PWR-T06 的参考域'),
+    'PRO-C03': _x('短时耐压测试值、绝缘目标或无直流跨接被错当成实际工作条件下的元件资格', '每个跨隔离器件均有工作应力与资格条件的对照，未满足前提不得移作阶段NA', inputs='隔离器件清单、实际波形/工作电压及准确订货变体资格'),
     'PRO-D03': _x('有 ESD 器件不等于端口受保护：可能挂在非活线上或钳位电压过高', '每个对外针的防护与泄放路径、所列钳位的工作与钳位电压都核实即关闭', inputs='DEV-D03 的端口定义', false_alarms='板内互连连接器可按依据判不适用'),
     'DRV-A01': _x('被开关的线圈没有释放路径时，关断尖峰会击穿开关管', '找到续流、钳位、RC 或有据的集成钳位路径即关闭；额定归 DRV-C01', false_alarms='驱动器内部钳位（需资料）；反激变压器的能量经次级送出'),
     'DRV-A02': _x('续流二极管反接时，开关导通即短路电源，关断时也不续流', '二极管阳极在开关节点、阴极在电源轨即关闭', false_alarms='升压二极管阴极接输出母线是正确接法，不是续流管'),
