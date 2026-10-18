@@ -60,6 +60,31 @@ def requirement_clause_errors(key, item, criterion):
     elif worst is not None and item.get("review_result") != worst:
         errors.append(f"{key}: 行结论须等于义务条款中最差的结论（{worst}）；前提条款与其他行的缺陷不连带本行")
     return errors
+def _under(source, root):
+    source, root = source.replace('\\', '/').rstrip('/'), root.replace('\\', '/').rstrip('/')
+    return source == root or source.startswith(root + '/') or source.endswith('/' + root)
+
+
+def history_citation_errors(report, checks, expected):
+    """history_inputs：本轮能看到的旧审查材料；只有上一版问题复验行（REQ-H02）可以引用它们。"""
+    if 'history_inputs' not in report:
+        return []
+    roots = report['history_inputs']
+    if not (isinstance(roots, list) and all(text(x) for x in roots)):
+        return ['history_inputs must list the earlier-review paths available to this review (may be empty)']
+    errors = []
+    for key, item in checks.items():
+        if (expected.get(key) or {}).get('rule') == 'REQ-H02':
+            continue
+        for ev in item.get('evidence') or []:
+            source = ev.get('source') if isinstance(ev, dict) else None
+            hit = next((root for root in roots if text(source) and _under(source, root)), None)
+            if hit:
+                errors.append(f"{key}: evidence {source} is an earlier review ({hit}); judge from current "
+                              "sources and cite earlier reviews only in REQ-H02 history rows")
+    return errors
+
+
 def split_out_errors(checks, expected):
     """split_out：汇总行的结论只覆盖拆出实例以外的对象；拆出实例同规则、各自给结论、只属一个汇总行。"""
     errors, owner = [], {}
@@ -364,6 +389,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 require(evidence(h.get("evidence")), f"{key}: handoff acceptance/verification needs record")
 
     errors.extend(split_out_errors(checks, expected))
+    errors.extend(history_citation_errors(report, checks, expected))
 
     for fid, item in findings.items():
         if actionable:

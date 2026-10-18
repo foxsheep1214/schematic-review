@@ -354,6 +354,11 @@ def render(plan, results, gate, notes=None, title=None):
         out.append('- **待办**：%d 件，按可能后果从重到轻列在“待办”一节。' % len(tasks))
     if phase == 'design_iteration':
         out.append('- 这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。')
+    if 'history_inputs' in results:
+        history_inputs = [x for x in results.get('history_inputs') or [] if isinstance(x, str)]
+        out.append('- **上一版审查材料**：%s' % (
+            '本轮可见 %s；只用于“上一版问题”的复验，本轮结论按当前资料独立得出。' % '、'.join(
+                '`%s`' % cell(x) for x in history_inputs[:4]) if history_inputs else '本轮没有使用。'))
     out.append('')
     if notes.get('summary'):
         out += [notes['summary'], '']

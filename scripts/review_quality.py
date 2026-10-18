@@ -21,6 +21,8 @@ DOWNSTREAM_RE = re.compile(r'实测|样机|样品|闭壳|温升测试|热测|EMC
 DESIGN_GAP_RE = re.compile(r'未选|未定|缺少?手册|缺资料|无资料|未计算|未建模|未连接|未设计|改图|越限|超出额定|不满足')
 OPTIMIZATION_RE = re.compile(r'优化目标|成本|体积|报价|尽量|cost|volume', re.I)
 # 冻结阶段把以下两类提示当作“定级未完成”的放行阻断，不改变 valid。
+# Review records whose citation as evidence for a current conclusion suggests reuse of an earlier review.
+REVIEW_ARTIFACTS = {'review-results.json', 'review-gate.json', '审查报告.md', 'review-ledger.json'}
 FREEZE_BLOCKING_CODES = ('TEMPLATED_SEVERITY_REASON', 'UNIFORM_SEVERITY_WITHIN_RULE')
 IMPACT_TEXT_FIELDS = ('consequence', 'severity_reason')
 
@@ -302,6 +304,17 @@ def screen_quality(plan, report, db=None):
                 'check_ids': sorted(cid for cid, _ in group),
                 'message': f'All {len(group)} evidence gaps of {rule} share one potential grade; '
                            'objects of one rule (bypass cap vs. bulk high-voltage resistor) rarely share one consequence.'})
+    cited_reviews = sorted(
+        row['id'] for row in report['checks'] if isinstance(row, dict) and isinstance(row.get('id'), str)
+        and row['id'] in expected
+        and expected[row['id']].get('rule') != 'REQ-H02'
+        and any(isinstance(ev, dict) and isinstance(ev.get('source'), str)
+                and ev['source'].replace('\\', '/').rsplit('/', 1)[-1] in REVIEW_ARTIFACTS
+                for ev in row.get('evidence') or []))
+    if cited_reviews:
+        candidates.append({'code': 'CURRENT_CHECK_CITES_REVIEW_RECORD', 'check_ids': cited_reviews,
+            'message': 'A current conclusion cites a review results/gate/report file. If it is an earlier review, '
+                       're-derive the conclusion from current sources and declare the file in history_inputs.'})
     candidates.sort(key=lambda x: (x['code'], x['check_ids']))
     output.update(status='NEEDS_SEMANTIC_REVIEW' if candidates else 'NO_PATTERN_DETECTED',
                   candidate_count=len(candidates),

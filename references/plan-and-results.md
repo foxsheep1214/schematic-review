@@ -335,6 +335,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 - 每项证据不足（REQUIREMENT_OPEN 与 REQ-H02 历史处置除外）给 `impact_assessment` 的五项非空字段，校验始终强制；
   内容按 [危险度分类原则](verdicts-and-release.md#证据不足的危险度分类原则) 逐项判定；非空字段不等于危险度可靠。
   缺影响依据的旧报告校验不通过，须按当前规则重新分级，不改写旧结果或工程指纹来冒充新审查。
+- **独立审查**：结果顶层写 `history_inputs`（本轮能看到的旧审查目录或文件路径，没有就写空数组）。除 REQ-H02 上一版问题复验行外，任何检查的 evidence 引用这些路径都会被 `validate_review.py` 拒绝；未声明却引用某次审查的结论/校验/报告文件（`review-results.json`、`review-gate.json`、`审查报告.md`）会进质量筛查候选。报告结论里写明本轮可见的旧审查材料。
 - 新报告写 `impact_class_version: 1`，每项证据不足另给 `impact_assessment.consequence_class`（类别决定潜在等级，
   见[后果类别](verdicts-and-release.md#后果类别impact_class_version-1)）。
 - 新报告写 `requirement_clauses_version: 1`：每个 REQ-D01（需求状态 OPEN/DEFERRED 与 NA 除外）给 `requirement_clauses`，

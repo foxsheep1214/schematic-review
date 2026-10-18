@@ -191,6 +191,14 @@ class ReportWordingTests(unittest.TestCase):
         self.assertEqual(reasons, ['输入资料一致性核对没通过（检查 DOC-Q01.X，问题见 F-DOC-01）'])
         self.assertNotIn('其他定稿条件', '；'.join(reasons))
 
+    def test_history_materials_are_stated_in_the_conclusion(self):
+        p, r, db = decisive()
+        r['history_inputs'] = ['reviews/R1']
+        text, gate = report(p, r, db)
+        self.assertIn('- **上一版审查材料**：本轮可见 `reviews/R1`', body(text))
+        r['history_inputs'] = []
+        self.assertIn('- **上一版审查材料**：本轮没有使用。', body(report(p, r, db)[0]))
+
     def test_gap_blockers_are_counted_by_work_item(self):
         from render_report import blocker_reasons
         blockers = ['A.%d: unresolved blocking INSUFFICIENT' % i for i in range(5)]

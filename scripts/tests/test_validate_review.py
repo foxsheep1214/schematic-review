@@ -580,5 +580,32 @@ class ImpactClassTests(unittest.TestCase):
         self.assertEqual([e for e in validate_review(p, r, db)['errors'] if 'consequence_class' in e], [])
 
 
+
+class HistoryInputTests(unittest.TestCase):
+    """100W PD 复审：要求独立审查，报告却写明参考了前轮台账。"""
+
+    def test_current_check_cannot_cite_a_declared_earlier_review(self):
+        p, r, db = fixture()
+        r['history_inputs'] = ['reviews/R1']
+        r['checks'][0]['evidence'] = [{'source': 'reviews/R1/record/review-results.json', 'locator': 'C1'}]
+        errors = validate_review(p, r, db)['errors']
+        self.assertTrue(any('earlier review' in e and C1 in e for e in errors), errors)
+        r['checks'][0]['evidence'] = E
+        self.assertEqual([e for e in validate_review(p, r, db)['errors'] if 'earlier review' in e], [])
+
+    def test_history_inputs_must_be_paths(self):
+        p, r, db = fixture()
+        r['history_inputs'] = ['', 3]
+        self.assertTrue(any('history_inputs' in e for e in validate_review(p, r, db)['errors']))
+        r['history_inputs'] = []
+        self.assertFalse(any('history_inputs' in e for e in validate_review(p, r, db)['errors']))
+
+    def test_undeclared_review_record_citation_is_screened(self):
+        p, r, db = fixture()
+        r['checks'][0]['evidence'] = [{'source': 'old/审查报告.md', 'locator': 'F-1'}]
+        codes = {c['code'] for c in validate_review(p, r, db)['quality_screening']['candidates']}
+        self.assertIn('CURRENT_CHECK_CITES_REVIEW_RECORD', codes)
+
+
 if __name__ == '__main__':
     unittest.main()
