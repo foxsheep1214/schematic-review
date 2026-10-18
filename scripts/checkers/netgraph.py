@@ -235,6 +235,9 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
             return kind, 'part-keyword'
     if signature and (pin_count is None or pin_count >= 3):
         return signature, 'pin-names'
+    names = {normalize(name) for name, _ in pin_names}
+    if {'VBUS', 'CC1', 'CC2'} <= names and not ({'VCONN', 'VDD', 'SCL', 'SDA'} & names):
+        return CONNECTOR, 'pin-names'   # USB-C receptacle contact set; controllers carry supply/I2C pins
     for pattern, kind in PREFIX_KINDS:
         if re.match(pattern, ref, re.I):
             if kind == MOSFET and pin_count is not None and pin_count < 3:
@@ -242,6 +245,10 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
             # 只有两脚的 K 位号不可能同时有线圈和触点（部分库把连接器编为 K）；
             # 三脚以上名称不明的 K 仍按继电器保留，不掩盖真继电器
             if kind == RELAY and pin_count is not None and pin_count < 3:
+                return UNKNOWN, 'refdes-prefix conflicts with pin count'
+            # Some libraries number every connector K; more than 8 pins is not a relay package
+            # (USB-C receptacles, headers). Without a keyword the part stays unknown, never a relay.
+            if kind == RELAY and pin_count is not None and pin_count > 8:
                 return UNKNOWN, 'refdes-prefix conflicts with pin count'
             return kind, 'refdes-prefix'
     return UNKNOWN, 'no classification evidence'

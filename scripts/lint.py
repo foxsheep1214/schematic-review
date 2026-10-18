@@ -60,6 +60,10 @@ def export_log_kind(line):
     return None
 
 
+def _fmt_v(value):
+    return '无' if value is None else '%gV' % value
+
+
 BOOTSTRAP_PIN_RE = re.compile(r'^(BOOT|BST|CBOOT|BTST|CB)\w*$', re.I)
 SUPPLY_PIN_RE = re.compile(r'^(VDD|VCC|AVDD|DVDD|VBAT|VDDA|VDDIO|VCCA|VCCIO)\w*$'
                            r'(?<![_-]DET)(?<![_-]SENSE)(?<![_-]SNS)(?<![_-]EN)(?<![_-]PG)(?<![_-]MON)', re.I)
@@ -252,11 +256,20 @@ class Lint:
             kind = self.graph.kind(ref)
             if kind == 'connector':
                 continue
-            if kind != 'relay' or str(self.pinname.get(node, '')).strip().upper() != 'NC':
+            # Contact roles come from pin names; a symbol without pin names may carry them in its
+            # three distinct net names (COM/NC/NO), as hand-drawn relay libraries do.
+            unnamed = not any(str(self.pinname.get(ref + '.' + p, '')).strip() for p in self.graph.pins_of(ref))
+
+            def contact(pin_node, pin_net):
+                name = str(self.pinname.get(pin_node, '')).strip().upper()
+                if name or not unnamed:
+                    return name
+                return str(pin_net).rsplit('/', 1)[-1].strip().upper()
+            if kind != 'relay' or contact(node, net) != 'NC':
                 return False
             roles = defaultdict(list)
             for pin, pin_net in self.graph.pins_of(ref).items():
-                name = str(self.pinname.get(ref + '.' + pin, '')).strip().upper()
+                name = contact(ref + '.' + pin, pin_net)
                 if name in {'NC', 'COM', 'NO'}:
                     roles[name].append(pin_net)
             if any(len(roles[name]) != 1 for name in ('NC', 'COM', 'NO')):
@@ -402,7 +415,7 @@ class Lint:
                     continue   # fed from a driven rail through a filter resistor, switch or protection FET
                 if entry:
                     self.add('PWR-A01', '电源轨只经连接器进板',
-                             f'{n}: 板上无来源，经 {entry[:4]} 由外部供电；核对端供电与反灌', kind='CANDIDATE')
+                             f'{n}: 板上无来源，经 {entry[:4]} 由外部供电；输入保护按 PRO 规则另核', kind='INFO')
                 else:
                     self.add('PWR-A01', '电源轨疑似无驱动',
                              f'{n} ({len(nds)}节点): {sorted(self.refs_of(n))[:6]}')
@@ -462,7 +475,10 @@ class Lint:
                         'NET-A06', '多个输出引脚直连',
                         f'{net}: {outputs}；开漏/三态等合法结构须逐条排除')
                 if nodes and len(typed) == len(nodes) and typed and all(
-                        kind == 'IN' for _, kind in typed):
+                        kind == 'IN' for _, kind in typed) and not any(
+                        self.graph.kind(node.partition('.')[0]) == CONNECTOR
+                        or DATASHEET_NC_PIN_RE.match(self.pinname.get(node, '')) for node in nodes):
+                    # A connector contact typed input (some header libraries) is driven off-board.
                     self.add(
                         'NET-A06', '网络仅含输入引脚（确认外部源/漏驱动）',
                         f'{net}: {[node for node, _ in typed]}',
@@ -572,8 +588,8 @@ class Lint:
                 continue
             rail = rails[0]
             self.add('PRO-A02', '防护器件工作/击穿/钳位窗口待复核',
-                     f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_volt(rail)}V，'
-                     f'型号提示={clamp_volt(blob)}V。分别查 VRWM、VBR@IT、VC@Ipp、'
+                     f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_fmt_v(_volt(rail))}，'
+                     f'型号提示={_fmt_v(clamp_volt(blob))}。分别查 VRWM、VBR@IT、VC@Ipp、'
                      '波形、温度与能量配合；型号不能证明导通或烧毁。',
                      ref, kind='CANDIDATE')
 

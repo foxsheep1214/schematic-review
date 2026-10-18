@@ -174,11 +174,11 @@ class PowerNameHeuristicTest(unittest.TestCase):
     def rules(self, db, rule):
         return [f for f in scans(db, rule)]
 
-    def test_connector_fed_rail_is_a_candidate_not_a_finding(self):
+    def test_connector_fed_rail_is_info_not_a_finding(self):
         db = board({'J1': 'Connector:Conn_01x02', 'U1': 'SENSOR'},
                    {'VCC': ['J1.1', 'U1.1'], 'GND': ['J1.2', 'U1.2']},
                    pinname={'U1.1': 'VDD', 'U1.2': 'GND', 'J1.1': '1', 'J1.2': '2'})
-        self.assertEqual({f['kind'] for f in scans(db, 'PWR-A01')}, {'CANDIDATE'})
+        self.assertEqual({f['kind'] for f in scans(db, 'PWR-A01')}, {'INFO'})
         self.assertEqual(scans(db, 'PWR-A02'), [])
 
     def test_native_power_out_drives_a_rail_on_any_refdes(self):
@@ -212,7 +212,7 @@ class TypicalBoardPowerTest(unittest.TestCase):
                    {'VBUS_IN': ['USB-C1.1', 'F1.1'], 'V_FUSED': ['F1.2', 'D1.2'], '+5V': ['D1.1', 'U1.1', 'C1.1'],
                     'GND': ['USB-C1.2', 'U1.2', 'C1.2']},
                    pinname={'D1.1': 'K', 'D1.2': 'A', 'U1.1': 'VIN', 'U1.2': 'GND'})
-        self.assertEqual({f['kind'] for f in scans(db, 'PWR-A01')}, {'CANDIDATE'})
+        self.assertEqual({f['kind'] for f in scans(db, 'PWR-A01')}, {'INFO'})
         self.assertEqual(scans(db, 'PWR-A02'), [])
 
     def test_battery_and_rc_filtered_supply_pin(self):
@@ -242,6 +242,35 @@ class TypicalBoardPowerTest(unittest.TestCase):
                    pinname={'U1.12': 'NC', 'U1.3': 'INTn', 'U1.1': 'VDD', 'U1.2': 'GND'})
         hits = scans(db, 'NET-A01')
         self.assertEqual([(f['kind'], 'U1.3' in f['detail']) for f in hits], [('CANDIDATE', True)])
+
+
+
+class TypicalBoardClassificationTest(unittest.TestCase):
+    """典型电路基准：Soldered 库把连接器编为 K、手画继电器没有脚名、Olimex 位号带下划线。"""
+
+    def test_sixteen_pin_k_part_is_not_a_relay_and_usb_c_pins_make_a_connector(self):
+        from checkers import netgraph as ng
+        self.assertEqual(ng.classify('K9', {'value': 'HDR'}, 16)[0], ng.UNKNOWN)
+        names = [('VBUS', 'A4'), ('CC1', 'A5'), ('CC2', 'B5'), ('GND', 'A1'), ('SBU1', 'A8')]
+        self.assertEqual(ng.classify('K1', {'value': 'U262-161N'}, 16, names)[0], ng.CONNECTOR)
+        controller = names + [('VDD', '1'), ('SCL', '2')]
+        self.assertNotEqual(ng.classify('U1', {'value': 'FUSB302'}, 14, controller)[0], ng.CONNECTOR)
+
+    def test_relay_without_pin_names_takes_contact_roles_from_net_names(self):
+        db = board({'K1': 'SRD_RELAY_5V', 'K3': 'TERMINAL_KF235-5.0-3P'},
+                   {'NC': ['K1.5', 'K3.1'], 'NO': ['K1.3', 'K3.3'], 'COM': ['K1.4', 'K3.2'],
+                    'COIL_A': ['K1.1'], 'COIL_B': ['K1.2']})
+        self.assertEqual(scans(db, 'NET-A04'), [])
+
+    def test_vendor_refdes_formats_are_annotated(self):
+        db = board({'USB-C1': 'Connector:USB_C', 'PS2_KBD1': 'Connector:MiniDIN', 'PGM/DBG1': 'Connector:Conn',
+                    'R?': '10k'}, {'A': ['USB-C1.1', 'PS2_KBD1.1', 'PGM/DBG1.1', 'R?.1']})
+        self.assertEqual([f['detail'].split(':')[0] for f in scans(db, 'DOC-A04')], ['R?'])
+
+    def test_header_contacts_typed_input_are_driven_off_board(self):
+        db = board({'J1': 'HEADER_2x05', 'U2': 'FT232'}, {'CTS': ['J1.5', 'U2.6']},
+                   pintype={'J1.5': 'IN', 'U2.6': 'IN'})
+        self.assertEqual([f for f in scans(db, 'NET-A06') if 'CTS' in f['detail']], [])
 
 
 if __name__ == '__main__':

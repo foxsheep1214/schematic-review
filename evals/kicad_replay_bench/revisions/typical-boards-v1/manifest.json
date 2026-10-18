@@ -1,0 +1,15 @@
+{
+ "revision": "typical-boards-v1",
+ "parents": {
+  "revisions/name-heuristics-v1/expected.json": "7d9cf0bec9ebeb55702bc273fe0bfb97976740e65a5d2c72b3e26b3569379a11",
+  "revisions/name-heuristics-v1/cases.json": "ab06c8b73477bc9981d70e9abccb6044d563dea8ac81b0927e5019b4de966a6f",
+  "revisions/name-heuristics-v1/sources.json": "3a35c62d488d4384d8c8e45f214d913faf58572b571a2369fce0b327f57e9517",
+  "revisions/name-heuristics-v1/manifest.json": "c31808ae832f6a35b22c26bfb5c1a92ec7d97adcb57e327643eceb269b5fd758"
+ },
+ "derived_files": {
+  "revisions/typical-boards-v1/expected.json": "379de00d62be8518a2297538377058a13f25a8e5f960eb9d9aa0e5653afc712e",
+  "revisions/typical-boards-v1/cases.json": "ab06c8b73477bc9981d70e9abccb6044d563dea8ac81b0927e5019b4de966a6f",
+  "revisions/typical-boards-v1/sources.json": "3a35c62d488d4384d8c8e45f214d913faf58572b571a2369fce0b327f57e9517"
+ },
+ "scope": "33 块开源典型板暴露的分类问题：K 位号超过 8 脚不当继电器、VBUS+CC1+CC2 脚组认作 USB-C 连接器。r02 检查数 198→200，其余 11 个用例答案不变。name-heuristics-v1 文件保持原字节。"
+}

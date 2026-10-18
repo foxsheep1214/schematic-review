@@ -106,6 +106,8 @@ class _Scan:
                 found.append({'node': node, 'via': via, 'source': 'discrete-stage'})
             elif kind == ng.CONNECTOR:
                 found.append({'node': node, 'via': via, 'source': 'external'})
+            elif kind == ng.OPTO and self.graph.role(node) not in ('anode', 'cathode'):
+                found.append({'node': node, 'via': via, 'source': 'opto-output'})
         return found
 
     def drivers(self, gate_net):
@@ -190,6 +192,11 @@ class _Scan:
 
     def _winding_supply_nets(self, drain_net):
         nets = {other for _, other in self.graph.neighbors(drain_net, {ng.INDUCTOR})}
+        # A relay coil may reach its supply through a resistor; a diode across the coil (switch node
+        # to the coil's other terminal) is still its freewheel clamp.
+        for ref in self.graph.refs_on(drain_net):
+            if self.graph.kind(ref) == ng.RELAY:
+                nets.update(n for n in self.graph.nets_of(ref) if n != drain_net)
         for declaration in self.winding_maps:
             if declaration.get('kind') != 'flyback_transformer':
                 continue
@@ -511,13 +518,15 @@ class PowerSwitchChecker(Checker):
 
     @staticmethod
     def _untyped_ic_pins(graph, gate_net):
-        """IC pins on the gate net (directly or through a series passive) with no pin direction at all."""
+        """IC pins on the gate net (directly or through a series passive) whose direction the
+        netlist does not give: no pin type, or a library that types every pin passive/unspecified."""
         native = graph.db.get('native_pintype') or {}
         nets = [gate_net] + [other for _, other in graph.neighbors(gate_net, ng.PASSIVE_LINKS)]
         return sorted({node for net in nets for node in graph.nodes_on(net)
                        if graph.kind(node.partition('.')[0]) == ng.IC
                        and graph.is_fitted(node.partition('.')[0])
-                       and not graph.pintype.get(node) and node not in native})
+                       and native.get(node, '') in ('', 'passive', 'unspecified', 'free')
+                       and ng.normalize(graph.pintype.get(node)) in ('', 'UNSPEC', 'PASSIVE')})
 
     def cold_findings(self, lint, inventory):
         for state, switch in inv.walk(inventory, 'switches'):

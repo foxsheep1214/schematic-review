@@ -95,6 +95,21 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual([f['kind'] for f in hits], ['CANDIDATE'])
         self.assertIn('U1.1', hits[0]['detail'])
 
+    def test_optocoupler_output_drives_a_bjt_base(self):
+        # 典型电路基准：继电器板 PC357 发射极驱动 Q1 基极，曾报“基极悬空”。
+        db = switch_board(driver=None, pull=False)
+        add(db, 'U1', 'PC357_OPTO', [('1', 'anoda', 'IN_A'), ('2', 'katoda', 'GND'),
+                                     ('3', 'emiter', 'GATE'), ('4', 'kolektor', 'V12')])
+        self.assertEqual([f for f in findings(db) if f['rule'] == 'DRV-A03'], [])
+
+    def test_relay_flyback_diode_counts_when_coil_is_fed_through_a_resistor(self):
+        db = switch_board(load=None)
+        add(db, 'K1', 'SRD_RELAY_5V', [('1', '1', 'COIL_TOP'), ('2', '2', 'SW_OUT'), ('3', '3', 'NO'),
+                                       ('4', '4', 'COM'), ('5', '5', 'NC')])
+        add(db, 'R4', '10R', [('1', '1', 'COIL_TOP'), ('2', '2', 'V12')])
+        add(db, 'D2', '1N4148', [('1', 'A', 'SW_OUT'), ('2', 'K', 'COIL_TOP')])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+
     def test_gate_pull_alone_is_not_a_finding(self):
         self.assertEqual(findings(switch_board(driver=None, snubber='rc')), [])
 

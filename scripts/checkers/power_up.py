@@ -43,6 +43,7 @@ class _Scan:
         self.excluded = excluded
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
         self.tree = powertree.PowerTree(self.graph)
+        self.feed = powertree.PowerTree(self.graph, feed=True)   # supply nets entering through connectors
         self._regulators = None
 
     def _enable_source(self, enable_net, input_nets):
@@ -51,7 +52,7 @@ class _Scan:
         if enable_net in input_nets:
             return 'tied-to-input', []
         to_rail = [(ref, other) for ref, other in graph.neighbors(enable_net, {ng.RESISTOR})
-                   if self.tree.is_rail(other)]
+                   if self.tree.is_rail(other) or (other not in self.grounds and self.feed.driven(other))]
         to_ground = [(ref, other) for ref, other in graph.neighbors(enable_net, {ng.RESISTOR})
                      if other in self.grounds]
         caps = [ref for ground in sorted(self.grounds)
@@ -81,6 +82,8 @@ class _Scan:
 
     def _supply_inputs(self, ref):
         inputs = self.graph.named_pins(ref, POWER_PIN_RE)
+        # A bare IN pin on a part already recognised as a regulator (it has OUT/SW/FB) is its supply input.
+        inputs.update(self.graph.named_pins(ref, re.compile(r'^IN\d*$', re.I)))
         # VI can also mean a signal/video input. Only directional native power
         # evidence admits this alias; canonical POWER conflates inputs/outputs.
         native_types = self.graph.db.get('native_pintype') or {}
@@ -251,7 +254,9 @@ class PowerUpChecker(Checker):
                          '%s（状态 %s）：使能脚 %s 直连输入网 %s，未见 UVLO 分压或 RC 延时；'
                          '输入缓慢爬升或跌落时的开启点由器件内部门限决定'
                          % (item['ref'], state['id'], item['enable_node'], item['enable_net']),
-                         item['ref'], kind='CANDIDATE')
+                         # EN tied to IN is the standard hookup of a linear regulator; a switcher
+                         # starting at its internal UVLO under slow input ramps is worth a look.
+                         item['ref'], kind='CANDIDATE' if item['kind'] == 'switching' else 'INFO')
 
     def hot_check(self, lint, check):
         vin_min = hotmath.number(check['vin_min_v'])

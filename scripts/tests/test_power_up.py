@@ -102,12 +102,15 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual(item['kind'], 'linear')
 
     def test_enable_tied_to_input_reports_pu02(self):
-        db = rail_board(enable='tied')
+        db = rail_board(enable='tied', kind='switching')
         item = regulators_of(build_inventory(db))['U1']
         self.assertEqual(item['enable_source'], 'tied-to-input')
         hits = findings(db)
         self.assertEqual([f['rule'] for f in hits], ['RST-A03'])
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
+        # 典型电路基准：线性稳压器 EN 直连 IN 是手册常规接法，只作提示。
+        linear = [f for f in findings(rail_board(enable='tied')) if f['rule'] == 'RST-A03']
+        self.assertEqual([f['kind'] for f in linear], ['INFO'])
 
     def test_load_enable_on_its_own_rail_reports_pu01(self):
         db = rail_board(load_enable='same-rail')

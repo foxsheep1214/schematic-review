@@ -8,13 +8,13 @@
 """
 import re
 
-from checkers.netgraph import IC, RESISTOR, TESTPOINT, is_ground, is_rail, rail_voltage
+from checkers.netgraph import CONNECTOR, IC, RESISTOR, TESTPOINT, is_ground, is_rail, rail_voltage
 
 # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 RATING_RE = re.compile(r'(?<![\d.])(\d+(?:\.\d+)?)\s*V(?![\dA-Z])', re.I)
 LED_RE = re.compile(r'(^|[^A-Z])LED(S|[^A-Z]|$)', re.I)
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
-REFDES_RE = re.compile(r'^[A-Za-z]+\d+[A-Za-z]?$')
+REFDES_RE = re.compile(r'^(?!.*\?)[A-Za-z][A-Za-z0-9_/+-]*?\d+[A-Za-z]?$')   # USB-C1, PS2_KBD1, PGM/DBG1 are annotated
 I2C_LINE_RE = re.compile(r'^(SDA|SCL)\d*$')
 
 
@@ -136,6 +136,10 @@ def floating_inputs(lint):
         # obligation. Require role evidence stronger than the refdes alone;
         # unknown parts, IC inputs and unmarked dangling nets still get checked.
         if declared_nc and lint.graph.qualified_connector_contact(ref):
+            continue
+        # A datasheet NC pin typed input has no input to bias.
+        from lint import DATASHEET_NC_PIN_RE
+        if DATASHEET_NC_PIN_RE.match(lint.pinname.get(node, '')):
             continue
         if net is None:
             lint.add('NET-A07', '声明输入脚无网络', f'{node}: 引脚类型为输入，网表中没有网络', ref)

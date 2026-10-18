@@ -16,7 +16,9 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率
 `--contract legacy` 用于重放历史契约，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认契约是 `name-heuristics-v1`（`revisions/name-heuristics-v1/`，2026-10-18）：统一地名与轨名判定、原生 power_out 脚作为电源来源；r03 检查数 311→313（VSYS 识别为轨），r05 64→65（PWR-T04），其余答案不变。
+当前默认契约是 `typical-boards-v1`（`revisions/typical-boards-v1/`，2026-10-18）：K 位号超过 8 脚不当继电器、VBUS+CC1+CC2 脚组认作 USB-C 连接器；r02 检查数 198→200，其余答案不变。
+
+此前的默认契约是 `name-heuristics-v1`（`revisions/name-heuristics-v1/`，2026-10-18）：统一地名与轨名判定、原生 power_out 脚作为电源来源；r03 检查数 311→313（VSYS 识别为轨），r05 64→65（PWR-T04），其余答案不变。
 
 此前的默认契约是 `testpoint-kind-v1`（`revisions/testpoint-kind-v1/`，2026-10-18）：库条目名为 TestPoint 的符号（`Connector:TestPoint`、`SparkFun-Connector:TestPoint_1.0mm`）按测试点归类、不再套连接器检查，只把 r01 的检查数由 186 改为 178，其余答案不变。
 
