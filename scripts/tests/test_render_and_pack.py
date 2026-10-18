@@ -317,6 +317,27 @@ class PackReviewTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertIn(RECORD + '/evidence/calc/startup.md', manifest['packed'])
 
+    def test_same_named_file_in_an_input_does_not_hide_new_evidence(self):
+        # 100W PD 复审：旧审查目录作输入时，同名的本轮 page-1.png 被当成输入而漏装。
+        results = json.loads((self.work / 'review-results.json').read_text())
+        results['checks'][0]['evidence'].append({'source': 'page-1.png', 'locator': 'U601'})
+        results['checks'][0]['evidence'].append({'source': 'shots/page-2.png', 'locator': 'Q401'})
+        (self.work / 'review-results.json').write_text(json.dumps(results))
+        (self.work / 'page-1.png').write_bytes(b'new')
+        (self.inputs / 'page-1.png').write_bytes(b'old')
+        (self.inputs / 'page-2.png').write_bytes(b'old')
+        errors, manifest = self.run_pack()
+        self.assertIn(RECORD + '/evidence/page-1.png', manifest['packed'])
+        self.assertEqual((self.out / RECORD / 'evidence' / 'page-1.png').read_bytes(), b'new')
+        self.assertTrue(any('shots/page-2.png' in e for e in errors), errors)
+
+    def test_report_links_must_resolve_after_packing(self):
+        (self.out / REPORT).write_text('# report\n\n[算式](record/evidence/calc/startup.md) '
+                                       '[图](record/evidence/missing.png) [外链](https://example.com/x)\n')
+        errors, _ = self.run_pack()
+        self.assertEqual([e for e in errors if 'links to files missing' in e],
+                         [REPORT + ' links to files missing from the packed review: record/evidence/missing.png'])
+
     def test_extra_top_level_files_fail(self):
         (self.out / 'README.md').write_text('extra')
         errors, _ = self.run_pack()

@@ -191,7 +191,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
       python3 scripts/pack_review.py <审查目录> --review-plan … --review-results … --review-gate … --db … --intent … \
         --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
 
-  `pack_review.py` 只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`，不复制。
+  `pack_review.py` 只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`，不复制引用先在 `--evidence-root` 里找（本轮证据优先于输入里同名的旧文件），带目录的引用须按完整路径落在某个输入内；打包后报告里的相对链接须都能打开。
   顶层有其他文件或引用的证据找不到时打包失败。不另写 README、说明文档或 HTML。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。
 

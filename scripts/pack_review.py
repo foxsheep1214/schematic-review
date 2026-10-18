@@ -15,6 +15,7 @@ nor a declared input, fails the pack so the directory stays exactly this shape.
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -76,6 +77,46 @@ def cited_sources(value):
     return found
 
 
+def input_member(source, inputs):
+    """A cited source belongs to a declared input by full path, by path inside an input directory,
+    or, for a bare file name, by exactly one input file of that name. Never by name alone when the
+    citation carries a directory, so a same-named new file elsewhere is not mistaken for an input."""
+    path = Path(source)
+    matches = []
+    for fp in inputs:
+        root = Path(fp['path'])
+        if root.is_file():
+            files = [root]
+        else:
+            if (root / path).is_file():
+                return True
+            files = [q for q in root.rglob('*') if q.is_file()]
+        if path.is_absolute() and path.resolve() in [f.resolve() for f in files]:
+            return True
+        if len(path.parts) == 1:
+            matches += [f for f in files if f.name == path.name]
+    return len({sha256(f) for f in matches}) == 1
+
+
+LINK_RE = re.compile(r'\]\(([^)\s]+)\)')
+
+
+def broken_report_links(out):
+    """Every relative link in the delivered report must open a file in the packed review."""
+    report = Path(out) / REPORT
+    if not report.is_file():
+        return []
+    broken = []
+    for target in LINK_RE.findall(report.read_text(encoding='utf-8')):
+        target = target.split('#', 1)[0]
+        if not target or re.match(r'^[a-z][a-z0-9+.-]*:', target, re.I):
+            continue
+        if not (Path(out) / target).exists():
+            broken.append(target)
+    return ['%s links to files missing from the packed review: %s' % (REPORT, ', '.join(sorted(set(broken))))] \
+        if broken else []
+
+
 def skill_version():
     root = Path(__file__).resolve().parents[1]
     try:
@@ -120,25 +161,23 @@ def pack(out, ledger, evidence_root, inputs):
     if unfinished:
         errors.append('review not finished, nothing to deliver yet: finish reading/computing these checks, or record '
                       'manual_verification where only the SR tool is limited: ' + ', '.join(unfinished))
-    input_names = set()
-    for fp in declared.values():
-        p = Path(fp['path'])
-        input_names |= {p.name} | ({q.name for q in p.rglob('*') if q.is_file()} if p.is_dir() else set())
     unresolved = []
     for source in sorted(cited_sources(results)):
-        if source.startswith(('http://', 'https://')) or Path(source).name in input_names:
+        if source.startswith(('http://', 'https://')):
             continue
         candidate = Path(evidence_root) / source if evidence_root else None
         if candidate and candidate.is_file():
+            # This round's evidence wins over any same-named file inside an input.
             target = record / 'evidence' / source
             target.parent.mkdir(parents=True, exist_ok=True)
             if candidate.resolve() != target.resolve():  # re-packing an already packed review
                 shutil.copyfile(candidate, target)
             packed[RECORD + '/evidence/' + source] = sha256(target)
-        else:
+        elif not input_member(source, declared.values()):
             unresolved.append(source)
     if unresolved:
         errors.append('cited evidence is neither in --evidence-root nor a declared input: ' + ', '.join(unresolved))
+    errors += broken_report_links(out)
     manifest = {'schema_version': 1, 'skill_version': skill_version(), 'inputs': declared,
                 'packed': dict(sorted(packed.items())), 'report_sha256': sha256(out / REPORT)}
     (record / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
