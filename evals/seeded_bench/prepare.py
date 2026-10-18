@@ -42,7 +42,12 @@ def main():
     manifest = []
     for board in corpus['boards']:
         out = args.cache / 'db' / (board['id'] + '.json')
-        if 'fixture' in board:
+        if 'fixture' in board and board['fixture'].endswith('.xml'):
+            # A netlist already exported and stored with its license (evals/typical_circuits).
+            cmd = [sys.executable, '-B', str(ROOT / 'scripts' / 'parse_kicad.py'), str(ROOT / board['fixture']),
+                   '-o', str(out)]
+            run(cmd if board.get('strict', True) else cmd + ['--no-strict'])
+        elif 'fixture' in board:
             shutil.copyfile(ROOT / board['fixture'], out)
         else:
             src = args.cache / 'src' / board['id']

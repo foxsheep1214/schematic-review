@@ -215,4 +215,4 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在 `plan_review.py`、`lint.py`
   或对应检查器里实现展开/扫描。新增或调整规则先回答 [纲要中的三个问题](references/review-charter.md#用纲要指导进化)。
 - 修改脚本后运行 `python3 -m unittest discover -s scripts/tests -q`，必要时按
-  [电路评测说明](evals/circuit_bench/README.md) 跑冻结基准；改导入器时同时跑 [真实来源导入回归](evals/input_bench/README.md)；改 KiCad 解析、自检、日志扫描、去耦清单或计划展开时跑 [KiCad 原生交付回放](evals/kicad_replay_bench/README.md)。改检查器或规则后可跑 [种子基准](evals/seeded_bench/README.md) 看自动层检出；审查方法的合成评价在 `evals/workflow_guidance/`、`evals/scenarios/`。评测通过不等于任何真实电路审查通过。
+  [电路评测说明](evals/circuit_bench/README.md) 跑冻结基准；改导入器时同时跑 [真实来源导入回归](evals/input_bench/README.md)；改 KiCad 解析、自检、日志扫描、去耦清单或计划展开时跑 [KiCad 原生交付回放](evals/kicad_replay_bench/README.md)。改检查器或规则后跑 [典型电路基准](evals/typical_circuits/README.md)（33 块开源单模块板，每条报出都要已归类，新出现的须逐条审读）和 [种子基准](evals/seeded_bench/README.md) 看自动层检出；审查方法的合成评价在 `evals/workflow_guidance/`、`evals/scenarios/`。评测通过不等于任何真实电路审查通过。
