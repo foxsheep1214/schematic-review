@@ -179,7 +179,7 @@ def resolve_vref(db, check, audit, facts_path):
             or source['mpn'] != str(part.get(identity_field, '')).strip()):
         return None, ['Vref MPN 未精确对应当前已审计的 BOM VALUE/PART；别名/型号冲突不得自动复用']
     if source['package'] != part.get('jedec'):
-        return None, ['Vref package 未精确对应当前 BOM JEDEC；封装别名或缺字段需人工核验']
+        return None, ['Vref package 未精确对应当前 BOM JEDEC；封装别名或缺字段需审查者核验']
     try:
         actual_pdf_hash = _file_digest(material['document']['path'])
     except (OSError, TypeError) as error:

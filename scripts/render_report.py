@@ -18,6 +18,7 @@ import re
 import sys
 from collections import Counter, OrderedDict
 from pathlib import Path
+from task_scope import ownership, task_view
 
 RELEASE = {'GO': '可以定稿', 'CONDITIONAL_GO': '可以有条件定稿', 'NO_GO': '还不能定稿'}
 CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计没定'),
@@ -151,24 +152,27 @@ def unique(values):
     return seen
 
 
-def task_level(task, checks):
-    rows = [checks[c] for c in task.get('check_ids') or [] if c in checks]
-    return worst({r.get('severity') or r.get('potential_severity') for r in rows})
+def task_level(task, checks, owners=None):
+    return task_view(task, checks, owners)['level']
 
 
 FIELD_ITEMS_SHOWN = 3
 
 
-def render_item(task, checks, notes):
+def render_item(task, checks, notes, owners=None):
     rows = [checks[c] for c in task.get('check_ids') or [] if c in checks]
-    level = task_level(task, checks)
+    view = task_view(task, checks, owners)
+    level = view['level']
     head = '### %s　%s' % (task['id'], task.get('title') or task.get('root_cause') or '')
     meta = '类型：%s　可能后果：%s　涉及 %d 条检查' % (
         item_kind(rows), ('%s（%s）' % (SEVERITY_WORDS[level], level)) if level else '未定级', len(rows))
     lines = [head, '', meta, '']
+    if view['ambiguous_checks']:
+        lines += ['风险和资料需求尚未按任务分清：' + '、'.join(view['ambiguous_checks']) +
+                  '。相关检查的风险仍保留，不能把它们重复计为多个高风险根因。', '']
     if notes.get(task['id']):
         lines += [notes[task['id']], '']
-    requests = [req for r in rows for req in (r.get('input_requests') or {}).values() if isinstance(req, dict)]
+    requests = [req for _, _, req in view['requests']]
     fields = [('缺什么', [task.get('root_cause')]),
               ('为什么要紧', [task.get('reason')]),
               ('需要提供的内容', [q.get('required_scope') for q in requests]),
@@ -307,13 +311,14 @@ def render_check_explanations(plan, results):
     return out
 
 
-def render(plan, results, gate, notes=None, title=None):
+def render(plan, results, gate, notes=None, title=None, detail='compact'):
     notes = notes or {}
     item_notes = notes.get('items') or {}
     checks = {c['id']: c for c in results.get('checks') or [] if isinstance(c, dict) and 'id' in c}
     current_rows = {k: c for k, c in checks.items() if k.split('.', 1)[0] != HISTORY_RULE}
     flow = gate.get('workflow') or {}
     tasks = flow.get('work_items') or []
+    task_owners = ownership(tasks)
     findings = results.get('findings') or []
     summary = gate.get('categorized_summary') or {}
     counts = (summary.get('current') or {}).get('results') or {}
@@ -340,10 +345,13 @@ def render(plan, results, gate, notes=None, title=None):
     gap_tasks = [t for t in tasks if gap_ids.intersection(t.get('check_ids') or [])]
     if gap_ids:
         owned = {k for t in gap_tasks for k in t.get('check_ids') or []}
-        p0 = sum(any(checks[k].get('potential_severity') == 'P0'
-                     for k in gap_ids.intersection(t.get('check_ids') or [])) for t in gap_tasks)
+        p0 = sum(task_level(t, checks, task_owners) == 'P0' for t in gap_tasks)
+        ambiguous = [t for t in gap_tasks if task_view(t, checks, task_owners)['ambiguous_checks']]
         out.append('- **仍待确认**：%d 件事项，其中 %d 件可能涉及安全或损坏（P0）；资料不足不等于已发现缺陷。'
                    % (len(gap_tasks), p0))
+        if ambiguous:
+            out.append('- **任务归属待整理**：%d 件尚不能独立定级；关联检查的高风险没有消除，暂不计入已明确的根因数。'
+                       % len(ambiguous))
         if gap_ids - owned:
             out.append('- **待办整理未完成**：另有 %d 条无法判断的检查尚未关联待办。' % len(gap_ids - owned))
     reasons = blocker_reasons(gate.get('blockers') or [], results, tasks) if release != 'GO' else []
@@ -355,8 +363,8 @@ def render(plan, results, gate, notes=None, title=None):
         out.append('- **能否定稿**：%s。' % RELEASE.get(release, release))
     if tasks:
         fixes = sum(bool(covered_by_findings(t, checks, findings)) for t in tasks)
-        detail = ('（其中修正已列错误 %d 件、待确认 %d 件）' % (fixes, len(gap_tasks))) if fixes else ''
-        out.append('- **待办**：%d 件%s，按可能后果从重到轻列在“待办”一节。' % (len(tasks), detail))
+        task_counts = ('（其中修正已列错误 %d 件、待确认 %d 件）' % (fixes, len(gap_tasks))) if fixes else ''
+        out.append('- **待办**：%d 件%s，按可能后果从重到轻列在“待办”一节。' % (len(tasks), task_counts))
     if phase == 'design_iteration':
         out.append('- 这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。')
     if 'history_inputs' in results:
@@ -399,7 +407,7 @@ def render(plan, results, gate, notes=None, title=None):
         out += ['## 待办', '']
         if not findings:
             out += [SEVERITY_LEGEND, '']
-        rank = lambda t: (SEVERITIES.index(task_level(t, checks)) if task_level(t, checks) else len(SEVERITIES),
+        rank = lambda t: (SEVERITIES.index(task_level(t, checks, task_owners)) if task_level(t, checks, task_owners) else len(SEVERITIES),
                           -len(t.get('check_ids') or []))
         for task in sorted(tasks, key=rank):
             owners = covered_by_findings(task, checks, findings)
@@ -407,7 +415,7 @@ def render(plan, results, gate, notes=None, title=None):
                 out += ['### %s　%s' % (task['id'], task.get('title') or task.get('root_cause') or ''), '',
                         '按上文“发现的错误”中问题 %s 的改法处理，这里不重复。' % '、'.join(owners), '']
                 continue
-            out += render_item(task, checks, item_notes)
+            out += render_item(task, checks, item_notes, task_owners)
 
     if handoffs:
         out += ['## 交给后续环节的要求', '',
@@ -441,13 +449,13 @@ def render(plan, results, gate, notes=None, title=None):
                 '这里记录 SR 为什么做不到、该怎么改进 SR，留给 SR 维护。' % len(tool_gaps), '']
         same = OrderedDict()
         for t in tool_gaps:
-            key = tuple(cell(t.get(f) or '') for f in ('tool_limitation', 'sr_improvement', 'method'))
+            key = tuple(cell(t.get(f) or '') for f in ('tool_limitation', 'sr_improvement', 'method', 'reviewer_kind'))
             same.setdefault(key, []).append(t['check_id'])
-        for (limit, improve, method), ids in same.items():
+        for (limit, improve, method, reviewer), ids in same.items():
             out += ['### ' + '、'.join(ids), '',
                     '- **SR 为什么做不到**：' + limit,
                     '- **建议怎么改进 SR**：' + improve,
-                    '- **这次怎么核对的**：' + method, '']
+                    '- **这次怎么核对的**：' + ({'AI': 'AI 核对：', 'HUMAN': '人员核对：'}.get(reviewer, '')) + method, '']
         out += ['</details>', '']
 
     feedback = render_sr_feedback(notes.get('sr_feedback'))
@@ -477,13 +485,13 @@ def render(plan, results, gate, notes=None, title=None):
             '| 交给后续环节的要求 | %d |' % len(handoffs),
             '| 上一版问题的处理记录（不计入上面各行） | %d |' % history, '',
             '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']
-    explanations = render_check_explanations(plan, results)
+    explanations = render_check_explanations(plan, results) if detail == 'full' else []
     if explanations:
         out += ['<details>', '<summary>展开逐项依据与关闭条件（完整保留）</summary>', ''] + explanations + ['</details>', '']
     out += ['## 详细记录', '',
-            '每条检查的结论、依据和计算都在 `record/` 里：`review-results.json` 是逐条结论，`review-gate.json` 是校验结果和计数，'
-            '`review-plan.json` 是检查清单，`manifest.json` 记录用到的原理图、手册、需求的位置和校验码，'
-            '`evidence/` 是结论引用的计算和截图。', '']
+            '逐项结论、资料需求、修改条件及引用保存在[检查结果](record/review-results.json)，'
+            '通用盲区和完整覆盖保存在[检查计划](record/review-plan.json)，计数见[校验记录](record/review-gate.json)。'
+            '需要逐条展开正文时用 `--detail full` 生成完整报告；简洁模式不删除记录或改变结论。', '']
     return '\n'.join(out)
 
 
@@ -493,6 +501,8 @@ def main(argv=None):
     parser.add_argument('results')
     parser.add_argument('gate')
     parser.add_argument('--notes')
+    parser.add_argument('--detail', choices=('compact', 'full'), default='compact',
+                        help='compact: tasks and linked ledger (default); full: also expand every non-pass check')
     parser.add_argument('--title')
     parser.add_argument('-o', '--out', required=True)
     args = parser.parse_args(argv)
@@ -502,7 +512,7 @@ def main(argv=None):
     if problems:
         print('notes.json: ' + '; '.join(problems), file=sys.stderr)
         return 2
-    text = render(load(args.plan), load(args.results), load(args.gate), notes, args.title)
+    text = render(load(args.plan), load(args.results), load(args.gate), notes, args.title, args.detail)
     Path(args.out).write_text(text, encoding='utf-8')
     print('wrote', args.out)
     return 0

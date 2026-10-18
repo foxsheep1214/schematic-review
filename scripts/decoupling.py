@@ -17,7 +17,8 @@ from electrical_contract import db_fingerprint, finite, load_json
 from checkers.netgraph import CONNECTOR, classify
 from i2c_topology import digest, validate_db_shape
 
-KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other'}
+KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other',
+         'bridge_rectifier', 'transformer'}
 SECTION_SCHEMA_VERSION = 2
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
 # 组用途：普通旁路；按原厂条款不需要直接电容（如高压启动/检测脚）；片内稳压器输出电容（如 V5/VCAP）。
@@ -81,6 +82,11 @@ def _db_errors(db):
 
 
 def validate_decoupling_intent(intent, db=None):
+    from reviewed_declarations import resolve
+    try:
+        intent = resolve(intent, db)
+    except ValueError as error:
+        return [str(error)]
     if db is not None:
         errors = _db_errors(db)
         if errors:
@@ -441,6 +447,9 @@ def build_decoupling_inventory(db, intent=None):
     errors = _db_errors(db) or board_intent.validate(intent, db) or validate_decoupling_intent(intent, db)
     if errors:
         raise ValueError('; '.join(errors))
+    from reviewed_declarations import resolve, KEY
+    source_intent = intent
+    intent = resolve(intent, db)
     cfg = (intent or {}).get('decoupling')
     inv = Inventory(db, cfg, (intent or {}).get('devices'), board_intent.declared_kinds(intent))
     groups, device_records = inv.groups(), inv.device_inventory()
@@ -464,6 +473,15 @@ def build_decoupling_inventory(db, intent=None):
               'non_decoupling_connectors': inv.non_decoupling_connectors,
               'two_terminal_no_supply_refs': two_terminal, 'discovery_gaps': sorted(discovery_gaps),
               'states': [inv.state_inventory(s, groups, device_records) for s in sorted(states, key=lambda s: s['id'])]}
+    if isinstance(source_intent, dict) and KEY in source_intent:
+        # Revalidation needs the original review context, not a flattened copy
+        # that loses the provenance or silently refreshes its hashes.
+        result['context'] = deepcopy(source_intent)
+        result['reviewed_declarations'] = {
+            'digest': source_intent[KEY]['digest'], 'reviewer': deepcopy(source_intent[KEY]['reviewer']),
+            'status': 'CURRENT', 'scope': 'roles/grouping only; no electrical verdict',
+            'non_ic_roles': {ref: deepcopy(c) for ref, c in inv.components.items()
+                             if c.get('kind') in ('bridge_rectifier', 'transformer')}}
     result['digest'] = digest(result)
     return result
 

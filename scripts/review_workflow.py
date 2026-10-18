@@ -5,6 +5,7 @@ Work-item grouping is explicit,
 not a text-similarity claim that different electrical causes are equivalent.
 """
 PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
+from task_scope import ownership, task_view, validate_scopes
 # Gaps a schematic change can often remove: the reviewer must propose that change or say why none exists.
 DESIGNABLE_GAPS = ('EXTERNAL_DATA', 'DESIGN_OPEN')
 PREFERENCES = ('DESIGN_FIRST', 'EVIDENCE_FIRST', 'EITHER')
@@ -60,8 +61,8 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
                 'current_work_items': []}
     if phase not in PHASES:
         errors.append('review_phase must be one of ' + '/'.join(PHASES))
-    if type(report.get('workflow_version')) is not int or report['workflow_version'] != 1:
-        errors.append('staged results require workflow_version: 1')
+    if type(report.get('workflow_version')) is not int or report['workflow_version'] not in (1, 2):
+        errors.append('staged results require workflow_version: 1 or 2')
     items = report.get('work_items')
     if not isinstance(items, list):
         errors.append('work_items must be an array (use [] when no separate repair/evidence tasks)')
@@ -104,7 +105,9 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
                                         {f.get('id') for f in report.get('findings') or [] if isinstance(f, dict)}))
         for cid in linked:
             owners.setdefault(cid, []).append(item)
-        tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option') if k in item})
+        tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option', 'request_keys') if k in item})
+    errors.extend(validate_scopes(tasks, checks, strict=report.get('workflow_version') == 2))
+    task_owners = ownership(tasks)
     for cid in sorted(unresolved - set(owners)):
         errors.append(cid + ': unresolved check has no root-cause work item')
     for cid, groups in owners.items():
@@ -116,7 +119,10 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
                 and any(g.get('due_stage') != 'design_iteration' for g in groups)):
             errors.append(cid + ': confirmed FAIL must enter the current repair queue')
         if (row.get('review_result') == 'INSUFFICIENT' and row.get('potential_severity') == 'P0'
-                and any(g.get('due_stage') != 'design_iteration' for g in groups)):
+                and any(g.get('due_stage') != 'design_iteration'
+                        and (task_view(g, {cid: row}, task_owners)['known_level'] == 'P0'
+                             or cid in task_view(g, {cid: row}, task_owners)['ambiguous_checks'])
+                        for g in groups)):
             errors.append(cid + ': potential P0 needs current investigation')
         if (row.get('review_result') == 'INSUFFICIENT' and row.get('gap_cause') == 'REQUIREMENT_OPEN'
                 and any(g.get('due_stage') != 'design_iteration' for g in groups)):

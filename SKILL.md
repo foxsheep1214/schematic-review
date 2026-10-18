@@ -114,7 +114,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 冷跑后先出资料请求：`python3 scripts/gap_inventory.py review-plan-cold.json --datasheet-audit datasheet-audit.json --md 资料请求.md`，按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取。
 
-补齐命名启发式漏掉的对象/需求/工况，人工补查项加入 `review-plan-cold.json`。排除候选须有反证，无特征不等于 NA。
+补齐命名启发式漏掉的对象/需求/工况，审查者补查项加入 `review-plan-cold.json`。排除候选须有反证，无特征不等于 NA。
 检查器（I²C、去耦、感性负载、功率开关、输入滤波、上电、监控、差分电平、光耦等）每趟都跑；
 名称线索只生成待复核候选，清单绑定输入指纹，不能编辑清单消缺口。见 [自动检查](references/automation.md)。
 计划命令列出“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考域 `domain`
@@ -130,6 +130,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
   处理：不一致本身判 DEV-D04 FAIL，电气判据逐分支给条件结论，全部分支都违反才判电气 FAIL。
 - 按实际用途读引脚、额定/推荐条件、相关 min/max、模式和 errata；“官方物理脚”指手册引脚定义的编号或名称，
   焊盘映射属于 PCB 阶段。核过的脚表写入 `intent.devices`，DEV-D02 差集和 DEV-D05 引脚处置据此列出。
+- AI 已逐端核对的器件角色和电源/返回分组按 [可复用声明](references/reviewed-declarations.md) 保存来源与输入指纹；
+  下次先验证声明，输入变化则重新核对，不能只刷新摘要。`manual_*` 兼容字段不代表人员确认，核对者身份须如实记录。
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
   PDF 提取的关键数值对照渲染页核单位。证据计算所需保证值整理成 `evidence.json`。
 
@@ -173,7 +175,9 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 ### 7. 结果、报告与校验
 
 结果独立保存为 `review-results.json`，绑定最终计划；批量脚本只录入已审结论。按有证据的共同根因归并任务，
-不合并独立电气结论。录入前按 [逐行语义复核](references/plan-and-results.md#逐行语义复核) 逐行核对象、路径、因果、
+不合并独立电气结论。局部额定/寿命缺口用同规则 `split_out` 定位到实际对象；保留其余对象的已核范围，
+不为降低条数合并独立电源级或补证动作。复合检查涉及多个任务时用 [任务归属](references/verdicts-and-release.md#共同根因归并为任务)
+的 `workflow_version: 2` 精确分配补证键和各自风险，整体仍保留最高后果。录入前按 [逐行语义复核](references/plan-and-results.md#逐行语义复核) 逐行核对象、路径、因果、
 关闭范围和需求子义务（含多个子义务的需求只有全部适用子义务通过才 PASS）；绑定校验及质量筛查零提示不能代替这一步。
 证据不足先按 [下游分流](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
 批量脚本不能用一句固定兜底语给全部证据不足定级。
@@ -195,6 +199,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
       python3 scripts/pack_review.py <审查目录> --review-plan … --review-results … --review-gate … --db … --intent … \
         --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
 
+  默认简洁报告保留全部缺陷、任务、关闭条件及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
   `pack_review.py` 只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
   顶层有其他文件或引用的证据找不到时打包失败。不另写 README、说明文档或 HTML。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。

@@ -115,7 +115,7 @@ REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "PROPOSED": "提�
 SCOPE = set(catalog.COVERAGE_RULES)
 
 
-# Why SR could not decide, how to teach SR to decide it, and how the reviewer decided it by hand.
+# Why the automatic checker could not decide, and how the reviewer independently checked it.
 MANUAL_FIELDS = ('tool_limitation', 'sr_improvement', 'method')
 
 
@@ -291,13 +291,17 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             require(isinstance(manual, dict) and all(text(manual.get(f)) for f in MANUAL_FIELDS)
                     and evidence(manual.get('evidence')),
                     f'{key}: manual_verification needs ' + ', '.join(MANUAL_FIELDS) + ' and evidence')
+            if isinstance(manual, dict) and 'reviewer_kind' in manual:
+                require(manual['reviewer_kind'] in ('AI', 'HUMAN'),
+                        f'{key}: reviewer_kind must record the actual AI/HUMAN reviewer')
         if result in ('PASS', 'FAIL') and gates.get(key) and isinstance(manual, dict):
             # The reviewer's evidenced conclusion stands; the tool gap is an SR improvement, not design work.
             sr_improvements.append({'check_id': key, 'tool_messages': gates[key],
-                                    **{f: manual.get(f) for f in MANUAL_FIELDS}})
+                                    **{f: manual.get(f) for f in MANUAL_FIELDS},
+                                    **({'reviewer_kind': manual['reviewer_kind']} if 'reviewer_kind' in manual else {})})
         elif result == 'PASS':
             for message in gates.get(key, []):
-                require(False, message + ' (or record manual_verification if a reviewer verified it by hand)')
+                require(False, message + ' (or record manual_verification with an independent evidenced review)')
         proposal = expected.get(key, {}).get('proposal')
         if isinstance(proposal, dict) and proposal.get('result') == 'PASS' and result in ('FAIL', 'INSUFFICIENT'):
             errors.extend(passive_stress.override_errors(key, item))

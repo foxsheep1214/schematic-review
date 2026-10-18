@@ -90,6 +90,14 @@ def screen_quality(plan, report, db=None):
     actual_statuses = {r['id']: r.get('review_result') for r in report['checks']
                        if isinstance(r, dict) and isinstance(r.get('id'), str)}
     candidates = output['candidates']
+    # Suggest localization, never split or change a verdict without evidence.
+    task_owners = defaultdict(set)
+    for task in report.get('work_items') or []:
+        if (isinstance(task, dict) and isinstance(task.get('id'), str)
+                and isinstance(task.get('check_ids'), list)):
+            for cid in task['check_ids']:
+                if isinstance(cid, str):
+                    task_owners[cid].add(task['id'])
     for row in report['checks']:
         if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
             continue
@@ -184,6 +192,13 @@ def screen_quality(plan, report, db=None):
         if not isinstance(row, dict) or not isinstance(row.get('id'), str):
             continue
         check = expected.get(row['id'])
+        if (check and (check.get('object') or {}).get('board')
+                and check.get('rule') in ('DEV-C01', 'DEV-C02', 'DEV-C03', 'DEV-C04')
+                and row.get('review_result') in ('FAIL', 'INSUFFICIENT')
+                and not row.get('split_out')):
+            candidates.append({'code': 'BROAD_CHECK_NEEDS_LOCALIZATION',
+                'check_ids': [row['id']], 'task_ids': sorted(task_owners[row['id']]),
+                'message': 'Identify the actual refs and independent criteria; use same-rule split_out children for local gaps. Keep the residual result evidence-based; never auto-PASS the board or duplicate equivalent children.'})
         if (check and check.get('rule') != 'REQ-H02' and row.get('review_result') == 'INSUFFICIENT'
                 and row.get('gap_cause') != 'REQUIREMENT_OPEN'):
             grades[row.get('potential_severity')].append(row['id'])

@@ -113,7 +113,7 @@ class RenderReportTests(unittest.TestCase):
     def test_tool_gap_still_blocks_pass_without_manual_verification(self):
         key, (_, gate) = self.tool_gate({})
         self.assertFalse(gate['valid'])
-        self.assertIn(key + ': synthetic tool gap before PASS (or record manual_verification if a reviewer verified it by hand)',
+        self.assertIn(key + ': synthetic tool gap before PASS (or record manual_verification with an independent evidenced review)',
                       gate['errors'])
 
     def test_manual_verification_keeps_pass_and_lists_tool_gap_apart(self):
@@ -138,6 +138,20 @@ class RenderReportTests(unittest.TestCase):
         key = r['checks'][0]['id']
         self.assertIn(key + ': manual_verification only applies to a PASS/FAIL that the tool cannot confirm', gate['errors'])
         self.assertIn(key + ': manual_verification needs tool_limitation, sr_improvement, method and evidence', gate['errors'])
+
+    def test_review_actor_is_explicit_and_not_inferred_from_legacy_field_name(self):
+        manual = {'tool_limitation': 'Missing grouping', 'method': 'Read the pin table and traced returns',
+                  'sr_improvement': 'Save source-bound grouping',
+                  'evidence': [{'source': 'synthetic.json', 'locator': 'pin table'}]}
+        _, (legacy, _) = self.tool_gate({'manual_verification': manual})
+        self.assertNotIn('人员核对：', legacy)
+        for kind, label in [('AI', 'AI 核对：'), ('HUMAN', '人员核对：')]:
+            _, (text, gate) = self.tool_gate({'manual_verification': dict(manual, reviewer_kind=kind)})
+            self.assertTrue(gate['valid'], gate['errors'])
+            self.assertEqual(gate['sr_improvements'][0]['reviewer_kind'], kind)
+            self.assertIn(label + manual['method'], text)
+        _, (_, bad) = self.tool_gate({'manual_verification': dict(manual, reviewer_kind='inferred')})
+        self.assertFalse(bad['valid'])
 
     def test_confirmed_defect_is_listed_with_fix(self):
         p, r, db = fixture()
@@ -281,7 +295,7 @@ class ReportWordingTests(unittest.TestCase):
         task = {'id': 'W1', 'title': 'single cause', 'check_ids': [gap['id']]}
         text = render(p, r, {'valid': True, 'workflow': {'work_items': [task]}},
                       {'sr_feedback': [{'kind': 'software_bug', 'rules': ['DOC-Q01'],
-                                        'instance': 'path error', 'suggestion': 'verify archive'}]})
+                                        'instance': 'path error', 'suggestion': 'verify archive'}]}, detail='full')
         self.assertIn('仍待确认**：1 件事项，其中 1 件', text)
         self.assertIn('<summary>展开逐项依据与关闭条件（完整保留）</summary>', text)
         self.assertIn('本次结论依据', text)

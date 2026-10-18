@@ -15,7 +15,7 @@ python3 scripts/audit_document_summaries.py --calculations calculations.json --p
 `--document` 可重复，传实际含当前计算摘要的受控文件；无计算摘要的其他报告无需传入。
 不要为让脚本发现问题另外手输一份错误计数。保留原文声明、文件哈希及行号；输入中有历史/引文/局部摘要时，
 先界定当前全库存声明的语义范围，不把历史示例或局部计数当当前全板声明。
-不支持的格式先记 INSUFFICIENT，人工按同一三向判据核原文并留证，不能改写原冻结材料来过门。
+不支持的格式先记 INSUFFICIENT，审查者按同一三向判据核原文并留证，不能改写原冻结材料来过门。
 
 库存契约为 `schema_version: 1` 与 `calculations` 非空列表，每行有非空规范字符串 `id` 和
 `claim`（`SUPPORTED`、`CONDITIONAL`、`FAIL`）。其他字段留给算术/电气检查器。

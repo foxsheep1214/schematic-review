@@ -83,12 +83,12 @@
 
 ### 生成与合并
 
-- 冷跑 `lint.py --plan-json review-plan-cold.json` 保存计划和候选；人工补查项加入该计划。
+- 冷跑 `lint.py --plan-json review-plan-cold.json` 保存计划和候选；审查者补查项加入该计划。
 - 热跑 `--merge-plan review-plan-cold.json --plan-json review-plan.json` 产生**唯一最终计划**。
-  合并要求 `db_sha256` 与当前输入一致且规则指纹相同，保留人工补查项；相同 ID 的对象/判据冲突时拒绝自动覆盖。
+  合并要求 `db_sha256` 与当前输入一致且规则指纹相同，保留审查者补查项；相同 ID 的对象/判据冲突时拒绝自动覆盖。
 - 匹配证据后保留基础覆盖项，按 evidence ID 生成带 `parent_check_id` 的状态子项；基础项只汇总覆盖，不能代替子项结果。
 - 计划合并不读取或迁移结果；后续补查先更新计划，再更新 digest 和逐项结果。
-- 人工补查项从总表选规则，`id` 写成 `规则编号.自定义键`，并填与总表一致的 `rule`/`method`/`domain`、
+- 审查者补查项从总表选规则，`id` 写成 `规则编号.自定义键`，并填与总表一致的 `rule`/`method`/`domain`、
   `object`、`criterion`、`applicability`、`readiness`、`handoff`。
 - **拆分实例的命名**：一条规则需要逐对象或逐判据给出不同结果时，拆成多个补查实例，自定义键写成
   `<对象>[-<判据>]`，对象用位号、网络或电路 ID，判据用简短大写词。例如全板项 DEV-C01 逐颗判定时写
@@ -98,6 +98,9 @@
   这样一颗 C201 缺规格只让 `DEV-C01.C201` 资料不足，其余已核对象仍可让 `DEV-C01.BOARD` 通过，
   不会被一个对象拖成整板资料不足。拆出实例须同规则、只属于一个原项，且不再嵌套拆分（`validate_review.py` 检查）；
   原项 rationale 写清其余对象核到了哪些、依据是什么。报告在拆出实例下注明所属原项。
+  对 DEV-C01/02/03/04 的整板待核项先定位实际器件、额定/寿命/精度判据，保留与原检查的显式映射。
+  不另造同一对象/工况/判据的重复行；启动与运行只有义务不同才分开。不同控制器的功率级即使同级风险，
+  仍按独立关闭条件分任务。筛查 `BROAD_CHECK_NEEDS_LOCALIZATION` 只提示定位，不自动把汇总项变PASS。
 
 ### 检查项字段
 
@@ -182,7 +185,7 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
   及 requirements 是否都关联至少一条检查；仅 PDF 时由页面/手工对象清单另审，不制作伪网表。
 - `binding_version: 1`、`remediation_version: 2`（见 [报告与修改说明](report-and-remediation.md)）、
   `requirement_clarification_version: 1` 与 `requirement_clarifications`（无则 `[]`）、
-  `workflow_version: 1` 与 `work_items`（见 [结论与准出](verdicts-and-release.md#共同根因归并为任务)）；
+  `workflow_version: 1`（单一归属/旧记录）或 `2`（共享检查逐补证键归属）与 `work_items`（见 [结论与准出](verdicts-and-release.md#共同根因归并为任务)）；
   关联 EXTERNAL_DATA/DESIGN_OPEN 证据不足项的任务带 `design_option`（见 [报告与修改说明](report-and-remediation.md#三证据不足项的电路改进建议)）。
 - 复审另有 `revision_impact_version`、`revision_digest` 和必需项的 `reverification`，见 [改版复审](revision-review.md)。
 - `summary` / `release` 可省略，由校验器计算；填了必须一致。
@@ -232,12 +235,12 @@ NA 写明本机为什么不暴露于该风险；纯下游项写明本阶段可�
 清单核对；PWR-D02/C09 是否合格须另对本器件、本脚组、工况的条款判断。有适用替代接法/阻抗证明才可
 据此放行；资料尚不能证明替代合规时记具体 INSUFFICIENT，不从“没有直接电容”统一判实物失效。
 
-人工旁路补查必须保留自动生成项。`object` 用独立 `manual_group`，准确 `ref`、`nodes`、`return_nodes` 与
+审查者旁路补查必须保留自动生成项。`object` 用独立 `manual_group`，准确 `ref`、`nodes`、`return_nodes` 与
 已声明 `state`；官方角色未在清单设备声明时，补 `manual_pin_roles`（物理节点→`power/return`）
 与 `manual_pin_citation` 的独立官方脚表出处；`manual_pin_source` 用绝对 `path`、文件 `sha256` 和
-`locator` 绑定原文。节点必须在当前原生输入存在；已有官方映射的冲突角色不能以人工声明覆盖。
+`locator` 绑定原文。节点必须在当前原生输入存在；已有官方映射的冲突角色不能以审查者声明覆盖。
 不能以名称候选代替核验。确认非供电脚的候选
-用 `manual_group_role: "excluded_candidate"` 与实际 `other` 脚角色记录；D/C 判 NA 仍须独立用途依据。不得带任何 `decoupling_*` 生成绑定字段。人工结论仅证明该独立判据，不恢复自动条款/资格
+用 `manual_group_role: "excluded_candidate"` 与实际 `other` 脚角色记录；D/C 判 NA 仍须独立用途依据。不得带任何 `decoupling_*` 生成绑定字段。审查者结论仅证明该独立判据，不恢复自动条款/资格
 缺口，也不能解除输入完整性失败带来的全板 NO_GO。输入资格缺口只影响确实依赖该事实的行：
 某器件缺功能名只影响该器件自身引脚角色，不改变网络连通，其他器件去耦组的电容、回流与边界照常审结；
 不能把同一缺口复制成每个去耦行的 INS（见 [执行一致性](execution-consistency.md#2-局部-pass-不扩展为路径或系统-pass)）。
@@ -368,7 +371,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   逐项对照网表和原厂资料核对完时，按核对结论判 PASS/FAIL，附
   `manual_verification: {tool_limitation, sr_improvement, method, evidence}`：
   SR 为什么做不到（哪个检查器、缺什么映射或模型）、建议怎么改进 SR（具体到规则、别名或模型）、这次怎么核对的。
-  这是审查者（通常是 agent）自己的核对，不写成“人工核对”，除非确实有人参与并留有记录。
+  这是审查者（通常是 AI）自己的核对，不写成“人工核对”，除非确实有人参与并留有记录。可用 `reviewer_kind: "AI"` 或 `"HUMAN"` 明示实际核对者；未记录时不得推断为人员核对。
   多条检查因同一限制、用同一核对方法时写相同文字，报告会合并显示。只能用在工具确实拦了的行上；
   这类行不算 REVIEW_INCOMPLETE、不建 work_item，gate 把工具限制列入 `sr_improvements`，不影响准出。
   资料或设计本身没给出的数值不是工具限制，仍按 EXTERNAL_DATA / DESIGN_OPEN 处理。
@@ -418,5 +421,5 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 
 对以关断/响应时间不足为依据的结论，在本项证据或共享记录中给出故障后果、允许窗口、实际响应界、裕量、温度范围及关闭阶段。
 可在结果行用可选`timing_assessment`对象记录上述同名英文字段（见最小充分证据）；或用`timing_assessment.evidence`
-列出包含完整分析的共享文档定位。它是人工工程证据，不替代`impact_assessment`、HANDOFF或风险接受。
+列出包含完整分析的共享文档定位。它是审查者工程证据，不替代`impact_assessment`、HANDOFF或风险接受。
 质量筛查的`TIMING_BLOCK_WITHOUT_WINDOW`只是需复核提示；补充一个字段不会使设计自动通过。

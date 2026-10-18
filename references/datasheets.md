@@ -57,7 +57,7 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
 datasheet-audit.json 存在时，它覆盖
 intent.materials.datasheets.available 这个全局布尔值，并按位号控制 DEV-D01
 准备度。状态不是 AVAILABLE 的物料，依赖其 datasheet 的自动准备度仍为 WAITING_EVIDENCE；
-这不直接判定所有人工检查的电气结果。T/C/D 按具体主张核实补充证据，自动 E 仍遵守保证值契约。
+这不直接判定所有审查者检查的电气结果。T/C/D 按具体主张核实补充证据，自动 E 仍遵守保证值契约。
 计划与 lint 还会核对审计里的物料/位号是否与当前 db.json 一致。
 
 ### Audit 状态
@@ -129,13 +129,13 @@ Cache miss、网络受限或一次搜索无结果都不足以写 NOT_FOUND。
 
 Agent 汇总 datasheet-audit.json.user_messages 的缺失物料/位号及检索结果，并结合逐参数补证
 结果报告，不机械索取整本手册。
-已充分支持的人工主张给独立结果；仍影响判断的主张记录 review_result=INSUFFICIENT、
+已充分支持的审查者主张给独立结果；仍影响判断的主张记录 review_result=INSUFFICIENT、
 evidence_confidence=C，以及具体参数/身份/工况、受影响检查、最小补证方法和关闭条件。
 共享缺口合并到同一 work_item，不为多个检查重复索取资料。
 
 按 [逐参数补证与替代](evidence-proportionality.md#原定资料取不到时) 记录其他证据；
 同系列、近似后缀资料可辅助分析，但不得冒充原器件 datasheet 或更改身份/保证范围。
-审计状态只描述资料覆盖；人工结论不能反向把 NOT_FOUND 改成 AVAILABLE。
+审计状态只描述资料覆盖；审查者结论不能反向把 NOT_FOUND 改成 AVAILABLE。
 
 ### 按参数依赖补齐物料
 
@@ -167,9 +167,9 @@ evidence.basis.sources 还须记录确切的身份解释和实际文档指纹。
 每项 id 唯一、citation 可定位。证据计算结果不是整板准出。
 
 缺原厂 datasheet 时，[逐参数补证与替代](evidence-proportionality.md#原定资料取不到时)
-用于人工 T/C/D 取证与条件计算，不扩展本自动契约。相似型号参数、反算要求或样本实测值
+用于审查者 T/C/D 取证与条件计算，不扩展本自动契约。相似型号参数、反算要求或样本实测值
 不能冒充本器件保证值；其他文档不满足既有 AVAILABLE/来源绑定要求时，不强行填入 E。
-人工结论引用实际证据并说明覆盖差异，自动 E 缺口如实保留。
+审查者结论引用实际证据并说明覆盖差异，自动 E 缺口如实保留。
 
 ### 共有字段与依赖
 
@@ -386,7 +386,7 @@ lint.json 的 check_results 每条保留 check_id、review_result、detail/citat
 - `mode`、`qualifiers` 精确相等。频率、档位、测试连接等额外限制用双方一致的 qualifier
   键值记录；没有时显式 `{}`。这只是精确条件匹配，不解析自由文本或做单位换算。
 - `raw_conditions` 保留原始条件；`footnotes` 保留适用脚注（无则 `[]`），并将其限制
-  编码进 conditions。无法完整表达时令 `conditions_complete=false`，改走人工核验。
+  编码进 conditions。无法完整表达时令 `conditions_complete=false`，改走审查者核验。
   不能只填 true 来绕过尚未理解的脚注。完全缺少工况的提取草稿先留在阅读笔记中。
 - 同时有多条适用、已核实的保证时，输出歧义及 ID，不按列表顺序、置信度、最新日期或
   更窄范围静默择一。回原件明确行的适用性，保留更正记录后再用。

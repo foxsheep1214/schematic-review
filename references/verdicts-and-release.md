@@ -272,6 +272,14 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
   能改图消除缺口时写 `PROPOSED` 的电路改进建议及其规避的问题，不能时写 `NONE` 和原因。
   字段见 [证据不足项的电路改进建议](report-and-remediation.md#三证据不足项的电路改进建议)；`--require-actionable` 时强制校验。
 - 只有文字相似、同一器件或同一本手册不构成共同根因。根因相同的 FAIL 共用一个任务，引用 finding 的改法。
+- **复合检查的任务归属**：新记录有多任务共享同一缺证检查时用 `workflow_version: 2`。
+  每个任务给 `request_keys: {"检查ID": ["missing_inputs中的准确键"]}`，只列自己负责的补证。
+  每个键恰属一个任务；未知键、漏分配、重复分配都拒绝。单任务独占一条检查时可省略，表示负责全部请求。
+  共享检查的每个 `input_requests[键]` 除既有四字段，还给 `potential_severity` 和完整 `impact_assessment`
+  （与检查行同样的五字段及 `consequence_class`）；所有分支的最高等级须等于检查行等级，不能隐藏P0。
+  任务只取自己拥有的分支等级和资料需求，P1任务不继承相邻P0分支。检查本身仍按最高后果阻断。
+  旧 `workflow_version: 1` 仍可读取，但共享行未分归属时报告明确待整理，不猜测根因数或串入别组请求。
+  能按物理对象/判据拆开时优先拆检查，而不是用任务字段掩盖过宽的整板结论；资料请求措辞相似不能自动合并。
 - `blocking` 表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
 - REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过。
   只剩 SR 工具自身限制、审查时已对照网表和原厂资料核对完的，不记 REVIEW_INCOMPLETE，按核对结论判定并写 `manual_verification`
