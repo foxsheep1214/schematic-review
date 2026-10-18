@@ -112,6 +112,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 交付含计算库存、preflight 与 README/报告摘要时，冷跑另执行 [派生摘要核对](references/document-summaries.md)；
 热跑及报告定稿后用最终文件重放，候选按 DOC-Q01 单独入计划，不迁移局部输入资格 PASS。
 
+冷跑后先出资料请求：`python3 scripts/gap_inventory.py review-plan-cold.json --datasheet-audit datasheet-audit.json --md 资料请求.md`，按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取。
+
 补齐命名启发式漏掉的对象/需求/工况，人工补查项加入 `review-plan-cold.json`。排除候选须有反证，无特征不等于 NA。
 检查器（I²C、去耦、感性负载、功率开关、输入滤波、上电、监控、差分电平、光耦等）每趟都跑；
 名称线索只生成待复核候选，清单绑定输入指纹，不能编辑清单消缺口。见 [自动检查](references/automation.md)。
