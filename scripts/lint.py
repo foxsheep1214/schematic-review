@@ -60,6 +60,7 @@ def export_log_kind(line):
     return None
 
 
+BOOTSTRAP_PIN_RE = re.compile(r'^(BOOT|BST|CBOOT|BTST|CB)\w*$', re.I)
 SUPPLY_PIN_RE = re.compile(r'^(VDD|VCC|AVDD|DVDD|VBAT|VDDA|VDDIO|VCCA|VCCIO)\w*$'
                            r'(?<![_-]DET)(?<![_-]SENSE)(?<![_-]SNS)(?<![_-]EN)(?<![_-]PG)(?<![_-]MON)', re.I)
 RAIL_RE = ng.RAIL_RE   # one rail-name test: excludes _FB/_SENSE lines and _N/_RTN returns
@@ -69,6 +70,8 @@ CLAMP_RE = re.compile(r'ZENER|TVS|BZT|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)
 # EN 脚耐压绝大多数 <=6V；超过此值的上拉优先查 Abs Max（提示，非判定）
 EN_PULL_ALERT_V = 6.0
 GND_TOKEN_RE = re.compile(r'^([A-Z]{0,2}GND[A-Z0-9]{0,3}|[AD]?VSS[A-Z0-9]{0,3})$')
+KICAD_UNCONNECTED_RE = re.compile(r'^unconnected-\(', re.I)
+DATASHEET_NC_PIN_RE = re.compile(r'^(N\.?C\.?|DNC|NIC|RSVD|RESERVED)(?:$|[_\-\d])', re.I)
 KICAD_AUTO_NET_RE = re.compile(r'(^|/)(Net|unconnected)-\(')   # 工具按引脚生成的网名，不是手写拼写
 NET_TIE_RE = re.compile(r'NET_?TIE', re.I)
 ISOLATOR_RE = re.compile(r'ISOLAT|\bISO\d|ISOW|ADUM|SI8[46]\d|NSI\d|CA-IS|隔离', re.I)
@@ -218,10 +221,23 @@ class Lint:
         return self.power_path(net) is not None
 
     def _external_entry(self, net):
-        """Fitted connector contacts on the net: an off-board supply entry, not an on-board source."""
-        return sorted({node for node in self.graph.nodes_on(net)
-                       if self.graph.kind(node.partition('.')[0]) == CONNECTOR
-                       and self.graph.is_fitted(node.partition('.')[0])})
+        """Off-board contacts (connector or battery) that feed the net, directly or through
+        fuses, diodes, switches, protection MOSFETs or supply-filter resistors."""
+        if not hasattr(self, '_feed_tree'):
+            self._feed_tree = PowerTree(self.graph, self.intent, feed=True)
+        found = self._feed_tree.source_of(net)
+        if not found:
+            return []
+        if found['basis'].startswith('off-board'):
+            return [found['source']] + found['path']
+        return ['via:' + found['source']]
+
+    def _local_regulator_node(self, node, net):
+        """A supply pin whose net holds only its own IC's pins and capacitors (VDDCR, VCAP):
+        the IC's internal regulator output, not an undriven rail."""
+        ref = node.partition('.')[0]
+        others = [n for n in self.graph.nodes_on(net) if n.partition('.')[0] != ref]
+        return bool(others) and all(self.graph.kind(n.partition('.')[0]) == ng.CAPACITOR for n in others)
 
     # -- rules -----------------------------------------------------------
     def _relay_nc_contact(self, net, nodes):
@@ -340,6 +356,15 @@ class Lint:
                 continue
             if len(nds) == 1:
                 ref = nds[0].split('.')[0]
+                if KICAD_UNCONNECTED_RE.match(n):
+                    # KiCad names a pin left open without an NC flag; datasheet NC/DNC pins are meant to be open.
+                    if DATASHEET_NC_PIN_RE.match(pinname.get(nds[0], '')):
+                        continue
+                    self.add('NET-A01', '单节点悬空网',
+                             f'{n} <- {nds[0]} ({parts.get(ref, {}).get("value", "")}，脚名 {pinname.get(nds[0], "?")}) '
+                             '未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，'
+                             '输入脚另按 NET-A07 核', ref, kind='CANDIDATE')
+                    continue
                 self.add('NET-A01', '单节点悬空网',
                          f'{n} <- {nds[0]} ({parts.get(ref, {}).get("value", "")})', ref)
 
@@ -373,6 +398,8 @@ class Lint:
                 continue
             if not self.driven(n):
                 entry = self._external_entry(n)
+                if entry and entry[0].startswith('via:'):
+                    continue   # fed from a driven rail through a filter resistor, switch or protection FET
                 if entry:
                     self.add('PWR-A01', '电源轨只经连接器进板',
                              f'{n}: 板上无来源，经 {entry[:4]} 由外部供电；核对端供电与反灌', kind='CANDIDATE')
@@ -387,14 +414,22 @@ class Lint:
             ref = node.split('.')[0]
             if self.graph.kind(ref) in (CONNECTOR, ng.TESTPOINT):
                 continue
-            if not (SUPPLY_PIN_RE.match(pn) or native.get(node) == 'power_in'):
+            if not (SUPPLY_PIN_RE.match(pn) or native.get(node) == 'power_in') or BOOTSTRAP_PIN_RE.match(pn):
                 continue
             n = pin2net.get(node)
             if n is None:
                 self.add('PWR-A02', '电源球无网络', f'{node} ({pn})', ref)
             elif (n not in self.pseudo and not ng.is_ground(n) and not self.driven(n)
-                  and not self._external_entry(n)):
-                self.add('PWR-A02', '电源球所在轨无驱动', f'{node} ({pn}) <- {n}', ref)
+                  and not self._local_regulator_node(node, n)):
+                entry = self._external_entry(n)
+                jumpers = [r for r in self._feed_tree.source_of(n)['path']
+                           if self.graph.kind(r) == ng.JUMPER] if entry else []
+                if jumpers:
+                    self.add('PWR-A02', '电源脚经跳线供电',
+                             f'{node} ({pn}) <- {n}：经跳线 {"、".join(jumpers)} 才接到供电，核该装配下跳线是否闭合',
+                             ref, kind='CANDIDATE')
+                elif not entry:
+                    self.add('PWR-A02', '电源球所在轨无驱动', f'{node} ({pn}) <- {n}', ref)
 
         # PWR-A03 地脚未入地
         for node, pn in pinname.items():

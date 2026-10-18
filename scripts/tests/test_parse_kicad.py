@@ -196,6 +196,19 @@ class NotConnectedTest(unittest.TestCase):
         self.assertEqual([f['detail'].split(' <- ')[0] for f in hits],
                          ['unconnected-(R2-Pad1)'])
 
+    def test_stacked_unit_power_pin_keeps_its_real_net(self):
+        # 典型电路基准：CMoy 运放 MC33178 的 A/B 单元都带 V+/V-，KiCad 把 4 脚同时列入 V- 与
+        # unconnected-(U1A-V--Pad4)，曾被当作“物理引脚重复归网”整板拒收。
+        xml = netlist(comp('U1', 'Amplifier_Operational', 'MC33178', 'MC33178'),
+                      net('V-', ('U1', '4', 'V-', 'power_in')) +
+                      net('unconnected-(U1A-V--Pad4)', ('U1', '4', 'V-', 'power_in')) +
+                      net('OUT', ('U1', '1', 'OUT', 'output')))
+        db = parse(xml)
+        self.assertEqual(db['pin2net']['U1.4'], 'V-')
+        self.assertNotIn('unconnected-(U1A-V--Pad4)', db['nets'])
+        self.assertEqual(db['stacked_unit_pins'],
+                         [{'node': 'U1.4', 'kept': 'V-', 'dropped': 'unconnected-(U1A-V--Pad4)'}])
+
     def test_dnp_property_marks_the_part_unpopulated(self):
         db = parse(netlist(
             comp('R3', 'Device', 'R', '4.7k', properties='<property name="dnp"/>')

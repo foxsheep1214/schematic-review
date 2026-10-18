@@ -27,6 +27,9 @@ SWITCH_OUTPUT_PIN_RE = re.compile(r'^(SW\d*|LX\d*|PH\d*|VSW|SWITCH)$', re.I)
 # 同一器件上这些脚落在电感远端网时，电感是输入侧（升压类），不作来源
 SUPPLY_IN_PIN_RE = re.compile(r'^(P?VIN\w*|VCC\w*|VDD\w*|VBAT\w*|VSUP\w*)$', re.I)
 
+# Largest series resistor a supply-filter feed passes through (RC-filtered VDD, DW01 VCC).
+FEED_RESISTOR_KOHM = 1.0
+
 DECLARED = 'declared'      # intent 中带出处的来源
 DRIVER = 'driver'          # 网上有输出脚候选（拓扑依据）
 NAME_HINT = 'name-hint'    # 只有轨名像
@@ -35,8 +38,12 @@ NAME_HINT = 'name-hint'    # 只有轨名像
 class PowerTree:
     """按某一装配状态推导来源与轨身份；结果带依据级别，不带电气结论。"""
 
-    def __init__(self, graph, intent=None):
+    def __init__(self, graph, intent=None, feed=False):
+        """feed=True answers only "does anything feed this net": connector and battery contacts
+        count as off-board sources, and the trace also passes switches, reverse-protection MOSFET
+        channels and small series resistors (supply filters). Rail identity never uses it."""
         self.graph = graph
+        self.feed = feed
         intent = intent or {}
         self.state = intent.get('active_state')
         self.sources = {x.get('node'): x for x in intent.get('power_sources', [])
@@ -90,6 +97,14 @@ class PowerTree:
                 if node in self.sources:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'declared source', 'state': self.state}
+                if self.feed and graph.kind(ref) in (ng.CONNECTOR, ng.BATTERY):
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'off-board contact (connector or battery)'}
+                if self.feed and graph.kind(ref) == ng.MOSFET and graph.role(node) in ('drain', 'source'):
+                    other_role = 'source' if graph.role(node) == 'drain' else 'drain'
+                    for other_node, other_net in graph.pins_of(ref).items():
+                        if graph.role(ref + '.' + other_node) == other_role and other_net != current:
+                            queue.append((other_net, path + [ref]))
                 pin = node.partition('.')[2]
                 output_name = ng.name_matches(SOURCE_PIN_RE, graph.pinname.get(node), pin)
                 if IC_REF_RE.match(ref) and output_name:
@@ -127,6 +142,9 @@ class PowerTree:
                     continue
                 resistor = parse_resistor(part.get('value')) if re.match(r'^R\d', ref) else None
                 if SERIES_REF_RE.match(ref) or (resistor and resistor['kohm'] == 0):
+                    queue.append((other, path + [ref]))
+                elif self.feed and (graph.kind(ref) in (ng.SWITCH, ng.FUSE, ng.FERRITE, ng.INDUCTOR, ng.JUMPER)
+                                    or (resistor and resistor['kohm'] <= FEED_RESISTOR_KOHM)):
                     queue.append((other, path + [ref]))
             # 多脚 MOS 模型按端点精确匹配验证
             for edge in self.directed:

@@ -189,6 +189,7 @@ def parse(xml_text, export_errors=()):
     nets, pin2net, pinname, pintype = {}, {}, {}, {}
     native_pintype = {}
     no_connect_nodes, pseudo = [], []
+    stacked = _stacked_unit_pins(root)
     for net in root.findall('./nets/net'):
         name = _text(net.get('name'))
         if not name or name in nets:
@@ -199,6 +200,8 @@ def parse(xml_text, export_errors=()):
             if not ref or not pin or ref not in parts:
                 raise ValueError('节点缺失位号/脚号或引用不存在的器件')
             key = '%s.%s' % (ref, pin)
+            if stacked.get(key, {}).get('dropped') == name:
+                continue
             if key in pin2net:
                 raise ValueError('物理引脚重复归网: %s' % key)
             nodes.append(key)
@@ -217,6 +220,8 @@ def parse(xml_text, export_errors=()):
             function = _pin_function(_text(node.get('pinfunction')), declared, pin)
             if function:
                 pinname[key] = function
+        if not nodes and any(item['dropped'] == name for item in stacked.values()):
+            continue
         nets.setdefault(name, []).extend(nodes)
         # 只有"图上声明不接"的汇集网算伪网络；没有 NC 标记的悬空引脚保持真实单节点网
         if UNCONNECTED.match(name) and nodes and len(declared_nc) == len(nodes):
@@ -246,6 +251,7 @@ def parse(xml_text, export_errors=()):
         'missing_primitives': sorted({lib for lib in ref2lib.values() if lib not in libparts}),
         'no_connect_nodes': sorted(set(no_connect_nodes)),
         'native_pintype': native_pintype,
+        'stacked_unit_pins': [dict(node=k, **v) for k, v in sorted(stacked.items())],
         'export_meta': {
             'source': (design.findtext('source') or '').strip() if design is not None else '',
             'tool': (design.findtext('tool') or '').strip() if design is not None else '',
@@ -254,6 +260,28 @@ def parse(xml_text, export_errors=()):
             'libsource_normalizations': normalizations,
         },
     }
+
+
+def _stacked_unit_pins(root):
+    """Multi-unit symbols that repeat a shared pin (an op-amp's V+/V- in units A and B) make
+    KiCad list that pin in its real net AND in an auto-named 'unconnected-(...)' net holding
+    only that pin. The real net is the connection; the unconnected copy is dropped and recorded.
+    Any other repeat (two real nets, or an unconnected net with other pins) stays fatal."""
+    seen = {}
+    for net in root.findall('./nets/net'):
+        name = _text(net.get('name'))
+        keys = ['%s.%s' % (_text(n.get('ref')), _text(n.get('pin'))) for n in net.findall('node')]
+        for key in keys:
+            seen.setdefault(key, []).append((name, len(keys)))
+    out = {}
+    for key, places in seen.items():
+        if len(places) < 2:
+            continue
+        real = [name for name, _ in places if not UNCONNECTED.match(name or '')]
+        copies = [name for name, size in places if UNCONNECTED.match(name or '') and size == 1]
+        if len(real) == 1 and len(copies) == len(places) - 1 and len(copies) == 1:
+            out[key] = {'kept': real[0], 'dropped': copies[0]}
+    return out
 
 
 def build(path, executable=None):

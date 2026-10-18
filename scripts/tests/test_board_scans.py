@@ -202,5 +202,47 @@ class PowerNameHeuristicTest(unittest.TestCase):
         self.assertEqual(scans(db, 'PWR-A03'), [])
 
 
+
+class TypicalBoardPowerTest(unittest.TestCase):
+    """典型电路基准（33 块开源板）中电源规则的误报，按结构而不是名字判断。"""
+
+    def test_rail_fed_from_usb_connector_through_fuse_and_diode(self):
+        db = board({'USB-C1': 'OLIMEX_Connectors:USB2.0_TYPE-C', 'F1': 'Device:Polyfuse', 'D1': 'D_Schottky',
+                    'U1': 'LDO', 'C1': '10uF'},
+                   {'VBUS_IN': ['USB-C1.1', 'F1.1'], 'V_FUSED': ['F1.2', 'D1.2'], '+5V': ['D1.1', 'U1.1', 'C1.1'],
+                    'GND': ['USB-C1.2', 'U1.2', 'C1.2']},
+                   pinname={'D1.1': 'K', 'D1.2': 'A', 'U1.1': 'VIN', 'U1.2': 'GND'})
+        self.assertEqual({f['kind'] for f in scans(db, 'PWR-A01')}, {'CANDIDATE'})
+        self.assertEqual(scans(db, 'PWR-A02'), [])
+
+    def test_battery_and_rc_filtered_supply_pin(self):
+        db = board({'BT1': 'BATTERY', 'U1': 'DW01', 'R1': '100', 'C1': '100nF'},
+                   {'VBAT_P': ['BT1.1', 'R1.1'], 'DW_VCC': ['R1.2', 'U1.5', 'C1.1'], 'GND': ['BT1.2', 'U1.6', 'C1.2']},
+                   pinname={'U1.5': 'VCC', 'U1.6': 'GND'})
+        self.assertEqual(scans(db, 'PWR-A02'), [])
+
+    def test_internal_regulator_pin_with_only_its_capacitor(self):
+        db = board({'U1': 'LAN8720A', 'C1': '470nF', 'J1': 'Connector:Conn_01x02'},
+                   {'VDDCR': ['U1.6', 'C1.1'], 'V3': ['J1.1', 'U1.19'], 'GND': ['C1.2', 'J1.2', 'U1.20']},
+                   pinname={'U1.6': 'VDDCR', 'U1.19': 'VDD', 'U1.20': 'GND'})
+        self.assertEqual(scans(db, 'PWR-A02'), [])
+
+    def test_supply_through_solder_jumper_is_a_candidate(self):
+        db = board({'J1': 'Connector:Conn_01x02', 'JP1': 'Jumper', 'D3': 'WS2812B'},
+                   {'+3V3': ['J1.1', 'JP1.2'], 'LED_VDD': ['JP1.1', 'D3.4'], 'GND': ['J1.2', 'D3.2']},
+                   pinname={'D3.4': 'VDD', 'D3.2': 'GND'})
+        hits = scans(db, 'PWR-A02')
+        self.assertEqual([f['kind'] for f in hits], ['CANDIDATE'])
+        self.assertIn('JP1', hits[0]['detail'])
+
+    def test_open_datasheet_nc_pin_is_not_reported(self):
+        db = board({'U1': 'W5500', 'J1': 'Connector:Conn_01x02'},
+                   {'unconnected-(U1-NC-Pad12)': ['U1.12'], 'unconnected-(U1-INTn-Pad3)': ['U1.3'],
+                    'V3': ['J1.1', 'U1.1'], 'GND': ['J1.2', 'U1.2']},
+                   pinname={'U1.12': 'NC', 'U1.3': 'INTn', 'U1.1': 'VDD', 'U1.2': 'GND'})
+        hits = scans(db, 'NET-A01')
+        self.assertEqual([(f['kind'], 'U1.3' in f['detail']) for f in hits], [('CANDIDATE', True)])
+
+
 if __name__ == '__main__':
     unittest.main()

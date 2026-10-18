@@ -21,9 +21,10 @@ DIODE, TVS, ZENER, MOSFET, BJT = 'diode', 'tvs', 'zener', 'mosfet', 'bjt'
 RELAY, OPTO, CRYSTAL, TRANSFORMER = 'relay', 'opto', 'crystal', 'transformer'
 FUSE, JUMPER, TESTPOINT, SWITCH = 'fuse', 'jumper', 'testpoint', 'switch'
 IC, CONNECTOR, UNKNOWN = 'ic', 'connector', 'unknown'
+BATTERY = 'battery'
 KIND_CONSTANTS = {k: k for k in (RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER, MOSFET, BJT,
                                  RELAY, OPTO, CRYSTAL, TRANSFORMER, FUSE, JUMPER, TESTPOINT, SWITCH,
-                                 IC, CONNECTOR, UNKNOWN)}
+                                 IC, CONNECTOR, BATTERY, UNKNOWN)}
 
 PREFIX_KINDS = (
     (r'^JP\d', JUMPER), (r'^TP\d', TESTPOINT), (r'^FB\d', FERRITE),
@@ -31,7 +32,7 @@ PREFIX_KINDS = (
     (r'^L\d', INDUCTOR), (r'^D\d', DIODE), (r'^Q\d', MOSFET),
     (r'^K\d', RELAY), (r'^Y\d', CRYSTAL), (r'^X\d', CRYSTAL),
     (r'^T\d', TRANSFORMER), (r'^F\d', FUSE), (r'^SW\d', SWITCH),
-    (r'^S\d', SWITCH), (r'^[UM]\d', IC), (r'^(J|P|CN)\d', CONNECTOR),
+    (r'^S\d', SWITCH), (r'^[UM]\d', IC), (r'^(J|P|CN)\d', CONNECTOR), (r'^BT\d', BATTERY),
 )
 
 JST_CONNECTOR_RE = r'(?:^|[\s:])JST[-_]'
@@ -54,7 +55,7 @@ KEYWORD_KINDS = (
     # KiCad symbol-library category of the symbol actually placed.
     (r'TRANSISTOR_BJT:', BJT),
     (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:', MOSFET),
-    (r'MOSFET|\bFET\b|NMOS|PMOS|IRF|AO\d{4}|SI\d{4}|BSS\d|2N7002|IGBT', MOSFET),
+    (r'MOSFET|\bFET\b|NMOS|PMOS|[NP]-MOS|IRF|IRLML|AO\d{4}|SI\d{4}|BSS\d|2N7002|IGBT', MOSFET),
     (r'\bNPN\b|\bPNP\b|BC[PXW]?\d{2,3}|2N\d{4}|MMBT|PBSS|S8050|S8550|三极管', BJT),
     (r'SCHOTTKY|DIODE|SS\d{2}|BAT\d|1N4\d{3}|1N58\d|二极管', DIODE),
     (r'FERRITE|BEAD|BLM\d|MPZ\d|磁珠', FERRITE),
@@ -62,6 +63,7 @@ KEYWORD_KINDS = (
     (r'CRYSTAL|XTAL|OSC|晶振|晶体', CRYSTAL),
     (r'TRANSFORMER|变压器', TRANSFORMER),
     (r'FUSE|PTC|保险', FUSE),
+    (r'(?:^|[\s:_])BATTERY\b|电池', BATTERY),
     # Explicit connector symbol/part families can use arbitrary refdes (e.g. K).
     # Keep stronger device keywords above and do not treat a bare "terminal" or
     # "header" in an IC description as a connector. This is role evidence only,
@@ -69,7 +71,8 @@ KEYWORD_KINDS = (
     # KiCad places test pads as Connector:TestPoint*; the library entry, not the
     # namespace, decides that this is a probe/fixture pad rather than a connector.
     (r'(?:^|[\s:])TEST_?POINT(?:_|\b)', TESTPOINT),
-    (r'\bCONNECTOR(?:_[A-Z0-9]+)*:|\bCONN_\d+X\d+\b|'
+    (r'(?:\b|_)CONNECTORS?(?:_[A-Z0-9]+)*:|\bCONN_\d+X\d+\b|'
+     r'\bUSB[-_ ]?(?:2\.0[-_ ]?)?TYPE[-_ ]?C\b|\bTYPE-C-\d+-M\b|\bBARREL[-_ ]?JACK\b|\bPWR[-_ ]?JA[C]?K|'
      r'\bPINHEADER[_:-]|\bTERMINAL_?BLOCK[_:-]|'
      r'\bHEADER_(?:MALE|FEMALE)[_:-]|\bHEADER[-_]\d+X\d+(?:\b|[_:-])|'
      r'\bTERMINAL_KF\d', CONNECTOR),
