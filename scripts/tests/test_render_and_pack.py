@@ -40,7 +40,7 @@ class RenderReportTests(unittest.TestCase):
         self.assertIn('资料不足无法判断（INSUFFICIENT） 1 条', lines[2])
         self.assertEqual(lines[3], '- **发现的错误**：0 处。')
         self.assertTrue(lines[4].startswith('- **能否定稿**：还不能定稿。还差：'))
-        self.assertIn('1 条检查缺资料或设计依据', lines[5])
+        self.assertIn('1 件待办没解决（同一原因合并，涉及 1 条缺资料或设计依据的检查）', lines[5])
         section = text.split('## 待办')[1]
         self.assertIn('W-1', section)
         self.assertIn('类型：缺资料　可能后果：必需功能可能不达标（P1）　涉及 1 条检查', section)
@@ -190,6 +190,16 @@ class ReportWordingTests(unittest.TestCase):
         reasons = blocker_reasons(['scope input_consistency: coverage audit not PASS'], results)
         self.assertEqual(reasons, ['输入资料一致性核对没通过（检查 DOC-Q01.X，问题见 F-DOC-01）'])
         self.assertNotIn('其他定稿条件', '；'.join(reasons))
+
+    def test_gap_blockers_are_counted_by_work_item(self):
+        from render_report import blocker_reasons
+        blockers = ['A.%d: unresolved blocking INSUFFICIENT' % i for i in range(5)]
+        tasks = [{'id': 'W1', 'check_ids': ['A.0', 'A.1', 'A.2']}, {'id': 'W2', 'check_ids': ['A.3', 'A.4']}]
+        self.assertEqual(blocker_reasons(blockers, {}, tasks),
+                         ['2 件待办没解决（同一原因合并，涉及 5 条缺资料或设计依据的检查）'])
+        # A gap no work item owns keeps the per-check wording.
+        self.assertEqual(blocker_reasons(blockers, {}, tasks[:1]),
+                         ['5 条检查缺资料或设计依据，对应下面列出的待办'])
 
     def test_handoffs_list_where_they_apply_and_tool_gaps_merge(self):
         p, r, db = downstream()

@@ -38,10 +38,14 @@ RESULT_SHORT = {'PASS': '通过', 'FAIL': '没通过', 'INSUFFICIENT': '资料�
 # Why the schematic cannot be finalised yet, in the order a reader should act on them.
 BLOCKERS = (('fail', '%d 条检查发现的错误还没改'),
             ('gap', '%d 条检查缺资料或设计依据，对应下面列出的待办'),
+            ('gap_tasks', '%d 件待办没解决（同一原因合并，涉及 %d 条缺资料或设计依据的检查）'),
             ('requirement', '%d 条需求还要用户拍板'),
             ('review', '%d 条检查审查还没做完'),
             ('grading', '%d 组资料不足的检查还没逐条判断后果'),
             ('netlist', '原理图导出的网表不完整或导出失败'))
+IMPACT_CLASS_WORDS = OrderedDict((('DAMAGE_OR_HAZARD', '损坏或危险'), ('CORE_LINK_LOSS', '核心链路断开'),
+                                  ('REQUIRED_FUNCTION', '必需功能'), ('PERFORMANCE_OR_LIFE', '性能或寿命'),
+                                  ('LOCAL_OR_DATA', '局部或资料'), ('OPTIMIZATION', '可选优化')))
 SCOPES = {'input_consistency': '输入资料一致性核对', 'requirements': '需求逐条覆盖核对',
           'chains': '功能链覆盖核对', 'states': '工作状态覆盖核对',
           'datasheets': '器件资料覆盖核对', 'history': '上一版问题处理核对'}
@@ -70,9 +74,10 @@ def is_document(check_ids):
     return bool(check_ids) and all(rule_of(k) in DOCUMENT_RULES for k in check_ids)
 
 
-def blocker_reasons(blockers, results):
-    """Every blocker in plain words; scope audits name the check and the finding behind them."""
-    kinds, scopes, unknown = Counter(), [], []
+def blocker_reasons(blockers, results, tasks=None):
+    """Every blocker in plain words; scope audits name the check and the finding behind them.
+    Evidence gaps are counted by the work items (root causes) behind them when those are known."""
+    kinds, scopes, unknown, gap_keys = Counter(), [], [], set()
     scope_checks = results.get('scope_checks') or {}
     checks = {c.get('id'): c for c in results.get('checks') or [] if isinstance(c, dict)}
     for b in blockers:
@@ -82,6 +87,7 @@ def blocker_reasons(blockers, results):
             kinds['fail'] += 1
         elif 'unresolved blocking INSUFFICIENT' in b:
             kinds['gap'] += 1
+            gap_keys.add(b.split(': unresolved blocking', 1)[0])
         elif 'unresolved requirement decision' in b:
             kinds['requirement'] += 1
         elif 'need individual grading' in b:
@@ -96,7 +102,11 @@ def blocker_reasons(blockers, results):
                                                   '，问题见 %s' % finding if finding else ''))
         else:
             unknown.append(b)
-    out = [(text % kinds[key]) if '%d' in text else text for key, text in BLOCKERS if kinds[key]]
+    owning = [t for t in tasks or [] if gap_keys & set(t.get('check_ids') or [])]
+    if owning and gap_keys <= {k for t in owning for k in t.get('check_ids') or []}:
+        kinds['gap_tasks'], kinds['gap'] = len(owning), 0
+    out = [(text % ((kinds[key], len(gap_keys)) if key == 'gap_tasks' else kinds[key])) if '%d' in text else text
+           for key, text in BLOCKERS if kinds[key]]
     out += scopes
     if unknown:
         out.append('另有 %d 项定稿条件没满足，原文见 record/review-gate.json 的 blockers：%s'
@@ -333,7 +343,7 @@ def render(plan, results, gate, notes=None, title=None):
             '、'.join('%s %d 处' % (s, by_sev[s]) for s in SEVERITIES if by_sev.get(s))))
     else:
         out.append('- **发现的错误**：0 处。')
-    reasons = blocker_reasons(gate.get('blockers') or [], results) if release != 'GO' else []
+    reasons = blocker_reasons(gate.get('blockers') or [], results, tasks) if release != 'GO' else []
     if reasons:
         out.append('- **能否定稿**：%s。还差：' % RELEASE.get(release, release))
         out += ['  %d. %s；' % (i, r) for i, r in enumerate(reasons, 1)]
@@ -434,6 +444,9 @@ def render(plan, results, gate, notes=None, title=None):
     gaps = [c for c in current_rows.values() if c.get('review_result') == 'INSUFFICIENT']
     pot = Counter(c.get('potential_severity') for c in gaps)
     cause = Counter(c.get('gap_cause') for c in gaps)
+    classes = Counter((c.get('impact_assessment') or {}).get('consequence_class') for c in gaps
+                      if isinstance(c.get('impact_assessment'), dict)
+                      and c['impact_assessment'].get('consequence_class') in IMPACT_CLASS_WORDS)
     history = (summary.get('history') or {}).get('checks', 0)
     out += ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
@@ -442,8 +455,12 @@ def render(plan, results, gate, notes=None, title=None):
             '| 原理图阶段不判、交给后续环节 | %d |' % counts.get('NA_OUTSIDE_STAGE', 0),
             '| 发现的错误，按严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(by_sev.get(s, 0)) for s in SEVERITIES),
             '| 其中文档错误 | %d |' % len(doc_defects),
+            '| 待办（同一原因合并） | %d 件 |' % len(tasks),
             '| 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(pot.get(s, 0)) for s in SEVERITIES),
             '| 资料不足的原因：%s | %s |' % (' / '.join(CAUSES.values()), ' / '.join(str(cause.get(k, 0)) for k in CAUSES)),
+            ] + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),
+                                                  ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
+                 if classes else []) + [
             '| 交给后续环节的要求 | %d |' % len(handoffs),
             '| 上一版问题的处理记录（不计入上面各行） | %d |' % history, '',
             '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']

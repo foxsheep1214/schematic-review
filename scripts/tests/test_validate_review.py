@@ -541,5 +541,44 @@ class SplitOutTests(unittest.TestCase):
             self.assertTrue(any('split_out' in e for e in out['errors']), (split, out['errors']))
 
 
+
+class ImpactClassTests(unittest.TestCase):
+    """100W PD 复审：86 项资料不足全部是 P0/P1，等级需要逐项的后果类别作依据。"""
+
+    def ledger(self, cls, severity, **extra):
+        p, r, db = fixture()
+        r['impact_class_version'] = 1
+        row = r['checks'][0]
+        row.update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['x rating'],
+                   potential_severity=severity)
+        complete_gap(row, cause='EXTERNAL_DATA', severity=severity)
+        row['impact_assessment'].update(consequence_class=cls, **extra)
+        return p, r, db
+
+    def class_errors(self, *args, **extra):
+        p, r, db = self.ledger(*args, **extra)
+        return [e for e in validate_review(p, r, db)['errors'] if 'consequence_class' in e]
+
+    def test_class_sets_the_potential_level(self):
+        self.assertEqual(self.class_errors('LOCAL_OR_DATA', 'P2'), [])
+        self.assertEqual(self.class_errors('REQUIRED_FUNCTION', 'P1'), [])
+        self.assertTrue(self.class_errors('LOCAL_OR_DATA', 'P1'))
+        self.assertTrue(self.class_errors('UNKNOWN', 'P1'))
+
+    def test_damage_class_drops_to_p1_only_with_an_exclusion(self):
+        self.assertTrue(self.class_errors('DAMAGE_OR_HAZARD', 'P1'))
+        self.assertEqual(self.class_errors('DAMAGE_OR_HAZARD', 'P1', exclusion='D5 clamps at 18 V (datasheet p4)'), [])
+
+    def test_classes_are_counted_in_the_summary(self):
+        p, r, db = self.ledger('PERFORMANCE_OR_LIFE', 'P1')
+        impact = validate_review(p, r, db)['categorized_summary']['insufficient_impact']
+        self.assertEqual(impact['by_consequence_class'], {'PERFORMANCE_OR_LIFE': 1})
+
+    def test_unversioned_results_keep_the_old_contract(self):
+        p, r, db = self.ledger('LOCAL_OR_DATA', 'P1')
+        del r['impact_class_version']
+        self.assertEqual([e for e in validate_review(p, r, db)['errors'] if 'consequence_class' in e], [])
+
+
 if __name__ == '__main__':
     unittest.main()
