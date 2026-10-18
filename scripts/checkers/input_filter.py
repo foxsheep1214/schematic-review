@@ -77,7 +77,7 @@ class _Scan:
     def converters(self):
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) is not ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
                 continue
             input_nets = self._pin_nets(ref, VIN_PIN_RE)
             if not input_nets or not self._pin_nets(ref, powertree.SWITCH_NODE_PIN_RE):

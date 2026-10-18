@@ -301,7 +301,7 @@ class _Scan:
                     return ref, 'switch:' + ref + '(pin roles unknown)'
         for node in graph.nodes_on(net):
             ref = node.partition('.')[0]
-            if graph.kind(ref) is not ng.IC or ref in self.excluded:
+            if graph.kind(ref) != ng.IC or ref in self.excluded:
                 continue
             if ng.name_matches(DRIVER_PIN_RE, graph.pinname.get(node), node.partition('.')[2]):
                 return ref, 'driver-pin:' + node
@@ -440,7 +440,7 @@ class _Scan:
 
     def _integrated_clamp(self, switch_ref, rail_net):
         graph = self.graph
-        if switch_ref is None or graph.kind(switch_ref) is not ng.IC:
+        if switch_ref is None or graph.kind(switch_ref) != ng.IC:
             return []
         for node, net in graph.pins_of(switch_ref).items():
             if net == rail_net and ng.name_matches(
@@ -469,7 +469,7 @@ class _Scan:
             terminals = graph.terminals(ref)
             gaps = []
             if len(terminals) != 2:
-                if kind is ng.RELAY:
+                if kind == ng.RELAY:
                     coil = [graph.pin2net[node] for node in sorted(graph.pin2net)
                             if node.startswith(ref + '.') and graph.role(node) == 'coil']
                     terminals = sorted(set(coil))
@@ -495,7 +495,7 @@ class _Scan:
             if boost is not None:
                 found.append(boost)
                 continue
-            if kind is not ng.RELAY and self._is_converter_node(switch_net):
+            if kind != ng.RELAY and self._is_converter_node(switch_net):
                 continue
             found.append(self._entry(ref, kind, switch_net, rail_net, switch_ref, basis, gaps))
         found.extend(self._external_loads())
@@ -508,7 +508,7 @@ class _Scan:
             if not LOAD_NAME_RE.search(net) or net in graph.pseudo:
                 continue
             switch_ref, _ = self._switch_on(net)
-            connectors = [ref for ref in graph.refs_on(net) if graph.kind(ref) is ng.CONNECTOR]
+            connectors = [ref for ref in graph.refs_on(net) if graph.kind(ref) == ng.CONNECTOR]
             if switch_ref is None or not connectors:
                 continue
             if any(item['switch_net'] == net for item in found):

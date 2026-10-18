@@ -587,7 +587,7 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
     if isinstance(monitor, dict) and isinstance(monitor.get('node'), str):
         mref = monitor['node'].partition('.')[0]
         require(graph.pin2net.get(monitor['node']) == net and graph.is_fitted(mref)
-                and graph.kind(mref) is ng.IC,
+                and graph.kind(mref) == ng.IC,
                 'internal_monitor node must be a fitted IC pin on this rail')
     return errors
 
@@ -637,12 +637,12 @@ class _Scan:
             model_reset = (_exact_model(self.graph.parts[ref], MODEL_RESET_RECEIVER)
                            and _physical_pin(self.graph, ref, '8', {'EN'}, {'input'})
                            and pin == '8')
-            if (kind is ng.IC and _pin_direction(self.graph, node) in ('input', 'bidirectional')
+            if (kind == ng.IC and _pin_direction(self.graph, node) in ('input', 'bidirectional')
                     and (named_reset or model_reset)):
                 found.append({'node': node, 'role': 'reset-input'})
-            elif kind is ng.IC:
+            elif kind == ng.IC:
                 found.append({'node': node, 'role': 'other-pin'})
-            elif kind is ng.CONNECTOR:
+            elif kind == ng.CONNECTOR:
                 found.append({'node': node, 'role': 'external'})
         return sorted(found, key=lambda item: item['node'])
 
@@ -668,7 +668,7 @@ class _Scan:
     def supervisors(self):
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) is not ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
                 continue
             watchdogs = self.graph.named_pins(ref, WATCHDOG_IN_RE)
             senses = self.graph.named_pins(ref, SENSE_RE)
@@ -714,7 +714,7 @@ class _Scan:
             if basis is None:
                 continue
             loads = [node for node in graph.nodes_on(net)
-                     if graph.kind(node.partition('.')[0]) is ng.IC
+                     if graph.kind(node.partition('.')[0]) == ng.IC
                      and SUPPLY_PIN_RE.match(ng.normalize(graph.pinname.get(node)) or '')]
             if not loads:
                 continue

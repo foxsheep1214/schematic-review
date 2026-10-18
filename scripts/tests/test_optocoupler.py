@@ -34,6 +34,15 @@ def opto_board(led_resistor=True, pullup=True):
     return db
 
 
+def json_declared_opto_board():
+    """手册核验过的 opto 声明经 JSON 读入：字符串相等但不是同一个对象。"""
+    import json
+    db = opto_board()
+    db['parts']['OK1'].update(part='SFH-UNLISTED', value='SFH-UNLISTED', prim='Custom:Opto4')
+    db['device_kinds'] = json.loads(json.dumps({'OK1': {'kind': ''.join(['op', 'to']), 'citation': 'p1'}}))
+    return db
+
+
 def optos_of(inventory, state='as-built'):
     entry = next(x for x in inventory['states'] if x['id'] == state)
     return {item['ref']: item for item in entry['optocouplers']}
@@ -180,3 +189,12 @@ class HotRuleTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class DeclaredKindIdentityTest(unittest.TestCase):
+    def test_json_declared_opto_enters_the_inventory(self):
+        # 100W PD 复审：U202/U403/U404 已核验为光耦，清单仍为空（kind 用 is 比较）。
+        from checkers import netgraph as ng
+        db = json_declared_opto_board()
+        self.assertIs(ng.NetGraph(db).kind('OK1'), ng.OPTO)
+        self.assertIn('OK1', optos_of(build_inventory(db)))

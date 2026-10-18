@@ -99,12 +99,12 @@ class _Scan:
             kind = self.graph.kind(ref)
             pin = node.partition('.')[2]
             pintype = ng.normalize(self.graph.pintype.get(node))
-            if kind is ng.IC and (ng.name_matches(DRIVER_PIN_RE, self.graph.pinname.get(node), pin)
+            if kind == ng.IC and (ng.name_matches(DRIVER_PIN_RE, self.graph.pinname.get(node), pin)
                                   or pintype in OUT_PINTYPES):
                 found.append({'node': node, 'via': via, 'source': 'driver-pin'})
             elif kind in SWITCH_KINDS and self.graph.role(node) == 'drain':
                 found.append({'node': node, 'via': via, 'source': 'discrete-stage'})
-            elif kind is ng.CONNECTOR:
+            elif kind == ng.CONNECTOR:
                 found.append({'node': node, 'via': via, 'source': 'external'})
         return found
 

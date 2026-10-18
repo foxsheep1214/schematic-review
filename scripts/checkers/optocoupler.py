@@ -62,7 +62,7 @@ class _Scan:
         for ref in sorted(graph.parts):
             if ref in self.excluded or not graph.is_fitted(ref):
                 continue
-            if graph.kind(ref) is not ng.OPTO:
+            if graph.kind(ref) != ng.OPTO:
                 continue
             nodes = {role: graph.node_named(ref, role)
                      for role in ('led_anode', 'led_cathode', 'out_collector', 'out_emitter')}

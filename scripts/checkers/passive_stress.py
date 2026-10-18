@@ -138,12 +138,12 @@ class _Bounds:
                 if not graph.is_fitted(ref):
                     continue
                 kind = graph.kind(ref)
-                if kind is ng.UNKNOWN and TWO_TERMINAL_LINK_RE.match(ref) and len(graph.pins_of(ref)) == 2:
+                if kind == ng.UNKNOWN and TWO_TERMINAL_LINK_RE.match(ref) and len(graph.pins_of(ref)) == 2:
                     kind = ng.RESISTOR
                 if ng.name_matches(UNBOUNDED_PIN_RE, graph.pinname.get(node), pin):
                     gap = 'unbounded-pin:' + node
                     break
-                if kind is ng.IC:
+                if kind == ng.IC:
                     supply = self.ic_supply(ref)
                     if supply is None or isinstance(supply, str):
                         gap = 'undeclared-supply:%s(%s)' % (ref, supply or 'no-declared-rail')
@@ -160,7 +160,7 @@ class _Bounds:
                             tops.append(fixed[1])
                             domains |= {self.domain(other)} - {None}
                             continue
-                        ac = ac or kind is ng.CAPACITOR
+                        ac = ac or kind == ng.CAPACITOR
                         seen.add(other)
                         queue.append(other)
                 else:
@@ -185,9 +185,9 @@ def _signal_series(graph, nets):
         for node in graph.nodes_on(net):
             ref = node.partition('.')[0]
             kind = graph.kind(ref) if graph.is_fitted(ref) else None
-            if kind is ng.CONNECTOR:
+            if kind == ng.CONNECTOR:
                 found.add('connector')
-            elif kind is ng.IC and graph.pintype.get(node) not in POWER_PINTYPES:
+            elif kind == ng.IC and graph.pintype.get(node) not in POWER_PINTYPES:
                 found.add('ic-signal')
         return frozenset(found)
     if any(ng.is_rail(net) for net in nets):
@@ -209,7 +209,7 @@ def _scan(db, intent, state):
             continue
         entry = {'ref': ref, 'kind': kind, 'package': package, 'value': part.get('value'),
                  'nets': sorted(pins.values())}
-        if kind is ng.RESISTOR and not any(_ground_name(net) for net in entry['nets']):
+        if kind == ng.RESISTOR and not any(_ground_name(net) for net in entry['nets']):
             entry['signal_series'] = _signal_series(graph, entry['nets'])
         windows, domains = [], set()
         for net in entry['nets']:

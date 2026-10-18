@@ -20,6 +20,9 @@ DIODE, TVS, ZENER, MOSFET, BJT = 'diode', 'tvs', 'zener', 'mosfet', 'bjt'
 RELAY, OPTO, CRYSTAL, TRANSFORMER = 'relay', 'opto', 'crystal', 'transformer'
 FUSE, JUMPER, TESTPOINT, SWITCH = 'fuse', 'jumper', 'testpoint', 'switch'
 IC, CONNECTOR, UNKNOWN = 'ic', 'connector', 'unknown'
+KIND_CONSTANTS = {k: k for k in (RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER, MOSFET, BJT,
+                                 RELAY, OPTO, CRYSTAL, TRANSFORMER, FUSE, JUMPER, TESTPOINT, SWITCH,
+                                 IC, CONNECTOR, UNKNOWN)}
 
 PREFIX_KINDS = (
     (r'^JP\d', JUMPER), (r'^TP\d', TESTPOINT), (r'^FB\d', FERRITE),
@@ -180,7 +183,8 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     pin_names 为 (引脚名, 脚号) 序列。
     """
     if declared:
-        kind = declared
+        # Declared kinds come from JSON; return the module constant so identity checks agree.
+        kind = KIND_CONSTANTS.get(declared, declared)
         sig = pin_signature(pin_names)
         if kind in (MOSFET, BJT) and sig and sig != kind:
             return UNKNOWN, f'datasheet says {kind} but symbol pin names say {sig}'
@@ -226,11 +230,11 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         return signature, 'pin-names'
     for pattern, kind in PREFIX_KINDS:
         if re.match(pattern, ref, re.I):
-            if kind is MOSFET and pin_count is not None and pin_count < 3:
+            if kind == MOSFET and pin_count is not None and pin_count < 3:
                 return UNKNOWN, 'refdes-prefix conflicts with pin count'
             # 只有两脚的 K 位号不可能同时有线圈和触点（部分库把连接器编为 K）；
             # 三脚以上名称不明的 K 仍按继电器保留，不掩盖真继电器
-            if kind is RELAY and pin_count is not None and pin_count < 3:
+            if kind == RELAY and pin_count is not None and pin_count < 3:
                 return UNKNOWN, 'refdes-prefix conflicts with pin count'
             return kind, 'refdes-prefix'
     return UNKNOWN, 'no classification evidence'
@@ -395,11 +399,11 @@ class NetGraph:
             if name in CATHODE_NAMES:
                 return 'cathode'
             return None
-        if kind is RELAY:
+        if kind == RELAY:
             if name in COIL_NAMES or name.startswith('COIL'):
                 return 'coil'
             return 'contact'
-        if kind is OPTO:
+        if kind == OPTO:
             if name in LED_ANODE_NAMES:
                 return 'led_anode'
             if name in LED_CATHODE_NAMES:

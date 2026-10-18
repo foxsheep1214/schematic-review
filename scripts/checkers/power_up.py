@@ -59,7 +59,7 @@ class _Scan:
         drivers = []
         for node in graph.nodes_on(enable_net):
             ref = node.partition('.')[0]
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) is not ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
                 continue
             name = ng.normalize(graph.pinname.get(node))
             pintype = ng.normalize(graph.pintype.get(node))
@@ -94,7 +94,7 @@ class _Scan:
             return self._regulators
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) is not ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
                 continue
             enables = self.graph.named_pins(ref, ENABLE_PIN_RE)
             outputs = self.graph.named_pins(ref, OUTPUT_PIN_RE)
@@ -132,7 +132,7 @@ class _Scan:
         graph, found = self.graph, []
         regulators = {item['ref'] for item in self.regulators()}
         for ref in sorted(graph.parts):
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) is not ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
                 continue
             if ref in regulators:
                 continue
