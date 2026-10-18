@@ -32,6 +32,7 @@ FUNCTIONS = {
     'flyback_stop.primary_on_sr_platform': flyback_stop.primary_on_sr_platform,
     'model_bounds.ntc_resistance_bounds': model_bounds.ntc_resistance_bounds,
     'model_bounds.cc_discharge_with_tail': model_bounds.cc_discharge_with_tail,
+    'model_bounds.crm_boost_capacitor_ripple': model_bounds.crm_boost_capacitor_ripple,
     'zener_fault.trip_drive': zener_fault.trip_drive,
     'zener_fault.no_trip_budget': zener_fault.no_trip_budget,
     'zener_fault.hold_charge': zener_fault.hold_charge,

@@ -82,20 +82,45 @@ def input_member(source, inputs):
     or, for a bare file name, by exactly one input file of that name. Never by name alone when the
     citation carries a directory, so a same-named new file elsewhere is not mistaken for an input."""
     path = Path(source)
+    if not path.is_absolute() and not safe_relative(source):
+        return False
     matches = []
     for fp in inputs:
         root = Path(fp['path'])
         if root.is_file():
             files = [root]
         else:
-            if (root / path).is_file():
+            if not path.is_absolute() and contained(root / path, root) and (root / path).is_file():
                 return True
-            files = [q for q in root.rglob('*') if q.is_file()]
+            files = [q for q in root.rglob('*') if q.is_file() and contained(q, root)]
         if path.is_absolute() and path.resolve() in [f.resolve() for f in files]:
             return True
         if len(path.parts) == 1:
             matches += [f for f in files if f.name == path.name]
     return len({sha256(f) for f in matches}) == 1
+
+
+def safe_relative(source):
+    path = Path(source)
+    return bool(source) and not path.is_absolute() and '..' not in path.parts
+
+
+def contained(path, root):
+    return Path(path).resolve().is_relative_to(Path(root).resolve())
+
+
+def packed_errors(out, packed):
+    """A successful pack must be independently readable from every manifest key."""
+    errors = []
+    for name, digest in packed.items():
+        path = Path(out) / name
+        if not safe_relative(name) or not contained(path, out):
+            errors.append('packed path escapes review: ' + name)
+        elif not path.is_file():
+            errors.append('packed file missing: ' + name)
+        elif sha256(path) != digest:
+            errors.append('packed hash mismatch: ' + name)
+    return errors
 
 
 LINK_RE = re.compile(r'\]\(([^)\s]+)\)')
@@ -147,6 +172,18 @@ def pack(out, ledger, evidence_root, inputs):
             declared[name] = fingerprint(path)
     if errors:
         return errors, None
+    # Reject output symlinks before writing any ledger or evidence file.
+    if not contained(record / 'evidence', out):
+        return ['record/evidence escapes review directory'], None
+    for name, src in ledger.items():
+        if name not in LEDGER or not contained(record / name, out):
+            errors.append('unsafe ledger target: ' + name)
+        if not Path(src).is_file():
+            errors.append('missing ledger: ' + str(src))
+    if not contained(record / 'manifest.json', out):
+        errors.append('manifest escapes review directory')
+    if errors:
+        return errors, None
     (record / 'evidence').mkdir(parents=True, exist_ok=True)
     packed = {}
     for name, src in ledger.items():
@@ -165,10 +202,24 @@ def pack(out, ledger, evidence_root, inputs):
     for source in sorted(cited_sources(results)):
         if source.startswith(('http://', 'https://')):
             continue
+        # Absolute original inputs are references, never archive member names.
+        if Path(source).is_absolute():
+            if not input_member(source, declared.values()):
+                unresolved.append(source)
+            continue
+        if not safe_relative(source):
+            errors.append('unsafe evidence path: ' + source)
+            continue
         candidate = Path(evidence_root) / source if evidence_root else None
+        if candidate and not contained(candidate, evidence_root):
+            errors.append('evidence path escapes work directory: ' + source)
+            continue
         if candidate and candidate.is_file():
             # This round's evidence wins over any same-named file inside an input.
             target = record / 'evidence' / source
+            if not contained(target, record / 'evidence'):
+                errors.append('evidence target escapes archive: ' + source)
+                continue
             target.parent.mkdir(parents=True, exist_ok=True)
             if candidate.resolve() != target.resolve():  # re-packing an already packed review
                 shutil.copyfile(candidate, target)
@@ -178,6 +229,7 @@ def pack(out, ledger, evidence_root, inputs):
     if unresolved:
         errors.append('cited evidence is neither in --evidence-root nor a declared input: ' + ', '.join(unresolved))
     errors += broken_report_links(out)
+    errors += packed_errors(out, packed)
     manifest = {'schema_version': 1, 'skill_version': skill_version(), 'inputs': declared,
                 'packed': dict(sorted(packed.items())), 'report_sha256': sha256(out / REPORT)}
     (record / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

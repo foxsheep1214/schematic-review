@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 import re
 
+from asg_summary_adapter import adapt_asg
+
 STATES = ("SUPPORTED", "CONDITIONAL", "FAIL")
 CHINESE = re.compile(
     r"(?<![\w.+-])(\d+)项计算条件检查\s*(\d+)SUPPORTED\s*/\s*"
@@ -43,10 +45,21 @@ def _distribution(rows):
     return {"total": len(rows), **{s: counts[s] for s in STATES}}
 
 
+ASG_SUMMARY = re.compile(r"^\s*\|\s*计算结论：满足 / 有条件满足 / 不满足\s*\|\s*(\d+)\s*/\s*(\d+)\s*/\s*(\d+)\s*\|\s*$")
+ASG_COVERAGE = re.compile(r"^\s*\|\s*计算：上下界完整 / 只算了一部分\s*\|\s*(\d+)\s*/\s*(\d+)\s*\|\s*$")
+
+
 def parse_summaries(text):
     """Return all supported literal declarations, plus unparsed anchors."""
     summaries, gaps = [], []
     for number, line in enumerate(text.splitlines(), 1):
+        asg = ASG_SUMMARY.fullmatch(line)
+        if asg:
+            values = [int(v) for v in asg.groups()]
+            summaries.append({"line": number, "literal": asg.group(0),
+                              "counts": dict(zip(("total", *STATES), [sum(values), *values]))})
+        elif "计算结论：" in line:
+            gaps.append({"line": number, "reason": "unsupported ASG summary format"})
         matches = list(CHINESE.finditer(line))
         english = ENGLISH.fullmatch(line.strip())
         if english:
@@ -64,7 +77,7 @@ def parse_summaries(text):
     return summaries, gaps
 
 
-def audit(calculations=None, preflight=None, documents=()):
+def audit(calculations=None, preflight=None, documents=(), preflight_contract=None):
     findings, inputs, declarations = [], {}, []
 
     def issue(code, message, source, locator, proven=False):
@@ -87,6 +100,11 @@ def audit(calculations=None, preflight=None, documents=()):
 
     inventory = read(calculations, "calculations")
     checked = read(preflight, "preflight")
+    adapter = None
+    if isinstance(inventory, list) and inventory and any(isinstance(r, dict) and "conclusion" in r for r in inventory):
+        contract = read(preflight_contract, "preflight-contract")
+        inventory, checked, adapter = adapt_asg(inventory, checked, contract, calculations, preflight,
+                                               preflight_contract, issue)
     claims, statuses = {}, {}
     inventory_ids, preflight_ids, ambiguous_ids = set(), set(), set()
     inventory_schema = (_version_one(inventory)
@@ -162,6 +180,15 @@ def audit(calculations=None, preflight=None, documents=()):
         text = read(document, "document", False)
         if text is None:
             continue
+        if adapter is not None:
+            for number, line in enumerate(text.splitlines(), 1):
+                match = ASG_COVERAGE.fullmatch(line)
+                if match and adapter["coverage"] is not None:
+                    stated = dict(zip(("complete", "partial"), map(int, match.groups())))
+                    if stated != adapter["coverage"]:
+                        issue("COVERAGE_COUNT_MISMATCH", f"declared={stated}; inventory={adapter['coverage']}", document, f"line {number}", True)
+                elif "计算：上下界完整" in line and not match:
+                    issue("UNPARSED_SUMMARY", "unsupported ASG coverage table", document, f"line {number}")
         summaries, gaps = parse_summaries(text)
         for gap in gaps:
             issue("UNPARSED_SUMMARY", gap["reason"], document, f"line {gap['line']}")
@@ -201,17 +228,18 @@ def audit(calculations=None, preflight=None, documents=()):
                             "ambiguous_calculation_ids": sorted(ambiguous_ids)},
             "reliable_rows": {"claims": dict(sorted(claims.items())),
                               "preflight": dict(sorted(statuses.items()))},
-            "declarations": declarations, "findings": findings}
+            "adapter": adapter, "declarations": declarations, "findings": findings}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--calculations", type=Path)
     parser.add_argument("--preflight", type=Path)
+    parser.add_argument("--preflight-contract", type=Path, help="ASG design-preflight.json linking child checks to calculation rows")
     parser.add_argument("--document", action="append", type=Path, default=[])
     parser.add_argument("--json", type=Path)
     args = parser.parse_args()
-    result = audit(args.calculations, args.preflight, args.document)
+    result = audit(args.calculations, args.preflight, args.document, args.preflight_contract)
     output = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)

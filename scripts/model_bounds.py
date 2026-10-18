@@ -9,6 +9,35 @@ import math
 KELVIN = 273.15
 
 
+def crm_boost_capacitor_ripple(*, input_rms_v, bus_v, power_w, hf_ripple_factor=1.0):
+    """Ideal unity-PF CrM boost, constant bus and constant-power load; not a qualification.
+
+    Over each switching cycle Ipk=2*sqrt(2)*P/Vac*sin(theta), diode duty=v/Vbus.
+    <Id^2>=<Ipk^2*v/(3*Vbus)>; capacitor variance subtracts (P/Vbus)^2.
+    The twice-line component is P/(sqrt(2)*Vbus); remaining variance is switching ripple.
+    hf_ripple_factor is the capacitor's supplied high-frequency/line-frequency rating ratio.
+    Run each actual controller bus mode separately; fixed nominal bus cannot cover follower mode.
+    """
+    vac = _n(input_rms_v, 'input_rms_v', True)
+    bus = _n(bus_v, 'bus_v', True)
+    power = _n(power_w, 'power_w', True)
+    factor = _n(hf_ripple_factor, 'hf_ripple_factor', True)
+    if bus <= math.sqrt(2) * vac:
+        raise ValueError('bus_v must exceed peak input throughout the ideal boost cycle')
+    output = power / bus
+    diode_ms = 32 * math.sqrt(2) * power**2 / (9 * math.pi * vac * bus)
+    total_ms = diode_ms - output**2
+    lf_ms = output**2 / 2
+    hf_ms = total_ms - lf_ms
+    return {'diode_rms_a': math.sqrt(diode_ms), 'capacitor_rms_a': math.sqrt(total_ms),
+            'twice_line_rms_a': math.sqrt(lf_ms), 'switching_rms_a': math.sqrt(hf_ms),
+            'equivalent_line_rms_a': math.sqrt(lf_ms + hf_ms / factor**2),
+            'diode_conduction_fraction': 'v_instantaneous / bus_v',
+            'basis': 'CONDITIONAL_ON_IDEAL_CRM_CONSTANT_BUS',
+            'applicability_flags': ['requires-actual-controller-mode-and-bus-envelope',
+                                    'excludes-burst-current-limit-bus-ripple-and-load-dynamics']}
+
+
 def _n(x, name, positive=False):
     if isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x):
         raise ValueError(name + ' must be finite')

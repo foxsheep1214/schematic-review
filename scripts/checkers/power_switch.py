@@ -145,6 +145,8 @@ class _Scan:
             for ref in graph.between(drain_net, target, {ng.CAPACITOR}):
                 found.append({'ref': ref, 'type': 'capacitor', 'to': target})
             for ref in graph.between(drain_net, target, CLAMP_KINDS):
+                if graph.kind(ref) == ng.DIODE and not self._clamp_diode(ref, drain_net, target, source_net):
+                    continue
                 found.append({'ref': ref, 'type': 'clamp-' + graph.kind(ref), 'to': target})
         for ref, middle in graph.neighbors(drain_net, {ng.RESISTOR}):
             for target in sorted(targets):
@@ -153,6 +155,8 @@ class _Scan:
         # RCD: switch node -> diode -> clamp node returned through a capacitor to a rail/ground
         # (the same branch the inductive-load inventory reports for a flyback primary).
         for diode, middle in graph.neighbors(drain_net, {ng.DIODE}):
+            if not self._clamp_diode(diode, drain_net, middle, source_net):
+                continue
             if middle in targets:
                 continue
             if self._boost_transfer(diode, drain_net, middle):
@@ -170,13 +174,23 @@ class _Scan:
                 item['type'] = 'boost-transfer-diode'
         return sorted(found, key=lambda item: (item['ref'], item['type']))
 
-    def _boost_transfer(self, diode, drain_net, target):
-        """Anode on the switch node, cathode on an output with storage (a rail or >=1 uF to a
-        ground/return), and an inductor feeding the node from a different net."""
+    def _forward_diode(self, diode, source, target):
         graph = self.graph
         anode, cathode = graph.node_named(diode, 'anode'), graph.node_named(diode, 'cathode')
-        if not (anode and cathode and graph.pin2net.get(anode) == drain_net
-                and graph.pin2net.get(cathode) == target):
+        return bool(anode and cathode and graph.pin2net.get(anode) == source
+                    and graph.pin2net.get(cathode) == target)
+
+    def _clamp_diode(self, diode, drain, target, source):
+        # Low-side/Boost releases positive SW voltage toward the supply/output.
+        # A high-side buck instead freewheels from ground into a negative-going SW.
+        return (self._forward_diode(diode, drain, target)
+                or (target in self.grounds and source not in self.grounds
+                    and self.tree.is_rail(source) and self._forward_diode(diode, target, drain)))
+
+    def _boost_transfer(self, diode, drain_net, target):
+        """Forward rectifier into an output rail/storage, with an input inductor."""
+        graph = self.graph
+        if not self._forward_diode(diode, drain_net, target):
             return False
         if not (self.tree.is_rail(target) or self._has_storage(target)):
             return False
@@ -186,7 +200,8 @@ class _Scan:
         for cap in self.graph.refs_on(net):
             if self.graph.kind(cap) == ng.CAPACITOR:
                 value = parse_capacitance(self.graph.parts.get(cap, {}).get('value'))
-                if value is not None and value >= 1e-6:
+                if (value is not None and value >= 1e-6
+                        and any(n in self.grounds for n in self.graph.nets_of(cap))):
                     return True
         return False
 
@@ -548,7 +563,7 @@ class PowerSwitchChecker(Checker):
                              + ' 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定',
                              switch['ref'])
             if switch['switch_node_evidence'] and not [s for s in switch['snubbers']
-                                                        if s['type'] != 'boost-transfer-diode']:
+                    if s['type'] != 'boost-transfer-diode' or switch['topology'] == 'low-side']:
                 lint.add('DRV-A04', self.cold_rules['DRV-A04'],
                          head + '：开关节点 ' + str(switch['drain_net'])
                          + ' 上有 ' + '、'.join(switch['switch_node_evidence'])

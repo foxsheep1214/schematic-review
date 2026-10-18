@@ -57,5 +57,46 @@ class DischargeTest(unittest.TestCase):
                                    series_r_max_ohm=1, tail_r_ohm=1)
 
 
+class CrmBoostRippleTest(unittest.TestCase):
+    def test_against_independent_time_samples_of_triangular_diode_current(self):
+        from model_bounds import crm_boost_capacitor_ripple
+        # Synthetic values; integrate time-domain triangles, not the closed-form expression.
+        vac, bus, power = 100, 300, 80
+        result = crm_boost_capacitor_ripple(input_rms_v=vac, bus_v=bus, power_w=power)
+        samples = []
+        for line in range(200):
+            v = math.sqrt(2) * vac * math.sin(math.pi * (line + .5) / 200)
+            peak = 2 * power * v / vac**2
+            on_fraction = 1 - v / bus
+            for cycle in range(1000):
+                t = (cycle + .5) / 1000
+                diode = 0 if t <= on_fraction else peak * (1 - t) / (1 - on_fraction)
+                samples.append((diode - power / bus)**2)
+        measured = math.sqrt(sum(samples) / len(samples))
+        self.assertAlmostEqual(result['capacitor_rms_a'], measured, delta=.002)
+        self.assertAlmostEqual(result['equivalent_line_rms_a'], result['capacitor_rms_a'])
+        self.assertAlmostEqual(result['capacitor_rms_a']**2,
+                               result['twice_line_rms_a']**2 + result['switching_rms_a']**2)
+
+    def test_phase_reversal_claim_is_detected(self):
+        from calc_claims import check
+        vac, bus, p = 100, 300, 80
+        # Wrong model integrates MOS on fraction instead of diode off fraction.
+        wrong_ms = 4 * p*p / (3*vac*vac) - 32*math.sqrt(2)*p*p/(9*math.pi*vac*bus) - (p/bus)**2
+        rows, errors = check([{'id': 'CAP', 'source': 'synthetic.md', 'locator': 'ripple',
+            'calculation': 'model_bounds.crm_boost_capacitor_ripple',
+            'inputs': dict(input_rms_v=vac, bus_v=bus, power_w=p),
+            'claimed': {'capacitor_rms_a': math.sqrt(wrong_ms)}}])
+        self.assertFalse(errors)
+        self.assertEqual(rows[0]['status'], 'MISMATCH')
+
+    def test_invalid_operating_point_and_factor_are_rejected(self):
+        from model_bounds import crm_boost_capacitor_ripple as calc
+        for kwargs in [dict(bus_v=100), dict(input_rms_v=0), dict(power_w=True),
+                       dict(hf_ripple_factor=0), dict(bus_v=float('nan'))]:
+            with self.assertRaises(ValueError):
+                calc(**dict(dict(input_rms_v=100, bus_v=300, power_w=80), **kwargs))
+
+
 if __name__ == '__main__':
     unittest.main()

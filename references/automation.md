@@ -788,6 +788,13 @@ gate/base、继电器线圈、普通 IC 信号脚不当作导通端；未解析�
 自动扫描：`PRO-A03` LED 两条腿上都没有串联电阻且未声明恒流驱动（intent 中 `drive: constant-current`
 并给出处才可免除）；`PRO-A04` 集电极网上无到电源轨的上拉（CANDIDATE）。
 
+接收端内部上拉可在 `intent.optocouplers.optocouplers[]` 的 `internal_pullup` 记录：
+`{"node":"U2.1","resistance_ohm":{"min":17000,"max":23000},"bias_v":{"min":3,"max":3.6},"states":["run"],"citation":"准确料号手册页码、引脚、启用条件"}`。
+以上数值仅为合成格式示例。必须落在已贴接收 IC 的实际集电极同网脚，并适用于当前状态；错误引脚、未贴装、
+缺出处或无效范围均不能消除候选。只消除“没找到上拉”的候选，内部上拉、电压、并联负载仍纳入 PRO-E01 的最坏负载计算；
+`bias_v` 可省略：已证有内部上拉时不因尚缺偏置电压而继续报缺外部电阻；偏置电压缺口留给传输能力计算。
+掉电、高阻及动态 CTR 不自动通过。该模型随 intent/装配/网表摘要进入库存绑定。
+
 证据计算 `PRO-E01`（`opto_ctr`）：
 I<sub>F,min</sub> = (V<sub>drive,min</sub> − V<sub>F,max</sub> − V<sub>drop,max</sub>)/R<sub>LED,max</sub>，
 I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>·寿命衰减系数，
@@ -822,6 +829,15 @@ PASS 不覆盖开关速度、温度角与隔离耐压。
 `cc_discharge_with_tail` 把恒流放电在合规交界 I×(串阻+尾段电阻) 处切成恒流段与 RC 尾段，尾段电阻须取自器件 I-V 资料。
 DOC-Q01 重放计算合同只说明格式与输入可追溯，**合同有效不等于模型正确**：温度单调方向、公差角点和分段模型的适用区间要另行复算。
 
+`model_bounds.crm_boost_capacitor_ripple` 核理想 CrM Boost：输入有效值 `input_rms_v`、恒定母线 `bus_v`、
+功率 `power_w`，以及原厂给出的高频相对两倍工频纹波额定系数 `hf_ripple_factor`（默认 1，不给高频增益）。
+输出总电容 RMS、两倍工频/开关分量和折算 RMS。二极管导通比例为瞬时输入/母线，不能用 MOS 导通比例；
+按控制器的 follower/稳压/限流/跳周期实际模式选模型，输入峰值高于母线时拒算。
+该模型不包含母线纹波、损耗、跳周期和负载动态；其 MATCH 不证明这些条件已成立。
+
+功率开关扫描识别低边 Boost 的正向主整流二极管及输出轨/储能回路后，不再报“无吸收/钳位”。
+主整流路径与 RC/RCD 分开记录；DRV-C02/DRV-D01 的寄生尖峰、耐压和安全工作区检查照常保留。
+
 ### 常用电路的最坏角点与设计数值复算
 
 `scripts/circuit_bounds.py` 覆盖各类板子都有的计算：`divider_bounds`（普通/反馈分压窗口及上臂功耗）、`rc_crossing_time`
@@ -832,6 +848,18 @@ DOC-Q01 重放计算合同只说明格式与输入可追溯，**合同有效不�
 `scripts/calc_claims.py` 把设计文档里的数值写成 claim 逐条复算：每条给 `id/source/locator/calculation/inputs/claimed`
 与可选 `rel_tol`（默认 1%），输出 MATCH / MISMATCH / NOT_COMPUTED / ERROR 及相对差，可直接存为证据。
 MISMATCH 只说明在 SR 的模型下所称数值不能由所称输入推出，确认原文和模型适用后才记文档错误。
+
+### 厂家参数引用核对
+
+`python3 scripts/audit_parameter_claims.py parameter-claims.json --json parameter-audit.json`
+读取 list，每项含 `id`、`claimed`、`reference`。两侧各有 `identity/parameter/conditions/basis/unit/value/source/locator`，
+reference 另给原厂文件 `sha256`；source 是本地文件路径，locator 精确到版本、页码和表行。
+先独立阅读原厂表格并核温度、H/f、典型/最小/最大口径，再录入 reference，不能从设计报告复制引用值作基准。
+`conditions` 为键值对象，字段与单位统一；`basis` 为 `typical/minimum/maximum/engineering_limit`。
+工具验证参考文件哈希，在相同材料/料号、参数、试验条件、口径和可换算单位下比较数值；
+输出 MATCH/MISMATCH，条件或单位不兼容为 NOT_COMPARABLE，工程限值为 OUT_OF_SCOPE，缺字段/哈希错误为 ERROR。
+支持 T/mT、V/mV、A/mA、ohm/kohm，其他单位不猜。工具不自动理解 PDF，也不证明摘录准确或资料是真正原厂。
+设计采用较低磁通限值可以合理，但不能把该设计限值冒充特定温度下的厂家饱和磁通。
 
 ### 齐纳门限与锁定保持计算
 

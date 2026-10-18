@@ -199,7 +199,8 @@ def covered_by_findings(task, checks, findings):
 
 
 SR_FEEDBACK_KINDS = (('false_alarm', '误报'), ('over_strict', '规则过严或关闭条件不合理'),
-                     ('missed', '漏报'), ('unclear', '说明不清或互相矛盾'))
+                     ('missed', '漏报'), ('unclear', '说明不清或互相矛盾'),
+                     ('software_bug', '已复现的程序错误'), ('coverage_gap', '自动化覆盖或格式适配不足'))
 
 
 def sr_feedback_errors(items):
@@ -329,20 +330,22 @@ def render(plan, results, gate, notes=None, title=None):
         out += ['> **审查记录本身有错，这份报告的结论不可用。** 先改正记录再重新出报告：' +
                 '；'.join(cell(e) for e in (gate.get('errors') or [])[:5]), '']
     out += ['## 结论', '']
-    total = (summary.get('current') or {}).get('checks', len(current_rows))
-    parts = []
-    for key, label in RESULT_WORDS:
-        part = '%s %d 条' % (label, counts.get(key, 0))
-        if key == 'FAIL' and counts.get(key):
-            part += '（%s）' % failed_checks(current_rows, findings)
-        parts.append(part)
-    out.append('- **检查结果**：共 %d 条。%s。' % (total, '，'.join(parts)))
     if defects:
         out.append('- **发现的错误**：电路错误 %d 处，文档错误 %d 处（%s），见“发现的错误”一节。' % (
             defects - len(doc_defects), len(doc_defects),
             '、'.join('%s %d 处' % (s, by_sev[s]) for s in SEVERITIES if by_sev.get(s))))
     else:
         out.append('- **发现的错误**：0 处。')
+    gap_ids = {k for k, c in current_rows.items() if c.get('review_result') == 'INSUFFICIENT'}
+    gap_tasks = [t for t in tasks if gap_ids.intersection(t.get('check_ids') or [])]
+    if gap_ids:
+        owned = {k for t in gap_tasks for k in t.get('check_ids') or []}
+        p0 = sum(any(checks[k].get('potential_severity') == 'P0'
+                     for k in gap_ids.intersection(t.get('check_ids') or [])) for t in gap_tasks)
+        out.append('- **仍待确认**：%d 件事项，其中 %d 件可能涉及安全或损坏（P0）；资料不足不等于已发现缺陷。'
+                   % (len(gap_tasks), p0))
+        if gap_ids - owned:
+            out.append('- **待办整理未完成**：另有 %d 条无法判断的检查尚未关联待办。' % len(gap_ids - owned))
     reasons = blocker_reasons(gate.get('blockers') or [], results, tasks) if release != 'GO' else []
     if reasons:
         out.append('- **能否定稿**：%s。还差：' % RELEASE.get(release, release))
@@ -351,7 +354,9 @@ def render(plan, results, gate, notes=None, title=None):
     else:
         out.append('- **能否定稿**：%s。' % RELEASE.get(release, release))
     if tasks:
-        out.append('- **待办**：%d 件，按可能后果从重到轻列在“待办”一节。' % len(tasks))
+        fixes = sum(bool(covered_by_findings(t, checks, findings)) for t in tasks)
+        detail = ('（其中修正已列错误 %d 件、待确认 %d 件）' % (fixes, len(gap_tasks))) if fixes else ''
+        out.append('- **待办**：%d 件%s，按可能后果从重到轻列在“待办”一节。' % (len(tasks), detail))
     if phase == 'design_iteration':
         out.append('- 这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。')
     if 'history_inputs' in results:
@@ -370,8 +375,7 @@ def render(plan, results, gate, notes=None, title=None):
             level = f.get('severity')
             out.append('### %s　%s（%s：%s）' % (f.get('id'), f.get('title') or '', level, SEVERITY_WORDS.get(level, '')))
             out.append('')
-            out.append('类型：%s' % ('文档错误（图纸、BOM 或库字段与电路不一致，电路本身不用改）'
-                                    if f in doc_defects else '电路错误'))
+            out.append('类型：%s' % ('文档错误' if f in doc_defects else '电路错误'))
             out.append('')
             if item_notes.get(f.get('id')):
                 out += [item_notes[f['id']], '']
@@ -432,6 +436,7 @@ def render(plan, results, gate, notes=None, title=None):
     tool_gaps = gate.get('sr_improvements') or []
     if tool_gaps:
         out += ['## 审查工具的不足（设计者不用处理）', '',
+                '<details>', '<summary>展开工具限制及本轮核对方法</summary>', '',
                 '下面 %d 条检查，SR 的自动检查工具判断不了，审查时改为逐项对照网表和原厂资料核对，结论按核对结果算。'
                 '这里记录 SR 为什么做不到、该怎么改进 SR，留给 SR 维护。' % len(tool_gaps), '']
         same = OrderedDict()
@@ -443,8 +448,11 @@ def render(plan, results, gate, notes=None, title=None):
                     '- **SR 为什么做不到**：' + limit,
                     '- **建议怎么改进 SR**：' + improve,
                     '- **这次怎么核对的**：' + method, '']
+        out += ['</details>', '']
 
-    out += render_sr_feedback(notes.get('sr_feedback'))
+    feedback = render_sr_feedback(notes.get('sr_feedback'))
+    if feedback:
+        out += feedback[:2] + ['<details>', '<summary>展开 SR 维护反馈</summary>', ''] + feedback[2:] + ['</details>', '']
 
     gaps = [c for c in current_rows.values() if c.get('review_result') == 'INSUFFICIENT']
     pot = Counter(c.get('potential_severity') for c in gaps)
@@ -469,7 +477,9 @@ def render(plan, results, gate, notes=None, title=None):
             '| 交给后续环节的要求 | %d |' % len(handoffs),
             '| 上一版问题的处理记录（不计入上面各行） | %d |' % history, '',
             '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']
-    out += render_check_explanations(plan, results)
+    explanations = render_check_explanations(plan, results)
+    if explanations:
+        out += ['<details>', '<summary>展开逐项依据与关闭条件（完整保留）</summary>', ''] + explanations + ['</details>', '']
     out += ['## 详细记录', '',
             '每条检查的结论、依据和计算都在 `record/` 里：`review-results.json` 是逐条结论，`review-gate.json` 是校验结果和计数，'
             '`review-plan.json` 是检查清单，`manifest.json` 记录用到的原理图、手册、需求的位置和校验码，'

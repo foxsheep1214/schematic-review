@@ -69,6 +69,37 @@ def ctr_check(**overrides):
 
 
 class RecognitionTest(unittest.TestCase):
+    def internal_intent(self, db):
+        return bound_intent(db, {'optocouplers': {'schema_version': 2, 'optocouplers': [
+            {'id': 'opto', 'ref': 'OK1', 'drive': 'resistor', 'citation': 'synthetic circuit',
+             'internal_pullup': {'node': 'U2.1', 'resistance_ohm': {'min': 17000, 'max': 23000},
+                                 'bias_v': {'min': 3, 'max': 3.6}, 'states': ['run'],
+                                 'citation': 'Synthetic receiver table p2, always enabled in run'}}]}})
+
+    def test_internal_pullup_suppresses_only_missing_resistor_not_ctr_checks(self):
+        db = opto_board(pullup=False)
+        intent = self.internal_intent(db)
+        self.assertEqual(validate_optocoupler_intent(intent, db), [])
+        self.assertNotIn('PRO-A04', [f['rule'] for f in findings(db, intent)])
+        plan = build_review_plan(db, intent=intent)
+        self.assertTrue(any(c['rule'] == 'PRO-E01' and c['readiness'] != 'READY' for c in plan['checks']))
+
+    def test_wrong_pin_state_invalid_bounds_or_missing_citation_never_clear_candidate(self):
+        for field, value in [('node', 'U2.2'), ('states', ['off']), ('citation', ''),
+                             ('resistance_ohm', {'min': 0, 'max': 20000})]:
+            with self.subTest(field=field):
+                db = opto_board(pullup=False)
+                intent = self.internal_intent(db)
+                intent['optocouplers']['optocouplers'][0]['internal_pullup'][field] = value
+                item = optos_of(build_inventory(db, intent), 'run')['OK1']
+                self.assertIsNone(item['internal_pullup'])
+
+    def test_unpopulated_receiver_does_not_supply_internal_pullup(self):
+        db = opto_board(pullup=False)
+        intent = self.internal_intent(db)
+        intent['assemblies'][0]['population']['U2'] = False
+        self.assertIn('PRO-A04', [f['rule'] for f in findings(db, intent)])
+
     def test_complete_optocoupler_has_no_findings(self):
         db = opto_board()
         item = optos_of(build_inventory(db))['OK1']

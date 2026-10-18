@@ -17,10 +17,16 @@ finding 的 remediation、handoff）后重新生成。下文各节规定这些�
                   "suggestion": "SR 该怎么改（规则、别名、模型或说明）"}]}
 ```
 
-`sr_feedback` 记录审查中发现的 SR 自身问题，按 `kind` 分四类：`false_alarm`（误报）、`over_strict`（规则过严或关闭
+`sr_feedback` 记录审查中发现的 SR 自身问题，按 `kind` 分类：`false_alarm`（误报）、`over_strict`（规则过严或关闭
 条件不合理）、`missed`（漏报：问题是审查者自己找到的）、`unclear`（说明不清或互相矛盾）。每条必须点名规则编号、
 本板实例和建议；格式不对时 `render_report.py` 报错退出，不静默丢弃。它渲染为“对 SR 技能的反馈”一节，
 与“审查工具的不足”分开：后者只收工具拦住、审查者已手工判定的检查（`manual_verification`）。
+
+程序错误用 `software_bug`，自动化模型或输入格式不足用 `coverage_gap`，不要把专家流程已发现的错误说成整轮漏检。
+首页只突出已确认的电路/文档错误、仍待确认的事项及其潜在 P0 数、能否定稿和待办；
+检查行计数只在“数字一览”展示，同一原因跨多规则/状态展开不重复计成多件问题。
+工具维护反馈与逐项规则解释默认放在可展开的 `<details>` 中，完整依据、关闭条件和原始台账照常保留。
+简洁不通过删除未解决项、降低等级或截断唯一关闭条件来实现。
 
 notes 不能改结论或计数，不写内部代码名（gap_cause、documented 等），不重复任务字段已有的内容。
 任务的 title / root_cause / reason / next_action、input_requests 和 handoff 会原样进报告，按写给硬件工程师的白话写：

@@ -36,9 +36,9 @@ class RenderReportTests(unittest.TestCase):
         self.assertTrue(gate['valid'], gate['errors'])
         lines = [l for l in text.splitlines() if l.strip()]
         self.assertEqual(lines[1], '## 结论')
-        self.assertTrue(lines[2].startswith('- **检查结果**：共 %d 条。通过（PASS） ' % len(r['checks'])))
-        self.assertIn('资料不足无法判断（INSUFFICIENT） 1 条', lines[2])
-        self.assertEqual(lines[3], '- **发现的错误**：0 处。')
+        self.assertEqual(lines[2], '- **发现的错误**：0 处。')
+        self.assertIn('仍待确认**：1 件事项', lines[3])
+        self.assertNotIn('**检查结果**', body(text))
         self.assertTrue(lines[4].startswith('- **能否定稿**：还不能定稿。还差：'))
         self.assertIn('1 件待办没解决（同一原因合并，涉及 1 条缺资料或设计依据的检查）', lines[5])
         section = text.split('## 待办')[1]
@@ -93,7 +93,7 @@ class RenderReportTests(unittest.TestCase):
         self.assertIn('不影响原理图定稿', section)
         self.assertIn('| 与本产品无关（NA） | 0 |', text)
         self.assertIn('| 原理图阶段不判、交给后续环节 | 1 |', text)
-        self.assertIn('原理图阶段不判、交给后续环节 1 条', text)
+        self.assertIn('| 原理图阶段不判、交给后续环节 | 1 |', text)
         self.assertNotIn('NA，', text)
         self.assertNotIn('## 待办', text)
 
@@ -156,7 +156,8 @@ class RenderReportTests(unittest.TestCase):
         key = r['checks'][0]['id']
         r['findings'][0]['check_ids'] = [key]
         text, _ = report(p, r, db)
-        self.assertIn('没通过（FAIL） 1 条（%s → 问题 F1）' % key, text)
+        self.assertIn('### F1', text)
+        self.assertIn('| 通过 / 没通过 / 资料不足无法判断 | 6 / 1 / 0 |', text)
         self.assertIn('- **涉及的检查**：%s（没通过）' % key, text)
 
     def test_invalid_records_are_flagged_before_anything_else(self):
@@ -272,6 +273,21 @@ class ReportWordingTests(unittest.TestCase):
         self.assertEqual(jargon_in('按remediation同步fit清单，交下游'), ['下游', 'remediation', 'fit'])
         self.assertEqual(jargon_in('Q201 栅极经 R203 到 PFC_GATE，fitted 状态'), [])
 
+    def test_root_gap_count_not_check_count_and_details_preserve_evidence(self):
+        from test_check_explanations import synthetic
+        p, r = synthetic(['FAIL', 'INSUFFICIENT'])
+        gap = next(c for c in r['checks'] if c['review_result'] == 'INSUFFICIENT')
+        gap['potential_severity'] = 'P0'
+        task = {'id': 'W1', 'title': 'single cause', 'check_ids': [gap['id']]}
+        text = render(p, r, {'valid': True, 'workflow': {'work_items': [task]}},
+                      {'sr_feedback': [{'kind': 'software_bug', 'rules': ['DOC-Q01'],
+                                        'instance': 'path error', 'suggestion': 'verify archive'}]})
+        self.assertIn('仍待确认**：1 件事项，其中 1 件', text)
+        self.assertIn('<summary>展开逐项依据与关闭条件（完整保留）</summary>', text)
+        self.assertIn('本次结论依据', text)
+        self.assertEqual(text.count('<details>'), text.count('</details>'))
+        self.assertIn('已复现的程序错误', text)
+
 
 class PackReviewTests(unittest.TestCase):
     def setUp(self):
@@ -299,6 +315,51 @@ class PackReviewTests(unittest.TestCase):
 
     def run_pack(self):
         return pack(self.out, self.ledger, str(self.work), {'requirements': str(self.inputs)})
+
+    def cite(self, source):
+        path = self.work / 'review-results.json'
+        data = json.loads(path.read_text())
+        data['checks'][0]['evidence'].append({'source': str(source), 'locator': 'test'})
+        path.write_text(json.dumps(data))
+
+    def test_absolute_declared_input_is_not_a_packed_member(self):
+        self.cite(self.inputs / 'spec.md')
+        errors, manifest = self.run_pack()
+        self.assertEqual(errors, [])
+        self.assertFalse(any('spec.md' in k for k in manifest['packed']))
+        from pack_review import packed_errors
+        self.assertEqual(packed_errors(self.out, manifest['packed']), [])
+
+    def test_absolute_undeclared_input_cannot_hide_inside_input_directory(self):
+        self.cite(self.work / 'debug.log')
+        errors, _ = self.run_pack()
+        self.assertTrue(any('debug.log' in e for e in errors), errors)
+
+    def test_parent_traversal_and_source_symlink_are_rejected(self):
+        self.cite('../inputs/spec.md')
+        (self.work / 'escape.md').symlink_to(self.inputs / 'spec.md')
+        self.cite('escape.md')
+        errors, _ = self.run_pack()
+        self.assertTrue(any('unsafe evidence path' in e for e in errors), errors)
+        self.assertTrue(any('escapes work directory' in e for e in errors), errors)
+
+    def test_target_symlink_does_not_overwrite_original(self):
+        target = self.out / RECORD / 'evidence' / 'calc'
+        target.mkdir(parents=True)
+        (target / 'startup.md').symlink_to(self.inputs / 'spec.md')
+        errors, _ = self.run_pack()
+        self.assertTrue(any('escapes archive' in e for e in errors), errors)
+        self.assertEqual((self.inputs / 'spec.md').read_text(), 'requirement')
+
+    def test_manifest_verifier_rejects_missing_tampered_and_escaping_entries(self):
+        from pack_review import packed_errors
+        _, manifest = self.run_pack()
+        p = self.out / RECORD / 'evidence' / 'calc' / 'startup.md'
+        p.write_text('tampered')
+        self.assertTrue(any('hash mismatch' in e for e in packed_errors(self.out, manifest['packed'])))
+        p.unlink()
+        self.assertTrue(any('file missing' in e for e in packed_errors(self.out, manifest['packed'])))
+        self.assertTrue(packed_errors(self.out, {'../inputs/spec.md': 'unused'}))
 
     def test_record_holds_ledger_and_cited_evidence_only(self):
         errors, manifest = self.run_pack()

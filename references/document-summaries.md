@@ -36,6 +36,31 @@ Calculation summary: total=15; SUPPORTED=6; CONDITIONAL=9; FAIL=0
 
 ## 结果与处置
 
+### ASG 父计算与子不等式格式
+
+另支持 ASG 的非空计算 list（每项 `id/conclusion/coverage/checks`），以及执行后的
+`preflight-delivery.json`（`status`、`calculations` 状态 map）。调用时增加
+`--preflight-contract design-preflight.json`，该文件是输入合同，不能代替执行结果。
+适配器只接受合同子项 inputs.evidence 中明确指向当前计算文件、locator 为 `父ID / 检查name` 的关联；
+相对 source 从合同目录及其项目上一级解析。不能按 ID 后缀或相同数量猜对应。
+
+先核合同和执行结果的全部子 ID、子 claim/status、每个父项的子检查覆盖，再汇总父项：任一子项 FAIL 即 FAIL；
+无 FAIL 但有条件、partial、assumptions 或 omitted_terms 的保持 CONDITIONAL；只有完整且无条件才 SUPPORTED。
+重复、未知状态、未对应项保留缺口或矛盾，不能取最后一条来消除问题。`adapter.links` 保留关联路径。
+父计算总数与子检查总数分别保存，不能将 22 项计算与 66 条不等式直接判成资料冲突。
+
+支持当前中文表格的完整行（冒号及标签固定，数量周围允许空格）：
+
+```text
+| 计算：上下界完整 / 只算了一部分 | 0 / 2 |
+| 计算结论：满足 / 有条件满足 / 不满足 | 0 / 2 / 0 |
+```
+
+第一行只核 coverage，第二行核父计算结论；两行不是同一种状态计数。
+窄一致性 PASS 只说明这些受控声明相符，不能证明公式、资料来源或电路通过。
+
+### 对账与结论
+
 逐 ID 检查库存重复/空 ID、与 preflight 集合的双向差集、逐行 claim/status 相等，再分别计算唯一 ID 总数
 与三状态分布，与每个实际原文声明对账。相同计数或相同分布不能隐藏不同 ID 集合或逐项状态对调。
 多份/多处摘要冲突、摘要内部总数与分项和不等、原文数字与可解析库存/结果不等，均为已证资料矛盾。

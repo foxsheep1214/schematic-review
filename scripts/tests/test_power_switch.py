@@ -137,6 +137,14 @@ class RecognitionTest(unittest.TestCase):
     def test_resistive_load_without_damping_is_silent(self):
         self.assertEqual(findings(switch_board(load=None)), [])
 
+    def test_high_side_buck_negative_freewheel_is_not_a_reversed_boost_diode(self):
+        db = switch_board()
+        db['pin2net']['Q1.3'] = 'V12'
+        db['nets']['GND'].remove('Q1.3')
+        db['nets']['V12'].append('Q1.3')
+        add(db, 'D9', '1N4148', [('1', 'A', 'GND'), ('2', 'K', 'SW_OUT')])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+
     def test_half_bridge_midpoint_is_recognised(self):
         db = switch_board(load=None)
         add(db, 'Q2', 'AO3400', [('1', 'G', 'GATE_H'), ('2', 'D', 'V12'), ('3', 'S', 'SW_OUT')])
@@ -436,7 +444,8 @@ class SharedClampTopologyTest(unittest.TestCase):
         db = switch_board(snubber='boost')
         q1 = switches_of(build_inventory(db))['Q1']
         self.assertIn('boost-transfer-diode', [s['type'] for s in q1['snubbers']])
-        self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+        self.assertIn('DRV-D01', {c['rule'] for c in build_review_plan(db)['checks']})
 
     @staticmethod
     def rename(db, old, new):
@@ -460,7 +469,16 @@ class SharedClampTopologyTest(unittest.TestCase):
         types = [s['type'] for s in q1['snubbers']]
         self.assertIn('boost-transfer-diode', types)
         self.assertNotIn('rcd-clamp', types)
-        self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+
+    def test_boost_reversed_or_unpopulated_diode_keeps_candidate(self):
+        for reverse in (True, False):
+            db = switch_board(snubber='boost')
+            if reverse:
+                db['pinname']['D3.1'], db['pinname']['D3.2'] = 'K', 'A'
+            else:
+                db['parts']['D3']['nc'] = True
+            self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
 
     def test_flyback_secondary_net_is_not_the_switch_node_of_another_mosfet(self):
         from test_inductive_load import flyback_board, flyback_intent

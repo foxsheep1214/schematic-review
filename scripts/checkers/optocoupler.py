@@ -20,9 +20,39 @@ MAX_OPTOS = 128
 
 def validate_optocoupler_intent(intent, db=None):
     """校验可选的 optocouplers 配置段。"""
-    return state_lib.section_errors(
+    errors = state_lib.section_errors(
         intent, db, 'optocouplers', item_field='optocouplers', item_key='optocoupler',
-        fields=('id', 'ref', 'drive', 'citation'))
+        fields=('id', 'ref', 'drive', 'citation', 'internal_pullup'))
+    if errors:
+        return errors
+    cfg = (intent or {}).get('optocouplers', {}) if isinstance(intent, dict) else {}
+    for item in cfg.get('optocouplers', []) if isinstance(cfg, dict) else []:
+        if isinstance(item, dict) and 'internal_pullup' in item:
+            errors += internal_pullup_errors(item['internal_pullup'], db)
+    return errors
+
+
+def internal_pullup_errors(pull, db=None):
+    """Only a cited, bounded receiver pin model can explain an absent external resistor."""
+    required = {'node', 'resistance_ohm', 'states', 'citation'}
+    if not isinstance(pull, dict) or not required <= set(pull) <= required | {'bias_v'}:
+        return ['internal_pullup needs node, resistance_ohm, states and citation; optional bias_v']
+    errors = []
+    for field in ('node', 'citation'):
+        if not isinstance(pull[field], str) or not pull[field].strip():
+            errors.append('internal_pullup.' + field + ' must be non-empty text')
+    for field in ('resistance_ohm', 'bias_v'):
+        if field not in pull:
+            continue
+        bounds = hotmath.span(pull[field])
+        if bounds is None or bounds[0] <= 0:
+            errors.append('internal_pullup.' + field + ' needs positive min/max')
+    states = pull['states']
+    if not isinstance(states, list) or not states or not all(isinstance(s, str) and s.strip() for s in states):
+        errors.append('internal_pullup.states needs explicit applicable state IDs')
+    if db is not None and (not isinstance(pull['node'], str) or pull['node'] not in db.get('pin2net', {})):
+        errors.append('internal_pullup.node must be a physical receiver pin in the netlist')
+    return errors
 
 
 class _Scan:
@@ -57,6 +87,17 @@ class _Scan:
         return sorted({ref for ref, other in self.graph.neighbors(net, {ng.RESISTOR})
                        if self.tree.is_rail(other)})
 
+    def _internal_pullup(self, ref, collector):
+        pull = self.declared.get(ref, {}).get('internal_pullup')
+        if pull is None or internal_pullup_errors(pull, self.graph.db):
+            return None
+        receiver = pull['node'].partition('.')[0]
+        if (receiver != ref and self.graph.kind(receiver) == ng.IC
+                and self.graph.is_fitted(receiver) and self.state['id'] in pull['states']
+                and self.graph.pin2net.get(pull['node']) == collector):
+            return pull
+        return None
+
     def optocouplers(self):
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
@@ -77,13 +118,14 @@ class _Scan:
                 'id': slug(ref),
                 'ref': ref,
                 'basis': 'declared' if ref in self.declared else 'topology',
-                'drive': self.declared.get(ref, 'unknown'),
+                'drive': self.declared.get(ref, {}).get('drive', 'unknown'),
                 'led_nets': led_nets,
                 'led_resistors': self._series_resistors(led_nets),
                 'led_drivers': self._drivers(led_nets, ref),
                 'collector_net': collector,
                 'emitter_net': nets['out_emitter'],
                 'output_pullups': self._pullups(collector) if collector else [],
+                'internal_pullup': self._internal_pullup(ref, collector) if collector else None,
                 'gaps': sorted(set(gaps)),
             })
         return sorted(found, key=lambda item: item['id'])[:MAX_OPTOS]
@@ -95,7 +137,7 @@ def build_inventory(db, intent=None):
     declared = {}
     for item in (cfg or {}).get('optocouplers', []) if isinstance(cfg, dict) else []:
         if isinstance(item, dict) and isinstance(item.get('ref'), str):
-            declared[item['ref']] = item.get('drive') or 'declared'
+            declared[item['ref']] = item
     excluded = state_lib.excluded_refs(cfg)
     gaps = [] if cfg else ['intent.optocouplers: 未声明驱动方式']
     return inv.build(db, intent, 'optocouplers', 'optocouplers',
@@ -162,7 +204,7 @@ class OptocouplerChecker(Checker):
                          head + '：LED 回路 ' + '、'.join(item['led_nets'])
                          + ' 上未见限流电阻；若为恒流驱动需在 intent 中声明并给出出处',
                          item['ref'])
-            if item['collector_net'] and not item['output_pullups']:
+            if item['collector_net'] and not item['output_pullups'] and not item.get('internal_pullup'):
                 lint.add('PRO-A04', self.cold_rules['PRO-A04'],
                          head + '：输出集电极网 ' + item['collector_net']
                          + ' 上未见到电源轨的上拉电阻；若由接收端内部上拉或有源负载需给出证据',
