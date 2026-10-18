@@ -12,6 +12,7 @@ import sys
 import boost_switch_loss
 import fault_energy
 import flyback_stop
+import model_bounds
 import zener_fault
 
 FUNCTIONS = {
@@ -21,6 +22,8 @@ FUNCTIONS = {
     'fault_energy.capacitor_energy_window': fault_energy.capacitor_energy_window,
     'flyback_stop.post_stop_capacitor_bound': flyback_stop.post_stop_capacitor_bound,
     'flyback_stop.primary_on_sr_platform': flyback_stop.primary_on_sr_platform,
+    'model_bounds.ntc_resistance_bounds': model_bounds.ntc_resistance_bounds,
+    'model_bounds.cc_discharge_with_tail': model_bounds.cc_discharge_with_tail,
     'zener_fault.trip_drive': zener_fault.trip_drive,
     'zener_fault.no_trip_budget': zener_fault.no_trip_budget,
     'zener_fault.hold_charge': zener_fault.hold_charge,
