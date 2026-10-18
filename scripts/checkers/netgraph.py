@@ -8,12 +8,13 @@
 import re
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
-# 可带 RAIL_ 前缀（RAIL_3V3_PRI）；HV/HV80_IN/HV_BIAS 是高压轨（HVEN、HV_EN 是使能）；
-# 含 _FB/_FBACK/_SENSE/_SNS 段的是反馈或检测线；以 _N/_NEG/_RTN/_RET/- 结尾的是回流
+# 可带 RAIL_ 前缀（RAIL_3V3_PRI）；VSYS/VMOT/VLED/VM、P5V/P3V3 也是轨名；HV/HV80_IN/HV_BIAS 是高压轨（HVEN、HV_EN 是使能）；
+# 含 _FB/_FBACK/_SENSE/_SNS/_DET/_PG/_MON 段的是反馈、检测或状态线（VCC_EN 可能是受控轨，不排除）；以 _N/_NEG/_RTN/_RET/- 结尾的是回流
 # （如 VOUT_N、VIN-、VBAT_NEG），不是电源轨。
 RAIL_RE = re.compile(
-    r'^\+?(?:RAIL_)?(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+(?:\.[0-9]+)?V|HV(?=$|\d|[_+](?!EN)))'
-    r'(?!.*(?:[_-](?:N|NEG|RTN|RET|MINUS)|-)$)(?!.*[_-](?:FB|FBACK|FEEDBACK|SENSE|SNS)(?:$|[_-]))', re.I)
+    r'^\+?(?:RAIL_)?(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|VSYS|VMOT|VLED|VM(?=$|\d|_)|V\d|P\d+V\d*'
+    r'|[0-9]+(?:\.[0-9]+)?V|HV(?=$|\d|[_+](?!EN)))'
+    r'(?!.*(?:[_-](?:N|NEG|RTN|RET|MINUS)|-)$)(?!.*[_-](?:FB|FBACK|FEEDBACK|SENSE|SNS|DET|DETECT|PG|PGOOD|MON)(?:$|[_-]))', re.I)
 
 RESISTOR, CAPACITOR, INDUCTOR, FERRITE = 'resistor', 'capacitor', 'inductor', 'ferrite'
 DIODE, TVS, ZENER, MOSFET, BJT = 'diode', 'tvs', 'zener', 'mosfet', 'bjt'
@@ -243,8 +244,18 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     return UNKNOWN, 'no classification evidence'
 
 
+# A ground by its name token: GND with up to a 3-character unseparated prefix (SGND, PGND, CHGND) and a
+# short domain suffix (GND_ISO, GNDA, GND2), or 0V. Kelvin/sense/detect lines to ground are signals.
+GROUND_NAME_RE = re.compile(r'^[A-Z0-9]{0,3}GND(?:[_-]?([A-Z0-9]{1,6}))?$')
+GROUND_SIGNAL_SUFFIXES = {'SENSE', 'SNS', 'KELVIN', 'DET', 'FB', 'EN', 'SW'}
+
+
 def is_ground(net):
-    return normalize(net) in GNDS
+    name = normalize(net).rsplit('/', 1)[-1]
+    if name in GNDS or name == '0V':
+        return True
+    match = GROUND_NAME_RE.match(name)
+    return bool(match) and match.group(1) not in GROUND_SIGNAL_SUFFIXES
 
 
 # _P/_N 命名的电流/电压采样对（CS_P/CS_N、ISENSE+/-、SNS_P 等）是模拟测量，不是差分数据链路。

@@ -132,6 +132,39 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual(item['applicability'], 'UNDETERMINED')
 
 
+class SeriesFilterTest(unittest.TestCase):
+    """典型电路基准：LDO 输出进 π 型滤波、D 类功放输出 LC 滤波，电感不是需要续流的开关负载。"""
+
+    def rules(self, db):
+        return [f['rule'] for f in Lint(db, '').run() if f['rule'] in ('DRV-A01', 'DRV-A02')]
+
+    def base(self):
+        return {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {},
+                'pseudo_nets': [], 'ref2page': {}}
+
+    def test_ldo_output_into_pi_filter_is_not_a_load(self):
+        db = self.base()
+        add(db, 'U1', 'LDO', [('1', 'IN', 'V5'), ('2', 'GND', 'GND'), ('3', 'OUT', 'LDO_OUT')])
+        add(db, 'C1', '10uF', [('1', '1', 'LDO_OUT'), ('2', '2', 'GND')])
+        add(db, 'L1', 'INDUCTOR-10UH', [('1', '1', 'LDO_OUT'), ('2', '2', 'AVDD')])
+        add(db, 'C2', '10uF', [('1', '1', 'AVDD'), ('2', '2', 'GND')])
+        self.assertEqual(self.rules(db), [])
+
+    def test_class_d_output_filter_is_not_a_load(self):
+        db = self.base()
+        add(db, 'U1', 'AMP', [('1', 'OUTP', 'AMP_P'), ('2', 'PVDD', 'V12'), ('3', 'GND', 'GND')])
+        add(db, 'L1', 'INDUCTOR-22UH', [('1', '1', 'AMP_P'), ('2', '2', 'SPK_P')])
+        add(db, 'C1', '680nF', [('1', '1', 'SPK_P'), ('2', '2', 'GND')])
+        self.assertEqual(self.rules(db), [])
+
+    def test_coil_from_driver_output_to_supply_rail_still_needs_a_clamp(self):
+        db = self.base()
+        add(db, 'U1', 'DRIVER', [('1', 'OUT1', 'COIL_DRV'), ('2', 'VCC', 'V12'), ('3', 'GND', 'GND')])
+        add(db, 'L1', 'INDUCTOR-SOLENOID', [('1', '1', 'COIL_DRV'), ('2', '2', 'V12')])
+        add(db, 'C1', '100uF', [('1', '1', 'V12'), ('2', '2', 'GND')])
+        self.assertEqual(self.rules(db), ['DRV-A01'])
+
+
 class IntentTest(unittest.TestCase):
     def intent(self, db, **overrides):
         cfg = {'schema_version': 2,

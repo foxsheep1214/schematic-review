@@ -497,9 +497,22 @@ class _Scan:
                 continue
             if kind != ng.RELAY and self._is_converter_node(switch_net):
                 continue
+            if kind == ng.INDUCTOR and basis != 'declared' and self._series_filter(switch_net, rail_net, switch_ref):
+                continue
             found.append(self._entry(ref, kind, switch_net, rail_net, switch_ref, basis, gaps))
         found.extend(self._external_loads())
         return sorted(found, key=lambda item: item['id'])[:MAX_LOADS]
+
+    def _grounded_cap(self, net):
+        return any(ng.is_ground(other) for _, other in self.graph.neighbors(net, {ng.CAPACITOR}))
+
+    def _series_filter(self, driven_net, far_net, switch_ref):
+        """An IC output feeding an LC filter (LDO into a pi filter, class-D into its output filter):
+        a capacitor to ground on the driven side, or on a far side that is not a supply rail.
+        A coil from an IC output to a supply rail stays a switched load."""
+        if self.graph.kind(switch_ref) != ng.IC:
+            return False
+        return self._grounded_cap(driven_net) or (not self.tree.is_rail(far_net) and self._grounded_cap(far_net))
 
     def _external_loads(self):
         """经连接器外接、仅有网名线索的负载：只作候选，需 intent 确认。"""

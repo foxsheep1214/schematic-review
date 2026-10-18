@@ -26,7 +26,7 @@ import sys
 from collections import Counter
 from checkers import REGISTRY, passive_stress, registry_cold_rules, registry_hot_rules
 from checkers import powertree
-from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, GNDS, RAIL_RE, CONNECTOR, IC, MOSFET, TVS, UNKNOWN, ZENER, NetGraph, is_analog_sense_pair, normalize
+from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, RAIL_RE, is_ground, CONNECTOR, IC, MOSFET, TVS, UNKNOWN, ZENER, NetGraph, is_analog_sense_pair, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
@@ -623,7 +623,7 @@ class ReviewPlanner:
 
         # 每条电源轨分别检查拓扑（连接追踪）和功耗预算（工程计算）。
         for net in sorted(nets):
-            if net in pseudo or net in GNDS or not RAIL_RE.match(net):
+            if net in pseudo or is_ground(net) or not RAIL_RE.match(net):
                 continue
             self.add_check('PWR-T01', {'net': net}, trigger=[f'rail-name:{net}'])
             budget = self.intent.get('power_rails', {}).get(net, {})
@@ -704,7 +704,7 @@ class ReviewPlanner:
         requirements = self._materials_gap(['requirements'])
 
         def grounded(net):
-            return net in GNDS or bool(GROUND_RE.match(str(net).rsplit('/', 1)[-1]))
+            return is_ground(net) or bool(GROUND_RE.match(str(net).rsplit('/', 1)[-1]))
 
         def window(obj, gaps, trigger, gate_clamp=False):
             for side, criterion in WINDOW_SIDES:

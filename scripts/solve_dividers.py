@@ -23,7 +23,13 @@ import sys
 from fractions import Fraction
 from itertools import product
 
-GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
+
+def is_ground(net):
+    # checkers imports this module; resolve the shared ground test at call time.
+    from checkers.netgraph import is_ground as shared
+    return shared(net)
+
+
 RAIL_RE = re.compile(
     r'^(VCC|VBAT|VDD|VOUT|AVDD|DVDD|VIN|VBUS|3V3|5V|1V|2V|0V)', re.I)
 LINEAR_MAX_RESISTORS = 20
@@ -343,11 +349,11 @@ class Solver:
         # 起始反馈网本身可能叫 VOUT_SENSE，不能在尚未跨过电阻时误当电源端。
         reference = self.model.get('reference_net')
         source = self.model.get('source_net')
-        if segments and ((reference and net == reference) or (not reference and net in GNDS)):
+        if segments and ((reference and net == reference) or (not reference and is_ground(net))):
             return [{'terminal': net, 'is_reference': True, 'segments': segments}]
         if segments and ((source and net == source) or (not source and RAIL_RE.match(net))):
             return [{'terminal': net, 'segments': segments}]
-        if segments and ((reference and net in GNDS and net != reference)
+        if segments and ((reference and is_ground(net) and net != reference)
                          or (source and RAIL_RE.match(net) and net != source)):
             self.issues.append(f'{net}: 未声明的电源/参考边界')
             return []
@@ -472,7 +478,7 @@ class Solver:
                 raise ValueError(f'{net}: 伪网不能进入节点模型')
             if net in (source, reference):
                 continue
-            if net != fbnet and (net in GNDS or RAIL_RE.match(net)):
+            if net != fbnet and (is_ground(net) or RAIL_RE.match(net)):
                 raise ValueError(f'{net}: 未声明的电源/参考边界')
             for node in self.nets[net]:
                 ref = node.split('.')[0]

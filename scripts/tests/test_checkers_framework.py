@@ -363,17 +363,17 @@ class PowerTreeTest(unittest.TestCase):
               'pseudo_nets': ['NC'], 'ref2page': {}}
         add = relay_fixture.add
         add(db, 'U1', 'BUCK', [('1', 'VIN', '+12V'), ('2', 'SW', 'SW_NODE'),
-                               ('3', 'GND', 'GND'), ('4', 'VOUT', 'P3V3')])
-        add(db, 'L1', 'IND-4U7', [('1', '1', 'SW_NODE'), ('2', '2', 'P3V3')])
-        add(db, 'U2', 'SOC', [('1', 'VDD', 'P3V3'), ('2', 'GND', 'GND'),
+                               ('3', 'GND', 'GND'), ('4', 'VOUT', 'MAIN_PWR')])
+        add(db, 'L1', 'IND-4U7', [('1', '1', 'SW_NODE'), ('2', '2', 'MAIN_PWR')])
+        add(db, 'U2', 'SOC', [('1', 'VDD', 'MAIN_PWR'), ('2', 'GND', 'GND'),
                               ('3', 'IO', 'VCC_UNFED')])
         add(db, 'C9', '100nF', [('1', '1', 'NC'), ('2', '2', 'GND')])
         return db, powertree.PowerTree(ng.NetGraph(db))
 
     def test_output_pin_makes_a_rail_the_name_regex_misses(self):
         _, tree = self.board()
-        self.assertFalse(ng.is_rail('P3V3'))             # 轨名正则认不出
-        self.assertEqual(tree.rail_basis('P3V3'), powertree.DRIVER)
+        self.assertFalse(ng.is_rail('MAIN_PWR'))             # 轨名正则认不出
+        self.assertEqual(tree.rail_basis('MAIN_PWR'), powertree.DRIVER)
 
     def test_switch_node_is_not_a_rail_despite_reaching_the_output(self):
         _, tree = self.board()
@@ -399,15 +399,15 @@ class PowerTreeTest(unittest.TestCase):
     def test_name_only_rail_identity_is_recorded_as_a_gap(self):
         db, _ = self.board()
         add = relay_fixture.add
-        add(db, 'U3', 'SUPERVISOR', [('1', 'VCC', 'P3V3'), ('2', 'SENSE', 'SENSE_3V3'),
+        add(db, 'U3', 'SUPERVISOR', [('1', 'VCC', 'MAIN_PWR'), ('2', 'SENSE', 'SENSE_3V3'),
                                      ('3', 'WDI', 'WDI'), ('4', 'RESET', 'RST_N'),
                                      ('5', 'GND', 'GND')])
         db['pintype']['U3.4'] = 'OUT'
         add(db, 'U4', 'SENSOR', [('1', 'VDD', 'VCC_UNFED'), ('2', 'GND', 'GND')])
         rails = {rail['net']: rail for state in supervision_inventory(db)['states']
                  for rail in state['rails']}
-        self.assertEqual(rails['P3V3']['basis'], powertree.DRIVER)
-        self.assertEqual(rails['P3V3']['gaps'], [])
+        self.assertEqual(rails['MAIN_PWR']['basis'], powertree.DRIVER)
+        self.assertEqual(rails['MAIN_PWR']['gaps'], [])
         self.assertEqual(rails['VCC_UNFED']['basis'], powertree.NAME_HINT)
         self.assertEqual(rails['VCC_UNFED']['gaps'], ['rail-identity:VCC_UNFED'])
 

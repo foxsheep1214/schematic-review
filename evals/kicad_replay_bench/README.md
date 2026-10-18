@@ -16,7 +16,9 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率
 `--contract legacy` 用于重放历史契约，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认契约是 `testpoint-kind-v1`（`revisions/testpoint-kind-v1/`，2026-10-18）：库条目名为 TestPoint 的符号（`Connector:TestPoint`、`SparkFun-Connector:TestPoint_1.0mm`）按测试点归类、不再套连接器检查，只把 r01 的检查数由 186 改为 178，其余答案不变。
+当前默认契约是 `name-heuristics-v1`（`revisions/name-heuristics-v1/`，2026-10-18）：统一地名与轨名判定、原生 power_out 脚作为电源来源；r03 检查数 311→313（VSYS 识别为轨），r05 64→65（PWR-T04），其余答案不变。
+
+此前的默认契约是 `testpoint-kind-v1`（`revisions/testpoint-kind-v1/`，2026-10-18）：库条目名为 TestPoint 的符号（`Connector:TestPoint`、`SparkFun-Connector:TestPoint_1.0mm`）按测试点归类、不再套连接器检查，只把 r01 的检查数由 186 改为 178，其余答案不变。
 
 此前的默认契约是 `real-flyback-v1`（`revisions/real-flyback-v1/`，2026-10-17）：在 `threshold-window-v1` 的 9 个用例上
 新增两块公开反激板的 3 个用例，父版本答案逐字段不变。上游为 KiCad 10/8 格式，降级与导出步骤及独立核对工具见

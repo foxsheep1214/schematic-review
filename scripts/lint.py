@@ -31,6 +31,7 @@ from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
 from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID, registry_hot_rules
+from checkers import netgraph as ng
 from checkers.netgraph import (CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER, TVS,
                                TWO_TERMINAL, NetGraph, rail_voltage as _volt)
 from electrical_contract import bounded, db_fingerprint, load_json, readiness_gaps, validate_evidence
@@ -40,7 +41,6 @@ import board_intent
 from plan_review import build_review_plan, validate_intent
 from solve_dividers import Solver, divider_window, linear_feedback_window, parse_resistor
 
-GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
 # 导出日志分级（英文与中文界面）：导出错误/中止、批注错误、其他告警。退出码 0 不等于没有告警。
 EXPORT_ERROR_RE = re.compile(r'ERROR\s*\(|Aborting Netlisting|错误\s*[（(]|中止|已终止', re.I)
 EXPORT_ANNOTATION_RE = re.compile(r'annotation error|not (?:fully )?annotated|批注错误|标注错误|未(?:完全)?标注', re.I)
@@ -60,8 +60,9 @@ def export_log_kind(line):
     return None
 
 
-RAIL_RE = re.compile(
-    r'^\+?(VCC|VDD|VDDA|VCCA|VOUT|VBAT|AVDD|DVDD|VIN|VBUS|V\d|[0-9]+(?:\.[0-9]+)?V)', re.I)
+SUPPLY_PIN_RE = re.compile(r'^(VDD|VCC|AVDD|DVDD|VBAT|VDDA|VDDIO|VCCA|VCCIO)\w*$'
+                           r'(?<![_-]DET)(?<![_-]SENSE)(?<![_-]SNS)(?<![_-]EN)(?<![_-]PG)(?<![_-]MON)', re.I)
+RAIL_RE = ng.RAIL_RE   # one rail-name test: excludes _FB/_SENSE lines and _N/_RTN returns
 OUTPIN_RE = re.compile(r'^(VOUT|SW|OUT|VO|LX|\+VO)', re.I)
 EN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN)(_|\d|$)', re.I)
 CLAMP_RE = re.compile(r'ZENER|TVS|BZT|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)
@@ -175,7 +176,7 @@ class Lint:
         pulls = []
         for link in self.resistor_links(net):
             other = link['other']
-            if other in GNDS:
+            if ng.is_ground(other):
                 pulls.append(dict(link, state='low', voltage=0.0))
             elif RAIL_RE.match(other) or _volt(other) is not None:
                 pulls.append(dict(link, state='high', voltage=_volt(other)))
@@ -215,6 +216,12 @@ class Lint:
 
     def driven(self, net):
         return self.power_path(net) is not None
+
+    def _external_entry(self, net):
+        """Fitted connector contacts on the net: an off-board supply entry, not an on-board source."""
+        return sorted({node for node in self.graph.nodes_on(net)
+                       if self.graph.kind(node.partition('.')[0]) == CONNECTOR
+                       and self.graph.is_fitted(node.partition('.')[0])})
 
     # -- rules -----------------------------------------------------------
     def _relay_nc_contact(self, net, nodes):
@@ -360,30 +367,40 @@ class Lint:
             if not any(r[0] in 'UJMY' for r in rs):
                 self.add('NET-A03', '自动命名网仅含无源件', f'{n}: {sorted(rs)}')
 
-        # PWR-A01 电源轨无驱动
+        # PWR-A01 电源轨无驱动；只经连接器触点进板的轨是外部供电，记候选而不是疑似缺陷
         for n, nds in nets.items():
-            if n in GNDS or n in self.pseudo or not RAIL_RE.match(n):
+            if ng.is_ground(n) or n in self.pseudo or not RAIL_RE.match(n):
                 continue
             if not self.driven(n):
-                self.add('PWR-A01', '电源轨疑似无驱动',
-                         f'{n} ({len(nds)}节点): {sorted(self.refs_of(n))[:6]}')
+                entry = self._external_entry(n)
+                if entry:
+                    self.add('PWR-A01', '电源轨只经连接器进板',
+                             f'{n}: 板上无来源，经 {entry[:4]} 由外部供电；核对端供电与反灌', kind='CANDIDATE')
+                else:
+                    self.add('PWR-A01', '电源轨疑似无驱动',
+                             f'{n} ({len(nds)}节点): {sorted(self.refs_of(n))[:6]}')
 
-        # PWR-A02 电源脚无驱动 / 无网络
-        for node, pn in pinname.items():
-            if not re.search(r'(VDD|VCC|AVDD|DVDD|VBAT)', pn, re.I):
+        # PWR-A02 电源脚无驱动 / 无网络：器件自己的供电脚（原生 power_in 或供电脚名），连接器触点不算
+        native = self.db.get('native_pintype') or {}
+        for node in sorted(set(pinname) | {k for k, t in native.items() if t == 'power_in'}):
+            pn = pinname.get(node, '')
+            ref = node.split('.')[0]
+            if self.graph.kind(ref) in (CONNECTOR, ng.TESTPOINT):
+                continue
+            if not (SUPPLY_PIN_RE.match(pn) or native.get(node) == 'power_in'):
                 continue
             n = pin2net.get(node)
-            ref = node.split('.')[0]
             if n is None:
                 self.add('PWR-A02', '电源球无网络', f'{node} ({pn})', ref)
-            elif n not in self.pseudo and not self.driven(n):
+            elif (n not in self.pseudo and not ng.is_ground(n) and not self.driven(n)
+                  and not self._external_entry(n)):
                 self.add('PWR-A02', '电源球所在轨无驱动', f'{node} ({pn}) <- {n}', ref)
 
         # PWR-A03 地脚未入地
         for node, pn in pinname.items():
             if re.match(r'^(VSS|AVSS|DVSS)', pn, re.I):
                 n = pin2net.get(node)
-                if n not in GNDS:
+                if not ng.is_ground(n):
                     self.add('PWR-A03', 'VSS 球未入地',
                              f'{node} ({pn}) <- {n}', node.split('.')[0])
         self._ground_islands()
@@ -416,7 +433,7 @@ class Lint:
                         f'{net}: {[node for node, _ in typed]}',
                         kind='CANDIDATE')
                 for node, kind in typed:
-                    if kind == 'GROUND' and net not in GNDS:
+                    if kind == 'GROUND' and not ng.is_ground(net):
                         self.add(
                             'NET-A06', 'GROUND 类型引脚未接已知地网',
                             f'{node} -> {net}', node.split('.')[0],
@@ -513,9 +530,9 @@ class Lint:
             if not CLAMP_RE.search(blob):
                 continue
             ends = self.ends(ref)
-            if len(ends) != 2 or not any(e in GNDS for e in ends):
+            if len(ends) != 2 or not any(ng.is_ground(e) for e in ends):
                 continue
-            rails = [e for e in ends if e not in GNDS]
+            rails = [e for e in ends if not ng.is_ground(e)]
             if not rails:
                 continue
             rail = rails[0]
@@ -651,7 +668,7 @@ class Lint:
             candidates = [x for x in links if x['other'] == destination]
         else:
             candidates = [x for x in links if (
-                x['other'] in GNDS if check.get('direction') == 'down'
+                ng.is_ground(x['other']) if check.get('direction') == 'down'
                 else RAIL_RE.match(x['other']))]
         limits = check.get('resistance_ohm') or {}
         detail = f"{net}: {check['kind']} -> {destination or '*'}; candidates={candidates}"

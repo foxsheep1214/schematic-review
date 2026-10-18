@@ -167,5 +167,40 @@ class RulePlanTest(unittest.TestCase):
                          {'DEV-A01', 'DEV-A03', 'DOC-A04'})
 
 
+
+class PowerNameHeuristicTest(unittest.TestCase):
+    """名称启发式审计：只凭网名/脚名报出的电源问题要先看原生脚类型、连接器与统一的地名判定。"""
+
+    def rules(self, db, rule):
+        return [f for f in scans(db, rule)]
+
+    def test_connector_fed_rail_is_a_candidate_not_a_finding(self):
+        db = board({'J1': 'Connector:Conn_01x02', 'U1': 'SENSOR'},
+                   {'VCC': ['J1.1', 'U1.1'], 'GND': ['J1.2', 'U1.2']},
+                   pinname={'U1.1': 'VDD', 'U1.2': 'GND', 'J1.1': '1', 'J1.2': '2'})
+        self.assertEqual({f['kind'] for f in scans(db, 'PWR-A01')}, {'CANDIDATE'})
+        self.assertEqual(scans(db, 'PWR-A02'), [])
+
+    def test_native_power_out_drives_a_rail_on_any_refdes(self):
+        db = board({'VR1': 'REG', 'U1': 'SENSOR'},
+                   {'VDD_3V3': ['VR1.2', 'U1.1'], 'GND': ['VR1.3', 'U1.2'], 'VIN_RAW': ['VR1.1']},
+                   pinname={'VR1.1': 'IN', 'VR1.2': 'OUTPUT', 'VR1.3': 'GND', 'U1.1': 'VDD', 'U1.2': 'GND'},
+                   native_pintype={'VR1.2': 'power_out', 'VR1.1': 'power_in', 'U1.1': 'power_in'})
+        self.assertNotIn('VDD_3V3', ' '.join(f['detail'] for f in scans(db, 'PWR-A01')))
+        self.assertEqual([f for f in scans(db, 'PWR-A02') if 'U1.1' in f['detail']], [])
+
+    def test_supply_pin_name_is_anchored(self):
+        db = board({'U1': 'MCU', 'U2': 'LDO'},
+                   {'DET': ['U1.1'], 'V3': ['U1.2', 'U2.2'], 'VIN': ['U2.1'], 'GND': ['U1.3', 'U2.3']},
+                   pinname={'U1.1': 'VDDIO_DET', 'U1.2': 'VDD', 'U1.3': 'GND',
+                            'U2.1': 'IN', 'U2.2': 'OUT', 'U2.3': 'GND'})
+        self.assertEqual([f['detail'] for f in scans(db, 'PWR-A02') if 'U1.1' in f['detail']], [])
+
+    def test_named_signal_grounds_are_grounds(self):
+        db = board({'U1': 'OPAMP'}, {'SGND': ['U1.1'], 'V5': ['U1.2']},
+                   pinname={'U1.1': 'VSS', 'U1.2': 'VDD'})
+        self.assertEqual(scans(db, 'PWR-A03'), [])
+
+
 if __name__ == '__main__':
     unittest.main()

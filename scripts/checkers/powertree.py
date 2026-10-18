@@ -101,6 +101,10 @@ class PowerTree:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'OUT pin beside IN pin (regulator/load-switch shape); '
                                      'verify function and upstream power'}
+                if (graph.db.get('native_pintype') or {}).get(node) == 'power_out':
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'native power_out pin (library electrical type); '
+                                     'verify function and upstream power'}
                 if output_name and graph.pintype.get(node) == 'POWER':
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'power-type output pin name on non-IC refdes; '
