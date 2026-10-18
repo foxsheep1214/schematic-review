@@ -509,16 +509,35 @@ class PowerSwitchChecker(Checker):
                             + ['clamp:%s:%s' % (s['type'], s['ref']) for s in switch['snubbers']],)
                 item['inventory_gaps'] = gaps
 
+    @staticmethod
+    def _untyped_ic_pins(graph, gate_net):
+        """IC pins on the gate net (directly or through a series passive) with no pin direction at all."""
+        native = graph.db.get('native_pintype') or {}
+        nets = [gate_net] + [other for _, other in graph.neighbors(gate_net, ng.PASSIVE_LINKS)]
+        return sorted({node for net in nets for node in graph.nodes_on(net)
+                       if graph.kind(node.partition('.')[0]) == ng.IC
+                       and graph.is_fitted(node.partition('.')[0])
+                       and not graph.pintype.get(node) and node not in native})
+
     def cold_findings(self, lint, inventory):
         for state, switch in inv.walk(inventory, 'switches'):
             if not switch['gate_net'] or switch.get('role') == LEVEL_SHIFTER_ROLE:
                 continue
             head = '%s（%s，状态 %s）' % (switch['ref'], switch['kind'], state['id'])
             if not switch['drivers'] and not switch['gate_pulls']:
-                lint.add('DRV-A03', self.cold_rules['DRV-A03'],
-                         head + '：栅极网 ' + switch['gate_net']
-                         + ' 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定',
-                         switch['ref'])
+                untyped = self._untyped_ic_pins(lint.graph, switch['gate_net'])
+                if untyped:
+                    # Netlists without pin types (OrCAD, hand-drawn libraries): an MCU GPIO may drive the gate.
+                    lint.add('DRV-A03', self.cold_rules['DRV-A03'],
+                             head + '：栅极网 ' + switch['gate_net'] + ' 由 ' + '、'.join(untyped[:3])
+                             + ' 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，'
+                               '并核上电、复位与驱动高阻时栅极状态',
+                             switch['ref'], kind='CANDIDATE')
+                else:
+                    lint.add('DRV-A03', self.cold_rules['DRV-A03'],
+                             head + '：栅极网 ' + switch['gate_net']
+                             + ' 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定',
+                             switch['ref'])
             if switch['switch_node_evidence'] and not [s for s in switch['snubbers']
                                                         if s['type'] != 'boost-transfer-diode']:
                 lint.add('DRV-A04', self.cold_rules['DRV-A04'],

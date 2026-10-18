@@ -87,6 +87,14 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual([f['rule'] for f in hits], ['DRV-A03'])
         self.assertIn('GATE', hits[0]['detail'])
 
+    def test_untyped_ic_pin_on_the_gate_is_a_candidate(self):
+        # 名称启发式审计：没有引脚方向的网表里 MCU 的 PB3 直接驱动栅极，曾报“栅极悬空”。
+        db = switch_board(driver=None, pull=False)
+        add(db, 'U1', 'MCU', [('1', 'PB3', 'GATE'), ('2', 'VDD', 'V12'), ('3', 'GND', 'GND')])
+        hits = [f for f in findings(db) if f['rule'] == 'DRV-A03']
+        self.assertEqual([f['kind'] for f in hits], ['CANDIDATE'])
+        self.assertIn('U1.1', hits[0]['detail'])
+
     def test_gate_pull_alone_is_not_a_finding(self):
         self.assertEqual(findings(switch_board(driver=None, snubber='rc')), [])
 
