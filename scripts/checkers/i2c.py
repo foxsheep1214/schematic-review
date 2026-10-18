@@ -40,11 +40,20 @@ class I2CTopologyChecker(Checker):
                 obj = {'net': region['nets'][0], 'nets': region['nets'], 'state': state['id'],
                        'i2c_region': region['id'], 'i2c_topology_digest': inventory['digest']}
                 key = region['id']
+                access = region.get('access') or {}
+                fixture = access.get('kind') == 'fixture-only'
+                extra = {}
+                if fixture:
+                    extra['criterion'] = (
+                        f"只有 {access['device']} 和测试点 {access['test_points'][:6]}：确认这些焊盘只接生产/调试夹具、"
+                        '运行时没有板载对端；夹具侧上拉、电平和主电源禁能归 DEBUG/配置任务，不按板载总线补上拉')
                 item = planner.add_check(
                     'SIG-T02', obj, key=key,
                     readiness='WAITING_EVIDENCE' if region['gaps'] else 'READY',
-                    required_inputs=region['gaps'], trigger=['i2c-topology:' + key])
+                    required_inputs=region['gaps'], trigger=['i2c-topology:' + key], **extra)
                 item['analysis_required'] = True
+                if fixture:
+                    continue  # no on-board bus: pull-up, address and edge-rate checks have no object
                 for rule in catalog.package('I2C').rules:
                     item = planner.add_check(
                         rule, deepcopy(obj), key=key,

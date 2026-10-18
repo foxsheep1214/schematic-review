@@ -20,9 +20,9 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CONTRACT_REVISION = 'real-flyback-v1'
+CONTRACT_REVISION = 'testpoint-kind-v1'
 REVISIONS = ('legacy', 'page-inventory-v1', 'name-gap-scope-v1', 'passive-stress-v1', 'threshold-window-v1',
-             CONTRACT_REVISION)
+             'real-flyback-v1', CONTRACT_REVISION)
 
 
 def contract_path(name, revision=CONTRACT_REVISION):

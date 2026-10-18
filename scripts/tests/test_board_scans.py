@@ -114,6 +114,12 @@ class I2cPullupTest(unittest.TestCase):
         self.assertEqual({f['kind'] for f in hits}, {'INFO'})
         self.assertIn('夹具', hits[0]['detail'])
 
+    def test_kicad_library_test_point_counts_as_a_test_point(self):
+        # Connector:TestPoint 不能因库名空间被当作连接器。
+        db = board({'U1': 'PD-CTRL', 'X1': 'Connector:TestPoint'},
+                   {'CFG_SDA': ['U1.1', 'X1.1'], 'GND': ['U1.3']})
+        self.assertEqual({f['kind'] for f in scans(db, 'SIG-A03')}, {'INFO'})
+
     def test_resistor_to_ground_is_not_a_pullup(self):
         db = self.bus({'R1': '10K'}, {'SDA': ['R1.1'], 'GND': ['R1.2']})
         self.assertEqual(subjects(scans(db, 'SIG-A03')), ['SCL', 'SDA'])

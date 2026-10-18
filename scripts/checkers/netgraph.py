@@ -65,6 +65,9 @@ KEYWORD_KINDS = (
     # Keep stronger device keywords above and do not treat a bare "terminal" or
     # "header" in an IC description as a connector. This is role evidence only,
     # never a connector pinout/current-rating guarantee.
+    # KiCad places test pads as Connector:TestPoint*; the library entry, not the
+    # namespace, decides that this is a probe/fixture pad rather than a connector.
+    (r'(?:^|[\s:])TEST_?POINT(?:_|\b)', TESTPOINT),
     (r'\bCONNECTOR(?:_[A-Z0-9]+)*:|\bCONN_\d+X\d+\b|'
      r'\bPINHEADER[_:-]|\bTERMINAL_?BLOCK[_:-]|'
      r'\bHEADER_(?:MALE|FEMALE)[_:-]|\bHEADER[-_]\d+X\d+(?:\b|[_:-])|'

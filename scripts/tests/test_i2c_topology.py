@@ -523,5 +523,38 @@ class TopologyTests(unittest.TestCase):
             self.assertFalse((folder / 'bad.json').exists())
 
 
+
+class FixtureAccessTest(unittest.TestCase):
+    """100W PD 复审：CFG_SDA 只接一颗控制器和测试焊盘，不是运行时 I2C 总线。"""
+
+    def board(self, extra=()):
+        db = {'nets': {}, 'pin2net': {}, 'pinname': {}, 'parts': {}, 'pseudo_nets': []}
+        add(db, 'U601', 'PD-CTRL', [('10', 'GPIO2', 'CFG_SDA'), ('11', 'GND', 'GND')])
+        add(db, 'TP601', 'TestPoint', [('1', '1', 'CFG_SDA')])
+        db['parts']['TP601']['prim'] = 'Connector:TestPoint'
+        for ref, value, pins in extra:
+            add(db, ref, value, pins)
+        return db
+
+    def region(self, db):
+        return build_i2c_topology(db)['states'][0]['regions'][0]
+
+    def test_single_device_with_test_pads_is_fixture_only(self):
+        db = self.board()
+        region = self.region(db)
+        self.assertEqual(region['access'], {'kind': 'fixture-only', 'device': 'U601', 'test_points': ['TP601']})
+        self.assertNotIn('confirm-bus-pins-and-pairing', region['gaps'])
+        rows = [c for c in build_review_plan(db)['checks'] if c.get('object', {}).get('i2c_region') == region['id']]
+        self.assertEqual([c['rule'] for c in rows], ['SIG-T02'])
+        self.assertIn('夹具', rows[0]['criterion'])
+
+    def test_second_device_or_pull_up_keeps_the_bus_checks(self):
+        for extra in ([('U602', 'EEPROM', [('5', 'SDA', 'CFG_SDA')])],
+                      [('R601', '4.7K', [('1', '1', 'CFG_SDA'), ('2', '2', 'VCC_3V3')])]):
+            region = self.region(self.board(extra))
+            self.assertNotIn('access', region)
+            self.assertIn('confirm-bus-pins-and-pairing', region['gaps'])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -16,7 +16,9 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率
 `--contract legacy` 用于重放历史契约，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认契约是 `real-flyback-v1`（`revisions/real-flyback-v1/`，2026-10-17）：在 `threshold-window-v1` 的 9 个用例上
+当前默认契约是 `testpoint-kind-v1`（`revisions/testpoint-kind-v1/`，2026-10-18）：库条目名为 TestPoint 的符号（`Connector:TestPoint`、`SparkFun-Connector:TestPoint_1.0mm`）按测试点归类、不再套连接器检查，只把 r01 的检查数由 186 改为 178，其余答案不变。
+
+此前的默认契约是 `real-flyback-v1`（`revisions/real-flyback-v1/`，2026-10-17）：在 `threshold-window-v1` 的 9 个用例上
 新增两块公开反激板的 3 个用例，父版本答案逐字段不变。上游为 KiCad 10/8 格式，降级与导出步骤及独立核对工具见
 `tools/`：`downgrade.mjs`（调用 HubertHQH/kicad-version-converter，GPL-3.0，不随仓库分发）、`k7_power_pins.py`、
 `conn_compare.py`（降级前后连接相关内容逐项比对）、`geo_netlist.py`（在原始文件上自算连通并与导出网表比对）、

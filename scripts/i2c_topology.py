@@ -169,6 +169,10 @@ class Inventory:
             return 'resistor'
         if re.match(r'^JP\d', ref, re.I):
             return 'jumper'
+        part = self.parts.get(ref, {})
+        if re.match(r'^TP\d', ref, re.I) or any(re.search(r'(?:^|[\s:])TEST_?POINT(?:_|\b)', str(part.get(key) or ''), re.I)
+                                                 for key in ('part', 'prim', 'value')):
+            return 'testpoint'
         if re.match(r'^(J|P|CN)\d', ref, re.I):
             return 'connector'
         return 'unmodeled'
@@ -379,6 +383,8 @@ class Inventory:
                                                 'kind': kind, 'populated': present(ref)})
                 if present(ref) is False:
                     continue
+                if kind == 'testpoint':
+                    continue  # probe/fixture pad: no pin role; fixture-only regions are marked below
                 if kind == 'connector':
                     region['gaps'].add('external-port:' + ref)
                 elif kind in BARRIERS:
@@ -425,7 +431,17 @@ class Inventory:
                         region['gaps'].add('sda-scl-connected:' + bus['id'])
         for region in regions:
             if not any(b['origin'] != 'name-hint' for b in region['buses']):
-                region['gaps'].add('confirm-bus-pins-and-pairing')
+                devices = {e['node'].split('.', 1)[0] for e in region['endpoints']
+                           if e['kind'] != 'testpoint' and e['populated'] is not False}
+                pads = sorted({e['node'].split('.', 1)[0] for e in region['endpoints'] if e['kind'] == 'testpoint'})
+                if len(devices) == 1 and pads and not (region['edges'] or region['pullups'] or any(
+                        b['boundary_kind'] == 'passive-stop' for b in region['boundaries'])):
+                    # One device plus probe pads only: the other end and its pull-ups are on a
+                    # production/debug fixture, not an on-board bus to pair and model.
+                    region['access'] = {'kind': 'fixture-only', 'device': min(devices), 'test_points': pads}
+                    region['gaps'].discard('pin-role-or-model:' + min(devices))
+                else:
+                    region['gaps'].add('confirm-bus-pins-and-pairing')
             region['gaps'] = sorted(region['gaps'])
             region['coverage'] = 'INCOMPLETE' if region['gaps'] else 'DISCOVERED'
         return {'id': sid, 'citation': state.get('citation'), 'buses': output_buses,
