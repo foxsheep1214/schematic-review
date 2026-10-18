@@ -85,6 +85,7 @@ def _physical_pin(graph, ref, pin, names, directions):
 
 RAIL_REQUIREMENT_FIELDS = {'net', 'state', 'required', 'criterion', 'citation', 'identity'}
 # 可选：负载 IC 片内监测（UVLO/欠压/掉电检测）作为本轨的监控，须有出处；门限与动作仍另审。
+NATIVE_NON_OUTPUTS = {'input', 'power_in', 'power_out', 'no_connect'}   # passive/unspecified libraries stay open
 INTERNAL_MONITOR_FIELDS = {'node', 'function', 'citation'}
 SOURCE_IDENTITY_FIELDS = {'source_node', 'source_role', 'part', 'pin_name', 'native_pintypes', 'citation'}
 PART_IDENTITY_FIELDS = {'part', 'prim', 'value', 'jedec'}
@@ -700,10 +701,14 @@ class _Scan:
             watchdogs = self.graph.named_pins(ref, WATCHDOG_IN_RE)
             senses = self.graph.named_pins(ref, SENSE_RE)
             manual = self.graph.named_pins(ref, MANUAL_RESET_RE)
+            native = graph.db.get('native_pintype') or {}
+            # A library pin typed input/power is a reset INPUT (e.g. an LED driver's RESET), never a
+            # supervisor output, whatever SENSE/MR pins the part also has.
             outputs = {node: net for node, net in self.graph.named_pins(ref, RESET_OUT_RE).items()
-                       if ng.normalize(graph.pintype.get(node)) in OUT_PINTYPES
-                       or ng.normalize(graph.pinname.get(node)) in {'WDO', 'PFO'}
-                       or watchdogs or senses or manual}
+                       if native.get(node) not in NATIVE_NON_OUTPUTS
+                       and (ng.normalize(graph.pintype.get(node)) in OUT_PINTYPES
+                            or ng.normalize(graph.pinname.get(node)) in {'WDO', 'PFO'}
+                            or watchdogs or senses or manual)}
             if (_exact_model(graph.parts[ref], MODEL_WATCHDOG)
                     and _physical_pin(graph, ref, '4', {'DONE'}, {'input'})
                     and _physical_pin(graph, ref, '6', {'RST', 'RSTN'}, {'open_collector', 'output'})):

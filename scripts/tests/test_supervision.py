@@ -125,6 +125,17 @@ class RecognitionTest(unittest.TestCase):
         self.assertNotIn('U4', supervisors_of(build_inventory(db)))
 
 
+    def test_reset_input_of_a_part_with_sense_pin_is_not_a_supervisor_output(self):
+        # 名称启发式审计：LED 驱动器有 SENSE 脚和 RESET 输入，曾被当作监控器报“复位链中断”。
+        db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {},
+              'pseudo_nets': [], 'ref2page': {}}
+        add(db, 'U8', 'LED-DRIVER', [('1', 'VIN', 'V12'), ('2', 'SENSE', 'ISNS'),
+                                     ('3', 'RESET', 'LED_RST'), ('4', 'GND', 'GND')])
+        add(db, 'R1', '10K', [('1', '1', 'LED_RST'), ('2', '2', 'V12')])
+        db['native_pintype'] = {'U8.1': 'power_in', 'U8.2': 'input', 'U8.3': 'input', 'U8.4': 'power_in'}
+        self.assertNotIn('U8', supervisors_of(build_inventory(db)))
+        self.assertEqual([f['rule'] for f in findings(db) if f['rule'] == 'RST-A06'], [])
+
 class PlanTest(unittest.TestCase):
     def test_plan_covers_reset_path_pulse_and_rail_coverage(self):
         db = supervised_board(extra_rail=True)
