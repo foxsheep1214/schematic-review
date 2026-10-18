@@ -1,0 +1,1076 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>CAD/V1.0.0/Li-ion charger BQ24295 with 5V USB output board.kicad_sch</source>
+    <date>Sun Oct 18 06:06:52 2026</date>
+    <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>Li-ion charger BQ24295 with 5V USB output board</title>
+        <company>SOLDERED</company>
+        <rev>V1.0.0.</rev>
+        <date>2022-07-21</date>
+        <source>Li-ion charger BQ24295 with 5V USB output board.kicad_sch</source>
+        <comment number="1" value="333075"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>1u</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0b7026e6-8b45-47d8-b652-62da512da216</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>EMK316BB7226ML-T</value>
+      <footprint>e-radionica.com footprinti:1206C</footprint>
+      <libsource lib="e-radionica.com schematics" part="1206C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>04fbb6fd-a92a-45c7-953c-50b84330483f</tstamps>
+    </comp>
+    <comp ref="C3">
+      <value>GRM21BR71C475KE51K</value>
+      <footprint>e-radionica.com footprinti:0805C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0805C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4d772e3e-65c3-48f8-a07e-deec2e64846c</tstamps>
+    </comp>
+    <comp ref="C4">
+      <value>CL10B473KO8NNNC</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2550fc30-5d5a-4718-b4d9-e8c8680e076d</tstamps>
+    </comp>
+    <comp ref="C5">
+      <value>CL31B106MOHNNNE</value>
+      <footprint>e-radionica.com footprinti:1206C</footprint>
+      <libsource lib="e-radionica.com schematics" part="1206C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>da153c33-a0b1-4a88-9ce6-9f246d02d43e</tstamps>
+    </comp>
+    <comp ref="C6">
+      <value>CL31B106MOHNNNE</value>
+      <footprint>e-radionica.com footprinti:1206C</footprint>
+      <libsource lib="e-radionica.com schematics" part="1206C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bcf15945-c9e9-4006-afcc-cdd71cb5b78d</tstamps>
+    </comp>
+    <comp ref="C7">
+      <value>CL31B106MOHNNNE</value>
+      <footprint>e-radionica.com footprinti:1206C</footprint>
+      <libsource lib="e-radionica.com schematics" part="1206C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ce343251-fcc3-4887-bd11-a6af72b71e63</tstamps>
+    </comp>
+    <comp ref="C8">
+      <value>2u2</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dfbb236b-2231-4a4d-b58f-9f764d7b4ab3</tstamps>
+    </comp>
+    <comp ref="C9">
+      <value>2u2</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>808671a6-eaa2-439d-bb0b-07b8642ecfce</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>red</value>
+      <footprint>e-radionica.com footprinti:0402LED</footprint>
+      <fields>
+        <field name="Package">0402</field>
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="0402LED" description=""/>
+      <property name="Package" value="0402"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>af2a6810-ce1e-4674-bfa6-1bff9538ca3c</tstamps>
+    </comp>
+    <comp ref="D2">
+      <value>purple</value>
+      <footprint>e-radionica.com footprinti:0402LED</footprint>
+      <fields>
+        <field name="Package">0402</field>
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="0402LED" description=""/>
+      <property name="Package" value="0402"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a24591ca-5504-47a1-852f-54e3917f39d7</tstamps>
+    </comp>
+    <comp ref="FD1">
+      <value>FIDUCIAL</value>
+      <footprint>e-radionica.com footprinti:FIDUCIAL_23</footprint>
+      <libsource lib="e-radionica.com schematics" part="FIDUCIAL" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <property name="exclude_from_bom"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>31d37bdd-027e-41fb-aa4d-9229a831acfe</tstamps>
+    </comp>
+    <comp ref="H1">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>aa77a1ba-7536-4e00-b4b3-dd5d1354e41c</tstamps>
+    </comp>
+    <comp ref="H2">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bf9773a0-60a9-477b-8655-54326162fc75</tstamps>
+    </comp>
+    <comp ref="H3">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>48567a49-f79e-41d1-8a82-a9bfae3fcd5f</tstamps>
+    </comp>
+    <comp ref="H4">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dd0b2e97-a10c-4526-9d31-5d8c105d2e5d</tstamps>
+    </comp>
+    <comp ref="JP1">
+      <value>SMD_JUMPER_3_PAD_TRACE</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER_3_PAD_TRACE</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER_3_PAD_TRACE" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>618dced6-0386-43bf-b301-77e6bf639961</tstamps>
+    </comp>
+    <comp ref="JP2">
+      <value>SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</value>
+      <footprint>e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>baa1f13e-19d1-4885-8233-17013789766e</tstamps>
+    </comp>
+    <comp ref="JP3">
+      <value>SMD_JUMPER_3_PAD_TRACE</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER_3_PAD_TRACE</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER_3_PAD_TRACE" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>04b837ff-fb5b-410a-a9c0-7dd0fde0570f</tstamps>
+    </comp>
+    <comp ref="JP4">
+      <value>SMD-JUMPER-CONNECTED</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER_CONNECTED</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d748ce09-4443-421f-8270-4d6af2ddd2c3</tstamps>
+    </comp>
+    <comp ref="JP5">
+      <value>SMD_JUMPER</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1b63dc54-50e8-4626-ba64-4c6ba9877d67</tstamps>
+    </comp>
+    <comp ref="JP6">
+      <value>SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</value>
+      <footprint>e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>51779b43-951a-4e51-9d11-bc9f3055475a</tstamps>
+    </comp>
+    <comp ref="K1">
+      <value>HEADER_MALE_2X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_2X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_2X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3600be76-0257-4154-b51d-28543681e9fd</tstamps>
+    </comp>
+    <comp ref="K2">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dafb717a-692f-48db-b754-f7809a69a1c3</tstamps>
+    </comp>
+    <comp ref="K3">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>687d4e6f-6420-454a-9b64-f316dd382563</tstamps>
+    </comp>
+    <comp ref="K4">
+      <value>U262-161N-4BVC11</value>
+      <footprint>e-radionica.com footprinti:U262-161N-4BVC11</footprint>
+      <libsource lib="e-radionica.com schematics" part="U262-161N-4BVC11" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <property name="ki_keywords" value="USBC USB-C USB"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>168a241a-14c2-475f-b2cf-fbd59f1aeb9e</tstamps>
+    </comp>
+    <comp ref="K5">
+      <value>easyC-SMD</value>
+      <footprint>e-radionica.com footprinti:easyC-connector</footprint>
+      <libsource lib="e-radionica.com schematics" part="easyC-SMD" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4777a7ae-b0ad-4b4d-84d2-e3d9779823d0</tstamps>
+    </comp>
+    <comp ref="K6">
+      <value>HEADER_MALE_4X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_4X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_4X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>90857e4f-0233-4326-bb16-f34d4a0275bf</tstamps>
+    </comp>
+    <comp ref="K7">
+      <value>JST-2pin-SMD</value>
+      <footprint>e-radionica.com footprinti:JST-2pin-SMD</footprint>
+      <libsource lib="e-radionica.com schematics" part="JST-2pin-SMD" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f6885525-bf82-4cf5-b06d-b20d0730e2b3</tstamps>
+    </comp>
+    <comp ref="K8">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5592c349-a093-4cd6-80de-bdb508160687</tstamps>
+    </comp>
+    <comp ref="K9">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7a5422b0-9eb2-4c5a-b459-e651f4a8d736</tstamps>
+    </comp>
+    <comp ref="K10">
+      <value>HEADER_MALE_2X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_2X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_2X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f4676143-f877-48e9-b2b2-699dc92e54e8</tstamps>
+    </comp>
+    <comp ref="K11">
+      <value>easyC-SMD</value>
+      <footprint>e-radionica.com footprinti:easyC-connector</footprint>
+      <libsource lib="e-radionica.com schematics" part="easyC-SMD" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>caab8581-777e-4297-b3e4-28329c94bdb8</tstamps>
+    </comp>
+    <comp ref="K12">
+      <value>USB_A_FEMALE_CONNECTOR</value>
+      <footprint>e-radionica.com footprinti:USB_A_FEMALE_CONECTOR</footprint>
+      <libsource lib="e-radionica.com schematics" part="USB_A_FEMALE_CONNECTOR" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>50127078-1f1c-4ff1-8e28-ceadc89a1240</tstamps>
+    </comp>
+    <comp ref="L1">
+      <value>SRN5020TA__2R2M</value>
+      <footprint>e-radionica.com footprinti:SRN5020TA-2R2M</footprint>
+      <libsource lib="e-radionica.com schematics" part="SRN5020TA__2R2M" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e8f9abf3-0f9f-41fc-95e7-ec7c225a36f0</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>5k1</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cb217992-9ba2-4ac2-b5b9-44c1c8c6944a</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3707b928-2406-4f2f-95b1-bd227d6195c9</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>caf718bb-4994-4cef-926d-596797c52aff</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>33k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6b16a850-9b04-4861-9bd0-cb8b3601862c</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e0e861b9-f12d-4fb9-a4c4-1404b1366cdd</tstamps>
+    </comp>
+    <comp ref="R6">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dcf9417b-d769-4eb9-922f-9c0403056eff</tstamps>
+    </comp>
+    <comp ref="R7">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>20589c76-2d22-4696-a8e9-ce8d942b9694</tstamps>
+    </comp>
+    <comp ref="R8">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bbcd23e2-dc2d-4d60-a386-70c8a110f021</tstamps>
+    </comp>
+    <comp ref="R9">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>85b2d3e3-a390-4aac-9e27-36161bd5c39b</tstamps>
+    </comp>
+    <comp ref="R10">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>29bbea4a-b5ec-4b26-9aa7-7f516341476a</tstamps>
+    </comp>
+    <comp ref="R11">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:0402R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0402R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4d037c24-d316-4021-80e9-820163ef3c1e</tstamps>
+    </comp>
+    <comp ref="R12">
+      <value>5k1</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="" part="e-radionica.com schematics:0603R_2" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1c36898b-f13b-4a27-8b02-11961eb2f932</tstamps>
+    </comp>
+    <comp ref="R13">
+      <value>150</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>117a796f-ffc0-4e47-a39b-beb3ac80c529</tstamps>
+    </comp>
+    <comp ref="R14">
+      <value>5k1</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="" part="e-radionica.com schematics:0603R_1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f9ab8ab9-e978-4b13-aecb-b487365960ad</tstamps>
+    </comp>
+    <comp ref="R15">
+      <value>1k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>884ba007-cbcc-45bb-95a3-2b313a2a7f16</tstamps>
+    </comp>
+    <comp ref="R16">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:0402R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0402R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5e4b4a24-5617-4a6b-b974-e819687188fe</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>NMOS-DUAL</value>
+      <footprint>e-radionica.com footprinti:SOT-363</footprint>
+      <libsource lib="e-radionica.com schematics" part="NMOS-DUAL" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ef5d6a35-a2d0-429d-b493-c250d3d1e626</tstamps>
+    </comp>
+    <comp ref="U2">
+      <value>BQ24295_RGET</value>
+      <footprint>e-radionica.com footprinti:BQ24295RGET</footprint>
+      <libsource lib="e-radionica.com schematics" part="BQ24295_RGET" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>641d6b72-ce8f-49ad-abfe-d3331122715f</tstamps>
+    </comp>
+    <comp ref="U3">
+      <value>SE5218</value>
+      <footprint>e-radionica.com footprinti:SOT-23-5</footprint>
+      <libsource lib="e-radionica.com schematics" part="SE5218" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger BQ24295 with 5V USB output board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d55f8cec-f9a8-4bff-ab0d-c95e023a60fb</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="e-radionica.com schematics" part="0402LED">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">0402LED</field>
+        <field name="Footprint">e-radionica.com footprinti:0402LED</field>
+        <field name="Package">0402</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="K" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0402R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0402R</field>
+        <field name="Footprint">e-radionica.com footprinti:0402R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603C">
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">0603C</field>
+        <field name="Footprint">e-radionica.com footprinti:0603C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R_1">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R_2">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0805C">
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">0805C</field>
+        <field name="Footprint">e-radionica.com footprinti:0805C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="1206C">
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">1206C</field>
+        <field name="Footprint">e-radionica.com footprinti:1206C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="BQ24295_RGET">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">BQ24295_RGET</field>
+        <field name="Footprint">e-radionica.com footprinti:BQ24295RGET</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VBUS" type="input"/>
+        <pin num="2" name="D+" type="input"/>
+        <pin num="3" name="D-" type="input"/>
+        <pin num="4" name="STAT" type="input"/>
+        <pin num="5" name="SCL" type="input"/>
+        <pin num="6" name="SDA" type="input"/>
+        <pin num="7" name="INT" type="input"/>
+        <pin num="8" name="OTG" type="input"/>
+        <pin num="9" name="nCE" type="input"/>
+        <pin num="10" name="ILIM" type="input"/>
+        <pin num="11" name="TS" type="input"/>
+        <pin num="12" name="QON" type="input"/>
+        <pin num="13" name="BAT" type="input"/>
+        <pin num="14" name="BAT" type="input"/>
+        <pin num="15" name="SYS" type="input"/>
+        <pin num="16" name="SYS" type="input"/>
+        <pin num="17" name="PGND" type="input"/>
+        <pin num="18" name="PGND" type="input"/>
+        <pin num="19" name="SW" type="input"/>
+        <pin num="20" name="SW" type="input"/>
+        <pin num="21" name="BTST" type="input"/>
+        <pin num="22" name="REGN" type="input"/>
+        <pin num="23" name="PMID" type="input"/>
+        <pin num="24" name="VBUS" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="FIDUCIAL">
+      <fields>
+        <field name="Reference">FD</field>
+        <field name="Value">FIDUCIAL</field>
+        <field name="Footprint">e-radionica.com footprinti:FIDUCIAL_23</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HEADER_MALE_1X1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_1X1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_1X1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HEADER_MALE_2X1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_2X1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_2X1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HEADER_MALE_4X1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_4X1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_4X1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HOLE_3.2mm">
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">HOLE_3.2mm</field>
+        <field name="Footprint">e-radionica.com footprinti:HOLE_3.2mm</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="JST-2pin-SMD">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">JST-2pin-SMD</field>
+        <field name="Footprint">e-radionica.com footprinti:JST-2pin-SMD</field>
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="passive"/>
+        <pin num="2" name="-" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="NMOS-DUAL">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">NMOS-DUAL</field>
+        <field name="Footprint">e-radionica.com footprinti:SOT-363</field>
+      </fields>
+      <pins>
+        <pin num="1" name="S2" type="input"/>
+        <pin num="2" name="G2" type="input"/>
+        <pin num="3" name="D1" type="input"/>
+        <pin num="4" name="S1" type="input"/>
+        <pin num="5" name="G1" type="input"/>
+        <pin num="6" name="D2" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SE5218">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">SE5218</field>
+        <field name="Footprint">e-radionica.com footprinti:SOT-23-5</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VIN" type="power_in"/>
+        <pin num="2" name="GND" type="power_in"/>
+        <pin num="3" name="EN" type="input"/>
+        <pin num="4" name="NC" type="passive"/>
+        <pin num="5" name="VOUT" type="power_out"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD-JUMPER-CONNECTED</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER_CONNECTED</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD_JUMPER">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD_JUMPER</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD_JUMPER_3_PAD_TRACE">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD_JUMPER_3_PAD_TRACE</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER_3_PAD_TRACE</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SRN5020TA__2R2M">
+      <fields>
+        <field name="Reference">L</field>
+        <field name="Value">SRN5020TA__2R2M</field>
+        <field name="Footprint">e-radionica.com footprinti:SRN5020TA-2R2M</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="U262-161N-4BVC11">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">U262-161N-4BVC11</field>
+        <field name="Footprint">e-radionica.com footprinti:U262-161N-4BVC11</field>
+      </fields>
+      <pins>
+        <pin num="A1" name="GND" type="passive"/>
+        <pin num="A4" name="VBUS" type="passive"/>
+        <pin num="A5" name="CC1" type="passive"/>
+        <pin num="A6" name="DP1" type="passive"/>
+        <pin num="A7" name="DN1" type="passive"/>
+        <pin num="A8" name="SBU1" type="passive"/>
+        <pin num="A9" name="VBUS" type="passive"/>
+        <pin num="A12" name="GND" type="passive"/>
+        <pin num="B1" name="GND" type="passive"/>
+        <pin num="B4" name="VBUS" type="passive"/>
+        <pin num="B5" name="CC2" type="passive"/>
+        <pin num="B6" name="DP2" type="passive"/>
+        <pin num="B7" name="DN2" type="passive"/>
+        <pin num="B8" name="SBU2" type="passive"/>
+        <pin num="B9" name="VBUS" type="passive"/>
+        <pin num="B12" name="GND" type="passive"/>
+        <pin num="SH" name="SHIELD" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="USB_A_FEMALE_CONNECTOR">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">USB_A_FEMALE_CONNECTOR</field>
+        <field name="Footprint">e-radionica.com footprinti:USB_A_FEMALE_CONECTOR</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VBUS" type="passive"/>
+        <pin num="2" name="D-" type="passive"/>
+        <pin num="3" name="D+" type="passive"/>
+        <pin num="4" name="GND" type="passive"/>
+        <pin num="5" name="5" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="easyC-SMD">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">easyC-SMD</field>
+        <field name="Footprint">e-radionica.com footprinti:easyC-connector</field>
+      </fields>
+      <pins>
+        <pin num="1" name="SCL" type="passive"/>
+        <pin num="2" name="SDA" type="passive"/>
+        <pin num="3" name="3V3" type="passive"/>
+        <pin num="4" name="GND" type="passive"/>
+        <pin num="5" name="SHIELD" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="3V3">
+      <node ref="C9" pin="2" pintype="passive"/>
+      <node ref="JP3" pin="2" pintype="passive"/>
+      <node ref="JP6" pin="1" pintype="passive"/>
+      <node ref="K11" pin="3" pinfunction="3V3" pintype="passive"/>
+      <node ref="K5" pin="3" pinfunction="3V3" pintype="passive"/>
+      <node ref="R9" pin="1" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="G2" pintype="input"/>
+      <node ref="U1" pin="5" pinfunction="G1" pintype="input"/>
+      <node ref="U3" pin="5" pinfunction="VOUT" pintype="power_out"/>
+    </net>
+    <net code="2" name="BAT">
+      <node ref="C5" pin="2" pintype="passive"/>
+      <node ref="K7" pin="1" pinfunction="+" pintype="passive"/>
+      <node ref="K8" pin="1" pintype="passive"/>
+      <node ref="U2" pin="13" pinfunction="BAT" pintype="input"/>
+      <node ref="U2" pin="14" pinfunction="BAT" pintype="input"/>
+    </net>
+    <net code="3" name="BTST">
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="U2" pin="21" pinfunction="BTST" pintype="input"/>
+    </net>
+    <net code="4" name="D+">
+      <node ref="K4" pin="A6" pinfunction="DP1" pintype="passive"/>
+      <node ref="K4" pin="B6" pinfunction="DP2" pintype="passive"/>
+      <node ref="U2" pin="2" pinfunction="D+" pintype="input"/>
+    </net>
+    <net code="5" name="D-">
+      <node ref="K4" pin="A7" pinfunction="DN1" pintype="passive"/>
+      <node ref="K4" pin="B7" pinfunction="DN2" pintype="passive"/>
+      <node ref="U2" pin="3" pinfunction="D-" pintype="input"/>
+    </net>
+    <net code="6" name="GND">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="C5" pin="1" pintype="passive"/>
+      <node ref="C6" pin="1" pintype="passive"/>
+      <node ref="C7" pin="1" pintype="passive"/>
+      <node ref="C8" pin="1" pintype="passive"/>
+      <node ref="C9" pin="1" pintype="passive"/>
+      <node ref="D2" pin="2" pinfunction="K" pintype="passive"/>
+      <node ref="K1" pin="2" pintype="passive"/>
+      <node ref="K11" pin="4" pinfunction="GND" pintype="passive"/>
+      <node ref="K11" pin="5" pinfunction="SHIELD" pintype="passive"/>
+      <node ref="K12" pin="4" pinfunction="GND" pintype="passive"/>
+      <node ref="K12" pin="5" pinfunction="5" pintype="passive"/>
+      <node ref="K3" pin="1" pintype="passive"/>
+      <node ref="K4" pin="A1" pinfunction="GND" pintype="passive"/>
+      <node ref="K4" pin="A12" pinfunction="GND" pintype="passive"/>
+      <node ref="K4" pin="B1" pinfunction="GND" pintype="passive"/>
+      <node ref="K4" pin="B12" pinfunction="GND" pintype="passive"/>
+      <node ref="K4" pin="SH" pinfunction="SHIELD" pintype="passive"/>
+      <node ref="K5" pin="4" pinfunction="GND" pintype="passive"/>
+      <node ref="K5" pin="5" pinfunction="SHIELD" pintype="passive"/>
+      <node ref="K6" pin="1" pintype="passive"/>
+      <node ref="K7" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="K9" pin="1" pintype="passive"/>
+      <node ref="R12" pin="2" pintype="passive"/>
+      <node ref="R13" pin="2" pintype="passive"/>
+      <node ref="R14" pin="2" pintype="passive"/>
+      <node ref="R15" pin="2" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="U2" pin="17" pinfunction="PGND" pintype="input"/>
+      <node ref="U2" pin="18" pinfunction="PGND" pintype="input"/>
+      <node ref="U3" pin="2" pinfunction="GND" pintype="power_in"/>
+    </net>
+    <net code="7" name="ILIM">
+      <node ref="JP4" pin="2" pintype="passive"/>
+      <node ref="JP5" pin="2" pintype="passive"/>
+      <node ref="U2" pin="10" pinfunction="ILIM" pintype="input"/>
+    </net>
+    <net code="8" name="INT">
+      <node ref="K10" pin="2" pintype="passive"/>
+      <node ref="R9" pin="2" pintype="passive"/>
+      <node ref="U2" pin="7" pinfunction="INT" pintype="input"/>
+    </net>
+    <net code="9" name="Net-(C4-Pad2)">
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="L1" pin="1" pintype="passive"/>
+      <node ref="U2" pin="19" pinfunction="SW" pintype="input"/>
+      <node ref="U2" pin="20" pinfunction="SW" pintype="input"/>
+    </net>
+    <net code="10" name="Net-(D1-K)">
+      <node ref="D1" pin="2" pinfunction="K" pintype="passive"/>
+      <node ref="R11" pin="1" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(D2-A)">
+      <node ref="D2" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="R16" pin="2" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(JP2-Pad2)">
+      <node ref="JP2" pin="2" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+    </net>
+    <net code="13" name="Net-(JP4-Pad1)">
+      <node ref="JP4" pin="1" pintype="passive"/>
+      <node ref="R13" pin="1" pintype="passive"/>
+    </net>
+    <net code="14" name="Net-(JP5-Pad1)">
+      <node ref="JP5" pin="1" pintype="passive"/>
+      <node ref="R15" pin="1" pintype="passive"/>
+    </net>
+    <net code="15" name="Net-(JP6-Pad2)">
+      <node ref="JP6" pin="2" pintype="passive"/>
+      <node ref="R16" pin="1" pintype="passive"/>
+    </net>
+    <net code="16" name="Net-(K4-CC1)">
+      <node ref="K4" pin="A5" pinfunction="CC1" pintype="passive"/>
+      <node ref="R14" pin="1" pintype="passive"/>
+    </net>
+    <net code="17" name="Net-(K4-CC2)">
+      <node ref="K4" pin="B5" pinfunction="CC2" pintype="passive"/>
+      <node ref="R12" pin="1" pintype="passive"/>
+    </net>
+    <net code="18" name="Net-(K12-D+)">
+      <node ref="K12" pin="2" pinfunction="D-" pintype="passive"/>
+      <node ref="K12" pin="3" pinfunction="D+" pintype="passive"/>
+    </net>
+    <net code="19" name="OTG">
+      <node ref="R10" pin="2" pintype="passive"/>
+      <node ref="U2" pin="8" pinfunction="OTG" pintype="input"/>
+    </net>
+    <net code="20" name="PMID">
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="C8" pin="2" pintype="passive"/>
+      <node ref="JP1" pin="2" pintype="passive"/>
+      <node ref="K12" pin="1" pinfunction="VBUS" pintype="passive"/>
+      <node ref="K6" pin="2" pintype="passive"/>
+      <node ref="U2" pin="23" pinfunction="PMID" pintype="input"/>
+      <node ref="U3" pin="1" pinfunction="VIN" pintype="power_in"/>
+      <node ref="U3" pin="3" pinfunction="EN" pintype="input"/>
+    </net>
+    <net code="21" name="QON">
+      <node ref="U2" pin="12" pinfunction="QON" pintype="input"/>
+    </net>
+    <net code="22" name="REGN">
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="U2" pin="22" pinfunction="REGN" pintype="input"/>
+    </net>
+    <net code="23" name="SCL3,3">
+      <node ref="K11" pin="1" pinfunction="SCL" pintype="passive"/>
+      <node ref="K5" pin="1" pinfunction="SCL" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="S1" pintype="input"/>
+    </net>
+    <net code="24" name="SCL5">
+      <node ref="K6" pin="4" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="D1" pintype="input"/>
+      <node ref="U2" pin="5" pinfunction="SCL" pintype="input"/>
+    </net>
+    <net code="25" name="SCL_PULL3,3">
+      <node ref="JP3" pin="1" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+    </net>
+    <net code="26" name="SCL_PULL5">
+      <node ref="JP1" pin="1" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+    </net>
+    <net code="27" name="SDA3,3">
+      <node ref="K11" pin="2" pinfunction="SDA" pintype="passive"/>
+      <node ref="K5" pin="2" pinfunction="SDA" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="S2" pintype="input"/>
+    </net>
+    <net code="28" name="SDA5">
+      <node ref="K6" pin="3" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+      <node ref="U1" pin="6" pinfunction="D2" pintype="input"/>
+      <node ref="U2" pin="6" pinfunction="SDA" pintype="input"/>
+    </net>
+    <net code="29" name="SDA_PULL3,3">
+      <node ref="JP3" pin="3" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+    </net>
+    <net code="30" name="SDA_PULL5">
+      <node ref="JP1" pin="3" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+    </net>
+    <net code="31" name="STAT">
+      <node ref="R11" pin="2" pintype="passive"/>
+      <node ref="U2" pin="4" pinfunction="STAT" pintype="input"/>
+    </net>
+    <net code="32" name="SYS">
+      <node ref="C6" pin="2" pintype="passive"/>
+      <node ref="C7" pin="2" pintype="passive"/>
+      <node ref="D1" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="L1" pin="2" pintype="passive"/>
+      <node ref="R10" pin="1" pintype="passive"/>
+      <node ref="U2" pin="15" pinfunction="SYS" pintype="input"/>
+      <node ref="U2" pin="16" pinfunction="SYS" pintype="input"/>
+    </net>
+    <net code="33" name="TS">
+      <node ref="JP2" pin="1" pintype="passive"/>
+      <node ref="K1" pin="1" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="U2" pin="11" pinfunction="TS" pintype="input"/>
+    </net>
+    <net code="34" name="VCC">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="K2" pin="1" pintype="passive"/>
+      <node ref="K4" pin="A4" pinfunction="VBUS" pintype="passive"/>
+      <node ref="K4" pin="A9" pinfunction="VBUS" pintype="passive"/>
+      <node ref="K4" pin="B4" pinfunction="VBUS" pintype="passive"/>
+      <node ref="K4" pin="B9" pinfunction="VBUS" pintype="passive"/>
+      <node ref="U2" pin="1" pinfunction="VBUS" pintype="input"/>
+      <node ref="U2" pin="24" pinfunction="VBUS" pintype="input"/>
+    </net>
+    <net code="35" name="nCE">
+      <node ref="K10" pin="1" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+      <node ref="U2" pin="9" pinfunction="nCE" pintype="input"/>
+    </net>
+    <net code="36" name="unconnected-(K4-SBU1-PadA8)">
+      <node ref="K4" pin="A8" pinfunction="SBU1" pintype="passive"/>
+    </net>
+    <net code="37" name="unconnected-(K4-SBU2-PadB8)">
+      <node ref="K4" pin="B8" pinfunction="SBU2" pintype="passive"/>
+    </net>
+    <net code="38" name="unconnected-(U3-NC-Pad4)">
+      <node ref="U3" pin="4" pinfunction="NC" pintype="passive"/>
+    </net>
+  </nets>
+</export>

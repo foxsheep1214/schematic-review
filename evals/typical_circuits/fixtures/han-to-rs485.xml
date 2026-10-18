@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>AidonToRS485.kicad_sch</source>
+    <date>Sun Oct 18 05:58:24 2026</date>
+    <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>AidonToRS485.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>100n</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4bea2c6a-5236-4a28-90ff-19963b4adce0</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>100n</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8e9fa048-f2c8-4e93-9da6-af0735394af8</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>tx</value>
+      <footprint>LED_SMD:LED_0805_2012Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C84256</field>
+      </fields>
+      <libsource lib="Device" part="LED" description="Light emitting diode"/>
+      <property name="JLCPCB Part #" value="C84256"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Light emitting diode"/>
+      <property name="ki_keywords" value="LED diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fd7ec883-8d24-462c-a976-8099ad948de1</tstamps>
+    </comp>
+    <comp ref="D2">
+      <value>pwr</value>
+      <footprint>LED_SMD:LED_0805_2012Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C84256</field>
+      </fields>
+      <libsource lib="Device" part="LED" description="Light emitting diode"/>
+      <property name="JLCPCB Part #" value="C84256"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Light emitting diode"/>
+      <property name="ki_keywords" value="LED diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>93d4382e-ea23-434d-9088-3bf58bcd8245</tstamps>
+    </comp>
+    <comp ref="D3">
+      <value>SM712_SOT23</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+      <datasheet>https://www.littelfuse.com/~/media/electronics/datasheets/tvs_diode_arrays/littelfuse_tvs_diode_array_sm712_datasheet.pdf.pdf</datasheet>
+      <fields>
+        <field name="JLCPCB Part #">C404012</field>
+      </fields>
+      <libsource lib="Diode" part="SM712_SOT23" description="7V/12V, 600W Asymmetrical TVS Diode Array, SOT-23"/>
+      <property name="JLCPCB Part #" value="C404012"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="7V/12V, 600W Asymmetrical TVS Diode Array, SOT-23"/>
+      <property name="ki_keywords" value="transient voltage suppressor thyrector transil"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8ef4f19b-6447-4630-afd7-d2061bf46932</tstamps>
+    </comp>
+    <comp ref="IC1">
+      <value>MAX13487EESA+T</value>
+      <footprint>JLCPCB:SOIC127P600X175-8N</footprint>
+      <datasheet>https://datasheets.maximintegrated.com/en/ds/MAX13487E-MAX13488E.pdf</datasheet>
+      <fields>
+        <field name="Arrow Part Number">MAX13487EESA+T</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/max13487eesat/maxim-integrated?region=nac</field>
+        <field name="Description">MAXIM INTEGRATED PRODUCTS - MAX13487EESA+T - Transceiver RS422, RS485, 4.75V-5.25V supply, 1 Driver, NSOIC-8</field>
+        <field name="Height">1.75</field>
+        <field name="JLCPCB Part #">C18347</field>
+        <field name="Manufacturer_Name">Maxim Integrated</field>
+        <field name="Manufacturer_Part_Number">MAX13487EESA+T</field>
+        <field name="Mouser Part Number">700-MAX13487EESAT</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Maxim-Integrated/MAX13487EESA%2bT?qs=CDqwynd4ZNqR%252BznpqLLGdQ%3D%3D</field>
+      </fields>
+      <libsource lib="MAX13487EESA+T" part="MAX13487EESA+T" description="MAXIM INTEGRATED PRODUCTS - MAX13487EESA+T - Transceiver RS422, RS485, 4.75V-5.25V supply, 1 Driver, NSOIC-8"/>
+      <property name="Description" value="MAXIM INTEGRATED PRODUCTS - MAX13487EESA+T - Transceiver RS422, RS485, 4.75V-5.25V supply, 1 Driver, NSOIC-8"/>
+      <property name="Height" value="1.75"/>
+      <property name="Manufacturer_Name" value="Maxim Integrated"/>
+      <property name="Manufacturer_Part_Number" value="MAX13487EESA+T"/>
+      <property name="Mouser Part Number" value="700-MAX13487EESAT"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Maxim-Integrated/MAX13487EESA%2bT?qs=CDqwynd4ZNqR%252BznpqLLGdQ%3D%3D"/>
+      <property name="Arrow Part Number" value="MAX13487EESA+T"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/max13487eesat/maxim-integrated?region=nac"/>
+      <property name="Mouser Testing Part Number" value=""/>
+      <property name="Mouser Testing Price/Stock" value=""/>
+      <property name="JLCPCB Part #" value="C18347"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="MAXIM INTEGRATED PRODUCTS - MAX13487EESA+T - Transceiver RS422, RS485, 4.75V-5.25V supply, 1 Driver, NSOIC-8"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8410796c-b55d-4fdd-8d61-fb41eba08020</tstamps>
+    </comp>
+    <comp ref="J1">
+      <value>DS1133-S60BPX</value>
+      <footprint>Connector_RJ:RJ25_Wayconn_MJEA-660X1_Horizontal</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C77859</field>
+      </fields>
+      <libsource lib="Connector" part="RJ12" description="RJ connector, 6P6C (6 positions 6 connected)"/>
+      <property name="JLCPCB Part #" value="C77859"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="RJ connector, 6P6C (6 positions 6 connected)"/>
+      <property name="ki_keywords" value="6P6C RJ female connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d48927e9-523e-4e60-a98a-5b97863b236f</tstamps>
+    </comp>
+    <comp ref="J2">
+      <value>Conn_01x02_Female</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_2x01_P2.54mm_Vertical</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C234182</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x02_Female" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="JLCPCB Part #" value="C234182"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4b573290-dc0c-4c39-83f9-7816805ea7e0</tstamps>
+    </comp>
+    <comp ref="J3">
+      <value>Conn_01x03_Female</value>
+      <footprint>TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C91156</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x03_Female" description="Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="JLCPCB Part #" value="C91156"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a4a3da2c-95cb-4073-929c-e405c4027ec1</tstamps>
+    </comp>
+    <comp ref="Q1">
+      <value>MMS9013-H-TP</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+      <datasheet>https://www.onsemi.com/pub/Collateral/BC818-D.pdf</datasheet>
+      <fields>
+        <field name="JLCPCB Part #">C90160</field>
+      </fields>
+      <libsource lib="Transistor_BJT" part="BC817" description="0.8A Ic, 45V Vce, NPN Transistor, SOT-23"/>
+      <property name="JLCPCB Part #" value="C90160"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="0.8A Ic, 45V Vce, NPN Transistor, SOT-23"/>
+      <property name="ki_keywords" value="NPN Transistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b62ebe55-bf59-423f-9001-a49eb792f2d0</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>R500</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>99de6d34-6f79-4dfc-b28b-6804de8875c5</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>R4.7K</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ef0bdad1-2987-4a95-b0e9-5c3d9df7031d</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>R500</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>60c826e5-f973-4796-86f8-439acb34ae43</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>R120</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="AidonToRS485.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b6fc7cda-4a0b-4e1b-bcc7-996fbbbbfd1d</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="Connector" part="Conn_01x02_Female">
+      <description>Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x02_Female</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x03_Female">
+      <description>Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x03_Female</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="RJ12">
+      <description>RJ connector, 6P6C (6 positions 6 connected)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>6P6C*</fp>
+        <fp>RJ12*</fp>
+        <fp>RJ18*</fp>
+        <fp>RJ25*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">RJ12</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+        <pin num="5" name="" type="passive"/>
+        <pin num="6" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C">
+      <description>Unpolarized capacitor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="LED">
+      <description>Light emitting diode</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>LED*</fp>
+        <fp>LED_SMD:*</fp>
+        <fp>LED_THT:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">LED</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R">
+      <description>Resistor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Diode" part="SM712_SOT23">
+      <description>7V/12V, 600W Asymmetrical TVS Diode Array, SOT-23</description>
+      <docs>https://www.littelfuse.com/~/media/electronics/datasheets/tvs_diode_arrays/littelfuse_tvs_diode_array_sm712_datasheet.pdf.pdf</docs>
+      <footprints>
+        <fp>SOT?23*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">SM712_SOT23</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23</field>
+        <field name="Datasheet">https://www.littelfuse.com/~/media/electronics/datasheets/tvs_diode_arrays/littelfuse_tvs_diode_array_sm712_datasheet.pdf.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A1" type="passive"/>
+        <pin num="2" name="A2" type="passive"/>
+        <pin num="3" name="common" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="MAX13487EESA+T" part="MAX13487EESA+T">
+      <description>MAXIM INTEGRATED PRODUCTS - MAX13487EESA+T - Transceiver RS422, RS485, 4.75V-5.25V supply, 1 Driver, NSOIC-8</description>
+      <docs>https://datasheets.maximintegrated.com/en/ds/MAX13487E-MAX13488E.pdf</docs>
+      <fields>
+        <field name="Reference">IC</field>
+        <field name="Value">MAX13487EESA+T</field>
+        <field name="Footprint">SOIC127P600X175-8N</field>
+        <field name="Datasheet">https://datasheets.maximintegrated.com/en/ds/MAX13487E-MAX13488E.pdf</field>
+        <field name="Description">MAXIM INTEGRATED PRODUCTS - MAX13487EESA+T - Transceiver RS422, RS485, 4.75V-5.25V supply, 1 Driver, NSOIC-8</field>
+        <field name="Height">1.75</field>
+        <field name="Manufacturer_Name">Maxim Integrated</field>
+        <field name="Manufacturer_Part_Number">MAX13487EESA+T</field>
+        <field name="Mouser Part Number">700-MAX13487EESAT</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Maxim-Integrated/MAX13487EESA%2bT?qs=CDqwynd4ZNqR%252BznpqLLGdQ%3D%3D</field>
+        <field name="Arrow Part Number">MAX13487EESA+T</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/max13487eesat/maxim-integrated?region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="RO" type="passive"/>
+        <pin num="2" name="~{RE}" type="passive"/>
+        <pin num="3" name="~{SHDN}" type="passive"/>
+        <pin num="4" name="DI" type="passive"/>
+        <pin num="5" name="GND" type="passive"/>
+        <pin num="6" name="A" type="passive"/>
+        <pin num="7" name="B" type="passive"/>
+        <pin num="8" name="VCC" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Transistor_BJT" part="BC817">
+      <description>0.8A Ic, 45V Vce, NPN Transistor, SOT-23</description>
+      <docs>https://www.onsemi.com/pub/Collateral/BC818-D.pdf</docs>
+      <footprints>
+        <fp>SOT?23*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">BC817</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/BC818-D.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="B" type="input"/>
+        <pin num="2" name="E" type="passive"/>
+        <pin num="3" name="C" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="GND">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="D2" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="D3" pin="3" pinfunction="common" pintype="input"/>
+      <node ref="IC1" pin="5" pinfunction="GND" pintype="passive"/>
+      <node ref="J1" pin="3" pintype="passive"/>
+      <node ref="J1" pin="6" pintype="passive"/>
+      <node ref="J3" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="Q1" pin="2" pinfunction="E" pintype="passive"/>
+    </net>
+    <net code="2" name="Net-(D1-A)">
+      <node ref="D1" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+    </net>
+    <net code="3" name="Net-(D1-K)">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="D1" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="J1" pin="5" pintype="passive"/>
+      <node ref="Q1" pin="1" pinfunction="B" pintype="input"/>
+    </net>
+    <net code="4" name="Net-(D2-A)">
+      <node ref="D2" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+    </net>
+    <net code="5" name="Net-(D3-A1)">
+      <node ref="D3" pin="1" pinfunction="A1" pintype="passive"/>
+      <node ref="IC1" pin="7" pinfunction="B" pintype="passive"/>
+      <node ref="J2" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="J3" pin="3" pinfunction="Pin_3" pintype="passive"/>
+    </net>
+    <net code="6" name="Net-(D3-A2)">
+      <node ref="D3" pin="2" pinfunction="A2" pintype="passive"/>
+      <node ref="IC1" pin="6" pinfunction="A" pintype="passive"/>
+      <node ref="J3" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+    </net>
+    <net code="7" name="Net-(IC1-DI)">
+      <node ref="IC1" pin="4" pinfunction="DI" pintype="passive"/>
+      <node ref="Q1" pin="3" pinfunction="C" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+    </net>
+    <net code="8" name="Net-(J2-Pin_1)">
+      <node ref="J2" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+    </net>
+    <net code="9" name="VCC">
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="IC1" pin="2" pinfunction="~{RE}" pintype="passive"/>
+      <node ref="IC1" pin="3" pinfunction="~{SHDN}" pintype="passive"/>
+      <node ref="IC1" pin="8" pinfunction="VCC" pintype="passive"/>
+      <node ref="J1" pin="1" pintype="passive"/>
+      <node ref="J1" pin="2" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+    </net>
+    <net code="10" name="unconnected-(IC1-RO-Pad1)">
+      <node ref="IC1" pin="1" pinfunction="RO" pintype="passive"/>
+    </net>
+    <net code="11" name="unconnected-(J1-Pad4)">
+      <node ref="J1" pin="4" pintype="passive"/>
+    </net>
+  </nets>
+</export>

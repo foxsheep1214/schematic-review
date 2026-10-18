@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>CAD/V1.2.0/Li-ion charger with protection.kicad_sch</source>
+    <date>Sun Oct 18 06:08:50 2026</date>
+    <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>Li-ion charger with protection</title>
+        <company>SOLDERED</company>
+        <rev>V1.2.0.</rev>
+        <date>2024-07-15</date>
+        <source>Li-ion charger with protection.kicad_sch</source>
+        <comment number="1" value="333014"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>2u2</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d9d13c24-2c62-4e34-8ea8-94c25df48242</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>2u2</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6f543c76-2cc0-4dae-9966-2abf2cb557ca</tstamps>
+    </comp>
+    <comp ref="C3">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6023897c-899a-42cf-82d8-2b7d12bfd317</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>purple</value>
+      <footprint>e-radionica.com footprinti:0402LED</footprint>
+      <libsource lib="e-radionica.com schematics" part="0402LED" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d6916cdd-cd96-41d6-aa30-0f27c2873377</tstamps>
+    </comp>
+    <comp ref="D2">
+      <value>red</value>
+      <footprint>e-radionica.com footprinti:0402LED</footprint>
+      <libsource lib="" part="e-radionica.com schematics:0402LED_1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>155080f3-4ef4-49c4-b635-93794015f817</tstamps>
+    </comp>
+    <comp ref="FD1">
+      <value>FIDUCIAL</value>
+      <footprint>e-radionica.com footprinti:FIDUCIAL_23</footprint>
+      <libsource lib="e-radionica.com schematics" part="FIDUCIAL" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <property name="exclude_from_bom"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8214f85a-9129-4b56-9aed-72d8a07733ac</tstamps>
+    </comp>
+    <comp ref="H1">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6ef15701-4483-4897-8a75-e451da63b576</tstamps>
+    </comp>
+    <comp ref="H2">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>535a7990-5067-45a2-a3ba-e932d794e3b1</tstamps>
+    </comp>
+    <comp ref="H3">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>db53cf38-47bf-46eb-af5d-a96104c3f29e</tstamps>
+    </comp>
+    <comp ref="H4">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1f9b1ff4-d668-4b23-bfde-ff6bcdcdfc7f</tstamps>
+    </comp>
+    <comp ref="JP1">
+      <value>SMD_JUMPER</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>64a3f279-e483-4d37-a8cf-1902526fc1ac</tstamps>
+    </comp>
+    <comp ref="JP2">
+      <value>SMD-JUMPER-CONNECTED</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER_CONNECTED</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4287db73-88e8-40c8-a29b-64dc4809418a</tstamps>
+    </comp>
+    <comp ref="JP3">
+      <value>SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</value>
+      <footprint>e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>08a6f4c4-d66c-4dde-ba0d-f3c8561de6a7</tstamps>
+    </comp>
+    <comp ref="K1">
+      <value>U262-161N-4BVC11</value>
+      <footprint>e-radionica.com footprinti:U262-161N-4BVC11</footprint>
+      <libsource lib="e-radionica.com schematics" part="U262-161N-4BVC11" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <property name="ki_keywords" value="USBC USB-C USB"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6a009907-7e91-48c2-9bf6-3694f8eb7fb5</tstamps>
+    </comp>
+    <comp ref="K2">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b645e09c-7db0-4609-b2a6-d697c0c4cba2</tstamps>
+    </comp>
+    <comp ref="K3">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>df299e57-3ca0-42e9-9f6c-5ddf336366b0</tstamps>
+    </comp>
+    <comp ref="K4">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d7aaea5c-cac6-4eda-ac84-7032ccf7f37f</tstamps>
+    </comp>
+    <comp ref="K5">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f2b042ce-c1af-4cc0-9267-c07a277c2e7d</tstamps>
+    </comp>
+    <comp ref="K6">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>faa3cc40-f742-4aa1-a6e6-2c8d22a4cae3</tstamps>
+    </comp>
+    <comp ref="K7">
+      <value>JST-2pin-SMD</value>
+      <footprint>e-radionica.com footprinti:JST-2pin-SMD</footprint>
+      <libsource lib="e-radionica.com schematics" part="JST-2pin-SMD" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8173e422-c576-415a-83a3-1441786c04a1</tstamps>
+    </comp>
+    <comp ref="K8">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>aed05233-c369-4667-b3aa-6bc42afc7af3</tstamps>
+    </comp>
+    <comp ref="K9">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6b15518c-3701-4b20-a792-484fd48e6f46</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>5k1</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="" part="e-radionica.com schematics:0603R_2" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f14331e6-10c3-40b2-9257-463fb45db876</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>5k1</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="" part="e-radionica.com schematics:0603R_1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b40470b8-2bf3-4c34-8c5b-a4e79efb0c8b</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:0402R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0402R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>092c134f-6107-491a-967e-066bd4361443</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>4k7</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b25296da-f5bd-4a75-8c84-0378e0339610</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>2k49</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0450ae10-5b4f-4110-9975-a640a89c4637</tstamps>
+    </comp>
+    <comp ref="R6">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:0402R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0402R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>12ee6828-9021-440c-a775-34b63d83180b</tstamps>
+    </comp>
+    <comp ref="R7">
+      <value>1k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a47ff2fc-89f0-49bf-bbf5-ca795ada9580</tstamps>
+    </comp>
+    <comp ref="R8">
+      <value>100R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9a522abb-578c-4fec-abaa-9e3b6c7b90c1</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>TP4056M</value>
+      <footprint>e-radionica.com footprinti:TP4056M-MSOP8</footprint>
+      <libsource lib="e-radionica.com schematics" part="TP4056M" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bb246cd3-3c0b-45bd-9ad1-f9b934813fc3</tstamps>
+    </comp>
+    <comp ref="U2">
+      <value>DW01 (C686633)</value>
+      <footprint>e-radionica.com footprinti:Sot23-6</footprint>
+      <libsource lib="e-radionica.com schematics" part="DW01-P(SOT23-6)" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>97470054-0305-4868-a09e-a8a6d7b9cf5e</tstamps>
+    </comp>
+    <comp ref="U3">
+      <value>FS8205A</value>
+      <footprint>e-radionica.com footprinti:TSSOP8</footprint>
+      <libsource lib="e-radionica.com schematics" part="FS8205A" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Li-ion charger with protection.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0b896a5c-6921-4f0f-8668-49b68e4754e8</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="e-radionica.com schematics" part="0402LED">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">0402LED</field>
+        <field name="Footprint">e-radionica.com footprinti:0402LED</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="K" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0402LED_1">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">0402LED</field>
+        <field name="Footprint">e-radionica.com footprinti:0402LED</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="K" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0402R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0402R</field>
+        <field name="Footprint">e-radionica.com footprinti:0402R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603C">
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">0603C</field>
+        <field name="Footprint">e-radionica.com footprinti:0603C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R_1">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R_2">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="DW01-P(SOT23-6)">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">DW01-P(SOT23-6)</field>
+        <field name="Footprint">e-radionica.com footprinti:Sot23-6</field>
+      </fields>
+      <pins>
+        <pin num="1" name="OD" type="passive"/>
+        <pin num="2" name="CS" type="passive"/>
+        <pin num="3" name="OC" type="passive"/>
+        <pin num="4" name="TD" type="passive"/>
+        <pin num="5" name="VCC" type="passive"/>
+        <pin num="6" name="GND" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="FIDUCIAL">
+      <fields>
+        <field name="Reference">FD</field>
+        <field name="Value">FIDUCIAL</field>
+        <field name="Footprint">e-radionica.com footprinti:FIDUCIAL_23</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="FS8205A">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">FS8205A</field>
+        <field name="Footprint">e-radionica.com footprinti:TSSOP8</field>
+      </fields>
+      <pins>
+        <pin num="1" name="D12" type="passive"/>
+        <pin num="2" name="S1" type="passive"/>
+        <pin num="3" name="S1" type="passive"/>
+        <pin num="4" name="G1" type="passive"/>
+        <pin num="5" name="G2" type="passive"/>
+        <pin num="6" name="S2" type="passive"/>
+        <pin num="7" name="S2" type="passive"/>
+        <pin num="8" name="D12" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HEADER_MALE_1X1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_1X1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_1X1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HOLE_3.2mm">
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">HOLE_3.2mm</field>
+        <field name="Footprint">e-radionica.com footprinti:HOLE_3.2mm</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="JST-2pin-SMD">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">JST-2pin-SMD</field>
+        <field name="Footprint">e-radionica.com footprinti:JST-2pin-SMD</field>
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="passive"/>
+        <pin num="2" name="-" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD-JUMPER-CONNECTED</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER_CONNECTED</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD_JUMPER">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD_JUMPER</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="TP4056M">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TP4056M</field>
+        <field name="Footprint">e-radionica.com footprinti:TP4056M-MSOP8</field>
+      </fields>
+      <pins>
+        <pin num="1" name="TEMP" type="passive"/>
+        <pin num="2" name="PROG" type="passive"/>
+        <pin num="3" name="GND" type="passive"/>
+        <pin num="4" name="VCC" type="passive"/>
+        <pin num="5" name="BAT" type="passive"/>
+        <pin num="6" name="~{STDBY}" type="passive"/>
+        <pin num="7" name="~{CHRG}" type="passive"/>
+        <pin num="8" name="CE" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="U262-161N-4BVC11">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">U262-161N-4BVC11</field>
+        <field name="Footprint">e-radionica.com footprinti:U262-161N-4BVC11</field>
+      </fields>
+      <pins>
+        <pin num="A1" name="GND" type="passive"/>
+        <pin num="A4" name="VBUS" type="passive"/>
+        <pin num="A5" name="CC1" type="passive"/>
+        <pin num="A6" name="DP1" type="passive"/>
+        <pin num="A7" name="DN1" type="passive"/>
+        <pin num="A8" name="SBU1" type="passive"/>
+        <pin num="A9" name="VBUS" type="passive"/>
+        <pin num="A12" name="GND" type="passive"/>
+        <pin num="B1" name="GND" type="passive"/>
+        <pin num="B4" name="VBUS" type="passive"/>
+        <pin num="B5" name="CC2" type="passive"/>
+        <pin num="B6" name="DP2" type="passive"/>
+        <pin num="B7" name="DN2" type="passive"/>
+        <pin num="B8" name="SBU2" type="passive"/>
+        <pin num="B9" name="VBUS" type="passive"/>
+        <pin num="B12" name="GND" type="passive"/>
+        <pin num="SH" name="SHIELD" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="GND">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="D1" pin="2" pinfunction="K" pintype="passive"/>
+      <node ref="K1" pin="A1" pinfunction="GND" pintype="passive"/>
+      <node ref="K1" pin="A12" pinfunction="GND" pintype="passive"/>
+      <node ref="K1" pin="B1" pinfunction="GND" pintype="passive"/>
+      <node ref="K1" pin="B12" pinfunction="GND" pintype="passive"/>
+      <node ref="K1" pin="SH" pinfunction="SHIELD" pintype="passive"/>
+      <node ref="K3" pin="1" pintype="passive"/>
+      <node ref="K6" pin="1" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="GND" pintype="passive"/>
+      <node ref="U3" pin="6" pinfunction="S2" pintype="passive"/>
+      <node ref="U3" pin="7" pinfunction="S2" pintype="passive"/>
+    </net>
+    <net code="2" name="GND_ISO">
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="K7" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="K9" pin="1" pintype="passive"/>
+      <node ref="U2" pin="6" pinfunction="GND" pintype="passive"/>
+      <node ref="U3" pin="2" pinfunction="S1" pintype="passive"/>
+      <node ref="U3" pin="3" pinfunction="S1" pintype="passive"/>
+    </net>
+    <net code="3" name="Net-(D1-A)">
+      <node ref="D1" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+    </net>
+    <net code="4" name="Net-(D2-K)">
+      <node ref="D2" pin="2" pinfunction="K" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+    </net>
+    <net code="5" name="Net-(JP1-Pad1)">
+      <node ref="JP1" pin="1" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+    </net>
+    <net code="6" name="Net-(JP2-Pad1)">
+      <node ref="JP2" pin="1" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+    </net>
+    <net code="7" name="Net-(JP3-Pad2)">
+      <node ref="JP3" pin="2" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+    </net>
+    <net code="8" name="Net-(K1-CC1)">
+      <node ref="K1" pin="A5" pinfunction="CC1" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+    </net>
+    <net code="9" name="Net-(K1-CC2)">
+      <node ref="K1" pin="B5" pinfunction="CC2" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+    </net>
+    <net code="10" name="Net-(U1-~{CHRG})">
+      <node ref="R6" pin="1" pintype="passive"/>
+      <node ref="U1" pin="7" pinfunction="~{CHRG}" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(U2-CS)">
+      <node ref="R7" pin="2" pintype="passive"/>
+      <node ref="U2" pin="2" pinfunction="CS" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(U2-VCC)">
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+      <node ref="U2" pin="5" pinfunction="VCC" pintype="passive"/>
+    </net>
+    <net code="13" name="OC">
+      <node ref="U2" pin="3" pinfunction="OC" pintype="passive"/>
+      <node ref="U3" pin="5" pinfunction="G2" pintype="passive"/>
+    </net>
+    <net code="14" name="OD">
+      <node ref="U2" pin="1" pinfunction="OD" pintype="passive"/>
+      <node ref="U3" pin="4" pinfunction="G1" pintype="passive"/>
+    </net>
+    <net code="15" name="PROG">
+      <node ref="JP1" pin="2" pintype="passive"/>
+      <node ref="JP2" pin="2" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="PROG" pintype="passive"/>
+    </net>
+    <net code="16" name="TEMP">
+      <node ref="K4" pin="1" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="TEMP" pintype="passive"/>
+    </net>
+    <net code="17" name="VBAT">
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="K5" pin="1" pintype="passive"/>
+      <node ref="K7" pin="1" pinfunction="+" pintype="passive"/>
+      <node ref="K8" pin="1" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="U1" pin="5" pinfunction="BAT" pintype="passive"/>
+    </net>
+    <net code="18" name="VUSB">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="D2" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="JP3" pin="1" pintype="passive"/>
+      <node ref="K1" pin="A4" pinfunction="VBUS" pintype="passive"/>
+      <node ref="K1" pin="A9" pinfunction="VBUS" pintype="passive"/>
+      <node ref="K1" pin="B4" pinfunction="VBUS" pintype="passive"/>
+      <node ref="K1" pin="B9" pinfunction="VBUS" pintype="passive"/>
+      <node ref="K2" pin="1" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="VCC" pintype="passive"/>
+      <node ref="U1" pin="8" pinfunction="CE" pintype="passive"/>
+    </net>
+    <net code="19" name="unconnected-(K1-DN1-PadA7)">
+      <node ref="K1" pin="A7" pinfunction="DN1" pintype="passive"/>
+    </net>
+    <net code="20" name="unconnected-(K1-DN2-PadB7)">
+      <node ref="K1" pin="B7" pinfunction="DN2" pintype="passive"/>
+    </net>
+    <net code="21" name="unconnected-(K1-DP1-PadA6)">
+      <node ref="K1" pin="A6" pinfunction="DP1" pintype="passive"/>
+    </net>
+    <net code="22" name="unconnected-(K1-DP2-PadB6)">
+      <node ref="K1" pin="B6" pinfunction="DP2" pintype="passive"/>
+    </net>
+    <net code="23" name="unconnected-(K1-SBU1-PadA8)">
+      <node ref="K1" pin="A8" pinfunction="SBU1" pintype="passive"/>
+    </net>
+    <net code="24" name="unconnected-(K1-SBU2-PadB8)">
+      <node ref="K1" pin="B8" pinfunction="SBU2" pintype="passive"/>
+    </net>
+    <net code="25" name="unconnected-(U1-~{STDBY}-Pad6)">
+      <node ref="U1" pin="6" pinfunction="~{STDBY}" pintype="passive"/>
+    </net>
+    <net code="26" name="unconnected-(U2-TD-Pad4)">
+      <node ref="U2" pin="4" pinfunction="TD" pintype="passive"/>
+    </net>
+    <net code="27" name="unconnected-(U3-D12-Pad1)">
+      <node ref="U3" pin="1" pinfunction="D12" pintype="passive"/>
+    </net>
+    <net code="28" name="unconnected-(U3-D12-Pad8)">
+      <node ref="U3" pin="8" pinfunction="D12" pintype="passive"/>
+    </net>
+  </nets>
+</export>

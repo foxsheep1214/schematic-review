@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>CAD/V1.1.1/Modul_Relej_1CH.kicad_sch</source>
+    <date>Sun Oct 18 06:06:51 2026</date>
+    <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>1CH relay board</title>
+        <company>SOLDERED</company>
+        <rev>V1.1.1.</rev>
+        <date>2021-07-13</date>
+        <source>Modul_Relej_1CH.kicad_sch</source>
+        <comment number="1" value="333024"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="D1">
+      <value>blue</value>
+      <footprint>e-radionica.com footprinti:0402LED</footprint>
+      <fields>
+        <field name="Package">0402</field>
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="0402LED" description=""/>
+      <property name="Package" value="0402"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>41d466ff-b191-44e1-aed7-2fd548c3783a</tstamps>
+    </comp>
+    <comp ref="D2">
+      <value>M4_DIODA</value>
+      <footprint>e-radionica.com footprinti:M4_DIODA</footprint>
+      <libsource lib="e-radionica.com schematics" part="M4_DIODA" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2cfc0320-4d52-4381-a6fa-921d3f09e305</tstamps>
+    </comp>
+    <comp ref="D3">
+      <value>purple</value>
+      <footprint>e-radionica.com footprinti:0402LED</footprint>
+      <fields>
+        <field name="Package">0402</field>
+      </fields>
+      <libsource lib="e-radionica.com schematics" part="0402LED" description=""/>
+      <property name="Package" value="0402"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>81961395-1345-4f52-8c7c-e031347825be</tstamps>
+    </comp>
+    <comp ref="FD1">
+      <value>FIDUCIAL</value>
+      <footprint>e-radionica.com footprinti:FIDUCIAL_23</footprint>
+      <libsource lib="e-radionica.com schematics" part="FIDUCIAL" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e62cdb7f-dc01-490d-af26-b0a2e6e740a4</tstamps>
+    </comp>
+    <comp ref="H1">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b029ea0b-4734-4d49-a11b-ea887b2a902e</tstamps>
+    </comp>
+    <comp ref="H2">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3b645339-f17f-48c3-8eee-0a388b894c5e</tstamps>
+    </comp>
+    <comp ref="H3">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>39f7d575-9b78-4f94-ae03-6d793227001a</tstamps>
+    </comp>
+    <comp ref="H4">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>29469e5b-b374-44c3-a1d0-19ea6ebe76d3</tstamps>
+    </comp>
+    <comp ref="JP1">
+      <value>SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</value>
+      <footprint>e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6cb8a423-d17c-4725-99ed-92156c381c0e</tstamps>
+    </comp>
+    <comp ref="JP2">
+      <value>SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</value>
+      <footprint>e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8bead903-38cb-4f5e-a81e-0e3265554995</tstamps>
+    </comp>
+    <comp ref="K1">
+      <value>SRD-05VDC-SL-C</value>
+      <footprint>e-radionica.com footprinti:SRD_RELAY_5V</footprint>
+      <libsource lib="e-radionica.com schematics" part="SRD_RELAY_5V" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>abb21438-8e69-4476-9f4b-33a93fad0333</tstamps>
+    </comp>
+    <comp ref="K2">
+      <value>HEADER_MALE_3X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_3X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_3X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8bb94237-75d3-4746-9e10-e04ba54a701c</tstamps>
+    </comp>
+    <comp ref="K3">
+      <value>TERMINAL_KF235-5.0-3P</value>
+      <footprint>e-radionica.com footprinti:TERMINAL_KF235-5.0-3P</footprint>
+      <libsource lib="e-radionica.com schematics" part="TERMINAL_KF235-5.0-3P" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f1e9e274-f9fb-49a5-8f0f-834837e565a7</tstamps>
+    </comp>
+    <comp ref="Q1">
+      <value>NPN</value>
+      <footprint>e-radionica.com footprinti:SOT-23-3</footprint>
+      <libsource lib="e-radionica.com schematics" part="NPN-SOT-23-3" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f8392502-9e1e-43c3-a298-250cd812cc78</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>100R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6973e326-d0d3-4b83-a435-80e2b1155cd2</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:0402R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0402R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>30a7b7de-d9fc-44e2-8a08-f602df6eb20a</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>330R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ca583cbb-c385-470f-aec2-b7acaa5347d4</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>10R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a62822d4-1e1d-48c3-be59-ffbfe454a2f6</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:0402R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0402R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ea8a47e6-55f6-41bc-a325-32cd54ab5679</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>PC357_OPTO</value>
+      <footprint>e-radionica.com footprinti:PC357_OPTO</footprint>
+      <libsource lib="e-radionica.com schematics" part="PC357_OPTO" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Modul_Relej_1CH.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>27fe9ee6-8062-4e12-ad50-9698e3f35f43</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="e-radionica.com schematics" part="0402LED">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">0402LED</field>
+        <field name="Footprint">e-radionica.com footprinti:0402LED</field>
+        <field name="Package">0402</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="K" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0402R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0402R</field>
+        <field name="Footprint">e-radionica.com footprinti:0402R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="FIDUCIAL">
+      <fields>
+        <field name="Reference">FD</field>
+        <field name="Value">FIDUCIAL</field>
+        <field name="Footprint">e-radionica.com footprinti:FIDUCIAL_23</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HEADER_MALE_3X1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_3X1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_3X1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HOLE_3.2mm">
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">HOLE_3.2mm</field>
+        <field name="Footprint">e-radionica.com footprinti:HOLE_3.2mm</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="M4_DIODA">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">M4_DIODA</field>
+        <field name="Footprint">e-radionica.com footprinti:M4_DIODA</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="K" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="NPN-SOT-23-3">
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">NPN-SOT-23-3</field>
+        <field name="Footprint">e-radionica.com footprinti:SOT-23-3</field>
+      </fields>
+      <pins>
+        <pin num="1" name="B" type="passive"/>
+        <pin num="2" name="E" type="passive"/>
+        <pin num="3" name="C" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="PC357_OPTO">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">PC357_OPTO</field>
+        <field name="Footprint">e-radionica.com footprinti:PC357_OPTO</field>
+      </fields>
+      <pins>
+        <pin num="1" name="anoda" type="passive"/>
+        <pin num="2" name="katoda" type="passive"/>
+        <pin num="3" name="emiter" type="passive"/>
+        <pin num="4" name="kolektor" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SRD_RELAY_5V">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">SRD_RELAY_5V</field>
+        <field name="Footprint">e-radionica.com footprinti:SRD_RELAY_5V</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+        <pin num="5" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="TERMINAL_KF235-5.0-3P">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">TERMINAL_KF235-5.0-3P</field>
+        <field name="Footprint">e-radionica.com footprinti:TERMINAL_KF235-5.0-3P</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="input"/>
+        <pin num="2" name="" type="input"/>
+        <pin num="3" name="" type="input"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="COM">
+      <node ref="K1" pin="4" pintype="passive"/>
+      <node ref="K3" pin="2" pintype="input"/>
+    </net>
+    <net code="2" name="GND">
+      <node ref="D3" pin="2" pinfunction="K" pintype="passive"/>
+      <node ref="K2" pin="3" pintype="passive"/>
+      <node ref="Q1" pin="2" pinfunction="E" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="katoda" pintype="passive"/>
+    </net>
+    <net code="3" name="IN">
+      <node ref="K2" pin="2" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+    </net>
+    <net code="4" name="NC">
+      <node ref="K1" pin="5" pintype="passive"/>
+      <node ref="K3" pin="1" pintype="input"/>
+    </net>
+    <net code="5" name="NO">
+      <node ref="K1" pin="3" pintype="passive"/>
+      <node ref="K3" pin="3" pintype="input"/>
+    </net>
+    <net code="6" name="Net-(D1-K)">
+      <node ref="D1" pin="2" pinfunction="K" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+    </net>
+    <net code="7" name="Net-(D2-A)">
+      <node ref="D2" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="JP1" pin="2" pintype="passive"/>
+      <node ref="K1" pin="2" pintype="passive"/>
+      <node ref="Q1" pin="3" pinfunction="C" pintype="passive"/>
+    </net>
+    <net code="8" name="Net-(D2-K)">
+      <node ref="D2" pin="2" pinfunction="K" pintype="passive"/>
+      <node ref="K1" pin="1" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+    </net>
+    <net code="9" name="Net-(D3-A)">
+      <node ref="D3" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+    </net>
+    <net code="10" name="Net-(JP1-Pad1)">
+      <node ref="JP1" pin="1" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(JP2-Pad2)">
+      <node ref="JP2" pin="2" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(Q1-B)">
+      <node ref="Q1" pin="1" pinfunction="B" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="emiter" pintype="passive"/>
+    </net>
+    <net code="13" name="Net-(U1-anoda)">
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="anoda" pintype="passive"/>
+    </net>
+    <net code="14" name="Net-(U1-kolektor)">
+      <node ref="R3" pin="1" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="kolektor" pintype="passive"/>
+    </net>
+    <net code="15" name="VCC">
+      <node ref="D1" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="JP2" pin="1" pintype="passive"/>
+      <node ref="K2" pin="1" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+    </net>
+  </nets>
+</export>

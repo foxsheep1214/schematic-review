@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>d2k2_cmoy.kicad_sch</source>
+    <date>Sun Oct 18 06:06:01 2026</date>
+    <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>cmoy kicad layout by designer2k2</title>
+        <company>http://www.designer2k2.at</company>
+        <rev>0.1</rev>
+        <date>Montag, 30. März 2015</date>
+        <source>d2k2_cmoy.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="BT1">
+      <value>9V</value>
+      <libsource lib="d2k2_cmoy-rescue" part="BATTERY" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000551979a1</tstamps>
+    </comp>
+    <comp ref="BT2">
+      <value>9V</value>
+      <libsource lib="d2k2_cmoy-rescue" part="BATTERY" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-000055197a54</tstamps>
+    </comp>
+    <comp ref="C1">
+      <value>0.47µF</value>
+      <libsource lib="d2k2_cmoy-rescue" part="C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b979e</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>0.47µF</value>
+      <libsource lib="d2k2_cmoy-rescue" part="C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b9815</tstamps>
+    </comp>
+    <comp ref="C3">
+      <value>330µF</value>
+      <libsource lib="d2k2_cmoy-rescue" part="CP2" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552bb266</tstamps>
+    </comp>
+    <comp ref="C4">
+      <value>330µF</value>
+      <libsource lib="d2k2_cmoy-rescue" part="CP2" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552bb2b3</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>LED</value>
+      <libsource lib="d2k2_cmoy-rescue" part="LED" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552ba305</tstamps>
+    </comp>
+    <comp ref="J1">
+      <value>Jack_3.5mm_3pin</value>
+      <libsource lib="d2k2_cmoy-rescue" part="Jack_3.5mm_3pin" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b9390</tstamps>
+    </comp>
+    <comp ref="J2">
+      <value>Jack_3.5mm_3pin</value>
+      <libsource lib="d2k2_cmoy-rescue" part="Jack_3.5mm_3pin" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b9315</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>100k</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b9862</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>100k</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b98c1</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>1k</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b9b2a</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>1k</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b9b70</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>10k</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b9bd5</tstamps>
+    </comp>
+    <comp ref="R6">
+      <value>10k</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b9c0c</tstamps>
+    </comp>
+    <comp ref="R7">
+      <value>38</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b99f6</tstamps>
+    </comp>
+    <comp ref="R8">
+      <value>38</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552b9a80</tstamps>
+    </comp>
+    <comp ref="R9">
+      <value>100k</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552ba293</tstamps>
+    </comp>
+    <comp ref="R10">
+      <value>4.7k</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552bb151</tstamps>
+    </comp>
+    <comp ref="R11">
+      <value>4.7k</value>
+      <libsource lib="d2k2_cmoy-rescue" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000552bb19a</tstamps>
+    </comp>
+    <comp ref="RV1">
+      <value>DUAL_POT</value>
+      <libsource lib="d2k2_cmoy-rescue" part="DUAL_POT" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-000055198a01</tstamps>
+    </comp>
+    <comp ref="SW1">
+      <value>SPST</value>
+      <libsource lib="d2k2_cmoy-rescue" part="SPST" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-000055197c22</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>MC33178</value>
+      <libsource lib="d2k2_cmoy-rescue" part="MC33178" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="d2k2_cmoy.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000551989cc 00000000-0000-0000-0000-0000551987ed</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="d2k2_cmoy-rescue" part="BATTERY">
+      <fields>
+        <field name="Reference">BT</field>
+        <field name="Value">BATTERY</field>
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="passive"/>
+        <pin num="2" name="-" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="d2k2_cmoy-rescue" part="C">
+      <footprints>
+        <fp>SM*</fp>
+        <fp>C?</fp>
+        <fp>C1-1</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="d2k2_cmoy-rescue" part="CP2">
+      <footprints>
+        <fp>SM*</fp>
+        <fp>C?</fp>
+        <fp>C1-1</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">CP2</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="d2k2_cmoy-rescue" part="DUAL_POT">
+      <fields>
+        <field name="Reference">RV</field>
+        <field name="Value">DUAL_POT</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="3" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+        <pin num="5" name="" type="passive"/>
+        <pin num="6" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="d2k2_cmoy-rescue" part="Jack_3.5mm_3pin">
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Jack_3.5mm_3pin</field>
+      </fields>
+      <pins>
+        <pin num="1" name="S" type="passive"/>
+        <pin num="2" name="T" type="passive"/>
+        <pin num="3" name="R" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="d2k2_cmoy-rescue" part="LED">
+      <footprints>
+        <fp>LED-3MM</fp>
+        <fp>LED-5MM</fp>
+        <fp>LED-10MM</fp>
+        <fp>LED-0603</fp>
+        <fp>LED-0805</fp>
+        <fp>LED-1206</fp>
+        <fp>LEDV</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">LED</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="K" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="d2k2_cmoy-rescue" part="MC33178">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">MC33178</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="output"/>
+        <pin num="2" name="-" type="input"/>
+        <pin num="3" name="+" type="input"/>
+        <pin num="4" name="V-" type="power_in"/>
+        <pin num="5" name="+" type="input"/>
+        <pin num="6" name="-" type="input"/>
+        <pin num="7" name="" type="output"/>
+        <pin num="8" name="V+" type="power_in"/>
+      </pins>
+    </libpart>
+    <libpart lib="d2k2_cmoy-rescue" part="R">
+      <footprints>
+        <fp>R?</fp>
+        <fp>SM0603</fp>
+        <fp>SM0805</fp>
+        <fp>R?-*</fp>
+        <fp>SM1206</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="d2k2_cmoy-rescue" part="SPST">
+      <fields>
+        <field name="Reference">SW</field>
+        <field name="Value">SPST</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="input"/>
+        <pin num="2" name="2" type="input"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="GND">
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="J1" pin="1" pinfunction="S" pintype="passive"/>
+      <node ref="J2" pin="1" pinfunction="S" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="R10" pin="2" pintype="passive"/>
+      <node ref="R11" pin="1" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="RV1" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="RV1" pin="6" pintype="passive"/>
+    </net>
+    <net code="2" name="Net-(BT1-+)">
+      <node ref="BT1" pin="1" pinfunction="+" pintype="passive"/>
+      <node ref="SW1" pin="1" pinfunction="1" pintype="input"/>
+    </net>
+    <net code="3" name="Net-(BT1--)">
+      <node ref="BT1" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="BT2" pin="1" pinfunction="+" pintype="passive"/>
+    </net>
+    <net code="4" name="Net-(C1-Pad2)">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="RV1" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="5" name="Net-(C2-Pad2)">
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="RV1" pin="5" pintype="passive"/>
+    </net>
+    <net code="6" name="Net-(D1-A)">
+      <node ref="D1" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="R9" pin="2" pintype="passive"/>
+    </net>
+    <net code="7" name="Net-(J1-R)">
+      <node ref="J1" pin="3" pinfunction="R" pintype="passive"/>
+      <node ref="RV1" pin="1" pinfunction="1" pintype="passive"/>
+    </net>
+    <net code="8" name="Net-(J1-T)">
+      <node ref="J1" pin="2" pinfunction="T" pintype="passive"/>
+      <node ref="RV1" pin="4" pintype="passive"/>
+    </net>
+    <net code="9" name="Net-(J2-R)">
+      <node ref="J2" pin="3" pinfunction="R" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+    </net>
+    <net code="10" name="Net-(J2-T)">
+      <node ref="J2" pin="2" pinfunction="T" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(R5-Pad1)">
+      <node ref="R5" pin="1" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+      <node ref="U1" pin="1" pintype="output"/>
+    </net>
+    <net code="12" name="Net-(R6-Pad1)">
+      <node ref="R6" pin="1" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="U1" pin="7" pintype="output"/>
+    </net>
+    <net code="13" name="Net-(U1A-+)">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="+" pintype="input"/>
+    </net>
+    <net code="14" name="Net-(U1A--)">
+      <node ref="R3" pin="1" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="-" pintype="input"/>
+    </net>
+    <net code="15" name="Net-(U1B-+)">
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="U1" pin="5" pinfunction="+" pintype="input"/>
+    </net>
+    <net code="16" name="Net-(U1B--)">
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="U1" pin="6" pinfunction="-" pintype="input"/>
+    </net>
+    <net code="17" name="V+">
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="R10" pin="1" pintype="passive"/>
+      <node ref="R9" pin="1" pintype="passive"/>
+      <node ref="SW1" pin="2" pinfunction="2" pintype="input"/>
+      <node ref="U1" pin="8" pinfunction="V+" pintype="power_in"/>
+    </net>
+    <net code="18" name="V-">
+      <node ref="BT2" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="D1" pin="2" pinfunction="K" pintype="passive"/>
+      <node ref="R11" pin="2" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="V-" pintype="power_in"/>
+    </net>
+    <net code="19" name="unconnected-(U1A-V--Pad4)">
+      <node ref="U1" pin="4" pinfunction="V-" pintype="power_in"/>
+    </net>
+    <net code="20" name="unconnected-(U1B-V+-Pad8)">
+      <node ref="U1" pin="8" pinfunction="V+" pintype="power_in"/>
+    </net>
+  </nets>
+</export>

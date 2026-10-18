@@ -1,0 +1,1392 @@
+{
+ "revision": "typical-circuits-v1",
+ "cases": [
+  {
+   "id": "rp2040-stamp",
+   "category": "MCU minimal system (RP2040)",
+   "fixture": "fixtures/rp2040-stamp.xml",
+   "expected": [
+    {
+     "rule": "PWR-A02",
+     "match": "D3.4 (VDD) <- Net-(D3-VDD)：经跳线 JP1 才接到供电，核该装配下跳线是否闭合",
+     "why": "电源脚经跳线供电：核装配状态"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+5V: 板上无来源，经 ['J2.8'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U2.1 (VIN) <- /VIN",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "RST-A03",
+     "match": "U2（状态 as-built）：使能脚 U2.3 直连输入网 /VIN，未见 UVLO 分压或 RC 延时；输入缓慢爬升或跌落时的开启点由器件内部门限决定",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "esp32-c3-devkit-lipo",
+   "category": "MCU + LiPo charger + buck",
+   "fixture": "fixtures/esp32-c3-devkit-lipo.xml",
+   "expected": [
+    {
+     "rule": "RST-A01",
+     "match": "/ESP_EN: R12 上拉->+3.3V(3.3V)",
+     "why": "MCU 使能/复位只有上拉：核手册要求的 RC 延时"
+    },
+    {
+     "rule": "RST-A03",
+     "match": "U2（状态 as-built）：使能脚 U2.1 直连输入网 Net-(D2-K)，未见 UVLO 分压或 RC 延时；输入缓慢爬升或跌落时的开启点由器件内部门限决定",
+     "why": "开关稳压器 EN 直连输入：慢上电时按内部 UVLO 开启，值得核"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+5V (9节点): ['C1', 'CHARGING1', 'D1', 'D2', 'EXT1', 'FET1']",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "+5V_USB (5节点): ['D1', 'USB-C1']",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U1.4 (VCC) <- +5V",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U2.4 (IN) <- Net-(D2-K)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "USB-C1.A4 (VBUS) <- +5V_USB",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "USB-C1.A9 (VBUS) <- +5V_USB",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "USB-C1.B4 (VBUS) <- +5V_USB",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "USB-C1.B9 (VBUS) <- +5V_USB",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DOC-A04",
+     "match": "BAT_PWR_E1: 位号含 ? 或缺序号，无法定位与对账",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DOC-A04",
+     "match": "BAT_SENS_E1: 位号含 ? 或缺序号，无法定位与对账",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DOC-A04",
+     "match": "PWR_SENS_E1: 位号含 ? 或缺序号，无法定位与对账",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DOC-A04",
+     "match": "USB-C1: 位号含 ? 或缺序号，无法定位与对账",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "RST-A04",
+     "match": "U2（状态 as-built）：使能脚 U2.1 所在网 Net-(D2-K) 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "rvpc",
+   "category": "MCU (CH32V003) retro PC",
+   "fixture": "fixtures/rvpc.xml",
+   "expected": [],
+   "known_false_alarms": [
+    {
+     "rule": "NET-A07",
+     "match": "VGA1.9 -> unconnected-(VGA1-Key{slash}PWR-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "VGA 座第 9 脚未用并已标 NC；同上，Olimex 连接器库不在 NC 豁免受控名单"
+    }
+   ],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+5V (8节点): ['C1', 'PS2_KBD1', 'PWR_JACK1', 'PWR_LED1', 'R5', 'R6']",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "PS2_KBD1.4 (4) <- +5V",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U1.4 (VDD) <- +5V",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DOC-A04",
+     "match": "PGM/DBG1: 位号含 ? 或缺序号，无法定位与对账",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DOC-A04",
+     "match": "PS2_KBD1: 位号含 ? 或缺序号，无法定位与对账",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DOC-A04",
+     "match": "PWR_JACK1: 位号含 ? 或缺序号，无法定位与对账",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DOC-A04",
+     "match": "PWR_LED1: 位号含 ? 或缺序号，无法定位与对账",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    }
+   ]
+  },
+  {
+   "id": "fusb302-breakout",
+   "category": "USB-C PD sink",
+   "fixture": "fixtures/fusb302-breakout.xml",
+   "expected": [
+    {
+     "rule": "PRO-A02",
+     "match": "D1 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_p；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D2 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC1；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D3 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC2；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D4 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_n；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+3V3: 板上无来源，经 ['J1.1'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "+5V: 板上无来源，经 ['J4.1'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "VBUS: 板上无来源，经 ['J2.A4', 'J2.A9', 'J2.B4', 'J2.B9'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D1 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_p；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D2 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC1；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D3 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC2；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D4 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_n；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "powercb-usbc-ldo",
+   "category": "USB-C input + LDO",
+   "fixture": "fixtures/powercb-usbc-ldo.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "RST-A04",
+     "match": "U1（状态 as-built）：使能脚 U1.3 所在网 +5V 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "tps5430",
+   "category": "Buck converter",
+   "fixture": "fixtures/tps5430.xml",
+   "expected": [
+    {
+     "rule": "NET-A07",
+     "match": "U1.5 -> unconnected-(U1-EN-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "RST-A04",
+     "match": "U1（状态 as-built）：使能脚 U1.5 所在网 unconnected-(U1-EN-Pad5) 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+     "why": "EN 悬空：按手册确认内部上拉"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "VCC (9节点): ['C1', 'C2', 'C3', 'C4', 'D2', 'D3']",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U1.7 (VIN) <- VCC",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    }
+   ]
+  },
+  {
+   "id": "stepbubodc01",
+   "category": "Buck-boost converter",
+   "fixture": "fixtures/stepbubodc01.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "RST-A04",
+     "match": "U1（状态 as-built）：使能脚 U1.5 所在网 /en 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "soldered-liion-charger",
+   "category": "Li-ion charger (TP4056)",
+   "fixture": "fixtures/soldered-liion-charger.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DN1-PadA7) <- K1.A7 (U262-161N-4BVC11，脚名 DN1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DN2-PadB7) <- K1.B7 (U262-161N-4BVC11，脚名 DN2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DP1-PadA6) <- K1.A6 (U262-161N-4BVC11，脚名 DP1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DP2-PadB6) <- K1.B6 (U262-161N-4BVC11，脚名 DP2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-SBU1-PadA8) <- K1.A8 (U262-161N-4BVC11，脚名 SBU1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-SBU2-PadB8) <- K1.B8 (U262-161N-4BVC11，脚名 SBU2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-~{STDBY}-Pad6) <- U1.6 (TP4056M，脚名 ~{STDBY}) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DN1-PadA7) <- K1.A7 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DN2-PadB7) <- K1.B7 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DP1-PadA6) <- K1.A6 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DP2-PadB6) <- K1.B6 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-SBU1-PadA8) <- K1.A8 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-SBU2-PadB8) <- K1.B8 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-~{STDBY}-Pad6) <- U1.6 (TP4056M)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "VBAT: 板上无来源，经 ['K5.1', 'K7.1'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "soldered-bq24295-charger",
+   "category": "Li-ion charger + 5V boost (BQ24295)",
+   "fixture": "fixtures/soldered-bq24295-charger.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "QON <- U2.12 (BQ24295_RGET)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K4-SBU1-PadA8) <- K4.A8 (U262-161N-4BVC11，脚名 SBU1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K4-SBU2-PadB8) <- K4.B8 (U262-161N-4BVC11，脚名 SBU2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "QON: ['U2.12']",
+     "why": "网络只有输入脚：与单节点网同根"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.12 -> QON: 输入脚所在网只有该节点",
+     "why": "输入脚所在网只有它自己（与同网 NET-A01 同根），需确认内部偏置或连接"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K4-SBU1-PadA8) <- K4.A8 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K4-SBU2-PadB8) <- K4.B8 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U3-NC-Pad4) <- U3.4 (SE5218)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "VCC: 板上无来源，经 ['K2.1'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "RST-A03",
+     "match": "U3（状态 as-built）：使能脚 U3.3 直连输入网 PMID，未见 UVLO 分压或 RC 延时；输入缓慢爬升或跌落时的开启点由器件内部门限决定",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "soldered-liion-charger-protection",
+   "category": "Battery protection (DW01 + FS8205A)",
+   "fixture": "fixtures/soldered-liion-charger-protection.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DN1-PadA7) <- K1.A7 (U262-161N-4BVC11，脚名 DN1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DN2-PadB7) <- K1.B7 (U262-161N-4BVC11，脚名 DN2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DP1-PadA6) <- K1.A6 (U262-161N-4BVC11，脚名 DP1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DP2-PadB6) <- K1.B6 (U262-161N-4BVC11，脚名 DP2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-SBU1-PadA8) <- K1.A8 (U262-161N-4BVC11，脚名 SBU1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-SBU2-PadB8) <- K1.B8 (U262-161N-4BVC11，脚名 SBU2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-~{STDBY}-Pad6) <- U1.6 (TP4056M，脚名 ~{STDBY}) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U2-TD-Pad4) <- U2.4 (DW01 (C686633)，脚名 TD) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U3-D12-Pad1) <- U3.1 (FS8205A，脚名 D12) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U3-D12-Pad8) <- U3.8 (FS8205A，脚名 D12) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "U3（mosfet，状态 as-built）：栅极网 OD 由 U2.1 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
+     "why": "栅极由方向未知的 IC 脚驱动：核该脚为输出及上电状态"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DN1-PadA7) <- K1.A7 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DN2-PadB7) <- K1.B7 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DP1-PadA6) <- K1.A6 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-DP2-PadB6) <- K1.B6 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-SBU1-PadA8) <- K1.A8 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-SBU2-PadB8) <- K1.B8 (U262-161N-4BVC11)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-~{STDBY}-Pad6) <- U1.6 (TP4056M)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U2-TD-Pad4) <- U2.4 (DW01 (C686633))",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U3-D12-Pad1) <- U3.1 (FS8205A)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U3-D12-Pad8) <- U3.8 (FS8205A)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "VBAT: 板上无来源，经 ['K5.1', 'K7.1', 'K8.1'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U2.5 (VCC) <- Net-(U2-VCC)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "U3（mosfet，状态 as-built）：栅极网 OD 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    }
+   ]
+  },
+  {
+   "id": "piicodev-tmp117",
+   "category": "I2C sensor (TMP117)",
+   "fixture": "fixtures/piicodev-tmp117.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+3V3: 板上无来源，经 ['J1.2', 'J2.2', 'J3.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "piicodev-ens160",
+   "category": "I2C sensor (ENS160)",
+   "fixture": "fixtures/piicodev-ens160.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+3V3: 板上无来源，经 ['J1.2', 'J2.2', 'J3.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "bme280-dspace",
+   "category": "I2C sensor (BME280)",
+   "fixture": "fixtures/bme280-dspace.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+3V3: 板上无来源，经 ['J1.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "pmod-bme280",
+   "category": "I2C sensor PMOD (BME280)",
+   "fixture": "fixtures/pmod-bme280.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+3V3: 板上无来源，经 ['J1.12', 'J1.6', 'J2.12', 'J2.6'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "soldered-txb0104-level-shifter",
+   "category": "Level shifter (TXB0104)",
+   "fixture": "fixtures/soldered-txb0104-level-shifter.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "VCCL: 板上无来源，经 ['K1.5'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "makerverse-motor-driver-2ch",
+   "category": "Motor driver H-bridge (TC78H660)",
+   "fixture": "fixtures/makerverse-motor-driver-2ch.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "VCC (9节点): ['C1', 'C2', 'D1', 'D2', 'IC1', 'Q1']",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U2.3 (VI) <- Net-(D2-K)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    }
+   ]
+  },
+  {
+   "id": "piicodev-servo-driver",
+   "category": "Servo/PWM driver (PCA9685)",
+   "fixture": "fixtures/piicodev-servo-driver.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-LED7-Pad13) <- U1.13 (PCA9685PW，脚名 LED7) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U1.25 -> unconnected-(U1-EXTCLK-Pad25): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-LED7-Pad13) <- U1.13 (PCA9685PW)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "+3V3: 板上无来源，经 ['J1.2', 'J10.2', 'J2.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "+5V: 板上无来源，经 ['J11.2', 'J3.2', 'J4.2', 'J5.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "soldered-relay-1ch",
+   "category": "Relay + opto + flyback diode",
+   "fixture": "fixtures/soldered-relay-1ch.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "VCC: 板上无来源，经 ['K2.1'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "NET-A04",
+     "match": "NC: 2 个引脚被电气短接（该网带层次路径，系设计者所画，非工具伪网络）",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q1（bjt，状态 as-built）：栅极网 Net-(Q1-B) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q1（bjt，状态 as-built）：开关节点 Net-(D2-A) 上有 inductive:K1，但未见 RC/RCD 吸收或钳位；关断尖峰与振铃需按器件耐压核实",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "esp32-4ch-relays",
+   "category": "4 relays + ESP32 + USB-C",
+   "fixture": "fixtures/esp32-4ch-relays.xml",
+   "expected": [
+    {
+     "rule": "RST-A01",
+     "match": "/RESET: R8 上拉->+3.3V(3.3V)",
+     "why": "MCU 使能/复位只有上拉：核手册要求的 RC 延时"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.10 -> unconnected-(U2-~{DSR}-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.11 -> unconnected-(U2-~{RI}-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.12 -> unconnected-(U2-~{DCD}-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.15 -> unconnected-(U2-R232-Pad15): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.9 -> unconnected-(U2-~{CTS}-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U4.4 -> unconnected-(U4-SENSOR_VP-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U4.5 -> unconnected-(U4-SENSOR_VN-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U4.6 -> unconnected-(U4-IO34-Pad6): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U4.7 -> unconnected-(U4-IO35-Pad7): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    }
+   ],
+   "known_false_alarms": [
+    {
+     "rule": "NET-A07",
+     "match": "USB1.3 -> unconnected-(USB1-SBU2-Pad3): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "USB-C 母座 SBU 未用并已标 NC；NC 豁免要求连接器库身份可核（HRO 自建库不在受控名单），保守保留"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "USB1.9 -> unconnected-(USB1-SBU1-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "USB-C 母座 SBU 未用并已标 NC；NC 豁免要求连接器库身份可核（HRO 自建库不在受控名单），保守保留"
+    }
+   ],
+   "fixed_false_alarms": [],
+   "note": "修复前 SR 无法解析本板（多单元运放共享电源脚被判重复归网）"
+  },
+  {
+   "id": "isolated-serial-adapter",
+   "category": "Isolated RS-485/RS-232 (ADM2483)",
+   "fixture": "fixtures/isolated-serial-adapter.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "/USB/CTS0 <- U3.41 (CH344Q)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/CTS3 <- U3.46 (CH344Q)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/DCD0 <- U3.33 (CH344Q)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/DSR0 <- U3.29 (CH344Q)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RI0 <- U3.32 (CH344Q)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RTS0 <- U3.40 (CH344Q)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RTS3 <- U3.45 (CH344Q)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D10 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/TX1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D11 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RX1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D12 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RTS1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D13 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DTR1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D14 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/CTS1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D15 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DSR1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D16 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RI1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D17 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DCD1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D18 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/TX2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D19 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RX2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D20 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RI2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D21 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DCD2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D22 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RTS2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D23 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DTR2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D24 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/CTS2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "VBUS (7节点): ['C1', 'C3', 'D1', 'F1', 'PS1', 'U1']",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "PS1.1 (+Vin) <- VBUS",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U1.3 (VI) <- VBUS",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D10 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/TX1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D11 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RX1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D12 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RTS1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D13 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DTR1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D14 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/CTS1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D15 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DSR1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D16 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RI1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D17 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DCD1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D18 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/TX2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D19 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RX2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D20 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RI2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D21 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DCD2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D22 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RTS2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D23 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DTR2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D24 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/CTS2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "han-to-rs485",
+   "category": "RS-485 transceiver",
+   "fixture": "fixtures/han-to-rs485.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(IC1-RO-Pad1) <- IC1.1 (MAX13487EESA+T，脚名 RO) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(J1-Pad4) <- J1.4 (DS1133-S60BPX，脚名 ?) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(IC1-RO-Pad1) <- IC1.1 (MAX13487EESA+T)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(J1-Pad4) <- J1.4 (DS1133-S60BPX)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "VCC: 板上无来源，经 ['J1.1', 'J1.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "mcp25625-breakout",
+   "category": "CAN controller + transceiver (MCP25625)",
+   "fixture": "fixtures/mcp25625-breakout.xml",
+   "expected": [
+    {
+     "rule": "NET-A07",
+     "match": "U1.23 -> unconnected-(U1-~{Tx0RTS}-Pad23): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U1.6 -> unconnected-(U1-~{Tx1RTS}-Pad6): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U1.7 -> unconnected-(U1-~{Tx2RTS}-Pad7): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": []
+  },
+  {
+   "id": "soldered-can-mcp2518",
+   "category": "CAN-FD (MCP2518FD + ATA6561)",
+   "fixture": "fixtures/soldered-can-mcp2518.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-NC-Pad4) <- U1.4 (SE5218)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "5V: 板上无来源，经 ['K1.1', 'K2.1'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "RST-A03",
+     "match": "U1（状态 as-built）：使能脚 U1.3 直连输入网 5V，未见 UVLO 分压或 RC 延时；输入缓慢爬升或跌落时的开启点由器件内部门限决定",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "bioamp-exg-pill",
+   "category": "Op-amp biopotential front-end",
+   "fixture": "fixtures/bioamp-exg-pill.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "VCC: 板上无来源，经 ['J1.3'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "makerverse-loadcell-hx710c",
+   "category": "Load-cell ADC front-end (HX710C)",
+   "fixture": "fixtures/makerverse-loadcell-hx710c.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": []
+  },
+  {
+   "id": "lm386-amp",
+   "category": "Audio amplifier (LM386)",
+   "fixture": "fixtures/lm386-amp.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+9V: 板上无来源，经 ['J2.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "cmoy-headphone-amp",
+   "category": "Headphone amp (op-amp CMoy)",
+   "fixture": "fixtures/cmoy-headphone-amp.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [],
+   "note": "修复前 SR 无法解析本板（多单元运放共享电源脚被判重复归网）"
+  },
+  {
+   "id": "led-al8860",
+   "category": "LED driver (AL8860)",
+   "fixture": "fixtures/led-al8860.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+36V: 板上无来源，经 ['J1.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "led-lm3404",
+   "category": "LED driver (LM3404)",
+   "fixture": "fixtures/led-lm3404.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "+36V: 板上无来源，经 ['J1.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U1.2 (BOOT) <- Net-(U1-BOOT)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    }
+   ]
+  },
+  {
+   "id": "ethernet-pmod-lan8720",
+   "category": "Ethernet PHY (LAN8720A)",
+   "fixture": "fixtures/ethernet-pmod-lan8720.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "/RST <- U1.15 (LAN8720A)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/RSTn <- J1.8 (PMOD)",
+     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "/RST: ['U1.15']",
+     "why": "网络只有输入脚：与单节点网同根"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U1.15 -> /RST: 输入脚所在网只有该节点",
+     "why": "输入脚所在网只有它自己（与同网 NET-A01 同根），需确认内部偏置或连接"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "VCC: 板上无来源，经 ['J1.12', 'J1.6'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U1.6 (VDDCR) <- /VDDCR",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    }
+   ]
+  },
+  {
+   "id": "soldered-w5500",
+   "category": "Ethernet controller (W5500)",
+   "fixture": "fixtures/soldered-w5500.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-DUPLED-Pad26) <- U1.26 (W5500，脚名 DUPLED) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-SPDLED-Pad24) <- U1.24 (W5500，脚名 SPDLED) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-VBG-Pad18) <- U1.18 (W5500，脚名 VBG) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(K1-NC_P7-Pad7) <- K1.7 (HR_913550A)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-DNC-Pad7) <- U1.7 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-DUPLED-Pad26) <- U1.26 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-NC-Pad12) <- U1.12 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-NC-Pad13) <- U1.13 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-NC-Pad46) <- U1.46 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-NC-Pad47) <- U1.47 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-RSVD-Pad23) <- U1.23 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-RSVD-Pad38) <- U1.38 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-RSVD-Pad39) <- U1.39 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-RSVD-Pad40) <- U1.40 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-RSVD-Pad41) <- U1.41 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-RSVD-Pad42) <- U1.42 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-SPDLED-Pad24) <- U1.24 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-VBG-Pad18) <- U1.18 (W5500)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U2-NC-Pad4) <- U2.4 (SE5218)",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "unconnected-(K1-NC_P7-Pad7): ['K1.7']",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "K1.7 -> unconnected-(K1-NC_P7-Pad7): 输入脚所在网只有该节点",
+     "why": "typical-boards 审读判为误报，已修（FINDING）"
+    },
+    {
+     "rule": "RST-A03",
+     "match": "U2（状态 as-built）：使能脚 U2.3 直连输入网 VCC，未见 UVLO 分压或 RC 延时；输入缓慢爬升或跌落时的开启点由器件内部门限决定",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "makerverse-nano-power-timer",
+   "category": "Power timer (TPL5110-type)",
+   "fixture": "fixtures/makerverse-nano-power-timer.xml",
+   "expected": [
+    {
+     "rule": "RST-A02",
+     "match": "U1（状态 as-built）：U1.6 与本器件供电轨同为 VDD，使能/复位随电源同时建立；需确认器件允许该时序或另加延时",
+     "why": "使能与供电同网：核器件允许的上电时序"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "PWR-A01",
+     "match": "VDD: 板上无来源，经 ['J1.1', 'J2.6'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "VDDOUT: 板上无来源，经 ['J2.2'] 由外部供电；核对端供电与反灌",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  },
+  {
+   "id": "usb232r02",
+   "category": "USB-UART (FT232)",
+   "fixture": "fixtures/usb232r02.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A06",
+     "match": "/#CTS: ['J19.5', 'J19.6', 'U2.6']",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "/#DCD: ['J18.10', 'J18.9', 'U2.5']",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "/#DSR: ['J18.7', 'J18.8', 'U2.4']",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "/#RI: ['J18.5', 'J18.6', 'U2.2']",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "/RXD: ['J19.3', 'J19.4', 'U2.1']",
+     "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    }
+   ]
+  }
+ ]
+}

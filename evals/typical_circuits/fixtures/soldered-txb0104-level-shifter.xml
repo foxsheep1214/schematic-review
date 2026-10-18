@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>CAD/V1.0.0/IC_LEVEL_CONVERTER.kicad_sch</source>
+    <date>Sun Oct 18 06:07:38 2026</date>
+    <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>IC level converter</title>
+        <company>SOLDERED</company>
+        <rev>v1.0.0.</rev>
+        <date>2021-04-21</date>
+        <source>IC_LEVEL_CONVERTER.kicad_sch</source>
+        <comment number="1" value="333095"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a1c6ea23-4c71-4acf-ad70-5bcbf6668430</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>15585ec5-00ac-4cec-853c-d450488cfcda</tstamps>
+    </comp>
+    <comp ref="FD1">
+      <value>FIDUCIAL</value>
+      <footprint>e-radionica.com footprinti:FIDUCIAL_23</footprint>
+      <libsource lib="e-radionica.com schematics" part="FIDUCIAL" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3914c5fb-2e98-4c97-b412-fc0555f67032</tstamps>
+    </comp>
+    <comp ref="H1">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>84c63d72-f47d-49ed-a3ac-5c856c55a73f</tstamps>
+    </comp>
+    <comp ref="H2">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5b25ca97-eae6-4c3b-b915-2f1fd111a1d3</tstamps>
+    </comp>
+    <comp ref="K1">
+      <value>HEADER_MALE_6X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_6X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_6X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>33e9a83d-336c-4cfd-9d4d-08d8375c0c5c</tstamps>
+    </comp>
+    <comp ref="K2">
+      <value>HEADER_MALE_1X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_1X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_1X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6fea04c5-97a2-4c52-9476-46ded98a2a72</tstamps>
+    </comp>
+    <comp ref="K3">
+      <value>HEADER_MALE_6X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_6X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_6X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e8e3f6a7-cbe4-4d82-bad5-73bb67b50217</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>874f8287-190b-471d-a06f-901ba31521de</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>TXB0104PWR</value>
+      <footprint>e-radionica.com footprinti:TXB0104QPWRQ1</footprint>
+      <libsource lib="e-radionica.com schematics" part="TXB0104QPWRQ1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="IC_LEVEL_CONVERTER.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7fa5a67f-7c63-4cc5-ba8e-9ac41544b7e4</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="e-radionica.com schematics" part="0603C">
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">0603C</field>
+        <field name="Footprint">e-radionica.com footprinti:0603C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="FIDUCIAL">
+      <fields>
+        <field name="Reference">FD</field>
+        <field name="Value">FIDUCIAL</field>
+        <field name="Footprint">e-radionica.com footprinti:FIDUCIAL_23</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HEADER_MALE_1X1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_1X1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_1X1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HEADER_MALE_6X1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_6X1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_6X1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+        <pin num="5" name="" type="passive"/>
+        <pin num="6" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HOLE_3.2mm">
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">HOLE_3.2mm</field>
+        <field name="Footprint">e-radionica.com footprinti:HOLE_3.2mm</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="TXB0104QPWRQ1">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TXB0104QPWRQ1</field>
+        <field name="Footprint">e-radionica.com footprinti:TXB0104QPWRQ1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VCCA" type="power_in"/>
+        <pin num="2" name="A1" type="passive"/>
+        <pin num="3" name="A2" type="passive"/>
+        <pin num="4" name="A3" type="passive"/>
+        <pin num="5" name="A4" type="passive"/>
+        <pin num="6" name="NC" type="no_connect"/>
+        <pin num="7" name="GND" type="passive"/>
+        <pin num="8" name="OE" type="passive"/>
+        <pin num="9" name="NC" type="no_connect"/>
+        <pin num="10" name="B4" type="passive"/>
+        <pin num="11" name="B3" type="passive"/>
+        <pin num="12" name="B2" type="passive"/>
+        <pin num="13" name="B1" type="passive"/>
+        <pin num="14" name="VCCB" type="power_out"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="A1">
+      <node ref="K1" pin="4" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="A1" pintype="passive"/>
+    </net>
+    <net code="2" name="A2">
+      <node ref="K1" pin="3" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="A2" pintype="passive"/>
+    </net>
+    <net code="3" name="A3">
+      <node ref="K1" pin="2" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="A3" pintype="passive"/>
+    </net>
+    <net code="4" name="A4">
+      <node ref="K1" pin="1" pintype="passive"/>
+      <node ref="U1" pin="5" pinfunction="A4" pintype="passive"/>
+    </net>
+    <net code="5" name="B1">
+      <node ref="K3" pin="4" pintype="passive"/>
+      <node ref="U1" pin="13" pinfunction="B1" pintype="passive"/>
+    </net>
+    <net code="6" name="B2">
+      <node ref="K3" pin="3" pintype="passive"/>
+      <node ref="U1" pin="12" pinfunction="B2" pintype="passive"/>
+    </net>
+    <net code="7" name="B3">
+      <node ref="K3" pin="2" pintype="passive"/>
+      <node ref="U1" pin="11" pinfunction="B3" pintype="passive"/>
+    </net>
+    <net code="8" name="B4">
+      <node ref="K3" pin="1" pintype="passive"/>
+      <node ref="U1" pin="10" pinfunction="B4" pintype="passive"/>
+    </net>
+    <net code="9" name="GND">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="K1" pin="6" pintype="passive"/>
+      <node ref="K3" pin="6" pintype="passive"/>
+      <node ref="U1" pin="7" pinfunction="GND" pintype="passive"/>
+    </net>
+    <net code="10" name="OE">
+      <node ref="K2" pin="1" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="U1" pin="8" pinfunction="OE" pintype="passive"/>
+    </net>
+    <net code="11" name="VCCH">
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="K3" pin="5" pintype="passive"/>
+      <node ref="U1" pin="14" pinfunction="VCCB" pintype="power_out"/>
+    </net>
+    <net code="12" name="VCCL">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="K1" pin="5" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="VCCA" pintype="power_in"/>
+    </net>
+    <net code="13" name="unconnected-(U1-NC-Pad6)">
+      <node ref="U1" pin="6" pinfunction="NC" pintype="no_connect"/>
+    </net>
+    <net code="14" name="unconnected-(U1-NC-Pad9)">
+      <node ref="U1" pin="9" pinfunction="NC" pintype="no_connect"/>
+    </net>
+  </nets>
+</export>

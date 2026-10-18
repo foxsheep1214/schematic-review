@@ -1,0 +1,780 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>HARDWARE/RVPC_Rev.B/RVPC_Rev_B.kicad_sch</source>
+    <date>Sun Oct 18 05:59:28 2026</date>
+    <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>RVPC</title>
+        <company>OLIMEX LTD.</company>
+        <rev>B</rev>
+        <date>2024-09-13</date>
+        <source>RVPC_Rev_B.kicad_sch</source>
+        <comment number="1" value="https://www.olimex.com/"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="BLU1">
+      <value>Opened</value>
+      <footprint>OLIMEX_Jumpers-FP:SJ_1_SMALLER</footprint>
+      <libsource lib="OLIMEX_Jumpers" part="SJ" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>874ae78c-e768-422b-a8c9-008e4b4705ac</tstamps>
+    </comp>
+    <comp ref="C1">
+      <value>100nF/25V/2010</value>
+      <footprint>OLIMEX_RLC-FP:C2010</footprint>
+      <libsource lib="OLIMEX_RCL" part="C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-00006429c9cc</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>1N4148/DO35</value>
+      <footprint>OLIMEX_Diodes-FP:DO35_1K_2A</footprint>
+      <libsource lib="OLIMEX_Diodes" part="D" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5e12dcbf-2b12-4d7c-b6f3-3262d11fffb8</tstamps>
+    </comp>
+    <comp ref="FID1">
+      <value>Fiducial</value>
+      <footprint>OLIMEX_Other-FP:Fiducial1x3</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Fiducial" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-00005af57b2c</tstamps>
+    </comp>
+    <comp ref="FID2">
+      <value>Fiducial</value>
+      <footprint>OLIMEX_Other-FP:Fiducial1x3</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Fiducial" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-00005faaf1b6</tstamps>
+    </comp>
+    <comp ref="FID3">
+      <value>Fiducial</value>
+      <footprint>OLIMEX_Other-FP:Fiducial1x3</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Fiducial" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-00005af5872d</tstamps>
+    </comp>
+    <comp ref="FID4">
+      <value>Fiducial</value>
+      <footprint>OLIMEX_Other-FP:Fiducial1x3_Paste</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Fiducial" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>182d6b83-1c01-400f-8dfa-4e08e76e5702</tstamps>
+    </comp>
+    <comp ref="FID5">
+      <value>Fiducial</value>
+      <footprint>OLIMEX_Other-FP:Fiducial1x3_Paste</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Fiducial" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cc4e8522-ff67-4df8-b864-7aa2a67d0a74</tstamps>
+    </comp>
+    <comp ref="FID6">
+      <value>Fiducial</value>
+      <footprint>OLIMEX_Other-FP:Fiducial1x3_Paste</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Fiducial" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>09e99f3e-171b-427f-b8ab-55d7700118d0</tstamps>
+    </comp>
+    <comp ref="GND1">
+      <value>TESTPAD</value>
+      <footprint>OLIMEX_Other-FP:TEST_PAD40x70_SQUARE</footprint>
+      <fields>
+        <field name="Fieldname 1">Value 1</field>
+        <field name="Fieldname2">Value2</field>
+        <field name="Fieldname3">Value3</field>
+      </fields>
+      <libsource lib="OLIMEX_OTHER" part="TESTPAD" description=""/>
+      <property name="Fieldname 1" value="Value 1"/>
+      <property name="Fieldname2" value="Value2"/>
+      <property name="Fieldname3" value="Value3"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9c8cb27e-808a-4d1c-9ac9-dc65449877c6</tstamps>
+    </comp>
+    <comp ref="GRN1">
+      <value>Soldered</value>
+      <footprint>OLIMEX_Jumpers-FP:SJ_1_SMALLER</footprint>
+      <libsource lib="OLIMEX_Jumpers" part="SJ" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7b4eb770-99fe-4db3-b85a-02d10d825042</tstamps>
+    </comp>
+    <comp ref="MH1">
+      <value>Mounting_Hole_NPTH</value>
+      <footprint>OLIMEX_Other-FP:Mounting_Hole_Drill-3.3mm_Clerance-7mm</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Mounting_Hole_NPTH" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-000063d64adb</tstamps>
+    </comp>
+    <comp ref="MH2">
+      <value>Mounting_Hole_NPTH</value>
+      <footprint>OLIMEX_Other-FP:Mounting_Hole_Drill-3.3mm_Clerance-7mm</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Mounting_Hole_NPTH" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-000063e59c7a</tstamps>
+    </comp>
+    <comp ref="MH3">
+      <value>Mounting_Hole_NPTH</value>
+      <footprint>OLIMEX_Other-FP:Mounting_Hole_Drill-3.3mm_Clerance-7mm</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Mounting_Hole_NPTH" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-000063ed2510</tstamps>
+    </comp>
+    <comp ref="MH4">
+      <value>Mounting_Hole_NPTH</value>
+      <footprint>OLIMEX_Other-FP:Mounting_Hole_Drill-3.3mm_Clerance-7mm</footprint>
+      <libsource lib="OLIMEX_OTHER" part="Mounting_Hole_NPTH" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-000070e5c679</tstamps>
+    </comp>
+    <comp ref="PGM/DBG1">
+      <value>NS(HN1x2)</value>
+      <footprint>OLIMEX_Connectors-FP:HN1x2</footprint>
+      <libsource lib="OLIMEX_Connectors" part="CON2" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-000066144ac7</tstamps>
+    </comp>
+    <comp ref="PS2_KBD1">
+      <value>MDR6_MINI-DIN</value>
+      <footprint>OLIMEX_Connectors-FP:PS2_MDR6_MINI-DIN</footprint>
+      <libsource lib="OLIMEX_Connectors" part="PS2_MDR6_MINI-DIN" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000642fe999</tstamps>
+    </comp>
+    <comp ref="PWR_JACK1">
+      <value>PWRJ-2mm(YDJ-1134)</value>
+      <footprint>OLIMEX_Connectors-FP:PWRJ-2mm(YDJ-1136)</footprint>
+      <fields>
+        <field name="Fieldname 1">Value 1</field>
+        <field name="Fieldname2">Value2</field>
+        <field name="Fieldname3">Value3</field>
+      </fields>
+      <libsource lib="OLIMEX_Connectors" part="PWR-JAKPWR_JACK_UNI_MILLING" description=""/>
+      <property name="Fieldname 1" value="Value 1"/>
+      <property name="Fieldname2" value="Value2"/>
+      <property name="Fieldname3" value="Value3"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6eb7b11a-222e-4304-b69e-2047887b44fd</tstamps>
+    </comp>
+    <comp ref="PWR_LED1">
+      <value>LED/PTH/5MM/RED</value>
+      <footprint>OLIMEX_LEDs-FP:LED-5mm-PTH-KA</footprint>
+      <libsource lib="OLIMEX_Diodes" part="LED" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-00005812a4e3</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>2k/1/8W</value>
+      <footprint>OLIMEX_RLC-FP:R_0.125W_PTH</footprint>
+      <libsource lib="OLIMEX_RCL" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7a103b02-942e-4fac-afbd-d8089de81e0e</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>470R/1/8W</value>
+      <footprint>OLIMEX_RLC-FP:R_0.125W_PTH</footprint>
+      <libsource lib="OLIMEX_RCL" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-00006425039a</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>470R/1/8W</value>
+      <footprint>OLIMEX_RLC-FP:R_0.125W_PTH</footprint>
+      <libsource lib="OLIMEX_RCL" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9a645e72-91c9-46ed-93fb-fe6eab27db1c</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>470R/1/8W</value>
+      <footprint>OLIMEX_RLC-FP:R_0.125W_PTH</footprint>
+      <libsource lib="OLIMEX_RCL" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fd25ba3c-44f6-43d4-8830-88e8dbf235af</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>2k/1/8W</value>
+      <footprint>OLIMEX_RLC-FP:R_0.125W_PTH</footprint>
+      <libsource lib="OLIMEX_RCL" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-000069f7d33f</tstamps>
+    </comp>
+    <comp ref="R6">
+      <value>2k/1/8W</value>
+      <footprint>OLIMEX_RLC-FP:R_0.125W_PTH</footprint>
+      <libsource lib="OLIMEX_RCL" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-00006a8b4592</tstamps>
+    </comp>
+    <comp ref="R7">
+      <value>100R/1/8W</value>
+      <footprint>OLIMEX_RLC-FP:R_0.125W_PTH</footprint>
+      <libsource lib="OLIMEX_RCL" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fa5f5478-e67f-461d-ac63-0d344a09f5c2</tstamps>
+    </comp>
+    <comp ref="R8">
+      <value>2k/1/8W</value>
+      <footprint>OLIMEX_RLC-FP:R_0.125W_PTH</footprint>
+      <libsource lib="OLIMEX_RCL" part="R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7ffbd889-ce35-4757-8ae9-a40c61c58f2f</tstamps>
+    </comp>
+    <comp ref="RED1">
+      <value>Opened</value>
+      <footprint>OLIMEX_Jumpers-FP:SJ_1_SMALLER</footprint>
+      <libsource lib="OLIMEX_Jumpers" part="SJ" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>269dfd37-cba3-42a4-a682-c1bfe8e37e79</tstamps>
+    </comp>
+    <comp ref="SPK1">
+      <value>Speaker_QMB-09B-03(1.5-5.0V_2.7kHz_F9.0mm*H5.5mm)</value>
+      <footprint>OLIMEX_Devices-FP:Speaker_QMB-09B-03_1-Plus_2-Minus</footprint>
+      <libsource lib="OLIMEX_Devices" part="Buzzer_PB1221P" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9ecb28b7-957a-4c21-8abb-d5600e5212cd</tstamps>
+    </comp>
+    <comp ref="T1">
+      <value>2N3904</value>
+      <footprint>OLIMEX_Transistors-FP:TO-92_PTH</footprint>
+      <libsource lib="OLIMEX_Transistors" part="2N3904" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9b5809fa-6bdd-4d99-87e9-1fb149829cb1</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>CH32V003J4M6(SOP8)</value>
+      <footprint>OLIMEX_IC-FP:SOIC-8_150mil</footprint>
+      <datasheet>http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html</datasheet>
+      <fields>
+        <field name="Note">PB-Free</field>
+      </fields>
+      <libsource lib="OLIMEX_IC" part="CH32V003J4M6(SOP8)" description="CH32V003 series is an industrial-grade microcontroller with QingKe 32-bit RISC-V core and RV32EC&#xD;instruction set."/>
+      <property name="Note" value="PB-Free"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <property name="ki_description" value="CH32V003 series is an industrial-grade microcontroller with QingKe 32-bit RISC-V core and RV32EC&#xD;instruction set."/>
+      <property name="ki_keywords" value="CH32V003"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>98f86062-e444-43c8-b2f6-fd3438652dc1</tstamps>
+    </comp>
+    <comp ref="VGA1">
+      <value>HDR15-3.08-14.5T/VGA15/14.5mm</value>
+      <footprint>OLIMEX_Connectors-FP:VGA15-F(HDR15-3.08-14.5T)_DrillSlot</footprint>
+      <libsource lib="OLIMEX_Connectors" part="VGA15-F(CD0515S21J0)" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="RVPC_Rev_B.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00000000-0000-0000-0000-0000642504cf</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="OLIMEX_Connectors" part="CON2">
+      <fields>
+        <field name="Reference">CON</field>
+        <field name="Value">CON2</field>
+        <field name="Sim.Enable">0</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_Connectors" part="PS2_MDR6_MINI-DIN">
+      <footprints>
+        <fp>*PS2*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">PS</field>
+        <field name="Value">PS2_MDR6_MINI-DIN</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="bidirectional"/>
+        <pin num="2" name="2" type="no_connect"/>
+        <pin num="3" name="3" type="power_in"/>
+        <pin num="4" name="4" type="power_in"/>
+        <pin num="5" name="5" type="bidirectional"/>
+        <pin num="6" name="6" type="no_connect"/>
+        <pin num="7" name="NC1" type="no_connect"/>
+        <pin num="8" name="NC2" type="no_connect"/>
+        <pin num="9" name="SHIELD1" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_Connectors" part="PWR-JAKPWR_JACK_UNI_MILLING">
+      <footprints>
+        <fp>*PWR_JACK_UNI_MILLING*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">PWR</field>
+        <field name="Value">PWR-JAKPWR_JACK_UNI_MILLING</field>
+      </fields>
+      <pins>
+        <pin num="+" name="+" type="passive"/>
+        <pin num="-" name="-" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_Connectors" part="VGA15-F(CD0515S21J0)">
+      <fields>
+        <field name="Reference">VGA</field>
+        <field name="Value">VGA15-F(CD0515S21J0)</field>
+        <field name="Footprint">OLIMEX_Connectors-FP:VGA15-F(CD0515S21J0)</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Red" type="bidirectional"/>
+        <pin num="2" name="Green" type="bidirectional"/>
+        <pin num="3" name="Blue" type="bidirectional"/>
+        <pin num="4" name="ID2/RES" type="bidirectional"/>
+        <pin num="5" name="GND" type="power_in"/>
+        <pin num="6" name="Red_RTN" type="input"/>
+        <pin num="7" name="Green_RTN" type="input"/>
+        <pin num="8" name="Blue_RTN" type="input"/>
+        <pin num="9" name="Key/PWR" type="input"/>
+        <pin num="10" name="GND" type="power_in"/>
+        <pin num="11" name="ID0/RES" type="bidirectional"/>
+        <pin num="12" name="ID1/SDA" type="bidirectional"/>
+        <pin num="13" name="HSync" type="bidirectional"/>
+        <pin num="14" name="VSync" type="bidirectional"/>
+        <pin num="15" name="ID3/SCL" type="bidirectional"/>
+        <pin num="16" name="Shield1" type="input"/>
+        <pin num="17" name="Shield2" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_Devices" part="Buzzer_PB1221P">
+      <footprints>
+        <fp>*CDM-10008*</fp>
+        <fp>*PB1221*</fp>
+        <fp>*PB1221_BIG*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">BUZ</field>
+        <field name="Value">Buzzer_PB1221P</field>
+      </fields>
+      <pins>
+        <pin num="1" name="PLUS" type="passive"/>
+        <pin num="2" name="MINUS" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_Diodes" part="D">
+      <footprints>
+        <fp>Diode_*</fp>
+        <fp>D-Pak_TO252AA</fp>
+        <fp>*SingleDiode</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_Diodes" part="LED">
+      <footprints>
+        <fp>LED-3MM</fp>
+        <fp>LED-5MM</fp>
+        <fp>LED-10MM</fp>
+        <fp>LED-0603</fp>
+        <fp>LED-0805</fp>
+        <fp>LED-1206</fp>
+        <fp>LEDV</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">LED</field>
+        <field name="Value">LED</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_IC" part="CH32V003J4M6(SOP8)">
+      <description>CH32V003 series is an industrial-grade microcontroller with QingKe 32-bit RISC-V core and RV32EC&#xD;instruction set.</description>
+      <docs>http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html</docs>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">CH32V003J4M6(SOP8)</field>
+        <field name="Footprint">OLIMEX_IC-FP:SOIC-8_150mil</field>
+        <field name="Datasheet">http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html</field>
+        <field name="Note">PB-Free</field>
+      </fields>
+      <pins>
+        <pin num="1" name="PD6/A6/URX/T2CH3_/UTX_" type="bidirectional"/>
+        <pin num="2" name="VSS" type="power_in"/>
+        <pin num="3" name="PA2/OSCO/A0/T1CH2N/OPP0/AETR2_" type="bidirectional"/>
+        <pin num="4" name="VDD" type="power_in"/>
+        <pin num="5" name="PC1/SDA/NSS/T2CH4_/T2CH1ETR_/T1BKIN_/URX_" type="bidirectional"/>
+        <pin num="6" name="PC2/SCL/URTS/T1BKIN/AETR_/T2CH2_/T1ETR_" type="bidirectional"/>
+        <pin num="7" name="PC4/A2/T1CH4/MCO/T1CH1CH2N_" type="bidirectional"/>
+        <pin num="8" name="PD1/SWIO/AETR2/T1CH3N/SCL_/URX_" type="bidirectional"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_Jumpers" part="SJ">
+      <footprints>
+        <fp>*SJ*</fp>
+        <fp>*SJ-CLOSE*</fp>
+        <fp>*SJ_1_SMALLER_CLOSE*</fp>
+        <fp>*SJ_1_SMALLER_CLOSE_10MILS*</fp>
+        <fp>*SJ_1_THE_SMALLEST*</fp>
+        <fp>*SJ_1_SMALLER*</fp>
+        <fp>*SJW*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">SJ</field>
+        <field name="Value">SJ</field>
+        <field name="Footprint">jumper_SJ</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_OTHER" part="Fiducial">
+      <footprints>
+        <fp>*TEST_PAD40/70/SQUARE*</fp>
+        <fp>*TESTPAD50/80*</fp>
+        <fp>*TESPAD28/40*</fp>
+        <fp>*TESTPAD32/56*</fp>
+        <fp>*TESTPAD34/60*</fp>
+        <fp>*TESTPAD311_1*</fp>
+        <fp>*TESTPAD40/66/SQUARE*</fp>
+        <fp>*TESTPAD40/66*</fp>
+        <fp>*TESTPAD*</fp>
+        <fp>*TESTPAD2*</fp>
+        <fp>*TESTPAD43/80*</fp>
+        <fp>*SMD50/40*</fp>
+        <fp>*TESTPAD50/80*</fp>
+        <fp>*TESTPAD50/80_SQUARE*</fp>
+        <fp>*TESTPAD60/110*</fp>
+        <fp>*TESTPAD311*</fp>
+        <fp>*SMD80/30*</fp>
+        <fp>*SMD80/40*</fp>
+        <fp>*SMD80/50*</fp>
+        <fp>*TESTPAD80/130*</fp>
+        <fp>*TESTPAD90/69*</fp>
+        <fp>*SMD100/40*</fp>
+        <fp>*TESTPAD100/150*</fp>
+        <fp>*SMD250/80*</fp>
+        <fp>*TESTPAD40/OBLONG*</fp>
+        <fp>*TESTPAD_RPM*</fp>
+        <fp>*TESTPAD60/90_WITHOUT_MASK*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">FID</field>
+        <field name="Value">Fiducial</field>
+        <field name="Footprint">OLIMEX_Other-FP:Fiducial1x3</field>
+        <field name="Sim.Enable">0</field>
+      </fields>
+      <pins>
+        <pin num="Fid1" name="FID*" type="no_connect"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_OTHER" part="Mounting_Hole_NPTH">
+      <fields>
+        <field name="Reference">MH</field>
+        <field name="Value">Mounting_Hole_NPTH</field>
+        <field name="Sim.Enable">0</field>
+      </fields>
+    </libpart>
+    <libpart lib="OLIMEX_OTHER" part="TESTPAD">
+      <footprints>
+        <fp>*TEST_PAD40/70/SQUARE*</fp>
+        <fp>*TESTPAD50/80*</fp>
+        <fp>*TESPAD28/40*</fp>
+        <fp>*TESTPAD32/56*</fp>
+        <fp>*TESTPAD34/60*</fp>
+        <fp>*TESTPAD311_1*</fp>
+        <fp>*TESTPAD40/66/SQUARE*</fp>
+        <fp>*TESTPAD40/66*</fp>
+        <fp>*TESTPAD*</fp>
+        <fp>*TESTPAD2*</fp>
+        <fp>*TESTPAD43/80*</fp>
+        <fp>*SMD50/40*</fp>
+        <fp>*TESTPAD50/80*</fp>
+        <fp>*TESTPAD50/80_SQUARE*</fp>
+        <fp>*TESTPAD60/110*</fp>
+        <fp>*TESTPAD311*</fp>
+        <fp>*SMD80/30*</fp>
+        <fp>*SMD80/40*</fp>
+        <fp>*SMD80/50*</fp>
+        <fp>*TESTPAD80/130*</fp>
+        <fp>*TESTPAD90/69*</fp>
+        <fp>*SMD100/40*</fp>
+        <fp>*TESTPAD100/150*</fp>
+        <fp>*SMD250/80*</fp>
+        <fp>*TESTPAD40/OBLONG*</fp>
+        <fp>*TESTPAD_RPM*</fp>
+        <fp>*TESTPAD60/90_WITHOUT_MASK*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">TESTPAD</field>
+        <field name="Value">TESTPAD</field>
+        <field name="Sim.Enable">0</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pad" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_RCL" part="C">
+      <footprints>
+        <fp>C?</fp>
+        <fp>C_????_*</fp>
+        <fp>C_????</fp>
+        <fp>SMD*_c</fp>
+        <fp>Capacitor*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_RCL" part="R">
+      <footprints>
+        <fp>R_*</fp>
+        <fp>Resistor_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+        <field name="Sim.Enable">0</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="OLIMEX_Transistors" part="2N3904">
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">2N3904</field>
+        <field name="Footprint">OLIMEX_Transistors-FP:TO-92_PTH</field>
+      </fields>
+      <pins>
+        <pin num="1" name="E" type="passive"/>
+        <pin num="2" name="B" type="passive"/>
+        <pin num="3" name="C" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="+5V">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="PS2_KBD1" pin="4" pinfunction="4" pintype="power_in"/>
+      <node ref="PWR_JACK1" pin="+" pinfunction="+" pintype="passive"/>
+      <node ref="PWR_LED1" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="VDD" pintype="power_in"/>
+    </net>
+    <net code="2" name="/PA2\KBD_DAT">
+      <node ref="PS2_KBD1" pin="1" pinfunction="1" pintype="bidirectional"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="PA2/OSCO/A0/T1CH2N/OPP0/AETR2_" pintype="bidirectional"/>
+    </net>
+    <net code="3" name="/PC1\T2CH4_1\HSync">
+      <node ref="U1" pin="5" pinfunction="PC1/SDA/NSS/T2CH4_/T2CH1ETR_/T1BKIN_/URX_" pintype="bidirectional"/>
+      <node ref="VGA1" pin="13" pinfunction="HSync" pintype="bidirectional"/>
+    </net>
+    <net code="4" name="/PC2\T2CH2_1\Video_Out">
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="U1" pin="6" pinfunction="PC2/SCL/URTS/T1BKIN/AETR_/T2CH2_/T1ETR_" pintype="bidirectional"/>
+    </net>
+    <net code="5" name="/PC4\T1CH4_2\Audio">
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="U1" pin="7" pinfunction="PC4/A2/T1CH4/MCO/T1CH1CH2N_" pintype="bidirectional"/>
+    </net>
+    <net code="6" name="/PD1\SWIO\KBD_CLK">
+      <node ref="PGM/DBG1" pin="1" pintype="passive"/>
+      <node ref="PS2_KBD1" pin="5" pinfunction="5" pintype="bidirectional"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="U1" pin="8" pinfunction="PD1/SWIO/AETR2/T1CH3N/SCL_/URX_" pintype="bidirectional"/>
+    </net>
+    <net code="7" name="/PD6\T2CH3_3\VSync">
+      <node ref="U1" pin="1" pinfunction="PD6/A6/URX/T2CH3_/UTX_" pintype="bidirectional"/>
+      <node ref="VGA1" pin="14" pinfunction="VSync" pintype="bidirectional"/>
+    </net>
+    <net code="9" name="GND">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="GND1" pin="1" pinfunction="Pad" pintype="passive"/>
+      <node ref="PGM/DBG1" pin="2" pintype="passive"/>
+      <node ref="PS2_KBD1" pin="3" pinfunction="3" pintype="power_in"/>
+      <node ref="PS2_KBD1" pin="9" pinfunction="SHIELD1" pintype="input"/>
+      <node ref="PWR_JACK1" pin="-" pinfunction="-" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="T1" pin="1" pinfunction="E" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="VSS" pintype="power_in"/>
+      <node ref="VGA1" pin="10" pinfunction="GND" pintype="power_in"/>
+      <node ref="VGA1" pin="16" pinfunction="Shield1" pintype="input"/>
+      <node ref="VGA1" pin="17" pinfunction="Shield2" pintype="input"/>
+      <node ref="VGA1" pin="5" pinfunction="GND" pintype="power_in"/>
+      <node ref="VGA1" pin="6" pinfunction="Red_RTN" pintype="input"/>
+      <node ref="VGA1" pin="7" pinfunction="Green_RTN" pintype="input"/>
+      <node ref="VGA1" pin="8" pinfunction="Blue_RTN" pintype="input"/>
+    </net>
+    <net code="10" name="Net-(BLU1-Pad2)">
+      <node ref="BLU1" pin="2" pinfunction="2" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(D1-A)">
+      <node ref="D1" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="SPK1" pin="2" pinfunction="MINUS" pintype="passive"/>
+      <node ref="T1" pin="3" pinfunction="C" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(D1-K)">
+      <node ref="D1" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+      <node ref="SPK1" pin="1" pinfunction="PLUS" pintype="passive"/>
+    </net>
+    <net code="13" name="Net-(GRN1-Pad2)">
+      <node ref="GRN1" pin="2" pinfunction="2" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+    </net>
+    <net code="14" name="Net-(PWR_LED1-K)">
+      <node ref="PWR_LED1" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+    </net>
+    <net code="15" name="Net-(R2-Pad1)">
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="RED1" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="16" name="Net-(T1-B)">
+      <node ref="R8" pin="1" pintype="passive"/>
+      <node ref="T1" pin="2" pinfunction="B" pintype="passive"/>
+    </net>
+    <net code="17" name="Net-(VGA1-Blue)">
+      <node ref="BLU1" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="VGA1" pin="3" pinfunction="Blue" pintype="bidirectional"/>
+    </net>
+    <net code="18" name="Net-(VGA1-Green)">
+      <node ref="GRN1" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="VGA1" pin="2" pinfunction="Green" pintype="bidirectional"/>
+    </net>
+    <net code="19" name="Net-(VGA1-Red)">
+      <node ref="RED1" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="VGA1" pin="1" pinfunction="Red" pintype="bidirectional"/>
+    </net>
+    <net code="20" name="unconnected-(FID1-FID*-PadFid1)">
+      <node ref="FID1" pin="Fid1" pinfunction="FID*" pintype="no_connect"/>
+    </net>
+    <net code="21" name="unconnected-(FID2-FID*-PadFid1)">
+      <node ref="FID2" pin="Fid1" pinfunction="FID*" pintype="no_connect"/>
+    </net>
+    <net code="22" name="unconnected-(FID3-FID*-PadFid1)">
+      <node ref="FID3" pin="Fid1" pinfunction="FID*" pintype="no_connect"/>
+    </net>
+    <net code="23" name="unconnected-(FID4-FID*-PadFid1)">
+      <node ref="FID4" pin="Fid1" pinfunction="FID*" pintype="no_connect"/>
+    </net>
+    <net code="24" name="unconnected-(FID5-FID*-PadFid1)">
+      <node ref="FID5" pin="Fid1" pinfunction="FID*" pintype="no_connect"/>
+    </net>
+    <net code="25" name="unconnected-(FID6-FID*-PadFid1)">
+      <node ref="FID6" pin="Fid1" pinfunction="FID*" pintype="no_connect"/>
+    </net>
+    <net code="26" name="unconnected-(PS2_KBD1-NC1-Pad7)">
+      <node ref="PS2_KBD1" pin="7" pinfunction="NC1" pintype="no_connect"/>
+    </net>
+    <net code="27" name="unconnected-(PS2_KBD1-NC2-Pad8)">
+      <node ref="PS2_KBD1" pin="8" pinfunction="NC2" pintype="no_connect"/>
+    </net>
+    <net code="28" name="unconnected-(PS2_KBD1-Pad2)">
+      <node ref="PS2_KBD1" pin="2" pinfunction="2" pintype="no_connect"/>
+    </net>
+    <net code="29" name="unconnected-(PS2_KBD1-Pad6)">
+      <node ref="PS2_KBD1" pin="6" pinfunction="6" pintype="no_connect"/>
+    </net>
+    <net code="30" name="unconnected-(VGA1-ID0{slash}RES-Pad11)">
+      <node ref="VGA1" pin="11" pinfunction="ID0/RES" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="31" name="unconnected-(VGA1-ID1{slash}SDA-Pad12)">
+      <node ref="VGA1" pin="12" pinfunction="ID1/SDA" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="32" name="unconnected-(VGA1-ID2{slash}RES-Pad4)">
+      <node ref="VGA1" pin="4" pinfunction="ID2/RES" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="33" name="unconnected-(VGA1-ID3{slash}SCL-Pad15)">
+      <node ref="VGA1" pin="15" pinfunction="ID3/SCL" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="34" name="unconnected-(VGA1-Key{slash}PWR-Pad9)">
+      <node ref="VGA1" pin="9" pinfunction="Key/PWR" pintype="input+no_connect"/>
+    </net>
+  </nets>
+</export>

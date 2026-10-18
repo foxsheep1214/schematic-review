@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>CAD/V1.2.0/Ethernet controller W5500 board.kicad_sch</source>
+    <date>Sun Oct 18 06:06:01 2026</date>
+    <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>Ethernet controller W5500 board</title>
+        <company>SOLDERED</company>
+        <rev>v1.2.0.</rev>
+        <date>2023-03-16</date>
+        <source>Ethernet controller W5500 board.kicad_sch</source>
+        <comment number="1" value="333039"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>EDK106M016A9BAA</value>
+      <footprint>e-radionica.com footprinti:ELECTROLITIC_CAP_4mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="ELECTROLITIC_CAP_4mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>77e94b2b-7917-47ed-ab51-a0fdbe42eabd</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>34fef5bd-c057-43c0-8372-17d3c61ff359</tstamps>
+    </comp>
+    <comp ref="C3">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a00a73f0-58cb-450c-9c49-b37952dc7edb</tstamps>
+    </comp>
+    <comp ref="C4">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bdfafd2c-6ca9-456d-840e-9d245527a8c6</tstamps>
+    </comp>
+    <comp ref="C5">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c135e9c5-b5fe-4581-bca5-843a1ae4f842</tstamps>
+    </comp>
+    <comp ref="C6">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c48cfca8-5da9-49e6-bcd9-b385bc2bdad8</tstamps>
+    </comp>
+    <comp ref="C7">
+      <value>10n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>13509b52-ea83-4db4-993d-087be7c136ce</tstamps>
+    </comp>
+    <comp ref="C8">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d0ea4c32-af18-407d-b3d5-ec4e882dfdd2</tstamps>
+    </comp>
+    <comp ref="C9">
+      <value>6n8</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3d3a06ac-e765-4db3-8f3f-3157315cfd43</tstamps>
+    </comp>
+    <comp ref="C10">
+      <value>6n8</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d99ad549-1ad9-41ef-b3d5-cd4d8e90bcd4</tstamps>
+    </comp>
+    <comp ref="C11">
+      <value>22n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a5d9b23f-a5f9-4491-89d9-da4827620eaa</tstamps>
+    </comp>
+    <comp ref="C12">
+      <value>4u7</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>df3b8483-1f15-4353-8717-0ece25d2ffe4</tstamps>
+    </comp>
+    <comp ref="C13">
+      <value>10n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f216aca1-75a7-4886-9565-be4104388136</tstamps>
+    </comp>
+    <comp ref="C14">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e1e3a32a-4a8f-4c95-b93a-f1aba4267873</tstamps>
+    </comp>
+    <comp ref="C15">
+      <value>EDK106M016A9BAA</value>
+      <footprint>e-radionica.com footprinti:ELECTROLITIC_CAP_4mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="ELECTROLITIC_CAP_4mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3a8cd9a5-8c3b-402c-b3c6-ca181f6a8528</tstamps>
+    </comp>
+    <comp ref="C16">
+      <value>18p</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cb94ca11-2a0a-4b19-acbf-3b5e80beb597</tstamps>
+    </comp>
+    <comp ref="C17">
+      <value>18p</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ab3c68e0-8e78-4c32-8d67-50e38e12b981</tstamps>
+    </comp>
+    <comp ref="C18">
+      <value>2u2</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>49d255a7-703d-4f6a-aa5d-2a5f0301f55a</tstamps>
+    </comp>
+    <comp ref="C19">
+      <value>2u2</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6deb3170-e9a5-49db-b2af-56d19fdc895d</tstamps>
+    </comp>
+    <comp ref="C20">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f9cce7d1-d178-42ab-8094-6b3c09bc9916</tstamps>
+    </comp>
+    <comp ref="C21">
+      <value>100n</value>
+      <footprint>e-radionica.com footprinti:0603C</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603C" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a0772360-a9ac-4f38-8781-387b7ec1912d</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>purple</value>
+      <footprint>e-radionica.com footprinti:0402LED</footprint>
+      <libsource lib="e-radionica.com schematics" part="0402LED" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>16a9a5c9-7506-4fe0-bacd-777b917f2399</tstamps>
+    </comp>
+    <comp ref="FB1">
+      <value>MMZ1608S601ATA00</value>
+      <footprint>e-radionica.com footprinti:0603L</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603L" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8930810a-c33d-45d7-a327-904d5b961eba</tstamps>
+    </comp>
+    <comp ref="FD1">
+      <value>FIDUCIAL</value>
+      <footprint>e-radionica.com footprinti:FIDUCIAL_23</footprint>
+      <libsource lib="e-radionica.com schematics" part="FIDUCIAL" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <property name="exclude_from_bom"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f3c01591-7232-460b-941a-26c50f37e804</tstamps>
+    </comp>
+    <comp ref="H1">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9852f215-d7c8-4bc8-aff5-379c8fa20565</tstamps>
+    </comp>
+    <comp ref="H2">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>68cdfd81-6676-47aa-a2aa-4d41e0ce4b7d</tstamps>
+    </comp>
+    <comp ref="H3">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>36518a0f-439a-4004-bb80-de2deb372f35</tstamps>
+    </comp>
+    <comp ref="H4">
+      <value>HOLE_3.2mm</value>
+      <footprint>e-radionica.com footprinti:HOLE_3.2mm</footprint>
+      <libsource lib="e-radionica.com schematics" part="HOLE_3.2mm" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>732d88f2-608f-4e96-b3ac-a51dc746b8d0</tstamps>
+    </comp>
+    <comp ref="JP1">
+      <value>SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</value>
+      <footprint>e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>20657393-59d7-40c2-b47a-bff4e0b60579</tstamps>
+    </comp>
+    <comp ref="JP2">
+      <value>SMD_JUMPER</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>69af2907-038b-4657-ab2c-d5245f579c74</tstamps>
+    </comp>
+    <comp ref="JP3">
+      <value>SMD_JUMPER</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>58a90b4e-8879-4ba9-9b93-506a62e6a1e2</tstamps>
+    </comp>
+    <comp ref="JP4">
+      <value>SMD_JUMPER</value>
+      <footprint>e-radionica.com footprinti:SMD_JUMPER</footprint>
+      <libsource lib="e-radionica.com schematics" part="SMD_JUMPER" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>08031ee3-5a14-47c8-9248-35b4dc039632</tstamps>
+    </comp>
+    <comp ref="K1">
+      <value>HR_913550A</value>
+      <footprint>e-radionica.com footprinti:HR913550A</footprint>
+      <libsource lib="e-radionica.com schematics" part="HR_913550A" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ff52d376-d05b-44b0-986a-6aacea5d88d4</tstamps>
+    </comp>
+    <comp ref="K2">
+      <value>HEADER_MALE_9X1</value>
+      <footprint>e-radionica.com footprinti:HEADER_MALE_9X1</footprint>
+      <libsource lib="e-radionica.com schematics" part="HEADER_MALE_9X1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>09ec3aeb-f08e-4d41-bd35-f62fa84f51dd</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>33R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00d15f13-2485-4b85-bd57-c110da304838</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>33R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>53f8b073-f8b6-4f22-80ee-2e26c0aa47d9</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>33R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2d956814-d758-4cf3-9215-e862a2b763ef</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>33R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>77716765-db0f-405a-a96c-918d919024fa</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>12k4_1%</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e7b67326-b179-431a-8346-3ab18c7cee87</tstamps>
+    </comp>
+    <comp ref="R6">
+      <value>49R9 1%</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2c91ec60-87d1-4345-80a3-4ff7df4c7a56</tstamps>
+    </comp>
+    <comp ref="R7">
+      <value>49R9 1%</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7565ed1c-63a3-4c57-882d-205e2dfa216a</tstamps>
+    </comp>
+    <comp ref="R8">
+      <value>49R9 1%</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c8384503-1646-4d12-83b9-3b42b2cd0b40</tstamps>
+    </comp>
+    <comp ref="R9">
+      <value>49R9 1%</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1730a7fc-e86b-4d13-b1c5-e2cf4be1b868</tstamps>
+    </comp>
+    <comp ref="R10">
+      <value>10R 1%</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>aa44d3f0-f9ac-4a86-ae12-0646033fc0f1</tstamps>
+    </comp>
+    <comp ref="R11">
+      <value>330R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6e9db47d-119b-4fab-9ca2-b1443eef2e27</tstamps>
+    </comp>
+    <comp ref="R12">
+      <value>330R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4c771e55-04d2-43b1-bd94-775e2b0584b1</tstamps>
+    </comp>
+    <comp ref="R13">
+      <value>2k2</value>
+      <footprint>e-radionica.com footprinti:0402R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0402R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cfd5e4c8-7e9f-4f30-bd40-b915f2695070</tstamps>
+    </comp>
+    <comp ref="R14">
+      <value>1M</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a91bbe7e-f55a-44ae-8dc5-5614a899e071</tstamps>
+    </comp>
+    <comp ref="R15">
+      <value>0R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d17d253c-6fea-4a16-9d79-8aaaa824ea35</tstamps>
+    </comp>
+    <comp ref="R16">
+      <value>0R</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>00bbacff-074a-462f-98ff-b621fb7a224e</tstamps>
+    </comp>
+    <comp ref="R17">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d7837d15-3739-4288-8025-a73ff5aff494</tstamps>
+    </comp>
+    <comp ref="R21">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>92cf71ee-b753-4658-a147-77f0c8d2b629</tstamps>
+    </comp>
+    <comp ref="R22">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>29182dd7-139c-462b-aa2d-7493fc151e03</tstamps>
+    </comp>
+    <comp ref="R27">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>19e03d47-6da7-48de-af30-9a8b41428a88</tstamps>
+    </comp>
+    <comp ref="R28">
+      <value>10k</value>
+      <footprint>e-radionica.com footprinti:0603R</footprint>
+      <libsource lib="e-radionica.com schematics" part="0603R" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>18afb91d-db18-4ba1-8e28-d0cc20485d53</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>W5500</value>
+      <footprint>e-radionica.com footprinti:WIZnet W5500</footprint>
+      <libsource lib="e-radionica.com schematics" part="WIZnet_W5500" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>567b02d7-971f-4f36-91c3-47542f47f4e0</tstamps>
+    </comp>
+    <comp ref="U2">
+      <value>SE5218</value>
+      <footprint>e-radionica.com footprinti:SOT-23-5</footprint>
+      <libsource lib="e-radionica.com schematics" part="SE5218" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5723266d-9da6-4f27-afb5-996442e6ec43</tstamps>
+    </comp>
+    <comp ref="U3">
+      <value>TXB0104PWR</value>
+      <footprint>e-radionica.com footprinti:TXB0104QPWRQ1</footprint>
+      <libsource lib="e-radionica.com schematics" part="TXB0104QPWRQ1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a3c03939-7530-48a5-8310-a32bd7835519</tstamps>
+    </comp>
+    <comp ref="U5">
+      <value>NMOS-DUAL</value>
+      <footprint>e-radionica.com footprinti:SOT-363</footprint>
+      <libsource lib="e-radionica.com schematics" part="NMOS-DUAL" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>77eaedef-a5f0-49f2-a5a8-8e452e779703</tstamps>
+    </comp>
+    <comp ref="X1">
+      <value>TSX-3225 25.0000MF10P-C3</value>
+      <footprint>e-radionica.com footprinti:CRYSTAL_3225__4_PAD</footprint>
+      <libsource lib="e-radionica.com schematics" part="CRYSTAL_3225_4_PAD" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Ethernet controller W5500 board.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6e8617be-a73a-438d-a034-27f9266d57af</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="e-radionica.com schematics" part="0402LED">
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">0402LED</field>
+        <field name="Footprint">e-radionica.com footprinti:0402LED</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="K" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0402R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0402R</field>
+        <field name="Footprint">e-radionica.com footprinti:0402R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603C">
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">0603C</field>
+        <field name="Footprint">e-radionica.com footprinti:0603C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603L">
+      <fields>
+        <field name="Reference">L</field>
+        <field name="Value">0603L</field>
+        <field name="Footprint">e-radionica.com footprinti:0603L</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="0603R">
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">0603R</field>
+        <field name="Footprint">e-radionica.com footprinti:0603R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="CRYSTAL_3225_4_PAD">
+      <fields>
+        <field name="Reference">X</field>
+        <field name="Value">CRYSTAL_3225_4_PAD</field>
+        <field name="Footprint">e-radionica.com footprinti:CRYSTAL_3225__4_PAD</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="power_in"/>
+        <pin num="3" name="" type="output"/>
+        <pin num="4" name="" type="power_in"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="ELECTROLITIC_CAP_4mm">
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">ELECTROLITIC_CAP_4mm</field>
+        <field name="Footprint">e-radionica.com footprinti:ELECTROLITIC_CAP_4mm</field>
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="input"/>
+        <pin num="2" name="-" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="FIDUCIAL">
+      <fields>
+        <field name="Reference">FD</field>
+        <field name="Value">FIDUCIAL</field>
+        <field name="Footprint">e-radionica.com footprinti:FIDUCIAL_23</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HEADER_MALE_9X1">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HEADER_MALE_9X1</field>
+        <field name="Footprint">e-radionica.com footprinti:HEADER_MALE_9X1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+        <pin num="5" name="" type="passive"/>
+        <pin num="6" name="" type="passive"/>
+        <pin num="7" name="" type="passive"/>
+        <pin num="8" name="" type="passive"/>
+        <pin num="9" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HOLE_3.2mm">
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">HOLE_3.2mm</field>
+        <field name="Footprint">e-radionica.com footprinti:HOLE_3.2mm</field>
+      </fields>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="HR_913550A">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">HR_913550A</field>
+        <field name="Footprint">e-radionica.com footprinti:HR913550A</field>
+      </fields>
+      <pins>
+        <pin num="1" name="TD+P1" type="input"/>
+        <pin num="2" name="TD-P2" type="input"/>
+        <pin num="3" name="RD+P3" type="input"/>
+        <pin num="4" name="P4" type="input"/>
+        <pin num="5" name="P5" type="input"/>
+        <pin num="6" name="RD-P6" type="input"/>
+        <pin num="7" name="NC_P7" type="input"/>
+        <pin num="8" name="CHS_GND_P8" type="input"/>
+        <pin num="9" name="GREEN_A" type="input"/>
+        <pin num="10" name="GREEN_C" type="input"/>
+        <pin num="11" name="YELLOW_C" type="input"/>
+        <pin num="12" name="YELLOW_A" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="NMOS-DUAL">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">NMOS-DUAL</field>
+        <field name="Footprint">e-radionica.com footprinti:SOT-363</field>
+      </fields>
+      <pins>
+        <pin num="1" name="S2" type="input"/>
+        <pin num="2" name="G2" type="input"/>
+        <pin num="3" name="D1" type="input"/>
+        <pin num="4" name="S1" type="input"/>
+        <pin num="5" name="G1" type="input"/>
+        <pin num="6" name="D2" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SE5218">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">SE5218</field>
+        <field name="Footprint">e-radionica.com footprinti:SOT-23-5</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VIN" type="power_in"/>
+        <pin num="2" name="GND" type="power_in"/>
+        <pin num="3" name="EN" type="input"/>
+        <pin num="4" name="NC" type="passive"/>
+        <pin num="5" name="VOUT" type="power_out"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD-JUMPER-CONNECTED_TRACE_SLODERMASK">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD-JUMPER-CONNECTED_TRACE_SLODERMASK</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="SMD_JUMPER">
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SMD_JUMPER</field>
+        <field name="Footprint">e-radionica.com footprinti:SMD_JUMPER</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="TXB0104QPWRQ1">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TXB0104QPWRQ1</field>
+        <field name="Footprint">e-radionica.com footprinti:TXB0104QPWRQ1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VCCA" type="power_in"/>
+        <pin num="2" name="A1" type="passive"/>
+        <pin num="3" name="A2" type="passive"/>
+        <pin num="4" name="A3" type="passive"/>
+        <pin num="5" name="A4" type="passive"/>
+        <pin num="6" name="NC" type="no_connect"/>
+        <pin num="7" name="GND" type="passive"/>
+        <pin num="8" name="OE" type="passive"/>
+        <pin num="9" name="NC" type="no_connect"/>
+        <pin num="10" name="B4" type="passive"/>
+        <pin num="11" name="B3" type="passive"/>
+        <pin num="12" name="B2" type="passive"/>
+        <pin num="13" name="B1" type="passive"/>
+        <pin num="14" name="VCCB" type="power_out"/>
+      </pins>
+    </libpart>
+    <libpart lib="e-radionica.com schematics" part="WIZnet_W5500">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">WIZnet_W5500</field>
+        <field name="Footprint">e-radionica.com footprinti:WIZnet W5500</field>
+      </fields>
+      <pins>
+        <pin num="1" name="TXN" type="passive"/>
+        <pin num="2" name="TXP" type="passive"/>
+        <pin num="3" name="AGND" type="passive"/>
+        <pin num="4" name="AVDD" type="passive"/>
+        <pin num="5" name="RXN" type="passive"/>
+        <pin num="6" name="RXP" type="passive"/>
+        <pin num="7" name="DNC" type="passive"/>
+        <pin num="8" name="AVDD" type="passive"/>
+        <pin num="9" name="AGND" type="passive"/>
+        <pin num="10" name="EXRES1" type="passive"/>
+        <pin num="11" name="AVDD" type="passive"/>
+        <pin num="12" name="NC" type="passive"/>
+        <pin num="13" name="NC" type="passive"/>
+        <pin num="14" name="AGND" type="passive"/>
+        <pin num="15" name="AVDD" type="passive"/>
+        <pin num="16" name="AGND" type="passive"/>
+        <pin num="17" name="AVDD" type="passive"/>
+        <pin num="18" name="VBG" type="passive"/>
+        <pin num="19" name="AGND" type="passive"/>
+        <pin num="20" name="TOCAP" type="passive"/>
+        <pin num="21" name="AVDD" type="passive"/>
+        <pin num="22" name="1V20" type="passive"/>
+        <pin num="23" name="RSVD" type="passive"/>
+        <pin num="24" name="SPDLED" type="passive"/>
+        <pin num="25" name="LINKLED" type="passive"/>
+        <pin num="26" name="DUPLED" type="passive"/>
+        <pin num="27" name="ACTLED" type="passive"/>
+        <pin num="28" name="VDD" type="passive"/>
+        <pin num="29" name="GND" type="passive"/>
+        <pin num="30" name="XI/CLKIN" type="passive"/>
+        <pin num="31" name="XO" type="passive"/>
+        <pin num="32" name="SCSn" type="passive"/>
+        <pin num="33" name="SCLK" type="passive"/>
+        <pin num="34" name="MISO" type="passive"/>
+        <pin num="35" name="MOSI" type="passive"/>
+        <pin num="36" name="INTn" type="passive"/>
+        <pin num="37" name="RSTn" type="passive"/>
+        <pin num="38" name="RSVD" type="passive"/>
+        <pin num="39" name="RSVD" type="passive"/>
+        <pin num="40" name="RSVD" type="passive"/>
+        <pin num="41" name="RSVD" type="passive"/>
+        <pin num="42" name="RSVD" type="passive"/>
+        <pin num="43" name="PMODE2" type="passive"/>
+        <pin num="44" name="PMODE1" type="passive"/>
+        <pin num="45" name="PMODE0" type="passive"/>
+        <pin num="46" name="NC" type="passive"/>
+        <pin num="47" name="NC" type="passive"/>
+        <pin num="48" name="AGND" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="/RXN">
+      <node ref="C9" pin="1" pintype="passive"/>
+      <node ref="K1" pin="6" pinfunction="RD-P6" pintype="input"/>
+    </net>
+    <net code="2" name="/RXP">
+      <node ref="C10" pin="1" pintype="passive"/>
+      <node ref="K1" pin="3" pinfunction="RD+P3" pintype="input"/>
+    </net>
+    <net code="3" name="/TXN">
+      <node ref="K1" pin="2" pinfunction="TD-P2" pintype="input"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+    </net>
+    <net code="4" name="/TXP">
+      <node ref="K1" pin="1" pinfunction="TD+P1" pintype="input"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+    </net>
+    <net code="5" name="3V3">
+      <node ref="C14" pin="2" pintype="passive"/>
+      <node ref="C15" pin="1" pinfunction="+" pintype="input"/>
+      <node ref="C19" pin="2" pintype="passive"/>
+      <node ref="C20" pin="2" pintype="passive"/>
+      <node ref="FB1" pin="1" pintype="passive"/>
+      <node ref="JP1" pin="1" pintype="passive"/>
+      <node ref="K1" pin="12" pinfunction="YELLOW_A" pintype="input"/>
+      <node ref="K1" pin="9" pinfunction="GREEN_A" pintype="input"/>
+      <node ref="R17" pin="1" pintype="passive"/>
+      <node ref="R21" pin="2" pintype="passive"/>
+      <node ref="R28" pin="1" pintype="passive"/>
+      <node ref="U1" pin="28" pinfunction="VDD" pintype="passive"/>
+      <node ref="U2" pin="5" pinfunction="VOUT" pintype="power_out"/>
+      <node ref="U3" pin="1" pinfunction="VCCA" pintype="power_in"/>
+      <node ref="U5" pin="2" pinfunction="G2" pintype="input"/>
+      <node ref="U5" pin="5" pinfunction="G1" pintype="input"/>
+    </net>
+    <net code="6" name="3V3_A">
+      <node ref="C1" pin="1" pinfunction="+" pintype="input"/>
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="C5" pin="2" pintype="passive"/>
+      <node ref="C6" pin="2" pintype="passive"/>
+      <node ref="C8" pin="2" pintype="passive"/>
+      <node ref="FB1" pin="2" pintype="passive"/>
+      <node ref="R10" pin="2" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="U1" pin="11" pinfunction="AVDD" pintype="passive"/>
+      <node ref="U1" pin="15" pinfunction="AVDD" pintype="passive"/>
+      <node ref="U1" pin="17" pinfunction="AVDD" pintype="passive"/>
+      <node ref="U1" pin="21" pinfunction="AVDD" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="AVDD" pintype="passive"/>
+      <node ref="U1" pin="8" pinfunction="AVDD" pintype="passive"/>
+    </net>
+    <net code="7" name="ACTLED">
+      <node ref="R12" pin="2" pintype="passive"/>
+      <node ref="U1" pin="27" pinfunction="ACTLED" pintype="passive"/>
+    </net>
+    <net code="8" name="CGND">
+      <node ref="K1" pin="8" pinfunction="CHS_GND_P8" pintype="input"/>
+      <node ref="R16" pin="2" pintype="passive"/>
+    </net>
+    <net code="9" name="GND">
+      <node ref="C1" pin="2" pinfunction="-" pintype="input"/>
+      <node ref="C11" pin="1" pintype="passive"/>
+      <node ref="C12" pin="1" pintype="passive"/>
+      <node ref="C13" pin="1" pintype="passive"/>
+      <node ref="C14" pin="1" pintype="passive"/>
+      <node ref="C15" pin="2" pinfunction="-" pintype="input"/>
+      <node ref="C16" pin="1" pintype="passive"/>
+      <node ref="C17" pin="1" pintype="passive"/>
+      <node ref="C18" pin="1" pintype="passive"/>
+      <node ref="C19" pin="1" pintype="passive"/>
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="C20" pin="1" pintype="passive"/>
+      <node ref="C21" pin="2" pintype="passive"/>
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="C5" pin="1" pintype="passive"/>
+      <node ref="C6" pin="1" pintype="passive"/>
+      <node ref="C7" pin="1" pintype="passive"/>
+      <node ref="C8" pin="1" pintype="passive"/>
+      <node ref="D1" pin="2" pinfunction="K" pintype="passive"/>
+      <node ref="JP2" pin="1" pintype="passive"/>
+      <node ref="JP3" pin="1" pintype="passive"/>
+      <node ref="JP4" pin="1" pintype="passive"/>
+      <node ref="K2" pin="1" pintype="passive"/>
+      <node ref="R16" pin="1" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+      <node ref="U1" pin="14" pinfunction="AGND" pintype="passive"/>
+      <node ref="U1" pin="16" pinfunction="AGND" pintype="passive"/>
+      <node ref="U1" pin="19" pinfunction="AGND" pintype="passive"/>
+      <node ref="U1" pin="29" pinfunction="GND" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="AGND" pintype="passive"/>
+      <node ref="U1" pin="48" pinfunction="AGND" pintype="passive"/>
+      <node ref="U1" pin="9" pinfunction="AGND" pintype="passive"/>
+      <node ref="U2" pin="2" pinfunction="GND" pintype="power_in"/>
+      <node ref="U3" pin="7" pinfunction="GND" pintype="passive"/>
+      <node ref="X1" pin="2" pintype="power_in"/>
+      <node ref="X1" pin="4" pintype="power_in"/>
+    </net>
+    <net code="10" name="INTn_H">
+      <node ref="K2" pin="3" pintype="passive"/>
+      <node ref="R22" pin="2" pintype="passive"/>
+      <node ref="U5" pin="3" pinfunction="D1" pintype="input"/>
+    </net>
+    <net code="11" name="INTn_L">
+      <node ref="R28" pin="2" pintype="passive"/>
+      <node ref="U1" pin="36" pinfunction="INTn" pintype="passive"/>
+      <node ref="U5" pin="4" pinfunction="S1" pintype="input"/>
+    </net>
+    <net code="12" name="LINKLED">
+      <node ref="R11" pin="2" pintype="passive"/>
+      <node ref="U1" pin="25" pinfunction="LINKLED" pintype="passive"/>
+    </net>
+    <net code="13" name="MISO_H">
+      <node ref="K2" pin="5" pintype="passive"/>
+      <node ref="U3" pin="11" pinfunction="B3" pintype="passive"/>
+    </net>
+    <net code="14" name="MISO_L">
+      <node ref="U1" pin="34" pinfunction="MISO" pintype="passive"/>
+      <node ref="U3" pin="4" pinfunction="A3" pintype="passive"/>
+    </net>
+    <net code="15" name="MOSI_H">
+      <node ref="K2" pin="6" pintype="passive"/>
+      <node ref="U3" pin="12" pinfunction="B2" pintype="passive"/>
+    </net>
+    <net code="16" name="MOSI_L">
+      <node ref="U1" pin="35" pinfunction="MOSI" pintype="passive"/>
+      <node ref="U3" pin="3" pinfunction="A2" pintype="passive"/>
+    </net>
+    <net code="17" name="Net-(C9-Pad2)">
+      <node ref="C9" pin="2" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="R9" pin="2" pintype="passive"/>
+    </net>
+    <net code="18" name="Net-(C10-Pad2)">
+      <node ref="C10" pin="2" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+    </net>
+    <net code="19" name="Net-(C17-Pad2)">
+      <node ref="C17" pin="2" pintype="passive"/>
+      <node ref="R15" pin="1" pintype="passive"/>
+      <node ref="X1" pin="3" pintype="output"/>
+    </net>
+    <net code="20" name="Net-(D1-A)">
+      <node ref="D1" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="R13" pin="2" pintype="passive"/>
+    </net>
+    <net code="21" name="Net-(JP1-Pad2)">
+      <node ref="JP1" pin="2" pintype="passive"/>
+      <node ref="R13" pin="1" pintype="passive"/>
+    </net>
+    <net code="22" name="Net-(K1-GREEN_C)">
+      <node ref="K1" pin="10" pinfunction="GREEN_C" pintype="input"/>
+      <node ref="R12" pin="1" pintype="passive"/>
+    </net>
+    <net code="23" name="Net-(K1-P4)">
+      <node ref="C11" pin="2" pintype="passive"/>
+      <node ref="K1" pin="4" pinfunction="P4" pintype="input"/>
+      <node ref="R10" pin="1" pintype="passive"/>
+    </net>
+    <net code="24" name="Net-(K1-P5)">
+      <node ref="C7" pin="2" pintype="passive"/>
+      <node ref="K1" pin="5" pinfunction="P5" pintype="input"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+      <node ref="R9" pin="1" pintype="passive"/>
+    </net>
+    <net code="25" name="Net-(K1-YELLOW_C)">
+      <node ref="K1" pin="11" pinfunction="YELLOW_C" pintype="input"/>
+      <node ref="R11" pin="1" pintype="passive"/>
+    </net>
+    <net code="26" name="Net-(U1-1V20)">
+      <node ref="C13" pin="2" pintype="passive"/>
+      <node ref="U1" pin="22" pinfunction="1V20" pintype="passive"/>
+    </net>
+    <net code="27" name="Net-(U1-EXRES1)">
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="U1" pin="10" pinfunction="EXRES1" pintype="passive"/>
+    </net>
+    <net code="28" name="Net-(U1-TOCAP)">
+      <node ref="C12" pin="2" pintype="passive"/>
+      <node ref="U1" pin="20" pinfunction="TOCAP" pintype="passive"/>
+    </net>
+    <net code="29" name="Net-(U1-XI{slash}CLKIN)">
+      <node ref="C16" pin="2" pintype="passive"/>
+      <node ref="R14" pin="1" pintype="passive"/>
+      <node ref="U1" pin="30" pinfunction="XI/CLKIN" pintype="passive"/>
+      <node ref="X1" pin="1" pintype="passive"/>
+    </net>
+    <net code="30" name="Net-(U1-XO)">
+      <node ref="R14" pin="2" pintype="passive"/>
+      <node ref="R15" pin="2" pintype="passive"/>
+      <node ref="U1" pin="31" pinfunction="XO" pintype="passive"/>
+    </net>
+    <net code="31" name="OE">
+      <node ref="K2" pin="9" pintype="passive"/>
+      <node ref="R17" pin="2" pintype="passive"/>
+      <node ref="U3" pin="8" pinfunction="OE" pintype="passive"/>
+    </net>
+    <net code="32" name="PMODE0">
+      <node ref="JP2" pin="2" pintype="passive"/>
+      <node ref="U1" pin="45" pinfunction="PMODE0" pintype="passive"/>
+    </net>
+    <net code="33" name="PMODE1">
+      <node ref="JP3" pin="2" pintype="passive"/>
+      <node ref="U1" pin="44" pinfunction="PMODE1" pintype="passive"/>
+    </net>
+    <net code="34" name="PMODE2">
+      <node ref="JP4" pin="2" pintype="passive"/>
+      <node ref="U1" pin="43" pinfunction="PMODE2" pintype="passive"/>
+    </net>
+    <net code="35" name="RSTn_H">
+      <node ref="K2" pin="4" pintype="passive"/>
+      <node ref="R27" pin="1" pintype="passive"/>
+      <node ref="U5" pin="6" pinfunction="D2" pintype="input"/>
+    </net>
+    <net code="36" name="RSTn_L">
+      <node ref="R21" pin="1" pintype="passive"/>
+      <node ref="U1" pin="37" pinfunction="RSTn" pintype="passive"/>
+      <node ref="U5" pin="1" pinfunction="S2" pintype="input"/>
+    </net>
+    <net code="37" name="RX+">
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="U1" pin="6" pinfunction="RXP" pintype="passive"/>
+    </net>
+    <net code="38" name="RX-">
+      <node ref="R3" pin="1" pintype="passive"/>
+      <node ref="U1" pin="5" pinfunction="RXN" pintype="passive"/>
+    </net>
+    <net code="39" name="SCLK_H">
+      <node ref="K2" pin="7" pintype="passive"/>
+      <node ref="U3" pin="13" pinfunction="B1" pintype="passive"/>
+    </net>
+    <net code="40" name="SCLK_L">
+      <node ref="U1" pin="33" pinfunction="SCLK" pintype="passive"/>
+      <node ref="U3" pin="2" pinfunction="A1" pintype="passive"/>
+    </net>
+    <net code="41" name="SCSn_H">
+      <node ref="K2" pin="8" pintype="passive"/>
+      <node ref="U3" pin="10" pinfunction="B4" pintype="passive"/>
+    </net>
+    <net code="42" name="SCSn_L">
+      <node ref="U1" pin="32" pinfunction="SCSn" pintype="passive"/>
+      <node ref="U3" pin="5" pinfunction="A4" pintype="passive"/>
+    </net>
+    <net code="43" name="TX+">
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="TXP" pintype="passive"/>
+    </net>
+    <net code="44" name="TX-">
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="TXN" pintype="passive"/>
+    </net>
+    <net code="45" name="VCC">
+      <node ref="C18" pin="2" pintype="passive"/>
+      <node ref="C21" pin="1" pintype="passive"/>
+      <node ref="K2" pin="2" pintype="passive"/>
+      <node ref="R22" pin="1" pintype="passive"/>
+      <node ref="R27" pin="2" pintype="passive"/>
+      <node ref="U2" pin="1" pinfunction="VIN" pintype="power_in"/>
+      <node ref="U2" pin="3" pinfunction="EN" pintype="input"/>
+      <node ref="U3" pin="14" pinfunction="VCCB" pintype="power_out"/>
+    </net>
+    <net code="46" name="unconnected-(K1-NC_P7-Pad7)">
+      <node ref="K1" pin="7" pinfunction="NC_P7" pintype="input"/>
+    </net>
+    <net code="47" name="unconnected-(U1-DNC-Pad7)">
+      <node ref="U1" pin="7" pinfunction="DNC" pintype="passive"/>
+    </net>
+    <net code="48" name="unconnected-(U1-DUPLED-Pad26)">
+      <node ref="U1" pin="26" pinfunction="DUPLED" pintype="passive"/>
+    </net>
+    <net code="49" name="unconnected-(U1-NC-Pad12)">
+      <node ref="U1" pin="12" pinfunction="NC" pintype="passive"/>
+    </net>
+    <net code="50" name="unconnected-(U1-NC-Pad13)">
+      <node ref="U1" pin="13" pinfunction="NC" pintype="passive"/>
+    </net>
+    <net code="51" name="unconnected-(U1-NC-Pad46)">
+      <node ref="U1" pin="46" pinfunction="NC" pintype="passive"/>
+    </net>
+    <net code="52" name="unconnected-(U1-NC-Pad47)">
+      <node ref="U1" pin="47" pinfunction="NC" pintype="passive"/>
+    </net>
+    <net code="53" name="unconnected-(U1-RSVD-Pad23)">
+      <node ref="U1" pin="23" pinfunction="RSVD" pintype="passive"/>
+    </net>
+    <net code="54" name="unconnected-(U1-RSVD-Pad38)">
+      <node ref="U1" pin="38" pinfunction="RSVD" pintype="passive"/>
+    </net>
+    <net code="55" name="unconnected-(U1-RSVD-Pad39)">
+      <node ref="U1" pin="39" pinfunction="RSVD" pintype="passive"/>
+    </net>
+    <net code="56" name="unconnected-(U1-RSVD-Pad40)">
+      <node ref="U1" pin="40" pinfunction="RSVD" pintype="passive"/>
+    </net>
+    <net code="57" name="unconnected-(U1-RSVD-Pad41)">
+      <node ref="U1" pin="41" pinfunction="RSVD" pintype="passive"/>
+    </net>
+    <net code="58" name="unconnected-(U1-RSVD-Pad42)">
+      <node ref="U1" pin="42" pinfunction="RSVD" pintype="passive"/>
+    </net>
+    <net code="59" name="unconnected-(U1-SPDLED-Pad24)">
+      <node ref="U1" pin="24" pinfunction="SPDLED" pintype="passive"/>
+    </net>
+    <net code="60" name="unconnected-(U1-VBG-Pad18)">
+      <node ref="U1" pin="18" pinfunction="VBG" pintype="passive"/>
+    </net>
+    <net code="61" name="unconnected-(U2-NC-Pad4)">
+      <node ref="U2" pin="4" pinfunction="NC" pintype="passive"/>
+    </net>
+    <net code="62" name="unconnected-(U3-NC-Pad6)">
+      <node ref="U3" pin="6" pinfunction="NC" pintype="no_connect"/>
+    </net>
+    <net code="63" name="unconnected-(U3-NC-Pad9)">
+      <node ref="U3" pin="9" pinfunction="NC" pintype="no_connect"/>
+    </net>
+  </nets>
+</export>
