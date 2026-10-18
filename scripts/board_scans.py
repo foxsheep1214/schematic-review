@@ -23,6 +23,18 @@ def _named_rail(net):
     return bool(net) and (is_rail(net) or is_rail(str(net).lstrip('/').lstrip('+')))
 
 
+KICAD_POLARIZED_RE = re.compile(r'^Device:(?:C_Polarized|CP)(?:\w*)$', re.I)
+NEGATIVE_NET_RE = re.compile(r'(^-|NEG|VEE|VSS|(?:^|[_/])-?\d+V\d*N\b|[_-]N$)', re.I)
+
+
+def _positive_supply(lint, net):
+    """A named rail, or a net SR traces to an on-board source or an off-board contact,
+    unless its name marks it negative (inverting outputs keep + on ground correctly)."""
+    if not net or is_ground(net) or NEGATIVE_NET_RE.search(str(net)):
+        return False
+    return _named_rail(net) or lint.driven(net) or bool(lint._external_entry(net))
+
+
 def _rated_v(value):
     """BOM 值里写明的耐压；写了多个取最小，写不明返回 None。"""
     ratings = [float(x) for x in RATING_RE.findall(str(value or ''))]
@@ -67,10 +79,15 @@ def capacitor_polarity(lint):
             side = POLARITY.get(str(lint.pinname.get(node, '')).strip().upper())
             if side:
                 marked[side] = node
+        if not marked and KICAD_POLARIZED_RE.match(str(part.get('prim') or '')):
+            # KiCad's own polarized-capacitor symbols leave pins unnamed; pin 1 is + by library convention.
+            nodes = {node.partition('.')[2]: node for node in _nodes(lint, ref)}
+            if set(nodes) == {'1', '2'}:
+                marked = {'plus': nodes['1'], 'minus': nodes['2']}
         if len(marked) != 2:
             continue
         plus, minus = lint.pin2net.get(marked['plus']), lint.pin2net.get(marked['minus'])
-        if is_ground(plus) and _named_rail(minus):
+        if is_ground(plus) and _positive_supply(lint, minus):
             lint.add('DEV-A02', '极性电容方向反接',
                      f'{ref}: + 脚 {marked["plus"]} 接 {plus}，- 脚 {marked["minus"]} 接 {minus}',
                      ref)
@@ -93,29 +110,74 @@ def led_current_limit(lint):
                      '恒流驱动须有资料或声明证据', ref)
 
 
+def _i2c_segment(lint, net):
+    """The bus segment around an SDA/SCL net: nets joined by series resistors of at most 1 kOhm
+    (a sensor behind 120 Ohm, PiicoDev style). Larger resistors are pull-ups, not series links."""
+    from solve_dividers import parse_resistor
+    segment, queue = {net}, [net]
+    while queue:
+        current = queue.pop()
+        for ref, other in lint.graph.neighbors(current, {RESISTOR}):
+            value = parse_resistor(lint.parts.get(ref, {}).get('value'))
+            if (value and value['kohm'] <= 1.0 and other not in segment and not is_ground(other)
+                    and not is_rail(other) and other not in lint.pseudo):
+                segment.add(other)
+                queue.append(other)
+    return segment
+
+
+def _switched_pullups(lint, segment):
+    """(switch, resistor) pairs: a DIP switch or solder jumper on the segment whose other contact
+    reaches a resistor to a non-ground net, i.e. a pull-up the user can select."""
+    from checkers.netgraph import JUMPER, SWITCH
+    found = []
+    for n in sorted(segment):
+        for ref in lint.graph.refs_on(n):
+            if lint.graph.kind(ref) not in (SWITCH, JUMPER):
+                continue
+            for other in lint.graph.nets_of(ref):
+                if other in segment or is_ground(other):
+                    continue
+                for res, far in lint.graph.neighbors(other, {RESISTOR}):
+                    if not is_ground(far) and far not in segment:
+                        found.append((ref, res))
+    return sorted(set(found))
+
+
 def i2c_pullups(lint):
-    """SIG-A03：SDA/SCL 网上没有任何接到非地网的已装配电阻（串阻也算有电阻，宁可漏报）。"""
+    """SIG-A03：SDA/SCL 所在总线段上没有任何接到非地网的已装配电阻（段内串阻不算上拉）。"""
+    done = set()
     for net, nodes in sorted(lint.nets.items()):
         tokens = re.split(r'[^A-Z0-9]+', str(net).upper())
-        if net in lint.pseudo or not any(I2C_LINE_RE.match(t) for t in tokens) or len(nodes) < 2:
+        if net in lint.pseudo or net in done or not any(I2C_LINE_RE.match(t) for t in tokens) or len(nodes) < 2:
             continue
-        refs = sorted({node.partition('.')[0] for node in nodes})
+        segment = _i2c_segment(lint, net)
+        done |= segment
+        refs = sorted({node.partition('.')[0] for n in segment for node in lint.nets.get(n, [])})
         if not any(lint.graph.kind(ref) == IC for ref in refs):
             continue
         resistors = [ref for ref in refs if lint.graph.kind(ref) == RESISTOR
                      and not lint.parts.get(ref, {}).get('nc')
-                     and not any(is_ground(other) for other in lint.graph.nets_of(ref) if other != net)]
+                     and any(other not in segment and not is_ground(other) for other in lint.graph.nets_of(ref))]
         ics = [ref for ref in refs if lint.graph.kind(ref) == IC]
         access = [ref for ref in refs if lint.graph.kind(ref) == TESTPOINT]
-        if not resistors and len(ics) == 1 and len(ics) + len(access) == len(refs):
+        series = [ref for ref in refs if lint.graph.kind(ref) == RESISTOR and ref not in resistors]
+        if not resistors and len(ics) == 1 and len(ics) + len(access) + len(series) == len(refs):
             # 只有一颗 IC，其余是测试点：对端和上拉在生产/调试夹具上（连接器仍按候选，板外主机未必有上拉）。
             lint.add('SIG-A03', 'I²C 线无上拉',
                      f'{net}: 只有 {ics[0]} 和测试点 {access[:6]}，对端与上拉在生产/调试夹具；'
                      '按接口条款核外部上拉与电平，不为此补板载上拉', ics[0], kind='INFO')
             continue
+        switched = _switched_pullups(lint, segment) if not resistors else []
+        if switched:
+            lint.add('SIG-A03', 'I²C 上拉经开关/跳线可选',
+                     f'{net}: 上拉 {switched[0][1]} 经 {switched[0][0]} 接入；核出厂/装配时开关或跳线状态',
+                     switched[0][0], kind='INFO')
+            continue
         if not resistors:
+            where = net if segment == {net} else f'{net}（含经串阻相连的 {sorted(segment - {net})[:3]}）'
             lint.add('SIG-A03', 'I²C 线无上拉',
-                     f'{net}: {refs[:8]} 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，'
+                     f'{where}: {refs[:8]} 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，'
                      '否则补上拉（阻值按 SIG-C01）', refs[0], kind='CANDIDATE')
 
 

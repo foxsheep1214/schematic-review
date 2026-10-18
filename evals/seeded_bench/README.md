@@ -32,3 +32,12 @@ python3 -B evals/seeded_bench/run.py --cache <缓存目录> --out <输出目录>
 
 `prepare.py` 按 `corpus.json` 的固定 commit 拉取源仓库、用 kicad-cli 导出网表并解析；第三方文件只留在缓存目录。
 `strict: false` 的板子按 `strict_note` 记录的原因用 `--no-strict` 解析。
+
+## 语料扩充记录（2026-10-18）
+
+语料加入 `evals/typical_circuits` 的 32 块开源单模块板（与原有继电器板重复的一块不重复收），共 39 块，
+夹具直接用该基准随许可证保存的 KiCad XML（`fixture` 指向 `.xml` 时 `prepare.py` 直接解析）。
+扩充后按同一缓存比较：修正前 SR（7c122a3）与当日修正后检出相同（209/247，漏检位点集合完全一致，无回退）；
+补上 KiCad 极性电容 1 脚为正的库约定、正电源按来源追踪认定、I²C 段跨 ≤1 kΩ 串阻、`OSC` 关键字只匹配整词后，
+自动检出 223/251（89%），极性电容反接 3→11/13，I²C 上拉缺失 11→13/17。其余漏检位点均有 NET-A01 等其他规则点名。
+

@@ -1117,7 +1117,13 @@
    "id": "lm386-amp",
    "category": "Audio amplifier (LM386)",
    "fixture": "fixtures/lm386-amp.xml",
-   "expected": [],
+   "expected": [
+    {
+     "rule": "DEV-A02",
+     "match": "C4: + 脚 C4.1 接 GND，- 脚 C4.2 接 +9V",
+     "why": "真实缺陷：Device:C_Polarized_Small 内嵌符号的“+”标记在 1 脚，C4（100µF）1 脚接 GND、2 脚接 +9V，电解电容反接（或符号与封装极性不一致），需改图核实"
+    }
+   ],
    "known_false_alarms": [],
    "fixed_false_alarms": [
     {

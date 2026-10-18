@@ -60,7 +60,8 @@ KEYWORD_KINDS = (
     (r'SCHOTTKY|DIODE|SS\d{2}|BAT\d|1N4\d{3}|1N58\d|二极管', DIODE),
     (r'FERRITE|BEAD|BLM\d|MPZ\d|磁珠', FERRITE),
     (r'INDUCTOR|CHOKE|电感', INDUCTOR),
-    (r'CRYSTAL|XTAL|OSC|晶振|晶体', CRYSTAL),
+    # OSC only as a whole word: footprint names like Bosch_LGA-8 contain the letters.
+    (r'CRYSTAL|XTAL|\bOSC(?:ILLATOR)?\b|晶振|晶体', CRYSTAL),
     (r'TRANSFORMER|变压器', TRANSFORMER),
     (r'FUSE|PTC|保险', FUSE),
     (r'(?:^|[\s:_])BATTERY\b|电池', BATTERY),

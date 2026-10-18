@@ -273,5 +273,44 @@ class TypicalBoardClassificationTest(unittest.TestCase):
         self.assertEqual([f for f in scans(db, 'NET-A06') if 'CTS' in f['detail']], [])
 
 
+
+class SeededDetectionTest(unittest.TestCase):
+    """种子基准（39 块真实板）漏检的两类：KiCad 极性电容无脚名、传感器经串阻挂在 I²C 上。"""
+
+    def test_kicad_polarized_cap_pin_one_is_plus(self):
+        db = board({'C4': 'Device:C_Polarized_Small', 'J1': 'Connector:Conn_01x02'},
+                   {'GND': ['C4.1', 'J1.2'], 'SUPPLY_IN': ['C4.2', 'J1.1']})
+        db['parts']['C4']['value'] = '100uF'
+        self.assertEqual([f['detail'].split(':')[0] for f in scans(db, 'DEV-A02')], ['C4'])
+        db['nets'] = {'GND': ['C4.2', 'J1.2'], 'SUPPLY_IN': ['C4.1', 'J1.1']}
+        db['pin2net'] = {n: net for net, nodes in db['nets'].items() for n in nodes}
+        self.assertEqual(scans(db, 'DEV-A02'), [])
+
+    def test_negative_named_supply_keeps_plus_on_ground(self):
+        db = board({'C1': 'Device:CP', 'J1': 'Connector:Conn_01x02'},
+                   {'GND': ['C1.1', 'J1.2'], 'VEE': ['C1.2', 'J1.1']})
+        self.assertEqual(scans(db, 'DEV-A02'), [])
+
+    def test_sensor_behind_series_resistor_without_pullup(self):
+        db = board({'U1': 'TMP117', 'R6': '120R', 'J1': 'Connector:Conn_01x04'},
+                   {'/SDA': ['J1.3', 'R6.2'], 'U1_SDA': ['R6.1', 'U1.3'], 'GND': ['U1.1', 'J1.1']})
+        hits = scans(db, 'SIG-A03')
+        self.assertEqual([f['kind'] for f in hits], ['CANDIDATE'])
+        db['parts']['R4'] = {'value': '10k', 'part': '10k', 'prim': '10k', 'nc': False}
+        db['nets']['/SDA'].append('R4.1'); db['nets']['V3'] = ['R4.2', 'J1.2']
+        db['pin2net'].update({'R4.1': '/SDA', 'R4.2': 'V3', 'J1.2': 'V3'})
+        self.assertEqual(scans(db, 'SIG-A03'), [])
+
+    def test_pullups_selected_by_dip_switch_are_info(self):
+        db = board({'U1': 'BME280', 'SW1': 'SW_DIP_x02', 'R1': '4.7K', 'J1': 'Connector:Conn_01x04'},
+                   {'/SCL': ['U1.4', 'SW1.4', 'J1.3'], 'PU1': ['SW1.1', 'R1.2'], '+3V3': ['R1.1', 'J1.1']})
+        self.assertEqual({f['kind'] for f in scans(db, 'SIG-A03')}, {'INFO'})
+
+    def test_bosch_footprint_is_not_an_oscillator(self):
+        from checkers import netgraph as ng
+        self.assertEqual(ng.classify('U1', {'prim': 'DS-sensors:BME280',
+                                            'jedec': 'DS-sensors:Bosch_LGA-8_2.5x2.5mm'}, 8)[0], ng.IC)
+
+
 if __name__ == '__main__':
     unittest.main()
