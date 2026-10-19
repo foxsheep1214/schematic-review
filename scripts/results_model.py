@@ -28,7 +28,9 @@ RETIRED_ROW_FIELDS = {
     'impact_assessment': 'gaps[].severity',
 }
 RETIRED_TOP_FIELDS = ('binding_version', 'remediation_version', 'workflow_version', 'impact_class_version',
-                      'requirement_clauses_version', 'requirement_clarification_version')
+                      'requirement_clauses_version', 'requirement_clarification_version',
+                      # lint findings are plan checks with their own result rows
+                      'lint_reviews')
 # Schema 3 always means the newest contract of each retired switch: consequence classes v2,
 # REQ-D01 clauses, staged work items. Bindings and actionable instructions are required by
 # validate_review's --require-bindings/--require-actionable.

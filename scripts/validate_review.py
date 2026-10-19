@@ -19,7 +19,7 @@ from requirement_clarifications import validate_clarifications
 from checkers import REGISTRY, passive_stress, validate_inventories
 from validate_remediation import validate_remediation, READINESS
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
-from plan_review import ReviewPlanner
+from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check_id
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
 from execution_audit import validate_execution_audit
@@ -466,18 +466,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                             f'coverage.pages.{obj}: must link its own DOC-V01 page view')
 
     if lint_runs is not None:
-        reviews = report.get('lint_reviews', [])
-        require(isinstance(reviews, list), 'lint_reviews must be an array')
-        review_map = {}
-        for review in reviews if isinstance(reviews, list) else []:
-            if not isinstance(review, dict) or not text(review.get('run_digest')):
-                require(False, 'lint_reviews: invalid run_digest')
-                continue
-            digest = review['run_digest']
-            require(digest not in review_map, 'duplicate lint run review')
-            review_map[digest] = review.get('items')
-        require(set(review_map) == {fingerprint(x) for x in lint_runs},
-                'lint_reviews must match supplied cold/hot runs')
+        # Each automatic-scan finding is a check of its own in the final plan; its result row answers it.
         for run in lint_runs:
             digest = fingerprint(run)
             run_checks = {}
@@ -499,23 +488,17 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             if not isinstance(findings_list, list):
                 require(False, 'invalid lint findings list')
                 continue
-            dispositions = review_map.get(digest)
-            require(isinstance(dispositions, dict), f'{digest}: missing lint item dispositions')
-            if not isinstance(dispositions, dict):
-                continue
-            require(set(dispositions) == {str(i) for i in range(len(findings_list))},
-                    f'{digest}: lint candidate coverage mismatch')
-            for number, linked in dispositions.items():
-                require(ids(linked) and all(x in checks for x in linked),
-                        f'{digest}[{number}]: missing/unknown result check')
-                if isinstance(number, str) and number.isdecimal() and int(number) < len(findings_list):
-                    finding = findings_list[int(number)]
-                    evidence_id = finding.get('check_id') if isinstance(finding, dict) else None
-                    if evidence_id and run_checks:
-                        targets = {k for k, item in run_checks.items()
-                                   if item.get('evidence_check_id') == evidence_id}
-                        require(bool(targets) and ids(linked) and targets.issubset(linked),
-                                f'{digest}[{number}]: hot candidate must link its state checks')
+            for number, finding in enumerate(findings_list):
+                if not isinstance(finding, dict):
+                    require(False, f'{digest}[{number}]: invalid lint finding')
+                    continue
+                if finding.get('check_id'):
+                    targets = {k for k, item in expected.items() if item.get('evidence_check_id') == finding['check_id']}
+                    require(bool(targets), f'{digest}[{number}]: evidence result has no planned state check')
+                elif finding.get('kind') in LINT_REVIEW_KINDS:
+                    key = lint_check_id(finding)
+                    require(key in expected and expected[key].get('criterion') == lint_check(finding)['criterion'],
+                            f'{digest}[{number}]: final plan omits the check for lint finding {key}')
 
     execution = validate_execution_audit(plan, report, db, execution_audit, require_execution_audit, record=written)
     errors.extend(execution['errors'])

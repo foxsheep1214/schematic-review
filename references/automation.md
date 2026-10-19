@@ -20,7 +20,7 @@
 
 **输出分三类**：`FINDING` 是疑似缺陷，逐条排除；`CANDIDATE` 是待资料取证定夺的优先级清单，直接
 决定先读哪几份 datasheet；`INFO` 是提示，不计入疑点，但准出前仍要核实（如 NET-A04 判为工具伪网络的
-NC 网）。同一条规则可同时产出多类，例如 PRO-A02 按型号或轨名推断的电压只作候选。
+NC 网）。FINDING/CANDIDATE 各成审查计划的一行检查，与其他检查一样作答；INFO 进计划 `diagnostics`。同一条规则可同时产出多类，例如 PRO-A02 按型号或轨名推断的电压只作候选。
 E 规则的每条结果另记 `check_results`（PASS/FAIL/INSUFFICIENT）与 `passes`。
 
 **未执行不等于通过**：`lint.py` 每次在末尾列出本次没执行的规则及原因（缺 `--intent`、未提供证据）。

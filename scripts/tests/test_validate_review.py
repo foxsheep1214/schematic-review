@@ -6,6 +6,7 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import catalog
 from electrical_contract import PLAN_SCHEMA_VERSION
+from plan_review import lint_check
 from validate_review import fingerprint, SCOPE
 from ledger_v3 import validate_review
 from gap_fixture import complete_gap
@@ -259,14 +260,15 @@ class ReviewGateTests(unittest.TestCase):
         r['db_digest'] = fingerprint(db)
         self.assertEqual(validate_review(p, r, db)['release'], 'NO_GO')
 
-    def test_unreviewed_lint_candidate_rejected(self):
+    def test_lint_finding_needs_its_plan_check(self):
         p, r, db = fixture()
-        run = {'findings': [{'rule': 'PWR-A01', 'detail': 'candidate 1'},
-                            {'rule': 'PWR-A01', 'detail': 'candidate 2'}]}
-        r['lint_reviews'] = [{'run_digest': fingerprint(run), 'items': {'0': [C1]}}]
-        self.assertFalse(validate_review(p, r, db, [run])['valid'])
-        r['lint_reviews'][0]['items']['1'] = [C1]
-        self.assertTrue(validate_review(p, r, db, [run])['valid'])
+        finding = {'rule': 'PWR-A01', 'kind': 'CANDIDATE', 'detail': 'R1: candidate 1'}
+        self.assertFalse(validate_review(p, r, db, [{'findings': [finding]}])['valid'])
+        check = lint_check(finding)
+        p['checks'].append(check)
+        r['checks'].append(dict(r['checks'][0], id=check['id']))
+        r['plan_digest'] = fingerprint(p)
+        self.assertTrue(validate_review(p, r, db, [{'findings': [finding]}])['valid'])
 
     def test_malformed_result_cannot_release(self):
         p, r, db = fixture()

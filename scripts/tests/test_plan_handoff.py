@@ -12,6 +12,7 @@ sys.path.insert(0, str(SCRIPTS))
 import catalog
 from electrical_fixtures import bind_evidence, pin_analysis
 from board_intent import input_fingerprint
+from lint import Lint
 from plan_review import build_review_plan
 from validate_review import fingerprint, SCOPE
 from ledger_v3 import validate_review
@@ -27,7 +28,8 @@ class PlanHandoffTests(unittest.TestCase):
         self.db = {'parts': {'U1': {'value': 'SYNTHETIC-IC', 'nc': False}},
             'nets': {'CONTROL': ['U1.1']}, 'pin2net': {'U1.1': 'CONTROL'},
             'pinname': {'U1.1': 'EN'}, 'pintype': {}, 'ref2page': {'U1': 1}, 'pseudo_nets': []}
-        self.cold = build_review_plan(self.db, self.inventory_context())
+        self.cold = build_review_plan(self.db, self.inventory_context(),
+                                      lint_findings=Lint(self.db, None, self.inventory_context()).run())
         self.parent = next(c['id'] for c in self.cold['checks'] if c.get('rule') == 'RST-E01')
         base = {'rule': 'RST-E01', 'kind': 'pin_bias', 'node': 'U1.1',
             'required_default': 'high', 'vih_min_v': 2.0, 'abs_min_v': -0.3,
@@ -99,8 +101,7 @@ class PlanHandoffTests(unittest.TestCase):
                 'components': {k: [self.parent] for k in self.db['parts']},
                 'pins': {k: [self.parent] for k in self.db['pin2net']},
                 'nets': {k: [self.parent] for k in self.db['nets']},
-                'pages': {str(k): [self.parent] for k in self.db['ref2page'].values()}},
-            'lint_reviews': []}
+                'pages': {str(k): [self.parent] for k in self.db['ref2page'].values()}}}
         if defect:
             target = next(p['id'] for p in plan['checks'] if p.get('evidence_check_id') == defect_evidence)
             next(x for x in checks if x['id'] == target).update(review_result='FAIL', severity='P1', finding_id='F1')
@@ -108,13 +109,6 @@ class PlanHandoffTests(unittest.TestCase):
                 'location': {'pages': ['1'], 'refs': ['U1'], 'nets': ['CONTROL']},
                 **{k: 'Synthetic condition' for k in ('title', 'observed', 'criterion', 'impact', 'scenario',
                       'root_cause', 'recommendation', 'verification', 'severity_reason')}, 'remediation': ready()}]
-        for run in runs:
-            items = {}
-            for i, finding in enumerate(run['findings']):
-                targets = [p['id'] for p in plan['checks']
-                           if finding.get('check_id') and p.get('evidence_check_id') == finding['check_id']]
-                items[str(i)] = targets or [self.parent]
-            report['lint_reviews'].append({'run_digest': fingerprint(run), 'items': items})
         return report
 
     def test_combined_cold_cli_preserves_standalone_plan(self):
@@ -146,13 +140,6 @@ class PlanHandoffTests(unittest.TestCase):
         result = validate_review(final, report, self.db, runs, require_actionable=True)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['release'], 'GO')
-
-    def test_candidate_cannot_link_only_parent(self):
-        final, runs = self.runs()
-        report = self.report(final, runs, defect=True)
-        report['lint_reviews'][1]['items'] = {str(i): [self.parent] for i in range(len(runs[1]['findings']))}
-        result = validate_review(final, report, self.db, runs, require_actionable=True)
-        self.assertTrue(any('hot candidate must link its state checks' in e for e in result['errors']))
 
     def test_manual_check_retained_and_old_plan_not_mutated(self):
         manual = deepcopy(self.cold['checks'][0])
@@ -209,7 +196,8 @@ class PlanHandoffTests(unittest.TestCase):
             'pin2net': {'U1.1': 'SIGNAL_IN', 'R1.1': 'SIGNAL_IN', 'R1.2': 'SIGNAL_OUT'},
             'pinname': {'U1.1': 'GPIO', 'R1.1': '1', 'R1.2': '2'},
             'pintype': {}, 'ref2page': {'U1': 1, 'R1': 1}, 'pseudo_nets': []}
-        self.cold = build_review_plan(self.db, self.inventory_context())
+        self.cold = build_review_plan(self.db, self.inventory_context(),
+                                      lint_findings=Lint(self.db, None, self.inventory_context()).run())
         self.parent = self.cold['checks'][0]['id']
         self.evidence = {'schema_version': 2, 'checks': [{'id': 'SERIES-ALERT', 'rule': 'SIG-E01',
             'kind': 'required_series', 'net': 'SIGNAL_IN', 'to': 'SIGNAL_OUT',

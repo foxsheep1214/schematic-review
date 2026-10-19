@@ -16,7 +16,9 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率
 `--contract legacy` 用于重放历史契约，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认契约是 `typical-boards-v1`（`revisions/typical-boards-v1/`，2026-10-18）：K 位号超过 8 脚不当继电器、VBUS+CC1+CC2 脚组认作 USB-C 连接器；r02 检查数 198→200，其余答案不变。
+当前默认契约是 `lint-checks-v1`（`revisions/lint-checks-v1/`，2026-10-19）：冷检规则的 FINDING/CANDIDATE 发现各成一项计划检查（lint_reviews 退役），检查数只增加该例冷检发现数（r01 178→192、r02 200→216、r03 313→365、r04 50→54、rf1 286→298、rf2 74→78），其余答案不变。
+
+此前的默认契约是 `typical-boards-v1`（`revisions/typical-boards-v1/`，2026-10-18）：K 位号超过 8 脚不当继电器、VBUS+CC1+CC2 脚组认作 USB-C 连接器；r02 检查数 198→200，其余答案不变。
 
 此前的默认契约是 `name-heuristics-v1`（`revisions/name-heuristics-v1/`，2026-10-18）：统一地名与轨名判定、原生 power_out 脚作为电源来源；r03 检查数 311→313（VSYS 识别为轨），r05 64→65（PWR-T04），其余答案不变。
 

@@ -439,9 +439,10 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 - 退出 0 表示台账有效（结论 NO_GO 也可正常交付）；2 表示台账有错。冻结门加 `--require-release`，NO_GO 也退出 2。
 - 校验只证明记录一致，不验证来源文字真实、计算合理或判据穷尽。空计划、遗漏对象、C 写 PASS、NA 冲突、
   无位置/改法、虚假汇总、陈旧规则指纹均被拒绝。
-- **自动扫描候选处置**：两次 `--lint` 提供冷/热 JSON；`lint_reviews` 每条含 `run_digest` 与
-  `items`（finding 索引→结果检查 ID 数组），全部候选都要处置；证据计算候选须关联对应状态子项。
-  无证据时也保存一次未带证据的热跑。仅 PDF 模式明确 NA 并留依据。
+- **自动扫描发现即计划检查**：冷检每条 FINDING/CANDIDATE 在计划里自成一行（id 形如
+  `PWR-A01.AUX-DC-b17ec0`，判据为“规则名：发现原文”），像其他检查一样写结论；INFO 进计划
+  `diagnostics`（`LINT_INFO`），不计疑点。证据计算结果由对应状态子项作答。两次 `--lint` 提供冷/热 JSON，
+  校验核对每条发现都有计划行；结果不再写 `lint_reviews`。无证据时也保存一次未带证据的热跑。仅 PDF 模式明确 NA 并留依据。
 - **输出**：`summary`（检查结果计数、唯一缺陷及 P0–P3）、`categorized_summary`（当前/历史检查、唯一缺陷、
   唯一任务、必需移交及其状态）、`insufficient_by_cause`、`requirement_clarification_summary`、`workflow`、
   `release`/`blockers`、`remediation_validation`、`binding_validation`。

@@ -21,6 +21,7 @@ from page_inventory import inventory as document_inventory, LIMITED
 import io
 import json
 import os
+import hashlib
 import re
 import sys
 from collections import Counter
@@ -296,8 +297,9 @@ CONNECTOR_EXTRA_PAD_RE = re.compile(r'MOUNT|SHIELD|(?<![A-Z])MP(?![A-Z])|THERMAL
 class ReviewPlanner:
     def __init__(self, db, intent=None, evidence=None, review_mode=None,
                  old_db_available=False, claims_available=False,
-                 datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None):
+                 datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None, lint_findings=None):
         self.db = db
+        self.lint_findings = lint_findings or []
         self.document_inventory = document_inventory(db)
         self.kind_intent = board_intent.with_verified_kinds(intent, datasheet_audit)
         analysis_db = board_intent.graph_db(db, self.kind_intent)
@@ -1021,6 +1023,21 @@ class ReviewPlanner:
             retained['evidence_confidence'] = None
             self.checks.append(retained)
 
+    def attach_lint_findings(self):
+        """Every A-rule FINDING/CANDIDATE becomes its own check; INFO becomes a plan diagnostic."""
+        present = {c['id'] for c in self.checks}
+        for finding in self.lint_findings:
+            if not isinstance(finding, dict) or finding.get('check_id'):
+                continue  # evidence (E) results are answered by their planned evidence checks
+            if finding.get('kind') == 'INFO':
+                self.diagnostics.append({'code': 'LINT_INFO', 'rule': finding.get('rule'),
+                                         'detail': finding.get('detail')})
+            elif finding.get('kind') in LINT_REVIEW_KINDS:
+                check = lint_check(finding)
+                if check['id'] not in present:
+                    self.checks.append(check)
+                    present.add(check['id'])
+
     def generate(self):
         """生成全部自动计划项；计划构建与结果校验共用同一顺序。"""
         self.plan_coverage()
@@ -1033,6 +1050,7 @@ class ReviewPlanner:
     def build(self):
         self.generate()
         self.merge_previous_checks()
+        self.attach_lint_findings()
         for material in (self.datasheet_audit or {}).get('materials', []):
             if material.get('status') == 'NOT_FOUND':
                 self.diagnostics.append({
@@ -1127,16 +1145,45 @@ class ReviewPlanner:
         return plan
 
 
+LINT_REVIEW_KINDS = ('FINDING', 'CANDIDATE')
+
+
+def lint_check_id(finding):
+    """Stable check ID for one automatic-scan finding: rule, the object the detail names first, and a
+    short digest of the detail so two findings on one object stay apart."""
+    detail = str(finding.get('detail') or '')
+    head = re.split(r'[\s:：(（\[,，;；<]', detail.strip(), maxsplit=1)[0] or 'BOARD'
+    slug = re.sub(r'[^A-Z0-9]+', '-', head.upper()).strip('-')[:24] or 'BOARD'
+    digest = hashlib.sha1((finding.get('rule', '') + '\n' + detail).encode('utf-8')).hexdigest()[:6]
+    return '%s.%s-%s' % (finding.get('rule'), slug, digest)
+
+
+def lint_check(finding):
+    """The plan row that answers one A-rule finding. The reviewer gives it a normal result:
+    FAIL when the finding holds, PASS with the reason it does not (naming the check that settles it),
+    INSUFFICIENT when it cannot be settled yet."""
+    rule = finding['rule']
+    obj = {'lint_detail': str(finding.get('detail') or '')}
+    if isinstance(finding.get('ref'), str) and finding['ref'].strip():
+        obj['ref'] = finding['ref']
+    return {'id': lint_check_id(finding), 'rule': rule, 'method': catalog.method_of(rule),
+            'domain': catalog.domain_of(rule), 'object': obj,
+            'criterion': '%s：%s' % (finding.get('name') or catalog.title(rule), finding.get('detail') or ''),
+            'applicability': 'APPLICABLE', 'readiness': 'READY', 'required_inputs': [],
+            'trigger': ['lint:' + finding.get('kind', 'FINDING')], 'lint_kind': finding.get('kind'),
+            'handoff': {'required': False, 'state': None}, 'review_result': None, 'evidence_confidence': None}
+
+
 def build_review_plan(db, intent=None, evidence=None, review_mode=None,
                       old_db_available=False, claims_available=False,
-                      datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None):
+                      datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None, lint_findings=None):
     if evidence is not None:
         errors = validate_evidence(evidence)
         if errors:
             raise ValueError('evidence.json 无效: ' + '; '.join(errors))
     return ReviewPlanner(
         db, intent, evidence, review_mode, old_db_available,
-        claims_available, datasheet_audit, previous_plan, old_db, old_plan).build()
+        claims_available, datasheet_audit, previous_plan, old_db, old_plan, lint_findings).build()
 
 
 def main():
@@ -1188,11 +1235,13 @@ def main():
         if errors:
             sys.exit('[FATAL] datasheet-audit.json 无效:\n  - '
                      + '\n  - '.join(errors))
+    from lint import Lint  # the scan findings are part of the plan; lint imports this module
     try:
         plan = build_review_plan(
             db, intent, evidence, args.review_mode,
             old_db_available=bool(args.old_db), claims_available=bool(args.claims),
-            datasheet_audit=datasheet_audit, old_db=old_db, old_plan=old_plan)
+            datasheet_audit=datasheet_audit, old_db=old_db, old_plan=old_plan,
+            lint_findings=Lint(db, None, intent, evidence, datasheet_audit).run())
     except ValueError as error:
         parser.error(str(error))
     if args.revision_impact_json:

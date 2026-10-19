@@ -275,6 +275,8 @@ class Lint:
         """kind: FINDING=疑似缺陷，逐条排除；CANDIDATE=待资料取证定夺的优先级清单；INFO=提示，不计入疑点"""
         item = {'rule': rid, 'name': name, 'detail': detail, 'kind': kind,
                 'page': self.page.get(ref, 0) if ref else 0}
+        if ref:
+            item['ref'] = ref
         item.update(extra)
         if extra.get('check_id'):
             evidence = next((x for x in self.evidence.get('checks', [])
@@ -1017,13 +1019,16 @@ def main():
         if path and not os.path.isfile(path):
             sys.exit(f'[FATAL] {label} 文件不存在: {path}')
 
+    lint = Lint(db, log, intent, evidence, datasheet_audit)
+    F = lint.run()
     try:
+        # Each automatic-scan finding is answered in the ledger like any other check.
         review_plan = build_review_plan(
             db, intent, evidence, a.review_mode,
             old_db_available=bool(a.old_db),
             claims_available=bool(a.claims),
             datasheet_audit=datasheet_audit, previous_plan=previous_plan,
-            old_db=old_db, old_plan=old_plan)
+            old_db=old_db, old_plan=old_plan, lint_findings=F)
     except ValueError as error:
         sys.exit(f'[FATAL] {error}')
     if a.revision_impact_json:
@@ -1052,9 +1057,6 @@ def main():
         with open(path, 'w', encoding='utf-8') as stream:
             json.dump(review_plan[checker.plan_key], stream, ensure_ascii=False,
                       indent=2, allow_nan=False)
-
-    lint = Lint(db, log, intent, evidence, datasheet_audit)
-    F = lint.run()
 
     # 分组键含 kind——同一条规则可同时产出 FINDING 与 CANDIDATE
     by = defaultdict(list)
