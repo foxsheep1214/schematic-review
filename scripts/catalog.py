@@ -711,8 +711,8 @@ DOMAIN_BY_CODE = {d.code: d for d in DOMAINS}
 METHOD_BY_CODE = {m.code: m for m in METHODS}
 
 # -- 输入依赖与执行阶段 ---------------------------------------------------
-# 方式字母同时编码了“谁来做”和“要什么输入”。这里把输入依赖单列：冷跑、热跑与审查阶段由它推出，
-# 板级 bench 的覆盖统计、资料请求和测试分层也按它分组；规则编号不变。
+# 方式字母同时编码了“谁来做”和“要什么输入”。这里把输入依赖单列，冷跑、热跑与审查阶段由它推出；
+# 规则编号不变。
 INPUTS = OrderedDict([
     ('netlist', '网表'),
     ('export_log', '导出日志'),
@@ -739,25 +739,9 @@ INPUT_OVERRIDES = {
     'DOC-A02': ('netlist', 'export_log'),
     'REQ-A01': ('netlist', 'intent'),
 }
-METHOD_EXECUTOR = {'A': 'script', 'E': 'script', 'H': 'script+reviewer'}
 COLD_INPUTS = {'netlist', 'export_log', 'intent'}
 STAGES = OrderedDict([('cold', '冷跑'), ('hot', '热跑'), ('review', '审查员'), ('revision', '复审')])
 
-# 同一个电气问题由脚本部分和审查员部分共同回答。报告与覆盖统计按问题看，不把它们当成互不相关的检查。
-QUESTIONS = OrderedDict([
-    ('operating-window', ('器件工作条件', ('DEV-E02', 'DEV-C05'))),
-    ('pin-map', ('符号脚与官方脚表', ('DEV-E01', 'DEV-D02'))),
-    ('i2c-pull', ('I²C 上拉', ('SIG-A03', 'SIG-E01', 'SIG-C01'))),
-    ('enable', ('使能来源与电平', ('RST-A01', 'RST-A04', 'RST-E01', 'RST-T01'))),
-    ('reset-pulse', ('复位脉宽与时序', ('RST-E03', 'RST-C02'))),
-    ('gate-drive', ('功率管栅极驱动', ('DRV-A03', 'DRV-E01'))),
-    ('input-filter', ('输入滤波阻尼', ('PWR-A05', 'PWR-E03', 'PWR-C11'))),
-    ('rail-monitor', ('电源轨监控覆盖', ('PWR-A06', 'PWR-T04'))),
-    ('inductive-clamp', ('感性负载续流钳位', ('DRV-A01', 'DRV-A02', 'DRV-T01', 'DRV-C01'))),
-    ('opto-transfer', ('光耦驱动与传输', ('PRO-A03', 'PRO-A04', 'PRO-E01'))),
-    ('ac-coupling', ('交流耦合差分偏置', ('SIG-A01', 'SIG-A02', 'SIG-T03'))),
-])
-QUESTION_BY_RULE = {}
 # 每条规则的检查说明（第 2 版）。风险描述是检查理由，不是本次缺陷或自动严重度；
 # inputs 中的规则只是复用方向，只有同一实际对象/状态的证据才构成项目依赖。
 #   risk_if_omitted 盲区：朴素检查会漏掉什么（必填）
@@ -1032,13 +1016,6 @@ def _build_index():
     for rule_id, needs in INPUT_OVERRIDES.items():
         if rule_id not in BY_ID or not set(needs) <= set(INPUTS):
             raise ValueError('输入依赖定义错误: ' + rule_id)
-    for key, (_, members) in QUESTIONS.items():
-        for rule_id in members:
-            if rule_id not in BY_ID or rule_id in QUESTION_BY_RULE:
-                raise ValueError('问题分组引用未知或重复规则: %s %s' % (key, rule_id))
-            QUESTION_BY_RULE[rule_id] = key
-        if len(members) < 2:
-            raise ValueError('问题分组至少两条规则: ' + key)
     for package in PACKAGES:
         if not package.rules or any(rule[4] in 'AEHQ' for rule in package.rules):
             raise ValueError('功能包成员须为审查者逐项执行的规则: ' + package.name)
@@ -1072,24 +1049,15 @@ def inputs_of(rule_id):
     return INPUT_OVERRIDES.get(rule_id) or METHOD_INPUTS[rule_id[4]]
 
 
-def executor_of(rule_id):
-    return METHOD_EXECUTOR.get(get(rule_id).id[4], 'reviewer')
-
-
 def stage_of(rule_id):
     """cold：脚本只用网表/日志/意图；hot：脚本还要规格书数值；review：审查员；revision：复审比对。"""
-    executor, inputs = executor_of(rule_id), set(inputs_of(rule_id))
+    rule_id = get(rule_id).id
+    inputs = set(inputs_of(rule_id))
     if 'history' in inputs:
         return 'revision'
-    if executor == 'script':
+    if METHOD_BY_CODE[rule_id[4]].executor == '脚本':
         return 'cold' if inputs <= COLD_INPUTS else 'hot'
     return 'review'
-
-
-def question_of(rule_id):
-    """(问题键, 问题名, 同问题的全部规则) 或 None。"""
-    key = QUESTION_BY_RULE.get(get(rule_id).id)
-    return (key,) + QUESTIONS[key] if key else None
 
 
 def title(rule_id):
@@ -1185,11 +1153,7 @@ def render_markdown():
               '| 冷跑 | 脚本执行，只用网表、导出日志或设计意图声明 | %d |' % len(rules(stage='cold')),
               '| 热跑 | 脚本执行，还要规格书数值（evidence.json） | %d |' % len(rules(stage='hot')),
               '| 审查员 | 审查员对照资料、需求和图面判 | %d |' % len(rules(stage='review')),
-              '| 复审 | 需要上一版网表与意见 | %d |' % len(rules(stage='revision')), '',
-              '同一个电气问题常由脚本部分和审查员部分共同回答，报告与覆盖统计按问题看：', '',
-              '| 问题 | 规则 |', '|---|---|']
-    for key, (name, members) in QUESTIONS.items():
-        lines.append('| %s | %s |' % (name, '、'.join('%s（%s）' % (r, STAGES[stage_of(r)]) for r in members)))
+              '| 复审 | 需要上一版网表与意见 | %d |' % len(rules(stage='revision'))]
     lines += ['', '## 内容域', '',
               '| 代码 | 内容域 | 范围 | 在用规则 | 移交事项（HANDOFF） |',
               '|---|---|---|---|---|']
