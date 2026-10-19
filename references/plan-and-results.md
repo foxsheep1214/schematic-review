@@ -421,6 +421,101 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   工具提示的 `required_inputs` 指向 `intent:` 字段（如 `supervision.rail_requirements` 逐轨 `required=false` / `internal_monitor`，
   `optocouplers[].internal_pullup`）时，是声明缺失不是工具限制：先补 intent、重生成计划再判，不写 `manual_verification`。
 
+### 示例：一个缺口被多条检查共享
+
+T301 的受控磁件规格同时挡住反激的环路模型（PWR-C15，带义务合同）和最小关断时间核算（PWR-C04）；
+PWR-C04 另缺输出电容的低温 ESR，由另一个待办负责。其余行字段同上文单条检查。
+
+```json
+{
+  "checks": [
+    {
+      "id": "PWR-C15.QR-FLYBACK-RUN.U402",
+      "review_result": "INSUFFICIENT",
+      "gap_cause": "EXTERNAL_DATA",
+      "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p13 Feedback, p21 补偿网络"}],
+      "rationale": "NCP1343 内部补偿的适用条件已对上；功率级增益和右半平面零点取决于 T301 的 Lp 与匝比，规格未给。",
+      "gaps": [{
+        "what": "T301 受控磁件规格（Lp、匝比、漏感）",
+        "scope": "90–264 Vac、5–20 V 输出、空载至 5 A",
+        "how_to_close": "取得 T301 对应设计版本的磁件规格书",
+        "closure_criterion": "规格给出 Lp 公差、Np:Ns:Na 与漏感上限",
+        "closure_domain": "loop_stability",
+        "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "反激输出调节",
+                     "consequence": "功率级模型未知时无法证明各输出档在全输入范围内稳定"}
+      }],
+      "obligations": {
+        "loop_model": {"review_result": "INSUFFICIENT", "rationale": "功率级传函需要 Lp 与匝比",
+                       "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p13 Feedback"}],
+                       "request_keys": ["T301 受控磁件规格（Lp、匝比、漏感）"]},
+        "compensation_configuration": {"review_result": "PASS", "rationale": "FB 脚外接与手册内部补偿的适用条件一致",
+                                       "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p21 补偿网络"}]},
+        "stability_limits": {"review_result": "INSUFFICIENT", "rationale": "角点穿越频率与相位裕量依赖同一功率级模型",
+                             "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p13 Feedback"}],
+                             "request_keys": ["T301 受控磁件规格（Lp、匝比、漏感）"]}
+      }
+    },
+    {
+      "id": "PWR-C04.QR-FLYBACK-RUN.U402",
+      "review_result": "INSUFFICIENT",
+      "gap_cause": "EXTERNAL_DATA",
+      "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p8 tOFF(min)"}],
+      "rationale": "轻载谷底切换的最短关断时间要用 Lp 计算；输出电容稳定条件要用低温 ESR。",
+      "gaps": [{
+        "what": "T301 受控磁件规格（Lp、匝比、漏感）",
+        "scope": "264 Vac、20 V 输出、空载至 0.5 A",
+        "how_to_close": "取得 T301 对应设计版本的磁件规格书",
+        "closure_criterion": "按 Lp 下限算出的关断时间不小于 tOFF(min)",
+        "closure_domain": "loop_stability",
+        "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "轻载输出调节",
+                     "consequence": "关断时间低于下限时控制器跳周期，轻载输出纹波失控"}
+      }, {
+        "what": "C503–C506 在 −20 °C 的 ESR 上限",
+        "scope": "−20–40 °C 环境，5–20 V 输出",
+        "how_to_close": "已读 Rubycon BXW p1，缺低温 ESR；向厂家索取或改用给出该值的系列",
+        "closure_criterion": "低温 ESR 满足 NCP1343 对输出电容零点的适用条件",
+        "severity": {"level": "P1", "class": "PERFORMANCE_OR_LIFE", "affects": "低温输出纹波",
+                     "consequence": "低温 ESR 升高使输出电容零点移出适用范围，纹波超出规格"}
+      }]
+    }
+  ],
+  "work_items": [
+    {
+      "id": "W-005", "title": "取得 T301 的受控磁件规格",
+      "root_cause": "资料包没有 T301 的 Lp、匝比与漏感",
+      "check_ids": ["PWR-C15.QR-FLYBACK-RUN.U402", "PWR-C04.QR-FLYBACK-RUN.U402"],
+      "closure_domain": "loop_stability",
+      "request_keys": {"PWR-C15.QR-FLYBACK-RUN.U402": ["T301 受控磁件规格（Lp、匝比、漏感）"],
+                       "PWR-C04.QR-FLYBACK-RUN.U402": ["T301 受控磁件规格（Lp、匝比、漏感）"]},
+      "due_stage": "schematic_freeze", "reason": "同一份规格关闭两行的磁件分支",
+      "next_action": "取得规格后分别完成环路模型与最短关断时间核算",
+      "evidence": [{"source": "record/intent.json", "locator": "materials 无 T301 规格"}],
+      "design_option": {"status": "NONE", "reason": "磁件参数是设计输入，改图不能代替规格",
+                        "evidence": [{"source": "record/intent.json", "locator": "circuits.QR-FLYBACK"}]}
+    },
+    {
+      "id": "W-006", "title": "补输出电容低温 ESR",
+      "root_cause": "所选电容手册未给 −20 °C ESR",
+      "check_ids": ["PWR-C04.QR-FLYBACK-RUN.U402"],
+      "request_keys": {"PWR-C04.QR-FLYBACK-RUN.U402": ["C503–C506 在 −20 °C 的 ESR 上限"]},
+      "due_stage": "schematic_freeze", "reason": "与磁件规格无关的独立资料",
+      "next_action": "向厂家索取低温 ESR，或换用手册给出该值的系列后复核",
+      "evidence": [{"source": "evidence/ds/Rubycon-BXW.txt", "locator": "p1 特性表"}],
+      "design_option": {"status": "NONE", "reason": "先查现有型号的低温 ESR；换型号同样需要该值",
+                        "evidence": [{"source": "evidence/ds/Rubycon-BXW.txt", "locator": "p1 特性表"}]}
+    }
+  ]
+}
+```
+
+- 共享的是缺口，不是结论：两行各写一条 `what` 相同的缺口，`scope`、`closure_criterion` 和 `severity` 按本行判据写。
+- 义务合同：PWR-C15 的 `obligations` 键与计划 `closure_contract.obligations` 相同；每个 INSUFFICIENT 义务用
+  `request_keys` 点名本行缺口的 `what`，本行每条缺口至少属于一个义务；PASS 义务不带 `request_keys`。行结论取最差义务。
+- 领域：带合同的行（PRO-C03、PWR-C15）的缺口写 `closure_domain`，负责它的待办写同一个 `closure_domain`；
+  这个待办选中的其他行缺口（PWR-C04 的磁件分支）也写同一领域。不同领域的缺口（ESR）交给另一个待办。
+- 归属：同一行被几个待办共享时，每个待办在 `request_keys` 里只列自己负责的缺口，每条缺口恰属一个待办；
+  待办的潜在等级只取它拥有的缺口。
+
 ### 发现项
 
 每个 `findings[]` 含 id、kind（DEFECT / IMPROVEMENT）、severity、check_ids 及非空的 `title`、`observed`、
