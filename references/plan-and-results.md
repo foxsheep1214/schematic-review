@@ -114,7 +114,7 @@
 | `readiness` | READY / WAITING_EVIDENCE / NOT_SCHEDULED |
 | `required_inputs` | 当前缺失的输入 |
 | `trigger` | 实例化该项的可复现依据 |
-| `handoff` | 独立下游动作，可与任一结果并存 |
+| `handoff` | 独立下游动作，可与任一结果并存；`constraint`/`verification` 逐条写接收方要做和要测的事，不写“执行 X 原文及其全部工况”这类只换编号的套话（`TEMPLATED_HANDOFF` 提示） |
 
 `rule_plan[]` 回答“这类规则要不要跑”，`checks[]` 回答“具体审哪一项”。
 
@@ -357,6 +357,8 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   REVIEW_INCOMPLETE、USER_DEFERRED，含义见 [最小充分证据](evidence-proportionality.md#复核每条证据不足)。
   纯下游项不是 INSUFFICIENT，用阶段 NA。EXTERNAL_DATA / DESIGN_OPEN 另写以 missing_inputs 原文为键的
   `input_requests`（why_decisive / required_scope / acquisition / closure_criterion），其他原因不写。
+  `required_scope` 写请求要覆盖的电压/负载/状态/温度范围，不是任务标题或根因的复述（`REQUEST_SCOPE_ECHOES_TASK` 提示，报告也不显示只复述的范围）；
+  `acquisition` 以“已读 X 第 N 页，缺 Y”开头时，后半句不要再整句重复任务的 `next_action`，报告会合并。
   `closure_criterion` 写设计者能核的边界和条件（手册限值、标准条款、工况），不写审查员算例的中间值；
   位号与数值之间留空格或标点（“R604 100°C”，不写“R604100°C”）。
 - 计划行带 `proposal.result = PASS` 而结论为 FAIL/INSUFFICIENT 时，须给 `proposal_override`（code 与 reason），

@@ -17,6 +17,10 @@ finding 的 remediation、handoff）后重新生成。下文各节规定这些�
                   "suggestion": "SR 该怎么改（规则、别名、模型或说明）"}]}
 ```
 
+`summary`、`items`、`highlights` 只说这块板：SR 自身的误报、提示数量、改进效果一律写进 `sr_feedback`，
+渲染脚本遇到这类文字会拒绝出报告。打包时的白话检查到“审查工具的不足 / 对 SR 技能的反馈 / 数字一览”任一标题为止，
+这两节是 SR 维护者的文字，允许出现规则名和术语。
+
 `sr_feedback` 记录审查中发现的 SR 自身问题，按 `kind` 分类：`false_alarm`（误报）、`over_strict`（规则过严或关闭
 条件不合理）、`missed`（漏报：问题是审查者自己找到的）、`unclear`（说明不清或互相矛盾）。每条必须点名规则编号、
 本板实例和建议；格式不对时 `render_report.py` 报错退出，不静默丢弃。它渲染为“对 SR 技能的反馈”一节，
@@ -67,6 +71,7 @@ next_action 和 acquisition 写具体动作及资料取得方法；closure_crite
 - 质量提示（`quality_screening`）中有 TEMPLATED_SEVERITY_REASON / UNIFORM_SEVERITY_WITHIN_RULE 时，先重新定级再出报告；
   来不及时在结论里写明“等级尚未逐行复核”，不把模板等级当结论展示。
 - BOILERPLATE_ACQUISITION / TEMPLATED_DESIGN_OPTION_REASON 表示多件待办共用同一句“怎么拿资料”或同一句“为什么不改图”；逐件写出真实来源（文件、供应商联系、测量）和不改图的具体理由，或提出改法。报告结论里的自检行只报数量，不改结论。
+- PORT_OVERVOLTAGE_GRADED_BELOW_P0 表示后果写的是端口/负载过压，类别却藏起了这条路径；按危险度表改类别，锁定式 OVP 是降级理由时写进 exclusion。REQUEST_SCOPE_ECHOES_TASK / TEMPLATED_HANDOFF 是写法问题：适用范围写工况不写标题，移交表逐条写要做要测的事。
 - WORK_ITEM_MIXES_LEVELS / WORK_ITEM_MIXES_HAZARD_PATHS 表示一件 P0 待办夹带了 P1 分支或两条危险路径；拆成各自的待办，或在 reason 里写明为何同根因。REF_GLUED_TO_VALUE / OVERPRECISE_CLOSURE_VALUE / ACQUISITION_WITHOUT_LOOKUP 是写法问题：分开位号和数值、通过条件不写算例中间值、缺资料先写查过哪页。
 - 结论里“N 件待办阻塞定稿”只计阻塞项，“仍待确认 M 件”计全部待办，二者可以不等；“交给后续环节”表按检查逐行列出，便于接收方逐条销项。
 - `release` 是冻结闸门，非冻结阶段不能当作总判定，也不能反过来把真实电气阻断项改成 PASS；

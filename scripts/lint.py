@@ -893,6 +893,7 @@ class Lint:
         ref = check['ref']
         mismatches = []
         declared = self.db.get('declared_pinname') or {}
+        unnamed = []
         for pin, expected in sorted(check['expected'].items()):
             node = f'{ref}.{pin}'
             # The functional-name index skips passive pins (bridge AC terminals,
@@ -900,12 +901,17 @@ class Lint:
             actual = self.pinname.get(node) or declared.get(node)
             allowed = expected if isinstance(expected, list) else [expected]
             allowed = [str(x).strip().upper() for x in allowed]
+            if actual is None and node in self.pin2net:
+                # KiCad exports an unnamed pin ("~") without a name: the pin exists,
+                # so the number is confirmed and there is no name to disagree with.
+                unnamed.append(node)
+                continue
             if actual is None or str(actual).strip().upper() not in allowed:
                 mismatches.append(
                     f'{node}: actual={actual!r}, expected={allowed}')
         detail = (
             f"{ref}: checked={len(check['expected'])}, "
-            f"mismatches={mismatches}; {self._citation(check)}")
+            f"mismatches={mismatches}, unnamed_in_symbol={unnamed}; {self._citation(check)}")
         if mismatches:
             self.add(
                 'DEV-E01', '符号引脚映射与官方定义不符', detail, ref,

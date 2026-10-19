@@ -128,7 +128,9 @@
 "可能损坏器件"不等于危险：器件损坏要成为 P0，必须说得出它打开哪条危险路径（`hazard_path`）。
 常见的 P1 而非 P0 情形：二次侧低压开关管在端口短路下的 SOA（有熔断器/初级 OCP，终态是坏机不是火灾）；
 同步整流管换流不及时的交叉导通（同上）；CC/D± 信号脚的 ESD 耐受（损伤控制器，不危及用户）；
-已有锁定式 OVP 路径、只缺动作时序数据（除非已算出停能前端口可达的能量/电压超过受控上限，才是 `PORT_OVERVOLTAGE`）；
+已有锁定式 OVP 路径、只缺动作时序数据（除非已算出停能前端口可达的能量/电压超过受控上限，才是 `PORT_OVERVOLTAGE`）——
+此时类别仍写 `DAMAGE_OR_HAZARD` + `hazard_path: PORT_OVERVOLTAGE`，用 `exclusion` 写明是哪个锁定式 OVP 及其门限出处后降为 P1；
+不能改写成 `COMPONENT_DAMAGE` 或 `REQUIRED_FUNCTION` 把路径藏起来（`PORT_OVERVOLTAGE_GRADED_BELOW_P0` 提示）；
 熔断器分断能力：IEC 60127 高分断（H，1500 A）熔断器用于插墙电源时按额定分断能力核，不要求电网可用短路电流数据。
 仍是 P0 的情形：绝缘屏障器件（变压器、光耦、Y 电容）的长期工作电压/环境条件缺证（`INSULATION`）；
 保护元件本身额定不明且其失效会让一次侧故障持续（`FIRE`/`PROTECTION_LOSS`）；端口可能出现超出受控上限的电压或能量（`PORT_OVERVOLTAGE`）。报告“数字一览”按类别计数，

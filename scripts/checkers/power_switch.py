@@ -491,7 +491,10 @@ def build_inventory(db, intent=None):
     inventory = inv.build(db, intent, 'power_switches', 'switches',
                      lambda state: _Scan(db, state, declared, excluded,
                                         ((intent or {}).get('inductive_loads') or {}).get('loads', [])).switches(), gaps)
-    if any(item.get('role') == SYNC_RECTIFIER_ROLE for item in declared.values()) and (intent or {}).get('inductive_loads'):
+    # The scan reads the winding maps for every switch, so the inventory digest
+    # must cover them whenever they were supplied, not only once a sync-rectifier
+    # role is declared; otherwise generation and validation see different inputs.
+    if (intent or {}).get('inductive_loads'):
         inventory['context']['inductive_loads'] = intent['inductive_loads']
         inventory['digest'] = inv.digest({k: v for k, v in inventory.items() if k != 'digest'})
     return inventory

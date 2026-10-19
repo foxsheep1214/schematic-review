@@ -189,7 +189,15 @@ def render_item(task, checks, notes, owners=None, classes=False):
         lines += ['风险和资料需求尚未按任务分清：' + '、'.join(view['ambiguous_checks']) +
                   '。相关检查的风险仍保留，不能把它们重复计为多个高风险根因。', '']
     requests = [req for _, _, req in view['requests']]
-    scopes = unique(q.get('required_scope') for q in requests)
+    names = [task.get(f).strip() for f in ('title', 'root_cause') if isinstance(task.get(f), str) and task[f].strip()]
+    scopes = []
+    for scope in unique(q.get('required_scope') for q in requests):
+        # A scope that only repeats the title/root cause adds nothing; show the remainder or nothing.
+        rest = scope
+        for name in names:
+            rest = rest.replace(name, '')
+        if re.sub(r'[\s，、；;：:。.()（）/]+', '', rest):
+            scopes.append(scope)
     criteria = unique(q.get('closure_criterion') for q in requests)
     reason = (task.get('reason') or '').strip()
     # Old records sometimes put the scope in the impact field verbatim.
@@ -206,8 +214,11 @@ def render_item(task, checks, notes, owners=None, classes=False):
             action = ''
         elif action.endswith('；' + criterion):
             action = action[:-len(criterion)-1]
+    acquisitions = unique(q.get('acquisition') for q in requests)
+    if action and any(action in a for a in acquisitions):
+        action = ''   # the request text already carries the action verbatim
     fields = [('缺什么', missing),
-              ('怎么补', [action] + [q.get('acquisition') for q in requests]),
+              ('怎么补', [action] + acquisitions),
               ('怎样算通过', criteria)]
     option = task.get('design_option') or {}
     if option.get('status') == 'PROPOSED':
@@ -235,6 +246,23 @@ def covered_by_findings(task, checks, findings):
 SR_FEEDBACK_KINDS = (('false_alarm', '误报'), ('over_strict', '规则过严或关闭条件不合理'),
                      ('missed', '漏报'), ('unclear', '说明不清或互相矛盾'),
                      ('software_bug', '已复现的程序错误'), ('coverage_gap', '自动化覆盖或格式适配不足'))
+
+
+SR_TALK_RE = re.compile(r'\bSR\b|误报|改进效果|quality_screening|提示仍|技能')
+
+
+def notes_errors(notes):
+    """notes.summary/items/highlights speak to the designer; SR's own problems go to sr_feedback."""
+    errors = []
+    notes = notes or {}
+    texts = [('summary', notes.get('summary'))]
+    texts += [('items.' + k, v) for k, v in (notes.get('items') or {}).items()] if isinstance(notes.get('items'), dict) else []
+    texts += [('highlights[%d]' % i, v) for i, v in enumerate(notes.get('highlights') or [])]
+    for where, text in texts:
+        if isinstance(text, str) and SR_TALK_RE.search(text):
+            errors.append('%s talks about SR itself (%s); move it to sr_feedback, the designer-facing text stays about the board'
+                          % (where, SR_TALK_RE.search(text).group(0)))
+    return errors
 
 
 def sr_feedback_errors(items):
@@ -542,7 +570,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     load = lambda p: json.loads(Path(p).read_text(encoding='utf-8'))
     notes = load(args.notes) if args.notes else None
-    problems = sr_feedback_errors((notes or {}).get('sr_feedback'))
+    problems = sr_feedback_errors((notes or {}).get('sr_feedback')) + notes_errors(notes)
     if problems:
         print('notes.json: ' + '; '.join(problems), file=sys.stderr)
         return 2

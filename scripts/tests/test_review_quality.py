@@ -312,6 +312,68 @@ class WorkItemAndTextHygieneTests(unittest.TestCase):
         self.assertEqual(set(), self.codes(p, r, db))
 
 
+class RequestOwnershipAndWordingTests(unittest.TestCase):
+    def setUp(self):
+        from review_quality import screen_quality
+        self.screen = screen_quality
+
+    def found(self, p, r, code):
+        return [x for x in self.screen(p, r)['candidates'] if x['code'] == code]
+
+    def test_acquisition_is_counted_for_the_tasks_naming_its_request_key(self):
+        p, r = impact_fixture(n=3)
+        row = r['checks'][0]
+        for i, other in enumerate(r['checks']):
+            other['impact_assessment']['consequence'] = f'N{i} consequence'
+        shared = {'why_decisive': 'w', 'required_scope': 's', 'acquisition': '向原厂取得', 'closure_criterion': 'c'}
+        row['input_requests'] = {k: dict(shared) for k in ('k1', 'k2', 'k3', 'k4')}
+        # One task names k1; six other tasks own the remaining keys of the same row.
+        r['work_items'] = [{'id': 'W-1', 'check_ids': [row['id']], 'request_keys': {row['id']: ['k1']}}] + [
+            {'id': f'W-{n}', 'check_ids': [row['id']], 'request_keys': {row['id']: [f'k{n}']}} for n in (2, 3, 4)]
+        for n in (2, 3, 4):
+            row['input_requests'][f'k{n}']['acquisition'] = f'查 DS p{n}'
+        # Before request_keys were honoured, k1's sentence was charged to all four owners.
+        self.assertEqual([], self.found(p, r, 'BOILERPLATE_ACQUISITION'))
+        # The same sentence genuinely owned by every task is still boilerplate.
+        for n in (2, 3, 4):
+            row['input_requests'][f'k{n}']['acquisition'] = '向原厂取得'
+        hit = self.found(p, r, 'BOILERPLATE_ACQUISITION')
+        self.assertEqual(['W-1', 'W-2', 'W-3', 'W-4'], hit[0]['task_ids'])
+
+    def test_port_overvoltage_text_graded_as_component_damage_is_flagged(self):
+        p, r = impact_fixture(n=3)
+        for i, row in enumerate(r['checks']):
+            row['impact_assessment']['consequence'] = f'N{i} consequence'
+        row = r['checks'][0]
+        row['impact_assessment'].update(consequence='合同过压可使端口负载损坏', consequence_class='COMPONENT_DAMAGE')
+        self.assertEqual([row['id']], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0')[0]['check_ids'])
+        row['impact_assessment'].update(consequence_class='DAMAGE_OR_HAZARD', hazard_path='PORT_OVERVOLTAGE',
+                                        exclusion='U601 锁定式 OVP，门限见 DS01 p12')
+        self.assertEqual([], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0'))
+
+    def test_scope_echoing_the_task_and_templated_handoffs_are_flagged(self):
+        p, r = impact_fixture(n=4)
+        for i, row in enumerate(r['checks']):
+            row['impact_assessment']['consequence'] = f'N{i} consequence'
+        row = r['checks'][0]
+        row['input_requests'] = {'k': {'why_decisive': 'w', 'required_scope': 'F101 分断；100A 尚未配对',
+                                       'acquisition': 'a', 'closure_criterion': 'c'}}
+        r['work_items'] = [{'id': 'W-1', 'title': 'F101 分断', 'root_cause': '100A 尚未配对', 'check_ids': [row['id']]}]
+        self.assertEqual([row['id']], self.found(p, r, 'REQUEST_SCOPE_ECHOES_TASK')[0]['check_ids'])
+        row['input_requests']['k']['required_scope'] = '90–264Vac、冷/热重插'
+        self.assertEqual([], self.found(p, r, 'REQUEST_SCOPE_ECHOES_TASK'))
+        for c in r['checks'][1:]:
+            c['handoff'] = {'required': True, 'receivers': ['样机验证'],
+                            'constraint': f"执行{c['id']}原文及其全部工况。", 'verification': f'按 {c["id"]} 验收'}
+        hit = self.found(p, r, 'TEMPLATED_HANDOFF')
+        self.assertEqual({'constraint', 'verification'}, {x['field'] for x in hit})
+        self.assertEqual(3, len(hit[0]['check_ids']))
+        for i, c in enumerate(r['checks'][1:]):
+            c['handoff']['constraint'] = f'闭壳 {40 + i}°C 测热点'
+            c['handoff']['verification'] = f'记录第 {i} 组数据'
+        self.assertEqual([], self.found(p, r, 'TEMPLATED_HANDOFF'))
+
+
 class DownstreamTriageTests(unittest.TestCase):
     def codes(self, p, r):
         from review_quality import screen_quality

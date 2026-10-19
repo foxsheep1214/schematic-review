@@ -183,16 +183,34 @@ class LintTests(unittest.TestCase):
             lint.hot_executed, {'SIG-E01', 'RST-E01', 'DEV-E01', 'RST-E02'})
         self.assertTrue(any(item[0] == 'NET-A06' for item in lint.skipped))
 
+    def pin_map_run(self, db, expected):
+        evidence = hot_evidence()
+        evidence['checks'] = [c for c in evidence['checks'] if c['id'] == 'J1-MAP']
+        evidence['checks'][0]['expected'] = expected
+        lint = self.bound_lint(db, evidence)
+        findings = [i for i in lint.run() if i['rule'] == 'DEV-E01' and i['kind'] == 'FINDING']
+        passes = [p for p in lint.passes if p['rule'] == 'DEV-E01']
+        self.assertIn('DEV-E01', lint.hot_executed)
+        return findings, passes
+
     def test_hot_pin_map_reads_declared_name_for_passive_pins(self):
         # Bridge AC terminals and windings have no functional name in pinname;
         # the symbol's declared name is the one to compare.
         db = sample_db(); db['pinname'].pop('J1.1'); db['declared_pinname'] = {'J1.1': 'VBUS'}
-        evidence = hot_evidence()
-        evidence['checks'] = [c for c in evidence['checks'] if c['id'] == 'J1-MAP']
-        lint = self.bound_lint(db, evidence)
-        findings = lint.run()
-        self.assertNotIn('DEV-E01', {i['rule'] for i in findings if i['kind'] == 'FINDING'})
-        self.assertIn('DEV-E01', lint.hot_executed)
+        findings, passes = self.pin_map_run(db, {'1': 'VBUS'})
+        self.assertEqual([], findings)
+
+    def test_hot_pin_map_accepts_pins_the_symbol_leaves_unnamed(self):
+        # KiCad exports "~" pins with no name at all (bridge AC terminals): the parser
+        # yields no declared name either. The pin exists, so the number is confirmed.
+        db = sample_db(); db['pinname'].pop('J1.1'); db['declared_pinname'] = {}
+        findings, passes = self.pin_map_run(db, {'1': ['~', 'AC', 'AC1']})
+        self.assertEqual([], findings)
+        self.assertIn("unnamed_in_symbol=['J1.1']", passes[0]['detail'])
+        # A pin the netlist does not have at all is still a mismatch.
+        findings, _ = self.pin_map_run(db, {'1': ['AC1'], '9': ['AC2']})
+        self.assertEqual(1, len(findings))
+        self.assertIn('J1.9: actual=None', findings[0]['detail'])
 
     def test_hot_divider_uses_worst_case_window(self):
         evidence = {

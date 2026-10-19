@@ -674,6 +674,12 @@ class SynchronousRectifierTest(unittest.TestCase):
         changed['inductive_loads']['loads'][0]['windings'][1]['dot']='3'
         self.assertNotEqual(build_inventory(db,changed)['digest'],inventory['digest'])
         self.assertIn('inductive_loads',inventory['context'])
+        # The scan reads the windings for every switch: the context keeps them even
+        # before any synchronous-rectifier role is declared, so generation and
+        # validation hash the same inputs.
+        bare={'inductive_loads':intent['inductive_loads'],'power_switches':{'switches':[]},
+              'assemblies':intent.get('assemblies')}
+        self.assertIn('inductive_loads',build_inventory(db,bare)['context'])
 
 
 class GateResistorAndBridgeTest(unittest.TestCase):

@@ -34,7 +34,9 @@ LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.jso
 
 def plain_language_errors(report):
     """Text written for the designer (everything above the tool-gap and count sections) must be plain."""
-    body = report.split('\n## 审查工具的不足')[0].split('\n## 数字一览')[0]
+    body = report
+    for heading in ('\n## 审查工具的不足', '\n## 对 SR 技能的反馈', '\n## 数字一览'):
+        body = body.split(heading)[0]
     errors = []
     for number, line in enumerate(body.splitlines()[1:], 2):
         words = jargon_in(line)

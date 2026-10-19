@@ -344,6 +344,9 @@ def screen_quality(plan, report, db=None):
     candidates.extend(unreconciled_history(report, expected))
     candidates.extend(work_item_consistency(report))
     candidates.extend(text_hygiene(report, expected, known))
+    candidates.extend(port_overvoltage_grading(report))
+    candidates.extend(scope_echoes_task(report))
+    candidates.extend(templated_handoffs(report))
     candidates.sort(key=lambda x: (x['code'], x['check_ids']))
     output.update(status='NEEDS_SEMANTIC_REVIEW' if candidates else 'NO_PATTERN_DETECTED',
                   candidate_count=len(candidates),
@@ -438,6 +441,89 @@ OVERPRECISE_RE = re.compile(r'(?<![0-9.])\d*\.\d{3,}(?![\d.])')
 LOOKUP_RE = re.compile(r'(?:(?<![A-Za-z])pp?\.?\s*\d+|(?<![A-Za-z])page\s*\d+|第\s*\d+\s*[页节条章]|\d+\s*页|表\s*[\dA-Z]|\bTable\s*\d|'
                        r'\bFig(?:ure)?\.?\s*\d|图\s*\d|§\s*\d|\d+\.\d+(?:\.\d+)*\s*[条节款]|条款\s*\d|\bRev\.?\s*[\dA-Z])', re.I)
 ACQUIRE_RE = re.compile(r'^\s*(?:先?由|向|请|找|从|待)|取得|索取|提供|询|索要')
+
+
+# 端口过压送到外部负载是 PORT_OVERVOLTAGE 危险路径（P0 类），不因“只坏负载”降为器件损坏或功能项。
+PORT_OV_RE = re.compile(r'(?:端口|USB|VBUS|合同|负载)[^。；;]{0,16}过压|过压[^。；;]{0,16}(?:端口|负载|USB|VBUS)|负载损坏|port\s*over-?voltage', re.I)
+P0_CLASSES = {'DAMAGE_OR_HAZARD', 'CORE_LINK_LOSS'}
+# 移交表：同一句约束只换了检查编号，不是逐条可销项的要求。
+HANDOFF_MIN_ROWS = 3
+
+
+def port_overvoltage_grading(report):
+    found = []
+    for row in report.get('checks') or []:
+        if not isinstance(row, dict) or not isinstance(row.get('id'), str):
+            continue
+        if row.get('review_result') not in ('INSUFFICIENT', 'FAIL'):
+            continue
+        assessment = row.get('impact_assessment') if isinstance(row.get('impact_assessment'), dict) else {}
+        if assessment.get('consequence_class') in P0_CLASSES or assessment.get('hazard_path') == 'PORT_OVERVOLTAGE':
+            continue
+        text = ' '.join(str(assessment.get(f) or '') for f in ('consequence', 'severity_reason', 'affected_function'))
+        text += ' ' + str(row.get('rationale') or '')
+        if PORT_OV_RE.search(text):
+            found.append({'code': 'PORT_OVERVOLTAGE_GRADED_BELOW_P0', 'check_ids': [row['id']],
+                          'consequence_class': assessment.get('consequence_class'),
+                          'message': 'The consequence text describes overvoltage reaching the port or its load, but the class '
+                                     'hides that path: grade it DAMAGE_OR_HAZARD / PORT_OVERVOLTAGE; when a latched OVP with '
+                                     'evidenced threshold is the reason it stays P1, keep that class and write the exclusion, '
+                                     'not COMPONENT_DAMAGE or REQUIRED_FUNCTION.'})
+    return found
+
+
+def scope_echoes_task(report):
+    """required_scope that only repeats the task title/root cause states no operating range."""
+    found = []
+    rows = _rows(report)
+    for task in report.get('work_items') or []:
+        if not isinstance(task, dict) or not isinstance(task.get('id'), str):
+            continue
+        names = [task.get(f) for f in ('title', 'root_cause') if isinstance(task.get(f), str) and task[f].strip()]
+        if not names:
+            continue
+        echoed = set()
+        for cid in task.get('check_ids') or []:
+            row = rows.get(cid) if isinstance(cid, str) else None
+            requests = (row or {}).get('input_requests')
+            for q in requests.values() if isinstance(requests, dict) else []:
+                scope = q.get('required_scope') if isinstance(q, dict) else None
+                if not isinstance(scope, str):
+                    continue
+                rest = scope
+                for name in names:
+                    rest = rest.replace(name.strip(), '')
+                if rest != scope and not re.sub(r'[\s，、；;：:。.()（）/]+', '', rest):
+                    echoed.add(cid)
+        if echoed:
+            found.append({'code': 'REQUEST_SCOPE_ECHOES_TASK', 'task_ids': [task['id']], 'check_ids': sorted(echoed),
+                          'message': 'required_scope only repeats the task title/root cause; state the voltages, loads, '
+                                     'states and temperatures the request must cover.'})
+    return found
+
+
+def templated_handoffs(report):
+    groups = defaultdict(set)
+    for row in report.get('checks') or []:
+        if not isinstance(row, dict) or not isinstance(row.get('id'), str):
+            continue
+        handoff = row.get('handoff')
+        if not isinstance(handoff, dict) or not handoff.get('required'):
+            continue
+        for field in ('constraint', 'verification'):
+            text = handoff.get(field)
+            if not isinstance(text, str) or not text.strip():
+                continue
+            # Remove this check's own id and its requirement token so only the template remains.
+            tokens = [row['id']] + [t for t in re.split(r'[.]', row['id']) if len(t) > 3]
+            template = text
+            for token in sorted(set(tokens), key=len, reverse=True):
+                template = template.replace(token, '<id>')
+            groups[(field, re.sub(r'\s+', ' ', template).strip())].add(row['id'])
+    return [{'code': 'TEMPLATED_HANDOFF', 'field': field, 'template': template[:120], 'check_ids': sorted(ids),
+             'message': f'{len(ids)} handoff rows share one {field} sentence with only the check id swapped; '
+                        'write what each receiver must actually do and measure.'}
+            for (field, template), ids in sorted(groups.items()) if len(ids) >= HANDOFF_MIN_ROWS]
 
 
 def _task_texts(task):
@@ -537,21 +623,33 @@ def templated_task_text(report, expected):
     found = []
     tasks = [t for t in report.get('work_items') or []
              if isinstance(t, dict) and isinstance(t.get('id'), str) and isinstance(t.get('check_ids'), list)]
-    owners = defaultdict(set)
+    owners = defaultdict(set)        # check id -> tasks that own the whole row
+    key_owners = defaultdict(set)    # (check id, request key) -> tasks naming that key
     for task in tasks:
+        keyed = task.get('request_keys') if isinstance(task.get('request_keys'), dict) else {}
         for cid in task['check_ids']:
-            if isinstance(cid, str):
+            if not isinstance(cid, str):
+                continue
+            if isinstance(keyed.get(cid), list):
+                for key in keyed[cid]:
+                    if isinstance(key, str):
+                        key_owners[(cid, key)].add(task['id'])
+            else:
                 owners[cid].add(task['id'])
     acquisitions = defaultdict(lambda: (set(), set(), set()))
     for row in report.get('checks') or []:
         if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
             continue
         requests = row.get('input_requests')
-        for request in requests.values() if isinstance(requests, dict) else []:
+        for key, request in requests.items() if isinstance(requests, dict) else []:
             text = request.get('acquisition') if isinstance(request, dict) else None
             if isinstance(text, str) and text.strip():
                 ids, scopes, task_ids = acquisitions[re.sub(r'\s+', ' ', text).strip()]
-                ids.add(row['id']); scopes.add(_scope(expected[row['id']])); task_ids.update(owners.get(row['id'], ()))
+                ids.add(row['id']); scopes.add(_scope(expected[row['id']]))
+                # A request belongs to the tasks that name its key; tasks that own the
+                # whole row count only when no task names any key of that row.
+                named = key_owners.get((row['id'], key)) or set()
+                task_ids.update(named or owners.get(row['id'], ()))
     for text, (ids, scopes, task_ids) in acquisitions.items():
         if len(task_ids or scopes) >= ACQUISITION_MIN_TASKS:
             found.append({'code': 'BOILERPLATE_ACQUISITION', 'field': 'acquisition', 'template': text[:120],

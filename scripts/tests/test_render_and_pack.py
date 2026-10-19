@@ -97,6 +97,33 @@ class RenderReportTests(unittest.TestCase):
         checks['A.2']['potential_severity'] = 'P0'
         self.assertIn('涉及 2 条检查\n', render_item(task, checks, {})[2] + '\n')
 
+    def test_plain_language_scan_stops_before_sr_feedback_even_without_tool_gaps(self):
+        from pack_review import plain_language_errors
+        report = ('# t\n\n## 结论\n\n- ok\n\n## 对 SR 技能的反馈（设计者不用处理）\n\n'
+                  '1. **DEV-E01**：技能误报。\n\n## 数字一览\n\n| 项目 | 数量 |\n')
+        self.assertEqual([], plain_language_errors(report))
+        self.assertTrue(plain_language_errors(report.replace('- ok', '- 技能 ok')))
+
+    def test_item_drops_scope_and_action_that_only_echo_the_task(self):
+        from render_report import render_item
+        req = {'why_decisive': 'x', 'required_scope': 'F101 分断；100A 与故障电流尚未配对',
+               'acquisition': '已读 Littelfuse p1。 核 GB4943.1 条款再确认 F101', 'closure_criterion': 'c'}
+        checks = {'A.1': {'id': 'A.1', 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA',
+                          'potential_severity': 'P0', 'input_requests': {'k': req}}}
+        task = {'id': 'W-1', 'title': 'F101 分断', 'root_cause': '100A 与故障电流尚未配对',
+                'check_ids': ['A.1'], 'next_action': '核 GB4943.1 条款再确认 F101'}
+        text = '\n'.join(render_item(task, checks, {}))
+        self.assertNotIn('适用范围', text)
+        self.assertEqual(1, text.count('核 GB4943.1 条款再确认 F101'))
+        req['required_scope'] = '90–264Vac、冷/热重插'
+        self.assertIn('适用范围：90–264Vac、冷/热重插', '\n'.join(render_item(task, checks, {})))
+
+    def test_notes_about_sr_itself_are_refused_outside_sr_feedback(self):
+        from render_report import notes_errors
+        self.assertEqual([], notes_errors({'summary': '先核 F101。', 'items': {'W-1': '补磁件资料。'}}))
+        self.assertTrue(notes_errors({'summary': 'SR改进部分有效，真实BR101误报仍未解决。'}))
+        self.assertTrue(notes_errors({'highlights': ['质量提示仍有 17 条']}))
+
     def test_stage_na_is_handed_over_without_blocking(self):
         p, r, db = downstream()
         text, gate = report(p, r, db)
