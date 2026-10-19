@@ -1187,7 +1187,6 @@
    "baseline": {
     "quality_codes": {
      "CALCULATION_RECORDED_AS_DATA_GAP": 4,
-     "DOWNSTREAM_RECORDED_AS_DESIGN_GAP": 1,
      "FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP": 1,
      "REUSED_RATIONALE_ACROSS_SCOPES": 12,
      "UNIFORM_SEVERITY_WITHIN_RULE": 3
@@ -1240,7 +1239,7 @@
      "- **能否定稿**：还不能定稿。还差：",
      "  1. 35 件待办阻塞定稿（同一原因合并，涉及 178 条缺资料或设计依据的阻塞检查；不阻塞的待办不计在内）。",
      "- **待办**：35 件，按可能后果从重到轻列在“待办”一节。",
-     "- **审查记录自检**：21 条提示涉及 136 条检查（REUSED_RATIONALE_ACROSS_SCOPES 12、CALCULATION_RECORDED_AS_DATA_GAP 4、UNIFORM_SEVERITY_WITHIN_RULE 3）。提示只要求复核写法和依据，不改变上面的结论；明细在校验记录。",
+     "- **审查记录自检**：20 条提示涉及 133 条检查（REUSED_RATIONALE_ACROSS_SCOPES 12、CALCULATION_RECORDED_AS_DATA_GAP 4、UNIFORM_SEVERITY_WITHIN_RULE 3）。提示只要求复核写法和依据，不改变上面的结论；明细在校验记录。",
      "- 这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。",
      "- **上一版审查材料**：本轮没有使用。"
     ]

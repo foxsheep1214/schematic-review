@@ -19,7 +19,10 @@ GRADE_RE = re.compile(r'P[0-3]')
 RULE_UNIFORM_MIN_ROWS = 10
 # 下游分流线索：缺口文字只指向样机/试验结果，或把优化目标记成阻断缺口。关键词只生成提示，不改结论。
 DOWNSTREAM_RE = re.compile(r'实测|样机|样品|闭壳|温升测试|热测|EMC|传导|辐射|认证|一致性测试|兼容性测试|寿命试验|'
-                           r'能效测试|整机测试|插墙|PCB寄生|实际寄生|实物波形|prototype|bench|compliance|certif', re.I)
+                           r'能效测试|整机测试|PCB寄生|实际寄生|实物波形|prototype|bench|compliance|certif', re.I)
+# “插墙”是应用场景不是下游验证（R3 的 F101 分断缺口因此被误标，R4 证实为 P0 缺陷）。
+# 写明随后/留给下游的分句已把下游部分分出，只看其余文字；整条都是这种分句时仍按原文判。
+DEFERRED_CLAUSE_RE = re.compile(r'[^；;，,。]*(?:随后|留给|留待|另行|后续|移交|交由|另验)[^；;，,。]*')
 DESIGN_GAP_RE = re.compile(r'未选|未定|缺少?手册|缺资料|无资料|未计算|未建模|未连接|未设计|改图|越限|超出额定|不满足')
 OPTIMIZATION_RE = re.compile(r'优化目标|成本|体积|报价|尽量|cost|volume', re.I)
 # 冻结阶段把以下两类提示当作“定级未完成”的放行阻断，不改变 valid。
@@ -68,6 +71,12 @@ def analysis_text(text, check):
 
 def field_text(value):
     return ' '.join(x for x in value if isinstance(x, str)) if isinstance(value, list) else value
+
+
+def _decisive_part(what):
+    """A gap text without the side clauses that already defer something downstream."""
+    rest = DEFERRED_CLAUSE_RE.sub('', what)
+    return rest if rest.strip(' ；;，,。') else what
 
 
 def screen_quality(plan, report, db=None):
@@ -214,7 +223,7 @@ def screen_quality(plan, report, db=None):
                 and row.get('gap_cause') != 'REQUIREMENT_OPEN'):
             grades[row.get('potential_severity')].append(row['id'])
             cause = row.get('gap_cause')
-            gap_text = ' '.join(x for x in (row.get('missing_inputs') or []) if isinstance(x, str))
+            gap_text = ' '.join(_decisive_part(x) for x in (row.get('missing_inputs') or []) if isinstance(x, str))
             if cause in ('DESIGN_OPEN', 'EXTERNAL_DATA') and DOWNSTREAM_RE.search(gap_text) \
                     and not DESIGN_GAP_RE.search(gap_text):
                 downstream_ids.append(row['id'])

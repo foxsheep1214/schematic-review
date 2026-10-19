@@ -157,5 +157,32 @@ class SharedGapExampleTest(unittest.TestCase):
         self.assertTrue(set.intersection(*whats), 'the example must show one gap shared by several checks')
 
 
+class DownstreamScreenCounterexampleTest(unittest.TestCase):
+    """真实反例：三份 R3 台账（3924cd7、41f4ad3 及其复审）把 F101 分断缺口因“插墙”标成下游项，R4 证实它是 P0 缺陷；
+    435c0fc 的资料缺口只在附带分句里说“实际寄生波形随后验证”“OTP温度映射留给闭壳标定”。"""
+
+    @staticmethod
+    def flagged(whats):
+        from review_quality import screen_quality
+        from test_review_quality import impact_fixture
+        p, r = impact_fixture(n=len(whats))
+        for row, what in zip(r['checks'], whats):
+            row.update(gap_cause='EXTERNAL_DATA', missing_inputs=[what])
+        hit = {c['code']: c for c in screen_quality(p, r)['candidates']}.get('DOWNSTREAM_RECORDED_AS_DESIGN_GAP')
+        ids = [row['id'] for row in r['checks']]
+        return [ids.index(cid) for cid in (hit or {}).get('check_ids', [])]
+
+    def test_application_context_and_deferred_side_clauses_are_not_downstream_gaps(self):
+        self.assertEqual(self.flagged([
+            '383 系列 100A 分断条件尚未与插墙应用的故障和后备保护对应',
+            '同步整流自供电和关断时序适用范围：按准确NCP4307FBS的自供电、最小导通及关断条款和准确QR周期求SR_VCC、'
+            '驱动电荷/反向时序，核正常反压及R504重复耗散；实际寄生波形随后验证。',
+            '双偏置NTC判别的温度边界：取得NCU18WF104F60RB全范围R(T)容差或保证端点包络，结合准确RT7209两档电流、'
+            'ADC满量程和等待状态复算不重叠；OTP温度映射留给闭壳标定。']), [])
+
+    def test_test_only_gaps_are_still_flagged(self):
+        self.assertEqual(self.flagged(['闭壳温升与EMC传导实测结果', '插墙实测温升随后验证', '安规认证报告']), [0, 1, 2])
+
+
 if __name__ == '__main__':
     unittest.main()
