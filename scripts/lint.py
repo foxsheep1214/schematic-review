@@ -31,6 +31,7 @@ from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
 from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID, registry_hot_rules
+from checkers.powertree import declared_supply_nets
 from checkers import netgraph as ng
 from checkers.netgraph import (CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER, TVS,
                                TWO_TERMINAL, NetGraph, rail_voltage as _volt)
@@ -406,8 +407,10 @@ class Lint:
                 self.add('NET-A03', '自动命名网仅含无源件', f'{n}: {sorted(rs)}')
 
         # PWR-A01 电源轨无驱动；只经连接器触点进板的轨是外部供电，记候选而不是疑似缺陷
+        # intent.power_rails 声明的轨不论名字都扫；PWR_FLAG 不是来源。
+        declared_rails = declared_supply_nets(self.graph, self.intent)
         for n, nds in nets.items():
-            if ng.is_ground(n) or n in self.pseudo or not RAIL_RE.match(n):
+            if ng.is_ground(n) or n in self.pseudo or not (RAIL_RE.match(n) or n in declared_rails):
                 continue
             if not self.driven(n):
                 entry = self._external_entry(n)

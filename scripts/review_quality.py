@@ -24,6 +24,9 @@ OPTIMIZATION_RE = re.compile(r'优化目标|成本|体积|报价|尽量|cost|vol
 # Review records whose citation as evidence for a current conclusion suggests reuse of an earlier review.
 REVIEW_ARTIFACTS = {'review-results.json', 'review-gate.json', '审查报告.md', 'review-ledger.json'}
 FREEZE_BLOCKING_CODES = ('TEMPLATED_SEVERITY_REASON', 'UNIFORM_SEVERITY_WITHIN_RULE')
+# 资料获取方式/无改图理由模板：同一句话服务于多件待办时，说明没有按对象写出真实来源或真实替代方案。
+ACQUISITION_MIN_TASKS = 3
+DESIGN_OPTION_MIN_TASKS = 3
 IMPACT_TEXT_FIELDS = ('consequence', 'severity_reason')
 
 
@@ -330,8 +333,75 @@ def screen_quality(plan, report, db=None):
         candidates.append({'code': 'CURRENT_CHECK_CITES_REVIEW_RECORD', 'check_ids': cited_reviews,
             'message': 'A current conclusion cites a review results/gate/report file. If it is an earlier review, '
                        're-derive the conclusion from current sources and declare the file in history_inputs.'})
+    candidates.extend(templated_task_text(report, expected))
     candidates.sort(key=lambda x: (x['code'], x['check_ids']))
     output.update(status='NEEDS_SEMANTIC_REVIEW' if candidates else 'NO_PATTERN_DETECTED',
                   candidate_count=len(candidates),
                   flagged_check_count=len({cid for x in candidates for cid in x['check_ids']}))
     return output
+
+
+def _scope(check):
+    return json.dumps([check.get('rule'), check.get('object')], sort_keys=True, ensure_ascii=False)
+
+
+def templated_task_text(report, expected):
+    """Acquisition text and NONE design-option reasons reused across work items.
+
+    One acquisition sentence serving many tasks names no actual document, party or
+    part; one NONE reason with only the missing-input name swapped is not a per-task
+    statement that no schematic change removes the gap. Leads only; no verdict changes.
+    """
+    found = []
+    tasks = [t for t in report.get('work_items') or []
+             if isinstance(t, dict) and isinstance(t.get('id'), str) and isinstance(t.get('check_ids'), list)]
+    owners = defaultdict(set)
+    for task in tasks:
+        for cid in task['check_ids']:
+            if isinstance(cid, str):
+                owners[cid].add(task['id'])
+    acquisitions = defaultdict(lambda: (set(), set(), set()))
+    for row in report.get('checks') or []:
+        if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
+            continue
+        requests = row.get('input_requests')
+        for request in requests.values() if isinstance(requests, dict) else []:
+            text = request.get('acquisition') if isinstance(request, dict) else None
+            if isinstance(text, str) and text.strip():
+                ids, scopes, task_ids = acquisitions[re.sub(r'\s+', ' ', text).strip()]
+                ids.add(row['id']); scopes.add(_scope(expected[row['id']])); task_ids.update(owners.get(row['id'], ()))
+    for text, (ids, scopes, task_ids) in acquisitions.items():
+        if len(task_ids or scopes) >= ACQUISITION_MIN_TASKS:
+            found.append({'code': 'BOILERPLATE_ACQUISITION', 'field': 'acquisition', 'template': text[:120],
+                          'check_ids': sorted(ids), 'task_ids': sorted(task_ids),
+                          'message': f'{len(task_ids or scopes)} tasks share one acquisition sentence; name the actual '
+                                     'document, supplier contact or measurement for each request.'})
+    reasons = defaultdict(set)
+    for task in tasks:
+        option = task.get('design_option')
+        reason = option.get('reason') if isinstance(option, dict) and option.get('status') == 'NONE' else None
+        if not isinstance(reason, str) or not reason.strip():
+            continue
+        # Remove this task's own missing-input names; what remains is the template.
+        names = set()
+        for cid in task['check_ids']:
+            row = next((r for r in report.get('checks') or [] if isinstance(r, dict) and r.get('id') == cid), None)
+            requests = (row or {}).get('input_requests')
+            if isinstance(requests, dict):
+                names.update(k for k in requests if isinstance(k, str) and k.strip())
+            for name in (row or {}).get('missing_inputs') or []:
+                if isinstance(name, str) and name.strip():
+                    names.add(name)
+        for name in sorted(names, key=len, reverse=True):
+            reason = reason.replace(name, '')
+        reasons[re.sub(r'\s+', ' ', reason).strip()].add(task['id'])
+    for text, task_ids in reasons.items():
+        if len(task_ids) >= DESIGN_OPTION_MIN_TASKS:
+            ids = sorted({cid for t in tasks if t['id'] in task_ids for cid in t['check_ids'] if isinstance(cid, str)})
+            found.append({'code': 'TEMPLATED_DESIGN_OPTION_REASON', 'field': 'design_option.reason',
+                          'template': text[:120], 'check_ids': ids, 'task_ids': sorted(task_ids),
+                          'message': f'{len(task_ids)} tasks decline a schematic change with the same sentence; '
+                                     'state per task why no part change, value change or added circuit removes the gap, '
+                                     'or propose one.'})
+    return found
+

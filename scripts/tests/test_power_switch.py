@@ -161,6 +161,29 @@ class RecognitionTest(unittest.TestCase):
         add(db, 'D9', '1N4148', [('1', 'A', 'GND'), ('2', 'K', 'SW_OUT')])
         self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
 
+    def test_rcd_clamp_returning_to_an_undeclared_transformer_bulk_is_found(self):
+        from test_inductive_load import flyback_board
+        db = flyback_board()
+        add(db, 'C9', '68uF', [('1', '1', 'BUS'), ('2', '2', 'GND')])
+        switch = switches_of(build_inventory(db))['Q1']
+        self.assertEqual([(s['type'], s['to']) for s in switch['snubbers']], [('rcd-clamp', 'BUS')])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+        db['parts']['C9']['nc'] = True   # a transformer terminal without storage is not a supply
+        self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
+
+    def test_boost_rectifier_counts_for_a_sensed_low_side_switch(self):
+        db = switch_board(load=None)
+        db['pin2net']['Q1.3'] = 'SENSE'
+        db['nets']['GND'].remove('Q1.3')
+        db['nets']['SENSE'] = ['Q1.3']
+        add(db, 'R9', '0R1', [('1', '1', 'SENSE'), ('2', '2', 'GND')])
+        add(db, 'L9', 'IND-200UH', [('1', '1', 'VIN'), ('2', '2', 'SW_OUT')])
+        add(db, 'D9', 'MUR550', [('1', 'A', 'SW_OUT'), ('2', 'K', 'V12')])
+        switch = switches_of(build_inventory(db))['Q1']
+        self.assertEqual(switch['topology'], 'floating')
+        self.assertEqual([s['type'] for s in switch['snubbers']], ['boost-transfer-diode'])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+
     def test_half_bridge_midpoint_is_recognised(self):
         db = switch_board(load=None)
         add(db, 'Q2', 'AO3400', [('1', 'G', 'GATE_H'), ('2', 'D', 'V12'), ('3', 'S', 'SW_OUT')])

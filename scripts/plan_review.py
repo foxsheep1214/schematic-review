@@ -625,10 +625,13 @@ class ReviewPlanner:
             self.add_check('PRO-D03', {'ref': ref}, trigger=connector_trigger)
 
         # 每条电源轨分别检查拓扑（连接追踪）和功耗预算（工程计算）。
+        # 轨名不像电源（BULK、AUX_DC、SR_VCC）但 intent.power_rails 已声明且确实供电的网同样是轨。
+        declared_rails = powertree.declared_supply_nets(connector_graph, self.intent)
         for net in sorted(nets):
-            if net in pseudo or is_ground(net) or not RAIL_RE.match(net):
+            if net in pseudo or is_ground(net) or not (RAIL_RE.match(net) or net in declared_rails):
                 continue
-            self.add_check('PWR-T01', {'net': net}, trigger=[f'rail-name:{net}'])
+            self.add_check('PWR-T01', {'net': net},
+                           trigger=[f'rail-name:{net}' if RAIL_RE.match(net) else f'declared-rail:{net}'])
             budget = self.intent.get('power_rails', {}).get(net, {})
             missing = []
             for field in ('voltage_v', 'load_a'):

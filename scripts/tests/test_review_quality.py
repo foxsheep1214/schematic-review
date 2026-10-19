@@ -291,3 +291,61 @@ class FreezeGradingGateTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def task_text_fixture(shared=True):
+    """Four single-check tasks whose requests and NONE reasons are one template."""
+    p = {'checks': [{'id': f'DEV-C01.R{i}', 'rule': 'DEV-C01', 'method': 'C', 'object': {'ref': f'R{i}'},
+                     'criterion': f'R{i} rating'} for i in range(1, 5)]}
+    rows, tasks = [], []
+    for i in range(1, 5):
+        key = f'R{i} pulse rating table'
+        acquisition = '设计方结合原厂技术支持建立受控范围。' if shared else f'向R{i}供应商索取脉冲曲线第{i}页。'
+        reason = f'当前缺口是{key}；未取得该范围前无法证明某个替换值能关闭此条件。' if shared else \
+            f'R{i}换更大功率封装会超出板位{i}mm，改值会使门限偏移；先取得曲线。'
+        rows.append({'id': f'DEV-C01.R{i}', 'review_result': 'INSUFFICIENT', 'rationale': f'R{i} pulse data missing.',
+                     'missing_inputs': [key], 'input_requests': {key: {'acquisition': acquisition}}})
+        tasks.append({'id': f'W{i}', 'check_ids': [f'DEV-C01.R{i}'],
+                      'design_option': {'status': 'NONE', 'reason': reason, 'evidence': E}})
+    return p, {'checks': rows, 'work_items': tasks}
+
+
+class TaskTextTemplateTests(unittest.TestCase):
+    def codes(self, p, r):
+        from review_quality import screen_quality
+        return {c['code']: c for c in screen_quality(p, r)['candidates']}
+
+    def test_shared_acquisition_and_none_reason_are_flagged_with_their_tasks(self):
+        found = self.codes(*task_text_fixture())
+        self.assertEqual(found['BOILERPLATE_ACQUISITION']['task_ids'], ['W1', 'W2', 'W3', 'W4'])
+        self.assertEqual(len(found['BOILERPLATE_ACQUISITION']['check_ids']), 4)
+        templated = found['TEMPLATED_DESIGN_OPTION_REASON']
+        self.assertEqual(templated['task_ids'], ['W1', 'W2', 'W3', 'W4'])
+        self.assertNotIn('R1 pulse rating table', templated['template'])
+
+    def test_task_specific_text_is_not_flagged(self):
+        found = self.codes(*task_text_fixture(shared=False))
+        self.assertNotIn('BOILERPLATE_ACQUISITION', found)
+        self.assertNotIn('TEMPLATED_DESIGN_OPTION_REASON', found)
+
+    def test_two_tasks_sharing_text_stay_below_threshold(self):
+        p, r = task_text_fixture()
+        r['work_items'] = r['work_items'][:2]; r['checks'] = r['checks'][:2]; p['checks'] = p['checks'][:2]
+        self.assertNotIn('TEMPLATED_DESIGN_OPTION_REASON', self.codes(p, r))
+
+    def test_report_conclusion_names_the_screen_without_changing_counts(self):
+        from test_check_explanations import synthetic
+        from render_report import render
+        p, r = synthetic(['FAIL', 'INSUFFICIENT'])
+        plain = render(p, r, {'valid': True})
+        self.assertNotIn('- **审查记录自检**', plain)
+        self.assertIn('| 审查记录自检提示（不计入结论） | 0 |', plain)
+        gate = {'valid': True, 'quality_screening': {'candidates': [
+            {'code': 'REUSED_RATIONALE_ACROSS_SCOPES', 'check_ids': ['a', 'b']},
+            {'code': 'BOILERPLATE_ACQUISITION', 'check_ids': ['b']}]}}
+        text = render(p, r, gate)
+        self.assertIn('- **审查记录自检**：2 条提示涉及 2 条检查（REUSED_RATIONALE_ACROSS_SCOPES 1、BOILERPLATE_ACQUISITION 1）', text)
+        self.assertIn('| 审查记录自检提示（不计入结论） | 2 |', text)
+        strip = lambda t: [l for l in t.splitlines() if '审查记录自检' not in l]
+        self.assertEqual(strip(plain), strip(text))
+

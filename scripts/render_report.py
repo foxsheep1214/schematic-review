@@ -369,6 +369,12 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         fixes = sum(bool(covered_by_findings(t, checks, findings)) for t in tasks)
         task_counts = ('（其中修正已列错误 %d 件、待确认 %d 件）' % (fixes, len(gap_tasks))) if fixes else ''
         out.append('- **待办**：%d 件%s，按可能后果从重到轻列在“待办”一节。' % (len(tasks), task_counts))
+    screen = (gate.get('quality_screening') or {}).get('candidates') or []
+    if screen:
+        by_code = Counter(c.get('code') for c in screen if isinstance(c, dict))
+        flagged = {cid for c in screen if isinstance(c, dict) for cid in c.get('check_ids') or []}
+        out.append('- **审查记录自检**：%d 条提示涉及 %d 条检查（%s）。提示只要求复核写法和依据，不改变上面的结论；明细在校验记录。'
+                   % (len(screen), len(flagged), '、'.join('%s %d' % (code, n) for code, n in by_code.most_common(3))))
     if phase == 'design_iteration':
         out.append('- 这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。')
     if 'history_inputs' in results:
@@ -487,6 +493,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                                                   ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
                  if classes else []) + [
             '| 交给后续环节的要求 | %d |' % len(handoffs),
+            '| 审查记录自检提示（不计入结论） | %d |' % len(screen),
             '| 上一版问题的处理记录（不计入上面各行） | %d |' % history, '',
             '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']
     explanations = render_check_explanations(plan, results) if detail == 'full' else []

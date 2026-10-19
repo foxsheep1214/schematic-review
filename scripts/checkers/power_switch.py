@@ -209,6 +209,14 @@ class _Scan:
 
     def _winding_supply_nets(self, drain_net):
         nets = {other for _, other in self.graph.neighbors(drain_net, {ng.INDUCTOR})}
+        # An undeclared transformer on the switch node: its terminal that carries bulk storage
+        # or is a rail is the primary supply the RCD clamp returns to. Other terminals
+        # (secondary, auxiliary) are not supply candidates without a winding declaration.
+        for ref in self.graph.refs_on(drain_net):
+            if self.graph.kind(ref) == ng.TRANSFORMER and self.graph.is_fitted(ref):
+                nets.update(n for n in self.graph.nets_of(ref)
+                            if n != drain_net and n not in self.grounds
+                            and (self.tree.is_rail(n) or self._has_storage(n)))
         # A relay coil may reach its supply through a resistor; a diode across the coil (switch node
         # to the coil's other terminal) is still its freewheel clamp.
         for ref in self.graph.refs_on(drain_net):
@@ -565,7 +573,7 @@ class PowerSwitchChecker(Checker):
                              + ' 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定',
                              switch['ref'])
             if switch['switch_node_evidence'] and not [s for s in switch['snubbers']
-                    if s['type'] != 'boost-transfer-diode' or switch['topology'] == 'low-side']:
+                    if s['type'] != 'boost-transfer-diode' or switch['topology'] != 'high-side']:
                 lint.add('DRV-A04', self.cold_rules['DRV-A04'],
                          head + '：开关节点 ' + str(switch['drain_net'])
                          + ' 上有 ' + '、'.join(switch['switch_node_evidence'])

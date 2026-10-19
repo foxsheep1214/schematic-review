@@ -35,6 +35,47 @@ DRIVER = 'driver'          # 网上有输出脚候选（拓扑依据）
 NAME_HINT = 'name-hint'    # 只有轨名像
 
 
+def declared_supply_nets(graph, intent):
+    """Nets that intent.power_rails declares and that behave as supplies on the netlist.
+
+    Reviewers also declare voltage windows for signal nets (ZCD, CC1, gate drives), so a
+    declaration alone is not rail identity. A declared net counts when a fitted IC draws
+    supply from it or it carries bulk storage to ground. Name hints stay separate.
+    """
+    from decoupling import parse_capacitance
+    native = (graph.db.get('native_pintype') or {}) if isinstance(graph.db, dict) else {}
+    rails = (intent or {}).get('power_rails') or {}
+    if not isinstance(rails, dict):
+        return set()
+
+    def window(net):
+        v = rails[net].get('voltage_v') if isinstance(rails.get(net), dict) else None
+        return v if isinstance(v, dict) and all(isinstance(v.get(k), (int, float)) for k in ('min', 'max')) else None
+
+    # A declared window that never rises above 0 V is a return (SEC_RTN), not a supply.
+    returns = {net for net in rails if (window(net) or {}).get('max', 1) <= 0}
+    found = set()
+    for net in rails:
+        if net not in graph.nets or ng.is_ground(net) or net in graph.pseudo or net in returns:
+            continue
+        for node in graph.nodes_on(net):
+            ref, _, pin = node.partition('.')
+            if not graph.is_fitted(ref):
+                continue
+            kind = graph.kind(ref)
+            name = graph.pinname.get(node)
+            if kind == ng.IC and not ng.is_ground(name or '') and (
+                    native.get(node) == 'power_in' or ng.name_matches(SUPPLY_IN_PIN_RE, name, pin)):
+                found.add(net)
+                break
+            if kind == ng.CAPACITOR and any(ng.is_ground(n) or n in returns for n in graph.nets_of(ref) if n != net):
+                value = parse_capacitance(graph.parts.get(ref, {}).get('value'))
+                if value is not None and value >= 1e-6:
+                    found.add(net)
+                    break
+    return found
+
+
 class PowerTree:
     """按某一装配状态推导来源与轨身份；结果带依据级别，不带电气结论。"""
 

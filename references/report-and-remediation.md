@@ -3,7 +3,7 @@
 报告正文只写结论和需要处理的事项，详细台账与计算放可定位的附录；无内容不设空节。
 结果字段以 [计划与结果台账](plan-and-results.md) 为准，分级与准出以 [结论与准出](verdicts-and-release.md) 为准。
 
-**报告由 `scripts/render_report.py` 从台账生成**，顺序固定：结论（电路错误数、能否定稿及还差什么）→
+**报告由 `scripts/render_report.py` 从台账生成**，顺序固定：结论（电路错误数、能否定稿及还差什么、`quality_screening` 有提示时一行自检计数）→
 电路错误 → 待办（一个列表，按可能后果从重到轻）→ 交给后续环节的要求（随图交出，不卡定稿）→ 已核对的重点 →
 审查工具的不足（`sr_improvements`，设计者不用处理）→ 对 SR 技能的反馈（`notes.sr_feedback`）→ 数字一览 → 详细记录。
 结构和数字只来自台账，不手改报告；要改内容就改台账（任务的 title/root_cause/reason/next_action、检查的 input_requests、
@@ -66,6 +66,7 @@ next_action 和 acquisition 写具体动作及资料取得方法；closure_crite
   一个根因按多个状态/规则展开出的几十行是同一件事，不说成“还有几百项没过”。
 - 质量提示（`quality_screening`）中有 TEMPLATED_SEVERITY_REASON / UNIFORM_SEVERITY_WITHIN_RULE 时，先重新定级再出报告；
   来不及时在结论里写明“等级尚未逐行复核”，不把模板等级当结论展示。
+- BOILERPLATE_ACQUISITION / TEMPLATED_DESIGN_OPTION_REASON 表示多件待办共用同一句“怎么拿资料”或同一句“为什么不改图”；逐件写出真实来源（文件、供应商联系、测量）和不改图的具体理由，或提出改法。报告结论里的自检行只报数量，不改结论。
 - `release` 是冻结闸门，非冻结阶段不能当作总判定，也不能反过来把真实电气阻断项改成 PASS；
   `valid=true` 只表示记录可对账，不作“审查通过”展示。
 - 审查未完成时写明“审查进行中”，只交进度和剩余工作；仍有 REVIEW_INCOMPLETE 行时 `pack_review.py` 拒绝打包。仅 PDF、外部缺证等限制直接说明影响，不写长篇免责声明。

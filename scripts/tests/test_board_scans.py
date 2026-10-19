@@ -314,3 +314,37 @@ class SeededDetectionTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class DeclaredRailTest(unittest.TestCase):
+    """intent.power_rails names supplies whose net names carry no hint (SR_VCC, BULK, VRAW)."""
+
+    def board(self):
+        nets = {'SR_VCC': ['U1.1', 'C1.1'], 'GND': ['U1.2', 'C1.2', 'R1.2', 'C2.2'],
+                'ZCD': ['U1.3', 'R1.1'], 'VRAW': ['C3.1'], 'SEC_RTN': ['C3.2', 'C2.1'],
+                'BULK': ['C4.1', 'D1.2'], 'PGND': ['C4.2'], 'RECT': ['D1.1']}
+        db = board({'U1': 'NCP4307', 'C1': '1u', 'C2': '100n', 'C3': '330u', 'C4': '68u', 'R1': '10k', 'D1': 'US1M'},
+                   nets, pinname={'U1.1': 'VCCL', 'U1.2': 'GND', 'U1.3': 'CS',
+                                  'D1.1': 'A', 'D1.2': 'K'})
+        rails = {'SR_VCC': {'min': 0, 'max': 13}, 'ZCD': {'min': -0.3, 'max': 5}, 'VRAW': {'min': 0, 'max': 22},
+                 'SEC_RTN': {'min': -0.06, 'max': 0}, 'BULK': {'min': 0, 'max': 445}}
+        intent = {'power_rails': {net: {'domain': 'SEC', 'voltage_v': v, 'state': 'run', 'citation': 'fixture'}
+                                  for net, v in rails.items()}}
+        return db, intent
+
+    def test_declared_supplies_get_rail_checks_and_undriven_scan(self):
+        db, intent = self.board()
+        plan = build_review_plan(db, intent=intent)
+        t01 = {c['object']['net']: c for c in plan['checks'] if c['rule'] == 'PWR-T01'}
+        self.assertEqual(sorted(t01), ['BULK', 'SR_VCC', 'VRAW'])
+        self.assertIn('declared-rail:SR_VCC', t01['SR_VCC']['trigger'])
+        lint = Lint(db, '', intent); lint.run()
+        undriven = {f['detail'].split(' ')[0] for f in lint.F if f['rule'] == 'PWR-A01'}
+        self.assertEqual(undriven, {'BULK', 'SR_VCC', 'VRAW'})
+
+    def test_signal_windows_and_returns_are_not_rails(self):
+        db, intent = self.board()
+        del intent['power_rails']['SR_VCC'], intent['power_rails']['VRAW'], intent['power_rails']['BULK']
+        plan = build_review_plan(db, intent=intent)
+        self.assertEqual([c for c in plan['checks'] if c['rule'] == 'PWR-T01'], [])
+
