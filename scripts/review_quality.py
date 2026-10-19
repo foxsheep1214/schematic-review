@@ -289,7 +289,13 @@ def screen_quality(plan, report, db=None):
                 'check_ids': sorted({cid for cid, _ in group}),
                 'message': 'Different scopes reuse identical reasoning; verify each criterion or document the shared proof.'})
     for (field, _), group in impact_groups.items():
-        if len({scope for _, scope in group}) > 1:
+        # Criteria that one work item owns outright share that item's root cause; the
+        # same consequence sentence there is the task's analysis, not a copy across scopes.
+        common = None
+        for cid, _ in group:
+            owners_of = task_owners.get(cid) or set()
+            common = set(owners_of) if common is None else common & owners_of
+        if len({scope for _, scope in group}) > 1 and not common:
             candidates.append({'code': 'REUSED_IMPACT_ACROSS_SCOPES', 'field': field,
                 'check_ids': sorted({cid for cid, _ in group}),
                 'message': 'Different criteria share identical impact text; trace each consequence path '
@@ -336,6 +342,8 @@ def screen_quality(plan, report, db=None):
                        're-derive the conclusion from current sources and declare the file in history_inputs.'})
     candidates.extend(templated_task_text(report, expected))
     candidates.extend(unreconciled_history(report, expected))
+    candidates.extend(work_item_consistency(report))
+    candidates.extend(text_hygiene(report, expected, known))
     candidates.sort(key=lambda x: (x['code'], x['check_ids']))
     output.update(status='NEEDS_SEMANTIC_REVIEW' if candidates else 'NO_PATTERN_DETECTED',
                   candidate_count=len(candidates),
@@ -372,6 +380,151 @@ def unreconciled_history(report, expected):
 
 def _scope(check):
     return json.dumps([check.get('rule'), check.get('object')], sort_keys=True, ensure_ascii=False)
+
+
+def _rows(report):
+    return {r['id']: r for r in report.get('checks') or [] if isinstance(r, dict) and isinstance(r.get('id'), str)}
+
+
+def _owned_branches(task, row):
+    """(level, hazard_path) of every branch this task owns on one INSUFFICIENT row."""
+    requests = row.get('input_requests') if isinstance(row.get('input_requests'), dict) else {}
+    keys = (task.get('request_keys') or {}).get(row['id']) if isinstance(task.get('request_keys'), dict) else None
+    picked = [requests[k] for k in keys if isinstance(requests.get(k), dict)] if isinstance(keys, list) else []
+    if picked:
+        return [(q.get('potential_severity'), (q.get('impact_assessment') or {}).get('hazard_path')
+                 if isinstance(q.get('impact_assessment'), dict) else None) for q in picked]
+    assessment = row.get('impact_assessment') if isinstance(row.get('impact_assessment'), dict) else {}
+    return [(row.get('potential_severity'), assessment.get('hazard_path'))]
+
+
+def work_item_consistency(report):
+    """A work item is one root cause: its P0 branches share one hazard path and it does not
+    present P1 checks under a P0 heading. Leads only; the item's level is still the worst branch."""
+    found = []
+    rows = _rows(report)
+    for task in report.get('work_items') or []:
+        if not isinstance(task, dict) or not isinstance(task.get('id'), str) or not isinstance(task.get('check_ids'), list):
+            continue
+        by_level, paths = defaultdict(list), defaultdict(set)
+        for cid in task['check_ids']:
+            row = rows.get(cid) if isinstance(cid, str) else None
+            if not row or row.get('review_result') != 'INSUFFICIENT' or row.get('gap_cause') == 'REQUIREMENT_OPEN':
+                continue
+            for level, path in _owned_branches(task, row):
+                by_level[level].append(cid)
+                if level == 'P0':
+                    paths[path].add(cid)
+        lower = sorted({cid for level, ids in by_level.items() if level != 'P0' for cid in ids})
+        if by_level.get('P0') and lower:
+            found.append({'code': 'WORK_ITEM_MIXES_LEVELS', 'task_ids': [task['id']],
+                          'check_ids': lower, 'p0_check_ids': sorted(set(by_level['P0'])),
+                          'message': f"{task['id']} is headed P0 but owns {len(lower)} lower-level branch(es); "
+                                     'give them their own item or state in the item why they share the P0 root cause.'})
+        if len(paths) > 1:
+            found.append({'code': 'WORK_ITEM_MIXES_HAZARD_PATHS', 'task_ids': [task['id']],
+                          'check_ids': sorted({cid for ids in paths.values() for cid in ids}),
+                          'hazard_paths': sorted(str(k) for k in paths),
+                          'message': f"{task['id']} bundles P0 branches with different hazard paths "
+                                     f"({', '.join(sorted(str(k) for k in paths))}); one root cause opens one path, split the item."})
+    return found
+
+
+# 位号后面直接粘着数值（R604100°C、C5021.1uF）：读者分不清位号和数值；这是写法问题，不改结论。
+TOKEN_RE = re.compile(r'(?<![A-Za-z0-9_])([A-Z]{1,4})(\d+)(?![A-Za-z_])')
+# 通过条件里的三位以上小数（257.121uA、.27647mA）是审查员算例的中间值，不是设计者能凑的判据。
+OVERPRECISE_RE = re.compile(r'(?<![0-9.])\d*\.\d{3,}(?![\d.])')
+# 缺资料请求至少写出查过哪份资料的哪一页/表/条款仍没有该数据。
+LOOKUP_RE = re.compile(r'(?:(?<![A-Za-z])pp?\.?\s*\d+|(?<![A-Za-z])page\s*\d+|第\s*\d+\s*[页节条章]|\d+\s*页|表\s*[\dA-Z]|\bTable\s*\d|'
+                       r'\bFig(?:ure)?\.?\s*\d|图\s*\d|§\s*\d|\d+\.\d+(?:\.\d+)*\s*[条节款]|条款\s*\d|\bRev\.?\s*[\dA-Z])', re.I)
+ACQUIRE_RE = re.compile(r'^\s*(?:先?由|向|请|找|从|待)|取得|索取|提供|询|索要')
+
+
+def _task_texts(task):
+    for field in ('title', 'root_cause', 'reason', 'next_action'):
+        if isinstance(task.get(field), str):
+            yield field, task[field]
+    option = task.get('design_option')
+    if isinstance(option, dict) and isinstance(option.get('summary'), str):
+        yield 'design_option.summary', option['summary']
+
+
+def _request_texts(row):
+    requests = row.get('input_requests')
+    for key, q in (requests.items() if isinstance(requests, dict) else []):
+        if not isinstance(q, dict):
+            continue
+        yield key, 'key', key
+        for field in ('why_decisive', 'required_scope', 'acquisition', 'closure_criterion'):
+            if isinstance(q.get(field), str):
+                yield key, field, q[field]
+
+
+def glued_refs(text, known):
+    """Designators that run straight into a number: the token is not itself a known
+    ref, but a known ref of the same prefix letters is a proper prefix of it."""
+    hits = set()
+    for letters, digits in TOKEN_RE.findall(text or ''):
+        if letters + digits in known:
+            continue
+        for n in range(len(digits) - 1, 0, -1):
+            if letters + digits[:n] in known:
+                hits.add(letters + digits[:n])
+                break
+    return hits
+
+
+def text_hygiene(report, expected, known):
+    found = []
+    known = set(known or ())
+    rows = _rows(report)
+    glued_hits = defaultdict(set)   # (owner, field) -> refs
+    unlooked = defaultdict(set)     # request text -> check ids
+    for task in report.get('work_items') or []:
+        if isinstance(task, dict) and isinstance(task.get('id'), str):
+            for field, text in _task_texts(task):
+                hits = glued_refs(text, known)
+                if hits:
+                    glued_hits[('task:' + task['id'], field)] |= hits
+    for cid, row in rows.items():
+        if cid not in expected:
+            continue
+        texts = list(_request_texts(row))
+        assessment = row.get('impact_assessment')
+        if isinstance(assessment, dict):
+            texts += [(None, 'impact_assessment.' + f, assessment[f]) for f in IMPACT_TEXT_FIELDS if isinstance(assessment.get(f), str)]
+        for key, field, text in texts:
+            hits = glued_refs(text, known)
+            if hits:
+                glued_hits[(cid, field)] |= hits
+            if field in ('closure_criterion', 'next_action') and OVERPRECISE_RE.search(text):
+                found.append({'code': 'OVERPRECISE_CLOSURE_VALUE', 'check_ids': [cid], 'field': field,
+                              'request': key, 'values': sorted(set(OVERPRECISE_RE.findall(text))),
+                              'message': 'The acceptance criterion carries an intermediate value from the reviewer\'s own '
+                                         'calculation; state the datasheet/standard bound and the condition, not the sample result.'})
+        if row.get('review_result') == 'INSUFFICIENT' and row.get('gap_cause') == 'EXTERNAL_DATA':
+            missing = ' '.join(x for x in (row.get('missing_inputs') or []) if isinstance(x, str))
+            requests = row.get('input_requests') if isinstance(row.get('input_requests'), dict) else {}
+            for key, q in requests.items():
+                if not isinstance(q, dict) or not isinstance(q.get('acquisition'), str):
+                    continue
+                if not ACQUIRE_RE.search(q['acquisition']):
+                    continue
+                looked = ' '.join([key, missing, q['acquisition'], q.get('why_decisive') or '' if isinstance(q.get('why_decisive'), str) else ''])
+                if not LOOKUP_RE.search(looked):
+                    unlooked[key].add(cid)
+    for key, ids in sorted(unlooked.items()):
+        found.append({'code': 'ACQUISITION_WITHOUT_LOOKUP', 'check_ids': sorted(ids), 'request': key,
+                      'message': 'This external-data request names no page/table/clause that was checked and lacks the '
+                                 'datum. Quantities fixed by the applicable standard (prospective short-circuit current, '
+                                 'pollution degree, altitude factor) and first-page datasheet ratings are read, not requested; '
+                                 'write which document and where was looked up before asking the supplier.'})
+    for (owner, field), refs in sorted(glued_hits.items()):
+        found.append({'code': 'REF_GLUED_TO_VALUE', 'check_ids': [owner] if not owner.startswith('task:') else [],
+                      'task_ids': [owner[5:]] if owner.startswith('task:') else [], 'field': field, 'refs': sorted(refs),
+                      'message': 'A reference designator runs straight into a number (R604100°C); separate them so the '
+                                 'designator and the value both stay readable.'})
+    return found
 
 
 def templated_task_text(report, expected):

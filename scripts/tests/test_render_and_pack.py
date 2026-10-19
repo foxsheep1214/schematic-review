@@ -40,7 +40,7 @@ class RenderReportTests(unittest.TestCase):
         self.assertIn('仍待确认**：1 件事项', lines[3])
         self.assertNotIn('**检查结果**', body(text))
         self.assertTrue(lines[4].startswith('- **能否定稿**：还不能定稿。还差：'))
-        self.assertIn('1 件待办没解决（同一原因合并，涉及 1 条缺资料或设计依据的检查）', lines[5])
+        self.assertIn('1 件待办阻塞定稿（同一原因合并，涉及 1 条缺资料或设计依据的阻塞检查；不阻塞的待办不计在内）', lines[5])
         section = text.split('## 待办')[1]
         self.assertIn('W-1', section)
         self.assertIn('类型：缺资料　可能后果：必需功能可能不达标（P1）　涉及 1 条检查', section)
@@ -83,13 +83,27 @@ class RenderReportTests(unittest.TestCase):
         self.assertNotIn('第 8 条', text)  # highlights are capped
         self.assertEqual(text.split('## 数字一览')[1], plain.split('## 数字一览')[1])
 
+    def test_mixed_level_item_shows_its_breakdown_and_note_is_a_bullet(self):
+        from render_report import render_item
+        checks = {'A.1': {'id': 'A.1', 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA',
+                          'potential_severity': 'P0'},
+                  'A.2': {'id': 'A.2', 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA',
+                          'potential_severity': 'P1'}}
+        task = {'id': 'W-1', 'title': 't', 'root_cause': 'x', 'check_ids': ['A.1', 'A.2'], 'next_action': 'y'}
+        lines = render_item(task, checks, {'W-1': '审查员的话。'})
+        self.assertIn('涉及 2 条检查（P0 1、P1 1）', lines[2])
+        self.assertIn('- **审查员补充**：审查员的话。', lines)
+        self.assertNotIn('审查员的话。', lines)   # not a floating paragraph
+        checks['A.2']['potential_severity'] = 'P0'
+        self.assertIn('涉及 2 条检查\n', render_item(task, checks, {})[2] + '\n')
+
     def test_stage_na_is_handed_over_without_blocking(self):
         p, r, db = downstream()
         text, gate = report(p, r, db)
         self.assertEqual(gate['release'], 'GO')
         self.assertIn('- **能否定稿**：可以定稿', text)
         section = text.split('## 交给后续环节的要求')[1]
-        self.assertIn('| Synthetic test engineer | 1 |', section)
+        self.assertIn('| Synthetic test engineer | RST-E01.C1 | 整板 |', section)
         self.assertIn('不影响原理图定稿', section)
         self.assertIn('| 与本产品无关（NA） | 0 |', text)
         self.assertIn('| 原理图阶段不判、交给后续环节 | 1 |', text)
@@ -229,7 +243,7 @@ class ReportWordingTests(unittest.TestCase):
         blockers = ['A.%d: unresolved blocking INSUFFICIENT' % i for i in range(5)]
         tasks = [{'id': 'W1', 'check_ids': ['A.0', 'A.1', 'A.2']}, {'id': 'W2', 'check_ids': ['A.3', 'A.4']}]
         self.assertEqual(blocker_reasons(blockers, {}, tasks),
-                         ['2 件待办没解决（同一原因合并，涉及 5 条缺资料或设计依据的检查）'])
+                         ['2 件待办阻塞定稿（同一原因合并，涉及 5 条缺资料或设计依据的阻塞检查；不阻塞的待办不计在内）'])
         # A gap no work item owns keeps the per-check wording.
         self.assertEqual(blocker_reasons(blockers, {}, tasks[:1]),
                          ['5 条检查缺资料或设计依据，对应下面列出的待办'])
@@ -239,7 +253,7 @@ class ReportWordingTests(unittest.TestCase):
         key = r['checks'][0]['id']
         next(c for c in p['checks'] if c['id'] == key)['object']['ref'] = 'U7'
         text, _ = report(p, r, db)
-        self.assertIn('| 负责方 | 条数 | 涉及位号/网络 |', text)
+        self.assertIn('| 负责方 | 检查 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |', text)
         self.assertIn('| U7 |', text.split('## 交给后续环节的要求')[1])
         from render_report import render
         gate = {'valid': True, 'release': 'GO', 'blockers': [], 'sr_improvements': [

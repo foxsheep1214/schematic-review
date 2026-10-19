@@ -892,9 +892,12 @@ class Lint:
     def _hot_pin_map(self, check):
         ref = check['ref']
         mismatches = []
+        declared = self.db.get('declared_pinname') or {}
         for pin, expected in sorted(check['expected'].items()):
             node = f'{ref}.{pin}'
-            actual = self.pinname.get(node)
+            # The functional-name index skips passive pins (bridge AC terminals,
+            # transformer windings); compare the symbol's declared name there.
+            actual = self.pinname.get(node) or declared.get(node)
             allowed = expected if isinstance(expected, list) else [expected]
             allowed = [str(x).strip().upper() for x in allowed]
             if actual is None or str(actual).strip().upper() not in allowed:

@@ -116,4 +116,18 @@ class TaskScopeTests(unittest.TestCase):
         c=next(c for c in screen_quality(p,r)['candidates'] if c['code']=='BROAD_CHECK_NEEDS_LOCALIZATION')
         self.assertEqual(c['task_ids'],['good'])
 
+    def test_v2_component_damage_branch_is_graded_not_ambiguous(self):
+        p,r,db=shared(); r['impact_class_version']=2
+        row=r['checks'][0]; cid=row['id']
+        for a in (row['impact_assessment'], row['input_requests']['short waveform']['impact_assessment']):
+            a['hazard_path']='FIRE'
+        row['input_requests']['loop model']['impact_assessment']['consequence_class']='COMPONENT_DAMAGE'
+        g=validate_review(p,r,db); self.assertTrue(g['valid'], g['errors'])
+        owners=ownership(r['work_items']); loop=r['work_items'][1]
+        self.assertEqual(task_view(loop,{cid:row},owners,2)['ambiguous_checks'],[])
+        self.assertEqual(task_view(loop,{cid:row},owners,2)['level'],'P1')
+        # The same record read with the v1 class table cannot grade that branch.
+        self.assertEqual(task_view(loop,{cid:row},owners,1)['ambiguous_checks'],[cid])
+        self.assertNotIn('ambiguous', render(p,r,g))
+
 if __name__=='__main__':unittest.main()

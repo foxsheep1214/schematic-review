@@ -106,7 +106,8 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
         for cid in linked:
             owners.setdefault(cid, []).append(item)
         tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option', 'request_keys') if k in item})
-    errors.extend(validate_scopes(tasks, checks, strict=report.get('workflow_version') == 2))
+    classes = report.get('impact_class_version') if 'impact_class_version' in report else False
+    errors.extend(validate_scopes(tasks, checks, strict=report.get('workflow_version') == 2, classes=classes))
     task_owners = ownership(tasks)
     for cid in sorted(unresolved - set(owners)):
         errors.append(cid + ': unresolved check has no root-cause work item')
@@ -120,8 +121,8 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
             errors.append(cid + ': confirmed FAIL must enter the current repair queue')
         if (row.get('review_result') == 'INSUFFICIENT' and row.get('potential_severity') == 'P0'
                 and any(g.get('due_stage') != 'design_iteration'
-                        and (task_view(g, {cid: row}, task_owners)['known_level'] == 'P0'
-                             or cid in task_view(g, {cid: row}, task_owners)['ambiguous_checks'])
+                        and (task_view(g, {cid: row}, task_owners, classes)['known_level'] == 'P0'
+                             or cid in task_view(g, {cid: row}, task_owners, classes)['ambiguous_checks'])
                         for g in groups)):
             errors.append(cid + ': potential P0 needs current investigation')
         if (row.get('review_result') == 'INSUFFICIENT' and row.get('gap_cause') == 'REQUIREMENT_OPEN'

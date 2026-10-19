@@ -40,8 +40,11 @@ def selected_keys(task, cid, row, owners):
     return list(requests) if len(owners.get(cid, {task.get('id')})) <= 1 else None
 
 
-def task_view(task, checks, owners=None):
-    """One shared projection used by scheduling, severity counts and report text."""
+def task_view(task, checks, owners=None, classes=False):
+    """One shared projection used by scheduling, severity counts and report text.
+
+    ``classes`` is the record's impact_class_version (False for legacy records); the
+    request branches are validated against the same class table as the check rows."""
     owners = owners if owners is not None else ownership([task])
     levels, requests, ambiguous = [], [], []
     for cid in task.get('check_ids') or []:
@@ -66,7 +69,7 @@ def task_view(task, checks, owners=None):
             level = req.get('potential_severity')
             if level in LEVELS and not validate_impact({
                     **req, 'id': cid + '/' + key, 'review_result': 'INSUFFICIENT',
-                    'gap_cause': row.get('gap_cause'), 'blocking': row.get('blocking')}, classes=True):
+                    'gap_cause': row.get('gap_cause'), 'blocking': row.get('blocking')}, classes=classes):
                 branch_levels.append(level)
             elif partial:
                 ambiguous.append(cid)
@@ -82,7 +85,7 @@ def task_view(task, checks, owners=None):
             'ambiguous_checks': sorted(set(ambiguous))}
 
 
-def validate_scopes(tasks, checks, strict=False):
+def validate_scopes(tasks, checks, strict=False, classes=False):
     errors = []
     owners = ownership(tasks)
     by_id = {t['id']: t for t in tasks}
@@ -123,7 +126,7 @@ def validate_scopes(tasks, checks, strict=False):
                     continue
                 errors.extend(validate_impact({**req, 'id': cid + '/' + key,
                     'review_result': 'INSUFFICIENT', 'gap_cause': row.get('gap_cause'),
-                    'blocking': row.get('blocking')}, classes=True))
+                    'blocking': row.get('blocking')}, classes=classes))
                 levels.append(req.get('potential_severity'))
             if worst(levels) != row.get('potential_severity'):
                 errors.append(cid + ': request consequences must preserve the aggregate potential_severity')

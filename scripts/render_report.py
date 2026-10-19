@@ -16,7 +16,7 @@ import argparse
 import json
 import re
 import sys
-from collections import Counter, OrderedDict
+from collections import Counter, OrderedDict, defaultdict
 from pathlib import Path
 from task_scope import ownership, task_view
 
@@ -37,7 +37,7 @@ RESULT_SHORT = {'PASS': '通过', 'FAIL': '没通过', 'INSUFFICIENT': '资料�
 # Why the schematic cannot be finalised yet, in the order a reader should act on them.
 BLOCKERS = (('fail', '%d 条检查发现的错误还没改'),
             ('gap', '%d 条检查缺资料或设计依据，对应下面列出的待办'),
-            ('gap_tasks', '%d 件待办没解决（同一原因合并，涉及 %d 条缺资料或设计依据的检查）'),
+            ('gap_tasks', '%d 件待办阻塞定稿（同一原因合并，涉及 %d 条缺资料或设计依据的阻塞检查；不阻塞的待办不计在内）'),
             ('requirement', '%d 条需求还要用户拍板'),
             ('review', '%d 条检查审查还没做完'),
             ('grading', '%d 组资料不足的检查还没逐条判断后果'),
@@ -160,23 +160,34 @@ def join_statements(values):
     return out
 
 
-def task_level(task, checks, owners=None):
-    return task_view(task, checks, owners)['level']
+def task_level(task, checks, owners=None, classes=False):
+    return task_view(task, checks, owners, classes)['level']
 
 
-def render_item(task, checks, notes, owners=None):
+def render_item(task, checks, notes, owners=None, classes=False):
     rows = [checks[c] for c in task.get('check_ids') or [] if c in checks]
-    view = task_view(task, checks, owners)
+    view = task_view(task, checks, owners, classes)
     level = view['level']
     head = '### %s　%s' % (task['id'], task.get('title') or task.get('root_cause') or '')
-    meta = '类型：%s　可能后果：%s　涉及 %d 条检查' % (
-        item_kind(rows), ('%s（%s）' % (SEVERITY_WORDS[level], level)) if level else '未定级', len(rows))
+    # Count the owned branches by level so a P0 item cannot silently absorb P1 checks.
+    owned = defaultdict(list)
+    for cid, _, req in view['requests']:
+        owned[cid].append(req.get('potential_severity'))
+    branch_levels = Counter()
+    for r in rows:
+        if r.get('review_result') == 'FAIL':
+            branch_levels[r.get('severity')] += 1
+        elif r.get('review_result') == 'INSUFFICIENT':
+            branch_levels.update(owned.get(r.get('id')) or [r.get('potential_severity')])
+    breakdown = ''
+    if len([k for k in branch_levels if k]) > 1:
+        breakdown = '（%s）' % '、'.join('%s %d' % (k, branch_levels[k]) for k in SEVERITIES if branch_levels.get(k))
+    meta = '类型：%s　可能后果：%s　涉及 %d 条检查%s' % (
+        item_kind(rows), ('%s（%s）' % (SEVERITY_WORDS[level], level)) if level else '未定级', len(rows), breakdown)
     lines = [head, '', meta, '']
     if view['ambiguous_checks']:
         lines += ['风险和资料需求尚未按任务分清：' + '、'.join(view['ambiguous_checks']) +
                   '。相关检查的风险仍保留，不能把它们重复计为多个高风险根因。', '']
-    if notes.get(task['id']):
-        lines += [notes[task['id']], '']
     requests = [req for _, _, req in view['requests']]
     scopes = unique(q.get('required_scope') for q in requests)
     criteria = unique(q.get('closure_criterion') for q in requests)
@@ -206,6 +217,8 @@ def render_item(task, checks, notes, owners=None):
         if values:
             # Repeated requests share one line; every distinct acceptance stays visible.
             lines.append('- **%s**：%s' % (label, join_statements(values)))
+    if notes.get(task['id']):
+        lines.append('- **审查员补充**：%s' % notes[task['id']])
     lines.append('')
     return lines
 
@@ -323,6 +336,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     flow = gate.get('workflow') or {}
     tasks = flow.get('work_items') or []
     task_owners = ownership(tasks)
+    classes = results.get('impact_class_version') if 'impact_class_version' in results else False
     findings = results.get('findings') or []
     summary = gate.get('categorized_summary') or {}
     counts = (summary.get('current') or {}).get('results') or {}
@@ -349,8 +363,8 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     gap_tasks = [t for t in tasks if gap_ids.intersection(t.get('check_ids') or [])]
     if gap_ids:
         owned = {k for t in gap_tasks for k in t.get('check_ids') or []}
-        p0 = sum(task_level(t, checks, task_owners) == 'P0' for t in gap_tasks)
-        ambiguous = [t for t in gap_tasks if task_view(t, checks, task_owners)['ambiguous_checks']]
+        p0 = sum(task_level(t, checks, task_owners, classes) == 'P0' for t in gap_tasks)
+        ambiguous = [t for t in gap_tasks if task_view(t, checks, task_owners, classes)['ambiguous_checks']]
         out.append('- **仍待确认**：%d 件事项，其中 %d 件可能涉及安全或损坏（P0）；资料不足不等于已发现缺陷。'
                    % (len(gap_tasks), p0))
         if ambiguous:
@@ -422,7 +436,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         out += ['## 待办', '']
         if not findings:
             out += [SEVERITY_LEGEND, '']
-        rank = lambda t: (SEVERITIES.index(task_level(t, checks, task_owners)) if task_level(t, checks, task_owners) else len(SEVERITIES),
+        rank = lambda t: (SEVERITIES.index(task_level(t, checks, task_owners, classes)) if task_level(t, checks, task_owners, classes) else len(SEVERITIES),
                           -len(t.get('check_ids') or []))
         for task in sorted(tasks, key=rank):
             owners = covered_by_findings(task, checks, findings)
@@ -430,24 +444,25 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                 out += ['### %s　%s' % (task['id'], task.get('title') or task.get('root_cause') or ''), '',
                         '按上文“发现的错误”中问题 %s 的改法处理，这里不重复。' % '、'.join(owners), '']
                 continue
-            out += render_item(task, checks, item_notes, task_owners)
+            out += render_item(task, checks, item_notes, task_owners, classes)
 
     if handoffs:
         out += ['## 交给后续环节的要求', '',
                 '下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，'
                 '也不影响原理图定稿。原理图交出时把这张表一起交给对应负责方即可。', '',
-                '| 负责方 | 条数 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |', '|---|---:|---|---|---|']
+                '| 负责方 | 检查 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |', '|---|---|---|---|---|']
         planned = {c.get('id'): c for c in plan.get('checks') or [] if isinstance(c, dict)}
         groups = OrderedDict()
         for c in handoffs:
             groups.setdefault('、'.join(c['handoff'].get('receivers') or ['未指定']), []).append(c)
+        # One row per check: a receiver gets a list to tick off, not one merged paragraph.
         for who, rows in sorted(groups.items(), key=lambda kv: -len(kv[1])):
-            hs = [c['handoff'] for c in rows]
-            where = unique(x for c in rows for x in anchors((planned.get(c['id']) or {}).get('object')))
-            shown = '、'.join(where[:12]) + ('等 %d 处' % len(where) if len(where) > 12 else '')
-            out.append('| %s | %d | %s | %s | %s |' % (cell(who), len(hs), cell(shown or '整板'),
-                       cell('；'.join(unique(h.get('constraint') for h in hs))),
-                       cell('；'.join(unique(h.get('verification') for h in hs)))))
+            for c in sorted(rows, key=lambda c: c['id']):
+                h = c['handoff']
+                where = unique(anchors((planned.get(c['id']) or {}).get('object')))
+                shown = '、'.join(where[:6]) + ('等 %d 处' % len(where) if len(where) > 6 else '')
+                out.append('| %s | %s | %s | %s | %s |' % (cell(who), cell(c['id']), cell(shown or '整板'),
+                           cell(h.get('constraint') or ''), cell(h.get('verification') or '')))
         pending = (gate.get('stage_scope') or {}).get('requirements_pending_downstream') or []
         if pending:
             out += ['', '另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending))]

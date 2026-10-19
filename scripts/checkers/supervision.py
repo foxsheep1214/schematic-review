@@ -988,5 +988,10 @@ class SupervisionChecker(Checker):
 
     def pass_blockers(self, key, planned, generated, inventory):
         if generated and generated.get('inventory_gaps'):
-            return [key + ': supervision gaps must be resolved in a regenerated plan before PASS']
+            gaps = [g for g in generated['inventory_gaps'] if isinstance(g, str)]
+            return [key + ': supervision gaps must be resolved in a regenerated plan before PASS'
+                    + ('; gaps: ' + '; '.join(gaps[:4]) if gaps else '')
+                    + '; a rail watched only by on-chip UVLO/reset is declared in intent '
+                      'supervision.rail_requirements (required=false or internal_monitor with its source), '
+                      'then the plan is regenerated: that is a declaration, not a tool limitation']
         return []

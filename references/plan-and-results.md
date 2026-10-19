@@ -357,6 +357,8 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   REVIEW_INCOMPLETE、USER_DEFERRED，含义见 [最小充分证据](evidence-proportionality.md#复核每条证据不足)。
   纯下游项不是 INSUFFICIENT，用阶段 NA。EXTERNAL_DATA / DESIGN_OPEN 另写以 missing_inputs 原文为键的
   `input_requests`（why_decisive / required_scope / acquisition / closure_criterion），其他原因不写。
+  `closure_criterion` 写设计者能核的边界和条件（手册限值、标准条款、工况），不写审查员算例的中间值；
+  位号与数值之间留空格或标点（“R604 100°C”，不写“R604100°C”）。
 - 计划行带 `proposal.result = PASS` 而结论为 FAIL/INSUFFICIENT 时，须给 `proposal_override`（code 与 reason），
   code 的封闭清单见 [通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗行)。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
@@ -376,6 +378,8 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   多条检查因同一限制、用同一核对方法时写相同文字，报告会合并显示。只能用在工具确实拦了的行上；
   这类行不算 REVIEW_INCOMPLETE、不建 work_item，gate 把工具限制列入 `sr_improvements`，不影响准出。
   资料或设计本身没给出的数值不是工具限制，仍按 EXTERNAL_DATA / DESIGN_OPEN 处理。
+  工具提示的 `required_inputs` 指向 `intent:` 字段（如 `supervision.rail_requirements` 逐轨 `required=false` / `internal_monitor`，
+  `optocouplers[].internal_pullup`）时，是声明缺失不是工具限制：先补 intent、重生成计划再判，不写 `manual_verification`。
 
 ### 发现项
 

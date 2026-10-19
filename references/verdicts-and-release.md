@@ -167,8 +167,12 @@
 工作时点和是否暂停由任务记录管理，不从等级推出；用户暂停任务不等于电气影响降低。
 结构校验只能发现字段漏填及已编码的不一致，不能证明路径、保护独立性或工程定级正确。
 `quality_screening` 另给两类提示（不阻断）：不同判据共用完全相同的 `consequence`/`severity_reason`
-（`REUSED_IMPACT_ACROSS_SCOPES`），以及至少 10 项证据不足中九成以上落在同一潜在等级（`UNIFORM_POTENTIAL_SEVERITY`）。
+（`REUSED_IMPACT_ACROSS_SCOPES`；同一任务独占的几条判据共用一句后果是该任务的分析，不提示），
+以及至少 10 项证据不足中九成以上落在同一潜在等级（`UNIFORM_POTENTIAL_SEVERITY`）。
 收到提示时逐项复核后果路径，确属共用分析的写明它与各判据的关系。
+写法提示（不阻断）：位号与数值粘连（`REF_GLUED_TO_VALUE`，如 R604100°C）、通过条件里带三位以上小数的算例中间值
+（`OVERPRECISE_CLOSURE_VALUE`，如 257.121uA；写手册/标准边界和条件，不写样例结果）、缺资料请求没写查证位置
+（`ACQUISITION_WITHOUT_LOOKUP`）。
 另有两类定级提示：同一句带 P0–P3 的话作为 ≥10 行、≥3 条规则的定级理由（`TEMPLATED_SEVERITY_REASON`），
 以及同一规则 ≥10 行证据不足全部同级（`UNIFORM_SEVERITY_WITHIN_RULE`）。设计迭代阶段只提示；
 `schematic_freeze` 阶段二者计入放行阻断（`valid` 不变），须逐行按本对象后果路径重新定级后才能放行。
@@ -280,6 +284,11 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
   能改图消除缺口时写 `PROPOSED` 的电路改进建议及其规避的问题，不能时写 `NONE` 和原因。
   字段见 [证据不足项的电路改进建议](report-and-remediation.md#三证据不足项的电路改进建议)；`--require-actionable` 时强制校验。
 - 只有文字相似、同一器件或同一本手册不构成共同根因。根因相同的 FAIL 共用一个任务，引用 finding 的改法。
+- 一个任务只开一条危险路径：P0 任务的各 P0 分支须有同一个 `hazard_path`（绝缘项里不放 FIRE 分支），
+  P1 分支不并进 P0 标题下的“涉及 N 条检查”；确属同根因的低等级分支在 `reason` 里说明，报告会按等级分列条数。
+  混合时 `WORK_ITEM_MIXES_LEVELS` / `WORK_ITEM_MIXES_HAZARD_PATHS` 提示拆分。
+- `design_option` 为 `PROPOSED` 时，改法不得以缺口的不利结果为前提（“改为更高分断方案”先假定了保险不够）；
+  缺口能靠查标准条款或手册关闭的，`preference` 写 `EVIDENCE_FIRST`，先查再决定改不改。
 - **复合检查的任务归属**：新记录有多任务共享同一缺证检查时用 `workflow_version: 2`。
   每个任务给 `request_keys: {"检查ID": ["missing_inputs中的准确键"]}`，只列自己负责的补证。
   每个键恰属一个任务；未知键、漏分配、重复分配都拒绝。单任务独占一条检查时可省略，表示负责全部请求。

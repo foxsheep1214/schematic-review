@@ -395,7 +395,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
 
     errors.extend(split_out_errors(checks, expected))
     errors.extend(history_citation_errors(report, checks, expected))
-    errors.extend(validate_obligations(expected, checks, report.get('work_items') or []))
+    errors.extend(validate_obligations(expected, checks, report.get('work_items') or [], impact_classes))
 
     for fid, item in findings.items():
         if actionable:

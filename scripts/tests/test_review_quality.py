@@ -243,6 +243,75 @@ class ImpactScreeningTests(unittest.TestCase):
             c['rule'] = 'REQ-H02'
         self.assertNotIn('UNIFORM_POTENTIAL_SEVERITY', self.codes(p, r))
 
+class WorkItemAndTextHygieneTests(unittest.TestCase):
+    def setUp(self):
+        from review_quality import screen_quality
+        self.screen = screen_quality
+
+    def codes(self, p, r, db=None):
+        return {x['code'] for x in self.screen(p, r, db)['candidates']}
+
+    def p0_item(self):
+        p, r = impact_fixture(n=3)
+        for i, row in enumerate(r['checks']):
+            row['impact_assessment'].update(consequence=f'N{i} consequence', hazard_path='FIRE')
+            row['potential_severity'] = 'P0'
+        r['work_items'] = [{'id': 'W-1', 'check_ids': [c['id'] for c in p['checks']]}]
+        return p, r
+
+    def test_p0_item_owning_a_lower_branch_or_two_paths_is_flagged(self):
+        p, r = self.p0_item()
+        self.assertEqual(set(), self.codes(p, r))
+        r['checks'][2]['potential_severity'] = 'P1'
+        found = [x for x in self.screen(p, r)['candidates'] if x['code'] == 'WORK_ITEM_MIXES_LEVELS']
+        self.assertEqual([r['checks'][2]['id']], found[0]['check_ids'])
+        p, r = self.p0_item()
+        r['checks'][2]['impact_assessment']['hazard_path'] = 'INSULATION'
+        found = [x for x in self.screen(p, r)['candidates'] if x['code'] == 'WORK_ITEM_MIXES_HAZARD_PATHS']
+        self.assertEqual(['FIRE', 'INSULATION'], found[0]['hazard_paths'])
+
+    def test_request_keys_limit_the_branches_an_item_answers_for(self):
+        p, r = self.p0_item()
+        row = r['checks'][2]
+        row['input_requests'] = {
+            'short': {'potential_severity': 'P0', 'impact_assessment': {'hazard_path': 'FIRE'}},
+            'loop': {'potential_severity': 'P1', 'impact_assessment': {}}}
+        r['work_items'][0]['request_keys'] = {row['id']: ['short']}
+        r['work_items'].append({'id': 'W-2', 'check_ids': [row['id']], 'request_keys': {row['id']: ['loop']}})
+        self.assertEqual(set(), self.codes(p, r))
+
+    def test_shared_consequence_inside_one_work_item_is_the_task_not_a_copy(self):
+        p, r = impact_fixture()
+        ids = [c['id'] for c in p['checks']]
+        r['work_items'] = [{'id': 'W-1', 'check_ids': ids}]
+        self.assertNotIn('REUSED_IMPACT_ACROSS_SCOPES', self.codes(p, r))
+        r['work_items'] = [{'id': 'W-1', 'check_ids': ids[:6]}, {'id': 'W-2', 'check_ids': ids[6:]}]
+        self.assertIn('REUSED_IMPACT_ACROSS_SCOPES', self.codes(p, r))
+
+    def test_glued_refs_sample_values_and_unlooked_requests_are_flagged(self):
+        p, r = impact_fixture(n=3)
+        for i, row in enumerate(r['checks']):
+            row['impact_assessment']['consequence'] = f'N{i} consequence'
+        db = {'parts': {'R604': {}, 'U601': {}, 'R60': {}}}
+        row = r['checks'][0]
+        row['input_requests'] = {'fuse clearing': {
+            'why_decisive': 'x', 'required_scope': 'R604100°C',
+            'acquisition': '向Littelfuse取得所选料号总清除能力', 'closure_criterion': '注入预算257.121uA以下'}}
+        r['work_items'] = [{'id': 'W-1', 'check_ids': [row['id']], 'reason': 'U6016.5V直流额定'}]
+        out = {x['code']: x for x in self.screen(p, r, db)['candidates']}
+        self.assertEqual({'REF_GLUED_TO_VALUE', 'OVERPRECISE_CLOSURE_VALUE', 'ACQUISITION_WITHOUT_LOOKUP'}, set(out))
+        glued = [x for x in self.screen(p, r, db)['candidates'] if x['code'] == 'REF_GLUED_TO_VALUE']
+        self.assertEqual({('W-1', 'U601'), ('', 'R604')},
+                         {((x['task_ids'] or [''])[0], x['refs'][0]) for x in glued})
+        self.assertEqual(['257.121'], out['OVERPRECISE_CLOSURE_VALUE']['values'])
+        self.assertEqual([row['id']], out['ACQUISITION_WITHOUT_LOOKUP']['check_ids'])
+        q = row['input_requests']['fuse clearing']
+        q.update(required_scope='R604 100°C', closure_criterion='注入预算低于手册上限',
+                 acquisition='Littelfuse 规格书 p.2 只给额定分断电流，向 Littelfuse 取得总清除 I²t')
+        r['work_items'][0]['reason'] = 'U601 6.5V 直流额定；R604 与 R60 各自标注'
+        self.assertEqual(set(), self.codes(p, r, db))
+
+
 class DownstreamTriageTests(unittest.TestCase):
     def codes(self, p, r):
         from review_quality import screen_quality

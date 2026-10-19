@@ -183,6 +183,17 @@ class LintTests(unittest.TestCase):
             lint.hot_executed, {'SIG-E01', 'RST-E01', 'DEV-E01', 'RST-E02'})
         self.assertTrue(any(item[0] == 'NET-A06' for item in lint.skipped))
 
+    def test_hot_pin_map_reads_declared_name_for_passive_pins(self):
+        # Bridge AC terminals and windings have no functional name in pinname;
+        # the symbol's declared name is the one to compare.
+        db = sample_db(); db['pinname'].pop('J1.1'); db['declared_pinname'] = {'J1.1': 'VBUS'}
+        evidence = hot_evidence()
+        evidence['checks'] = [c for c in evidence['checks'] if c['id'] == 'J1-MAP']
+        lint = self.bound_lint(db, evidence)
+        findings = lint.run()
+        self.assertNotIn('DEV-E01', {i['rule'] for i in findings if i['kind'] == 'FINDING'})
+        self.assertIn('DEV-E01', lint.hot_executed)
+
     def test_hot_divider_uses_worst_case_window(self):
         evidence = {
             'schema_version': 2,

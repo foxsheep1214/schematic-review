@@ -40,7 +40,7 @@ def _evidence(x):
         _text(e.get('source')) and _text(e.get('locator')) for e in x)
 
 
-def validate_obligations(expected, checks, tasks):
+def validate_obligations(expected, checks, tasks, classes=False):
     errors = []
     protected = set()
     for cid, planned in expected.items():
@@ -115,7 +115,7 @@ def validate_obligations(expected, checks, tasks):
                  if c in protected and expected[c]['rule'] == 'PWR-C15'}
         if len(loops) > 1:
             errors.append(task.get('id', '?') + ': distinct converter loops require separate closure tasks')
-        view = task_view(task, checks, owners)
+        view = task_view(task, checks, owners, classes)
         # FAIL-only repair tasks already have their own remediation contract.
         if not view['requests']:
             continue

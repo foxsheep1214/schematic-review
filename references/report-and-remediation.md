@@ -11,7 +11,7 @@ finding 的 remediation、handoff）后重新生成。下文各节规定这些�
 
 ```json
 {"summary": "1–3 句：这一轮的状态和最要紧的一件事，写给硬件工程师",
- "items": {"<任务或 finding ID>": "一两句白话：这件事是什么、为什么要做"},
+ "items": {"<任务或 finding ID>": "一两句白话：这件事是什么、为什么要做（待办里以“审查员补充”一条列出，不另起段落）"},
  "highlights": ["最多 8 行：实际复核过、读者需要知道的关键结论，每行一句"],
  "sr_feedback": [{"kind": "false_alarm", "rules": ["SIG-T01"], "instance": "本板实例：哪个对象、SR 怎么判、实际是什么",
                   "suggestion": "SR 该怎么改（规则、别名、模型或说明）"}]}
@@ -67,6 +67,8 @@ next_action 和 acquisition 写具体动作及资料取得方法；closure_crite
 - 质量提示（`quality_screening`）中有 TEMPLATED_SEVERITY_REASON / UNIFORM_SEVERITY_WITHIN_RULE 时，先重新定级再出报告；
   来不及时在结论里写明“等级尚未逐行复核”，不把模板等级当结论展示。
 - BOILERPLATE_ACQUISITION / TEMPLATED_DESIGN_OPTION_REASON 表示多件待办共用同一句“怎么拿资料”或同一句“为什么不改图”；逐件写出真实来源（文件、供应商联系、测量）和不改图的具体理由，或提出改法。报告结论里的自检行只报数量，不改结论。
+- WORK_ITEM_MIXES_LEVELS / WORK_ITEM_MIXES_HAZARD_PATHS 表示一件 P0 待办夹带了 P1 分支或两条危险路径；拆成各自的待办，或在 reason 里写明为何同根因。REF_GLUED_TO_VALUE / OVERPRECISE_CLOSURE_VALUE / ACQUISITION_WITHOUT_LOOKUP 是写法问题：分开位号和数值、通过条件不写算例中间值、缺资料先写查过哪页。
+- 结论里“N 件待办阻塞定稿”只计阻塞项，“仍待确认 M 件”计全部待办，二者可以不等；“交给后续环节”表按检查逐行列出，便于接收方逐条销项。
 - `release` 是冻结闸门，非冻结阶段不能当作总判定，也不能反过来把真实电气阻断项改成 PASS；
   `valid=true` 只表示记录可对账，不作“审查通过”展示。
 - 审查未完成时写明“审查进行中”，只交进度和剩余工作；仍有 REVIEW_INCOMPLETE 行时 `pack_review.py` 拒绝打包。仅 PDF、外部缺证等限制直接说明影响，不写长篇免责声明。
