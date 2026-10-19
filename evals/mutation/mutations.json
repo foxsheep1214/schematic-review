@@ -12,7 +12,7 @@
  {"id": "M6", "name": "opto LED-off check removed", "file": "scripts/checkers/optocoupler.py",
   "old": "        if if_min <= 0:\n", "new": "        if if_min < -1e9:\n"},
  {"id": "M7", "name": "pin map mismatch never reported", "file": "scripts/lint.py",
-  "old": "            if actual is None or str(actual).strip().upper() not in allowed:", "new": "            if False:"},
+  "old": "            if actual is None or not (pin_name_tokens(actual) & set(allowed)):", "new": "            if False:"},
  {"id": "M8", "name": "report says 0 P0 always", "file": "scripts/render_report.py",
   "old": "p0 = sum(task_level(t, checks, task_owners, classes) == 'P0' for t in gap_tasks)", "new": "p0 = 0"},
  {"id": "M9", "name": "NET-A03 passive-only auto net never reported", "file": "scripts/lint.py",
