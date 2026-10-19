@@ -37,5 +37,6 @@
 
 电路评测集、独立参考计算、ngspice 交叉验证及版本比较命令见 [电路评测说明](evals/circuit_bench/README.md)。
 评测只测声明范围内的工具能力，不代替真实项目审查或电路准出。
+`python3 scripts/run_regression.py` 对 `tests/regression/boards.json` 登记的真实审查记录只读重跑结果校验，校验错误增多或准出变差即 FAIL（`--update-baseline` 接受当前数字）。
 
 MIT License，见 [LICENSE](LICENSE)。

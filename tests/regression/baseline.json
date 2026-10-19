@@ -1,0 +1,27 @@
+{
+  "generated": "2026-10-19",
+  "boards": {
+    "R3-pre": {
+      "validation_errors": 1,
+      "results": {
+        "FAIL": 0,
+        "INSUFFICIENT": 156,
+        "NA": 25,
+        "PASS": 168
+      },
+      "release": "NO_GO",
+      "recorded_release": "NO_GO"
+    },
+    "R4-post": {
+      "validation_errors": 1,
+      "results": {
+        "FAIL": 0,
+        "INSUFFICIENT": 145,
+        "NA": 27,
+        "PASS": 192
+      },
+      "release": "NO_GO",
+      "recorded_release": "NO_GO"
+    }
+  }
+}

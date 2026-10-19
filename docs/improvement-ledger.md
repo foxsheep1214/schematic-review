@@ -7,6 +7,25 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Regression over delivered review records (2026-10-19)
+
+The previous entry left SR without a regression set over its own
+deliveries, so a validator change could silently break the ledgers already
+delivered. `scripts/run_regression.py` registers real review folders in
+`tests/regression/boards.json`, re-runs `validate_review` on each
+`record/` read-only with the SKILL.md step 7 flags, counts validation
+errors, PASS / FAIL / INSUFFICIENT / NA results and the release of the
+fresh run against the release written in `review-gate.json`, and compares
+with `tests/regression/baseline.json`: more errors or a worse release is
+FAIL, a missing folder is skipped, `--update-baseline` accepts the current
+numbers. First run: both registered R3/R4 records are schema 2 ledgers,
+which the current validator refuses with one error each (release NO_GO
+either way), so the baseline records that error, not a clean run.
+
+- Event: user:2026-10-19 (ASG improvement plan stage 0/5, SR regression set), review:SR-20261019-R4-修改后复审-41f4ad3/review-gate.json
+- Causes: rule_not_enforced 1
+- Changed: scripts/run_regression.py, tests/regression/boards.json, tests/regression/baseline.json, scripts/tests/test_regression.py, docs/improvement-ledger.md, README.md
+
 ## Independent re-judgement of ASG's part selection and attribution (2026-10-19)
 
 ASG improvement plan stage 5 (its `docs/improvement-plan.md`). ASG now
