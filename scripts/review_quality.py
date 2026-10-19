@@ -599,7 +599,7 @@ def stage_and_cause_misfiles(report, expected):
 def _template(text, known):
     """Mask designators, net names (with their pin suffixes) and numbers; what is left is the method."""
     text = re.sub(r'\s+', ' ', text or '').strip()
-    for ref in sorted((k for k in known if len(k) >= 2), key=len, reverse=True):
+    for ref in sorted((k for k in known if len(k) >= 2), key=lambda k: (-len(k), k)):
         text = re.sub(r'(?<![A-Za-z0-9_])' + re.escape(ref) + r'(?:\.[A-Za-z0-9_+\-]+)?(?![A-Za-z0-9_])', '<ref>', text)
     text = re.sub(r'\d+(?:\.\d+)?', '#', text)
     return text

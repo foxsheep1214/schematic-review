@@ -19,7 +19,7 @@ CONTRACT_FILES = {
     'test_rule_contracts.py',
     # validator invariants
     'test_validate_review.py', 'test_review_v2.py', 'test_review_quality.py', 'test_checkers_framework.py',
-    'test_import_integrity.py', 'test_catalog.py',
+    'test_import_integrity.py', 'test_catalog.py', 'test_ledger_replay.py',
     # parsers
     'test_parse_netlist.py', 'test_parse_kicad.py', 'test_page_inventory.py', 'test_kicad_declared_contacts.py',
     'test_dotted_physical_pins.py',
