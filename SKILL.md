@@ -57,6 +57,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 工程计算公式 | [wca-formulas.md](references/wca-formulas.md)；修改建议的计算预检查见 [calculation-preflight.md](references/calculation-preflight.md) |
 | 写报告和修改说明 | [report-and-remediation.md](references/report-and-remediation.md) |
 | 复审、改版影响 | [revision-review.md](references/revision-review.md) |
+| ASG 交付带选型记录与意见归因 | [selection-review.md](references/selection-review.md) |
 
 ## 与 ASG 的有状态工作流交接
 
@@ -135,6 +136,9 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
   下次先验证声明，输入变化则重新核对，不能只刷新摘要。`manual_*` 兼容字段不代表人员确认，核对者身份须如实记录。
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
   PDF 提取的关键数值对照渲染页核单位。证据计算所需保证值整理成 `evidence.json`。
+- ASG 交付包带 `record/selection.json`（核心器件选型）和归因记录时，按 [选型与归因复核](references/selection-review.md)
+  用 `scripts/review_selection.py` 生成复核表，逐角色独立给 AGREE/DISAGREE/INSUFFICIENT，不同意要给候选之外的型号或点名 ASG 理由的错误；
+  复核摘要进报告处理清单。
 
 ### 4. 热跑：证据计算
 

@@ -77,6 +77,9 @@ ASG 自检或目检未通过/未完成时必须保留开放项。SR 封装必须
 | `downstream_constraints` | PCB/结构/固件等交接约束 |
 
 除 requirements 外，每个上述角色恰好指向一个文件，可用索引文件组织多份器件/计算证据。
+ASG 交付包的 `record/selection.json`（核心器件选型）、`record/lessons.json` 和 `review-responses.json` 的 `cause`
+（上一轮意见的归因）随包收入 files；SR 的复核结果 `selection-review.json` 随审查包返回，
+格式与校验见 [选型与归因复核](selection-review.md)。这两项不新增合同角色，封装仍为 v1。
 控制器重跑 ASG 新鲜度检查，拒绝遗漏有效图页和证据引用。自检缺口原样交给 SR；FRESH 不是电气通过。
 改版还应收入 change contract、preflight、基线和复验记录，可使用附加角色。
 

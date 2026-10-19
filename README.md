@@ -7,6 +7,8 @@
 - 全部检查按 [规则总表](references/check-catalog.md) 编号（`内容域-方式序号`，如 `PWR-E01`），11 个内容域、8 种检查方式；
   DDR、USB、电源保护等功能以“功能包”组织，确认实际用途后逐电路、逐工况展开。
 - 判“证据不足”前先用已有参数定界，规则见 [最小充分证据](references/evidence-proportionality.md)。
+- ASG 交付带核心器件选型记录和意见归因时，用 `scripts/review_selection.py` 独立复核，见 [选型与归因复核](references/selection-review.md)。
+  SR 自己的改动按 [改进台账](docs/improvement-ledger.md) 记事件来源与归因，`scripts/check_ledger.py` 检查最新条目。
 
 ## 使用与安装
 
