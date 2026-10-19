@@ -189,10 +189,10 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if clauses_required:
         require(type(report.get('requirement_clauses_version')) is int and report['requirement_clauses_version'] == 1,
                 'requirement_clauses_version must be 1')
-    impact_classes = 'impact_class_version' in report
-    if impact_classes:
-        require(type(report.get('impact_class_version')) is int and report['impact_class_version'] == 1,
-                'impact_class_version must be 1')
+    impact_classes = report.get('impact_class_version') if 'impact_class_version' in report else False
+    if impact_classes is not False:
+        require(type(impact_classes) is int and impact_classes in (1, 2), 'impact_class_version must be 1 or 2')
+        impact_classes = impact_classes if impact_classes in (1, 2) else 1
     require(plan.get("schema_version") == PLAN_SCHEMA_VERSION,
             f"plan.schema_version must be {PLAN_SCHEMA_VERSION}; plans with retired check IDs must be regenerated")
     remediation_version = report.get("remediation_version")

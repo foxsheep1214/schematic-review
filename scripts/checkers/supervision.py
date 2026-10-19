@@ -890,7 +890,8 @@ class SupervisionChecker(Checker):
             check = planner.add_check(
                 'PWR-T04', obj, key=slug(state['id']), readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(list(state['gaps']) + [
-                    'requirements:必须监测的电源域与动作要求'])),
+                    'requirements:必须监测的电源域与动作要求',
+                    'intent:supervision.rail_requirements 逐轨声明 required=false 或 internal_monitor（片内 UVLO/复位，附出处）'])),
                 trigger=['supervision-rails:' + state['id']],)
             check['inventory_gaps'] = sorted(
                 {'rail-unmonitored:' + rail['net'] for rail in rails if not rail['monitor']

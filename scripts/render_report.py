@@ -43,7 +43,7 @@ BLOCKERS = (('fail', '%d 条检查发现的错误还没改'),
             ('grading', '%d 组资料不足的检查还没逐条判断后果'),
             ('netlist', '原理图导出的网表不完整或导出失败'))
 IMPACT_CLASS_WORDS = OrderedDict((('DAMAGE_OR_HAZARD', '损坏或危险'), ('CORE_LINK_LOSS', '核心链路断开'),
-                                  ('REQUIRED_FUNCTION', '必需功能'), ('PERFORMANCE_OR_LIFE', '性能或寿命'),
+                                  ('COMPONENT_DAMAGE', '器件损坏（不致危险）'), ('REQUIRED_FUNCTION', '必需功能'), ('PERFORMANCE_OR_LIFE', '性能或寿命'),
                                   ('LOCAL_OR_DATA', '局部或资料'), ('OPTIMIZATION', '可选优化')))
 SCOPES = {'input_consistency': '输入资料一致性核对', 'requirements': '需求逐条覆盖核对',
           'chains': '功能链覆盖核对', 'states': '工作状态覆盖核对',
@@ -382,6 +382,11 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         out.append('- **上一版审查材料**：%s' % (
             '本轮可见 %s；只用于“上一版问题”的复验，本轮结论按当前资料独立得出。' % '、'.join(
                 '`%s`' % cell(x) for x in history_inputs[:4]) if history_inputs else '本轮没有使用。'))
+        unreconciled = [c for c in screen if isinstance(c, dict) and c.get('code') == 'HISTORY_FINDINGS_UNRECONCILED']
+        if unreconciled:
+            out.append('- **上一版问题未逐条复验**：上一版记录的 %d 条问题（%s）没有历史复验行；每条写明已修、保留或撤回。'
+                       % (sum(len(c.get('finding_ids') or []) for c in unreconciled),
+                          '、'.join(fid for c in unreconciled for fid in (c.get('finding_ids') or [])[:6])))
     out.append('')
     if notes.get('summary'):
         out += [notes['summary'], '']
@@ -479,6 +484,9 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                       if isinstance(c.get('impact_assessment'), dict)
                       and c['impact_assessment'].get('consequence_class') in IMPACT_CLASS_WORDS)
     history = (summary.get('history') or {}).get('checks', 0)
+    history_cell = str(history)
+    if not history and any(isinstance(x, str) for x in results.get('history_inputs') or []):
+        history_cell = '0（已声明上一版材料，但没有逐条复验行）'
     out += ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
             '| 通过 / 没通过 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
@@ -494,7 +502,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                  if classes else []) + [
             '| 交给后续环节的要求 | %d |' % len(handoffs),
             '| 审查记录自检提示（不计入结论） | %d |' % len(screen),
-            '| 上一版问题的处理记录（不计入上面各行） | %d |' % history, '',
+            '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '',
             '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']
     explanations = render_check_explanations(plan, results) if detail == 'full' else []
     if explanations:

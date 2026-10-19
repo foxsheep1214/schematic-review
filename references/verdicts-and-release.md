@@ -109,21 +109,29 @@
 | P2 | 局部非关键功能、维护测试、物料/图纸数据一致性或一般交付缺口 | 说明影响局限及为何不影响关键电气/必需功能保证。不能把未明额定、保护身份或关键配置统一降为“资料问题” |
 | P3 | 可选优化或低影响图纸卫生的判断尚缺依据 | 基础必需要求已有通过证据，缺口只影响优化选择。必需验收证据缺失不属于 P3 |
 
-#### 后果类别（`impact_class_version: 1`）
+#### 后果类别（`impact_class_version: 2`）
 
-新审查在结果顶层写 `impact_class_version: 1`，每项证据不足在 `impact_assessment.consequence_class` 写后果类别，
-等级由类别决定，`validate_review.py` 检查二者一致：
+新审查在结果顶层写 `impact_class_version: 2`，每项证据不足在 `impact_assessment.consequence_class` 写后果类别，
+等级由类别决定，`validate_review.py` 检查二者一致（版本 1 的旧报告按旧表校验，不重写）：
 
 | consequence_class | 含义 | 潜在等级 |
 |---|---|---|
-| `DAMAGE_OR_HAZARD` | 危险应力、不可逆器件/负载损坏、关键保护失效 | P0；本判据通向该后果的路径已有独立排除依据时写 `impact_assessment.exclusion` 后可为 P1 |
-| `CORE_LINK_LOSS` | 唯一必需供电或核心链路可能断开 | P0（同上，有 `exclusion` 可为 P1） |
+| `DAMAGE_OR_HAZARD` | 安全危险：火灾、触电、绝缘屏障、危险能量、用户端口过压，或使一项安全保护失效 | P0；版本 2 须在 `impact_assessment.hazard_path` 写明是哪条路径：`FIRE` / `SHOCK` / `INSULATION` / `HAZARDOUS_ENERGY` / `PORT_OVERVOLTAGE` / `PROTECTION_LOSS`；该路径已有独立排除依据时写 `exclusion` 后可为 P1 |
+| `CORE_LINK_LOSS` | 唯一必需供电或核心链路可能断开 | P0（同上，须写 `hazard_path`，有 `exclusion` 可为 P1） |
+| `COMPONENT_DAMAGE` | 某个器件可能不可逆损坏，但不打开上面任何一条危险路径（例如二次侧低压开关管短路 SOA、同步整流管交叉导通、信号脚 ESD 损伤） | P1（版本 2 新增；版本 1 没有这一类，当时这类缺口只能写 `DAMAGE_OR_HAZARD`） |
 | `REQUIRED_FUNCTION` | 必需功能、启动/恢复、协议不保证 | P1 |
 | `PERFORMANCE_OR_LIFE` | 精度、动态性能、寿命或全工况保证不足 | P1 |
 | `LOCAL_OR_DATA` | 局部非关键功能、维护测试、物料/图纸数据一致性 | P2 |
 | `OPTIMIZATION` | 只影响可选优化 | P3 |
 
-先选类别再得等级：选不出类别说明后果路径还没理清，按上文第 4 步先追踪。报告“数字一览”按类别计数，
+先选类别再得等级：选不出类别说明后果路径还没理清，按上文第 4 步先追踪。
+"可能损坏器件"不等于危险：器件损坏要成为 P0，必须说得出它打开哪条危险路径（`hazard_path`）。
+常见的 P1 而非 P0 情形：二次侧低压开关管在端口短路下的 SOA（有熔断器/初级 OCP，终态是坏机不是火灾）；
+同步整流管换流不及时的交叉导通（同上）；CC/D± 信号脚的 ESD 耐受（损伤控制器，不危及用户）；
+已有锁定式 OVP 路径、只缺动作时序数据（除非已算出停能前端口可达的能量/电压超过受控上限，才是 `PORT_OVERVOLTAGE`）；
+熔断器分断能力：IEC 60127 高分断（H，1500 A）熔断器用于插墙电源时按额定分断能力核，不要求电网可用短路电流数据。
+仍是 P0 的情形：绝缘屏障器件（变压器、光耦、Y 电容）的长期工作电压/环境条件缺证（`INSULATION`）；
+保护元件本身额定不明且其失效会让一次侧故障持续（`FIRE`/`PROTECTION_LOSS`）；端口可能出现超出受控上限的电压或能量（`PORT_OVERVOLTAGE`）。报告“数字一览”按类别计数，
 结论里的资料缺口按待办（同一原因合并）计件，同时注明涉及的检查条数。
 
 同一对象可以有不同等级：触点电流耐受、被动端子映射、接口协议配置不是同一个判据。

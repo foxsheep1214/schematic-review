@@ -579,6 +579,23 @@ class ImpactClassTests(unittest.TestCase):
         del r['impact_class_version']
         self.assertEqual([e for e in validate_review(p, r, db)['errors'] if 'consequence_class' in e], [])
 
+    def errors_v2(self, cls, severity, **extra):
+        p, r, db = self.ledger(cls, severity, **extra)
+        r['impact_class_version'] = 2
+        return [e for e in validate_review(p, r, db)['errors']
+                if 'consequence_class' in e or 'hazard_path' in e or 'impact_class_version' in e]
+
+    def test_v2_grades_component_damage_p1_and_asks_hazard_p0_for_its_path(self):
+        # 100W PD R3 复审：33 条“可能损坏”全被 DAMAGE_OR_HAZARD 顶成 P0；器件损坏与安全危险要分开。
+        self.assertEqual(self.errors_v2('COMPONENT_DAMAGE', 'P1'), [])
+        self.assertTrue(self.class_errors('COMPONENT_DAMAGE', 'P1'))            # v1 does not know the class
+        self.assertTrue(self.errors_v2('DAMAGE_OR_HAZARD', 'P0'))               # P0 must name its hazard path
+        self.assertEqual(self.errors_v2('DAMAGE_OR_HAZARD', 'P0', hazard_path='INSULATION'), [])
+        self.assertTrue(self.errors_v2('DAMAGE_OR_HAZARD', 'P0', hazard_path='SMOKE'))
+        self.assertTrue(self.errors_v2('CORE_LINK_LOSS', 'P0'))
+        self.assertEqual(self.errors_v2('CORE_LINK_LOSS', 'P0', hazard_path='PROTECTION_LOSS'), [])
+        self.assertEqual(self.class_errors('DAMAGE_OR_HAZARD', 'P0'), [])      # v1 contract unchanged
+
 
 
 class HistoryInputTests(unittest.TestCase):

@@ -10,21 +10,31 @@ IMPACT_FIELDS = ('affected_function', 'operating_condition', 'consequence',
 
 # Consequence class -> potential level (verdicts-and-release.md 等级边界). A damage/hazard or
 # core-link class drops to P1 only with a written independent exclusion of that path.
+# impact_class_version 2 separates COMPONENT_DAMAGE (a part may be destroyed, nothing else
+# follows: P1) from DAMAGE_OR_HAZARD, which then must name the hazard path it opens.
 IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P0', 'CORE_LINK_LOSS': 'P0',
+                  'COMPONENT_DAMAGE': 'P1',
                   'REQUIRED_FUNCTION': 'P1', 'PERFORMANCE_OR_LIFE': 'P1',
                   'LOCAL_OR_DATA': 'P2', 'OPTIMIZATION': 'P3'}
+V2_ONLY_CLASSES = {'COMPONENT_DAMAGE'}
+HAZARD_PATHS = ('FIRE', 'SHOCK', 'INSULATION', 'HAZARDOUS_ENERGY', 'PORT_OVERVOLTAGE', 'PROTECTION_LOSS')
 
 
-def impact_class_errors(key, assessment, severity):
+def impact_class_errors(key, assessment, severity, version=1):
+    classes = {k: v for k, v in IMPACT_CLASSES.items() if version >= 2 or k not in V2_ONLY_CLASSES}
     cls = assessment.get('consequence_class')
-    if cls not in IMPACT_CLASSES:
-        return [f'{key}: impact_assessment.consequence_class is one of {"/".join(IMPACT_CLASSES)}']
-    expected = IMPACT_CLASSES[cls]
+    if cls not in classes:
+        return [f'{key}: impact_assessment.consequence_class is one of {"/".join(classes)}']
+    expected = classes[cls]
+    errors = []
+    if version >= 2 and expected == 'P0' and assessment.get('hazard_path') not in HAZARD_PATHS:
+        errors.append(f'{key}: {cls} needs impact_assessment.hazard_path one of {"/".join(HAZARD_PATHS)}; '
+                      'a part that may be destroyed without opening one of these paths is COMPONENT_DAMAGE (P1)')
     excluded = isinstance(assessment.get('exclusion'), str) and assessment['exclusion'].strip()
     if severity == expected or (expected == 'P0' and severity == 'P1' and excluded):
-        return []
+        return errors
     hint = '; P1 needs impact_assessment.exclusion naming the independent protection' if expected == 'P0' else ''
-    return [f'{key}: consequence_class {cls} sets potential_severity {expected}, not {severity}{hint}']
+    return errors + [f'{key}: consequence_class {cls} sets potential_severity {expected}, not {severity}{hint}']
 
 
 def validate_impact(item, classes=False):
@@ -42,7 +52,7 @@ def validate_impact(item, classes=False):
     if not isinstance(item.get('blocking'), bool):
         errors.append(f'{key}: blocking must be boolean for impact assessment')
     if classes:
-        errors += impact_class_errors(key, assessment, item.get('potential_severity'))
+        errors += impact_class_errors(key, assessment, item.get('potential_severity'), int(classes))
     return errors
 
 

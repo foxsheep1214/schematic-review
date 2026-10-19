@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from test_validate_review import fixture, E
+from test_validate_review import fixture, planned, E
 from validate_review import validate_review, fingerprint
 from gap_fixture import complete_gap
 from review_workflow import workflow
@@ -349,3 +349,33 @@ class TaskTextTemplateTests(unittest.TestCase):
         strip = lambda t: [l for l in t.splitlines() if '审查记录自检' not in l]
         self.assertEqual(strip(plain), strip(text))
 
+
+
+class HistoryReconciliationTests(unittest.TestCase):
+    """100W PD R3 复审：声明了上一版审查，报告却显示 0 条处理记录，2 条旧问题的对照只在旁路文件里。"""
+
+    def codes(self, p, r):
+        from review_quality import screen_quality
+        return {x['code']: x for x in screen_quality(p, r)['candidates']}
+
+    def test_declared_earlier_findings_without_history_rows_are_flagged(self):
+        import json
+        import tempfile
+        p, r, db = fixture()
+        with tempfile.TemporaryDirectory() as tmp:
+            record = Path(tmp) / 'record'
+            record.mkdir()
+            results = record / 'review-results.json'
+            results.write_text(json.dumps({'findings': [{'id': 'F-OLD', 'kind': 'DEFECT'}]}), encoding='utf-8')
+            r['history_inputs'] = [tmp]
+            hit = self.codes(p, r)['HISTORY_FINDINGS_UNRECONCILED']
+            self.assertEqual((hit['finding_ids'], hit['source']), (['F-OLD'], str(results)))
+            p['checks'].append(planned('REQ-H02.F-OLD'))
+            r['checks'].append({**r['checks'][0], 'id': 'REQ-H02.F-OLD'})
+            self.assertNotIn('HISTORY_FINDINGS_UNRECONCILED', self.codes(p, r))
+            p['checks'].pop()
+            r['checks'].pop()
+            results.write_text('{"findings": []}', encoding='utf-8')
+            self.assertNotIn('HISTORY_FINDINGS_UNRECONCILED', self.codes(p, r))
+            r['history_inputs'] = [tmp + '/missing']
+            self.assertNotIn('HISTORY_FINDINGS_UNRECONCILED', self.codes(p, r))

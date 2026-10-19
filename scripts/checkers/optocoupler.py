@@ -207,7 +207,8 @@ class OptocouplerChecker(Checker):
             if item['collector_net'] and not item['output_pullups'] and not item.get('internal_pullup'):
                 lint.add('PRO-A04', self.cold_rules['PRO-A04'],
                          head + '：输出集电极网 ' + item['collector_net']
-                         + ' 上未见到电源轨的上拉电阻；若由接收端内部上拉或有源负载需给出证据',
+                         + ' 上未见到电源轨的上拉电阻；若由接收端内部上拉或有源负载（控制器 FB/COMP/DIS 一类脚常见），'
+                         '在 intent optocouplers[].internal_pullup 写明接收脚、阻值范围与出处即关闭',
                          item['ref'], kind='CANDIDATE')
 
     def hot_check(self, lint, check):

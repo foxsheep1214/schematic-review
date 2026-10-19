@@ -4,6 +4,7 @@ Exact reused prose and disjoint explicit component references are review leads,
 not defects. Shared proofs and indirect dependencies can be legitimate.
 """
 from collections import defaultdict
+from pathlib import Path
 import json
 import re
 
@@ -334,11 +335,39 @@ def screen_quality(plan, report, db=None):
             'message': 'A current conclusion cites a review results/gate/report file. If it is an earlier review, '
                        're-derive the conclusion from current sources and declare the file in history_inputs.'})
     candidates.extend(templated_task_text(report, expected))
+    candidates.extend(unreconciled_history(report, expected))
     candidates.sort(key=lambda x: (x['code'], x['check_ids']))
     output.update(status='NEEDS_SEMANTIC_REVIEW' if candidates else 'NO_PATTERN_DETECTED',
                   candidate_count=len(candidates),
                   flagged_check_count=len({cid for x in candidates for cid in x['check_ids']}))
     return output
+
+
+def unreconciled_history(report, expected):
+    """Earlier findings declared in history_inputs that no REQ-H02 row reconciles."""
+    roots = [x for x in report.get('history_inputs') or [] if isinstance(x, str)]
+    rows = [row for row in report.get('checks') or [] if isinstance(row, dict)]
+    if not roots or any(expected.get(row.get('id'), {}).get('rule') == 'REQ-H02' for row in rows):
+        return []
+    found = []
+    for root in roots:
+        base = Path(root)
+        source = next((c for c in (base, base / 'review-results.json', base / 'record' / 'review-results.json')
+                       if c.name == 'review-results.json' and c.is_file()), None)
+        if source is None:
+            continue
+        try:
+            prior = json.loads(source.read_text(encoding='utf-8'))
+        except (OSError, ValueError):
+            continue
+        ids = sorted(f['id'] for f in (prior.get('findings') or []) if isinstance(prior, dict)
+                     and isinstance(f, dict) and isinstance(f.get('id'), str))
+        if ids:
+            found.append({'code': 'HISTORY_FINDINGS_UNRECONCILED', 'check_ids': [], 'source': str(source),
+                          'finding_ids': ids,
+                          'message': '%d earlier finding(s) in a declared history input have no REQ-H02 row; '
+                                     'record fixed/kept/withdrawn per finding, or state why none applies.' % len(ids)})
+    return found
 
 
 def _scope(check):

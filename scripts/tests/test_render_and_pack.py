@@ -211,8 +211,18 @@ class ReportWordingTests(unittest.TestCase):
         r['history_inputs'] = ['reviews/R1']
         text, gate = report(p, r, db)
         self.assertIn('- **上一版审查材料**：本轮可见 `reviews/R1`', body(text))
+        self.assertNotIn('上一版问题未逐条复验', text)
         r['history_inputs'] = []
         self.assertIn('- **上一版审查材料**：本轮没有使用。', body(report(p, r, db)[0]))
+        # 100W PD R3 复审：上一版 2 条问题只在旁路文件里对照，报告却显示 0 条处理记录。
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / 'record').mkdir()
+            (Path(tmp) / 'record' / 'review-results.json').write_text(
+                json.dumps({'findings': [{'id': 'F-OLD-1'}, {'id': 'F-OLD-2'}]}), encoding='utf-8')
+            r['history_inputs'] = [tmp]
+            text, gate = report(p, r, db)
+        self.assertIn('- **上一版问题未逐条复验**：上一版记录的 2 条问题（F-OLD-1、F-OLD-2）没有历史复验行', body(text))
+        self.assertIn('| 上一版问题的处理记录（不计入上面各行） | 0（已声明上一版材料，但没有逐条复验行） |', text)
 
     def test_gap_blockers_are_counted_by_work_item(self):
         from render_report import blocker_reasons
