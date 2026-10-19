@@ -11,7 +11,7 @@ from test_review_stage_scope import decisive, downstream
 from test_validate_review import fixture, fail
 from gap_fixture import complete_gaps
 import validate_review as vr
-from validate_review import validate_review
+from ledger_v3 import validate_review
 from render_report import render
 from pack_review import pack, REPORT, RECORD, LEDGER
 

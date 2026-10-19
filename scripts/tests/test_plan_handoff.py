@@ -13,7 +13,8 @@ import catalog
 from electrical_fixtures import bind_evidence, pin_analysis
 from board_intent import input_fingerprint
 from plan_review import build_review_plan
-from validate_review import fingerprint, validate_review, SCOPE
+from validate_review import fingerprint, SCOPE
+from ledger_v3 import validate_review
 from test_validate_review import E
 from test_remediation import ready
 

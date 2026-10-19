@@ -96,7 +96,7 @@ review-results / gate / 报告）每轮只做 3 块：1 块 fix pair 的 before 
 
 - **模型家族必须不同于审查 agent**（例如审查用 Claude，批评用 GPT 系，反之亦然）。
 - **盲评**：输入是原理图 PDF/网表 db、该板的原厂资料目录、以及**一条**发现（规则、对象、结论、等级）；
-  **不给**审查员的 rationale、severity_reason、report 正文。目的是让它独立判断，而不是被说服。
+  **不给**审查员的 rationale、缺口的 severity 说明、report 正文。目的是让它独立判断，而不是被说服。
 - 逐条按 [critic/rubric.md](critic/rubric.md) 打分，输出 `runs/<round>/critic/<board>.json`，每条：
 
 ```json

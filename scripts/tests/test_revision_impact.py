@@ -14,7 +14,7 @@ from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint
 from plan_review import build_review_plan, validate_intent
 from revision_impact import (attach_metadata, check_spec, COVERAGE_ID, digest,
                              validate_metadata, validate_reverification)
-from validate_review import validate_review
+from ledger_v3 import record, validate_review
 from gap_fixture import validating, complete_gaps
 validate_review = validating(validate_review)  # gap records are not this file's subject
 from test_i2c_topology import add, fixture as i2c_fixture, pending_report
@@ -438,7 +438,7 @@ class RevisionWorkflowTests(unittest.TestCase):
         plan = json.loads(output.read_text())
         self.assertEqual(plan['revision_impact'], json.loads(impact.read_text()))
         self.assertEqual(plan, json.loads(lint.read_text())['review_plan'])
-        result = self.cli('validate_review.py', output, self.write('report.json', self.report(plan)),
+        result = self.cli('validate_review.py', output, self.write('report.json', record(self.report(plan))),
                           '--db', db, '--old-db', old, '--old-plan', base, '--require-revision-impact')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         result = self.cli('plan_review.py', db, '--old-db', old, '--old-plan', base, '--json', self.root/'standalone.json')

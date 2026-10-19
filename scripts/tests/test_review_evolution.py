@@ -15,7 +15,8 @@ from review_summary import categorized_summary
 from validate_remediation import validate_remediation
 from test_revision_impact import database, focused, entries, reviewed_records, check
 from test_remediation import ready, actionable
-from validate_review import validate_review, fingerprint
+from validate_review import fingerprint
+from ledger_v3 import validate_review
 from test_calculation_preflight import calculation
 from test_validate_review import fixture
 
@@ -103,14 +104,6 @@ class EvolutionTests(unittest.TestCase):
         self.assertEqual(validate_engine(plan, False), [])
         self.assertTrue(validate_engine(plan, True))
         self.assertTrue(validate_engine({'review_engine': 'tampered'}, False))
-
-    def test_actionable_results_require_remediation_version_2(self):
-        p, r, db = actionable()
-        p['review_engine'] = engine_identity(); r['plan_digest'] = fingerprint(p)
-        self.assertEqual(validate_review(p, r, db, require_actionable=True)['errors'], [])
-        r['remediation_version'] = 1
-        errors = validate_review(p, r, db, require_actionable=True)['errors']
-        self.assertTrue(any('remediation_version must be 2' in e for e in errors), errors)
 
     def test_model_source_reopens_unchanged_upstream_and_dependent_parts(self):
         db = database()

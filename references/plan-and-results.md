@@ -180,7 +180,7 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 工况，未证路径留具体缺口，不添加需求未承诺的零待机电流门槛。结果、父项、发现项和任务同步核
 实际页码、型号、物理脚/网络与状态，避免把封装/文档错误误写为实体错连。
 
-## 三、review-results.json（schema_version 2）
+## 三、review-results.json（schema_version 3）
 
 ### 顶层字段
 
@@ -191,10 +191,12 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
   各指向对应覆盖审计项。表示覆盖审计完成，不是该域全部电气通过。
 - `coverage`：各维度“对象→检查 ID 数组”的完整映射。有 `--db` 时机械检查 components、pins、nets、pages
   及 requirements 是否都关联至少一条检查；仅 PDF 时由页面/手工对象清单另审，不制作伪网表。
-- `binding_version: 1`、`remediation_version: 2`（见 [报告与修改说明](report-and-remediation.md)）、
-  `requirement_clarification_version: 1` 与 `requirement_clarifications`（无则 `[]`）、
-  `workflow_version: 1`（单一归属/旧记录）或 `2`（共享检查逐补证键归属）与 `work_items`（见 [结论与准出](verdicts-and-release.md#共同根因归并为任务)）；
+- `requirement_clarifications`（无则可省略）与 `work_items`（见 [结论与准出](verdicts-and-release.md#共同根因归并为任务)）；
   关联 EXTERNAL_DATA/DESIGN_OPEN 证据不足项的任务带 `design_option`（见 [报告与修改说明](report-and-remediation.md#三证据不足项的电路改进建议)）。
+- schema 3 没有分版本号：`binding_version`、`remediation_version`、`workflow_version`、`impact_class_version`、
+  `requirement_clauses_version`、`requirement_clarification_version` 写了会被拒绝，各项一律按最新规则校验。
+  绑定和修改说明由 `validate_review.py` 的 `--require-bindings`、`--require-actionable` 要求。
+  schema 2 的旧台账不再读取，按本版 SR 重新审查。
 - 复审另有 `revision_impact_version`、`revision_digest` 和必需项的 `reverification`，见 [改版复审](revision-review.md)。
 - `summary` / `release` 可省略，由校验器计算；填了必须一致。
 
@@ -260,7 +262,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 窄的标准脚义/方向项可用标准及器件手册闭合；准确机械/焊盘视图与已指定对端的兼容保证另审，
 未指定外卡/主机按 [本体与系统范围](evidence-proportionality.md#模块本体完整系统与制造核准) 处理。
 
-`rationale`、`missing_inputs`、`impact_assessment` 每个字段和关闭任务分别核同一实际对象/状态/因果。
+`rationale`、`gaps` 的每条缺口（what、scope、severity）每个字段和关闭任务分别核同一实际对象/状态/因果。
 任务的 prerequisite、steps、impact_review、verification、avoids 不能借另一个根问题填充；输入取得方法与
 验收须能关闭所关联的具体判据，不以“执行发现项说明”等通用指令替代。计算修订同步所有引用该值的结果与
 结构化任务，核单位、公差及不利方向；正确理由、绑定或 locator 不证明其余字段正确。
@@ -285,7 +287,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 
 ### 逐行语义复核
 
-录入与最终校验前，逐行用实际对象上下文对照 `rationale`、`missing_inputs`、影响评估及关联关闭任务：
+录入与最终校验前，逐行用实际对象上下文对照 `rationale`、`gaps` 及关联关闭任务：
 
 - 对每条需求，将原文与本行 criterion 中并列的功能、工况前提、交付和范围排除分别列为子义务，
   在现有 evidence 定位每项实际证据、相关检查 ID 与状态。明确排除认证、实测或某种使用状态，
@@ -293,7 +295,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   “拆分实例的命名”补查子义务，保留自动原项及完整覆盖关系。
 - 需求整项只有全部适用子义务已 PASS（或有来源证明 NA）时才能 PASS。子义务有确认 FAIL 时
   整项按真实违反给 FAIL；没有确认 FAIL 但仍有必需证据不足时整项为 INSUFFICIENT，写明具体
-  gap_cause、未知和关闭条件，blocking 按该义务现有准出依赖判断。最高潜在级仅引用实际相关
+  gap_cause、未知和关闭条件，是否写 `"blocking": false` 按该义务现有准出依赖判断。最高潜在级仅引用实际相关
   子义务的可信物理后果与条件，确认缺陷和潜在风险分开；复用既有唯一根因任务，不重复计缺陷。
   纯范围排除项可独立 PASS，不能因为全板其他项未闭就自动传染 INSUFFICIENT；相反，复合项不能
   用范围 PASS 掩盖它明确依赖的本体义务。资料缺口不是需求待决，不改成 REQUIREMENT_OPEN。
@@ -327,30 +329,58 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   },
   "applicability": "APPLICABLE",
   "review_result": "FAIL",
-  "evidence_confidence": "A",
   "evidence": [{"source": "db.json", "locator": "nets.SENSE_A; nets.SENSE_B"}],
   "rationale": "要求的检测端点不连通，见路径表 PATH-01。",
   "severity": "P1",
   "finding_id": "F-001",
-  "blocking": true,
-  "disposition": "OPEN",
   "handoff": {"required": false}
 }
 ```
 
+证据不足的行列出缺口 `gaps`，一条缺口写一件缺的东西：
+
+```json
+{
+  "id": "ANA-C01.CURRENT-ZERO-TO-5A.R503",
+  "binding": {"object": {"circuit": "CURRENT", "ref": "R503", "state": "ZERO_TO_5A"},
+              "criterion": "运放输入共模/输出摆幅及偏置/失调/增益误差，含供电和温度极限"},
+  "applicability": "APPLICABLE",
+  "review_result": "INSUFFICIENT",
+  "gap_cause": "DESIGN_OPEN",
+  "evidence": [{"source": "evidence/engineering.md", "locator": "USB、采样、配置"}],
+  "rationale": "R503 低侧差分约 55 mV/5.5 A，经片内放大后约 1.57 V；失调可等效 0.25 A。",
+  "gaps": [{
+    "what": "片内零偏可等效 0.25 A，实际校准与误差预算未给出",
+    "scope": "零电流至 5 A、PPS 限流、R503 温漂、ADC 增益/失调与温区",
+    "how_to_close": "已读 RT7209 p11–13；建立零点/增益校准与读回格式，枚举 ADC、分流电阻和温漂误差",
+    "closure_criterion": "PPS 等模式的电流精度和限制窗口满足工程规格；校准失效可识别",
+    "severity": {"level": "P1", "class": "PERFORMANCE_OR_LIFE", "affects": "R503 电流测量的量产校准",
+                 "consequence": "PPS 电流窗口不能保证"}
+  }],
+  "handoff": {"required": false}
+}
+```
+
+由校验器推出、不写进台账的字段（写了会被拒绝）：
+- `blocking`：FAIL/INSUFFICIENT 默认阻塞。只有阶段允许暂留的 P2/P3 才写 `"blocking": false`。
+- `evidence_confidence`：PASS/FAIL 默认 B，INSUFFICIENT 为 C。只有声称 A 级证据时才写 `"A"`。
+- `disposition`：默认 OPEN。只写 FIXED_VERIFIED、ACCEPTED、RETRACTED。
+- 行级潜在等级取各缺口 `severity.level` 中最高的一级。共享检查按 `request_keys` 把缺口分给不同待办时，
+  每个待办只取它拥有的缺口的等级。
+
 - `binding.object`/`binding.criterion` 是实际已审范围，与同 ID 计划的 object/criterion 完全一致；
   `evidence` 和 `rationale` 只支持这个对象、配置、工况和判据。复用结论前核对物理脚、网络及要求，
   不能因 ID 相似、同一 IC 或同一功能组就移用。
-- 所有结果含非空 `rationale` 与可定位 `evidence`。PASS/FAIL 只能 A/B；INSUFFICIENT 必须 C 并给
-  `missing_inputs` 和 `potential_severity`（REQUIREMENT_OPEN 除外）；非 FAIL 不填 severity。
-- 每项证据不足（REQUIREMENT_OPEN 与 REQ-H02 历史处置除外）给 `impact_assessment` 的五项非空字段，校验始终强制；
+- 所有结果含非空 `rationale` 与可定位 `evidence`。INSUFFICIENT 必须给 `gaps`；非 FAIL 不填 `severity`（行级字段只属于 FAIL）。
+- 每条缺口（REQUIREMENT_OPEN 与 REQ-H02 历史处置除外）给 `scope` 和完整的 `severity`
+  （`level`、`class`、`affects`、`consequence`），校验始终强制；
   内容按 [危险度分类原则](verdicts-and-release.md#证据不足的危险度分类原则) 逐项判定；非空字段不等于危险度可靠。
-  缺影响依据的旧报告校验不通过，须按当前规则重新分级，不改写旧结果或工程指纹来冒充新审查。
+  `consequence` 同时是定级理由：写清这个缺口在什么工况下导致什么后果，不写跨行通用的套话（`TEMPLATED_SEVERITY_REASON`）。
 - **独立审查**：结果顶层写 `history_inputs`（本轮能看到的旧审查目录或文件路径，没有就写空数组）。除 REQ-H02 上一版问题复验行外，任何检查的 evidence 引用这些路径都会被 `validate_review.py` 拒绝；未声明却引用某次审查的结论/校验/报告文件（`review-results.json`、`review-gate.json`、`审查报告.md`）会进质量筛查候选。报告结论里写明本轮可见的旧审查材料。
-- 新报告写 `impact_class_version: 2`，每项证据不足另给 `impact_assessment.consequence_class`（类别决定潜在等级，
-  见[后果类别](verdicts-and-release.md#后果类别impact_class_version-2)）；P0 类别另给 `hazard_path`，
-  只会坏一个器件而不打开危险路径的写 `COMPONENT_DAMAGE`（P1）。版本 1 的旧报告仍按旧表校验。
-- 新报告写 `requirement_clauses_version: 1`：每个 REQ-D01（需求状态 OPEN/DEFERRED 与 NA 除外）给 `requirement_clauses`，
+- `severity.class` 是后果类别，类别决定潜在等级（见[后果类别](verdicts-and-release.md#后果类别severityclass)）；
+  P0 类别另给 `severity.hazard_path`，只会坏一个器件而不打开危险路径的写 `COMPONENT_DAMAGE`（P1）；
+  P0 类别降为 P1 时给 `severity.exclusion` 写出独立保护。
+- 每个 REQ-D01（需求状态 OPEN/DEFERRED 与 NA 除外）给 `requirement_clauses`，
   把需求原文按顺序完整拆成条款（拼接后等于原文），逐条标类别：
 
   | 条款形式 | kind | 结论 |
@@ -363,10 +393,10 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   其他行发现的缺陷不连带本行；需求原文把该缺陷写成义务（如“各连续受电元件不得超出持续功率额定”）时才在本行判。
 - INSUFFICIENT 必填 `gap_cause`（校验始终强制）：REQUIREMENT_OPEN、EXTERNAL_DATA、DESIGN_OPEN、
   REVIEW_INCOMPLETE、USER_DEFERRED，含义见 [最小充分证据](evidence-proportionality.md#复核每条证据不足)。
-  纯下游项不是 INSUFFICIENT，用阶段 NA。EXTERNAL_DATA / DESIGN_OPEN 另写以 missing_inputs 原文为键的
-  `input_requests`（why_decisive / required_scope / acquisition / closure_criterion），其他原因不写。
-  `required_scope` 写请求要覆盖的电压/负载/状态/温度范围，不是任务标题或根因的复述（`REQUEST_SCOPE_ECHOES_TASK` 提示，报告也不显示只复述的范围）；
-  `acquisition` 以“已读 X 第 N 页，缺 Y”开头时，后半句不要再整句重复任务的 `next_action`，报告会合并。
+  纯下游项不是 INSUFFICIENT，用阶段 NA。EXTERNAL_DATA / DESIGN_OPEN 的每条缺口另写 `how_to_close` 和
+  `closure_criterion`，其他原因不写；待办的 `request_keys` 用缺口的 `what` 原文指名。
+  `scope` 写缺口要覆盖的电压/负载/状态/温度范围，不是任务标题或根因的复述（`REQUEST_SCOPE_ECHOES_TASK` 提示，报告也不显示只复述的范围）；
+  `how_to_close` 以“已读 X 第 N 页，缺 Y”开头时，后半句不要再整句重复任务的 `next_action`，报告会合并。
   `closure_criterion` 写设计者能核的边界和条件（手册限值、标准条款、工况），不写审查员算例的中间值；
   位号与数值之间留空格或标点（“R604 100°C”，不写“R604100°C”）。
 - 计划行带 `proposal.result = PASS` 而结论为 FAIL/INSUFFICIENT 时，须给 `proposal_override`（code 与 reason），
@@ -376,7 +406,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   复合义务不能整体 NA；测试义务条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，
   `check_ids` 链接独立阶段 NA 检查，不得只改条款结果让测试消失。
 - 普通 NA 必须 NOT_APPLICABLE；修改自动计划的适用性需 `applicability_evidence`。UNDETERMINED 只能落 INSUFFICIENT。
-- `disposition`：FIXED_VERIFIED / RETRACTED 只用于当前 PASS/NA 并须 `closure_evidence`；ACCEPTED 保留
+- `disposition`（默认 OPEN，不写）：FIXED_VERIFIED / RETRACTED 只用于当前 PASS/NA 并须 `closure_evidence`；ACCEPTED 保留
   FAIL/INSUFFICIENT，附 `acceptance`（by/date/scope/reason/record，来自真实授权记录）。P0/P1 潜在未知默认阻断。
 - 必需 handoff 的 receivers/constraint/verification 不可空；ACCEPTED/VERIFIED 须有 evidence；
   取消计划中的必需 handoff 须 `handoff_evidence` 留据。handoff 随图交出，OPEN 不阻断冻结。
@@ -436,5 +466,5 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 
 对以关断/响应时间不足为依据的结论，在本项证据或共享记录中给出故障后果、允许窗口、实际响应界、裕量、温度范围及关闭阶段。
 可在结果行用可选`timing_assessment`对象记录上述同名英文字段（见最小充分证据）；或用`timing_assessment.evidence`
-列出包含完整分析的共享文档定位。它是审查者工程证据，不替代`impact_assessment`、HANDOFF或风险接受。
+列出包含完整分析的共享文档定位。它是审查者工程证据，不替代缺口的 `severity`、HANDOFF或风险接受。
 质量筛查的`TIMING_BLOCK_WITHOUT_WINDOW`只是需复核提示；补充一个字段不会使设计自动通过。

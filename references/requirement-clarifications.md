@@ -1,7 +1,7 @@
 # 需求澄清项：独立报告与决策闭环
 
 需求澄清项是报告的问题类别，不是第五种检查结果，也不是已确认电气缺陷。
-本节是该类别的唯一字段与判定契约。新报告使用 `requirement_clarification_version: 1`，
+本节是该类别的唯一字段与判定契约。
 顶层 `requirement_clarifications` 保存唯一问题，未发现时填 `[]`。
 
 ## 收录范围
@@ -86,7 +86,6 @@
 
 ```json
 {
-  "requirement_clarification_version": 1,
   "requirement_clarifications": [{
     "id": "CL-LOAD-01",
     "title": "确定输出最大连续负载",
@@ -105,7 +104,6 @@
     "freeze_impact": "BLOCKING",
     "impact_reason": "电流范围影响器件额定和损耗，尚不能确定原理图选型"
   }],
-  "workflow_version": 1,
   "work_items": []
 }
 ```
@@ -118,7 +116,7 @@ OPEN 项另须填两项，供报告直接告诉需求方“需求说明哪里不
 closure_criteria 写确认方式和复验范围。evidence 必须定位已检查的输入和待决依据。
 
 OPEN 项的 check_ids 只关联 `INSUFFICIENT + REQUIREMENT_OPEN` 检查。这些检查仍须有
-missing_inputs、rationale、证据和 C 置信度，但不填写 severity/potential_severity。
+gaps（只写 what）、rationale 和证据，但缺口不写 severity。
 独立电气 FAIL、证据缺口、已完成的窄判据另留检查，不能把它们改成需求问题来改变严重度或放行。
 
 澄清记录直接生成本轮 workflow 任务，保留 owner、decision_due 和 closure_criteria；
@@ -166,8 +164,7 @@ RESOLVED 关联的 REQ 条目在当前计划中必须为 CONFIRMED；撤回条�
 blocking_open/covered_open；例如“1 项待决需求，影响 10 条检查”，不计入 confirmed_defects。
 `requirement_clarifications` 输出完整唯一记录，`insufficient_by_cause` 只表示检查行数。
 
-所有报告必须声明 requirement_clarification_version: 1，并包含 requirement_clarifications 数组，
-无需求澄清时填 []；校验器强制检查，缺字段直接拒绝。
+没有需求澄清时 `requirement_clarifications` 可省略或填 []；有记录时校验器逐项强制检查字段。
 
 ## 关闭证据的例子
 

@@ -19,8 +19,8 @@ PWR-C15不要求每个线性供电都建立PWM模型：无反馈环可据拓扑N
 
 这两条规则的结果必须有 `obligations`，键与计划的 `closure_contract.obligations` 完全相同。
 每项包含 `review_result`、具体 `rationale`、`evidence`。INSUFFICIENT项用 `request_keys`
-指向该行真正需要的 `input_requests`；同一资料可以支持多个义务，但不能拿不相关请求凑覆盖。
-缺口原因是需求未定、用户推迟或本轮未审完（无 `input_requests`）时不要求 `request_keys`。
+指向该行真正需要的缺口（`gaps[].what`）；同一资料可以支持多个义务，但不能拿不相关缺口凑覆盖。
+缺口原因是需求未定、用户推迟或本轮未审完（缺口无 how_to_close）时不要求 `request_keys`。
 行结果保留最差义务，不能因连接正确而PASS，也不能整体转成阶段NA。
 不适用义务须写 `inapplicability_basis` 并给实际拓扑/用途出处；
 整行按拓扑判NA（如无反馈环、无隔离成员）时可省略 `obligations`，改在行上写 `inapplicability_basis`。
@@ -32,7 +32,7 @@ PRO-C03还须有 `qualification_members`，按计划 `object.refs` 覆盖每个�
 
 ## 任务边界
 
-相关 `input_requests` 和所属任务均写 `closure_domain`：PRO-C03为
+相关缺口（`gaps[].closure_domain`）和所属任务均写 `closure_domain`：PRO-C03为
 `isolation_qualification`，PWR-C15为 `loop_stability`。
 这些任务所有选中的请求必须属于同一解决条件；不能把RCD/短路SOA等请求一并塞入补偿任务。
 不同电源电路的补偿也分别建任务（例如PFC与反激）；同一电路不同工况可共用一项，不能仅因同属loop_stability而合并不同环路。

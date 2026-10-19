@@ -7,10 +7,16 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from execution_audit import digest, validate_execution_audit
-from validate_review import validate_review
+from execution_audit import digest, validate_execution_audit as _audit
+from ledger_v3 import as_sent, validate_review
+import results_model
 from gap_fixture import validating, complete_gaps
 validate_review = validating(validate_review)  # gap records are not this file's subject
+
+
+def validate_execution_audit(p, r, db=None, a=None, required=False):
+    sent = as_sent(p, complete_gaps(r))
+    return _audit(p, results_model.expand(sent), db, a, required, record=sent)
 
 FIXTURE = Path(__file__).parent / 'fixtures/execution-audit/synthetic.json'
 
@@ -25,7 +31,7 @@ def fixture():
 def rebind(p, r, db, a):
     complete_gaps(r)  # before the digest, so the audit binds the complete gap records
     r['plan_digest'], r['db_digest'] = digest(p), digest(db)
-    a.update(plan_digest=digest(p), results_digest=digest(r), db_digest=digest(db))
+    a.update(plan_digest=digest(p), results_digest=digest(as_sent(p, r)), db_digest=digest(db))
 
 
 def row(report, check_id):

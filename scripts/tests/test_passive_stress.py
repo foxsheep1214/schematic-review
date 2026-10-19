@@ -7,7 +7,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from checkers.passive_stress import OVERRIDE_CODES
 from plan_review import build_review_plan
-from validate_review import validate_review
+from ledger_v3 import validate_review
 from test_decoupling import add, fixture, ledger, mark_pass, rebind
 
 R0402 = 'Resistor_SMD:R_0402_1005Metric'

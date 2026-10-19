@@ -28,9 +28,6 @@ def validate_clarifications(report, checks, expected):
         if not ok:
             errors.append(message)
 
-    require(type(report.get('requirement_clarification_version')) is int
-            and report['requirement_clarification_version'] == 1,
-            'requirement_clarification_version must be 1')
     rows = report.get('requirement_clarifications')
     if not isinstance(rows, list):
         errors.append('requirement_clarifications must be an array')

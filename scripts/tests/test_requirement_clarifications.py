@@ -8,7 +8,8 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from validate_review import validate_review, fingerprint
+from validate_review import fingerprint
+from ledger_v3 import record, validate_review
 from gap_fixture import validating
 validate_review = validating(validate_review)  # gap records are not this file's subject
 from test_validate_review import fixture, planned, E
@@ -173,14 +174,6 @@ class RequirementClarificationTests(unittest.TestCase):
         self.assertEqual(out['release'], 'NO_GO')
         self.assertEqual(out['summary']['confirmed_defects'], 1)
 
-    def test_old_reports_and_missing_contract_fields_are_rejected(self):
-        p, r, db = sample(); del r['requirement_clarification_version']
-        self.assertFalse(validate_review(p, r, db)['valid'])
-        p, r, db = fixture()
-        self.assertTrue(validate_review(p, r, db)['valid'])
-        del r['requirement_clarification_version']; del r['requirement_clarifications']
-        self.assertFalse(validate_review(p, r, db)['valid'])
-
     def test_new_report_with_no_questions_has_zero_summary(self):
         p, r, db = fixture()
         r.update(requirement_clarification_version=1, requirement_clarifications=[],
@@ -260,7 +253,7 @@ class RequirementClarificationTests(unittest.TestCase):
         script = pathlib.Path(__file__).resolve().parents[1] / 'validate_review.py'
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            for name, data in (('plan', p), ('report', r)):
+            for name, data in (('plan', p), ('report', record(r))):
                 (root/name).write_text(json.dumps(data))
             args = [sys.executable, '-B', str(script), str(root/'plan'), str(root/'report')]
             run = subprocess.run(args, capture_output=True, text=True)

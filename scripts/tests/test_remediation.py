@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from validate_review import validate_review
+from ledger_v3 import record, validate_review
 from test_validate_review import fixture, fail, E
 from test_calculation_preflight import calculation
 from review_engine import engine_identity
@@ -47,10 +47,6 @@ class RemediationTests(unittest.TestCase):
         self.assertEqual(result['release'], 'NO_GO')
         self.assertEqual(result['summary']['confirmed_defects'], 1)
         self.assertEqual(result['remediation_validation']['by_readiness']['READY'], 1)
-
-    def test_version_declaration_enforces_instructions_without_cli_flag(self):
-        p, r, db = actionable(); del r['findings'][0]['remediation']
-        self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_connect_needs_explicit_old_and_new_endpoints(self):
         p, r, db = actionable(); m = r['findings'][0]['remediation']
@@ -122,7 +118,7 @@ class RemediationTests(unittest.TestCase):
         script = pathlib.Path(__file__).resolve().parents[1] / 'validate_review.py'
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            for name, value in [('plan', p), ('report', r), ('db', db)]:
+            for name, value in [('plan', p), ('report', record(r)), ('db', db)]:
                 (root/name).write_text(json.dumps(value))
             args = [sys.executable, str(script), str(root/'plan'), str(root/'report'),
                     '--db', str(root/'db'), '--require-actionable']
@@ -131,7 +127,7 @@ class RemediationTests(unittest.TestCase):
             self.assertEqual(json.loads(result.stdout)['release'], 'NO_GO')
             self.assertEqual(subprocess.run(args+['--require-release'], capture_output=True).returncode, 2)
             del r['findings'][0]['remediation']
-            (root/'report').write_text(json.dumps(r))
+            (root/'report').write_text(json.dumps(record(r)))
             self.assertEqual(subprocess.run(args, capture_output=True).returncode, 2)
 
 

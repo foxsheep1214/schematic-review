@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from plan_review import build_review_plan
-from validate_review import validate_review
+from ledger_v3 import validate_review
 from gap_fixture import validating
 validate_review = validating(validate_review)  # gap records are not this file's subject
 from test_decoupling import fixture, rebind, ledger, mark_pass

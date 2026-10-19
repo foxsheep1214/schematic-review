@@ -12,6 +12,7 @@ notes.json (optional):
    "sr_feedback": [{"kind": "false_alarm|over_strict|missed|unclear", "rules": ["PRO-C02"],
                     "instance": "what happened on this board", "suggestion": "how SR should change"}]}
 """
+import results_model
 import argparse
 import json
 import re
@@ -366,6 +367,7 @@ def render_check_explanations(plan, results):
 
 
 def render(plan, results, gate, notes=None, title=None, detail='compact'):
+    results = results_model.expand(results)
     notes = notes or {}
     item_notes = notes.get('items') or {}
     checks = {c['id']: c for c in results.get('checks') or [] if isinstance(c, dict) and 'id' in c}
@@ -373,7 +375,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     flow = gate.get('workflow') or {}
     tasks = flow.get('work_items') or []
     task_owners = ownership(tasks)
-    classes = results.get('impact_class_version') if 'impact_class_version' in results else False
+    classes = results_model.IMPACT_CLASS_VERSION
     findings = results.get('findings') or []
     summary = gate.get('categorized_summary') or {}
     counts = (summary.get('current') or {}).get('results') or {}

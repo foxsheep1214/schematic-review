@@ -5,6 +5,7 @@ Work-item grouping is explicit,
 not a text-similarity claim that different electrical causes are equivalent.
 """
 PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
+import results_model
 from task_scope import ownership, task_view, validate_scopes
 # Gaps a schematic change can often remove: the reviewer must propose that change or say why none exists.
 DESIGNABLE_GAPS = ('EXTERNAL_DATA', 'DESIGN_OPEN')
@@ -54,15 +55,13 @@ def design_option(key, value, unresolved, finding_ids):
 
 def workflow(plan, report, checks, clarifications=None, require_design_options=False):
     errors, tasks, owners = [], [], {}
-    enabled = bool(clarifications and clarifications['tasks']) or 'review_phase' in plan or 'workflow_version' in report or 'work_items' in report
+    enabled = bool(clarifications and clarifications['tasks']) or 'review_phase' in plan or 'work_items' in report
     phase = plan.get('review_phase', 'schematic_freeze')
     if not enabled:
         return {'enabled': False, 'phase': phase, 'errors': [], 'tasks': [],
                 'current_work_items': []}
     if phase not in PHASES:
         errors.append('review_phase must be one of ' + '/'.join(PHASES))
-    if type(report.get('workflow_version')) is not int or report['workflow_version'] not in (1, 2):
-        errors.append('staged results require workflow_version: 1 or 2')
     items = report.get('work_items')
     if not isinstance(items, list):
         errors.append('work_items must be an array (use [] when no separate repair/evidence tasks)')
@@ -106,8 +105,8 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
         for cid in linked:
             owners.setdefault(cid, []).append(item)
         tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option', 'request_keys') if k in item})
-    classes = report.get('impact_class_version') if 'impact_class_version' in report else False
-    errors.extend(validate_scopes(tasks, checks, strict=report.get('workflow_version') == 2, classes=classes))
+    classes = results_model.IMPACT_CLASS_VERSION
+    errors.extend(validate_scopes(tasks, checks, strict=True, classes=classes))
     task_owners = ownership(tasks)
     for cid in sorted(unresolved - set(owners)):
         errors.append(cid + ': unresolved check has no root-cause work item')

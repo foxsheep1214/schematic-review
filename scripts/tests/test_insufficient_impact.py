@@ -2,7 +2,7 @@ import copy
 import unittest
 
 from test_validate_review import fixture
-from validate_review import validate_review
+from ledger_v3 import validate_review
 from review_summary import categorized_summary, validate_impact
 
 

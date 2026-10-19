@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 import sys
 import catalog
+import results_model
 from review_workflow import workflow, decision
 from review_quality import FREEZE_BLOCKING_CODES, screen_quality
 from review_engine import validate_engine
@@ -183,23 +184,19 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         return {"valid": False, "errors": ["plan/results must be objects"],
                 "release": "NO_GO", "blockers": ["invalid input"],
                 "quality_screening": screen_quality(plan, report, db)}
+    history_ids = {c.get('id') for c in plan.get('checks') or [] if isinstance(c, dict) and c.get('rule') == 'REQ-H02'}
+    shape = results_model.shape_errors(report, history_ids)
+    if report.get('schema_version') != results_model.SCHEMA_VERSION:
+        return {"valid": False, "errors": shape, "release": "NO_GO", "blockers": ["results schema"],
+                "quality_screening": screen_quality(plan, report, db)}
+    errors.extend(shape)
+    written, report = report, results_model.expand(report)
     errors.extend(validate_engine(plan, require_current_engine))
-    require(report.get("schema_version") == 2, "results.schema_version must be 2")
-    clauses_required = 'requirement_clauses_version' in report
-    if clauses_required:
-        require(type(report.get('requirement_clauses_version')) is int and report['requirement_clauses_version'] == 1,
-                'requirement_clauses_version must be 1')
-    impact_classes = report.get('impact_class_version') if 'impact_class_version' in report else False
-    if impact_classes is not False:
-        require(type(impact_classes) is int and impact_classes in (1, 2), 'impact_class_version must be 1 or 2')
-        impact_classes = impact_classes if impact_classes in (1, 2) else 1
+    clauses_required = True  # schema 3: REQ-D01 always splits its requirement into clauses
+    impact_classes = results_model.IMPACT_CLASS_VERSION
     require(plan.get("schema_version") == PLAN_SCHEMA_VERSION,
             f"plan.schema_version must be {PLAN_SCHEMA_VERSION}; plans with retired check IDs must be regenerated")
-    remediation_version = report.get("remediation_version")
-    actionable = require_actionable or "remediation_version" in report
-    if actionable:
-        require(type(remediation_version) is int and remediation_version == 2,
-                "remediation_version must be 2 (with calculation_preflight) for actionable instructions")
+    actionable = require_actionable
     require(report.get("plan_digest") == fingerprint(plan), "plan_digest mismatch")
     if db is not None:
         if db.get('integrity', {}).get('self_check_passed') is False or db.get('export_errors'):
@@ -248,11 +245,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     scope_errors, stage_scope = validate_stage_scope(checks, expected)
     errors.extend(scope_errors)
     findings = index(report.get("findings"), "findings")
-    bindings = (require_bindings or revision is not None or 'binding_version' in report
+    bindings = (require_bindings or revision is not None
                 or any('binding' in x for x in checks.values()))
-    if bindings:
-        require(type(report.get('binding_version')) is int and report['binding_version'] == 1,
-                'binding_version must be 1 for object/criterion/evidence bindings')
     bound_count = 0
     require(bool(expected), "empty review plan")
     require(set(checks) == set(expected),
@@ -398,10 +392,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     errors.extend(validate_obligations(expected, checks, report.get('work_items') or [], impact_classes))
 
     for fid, item in findings.items():
-        if actionable:
+        if actionable or "remediation" in item:
             errors.extend(validate_remediation(fid, item.get("remediation"), set(findings), require_preflight=True))
-        elif "remediation" in item:
-            require(False, f"{fid}: remediation requires top-level remediation_version")
         require(item.get("severity") in tuple(SEVERITIES), f"{fid}: invalid severity")
         require(item.get("kind") in ("DEFECT", "IMPROVEMENT"), f"{fid}: invalid finding kind")
         require(ids(item.get("check_ids")), f"{fid}: check_ids required")
@@ -525,7 +517,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                         require(bool(targets) and ids(linked) and targets.issubset(linked),
                                 f'{digest}[{number}]: hot candidate must link its state checks')
 
-    execution = validate_execution_audit(plan, report, db, execution_audit, require_execution_audit)
+    execution = validate_execution_audit(plan, report, db, execution_audit, require_execution_audit, record=written)
     errors.extend(execution['errors'])
     counts = dict(Counter(x.get("review_result") for x in checks.values()
                           if isinstance(x.get("review_result"), str)))

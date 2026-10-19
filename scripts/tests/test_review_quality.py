@@ -6,7 +6,8 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from test_validate_review import fixture, planned, E
-from validate_review import validate_review, fingerprint
+from validate_review import fingerprint
+from ledger_v3 import validate_review
 from gap_fixture import complete_gap
 from review_workflow import workflow
 
@@ -216,14 +217,14 @@ class ImpactScreeningTests(unittest.TestCase):
         rules = ('DEV-C01', 'PWR-C10', 'DRV-C02')
         for i, (c, row) in enumerate(zip(p['checks'], r['checks'])):
             c['rule'] = rules[i % 3]
-            row['impact_assessment']['consequence'] = f'N{i} consequence'
             row['potential_severity'] = ('P1', 'P2')[i % 2]
-            row['impact_assessment']['severity_reason'] = f'N{i} path。本行未建立独立损坏路径，按必需性能P1。'
+            # schema 3: the consequence is also the grade's reason
+            row['impact_assessment']['consequence'] = f'N{i} path。本行未建立独立损坏路径，按必需性能P1。'
         found = [x for x in self.screen(p, r)['candidates'] if x['code'] == 'TEMPLATED_SEVERITY_REASON']
         self.assertEqual(1, len(found))
         self.assertEqual(12, len(found[0]['check_ids']))
         for i, row in enumerate(r['checks']):
-            row['impact_assessment']['severity_reason'] = f'N{i} 漏电经R{i}使门限偏移，按P1。'
+            row['impact_assessment']['consequence'] = f'N{i} 漏电经R{i}使门限偏移，按P1。'
         self.assertNotIn('TEMPLATED_SEVERITY_REASON', self.codes(p, r))
 
     def test_distinct_paths_and_mixed_grades_are_not_flagged(self):
@@ -463,7 +464,8 @@ class FreezeGradingGateTests(unittest.TestCase):
         flagged = {'code': 'TEMPLATED_SEVERITY_REASON', 'check_ids': ['X'] * 12}
         fake = lambda *a, **k: {'candidates': [flagged]}
         with mock.patch.object(vr, 'screen_quality', fake):
-            return vr.validate_review(plan, ledger(plan, db), db)
+            from ledger_v3 import record
+            return vr.validate_review(plan, record(ledger(plan, db)), db)
 
     def test_freeze_blocks_and_iteration_does_not(self):
         freeze = self.gate('schematic_freeze')

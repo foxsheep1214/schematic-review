@@ -3,7 +3,7 @@ from copy import deepcopy
 import unittest
 from test_review_stage_scope import decisive, request, IMPACT
 from task_scope import ownership, task_view
-from validate_review import validate_review
+from ledger_v3 import validate_review
 from render_report import render, render_item
 
 
@@ -12,12 +12,13 @@ def shared():
     r['workflow_version'] = 2
     row = r['checks'][0]; cid = row['id']
     row.update(potential_severity='P0', missing_inputs=['short waveform', 'loop model'])
-    row['impact_assessment'].update(consequence_class='DAMAGE_OR_HAZARD')
+    row['impact_assessment'].update(consequence_class='DAMAGE_OR_HAZARD', hazard_path='PROTECTION_LOSS')
     row['input_requests'] = {}
     for key, severity, cls in [('short waveform','P0','DAMAGE_OR_HAZARD'),
                                 ('loop model','P1','PERFORMANCE_OR_LIFE')]:
         q = request(); q.update(potential_severity=severity,
-            impact_assessment=dict(IMPACT, consequence_class=cls))
+            impact_assessment=dict(IMPACT, consequence_class=cls,
+                                   **({'hazard_path': 'PROTECTION_LOSS'} if severity == 'P0' else {})))
         q.update(acquisition='Acquire '+key, closure_criterion='Close '+key, required_scope=key)
         row['input_requests'][key]=q
     t=r['work_items'][0]
@@ -46,24 +47,6 @@ class TaskScopeTests(unittest.TestCase):
             g=validate_review(p,r,db);self.assertFalse(g['valid'],keys)
         p,r,db=shared();r['work_items'][1].pop('request_keys')
         self.assertFalse(validate_review(p,r,db)['valid'])
-
-    def test_declared_branch_cannot_hide_the_aggregate_hazard(self):
-        p,r,db=shared(); q=r['checks'][0]['input_requests']['short waveform']
-        q['potential_severity']='P1';q['impact_assessment']['consequence_class']='PERFORMANCE_OR_LIFE'
-        g=validate_review(p,r,db);self.assertFalse(g['valid'])
-        self.assertTrue(any('preserve the aggregate' in x for x in g['errors']))
-        p,r,db=shared();r['checks'][0]['input_requests']['short waveform'].pop('impact_assessment')
-        self.assertFalse(validate_review(p,r,db)['valid'])
-
-    def test_legacy_ambiguous_ownership_is_visible_not_assigned_by_text(self):
-        p,r,db=shared();r['workflow_version']=1
-        for t in r['work_items']:t.pop('request_keys')
-        g=validate_review(p,r,db);self.assertTrue(g['valid'],g['errors'])
-        text=render(p,r,g);self.assertIn('任务归属待整理',text)
-        self.assertNotIn('其中 2 件可能涉及',text)
-        self.assertNotIn('Acquire short waveform',text)
-        self.assertEqual(g['release'],'NO_GO')
-        self.assertIn('2 件尚不能独立定级',text)
 
     def test_shared_row_without_requests_keeps_its_level_for_every_owner(self):
         cid='PWR-C15.X';rows={cid:{'id':cid,'review_result':'INSUFFICIENT','potential_severity':'P0',

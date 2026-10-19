@@ -178,7 +178,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 结果独立保存为 `review-results.json`，绑定最终计划；批量脚本只录入已审结论。逐项检查是审计底账，待办是交付单位，见 [台账两层](references/plan-and-results.md)。按有证据的共同根因归并任务，
 不合并独立电气结论。局部额定/寿命缺口用同规则 `split_out` 定位到实际对象；保留其余对象的已核范围，
 不为降低条数合并独立电源级或补证动作。复合检查涉及多个任务时用 [任务归属](references/verdicts-and-release.md#共同根因归并为任务)
-的 `workflow_version: 2` 精确分配补证键和各自风险，整体仍保留最高后果。录入前按 [逐行语义复核](references/plan-and-results.md#逐行语义复核) 逐行核对象、路径、因果、
+的 `request_keys` 精确分配缺口和各自风险，整体仍保留最高后果。录入前按 [逐行语义复核](references/plan-and-results.md#逐行语义复核) 逐行核对象、路径、因果、
 关闭范围和需求子义务（含多个子义务的需求只有全部适用子义务通过才 PASS）；绑定校验及质量筛查零提示不能代替这一步。
 证据不足先按 [下游分流](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
 批量脚本不能用一句固定兜底语给全部证据不足定级。

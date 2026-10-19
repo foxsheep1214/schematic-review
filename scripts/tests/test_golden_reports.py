@@ -12,7 +12,7 @@ import unittest
 
 from test_review_stage_scope import decisive, downstream
 from test_validate_review import fixture, fail
-from validate_review import validate_review
+from ledger_v3 import validate_review
 from render_report import render
 
 GOLDEN = Path(__file__).resolve().parent / 'fixtures' / 'golden_reports'

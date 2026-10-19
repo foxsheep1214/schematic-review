@@ -6,7 +6,7 @@
 **报告由 `scripts/render_report.py` 从台账生成**，顺序固定：结论（电路错误数、能否定稿及还差什么、`quality_screening` 有提示时一行自检计数）→
 电路错误 → 待办（一个列表，按可能后果从重到轻）→ 交给后续环节的要求（随图交出，不卡定稿）→ 已核对的重点 →
 审查工具的不足（`sr_improvements`，设计者不用处理）→ 对 SR 技能的反馈（`notes.sr_feedback`）→ 数字一览 → 详细记录。
-结构和数字只来自台账，不手改报告；要改内容就改台账（任务的 title/root_cause/reason/next_action、检查的 input_requests、
+结构和数字只来自台账，不手改报告；要改内容就改台账（任务的 title/root_cause/reason/next_action、检查的 gaps、
 finding 的 remediation、handoff）后重新生成。下文各节规定这些字段写什么。agent 只通过 `notes.json` 补白话：
 
 ```json
@@ -34,14 +34,14 @@ finding 的 remediation、handoff）后重新生成。下文各节规定这些�
 
 notes 不能改结论或计数，不写内部代码名（gap_cause、documented 等），不重复任务字段已有的内容。
 任务默认只显示“缺什么、怎么补、怎样算通过”三行，标题直接点名器件或环路。
-沿用现有字段：root_cause 写具体缺口，reason 只补实际影响；required_scope 写适用器件与工况；
-next_action 和 acquisition 写具体动作及资料取得方法；closure_criterion 写可复核的通过标准。
+沿用现有字段：root_cause 写具体缺口，reason 只补实际影响；缺口的 scope 写适用器件与工况；
+next_action 和缺口的 how_to_close 写具体动作及资料取得方法；closure_criterion 写可复核的通过标准。
 不用“隔离资格、独立关闭义务、角点闭合”等说法；分别写器件允许的工作条件、需要补的具体内容、各输入/负载/温度组合怎样才算通过。
 不同工作条件重复索取同一资料时合并，保留所有不同的通过标准；不能只显示前三条而隐藏其余要求。
 同一动作、同一范围、同一通过标准才合并任务；仅资料来源相同可以合并取资料动作，不能合并不同电源环路的判定。
 优先复用审查时已取得的资料和计算，仅整理报告时不增加检查、试验、填表或补资料要求。
 
-任务的 title / root_cause / reason / next_action、input_requests 和 handoff 按写给硬件工程师的白话写：
+任务的 title / root_cause / reason / next_action、gaps 和 handoff 按写给硬件工程师的白话写：
 用器件位号、网络名和物理量说事，不写 SR 内部的规则号、字段名、工具名或“伪填”“签 PASS”这类审查行话；
 一个字段一两句，细节放检查行的 rationale。finding 的 title / observed / impact / recommendation / verification
 和 remediation 的 purpose / steps 同样原样进报告。
@@ -91,7 +91,7 @@ next_action 和 acquisition 写具体动作及资料取得方法；closure_crite
 |---|---|---|
 | 检查结果 通过（PASS）/ 不符合（FAIL）/ 证据不足（INSUFFICIENT）/ 不适用（NA）/ 本阶段不判，移交下游（NA_OUTSIDE_STAGE） | 当前检查行数 | `review-gate.json` 的 `categorized_summary.current.results`；复审另列 `history`（REQ-H02 历史处置），不混入当前 |
 | 确认缺陷 P0 / P1 / P2 / P3 | 唯一缺陷数 | `summary.by_severity` |
-| 证据不足项潜在等级 P0 / P1 / P2 / P3 / 需求未定（不定级） | 当前 INSUFFICIENT 行数 | `review-results.json` 中 INSUFFICIENT 行的 `potential_severity`；`gap_cause` 为 REQUIREMENT_OPEN 的行不定级，计入“需求未定”，各项之和等于当前 INSUFFICIENT 数 |
+| 证据不足项潜在等级 P0 / P1 / P2 / P3 / 需求未定（不定级） | 当前 INSUFFICIENT 行数 | `review-results.json` 中 INSUFFICIENT 行的潜在等级（各缺口 `severity.level` 中最高的一级）；`gap_cause` 为 REQUIREMENT_OPEN 的行不定级，计入“需求未定”，各项之和等于当前 INSUFFICIENT 数 |
 | 证据不足原因 REQUIREMENT_OPEN / EXTERNAL_DATA / DESIGN_OPEN / REVIEW_INCOMPLETE / USER_DEFERRED | INSUFFICIENT 行数 | `insufficient_by_cause`（未填原因的计为 UNSPECIFIED，应补填） |
 | 影响分级依据完整 / 未完整、冻结阻断 | 当前证据不足行数 | `categorized_summary.insufficient_impact` 的 documented / undocumented / blocking；有等级无依据的行仍计入未完整 |
 | 电路改进建议 PROPOSED / NONE | 唯一任务数 | `workflow.design_options`；只统计带 `design_option` 的任务 |
@@ -107,7 +107,7 @@ next_action 和 acquisition 写具体动作及资料取得方法；closure_crite
 证据/设计缺口、审查待完成、下游移交、集成约束、可选改善。
 阶段 NA 单列为“本阶段不判，移交下游”（结果计数键 `NA_OUTSIDE_STAGE`），与普通 NA 分开，不计入设计缺证；
 需求追溯表中 `stage_scope.requirements_pending_downstream` 的需求行标“待下游验证”，不写“不适用”。
-EXTERNAL_DATA / DESIGN_OPEN 项展示 input_requests 的补证要求及复审关闭条件。
+EXTERNAL_DATA / DESIGN_OPEN 项展示各缺口的补证要求（how_to_close）及复审关闭条件（closure_criterion）。
 
 | ID / 类别 | 位置、问题及依据 | 影响 / 冻结影响 | 建议及下一步 | 关闭条件 / 时点 / 状态 |
 |---|---|---|---|---|
@@ -194,7 +194,7 @@ Vmax、Cmax、Vsafe、tmax、温度，按 `R ≤ tmax/[Cmax·ln(Vmax/Vsafe)]` �
 
 ### 结构化字段
 
-结果设 `remediation_version: 2`，每个 finding 带 `remediation`：
+`--require-actionable` 时每个 finding 带 `remediation`（写了也一律校验）：
 
 ```json
 {

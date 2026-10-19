@@ -5,6 +5,7 @@ not defects. Shared proofs and indirect dependencies can be legitimate.
 """
 from collections import defaultdict
 from pathlib import Path
+import results_model
 import json
 import re
 
@@ -24,11 +25,15 @@ OPTIMIZATION_RE = re.compile(r'优化目标|成本|体积|报价|尽量|cost|vol
 # 冻结阶段把以下两类提示当作“定级未完成”的放行阻断，不改变 valid。
 # Review records whose citation as evidence for a current conclusion suggests reuse of an earlier review.
 REVIEW_ARTIFACTS = {'review-results.json', 'review-gate.json', '审查报告.md', 'review-ledger.json'}
+RECORD_FIELD_NAMES = {'missing_inputs': 'gaps[].what', 'required_scope': 'gaps[].scope',
+                      'acquisition': 'gaps[].how_to_close', 'closure_criterion': 'gaps[].closure_criterion',
+                      'consequence': 'gaps[].severity.consequence', 'affected_function': 'gaps[].severity.affects',
+                      'potential_severity': 'gaps[].severity.level'}
 FREEZE_BLOCKING_CODES = ('TEMPLATED_SEVERITY_REASON', 'UNIFORM_SEVERITY_WITHIN_RULE')
 # 资料获取方式/无改图理由模板：同一句话服务于多件待办时，说明没有按对象写出真实来源或真实替代方案。
 ACQUISITION_MIN_TASKS = 3
 DESIGN_OPTION_MIN_TASKS = 3
-IMPACT_TEXT_FIELDS = ('consequence', 'severity_reason')
+IMPACT_TEXT_FIELDS = ('consequence',)  # schema 3 derives severity_reason from it
 
 
 def analysis_text(text, check):
@@ -66,6 +71,8 @@ def field_text(value):
 
 
 def screen_quality(plan, report, db=None):
+    if isinstance(report, dict):
+        report = results_model.expand(report)
     output = {'status': 'NOT_RUN', 'scope': 'ADVISORY_PATTERN_SCREENING_ONLY',
               'candidate_count': 0, 'flagged_check_count': 0, 'candidates': []}
     if not isinstance(plan, dict) or not isinstance(report, dict):
@@ -216,7 +223,7 @@ def screen_quality(plan, report, db=None):
                 optimization_ids.append(row['id'])
             rule_grades[check.get('rule')].append((row['id'], row.get('potential_severity')))
             assessment = row.get('impact_assessment')
-            reason = assessment.get('severity_reason') if isinstance(assessment, dict) else None
+            reason = assessment.get('consequence') if isinstance(assessment, dict) else None
             if isinstance(reason, str):
                 for sentence in {x.strip() for x in re.split(r'[。；;\n]', reason)}:
                     if GRADE_RE.search(sentence):
@@ -309,7 +316,7 @@ def screen_quality(plan, report, db=None):
                            'confirm each was graded from its own consequence path, not by default.'})
     for sentence, group in templates.items():
         if len(group) >= TEMPLATE_MIN_ROWS and len({rule for _, rule in group}) >= TEMPLATE_MIN_RULES:
-            candidates.append({'code': 'TEMPLATED_SEVERITY_REASON', 'field': 'severity_reason',
+            candidates.append({'code': 'TEMPLATED_SEVERITY_REASON', 'field': 'consequence',
                 'template': sentence[:120], 'check_ids': sorted({cid for cid, _ in group}),
                 'message': f'{len(group)} evidence gaps across rules justify their grade with the same sentence; '
                            'grade each row from its own consequence path (P0/P1 need an object-specific path).'})
@@ -350,6 +357,9 @@ def screen_quality(plan, report, db=None):
     candidates.extend(stage_and_cause_misfiles(report, expected))
     nets = db.get('nets', {}) if isinstance(db, dict) else {}
     candidates.extend(duplicate_work_items(report, known | {n.rsplit('/', 1)[-1] for n in nets if isinstance(n, str) and n} if isinstance(nets, dict) else known))
+    for candidate in candidates:  # name fields the way a schema 3 record writes them
+        if candidate.get('field') in RECORD_FIELD_NAMES:
+            candidate['field'] = RECORD_FIELD_NAMES[candidate['field']]
     candidates.sort(key=lambda x: (x['code'], x['check_ids']))
     output.update(status='NEEDS_SEMANTIC_REVIEW' if candidates else 'NO_PATTERN_DETECTED',
                   candidate_count=len(candidates),
@@ -510,7 +520,7 @@ def scope_echoes_task(report):
                     echoed.add(cid)
         if echoed:
             found.append({'code': 'REQUEST_SCOPE_ECHOES_TASK', 'task_ids': [task['id']], 'check_ids': sorted(echoed),
-                          'message': 'required_scope only repeats the task title/root cause; state the voltages, loads, '
+                          'message': 'The gap scope only repeats the task title/root cause; state the voltages, loads, '
                                      'states and temperatures the request must cover.'})
     return found
 
@@ -580,7 +590,7 @@ def stage_and_cause_misfiles(report, expected):
                                  'stage NA + handoff to firmware, not a freeze-blocking design gap.'})
     for key, ids in sorted(calc.items()):
         found.append({'code': 'CALCULATION_RECORDED_AS_DATA_GAP', 'check_ids': sorted(ids), 'request': key,
-                      'message': 'The acquisition says the document was read and what remains is a calculation. '
+                      'message': 'how_to_close says the document was read and what remains is a calculation. '
                                  'That is review work (REVIEW_INCOMPLETE, finish it this round) or a design task for '
                                  'ASG, not EXTERNAL_DATA; name the datum that is actually absent if one is.'})
     return found
@@ -665,7 +675,7 @@ def _request_texts(row):
         if not isinstance(q, dict):
             continue
         yield key, 'key', key
-        for field in ('why_decisive', 'required_scope', 'acquisition', 'closure_criterion'):
+        for field in ('required_scope', 'acquisition', 'closure_criterion'):  # why_decisive is the row's rationale
             if isinstance(q.get(field), str):
                 yield key, field, q[field]
 
@@ -778,7 +788,7 @@ def templated_task_text(report, expected):
         if len(task_ids or scopes) >= ACQUISITION_MIN_TASKS:
             found.append({'code': 'BOILERPLATE_ACQUISITION', 'field': 'acquisition', 'template': text[:120],
                           'check_ids': sorted(ids), 'task_ids': sorted(task_ids),
-                          'message': f'{len(task_ids or scopes)} tasks share one acquisition sentence; name the actual '
+                          'message': f'{len(task_ids or scopes)} tasks share one how_to_close sentence; name the actual '
                                      'document, supplier contact or measurement for each request.'})
     reasons = defaultdict(set)
     for task in tasks:

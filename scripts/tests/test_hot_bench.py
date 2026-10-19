@@ -1,11 +1,13 @@
 import pathlib
-import sys
 import unittest
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'evals' / 'hot_bench'))
+import importlib.util
 
-import run as hot_bench
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+# Loaded under its own name: other benches also ship a module called run.py.
+_spec = importlib.util.spec_from_file_location('hot_bench_run', ROOT / 'evals' / 'hot_bench' / 'run.py')
+hot_bench = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(hot_bench)
 
 
 class HotBenchTest(unittest.TestCase):

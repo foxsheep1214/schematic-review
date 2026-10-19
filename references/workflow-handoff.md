@@ -85,6 +85,8 @@ ASG 自检或目检未通过/未完成时必须保留开放项。SR 封装必须
 每个角色指向一个文件：`review_intent`、`db`、`review_plan`、`review_results`、`review_gate`、
 `lint_cold`、`lint_hot`、`report`。器件证据、计算、裁图等引用材料也收入 files。
 原生格式继续使用 SR 当前的 intent、plan、results schema，不另造简化审查格式。
+results 为 schema 3（[台账字段](plan-and-results.md#三review-resultsjsonschema_version-3)）；控制器用与交付相同版本的 SR 重跑校验，
+schema 或版本不符时拒绝，不静默通过。
 
 控制器执行以下校验：
 

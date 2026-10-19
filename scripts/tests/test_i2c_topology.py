@@ -15,7 +15,8 @@ from board_intent import input_fingerprint
 from i2c_topology import build_i2c_topology, validate_i2c_intent
 from lint import Lint
 from plan_review import build_review_plan, validate_intent
-from validate_review import fingerprint, validate_review, SCOPE
+from validate_review import fingerprint, SCOPE
+from ledger_v3 import validate_review
 from gap_fixture import validating
 validate_review = validating(validate_review)  # gap records are not this file's subject
 

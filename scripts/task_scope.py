@@ -43,7 +43,7 @@ def selected_keys(task, cid, row, owners):
 def task_view(task, checks, owners=None, classes=False):
     """One shared projection used by scheduling, severity counts and report text.
 
-    ``classes`` is the record's impact_class_version (False for legacy records); the
+    ``classes`` is the consequence-class contract version (results_model.IMPACT_CLASS_VERSION); the
     request branches are validated against the same class table as the check rows."""
     owners = owners if owners is not None else ownership([task])
     levels, requests, ambiguous = [], [], []
@@ -119,7 +119,7 @@ def validate_scopes(tasks, checks, strict=False, classes=False):
         if set(counts) != set(requests) or any(n != 1 for n in counts.values()):
             errors.append(cid + ': each input request must have exactly one owning task (no omission/duplicate)')
         if shared:
-            levels = []
+            # The row's level is derived as the worst gap (results_model), so only each branch is checked.
             for key, req in requests.items():
                 if not isinstance(req, dict):
                     errors.append(cid + ': malformed input request ' + key)
@@ -127,7 +127,4 @@ def validate_scopes(tasks, checks, strict=False, classes=False):
                 errors.extend(validate_impact({**req, 'id': cid + '/' + key,
                     'review_result': 'INSUFFICIENT', 'gap_cause': row.get('gap_cause'),
                     'blocking': row.get('blocking')}, classes=classes))
-                levels.append(req.get('potential_severity'))
-            if worst(levels) != row.get('potential_severity'):
-                errors.append(cid + ': request consequences must preserve the aggregate potential_severity')
     return errors

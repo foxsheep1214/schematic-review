@@ -2,7 +2,7 @@
 import unittest
 from test_validate_review import fixture, E
 from test_review_quality import staged
-from validate_review import validate_review
+from ledger_v3 import record, validate_review
 from review_stage_scope import OUTSIDE_STAGE, REQUEST_FIELDS, validate_stage_scope
 
 INPUT = 'startup load current envelope'
@@ -106,8 +106,8 @@ class StageScopeTests(unittest.TestCase):
 
     def test_stage_na_cannot_keep_hidden_electrical_gap(self):
         for field, value in [('missing_inputs', ['unknown load']), ('potential_severity', 'P1'),
-                             ('gap_cause', 'EXTERNAL_DATA'), ('blocking', True)]:
-            p, r, db = downstream(); r['checks'][0][field] = value
+                             ('gap_cause', 'EXTERNAL_DATA'), ('gaps', [{'what': 'unknown load'}]), ('blocking', True)]:
+            p, r, db = downstream(); r = record(r); r['checks'][0][field] = value
             self.assertFalse(gate(p, r, db)['valid'], field)
 
     def test_stage_na_is_tracked_by_handoff_not_work_item(self):
@@ -122,16 +122,15 @@ class StageScopeTests(unittest.TestCase):
         self.assertEqual(out['release'], 'NO_GO')
         self.assertEqual(out['stage_scope']['input_request_count'], 1)
 
-    def test_request_must_have_each_actionable_field(self):
-        for field in REQUEST_FIELDS:
-            p, r, db = decisive()
-            del r['checks'][0]['input_requests'][INPUT][field]
+    def test_a_request_gap_needs_each_actionable_field(self):
+        for field in ('scope', 'how_to_close', 'closure_criterion'):
+            p, r, db = decisive(); r = record(r)
+            del r['checks'][0]['gaps'][0][field]
             self.assertFalse(gate(p, r, db)['valid'], field)
 
-    def test_each_missing_input_has_exactly_one_request(self):
-        p, r, db = decisive(); r['checks'][0]['missing_inputs'].append('fault restart duty cycle')
-        self.assertFalse(gate(p, r, db)['valid'])
-        p, r, db = decisive(); r['checks'][0]['input_requests']['unrelated input'] = request()
+    def test_each_gap_is_named_once(self):
+        p, r, db = decisive(); r = record(r)
+        r['checks'][0]['gaps'].append(dict(r['checks'][0]['gaps'][0]))
         self.assertFalse(gate(p, r, db)['valid'])
 
     def test_requests_only_for_real_input_or_design_gaps(self):

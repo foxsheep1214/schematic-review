@@ -312,7 +312,7 @@ PART/VALUE 冲突，或图面/BOM 与链接资料互相矛盾时，建立身份�
   同尺寸有引用目录的可订购档满足时该分支 PASS（B）并带最低规格约束；没有可引用目录时该分支 INSUFFICIENT（DESIGN_OPEN）。
 - 汇总：全部候选分支都违反判据时，才可判该电气判据 FAIL；全部候选分支都满足判据时，判 PASS（B），
   结论写明“实际物料在上述候选内即成立”，并把候选范围写入 BOM 约束；其余一律 INSUFFICIENT（DESIGN_OPEN），
-  missing_inputs 写实际料号及所需最低规格。
+  缺口的 `what` 写实际料号及所需最低规格。
 
 身份没有冲突、只是档位或后缀未定（如光耦 CTR 分档、温度等级后缀、通用 NPN/肖特基、同系列不同代）时，按系列中对本判据最不利的档位（CTR 最低档、温度范围最窄档、手册中最差的保证值）计算：最差档仍满足，就判 PASS（B），不再要求确定具体后缀；最差档不满足，才把“须选某档以上”作为证据不足或修改任务。差异只影响固件配置（如 I²C 地址后缀、上电默认寄存器）时，不记证据不足：电气检查按各后缀分别成立判定，把“固件配置须与实装后缀一致”写成集成约束。
 
@@ -380,7 +380,7 @@ PART/VALUE 冲突，或图面/BOM 与链接资料互相矛盾时，建立身份�
 | 原因 | `gap_cause`（新报告必填） | 处理 |
 |---|---|---|
 | 需求待澄清 | REQUIREMENT_OPEN | 判据所依赖的需求缺失、含糊、冲突或待确认，例如输入电压范围与频率、环境（海拔、气候）、适用标准与抗扰度等级、能效版本、目标市场认证。不当作缺资料，反馈给需求责任方：按独立需求澄清协议记录唯一问题、已核输入、待决内容和关闭依据；归本轮任务（`design_iteration`）。需求定了但标准正文未取得，属 EXTERNAL_DATA。先按 [源条目到审查义务](requirement-clarifications.md#源条目到审查义务) 核实际语义；真正待需求责任方决定的条目在 intent 中写 `status: OPEN`（真实暂缓写 `status: DEFERRED`，归“用户明确暂缓”），校验据此归类。源标题 OPEN 下的已有要求、真实外部资料缺口及明确排除不机械录为 OPEN；只依赖真正待决要求的检查才归本类。复审时不得沿用上一版的 gap_cause，必须逐条重新归类。 |
-| 真实资料缺口 | EXTERNAL_DATA | 指出缺哪一参数/身份/工况、影响哪一判断，列最小取得方法和关闭阶段。`acquisition` 先写查过哪份资料的哪一页/表/条款仍没有该数据，再写向谁取得；没写查证位置的请求会被 `ACQUISITION_WITHOUT_LOOKUP` 提示。标准规定的量（预期短路电流、污染等级、海拔修正系数）按标准条款取值，手册首页的额定和分断类别直接读取，公开数据页抓取失败属 REVIEW_INCOMPLETE，这三类都不是缺资料。“已读 X 第 N 页，再按 … 复算”也不是缺资料：资料在手只差计算的，本轮算完或交 ASG。光耦寿命末期 CTR、电解寿命公式、MOS 热态 RDS 这类有公开曲线或行业折减系数的量，用 intent/evidence 里声明的系数（如 `ctr_derating`）计算，不向厂家索取“保证”。 |
+| 真实资料缺口 | EXTERNAL_DATA | 指出缺哪一参数/身份/工况、影响哪一判断，列最小取得方法和关闭阶段。`how_to_close` 先写查过哪份资料的哪一页/表/条款仍没有该数据，再写向谁取得；没写查证位置的请求会被 `ACQUISITION_WITHOUT_LOOKUP` 提示。标准规定的量（预期短路电流、污染等级、海拔修正系数）按标准条款取值，手册首页的额定和分断类别直接读取，公开数据页抓取失败属 REVIEW_INCOMPLETE，这三类都不是缺资料。“已读 X 第 N 页，再按 … 复算”也不是缺资料：资料在手只差计算的，本轮算完或交 ASG。光耦寿命末期 CTR、电解寿命公式、MOS 热态 RDS 这类有公开曲线或行业折减系数的量，用 intent/evidence 里声明的系数（如 `ctr_derating`）计算，不向厂家索取“保证”。 |
 | 设计尚未决定 | DESIGN_OPEN | 列需定型的规格/配置及约束；AI 先完成可做的选型/计算，到真实取舍点再请人决策。 |
 | 审查尚未完成 | REVIEW_INCOMPLETE | 明示还未执行的阅读、计算或录入并继续做，不说成外部资料不存在。临时台账可记证据不足，不能据此宣称审查完成。工具限制但审查者已核对完的，改按审查者结论判定并写 `manual_verification`，不用本原因。 |
 | 纯下游验证 | 不设（不是 INSUFFICIENT） | 按 [判定顺序](verdicts-and-release.md#纯下游验证项) 拆出原理图前提单独判；只能由样机/PCB/结构/试验产生的结果记阶段 NA + HANDOFF，产品要求仍待验证。 |
@@ -392,23 +392,22 @@ PART/VALUE 冲突，或图面/BOM 与链接资料互相矛盾时，建立身份�
 
 报告按原因给出受影响检查条数，需求澄清按唯一问题另计，回答“哪些要设计者先定需求、哪些是真缺资料、哪些是设计或审查没做完”。
 
-每条保留的 INSUFFICIENT 在 missing_inputs 写具体缺口，例如“缺输入浪涌电流及持续时间，无法比较保险丝与桥堆 I²t”；
+每条保留的 INSUFFICIENT 在缺口的 `what` 写具体缺什么，例如“缺输入浪涌电流及持续时间，无法比较保险丝与桥堆 I²t”；
 不要写“缺完整手册/全部应力证据”或只写“待确认/待实测”。
 
-`gap_cause` 为 EXTERNAL_DATA 或 DESIGN_OPEN 的行另写 `input_requests`：以 missing_inputs 的每一项原文为键
-（键集合与 missing_inputs 完全相同，可直接复制），值含以下四个字段。其他原因不写 input_requests：
-REQUIREMENT_OPEN 走需求澄清记录，REVIEW_INCOMPLETE 本轮自己做完，USER_DEFERRED 引用暂缓指示。
+`gap_cause` 为 EXTERNAL_DATA 或 DESIGN_OPEN 的行，每条缺口另写 `how_to_close` 和 `closure_criterion`。
+其他原因不写这两项：REQUIREMENT_OPEN 走需求澄清记录，REVIEW_INCOMPLETE 本轮自己做完，USER_DEFERRED 引用暂缓指示。
 
 ```json
-"missing_inputs": ["5V 轨启动峰值电流及持续时间"],
-"input_requests": {"5V 轨启动峰值电流及持续时间": {
-  "why_decisive": "…", "required_scope": "…", "acquisition": "…", "closure_criterion": "…"}}
+"gaps": [{"what": "5V 轨启动峰值电流及持续时间", "scope": "…", "how_to_close": "…",
+          "closure_criterion": "…", "severity": {"level": "P1", "class": "REQUIRED_FUNCTION",
+                                                 "affects": "…", "consequence": "…"}}]
 ```
 
-- `why_decisive`：哪个判断因它不能成立；已有事实与未知边界分开，不泛称“影响安全”。
-- `required_scope`：所需数值范围、单位、模式、版本、对象、工况或状态；只索取能改变该判据的条件，
+- 行的 `rationale` 写哪个判断因缺口不能成立；已有事实与未知边界分开，不泛称“影响安全”。
+- `scope`：所需数值范围、单位、模式、版本、对象、工况或状态；只索取能改变该判据的条件，
   不默认扩大到全温全工况。既有受控负载包络已足够时，不再要求每个用户的实际负载实测。
-- `acquisition`：取得路径和承担角色；先查已有文件/计算，只有真实缺项再找厂家或需求责任方。
+- `how_to_close`：取得路径和承担角色；先查已有文件/计算，只有真实缺项再找厂家或需求责任方。
 - `closure_criterion`：拿到材料后复核什么、达到什么条件才关闭；只是“收到资料”不等于通过。
 
 例：负载未知时，索取该电源轨在启动、稳态和故障重试时的最大电流及脉宽/占空比，

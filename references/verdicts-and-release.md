@@ -71,7 +71,7 @@
 ### 证据不足的危险度分类原则
 
 `INSUFFICIENT` 的中文展示名统一为**证据不足**，报告中写作“证据不足（INSUFFICIENT）”，其他结果同样写“通过（PASS）”“不符合（FAIL）”“不适用（NA）”；机器状态不改。其危险度用已有
-`potential_severity`（潜在影响等级）P0–P3 表达，包含电气危险及功能影响，**不是失效概率或安全认证等级**。
+缺口的 `severity.level`（潜在影响等级）P0–P3 表达，包含电气危险及功能影响，**不是失效概率或安全认证等级**。
 按**有物理依据、且尚未排除的最严重后果**定级。资料缺失量、证据置信度 C、器件类别和取得资料的难度
 不决定等级；禁止整批默认 P1，也禁止把“尚无参数”本身当作 P0 的依据。
 
@@ -109,14 +109,13 @@
 | P2 | 局部非关键功能、维护测试、物料/图纸数据一致性或一般交付缺口 | 说明影响局限及为何不影响关键电气/必需功能保证。不能把未明额定、保护身份或关键配置统一降为“资料问题” |
 | P3 | 可选优化或低影响图纸卫生的判断尚缺依据 | 基础必需要求已有通过证据，缺口只影响优化选择。必需验收证据缺失不属于 P3 |
 
-#### 后果类别（`impact_class_version: 2`）
+#### 后果类别（`severity.class`）
 
-新审查在结果顶层写 `impact_class_version: 2`，每项证据不足在 `impact_assessment.consequence_class` 写后果类别，
-等级由类别决定，`validate_review.py` 检查二者一致（版本 1 的旧报告按旧表校验，不重写）：
+每条缺口在 `severity.class` 写后果类别，等级由类别决定，`validate_review.py` 检查二者一致：
 
 | consequence_class | 含义 | 潜在等级 |
 |---|---|---|
-| `DAMAGE_OR_HAZARD` | 安全危险：火灾、触电、绝缘屏障、危险能量、用户端口过压，或使一项安全保护失效 | P0；版本 2 须在 `impact_assessment.hazard_path` 写明是哪条路径：`FIRE` / `SHOCK` / `INSULATION` / `HAZARDOUS_ENERGY` / `PORT_OVERVOLTAGE` / `PROTECTION_LOSS`；该路径已有独立排除依据时写 `exclusion` 后可为 P1 |
+| `DAMAGE_OR_HAZARD` | 安全危险：火灾、触电、绝缘屏障、危险能量、用户端口过压，或使一项安全保护失效 | P0；须在 `severity.hazard_path` 写明是哪条路径：`FIRE` / `SHOCK` / `INSULATION` / `HAZARDOUS_ENERGY` / `PORT_OVERVOLTAGE` / `PROTECTION_LOSS`；该路径已有独立排除依据时写 `exclusion` 后可为 P1 |
 | `CORE_LINK_LOSS` | 唯一必需供电或核心链路可能断开 | P0（同上，须写 `hazard_path`，有 `exclusion` 可为 P1） |
 | `COMPONENT_DAMAGE` | 某个器件可能不可逆损坏，但不打开上面任何一条危险路径（例如二次侧低压开关管短路 SOA、同步整流管交叉导通、信号脚 ESD 损伤） | P1（版本 2 新增；版本 1 没有这一类，当时这类缺口只能写 `DAMAGE_OR_HAZARD`） |
 | `REQUIRED_FUNCTION` | 必需功能、启动/恢复、协议不保证 | P1 |
@@ -154,21 +153,21 @@
 | 非关键故障指示的物料字段不一致，已核不参与供电/保护且关键功能已保证 | 潜在 P2；若该器件实际上承担唯一保护，重新按保护路径分级 |
 | 核心要求已通过，只缺哪种图纸命名更便于维护的依据 | 潜在 P3；不能用这个例子降级关键物料身份或制造验收缺证 |
 
-每项以 `impact_assessment` 写明 `affected_function`（受影响功能）、`operating_condition`（工况）、
-`consequence`（条件性后果）、`severity_reason`（为何属于该等级）、`blocking_reason`（冻结影响依据）。
-具体缺口与证据仍由本项 `missing_inputs`、`binding` 和 `evidence` 定位。共用物理路径可以引用同一分析，
+每条缺口的 `severity` 写明 `affects`（受影响功能）和 `consequence`（条件性后果，同时是定级理由），
+工况写在缺口的 `scope`，冻结影响依据就是缺口的 `closure_criterion`。
+具体缺口与证据由缺口的 `what`、行的 `binding` 和 `evidence` 定位。共用物理路径可以引用同一分析，
 但必须说明它与本项判据的关系；一个高风险对象上的所有检查不因此自动成为 P0。
-`severity_reason` 包含“缺口→后果路径→独立保护/排除依据→所选等级→调整等级所需证据”；
-`missing_inputs` 或关联任务记录补证与复验动作。没有后果路径的“风险未知/参考手册”不构成定级理由。
+`consequence` 包含“缺口→后果路径→独立保护/排除依据→所选等级”；调整等级所需证据和复验动作写在
+`how_to_close` 或关联任务里。没有后果路径的“风险未知/参考手册”不构成定级理由。
 把“该规则涉及可靠性，未知时可能影响功能”等泛化文字换成当前对象的实际物理因果：未知参数如何
 经哪段供电/信号/保护路径改变哪项受控功能，已知限值与独立排除依据是什么。单纯回显对象、工况、
 判据或加一句“潜在 P1/P2”仍不构成后果链。依据不足时先完成追踪，不能为了完整字段或 `valid=true`
 强行接受等级；未完成追踪的审查只交进度。合并补证任务时保留每行独立后果与真实缺口。
 
-`blocking` 与影响等级分别记录：P0/P1 原则上阻断；P2 属于项目必需验收条件也可阻断。
+FAIL/INSUFFICIENT 默认阻断；只有阶段允许暂留的 P2/P3 才写 `"blocking": false`。P0/P1 写了也照样阻断。
 工作时点和是否暂停由任务记录管理，不从等级推出；用户暂停任务不等于电气影响降低。
 结构校验只能发现字段漏填及已编码的不一致，不能证明路径、保护独立性或工程定级正确。
-`quality_screening` 另给两类提示（不阻断）：不同判据共用完全相同的 `consequence`/`severity_reason`
+`quality_screening` 另给两类提示（不阻断）：不同判据共用完全相同的 `consequence`
 （`REUSED_IMPACT_ACROSS_SCOPES`；同一任务独占的几条判据共用一句后果是该任务的分析，不提示），
 以及至少 10 项证据不足中九成以上落在同一潜在等级（`UNIFORM_POTENTIAL_SEVERITY`）。
 收到提示时逐项复核后果路径，确属共用分析的写明它与各判据的关系。
@@ -262,12 +261,11 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 
 ### 共同根因归并为任务
 
-结果使用 `workflow_version: 1` 和 `work_items`；每个电气 FAIL/其他 INSUFFICIENT 至少关联一个任务，
+结果使用 `work_items`；每个电气 FAIL/其他 INSUFFICIENT 至少关联一个任务，
 需求澄清直接生成任务，不在 work_items 重复登记；没有未决项时填空数组。
 
 ```json
 {
-  "workflow_version": 1,
   "work_items": [{
     "id": "W-MAG-001",
     "title": "取得磁件的受控规格",
@@ -291,15 +289,13 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
   混合时 `WORK_ITEM_MIXES_LEVELS` / `WORK_ITEM_MIXES_HAZARD_PATHS` 提示拆分。
 - `design_option` 为 `PROPOSED` 时，改法不得以缺口的不利结果为前提（“改为更高分断方案”先假定了保险不够）；
   缺口能靠查标准条款或手册关闭的，`preference` 写 `EVIDENCE_FIRST`，先查再决定改不改。
-- **复合检查的任务归属**：新记录有多任务共享同一缺证检查时用 `workflow_version: 2`。
-  每个任务给 `request_keys: {"检查ID": ["missing_inputs中的准确键"]}`，只列自己负责的补证。
-  每个键恰属一个任务；未知键、漏分配、重复分配都拒绝。单任务独占一条检查时可省略，表示负责全部请求。
-  共享检查的每个 `input_requests[键]` 除既有四字段，还给 `potential_severity` 和完整 `impact_assessment`
-  （与检查行同样的五字段及 `consequence_class`）；所有分支的最高等级须等于检查行等级，不能隐藏P0。
-  任务只取自己拥有的分支等级和资料需求，P1任务不继承相邻P0分支。检查本身仍按最高后果阻断。
-  旧 `workflow_version: 1` 仍可读取，但共享行未分归属时报告明确待整理，不猜测根因数或串入别组请求。
+- **复合检查的任务归属**：多任务共享同一缺证检查时，每个任务给
+  `request_keys: {"检查ID": ["缺口 what 的原文"]}`，只列自己负责的缺口。
+  每条缺口恰属一个任务；未知键、漏分配、重复分配都拒绝。单任务独占一条检查时可省略，表示负责全部缺口。
+  每条缺口各带自己的 `severity`；检查行的等级取最高的缺口，不会被低等级分支隐藏。
+  任务只取自己拥有的缺口等级和资料需求，P1 任务不继承相邻 P0 缺口。检查本身仍按最高后果阻断。
   能按物理对象/判据拆开时优先拆检查，而不是用任务字段掩盖过宽的整板结论；资料请求措辞相似不能自动合并。
-- `blocking` 表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
+- 阻断表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
 - REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过。
   只剩 SR 工具自身限制、审查时已对照网表和原厂资料核对完的，不记 REVIEW_INCOMPLETE，按核对结论判定并写 `manual_verification`
   （见 [计划与结果台账](plan-and-results.md)），工具限制列入 `sr_improvements`，不进设计者待办。
@@ -329,9 +325,9 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 
 阶段 NA 行的固定写法（校验强制）：
 
-1. `review_result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`、`blocking: false`；
+1. `review_result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`；
    `applicability` **保持 `APPLICABLE`**（产品需求仍适用），不写 applicability_evidence；
-   不填 potential_severity、gap_cause、missing_inputs、input_requests。
+   不填 gap_cause、gaps、blocking。
 2. `handoff.required: true`、`scope: downstream_verification`、`product_requirement_status: PENDING_VERIFICATION`，
    写清接收角色、约束、验证方法。
 3. `handoff.schematic_prerequisites` 列第 2 步拆出的检查 ID；确无前提填 `[]` 并给 `no_schematic_prerequisites_reason`。
@@ -343,7 +339,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 |---|---|
 | 只能靠样机取得的能效、EMC、闭壳热、寿命/环境、协议一致性及结构试验结果 | 纯测试行阶段 NA + HANDOFF，产品验收仍待完成 |
 | 实际漏感/PCB 寄生尖峰，已有适用的保守参数和吸收/钳位设计依据 | 设计子判据单独判定，实际波形测试阶段 NA；保守界限不足或算不过不能移交消失 |
-| 实际负载不明、保护配置未知、保证边界足以改变选型结论 | INSUFFICIENT + 具体 input_requests；已证实违反则 FAIL |
+| 实际负载不明、保护配置未知、保证边界足以改变选型结论 | INSUFFICIENT + 具体缺口（gaps）；已证实违反则 FAIL |
 | 固件配置表缺失或自相矛盾 | INSUFFICIENT（DESIGN_OPEN），由 ASG 把配置表定下来 |
 | 烧录镜像、读回、编程夹具、量产校准 | 原理图前提单独判；镜像本身阶段 NA + HANDOFF 给固件/生产 |
 | 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`） |

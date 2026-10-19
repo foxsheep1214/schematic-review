@@ -130,7 +130,7 @@ Cache miss、网络受限或一次搜索无结果都不足以写 NOT_FOUND。
 Agent 汇总 datasheet-audit.json.user_messages 的缺失物料/位号及检索结果，并结合逐参数补证
 结果报告，不机械索取整本手册。
 已充分支持的审查者主张给独立结果；仍影响判断的主张记录 review_result=INSUFFICIENT、
-evidence_confidence=C，以及具体参数/身份/工况、受影响检查、最小补证方法和关闭条件。
+具体缺口（gaps：参数/身份/工况）、受影响检查、最小补证方法和关闭条件。
 共享缺口合并到同一 work_item，不为多个检查重复索取资料。
 
 按 [逐参数补证与替代](evidence-proportionality.md#原定资料取不到时) 记录其他证据；

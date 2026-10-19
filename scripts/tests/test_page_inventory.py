@@ -13,7 +13,8 @@ from parse_kicad import parse
 from parse_netlist import self_check
 from plan_review import build_review_plan
 from test_validate_review import fixture, planned, E
-from validate_review import fingerprint, validate_review
+from validate_review import fingerprint
+from ledger_v3 import validate_review
 
 XML = (Path(__file__).parent / 'fixtures/page_inventory/empty-root.xml').read_text()
 

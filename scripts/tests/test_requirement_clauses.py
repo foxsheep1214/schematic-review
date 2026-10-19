@@ -5,7 +5,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from plan_review import build_review_plan
-from validate_review import validate_review
+from ledger_v3 import validate_review
 from test_decoupling import fixture, ledger, mark_pass, rebind
 
 TEXT = '+3V3=3.3V±5%，环境0～50°C。电阻采购公差1%；元件按实际物料额定审查。'
@@ -53,11 +53,7 @@ class RequirementClauseTests(unittest.TestCase):
     def test_clauses_must_cover_the_text_in_order(self):
         self.assertTrue(self.errors('PASS', self.clauses()[:2]))
         self.assertTrue(self.errors('PASS', list(reversed(self.clauses()))))
-        self.assertTrue(self.errors('PASS', None))
-
-    def test_unversioned_reports_are_not_checked(self):
-        self.assertEqual(self.errors('PASS', None, versioned=False), [])
-
+        self.assertTrue(self.errors('PASS', []))
 
 if __name__ == '__main__':
     unittest.main()

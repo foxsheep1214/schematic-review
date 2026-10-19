@@ -6,6 +6,7 @@ DB, not prose assertions. Expert review must establish the basis' completeness
 and physical model applicability. This gate catches contradictions, omitted
 declared cases and unsupported transfers; it cannot prove the controlled basis.
 """
+import results_model
 import hashlib
 import json
 import math
@@ -48,16 +49,18 @@ def pointer(root, path):
     return root
 
 
-def validate_execution_audit(plan, report, db=None, audit=None, required=False):
+def validate_execution_audit(plan, report, db=None, audit=None, required=False, record=None):
+    """`report` is the validators' view (results_model.expand); `record` is the ledger as written,
+    which the audit's results_digest binds (defaults to `report`)."""
     try:
-        return _validate_execution_audit(plan, report, db, audit, required)
+        return _validate_execution_audit(plan, report, db, audit, required, record)
     except (KeyError, IndexError, TypeError, ValueError, OverflowError, AttributeError) as exc:
         return {'enforced': True, 'scope': 'SOURCE_BOUND_EXECUTION_CONSISTENCY_ONLY',
             'electrical_approval': False, 'errors': ['MALFORMED_EXECUTION_AUDIT: ' + str(exc)],
             'checked': {s: 0 for s in SECTIONS}}
 
 
-def _validate_execution_audit(plan, report, db=None, audit=None, required=False):
+def _validate_execution_audit(plan, report, db=None, audit=None, required=False, record=None):
     errors = []
     output = {'enforced': bool(required or audit is not None or 'execution_contract' in plan),
         'scope': 'SOURCE_BOUND_EXECUTION_CONSISTENCY_ONLY', 'electrical_approval': False,
@@ -132,7 +135,7 @@ def _validate_execution_audit(plan, report, db=None, audit=None, required=False)
                 'AUDIT_REQUIRED', 'execution-audit.json version 1 required'):
         return output
     need(audit.get('plan_digest') == digest(plan), 'STALE_AUDIT', 'plan_digest differs')
-    need(audit.get('results_digest') == digest(report), 'STALE_AUDIT', 'results_digest differs')
+    need(audit.get('results_digest') == digest(report if record is None else record), 'STALE_AUDIT', 'results_digest differs')
     need(audit.get('db_digest') == (digest(db) if db is not None else None), 'STALE_AUDIT', 'db_digest differs')
     checks = index(plan.get('checks'), 'plan.checks')
     actual = index(report.get('checks'), 'results.checks')
@@ -499,8 +502,9 @@ def main():
     args = parser.parse_args()
     try:
         read = lambda path: json.loads(Path(path).read_text(encoding='utf-8'))
-        result = validate_execution_audit(read(args.plan), read(args.results),
-            read(args.db) if args.db else None, read(args.audit), required=True)
+        written = read(args.results)
+        result = validate_execution_audit(read(args.plan), results_model.expand(written),
+            read(args.db) if args.db else None, read(args.audit), required=True, record=written)
     except (ValueError, OSError) as exc:
         result = {'enforced':True, 'electrical_approval':False, 'errors':[str(exc)]}
     if args.json:
