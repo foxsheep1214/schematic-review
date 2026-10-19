@@ -2,9 +2,11 @@
 import ast
 import hashlib
 from functools import lru_cache
+import io
 import json
 from pathlib import Path
 import re
+import tokenize
 
 NON_RULE_REFS = {"workflow-handoff.md", "improvement-ledger.md", "release-validation.md",
                  "upstream-integration.md", "upstream-sources.json"}
@@ -36,15 +38,67 @@ def _skill_body(text):
     return "\n".join(lines)
 
 
-class _StripDocs(ast.NodeTransformer):
-    def generic_visit(self, node):
-        super().generic_visit(node)
+def _docstring_spans(tree):
+    spans = set()
+    for node in ast.walk(tree):
         if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
             if (node.body and isinstance(node.body[0], ast.Expr)
                     and isinstance(node.body[0].value, ast.Constant)
                     and isinstance(node.body[0].value.value, str)):
-                node.body = node.body[1:]
-        return node
+                spans.add((node.body[0].lineno, node.body[0].col_offset))
+    return spans
+
+
+def _code_tokens(raw):
+    """Source tokens without comments, docstrings and blank lines.
+
+    ``ast.dump`` output changes between interpreter versions (3.9 and 3.13 serialize the
+    same tree differently), which made one unchanged SR look like changed rules. Token
+    text is what the file says, so it hashes the same on every supported Python; f-strings,
+    which 3.12+ tokenizes in pieces, are re-joined from the source so they hash as before.
+    """
+    text = raw.decode("utf-8")
+    spans = _docstring_spans(ast.parse(text))
+    lines = text.splitlines(keepends=True)
+    out, fstring_start, depth = [], None, 0
+    skip_until, drop_newline = None, False
+    for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+        kind, string, start, end = tok.type, tok.string, tok.start, tok.end
+        if kind in (tokenize.COMMENT, tokenize.NL, tokenize.ENCODING, tokenize.ENDMARKER):
+            continue
+        name = tokenize.tok_name[kind]
+        if name == "FSTRING_START":
+            if depth == 0:
+                fstring_start = start
+            depth += 1
+            continue
+        if name == "FSTRING_END":
+            depth -= 1
+            if depth == 0:
+                string, start, kind = _slice(lines, fstring_start, end), fstring_start, tokenize.STRING
+            else:
+                continue
+        elif depth:
+            continue   # pieces inside an f-string are covered by the joined slice
+        if skip_until is not None:
+            if start < skip_until:
+                continue
+            skip_until = None
+        if kind == tokenize.STRING and start in spans:
+            skip_until, drop_newline = end, True
+            continue
+        if kind == tokenize.NEWLINE and drop_newline:
+            drop_newline = False   # the docstring statement's own line ending goes with it
+            continue
+        out.append((tokenize.tok_name[kind], string if kind != tokenize.NEWLINE else ""))
+    return out
+
+
+def _slice(lines, start, end):
+    (l0, c0), (l1, c1) = start, end
+    if l0 == l1:
+        return lines[l0 - 1][c0:c1]
+    return lines[l0 - 1][c0:] + "".join(lines[l0:l1 - 1]) + lines[l1 - 1][:c1]
 
 
 @lru_cache(maxsize=4096)
@@ -52,9 +106,8 @@ def _normalized_hash(raw, suffix, entrypoint):
     """Cache by bytes, never timestamps; same-size replacements remain visible."""
     if suffix == ".py":
         try:
-            tree = _StripDocs().visit(ast.parse(raw))
-            return _hash(ast.dump(tree, include_attributes=False).encode())
-        except (SyntaxError, ValueError):
+            return _hash(json.dumps(_code_tokens(raw), separators=(",", ":")).encode())
+        except (SyntaxError, ValueError, tokenize.TokenError, UnicodeDecodeError):
             return _hash(b"invalid-python\0" + raw)  # Never silently ignore broken code.
     if suffix == ".md":
         text = raw.decode("utf-8")

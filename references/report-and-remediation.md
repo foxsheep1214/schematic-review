@@ -71,6 +71,7 @@ next_action 和 acquisition 写具体动作及资料取得方法；closure_crite
 - 质量提示（`quality_screening`）中有 TEMPLATED_SEVERITY_REASON / UNIFORM_SEVERITY_WITHIN_RULE 时，先重新定级再出报告；
   来不及时在结论里写明“等级尚未逐行复核”，不把模板等级当结论展示。
 - BOILERPLATE_ACQUISITION / TEMPLATED_DESIGN_OPTION_REASON 表示多件待办共用同一句“怎么拿资料”或同一句“为什么不改图”；逐件写出真实来源（文件、供应商联系、测量）和不改图的具体理由，或提出改法。报告结论里的自检行只报数量，不改结论。
+- FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP 表示把烧录镜像/读回/量产校准记成了阻塞冻结的设计缺口；改成判原理图前提 + 阶段 NA 移交固件。CALCULATION_RECORDED_AS_DATA_GAP 表示资料已读只差计算；本轮算完或交 ASG。DUPLICATE_WORK_ITEMS 表示同一方法套在几个对象上被拆成了几件；合并成一件多位号。
 - PORT_OVERVOLTAGE_GRADED_BELOW_P0 表示后果写的是端口/负载过压，类别却藏起了这条路径；按危险度表改类别，锁定式 OVP 是降级理由时写进 exclusion。REQUEST_SCOPE_ECHOES_TASK / TEMPLATED_HANDOFF 是写法问题：适用范围写工况不写标题，移交表逐条写要做要测的事。
 - WORK_ITEM_MIXES_LEVELS / WORK_ITEM_MIXES_HAZARD_PATHS 表示一件 P0 待办夹带了 P1 分支或两条危险路径；拆成各自的待办，或在 reason 里写明为何同根因。REF_GLUED_TO_VALUE / OVERPRECISE_CLOSURE_VALUE / ACQUISITION_WITHOUT_LOOKUP 是写法问题：分开位号和数值、通过条件不写算例中间值、缺资料先写查过哪页。
 - 结论里“N 件待办阻塞定稿”只计阻塞项，“仍待确认 M 件”计全部待办，二者可以不等；“交给后续环节”表按检查逐行列出，便于接收方逐条销项。

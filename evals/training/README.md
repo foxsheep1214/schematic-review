@@ -122,6 +122,10 @@ review-results / gate / 报告）每轮只做 3 块：1 块 fix pair 的 before 
 | `mature_hot_p0_per_100` | 成熟板热审每 100 条检查的潜在 P0 + FAIL 数 | ↓ |
 | `p0_precision` | 热审潜在 P0 中，人裁决为 TRUE_RISK（能说出 FIRE/SHOCK/INSULATION/HAZARDOUS_ENERGY/PORT_OVERVOLTAGE/PROTECTION_LOSS 路径）的比例 | ↑ |
 | `todo_density` | 热审每 100 条检查的待办件数；`external_data_share` = 缺资料原因占 INSUFFICIENT 的比例 | ↓ |
+| `misfile_rate` | 阻塞冻结的 INSUFFICIENT 中，经裁决应为“阶段 NA/移交”（固件镜像、实测）或“审查没算完/设计任务”（资料已读只差计算）的比例；先用 `FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` / `CALCULATION_RECORDED_AS_DATA_GAP` 粗算，再抽样裁决 | ↓ |
+| `duplicate_item_share` | `DUPLICATE_WORK_ITEMS` 命中的待办 / 总待办 | ↓ |
+| `lookup_honesty` | 批评 agent 抽查“已读 X 第 N 页”声明（每板 ≥5 条）中，该页确实含所述内容的比例 | 必须 ≥ 0.9 |
+| `closure_rate` | 同一块板连续两轮（SR → ASG 处理 → SR）之间，上一轮待办在下一轮被关闭（PASS 或 NA/移交且前提 PASS）的比例；只对真实设计迭代算 | ↑ |
 | `consistency` | `evals/consistency_bench` 跨 agent 一致率 | ↑ |
 | `typical_gate` | `typical_circuits/run.py` 的 MISSED/UNCLASSIFIED/FALSE_ALARM_BACK 计数 | 必须 0 |
 | `replay_gate` | `kicad_replay_bench` MISMATCH 计数 | 必须 0 |
@@ -129,11 +133,20 @@ review-results / gate / 报告）每轮只做 3 块：1 块 fix pair 的 before 
 `compare.py` 对比上一轮：任何 ↑ 指标下降、任何门指标非 0，改进 agent 的改动不得进入 summary 的"通过"栏。
 召回先于过严：同一轮里 `fix_pair_recall_*` 或 `seeded_recall` 下降，不论过严率改善多少都算失败。
 
+### 4.1 两轮 R3（2026-10-18/19）暴露的度量盲区
+
+- **提示可以被“写法”绕过**：加了 `ACQUISITION_WITHOUT_LOOKUP` 后，下一轮每条请求都带上“已读 X 第 N 页”，提示归零但缺口没变。
+  所以提示数不是指标；`lookup_honesty` 抽查声明是否属实，才是。任何新加的筛查，上线后第一轮都要看它是被解决了还是被绕过了。
+- **阶段错放比过严更常见**：35 件待办里约 8 件（约 75 条检查）是固件配置/烧录，约 7 件是“资料已读只差计算”；
+  它们把原理图冻结卡住，但既不是过严判级也不是真缺口。`misfile_rate` 单列，裁决模板的 `decision` 增加 `MISFILED_STAGE` 和 `MISFILED_CAUSE`。
+- **同一块板反复审查看不出 SR 进步**：R3 三轮待办 22 → 22 → 35，数字无法比较，因为计划、器件声明和审查员都在变。
+  进步只能在固定语料（fix pairs、成熟板）上量；R3 这类真实板只用来算 `closure_rate`，并且必须有 ASG 处理过的中间版本。
+
 ## 5. 人工裁决（阶段 5，每轮 ≤ 10 条）
 
 送裁决队列的只有三类：批评 agent 判 `OVER_STRICT`/`UNDERGRADED` 的条目；fix pair 漏检；改进 agent 申请放宽规则时附的
 "曾过严"与"仍须报出"两块板。按 [adjudications/TEMPLATE.json](adjudications/TEMPLATE.json) 写，每条给出：
-裁决（TRUE_RISK / OVER_STRICT / UNDERGRADED / NOT_A_DEFECT / DEFECT_MISSED）、理由、硬件依据（规格书页码或标准条款）、
+裁决（TRUE_RISK / OVER_STRICT / UNDERGRADED / NOT_A_DEFECT / DEFECT_MISSED / MISFILED_STAGE / MISFILED_CAUSE）、理由、硬件依据（规格书页码或标准条款）、
 **落到哪**：`scenarios/*.md` 判例、`typical_circuits/cases.json` 的 `expected`/`known_false_alarms`、
 fix-pairs 的 `expected_rules`/`hazard`、或 `references/*.md` 的边界例子。裁决一经写入即为真值，后续轮次不再重判。
 
@@ -187,7 +200,23 @@ fix-pairs 的 `expected_rules`/`hazard`、或 `references/*.md` 的边界例子�
 
 ## 10. 不做的事
 
+- 审查 agent 不评价 SR：报告的 summary/items/highlights 只说这块板，SR 的问题写 `sr_feedback`；
+  “本次 SR 改进效果对照”是另一个任务（回归评估），由改进 agent 在固定语料上做，不混进设计者报告。
+- 审查 agent 看不到上一轮 SR 改了什么（不给 diff、不给 commit message），否则它会按改动点“表演”合规。
+
 - 不用 agent 互评的分数当指标；不让审查 agent 看批评结果后重写同一份报告再评。
 - 不为了让 `p0_precision` 好看把真风险降级：绝缘屏障、保护件额定、端口过压这三类一律保持 P0 候选，由人裁。
 - 不把 `evals/typical_circuits` 的 `expected` 当缺陷真值——它们多数是审查线索；缺陷真值只来自 fix pairs、seeded 位点和裁决。
 - 不在同一批板上既训练又评估。
+- 不把“提示数下降”当成改进证据；提示是给人看的线索，改进只以第 4 节的召回/精度/错放率说话。
+
+## 11. 与 ASG 的闭环（真实板）
+
+真实板（如 100W PD R3）走 SR → ASG → SR：
+1. SR 出报告；ASG 按其 `review-comments.md` 逐条登记处理方式（REDESIGN / DESIGN / OBTAIN_DATA / HANDOFF / DECLINE）。
+2. ASG 交付新版（含设计报告、design-closure.json、配置表、BOM 约束），SR 以新版为输入重审，`history_inputs` 声明上一版报告。
+3. 算 `closure_rate`，并逐件看“没关闭”的原因：ASG 没做（设计侧欠账）、ASG 做了 SR 不认（SR 的关闭条件不可达，回到裁决）、
+   ASG 用 DECLINE 顶回（看依据是否成立，成立就是 SR 过严的判例）。
+4. 连续两轮 ASG 的 DECLINE 被裁决为成立的规则，进改进 agent 的放宽队列；连续两轮 ASG 没做的项，进 ASG 的“设计闭合项”清单
+   （`requirements-to-intent.md` 第 4 节），让下一次设计一次算清。
+

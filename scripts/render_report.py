@@ -123,13 +123,22 @@ def jargon_in(text):
 
 
 def item_kind(rows):
-    kinds = {r.get('review_result') if r.get('review_result') == 'FAIL' else r.get('gap_cause') for r in rows}
-    for key, label in KINDS.items():
-        if key in kinds:
+    """FAIL and open requirements name the item; otherwise the gap cause most of its checks carry,
+    with the minority cause shown so one DESIGN_OPEN row cannot relabel thirteen data gaps."""
+    kinds = Counter(r.get('review_result') if r.get('review_result') == 'FAIL' else r.get('gap_cause') for r in rows)
+    for key in ('FAIL', 'REQUIREMENT_OPEN'):
+        if kinds.get(key):
             if key == 'FAIL' and is_document([r.get('id', '') for r in rows if r.get('review_result') == 'FAIL']):
                 return '文档错误'
-            return label
-    return '待处理'
+            return KINDS[key]
+    causes = [(n, list(KINDS).index(k)) for k, n in kinds.items() if k in KINDS]
+    if not causes:
+        return '待处理'
+    ranked = sorted(((k, n) for k, n in kinds.items() if k in KINDS), key=lambda kn: (-kn[1], list(KINDS).index(kn[0])))
+    label = KINDS[ranked[0][0]]
+    if len(ranked) > 1:
+        label += '（另 %s）' % '、'.join('%s %d 条' % (KINDS[k], n) for k, n in ranked[1:])
+    return label
 
 
 def anchors(obj):

@@ -347,6 +347,9 @@ def screen_quality(plan, report, db=None):
     candidates.extend(port_overvoltage_grading(report))
     candidates.extend(scope_echoes_task(report))
     candidates.extend(templated_handoffs(report))
+    candidates.extend(stage_and_cause_misfiles(report, expected))
+    nets = db.get('nets', {}) if isinstance(db, dict) else {}
+    candidates.extend(duplicate_work_items(report, known | {n.rsplit('/', 1)[-1] for n in nets if isinstance(n, str) and n} if isinstance(nets, dict) else known))
     candidates.sort(key=lambda x: (x['code'], x['check_ids']))
     output.update(status='NEEDS_SEMANTIC_REVIEW' if candidates else 'NO_PATTERN_DETECTED',
                   candidate_count=len(candidates),
@@ -445,6 +448,16 @@ ACQUIRE_RE = re.compile(r'^\s*(?:先?由|向|请|找|从|待)|取得|索取|提�
 
 # 端口过压送到外部负载是 PORT_OVERVOLTAGE 危险路径（P0 类），不因“只坏负载”降为器件损坏或功能项。
 PORT_OV_RE = re.compile(r'(?:端口|USB|VBUS|合同|负载)[^。；;]{0,16}过压|过压[^。；;]{0,16}(?:端口|负载|USB|VBUS)|负载损坏|port\s*over-?voltage', re.I)
+# 否定/转交句（“未据此推断端口过压”“端口过压另由 W-OVP 核”）不是正向后果断言。
+PORT_OV_NEGATED_RE = re.compile(r'(?:未|不|没有|并非|无法|不能|不会|非)[^。；;]{0,12}(?:推断|认定|构成|建立|导致|视为|判为|形成|证明)[^。；;]{0,24}过压'
+                                r'|过压[^。；;]{0,16}(?:另|单独|由)[^。；;]{0,12}(?:核|列|审|处理)|不(?:涉及|属于)[^。；;]{0,8}过压')
+
+
+def _asserts_port_overvoltage(text):
+    for sentence in re.split(r'[。；;\n]', text or ''):
+        if PORT_OV_RE.search(sentence) and not PORT_OV_NEGATED_RE.search(sentence):
+            return True
+    return False
 P0_CLASSES = {'DAMAGE_OR_HAZARD', 'CORE_LINK_LOSS'}
 # 移交表：同一句约束只换了检查编号，不是逐条可销项的要求。
 HANDOFF_MIN_ROWS = 3
@@ -462,7 +475,7 @@ def port_overvoltage_grading(report):
             continue
         text = ' '.join(str(assessment.get(f) or '') for f in ('consequence', 'severity_reason', 'affected_function'))
         text += ' ' + str(row.get('rationale') or '')
-        if PORT_OV_RE.search(text):
+        if _asserts_port_overvoltage(text):
             found.append({'code': 'PORT_OVERVOLTAGE_GRADED_BELOW_P0', 'check_ids': [row['id']],
                           'consequence_class': assessment.get('consequence_class'),
                           'message': 'The consequence text describes overvoltage reaching the port or its load, but the class '
@@ -524,6 +537,117 @@ def templated_handoffs(report):
              'message': f'{len(ids)} handoff rows share one {field} sentence with only the check id swapped; '
                         'write what each receiver must actually do and measure.'}
             for (field, template), ids in sorted(groups.items()) if len(ids) >= HANDOFF_MIN_ROWS]
+
+
+# 固件镜像/烧录/读回/量产校准是固件与生产环节的产物；原理图阶段只判它们的前提（引脚、上拉、GPIO 冲突、配置表自洽）。
+FIRMWARE_RE = re.compile(r'烧录|镜像|读回|回读|固件版本|编程(?:模式|接口|夹具)|量产(?:校准|编程)|寄存器(?:映射|编码)|配置工具|'
+                         r'应用版本|firmware|image|readback', re.I)
+SCHEMATIC_PREREQ_RE = re.compile(r'引脚|上拉|下拉|GPIO.{0,6}冲突|电平|接法|配置表|分压|阻值|网络|连接')
+# “已读 X 第 N 页”后面只剩计算/建模动作、没有“缺/未给/只给”的，是审查没算，不是资料缺。
+READ_RE = re.compile(r'已读|已核|已查|已取得')
+CALC_RE = re.compile(r'计算|复算|核算|反算|积分|建立.{0,6}模型|建模|重算|推算|折算|枚举')
+DATA_MISSING_RE = re.compile(r'缺|未给|没有|没给|无此|未找到|不覆盖|不保证|只给|只有.{0,6}(?:典型|25\s*°?C)|未公布|不公开|403|待厂家|向.{0,12}(?:取得|索取)')
+
+
+def stage_and_cause_misfiles(report, expected):
+    found = []
+    firmware, calc = [], defaultdict(set)
+    for row in report.get('checks') or []:
+        if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
+            continue
+        if row.get('review_result') != 'INSUFFICIENT' or row.get('gap_cause') not in ('DESIGN_OPEN', 'EXTERNAL_DATA'):
+            continue
+        missing = ' '.join(x for x in (row.get('missing_inputs') or []) if isinstance(x, str))
+        requests = row.get('input_requests') if isinstance(row.get('input_requests'), dict) else {}
+        texts = [missing] + [k for k in requests] + [
+            q.get(f) for q in requests.values() if isinstance(q, dict)
+            for f in ('why_decisive', 'acquisition') if isinstance(q.get(f), str)]
+        joined = ' '.join(texts)
+        if FIRMWARE_RE.search(joined) and not SCHEMATIC_PREREQ_RE.search(missing + ' ' + ' '.join(requests)):
+            firmware.append(row['id'])
+        if row.get('gap_cause') == 'EXTERNAL_DATA':
+            for key, q in requests.items():
+                acq = q.get('acquisition') if isinstance(q, dict) else None
+                if not isinstance(acq, str):
+                    continue
+                if READ_RE.search(acq) and CALC_RE.search(acq) and not DATA_MISSING_RE.search(acq + ' ' + key):
+                    calc[key].add(row['id'])
+    if firmware:
+        found.append({'code': 'FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', 'check_ids': sorted(firmware),
+                      'message': 'The missing input is a burned image, readback, programming mode or production calibration. '
+                                 'Judge the schematic prerequisites (pins, pulls, GPIO conflicts, a self-consistent '
+                                 'configuration table) in their own checks; the image itself is verified downstream: '
+                                 'stage NA + handoff to firmware, not a freeze-blocking design gap.'})
+    for key, ids in sorted(calc.items()):
+        found.append({'code': 'CALCULATION_RECORDED_AS_DATA_GAP', 'check_ids': sorted(ids), 'request': key,
+                      'message': 'The acquisition says the document was read and what remains is a calculation. '
+                                 'That is review work (REVIEW_INCOMPLETE, finish it this round) or a design task for '
+                                 'ASG, not EXTERNAL_DATA; name the datum that is actually absent if one is.'})
+    return found
+
+
+def _template(text, known):
+    """Mask designators, net names (with their pin suffixes) and numbers; what is left is the method."""
+    text = re.sub(r'\s+', ' ', text or '').strip()
+    for ref in sorted((k for k in known if len(k) >= 2), key=len, reverse=True):
+        text = re.sub(r'(?<![A-Za-z0-9_])' + re.escape(ref) + r'(?:\.[A-Za-z0-9_+\-]+)?(?![A-Za-z0-9_])', '<ref>', text)
+    text = re.sub(r'\d+(?:\.\d+)?', '#', text)
+    return text
+
+
+def _request_owners(report):
+    """(check id, request key) -> tasks answering for it: the tasks naming the key in
+    request_keys, else every task owning the row when no task names any of its keys."""
+    rows = _rows(report)
+    named, whole = defaultdict(set), defaultdict(set)
+    for task in report.get('work_items') or []:
+        if not isinstance(task, dict) or not isinstance(task.get('id'), str):
+            continue
+        keyed = task.get('request_keys') if isinstance(task.get('request_keys'), dict) else {}
+        for cid in task.get('check_ids') or []:
+            if not isinstance(cid, str):
+                continue
+            if isinstance(keyed.get(cid), list):
+                for key in keyed[cid]:
+                    if isinstance(key, str):
+                        named[(cid, key)].add(task['id'])
+            else:
+                whole[cid].add(task['id'])
+    owners = {}
+    for cid, row in rows.items():
+        requests = row.get('input_requests') if isinstance(row.get('input_requests'), dict) else {}
+        for key in requests:
+            owners[(cid, key)] = named.get((cid, key)) or whole.get(cid, set())
+    return owners
+
+
+def duplicate_work_items(report, known):
+    """Work items whose next_action or owned acquisition text is identical once refs and numbers
+    are masked are one method applied to several objects (three optocoupler CTR items): merge them."""
+    rows = _rows(report)
+    owners = _request_owners(report)
+    groups = defaultdict(set)
+    for task in report.get('work_items') or []:
+        if not isinstance(task, dict) or not isinstance(task.get('id'), str):
+            continue
+        if isinstance(task.get('next_action'), str) and len(task['next_action'].strip()) >= 12:
+            groups[('next_action', _template(task['next_action'], known))].add(task['id'])
+    for (cid, key), tids in owners.items():
+        q = (rows[cid].get('input_requests') or {}).get(key)
+        if isinstance(q, dict) and isinstance(q.get('acquisition'), str) and len(q['acquisition'].strip()) >= 12:
+            for tid in tids:
+                groups[('acquisition', _template(q['acquisition'], known))].add(tid)
+    seen, found = set(), []
+    for (field, template), ids in sorted(groups.items(), key=lambda kv: sorted(kv[1])):
+        key = frozenset(ids)
+        if len(ids) < 2 or key in seen:
+            continue
+        seen.add(key)
+        found.append({'code': 'DUPLICATE_WORK_ITEMS', 'task_ids': sorted(ids), 'check_ids': [], 'field': field,
+                      'template': template[:120],
+                      'message': f'{len(ids)} work items share one {field} once designators and numbers are masked; '
+                                 'one method applied to several objects is one item with several refs.'})
+    return found
 
 
 def _task_texts(task):

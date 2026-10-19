@@ -157,3 +157,22 @@ class EvolutionTests(unittest.TestCase):
                 (root/name).write_text(json.dumps(value))
             command = [sys.executable, '-B', str(script), str(root/'p'), str(root/'r')]
             self.assertEqual(subprocess.run(command, capture_output=True).returncode, 2)
+
+
+class EngineeringIdentityTokenTests(unittest.TestCase):
+    """The rule fingerprint hashes source tokens, so it is the same on every supported Python."""
+
+    def hash(self, src):
+        from skill_identity import _normalized_hash
+        return _normalized_hash(src.encode(), '.py', False)
+
+    def test_docstrings_comments_and_blank_lines_do_not_change_the_rules(self):
+        a = '"""m"""\n\nclass A:\n    """c"""\n    def f(self, x):\n        """d"""\n        # note\n        return f"{x}!"  # tail\n'
+        b = 'class A:\n    def f(self, x):\n        return f"{x}!"\n'
+        self.assertEqual(self.hash(a), self.hash(b))
+
+    def test_code_changes_remain_visible(self):
+        a = 'def f(x):\n    return f"{x}!"\n'
+        self.assertNotEqual(self.hash(a), self.hash(a.replace('!', '?')))
+        self.assertNotEqual(self.hash(a), self.hash(a.replace('return', 'yield')))
+        self.assertNotEqual(self.hash('X = 1\n'), self.hash('X = 10\n'))

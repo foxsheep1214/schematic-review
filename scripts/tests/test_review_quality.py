@@ -350,6 +350,12 @@ class RequestOwnershipAndWordingTests(unittest.TestCase):
         row['impact_assessment'].update(consequence_class='DAMAGE_OR_HAZARD', hazard_path='PORT_OVERVOLTAGE',
                                         exclusion='U601 锁定式 OVP，门限见 DS01 p12')
         self.assertEqual([], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0'))
+        # A negated or hand-over sentence is not an assertion of the path.
+        row['impact_assessment'].update(consequence_class='COMPONENT_DAMAGE', hazard_path=None,
+                                        consequence='Q701 可能损坏；未据此推断火灾、触电或端口过压')
+        self.assertEqual([], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0'))
+        row['impact_assessment']['consequence'] = 'Q701 可能损坏；端口过压另由 W-OVP 单独核'
+        self.assertEqual([], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0'))
 
     def test_scope_echoing_the_task_and_templated_handoffs_are_flagged(self):
         p, r = impact_fixture(n=4)
@@ -372,6 +378,52 @@ class RequestOwnershipAndWordingTests(unittest.TestCase):
             c['handoff']['constraint'] = f'闭壳 {40 + i}°C 测热点'
             c['handoff']['verification'] = f'记录第 {i} 组数据'
         self.assertEqual([], self.found(p, r, 'TEMPLATED_HANDOFF'))
+
+
+class StageCauseAndDuplicateTests(unittest.TestCase):
+    def setUp(self):
+        from review_quality import screen_quality
+        self.screen = screen_quality
+
+    def found(self, p, r, code, db=None):
+        return [x for x in self.screen(p, r, db)['candidates'] if x['code'] == code]
+
+    def rows(self, n=3):
+        p, r = impact_fixture(n=n)
+        for i, row in enumerate(r['checks']):
+            row['impact_assessment']['consequence'] = f'N{i} consequence'
+        return p, r
+
+    def test_burned_image_gap_is_a_firmware_handoff_lead(self):
+        p, r = self.rows()
+        row = r['checks'][0]
+        row.update(gap_cause='DESIGN_OPEN', missing_inputs=['准确应用版本的烧录镜像与读回 hash'])
+        self.assertEqual([row['id']], self.found(p, r, 'FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP')[0]['check_ids'])
+        row['missing_inputs'] = ['TP602 与 PFC_EN_N 共脚的编程接口电平与上拉']
+        self.assertEqual([], self.found(p, r, 'FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP'))
+
+    def test_read_then_calculate_is_not_an_external_data_gap(self):
+        p, r = self.rows()
+        row = r['checks'][0]
+        row['input_requests'] = {'C201 全模式纹波': {
+            'why_decisive': 'w', 'required_scope': '90–264Vac',
+            'acquisition': '已读 Rubycon BXW p1,p5；按低线跟随模式复算频谱并折算到 120Hz', 'closure_criterion': 'c'}}
+        hit = self.found(p, r, 'CALCULATION_RECORDED_AS_DATA_GAP')
+        self.assertEqual([row['id']], hit[0]['check_ids'])
+        row['input_requests']['C201 全模式纹波']['acquisition'] = '已读 Rubycon BXW p1,p5，只给 120Hz 系数，缺 100kHz 以上折算；向 Rubycon 索取'
+        self.assertEqual([], self.found(p, r, 'CALCULATION_RECORDED_AS_DATA_GAP'))
+
+    def test_same_method_on_three_optocouplers_is_one_item(self):
+        p, r = self.rows()
+        db = {'parts': {'U202': {}, 'U403': {}, 'U404': {}}}
+        r['work_items'] = [
+            {'id': f'W-{ref}', 'check_ids': [c['id']],
+             'next_action': f'按 {ref} 的实际 LED 电流取厂家适用 CTR 与退化界限，并算接收端最大负载 {n}µA'}
+            for ref, n, c in zip(('U202', 'U403', 'U404'), (47, 1520, 277), r['checks'])]
+        hit = self.found(p, r, 'DUPLICATE_WORK_ITEMS', db)
+        self.assertEqual(['W-U202', 'W-U403', 'W-U404'], hit[0]['task_ids'])
+        r['work_items'][0]['next_action'] = '改用 U202 的另一路 GPIO 直驱 DIS，去掉光耦'
+        self.assertEqual(['W-U403', 'W-U404'], self.found(p, r, 'DUPLICATE_WORK_ITEMS', db)[0]['task_ids'])
 
 
 class DownstreamTriageTests(unittest.TestCase):

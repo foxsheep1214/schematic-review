@@ -8,7 +8,7 @@
    "board": "<board id>",
    "check_id": "<规则.对象> 或 null（漏检时）",
    "critic_verdict": "OVER_STRICT|TRUE_RISK|UNDERGRADED|CANNOT_TELL|null",
-   "decision": "TRUE_RISK|OVER_STRICT|UNDERGRADED|NOT_A_DEFECT|DEFECT_MISSED",
+   "decision": "TRUE_RISK|OVER_STRICT|UNDERGRADED|NOT_A_DEFECT|DEFECT_MISSED|MISFILED_STAGE|MISFILED_CAUSE",
    "level": "P0|P1|P2|P3|null",
    "hazard_path": "FIRE|SHOCK|INSULATION|HAZARDOUS_ENERGY|PORT_OVERVOLTAGE|PROTECTION_LOSS|null",
    "reason": "硬件依据：规格书页码、标准条款、图上的保护元件位号",
