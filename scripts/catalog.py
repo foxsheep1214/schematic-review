@@ -297,7 +297,7 @@ RULES = (
     Rule('PWR-C13', '热插拔浪涌与输入电容',
          '按实际接口/输入方式核浪涌与源端能力；有明确平台电容限制时对照该限制，不默认热插拔或模板电容上限', 'package', 'circuit'),
     Rule('PWR-C14', '纹波与噪声预算',
-         '按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；'
+         '随敏感负载所在功能包（ANALOG、CLOCK、RF）逐电路生成，不随变换器生成；按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；'
          '实测另交 HANDOFF', 'package', 'circuit'),
     Rule('PWR-D01', '去耦清单完整性',
          '结合完整器件/官方物理脚清单核对供电脚与去耦分组覆盖；无名称命中不代表不适用', 'decoupling', 'board'),
@@ -457,9 +457,11 @@ RULES = (
          '存在检测/监测链时先定义被测量与保护目的，再核取样侧、返回地、判决与控制；纯被动保护不强加该链：检测输入存在可取源侧，'
          '验证输出有效或负载电压取保护后；首次使能不能依赖尚未使能的输出，检查循环启动', 'package', 'circuit'),
     Rule('ANA-C01', '直流范围与误差',
-         '运放输入共模/输出摆幅及偏置/失调/增益误差，含供电和温度极限', 'package', 'circuit'),
+         '分立运放核输入共模/输出摆幅及偏置/失调/增益误差，含供电和温度极限；片内放大器+ADC 通道（检流、NTC 等直接接 IC 检测脚）'
+         '按该 IC 手册的通道输入范围与失调/增益误差核，不另列运放子判据', 'package', 'circuit'),
     Rule('ANA-C02', '动态与负载',
-         '运放 GBW/压摆率/容性负载；ADC 源阻抗、采样保持获取时间与建立误差', 'package', 'circuit'),
+         '分立运放核 GBW/压摆率/容性负载；ADC（含片内）核源阻抗、采样保持获取时间与建立误差；'
+         '片内放大器+ADC 通道按手册的输入滤波/源阻抗要求核，不另列运放子判据', 'package', 'circuit'),
     Rule('ANA-C03', '基准与输入保护',
          'ADC 基准驱动/误差、输入满量程及钳位/注入电流，含掉电状态', 'package', 'circuit'),
     Rule('ANA-C04', '传感器开短路判别',
@@ -613,10 +615,11 @@ def build_objective_index(rule_ids, groups, objectives=OBJECTIVES):
 
 # 功能包：正则名称命中仅作候选；声明或已确认拓扑使其适用，再逐电路×工况
 # （未声明电路时按包一次）生成全部成员规则。意图中 features 的键与 circuits[].type 取包名。
+# PWR-C14 噪声预算挂在敏感负载的包上（ANALOG/CLOCK/RF），变换器本身不生成。
 PACKAGES = (
     Package('POWER_CONVERTER', '变换器与稳压器', 'PWR',
             r'(^|[:_-])(FB|VFB|LX\d*|PGOOD|PWRGD|VOUT\d*)([:_-]|$)|LDO|BUCK|BOOST|DC-?DC|PMIC',
-            ('PWR-C02', 'PWR-C03', 'PWR-C04', 'PWR-C05', 'PWR-C14', 'PWR-C15'),
+            ('PWR-C02', 'PWR-C03', 'PWR-C04', 'PWR-C05', 'PWR-C15'),
             ('requirements', 'datasheets')),
     Package('POWER_PROTECTION', '电源输入保护', 'PWR',
             r'FUSE|HOT-?SWAP|SURGE|PART:F\d+:|(^|[:_-])(OVP|UVP|OCP|ILIM)([:_-]|$)|SMBJ|SMAJ|SMCJ',
@@ -624,7 +627,7 @@ PACKAGES = (
             ('requirements', 'datasheets')),
     Package('ANALOG', '模拟前端与监测', 'ANA',
             r'(^|[:_-])(AIN\d*|ADC\w*|VREF\w*|REFIN|REFOUT|OPA\w*|INA\d*|ISENSE\w*|CSP|CSN|NTC\w*|THERM\w*)([:_-]|$)',
-            ('ANA-C01', 'ANA-C02', 'ANA-C03', 'ANA-T01', 'ANA-D01'),
+            ('ANA-C01', 'ANA-C02', 'ANA-C03', 'ANA-T01', 'ANA-D01', 'PWR-C14'),
             ('requirements', 'datasheets')),
     Package('STARTUP', '上电、复位与启动', 'RST',
             r'RESET|(^|_)RST|POR(_|$)|(^|[:_-])(BOOT\w*|STRAP\w*|PWRON\w*)([:_-]|$)',
@@ -632,7 +635,7 @@ PACKAGES = (
             ('requirements', 'datasheets')),
     Package('CLOCK', '时钟', 'CLK',
             r'CLK|CLOCK|OSC|XTAL|XIN|XOUT|32K',
-            ('CLK-C01', 'CLK-D01', 'CLK-D03'),
+            ('CLK-C01', 'CLK-D01', 'CLK-D03', 'PWR-C14'),
             ('datasheets',)),
     Package('I2C', 'I²C', 'SIG',
             r'(^|[:_-])(I2C\w*|SCL\d*|SDA\d*)([:_-]|$)',

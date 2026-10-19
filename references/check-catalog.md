@@ -227,7 +227,7 @@
 | PWR-C10 | G4 | 工程计算 | 网表、规格书数值、需求 | 去耦电容额定 | 按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核 | 逐器件 | 检查器·去耦覆盖 | — |
 | PWR-C11 | G4 | 工程计算 | 网表、规格书数值、需求 | 输入滤波元件 | 核滤波元件的饱和电流、RMS 电流与手册温升电流额定及其测试/降额条件、直流压降、损耗与所需衰减量；额定温升电流不证明板上实际温升，实际温升转 HANDOFF；截止频率与开关频率的关系按 EMC 需求确认，不以有磁珠即判合格 | 逐器件 | 检查器·开关电源输入滤波 | — |
 | PWR-C13 | G5 | 工程计算 | 网表、规格书数值、需求 | 热插拔浪涌与输入电容 | 按实际接口/输入方式核浪涌与源端能力；有明确平台电容限制时对照该限制，不默认热插拔或模板电容上限 | 逐电路×工况 | 功能包成员 | POWER_PROTECTION |
-| PWR-C14 | G4 | 工程计算 | 网表、规格书数值、需求 | 纹波与噪声预算 | 按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；实测另交 HANDOFF | 逐电路×工况 | 功能包成员 | POWER_CONVERTER、RF |
+| PWR-C14 | G4 | 工程计算 | 网表、规格书数值、需求 | 纹波与噪声预算 | 随敏感负载所在功能包（ANALOG、CLOCK、RF）逐电路生成，不随变换器生成；按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；实测另交 HANDOFF | 逐电路×工况 | 功能包成员 | ANALOG、CLOCK、RF |
 | PWR-C15 | G3 | 工程计算 | 网表、规格书数值、需求 | 反馈模型与补偿资格 | 按实际拓扑独立核反馈模型、补偿配置及规定角点的稳定性/动态边界；内部补偿也须匹配厂家适用条件，无反馈环的电路可据实际拓扑判NA；峰值电流、RCD或栅极应力不能代替本项，样机Bode测试不代替原理图补偿条件 | 逐电路×工况 | 功能包成员 | POWER_CONVERTER |
 | PWR-D01 | G7 | 条款核对 | 网表、规格书数值、需求 | 去耦清单完整性 | 结合完整器件/官方物理脚清单核对供电脚与去耦分组覆盖；无名称命中不代表不适用 | 全板一次 | 检查器·去耦覆盖 | — |
 | PWR-D02 | G2 | 条款核对 | 网表、规格书数值、需求 | 去耦接法 | 按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分 | 逐器件 | 检查器·去耦覆盖 | — |
@@ -302,8 +302,8 @@
 | 编号 | 纲要 | 方式 | 输入 | 检查项 | 判据要点 | 粒度 | 来源 | 功能包 |
 |---|---|---|---|---|---|---|---|---|
 | ANA-T01 | G3 | 连接追踪 | 网表、装配与状态表、图面 | 检测与监测链 | 存在检测/监测链时先定义被测量与保护目的，再核取样侧、返回地、判决与控制；纯被动保护不强加该链：检测输入存在可取源侧，验证输出有效或负载电压取保护后；首次使能不能依赖尚未使能的输出，检查循环启动 | 逐电路×工况 | 功能包成员 | POWER_PROTECTION、ANALOG |
-| ANA-C01 | G3 | 工程计算 | 网表、规格书数值、需求 | 直流范围与误差 | 运放输入共模/输出摆幅及偏置/失调/增益误差，含供电和温度极限 | 逐电路×工况 | 功能包成员 | ANALOG |
-| ANA-C02 | G3 | 工程计算 | 网表、规格书数值、需求 | 动态与负载 | 运放 GBW/压摆率/容性负载；ADC 源阻抗、采样保持获取时间与建立误差 | 逐电路×工况 | 功能包成员 | ANALOG |
+| ANA-C01 | G3 | 工程计算 | 网表、规格书数值、需求 | 直流范围与误差 | 分立运放核输入共模/输出摆幅及偏置/失调/增益误差，含供电和温度极限；片内放大器+ADC 通道（检流、NTC 等直接接 IC 检测脚）按该 IC 手册的通道输入范围与失调/增益误差核，不另列运放子判据 | 逐电路×工况 | 功能包成员 | ANALOG |
+| ANA-C02 | G3 | 工程计算 | 网表、规格书数值、需求 | 动态与负载 | 分立运放核 GBW/压摆率/容性负载；ADC（含片内）核源阻抗、采样保持获取时间与建立误差；片内放大器+ADC 通道按手册的输入滤波/源阻抗要求核，不另列运放子判据 | 逐电路×工况 | 功能包成员 | ANALOG |
 | ANA-C03 | G5 | 工程计算 | 网表、规格书数值、需求 | 基准与输入保护 | ADC 基准驱动/误差、输入满量程及钳位/注入电流，含掉电状态 | 逐电路×工况 | 功能包成员 | ANALOG |
 | ANA-C04 | G5 | 工程计算 | 网表、规格书数值、需求 | 传感器开短路判别 | 传感器接控制器检测脚时，按控制器实际可选的偏置电流档/上拉、ADC 满量程或内部钳位，以及产品环境与工作温度全范围（含传感器、偏置与串并联电阻公差）计算正常读数区间，与开路、短路读数不重叠且留有裕量；偏置只能离散选档时写明所用档位、切档等待与去抖，单档覆盖不到时不判通过；缺控制器偏置档或环境范围不定判 | 逐引脚 | 计划逐对象生成 | — |
 | ANA-D01 | G3 | 条款核对 | 网表、规格书数值、需求 | 温度传感器 | 温度传感器电气连接、量程和接口正确；传感器摆放与热路径另交 HANDOFF | 逐电路×工况 | 功能包成员 | ANALOG |
@@ -573,11 +573,11 @@
 
 | 功能包 | 名称 | 内容域 | 成员规则 | 必需资料 | 检出特征（正则） |
 |---|---|---|---|---|---|
-| POWER_CONVERTER | 变换器与稳压器 | PWR | PWR-C02、PWR-C03、PWR-C04、PWR-C05、PWR-C14、PWR-C15 | requirements、datasheets | `(^\|[:_-])(FB\|VFB\|LX\d*\|PGOOD\|PWRGD\|VOUT\d*)([:_-]\|$)\|LDO\|BUCK\|BOOST\|DC-?DC\|PMIC` |
+| POWER_CONVERTER | 变换器与稳压器 | PWR | PWR-C02、PWR-C03、PWR-C04、PWR-C05、PWR-C15 | requirements、datasheets | `(^\|[:_-])(FB\|VFB\|LX\d*\|PGOOD\|PWRGD\|VOUT\d*)([:_-]\|$)\|LDO\|BUCK\|BOOST\|DC-?DC\|PMIC` |
 | POWER_PROTECTION | 电源输入保护 | PWR | PWR-C06、DRV-C02、PRO-C01、PWR-C13、PWR-T05、ANA-T01 | requirements、datasheets | `FUSE\|HOT-?SWAP\|SURGE\|PART:F\d+:\|(^\|[:_-])(OVP\|UVP\|OCP\|ILIM)([:_-]\|$)\|SMBJ\|SMAJ\|SMCJ` |
-| ANALOG | 模拟前端与监测 | ANA | ANA-C01、ANA-C02、ANA-C03、ANA-T01、ANA-D01 | requirements、datasheets | `(^\|[:_-])(AIN\d*\|ADC\w*\|VREF\w*\|REFIN\|REFOUT\|OPA\w*\|INA\d*\|ISENSE\w*\|CSP\|CSN\|NTC\w*\|THERM\w*)([:_-]\|$)` |
+| ANALOG | 模拟前端与监测 | ANA | ANA-C01、ANA-C02、ANA-C03、ANA-T01、ANA-D01、PWR-C14 | requirements、datasheets | `(^\|[:_-])(AIN\d*\|ADC\w*\|VREF\w*\|REFIN\|REFOUT\|OPA\w*\|INA\d*\|ISENSE\w*\|CSP\|CSN\|NTC\w*\|THERM\w*)([:_-]\|$)` |
 | STARTUP | 上电、复位与启动 | RST | RST-C01、RST-C02、RST-T03、RST-T04、RST-D01 | requirements、datasheets | `RESET\|(^\|_)RST\|POR(_\|$)\|(^\|[:_-])(BOOT\w*\|STRAP\w*\|PWRON\w*)([:_-]\|$)` |
-| CLOCK | 时钟 | CLK | CLK-C01、CLK-D01、CLK-D03 | datasheets | `CLK\|CLOCK\|OSC\|XTAL\|XIN\|XOUT\|32K` |
+| CLOCK | 时钟 | CLK | CLK-C01、CLK-D01、CLK-D03、PWR-C14 | datasheets | `CLK\|CLOCK\|OSC\|XTAL\|XIN\|XOUT\|32K` |
 | I2C | I²C | SIG | SIG-C01、SIG-C07、SIG-C08、SIG-D01 | requirements、datasheets | `(^\|[:_-])(I2C\w*\|SCL\d*\|SDA\d*)([:_-]\|$)` |
 | LEVEL_SHIFT | 电平转换与跨电压域互连 | SIG | SIG-C07、SIG-C08、SIG-C09、SIG-T04 | requirements、datasheets | `TXS0\d{3}\|TXB0\d{3}\|TXU0\d{3}\|PCA9306\|NVT20\d\d\|LSF0\d{3}\|GTL2003\|FXMA\d+\|FXLA\d+\|NLSX\d+\|(SN)?74(LVC\|AVC\|AXC\|ALVC)\d*T\d+\|LEVEL_?SHIFT\|LVL_?SHIFT\|TRANSLAT\|NET:\w*_(LV\|HV)(_\|$)` |
 | SPI | SPI | SIG | SIG-D09、SIG-C07、SIG-C09 | requirements、datasheets | `\bSPI\w*\|MOSI\|MISO\|SCLK` |

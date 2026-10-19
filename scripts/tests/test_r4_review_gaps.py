@@ -41,5 +41,35 @@ class PinResistorCurrentLimitTest(unittest.TestCase):
         self.assertIn('plan', advice['message'])
 
 
+def plan_rules(circuits):
+    from plan_review import build_review_plan
+    from test_checkers_framework import whole_board
+    intent = {'schema_version': 3, 'circuits': [
+        {'id': cid, 'type': kind, 'refs': ['U1'], 'states': ['run'], 'citation': 'synthetic'}
+        for cid, kind in circuits]}
+    return {(c['rule'], (c.get('object') or {}).get('circuit'))
+            for c in build_review_plan(whole_board(), intent)['checks']}
+
+
+class ChannelAndNoiseScopeTest(unittest.TestCase):
+    """R4：R503 经 RT7209B 片内放大器进 ADC，板上无运放；PWR-C14 却对 PFC、反激、辅助供电各出一行。"""
+
+    def test_analog_criteria_branch_for_an_on_chip_amplifier_and_adc(self):
+        for rule in ('ANA-C01', 'ANA-C02'):
+            with self.subTest(rule):
+                criterion = catalog.criterion(rule)
+                self.assertIn('片内放大器', criterion)
+                self.assertIn('不另列运放子判据', criterion)
+
+    def test_noise_budget_is_not_generated_for_a_converter_alone(self):
+        self.assertNotIn(('PWR-C14', 'BUCK'), plan_rules([('BUCK', 'POWER_CONVERTER')]))
+
+    def test_noise_budget_follows_sensitive_load_circuits(self):
+        rules = plan_rules([('BUCK', 'POWER_CONVERTER'), ('ADC-IN', 'ANALOG'), ('PLL', 'CLOCK'), ('ANT', 'RF')])
+        self.assertNotIn(('PWR-C14', 'BUCK'), rules)
+        for circuit in ('ADC-IN', 'PLL', 'ANT'):
+            self.assertIn(('PWR-C14', circuit), rules)
+
+
 if __name__ == '__main__':
     unittest.main()
