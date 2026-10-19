@@ -1,0 +1,65 @@
+{
+ "rule": "NET-A06",
+ "runner": "cold",
+ "note": "two output pins on one net vs output driving an input",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U2",
+    "value": "IC",
+    "pins": [
+     [
+      "1",
+      "OUT",
+      "BUSY"
+     ]
+    ]
+   },
+   {
+    "ref": "U3",
+    "value": "IC",
+    "pins": [
+     [
+      "1",
+      "OUT",
+      "BUSY"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U2.1": "OUT",
+   "U3.1": "OUT"
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U2",
+    "value": "IC",
+    "pins": [
+     [
+      "1",
+      "OUT",
+      "BUSY"
+     ]
+    ]
+   },
+   {
+    "ref": "U3",
+    "value": "IC",
+    "pins": [
+     [
+      "1",
+      "IN",
+      "BUSY"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U2.1": "OUT",
+   "U3.1": "IN"
+  }
+ }
+}

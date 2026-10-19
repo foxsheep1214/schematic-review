@@ -1,0 +1,178 @@
+{
+ "rule": "RST-A01",
+ "runner": "cold",
+ "note": "EN net pulled up through a resistor vs EN driven by a GPIO with no pull",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U9",
+    "value": "LDO",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "IC",
+    "pins": [
+     [
+      "1",
+      "EN",
+      "BUCK_EN"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "100K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_12V"
+     ],
+     [
+      "2",
+      "2",
+      "BUCK_EN"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U9",
+    "value": "LDO",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "IC",
+    "pins": [
+     [
+      "1",
+      "EN",
+      "BUCK_EN"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U3",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "GPIO",
+      "BUCK_EN"
+     ]
+    ]
+   }
+  ]
+ }
+}

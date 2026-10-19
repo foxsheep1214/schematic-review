@@ -1,0 +1,27 @@
+{
+ "rule": "DOC-V02",
+ "runner": "plan",
+ "note": "drawing-hygiene item planned once per board",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "NODE_A"
+     ],
+     [
+      "2",
+      "2",
+      "NODE_B"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": null,
+ "always": "全板通用规则：计划对每块板都生成一项（含空板），不存在不生成的近似板"
+}

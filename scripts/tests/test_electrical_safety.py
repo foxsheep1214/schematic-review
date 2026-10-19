@@ -322,6 +322,21 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.assertEqual(lint.results[0]['review_result'], 'INSUFFICIENT')
         self.assertEqual(lint.results[0]['required_inputs'], ['power_rails.VCC_24V.voltage_v.min/max'])
 
+    def test_operating_range_fails_when_the_rail_minimum_is_below_the_recommended_minimum(self):
+        db = database({'VCC_24V': ['U1.1'], 'GND': ['U1.2']}, {'U1': 'LOAD-24V'},
+                      {'U1.1': 'VDD', 'U1.2': 'VSS'})
+        check = {'id': 'U1-RANGE', 'rule': 'DEV-E02', 'kind': 'operating_range', 'ref': 'U1',
+                 'net': 'VCC_24V', 'supply_v': {'min': 9.0, 'max': 26.4},
+                 'citation': 'LOAD-24V datasheet Rev.A recommended operating conditions'}
+        evidence = {'schema_version': 2, 'checks': [check]}
+        audit = bind_evidence(db, evidence, self.directory.name)
+        rails = {'VCC_24V': {'voltage_v': {'min': 8.0, 'max': 26.0}}}
+        lint = Lint(db, intent={'power_rails': rails}, evidence=evidence, datasheet_audit=audit)
+        lint.run()
+        self.assertEqual(lint.results[0]['review_result'], 'FAIL')
+        self.assertEqual(lint.results[0]['calculation']['margin_low_v'], 8.0 - 9.0)
+        self.assertGreater(lint.results[0]['calculation']['margin_high_v'], 0)
+
     def test_operating_range_evidence_needs_guaranteed_bounds(self):
         db = database({'VCC_24V': ['U1.1'], 'GND': ['U1.2']}, {'U1': 'LOAD-24V'},
                       {'U1.1': 'VDD', 'U1.2': 'VSS'})

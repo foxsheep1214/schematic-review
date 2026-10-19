@@ -1,0 +1,121 @@
+{
+ "rule": "DOC-A01",
+ "runner": "cold",
+ "note": "export log with ERROR/abort vs an empty (clean) export log",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U9",
+    "value": "LDO",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "log": "ERROR (unannotated) Aborting Netlisting\n"
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U9",
+    "value": "LDO",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "log": ""
+ }
+}

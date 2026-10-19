@@ -1,0 +1,151 @@
+{
+ "rule": "DOC-A04",
+ "runner": "cold",
+ "note": "unannotated refdes R? vs R1",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U9",
+    "value": "LDO",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R?",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "SIG_B"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U9",
+    "value": "LDO",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "SIG_B"
+     ]
+    ]
+   }
+  ]
+ }
+}

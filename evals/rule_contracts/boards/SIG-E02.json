@@ -1,0 +1,215 @@
+{
+ "rule": "SIG-E02",
+ "runner": "hot",
+ "note": "driver common mode 2.4-2.6V above the receiver 0.3-2.2V window vs 1.1-1.3V",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "LVPECL-CLOCK",
+    "pins": [
+     [
+      "1",
+      "OUTP",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "OUTN",
+      "CLK_N"
+     ],
+     [
+      "3",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "RECEIVER",
+    "pins": [
+     [
+      "1",
+      "INP",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "INN",
+      "CLK_N"
+     ],
+     [
+      "3",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R5",
+    "value": "100R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_N"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U1.1": "OUT",
+   "U1.2": "OUT",
+   "U2.1": "IN",
+   "U2.2": "IN"
+  },
+  "evidence": [
+   {
+    "id": "LEVELS",
+    "rule": "SIG-E02",
+    "kind": "diff_level",
+    "ref": "U2",
+    "net": "CLK_P",
+    "coupling": "dc",
+    "driver_common_mode_v": {
+     "min": 2.4,
+     "max": 2.6
+    },
+    "driver_swing_v": {
+     "min": 0.25,
+     "max": 0.45
+    },
+    "receiver_common_mode_v": {
+     "min": 0.3,
+     "max": 2.2
+    },
+    "receiver_input_diff_v": {
+     "min": 0.1,
+     "max": 1.0
+    },
+    "citation": "Synthetic driver and receiver guaranteed level ranges"
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "LVPECL-CLOCK",
+    "pins": [
+     [
+      "1",
+      "OUTP",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "OUTN",
+      "CLK_N"
+     ],
+     [
+      "3",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "RECEIVER",
+    "pins": [
+     [
+      "1",
+      "INP",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "INN",
+      "CLK_N"
+     ],
+     [
+      "3",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R5",
+    "value": "100R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_N"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U1.1": "OUT",
+   "U1.2": "OUT",
+   "U2.1": "IN",
+   "U2.2": "IN"
+  },
+  "evidence": [
+   {
+    "id": "LEVELS",
+    "rule": "SIG-E02",
+    "kind": "diff_level",
+    "ref": "U2",
+    "net": "CLK_P",
+    "coupling": "dc",
+    "driver_common_mode_v": {
+     "min": 1.1,
+     "max": 1.3
+    },
+    "driver_swing_v": {
+     "min": 0.25,
+     "max": 0.45
+    },
+    "receiver_common_mode_v": {
+     "min": 0.3,
+     "max": 2.2
+    },
+    "receiver_input_diff_v": {
+     "min": 0.1,
+     "max": 1.0
+    },
+    "citation": "Synthetic driver and receiver guaranteed level ranges"
+   }
+  ]
+ }
+}

@@ -1,0 +1,124 @@
+{
+ "rule": "DRV-T01",
+ "runner": "plan",
+ "note": "relay coil is an inductive load vs converter storage inductor on an SW pin",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "K1",
+    "value": "RELAY-5V",
+    "pins": [
+     [
+      "1",
+      "COIL1",
+      "RELAY_DRV"
+     ],
+     [
+      "2",
+      "COIL2",
+      "V24"
+     ]
+    ]
+   },
+   {
+    "ref": "Q1",
+    "value": "AO3400",
+    "pins": [
+     [
+      "1",
+      "G",
+      "RELAY_EN"
+     ],
+     [
+      "2",
+      "D",
+      "RELAY_DRV"
+     ],
+     [
+      "3",
+      "S",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "D1",
+    "value": "1N4148",
+    "pins": [
+     [
+      "1",
+      "A",
+      "RELAY_DRV"
+     ],
+     [
+      "2",
+      "K",
+      "V24"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U5",
+    "value": "BUCK-X",
+    "pins": [
+     [
+      "1",
+      "SW",
+      "SW_NODE"
+     ],
+     [
+      "2",
+      "VIN",
+      "V12"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "L1",
+    "value": "IND-10UH",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_NODE"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "Q2",
+    "value": "AO3400",
+    "pins": [
+     [
+      "1",
+      "G",
+      "PWM"
+     ],
+     [
+      "2",
+      "D",
+      "SW_NODE"
+     ],
+     [
+      "3",
+      "S",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

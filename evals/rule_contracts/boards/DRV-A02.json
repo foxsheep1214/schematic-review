@@ -1,0 +1,119 @@
+{
+ "rule": "DRV-A02",
+ "runner": "cold",
+ "note": "flyback diode reversed across the coil vs correct orientation",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "K1",
+    "value": "RELAY-5V",
+    "pins": [
+     [
+      "1",
+      "COIL1",
+      "RELAY_DRV"
+     ],
+     [
+      "2",
+      "COIL2",
+      "V24"
+     ]
+    ]
+   },
+   {
+    "ref": "Q1",
+    "value": "AO3400",
+    "pins": [
+     [
+      "1",
+      "G",
+      "RELAY_EN"
+     ],
+     [
+      "2",
+      "D",
+      "RELAY_DRV"
+     ],
+     [
+      "3",
+      "S",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "D1",
+    "value": "1N4148",
+    "pins": [
+     [
+      "1",
+      "K",
+      "RELAY_DRV"
+     ],
+     [
+      "2",
+      "A",
+      "V24"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "K1",
+    "value": "RELAY-5V",
+    "pins": [
+     [
+      "1",
+      "COIL1",
+      "RELAY_DRV"
+     ],
+     [
+      "2",
+      "COIL2",
+      "V24"
+     ]
+    ]
+   },
+   {
+    "ref": "Q1",
+    "value": "AO3400",
+    "pins": [
+     [
+      "1",
+      "G",
+      "RELAY_EN"
+     ],
+     [
+      "2",
+      "D",
+      "RELAY_DRV"
+     ],
+     [
+      "3",
+      "S",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "D1",
+    "value": "1N4148",
+    "pins": [
+     [
+      "1",
+      "A",
+      "RELAY_DRV"
+     ],
+     [
+      "2",
+      "K",
+      "V24"
+     ]
+    ]
+   }
+  ]
+ }
+}

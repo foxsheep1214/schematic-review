@@ -1,0 +1,295 @@
+{
+ "rule": "PRO-E01",
+ "runner": "hot",
+ "note": "derated CTR too low to pull the 10k pull-up below VOL vs project derating 0.5",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "OK1",
+    "value": "PC817",
+    "pins": [
+     [
+      "1",
+      "ANODE",
+      "LED_A"
+     ],
+     [
+      "2",
+      "CATHODE",
+      "OPTO_DRV"
+     ],
+     [
+      "3",
+      "EMITTER",
+      "GND"
+     ],
+     [
+      "4",
+      "COLLECTOR",
+      "OPTO_OUT"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "GPIO2",
+      "OPTO_DRV"
+     ],
+     [
+      "2",
+      "VDD",
+      "V5_ISO"
+     ],
+     [
+      "3",
+      "GND",
+      "GND_ISO"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "1K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "V5_ISO"
+     ],
+     [
+      "2",
+      "2",
+      "LED_A"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "OPTO_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "HOST",
+    "pins": [
+     [
+      "1",
+      "IN",
+      "OPTO_OUT"
+     ],
+     [
+      "2",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U1.1": "OUT"
+  },
+  "evidence": [
+   {
+    "id": "OPTO",
+    "rule": "PRO-E01",
+    "kind": "opto_ctr",
+    "ref": "OK1",
+    "net": "OPTO_OUT",
+    "drive_v": {
+     "min": 4.75,
+     "max": 5.25
+    },
+    "vf_v": {
+     "min": 1.0,
+     "max": 1.4
+    },
+    "driver_drop_v": {
+     "min": 0.0,
+     "max": 0.4
+    },
+    "r_led_ohm": {
+     "min": 970.0,
+     "max": 1030.0
+    },
+    "r_pullup_ohm": {
+     "min": 9700.0,
+     "max": 10300.0
+    },
+    "v_pullup_v": {
+     "min": 3.15,
+     "max": 3.45
+    },
+    "vol_required_v": 0.4,
+    "ctr_min": 0.5,
+    "ctr_derating": 0.05,
+    "if_abs_max_a": 0.05,
+    "citation": "Synthetic optocoupler CTR and project lifetime derating rule"
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "OK1",
+    "value": "PC817",
+    "pins": [
+     [
+      "1",
+      "ANODE",
+      "LED_A"
+     ],
+     [
+      "2",
+      "CATHODE",
+      "OPTO_DRV"
+     ],
+     [
+      "3",
+      "EMITTER",
+      "GND"
+     ],
+     [
+      "4",
+      "COLLECTOR",
+      "OPTO_OUT"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "GPIO2",
+      "OPTO_DRV"
+     ],
+     [
+      "2",
+      "VDD",
+      "V5_ISO"
+     ],
+     [
+      "3",
+      "GND",
+      "GND_ISO"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "1K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "V5_ISO"
+     ],
+     [
+      "2",
+      "2",
+      "LED_A"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "OPTO_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "HOST",
+    "pins": [
+     [
+      "1",
+      "IN",
+      "OPTO_OUT"
+     ],
+     [
+      "2",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U1.1": "OUT"
+  },
+  "evidence": [
+   {
+    "id": "OPTO",
+    "rule": "PRO-E01",
+    "kind": "opto_ctr",
+    "ref": "OK1",
+    "net": "OPTO_OUT",
+    "drive_v": {
+     "min": 4.75,
+     "max": 5.25
+    },
+    "vf_v": {
+     "min": 1.0,
+     "max": 1.4
+    },
+    "driver_drop_v": {
+     "min": 0.0,
+     "max": 0.4
+    },
+    "r_led_ohm": {
+     "min": 970.0,
+     "max": 1030.0
+    },
+    "r_pullup_ohm": {
+     "min": 9700.0,
+     "max": 10300.0
+    },
+    "v_pullup_v": {
+     "min": 3.15,
+     "max": 3.45
+    },
+    "vol_required_v": 0.4,
+    "ctr_min": 0.5,
+    "ctr_derating": 0.5,
+    "if_abs_max_a": 0.05,
+    "citation": "Synthetic optocoupler CTR and project lifetime derating rule"
+   }
+  ]
+ }
+}

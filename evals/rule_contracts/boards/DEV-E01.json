@@ -1,0 +1,71 @@
+{
+ "rule": "DEV-E01",
+ "runner": "hot",
+ "note": "official pin map swaps pins 1/2 vs matches the symbol",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "VBUS",
+      "VBUS"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "id": "J1-MAP",
+    "rule": "DEV-E01",
+    "kind": "pin_map",
+    "ref": "J1",
+    "citation": "Synthetic connector drawing Rev.B p.2",
+    "expected": {
+     "1": "GND",
+     "2": "VBUS"
+    }
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "VBUS",
+      "VBUS"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "id": "J1-MAP",
+    "rule": "DEV-E01",
+    "kind": "pin_map",
+    "ref": "J1",
+    "citation": "Synthetic connector drawing Rev.B p.2",
+    "expected": {
+     "1": "VBUS",
+     "2": "GND"
+    }
+   }
+  ]
+ }
+}

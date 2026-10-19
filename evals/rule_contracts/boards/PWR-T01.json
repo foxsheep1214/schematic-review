@@ -1,0 +1,77 @@
+{
+ "rule": "PWR-T01",
+ "runner": "plan",
+ "note": "IC on rail-named VCC_3V3 vs board with no rail-named net",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "NODE_A"
+     ],
+     [
+      "2",
+      "2",
+      "NODE_B"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "NODE_A"
+     ],
+     [
+      "2",
+      "2",
+      "NODE_B"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "IO",
+      "SIG_X"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}
