@@ -19,7 +19,8 @@ DEVICE_FIELDS = ('mpn', 'package', 'identity_citation', 'citation', 'pinout_comp
 # Device type as stated by the manufacturer's datasheet (same strings as checkers.netgraph kinds).
 # intent.device_kinds declares it; only declarations the datasheet audit VERIFIED reach the analysis.
 DEVICE_KINDS = ('bjt', 'mosfet', 'diode', 'zener', 'tvs', 'opto', 'relay', 'ic', 'resistor', 'capacitor',
-                'inductor', 'ferrite', 'transformer', 'fuse', 'crystal', 'connector', 'switch', 'jumper')
+                'inductor', 'ferrite', 'transformer', 'bridge_rectifier', 'fuse', 'crystal', 'connector', 'switch',
+                'jumper')
 PIN_ROLES = ('power', 'return', 'nc', 'other')
 SHARED_KEYS = ('input_sha256', 'assemblies', 'devices', 'device_kinds')
 

@@ -20,6 +20,8 @@ from i2c_topology import digest, validate_db_shape
 KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other',
          'bridge_rectifier', 'transformer'}
 SECTION_SCHEMA_VERSION = 2
+# Datasheet-verified device kinds (intent.device_kinds) that have no IC supply pins to bypass.
+NO_SUPPLY_KINDS = {'bridge_rectifier', 'transformer', 'connector'}
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
 # 组用途：普通旁路；按原厂条款不需要直接电容（如高压启动/检测脚）；片内稳压器输出电容（如 V5/VCAP）。
 # 后两类必须有对应的 connection 条款作出处。
@@ -455,7 +457,8 @@ def build_decoupling_inventory(db, intent=None):
     groups, device_records = inv.groups(), inv.device_inventory()
     candidates = [ref for ref in inv.parts if ref not in inv.devices and
                   inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref)
-                  and classify(ref, inv.parts[ref])[0] != CONNECTOR]   # keyword-identified headers/terminals
+                  and classify(ref, inv.parts[ref])[0] != CONNECTOR   # keyword-identified headers/terminals
+                  and inv.verified_kinds.get(ref, {}).get('kind') not in NO_SUPPLY_KINDS]
     two_terminal = sorted(ref for ref in candidates if inv.two_terminal(ref))
     unknown = sorted(set(candidates) - set(two_terminal))
     discovery_gaps = set(inv.input_gaps) | {'unverified-device-pinout:' + r for r in unknown}

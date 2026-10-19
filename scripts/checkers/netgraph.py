@@ -21,10 +21,10 @@ DIODE, TVS, ZENER, MOSFET, BJT = 'diode', 'tvs', 'zener', 'mosfet', 'bjt'
 RELAY, OPTO, CRYSTAL, TRANSFORMER = 'relay', 'opto', 'crystal', 'transformer'
 FUSE, JUMPER, TESTPOINT, SWITCH = 'fuse', 'jumper', 'testpoint', 'switch'
 IC, CONNECTOR, UNKNOWN = 'ic', 'connector', 'unknown'
-BATTERY = 'battery'
+BATTERY, BRIDGE_RECTIFIER = 'battery', 'bridge_rectifier'
 KIND_CONSTANTS = {k: k for k in (RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER, MOSFET, BJT,
                                  RELAY, OPTO, CRYSTAL, TRANSFORMER, FUSE, JUMPER, TESTPOINT, SWITCH,
-                                 IC, CONNECTOR, BATTERY, UNKNOWN)}
+                                 IC, CONNECTOR, BATTERY, BRIDGE_RECTIFIER, UNKNOWN)}
 
 PREFIX_KINDS = (
     (r'^JP\d', JUMPER), (r'^TP\d', TESTPOINT), (r'^FB\d', FERRITE),

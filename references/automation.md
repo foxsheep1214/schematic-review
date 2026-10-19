@@ -204,13 +204,15 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 **器件类型以原厂手册为准，由工具核验原文。**
 
 第一步，审查者读手册，在 `intent.device_kinds.<ref>` 写下声明：`kind`、`page`、`quote`。
-- `kind`：bjt/mosfet/diode/zener/tvs/opto 等，与检查器的器件类别一致。
+- `kind`：bjt/mosfet/diode/zener/tvs/opto/bridge_rectifier/transformer/connector 等，与检查器的器件类别一致。
+  核验通过的 bridge_rectifier/transformer/connector 没有需要 IC 旁路的供电脚，不再留 PWR-D01 的 `unverified-device-pinout` 缺口；
+  极性、绕组、额定、绝缘与针表仍由各自检查核对。
 - `page`：手册页码，从 1 开始。
 - `quote`：该页上写明器件类型的原文，例如 BCX56-16TX 写 `{"kind":"bjt","page":1,"quote":"80 V, 1 A NPN power bipolar transistors"}`。
 
 第二步，`audit_datasheets.py --intent intent.json` 读取 datasheet 解析表绑定给该位号的那份 PDF，用 pdftotext 抽取该页文本。比较时只保留字母和数字（PDF 常丢空格），逐条核验三点：
 - 原文确实在该页上；
-- 原文本身写明了所声明的类型，例如 NPN/bipolar、MOSFET/N-channel、Zener、TVS/ESD protection、rectifier/diode/Schottky；
+- 原文本身写明了所声明的类型，例如 NPN/bipolar、MOSFET/N-channel、Zener、TVS/ESD protection、rectifier/diode/Schottky、bridge rectifier、transformer、connector/receptacle/terminal block；
 - 原文没有同时指向别的类型，例如把 “ESD Protection Diode” 声明为普通二极管，判为 QUOTE_CONFLICT。
 
 核验结果写入审计的 `device_kinds` 段：
@@ -413,7 +415,7 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   声明组只需本组供电/返回脚在 `intent.devices.pins` 里有角色和出处：整颗器件脚表不完整时
   `official-full-pinout` 只留在 PWR-D01，不再挡这一组；本组器件上未核实的供电脚差异仍挡本组。
 从官方逐脚外围要求核这些对象，不因符号输出类型或没有 VDD/VCC 名称而漏掉，也不从"连到电容"推断属于普通组。
-- `components`：支持 `capacitor/resistor/ferrite/inductor/jumper/switch/other`，都要有出处。
+- `components`：支持 `capacitor/resistor/ferrite/inductor/jumper/switch/bridge_rectifier/transformer/other`，都要有出处。
   C/R/L/FB/JP 前缀仅为候选类型；计入确认容量前需核类型与装配。`other` 是有证据的类别排除，
   不是规避官方电源脚审查的通用开关。
 - `requirements`：唯一 `id`、`kind`（`connection/capacitance/rating`）、`criterion`、`citation`，

@@ -71,5 +71,54 @@ class ChannelAndNoiseScopeTest(unittest.TestCase):
             self.assertIn(('PWR-C14', circuit), rules)
 
 
+class NonIcDeviceKindTest(unittest.TestCase):
+    """R4：BR101（GBU4M 桥堆）、T301（定制变压器）留在 PWR-D01 的 unverified-device-pinout，device_kinds 无法登记。"""
+
+    @staticmethod
+    def page(text):
+        return lambda path, page: text if page == 1 else None
+
+    def test_bridge_transformer_and_connector_quotes_verify(self):
+        import datasheet_kinds as dk
+        for kind, quote in (('bridge_rectifier', 'Glass Passivated Single-Phase Bridge Rectifier'),
+                            ('transformer', 'For SMPS transformers with optimum'),
+                            ('connector', 'USB Type C Receptacle for USB2.0, SMT Type')):
+            with self.subTest(kind):
+                self.assertEqual(dk.cues(quote), {kind})
+                self.assertEqual(dk.verify({'kind': kind, 'page': 1, 'quote': quote}, 'x.pdf',
+                                           self.page('header\n' + quote))['status'], 'VERIFIED')
+        bridge = 'Glass Passivated Single-Phase Bridge Rectifier'
+        self.assertEqual(dk.verify({'kind': 'diode', 'page': 1, 'quote': bridge}, 'x.pdf',
+                                   self.page(bridge))['status'], 'QUOTE_CONFLICT')
+
+    def test_bridge_rectifier_is_a_declarable_kind(self):
+        import board_intent
+        self.assertIn('bridge_rectifier', board_intent.DEVICE_KINDS)
+
+    def test_verified_non_ic_kind_closes_the_inventory_gap(self):
+        from decoupling import build_decoupling_inventory
+        from test_decoupling import add, fixture, rebind
+        import board_intent
+        parts = {'BR9': ('Lib:GBU', [('1', '+', 'RECT'), ('2', '~', 'AC_L'), ('3', '~', 'AC_N'), ('4', '-', 'PRI_RTN')]),
+                 'T9': ('Lib:ETD39', [('1', '1', 'BULK'), ('2', '2', 'DRAIN'), ('3', '3', 'AUX'), ('4', '4', 'PRI_RTN')])}
+        quotes = {'BR9': ('bridge_rectifier', 'Glass Passivated Single-Phase Bridge Rectifier'),
+                  'T9': ('transformer', 'For SMPS transformers with optimum')}
+        for ref, (symbol, pins) in parts.items():
+            with self.subTest(ref):
+                db, intent = fixture()
+                add(db, ref, 'TEST-PART', pins)
+                db['parts'][ref]['prim'] = symbol
+                intent['assemblies'][0]['population'][ref] = True
+                kind, quote = quotes[ref]
+                intent['device_kinds'] = {ref: {'kind': kind, 'page': 1, 'quote': quote}}
+                rebind(db, intent)
+                self.assertIn('unverified-device-pinout:' + ref, build_decoupling_inventory(db, intent)['discovery_gaps'])
+                audit = {'device_kinds': {ref: dict(intent['device_kinds'][ref], status='VERIFIED',
+                                                    document='synthetic.pdf', document_sha256='a' * 64)}}
+                inv = build_decoupling_inventory(db, board_intent.with_verified_kinds(intent, audit))
+                self.assertNotIn('unverified-device-pinout:' + ref, inv['discovery_gaps'])
+                self.assertNotIn(ref, inv['unverified_device_refs'])
+
+
 if __name__ == '__main__':
     unittest.main()

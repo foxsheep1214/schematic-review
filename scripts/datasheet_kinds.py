@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Verify reviewer-declared device kinds against the bound datasheet text.
 
-The reviewer states each discrete semiconductor's or optocoupler's kind with the datasheet page and a verbatim
-quote (intent.device_kinds). This module reads that page of the PDF the datasheet audit bound to
+The reviewer states each discrete semiconductor's, optocoupler's, bridge rectifier's, transformer's or
+connector's kind with the datasheet page and a verbatim quote (intent.device_kinds). This module reads that page of the PDF the datasheet audit bound to
 the ref and checks that the quote is really there and that the quote itself names the declared kind.
 It also proposes candidates for undeclared parts. It never turns extracted text into a conclusion:
 only a VERIFIED declaration is used as the 'datasheet' basis; anything else stays a gap.
@@ -20,9 +20,12 @@ KIND_CUES = (
     ('mosfet', ('mosfet', 'nchannel', 'pchannel', 'superjunction')),
     ('tvs', ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress')),
     ('zener', ('zener',)),
+    ('bridge_rectifier', ('bridgerectifier',)),
     ('diode', ('rectifier', 'diode', 'schottky')),
+    ('transformer', ('transformer',)),
+    ('connector', ('connector', 'receptacle', 'terminalblock')),
 )
-SPECIFIC_DIODES = {'tvs', 'zener'}      # a quote naming these is not evidence for a plain diode
+SPECIFIC_DIODES = {'tvs', 'zener', 'bridge_rectifier'}      # a quote naming these is not evidence for a plain diode
 SEMICONDUCTOR_REF = re.compile(r'^(Q|D|ZD|TVS)\d', re.I)
 STATUSES = ('VERIFIED', 'QUOTE_NOT_FOUND', 'QUOTE_LACKS_TYPE', 'QUOTE_CONFLICT', 'NO_DOCUMENT', 'NO_TEXT')
 
