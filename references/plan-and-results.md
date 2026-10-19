@@ -100,7 +100,7 @@
   `object`、`criterion`、`applicability`、`readiness`、`handoff`。
 - **拆分实例的命名**：一条规则需要逐对象或逐判据给出不同结果时，拆成多个补查实例，自定义键写成
   `<对象>[-<判据>]`，对象用位号、网络或电路 ID，判据用简短大写词。例如全板项 DEV-C01 逐颗判定时写
-  `DEV-C01.C12`、`DEV-C01.Q3`；PWR-C02 拆窗口与调节能力时写 `PWR-C02.U1-WINDOW`、`PWR-C02.U1-REGULATION`。
+  `DEV-C01.C12`、`DEV-C01.Q3`，IC 脚经外接电阻驱动内部开关时写 `DEV-C01.U601-VBUS`；PWR-C02 拆窗口与调节能力时写 `PWR-C02.U1-WINDOW`、`PWR-C02.U1-REGULATION`。
   自动生成的原计划项（如 `DEV-C01.BOARD`）保持不变（校验会按保存的输入重建它），在结果行写
   `split_out: [拆分实例 ID…]`：原项的结论只覆盖拆出实例**以外**的对象，拆出的对象各自给结论。
   这样一颗 C201 缺规格只让 `DEV-C01.C201` 资料不足，其余已核对象仍可让 `DEV-C01.BOARD` 通过，
