@@ -41,3 +41,15 @@ python3 -B evals/seeded_bench/run.py --cache <缓存目录> --out <输出目录>
 补上 KiCad 极性电容 1 脚为正的库约定、正电源按来源追踪认定、I²C 段跨 ≤1 kΩ 串阻、`OSC` 关键字只匹配整词后，
 自动检出 223/251（89%），极性电容反接 3→11/13，I²C 上拉缺失 11→13/17。其余漏检位点均有 NET-A01 等其他规则点名。
 
+
+## 离线运行与基线闸门（2026-10-19）
+
+语料中随仓库保存网表的板子（`evals/typical_circuits` 的 32 块）不需要拉取和 kicad-cli，可直接离线跑：
+
+```sh
+python3 -B evals/seeded_bench/run.py --offline --out <输出目录> --gate evals/seeded_bench/baseline-offline.json
+```
+
+`baseline-offline.json` 冻结每类缺陷的自动检出数（当日 203 个位点检出 179）。任一类低于基线或出现运行错误时退出 1。
+规则修改可以提高检出；要降低某一类，须在同一提交里说明漏检原因并更新基线。
+本闸门约 90 秒，不放进单元测试，在改规则或检查器前后各跑一次。

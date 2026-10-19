@@ -13,7 +13,7 @@
 import argparse
 import re
 import sys
-from collections import namedtuple
+from collections import OrderedDict, namedtuple
 
 Domain = namedtuple('Domain', 'code name scope handoff')
 Method = namedtuple('Method', 'code name executor inputs output stage')
@@ -709,6 +709,55 @@ ID_RE = re.compile(r'^([A-Z]{3})-([A-Z])(\d{2})$')
 METHOD_ORDER = ''.join(m.code for m in METHODS)
 DOMAIN_BY_CODE = {d.code: d for d in DOMAINS}
 METHOD_BY_CODE = {m.code: m for m in METHODS}
+
+# -- 输入依赖与执行阶段 ---------------------------------------------------
+# 方式字母同时编码了“谁来做”和“要什么输入”。这里把输入依赖单列：冷跑、热跑与审查阶段由它推出，
+# 板级 bench 的覆盖统计、资料请求和测试分层也按它分组；规则编号不变。
+INPUTS = OrderedDict([
+    ('netlist', '网表'),
+    ('export_log', '导出日志'),
+    ('intent', '设计意图声明'),
+    ('assembly', '装配与状态表'),
+    ('datasheet', '规格书数值'),
+    ('requirement', '需求'),
+    ('drawing', '图面'),
+    ('ledger', '计划与结果台账'),
+    ('history', '上一版网表与意见'),
+])
+METHOD_INPUTS = {
+    'A': ('netlist',),
+    'E': ('netlist', 'datasheet'),
+    'T': ('netlist', 'assembly', 'drawing'),
+    'C': ('netlist', 'datasheet', 'requirement'),
+    'D': ('netlist', 'datasheet', 'requirement'),
+    'V': ('drawing',),
+    'Q': ('ledger',),
+    'H': ('netlist', 'history'),
+}
+INPUT_OVERRIDES = {
+    'DOC-A01': ('netlist', 'export_log'),
+    'DOC-A02': ('netlist', 'export_log'),
+    'REQ-A01': ('netlist', 'intent'),
+}
+METHOD_EXECUTOR = {'A': 'script', 'E': 'script', 'H': 'script+reviewer'}
+COLD_INPUTS = {'netlist', 'export_log', 'intent'}
+STAGES = OrderedDict([('cold', '冷跑'), ('hot', '热跑'), ('review', '审查员'), ('revision', '复审')])
+
+# 同一个电气问题由脚本部分和审查员部分共同回答。报告与覆盖统计按问题看，不把它们当成互不相关的检查。
+QUESTIONS = OrderedDict([
+    ('operating-window', ('器件工作条件', ('DEV-E02', 'DEV-C05'))),
+    ('pin-map', ('符号脚与官方脚表', ('DEV-E01', 'DEV-D02'))),
+    ('i2c-pull', ('I²C 上拉', ('SIG-A03', 'SIG-E01', 'SIG-C01'))),
+    ('enable', ('使能来源与电平', ('RST-A01', 'RST-A04', 'RST-E01', 'RST-T01'))),
+    ('reset-pulse', ('复位脉宽与时序', ('RST-E03', 'RST-C02'))),
+    ('gate-drive', ('功率管栅极驱动', ('DRV-A03', 'DRV-E01'))),
+    ('input-filter', ('输入滤波阻尼', ('PWR-A05', 'PWR-E03', 'PWR-C11'))),
+    ('rail-monitor', ('电源轨监控覆盖', ('PWR-A06', 'PWR-T04'))),
+    ('inductive-clamp', ('感性负载续流钳位', ('DRV-A01', 'DRV-A02', 'DRV-T01', 'DRV-C01'))),
+    ('opto-transfer', ('光耦驱动与传输', ('PRO-A03', 'PRO-A04', 'PRO-E01'))),
+    ('ac-coupling', ('交流耦合差分偏置', ('SIG-A01', 'SIG-A02', 'SIG-T03'))),
+])
+QUESTION_BY_RULE = {}
 # 每条规则的检查说明（第 2 版）。风险描述是检查理由，不是本次缺陷或自动严重度；
 # inputs 中的规则只是复用方向，只有同一实际对象/状态的证据才构成项目依赖。
 #   risk_if_omitted 盲区：朴素检查会漏掉什么（必填）
@@ -980,6 +1029,16 @@ def _build_index():
     for rule in referenced:
         if rule not in BY_ID:
             raise ValueError('映射引用了未登记的规则: ' + rule)
+    for rule_id, needs in INPUT_OVERRIDES.items():
+        if rule_id not in BY_ID or not set(needs) <= set(INPUTS):
+            raise ValueError('输入依赖定义错误: ' + rule_id)
+    for key, (_, members) in QUESTIONS.items():
+        for rule_id in members:
+            if rule_id not in BY_ID or rule_id in QUESTION_BY_RULE:
+                raise ValueError('问题分组引用未知或重复规则: %s %s' % (key, rule_id))
+            QUESTION_BY_RULE[rule_id] = key
+        if len(members) < 2:
+            raise ValueError('问题分组至少两条规则: ' + key)
     for package in PACKAGES:
         if not package.rules or any(rule[4] in 'AEHQ' for rule in package.rules):
             raise ValueError('功能包成员须为审查者逐项执行的规则: ' + package.name)
@@ -1007,6 +1066,32 @@ def method_of(rule_id):
     return get(rule_id).id[4]
 
 
+def inputs_of(rule_id):
+    """判这条规则需要的输入（INPUTS 的键）。"""
+    rule_id = get(rule_id).id
+    return INPUT_OVERRIDES.get(rule_id) or METHOD_INPUTS[rule_id[4]]
+
+
+def executor_of(rule_id):
+    return METHOD_EXECUTOR.get(get(rule_id).id[4], 'reviewer')
+
+
+def stage_of(rule_id):
+    """cold：脚本只用网表/日志/意图；hot：脚本还要规格书数值；review：审查员；revision：复审比对。"""
+    executor, inputs = executor_of(rule_id), set(inputs_of(rule_id))
+    if 'history' in inputs:
+        return 'revision'
+    if executor == 'script':
+        return 'cold' if inputs <= COLD_INPUTS else 'hot'
+    return 'review'
+
+
+def question_of(rule_id):
+    """(问题键, 问题名, 同问题的全部规则) 或 None。"""
+    key = QUESTION_BY_RULE.get(get(rule_id).id)
+    return (key,) + QUESTIONS[key] if key else None
+
+
 def title(rule_id):
     return get(rule_id).title
 
@@ -1015,15 +1100,18 @@ def criterion(rule_id):
     return get(rule_id).criterion
 
 
-def rules(method=None, domain=None, source=None):
+def rules(method=None, domain=None, source=None, stage=None, needs=None):
+    """stage 按输入依赖推出的执行阶段筛选；needs 筛出需要某种输入的规则。"""
     return [rule for rule in RULES
             if (method is None or rule.id[4] == method)
             and (domain is None or rule.id[:3] == domain)
-            and (source is None or rule.source == source)]
+            and (source is None or rule.source == source)
+            and (stage is None or stage_of(rule.id) == stage)
+            and (needs is None or needs in inputs_of(rule.id))]
 
 
-def titles(method=None, domain=None, source=None):
-    return {rule.id: rule.title for rule in rules(method, domain, source)}
+def titles(method=None, domain=None, source=None, stage=None):
+    return {rule.id: rule.title for rule in rules(method, domain, source, stage)}
 
 
 def package(name):
@@ -1090,6 +1178,18 @@ def render_markdown():
              '|---|---|---|---|---|---|']
     for m in METHODS:
         lines.append('| %s | %s | %s | %s | %s | %s |' % tuple(_cell(x) for x in m))
+    lines += ['', '## 输入依赖与执行阶段', '',
+              '方式字母说明谁来做；下表说明判这条规则要什么输入。冷跑、热跑与审查阶段由输入依赖推出，'
+              '规则编号不随自动化程度改变。', '',
+              '| 阶段 | 条件 | 规则数 |', '|---|---|---|',
+              '| 冷跑 | 脚本执行，只用网表、导出日志或设计意图声明 | %d |' % len(rules(stage='cold')),
+              '| 热跑 | 脚本执行，还要规格书数值（evidence.json） | %d |' % len(rules(stage='hot')),
+              '| 审查员 | 审查员对照资料、需求和图面判 | %d |' % len(rules(stage='review')),
+              '| 复审 | 需要上一版网表与意见 | %d |' % len(rules(stage='revision')), '',
+              '同一个电气问题常由脚本部分和审查员部分共同回答，报告与覆盖统计按问题看：', '',
+              '| 问题 | 规则 |', '|---|---|']
+    for key, (name, members) in QUESTIONS.items():
+        lines.append('| %s | %s |' % (name, '、'.join('%s（%s）' % (r, STAGES[stage_of(r)]) for r in members)))
     lines += ['', '## 内容域', '',
               '| 代码 | 内容域 | 范围 | 在用规则 | 移交事项（HANDOFF） |',
               '|---|---|---|---|---|']
@@ -1118,10 +1218,11 @@ def render_markdown():
         lines.append('| %s %s | %s |' % (d.code, d.name, ' | '.join(cells)))
     for d in DOMAINS:
         lines += ['', '## %s %s' % (d.code, d.name), '',
-                  '| 编号 | 纲要 | 方式 | 检查项 | 判据要点 | 粒度 | 来源 | 功能包 |', '|---|---|---|---|---|---|---|---|']
+                  '| 编号 | 纲要 | 方式 | 输入 | 检查项 | 判据要点 | 粒度 | 来源 | 功能包 |', '|---|---|---|---|---|---|---|---|---|']
         for rule in sorted(rules(domain=d.code), key=lambda r: order(r.id)):
-            lines.append('| %s | %s | %s | %s | %s | %s | %s | %s |' % (
-                rule.id, OBJECTIVE_BY_RULE[rule.id], METHOD_BY_CODE[rule.id[4]].name, _cell(rule.title),
+            lines.append('| %s | %s | %s | %s | %s | %s | %s | %s | %s |' % (
+                rule.id, OBJECTIVE_BY_RULE[rule.id], METHOD_BY_CODE[rule.id[4]].name,
+                '、'.join(INPUTS[x] for x in inputs_of(rule.id)), _cell(rule.title),
                 _cell(rule.criterion), SCOPES[rule.scope], SOURCES[rule.source],
                 '、'.join(packages_of(rule.id)) or '—'))
     lines += ['', '## 每项检查的盲区、关闭条件与常见误报', '',

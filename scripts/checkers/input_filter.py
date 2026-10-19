@@ -121,8 +121,8 @@ class InputFilterChecker(Checker):
     version_key = 'input_filter_version'
     version = 1
     intent_key = 'input_filters'
-    cold_rules = catalog.titles(method='A', source='input_filter')
-    hot_rules = catalog.titles(method='E', source='input_filter')
+    cold_rules = catalog.titles(stage='cold', source='input_filter')
+    hot_rules = catalog.titles(stage='hot', source='input_filter')
     evidence_kinds = {'PWR-E03': {'input_filter_damping'}}
 
     missing_inventory_message = 'input filter checks require their inventory'

@@ -1,0 +1,47 @@
+{
+ "note": "Datasheet facts in cases.json were transcribed from these documents on 2026-10-19; the PDFs are not redistributed. run.py binds each evidence check to a placeholder file that names the source id and SHA-256 below, so the hot rules run offline; the facts themselves are frozen in cases.json with page locators.",
+ "documents": {
+  "TI-TPS5430": {
+   "title": "TPS5430/TPS5431 datasheet",
+   "url": "https://www.ti.com/lit/ds/symlink/tps5430.pdf",
+   "sha256": "88c98e6e51851285fbbfc17837d002b29af7cd3fe30442fa7e4612c5179985da",
+   "retrieved": "2026-10-19"
+  },
+  "TI-TPS736": {
+   "title": "TPS736 datasheet SBVS038X (rev. May 2025)",
+   "url": "https://www.ti.com/lit/ds/symlink/tps736.pdf",
+   "sha256": "6cf8ac9cdf78f1849826526d8e48db630f7fd5c0990039afb941a272d7ee00c1",
+   "retrieved": "2026-10-19"
+  },
+  "TI-TMP117": {
+   "title": "TMP117 datasheet",
+   "url": "https://www.ti.com/lit/ds/symlink/tmp117.pdf",
+   "sha256": "4002364bdbb5c4c47e42b828939e12daf17f5249ae162866ca0a445b730f66c9",
+   "retrieved": "2026-10-19"
+  },
+  "DIODES-AP2112": {
+   "title": "AP2112 datasheet",
+   "url": "https://www.diodes.com/assets/Datasheets/AP2112.pdf",
+   "sha256": "ef8d376f2ec356e29172eb9e053819a0ebdcc576dba7fc9ab0505c568427920f",
+   "retrieved": "2026-10-19"
+  },
+  "MCHP-MCP73831": {
+   "title": "MCP73831/2 datasheet DS20001984H",
+   "url": "https://ww1.microchip.com/downloads/en/DeviceDoc/MCP73831-Family-Data-Sheet-DS20001984H.pdf",
+   "sha256": "75297f2a5235599368381adfb63df2652cc22d757f171f388147b2ab3d32776f",
+   "retrieved": "2026-10-19"
+  },
+  "ESP-C3-MINI-1": {
+   "title": "ESP32-C3-MINI-1 datasheet",
+   "url": "https://www.espressif.com/sites/default/files/documentation/esp32-c3-mini-1_datasheet_en.pdf",
+   "sha256": "de7361381348d82a1abd337f10170be7a420675987568f71fe3c5b100deed270",
+   "retrieved": "2026-10-19"
+  },
+  "ESP-C3": {
+   "title": "ESP32-C3 Series datasheet v2.4",
+   "url": "https://www.espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf",
+   "sha256": "833fc000b4b3c3d39c496fcbd597fed5806956503ce7390b19cc8ae82f19f968",
+   "retrieved": "2026-10-19"
+  }
+ }
+}

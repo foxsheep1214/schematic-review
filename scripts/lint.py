@@ -136,7 +136,17 @@ def _ground_like(net):
 
 def hot_rules():
     """全部证据计算规则（内置与检查器）；未执行的照样要列出来。"""
-    return [(rule.id, rule.title) for rule in catalog.rules(method='E')]
+    return [(rule.id, rule.title) for rule in catalog.rules(stage='hot')]
+
+
+BRIDGED_JUMPER_RE = re.compile(r'SolderJumper_(\d)_Bridged(\d*)')
+
+
+def pin_name_tokens(name):
+    """Names a symbol pin answers to: the whole name and each '/'-separated alternate function,
+    with KiCad's active-low overbar ~{...} removed. 'IO2/GPIO2/ADC1_CH2' answers to IO2."""
+    text = re.sub(r'~\{([^}]*)\}', r'\1', str(name)).strip().upper()
+    return {text} | {part.strip() for part in text.split('/') if part.strip()}
 
 
 def _pin_class(value):
@@ -219,13 +229,37 @@ class Lint:
                 continue
             parsed = parse_resistor(part.get('value'))
             other = ends[0] if ends[1] == net else ends[1]
-            links.append({
+            link = {
                 'ref': ref,
                 'other': other,
                 'ohm': parsed['kohm'] * 1000.0 if parsed else None,
                 'tol': parsed['tol'] if parsed else None,
-            })
+            }
+            far, via = self.bridged_jumper_peer(other)
+            if far:
+                link.update(other=far, via=via)
+            links.append(link)
         return links
+
+    def bridged_jumper_peer(self, net):
+        """The net a factory-closed solder jumper ties `net` to. KiCad's Jumper:SolderJumper_2_Bridged,
+        _3_Bridged12 and _3_Bridged123 ship with the named pads joined by copper, so a pull-up drawn
+        through one is present unless someone cuts it. Returns (net, jumper ref) or (None, None)."""
+        peers = set()
+        for node in self.nets.get(net, []):
+            ref, pad = node.split('.', 1)
+            match = BRIDGED_JUMPER_RE.search(str(self.parts.get(ref, {}).get('prim') or ''))
+            if not match:
+                continue
+            joined = match.group(2) or '12'
+            if pad not in joined:
+                continue
+            peers |= {(self.pin2net.get('%s.%s' % (ref, other)), ref) for other in joined if other != pad}
+        peers = {(n, r) for n, r in peers if n and n != net}
+        if len(peers) > 1:
+            # A three-pad Bridged123 also joins the other pull-up's top; the rail is the one that counts.
+            peers = {(n, r) for n, r in peers if RAIL_RE.match(n) or ng.is_ground(n)}
+        return next(iter(peers)) if len(peers) == 1 else (None, None)
 
     def pulls(self, net):
         pulls = []
@@ -906,7 +940,7 @@ class Lint:
                 # so the number is confirmed and there is no name to disagree with.
                 unnamed.append(node)
                 continue
-            if actual is None or str(actual).strip().upper() not in allowed:
+            if actual is None or not (pin_name_tokens(actual) & set(allowed)):
                 mismatches.append(
                     f'{node}: actual={actual!r}, expected={allowed}')
         detail = (

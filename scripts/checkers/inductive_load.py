@@ -583,7 +583,7 @@ class InductiveLoadChecker(Checker):
     version_key = 'inductive_load_version'
     version = 1
     intent_key = 'inductive_loads'
-    cold_rules = catalog.titles(method='A', source='inductive_load')
+    cold_rules = catalog.titles(stage='cold', source='inductive_load')
 
     missing_inventory_message = 'inductive load checks require their inventory'
     inventory_type_message = 'inductive load inventory must be an object'

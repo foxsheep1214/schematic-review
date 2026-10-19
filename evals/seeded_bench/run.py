@@ -20,8 +20,34 @@ from collections import defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 import mutators  # noqa: E402
+
+
+def offline_boards(directory):
+    """Corpus boards whose netlist ships in the repo (evals/typical_circuits), parsed into `directory`.
+    Boards that need a git fetch and kicad-cli are left to prepare.py."""
+    corpus = json.loads((HERE / 'corpus.json').read_text(encoding='utf-8'))
+    boards = []
+    for board in corpus['boards']:
+        if not board.get('fixture', '').endswith(('.xml', '.net')):
+            continue
+        out = Path(directory) / (board['id'] + '.json')
+        cmd = [sys.executable, '-B', str(ROOT / 'scripts' / 'parse_kicad.py'), str(ROOT / board['fixture']), '-o', str(out)]
+        subprocess.run(cmd if board.get('strict', True) else cmd + ['--no-strict'], check=True, capture_output=True)
+        boards.append({'id': board['id'], 'db': str(out)})
+    return boards
+
+
+def below_baseline(summary, baseline):
+    """Defect types whose automatic detections fell under the frozen baseline, or that now error."""
+    worse = []
+    for defect, want in baseline['auto'].items():
+        row = summary.get(defect, {'auto': 0, 'errors': 0})
+        if row['auto'] < want or row['errors']:
+            worse.append('%s auto %d < %d (errors %d)' % (defect, row['auto'], want, row['errors']))
+    return worse
 
 
 def lint(sut, db, work):
@@ -116,14 +142,20 @@ def report(summary, baselines, compare=None):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('--cache', type=Path, required=True, help='directory written by prepare.py')
+    ap.add_argument('--cache', type=Path, help='directory written by prepare.py')
+    ap.add_argument('--offline', action='store_true', help='use only the corpus boards stored in the repo')
+    ap.add_argument('--gate', type=Path, help='baseline.json: exit 1 if any defect type detects fewer sites')
     ap.add_argument('--sut', type=Path, default=HERE.parents[1], help='SR checkout under test')
     ap.add_argument('--out', type=Path, required=True)
     ap.add_argument('--compare', type=Path, help='earlier results.json to show auto-detection deltas')
     args = ap.parse_args()
-    boards = json.loads((args.cache / 'manifest.json').read_text(encoding='utf-8'))
+    if not args.offline and not args.cache:
+        ap.error('--cache or --offline is required')
     start = time.time()
-    records, baselines = evaluate(args.sut.resolve(), boards)
+    with tempfile.TemporaryDirectory(prefix='seeded-db-') as dbdir:
+        boards = (offline_boards(dbdir) if args.offline
+                  else json.loads((args.cache / 'manifest.json').read_text(encoding='utf-8')))
+        records, baselines = evaluate(args.sut.resolve(), boards)
     summary = summarize(records)
     compare = json.loads(args.compare.read_text(encoding='utf-8'))['summary'] if args.compare else None
     args.out.mkdir(parents=True, exist_ok=True)
@@ -133,7 +165,12 @@ def main():
     text = report(summary, baselines, compare)
     (args.out / 'report.md').write_text(text, encoding='utf-8')
     print(text + '用时 %.0f 秒' % result['seconds'])
+    if args.gate:
+        worse = below_baseline(summary, json.loads(args.gate.read_text(encoding='utf-8')))
+        print('\n'.join(worse) or 'gate: no defect type below baseline')
+        return 1 if worse else 0
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

@@ -200,6 +200,39 @@ class LintTests(unittest.TestCase):
         findings, passes = self.pin_map_run(db, {'1': 'VBUS'})
         self.assertEqual([], findings)
 
+    def test_pull_through_factory_closed_solder_jumper_reaches_the_rail(self):
+        def board(prim, pads):
+            nets = {'SDA': ['U1.1', 'R1.1'], 'TOP': ['R1.2', 'JP1.1'], 'VCC_3V3': ['JP1.2'], 'TOP2': []}
+            if pads == 3:
+                nets['TOP2'] = ['JP1.3', 'R2.1']
+                nets['SCL'] = ['R2.2']
+            parts = {'U1': {'value': 'A', 'part': 'A', 'prim': 'A', 'nc': False},
+                     'R1': {'value': '4.7K', 'part': 'R', 'prim': 'Device:R', 'nc': False},
+                     'R2': {'value': '4.7K', 'part': 'R', 'prim': 'Device:R', 'nc': False},
+                     'JP1': {'value': 'PU', 'part': 'J', 'prim': prim, 'nc': False}}
+            pin2net = {n: net for net, nodes in nets.items() for n in nodes}
+            if pads != 3:
+                parts.pop('R2')
+            return Lint({'parts': parts, 'nets': nets, 'pin2net': pin2net, 'pinname': {}, 'pintype': {}})
+        for prim, pads in (('Jumper:SolderJumper_2_Bridged', 2), ('Jumper:SolderJumper_3_Bridged123', 3)):
+            link = board(prim, pads).resistor_links('SDA')[0]
+            self.assertEqual((link['other'], link.get('via')), ('VCC_3V3', 'JP1'), prim)
+        # An open jumper is a population choice, not copper: the pull-up's far end stays where it is drawn.
+        self.assertEqual(board('Jumper:SolderJumper_2_Open', 2).resistor_links('SDA')[0]['other'], 'TOP')
+
+    def test_hot_pin_map_matches_one_alternate_function_of_a_multiplexed_pin(self):
+        # Module symbols name pins by every function ('IO2/GPIO2/ADC1_CH2/FSPIQ');
+        # the official name only has to be one of them. Overbars do not change the name.
+        db = sample_db(); db['pinname']['J1.1'] = 'IO2/GPIO2/ADC1_CH2/FSPIQ'
+        findings, _ = self.pin_map_run(db, {'1': 'IO2'})
+        self.assertEqual([], findings)
+        db['pinname']['J1.1'] = '~{INT}'
+        self.assertEqual([], self.pin_map_run(db, {'1': ['ALERT', 'INT']})[0])
+        # A different function is still a mismatch, and a substring is not a token.
+        db['pinname']['J1.1'] = 'IO2/GPIO2/ADC1_CH2/FSPIQ'
+        self.assertEqual(1, len(self.pin_map_run(db, {'1': 'IO3'})[0]))
+        self.assertEqual(1, len(self.pin_map_run(db, {'1': 'GPIO'})[0]))
+
     def test_hot_pin_map_accepts_pins_the_symbol_leaves_unnamed(self):
         # KiCad exports "~" pins with no name at all (bridge AC terminals): the parser
         # yields no declared name either. The pin exists, so the number is confirmed.

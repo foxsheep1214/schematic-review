@@ -507,8 +507,8 @@ class PowerSwitchChecker(Checker):
     version_key = 'power_switch_version'
     version = 1
     intent_key = 'power_switches'
-    cold_rules = catalog.titles(method='A', source='power_switch')
-    hot_rules = catalog.titles(method='E', source='power_switch')
+    cold_rules = catalog.titles(stage='cold', source='power_switch')
+    hot_rules = catalog.titles(stage='hot', source='power_switch')
     evidence_kinds = {'DRV-E01': {'gate_drive'}}
 
     missing_inventory_message = 'power switch checks require their inventory'

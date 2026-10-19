@@ -156,8 +156,8 @@ class DiffLevelsChecker(Checker):
     version_key = 'diff_levels_version'
     version = 1
     intent_key = 'diff_levels'
-    cold_rules = catalog.titles(method='A', source='diff_levels')
-    hot_rules = catalog.titles(method='E', source='diff_levels')
+    cold_rules = catalog.titles(stage='cold', source='diff_levels')
+    hot_rules = catalog.titles(stage='hot', source='diff_levels')
     evidence_kinds = {'SIG-E02': {'diff_level'}}
 
     missing_inventory_message = 'diff level checks require their inventory'

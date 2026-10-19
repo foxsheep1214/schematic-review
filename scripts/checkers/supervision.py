@@ -837,8 +837,8 @@ class SupervisionChecker(Checker):
     version_key = 'supervision_version'
     version = 1
     intent_key = 'supervision'
-    cold_rules = catalog.titles(method='A', source='supervision')
-    hot_rules = catalog.titles(method='E', source='supervision')
+    cold_rules = catalog.titles(stage='cold', source='supervision')
+    hot_rules = catalog.titles(stage='hot', source='supervision')
     evidence_kinds = {'RST-E03': {'reset_pulse'}}
 
     missing_inventory_message = 'supervision checks require their inventory'

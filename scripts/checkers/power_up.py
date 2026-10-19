@@ -181,8 +181,8 @@ class PowerUpChecker(Checker):
     version_key = 'power_up_version'
     version = 1
     intent_key = 'power_up'
-    cold_rules = catalog.titles(method='A', source='power_up')
-    hot_rules = catalog.titles(method='E', source='power_up')
+    cold_rules = catalog.titles(stage='cold', source='power_up')
+    hot_rules = catalog.titles(stage='hot', source='power_up')
     evidence_kinds = {'PWR-E02': {'dropout'}}
 
     missing_inventory_message = 'power up checks require their inventory'

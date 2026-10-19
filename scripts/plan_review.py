@@ -90,7 +90,7 @@ COLD_RULE_INDEXES = {
     'DEV-A03': ['parts', 'nets'], 'NET-A07': ['pintype'], 'SIG-A03': ['nets', 'parts'],
 }
 # 由网表实例化的内置证据计算规则。
-BUILTIN_EVIDENCE_RULES = tuple(rule.id for rule in catalog.rules(method='E', source='lint'))
+BUILTIN_EVIDENCE_RULES = tuple(rule.id for rule in catalog.rules(stage='hot', source='lint'))
 
 
 # Confirmation state of an intent requirement: 已确认（CONFIRMED）、提案（PROPOSED）、

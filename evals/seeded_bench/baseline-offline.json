@@ -1,0 +1,19 @@
+{
+ "note": "Frozen automatic detections per defect type on the repo-stored corpus boards (run.py --offline). A rule change may raise these; lowering one needs the miss explained and this file updated in the same commit.",
+ "frozen": "2026-10-19, SR 41f4ad3 plus the hot-bench lint fixes",
+ "sites": 203,
+ "auto": {
+  "D-BOM-WS": 32,
+  "D-CAP-POL": 9,
+  "D-CAP-VR": 17,
+  "D-EN-FLOAT": 11,
+  "D-FLY-MISS": 4,
+  "D-FLY-REV": 4,
+  "D-GND-PIN": 14,
+  "D-I2C-PU": 9,
+  "D-LED-R": 6,
+  "D-RAIL-SPLIT": 34,
+  "D-REF-ANNO": 32,
+  "D-TVS-STUB": 7
+ }
+}

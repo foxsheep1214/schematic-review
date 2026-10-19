@@ -151,8 +151,8 @@ class OptocouplerChecker(Checker):
     version_key = 'optocoupler_version'
     version = 1
     intent_key = 'optocouplers'
-    cold_rules = catalog.titles(method='A', source='optocoupler')
-    hot_rules = catalog.titles(method='E', source='optocoupler')
+    cold_rules = catalog.titles(stage='cold', source='optocoupler')
+    hot_rules = catalog.titles(stage='hot', source='optocoupler')
     evidence_kinds = {'PRO-E01': {'opto_ctr'}}
 
     missing_inventory_message = 'optocoupler checks require their inventory'
