@@ -125,7 +125,7 @@ class _Scan:
                               'value': self.graph.parts.get(ref, {}).get('value')})
         return found
 
-    def snubbers(self, drain_net, source_net):
+    def snubbers(self, drain_net, source_net, topology='unknown'):
         """开关节点到地/源/电源轨的吸收或钳位路径。
 
         跨负载接到电源轨的续流二极管也是钳位路径，不能只看漏源之间。
@@ -145,7 +145,7 @@ class _Scan:
             for ref in graph.between(drain_net, target, {ng.CAPACITOR}):
                 found.append({'ref': ref, 'type': 'capacitor', 'to': target})
             for ref in graph.between(drain_net, target, CLAMP_KINDS):
-                if graph.kind(ref) == ng.DIODE and not self._clamp_diode(ref, drain_net, target, source_net):
+                if graph.kind(ref) == ng.DIODE and not self._clamp_diode(ref, drain_net, target, topology):
                     continue
                 found.append({'ref': ref, 'type': 'clamp-' + graph.kind(ref), 'to': target})
         for ref, middle in graph.neighbors(drain_net, {ng.RESISTOR}):
@@ -155,7 +155,7 @@ class _Scan:
         # RCD: switch node -> diode -> clamp node returned through a capacitor to a rail/ground
         # (the same branch the inductive-load inventory reports for a flyback primary).
         for diode, middle in graph.neighbors(drain_net, {ng.DIODE}):
-            if not self._clamp_diode(diode, drain_net, middle, source_net):
+            if not self._clamp_diode(diode, drain_net, middle, topology):
                 continue
             if middle in targets:
                 continue
@@ -180,12 +180,14 @@ class _Scan:
         return bool(anode and cathode and graph.pin2net.get(anode) == source
                     and graph.pin2net.get(cathode) == target)
 
-    def _clamp_diode(self, diode, drain, target, source):
+    def _clamp_diode(self, diode, drain, target, topology):
         # Low-side/Boost releases positive SW voltage toward the supply/output.
-        # A high-side buck instead freewheels from ground into a negative-going SW.
+        # A high-side buck instead freewheels from ground into a negative-going SW; its supply
+        # need not be a recognised rail (e.g. a PFC bulk named BULK), so only a low-side switch
+        # rejects the ground-anode diode (there it merely parallels the body diode).
         return (self._forward_diode(diode, drain, target)
-                or (target in self.grounds and source not in self.grounds
-                    and self.tree.is_rail(source) and self._forward_diode(diode, target, drain)))
+                or (target in self.grounds and not topology.startswith('low-side')
+                    and self._forward_diode(diode, target, drain)))
 
     def _boost_transfer(self, diode, drain_net, target):
         """Forward rectifier into an output rail/storage, with an input inductor."""
@@ -402,7 +404,7 @@ class _Scan:
             if sync:
                 topology = 'low-side-local-return'
             pulls = self.pulls(nets['gate'], nets['source']) if nets['gate'] else []
-            snubbers = self.snubbers(nets['drain'], nets['source']) if nets['drain'] else []
+            snubbers = self.snubbers(nets['drain'], nets['source'], topology) if nets['drain'] else []
             switch_node = self._switch_node_evidence(nets['drain'], ref) if nets['drain'] else []
             found.append({
                 'id': slug(ref + '-' + (nets['gate'] or 'unresolved')),

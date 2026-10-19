@@ -61,6 +61,23 @@ class ObligationTests(unittest.TestCase):
         next(iter(row['obligations'].values())).pop('inapplicability_basis')
         self.assertTrue(validate_obligations(p,r,t))
 
+    def test_whole_row_topology_na_needs_one_row_basis_not_stage_na(self):
+        p,r,t=fixture('PWR-C15','NA');row=r[next(iter(r))];row.pop('obligations')
+        self.assertTrue(any('inapplicability' in e for e in validate_obligations(p,r,t)))
+        row['inapplicability_basis']='Unregulated charge pump: no feedback node exists in the schematic.'
+        self.assertEqual(validate_obligations(p,r,t),[])
+        row['na_reason']='OUTSIDE_SCHEMATIC_STAGE'
+        self.assertTrue(any('stage NA' in e for e in validate_obligations(p,r,t)))
+
+    def test_requirement_gap_obligation_needs_no_input_request(self):
+        for cause,ok in [('REQUIREMENT_OPEN',True),('USER_DEFERRED',True),('EXTERNAL_DATA',False),('DESIGN_OPEN',False)]:
+            p,r,t=fixture('PWR-C15');row=r[next(iter(r))]
+            row.update(gap_cause=cause,input_requests={},missing_inputs=[])
+            for v in row['obligations'].values():v.pop('request_keys')
+            t[0].pop('request_keys')
+            errors=validate_obligations(p,r,t)
+            self.assertEqual(errors==[],ok,(cause,errors))
+
     def test_loop_cannot_be_replaced_by_a_clamp_request(self):
         p,r,t=fixture('PWR-C15');row=r[next(iter(r))]
         row['input_requests']['loop_model']['closure_domain']='switch_stress'

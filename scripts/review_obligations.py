@@ -3,6 +3,7 @@
 These contracts prove coverage and request ownership, not electrical correctness.
 Names/requirements are controlled by the rule, never inferred from prose.
 """
+from review_stage_scope import REQUEST_CAUSES
 from task_scope import ownership, task_view
 
 CONTRACTS = {
@@ -51,6 +52,12 @@ def validate_obligations(expected, checks, tasks):
         if row.get('na_reason') == 'OUTSIDE_SCHEMATIC_STAGE':
             errors.append(cid + ': electrical qualification/stability cannot be deferred as stage NA')
         parts = row.get('obligations')
+        # A whole-row topology NA (no feedback loop, no barrier) may cite one inapplicability
+        # basis for the row instead of repeating it under every obligation.
+        if parts is None and row.get('review_result') == 'NA' and row.get('na_reason') != 'OUTSIDE_SCHEMATIC_STAGE':
+            if not _text(row.get('inapplicability_basis')):
+                errors.append(cid + ': NA needs actual topology/application inapplicability')
+            continue
         if not isinstance(parts, dict) or set(parts) != set(spec['obligations']):
             errors.append(cid + ': obligations must cover the complete rule contract')
             continue
@@ -70,7 +77,8 @@ def validate_obligations(expected, checks, tasks):
             keys = item.get('request_keys', [])
             if not isinstance(keys, list) or any(not isinstance(k, str) for k in keys):
                 errors.append(key + ': request_keys must be a list of exact input names'); continue
-            if state == 'INSUFFICIENT' and not keys:
+            # Requirement/user/round gaps carry no input request (see review_stage_scope).
+            if state == 'INSUFFICIENT' and not keys and row.get('gap_cause') in REQUEST_CAUSES:
                 errors.append(key + ': missing obligation needs its own decisive input')
             if state != 'INSUFFICIENT' and keys:
                 errors.append(key + ': resolved/inapplicable obligation cannot own open input requests')

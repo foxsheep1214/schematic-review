@@ -20,8 +20,10 @@ PWR-C15不要求每个线性供电都建立PWM模型：无反馈环可据拓扑N
 这两条规则的结果必须有 `obligations`，键与计划的 `closure_contract.obligations` 完全相同。
 每项包含 `review_result`、具体 `rationale`、`evidence`。INSUFFICIENT项用 `request_keys`
 指向该行真正需要的 `input_requests`；同一资料可以支持多个义务，但不能拿不相关请求凑覆盖。
+缺口原因是需求未定、用户推迟或本轮未审完（无 `input_requests`）时不要求 `request_keys`。
 行结果保留最差义务，不能因连接正确而PASS，也不能整体转成阶段NA。
-不适用义务须写 `inapplicability_basis` 并给实际拓扑/用途出处。
+不适用义务须写 `inapplicability_basis` 并给实际拓扑/用途出处；
+整行按拓扑判NA（如无反馈环、无隔离成员）时可省略 `obligations`，改在行上写 `inapplicability_basis`。
 
 PRO-C03还须有 `qualification_members`，按计划 `object.refs` 覆盖每个实际隔离器件。
 每个器件记录 `review_result`、`working_basis`（实际工作应力/条件，未知明确写未知）、

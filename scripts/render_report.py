@@ -32,8 +32,6 @@ SEVERITY_WORDS = {'P0': '可能损坏器件或危及安全', 'P1': '必需功能
                   'P2': '局部或次要问题', 'P3': '可选优化'}
 SEVERITY_LEGEND = '严重程度：P0 可能损坏器件或危及安全；P1 必需功能可能不达标；P2 局部或次要问题；P3 可选优化。'
 HISTORY_RULE = 'REQ-H02'
-RESULT_WORDS = (('PASS', '通过（PASS）'), ('FAIL', '没通过（FAIL）'), ('INSUFFICIENT', '资料不足无法判断（INSUFFICIENT）'),
-                ('NA', '与本产品无关（NA）'), ('NA_OUTSIDE_STAGE', '原理图阶段不判、交给后续环节'))
 RESULT_SHORT = {'PASS': '通过', 'FAIL': '没通过', 'INSUFFICIENT': '资料不足', 'NA': '无关',
                 'NA_OUTSIDE_STAGE': '交给后续环节'}
 # Why the schematic cannot be finalised yet, in the order a reader should act on them.
@@ -266,19 +264,6 @@ def same_text(a, b):
     norm = lambda s: re.sub(r'[\s，。；、,.;:：]', '', str(s or ''))
     return bool(a) and bool(b) and (norm(a) == norm(b) or norm(a) in norm(b))
 
-
-def failed_checks(rows, findings):
-    """Name every failed check and the problem it belongs to, so the count can be traced."""
-    owner = {}
-    for f in findings:
-        for k in f.get('check_ids') or []:
-            owner.setdefault(k, f.get('id'))
-    groups = {}
-    for k, c in rows.items():
-        if c.get('review_result') == 'FAIL':
-            groups.setdefault(owner.get(k) or c.get('finding_id'), []).append(k)
-    return '；'.join('%s → 问题 %s' % ('、'.join(ids), fid) if fid else '、'.join(ids) + ' → 未写成问题'
-                    for fid, ids in groups.items())
 
 
 EXPLANATION_LABELS = (('risk_if_omitted', '不查会漏掉什么'), ('closes_when', '怎样算通过'),

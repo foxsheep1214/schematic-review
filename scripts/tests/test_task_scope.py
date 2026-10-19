@@ -65,6 +65,14 @@ class TaskScopeTests(unittest.TestCase):
         self.assertEqual(g['release'],'NO_GO')
         self.assertIn('2 件尚不能独立定级',text)
 
+    def test_shared_row_without_requests_keeps_its_level_for_every_owner(self):
+        cid='PWR-C15.X';rows={cid:{'id':cid,'review_result':'INSUFFICIENT','potential_severity':'P0',
+                                 'gap_cause':'REQUIREMENT_OPEN','input_requests':{}}}
+        tasks=[{'id':'W1','check_ids':[cid]},{'id':'W2','check_ids':[cid]}];owners=ownership(tasks)
+        for t in tasks:
+            view=task_view(t,rows,owners)
+            self.assertEqual((view['level'],view['ambiguous_checks'],view['requests']),('P0',[],[]))
+
     def test_only_the_hazard_owner_must_be_scheduled_now(self):
         p,r,db=shared();r['work_items'][1]['due_stage']='schematic_freeze'
         g=validate_review(p,r,db);self.assertTrue(g['valid'],g['errors'])

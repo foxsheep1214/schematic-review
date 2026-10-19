@@ -28,6 +28,8 @@ def selected_keys(task, cid, row, owners):
     requests = row.get('input_requests') or {}
     if not isinstance(requests, dict):
         return None
+    if not requests:
+        return []  # nothing to allocate: every owner keeps the row's own consequence
     explicit = task.get('request_keys')
     if isinstance(explicit, dict) and cid in explicit:
         keys = explicit[cid]

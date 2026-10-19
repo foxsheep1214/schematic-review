@@ -145,6 +145,22 @@ class RecognitionTest(unittest.TestCase):
         add(db, 'D9', '1N4148', [('1', 'A', 'GND'), ('2', 'K', 'SW_OUT')])
         self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
 
+    def test_high_side_switch_fed_from_unrecognised_bulk_keeps_its_freewheel_diode(self):
+        db = switch_board()
+        db['pin2net']['Q1.3'] = 'BULK'
+        db['nets']['GND'].remove('Q1.3')
+        db['nets']['BULK'] = ['Q1.3']
+        add(db, 'D9', '1N4148', [('1', 'A', 'GND'), ('2', 'K', 'SW_OUT')])
+        switch = switches_of(build_inventory(db))['Q1']
+        self.assertEqual(switch['topology'], 'floating')
+        self.assertEqual([s['ref'] for s in switch['snubbers']], ['D9'])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+
+    def test_low_side_reverse_diode_to_ground_is_not_a_clamp(self):
+        db = switch_board()
+        add(db, 'D9', '1N4148', [('1', 'A', 'GND'), ('2', 'K', 'SW_OUT')])
+        self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
+
     def test_half_bridge_midpoint_is_recognised(self):
         db = switch_board(load=None)
         add(db, 'Q2', 'AO3400', [('1', 'G', 'GATE_H'), ('2', 'D', 'V12'), ('3', 'S', 'SW_OUT')])
