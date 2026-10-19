@@ -1,0 +1,19 @@
+{
+ "date": "YYYY-MM-DD",
+ "adjudicator": "姓名/角色",
+ "sr_sha": "本轮审查所用 SR 的 git sha",
+ "items": [
+  {
+   "source": "runs/YYYY-MM-DD-<sha>/critic/<board>.json#<check_id> 或 fix-pairs:<id>",
+   "board": "<board id>",
+   "check_id": "<规则.对象> 或 null（漏检时）",
+   "critic_verdict": "OVER_STRICT|TRUE_RISK|UNDERGRADED|CANNOT_TELL|null",
+   "decision": "TRUE_RISK|OVER_STRICT|UNDERGRADED|NOT_A_DEFECT|DEFECT_MISSED",
+   "level": "P0|P1|P2|P3|null",
+   "hazard_path": "FIRE|SHOCK|INSULATION|HAZARDOUS_ENERGY|PORT_OVERVOLTAGE|PROTECTION_LOSS|null",
+   "reason": "硬件依据：规格书页码、标准条款、图上的保护元件位号",
+   "lands_in": "scenarios/<file>.md | typical_circuits/cases.json:<id>.<expected|known_false_alarms> | fix-pairs:<id>.expected_rules | references/<file>.md",
+   "sr_change_allowed": "none | relax:<rule> | tighten:<rule> | doc:<file>"
+  }
+ ]
+}

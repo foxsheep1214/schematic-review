@@ -1,0 +1,6 @@
+reviews/
+critic/
+seeded/
+replay/
+*.json
+!summary.md
