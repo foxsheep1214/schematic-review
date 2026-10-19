@@ -1,0 +1,77 @@
+{
+ "rule": "PWR-T04",
+ "runner": "plan",
+ "note": "board with a supply rail gets a supervision-coverage item vs board with no rail",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "NODE_A"
+     ],
+     [
+      "2",
+      "2",
+      "NODE_B"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "NODE_A"
+     ],
+     [
+      "2",
+      "2",
+      "NODE_B"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "IO",
+      "SIG_X"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

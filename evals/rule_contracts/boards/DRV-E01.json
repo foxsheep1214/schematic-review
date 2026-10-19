@@ -1,0 +1,295 @@
+{
+ "rule": "DRV-E01",
+ "runner": "hot",
+ "note": "gate drive 3-5V below the 4.5V Rds(on) condition vs 9-12.6V drive",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "Q1",
+    "value": "AO3400",
+    "pins": [
+     [
+      "1",
+      "G",
+      "GATE"
+     ],
+     [
+      "2",
+      "D",
+      "SW_OUT"
+     ],
+     [
+      "3",
+      "S",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "GATE-DRIVER",
+    "pins": [
+     [
+      "1",
+      "LO",
+      "DRV_OUT"
+     ],
+     [
+      "2",
+      "VDD",
+      "V12"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "DRV_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "GATE"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "100K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "GATE"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "L2",
+    "value": "IND-100UH",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "V12"
+     ]
+    ]
+   },
+   {
+    "ref": "R3",
+    "value": "10R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "SNUB"
+     ]
+    ]
+   },
+   {
+    "ref": "C3",
+    "value": "1nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SNUB"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "id": "GATE-DRIVE",
+    "rule": "DRV-E01",
+    "kind": "gate_drive",
+    "node": "Q1.1",
+    "channel": "n",
+    "vgs_drive_v": {
+     "min": 3.0,
+     "max": 5.0
+    },
+    "vgs_rds_on_v": 4.5,
+    "vgs_abs_v": {
+     "min": -20.0,
+     "max": 20.0
+    },
+    "citation": "Synthetic driver supply window and MOSFET guaranteed conditions"
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "Q1",
+    "value": "AO3400",
+    "pins": [
+     [
+      "1",
+      "G",
+      "GATE"
+     ],
+     [
+      "2",
+      "D",
+      "SW_OUT"
+     ],
+     [
+      "3",
+      "S",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "GATE-DRIVER",
+    "pins": [
+     [
+      "1",
+      "LO",
+      "DRV_OUT"
+     ],
+     [
+      "2",
+      "VDD",
+      "V12"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "DRV_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "GATE"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "100K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "GATE"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "L2",
+    "value": "IND-100UH",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "V12"
+     ]
+    ]
+   },
+   {
+    "ref": "R3",
+    "value": "10R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "SNUB"
+     ]
+    ]
+   },
+   {
+    "ref": "C3",
+    "value": "1nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SNUB"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "id": "GATE-DRIVE",
+    "rule": "DRV-E01",
+    "kind": "gate_drive",
+    "node": "Q1.1",
+    "channel": "n",
+    "vgs_drive_v": {
+     "min": 9.0,
+     "max": 12.6
+    },
+    "vgs_rds_on_v": 4.5,
+    "vgs_abs_v": {
+     "min": -20.0,
+     "max": 20.0
+    },
+    "citation": "Synthetic driver supply window and MOSFET guaranteed conditions"
+   }
+  ]
+ }
+}

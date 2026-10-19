@@ -1,0 +1,77 @@
+{
+ "rule": "PWR-T03",
+ "runner": "plan",
+ "note": "IC supply pin VDD on a rail gets a decoupling item vs IC with no supply pin",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "NODE_A"
+     ],
+     [
+      "2",
+      "2",
+      "NODE_B"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "NODE_A"
+     ],
+     [
+      "2",
+      "2",
+      "NODE_B"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "IO",
+      "SIG_X"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

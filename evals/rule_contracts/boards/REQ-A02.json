@@ -1,0 +1,66 @@
+{
+ "rule": "REQ-A02",
+ "runner": "plan",
+ "note": "CAN required by intent but absent from the netlist vs present (CANH)",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "intent": {
+   "features": {
+    "CAN": {
+     "applicability": "APPLICABLE",
+     "citation": "synthetic requirement R-1"
+    }
+   }
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "CANH",
+      "CANH"
+     ]
+    ]
+   }
+  ],
+  "intent": {
+   "features": {
+    "CAN": {
+     "applicability": "APPLICABLE",
+     "citation": "synthetic requirement R-1"
+    }
+   }
+  }
+ }
+}

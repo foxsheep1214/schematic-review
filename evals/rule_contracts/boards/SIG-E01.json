@@ -1,0 +1,97 @@
+{
+ "rule": "SIG-E01",
+ "runner": "hot",
+ "note": "10k pull-up outside the required 1k-4.7k window vs 2.2k inside it",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "SYNTHETIC-IO",
+    "pins": [
+     [
+      "1",
+      "SDA",
+      "SDA"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10K/1%",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SDA"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "id": "PULL",
+    "rule": "SIG-E01",
+    "kind": "required_pull",
+    "net": "SDA",
+    "direction": "up",
+    "to": "VCC_3V3",
+    "resistance_ohm": {
+     "min": 1000,
+     "max": 4700
+    },
+    "citation": "Synthetic bus driver sink/rise requirement"
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "SYNTHETIC-IO",
+    "pins": [
+     [
+      "1",
+      "SDA",
+      "SDA"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "2.2K/1%",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SDA"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "id": "PULL",
+    "rule": "SIG-E01",
+    "kind": "required_pull",
+    "net": "SDA",
+    "direction": "up",
+    "to": "VCC_3V3",
+    "resistance_ohm": {
+     "min": 1000,
+     "max": 4700
+    },
+    "citation": "Synthetic bus driver sink/rise requirement"
+   }
+  ]
+ }
+}

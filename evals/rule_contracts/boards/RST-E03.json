@@ -1,0 +1,303 @@
+{
+ "rule": "RST-E03",
+ "runner": "hot",
+ "note": "reset pulse 10-20ms below the 100ms requirement vs 140-280ms",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U3",
+    "value": "SUPERVISOR",
+    "pins": [
+     [
+      "1",
+      "VCC",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "SENSE",
+      "SENSE_3V3"
+     ],
+     [
+      "3",
+      "WDI",
+      "WDI_NET"
+     ],
+     [
+      "4",
+      "RESET",
+      "SYS_RST_N"
+     ],
+     [
+      "5",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R7",
+    "value": "100K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "SENSE_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R8",
+    "value": "47K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SENSE_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R9",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SYS_RST_N"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "U4",
+    "value": "SOC",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "NRST",
+      "SYS_RST_N"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U5",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "GPIO1",
+      "WDI_NET"
+     ],
+     [
+      "2",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U3.4": "OUT",
+   "U4.2": "IN",
+   "U5.1": "OUT"
+  },
+  "evidence": [
+   {
+    "id": "RESET",
+    "rule": "RST-E03",
+    "kind": "reset_pulse",
+    "ref": "U3",
+    "net": "SYS_RST_N",
+    "output_type": "open_drain",
+    "pulse_width_s": {
+     "min": 0.01,
+     "max": 0.02
+    },
+    "required_width_s": {
+     "min": 0.001,
+     "max": 0.1
+    },
+    "citation": "Synthetic supervisor pulse width and SoC reset requirement"
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U3",
+    "value": "SUPERVISOR",
+    "pins": [
+     [
+      "1",
+      "VCC",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "SENSE",
+      "SENSE_3V3"
+     ],
+     [
+      "3",
+      "WDI",
+      "WDI_NET"
+     ],
+     [
+      "4",
+      "RESET",
+      "SYS_RST_N"
+     ],
+     [
+      "5",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R7",
+    "value": "100K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "SENSE_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R8",
+    "value": "47K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SENSE_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R9",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SYS_RST_N"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "U4",
+    "value": "SOC",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "NRST",
+      "SYS_RST_N"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U5",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "GPIO1",
+      "WDI_NET"
+     ],
+     [
+      "2",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U3.4": "OUT",
+   "U4.2": "IN",
+   "U5.1": "OUT"
+  },
+  "evidence": [
+   {
+    "id": "RESET",
+    "rule": "RST-E03",
+    "kind": "reset_pulse",
+    "ref": "U3",
+    "net": "SYS_RST_N",
+    "output_type": "open_drain",
+    "pulse_width_s": {
+     "min": 0.14,
+     "max": 0.28
+    },
+    "required_width_s": {
+     "min": 0.001,
+     "max": 0.1
+    },
+    "citation": "Synthetic supervisor pulse width and SoC reset requirement"
+   }
+  ]
+ }
+}

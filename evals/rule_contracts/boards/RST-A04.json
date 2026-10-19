@@ -1,0 +1,97 @@
+{
+ "rule": "RST-A04",
+ "runner": "cold",
+ "note": "regulator EN with no source vs EN from a VIN divider",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "REG-X",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "V12"
+     ],
+     [
+      "2",
+      "EN",
+      "EN_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ],
+     [
+      "4",
+      "VOUT",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "REG-X",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "V12"
+     ],
+     [
+      "2",
+      "EN",
+      "EN_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ],
+     [
+      "4",
+      "VOUT",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "100K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "V12"
+     ],
+     [
+      "2",
+      "2",
+      "EN_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "22K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "EN_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

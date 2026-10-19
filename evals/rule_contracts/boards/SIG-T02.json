@@ -1,0 +1,136 @@
+{
+ "rule": "SIG-T02",
+ "runner": "plan",
+ "note": "SDA/SCL bus with pull-ups gets per-line connection items vs the same two pulled-up lines as SPI",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TEST-I2C",
+    "pins": [
+     [
+      "1",
+      "SDA",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "SCL",
+      "I2C_SCL"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "4.7K/1%",
+    "pins": [
+     [
+      "1",
+      "1",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "4.7K/1%",
+    "pins": [
+     [
+      "1",
+      "1",
+      "I2C_SCL"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ],
+  "intent": {
+   "bound": true,
+   "i2c_topology": {
+    "schema_version": 2,
+    "buses": [
+     {
+      "id": "CTRL",
+      "sda": [
+       "U1.1"
+      ],
+      "scl": [
+       "U1.2"
+      ],
+      "citation": "synthetic pin map section 1"
+     }
+    ],
+    "components": {
+     "U1": {
+      "kind": "endpoint",
+      "citation": "synthetic pin map section 1"
+     }
+    },
+    "rails": {
+     "VCC_3V3": "synthetic power tree node A"
+    }
+   }
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TEST-SPI",
+    "pins": [
+     [
+      "1",
+      "MOSI",
+      "SPI_MOSI"
+     ],
+     [
+      "2",
+      "SCK",
+      "SPI_SCK"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "4.7K/1%",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SPI_MOSI"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "4.7K/1%",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SPI_SCK"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ]
+ }
+}

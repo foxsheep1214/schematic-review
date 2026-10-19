@@ -1,0 +1,289 @@
+{
+ "rule": "SIG-A01",
+ "runner": "cold",
+ "note": "AC-coupled LVPECL driver legs with no DC path vs 150R emitter pull-downs",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "LVPECL-CLOCK",
+    "pins": [
+     [
+      "1",
+      "OUTP",
+      "CLK_TX_P"
+     ],
+     [
+      "2",
+      "OUTN",
+      "CLK_TX_N"
+     ],
+     [
+      "3",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "RECEIVER",
+    "pins": [
+     [
+      "1",
+      "INP",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "INN",
+      "CLK_N"
+     ],
+     [
+      "3",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_P"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_P"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_N"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_N"
+     ]
+    ]
+   },
+   {
+    "ref": "R3",
+    "value": "130R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R4",
+    "value": "130R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_N"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U1.1": "OUT",
+   "U1.2": "OUT",
+   "U2.1": "IN",
+   "U2.2": "IN"
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "LVPECL-CLOCK",
+    "pins": [
+     [
+      "1",
+      "OUTP",
+      "CLK_TX_P"
+     ],
+     [
+      "2",
+      "OUTN",
+      "CLK_TX_N"
+     ],
+     [
+      "3",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "RECEIVER",
+    "pins": [
+     [
+      "1",
+      "INP",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "INN",
+      "CLK_N"
+     ],
+     [
+      "3",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_P"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_P"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_N"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_N"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "150R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_P"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "150R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_N"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R3",
+    "value": "130R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_P"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R4",
+    "value": "130R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_N"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U1.1": "OUT",
+   "U1.2": "OUT",
+   "U2.1": "IN",
+   "U2.2": "IN"
+  }
+ }
+}

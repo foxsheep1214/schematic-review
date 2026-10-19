@@ -1,0 +1,81 @@
+{
+ "rule": "REQ-H01",
+ "runner": "rule_plan",
+ "note": "revision review against an old netlist vs first review",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "old": {
+   "parts": [
+    {
+     "ref": "U1",
+     "value": "MCU",
+     "pins": [
+      [
+       "1",
+       "VDD",
+       "VCC_3V3"
+      ],
+      [
+       "2",
+       "GND",
+       "GND"
+      ]
+     ]
+    },
+    {
+     "ref": "U2",
+     "value": "MCU",
+     "pins": [
+      [
+       "1",
+       "VDD",
+       "VCC_3V3"
+      ],
+      [
+       "2",
+       "GND",
+       "GND"
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,204 @@
+{
+ "rule": "DRV-A03",
+ "runner": "cold",
+ "note": "MOSFET gate with no driver and no pull-down vs driven through 10R with 100k pull-down",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "Q1",
+    "value": "AO3400",
+    "pins": [
+     [
+      "1",
+      "G",
+      "GATE"
+     ],
+     [
+      "2",
+      "D",
+      "SW_OUT"
+     ],
+     [
+      "3",
+      "S",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "L2",
+    "value": "IND-100UH",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "V12"
+     ]
+    ]
+   },
+   {
+    "ref": "R3",
+    "value": "10R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "SNUB"
+     ]
+    ]
+   },
+   {
+    "ref": "C3",
+    "value": "1nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SNUB"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "Q1",
+    "value": "AO3400",
+    "pins": [
+     [
+      "1",
+      "G",
+      "GATE"
+     ],
+     [
+      "2",
+      "D",
+      "SW_OUT"
+     ],
+     [
+      "3",
+      "S",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "GATE-DRIVER",
+    "pins": [
+     [
+      "1",
+      "LO",
+      "DRV_OUT"
+     ],
+     [
+      "2",
+      "VDD",
+      "V12"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "DRV_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "GATE"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "100K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "GATE"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "L2",
+    "value": "IND-100UH",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "V12"
+     ]
+    ]
+   },
+   {
+    "ref": "R3",
+    "value": "10R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_OUT"
+     ],
+     [
+      "2",
+      "2",
+      "SNUB"
+     ]
+    ]
+   },
+   {
+    "ref": "C3",
+    "value": "1nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SNUB"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

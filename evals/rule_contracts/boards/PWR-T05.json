@@ -1,0 +1,85 @@
+{
+ "rule": "PWR-T05",
+ "runner": "plan",
+ "note": "POWER_PROTECTION package declared applicable vs only a name hit (fuse) left UNDETERMINED",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "F1",
+    "value": "FUSE-2A",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_RAW"
+     ],
+     [
+      "2",
+      "2",
+      "VIN_12V"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VIN_12V"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "intent": {
+   "features": {
+    "POWER_PROTECTION": {
+     "applicability": "APPLICABLE",
+     "citation": "synthetic requirement R-1"
+    }
+   }
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "F1",
+    "value": "FUSE-2A",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_RAW"
+     ],
+     [
+      "2",
+      "2",
+      "VIN_12V"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VIN_12V"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

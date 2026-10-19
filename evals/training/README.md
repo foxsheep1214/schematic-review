@@ -162,7 +162,7 @@ fix-pairs 的 `expected_rules`/`hazard`、或 `references/*.md` 的边界例子�
    新增的每条要么是 `expected`（有理由）要么立即判为误报并修正。
 4. 改分级/方法文档（`references/verdicts-and-release.md`、`plan-and-results.md`、`report-and-remediation.md`）时，
    在 `runs/<round>/summary.md` 写明哪条裁决支持这条改动。
-5. 改完跑第 4 节全部门指标 + `python3 -m unittest discover -s scripts/tests -q`。
+5. 改完跑第 4 节全部门指标 + 两层测试与变异门：合同层 `python3 -m pytest scripts/tests -m contract -q` 先过（改了规则判据就同步改 `evals/rule_contracts/boards/` 的触发板/近似板，新规则必须新增合同）；全量 `python3 -m unittest discover -s scripts/tests -q`（含措辞层 golden 报告，措辞改动用 `SR_UPDATE_GOLDEN=1` 重写并在 summary 里说明）；`python3 evals/mutation/run.py --tier unit` 每条变异 KILLED，改了的判据要在 `evals/mutation/mutations.json` 加对应变异。
 6. 不碰第 0 节第 3 条列的真值文件；需要改 `expected` 就写进裁决队列等人。
 
 产物：代码/文档 diff、`summary.md` 的"改动—证据—指标变化"表。是否提交由人决定。

@@ -1,0 +1,225 @@
+{
+ "rule": "PWR-A05",
+ "runner": "cold",
+ "note": "ferrite + ceramic input filter with no damping vs RC damper on VIN",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "BUCK-3A",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_12"
+     ],
+     [
+      "2",
+      "SW",
+      "SW_NODE"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ],
+     [
+      "4",
+      "FB",
+      "FB"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "10uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_12"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "L1",
+    "value": "IND-4U7",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_NODE"
+     ],
+     [
+      "2",
+      "2",
+      "VOUT_5V"
+     ]
+    ]
+   },
+   {
+    "ref": "FB1",
+    "value": "BLM21",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_12"
+     ],
+     [
+      "2",
+      "2",
+      "V12_RAW"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "10uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "V12_RAW"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "BUCK-3A",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_12"
+     ],
+     [
+      "2",
+      "SW",
+      "SW_NODE"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ],
+     [
+      "4",
+      "FB",
+      "FB"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "10uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_12"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "L1",
+    "value": "IND-4U7",
+    "pins": [
+     [
+      "1",
+      "1",
+      "SW_NODE"
+     ],
+     [
+      "2",
+      "2",
+      "VOUT_5V"
+     ]
+    ]
+   },
+   {
+    "ref": "FB1",
+    "value": "BLM21",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_12"
+     ],
+     [
+      "2",
+      "2",
+      "V12_RAW"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "10uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "V12_RAW"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R5",
+    "value": "1R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_12"
+     ],
+     [
+      "2",
+      "2",
+      "DAMP_MID"
+     ]
+    ]
+   },
+   {
+    "ref": "C5",
+    "value": "47uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "DAMP_MID"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

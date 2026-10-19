@@ -1,0 +1,81 @@
+{
+ "rule": "DOC-V01",
+ "runner": "plan",
+ "note": "components located on pages 1-2 give per-page visual items vs no page location at all",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "NODE_A"
+     ],
+     [
+      "2",
+      "2",
+      "NODE_B"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "ref2page": {
+   "R1": 1,
+   "U1": 2
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "NODE_A"
+     ],
+     [
+      "2",
+      "2",
+      "NODE_B"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

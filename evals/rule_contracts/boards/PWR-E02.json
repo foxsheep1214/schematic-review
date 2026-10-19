@@ -1,0 +1,153 @@
+{
+ "rule": "PWR-E02",
+ "runner": "hot",
+ "note": "worst-case dropout 0.6V leaves VOUT below 3.2V vs 0.25V dropout",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "REG-X",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "V12"
+     ],
+     [
+      "2",
+      "EN",
+      "EN_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ],
+     [
+      "4",
+      "VOUT",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "100K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "V12"
+     ],
+     [
+      "2",
+      "2",
+      "EN_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "22K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "EN_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "id": "DROPOUT",
+    "rule": "PWR-E02",
+    "kind": "dropout",
+    "ref": "U1",
+    "vin_min_v": 3.6,
+    "dropout_max_v": 0.6,
+    "vout_required_min_v": 3.2,
+    "citation": "Synthetic LDO dropout at minimum temperature and maximum load"
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "REG-X",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "V12"
+     ],
+     [
+      "2",
+      "EN",
+      "EN_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ],
+     [
+      "4",
+      "VOUT",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "100K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "V12"
+     ],
+     [
+      "2",
+      "2",
+      "EN_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "22K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "EN_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "id": "DROPOUT",
+    "rule": "PWR-E02",
+    "kind": "dropout",
+    "ref": "U1",
+    "vin_min_v": 3.6,
+    "dropout_max_v": 0.25,
+    "vout_required_min_v": 3.2,
+    "citation": "Synthetic LDO dropout at minimum temperature and maximum load"
+   }
+  ]
+ }
+}
