@@ -1,0 +1,897 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>Hardware/SparkFun_Ideal_Diode_Breakout.kicad_sch</source>
+    <date>2026-10-18T21:00:05</date>
+    <tool>Eeschema 10.0.6</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>SparkFun Ideal Diode Breakout</title>
+        <company>SparkFun Electronics</company>
+        <rev>v10</rev>
+        <date>2024-12-20</date>
+        <source>SparkFun_Ideal_Diode_Breakout.kicad_sch</source>
+        <comment number="1" value="Designed by: Dryw Wade"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="FID1">
+      <value>Fiducial_0.5mm</value>
+      <footprint>SparkFun-Aesthetic:Fiducial_0.5mm_Mask1mm</footprint>
+      <description>Fiducial Marker</description>
+      <fields>
+        <field name="Footprint">SparkFun-Aesthetic:Fiducial_0.5mm_Mask1mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Fiducial Marker</field>
+      </fields>
+      <libsource lib="SparkFun-Aesthetic" part="Fiducial_0.5mm" description="Fiducial Marker"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun fiducial marker"/>
+      <property name="ki_fp_filters" value="Fiducial*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a7ec6cc9-20f8-4a12-9541-29a9be25ae1c</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FID4">
+      <value>Fiducial_0.5mm</value>
+      <footprint>SparkFun-Aesthetic:Fiducial_0.5mm_Mask1mm</footprint>
+      <description>Fiducial Marker</description>
+      <fields>
+        <field name="Footprint">SparkFun-Aesthetic:Fiducial_0.5mm_Mask1mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Fiducial Marker</field>
+      </fields>
+      <libsource lib="SparkFun-Aesthetic" part="Fiducial_0.5mm" description="Fiducial Marker"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun fiducial marker"/>
+      <property name="ki_fp_filters" value="Fiducial*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7a72b518-2fca-4a85-8df7-c0d3aac86170</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="G1">
+      <value>SparkFun_Logo</value>
+      <footprint>SparkFun-Aesthetic:SparkFun_Logo_8mm</footprint>
+      <fields>
+        <field name="Footprint">SparkFun-Aesthetic:SparkFun_Logo_8mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="SparkFun-Aesthetic" part="SparkFun_Logo" description=""/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="exclude_from_board"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1f71d36e-2564-4a65-a00f-3b68769ddaf6</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="G2">
+      <value>SparkFun_Logo</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="SparkFun-Aesthetic" part="SparkFun_Logo" description=""/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="exclude_from_board"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b2decde1-62d4-4670-a064-d07726e72b30</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="G3">
+      <value>OSHW_Logo</value>
+      <footprint>SparkFun-Aesthetic:Creative_Commons_License</footprint>
+      <fields>
+        <field name="Footprint">SparkFun-Aesthetic:Creative_Commons_License</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="SparkFun-Aesthetic" part="OSHW_Logo" description=""/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="exclude_from_bom"/>
+      <property name="ki_keywords" value="SparkFun Open Source Hardware Logo"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a21e6db0-b885-4793-a405-9dcb22fe3734</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J1">
+      <value>Conn_01x05</value>
+      <footprint>SparkFun-Connector:1x05</footprint>
+      <description>Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <fields>
+        <field name="Footprint">SparkFun-Connector:1x05</field>
+        <field name="Datasheet"/>
+        <field name="Description">Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)</field>
+      </fields>
+      <libsource lib="SparkFun-Connector" part="Conn_01x05" description="Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun connector"/>
+      <property name="ki_fp_filters" value="Connector*:*_1x??_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>62b2a4dc-d178-4039-8fb5-b8b397a57bcc</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+            <pin num="4"/>
+            <pin num="5"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J2">
+      <value>Conn_01x05</value>
+      <footprint>SparkFun-Connector:1x05</footprint>
+      <description>Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <fields>
+        <field name="Footprint">SparkFun-Connector:1x05</field>
+        <field name="Datasheet"/>
+        <field name="Description">Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)</field>
+      </fields>
+      <libsource lib="SparkFun-Connector" part="Conn_01x05" description="Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun connector"/>
+      <property name="ki_fp_filters" value="Connector*:*_1x??_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9a6d3851-f4b8-4d4c-8ae1-5a41f8de6748</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+            <pin num="4"/>
+            <pin num="5"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q1">
+      <value>BCM857BS-7-F</value>
+      <footprint>SparkFun-Semiconductor-Standard:SOT-323</footprint>
+      <datasheet>https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</datasheet>
+      <description>100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</description>
+      <fields>
+        <field name="PROD_ID">TRANS-14386</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT-323</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</field>
+        <field name="Description">100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</field>
+      </fields>
+      <libsource lib="SparkFun-DiscreteSemi" part="Q_PNP_DUAL" description="100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363"/>
+      <property name="PROD_ID" value="TRANS-14386"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun PNP/PNP Transistor SC70-6 SOT-363 SC-88 BC846BS"/>
+      <property name="ki_fp_filters" value="SOT?363*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cf7c6168-d39b-4b3f-9779-8eebb0a8a1b2 c0788bcd-3a27-4068-b58d-f51f9fac28cc</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="2"/>
+            <pin num="1"/>
+            <pin num="6"/>
+          </pins>
+        </unit>
+        <unit name="B">
+          <pins>
+            <pin num="5"/>
+            <pin num="4"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q2">
+      <value>DMG2305UX</value>
+      <footprint>SparkFun-Semiconductor-Standard:SOT23-3</footprint>
+      <datasheet>https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</datasheet>
+      <description>P-MOSFET transistor, drain/gate/source</description>
+      <fields>
+        <field name="PROD_ID">TRANS-14388</field>
+        <field name="IMax">4.2A</field>
+        <field name="VMax">20V</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT23-3</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</field>
+        <field name="Description">P-MOSFET transistor, drain/gate/source</field>
+      </fields>
+      <libsource lib="SparkFun-DiscreteSemi" part="Q_PMOS_4.2A_20V" description="P-MOSFET transistor, drain/gate/source"/>
+      <property name="PROD_ID" value="TRANS-14388"/>
+      <property name="IMax" value="4.2A"/>
+      <property name="VMax" value="20V"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun transistor PMOS P-MOS P-MOSFET"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>094a00f2-a0f9-4a76-bdda-0460900a1270</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q3">
+      <value>BCM857BS-7-F</value>
+      <footprint>SparkFun-Semiconductor-Standard:SOT-323</footprint>
+      <datasheet>https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</datasheet>
+      <description>100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</description>
+      <fields>
+        <field name="PROD_ID">TRANS-14386</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT-323</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</field>
+        <field name="Description">100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</field>
+      </fields>
+      <libsource lib="SparkFun-DiscreteSemi" part="Q_PNP_DUAL" description="100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363"/>
+      <property name="PROD_ID" value="TRANS-14386"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun PNP/PNP Transistor SC70-6 SOT-363 SC-88 BC846BS"/>
+      <property name="ki_fp_filters" value="SOT?363*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5a6544f8-a2f4-473e-95ca-7795b030b62b 27eb21f1-56c9-477f-af8b-e78902696af0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="2"/>
+            <pin num="1"/>
+            <pin num="6"/>
+          </pins>
+        </unit>
+        <unit name="B">
+          <pins>
+            <pin num="5"/>
+            <pin num="4"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q4">
+      <value>DMG2305UX</value>
+      <footprint>SparkFun-Semiconductor-Standard:SOT23-3</footprint>
+      <datasheet>https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</datasheet>
+      <description>P-MOSFET transistor, drain/gate/source</description>
+      <fields>
+        <field name="PROD_ID">TRANS-14388</field>
+        <field name="IMax">4.2A</field>
+        <field name="VMax">20V</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT23-3</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</field>
+        <field name="Description">P-MOSFET transistor, drain/gate/source</field>
+      </fields>
+      <libsource lib="SparkFun-DiscreteSemi" part="Q_PMOS_4.2A_20V" description="P-MOSFET transistor, drain/gate/source"/>
+      <property name="PROD_ID" value="TRANS-14388"/>
+      <property name="IMax" value="4.2A"/>
+      <property name="VMax" value="20V"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun transistor PMOS P-MOS P-MOSFET"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2033d4a9-5e91-4f71-b2b4-5c34592f33f0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q5">
+      <value>BCM857BS-7-F</value>
+      <footprint>SparkFun-Semiconductor-Standard:SOT-323</footprint>
+      <datasheet>https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</datasheet>
+      <description>100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</description>
+      <fields>
+        <field name="PROD_ID">TRANS-14386</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT-323</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</field>
+        <field name="Description">100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</field>
+      </fields>
+      <libsource lib="SparkFun-DiscreteSemi" part="Q_PNP_DUAL" description="100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363"/>
+      <property name="PROD_ID" value="TRANS-14386"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun PNP/PNP Transistor SC70-6 SOT-363 SC-88 BC846BS"/>
+      <property name="ki_fp_filters" value="SOT?363*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c4312647-9ff2-4501-969c-ca091bb4ec6b 4b7a7115-dd0c-490e-8065-f53aadcff164</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="2"/>
+            <pin num="1"/>
+            <pin num="6"/>
+          </pins>
+        </unit>
+        <unit name="B">
+          <pins>
+            <pin num="5"/>
+            <pin num="4"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q6">
+      <value>DMG2305UX</value>
+      <footprint>SparkFun-Semiconductor-Standard:SOT23-3</footprint>
+      <datasheet>https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</datasheet>
+      <description>P-MOSFET transistor, drain/gate/source</description>
+      <fields>
+        <field name="PROD_ID">TRANS-14388</field>
+        <field name="IMax">4.2A</field>
+        <field name="VMax">20V</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT23-3</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</field>
+        <field name="Description">P-MOSFET transistor, drain/gate/source</field>
+      </fields>
+      <libsource lib="SparkFun-DiscreteSemi" part="Q_PMOS_4.2A_20V" description="P-MOSFET transistor, drain/gate/source"/>
+      <property name="PROD_ID" value="TRANS-14388"/>
+      <property name="IMax" value="4.2A"/>
+      <property name="VMax" value="20V"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun transistor PMOS P-MOS P-MOSFET"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ee3e90d0-6500-4fd9-8ca2-b07d6f3168a0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q7">
+      <value>BCM857BS-7-F</value>
+      <footprint>SparkFun-Semiconductor-Standard:SOT-323</footprint>
+      <datasheet>https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</datasheet>
+      <description>100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</description>
+      <fields>
+        <field name="PROD_ID">TRANS-14386</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT-323</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</field>
+        <field name="Description">100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</field>
+      </fields>
+      <libsource lib="SparkFun-DiscreteSemi" part="Q_PNP_DUAL" description="100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363"/>
+      <property name="PROD_ID" value="TRANS-14386"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun PNP/PNP Transistor SC70-6 SOT-363 SC-88 BC846BS"/>
+      <property name="ki_fp_filters" value="SOT?363*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f7af96b1-f2ca-4102-9821-849357e2ff06 e85a7cc7-7aa1-45cf-97f2-03b7055ad7dd</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="2"/>
+            <pin num="1"/>
+            <pin num="6"/>
+          </pins>
+        </unit>
+        <unit name="B">
+          <pins>
+            <pin num="5"/>
+            <pin num="4"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q8">
+      <value>DMG2305UX</value>
+      <footprint>SparkFun-Semiconductor-Standard:SOT23-3</footprint>
+      <datasheet>https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</datasheet>
+      <description>P-MOSFET transistor, drain/gate/source</description>
+      <fields>
+        <field name="PROD_ID">TRANS-14388</field>
+        <field name="IMax">4.2A</field>
+        <field name="VMax">20V</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT23-3</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</field>
+        <field name="Description">P-MOSFET transistor, drain/gate/source</field>
+      </fields>
+      <libsource lib="SparkFun-DiscreteSemi" part="Q_PMOS_4.2A_20V" description="P-MOSFET transistor, drain/gate/source"/>
+      <property name="PROD_ID" value="TRANS-14388"/>
+      <property name="IMax" value="4.2A"/>
+      <property name="VMax" value="20V"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun transistor PMOS P-MOS P-MOSFET"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d27de3cf-f33c-4f97-b865-cbfbb698eace</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R1">
+      <value>100k</value>
+      <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+      <datasheet>https://www.vishay.com/docs/20035/dcrcwe3.pdf</datasheet>
+      <description>Resistor</description>
+      <fields>
+        <field name="PROD_ID">RES-13495</field>
+        <field name="Footprint">SparkFun-Resistor:R_0402_1005Metric</field>
+        <field name="Datasheet">https://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor"/>
+      <property name="PROD_ID" value="RES-13495"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>69b47c02-98ac-4b3a-ba05-0622630cd695</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R2">
+      <value>100k</value>
+      <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+      <datasheet>https://www.vishay.com/docs/20035/dcrcwe3.pdf</datasheet>
+      <description>Resistor</description>
+      <fields>
+        <field name="PROD_ID">RES-13495</field>
+        <field name="Footprint">SparkFun-Resistor:R_0402_1005Metric</field>
+        <field name="Datasheet">https://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor"/>
+      <property name="PROD_ID" value="RES-13495"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4bc001bf-fae0-4fd8-b504-2ecbeb2a920d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R3">
+      <value>100k</value>
+      <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+      <datasheet>https://www.vishay.com/docs/20035/dcrcwe3.pdf</datasheet>
+      <description>Resistor</description>
+      <fields>
+        <field name="PROD_ID">RES-13495</field>
+        <field name="Footprint">SparkFun-Resistor:R_0402_1005Metric</field>
+        <field name="Datasheet">https://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor"/>
+      <property name="PROD_ID" value="RES-13495"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4c9efa03-b745-4ce3-8cec-496016fe38c5</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R4">
+      <value>100k</value>
+      <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+      <datasheet>https://www.vishay.com/docs/20035/dcrcwe3.pdf</datasheet>
+      <description>Resistor</description>
+      <fields>
+        <field name="PROD_ID">RES-13495</field>
+        <field name="Footprint">SparkFun-Resistor:R_0402_1005Metric</field>
+        <field name="Datasheet">https://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor"/>
+      <property name="PROD_ID" value="RES-13495"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9a76b409-6440-48c7-a894-4715dd5421ba</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R5">
+      <value>100k</value>
+      <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+      <datasheet>https://www.vishay.com/docs/20035/dcrcwe3.pdf</datasheet>
+      <description>Resistor</description>
+      <fields>
+        <field name="PROD_ID">RES-13495</field>
+        <field name="Footprint">SparkFun-Resistor:R_0402_1005Metric</field>
+        <field name="Datasheet">https://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor"/>
+      <property name="PROD_ID" value="RES-13495"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9990fe52-49a4-4191-8f4d-2ffdc775f975</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R6">
+      <value>100k</value>
+      <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+      <datasheet>https://www.vishay.com/docs/20035/dcrcwe3.pdf</datasheet>
+      <description>Resistor</description>
+      <fields>
+        <field name="PROD_ID">RES-13495</field>
+        <field name="Footprint">SparkFun-Resistor:R_0402_1005Metric</field>
+        <field name="Datasheet">https://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor"/>
+      <property name="PROD_ID" value="RES-13495"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2af40984-c1e3-44ef-a50a-d69e5f6c18c2</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R7">
+      <value>100k</value>
+      <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+      <datasheet>https://www.vishay.com/docs/20035/dcrcwe3.pdf</datasheet>
+      <description>Resistor</description>
+      <fields>
+        <field name="PROD_ID">RES-13495</field>
+        <field name="Footprint">SparkFun-Resistor:R_0402_1005Metric</field>
+        <field name="Datasheet">https://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor"/>
+      <property name="PROD_ID" value="RES-13495"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>607d07e8-7fa8-4ba6-a143-1647c4edcbca</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R8">
+      <value>100k</value>
+      <footprint>SparkFun-Resistor:R_0402_1005Metric</footprint>
+      <datasheet>https://www.vishay.com/docs/20035/dcrcwe3.pdf</datasheet>
+      <description>Resistor</description>
+      <fields>
+        <field name="PROD_ID">RES-13495</field>
+        <field name="Footprint">SparkFun-Resistor:R_0402_1005Metric</field>
+        <field name="Datasheet">https://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="SparkFun-Resistor" part="100k_0402" description="Resistor"/>
+      <property name="PROD_ID" value="RES-13495"/>
+      <property name="Sheetname" value="SparkFun_Ideal_Diode_Breakout"/>
+      <property name="Sheetfile" value="SparkFun_Ideal_Diode_Breakout.kicad_sch"/>
+      <property name="ki_keywords" value="SparkFun R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>23dfea45-3988-4f7b-bde3-bab536e4352f</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="SparkFun-Aesthetic" part="Fiducial_0.5mm">
+      <description>Fiducial Marker</description>
+      <footprints>
+        <fp>Fiducial*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">FID</field>
+        <field name="Value">Fiducial_0.5mm</field>
+        <field name="Footprint">SparkFun-Aesthetic:Fiducial_0.5mm_Mask1mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Fiducial Marker</field>
+      </fields>
+    </libpart>
+    <libpart lib="SparkFun-Aesthetic" part="OSHW_Logo">
+      <fields>
+        <field name="Reference">G</field>
+        <field name="Value">OSHW_Logo</field>
+        <field name="Footprint">SparkFun-Aesthetic:Creative_Commons_License</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+    </libpart>
+    <libpart lib="SparkFun-Aesthetic" part="SparkFun_Logo">
+      <fields>
+        <field name="Reference">G</field>
+        <field name="Value">SparkFun_Logo</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+    </libpart>
+    <libpart lib="SparkFun-Connector" part="Conn_01x05">
+      <description>Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x05</field>
+        <field name="Footprint">SparkFun-Connector:1x05</field>
+        <field name="Datasheet"/>
+        <field name="Description">Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+        <pin num="5" name="Pin_5" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="SparkFun-DiscreteSemi" part="Q_PMOS_4.2A_20V">
+      <description>P-MOSFET transistor, drain/gate/source</description>
+      <docs>https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</docs>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">DMG2305UX</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT23-3</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf</field>
+        <field name="Description">P-MOSFET transistor, drain/gate/source</field>
+        <field name="PROD_ID">TRANS-14388</field>
+        <field name="IMax">4.2A</field>
+        <field name="VMax">20V</field>
+      </fields>
+      <pins>
+        <pin num="1" name="G" type="input"/>
+        <pin num="2" name="S" type="passive"/>
+        <pin num="3" name="D" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="SparkFun-DiscreteSemi" part="Q_PNP_DUAL">
+      <description>100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</description>
+      <docs>https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</docs>
+      <footprints>
+        <fp>SOT?363*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">BCM857BS-7-F</field>
+        <field name="Footprint">SparkFun-Semiconductor-Standard:SOT-323</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/BCM857BS.pdf</field>
+        <field name="Description">100mA IC, 65V Vce, Dual PNP/PNP Transistors, SOT-363</field>
+        <field name="PROD_ID">TRANS-14386</field>
+      </fields>
+      <pins>
+        <pin num="1" name="E" type="passive"/>
+        <pin num="2" name="B" type="input"/>
+        <pin num="3" name="C" type="passive"/>
+        <pin num="4" name="E" type="passive"/>
+        <pin num="5" name="B" type="input"/>
+        <pin num="6" name="C" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="SparkFun-Resistor" part="100k_0402">
+      <description>Resistor</description>
+      <docs>https://www.vishay.com/docs/20035/dcrcwe3.pdf</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">100k</field>
+        <field name="Footprint">SparkFun-Resistor:R_0402_1005Metric</field>
+        <field name="Datasheet">https://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Resistor</field>
+        <field name="PROD_ID">RES-13495</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="GND" class="Default">
+      <node ref="J1" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="J2" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+    </net>
+    <net code="2" name="Net-(Q1A-B)" class="Default">
+      <node ref="Q1" pin="2" pinfunction="B_2" pintype="input"/>
+      <node ref="Q1" pin="5" pinfunction="B_5" pintype="input"/>
+      <node ref="Q1" pin="6" pinfunction="C_6" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+    </net>
+    <net code="3" name="Net-(Q1B-C)" class="Default">
+      <node ref="Q1" pin="3" pinfunction="C_3" pintype="passive"/>
+      <node ref="Q2" pin="1" pinfunction="G_1" pintype="input"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+    </net>
+    <net code="4" name="Net-(Q3A-B)" class="Default">
+      <node ref="Q3" pin="2" pinfunction="B_2" pintype="input"/>
+      <node ref="Q3" pin="5" pinfunction="B_5" pintype="input"/>
+      <node ref="Q3" pin="6" pinfunction="C_6" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+    </net>
+    <net code="5" name="Net-(Q3B-C)" class="Default">
+      <node ref="Q3" pin="3" pinfunction="C_3" pintype="passive"/>
+      <node ref="Q4" pin="1" pinfunction="G_1" pintype="input"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+    </net>
+    <net code="6" name="Net-(Q5A-B)" class="Default">
+      <node ref="Q5" pin="2" pinfunction="B_2" pintype="input"/>
+      <node ref="Q5" pin="5" pinfunction="B_5" pintype="input"/>
+      <node ref="Q5" pin="6" pinfunction="C_6" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+    </net>
+    <net code="7" name="Net-(Q5B-C)" class="Default">
+      <node ref="Q5" pin="3" pinfunction="C_3" pintype="passive"/>
+      <node ref="Q6" pin="1" pinfunction="G_1" pintype="input"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+    </net>
+    <net code="8" name="Net-(Q7A-B)" class="Default">
+      <node ref="Q7" pin="2" pinfunction="B_2" pintype="input"/>
+      <node ref="Q7" pin="5" pinfunction="B_5" pintype="input"/>
+      <node ref="Q7" pin="6" pinfunction="C_6" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+    </net>
+    <net code="9" name="Net-(Q7B-C)" class="Default">
+      <node ref="Q7" pin="3" pinfunction="C_3" pintype="passive"/>
+      <node ref="Q8" pin="1" pinfunction="G_1" pintype="input"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+    </net>
+    <net code="10" name="VIN1" class="Default">
+      <node ref="J1" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="Q1" pin="1" pinfunction="E_1" pintype="passive"/>
+      <node ref="Q2" pin="3" pinfunction="D_3" pintype="passive"/>
+    </net>
+    <net code="11" name="VIN2" class="Default">
+      <node ref="J1" pin="3" pinfunction="Pin_3_3" pintype="passive"/>
+      <node ref="Q3" pin="1" pinfunction="E_1" pintype="passive"/>
+      <node ref="Q4" pin="3" pinfunction="D_3" pintype="passive"/>
+    </net>
+    <net code="12" name="VIN3" class="Default">
+      <node ref="J1" pin="4" pinfunction="Pin_4_4" pintype="passive"/>
+      <node ref="Q5" pin="1" pinfunction="E_1" pintype="passive"/>
+      <node ref="Q6" pin="3" pinfunction="D_3" pintype="passive"/>
+    </net>
+    <net code="13" name="VIN4" class="Default">
+      <node ref="J1" pin="5" pinfunction="Pin_5_5" pintype="passive"/>
+      <node ref="Q7" pin="1" pinfunction="E_1" pintype="passive"/>
+      <node ref="Q8" pin="3" pinfunction="D_3" pintype="passive"/>
+    </net>
+    <net code="14" name="VOUT1" class="Default">
+      <node ref="J2" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="Q1" pin="4" pinfunction="E_4" pintype="passive"/>
+      <node ref="Q2" pin="2" pinfunction="S_2" pintype="passive"/>
+    </net>
+    <net code="15" name="VOUT2" class="Default">
+      <node ref="J2" pin="3" pinfunction="Pin_3_3" pintype="passive"/>
+      <node ref="Q3" pin="4" pinfunction="E_4" pintype="passive"/>
+      <node ref="Q4" pin="2" pinfunction="S_2" pintype="passive"/>
+    </net>
+    <net code="16" name="VOUT3" class="Default">
+      <node ref="J2" pin="4" pinfunction="Pin_4_4" pintype="passive"/>
+      <node ref="Q5" pin="4" pinfunction="E_4" pintype="passive"/>
+      <node ref="Q6" pin="2" pinfunction="S_2" pintype="passive"/>
+    </net>
+    <net code="17" name="VOUT4" class="Default">
+      <node ref="J2" pin="5" pinfunction="Pin_5_5" pintype="passive"/>
+      <node ref="Q7" pin="4" pinfunction="E_4" pintype="passive"/>
+      <node ref="Q8" pin="2" pinfunction="S_2" pintype="passive"/>
+    </net>
+  </nets>
+</export>

@@ -47,11 +47,13 @@ EXPORT_ERROR_RE = re.compile(r'ERROR\s*\(|Aborting Netlisting|错误\s*[（(]|�
 EXPORT_ANNOTATION_RE = re.compile(r'annotation error|not (?:fully )?annotated|批注错误|标注错误|未(?:完全)?标注', re.I)
 EXPORT_WARNING_RE = re.compile(r'\b(?:warning|error)\b|警告|错误', re.I)
 NO_CONNECT_IGNORED_RE = re.compile(r'"No_connect" property on Pin', re.I)
+# kicad-cli on macOS always prints Fontconfig cache chatter; it is host font noise, not an export warning.
+HOST_FONT_NOISE_RE = re.compile(r'^\s*Fontconfig (?:warning|error):', re.I)
 
 
 def export_log_kind(line):
-    if NO_CONNECT_IGNORED_RE.search(line):
-        return None  # DOC-A02 parses these separately
+    if NO_CONNECT_IGNORED_RE.search(line) or HOST_FONT_NOISE_RE.match(line):
+        return None  # DOC-A02 parses these separately; Fontconfig lines are skipped outright
     if EXPORT_ANNOTATION_RE.search(line):
         return 'CANDIDATE'
     if EXPORT_ERROR_RE.search(line):
@@ -66,6 +68,8 @@ def _fmt_v(value):
 
 
 BOOTSTRAP_PIN_RE = re.compile(r'^(BOOT|BST|CBOOT|BTST|CB)\w*$', re.I)
+THERMAL_PAD_PIN_RE = re.compile(r'^(E?PAD\w*|EP|TAB|EXPOSED\w*|THERMAL\w*)$', re.I)
+NEGATIVE_SUPPLY_PIN_RE = re.compile(r'^(-\w+|\w+-|V-|VEE|VNEG|V_?NEG|VSS\w*|V_?MINUS|\w+[_-](NEG|RTN|RET|MINUS)|COM|0V)$', re.I)
 SUPPLY_PIN_RE = re.compile(r'^(VDD|VCC|AVDD|DVDD|VBAT|VDDA|VDDIO|VCCA|VCCIO)\w*$'
                            r'(?<![_-]DET)(?<![_-]SENSE)(?<![_-]SNS)(?<![_-]EN)(?<![_-]PG)(?<![_-]MON)', re.I)
 RAIL_RE = ng.RAIL_RE   # one rail-name test: excludes _FB/_SENSE lines and _N/_RTN returns
@@ -80,6 +84,49 @@ DATASHEET_NC_PIN_RE = re.compile(r'^(N\.?C\.?|DNC|NIC|RSVD|RESERVED)(?:$|[_\-\d]
 KICAD_AUTO_NET_RE = re.compile(r'(^|/)(Net|unconnected)-\(')   # 工具按引脚生成的网名，不是手写拼写
 NET_TIE_RE = re.compile(r'NET_?TIE', re.I)
 ISOLATOR_RE = re.compile(r'ISOLAT|\bISO\d|ISOW|ADUM|SI8[46]\d|NSI\d|CA-IS|隔离', re.I)
+
+
+# NET-A02：命名惯例里成对/成组出现的网名不是拼写分裂。
+NET_PAIR_TOKENS = [frozenset(p) for p in (
+    ('RX', 'TX'), ('RXD', 'TXD'), ('RXP', 'TXP'), ('RXN', 'TXN'), ('MISO', 'MOSI'),
+    ('SDI', 'SDO'), ('DIN', 'DOUT'), ('SCL', 'SDA'), ('SCLK', 'SDATA'), ('CANH', 'CANL'))]
+NET_VOLTAGE_TOKEN_RE = re.compile(r'^(\d+V\d*|V\d+|\d+\.\d+V)$', re.I)
+
+
+def _token_difference(a, b):
+    """两名按分隔符切词后只差一个词时返回该词对，否则 None。"""
+    ta, tb = re.split(r'[^A-Za-z0-9+-]+', a), re.split(r'[^A-Za-z0-9+-]+', b)
+    if len(ta) != len(tb):
+        return None
+    diff = [(x, y) for x, y in zip(ta, tb) if x != y]
+    return diff[0] if len(diff) == 1 else None
+
+
+def net_name_split(a, b):
+    """相邻排序的两张网是否疑似同一名字的拼写分裂。
+
+    只比较叶名（层次路径是同页所有网共享的，不构成相似证据）；豁免末位序号、_N/_P 与 +/- 差分对、
+    只差一个字母且字母相邻的兄弟（GHA/GHB、AUX1_A/AUX1_B）、收发对（RX/TX、MISO/MOSI、SCL/SDA）
+    和同名双路（FB_12V/FB_5V）。
+    """
+    la, lb = a.rsplit('/', 1)[-1], b.rsplit('/', 1)[-1]
+    if la == lb or difflib.SequenceMatcher(None, la, lb).ratio() <= 0.90:
+        return False
+    if re.sub(r'\d+$', '', la) == re.sub(r'\d+$', '', lb):
+        return False          # 仅差末位序号 -> 同族
+    if re.sub(r'(_?[NP]|[+-])$', '', la) == re.sub(r'(_?[NP]|[+-])$', '', lb):
+        return False          # 差分对
+    if len(la) == len(lb):
+        diff = [(x, y) for x, y in zip(la, lb) if x != y]
+        if len(diff) == 1 and (all(c.isdigit() for c in diff[0]) or (
+                all(c.isalpha() for c in diff[0])
+                and abs(ord(diff[0][0].upper()) - ord(diff[0][1].upper())) == 1)):
+            return False      # 序号/字母序兄弟（AUX1_X/AUX2_X、GHA/GHB）
+    pair = _token_difference(la, lb)
+    if pair and (frozenset(t.upper() for t in pair) in NET_PAIR_TOKENS
+                 or all(NET_VOLTAGE_TOKEN_RE.match(t) for t in pair)):
+        return False          # 收发对 / 同名双路
+    return True
 
 
 def _ground_like(net):
@@ -382,15 +429,11 @@ class Lint:
                 self.add('NET-A01', '单节点悬空网',
                          f'{n} <- {nds[0]} ({parts.get(ref, {}).get("value", "")})', ref)
 
-        # NET-A02 疑似网络名分裂（剔除同族总线/差分对/序号兄弟）
+        # NET-A02 疑似网络名分裂（剔除同族总线/差分对/序号兄弟/收发对/同名双路）
         names = sorted(nets)
         for a, b in zip(names, names[1:]):
-            if a == b or difflib.SequenceMatcher(None, a, b).ratio() <= 0.90:
+            if a == b or not net_name_split(a, b):
                 continue
-            if re.sub(r'\d+$', '', a) == re.sub(r'\d+$', '', b):
-                continue          # 仅差末位序号 -> 同族
-            if re.sub(r'_?[NP]$', '', a) == re.sub(r'_?[NP]$', '', b):
-                continue          # 差分对
             if re.fullmatch(r'N\d{6,}', a) or re.fullmatch(r'N\d{6,}', b):
                 continue
             if KICAD_AUTO_NET_RE.search(a) or KICAD_AUTO_NET_RE.search(b):
@@ -435,6 +478,18 @@ class Lint:
             n = pin2net.get(node)
             if n is None:
                 self.add('PWR-A02', '电源球无网络', f'{node} ({pn})', ref)
+            elif (ng.is_ground(n) and native.get(node) == 'power_in' and pn
+                  and not _ground_like(plain := re.sub(r'[{}]|_(?=\{)', '', pn))
+                  and not NEGATIVE_SUPPLY_PIN_RE.match(plain) and not THERMAL_PAD_PIN_RE.match(plain)):
+                # VIPer22A VDD tied to the source ground: the device's own supply pin is shorted to its return.
+                # Other power_in names (REGIN of an unused internal LDO) may be grounded by the datasheet.
+                supply = bool(SUPPLY_PIN_RE.match(plain) or re.match(r'^V', plain, re.I))
+                if not supply and not re.search(r'IN|REG|PWR|SUPPLY|BAT|BUS', plain, re.I):
+                    continue   # opaque pin names (TC78H660 "A") carry no supply claim to check
+                self.add('PWR-A02', '电源脚落在地网',
+                         f'{node} ({pn}，原生 power_in) <- {n}：供电脚直接接地，'
+                         + ('器件无供电或供电被短路' if supply else '按手册确认该脚允许接地（如未用的内部 LDO 输入）'),
+                         ref, kind='FINDING' if supply else 'CANDIDATE')
             elif (n not in self.pseudo and not ng.is_ground(n) and not self.driven(n)
                   and not self._local_regulator_node(node, n)):
                 entry = self._external_entry(n)

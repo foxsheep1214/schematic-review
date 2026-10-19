@@ -1,0 +1,1432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>AC-DC Wandler.kicad_sch</source>
+    <date>2026-10-18T21:00:03</date>
+    <tool>Eeschema 10.0.6</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>AC-DC Wandler.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>100nF-275VAC</value>
+      <footprint>Capacitor_THT:C_Rect_L13.0mm_W5.0mm_P10.00mm_FKS3_FKP3_MKS4</footprint>
+      <description>Unpolarized capacitor</description>
+      <fields>
+        <field name="Footprint">Capacitor_THT:C_Rect_L13.0mm_W5.0mm_P10.00mm_FKS3_FKP3_MKS4</field>
+        <field name="Datasheet"/>
+        <field name="Description">Unpolarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b89fad65-a128-4e22-9e28-441c9860b79b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C2">
+      <value>22uF-400V</value>
+      <footprint>Capacitor_THT:CP_Radial_D12.5mm_P5.00mm</footprint>
+      <description>Polarized capacitor</description>
+      <fields>
+        <field name="Footprint">Capacitor_THT:CP_Radial_D12.5mm_P5.00mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Polarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>35d3d995-6d69-447f-b322-c28f1cb7f236</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C3">
+      <value>2.2nF-1KV</value>
+      <footprint>Capacitor_THT:C_Disc_D9.0mm_W5.0mm_P7.50mm</footprint>
+      <description>Unpolarized capacitor</description>
+      <fields>
+        <field name="Footprint">Capacitor_THT:C_Disc_D9.0mm_W5.0mm_P7.50mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Unpolarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bd8d5ed8-0563-4027-b193-d3f8a16f5c82</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C4">
+      <value>10nF-1KV</value>
+      <footprint>Capacitor_THT:C_Disc_D7.5mm_W5.0mm_P5.00mm</footprint>
+      <description>Unpolarized capacitor</description>
+      <fields>
+        <field name="Footprint">Capacitor_THT:C_Disc_D7.5mm_W5.0mm_P5.00mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Unpolarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e009de0c-1615-4a42-8e31-9a381e17666d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C5">
+      <value>470μF-16V</value>
+      <footprint>Capacitor_THT:CP_Radial_D8.0mm_P3.50mm</footprint>
+      <description>Polarized capacitor</description>
+      <fields>
+        <field name="Footprint">Capacitor_THT:CP_Radial_D8.0mm_P3.50mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Polarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>de92547a-24b1-4637-9004-3da0b560e9e6</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C6">
+      <value>470μF-16V</value>
+      <footprint>Capacitor_THT:CP_Radial_D8.0mm_P3.50mm</footprint>
+      <description>Polarized capacitor</description>
+      <fields>
+        <field name="Footprint">Capacitor_THT:CP_Radial_D8.0mm_P3.50mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Polarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b1a2a781-528d-4960-8eaa-16c8af835172</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C7">
+      <value>470μF-16V</value>
+      <footprint>Capacitor_THT:CP_Radial_D8.0mm_P3.50mm</footprint>
+      <description>Polarized capacitor</description>
+      <fields>
+        <field name="Footprint">Capacitor_THT:CP_Radial_D8.0mm_P3.50mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Polarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0ab13977-c5e7-4472-8379-0920ce1530c4</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C8">
+      <value>470μF-16V</value>
+      <footprint>Capacitor_THT:CP_Radial_D8.0mm_P3.50mm</footprint>
+      <description>Polarized capacitor</description>
+      <fields>
+        <field name="Footprint">Capacitor_THT:CP_Radial_D8.0mm_P3.50mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Polarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ba032090-fd87-4016-9dd6-153d92741c2e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C9">
+      <value>100nF</value>
+      <footprint>Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P2.50mm</footprint>
+      <description>Unpolarized capacitor</description>
+      <fields>
+        <field name="Footprint">Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P2.50mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Unpolarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>67881d4e-2e33-4489-ab43-4e46fd01f7db</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C10">
+      <value>100uF-16V</value>
+      <description>capacitor, US symbol</description>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">capacitor, US symbol</field>
+      </fields>
+      <libsource lib="Device" part="C_US" description="capacitor, US symbol"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a30e1bde-2135-41d7-bd10-babfc540b38c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C11">
+      <value>C</value>
+      <description>Unpolarized capacitor</description>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Unpolarized capacitor</field>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>474834d9-00b3-470d-82dc-cc2c3c916ad1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D1">
+      <value>FR107</value>
+      <footprint>Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal</footprint>
+      <description>Diode</description>
+      <fields>
+        <field name="Sim.Device">D</field>
+        <field name="Sim.Pins">1=K 2=A</field>
+        <field name="Footprint">Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Diode</field>
+      </fields>
+      <libsource lib="Device" part="D" description="Diode"/>
+      <property name="Sim.Device" value="D"/>
+      <property name="Sim.Pins" value="1=K 2=A"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="diode"/>
+      <property name="ki_fp_filters" value="TO-???* *_Diode_* *SingleDiode* D_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6b2cfa7c-3495-43ab-b1cf-cce070726678</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D3">
+      <value>3mm-LED</value>
+      <footprint>LED_THT:LED_D3.0mm</footprint>
+      <description>Light emitting diode</description>
+      <fields>
+        <field name="Sim.Pins">1=K 2=A</field>
+        <field name="Footprint">LED_THT:LED_D3.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Light emitting diode</field>
+      </fields>
+      <libsource lib="Device" part="LED" description="Light emitting diode"/>
+      <property name="Sim.Pins" value="1=K 2=A"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="LED diode"/>
+      <property name="ki_fp_filters" value="LED* LED_SMD:* LED_THT:*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cc20aaf0-3049-4ed1-81ce-e0797ef56b90</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D5">
+      <value>SB360</value>
+      <footprint>Diode_THT:D_DO-201AD_P15.24mm_Horizontal</footprint>
+      <description>Diode</description>
+      <fields>
+        <field name="Sim.Device">D</field>
+        <field name="Sim.Pins">1=K 2=A</field>
+        <field name="Footprint">Diode_THT:D_DO-201AD_P15.24mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Diode</field>
+      </fields>
+      <libsource lib="Device" part="D" description="Diode"/>
+      <property name="Sim.Device" value="D"/>
+      <property name="Sim.Pins" value="1=K 2=A"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="diode"/>
+      <property name="ki_fp_filters" value="TO-???* *_Diode_* *SingleDiode* D_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b84e4438-8664-482d-b785-291fcf792375</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D15">
+      <value>KBP206</value>
+      <footprint>Diode_THT:Diode_Bridge_DIP-4_W7.62mm_P5.08mm</footprint>
+      <datasheet>https://www.vishay.com/docs/88769/woo5g.pdf</datasheet>
+      <description>Glass Passivated Single-Phase Bridge Rectifier, 70V Vrms, 1.5A If, WOG package</description>
+      <fields>
+        <field name="Footprint">Diode_THT:Diode_Bridge_DIP-4_W7.62mm_P5.08mm</field>
+        <field name="Datasheet">https://www.vishay.com/docs/88769/woo5g.pdf</field>
+        <field name="Description">Glass Passivated Single-Phase Bridge Rectifier, 70V Vrms, 1.5A If, WOG package</field>
+      </fields>
+      <libsource lib="Diode_Bridge" part="W01G" description="Glass Passivated Single-Phase Bridge Rectifier, 70V Vrms, 1.5A If, WOG package"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="Bridge Rectifier acdc"/>
+      <property name="ki_fp_filters" value="D*Bridge*Round*D9.8mm*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>662aad3b-a001-4b47-b64f-e9515416eb13</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="3"/>
+            <pin num="4"/>
+            <pin num="2"/>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="F1">
+      <value>500mA</value>
+      <footprint>Fuse:Fuseholder_Cylinder-5x20mm_Wuerth_696103101002-SMD_Horizontal_Open</footprint>
+      <description>Fuse</description>
+      <fields>
+        <field name="Footprint">Fuse:Fuseholder_Cylinder-5x20mm_Wuerth_696103101002-SMD_Horizontal_Open</field>
+        <field name="Datasheet"/>
+        <field name="Description">Fuse</field>
+      </fields>
+      <libsource lib="Device" part="Fuse" description="Fuse"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="fuse"/>
+      <property name="ki_fp_filters" value="*Fuse*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f5a47200-499f-4676-a987-2810682c1726</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FL1">
+      <value>Choke_Schaffner_RN102-0.3-02-12M</value>
+      <footprint>Inductor_THT:Choke_Schaffner_RN102-04-14.0x14.0mm</footprint>
+      <datasheet>https://www.schaffner.com/products/download/product/datasheet/rn-series-common-mode-chokes-new/</datasheet>
+      <description>Common mode choke, 300mA, 300VAC, 12mH, 1.1 ohm, RN-102</description>
+      <fields>
+        <field name="Footprint">Inductor_THT:Choke_Schaffner_RN102-04-14.0x14.0mm</field>
+        <field name="Datasheet">https://www.schaffner.com/products/download/product/datasheet/rn-series-common-mode-chokes-new/</field>
+        <field name="Description">Common mode choke, 300mA, 300VAC, 12mH, 1.1 ohm, RN-102</field>
+      </fields>
+      <libsource lib="Filter" part="Choke_Schaffner_RN102-0.3-02-12M" description="Common mode choke, 300mA, 300VAC, 12mH, 1.1 ohm, RN-102"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="common-mode common mode choke powerline power line filter"/>
+      <property name="ki_fp_filters" value="Choke*Schaffner*RN102*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b29fcbfc-75f0-4ca6-92bc-488d5a3d1042</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+            <pin num="4"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J1">
+      <value>AC Eingang</value>
+      <footprint>TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1-2-3.81_1x02_P3.81mm_Horizontal</footprint>
+      <description>Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <fields>
+        <field name="Footprint">TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1-2-3.81_1x02_P3.81mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</field>
+      </fields>
+      <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="screw terminal"/>
+      <property name="ki_fp_filters" value="TerminalBlock*:*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d9164854-3199-4215-91a9-a999ffff1555</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J2">
+      <value>DC Ausgang</value>
+      <footprint>TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1-2-3.81_1x02_P3.81mm_Horizontal</footprint>
+      <description>Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <fields>
+        <field name="Footprint">TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1-2-3.81_1x02_P3.81mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</field>
+      </fields>
+      <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="screw terminal"/>
+      <property name="ki_fp_filters" value="TerminalBlock*:*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9ab8ebff-2c3a-4bf3-bb51-6ed6a3c03775</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="L1">
+      <value>10µH</value>
+      <footprint>Inductor_THT:L_Axial_L7.0mm_D3.3mm_P10.16mm_Horizontal_Fastron_MICC</footprint>
+      <description>Inductor</description>
+      <fields>
+        <field name="Footprint">Inductor_THT:L_Axial_L7.0mm_D3.3mm_P10.16mm_Horizontal_Fastron_MICC</field>
+        <field name="Datasheet"/>
+        <field name="Description">Inductor</field>
+      </fields>
+      <libsource lib="Device" part="L" description="Inductor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="inductor choke coil reactor magnetic"/>
+      <property name="ki_fp_filters" value="Choke_* *Coil* Inductor_* L_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8d714eb8-6e3f-4c05-8aa4-e5d00fa704ca</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R1">
+      <value>330</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <description>Resistor</description>
+      <fields>
+        <field name="Footprint">Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2e294c0e-732c-46a8-8cc5-121117d2a41a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R3">
+      <value>100K-1W</value>
+      <footprint>Inductor_THT:L_Axial_L7.0mm_D3.3mm_P10.16mm_Horizontal_Fastron_MICC</footprint>
+      <description>Resistor</description>
+      <fields>
+        <field name="Footprint">Inductor_THT:L_Axial_L7.0mm_D3.3mm_P10.16mm_Horizontal_Fastron_MICC</field>
+        <field name="Datasheet"/>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a31811ea-16a4-45b7-90e4-4d3350acfc4a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R4">
+      <value>2.2K</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <description>Resistor</description>
+      <fields>
+        <field name="Footprint">Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>790d1e55-4288-48d8-bbe7-611717d6b4d5</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R5">
+      <value>1K</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <description>Resistor</description>
+      <fields>
+        <field name="Footprint">Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a8fc565e-e8ba-423b-b066-052fa2ad2e28</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R6">
+      <value>18K</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <description>Resistor</description>
+      <fields>
+        <field name="Footprint">Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>39ce3516-a32a-4922-b3df-4d9e88f2565c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R7">
+      <value>4.7K</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <description>Resistor</description>
+      <fields>
+        <field name="Footprint">Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>059810e9-474c-4950-afb7-3515959d08f0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R8">
+      <value>3.9K</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <description>Resistor</description>
+      <fields>
+        <field name="Footprint">Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</field>
+        <field name="Datasheet"/>
+        <field name="Description">Resistor</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f51ff3f7-cbac-47a6-a6ea-3a124a41f9e3</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="RV1">
+      <value>Varistor</value>
+      <footprint>Varistor:RV_Disc_D12mm_W5mm_P7.5mm</footprint>
+      <description>Voltage dependent resistor</description>
+      <fields>
+        <field name="Sim.Name">kicad_builtin_varistor</field>
+        <field name="Sim.Device">SUBCKT</field>
+        <field name="Sim.Pins">1=A 2=B</field>
+        <field name="Sim.Params">threshold=1k</field>
+        <field name="Sim.Library">${KICAD9_SYMBOL_DIR}/Simulation_SPICE.sp</field>
+        <field name="Footprint">Varistor:RV_Disc_D12mm_W5mm_P7.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Voltage dependent resistor</field>
+      </fields>
+      <libsource lib="Device" part="Varistor" description="Voltage dependent resistor"/>
+      <property name="Sim.Name" value="kicad_builtin_varistor"/>
+      <property name="Sim.Device" value="SUBCKT"/>
+      <property name="Sim.Pins" value="1=A 2=B"/>
+      <property name="Sim.Params" value="threshold=1k"/>
+      <property name="Sim.Library" value="${KICAD9_SYMBOL_DIR}/Simulation_SPICE.sp"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="VDR resistance"/>
+      <property name="ki_fp_filters" value="RV_* Varistor*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c3ca19a3-14f0-4b0d-acd6-69922666f126</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="RV3">
+      <value>500R_Trim</value>
+      <footprint>Potentiometer_THT:Potentiometer_Bourns_3296W_Vertical</footprint>
+      <description>Trim-potentiometer</description>
+      <fields>
+        <field name="Sim.Device">R</field>
+        <field name="Sim.Type">POT</field>
+        <field name="Sim.Pins">1=r0 2=wiper 3=r1</field>
+        <field name="Footprint">Potentiometer_THT:Potentiometer_Bourns_3296W_Vertical</field>
+        <field name="Datasheet"/>
+        <field name="Description">Trim-potentiometer</field>
+      </fields>
+      <libsource lib="Device" part="R_Potentiometer_Trim" description="Trim-potentiometer"/>
+      <property name="Sim.Device" value="R"/>
+      <property name="Sim.Type" value="POT"/>
+      <property name="Sim.Pins" value="1=r0 2=wiper 3=r1"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="resistor variable trimpot trimmer"/>
+      <property name="ki_fp_filters" value="Potentiometer*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>819fc014-9bcd-43e3-ad89-b63402c942b3</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="T1">
+      <value>EE25-13-7</value>
+      <footprint>Transformer_THT:Transformer_Myrra_EF20_7408x</footprint>
+      <description>Transformer, single primary, dual secondary</description>
+      <fields>
+        <field name="Footprint">Transformer_THT:Transformer_Myrra_EF20_7408x</field>
+        <field name="Datasheet"/>
+        <field name="Description">Transformer, single primary, dual secondary</field>
+      </fields>
+      <libsource lib="" part="Transformer_1P_2S_1" description="Transformer, single primary, dual secondary"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="transformer coil magnet"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ea5eed31-ddab-4a83-b4fd-68f06c19698f</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="5"/>
+            <pin num="10"/>
+            <pin num="9"/>
+            <pin num="6"/>
+            <pin num="7"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TH1">
+      <value>Thermistor_NTC</value>
+      <footprint>Varistor:RV_Disc_D9mm_W4mm_P5mm</footprint>
+      <description>Temperature dependent resistor, negative temperature coefficient</description>
+      <fields>
+        <field name="Footprint">Varistor:RV_Disc_D9mm_W4mm_P5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description">Temperature dependent resistor, negative temperature coefficient</field>
+      </fields>
+      <libsource lib="Device" part="Thermistor_NTC" description="Temperature dependent resistor, negative temperature coefficient"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="thermistor NTC resistor sensor RTD"/>
+      <property name="ki_fp_filters" value="R_* RV_*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5e074958-4f52-4f75-bbc4-101c96b8810b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U1">
+      <value>VIPer22ADIP-E</value>
+      <footprint>Package_DIP:DIP-8_W7.62mm</footprint>
+      <datasheet>http://www.st.com/web/en/resource/technical/document/datasheet/CD00087939.pdf</datasheet>
+      <description>Low power OFF-line SMPS primary switcher</description>
+      <fields>
+        <field name="Footprint">Package_DIP:DIP-8_W7.62mm</field>
+        <field name="Datasheet">http://www.st.com/web/en/resource/technical/document/datasheet/CD00087939.pdf</field>
+        <field name="Description">Low power OFF-line SMPS primary switcher</field>
+      </fields>
+      <libsource lib="Regulator_Switching" part="VIPer22ADIP-E" description="Low power OFF-line SMPS primary switcher"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="SMPS"/>
+      <property name="ki_fp_filters" value="DIP*W7.62mm*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ee1de591-9b68-4242-9a73-b6e9a7add056</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="3"/>
+            <pin num="4"/>
+            <pin num="5"/>
+            <pin num="6"/>
+            <pin num="7"/>
+            <pin num="2"/>
+            <pin num="8"/>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U2">
+      <value>TL431DBZ</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+      <datasheet>http://www.ti.com/lit/ds/symlink/tl431.pdf</datasheet>
+      <description>Shunt Regulator, SOT-23</description>
+      <fields>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23</field>
+        <field name="Datasheet">http://www.ti.com/lit/ds/symlink/tl431.pdf</field>
+        <field name="Description">Shunt Regulator, SOT-23</field>
+      </fields>
+      <libsource lib="Reference_Voltage" part="TL431DBZ" description="Shunt Regulator, SOT-23"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="diode device shunt regulator"/>
+      <property name="ki_fp_filters" value="SOT?23*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7a0f2814-d206-4b9f-afdd-78c45f65714a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="3"/>
+            <pin num="2"/>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U3">
+      <value>EL817</value>
+      <footprint>Package_DIP:DIP-4_W7.62mm</footprint>
+      <datasheet>http://www.everlight.com/file/ProductFile/EL817.pdf</datasheet>
+      <description>DC Optocoupler, Vce 35V, DIP-4</description>
+      <fields>
+        <field name="Footprint">Package_DIP:DIP-4_W7.62mm</field>
+        <field name="Datasheet">http://www.everlight.com/file/ProductFile/EL817.pdf</field>
+        <field name="Description">DC Optocoupler, Vce 35V, DIP-4</field>
+      </fields>
+      <libsource lib="Isolator" part="EL817" description="DC Optocoupler, Vce 35V, DIP-4"/>
+      <property name="Sheetname" value="Die Schmatic(page 1)"/>
+      <property name="Sheetfile" value="AC-DC Wandler.kicad_sch"/>
+      <property name="ki_keywords" value="NPN DC Optocoupler"/>
+      <property name="ki_fp_filters" value="DIP*W7.62mm*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8290c0fd-9897-431d-a20d-87740d59a31d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="4"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="" part="Transformer_1P_2S_1">
+      <description>Transformer, single primary, dual secondary</description>
+      <fields>
+        <field name="Reference">T2</field>
+        <field name="Value">Transformer_1P_2S</field>
+        <field name="Footprint">Transformer_THT:Transformer_Myrra_EF20_7408x</field>
+        <field name="Datasheet"/>
+        <field name="Description">Transformer, single primary, dual secondary</field>
+      </fields>
+      <pins>
+        <pin num="1" name="AA" type="passive"/>
+        <pin num="5" name="AB" type="passive"/>
+        <pin num="6" name="SC" type="passive"/>
+        <pin num="7" name="SD" type="passive"/>
+        <pin num="9" name="SB" type="passive"/>
+        <pin num="10" name="SA" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Screw_Terminal_01x02">
+      <description>Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <footprints>
+        <fp>TerminalBlock*:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Screw_Terminal_01x02</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C">
+      <description>Unpolarized capacitor</description>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Unpolarized capacitor</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C_Polarized">
+      <description>Polarized capacitor</description>
+      <footprints>
+        <fp>CP_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_Polarized</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Polarized capacitor</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C_US">
+      <description>capacitor, US symbol</description>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_US</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">capacitor, US symbol</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="D">
+      <description>Diode</description>
+      <footprints>
+        <fp>TO-???*</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>D_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Diode</field>
+        <field name="Sim.Device">D</field>
+        <field name="Sim.Pins">1=K 2=A</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="Fuse">
+      <description>Fuse</description>
+      <footprints>
+        <fp>*Fuse*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">F</field>
+        <field name="Value">Fuse</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Fuse</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="L">
+      <description>Inductor</description>
+      <footprints>
+        <fp>Choke_*</fp>
+        <fp>*Coil*</fp>
+        <fp>Inductor_*</fp>
+        <fp>L_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">L</field>
+        <field name="Value">L</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Inductor</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="LED">
+      <description>Light emitting diode</description>
+      <footprints>
+        <fp>LED*</fp>
+        <fp>LED_SMD:*</fp>
+        <fp>LED_THT:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">LED</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Light emitting diode</field>
+        <field name="Sim.Pins">1=K 2=A</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R">
+      <description>Resistor</description>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Resistor</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R_Potentiometer_Trim">
+      <description>Trim-potentiometer</description>
+      <footprints>
+        <fp>Potentiometer*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">RV</field>
+        <field name="Value">R_Potentiometer_Trim</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Trim-potentiometer</field>
+        <field name="Sim.Device">R</field>
+        <field name="Sim.Type">POT</field>
+        <field name="Sim.Pins">1=r0 2=wiper 3=r1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="3" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="Thermistor_NTC">
+      <description>Temperature dependent resistor, negative temperature coefficient</description>
+      <footprints>
+        <fp>R_*</fp>
+        <fp>RV_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">TH</field>
+        <field name="Value">Thermistor_NTC</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Temperature dependent resistor, negative temperature coefficient</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="Varistor">
+      <description>Voltage dependent resistor</description>
+      <footprints>
+        <fp>RV_*</fp>
+        <fp>Varistor*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">RV</field>
+        <field name="Value">Varistor</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Voltage dependent resistor</field>
+        <field name="Sim.Name">kicad_builtin_varistor</field>
+        <field name="Sim.Device">SUBCKT</field>
+        <field name="Sim.Pins">1=A 2=B</field>
+        <field name="Sim.Params">threshold=1k</field>
+        <field name="Sim.Library">${KICAD9_SYMBOL_DIR}/Simulation_SPICE.sp</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Diode_Bridge" part="W01G">
+      <description>Glass Passivated Single-Phase Bridge Rectifier, 70V Vrms, 1.5A If, WOG package</description>
+      <docs>https://www.vishay.com/docs/88769/woo5g.pdf</docs>
+      <footprints>
+        <fp>D*Bridge*Round*D9.8mm*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">W01G</field>
+        <field name="Footprint">Diode_THT:Diode_Bridge_Round_D9.8mm</field>
+        <field name="Datasheet">https://www.vishay.com/docs/88769/woo5g.pdf</field>
+        <field name="Description">Glass Passivated Single-Phase Bridge Rectifier, 70V Vrms, 1.5A If, WOG package</field>
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="-" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Filter" part="Choke_Schaffner_RN102-0.3-02-12M">
+      <description>Common mode choke, 300mA, 300VAC, 12mH, 1.1 ohm, RN-102</description>
+      <docs>https://www.schaffner.com/products/download/product/datasheet/rn-series-common-mode-chokes-new/</docs>
+      <footprints>
+        <fp>Choke*Schaffner*RN102*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">FL</field>
+        <field name="Value">Choke_Schaffner_RN102-0.3-02-12M</field>
+        <field name="Footprint">Inductor_THT:Choke_Schaffner_RN102-04-14.0x14.0mm</field>
+        <field name="Datasheet">https://www.schaffner.com/products/download/product/datasheet/rn-series-common-mode-chokes-new/</field>
+        <field name="Description">Common mode choke, 300mA, 300VAC, 12mH, 1.1 ohm, RN-102</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="3" type="passive"/>
+        <pin num="4" name="4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Isolator" part="EL817">
+      <description>DC Optocoupler, Vce 35V, DIP-4</description>
+      <docs>http://www.everlight.com/file/ProductFile/EL817.pdf</docs>
+      <footprints>
+        <fp>DIP*W7.62mm*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">EL817</field>
+        <field name="Footprint">Package_DIP:DIP-4_W7.62mm</field>
+        <field name="Datasheet">http://www.everlight.com/file/ProductFile/EL817.pdf</field>
+        <field name="Description">DC Optocoupler, Vce 35V, DIP-4</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Reference_Voltage" part="TL431DBZ">
+      <description>Shunt Regulator, SOT-23</description>
+      <docs>http://www.ti.com/lit/ds/symlink/tl431.pdf</docs>
+      <footprints>
+        <fp>SOT?23*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TL431DBZ</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23</field>
+        <field name="Datasheet">http://www.ti.com/lit/ds/symlink/tl431.pdf</field>
+        <field name="Description">Shunt Regulator, SOT-23</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="REF" type="passive"/>
+        <pin num="3" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Regulator_Switching" part="VIPer22ADIP-E">
+      <description>Low power OFF-line SMPS primary switcher</description>
+      <docs>http://www.st.com/web/en/resource/technical/document/datasheet/CD00087939.pdf</docs>
+      <footprints>
+        <fp>DIP*W7.62mm*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">VIPer22ADIP-E</field>
+        <field name="Footprint">Package_DIP:DIP-8_W7.62mm</field>
+        <field name="Datasheet">http://www.st.com/web/en/resource/technical/document/datasheet/CD00087939.pdf</field>
+        <field name="Description">Low power OFF-line SMPS primary switcher</field>
+      </fields>
+      <pins>
+        <pin num="1" name="S" type="passive"/>
+        <pin num="2" name="S" type="passive"/>
+        <pin num="3" name="FB" type="input"/>
+        <pin num="4" name="VDD" type="power_in"/>
+        <pin num="5" name="D" type="passive"/>
+        <pin num="6" name="D" type="passive"/>
+        <pin num="7" name="D" type="passive"/>
+        <pin num="8" name="D" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Connector">
+      <uri>${KICAD10_SYMBOL_DIR}/Connector.kicad_sym</uri>
+    </library>
+    <library logical="Device">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols/Device.kicad_sym</uri>
+    </library>
+    <library logical="Diode_Bridge">
+      <uri>${KICAD10_SYMBOL_DIR}/Diode_Bridge.kicad_sym</uri>
+    </library>
+    <library logical="Filter">
+      <uri>${KICAD10_SYMBOL_DIR}/Filter.kicad_sym</uri>
+    </library>
+    <library logical="Isolator">
+      <uri>${KICAD10_SYMBOL_DIR}/Isolator.kicad_sym</uri>
+    </library>
+    <library logical="Reference_Voltage">
+      <uri>${KICAD10_SYMBOL_DIR}/Reference_Voltage.kicad_sym</uri>
+    </library>
+    <library logical="Regulator_Switching">
+      <uri>${KICAD10_SYMBOL_DIR}/Regulator_Switching.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="+12V_1" class="Default">
+      <node ref="C5" pin="1" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+    </net>
+    <net code="2" name="+12V_2" class="Default">
+      <node ref="C8" pin="1" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+    </net>
+    <net code="3" name="/DC Line" class="Default">
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="D15" pin="1" pinfunction="+_1" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+      <node ref="T1" pin="1" pinfunction="AA_1" pintype="passive"/>
+    </net>
+    <net code="4" name="GND1" class="Default">
+      <node ref="C10" pin="1" pintype="passive"/>
+      <node ref="C11" pin="2" pintype="passive"/>
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="D15" pin="3" pinfunction="-_3" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="S_1" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="S_2" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="VDD_4" pintype="power_in"/>
+      <node ref="U3" pin="4" pintype="passive"/>
+    </net>
+    <net code="5" name="GND2" class="Default">
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="C5" pin="2" pintype="passive"/>
+      <node ref="C6" pin="2" pintype="passive"/>
+      <node ref="C7" pin="2" pintype="passive"/>
+      <node ref="C8" pin="2" pintype="passive"/>
+      <node ref="D3" pin="1" pinfunction="K_1" pintype="passive"/>
+      <node ref="J2" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="RV3" pin="2" pinfunction="2_2" pintype="passive"/>
+      <node ref="T1" pin="10" pinfunction="SA_10" pintype="passive"/>
+      <node ref="T1" pin="9" pinfunction="SB_9" pintype="passive"/>
+    </net>
+    <net code="6" name="Net-(C1-Pad1)" class="Default">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="F1" pin="2" pintype="passive"/>
+      <node ref="RV1" pin="1" pintype="passive"/>
+      <node ref="TH1" pin="2" pintype="passive"/>
+    </net>
+    <net code="7" name="Net-(D1-A)" class="Default">
+      <node ref="D1" pin="2" pinfunction="A_2" pintype="passive"/>
+      <node ref="T1" pin="5" pinfunction="AB_5" pintype="passive"/>
+      <node ref="U1" pin="5" pinfunction="D_5" pintype="passive"/>
+      <node ref="U1" pin="6" pinfunction="D_6" pintype="passive"/>
+      <node ref="U1" pin="7" pinfunction="D_7" pintype="passive"/>
+      <node ref="U1" pin="8" pinfunction="D_8" pintype="passive"/>
+    </net>
+    <net code="8" name="Net-(D1-K)" class="Default">
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="D1" pin="1" pinfunction="K_1" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+    </net>
+    <net code="9" name="Net-(D3-A)" class="Default">
+      <node ref="D3" pin="2" pinfunction="A_2" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+    </net>
+    <net code="10" name="Net-(D5-A)" class="Default">
+      <node ref="D5" pin="2" pinfunction="A_2" pintype="passive"/>
+      <node ref="T1" pin="6" pinfunction="SC_6" pintype="passive"/>
+      <node ref="T1" pin="7" pinfunction="SD_7" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(D5-K)" class="Default">
+      <node ref="C6" pin="1" pintype="passive"/>
+      <node ref="D5" pin="1" pinfunction="K_1" pintype="passive"/>
+      <node ref="L1" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(D15-Pad2)" class="Default">
+      <node ref="D15" pin="2" pintype="passive"/>
+      <node ref="FL1" pin="2" pinfunction="2_2" pintype="passive"/>
+    </net>
+    <net code="13" name="Net-(D15-Pad4)" class="Default">
+      <node ref="D15" pin="4" pintype="passive"/>
+      <node ref="FL1" pin="4" pinfunction="4_4" pintype="passive"/>
+    </net>
+    <net code="14" name="Net-(FL1-Pad1)" class="Default">
+      <node ref="FL1" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="TH1" pin="1" pintype="passive"/>
+    </net>
+    <net code="15" name="Net-(J1-Pin_1)" class="Default">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="FL1" pin="3" pinfunction="3_3" pintype="passive"/>
+      <node ref="J1" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="RV1" pin="2" pintype="passive"/>
+    </net>
+    <net code="16" name="Net-(J1-Pin_2)" class="Default">
+      <node ref="F1" pin="1" pintype="passive"/>
+      <node ref="J1" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+    </net>
+    <net code="17" name="Net-(J2-Pin_1)" class="Default">
+      <node ref="C7" pin="1" pintype="passive"/>
+      <node ref="J2" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="L1" pin="2" pinfunction="2_2" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+    </net>
+    <net code="18" name="Net-(R4-Pad1)" class="Default">
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+      <node ref="U3" pin="1" pintype="passive"/>
+    </net>
+    <net code="19" name="Net-(R8-Pad1)" class="Default">
+      <node ref="R8" pin="1" pintype="passive"/>
+      <node ref="RV3" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="20" name="Net-(U1-FB)" class="Default">
+      <node ref="C11" pin="1" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="FB_3" pintype="input"/>
+      <node ref="U3" pin="3" pintype="passive"/>
+    </net>
+    <net code="21" name="Net-(U2-A)" class="Default">
+      <node ref="C9" pin="1" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+      <node ref="U2" pin="1" pinfunction="K_1" pintype="passive"/>
+      <node ref="U2" pin="3" pinfunction="A_3" pintype="passive"/>
+      <node ref="U3" pin="2" pintype="passive"/>
+    </net>
+    <net code="22" name="Net-(U2-REF)" class="Default">
+      <node ref="C9" pin="2" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="U2" pin="2" pinfunction="REF_2" pintype="passive"/>
+    </net>
+    <net code="23" name="unconnected-(C10-Pad2)" class="Default">
+      <node ref="C10" pin="2" pintype="passive"/>
+    </net>
+    <net code="24" name="unconnected-(RV3-Pad3)" class="Default">
+      <node ref="RV3" pin="3" pinfunction="3_3" pintype="passive+no_connect"/>
+    </net>
+  </nets>
+</export>

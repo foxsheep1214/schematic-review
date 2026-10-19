@@ -272,6 +272,19 @@ class LintTests(unittest.TestCase):
         self.assertIn(('INFO', 'Warning: footprint library not found'), hits)
         self.assertNotIn('网表导出完成', [d for _, d in hits])
 
+    def test_fontconfig_cache_noise_is_not_an_export_warning(self):
+        # macOS 上 kicad-cli 必然打印 Fontconfig 字体缓存告警；R3 报告曾把它读成“导出错误候选”。
+        log = '\n'.join(['Fontconfig warning: We will not regenerate the cache for /usr/share/fonts',
+                         'Fontconfig warning: ignoring UTF-8: not a valid region tag',
+                         'Warning: footprint library not found'])
+        lint = Lint(sample_db(), log_text=log, intent={'expect': {}})
+        hits = [f['detail'] for f in lint.run() if f['rule'] == 'DOC-A01']
+        self.assertEqual(hits, ['Warning: footprint library not found'])
+        self.assertFalse({'DOC-A01', 'DOC-A02'} & {item[0] for item in lint.skipped})
+        lint = Lint(sample_db(), log_text='Fontconfig warning: We will not regenerate the cache', intent={'expect': {}})
+        self.assertEqual([f for f in lint.run() if f['rule'] == 'DOC-A01'], [])
+        self.assertFalse({'DOC-A01', 'DOC-A02'} & {item[0] for item in lint.skipped})
+
     @staticmethod
     def ground_island_db():
         """精简自 SolderedElectronics MPPT-Li-Ion-CN3791 V1.2.1（TAPR OHL）的盲植变体：

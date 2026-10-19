@@ -230,6 +230,69 @@
    "commit": "c48490f55fd43c902511aa52a9bac82c7fb303c6",
    "schematic": "hw/sch_pcb/USB232R02.kicad_sch",
    "license": "GPL-3.0"
+  },
+  {
+   "id": "flyback-viper22a",
+   "repo": "https://github.com/MoElashmawi/Flyback-AC-DC-Converter",
+   "commit": "e49dd6d442a6b73541927b72768db991146012fc",
+   "schematic": "AC-DC Wandler.kicad_sch",
+   "license": "MIT"
+  },
+  {
+   "id": "flyback-uc3844",
+   "repo": "https://github.com/gorkemguven/12V-1A-Isolated-Flyback-SMPS",
+   "commit": "36a78f3d4086a58e2786bb3a77145fbbc47d9f21",
+   "schematic": "flyback trafo devresi.kicad_sch",
+   "license": "MIT"
+  },
+  {
+   "id": "resonare-lcc",
+   "repo": "https://github.com/Deco025/resonare",
+   "commit": "fb5771e206e98ab57f1af3b5d644284afad67fee",
+   "schematic": "p1/p1.kicad_sch",
+   "license": "CERN-OHL-S-2.0"
+  },
+  {
+   "id": "moteus-c1",
+   "repo": "https://github.com/mjbots/moteus",
+   "commit": "8f747f4ac448d117c1390b77ca2d80c27e751a56",
+   "schematic": "hw/c1/moteus_c1.kicad_sch",
+   "license": "Apache-2.0"
+  },
+  {
+   "id": "bms-c1",
+   "repo": "https://github.com/LibreSolar/bms-c1",
+   "commit": "0ca09706f49906bdc73f6ccf99635de349d47474",
+   "schematic": "kicad/bms-c1.kicad_sch",
+   "license": "CERN-OHL-W-2.0"
+  },
+  {
+   "id": "easyiso",
+   "repo": "https://github.com/Protocentral/protocentral_easyiso_hardware",
+   "commit": "4b3fa114c8cbecdc08d2eb3f471d80c56ecd3459",
+   "schematic": "hardware/easyISO.kicad_sch",
+   "license": "CERN-OHL-P-2.0"
+  },
+  {
+   "id": "ideal-diode",
+   "repo": "https://github.com/sparkfun/SparkFun_Ideal_Diode_Breakout",
+   "commit": "c950f439b55c08009e14fecc60f0fecd5832a42e",
+   "schematic": "Hardware/SparkFun_Ideal_Diode_Breakout.kicad_sch",
+   "license": "CC-BY-SA-4.0 (LICENSE.md, hardware)"
+  },
+  {
+   "id": "pd-liion-charger",
+   "repo": "https://github.com/MG-5/usb-c-to-liion-charger",
+   "commit": "352e568fca1739743a8f37807c7d36608cae4dce",
+   "schematic": "usb-c-to-liion-charger.kicad_sch",
+   "license": "GPL-3.0"
+  },
+  {
+   "id": "pcm5102a-dac",
+   "repo": "https://github.com/Giuseppe499/KiCad-GY-PCM5102A",
+   "commit": "84c4329d53da9d030c35c1a20c9a45cb9a47afd2",
+   "schematic": "GY-PCM5102A.kicad_sch",
+   "license": "CERN-OHL-S-2.0"
   }
  ]
 }

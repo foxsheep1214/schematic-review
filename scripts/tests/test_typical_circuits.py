@@ -1,4 +1,4 @@
-"""Typical-circuit bench: every report on 33 real open boards is classified and still holds."""
+"""Typical-circuit bench: every report on 42 real open boards is classified and still holds."""
 from pathlib import Path
 import contextlib
 import importlib.util

@@ -1,5 +1,5 @@
 {
- "revision": "typical-circuits-v1",
+ "revision": "typical-circuits-v2",
  "cases": [
   {
    "id": "rp2040-stamp",
@@ -1393,6 +1393,565 @@
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     }
    ]
+  },
+  {
+   "id": "flyback-viper22a",
+   "category": "AC-DC flyback (VIPer22A, 230 VAC to 12 V)",
+   "fixture": "fixtures/flyback-viper22a.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(C10-Pad2) <- C10.2 (100uF-16V，脚名 ?) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "真实缺陷：VDD 储能电容 C10 一脚悬空，且 U1.4 VDD 与 C10.1 同在 GND1（VDD 短接到源极地），辅助供电未接通；VDD 接地本身冷跑没有规则报出"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "+12V_1 (2节点): ['C5', 'R4']",
+     "why": "真实缺陷：+12V_1 只有输出电容 C5 与光耦偏置 R4，没接到输出网 Net-(J2-Pin_1)，电源标签断开"
+    },
+    {
+     "rule": "PWR-A01",
+     "match": "+12V_2 (2节点): ['C8', 'R6']",
+     "why": "真实缺陷：+12V_2 只有 C8 与 TL431 分压上臂 R6，反馈采样未接到输出，环路开环"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U1.4 (VDD，原生 power_in) <- GND1",
+     "why": "VIPer22A VDD 脚直接落在源极地 GND1，器件无供电；原为自动层漏检，现由 PWR-A02 电源脚落在地网报出"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": []
+  },
+  {
+   "id": "flyback-uc3844",
+   "category": "AC-DC flyback (UC3844 + discrete MOSFET)",
+   "fixture": "fixtures/flyback-uc3844.xml",
+   "expected": [
+    {
+     "rule": "PWR-A02",
+     "match": "IC2.7 (VCC) <- /12V",
+     "why": "控制器 VCC 经磁珠 L1 由辅助绕组整流 D2 与启动电阻 R10 供电，冷跑看不到来源：核启动电流与 UVLO"
+    },
+    {
+     "rule": "PRO-A04",
+     "match": "AT2（状态 as-built）：输出集电极网 Net-(AT2-COLLECTOR) 上未见到电源轨的上拉电阻",
+     "why": "光耦集电极接 UC3844 COMP，上拉由 COMP 内部电流源提供：需手册证据，冷跑无法知道"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": []
+  },
+  {
+   "id": "resonare-lcc",
+   "category": "LCC-S resonant wireless charger TX+RX (120 W)",
+   "fixture": "fixtures/resonare-lcc.xml",
+   "expected": [
+    {
+     "rule": "RST-A01",
+     "match": "CHG_EN: R803 下拉->GND_RX(0.0V)",
+     "why": "LM74700 EN 默认经 R803 下拉、由 MCU P4.2 拉高：核上电默认态"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D101 (SMAJ28A SMAJ28A Diode:SMAJ28A) 跨 /TX_Input/VIN_FUSED",
+     "why": "TVS 跨电源轨：核 VRWM/VBR/VC 与工作电压"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D605 (SMAJ33A SMCJ33A Diode:SMAJ33A) 跨 VRECT",
+     "why": "TVS 跨电源轨：核 VRWM/VBR/VC 与工作电压"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D801 (SMAJ26A SMAJ26A Diode:SMAJ26A) 跨 VSCAP",
+     "why": "TVS 跨电源轨：核 VRWM/VBR/VC 与工作电压"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q2（mosfet，状态 as-built）：开关节点 /SWA 上有 converter-node:U201.4、half-bridge:Q1、inductive:L301，但未见 RC/RCD 吸收或钳位",
+     "why": "全桥（SWA/SWB）与降压（BUCK_SW）开关节点未见吸收：核 FET 耐压与振铃"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q4（mosfet，状态 as-built）：开关节点 /SWB 上有 converter-node:U202.4、half-bridge:Q3、inductive:L302，但未见 RC/RCD 吸收或钳位",
+     "why": "全桥（SWA/SWB）与降压（BUCK_SW）开关节点未见吸收：核 FET 耐压与振铃"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q702（mosfet，状态 as-built）：开关节点 /RX_Buck/BUCK_SW 上有 converter-node:U701.4、half-bridge:Q701、inductive:L701，但未见 RC/RCD 吸收或钳位",
+     "why": "全桥（SWA/SWB）与降压（BUCK_SW）开关节点未见吸收：核 FET 耐压与振铃"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A02",
+     "match": "/RX_AuxPower/FB_12V_RX(3节点) <-> /RX_AuxPower/FB_5V_RX(3节点)",
+     "why": "12 V/5 V 两路独立稳压器的 FB/SW 同名对，以及 UART/ISP/LINK 的 RX/TX 对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/RX_AuxPower/SW_12V_RX(4节点) <-> /RX_AuxPower/SW_5V_RX(4节点)",
+     "why": "12 V/5 V 两路独立稳压器的 FB/SW 同名对，以及 UART/ISP/LINK 的 RX/TX 对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/RX_MCU/ISP_RXD(2节点) <-> /RX_MCU/ISP_TXD(2节点)",
+     "why": "12 V/5 V 两路独立稳压器的 FB/SW 同名对，以及 UART/ISP/LINK 的 RX/TX 对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/RX_MCU/LINK_RX(2节点) <-> /RX_MCU/LINK_TX(2节点)",
+     "why": "12 V/5 V 两路独立稳压器的 FB/SW 同名对，以及 UART/ISP/LINK 的 RX/TX 对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/TX_AuxPower/FB_12V(3节点) <-> /TX_AuxPower/FB_5V(3节点)",
+     "why": "12 V/5 V 两路独立稳压器的 FB/SW 同名对，以及 UART/ISP/LINK 的 RX/TX 对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/TX_AuxPower/SW_12V(4节点) <-> /TX_AuxPower/SW_5V(4节点)",
+     "why": "12 V/5 V 两路独立稳压器的 FB/SW 同名对，以及 UART/ISP/LINK 的 RX/TX 对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/TX_MCU/UART_RX(2节点) <-> /TX_MCU/UART_TX(2节点)",
+     "why": "12 V/5 V 两路独立稳压器的 FB/SW 同名对，以及 UART/ISP/LINK 的 RX/TX 对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    }
+   ]
+  },
+  {
+   "id": "moteus-c1",
+   "category": "BLDC controller (DRV8323 + 3-phase bridge)",
+   "fixture": "fixtures/moteus-c1.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "/stm32g4/AUX1_I2C_PULLUP <- U3.46 (STM32G474CEU6)",
+     "why": "标签网只有 PB8-BOOT0 一个脚：预留功能未接，核是否有意"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(AUX2-SHIELD-PadS1) <- AUX2.S1 (SM07B-GHS-TB(LF)(SN)，脚名 SHIELD) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(AUX2-SHIELD-PadS2) <- AUX2.S2 (SM07B-GHS-TB(LF)(SN)，脚名 SHIELD) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(SWD1-Pad1) <- SWD1.1 (S6B-ZR-SM4A-TF(LF)(SN)，脚名 1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(SWD1-SHIELD-PadSH1) <- SWD1.SH1 (S6B-ZR-SM4A-TF(LF)(SN)，脚名 SHIELD) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(SWD1-SHIELD-PadSH2) <- SWD1.SH2 (S6B-ZR-SM4A-TF(LF)(SN)，脚名 SHIELD) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U1-*RESET-Pad6) <- U1.6 (MAX15062BATA+T，脚名 *RESET) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U3A-PB11-Pad24) <- U3.24 (STM32G474CEU6，脚名 PB11) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U3A-PB14-Pad27) <- U3.27 (STM32G474CEU6，脚名 PB14) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U4-CAL-Pad31) <- U4.31 (DRV8323SRTAR，脚名 CAL) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U6-A-Pad7) <- U6.7 (AS5047P-ATSM，脚名 A) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U6-B-Pad6) <- U6.6 (AS5047P-ATSM，脚名 B) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U6-I/PWM-Pad14) <- U6.14 (AS5047P-ATSM，脚名 I/PWM) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U6-U-Pad10) <- U6.10 (AS5047P-ATSM，脚名 U) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U6-V-Pad9) <- U6.9 (AS5047P-ATSM，脚名 V) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(U6-W/PWM-Pad8) <- U6.8 (AS5047P-ATSM，脚名 W/PWM) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "unconnected-(U4-CAL-Pad31): ['U4.31']",
+     "why": "网络只有输入脚：与单节点网同根"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D1 (SMBJ48D-M3/I SMBJ48D-M3/I Diode:SM6T39A) 跨 V+",
+     "why": "TVS 跨电源轨：核 VRWM/VBR/VC 与工作电压"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U4.31 -> unconnected-(U4-CAL-Pad31): 输入脚所在网只有该节点",
+     "why": "DRV8323 CAL 输入悬空：核手册内部下拉"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q2（mosfet，状态 as-built）：开关节点 /H Bridge A/OUTX 上有 half-bridge:Q1，但未见 RC/RCD 吸收或钳位",
+     "why": "电机相节点未见吸收：核 FET 耐压与振铃"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q4（mosfet，状态 as-built）：开关节点 /H Bridge B/OUTX 上有 half-bridge:Q3，但未见 RC/RCD 吸收或钳位",
+     "why": "电机相节点未见吸收：核 FET 耐压与振铃"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q6（mosfet，状态 as-built）：开关节点 /H Bridge C/OUTX 上有 half-bridge:Q5，但未见 RC/RCD 吸收或钳位",
+     "why": "电机相节点未见吸收：核 FET 耐压与振铃"
+    },
+    {
+     "rule": "RST-A03",
+     "match": "U1（状态 as-built）：使能脚 U1.2 直连输入网 V+，未见 UVLO 分压或 RC 延时",
+     "why": "开关稳压器 EN/UVLO 直连输入：慢上电时按内部 UVLO 开启，值得核"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A02",
+     "match": "/CAN/CAN_RX(2节点) <-> /CAN/CAN_TX(2节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/Current Sense/CUR3(2节点) <-> /Current Sense/FCUR1(3节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/Gate Driver/DRV8323_MISO(3节点) <-> /Gate Driver/DRV8323_MOSI(2节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/Gate Driver/GHA(2节点) <-> /Gate Driver/GHB(2节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/Gate Driver/GHB(2节点) <-> /Gate Driver/GHC(2节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/Gate Driver/GLA(3节点) <-> /Gate Driver/GLB(3节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/Gate Driver/GLB(3节点) <-> /Gate Driver/GLC(3节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux1/AUX1P_D(2节点) <-> /aux1/AUX1P_E(2节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux1/AUX1_A(2节点) <-> /aux1/AUX1_B(2节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux1/AUX1_B(2节点) <-> /aux1/AUX1_C(2节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux1/AUX1_C(2节点) <-> /aux1/AUX1_D(2节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux1/AUX1_D(2节点) <-> /aux1/AUX1_E(3节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux2/AUX2P_A(4节点) <-> /aux2/AUX2P_B(3节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux2/AUX2P_B(3节点) <-> /aux2/AUX2P_C(3节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux2/AUX2P_C(3节点) <-> /aux2/AUX2P_D(3节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux2/AUX2_A(3节点) <-> /aux2/AUX2_B(5节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux2/AUX2_B(5节点) <-> /aux2/AUX2_C(5节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/aux2/AUX2_C(5节点) <-> /aux2/AUX2_D(3节点)",
+     "why": "三相栅驱 GHA/GHB/GHC、GLA/GLB/GLC、AUX 通道 A–E 等字母序兄弟，以及 CAN_RX/TX、MISO/MOSI、CUR3/FCUR1 等收发/滤波对，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    }
+   ]
+  },
+  {
+   "id": "bms-c1",
+   "category": "16S battery management (BQ76952)",
+   "fixture": "fixtures/bms-c1.xml",
+   "expected": [
+    {
+     "rule": "NET-A06",
+     "match": "/ESP32-C3 MCU/CAN_RX: ['U1.4', 'U2.1']",
+     "why": "两颗 CAN 收发器 U1(SN65HVD230)/U2(SN65HVD75) 的 R 输出并联到 CAN_RX，网表中均为已装配：若为二选一贴装需 DNP 标记"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D11 (MMSZ4685T1G 3.6V LibreSolar:D_Zener) 跨 /BQ76952/VC0",
+     "why": "齐纳跨 BQ76952 引脚：核钳位电压与引脚额定"
+    },
+    {
+     "rule": "PRO-A02",
+     "match": "D23 (MMSZ5267BT1G 75V LibreSolar:D_Zener) 跨 /BQ76952/PDSG",
+     "why": "齐纳跨 BQ76952 引脚：核钳位电压与引脚额定"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q10（mosfet，状态 as-built）：栅极网 Net-(D16-K) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "Q10 栅极由 D16/D19/R51 电平移位网络驱动：核默认态与关断路径"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U4.36 (REGIN，原生 power_in) <- GND",
+     "why": "BQ76952 内部 LDO 输入 REGIN 接地：手册允许不用内部 LDO 时接 VSS，但需审查者按手册确认，作候选保留"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A02",
+     "match": "/ESP32-C3 MCU/CAN_STB(2节点) <-> /ESP32-C3 MCU/CAN_TX(3节点)",
+     "why": "CAN_STB 与 CAN_TX 是不同信号；USB_D+/USB_D- 是差分对，NET-A02 只豁免 _N/_P 后缀；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "/ESP32-C3 MCU/USB_D+(4节点) <-> /ESP32-C3 MCU/USB_D-(4节点)",
+     "why": "CAN_STB 与 CAN_TX 是不同信号；USB_D+/USB_D- 是差分对，NET-A02 只豁免 _N/_P 后缀；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q2（mosfet，状态 as-built）：栅极网 Net-(Q2-G) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "并联功率 MOS 栅极经 47 Ω 栅极电阻接到公共驱动节点；SR 不穿过串联栅极电阻找驱动与下拉；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q2（mosfet，状态 as-built）：开关节点 /CHG+ 上有 half-bridge:Q12，但未见 RC/RCD 吸收或钳位",
+     "why": "BMS 充放电 MOS 是静态开关，/CHG+ 不是开关节点；Q12 是源极在 CHG+ 的 PMOS（预充/检测），不构成半桥；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q3（mosfet，状态 as-built）：栅极网 Net-(Q3-G) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "并联功率 MOS 栅极经 47 Ω 栅极电阻接到公共驱动节点；SR 不穿过串联栅极电阻找驱动与下拉；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q3（mosfet，状态 as-built）：开关节点 /CHG+ 上有 half-bridge:Q12，但未见 RC/RCD 吸收或钳位",
+     "why": "BMS 充放电 MOS 是静态开关，/CHG+ 不是开关节点；Q12 是源极在 CHG+ 的 PMOS（预充/检测），不构成半桥；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q4（mosfet，状态 as-built）：栅极网 Net-(Q4-G) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "并联功率 MOS 栅极经 47 Ω 栅极电阻接到公共驱动节点；SR 不穿过串联栅极电阻找驱动与下拉；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q4（mosfet，状态 as-built）：开关节点 /CHG+ 上有 half-bridge:Q12，但未见 RC/RCD 吸收或钳位",
+     "why": "BMS 充放电 MOS 是静态开关，/CHG+ 不是开关节点；Q12 是源极在 CHG+ 的 PMOS（预充/检测），不构成半桥；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q5（mosfet，状态 as-built）：栅极网 Net-(Q5-G) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "并联功率 MOS 栅极经 47 Ω 栅极电阻接到公共驱动节点；SR 不穿过串联栅极电阻找驱动与下拉；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q5（mosfet，状态 as-built）：开关节点 /CHG+ 上有 half-bridge:Q12，但未见 RC/RCD 吸收或钳位",
+     "why": "BMS 充放电 MOS 是静态开关，/CHG+ 不是开关节点；Q12 是源极在 CHG+ 的 PMOS（预充/检测），不构成半桥；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q6（mosfet，状态 as-built）：栅极网 Net-(Q6-G) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "并联功率 MOS 栅极经 47 Ω 栅极电阻接到公共驱动节点；SR 不穿过串联栅极电阻找驱动与下拉；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q6（mosfet，状态 as-built）：开关节点 /CHG+ 上有 half-bridge:Q12，但未见 RC/RCD 吸收或钳位",
+     "why": "BMS 充放电 MOS 是静态开关，/CHG+ 不是开关节点；Q12 是源极在 CHG+ 的 PMOS（预充/检测），不构成半桥；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q7（mosfet，状态 as-built）：栅极网 Net-(Q7-G) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "并联功率 MOS 栅极经 47 Ω 栅极电阻接到公共驱动节点；SR 不穿过串联栅极电阻找驱动与下拉；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q7（mosfet，状态 as-built）：开关节点 /CHG+ 上有 half-bridge:Q12，但未见 RC/RCD 吸收或钳位",
+     "why": "BMS 充放电 MOS 是静态开关，/CHG+ 不是开关节点；Q12 是源极在 CHG+ 的 PMOS（预充/检测），不构成半桥；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q8（mosfet，状态 as-built）：栅极网 Net-(Q8-G) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "并联功率 MOS 栅极经 47 Ω 栅极电阻接到公共驱动节点；SR 不穿过串联栅极电阻找驱动与下拉；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q8（mosfet，状态 as-built）：开关节点 /CHG+ 上有 half-bridge:Q12，但未见 RC/RCD 吸收或钳位",
+     "why": "BMS 充放电 MOS 是静态开关，/CHG+ 不是开关节点；Q12 是源极在 CHG+ 的 PMOS（预充/检测），不构成半桥；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q9（mosfet，状态 as-built）：栅极网 Net-(Q9-G) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+     "why": "并联功率 MOS 栅极经 47 Ω 栅极电阻接到公共驱动节点；SR 不穿过串联栅极电阻找驱动与下拉；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q9（mosfet，状态 as-built）：开关节点 /CHG+ 上有 half-bridge:Q12，但未见 RC/RCD 吸收或钳位",
+     "why": "BMS 充放电 MOS 是静态开关，/CHG+ 不是开关节点；Q12 是源极在 CHG+ 的 PMOS（预充/检测），不构成半桥；已修（typical-circuits-v2 误报修正）"
+    }
+   ]
+  },
+  {
+   "id": "easyiso",
+   "category": "Isolated I2C/Qwiic (ISO1640 + isolated DC-DC)",
+   "fixture": "fixtures/easyiso.xml",
+   "expected": [
+    {
+     "rule": "RST-A01",
+     "match": "Net-(PS1-EN): R5 上拉->VIN",
+     "why": "隔离 DC-DC 模块 PS1 的 EN 经 R5 上拉到 VIN 常通：核模块 EN 门限与是否需要受控开关"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": []
+  },
+  {
+   "id": "ideal-diode",
+   "category": "Ideal diode / reverse protection (4 ch)",
+   "fixture": "fixtures/ideal-diode.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "DRV-A04",
+     "match": "Q2（mosfet，状态 as-built）：开关节点 VIN1 上有 half-bridge:Q1，但未见 RC/RCD 吸收或钳位",
+     "why": "理想二极管：PMOS Q2/Q4/Q6/Q8 的栅极由 PNP 对 Q1/Q3/Q5/Q7 控制，VINx 是直流输入端不是开关节点；SparkFun 的 Q_PNP_DUAL 被当成 MOS 半桥的另一管；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q4（mosfet，状态 as-built）：开关节点 VIN2 上有 half-bridge:Q3，但未见 RC/RCD 吸收或钳位",
+     "why": "理想二极管：PMOS Q2/Q4/Q6/Q8 的栅极由 PNP 对 Q1/Q3/Q5/Q7 控制，VINx 是直流输入端不是开关节点；SparkFun 的 Q_PNP_DUAL 被当成 MOS 半桥的另一管；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q6（mosfet，状态 as-built）：开关节点 VIN3 上有 half-bridge:Q5，但未见 RC/RCD 吸收或钳位",
+     "why": "理想二极管：PMOS Q2/Q4/Q6/Q8 的栅极由 PNP 对 Q1/Q3/Q5/Q7 控制，VINx 是直流输入端不是开关节点；SparkFun 的 Q_PNP_DUAL 被当成 MOS 半桥的另一管；已修（typical-circuits-v2 误报修正）"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q8（mosfet，状态 as-built）：开关节点 VIN4 上有 half-bridge:Q7，但未见 RC/RCD 吸收或钳位",
+     "why": "理想二极管：PMOS Q2/Q4/Q6/Q8 的栅极由 PNP 对 Q1/Q3/Q5/Q7 控制，VINx 是直流输入端不是开关节点；SparkFun 的 Q_PNP_DUAL 被当成 MOS 半桥的另一管；已修（typical-circuits-v2 误报修正）"
+    }
+   ]
+  },
+  {
+   "id": "pd-liion-charger",
+   "category": "USB-C PD input + boost + Li-ion charger (LTC3769 + LTC4000)",
+   "fixture": "fixtures/pd-liion-charger.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "/Charge-IC/ENABLE <- U2.5 (LTC4000-QFN)",
+     "why": "LTC4000 ENC 只挂标签没有连接：核内部上下拉与默认使能态"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q2（mosfet，状态 as-built）：栅极网 Net-(Q2-G) 由 U2.18 驱动，但网表没有引脚方向，且无下拉/上拉",
+     "why": "栅极由方向未知的控制器脚驱动（LTC4000 BGATE、LTC3769 TG/BG）：核该脚为输出及上电状态"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q3（mosfet，状态 as-built）：栅极网 Net-(Q3-G) 由 U3.19 驱动，但网表没有引脚方向，且无下拉/上拉",
+     "why": "栅极由方向未知的控制器脚驱动（LTC4000 BGATE、LTC3769 TG/BG）：核该脚为输出及上电状态"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q4（mosfet，状态 as-built）：栅极网 Net-(Q4-G) 由 U3.21 驱动，但网表没有引脚方向，且无下拉/上拉",
+     "why": "栅极由方向未知的控制器脚驱动（LTC4000 BGATE、LTC3769 TG/BG）：核该脚为输出及上电状态"
+    },
+    {
+     "rule": "DRV-A04",
+     "match": "Q4（mosfet，状态 as-built）：开关节点 Net-(Q4-D) 上有 converter-node:U3.18、half-bridge:Q3、inductive:L1，但未见 RC/RCD 吸收或钳位",
+     "why": "升压开关节点未见吸收：核 Q3/Q4 耐压与关断尖峰"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A02",
+     "match": "/Charge-IC/FBG(7节点) <-> /Charge-IC/OFB(4节点)",
+     "why": "FBG（反馈地）与 OFB（输出反馈）是 LTC4000 两个不同引脚，名字相似不是网络分裂；已修（typical-circuits-v2 误报修正）"
+    }
+   ]
+  },
+  {
+   "id": "pcm5102a-dac",
+   "category": "I2S DAC (PCM5102A)",
+   "fixture": "fixtures/pcm5102a-dac.xml",
+   "expected": [],
+   "known_false_alarms": [],
+   "fixed_false_alarms": []
   }
  ]
 }

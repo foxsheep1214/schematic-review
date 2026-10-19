@@ -1,8 +1,9 @@
 # 夹具许可证
 
-本目录的 `*.xml` 是第三方开源硬件原理图用 kicad-cli 7.0.11 `sch export netlist --format kicadxml` 导出的网表，
+本目录的 `*.xml` 是第三方开源硬件原理图用 kicad-cli `sch export netlist --format kicadxml` 导出的网表
+（前 33 块用 7.0.11，2026-10-19 新增的 9 块用 10.0.6），
 只把 `<source>` 里的本机绝对路径换成仓库内的原理图相对路径，其余未改。它们是上游设计的衍生文件，
-**不适用仓库根目录的 MIT 许可证**，各自沿用上游许可证；共享型许可证（CC-BY-SA-4.0、CERN-OHL-S-2.0、GPL-3.0）
+**不适用仓库根目录的 MIT 许可证**，各自沿用上游许可证；共享型许可证（CC-BY-SA-4.0、CERN-OHL-S-2.0、CERN-OHL-W-2.0、GPL-3.0）
 要求以相同许可证再分发。完整 commit 与原理图路径见 `../sources.json`，版权归各上游作者。
 
 | 夹具 | 上游仓库 | commit | 许可证 |
@@ -40,3 +41,12 @@
 | soldered-w5500.xml | SolderedElectronics/Ethernet-controller-W5500-board-hardware-design | b3d7a383d4e7 | TAPR-OHL-1.0 |
 | makerverse-nano-power-timer.xml | CoreElectronics/CE-Makerverse-Nano-Power-Timer | 57f0569860de | CC-BY-SA-4.0 |
 | usb232r02.xml | mlab-modules/USB232R02 | c48490f55fd4 | GPL-3.0 |
+| flyback-viper22a.xml | MoElashmawi/Flyback-AC-DC-Converter | e49dd6d442a6 | MIT |
+| flyback-uc3844.xml | gorkemguven/12V-1A-Isolated-Flyback-SMPS | 36a78f3d4086 | MIT |
+| resonare-lcc.xml | Deco025/resonare | fb5771e206e9 | CERN-OHL-S-2.0 |
+| moteus-c1.xml | mjbots/moteus（hw/c1） | 8f747f4ac448 | Apache-2.0 |
+| bms-c1.xml | LibreSolar/bms-c1 | 0ca09706f499 | CERN-OHL-W-2.0 |
+| easyiso.xml | Protocentral/protocentral_easyiso_hardware | 4b3fa114c8cb | CERN-OHL-P-2.0 |
+| ideal-diode.xml | sparkfun/SparkFun_Ideal_Diode_Breakout | c950f439b55c | CC-BY-SA-4.0 (LICENSE.md, hardware) |
+| pd-liion-charger.xml | MG-5/usb-c-to-liion-charger | 352e568fca17 | GPL-3.0 |
+| pcm5102a-dac.xml | Giuseppe499/KiCad-GY-PCM5102A | 84c4329d53da | CERN-OHL-S-2.0 |

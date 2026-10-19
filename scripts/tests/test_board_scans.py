@@ -348,3 +348,88 @@ class DeclaredRailTest(unittest.TestCase):
         plan = build_review_plan(db, intent=intent)
         self.assertEqual([c for c in plan['checks'] if c['rule'] == 'PWR-T01'], [])
 
+
+
+class NetNameSplitTest(unittest.TestCase):
+    """NET-A02：相似网名只在真正拼写分裂时报，命名惯例里的兄弟/收发/差分对不报。"""
+
+    @staticmethod
+    def names(nets):
+        db = board({'U1': 'MCU'}, {net: ['U1.' + str(i + 1)] for i, net in enumerate(nets)})
+        return [f['detail'] for f in scans(db, 'NET-A02')]
+
+    def test_sheet_path_does_not_inflate_similarity(self):
+        # bms-c1：/ESP32-C3 MCU/CAN_STB 与 /ESP32-C3 MCU/CAN_TX 只因共享层次路径而“相似”
+        self.assertEqual(self.names(['/ESP32-C3 MCU/CAN_STB', '/ESP32-C3 MCU/CAN_TX']), [])
+        self.assertEqual(self.names(['/Current Sense/CUR3', '/Current Sense/FCUR1']), [])
+        self.assertEqual(self.names(['/Charge-IC/FBG', '/Charge-IC/OFB']), [])
+
+    def test_real_split_is_still_reported(self):
+        self.assertEqual(len(self.names(['/power/VCC_3V3_MCU', '/power/VCC_3V3_MCU_1'])), 1)
+        self.assertEqual(len(self.names(['VBUS_5V0_SYS', 'VBUS5V0_SYS'])), 1)
+
+    def test_plus_minus_differential_pair_is_exempt(self):
+        self.assertEqual(self.names(['/usb/USB_DATA_D+', '/usb/USB_DATA_D-']), [])
+        self.assertEqual(self.names(['TMDS_DATA0+', 'TMDS_DATA0-']), [])
+
+    def test_numbered_siblings_across_sheets_are_exempt(self):
+        # moteus-c1：/aux2/AUX2_I2C_PULLUP 与 /stm32g4/AUX1_I2C_PULLUP 只差中间一个序号
+        self.assertEqual(self.names(['/aux2/AUX2_I2C_PULLUP', '/stm32g4/AUX1_I2C_PULLUP']), [])
+
+    def test_alphabetical_siblings_are_exempt(self):
+        self.assertEqual(self.names(['/Gate Driver/GATE_HIGH_A', '/Gate Driver/GATE_HIGH_B',
+                                     '/Gate Driver/GATE_HIGH_C']), [])
+        self.assertEqual(self.names(['/aux2/AUX2P_CHANNEL_A', '/aux2/AUX2P_CHANNEL_B']), [])
+
+    def test_transceiver_pairs_are_exempt(self):
+        self.assertEqual(self.names(['/TX_MCU/UART_DEBUG_RX', '/TX_MCU/UART_DEBUG_TX']), [])
+        self.assertEqual(self.names(['/RX_MCU/ISP_SERIAL_RXD', '/RX_MCU/ISP_SERIAL_TXD']), [])
+        self.assertEqual(self.names(['DRV8323_SPI_MISO', 'DRV8323_SPI_MOSI']), [])
+        self.assertEqual(self.names(['SENSOR_I2C_SCL', 'SENSOR_I2C_SDA']), [])
+
+    def test_same_named_dual_regulator_nets_are_exempt(self):
+        self.assertEqual(self.names(['/TX_AuxPower/BUCK_FB_12V_RAIL', '/TX_AuxPower/BUCK_FB_5V_RAIL']), [])
+        self.assertEqual(self.names(['/TX_AuxPower/BUCK_SW_12V_RAIL', '/TX_AuxPower/BUCK_SW_5V_RAIL']), [])
+
+
+class SupplyPinOnGroundTest(unittest.TestCase):
+    """PWR-A02：器件自己的供电脚（原生 power_in）落在地网上。"""
+
+    @staticmethod
+    def viper(vdd_net, native='power_in', pinname='VDD'):
+        # flyback-viper22a：U1.4 VDD（native power_in）直接落在 GND1。
+        db = board({'U1': 'VIPer22ADIP-E', 'C1': '10uF'},
+                   {'GND1': ['U1.1', 'C1.2'] + (['U1.4'] if vdd_net == 'GND1' else []),
+                    **({vdd_net: ['U1.4', 'C1.1']} if vdd_net != 'GND1' else {'VDD_AUX': ['C1.1']})},
+                   pinname={'U1.1': 'S', 'U1.4': pinname},
+                   native_pintype={'U1.1': 'passive', 'U1.4': native})
+        return db
+
+    def test_power_in_pin_on_ground_is_a_finding(self):
+        hits = scans(self.viper('GND1'), 'PWR-A02')
+        self.assertEqual([f['kind'] for f in hits], ['FINDING'])
+        self.assertIn('U1.4', hits[0]['detail'])
+        self.assertIn('GND1', hits[0]['detail'])
+
+    def test_ground_named_passive_and_output_pins_are_not_reported(self):
+        self.assertEqual(scans(self.viper('GND1', native='power_in', pinname='VSS'), 'PWR-A02'), [])
+        self.assertEqual(scans(self.viper('GND1', native='power_in', pinname='PGND'), 'PWR-A02'), [])
+        self.assertEqual(scans(self.viper('GND1', native='power_in', pinname='V_{SS}'), 'PWR-A02'), [])
+        self.assertEqual(scans(self.viper('GND1', native='power_in', pinname='PAD'), 'PWR-A02'), [])
+        self.assertEqual(scans(self.viper('GND1', native='power_in', pinname='PADGND'), 'PWR-A02'), [])
+        # isolated-serial-adapter：隔离 DC-DC 模块的 -Vin 就是输入回流端
+        self.assertEqual(scans(self.viper('GND1', native='power_in', pinname='-Vin'), 'PWR-A02'), [])
+        self.assertEqual(scans(self.viper('GND1', native='power_in', pinname='VIN-'), 'PWR-A02'), [])
+        self.assertEqual(scans(self.viper('GND1', native='passive'), 'PWR-A02'), [])
+        self.assertEqual(scans(self.viper('GND1', native='power_out'), 'PWR-A02'), [])
+
+    def test_other_power_in_names_on_ground_are_candidates(self):
+        # bms-c1：BQ76952 REGIN（内部 LDO 输入）接地，手册允许未用时接 VSS，只作候选
+        hits = scans(self.viper('GND1', native='power_in', pinname='REGIN'), 'PWR-A02')
+        self.assertEqual([f['kind'] for f in hits], ['CANDIDATE'])
+        # makerverse-motor-driver-2ch：库里脚名只有 "A"，没有供电含义，不报
+        self.assertEqual(scans(self.viper('GND1', native='power_in', pinname='A'), 'PWR-A02'), [])
+
+    def test_power_in_pin_on_its_own_rail_is_silent(self):
+        db = self.viper('VDD_AUX')
+        self.assertEqual([f for f in scans(db, 'PWR-A02') if '地' in f['title']], [])

@@ -1,0 +1,3011 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>flyback trafo devresi.kicad_sch</source>
+    <date>2026-10-18T21:00:04</date>
+    <tool>Eeschema 10.0.6</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>flyback trafo devresi.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="AT2">
+      <value>PC81710NIP1B</value>
+      <footprint>150nF 305VAc X2 kapasitor:SOP254P960X420-4N</footprint>
+      <datasheet>https://global.sharp/products/device/lineup/data/pdf/datasheet/PC8171xNSZ1B_e.pdf</datasheet>
+      <description>OPTOISOLATOR 5KV TRANS 4SMD</description>
+      <fields>
+        <field name="Description_1">OPTOISOLATOR 5KV TRANS 4SMD</field>
+        <field name="Height">4.2</field>
+        <field name="Manufacturer_Name">Sharp Microelectronics</field>
+        <field name="Manufacturer_Part_Number">PC81710NIP1B</field>
+        <field name="Mouser Part Number">852-PC81710NIP1B</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Sharp-Microelectronics/PC81710NIP1B?qs=MLItCLRbWswN8lAuXmPENg%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">150nF 305VAc X2 kapasitor:SOP254P960X420-4N</field>
+        <field name="Datasheet">https://global.sharp/products/device/lineup/data/pdf/datasheet/PC8171xNSZ1B_e.pdf</field>
+        <field name="Description">OPTOISOLATOR 5KV TRANS 4SMD</field>
+      </fields>
+      <libsource lib="optocuplar" part="PC81710NIP1B" description="OPTOISOLATOR 5KV TRANS 4SMD"/>
+      <property name="Description_1" value="OPTOISOLATOR 5KV TRANS 4SMD"/>
+      <property name="Height" value="4.2"/>
+      <property name="Manufacturer_Name" value="Sharp Microelectronics"/>
+      <property name="Manufacturer_Part_Number" value="PC81710NIP1B"/>
+      <property name="Mouser Part Number" value="852-PC81710NIP1B"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Sharp-Microelectronics/PC81710NIP1B?qs=MLItCLRbWswN8lAuXmPENg%3D%3D"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>16a82aa0-528a-4cbd-a6ec-a4adda68e738</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="4"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C4">
+      <value>220pF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <datasheet>https://content.kemet.com/datasheets/KEM_C1002_X7R_SMD.pdf</datasheet>
+      <description>Multilayer Ceramic Capacitors MLCC - SMD/SMT 220.PF 25.0V</description>
+      <fields>
+        <field name="Description_1">Multilayer Ceramic Capacitors MLCC - SMD/SMT 220.PF 25.0V</field>
+        <field name="Height">0.55</field>
+        <field name="Manufacturer_Name">KEMET</field>
+        <field name="Manufacturer_Part_Number">C0402C221K3RAC</field>
+        <field name="Mouser Part Number">N/A</field>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">Capacitor_SMD:C_0805_2012Metric</field>
+        <field name="Datasheet">https://content.kemet.com/datasheets/KEM_C1002_X7R_SMD.pdf</field>
+        <field name="Description">Multilayer Ceramic Capacitors MLCC - SMD/SMT 220.PF 25.0V</field>
+      </fields>
+      <libsource lib="220pF" part="C0402C221K3RAC" description="Multilayer Ceramic Capacitors MLCC - SMD/SMT 220.PF 25.0V"/>
+      <property name="Description_1" value="Multilayer Ceramic Capacitors MLCC - SMD/SMT 220.PF 25.0V"/>
+      <property name="Height" value="0.55"/>
+      <property name="Manufacturer_Name" value="KEMET"/>
+      <property name="Manufacturer_Part_Number" value="C0402C221K3RAC"/>
+      <property name="Mouser Part Number" value="N/A"/>
+      <property name="Mouser Price/Stock" value=""/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a0959869-34e8-48b6-87d8-1768515a4d49</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C5">
+      <value>33UF 400V</value>
+      <footprint>CAPPRD500W80D1275H2650</footprint>
+      <datasheet>https://datasheet.datasheetarchive.com/originals/dk/DKDS-9/176701.pdf</datasheet>
+      <description>Aluminum Electrolytic Capacitors - Radial Leaded 400volts 33uF AEC-Q200</description>
+      <fields>
+        <field name="Description_1">Aluminum Electrolytic Capacitors - Radial Leaded 400volts 33uF AEC-Q200</field>
+        <field name="Height">26.5</field>
+        <field name="Manufacturer_Name">Nichicon</field>
+        <field name="Manufacturer_Part_Number">UCY2G330MHD</field>
+        <field name="Mouser Part Number">647-UCY2G330MHD</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Nichicon/UCY2G330MHD/?qs=isV%252BNJxyrb4Z%2FnYyJffgyA%3D%3D</field>
+        <field name="Arrow Part Number">UCY2G330MHD</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/ucy2g330mhd/nichicon</field>
+        <field name="Footprint">CAPPRD500W80D1275H2650</field>
+        <field name="Datasheet">https://datasheet.datasheetarchive.com/originals/dk/DKDS-9/176701.pdf</field>
+        <field name="Description">Aluminum Electrolytic Capacitors - Radial Leaded 400volts 33uF AEC-Q200</field>
+      </fields>
+      <libsource lib="CAP ALUM 33UF 20% 400V RADIAL TH" part="UCY2G330MHD" description="Aluminum Electrolytic Capacitors - Radial Leaded 400volts 33uF AEC-Q200"/>
+      <property name="Description_1" value="Aluminum Electrolytic Capacitors - Radial Leaded 400volts 33uF AEC-Q200"/>
+      <property name="Height" value="26.5"/>
+      <property name="Manufacturer_Name" value="Nichicon"/>
+      <property name="Manufacturer_Part_Number" value="UCY2G330MHD"/>
+      <property name="Mouser Part Number" value="647-UCY2G330MHD"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Nichicon/UCY2G330MHD/?qs=isV%252BNJxyrb4Z%2FnYyJffgyA%3D%3D"/>
+      <property name="Arrow Part Number" value="UCY2G330MHD"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/ucy2g330mhd/nichicon"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cc697b2b-94e9-4400-8b22-6f7f1708581c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C7">
+      <value>2200PF</value>
+      <footprint>CAPC3216X135N</footprint>
+      <datasheet>https://eu.mouser.com/datasheet/2/210/Middle_and_High_Voltage_DS-1535659.pdf</datasheet>
+      <description>Multilayer Ceramic Capacitors MLCC - SMD/SMT 2200pF 10% 1000V</description>
+      <fields>
+        <field name="Description_1">Multilayer Ceramic Capacitors MLCC - SMD/SMT 2200pF 10% 1000V</field>
+        <field name="Height">1.35</field>
+        <field name="Manufacturer_Name">Walsin Technology Corporation</field>
+        <field name="Manufacturer_Part_Number">1206B222K102CT</field>
+        <field name="Mouser Part Number">791-1206B222K102CT</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Walsin/1206B222K102CT/?qs=fIkAfuXiAQI4C%252B7mwy%2FA%2FA%3D%3D</field>
+        <field name="Arrow Part Number">1206B222K102CT</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/1206b222k102ct/walsin-technology</field>
+        <field name="Footprint">CAPC3216X135N</field>
+        <field name="Datasheet">https://eu.mouser.com/datasheet/2/210/Middle_and_High_Voltage_DS-1535659.pdf</field>
+        <field name="Description">Multilayer Ceramic Capacitors MLCC - SMD/SMT 2200pF 10% 1000V</field>
+      </fields>
+      <libsource lib="CAP CER 2200PF 1KV X7R 1206" part="1206B222K102CT" description="Multilayer Ceramic Capacitors MLCC - SMD/SMT 2200pF 10% 1000V"/>
+      <property name="Description_1" value="Multilayer Ceramic Capacitors MLCC - SMD/SMT 2200pF 10% 1000V"/>
+      <property name="Height" value="1.35"/>
+      <property name="Manufacturer_Name" value="Walsin Technology Corporation"/>
+      <property name="Manufacturer_Part_Number" value="1206B222K102CT"/>
+      <property name="Mouser Part Number" value="791-1206B222K102CT"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Walsin/1206B222K102CT/?qs=fIkAfuXiAQI4C%252B7mwy%2FA%2FA%3D%3D"/>
+      <property name="Arrow Part Number" value="1206B222K102CT"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/1206b222k102ct/walsin-technology"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>70c1bb3b-8891-4d93-bdf5-ef57aa8d5268</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C11">
+      <value>100nF 25V</value>
+      <footprint>1uF 50V X7R capasitor:CAPC3216X170N</footprint>
+      <datasheet>http://www.vishay.com/docs/45200/vjhirelseries.pdf</datasheet>
+      <description>Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</description>
+      <fields>
+        <field name="Description_1">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+        <field name="Height">1.7</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Mouser Part Number">77-VJ1206Y104JXXCBC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=77-VJ1206Y104JXXCBC</field>
+        <field name="Arrow Part Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/vj1206y104jxxcw1bc/vishay</field>
+        <field name="Footprint">1uF 50V X7R capasitor:CAPC3216X170N</field>
+        <field name="Datasheet">http://www.vishay.com/docs/45200/vjhirelseries.pdf</field>
+        <field name="Description">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+      </fields>
+      <libsource lib="100nF 25V smd1206 capasitor" part="VJ1206Y104JXXCW1BC" description="Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R"/>
+      <property name="Description_1" value="Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R"/>
+      <property name="Height" value="1.7"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="VJ1206Y104JXXCW1BC"/>
+      <property name="Mouser Part Number" value="77-VJ1206Y104JXXCBC"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.com/Search/Refine.aspx?Keyword=77-VJ1206Y104JXXCBC"/>
+      <property name="Arrow Part Number" value="VJ1206Y104JXXCW1BC"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/vj1206y104jxxcw1bc/vishay"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>25613f1b-853c-4e09-9e0b-30dc63e59d6f</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C12">
+      <value>1nF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <datasheet>http://www.vishay.com/docs/45200/vjhirelseries.pdf</datasheet>
+      <description>Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</description>
+      <fields>
+        <field name="Description_1">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+        <field name="Height">1.7</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Mouser Part Number">77-VJ1206Y104JXXCBC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=77-VJ1206Y104JXXCBC</field>
+        <field name="Arrow Part Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/vj1206y104jxxcw1bc/vishay</field>
+        <field name="Footprint">Capacitor_SMD:C_0805_2012Metric</field>
+        <field name="Datasheet">http://www.vishay.com/docs/45200/vjhirelseries.pdf</field>
+        <field name="Description">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+      </fields>
+      <libsource lib="100nF 25V smd1206 capasitor" part="VJ1206Y104JXXCW1BC" description="Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R"/>
+      <property name="Description_1" value="Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R"/>
+      <property name="Height" value="1.7"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="VJ1206Y104JXXCW1BC"/>
+      <property name="Mouser Part Number" value="77-VJ1206Y104JXXCBC"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.com/Search/Refine.aspx?Keyword=77-VJ1206Y104JXXCBC"/>
+      <property name="Arrow Part Number" value="VJ1206Y104JXXCW1BC"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/vj1206y104jxxcw1bc/vishay"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4d619206-c822-41a8-9c00-3e07a16a08f7</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C13">
+      <value>100nF 25V</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <datasheet>http://www.vishay.com/docs/45200/vjhirelseries.pdf</datasheet>
+      <description>Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</description>
+      <fields>
+        <field name="Description_1">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+        <field name="Height">1.7</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Mouser Part Number">77-VJ1206Y104JXXCBC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=77-VJ1206Y104JXXCBC</field>
+        <field name="Arrow Part Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/vj1206y104jxxcw1bc/vishay</field>
+        <field name="Footprint">Capacitor_SMD:C_0805_2012Metric</field>
+        <field name="Datasheet">http://www.vishay.com/docs/45200/vjhirelseries.pdf</field>
+        <field name="Description">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+      </fields>
+      <libsource lib="100nF 25V smd1206 capasitor" part="VJ1206Y104JXXCW1BC" description="Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R"/>
+      <property name="Description_1" value="Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R"/>
+      <property name="Height" value="1.7"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="VJ1206Y104JXXCW1BC"/>
+      <property name="Mouser Part Number" value="77-VJ1206Y104JXXCBC"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.com/Search/Refine.aspx?Keyword=77-VJ1206Y104JXXCBC"/>
+      <property name="Arrow Part Number" value="VJ1206Y104JXXCW1BC"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/vj1206y104jxxcw1bc/vishay"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>01c95ff9-c0ab-429c-a62a-ca91c19a68e1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C20">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_1206_3216Metric</footprint>
+      <datasheet>http://www.vishay.com/docs/45200/vjhirelseries.pdf</datasheet>
+      <description>Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</description>
+      <fields>
+        <field name="Description_1">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+        <field name="Height">1.7</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Mouser Part Number">77-VJ1206Y104JXXCBC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=77-VJ1206Y104JXXCBC</field>
+        <field name="Arrow Part Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/vj1206y104jxxcw1bc/vishay</field>
+        <field name="Footprint">Capacitor_SMD:C_1206_3216Metric</field>
+        <field name="Datasheet">http://www.vishay.com/docs/45200/vjhirelseries.pdf</field>
+        <field name="Description">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+      </fields>
+      <libsource lib="100nF 25V smd1206 capasitor" part="VJ1206Y104JXXCW1BC" description="Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R"/>
+      <property name="Description_1" value="Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R"/>
+      <property name="Height" value="1.7"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="VJ1206Y104JXXCW1BC"/>
+      <property name="Mouser Part Number" value="77-VJ1206Y104JXXCBC"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.com/Search/Refine.aspx?Keyword=77-VJ1206Y104JXXCBC"/>
+      <property name="Arrow Part Number" value="VJ1206Y104JXXCW1BC"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/vj1206y104jxxcw1bc/vishay"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bee9c53b-2eec-4b15-98ed-29e5fcd16d0c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C21">
+      <value>1uF 25V capasitor</value>
+      <footprint>1uF 50V X7R capasitor:CAPC3216X170N</footprint>
+      <datasheet>http://www.vishay.com/docs/45200/vjhirelseries.pdf</datasheet>
+      <description>Multilayer Ceramic Capacitors MLCC - SMD/SMT 1206 1uF 25volts Non-Magnetic</description>
+      <fields>
+        <field name="Description_1">Multilayer Ceramic Capacitors MLCC - SMD/SMT 1206 1uF 25volts Non-Magnetic</field>
+        <field name="Height">1.7</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">VJ1206Y105KCXAT</field>
+        <field name="Mouser Part Number">77-VJ1206Y105KCXAT</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Vitramon/VJ1206Y105KCXAT?qs=oomPkbqnLXfLtU42Fz8kiQ%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">1uF 50V X7R capasitor:CAPC3216X170N</field>
+        <field name="Datasheet">http://www.vishay.com/docs/45200/vjhirelseries.pdf</field>
+        <field name="Description">Multilayer Ceramic Capacitors MLCC - SMD/SMT 1206 1uF 25volts Non-Magnetic</field>
+      </fields>
+      <libsource lib="1uF 25V capasitor" part="VJ1206Y105KCXAT" description="Multilayer Ceramic Capacitors MLCC - SMD/SMT 1206 1uF 25volts Non-Magnetic"/>
+      <property name="Description_1" value="Multilayer Ceramic Capacitors MLCC - SMD/SMT 1206 1uF 25volts Non-Magnetic"/>
+      <property name="Height" value="1.7"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="VJ1206Y105KCXAT"/>
+      <property name="Mouser Part Number" value="77-VJ1206Y105KCXAT"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Vishay-Vitramon/VJ1206Y105KCXAT?qs=oomPkbqnLXfLtU42Fz8kiQ%3D%3D"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fd5b91c8-0b1a-4110-99bb-41d428b65198</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C22">
+      <value>47uF</value>
+      <footprint>47uF 25V capasitor:CAPPRD200W50D525H1250</footprint>
+      <datasheet>https://componentsearchengine.com/Datasheets/2/25YXJ47MTA5X11.pdf</datasheet>
+      <description>RUBYCON - 25YXJ47MTA5X11 - CAP, 47F, 25V, 20%</description>
+      <fields>
+        <field name="Description_1">RUBYCON - 25YXJ47MTA5X11 - CAP, 47F, 25V, 20%</field>
+        <field name="Height">12.5</field>
+        <field name="Manufacturer_Name">Rubycon</field>
+        <field name="Manufacturer_Part_Number">25YXJ47MTA5X11</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">47uF 25V capasitor:CAPPRD200W50D525H1250</field>
+        <field name="Datasheet">https://componentsearchengine.com/Datasheets/2/25YXJ47MTA5X11.pdf</field>
+        <field name="Description">RUBYCON - 25YXJ47MTA5X11 - CAP, 47F, 25V, 20%</field>
+      </fields>
+      <libsource lib="47uF 25V capasitor" part="25YXJ47MTA5X11" description="RUBYCON - 25YXJ47MTA5X11 - CAP, 47F, 25V, 20%"/>
+      <property name="Description_1" value="RUBYCON - 25YXJ47MTA5X11 - CAP, 47F, 25V, 20%"/>
+      <property name="Height" value="12.5"/>
+      <property name="Manufacturer_Name" value="Rubycon"/>
+      <property name="Manufacturer_Part_Number" value="25YXJ47MTA5X11"/>
+      <property name="Mouser Part Number" value=""/>
+      <property name="Mouser Price/Stock" value=""/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1fba7d2a-b756-406e-b821-2dab4dbff259</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C23">
+      <value>25V 2200pF</value>
+      <footprint>CAPC3216X94N</footprint>
+      <datasheet>https://spicat.kyocera-avx.com/product/mlcc/chartview/12063A222JAT2A/DataSheet/NP0</datasheet>
+      <description>Multilayer Ceramic Capacitors MLCC - SMD/SMT 25V 2200pF C0G 1206 5%</description>
+      <fields>
+        <field name="Description_1">Multilayer Ceramic Capacitors MLCC - SMD/SMT 25V 2200pF C0G 1206 5%</field>
+        <field name="Height">0.94</field>
+        <field name="Manufacturer_Name">Kyocera AVX</field>
+        <field name="Manufacturer_Part_Number">12063A222JAT2A</field>
+        <field name="Mouser Part Number">581-12063A222JAT2A</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=581-12063A222JAT2A</field>
+        <field name="Arrow Part Number">12063A222JAT2A</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/12063a222jat2a/avx</field>
+        <field name="Footprint">CAPC3216X94N</field>
+        <field name="Datasheet">https://spicat.kyocera-avx.com/product/mlcc/chartview/12063A222JAT2A/DataSheet/NP0</field>
+        <field name="Description">Multilayer Ceramic Capacitors MLCC - SMD/SMT 25V 2200pF C0G 1206 5%</field>
+      </fields>
+      <libsource lib="CAP CER 2200PF 25V C0GNP0 1206" part="12063A222JAT2A" description="Multilayer Ceramic Capacitors MLCC - SMD/SMT 25V 2200pF C0G 1206 5%"/>
+      <property name="Description_1" value="Multilayer Ceramic Capacitors MLCC - SMD/SMT 25V 2200pF C0G 1206 5%"/>
+      <property name="Height" value="0.94"/>
+      <property name="Manufacturer_Name" value="Kyocera AVX"/>
+      <property name="Manufacturer_Part_Number" value="12063A222JAT2A"/>
+      <property name="Mouser Part Number" value="581-12063A222JAT2A"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.com/Search/Refine.aspx?Keyword=581-12063A222JAT2A"/>
+      <property name="Arrow Part Number" value="12063A222JAT2A"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/12063a222jat2a/avx"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f37c74af-9a72-4eb2-b8c9-276c0bdf48d5</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C26">
+      <value>2.2nF 300Vac Y2</value>
+      <footprint>2.2nF 300Vac Y2:B32021__13_x_4_</footprint>
+      <datasheet>https://product.tdk.com/system/files/dam/doc/product/capacitor/film/emi/data_sheet/20/20/db/fc_2009/y2_b32021_026.pdf</datasheet>
+      <description>EMI Suppression Capacitors, 0.0022uF, 300Vrms AC, 4m(W) x 9m(H) x 13m(L)</description>
+      <fields>
+        <field name="Description_1">EMI Suppression Capacitors, 0.0022uF, 300Vrms AC, 4m(W) x 9m(H) x 13m(L)</field>
+        <field name="Height"/>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B32021A3222M189</field>
+        <field name="Mouser Part Number">871-B32021A3222M189</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B32021A3222M189?qs=FNSAlmj86E1UZItQdZ73ug%3D%3D</field>
+        <field name="Arrow Part Number">B32021A3222M189</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/b32021a3222m189/tdk?region=nac</field>
+        <field name="Footprint">2.2nF 300Vac Y2:B32021__13_x_4_</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/capacitor/film/emi/data_sheet/20/20/db/fc_2009/y2_b32021_026.pdf</field>
+        <field name="Description">EMI Suppression Capacitors, 0.0022uF, 300Vrms AC, 4m(W) x 9m(H) x 13m(L)</field>
+      </fields>
+      <libsource lib="Y2 cap" part="B32021A3222M189" description="EMI Suppression Capacitors, 0.0022uF, 300Vrms AC, 4m(W) x 9m(H) x 13m(L)"/>
+      <property name="Description_1" value="EMI Suppression Capacitors, 0.0022uF, 300Vrms AC, 4m(W) x 9m(H) x 13m(L)"/>
+      <property name="Height" value=""/>
+      <property name="Manufacturer_Name" value="TDK"/>
+      <property name="Manufacturer_Part_Number" value="B32021A3222M189"/>
+      <property name="Mouser Part Number" value="871-B32021A3222M189"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B32021A3222M189?qs=FNSAlmj86E1UZItQdZ73ug%3D%3D"/>
+      <property name="Arrow Part Number" value="B32021A3222M189"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/b32021a3222m189/tdk?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>813b1fce-79f3-4a09-a32c-e9fd8a57b5aa</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C27">
+      <value>470 uF 35V capasitor</value>
+      <footprint>470uF 35V capasitor:CAPPRD500W65D1000H1750</footprint>
+      <datasheet>http://industrial.panasonic.com/cdbs/www-data/pdf/RDF0000/ABA0000C1259.pdf</datasheet>
+      <description>Capacitor Al FR 470uF 35V 10x16 Panasonic 470uF 35 V dc Aluminium Electrolytic Capacitor, FR Radial Series 8000h 10 Dia. x 16mm</description>
+      <fields>
+        <field name="Description_1">Capacitor Al FR 470uF 35V 10x16 Panasonic 470uF 35 V dc Aluminium Electrolytic Capacitor, FR Radial Series 8000h 10 Dia. x 16mm</field>
+        <field name="Height">17.5</field>
+        <field name="Manufacturer_Name">Panasonic</field>
+        <field name="Manufacturer_Part_Number">EEUFR1V471</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number">EEUFR1V471</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/eeufr1v471/panasonic</field>
+        <field name="Footprint">470uF 35V capasitor:CAPPRD500W65D1000H1750</field>
+        <field name="Datasheet">http://industrial.panasonic.com/cdbs/www-data/pdf/RDF0000/ABA0000C1259.pdf</field>
+        <field name="Description">Capacitor Al FR 470uF 35V 10x16 Panasonic 470uF 35 V dc Aluminium Electrolytic Capacitor, FR Radial Series 8000h 10 Dia. x 16mm</field>
+      </fields>
+      <libsource lib="EEUFR1V471" part="EEUFR1V471" description="Capacitor Al FR 470uF 35V 10x16 Panasonic 470uF 35 V dc Aluminium Electrolytic Capacitor, FR Radial Series 8000h 10 Dia. x 16mm"/>
+      <property name="Description_1" value="Capacitor Al FR 470uF 35V 10x16 Panasonic 470uF 35 V dc Aluminium Electrolytic Capacitor, FR Radial Series 8000h 10 Dia. x 16mm"/>
+      <property name="Height" value="17.5"/>
+      <property name="Manufacturer_Name" value="Panasonic"/>
+      <property name="Manufacturer_Part_Number" value="EEUFR1V471"/>
+      <property name="Mouser Part Number" value=""/>
+      <property name="Mouser Price/Stock" value=""/>
+      <property name="Arrow Part Number" value="EEUFR1V471"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/eeufr1v471/panasonic"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>214e7667-2ea9-4fe4-a05f-4eb4f537e2a0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C28">
+      <value>1uF 50V X7R capasitor</value>
+      <footprint>1uF 50V X7R capasitor:CAPC3216X170N</footprint>
+      <datasheet>http://www.vishay.com/docs/45200/vjhirelseries.pdf</datasheet>
+      <description>VISHAY - VJ1206Y105KXATW1BC - SMD Multilayer Ceramic Capacitor, 1 F, 50 V, 1206 [3216 Metric], +/- 10%, X7R, VJ Series</description>
+      <fields>
+        <field name="Description_1">VISHAY - VJ1206Y105KXATW1BC - SMD Multilayer Ceramic Capacitor, 1 F, 50 V, 1206 [3216 Metric], +/- 10%, X7R, VJ Series</field>
+        <field name="Height">1.7</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">VJ1206Y105KXATW1BC</field>
+        <field name="Mouser Part Number">77-VJ126Y105KXATW1BC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Vitramon/VJ1206Y105KXATW1BC/?qs=eZJMd5XsRrh8UTJm8i9W0Q%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">1uF 50V X7R capasitor:CAPC3216X170N</field>
+        <field name="Datasheet">http://www.vishay.com/docs/45200/vjhirelseries.pdf</field>
+        <field name="Description">VISHAY - VJ1206Y105KXATW1BC - SMD Multilayer Ceramic Capacitor, 1 F, 50 V, 1206 [3216 Metric], +/- 10%, X7R, VJ Series</field>
+      </fields>
+      <libsource lib="1uF 50V X7R capasitor" part="VJ1206Y105KXATW1BC" description="VISHAY - VJ1206Y105KXATW1BC - SMD Multilayer Ceramic Capacitor, 1 F, 50 V, 1206 [3216 Metric], +/- 10%, X7R, VJ Series"/>
+      <property name="Description_1" value="VISHAY - VJ1206Y105KXATW1BC - SMD Multilayer Ceramic Capacitor, 1 F, 50 V, 1206 [3216 Metric], +/- 10%, X7R, VJ Series"/>
+      <property name="Height" value="1.7"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="VJ1206Y105KXATW1BC"/>
+      <property name="Mouser Part Number" value="77-VJ126Y105KXATW1BC"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Vishay-Vitramon/VJ1206Y105KXATW1BC/?qs=eZJMd5XsRrh8UTJm8i9W0Q%3D%3D"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e1652197-7a2f-4206-a6c3-74f5d1951c2e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C35">
+      <value>0.15UF X2</value>
+      <footprint>CAP FILM 0.15UF 10% 305VAC RAD:B32932A__18_x_7_</footprint>
+      <datasheet>https://product.tdk.com/system/files/dam/doc/product/capacitor/film/emi/data_sheet/20/20/ds/mkt_b32932_936.pdf</datasheet>
+      <description>EMI Suppression Capacitors, 0.15uF, 305Vrms AC, 7m(W) x 12.5m(H) x 18m(L)</description>
+      <fields>
+        <field name="Description_1">EMI Suppression Capacitors, 0.15uF, 305Vrms AC, 7m(W) x 12.5m(H) x 18m(L)</field>
+        <field name="Height"/>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B32932A3154K000</field>
+        <field name="Mouser Part Number">871-B32932A3154K000</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B32932A3154K000?qs=o70DwCUVFUh8CIyECYm%252BNg%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">CAP FILM 0.15UF 10% 305VAC RAD:B32932A__18_x_7_</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/capacitor/film/emi/data_sheet/20/20/ds/mkt_b32932_936.pdf</field>
+        <field name="Description">EMI Suppression Capacitors, 0.15uF, 305Vrms AC, 7m(W) x 12.5m(H) x 18m(L)</field>
+      </fields>
+      <libsource lib="CAP FILM 0.15UF 10% 305VAC RAD" part="B32932A3154K000" description="EMI Suppression Capacitors, 0.15uF, 305Vrms AC, 7m(W) x 12.5m(H) x 18m(L)"/>
+      <property name="Description_1" value="EMI Suppression Capacitors, 0.15uF, 305Vrms AC, 7m(W) x 12.5m(H) x 18m(L)"/>
+      <property name="Height" value=""/>
+      <property name="Manufacturer_Name" value="TDK"/>
+      <property name="Manufacturer_Part_Number" value="B32932A3154K000"/>
+      <property name="Mouser Part Number" value="871-B32932A3154K000"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B32932A3154K000?qs=o70DwCUVFUh8CIyECYm%252BNg%3D%3D"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9ff1cef6-c86e-42de-aa82-bab1deca1fca</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D2">
+      <value>ES2D</value>
+      <footprint>ES2D Diyot:DIOM5336X265N</footprint>
+      <datasheet>https://www.onsemi.com/pub/Collateral/ES2D-D.pdf</datasheet>
+      <description>Superfast recovery time for highefficiency.; Built-in strain relief. ; Low profile package. ; For surface mount applications. ; Glass passivated junction.</description>
+      <fields>
+        <field name="Description_1">Superfast recovery time for highefficiency.; Built-in strain relief. ; Low profile package. ; For surface mount applications. ; Glass passivated junction.</field>
+        <field name="Height">2.65</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">ES2D</field>
+        <field name="Mouser Part Number">512-ES2D</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/ES2D?qs=3kCnFMRqPtEmDfWv8SnLIg%3D%3D</field>
+        <field name="Arrow Part Number">ES2D</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/es2d/on-semiconductor?region=nac</field>
+        <field name="Footprint">ES2D Diyot:DIOM5336X265N</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/ES2D-D.pdf</field>
+        <field name="Description">Superfast recovery time for highefficiency.; Built-in strain relief. ; Low profile package. ; For surface mount applications. ; Glass passivated junction.</field>
+      </fields>
+      <libsource lib="ES2D" part="ES2D" description="Superfast recovery time for highefficiency.; Built-in strain relief. ; Low profile package. ; For surface mount applications. ; Glass passivated junction."/>
+      <property name="Description_1" value="Superfast recovery time for highefficiency.; Built-in strain relief. ; Low profile package. ; For surface mount applications. ; Glass passivated junction."/>
+      <property name="Height" value="2.65"/>
+      <property name="Manufacturer_Name" value="onsemi"/>
+      <property name="Manufacturer_Part_Number" value="ES2D"/>
+      <property name="Mouser Part Number" value="512-ES2D"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/ES2D?qs=3kCnFMRqPtEmDfWv8SnLIg%3D%3D"/>
+      <property name="Arrow Part Number" value="ES2D"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/es2d/on-semiconductor?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2b5383d6-75c1-44c0-90e9-86e7b67b7be0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D3">
+      <value>S2M</value>
+      <footprint>DIOM5336X265N</footprint>
+      <datasheet>https://www.onsemi.com/pub/Collateral/S2M-D.PDF</datasheet>
+      <description>High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</description>
+      <fields>
+        <field name="Description_1">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+        <field name="Height">2.65</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">S2M</field>
+        <field name="Mouser Part Number">512-S2M</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/S2M?qs=a0wxjULRyoFPR8XEAEgF8g%3D%3D</field>
+        <field name="Arrow Part Number">S2M</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/s2m/on-semiconductor?utm_currency=USD&amp;region=nac</field>
+        <field name="Footprint">DIOM5336X265N</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/S2M-D.PDF</field>
+        <field name="Description">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+      </fields>
+      <libsource lib="S2M" part="S2M" description="High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant"/>
+      <property name="Description_1" value="High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant"/>
+      <property name="Height" value="2.65"/>
+      <property name="Manufacturer_Name" value="onsemi"/>
+      <property name="Manufacturer_Part_Number" value="S2M"/>
+      <property name="Mouser Part Number" value="512-S2M"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/S2M?qs=a0wxjULRyoFPR8XEAEgF8g%3D%3D"/>
+      <property name="Arrow Part Number" value="S2M"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/s2m/on-semiconductor?utm_currency=USD&amp;region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>89b5e769-284f-46bb-82a4-4c200f3657c5</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D8">
+      <value>S2M</value>
+      <footprint>DIOM5336X265N</footprint>
+      <datasheet>https://www.onsemi.com/pub/Collateral/S2M-D.PDF</datasheet>
+      <description>High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</description>
+      <fields>
+        <field name="Description_1">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+        <field name="Height">2.65</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">S2M</field>
+        <field name="Mouser Part Number">512-S2M</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/S2M?qs=a0wxjULRyoFPR8XEAEgF8g%3D%3D</field>
+        <field name="Arrow Part Number">S2M</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/s2m/on-semiconductor?utm_currency=USD&amp;region=nac</field>
+        <field name="Footprint">DIOM5336X265N</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/S2M-D.PDF</field>
+        <field name="Description">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+      </fields>
+      <libsource lib="S2M" part="S2M" description="High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant"/>
+      <property name="Description_1" value="High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant"/>
+      <property name="Height" value="2.65"/>
+      <property name="Manufacturer_Name" value="onsemi"/>
+      <property name="Manufacturer_Part_Number" value="S2M"/>
+      <property name="Mouser Part Number" value="512-S2M"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/S2M?qs=a0wxjULRyoFPR8XEAEgF8g%3D%3D"/>
+      <property name="Arrow Part Number" value="S2M"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/s2m/on-semiconductor?utm_currency=USD&amp;region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>285655a1-0809-45b3-9e05-efbb802a4a0a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D12">
+      <value>S2M</value>
+      <footprint>DIOM5336X265N</footprint>
+      <datasheet>https://www.onsemi.com/pub/Collateral/S2M-D.PDF</datasheet>
+      <description>High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</description>
+      <fields>
+        <field name="Description_1">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+        <field name="Height">2.65</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">S2M</field>
+        <field name="Mouser Part Number">512-S2M</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/S2M?qs=a0wxjULRyoFPR8XEAEgF8g%3D%3D</field>
+        <field name="Arrow Part Number">S2M</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/s2m/on-semiconductor?utm_currency=USD&amp;region=nac</field>
+        <field name="Footprint">DIOM5336X265N</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/S2M-D.PDF</field>
+        <field name="Description">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+      </fields>
+      <libsource lib="S2M" part="S2M" description="High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant"/>
+      <property name="Description_1" value="High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant"/>
+      <property name="Height" value="2.65"/>
+      <property name="Manufacturer_Name" value="onsemi"/>
+      <property name="Manufacturer_Part_Number" value="S2M"/>
+      <property name="Mouser Part Number" value="512-S2M"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/S2M?qs=a0wxjULRyoFPR8XEAEgF8g%3D%3D"/>
+      <property name="Arrow Part Number" value="S2M"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/s2m/on-semiconductor?utm_currency=USD&amp;region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>84dcd498-a349-4c12-8054-e07995883700</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D13">
+      <value>S2M</value>
+      <footprint>DIOM5336X265N</footprint>
+      <datasheet>https://www.onsemi.com/pub/Collateral/S2M-D.PDF</datasheet>
+      <description>High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</description>
+      <fields>
+        <field name="Description_1">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+        <field name="Height">2.65</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">S2M</field>
+        <field name="Mouser Part Number">512-S2M</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/S2M?qs=a0wxjULRyoFPR8XEAEgF8g%3D%3D</field>
+        <field name="Arrow Part Number">S2M</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/s2m/on-semiconductor?utm_currency=USD&amp;region=nac</field>
+        <field name="Footprint">DIOM5336X265N</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/S2M-D.PDF</field>
+        <field name="Description">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+      </fields>
+      <libsource lib="S2M" part="S2M" description="High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant"/>
+      <property name="Description_1" value="High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant"/>
+      <property name="Height" value="2.65"/>
+      <property name="Manufacturer_Name" value="onsemi"/>
+      <property name="Manufacturer_Part_Number" value="S2M"/>
+      <property name="Mouser Part Number" value="512-S2M"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/S2M?qs=a0wxjULRyoFPR8XEAEgF8g%3D%3D"/>
+      <property name="Arrow Part Number" value="S2M"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/s2m/on-semiconductor?utm_currency=USD&amp;region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>23cf753a-76b8-49ed-a0f0-36ee878373f7</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D15">
+      <value>US1M-13-F</value>
+      <footprint>SODFL5226X240N</footprint>
+      <datasheet>https://www.diodes.com/assets/Datasheets/ds16008.pdf</datasheet>
+      <description>Diode Fast 1A 1000V 75ns SMA Diodes Inc US1M-13-F, SMT Switching Diode, 1000V 1A, 75ns, 2-Pin DO-214AC</description>
+      <fields>
+        <field name="Description_1">Diode Fast 1A 1000V 75ns SMA Diodes Inc US1M-13-F, SMT Switching Diode, 1000V 1A, 75ns, 2-Pin DO-214AC</field>
+        <field name="Height">2.4</field>
+        <field name="Manufacturer_Name">Diodes Incorporated</field>
+        <field name="Manufacturer_Part_Number">US1M-13-F</field>
+        <field name="Mouser Part Number">621-US1M-F</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Diodes-Incorporated/US1M-13-F?qs=eQQ5Ftq4seWl6gFwdb8vMg%3D%3D</field>
+        <field name="Arrow Part Number">US1M-13-F</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/us1m-13-f/diodes-incorporated?utm_currency=USD&amp;region=europe</field>
+        <field name="Footprint">SODFL5226X240N</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/ds16008.pdf</field>
+        <field name="Description">Diode Fast 1A 1000V 75ns SMA Diodes Inc US1M-13-F, SMT Switching Diode, 1000V 1A, 75ns, 2-Pin DO-214AC</field>
+      </fields>
+      <libsource lib="US1M-13-F diot" part="US1M-13-F" description="Diode Fast 1A 1000V 75ns SMA Diodes Inc US1M-13-F, SMT Switching Diode, 1000V 1A, 75ns, 2-Pin DO-214AC"/>
+      <property name="Description_1" value="Diode Fast 1A 1000V 75ns SMA Diodes Inc US1M-13-F, SMT Switching Diode, 1000V 1A, 75ns, 2-Pin DO-214AC"/>
+      <property name="Height" value="2.4"/>
+      <property name="Manufacturer_Name" value="Diodes Incorporated"/>
+      <property name="Manufacturer_Part_Number" value="US1M-13-F"/>
+      <property name="Mouser Part Number" value="621-US1M-F"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Diodes-Incorporated/US1M-13-F?qs=eQQ5Ftq4seWl6gFwdb8vMg%3D%3D"/>
+      <property name="Arrow Part Number" value="US1M-13-F"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/us1m-13-f/diodes-incorporated?utm_currency=USD&amp;region=europe"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6164d3d8-013c-450d-8f21-47752c26cf17</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D16">
+      <value>SB3200</value>
+      <footprint>DIOAD2510W125L750D440</footprint>
+      <datasheet>https://4donline.ihs.com/images/VipMasterIC/IC/DISE/DISES01075/DISES01075-1.pdf?hkey=EF798316E3902B6ED9A73243A3159BB0</datasheet>
+      <description>Diode 200 V 3A Through Hole DO-201AD</description>
+      <fields>
+        <field name="Description_1">Diode 200 V 3A Through Hole DO-201AD</field>
+        <field name="Height"/>
+        <field name="Manufacturer_Name">Diotec</field>
+        <field name="Manufacturer_Part_Number">SB3200</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">DIOAD2510W125L750D440</field>
+        <field name="Datasheet">https://4donline.ihs.com/images/VipMasterIC/IC/DISE/DISES01075/DISES01075-1.pdf?hkey=EF798316E3902B6ED9A73243A3159BB0</field>
+        <field name="Description">Diode 200 V 3A Through Hole DO-201AD</field>
+      </fields>
+      <libsource lib="diot SB3200 200 V 3A Through Hole" part="SB3200" description="Diode 200 V 3A Through Hole DO-201AD"/>
+      <property name="Description_1" value="Diode 200 V 3A Through Hole DO-201AD"/>
+      <property name="Height" value=""/>
+      <property name="Manufacturer_Name" value="Diotec"/>
+      <property name="Manufacturer_Part_Number" value="SB3200"/>
+      <property name="Mouser Part Number" value=""/>
+      <property name="Mouser Price/Stock" value=""/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ec50b88a-17dc-4c97-b3f9-3aad3dae7566</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="F1">
+      <value>37411000430</value>
+      <footprint>FUSE HOLDER 10AMP:WR-FSH_THT_2</footprint>
+      <datasheet>https://www.littelfuse.com/assetdocs/fuse-374-datasheet?assetguid=3a419d96-9ce7-47cd-8c71-4ff91f37569c</datasheet>
+      <description>Fuses with Leads - Through Hole 250V UL TL SL 1A TR5</description>
+      <fields>
+        <field name="Description_1">Fuses with Leads - Through Hole 250V UL TL SL 1A TR5</field>
+        <field name="Height">8</field>
+        <field name="Manufacturer_Name">LITTELFUSE</field>
+        <field name="Manufacturer_Part_Number">37411000430</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number">37411000430</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/37411000430/littelfuse?region=europe</field>
+        <field name="Footprint">FUSE HOLDER 10AMP:WR-FSH_THT_2</field>
+        <field name="Datasheet">https://www.littelfuse.com/assetdocs/fuse-374-datasheet?assetguid=3a419d96-9ce7-47cd-8c71-4ff91f37569c</field>
+        <field name="Description">Fuses with Leads - Through Hole 250V UL TL SL 1A TR5</field>
+      </fields>
+      <libsource lib="FLYBACK fuse" part="37411000430" description="Fuses with Leads - Through Hole 250V UL TL SL 1A TR5"/>
+      <property name="Description_1" value="Fuses with Leads - Through Hole 250V UL TL SL 1A TR5"/>
+      <property name="Height" value="8"/>
+      <property name="Manufacturer_Name" value="LITTELFUSE"/>
+      <property name="Manufacturer_Part_Number" value="37411000430"/>
+      <property name="Mouser Part Number" value=""/>
+      <property name="Mouser Price/Stock" value=""/>
+      <property name="Arrow Part Number" value="37411000430"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/37411000430/littelfuse?region=europe"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c6ae4078-b2d1-4f2e-9904-e563fb85b3fa</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FL2">
+      <value>39mH 0.7A</value>
+      <footprint>B82732R2701B030</footprint>
+      <datasheet>https://product.tdk.com/system/files/dam/doc/product/emc/emc/line-filter/data_sheet/30/db/ind_2008/b82732r_w.pdf</datasheet>
+      <description>Power Line Chokes, L=39mH  Rated current=0.7A, LxWxT:24mmx16.5mmx23.5mm</description>
+      <fields>
+        <field name="Description_1">Power Line Chokes, L=39mH  Rated current=0.7A, LxWxT:24mmx16.5mmx23.5mm</field>
+        <field name="Height">23.5</field>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B82732R2701B030</field>
+        <field name="Mouser Part Number">871-B82732R2701B030</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B82732R2701B030/?qs=x3Z3TaiycdvnIGyKwS1mEw%3D%3D</field>
+        <field name="Arrow Part Number">B82732R2701B030</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/b82732r2701b030/epcos-tdk</field>
+        <field name="Footprint">B82732R2701B030</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/emc/emc/line-filter/data_sheet/30/db/ind_2008/b82732r_w.pdf</field>
+        <field name="Description">Power Line Chokes, L=39mH  Rated current=0.7A, LxWxT:24mmx16.5mmx23.5mm</field>
+      </fields>
+      <libsource lib="ortak mod bobin 39mH 0.7A" part="B82732R2701B030" description="Power Line Chokes, L=39mH  Rated current=0.7A, LxWxT:24mmx16.5mmx23.5mm"/>
+      <property name="Description_1" value="Power Line Chokes, L=39mH  Rated current=0.7A, LxWxT:24mmx16.5mmx23.5mm"/>
+      <property name="Height" value="23.5"/>
+      <property name="Manufacturer_Name" value="TDK"/>
+      <property name="Manufacturer_Part_Number" value="B82732R2701B030"/>
+      <property name="Mouser Part Number" value="871-B82732R2701B030"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B82732R2701B030/?qs=x3Z3TaiycdvnIGyKwS1mEw%3D%3D"/>
+      <property name="Arrow Part Number" value="B82732R2701B030"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/b82732r2701b030/epcos-tdk"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>548514da-fd39-42d8-8e43-5a3100fbbbd1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="4"/>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="IC2">
+      <value>UC3844D8TRG4</value>
+      <footprint>SOIC127P600X175-8N</footprint>
+      <datasheet>https://www.ti.com/lit/ds/symlink/uc3844.pdf?ts=1637840317886</datasheet>
+      <description>Switching Controllers Current-Mode PWM Controller</description>
+      <fields>
+        <field name="Description_1">Switching Controllers Current-Mode PWM Controller</field>
+        <field name="Height">1.75</field>
+        <field name="Manufacturer_Name">Texas Instruments</field>
+        <field name="Manufacturer_Part_Number">UC3844D8TRG4</field>
+        <field name="Mouser Part Number">595-UC3844D8TRG4</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Texas-Instruments/UC3844D8TRG4?qs=fZz%252BEhgUXdjrQNJSRvUQrw%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">SOIC127P600X175-8N</field>
+        <field name="Datasheet">https://www.ti.com/lit/ds/symlink/uc3844.pdf?ts=1637840317886</field>
+        <field name="Description">Switching Controllers Current-Mode PWM Controller</field>
+      </fields>
+      <libsource lib="UC3844D8TRG4" part="UC3844D8TRG4" description="Switching Controllers Current-Mode PWM Controller"/>
+      <property name="Description_1" value="Switching Controllers Current-Mode PWM Controller"/>
+      <property name="Height" value="1.75"/>
+      <property name="Manufacturer_Name" value="Texas Instruments"/>
+      <property name="Manufacturer_Part_Number" value="UC3844D8TRG4"/>
+      <property name="Mouser Part Number" value="595-UC3844D8TRG4"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Texas-Instruments/UC3844D8TRG4?qs=fZz%252BEhgUXdjrQNJSRvUQrw%3D%3D"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>692e0c63-b9d9-4f1e-808e-331cde86bd5d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+            <pin num="4"/>
+            <pin num="8"/>
+            <pin num="7"/>
+            <pin num="6"/>
+            <pin num="5"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="IC7">
+      <value>TL431</value>
+      <footprint>SOT96P240X120-3N</footprint>
+      <datasheet>https://datasheet.lcsc.com/szlcsc/Guangdong-Hottech-TL431_C181103.pdf</datasheet>
+      <description>ON Semiconductor ANA 2.5V PROG SHUNT REF</description>
+      <fields>
+        <field name="Description_1">ON Semiconductor ANA 2.5V PROG SHUNT REF</field>
+        <field name="Height">1.2</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">TL431</field>
+        <field name="Mouser Part Number">N/A</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi/TL431?qs=%252BEew9%252B0nqrAp2ClC6bEq7Q%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">SOT96P240X120-3N</field>
+        <field name="Datasheet">https://datasheet.lcsc.com/szlcsc/Guangdong-Hottech-TL431_C181103.pdf</field>
+        <field name="Description">ON Semiconductor ANA 2.5V PROG SHUNT REF</field>
+      </fields>
+      <libsource lib="TL431" part="TL431" description="ON Semiconductor ANA 2.5V PROG SHUNT REF"/>
+      <property name="Description_1" value="ON Semiconductor ANA 2.5V PROG SHUNT REF"/>
+      <property name="Height" value="1.2"/>
+      <property name="Manufacturer_Name" value="onsemi"/>
+      <property name="Manufacturer_Part_Number" value="TL431"/>
+      <property name="Mouser Part Number" value="N/A"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/onsemi/TL431?qs=%252BEew9%252B0nqrAp2ClC6bEq7Q%3D%3D"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>681b9a6b-0aef-4d43-8c65-63655fa65822</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J1">
+      <value>KF128-5.08-2P-AA</value>
+      <footprint>KF1285082PAA</footprint>
+      <datasheet>https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2303171000_Cixi-Kefa-Elec-KF128-5-08-2P-AA_C474952.pdf</datasheet>
+      <description>1x2P 24A -40~+105 250V Green 12~22 Straight 5.08mm 2.5 1 2 Plugin,P=5.08mm Screw terminal ROHS</description>
+      <fields>
+        <field name="Height">14.6</field>
+        <field name="Manufacturer_Name">CIXI KEFA ELECTRONICS</field>
+        <field name="Manufacturer_Part_Number">KF128-5.08-2P-AA</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">KF1285082PAA</field>
+        <field name="Datasheet">https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2303171000_Cixi-Kefa-Elec-KF128-5-08-2P-AA_C474952.pdf</field>
+        <field name="Description">1x2P 24A -40~+105 250V Green 12~22 Straight 5.08mm 2.5 1 2 Plugin,P=5.08mm Screw terminal ROHS</field>
+      </fields>
+      <libsource lib="KF128-5_08-2P-AA" part="KF128-5.08-2P-AA" description="1x2P 24A -40~+105 250V Green 12~22 Straight 5.08mm 2.5 1 2 Plugin,P=5.08mm Screw terminal ROHS"/>
+      <property name="Height" value="14.6"/>
+      <property name="Manufacturer_Name" value="CIXI KEFA ELECTRONICS"/>
+      <property name="Manufacturer_Part_Number" value="KF128-5.08-2P-AA"/>
+      <property name="Mouser Part Number" value=""/>
+      <property name="Mouser Price/Stock" value=""/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>aafcda73-7944-4d34-b754-b7718ae89038</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J2">
+      <value>KF128-5.08-2P-AA</value>
+      <footprint>KF1285082PAA</footprint>
+      <datasheet>https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2303171000_Cixi-Kefa-Elec-KF128-5-08-2P-AA_C474952.pdf</datasheet>
+      <description>1x2P 24A -40~+105 250V Green 12~22 Straight 5.08mm 2.5 1 2 Plugin,P=5.08mm Screw terminal ROHS</description>
+      <fields>
+        <field name="Height">14.6</field>
+        <field name="Manufacturer_Name">CIXI KEFA ELECTRONICS</field>
+        <field name="Manufacturer_Part_Number">KF128-5.08-2P-AA</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">KF1285082PAA</field>
+        <field name="Datasheet">https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2303171000_Cixi-Kefa-Elec-KF128-5-08-2P-AA_C474952.pdf</field>
+        <field name="Description">1x2P 24A -40~+105 250V Green 12~22 Straight 5.08mm 2.5 1 2 Plugin,P=5.08mm Screw terminal ROHS</field>
+      </fields>
+      <libsource lib="KF128-5_08-2P-AA" part="KF128-5.08-2P-AA" description="1x2P 24A -40~+105 250V Green 12~22 Straight 5.08mm 2.5 1 2 Plugin,P=5.08mm Screw terminal ROHS"/>
+      <property name="Height" value="14.6"/>
+      <property name="Manufacturer_Name" value="CIXI KEFA ELECTRONICS"/>
+      <property name="Manufacturer_Part_Number" value="KF128-5.08-2P-AA"/>
+      <property name="Mouser Part Number" value=""/>
+      <property name="Mouser Price/Stock" value=""/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c8dfcac1-43c9-4887-a248-c4f5236b3f91</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="L1">
+      <value>80R 100Mhz bobin</value>
+      <footprint>80R 100Mhz bobin:INDC3216X130N</footprint>
+      <datasheet>http://componentsearchengine.com/Datasheets/1/74279215.pdf</datasheet>
+      <description>SMD EMI Suppression Ferrite Beads WE-CBF</description>
+      <fields>
+        <field name="Description_1">SMD EMI Suppression Ferrite Beads WE-CBF</field>
+        <field name="Height">1.3</field>
+        <field name="Manufacturer_Name">Wurth Elektronik</field>
+        <field name="Manufacturer_Part_Number">74279215</field>
+        <field name="Mouser Part Number">710-74279215</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Wurth-Elektronik/74279215?qs=5twSNpOB8IC%252BebnV0jQtuw%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">80R 100Mhz bobin:INDC3216X130N</field>
+        <field name="Datasheet">http://componentsearchengine.com/Datasheets/1/74279215.pdf</field>
+        <field name="Description">SMD EMI Suppression Ferrite Beads WE-CBF</field>
+      </fields>
+      <libsource lib="80R 100Mhz bobin" part="74279215" description="SMD EMI Suppression Ferrite Beads WE-CBF"/>
+      <property name="Description_1" value="SMD EMI Suppression Ferrite Beads WE-CBF"/>
+      <property name="Height" value="1.3"/>
+      <property name="Manufacturer_Name" value="Wurth Elektronik"/>
+      <property name="Manufacturer_Part_Number" value="74279215"/>
+      <property name="Mouser Part Number" value="710-74279215"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Wurth-Elektronik/74279215?qs=5twSNpOB8IC%252BebnV0jQtuw%3D%3D"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>75f080fa-cf22-41aa-a992-d800e78e313a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q2">
+      <value>Mosfet</value>
+      <footprint>NTD360N80S3Z</footprint>
+      <datasheet>https://www.onsemi.com/pub/Collateral/NTD360N80S3Z-D.PDF</datasheet>
+      <description>900 V @ TJ = 150 C; Ultra Low Gate Charge (Typ. Qg = 25.3 nC); Low Stored Energy in Output Capacitance (Eoss = 2.72 J @ 400 V); Optimized Capacitance; ESD Improved Capability with Zener Diode; Typ. RDS(on) = 300 m; RoHS Compliant; 100% Avalanche Tested; Internal Gate Resistance: 4</description>
+      <fields>
+        <field name="Description_1">900 V @ TJ = 150 C; Ultra Low Gate Charge (Typ. Qg = 25.3 nC); Low Stored Energy in Output Capacitance (Eoss = 2.72 J @ 400 V); Optimized Capacitance; ESD Improved Capability with Zener Diode; Typ. RDS(on) = 300 m; RoHS Compliant; 100% Avalanche Tested; Internal Gate Resistance: 4 </field>
+        <field name="Height">2.517</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">NTD360N80S3Z</field>
+        <field name="Mouser Part Number">863-NTD360N80S3Z</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi/NTD360N80S3Z?qs=7MVldsJ5Uaw4dM2ZaedK3Q%3D%3D</field>
+        <field name="Arrow Part Number">NTD360N80S3Z</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/ntd360n80s3z/on-semiconductor?region=nac</field>
+        <field name="Footprint">NTD360N80S3Z</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/NTD360N80S3Z-D.PDF</field>
+        <field name="Description">900 V @ TJ = 150 C; Ultra Low Gate Charge (Typ. Qg = 25.3 nC); Low Stored Energy in Output Capacitance (Eoss = 2.72 J @ 400 V); Optimized Capacitance; ESD Improved Capability with Zener Diode; Typ. RDS(on) = 300 m; RoHS Compliant; 100% Avalanche Tested; Internal Gate Resistance: 4</field>
+      </fields>
+      <libsource lib="Mosfet" part="NTD360N80S3Z" description="900 V @ TJ = 150 C; Ultra Low Gate Charge (Typ. Qg = 25.3 nC); Low Stored Energy in Output Capacitance (Eoss = 2.72 J @ 400 V); Optimized Capacitance; ESD Improved Capability with Zener Diode; Typ. RDS(on) = 300 m; RoHS Compliant; 100% Avalanche Tested; Internal Gate Resistance: 4"/>
+      <property name="Description_1" value="900 V @ TJ = 150 C; Ultra Low Gate Charge (Typ. Qg = 25.3 nC); Low Stored Energy in Output Capacitance (Eoss = 2.72 J @ 400 V); Optimized Capacitance; ESD Improved Capability with Zener Diode; Typ. RDS(on) = 300 m; RoHS Compliant; 100% Avalanche Tested; Internal Gate Resistance: 4 "/>
+      <property name="Height" value="2.517"/>
+      <property name="Manufacturer_Name" value="onsemi"/>
+      <property name="Manufacturer_Part_Number" value="NTD360N80S3Z"/>
+      <property name="Mouser Part Number" value="863-NTD360N80S3Z"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/onsemi/NTD360N80S3Z?qs=7MVldsJ5Uaw4dM2ZaedK3Q%3D%3D"/>
+      <property name="Arrow Part Number" value="NTD360N80S3Z"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/ntd360n80s3z/on-semiconductor?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>86b05361-930a-441c-923c-f396f42fe7f5</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R5">
+      <value>1K</value>
+      <footprint>RESC3016X65N</footprint>
+      <datasheet>http://www.bourns.com/docs/Product-Datasheets/crt-as.pdf</datasheet>
+      <description>BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206</description>
+      <fields>
+        <field name="Description_1">BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206</field>
+        <field name="Height">0.65</field>
+        <field name="Manufacturer_Name">Bourns</field>
+        <field name="Manufacturer_Part_Number">CRT1206-BW-1001ELF</field>
+        <field name="Mouser Part Number">652-CRT1206BW1001ELF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Bourns/CRT1206-BW-1001ELF?qs=pxDZlBjcsCirv2G%252BeHjZpA%3D%3D</field>
+        <field name="Arrow Part Number">CRT1206-BW-1001ELF</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crt1206-bw-1001elf/bourns</field>
+        <field name="Footprint">RESC3016X65N</field>
+        <field name="Datasheet">http://www.bourns.com/docs/Product-Datasheets/crt-as.pdf</field>
+        <field name="Description">BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206</field>
+      </fields>
+      <libsource lib="1K, 0.1%, 0.25W, 1206" part="CRT1206-BW-1001ELF" description="BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206"/>
+      <property name="Description_1" value="BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206"/>
+      <property name="Height" value="0.65"/>
+      <property name="Manufacturer_Name" value="Bourns"/>
+      <property name="Manufacturer_Part_Number" value="CRT1206-BW-1001ELF"/>
+      <property name="Mouser Part Number" value="652-CRT1206BW1001ELF"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Bourns/CRT1206-BW-1001ELF?qs=pxDZlBjcsCirv2G%252BeHjZpA%3D%3D"/>
+      <property name="Arrow Part Number" value="CRT1206-BW-1001ELF"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/crt1206-bw-1001elf/bourns"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d36243b6-9bb8-4946-bb23-45c02aeb9ca7</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R6">
+      <value>10K</value>
+      <footprint>Resistor_SMD:R_1206_3216Metric</footprint>
+      <datasheet>http://docs-europe.electrocomponents.com/webdocs/1488/0900766b814885e5.pdf</datasheet>
+      <description>Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM</description>
+      <fields>
+        <field name="Description_1">Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM</field>
+        <field name="Height">0.65</field>
+        <field name="Manufacturer_Name">TE Connectivity</field>
+        <field name="Manufacturer_Part_Number">RN73C2A10KLTDF</field>
+        <field name="Mouser Part Number">279-RN73C2A10KLTDF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/TE-Connectivity-Holsworthy/RN73C2A10KLTDF?qs=1Hpg7qxOs69sC8pHBMR1GQ%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">Resistor_SMD:R_1206_3216Metric</field>
+        <field name="Datasheet">http://docs-europe.electrocomponents.com/webdocs/1488/0900766b814885e5.pdf</field>
+        <field name="Description">Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM</field>
+      </fields>
+      <libsource lib="SMD RN 0805 10K 0.01% 10PPM" part="RN73C2A10KLTDF" description="Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM"/>
+      <property name="Description_1" value="Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM"/>
+      <property name="Height" value="0.65"/>
+      <property name="Manufacturer_Name" value="TE Connectivity"/>
+      <property name="Manufacturer_Part_Number" value="RN73C2A10KLTDF"/>
+      <property name="Mouser Part Number" value="279-RN73C2A10KLTDF"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/TE-Connectivity-Holsworthy/RN73C2A10KLTDF?qs=1Hpg7qxOs69sC8pHBMR1GQ%3D%3D"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2a549bdc-d98a-4c48-9d73-4e42bcc99da2</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R7">
+      <value>10K</value>
+      <footprint>Resistor_SMD:R_1206_3216Metric</footprint>
+      <datasheet>http://docs-europe.electrocomponents.com/webdocs/1488/0900766b814885e5.pdf</datasheet>
+      <description>Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM</description>
+      <fields>
+        <field name="Description_1">Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM</field>
+        <field name="Height">0.65</field>
+        <field name="Manufacturer_Name">TE Connectivity</field>
+        <field name="Manufacturer_Part_Number">RN73C2A10KLTDF</field>
+        <field name="Mouser Part Number">279-RN73C2A10KLTDF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/TE-Connectivity-Holsworthy/RN73C2A10KLTDF?qs=1Hpg7qxOs69sC8pHBMR1GQ%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">Resistor_SMD:R_1206_3216Metric</field>
+        <field name="Datasheet">http://docs-europe.electrocomponents.com/webdocs/1488/0900766b814885e5.pdf</field>
+        <field name="Description">Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM</field>
+      </fields>
+      <libsource lib="SMD RN 0805 10K 0.01% 10PPM" part="RN73C2A10KLTDF" description="Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM"/>
+      <property name="Description_1" value="Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM"/>
+      <property name="Height" value="0.65"/>
+      <property name="Manufacturer_Name" value="TE Connectivity"/>
+      <property name="Manufacturer_Part_Number" value="RN73C2A10KLTDF"/>
+      <property name="Mouser Part Number" value="279-RN73C2A10KLTDF"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/TE-Connectivity-Holsworthy/RN73C2A10KLTDF?qs=1Hpg7qxOs69sC8pHBMR1GQ%3D%3D"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f76223cf-e0b9-4f15-b765-a18776dbe151</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R8">
+      <value>100kohm 0.25W</value>
+      <footprint>100k ohm 0.25W smd1206:RESC3216X60N</footprint>
+      <datasheet>http://componentsearchengine.com/Datasheets/1/CRCW1206100KJNEBC.pdf</datasheet>
+      <description>Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</description>
+      <fields>
+        <field name="Description_1">Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</field>
+        <field name="Height">0.6</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW1206100KJNEBC</field>
+        <field name="Mouser Part Number">71-CRCW1206100KJNEBC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW1206100KJNEBC?qs=wd5RIQLrsJgGBD9A92B5Zw%3D%3D</field>
+        <field name="Arrow Part Number">CRCW1206100KJNEBC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw1206100kjnebc/vishay?region=nac</field>
+        <field name="Footprint">100k ohm 0.25W smd1206:RESC3216X60N</field>
+        <field name="Datasheet">http://componentsearchengine.com/Datasheets/1/CRCW1206100KJNEBC.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</field>
+      </fields>
+      <libsource lib="100Kohm 0.25W smd1206" part="CRCW1206100KJNEBC" description="Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use"/>
+      <property name="Description_1" value="Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use"/>
+      <property name="Height" value="0.6"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="CRCW1206100KJNEBC"/>
+      <property name="Mouser Part Number" value="71-CRCW1206100KJNEBC"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW1206100KJNEBC?qs=wd5RIQLrsJgGBD9A92B5Zw%3D%3D"/>
+      <property name="Arrow Part Number" value="CRCW1206100KJNEBC"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/crcw1206100kjnebc/vishay?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0bdd84a6-2731-4b2f-8710-b69aab7a1705</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R9">
+      <value>100kohm 0.25W</value>
+      <footprint>100k ohm 0.25W smd1206:RESC3216X60N</footprint>
+      <datasheet>http://componentsearchengine.com/Datasheets/1/CRCW1206100KJNEBC.pdf</datasheet>
+      <description>Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</description>
+      <fields>
+        <field name="Description_1">Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</field>
+        <field name="Height">0.6</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW1206100KJNEBC</field>
+        <field name="Mouser Part Number">71-CRCW1206100KJNEBC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW1206100KJNEBC?qs=wd5RIQLrsJgGBD9A92B5Zw%3D%3D</field>
+        <field name="Arrow Part Number">CRCW1206100KJNEBC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw1206100kjnebc/vishay?region=nac</field>
+        <field name="Footprint">100k ohm 0.25W smd1206:RESC3216X60N</field>
+        <field name="Datasheet">http://componentsearchengine.com/Datasheets/1/CRCW1206100KJNEBC.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</field>
+      </fields>
+      <libsource lib="100Kohm 0.25W smd1206" part="CRCW1206100KJNEBC" description="Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use"/>
+      <property name="Description_1" value="Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use"/>
+      <property name="Height" value="0.6"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="CRCW1206100KJNEBC"/>
+      <property name="Mouser Part Number" value="71-CRCW1206100KJNEBC"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW1206100KJNEBC?qs=wd5RIQLrsJgGBD9A92B5Zw%3D%3D"/>
+      <property name="Arrow Part Number" value="CRCW1206100KJNEBC"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/crcw1206100kjnebc/vishay?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c0aabb08-3811-4511-b3ad-86f8b74581a0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R10">
+      <value>100kohm 0.25W</value>
+      <footprint>100k ohm 0.25W smd1206:RESC3216X60N</footprint>
+      <datasheet>http://componentsearchengine.com/Datasheets/1/CRCW1206100KJNEBC.pdf</datasheet>
+      <description>Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</description>
+      <fields>
+        <field name="Description_1">Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</field>
+        <field name="Height">0.6</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW1206100KJNEBC</field>
+        <field name="Mouser Part Number">71-CRCW1206100KJNEBC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW1206100KJNEBC?qs=wd5RIQLrsJgGBD9A92B5Zw%3D%3D</field>
+        <field name="Arrow Part Number">CRCW1206100KJNEBC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw1206100kjnebc/vishay?region=nac</field>
+        <field name="Footprint">100k ohm 0.25W smd1206:RESC3216X60N</field>
+        <field name="Datasheet">http://componentsearchengine.com/Datasheets/1/CRCW1206100KJNEBC.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</field>
+      </fields>
+      <libsource lib="100Kohm 0.25W smd1206" part="CRCW1206100KJNEBC" description="Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use"/>
+      <property name="Description_1" value="Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use"/>
+      <property name="Height" value="0.6"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="CRCW1206100KJNEBC"/>
+      <property name="Mouser Part Number" value="71-CRCW1206100KJNEBC"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW1206100KJNEBC?qs=wd5RIQLrsJgGBD9A92B5Zw%3D%3D"/>
+      <property name="Arrow Part Number" value="CRCW1206100KJNEBC"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/crcw1206100kjnebc/vishay?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>93a3fb7a-1527-4e0e-9aa6-7e54fbb71a71</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R11">
+      <value>2.2R</value>
+      <footprint>RESC3216X70N</footprint>
+      <datasheet>http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</datasheet>
+      <description>Thick Film Resistors - SMD 2.2 OHM 1%</description>
+      <fields>
+        <field name="Description_1">Thick Film Resistors - SMD 2.2 OHM 1%</field>
+        <field name="Height">0.7</field>
+        <field name="Manufacturer_Name">KOA Speer</field>
+        <field name="Manufacturer_Part_Number">RK73H2BTTD2R20F</field>
+        <field name="Mouser Part Number">660-RK73H2BTTD2R20F</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=660-RK73H2BTTD2R20F</field>
+        <field name="Arrow Part Number">RK73H2BTTD2R20F</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/rk73h2bttd2r20f/koa-speer-electronics</field>
+        <field name="Footprint">RESC3216X70N</field>
+        <field name="Datasheet">http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 2.2 OHM 1%</field>
+      </fields>
+      <libsource lib="RES 2.2 OHM 1% 14W 1206" part="RK73H2BTTD2R20F" description="Thick Film Resistors - SMD 2.2 OHM 1%"/>
+      <property name="Description_1" value="Thick Film Resistors - SMD 2.2 OHM 1%"/>
+      <property name="Height" value="0.7"/>
+      <property name="Manufacturer_Name" value="KOA Speer"/>
+      <property name="Manufacturer_Part_Number" value="RK73H2BTTD2R20F"/>
+      <property name="Mouser Part Number" value="660-RK73H2BTTD2R20F"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.com/Search/Refine.aspx?Keyword=660-RK73H2BTTD2R20F"/>
+      <property name="Arrow Part Number" value="RK73H2BTTD2R20F"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/rk73h2bttd2r20f/koa-speer-electronics"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0566b853-3b3b-4d60-b61a-241e8145cd27</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R12">
+      <value>22 ohm</value>
+      <footprint>RESC3216X70N</footprint>
+      <datasheet>http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</datasheet>
+      <description>Thick Film Resistors - SMD 22 ohm 1% 0.25W AEC-Q200 ANTI-SULFUR</description>
+      <fields>
+        <field name="Description_1">Thick Film Resistors - SMD 22 ohm 1% 0.25W AEC-Q200 ANTI-SULFUR</field>
+        <field name="Height">0.7</field>
+        <field name="Manufacturer_Name">KOA Speer</field>
+        <field name="Manufacturer_Part_Number">RK73H2BRTTD22R0F</field>
+        <field name="Mouser Part Number">660-RK73H2BRTTD22R0F</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=660-RK73H2BRTTD22R0F</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">RESC3216X70N</field>
+        <field name="Datasheet">http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 22 ohm 1% 0.25W AEC-Q200 ANTI-SULFUR</field>
+      </fields>
+      <libsource lib="RK73H2BRTTD22R0F" part="RK73H2BRTTD22R0F" description="Thick Film Resistors - SMD 22 ohm 1% 0.25W AEC-Q200 ANTI-SULFUR"/>
+      <property name="Description_1" value="Thick Film Resistors - SMD 22 ohm 1% 0.25W AEC-Q200 ANTI-SULFUR"/>
+      <property name="Height" value="0.7"/>
+      <property name="Manufacturer_Name" value="KOA Speer"/>
+      <property name="Manufacturer_Part_Number" value="RK73H2BRTTD22R0F"/>
+      <property name="Mouser Part Number" value="660-RK73H2BRTTD22R0F"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.com/Search/Refine.aspx?Keyword=660-RK73H2BRTTD22R0F"/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e7a7f880-03a7-4d2f-91a8-04c7db6dc951</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R13">
+      <value>1K</value>
+      <footprint>RESC3016X65N</footprint>
+      <datasheet>http://www.bourns.com/docs/Product-Datasheets/crt-as.pdf</datasheet>
+      <description>BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206</description>
+      <fields>
+        <field name="Description_1">BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206</field>
+        <field name="Height">0.65</field>
+        <field name="Manufacturer_Name">Bourns</field>
+        <field name="Manufacturer_Part_Number">CRT1206-BW-1001ELF</field>
+        <field name="Mouser Part Number">652-CRT1206BW1001ELF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Bourns/CRT1206-BW-1001ELF?qs=pxDZlBjcsCirv2G%252BeHjZpA%3D%3D</field>
+        <field name="Arrow Part Number">CRT1206-BW-1001ELF</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crt1206-bw-1001elf/bourns</field>
+        <field name="Footprint">RESC3016X65N</field>
+        <field name="Datasheet">http://www.bourns.com/docs/Product-Datasheets/crt-as.pdf</field>
+        <field name="Description">BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206</field>
+      </fields>
+      <libsource lib="1K, 0.1%, 0.25W, 1206" part="CRT1206-BW-1001ELF" description="BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206"/>
+      <property name="Description_1" value="BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206"/>
+      <property name="Height" value="0.65"/>
+      <property name="Manufacturer_Name" value="Bourns"/>
+      <property name="Manufacturer_Part_Number" value="CRT1206-BW-1001ELF"/>
+      <property name="Mouser Part Number" value="652-CRT1206BW1001ELF"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Bourns/CRT1206-BW-1001ELF?qs=pxDZlBjcsCirv2G%252BeHjZpA%3D%3D"/>
+      <property name="Arrow Part Number" value="CRT1206-BW-1001ELF"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/crt1206-bw-1001elf/bourns"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7392dc10-ec92-4e27-8103-12104043fc33</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R25">
+      <value>4.7 K</value>
+      <footprint>RES SMD 3.3K OHM 1% 14W 1206:RESC3216X75N</footprint>
+      <datasheet>http://componentsearchengine.com/Datasheets/1/CRCW12064K70JNEAHP.pdf</datasheet>
+      <description>Thick Film Resistors - SMD 1/2watt 4.7Kohms 5% 200ppm High Power</description>
+      <fields>
+        <field name="Description_1">Thick Film Resistors - SMD 1/2watt 4.7Kohms 5% 200ppm High Power</field>
+        <field name="Height">0.65</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW12064K70JNEAHP</field>
+        <field name="Mouser Part Number">71-CRCW12064K70JNEAH</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW12064K70JNEAHP?qs=k2%2FDWSARqgG8t237E%2F5Y8Q%3D%3D</field>
+        <field name="Arrow Part Number">CRCW12064K70JNEAHP</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw12064k70jneahp/vishay?region=nac</field>
+        <field name="Footprint">RES SMD 3.3K OHM 1% 14W 1206:RESC3216X75N</field>
+        <field name="Datasheet">http://componentsearchengine.com/Datasheets/1/CRCW12064K70JNEAHP.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 1/2watt 4.7Kohms 5% 200ppm High Power</field>
+      </fields>
+      <libsource lib="4.7 Kohm 0.75 W  res" part="CRCW12064K70JNEAHP" description="Thick Film Resistors - SMD 1/2watt 4.7Kohms 5% 200ppm High Power"/>
+      <property name="Description_1" value="Thick Film Resistors - SMD 1/2watt 4.7Kohms 5% 200ppm High Power"/>
+      <property name="Height" value="0.65"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="CRCW12064K70JNEAHP"/>
+      <property name="Mouser Part Number" value="71-CRCW12064K70JNEAH"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW12064K70JNEAHP?qs=k2%2FDWSARqgG8t237E%2F5Y8Q%3D%3D"/>
+      <property name="Arrow Part Number" value="CRCW12064K70JNEAHP"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/crcw12064k70jneahp/vishay?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>932a0d8d-22c4-4dd8-9d03-20788b624391</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R26">
+      <value>2.63k</value>
+      <footprint>RESC3216X60N</footprint>
+      <datasheet>http://www.vishay.com/docs/20035/dcrcwe3.pdf</datasheet>
+      <description>Vishay CRCW Series Thick Film Surface Mount Resistor 1206 Case 2k +/-1% 0.25W +/-100ppm/C</description>
+      <fields>
+        <field name="Description_1">Vishay CRCW Series Thick Film Surface Mount Resistor 1206 Case 2k +/-1% 0.25W +/-100ppm/C</field>
+        <field name="Height">0.6</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW12062K00FKEA</field>
+        <field name="Mouser Part Number">71-CRCW1206-2.0K-E3</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW12062K00FKEA?qs=v%252BxIQaJyuQqY2OIRES8H3w%3D%3D</field>
+        <field name="Arrow Part Number">CRCW12062K00FKEA</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw12062k00fkea/vishay?region=nac</field>
+        <field name="Footprint">RESC3216X60N</field>
+        <field name="Datasheet">http://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Vishay CRCW Series Thick Film Surface Mount Resistor 1206 Case 2k +/-1% 0.25W +/-100ppm/C</field>
+      </fields>
+      <libsource lib="2k ohm" part="CRCW12062K00FKEA" description="Vishay CRCW Series Thick Film Surface Mount Resistor 1206 Case 2k +/-1% 0.25W +/-100ppm/C"/>
+      <property name="Description_1" value="Vishay CRCW Series Thick Film Surface Mount Resistor 1206 Case 2k +/-1% 0.25W +/-100ppm/C"/>
+      <property name="Height" value="0.6"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="CRCW12062K00FKEA"/>
+      <property name="Mouser Part Number" value="71-CRCW1206-2.0K-E3"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW12062K00FKEA?qs=v%252BxIQaJyuQqY2OIRES8H3w%3D%3D"/>
+      <property name="Arrow Part Number" value="CRCW12062K00FKEA"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/crcw12062k00fkea/vishay?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a3f58c58-e02b-4b6e-a731-6b0b8182d46a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R29">
+      <value>2.2k ohm 0.25W</value>
+      <footprint>100k ohm 0.25W smd1206:RESC3216X60N</footprint>
+      <description>Standard Thick Film Chip Resistors value 2K20 ohm.</description>
+      <fields>
+        <field name="Description_1">Standard Thick Film Chip Resistors value 2K20 ohm.</field>
+        <field name="Height">0.6</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW12062K20JNEC</field>
+        <field name="Mouser Part Number">71-CRCW12062K20JNEC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW12062K20JNEC?qs=yFoSHhcf0wFdiitt3rT5qA%3D%3D</field>
+        <field name="Arrow Part Number">CRCW12062K20JNEC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw12062k20jnec/vishay</field>
+        <field name="Footprint">100k ohm 0.25W smd1206:RESC3216X60N</field>
+        <field name="Datasheet"/>
+        <field name="Description">Standard Thick Film Chip Resistors value 2K20 ohm.</field>
+      </fields>
+      <libsource lib="2.2k ohm 0.25W resistor" part="CRCW12062K20JNEC" description="Standard Thick Film Chip Resistors value 2K20 ohm."/>
+      <property name="Description_1" value="Standard Thick Film Chip Resistors value 2K20 ohm."/>
+      <property name="Height" value="0.6"/>
+      <property name="Manufacturer_Name" value="Vishay"/>
+      <property name="Manufacturer_Part_Number" value="CRCW12062K20JNEC"/>
+      <property name="Mouser Part Number" value="71-CRCW12062K20JNEC"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW12062K20JNEC?qs=yFoSHhcf0wFdiitt3rT5qA%3D%3D"/>
+      <property name="Arrow Part Number" value="CRCW12062K20JNEC"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/crcw12062k20jnec/vishay"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4d199ce8-6bf8-4de8-b2eb-5dbd0d015eba</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R33">
+      <value>47K</value>
+      <footprint>47kΩ ±5% 2W ±200ppm°C:RESC6432X65N</footprint>
+      <datasheet>http://www.bourns.com/data/global/pdfs/CRM0805_1206_2010.pdf</datasheet>
+      <description>BOURNS - CRM2512-JW-473ELF - RES, 47K, 5%, 2512, THICK FILM</description>
+      <fields>
+        <field name="Description_1">BOURNS - CRM2512-JW-473ELF - RES, 47K, 5%, 2512, THICK FILM</field>
+        <field name="Height">0.8</field>
+        <field name="Manufacturer_Name">Bourns</field>
+        <field name="Manufacturer_Part_Number">CRM2512-JW-473ELF</field>
+        <field name="Mouser Part Number">652-CRM2512JW473ELF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Bourns/CRM2512-JW-473ELF?qs=%2FxQVPCMPNzjXr%252BWmcdvIgA%3D%3D</field>
+        <field name="Arrow Part Number">CRM2512-JW-473ELF</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crm2512-jw-473elf/bourns</field>
+        <field name="Footprint">47kΩ ±5% 2W ±200ppm°C:RESC6432X65N</field>
+        <field name="Datasheet">http://www.bourns.com/data/global/pdfs/CRM0805_1206_2010.pdf</field>
+        <field name="Description">BOURNS - CRM2512-JW-473ELF - RES, 47K, 5%, 2512, THICK FILM</field>
+      </fields>
+      <libsource lib="RES SMD 47K OHM 5% 2W 2512" part="CRM2512-JW-473ELF" description="BOURNS - CRM2512-JW-473ELF - RES, 47K, 5%, 2512, THICK FILM"/>
+      <property name="Description_1" value="BOURNS - CRM2512-JW-473ELF - RES, 47K, 5%, 2512, THICK FILM"/>
+      <property name="Height" value="0.8"/>
+      <property name="Manufacturer_Name" value="Bourns"/>
+      <property name="Manufacturer_Part_Number" value="CRM2512-JW-473ELF"/>
+      <property name="Mouser Part Number" value="652-CRM2512JW473ELF"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Bourns/CRM2512-JW-473ELF?qs=%2FxQVPCMPNzjXr%252BWmcdvIgA%3D%3D"/>
+      <property name="Arrow Part Number" value="CRM2512-JW-473ELF"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/crm2512-jw-473elf/bourns"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9d87964d-c50a-46e1-a5ca-0f813626b584</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R34">
+      <value>2.2R</value>
+      <footprint>RESC3216X70N</footprint>
+      <datasheet>http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</datasheet>
+      <description>Thick Film Resistors - SMD 2.2 OHM 1%</description>
+      <fields>
+        <field name="Description_1">Thick Film Resistors - SMD 2.2 OHM 1%</field>
+        <field name="Height">0.7</field>
+        <field name="Manufacturer_Name">KOA Speer</field>
+        <field name="Manufacturer_Part_Number">RK73H2BTTD2R20F</field>
+        <field name="Mouser Part Number">660-RK73H2BTTD2R20F</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=660-RK73H2BTTD2R20F</field>
+        <field name="Arrow Part Number">RK73H2BTTD2R20F</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/rk73h2bttd2r20f/koa-speer-electronics</field>
+        <field name="Footprint">RESC3216X70N</field>
+        <field name="Datasheet">http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 2.2 OHM 1%</field>
+      </fields>
+      <libsource lib="RES 2.2 OHM 1% 14W 1206" part="RK73H2BTTD2R20F" description="Thick Film Resistors - SMD 2.2 OHM 1%"/>
+      <property name="Description_1" value="Thick Film Resistors - SMD 2.2 OHM 1%"/>
+      <property name="Height" value="0.7"/>
+      <property name="Manufacturer_Name" value="KOA Speer"/>
+      <property name="Manufacturer_Part_Number" value="RK73H2BTTD2R20F"/>
+      <property name="Mouser Part Number" value="660-RK73H2BTTD2R20F"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.com/Search/Refine.aspx?Keyword=660-RK73H2BTTD2R20F"/>
+      <property name="Arrow Part Number" value="RK73H2BTTD2R20F"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/rk73h2bttd2r20f/koa-speer-electronics"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1ab3059e-15ef-4568-88e1-d27f98ff2be4</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R36">
+      <value>3.3kohm 0.25W</value>
+      <footprint>RESC3216X75N</footprint>
+      <datasheet>https://componentsearchengine.com/Datasheets/2/CR1206-FX-3301ELF.pdf</datasheet>
+      <description>BOURNS - CR1206-FX-3301ELF - RES, THICK FILM, 3K3, 1%, 0.25W, 1206</description>
+      <fields>
+        <field name="Description_1">BOURNS - CR1206-FX-3301ELF - RES, THICK FILM, 3K3, 1%, 0.25W, 1206</field>
+        <field name="Height">0.75</field>
+        <field name="Manufacturer_Name">Bourns</field>
+        <field name="Manufacturer_Part_Number">CR1206-FX-3301ELF</field>
+        <field name="Mouser Part Number">652-CR1206FX-3301ELF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Bourns/CR1206-FX-3301ELF?qs=raSpJxvwqHGGjBeE8FVf2Q%3D%3D</field>
+        <field name="Arrow Part Number">CR1206-FX-3301ELF</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/cr1206-fx-3301elf/bourns?region=nac</field>
+        <field name="Footprint">RESC3216X75N</field>
+        <field name="Datasheet">https://componentsearchengine.com/Datasheets/2/CR1206-FX-3301ELF.pdf</field>
+        <field name="Description">BOURNS - CR1206-FX-3301ELF - RES, THICK FILM, 3K3, 1%, 0.25W, 1206</field>
+      </fields>
+      <libsource lib="RES SMD 3.3K OHM 1% 14W 1206" part="CR1206-FX-3301ELF" description="BOURNS - CR1206-FX-3301ELF - RES, THICK FILM, 3K3, 1%, 0.25W, 1206"/>
+      <property name="Description_1" value="BOURNS - CR1206-FX-3301ELF - RES, THICK FILM, 3K3, 1%, 0.25W, 1206"/>
+      <property name="Height" value="0.75"/>
+      <property name="Manufacturer_Name" value="Bourns"/>
+      <property name="Manufacturer_Part_Number" value="CR1206-FX-3301ELF"/>
+      <property name="Mouser Part Number" value="652-CR1206FX-3301ELF"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/Bourns/CR1206-FX-3301ELF?qs=raSpJxvwqHGGjBeE8FVf2Q%3D%3D"/>
+      <property name="Arrow Part Number" value="CR1206-FX-3301ELF"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/cr1206-fx-3301elf/bourns?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>49d42987-5f09-4274-bca0-617aee05c33a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="RT1">
+      <value>NTC</value>
+      <footprint>NTC:B57153S0___M0__</footprint>
+      <datasheet>https://product.tdk.com/system/files/dam/doc/product/protection/current/ntc-limiter/data_sheet/50/db/icl_16/s153.pdf</datasheet>
+      <description>NTC Inrush Current Limiters, Resistance (at 25)=10, Maximum Current=2A</description>
+      <fields>
+        <field name="Description_1">NTC Inrush Current Limiters, Resistance (at 25)=10, Maximum Current=2A</field>
+        <field name="Height">13</field>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B57153S0100M000</field>
+        <field name="Mouser Part Number">871-B57153S0100M000</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B57153S0100M000?qs=AKDv8POSxR22bWjVdDPC%2Fw%3D%3D</field>
+        <field name="Arrow Part Number">B57153S0100M000</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/b57153s0100m000/tdk?utm_currency=USD&amp;region=europe</field>
+        <field name="Footprint">NTC:B57153S0___M0__</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/protection/current/ntc-limiter/data_sheet/50/db/icl_16/s153.pdf</field>
+        <field name="Description">NTC Inrush Current Limiters, Resistance (at 25)=10, Maximum Current=2A</field>
+      </fields>
+      <libsource lib="NTC" part="B57153S0100M000" description="NTC Inrush Current Limiters, Resistance (at 25)=10, Maximum Current=2A"/>
+      <property name="Description_1" value="NTC Inrush Current Limiters, Resistance (at 25)=10, Maximum Current=2A"/>
+      <property name="Height" value="13"/>
+      <property name="Manufacturer_Name" value="TDK"/>
+      <property name="Manufacturer_Part_Number" value="B57153S0100M000"/>
+      <property name="Mouser Part Number" value="871-B57153S0100M000"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B57153S0100M000?qs=AKDv8POSxR22bWjVdDPC%2Fw%3D%3D"/>
+      <property name="Arrow Part Number" value="B57153S0100M000"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/b57153s0100m000/tdk?utm_currency=USD&amp;region=europe"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>25199e48-2a84-4b8b-bb1d-8469c26abf0c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="RV2">
+      <value>Varistor</value>
+      <footprint>B72214S2301K101</footprint>
+      <datasheet>https://product.tdk.com/system/files/dam/doc/product/protection/voltage/lead-disk-varistor/data_sheet/70/db/var/siov_leaded_advanced.pdf</datasheet>
+      <description>Leaded Disk Varistors, Max. Operating Voltage [AC]=300Vrms, Max. Surge Current Imax(8/20?s,1time)=6000A</description>
+      <fields>
+        <field name="Description_1">Leaded Disk Varistors, Max. Operating Voltage [AC]=300Vrms, Max. Surge Current Imax(8/20?s,1time)=6000A</field>
+        <field name="Height">18.5</field>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B72214S2301K101</field>
+        <field name="Mouser Part Number">871-B72214S2301K101</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B72214S2301K101?qs=xN3cbABbNRZMKewFIVrNMg%3D%3D</field>
+        <field name="Arrow Part Number">B72214S2301K101</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/b72214s2301k101/tdk?utm_currency=USD&amp;region=nac</field>
+        <field name="Footprint">B72214S2301K101</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/protection/voltage/lead-disk-varistor/data_sheet/70/db/var/siov_leaded_advanced.pdf</field>
+        <field name="Description">Leaded Disk Varistors, Max. Operating Voltage [AC]=300Vrms, Max. Surge Current Imax(8/20?s,1time)=6000A</field>
+      </fields>
+      <libsource lib="Varistor" part="B72214S2301K101" description="Leaded Disk Varistors, Max. Operating Voltage [AC]=300Vrms, Max. Surge Current Imax(8/20?s,1time)=6000A"/>
+      <property name="Description_1" value="Leaded Disk Varistors, Max. Operating Voltage [AC]=300Vrms, Max. Surge Current Imax(8/20?s,1time)=6000A"/>
+      <property name="Height" value="18.5"/>
+      <property name="Manufacturer_Name" value="TDK"/>
+      <property name="Manufacturer_Part_Number" value="B72214S2301K101"/>
+      <property name="Mouser Part Number" value="871-B72214S2301K101"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B72214S2301K101?qs=xN3cbABbNRZMKewFIVrNMg%3D%3D"/>
+      <property name="Arrow Part Number" value="B72214S2301K101"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/b72214s2301k101/tdk?utm_currency=USD&amp;region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>808df267-4dc7-4498-8631-2354be7cd6ca</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U1">
+      <value>~</value>
+      <footprint>Trafo:TRafo</footprint>
+      <fields>
+        <field name="Footprint">Trafo:TRafo</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="" part="Trafo_1" description=""/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f7b4505f-ad1f-42f1-9e3a-7932c09d4e2d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="5"/>
+            <pin num="6"/>
+            <pin num="7"/>
+            <pin num="2"/>
+            <pin num="4"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Z2">
+      <value>15V zener</value>
+      <footprint>SOD3716X135N</footprint>
+      <datasheet>https://www.onsemi.com/pub/Collateral/MMSZ5221ET1-D.PDF</datasheet>
+      <description>500 mW Rating on FR4 or FR5 Board; Wide Zener Reverse Voltage Range  2.4 V to 110 V; Package Designed for Optimal Automated Board Assembly; Small Package Size for High Density Applications; ESD Rating of Class 3 (&gt;16 KV) per Human Body Model; Pb-Free Packages are Available; AEC-Q101 Qualified and PPAP Capable; SZ Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements</description>
+      <fields>
+        <field name="Description_1">500 mW Rating on FR4 or FR5 Board; Wide Zener Reverse Voltage Range  2.4 V to 110 V; Package Designed for Optimal Automated Board Assembly; Small Package Size for High Density Applications; ESD Rating of Class 3 (&gt;16 KV) per Human Body Model; Pb-Free Packages are Available; AEC-Q101 Qualified and PPAP Capable; SZ Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements</field>
+        <field name="Height">1.35</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">MMSZ5245ET1G</field>
+        <field name="Mouser Part Number">863-MMSZ5245ET1G</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi/MMSZ5245ET1G?qs=P4IOph%252Bbot%252BNzOWtX7kMyg%3D%3D</field>
+        <field name="Arrow Part Number">MMSZ5245ET1G</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/mmsz5245et1g/on-semiconductor?region=nac</field>
+        <field name="Footprint">SOD3716X135N</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/MMSZ5221ET1-D.PDF</field>
+        <field name="Description">500 mW Rating on FR4 or FR5 Board; Wide Zener Reverse Voltage Range  2.4 V to 110 V; Package Designed for Optimal Automated Board Assembly; Small Package Size for High Density Applications; ESD Rating of Class 3 (&gt;16 KV) per Human Body Model; Pb-Free Packages are Available; AEC-Q101 Qualified and PPAP Capable; SZ Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements</field>
+      </fields>
+      <libsource lib="15V zener diyot" part="MMSZ5245ET1G" description="500 mW Rating on FR4 or FR5 Board; Wide Zener Reverse Voltage Range  2.4 V to 110 V; Package Designed for Optimal Automated Board Assembly; Small Package Size for High Density Applications; ESD Rating of Class 3 (&gt;16 KV) per Human Body Model; Pb-Free Packages are Available; AEC-Q101 Qualified and PPAP Capable; SZ Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements"/>
+      <property name="Description_1" value="500 mW Rating on FR4 or FR5 Board; Wide Zener Reverse Voltage Range  2.4 V to 110 V; Package Designed for Optimal Automated Board Assembly; Small Package Size for High Density Applications; ESD Rating of Class 3 (&gt;16 KV) per Human Body Model; Pb-Free Packages are Available; AEC-Q101 Qualified and PPAP Capable; SZ Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements"/>
+      <property name="Height" value="1.35"/>
+      <property name="Manufacturer_Name" value="onsemi"/>
+      <property name="Manufacturer_Part_Number" value="MMSZ5245ET1G"/>
+      <property name="Mouser Part Number" value="863-MMSZ5245ET1G"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/onsemi/MMSZ5245ET1G?qs=P4IOph%252Bbot%252BNzOWtX7kMyg%3D%3D"/>
+      <property name="Arrow Part Number" value="MMSZ5245ET1G"/>
+      <property name="Arrow Price/Stock" value="https://www.arrow.com/en/products/mmsz5245et1g/on-semiconductor?region=nac"/>
+      <property name="Sheetname" value="flyback trafo devresi"/>
+      <property name="Sheetfile" value="flyback trafo devresi.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>067bf306-ce5a-43ad-bef1-97289dbf27ae</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="" part="Trafo_1">
+      <fields>
+        <field name="Reference">U1</field>
+        <field name="Value"/>
+        <field name="Footprint">Trafo:TRafo</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="free"/>
+        <pin num="2" name="" type="free"/>
+        <pin num="4" name="" type="free"/>
+        <pin num="5" name="" type="free"/>
+        <pin num="6" name="" type="free"/>
+        <pin num="7" name="" type="free"/>
+      </pins>
+    </libpart>
+    <libpart lib="100Kohm 0.25W smd1206" part="CRCW1206100KJNEBC">
+      <description>Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</description>
+      <docs>http://componentsearchengine.com/Datasheets/1/CRCW1206100KJNEBC.pdf</docs>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">CRCW1206100KJNEBC</field>
+        <field name="Footprint">RESC3216X60N</field>
+        <field name="Datasheet">http://componentsearchengine.com/Datasheets/1/CRCW1206100KJNEBC.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</field>
+        <field name="Description_1">Thick Film Resistors - SMD 1/4Watt 100Kohms 5% Commercial Use</field>
+        <field name="Height">0.6</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW1206100KJNEBC</field>
+        <field name="Mouser Part Number">71-CRCW1206100KJNEBC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW1206100KJNEBC?qs=wd5RIQLrsJgGBD9A92B5Zw%3D%3D</field>
+        <field name="Arrow Part Number">CRCW1206100KJNEBC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw1206100kjnebc/vishay?region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="100nF 25V smd1206 capasitor" part="VJ1206Y104JXXCW1BC">
+      <description>Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</description>
+      <docs>http://www.vishay.com/docs/45200/vjhirelseries.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">VJ1206Y104JXXCW1BC</field>
+        <field name="Footprint">CAPC3216X170N</field>
+        <field name="Datasheet">http://www.vishay.com/docs/45200/vjhirelseries.pdf</field>
+        <field name="Description">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+        <field name="Description_1">Cap Ceramic 0.1uF 25V X7R 5% Pad SMD 1206 125C T/R</field>
+        <field name="Height">1.7</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Mouser Part Number">77-VJ1206Y104JXXCBC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=77-VJ1206Y104JXXCBC</field>
+        <field name="Arrow Part Number">VJ1206Y104JXXCW1BC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/vj1206y104jxxcw1bc/vishay</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="15V zener diyot" part="MMSZ5245ET1G">
+      <description>500 mW Rating on FR4 or FR5 Board; Wide Zener Reverse Voltage Range  2.4 V to 110 V; Package Designed for Optimal Automated Board Assembly; Small Package Size for High Density Applications; ESD Rating of Class 3 (&gt;16 KV) per Human Body Model; Pb-Free Packages are Available; AEC-Q101 Qualified and PPAP Capable; SZ Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements</description>
+      <docs>https://www.onsemi.com/pub/Collateral/MMSZ5221ET1-D.PDF</docs>
+      <fields>
+        <field name="Reference">Z</field>
+        <field name="Value">MMSZ5245ET1G</field>
+        <field name="Footprint">SOD3716X135N</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/MMSZ5221ET1-D.PDF</field>
+        <field name="Description">500 mW Rating on FR4 or FR5 Board; Wide Zener Reverse Voltage Range  2.4 V to 110 V; Package Designed for Optimal Automated Board Assembly; Small Package Size for High Density Applications; ESD Rating of Class 3 (&gt;16 KV) per Human Body Model; Pb-Free Packages are Available; AEC-Q101 Qualified and PPAP Capable; SZ Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements</field>
+        <field name="Description_1">500 mW Rating on FR4 or FR5 Board; Wide Zener Reverse Voltage Range  2.4 V to 110 V; Package Designed for Optimal Automated Board Assembly; Small Package Size for High Density Applications; ESD Rating of Class 3 (&gt;16 KV) per Human Body Model; Pb-Free Packages are Available; AEC-Q101 Qualified and PPAP Capable; SZ Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements</field>
+        <field name="Height">1.35</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">MMSZ5245ET1G</field>
+        <field name="Mouser Part Number">863-MMSZ5245ET1G</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi/MMSZ5245ET1G?qs=P4IOph%252Bbot%252BNzOWtX7kMyg%3D%3D</field>
+        <field name="Arrow Part Number">MMSZ5245ET1G</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/mmsz5245et1g/on-semiconductor?region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="1K, 0.1%, 0.25W, 1206" part="CRT1206-BW-1001ELF">
+      <description>BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206</description>
+      <docs>http://www.bourns.com/docs/Product-Datasheets/crt-as.pdf</docs>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">CRT1206-BW-1001ELF</field>
+        <field name="Footprint">RESC3016X65N</field>
+        <field name="Datasheet">http://www.bourns.com/docs/Product-Datasheets/crt-as.pdf</field>
+        <field name="Description">BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206</field>
+        <field name="Description_1">BOURNS - CRT1206-BW-1001ELF - RES, THIN FILM, 1K, 0.1%, 0.25W, 1206</field>
+        <field name="Height">0.65</field>
+        <field name="Manufacturer_Name">Bourns</field>
+        <field name="Manufacturer_Part_Number">CRT1206-BW-1001ELF</field>
+        <field name="Mouser Part Number">652-CRT1206BW1001ELF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Bourns/CRT1206-BW-1001ELF?qs=pxDZlBjcsCirv2G%252BeHjZpA%3D%3D</field>
+        <field name="Arrow Part Number">CRT1206-BW-1001ELF</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crt1206-bw-1001elf/bourns</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="1uF 25V capasitor" part="VJ1206Y105KCXAT">
+      <description>Multilayer Ceramic Capacitors MLCC - SMD/SMT 1206 1uF 25volts Non-Magnetic</description>
+      <docs>http://www.vishay.com/docs/45200/vjhirelseries.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">VJ1206Y105KCXAT</field>
+        <field name="Footprint">CAPC3216X170N</field>
+        <field name="Datasheet">http://www.vishay.com/docs/45200/vjhirelseries.pdf</field>
+        <field name="Description">Multilayer Ceramic Capacitors MLCC - SMD/SMT 1206 1uF 25volts Non-Magnetic</field>
+        <field name="Description_1">Multilayer Ceramic Capacitors MLCC - SMD/SMT 1206 1uF 25volts Non-Magnetic</field>
+        <field name="Height">1.7</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">VJ1206Y105KCXAT</field>
+        <field name="Mouser Part Number">77-VJ1206Y105KCXAT</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Vitramon/VJ1206Y105KCXAT?qs=oomPkbqnLXfLtU42Fz8kiQ%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="1uF 50V X7R capasitor" part="VJ1206Y105KXATW1BC">
+      <description>VISHAY - VJ1206Y105KXATW1BC - SMD Multilayer Ceramic Capacitor, 1 F, 50 V, 1206 [3216 Metric], +/- 10%, X7R, VJ Series</description>
+      <docs>http://www.vishay.com/docs/45200/vjhirelseries.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">VJ1206Y105KXATW1BC</field>
+        <field name="Footprint">CAPC3216X170N</field>
+        <field name="Datasheet">http://www.vishay.com/docs/45200/vjhirelseries.pdf</field>
+        <field name="Description">VISHAY - VJ1206Y105KXATW1BC - SMD Multilayer Ceramic Capacitor, 1 F, 50 V, 1206 [3216 Metric], +/- 10%, X7R, VJ Series</field>
+        <field name="Description_1">VISHAY - VJ1206Y105KXATW1BC - SMD Multilayer Ceramic Capacitor, 1 F, 50 V, 1206 [3216 Metric], +/- 10%, X7R, VJ Series</field>
+        <field name="Height">1.7</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">VJ1206Y105KXATW1BC</field>
+        <field name="Mouser Part Number">77-VJ126Y105KXATW1BC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Vitramon/VJ1206Y105KXATW1BC/?qs=eZJMd5XsRrh8UTJm8i9W0Q%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="2.2k ohm 0.25W resistor" part="CRCW12062K20JNEC">
+      <description>Standard Thick Film Chip Resistors value 2K20 ohm.</description>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">CRCW12062K20JNEC</field>
+        <field name="Footprint">RESC3216X60N</field>
+        <field name="Datasheet"/>
+        <field name="Description">Standard Thick Film Chip Resistors value 2K20 ohm.</field>
+        <field name="Description_1">Standard Thick Film Chip Resistors value 2K20 ohm.</field>
+        <field name="Height">0.6</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW12062K20JNEC</field>
+        <field name="Mouser Part Number">71-CRCW12062K20JNEC</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW12062K20JNEC?qs=yFoSHhcf0wFdiitt3rT5qA%3D%3D</field>
+        <field name="Arrow Part Number">CRCW12062K20JNEC</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw12062k20jnec/vishay</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="220pF" part="C0402C221K3RAC">
+      <description>Multilayer Ceramic Capacitors MLCC - SMD/SMT 220.PF 25.0V</description>
+      <docs>https://content.kemet.com/datasheets/KEM_C1002_X7R_SMD.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C0402C221K3RAC</field>
+        <field name="Footprint">C0402C104J4RACTU</field>
+        <field name="Datasheet">https://content.kemet.com/datasheets/KEM_C1002_X7R_SMD.pdf</field>
+        <field name="Description">Multilayer Ceramic Capacitors MLCC - SMD/SMT 220.PF 25.0V</field>
+        <field name="Description_1">Multilayer Ceramic Capacitors MLCC - SMD/SMT 220.PF 25.0V</field>
+        <field name="Height">0.55</field>
+        <field name="Manufacturer_Name">KEMET</field>
+        <field name="Manufacturer_Part_Number">C0402C221K3RAC</field>
+        <field name="Mouser Part Number">N/A</field>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="2k ohm" part="CRCW12062K00FKEA">
+      <description>Vishay CRCW Series Thick Film Surface Mount Resistor 1206 Case 2k +/-1% 0.25W +/-100ppm/C</description>
+      <docs>http://www.vishay.com/docs/20035/dcrcwe3.pdf</docs>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">CRCW12062K00FKEA</field>
+        <field name="Footprint">RESC3216X60N</field>
+        <field name="Datasheet">http://www.vishay.com/docs/20035/dcrcwe3.pdf</field>
+        <field name="Description">Vishay CRCW Series Thick Film Surface Mount Resistor 1206 Case 2k +/-1% 0.25W +/-100ppm/C</field>
+        <field name="Description_1">Vishay CRCW Series Thick Film Surface Mount Resistor 1206 Case 2k +/-1% 0.25W +/-100ppm/C</field>
+        <field name="Height">0.6</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW12062K00FKEA</field>
+        <field name="Mouser Part Number">71-CRCW1206-2.0K-E3</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW12062K00FKEA?qs=v%252BxIQaJyuQqY2OIRES8H3w%3D%3D</field>
+        <field name="Arrow Part Number">CRCW12062K00FKEA</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw12062k00fkea/vishay?region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="4.7 Kohm 0.75 W  res" part="CRCW12064K70JNEAHP">
+      <description>Thick Film Resistors - SMD 1/2watt 4.7Kohms 5% 200ppm High Power</description>
+      <docs>http://componentsearchengine.com/Datasheets/1/CRCW12064K70JNEAHP.pdf</docs>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">CRCW12064K70JNEAHP</field>
+        <field name="Footprint">RESC3116X65N</field>
+        <field name="Datasheet">http://componentsearchengine.com/Datasheets/1/CRCW12064K70JNEAHP.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 1/2watt 4.7Kohms 5% 200ppm High Power</field>
+        <field name="Description_1">Thick Film Resistors - SMD 1/2watt 4.7Kohms 5% 200ppm High Power</field>
+        <field name="Height">0.65</field>
+        <field name="Manufacturer_Name">Vishay</field>
+        <field name="Manufacturer_Part_Number">CRCW12064K70JNEAHP</field>
+        <field name="Mouser Part Number">71-CRCW12064K70JNEAH</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Vishay-Dale/CRCW12064K70JNEAHP?qs=k2%2FDWSARqgG8t237E%2F5Y8Q%3D%3D</field>
+        <field name="Arrow Part Number">CRCW12064K70JNEAHP</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crcw12064k70jneahp/vishay?region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="47uF 25V capasitor" part="25YXJ47MTA5X11">
+      <description>RUBYCON - 25YXJ47MTA5X11 - CAP, 47F, 25V, 20%</description>
+      <docs>https://componentsearchengine.com/Datasheets/2/25YXJ47MTA5X11.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">25YXJ47MTA5X11</field>
+        <field name="Footprint">CAPPRD200W50D525H1250</field>
+        <field name="Datasheet">https://componentsearchengine.com/Datasheets/2/25YXJ47MTA5X11.pdf</field>
+        <field name="Description">RUBYCON - 25YXJ47MTA5X11 - CAP, 47F, 25V, 20%</field>
+        <field name="Description_1">RUBYCON - 25YXJ47MTA5X11 - CAP, 47F, 25V, 20%</field>
+        <field name="Height">12.5</field>
+        <field name="Manufacturer_Name">Rubycon</field>
+        <field name="Manufacturer_Part_Number">25YXJ47MTA5X11</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="80R 100Mhz bobin" part="74279215">
+      <description>SMD EMI Suppression Ferrite Beads WE-CBF</description>
+      <docs>http://componentsearchengine.com/Datasheets/1/74279215.pdf</docs>
+      <fields>
+        <field name="Reference">L</field>
+        <field name="Value">74279215</field>
+        <field name="Footprint">INDC3216X130N</field>
+        <field name="Datasheet">http://componentsearchengine.com/Datasheets/1/74279215.pdf</field>
+        <field name="Description">SMD EMI Suppression Ferrite Beads WE-CBF</field>
+        <field name="Description_1">SMD EMI Suppression Ferrite Beads WE-CBF</field>
+        <field name="Height">1.3</field>
+        <field name="Manufacturer_Name">Wurth Elektronik</field>
+        <field name="Manufacturer_Part_Number">74279215</field>
+        <field name="Mouser Part Number">710-74279215</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Wurth-Elektronik/74279215?qs=5twSNpOB8IC%252BebnV0jQtuw%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="CAP ALUM 33UF 20% 400V RADIAL TH" part="UCY2G330MHD">
+      <description>Aluminum Electrolytic Capacitors - Radial Leaded 400volts 33uF AEC-Q200</description>
+      <docs>https://datasheet.datasheetarchive.com/originals/dk/DKDS-9/176701.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">UCY2G330MHD</field>
+        <field name="Footprint">CAPPRD500W80D1275H2650</field>
+        <field name="Datasheet">https://datasheet.datasheetarchive.com/originals/dk/DKDS-9/176701.pdf</field>
+        <field name="Description">Aluminum Electrolytic Capacitors - Radial Leaded 400volts 33uF AEC-Q200</field>
+        <field name="Description_1">Aluminum Electrolytic Capacitors - Radial Leaded 400volts 33uF AEC-Q200</field>
+        <field name="Height">26.5</field>
+        <field name="Manufacturer_Name">Nichicon</field>
+        <field name="Manufacturer_Part_Number">UCY2G330MHD</field>
+        <field name="Mouser Part Number">647-UCY2G330MHD</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Nichicon/UCY2G330MHD/?qs=isV%252BNJxyrb4Z%2FnYyJffgyA%3D%3D</field>
+        <field name="Arrow Part Number">UCY2G330MHD</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/ucy2g330mhd/nichicon</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="CAP CER 2200PF 1KV X7R 1206" part="1206B222K102CT">
+      <description>Multilayer Ceramic Capacitors MLCC - SMD/SMT 2200pF 10% 1000V</description>
+      <docs>https://eu.mouser.com/datasheet/2/210/Middle_and_High_Voltage_DS-1535659.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">1206B222K102CT</field>
+        <field name="Footprint">CAPC3216X135N</field>
+        <field name="Datasheet">https://eu.mouser.com/datasheet/2/210/Middle_and_High_Voltage_DS-1535659.pdf</field>
+        <field name="Description">Multilayer Ceramic Capacitors MLCC - SMD/SMT 2200pF 10% 1000V</field>
+        <field name="Description_1">Multilayer Ceramic Capacitors MLCC - SMD/SMT 2200pF 10% 1000V</field>
+        <field name="Height">1.35</field>
+        <field name="Manufacturer_Name">Walsin Technology Corporation</field>
+        <field name="Manufacturer_Part_Number">1206B222K102CT</field>
+        <field name="Mouser Part Number">791-1206B222K102CT</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Walsin/1206B222K102CT/?qs=fIkAfuXiAQI4C%252B7mwy%2FA%2FA%3D%3D</field>
+        <field name="Arrow Part Number">1206B222K102CT</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/1206b222k102ct/walsin-technology</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="CAP CER 2200PF 25V C0GNP0 1206" part="12063A222JAT2A">
+      <description>Multilayer Ceramic Capacitors MLCC - SMD/SMT 25V 2200pF C0G 1206 5%</description>
+      <docs>https://spicat.kyocera-avx.com/product/mlcc/chartview/12063A222JAT2A/DataSheet/NP0</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">12063A222JAT2A</field>
+        <field name="Footprint">CAPC3216X94N</field>
+        <field name="Datasheet">https://spicat.kyocera-avx.com/product/mlcc/chartview/12063A222JAT2A/DataSheet/NP0</field>
+        <field name="Description">Multilayer Ceramic Capacitors MLCC - SMD/SMT 25V 2200pF C0G 1206 5%</field>
+        <field name="Description_1">Multilayer Ceramic Capacitors MLCC - SMD/SMT 25V 2200pF C0G 1206 5%</field>
+        <field name="Height">0.94</field>
+        <field name="Manufacturer_Name">Kyocera AVX</field>
+        <field name="Manufacturer_Part_Number">12063A222JAT2A</field>
+        <field name="Mouser Part Number">581-12063A222JAT2A</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=581-12063A222JAT2A</field>
+        <field name="Arrow Part Number">12063A222JAT2A</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/12063a222jat2a/avx</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="CAP FILM 0.15UF 10% 305VAC RAD" part="B32932A3154K000">
+      <description>EMI Suppression Capacitors, 0.15uF, 305Vrms AC, 7m(W) x 12.5m(H) x 18m(L)</description>
+      <docs>https://product.tdk.com/system/files/dam/doc/product/capacitor/film/emi/data_sheet/20/20/ds/mkt_b32932_936.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">B32932A3154K000</field>
+        <field name="Footprint">B32932A_(18_x_7)</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/capacitor/film/emi/data_sheet/20/20/ds/mkt_b32932_936.pdf</field>
+        <field name="Description">EMI Suppression Capacitors, 0.15uF, 305Vrms AC, 7m(W) x 12.5m(H) x 18m(L)</field>
+        <field name="Description_1">EMI Suppression Capacitors, 0.15uF, 305Vrms AC, 7m(W) x 12.5m(H) x 18m(L)</field>
+        <field name="Height"/>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B32932A3154K000</field>
+        <field name="Mouser Part Number">871-B32932A3154K000</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B32932A3154K000?qs=o70DwCUVFUh8CIyECYm%252BNg%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="EEUFR1V471" part="EEUFR1V471">
+      <description>Capacitor Al FR 470uF 35V 10x16 Panasonic 470uF 35 V dc Aluminium Electrolytic Capacitor, FR Radial Series 8000h 10 Dia. x 16mm</description>
+      <docs>http://industrial.panasonic.com/cdbs/www-data/pdf/RDF0000/ABA0000C1259.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">EEUFR1V471</field>
+        <field name="Footprint">CAPPRD500W65D1000H1750</field>
+        <field name="Datasheet">http://industrial.panasonic.com/cdbs/www-data/pdf/RDF0000/ABA0000C1259.pdf</field>
+        <field name="Description">Capacitor Al FR 470uF 35V 10x16 Panasonic 470uF 35 V dc Aluminium Electrolytic Capacitor, FR Radial Series 8000h 10 Dia. x 16mm</field>
+        <field name="Description_1">Capacitor Al FR 470uF 35V 10x16 Panasonic 470uF 35 V dc Aluminium Electrolytic Capacitor, FR Radial Series 8000h 10 Dia. x 16mm</field>
+        <field name="Height">17.5</field>
+        <field name="Manufacturer_Name">Panasonic</field>
+        <field name="Manufacturer_Part_Number">EEUFR1V471</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number">EEUFR1V471</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/eeufr1v471/panasonic</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="ES2D" part="ES2D">
+      <description>Superfast recovery time for highefficiency.; Built-in strain relief. ; Low profile package. ; For surface mount applications. ; Glass passivated junction.</description>
+      <docs>https://www.onsemi.com/pub/Collateral/ES2D-D.pdf</docs>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">ES2D</field>
+        <field name="Footprint">DIOM5336X265N</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/ES2D-D.pdf</field>
+        <field name="Description">Superfast recovery time for highefficiency.; Built-in strain relief. ; Low profile package. ; For surface mount applications. ; Glass passivated junction.</field>
+        <field name="Description_1">Superfast recovery time for highefficiency.; Built-in strain relief. ; Low profile package. ; For surface mount applications. ; Glass passivated junction.</field>
+        <field name="Height">2.65</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">ES2D</field>
+        <field name="Mouser Part Number">512-ES2D</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/ES2D?qs=3kCnFMRqPtEmDfWv8SnLIg%3D%3D</field>
+        <field name="Arrow Part Number">ES2D</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/es2d/on-semiconductor?region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="FLYBACK fuse" part="37411000430">
+      <description>Fuses with Leads - Through Hole 250V UL TL SL 1A TR5</description>
+      <docs>https://www.littelfuse.com/assetdocs/fuse-374-datasheet?assetguid=3a419d96-9ce7-47cd-8c71-4ff91f37569c</docs>
+      <fields>
+        <field name="Reference">F</field>
+        <field name="Value">37411000430</field>
+        <field name="Footprint">37411000430</field>
+        <field name="Datasheet">https://www.littelfuse.com/assetdocs/fuse-374-datasheet?assetguid=3a419d96-9ce7-47cd-8c71-4ff91f37569c</field>
+        <field name="Description">Fuses with Leads - Through Hole 250V UL TL SL 1A TR5</field>
+        <field name="Description_1">Fuses with Leads - Through Hole 250V UL TL SL 1A TR5</field>
+        <field name="Height">8</field>
+        <field name="Manufacturer_Name">LITTELFUSE</field>
+        <field name="Manufacturer_Part_Number">37411000430</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number">37411000430</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/37411000430/littelfuse?region=europe</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="KF128-5_08-2P-AA" part="KF128-5.08-2P-AA">
+      <description>1x2P 24A -40~+105 250V Green 12~22 Straight 5.08mm 2.5 1 2 Plugin,P=5.08mm Screw terminal ROHS</description>
+      <docs>https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2303171000_Cixi-Kefa-Elec-KF128-5-08-2P-AA_C474952.pdf</docs>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">KF128-5.08-2P-AA</field>
+        <field name="Footprint">KF1285082PAA</field>
+        <field name="Datasheet">https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2303171000_Cixi-Kefa-Elec-KF128-5-08-2P-AA_C474952.pdf</field>
+        <field name="Description">1x2P 24A -40~+105 250V Green 12~22 Straight 5.08mm 2.5 1 2 Plugin,P=5.08mm Screw terminal ROHS</field>
+        <field name="Height">14.6</field>
+        <field name="Manufacturer_Name">CIXI KEFA ELECTRONICS</field>
+        <field name="Manufacturer_Part_Number">KF128-5.08-2P-AA</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Mosfet" part="NTD360N80S3Z">
+      <description>900 V @ TJ = 150 C; Ultra Low Gate Charge (Typ. Qg = 25.3 nC); Low Stored Energy in Output Capacitance (Eoss = 2.72 J @ 400 V); Optimized Capacitance; ESD Improved Capability with Zener Diode; Typ. RDS(on) = 300 m; RoHS Compliant; 100% Avalanche Tested; Internal Gate Resistance: 4</description>
+      <docs>https://www.onsemi.com/pub/Collateral/NTD360N80S3Z-D.PDF</docs>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">NTD360N80S3Z</field>
+        <field name="Footprint">NTD360N80S3Z</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/NTD360N80S3Z-D.PDF</field>
+        <field name="Description">900 V @ TJ = 150 C; Ultra Low Gate Charge (Typ. Qg = 25.3 nC); Low Stored Energy in Output Capacitance (Eoss = 2.72 J @ 400 V); Optimized Capacitance; ESD Improved Capability with Zener Diode; Typ. RDS(on) = 300 m; RoHS Compliant; 100% Avalanche Tested; Internal Gate Resistance: 4</field>
+        <field name="Description_1">900 V @ TJ = 150 C; Ultra Low Gate Charge (Typ. Qg = 25.3 nC); Low Stored Energy in Output Capacitance (Eoss = 2.72 J @ 400 V); Optimized Capacitance; ESD Improved Capability with Zener Diode; Typ. RDS(on) = 300 m; RoHS Compliant; 100% Avalanche Tested; Internal Gate Resistance: 4 </field>
+        <field name="Height">2.517</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">NTD360N80S3Z</field>
+        <field name="Mouser Part Number">863-NTD360N80S3Z</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi/NTD360N80S3Z?qs=7MVldsJ5Uaw4dM2ZaedK3Q%3D%3D</field>
+        <field name="Arrow Part Number">NTD360N80S3Z</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/ntd360n80s3z/on-semiconductor?region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="NTC" part="B57153S0100M000">
+      <description>NTC Inrush Current Limiters, Resistance (at 25)=10, Maximum Current=2A</description>
+      <docs>https://product.tdk.com/system/files/dam/doc/product/protection/current/ntc-limiter/data_sheet/50/db/icl_16/s153.pdf</docs>
+      <fields>
+        <field name="Reference">RT</field>
+        <field name="Value">B57153S0100M000</field>
+        <field name="Footprint">B57153S0***M0**</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/protection/current/ntc-limiter/data_sheet/50/db/icl_16/s153.pdf</field>
+        <field name="Description">NTC Inrush Current Limiters, Resistance (at 25)=10, Maximum Current=2A</field>
+        <field name="Description_1">NTC Inrush Current Limiters, Resistance (at 25)=10, Maximum Current=2A</field>
+        <field name="Height">13</field>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B57153S0100M000</field>
+        <field name="Mouser Part Number">871-B57153S0100M000</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B57153S0100M000?qs=AKDv8POSxR22bWjVdDPC%2Fw%3D%3D</field>
+        <field name="Arrow Part Number">B57153S0100M000</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/b57153s0100m000/tdk?utm_currency=USD&amp;region=europe</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RES 2.2 OHM 1% 14W 1206" part="RK73H2BTTD2R20F">
+      <description>Thick Film Resistors - SMD 2.2 OHM 1%</description>
+      <docs>http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</docs>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">RK73H2BTTD2R20F</field>
+        <field name="Footprint">RESC3216X70N</field>
+        <field name="Datasheet">http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 2.2 OHM 1%</field>
+        <field name="Description_1">Thick Film Resistors - SMD 2.2 OHM 1%</field>
+        <field name="Height">0.7</field>
+        <field name="Manufacturer_Name">KOA Speer</field>
+        <field name="Manufacturer_Part_Number">RK73H2BTTD2R20F</field>
+        <field name="Mouser Part Number">660-RK73H2BTTD2R20F</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=660-RK73H2BTTD2R20F</field>
+        <field name="Arrow Part Number">RK73H2BTTD2R20F</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/rk73h2bttd2r20f/koa-speer-electronics</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RES SMD 3.3K OHM 1% 14W 1206" part="CR1206-FX-3301ELF">
+      <description>BOURNS - CR1206-FX-3301ELF - RES, THICK FILM, 3K3, 1%, 0.25W, 1206</description>
+      <docs>https://componentsearchengine.com/Datasheets/2/CR1206-FX-3301ELF.pdf</docs>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">CR1206-FX-3301ELF</field>
+        <field name="Footprint">RESC3216X75N</field>
+        <field name="Datasheet">https://componentsearchengine.com/Datasheets/2/CR1206-FX-3301ELF.pdf</field>
+        <field name="Description">BOURNS - CR1206-FX-3301ELF - RES, THICK FILM, 3K3, 1%, 0.25W, 1206</field>
+        <field name="Description_1">BOURNS - CR1206-FX-3301ELF - RES, THICK FILM, 3K3, 1%, 0.25W, 1206</field>
+        <field name="Height">0.75</field>
+        <field name="Manufacturer_Name">Bourns</field>
+        <field name="Manufacturer_Part_Number">CR1206-FX-3301ELF</field>
+        <field name="Mouser Part Number">652-CR1206FX-3301ELF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Bourns/CR1206-FX-3301ELF?qs=raSpJxvwqHGGjBeE8FVf2Q%3D%3D</field>
+        <field name="Arrow Part Number">CR1206-FX-3301ELF</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/cr1206-fx-3301elf/bourns?region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RES SMD 47K OHM 5% 2W 2512" part="CRM2512-JW-473ELF">
+      <description>BOURNS - CRM2512-JW-473ELF - RES, 47K, 5%, 2512, THICK FILM</description>
+      <docs>http://www.bourns.com/data/global/pdfs/CRM0805_1206_2010.pdf</docs>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">CRM2512-JW-473ELF</field>
+        <field name="Footprint">RESC6331X80N</field>
+        <field name="Datasheet">http://www.bourns.com/data/global/pdfs/CRM0805_1206_2010.pdf</field>
+        <field name="Description">BOURNS - CRM2512-JW-473ELF - RES, 47K, 5%, 2512, THICK FILM</field>
+        <field name="Description_1">BOURNS - CRM2512-JW-473ELF - RES, 47K, 5%, 2512, THICK FILM</field>
+        <field name="Height">0.8</field>
+        <field name="Manufacturer_Name">Bourns</field>
+        <field name="Manufacturer_Part_Number">CRM2512-JW-473ELF</field>
+        <field name="Mouser Part Number">652-CRM2512JW473ELF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Bourns/CRM2512-JW-473ELF?qs=%2FxQVPCMPNzjXr%252BWmcdvIgA%3D%3D</field>
+        <field name="Arrow Part Number">CRM2512-JW-473ELF</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/crm2512-jw-473elf/bourns</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RK73H2BRTTD22R0F" part="RK73H2BRTTD22R0F">
+      <description>Thick Film Resistors - SMD 22 ohm 1% 0.25W AEC-Q200 ANTI-SULFUR</description>
+      <docs>http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</docs>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">RK73H2BRTTD22R0F</field>
+        <field name="Footprint">RESC3216X70N</field>
+        <field name="Datasheet">http://www.koaspeer.com/catimages/Products/RK73H/RK73H.pdf</field>
+        <field name="Description">Thick Film Resistors - SMD 22 ohm 1% 0.25W AEC-Q200 ANTI-SULFUR</field>
+        <field name="Description_1">Thick Film Resistors - SMD 22 ohm 1% 0.25W AEC-Q200 ANTI-SULFUR</field>
+        <field name="Height">0.7</field>
+        <field name="Manufacturer_Name">KOA Speer</field>
+        <field name="Manufacturer_Part_Number">RK73H2BRTTD22R0F</field>
+        <field name="Mouser Part Number">660-RK73H2BRTTD22R0F</field>
+        <field name="Mouser Price/Stock">https://www.mouser.com/Search/Refine.aspx?Keyword=660-RK73H2BRTTD22R0F</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="S2M" part="S2M">
+      <description>High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</description>
+      <docs>https://www.onsemi.com/pub/Collateral/S2M-D.PDF</docs>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">S2M</field>
+        <field name="Footprint">DIOM5336X265N</field>
+        <field name="Datasheet">https://www.onsemi.com/pub/Collateral/S2M-D.PDF</field>
+        <field name="Description">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+        <field name="Description_1">High-Current Capability, 2 A Rated; Fast Response: 2 us Trr; Low-Forward Voltage Drop, 1.15 V VF Max at 2 A; Glass Passivated Junction; High-Surge Current Capability, 50 A2s IFSM; UL Certified, UL #E258596; NRV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AECQ101 Qualified and PPAP Capable; These Devices are PbFree and are RoHS Compliant</field>
+        <field name="Height">2.65</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">S2M</field>
+        <field name="Mouser Part Number">512-S2M</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/S2M?qs=a0wxjULRyoFPR8XEAEgF8g%3D%3D</field>
+        <field name="Arrow Part Number">S2M</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/s2m/on-semiconductor?utm_currency=USD&amp;region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="SMD RN 0805 10K 0.01% 10PPM" part="RN73C2A10KLTDF">
+      <description>Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM</description>
+      <docs>http://docs-europe.electrocomponents.com/webdocs/1488/0900766b814885e5.pdf</docs>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">RN73C2A10KLTDF</field>
+        <field name="Footprint">RESC2012X65N</field>
+        <field name="Datasheet">http://docs-europe.electrocomponents.com/webdocs/1488/0900766b814885e5.pdf</field>
+        <field name="Description">Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM</field>
+        <field name="Description_1">Thin Film Resistors - SMD RN 0805 10K 0.01% 10PPM</field>
+        <field name="Height">0.65</field>
+        <field name="Manufacturer_Name">TE Connectivity</field>
+        <field name="Manufacturer_Part_Number">RN73C2A10KLTDF</field>
+        <field name="Mouser Part Number">279-RN73C2A10KLTDF</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/TE-Connectivity-Holsworthy/RN73C2A10KLTDF?qs=1Hpg7qxOs69sC8pHBMR1GQ%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="TL431" part="TL431">
+      <description>ON Semiconductor ANA 2.5V PROG SHUNT REF</description>
+      <docs>https://datasheet.lcsc.com/szlcsc/Guangdong-Hottech-TL431_C181103.pdf</docs>
+      <fields>
+        <field name="Reference">IC</field>
+        <field name="Value">TL431</field>
+        <field name="Footprint">SOT96P240X120-3N</field>
+        <field name="Datasheet">https://datasheet.lcsc.com/szlcsc/Guangdong-Hottech-TL431_C181103.pdf</field>
+        <field name="Description">ON Semiconductor ANA 2.5V PROG SHUNT REF</field>
+        <field name="Description_1">ON Semiconductor ANA 2.5V PROG SHUNT REF</field>
+        <field name="Height">1.2</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">TL431</field>
+        <field name="Mouser Part Number">N/A</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi/TL431?qs=%252BEew9%252B0nqrAp2ClC6bEq7Q%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="REFERENCE" type="passive"/>
+        <pin num="2" name="CATHODE" type="passive"/>
+        <pin num="3" name="ANODE" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="UC3844D8TRG4" part="UC3844D8TRG4">
+      <description>Switching Controllers Current-Mode PWM Controller</description>
+      <docs>https://www.ti.com/lit/ds/symlink/uc3844.pdf?ts=1637840317886</docs>
+      <fields>
+        <field name="Reference">IC</field>
+        <field name="Value">UC3844D8TRG4</field>
+        <field name="Footprint">SOIC127P600X175-8N</field>
+        <field name="Datasheet">https://www.ti.com/lit/ds/symlink/uc3844.pdf?ts=1637840317886</field>
+        <field name="Description">Switching Controllers Current-Mode PWM Controller</field>
+        <field name="Description_1">Switching Controllers Current-Mode PWM Controller</field>
+        <field name="Height">1.75</field>
+        <field name="Manufacturer_Name">Texas Instruments</field>
+        <field name="Manufacturer_Part_Number">UC3844D8TRG4</field>
+        <field name="Mouser Part Number">595-UC3844D8TRG4</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Texas-Instruments/UC3844D8TRG4?qs=fZz%252BEhgUXdjrQNJSRvUQrw%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="COMP" type="passive"/>
+        <pin num="2" name="VFB" type="passive"/>
+        <pin num="3" name="ISENSE" type="passive"/>
+        <pin num="4" name="RT/CT" type="passive"/>
+        <pin num="5" name="GROUND" type="passive"/>
+        <pin num="6" name="OUTPUT" type="passive"/>
+        <pin num="7" name="VCC" type="passive"/>
+        <pin num="8" name="VREF" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="US1M-13-F diot" part="US1M-13-F">
+      <description>Diode Fast 1A 1000V 75ns SMA Diodes Inc US1M-13-F, SMT Switching Diode, 1000V 1A, 75ns, 2-Pin DO-214AC</description>
+      <docs>https://www.diodes.com/assets/Datasheets/ds16008.pdf</docs>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">US1M-13-F</field>
+        <field name="Footprint">SODFL5226X240N</field>
+        <field name="Datasheet">https://www.diodes.com/assets/Datasheets/ds16008.pdf</field>
+        <field name="Description">Diode Fast 1A 1000V 75ns SMA Diodes Inc US1M-13-F, SMT Switching Diode, 1000V 1A, 75ns, 2-Pin DO-214AC</field>
+        <field name="Description_1">Diode Fast 1A 1000V 75ns SMA Diodes Inc US1M-13-F, SMT Switching Diode, 1000V 1A, 75ns, 2-Pin DO-214AC</field>
+        <field name="Height">2.4</field>
+        <field name="Manufacturer_Name">Diodes Incorporated</field>
+        <field name="Manufacturer_Part_Number">US1M-13-F</field>
+        <field name="Mouser Part Number">621-US1M-F</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Diodes-Incorporated/US1M-13-F?qs=eQQ5Ftq4seWl6gFwdb8vMg%3D%3D</field>
+        <field name="Arrow Part Number">US1M-13-F</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/us1m-13-f/diodes-incorporated?utm_currency=USD&amp;region=europe</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Varistor" part="B72214S2301K101">
+      <description>Leaded Disk Varistors, Max. Operating Voltage [AC]=300Vrms, Max. Surge Current Imax(8/20?s,1time)=6000A</description>
+      <docs>https://product.tdk.com/system/files/dam/doc/product/protection/voltage/lead-disk-varistor/data_sheet/70/db/var/siov_leaded_advanced.pdf</docs>
+      <fields>
+        <field name="Reference">RV</field>
+        <field name="Value">B72214S2301K101</field>
+        <field name="Footprint">B72214S2301K101</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/protection/voltage/lead-disk-varistor/data_sheet/70/db/var/siov_leaded_advanced.pdf</field>
+        <field name="Description">Leaded Disk Varistors, Max. Operating Voltage [AC]=300Vrms, Max. Surge Current Imax(8/20?s,1time)=6000A</field>
+        <field name="Description_1">Leaded Disk Varistors, Max. Operating Voltage [AC]=300Vrms, Max. Surge Current Imax(8/20?s,1time)=6000A</field>
+        <field name="Height">18.5</field>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B72214S2301K101</field>
+        <field name="Mouser Part Number">871-B72214S2301K101</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B72214S2301K101?qs=xN3cbABbNRZMKewFIVrNMg%3D%3D</field>
+        <field name="Arrow Part Number">B72214S2301K101</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/b72214s2301k101/tdk?utm_currency=USD&amp;region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Y2 cap" part="B32021A3222M189">
+      <description>EMI Suppression Capacitors, 0.0022uF, 300Vrms AC, 4m(W) x 9m(H) x 13m(L)</description>
+      <docs>https://product.tdk.com/system/files/dam/doc/product/capacitor/film/emi/data_sheet/20/20/db/fc_2009/y2_b32021_026.pdf</docs>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">B32021A3222M189</field>
+        <field name="Footprint">B32021_(13_x_4)</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/capacitor/film/emi/data_sheet/20/20/db/fc_2009/y2_b32021_026.pdf</field>
+        <field name="Description">EMI Suppression Capacitors, 0.0022uF, 300Vrms AC, 4m(W) x 9m(H) x 13m(L)</field>
+        <field name="Description_1">EMI Suppression Capacitors, 0.0022uF, 300Vrms AC, 4m(W) x 9m(H) x 13m(L)</field>
+        <field name="Height"/>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B32021A3222M189</field>
+        <field name="Mouser Part Number">871-B32021A3222M189</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B32021A3222M189?qs=FNSAlmj86E1UZItQdZ73ug%3D%3D</field>
+        <field name="Arrow Part Number">B32021A3222M189</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/b32021a3222m189/tdk?region=nac</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="diot SB3200 200 V 3A Through Hole" part="SB3200">
+      <description>Diode 200 V 3A Through Hole DO-201AD</description>
+      <docs>https://4donline.ihs.com/images/VipMasterIC/IC/DISE/DISES01075/DISES01075-1.pdf?hkey=EF798316E3902B6ED9A73243A3159BB0</docs>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">SB3200</field>
+        <field name="Footprint">DIOAD2510W125L750D440</field>
+        <field name="Datasheet">https://4donline.ihs.com/images/VipMasterIC/IC/DISE/DISES01075/DISES01075-1.pdf?hkey=EF798316E3902B6ED9A73243A3159BB0</field>
+        <field name="Description">Diode 200 V 3A Through Hole DO-201AD</field>
+        <field name="Description_1">Diode 200 V 3A Through Hole DO-201AD</field>
+        <field name="Height"/>
+        <field name="Manufacturer_Name">Diotec</field>
+        <field name="Manufacturer_Part_Number">SB3200</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="optocuplar" part="PC81710NIP1B">
+      <description>OPTOISOLATOR 5KV TRANS 4SMD</description>
+      <docs>https://global.sharp/products/device/lineup/data/pdf/datasheet/PC8171xNSZ1B_e.pdf</docs>
+      <fields>
+        <field name="Reference">AT</field>
+        <field name="Value">PC81710NIP1B</field>
+        <field name="Footprint">SOP254P960X420-4N</field>
+        <field name="Datasheet">https://global.sharp/products/device/lineup/data/pdf/datasheet/PC8171xNSZ1B_e.pdf</field>
+        <field name="Description">OPTOISOLATOR 5KV TRANS 4SMD</field>
+        <field name="Description_1">OPTOISOLATOR 5KV TRANS 4SMD</field>
+        <field name="Height">4.2</field>
+        <field name="Manufacturer_Name">Sharp Microelectronics</field>
+        <field name="Manufacturer_Part_Number">PC81710NIP1B</field>
+        <field name="Mouser Part Number">852-PC81710NIP1B</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/Sharp-Microelectronics/PC81710NIP1B?qs=MLItCLRbWswN8lAuXmPENg%3D%3D</field>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="ANODE" type="passive"/>
+        <pin num="2" name="CATHODE" type="passive"/>
+        <pin num="3" name="EMITTER" type="passive"/>
+        <pin num="4" name="COLLECTOR" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="ortak mod bobin 39mH 0.7A" part="B82732R2701B030">
+      <description>Power Line Chokes, L=39mH  Rated current=0.7A, LxWxT:24mmx16.5mmx23.5mm</description>
+      <docs>https://product.tdk.com/system/files/dam/doc/product/emc/emc/line-filter/data_sheet/30/db/ind_2008/b82732r_w.pdf</docs>
+      <fields>
+        <field name="Reference">FL</field>
+        <field name="Value">B82732R2701B030</field>
+        <field name="Footprint">B82732R2701B030</field>
+        <field name="Datasheet">https://product.tdk.com/system/files/dam/doc/product/emc/emc/line-filter/data_sheet/30/db/ind_2008/b82732r_w.pdf</field>
+        <field name="Description">Power Line Chokes, L=39mH  Rated current=0.7A, LxWxT:24mmx16.5mmx23.5mm</field>
+        <field name="Description_1">Power Line Chokes, L=39mH  Rated current=0.7A, LxWxT:24mmx16.5mmx23.5mm</field>
+        <field name="Height">23.5</field>
+        <field name="Manufacturer_Name">TDK</field>
+        <field name="Manufacturer_Part_Number">B82732R2701B030</field>
+        <field name="Mouser Part Number">871-B82732R2701B030</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/EPCOS-TDK/B82732R2701B030/?qs=x3Z3TaiycdvnIGyKwS1mEw%3D%3D</field>
+        <field name="Arrow Part Number">B82732R2701B030</field>
+        <field name="Arrow Price/Stock">https://www.arrow.com/en/products/b82732r2701b030/epcos-tdk</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="3" type="passive"/>
+        <pin num="4" name="4" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="/12V" class="Default">
+      <node ref="C21" pin="1" pintype="passive"/>
+      <node ref="IC2" pin="7" pinfunction="VCC_7" pintype="passive"/>
+      <node ref="L1" pin="2" pintype="passive"/>
+    </net>
+    <net code="2" name="/D+" class="Default">
+      <node ref="C26" pin="1" pintype="passive"/>
+      <node ref="C5" pin="1" pintype="passive"/>
+      <node ref="C7" pin="2" pintype="passive"/>
+      <node ref="D12" pin="1" pintype="passive"/>
+      <node ref="D15" pin="1" pintype="passive"/>
+      <node ref="D3" pin="1" pintype="passive"/>
+      <node ref="R33" pin="1" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+      <node ref="U1" pin="1" pintype="free"/>
+    </net>
+    <net code="3" name="/E" class="Default">
+      <node ref="AT2" pin="3" pinfunction="EMITTER_3" pintype="passive"/>
+      <node ref="C11" pin="2" pintype="passive"/>
+      <node ref="C12" pin="2" pintype="passive"/>
+      <node ref="C20" pin="1" pintype="passive"/>
+      <node ref="C21" pin="2" pintype="passive"/>
+      <node ref="C22" pin="2" pintype="passive"/>
+      <node ref="C23" pin="1" pintype="passive"/>
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="C5" pin="2" pintype="passive"/>
+      <node ref="C7" pin="1" pintype="passive"/>
+      <node ref="D13" pin="2" pintype="passive"/>
+      <node ref="D8" pin="2" pintype="passive"/>
+      <node ref="IC2" pin="2" pinfunction="VFB_2" pintype="passive"/>
+      <node ref="IC2" pin="5" pinfunction="GROUND_5" pintype="passive"/>
+      <node ref="R11" pin="2" pintype="passive"/>
+      <node ref="R33" pin="2" pintype="passive"/>
+      <node ref="R34" pin="2" pintype="passive"/>
+      <node ref="U1" pin="7" pintype="free"/>
+    </net>
+    <net code="4" name="/gate" class="Default">
+      <node ref="IC2" pin="6" pinfunction="OUTPUT_6" pintype="passive"/>
+      <node ref="R12" pin="1" pintype="passive"/>
+    </net>
+    <net code="5" name="/ıone" class="Default">
+      <node ref="Q2" pin="3" pintype="passive"/>
+      <node ref="R11" pin="1" pintype="passive"/>
+      <node ref="R13" pin="1" pintype="passive"/>
+      <node ref="R25" pin="1" pintype="passive"/>
+      <node ref="R34" pin="1" pintype="passive"/>
+      <node ref="Z2" pin="2" pintype="passive"/>
+    </net>
+    <net code="6" name="12Vkontrol" class="Default">
+      <node ref="C27" pin="1" pintype="passive"/>
+      <node ref="C28" pin="2" pintype="passive"/>
+      <node ref="D16" pin="1" pintype="passive"/>
+      <node ref="J2" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="R29" pin="2" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+    </net>
+    <net code="7" name="GND" class="Default">
+      <node ref="C26" pin="2" pintype="passive"/>
+      <node ref="C27" pin="2" pintype="passive"/>
+      <node ref="C28" pin="1" pintype="passive"/>
+      <node ref="IC7" pin="3" pinfunction="ANODE_3" pintype="passive"/>
+      <node ref="J2" pin="2" pinfunction="2_2" pintype="passive"/>
+      <node ref="R26" pin="2" pintype="passive"/>
+      <node ref="R29" pin="1" pintype="passive"/>
+      <node ref="U1" pin="4" pintype="free"/>
+    </net>
+    <net code="8" name="High_Power_AC_DC" class="Default">
+      <node ref="F1" pin="2" pinfunction="~_2" pintype="passive"/>
+      <node ref="RT1" pin="1" pintype="passive"/>
+      <node ref="RV2" pin="2" pintype="passive"/>
+    </net>
+    <net code="9" name="Net-(AT2-ANODE)" class="Default">
+      <node ref="AT2" pin="1" pinfunction="ANODE_1" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+    </net>
+    <net code="10" name="Net-(AT2-CATHODE)" class="Default">
+      <node ref="AT2" pin="2" pinfunction="CATHODE_2" pintype="passive"/>
+      <node ref="C13" pin="1" pintype="passive"/>
+      <node ref="IC7" pin="2" pinfunction="CATHODE_2" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(AT2-COLLECTOR)" class="Default">
+      <node ref="AT2" pin="4" pinfunction="COLLECTOR_4" pintype="passive"/>
+      <node ref="C12" pin="1" pintype="passive"/>
+      <node ref="IC2" pin="1" pinfunction="COMP_1" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(C13-Pad2)" class="Default">
+      <node ref="C13" pin="2" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+    </net>
+    <net code="13" name="Net-(C20-Pad2)" class="Default">
+      <node ref="C20" pin="2" pintype="passive"/>
+      <node ref="C22" pin="1" pintype="passive"/>
+      <node ref="D2" pin="1" pintype="passive"/>
+      <node ref="L1" pin="1" pintype="passive"/>
+      <node ref="R10" pin="2" pintype="passive"/>
+    </net>
+    <net code="14" name="Net-(C35-Pad1)" class="Default">
+      <node ref="C35" pin="1" pintype="passive"/>
+      <node ref="FL2" pin="4" pinfunction="4_4" pintype="passive"/>
+      <node ref="RT1" pin="2" pintype="passive"/>
+    </net>
+    <net code="15" name="Net-(C35-Pad2)" class="Default">
+      <node ref="C35" pin="2" pintype="passive"/>
+      <node ref="FL2" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="J1" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="RV2" pin="1" pintype="passive"/>
+    </net>
+    <net code="16" name="Net-(D2-Pad2)" class="Default">
+      <node ref="D2" pin="2" pintype="passive"/>
+      <node ref="U1" pin="6" pintype="free"/>
+    </net>
+    <net code="17" name="Net-(D3-Pad2)" class="Default">
+      <node ref="D3" pin="2" pintype="passive"/>
+      <node ref="D8" pin="1" pintype="passive"/>
+      <node ref="FL2" pin="3" pinfunction="3_3" pintype="passive"/>
+    </net>
+    <net code="18" name="Net-(D12-Pad2)" class="Default">
+      <node ref="D12" pin="2" pintype="passive"/>
+      <node ref="D13" pin="1" pintype="passive"/>
+      <node ref="FL2" pin="2" pinfunction="2_2" pintype="passive"/>
+    </net>
+    <net code="19" name="Net-(D15-Pad2)" class="Default">
+      <node ref="D15" pin="2" pintype="passive"/>
+      <node ref="Q2" pin="2" pintype="passive"/>
+      <node ref="U1" pin="5" pintype="free"/>
+    </net>
+    <net code="20" name="Net-(D16-Pad2)" class="Default">
+      <node ref="D16" pin="2" pintype="passive"/>
+      <node ref="U1" pin="2" pintype="free"/>
+    </net>
+    <net code="21" name="Net-(F1-~-Pad1)" class="Default">
+      <node ref="F1" pin="1" pinfunction="~_1" pintype="passive"/>
+      <node ref="J1" pin="2" pinfunction="2_2" pintype="passive"/>
+    </net>
+    <net code="22" name="Net-(IC2-ISENSE)" class="Default">
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="IC2" pin="3" pinfunction="ISENSE_3" pintype="passive"/>
+      <node ref="R13" pin="2" pintype="passive"/>
+    </net>
+    <net code="23" name="Net-(IC2-RT/CT)" class="Default">
+      <node ref="C23" pin="2" pintype="passive"/>
+      <node ref="IC2" pin="4" pinfunction="RT/CT_4" pintype="passive"/>
+      <node ref="R36" pin="2" pintype="passive"/>
+    </net>
+    <net code="24" name="Net-(IC2-VREF)" class="Default">
+      <node ref="C11" pin="1" pintype="passive"/>
+      <node ref="IC2" pin="8" pinfunction="VREF_8" pintype="passive"/>
+      <node ref="R36" pin="1" pintype="passive"/>
+    </net>
+    <net code="25" name="Net-(IC7-REFERENCE)" class="Default">
+      <node ref="IC7" pin="1" pinfunction="REFERENCE_1" pintype="passive"/>
+      <node ref="R26" pin="1" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+    </net>
+    <net code="26" name="Net-(Q2-Pad1)" class="Default">
+      <node ref="Q2" pin="1" pintype="passive"/>
+      <node ref="R12" pin="2" pintype="passive"/>
+      <node ref="R25" pin="2" pintype="passive"/>
+      <node ref="Z2" pin="1" pintype="passive"/>
+    </net>
+    <net code="27" name="Net-(R8-Pad2)" class="Default">
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="R9" pin="1" pintype="passive"/>
+    </net>
+    <net code="28" name="Net-(R10-Pad1)" class="Default">
+      <node ref="R10" pin="1" pintype="passive"/>
+      <node ref="R9" pin="2" pintype="passive"/>
+    </net>
+  </nets>
+</export>

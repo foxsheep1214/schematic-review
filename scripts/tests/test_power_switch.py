@@ -674,3 +674,72 @@ class SynchronousRectifierTest(unittest.TestCase):
         changed['inductive_loads']['loads'][0]['windings'][1]['dot']='3'
         self.assertNotEqual(build_inventory(db,changed)['digest'],inventory['digest'])
         self.assertIn('inductive_loads',inventory['context'])
+
+
+class GateResistorAndBridgeTest(unittest.TestCase):
+    """typical-circuits-v2：串联栅极电阻后的驱动/下拉，以及半桥证据的结构要求。"""
+
+    def test_pull_behind_a_series_gate_resistor_counts(self):
+        # bms-c1：并联 MOS 栅极各经 47 Ω 接公共驱动节点 CHG_G，那里才有 10 M 下拉和驱动
+        db = switch_board(driver=None, pull=False, load=None)
+        add(db, 'R10', '47', [('1', '1', 'GATE'), ('2', '2', 'CHG_G')])
+        add(db, 'R11', '10M', [('1', '1', 'CHG_G'), ('2', '2', 'GND')])
+        add(db, 'R12', '100', [('1', '1', 'CHG_G'), ('2', '2', 'CHG')])
+        add(db, 'U4', 'BQ76952', [('1', 'CHG', 'CHG'), ('2', 'VSS', 'GND')])
+        switch = switches_of(build_inventory(db))['Q1']
+        self.assertEqual([(p['ref'], p['to'], p.get('via')) for p in switch['gate_pulls']],
+                         [('R11', 'GND', 'series:R10')])
+        self.assertEqual([f for f in findings(db) if f['rule'] == 'DRV-A03'], [])
+
+    def test_only_one_low_value_resistor_is_crossed(self):
+        db = switch_board(driver=None, pull=False, load=None)
+        add(db, 'R10', '47', [('1', '1', 'GATE'), ('2', '2', 'MID')])
+        add(db, 'R11', '47', [('1', '1', 'MID'), ('2', '2', 'CHG_G')])
+        add(db, 'R12', '10M', [('1', '1', 'CHG_G'), ('2', '2', 'GND')])
+        self.assertEqual([f['rule'] for f in findings(db)], ['DRV-A03'])
+        db = switch_board(driver=None, pull=False, load=None)
+        add(db, 'R10', '10K', [('1', '1', 'GATE'), ('2', '2', 'CHG_G')])
+        add(db, 'R11', '10M', [('1', '1', 'CHG_G'), ('2', '2', 'GND')])
+        self.assertEqual([f['rule'] for f in findings(db)], ['DRV-A03'])
+        db = switch_board(driver=None, pull=False, load=None)   # a second part on the gate net: not a lone series resistor
+        add(db, 'R10', '47', [('1', '1', 'GATE'), ('2', '2', 'CHG_G')])
+        add(db, 'C10', '1nF', [('1', '1', 'GATE'), ('2', '2', 'GND')])
+        add(db, 'R11', '10M', [('1', '1', 'CHG_G'), ('2', '2', 'GND')])
+        self.assertEqual([f['rule'] for f in findings(db)], ['DRV-A03'])
+
+    def test_pmos_source_on_a_high_side_drain_is_not_a_half_bridge(self):
+        # bms-c1：Q2 源极在 BAT+、漏极在 CHG+；Q12（PMOS）源极也挂在 CHG+，漏极去检测电阻
+        db = switch_board(driver=None, pull=False, load=None)
+        db['pin2net']['Q1.3'] = 'BAT+'
+        db['nets']['GND'].remove('Q1.3')
+        db['nets']['BAT+'] = ['Q1.3']
+        add(db, 'R2', '100K', [('1', '1', 'GATE'), ('2', '2', 'BAT+')])
+        add(db, 'Q12', 'ZXMP10A17GTA PMOS', [('1', 'G', 'DET_G'), ('2', 'D', 'DET_D'), ('3', 'S', 'SW_OUT')])
+        add(db, 'R63', '40', [('1', '1', 'DET_D'), ('2', '2', 'DET')])
+        add(db, 'R64', '100K', [('1', '1', 'DET_G'), ('2', '2', 'SW_OUT')])
+        switch = switches_of(build_inventory(db))['Q1']
+        self.assertEqual(switch['switch_node_evidence'], [])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+
+    def test_bjt_emitter_on_the_drain_net_is_not_a_half_bridge(self):
+        # ideal-diode：PMOS Q2 漏极在 VIN1，PNP 对 Q1 的发射极也在 VIN1
+        db = switch_board(driver=None, pull=False, load=None)
+        db['pin2net']['Q1.3'] = 'VOUT1'
+        db['nets']['GND'].remove('Q1.3')
+        db['nets']['VOUT1'] = ['Q1.3']
+        add(db, 'R2', '100K', [('1', '1', 'GATE'), ('2', '2', 'VOUT1')])
+        add(db, 'Q5', 'BCM857BS PNP', [('1', 'E', 'SW_OUT'), ('2', 'B', 'GATE'), ('3', 'C', 'GATE')])
+        switch = switches_of(build_inventory(db))['Q1']
+        self.assertEqual(switch['switch_node_evidence'], [])
+        self.assertNotIn('DRV-A04', [f['rule'] for f in findings(db)])
+
+    def test_series_mosfet_arm_without_an_inductor_is_still_a_half_bridge(self):
+        # moteus-c1：三相桥 OUTX 只挂高管源极/低管漏极和连接器，没有板上电感，仍是开关节点
+        db = switch_board(load=None)
+        add(db, 'Q2', 'AO3400', [('1', 'G', 'GATE_H'), ('2', 'D', 'V+'), ('3', 'S', 'SW_OUT')])
+        add(db, 'R4', '100K', [('1', '1', 'GATE_H'), ('2', '2', 'SW_OUT')])
+        add(db, 'J9', 'MOTOR', [('1', '1', 'SW_OUT')])
+        add(db, 'C1', '1uF 100V', [('1', '1', 'V+'), ('2', '2', 'GND')])
+        switch = switches_of(build_inventory(db))['Q1']
+        self.assertEqual(switch['switch_node_evidence'], ['half-bridge:Q2'])
+        self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])

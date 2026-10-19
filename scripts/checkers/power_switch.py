@@ -117,13 +117,39 @@ class _Scan:
         unique = {item['node'] + '|' + item['via']: item for item in found}
         return [unique[key] for key in sorted(unique)]
 
-    def pulls(self, gate_net, source_net):
+    def pulls(self, gate_net, source_net, gate_node=None):
+        found = self._pulls_on(gate_net, source_net)
+        if not found and gate_node:
+            # A gate reached only through its own series resistor (parallel power MOSFETs each
+            # with 47 R to a common drive node): the pull sits on the far side. One hop, <= 1 kR.
+            series = self._lone_gate_resistor(gate_net, gate_node)
+            if series:
+                ref, other = series
+                found = [dict(item, via='series:' + ref) for item in self._pulls_on(other, source_net)]
+        return found
+
+    def _pulls_on(self, net, source_net):
         found = []
-        for ref, other in self.graph.neighbors(gate_net, {ng.RESISTOR}):
+        for ref, other in self.graph.neighbors(net, {ng.RESISTOR}):
             if other == source_net or other in self.grounds or self.tree.is_rail(other):
                 found.append({'ref': ref, 'to': other,
                               'value': self.graph.parts.get(ref, {}).get('value')})
         return found
+
+    def _lone_gate_resistor(self, gate_net, gate_node):
+        graph = self.graph
+        nodes = [n for n in graph.nodes_on(gate_net) if graph.is_fitted(n.partition('.')[0])]
+        others = [n for n in nodes if n != gate_node]
+        if len(others) != 1 or len(nodes) != 2:
+            return None
+        ref = others[0].partition('.')[0]
+        if graph.kind(ref) != ng.RESISTOR:
+            return None
+        parsed = parse_resistor(str(graph.parts.get(ref, {}).get('value', '')).split('/')[0])
+        if parsed is None or not 0 <= parsed['kohm'] <= 1.0:
+            return None
+        far = [n for n in graph.nets_of(ref) if n != gate_net]
+        return (ref, far[0]) if len(far) == 1 else None
 
     def snubbers(self, drain_net, source_net, topology='unknown'):
         """开关节点到地/源/电源轨的吸收或钳位路径。
@@ -234,7 +260,7 @@ class _Scan:
                 nets.update(n for n in pnets if n and n != drain_net)
         return nets
 
-    def _switch_node_evidence(self, drain_net, ref):
+    def _switch_node_evidence(self, drain_net, ref, source_net=None, topology='unknown'):
         """开关节点上是否有感性负载或半桥对管。"""
         reasons = []
         for other in self.graph.refs_on(drain_net):
@@ -243,15 +269,28 @@ class _Scan:
             kind = self.graph.kind(other)
             if kind in INDUCTIVE_KINDS and not self._other_flyback_winding(other, drain_net):
                 reasons.append('inductive:' + other)
-            elif kind in SWITCH_KINDS:
-                node = self.graph.node_named(other, 'source')
-                if node and self.graph.pin2net.get(node) == drain_net:
-                    reasons.append('half-bridge:' + other)
+            elif kind == ng.MOSFET and self._bridge_partner(other, drain_net, source_net, topology):
+                reasons.append('half-bridge:' + other)
         for node in self.graph.nodes_on(drain_net):
             if ng.name_matches(powertree.SWITCH_NODE_PIN_RE, self.graph.pinname.get(node),
                                node.partition('.')[2]):
                 reasons.append('converter-node:' + node)
         return sorted(set(reasons))
+
+    def _bridge_partner(self, other, drain_net, source_net, topology):
+        """Series arm in the same direction: the other MOSFET's source is this node and its drain
+        goes on to a supply (rail or bulk storage). A PMOS hanging its source on a high-side
+        switch's drain (BMS charge-detect) or a BJT pair is not a half-bridge."""
+        if topology == 'high-side':
+            return False
+        graph = self.graph
+        src, drn = graph.node_named(other, 'source'), graph.node_named(other, 'drain')
+        if not (src and drn) or graph.pin2net.get(src) != drain_net:
+            return False
+        far = graph.pin2net.get(drn)
+        if not far or far in (drain_net, source_net) or far in self.grounds:
+            return False
+        return self.tree.is_rail(far) or self._has_storage(far)
 
     def _other_flyback_winding(self, ref, net):
         """A declared flyback transformer's winding on a DC net (the rectified output: a rail or a
@@ -411,9 +450,10 @@ class _Scan:
             gaps.extend(sync_gaps)
             if sync:
                 topology = 'low-side-local-return'
-            pulls = self.pulls(nets['gate'], nets['source']) if nets['gate'] else []
+            pulls = self.pulls(nets['gate'], nets['source'], nodes['gate']) if nets['gate'] else []
             snubbers = self.snubbers(nets['drain'], nets['source'], topology) if nets['drain'] else []
-            switch_node = self._switch_node_evidence(nets['drain'], ref) if nets['drain'] else []
+            switch_node = (self._switch_node_evidence(nets['drain'], ref, nets['source'], topology)
+                           if nets['drain'] else [])
             found.append({
                 'id': slug(ref + '-' + (nets['gate'] or 'unresolved')),
                 'ref': ref,
