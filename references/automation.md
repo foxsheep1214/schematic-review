@@ -869,3 +869,13 @@ reference 另给原厂文件 `sha256`；source 是本地文件路径，locator �
 ### 齐纳门限与锁定保持计算
 
 `scripts/zener_fault.py`只接受调用者已建立适用性的数值界限：`trip_drive`联解内部吸流及充电余量，`no_trip_budget`求正常时可容许的外部注入，`hold_charge`核供电缺口期间的电荷余量。无默认尖峰、温度、延迟或电容公差；负余量不等于实际故障已经发生，须复核输入是否是可达轨迹或仅充分条件。
+
+## 脚本分类
+
+新脚本先归入下表；只有入口写进 SKILL.md 的执行流程。
+
+| 类别 | 脚本 |
+|---|---|
+| 入口：执行流程里按顺序调用 | `parse_kicad.py`、`parse_netlist.py`、`lint.py`（冷/热跑，同时生成计划）、`audit_datasheets.py`、`gap_inventory.py`、`calc_claims.py`、`validate_review.py`、`render_report.py`、`pack_review.py`、`diff_netlists.py`；维护时 `catalog.py --write-doc` |
+| 专用工具：特定情形手动调用 | `plan_review.py`（单独重建计划，日常由 `lint.py` 代办）、`calc.py`、`simulate_rc.py`、`solve_dividers.py`（仅探索）、`decoupling.py`、`i2c_topology.py`、`datasheet_facts.py`、`electrical_contract.py`、`reviewed_declarations.py`、`audit_document_summaries.py`、`audit_parameter_claims.py`、`execution_audit.py`（可选自检）、`install_kicad_cli.py` |
+| 库：只被导入 | `results_model.py`、`review_engine.py`、`skill_identity.py`、`board_intent.py`、`board_scans.py`、`page_inventory.py`、`datasheet_kinds.py`、`design_preflight.py`、`review_obligations.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`revision_impact.py`、`requirement_clarifications.py`、`task_scope.py`、`validate_remediation.py`、`asg_summary_adapter.py`、计算模块（`circuit_bounds.py`、`model_bounds.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`）、`checkers/` |
