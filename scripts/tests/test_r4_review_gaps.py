@@ -133,30 +133,6 @@ def shared_gap_example():
     return json.loads(match.group(1)) if match else None
 
 
-class SharedGapExampleTest(unittest.TestCase):
-    """R4 审查者要找一个缺口被多条检查共享时 request_keys、closure_domain、obligations 怎样接线的完整写法。"""
-
-    def test_documented_example_passes_the_validators(self):
-        import results_model
-        from review_obligations import validate_obligations
-        from review_workflow import workflow
-        example = shared_gap_example()
-        self.assertIsNotNone(example, 'plan-and-results.md lacks the shared-gap example')
-        report = dict(example, schema_version=3)
-        self.assertEqual(results_model.shape_errors(report), [])
-        expanded = results_model.expand(report)
-        checks = {row['id']: row for row in expanded['checks']}
-        expected = {cid: {'id': cid, 'rule': cid.split('.')[0], 'object': {'circuit': cid.split('.')[1].rsplit('-', 1)[0]}}
-                    for cid in checks}
-        state = workflow({'review_phase': 'schematic_freeze'}, expanded, checks, require_design_options=True)
-        self.assertEqual(state['errors'], [])
-        self.assertEqual(validate_obligations(expected, checks, expanded['work_items']), [])
-        shared = [cid for cid in checks if sum(cid in t['check_ids'] for t in expanded['work_items']) > 1]
-        self.assertTrue(shared, 'the example must show one check split between two work items')
-        whats = [set(r.get('input_requests', {})) for r in checks.values()]
-        self.assertTrue(set.intersection(*whats), 'the example must show one gap shared by several checks')
-
-
 class DownstreamScreenCounterexampleTest(unittest.TestCase):
     """真实反例：三份 R3 台账（3924cd7、41f4ad3 及其复审）把 F101 分断缺口因“插墙”标成下游项，R4 证实它是 P0 缺陷；
     435c0fc 的资料缺口只在附带分句里说“实际寄生波形随后验证”“OTP温度映射留给闭壳标定”。"""

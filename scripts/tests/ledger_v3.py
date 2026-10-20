@@ -1,10 +1,16 @@
 """Test-side bridge: the older test builders write rows in the expanded (validator) view; the
-validator reads schema 3. `record` writes such a ledger the way a reviewer writes schema 3, so a
-test still states its case in the fields it is about. Not used by SR itself."""
+validator reads schema 4. `record` writes such a ledger the way a reviewer writes schema 4 — the
+gaps and work items the builder stated become function verdicts with open/fail items, and the rows
+name them — so a test still states its case in the fields it is about. Not used by SR itself."""
 import copy
+import re
 
+import catalog
 import results_model
 import validate_review as _validate_review
+
+SYNTHETIC = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
+CAUSE_KIND = {v: k for k, v in results_model.KIND_CAUSE.items()}
 
 DEFAULTS = {'PASS': 'B', 'FAIL': 'B', 'INSUFFICIENT': 'C'}
 
@@ -58,14 +64,138 @@ def _gaps(row):
     return gaps
 
 
-def record(report):
+def _slug(value):
+    return re.sub(r'[^A-Za-z0-9_.-]+', '-', str(value)).strip('-') or 'X'
+
+
+def _aspect(plan, row):
+    rule = str(row.get('id', '')).split('.')[0]
+    try:
+        return catalog.title(rule)
+    except Exception:  # unknown synthetic rule
+        return 'general'
+
+
+def _objects(plan, cids):
+    refs, nets = [], []
+    for c in (plan or {}).get('checks') or []:
+        if isinstance(c, dict) and c.get('id') in cids and isinstance(c.get('object'), dict):
+            o = c['object']
+            refs += [x for x in ([o.get('ref')] if isinstance(o.get('ref'), str) else []) + list(o.get('refs') or []) if isinstance(x, str)]
+            nets += [x for x in ([o.get('net')] if isinstance(o.get('net'), str) else []) + list(o.get('nets') or []) if isinstance(x, str)]
+    return {'refs': list(dict.fromkeys(refs)) or ['SYNTHETIC']} if not nets or refs else {'nets': list(dict.fromkeys(nets))}
+
+
+def _open_item(key, rows, task):
+    """One open item for the gaps a task (or an orphan row) owns; the row gaps were written in schema 3 shape."""
+    gaps = [g for row in rows for g in row.get('gaps') or []]
+    cause = rows[0].get('gap_cause')
+    kind = CAUSE_KIND.get(cause, 'REVIEW_INCOMPLETE')
+    whats = list(dict.fromkeys(g.get('what') for g in gaps if g.get('what')))
+    first = gaps[0] if gaps else {}
+    item = {'key': key, 'kind': kind, 'what': '；'.join(whats) or (task or {}).get('root_cause') or 'Synthetic gap',
+            'decides': [{'aspect': a} for a in dict.fromkeys(r['aspect'] for r in rows)]}
+    if task:
+        item['title'] = task.get('title')
+        if task.get('reason'):
+            item['why'] = task['reason']
+        if task.get('due_stage'):
+            item['due_stage'] = task['due_stage']
+        if 'design_option' in task:
+            item['design_option'] = task['design_option']
+    if kind != 'REQUIREMENT':
+        sev = first.get('severity') or {}
+        item['severity'] = {'level': sev.get('level'), 'class': sev.get('class'),
+                            'affects': sev.get('affects'), 'consequence': sev.get('consequence') or 'Synthetic consequence'}
+        for k in ('hazard_path', 'exclusion'):
+            if k in sev:
+                item['severity'][k] = sev[k]
+        item['severity'] = {k: v for k, v in item['severity'].items() if v is not None}
+    if first.get('scope'):
+        item['scope'] = first['scope']
+    if kind in ('DESIGN_VALUE', 'VENDOR_DATUM'):
+        item['closure'] = first.get('closure_criterion')
+        if kind == 'DESIGN_VALUE':
+            item['spec'] = first.get('how_to_close')
+            item['owner'] = 'Synthetic designer'
+        else:
+            item['acquisition'] = first.get('how_to_close')
+            item['checked'] = ['c1']
+            item['why_insufficient'] = 'Synthetic: the stipulated clause does not give the datum'
+            item['worst_case'] = {'result': 'Synthetic worst case stated by the fixture'}
+    if kind == 'USER_DEFERRED':
+        item['instruction'] = SYNTHETIC
+    return {k: v for k, v in item.items() if v is not None}
+
+
+def _functions(out, plan):
+    """Function verdicts from the legacy work_items and the INSUFFICIENT/FAIL rows they own."""
+    rows = {r['id']: r for r in out.get('checks') or [] if isinstance(r, dict) and isinstance(r.get('id'), str)}
+    tasks = [t for t in out.get('work_items') or [] if isinstance(t, dict) and isinstance(t.get('id'), str)]
+    for row in rows.values():
+        if row.get('review_result') in ('INSUFFICIENT', 'FAIL'):
+            row.setdefault('aspect', _aspect(plan, row))
+    functions, owned = [], set()
+    for task in tasks:
+        cids = [c for c in task.get('check_ids') or [] if c in rows and rows[c].get('review_result') in ('INSUFFICIENT', 'FAIL')]
+        if not cids or any(c in owned for c in cids):
+            continue   # a malformed or shared task stays as the builder wrote it: the validator names it
+        owned.update(cids)
+        fid = 'FN-' + _slug(task['id'])
+        fn = {'id': fid, 'question': task.get('title') or 'Synthetic question', 'objects': _objects(plan, cids),
+              'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'stipulated clause',
+                              'says': 'stipulated', 'use': 'stipulated'}],
+              'no_calculation_reason': 'synthetic fixture', 'evidence': task.get('evidence') or SYNTHETIC,
+              'open': [], 'fails': []}
+        ins = [rows[c] for c in cids if rows[c].get('review_result') == 'INSUFFICIENT']
+        fails = [rows[c] for c in cids if rows[c].get('review_result') == 'FAIL']
+        if ins:
+            fn['open'].append(_open_item(task['id'], ins, task))
+            for r in ins:
+                r['function_id'], r['open_ref'] = fid, fid + '/' + task['id']
+        for r in fails:
+            key = task['id'] if not ins and len(fails) == 1 else task['id'] + '-' + _slug(r['id'])
+            fn['fails'].append({'key': key, 'finding_id': r.get('finding_id'), 'what': task.get('root_cause') or 'Synthetic defect',
+                                'title': task.get('title'), 'decides': [{'aspect': r['aspect']}],
+                                **{k: task[k] for k in ('due_stage', 'design_option') if k in task},
+                                **({'why': task['reason']} if task.get('reason') else {})})
+            r['function_id'], r['fail_ref'] = fid, fid + '/' + key
+        fn['verdict'] = 'FAIL' if fn['fails'] else 'OPEN'
+        functions.append(fn)
+    orphans = [cid for cid, row in rows.items()
+               if row.get('review_result') == 'INSUFFICIENT' and cid not in owned and row.get('gaps') is not None]
+    for cid, row in rows.items():
+        if row.get('review_result') == 'FAIL' and cid not in owned and (functions or orphans) and row.get('finding_id'):
+            # Legacy builders left FAIL rows outside any task while the workflow was disabled; the
+            # functions above enable it, so the defect gets the function the reviewer would write.
+            fid = 'FN-' + _slug(cid)
+            functions.append({'id': fid, 'question': 'Synthetic question for ' + cid, 'objects': _objects(plan, [cid]),
+                              'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'stipulated clause',
+                                              'says': 'stipulated', 'use': 'stipulated'}],
+                              'no_calculation_reason': 'synthetic fixture', 'evidence': SYNTHETIC, 'open': [],
+                              'fails': [{'key': _slug(cid), 'finding_id': row['finding_id'], 'what': 'Synthetic defect',
+                                         'decides': [{'aspect': row['aspect']}]}], 'verdict': 'FAIL'})
+            row['function_id'], row['fail_ref'] = fid, fid + '/' + _slug(cid)
+        if row.get('review_result') == 'INSUFFICIENT' and cid not in owned and row.get('gaps') is not None:
+            fid = 'FN-' + _slug(cid)
+            functions.append({'id': fid, 'question': 'Synthetic question for ' + cid, 'objects': _objects(plan, [cid]),
+                              'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'stipulated clause',
+                                              'says': 'stipulated', 'use': 'stipulated'}],
+                              'no_calculation_reason': 'synthetic fixture', 'evidence': SYNTHETIC,
+                              'open': [_open_item(_slug(cid), [row], None)], 'fails': [], 'verdict': 'OPEN'})
+            row['function_id'], row['open_ref'] = fid, fid + '/' + _slug(cid)
+    return functions
+
+
+def record(report, plan=None):
     if not isinstance(report, dict) or report.get('schema_version') == results_model.SCHEMA_VERSION:
         return report
     out = copy.deepcopy(report)
-    if out.get('schema_version') == 2:
+    if out.get('schema_version') in (2, 3):
         out['schema_version'] = results_model.SCHEMA_VERSION
     for key in results_model.RETIRED_TOP_FIELDS:
-        out.pop(key, None)
+        if key != 'work_items':
+            out.pop(key, None)
     for row in out.get('checks') or []:
         if not isinstance(row, dict):
             continue
@@ -81,7 +211,14 @@ def record(report):
             gaps = _gaps(row)
             if gaps is not None:
                 row['gaps'] = gaps
-            for key in results_model.RETIRED_ROW_FIELDS:
+            for key in ('missing_inputs', 'input_requests', 'potential_severity', 'impact_assessment'):
+                row.pop(key, None)
+    if 'functions' not in out:
+        out['functions'] = _functions(out, plan)
+    out.pop('work_items', None)
+    for row in out.get('checks') or []:
+        if isinstance(row, dict):
+            for key in ('gaps', 'gap_cause', 'obligations', 'qualification_members'):
                 row.pop(key, None)
     return out
 
@@ -99,8 +236,8 @@ def _whole_clauses(plan, report):
 
 
 def as_sent(plan, report):
-    """The schema 3 ledger these test helpers hand to validate_review."""
-    report = record(report)
+    """The schema 4 ledger these test helpers hand to validate_review."""
+    report = record(report, plan)
     if isinstance(report, dict):
         report = copy.deepcopy(report)
         _whole_clauses(plan, report)

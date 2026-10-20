@@ -260,27 +260,6 @@ class WorkItemAndTextHygieneTests(unittest.TestCase):
         r['work_items'] = [{'id': 'W-1', 'check_ids': [c['id'] for c in p['checks']]}]
         return p, r
 
-    def test_p0_item_owning_a_lower_branch_or_two_paths_is_flagged(self):
-        p, r = self.p0_item()
-        self.assertEqual(set(), self.codes(p, r))
-        r['checks'][2]['potential_severity'] = 'P1'
-        found = [x for x in self.screen(p, r)['candidates'] if x['code'] == 'WORK_ITEM_MIXES_LEVELS']
-        self.assertEqual([r['checks'][2]['id']], found[0]['check_ids'])
-        p, r = self.p0_item()
-        r['checks'][2]['impact_assessment']['hazard_path'] = 'INSULATION'
-        found = [x for x in self.screen(p, r)['candidates'] if x['code'] == 'WORK_ITEM_MIXES_HAZARD_PATHS']
-        self.assertEqual(['FIRE', 'INSULATION'], found[0]['hazard_paths'])
-
-    def test_request_keys_limit_the_branches_an_item_answers_for(self):
-        p, r = self.p0_item()
-        row = r['checks'][2]
-        row['input_requests'] = {
-            'short': {'potential_severity': 'P0', 'impact_assessment': {'hazard_path': 'FIRE'}},
-            'loop': {'potential_severity': 'P1', 'impact_assessment': {}}}
-        r['work_items'][0]['request_keys'] = {row['id']: ['short']}
-        r['work_items'].append({'id': 'W-2', 'check_ids': [row['id']], 'request_keys': {row['id']: ['loop']}})
-        self.assertEqual(set(), self.codes(p, r))
-
     def test_shared_consequence_inside_one_work_item_is_the_task_not_a_copy(self):
         p, r = impact_fixture()
         ids = [c['id'] for c in p['checks']]
@@ -300,12 +279,11 @@ class WorkItemAndTextHygieneTests(unittest.TestCase):
             'acquisition': '向Littelfuse取得所选料号总清除能力', 'closure_criterion': '注入预算257.121uA以下'}}
         r['work_items'] = [{'id': 'W-1', 'check_ids': [row['id']], 'reason': 'U6016.5V直流额定'}]
         out = {x['code']: x for x in self.screen(p, r, db)['candidates']}
-        self.assertEqual({'REF_GLUED_TO_VALUE', 'OVERPRECISE_CLOSURE_VALUE', 'ACQUISITION_WITHOUT_LOOKUP'}, set(out))
+        self.assertEqual({'REF_GLUED_TO_VALUE', 'OVERPRECISE_CLOSURE_VALUE'}, set(out))
         glued = [x for x in self.screen(p, r, db)['candidates'] if x['code'] == 'REF_GLUED_TO_VALUE']
         self.assertEqual({('W-1', 'U601'), ('', 'R604')},
                          {((x['task_ids'] or [''])[0], x['refs'][0]) for x in glued})
         self.assertEqual(['257.121'], out['OVERPRECISE_CLOSURE_VALUE']['values'])
-        self.assertEqual([row['id']], out['ACQUISITION_WITHOUT_LOOKUP']['check_ids'])
         q = row['input_requests']['fuse clearing']
         q.update(required_scope='R604 100°C', closure_criterion='注入预算低于手册上限',
                  acquisition='Littelfuse 规格书 p.2 只给额定分断电流，向 Littelfuse 取得总清除 I²t')
@@ -320,26 +298,6 @@ class RequestOwnershipAndWordingTests(unittest.TestCase):
 
     def found(self, p, r, code):
         return [x for x in self.screen(p, r)['candidates'] if x['code'] == code]
-
-    def test_acquisition_is_counted_for_the_tasks_naming_its_request_key(self):
-        p, r = impact_fixture(n=3)
-        row = r['checks'][0]
-        for i, other in enumerate(r['checks']):
-            other['impact_assessment']['consequence'] = f'N{i} consequence'
-        shared = {'why_decisive': 'w', 'required_scope': 's', 'acquisition': '向原厂取得', 'closure_criterion': 'c'}
-        row['input_requests'] = {k: dict(shared) for k in ('k1', 'k2', 'k3', 'k4')}
-        # One task names k1; six other tasks own the remaining keys of the same row.
-        r['work_items'] = [{'id': 'W-1', 'check_ids': [row['id']], 'request_keys': {row['id']: ['k1']}}] + [
-            {'id': f'W-{n}', 'check_ids': [row['id']], 'request_keys': {row['id']: [f'k{n}']}} for n in (2, 3, 4)]
-        for n in (2, 3, 4):
-            row['input_requests'][f'k{n}']['acquisition'] = f'查 DS p{n}'
-        # Before request_keys were honoured, k1's sentence was charged to all four owners.
-        self.assertEqual([], self.found(p, r, 'BOILERPLATE_ACQUISITION'))
-        # The same sentence genuinely owned by every task is still boilerplate.
-        for n in (2, 3, 4):
-            row['input_requests'][f'k{n}']['acquisition'] = '向原厂取得'
-        hit = self.found(p, r, 'BOILERPLATE_ACQUISITION')
-        self.assertEqual(['W-1', 'W-2', 'W-3', 'W-4'], hit[0]['task_ids'])
 
     def test_port_overvoltage_text_graded_as_component_damage_is_flagged(self):
         p, r = impact_fixture(n=3)

@@ -55,17 +55,14 @@ def design_option(key, value, unresolved, finding_ids):
 
 def workflow(plan, report, checks, clarifications=None, require_design_options=False):
     errors, tasks, owners = [], [], {}
-    enabled = bool(clarifications and clarifications['tasks']) or 'review_phase' in plan or 'work_items' in report
+    enabled = bool(clarifications and clarifications['tasks']) or 'review_phase' in plan or bool(report.get('functions'))
     phase = plan.get('review_phase', 'schematic_freeze')
     if not enabled:
         return {'enabled': False, 'phase': phase, 'errors': [], 'tasks': [],
                 'current_work_items': []}
     if phase not in PHASES:
         errors.append('review_phase must be one of ' + '/'.join(PHASES))
-    items = report.get('work_items')
-    if not isinstance(items, list):
-        errors.append('work_items must be an array (use [] when no separate repair/evidence tasks)')
-        items = []
+    items = report.get('work_items') or []   # derived from the functions' open/fail items (results_model)
     unresolved = {k for k, c in checks.items() if c.get('review_result') in ('FAIL', 'INSUFFICIENT')}
     if clarifications:
         tasks.extend(clarifications['tasks'])

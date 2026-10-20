@@ -117,18 +117,23 @@ class ReviewGateTests(unittest.TestCase):
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['insufficient_by_cause'], {'EXTERNAL_DATA': 1})
-        r['checks'][0]['gap_cause'] = 'TOO_STRICT'
-        self.assertFalse(validate_review(p, r, db)['valid'])
+        from ledger_v3 import record
+        sent = record(r, p)
+        sent['functions'][0]['open'][0]['kind'] = 'TOO_STRICT'
+        self.assertFalse(validate_review(p, sent, db)['valid'])
         p, r, db = fixture()
-        r['checks'][0]['gap_cause'] = 'EXTERNAL_DATA'
+        r['checks'][0]['open_ref'] = 'FN-X/Y'   # a PASS row names no open item
         self.assertFalse(validate_review(p, r, db)['valid'])
 
-    def test_untagged_insufficient_reported_as_unspecified(self):
+    def test_insufficient_without_an_open_item_is_refused_and_counted_unspecified(self):
+        from ledger_v3 import record
         p, r, db = fixture()
         r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['magnetics Isat'],
                               potential_severity='P2')
-        out = validate_review(p, r, db)
-        self.assertFalse(out['valid'])  # gap_cause is mandatory; the count still shows what is missing
+        complete_gap(r['checks'][0])
+        sent = record(r, p); del sent['checks'][0]['open_ref']
+        out = validate_review(p, sent, db)
+        self.assertFalse(out['valid'])  # the open item that decides the row is mandatory; the count still shows what is missing
         self.assertEqual(out['insufficient_by_cause'], {'UNSPECIFIED': 1})
 
     def test_open_or_deferred_requirement_cannot_be_judged(self):

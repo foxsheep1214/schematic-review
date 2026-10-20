@@ -3,6 +3,11 @@ import unittest
 from test_validate_review import fixture, E
 from test_review_quality import staged
 from ledger_v3 import record, validate_review
+
+
+def sent(p, r):
+    """The schema 4 ledger a builder's rows become; tests about open items mutate this."""
+    return record(r, p)
 from review_stage_scope import OUTSIDE_STAGE, REQUEST_FIELDS, validate_stage_scope
 
 INPUT = 'startup load current envelope'
@@ -111,8 +116,10 @@ class StageScopeTests(unittest.TestCase):
             self.assertFalse(gate(p, r, db)['valid'], field)
 
     def test_stage_na_is_tracked_by_handoff_not_work_item(self):
-        p, r, db = downstream()
-        r['work_items'] = [dict(gap_task(r), due_stage='prototype_verification', check_ids=[r['checks'][0]['id']])]
+        p, r, db = decisive()
+        r = sent(p, r)
+        r['checks'][1].update(review_result='NA', applicability='APPLICABLE', na_reason=OUTSIDE_STAGE,
+                              open_ref=r['checks'][0]['open_ref'])
         self.assertFalse(gate(p, r, db)['valid'])
 
     def test_decisive_gap_stays_insufficient_with_usable_request(self):
@@ -123,28 +130,34 @@ class StageScopeTests(unittest.TestCase):
         self.assertEqual(out['stage_scope']['input_request_count'], 1)
 
     def test_a_request_gap_needs_each_actionable_field(self):
-        for field in ('scope', 'how_to_close', 'closure_criterion'):
-            p, r, db = decisive(); r = record(r)
-            del r['checks'][0]['gaps'][0][field]
+        for field in ('scope', 'acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
+            p, r, db = decisive(); r = sent(p, r)
+            del r['functions'][0]['open'][0][field]
             self.assertFalse(gate(p, r, db)['valid'], field)
 
-    def test_each_gap_is_named_once(self):
-        p, r, db = decisive(); r = record(r)
-        r['checks'][0]['gaps'].append(dict(r['checks'][0]['gaps'][0]))
+    def test_each_open_item_key_is_unique_across_functions(self):
+        p, r, db = decisive(); r = sent(p, r)
+        twin = dict(r['functions'][0], id='FN-TWIN')
+        r['functions'].append(twin)
         self.assertFalse(gate(p, r, db)['valid'])
 
     def test_requests_only_for_real_input_or_design_gaps(self):
-        for cause in ('REVIEW_INCOMPLETE', 'USER_DEFERRED'):
-            with self.subTest(cause=cause):
-                p, r, db = decisive(); r['checks'][0]['gap_cause'] = cause
+        for kind in ('REVIEW_INCOMPLETE', 'USER_DEFERRED'):
+            with self.subTest(kind=kind):
+                p, r, db = decisive(); r = sent(p, r)
+                item = r['functions'][0]['open'][0]
+                item['kind'] = kind
+                if kind == 'USER_DEFERRED':
+                    item['instruction'] = E
                 self.assertFalse(gate(p, r, db)['valid'])
-                del r['checks'][0]['input_requests']
+                for field in ('acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
+                    item.pop(field, None)
                 self.assertTrue(gate(p, r, db)['valid'], gate(p, r, db)['errors'])
 
-    def test_gap_cause_is_mandatory_and_downstream_cause_is_retired(self):
-        p, r, db = decisive(); del r['checks'][0]['gap_cause']
+    def test_kind_is_mandatory_and_downstream_kind_is_retired(self):
+        p, r, db = decisive(); r = sent(p, r); del r['functions'][0]['open'][0]['kind']
         self.assertFalse(gate(p, r, db)['valid'])
-        p, r, db = decisive(); r['checks'][0]['gap_cause'] = 'DOWNSTREAM_VERIFICATION'
+        p, r, db = decisive(); r = sent(p, r); r['functions'][0]['open'][0]['kind'] = 'DOWNSTREAM_VERIFICATION'
         self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_requests_are_always_required_for_real_gaps(self):

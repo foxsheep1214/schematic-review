@@ -103,7 +103,12 @@ class RequirementClarificationTests(unittest.TestCase):
             self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_requirement_is_not_given_a_defect_grade_or_waived_as_risk(self):
-        for extra in ({'potential_severity': 'P1'}, {'blocking': False},
+        from ledger_v3 import record
+        p, r, db = sample(); sent = record(r, p)
+        next(fn for fn in sent['functions'] if fn['open'][0]['kind'] == 'REQUIREMENT')['open'][0]['severity'] = {
+            'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'consequence': 'synthetic'}
+        self.assertFalse(validate_review(p, sent, db)['valid'])
+        for extra in ({'blocking': False},
                       {'disposition': 'ACCEPTED', 'acceptance': {k: 'synthetic' for k in ('by', 'date', 'scope', 'reason', 'record')}}):
             p, r, db = sample(); r['checks'][0].update(extra)
             self.assertFalse(validate_review(p, r, db)['valid'])
@@ -129,12 +134,14 @@ class RequirementClarificationTests(unittest.TestCase):
         self.assertEqual(out['requirement_clarification_summary']['open'], 2)
         self.assertEqual(out['requirement_clarification_summary']['affected_checks'], 2)
 
-    def test_no_duplicate_work_item_for_a_requirement_question(self):
+    def test_a_requirement_question_is_not_turned_into_a_design_item(self):
+        from ledger_v3 import record
         p, r, db = sample()
-        r['work_items'] = [{'id': 'W-DUP', 'title': 'same question', 'root_cause': 'same load',
-                            'check_ids': [REQ], 'due_stage': 'design_iteration', 'reason': 'same reason',
-                            'next_action': 'same decision', 'evidence': E}]
-        self.assertFalse(validate_review(p, r, db)['valid'])
+        sent = record(r, p)
+        item = next(fn for fn in sent['functions'] if fn['open'][0]['kind'] == 'REQUIREMENT')['open'][0]
+        item.update(kind='DESIGN_VALUE', spec='2 A', owner='designer', scope='all loads', closure='decided',
+                    severity={'level': 'P2', 'class': 'LOCAL_OR_DATA', 'consequence': 'synthetic'})
+        self.assertFalse(validate_review(p, sent, db)['valid'])
 
     def test_resolution_requires_decision_record_and_current_reverification(self):
         p, r, db = sample()

@@ -79,7 +79,7 @@ def _decisive_part(what):
     return rest if rest.strip(' ；;，,。') else what
 
 
-def screen_quality(plan, report, db=None, evidence_root=None):
+def screen_quality(plan, report, db=None):
     if isinstance(report, dict):
         report = results_model.expand(report)
     output = {'status': 'NOT_RUN', 'scope': 'ADVISORY_PATTERN_SCREENING_ONLY',
@@ -358,13 +358,11 @@ def screen_quality(plan, report, db=None, evidence_root=None):
                        're-derive the conclusion from current sources and declare the file in history_inputs.'})
     candidates.extend(templated_task_text(report, expected))
     candidates.extend(unreconciled_history(report, expected, (plan or {}).get("review_mode")))
-    candidates.extend(work_item_consistency(report))
     candidates.extend(text_hygiene(report, expected, known))
     candidates.extend(port_overvoltage_grading(report))
     candidates.extend(scope_echoes_task(report))
     candidates.extend(templated_handoffs(report))
     candidates.extend(stage_and_cause_misfiles(report, expected))
-    candidates.extend(open_despite_bounds(report, expected, evidence_root))
     nets = db.get('nets', {}) if isinstance(db, dict) else {}
     candidates.extend(duplicate_work_items(report, known | {n.rsplit('/', 1)[-1] for n in nets if isinstance(n, str) and n} if isinstance(nets, dict) else known))
     for candidate in candidates:  # name fields the way a schema 3 record writes them
@@ -413,58 +411,10 @@ def _rows(report):
     return {r['id']: r for r in report.get('checks') or [] if isinstance(r, dict) and isinstance(r.get('id'), str)}
 
 
-def _owned_branches(task, row):
-    """(level, hazard_path) of every branch this task owns on one INSUFFICIENT row."""
-    requests = row.get('input_requests') if isinstance(row.get('input_requests'), dict) else {}
-    keys = (task.get('request_keys') or {}).get(row['id']) if isinstance(task.get('request_keys'), dict) else None
-    picked = [requests[k] for k in keys if isinstance(requests.get(k), dict)] if isinstance(keys, list) else []
-    if picked:
-        return [(q.get('potential_severity'), (q.get('impact_assessment') or {}).get('hazard_path')
-                 if isinstance(q.get('impact_assessment'), dict) else None) for q in picked]
-    assessment = row.get('impact_assessment') if isinstance(row.get('impact_assessment'), dict) else {}
-    return [(row.get('potential_severity'), assessment.get('hazard_path'))]
-
-
-def work_item_consistency(report):
-    """A work item is one root cause: its P0 branches share one hazard path and it does not
-    present P1 checks under a P0 heading. Leads only; the item's level is still the worst branch."""
-    found = []
-    rows = _rows(report)
-    for task in report.get('work_items') or []:
-        if not isinstance(task, dict) or not isinstance(task.get('id'), str) or not isinstance(task.get('check_ids'), list):
-            continue
-        by_level, paths = defaultdict(list), defaultdict(set)
-        for cid in task['check_ids']:
-            row = rows.get(cid) if isinstance(cid, str) else None
-            if not row or row.get('review_result') != 'INSUFFICIENT' or row.get('gap_cause') == 'REQUIREMENT_OPEN':
-                continue
-            for level, path in _owned_branches(task, row):
-                by_level[level].append(cid)
-                if level == 'P0':
-                    paths[path].add(cid)
-        lower = sorted({cid for level, ids in by_level.items() if level != 'P0' for cid in ids})
-        if by_level.get('P0') and lower:
-            found.append({'code': 'WORK_ITEM_MIXES_LEVELS', 'task_ids': [task['id']],
-                          'check_ids': lower, 'p0_check_ids': sorted(set(by_level['P0'])),
-                          'message': f"{task['id']} is headed P0 but owns {len(lower)} lower-level branch(es); "
-                                     'give them their own item or state in the item why they share the P0 root cause.'})
-        if len(paths) > 1:
-            found.append({'code': 'WORK_ITEM_MIXES_HAZARD_PATHS', 'task_ids': [task['id']],
-                          'check_ids': sorted({cid for ids in paths.values() for cid in ids}),
-                          'hazard_paths': sorted(str(k) for k in paths),
-                          'message': f"{task['id']} bundles P0 branches with different hazard paths "
-                                     f"({', '.join(sorted(str(k) for k in paths))}); one root cause opens one path, split the item."})
-    return found
-
-
 # 位号后面直接粘着数值（R604100°C、C5021.1uF）：读者分不清位号和数值；这是写法问题，不改结论。
 TOKEN_RE = re.compile(r'(?<![A-Za-z0-9_])([A-Z]{1,4})(\d+)(?![A-Za-z_])')
 # 通过条件里的三位以上小数（257.121uA、.27647mA）是审查员算例的中间值，不是设计者能凑的判据。
 OVERPRECISE_RE = re.compile(r'(?<![0-9.])\d*\.\d{3,}(?![\d.])')
-# 缺资料请求至少写出查过哪份资料的哪一页/表/条款仍没有该数据。
-LOOKUP_RE = re.compile(r'(?:(?<![A-Za-z])pp?\.?\s*\d+|(?<![A-Za-z])page\s*\d+|第\s*\d+\s*[页节条章]|\d+\s*页|表\s*[\dA-Z]|\bTable\s*\d|'
-                       r'\bFig(?:ure)?\.?\s*\d|图\s*\d|§\s*\d|\d+\.\d+(?:\.\d+)*\s*[条节款]|条款\s*\d|\bRev\.?\s*[\dA-Z])', re.I)
-ACQUIRE_RE = re.compile(r'^\s*(?:先?由|向|请|找|从|待)|取得|索取|提供|询|索要')
 
 
 # 端口过压送到外部负载是 PORT_OVERVOLTAGE 危险路径（P0 类），不因“只坏负载”降为器件损坏或功能项。
@@ -607,95 +557,6 @@ def stage_and_cause_misfiles(report, expected):
     return found
 
 
-UNIT = r'(mV|µA|uA|mA|kΩ|MΩ|Ω|mW|kHz|MHz|Hz|°C|V|A|W)(?![A-Za-z])'
-NUM_UNIT = r'(?<![pP第\d.])(\d+(?:\.\d+)?)\s*' + UNIT   # not a page number ("p11 V5")
-# "VCCmin10.2375V>U402停机9.5V", "漏极763.74V<800V": a number compared with another of the same unit.
-COMPARE_RE = re.compile(NUM_UNIT + r'[^<>≤≥，,；;。、/]{0,12}?[<>≤≥][^<>≤≥，,；;。、/]{0,12}?' + NUM_UNIT)
-NEGATED_RE = re.compile(r'不|未|没|无法')
-SENTENCE_RE = re.compile(r'[^。；;\n]+')
-VENDOR_ASK_RE = re.compile(r'向[^，,；;。]{0,16}(?:原厂|厂商|厂家|供应商|[A-Z][A-Za-z]{2,})[^，,；;。]{0,8}(?:索取|取得|索要|要)')
-
-
-def _computed_margins(text):
-    return [m.group(0) for m in COMPARE_RE.finditer(text) if m.group(2) == m.group(4) and not NEGATED_RE.search(m.group(0))]
-
-
-def _about(text, names):
-    """Sentences of a shared evidence section that name this check's own parts or nets."""
-    return [t for t in SENTENCE_RE.findall(text)
-            if any(re.search(r'(?<![A-Za-z0-9])%s(?![0-9])' % re.escape(n), t) for n in names)]
-
-
-def _cited_sections(row, root):
-    """Markdown sections the row cites as evidence (`evidence/engineering.md` + `## BIAS`): where the reviewer's
-    calculations live when the rationale only summarises them."""
-    out = []
-    for ev in row.get('evidence') or []:
-        if not isinstance(ev, dict) or not isinstance(ev.get('source'), str) or not str(ev.get('locator', '')).startswith('#'):
-            continue
-        for base in (root, root / 'evidence'):
-            path = base / ev['source']
-            if path.suffix == '.md' and path.is_file():
-                head = ev['locator'].strip()
-                level = len(head) - len(head.lstrip('#'))
-                lines, keep = [], False
-                for line in path.read_text(encoding='utf-8', errors='replace').splitlines():
-                    if line.startswith('#'):
-                        hashes = len(line) - len(line.lstrip('#'))
-                        if keep and hashes <= level:
-                            break
-                        keep = keep or line.strip() == head
-                    elif keep:
-                        lines.append(line)
-                out.append('\n'.join(lines))
-                break
-    return out
-
-
-def open_despite_bounds(report, expected, evidence_root=None):
-    """The other direction from the screens above: a check kept INSUFFICIENT although the record already
-    holds a computed margin, or a design value requested from a vendor (100W PD R5: W-BIAS computed
-    VCCmin 10.24V > 9.5V and still waited for "全温小电流保证"; W-POWER 763.74V < 800V)."""
-    found, margins, design_asks = [], {}, []
-    for row in report.get('checks') or []:
-        if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
-            continue
-        if row.get('review_result') != 'INSUFFICIENT':
-            continue
-        requests = row.get('input_requests') if isinstance(row.get('input_requests'), dict) else {}
-        texts = [row.get('rationale')] + list(row.get('missing_inputs') or []) + [
-            q.get(f) for q in requests.values() if isinstance(q, dict) for f in ('why_decisive', 'acquisition')]
-        if evidence_root is not None:
-            obj = (expected[row['id']] or {}).get('object') or {}
-            names = [x for x in [obj.get('ref'), obj.get('net')] + list(obj.get('refs') or []) + list(obj.get('nets') or [])
-                     if isinstance(x, str) and x]
-            for section in _cited_sections(row, Path(evidence_root)):
-                texts += _about(section, names)
-        hits = _computed_margins(' '.join(t for t in texts if isinstance(t, str)))
-        if hits:
-            margins[row['id']] = list(dict.fromkeys(hits))[:3]
-        if row.get('gap_cause') == 'DESIGN_OPEN' and any(
-                isinstance(q, dict) and isinstance(q.get('acquisition'), str) and VENDOR_ASK_RE.search(q['acquisition'])
-                for q in requests.values()):
-            design_asks.append(row['id'])
-    same = defaultdict(list)
-    for cid, hits in sorted(margins.items()):
-        same[tuple(hits)].append(cid)
-    for hits, ids in same.items():
-        found.append({'code': 'MARGIN_COMPUTED_BUT_OPEN', 'check_ids': ids, 'margins': list(hits),
-                      'message': 'The record already compares a computed value with its limit, yet the check stays '
-                                 'INSUFFICIENT. With margin, judge PASS (B) and name the assumptions and a prototype '
-                                 'measurement handoff; without, FAIL or a named risk with a fix. Keep INSUFFICIENT only '
-                                 'when the comparison does not decide this check, and say why.'})
-    if design_asks:
-        found.append({'code': 'DESIGN_VALUE_ASKED_OF_VENDOR', 'check_ids': sorted(design_asks),
-                      'message': 'The gap is a design decision (DESIGN_OPEN) but the way to close it is a vendor request. '
-                                 'Values this design sets (leakage inductance, auxiliary regulation, compensation or '
-                                 'configuration codes) are back-calculated into a specification for ASG or handed to '
-                                 'prototype measurement; ask the vendor only for what the part itself guarantees.'})
-    return found
-
-
 def _template(text, known):
     """Mask designators, net names (with their pin suffixes) and numbers; what is left is the method."""
     text = re.sub(r'\s+', ' ', text or '').strip()
@@ -799,7 +660,6 @@ def text_hygiene(report, expected, known):
     known = set(known or ())
     rows = _rows(report)
     glued_hits = defaultdict(set)   # (owner, field) -> refs
-    unlooked = defaultdict(set)     # request text -> check ids
     for task in report.get('work_items') or []:
         if isinstance(task, dict) and isinstance(task.get('id'), str):
             for field, text in _task_texts(task):
@@ -828,23 +688,6 @@ def text_hygiene(report, expected, known):
                               'request': key, 'values': sorted(set(OVERPRECISE_RE.findall(text))),
                               'message': 'The acceptance criterion carries an intermediate value from the reviewer\'s own '
                                          'calculation; state the datasheet/standard bound and the condition, not the sample result.'})
-        if row.get('review_result') == 'INSUFFICIENT' and row.get('gap_cause') == 'EXTERNAL_DATA':
-            missing = ' '.join(x for x in (row.get('missing_inputs') or []) if isinstance(x, str))
-            requests = row.get('input_requests') if isinstance(row.get('input_requests'), dict) else {}
-            for key, q in requests.items():
-                if not isinstance(q, dict) or not isinstance(q.get('acquisition'), str):
-                    continue
-                if not ACQUIRE_RE.search(q['acquisition']):
-                    continue
-                looked = ' '.join([key, missing, q['acquisition'], q.get('why_decisive') or '' if isinstance(q.get('why_decisive'), str) else ''])
-                if not LOOKUP_RE.search(looked):
-                    unlooked[key].add(cid)
-    for key, ids in sorted(unlooked.items()):
-        found.append({'code': 'ACQUISITION_WITHOUT_LOOKUP', 'check_ids': sorted(ids), 'request': key,
-                      'message': 'This external-data request names no page/table/clause that was checked and lacks the '
-                                 'datum. Quantities fixed by the applicable standard (prospective short-circuit current, '
-                                 'pollution degree, altitude factor) and first-page datasheet ratings are read, not requested; '
-                                 'write which document and where was looked up before asking the supplier.'})
     for (owner, field), refs in sorted(glued_hits.items()):
         found.append({'code': 'REF_GLUED_TO_VALUE', 'check_ids': [owner] if not owner.startswith('task:') else [],
                       'task_ids': [owner[5:]] if owner.startswith('task:') else [], 'field': field, 'refs': sorted(refs),

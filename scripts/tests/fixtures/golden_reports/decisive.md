@@ -34,9 +34,9 @@
 
 类型：缺资料　可能后果：必需功能可能不达标（P1）　涉及 1 条检查
 
-- **缺什么**：Unfinished calculation；适用范围：Peak amperes, pulse seconds and repetition at the specified supply limits
+- **缺什么**：startup load current envelope；适用范围：Peak amperes, pulse seconds and repetition at the specified supply limits
 - **为什么要紧**：Synthetic independent input
-- **还要做**：Evaluate the local bound；System engineer derives controlled bound from installed loads and their startup data
+- **还要做**：System engineer derives controlled bound from installed loads and their startup data
 - **怎样算通过**：Recompute current-limit margin and startup voltage; compare with required rails
 
 ## 索引

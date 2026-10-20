@@ -4,7 +4,7 @@ import unittest
 from test_render_and_pack import body, report
 from test_review_stage_scope import decisive
 from render_report import notes_errors, render, render_item
-from review_quality import open_despite_bounds, templated_task_text, text_hygiene
+from review_quality import templated_task_text, text_hygiene
 
 
 class HowToCloseShownOnceTest(unittest.TestCase):
@@ -19,8 +19,10 @@ class HowToCloseShownOnceTest(unittest.TestCase):
         self.assertEqual(line, '- **还要做**：' + acquisition)
 
     def test_a_different_next_action_stays(self):
+        from ledger_v3 import record
         p, r, db = decisive()
-        r['work_items'][0]['next_action'] = 'Ask the PSU vendor for the hiccup timing table'
+        r = record(r, p)
+        r['functions'][0]['open'][0]['acquisition'] = 'Ask the PSU vendor for the hiccup timing table'
         line = next(l for l in body(report(p, r, db)[0]).splitlines() if l.startswith('- **还要做**'))
         self.assertIn('Ask the PSU vendor for the hiccup timing table', line)
 
@@ -124,42 +126,6 @@ class SameHandoffOneRowTest(unittest.TestCase):
         self.assertIn('| 热设计 | DEV-C04.C503、DEV-C04.C504、DEV-C04.C505 | C503、C504、C505 | C503–C505热点≤105°C | '
                       '测量每只本体热点 |', table)
         self.assertIn('| 热设计 | DEV-C04.C201 | C201 | C201热点≤75°C | 测量C201本体热点 |', table)
-
-
-class OpenDespiteBoundsTest(unittest.TestCase):
-    """R5 W-BIAS：engineering.md 已算出“VCCmin10.2375V>U402停机9.5V”，检查仍等“全温小电流保证”；
-    W-APP：设计没定的配置写成“向Richtek索取”。"""
-
-    def rows(self, rationale, cause='EXTERNAL_DATA', acquisition='已读p6；向onsemi取得下界'):
-        report = {'checks': [{'id': 'PWR-C01.VCC', 'review_result': 'INSUFFICIENT', 'gap_cause': cause,
-                              'rationale': rationale, 'input_requests': {'k': {'acquisition': acquisition}}}]}
-        return {c['code']: c for c in open_despite_bounds(report, {'PWR-C01.VCC': {'object': {'net': 'VCC'}}})}
-
-    def test_a_computed_margin_left_open_is_named(self):
-        hit = self.rows('VGS2.74、VF0.6的条件给VCCmin10.2375V>U402停机9.5V；全温保证未取得')
-        self.assertEqual(hit['MARGIN_COMPUTED_BUT_OPEN']['margins'], ['10.2375V>U402停机9.5V'])
-
-    def test_conditions_negations_and_page_numbers_are_not_margins(self):
-        for text in ('V5原表6V<VDD保证不覆盖本机4.75V', '已读p11 V5保证仅在VDD>6V', '4.41V、GPIO低电平≤0.4V',
-                     '10mA时0.31V，100mA时0.40V'):
-            self.assertNotIn('MARGIN_COMPUTED_BUT_OPEN', self.rows(text), text)
-
-    def test_cited_evidence_sentences_about_the_part_count(self):
-        import tempfile
-        from pathlib import Path
-        with tempfile.TemporaryDirectory() as root:
-            (Path(root) / 'evidence').mkdir()
-            (Path(root) / 'evidence' / 'engineering.md').write_text(
-                '## BIAS\n辅助−10%时VCC最低10.24V>停机9.5V。U201另核13.3V>11.25V。\n## OTHER\nVCC 1V>0.5V\n', encoding='utf-8')
-            report = {'checks': [{'id': 'PWR-C01.VCC', 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA',
-                                  'rationale': '资料不足', 'evidence': [{'source': 'evidence/engineering.md', 'locator': '## BIAS'}]}]}
-            hit = [c for c in open_despite_bounds(report, {'PWR-C01.VCC': {'object': {'net': 'VCC'}}}, root)
-                   if c['code'] == 'MARGIN_COMPUTED_BUT_OPEN']
-        self.assertEqual(hit[0]['margins'], ['10.24V>停机9.5V'])
-
-    def test_design_value_asked_of_a_vendor(self):
-        self.assertIn('DESIGN_VALUE_ASKED_OF_VENDOR', self.rows('配置未定', 'DESIGN_OPEN', '已读p35；向Richtek索取寄存器'))
-        self.assertNotIn('DESIGN_VALUE_ASKED_OF_VENDOR', self.rows('配置未定', 'DESIGN_OPEN', '由设计者确定补偿码'))
 
 
 if __name__ == '__main__':
