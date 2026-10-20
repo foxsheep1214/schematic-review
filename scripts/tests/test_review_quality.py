@@ -531,7 +531,7 @@ class TaskTextTemplateTests(unittest.TestCase):
             {'code': 'BOILERPLATE_ACQUISITION', 'check_ids': ['b']}]}}
         text = render(p, r, gate)
         # The conclusion only says there are prompts; the code names are for the record keeper, in the count table.
-        self.assertIn('- 审查记录自检有 2 条写法提示', text)
+        self.assertNotIn('审查记录自检', body(text).split('## 发现的错误')[0])   # nothing the reader acts on
         self.assertNotIn('REUSED_RATIONALE_ACROSS_SCOPES', body(text))
         self.assertIn('| 审查记录自检提示（不计入结论） | 2（REUSED_RATIONALE_ACROSS_SCOPES 1、BOILERPLATE_ACQUISITION 1） |', text)
         strip = lambda t: [l for l in t.splitlines() if l and '审查记录自检' not in l and l != '**说明**：']
