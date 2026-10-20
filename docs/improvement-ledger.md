@@ -7,6 +7,25 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## State-invariant member rules ask once per circuit (2026-10-20)
+
+Package member rules expanded as rules × declared states for every circuit,
+so a reverse-polarity direction check or a USB role check was asked again
+for each operating state although its answer cannot change with the state.
+`catalog.STATE_INVARIANT` names the five rules whose answer is a property of
+the topology or interface semantics (PWR-T05, ANA-D01, SIG-T04, SIG-D07,
+SIG-D04); the plan generates one row per circuit for them, without `state`
+in the object and without "{state} 时" in the question, and the frame lists
+the member with `state: null`. PWR-C14 (ripple budget) and the converter
+rules stay per state because load and mode change their numbers. Chosen by
+what the rule asks, not by any board's results. kicad_replay revision
+state-invariant-v1 (frames case 326→325 checks); mutation M19 re-expands the
+five rules per state and is killed by the new plan test.
+
+- Event: user:2026-10-20 (state-invariant rules once per circuit; PWR-C14 kept per state)
+- Causes: judgment 1
+- Changed: scripts/catalog.py, scripts/plan_review.py, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/state-invariant-v1/cases.json, evals/kicad_replay_bench/revisions/state-invariant-v1/expected.json, evals/kicad_replay_bench/revisions/state-invariant-v1/sources.json, evals/kicad_replay_bench/revisions/state-invariant-v1/manifest.json, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, SKILL.md, references/plan-and-results.md, docs/improvement-ledger.md
+
 ## No project priors in the tests either (2026-10-20)
 
 The previous entry left the test suite citing the same reviewed design: two

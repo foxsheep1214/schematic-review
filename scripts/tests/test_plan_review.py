@@ -479,8 +479,11 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
         members = [x for x in plan['checks'] if x.get('package') == 'USB' and x['rule'] != 'REQ-Q07']
-        self.assertEqual(len(members), 2 * len(catalog.package('USB').rules))
-        self.assertEqual({x['object']['state'] for x in members}, {'host', 'unpowered'})
+        # SIG-T04/SIG-D07/SIG-D04 与工作态无关，每电路一行；其余成员规则两个状态各一行。
+        invariant = [r for r in catalog.package('USB').rules if r in catalog.STATE_INVARIANT]
+        self.assertEqual(len(members), 2 * (len(catalog.package('USB').rules) - len(invariant)) + len(invariant))
+        self.assertEqual({x['object']['state'] for x in members if x['rule'] not in invariant}, {'host', 'unpowered'})
+        self.assertFalse([x for x in members if x['rule'] in invariant and 'state' in x['object']])
         self.assertIn('intent.circuits:synthetic port definition', get_feature(plan, 'USB')['trigger'])
 
     def test_level_shift_name_hit_is_candidate_until_circuit_is_declared(self):
@@ -500,7 +503,8 @@ class ReviewPlanTests(unittest.TestCase):
         plan = build_review_plan(db, intent)
         members = [x for x in plan['checks'] if x.get('package') == 'LEVEL_SHIFT' and x['rule'] != 'REQ-Q07']
         self.assertEqual(sorted({x['rule'] for x in members}), sorted(catalog.package('LEVEL_SHIFT').rules))
-        self.assertEqual(len(members), 2 * len(catalog.package('LEVEL_SHIFT').rules))
+        # SIG-T04（接口方向语义）与工作态无关，两个状态只问一次。
+        self.assertEqual(len(members), 2 * len(catalog.package('LEVEL_SHIFT').rules) - 1)
 
     def test_declared_circuit_makes_package_applicable_and_conflicts_with_na(self):
         circuit = {'id': 'LDO', 'type': 'POWER_PROTECTION', 'refs': ['U1'], 'states': ['run'],
@@ -648,6 +652,28 @@ class FunctionFrameTests(unittest.TestCase):
         window = next(c for c in members if c['rule'] == 'PWR-C02')
         self.assertIn('VCC_3V3 3.2–3.4 V', window['question'])
         self.assertEqual(catalog.question_errors(plan), [])
+
+    def test_state_invariant_rules_get_one_row_per_circuit(self):
+        # 导通方向、接口语义这类答案不随工作态变化的规则，两个状态只问一次；其余成员规则仍逐状态。
+        circuit = {'id': 'IN-PROT', 'type': 'POWER_PROTECTION', 'refs': ['D1', 'Q1'], 'nets': ['VIN'],
+                   'states': ['run', 'surge'], 'citation': 'synthetic input protection'}
+        plan = build_review_plan(sample_db(), {'schema_version': 3, 'circuits': [circuit]})
+        rules = catalog.package('POWER_PROTECTION').rules
+        invariant = [r for r in rules if r in catalog.STATE_INVARIANT]
+        self.assertEqual(invariant, ['PWR-T05'])
+        members = [c for c in plan['checks'] if c['object'].get('circuit') == 'IN-PROT']
+        self.assertEqual(len(members), 2 * (len(rules) - 1) + 1)
+        once = [c for c in members if c['rule'] == 'PWR-T05']
+        self.assertEqual([c['id'] for c in once], ['PWR-T05.IN-PROT.D1'])
+        self.assertNotIn('state', once[0]['object'])
+        self.assertEqual(once[0]['question'], 'IN-PROT（D1、Q1）防反接电路的导通方向、体二极管朝向与栅极钳位是否正确')
+        frame = plan['functions'][0]
+        self.assertEqual(frame['states'], ['run', 'surge'])
+        self.assertEqual([m['state'] for m in frame['members'] if m['rule'] == 'PWR-T05'], [None])
+        self.assertEqual(len(frame['members']), len(members))
+        for row in members:
+            if row['rule'] != 'PWR-T05':
+                self.assertIn(row['object']['state'] + ' 时 IN-PROT（D1、Q1）', row['question'])
 
     def test_no_rail_window_is_said_so_and_no_circuit_means_no_frame(self):
         plan = build_review_plan(sample_db(), {'schema_version': 3, 'circuits': [self.circuit(nets=())]})

@@ -22,5 +22,6 @@
 | M16 | derive_rows ignores open items | `scripts/derive_rows.py` | KILLED | FAILED scripts/tests/test_derive_rows.py::DeriveTests::test_a_hand_filled_row_is_kept_and_a_disagreement_is_named |
 | M17 | question prohibition ban never fires on rows | `scripts/catalog.py` | KILLED | FAILED scripts/tests/test_catalog.py::QuestionTemplateTest::test_question_errors_reject_prohibition_phrasing_in_rows_and_frames |
 | M18 | plan emits no function frames | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_plan_review.py::FunctionFrameTests::test_a_declared_circuit_gets_a_frame_and_bound_member_rows |
+| M19 | state-invariant rules expanded per state again | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_plan_review.py::ReviewPlanTests::test_level_shift_name_hit_is_candidate_until_circuit_is_declared |
 
 全部杀死。

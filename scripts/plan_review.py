@@ -539,20 +539,29 @@ class ReviewPlanner:
         return '、'.join(parts) or None
 
     def plan_package_members(self, package, circuits, missing):
-        """声明了电路则逐电路×工况展开成员规则并建功能框架，否则按功能包展开一次；已有 I²C 区域时由检查器逐区域展开。"""
+        """声明了电路则逐电路×工况展开成员规则并建功能框架（答案不随工作态变化的规则每电路一行），
+        否则按功能包展开一次；已有 I²C 区域时由检查器逐区域展开。"""
         members = []
         for circuit in circuits:
             refs = circuit['refs']
             gaps = [f'datasheet:{ref}' for ref in refs
                     if not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
             gaps += [f'unknown ref:{ref}' for ref in refs if ref not in self.db.get('parts', {})]
-            for state in circuit['states']:
-                obj = {'circuit': circuit['id'], 'ref': refs[0], 'refs': refs,
-                       'nets': circuit.get('nets', []), 'state': state}
-                members.append((obj, f'{circuit["id"]}-{state}', gaps, f'intent.circuits:{circuit["citation"]}'))
+            trigger = f'intent.circuits:{circuit["citation"]}'
+            for index, state in enumerate(circuit['states']):
+                for rule in package.rules:
+                    invariant = rule in catalog.STATE_INVARIANT
+                    if invariant and index:
+                        continue   # asked once per circuit, with the first state's rows
+                    obj = {'circuit': circuit['id'], 'ref': refs[0], 'refs': refs, 'nets': circuit.get('nets', [])}
+                    if not invariant:
+                        obj['state'] = state
+                    key = circuit['id'] if invariant else f'{circuit["id"]}-{state}'
+                    members.append((rule, obj, key, gaps, trigger))
         regions = any(state['regions'] for state in self.i2c_topology['states'])
         if not circuits and not (package.name == 'I2C' and regions):
-            members.append(({'package': package.name}, None, missing, f'package:{package.name}'))
+            for rule in package.rules:
+                members.append((rule, {'package': package.name}, None, missing, f'package:{package.name}'))
         frames = {}
         for circuit in circuits:
             window = self._rail_window(circuit.get('nets', []))
@@ -567,20 +576,19 @@ class ReviewPlanner:
                 'blind_spots': {rule: catalog.explanation(rule)['risk_if_omitted'] for rule in package.rules},
                 'checklist': list(catalog.BOUNDING_STEPS),
             }
-        for obj, key, gaps, trigger in members:
+        for rule, obj, key, gaps, trigger in members:
             frame = frames.get(obj.get('circuit'))
-            for rule in package.rules:
-                item = self._ready_check(rule, dict(obj), gaps, [trigger], key=key)
-                item['package'] = package.name
-                item['analysis_required'] = True
-                item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
-                if frame is not None:
-                    item['question'] = catalog.question(rule, obj['state'], obj['circuit'], obj['refs'],
-                                                        self._rail_window(obj['nets']))
-                    item['function_id'] = frame['id']
-                    item['aspect'] = catalog.title(rule)
-                    frame['members'].append({'check_id': item['id'], 'rule': rule, 'aspect': item['aspect'],
-                                             'state': obj['state']})
+            item = self._ready_check(rule, dict(obj), gaps, [trigger], key=key)
+            item['package'] = package.name
+            item['analysis_required'] = True
+            item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
+            if frame is not None:
+                item['question'] = catalog.question(rule, obj.get('state'), obj['circuit'], obj['refs'],
+                                                    self._rail_window(obj['nets']))
+                item['function_id'] = frame['id']
+                item['aspect'] = catalog.title(rule)
+                frame['members'].append({'check_id': item['id'], 'rule': rule, 'aspect': item['aspect'],
+                                         'state': obj.get('state')})
         self.functions.extend(frames.values())
 
     def plan_checkers(self):

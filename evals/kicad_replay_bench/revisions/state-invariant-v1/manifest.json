@@ -1,0 +1,15 @@
+{
+ "revision": "state-invariant-v1",
+ "parents": {
+  "revisions/function-frames-v1/expected.json": "69d1e557f09239d559dc56c32c5ff21ee0e46098c3707b1f5c54473e4de2f995",
+  "revisions/function-frames-v1/cases.json": "9deb836418a5ccbb1ad745c8ad34eea7236b3fff4ccd5b61c11eceedd4c56b04",
+  "revisions/function-frames-v1/sources.json": "741eb7de9f06bf81f3f4005def4316f3ee9f52f95756d1c98757eabc8596e259",
+  "revisions/function-frames-v1/manifest.json": "fecbec18d2cce8c9ace4b729105b9d949be6e3d69bb1d51ced9b6ab664dedcd5"
+ },
+ "derived_files": {
+  "revisions/state-invariant-v1/expected.json": "50498805c5d4e329778c41d504aae1851aad7696c3a0867e87c8195a4c236450",
+  "revisions/state-invariant-v1/cases.json": "c5befd8a24785ce259b41c5ac9b07b2e6c0961976a5a32c2c6f65502b5cca206",
+  "revisions/state-invariant-v1/sources.json": "741eb7de9f06bf81f3f4005def4316f3ee9f52f95756d1c98757eabc8596e259"
+ },
+ "scope": "与工作态无关的成员规则（PWR-T05、ANA-D01、SIG-T04、SIG-D07、SIG-D04）每电路一行，object 不带 state：rf1-c2000-float-flyback-frames 检查数 326→325、FN-HV-CLAMP 成员 12→11；其余用例与字段不变。function-frames-v1 文件保持原字节。"
+}

@@ -34,5 +34,7 @@
  {"id": "M17", "name": "question prohibition ban never fires on rows", "file": "scripts/catalog.py",
   "old": "        if isinstance(item, dict) and isinstance(item.get('question'), str) and QUESTION_BAN_RE.search(item['question']):", "new": "        if False:"},
  {"id": "M18", "name": "plan emits no function frames", "file": "scripts/plan_review.py",
-  "old": "        self.functions.extend(frames.values())", "new": "        pass"}
+  "old": "        self.functions.extend(frames.values())", "new": "        pass"},
+ {"id": "M19", "name": "state-invariant rules expanded per state again", "file": "scripts/plan_review.py",
+  "old": "                    invariant = rule in catalog.STATE_INVARIANT", "new": "                    invariant = False"}
 ]

@@ -713,12 +713,12 @@ QUESTIONS = {
     'DRV-C02': '{state} 时 {circuit}（{refs}）的功率管在实际驱动、电流、电压、脉宽和温度下是否处于适用的 SOA 与降额范围内（重复脉冲与单次脉冲分别核）',
     'PRO-C01': '{state} 时 {circuit}（{refs}）的防护链逐段的动作电压、时序与能量是否协调：TVS 的 VRWM/VBR/VC 对照后级绝限，熔断器/PTC 的额定、时间电流、熔断能量和分断能力是否满足',
     'PWR-C13': '{state} 时 {circuit}（{refs}）按实际接口/输入方式，浪涌电流与输入电容是否在源端能力和平台限制内',
-    'PWR-T05': '{state} 时 {circuit}（{refs}）防反接电路的导通方向、体二极管朝向与栅极钳位是否正确',
+    'PWR-T05': '{circuit}（{refs}）防反接电路的导通方向、体二极管朝向与栅极钳位是否正确',
     'ANA-T01': '{state} 时 {circuit}（{refs}）的检测/监测链的被测量与保护目的是否明确，取样侧、返回地、判决与控制是否闭合，首次使能是否能启动',
     'ANA-C01': '{state} 时 {circuit}（{refs}）的输入共模/输出摆幅与偏置、失调、增益误差在供电和温度极限内是否满足精度要求（片内放大器+ADC 通道按该 IC 手册的通道范围与误差）',
     'ANA-C02': '{state} 时 {circuit}（{refs}）的 GBW/压摆率/容性负载或 ADC 源阻抗、采样保持获取时间与建立误差是否满足要求',
     'ANA-C03': '{state} 时 {circuit}（{refs}）的 ADC 基准驱动与误差、输入满量程及钳位/注入电流（含掉电状态）是否在限值内',
-    'ANA-D01': '{state} 时 {circuit}（{refs}）的温度传感器电气连接、量程和接口是否正确',
+    'ANA-D01': '{circuit}（{refs}）的温度传感器电气连接、量程和接口是否正确',
     'PWR-C14': '{state} 时 {circuit}（{refs}）的电源纹波与噪声（含开关频率、后级 LDO/滤波与去耦）是否满足敏感负载的噪声/PSRR 要求',
     'RST-C01': '{state} 时 {circuit}（{refs}）每个采样窗口内 strap/EN 的保证电压（含内部拉阻、LED、泄漏、电容和门限）是否落在要求的电平',
     'RST-C02': '{state} 时 {circuit}（{refs}）按 V(t) 穿越门限时刻算出的复位脉宽/释放与采样 setup/hold 是否满足要求',
@@ -733,13 +733,13 @@ QUESTIONS = {
     'SIG-C08': '{state} 时 {circuit}（{refs}）逐域掉电和外部设备先上电时，Ioff、输入耐压与注入电流是否在限值内，经上拉、ESD 结构或保护二极管的反灌路径是否被堵住',
     'SIG-D01': '{state} 时 {circuit}（{refs}）的地址/复用/复位态与板载及外部上拉的装配组合是否正确',
     'SIG-C09': '{state} 时 {circuit}（{refs}）按两端保证值算出的传播延迟、建立/保持、时钟偏斜、电平转换器延迟及上升时间在最坏角点是否有裕量',
-    'SIG-T04': '{state} 时 {circuit}（{refs}）的 TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义是否对应，对端连接器视图与线缆针序是否一致',
+    'SIG-T04': '{circuit}（{refs}）的 TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义是否对应，对端连接器视图与线缆针序是否一致',
     'SIG-D09': '{state} 时 {circuit}（{refs}）的 SPI 片选/时钟极性与串阻、SPI Flash 供电域、上拉与写保护是否正确',
     'SIG-D08': '{state} 时 {circuit}（{refs}）收发器的供电与 VIO、STBY/EN 默认态、端接策略、空闲偏置、隔离与防护是否满足总线要求',
     'SIG-C03': '{state} 时 {circuit}（{refs}）按实际端点和节点数算出的端接等效负载、空闲偏置是否满足接收保证差分门限',
     'SIG-C04': '{state} 时 {circuit}（{refs}）收发器的 VIO/默认态、总线共模范围、地偏差与未供电负载是否在限值内',
-    'SIG-D07': '{state} 时 {circuit}（{refs}）的 REXT、DP/DM 串阻、VBUS 检测、ID 与 ESD 是否按 USB 要求接在活线上',
-    'SIG-D04': '{state} 时 {circuit}（{refs}）按 Source/Sink/DRP 角色及 PD 模式，CC/Rp/Rd、方向检测、线缆 VCONN 是否正确',
+    'SIG-D07': '{circuit}（{refs}）的 REXT、DP/DM 串阻、VBUS 检测、ID 与 ESD 是否按 USB 要求接在活线上',
+    'SIG-D04': '{circuit}（{refs}）按 Source/Sink/DRP 角色及 PD 模式，CC/Rp/Rd、方向检测、线缆 VCONN 是否正确',
     'SIG-C05': '{state} 时 {circuit}（{refs}）的 VBUS 供电资格、电压档位、放电、反灌、过流及端口未供电状态是否满足要求',
     'SIG-D11': '{state} 时 {circuit}（{refs}）的 MDI 对应、中心抽头与共模端接、MDIO、复位及 strap 是否符合实际 PHY、网变和接口模式的要求',
     'SIG-D02': '{state} 时 {circuit}（{refs}）的 ZQ/校准脚端接与精度是否符合控制器与 DRAM 各自型号的要求',
@@ -755,6 +755,10 @@ QUESTIONS = {
 }
 
 # 功能框架的问题：每个 intent 电路一句，由该包成员问题归纳；审查员可改写。
+# 答案不随工作态变化的成员规则（导通方向、接口语义、USB 物理层与角色、传感器接法）：计划每电路只问一次，
+# 行的 object 不带 state，问题模板也不带“{state} 时”。纹波预算（PWR-C14）和变换器各条随负载/模式变化，仍逐状态。
+STATE_INVARIANT = frozenset({'PWR-T05', 'ANA-D01', 'SIG-T04', 'SIG-D07', 'SIG-D04'})
+
 FRAME_QUESTIONS = {
     'POWER_CONVERTER': '输出是否落在负载要求的窗口 {window} 内，电流应力、时序/电容条件、损耗和反馈环路是否都在保证范围内',
     'POWER_PROTECTION': '保护门限、功率管 SOA、防护器件协调、浪涌与防反接是否都成立',

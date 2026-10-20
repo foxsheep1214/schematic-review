@@ -238,7 +238,12 @@ class QuestionTemplateTest(unittest.TestCase):
             with self.subTest(rule):
                 self.assertIsNone(catalog.QUESTION_BAN_RE.search(template), template)
                 filled = catalog.question(rule, 'RUN', 'BIAS', ['Q2', 'D4'], 'VCC 9–18 V')
-                self.assertIn('RUN 时 BIAS（Q2、D4）', filled)
+                if rule in catalog.STATE_INVARIANT:   # asked once per circuit: no state in the question
+                    self.assertTrue(filled.startswith('BIAS（Q2、D4）'), filled)
+                    self.assertNotIn('RUN', filled)
+                else:
+                    self.assertIn('RUN 时 BIAS（Q2、D4）', filled)
+        self.assertLessEqual(catalog.STATE_INVARIANT, set(catalog.QUESTIONS))
         self.assertEqual({p.name for p in catalog.PACKAGES}, set(catalog.FRAME_QUESTIONS))
         for name, body in catalog.FRAME_QUESTIONS.items():
             with self.subTest(name):
