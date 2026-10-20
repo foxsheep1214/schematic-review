@@ -8,3 +8,4 @@ replay/
 !*/corpus-draft/*.json
 !*/adjudication-queue.json
 *.log
+!*/hot/**

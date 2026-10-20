@@ -1,0 +1,420 @@
+{
+  "quality_screening": {
+    "status": "NEEDS_SEMANTIC_REVIEW",
+    "scope": "ADVISORY_PATTERN_SCREENING_ONLY",
+    "candidate_count": 3,
+    "flagged_check_count": 2,
+    "candidates": [
+      {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-RXD-5V-PULLUP",
+          "W-RXD-5V-PULLUP-UART"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "按发现项 F-# 的改法处理",
+        "message": "2 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-V3-WINDOW",
+          "W-V3-WINDOW-UART"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "已读 CH# 数据手册 V#C 第 #、# 页，缺 # V 模式 V# 输出电压窗口；向 WCH 索取或实测 <ref> 电压的温度/VCC 角点",
+        "message": "2 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      {
+        "code": "REUSED_IMPACT_ACROSS_SCOPES",
+        "field": "gaps[].severity.consequence",
+        "check_ids": [
+          "SIG-C07.UART-DBG-RUN.U1",
+          "SIG-C07.UART-XLAT-RUN.U1"
+        ],
+        "message": "Different criteria share identical impact text; trace each consequence path or state how the shared analysis applies to each criterion."
+      }
+    ]
+  },
+  "execution_audit": {
+    "enforced": false,
+    "scope": "SOURCE_BOUND_EXECUTION_CONSISTENCY_ONLY",
+    "electrical_approval": false,
+    "errors": [],
+    "checked": {
+      "networks": 0,
+      "power": 0,
+      "aggregates": 0,
+      "repairs": 0,
+      "gaps": 0,
+      "handoffs": 0
+    }
+  },
+  "valid": false,
+  "errors": [
+    "check coverage mismatch: missing=['DEV-C01.BOARD', 'DEV-C02.BOARD', 'DEV-C03.BOARD', 'DEV-C04.BOARD', 'DEV-C05.DCDC1', 'DEV-C05.U1', 'DEV-C05.U2', 'DEV-C05.U3', 'DEV-C05.U4', 'DEV-C05.U5', 'DEV-C05.U6', 'DEV-C05.U7', 'DEV-D01.DCDC1', 'DEV-D01.U1', 'DEV-D01.U2', 'DEV-D01.U3', 'DEV-D01.U4', 'DEV-D01.U5', 'DEV-D01.U6', 'DEV-D01.U7', 'DEV-D02.D1', 'DEV-D02.D10', 'DEV-D02.D11', 'DEV-D02.D2', 'DEV-D02.D3', 'DEV-D02.D4', 'DEV-D02.D5', 'DEV-D02.D6', 'DEV-D02.D7', 'DEV-D02.D9', 'DEV-D02.Q2', 'DEV-D02.Q3', 'DEV-D02.U1', 'DEV-D02.U2', 'DEV-D02.U3', 'DEV-D02.U4', 'DEV-D02.U5', 'DEV-D02.U6', 'DEV-D02.U7', 'DEV-D03.BAT1', 'DEV-D03.LAN-CON1', 'DEV-D03.MICRO-SD1', 'DEV-D03.UEXT1', 'DEV-D03.USB-UART1', 'DEV-D04.BOARD', 'DEV-D05.BAT1', 'DEV-D05.DCDC1', 'DEV-D05.LAN-CON1', 'DEV-D05.MICRO-SD1', 'DEV-D05.U1', 'DEV-D05.U2', 'DEV-D05.U3', 'DEV-D05.U4', 'DEV-D05.U5', 'DEV-D05.U6', 'DEV-D05.U7', 'DEV-D05.UEXT1', 'DEV-D05.USB-UART1', 'DEV-E01.BAT1', 'DEV-E01.LAN-CON1', 'DEV-E01.MICRO-SD1', 'DEV-E01.UEXT1', 'DEV-E01.USB-UART1', 'DEV-Q01.DATASHEETS', 'DOC-D01.BOARD', 'DOC-D02.BOARD', 'DOC-Q01.INPUT-CONSISTENCY', 'DOC-T01.BOARD', 'DOC-V01.1', 'DOC-V02.BOARD', 'DRV-A01.L1-65275d', 'DRV-C01.L1-3-3VLAN.3-3VLAN', 'DRV-C01.L2-3-3V.3-3V', 'DRV-C01.L5-3-3V.3-3V', 'DRV-C02.FET1-UNRESOLVED.FET1', 'DRV-C02.FET2-UNRESOLVED.FET2', 'DRV-C02.FET3-UNRESOLVED.FET3', 'DRV-C02.Q2-NET-Q2-B.Q2-1', 'DRV-C02.Q3-NET-Q3-B.Q3-1', 'DRV-C02.T1-GPIO12-PHY-PWR.T1-1', 'DRV-E01.FET1-UNRESOLVED.FET1', 'DRV-E01.FET2-UNRESOLVED.FET2', 'DRV-E01.FET3-UNRESOLVED.FET3', 'DRV-T01.L1-3-3VLAN.3-3VLAN', 'DRV-T01.L2-3-3V.3-3V', 'DRV-T01.L5-3-3V.3-3V', 'NET-A07.MICRO-SD1-CD1-2d00e8', 'NET-A07.USB-UART1-4-a3d762', 'PRO-C02.NOTRIP.D10', 'PRO-C02.NOTRIP.D11', 'PRO-C02.NOTRIP.U5-2', 'PRO-C02.NOTRIP.U5-9', 'PRO-C02.TRIP.D10', 'PRO-C02.TRIP.D11', 'PRO-C02.TRIP.U5-2', 'PRO-C02.TRIP.U5-9', 'PRO-D03.BAT1', 'PRO-D03.LAN-CON1', 'PRO-D03.MICRO-SD1', 'PRO-D03.UEXT1', 'PRO-D03.USB-UART1', 'PWR-A01.NET-cc35af', 'PWR-A02.U1-10-627578', 'PWR-A03.U2-4-3709c2', 'PWR-C01.3-3V', 'PWR-C01.3-3VLAN', 'PWR-C01.5V', 'PWR-C01.5V-USB', 'PWR-C01.5VP', 'PWR-C01.NET-U1-V3', 'PWR-C09.DECAP-023B547755BC02EA1619.NET-U1-V3', 'PWR-C09.DECAP-0EFAF35B498C64E687D2.NET-U3-VBAT', 'PWR-C09.DECAP-0F3BED0A26F5802A6D7C.3-3VLAN', 'PWR-C09.DECAP-1156DF52BD82D6361169.3-3VLAN', 'PWR-C09.DECAP-1F9B8572BB5111A2C47C.SPARE1', 'PWR-C09.DECAP-202811C2AE423EEC21F1.NET-LAN-CON1-RCT', 'PWR-C09.DECAP-2B251FF1973199F489EA.5VP', 'PWR-C09.DECAP-2EFC01BC5ADBA2A370DF.5V-USB', 'PWR-C09.DECAP-336BC5F31AF4E0AA6E10.EARTH', 'PWR-C09.DECAP-47CD1FED0AD214F9D13A.5V-USB', 'PWR-C09.DECAP-7D30AEE35B65490A265C.SPARE2', 'PWR-C09.DECAP-7FC7CD6A66892D04FCBA.NET-D3-K', 'PWR-C09.DECAP-9C22EDFBB4CBBBDF9400.EARTH', 'PWR-C09.DECAP-B1F733DCAEB185B5744C.NET-MICRO-SD1-VDD', 'PWR-C09.DECAP-B37B277B57270A824B59.5V', 'PWR-C09.DECAP-BBB99AF3B6A525FCB070.5V-DCDC', 'PWR-C09.DECAP-D62B52705AFB7578129C.GND', 'PWR-C09.DECAP-D7D7CA30D447F8215E9B.SPARE1', 'PWR-C09.DECAP-E0627F14509B2C11E45F.GND', 'PWR-C09.DECAP-E15D7D26DFEC61C0FF0B.SPARE1', 'PWR-C09.DECAP-E4AADDEEB3F2B2A35DF6.3-3V', 'PWR-C09.DECAP-E67364A3A0C620268A82.NET-U4-VDDCR', 'PWR-C09.DECAP-FCCB9744E5AB61439575.SPARE2', 'PWR-C10.DECAP-023B547755BC02EA1619.NET-U1-V3', 'PWR-C10.DECAP-0EFAF35B498C64E687D2.NET-U3-VBAT', 'PWR-C10.DECAP-0F3BED0A26F5802A6D7C.3-3VLAN', 'PWR-C10.DECAP-1156DF52BD82D6361169.3-3VLAN', 'PWR-C10.DECAP-1F9B8572BB5111A2C47C.SPARE1', 'PWR-C10.DECAP-202811C2AE423EEC21F1.NET-LAN-CON1-RCT', 'PWR-C10.DECAP-2B251FF1973199F489EA.5VP', 'PWR-C10.DECAP-2EFC01BC5ADBA2A370DF.5V-USB', 'PWR-C10.DECAP-336BC5F31AF4E0AA6E10.EARTH', 'PWR-C10.DECAP-47CD1FED0AD214F9D13A.5V-USB', 'PWR-C10.DECAP-7D30AEE35B65490A265C.SPARE2', 'PWR-C10.DECAP-7FC7CD6A66892D04FCBA.NET-D3-K', 'PWR-C10.DECAP-9C22EDFBB4CBBBDF9400.EARTH', 'PWR-C10.DECAP-B1F733DCAEB185B5744C.NET-MICRO-SD1-VDD', 'PWR-C10.DECAP-B37B277B57270A824B59.5V', 'PWR-C10.DECAP-BBB99AF3B6A525FCB070.5V-DCDC', 'PWR-C10.DECAP-D62B52705AFB7578129C.GND', 'PWR-C10.DECAP-D7D7CA30D447F8215E9B.SPARE1', 'PWR-C10.DECAP-E0627F14509B2C11E45F.GND', 'PWR-C10.DECAP-E15D7D26DFEC61C0FF0B.SPARE1', 'PWR-C10.DECAP-E4AADDEEB3F2B2A35DF6.3-3V', 'PWR-C10.DECAP-E67364A3A0C620268A82.NET-U4-VDDCR', 'PWR-C10.DECAP-FCCB9744E5AB61439575.SPARE2', 'PWR-C11.U5-SPARE1.SPARE1', 'PWR-C11.U7-NET-D3-K.NET-D3-K', 'PWR-D01.DECOUPLING-INVENTORY', 'PWR-D02.DECAP-023B547755BC02EA1619.NET-U1-V3', 'PWR-D02.DECAP-0EFAF35B498C64E687D2.NET-U3-VBAT', 'PWR-D02.DECAP-0F3BED0A26F5802A6D7C.3-3VLAN', 'PWR-D02.DECAP-1156DF52BD82D6361169.3-3VLAN', 'PWR-D02.DECAP-1F9B8572BB5111A2C47C.SPARE1', 'PWR-D02.DECAP-202811C2AE423EEC21F1.NET-LAN-CON1-RCT', 'PWR-D02.DECAP-2B251FF1973199F489EA.5VP', 'PWR-D02.DECAP-2EFC01BC5ADBA2A370DF.5V-USB', 'PWR-D02.DECAP-336BC5F31AF4E0AA6E10.EARTH', 'PWR-D02.DECAP-47CD1FED0AD214F9D13A.5V-USB', 'PWR-D02.DECAP-7D30AEE35B65490A265C.SPARE2', 'PWR-D02.DECAP-7FC7CD6A66892D04FCBA.NET-D3-K', 'PWR-D02.DECAP-9C22EDFBB4CBBBDF9400.EARTH', 'PWR-D02.DECAP-B1F733DCAEB185B5744C.NET-MICRO-SD1-VDD', 'PWR-D02.DECAP-B37B277B57270A824B59.5V', 'PWR-D02.DECAP-BBB99AF3B6A525FCB070.5V-DCDC', 'PWR-D02.DECAP-D62B52705AFB7578129C.GND', 'PWR-D02.DECAP-D7D7CA30D447F8215E9B.SPARE1', 'PWR-D02.DECAP-E0627F14509B2C11E45F.GND', 'PWR-D02.DECAP-E15D7D26DFEC61C0FF0B.SPARE1', 'PWR-D02.DECAP-E4AADDEEB3F2B2A35DF6.3-3V', 'PWR-D02.DECAP-E67364A3A0C620268A82.NET-U4-VDDCR', 'PWR-D02.DECAP-FCCB9744E5AB61439575.SPARE2', 'PWR-D03.U5-NET-U2-CDB.U5-6', 'PWR-D03.U7-NET-D3-K.U7-4', 'PWR-E01.U5-5', 'PWR-E01.U7-5', 'PWR-E03.U5-SPARE1.SPARE1', 'PWR-E03.U7-NET-D3-K.NET-D3-K', 'PWR-T01.3-3V', 'PWR-T01.3-3VLAN', 'PWR-T01.5V', 'PWR-T01.5V-USB', 'PWR-T01.5VP', 'PWR-T01.NET-U1-V3', 'PWR-T03.DECAP-023B547755BC02EA1619.NET-U1-V3', 'PWR-T03.DECAP-0EFAF35B498C64E687D2.NET-U3-VBAT', 'PWR-T03.DECAP-0F3BED0A26F5802A6D7C.3-3VLAN', 'PWR-T03.DECAP-1156DF52BD82D6361169.3-3VLAN', 'PWR-T03.DECAP-1F9B8572BB5111A2C47C.SPARE1', 'PWR-T03.DECAP-202811C2AE423EEC21F1.NET-LAN-CON1-RCT', 'PWR-T03.DECAP-2B251FF1973199F489EA.5VP', 'PWR-T03.DECAP-2EFC01BC5ADBA2A370DF.5V-USB', 'PWR-T03.DECAP-336BC5F31AF4E0AA6E10.EARTH', 'PWR-T03.DECAP-47CD1FED0AD214F9D13A.5V-USB', 'PWR-T03.DECAP-7D30AEE35B65490A265C.SPARE2', 'PWR-T03.DECAP-7FC7CD6A66892D04FCBA.NET-D3-K', 'PWR-T03.DECAP-9C22EDFBB4CBBBDF9400.EARTH', 'PWR-T03.DECAP-B1F733DCAEB185B5744C.NET-MICRO-SD1-VDD', 'PWR-T03.DECAP-B37B277B57270A824B59.5V', 'PWR-T03.DECAP-BBB99AF3B6A525FCB070.5V-DCDC', 'PWR-T03.DECAP-D62B52705AFB7578129C.GND', 'PWR-T03.DECAP-D7D7CA30D447F8215E9B.SPARE1', 'PWR-T03.DECAP-E0627F14509B2C11E45F.GND', 'PWR-T03.DECAP-E15D7D26DFEC61C0FF0B.SPARE1', 'PWR-T03.DECAP-E4AADDEEB3F2B2A35DF6.3-3V', 'PWR-T03.DECAP-E67364A3A0C620268A82.NET-U4-VDDCR', 'PWR-T03.DECAP-FCCB9744E5AB61439575.SPARE2', 'PWR-T04.AS-BUILT.SUPERVISION-RAILS', 'PWR-T06.BOARD', 'REQ-D01.REQ-UART', 'REQ-D02.BOARD', 'REQ-Q01.REQUIREMENTS', 'REQ-Q02.CHAINS', 'REQ-Q03.STATES', 'REQ-Q04.HISTORY', 'REQ-Q07.ANALOG', 'REQ-Q07.CLOCK', 'REQ-Q07.ETHERNET', 'REQ-Q07.I2C', 'REQ-Q07.ISOLATION', 'REQ-Q07.LEVEL-SHIFT', 'REQ-Q07.POWER-CONVERTER', 'REQ-Q07.POWER-PROTECTION', 'REQ-Q07.SPI', 'REQ-Q07.UART', 'REQ-Q07.USB', 'REQ-Q08.BOARD', 'RST-A01.ESP-EN-074c84', 'RST-A03.U7-da5648', 'RST-A04.U5-0b03f5', 'RST-E01.U5-6', 'RST-E01.U6-3', 'RST-E01.U6-33', 'RST-E01.U7-4', 'RST-T01.U5-NET-U2-CDB.U5-6', 'RST-T01.U7-NET-D3-K.U7-4', 'SIG-C01.I2C-85A750311EF8D7D7C712.GPIO33', 'SIG-C01.I2C-951503382FEE1B4B35CB.GPIO16-I2C-SCL', 'SIG-C01.I2C-A1DFA5846CB31DA917BF.GPIO13-I2C-SDA', 'SIG-C07.I2C-85A750311EF8D7D7C712.GPIO33', 'SIG-C07.I2C-951503382FEE1B4B35CB.GPIO16-I2C-SCL', 'SIG-C07.I2C-A1DFA5846CB31DA917BF.GPIO13-I2C-SDA', 'SIG-C08.I2C-85A750311EF8D7D7C712.GPIO33', 'SIG-C08.I2C-951503382FEE1B4B35CB.GPIO16-I2C-SCL', 'SIG-C08.I2C-A1DFA5846CB31DA917BF.GPIO13-I2C-SDA', 'SIG-D01.I2C-85A750311EF8D7D7C712.GPIO33', 'SIG-D01.I2C-951503382FEE1B4B35CB.GPIO16-I2C-SCL', 'SIG-D01.I2C-A1DFA5846CB31DA917BF.GPIO13-I2C-SDA', 'SIG-D13.BOARD', 'SIG-E02.RD.RD', 'SIG-E02.TD.TD', 'SIG-E02.USB-D.USB-D', 'SIG-T01.RD', 'SIG-T01.TD', 'SIG-T01.USB-D', 'SIG-T02.I2C-85A750311EF8D7D7C712.GPIO33', 'SIG-T02.I2C-951503382FEE1B4B35CB.GPIO16-I2C-SCL', 'SIG-T02.I2C-A1DFA5846CB31DA917BF.GPIO13-I2C-SDA', 'SIG-T03.RD.RD', 'SIG-T03.TD.TD', 'SIG-T03.USB-D.USB-D'], unexpected=[]",
+    "scope_checks must cover six audit dimensions",
+    "coverage.requirements: missing=['REQ-UART'], unexpected=[]",
+    "coverage.components: missing=['ACT1', 'BAT1', 'BUT1', 'C1', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C2', 'C20', 'C21', 'C22', 'C23', 'C24', 'C25', 'C26', 'C27', 'C28', 'C29', 'C3', 'C30', 'C31', 'C6', 'C7', 'C8', 'C9', 'CHRG1', 'D1', 'D10', 'D11', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'DCDC1', 'EXT1', 'EXT2', 'FET1', 'FET2', 'FET3', 'FID1', 'FID2', 'FID3', 'FID4', 'FID5', 'FID6', 'FID7', 'FID8', 'L1', 'L2', 'L3', 'L4', 'L5', 'LAN_CON1', 'LNK1', 'MH1', 'MH2', 'MH3', 'MICRO_SD1', 'PWR1', 'Q2', 'Q3', 'R1', 'R10', 'R11', 'R12', 'R13', 'R14', 'R15', 'R16', 'R17', 'R18', 'R19', 'R2', 'R20', 'R21', 'R22', 'R23', 'R24', 'R25', 'R26', 'R27', 'R28', 'R29', 'R3', 'R30', 'R31', 'R32', 'R33', 'R34', 'R35', 'R36', 'R37', 'R38', 'R39', 'R4', 'R40', 'R41', 'R42', 'R43', 'R44', 'R46', 'R47', 'R48', 'R49', 'R5', 'R6', 'R7', 'R8', 'R9', 'RM1', 'RM2', 'RM3', 'RST1', 'T1', 'TVS1', 'TVS2', 'TVS3', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6', 'U7', 'U8', 'UEXT1', 'USB-UART1'], unexpected=[]",
+    "coverage.pins: missing=['ACT1.1', 'ACT1.2', 'BAT1.1', 'BAT1.2', 'BUT1.1', 'BUT1.2', 'C1.1', 'C1.2', 'C10.1', 'C10.2', 'C11.1', 'C11.2', 'C12.1', 'C12.2', 'C13.1', 'C13.2', 'C14.1', 'C14.2', 'C15.1', 'C15.2', 'C16.1', 'C16.2', 'C17.1', 'C17.2', 'C18.1', 'C18.2', 'C19.1', 'C19.2', 'C2.1', 'C2.2', 'C20.1', 'C20.2', 'C21.1', 'C21.2', 'C22.1', 'C22.2', 'C23.1', 'C23.2', 'C24.1', 'C24.2', 'C25.1', 'C25.2', 'C26.1', 'C26.2', 'C27.1', 'C27.2', 'C28.1', 'C28.2', 'C29.1', 'C29.2', 'C3.1', 'C3.2', 'C30.1', 'C30.2', 'C31.1', 'C31.2', 'C6.1', 'C6.2', 'C7.1', 'C7.2', 'C8.1', 'C8.2', 'C9.1', 'C9.2', 'CHRG1.1', 'CHRG1.2', 'D1.1', 'D1.2', 'D10.1', 'D10.2', 'D11.1', 'D11.2', 'D2.1', 'D2.2', 'D2.3', 'D3.1', 'D3.2', 'D4.1', 'D4.2', 'D5.1', 'D5.2', 'D6.1', 'D6.2', 'D7.1', 'D7.2', 'D8.1', 'D8.2', 'D9.1', 'D9.2', 'DCDC1.1', 'DCDC1.2', 'DCDC1.4', 'DCDC1.5', 'DCDC1.6', 'DCDC1.7', 'EXT1.1', 'EXT1.10', 'EXT1.2', 'EXT1.3', 'EXT1.4', 'EXT1.5', 'EXT1.6', 'EXT1.7', 'EXT1.8', 'EXT1.9', 'EXT2.1', 'EXT2.10', 'EXT2.2', 'EXT2.3', 'EXT2.4', 'EXT2.5', 'EXT2.6', 'EXT2.7', 'EXT2.8', 'EXT2.9', 'FET1.1', 'FET1.2', 'FET1.3', 'FET2.1', 'FET2.2', 'FET2.3', 'FET3.1', 'FET3.2', 'FET3.3', 'FID1.Fid1', 'FID2.Fid1', 'FID3.Fid1', 'FID4.Fid1', 'FID5.Fid1', 'FID6.Fid1', 'FID7.Fid1', 'FID8.Fid1', 'L1.1', 'L1.2', 'L2.1', 'L2.2', 'L3.1', 'L3.2', 'L4.1', 'L4.2', 'L5.1', 'L5.2', 'LAN_CON1.0', 'LAN_CON1.1', 'LAN_CON1.10', 'LAN_CON1.2', 'LAN_CON1.3', 'LAN_CON1.4', 'LAN_CON1.5', 'LAN_CON1.6', 'LAN_CON1.7', 'LAN_CON1.8', 'LAN_CON1.9', 'LNK1.1', 'LNK1.2', 'MICRO_SD1.1', 'MICRO_SD1.2', 'MICRO_SD1.3', 'MICRO_SD1.4', 'MICRO_SD1.5', 'MICRO_SD1.6', 'MICRO_SD1.7', 'MICRO_SD1.8', 'MICRO_SD1.CD1', 'MICRO_SD1.CH1', 'PWR1.1', 'PWR1.2', 'Q2.1', 'Q2.2', 'Q2.3', 'Q3.1', 'Q3.2', 'Q3.3', 'R1.1', 'R1.2', 'R10.1', 'R10.2', 'R11.1', 'R11.2', 'R12.1', 'R12.2', 'R13.1', 'R13.2', 'R14.1', 'R14.2', 'R15.1', 'R15.2', 'R16.1', 'R16.2', 'R17.1', 'R17.2', 'R18.1', 'R18.2', 'R19.1', 'R19.2', 'R2.1', 'R2.2', 'R20.1', 'R20.2', 'R21.1', 'R21.2', 'R22.1', 'R22.2', 'R23.1', 'R23.2', 'R24.1', 'R24.2', 'R25.1', 'R25.2', 'R26.1', 'R26.2', 'R27.1', 'R27.2', 'R28.1', 'R28.2', 'R29.1', 'R29.2', 'R3.1', 'R3.2', 'R30.1', 'R30.2', 'R31.1', 'R31.2', 'R32.1', 'R32.2', 'R33.1', 'R33.2', 'R34.1', 'R34.2', 'R35.1', 'R35.2', 'R36.1', 'R36.2', 'R37.1', 'R37.2', 'R38.1', 'R38.2', 'R39.1', 'R39.2', 'R4.1', 'R4.2', 'R40.1', 'R40.2', 'R41.1', 'R41.2', 'R42.1', 'R42.2', 'R43.1', 'R43.2', 'R44.1', 'R44.2', 'R46.1', 'R46.2', 'R47.1', 'R47.2', 'R48.1', 'R48.2', 'R49.1', 'R49.2', 'R5.1', 'R5.2', 'R6.1', 'R6.2', 'R7.1', 'R7.2', 'R8.1', 'R8.2', 'R9.1', 'R9.2', 'RM1.1.1', 'RM1.1.2', 'RM1.2.1', 'RM1.2.2', 'RM1.3.1', 'RM1.3.2', 'RM1.4.1', 'RM1.4.2', 'RM2.1.1', 'RM2.1.2', 'RM2.2.1', 'RM2.2.2', 'RM2.3.1', 'RM2.3.2', 'RM2.4.1', 'RM2.4.2', 'RM3.1.1', 'RM3.1.2', 'RM3.2.1', 'RM3.2.2', 'RM3.3.1', 'RM3.3.2', 'RM3.4.1', 'RM3.4.2', 'RST1.1', 'RST1.2', 'T1.1', 'T1.2', 'T1.3', 'TVS1.1', 'TVS1.2', 'TVS1.3', 'TVS1.4', 'TVS1.5', 'TVS2.1', 'TVS2.2', 'TVS3.1', 'TVS3.2', 'U1.1', 'U1.10', 'U1.2', 'U1.3', 'U1.4', 'U1.5', 'U1.6', 'U1.7', 'U1.8', 'U1.9', 'U2.1', 'U2.2', 'U2.3', 'U2.4', 'U2.5', 'U2.6', 'U2.7', 'U2.8', 'U2.9', 'U3.1', 'U3.2', 'U3.3', 'U3.4', 'U3.5', 'U4.1', 'U4.10', 'U4.11', 'U4.12', 'U4.13', 'U4.14', 'U4.15', 'U4.16', 'U4.17', 'U4.18', 'U4.19', 'U4.2', 'U4.20', 'U4.21', 'U4.22', 'U4.23', 'U4.24', 'U4.25', 'U4.26', 'U4.27', 'U4.28', 'U4.29', 'U4.3', 'U4.30', 'U4.31', 'U4.32', 'U4.33', 'U4.4', 'U4.5', 'U4.6', 'U4.7', 'U4.8', 'U4.9', 'U5.1', 'U5.2', 'U5.3', 'U5.4', 'U5.5', 'U5.6', 'U5.7', 'U5.8', 'U5.9', 'U6.1', 'U6.10', 'U6.11', 'U6.12', 'U6.13', 'U6.14', 'U6.15', 'U6.16', 'U6.17', 'U6.18', 'U6.19', 'U6.2', 'U6.20', 'U6.21', 'U6.22', 'U6.23', 'U6.24', 'U6.25', 'U6.26', 'U6.27', 'U6.28', 'U6.29', 'U6.3', 'U6.30', 'U6.31', 'U6.32', 'U6.33', 'U6.34', 'U6.35', 'U6.36', 'U6.37', 'U6.38', 'U6.39', 'U6.4', 'U6.5', 'U6.6', 'U6.7', 'U6.8', 'U6.9', 'U7.1', 'U7.2', 'U7.3', 'U7.4', 'U7.5', 'U7.6', 'U8.1', 'U8.2', 'U8.3', 'U8.4', 'U8.5', 'UEXT1.1', 'UEXT1.10', 'UEXT1.2', 'UEXT1.3', 'UEXT1.4', 'UEXT1.5', 'UEXT1.6', 'UEXT1.7', 'UEXT1.8', 'UEXT1.9', 'USB-UART1.0', 'USB-UART1.1', 'USB-UART1.2', 'USB-UART1.3', 'USB-UART1.4', 'USB-UART1.5'], unexpected=[]",
+    "coverage.nets: missing=['+3.3V', '+3.3VLAN', '+5V', '+5VP', '/+5V_USB', '/5V_DCDC', '/D_Com', '/ESP_EN', '/ETH_Shield', '/GPI34/BUT1', '/GPI35', '/GPI36/U1RXD', '/GPI39', '/GPIO0', '/GPIO1/U0TXD', '/GPIO12/PHY_PWR', '/GPIO13/I2C-SDA', '/GPIO14/HS2_CLK', '/GPIO15/HS2_CMD', '/GPIO16/I2C-SCL', '/GPIO17/EMAC_CLK_OUT_180', '/GPIO18/MDIO(RMII)', '/GPIO19/EMAC_TXD0(RMII)', '/GPIO2/HS2_DATA0', '/GPIO21/EMAC_TX_EN(RMII)', '/GPIO22/EMAC_TXD1(RMII)', '/GPIO23/MDC(RMII)', '/GPIO25/EMAC_RXD0(RMII)', '/GPIO26/EMAC_RXD1(RMII)', '/GPIO27/EMAC_RX_CRS_DV', '/GPIO3/U0RXD', '/GPIO32', '/GPIO33', '/GPIO4/U1TXD', '/GPIO5/SPI_CS', '/ILIM', '/PG', '/RD+', '/RD-', '/TD+', '/TD-', '/USB_D+', '/USB_D-', 'Earth', 'GND', 'Net-(ACT1-A)', 'Net-(ACT1-K)', 'Net-(BUT1-Pad2)', 'Net-(C10-Pad2)', 'Net-(C12-Pad2)', 'Net-(CHRG1-K)', 'Net-(D3-K)', 'Net-(D4-K)', 'Net-(D5-K)', 'Net-(D6-K)', 'Net-(D7-A)', 'Net-(D9-K)', 'Net-(L3-Pad1)', 'Net-(LAN_CON1-RCT)', 'Net-(LNK1-K)', 'Net-(MICRO_SD1-CD/DAT3/CS)', 'Net-(MICRO_SD1-CLK/SCLK)', 'Net-(MICRO_SD1-DAT0/DO)', 'Net-(MICRO_SD1-DAT1/RES)', 'Net-(MICRO_SD1-DAT2/RES)', 'Net-(MICRO_SD1-VDD)', 'Net-(PWR1-K)', 'Net-(Q2-B)', 'Net-(Q2-E)', 'Net-(Q3-B)', 'Net-(Q3-C)', 'Net-(Q3-E)', 'Net-(T1-C)', 'Net-(U1-CTS#)', 'Net-(U1-V3)', 'Net-(U2-CDB)', 'Net-(U2-CLS)', 'Net-(U2-DEN)', 'Net-(U3-CHRGb)', 'Net-(U3-PROG)', 'Net-(U3-VBAT)', 'Net-(U4-LED2/NINTSEL)', 'Net-(U4-NRST)', 'Net-(U4-RBIAS)', 'Net-(U4-RXCLK/PHYAD1)', 'Net-(U4-RXD2/RMIISEL)', 'Net-(U4-RXD3/PHYAD2)', 'Net-(U4-RXER/RXD4/PHYAD0)', 'Net-(U4-VDDCR)', 'Net-(U5-BS)', 'Net-(U5-FB)', 'Net-(U7-FB)', 'Net-(U7-SW)', 'Spare1', 'Spare2'], unexpected=[]",
+    "coverage.pages: missing=['1'], unexpected=[]"
+  ],
+  "blockers": [
+    "input netlist failed integrity/export checks",
+    "SIG-C07.UART-XLAT-ESP-RESET.U1: unresolved blocking FAIL",
+    "SIG-C07.UART-XLAT-RUN.U1: unresolved blocking INSUFFICIENT",
+    "SIG-C08.UART-XLAT-ESP-RESET.U1: unresolved blocking FAIL",
+    "SIG-C07.UART-DBG-ESP-RESET.U1: unresolved blocking FAIL",
+    "SIG-C07.UART-DBG-RUN.U1: unresolved blocking INSUFFICIENT"
+  ],
+  "release": "NO_GO",
+  "summary": {
+    "checks": 12,
+    "results": {
+      "FAIL": 3,
+      "INSUFFICIENT": 2,
+      "PASS": 7
+    },
+    "confirmed_defects": 1,
+    "by_severity": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "P3": 0
+    },
+    "improvements": 0
+  },
+  "categorized_summary": {
+    "current": {
+      "checks": 12,
+      "results": {
+        "FAIL": 3,
+        "PASS": 7,
+        "INSUFFICIENT": 2
+      }
+    },
+    "history": {
+      "checks": 0,
+      "results": {}
+    },
+    "result_labels": {
+      "PASS": "通过（PASS）",
+      "FAIL": "不符合（FAIL）",
+      "INSUFFICIENT": "证据不足（INSUFFICIENT）",
+      "NA": "不适用（NA）",
+      "NA_OUTSIDE_STAGE": "本阶段不判，移交下游（NA）"
+    },
+    "insufficient_impact": {
+      "by_potential_severity": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 2,
+        "P3": 0
+      },
+      "requirement_open": 0,
+      "unrated": 0,
+      "documented": 2,
+      "undocumented": 0,
+      "blocking": 2,
+      "by_consequence_class": {
+        "LOCAL_OR_DATA": 2
+      },
+      "note": "Documentation coverage does not prove engineering correctness; potential impact is not a confirmed defect."
+    },
+    "unique_findings": 1,
+    "unique_work_items": 4,
+    "work_item_check_links": 5,
+    "required_handoffs": 0,
+    "handoffs_by_state": {},
+    "note": "Handoffs overlap checks; ACCEPTED means responsibility/constraints accepted, not physical verification."
+  },
+  "insufficient_by_cause": {
+    "EXTERNAL_DATA": 2
+  },
+  "stage_scope": {
+    "outside_schematic_stage": [],
+    "not_applicable": [],
+    "requirements_pending_downstream": [],
+    "input_request_count": 2
+  },
+  "sr_improvements": [],
+  "requirement_clarification_summary": {
+    "total": 0,
+    "open": 0,
+    "resolved": 0,
+    "retracted": 0,
+    "affected_checks": 0,
+    "insufficient_from_requirements": 0,
+    "blocking_open": 0,
+    "covered_open": 0
+  },
+  "requirement_clarifications": [],
+  "requirements_by_status": {
+    "PROPOSED": {}
+  },
+  "workflow": {
+    "phase": "design_iteration",
+    "status": "REPAIR_REVIEW_RECORDS",
+    "schematic_release": "NO_GO",
+    "current_work_items": [
+      "W-V3-WINDOW",
+      "W-RXD-5V-PULLUP",
+      "W-V3-WINDOW-UART",
+      "W-RXD-5V-PULLUP-UART"
+    ],
+    "work_items": [
+      {
+        "id": "W-V3-WINDOW",
+        "title": "U1 在 5 V 供电模式下 V3 脚的输出电压保证窗口（R19 把 U6 的 U0RXD 上拉到这个节点）",
+        "root_cause": "U1 在 5 V 供电模式下 V3 脚的输出电压保证窗口（R19 把 U6 的 U0RXD 上拉到这个节点）",
+        "check_ids": [
+          "SIG-C07.UART-XLAT-RUN.U1"
+        ],
+        "due_stage": "design_iteration",
+        "reason": "V3 高于 3.5 V 时 U0RXD 在 run 态略超推荐输入上限，注入 ≤ 10 µA，只影响该脚长期可靠性数据的完整性，不影响通信",
+        "next_action": "已读 CH340 数据手册 V3C 第 5、8 页，缺 5 V 模式 V3 输出电压窗口；向 WCH 索取或实测 C8 电压的温度/VCC 角点",
+        "evidence": [
+          {
+            "source": "evidence/engineering.md",
+            "locator": "## UART-XLAT"
+          }
+        ],
+        "design_option": {
+          "status": "PROPOSED",
+          "summary": "R19 的上拉端从 Net-(U1-V3) 改接 +3.3V，U6 的 U0RXD 上拉轨变成 U6 自己的供电轨，不再依赖 CH340 V3 的窗口",
+          "preference": "DESIGN_FIRST",
+          "preference_reason": "改一条连线即可消除对厂家未给出数据的依赖，比索取 V3 窗口更快、更稳",
+          "remediation": {
+            "readiness": "READY",
+            "purpose": "让 U6 U0RXD 的上拉电压与 U6 的 VDD33 同源。",
+            "prerequisites": [],
+            "steps": [
+              {
+                "kind": "CONNECT",
+                "target": "R19.1",
+                "before": "R19.1 接 Net-(U1-V3)",
+                "after": "R19.1 接 +3.3V",
+                "instruction": "把 R19 的上拉端从 U1 的 V3 节点改到 +3.3V。",
+                "remove_connections": [
+                  {
+                    "from": "R19.1",
+                    "to": "Net-(U1-V3)"
+                  }
+                ],
+                "add_connections": [
+                  {
+                    "from": "R19.1",
+                    "to": "+3.3V"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "target": "R19",
+                "specification": "10 kΩ，0402，上拉到 +3.3V",
+                "status": "SELECTED",
+                "basis": [
+                  {
+                    "source": "evidence/ds/esp32-wroom-32e.txt",
+                    "locator": "p28 Table 15 VIH"
+                  }
+                ]
+              }
+            ],
+            "related_findings": [],
+            "impact_review": "USB 未插时 +3.3V 仍有电，U0RXD 空闲变为高（优于现状的低）；U1 无电时 D6 反偏、CH340X IO 自带防倒灌，无注入。",
+            "verification": [
+              {
+                "stage": "NETLIST",
+                "method": "核 R19.1 所在网。",
+                "expected": "R19.1 在 +3.3V。"
+              }
+            ],
+            "calculation_preflight": {
+              "applicable": false,
+              "reason": "只改上拉轨",
+              "evidence": [
+                {
+                  "source": "evidence/engineering.md",
+                  "locator": "## UART-XLAT"
+                }
+              ]
+            }
+          },
+          "avoids": [
+            {
+              "problem": "U0RXD 上拉电压依赖 CH340 V3 未保证的窗口",
+              "after_change": "上拉电压 = U6 VDD33，恒在 VIH 范围内",
+              "check_ids": [
+                "SIG-C07.UART-XLAT-RUN.U1"
+              ]
+            }
+          ],
+          "tradeoffs": [
+            "代价：改一条连线，无新增器件",
+            "新风险：U1 无电（USB 未插）时 R19 从有电的 +3.3V 经 D6 指向无电的 U1 TXD，D6 反偏且 CH340X IO 自带防倒灌，无注入；若换成无防倒灌的桥片要复核",
+            "仍开放：CH340 V3 自身的输出窗口未知，改接后与本功能无关"
+          ]
+        }
+      },
+      {
+        "id": "W-RXD-5V-PULLUP",
+        "title": "U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V",
+        "root_cause": "U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V",
+        "check_ids": [
+          "SIG-C07.UART-XLAT-ESP-RESET.U1",
+          "SIG-C08.UART-XLAT-ESP-RESET.U1"
+        ],
+        "due_stage": "design_iteration",
+        "reason": "U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V",
+        "next_action": "按发现项 F-001 的改法处理",
+        "evidence": [
+          {
+            "source": "evidence/engineering.md",
+            "locator": "## UART-XLAT"
+          }
+        ]
+      },
+      {
+        "id": "W-V3-WINDOW-UART",
+        "title": "U1 在 5 V 供电模式下 V3 脚的输出电压保证窗口（R19 把 U6 的 U0RXD 上拉到这个节点）",
+        "root_cause": "U1 在 5 V 供电模式下 V3 脚的输出电压保证窗口（R19 把 U6 的 U0RXD 上拉到这个节点）",
+        "check_ids": [
+          "SIG-C07.UART-DBG-RUN.U1"
+        ],
+        "due_stage": "design_iteration",
+        "reason": "V3 高于 3.5 V 时 U0RXD 在 run 态略超推荐输入上限，注入 ≤ 10 µA，只影响该脚长期可靠性数据的完整性，不影响通信",
+        "next_action": "已读 CH340 数据手册 V3C 第 5、8 页，缺 5 V 模式 V3 输出电压窗口；向 WCH 索取或实测 C8 电压的温度/VCC 角点",
+        "evidence": [
+          {
+            "source": "evidence/engineering.md",
+            "locator": "## UART-DBG"
+          }
+        ],
+        "design_option": {
+          "status": "PROPOSED",
+          "summary": "R19 的上拉端从 Net-(U1-V3) 改接 +3.3V，U6 的 U0RXD 上拉轨变成 U6 自己的供电轨，不再依赖 CH340 V3 的窗口",
+          "preference": "DESIGN_FIRST",
+          "preference_reason": "改一条连线即可消除对厂家未给出数据的依赖，比索取 V3 窗口更快、更稳",
+          "remediation": {
+            "readiness": "READY",
+            "purpose": "让 U6 U0RXD 的上拉电压与 U6 的 VDD33 同源。",
+            "prerequisites": [],
+            "steps": [
+              {
+                "kind": "CONNECT",
+                "target": "R19.1",
+                "before": "R19.1 接 Net-(U1-V3)",
+                "after": "R19.1 接 +3.3V",
+                "instruction": "把 R19 的上拉端从 U1 的 V3 节点改到 +3.3V。",
+                "remove_connections": [
+                  {
+                    "from": "R19.1",
+                    "to": "Net-(U1-V3)"
+                  }
+                ],
+                "add_connections": [
+                  {
+                    "from": "R19.1",
+                    "to": "+3.3V"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "target": "R19",
+                "specification": "10 kΩ，0402，上拉到 +3.3V",
+                "status": "SELECTED",
+                "basis": [
+                  {
+                    "source": "evidence/ds/esp32-wroom-32e.txt",
+                    "locator": "p28 Table 15 VIH"
+                  }
+                ]
+              }
+            ],
+            "related_findings": [],
+            "impact_review": "USB 未插时 +3.3V 仍有电，U0RXD 空闲变为高（优于现状的低）；U1 无电时 D6 反偏、CH340X IO 自带防倒灌，无注入。",
+            "verification": [
+              {
+                "stage": "NETLIST",
+                "method": "核 R19.1 所在网。",
+                "expected": "R19.1 在 +3.3V。"
+              }
+            ],
+            "calculation_preflight": {
+              "applicable": false,
+              "reason": "只改上拉轨",
+              "evidence": [
+                {
+                  "source": "evidence/engineering.md",
+                  "locator": "## UART-XLAT"
+                }
+              ]
+            }
+          },
+          "avoids": [
+            {
+              "problem": "U0RXD 上拉电压依赖 CH340 V3 未保证的窗口",
+              "after_change": "上拉电压 = U6 VDD33，恒在 VIH 范围内",
+              "check_ids": [
+                "SIG-C07.UART-XLAT-RUN.U1"
+              ]
+            }
+          ],
+          "tradeoffs": [
+            "代价：改一条连线，无新增器件",
+            "新风险：U1 无电（USB 未插）时 R19 从有电的 +3.3V 经 D6 指向无电的 U1 TXD，D6 反偏且 CH340X IO 自带防倒灌，无注入；若换成无防倒灌的桥片要复核",
+            "仍开放：CH340 V3 自身的输出窗口未知，改接后与本功能无关"
+          ]
+        }
+      },
+      {
+        "id": "W-RXD-5V-PULLUP-UART",
+        "title": "U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V",
+        "root_cause": "U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V",
+        "check_ids": [
+          "SIG-C07.UART-DBG-ESP-RESET.U1"
+        ],
+        "due_stage": "design_iteration",
+        "reason": "U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V",
+        "next_action": "按发现项 F-001 的改法处理",
+        "evidence": [
+          {
+            "source": "evidence/engineering.md",
+            "locator": "## UART-DBG"
+          }
+        ]
+      }
+    ],
+    "check_count_in_work_items": 5,
+    "unique_work_items": 4,
+    "design_options": {
+      "PROPOSED": 2,
+      "NONE": 0
+    },
+    "scope": "Continue design means analysis/redesign only; not permission to energize, fabricate or release hardware."
+  },
+  "revision_validation": {
+    "enforced": false,
+    "required_checks": 0,
+    "strategy": null
+  },
+  "binding_validation": {
+    "enforced": true,
+    "bound_checks": 12
+  },
+  "remediation_validation": {
+    "enforced": true,
+    "by_readiness": {
+      "READY": 1,
+      "CONDITIONAL": 0,
+      "DESIGN_REQUIRED": 0
+    }
+  }
+}

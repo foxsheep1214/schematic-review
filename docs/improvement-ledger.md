@@ -7,6 +7,39 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Hot-review pilot on the admitted fix pair: the frame asks the right question (2026-10-20)
+
+One hot review of the admitted fix pair's before version, limited to the two
+circuits an intent declared (a UART link and its diode-plus-pull-up level
+interface), to see whether a circuit-type frame asks about the defect the
+author later fixed. It does: once the circuits are declared, the plan frames
+SIG-C07 ("does the pull-up rail match every receiver's threshold and pin
+limit") and SIG-C08 ("is the back-feed path through pull-ups or protection
+diodes blocked") on exactly the pull-up, diode and MCU pin involved. Reading
+the two datasheets corrected the mechanism recorded earlier in this ledger
+and in the adjudication: the bridge runs in its 5 V mode and tolerates the
+5 V node; the violation is on the MCU side, whose TX pad is lifted above
+VDD+0.3 V through the forward diode whenever the MCU is in reset, which is
+the case the bridge vendor's own application note covers with a series NMOS.
+The verdict is one P1 COMPONENT_DAMAGE finding with a READY remediation, and
+one VENDOR_DATUM open item (the bridge's internal 3.3 V node has no
+guaranteed window in 5 V mode) that is a candidate for the over-strict queue.
+The fix pair's `expected_rules` become SIG-C07/SIG-C08; the SIG-D04 written
+before was a USB-C rule and an agent error.
+
+Frictions recorded in the round: a partial ledger cannot pass
+`validate_review.py` (coverage errors), so a hot review costs a whole board
+even when one function is in question; two frames over the same objects
+duplicate SIG-C07 rows and, since open-item keys are unique across
+functions, duplicate the open items too (`DUPLICATE_WORK_ITEMS`); frame
+members may not bind to another frame's function. `metrics.py` now scores
+hot recall on a DEFECT finding whose location names the defect, not on any
+row text at the location.
+
+- Event: user:2026-10-20 (hot-review pilot requested), review:evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/review-results.json
+- Causes: knowledge_wrong 1, judgment 1
+- Changed: evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/review-results.json, evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/notes.md, evals/training/runs/2026-10-20-29b9856/summary.md, evals/training/corpus/fix-pairs.json, evals/training/adjudications/2026-10-20.json, evals/training/scripts/metrics.py, evals/training/runs/.gitignore, docs/improvement-ledger.md
+
 ## Training round 1 adjudicated: two relaxations, one fix pair admitted (2026-10-20)
 
 The ten-item queue of the first training round was adjudicated by the user

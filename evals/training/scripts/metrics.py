@@ -46,8 +46,9 @@ def fix_pair_recall(round_dir, pairs):
         hot_hit = None
         if hot_res is not None:
             hot_seen += 1
-            hot_hit = any(r.get('verdict') in ('FAIL', 'INSUFFICIENT') and at(json.dumps(r, ensure_ascii=False))
-                          for r in hot_res.get('results', hot_res if isinstance(hot_res, list) else []))
+            # a confirmed DEFECT whose location names the defect; an INSUFFICIENT row at the location is not recall
+            hot_hit = any(f.get('kind') == 'DEFECT' and at(json.dumps(f.get('location'), ensure_ascii=False))
+                          for f in hot_res.get('findings', []))
             hot = (hot or 0) + int(hot_hit)
         cold += bool(hits); plan += bool(checks)
         rows.append({'pair': p['id'], 'reviewed': True, 'cold_hits': hits, 'plan_rows': checks, 'hot_hit': hot_hit})

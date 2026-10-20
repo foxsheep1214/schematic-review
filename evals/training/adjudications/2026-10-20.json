@@ -36,7 +36,7 @@
    "decision": "DEFECT_MISSED",
    "level": "P2",
    "hazard_path": null,
-   "reason": "CH340X 5 V 供电时 I/O 为 V3 的 3.3 V 域，RXD 被 R18 10 k 拉到 5 V，ESP 复位时 U0TXD 高阻，电流经 ESD 二极管倒灌 V3；N1 分压到 2.5 V，Rev O 改 1 k 上拉加 FET 电平转换。收录，defect_class pull，hazard component",
+   "reason": "CH340X 由 /+5V_USB 供电，按手册处于 5 V 模式，RXD 允许到 VCC+0.5，CH340 本身不过压；过压在 ESP32 侧：U6 复位或 3.3 V 未建立时，R18 10 k 从 5 V 经 D7 正向把 U6.35 U0TXD 抬到 4.65–5.25 V（上限 VDD33+0.3），WCH 手册 §7.7 正是为此要求串 NMOS。收录，defect_class pull，hazard component。（agent 复核前曾误写为 CH340X 3.3 V I/O 域过压，热审读手册后更正）",
    "lands_in": "fix-pairs:olimex-esp32-poe-iso-revN-revN1.expected_rules",
    "sr_change_allowed": "none"
   },

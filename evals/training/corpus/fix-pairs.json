@@ -26,11 +26,12 @@
     ]
    },
    "expected_rules": [
-    "SIG-D04"
+    "SIG-C07",
+    "SIG-C08"
    ],
    "hazard": "component",
    "split": "train",
-   "expected_rules_note": "agent 提议的科目，人只裁了收录与 hazard；换规则时同步改这里"
+   "expected_rules_note": "热审试点（2026-10-20）确认：LEVEL_SHIFT 框架的 SIG-C07（上拉轨对接收端耐压）与 SIG-C08（跨域注入）问出该缺陷；此前写的 SIG-D04 是 USB-C CC 规则，属 agent 笔误"
   }
  ]
 }

@@ -9,8 +9,8 @@
  "pairs_reviewed": 1,
  "fix_pair_recall_cold": 1.0,
  "fix_pair_recall_plan": 1.0,
- "fix_pair_recall_hot": null,
- "fix_pair_recall_hot_reason": "no hot review of a fix-pair before version this round",
+ "fix_pair_recall_hot": 1.0,
+ "fix_pair_recall_hot_reason": null,
  "per_pair": [
   {
    "pair": "olimex-esp32-poe-iso-revN-revN1",
@@ -34,7 +34,7 @@
     "PWR-T03.DECAP-023B547755BC02EA1619.NET-U1-V3",
     "PWR-T03.DECAP-47CD1FED0AD214F9D13A.5V-USB"
    ],
-   "hot_hit": null
+   "hot_hit": true
   }
  ],
  "boards_reviewed": 42,
@@ -285,12 +285,12 @@
   "KNOWN": 0,
   "MISMATCH": 0
  },
- "hot_reviews": 0,
+ "hot_reviews": 1,
  "critic_files": 0,
  "p0_precision": null,
  "p0_precision_reason": "no adjudicated P0 items (needs hot review + critic + human)",
- "misfile_rate": null,
- "misfile_rate_reason": "no hot review this round",
+ "misfile_rate": 0.0,
+ "misfile_rate_reason": null,
  "lookup_honesty": null,
  "lookup_honesty_reason": "needs critic agent spot checks of “已读 X 第 N 页” claims"
 }
