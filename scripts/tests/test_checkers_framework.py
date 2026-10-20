@@ -175,7 +175,7 @@ class NetGraphTest(unittest.TestCase):
         self.graph = ng.NetGraph(relay_fixture.relay_board())
 
     def test_common_optocoupler_part_numbers_are_classified(self):
-        for part in ('SFH6186-3', 'EL817', 'PS2561', 'TCMT1100', 'PC817'):
+        for part in ('SFH617A-3', 'EL817', 'PS2561', 'TCMT1100', 'PC817'):
             kind, _ = ng.classify('U9', {'part': part, 'value': part, 'prim': 'X', 'jedec': ''}, 4)
             self.assertEqual(kind, ng.OPTO, part)
 

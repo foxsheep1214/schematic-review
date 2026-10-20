@@ -11,7 +11,7 @@ class NtcBoundsTest(unittest.TestCase):
     ARGS = dict(r25_ohm=10e3, r25_tol=0.01, beta_k=3435, beta_tol=0.01)
 
     def test_hot_minimum_uses_r25min_and_bmax(self):
-        # 100W PD 复审：设计脚本用 Bmin 算 150°C 最小阻值，得到的其实是较大阻值。
+        # 真实反例：设计脚本用 Bmin 算 150°C 最小阻值，得到的其实是较大阻值。
         hot = ntc_resistance_bounds(temp_c=150, **self.ARGS)
         self.assertEqual(hot['r_min_corner'], 'R25min+Bmax')
         x = 1 / (150 + 273.15) - 1 / 298.15
@@ -34,7 +34,7 @@ class NtcBoundsTest(unittest.TestCase):
 
 class DischargeTest(unittest.TestCase):
     def test_constant_current_stops_at_the_compliance_boundary(self):
-        # 100W PD 复审：105 mA 恒流不能一路积分到 5.5 V，合规交界以下是 RC 尾段。
+        # 真实反例：105 mA 恒流不能一路积分到 5.5 V，合规交界以下是 RC 尾段。
         out = cc_discharge_with_tail(capacitance_f=1e-3, start_v=26, end_v=5.5, sink_current_a=0.105,
                                      series_r_max_ohm=49.35, tail_r_ohm=30)
         self.assertAlmostEqual(out['compliance_boundary_v'], 0.105 * 79.35)

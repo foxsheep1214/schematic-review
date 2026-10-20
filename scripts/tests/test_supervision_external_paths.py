@@ -35,8 +35,8 @@ def move(db, node, target):
 def source_board():
     db = board()
     nc_pad(db)
-    move(db, 'P1.1', 'VRAW')
-    add(db, 'D8', 'D_Schottky', [('1', 'A', 'VRAW'), ('2', 'K', 'VMID')])
+    move(db, 'P1.1', 'RAWOUT')
+    add(db, 'D8', 'D_Schottky', [('1', 'A', 'RAWOUT'), ('2', 'K', 'VMID')])
     add(db, 'R8', '0', [('1', '1', 'VMID'), ('2', '2', 'VCC_A')])
     for node in ('D8.1', 'D8.2', 'R8.1', 'R8.2'):
         db['native_pintype'][node] = db['declared_native_pintype'][node] = 'passive'
@@ -128,7 +128,7 @@ class ExternalSupplyPathTests(unittest.TestCase):
         inventory = plan['supervision']
         rail = next(r for r in inventory['states'][0]['rails'] if r['net'] == 'VCC_A')
         self.assertEqual(rail['source_path'], [
-            {'ref': 'D8', 'from_node': 'D8.1', 'from_net': 'VRAW', 'to_node': 'D8.2', 'to_net': 'VMID'},
+            {'ref': 'D8', 'from_node': 'D8.1', 'from_net': 'RAWOUT', 'to_node': 'D8.2', 'to_net': 'VMID'},
             {'ref': 'R8', 'from_node': 'R8.1', 'from_net': 'VMID', 'to_node': 'R8.2', 'to_net': 'VCC_A'}])
         self.assertIsNone(rail['monitor'])
         self.assertIn('rail-unmonitored:VCC_A', rail['observation_gaps'])

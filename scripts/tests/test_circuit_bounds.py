@@ -49,7 +49,7 @@ class RcTest(unittest.TestCase):
 
 class LogicLevelTest(unittest.TestCase):
     def test_fractional_vih_uses_the_receiver_supply_maximum(self):
-        # 100W PD 复审：高电平窗口推导方向写反；VIH=0.7*VDD 要用 VDD 最大值。
+        # 真实反例：高电平窗口推导方向写反；VIH=0.7*VDD 要用 VDD 最大值。
         out = logic_level_margins(voh_drop_v=0.4, driver_supply_min_v=3.135, vih_fraction=0.7,
                                   receiver_supply_min_v=3.135, receiver_supply_max_v=3.465,
                                   vol_max_v=0.4, vil_fraction=0.3)
@@ -69,7 +69,7 @@ class RippleTest(unittest.TestCase):
     TEMP = [[85, 1.73], [95, 1.41], [105, 1.0]]
 
     def test_lower_bracketing_factor_and_no_extrapolation(self):
-        # 100W PD 复审：105°C 额定 4.256 Arms 被写成 90°C 的 5.09 Arms。
+        # 真实反例：105°C 额定 4.256 Arms 被写成 90°C 的 5.09 Arms。
         out = capacitor_ripple_capability(rated_arms=4.256, freq_factors=self.FREQ, freq_hz=65e3,
                                           temp_factors=self.TEMP, temp_c=100)
         self.assertEqual((out['freq_factor'], out['temp_factor']), (0.95, 1.0))

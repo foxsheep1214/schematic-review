@@ -116,22 +116,22 @@ class RenderReportTests(unittest.TestCase):
 
     def test_item_drops_scope_and_action_that_only_echo_the_task(self):
         from render_report import render_item
-        req = {'why_decisive': 'x', 'required_scope': 'F101 分断；100A 与故障电流尚未配对',
-               'acquisition': '已读 Littelfuse p1。 核 GB4943.1 条款再确认 F101', 'closure_criterion': 'c'}
+        req = {'why_decisive': 'x', 'required_scope': 'F1 分断；100A 与故障电流尚未配对',
+               'acquisition': '已读保险丝手册 p1。 核 GB4943.1 条款再确认 F1', 'closure_criterion': 'c'}
         checks = {'A.1': {'id': 'A.1', 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA',
                           'potential_severity': 'P0', 'input_requests': {'k': req}}}
-        task = {'id': 'W-1', 'title': 'F101 分断', 'root_cause': '100A 与故障电流尚未配对',
-                'check_ids': ['A.1'], 'next_action': '核 GB4943.1 条款再确认 F101'}
+        task = {'id': 'W-1', 'title': 'F1 分断', 'root_cause': '100A 与故障电流尚未配对',
+                'check_ids': ['A.1'], 'next_action': '核 GB4943.1 条款再确认 F1'}
         text = '\n'.join(render_item(task, checks, {}))
         self.assertNotIn('适用范围', text)
-        self.assertEqual(1, text.count('核 GB4943.1 条款再确认 F101'))
+        self.assertEqual(1, text.count('核 GB4943.1 条款再确认 F1'))
         req['required_scope'] = '90–264Vac、冷/热重插'
         self.assertIn('适用范围：90–264Vac、冷/热重插', '\n'.join(render_item(task, checks, {})))
 
     def test_notes_about_sr_itself_are_refused_outside_sr_feedback(self):
         from render_report import notes_errors
-        self.assertEqual([], notes_errors({'summary': '先核 F101。', 'items': {'W-1': '补磁件资料。'}}))
-        self.assertTrue(notes_errors({'summary': 'SR改进部分有效，真实BR101误报仍未解决。'}))
+        self.assertEqual([], notes_errors({'summary': '先核 F1。', 'items': {'W-1': '补磁件资料。'}}))
+        self.assertTrue(notes_errors({'summary': 'SR改进部分有效，真实BR1误报仍未解决。'}))
         self.assertTrue(notes_errors({'items': {'W-1': '质量提示仍有 17 条'}}))
 
     def test_stage_na_is_handed_over_without_blocking(self):
@@ -270,7 +270,7 @@ class ReportWordingTests(unittest.TestCase):
         self.assertNotIn('上一版问题未逐条复验', text)
         r['history_inputs'] = []
         self.assertNotIn('上一版审查', body(report(p, r, db)[0]))   # nothing to say when none was seen
-        # 100W PD R3 复审：上一版 2 条问题只在旁路文件里对照，报告却显示 0 条处理记录。
+        # 真实反例：上一版 2 条问题只在旁路文件里对照，报告却显示 0 条处理记录。
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / 'record').mkdir()
             (Path(tmp) / 'record' / 'review-results.json').write_text(
@@ -282,7 +282,7 @@ class ReportWordingTests(unittest.TestCase):
         self.assertNotIn(tmp, text)
 
     def test_first_review_that_saw_history_says_it_does_not_reverify(self):
-        # 100W PD R5：首审可见 R4 审查，报告却写“只用于上一版问题的复验”并印出本机绝对路径，
+        # 真实反例：首审可见上一版审查，报告却写“只用于上一版问题的复验”并印出本机绝对路径，
         # 而首审模式根本加不了 REQ-H02 复验行。
         p, r, db = decisive()
         p['review_mode'] = 'first'
@@ -513,10 +513,10 @@ class PackReviewTests(unittest.TestCase):
         self.assertIn(RECORD + '/evidence/calc/startup.md', manifest['packed'])
 
     def test_same_named_file_in_an_input_does_not_hide_new_evidence(self):
-        # 100W PD 复审：旧审查目录作输入时，同名的本轮 page-1.png 被当成输入而漏装。
+        # 真实反例：旧审查目录作输入时，同名的本轮 page-1.png 被当成输入而漏装。
         results = json.loads((self.work / 'review-results.json').read_text())
-        results['checks'][0]['evidence'].append({'source': 'page-1.png', 'locator': 'U601'})
-        results['checks'][0]['evidence'].append({'source': 'shots/page-2.png', 'locator': 'Q401'})
+        results['checks'][0]['evidence'].append({'source': 'page-1.png', 'locator': 'U1'})
+        results['checks'][0]['evidence'].append({'source': 'shots/page-2.png', 'locator': 'Q2'})
         (self.work / 'review-results.json').write_text(json.dumps(results))
         (self.work / 'page-1.png').write_bytes(b'new')
         (self.inputs / 'page-1.png').write_bytes(b'old')

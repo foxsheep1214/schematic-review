@@ -237,14 +237,14 @@ class QuestionTemplateTest(unittest.TestCase):
         for rule, template in catalog.QUESTIONS.items():
             with self.subTest(rule):
                 self.assertIsNone(catalog.QUESTION_BAN_RE.search(template), template)
-                filled = catalog.question(rule, 'RUN', 'BIAS', ['Q401', 'D404'], 'VCC 9.5–18 V')
-                self.assertIn('RUN 时 BIAS（Q401、D404）', filled)
+                filled = catalog.question(rule, 'RUN', 'BIAS', ['Q2', 'D4'], 'VCC 9–18 V')
+                self.assertIn('RUN 时 BIAS（Q2、D4）', filled)
         self.assertEqual({p.name for p in catalog.PACKAGES}, set(catalog.FRAME_QUESTIONS))
         for name, body in catalog.FRAME_QUESTIONS.items():
             with self.subTest(name):
                 self.assertIsNone(catalog.QUESTION_BAN_RE.search(body), body)
-        self.assertIn(catalog.NO_WINDOW, catalog.question('PWR-C02', 'RUN', 'BIAS', ['Q401']))
-        self.assertIsNone(catalog.question('DOC-V01', 'RUN', 'BIAS', ['Q401']))
+        self.assertIn(catalog.NO_WINDOW, catalog.question('PWR-C02', 'RUN', 'BIAS', ['Q2']))
+        self.assertIsNone(catalog.question('DOC-V01', 'RUN', 'BIAS', ['Q2']))
 
     def test_bounding_steps_are_copied_from_the_reference(self):
         doc = (pathlib.Path(__file__).resolve().parents[2] / 'references' / 'evidence-proportionality.md').read_text(

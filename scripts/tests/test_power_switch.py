@@ -469,7 +469,7 @@ class SourceReturnTest(unittest.TestCase):
 
 
 class SharedClampTopologyTest(unittest.TestCase):
-    """100W PD 复审：功率开关检查器要认得感性负载清单已认出的吸收，并把升压主二极管单列。"""
+    """真实反例：功率开关检查器要认得感性负载清单已认出的吸收，并把升压主二极管单列。"""
 
     def test_rcd_clamp_returned_to_the_supply_counts_as_snubber(self):
         db = switch_board(snubber='rcd')
@@ -538,7 +538,7 @@ class SynchronousRectifierTest(unittest.TestCase):
         add(db, 'Q8', 'NMOS', [('1','S','SEC_RTN'),('2','S','SEC_RTN'),('3','S','SEC_RTN'),
             ('4','G','SR_G'),('5','D','SR_D'),('6','D','SR_D'),('7','D','SR_D'),('8','D','SR_D')])
         add(db, 'U8', 'SR-CONTROLLER', [('1','DRV','SR_DRV'),('2','GND','SEC_RTN'),
-             ('3','CS','SR_D'),('4','VCC','SR_VCC')])
+             ('3','CS','SR_D'),('4','VCC','SRCTL_SUP')])
         add(db, 'R8', '2R2', [('1','1','SR_DRV'),('2','2','SR_G')])
         add(db, 'R9', '100K', [('1','1','SR_G'),('2','2','SEC_RTN')])
         add(db, 'C8', '330uF', [('1','1','OUT'),('2','2','SEC_RTN')])
@@ -581,7 +581,7 @@ class SynchronousRectifierTest(unittest.TestCase):
         self.assertEqual(sr['derived_fields'], ['output_net', 'return_node', 'sense_node', 'winding_nodes'])
 
     def test_official_pin_name_picks_return_when_trigger_shares_the_source_net(self):
-        # 100W PD 复审：U501 的 VS(.2) 与 TRIG(.4) 都在源极网，最小声明曾因两个候选失败。
+        # 真实反例：同步整流控制器的 VS(.2) 与 TRIG(.4) 都在源极网，最小声明曾因两个候选失败。
         db, intent = self.fixture()
         cfg = intent['power_switches']['switches'][0]['synchronous_rectifier']
         for key in ('sense_node', 'return_node', 'winding_nodes', 'output_net'):

@@ -1,4 +1,4 @@
-"""2026-10-19 对 ASG 100W PD 适配器 R4 的全新独立审查暴露的规则缺口（SR-20261019-R4-全新独立审查-ab53178）。"""
+"""一次真实独立审查（2026-10-19）暴露的规则缺口；每个用例用合成数据复现。"""
 import pathlib
 import sys
 import unittest
@@ -10,7 +10,7 @@ import catalog
 
 
 class FuseBreakingCapacityTest(unittest.TestCase):
-    """R4 F101：Littelfuse 383 T3.15A 只保证 100 A@300 VAC，插墙一次侧短路分断不足（P0，审查者自查）。"""
+    """真实反例：一只 T3.15A 保险丝只保证 100 A@300 VAC 分断，插墙一次侧短路分断不足（P0，审查者自查）。"""
 
     def test_pro_c01_asks_for_breaking_capacity_against_prospective_fault_current(self):
         criterion = catalog.criterion('PRO-C01')
@@ -20,7 +20,7 @@ class FuseBreakingCapacityTest(unittest.TestCase):
 
 
 class PinResistorCurrentLimitTest(unittest.TestCase):
-    """R4 R605：100 Ω 接 RT7209B VBUS 脚，片内放电开关电流 57–110 mA，超 IDISCHG_VBUS 40 mA 上限（P1，审查者自查）。"""
+    """真实反例：100 Ω 外接电阻接控制器 VBUS 放电脚，片内放电开关电流超出手册上限（P1，审查者自查）。"""
 
     def test_dev_c01_limits_pin_current_into_an_internal_switch(self):
         criterion = catalog.criterion('DEV-C01')
@@ -52,7 +52,7 @@ def plan_rules(circuits):
 
 
 class ChannelAndNoiseScopeTest(unittest.TestCase):
-    """R4：R503 经 RT7209B 片内放大器进 ADC，板上无运放；PWR-C14 却对 PFC、反激、辅助供电各出一行。"""
+    """真实反例：采样电阻经控制器片内放大器进 ADC，板上无运放；PWR-C14 却对每个变换器各出一行。"""
 
     def test_analog_criteria_branch_for_an_on_chip_amplifier_and_adc(self):
         for rule in ('ANA-C01', 'ANA-C02'):
@@ -72,7 +72,7 @@ class ChannelAndNoiseScopeTest(unittest.TestCase):
 
 
 class NonIcDeviceKindTest(unittest.TestCase):
-    """R4：BR101（GBU4M 桥堆）、T301（定制变压器）留在 PWR-D01 的 unverified-device-pinout，device_kinds 无法登记。"""
+    """真实反例：桥堆和定制变压器留在 PWR-D01 的 unverified-device-pinout，device_kinds 无法登记。"""
 
     @staticmethod
     def page(text):
@@ -134,8 +134,8 @@ def shared_gap_example():
 
 
 class DownstreamScreenCounterexampleTest(unittest.TestCase):
-    """真实反例：三份 R3 台账（3924cd7、41f4ad3 及其复审）把 F101 分断缺口因“插墙”标成下游项，R4 证实它是 P0 缺陷；
-    435c0fc 的资料缺口只在附带分句里说“实际寄生波形随后验证”“OTP温度映射留给闭壳标定”。"""
+    """真实反例：三份台账把保险丝分断缺口因“插墙”标成下游项，下一轮证实它是 P0 缺陷；
+    另一份的资料缺口只在附带分句里说“实际寄生波形随后验证”“OTP温度映射留给闭壳标定”。"""
 
     @staticmethod
     def flagged(whats):
@@ -150,10 +150,10 @@ class DownstreamScreenCounterexampleTest(unittest.TestCase):
 
     def test_application_context_and_deferred_side_clauses_are_not_downstream_gaps(self):
         self.assertEqual(self.flagged([
-            '383 系列 100A 分断条件尚未与插墙应用的故障和后备保护对应',
-            '同步整流自供电和关断时序适用范围：按准确NCP4307FBS的自供电、最小导通及关断条款和准确QR周期求SR_VCC、'
-            '驱动电荷/反向时序，核正常反压及R504重复耗散；实际寄生波形随后验证。',
-            '双偏置NTC判别的温度边界：取得NCU18WF104F60RB全范围R(T)容差或保证端点包络，结合准确RT7209两档电流、'
+            '保险丝 100A 分断条件尚未与插墙应用的故障和后备保护对应',
+            '同步整流自供电和关断时序适用范围：按准确同步整流控制器的自供电、最小导通及关断条款和准确QR周期求自供电压、'
+            '驱动电荷/反向时序，核正常反压及R9重复耗散；实际寄生波形随后验证。',
+            '双偏置NTC判别的温度边界：取得NTC全范围R(T)容差或保证端点包络，结合准确控制器两档电流、'
             'ADC满量程和等待状态复算不重叠；OTP温度映射留给闭壳标定。']), [])
 
     def test_test_only_gaps_are_still_flagged(self):

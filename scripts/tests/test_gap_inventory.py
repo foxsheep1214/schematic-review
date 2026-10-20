@@ -38,9 +38,9 @@ class GapInventoryTest(unittest.TestCase):
         self.assertEqual(inv['summary']['waiting_checks'], 5)
 
     def test_audit_missing_material_is_a_part_data_request(self):
-        audit = {'materials': [{'identity': 'NCP1343', 'refdes': ['U402'], 'status': 'NOT_FOUND'}]}
+        audit = {'materials': [{'identity': 'CTRL-1', 'refdes': ['U1'], 'status': 'NOT_FOUND'}]}
         rows = gap_inventory.build(plan(), audit)['by_owner']['part_data']
-        self.assertIn('U402 的器件资料', [r['input'] for r in rows])
+        self.assertIn('U1 的器件资料', [r['input'] for r in rows])
 
     def test_cli_writes_markdown_and_json(self):
         with tempfile.TemporaryDirectory() as tmp:

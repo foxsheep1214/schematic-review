@@ -224,7 +224,7 @@ if __name__ == '__main__':
 
 class DeclaredKindIdentityTest(unittest.TestCase):
     def test_json_declared_opto_enters_the_inventory(self):
-        # 100W PD 复审：U202/U403/U404 已核验为光耦，清单仍为空（kind 用 is 比较）。
+        # 真实反例：三颗已核验为光耦的器件，清单仍为空（kind 用 is 比较）。
         from checkers import netgraph as ng
         db = json_declared_opto_board()
         self.assertIs(ng.NetGraph(db).kind('OK1'), ng.OPTO)

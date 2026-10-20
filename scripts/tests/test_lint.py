@@ -323,7 +323,7 @@ class LintTests(unittest.TestCase):
         self.assertFalse({'DOC-A01', 'DOC-A02'} & {item[0] for item in lint.skipped})
 
     def test_export_log_is_classified_in_english_and_chinese(self):
-        # 100W PD 复审：中文界面的“原理图存在批注错误”没有生成候选，退出码 0 被当作无告警。
+        # 真实反例：中文界面的“原理图存在批注错误”没有生成候选，退出码 0 被当作无告警。
         log = '\n'.join(['原理图存在批注错误。', 'ERROR (U3): pin not found', '错误（第 2 页）：网表导出已中止',
                          'Warning: footprint library not found', '网表导出完成'])
         lint = Lint(sample_db(), log_text=log, intent={'expect': {}})
@@ -335,7 +335,7 @@ class LintTests(unittest.TestCase):
         self.assertNotIn('网表导出完成', [d for _, d in hits])
 
     def test_fontconfig_cache_noise_is_not_an_export_warning(self):
-        # macOS 上 kicad-cli 必然打印 Fontconfig 字体缓存告警；R3 报告曾把它读成“导出错误候选”。
+        # macOS 上 kicad-cli 必然打印 Fontconfig 字体缓存告警；一份报告曾把它读成“导出错误候选”。
         log = '\n'.join(['Fontconfig warning: We will not regenerate the cache for /usr/share/fonts',
                          'Fontconfig warning: ignoring UTF-8: not a valid region tag',
                          'Warning: footprint library not found'])

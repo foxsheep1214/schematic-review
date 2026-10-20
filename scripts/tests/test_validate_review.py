@@ -513,7 +513,7 @@ class DesignOptionTests(unittest.TestCase):
 
 
 class SplitOutTests(unittest.TestCase):
-    """100W PD 复审：一颗 C201 缺规格让 DEV-C01.BOARD 整板资料不足。"""
+    """真实反例：一颗电容缺规格让 DEV-C01.BOARD 整板资料不足。"""
 
     def ledger(self):
         p, r, db = fixture()
@@ -541,7 +541,7 @@ class SplitOutTests(unittest.TestCase):
 
 
 class ImpactClassTests(unittest.TestCase):
-    """100W PD 复审：86 项资料不足全部是 P0/P1，等级需要逐项的后果类别作依据。"""
+    """真实反例：八十多项资料不足全部是 P0/P1，等级需要逐项的后果类别作依据。"""
 
     def ledger(self, cls, severity, **extra):
         p, r, db = fixture()
@@ -579,7 +579,7 @@ class ImpactClassTests(unittest.TestCase):
                 if 'consequence_class' in e or 'hazard_path' in e or 'impact_class_version' in e]
 
     def test_v2_grades_component_damage_p1_and_asks_hazard_p0_for_its_path(self):
-        # 100W PD R3 复审：33 条“可能损坏”全被 DAMAGE_OR_HAZARD 顶成 P0；器件损坏与安全危险要分开。
+        # 真实反例：三十多条“可能损坏”全被 DAMAGE_OR_HAZARD 顶成 P0；器件损坏与安全危险要分开。
         self.assertEqual(self.errors_v2('COMPONENT_DAMAGE', 'P1'), [])
         self.assertTrue(self.errors_v2('DAMAGE_OR_HAZARD', 'P0'))               # P0 must name its hazard path
         self.assertEqual(self.errors_v2('DAMAGE_OR_HAZARD', 'P0', hazard_path='INSULATION'), [])
@@ -591,7 +591,7 @@ class ImpactClassTests(unittest.TestCase):
 
 
 class HistoryInputTests(unittest.TestCase):
-    """100W PD 复审：要求独立审查，报告却写明参考了前轮台账。"""
+    """真实反例：要求独立审查，报告却写明参考了前轮台账。"""
 
     def test_current_check_cannot_cite_a_declared_earlier_review(self):
         p, r, db = fixture()

@@ -17,8 +17,8 @@ def asg_record(tmp):
     (rec / 'selection.json').write_text(json.dumps({'schema_version': 1, 'roles': [
         {'role': 'PFC 控制器', 'refs': ['U201'], 'decisive': [{'param': '输入电压范围', 'op': 'covers', 'limit': [90, 264], 'unit': 'Vac'}],
          'sources': ['x'], 'candidates': [
-             {'mpn': 'NCP1623', 'status': 'selected', 'datasheet': 'a.pdf', 'reason': 'r'},
-             {'mpn': 'L6562A', 'status': 'rejected', 'datasheet': 'b.pdf', 'reason': 'r'}]}]}), encoding='utf-8')
+             {'mpn': 'PFC-A', 'status': 'selected', 'datasheet': 'a.pdf', 'reason': 'r'},
+             {'mpn': 'PFC-B', 'status': 'rejected', 'datasheet': 'b.pdf', 'reason': 'r'}]}]}), encoding='utf-8')
     (rec / 'review-responses.json').write_text(json.dumps({'schema_version': 1, 'sources': [], 'items': [
         {'id': 'W-AC', 'comment': 'c', 'response': 'DESIGN', 'cause': 'rule_not_enforced'},
         {'id': 'W-X', 'comment': 'c', 'response': 'DECLINE'}]}), encoding='utf-8')
@@ -36,8 +36,8 @@ class ReviewSelectionTests(unittest.TestCase):
 
     def test_worksheet_lists_roles_and_attributed_items_without_verdicts(self):
         role = self.review['roles'][0]
-        self.assertEqual(('PFC 控制器', 'NCP1623', None), (role['role'], role['asg_selected'], role['verdict']))
-        self.assertEqual([{'mpn': 'NCP1623', 'status': 'selected', 'reject_kind': None}, {'mpn': 'L6562A', 'status': 'rejected', 'reject_kind': None}], role['asg_candidates'])
+        self.assertEqual(('PFC 控制器', 'PFC-A', None), (role['role'], role['asg_selected'], role['verdict']))
+        self.assertEqual([{'mpn': 'PFC-A', 'status': 'selected', 'reject_kind': None}, {'mpn': 'PFC-B', 'status': 'rejected', 'reject_kind': None}], role['asg_candidates'])
         self.assertEqual(['W-AC', 'W-X'], [a['id'] for a in self.review['attribution']])
 
     def test_blank_worksheet_fails_validation(self):
@@ -62,14 +62,14 @@ class ReviewSelectionTests(unittest.TestCase):
         self.review['attribution'][0]['agree'] = True
         errors = rs.validate(self.review, self.asg)
         self.assertIn('角色“PFC 控制器”不同意时要给 ASG 候选之外的型号（alternative_mpn）或指出 ASG 淘汰理由的错误（asg_error）', errors)
-        role['alternative_mpn'] = 'NCP1623'
-        self.assertIn('角色“PFC 控制器”不同意却给出 ASG 已选定的 NCP1623', rs.validate(self.review, self.asg))
+        role['alternative_mpn'] = 'PFC-A'
+        self.assertIn('角色“PFC 控制器”不同意却给出 ASG 已选定的 PFC-A', rs.validate(self.review, self.asg))
         role['alternative_mpn'] = ''
         role['asg_error'] = '淘汰理由写错了'
         self.assertIn('角色“PFC 控制器”的 asg_error 要点名 ASG 候选里的哪个型号被错误淘汰或错误选中', rs.validate(self.review, self.asg))
-        role['asg_error'] = 'L6562A 的轻载模式判断错误：p.1 有跳周期'
+        role['asg_error'] = 'PFC-B 的轻载模式判断错误：p.1 有跳周期'
         self.assertEqual([], rs.validate(self.review, self.asg))
-        self.assertIn('淘汰理由有误：L6562A', rs.summary(self.review))
+        self.assertIn('淘汰理由有误：PFC-B', rs.summary(self.review))
 
     def test_attribution_disagreement_needs_another_cause_and_reason(self):
         role = self.review['roles'][0]

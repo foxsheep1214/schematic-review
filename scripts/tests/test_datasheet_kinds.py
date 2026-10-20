@@ -48,10 +48,10 @@ class KindVerificationTests(unittest.TestCase):
                                    'x.pdf', read)['status'], 'VERIFIED')
 
     def test_optocoupler_quote_verifies_despite_naming_its_diode_and_transistor(self):
-        # 100W PD 复审：SFH6186 的 opto 声明因核验只支持分立半导体而无法生效。
+        # 真实反例：一颗光耦的 opto 声明因核验只支持分立半导体而无法生效。
         quote = 'Optocoupler, Phototransistor Output, with Base Connection, infrared emitting diode, NPN'
         self.assertEqual(dk.cues(quote), {'opto'})
-        read = self.page('SFH6186\n' + quote)
+        read = self.page('OPTO-1\n' + quote)
         self.assertEqual(dk.verify({'kind': 'opto', 'page': 1, 'quote': quote}, 'x.pdf', read)['status'], 'VERIFIED')
         self.assertEqual(dk.verify({'kind': 'bjt', 'page': 1, 'quote': quote}, 'x.pdf', read)['status'], 'QUOTE_CONFLICT')
 

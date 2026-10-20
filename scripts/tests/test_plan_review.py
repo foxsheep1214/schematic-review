@@ -58,16 +58,16 @@ def sample_db():
 def threshold_db():
     """辅助绕组齐纳经电阻到 FAULT、NTC 接控制器 RT 脚、浪涌 NTC 只在功率路径、普通二极管。"""
     pins = {
-        'D1': [('1', 'K', 'AUX_DC'), ('2', 'A', 'D1_A')],
+        'D1': [('1', 'K', 'AUX'), ('2', 'A', 'D1_A')],
         'R1': [('1', '1', 'D1_A'), ('2', '2', 'FAULT')],
-        'U1': [('1', 'FAULT', 'FAULT'), ('2', 'GND', 'PGND'), ('3', 'VCC', 'AUX_DC')],
+        'U1': [('1', 'FAULT', 'FAULT'), ('2', 'GND', 'PGND'), ('3', 'VCC', 'AUX')],
         'TH1': [('1', '1', 'TEMP'), ('2', '2', 'SGND')],
         'U2': [('1', 'RT', 'TEMP'), ('2', 'GND', 'SGND')],
         'TH2': [('1', '1', 'AC_L'), ('2', '2', 'AC_L_F')],
-        'D2': [('1', 'A', 'AC_L_F'), ('2', 'K', 'AUX_DC')],
+        'D2': [('1', 'A', 'AC_L_F'), ('2', 'K', 'AUX')],
     }
     parts = {'D1': ('BZT52H-B68', 'Device:D_Zener'), 'R1': ('1k', 'Device:R'),
-             'U1': ('NCP1343', 'PD:NCP1343'), 'U2': ('RT7209', 'PD:RT7209'),
+             'U1': ('CTRL-A', 'Lib:CTRL-A'), 'U2': ('CTRL-B', 'Lib:CTRL-B'),
              'TH1': ('100k/B4250', 'Device:Thermistor_NTC'), 'TH2': ('5R/3A', 'Device:Thermistor_NTC'),
              'D2': ('US1M', 'Device:D')}
     db = {'nets': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {}, 'pseudo_nets': [],
@@ -377,7 +377,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertIn('requirements', checks['PRO-C02.TRIP.D1']['required_inputs'])
 
     def test_gate_source_zener_may_clamp_in_normal_drive(self):
-        # 100W PD 复审：Q701 栅源稳压管 D701 正常驱动中允许限幅，不能要求永不导通。
+        # 真实反例：功率管的栅源稳压管正常驱动中允许限幅，不能要求永不导通。
         db = threshold_db()
         for ref, value, rows in (('Q9', 'NMOS', [('1', 'G', 'G9'), ('2', 'D', 'D9N'), ('3', 'S', 'S9')]),
                                  ('D9', 'MMSZ5248B', [('1', 'K', 'G9'), ('2', 'A', 'S9')])):
@@ -410,7 +410,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(rows, ['U2.1'])
 
     def test_current_sense_pair_is_not_a_differential_link(self):
-        # 100W PD 复审：CS_P/CS_N 是 R503 电流采样，不套差分数据链路规则。
+        # 真实反例：CS_P/CS_N 是电流采样对，不套差分数据链路规则。
         from plan_review import _differential_pairs
         db = {'nets': {'CS_P': [], 'CS_N': [], 'TX_P': [], 'TX_N': [], 'ISENSE+': [], 'ISENSE-': []}}
         self.assertEqual(_differential_pairs(db), [('TX_P', 'TX_N')])
@@ -419,7 +419,7 @@ class ReviewPlanTests(unittest.TestCase):
         # rf1 公开板：Reg1/Reg2/Reg3（LM317M、MCP1703）曾因位号不是 U 而没有 DEV-D01/DEV-C05。
         db = threshold_db()
         for pin, name, net, kind in (('1', 'GND', 'PGND', 'power_in'), ('2', 'VO', 'V3V3', 'power_out'),
-                                     ('3', 'VI', 'AUX_DC', 'power_in')):
+                                     ('3', 'VI', 'AUX', 'power_in')):
             node = 'Reg1.' + pin
             db['nets'].setdefault(net, []).append(node); db['pin2net'][node] = net; db['pinname'][node] = name
             db.setdefault('native_pintype', {})[node] = kind

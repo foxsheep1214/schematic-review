@@ -1,7 +1,7 @@
 """Function verdicts (design §4/§7): F1–F7 on a bias-supply example, and the rows that follow it.
 
-The example is the 100W PD R5 bias path (Q401 source follower feeding U402 VCC): the record had
-computed VCC_min 10.24 V > 9.5 V and still kept 19 rows INSUFFICIENT waiting for "全温小电流保证".
+The example is a synthetic bias path (Q2 source follower feeding U1 VCC), shaped like a real record that
+had computed VCC_min above VCC(off) max and still kept its rows INSUFFICIENT waiting for "全温小电流保证".
 """
 import copy
 import unittest
@@ -18,18 +18,18 @@ ASPECT = '变换器电压裕量'   # catalog title of PWR-C02
 
 def bias_function(verdict='OPEN'):
     fn = {
-        'id': 'FN-BIAS-VCC', 'circuit': 'BIAS',
-        'question': '默认 5 V 输出、−10..105 °C、辅助绕组取最低电压时，Q401 偏置路径能否让 U402 VCC 保持在 9.5 V 以上',
-        'objects': {'refs': ['Q401', 'D401', 'D402', 'C403'], 'nets': ['AUX_DC', 'BIAS15', 'VCC']},
+        'id': 'FN-BIAS', 'circuit': 'BIAS',
+        'question': '默认 5 V 输出、−10..105 °C、辅助绕组取最低电压时，Q2 偏置路径能否让 U1 VCC 保持在 8.8 V 以上',
+        'objects': {'refs': ['Q2', 'D2', 'D3', 'C3'], 'nets': ['AUX', 'BIAS', 'VCC']},
         'states': ['STARTUP', 'RUN', 'LATCH'],
         'conditions': [
-            {'id': 'c1', 'source': 'Nexperia-PMEG6010CEH.pdf', 'locator': 'p3 Table 7',
-             'says': 'VF ≤ 0.31 V @10 mA, ≤ 0.40 V @100 mA (25 °C)', 'use': '20 mA 在两点之间，单调，取 0.40 V 上界'},
-            {'id': 'c2', 'source': 'Infineon-ISC032N12LM6.pdf', 'locator': 'p4 Table 4',
-             'says': 'VGS(th) 1.2–2.2 V @110 µA', 'use': '20 mA 取 2.2 V + 0.5 V 余量'},
-            {'id': 'c3', 'source': 'NCP1343.pdf', 'locator': 'p7 Table 7', 'says': 'VCC(off) max 9.5 V', 'use': '判据'}],
-        'calculation': {'claim_ids': ['BIAS-VCCMIN'], 'result': 'VCC_min = 10.24 V',
-                        'margin': {'value': 0.74, 'unit': 'V', 'against': 'VCC(off) max 9.5 V'}, 'aspect': ASPECT},
+            {'id': 'c1', 'source': 'evidence/ds/D2.txt', 'locator': 'p3 Table 7',
+             'says': 'VF ≤ 0.35 V @10 mA, ≤ 0.45 V @100 mA (25 °C)', 'use': '20 mA 在两点之间，单调，取 0.45 V 上界'},
+            {'id': 'c2', 'source': 'evidence/ds/Q2.txt', 'locator': 'p4 Table 4',
+             'says': 'VGS(th) 1.0–2.0 V @250 µA', 'use': '20 mA 取 2.0 V + 0.5 V 余量'},
+            {'id': 'c3', 'source': 'evidence/ds/U1.txt', 'locator': 'p7 Table 7', 'says': 'VCC(off) max 8.8 V', 'use': '判据'}],
+        'calculation': {'claim_ids': ['BIAS-VCCMIN'], 'result': 'VCC_min = 9.6 V',
+                        'margin': {'value': 0.8, 'unit': 'V', 'against': 'VCC(off) max 8.8 V'}, 'aspect': ASPECT},
         'verdict': verdict, 'fails': [], 'open': [], 'evidence': [{'source': 'evidence/engineering.md', 'locator': '## BIAS'}]}
     if verdict == 'OPEN':
         fn['open'] = [aux_open()]
@@ -38,13 +38,13 @@ def bias_function(verdict='OPEN'):
 
 def aux_open():
     return {'key': 'AUX-5V-MIN', 'kind': 'DESIGN_VALUE',
-            'what': 'T301 辅助绕组在 5 V 空载时的最低峰值电压还没有定',
-            'scope': '5 V 空载、−10..105 °C', 'spec': 'AUX_AC 峰值 ≥ 14.5 V', 'owner': 'ASG 磁件设计',
-            'closure': '磁件规格写明 5 V 空载最低峰值电压且 ≥ 14.5 V',
+            'what': 'T1 辅助绕组在 5 V 空载时的最低峰值电压还没有定',
+            'scope': '5 V 空载、−10..105 °C', 'spec': '辅助绕组峰值 ≥ 13.5 V', 'owner': '磁件设计',
+            'closure': '磁件规格写明 5 V 空载最低峰值电压且 ≥ 13.5 V',
             'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN']}],
             'margin_not_decisive_reason': '余量按标称辅助电压算，辅助电压本身是待定的设计值',
-            'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'affects': 'U402 供电',
-                         'consequence': '辅助电压低于规格时 U402 在 5 V 待机掉电重启'}}
+            'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'affects': 'U1 供电',
+                         'consequence': '辅助电压低于规格时 U1 在 5 V 待机掉电重启'}}
 
 
 def ledger(fn):
@@ -52,11 +52,11 @@ def ledger(fn):
     p, r, db = fixture()
     rows = []
     for state in ('STARTUP', 'RUN', 'LATCH'):
-        cid = 'PWR-C02.BIAS-%s.Q401' % state
-        p['checks'].append(dict(planned(cid), object={'circuit': 'BIAS', 'ref': 'Q401', 'state': state},
+        cid = 'PWR-C02.BIAS-%s.Q2' % state
+        p['checks'].append(dict(planned(cid), object={'circuit': 'BIAS', 'ref': 'Q2', 'state': state},
                                 criterion='bias output window'))
         row = {'id': cid, 'applicability': 'APPLICABLE', 'review_result': 'PASS', 'evidence': E,
-               'rationale': 'see FN-BIAS-VCC', 'handoff': {'required': False},
+               'rationale': 'see FN-BIAS', 'handoff': {'required': False},
                'function_id': fn['id'], 'aspect': ASPECT}
         rows.append(row)
     r['checks'] += rows
@@ -77,8 +77,8 @@ class FunctionShapeTests(unittest.TestCase):
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
         results = {c['id']: c['review_result'] for c in r['checks'] if c['id'].startswith('PWR-C02')}
-        self.assertEqual(results, {'PWR-C02.BIAS-STARTUP.Q401': 'INSUFFICIENT', 'PWR-C02.BIAS-RUN.Q401': 'INSUFFICIENT',
-                                   'PWR-C02.BIAS-LATCH.Q401': 'PASS'})
+        self.assertEqual(results, {'PWR-C02.BIAS-STARTUP.Q2': 'INSUFFICIENT', 'PWR-C02.BIAS-RUN.Q2': 'INSUFFICIENT',
+                                   'PWR-C02.BIAS-LATCH.Q2': 'PASS'})
         self.assertEqual(out['insufficient_by_cause'], {'DESIGN_OPEN': 2})
         self.assertEqual([t['id'] for t in out['workflow']['work_items']], ['W-AUX-5V-MIN'])
 
@@ -105,9 +105,9 @@ class FunctionShapeTests(unittest.TestCase):
         self.assertTrue(any('not asked of a vendor' in e for e in function_errors({'functions': [fn]})))
 
     def test_f3_vendor_datum_names_what_was_checked_and_the_worst_case(self):
-        item = {'key': 'HV-IV', 'kind': 'VENDOR_DATUM', 'what': 'NCP1343 HV 恒流源在 40–120 V 的电流下限',
-                'scope': '90 Vac、R403 压降后', 'closure': '40..120 V 启动电流下界 ≥ 2 mA',
-                'acquisition': 'onsemi 应用支持', 'checked': ['c3'], 'why_insufficient': '表头只给 120 V 测试点',
+        item = {'key': 'HV-IV', 'kind': 'VENDOR_DATUM', 'what': 'U1 HV 恒流源在 40–120 V 的电流下限',
+                'scope': '90 Vac、R4 压降后', 'closure': '40..120 V 启动电流下界 ≥ 2 mA',
+                'acquisition': '原厂应用支持', 'checked': ['c3'], 'why_insufficient': '表头只给 120 V 测试点',
                 'worst_case': {'result': '按 VHV(MIN) 40 V 仍工作，门限 116 V 以上充电'},
                 'decides': [{'aspect': ASPECT}],
                 'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'consequence': '低线不能启动'}}
@@ -122,7 +122,7 @@ class FunctionShapeTests(unittest.TestCase):
     def test_f4_a_positive_margin_decides_unless_a_reason_says_why_not(self):
         fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']
         errors = function_errors({'functions': [fn]})
-        self.assertTrue(any('0.74 V margin' in e for e in errors), errors)
+        self.assertTrue(any('0.8 V margin' in e for e in errors), errors)
         fn['open'][0]['decides'] = [{'aspect': '变换器电流应力'}]   # another aspect: the margin says nothing about it
         self.assertEqual(function_errors({'functions': [fn]}), [])
         fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']; del fn['calculation']['aspect']
@@ -154,24 +154,24 @@ class FunctionShapeTests(unittest.TestCase):
 class RowBindingTests(unittest.TestCase):
     def test_f5_a_row_outside_the_items_decides_is_refused(self):
         p, r, db = ledger(bias_function())
-        latch = next(c for c in r['checks'] if c['id'].endswith('LATCH.Q401'))
-        latch.update(review_result='INSUFFICIENT', open_ref='FN-BIAS-VCC/AUX-5V-MIN')
+        latch = next(c for c in r['checks'] if c['id'].endswith('LATCH.Q2'))
+        latch.update(review_result='INSUFFICIENT', open_ref='FN-BIAS/AUX-5V-MIN')
         out = vr.validate_review(p, r, db)
         self.assertTrue(any('does not decide aspect' in e and 'LATCH' in e for e in out['errors']), out['errors'])
 
     def test_f5_a_fail_row_bound_to_a_function_names_its_fail_item(self):
         p, r, db = ledger(bias_function('PASS'))
-        run = next(c for c in r['checks'] if c['id'].endswith('RUN.Q401'))
+        run = next(c for c in r['checks'] if c['id'].endswith('RUN.Q2'))
         run.update(review_result='FAIL', severity='P1', finding_id='F1')
         r['findings'] = [{'id': 'F1', 'kind': 'DEFECT', 'severity': 'P1', 'check_ids': [run['id']],
-                          'location': {'pages': ['1'], 'refs': ['Q401'], 'nets': ['VCC']},
+                          'location': {'pages': ['1'], 'refs': ['Q2'], 'nets': ['VCC']},
                           **{k: 'synthetic' for k in ('title', 'observed', 'criterion', 'impact', 'scenario',
                                                       'root_cause', 'recommendation', 'verification', 'severity_reason')}}]
         self.assertTrue(any('fail_ref' in e for e in vr.validate_review(p, r, db)['errors']))
         fn = r['functions'][0]
-        fn.update(verdict='FAIL', fails=[{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC below 9.5 V',
+        fn.update(verdict='FAIL', fails=[{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC below 8.8 V',
                                           'decides': [{'aspect': ASPECT, 'states': ['RUN']}]}])
-        run['fail_ref'] = 'FN-BIAS-VCC/VCC-LOW'
+        run['fail_ref'] = 'FN-BIAS/VCC-LOW'
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
         self.assertEqual([t['id'] for t in out['workflow']['work_items']], ['W-VCC-LOW'])
@@ -187,22 +187,22 @@ class DerivedLevelsTests(unittest.TestCase):
     def test_report_counts_p0_and_p1_items_separately(self):
         p, r, db = ledger(bias_function())
         fn = r['functions'][0]
-        short = {'key': 'SHORT-SOA', 'kind': 'VENDOR_DATUM', 'what': 'Q701 短路关断轨迹', 'scope': '22.1 V 热态短路',
-                 'closure': 'Q701 重复短路 SOA 内', 'acquisition': 'Richtek 应用支持', 'checked': ['c3'],
-                 'why_insufficient': '手册无 USBP 关断轨迹', 'worst_case': {'not_boundable_reason': '无驱动电流上限'},
-                 'decides': [{'aspect': ASPECT, 'states': ['LATCH']}], 'margin_not_decisive_reason': '余量是偏置电压的，不是 Q701 的',
-                 'severity': {'level': 'P0', 'class': 'DAMAGE_OR_HAZARD', 'hazard_path': 'FIRE', 'affects': 'Q701',
-                              'consequence': 'Q701 烧毁起火'}}
+        short = {'key': 'SHORT-SOA', 'kind': 'VENDOR_DATUM', 'what': 'Q5 短路关断轨迹', 'scope': '22.1 V 热态短路',
+                 'closure': 'Q5 重复短路 SOA 内', 'acquisition': '原厂应用支持', 'checked': ['c3'],
+                 'why_insufficient': '手册无 VBUS 关断轨迹', 'worst_case': {'not_boundable_reason': '无驱动电流上限'},
+                 'decides': [{'aspect': ASPECT, 'states': ['LATCH']}], 'margin_not_decisive_reason': '余量是偏置电压的，不是 Q5 的',
+                 'severity': {'level': 'P0', 'class': 'DAMAGE_OR_HAZARD', 'hazard_path': 'FIRE', 'affects': 'Q5',
+                              'consequence': 'Q5 烧毁起火'}}
         fn['open'].append(short)
-        latch = next(c for c in r['checks'] if c['id'].endswith('LATCH.Q401'))
-        latch.update(review_result='INSUFFICIENT', open_ref='FN-BIAS-VCC/SHORT-SOA')
+        latch = next(c for c in r['checks'] if c['id'].endswith('LATCH.Q2'))
+        latch.update(review_result='INSUFFICIENT', open_ref='FN-BIAS/SHORT-SOA')
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
         text = render(p, r, out)
         self.assertIn('另有 2 件事因为缺资料或设计还没定，现在还判断不了，其中 1 件可能损坏器件或危及安全（P0）', text)
         section = text.split('### W-AUX-5V-MIN')[1].split('### ', 1)[0]
         self.assertIn('（P1）', section)
-        self.assertNotIn('Richtek', section)
+        self.assertNotIn('原厂应用支持', section)
 
 
 class ReportTests(unittest.TestCase):
@@ -215,7 +215,7 @@ class ReportTests(unittest.TestCase):
         text = render(p, r, out)
         self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 0 / 0 / 1 |\n| 检查总数 |', text)
         table = text.split('## 各功能的判断')[1].split('## 待办')[0]
-        self.assertIn('| FN-BIAS-VCC | %s | 未定 | VCC_min = 10.24 V；余量 0.74 V 对 VCC(off) max 9.5 V | W-AUX-5V-MIN |'
+        self.assertIn('| FN-BIAS | %s | 未定 | VCC_min = 9.6 V；余量 0.8 V 对 VCC(off) max 8.8 V | W-AUX-5V-MIN |'
                       % bias_function()['question'], table)
         self.assertLess(text.index('## 结论'), text.index('## 各功能的判断'))
         codes = [c.get('code') for c in (out.get('quality_screening') or {}).get('candidates') or []]
@@ -226,7 +226,7 @@ class ReportTests(unittest.TestCase):
                 row.update(review_result='PASS'); row.pop('open_ref', None)
         text = render(p, r, vr.validate_review(p, r, db))
         self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 1 / 0 / 0 |', text)
-        self.assertIn('| 通过 | VCC_min = 10.24 V；余量 0.74 V 对 VCC(off) max 9.5 V | — |', text)
+        self.assertIn('| 通过 | VCC_min = 9.6 V；余量 0.8 V 对 VCC(off) max 8.8 V | — |', text)
         fn = r['functions'][0]; fn.pop('calculation'); fn['no_calculation_reason'] = '连接性检查，无数值'
         self.assertIn('| 通过 | 连接性检查，无数值 | — |', render(p, r, vr.validate_review(p, r, db)))
 
@@ -240,10 +240,10 @@ class BridgeTests(unittest.TestCase):
 class FrameTests(unittest.TestCase):
     """Plan frames are answered: reviewed member rows bind to the frame's function; the frame has a verdict."""
 
-    def framed(self, frame_id='FN-BIAS-VCC'):
+    def framed(self, frame_id='FN-BIAS'):
         p, r, db = ledger(bias_function())
         p['functions'] = [{'id': frame_id, 'circuit': 'BIAS', 'question': 'bias frame',
-                           'members': [{'check_id': 'PWR-C02.BIAS-%s.Q401' % s, 'rule': 'PWR-C02', 'aspect': ASPECT, 'state': s}
+                           'members': [{'check_id': 'PWR-C02.BIAS-%s.Q2' % s, 'rule': 'PWR-C02', 'aspect': ASPECT, 'state': s}
                                        for s in ('STARTUP', 'RUN', 'LATCH')]}]
         r['plan_digest'] = fingerprint(p)
         return p, r, db
@@ -254,9 +254,9 @@ class FrameTests(unittest.TestCase):
         self.assertTrue(out['valid'], out['errors'])
 
     def test_a_member_row_bound_elsewhere_is_named(self):
-        p, r, db = self.framed('FN-BIAS')
+        p, r, db = self.framed('FN-AUX')
         errors = vr.validate_review(p, r, db)['errors']
-        self.assertTrue(any('member of frame FN-BIAS' in e for e in errors), errors)
+        self.assertTrue(any('member of frame FN-AUX' in e for e in errors), errors)
         self.assertTrue(any('no function verdict' in e for e in errors), errors)
 
     def test_frame_errors_check_aspect_and_skip_unreviewed_frames(self):

@@ -12,18 +12,18 @@ E = [{'source': 'evidence/engineering.md', 'locator': '## CURRENT'}]
 
 
 def open_item(**extra):
-    out = {'key': 'ADC-CAL', 'kind': 'DESIGN_VALUE', 'what': 'R503 calibration error budget',
+    out = {'key': 'ADC-CAL', 'kind': 'DESIGN_VALUE', 'what': 'RS1 calibration error budget',
            'scope': '0 to 5 A, full temperature range', 'spec': 'zero 15 mA, gain 1%, drift 0.5%', 'owner': 'firmware',
-           'closure': 'PPS current window holds at every corner', 'decides': [{'aspect': '电流检测'}],
-           'severity': {'level': 'P1', 'class': 'PERFORMANCE_OR_LIFE', 'affects': 'R503 current measurement',
-                        'consequence': 'PPS current window cannot be guaranteed'}}
+           'closure': 'CC current window holds at every corner', 'decides': [{'aspect': '电流检测'}],
+           'severity': {'level': 'P1', 'class': 'PERFORMANCE_OR_LIFE', 'affects': 'RS1 current measurement',
+                        'consequence': 'CC current window cannot be guaranteed'}}
     out.update(extra)
     return out
 
 
 def function(*items, **extra):
-    fn = {'id': 'FN-CURRENT', 'question': 'Does R503 sensing meet the PPS current window', 'objects': {'refs': ['R503']},
-          'conditions': [{'id': 'c1', 'source': 'RT7209.pdf', 'locator': 'p12', 'says': 'ADC ±6 LSB', 'use': 'error budget'}],
+    fn = {'id': 'FN-CURRENT', 'question': 'Does RS1 sensing meet the CC current window', 'objects': {'refs': ['RS1']},
+          'conditions': [{'id': 'c1', 'source': 'evidence/ds/U2.txt', 'locator': 'p12', 'says': 'ADC ±6 LSB', 'use': 'error budget'}],
           'calculation': {'result': '5.5 A reads 1.572 V'}, 'verdict': 'OPEN' if items else 'PASS',
           'open': list(items), 'evidence': E}
     fn.update(extra)
@@ -31,7 +31,7 @@ def function(*items, **extra):
 
 
 def row(**extra):
-    out = {'id': 'ANA-C01.R503', 'review_result': 'INSUFFICIENT', 'rationale': 'Offset is equivalent to 0.25 A',
+    out = {'id': 'ANA-C01.RS1', 'review_result': 'INSUFFICIENT', 'rationale': 'Offset is equivalent to 0.25 A',
            'function_id': 'FN-CURRENT', 'aspect': '电流检测', 'open_ref': 'FN-CURRENT/ADC-CAL'}
     out.update(extra)
     return out
@@ -90,20 +90,20 @@ class ExpandTests(unittest.TestCase):
         self.assertIs(out['blocking'], True)
         self.assertEqual((out['evidence_confidence'], out['disposition']), ('C', 'OPEN'))
         self.assertEqual(out['gap_cause'], 'DESIGN_OPEN')
-        self.assertEqual(out['missing_inputs'], ['R503 calibration error budget'])
-        request = out['input_requests']['R503 calibration error budget']
+        self.assertEqual(out['missing_inputs'], ['RS1 calibration error budget'])
+        request = out['input_requests']['RS1 calibration error budget']
         self.assertEqual(request['why_decisive'], out['rationale'])
         self.assertEqual(request['acquisition'], '由firmware确定：zero 15 mA, gain 1%, drift 0.5%')
-        self.assertEqual(request['impact_assessment']['blocking_reason'], 'PPS current window holds at every corner')
+        self.assertEqual(request['impact_assessment']['blocking_reason'], 'CC current window holds at every corner')
         self.assertEqual(out['potential_severity'], 'P1')
 
     def test_vendor_datum_derives_external_data_and_its_acquisition(self):
-        item = open_item(kind='VENDOR_DATUM', acquisition='Richtek: CC DAC code table', checked=['c1'],
+        item = open_item(kind='VENDOR_DATUM', acquisition='the vendor: CC DAC code table', checked=['c1'],
                          why_insufficient='p12 gives the ADC, not the DAC code', worst_case={'result': '±0.3 A'})
         del item['spec'], item['owner']
         out = rm.expand(ledger(row(), functions=[function(item)]))['checks'][0]
         self.assertEqual(out['gap_cause'], 'EXTERNAL_DATA')
-        self.assertEqual(out['input_requests']['R503 calibration error budget']['acquisition'], 'Richtek: CC DAC code table')
+        self.assertEqual(out['input_requests']['RS1 calibration error budget']['acquisition'], 'the vendor: CC DAC code table')
 
     def test_non_request_kinds_carry_no_request(self):
         item = {'key': 'TRACE', 'kind': 'REVIEW_INCOMPLETE', 'what': 'Trace U2 enable path', 'scope': 'power-up',
@@ -114,12 +114,12 @@ class ExpandTests(unittest.TestCase):
         self.assertEqual(out['potential_severity'], 'P1')
 
     def test_work_items_derive_one_per_open_item(self):
-        out = rm.expand(ledger(row(), row(id='ANA-C02.R503')))
+        out = rm.expand(ledger(row(), row(id='ANA-C02.RS1')))
         self.assertEqual([t['id'] for t in out['work_items']], ['W-ADC-CAL'])
         task = out['work_items'][0]
-        self.assertEqual(task['check_ids'], ['ANA-C01.R503', 'ANA-C02.R503'])
-        self.assertEqual((task['root_cause'], task['due_stage']), ('R503 calibration error budget', 'design_iteration'))
-        self.assertEqual(task['reason'], 'PPS current window cannot be guaranteed')
+        self.assertEqual(task['check_ids'], ['ANA-C01.RS1', 'ANA-C02.RS1'])
+        self.assertEqual((task['root_cause'], task['due_stage']), ('RS1 calibration error budget', 'design_iteration'))
+        self.assertEqual(task['reason'], 'CC current window cannot be guaranteed')
 
     def test_requirement_items_and_fail_items(self):
         req = {'key': 'LOAD', 'kind': 'REQUIREMENT', 'what': 'maximum load current', 'decides': [{'aspect': '需求'}]}

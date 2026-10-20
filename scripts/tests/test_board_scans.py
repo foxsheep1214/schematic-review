@@ -107,7 +107,7 @@ class I2cPullupTest(unittest.TestCase):
         self.assertEqual(scans(jumper, 'SIG-A03'), [])
 
     def test_single_ic_with_test_points_only_is_fixture_access(self):
-        # 100W PD 复审：CFG_SDA 只接 U601 和测试点，对端与上拉在生产夹具。
+        # 真实反例：配置 I2C 脚只接一颗控制器和测试点，对端与上拉在生产夹具。
         db = board({'U1': 'PD-CTRL', 'TP1': 'TESTPOINT', 'TP2': 'TESTPOINT'},
                    {'CFG_SDA': ['U1.1', 'TP1.1'], 'CFG_SCL': ['U1.2', 'TP2.1'], 'GND': ['U1.3']})
         hits = scans(db, 'SIG-A03')
@@ -317,16 +317,16 @@ if __name__ == '__main__':
 
 
 class DeclaredRailTest(unittest.TestCase):
-    """intent.power_rails names supplies whose net names carry no hint (SR_VCC, BULK, VRAW)."""
+    """intent.power_rails names supplies whose net names carry no hint (SRCTL_SUP, BULK, RAWOUT)."""
 
     def board(self):
-        nets = {'SR_VCC': ['U1.1', 'C1.1'], 'GND': ['U1.2', 'C1.2', 'R1.2', 'C2.2'],
-                'ZCD': ['U1.3', 'R1.1'], 'VRAW': ['C3.1'], 'SEC_RTN': ['C3.2', 'C2.1'],
+        nets = {'SRCTL_SUP': ['U1.1', 'C1.1'], 'GND': ['U1.2', 'C1.2', 'R1.2', 'C2.2'],
+                'ZCD': ['U1.3', 'R1.1'], 'RAWOUT': ['C3.1'], 'SEC_RTN': ['C3.2', 'C2.1'],
                 'BULK': ['C4.1', 'D1.2'], 'PGND': ['C4.2'], 'RECT': ['D1.1']}
-        db = board({'U1': 'NCP4307', 'C1': '1u', 'C2': '100n', 'C3': '330u', 'C4': '68u', 'R1': '10k', 'D1': 'US1M'},
+        db = board({'U1': 'SR-CONTROLLER', 'C1': '1u', 'C2': '100n', 'C3': '330u', 'C4': '68u', 'R1': '10k', 'D1': 'US1M'},
                    nets, pinname={'U1.1': 'VCCL', 'U1.2': 'GND', 'U1.3': 'CS',
                                   'D1.1': 'A', 'D1.2': 'K'})
-        rails = {'SR_VCC': {'min': 0, 'max': 13}, 'ZCD': {'min': -0.3, 'max': 5}, 'VRAW': {'min': 0, 'max': 22},
+        rails = {'SRCTL_SUP': {'min': 0, 'max': 13}, 'ZCD': {'min': -0.3, 'max': 5}, 'RAWOUT': {'min': 0, 'max': 22},
                  'SEC_RTN': {'min': -0.06, 'max': 0}, 'BULK': {'min': 0, 'max': 445}}
         intent = {'power_rails': {net: {'domain': 'SEC', 'voltage_v': v, 'state': 'run', 'citation': 'fixture'}
                                   for net, v in rails.items()}}
@@ -336,15 +336,15 @@ class DeclaredRailTest(unittest.TestCase):
         db, intent = self.board()
         plan = build_review_plan(db, intent=intent)
         t01 = {c['object']['net']: c for c in plan['checks'] if c['rule'] == 'PWR-T01'}
-        self.assertEqual(sorted(t01), ['BULK', 'SR_VCC', 'VRAW'])
-        self.assertIn('declared-rail:SR_VCC', t01['SR_VCC']['trigger'])
+        self.assertEqual(sorted(t01), ['BULK', 'RAWOUT', 'SRCTL_SUP'])
+        self.assertIn('declared-rail:SRCTL_SUP', t01['SRCTL_SUP']['trigger'])
         lint = Lint(db, '', intent); lint.run()
         undriven = {f['detail'].split(' ')[0] for f in lint.F if f['rule'] == 'PWR-A01'}
-        self.assertEqual(undriven, {'BULK', 'SR_VCC', 'VRAW'})
+        self.assertEqual(undriven, {'BULK', 'SRCTL_SUP', 'RAWOUT'})
 
     def test_signal_windows_and_returns_are_not_rails(self):
         db, intent = self.board()
-        del intent['power_rails']['SR_VCC'], intent['power_rails']['VRAW'], intent['power_rails']['BULK']
+        del intent['power_rails']['SRCTL_SUP'], intent['power_rails']['RAWOUT'], intent['power_rails']['BULK']
         plan = build_review_plan(db, intent=intent)
         self.assertEqual([c for c in plan['checks'] if c['rule'] == 'PWR-T01'], [])
 

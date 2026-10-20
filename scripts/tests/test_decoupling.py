@@ -414,7 +414,7 @@ class DecouplingInventoryTests(unittest.TestCase):
 
     def test_three_or_more_pin_parts_stay_unverified(self):
         for symbol, pins in (('Device:D_Dual_Series_ACK', [('1', 'A', 'N1'), ('2', 'C', 'N2'), ('3', 'K', 'N3')]),
-                             ('Diode_Bridge:GBU4M', [('1', '+', 'N1'), ('2', '~', 'N2'), ('3', '~', 'N3'), ('4', '-', 'GND')])):
+                             ('Diode_Bridge:DF06', [('1', '+', 'N1'), ('2', '~', 'N2'), ('3', '~', 'N3'), ('4', '-', 'GND')])):
             with self.subTest(symbol=symbol):
                 db, intent = fixture()
                 add(db, 'D9', 'TEST-PART', pins)
@@ -486,7 +486,7 @@ class DecouplingInventoryTests(unittest.TestCase):
 
 class DecouplingPlanTests(unittest.TestCase):
     def test_no_direct_capacitor_group_has_no_capacitance_or_rating_object(self):
-        # 100W PD 复审：U402 HV 启动/检测脚按原厂条款不接旁路电容。
+        # 真实反例：控制器 HV 启动/检测脚按原厂条款不接旁路电容。
         db, intent = fixture(())
         group_cfg = intent['decoupling']['groups'][0]
         group_cfg['purpose'] = 'no_direct_capacitor'

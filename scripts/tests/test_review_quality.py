@@ -278,22 +278,22 @@ class WorkItemAndTextHygieneTests(unittest.TestCase):
         p, r = impact_fixture(n=3)
         for i, row in enumerate(r['checks']):
             row['impact_assessment']['consequence'] = f'N{i} consequence'
-        db = {'parts': {'R604': {}, 'U601': {}, 'R60': {}}}
+        db = {'parts': {'R12': {}, 'U11': {}, 'R1': {}}}
         row = r['checks'][0]
         row['input_requests'] = {'fuse clearing': {
-            'why_decisive': 'x', 'required_scope': 'R604100°C',
-            'acquisition': '向Littelfuse取得所选料号总清除能力', 'closure_criterion': '注入预算257.121uA以下'}}
-        r['work_items'] = [{'id': 'W-1', 'check_ids': [row['id']], 'reason': 'U6016.5V直流额定'}]
+            'why_decisive': 'x', 'required_scope': 'R12100°C',
+            'acquisition': '向保险丝厂家取得所选料号总清除能力', 'closure_criterion': '注入预算257.121uA以下'}}
+        r['work_items'] = [{'id': 'W-1', 'check_ids': [row['id']], 'reason': 'U116.5V直流额定'}]
         out = {x['code']: x for x in self.screen(p, r, db)['candidates']}
         self.assertEqual({'REF_GLUED_TO_VALUE', 'OVERPRECISE_CLOSURE_VALUE'}, set(out))
         glued = [x for x in self.screen(p, r, db)['candidates'] if x['code'] == 'REF_GLUED_TO_VALUE']
-        self.assertEqual({('W-1', 'U601'), ('', 'R604')},
+        self.assertEqual({('W-1', 'U11'), ('', 'R12')},
                          {((x['task_ids'] or [''])[0], x['refs'][0]) for x in glued})
         self.assertEqual(['257.121'], out['OVERPRECISE_CLOSURE_VALUE']['values'])
         q = row['input_requests']['fuse clearing']
-        q.update(required_scope='R604 100°C', closure_criterion='注入预算低于手册上限',
-                 acquisition='Littelfuse 规格书 p.2 只给额定分断电流，向 Littelfuse 取得总清除 I²t')
-        r['work_items'][0]['reason'] = 'U601 6.5V 直流额定；R604 与 R60 各自标注'
+        q.update(required_scope='R12 100°C', closure_criterion='注入预算低于手册上限',
+                 acquisition='保险丝规格书 p.2 只给额定分断电流，向厂家取得总清除 I²t')
+        r['work_items'][0]['reason'] = 'U11 6.5V 直流额定；R12 与 R1 各自标注'
         self.assertEqual(set(), self.codes(p, r, db))
 
 
@@ -313,13 +313,13 @@ class RequestOwnershipAndWordingTests(unittest.TestCase):
         row['impact_assessment'].update(consequence='合同过压可使端口负载损坏', consequence_class='COMPONENT_DAMAGE')
         self.assertEqual([row['id']], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0')[0]['check_ids'])
         row['impact_assessment'].update(consequence_class='DAMAGE_OR_HAZARD', hazard_path='PORT_OVERVOLTAGE',
-                                        exclusion='U601 锁定式 OVP，门限见 DS01 p12')
+                                        exclusion='U11 锁定式 OVP，门限见 DS01 p12')
         self.assertEqual([], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0'))
         # A negated or hand-over sentence is not an assertion of the path.
         row['impact_assessment'].update(consequence_class='COMPONENT_DAMAGE', hazard_path=None,
-                                        consequence='Q701 可能损坏；未据此推断火灾、触电或端口过压')
+                                        consequence='Q5 可能损坏；未据此推断火灾、触电或端口过压')
         self.assertEqual([], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0'))
-        row['impact_assessment']['consequence'] = 'Q701 可能损坏；端口过压另由 W-OVP 单独核'
+        row['impact_assessment']['consequence'] = 'Q5 可能损坏；端口过压另由 W-PORT-OV 单独核'
         self.assertEqual([], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0'))
 
     def test_scope_echoing_the_task_and_templated_handoffs_are_flagged(self):
@@ -327,9 +327,9 @@ class RequestOwnershipAndWordingTests(unittest.TestCase):
         for i, row in enumerate(r['checks']):
             row['impact_assessment']['consequence'] = f'N{i} consequence'
         row = r['checks'][0]
-        row['input_requests'] = {'k': {'why_decisive': 'w', 'required_scope': 'F101 分断；100A 尚未配对',
+        row['input_requests'] = {'k': {'why_decisive': 'w', 'required_scope': 'F1 分断；100A 尚未配对',
                                        'acquisition': 'a', 'closure_criterion': 'c'}}
-        r['work_items'] = [{'id': 'W-1', 'title': 'F101 分断', 'root_cause': '100A 尚未配对', 'check_ids': [row['id']]}]
+        r['work_items'] = [{'id': 'W-1', 'title': 'F1 分断', 'root_cause': '100A 尚未配对', 'check_ids': [row['id']]}]
         self.assertEqual([row['id']], self.found(p, r, 'REQUEST_SCOPE_ECHOES_TASK')[0]['check_ids'])
         row['input_requests']['k']['required_scope'] = '90–264Vac、冷/热重插'
         self.assertEqual([], self.found(p, r, 'REQUEST_SCOPE_ECHOES_TASK'))
@@ -380,15 +380,15 @@ class StageCauseAndDuplicateTests(unittest.TestCase):
 
     def test_same_method_on_three_optocouplers_is_one_item(self):
         p, r = self.rows()
-        db = {'parts': {'U202': {}, 'U403': {}, 'U404': {}}}
+        db = {'parts': {'U2': {}, 'U3': {}, 'U4': {}}}
         r['work_items'] = [
             {'id': f'W-{ref}', 'check_ids': [c['id']],
              'next_action': f'按 {ref} 的实际 LED 电流取厂家适用 CTR 与退化界限，并算接收端最大负载 {n}µA'}
-            for ref, n, c in zip(('U202', 'U403', 'U404'), (47, 1520, 277), r['checks'])]
+            for ref, n, c in zip(('U2', 'U3', 'U4'), (47, 1520, 277), r['checks'])]
         hit = self.found(p, r, 'DUPLICATE_WORK_ITEMS', db)
-        self.assertEqual(['W-U202', 'W-U403', 'W-U404'], hit[0]['task_ids'])
-        r['work_items'][0]['next_action'] = '改用 U202 的另一路 GPIO 直驱 DIS，去掉光耦'
-        self.assertEqual(['W-U403', 'W-U404'], self.found(p, r, 'DUPLICATE_WORK_ITEMS', db)[0]['task_ids'])
+        self.assertEqual(['W-U2', 'W-U3', 'W-U4'], hit[0]['task_ids'])
+        r['work_items'][0]['next_action'] = '改用 U2 的另一路 GPIO 直驱 DIS，去掉光耦'
+        self.assertEqual(['W-U3', 'W-U4'], self.found(p, r, 'DUPLICATE_WORK_ITEMS', db)[0]['task_ids'])
 
 
 class DownstreamTriageTests(unittest.TestCase):
@@ -505,7 +505,7 @@ class TaskTextTemplateTests(unittest.TestCase):
 
 
 class HistoryReconciliationTests(unittest.TestCase):
-    """100W PD R3 复审：声明了上一版审查，报告却显示 0 条处理记录，2 条旧问题的对照只在旁路文件里。"""
+    """真实反例：声明了上一版审查，报告却显示 0 条处理记录，2 条旧问题的对照只在旁路文件里。"""
 
     def codes(self, p, r):
         from review_quality import screen_quality

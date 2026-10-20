@@ -7,6 +7,22 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## No project priors in the tests either (2026-10-20)
+
+The previous entry left the test suite citing the same reviewed design: two
+regression files named after its review rounds, docstrings and comments
+opening with the project name, and fixtures built from its part numbers,
+designators, nets, vendors and computed margins. Every such test now
+describes the failure mechanism ("真实反例：…") and runs on synthetic names
+(Q2/U1/T1, `evidence/ds/U1.txt`, PFC-A/PFC-B, invented but self-consistent
+numbers); the two regression files are `test_rule_gaps_from_reviews.py` and
+`test_report_gaps_from_reviews.py`. The ledger entries and the dated design
+document keep their review-record citations as provenance.
+
+- Event: user:2026-10-20 (SR must not carry prior information about any specific reviewed circuit; tests included)
+- Causes: judgment 1
+- Changed: scripts/tests/test_rule_gaps_from_reviews.py, scripts/tests/test_report_gaps_from_reviews.py, scripts/tests/test_review_functions.py, scripts/tests/test_derive_rows.py, scripts/tests/test_board_scans.py, scripts/tests/test_catalog.py, scripts/tests/test_circuit_bounds.py, scripts/tests/test_checkers_framework.py, scripts/tests/test_datasheet_kinds.py, scripts/tests/test_decoupling.py, scripts/tests/test_gap_inventory.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_optocoupler.py, scripts/tests/test_lint.py, scripts/tests/test_ledger.py, scripts/tests/test_model_bounds.py, scripts/tests/test_plan_review.py, scripts/tests/test_power_switch.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_results_model.py, scripts/tests/test_review_quality.py, scripts/tests/test_review_selection.py, scripts/tests/test_supervision_external_paths.py, scripts/tests/test_supervision_requirements.py, scripts/tests/test_validate_review.py, scripts/render_report.py, docs/improvement-ledger.md
+
 ## No project priors in the skill (2026-10-20)
 
 The function-verdict examples in the references, two rail-name hints and

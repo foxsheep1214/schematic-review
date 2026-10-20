@@ -83,7 +83,7 @@ class RailRequirementsTest(unittest.TestCase):
         self.assertEqual(checks['B']['inventory_gaps'], [])
 
     def test_cited_on_chip_uvlo_monitors_a_required_rail(self):
-        # 100W PD 复审：控制器片内 UVLO/欠压检测在监控清单里不被认作监控。
+        # 真实反例：控制器片内 UVLO/欠压检测在监控清单里不被认作监控。
         item = self.intent['supervision']['rail_requirements'][0]
         item['required'] = True
         item['internal_monitor'] = {'node': 'U1.1', 'function': 'VDD UVLO with hysteresis',
@@ -100,7 +100,7 @@ class RailRequirementsTest(unittest.TestCase):
         self.assertTrue(any('internal_monitor' in e for e in validate_supervision_intent(self.intent, self.db)))
 
     def test_self_monitored_rail_needs_no_source_identity(self):
-        # 100W PD 复审：源跟随、自供或串阻供电的轨无法写来源身份，但负载自身 UVLO 已监测本轨。
+        # 真实反例：源跟随、自供或串阻供电的轨无法写来源身份，但负载自身 UVLO 已监测本轨。
         for item in self.intent['supervision']['rail_requirements']:
             if item['net'] == 'VCC_A':
                 item['required'] = True
