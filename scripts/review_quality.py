@@ -357,7 +357,7 @@ def screen_quality(plan, report, db=None):
             'message': 'A current conclusion cites a review results/gate/report file. If it is an earlier review, '
                        're-derive the conclusion from current sources and declare the file in history_inputs.'})
     candidates.extend(templated_task_text(report, expected))
-    candidates.extend(unreconciled_history(report, expected))
+    candidates.extend(unreconciled_history(report, expected, (plan or {}).get("review_mode")))
     candidates.extend(work_item_consistency(report))
     candidates.extend(text_hygiene(report, expected, known))
     candidates.extend(port_overvoltage_grading(report))
@@ -376,11 +376,12 @@ def screen_quality(plan, report, db=None):
     return output
 
 
-def unreconciled_history(report, expected):
+def unreconciled_history(report, expected, review_mode=None):
     """Earlier findings declared in history_inputs that no REQ-H02 row reconciles."""
     roots = [x for x in report.get('history_inputs') or [] if isinstance(x, str)]
     rows = [row for row in report.get('checks') or [] if isinstance(row, dict)]
-    if not roots or any(expected.get(row.get('id'), {}).get('rule') == 'REQ-H02' for row in rows):
+    # A first review cannot hold REQ-H02 rows; earlier findings are re-verified by a revision review.
+    if review_mode != 'revision' or not roots or any(expected.get(row.get('id'), {}).get('rule') == 'REQ-H02' for row in rows):
         return []
     found = []
     for root in roots:
@@ -719,6 +720,12 @@ def text_hygiene(report, expected, known):
         if cid not in expected:
             continue
         texts = list(_request_texts(row))
+        # Handoff and manual-verification text reach the report too (100W PD R5: "Q4011.50W", "U60111").
+        for group, fields in (('handoff', ('constraint', 'verification')),
+                              ('manual_verification', ('method', 'tool_limitation', 'sr_improvement'))):
+            block = row.get(group)
+            if isinstance(block, dict):
+                texts += [(None, group + '.' + f, block[f]) for f in fields if isinstance(block.get(f), str)]
         assessment = row.get('impact_assessment')
         if isinstance(assessment, dict):
             texts += [(None, 'impact_assessment.' + f, assessment[f]) for f in IMPACT_TEXT_FIELDS if isinstance(assessment.get(f), str)]
@@ -757,7 +764,7 @@ def text_hygiene(report, expected, known):
 
 
 def templated_task_text(report, expected):
-    """Acquisition text and NONE design-option reasons reused across work items.
+    """Acquisition text, work-item reasons and NONE design-option reasons reused across work items.
 
     One acquisition sentence serving many tasks names no actual document, party or
     part; one NONE reason with only the missing-input name swapped is not a per-task
@@ -818,6 +825,18 @@ def templated_task_text(report, expected):
         for name in sorted(names, key=len, reverse=True):
             reason = reason.replace(name, '')
         reasons[re.sub(r'\s+', ' ', reason).strip()].add(task['id'])
+    stage_reasons = defaultdict(set)
+    for task in tasks:
+        if isinstance(task.get('reason'), str) and task['reason'].strip():
+            stage_reasons[re.sub(r'\s+', ' ', task['reason']).strip()].add(task['id'])
+    for text, task_ids in stage_reasons.items():
+        if len(task_ids) >= DESIGN_OPTION_MIN_TASKS:
+            ids = sorted({cid for t in tasks if t['id'] in task_ids for cid in t['check_ids'] if isinstance(cid, str)})
+            found.append({'code': 'TEMPLATED_WORK_ITEM_REASON', 'field': 'reason', 'template': text[:120],
+                          'check_ids': ids, 'task_ids': sorted(task_ids),
+                          'message': f'{len(task_ids)} work items give the same reason for their stage and grouping; '
+                                     'say per item why it is due at that stage or why its checks belong together. '
+                                     'The report leaves a shared reason out.'})
     for text, task_ids in reasons.items():
         if len(task_ids) >= DESIGN_OPTION_MIN_TASKS:
             ids = sorted({cid for t in tasks if t['id'] in task_ids for cid in t['check_ids'] if isinstance(cid, str)})

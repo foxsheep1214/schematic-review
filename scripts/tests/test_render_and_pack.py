@@ -253,9 +253,10 @@ class ReportWordingTests(unittest.TestCase):
 
     def test_history_materials_are_stated_in_the_conclusion(self):
         p, r, db = decisive()
+        p['review_mode'] = 'revision'
         r['history_inputs'] = ['reviews/R1']
         text, gate = report(p, r, db)
-        self.assertIn('- **上一版审查材料**：本轮可见 `reviews/R1`', body(text))
+        self.assertIn('- **上一版审查材料**：本轮可见 `R1`；只用于“上一版问题”的复验', body(text))
         self.assertNotIn('上一版问题未逐条复验', text)
         r['history_inputs'] = []
         self.assertIn('- **上一版审查材料**：本轮没有使用。', body(report(p, r, db)[0]))
@@ -268,6 +269,24 @@ class ReportWordingTests(unittest.TestCase):
             text, gate = report(p, r, db)
         self.assertIn('- **上一版问题未逐条复验**：上一版记录的 2 条问题（F-OLD-1、F-OLD-2）没有历史复验行', body(text))
         self.assertIn('| 上一版问题的处理记录（不计入上面各行） | 0（已声明上一版材料，但没有逐条复验行） |', text)
+        self.assertNotIn(tmp, text)
+
+    def test_first_review_that_saw_history_says_it_does_not_reverify(self):
+        # 100W PD R5：首审可见 R4 审查，报告却写“只用于上一版问题的复验”并印出本机绝对路径，
+        # 而首审模式根本加不了 REQ-H02 复验行。
+        p, r, db = decisive()
+        p['review_mode'] = 'first'
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / 'record').mkdir()
+            (Path(tmp) / 'record' / 'review-results.json').write_text(
+                json.dumps({'findings': [{'id': 'F-OLD-1'}]}), encoding='utf-8')
+            r['history_inputs'] = [tmp]
+            text, gate = report(p, r, db)
+        self.assertIn('但这是首审，结论没有引用它，也不逐条复验上一版问题；要复验上一版问题，用改版复审。', body(text))
+        self.assertNotIn('只用于“上一版问题”的复验', text)
+        self.assertNotIn('上一版问题未逐条复验', text)
+        self.assertNotIn(tmp, text)
+        self.assertIn('| 上一版问题的处理记录（不计入上面各行） | 0（首审不复验上一版问题） |', text)
 
     def test_gap_blockers_are_counted_by_work_item(self):
         from render_report import blocker_reasons

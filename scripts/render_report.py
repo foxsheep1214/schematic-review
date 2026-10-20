@@ -18,6 +18,7 @@ import json
 import re
 import sys
 from collections import Counter, OrderedDict, defaultdict
+from difflib import SequenceMatcher
 from pathlib import Path
 from task_scope import ownership, task_view
 
@@ -174,7 +175,23 @@ def task_level(task, checks, owners=None, classes=False):
     return task_view(task, checks, owners, classes)['level']
 
 
-def render_item(task, checks, notes, owners=None, classes=False):
+def restates(short, long):
+    """`short` says what `long` says: with page/section numbers and punctuation removed, 90% of
+    `short` appears in `long` in the same order (100W PD R5 W-ESD: the work item's next_action and
+    its gap's how_to_close differed only by page numbers, and the report printed both)."""
+    def plain(t):
+        return re.sub(r'(?:p|P|第|§)?\d+(?:[–\-~/.,]\d+)*(?:页)?|[\s，、；;：:。.()（）/]+', '', t)
+    a, b = plain(short), plain(long)
+    if not a or len(a) > len(b):
+        return False
+    matched = sum(m.size for m in SequenceMatcher(None, a, b, autojunk=False).get_matching_blocks())
+    return matched >= 0.9 * len(a)
+
+
+SHARED_REASON_MIN_TASKS = 3
+
+
+def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=()):
     rows = [checks[c] for c in task.get('check_ids') or [] if c in checks]
     view = task_view(task, checks, owners, classes)
     level = view['level']
@@ -212,7 +229,7 @@ def render_item(task, checks, notes, owners=None, classes=False):
     reason = (task.get('reason') or '').strip()
     # Old records sometimes put the scope in the impact field verbatim.
     # Remove only that exact duplicate, never infer equivalence from similarity.
-    if reason in scopes or reason in ['本任务只关闭：' + scope for scope in scopes]:
+    if reason in scopes or reason in ['本任务只关闭：' + scope for scope in scopes] or reason in shared_reasons:
         reason = ''
     missing = unique([task.get('root_cause'), reason])
     if scopes:
@@ -225,8 +242,8 @@ def render_item(task, checks, notes, owners=None, classes=False):
         elif action.endswith('；' + criterion):
             action = action[:-len(criterion)-1]
     acquisitions = unique(q.get('acquisition') for q in requests)
-    if action and any(action in a for a in acquisitions):
-        action = ''   # the request text already carries the action verbatim
+    if action and any(action in a or restates(action, a) for a in acquisitions):
+        action = ''   # the request text already carries the action (verbatim or reworded with page numbers)
     fields = [('缺什么', missing),
               ('怎么补', [action] + acquisitions),
               ('怎样算通过', criteria)]
@@ -259,6 +276,9 @@ SR_FEEDBACK_KINDS = (('false_alarm', '误报'), ('over_strict', '规则过严或
 
 
 SR_TALK_RE = re.compile(r'\bSR\b|误报|改进效果|quality_screening|提示仍|技能')
+# How the record was kept (screens worked through, files, ledger modes) is not news about the board
+# (100W PD R5 summary: "已逐条复核104条记录质量提示；43条位号与数值粘连已修复…history-handling.json…first").
+RECORD_TALK_RE = re.compile(r'质量提示|自检提示|粘连|\.json(?![A-Za-z])|REQ-H0\d|(?<![A-Za-z])(?:first|revision)(?![A-Za-z])')
 
 
 def notes_errors(notes):
@@ -272,6 +292,9 @@ def notes_errors(notes):
         if isinstance(text, str) and SR_TALK_RE.search(text):
             errors.append('%s talks about SR itself (%s); move it to sr_feedback, the designer-facing text stays about the board'
                           % (where, SR_TALK_RE.search(text).group(0)))
+        elif isinstance(text, str) and RECORD_TALK_RE.search(text):
+            errors.append('%s talks about keeping the review record (%s); the designer-facing text stays about the board, '
+                          'the record and its screens speak for themselves' % (where, RECORD_TALK_RE.search(text).group(0)))
     return errors
 
 
@@ -368,6 +391,7 @@ def render_check_explanations(plan, results):
 
 def render(plan, results, gate, notes=None, title=None, detail='compact'):
     results = results_model.expand(results)
+    revision = (plan or {}).get('review_mode') == 'revision'
     notes = notes or {}
     item_notes = notes.get('items') or {}
     checks = {c['id']: c for c in results.get('checks') or [] if isinstance(c, dict) and 'id' in c}
@@ -432,11 +456,17 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         out.append('- 这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。')
     if 'history_inputs' in results:
         history_inputs = [x for x in results.get('history_inputs') or [] if isinstance(x, str)]
-        out.append('- **上一版审查材料**：%s' % (
-            '本轮可见 %s；只用于“上一版问题”的复验，本轮结论按当前资料独立得出。' % '、'.join(
-                '`%s`' % cell(x) for x in history_inputs[:4]) if history_inputs else '本轮没有使用。'))
+        # The reader needs which earlier review, not where it sat on the reviewer's machine.
+        seen = '、'.join('`%s`' % cell(Path(x).name or x) for x in history_inputs[:4])
+        if not history_inputs:
+            out.append('- **上一版审查材料**：本轮没有使用。')
+        elif revision:
+            out.append('- **上一版审查材料**：本轮可见 %s；只用于“上一版问题”的复验，本轮结论按当前资料独立得出。' % seen)
+        else:
+            out.append('- **上一版审查材料**：本轮可见 %s，但这是首审，结论没有引用它，也不逐条复验上一版问题；'
+                       '要复验上一版问题，用改版复审。' % seen)
         unreconciled = [c for c in screen if isinstance(c, dict) and c.get('code') == 'HISTORY_FINDINGS_UNRECONCILED']
-        if unreconciled:
+        if unreconciled and revision:
             out.append('- **上一版问题未逐条复验**：上一版记录的 %d 条问题（%s）没有历史复验行；每条写明已修、保留或撤回。'
                        % (sum(len(c.get('finding_ids') or []) for c in unreconciled),
                           '、'.join(fid for c in unreconciled for fid in (c.get('finding_ids') or [])[:6])))
@@ -477,13 +507,16 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             out += [SEVERITY_LEGEND, '']
         rank = lambda t: (SEVERITIES.index(task_level(t, checks, task_owners, classes)) if task_level(t, checks, task_owners, classes) else len(SEVERITIES),
                           -len(t.get('check_ids') or []))
+        # One reason sentence on many work items says nothing about any of them (100W PD R5: 15 of 18).
+        reason_count = Counter(t['reason'].strip() for t in tasks if isinstance(t.get('reason'), str))
+        shared_reasons = {r for r, n in reason_count.items() if n >= SHARED_REASON_MIN_TASKS}
         for task in sorted(tasks, key=rank):
             owners = covered_by_findings(task, checks, findings)
             if owners:
                 out += ['### %s　%s' % (task['id'], task.get('title') or task.get('root_cause') or ''), '',
                         '按上文“发现的错误”中问题 %s 的改法处理，这里不重复。' % '、'.join(owners), '']
                 continue
-            out += render_item(task, checks, item_notes, task_owners, classes)
+            out += render_item(task, checks, item_notes, task_owners, classes, shared_reasons)
 
     if handoffs:
         out += ['## 交给后续环节的要求', '',
@@ -540,7 +573,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     history = (summary.get('history') or {}).get('checks', 0)
     history_cell = str(history)
     if not history and any(isinstance(x, str) for x in results.get('history_inputs') or []):
-        history_cell = '0（已声明上一版材料，但没有逐条复验行）'
+        history_cell = '0（已声明上一版材料，但没有逐条复验行）' if revision else '0（首审不复验上一版问题）'
     out += ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
             '| 通过 / 没通过 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),

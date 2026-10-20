@@ -547,12 +547,16 @@ class HistoryReconciliationTests(unittest.TestCase):
         import json
         import tempfile
         p, r, db = fixture()
+        p['review_mode'] = 'revision'
         with tempfile.TemporaryDirectory() as tmp:
             record = Path(tmp) / 'record'
             record.mkdir()
             results = record / 'review-results.json'
             results.write_text(json.dumps({'findings': [{'id': 'F-OLD', 'kind': 'DEFECT'}]}), encoding='utf-8')
             r['history_inputs'] = [tmp]
+            p['review_mode'] = 'first'   # a first review cannot hold REQ-H02 rows, so nothing to ask for
+            self.assertNotIn('HISTORY_FINDINGS_UNRECONCILED', self.codes(p, r))
+            p['review_mode'] = 'revision'
             hit = self.codes(p, r)['HISTORY_FINDINGS_UNRECONCILED']
             self.assertEqual((hit['finding_ids'], hit['source']), (['F-OLD'], str(results)))
             p['checks'].append(planned('REQ-H02.F-OLD'))

@@ -364,7 +364,7 @@
      "ACQUISITION_WITHOUT_LOOKUP": 16,
      "FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP": 1,
      "OVERPRECISE_CLOSURE_VALUE": 10,
-     "REF_GLUED_TO_VALUE": 31,
+     "REF_GLUED_TO_VALUE": 32,
      "TEMPLATED_SEVERITY_REASON": 2,
      "UNIFORM_SEVERITY_WITHIN_RULE": 1,
      "WORK_ITEM_MIXES_LEVELS": 1
@@ -404,7 +404,7 @@
      "- **能否定稿**：还不能定稿。还差：",
      "  1. 21 件待办阻塞定稿（同一原因合并，涉及 118 条缺资料或设计依据的阻塞检查；不阻塞的待办不计在内）。",
      "- **待办**：22 件，按可能后果从重到轻列在“待办”一节。",
-     "- **审查记录自检**：62 条提示涉及 114 条检查（REF_GLUED_TO_VALUE 31、ACQUISITION_WITHOUT_LOOKUP 16、OVERPRECISE_CLOSURE_VALUE 10）。提示只要求复核写法和依据，不改变上面的结论；明细在校验记录。",
+     "- **审查记录自检**：63 条提示涉及 115 条检查（REF_GLUED_TO_VALUE 32、ACQUISITION_WITHOUT_LOOKUP 16、OVERPRECISE_CLOSURE_VALUE 10）。提示只要求复核写法和依据，不改变上面的结论；明细在校验记录。",
      "- 这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。",
      "- **上一版审查材料**：本轮没有使用。"
     ]
@@ -771,7 +771,7 @@
      "- **待办**：22 件，按可能后果从重到轻列在“待办”一节。",
      "- **审查记录自检**：51 条提示涉及 157 条检查（REQUEST_SCOPE_ECHOES_TASK 20、REUSED_RATIONALE_ACROSS_SCOPES 14、IMPACT_REFERENCES_OUTSIDE_SCOPE 8）。提示只要求复核写法和依据，不改变上面的结论；明细在校验记录。",
      "- 这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。",
-     "- **上一版审查材料**：本轮可见 `project/原理图审查结果/SR-20261018-R3-全新独立审查-4b3b406`、`project/原理图审查结果/SR-20261018-R3-全新独立重审-28d908b`、`project/原理图审查结果/SR-20261018-R3-任务归属修复回归`、`project/原理图审查结果/SR-20261018-R3-隔离补偿修复回归`；只用于“上一版问题”的复验，本轮结论按当前资料独立得出。"
+     "- **上一版审查材料**：本轮可见 `SR-20261018-R3-全新独立审查-4b3b406`、`SR-20261018-R3-全新独立重审-28d908b`、`SR-20261018-R3-任务归属修复回归`、`SR-20261018-R3-隔离补偿修复回归`，但这是首审，结论没有引用它，也不逐条复验上一版问题；要复验上一版问题，用改版复审。"
     ]
    }
   },
