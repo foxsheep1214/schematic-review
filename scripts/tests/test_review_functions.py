@@ -10,7 +10,7 @@ from test_validate_review import fixture, planned, E, C1
 from validate_review import fingerprint
 from ledger_v3 import record, validate_review as bridged_validate
 import validate_review as vr
-from review_functions import function_errors, binding_errors, validate_functions
+from review_functions import function_errors, binding_errors, frame_errors, validate_functions
 from render_report import render
 
 ASPECT = '变换器电压裕量'   # catalog title of PWR-C02
@@ -209,6 +209,37 @@ class BridgeTests(unittest.TestCase):
     def test_legacy_builders_still_validate_through_the_bridge(self):
         p, r, db = fixture()
         self.assertTrue(bridged_validate(p, r, db)['valid'])
+
+
+class FrameTests(unittest.TestCase):
+    """Plan frames are answered: reviewed member rows bind to the frame's function; the frame has a verdict."""
+
+    def framed(self, frame_id='FN-BIAS-VCC'):
+        p, r, db = ledger(bias_function())
+        p['functions'] = [{'id': frame_id, 'circuit': 'BIAS', 'question': 'bias frame',
+                           'members': [{'check_id': 'PWR-C02.BIAS-%s.Q401' % s, 'rule': 'PWR-C02', 'aspect': ASPECT, 'state': s}
+                                       for s in ('STARTUP', 'RUN', 'LATCH')]}]
+        r['plan_digest'] = fingerprint(p)
+        return p, r, db
+
+    def test_rows_bound_to_their_frame_validate(self):
+        p, r, db = self.framed()
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(out['valid'], out['errors'])
+
+    def test_a_member_row_bound_elsewhere_is_named(self):
+        p, r, db = self.framed('FN-BIAS')
+        errors = vr.validate_review(p, r, db)['errors']
+        self.assertTrue(any('member of frame FN-BIAS' in e for e in errors), errors)
+        self.assertTrue(any('no function verdict' in e for e in errors), errors)
+
+    def test_frame_errors_check_aspect_and_skip_unreviewed_frames(self):
+        plan = {'functions': [{'id': 'FN-X', 'members': [{'check_id': 'A', 'aspect': 'x'}, {'check_id': 'B', 'aspect': 'y'}]}]}
+        rows = {'A': {'review_result': 'PASS', 'function_id': 'FN-X', 'aspect': 'wrong'}, 'B': {'review_result': 'NA'}}
+        errors = frame_errors(plan, rows, [{'id': 'FN-X'}])
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("aspect 'wrong'", errors[0])
+        self.assertEqual(frame_errors(plan, {'A': {'review_result': 'NA'}}, []), [])
 
 
 if __name__ == '__main__':

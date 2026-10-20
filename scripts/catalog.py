@@ -701,6 +701,123 @@ PACKAGES = (
             ('datasheets',)),
 )
 
+# 功能包成员规则的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），行的 question 就是审查员要回答的
+# 问题；通用 criterion 保留为提示。问题只说要算什么、对照什么，禁止句（“不得…”“不把…外推”）由 question_errors 拒绝。
+QUESTIONS = {
+    'PWR-C02': '{state} 时 {circuit}（{refs}）在要求的输入、负载和温度范围内，输出是否落在负载要求的窗口 {window} 内；允许关断或保护时，动作与恢复是否安全',
+    'PWR-C03': '{state} 时 {circuit}（{refs}）按实际拓扑算出的电流应力（开关变换器的电感峰值/RMS、Isat 与限流；线性电路的偏置与负载能力）是否在器件保证范围内',
+    'PWR-C04': '{state} 时 {circuit}（{refs}）的最小导通/关断时间与输出电容是否满足控制器手册的适用条件；允许失调节的故障或关断状态下，动作与恢复是否成立',
+    'PWR-C05': '{state} 时 {circuit}（{refs}）在声明工况下的损耗、反向电流、预偏置与放电路径是否在器件允许范围内，损耗边界和允许的温度约束是多少',
+    'PWR-C15': '{state} 时 {circuit}（{refs}）的反馈模型与补偿配置是否符合厂家适用条件，规定角点的稳定性与动态边界是否成立（无反馈环时按拓扑记 NA）',
+    'PWR-C06': '{state} 时 {circuit}（{refs}）的 UVLO/OVLO/限流门限含容差是否在要求范围内，检测目的与采样侧是否正确；被动输入的保险丝/MOV/NTC 是否协调',
+    'DRV-C02': '{state} 时 {circuit}（{refs}）的功率管在实际驱动、电流、电压、脉宽和温度下是否处于适用的 SOA 与降额范围内（重复脉冲与单次脉冲分别核）',
+    'PRO-C01': '{state} 时 {circuit}（{refs}）的防护链逐段的动作电压、时序与能量是否协调：TVS 的 VRWM/VBR/VC 对照后级绝限，熔断器/PTC 的额定、时间电流、熔断能量和分断能力是否满足',
+    'PWR-C13': '{state} 时 {circuit}（{refs}）按实际接口/输入方式，浪涌电流与输入电容是否在源端能力和平台限制内',
+    'PWR-T05': '{state} 时 {circuit}（{refs}）防反接电路的导通方向、体二极管朝向与栅极钳位是否正确',
+    'ANA-T01': '{state} 时 {circuit}（{refs}）的检测/监测链的被测量与保护目的是否明确，取样侧、返回地、判决与控制是否闭合，首次使能是否能启动',
+    'ANA-C01': '{state} 时 {circuit}（{refs}）的输入共模/输出摆幅与偏置、失调、增益误差在供电和温度极限内是否满足精度要求（片内放大器+ADC 通道按该 IC 手册的通道范围与误差）',
+    'ANA-C02': '{state} 时 {circuit}（{refs}）的 GBW/压摆率/容性负载或 ADC 源阻抗、采样保持获取时间与建立误差是否满足要求',
+    'ANA-C03': '{state} 时 {circuit}（{refs}）的 ADC 基准驱动与误差、输入满量程及钳位/注入电流（含掉电状态）是否在限值内',
+    'ANA-D01': '{state} 时 {circuit}（{refs}）的温度传感器电气连接、量程和接口是否正确',
+    'PWR-C14': '{state} 时 {circuit}（{refs}）的电源纹波与噪声（含开关频率、后级 LDO/滤波与去耦）是否满足敏感负载的噪声/PSRR 要求',
+    'RST-C01': '{state} 时 {circuit}（{refs}）每个采样窗口内 strap/EN 的保证电压（含内部拉阻、LED、泄漏、电容和门限）是否落在要求的电平',
+    'RST-C02': '{state} 时 {circuit}（{refs}）按 V(t) 穿越门限时刻算出的复位脉宽/释放与采样 setup/hold 是否满足要求',
+    'RST-T03': '{state} 时 {circuit}（{refs}）在慢爬升、棕断、短暂掉电、单域掉电、外部先供电和重试下的上电顺序与恢复是否成立',
+    'RST-T04': '{state} 时 {circuit}（{refs}）在断电、复位、启动配置采样与固件接管前的 IO 默认态对继电器、电源使能、驱动器、LED 与外部总线是否安全，依据是什么',
+    'RST-D01': '{state} 时 {circuit}（{refs}）的编程/救援通道、进入条件与电平是否满足实际恢复需求',
+    'CLK-C01': '{state} 时 {circuit}（{refs}）按准确晶体料号核对的 CL/ESR/驱动功率、振荡器适配和起振条件是否满足',
+    'CLK-D01': '{state} 时 {circuit}（{refs}）有源时钟的输出幅度/电源域、使能态和上电有效时间是否满足负载要求',
+    'CLK-D03': '{state} 时 {circuit}（{refs}）的 RTC 时钟源、频率/负载要求及模式是否匹配，备份电池/超级电容的充电电压/电流与反向电流是否在器件要求内',
+    'SIG-C01': '{state} 时 {circuit}（{refs}）每个电气段合并全部上拉公差后，Rp 是否落在 (Vpullup_max−VOL_max)/IOL 与 tr_max/(0.8473·Cb_max) 之间，串联压降是否可接受',
+    'SIG-C07': '{state} 时 {circuit}（{refs}）每条链路驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对各接收端门限与耐压是否匹配；跨域直连是否由两端保证条件证明',
+    'SIG-C08': '{state} 时 {circuit}（{refs}）逐域掉电和外部设备先上电时，Ioff、输入耐压与注入电流是否在限值内，经上拉、ESD 结构或保护二极管的反灌路径是否被堵住',
+    'SIG-D01': '{state} 时 {circuit}（{refs}）的地址/复用/复位态与板载及外部上拉的装配组合是否正确',
+    'SIG-C09': '{state} 时 {circuit}（{refs}）按两端保证值算出的传播延迟、建立/保持、时钟偏斜、电平转换器延迟及上升时间在最坏角点是否有裕量',
+    'SIG-T04': '{state} 时 {circuit}（{refs}）的 TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义是否对应，对端连接器视图与线缆针序是否一致',
+    'SIG-D09': '{state} 时 {circuit}（{refs}）的 SPI 片选/时钟极性与串阻、SPI Flash 供电域、上拉与写保护是否正确',
+    'SIG-D08': '{state} 时 {circuit}（{refs}）收发器的供电与 VIO、STBY/EN 默认态、端接策略、空闲偏置、隔离与防护是否满足总线要求',
+    'SIG-C03': '{state} 时 {circuit}（{refs}）按实际端点和节点数算出的端接等效负载、空闲偏置是否满足接收保证差分门限',
+    'SIG-C04': '{state} 时 {circuit}（{refs}）收发器的 VIO/默认态、总线共模范围、地偏差与未供电负载是否在限值内',
+    'SIG-D07': '{state} 时 {circuit}（{refs}）的 REXT、DP/DM 串阻、VBUS 检测、ID 与 ESD 是否按 USB 要求接在活线上',
+    'SIG-D04': '{state} 时 {circuit}（{refs}）按 Source/Sink/DRP 角色及 PD 模式，CC/Rp/Rd、方向检测、线缆 VCONN 是否正确',
+    'SIG-C05': '{state} 时 {circuit}（{refs}）的 VBUS 供电资格、电压档位、放电、反灌、过流及端口未供电状态是否满足要求',
+    'SIG-D11': '{state} 时 {circuit}（{refs}）的 MDI 对应、中心抽头与共模端接、MDIO、复位及 strap 是否符合实际 PHY、网变和接口模式的要求',
+    'SIG-D02': '{state} 时 {circuit}（{refs}）的 ZQ/校准脚端接与精度是否符合控制器与 DRAM 各自型号的要求',
+    'SIG-D03': '{state} 时 {circuit}（{refs}）各数据/地址/时钟/VREF/VTT 电源域的拓扑、端接、基准及上电条件是否正确',
+    'SIG-D10': '{state} 时 {circuit}（{refs}）的 IO 电平、CMD 上拉、CLK/STROBE 串阻与测试节点电气预留是否满足 eMMC/SD 要求',
+    'SIG-D12': '{state} 时 {circuit}（{refs}）的天线路径默认通断、供电电容、开关机/复位及 SIM 接口保护是否满足模组要求',
+    'SIG-D14': '{state} 时 {circuit}（{refs}）链路的交流耦合电容位置与容值、极性与通道映射、参考时钟与边带信号是否按规范连接',
+    'SIG-T01': '{state} 时 {circuit}（{refs}）差分对 P/N 两端语义、耦合/端接拓扑和全链路连通是否正确',
+    'SIG-D15': '{state} 时 {circuit}（{refs}）的通道映射、热插拔/DDC/CEC 电平与上拉、MCLK/帧时钟来源、模拟音频供电与地是否按规范连接',
+    'PRO-D02': '{state} 时 {circuit}（{refs}）跨隔离带器件与网络的归属及跨接用途是否明确',
+    'PRO-C03': '{state} 时 {circuit}（{refs}）每个跨隔离器件的实际工作电压、重复峰值/频率、绝缘类别是否在厂家资格适用条件内',
+    'SIG-D06': '{state} 时 {circuit}（{refs}）的 UART/JTAG/SWD 信号电气引出、串阻与 ESD 是否满足调试/烧录要求',
+}
+
+# 功能框架的问题：每个 intent 电路一句，由该包成员问题归纳；审查员可改写。
+FRAME_QUESTIONS = {
+    'POWER_CONVERTER': '输出是否落在负载要求的窗口 {window} 内，电流应力、时序/电容条件、损耗和反馈环路是否都在保证范围内',
+    'POWER_PROTECTION': '保护门限、功率管 SOA、防护器件协调、浪涌与防反接是否都成立',
+    'ANALOG': '检测链的直流误差、动态、基准与保护、噪声预算是否满足测量要求',
+    'STARTUP': '采样窗口电平、复位时序、上电顺序、IO 默认态与救砖通道是否成立',
+    'CLOCK': '晶体/有源时钟/RTC 是否按料号条件起振并满足负载与噪声要求',
+    'I2C': '上拉与上升时间、电平匹配、掉电注入和地址/装配组合是否成立',
+    'LEVEL_SHIFT': '两侧电平匹配、掉电注入、时序裕量和方向语义是否成立',
+    'SPI': 'SPI 片选/极性/串阻、电平匹配和时序裕量是否成立',
+    'UART': '收发器供电与默认态、方向语义和电平匹配是否成立',
+    'CAN': '端接与偏置、共模与未供电负载、收发器配置和防护协调是否成立',
+    'RS485': '端接与偏置、共模与未供电负载、收发器配置、方向语义和防护协调是否成立',
+    'USB': 'USB 物理层、Type-C 角色与 CC、VBUS 供电与保护、方向语义是否成立',
+    'ETHERNET': 'PHY 与网变配置、时序裕量与防护协调是否成立',
+    'DDR': '校准端接、各电源域端接与基准、时序裕量是否成立',
+    'STORAGE': 'eMMC/SD 接口、电平匹配与时序裕量是否成立',
+    'RF': '天线路径、供电与噪声预算是否满足模组要求',
+    'HSSERIAL': '高速链路的耦合、映射、边带与差分连通是否按规范',
+    'AV': '音视频接口的通道映射、电平与时钟来源、电平匹配是否成立',
+    'ISOLATION': '隔离带跨接归属、防护协调与隔离器件工作资格是否成立',
+    'DEBUG': '调试接口电气引出、串阻与 ESD 是否满足烧录/调试要求',
+}
+FRAME_PREFIX = '{circuit}（{refs}）在 {states} 各状态下，'
+NO_WINDOW = '（需求未给窗口）'
+
+# 判“证据不足”之前的五步（原文见 evidence-proportionality.md），随功能框架交给审查员。
+BOUNDING_STEPS = (
+    '先用手册里已有的界限。',
+    '算出了余量就下结论。',
+    '本设计自己要定的量不向厂家要。',
+    '没有保证值就按最坏情况判断。',
+    '只有走完 1–4 仍判不了，才记证据不足，并在缺口里写明查过手册哪几条、为什么都不够。',
+)
+
+QUESTION_BAN_RE = re.compile(r'禁止|严禁|勿|不(得|能|可|准|要|把|以|强加|默认|另|自动|单|统一|套|据此|强制|推翻|代替|归|随|再|必|需)')
+
+
+def question(rule_id, state, circuit, refs, window=None):
+    """成员规则的问题，按电路填空；没有模板的规则返回 None。"""
+    template = QUESTIONS.get(rule_id)
+    if template is None:
+        return None
+    return template.format(state=state, circuit=circuit, refs='、'.join(refs), window=window or NO_WINDOW)
+
+
+def frame_question(package_name, circuit, refs, states, window=None):
+    body = FRAME_QUESTIONS.get(package_name) or '成员检查的问题是否都成立'
+    return (FRAME_PREFIX + body).format(circuit=circuit, refs='、'.join(refs), states='/'.join(states),
+                                        window=window or NO_WINDOW)
+
+
+def question_errors(plan):
+    """计划里每个问题（行的 question、功能框架的 question）都不含禁止句；审查员补加的行同样受限。"""
+    errors = []
+    for item in plan.get('checks') or []:
+        if isinstance(item, dict) and isinstance(item.get('question'), str) and QUESTION_BAN_RE.search(item['question']):
+            errors.append('%s: question 含禁止句，改写成要算什么、对照什么' % item.get('id'))
+    for frame in plan.get('functions') or []:
+        if isinstance(frame, dict) and isinstance(frame.get('question'), str) and QUESTION_BAN_RE.search(frame['question']):
+            errors.append('functions.%s: question 含禁止句，改写成要算什么、对照什么' % frame.get('id'))
+    return errors
+
+
 # 审查过程的六个覆盖维度及其审计规则。
 COVERAGE_RULES = {
     'input_consistency': 'DOC-Q01',

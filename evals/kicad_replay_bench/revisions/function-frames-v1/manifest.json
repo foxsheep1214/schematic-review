@@ -1,0 +1,15 @@
+{
+ "revision": "function-frames-v1",
+ "parents": {
+  "revisions/lint-checks-v1/expected.json": "e401698c96c5b11c79eea4d6ad8d21b23a477988f4faa5514fd89eea16e791de",
+  "revisions/lint-checks-v1/cases.json": "ab06c8b73477bc9981d70e9abccb6044d563dea8ac81b0927e5019b4de966a6f",
+  "revisions/lint-checks-v1/sources.json": "3a35c62d488d4384d8c8e45f214d913faf58572b571a2369fce0b327f57e9517",
+  "revisions/lint-checks-v1/manifest.json": "cd755e1a51912a06e4bdc0745e95d1878ec41fa014b44c766c5e3a714119657d"
+ },
+ "derived_files": {
+  "revisions/function-frames-v1/expected.json": "69d1e557f09239d559dc56c32c5ff21ee0e46098c3707b1f5c54473e4de2f995",
+  "revisions/function-frames-v1/cases.json": "9deb836418a5ccbb1ad745c8ad34eea7236b3fff4ccd5b61c11eceedd4c56b04",
+  "revisions/function-frames-v1/sources.json": "741eb7de9f06bf81f3f4005def4316f3ee9f52f95756d1c98757eabc8596e259"
+ },
+ "scope": "计划 schema 4：intent 声明的每个电路生成一个功能框架（plan.functions），成员行带 question/function_id/aspect。新增观测字段 plan.functions（父用例全为空）与用例 rf1-c2000-float-flyback-frames（3 个电路，检查数 298→326）；其余字段不变。lint-checks-v1 文件保持原字节。"
+}

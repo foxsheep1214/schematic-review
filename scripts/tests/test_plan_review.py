@@ -615,5 +615,47 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(next(x for x in build_review_plan(db)['checks']
                               if x['rule'] == 'DOC-T01')['required_inputs'], ['intent.assemblies'])
 
+
+class FunctionFrameTests(unittest.TestCase):
+    """计划 schema 4：每个 intent 电路一个功能框架，成员行带问题、function_id 和方面。"""
+
+    def circuit(self, nets=('VCC_3V3',)):
+        return {'id': 'REG-3V3', 'type': 'POWER_CONVERTER', 'refs': ['U1', 'R1'], 'nets': list(nets),
+                'states': ['cold', 'hot'], 'citation': 'synthetic regulator'}
+
+    def test_a_declared_circuit_gets_a_frame_and_bound_member_rows(self):
+        intent = {'schema_version': 3, 'circuits': [self.circuit()],
+                  'power_rails': {'VCC_3V3': {'voltage_v': {'min': 3.2, 'max': 3.4}, 'refs': ['U1'],
+                                              'citation': 'synthetic rail'}}}
+        plan = build_review_plan(sample_db(), intent)
+        self.assertEqual(plan['schema_version'], 4)
+        self.assertEqual([f['id'] for f in plan['functions']], ['FN-REG-3V3'])
+        frame = plan['functions'][0]
+        rules = catalog.package('POWER_CONVERTER').rules
+        members = [c for c in plan['checks'] if c['object'].get('circuit') == 'REG-3V3']
+        self.assertEqual(len(members), 2 * len(rules))
+        self.assertEqual({m['check_id'] for m in frame['members']}, {c['id'] for c in members})
+        self.assertIn('VCC_3V3 3.2–3.4 V', frame['question'])
+        self.assertEqual(set(frame['blind_spots']), set(rules))
+        self.assertEqual(frame['checklist'], list(catalog.BOUNDING_STEPS))
+        self.assertEqual(frame['objects'], {'refs': ['U1', 'R1'], 'nets': ['VCC_3V3']})
+        for row in members:
+            with self.subTest(row['id']):
+                self.assertEqual(row['function_id'], 'FN-REG-3V3')
+                self.assertEqual(row['aspect'], catalog.title(row['rule']))
+                self.assertIn(row['object']['state'] + ' 时 REG-3V3（U1、R1）', row['question'])
+                self.assertNotIn('closure_contract', row)
+        window = next(c for c in members if c['rule'] == 'PWR-C02')
+        self.assertIn('VCC_3V3 3.2–3.4 V', window['question'])
+        self.assertEqual(catalog.question_errors(plan), [])
+
+    def test_no_rail_window_is_said_so_and_no_circuit_means_no_frame(self):
+        plan = build_review_plan(sample_db(), {'schema_version': 3, 'circuits': [self.circuit(nets=())]})
+        row = next(c for c in plan['checks'] if c['rule'] == 'PWR-C02' and c['object'].get('circuit'))
+        self.assertIn(catalog.NO_WINDOW, row['question'])
+        self.assertIn(catalog.NO_WINDOW, plan['functions'][0]['question'])
+        self.assertEqual(build_review_plan(sample_db())['functions'], [])
+
+
 if __name__ == '__main__':
     unittest.main()

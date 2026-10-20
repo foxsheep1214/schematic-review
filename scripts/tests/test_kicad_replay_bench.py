@@ -20,7 +20,7 @@ from test_parse_kicad import comp, net, netlist  # noqa: E402
 
 REQUIRED = {'parse.strict_exit', 'parse.strict_db_written', 'parse.self_check_passed',
             'parse.missing_functional_pins', 'lint.DOC-A01_executed', 'lint.DOC-A02_executed',
-            'plan.DOC-Q01', 'plan.checks_total', 'plan.not_applicable', 'decoupling.discovery_gaps',
+            'plan.DOC-Q01', 'plan.checks_total', 'plan.not_applicable', 'plan.functions', 'decoupling.discovery_gaps',
             'decoupling.pin_names_resolved_by_official_pinout', 'decoupling.group_gaps'}
 
 

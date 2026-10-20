@@ -128,63 +128,83 @@ def _open_item(key, rows, task):
     return {k: v for k, v in item.items() if v is not None}
 
 
+def _stipulated(fid, question, objects, verdict):
+    return {'id': fid, 'question': question, 'objects': objects,
+            'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'stipulated clause',
+                            'says': 'stipulated', 'use': 'stipulated'}],
+            'no_calculation_reason': 'synthetic fixture', 'evidence': SYNTHETIC, 'open': [], 'fails': [], 'verdict': verdict}
+
+
 def _functions(out, plan):
-    """Function verdicts from the legacy work_items and the INSUFFICIENT/FAIL rows they own."""
+    """Function verdicts from the legacy work_items and the INSUFFICIENT/FAIL rows they own. A row that
+    belongs to a plan frame (intent circuit) binds to that frame's function, as a reviewer would."""
     rows = {r['id']: r for r in out.get('checks') or [] if isinstance(r, dict) and isinstance(r.get('id'), str)}
     tasks = [t for t in out.get('work_items') or [] if isinstance(t, dict) and isinstance(t.get('id'), str)]
+    frames = {f['id']: f for f in (plan or {}).get('functions') or [] if isinstance(f, dict) and isinstance(f.get('id'), str)}
+    frame_of = {m['check_id']: f['id'] for f in frames.values() for m in f.get('members') or [] if isinstance(m, dict)}
     for row in rows.values():
         if row.get('review_result') in ('INSUFFICIENT', 'FAIL'):
             row.setdefault('aspect', _aspect(plan, row))
-    functions, owned = [], set()
+    functions, owned = {}, set()
+
+    def function(fid, cids, fallback_question):
+        if fid not in functions:
+            frame = frames.get(fid)
+            fn = _stipulated(fid, frame['question'] if frame else fallback_question,
+                             frame['objects'] if frame else _objects(plan, cids), 'PASS')
+            fn['evidence'] = SYNTHETIC
+            functions[fid] = fn
+        return functions[fid]
+
     for task in tasks:
         cids = [c for c in task.get('check_ids') or [] if c in rows and rows[c].get('review_result') in ('INSUFFICIENT', 'FAIL')]
         if not cids or any(c in owned for c in cids):
             continue   # a malformed or shared task stays as the builder wrote it: the validator names it
         owned.update(cids)
-        fid = 'FN-' + _slug(task['id'])
-        fn = {'id': fid, 'question': task.get('title') or 'Synthetic question', 'objects': _objects(plan, cids),
-              'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'stipulated clause',
-                              'says': 'stipulated', 'use': 'stipulated'}],
-              'no_calculation_reason': 'synthetic fixture', 'evidence': task.get('evidence') or SYNTHETIC,
-              'open': [], 'fails': []}
-        ins = [rows[c] for c in cids if rows[c].get('review_result') == 'INSUFFICIENT']
-        fails = [rows[c] for c in cids if rows[c].get('review_result') == 'FAIL']
-        if ins:
-            fn['open'].append(_open_item(task['id'], ins, task))
-            for r in ins:
-                r['function_id'], r['open_ref'] = fid, fid + '/' + task['id']
-        for r in fails:
-            key = task['id'] if not ins and len(fails) == 1 else task['id'] + '-' + _slug(r['id'])
-            fn['fails'].append({'key': key, 'finding_id': r.get('finding_id'), 'what': task.get('root_cause') or 'Synthetic defect',
-                                'title': task.get('title'), 'decides': [{'aspect': r['aspect']}],
-                                **{k: task[k] for k in ('due_stage', 'design_option') if k in task},
-                                **({'why': task['reason']} if task.get('reason') else {})})
-            r['function_id'], r['fail_ref'] = fid, fid + '/' + key
-        fn['verdict'] = 'FAIL' if fn['fails'] else 'OPEN'
-        functions.append(fn)
+        groups = {}
+        for c in cids:
+            groups.setdefault(frame_of.get(c) or 'FN-' + _slug(task['id']), []).append(c)
+        for fid, members in groups.items():
+            fn = function(fid, members, task.get('title') or 'Synthetic question')
+            if task.get('evidence'):
+                fn['evidence'] = task['evidence']
+            ins = [rows[c] for c in members if rows[c].get('review_result') == 'INSUFFICIENT']
+            fails = [rows[c] for c in members if rows[c].get('review_result') == 'FAIL']
+            if ins:
+                fn['open'].append(_open_item(task['id'], ins, task))
+                for r in ins:
+                    r['function_id'], r['open_ref'] = fid, fid + '/' + task['id']
+            for r in fails:
+                key = task['id'] if not ins and len(fails) == 1 else task['id'] + '-' + _slug(r['id'])
+                fn['fails'].append({'key': key, 'finding_id': r.get('finding_id'), 'what': task.get('root_cause') or 'Synthetic defect',
+                                    'title': task.get('title'), 'decides': [{'aspect': r['aspect']}],
+                                    **{k: task[k] for k in ('due_stage', 'design_option') if k in task},
+                                    **({'why': task['reason']} if task.get('reason') else {})})
+                r['function_id'], r['fail_ref'] = fid, fid + '/' + key
     orphans = [cid for cid, row in rows.items()
                if row.get('review_result') == 'INSUFFICIENT' and cid not in owned and row.get('gaps') is not None]
     for cid, row in rows.items():
-        if row.get('review_result') == 'FAIL' and cid not in owned and (functions or orphans) and row.get('finding_id'):
+        if row.get('review_result') == 'FAIL' and cid not in owned and (functions or orphans or cid in frame_of) and row.get('finding_id'):
             # Legacy builders left FAIL rows outside any task while the workflow was disabled; the
             # functions above enable it, so the defect gets the function the reviewer would write.
-            fid = 'FN-' + _slug(cid)
-            functions.append({'id': fid, 'question': 'Synthetic question for ' + cid, 'objects': _objects(plan, [cid]),
-                              'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'stipulated clause',
-                                              'says': 'stipulated', 'use': 'stipulated'}],
-                              'no_calculation_reason': 'synthetic fixture', 'evidence': SYNTHETIC, 'open': [],
-                              'fails': [{'key': _slug(cid), 'finding_id': row['finding_id'], 'what': 'Synthetic defect',
-                                         'decides': [{'aspect': row['aspect']}]}], 'verdict': 'FAIL'})
+            fid = frame_of.get(cid) or 'FN-' + _slug(cid)
+            fn = function(fid, [cid], 'Synthetic question for ' + cid)
+            fn['fails'].append({'key': _slug(cid), 'finding_id': row['finding_id'], 'what': 'Synthetic defect',
+                                'decides': [{'aspect': row['aspect']}]})
             row['function_id'], row['fail_ref'] = fid, fid + '/' + _slug(cid)
         if row.get('review_result') == 'INSUFFICIENT' and cid not in owned and row.get('gaps') is not None:
-            fid = 'FN-' + _slug(cid)
-            functions.append({'id': fid, 'question': 'Synthetic question for ' + cid, 'objects': _objects(plan, [cid]),
-                              'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'stipulated clause',
-                                              'says': 'stipulated', 'use': 'stipulated'}],
-                              'no_calculation_reason': 'synthetic fixture', 'evidence': SYNTHETIC,
-                              'open': [_open_item(_slug(cid), [row], None)], 'fails': [], 'verdict': 'OPEN'})
+            fid = frame_of.get(cid) or 'FN-' + _slug(cid)
+            fn = function(fid, [cid], 'Synthetic question for ' + cid)
+            fn['open'].append(_open_item(_slug(cid), [row], None))
             row['function_id'], row['open_ref'] = fid, fid + '/' + _slug(cid)
-    return functions
+    for cid, fid in frame_of.items():
+        row = rows.get(cid)
+        if row and row.get('review_result') in ('PASS', 'FAIL', 'INSUFFICIENT') and 'function_id' not in row:
+            function(fid, [cid], 'Synthetic question for ' + cid)
+            row['function_id'] = fid
+    for fn in functions.values():
+        fn['verdict'] = 'FAIL' if fn['fails'] else 'OPEN' if fn['open'] else 'PASS'
+    return list(functions.values())
 
 
 def record(report, plan=None):

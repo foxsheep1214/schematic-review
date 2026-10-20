@@ -228,5 +228,41 @@ class ObjectiveAlignmentTest(unittest.TestCase):
             catalog.build_objective_index(catalog.BY_ID, groups)
 
 
+class QuestionTemplateTest(unittest.TestCase):
+    """功能包成员规则的问题模板：每条都有、都能填空、都不含禁止句；五步核对单抄自参考文档。"""
+
+    def test_every_package_member_rule_has_a_question_free_of_prohibitions(self):
+        members = {rule for package in catalog.PACKAGES for rule in package.rules}
+        self.assertEqual(members, set(catalog.QUESTIONS))
+        for rule, template in catalog.QUESTIONS.items():
+            with self.subTest(rule):
+                self.assertIsNone(catalog.QUESTION_BAN_RE.search(template), template)
+                filled = catalog.question(rule, 'RUN', 'BIAS', ['Q401', 'D404'], 'VCC 9.5–18 V')
+                self.assertIn('RUN 时 BIAS（Q401、D404）', filled)
+        self.assertEqual({p.name for p in catalog.PACKAGES}, set(catalog.FRAME_QUESTIONS))
+        for name, body in catalog.FRAME_QUESTIONS.items():
+            with self.subTest(name):
+                self.assertIsNone(catalog.QUESTION_BAN_RE.search(body), body)
+        self.assertIn(catalog.NO_WINDOW, catalog.question('PWR-C02', 'RUN', 'BIAS', ['Q401']))
+        self.assertIsNone(catalog.question('DOC-V01', 'RUN', 'BIAS', ['Q401']))
+
+    def test_bounding_steps_are_copied_from_the_reference(self):
+        doc = (pathlib.Path(__file__).resolve().parents[2] / 'references' / 'evidence-proportionality.md').read_text(
+            encoding='utf-8').replace('**', '')
+        self.assertEqual(len(catalog.BOUNDING_STEPS), 5)
+        for step in catalog.BOUNDING_STEPS:
+            self.assertIn(step, doc)
+
+    def test_question_errors_reject_prohibition_phrasing_in_rows_and_frames(self):
+        plan = {'checks': [{'id': 'PWR-C02.X', 'question': '输出是否落在窗口内'},
+                           {'id': 'PWR-C03.X', 'question': '不把测试条件外推为使用范围'}],
+                'functions': [{'id': 'FN-X', 'question': '不得以典型值放行'}]}
+        errors = catalog.question_errors(plan)
+        self.assertEqual(len(errors), 2, errors)
+        self.assertTrue(errors[0].startswith('PWR-C03.X'))
+        self.assertTrue(errors[1].startswith('functions.FN-X'))
+        self.assertEqual(catalog.question_errors({'checks': [{'id': 'A'}]}), [])
+
+
 if __name__ == '__main__':
     unittest.main()

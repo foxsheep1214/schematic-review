@@ -20,9 +20,10 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CONTRACT_REVISION = 'lint-checks-v1'
+CONTRACT_REVISION = 'function-frames-v1'
 REVISIONS = ('legacy', 'page-inventory-v1', 'name-gap-scope-v1', 'passive-stress-v1', 'threshold-window-v1',
-             'real-flyback-v1', 'testpoint-kind-v1', 'name-heuristics-v1', 'typical-boards-v1', CONTRACT_REVISION)
+             'real-flyback-v1', 'testpoint-kind-v1', 'name-heuristics-v1', 'typical-boards-v1', 'lint-checks-v1',
+             CONTRACT_REVISION)
 
 
 def contract_path(name, revision=CONTRACT_REVISION):
@@ -86,6 +87,8 @@ def observe(sut, case, work):
                            for c in q01]
     obs['plan.checks_total'] = len(plan['checks'])
     obs['plan.not_applicable'] = sum(c['applicability'] == 'NOT_APPLICABLE' for c in plan['checks'])
+    obs['plan.functions'] = [{'id': f['id'], 'members': len(f['members']), 'states': f['states']}
+                             for f in plan.get('functions', [])]
     # .get: an older SR may lack a field; that is reported as a difference, not a crash.
     obs['decoupling.discovery_gaps'] = dec.get('discovery_gaps')
     obs['decoupling.pin_names_resolved_by_official_pinout'] = dec.get('pin_names_resolved_by_official_pinout')

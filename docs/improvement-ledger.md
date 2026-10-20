@@ -7,6 +7,30 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function verdicts, step 2: the plan asks questions and frames each circuit (2026-10-20)
+
+Step 1 made the function verdict the unit of judgement; the plan still handed
+the reviewer a `criterion` per row that embedded the answer ("do not extrapolate
+the test condition", "must have a guaranteed value") and no place to write one
+verdict per circuit. Plan schema 4: the 48 package member rules carry a
+`question` template in `catalog.py` (state, circuit, refs and the rail window
+from `intent.power_rails` fill it; generic `criterion` stays as a hint), each
+intent circuit becomes a frame in `plan.functions` (question, objects, states,
+member rows with their aspect, one blind-spot line per rule, the five bounding
+steps copied from evidence-proportionality.md), member rows carry
+`question`/`function_id`/`aspect`, and `catalog.question_errors` refuses
+prohibition phrasing in any question, reviewer-added rows included.
+`review_functions.frame_errors` makes a reviewed member row bind to its frame
+and every answered frame have a verdict. `closure_contract`/
+`review_obligations.py` are gone: the frame is the contract. kicad_replay gets
+revision function-frames-v1 (new field `plan.functions`, new case with three
+declared circuits on the rf1 board: checks 298→326 = 5×2+6×2+6×1 member rows).
+The R5 intent yields 12 frames and 129 bound member rows, all with an aspect.
+
+- Event: user:2026-10-20 (design docs/2026-10-20-function-verdicts-design.md §6, step 2), review:SR-20261019-R5-新版复审-2692b08/record/review-plan.json (PWR-C02 HV-start criterion)
+- Causes: rule_not_enforced 2, judgment 1
+- Changed: scripts/catalog.py, scripts/plan_review.py, scripts/electrical_contract.py, scripts/review_functions.py, scripts/validate_review.py, scripts/tests/ledger_v3.py, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, scripts/tests/test_review_functions.py, scripts/tests/test_kicad_replay_bench.py, scripts/tests/fixtures/execution-audit/synthetic.json, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.function-frames-v1.intent.json, evals/kicad_replay_bench/revisions/function-frames-v1/cases.json, evals/kicad_replay_bench/revisions/function-frames-v1/expected.json, evals/kicad_replay_bench/revisions/function-frames-v1/sources.json, evals/kicad_replay_bench/revisions/function-frames-v1/manifest.json, references/automation.md, docs/improvement-ledger.md
+
 ## Function verdicts as the unit of judgement, step 1: results schema 4 (2026-10-20)
 
 The R5 re-review kept 142 rows INSUFFICIENT on 18 distinct gap texts; the

@@ -318,6 +318,7 @@ class ReviewPlanner:
         self.old_db_available = old_db_available or old_db is not None
         self.claims_available = claims_available
         self.checks = []
+        self.functions = []
         self.rule_plan = []
         self.diagnostics = []
         self._ids = set()
@@ -527,8 +528,18 @@ class ReviewPlanner:
                 required_inputs=[f'intent.features.{name}' for name in undetected],
                 trigger=['package-discovery'])
 
+    def _rail_window(self, nets):
+        """电路网络里 intent.power_rails 给了电压窗口的轨；没有就 None（问题写“需求未给窗口”）。"""
+        rails = self.intent.get('power_rails') or {}
+        parts = []
+        for net in nets:
+            window = (rails.get(net) or {}).get('voltage_v') if isinstance(rails.get(net), dict) else None
+            if isinstance(window, dict) and finite(window.get('min')) and finite(window.get('max')):
+                parts.append(f'{net} {window["min"]}–{window["max"]} V')
+        return '、'.join(parts) or None
+
     def plan_package_members(self, package, circuits, missing):
-        """声明了电路则逐电路×工况展开成员规则，否则按功能包展开一次；已有 I²C 区域时由检查器逐区域展开。"""
+        """声明了电路则逐电路×工况展开成员规则并建功能框架，否则按功能包展开一次；已有 I²C 区域时由检查器逐区域展开。"""
         members = []
         for circuit in circuits:
             refs = circuit['refs']
@@ -542,15 +553,35 @@ class ReviewPlanner:
         regions = any(state['regions'] for state in self.i2c_topology['states'])
         if not circuits and not (package.name == 'I2C' and regions):
             members.append(({'package': package.name}, None, missing, f'package:{package.name}'))
+        frames = {}
+        for circuit in circuits:
+            window = self._rail_window(circuit.get('nets', []))
+            frames[circuit['id']] = {
+                'id': 'FN-' + _slug(circuit['id']),
+                'circuit': circuit['id'],
+                'package': package.name,
+                'question': catalog.frame_question(package.name, circuit['id'], circuit['refs'], circuit['states'], window),
+                'objects': {'refs': list(circuit['refs']), 'nets': list(circuit.get('nets', []))},
+                'states': list(circuit['states']),
+                'members': [],
+                'blind_spots': {rule: catalog.explanation(rule)['risk_if_omitted'] for rule in package.rules},
+                'checklist': list(catalog.BOUNDING_STEPS),
+            }
         for obj, key, gaps, trigger in members:
+            frame = frames.get(obj.get('circuit'))
             for rule in package.rules:
                 item = self._ready_check(rule, dict(obj), gaps, [trigger], key=key)
                 item['package'] = package.name
                 item['analysis_required'] = True
                 item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
-                from review_obligations import contract
-                if contract(rule):
-                    item['closure_contract'] = contract(rule)
+                if frame is not None:
+                    item['question'] = catalog.question(rule, obj['state'], obj['circuit'], obj['refs'],
+                                                        self._rail_window(obj['nets']))
+                    item['function_id'] = frame['id']
+                    item['aspect'] = catalog.title(rule)
+                    frame['members'].append({'check_id': item['id'], 'rule': rule, 'aspect': item['aspect'],
+                                             'state': obj['state']})
+        self.functions.extend(frames.values())
 
     def plan_checkers(self):
         """遍历检查器注册表；每个检查器只生成自己的计划项。"""
@@ -1112,6 +1143,7 @@ class ReviewPlanner:
             },
             'rule_plan': self.rule_plan,
             'checks': self.checks,
+            'functions': sorted(self.functions, key=lambda x: x['id']),
             'diagnostics': self.diagnostics,
         }
         if 'review_phase' in self.intent:

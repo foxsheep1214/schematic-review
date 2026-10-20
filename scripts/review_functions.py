@@ -260,7 +260,36 @@ def binding_errors(expected, checks, functions, history_ids=()):
     return errors
 
 
+REVIEWED = ('PASS', 'FAIL', 'INSUFFICIENT')
+
+
+def frame_errors(plan, checks, functions):
+    """Plan frames (one per intent circuit) are answered: a reviewed member row binds to its frame's
+    function and keeps the frame's aspect; a frame with a reviewed member has a function verdict."""
+    errors = []
+    ids = {fn['id'] for fn in functions or [] if isinstance(fn, dict) and text(fn.get('id'))}
+    for frame in (plan or {}).get('functions') or []:
+        if not isinstance(frame, dict) or not text(frame.get('id')):
+            continue
+        answered = False
+        for member in frame.get('members') or []:
+            row = checks.get(member.get('check_id')) if isinstance(member, dict) else None
+            if not isinstance(row, dict) or row.get('review_result') not in REVIEWED:
+                continue
+            answered = True
+            if row.get('function_id') != frame['id']:
+                errors.append('%s: a member of frame %s binds to it (function_id), not to %s'
+                              % (member['check_id'], frame['id'], row.get('function_id')))
+            if 'aspect' in row and row['aspect'] != member.get('aspect'):
+                errors.append('%s: aspect %r differs from the frame member aspect %r'
+                              % (member['check_id'], row['aspect'], member.get('aspect')))
+        if answered and frame['id'] not in ids:
+            errors.append('functions: frame %s has reviewed member rows but no function verdict' % frame['id'])
+    return errors
+
+
 def validate_functions(plan, report, checks, history_ids=()):
     """All function-verdict errors for validate_review. `report` is the record as written."""
     expected = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and isinstance(c.get('id'), str)}
-    return function_errors(report) + binding_errors(expected, checks, report.get('functions'), history_ids)
+    return (function_errors(report) + binding_errors(expected, checks, report.get('functions'), history_ids)
+            + frame_errors(plan, checks, report.get('functions')))

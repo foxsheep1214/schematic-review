@@ -16,7 +16,9 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率
 `--contract legacy` 用于重放历史契约，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认契约是 `lint-checks-v1`（`revisions/lint-checks-v1/`，2026-10-19）：冷检规则的 FINDING/CANDIDATE 发现各成一项计划检查（lint_reviews 退役），检查数只增加该例冷检发现数（r01 178→192、r02 200→216、r03 313→365、r04 50→54、rf1 286→298、rf2 74→78），其余答案不变。
+当前默认契约是 `function-frames-v1`（`revisions/function-frames-v1/`，2026-10-20）：计划 schema 4，intent 声明的每个电路生成一个功能框架（新增观测字段 `plan.functions`：框架 id、成员数、状态；父用例的 intent 都没有 circuits，全为空），成员行带 question/function_id/aspect。新增用例 rf1-c2000-float-flyback-frames（同板 intent 再声明反激变换器、TVS 钳位、NTC 检测 3 个电路，检查数 298→326 = 5×2+6×2+6×1 条成员行），其余答案不变。
+
+此前的默认契约是 `lint-checks-v1`（`revisions/lint-checks-v1/`，2026-10-19）：冷检规则的 FINDING/CANDIDATE 发现各成一项计划检查（lint_reviews 退役），检查数只增加该例冷检发现数（r01 178→192、r02 200→216、r03 313→365、r04 50→54、rf1 286→298、rf2 74→78），其余答案不变。
 
 此前的默认契约是 `typical-boards-v1`（`revisions/typical-boards-v1/`，2026-10-18）：K 位号超过 8 脚不当继电器、VBUS+CC1+CC2 脚组认作 USB-C 连接器；r02 检查数 198→200，其余答案不变。
 
@@ -64,6 +66,7 @@ python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out 
 | rf1-c2000-float-flyback | 公开同步整流反激板（CERN-OHL-S-2.0） | 4 子图 85 器件；Reg 位号稳压器按原生电源脚识别；RAIL_/HV 轨名、VOUT_N 回流、VOUT_FBACK 反馈线；TVS 开关节点钳位保留 PRO-C02；NTC 只在检测脚生成 ANA-C04 |
 | rf1-c2000-float-flyback-intent | 同上 + 带出处 intent | 反激绕组映射与 TVS 漏感钳位、R19 源极采样回地、UCC24612 同步整流最小声明 |
 | rf2-hv-flyback-lt3957a | 公开 LT3957A 高压反激板（CERN-OHL-W-2.0） | 连接器信号针 ESD 归入 PRO-D03；电源轨 TVS 与开关节点齐纳保留 PRO-C02；HV 输出按轨审查 |
+| rf1-c2000-float-flyback-frames | 同上 + 声明 3 个电路的 intent | 每个电路一个功能框架；成员行数 = 包成员规则 × 状态（function-frames-v1） |
 
 日志模式 `empty` 指给 `--log` 但文件为空，这是 kicad-cli 干净导出时的实际情况；`none` 指不给 `--log`。
 
@@ -71,7 +74,7 @@ python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out 
 
 `parse.strict_exit`、`parse.strict_db_written`、`parse.self_check_passed`、`parse.missing_functional_pins`、
 `parse.parts`/`parse.nets`（夹具身份），`lint.DOC-A01_executed`/`lint.DOC-A02_executed`、
-`plan.DOC-Q01`（applicability/readiness）、`plan.checks_total`、`plan.not_applicable`、
+`plan.DOC-Q01`（applicability/readiness）、`plan.checks_total`、`plan.not_applicable`、`plan.functions`（框架 id/成员数/状态）、
 `decoupling.discovery_gaps`、`decoupling.pin_names_resolved_by_official_pinout`、
 `decoupling.group_gaps`（键为 `状态/declared_id`，值为该组 gaps）。
 

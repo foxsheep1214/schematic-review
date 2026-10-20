@@ -214,6 +214,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             require(False, f"{key}: {message}")
     for message in catalog.plan_explanation_errors(plan):
         require(False, message)
+    for message in catalog.question_errors(plan):
+        require(False, message)
     revision_errors, revision = validate_metadata(plan, db, old_db, old_plan, require_revision)
     errors.extend(revision_errors)
     if revision is not None:
