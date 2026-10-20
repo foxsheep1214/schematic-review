@@ -7,6 +7,23 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function verdicts, step 3: rows derive from the verdict (2026-10-20)
+
+With the frame bound (step 2) the reviewer still typed 15 rows for the R5
+bias circuit and pasted the same gap text into each. `derive_rows.py` reads
+`functions[]` and writes every bound row: a fail item whose `decides` covers
+the row's aspect and state makes it FAIL with the finding, an open item makes
+it INSUFFICIENT with `open_ref`, otherwise PASS with a rationale that cites the
+verdict, its result and margin; evidence and a planned handoff come from the
+function. Hand-filled rows are compared, never overwritten, and a disagreement
+or a missing finding/handoff stops the write. On the bias example 15 rows
+derive as 2 INSUFFICIENT (PWR-C02 STARTUP/RUN, DESIGN_OPEN) and 13 PASS, and
+the validator accepts them with one work item W-AUX-5V-MIN.
+
+- Event: user:2026-10-20 (design docs/2026-10-20-function-verdicts-design.md §5, step 3), review:SR-20261019-R5-新版复审-2692b08/record/review-results.json (PWR-C02..C15 BIAS rows)
+- Causes: rule_not_enforced 1
+- Changed: scripts/derive_rows.py, scripts/tests/test_derive_rows.py, scripts/tests/conftest.py, SKILL.md, references/automation.md, docs/improvement-ledger.md
+
 ## Function verdicts, step 2: the plan asks questions and frames each circuit (2026-10-20)
 
 Step 1 made the function verdict the unit of judgement; the plan still handed

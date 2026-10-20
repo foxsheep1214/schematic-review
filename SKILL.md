@@ -187,6 +187,10 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 关闭范围和需求子义务（含多个子义务的需求只有全部适用子义务通过才 PASS）；绑定校验及质量筛查零提示不能代替这一步。
 证据不足先按 [下游分流](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
 批量脚本不能用一句固定兜底语给全部证据不足定级。
+功能判定写完后先派生已绑定的行（结论、open_ref/fail_ref、rationale 都从功能来；手填的行只对账不覆盖），再手填框架外的行：
+
+    python3 scripts/derive_rows.py review-plan.json review-results.json -o review-results.json
+
 完成后对账：
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --json review-gate.json
