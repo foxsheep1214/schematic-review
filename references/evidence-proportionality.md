@@ -415,11 +415,11 @@ REVIEW_INCOMPLETE 本轮自己做完，USER_DEFERRED 引用暂缓指示（`instr
 [功能判定](plan-and-results.md#功能判定functions)。
 
 ```json
-{"key": "AUX-5V-MIN", "kind": "DESIGN_VALUE", "what": "T301 辅助绕组在 5 V 空载时的最低峰值电压还没有定",
- "scope": "5 V 空载、−10..105 °C", "spec": "AUX_AC 峰值 ≥ 14.5 V", "owner": "ASG 磁件设计",
- "closure": "磁件规格写明 5 V 空载最低峰值电压且 ≥ 14.5 V",
+{"key": "AUX-5V-MIN", "kind": "DESIGN_VALUE", "what": "T1 辅助绕组在 5 V 空载时的最低峰值电压还没有定",
+ "scope": "5 V 空载、−10..105 °C", "spec": "辅助绕组峰值 ≥ 13.5 V", "owner": "磁件设计",
+ "closure": "磁件规格写明 5 V 空载最低峰值电压且 ≥ 13.5 V",
  "decides": [{"aspect": "变换器电压裕量", "states": ["STARTUP", "RUN"]}],
- "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "U402 供电", "consequence": "…"}}
+ "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "U1 供电", "consequence": "…"}}
 ```
 
 - 功能的 `calculation` 和 `conditions` 写哪个判断因缺口不能成立；已有事实与未知边界分开，不泛称“影响安全”。

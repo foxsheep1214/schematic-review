@@ -103,7 +103,7 @@
   `object`、`criterion`、`applicability`、`readiness`、`handoff`。
 - **拆分实例的命名**：一条规则需要逐对象或逐判据给出不同结果时，拆成多个补查实例，自定义键写成
   `<对象>[-<判据>]`，对象用位号、网络或电路 ID，判据用简短大写词。例如全板项 DEV-C01 逐颗判定时写
-  `DEV-C01.C12`、`DEV-C01.Q3`，IC 脚经外接电阻驱动内部开关时写 `DEV-C01.U601-VBUS`；PWR-C02 拆窗口与调节能力时写 `PWR-C02.U1-WINDOW`、`PWR-C02.U1-REGULATION`。
+  `DEV-C01.C12`、`DEV-C01.Q3`，IC 脚经外接电阻驱动内部开关时写 `DEV-C01.U2-VBUS`；PWR-C02 拆窗口与调节能力时写 `PWR-C02.U1-WINDOW`、`PWR-C02.U1-REGULATION`。
   自动生成的原计划项（如 `DEV-C01.BOARD`）保持不变（校验会按保存的输入重建它），在结果行写
   `split_out: [拆分实例 ID…]`：原项的结论只覆盖拆出实例**以外**的对象，拆出的对象各自给结论。
   这样一颗 C201 缺规格只让 `DEV-C01.C201` 资料不足，其余已核对象仍可让 `DEV-C01.BOARD` 通过，
@@ -209,39 +209,39 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 
 ### 功能判定（functions）
 
-以 R5 的偏置电路为例（数字取自原记录和手册）：
+以一个合成例子说明：反激控制器 U1 的 VCC 由辅助绕组经整流、源跟随管 Q2 供电，数字全部是编的，只为展示字段：
 
 ```json
 {
   "id": "FN-BIAS", "circuit": "BIAS",
-  "question": "默认 5 V 输出、−10..105 °C、辅助绕组取最低电压时，Q401 偏置路径能否让 U402 VCC 保持在 9.5 V 以上",
-  "objects": {"refs": ["Q401", "D401", "D402", "D404", "C403"], "nets": ["AUX_DC", "BIAS15", "VCC"]},
+  "question": "最低输出档 5 V、−10..105 °C、辅助绕组取最低电压时，Q2 偏置路径能否让 U1 VCC 保持在 8.8 V 以上",
+  "objects": {"refs": ["Q2", "D2", "D3", "D4", "C3"], "nets": ["AUX", "BIAS", "VCC"]},
   "states": ["STARTUP", "RUN", "LATCH"],
   "conditions": [
-    {"id": "c1", "source": "Nexperia-PMEG6010CEH.pdf", "locator": "p3 Table 7",
-     "says": "VF ≤ 0.31 V @10 mA，≤ 0.40 V @100 mA（25 °C）", "use": "20 mA 在两点之间，VF 单调，取 0.40 V 作上界"},
-    {"id": "c2", "source": "Infineon-ISC032N12LM6.pdf", "locator": "p4 Table 4",
-     "says": "VGS(th) 1.2–2.2 V @110 µA", "use": "20 mA 取 2.2 V + 0.5 V 工程余量"},
-    {"id": "c3", "source": "NCP1343.pdf", "locator": "p7 Table 7", "says": "VCC(off) max 9.5 V", "use": "判据"}
+    {"id": "c1", "source": "evidence/ds/D2.txt", "locator": "p3 Table 7",
+     "says": "VF ≤ 0.35 V @10 mA，≤ 0.45 V @100 mA（25 °C）", "use": "20 mA 在两点之间，VF 单调，取 0.45 V 作上界"},
+    {"id": "c2", "source": "evidence/ds/Q2.txt", "locator": "p4 Table 4",
+     "says": "VGS(th) 1.0–2.0 V @250 µA", "use": "20 mA 取 2.0 V + 0.5 V 工程余量"},
+    {"id": "c3", "source": "evidence/ds/U1.txt", "locator": "p7 Table 7", "says": "VCC(off) max 8.8 V", "use": "判据"}
   ],
-  "calculation": {"claim_ids": ["BIAS-VCCMIN"], "result": "VCC_min = 10.24 V",
-                  "margin": {"value": 0.74, "unit": "V", "against": "VCC(off) max 9.5 V"},
-                  "assumptions": ["辅助绕组 −10%", "Na/Ns = 21/6"], "aspect": "变换器电压裕量"},
+  "calculation": {"claim_ids": ["BIAS-VCCMIN"], "result": "VCC_min = 9.6 V",
+                  "margin": {"value": 0.8, "unit": "V", "against": "VCC(off) max 8.8 V"},
+                  "assumptions": ["辅助绕组 −10%", "Na/Ns = 3"], "aspect": "变换器电压裕量"},
   "verdict": "OPEN",
   "open": [{
     "key": "AUX-5V-MIN", "kind": "DESIGN_VALUE",
-    "what": "T301 辅助绕组在 5 V 空载时的最低峰值电压还没有定",
+    "what": "T1 辅助绕组在 5 V 空载时的最低峰值电压还没有定",
     "scope": "5 V 空载、−10..105 °C",
-    "spec": "AUX_AC 峰值 ≥ 14.5 V（= 9.5 + 2.7 + 0.4 + 1.7 + 0.2 V 余量）", "owner": "ASG 磁件设计",
-    "closure": "磁件规格写明 5 V 空载最低峰值电压且 ≥ 14.5 V",
+    "spec": "辅助绕组峰值 ≥ 13.5 V（= 8.8 + 2.5 + 0.45 + 1.5 + 0.25 V 余量）", "owner": "磁件设计",
+    "closure": "磁件规格写明 5 V 空载最低峰值电压且 ≥ 13.5 V",
     "decides": [{"aspect": "变换器电压裕量", "states": ["STARTUP", "RUN"]}],
     "margin_not_decisive_reason": "余量按标称辅助电压算，辅助电压本身是待定的设计值",
-    "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "U402 供电",
-                 "consequence": "辅助电压低于规格时 U402 在 5 V 待机掉电重启"},
+    "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "U1 供电",
+                 "consequence": "辅助电压低于规格时 U1 在 5 V 待机掉电重启"},
     "design_option": {"status": "NONE", "reason": "先定磁件规格；定不下来再改为有保证压差的受控偏置"}
   }],
   "fails": [],
-  "handoffs": [{"receivers": ["样机试验"], "constraint": "5 V 空载、−10 °C 时 VCC ≥ 9.5 V", "verification": "实测 C403 电压"}],
+  "handoffs": [{"receivers": ["样机试验"], "constraint": "5 V 空载、−10 °C 时 VCC ≥ 8.8 V", "verification": "实测 C3 电压"}],
   "evidence": [{"source": "evidence/engineering.md", "locator": "## BIAS"}]
 }
 ```
@@ -419,14 +419,14 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 
 ```json
 {
-  "id": "ANA-C01.CURRENT-RUN.R503",
-  "binding": {"object": {"circuit": "CURRENT", "ref": "R503", "state": "RUN"},
+  "id": "ANA-C01.CURRENT-RUN.RS1",
+  "binding": {"object": {"circuit": "CURRENT", "ref": "RS1", "state": "RUN"},
               "criterion": "……"},
   "applicability": "APPLICABLE",
   "review_result": "INSUFFICIENT",
   "function_id": "FN-CURRENT", "aspect": "直流范围与误差", "open_ref": "FN-CURRENT/ADC-CAL",
   "evidence": [{"source": "evidence/engineering.md", "locator": "## CURRENT"}],
-  "rationale": "见功能判定 FN-CURRENT（直流范围与误差，RUN）：开放项 ADC-CAL——R503 校准与误差预算未定",
+  "rationale": "见功能判定 FN-CURRENT（直流范围与误差，RUN）：开放项 ADC-CAL——RS1 校准与误差预算未定",
   "handoff": {"required": false}
 }
 ```
@@ -467,7 +467,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   `scope` 写缺口要覆盖的电压/负载/状态/温度范围，不是标题或 `what` 的复述（`REQUEST_SCOPE_ECHOES_TASK` 提示，报告也不显示只复述的范围）；
   `acquisition` 以“已读 X 第 N 页，缺 Y”开头时，报告把“已读”部分单列为“已查过”。
   `closure` 写设计者能核的边界和条件（手册限值、标准条款、工况），不写审查员算例的中间值；
-  位号与数值之间留空格或标点（“R604 100°C”，不写“R604100°C”）。
+  位号与数值之间留空格或标点（“R12 100°C”，不写“R12100°C”）。
 - 计划行带 `proposal.result = PASS` 而结论为 FAIL/INSUFFICIENT 时，须给 `proposal_override`（code 与 reason），
   code 的封闭清单见 [通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗行)。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
@@ -492,35 +492,35 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 
 ### 示例：一个功能的两个开放项决定两行
 
-反激变换器的功能判定缺两样：T301 的磁件参数（本设计要定，DESIGN_VALUE）挡住环路模型（PWR-C15）和最小关断时间（PWR-C04），
+合成例子：反激变换器的功能判定缺两样：T1 的磁件参数（本设计要定，DESIGN_VALUE）挡住环路模型（PWR-C15）和最小关断时间（PWR-C04），
 输出电容的低温 ESR（厂家才知道，VENDOR_DATUM）只挡住 PWR-C04。两行都由 `derive_rows.py` 从功能派生。
 
 ```json
 {
   "functions": [{
-    "id": "FN-QR", "circuit": "QR", "question": "90–264 Vac、5–20 V、空载至 5 A 时反激各输出档是否稳定且关断时间不低于 tOFF(min)",
-    "objects": {"refs": ["U402", "Q301", "T301", "C503"], "nets": ["BULK", "VRAW"]}, "states": ["RUN"],
+    "id": "FN-QR", "circuit": "QR", "question": "90–264 Vac、5–12 V、空载至 3 A 时反激各输出档是否稳定且关断时间不低于 tOFF(min)",
+    "objects": {"refs": ["U1", "Q1", "T1", "C5"], "nets": ["BULK", "VOUT"]}, "states": ["RUN"],
     "conditions": [
-      {"id": "c1", "source": "evidence/ds/NCP1343.txt", "locator": "p13 Feedback, p21 补偿网络", "says": "内部补偿适用条件", "use": "FB 外接与条件一致"},
-      {"id": "c2", "source": "evidence/ds/NCP1343.txt", "locator": "p8 tOFF(min)", "says": "tOFF(min) 典型/最大", "use": "判据"},
-      {"id": "c3", "source": "evidence/ds/Rubycon-BXW.txt", "locator": "p1 特性表", "says": "20 °C ESR", "use": "低温 ESR 未给"}
+      {"id": "c1", "source": "evidence/ds/U1.txt", "locator": "p13 Feedback, p21 补偿网络", "says": "内部补偿适用条件", "use": "FB 外接与条件一致"},
+      {"id": "c2", "source": "evidence/ds/U1.txt", "locator": "p8 tOFF(min)", "says": "tOFF(min) 典型/最大", "use": "判据"},
+      {"id": "c3", "source": "evidence/ds/C5.txt", "locator": "p1 特性表", "says": "20 °C ESR", "use": "低温 ESR 未给"}
     ],
     "no_calculation_reason": "功率级增益和关断时间都要 Lp 与匝比，规格未定",
     "verdict": "OPEN",
     "open": [
-      {"key": "T301-SPEC", "kind": "DESIGN_VALUE", "what": "T301 的 Lp、匝比与漏感还没有定",
-       "scope": "90–264 Vac、5–20 V 输出、空载至 5 A",
-       "spec": "Lp 公差、Np:Ns:Na 与漏感上限，使 264 Vac/20 V/0.5 A 下关断时间 ≥ tOFF(min) 且各档穿越频率在内部补偿适用范围内",
-       "owner": "ASG 磁件设计", "closure": "按 Lp 下限算出的关断时间不小于 tOFF(min)；各输出档满足内部补偿适用条件",
+      {"key": "T1-SPEC", "kind": "DESIGN_VALUE", "what": "T1 的 Lp、匝比与漏感还没有定",
+       "scope": "90–264 Vac、5–12 V 输出、空载至 3 A",
+       "spec": "Lp 公差、Np:Ns:Na 与漏感上限，使 264 Vac/12 V/0.3 A 下关断时间 ≥ tOFF(min) 且各档穿越频率在内部补偿适用范围内",
+       "owner": "磁件设计", "closure": "按 Lp 下限算出的关断时间不小于 tOFF(min)；各输出档满足内部补偿适用条件",
        "decides": [{"aspect": "反馈模型与补偿资格"}, {"aspect": "变换器时序与输出电容条件"}],
        "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "反激输出调节",
                     "consequence": "功率级模型未知时无法证明各输出档在全输入范围内稳定；关断时间低于下限时轻载跳周期"},
        "design_option": {"status": "NONE", "reason": "磁件参数是设计输入，改图不能代替规格"}},
-      {"key": "C503-ESR", "kind": "VENDOR_DATUM", "what": "C503–C506 在 −20 °C 的 ESR 上限",
-       "scope": "−20–40 °C 环境，5–20 V 输出", "checked": ["c3"], "why_insufficient": "BXW p1 只给 20 °C ESR",
-       "acquisition": "向 Rubycon 索取低温 ESR，或改用手册给出该值的系列",
+      {"key": "C5-ESR", "kind": "VENDOR_DATUM", "what": "C5–C8 在 −20 °C 的 ESR 上限",
+       "scope": "−20–40 °C 环境，5–12 V 输出", "checked": ["c3"], "why_insufficient": "c3 只给 20 °C ESR",
+       "acquisition": "向电容厂家索取低温 ESR，或改用手册给出该值的系列",
        "worst_case": {"not_boundable_reason": "手册没有低温倍率，无法取上界"},
-       "closure": "低温 ESR 满足 NCP1343 对输出电容零点的适用条件",
+       "closure": "低温 ESR 满足控制器对输出电容零点的适用条件",
        "decides": [{"aspect": "变换器时序与输出电容条件"}],
        "severity": {"level": "P1", "class": "PERFORMANCE_OR_LIFE", "affects": "低温输出纹波",
                     "consequence": "低温 ESR 升高使输出电容零点移出适用范围，纹波超出规格"},
@@ -529,16 +529,16 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
     "fails": [], "evidence": [{"source": "evidence/engineering.md", "locator": "## QR"}]
   }],
   "checks": [
-    {"id": "PWR-C15.QR-RUN.U402", "review_result": "INSUFFICIENT", "function_id": "FN-QR",
-     "aspect": "反馈模型与补偿资格", "open_ref": "FN-QR/T301-SPEC", "…": "…"},
-    {"id": "PWR-C04.QR-RUN.U402", "review_result": "INSUFFICIENT", "function_id": "FN-QR",
-     "aspect": "变换器时序与输出电容条件", "open_ref": "FN-QR/T301-SPEC", "…": "…"}
+    {"id": "PWR-C15.QR-RUN.U1", "review_result": "INSUFFICIENT", "function_id": "FN-QR",
+     "aspect": "反馈模型与补偿资格", "open_ref": "FN-QR/T1-SPEC", "…": "…"},
+    {"id": "PWR-C04.QR-RUN.U1", "review_result": "INSUFFICIENT", "function_id": "FN-QR",
+     "aspect": "变换器时序与输出电容条件", "open_ref": "FN-QR/T1-SPEC", "…": "…"}
   ]
 }
 ```
 
 - 一行只指向一个开放项：PWR-C04 同时受两个开放项影响时，`derive_rows.py` 取 `open[]` 里先写的那个；
-  两个开放项各派生一件待办（W-T301-SPEC、W-C503-ESR），待办的 `check_ids` 是指向它的行。
+  两个开放项各派生一件待办（W-T1-SPEC、W-C5-ESR），待办的 `check_ids` 是指向它的行。
 - 共享的是开放项，不是结论：两行各自的方面写在 `decides` 里，等级和 `scope` 写在开放项上。
 - 不再有 `obligations`、`request_keys`、`closure_domain`：隔离资格与环路稳定是功能的方面（见上）。
 

@@ -20,7 +20,7 @@ RULE_UNIFORM_MIN_ROWS = 10
 # 下游分流线索：缺口文字只指向样机/试验结果，或把优化目标记成阻断缺口。关键词只生成提示，不改结论。
 DOWNSTREAM_RE = re.compile(r'实测|样机|样品|闭壳|温升测试|热测|EMC|传导|辐射|认证|一致性测试|兼容性测试|寿命试验|'
                            r'能效测试|整机测试|PCB寄生|实际寄生|实物波形|prototype|bench|compliance|certif', re.I)
-# “插墙”是应用场景不是下游验证（R3 的 F101 分断缺口因此被误标，R4 证实为 P0 缺陷）。
+# “插墙”是应用场景不是下游验证（一份台账曾把保险丝分断缺口因此标成下游项，下一轮证实为 P0 缺陷）。
 # 写明随后/留给下游的分句已把下游部分分出，只看其余文字；整条都是这种分句时仍按原文判。
 DEFERRED_CLAUSE_RE = re.compile(r'[^；;，,。]*(?:随后|留给|留待|另行|后续|移交|交由|另验)[^；;，,。]*')
 DESIGN_GAP_RE = re.compile(r'未选|未定|缺少?手册|缺资料|无资料|未计算|未建模|未连接|未设计|改图|越限|超出额定|不满足')
@@ -412,7 +412,7 @@ def _rows(report):
     return {r['id']: r for r in report.get('checks') or [] if isinstance(r, dict) and isinstance(r.get('id'), str)}
 
 
-# 位号后面直接粘着数值（R604100°C、C5021.1uF）：读者分不清位号和数值；这是写法问题，不改结论。
+# 位号后面直接粘着数值（R12100°C、C71.1uF）：读者分不清位号和数值；这是写法问题，不改结论。
 TOKEN_RE = re.compile(r'(?<![A-Za-z0-9_])([A-Z]{1,4})(\d+)(?![A-Za-z_])')
 # 通过条件里的三位以上小数（257.121uA、.27647mA）是审查员算例的中间值，不是设计者能凑的判据。
 OVERPRECISE_RE = re.compile(r'(?<![0-9.])\d*\.\d{3,}(?![\d.])')
@@ -420,7 +420,7 @@ OVERPRECISE_RE = re.compile(r'(?<![0-9.])\d*\.\d{3,}(?![\d.])')
 
 # 端口过压送到外部负载是 PORT_OVERVOLTAGE 危险路径（P0 类），不因“只坏负载”降为器件损坏或功能项。
 PORT_OV_RE = re.compile(r'(?:端口|USB|VBUS|合同|负载)[^。；;]{0,16}过压|过压[^。；;]{0,16}(?:端口|负载|USB|VBUS)|负载损坏|port\s*over-?voltage', re.I)
-# 否定/转交句（“未据此推断端口过压”“端口过压另由 W-OVP 核”）不是正向后果断言。
+# 否定/转交句（“未据此推断端口过压”“端口过压另列待办核”）不是正向后果断言。
 PORT_OV_NEGATED_RE = re.compile(r'(?:未|不|没有|并非|无法|不能|不会|非)[^。；;]{0,12}(?:推断|认定|构成|建立|导致|视为|判为|形成|证明)[^。；;]{0,24}过压'
                                 r'|过压[^。；;]{0,16}(?:另|单独|由)[^。；;]{0,12}(?:核|列|审|处理)|不(?:涉及|属于)[^。；;]{0,8}过压')
 
@@ -671,7 +671,7 @@ def text_hygiene(report, expected, known):
         if cid not in expected:
             continue
         texts = list(_request_texts(row))
-        # Handoff and manual-verification text reach the report too (100W PD R5: "Q4011.50W", "U60111").
+        # Handoff and manual-verification text reach the report too (a delivered report: "Q21.50W", "U111").
         for group, fields in (('handoff', ('constraint', 'verification')),
                               ('manual_verification', ('method', 'tool_limitation', 'sr_improvement'))):
             block = row.get(group)
@@ -692,7 +692,7 @@ def text_hygiene(report, expected, known):
     for (owner, field), refs in sorted(glued_hits.items()):
         found.append({'code': 'REF_GLUED_TO_VALUE', 'check_ids': [owner] if not owner.startswith('task:') else [],
                       'task_ids': [owner[5:]] if owner.startswith('task:') else [], 'field': field, 'refs': sorted(refs),
-                      'message': 'A reference designator runs straight into a number (R604100°C); separate them so the '
+                      'message': 'A reference designator runs straight into a number (R12100°C); separate them so the '
                                  'designator and the value both stay readable.'})
     return found
 

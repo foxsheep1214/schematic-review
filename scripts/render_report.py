@@ -199,8 +199,8 @@ def task_level(task, checks, owners=None, classes=False):
 
 def restates(short, long):
     """`short` says what `long` says: with page/section numbers and punctuation removed, 90% of
-    `short` appears in `long` in the same order (100W PD R5 W-ESD: the work item's next_action and
-    its gap's how_to_close differed only by page numbers, and the report printed both)."""
+    `short` appears in `long` in the same order (seen in a delivered report: a work item's next_action and
+    its gap's how_to_close differed only by page numbers, and both were printed)."""
     def plain(t):
         return re.sub(r'(?:p|P|第|§)?\d+(?:[–\-~/.,]\d+)*(?:页)?|[\s，、；;：:。.()（）/]+', '', t)
     a, b = plain(short), plain(long)
@@ -215,8 +215,8 @@ READ_RE = re.compile(r'^已读([^；;]*)[；;]?\s*(.*)$', re.S)
 
 
 def split_read(values):
-    """What was already read, said once; what is still to do, apart (100W PD R5 W-BIAS: the work item and
-    its gap each opened with "已读ISC032N12LM6 p3–7、PMEG6010 p2–5…", and the report printed both)."""
+    """What was already read, said once; what is still to do, apart (seen in a delivered report: a work item and
+    its gap each opened with the same "已读…手册 p3–7…" clause, and both were printed)."""
     read, todo = [], []
     for value in unique(values):
         m = READ_RE.match(value)
@@ -361,9 +361,9 @@ SR_FEEDBACK_KINDS = (('false_alarm', '误报'), ('over_strict', '规则过严或
 
 SR_TALK_RE = re.compile(r'(?<![A-Za-z])SR(?![A-Za-z])|误报|改进效果|quality_screening|提示仍|技能')
 # How the record was kept (screens worked through, files, ledger modes) is not news about the board
-# (100W PD R5 summary: "已逐条复核104条记录质量提示；43条位号与数值粘连已修复…history-handling.json…first").
+# (a delivered summary: "已逐条复核…条记录质量提示；…条位号与数值粘连已修复…history-handling.json…first").
 # The summary adds what the first line cannot: what changed and what to do first. The verdict and
-# how the review was run are not news (100W PD R5: "本次使用SR…重新导出、逐页读图和复算。当前仍不能定稿…").
+# how the review was run are not news (a delivered summary: "本次使用SR…重新导出、逐页读图和复算。当前仍不能定稿…").
 SUMMARY_REPEAT_RE = re.compile(r'不能定稿|可以定稿|能否定稿|重新导出|逐页读图|重新审查|本轮复核')
 RECORD_TALK_RE = re.compile(r'质量提示|自检提示|粘连|\.json(?![A-Za-z])|REQ-H0\d|(?<![A-Za-z])(?:first|revision)(?![A-Za-z])')
 
@@ -622,7 +622,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             out += [SEVERITY_LEGEND, '']
         rank = lambda t: (SEVERITIES.index(task_level(t, checks, task_owners, classes)) if task_level(t, checks, task_owners, classes) else len(SEVERITIES),
                           -len(t.get('check_ids') or []))
-        # One reason sentence on many work items says nothing about any of them (100W PD R5: 15 of 18).
+        # One reason sentence on many work items says nothing about any of them (a delivered report: 15 of 18).
         reason_count = Counter(t['reason'].strip() for t in tasks if isinstance(t.get('reason'), str))
         shared_reasons = {r for r, n in reason_count.items() if n >= SHARED_REASON_MIN_TASKS}
         for task in sorted(tasks, key=rank):
@@ -643,7 +643,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         for c in handoffs:
             groups.setdefault('、'.join(c['handoff'].get('receivers') or ['未指定']), []).append(c)
         # One row per requirement: checks that ask the same thing of different parts share a row
-        # (100W PD R5: C503, C504 and C505 got three rows differing only in the refdes).
+        # (a delivered report gave three output capacitors three rows differing only in the refdes).
         for who, rows in sorted(groups.items(), key=lambda kv: -len(kv[1])):
             same = OrderedDict()
             for c in sorted(rows, key=lambda c: c['id']):

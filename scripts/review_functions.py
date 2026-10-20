@@ -138,7 +138,7 @@ def function_errors(report):
     seen_ids, seen_keys = set(), {}
     for fn in functions:
         if not isinstance(fn, dict) or not (text(fn.get('id')) and ID_RE.match(fn['id'])):
-            errors.append('functions[]: each verdict has an id like FN-BIAS-VCC')
+            errors.append('functions[]: each verdict has an id like FN-BIAS')
             continue
         fid = fn['id']
         if fid in seen_ids:

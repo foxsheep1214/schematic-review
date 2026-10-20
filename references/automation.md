@@ -182,7 +182,7 @@ DEV-C05 逐项核。
 轨名提示（`name-hint`）按 VCC/VDD/VIN/VOUT/VBAT/VBUS/V<数字>/<数字>V/HV 开头识别，可带 `RAIL_` 前缀（RAIL_3V3_PRI）。
 以 `_N/_NEG/_RTN/_RET/-` 结尾的是回流（VOUT_N、VIN-），含 `_FB/_FBACK/_SENSE/_SNS` 段的是反馈或检测线，
 HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（`evals/kicad_replay_bench` 的 rf1/rf2）。
-轨名不像电源的供电网（BULK、AUX_DC、SR_VCC、VRAW）在 `intent.power_rails` 声明后同样进入 PWR-A01 扫描和 PWR-T01/PWR-C01 计划（触发 `declared-rail:<网>`）；条件是该网给已贴 IC 的供电脚供电，或经 ≥1µF 电容回到地/声明窗口不高于 0V 的回流网。只声明电压窗口的信号网（ZCD、CC1、栅极驱动）不因此变成轨；PWR_FLAG 不是来源，自供电（如 NCP4307 从 CS 取电）要在 `power_sources` 写出处。
+轨名不像电源的供电网（BULK、HVDC、PRI_AUX）在 `intent.power_rails` 声明后同样进入 PWR-A01 扫描和 PWR-T01/PWR-C01 计划（触发 `declared-rail:<网>`）；条件是该网给已贴 IC 的供电脚供电，或经 ≥1µF 电容回到地/声明窗口不高于 0V 的回流网。只声明电压窗口的信号网（ZCD、CC1、栅极驱动）不因此变成轨；PWR_FLAG 不是来源，自供电（如 NCP4307 从 CS 取电）要在 `power_sources` 写出处。
 
 带 `SW/LX/PH/BOOT/BST` 类引脚的网是**开关节点，不算直流轨**——它经储能电感能回溯到输出脚，
 但本身不是可监测、可挂负载的轨。只有 `name-hint` 的轨登记 `rail-identity:<net>` 缺口；
@@ -680,7 +680,7 @@ ESP32-C3-MINI-1-N4 的 EN8 是复位接收输入（模组 datasheet v2.2，Table
 PWR-T04 按需求决定哪些域必须监控。`supervision.schema_version=2` 可增加
 `rail_requirements` 数组；每项只绑定一个实际 `net` 和一个 `intent.assemblies` 的 `state`，
 写 `required`（真布尔）、`criterion`（明确监控要求或不要求的范围依据）、`citation`（受控出处），
-以及 `identity`；可选 `internal_monitor`：`{"node": "U402.8", "function": "VCC UVLO 及迟滞", "citation": "手册页码/章节"}`，
+以及 `identity`；可选 `internal_monitor`：`{"node": "U1.8", "function": "VCC UVLO 及迟滞", "citation": "手册页码/章节"}`，
 表示负载 IC 片内的 UVLO/欠压/掉电检测监测本轨（节点须是该轨上已贴装 IC 的脚）。声明有效时本轨按已监测计，
 PWR-T04 不再报 `rail-unmonitored`；门限、迟滞与动作是否满足需求仍由 PWR-C06/RST-T03 另核。若 `internal_monitor.node` 是本轨上已贴装负载 IC 的供电脚（VCC/VDD/VIN 等），可省略 `identity`：源跟随、自供或串阻供电等写不成来源身份的轨照样能声明，负载自身的 UVLO 即确认本轨身份；监测脚不是供电脚时仍须写 `identity`。`identity` 字段：
 

@@ -275,7 +275,7 @@ Vmax、Cmax、Vsafe、tmax、温度，按 `R ≤ tmax/[Cmax·ln(Vmax/Vsafe)]` �
 
 1. **改法**：与上文修改说明同样具体，定位、旧→新、规格和依据、顺序操作。
 2. **改后可规避的问题**：按改后电路说明原来的风险为什么不再存在，例如“改后最低供电只取决于
-   VRAW 下限和二极管 VF 最大值，不再依赖亚 mA 齐纳电压，DEV-C05.U701 等 15 项可按保证值判定”。
+   输入轨下限和二极管 VF 最大值，不再依赖亚 mA 齐纳电压，DEV-C05.U5 等 15 项可按保证值判定”。
    写清哪些检查因此可以闭合；只是缩小缺口的，写剩下什么。
 3. **代价与新风险**：成本、体积、损耗、热、绝缘、需要修改的已确认规格；新引入的风险同样列出，
    不能只写好处。
@@ -290,13 +290,13 @@ Vmax、Cmax、Vsafe、tmax、温度，按 `R ≤ tmax/[Cmax·ln(Vmax/Vsafe)]` �
 {
   "design_option": {
     "status": "PROPOSED",
-    "summary": "SR 控制器供电改为经肖特基取自输出，去掉低电流齐纳偏置",
+    "summary": "同步整流控制器供电改为经肖特基取自输出，去掉低电流齐纳偏置",
     "preference": "DESIGN_FIRST",
     "preference_reason": "齐纳在测试电流以下的电压原厂不保证，补证路径基本不可得",
     "remediation": { "...": "与 finding 的 remediation 相同结构，含 calculation_preflight" },
     "avoids": [{
       "problem": "5 V 输出时最低供电依赖无保证的亚 mA 齐纳电压",
-      "after_change": "最低供电 = VRAW 下限 − 肖特基 VF 最大值，全部来自手册保证值",
+      "after_change": "最低供电 = 输入轨下限 − 肖特基 VF 最大值，全部来自手册保证值",
       "check_ids": ["<实际检查ID>"]
     }],
     "tradeoffs": ["21 V 输出时控制器内部箝位损耗上升，热约束移交 PCB", "需修改已确认规格 BLK-xx 的下限"]

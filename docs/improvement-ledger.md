@@ -7,6 +7,24 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## No project priors in the skill (2026-10-20)
+
+The function-verdict examples in the references, two rail-name hints and
+several script comments and one validator message were lifted from one
+reviewed design: its part numbers, designators, nets, measured margins and
+work-item ids. A reviewer reading them would carry that design's answers
+into the next board, and the skill would look better on that design than
+its method is. Every example is now synthetic and neutral (U1/Q1/T1,
+`evidence/ds/U1.txt`, invented but self-consistent numbers), rail-name
+hints use generic names, comments describe the failure mechanism without
+naming the record, and the SKILL bench note no longer ties the ledger replay
+to a particular review round. Test docstrings and fixtures that cite the
+same design, and the dated design document, are unchanged here.
+
+- Event: user:2026-10-20 (SR must not carry prior information about any specific reviewed circuit)
+- Causes: judgment 1
+- Changed: SKILL.md, references/plan-and-results.md, references/evidence-proportionality.md, references/verdicts-and-release.md, references/automation.md, references/report-and-remediation.md, scripts/render_report.py, scripts/review_quality.py, scripts/review_functions.py, scripts/plan_review.py, docs/improvement-ledger.md
+
 ## Function verdicts, step 6: benches guard the new gates (2026-10-20)
 
 Steps 1–5 added gates that no mutation named: a vendor-ask in a design value,
