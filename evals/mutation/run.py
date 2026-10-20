@@ -24,7 +24,21 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 BENCHES = ('test_typical_circuits.py', 'test_seeded_bench.py', 'test_kicad_replay_bench.py')
-IGNORE = shutil.ignore_patterns('.git', '.claude', '__pycache__', 'runs', '.pytest_cache')
+TRAINING_RUNS = Path('evals') / 'training' / 'runs'
+
+
+def IGNORE(directory, names):
+    """What the working copy leaves out: VCS/cache dirs, the top-level review runs, and inside the
+    tracked training rounds only the untracked bench/cold-run artefacts. Dropping every directory
+    named `runs` used to drop the training rounds the ledger's latest entry lists, so the ledger
+    test failed in every copy and every mutation looked killed."""
+    rel = Path(directory).resolve().relative_to(ROOT.resolve()) if Path(directory).resolve() != ROOT.resolve() else Path('.')
+    skip = {n for n in names if n in ('.git', '.claude', '__pycache__', '.pytest_cache')}
+    if rel == Path('.'):
+        skip |= {n for n in names if n == 'runs'}
+    if rel == TRAINING_RUNS or TRAINING_RUNS in rel.parents:
+        skip |= {n for n in names if n in ('reviews', 'seeded', 'replay', 'critic') or n.endswith('.log')}
+    return skip
 
 
 def pytest_command(tier):
@@ -63,6 +77,20 @@ def run_mutation(mutation, tiers, workdir):
     return row
 
 
+def clean_copy_passes(tiers, workdir):
+    """The unmutated copy must pass the unit tier, otherwise every kill below is spurious."""
+    copy = Path(workdir) / 'baseline'
+    shutil.copytree(ROOT, copy, ignore=IGNORE)
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1')
+    done = subprocess.run(pytest_command('unit'), cwd=copy, capture_output=True, text=True, env=env)
+    shutil.rmtree(copy, ignore_errors=True)
+    if done.returncode != 0:
+        print('baseline: the unmutated copy fails the unit tier, kills would be meaningless:\n'
+              + first_failure(done.stdout + done.stderr), file=sys.stderr)
+        return False
+    return True
+
+
 def table(rows, tiers):
     head = '| 变异 | 说明 | 文件 | ' + ' | '.join(tiers) + ' | 首个失败的测试（单元层） |'
     lines = [head, '|' + '---|' * (4 + len(tiers))]
@@ -90,6 +118,8 @@ def main():
         mutations = [m for m in mutations if m['id'] in args.only]
     tiers = ['unit', 'contract'] if args.tier == 'both' else [args.tier]
     with tempfile.TemporaryDirectory(prefix='sr-mutation-') as workdir:
+        if not clean_copy_passes(tiers, workdir):
+            return 1
         with ThreadPoolExecutor(args.jobs) as pool:
             rows = list(pool.map(lambda m: run_mutation(m, tiers, workdir), mutations))
     text = table(rows, tiers)

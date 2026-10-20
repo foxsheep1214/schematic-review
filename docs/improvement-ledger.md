@@ -34,9 +34,18 @@ and is stored with the round. The 30 µA / 0.3 V floor is the agent's
 proposal, applied once the user asked for the improvement; it is written as a
 floor the human can tighten.
 
+Found while gating this: the mutation runner's working copy dropped every
+directory named `runs`, including the tracked training rounds that the
+ledger's latest entry lists, so the ledger test failed in every copy and any
+mutation whose guard test sorts after `test_ledger.py` was reported killed by
+the wrong test (M25/M26 showed `test_ledger` as the first failure). The
+runner now keeps `evals/training/runs` minus its untracked artefacts, runs the
+unmutated copy first and refuses to score when that baseline fails; M25/M26
+are killed by their own tests.
+
 - Event: user:2026-10-20 (improve the three frictions the pilot exposed), review:evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/review-gate.json
 - Causes: judgment 2, rule_missing 1
-- Changed: scripts/review_functions.py, scripts/validate_review.py, scripts/tests/test_review_functions.py, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, references/commodity-floors.md, references/plan-and-results.md, evals/training/README.md, evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/review-results.json, evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/notes.md, evals/training/runs/2026-10-20-29b9856/summary.md, docs/improvement-ledger.md
+- Changed: scripts/review_functions.py, scripts/validate_review.py, scripts/tests/test_review_functions.py, evals/mutation/run.py, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, references/commodity-floors.md, references/plan-and-results.md, evals/training/README.md, evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/review-results.json, evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/notes.md, evals/training/runs/2026-10-20-29b9856/summary.md, docs/improvement-ledger.md
 
 ## Hot-review pilot on the admitted fix pair: the frame asks the right question (2026-10-20)
 
