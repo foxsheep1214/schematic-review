@@ -1,19 +1,5 @@
 # 原理图审查报告
 
-## 结论
-
-**可以定稿。** 电路和文档都没有发现错误。
-
-这是设计中途的检查。
-
-## 交给后续环节的要求
-
-下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，也不影响原理图定稿。原理图交出时把这张表一起交给对应负责方即可。
-
-| 负责方 | 检查 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |
-|---|---|---|---|---|
-| Synthetic test engineer | RST-E01.C1 | 整板 | Retain controlled product test criterion | Measure prototype under controlled test configuration |
-
 ## 数字一览
 
 | 项目 | 数量 |
@@ -28,11 +14,34 @@
 | 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | 0 / 0 / 0 / 0 |
 | 资料不足的原因：缺资料 / 设计没定 / 需求没定 / 审查没做完 / 已暂缓 | 0 / 0 / 0 / 0 / 0 |
 | 交给后续环节的要求 | 1 |
-| 审查记录自检提示（不计入结论） | 0 |
+| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | 0 |
 | 上一版问题的处理记录（不计入上面各行） | 0 |
 
 “条”是检查条数，待办“件”按同一原因合并，两者不能相加。
 
-## 详细记录
+## 结论
 
-逐项结论、资料需求、修改条件及引用保存在[检查结果](record/review-results.json)，通用盲区和完整覆盖保存在[检查计划](record/review-plan.json)，计数见[校验记录](record/review-gate.json)。需要逐条展开正文时用 `--detail full` 生成完整报告；简洁模式不删除记录或改变结论。
+**可以定稿。** 电路和文档都没有发现错误。
+
+这是设计中途的检查。
+
+## 交给后续环节的要求
+
+下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，也不影响原理图定稿。原理图交出时把这张表一起交给对应负责方即可。
+
+| 负责方 | 检查 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |
+|---|---|---|---|---|
+| Synthetic test engineer | RST-E01.C1 | 整板 | Retain controlled product test criterion | Measure prototype under controlled test configuration |
+
+## 索引
+
+| 内容 | 文件 |
+|---|---|
+| 每条检查的结论、依据、缺的资料和修改条件 | [review-results.json](record/review-results.json) |
+| 检查计划：全部检查项和覆盖范围 | [review-plan.json](record/review-plan.json) |
+| 校验结果：各项计数、定稿条件和自检提示明细 | [review-gate.json](record/review-gate.json) |
+| 从原理图导出的网表数据 | [db.json](record/db.json) |
+| 审查依据：需求、电源轨、装配和器件声明 | [intent.json](record/intent.json) |
+| 自动检查输出（只用网表） | [lint-cold.json](record/lint-cold.json) |
+| 自动检查输出（加上器件资料） | [lint-hot.json](record/lint-hot.json) |
+| 引用的资料摘录、计算和图片 | [evidence/](record/evidence/) |

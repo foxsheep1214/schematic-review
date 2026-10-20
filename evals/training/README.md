@@ -201,7 +201,7 @@ fix-pairs 的 `expected_rules`/`hazard`、或 `references/*.md` 的边界例子�
 
 ## 10. 不做的事
 
-- 审查 agent 不评价 SR：报告的 summary/items/highlights 只说这块板，SR 的问题写 `sr_feedback`；
+- 审查 agent 不评价 SR：报告的 summary/items 只说这块板，SR 的问题写 `sr_feedback`；
   “本次 SR 改进效果对照”是另一个任务（回归评估），由改进 agent 在固定语料上做，不混进设计者报告。
 - 审查 agent 看不到上一轮 SR 改了什么（不给 diff、不给 commit message），否则它会按改动点“表演”合规。
 

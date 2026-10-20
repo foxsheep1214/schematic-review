@@ -25,8 +25,12 @@ def report(p, r, db, notes=None):
 
 
 def body(text):
-    """Report text above the count table, where readers look first."""
-    return text.split('## 数字一览')[0]
+    """Report text the designer reads: without the count table, and stopping at the SR section."""
+    text = text.split('\n## 对 SR 的反馈')[0].split('\n## 索引')[0]
+    if '## 数字一览' in text:
+        head, rest = text.split('## 数字一览', 1)
+        text = head + ('## ' + rest.split('\n## ', 1)[1] if '\n## ' in rest else '')
+    return text
 
 
 class RenderReportTests(unittest.TestCase):
@@ -35,7 +39,10 @@ class RenderReportTests(unittest.TestCase):
         text, gate = report(p, r, db)
         self.assertTrue(gate['valid'], gate['errors'])
         lines = [l for l in text.splitlines() if l.strip()]
-        self.assertEqual(lines[1], '## 结论')
+        self.assertEqual(lines[1], '## 数字一览')   # the numbers first, then the conclusion
+        lines = lines[lines.index('## 结论'):]
+        self.assertEqual(lines[0], '## 结论')
+        lines.insert(0, '')
         # The first line answers the question; the open work item is named right after it.
         self.assertEqual(lines[2], '**还不能定稿。** 电路和文档都没有发现错误。另有 1 件事因为缺资料，现在还判断不了。')
         self.assertNotIn('**检查结果**', body(text))
@@ -48,10 +55,11 @@ class RenderReportTests(unittest.TestCase):
         for phrase in ('Recompute current-limit margin', 'System engineer derives', 'Peak amperes'):
             self.assertIn(phrase, section)
 
-    def test_counts_are_at_the_end_with_plain_labels(self):
+    def test_counts_come_first_with_plain_labels(self):
         p, r, db = decisive()
         text, _ = report(p, r, db)
-        self.assertLess(text.index('## 待办'), text.index('## 数字一览'))
+        self.assertLess(text.index('## 数字一览'), text.index('## 结论'))
+        self.assertTrue(text.rstrip().split('\n## ')[-1].startswith('索引'))   # the file index closes the report
         self.assertIn('| 资料不足的原因：缺资料 / 设计没定 / 需求没定 / 审查没做完 / 已暂缓 | 1 / 0 / 0 / 0 / 0 |', text)
         for jargon in ('冻结', '闸门', '移交', '接收方', '证据不足'):
             self.assertNotIn(jargon, text)
@@ -76,15 +84,14 @@ class RenderReportTests(unittest.TestCase):
 
     def test_notes_add_plain_text_but_not_numbers(self):
         p, r, db = decisive()
-        notes = {'summary': '先确认启动电流。', 'items': {'W-1': '电源启动时可能被限流卡住。'},
-                 'highlights': ['第 %d 条' % i for i in range(12)]}
+        notes = {'summary': '先确认启动电流。', 'items': {'W-1': '电源启动时可能被限流卡住。'}}
         text, _ = report(p, r, db, notes)
         plain, _ = report(p, r, db)
         self.assertIn('先确认启动电流。', text)
         self.assertIn('电源启动时可能被限流卡住。', text)
-        self.assertIn('第 7 条', text)
-        self.assertNotIn('第 8 条', text)  # highlights are capped
-        self.assertEqual(text.split('## 数字一览')[1], plain.split('## 数字一览')[1])
+        self.assertNotIn('已核对的重点', text)
+        counts = lambda t: t.split('## 数字一览')[1].split('\n## ')[0]
+        self.assertEqual(counts(text), counts(plain))
 
     def test_mixed_level_item_shows_its_breakdown_and_note_is_a_bullet(self):
         from render_report import render_item
@@ -102,8 +109,8 @@ class RenderReportTests(unittest.TestCase):
 
     def test_plain_language_scan_stops_before_sr_feedback_even_without_tool_gaps(self):
         from pack_review import plain_language_errors
-        report = ('# t\n\n## 结论\n\n- ok\n\n## 对 SR 技能的反馈（设计者不用处理）\n\n'
-                  '1. **DEV-E01**：技能误报。\n\n## 数字一览\n\n| 项目 | 数量 |\n')
+        report = ('# t\n\n## 数字一览\n\n| 项目 | 数量 |\n| NA 检查 | 1 |\n\n## 结论\n\n- ok\n\n'
+                  '## 对 SR 的反馈（设计者不用处理）\n\n1. **DEV-E01**：技能误报。\n\n## 索引\n\n| a | b.json |\n')
         self.assertEqual([], plain_language_errors(report))
         self.assertTrue(plain_language_errors(report.replace('- ok', '- 技能 ok')))
 
@@ -125,7 +132,7 @@ class RenderReportTests(unittest.TestCase):
         from render_report import notes_errors
         self.assertEqual([], notes_errors({'summary': '先核 F101。', 'items': {'W-1': '补磁件资料。'}}))
         self.assertTrue(notes_errors({'summary': 'SR改进部分有效，真实BR101误报仍未解决。'}))
-        self.assertTrue(notes_errors({'highlights': ['质量提示仍有 17 条']}))
+        self.assertTrue(notes_errors({'items': {'W-1': '质量提示仍有 17 条'}}))
 
     def test_stage_na_is_handed_over_without_blocking(self):
         p, r, db = downstream()
@@ -168,7 +175,7 @@ class RenderReportTests(unittest.TestCase):
         self.assertTrue(gate['valid'], gate['errors'])
         self.assertEqual(gate['release'], 'GO')
         self.assertEqual(gate['sr_improvements'][0]['check_id'], key)
-        section = text.split('## 审查工具的不足（设计者不用处理）')[1]
+        section = text.split('## 对 SR 的反馈（设计者不用处理）')[1].split('### 工具判断不了、已逐项手工核对的检查')[1]
         for phrase in ('**SR 为什么做不到**：Kelvin source pins not mapped',
                        '**建议怎么改进 SR**：Accept S1_KELVIN/S2_POWER',
                        '**这次怎么核对的**：Traced pins on the vendor drawing'):
@@ -490,7 +497,7 @@ class PackReviewTests(unittest.TestCase):
         self.assertTrue(any('review not finished' in e and row['id'] in e for e in errors), errors)
 
     def test_jargon_in_report_body_fails_the_pack(self):
-        (self.out / REPORT).write_text('# r\n\n## 结论\n\n- 还不能冻结，见本行。\n\n## 审查工具的不足（设计者不用处理）\n\n- 原生映射\n')
+        (self.out / REPORT).write_text('# r\n\n## 结论\n\n- 还不能冻结，见本行。\n\n## 对 SR 的反馈（设计者不用处理）\n\n- 原生映射\n')
         errors, _ = self.run_pack()
         hits = [e for e in errors if 'plain words' in e]
         self.assertEqual(len(hits), 1, errors)

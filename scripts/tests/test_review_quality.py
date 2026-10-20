@@ -525,17 +525,18 @@ class TaskTextTemplateTests(unittest.TestCase):
         p, r = synthetic(['FAIL', 'INSUFFICIENT'])
         plain = render(p, r, {'valid': True})
         self.assertNotIn('审查记录自检有', plain)
-        self.assertIn('| 审查记录自检提示（不计入结论） | 0 |', plain)
+        self.assertIn('| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | 0 |', plain)
         gate = {'valid': True, 'quality_screening': {'candidates': [
             {'code': 'REUSED_RATIONALE_ACROSS_SCOPES', 'check_ids': ['a', 'b']},
             {'code': 'BOILERPLATE_ACQUISITION', 'check_ids': ['b']}]}}
         text = render(p, r, gate)
-        # The conclusion only says there are prompts; the code names are for the record keeper, in the count table.
-        self.assertNotIn('审查记录自检', body(text).split('## 发现的错误')[0])   # nothing the reader acts on
+        # The reader's part does not mention the prompts; the count table counts them, the SR section names them.
+        self.assertNotIn('审查记录自检', body(text).split('## 发现的错误')[0])
         self.assertNotIn('REUSED_RATIONALE_ACROSS_SCOPES', body(text))
-        self.assertIn('| 审查记录自检提示（不计入结论） | 2（REUSED_RATIONALE_ACROSS_SCOPES 1、BOILERPLATE_ACQUISITION 1） |', text)
-        strip = lambda t: [l for l in t.splitlines() if l and '审查记录自检' not in l and l != '**说明**：']
-        self.assertEqual(strip(plain), strip(text))
+        self.assertIn('| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | 2 |', text)
+        self.assertIn('2 条，只要求复核写法和依据，不改变结论：REUSED_RATIONALE_ACROSS_SCOPES 1、BOILERPLATE_ACQUISITION 1。',
+                      text.split('## 对 SR 的反馈')[1])
+        self.assertEqual(body(plain).replace('| 0 |', ''), body(text).replace('| 2 |', ''))   # prompts change no count
 
 
 

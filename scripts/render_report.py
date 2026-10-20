@@ -8,7 +8,6 @@ through an optional notes file; it cannot change verdicts or counts here.
 notes.json (optional):
   {"summary": "1-3 sentences for a hardware engineer",
    "items": {"<work item or finding id>": "one or two plain sentences"},
-   "highlights": ["at most 8 short lines on what was actually verified"],
    "sr_feedback": [{"kind": "false_alarm|over_strict|missed|unclear", "rules": ["PRO-C02"],
                     "instance": "what happened on this board", "suggestion": "how SR should change"}]}
 """
@@ -23,6 +22,15 @@ from pathlib import Path
 from task_scope import ownership, task_view
 
 TOP_TASKS = 3
+SR_SECTION = '## 对 SR 的反馈（设计者不用处理）'
+RECORD_INDEX = (('review-results.json', '每条检查的结论、依据、缺的资料和修改条件'),
+                ('review-plan.json', '检查计划：全部检查项和覆盖范围'),
+                ('review-gate.json', '校验结果：各项计数、定稿条件和自检提示明细'),
+                ('db.json', '从原理图导出的网表数据'),
+                ('intent.json', '审查依据：需求、电源轨、装配和器件声明'),
+                ('lint-cold.json', '自动检查输出（只用网表）'),
+                ('lint-hot.json', '自动检查输出（加上器件资料）'),
+                ('evidence/', '引用的资料摘录、计算和图片'))
 OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计还没定'),
                                 ('REQUIREMENT_OPEN', '需求还没定'), ('REVIEW_INCOMPLETE', '审查还没做完'),
                                 ('USER_DEFERRED', '暂缓处理')])
@@ -286,12 +294,11 @@ RECORD_TALK_RE = re.compile(r'质量提示|自检提示|粘连|\.json(?![A-Za-z]
 
 
 def notes_errors(notes):
-    """notes.summary/items/highlights speak to the designer; SR's own problems go to sr_feedback."""
+    """notes.summary/items speak to the designer; SR's own problems go to sr_feedback."""
     errors = []
     notes = notes or {}
     texts = [('summary', notes.get('summary'))]
     texts += [('items.' + k, v) for k, v in (notes.get('items') or {}).items()] if isinstance(notes.get('items'), dict) else []
-    texts += [('highlights[%d]' % i, v) for i, v in enumerate(notes.get('highlights') or [])]
     for where, text in texts:
         if isinstance(text, str) and SR_TALK_RE.search(text):
             errors.append('%s talks about SR itself (%s); move it to sr_feedback, the designer-facing text stays about the board'
@@ -322,11 +329,10 @@ def sr_feedback_errors(items):
 
 
 def render_sr_feedback(items):
-    """审查者对 SR 技能的反馈：误报、过严、漏报、说明不清，按类分组，给 SR 维护用。"""
+    """审查者对 SR 的反馈：误报、过严、漏报、说明不清，按类分组，是“对 SR 的反馈”一节的一部分。"""
     if not items or sr_feedback_errors(items):
         return []
-    out = ['## 对 SR 技能的反馈（设计者不用处理）', '',
-           '审查中发现的 SR 规则误报、过严、漏报或说明问题，逐条写明规则、本板实例和改进建议，留给 SR 维护。', '']
+    out = []
     for kind, label in SR_FEEDBACK_KINDS:
         rows = [i for i in items if i['kind'] == kind]
         if rows:
@@ -419,6 +425,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     if not gate.get('valid'):
         out += ['> **审查记录本身有错，这份报告的结论不可用。** 先改正记录再重新出报告：' +
                 '；'.join(cell(e) for e in (gate.get('errors') or [])[:5]), '']
+    counts_at = len(out)   # 数字一览 goes here, ahead of the conclusion, once its numbers are known
     out += ['## 结论', '']
     gap_ids = {k for k, c in current_rows.items() if c.get('review_result') == 'INSUFFICIENT'}
     gap_tasks = [t for t in tasks if gap_ids.intersection(t.get('check_ids') or [])]
@@ -566,29 +573,30 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             out += ['', '另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending))]
         out.append('')
 
-    if notes.get('highlights'):
-        out += ['## 已核对的重点', ''] + ['- ' + h for h in notes['highlights'][:8]] + ['']
-
+    # Everything about SR itself in one folded section, for its maintainers.
+    sr = []
     tool_gaps = gate.get('sr_improvements') or []
     if tool_gaps:
-        out += ['## 审查工具的不足（设计者不用处理）', '',
-                '<details>', '<summary>展开工具限制及本轮核对方法</summary>', '',
-                '下面 %d 条检查，SR 的自动检查工具判断不了，审查时改为逐项对照网表和原厂资料核对，结论按核对结果算。'
-                '这里记录 SR 为什么做不到、该怎么改进 SR，留给 SR 维护。' % len(tool_gaps), '']
+        sr += ['### 工具判断不了、已逐项手工核对的检查', '',
+               '下面 %d 条检查，SR 的自动检查工具判断不了，审查时改为逐项对照网表和原厂资料核对，结论按核对结果算。'
+               % len(tool_gaps), '']
         same = OrderedDict()
         for t in tool_gaps:
             key = tuple(cell(t.get(f) or '') for f in ('tool_limitation', 'sr_improvement', 'method', 'reviewer_kind'))
             same.setdefault(key, []).append(t['check_id'])
         for (limit, improve, method, reviewer), ids in same.items():
-            out += ['### ' + '、'.join(ids), '',
-                    '- **SR 为什么做不到**：' + limit,
-                    '- **建议怎么改进 SR**：' + improve,
-                    '- **这次怎么核对的**：' + ({'AI': 'AI 核对：', 'HUMAN': '人员核对：'}.get(reviewer, '')) + method, '']
-        out += ['</details>', '']
-
-    feedback = render_sr_feedback(notes.get('sr_feedback'))
-    if feedback:
-        out += feedback[:2] + ['<details>', '<summary>展开 SR 维护反馈</summary>', ''] + feedback[2:] + ['</details>', '']
+            sr += ['#### ' + '、'.join(ids), '',
+                   '- **SR 为什么做不到**：' + limit,
+                   '- **建议怎么改进 SR**：' + improve,
+                   '- **这次怎么核对的**：' + ({'AI': 'AI 核对：', 'HUMAN': '人员核对：'}.get(reviewer, '')) + method, '']
+    sr += render_sr_feedback(notes.get('sr_feedback'))
+    if screen:
+        sr += ['### 审查记录自检提示', '',
+               '%d 条，只要求复核写法和依据，不改变结论：%s。明细在 record/review-gate.json 的 quality_screening。' % (
+                   len(screen), '、'.join('%s %d' % kv for kv in
+                                         Counter(c.get('code') for c in screen if isinstance(c, dict)).most_common())), '']
+    if sr:
+        out += [SR_SECTION, '', '<details>', '<summary>展开（给 SR 维护者）</summary>', ''] + sr + ['</details>', '']
 
     gaps = [c for c in current_rows.values() if c.get('review_result') == 'INSUFFICIENT']
     pot = Counter(c.get('potential_severity') for c in gaps)
@@ -600,7 +608,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     history_cell = str(history)
     if not history and any(isinstance(x, str) for x in results.get('history_inputs') or []):
         history_cell = '0（已声明上一版材料，但没有逐条复验行）' if revision else '0（首审不逐条登记）'
-    out += ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
+    counts_block = ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
             '| 通过 / 没通过 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
             '| 与本产品无关（NA） | %d |' % counts.get('NA', 0),
@@ -614,18 +622,15 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                                                   ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
                  if classes else []) + [
             '| 交给后续环节的要求 | %d |' % len(handoffs),
-            '| 审查记录自检提示（不计入结论） | %s |' % (('%d（%s）' % (len(screen), '、'.join(
-                '%s %d' % kv for kv in Counter(c.get('code') for c in screen if isinstance(c, dict)).most_common(3))))
-                if screen else '0'),
+            '| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | %d |' % len(screen),
             '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '',
             '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']
+    out[counts_at:counts_at] = counts_block
     explanations = render_check_explanations(plan, results) if detail == 'full' else []
     if explanations:
         out += ['<details>', '<summary>展开逐项依据与通过标准（完整保留）</summary>', ''] + explanations + ['</details>', '']
-    out += ['## 详细记录', '',
-            '逐项结论、资料需求、修改条件及引用保存在[检查结果](record/review-results.json)，'
-            '通用盲区和完整覆盖保存在[检查计划](record/review-plan.json)，计数见[校验记录](record/review-gate.json)。'
-            '需要逐条展开正文时用 `--detail full` 生成完整报告；简洁模式不删除记录或改变结论。', '']
+    out += ['## 索引', '', '| 内容 | 文件 |', '|---|---|'] + [
+        '| %s | [%s](record/%s) |' % (what, name, name) for name, what in RECORD_INDEX] + ['']
     return '\n'.join(out)
 
 

@@ -25,7 +25,7 @@ REPORT = '审查报告.md'
 RECORD = 'record'
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from render_report import jargon_in  # noqa: E402
+from render_report import SR_SECTION, jargon_in  # noqa: E402
 
 HISTORY_RULE = 'REQ-H02'
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
@@ -33,10 +33,12 @@ LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.jso
 
 
 def plain_language_errors(report):
-    """Text written for the designer (everything above the tool-gap and count sections) must be plain."""
-    body = report
-    for heading in ('\n## 审查工具的不足', '\n## 对 SR 技能的反馈', '\n## 数字一览'):
-        body = body.split(heading)[0]
+    """Text written for the designer must be plain: everything except the count table (labels fixed by
+    render_report) and what follows the SR section (SR feedback, index)."""
+    body = report.split('\n' + SR_SECTION)[0].split('\n## 索引')[0]
+    if '\n## 数字一览' in body:
+        head, rest = body.split('\n## 数字一览', 1)
+        body = head + ('\n## ' + rest.split('\n## ', 1)[1] if '\n## ' in rest else '')
     errors = []
     for number, line in enumerate(body.splitlines()[1:], 2):
         words = jargon_in(line)
