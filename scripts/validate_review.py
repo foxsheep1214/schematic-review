@@ -161,7 +161,7 @@ def primary_anchors(obj, db=None):
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
                     require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
-                    execution_audit=None, require_execution_audit=False):
+                    execution_audit=None, require_execution_audit=False, evidence_root=None):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -183,12 +183,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if not isinstance(plan, dict) or not isinstance(report, dict):
         return {"valid": False, "errors": ["plan/results must be objects"],
                 "release": "NO_GO", "blockers": ["invalid input"],
-                "quality_screening": screen_quality(plan, report, db)}
+                "quality_screening": screen_quality(plan, report, db, evidence_root)}
     history_ids = {c.get('id') for c in plan.get('checks') or [] if isinstance(c, dict) and c.get('rule') == 'REQ-H02'}
     shape = results_model.shape_errors(report, history_ids)
     if report.get('schema_version') != results_model.SCHEMA_VERSION:
         return {"valid": False, "errors": shape, "release": "NO_GO", "blockers": ["results schema"],
-                "quality_screening": screen_quality(plan, report, db)}
+                "quality_screening": screen_quality(plan, report, db, evidence_root)}
     errors.extend(shape)
     written, report = report, results_model.expand(report)
     errors.extend(validate_engine(plan, require_current_engine))
@@ -512,7 +512,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if "summary" in report:
         require(report["summary"] == computed, "summary does not match unique findings/check results")
     if plan.get("review_phase", "schematic_freeze") == "schematic_freeze":
-        for item in screen_quality(plan, report, db)["candidates"]:
+        for item in screen_quality(plan, report, db, evidence_root)["candidates"]:
             if item["code"] in FREEZE_BLOCKING_CODES:
                 blockers.append(f"{item['code']}: {len(item['check_ids'])} evidence gaps need individual grading before freeze")
     release = "NO_GO" if errors or blockers else ("CONDITIONAL_GO" if accepted else "GO")
@@ -523,7 +523,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     repair_counts = {state: sum(isinstance(x.get("remediation"), dict) and
                     x["remediation"].get("readiness") == state for x in findings.values())
                     for state in READINESS}
-    return {"quality_screening": screen_quality(plan, report, db),
+    return {"quality_screening": screen_quality(plan, report, db, evidence_root),
             "execution_audit": execution,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
@@ -573,6 +573,7 @@ def main():
                                  require_bindings=args.require_bindings,
                                  execution_audit=read(args.execution_audit) if args.execution_audit else None,
                                  require_execution_audit=args.require_execution_audit,
+                                 evidence_root=Path(args.results).resolve().parent,
                                  old_db=read(args.old_db) if args.old_db else None,
                                  old_plan=read(args.old_plan) if args.old_plan else None,
                                  require_revision=args.require_revision_impact,

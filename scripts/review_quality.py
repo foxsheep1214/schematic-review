@@ -79,7 +79,7 @@ def _decisive_part(what):
     return rest if rest.strip(' ；;，,。') else what
 
 
-def screen_quality(plan, report, db=None):
+def screen_quality(plan, report, db=None, evidence_root=None):
     if isinstance(report, dict):
         report = results_model.expand(report)
     output = {'status': 'NOT_RUN', 'scope': 'ADVISORY_PATTERN_SCREENING_ONLY',
@@ -364,6 +364,7 @@ def screen_quality(plan, report, db=None):
     candidates.extend(scope_echoes_task(report))
     candidates.extend(templated_handoffs(report))
     candidates.extend(stage_and_cause_misfiles(report, expected))
+    candidates.extend(open_despite_bounds(report, expected, evidence_root))
     nets = db.get('nets', {}) if isinstance(db, dict) else {}
     candidates.extend(duplicate_work_items(report, known | {n.rsplit('/', 1)[-1] for n in nets if isinstance(n, str) and n} if isinstance(nets, dict) else known))
     for candidate in candidates:  # name fields the way a schema 3 record writes them
@@ -603,6 +604,95 @@ def stage_and_cause_misfiles(report, expected):
                       'message': 'how_to_close says the document was read and what remains is a calculation. '
                                  'That is review work (REVIEW_INCOMPLETE, finish it this round) or a design task for '
                                  'ASG, not EXTERNAL_DATA; name the datum that is actually absent if one is.'})
+    return found
+
+
+UNIT = r'(mV|µA|uA|mA|kΩ|MΩ|Ω|mW|kHz|MHz|Hz|°C|V|A|W)(?![A-Za-z])'
+NUM_UNIT = r'(?<![pP第\d.])(\d+(?:\.\d+)?)\s*' + UNIT   # not a page number ("p11 V5")
+# "VCCmin10.2375V>U402停机9.5V", "漏极763.74V<800V": a number compared with another of the same unit.
+COMPARE_RE = re.compile(NUM_UNIT + r'[^<>≤≥，,；;。、/]{0,12}?[<>≤≥][^<>≤≥，,；;。、/]{0,12}?' + NUM_UNIT)
+NEGATED_RE = re.compile(r'不|未|没|无法')
+SENTENCE_RE = re.compile(r'[^。；;\n]+')
+VENDOR_ASK_RE = re.compile(r'向[^，,；;。]{0,16}(?:原厂|厂商|厂家|供应商|[A-Z][A-Za-z]{2,})[^，,；;。]{0,8}(?:索取|取得|索要|要)')
+
+
+def _computed_margins(text):
+    return [m.group(0) for m in COMPARE_RE.finditer(text) if m.group(2) == m.group(4) and not NEGATED_RE.search(m.group(0))]
+
+
+def _about(text, names):
+    """Sentences of a shared evidence section that name this check's own parts or nets."""
+    return [t for t in SENTENCE_RE.findall(text)
+            if any(re.search(r'(?<![A-Za-z0-9])%s(?![0-9])' % re.escape(n), t) for n in names)]
+
+
+def _cited_sections(row, root):
+    """Markdown sections the row cites as evidence (`evidence/engineering.md` + `## BIAS`): where the reviewer's
+    calculations live when the rationale only summarises them."""
+    out = []
+    for ev in row.get('evidence') or []:
+        if not isinstance(ev, dict) or not isinstance(ev.get('source'), str) or not str(ev.get('locator', '')).startswith('#'):
+            continue
+        for base in (root, root / 'evidence'):
+            path = base / ev['source']
+            if path.suffix == '.md' and path.is_file():
+                head = ev['locator'].strip()
+                level = len(head) - len(head.lstrip('#'))
+                lines, keep = [], False
+                for line in path.read_text(encoding='utf-8', errors='replace').splitlines():
+                    if line.startswith('#'):
+                        hashes = len(line) - len(line.lstrip('#'))
+                        if keep and hashes <= level:
+                            break
+                        keep = keep or line.strip() == head
+                    elif keep:
+                        lines.append(line)
+                out.append('\n'.join(lines))
+                break
+    return out
+
+
+def open_despite_bounds(report, expected, evidence_root=None):
+    """The other direction from the screens above: a check kept INSUFFICIENT although the record already
+    holds a computed margin, or a design value requested from a vendor (100W PD R5: W-BIAS computed
+    VCCmin 10.24V > 9.5V and still waited for "全温小电流保证"; W-POWER 763.74V < 800V)."""
+    found, margins, design_asks = [], {}, []
+    for row in report.get('checks') or []:
+        if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
+            continue
+        if row.get('review_result') != 'INSUFFICIENT':
+            continue
+        requests = row.get('input_requests') if isinstance(row.get('input_requests'), dict) else {}
+        texts = [row.get('rationale')] + list(row.get('missing_inputs') or []) + [
+            q.get(f) for q in requests.values() if isinstance(q, dict) for f in ('why_decisive', 'acquisition')]
+        if evidence_root is not None:
+            obj = (expected[row['id']] or {}).get('object') or {}
+            names = [x for x in [obj.get('ref'), obj.get('net')] + list(obj.get('refs') or []) + list(obj.get('nets') or [])
+                     if isinstance(x, str) and x]
+            for section in _cited_sections(row, Path(evidence_root)):
+                texts += _about(section, names)
+        hits = _computed_margins(' '.join(t for t in texts if isinstance(t, str)))
+        if hits:
+            margins[row['id']] = list(dict.fromkeys(hits))[:3]
+        if row.get('gap_cause') == 'DESIGN_OPEN' and any(
+                isinstance(q, dict) and isinstance(q.get('acquisition'), str) and VENDOR_ASK_RE.search(q['acquisition'])
+                for q in requests.values()):
+            design_asks.append(row['id'])
+    same = defaultdict(list)
+    for cid, hits in sorted(margins.items()):
+        same[tuple(hits)].append(cid)
+    for hits, ids in same.items():
+        found.append({'code': 'MARGIN_COMPUTED_BUT_OPEN', 'check_ids': ids, 'margins': list(hits),
+                      'message': 'The record already compares a computed value with its limit, yet the check stays '
+                                 'INSUFFICIENT. With margin, judge PASS (B) and name the assumptions and a prototype '
+                                 'measurement handoff; without, FAIL or a named risk with a fix. Keep INSUFFICIENT only '
+                                 'when the comparison does not decide this check, and say why.'})
+    if design_asks:
+        found.append({'code': 'DESIGN_VALUE_ASKED_OF_VENDOR', 'check_ids': sorted(design_asks),
+                      'message': 'The gap is a design decision (DESIGN_OPEN) but the way to close it is a vendor request. '
+                                 'Values this design sets (leakage inductance, auxiliary regulation, compensation or '
+                                 'configuration codes) are back-calculated into a specification for ASG or handed to '
+                                 'prototype measurement; ask the vendor only for what the part itself guarantees.'})
     return found
 
 

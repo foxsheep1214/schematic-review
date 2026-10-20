@@ -93,6 +93,7 @@ next_action 和缺口的 how_to_close 写具体动作及资料取得方法；clo
 - 质量提示（`quality_screening`）中有 TEMPLATED_SEVERITY_REASON / UNIFORM_SEVERITY_WITHIN_RULE 时，先重新定级再出报告；
   来不及时在结论里写明“等级尚未逐行复核”，不把模板等级当结论展示。
 - BOILERPLATE_ACQUISITION / TEMPLATED_DESIGN_OPTION_REASON / TEMPLATED_WORK_ITEM_REASON 表示多件待办共用同一句“怎么拿资料”、同一句“为什么不改图”或同一句 `reason`；逐件写出真实来源（文件、供应商联系、测量）、不改图的具体理由或该件为什么在这个阶段、为什么这些检查归一件，或提出改法。三件以上共用的 `reason` 报告不显示。报告结论里的自检行只报数量，不改结论。
+- MARGIN_COMPUTED_BUT_OPEN 表示记录里已经算出了“X > 限值”之类的余量，检查却仍是证据不足：余量够就判 PASS（B）并写明假设和样机实测移交，不够就判 FAIL 或风险并给改法。DESIGN_VALUE_ASKED_OF_VENDOR 表示设计没定的量写成了向厂家索取：反算允许范围写成设计规格，见 [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)。
 - FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP 表示把烧录镜像/读回/量产校准记成了阻塞冻结的设计缺口；改成判原理图前提 + 阶段 NA 移交固件。CALCULATION_RECORDED_AS_DATA_GAP 表示资料已读只差计算；本轮算完或交 ASG。DUPLICATE_WORK_ITEMS 表示同一方法套在几个对象上被拆成了几件；合并成一件多位号。
 - PORT_OVERVOLTAGE_GRADED_BELOW_P0 表示后果写的是端口/负载过压，类别却藏起了这条路径；按危险度表改类别，锁定式 OVP 是降级理由时写进 exclusion。REQUEST_SCOPE_ECHOES_TASK / TEMPLATED_HANDOFF 是写法问题：适用范围写工况不写标题，移交表逐条写要做要测的事。
 - WORK_ITEM_MIXES_LEVELS / WORK_ITEM_MIXES_HAZARD_PATHS 表示一件 P0 待办夹带了 P1 分支或两条危险路径；拆成各自的待办，或在 reason 里写明为何同根因。REF_GLUED_TO_VALUE / OVERPRECISE_CLOSURE_VALUE / ACQUISITION_WITHOUT_LOOKUP 是写法问题：分开位号和数值、通过条件不写算例中间值、缺资料先写查过哪页。
