@@ -153,12 +153,12 @@
 | 非关键故障指示的物料字段不一致，已核不参与供电/保护且关键功能已保证 | 潜在 P2；若该器件实际上承担唯一保护，重新按保护路径分级 |
 | 核心要求已通过，只缺哪种图纸命名更便于维护的依据 | 潜在 P3；不能用这个例子降级关键物料身份或制造验收缺证 |
 
-每条缺口的 `severity` 写明 `affects`（受影响功能）和 `consequence`（条件性后果，同时是定级理由），
-工况写在缺口的 `scope`，冻结影响依据就是缺口的 `closure_criterion`。
-具体缺口与证据由缺口的 `what`、行的 `binding` 和 `evidence` 定位。共用物理路径可以引用同一分析，
+每个开放项的 `severity` 写明 `affects`（受影响功能）和 `consequence`（条件性后果，同时是定级理由），
+工况写在开放项的 `scope`，冻结影响依据就是开放项的 `closure`。
+具体缺口与证据由开放项的 `what`、功能的 `conditions`/`evidence` 和行的 `binding` 定位。共用物理路径可以引用同一分析，
 但必须说明它与本项判据的关系；一个高风险对象上的所有检查不因此自动成为 P0。
 `consequence` 包含“缺口→后果路径→独立保护/排除依据→所选等级”；调整等级所需证据和复验动作写在
-`how_to_close` 或关联任务里。没有后果路径的“风险未知/参考手册”不构成定级理由。
+`acquisition`/`spec` 或 `closure` 里。没有后果路径的“风险未知/参考手册”不构成定级理由。
 把“该规则涉及可靠性，未知时可能影响功能”等泛化文字换成当前对象的实际物理因果：未知参数如何
 经哪段供电/信号/保护路径改变哪项受控功能，已知限值与独立排除依据是什么。单纯回显对象、工况、
 判据或加一句“潜在 P1/P2”仍不构成后果链。依据不足时先完成追踪，不能为了完整字段或 `valid=true`
@@ -255,46 +255,35 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 | `prototype_verification` | 接收实物/布局证据，追踪整改 | 只审原理图与外部证据交接，不签署整机、EMC、寿命或生产准出 |
 
 `review-gate.json` 中的工具字段：`valid/errors` 表示记录是否可对账；`workflow.status/current_work_items`
-给出本轮先做什么；`release` 是原理图冻结的 GO / CONDITIONAL_GO / NO_GO。
+（由开放项派生，见下）给出本轮先做什么；`release` 是原理图冻结的 GO / CONDITIONAL_GO / NO_GO。
 `release` 在非冻结阶段也会计算，但**不是本轮总判定**：非冻结阶段的报告展示实际用途下的电气结论、
 必要疑点及集成约束，不因未接受移交或未给完整制造资料就把整个设计标为失败。冻结 NO_GO 也不妨碍继续设计和补证。
 
-### 共同根因归并为任务
+### 待办由开放项派生
 
-结果使用 `work_items`；每个电气 FAIL/其他 INSUFFICIENT 至少关联一个任务，
-需求澄清直接生成任务，不在 work_items 重复登记；没有未决项时填空数组。
+待办（`work_items`）不手写。`validate_review.py` 从 `functions[]` 的每个开放项（`open[]`，REQUIREMENT 除外）和
+失败项（`fails[]`）各派生一件，写进 `review-gate.json` 的 `workflow.work_items`，编号 `W-<key>`（key 已是 W- 开头则原样）：
 
-```json
-{
-  "work_items": [{
-    "id": "W-MAG-001",
-    "title": "取得磁件的受控规格",
-    "root_cause": "当前资料包没有目标变压器的绕组及绝缘规格",
-    "check_ids": ["<实际检查ID1>", "<实际检查ID2>"],
-    "due_stage": "schematic_freeze",
-    "reason": "缺口影响匝比及绝缘判断，冻结前须闭合；其他独立连接检查可继续",
-    "next_action": "取得对应设计版本的磁件规格，再分别完成所关联的计算与条款核对",
-    "evidence": [{"source": "input-manifest.json", "locator": "磁件规格缺失记录"}]
-  }]
-}
-```
+| 待办字段 | 来自 |
+|---|---|
+| `title` / `root_cause` | 开放项的 `title`（无则 `what`）/ `what` |
+| `reason` | `why`，无则 `severity.consequence` |
+| `next_action` | DESIGN_VALUE：“由 {owner} 确定：{spec}”；VENDOR_DATUM：`acquisition`；失败项：“按发现项 {finding_id} 的改法处理” |
+| `due_stage` / `design_option` | 开放项同名字段（`due_stage` 默认 `design_iteration`） |
+| `check_ids` | 用 `open_ref`/`fail_ref` 指向这一项的行（即 `decides` 命中的方面×状态） |
+| 等级 | 开放项的 `severity.level`；失败项取发现项 |
 
-- 字段全部必填。共享的只是补证或修改动作，不是电气结论；各项仍保留自己的判据、严重度理由和证据。
-- 关联了 `gap_cause` 为 EXTERNAL_DATA 或 DESIGN_OPEN 的证据不足项时，任务还须带 `design_option`：
+- 共享的只是补证或修改动作，不是电气结论；每条行仍保留自己的判据和证据。一件待办只有一个开放项，
+  所以不再有“一行被几件待办分缺口”的归属字段；两个功能缺同一份资料时各写各的开放项（key 不同），报告按文字合并显示。
+- 关联 DESIGN_VALUE / VENDOR_DATUM 开放项的待办须有 `design_option`（写在开放项上）：
   能改图消除缺口时写 `PROPOSED` 的电路改进建议及其规避的问题，不能时写 `NONE` 和原因。
   字段见 [证据不足项的电路改进建议](report-and-remediation.md#三证据不足项的电路改进建议)；`--require-actionable` 时强制校验。
-- 只有文字相似、同一器件或同一本手册不构成共同根因。根因相同的 FAIL 共用一个任务，引用 finding 的改法。
-- 一个任务只开一条危险路径：P0 任务的各 P0 分支须有同一个 `hazard_path`（绝缘项里不放 FIRE 分支），
-  P1 分支不并进 P0 标题下的“涉及 N 条检查”；确属同根因的低等级分支在 `reason` 里说明，报告会按等级分列条数。
-  混合时 `WORK_ITEM_MIXES_LEVELS` / `WORK_ITEM_MIXES_HAZARD_PATHS` 提示拆分。
-- `design_option` 为 `PROPOSED` 时，改法不得以缺口的不利结果为前提（“改为更高分断方案”先假定了保险不够）；
-  缺口能靠查标准条款或手册关闭的，`preference` 写 `EVIDENCE_FIRST`，先查再决定改不改。
-- **复合检查的任务归属**：多任务共享同一缺证检查时，每个任务给
-  `request_keys: {"检查ID": ["缺口 what 的原文"]}`，只列自己负责的缺口。
-  每条缺口恰属一个任务；未知键、漏分配、重复分配都拒绝。单任务独占一条检查时可省略，表示负责全部缺口。
-  每条缺口各带自己的 `severity`；检查行的等级取最高的缺口，不会被低等级分支隐藏。
-  任务只取自己拥有的缺口等级和资料需求，P1 任务不继承相邻 P0 缺口。检查本身仍按最高后果阻断。
-  能按物理对象/判据拆开时优先拆检查，而不是用任务字段掩盖过宽的整板结论；资料请求措辞相似不能自动合并。
+  改法不得以缺口的不利结果为前提（“改为更高分断方案”先假定了保险不够）；缺口能靠查标准条款或手册关闭的，
+  `preference` 写 `EVIDENCE_FIRST`，先查再决定改不改。
+- 一个开放项只开一条危险路径：P0 开放项的 `severity.hazard_path` 唯一；同一功能里后果等级不同的缺口分开写开放项，
+  `decides` 各自限定方面与状态，P1 的方面不并进 P0 的开放项。
+- 只有文字相似、同一器件或同一本手册不构成同一开放项。根因相同的 FAIL 行引用同一个失败项，改法在发现项里。
+- 能按物理对象/判据拆开时优先拆开放项的 `decides`，而不是让一个开放项铺满整块电路（超过 3 个方面要写 `decides_reason`）。
 - 阻断表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
 - REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过。
   只剩 SR 工具自身限制、审查时已对照网表和原厂资料核对完的，不记 REVIEW_INCOMPLETE，按核对结论判定并写 `manual_verification`
@@ -312,7 +301,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 2. 判据里有没有原理图能判的部分：连接、额定、负载边界、保护配置、损耗预算、必要设计裕量、
    保守参数下的吸收/钳位计算？有 → 拆成独立检查，按 PASS / FAIL / INSUFFICIENT 判，不随测试项移交。
 3. 剩余部分问一句：**拿到这个数，审查者今天能否在原理图上重判这一条？**
-   能（数来自手册、需求、系统设计、配置表或计算）→ INSUFFICIENT，按[最小充分证据](evidence-proportionality.md#复核每条证据不足)写 gap_cause 及补证要求；
+   能（数来自手册、需求、系统设计、配置表或计算）→ 先按[判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)走完五步，仍判不了才在功能判定里记开放项（kind 见[复核每条证据不足](evidence-proportionality.md#复核每条证据不足)），行 INSUFFICIENT 由它派生；
    不能（数只能由样机、PCB、结构或试验产生）→ 阶段 NA + HANDOFF。
 
 实际负载未知、保护门限/故障输出配置未知，都是第 3 步的“能”，记 INSUFFICIENT，不是下游验证。
@@ -327,7 +316,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 
 1. `review_result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`；
    `applicability` **保持 `APPLICABLE`**（产品需求仍适用），不写 applicability_evidence；
-   不填 gap_cause、gaps、blocking。
+   不填 open_ref、blocking。
 2. `handoff.required: true`、`scope: downstream_verification`、`product_requirement_status: PENDING_VERIFICATION`，
    写清接收角色、约束、验证方法。
 3. `handoff.schematic_prerequisites` 列第 2 步拆出的检查 ID；确无前提填 `[]` 并给 `no_schematic_prerequisites_reason`。

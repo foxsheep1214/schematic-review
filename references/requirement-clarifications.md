@@ -103,8 +103,7 @@
     "evidence": [{"source": "需求规格 Rev A", "locator": "输出电流条目及本轮输入核查记录"}],
     "freeze_impact": "BLOCKING",
     "impact_reason": "电流范围影响器件额定和损耗，尚不能确定原理图选型"
-  }],
-  "work_items": []
+  }]
 }
 ```
 
@@ -115,12 +114,12 @@ OPEN 项另须填两项，供报告直接告诉需求方“需求说明哪里不
 `proposed_requirement` 写建议补入需求说明的条文，要具体到可验收的数值、工况或允许/禁止的行为，有多个可选口径时写推荐项并注明其他选项。建议条文只是提案，需求方确认前不作为判据。
 closure_criteria 写确认方式和复验范围。evidence 必须定位已检查的输入和待决依据。
 
-OPEN 项的 check_ids 只关联 `INSUFFICIENT + REQUIREMENT_OPEN` 检查。这些检查仍须有
-gaps（只写 what）、rationale 和证据，但缺口不写 severity。
+OPEN 项的 check_ids 只关联 `INSUFFICIENT + REQUIREMENT_OPEN` 检查：行的 `open_ref` 指向一个
+`kind: REQUIREMENT` 的开放项（只写 key/what/decides，不写 severity），功能的 rationale 和证据照常。
 独立电气 FAIL、证据缺口、已完成的窄判据另留检查，不能把它们改成需求问题来改变严重度或放行。
 
 澄清记录直接生成本轮 workflow 任务，保留 owner、decision_due 和 closure_criteria；
-不要在 work_items 重复添加相同需求待办。其他 FAIL/INSUFFICIENT 继续用 work_items。
+REQUIREMENT 开放项不派生待办，不与澄清记录重复。其他 FAIL/INSUFFICIENT 的待办由各自的开放项/失败项派生。
 
 ## 冻结影响与决策时点
 

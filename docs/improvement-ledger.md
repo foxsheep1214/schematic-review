@@ -7,6 +7,26 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function verdicts, step 5: the documents say what the scripts now enforce (2026-10-20)
+
+Steps 1–4 changed what a reviewer writes; SKILL and the references still told
+them to fill rows, hand-write work items, split gaps with `request_keys` and
+keep obligation contracts for PRO-C03/PWR-C15. SKILL step 5 is now three
+sub-steps (function verdicts from the plan frames, derive_rows, hand-filled
+factual rows) and step 7 reviews functions instead of rows; plan-and-results
+describes the three-layer ledger (functions → rows → derived work items), plan
+schema 4 (question/function_id/aspect, frames) and results schema 4 with the
+bias example and F1–F7, and its shared-gap example is one function with two
+open items; verdicts-and-release derives work items from open items;
+evidence-proportionality maps its gap causes to open-item kinds and notes that
+the five bounding steps travel with each frame; closure-obligations.md is
+merged into the function section (isolation qualification and loop stability
+are aspects of a function) and removed.
+
+- Event: user:2026-10-20 (design docs/2026-10-20-function-verdicts-design.md §8/§10, step 5)
+- Causes: rule_not_enforced 1
+- Changed: SKILL.md, references/plan-and-results.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/requirement-clarifications.md, docs/improvement-ledger.md
+
 ## Function verdicts, step 4: the report answers per function (2026-10-20)
 
 The R5 report listed 17 work items and 142 open rows but nowhere said

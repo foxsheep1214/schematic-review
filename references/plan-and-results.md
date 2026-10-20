@@ -4,13 +4,16 @@
 `review-results.json`（逐项结果）。计划只决定每项的规则、适用性和准备度，不提前制造 PASS/FAIL；
 结果另存，由 `validate_review.py` 对账。常规命令见 [SKILL.md](../SKILL.md)。
 
-台账只有两层：
+台账有三层，只有第一层是审查员写的判断：
+- **功能判定**（`functions[]`）是判断单位。一个功能回答一块电路的一个问题（“偏置路径能否让 VCC 保持在 9.5 V 以上”），
+  带手册条款、计算、余量、结论和开放项/失败项。计划按 intent 电路生成框架；框架外的功能审查员自己加。
 - **逐项检查**是审计底账。一行对应一条规则、一个实际对象、一个状态，编号为“规则.对象[.状态]”，跨轮次保持不变，
-  供改版复审、训练裁决和复核引用。一个器件挂很多条规则是正常的，不合并成一行。
-- **待办**（`work_items`）是交付单位。设计者、ASG 和报告都按待办处理；每个 FAIL 和 INSUFFICIENT 至少落进一个待办，
-  同一根因、同一补证动作的检查合并到一个待办，PASS 和 NA 不进待办。
+  供改版复审、训练裁决和复核引用。绑定了功能的行由 `derive_rows.py` 从功能派生，不手填；
+  事实性检查（目检、脚表、身份、需求条款）手填。一个器件挂很多条规则是正常的，不合并成一行。
+- **待办**是交付单位，由开放项和失败项派生（编号 `W-<key>`，见 [结论与准出](verdicts-and-release.md#待办由开放项派生)），
+  不手写。设计者、ASG 和报告都按待办处理；PASS 和 NA 不进待办。
 
-不另设“问题组”之类的中间层；需要把几条检查放在一起处理时，用待办归并。
+“资料不足”只有一个入口：先有功能判定的开放项，才有 INSUFFICIENT 的行。
 
 ## 一、intent.json（schema_version 3）
 
@@ -87,7 +90,7 @@
   不得把未上电的稳压器或端口标成 source 来消除告警。
 - 各检查器的 intent 段（`i2c_topology`、`decoupling`、`device_kinds` 等）见 [自动检查](automation.md)。
 
-## 二、review-plan.json（schema_version 3）
+## 二、review-plan.json（schema_version 4）
 
 ### 生成与合并
 
@@ -123,8 +126,12 @@
 | `required_inputs` | 当前缺失的输入 |
 | `trigger` | 实例化该项的可复现依据 |
 | `handoff` | 独立下游动作，可与任一结果并存；`constraint`/`verification` 逐条写接收方要做和要测的事，不写“执行 X 原文及其全部工况”这类只换编号的套话（`TEMPLATED_HANDOFF` 提示） |
+| `question` / `function_id` / `aspect` | 电路成员行才有：按规则模板填了电路、位号、状态和需求窗口的问题；所属功能框架；方面（= 规则标题）。问题里不许有禁止句（“不得…”“不把…外推”），校验 `question_errors` 拒绝，审查员补加的行同样受限 |
 
-`rule_plan[]` 回答“这类规则要不要跑”，`checks[]` 回答“具体审哪一项”。
+`rule_plan[]` 回答“这类规则要不要跑”，`checks[]` 回答“具体审哪一项”，`functions[]` 是功能框架：
+每个 intent 电路一条，含 `id`（`FN-<电路 id>`）、`question`（由成员问题归纳，审查员可改）、`objects`、`states`、
+`members[]`（成员行 id、规则、方面、状态）、`blind_spots`（每条成员规则的盲区一句）和 `checklist`
+（判“证据不足”之前的五步原文）。审查员照框架写功能判定，不翻规则书。
 
 - APPLICABLE + READY：本轮执行；READY 不代表 PASS。
 - APPLICABLE + WAITING_EVIDENCE：必须执行但缺材料，未补齐时为 INSUFFICIENT。
@@ -180,25 +187,93 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 工况，未证路径留具体缺口，不添加需求未承诺的零待机电流门槛。结果、父项、发现项和任务同步核
 实际页码、型号、物理脚/网络与状态，避免把封装/文档错误误写为实体错连。
 
-## 三、review-results.json（schema_version 3）
+## 三、review-results.json（schema_version 4）
 
 ### 顶层字段
 
 - `plan_digest` / `db_digest`：`validate_review.fingerprint()` 对 JSON 对象排序序列化后的 SHA-256（不是文件字节哈希）。
+- `functions`：功能判定，见下节；没有时写空数组。
 - `checks`：与最终计划 ID 集合完全一致的逐项结果。
 - `findings`：唯一已确认缺陷/改善，一个根因可被多个检查引用。
 - `scope_checks`：六个覆盖维度 `input_consistency`、`requirements`、`chains`、`states`、`datasheets`、`history`
   各指向对应覆盖审计项。表示覆盖审计完成，不是该域全部电气通过。
 - `coverage`：各维度“对象→检查 ID 数组”的完整映射。有 `--db` 时机械检查 components、pins、nets、pages
   及 requirements 是否都关联至少一条检查；仅 PDF 时由页面/手工对象清单另审，不制作伪网表。
-- `requirement_clarifications`（无则可省略）与 `work_items`（见 [结论与准出](verdicts-and-release.md#共同根因归并为任务)）；
-  关联 EXTERNAL_DATA/DESIGN_OPEN 证据不足项的任务带 `design_option`（见 [报告与修改说明](report-and-remediation.md#三证据不足项的电路改进建议)）。
-- schema 3 没有分版本号：`binding_version`、`remediation_version`、`workflow_version`、`impact_class_version`、
+- `requirement_clarifications`（无则可省略）。`work_items` 不再写：待办由开放项派生（见 [结论与准出](verdicts-and-release.md#待办由开放项派生)）。
+- schema 4 没有分版本号：`binding_version`、`remediation_version`、`workflow_version`、`impact_class_version`、
   `requirement_clauses_version`、`requirement_clarification_version` 写了会被拒绝，各项一律按最新规则校验。
   绑定和修改说明由 `validate_review.py` 的 `--require-bindings`、`--require-actionable` 要求。
-  schema 2 的旧台账不再读取，按本版 SR 重新审查。
+  schema 2/3 的旧台账不再读取，按本版 SR 重新审查。
 - 复审另有 `revision_impact_version`、`revision_digest` 和必需项的 `reverification`，见 [改版复审](revision-review.md)。
 - `summary` / `release` 可省略，由校验器计算；填了必须一致。
+
+### 功能判定（functions）
+
+以 R5 的偏置电路为例（数字取自原记录和手册）：
+
+```json
+{
+  "id": "FN-BIAS", "circuit": "BIAS",
+  "question": "默认 5 V 输出、−10..105 °C、辅助绕组取最低电压时，Q401 偏置路径能否让 U402 VCC 保持在 9.5 V 以上",
+  "objects": {"refs": ["Q401", "D401", "D402", "D404", "C403"], "nets": ["AUX_DC", "BIAS15", "VCC"]},
+  "states": ["STARTUP", "RUN", "LATCH"],
+  "conditions": [
+    {"id": "c1", "source": "Nexperia-PMEG6010CEH.pdf", "locator": "p3 Table 7",
+     "says": "VF ≤ 0.31 V @10 mA，≤ 0.40 V @100 mA（25 °C）", "use": "20 mA 在两点之间，VF 单调，取 0.40 V 作上界"},
+    {"id": "c2", "source": "Infineon-ISC032N12LM6.pdf", "locator": "p4 Table 4",
+     "says": "VGS(th) 1.2–2.2 V @110 µA", "use": "20 mA 取 2.2 V + 0.5 V 工程余量"},
+    {"id": "c3", "source": "NCP1343.pdf", "locator": "p7 Table 7", "says": "VCC(off) max 9.5 V", "use": "判据"}
+  ],
+  "calculation": {"claim_ids": ["BIAS-VCCMIN"], "result": "VCC_min = 10.24 V",
+                  "margin": {"value": 0.74, "unit": "V", "against": "VCC(off) max 9.5 V"},
+                  "assumptions": ["辅助绕组 −10%", "Na/Ns = 21/6"], "aspect": "变换器电压裕量"},
+  "verdict": "OPEN",
+  "open": [{
+    "key": "AUX-5V-MIN", "kind": "DESIGN_VALUE",
+    "what": "T301 辅助绕组在 5 V 空载时的最低峰值电压还没有定",
+    "scope": "5 V 空载、−10..105 °C",
+    "spec": "AUX_AC 峰值 ≥ 14.5 V（= 9.5 + 2.7 + 0.4 + 1.7 + 0.2 V 余量）", "owner": "ASG 磁件设计",
+    "closure": "磁件规格写明 5 V 空载最低峰值电压且 ≥ 14.5 V",
+    "decides": [{"aspect": "变换器电压裕量", "states": ["STARTUP", "RUN"]}],
+    "margin_not_decisive_reason": "余量按标称辅助电压算，辅助电压本身是待定的设计值",
+    "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "U402 供电",
+                 "consequence": "辅助电压低于规格时 U402 在 5 V 待机掉电重启"},
+    "design_option": {"status": "NONE", "reason": "先定磁件规格；定不下来再改为有保证压差的受控偏置"}
+  }],
+  "fails": [],
+  "handoffs": [{"receivers": ["样机试验"], "constraint": "5 V 空载、−10 °C 时 VCC ≥ 9.5 V", "verification": "实测 C403 电压"}],
+  "evidence": [{"source": "evidence/engineering.md", "locator": "## BIAS"}]
+}
+```
+
+字段：
+
+| 字段 | 含义 |
+|---|---|
+| `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头 |
+| `conditions[]` | 第 1 步“先用手册里已有的界限”：每条 `id`/`source`/`locator`/`says`/`use`，`use` 写怎么用（相邻测试点夹界、门限上限、温度系数） |
+| `calculation` | 第 2 步：`result`、`margin{value,unit,against}`、`claim_ids`、`assumptions`；只针对一个方面时写 `aspect`。没有数值的功能写 `no_calculation_reason` |
+| `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
+| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[{aspect, states?}]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`、`title`/`why` 可选。DESIGN_VALUE 另写 `spec` 和 `owner`（不许写成向厂家索取）；VENDOR_DATUM 另写 `checked`（条款 id）、`why_insufficient`、`acquisition`、`worst_case{result 或 not_boundable_reason}`；USER_DEFERRED 写 `instruction`；REQUIREMENT 不写 severity，走需求澄清。`decides` 超过 3 个方面要写 `decides_reason`；功能已算出正余量而仍开放时写 `margin_not_decisive_reason` |
+| `fails[]` | 失败项：`key`、`finding_id`（指向 findings）、`what`、`decides`，可带 `title`/`why`/`due_stage`/`design_option` |
+| `handoffs[]` | 功能级移交，派生行时填进计划要求移交的行 |
+| `verdict_history[]` | 改过结论时写 `{from, to, basis: [条款或 claim id], note}`，basis 不能为空 |
+| `evidence` | 可定位的证据 |
+
+校验 F1–F7：F1 每个功能有问题、对象、至少一条完整的条款和结论；F2 DESIGN_VALUE 写规格与责任方，不向厂家要；
+F3 VENDOR_DATUM 写查过什么、为什么不够、最坏情况；F4 算出正余量就不能在同一方面保留开放项（除非写明理由）；
+F5 行跟随功能（见下）；F6 改结论要引条款或数字；F7 一个开放项铺过 3 个方面要写理由。
+
+隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是功能的方面，不另设合同：
+PRO-C03 在隔离功能里逐个列出变压器、光耦/数字隔离器、跨接电容的实际工作电压、重复峰值/频率和厂家资格条件
+（短时耐压、目标绝缘类别、无直流跨接都不能独自关闭）；PWR-C15 在变换器功能里写反馈模型、补偿配置和角点稳定性
+（无反馈环按拓扑 NA；内部补偿用厂家适用条件证明；Bode 实测是移交，不是开放项）。
+
+**行跟随功能。** 绑定了功能的行（计划成员行，或审查员写了 `function_id` 的行）：功能 PASS → 行 PASS；
+功能 FAIL → `fails[].decides` 命中的（方面，状态）FAIL 并带 `fail_ref`/`finding_id`，其余 PASS；功能 OPEN →
+`open[].decides` 命中的行 INSUFFICIENT 并带 `open_ref: "FN-ID/KEY"`，其余 PASS。`rationale` 写“见功能判定 FN-X（方面，状态）：结论 + 余量”。
+`derive_rows.py` 生成这些行；手填的行只对账不覆盖。校验强制：INSUFFICIENT 必有 `open_ref` 且其 `decides` 覆盖本行的方面和状态；
+绑定的行的 `aspect` 等于计划的方面；每个有已审成员的框架都有功能判定。
 
 ### 每项检查的盲区与关闭条件
 
@@ -262,7 +337,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 窄的标准脚义/方向项可用标准及器件手册闭合；准确机械/焊盘视图与已指定对端的兼容保证另审，
 未指定外卡/主机按 [本体与系统范围](evidence-proportionality.md#模块本体完整系统与制造核准) 处理。
 
-`rationale`、`gaps` 的每条缺口（what、scope、severity）每个字段和关闭任务分别核同一实际对象/状态/因果。
+`rationale` 和开放项的每个字段（what、scope、severity、decides）与派生待办分别核同一实际对象/状态/因果。
 任务的 prerequisite、steps、impact_review、verification、avoids 不能借另一个根问题填充；输入取得方法与
 验收须能关闭所关联的具体判据，不以“执行发现项说明”等通用指令替代。计算修订同步所有引用该值的结果与
 结构化任务，核单位、公差及不利方向；正确理由、绑定或 locator 不证明其余字段正确。
@@ -285,9 +360,12 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 任务，重新对账父子结果；不把记录修正当作硬件已改动或新增已发生故障。硬件可实现某个
 方向/PIO功能不证明实际固件 pinmux 或模式，配置与默认高阻/恢复顺序仍需独立受控证据。
 
-### 逐行语义复核
+### 功能复核
 
-录入与最终校验前，逐行用实际对象上下文对照 `rationale`、`gaps` 及关联关闭任务：
+录入与最终校验前，先逐个功能核：问题是不是这块电路真正要回答的；`conditions` 是否列全了手册里有关的条款，
+`use` 的推导是否成立（测试条件不是使用范围，相邻测试点夹界要有单调性依据）；`calculation` 的假设是否写明；
+算出余量的方面是否已下结论；每个开放项的 `kind` 是否对（本设计要定的量不是厂家资料）、`decides` 是否只覆盖它真正决定的方面与状态、
+`severity.consequence` 是否写了这个缺口在什么工况下导致什么后果。然后逐行用实际对象上下文对照手填行的 `rationale` 及关联待办：
 
 - 对每条需求，将原文与本行 criterion 中并列的功能、工况前提、交付和范围排除分别列为子义务，
   在现有 evidence 定位每项实际证据、相关检查 ID 与状态。明确排除认证、实测或某种使用状态，
@@ -295,7 +373,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   “拆分实例的命名”补查子义务，保留自动原项及完整覆盖关系。
 - 需求整项只有全部适用子义务已 PASS（或有来源证明 NA）时才能 PASS。子义务有确认 FAIL 时
   整项按真实违反给 FAIL；没有确认 FAIL 但仍有必需证据不足时整项为 INSUFFICIENT，写明具体
-  gap_cause、未知和关闭条件，是否写 `"blocking": false` 按该义务现有准出依赖判断。最高潜在级仅引用实际相关
+  开放项、未知和关闭条件，是否写 `"blocking": false` 按该义务现有准出依赖判断。最高潜在级仅引用实际相关
   子义务的可信物理后果与条件，确认缺陷和潜在风险分开；复用既有唯一根因任务，不重复计缺陷。
   纯范围排除项可独立 PASS，不能因为全板其他项未闭就自动传染 INSUFFICIENT；相反，复合项不能
   用范围 PASS 掩盖它明确依赖的本体义务。资料缺口不是需求待决，不改成 REQUIREMENT_OPEN。
@@ -337,45 +415,38 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 }
 ```
 
-证据不足的行列出缺口 `gaps`，一条缺口写一件缺的东西：
+证据不足的行只指向功能判定里决定它的开放项（缺口文字写在开放项上，行不重复）：
 
 ```json
 {
-  "id": "ANA-C01.CURRENT-ZERO-TO-5A.R503",
-  "binding": {"object": {"circuit": "CURRENT", "ref": "R503", "state": "ZERO_TO_5A"},
-              "criterion": "运放输入共模/输出摆幅及偏置/失调/增益误差，含供电和温度极限"},
+  "id": "ANA-C01.CURRENT-RUN.R503",
+  "binding": {"object": {"circuit": "CURRENT", "ref": "R503", "state": "RUN"},
+              "criterion": "……"},
   "applicability": "APPLICABLE",
   "review_result": "INSUFFICIENT",
-  "gap_cause": "DESIGN_OPEN",
-  "evidence": [{"source": "evidence/engineering.md", "locator": "USB、采样、配置"}],
-  "rationale": "R503 低侧差分约 55 mV/5.5 A，经片内放大后约 1.57 V；失调可等效 0.25 A。",
-  "gaps": [{
-    "what": "片内零偏可等效 0.25 A，实际校准与误差预算未给出",
-    "scope": "零电流至 5 A、PPS 限流、R503 温漂、ADC 增益/失调与温区",
-    "how_to_close": "已读 RT7209 p11–13；建立零点/增益校准与读回格式，枚举 ADC、分流电阻和温漂误差",
-    "closure_criterion": "PPS 等模式的电流精度和限制窗口满足工程规格；校准失效可识别",
-    "severity": {"level": "P1", "class": "PERFORMANCE_OR_LIFE", "affects": "R503 电流测量的量产校准",
-                 "consequence": "PPS 电流窗口不能保证"}
-  }],
+  "function_id": "FN-CURRENT", "aspect": "直流范围与误差", "open_ref": "FN-CURRENT/ADC-CAL",
+  "evidence": [{"source": "evidence/engineering.md", "locator": "## CURRENT"}],
+  "rationale": "见功能判定 FN-CURRENT（直流范围与误差，RUN）：开放项 ADC-CAL——R503 校准与误差预算未定",
   "handoff": {"required": false}
 }
 ```
+
+`gap_cause`、`missing_inputs`、`input_requests`、`potential_severity`、`impact_assessment` 由开放项推出
+（DESIGN_VALUE→DESIGN_OPEN，VENDOR_DATUM→EXTERNAL_DATA，REQUIREMENT→REQUIREMENT_OPEN，其余同名），写了会被拒绝。
 
 由校验器推出、不写进台账的字段（写了会被拒绝）：
 - `blocking`：FAIL/INSUFFICIENT 默认阻塞。只有阶段允许暂留的 P2/P3 才写 `"blocking": false`。
 - `evidence_confidence`：PASS/FAIL 默认 B，INSUFFICIENT 为 C。只有声称 A 级证据时才写 `"A"`。
 - `disposition`：默认 OPEN。只写 FIXED_VERIFIED、ACCEPTED、RETRACTED。
-- 行级潜在等级取各缺口 `severity.level` 中最高的一级。共享检查按 `request_keys` 把缺口分给不同待办时，
-  每个待办只取它拥有的缺口的等级。
+- 行级潜在等级是 `open_ref` 指向的开放项的 `severity.level`；一行只指向一个开放项。
 
 - `binding.object`/`binding.criterion` 是实际已审范围，与同 ID 计划的 object/criterion 完全一致；
   `evidence` 和 `rationale` 只支持这个对象、配置、工况和判据。复用结论前核对物理脚、网络及要求，
   不能因 ID 相似、同一 IC 或同一功能组就移用。
-- 所有结果含非空 `rationale` 与可定位 `evidence`。INSUFFICIENT 必须给 `gaps`；非 FAIL 不填 `severity`（行级字段只属于 FAIL）。
-- 每条缺口（REQUIREMENT_OPEN 与 REQ-H02 历史处置除外）给 `scope` 和完整的 `severity`
-  （`level`、`class`、`affects`、`consequence`），校验始终强制；
+- 所有结果含非空 `rationale` 与可定位 `evidence`。INSUFFICIENT 必须有 `open_ref`（REQ-H02 历史处置除外）；非 FAIL 不填 `severity`（行级字段只属于 FAIL）。
+- 每个开放项（REQUIREMENT 除外）给 `scope` 和完整的 `severity`（`level`、`class`、`affects`、`consequence`），校验始终强制；
   内容按 [危险度分类原则](verdicts-and-release.md#证据不足的危险度分类原则) 逐项判定；非空字段不等于危险度可靠。
-  `consequence` 同时是定级理由：写清这个缺口在什么工况下导致什么后果，不写跨行通用的套话（`TEMPLATED_SEVERITY_REASON`）。
+  `consequence` 同时是定级理由：写清这个缺口在什么工况下导致什么后果，不写跨开放项通用的套话（`TEMPLATED_SEVERITY_REASON`）。
 - **独立审查**：结果顶层写 `history_inputs`（本轮能看到的旧审查目录或文件路径，没有就写空数组）。除 REQ-H02 上一版问题复验行外，任何检查的 evidence 引用这些路径都会被 `validate_review.py` 拒绝；未声明却引用某次审查的结论/校验/报告文件（`review-results.json`、`review-gate.json`、`审查报告.md`）会进质量筛查候选。报告结论里写明本轮可见的旧审查材料（只显示目录名）。首审（`review_mode: first`）可以看到旧材料，但结论按当前资料重新得出、不引用旧结论，也不逐条登记上一版问题的处理结果，报告照此说明；要逐条登记（已修、保留、撤回），用改版复审（REQ-H02）。
 - `severity.class` 是后果类别，类别决定潜在等级（见[后果类别](verdicts-and-release.md#后果类别severityclass)）；
   P0 类别另给 `severity.hazard_path`，只会坏一个器件而不打开危险路径的写 `COMPONENT_DAMAGE`（P1）；
@@ -391,18 +462,16 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   格式：`[{"text": "原文片段", "kind": "OBLIGATION", "result": "PASS", "check_ids": [...]}, {"text": "原文片段", "kind": "PREMISE"}]`。
   行结论 = 义务条款中最差的结论（FAIL > INSUFFICIENT > PASS > NA），校验强制。前提条款里的要求由相关器件/电路行执行，
   其他行发现的缺陷不连带本行；需求原文把该缺陷写成义务（如“各连续受电元件不得超出持续功率额定”）时才在本行判。
-- INSUFFICIENT 必填 `gap_cause`（校验始终强制）：REQUIREMENT_OPEN、EXTERNAL_DATA、DESIGN_OPEN、
-  REVIEW_INCOMPLETE、USER_DEFERRED，含义见 [最小充分证据](evidence-proportionality.md#复核每条证据不足)。
-  纯下游项不是 INSUFFICIENT，用阶段 NA。EXTERNAL_DATA / DESIGN_OPEN 的每条缺口另写 `how_to_close` 和
-  `closure_criterion`，其他原因不写；待办的 `request_keys` 用缺口的 `what` 原文指名。
-  `scope` 写缺口要覆盖的电压/负载/状态/温度范围，不是任务标题或根因的复述（`REQUEST_SCOPE_ECHOES_TASK` 提示，报告也不显示只复述的范围）；
-  `how_to_close` 以“已读 X 第 N 页，缺 Y”开头时，后半句不要再整句重复任务的 `next_action`，报告会合并。
-  `closure_criterion` 写设计者能核的边界和条件（手册限值、标准条款、工况），不写审查员算例的中间值；
+- 证据不足的原因是开放项的 `kind`：DESIGN_VALUE、VENDOR_DATUM、REQUIREMENT、REVIEW_INCOMPLETE、USER_DEFERRED，
+  含义见 [复核每条证据不足](evidence-proportionality.md#复核每条证据不足)。纯下游项不是 INSUFFICIENT，用阶段 NA。
+  `scope` 写缺口要覆盖的电压/负载/状态/温度范围，不是标题或 `what` 的复述（`REQUEST_SCOPE_ECHOES_TASK` 提示，报告也不显示只复述的范围）；
+  `acquisition` 以“已读 X 第 N 页，缺 Y”开头时，报告把“已读”部分单列为“已查过”。
+  `closure` 写设计者能核的边界和条件（手册限值、标准条款、工况），不写审查员算例的中间值；
   位号与数值之间留空格或标点（“R604 100°C”，不写“R604100°C”）。
 - 计划行带 `proposal.result = PASS` 而结论为 FAIL/INSUFFICIENT 时，须给 `proposal_override`（code 与 reason），
   code 的封闭清单见 [通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗行)。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
-  `handoff.product_requirement_status: PENDING_VERIFICATION`，不建 work_item；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。
+  `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。
   复合义务不能整体 NA；测试义务条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，
   `check_ids` 链接独立阶段 NA 检查，不得只改条款结果让测试消失。
 - 普通 NA 必须 NOT_APPLICABLE；修改自动计划的适用性需 `applicability_evidence`。UNDETERMINED 只能落 INSUFFICIENT。
@@ -416,105 +485,62 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   SR 为什么做不到（哪个检查器、缺什么映射或模型）、建议怎么改进 SR（具体到规则、别名或模型）、这次怎么核对的。
   这是审查者（通常是 AI）自己的核对，不写成“人工核对”，除非确实有人参与并留有记录。可用 `reviewer_kind: "AI"` 或 `"HUMAN"` 明示实际核对者；未记录时不得推断为人员核对。
   多条检查因同一限制、用同一核对方法时写相同文字，报告会合并显示。只能用在工具确实拦了的行上；
-  这类行不算 REVIEW_INCOMPLETE、不建 work_item，gate 把工具限制列入 `sr_improvements`，不影响准出。
+  这类行不算 REVIEW_INCOMPLETE、不建开放项，gate 把工具限制列入 `sr_improvements`，不影响准出。
   资料或设计本身没给出的数值不是工具限制，仍按 EXTERNAL_DATA / DESIGN_OPEN 处理。
   工具提示的 `required_inputs` 指向 `intent:` 字段（如 `supervision.rail_requirements` 逐轨 `required=false` / `internal_monitor`，
   `optocouplers[].internal_pullup`）时，是声明缺失不是工具限制：先补 intent、重生成计划再判，不写 `manual_verification`。
 
-### 示例：一个缺口被多条检查共享
+### 示例：一个功能的两个开放项决定两行
 
-T301 的受控磁件规格同时挡住反激的环路模型（PWR-C15，带义务合同）和最小关断时间核算（PWR-C04）；
-PWR-C04 另缺输出电容的低温 ESR，由另一个待办负责。其余行字段同上文单条检查。
+反激变换器的功能判定缺两样：T301 的磁件参数（本设计要定，DESIGN_VALUE）挡住环路模型（PWR-C15）和最小关断时间（PWR-C04），
+输出电容的低温 ESR（厂家才知道，VENDOR_DATUM）只挡住 PWR-C04。两行都由 `derive_rows.py` 从功能派生。
 
 ```json
 {
+  "functions": [{
+    "id": "FN-QR", "circuit": "QR", "question": "90–264 Vac、5–20 V、空载至 5 A 时反激各输出档是否稳定且关断时间不低于 tOFF(min)",
+    "objects": {"refs": ["U402", "Q301", "T301", "C503"], "nets": ["BULK", "VRAW"]}, "states": ["RUN"],
+    "conditions": [
+      {"id": "c1", "source": "evidence/ds/NCP1343.txt", "locator": "p13 Feedback, p21 补偿网络", "says": "内部补偿适用条件", "use": "FB 外接与条件一致"},
+      {"id": "c2", "source": "evidence/ds/NCP1343.txt", "locator": "p8 tOFF(min)", "says": "tOFF(min) 典型/最大", "use": "判据"},
+      {"id": "c3", "source": "evidence/ds/Rubycon-BXW.txt", "locator": "p1 特性表", "says": "20 °C ESR", "use": "低温 ESR 未给"}
+    ],
+    "no_calculation_reason": "功率级增益和关断时间都要 Lp 与匝比，规格未定",
+    "verdict": "OPEN",
+    "open": [
+      {"key": "T301-SPEC", "kind": "DESIGN_VALUE", "what": "T301 的 Lp、匝比与漏感还没有定",
+       "scope": "90–264 Vac、5–20 V 输出、空载至 5 A",
+       "spec": "Lp 公差、Np:Ns:Na 与漏感上限，使 264 Vac/20 V/0.5 A 下关断时间 ≥ tOFF(min) 且各档穿越频率在内部补偿适用范围内",
+       "owner": "ASG 磁件设计", "closure": "按 Lp 下限算出的关断时间不小于 tOFF(min)；各输出档满足内部补偿适用条件",
+       "decides": [{"aspect": "反馈模型与补偿资格"}, {"aspect": "变换器时序与输出电容条件"}],
+       "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "反激输出调节",
+                    "consequence": "功率级模型未知时无法证明各输出档在全输入范围内稳定；关断时间低于下限时轻载跳周期"},
+       "design_option": {"status": "NONE", "reason": "磁件参数是设计输入，改图不能代替规格"}},
+      {"key": "C503-ESR", "kind": "VENDOR_DATUM", "what": "C503–C506 在 −20 °C 的 ESR 上限",
+       "scope": "−20–40 °C 环境，5–20 V 输出", "checked": ["c3"], "why_insufficient": "BXW p1 只给 20 °C ESR",
+       "acquisition": "向 Rubycon 索取低温 ESR，或改用手册给出该值的系列",
+       "worst_case": {"not_boundable_reason": "手册没有低温倍率，无法取上界"},
+       "closure": "低温 ESR 满足 NCP1343 对输出电容零点的适用条件",
+       "decides": [{"aspect": "变换器时序与输出电容条件"}],
+       "severity": {"level": "P1", "class": "PERFORMANCE_OR_LIFE", "affects": "低温输出纹波",
+                    "consequence": "低温 ESR 升高使输出电容零点移出适用范围，纹波超出规格"},
+       "design_option": {"status": "NONE", "reason": "先查现有型号的低温 ESR；换型号同样需要该值"}}
+    ],
+    "fails": [], "evidence": [{"source": "evidence/engineering.md", "locator": "## QR"}]
+  }],
   "checks": [
-    {
-      "id": "PWR-C15.QR-FLYBACK-RUN.U402",
-      "review_result": "INSUFFICIENT",
-      "gap_cause": "EXTERNAL_DATA",
-      "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p13 Feedback, p21 补偿网络"}],
-      "rationale": "NCP1343 内部补偿的适用条件已对上；功率级增益和右半平面零点取决于 T301 的 Lp 与匝比，规格未给。",
-      "gaps": [{
-        "what": "T301 受控磁件规格（Lp、匝比、漏感）",
-        "scope": "90–264 Vac、5–20 V 输出、空载至 5 A",
-        "how_to_close": "取得 T301 对应设计版本的磁件规格书",
-        "closure_criterion": "规格给出 Lp 公差、Np:Ns:Na 与漏感上限",
-        "closure_domain": "loop_stability",
-        "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "反激输出调节",
-                     "consequence": "功率级模型未知时无法证明各输出档在全输入范围内稳定"}
-      }],
-      "obligations": {
-        "loop_model": {"review_result": "INSUFFICIENT", "rationale": "功率级传函需要 Lp 与匝比",
-                       "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p13 Feedback"}],
-                       "request_keys": ["T301 受控磁件规格（Lp、匝比、漏感）"]},
-        "compensation_configuration": {"review_result": "PASS", "rationale": "FB 脚外接与手册内部补偿的适用条件一致",
-                                       "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p21 补偿网络"}]},
-        "stability_limits": {"review_result": "INSUFFICIENT", "rationale": "角点穿越频率与相位裕量依赖同一功率级模型",
-                             "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p13 Feedback"}],
-                             "request_keys": ["T301 受控磁件规格（Lp、匝比、漏感）"]}
-      }
-    },
-    {
-      "id": "PWR-C04.QR-FLYBACK-RUN.U402",
-      "review_result": "INSUFFICIENT",
-      "gap_cause": "EXTERNAL_DATA",
-      "evidence": [{"source": "evidence/ds/NCP1343.txt", "locator": "p8 tOFF(min)"}],
-      "rationale": "轻载谷底切换的最短关断时间要用 Lp 计算；输出电容稳定条件要用低温 ESR。",
-      "gaps": [{
-        "what": "T301 受控磁件规格（Lp、匝比、漏感）",
-        "scope": "264 Vac、20 V 输出、空载至 0.5 A",
-        "how_to_close": "取得 T301 对应设计版本的磁件规格书",
-        "closure_criterion": "按 Lp 下限算出的关断时间不小于 tOFF(min)",
-        "closure_domain": "loop_stability",
-        "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "轻载输出调节",
-                     "consequence": "关断时间低于下限时控制器跳周期，轻载输出纹波失控"}
-      }, {
-        "what": "C503–C506 在 −20 °C 的 ESR 上限",
-        "scope": "−20–40 °C 环境，5–20 V 输出",
-        "how_to_close": "已读 Rubycon BXW p1，缺低温 ESR；向厂家索取或改用给出该值的系列",
-        "closure_criterion": "低温 ESR 满足 NCP1343 对输出电容零点的适用条件",
-        "severity": {"level": "P1", "class": "PERFORMANCE_OR_LIFE", "affects": "低温输出纹波",
-                     "consequence": "低温 ESR 升高使输出电容零点移出适用范围，纹波超出规格"}
-      }]
-    }
-  ],
-  "work_items": [
-    {
-      "id": "W-005", "title": "取得 T301 的受控磁件规格",
-      "root_cause": "资料包没有 T301 的 Lp、匝比与漏感",
-      "check_ids": ["PWR-C15.QR-FLYBACK-RUN.U402", "PWR-C04.QR-FLYBACK-RUN.U402"],
-      "closure_domain": "loop_stability",
-      "request_keys": {"PWR-C15.QR-FLYBACK-RUN.U402": ["T301 受控磁件规格（Lp、匝比、漏感）"],
-                       "PWR-C04.QR-FLYBACK-RUN.U402": ["T301 受控磁件规格（Lp、匝比、漏感）"]},
-      "due_stage": "schematic_freeze", "reason": "同一份规格关闭两行的磁件分支",
-      "next_action": "取得规格后分别完成环路模型与最短关断时间核算",
-      "evidence": [{"source": "record/intent.json", "locator": "materials 无 T301 规格"}],
-      "design_option": {"status": "NONE", "reason": "磁件参数是设计输入，改图不能代替规格",
-                        "evidence": [{"source": "record/intent.json", "locator": "circuits.QR-FLYBACK"}]}
-    },
-    {
-      "id": "W-006", "title": "补输出电容低温 ESR",
-      "root_cause": "所选电容手册未给 −20 °C ESR",
-      "check_ids": ["PWR-C04.QR-FLYBACK-RUN.U402"],
-      "request_keys": {"PWR-C04.QR-FLYBACK-RUN.U402": ["C503–C506 在 −20 °C 的 ESR 上限"]},
-      "due_stage": "schematic_freeze", "reason": "与磁件规格无关的独立资料",
-      "next_action": "向厂家索取低温 ESR，或换用手册给出该值的系列后复核",
-      "evidence": [{"source": "evidence/ds/Rubycon-BXW.txt", "locator": "p1 特性表"}],
-      "design_option": {"status": "NONE", "reason": "先查现有型号的低温 ESR；换型号同样需要该值",
-                        "evidence": [{"source": "evidence/ds/Rubycon-BXW.txt", "locator": "p1 特性表"}]}
-    }
+    {"id": "PWR-C15.QR-RUN.U402", "review_result": "INSUFFICIENT", "function_id": "FN-QR",
+     "aspect": "反馈模型与补偿资格", "open_ref": "FN-QR/T301-SPEC", "…": "…"},
+    {"id": "PWR-C04.QR-RUN.U402", "review_result": "INSUFFICIENT", "function_id": "FN-QR",
+     "aspect": "变换器时序与输出电容条件", "open_ref": "FN-QR/T301-SPEC", "…": "…"}
   ]
 }
 ```
 
-- 共享的是缺口，不是结论：两行各写一条 `what` 相同的缺口，`scope`、`closure_criterion` 和 `severity` 按本行判据写。
-- 义务合同：PWR-C15 的 `obligations` 键与计划 `closure_contract.obligations` 相同；每个 INSUFFICIENT 义务用
-  `request_keys` 点名本行缺口的 `what`，本行每条缺口至少属于一个义务；PASS 义务不带 `request_keys`。行结论取最差义务。
-- 领域：带合同的行（PRO-C03、PWR-C15）的缺口写 `closure_domain`，负责它的待办写同一个 `closure_domain`；
-  这个待办选中的其他行缺口（PWR-C04 的磁件分支）也写同一领域。不同领域的缺口（ESR）交给另一个待办。
-- 归属：同一行被几个待办共享时，每个待办在 `request_keys` 里只列自己负责的缺口，每条缺口恰属一个待办；
-  待办的潜在等级只取它拥有的缺口。
+- 一行只指向一个开放项：PWR-C04 同时受两个开放项影响时，`derive_rows.py` 取 `open[]` 里先写的那个；
+  两个开放项各派生一件待办（W-T301-SPEC、W-C503-ESR），待办的 `check_ids` 是指向它的行。
+- 共享的是开放项，不是结论：两行各自的方面写在 `decides` 里，等级和 `scope` 写在开放项上。
+- 不再有 `obligations`、`request_keys`、`closure_domain`：隔离资格与环路稳定是功能的方面（见上）。
 
 ### 发现项
 
