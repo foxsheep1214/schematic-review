@@ -749,3 +749,27 @@ class GateResistorAndBridgeTest(unittest.TestCase):
         switch = switches_of(build_inventory(db))['Q1']
         self.assertEqual(switch['switch_node_evidence'], ['half-bridge:Q2'])
         self.assertIn('DRV-A04', [f['rule'] for f in findings(db)])
+
+
+class ChainedDriverTest(unittest.TestCase):
+    """2026-10-20 第 1 轮裁决 relax:DRV-A03：驱动脚经多级电阻到达的栅极降 CANDIDATE，到不了仍是 FINDING。"""
+
+    def test_driver_behind_a_resistor_chain_is_a_candidate(self):
+        # 电池保护板高边 P-MOS：AFE 的 DSG 脚 → 100 Ω → 1 k → 68 k → 栅极（电平移位网络）
+        db = switch_board(driver=None, pull=False, load=None)
+        add(db, 'R10', '68K', [('1', '1', 'GATE'), ('2', '2', 'MID1')])
+        add(db, 'R11', '1K', [('1', '1', 'MID1'), ('2', '2', 'MID2')])
+        add(db, 'R12', '100', [('1', '1', 'MID2'), ('2', '2', 'DSG')])
+        add(db, 'U4', 'BQ76952', [('1', 'DSG', 'DSG'), ('2', 'VSS', 'GND')])
+        db['pintype']['U4.1'] = 'OUT'
+        hits = [f for f in findings(db) if f['rule'] == 'DRV-A03']
+        self.assertEqual([f['kind'] for f in hits], ['CANDIDATE'])
+        self.assertIn('U4.1', hits[0]['detail'])
+
+    def test_four_resistors_on_the_way_keep_the_finding(self):
+        db = switch_board(driver=None, pull=False, load=None)
+        for i, (a, b) in enumerate([('GATE', 'M1'), ('M1', 'M2'), ('M2', 'M3'), ('M3', 'DSG')]):
+            add(db, 'R1%d' % i, '1K', [('1', '1', a), ('2', '2', b)])
+        add(db, 'U4', 'BQ76952', [('1', 'DSG', 'DSG'), ('2', 'VSS', 'GND')])
+        db['pintype']['U4.1'] = 'OUT'
+        self.assertEqual([f['kind'] for f in findings(db) if f['rule'] == 'DRV-A03'], ['FINDING'])

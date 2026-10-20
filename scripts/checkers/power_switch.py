@@ -26,6 +26,7 @@ DRIVER_PIN_RE = re.compile(r'^(HO|LO|HB|OUT\w*|DRV\w*|GATE\w*|SRC|SINK|O\d+)$', 
 OUT_PINTYPES = {'OUT', 'OUTPUT', 'BI', 'BIDI', 'BIDIR', 'BIDIRECTIONAL', 'IO', 'I/O',
                 'TRISTATE', '3STATE'}
 MAX_SWITCHES = 256
+CHAIN_HOPS = 3   # 栅极到驱动脚最多穿过的电阻级数（电平移位/分压驱动网络）
 LINEAR_ROLES = {'linear', 'source_follower', 'emitter_follower'}
 # 栅极接低侧轨的双向开漏电平转换管：不是功率开关，按所属电平转换电路（SIG-C07/C08/C09/T04）审查。
 LEVEL_SHIFTER_ROLE = 'level_shifter'
@@ -126,6 +127,22 @@ class _Scan:
             if series:
                 ref, other = series
                 found = [dict(item, via='series:' + ref) for item in self._pulls_on(other, source_net)]
+        return found
+
+    def chained_drivers(self, gate_net, hops=CHAIN_HOPS):
+        """驱动脚经最多 hops 级电阻（不限阻值）可达：电平移位/分压驱动网络。不进入地与电源轨，
+        不算作 drivers；只让 DRV-A03 冷判从 FINDING 降为 CANDIDATE（2026-10-20 第 1 轮裁决 relax:DRV-A03）。"""
+        seen, frontier, found = {gate_net}, [gate_net], []
+        for _ in range(hops):
+            nxt = []
+            for net in frontier:
+                for ref, other in self.graph.neighbors(net, {ng.RESISTOR}):
+                    if other in seen or other in self.grounds or self.tree.is_rail(other):
+                        continue
+                    seen.add(other)
+                    nxt.append(other)
+                    found.extend(self._driver_pins(other, 'chain:' + ref))
+            frontier = nxt
         return found
 
     def _pulls_on(self, net, source_net):
@@ -451,6 +468,7 @@ class _Scan:
             if sync:
                 topology = 'low-side-local-return'
             pulls = self.pulls(nets['gate'], nets['source'], nodes['gate']) if nets['gate'] else []
+            chained = self.chained_drivers(nets['gate']) if nets['gate'] and not drivers and not pulls else []
             snubbers = self.snubbers(nets['drain'], nets['source'], topology) if nets['drain'] else []
             switch_node = (self._switch_node_evidence(nets['drain'], ref, nets['source'], topology)
                            if nets['drain'] else [])
@@ -474,6 +492,7 @@ class _Scan:
                 'source_net': nets['source'],
                 'drivers': drivers,
                 'gate_pulls': pulls,
+                'chained_drivers': chained,
                 'snubbers': snubbers,
                 'switch_node_evidence': switch_node,
                 'gaps': sorted(set(gaps)),
@@ -609,6 +628,13 @@ class PowerSwitchChecker(Checker):
                              head + '：栅极网 ' + switch['gate_net'] + ' 由 ' + '、'.join(untyped[:3])
                              + ' 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，'
                                '并核上电、复位与驱动高阻时栅极状态',
+                             switch['ref'], kind='CANDIDATE')
+                elif switch.get('chained_drivers'):
+                    chain = switch['chained_drivers'][0]
+                    lint.add('DRV-A03', self.cold_rules['DRV-A03'],
+                             head + '：栅极网 ' + switch['gate_net'] + ' 上无直接驱动脚与上下拉，驱动脚 '
+                             + chain['node'] + ' 经多级电阻（' + chain['via'].partition(':')[2]
+                             + ' 等）到达，属电平移位/分压驱动网络；核上电与驱动高阻时的默认态和关断路径',
                              switch['ref'], kind='CANDIDATE')
                 else:
                     lint.add('DRV-A03', self.cold_rules['DRV-A03'],

@@ -433,3 +433,16 @@ class SupplyPinOnGroundTest(unittest.TestCase):
     def test_power_in_pin_on_its_own_rail_is_silent(self):
         db = self.viper('VDD_AUX')
         self.assertEqual([f for f in scans(db, 'PWR-A02') if '地' in f['title']], [])
+
+
+class SingleNodeNetTest(unittest.TestCase):
+    def test_bidirectional_ic_pin_with_only_a_label_is_a_candidate(self):
+        # 2026-10-20 第 1 轮裁决：UART 桥未用的调制解调/GPIO 线只挂层次标签 → OVER_STRICT，降 CANDIDATE；
+        # 同样只挂一个标签的输入脚（PHY nRST）是真缺陷，仍是 FINDING。
+        db = board({'U1': 'CH344Q', 'J1': 'Connector:Conn_01x02'},
+                   {'/USB/CTS0': ['U1.41'], '/RST': ['U1.15'], 'V3': ['J1.1', 'U1.1'], 'GND': ['J1.2', 'U1.2']},
+                   pinname={'U1.41': 'CTS0/GPIO0', 'U1.15': 'nRST', 'U1.1': 'VDD', 'U1.2': 'GND'},
+                   pintype={'U1.41': 'BI', 'U1.15': 'IN', 'U1.1': 'power_in', 'U1.2': 'power_in'})
+        hits = scans(db, 'NET-A01')
+        self.assertEqual(sorted((f['detail'].split(' <- ')[0], f['kind']) for f in hits),
+                         [('/RST', 'FINDING'), ('/USB/CTS0', 'CANDIDATE')])

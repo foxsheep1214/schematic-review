@@ -1,57 +1,57 @@
-# 训练第 1 轮 · 2026-10-20 · SR 29b9856
+# 训练第 1 轮 · 2026-10-20 · SR 29b9856 → 本轮改动
 
-状态：**停在第 8 节第 4 步（裁决队列已生成，等人）**。没有任何规则改动进入本轮。
+状态：**走完第 8 节 1–5 步**（基线、冷跑、裁决、改进、门指标），热审与批评 agent 两步缺席（见“问题”）。
 
 ## 跑了什么
 
 | 步骤 | 结果 |
 |---|---|
-| 基线 typical_circuits（42 块） | DETECTED 128 / FIXED 180 / KNOWN_FALSE_ALARM 3；MISSED、UNCLASSIFIED、FALSE_ALARM_BACK 均 0 |
-| 基线 kicad_replay（state-invariant-v1） | 195 MATCH / 0 MISMATCH |
-| 基线 seeded_bench | 门通过；`seeded_recall` 0.882（自动检出/位点），低于 1 的缺陷类：D-I2C-PU 0.69、D-GND-PIN 0.70、D-EN-FLOAT 0.79、D-RAIL-SPLIT 0.79、D-CAP-POL 0.82 |
-| 语料 | 签过的 fix pairs 0 对、成熟板 0 块。本轮起草 3 对（Olimex ESP32-PoE-ISO Rev M→M1、M1→N、N→N1），42 块 typical 板充当成熟板代理；都在 `corpus-draft/`，未入 `corpus/` |
-| 冷跑 | 45 块板全部 parse + lint + plan（`reviews/`，不入库） |
-| 热审 3 块 | **未做**（需要审查 agent 按 SKILL.md 完整审 3 块板，每块带 intent 与原厂资料） |
-| 批评 agent | **未做**（README 要求另一模型家族；本会话只有同家族） |
-| 裁决 | 队列 10 条已生成（`adjudication-queue.json`），等人 |
-| 改进 agent | 未启动（README §0：没有裁决就不许改规则） |
+| 基线 typical_circuits（42 块） | 改动前 DETECTED 128 / FIXED 180 / KNOWN_FALSE_ALARM 3；改动后 117 / 180 / 14（11 条按裁决从 expected 移到 known_false_alarms）；失败行始终 0 |
+| 基线 kicad_replay（state-invariant-v1） | 改动前后都 195 MATCH / 0 MISMATCH |
+| 基线 seeded_bench | 门通过；`seeded_recall` 0.882 不变。低于 1 的缺陷类：D-I2C-PU 0.69、D-GND-PIN 0.70、D-EN-FLOAT 0.79、D-RAIL-SPLIT 0.79、D-CAP-POL 0.82 |
+| 语料 | 起草 3 对（Olimex ESP32-PoE-ISO Rev M→M1、M1→N、N→N1，草稿在 `corpus-draft/fix-pairs-draft.json`）。裁决后 **1 对入库**（N→N1，CH340X RXD 被 5 V 上拉进 3.3 V I/O 域，defect_class pull）；M→M1（buck 输出加 TVS）与 M1→N（PG 门控 EN）判为改进不收录，后者初判收录、经 agent 电路复核后改判。42 块 typical 板充当成熟板代理（`corpus-draft/mature-boards.json`，`production_evidence` 未补） |
+| 冷跑 | 45 块板 parse + lint + plan（`reviews/`，不入库） |
+| 热审 3 块 | **未做** |
+| 批评 agent | **未做**（README 要求另一模型家族） |
+| 裁决 | 队列 10 条，人在对话中逐项裁定，agent 记录到 `adjudications/2026-10-20.json`：3 条 fix pair（1 收 2 拒）、4 条 OVER_STRICT、3 条 TRUE_RISK（P2、P1、P1） |
+| 改进 agent | 按裁决的 `sr_change_allowed` 做了两条放宽，均先写失败测试再改：NET-A01 对 IC 双向脚的单节点网降 CANDIDATE；DRV-A03 对经 ≤3 级电阻可达驱动脚的栅极降 CANDIDATE。变异 M23/M24 守住，变异门 24/24 杀死 |
 
-## 指标（`metrics.json`）
+## 指标（`metrics-baseline.json` → `metrics.json`）
 
-| 指标 | 本轮 | 怎么读 |
-|---|---|---|
-| fix_pair_recall_cold | 0.667（名义） | **实际 0/3**。两处“命中”是同网/同器件上的无关条目：M1→N 对命中的是 RST-A01 对 /ESP_EN 上拉的泛候选，N→N1 对命中的是 U1 另一个电源脚的 PWR-A02。按位置点名的定义会高估 |
-| fix_pair_recall_plan | 1.0（名义） | **实际 0/3**。任何 IC 都有 DEV 行，所以“计划里有行指向该器件”恒真。没有一行问到缺陷本身（输出钳位、PG→EN、电平域） |
-| fix_pair_recall_hot | null | 没有热审 |
-| seeded_recall | 0.882 | 基线 |
-| mature_cold_false_alarms | 0.47 /100 行 | 22 条 FINDING / 4657 行；NET-A01 占 12（7 条在同一块板的未用调制解调器线上），NET-A07 3，PWR-A01/A02 各 2 |
-| p0_precision / misfile_rate / lookup_honesty | null | 都要热审 + 批评 agent + 裁决 |
-| typical_gate / replay_gate | 0 / 0 | 通过 |
+| 指标 | 改动前 | 改动后 | 怎么读 |
+|---|---|---|---|
+| mature_cold_false_alarms | 0.47 /100 行（22/4657） | **0.28**（13/4657） | 少掉的 9 条就是裁决为 OVER_STRICT 的 CH344Q ×7、Q10、以及 QON 的 NET-A01（QON 仍以 NET-A07 报，规则未改）。这是本轮唯一可比的进步 |
+| fix_pair_recall_cold | 0.667（3 对） | 1.0（1 对） | **不可比也不可信**：入库的那一对“命中”的是 U1 另一脚的 PWR-A02（V3 脚，本身是误报），与缺陷无关。按位置点名的定义会高估，见问题 2 |
+| fix_pair_recall_plan | 1.0 | 1.0 | 同上，IC 总有 DEV 行 |
+| seeded_recall | 0.882 | 0.882 | 不降 |
+| typical_gate / replay_gate | 0 / 0 | 0 / 0 | 通过 |
+| fix_pair_recall_hot / p0_precision / misfile_rate / lookup_honesty | null | null | 要热审 + 批评 agent |
 
-## 三对缺陷为什么冷跑一条都抓不到
+## 缺陷为什么冷跑抓不到
 
-三处都是**缺件**（少 TVS、少 PG→EN 电阻、少下拉）。SR 的逐对象行挂在**存在的**器件上，能问“这件东西对不对”，问不出“这里该有而没有”。会问这类问题的科目（防护链 PRO-C01、使能来源 RST-T01、电平域 SIG-D04/T04）都在功能电路框架里，而框架只从声明的 intent 生成；本轮 Olimex 板没有 intent，`plan.functions` 为空。
-两条附带观察：before 版 M1 的 `power_up` 抽取已经记录了 U7 的 PG 脚悬空（`unconnected-(U7-PG-Pad6)`），只是没有规则把“稳压器 PG 没用而下游有 EN”变成一行；N 版 Net-(D7-A) 上 D7/R18/U1.9 的结构在 as-built 状态下没有任何行覆盖。
+三处候选都是**缺件**（少 TVS、少 PG→EN 电阻、少下拉/分压）。SR 的逐对象行挂在存在的器件上，问不出“这里该有而没有”；会问这类问题的科目（防护链 PRO-C01、使能来源 RST-T01、电平域 SIG-D04）在功能电路框架里，而框架只从声明的 intent 生成，本轮 Olimex 板没有 intent，`plan.functions` 为空。入库的 N→N1 对要靠热审声明 LEVEL_SHIFT/UART 电路后由 SIG-D04 问出“5 V 上拉进 3.3 V 域”。
 
 ## 过程中发现的问题
 
-1. **循环只是规格**：README 第 7 节五个脚本一个都不存在，`corpus/` 全空，`runs/` 没有历史轮。本轮补了 `run_review.py`（cold + hot 输入包）、`metrics.py`、`compare.py`；`build_fix_pairs.py`、`critic_pack.py` 仍缺。
-2. **召回指标定义会高估**（见上表）。要么改为“命中行的科目/规则在 `expected_rules` 内”（需要人先填 expected_rules），要么把位置命中降为“计划触达”辅助列。
-3. **`runs/.gitignore` 把 `metrics.json` 也忽略了**，而 `compare.py` 要上一轮的 metrics；已改为保留 `metrics.json`、`corpus-draft/*.json`、`adjudication-queue.json`。
-4. **收录条件难以机械判定**：3 对里只有 N→N1（“prevent accidental overvoltage”）明确是缺陷；M→M1（“increase reliability”）、M1→N（“works better … suggested by a customer”）措辞像改进。Olimex 的 changelog 里真正说“fixed”的多数是布局/封装。10 对的第 1 轮目标靠 Olimex 一家难凑齐。
-5. **Olimex 全部 Rev 在同一 commit 的不同目录下**，fix-pairs 模板里 before/after 两个 commit 字段退化为同一个 sha；模板应允许“同 commit 不同路径”。
-6. **成熟板语料缺 `production_evidence`**，42 块 typical 板只能当代理；`split.json` 按仓库划分也还没人签。
-7. **热审是整个循环的成本中心也是唯一的 P0 来源**，但 README 没写热审的 intent 从哪来（成熟板没有需求文档）。没有 intent 就没有功能电路框架，热审会退化成冷跑加人读图。
-8. **批评 agent 的“另一模型家族”在当前工具链里没有现成入口**，需要人接外部模型或先放宽为同家族盲评并记录。
-9. README §4.1/§9/§11 与 §3 示例里残留了一块已审设计的轮次与记录号，违反“SR 内容不带项目先验”的约束，本轮已中性化。
-10. 解析侧：Olimex 板 FET1–3 缺引脚名使 `parse_kicad` 严格自检退出码 2（db 仍写出）；training 冷跑按 README 记录 `parse_exit` 不中断，但 42 块代理板里也有 resonare-lcc、moteus-c1 等退出 2，成熟板语料入库前要先过严格解析。
+1. **循环只是规格**：第 7 节五个脚本一个都不存在，`corpus/` 全空。本轮补了 `run_review.py`（cold + hot 输入包）、`metrics.py`、`compare.py`；`build_fix_pairs.py`、`critic_pack.py` 仍缺。
+2. **召回指标定义会高估**：按“点名 defect_location 任一 ref/net”算，无关条目也算命中。应改为“命中行的规则在 `expected_rules` 内”，这要求人先填 expected_rules（本轮入库对已填 SIG-D04，agent 提议）。
+3. **`runs/.gitignore` 原本把 `metrics.json` 也忽略**，而 `compare.py` 要上一轮的 metrics；已改为保留 `metrics*.json`、`corpus-draft/*.json`、`adjudication-queue.json`。
+4. **收录条件难以机械判定**：3 对里只有 1 对的作者原话明确是缺陷；Olimex changelog 里真正写“fixed”的多数是布局/封装。靠 Olimex 一家凑不齐第 1 轮 10 对的目标。
+5. **Olimex 全部 Rev 同在一个 commit 的不同目录**，模板的 before/after 两个 commit 退化为同一 sha；模板应允许“同 commit 不同路径”。
+6. **typical 基准的 expected 里混着“SR 当时报了、人没核过”的条目**：本轮 10 条队列里 11 条 expected 行被人改判为误报（why 字段原本就写着“需人工确认”）。typical 的 expected 不是真值，只是回归锚；成熟板语料要另立真值。
+7. **人工裁决本身会错**：第 2 条初判收录，agent 复核电路后改判。裁决模板应允许 agent 附一栏“电路复核意见”，人看完再签。
+8. **热审是成本中心也是唯一的 P0 来源**，README 没写成熟板热审的 intent 从哪来；没有 intent 就没有功能电路框架。
+9. **批评 agent 的“另一模型家族”在当前工具链里没有入口**。
+10. README §3/§4.1/§9/§11 残留一块已审设计的轮次与记录号，已中性化。
+11. 解析侧：Olimex 板 FET1–3 缺引脚名、typical 的 resonare-lcc/moteus-c1 等，`parse_kicad` 严格自检退出码 2（db 仍写出）；成熟板语料入库前要先过严格解析。
+12. 下一轮过严候选：CH340X 5 V 供电时 V3 是 LDO 输出，PWR-A02 把它报成“电源脚所在轨无驱动”是误报。
 
 ## 进化效果
 
-**本轮为零**：没有裁决，README §0 不允许任何规则改动，`compare.py` 也没有上一轮可比。本轮的产出是让下一轮能跑起来的脚手架、三对待签样本、十条待裁决项，以及两处度量定义问题。真正能衡量“SR 进步”的数字要等：人签 fix pairs 并填 `expected_rules`（召回才能按规则算）、做 3 块热审（才有 P0 与过严率）。
+规则侧：两条放宽，成熟板冷跑误报每百行 0.47 → 0.28，召回类指标不降，三条门全过。真值侧：1 对 fix pair、10 条裁决、typical 11 行改标。能衡量“SR 能不能抓住真缺陷”的数字（热审召回、P0 精度）本轮仍为空。
 
 ## 等人做的事
 
-- 裁决 `adjudication-queue.json` 的 10 条（3 条 fix pair 收录与期望规则，7 条成熟板冷跑 FINDING）。
-- 决定是否把 `corpus-draft/` 的 3 对合入 `corpus/fix-pairs.json`，并签 `split.json`。
-- 决定批评 agent 用哪个外部模型，以及热审 3 块板（README §9 建议 flyback-viper22a、moteus-c1、bms-c1）的 intent 来源。
+- 决定热审 3 块板的 intent 来源与批评 agent 用哪个外部模型。
+- 给 42 块代理成熟板补 `production_evidence`，签 `split.json`（目前只有 Olimex 一个仓库在 train）。
+- 确认入库对的 `expected_rules`（SIG-D04 为 agent 提议）。

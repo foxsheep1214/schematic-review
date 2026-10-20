@@ -1,0 +1,128 @@
+{
+ "date": "2026-10-20",
+ "adjudicator": "用户/硬件负责人",
+ "sr_sha": "29b9856",
+ "note": "第 1 轮。裁决由人在对话中逐项给出，agent 只记录；批评 agent 未参与，所以 critic_verdict 全空。 第 2 条在 agent 给出电路复核后由人改判为不收录。",
+ "items": [
+  {
+   "source": "fix-pairs:olimex-esp32-poe-iso-revM-revM1",
+   "board": "olimex-esp32-poe-iso-revM-revM1.before",
+   "check_id": null,
+   "critic_verdict": null,
+   "decision": "NOT_A_DEFECT",
+   "level": null,
+   "hazard_path": null,
+   "reason": "作者只说提高可靠性/保护 C26，没有故障描述；按收录条件算改进，不收录",
+   "lands_in": "none",
+   "sr_change_allowed": "none"
+  },
+  {
+   "source": "fix-pairs:olimex-esp32-poe-iso-revM1-revN",
+   "board": "olimex-esp32-poe-iso-revM1-revN.before",
+   "check_id": null,
+   "critic_verdict": null,
+   "decision": "NOT_A_DEFECT",
+   "level": null,
+   "hazard_path": null,
+   "reason": "before 版 EN 为 R32 10 k 上拉到 3.3 V 加 C31 1 µF（10 ms），即乐鑫参考设计的 EN 延时电路，不违反器件要求；PG 门控是对慢爬升/掉电恢复的改进。作者原话亦只说 works better。初判 DEFECT_MISSED，经 agent 复核后改判",
+   "lands_in": "none",
+   "sr_change_allowed": "none"
+  },
+  {
+   "source": "fix-pairs:olimex-esp32-poe-iso-revN-revN1",
+   "board": "olimex-esp32-poe-iso-revN-revN1.before",
+   "check_id": null,
+   "critic_verdict": null,
+   "decision": "DEFECT_MISSED",
+   "level": "P2",
+   "hazard_path": null,
+   "reason": "CH340X 5 V 供电时 I/O 为 V3 的 3.3 V 域，RXD 被 R18 10 k 拉到 5 V，ESP 复位时 U0TXD 高阻，电流经 ESD 二极管倒灌 V3；N1 分压到 2.5 V，Rev O 改 1 k 上拉加 FET 电平转换。收录，defect_class pull，hazard component",
+   "lands_in": "fix-pairs:olimex-esp32-poe-iso-revN-revN1.expected_rules",
+   "sr_change_allowed": "none"
+  },
+  {
+   "source": "runs/2026-10-20-29b9856/reviews/isolated-serial-adapter/lint.json#NET-A01",
+   "board": "isolated-serial-adapter",
+   "check_id": "NET-A01.U3-modem-lines",
+   "critic_verdict": null,
+   "decision": "OVER_STRICT",
+   "level": null,
+   "hazard_path": null,
+   "reason": "CH344Q 未用的调制解调/GPIO 双向脚只挂标签，片内有上拉；同结构的输入脚（第 5 条）仍是真缺陷，所以只对双向脚放宽",
+   "lands_in": "typical_circuits/cases.json:isolated-serial-adapter.known_false_alarms",
+   "sr_change_allowed": "relax:NET-A01（IC 双向脚单节点网降 CANDIDATE）"
+  },
+  {
+   "source": "runs/2026-10-20-29b9856/reviews/ethernet-pmod-lan8720/lint.json#NET-A01",
+   "board": "ethernet-pmod-lan8720",
+   "check_id": "NET-A01./RST",
+   "critic_verdict": null,
+   "decision": "TRUE_RISK",
+   "level": "P2",
+   "hazard_path": null,
+   "reason": "/RST 与 /RSTn 两个单节点标签，PMOD 复位到不了 PHY；nRST 片内上拉使芯片能起来，所以是功能缺陷不是致命",
+   "lands_in": "typical_circuits/cases.json:ethernet-pmod-lan8720.expected",
+   "sr_change_allowed": "none"
+  },
+  {
+   "source": "runs/2026-10-20-29b9856/reviews/flyback-viper22a/lint.json#PWR-A02",
+   "board": "flyback-viper22a",
+   "check_id": "PWR-A02.U1-4",
+   "critic_verdict": null,
+   "decision": "TRUE_RISK",
+   "level": "P1",
+   "hazard_path": null,
+   "reason": "VIPer22A DIP-8 官方脚序 4=VDD，图上落在 GND1，器件无供电",
+   "lands_in": "typical_circuits/cases.json:flyback-viper22a.expected",
+   "sr_change_allowed": "none"
+  },
+  {
+   "source": "runs/2026-10-20-29b9856/reviews/lm386-amp/lint.json#DEV-A02",
+   "board": "lm386-amp",
+   "check_id": "DEV-A02.C4",
+   "critic_verdict": null,
+   "decision": "TRUE_RISK",
+   "level": "P1",
+   "hazard_path": null,
+   "reason": "KiCad 极性电容符号 pin 1 为正；C4 pin 1 接 GND、pin 2 接 +9V，电解反接",
+   "lands_in": "typical_circuits/cases.json:lm386-amp.expected",
+   "sr_change_allowed": "none"
+  },
+  {
+   "source": "runs/2026-10-20-29b9856/reviews/moteus-c1/lint.json#NET-A07",
+   "board": "moteus-c1",
+   "check_id": "NET-A07.U4-31",
+   "critic_verdict": null,
+   "decision": "OVER_STRICT",
+   "level": null,
+   "hazard_path": null,
+   "reason": "DRV8323 CAL 为放大器校准输入，带内部下拉，允许悬空",
+   "lands_in": "typical_circuits/cases.json:moteus-c1.known_false_alarms",
+   "sr_change_allowed": "none"
+  },
+  {
+   "source": "runs/2026-10-20-29b9856/reviews/bms-c1/lint.json#DRV-A03",
+   "board": "bms-c1",
+   "check_id": "DRV-A03.Q10",
+   "critic_verdict": null,
+   "decision": "OVER_STRICT",
+   "level": null,
+   "hazard_path": null,
+   "reason": "栅极由 BQ76952 DSG 经 R44 100 Ω→R46 1 k→R51 68 k‖D16 到达，栅源间 D19 5.1 V 钳位；有确定驱动",
+   "lands_in": "typical_circuits/cases.json:bms-c1.known_false_alarms",
+   "sr_change_allowed": "relax:DRV-A03（经最多 3 级电阻可达驱动脚的栅极降 CANDIDATE）"
+  },
+  {
+   "source": "runs/2026-10-20-29b9856/reviews/soldered-bq24295-charger/lint.json#NET-A01",
+   "board": "soldered-bq24295-charger",
+   "check_id": "NET-A01.QON",
+   "critic_verdict": null,
+   "decision": "OVER_STRICT",
+   "level": null,
+   "hazard_path": null,
+   "reason": "BQ24295 QON 带内部上拉，不用时可悬空",
+   "lands_in": "typical_circuits/cases.json:soldered-bq24295-charger.known_false_alarms",
+   "sr_change_allowed": "none"
+  }
+ ]
+}

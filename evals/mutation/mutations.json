@@ -42,5 +42,9 @@
  {"id": "M21", "name": "F8 design value without margin accepted", "file": "scripts/review_functions.py",
   "old": "    if calculation.get('claim_ids'):   # F8", "new": "    if False:"},
  {"id": "M22", "name": "document defect bound to a function accepted", "file": "scripts/review_functions.py",
-  "old": "        if fid is not None and result == 'FAIL' and document_row(cid):", "new": "        if False:"}
+  "old": "        if fid is not None and result == 'FAIL' and document_row(cid):", "new": "        if False:"},
+ {"id": "M23", "name": "bidirectional single-node net reported as FINDING again", "file": "scripts/lint.py",
+  "old": "                        and ng.normalize(self.pintype.get(nds[0])) in BIDIR_PINTYPES):", "new": "                        and False):"},
+ {"id": "M24", "name": "driver behind a resistor chain ignored", "file": "scripts/checkers/power_switch.py",
+  "old": "                elif switch.get('chained_drivers'):", "new": "                elif False:"}
 ]

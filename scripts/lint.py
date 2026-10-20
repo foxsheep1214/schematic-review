@@ -81,6 +81,7 @@ EN_PULL_ALERT_V = 6.0
 GND_TOKEN_RE = re.compile(r'^([A-Z]{0,2}GND[A-Z0-9]{0,3}|[AD]?VSS[A-Z0-9]{0,3})$')
 KICAD_UNCONNECTED_RE = re.compile(r'^unconnected-\(', re.I)
 DATASHEET_NC_PIN_RE = re.compile(r'^(N\.?C\.?|DNC|NIC|RSVD|RESERVED)(?:$|[_\-\d])', re.I)
+BIDIR_PINTYPES = {'BI', 'BIDI', 'BIDIR', 'BIDIRECTIONAL', 'IO', 'I/O', 'TRISTATE', '3STATE'}
 KICAD_AUTO_NET_RE = re.compile(r'(^|/)(Net|unconnected)-\(')   # 工具按引脚生成的网名，不是手写拼写
 NET_TIE_RE = re.compile(r'NET_?TIE', re.I)
 ISOLATOR_RE = re.compile(r'ISOLAT|\bISO\d|ISOW|ADUM|SI8[46]\d|NSI\d|CA-IS|隔离', re.I)
@@ -462,8 +463,16 @@ class Lint:
                              '未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，'
                              '输入脚另按 NET-A07 核', ref, kind='CANDIDATE')
                     continue
-                self.add('NET-A01', '单节点悬空网',
-                         f'{n} <- {nds[0]} ({parts.get(ref, {}).get("value", "")})', ref)
+                detail = f'{n} <- {nds[0]} ({parts.get(ref, {}).get("value", "")})'
+                if (self.graph.kind(ref) == IC
+                        and ng.normalize(self.pintype.get(nds[0])) in BIDIR_PINTYPES):
+                    # 2026-10-20 第 1 轮裁决：双向（兼 GPIO）脚只挂一个标签多是未用的调制解调/GPIO 线，
+                    # 不是标签分裂；输入、输出与电源脚仍按 FINDING 报。
+                    self.add('NET-A01', '单节点悬空网',
+                             detail + '：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出',
+                             ref, kind='CANDIDATE')
+                    continue
+                self.add('NET-A01', '单节点悬空网', detail, ref)
 
         # NET-A02 疑似网络名分裂（剔除同族总线/差分对/序号兄弟/收发对/同名双路）
         names = sorted(nets)

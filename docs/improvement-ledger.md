@@ -7,6 +7,40 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Training round 1 adjudicated: two relaxations, one fix pair admitted (2026-10-20)
+
+The ten-item queue of the first training round was adjudicated by the user
+item by item in chat; the agent recorded the decisions in
+`evals/training/adjudications/2026-10-20.json` and gave a circuit review of
+each verdict afterwards, on which one verdict changed (the PG-to-EN resistor
+pair is the reference EN delay plus an improvement, not a defect). Admitted
+truth: one fix pair (a UART bridge's RXD pulled to 5 V inside a 3.3 V I/O
+domain, class `pull`); rejected: two pairs whose author statements describe
+improvements. Seven mature-board cold FINDINGs were judged: four over-strict
+(unused modem lines on bidirectional pins, an input with an internal
+pull-down, an input with an internal pull-up, a gate driven through a
+three-resistor level-shift network), three true (a split reset label, a
+controller VDD tied to ground, a reversed electrolytic). Eleven typical
+`expected` rows whose `why` said "needs human confirmation" moved to
+`known_false_alarms`: the typical bench's expected list is a regression
+anchor, not truth.
+
+Two rule relaxations, each allowed by an adjudication and each with its
+failing test first: NET-A01 reports a single-node net on an IC's
+bidirectional pin as CANDIDATE (inputs, outputs and power pins stay
+FINDING, which keeps the split-reset-label defect); DRV-A03 reports a gate
+with no direct driver or pull but a driver pin reachable through at most
+three resistors as CANDIDATE instead of FINDING (`_Scan.chained_drivers`,
+never entering ground or rails; the one-hop <= 1 kR rule for pulls is
+unchanged). Mutations M23/M24 guard them; gate 24/24. Mature-board cold
+false alarms went from 0.47 to 0.28 per 100 checks, seeded recall and both
+gates unchanged. `metrics.py` now dedupes corpus entries by id across
+directories so a round's drafts cannot double-count signed pairs.
+
+- Event: user:2026-10-20 (adjudication of training round 1), test:evals/training/adjudications/2026-10-20.json
+- Causes: judgment 4, knowledge_missing 1
+- Changed: scripts/lint.py, scripts/checkers/power_switch.py, scripts/tests/test_board_scans.py, scripts/tests/test_power_switch.py, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, evals/typical_circuits/cases.json, evals/training/adjudications/2026-10-20.json, evals/training/corpus/fix-pairs.json, evals/training/corpus/split.json, evals/training/scripts/metrics.py, evals/training/runs/.gitignore, evals/training/runs/2026-10-20-29b9856/summary.md, docs/improvement-ledger.md
+
 ## A computed shortfall is a fail item; document checks are not functions (2026-10-20)
 
 A full re-review with function verdicts came back with 18 of 21 functions

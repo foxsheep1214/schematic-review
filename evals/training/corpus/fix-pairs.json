@@ -1,1 +1,36 @@
-{"note": "真值 A：作者修复过的缺陷—修复对，字段见 ../README.md 第 1.1 节；expected_rules 与 hazard 只能由人填。", "pairs": []}
+{
+ "note": "真值 A：作者修复过的缺陷—修复对，字段见 ../README.md 第 1.1 节；expected_rules 与 hazard 只能由人填。",
+ "pairs": [
+  {
+   "id": "olimex-esp32-poe-iso-revN-revN1",
+   "repo": "https://github.com/OLIMEX/ESP32-POE-ISO",
+   "license": "CERN OSH Licence v1.2 (README)",
+   "before": {
+    "commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01",
+    "schematic": "HARDWARE/ESP32-PoE-ISO-Rev.N/ESP32-PoE-ISO_Rev_N.kicad_sch"
+   },
+   "after": {
+    "commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01",
+    "schematic": "HARDWARE/ESP32-PoE-ISO-Rev.N1/ESP32-PoE-ISO_Rev_N1.kicad_sch"
+   },
+   "author_statement": "Rev N1: \"CH340X patch to prevent accidental overvoltage at reset. … Added resistor 10k/1206 over the RXD pin of CH340 to GND. The patch is near D7.\"（https://github.com/OLIMEX/ESP32-POE-ISO/blob/c19307ecd8a9d8c5703de7a1571cd89945e39c01/HARDWARE/Hardware-changes-log.txt，2026-10-20 读取；所有 Rev 同在 master 一棵树里，故前后 commit 相同）",
+   "defect_class": "pull",
+   "defect_location": {
+    "refs": [
+     "R45",
+     "U1",
+     "D7"
+    ],
+    "nets": [
+     "Net-(D7-A)"
+    ]
+   },
+   "expected_rules": [
+    "SIG-D04"
+   ],
+   "hazard": "component",
+   "split": "train",
+   "expected_rules_note": "agent 提议的科目，人只裁了收录与 hazard；换规则时同步改这里"
+  }
+ ]
+}

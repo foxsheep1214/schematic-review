@@ -2,7 +2,7 @@
  "date": "2026-10-20",
  "adjudicator": null,
  "sr_sha": "29b9856",
- "status": "WAITING_FOR_HUMAN",
+ "status": "ADJUDICATED -> adjudications/2026-10-20.json",
  "note": "第 1 轮：3 条 fix pair 收录/期望规则，7 条成熟板冷跑 FINDING（误报嫌疑）。没有热审与批评 agent 产物，故无 P0 条目。",
  "items": [
   {

@@ -26,6 +26,8 @@ M13–M18（2026-10-20）守功能判定机制：F2（设计值不向厂家要�
 M19（2026-10-20）把与工作态无关的审查科目（`catalog.STATE_INVARIANT`）重新按状态展开，由
 `test_plan_review.py` 的科目行计数测试杀死（首个失败是 `ReviewPlanTests::test_level_shift_name_hit_is_candidate_until_circuit_is_declared`，
 `FunctionFrameTests::test_state_invariant_rules_get_one_row_per_circuit` 同样失败）。
+M23–M24（2026-10-20，训练第 1 轮裁决）守两条放宽：IC 双向脚的单节点网降 CANDIDATE（`test_board_scans.py::SingleNodeNetTest`）、
+驱动脚经最多 3 级电阻可达的栅极降 CANDIDATE（`test_power_switch.py::ChainedDriverTest`）。
 
 ## 维护
 

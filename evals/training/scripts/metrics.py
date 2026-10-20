@@ -21,11 +21,13 @@ def locator(location):
 
 
 def corpus(dirs, name, key):
-    items = []
+    """同 id 以先给的目录为准（签过的 corpus 在前，轮内草稿在后）。"""
+    items = {}
     for d in dirs:
         data = load(pathlib.Path(d) / f'{name}.json') or {}
-        items += data.get(key, [])
-    return items
+        for item in data.get(key, []):
+            items.setdefault(item['id'], item)
+    return list(items.values())
 
 
 def fix_pair_recall(round_dir, pairs):

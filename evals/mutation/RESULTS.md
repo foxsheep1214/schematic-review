@@ -26,5 +26,7 @@
 | M20 | F4 shortfall kept open accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::FunctionShapeTests::test_f4_margins_per_aspect |
 | M21 | F8 design value without margin accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::FunctionShapeTests::test_f8_a_design_value_open_beside_a_calculation_states_its_margin |
 | M22 | document defect bound to a function accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::RowBindingTests::test_a_document_defect_is_not_bound_to_a_function |
+| M23 | bidirectional single-node net reported as FINDING again | `scripts/lint.py` | KILLED | FAILED scripts/tests/test_board_scans.py::SingleNodeNetTest::test_bidirectional_ic_pin_with_only_a_label_is_a_candidate |
+| M24 | driver behind a resistor chain ignored | `scripts/checkers/power_switch.py` | KILLED | FAILED scripts/tests/test_power_switch.py::ChainedDriverTest::test_driver_behind_a_resistor_chain_is_a_candidate |
 
 全部杀死。

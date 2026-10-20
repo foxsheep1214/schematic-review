@@ -381,11 +381,6 @@
    "expected": [
     {
      "rule": "NET-A01",
-     "match": "QON <- U2.12 (BQ24295_RGET)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
-    },
-    {
-     "rule": "NET-A01",
      "match": "unconnected-(K4-SBU1-PadA8) <- K4.A8 (U262-161N-4BVC11，脚名 SBU1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
      "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
     },
@@ -398,14 +393,20 @@
      "rule": "NET-A06",
      "match": "QON: ['U2.12']",
      "why": "网络只有输入脚：与单节点网同根"
+    }
+   ],
+   "known_false_alarms": [
+    {
+     "rule": "NET-A01",
+     "match": "QON <- U2.12 (BQ24295_RGET)",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：BQ24295 QON 片内上拉，不用可悬空；规则不改"
     },
     {
      "rule": "NET-A07",
      "match": "U2.12 -> QON: 输入脚所在网只有该节点",
-     "why": "输入脚所在网只有它自己（与同网 NET-A01 同根），需确认内部偏置或连接"
+     "why": "人工裁决 2026-10-20 OVER_STRICT：与同网 NET-A01 同根；规则不改"
     }
    ],
-   "known_false_alarms": [],
    "fixed_false_alarms": [
     {
      "rule": "NET-A01",
@@ -794,41 +795,6 @@
    "fixture": "fixtures/isolated-serial-adapter.xml",
    "expected": [
     {
-     "rule": "NET-A01",
-     "match": "/USB/CTS0 <- U3.41 (CH344Q)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/CTS3 <- U3.46 (CH344Q)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/DCD0 <- U3.33 (CH344Q)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/DSR0 <- U3.29 (CH344Q)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/RI0 <- U3.32 (CH344Q)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/RTS0 <- U3.40 (CH344Q)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/RTS3 <- U3.45 (CH344Q)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
-    },
-    {
      "rule": "PRO-A02",
      "match": "D10 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/TX1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
@@ -909,7 +875,43 @@
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     }
    ],
-   "known_false_alarms": [],
+   "known_false_alarms": [
+    {
+     "rule": "NET-A01",
+     "match": "/USB/CTS0 <- U3.41 (CH344Q)",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/CTS3 <- U3.46 (CH344Q)",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/DCD0 <- U3.33 (CH344Q)",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/DSR0 <- U3.29 (CH344Q)",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RI0 <- U3.32 (CH344Q)",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RTS0 <- U3.40 (CH344Q)",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RTS3 <- U3.45 (CH344Q)",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
+    }
+   ],
    "fixed_false_alarms": [
     {
      "rule": "PWR-A01",
@@ -1121,7 +1123,7 @@
     {
      "rule": "DEV-A02",
      "match": "C4: + 脚 C4.1 接 GND，- 脚 C4.2 接 +9V",
-     "why": "真实缺陷：Device:C_Polarized_Small 内嵌符号的“+”标记在 1 脚，C4（100µF）1 脚接 GND、2 脚接 +9V，电解电容反接（或符号与封装极性不一致），需改图核实"
+     "why": "人工裁决 2026-10-20 TRUE_RISK P1：100 µF 电解正极接 GND、负极接 +9V，反接"
     }
    ],
    "known_false_alarms": [],
@@ -1183,12 +1185,12 @@
     {
      "rule": "NET-A01",
      "match": "/RST <- U1.15 (LAN8720A)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+     "why": "人工裁决 2026-10-20 TRUE_RISK P2：/RST 与 /RSTn 标签名不一致，PMOD 复位到不了 PHY（nRST 片内上拉所以芯片能起来）"
     },
     {
      "rule": "NET-A01",
      "match": "/RSTn <- J1.8 (PMOD)",
-     "why": "网名只落在一个脚上：标签拼写分裂或未接，需人工确认"
+     "why": "人工裁决 2026-10-20 TRUE_RISK P2：/RST 与 /RSTn 标签名不一致，PMOD 复位到不了 PHY（nRST 片内上拉所以芯片能起来）"
     },
     {
      "rule": "NET-A06",
@@ -1198,7 +1200,7 @@
     {
      "rule": "NET-A07",
      "match": "U1.15 -> /RST: 输入脚所在网只有该节点",
-     "why": "输入脚所在网只有它自己（与同网 NET-A01 同根），需确认内部偏置或连接"
+     "why": "人工裁决 2026-10-20 TRUE_RISK P2：与同网 NET-A01 同根，PHY 复位脚只挂标签"
     }
    ],
    "known_false_alarms": [],
@@ -1417,7 +1419,7 @@
     {
      "rule": "PWR-A02",
      "match": "U1.4 (VDD，原生 power_in) <- GND1",
-     "why": "VIPer22A VDD 脚直接落在源极地 GND1，器件无供电；原为自动层漏检，现由 PWR-A02 电源脚落在地网报出"
+     "why": "人工裁决 2026-10-20 TRUE_RISK P1：VIPer22A DIP-8 pin 4 VDD 落在源极地 GND1，器件无供电"
     }
    ],
    "known_false_alarms": [],
@@ -1618,11 +1620,6 @@
      "why": "TVS 跨电源轨：核 VRWM/VBR/VC 与工作电压"
     },
     {
-     "rule": "NET-A07",
-     "match": "U4.31 -> unconnected-(U4-CAL-Pad31): 输入脚所在网只有该节点",
-     "why": "DRV8323 CAL 输入悬空：核手册内部下拉"
-    },
-    {
      "rule": "DRV-A04",
      "match": "Q2（mosfet，状态 as-built）：开关节点 /H Bridge A/OUTX 上有 half-bridge:Q1，但未见 RC/RCD 吸收或钳位",
      "why": "电机相节点未见吸收：核 FET 耐压与振铃"
@@ -1643,7 +1640,13 @@
      "why": "开关稳压器 EN/UVLO 直连输入：慢上电时按内部 UVLO 开启，值得核"
     }
    ],
-   "known_false_alarms": [],
+   "known_false_alarms": [
+    {
+     "rule": "NET-A07",
+     "match": "U4.31 -> unconnected-(U4-CAL-Pad31): 输入脚所在网只有该节点",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：DRV8323 CAL 输入片内下拉，允许悬空；NET-A07 不改"
+    }
+   ],
    "fixed_false_alarms": [
     {
      "rule": "NET-A02",
@@ -1758,17 +1761,18 @@
      "why": "齐纳跨 BQ76952 引脚：核钳位电压与引脚额定"
     },
     {
-     "rule": "DRV-A03",
-     "match": "Q10（mosfet，状态 as-built）：栅极网 Net-(D16-K) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
-     "why": "Q10 栅极由 D16/D19/R51 电平移位网络驱动：核默认态与关断路径"
-    },
-    {
      "rule": "PWR-A02",
      "match": "U4.36 (REGIN，原生 power_in) <- GND",
      "why": "BQ76952 内部 LDO 输入 REGIN 接地：手册允许不用内部 LDO 时接 VSS，但需审查者按手册确认，作候选保留"
     }
    ],
-   "known_false_alarms": [],
+   "known_false_alarms": [
+    {
+     "rule": "DRV-A03",
+     "match": "Q10（mosfet，状态 as-built）：栅极网 Net-(D16-K)",
+     "why": "人工裁决 2026-10-20 OVER_STRICT：栅极由 BQ76952 DSG 经 R44/R46/R51 三级电阻与 D16 电平移位网络驱动；DRV-A03 对经电阻链可达驱动脚的栅极已降 CANDIDATE（relax:DRV-A03）"
+    }
+   ],
    "fixed_false_alarms": [
     {
      "rule": "NET-A02",

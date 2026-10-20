@@ -1,0 +1,337 @@
+{
+ "round": "2026-10-20-29b9856",
+ "corpus_dirs": [
+  "evals/training/runs/2026-10-20-29b9856/corpus-draft"
+ ],
+ "adjudication_items": 0,
+ "pairs_total": 3,
+ "pairs_reviewed": 3,
+ "fix_pair_recall_cold": 0.667,
+ "fix_pair_recall_plan": 1.0,
+ "fix_pair_recall_hot": null,
+ "fix_pair_recall_hot_reason": "no hot review of a fix-pair before version this round",
+ "per_pair": [
+  {
+   "pair": "olimex-esp32-poe-iso-revM-revM1",
+   "reviewed": true,
+   "cold_hits": [],
+   "plan_rows": [
+    "PWR-C09.DECAP-BBB99AF3B6A525FCB070.5V-DCDC",
+    "PWR-C10.DECAP-BBB99AF3B6A525FCB070.5V-DCDC",
+    "PWR-D02.DECAP-BBB99AF3B6A525FCB070.5V-DCDC",
+    "PWR-T03.DECAP-BBB99AF3B6A525FCB070.5V-DCDC"
+   ],
+   "hot_hit": null
+  },
+  {
+   "pair": "olimex-esp32-poe-iso-revM1-revN",
+   "reviewed": true,
+   "cold_hits": [
+    "RST-A01:CANDIDATE",
+    "RST-A03:CANDIDATE"
+   ],
+   "plan_rows": [
+    "DEV-C05.U7",
+    "DEV-D01.U7",
+    "DEV-D02.U7",
+    "DEV-D05.U7",
+    "DRV-C01.L2-3-3V.3-3V",
+    "DRV-T01.L2-3-3V.3-3V",
+    "PWR-C09.DECAP-7FC7CD6A66892D04FCBA.NET-D3-K",
+    "PWR-C10.DECAP-7FC7CD6A66892D04FCBA.NET-D3-K",
+    "PWR-C11.U7-NET-D3-K.NET-D3-K",
+    "PWR-D02.DECAP-7FC7CD6A66892D04FCBA.NET-D3-K",
+    "PWR-D03.U7-NET-D3-K.U7-4",
+    "PWR-E01.U7-5",
+    "PWR-E03.U7-NET-D3-K.NET-D3-K",
+    "PWR-T03.DECAP-7FC7CD6A66892D04FCBA.NET-D3-K",
+    "RST-A01.ESP-EN-074c84",
+    "RST-A03.U7-da5648",
+    "RST-E01.U6-3",
+    "RST-E01.U7-4",
+    "RST-T01.U7-NET-D3-K.U7-4"
+   ],
+   "hot_hit": null
+  },
+  {
+   "pair": "olimex-esp32-poe-iso-revN-revN1",
+   "reviewed": true,
+   "cold_hits": [
+    "PWR-A02:FINDING"
+   ],
+   "plan_rows": [
+    "DEV-C05.U1",
+    "DEV-D01.U1",
+    "DEV-D02.D7",
+    "DEV-D02.U1",
+    "DEV-D05.U1",
+    "PWR-A02.U1-10-627578",
+    "PWR-C09.DECAP-023B547755BC02EA1619.NET-U1-V3",
+    "PWR-C09.DECAP-47CD1FED0AD214F9D13A.5V-USB",
+    "PWR-C10.DECAP-023B547755BC02EA1619.NET-U1-V3",
+    "PWR-C10.DECAP-47CD1FED0AD214F9D13A.5V-USB",
+    "PWR-D02.DECAP-023B547755BC02EA1619.NET-U1-V3",
+    "PWR-D02.DECAP-47CD1FED0AD214F9D13A.5V-USB",
+    "PWR-T03.DECAP-023B547755BC02EA1619.NET-U1-V3",
+    "PWR-T03.DECAP-47CD1FED0AD214F9D13A.5V-USB"
+   ],
+   "hot_hit": null
+  }
+ ],
+ "boards_reviewed": 42,
+ "findings": 22,
+ "checks": 4657,
+ "mature_cold_false_alarms": 0.47,
+ "adjudicated_false_alarms": 0,
+ "per_board": [
+  {
+   "board": "rp2040-stamp",
+   "findings": 0,
+   "checks": 141
+  },
+  {
+   "board": "esp32-c3-devkit-lipo",
+   "findings": 0,
+   "checks": 106
+  },
+  {
+   "board": "rvpc",
+   "findings": 0,
+   "checks": 91
+  },
+  {
+   "board": "fusb302-breakout",
+   "findings": 0,
+   "checks": 104
+  },
+  {
+   "board": "powercb-usbc-ldo",
+   "findings": 0,
+   "checks": 83
+  },
+  {
+   "board": "tps5430",
+   "findings": 0,
+   "checks": 85
+  },
+  {
+   "board": "stepbubodc01",
+   "findings": 0,
+   "checks": 77
+  },
+  {
+   "board": "soldered-liion-charger",
+   "findings": 0,
+   "checks": 73
+  },
+  {
+   "board": "soldered-bq24295-charger",
+   "findings": 2,
+   "checks": 168
+  },
+  {
+   "board": "soldered-liion-charger-protection",
+   "findings": 0,
+   "checks": 100
+  },
+  {
+   "board": "piicodev-tmp117",
+   "findings": 0,
+   "checks": 83
+  },
+  {
+   "board": "piicodev-ens160",
+   "findings": 0,
+   "checks": 100
+  },
+  {
+   "board": "bme280-dspace",
+   "findings": 0,
+   "checks": 67
+  },
+  {
+   "board": "pmod-bme280",
+   "findings": 0,
+   "checks": 61
+  },
+  {
+   "board": "soldered-txb0104-level-shifter",
+   "findings": 0,
+   "checks": 51
+  },
+  {
+   "board": "makerverse-motor-driver-2ch",
+   "findings": 0,
+   "checks": 87
+  },
+  {
+   "board": "piicodev-servo-driver",
+   "findings": 0,
+   "checks": 135
+  },
+  {
+   "board": "soldered-relay-1ch",
+   "findings": 0,
+   "checks": 45
+  },
+  {
+   "board": "esp32-4ch-relays",
+   "findings": 0,
+   "checks": 203
+  },
+  {
+   "board": "isolated-serial-adapter",
+   "findings": 7,
+   "checks": 326
+  },
+  {
+   "board": "han-to-rs485",
+   "findings": 0,
+   "checks": 55
+  },
+  {
+   "board": "mcp25625-breakout",
+   "findings": 0,
+   "checks": 51
+  },
+  {
+   "board": "soldered-can-mcp2518",
+   "findings": 0,
+   "checks": 74
+  },
+  {
+   "board": "bioamp-exg-pill",
+   "findings": 0,
+   "checks": 73
+  },
+  {
+   "board": "makerverse-loadcell-hx710c",
+   "findings": 0,
+   "checks": 70
+  },
+  {
+   "board": "lm386-amp",
+   "findings": 1,
+   "checks": 47
+  },
+  {
+   "board": "cmoy-headphone-amp",
+   "findings": 0,
+   "checks": 47
+  },
+  {
+   "board": "led-al8860",
+   "findings": 0,
+   "checks": 64
+  },
+  {
+   "board": "led-lm3404",
+   "findings": 0,
+   "checks": 65
+  },
+  {
+   "board": "ethernet-pmod-lan8720",
+   "findings": 3,
+   "checks": 88
+  },
+  {
+   "board": "soldered-w5500",
+   "findings": 0,
+   "checks": 95
+  },
+  {
+   "board": "makerverse-nano-power-timer",
+   "findings": 0,
+   "checks": 60
+  },
+  {
+   "board": "usb232r02",
+   "findings": 0,
+   "checks": 91
+  },
+  {
+   "board": "flyback-viper22a",
+   "findings": 3,
+   "checks": 70
+  },
+  {
+   "board": "flyback-uc3844",
+   "findings": 1,
+   "checks": 67
+  },
+  {
+   "board": "resonare-lcc",
+   "findings": 0,
+   "checks": 400
+  },
+  {
+   "board": "moteus-c1",
+   "findings": 2,
+   "checks": 367
+  },
+  {
+   "board": "bms-c1",
+   "findings": 2,
+   "checks": 264
+  },
+  {
+   "board": "easyiso",
+   "findings": 0,
+   "checks": 113
+  },
+  {
+   "board": "ideal-diode",
+   "findings": 0,
+   "checks": 68
+  },
+  {
+   "board": "pd-liion-charger",
+   "findings": 1,
+   "checks": 131
+  },
+  {
+   "board": "pcm5102a-dac",
+   "findings": 0,
+   "checks": 111
+  }
+ ],
+ "seeded_recall": 0.882,
+ "seeded_sites": 203,
+ "seeded_auto": 179,
+ "seeded_per_defect": {
+  "D-BOM-WS": 1.0,
+  "D-CAP-POL": 0.818,
+  "D-CAP-VR": 1.0,
+  "D-EN-FLOAT": 0.786,
+  "D-FLY-MISS": 1.0,
+  "D-FLY-REV": 1.0,
+  "D-GND-PIN": 0.7,
+  "D-I2C-PU": 0.692,
+  "D-LED-R": 1.0,
+  "D-RAIL-SPLIT": 0.791,
+  "D-REF-ANNO": 1.0,
+  "D-TVS-STUB": 1.0
+ },
+ "typical_gate": {
+  "MISSED": 0,
+  "FALSE_ALARM_BACK": 0,
+  "UNCLASSIFIED": 0,
+  "FALSE_ALARM_GONE": 0,
+  "ERROR": 0
+ },
+ "typical_boards": 42,
+ "replay_gate": 0,
+ "replay_totals": {
+  "MATCH": 195,
+  "KNOWN": 0,
+  "MISMATCH": 0
+ },
+ "hot_reviews": 0,
+ "critic_files": 0,
+ "p0_precision": null,
+ "p0_precision_reason": "no adjudicated P0 items (needs hot review + critic + human)",
+ "misfile_rate": null,
+ "misfile_rate_reason": "no hot review this round",
+ "lookup_honesty": null,
+ "lookup_honesty_reason": "needs critic agent spot checks of “已读 X 第 N 页” claims"
+}
