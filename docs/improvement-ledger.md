@@ -7,6 +7,22 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function verdicts, step 6: benches guard the new gates (2026-10-20)
+
+Steps 1–5 added gates that no mutation named: a vendor-ask in a design value,
+a positive margin left open, a frame member bound elsewhere, rows derived
+without their open items, a prohibition in a question, a plan without frames.
+Six mutations (M13–M18) now break each one and are killed by one unit test
+each; the gate is 18/18. The R3 ledger replay was retired in step 1 and its
+killers (M2/M3/M5/M6/M8) already point at unit tests. `run_regression.py`
+still matches its baseline (R3/R4 each refused on schema with one error,
+release unchanged) and `bench_coverage.py` runs unchanged; neither needed a
+new baseline.
+
+- Event: user:2026-10-20 (design docs/2026-10-20-function-verdicts-design.md §11, step 6)
+- Causes: rule_not_enforced 1
+- Changed: evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## Function verdicts, step 5: the documents say what the scripts now enforce (2026-10-20)
 
 Steps 1–4 changed what a reviewer writes; SKILL and the references still told

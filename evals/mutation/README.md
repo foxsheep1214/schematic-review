@@ -20,6 +20,9 @@ M1–M8 来自 2026-10-19 的审计：板级基准（42 块典型板、种子基
 `test_electrical_safety.py::test_operating_range_fails_when_the_rail_minimum_is_below_the_recommended_minimum`
 和 DEV-E02 合同后 M4 被杀死。M9–M12 删掉建合同前从未被测试点名的四条 A 规则（NET-A03、PWR-A04、RST-A01、
 REQ-A01）的报出，只有规则合同能杀死它们。
+M13–M18（2026-10-20）守功能判定机制：F2（设计值不向厂家要）、F4（正余量必须下结论）、框架成员行绑定、
+`derive_rows.py` 按开放项派生、问题禁止句检查、计划生成功能框架，各由 `test_review_functions.py`、
+`test_derive_rows.py`、`test_catalog.py`、`test_plan_review.py` 的一条测试杀死。
 
 ## 维护
 

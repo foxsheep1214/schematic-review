@@ -22,5 +22,17 @@
  {"id": "M11", "name": "RST-A01 EN pull candidates never reported", "file": "scripts/lint.py",
   "old": "            if pulls:", "new": "            if False:"},
  {"id": "M12", "name": "REQ-A01 key-part count mismatch never reported", "file": "scripts/lint.py",
-  "old": "                if len(got) != want:", "new": "                if False:"}
+  "old": "                if len(got) != want:", "new": "                if False:"},
+ {"id": "M13", "name": "F2 design value asked of a vendor accepted", "file": "scripts/review_functions.py",
+  "old": "        if VENDOR_ASK_RE.search(asked):", "new": "        if False:"},
+ {"id": "M14", "name": "F4 positive margin never decides", "file": "scripts/review_functions.py",
+  "old": "        if value is not None and value > 0 and isinstance(fn.get('open'), list):", "new": "        if False:"},
+ {"id": "M15", "name": "frame member bound to another function accepted", "file": "scripts/review_functions.py",
+  "old": "            if row.get('function_id') != frame['id']:", "new": "            if False:"},
+ {"id": "M16", "name": "derive_rows ignores open items", "file": "scripts/derive_rows.py",
+  "old": "    for item in fn.get('open') or []:", "new": "    for item in []:"},
+ {"id": "M17", "name": "question prohibition ban never fires on rows", "file": "scripts/catalog.py",
+  "old": "        if isinstance(item, dict) and isinstance(item.get('question'), str) and QUESTION_BAN_RE.search(item['question']):", "new": "        if False:"},
+ {"id": "M18", "name": "plan emits no function frames", "file": "scripts/plan_review.py",
+  "old": "        self.functions.extend(frames.values())", "new": "        pass"}
 ]

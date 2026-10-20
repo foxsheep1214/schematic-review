@@ -16,5 +16,11 @@
 | M10 | PWR-A04 same-base rails never reported | `scripts/lint.py` | KILLED | FAILED scripts/tests/test_rule_contracts.py::RuleContractTests::test_PWR_A04 |
 | M11 | RST-A01 EN pull candidates never reported | `scripts/lint.py` | KILLED | FAILED scripts/tests/test_rule_contracts.py::RuleContractTests::test_RST_A01 |
 | M12 | REQ-A01 key-part count mismatch never reported | `scripts/lint.py` | KILLED | FAILED scripts/tests/test_rule_contracts.py::RuleContractTests::test_REQ_A01 |
+| M13 | F2 design value asked of a vendor accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::FunctionShapeTests::test_f2_design_value_is_specified_not_requested |
+| M14 | F4 positive margin never decides | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::FunctionShapeTests::test_f4_a_positive_margin_decides_unless_a_reason_says_why_not |
+| M15 | frame member bound to another function accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::FrameTests::test_a_member_row_bound_elsewhere_is_named |
+| M16 | derive_rows ignores open items | `scripts/derive_rows.py` | KILLED | FAILED scripts/tests/test_derive_rows.py::DeriveTests::test_a_hand_filled_row_is_kept_and_a_disagreement_is_named |
+| M17 | question prohibition ban never fires on rows | `scripts/catalog.py` | KILLED | FAILED scripts/tests/test_catalog.py::QuestionTemplateTest::test_question_errors_reject_prohibition_phrasing_in_rows_and_frames |
+| M18 | plan emits no function frames | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_plan_review.py::FunctionFrameTests::test_a_declared_circuit_gets_a_frame_and_bound_member_rows |
 
 全部杀死。
