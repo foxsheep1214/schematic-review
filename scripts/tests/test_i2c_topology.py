@@ -248,7 +248,7 @@ class TopologyTests(unittest.TestCase):
                 db['pinname'][node] = 'GPIO'
         rebind(db, intent)
         plan = build_review_plan(db, intent)
-        feature = next(p for p in plan['checks'] if p['rule'] == 'REQ-Q07' and p['package'] == 'I2C')
+        feature = next(p for p in plan['checks'] if p['rule'] == 'REQ-Q07' and p['circuit_type'] == 'I2C')
         self.assertEqual(feature['applicability'], 'APPLICABLE')
         self.assertEqual(len(regions(plan['i2c_topology'])), 2)
 
@@ -463,17 +463,17 @@ class TopologyTests(unittest.TestCase):
     def test_plan_has_per_region_coverage_plus_package_electrical_checks(self):
         db, intent = fixture(('33R',))
         plan = build_review_plan(db, intent)
-        members = catalog.package('I2C').rules
+        members = catalog.circuit_type('I2C').subjects
         new = [p for p in plan['checks'] if p['object'].get('i2c_region')]
         self.assertEqual(len(new), 2 * (1 + len(members)))
         self.assertEqual(sum(p['rule'] == 'SIG-T02' for p in new), 2)
         self.assertTrue(all(p['review_result'] is None for p in new))
         electrical = [p for p in new if p['rule'] in members]
         self.assertEqual(len(electrical), 2 * len(members))
-        self.assertTrue(all(p['readiness'] == 'WAITING_EVIDENCE' and p['package'] == 'I2C' for p in electrical))
+        self.assertTrue(all(p['readiness'] == 'WAITING_EVIDENCE' and p['circuit_type'] == 'I2C' for p in electrical))
         self.assertTrue(any(p['rule'] == 'SIG-E01' for p in plan['checks']))
-        # 区域已逐个展开时，不再按功能包重复生成一套成员项。
-        self.assertFalse([p for p in plan['checks'] if p['object'].get('package') == 'I2C'
+        # 区域已逐个展开时，不再按功能电路重复生成一套科目项。
+        self.assertFalse([p for p in plan['checks'] if p['object'].get('circuit_type') == 'I2C'
                           and p['rule'] != 'REQ-Q07'])
 
     def test_merge_rejects_changed_state_even_when_db_is_unchanged(self):

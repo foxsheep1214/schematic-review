@@ -22,7 +22,7 @@ SOURCE_FILES = {
     'plan': ['plan_review.py', 'catalog.py'],
     'revision': ['revision_impact.py', 'diff_netlists.py', 'plan_review.py'],
 }
-GENERIC_SOURCES = {'package', 'board'}
+GENERIC_SOURCES = {'subject', 'board'}
 
 
 def source_text(source):
@@ -50,20 +50,20 @@ class CatalogTest(unittest.TestCase):
             with self.subTest(rule.id):
                 if rule.source == 'board':
                     self.assertEqual(rule.scope, 'board')
-                if rule.source == 'package':
+                if rule.source == 'subject':
                     self.assertIn(rule.scope, ('circuit', 'link'))
         self.assertTrue(set(BOARD_MATERIALS) <= {r.id for r in catalog.rules()
                                                   if r.scope == 'board' and r.id[4] != 'Q'})
 
     def test_packages_list_reviewer_rules_only(self):
-        for package in catalog.PACKAGES:
+        for package in catalog.CIRCUIT_TYPES:
             with self.subTest(package.name):
-                self.assertTrue(package.rules)
-                self.assertEqual(len(package.rules), len(set(package.rules)))
-                self.assertTrue(all(catalog.method_of(rule) in 'TCDV' for rule in package.rules))
+                self.assertTrue(package.subjects)
+                self.assertEqual(len(package.subjects), len(set(package.subjects)))
+                self.assertTrue(all(catalog.method_of(rule) in 'TCDV' for rule in package.subjects))
                 self.assertTrue(set(package.materials) <= {'requirements', 'datasheets', 'platform_checklist'})
-        members = {rule for package in catalog.PACKAGES for rule in package.rules}
-        self.assertEqual({r.id for r in catalog.rules(source='package')} - members, set())
+        members = {rule for package in catalog.CIRCUIT_TYPES for rule in package.subjects}
+        self.assertEqual({r.id for r in catalog.rules(source='subject')} - members, set())
 
     def test_every_rule_token_in_code_and_docs_is_registered(self):
         paths = sorted(SCRIPTS.glob('*.py')) + sorted((SCRIPTS / 'checkers').glob('*.py'))
@@ -116,22 +116,22 @@ class GeneratedOutputTest(unittest.TestCase):
                   'requirements': [{'id': 'REQ-1', 'text': 'synthetic', 'citation': 'synthetic',
                                     'criterion': 'synthetic criterion'}],
                   'circuits': [{'id': 'C-' + p.name, 'type': p.name, 'refs': ['U1'], 'states': ['run'],
-                                'citation': 'synthetic'} for p in catalog.PACKAGES]}
+                                'citation': 'synthetic'} for p in catalog.CIRCUIT_TYPES]}
         plans = [build_review_plan(db, intent), build_review_plan(self.board())]
         generated = set()
         for plan in plans:
             for item in plan['checks']:
                 with self.subTest(item['id']):
                     self.assertEqual(catalog.spec_errors(item), [])
-                    if item.get('package') and item['rule'] != 'REQ-Q07':
-                        self.assertIn(item['rule'], catalog.package(item['package']).rules)
+                    if item.get('circuit_type') and item['rule'] != 'REQ-Q07':
+                        self.assertIn(item['rule'], catalog.circuit_type(item['circuit_type']).subjects)
                 generated.add(item['rule'])
             for row in plan['rule_plan']:
                 self.assertTrue(catalog.known(row['rule']), row['rule'])
                 self.assertEqual(row['name'], catalog.title(row['rule']))
-        expected = {r.id for r in catalog.rules() if r.source in ('plan', 'package', 'board')}
+        expected = {r.id for r in catalog.rules() if r.source in ('plan', 'subject', 'board')}
         self.assertEqual(expected - generated, set())
-        custom = next(x for x in plans[0]['checks'] if x['rule'] == 'REQ-Q07' and x['package'] == 'CUSTOM')
+        custom = next(x for x in plans[0]['checks'] if x['rule'] == 'REQ-Q07' and x['circuit_type'] == 'CUSTOM')
         self.assertIn('自定义功能 CUSTOM', custom['criterion'])
         log = 'ERROR (ORCAP-1): export stopped\n"No_connect" property on Pin "U4.6" ignored ... net "WDI_NET"'
         lint = Lint(db, log, intent)
@@ -144,7 +144,7 @@ class GeneratedOutputTest(unittest.TestCase):
         plan = build_review_plan(self.board())
         for item in plan['checks']:
             obj = item['object']
-            if obj.get('board') or obj.get('package'):
+            if obj.get('board') or obj.get('circuit_type'):
                 with self.subTest(item['id']):
                     self.assertTrue(_global_scope(copy.deepcopy(item)))
         self.assertFalse(_global_scope(next(x for x in plan['checks'] if x['id'] == 'DEV-C05.U1')))
@@ -195,8 +195,8 @@ class ObjectiveAlignmentTest(unittest.TestCase):
         index = catalog.build_objective_index(catalog.BY_ID, catalog.OBJECTIVE_RULES)
         self.assertEqual(set(index), set(catalog.BY_ID))
         self.assertEqual(index, catalog.OBJECTIVE_BY_RULE)
-        for package in catalog.PACKAGES:
-            self.assertTrue(set(package.rules) <= set(index))
+        for package in catalog.CIRCUIT_TYPES:
+            self.assertTrue(set(package.subjects) <= set(index))
 
     def test_new_rule_without_alignment_is_rejected(self):
         with self.assertRaises(ValueError):
@@ -229,10 +229,10 @@ class ObjectiveAlignmentTest(unittest.TestCase):
 
 
 class QuestionTemplateTest(unittest.TestCase):
-    """功能包成员规则的问题模板：每条都有、都能填空、都不含禁止句；五步核对单抄自参考文档。"""
+    """审查科目的问题模板：每条都有、都能填空、都不含禁止句；五步核对单抄自参考文档。"""
 
     def test_every_package_member_rule_has_a_question_free_of_prohibitions(self):
-        members = {rule for package in catalog.PACKAGES for rule in package.rules}
+        members = {rule for package in catalog.CIRCUIT_TYPES for rule in package.subjects}
         self.assertEqual(members, set(catalog.QUESTIONS))
         for rule, template in catalog.QUESTIONS.items():
             with self.subTest(rule):
@@ -244,7 +244,7 @@ class QuestionTemplateTest(unittest.TestCase):
                 else:
                     self.assertIn('RUN 时 BIAS（Q2、D4）', filled)
         self.assertLessEqual(catalog.STATE_INVARIANT, set(catalog.QUESTIONS))
-        self.assertEqual({p.name for p in catalog.PACKAGES}, set(catalog.FRAME_QUESTIONS))
+        self.assertEqual({p.name for p in catalog.CIRCUIT_TYPES}, set(catalog.FRAME_QUESTIONS))
         for name, body in catalog.FRAME_QUESTIONS.items():
             with self.subTest(name):
                 self.assertIsNone(catalog.QUESTION_BAN_RE.search(body), body)

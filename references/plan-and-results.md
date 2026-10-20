@@ -70,7 +70,7 @@
 ```
 
 - `review_mode`：`first` 或 `revision`。`review_phase` 取值见 [结论与准出](verdicts-and-release.md#5-审查阶段)。
-- `features` 的键与 `circuits[].type` 取 [规则总表](check-catalog.md)“功能包”中的包名，否则拒绝；
+- `features` 的键与 `circuits[].type` 取 [规则总表](check-catalog.md)“功能电路”中的包名，否则拒绝；
   `applicability` 为 APPLICABLE / NOT_APPLICABLE / UNDETERMINED，前两者必须带 `citation`。
 - 名称命中只生成 UNDETERMINED 候选，不展开成员；由电路声明、features 出处或已确认拓扑确认后再展开。
   带出处的不适用声明可排除误命中；与已确认拓扑冲突则保留证据不足。没搜到关键字不能推出 NOT_APPLICABLE。
@@ -90,7 +90,7 @@
   不得把未上电的稳压器或端口标成 source 来消除告警。
 - 各检查器的 intent 段（`i2c_topology`、`decoupling`、`device_kinds` 等）见 [自动检查](automation.md)。
 
-## 二、review-plan.json（schema_version 4）
+## 二、review-plan.json（schema_version 5）
 
 ### 生成与合并
 
@@ -119,18 +119,18 @@
 |---|---|
 | `id` | `规则编号[.实例键].锚点`，如 `RST-T02.U3.SYS-RST-N` |
 | `rule` / `method` / `domain` | 规则编号、方式代码、内容域代码，须与总表一致 |
-| `object` | 对象：覆盖维度、功能包、全板、网络、位号、引脚或页码 |
+| `object` | 对象：覆盖维度、功能电路、全板、网络、位号、引脚或页码 |
 | `criterion` | 本项判据 |
 | `applicability` | APPLICABLE / NOT_APPLICABLE / UNDETERMINED |
 | `readiness` | READY / WAITING_EVIDENCE / NOT_SCHEDULED |
 | `required_inputs` | 当前缺失的输入 |
 | `trigger` | 实例化该项的可复现依据 |
 | `handoff` | 独立下游动作，可与任一结果并存；`constraint`/`verification` 逐条写接收方要做和要测的事，不写“执行 X 原文及其全部工况”这类只换编号的套话（`TEMPLATED_HANDOFF` 提示） |
-| `question` / `function_id` / `aspect` | 电路成员行才有：按规则模板填了电路、位号、状态和需求窗口的问题；所属功能框架；方面（= 规则标题）。问题里不许有禁止句（“不得…”“不把…外推”），校验 `question_errors` 拒绝，审查员补加的行同样受限 |
+| `question` / `function_id` / `aspect` | 电路科目行才有：按规则模板填了电路、位号、状态和需求窗口的问题；所属功能框架；方面（= 规则标题）。问题里不许有禁止句（“不得…”“不把…外推”），校验 `question_errors` 拒绝，审查员补加的行同样受限 |
 
 `rule_plan[]` 回答“这类规则要不要跑”，`checks[]` 回答“具体审哪一项”，`functions[]` 是功能框架：
 每个 intent 电路一条，含 `id`（`FN-<电路 id>`）、`question`（由成员问题归纳，审查员可改）、`objects`、`states`、
-`members[]`（成员行 id、规则、方面、状态）、`blind_spots`（每条成员规则的盲区一句）和 `checklist`
+`members[]`（科目行 id、规则、方面、状态）、`blind_spots`（每条审查科目的盲区一句）和 `checklist`
 （判“证据不足”之前的五步原文）。审查员照框架写功能判定，不翻规则书。
 
 - APPLICABLE + READY：本轮执行；READY 不代表 PASS。
@@ -152,9 +152,9 @@
 - **需求与覆盖**：每条需求实例化为 REQ-D01；另有六类覆盖审计项 DOC-Q01、REQ-Q01～Q04、DEV-Q01。
 - **证据计算（E）**：READY 须当前网表指纹、文档指纹、准确型号/版本/定位、依赖物料 AVAILABLE 及必要模型输入齐全，
   否则 WAITING_EVIDENCE。每条匹配证据生成独立状态子项。
-- **功能包**：汇总项 REQ-Q07 只汇总覆盖；功能包适用后生成成员规则，声明了电路时逐电路×工况（答案不随工作态变化的成员规则
-  每电路一行，行的 `object` 不带 `state`，见 `catalog.STATE_INVARIANT`），否则按功能包一次；各成员仍须按 [最小充分证据](evidence-proportionality.md) 核适用性。
-  未检出也未声明的功能包汇总到一项 REQ-Q08，逐个确认不适用并给依据。
+- **功能电路**：汇总项 REQ-Q07 只汇总覆盖；功能电路适用后生成审查科目，声明了电路时逐电路×工况（答案不随工作态变化的审查科目
+  每电路一行，行的 `object` 不带 `state`，见 `catalog.STATE_INVARIANT`），否则按功能电路一次；各科目仍须按 [最小充分证据](evidence-proportionality.md) 核适用性。
+  未检出也未声明的功能电路汇总到一项 REQ-Q08，逐个确认不适用并给依据。
 - **电平转换（LEVEL_SHIFT）**：用于独立转换模块和通用 GPIO 跨电压域互连。转换器位于已声明的 I²C/SPI/UART 等
   总线上时，把转换器列入该总线电路的 refs，不另声明 LEVEL_SHIFT，避免同一链路重复检查；此时 REQ-Q08 中的
   LEVEL_SHIFT 以“已并入 <电路 ID>”为依据关闭，不写成“不适用”。分立 MOSFET 转换器没有名称线索，须在 `intent.circuits`
@@ -164,17 +164,17 @@
 - **检查器**：清单写在同名顶层键并带 `<id>_version`，计划项 `object` 带 `<id>_digest` 绑定清单，
   `inventory_gaps` 保留缺口——有缺口不能判 PASS；最终校验会重建清单，不能编辑清单消缺口。
 
-### 功能包依赖与状态核对
+### 功能电路依赖与状态核对
 
-专家执行与 REQ-Q07 汇总先按最终计划的实际 `package`、`circuit`、`state`、`ref/refs` 核成员身份，
-在现有 evidence/rationale 列出全部必需成员的准确 ID、所支持子义务和结果。规则编号相同不证明是同一电路；
-未列 package 的计算或补查项按实际端点和判据判断是否必需，不机械纳入所有无包项，也不因无包而遗漏。
-跨包成员只有在同一供电、信号、控制或保护路径构成真实依赖时才引用，并写逐跳路径及适用状态；
-另一接口同名规则不能代替本接口电气检查。包内连接完成不代表电平、端接、供电或掉电成员已完成。
+专家执行与 REQ-Q07 汇总先按最终计划的实际 `circuit_type`、`circuit`、`state`、`ref/refs` 核科目归属，
+在现有 evidence/rationale 列出全部必需科目的准确 ID、所支持子义务和结果。规则编号相同不证明是同一电路；
+未列 `circuit_type` 的计算或补查项按实际端点和判据判断是否必需，不机械纳入所有未归类的项，也不因未归类而遗漏。
+跨类型科目只有在同一供电、信号、控制或保护路径构成真实依赖时才引用，并写逐跳路径及适用状态；
+另一接口同名规则不能代替本接口电气检查。连接类科目完成不代表电平、端接、供电或掉电科目已完成。
 
-汇总先核成员适用性及实际违反：任一必需成员已确认 FAIL，父项不得因其他成员 INSUFFICIENT 改成
-INSUFFICIENT；保留确认根因与其等级，再单列其余未知。没有确认 FAIL 而必需成员未闭合时才按具体
-缺口给 INSUFFICIENT。纯覆盖审计项按自身覆盖判据评判，不能直接复制整个包的电气结论。
+汇总先核科目适用性及实际违反：任一必需科目已确认 FAIL，父项不得因其他科目 INSUFFICIENT 改成
+INSUFFICIENT；保留确认根因与其等级，再单列其余未知。没有确认 FAIL 而必需科目未闭合时才按具体
+缺口给 INSUFFICIENT。纯覆盖审计项按自身覆盖判据评判，不能直接复制整类电路的电气结论。
 
 每颗关键器件从适用官方章节、表头及脚注逐脚列外围选值窗口，包括检测/配置电阻、时序、反馈、
 电容、电感等实际使用项；按真实型号/档位、供电、模式、温度及容差角点验算 Min/Max。
@@ -269,7 +269,7 @@ PRO-C03 在隔离功能里逐个列出变压器、光耦/数字隔离器、跨�
 （短时耐压、目标绝缘类别、无直流跨接都不能独自关闭）；PWR-C15 在变换器功能里写反馈模型、补偿配置和角点稳定性
 （无反馈环按拓扑 NA；内部补偿用厂家适用条件证明；Bode 实测是移交，不是开放项）。
 
-**行跟随功能。** 绑定了功能的行（计划成员行，或审查员写了 `function_id` 的行）：功能 PASS → 行 PASS；
+**行跟随功能。** 绑定了功能的行（计划科目行，或审查员写了 `function_id` 的行）：功能 PASS → 行 PASS；
 功能 FAIL → `fails[].decides` 命中的（方面，状态）FAIL 并带 `fail_ref`/`finding_id`，其余 PASS；功能 OPEN →
 `open[].decides` 命中的行 INSUFFICIENT 并带 `open_ref: "FN-ID/KEY"`，其余 PASS。`rationale` 写“见功能判定 FN-X（方面，状态）：结论 + 余量”。
 `derive_rows.py` 生成这些行；手填的行只对账不覆盖。校验强制：INSUFFICIENT 必有 `open_ref` 且其 `decides` 覆盖本行的方面和状态；
@@ -344,7 +344,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 物理脚说明同时核“位号、物理脚号、官方脚名、网络”；别名与符号编号差异注明映射依据，不把另一脚的
 名称带入 locator/rationale。最终结果修改后，从最终子项 ID 与状态重新核父项的理由、缺口和汇总，
 不得保留旧草稿的“子项证据不足”文字。已完成连接或计算子项不承担未解决的其他条款。
-功能包汇总引用成员结果与现有任务，不重复收集同一材料；汇总等级注明最高可信后果对应的成员与条件，
+功能电路汇总引用科目结果与现有任务，不重复收集同一材料；汇总等级注明最高可信后果对应的成员与条件，
 不统一压低成员风险，也不将其复制给所有成员。
 
 ### 阵列与多单元器件的内部通道

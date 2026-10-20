@@ -1,7 +1,7 @@
 {
   "description": "Synthetic controlled values, no proprietary hardware. Not engineering evidence.",
   "plan": {
-    "schema_version": 4,
+    "schema_version": 5,
     "checks": [
       {
         "id": "RST-E01.C1",

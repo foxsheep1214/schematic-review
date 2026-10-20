@@ -43,10 +43,10 @@ DOC-T01、DOC-V02、PWR-T06 是全板通用规则，计划对每块板（含空�
 | PWR-A04 同基名多轨 | A | Lint 内置 |
 | RST-A01 使能脚上下拉待复核 | A | Lint 内置 |
 | REQ-A01 关键器件计数 | A | Lint 内置 |
-| PWR-T05 防反接与理想二极管 | T | 功能包 POWER_PROTECTION |
+| PWR-T05 防反接与理想二极管 | T | 功能电路 POWER_PROTECTION |
 | PWR-T06 地网划分与连接 | T | 全板通用 |
-| RST-T03 上电顺序与恢复 | T | 功能包 STARTUP |
-| RST-T04 复位期间 IO 默认态 | T | 功能包 STARTUP |
+| RST-T03 上电顺序与恢复 | T | 功能电路 STARTUP |
+| RST-T04 复位期间 IO 默认态 | T | 功能电路 STARTUP |
 
 另有很多规则只被一两个测试点名（DOC-A03、DOC-V02、PRO-A02、ANA-T01、RST-T02 各 1 次）。
 现在 70 条全部有合同，`--gaps` 输出 `none`。变异门里 M9–M12 专门删掉前四条 A 规则的报出，验证合同能杀死。

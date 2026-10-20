@@ -76,7 +76,7 @@ def one(rule='RST-T01', obj=None, package=None):
     c = {'id': rule + '.PROBE', 'rule': rule, 'method': 'T' if rule == 'RST-T01' else 'C',
          'object': obj, 'criterion': 'Synthetic independently bound criterion'}
     if package:
-        c['package'] = package
+        c['circuit_type'] = package
     row = {'id': c['id'], 'review_result': 'INSUFFICIENT', 'rationale': 'U1 source is correctly traced.',
            'evidence': [{'source': 'synthetic.json', 'locator': 'U1 input'}], 'missing_inputs': ['Unknown bounded input']}
     return {'checks': [c]}, {'checks': [row]}, {'parts': {k: {} for k in ['U1', 'U2', 'R1', 'C1', 'J1']}}

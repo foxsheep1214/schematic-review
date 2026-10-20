@@ -251,7 +251,7 @@ def readiness_gaps(db, check, audit, db_sha256=None):
 
 
 EVIDENCE_SCHEMA_VERSION = 2
-PLAN_SCHEMA_VERSION = 4  # 计划行带 question/function_id/aspect，计划带 functions 功能框架
+PLAN_SCHEMA_VERSION = 5  # 行与框架带 circuit_type（功能电路类型，原 package）；行带 question/function_id/aspect，计划带 functions 功能框架
 # 内置证据计算规则；检查器的证据计算规则由注册表提供。
 HOT_RULE_IDS = frozenset(rule.id for rule in catalog.rules(stage='hot', source='lint'))
 

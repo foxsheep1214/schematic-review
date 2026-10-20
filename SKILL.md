@@ -44,12 +44,12 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 何时读 | 文件 |
 |---|---|
 | 审查目的、七项纲要、规则取舍 | [review-charter.md](references/review-charter.md) |
-| 规则编号、判据、功能包 | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
+| 规则编号、判据、功能电路 | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
 | 结果、P0–P3、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
 | 需求缺失/含糊/冲突 | [requirement-clarifications.md](references/requirement-clarifications.md) |
-| intent、计划、结果字段与校验；功能包展开边界（含电平转换） | [plan-and-results.md](references/plan-and-results.md) |
+| intent、计划、结果字段与校验；功能电路展开边界（含电平转换） | [plan-and-results.md](references/plan-and-results.md) |
 | 跨状态计算、局部/整体主张、父项与任务依赖 | [execution-consistency.md](references/execution-consistency.md) |
 | 输入版本、解析、覆盖与留档 | [inputs-and-coverage.md](references/inputs-and-coverage.md) |
 | 自动扫描与各检查器 | [automation.md](references/automation.md) |
@@ -77,8 +77,8 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（冷跑、热跑、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
 补查项也从总表选规则，ID 写成 `规则编号.自定义键`。
 
-功能包（DDR、USB、电源保护等）在声明或拓扑确认后展开成员规则：把实际电路填入 `intent.circuits`
-（`type` 取包名）即逐电路×工况展开；答案不随工作态变化的成员规则（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总，不能代替成员检查；未检出也未声明的功能包由 REQ-Q08 逐个确认。
+功能电路（DDR、USB、电源保护等）在声明或拓扑确认后展开审查科目：把实际电路填入 `intent.circuits`
+（`type` 取类型名）即逐电路×工况展开；答案不随工作态变化的审查科目（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总，不能代替审查科目；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
 
 ## 执行流程
 
@@ -153,7 +153,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 判断的单位是**功能**，不是检查行。分三小步：
 
 1. **功能判定**：按计划 `functions[]` 的框架逐个填写 `review-results.json` 的 `functions[]`（字段与 F1–F7 见
-   [功能判定](references/plan-and-results.md#功能判定functions)）。框架自带问题、成员行、每条规则的盲区和五步核对单；
+   [功能判定](references/plan-and-results.md#功能判定functions)）。框架自带问题、科目行、每条规则的盲区和五步核对单；
    审查员读手册和自己的计算，不翻规则书。先列手册里与这个功能有关的条款（`conditions`），再算（`calculation`），
    算出余量就下结论；本设计要定的量写成规格（DESIGN_VALUE，`spec`+`owner`），只有厂家才知道的参数才记 VENDOR_DATUM
    并写查过哪几条、为什么不够、最坏情况。框架外的功能（intent 没有声明的电路）自己加，同样校验。
@@ -162,8 +162,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 3. **手填剩余行**：图面目检、引脚表、器件身份、需求条款等事实性检查照下面的写法；这些行要判资料不足，也必须先建一个功能判定。
 
 按 PWR → RST → CLK → SIG → ANA → PRO → DRV 推进，每条规则逐对象、逐状态给结果；全板项逐条给适用性和结果。
-功能包按实际 package/circuit/state/ref 归组并列必需成员 ID，跨包依赖说明真实路径；不能只按规则编号归组。
-按 [功能包依赖与状态核对](references/plan-and-results.md#功能包依赖与状态核对) 核全部实际成员、外围选值窗口与掉电路径。
+功能电路按实际 package/circuit/state/ref 归组并列必需科目 ID，跨类型依赖说明真实路径；不能只按规则编号归组。
+按 [功能电路依赖与状态核对](references/plan-and-results.md#功能电路依赖与状态核对) 核全部实际科目、外围选值窗口与掉电路径。
 遇到共享控制网、多供源/状态、功能父项或共享整改任务，先读 [执行一致性](references/execution-consistency.md)。
 先按 [对象上下文录入](references/plan-and-results.md#对象上下文录入) 保存实际物理对象、状态、路径及出处、
 已核范围和未知边界，再形成结论；噪声 NA 先完成 [噪声路径资格](references/evidence-proportionality.md#噪声路径资格)。
@@ -237,8 +237,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 - 加字段、加质量筛查或加结论词之前，先查现有字段、规则或筛查能否表达；能表达就复用，新增时写明现有哪一项覆盖不了。
 - 新脚本先归入 [脚本分类](references/automation.md#脚本分类)：入口（执行流程里直接调用）、专用工具（特定情形手动调用）、库（只被导入）。只有入口写进执行流程。
 - 工程规则身份由 `scripts/review_engine.py` 与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。
-- 规则编号、判据、纲要归属和功能包只在 `scripts/catalog.py` 登记，改后运行
-  `python3 scripts/catalog.py --write-doc references/check-catalog.md`。来源为“全板通用”“功能包成员”的新规则
+- 规则编号、判据、纲要归属和功能电路只在 `scripts/catalog.py` 登记，改后运行
+  `python3 scripts/catalog.py --write-doc references/check-catalog.md`。来源为“全板通用”“审查科目”的新规则
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在 `plan_review.py`、`lint.py`
   或对应检查器里实现展开/扫描。新增或调整规则先回答 [纲要中的三个问题](references/review-charter.md#用纲要指导进化)。
 - 测试分两层（[分层定义](scripts/tests/conftest.py)）：每次改动先跑合同层 `python3 -m pytest scripts/tests -m contract -q`（[规则合同](evals/rule_contracts/README.md)、校验器不变量、解析器，几秒）；新增 A/E/T/V/H 规则须同时加触发板与近似板。措辞层 `-m wording` 是每个台账夹具一份 golden 报告，改报告措辞用 `SR_UPDATE_GOLDEN=1` 重写快照并审读 diff。改规则或检查器后跑[变异门](evals/mutation/README.md) `python3 evals/mutation/run.py`，清单里每条变异都要被单元测试杀死。

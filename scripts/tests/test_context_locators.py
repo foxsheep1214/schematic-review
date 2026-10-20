@@ -9,7 +9,7 @@ class ContextLocatorTests(unittest.TestCase):
     def screen(self,text):
         plan={'checks':[{'id':'PWR-C14.RF','rule':'PWR-C14','method':'C','object':{'ref':'U1'},'criterion':'Supply noise budget'},
                         {'id':'PWR-C14.RAIL','rule':'PWR-C14','method':'C','object':{'ref':'U2'},'criterion':'Supply noise budget'},
-                        {'id':'REQ-Q07.POWER','rule':'REQ-Q07','method':'Q','object':{'package':'POWER'},'criterion':'Member coverage'}]}
+                        {'id':'REQ-Q07.POWER','rule':'REQ-Q07','method':'Q','object':{'circuit_type':'POWER'},'criterion':'Member coverage'}]}
         report={'checks':[{'id':'PWR-C14.RF','review_result':'INSUFFICIENT','rationale':text},
                           {'id':'PWR-C14.RAIL','review_result':'PASS','rationale':'Confirmed bounded supply'},
                           {'id':'REQ-Q07.POWER','review_result':'INSUFFICIENT','rationale':text}]}

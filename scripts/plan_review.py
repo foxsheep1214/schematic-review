@@ -131,8 +131,8 @@ def validate_intent(intent, db=None):
     else:
         for key, item in features.items():
             label = f'features.{key}'
-            if str(key).upper() not in catalog.PACKAGE_BY_NAME:
-                errors.append(f'{label} 不是功能包名（取 check-catalog.md 中的功能包名）')
+            if str(key).upper() not in catalog.CIRCUIT_TYPE_BY_NAME:
+                errors.append(f'{label} 不是功能电路名（取 check-catalog.md 中的功能电路名）')
                 continue
             if not _text(key) or not isinstance(item, dict):
                 errors.append(f'{label} 必须为 object')
@@ -199,8 +199,8 @@ def validate_intent(intent, db=None):
         else:
             seen_circuits.add(cid)
         kind = circuit.get('type')
-        if not isinstance(kind, str) or kind not in catalog.PACKAGE_BY_NAME:
-            errors.append('circuits.type 不支持: %r（取 check-catalog.md 中的功能包名）' % (kind,))
+        if not isinstance(kind, str) or kind not in catalog.CIRCUIT_TYPE_BY_NAME:
+            errors.append('circuits.type 不支持: %r（取 check-catalog.md 中的功能电路名）' % (kind,))
         for field in ('refs', 'states'):
             values = circuit.get(field)
             if not isinstance(values, list) or not values or not all(_text(x) for x in values):
@@ -338,7 +338,7 @@ class ReviewPlanner:
         """按规则总表生成一个计划项；ID = 规则编号[.实例键].锚点。"""
         entry = catalog.get(rule)
         anchor = (obj.get('node') or obj.get('net') or obj.get('ref') or obj.get('feature')
-                  or obj.get('package') or obj.get('assembly') or obj.get('page')
+                  or obj.get('circuit_type') or obj.get('assembly') or obj.get('page')
                   or obj.get('board') or 'GLOBAL')
         base = '.'.join([rule] + ([_slug(key)] if key else []) + [_slug(anchor)])
         check_id, suffix = base, 2
@@ -390,7 +390,7 @@ class ReviewPlanner:
             return self.checks[-1]
         if rule == 'REQ-Q07':
             item['role'] = 'coverage_parent'
-            item['aggregation'] = '逐电路/状态成员检查完成后汇总，禁止整包一次性 PASS'
+            item['aggregation'] = '逐电路/状态审查科目完成后汇总，禁止整类电路一次性 PASS'
         self.checks.append(item)
         return item
 
@@ -448,18 +448,18 @@ class ReviewPlanner:
             self.add_check('DOC-T01', {'board': 'BOARD'}, readiness='WAITING_EVIDENCE',
                            required_inputs=['intent.assemblies'], trigger=['assembly-options'])
 
-    def plan_packages(self):
-        """功能包：名称仅生成待确认汇总项；声明/拓扑确认后展开成员，未发现的由 REQ-Q08 覆盖。"""
+    def plan_circuit_types(self):
+        """功能电路：名称仅生成待确认汇总项；声明/拓扑确认后展开成员，未发现的由 REQ-Q08 覆盖。"""
         declared = {str(key).upper(): value for key, value in self.intent.get('features', {}).items()}
         circuits = {}
         for circuit in self.intent.get('circuits', []):
             circuits.setdefault(circuit['type'], []).append(circuit)
-        custom = [catalog.Package(name, name, 'REQ', r'(?!x)x', (), ('requirements',))
-                  for name in sorted(set(declared) - set(catalog.PACKAGE_BY_NAME))]
+        custom = [catalog.CircuitType(name, name, 'REQ', r'(?!x)x', (), ('requirements',))
+                  for name in sorted(set(declared) - set(catalog.CIRCUIT_TYPE_BY_NAME))]
         undetected = []
-        for package in catalog.PACKAGES + tuple(custom):
-            name = package.name
-            hits = _feature_hits(self.db, package.pattern)
+        for kind in catalog.CIRCUIT_TYPES + tuple(custom):
+            name = kind.name
+            hits = _feature_hits(self.db, kind.pattern)
             topology_confirmed = name == 'I2C' and any(b['origin'] != 'name-hint'
                     for s in self.i2c_topology['states'] for b in s['buses'])
             if topology_confirmed:
@@ -501,7 +501,7 @@ class ReviewPlanner:
                 if requested == 'NOT_APPLICABLE' and confirmed:
                     missing.append('resolve intent/netlist conflict')
             else:
-                missing = self._materials_gap(package.materials)
+                missing = self._materials_gap(kind.materials)
             if applicability == 'APPLICABLE' and requested == 'APPLICABLE' and not found:
                 self.diagnostics.append({
                     'code': 'REQUIRED_FEATURE_NOT_DETECTED',
@@ -509,24 +509,24 @@ class ReviewPlanner:
                     'detail': '设计意图要求该功能，但网表未检测到对应特征',
                 })
             summary = self.add_check(
-                'REQ-Q07', {'package': name}, criterion=catalog.package_criterion(name),
+                'REQ-Q07', {'circuit_type': name}, criterion=catalog.circuit_type_criterion(name),
                 applicability=applicability, readiness='WAITING_EVIDENCE' if missing else 'READY',
                 required_inputs=missing, trigger=trigger)
-            summary['package'] = name
+            summary['circuit_type'] = name
             if applicability == 'APPLICABLE' and requested == 'APPLICABLE' and not found:
-                self.add_check('REQ-A02', {'package': name}, readiness='READY',
+                self.add_check('REQ-A02', {'circuit_type': name}, readiness='READY',
                                trigger=[f'intent:{item["citation"]}'])
             if applicability == 'APPLICABLE':
-                self.plan_package_members(package, declared_circuits, missing)
+                self.plan_subjects(kind, declared_circuits, missing)
         if undetected:
-            titles = [(name, catalog.package(name).title) for name in undetected]
+            titles = [(name, catalog.circuit_type(name).title) for name in undetected]
             self.add_check(
-                'REQ-Q08', {'board': 'BOARD', 'packages': undetected},
+                'REQ-Q08', {'board': 'BOARD', 'circuit_types': undetected},
                 criterion=catalog.criterion('REQ-Q08') + '：' + '、'.join(
                     name if title == name else f'{name}（{title}）' for name, title in titles),
                 readiness='WAITING_EVIDENCE',
                 required_inputs=[f'intent.features.{name}' for name in undetected],
-                trigger=['package-discovery'])
+                trigger=['circuit-type-discovery'])
 
     def _rail_window(self, nets):
         """电路网络里 intent.power_rails 给了电压窗口的轨；没有就 None（问题写“需求未给窗口”）。"""
@@ -538,9 +538,9 @@ class ReviewPlanner:
                 parts.append(f'{net} {window["min"]}–{window["max"]} V')
         return '、'.join(parts) or None
 
-    def plan_package_members(self, package, circuits, missing):
-        """声明了电路则逐电路×工况展开成员规则并建功能框架（答案不随工作态变化的规则每电路一行），
-        否则按功能包展开一次；已有 I²C 区域时由检查器逐区域展开。"""
+    def plan_subjects(self, kind, circuits, missing):
+        """声明了电路则逐电路×工况展开审查科目并建功能框架（答案不随工作态变化的规则每电路一行），
+        否则按功能电路展开一次；已有 I²C 区域时由检查器逐区域展开。"""
         members = []
         for circuit in circuits:
             refs = circuit['refs']
@@ -549,7 +549,7 @@ class ReviewPlanner:
             gaps += [f'unknown ref:{ref}' for ref in refs if ref not in self.db.get('parts', {})]
             trigger = f'intent.circuits:{circuit["citation"]}'
             for index, state in enumerate(circuit['states']):
-                for rule in package.rules:
+                for rule in kind.subjects:
                     invariant = rule in catalog.STATE_INVARIANT
                     if invariant and index:
                         continue   # asked once per circuit, with the first state's rows
@@ -559,27 +559,27 @@ class ReviewPlanner:
                     key = circuit['id'] if invariant else f'{circuit["id"]}-{state}'
                     members.append((rule, obj, key, gaps, trigger))
         regions = any(state['regions'] for state in self.i2c_topology['states'])
-        if not circuits and not (package.name == 'I2C' and regions):
-            for rule in package.rules:
-                members.append((rule, {'package': package.name}, None, missing, f'package:{package.name}'))
+        if not circuits and not (kind.name == 'I2C' and regions):
+            for rule in kind.subjects:
+                members.append((rule, {'circuit_type': kind.name}, None, missing, f'circuit-type:{kind.name}'))
         frames = {}
         for circuit in circuits:
             window = self._rail_window(circuit.get('nets', []))
             frames[circuit['id']] = {
                 'id': 'FN-' + _slug(circuit['id']),
                 'circuit': circuit['id'],
-                'package': package.name,
-                'question': catalog.frame_question(package.name, circuit['id'], circuit['refs'], circuit['states'], window),
+                'circuit_type': kind.name,
+                'question': catalog.frame_question(kind.name, circuit['id'], circuit['refs'], circuit['states'], window),
                 'objects': {'refs': list(circuit['refs']), 'nets': list(circuit.get('nets', []))},
                 'states': list(circuit['states']),
                 'members': [],
-                'blind_spots': {rule: catalog.explanation(rule)['risk_if_omitted'] for rule in package.rules},
+                'blind_spots': {rule: catalog.explanation(rule)['risk_if_omitted'] for rule in kind.subjects},
                 'checklist': list(catalog.BOUNDING_STEPS),
             }
         for rule, obj, key, gaps, trigger in members:
             frame = frames.get(obj.get('circuit'))
             item = self._ready_check(rule, dict(obj), gaps, [trigger], key=key)
-            item['package'] = package.name
+            item['circuit_type'] = kind.name
             item['analysis_required'] = True
             item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
             if frame is not None:
@@ -1081,7 +1081,7 @@ class ReviewPlanner:
         """生成全部自动计划项；计划构建与结果校验共用同一顺序。"""
         self.plan_coverage()
         self.plan_board()
-        self.plan_packages()
+        self.plan_circuit_types()
         self.plan_concrete_checks()
         self.plan_checkers()
         self.plan_explicit_evidence()

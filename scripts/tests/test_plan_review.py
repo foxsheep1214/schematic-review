@@ -85,7 +85,7 @@ def threshold_db():
 
 def get_feature(plan, name):
     return next(item for item in plan['checks']
-                if item['rule'] == 'REQ-Q07' and item['object'].get('package') == name)
+                if item['rule'] == 'REQ-Q07' and item['object'].get('circuit_type') == name)
 
 
 def undetected(plan):
@@ -96,11 +96,11 @@ class ReviewPlanTests(unittest.TestCase):
     def test_first_pass_discovers_instances_without_inventing_na(self):
         plan = build_review_plan(sample_db())
         confirm = undetected(plan)
-        self.assertIn('DDR', confirm['object']['packages'])
+        self.assertIn('DDR', confirm['object']['circuit_types'])
         self.assertIn('intent.features.DDR', confirm['required_inputs'])
         self.assertEqual(confirm['applicability'], 'APPLICABLE')
         self.assertIsNone(confirm['review_result'])
-        self.assertFalse(any(item['object'].get('package') == 'DDR' for item in plan['checks']))
+        self.assertFalse(any(item['object'].get('circuit_type') == 'DDR' for item in plan['checks']))
         self.assertEqual(get_feature(plan, 'USB')['applicability'],
                          'UNDETERMINED')
         pair = next(item for item in plan['checks']
@@ -129,7 +129,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(summary['applicability'], 'UNDETERMINED')
         self.assertIn('intent.features.USB', summary['required_inputs'])
         self.assertTrue(any(t.startswith('netlist:') for t in summary['trigger']))
-        self.assertFalse([x for x in plan['checks'] if x.get('package') == 'USB'
+        self.assertFalse([x for x in plan['checks'] if x.get('circuit_type') == 'USB'
                           and x['rule'] != 'REQ-Q07'])
 
     def test_cited_na_excludes_name_hint_without_inventing_conflict(self):
@@ -143,7 +143,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertTrue(any(t.startswith('netlist:') for t in summary['trigger']))
         self.assertFalse(any(x['code'] == 'INTENT_NETLIST_CONFLICT'
                              for x in plan['diagnostics']))
-        self.assertFalse([x for x in plan['checks'] if x.get('package') == 'USB'
+        self.assertFalse([x for x in plan['checks'] if x.get('circuit_type') == 'USB'
                           and x['rule'] != 'REQ-Q07'])
 
     def test_explicit_na_requires_intent_and_citation(self):
@@ -162,8 +162,8 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(item['applicability'], 'NOT_APPLICABLE')
         self.assertEqual(item['review_result'], 'NA')
         self.assertFalse(item['handoff']['required'])
-        self.assertNotIn('DDR', undetected(plan)['object']['packages'])
-        self.assertEqual([x['rule'] for x in plan['checks'] if x.get('package') == 'DDR'], ['REQ-Q07'])
+        self.assertNotIn('DDR', undetected(plan)['object']['circuit_types'])
+        self.assertEqual([x['rule'] for x in plan['checks'] if x.get('circuit_type') == 'DDR'], ['REQ-Q07'])
 
     def test_required_but_missing_feature_creates_ready_presence_check(self):
         intent = {
@@ -178,7 +178,7 @@ class ReviewPlanTests(unittest.TestCase):
         plan = build_review_plan(sample_db(), intent)
         presence = next(item for item in plan['checks']
                         if item['rule'] == 'REQ-A02'
-                        and item['object']['package'] == 'BLUETOOTH')
+                        and item['object']['circuit_type'] == 'BLUETOOTH')
         self.assertEqual(presence['readiness'], 'READY')
         custom = get_feature(plan, 'BLUETOOTH')
         self.assertEqual(custom['applicability'], 'APPLICABLE')
@@ -244,7 +244,7 @@ class ReviewPlanTests(unittest.TestCase):
         plan = build_review_plan(db)
         self.assertEqual(get_feature(plan, 'SPI')['applicability'],
                          'UNDETERMINED')
-        self.assertIn('I2C', undetected(plan)['object']['packages'])
+        self.assertIn('I2C', undetected(plan)['object']['circuit_types'])
         self.assertFalse(any(item['rule'] == 'SIG-E01'
                              for item in plan['checks']))
 
@@ -461,27 +461,27 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertIn('偏置电流档', checks[0]['criterion'])
         self.assertEqual(checks[0]['readiness'], 'WAITING_EVIDENCE')
 
-    def test_package_members_expand_per_circuit_or_once_per_package(self):
+    def test_subjects_expand_per_circuit_or_once_per_circuit_type(self):
         plan = build_review_plan(sample_db(), {'features': {
             'USB': {'applicability': 'APPLICABLE', 'citation': 'synthetic USB function'}}})
         usb = sorted(x['rule'] for x in plan['checks']
-                     if x.get('package') == 'USB' and x['rule'] != 'REQ-Q07')
-        self.assertEqual(usb, sorted(catalog.package('USB').rules))
+                     if x.get('circuit_type') == 'USB' and x['rule'] != 'REQ-Q07')
+        self.assertEqual(usb, sorted(catalog.circuit_type('USB').subjects))
         self.assertTrue(all(x['id'] == x['rule'] + '.USB' for x in plan['checks']
-                            if x.get('package') == 'USB' and x['rule'] != 'REQ-Q07'))
+                            if x.get('circuit_type') == 'USB' and x['rule'] != 'REQ-Q07'))
         summary = get_feature(plan, 'USB')
         self.assertEqual(summary['role'], 'coverage_parent')
-        for rule in catalog.package('USB').rules:
+        for rule in catalog.circuit_type('USB').subjects:
             self.assertIn(rule, summary['criterion'])
         intent = {'schema_version': 3, 'circuits': [
             {'id': 'PORT', 'type': 'USB', 'refs': ['J1'], 'states': ['host', 'unpowered'],
              'citation': 'synthetic port definition'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
-        members = [x for x in plan['checks'] if x.get('package') == 'USB' and x['rule'] != 'REQ-Q07']
-        # SIG-T04/SIG-D07/SIG-D04 与工作态无关，每电路一行；其余成员规则两个状态各一行。
-        invariant = [r for r in catalog.package('USB').rules if r in catalog.STATE_INVARIANT]
-        self.assertEqual(len(members), 2 * (len(catalog.package('USB').rules) - len(invariant)) + len(invariant))
+        members = [x for x in plan['checks'] if x.get('circuit_type') == 'USB' and x['rule'] != 'REQ-Q07']
+        # SIG-T04/SIG-D07/SIG-D04 与工作态无关，每电路一行；其余审查科目两个状态各一行。
+        invariant = [r for r in catalog.circuit_type('USB').subjects if r in catalog.STATE_INVARIANT]
+        self.assertEqual(len(members), 2 * (len(catalog.circuit_type('USB').subjects) - len(invariant)) + len(invariant))
         self.assertEqual({x['object']['state'] for x in members if x['rule'] not in invariant}, {'host', 'unpowered'})
         self.assertFalse([x for x in members if x['rule'] in invariant and 'state' in x['object']])
         self.assertIn('intent.circuits:synthetic port definition', get_feature(plan, 'USB')['trigger'])
@@ -494,17 +494,17 @@ class ReviewPlanTests(unittest.TestCase):
         db['pin2net'].update({'U2.6': 'GPIO_LV', 'U3.1': 'GPIO_LV'})
         plan = build_review_plan(db)
         self.assertEqual(get_feature(plan, 'LEVEL_SHIFT')['applicability'], 'UNDETERMINED')
-        self.assertFalse([x for x in plan['checks'] if x.get('package') == 'LEVEL_SHIFT'
+        self.assertFalse([x for x in plan['checks'] if x.get('circuit_type') == 'LEVEL_SHIFT'
                           and x['rule'] != 'REQ-Q07'])
         intent = {'schema_version': 3, 'circuits': [
             {'id': 'GPIO-XLAT', 'type': 'LEVEL_SHIFT', 'refs': ['U2', 'U3'],
              'states': ['both-powered', 'b-side-unpowered'], 'citation': 'synthetic translator link'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(db, intent)
-        members = [x for x in plan['checks'] if x.get('package') == 'LEVEL_SHIFT' and x['rule'] != 'REQ-Q07']
-        self.assertEqual(sorted({x['rule'] for x in members}), sorted(catalog.package('LEVEL_SHIFT').rules))
+        members = [x for x in plan['checks'] if x.get('circuit_type') == 'LEVEL_SHIFT' and x['rule'] != 'REQ-Q07']
+        self.assertEqual(sorted({x['rule'] for x in members}), sorted(catalog.circuit_type('LEVEL_SHIFT').subjects))
         # SIG-T04（接口方向语义）与工作态无关，两个状态只问一次。
-        self.assertEqual(len(members), 2 * len(catalog.package('LEVEL_SHIFT').rules) - 1)
+        self.assertEqual(len(members), 2 * len(catalog.circuit_type('LEVEL_SHIFT').subjects) - 1)
 
     def test_declared_circuit_makes_package_applicable_and_conflicts_with_na(self):
         circuit = {'id': 'LDO', 'type': 'POWER_PROTECTION', 'refs': ['U1'], 'states': ['run'],
@@ -515,14 +515,14 @@ class ReviewPlanTests(unittest.TestCase):
             'POWER_PROTECTION': {'applicability': 'NOT_APPLICABLE', 'citation': 'synthetic'}}}
         plan = build_review_plan(sample_db(), intent)
         self.assertEqual(get_feature(plan, 'POWER_PROTECTION')['applicability'], 'UNDETERMINED')
-        self.assertFalse([x for x in plan['checks'] if x.get('package') == 'POWER_PROTECTION'
+        self.assertFalse([x for x in plan['checks'] if x.get('circuit_type') == 'POWER_PROTECTION'
                           and x['rule'] != 'REQ-Q07'])
         self.assertTrue(any(x['code'] == 'INTENT_NETLIST_CONFLICT' for x in plan['diagnostics']))
 
-    def test_unknown_package_names_are_rejected(self):
+    def test_unknown_circuit_type_names_are_rejected(self):
         errors = validate_intent({'schema_version': 3, 'features': {
             'RESET': {'applicability': 'APPLICABLE', 'citation': 'not a package'}}})
-        self.assertTrue(any('不是功能包名' in error for error in errors))
+        self.assertTrue(any('不是功能电路名' in error for error in errors))
         errors = validate_intent({'schema_version': 3, 'circuits': [
             {'id': 'C1', 'type': 'USB_C', 'refs': ['J1'], 'states': ['run'], 'citation': 'not a package'}]})
         self.assertTrue(any('circuits.type 不支持' in error for error in errors))
@@ -621,7 +621,7 @@ class ReviewPlanTests(unittest.TestCase):
 
 
 class FunctionFrameTests(unittest.TestCase):
-    """计划 schema 4：每个 intent 电路一个功能框架，成员行带问题、function_id 和方面。"""
+    """计划 schema 5：每个 intent 电路一个功能框架，科目行带问题、function_id 和方面。"""
 
     def circuit(self, nets=('VCC_3V3',)):
         return {'id': 'REG-3V3', 'type': 'POWER_CONVERTER', 'refs': ['U1', 'R1'], 'nets': list(nets),
@@ -632,10 +632,10 @@ class FunctionFrameTests(unittest.TestCase):
                   'power_rails': {'VCC_3V3': {'voltage_v': {'min': 3.2, 'max': 3.4}, 'refs': ['U1'],
                                               'citation': 'synthetic rail'}}}
         plan = build_review_plan(sample_db(), intent)
-        self.assertEqual(plan['schema_version'], 4)
+        self.assertEqual(plan['schema_version'], 5)
         self.assertEqual([f['id'] for f in plan['functions']], ['FN-REG-3V3'])
         frame = plan['functions'][0]
-        rules = catalog.package('POWER_CONVERTER').rules
+        rules = catalog.circuit_type('POWER_CONVERTER').subjects
         members = [c for c in plan['checks'] if c['object'].get('circuit') == 'REG-3V3']
         self.assertEqual(len(members), 2 * len(rules))
         self.assertEqual({m['check_id'] for m in frame['members']}, {c['id'] for c in members})
@@ -654,11 +654,11 @@ class FunctionFrameTests(unittest.TestCase):
         self.assertEqual(catalog.question_errors(plan), [])
 
     def test_state_invariant_rules_get_one_row_per_circuit(self):
-        # 导通方向、接口语义这类答案不随工作态变化的规则，两个状态只问一次；其余成员规则仍逐状态。
+        # 导通方向、接口语义这类答案不随工作态变化的规则，两个状态只问一次；其余审查科目仍逐状态。
         circuit = {'id': 'IN-PROT', 'type': 'POWER_PROTECTION', 'refs': ['D1', 'Q1'], 'nets': ['VIN'],
                    'states': ['run', 'surge'], 'citation': 'synthetic input protection'}
         plan = build_review_plan(sample_db(), {'schema_version': 3, 'circuits': [circuit]})
-        rules = catalog.package('POWER_PROTECTION').rules
+        rules = catalog.circuit_type('POWER_PROTECTION').subjects
         invariant = [r for r in rules if r in catalog.STATE_INVARIANT]
         self.assertEqual(invariant, ['PWR-T05'])
         members = [c for c in plan['checks'] if c['object'].get('circuit') == 'IN-PROT']

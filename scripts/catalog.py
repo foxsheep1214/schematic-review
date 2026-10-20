@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""检查规则总表：编号、检查方式、内容域、展开粒度、功能包与判据的唯一来源。
+"""检查规则总表：编号、检查方式、内容域、展开粒度、功能电路与判据的唯一来源。
 
 编号格式为 <内容域>-<方式><序号>，例如 PWR-E01：前三个字母说明查什么，
 短横后的字母说明怎么查。在用规则的编号不改；新规则接在所在组最大序号之后，
@@ -18,7 +18,7 @@ from collections import OrderedDict, namedtuple
 Domain = namedtuple('Domain', 'code name scope handoff')
 Method = namedtuple('Method', 'code name executor inputs output stage')
 Rule = namedtuple('Rule', 'id title criterion source scope')
-Package = namedtuple('Package', 'name title domain pattern rules materials')
+CircuitType = namedtuple('CircuitType', 'name title domain pattern subjects materials')
 
 DOMAINS = (
     Domain('DOC', '图纸与数据', '导出与解析完整性、BOM/库字段、页面图形与命名、装配选项、测试节点、输入一致性',
@@ -38,7 +38,7 @@ DOMAINS = (
            '防护器件靠近连接器、实际爬电距离与电气间隙'),
     Domain('DRV', '功率驱动', '功率管栅极驱动、SOA、开关节点吸收、感性负载续流钳位',
            '换流/钳位回路面积、结温与散热'),
-    Domain('REQ', '需求与闭环', '需求追溯、关键器件与功能存在性、功能包与覆盖审计、改版与历史意见闭环', ''),
+    Domain('REQ', '需求与闭环', '需求追溯、关键器件与功能存在性、功能电路与覆盖审计、改版与历史意见闭环', ''),
 )
 
 METHODS = (
@@ -61,7 +61,7 @@ METHODS = (
 SOURCES = {
     'lint': 'Lint 内置',
     'plan': '计划逐对象生成',
-    'package': '功能包成员',
+    'subject': '功能电路审查科目',
     'board': '全板通用',
     'revision': '改版比对',
     'i2c_topology': '检查器·I²C 连接覆盖',
@@ -87,7 +87,7 @@ SCOPES = {
     'rail': '逐电源轨',
     'link': '逐链路/区域',
     'circuit': '逐电路×工况',
-    'package': '逐功能包',
+    'circuit_type': '逐功能电路',
     'assembly': '逐装配配置',
     'requirement': '逐需求',
     'history': '改版基线',
@@ -257,7 +257,7 @@ RULES = (
          '按需求确定哪些电源域必须监测，逐轨核监测点、阈值与动作；'
          '未监测的轨需给出书面依据，不能因为有一颗监控器就判全板覆盖', 'supervision', 'rail'),
     Rule('PWR-T05', '防反接与理想二极管',
-         '防反接电路（MOSFET 理想二极管/二极管）的导通方向、体二极管朝向与栅极钳位', 'package', 'circuit'),
+         '防反接电路（MOSFET 理想二极管/二极管）的导通方向、体二极管朝向与栅极钳位', 'subject', 'circuit'),
     Rule('PWR-T06', '地网划分与连接',
          '列出全部地网（数字、模拟、功率、机壳/保护地、隔离地），核连接点位置与方式（直连、0Ω、磁珠、RC/电容）'
          '符合器件与平台要求；不同地网不因名称相近而视为同一网', 'board', 'board'),
@@ -267,23 +267,23 @@ RULES = (
          '不向设计方索取逐模式或最高时钟预算', 'plan', 'rail'),
     Rule('PWR-C02', '变换器电压裕量',
          '在要求调节的 Vin/负载/温度状态核对输出窗口与负载范围；线性稳压器最坏压差由 PWR-E02 查，允许关断/保护时另核安全与恢复',
-         'package', 'circuit'),
+         'subject', 'circuit'),
     Rule('PWR-C03', '变换器电流应力',
-         '按实际拓扑核电流应力：开关变换器查电感峰值/RMS、Isat 与限流；线性/跟随器查偏置与负载能力，不强加储能电感模型', 'package', 'circuit'),
+         '按实际拓扑核电流应力：开关变换器查电感峰值/RMS、Isat 与限流；线性/跟随器查偏置与负载能力，不强加储能电感模型', 'subject', 'circuit'),
     Rule('PWR-C04', '变换器时序与输出电容条件',
          '开关变换器核最小导通/关断时间和Cout适用条件；反馈模型与补偿独立归PWR-C15，不能由峰流或吸收应力关闭；线性电路按实际条件查，不强加 PWM；'
          '原厂明确不要求Cout维持稳定且实际条件满足其条款时，可仅对本体稳定性判PASS，不能关闭独立电容额定或反向能量；'
          '仅凭典型应用等效的路径限后果不超过P2，不能放行P1核心功能或损坏/保护保证；'
-         '允许失调节的故障/关断状态查动作与恢复', 'package', 'circuit'),
+         '允许失调节的故障/关断状态查动作与恢复', 'subject', 'circuit'),
     Rule('PWR-C05', '损耗与反向电流',
          '核对声明工况下的损耗、反向电流、预偏置与放电路径，输出损耗边界与允许温度约束；'
-         '实际结温、散热路径及闭壳温升转 HANDOFF，缺下游热数据不推翻已有电气结论', 'package', 'circuit'),
+         '实际结温、散热路径及闭壳温升转 HANDOFF，缺下游热数据不推翻已有电气结论', 'subject', 'circuit'),
     Rule('PWR-C15', '反馈模型与补偿资格',
          '按实际拓扑独立核反馈模型、补偿配置及规定角点的稳定性/动态边界；内部补偿也须匹配厂家适用条件，'
-         '无反馈环的电路可据实际拓扑判NA；峰值电流、RCD或栅极应力不能代替本项，样机Bode测试不代替原理图补偿条件', 'package', 'circuit'),
+         '无反馈环的电路可据实际拓扑判NA；峰值电流、RCD或栅极应力不能代替本项，样机Bode测试不代替原理图补偿条件', 'subject', 'circuit'),
     Rule('PWR-C06', '保护门限',
          '存在主动门限时核 UVLO/OVLO/限流容差、检测目的与采样侧；被动输入按保险丝/MOV/NTC 等实际保护协调查，'
-         '不强加检测使能链；连续电流、限流、快断与热保护不能互代', 'package', 'circuit'),
+         '不强加检测使能链；连续电流、限流、快断与热保护不能互代', 'subject', 'circuit'),
     Rule('PWR-C09', '去耦容量',
          '按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量',
          'decoupling', 'device'),
@@ -295,10 +295,10 @@ RULES = (
          '额定温升电流不证明板上实际温升，实际温升转 HANDOFF；'
          '截止频率与开关频率的关系按 EMC 需求确认，不以有磁珠即判合格', 'input_filter', 'device'),
     Rule('PWR-C13', '热插拔浪涌与输入电容',
-         '按实际接口/输入方式核浪涌与源端能力；有明确平台电容限制时对照该限制，不默认热插拔或模板电容上限', 'package', 'circuit'),
+         '按实际接口/输入方式核浪涌与源端能力；有明确平台电容限制时对照该限制，不默认热插拔或模板电容上限', 'subject', 'circuit'),
     Rule('PWR-C14', '纹波与噪声预算',
-         '随敏感负载所在功能包（ANALOG、CLOCK、RF）逐电路生成，不随变换器生成；按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；'
-         '实测另交 HANDOFF', 'package', 'circuit'),
+         '随敏感负载所在功能电路（ANALOG、CLOCK、RF）逐电路生成，不随变换器生成；按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；'
+         '实测另交 HANDOFF', 'subject', 'circuit'),
     Rule('PWR-D01', '去耦清单完整性',
          '结合完整器件/官方物理脚清单核对供电脚与去耦分组覆盖；无名称命中不代表不适用', 'decoupling', 'board'),
     Rule('PWR-D02', '去耦接法',
@@ -334,30 +334,30 @@ RULES = (
          '逐跳核复位链：输出类型与上拉电源域、极性、到每个复位输入的连通、'
          '喂狗来源在启动期与固件异常时的行为，以及手动复位/去抖接法', 'supervision', 'device'),
     Rule('RST-T03', '上电顺序与恢复',
-         '检查慢爬升、棕断、短暂掉电、单域掉电、外部先供电、重试及恢复模式', 'package', 'circuit'),
+         '检查慢爬升、棕断、短暂掉电、单域掉电、外部先供电、重试及恢复模式', 'subject', 'circuit'),
     Rule('RST-T04', '复位期间 IO 默认态',
          '核主控与外设在断电、复位、启动配置采样与固件接管前的 IO 默认态（高阻、内部上下拉、默认输出）'
          '对继电器、电源使能、驱动器、LED 与外部总线的影响；关键控制线在适用状态下须有保证的安全默认态，内部偏置或外部电路均须有据；'
          '断电或 IO 电源域未建立时内部偏置通常不存在，该阶段须由外部电路保证',
-         'package', 'circuit'),
+         'subject', 'circuit'),
     Rule('RST-C01', '采样窗口电平',
          '逐采样窗口计算 strap/EN 保证电压，含内部拉阻、LED、泄漏、电容和门限；'
-         '带 state 的行只判该状态窗口内要求或被采样的电平，其他窗口的采样归对应状态行、RST-D01 或需求行', 'package', 'circuit'),
+         '带 state 的行只判该状态窗口内要求或被采样的电平，其他窗口的采样归对应状态行、RST-D01 或需求行', 'subject', 'circuit'),
     Rule('RST-C02', '复位时序',
-         '按 V(t) 穿越门限时刻核对复位脉宽/释放与采样 setup/hold，不能以 RC 时间常数代替', 'package', 'circuit'),
+         '按 V(t) 穿越门限时刻核对复位脉宽/释放与采样 setup/hold，不能以 RC 时间常数代替', 'subject', 'circuit'),
     Rule('RST-D01', '救砖通道',
          '可编程平台按实际恢复需求核编程/救援通道、进入条件与电平；'
          '硬件阶段核受控配置意图和硬件支持，最终烧录/回读回执移交上电前集成，不单以缺后期回执阻断；'
-         '保护配置或协议能力未明确的真实缺口仍保留；不统一要求电源 IC 具备 Recovery/Maskrom', 'package', 'circuit'),
+         '保护配置或协议能力未明确的真实缺口仍保留；不统一要求电源 IC 具备 Recovery/Maskrom', 'subject', 'circuit'),
 
     # CLK 时钟
     Rule('CLK-C01', '晶体负载与起振',
          '按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件，反馈电阻、串联电阻按 datasheet/参考设计取值；'
-         '寄生及实测裕量转 HANDOFF', 'package', 'circuit'),
+         '寄生及实测裕量转 HANDOFF', 'subject', 'circuit'),
     Rule('CLK-D01', '有源时钟输出与使能',
-         '有源时钟输出幅度/电源域、使能态和上电有效时间', 'package', 'circuit'),
+         '有源时钟输出幅度/电源域、使能态和上电有效时间', 'subject', 'circuit'),
     Rule('CLK-D03', 'RTC 晶体与备份电源',
-         '按实际 RTC 的时钟源、频率/负载要求及模式核晶体或外部时钟，不默认固定频率；备份电池/超级电容的充电电压/电流不超器件上限，反向电流符合器件要求', 'package', 'circuit'),
+         '按实际 RTC 的时钟源、频率/负载要求及模式核晶体或外部时钟，不默认固定频率；备份电池/超级电容的充电电压/电流不超器件上限，反向电流符合器件要求', 'subject', 'circuit'),
 
     # SIG 接口与信号
     Rule('SIG-A01', '交流耦合发送端无直流通路',
@@ -383,19 +383,19 @@ RULES = (
          '发送端直流通路，以及未用通道与掉电状态的处置', 'diff_levels', 'link'),
     Rule('SIG-T04', '接口方向语义',
          'TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义复述，核对对端连接器视图与线缆针序；连通只证明导电路径',
-         'package', 'circuit'),
+         'subject', 'circuit'),
     Rule('SIG-C01', 'I²C 灌电流与上升时间',
          '先核所有实际端点的上拉条款及“外部”相对哪颗器件；另一 IC 的真实内建上拉可作为外部实现，'
          '但须证明连接、保证阻值、上拉电源及默认/掉电状态，并明确受控启用条件，不能假设已启用；'
          '原厂明确要求离散上拉或禁止替代时须遵守；固件或降速不能替代不存在的硬件或放宽保证值；'
          '再逐电气段合并全部上拉公差：Rp_min=(Vpullup_max-VOL_max)/IOL_guaranteed，'
-         'Rp_max=tr_max/(0.8473*Cb_max)；核对串联压降', 'package', 'link'),
+         'Rp_max=tr_max/(0.8473*Cb_max)；核对串联压降', 'subject', 'link'),
     Rule('SIG-C03', '总线端接与偏置',
-         '按实际总线端点和节点数核对端接等效负载、空闲偏置及接收保证差分门限', 'package', 'circuit'),
+         '按实际总线端点和节点数核对端接等效负载、空闲偏置及接收保证差分门限', 'subject', 'circuit'),
     Rule('SIG-C04', '总线共模与未供电负载',
-         '核对收发器 VIO/默认态、总线共模范围、地偏差与未供电负载', 'package', 'circuit'),
+         '核对收发器 VIO/默认态、总线共模范围、地偏差与未供电负载', 'subject', 'circuit'),
     Rule('SIG-C05', 'USB VBUS 供电与保护',
-         '核对 VBUS 供电资格、电压档位、放电、反灌、过流及端口未供电状态；放电外接电阻对片内放电开关的电流上限归 DEV-C01', 'package', 'circuit'),
+         '核对 VBUS 供电资格、电压档位、放电、反灌、过流及端口未供电状态；放电外接电阻对片内放电开关的电流上限归 DEV-C01', 'subject', 'circuit'),
     Rule('SIG-C07', '逻辑电平与驱动匹配',
          '先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，'
          '读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；'
@@ -406,70 +406,70 @@ RULES = (
          '门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；'
          '另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；'
          '明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；'
-         '跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确', 'package', 'link'),
+         '跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确', 'subject', 'link'),
     Rule('SIG-C08', '掉电与跨域注入',
          '逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；'
-         '跨轨上拉先列候选，再核掉电容忍', 'package', 'link'),
+         '跨轨上拉先列候选，再核掉电容忍', 'subject', 'link'),
     Rule('SIG-C09', '时序裕量',
          '按两端保证值核传播延迟、建立/保持、时钟偏斜、电平转换器延迟及上拉/开漏信号的上升时间，给出最坏角点裕量；'
          '主控厂商设计指南明确指定该器件型号、接法与时钟配置且本设计未偏离时，按厂商合格配对判 PASS(B)，'
          '时钟上限等配置作为固件约束移交，不因主控手册缺接口时序记 INSUFFICIENT；换型号/改接法/提高时钟时仍按两端保证值计算；'
          '布线延迟另交 SI HANDOFF',
-         'package', 'link'),
+         'subject', 'link'),
     Rule('SIG-D01', 'I²C 地址与装配组合',
-         '核对地址/复用/复位态和板载及外部可选上拉的装配组合', 'package', 'link'),
+         '核对地址/复用/复位态和板载及外部可选上拉的装配组合', 'subject', 'link'),
     Rule('SIG-D02', 'DDR 校准端接',
-         '分别按控制器和 DRAM 的具体型号/代际核对 ZQ/校准脚端接与精度，禁止跨器件套用', 'package', 'circuit'),
+         '分别按控制器和 DRAM 的具体型号/代际核对 ZQ/校准脚端接与精度，禁止跨器件套用', 'subject', 'circuit'),
     Rule('SIG-D03', 'DDR 端接与基准',
-         '逐数据/地址/时钟/VREF/VTT 电源域核对拓扑、端接、基准及上电条件', 'package', 'circuit'),
+         '逐数据/地址/时钟/VREF/VTT 电源域核对拓扑、端接、基准及上电条件', 'subject', 'circuit'),
     Rule('SIG-D04', 'USB-C 角色与 CC',
-         '按 Source/Sink/DRP 角色及 PD 模式核对 CC/Rp/Rd、方向检测、线缆 VCONN', 'package', 'circuit'),
+         '按 Source/Sink/DRP 角色及 PD 模式核对 CC/Rp/Rd、方向检测、线缆 VCONN', 'subject', 'circuit'),
     Rule('SIG-D06', '调试接口',
-         '按实际调试/烧录要求核 UART/JTAG/SWD 的信号电气引出、串阻与 ESD；接插件机械可触达性及夹具实现移交下游', 'package', 'circuit'),
+         '按实际调试/烧录要求核 UART/JTAG/SWD 的信号电气引出、串阻与 ESD；接插件机械可触达性及夹具实现移交下游', 'subject', 'circuit'),
     Rule('SIG-D07', 'USB 物理层',
-         'REXT、DP/DM 串阻、VBUS 检测、ID 与 ESD 挂在活线上', 'package', 'circuit'),
+         'REXT、DP/DM 串阻、VBUS 检测、ID 与 ESD 挂在活线上', 'subject', 'circuit'),
     Rule('SIG-D08', '串口与现场总线',
          'UART/RS232/RS485/CAN 的收发器供电与 VIO、STBY/EN 默认态、端接策略（本端/对端书面明确）、空闲偏置、隔离与防护',
-         'package', 'circuit'),
+         'subject', 'circuit'),
     Rule('SIG-D09', 'SPI 与 SPI Flash',
-         'SPI 片选/时钟极性与串阻；SPI Flash 供电域、上拉与写保护', 'package', 'circuit'),
+         'SPI 片选/时钟极性与串阻；SPI Flash 供电域、上拉与写保护', 'subject', 'circuit'),
     Rule('SIG-D10', 'eMMC/SD 接口',
          'eMMC/SD 的 IO 电平、CMD 上拉、CLK/STROBE 串阻与测试节点电气预留；高速测试点与 stub 限制另交 HANDOFF',
-         'package', 'circuit'),
+         'subject', 'circuit'),
     Rule('SIG-D11', '以太网 PHY 与网变',
          '按实际 PHY、网变、接口模式及 PoE 配置核 MDI 对应、中心抽头与共模端接、MDIO、复位及 strap；外围数值与耐压取适用器件/接口要求，不套固定 Bob Smith 参数',
-         'package', 'circuit'),
+         'subject', 'circuit'),
     Rule('SIG-D12', '射频与模组',
          '按实际模组要求核天线路径默认通断、供电电容、开关机/复位及适用的 SIM 接口保护；参考设计作依据线索，偏离须按本设计条件验证，不以照抄为通过条件',
-         'package', 'circuit'),
+         'subject', 'circuit'),
     Rule('SIG-D13', '主控引脚复用与分配',
          '主控/SoC 引脚复用、功能分配与电平域符合平台约束（专用功能脚、启动相关脚、仅输入脚、5V 容忍），'
          '与固件配置表一致，无冲突与重复占用', 'board', 'board'),
     Rule('SIG-D14', '高速串行链路',
          'PCIe/SATA/USB3/SerDes 链路的交流耦合电容位置与容值、极性与通道映射、参考时钟与边带信号'
-         '（PERST#/CLKREQ#/WAKE#）按规范连接', 'package', 'circuit'),
+         '（PERST#/CLKREQ#/WAKE#）按规范连接', 'subject', 'circuit'),
     Rule('SIG-D15', '音视频接口',
          'HDMI/MIPI/LVDS 显示与摄像接口、I²S/编解码器的通道映射，热插拔/DDC/CEC 电平与上拉，'
-         'MCLK/帧时钟来源，模拟音频供电与地按规范连接', 'package', 'circuit'),
+         'MCLK/帧时钟来源，模拟音频供电与地按规范连接', 'subject', 'circuit'),
 
     # ANA 模拟与监测
     Rule('ANA-T01', '检测与监测链',
          '存在检测/监测链时先定义被测量与保护目的，再核取样侧、返回地、判决与控制；纯被动保护不强加该链：检测输入存在可取源侧，'
-         '验证输出有效或负载电压取保护后；首次使能不能依赖尚未使能的输出，检查循环启动', 'package', 'circuit'),
+         '验证输出有效或负载电压取保护后；首次使能不能依赖尚未使能的输出，检查循环启动', 'subject', 'circuit'),
     Rule('ANA-C01', '直流范围与误差',
          '分立运放核输入共模/输出摆幅及偏置/失调/增益误差，含供电和温度极限；片内放大器+ADC 通道（检流、NTC 等直接接 IC 检测脚）'
-         '按该 IC 手册的通道输入范围与失调/增益误差核，不另列运放子判据', 'package', 'circuit'),
+         '按该 IC 手册的通道输入范围与失调/增益误差核，不另列运放子判据', 'subject', 'circuit'),
     Rule('ANA-C02', '动态与负载',
          '分立运放核 GBW/压摆率/容性负载；ADC（含片内）核源阻抗、采样保持获取时间与建立误差；'
-         '片内放大器+ADC 通道按手册的输入滤波/源阻抗要求核，不另列运放子判据', 'package', 'circuit'),
+         '片内放大器+ADC 通道按手册的输入滤波/源阻抗要求核，不另列运放子判据', 'subject', 'circuit'),
     Rule('ANA-C03', '基准与输入保护',
-         'ADC 基准驱动/误差、输入满量程及钳位/注入电流，含掉电状态', 'package', 'circuit'),
+         'ADC 基准驱动/误差、输入满量程及钳位/注入电流，含掉电状态', 'subject', 'circuit'),
     Rule('ANA-C04', '传感器开短路判别',
          '传感器接控制器检测脚时，按控制器实际可选的偏置电流档/上拉、ADC 满量程或内部钳位，以及产品环境与工作温度全范围'
          '（含传感器、偏置与串并联电阻公差）计算正常读数区间，与开路、短路读数不重叠且留有裕量；偏置只能离散选档时写明'
          '所用档位、切档等待与去抖，单档覆盖不到时不判通过；缺控制器偏置档或环境范围不定判', 'plan', 'pin'),
     Rule('ANA-D01', '温度传感器',
-         '温度传感器电气连接、量程和接口正确；传感器摆放与热路径另交 HANDOFF', 'package', 'circuit'),
+         '温度传感器电气连接、量程和接口正确；传感器摆放与热路径另交 HANDOFF', 'subject', 'circuit'),
 
     # PRO 防护与隔离
     Rule('PRO-A01', 'ESD/TVS 挂残网',
@@ -487,7 +487,7 @@ RULES = (
     Rule('PRO-C01', '防护器件协调',
          'TVS 的 VRWM/VBR/VC 按实际浪涌波形、电流与温度对照后级绝限；熔断器/PTC 的额定、时间电流与熔断能量按项目'
          '降额核对；熔断器另核额定分断能力不低于安装点预期短路电流（插墙一次侧无项目值时按 IEC 60127 H 档 1500 A，'
-         '依据见 verdicts-and-release），只保证低分断档（如 100 A）判 FAIL；按实际保护链逐段核动作电压、时序与能量配合，不强制包含 GDT/TSS、ESD、端接或隔离的固定级联；缺工况不定判', 'package', 'circuit'),
+         '依据见 verdicts-and-release），只保证低分断档（如 100 A）判 FAIL；按实际保护链逐段核动作电压、时序与能量配合，不强制包含 GDT/TSS、ESD、端接或隔离的固定级联；缺工况不定判', 'subject', 'circuit'),
     Rule('PRO-C02', '阈值型保护双侧窗口',
          '齐纳、电源轨或板内 TVS 钳位与保护门限脚（FAULT/OVP/UVLO/OCP/OTP 等）逐对象两侧核算（对外连接器信号线上的 ESD 钳位归 PRO-D03）：不误动作侧取正常工况被测量最大值'
          '（全部输出档位、瞬态与上电/掉电、公差、温度、漏电，含峰值整流或滤波捕获的尖峰）对门限最小值；动作有效侧取需求内'
@@ -496,10 +496,10 @@ RULES = (
          '核隔离两侧的网络归属、参考地、跨接器件与耐压，以及输出侧速度/负载条件；'
          '爬电距离与实际隔离距离另交结构与版图', 'optocoupler', 'device'),
     Rule('PRO-D02', '隔离带跨接',
-         '跨隔离带器件与网络归属及跨接用途；元件工作电压与绝缘资格独立归PRO-C03；实际爬电距离另交 HANDOFF', 'package', 'circuit'),
+         '跨隔离带器件与网络归属及跨接用途；元件工作电压与绝缘资格独立归PRO-C03；实际爬电距离另交 HANDOFF', 'subject', 'circuit'),
     Rule('PRO-C03', '隔离器件工作条件与资格',
          '逐个跨隔离器件核实际工作电压、重复峰值/频率、绝缘类别和厂家资格适用条件；耐压试验数值或无直流跨接'
-         '不能代替工作资格。缺少元件选型前提保留原理图缺口，实际PCB/机构距离与实物耐压另验', 'package', 'circuit'),
+         '不能代替工作资格。缺少元件选型前提保留原理图缺口，实际PCB/机构距离与实物耐压另验', 'subject', 'circuit'),
     Rule('PRO-D03', '对外连接器防护',
          '对外连接器逐针考虑防护，ESD 器件挂在活线上，并核所列信号线钳位（clamp_refs）的工作电压不低于信号摆幅、钳位电压不超过被保护脚耐受；板内互连器件可按依据判不适用', 'plan', 'device'),
 
@@ -535,7 +535,7 @@ RULES = (
     Rule('REQ-A01', '关键器件计数',
          '按意图清单核对关键器件数量（该有的写 ≥1，该删的写 0）；缺意图时不执行并列入未执行', 'lint', 'board'),
     Rule('REQ-A02', '要求的功能未检出',
-         '验证设计意图要求的功能是否已在原理图中实现', 'plan', 'package'),
+         '验证设计意图要求的功能是否已在原理图中实现', 'plan', 'circuit_type'),
     Rule('REQ-D01', '需求逐条追溯',
          '需求条款逐条落到实现电路与检查项，验收判据取需求原文；原文拆成义务/前提条款，只有义务条款带结论，'
          '行结论取义务条款中最差者，前提条款与其他行的缺陷不连带本行', 'plan', 'requirement'),
@@ -551,10 +551,10 @@ RULES = (
          '首审/复审已裁定，历史意见逐条复验并保留撤回/复发', 'plan', 'board'),
     Rule('REQ-Q05', '改版影响覆盖',
          '核对新旧基线、变化、依赖缺口及扩大复验范围；全部必需项使用本轮证据，不迁移旧结论。', 'revision', 'history'),
-    Rule('REQ-Q07', '功能包覆盖',
-         '功能包的全部成员规则逐电路、逐工况完成后汇总；功能包只汇总覆盖，不能代替成员检查', 'plan', 'package'),
+    Rule('REQ-Q07', '功能电路覆盖',
+         '功能电路的全部审查科目逐电路、逐工况完成后汇总；功能电路只汇总覆盖，不能代替审查科目', 'plan', 'circuit_type'),
     Rule('REQ-Q08', '未检出功能确认',
-         '网表未检出且未声明的功能包逐个确认不适用并给出依据；未检出特征不等于不适用', 'plan', 'board'),
+         '网表未检出且未声明的功能电路逐个确认不适用并给出依据；未检出特征不等于不适用', 'plan', 'board'),
     Rule('REQ-H01', '改版 Diff 与历史意见闭环',
          '按历史意见断言核对新旧器件字段、引脚换网与网络成员变化，防止假闭环', 'revision', 'history'),
     Rule('REQ-H02', '改版删除项复核',
@@ -613,95 +613,95 @@ def build_objective_index(rule_ids, groups, objectives=OBJECTIVES):
     return index
 
 
-# 功能包：正则名称命中仅作候选；声明或已确认拓扑使其适用，再逐电路×工况
-# （未声明电路时按包一次）生成全部成员规则。意图中 features 的键与 circuits[].type 取包名。
+# 功能电路：正则名称命中仅作候选；声明或已确认拓扑使其适用，再逐电路×工况
+# （未声明电路时按类型一次）生成全部审查科目。意图中 features 的键与 circuits[].type 取类型名。
 # PWR-C14 噪声预算挂在敏感负载的包上（ANALOG/CLOCK/RF），变换器本身不生成。
-PACKAGES = (
-    Package('POWER_CONVERTER', '变换器与稳压器', 'PWR',
+CIRCUIT_TYPES = (
+    CircuitType('POWER_CONVERTER', '变换器与稳压器', 'PWR',
             r'(^|[:_-])(FB|VFB|LX\d*|PGOOD|PWRGD|VOUT\d*)([:_-]|$)|LDO|BUCK|BOOST|DC-?DC|PMIC',
             ('PWR-C02', 'PWR-C03', 'PWR-C04', 'PWR-C05', 'PWR-C15'),
             ('requirements', 'datasheets')),
-    Package('POWER_PROTECTION', '电源输入保护', 'PWR',
+    CircuitType('POWER_PROTECTION', '电源输入保护', 'PWR',
             r'FUSE|HOT-?SWAP|SURGE|PART:F\d+:|(^|[:_-])(OVP|UVP|OCP|ILIM)([:_-]|$)|SMBJ|SMAJ|SMCJ',
             ('PWR-C06', 'DRV-C02', 'PRO-C01', 'PWR-C13', 'PWR-T05', 'ANA-T01'),
             ('requirements', 'datasheets')),
-    Package('ANALOG', '模拟前端与监测', 'ANA',
+    CircuitType('ANALOG', '模拟前端与监测', 'ANA',
             r'(^|[:_-])(AIN\d*|ADC\w*|VREF\w*|REFIN|REFOUT|OPA\w*|INA\d*|ISENSE\w*|CSP|CSN|NTC\w*|THERM\w*)([:_-]|$)',
             ('ANA-C01', 'ANA-C02', 'ANA-C03', 'ANA-T01', 'ANA-D01', 'PWR-C14'),
             ('requirements', 'datasheets')),
-    Package('STARTUP', '上电、复位与启动', 'RST',
+    CircuitType('STARTUP', '上电、复位与启动', 'RST',
             r'RESET|(^|_)RST|POR(_|$)|(^|[:_-])(BOOT\w*|STRAP\w*|PWRON\w*)([:_-]|$)',
             ('RST-C01', 'RST-C02', 'RST-T03', 'RST-T04', 'RST-D01'),
             ('requirements', 'datasheets')),
-    Package('CLOCK', '时钟', 'CLK',
+    CircuitType('CLOCK', '时钟', 'CLK',
             r'CLK|CLOCK|OSC|XTAL|XIN|XOUT|32K',
             ('CLK-C01', 'CLK-D01', 'CLK-D03', 'PWR-C14'),
             ('datasheets',)),
-    Package('I2C', 'I²C', 'SIG',
+    CircuitType('I2C', 'I²C', 'SIG',
             r'(^|[:_-])(I2C\w*|SCL\d*|SDA\d*)([:_-]|$)',
             ('SIG-C01', 'SIG-C07', 'SIG-C08', 'SIG-D01'),
             ('requirements', 'datasheets')),
-    Package('LEVEL_SHIFT', '电平转换与跨电压域互连', 'SIG',
+    CircuitType('LEVEL_SHIFT', '电平转换与跨电压域互连', 'SIG',
             r'TXS0\d{3}|TXB0\d{3}|TXU0\d{3}|PCA9306|NVT20\d\d|LSF0\d{3}|GTL2003|FXMA\d+|FXLA\d+|NLSX\d+'
             r'|(SN)?74(LVC|AVC|AXC|ALVC)\d*T\d+|LEVEL_?SHIFT|LVL_?SHIFT|TRANSLAT'
             r'|NET:\w*_(LV|HV)(_|$)',
             ('SIG-C07', 'SIG-C08', 'SIG-C09', 'SIG-T04'),
             ('requirements', 'datasheets')),
-    Package('SPI', 'SPI', 'SIG',
+    CircuitType('SPI', 'SPI', 'SIG',
             r'\bSPI\w*|MOSI|MISO|SCLK',
             ('SIG-D09', 'SIG-C07', 'SIG-C09'),
             ('requirements', 'datasheets')),
-    Package('UART', 'UART/RS232', 'SIG',
+    CircuitType('UART', 'UART/RS232', 'SIG',
             r'UART|\bTXD\w*|\bRXD\w*',
             ('SIG-D08', 'SIG-T04', 'SIG-C07'),
             ('requirements', 'datasheets')),
-    Package('CAN', 'CAN', 'SIG',
+    CircuitType('CAN', 'CAN', 'SIG',
             r'CANH|CANL|CAN_TX|CAN_RX|\bCAN\d*\b',
             ('SIG-C03', 'SIG-C04', 'SIG-D08', 'PRO-C01'),
             ('requirements', 'datasheets')),
-    Package('RS485', 'RS485', 'SIG',
+    CircuitType('RS485', 'RS485', 'SIG',
             r'RS485|485_TX|485_RX|485_A|485_B',
             ('SIG-C03', 'SIG-C04', 'SIG-D08', 'SIG-T04', 'PRO-C01'),
             ('requirements', 'datasheets')),
-    Package('USB', 'USB/Type-C', 'SIG',
+    CircuitType('USB', 'USB/Type-C', 'SIG',
             r'USB|VBUS|TYPEC|TYPE_C',
             ('SIG-D07', 'SIG-D04', 'SIG-C05', 'SIG-T04'),
             ('requirements', 'datasheets')),
-    Package('ETHERNET', '以太网', 'SIG',
+    CircuitType('ETHERNET', '以太网', 'SIG',
             r'ETH|RGMII|RMII|SGMII|MDIO|\bMDI\d|PHY',
             ('SIG-D11', 'SIG-C09', 'PRO-C01'),
             ('requirements', 'datasheets', 'platform_checklist')),
-    Package('DDR', 'DDR', 'SIG',
+    CircuitType('DDR', 'DDR', 'SIG',
             r'LPDDR|DDR[2345]?|SDRAM|DQS|\bZQ\b',
             ('SIG-D02', 'SIG-D03', 'SIG-C09'),
             ('requirements', 'datasheets', 'platform_checklist')),
-    Package('STORAGE', 'eMMC/SD', 'SIG',
+    CircuitType('STORAGE', 'eMMC/SD', 'SIG',
             r'EMMC|SDIO|SDMMC|MICROSD|TF_CARD',
             ('SIG-D10', 'SIG-C07', 'SIG-C09'),
             ('requirements', 'datasheets', 'platform_checklist')),
-    Package('RF', '射频与模组', 'SIG',
+    CircuitType('RF', '射频与模组', 'SIG',
             r'(^|[:_-])(RF|ANT|WIFI|WLAN|LTE|GNSS|SIM)([:_-]|$)',
             ('SIG-D12', 'PWR-C14'),
             ('requirements', 'datasheets')),
-    Package('HSSERIAL', '高速串行', 'SIG',
+    CircuitType('HSSERIAL', '高速串行', 'SIG',
             r'PCIE|PCI_E|SATA|SERDES|USB3|SSTX|SSRX|PERST|CLKREQ',
             ('SIG-D14', 'SIG-T01'),
             ('requirements', 'datasheets', 'platform_checklist')),
-    Package('AV', '音视频接口', 'SIG',
+    CircuitType('AV', '音视频接口', 'SIG',
             r'HDMI|MIPI|(^|[:_-])(CSI|DSI|EDP|LCD)\w*|(^|[:_-])I2S|MCLK|LRCK|BCLK|CODEC|(^|[:_-])(SPK|MIC)([:_-]|\d|$)',
             ('SIG-D15', 'SIG-C07'),
             ('requirements', 'datasheets')),
-    Package('ISOLATION', '隔离', 'PRO',
+    CircuitType('ISOLATION', '隔离', 'PRO',
             r'ISOLAT|(^|_)ISO(_|$)|DIGITAL_ISO',
             ('PRO-D02', 'PRO-C01', 'PRO-C03'),
             ('requirements', 'datasheets')),
-    Package('DEBUG', '调试与烧录', 'SIG',
+    CircuitType('DEBUG', '调试与烧录', 'SIG',
             r'JTAG|SWDIO|SWCLK|(^|[:_-])(SWD|TCK|TMS|TDI|TDO|TRST\w*)([:_-]|$)|(^|[:_-])(DEBUG|DBG)',
             ('SIG-D06',),
             ('datasheets',)),
 )
 
-# 功能包成员规则的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），行的 question 就是审查员要回答的
+# 审查科目的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），行的 question 就是审查员要回答的
 # 问题；通用 criterion 保留为提示。问题只说要算什么、对照什么，禁止句（“不得…”“不把…外推”）由 question_errors 拒绝。
 QUESTIONS = {
     'PWR-C02': '{state} 时 {circuit}（{refs}）在要求的输入、负载和温度范围内，输出是否落在负载要求的窗口 {window} 内；允许关断或保护时，动作与恢复是否安全',
@@ -754,8 +754,8 @@ QUESTIONS = {
     'SIG-D06': '{state} 时 {circuit}（{refs}）的 UART/JTAG/SWD 信号电气引出、串阻与 ESD 是否满足调试/烧录要求',
 }
 
-# 功能框架的问题：每个 intent 电路一句，由该包成员问题归纳；审查员可改写。
-# 答案不随工作态变化的成员规则（导通方向、接口语义、USB 物理层与角色、传感器接法）：计划每电路只问一次，
+# 功能框架的问题：每个 intent 电路一句，由该科目问题归纳；审查员可改写。
+# 答案不随工作态变化的审查科目（导通方向、接口语义、USB 物理层与角色、传感器接法）：计划每电路只问一次，
 # 行的 object 不带 state，问题模板也不带“{state} 时”。纹波预算（PWR-C14）和变换器各条随负载/模式变化，仍逐状态。
 STATE_INVARIANT = frozenset({'PWR-T05', 'ANA-D01', 'SIG-T04', 'SIG-D07', 'SIG-D04'})
 
@@ -797,15 +797,15 @@ QUESTION_BAN_RE = re.compile(r'禁止|严禁|勿|不(得|能|可|准|要|把|以
 
 
 def question(rule_id, state, circuit, refs, window=None):
-    """成员规则的问题，按电路填空；没有模板的规则返回 None。"""
+    """审查科目的问题，按电路填空；没有模板的规则返回 None。"""
     template = QUESTIONS.get(rule_id)
     if template is None:
         return None
     return template.format(state=state, circuit=circuit, refs='、'.join(refs), window=window or NO_WINDOW)
 
 
-def frame_question(package_name, circuit, refs, states, window=None):
-    body = FRAME_QUESTIONS.get(package_name) or '成员检查的问题是否都成立'
+def frame_question(type_name, circuit, refs, states, window=None):
+    body = FRAME_QUESTIONS.get(type_name) or '审查科目的问题是否都成立'
     return (FRAME_PREFIX + body).format(circuit=circuit, refs='、'.join(refs), states='/'.join(states),
                                         window=window or NO_WINDOW)
 
@@ -1035,8 +1035,8 @@ EXPLANATIONS = {
     'REQ-Q03': _x('正常状态通过，可能掩盖启动、掉电或故障时的错误', '每个关键电路的需求内状态都已覆盖即关闭；不新增需求之外的工况', inputs='RST-T03 的顺序结论'),
     'REQ-Q04': _x('历史意见可能因换版或改位号而无声消失', '每条历史意见都有复验结论：修复、保留或有依据撤回即关闭', inputs='REQ-H01 的复验结果'),
     'REQ-Q05': _x('只复验修改点，会漏掉改动对其他电路的连带影响', '改动影响的供电、控制和保护范围都用本轮证据复验即关闭', inputs='REQ-H01 的差异与依赖'),
-    'REQ-Q07': _x('整包一次性通过可能掩盖某个子电路或状态没查', '功能包的全部成员检查逐电路、逐状态完成即关闭'),
-    'REQ-Q08': _x('命名或符号不典型的电路可能被自动计划漏掉', '每个未检出的功能包都确认不适用并有依据，或已补成员检查即关闭'),
+    'REQ-Q07': _x('整类电路一次性通过可能掩盖某个子电路或状态没查', '功能电路的全部审查科目逐电路、逐状态完成即关闭'),
+    'REQ-Q08': _x('命名或符号不典型的电路可能被自动计划漏掉', '每个未检出的功能电路都确认不适用并有依据，或已补审查科目即关闭'),
     'REQ-H01': _x('只改说明或换位号可能被误当成修复', '历史意见对应的器件字段、换网和网络成员变化都用新版证据核过即关闭', inputs='DOC-Q01 绑定的新旧输入'),
     'REQ-H02': _x('旧检查对象消失可能被误当成问题已关闭', '每个消失项都确认是删除、替代还是遗漏即关闭', inputs='REQ-H01 的差异'),
 }
@@ -1103,7 +1103,7 @@ def catalog_explanation_errors(rule_id):
 
 
 BY_ID = {}
-PACKAGE_BY_NAME = {}
+CIRCUIT_TYPE_BY_NAME = {}
 OBJECTIVE_BY_RULE = {}
 
 
@@ -1131,24 +1131,24 @@ def _build_index():
         if linked - set(BY_ID):
             raise ValueError('检查说明引用未知规则: ' + rule_id)
     OBJECTIVE_BY_RULE.update(build_objective_index(BY_ID, OBJECTIVE_RULES))
-    for package in PACKAGES:
-        if package.name in PACKAGE_BY_NAME or package.domain not in DOMAIN_BY_CODE:
-            raise ValueError('功能包定义错误: ' + package.name)
-        re.compile(package.pattern)
-        PACKAGE_BY_NAME[package.name] = package
-    referenced = [rule for p in PACKAGES for rule in p.rules] + list(COVERAGE_RULES.values())
+    for kind in CIRCUIT_TYPES:
+        if kind.name in CIRCUIT_TYPE_BY_NAME or kind.domain not in DOMAIN_BY_CODE:
+            raise ValueError('功能电路定义错误: ' + kind.name)
+        re.compile(kind.pattern)
+        CIRCUIT_TYPE_BY_NAME[kind.name] = kind
+    referenced = [rule for p in CIRCUIT_TYPES for rule in p.subjects] + list(COVERAGE_RULES.values())
     for rule in referenced:
         if rule not in BY_ID:
             raise ValueError('映射引用了未登记的规则: ' + rule)
     for rule_id, needs in INPUT_OVERRIDES.items():
         if rule_id not in BY_ID or not set(needs) <= set(INPUTS):
             raise ValueError('输入依赖定义错误: ' + rule_id)
-    for package in PACKAGES:
-        if not package.rules or any(rule[4] in 'AEHQ' for rule in package.rules):
-            raise ValueError('功能包成员须为审查者逐项执行的规则: ' + package.name)
+    for kind in CIRCUIT_TYPES:
+        if not kind.subjects or any(rule[4] in 'AEHQ' for rule in kind.subjects):
+            raise ValueError('审查科目须为审查者逐项执行的规则: ' + kind.name)
     for rule in RULES:
-        if rule.source == 'package' and not packages_of(rule.id):
-            raise ValueError('功能包成员规则未编入任何功能包: ' + rule.id)
+        if rule.source == 'subject' and not circuit_types_of(rule.id):
+            raise ValueError('审查科目未编入任何功能电路: ' + rule.id)
 
 
 def known(rule_id):
@@ -1209,21 +1209,21 @@ def titles(method=None, domain=None, source=None, stage=None):
     return {rule.id: rule.title for rule in rules(method, domain, source, stage)}
 
 
-def package(name):
-    return PACKAGE_BY_NAME[name]
+def circuit_type(name):
+    return CIRCUIT_TYPE_BY_NAME[name]
 
 
-def packages_of(rule_id):
-    return [p.name for p in PACKAGES if rule_id in p.rules]
+def circuit_types_of(rule_id):
+    return [p.name for p in CIRCUIT_TYPES if rule_id in p.subjects]
 
 
-def package_criterion(name):
-    """功能包汇总项的判据：列出本包成员规则；项目自定义功能没有成员规则，由审查者补充。"""
-    item = PACKAGE_BY_NAME.get(name)
+def circuit_type_criterion(name):
+    """功能电路汇总项的判据：列出本类型审查科目；项目自定义功能没有审查科目，由审查者补充。"""
+    item = CIRCUIT_TYPE_BY_NAME.get(name)
     if item is None:
-        return '执行项目自定义功能 %s 的原理图检查；成员检查由审查者按需求逐项补充' % name
-    members = '、'.join('%s %s' % (rule, title(rule)) for rule in item.rules)
-    return '执行%s功能包：%s；成员检查全部完成后汇总，禁止整包一次性 PASS' % (item.title, members)
+        return '执行项目自定义功能 %s 的原理图检查；审查科目由审查者按需求逐项补充' % name
+    members = '、'.join('%s %s' % (rule, title(rule)) for rule in item.subjects)
+    return '执行%s功能电路：%s；审查科目全部完成后汇总，禁止整类电路一次性 PASS' % (item.title, members)
 
 
 def order(rule_id):
@@ -1291,7 +1291,7 @@ def render_markdown():
               '| 来源 | 何时生成计划项 |', '|---|---|',
               '| Lint 内置 / 检查器 | 自动扫描随冷跑、热跑执行；证据计算项与检查器项按识别到的对象生成 |',
               '| 计划逐对象生成 | 按“粒度”列逐对象生成（页、器件、电源轨、链路、需求等） |',
-              '| 功能包成员 | 所属功能包适用时生成：声明了电路则逐电路×工况，否则按功能包生成一次 |',
+              '| 审查科目 | 所属功能电路适用时生成：声明了电路则逐电路×工况，否则按功能电路生成一次 |',
               '| 全板通用 | 每块板各生成一项，审查者给出适用性与结果 |',
               '| 改版比对 | 复审时由改版影响与历史意见断言生成 |', '',
               '| 粒度代码 | 含义 |', '|---|---|']
@@ -1309,13 +1309,13 @@ def render_markdown():
         lines.append('| %s %s | %s |' % (d.code, d.name, ' | '.join(cells)))
     for d in DOMAINS:
         lines += ['', '## %s %s' % (d.code, d.name), '',
-                  '| 编号 | 纲要 | 方式 | 输入 | 检查项 | 判据要点 | 粒度 | 来源 | 功能包 |', '|---|---|---|---|---|---|---|---|---|']
+                  '| 编号 | 纲要 | 方式 | 输入 | 检查项 | 判据要点 | 粒度 | 来源 | 功能电路 |', '|---|---|---|---|---|---|---|---|---|']
         for rule in sorted(rules(domain=d.code), key=lambda r: order(r.id)):
             lines.append('| %s | %s | %s | %s | %s | %s | %s | %s | %s |' % (
                 rule.id, OBJECTIVE_BY_RULE[rule.id], METHOD_BY_CODE[rule.id[4]].name,
                 '、'.join(INPUTS[x] for x in inputs_of(rule.id)), _cell(rule.title),
                 _cell(rule.criterion), SCOPES[rule.scope], SOURCES[rule.source],
-                '、'.join(packages_of(rule.id)) or '—'))
+                '、'.join(circuit_types_of(rule.id)) or '—'))
     lines += ['', '## 每项检查的盲区、关闭条件与常见误报', '',
               '“不查会漏掉什么”是检查的理由，不表示本设计已存在这些问题，也不预设 P0–P3。',
               '关闭条件写明证据到什么程度可以结束本项，以及哪些事不归本项；复用的事实只是方向，',
@@ -1330,17 +1330,17 @@ def render_markdown():
                      value.get('inputs') or '—', value.get('false_alarms') or '—')
             lines.append('| ' + ' | '.join(_cell(v) for v in cells) + ' |')
         lines.append('')
-    lines += ['', '## 功能包', '',
-              '名称命中先生成 UNDETERMINED 候选；意图声明（`features` 键、`circuits[].type` 取包名）或已确认拓扑使功能包适用，再生成 REQ-Q07 '
-              '覆盖项与成员规则，逐成员再核实际用途。未检出且未声明的功能包汇总到一项 REQ-Q08 确认；'
-              '不必为排除它们在 `features` 中逐个写 NOT_APPLICABLE，逐个声明会为每个包各生成一行 REQ-Q07。'
+    lines += ['', '## 功能电路', '',
+              '名称命中先生成 UNDETERMINED 候选；意图声明（`features` 键、`circuits[].type` 取类型名）或已确认拓扑使功能电路适用，再生成 REQ-Q07 '
+              '覆盖项与审查科目，逐科目再核实际用途。未检出且未声明的功能电路汇总到一项 REQ-Q08 确认；'
+              '不必为排除它们在 `features` 中逐个写 NOT_APPLICABLE，逐个声明会为每个类型各生成一行 REQ-Q07。'
               '分立 MOSFET 电平转换器没有名称线索，须在 `intent.circuits` 中声明（在 I²C 等总线上则并入该总线电路），'
               '转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划与结果台账](plan-and-results.md)。', '',
-              '| 功能包 | 名称 | 内容域 | 成员规则 | 必需资料 | 检出特征（正则） |',
+              '| 功能电路 | 名称 | 内容域 | 审查科目 | 必需资料 | 检出特征（正则） |',
               '|---|---|---|---|---|---|']
-    for p in PACKAGES:
+    for p in CIRCUIT_TYPES:
         lines.append('| %s | %s | %s | %s | %s | `%s` |' % (
-            p.name, p.title, p.domain, '、'.join(p.rules), '、'.join(p.materials), _cell(p.pattern)))
+            p.name, p.title, p.domain, '、'.join(p.subjects), '、'.join(p.materials), _cell(p.pattern)))
     lines += ['', '## 覆盖维度', '', '| 维度（results.scope_checks 键） | 规则 |', '|---|---|']
     for name, rule in COVERAGE_RULES.items():
         lines.append('| %s | %s %s |' % (name, rule, title(rule)))

@@ -179,28 +179,28 @@ def screen_quality(plan, report, db=None):
                     'stated_status': match.group(1), 'final_status': verdict,
                     'message': 'Aggregate text names a child with a different final result; reconcile the final member results.'})
         obj = check.get('object')
-        package = check.get('package') or (obj.get('package') if isinstance(obj, dict) else None)
+        package = check.get('circuit_type') or (obj.get('circuit_type') if isinstance(obj, dict) else None)
         if isinstance(package, str) and package and listed:
             def child_package(child):
                 obj = child.get('object')
-                return child.get('package') or (obj.get('package') if isinstance(obj, dict) else None)
+                return child.get('circuit_type') or (obj.get('circuit_type') if isinstance(obj, dict) else None)
             # Explicit plan scope only. Unpackaged physical dependencies cannot
             # be assigned by a shared rule prefix or a prose keyword.
             wrong = sorted(cid for cid in listed if cid in expected
                            and child_package(expected[cid])
                            and child_package(expected[cid]) != package)
             if wrong:
-                candidates.append({'code': 'AGGREGATE_CHILD_PACKAGE_MISMATCH',
-                    'check_ids': [row['id']], 'package': package, 'child_ids': wrong,
-                    'message': 'Listed checks have another explicit package. Verify membership or document the real cross-package dependency; this advisory does not reject legitimate shared proofs.'})
+                candidates.append({'code': 'AGGREGATE_CHILD_CIRCUIT_TYPE_MISMATCH',
+                    'check_ids': [row['id']], 'circuit_type': package, 'child_ids': wrong,
+                    'message': 'Listed checks belong to another circuit type. Verify membership or document the real cross-type dependency; this advisory does not reject legitimate shared proofs.'})
             members = {cid for cid, child in expected.items()
                        if cid != row['id'] and child.get('rule') != 'REQ-Q07'
                        and child_package(child) == package}
             missing = sorted(members - listed)
             if missing:
-                candidates.append({'code': 'AGGREGATE_PACKAGE_MEMBERS_MISSING',
-                    'check_ids': [row['id']], 'package': package, 'child_ids': missing,
-                    'message': 'An explicit child/status list omits checks bound to this package. Reconcile the complete plan scope; unbound electrical dependencies still require expert tracing.'})
+                candidates.append({'code': 'AGGREGATE_SUBJECTS_MISSING',
+                    'check_ids': [row['id']], 'circuit_type': package, 'child_ids': missing,
+                    'message': 'An explicit child/status list omits subjects bound to this circuit type. Reconcile the complete plan scope; unbound electrical dependencies still require expert tracing.'})
 
     groups = defaultdict(list)
     impact_groups = defaultdict(list)
@@ -291,14 +291,14 @@ def screen_quality(plan, report, db=None):
                     'field': 'missing_inputs', 'check_ids': [row['id']],
                     'expected_refs': sorted(targets), 'observed_refs': sorted(actual),
                     'message': 'Capacitor rating evidence must qualify the fitted capacitors; connector/device identity is a separate claim.'})
-        if check.get('rule') == 'SIG-T04' and check.get('package') == 'USB':
+        if check.get('rule') == 'SIG-T04' and check.get('circuit_type') == 'USB':
             text = analysis_text(rationale, check)
             other = re.search(r'(?<![A-Za-z0-9_])(?:UART|SPI|TXD\d*|RXD\d*|PICO|POCI)(?![A-Za-z0-9_])', text, re.I)
             usb = re.search(r'USB|D[+-]|(?<![A-Za-z0-9_])(?:DP|DM|Host|Device|Source|Sink)(?![A-Za-z0-9_])', text, re.I)
             if other and not usb:
                 candidates.append({'code': 'INTERFACE_ANALYSIS_MODE_MISMATCH',
                     'field': 'rationale', 'check_ids': [row['id']],
-                    'declared_package': 'USB',
+                    'declared_circuit_type': 'USB',
                     'message': 'USB direction reasoning only names UART/SPI roles; verify the actual USB endpoint roles instead of the scope echo.'})
     for group in groups.values():
         if len({scope for _, scope in group}) > 1:

@@ -1,6 +1,6 @@
 # 电平转换（LEVEL_SHIFT）：成对判例
 
-用于验证 LEVEL_SHIFT 功能包、[WCA 公式](../../references/wca-formulas.md)“MOSFET 双向开漏电平转换”行
+用于验证 LEVEL_SHIFT 功能电路、[WCA 公式](../../references/wca-formulas.md)“MOSFET 双向开漏电平转换”行
 及 [计划与结果台账](../../references/plan-and-results.md) 中电平转换的展开边界。全部为合成数据，不是自动测试；
 回放时只给“输入”，再与“应产生的行为”对照。
 

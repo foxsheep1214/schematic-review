@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Functional packages become circuit types with review subjects (2026-10-20)
+
+"功能包" read as a bundle of rules and "成员规则" as a membership, which
+hid what they are: a kind of functional circuit and the subjects that
+kind must pass. The catalog now defines `CIRCUIT_TYPES` (20 kinds, ids
+unchanged: POWER_CONVERTER, RS485, …) with `subjects`; rule source
+`package` is `subject`, scope `package` is `circuit_type`;
+`catalog.circuit_type()`, `circuit_types_of()`, `circuit_type_criterion()`
+replace the package lookups; plan rows and frames carry `circuit_type`
+instead of `package`, REQ-Q07/REQ-A02 objects use `circuit_type`, REQ-Q08
+lists `circuit_types`, triggers read `circuit-type:…`; the quality codes
+are AGGREGATE_CHILD_CIRCUIT_TYPE_MISMATCH and AGGREGATE_SUBJECTS_MISSING.
+Plan schema is 5 (plans with the old field are refused; results schema
+stays 4). Reader-facing text says 功能电路 / 审查科目 / 科目行 throughout
+SKILL, references, the generated catalog and the eval READMEs; dated
+design documents and earlier ledger entries keep their wording. The
+kicad_replay answers are unchanged (no observed field names the key), so
+no new revision.
+
+- Event: user:2026-10-20 (rename 功能包 → 功能电路, 成员规则 → 审查科目; old plans need not be read)
+- Causes: judgment 1
+- Changed: scripts/catalog.py, scripts/plan_review.py, scripts/review_quality.py, scripts/revision_impact.py, scripts/checkers/i2c.py, scripts/electrical_contract.py, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, scripts/tests/test_aggregate_circuit_type_quality.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_electrical_safety.py, scripts/tests/test_context_locators.py, scripts/tests/test_asg_review_scope.py, scripts/tests/test_derive_rows.py, scripts/tests/fixtures/execution-audit/synthetic.json, SKILL.md, README.md, references/check-catalog.md, references/plan-and-results.md, references/automation.md, references/evidence-proportionality.md, references/verdicts-and-release.md, references/revision-review.md, references/review-charter.md, references/datasheets.md, evals/mutation/README.md, evals/mutation/RESULTS.md, evals/rule_contracts/README.md, evals/kicad_replay_bench/README.md, evals/scenarios/array-light-sensor-boundary-cases.md, evals/scenarios/level-shift-cases.md, evals/workflow_guidance/state-and-procurement.md, references/workflow-handoff.md, scripts/tests/fixtures/execution-audit/README.md, docs/improvement-ledger.md
+
 ## State-invariant member rules ask once per circuit (2026-10-20)
 
 Package member rules expanded as rules × declared states for every circuit,
