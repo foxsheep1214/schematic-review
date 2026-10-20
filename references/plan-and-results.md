@@ -200,6 +200,9 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 - `coverage`：各维度“对象→检查 ID 数组”的完整映射。有 `--db` 时机械检查 components、pins、nets、pages
   及 requirements 是否都关联至少一条检查；仅 PDF 时由页面/手工对象清单另审，不制作伪网表。
 - `requirement_clarifications`（无则可省略）。`work_items` 不再写：待办由开放项派生（见 [结论与准出](verdicts-and-release.md#待办由开放项派生)）。
+- `review_scope`（只在局部热审时写）：`{"functions": [计划框架 id…], "reason": "…"}`。声明后校验只要求这些框架的科目行有结果，
+  不要求 `scope_checks` 与 `coverage`；gate 的 `valid` 可为真，但带阻断“不是整板结论”，`release` 恒为 NO_GO，`pack_review.py` 不打包。
+  用于训练语料的单电路热审与试点，不用于交付。
 - schema 4 没有分版本号：`binding_version`、`remediation_version`、`workflow_version`、`impact_class_version`、
   `requirement_clauses_version`、`requirement_clarification_version` 写了会被拒绝，各项一律按最新规则校验。
   绑定和修改说明由 `validate_review.py` 的 `--require-bindings`、`--require-actionable` 要求。
@@ -275,7 +278,8 @@ PRO-C03 在隔离功能里逐个列出变压器、光耦/数字隔离器、跨�
 （短时耐压、目标绝缘类别、无直流跨接都不能独自关闭）；PWR-C15 在变换器功能里写反馈模型、补偿配置和角点稳定性
 （无反馈环按拓扑 NA；内部补偿用厂家适用条件证明；Bode 实测是移交，不是开放项）。
 
-**行跟随功能。** 绑定了功能的行（计划科目行，或审查员写了 `function_id` 的行）：功能 PASS → 行 PASS；
+**行跟随功能。** 绑定了功能的行（计划科目行，或审查员写了 `function_id` 的行；同一组对象声明了两个功能电路时，
+一个框架的科目行可以绑到另一框架的功能，条件是该功能的 `objects` 覆盖这一行的位号与网络，这样共用的科目只判一次、不复制开放项）：功能 PASS → 行 PASS；
 功能 FAIL → `fails[].decides` 命中的（方面，状态）FAIL 并带 `fail_ref`/`finding_id`，其余 PASS；功能 OPEN →
 `open[].decides` 命中的行 INSUFFICIENT 并带 `open_ref: "FN-ID/KEY"`，其余 PASS。`rationale` 写“见功能判定 FN-X（方面，状态）：结论 + 余量”。
 `derive_rows.py` 生成这些行；手填的行只对账不覆盖。校验强制：INSUFFICIENT 必有 `open_ref` 且其 `decides` 覆盖本行的方面和状态；

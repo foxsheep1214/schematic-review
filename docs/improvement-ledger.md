@@ -7,6 +7,37 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## The pilot's three frictions fixed: a micro-injection floor, delegated frame rows, scoped ledgers (2026-10-20)
+
+User asked that the three things the hot-review pilot exposed be improved,
+not just recorded. (1) The VENDOR_DATUM the pilot raised for a bridge's
+internal 3.3 V node that pulls an MCU input through 10 k had no engineering
+weight: at most 0.1 V above VDD+0.3 and under 10 µA. `commodity-floors.md`
+gains a "micro-injection pull-up" floor: a digital input pulled through
+R >= 10 kR to a node whose stated worst-case bound exceeds VDD+0.3 V by at
+most 0.3 V, with (bound - VDD_min - 0.3 V)/R <= 30 µA (three orders below the
+JESD78 latch-up test current), passes SIG-C07/C08 at grade B with the bound,
+R and current written out; analog inputs, datasheet injection limits and
+explicit prohibitions are excluded. The pilot's open item is withdrawn under
+it. (2) Two circuits declared over the same parts duplicated SIG-C07 rows and,
+with open-item keys unique across functions, duplicated the open items;
+`frame_errors` now lets a frame member bind to another frame's function when
+that function's objects cover the row's refs and nets, so a shared subject is
+judged once. (3) A ledger that answers one circuit could never validate
+because coverage is owed for the whole board; `review-results.json` may now
+declare `review_scope` {functions, reason}: coverage is owed for those
+frames' rows only, `scope_checks`/`coverage` are not required, and the gate
+reconciles while carrying a blocker that it is not a board verdict (release
+stays NO_GO). Tests first for (2) and (3); mutations M25/M26 guard them. The
+pilot ledger now validates (12 rows, 9 PASS, 3 FAIL, no quality candidates)
+and is stored with the round. The 30 µA / 0.3 V floor is the agent's
+proposal, applied once the user asked for the improvement; it is written as a
+floor the human can tighten.
+
+- Event: user:2026-10-20 (improve the three frictions the pilot exposed), review:evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/review-gate.json
+- Causes: judgment 2, rule_missing 1
+- Changed: scripts/review_functions.py, scripts/validate_review.py, scripts/tests/test_review_functions.py, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, references/commodity-floors.md, references/plan-and-results.md, evals/training/README.md, evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/review-results.json, evals/training/runs/2026-10-20-29b9856/hot/olimex-esp32-poe-iso-revN-revN1.before/notes.md, evals/training/runs/2026-10-20-29b9856/summary.md, docs/improvement-ledger.md
+
 ## Hot-review pilot on the admitted fix pair: the frame asks the right question (2026-10-20)
 
 One hot review of the admitted fix pair's before version, limited to the two

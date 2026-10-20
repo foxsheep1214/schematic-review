@@ -310,11 +310,38 @@ def binding_errors(expected, checks, functions, history_ids=()):
 REVIEWED = ('PASS', 'FAIL', 'INSUFFICIENT')
 
 
+def row_anchors(planned):
+    """(refs, nets) a plan row is about, from its object."""
+    obj = (planned or {}).get('object') if isinstance(planned, dict) else None
+    if not isinstance(obj, dict):
+        return set(), set()
+    refs = {obj.get('ref')} | set(obj.get('refs') or [])
+    if isinstance(obj.get('node'), str):
+        refs.add(obj['node'].partition('.')[0])
+    nets = {obj.get('net')} | set(obj.get('nets') or [])
+    return {r for r in refs if text(r)}, {n for n in nets if text(n)}
+
+
+def delegated(row, planned, functions_by_id):
+    """A member row bound to another frame's function: allowed when that function's objects cover
+    every ref and net the row is about (two circuits declared over the same parts, e.g. a UART link
+    and its level interface), so the shared subject is judged once instead of duplicating open items."""
+    fn = functions_by_id.get(row.get('function_id'))
+    if not isinstance(fn, dict):
+        return False
+    objects = fn.get('objects') if isinstance(fn.get('objects'), dict) else {}
+    refs, nets = row_anchors(planned)
+    return bool(refs or nets) and refs <= set(objects.get('refs') or []) and nets <= set(objects.get('nets') or [])
+
+
 def frame_errors(plan, checks, functions):
     """Plan frames (one per intent circuit) are answered: a reviewed member row binds to its frame's
-    function and keeps the frame's aspect; a frame with a reviewed member has a function verdict."""
+    function (or to another frame's function whose objects cover the row) and keeps the frame's aspect;
+    a frame with a reviewed member of its own has a function verdict."""
     errors = []
-    ids = {fn['id'] for fn in functions or [] if isinstance(fn, dict) and text(fn.get('id'))}
+    by_id = {fn['id']: fn for fn in functions or [] if isinstance(fn, dict) and text(fn.get('id'))}
+    ids = set(by_id)
+    planned_rows = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and text(c.get('id'))}
     for frame in (plan or {}).get('functions') or []:
         if not isinstance(frame, dict) or not text(frame.get('id')):
             continue
@@ -323,10 +350,14 @@ def frame_errors(plan, checks, functions):
             row = checks.get(member.get('check_id')) if isinstance(member, dict) else None
             if not isinstance(row, dict) or row.get('review_result') not in REVIEWED:
                 continue
-            answered = True
             if row.get('function_id') != frame['id']:
+                if delegated(row, planned_rows.get(member['check_id']), by_id):
+                    continue
                 errors.append('%s: a member of frame %s binds to it (function_id), not to %s'
+                              ' (another function may take the row only when its objects cover the row)'
                               % (member['check_id'], frame['id'], row.get('function_id')))
+                continue
+            answered = True
             if 'aspect' in row and row['aspect'] != member.get('aspect'):
                 errors.append('%s: aspect %r differs from the frame member aspect %r'
                               % (member['check_id'], row['aspect'], member.get('aspect')))

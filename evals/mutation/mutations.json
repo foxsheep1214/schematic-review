@@ -46,5 +46,9 @@
  {"id": "M23", "name": "bidirectional single-node net reported as FINDING again", "file": "scripts/lint.py",
   "old": "                        and ng.normalize(self.pintype.get(nds[0])) in BIDIR_PINTYPES):", "new": "                        and False):"},
  {"id": "M24", "name": "driver behind a resistor chain ignored", "file": "scripts/checkers/power_switch.py",
-  "old": "                elif switch.get('chained_drivers'):", "new": "                elif False:"}
+  "old": "                elif switch.get('chained_drivers'):", "new": "                elif False:"},
+ {"id": "M25", "name": "delegated frame row accepted without object coverage", "file": "scripts/review_functions.py",
+  "old": "                if delegated(row, planned_rows.get(member['check_id']), by_id):", "new": "                if True:"},
+ {"id": "M26", "name": "review_scope ignored: scoped ledger owes every plan row", "file": "scripts/validate_review.py",
+  "old": "    in_scope = {k: v for k, v in expected.items() if k in scope_rows} if scope_decl else expected", "new": "    in_scope = expected"}
 ]

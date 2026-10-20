@@ -28,6 +28,8 @@ M19（2026-10-20）把与工作态无关的审查科目（`catalog.STATE_INVARIA
 `FunctionFrameTests::test_state_invariant_rules_get_one_row_per_circuit` 同样失败）。
 M23–M24（2026-10-20，训练第 1 轮裁决）守两条放宽：IC 双向脚的单节点网降 CANDIDATE（`test_board_scans.py::SingleNodeNetTest`）、
 驱动脚经最多 3 级电阻可达的栅极降 CANDIDATE（`test_power_switch.py::ChainedDriverTest`）。
+M25–M26（2026-10-20，热审试点）守台账两条放宽：同对象框架的行只能绑到覆盖该行对象的功能（`test_review_functions.py::SharedObjectFrameTests`）、
+`review_scope` 只免范围外的行（`ScopedReviewTests`）。
 
 ## 维护
 

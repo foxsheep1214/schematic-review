@@ -11,7 +11,7 @@
 | 基线 seeded_bench | 门通过；`seeded_recall` 0.882 不变。低于 1 的缺陷类：D-I2C-PU 0.69、D-GND-PIN 0.70、D-EN-FLOAT 0.79、D-RAIL-SPLIT 0.79、D-CAP-POL 0.82 |
 | 语料 | 起草 3 对（Olimex ESP32-PoE-ISO Rev M→M1、M1→N、N→N1，草稿在 `corpus-draft/fix-pairs-draft.json`）。裁决后 **1 对入库**（N→N1，CH340X RXD 被 5 V 上拉进 3.3 V I/O 域，defect_class pull）；M→M1（buck 输出加 TVS）与 M1→N（PG 门控 EN）判为改进不收录，后者初判收录、经 agent 电路复核后改判。42 块 typical 板充当成熟板代理（`corpus-draft/mature-boards.json`，`production_evidence` 未补） |
 | 冷跑 | 45 块板 parse + lint + plan（`reviews/`，不入库） |
-| 热审 3 块 | 做了 **1 块局部试点**：fix pair before 版，只审声明的 UART/LEVEL_SHIFT 两个功能电路（12 行 + 2 个功能判定），见 `hot/` 与下文 |
+| 热审 3 块 | 做了 **1 块局部试点**：fix pair before 版，只审声明的 UART/LEVEL_SHIFT 两个功能电路（12 行 + 2 个功能判定，`review_scope` 台账，校验通过），见 `hot/` 与下文 |
 | 批评 agent | **未做**（README 要求另一模型家族） |
 | 裁决 | 队列 10 条，人在对话中逐项裁定，agent 记录到 `adjudications/2026-10-20.json`：3 条 fix pair（1 收 2 拒）、4 条 OVER_STRICT、3 条 TRUE_RISK（P2、P1、P1） |
 | 改进 agent | 按裁决的 `sr_change_allowed` 做了两条放宽，均先写失败测试再改：NET-A01 对 IC 双向脚的单节点网降 CANDIDATE；DRV-A03 对经 ≤3 级电阻可达驱动脚的栅极降 CANDIDATE。变异 M23/M24 守住，变异门 24/24 杀死 |
@@ -36,9 +36,11 @@ SIG-C07 行的问题是"上拉轨对各接收端门限与耐压是否匹配"，S
 CH340X 由 USB 5 V 供电，按手册在 5 V 模式，RXD 允许到 VCC+0.5，**CH340 本身不过压**；过压在 ESP32 侧——
 U6 复位或 3.3 V 未建立时，R18 10 k 从 5 V 经 D7 正向把 U0TXD 抬到 4.65–5.25 V（上限 VDD33+0.3），WCH 手册 §7.7 正是为此要求在该支路串 NMOS，
 Rev O 的 FET4 就是这个管。判定：F-001 P1（COMPONENT_DAMAGE），SIG-C07/C08 的 esp-reset 行 FAIL，run 行 PASS 或开放。
-试点同时暴露：(a) 一个疑似过严开放项 V3-WINDOW（CH340 5 V 模式 V3 无保证窗口，最坏 +0.1 V、≤10 µA）；
-(b) 台账摩擦：同一组对象声明两个框架时 SIG-C07 重复、开放项 key 全局唯一导致复制与 DUPLICATE_WORK_ITEMS；
-(c) 局部台账过不了 validate（覆盖类错误 6 条），热审成本在"全板"而不在"这个功能"。
+试点暴露三件事，本轮都改了：(a) 疑似过严开放项 V3-WINDOW（CH340 5 V 模式 V3 无保证窗口，最坏 +0.1 V、≤10 µA）→
+`commodity-floors.md` 新增“微注入上拉”底线（R ≥ 10 k、超出 ≤ 0.3 V、注入 ≤ 30 µA 判 PASS(B)），试点按此撤销开放项；
+(b) 同一组对象声明两个框架时 SIG-C07 重复、开放项 key 全局唯一导致复制 → 校验允许一个框架的行绑到对象覆盖它的另一框架功能（M25 守）；
+(c) 局部台账过不了 validate → 台账可声明 `review_scope`，覆盖类校验只对范围内的行，gate 有效但带“不是整板结论”阻断（M26 守）。
+改后试点台账 `valid: true`，12 行 PASS 9 / FAIL 3，质量筛查零提示。
 
 ## 缺陷为什么冷跑抓不到
 

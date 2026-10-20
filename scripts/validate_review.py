@@ -159,6 +159,25 @@ def primary_anchors(obj, db=None):
     return refs, nets
 
 
+def review_scope(plan, report, require):
+    """results.review_scope = {functions: [plan frame ids], reason}: a ledger that answers only those
+    frames (a training hot review of one circuit). Coverage is owed for their member rows only and the
+    gate carries a blocker, so the record reconciles but never reads as a board verdict."""
+    decl = report.get("review_scope")
+    if decl is None:
+        return None, set()
+    frames = {f["id"]: f for f in plan.get("functions") or [] if isinstance(f, dict) and text(f.get("id"))}
+    ok = (isinstance(decl, dict) and isinstance(decl.get("functions"), list) and bool(decl["functions"])
+          and text(decl.get("reason")))
+    require(ok, "review_scope needs functions (plan frame ids) and a reason")
+    rows = set()
+    if ok:
+        for fid in decl["functions"]:
+            require(fid in frames, f"review_scope: {fid} is not a plan frame")
+            rows |= {m.get("check_id") for m in frames.get(fid, {}).get("members") or [] if isinstance(m, dict)}
+    return (decl if ok else {"functions": [], "reason": ""}), rows
+
+
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
                     require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
                     execution_audit=None, require_execution_audit=False):
@@ -251,9 +270,13 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 or any('binding' in x for x in checks.values()))
     bound_count = 0
     require(bool(expected), "empty review plan")
-    require(set(checks) == set(expected),
-            f"check coverage mismatch: missing={sorted(set(expected)-set(checks))}, "
-            f"unexpected={sorted(set(checks)-set(expected))}")
+    scope_decl, scope_rows = review_scope(plan, report, require)
+    in_scope = {k: v for k, v in expected.items() if k in scope_rows} if scope_decl else expected
+    missing, unexpected = sorted(set(in_scope) - set(checks)), sorted(set(checks) - set(expected))
+    require(not missing and not unexpected, f"check coverage mismatch: missing={missing}, unexpected={unexpected}")
+    if scope_decl:
+        blockers.append("review_scope: the ledger answers only %s; it is not a board verdict"
+                        % ", ".join(scope_decl["functions"]))
     clarifications = validate_clarifications(report, checks, expected)
     errors.extend(clarifications['errors'])
     blockers.extend(clarifications['blockers'])
@@ -432,7 +455,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                             f'{fid}/{key}: finding location omits checked net(s) {sorted(nets-located_nets)}')
 
     scope = report.get("scope_checks", {})
-    require(isinstance(scope, dict) and set(scope) == SCOPE, "scope_checks must cover six audit dimensions")
+    if scope_decl is None or "scope_checks" in report:
+        require(isinstance(scope, dict) and set(scope) == SCOPE, "scope_checks must cover six audit dimensions")
     if isinstance(scope, dict):
         for dimension, key in scope.items():
             require(text(key) and key in checks, f"scope {dimension}: unknown check id")
@@ -443,6 +467,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
 
     coverage = report.get("coverage", {})
     require(isinstance(coverage, dict), "coverage must be an object")
+    if scope_decl is not None and "coverage" not in report:
+        coverage = None   # a scoped ledger owes no board-wide coverage map
     wanted = {"requirements": {str(x["object"]["requirement_id"]) for x in expected.values()
               if isinstance(x.get("object"), dict) and x["object"].get("requirement_id")}}
     if db is not None:
@@ -527,6 +553,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     for state in READINESS}
     return {"quality_screening": screen_quality(plan, report, db),
             "execution_audit": execution,
+            "scope": scope_decl,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
             "categorized_summary": categorized_summary(checks, expected, findings, stage),

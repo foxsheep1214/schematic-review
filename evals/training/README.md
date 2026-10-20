@@ -91,6 +91,9 @@ python3 -B evals/training/scripts/run_review.py --corpus fix-pairs,mature-boards
 冷跑（parse + lint + plan）每块几秒，全语料都跑。**热审**（带 intent、原厂资料、由审查 agent 按 SKILL.md 完整做出
 review-results / gate / 报告）每轮只做 3 块：1 块 fix pair 的 before 版、2 块成熟板，轮换选取，产物与真实审查同格式。
 只有热审能产生 P0/待办，所以过严率的主要来源是这 3 块；冷跑产生 FINDING/CANDIDATE，用来算召回与冷跑误报。
+fix pair 的 before 版可以只热审缺陷所在的功能电路：intent 只声明这些电路，`review-results.json` 写 `review_scope`
+（见 [计划与结果台账](../../references/plan-and-results.md#顶层字段)），校验只要求这些框架的行；这样一对的热审成本是一个功能而不是整板，
+但它不是整板结论，`fix_pair_recall_hot` 只看其中位置点名缺陷的 DEFECT finding。
 
 ## 3. 批评 agent（阶段 3，盲评）
 

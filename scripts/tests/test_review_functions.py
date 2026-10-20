@@ -304,11 +304,14 @@ class FrameTests(unittest.TestCase):
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
 
-    def test_a_member_row_bound_elsewhere_is_named(self):
+    def test_a_member_row_bound_to_a_function_that_does_not_cover_it_is_named(self):
         p, r, db = self.framed('FN-AUX')
+        for row in p['checks']:
+            if row['id'].startswith('PWR-C02'):
+                row['object'] = dict(row['object'], ref='Q9')   # FN-BIAS is about Q2, not Q9
+        r['plan_digest'] = fingerprint(p)
         errors = vr.validate_review(p, r, db)['errors']
         self.assertTrue(any('member of frame FN-AUX' in e for e in errors), errors)
-        self.assertTrue(any('no function verdict' in e for e in errors), errors)
 
     def test_frame_errors_check_aspect_and_skip_unreviewed_frames(self):
         plan = {'functions': [{'id': 'FN-X', 'members': [{'check_id': 'A', 'aspect': 'x'}, {'check_id': 'B', 'aspect': 'y'}]}]}
@@ -317,6 +320,73 @@ class FrameTests(unittest.TestCase):
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("aspect 'wrong'", errors[0])
         self.assertEqual(frame_errors(plan, {'A': {'review_result': 'NA'}}, []), [])
+
+
+class SharedObjectFrameTests(unittest.TestCase):
+    """2026-10-20 热审试点：同一组对象声明了两个功能电路（如 UART 与 LEVEL_SHIFT）时，重复的科目行可以绑到
+    另一框架的功能，不必复制开放项；对象不同的框架仍各自作答。"""
+
+    def two_frames(self, other_refs=('Q2',)):
+        p, r, db = ledger(bias_function())
+        cid = 'PWR-C02.AUX-RUN.Q2'
+        p['checks'].append(dict(planned(cid), object={'circuit': 'AUX', 'ref': 'Q2', 'state': 'RUN'}, criterion='aux window'))
+        members = lambda circuit, states: [{'check_id': 'PWR-C02.%s-%s.Q2' % (circuit, s), 'rule': 'PWR-C02', 'aspect': ASPECT, 'state': s} for s in states]
+        p['functions'] = [{'id': 'FN-BIAS', 'circuit': 'BIAS', 'question': 'bias', 'objects': {'refs': ['Q2'], 'nets': []},
+                           'members': members('BIAS', ('STARTUP', 'RUN', 'LATCH'))},
+                          {'id': 'FN-AUX', 'circuit': 'AUX', 'question': 'aux', 'objects': {'refs': list(other_refs), 'nets': []},
+                           'members': members('AUX', ('RUN',))}]
+        r['checks'].append({'id': cid, 'applicability': 'APPLICABLE', 'review_result': 'PASS', 'evidence': E,
+                            'rationale': 'see FN-BIAS', 'handoff': {'required': False}, 'function_id': 'FN-BIAS', 'aspect': ASPECT})
+        r['plan_digest'] = fingerprint(p)
+        return p, r, db
+
+    def test_a_row_of_a_frame_over_the_same_objects_may_bind_to_the_other_function(self):
+        p, r, db = self.two_frames()
+        out = vr.validate_review(p, r, db)
+        self.assertFalse([e for e in out['errors'] if 'FN-AUX' in e], out['errors'])
+
+    def test_delegation_needs_the_function_to_cover_the_row_objects(self):
+        p, r, db = self.two_frames()
+        p['checks'][-1]['object'] = {'circuit': 'AUX', 'ref': 'Q9', 'state': 'RUN'}
+        r['plan_digest'] = fingerprint(p)
+        errors = vr.validate_review(p, r, db)['errors']
+        self.assertTrue(any('PWR-C02.AUX-RUN.Q2' in e and 'FN-BIAS' in e for e in errors), errors)
+
+
+class ScopedReviewTests(unittest.TestCase):
+    """2026-10-20 热审试点：只审声明的功能电路时，台账声明 review_scope，覆盖类校验只对范围内的行，
+    gate 有效但带"不是整板结论"的阻断。"""
+
+    def scoped(self):
+        p, r, db = ledger(bias_function())
+        p['checks'].append(dict(planned('RST-E01.C9'), object={'ref': 'C9'}))   # outside the scope, no result row
+        p['functions'] = [{'id': 'FN-BIAS', 'circuit': 'BIAS', 'question': 'bias', 'objects': {'refs': ['Q2'], 'nets': []},
+                           'members': [{'check_id': 'PWR-C02.BIAS-%s.Q2' % s, 'rule': 'PWR-C02', 'aspect': ASPECT, 'state': s}
+                                       for s in ('STARTUP', 'RUN', 'LATCH')]}]
+        r['checks'] = [c for c in r['checks'] if c['id'].startswith('PWR-C02')]
+        r.pop('scope_checks', None); r.pop('coverage', None)
+        r['plan_digest'] = fingerprint(p)
+        return p, r, db
+
+    def test_a_scoped_ledger_reconciles_only_its_frames_and_is_not_a_board_verdict(self):
+        p, r, db = self.scoped()
+        r['review_scope'] = {'functions': ['FN-BIAS'], 'reason': 'training hot-review pilot of one circuit'}
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual(out['release'], 'NO_GO')
+        self.assertTrue(any('review_scope' in b for b in out['blockers']), out['blockers'])
+        self.assertEqual(out['scope']['functions'], ['FN-BIAS'])
+
+    def test_without_the_declaration_the_missing_rows_still_fail(self):
+        p, r, db = self.scoped()
+        errors = vr.validate_review(p, r, db)['errors']
+        self.assertTrue(any('check coverage mismatch' in e for e in errors), errors)
+
+    def test_scope_names_plan_frames_and_a_reason(self):
+        p, r, db = self.scoped()
+        r['review_scope'] = {'functions': ['FN-NOPE'], 'reason': ''}
+        errors = vr.validate_review(p, r, db)['errors']
+        self.assertTrue(any('review_scope' in e for e in errors), errors)
 
 
 if __name__ == '__main__':
