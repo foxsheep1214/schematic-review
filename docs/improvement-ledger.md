@@ -7,6 +7,47 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## First training round actually run: the loop was a specification (2026-10-20)
+
+User asked for one round of the self-evolution loop in `evals/training/README.md`
+to see whether it works and what it yields. It did not run as written: the
+corpus had zero fix pairs and zero mature boards, none of the five scripts of
+README §7 existed, no round had ever been recorded, and the README itself still
+named one reviewed design and its review record. Done in this round, recorded
+under `evals/training/runs/2026-10-20-29b9856/`: the three baseline benches
+(typical 0 failing rows, replay 195/195, seeded gate passed, seeded recall
+0.882), three draft fix pairs from one Olimex board's revision log (drafts in
+the run folder, since corpus files are human-signed), the 42 typical boards as
+mature-board proxies, `run_review.py` (cold mode and the hot input pack),
+`metrics.py` and `compare.py`, a cold run over all of it, `metrics.json`, an
+adjudication queue of ten items, and `summary.md`. No rule changed: README §0
+forbids improvements without a human adjudication, and none exists yet.
+
+Two measurement problems the round exposed. First, `fix_pair_recall_cold` as
+defined (a FINDING/CANDIDATE that names any ref or net of the defect location)
+reads 0.667 while no finding is about any of the three defects: the hits are a
+generic EN pull-up candidate on the same net and an unrelated power-pin
+finding on the same IC; `fix_pair_recall_plan` reads 1.0 for the same reason
+(every IC has DEV rows). Location-based recall over-counts and the per-pair
+list in `metrics.json` must be read by eye until a defect-question match is
+defined. Second, the run folder's `.gitignore` dropped `metrics.json`, which
+`compare.py` needs from the previous round; it now keeps metrics, drafts and
+the adjudication queue.
+
+Why cold runs miss all three defects: a missing TVS, a missing PG-to-EN
+resistor and a missing pull-down are missing-part defects, and SR's per-object
+rows are anchored on parts that exist; the subjects that would ask the
+question (protection chain, enable source, level domain) live in circuit-type
+frames, which the plan builds only from a declared intent. The round had no
+intent for the Olimex board, so `plan.functions` was empty. Fix-pair recall
+therefore measures the hot review, not the lint, and the hot review is the
+part of the loop that needs a reviewer agent, a critic of another model family
+and a human, none of which this round had.
+
+- Event: user:2026-10-20 (run one training round and report), test:evals/training/runs/2026-10-20-29b9856/metrics.json
+- Causes: rule_not_enforced 1, judgment 1
+- Changed: evals/training/scripts/run_review.py, evals/training/scripts/metrics.py, evals/training/scripts/compare.py, scripts/tests/test_training_metrics.py, evals/training/README.md, evals/training/runs/.gitignore, evals/training/runs/2026-10-20-29b9856/summary.md, evals/training/runs/2026-10-20-29b9856/adjudication-queue.json, docs/improvement-ledger.md
+
 ## Functional packages become circuit types with review subjects (2026-10-20)
 
 "功能包" read as a bundle of rules and "成员规则" as a membership, which

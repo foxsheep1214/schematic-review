@@ -4,3 +4,7 @@ seeded/
 replay/
 *.json
 !summary.md
+!*/metrics.json
+!*/corpus-draft/*.json
+!*/adjudication-queue.json
+*.log

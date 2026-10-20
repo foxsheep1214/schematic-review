@@ -1,0 +1,91 @@
+{
+ "note": "第 1 轮 agent 起草，未经人签；expected_rules/hazard 空；只能由人合入 corpus/fix-pairs.json",
+ "pairs": [
+  {
+   "id": "olimex-esp32-poe-iso-revM-revM1",
+   "repo": "https://github.com/OLIMEX/ESP32-POE-ISO",
+   "license": "CERN OSH Licence v1.2 (README)",
+   "before": {
+    "commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01",
+    "schematic": "HARDWARE/ESP32-PoE-ISO-Rev.M/ESP32-PoE-ISO_Rev_M.kicad_sch"
+   },
+   "after": {
+    "commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01",
+    "schematic": "HARDWARE/ESP32-PoE-ISO-Rev.M1/ESP32-PoE-ISO_Rev_M1.kicad_sch"
+   },
+   "author_statement": "Rev M1: \"Added D11-SMBJ5.0A as patch, this will increase reliability.\"; Rev N: \"Added D11 to protect C26 (it was a hardware patch applied in M1, now fixed by design)\"（https://github.com/OLIMEX/ESP32-POE-ISO/blob/c19307ecd8a9d8c5703de7a1571cd89945e39c01/HARDWARE/Hardware-changes-log.txt，2026-10-20 读取；所有 Rev 同在 master 一棵树里，故前后 commit 相同）",
+   "defect_class": "protection",
+   "defect_location": {
+    "refs": [
+     "D11",
+     "C26"
+    ],
+    "nets": [
+     "/5V_DCDC"
+    ]
+   },
+   "expected_rules": null,
+   "hazard": null,
+   "split": "train",
+   "draft_note": "差异：仅 D11 新增（/5V_DCDC–Earth）与 FET1–3 换型；FET 换型与缺陷无关未写入。作者只说“提高可靠性/保护 C26”，是否算缺陷而非改进，需人判。"
+  },
+  {
+   "id": "olimex-esp32-poe-iso-revM1-revN",
+   "repo": "https://github.com/OLIMEX/ESP32-POE-ISO",
+   "license": "CERN OSH Licence v1.2 (README)",
+   "before": {
+    "commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01",
+    "schematic": "HARDWARE/ESP32-PoE-ISO-Rev.M1/ESP32-PoE-ISO_Rev_M1.kicad_sch"
+   },
+   "after": {
+    "commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01",
+    "schematic": "HARDWARE/ESP32-PoE-ISO-Rev.N/ESP32-PoE-ISO_Rev_N.kicad_sch"
+   },
+   "author_statement": "Rev N: \"Added R44(220R) between PG of the 3.3V regulator and ESP_EN so it works better at power up and reset, this was suggested by a customer\"（https://github.com/OLIMEX/ESP32-POE-ISO/blob/c19307ecd8a9d8c5703de7a1571cd89945e39c01/HARDWARE/Hardware-changes-log.txt，2026-10-20 读取；所有 Rev 同在 master 一棵树里，故前后 commit 相同）",
+   "defect_class": "power-sequence",
+   "defect_location": {
+    "refs": [
+     "R44",
+     "U7"
+    ],
+    "nets": [
+     "/ESP_EN",
+     "/PG"
+    ]
+   },
+   "expected_rules": null,
+   "hazard": null,
+   "split": "train",
+   "draft_note": "差异：仅 R44 新增，/PG 新网。作者措辞是“works better”，收录条件（缺陷而非改进）存疑，需人判。"
+  },
+  {
+   "id": "olimex-esp32-poe-iso-revN-revN1",
+   "repo": "https://github.com/OLIMEX/ESP32-POE-ISO",
+   "license": "CERN OSH Licence v1.2 (README)",
+   "before": {
+    "commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01",
+    "schematic": "HARDWARE/ESP32-PoE-ISO-Rev.N/ESP32-PoE-ISO_Rev_N.kicad_sch"
+   },
+   "after": {
+    "commit": "c19307ecd8a9d8c5703de7a1571cd89945e39c01",
+    "schematic": "HARDWARE/ESP32-PoE-ISO-Rev.N1/ESP32-PoE-ISO_Rev_N1.kicad_sch"
+   },
+   "author_statement": "Rev N1: \"CH340X patch to prevent accidental overvoltage at reset. … Added resistor 10k/1206 over the RXD pin of CH340 to GND. The patch is near D7.\"（https://github.com/OLIMEX/ESP32-POE-ISO/blob/c19307ecd8a9d8c5703de7a1571cd89945e39c01/HARDWARE/Hardware-changes-log.txt，2026-10-20 读取；所有 Rev 同在 master 一棵树里，故前后 commit 相同）",
+   "defect_class": "protection",
+   "defect_location": {
+    "refs": [
+     "R45",
+     "U1",
+     "D7"
+    ],
+    "nets": [
+     "Net-(D7-A)"
+    ]
+   },
+   "expected_rules": null,
+   "hazard": null,
+   "split": "train",
+   "draft_note": "差异：仅 R45 新增（Net-(D7-A)–GND）。Rev O 又改为去 D7 加 FET4、R18 改 1k、R45 NA，是同一缺陷的设计内修法，但 O 同时换 FET 与 L4，未另立一对。"
+  }
+ ]
+}

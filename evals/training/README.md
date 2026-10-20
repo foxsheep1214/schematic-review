@@ -100,7 +100,7 @@ review-results / gate / 报告）每轮只做 3 块：1 块 fix pair 的 before 
 - 逐条按 [critic/rubric.md](critic/rubric.md) 打分，输出 `runs/<round>/critic/<board>.json`，每条：
 
 ```json
-{"check_id": "PRO-C01.AC-R3-POPULATED.F101", "stated_level": "P0",
+{"check_id": "PRO-C01.AC-INPUT.F1", "stated_level": "P0",
  "hazard_path_named": false, "protection_present": "F101 为 IEC 60127 H 型 1500 A 分断熔断器（BOM/库名）",
  "data_actually_available": "Littelfuse 3831 系列规格书第 2 页给出分断能力",
  "verdict": "OVER_STRICT|TRUE_RISK|UNDERGRADED|CANNOT_TELL",
@@ -133,14 +133,14 @@ review-results / gate / 报告）每轮只做 3 块：1 块 fix pair 的 before 
 `compare.py` 对比上一轮：任何 ↑ 指标下降、任何门指标非 0，改进 agent 的改动不得进入 summary 的"通过"栏。
 召回先于过严：同一轮里 `fix_pair_recall_*` 或 `seeded_recall` 下降，不论过严率改善多少都算失败。
 
-### 4.1 两轮 R3（2026-10-18/19）暴露的度量盲区
+### 4.1 2026-10-18/19 两轮真实板审查暴露的度量盲区
 
 - **提示可以被“写法”绕过**：加了 `ACQUISITION_WITHOUT_LOOKUP` 后，下一轮每条请求都带上“已读 X 第 N 页”，提示归零但缺口没变。
   所以提示数不是指标；`lookup_honesty` 抽查声明是否属实，才是。任何新加的筛查，上线后第一轮都要看它是被解决了还是被绕过了。
-- **阶段错放比过严更常见**：35 件待办里约 8 件（约 75 条检查）是固件配置/烧录，约 7 件是“资料已读只差计算”；
+- **阶段错放比过严更常见**：一次真实板审查的 35 件待办里约 8 件（约 75 条检查）是固件配置/烧录，约 7 件是“资料已读只差计算”；
   它们把原理图冻结卡住，但既不是过严判级也不是真缺口。`misfile_rate` 单列，裁决模板的 `decision` 增加 `MISFILED_STAGE` 和 `MISFILED_CAUSE`。
-- **同一块板反复审查看不出 SR 进步**：R3 三轮待办 22 → 22 → 35，数字无法比较，因为计划、器件声明和审查员都在变。
-  进步只能在固定语料（fix pairs、成熟板）上量；R3 这类真实板只用来算 `closure_rate`，并且必须有 ASG 处理过的中间版本。
+- **同一块板反复审查看不出 SR 进步**：同一真实板三轮待办 22 → 22 → 35，数字无法比较，因为计划、器件声明和审查员都在变。
+  进步只能在固定语料（fix pairs、成熟板）上量；真实板只用来算 `closure_rate`，并且必须有 ASG 处理过的中间版本。
 
 ## 5. 人工裁决（阶段 5，每轮 ≤ 10 条）
 
@@ -193,9 +193,8 @@ fix-pairs 的 `expected_rules`/`hazard`、或 `references/*.md` 的边界例子�
 
 ## 9. 前三轮的具体安排
 
-- **第 1 轮**：建 10 对 fix pairs（Olimex 优先）+ 给现有 42 块 typical 板补 `production_evidence`；热审 R3 before 版无需做，
-  改用 `flyback-viper22a`（已知 3 处真缺陷）、`moteus-c1`、`bms-c1`。批评 agent 先在 R3 最新报告
-  （`SR-20261018-R3-最新SR重审-a547907d`）上试跑，看它能否独立指出 W-AC/W-ESD/W-SHORT 的过严与 W-ISO 的合理——能，才启用。
+- **第 1 轮**：建 10 对 fix pairs（Olimex 优先）+ 给现有 42 块 typical 板补 `production_evidence`；热审真实板 before 版无需做，
+  改用 `flyback-viper22a`（已知 3 处真缺陷）、`moteus-c1`、`bms-c1`。批评 agent 先在一份已有人工裁决的真实板报告上试跑，看它能否独立指出其中已判过严与已判合理的条目——能，才启用。
 - **第 2 轮**：fix pairs 到 20 对；首次算 `p0_precision`；改进 agent 只允许改 `known_false_alarms` 对应的规则。
 - **第 3 轮**：开放方法文档改动；首次留出集评估。
 
@@ -213,7 +212,7 @@ fix-pairs 的 `expected_rules`/`hazard`、或 `references/*.md` 的边界例子�
 
 ## 11. 与 ASG 的闭环（真实板）
 
-真实板（如 100W PD R3）走 SR → ASG → SR：
+真实板走 SR → ASG → SR：
 1. SR 出报告；ASG 按其 `review-comments.md` 逐条登记处理方式（REDESIGN / DESIGN / OBTAIN_DATA / HANDOFF / DECLINE）。
 2. ASG 交付新版（含设计报告、design-closure.json、配置表、BOM 约束），SR 以新版为输入重审，`history_inputs` 声明上一版报告。
 3. 算 `closure_rate`，并逐件看“没关闭”的原因：ASG 没做（设计侧欠账）、ASG 做了 SR 不认（SR 的关闭条件不可达，回到裁决）、
