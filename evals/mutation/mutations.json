@@ -14,7 +14,7 @@
  {"id": "M7", "name": "pin map mismatch never reported", "file": "scripts/lint.py",
   "old": "            if actual is None or not (pin_name_tokens(actual) & set(allowed)):", "new": "            if False:"},
  {"id": "M8", "name": "report says 0 P0 always", "file": "scripts/render_report.py",
-  "old": "p0 = sum(task_level(t, checks, task_owners, classes) == 'P0' for t in gap_tasks)", "new": "p0 = 0"},
+  "old": "p0 = sum(level_of(t) == 'P0' for t in gap_tasks)", "new": "p0 = 0"},
  {"id": "M9", "name": "NET-A03 passive-only auto net never reported", "file": "scripts/lint.py",
   "old": "if not any(r[0] in 'UJMY' for r in rs):", "new": "if False:"},
  {"id": "M10", "name": "PWR-A04 same-base rails never reported", "file": "scripts/lint.py",

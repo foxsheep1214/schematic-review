@@ -36,11 +36,12 @@ class RenderReportTests(unittest.TestCase):
         self.assertTrue(gate['valid'], gate['errors'])
         lines = [l for l in text.splitlines() if l.strip()]
         self.assertEqual(lines[1], '## 结论')
-        self.assertEqual(lines[2], '- **发现的错误**：0 处。')
-        self.assertIn('仍待确认**：1 件事项', lines[3])
+        # The first line answers the question; the open work item is named right after it.
+        self.assertEqual(lines[2], '**还不能定稿。** 没有发现电路错误或文档错误；还有 1 件事要先确认。')
         self.assertNotIn('**检查结果**', body(text))
-        self.assertTrue(lines[4].startswith('- **能否定稿**：还不能定稿。还差：'))
-        self.assertIn('1 件待办阻塞定稿（同一原因合并，涉及 1 条缺资料或设计依据的阻塞检查；不阻塞的待办不计在内）', lines[5])
+        self.assertEqual(lines[3], '**先处理**（按可能后果从重到轻）：')
+        self.assertTrue(lines[4].startswith('1. W-1　'), lines[4])
+        self.assertNotIn('**定稿还差**', body(text))   # the open work item is the only blocker, already stated
         section = text.split('## 待办')[1]
         self.assertIn('W-1', section)
         self.assertIn('类型：缺资料　可能后果：必需功能可能不达标（P1）　涉及 1 条检查', section)
@@ -66,7 +67,9 @@ class RenderReportTests(unittest.TestCase):
         text = render({}, {'checks': rows}, gate)
         self.assertNotIn('现在先做', text)
         self.assertNotIn('定稿前还要做', text)
-        self.assertIn('- **待办**：3 件', text)
+        self.assertNotIn('全部 3 件待办', text)   # all three are already in the first-things list
+        top = text.split('**先处理**')[1].split('## 待办')[0]
+        self.assertLess(top.index('W-1'), top.index('W-2'))
         section = text.split('## 待办')[1]
         self.assertLess(section.index('W-1'), section.index('W-2'))
         self.assertLess(section.index('W-2'), section.index('W-0'))
@@ -128,7 +131,7 @@ class RenderReportTests(unittest.TestCase):
         p, r, db = downstream()
         text, gate = report(p, r, db)
         self.assertEqual(gate['release'], 'GO')
-        self.assertIn('- **能否定稿**：可以定稿', text)
+        self.assertIn('**可以定稿。**', text)
         section = text.split('## 交给后续环节的要求')[1]
         self.assertIn('| Synthetic test engineer | RST-E01.C1 | 整板 |', section)
         self.assertIn('不影响原理图定稿', section)
@@ -202,7 +205,7 @@ class RenderReportTests(unittest.TestCase):
         self.assertIn('F1', section)
         self.assertIn('（P1：必需功能可能不达标）', section)
         self.assertIn('**怎么改**', section)
-        self.assertIn('- **发现的错误**：电路错误 1 处，文档错误 0 处（P1 1 处）', text)
+        self.assertIn('**还不能定稿。** 发现电路错误 1 处（P1），见“发现的错误”一节。', text)
         self.assertIn('类型：电路错误', section)
 
     def test_failed_checks_are_named_with_their_problem(self):
@@ -240,7 +243,7 @@ class ReportWordingTests(unittest.TestCase):
         r['findings'][0]['check_ids'] = [r['checks'][0]['id']]
         with mock.patch('render_report.is_document', return_value=True):
             text, _ = report(p, r, db)
-        self.assertIn('电路错误 0 处，文档错误 1 处', text)
+        self.assertIn('没有发现电路错误，有 1 处文档错误（P1）', text)
         self.assertIn('类型：文档错误', text)
 
     def test_scope_blocker_names_the_check_and_finding(self):
@@ -256,10 +259,10 @@ class ReportWordingTests(unittest.TestCase):
         p['review_mode'] = 'revision'
         r['history_inputs'] = ['reviews/R1']
         text, gate = report(p, r, db)
-        self.assertIn('- **上一版审查材料**：本轮可见 `R1`；只用于“上一版问题”的复验', body(text))
+        self.assertIn('- 上一版审查材料：本轮可见 `R1`，只用于“上一版问题”的复验', body(text))
         self.assertNotIn('上一版问题未逐条复验', text)
         r['history_inputs'] = []
-        self.assertIn('- **上一版审查材料**：本轮没有使用。', body(report(p, r, db)[0]))
+        self.assertIn('- 上一版审查材料：本轮没有使用。', body(report(p, r, db)[0]))
         # 100W PD R3 复审：上一版 2 条问题只在旁路文件里对照，报告却显示 0 条处理记录。
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / 'record').mkdir()
@@ -267,7 +270,7 @@ class ReportWordingTests(unittest.TestCase):
                 json.dumps({'findings': [{'id': 'F-OLD-1'}, {'id': 'F-OLD-2'}]}), encoding='utf-8')
             r['history_inputs'] = [tmp]
             text, gate = report(p, r, db)
-        self.assertIn('- **上一版问题未逐条复验**：上一版记录的 2 条问题（F-OLD-1、F-OLD-2）没有历史复验行', body(text))
+        self.assertIn('- 上一版问题未逐条复验：上一版记录的 2 条问题（F-OLD-1、F-OLD-2）没有历史复验行', body(text))
         self.assertIn('| 上一版问题的处理记录（不计入上面各行） | 0（已声明上一版材料，但没有逐条复验行） |', text)
         self.assertNotIn(tmp, text)
 
@@ -387,7 +390,7 @@ class ReportWordingTests(unittest.TestCase):
         text = render(p, r, {'valid': True, 'workflow': {'work_items': [task]}},
                       {'sr_feedback': [{'kind': 'software_bug', 'rules': ['DOC-Q01'],
                                         'instance': 'path error', 'suggestion': 'verify archive'}]}, detail='full')
-        self.assertIn('仍待确认**：1 件事项，其中 1 件', text)
+        self.assertIn('还有 1 件事要先确认，其中 1 件可能涉及安全或损坏（P0）', text)
         self.assertIn('<summary>展开逐项依据与通过标准（完整保留）</summary>', text)
         self.assertIn('本次结论依据', text)
         self.assertEqual(text.count('<details>'), text.count('</details>'))

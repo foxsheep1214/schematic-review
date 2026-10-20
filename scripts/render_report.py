@@ -22,6 +22,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from task_scope import ownership, task_view
 
+TOP_TASKS = 3
 RELEASE = {'GO': '可以定稿', 'CONDITIONAL_GO': '可以有条件定稿', 'NO_GO': '还不能定稿'}
 CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计没定'),
                       ('REQUIREMENT_OPEN', '需求没定'), ('REVIEW_INCOMPLETE', '审查没做完'),
@@ -75,7 +76,7 @@ def is_document(check_ids):
     return bool(check_ids) and all(rule_of(k) in DOCUMENT_RULES for k in check_ids)
 
 
-def blocker_reasons(blockers, results, tasks=None):
+def blocker_reasons(blockers, results, tasks=None, skip=()):
     """Every blocker in plain words; scope audits name the check and the finding behind them.
     Evidence gaps are counted by the work items (root causes) behind them when those are known."""
     kinds, scopes, unknown, gap_keys = Counter(), [], [], set()
@@ -107,7 +108,7 @@ def blocker_reasons(blockers, results, tasks=None):
     if owning and gap_keys <= {k for t in owning for k in t.get('check_ids') or []}:
         kinds['gap_tasks'], kinds['gap'] = len(owning), 0
     out = [(text % ((kinds[key], len(gap_keys)) if key == 'gap_tasks' else kinds[key])) if '%d' in text else text
-           for key, text in BLOCKERS if kinds[key]]
+           for key, text in BLOCKERS if kinds[key] and key not in skip]
     out += scopes
     if unknown:
         out.append('另有 %d 项定稿条件没满足，原文见 record/review-gate.json 的 blockers：%s'
@@ -416,63 +417,82 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         out += ['> **审查记录本身有错，这份报告的结论不可用。** 先改正记录再重新出报告：' +
                 '；'.join(cell(e) for e in (gate.get('errors') or [])[:5]), '']
     out += ['## 结论', '']
-    if defects:
-        out.append('- **发现的错误**：电路错误 %d 处，文档错误 %d 处（%s），见“发现的错误”一节。' % (
-            defects - len(doc_defects), len(doc_defects),
-            '、'.join('%s %d 处' % (s, by_sev[s]) for s in SEVERITIES if by_sev.get(s))))
-    else:
-        out.append('- **发现的错误**：0 处。')
     gap_ids = {k for k, c in current_rows.items() if c.get('review_result') == 'INSUFFICIENT'}
     gap_tasks = [t for t in tasks if gap_ids.intersection(t.get('check_ids') or [])]
-    if gap_ids:
-        owned = {k for t in gap_tasks for k in t.get('check_ids') or []}
-        p0 = sum(task_level(t, checks, task_owners, classes) == 'P0' for t in gap_tasks)
-        ambiguous = [t for t in gap_tasks if task_view(t, checks, task_owners, classes)['ambiguous_checks']]
-        out.append('- **仍待确认**：%d 件事项，其中 %d 件可能涉及安全或损坏（P0）；资料不足不等于已发现缺陷。'
-                   % (len(gap_tasks), p0))
-        if ambiguous:
-            out.append('- **任务归属待整理**：%d 件尚不能独立定级；关联检查的高风险没有消除，暂不计入已明确的根因数。'
-                       % len(ambiguous))
-        if gap_ids - owned:
-            out.append('- **待办整理未完成**：另有 %d 条无法判断的检查尚未关联待办。' % len(gap_ids - owned))
-    reasons = blocker_reasons(gate.get('blockers') or [], results, tasks) if release != 'GO' else []
-    if reasons:
-        out.append('- **能否定稿**：%s。还差：' % RELEASE.get(release, release))
-        out += ['  %d. %s；' % (i, r) for i, r in enumerate(reasons, 1)]
-        out[-1] = out[-1][:-1] + '。'
+    level_of = lambda t: task_level(t, checks, task_owners, classes)
+    p0 = sum(level_of(t) == 'P0' for t in gap_tasks)
+    # One sentence answers "can it be frozen, and why not": errors found, then what is still open.
+    circuit = defects - len(doc_defects)
+    levels = [s for s in SEVERITIES if by_sev.get(s)]
+    grades = levels[0] if len(levels) == 1 else '、'.join('%s %d 处' % (s, by_sev[s]) for s in levels)
+    if circuit:
+        found = '发现电路错误 %d 处%s（%s）' % (circuit, '、文档错误 %d 处' % len(doc_defects) if doc_defects else '', grades)
+    elif doc_defects:
+        found = '没有发现电路错误，有 %d 处文档错误（%s）' % (len(doc_defects), grades)
     else:
-        out.append('- **能否定稿**：%s。' % RELEASE.get(release, release))
+        found = '没有发现电路错误或文档错误'
+    open_part = ''
+    if gap_tasks:
+        open_part = '；还有 %d 件事要先确认%s' % (len(gap_tasks), '，其中 %d 件可能涉及安全或损坏（P0）' % p0 if p0 else '')
+    if defects:
+        found += '，见“发现的错误”一节'
+    out += ['**%s。** %s%s。' % (RELEASE.get(release, release), found, open_part), '']
+    if notes.get('summary'):
+        out += [notes['summary'], '']
     if tasks:
+        ordered = sorted(tasks, key=lambda t: (SEVERITIES.index(level_of(t)) if level_of(t) else len(SEVERITIES),
+                                               -len(t.get('check_ids') or [])))
+        out.append('**先处理**（按可能后果从重到轻）：')
+        for i, t in enumerate(ordered[:TOP_TASKS], 1):
+            level = level_of(t)
+            out.append('%d. %s　%s（%s涉及 %d 条检查）' % (i, t['id'], t.get('title') or t.get('root_cause') or '',
+                                                     level + '，' if level else '', len(t.get('check_ids') or [])))
         fixes = sum(bool(covered_by_findings(t, checks, findings)) for t in tasks)
-        task_counts = ('（其中修正已列错误 %d 件、待确认 %d 件）' % (fixes, len(gap_tasks))) if fixes else ''
-        out.append('- **待办**：%d 件%s，按可能后果从重到轻列在“待办”一节。' % (len(tasks), task_counts))
-    screen = (gate.get('quality_screening') or {}).get('candidates') or []
-    if screen:
-        by_code = Counter(c.get('code') for c in screen if isinstance(c, dict))
-        flagged = {cid for c in screen if isinstance(c, dict) for cid in c.get('check_ids') or []}
-        out.append('- **审查记录自检**：%d 条提示涉及 %d 条检查（%s）。提示只要求复核写法和依据，不改变上面的结论；明细在校验记录。'
-                   % (len(screen), len(flagged), '、'.join('%s %d' % (code, n) for code, n in by_code.most_common(3))))
+        out.append('')
+        if len(tasks) > TOP_TASKS:
+            out += ['全部 %d 件待办%s列在“待办”一节。' % (
+                len(tasks), '（其中修正已列错误 %d 件）' % fixes if fixes else ''), '']
+    # Errors and open work items are in the sentence above; list only the other conditions.
+    reasons = (blocker_reasons(gate.get('blockers') or [], results, tasks, skip=('fail', 'gap', 'gap_tasks'))
+               if release != 'GO' else [])
+    if gap_ids:
+        ambiguous = [t for t in gap_tasks if task_view(t, checks, task_owners, classes)['ambiguous_checks']]
+        owned = {k for t in gap_tasks for k in t.get('check_ids') or []}
+        if ambiguous:
+            reasons.append('%d 件待办尚不能独立定级：关联检查的高风险没有消除，暂不计入已明确的根因数' % len(ambiguous))
+        if gap_ids - owned:
+            reasons.append('另有 %d 条资料不足的检查还没归入待办' % len(gap_ids - owned))
+    if reasons:
+        out.append('**定稿还差**：')
+        out += ['%d. %s。' % (i, r) for i, r in enumerate(reasons, 1)]
+        out.append('')
+    remarks = []
+    if gap_tasks:
+        remarks.append('待确认的事是资料或设计依据还不够，不等于已发现缺陷。')
     if phase == 'design_iteration':
-        out.append('- 这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。')
+        remarks.append('这次是设计过程中的检查，不是定稿审查；“能否定稿”只说明离定稿还差什么。')
+    screen = (gate.get('quality_screening') or {}).get('candidates') or []
     if 'history_inputs' in results:
         history_inputs = [x for x in results.get('history_inputs') or [] if isinstance(x, str)]
         # The reader needs which earlier review, not where it sat on the reviewer's machine.
         seen = '、'.join('`%s`' % cell(Path(x).name or x) for x in history_inputs[:4])
         if not history_inputs:
-            out.append('- **上一版审查材料**：本轮没有使用。')
+            remarks.append('上一版审查材料：本轮没有使用。')
         elif revision:
-            out.append('- **上一版审查材料**：本轮可见 %s；只用于“上一版问题”的复验，本轮结论按当前资料独立得出。' % seen)
+            remarks.append('上一版审查材料：本轮可见 %s，只用于“上一版问题”的复验，本轮结论按当前资料独立得出。' % seen)
         else:
-            out.append('- **上一版审查材料**：本轮可见 %s，但这是首审，结论没有引用它，也不逐条复验上一版问题；'
-                       '要复验上一版问题，用改版复审。' % seen)
+            remarks.append('上一版审查材料：本轮可见 %s，但这是首审，结论没有引用它，也不逐条复验上一版问题；'
+                           '要复验上一版问题，用改版复审。' % seen)
         unreconciled = [c for c in screen if isinstance(c, dict) and c.get('code') == 'HISTORY_FINDINGS_UNRECONCILED']
         if unreconciled and revision:
-            out.append('- **上一版问题未逐条复验**：上一版记录的 %d 条问题（%s）没有历史复验行；每条写明已修、保留或撤回。'
-                       % (sum(len(c.get('finding_ids') or []) for c in unreconciled),
-                          '、'.join(fid for c in unreconciled for fid in (c.get('finding_ids') or [])[:6])))
-    out.append('')
-    if notes.get('summary'):
-        out += [notes['summary'], '']
+            remarks.append('上一版问题未逐条复验：上一版记录的 %d 条问题（%s）没有历史复验行；每条写明已修、保留或撤回。'
+                           % (sum(len(c.get('finding_ids') or []) for c in unreconciled),
+                              '、'.join(fid for c in unreconciled for fid in (c.get('finding_ids') or [])[:6])))
+    if screen:
+        remarks.append('审查记录自检有 %d 条写法提示，只要求复核写法和依据，不改变上面的结论；分类见“数字一览”，明细在校验记录。'
+                       % len(screen))
+    if remarks:
+        out += ['**说明**：'] + ['- ' + r for r in remarks] + ['']
 
     if findings:
         out += ['## 发现的错误', '', SEVERITY_LEGEND, '']
@@ -588,7 +608,9 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                                                   ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
                  if classes else []) + [
             '| 交给后续环节的要求 | %d |' % len(handoffs),
-            '| 审查记录自检提示（不计入结论） | %d |' % len(screen),
+            '| 审查记录自检提示（不计入结论） | %s |' % (('%d（%s）' % (len(screen), '、'.join(
+                '%s %d' % kv for kv in Counter(c.get('code') for c in screen if isinstance(c, dict)).most_common(3))))
+                if screen else '0'),
             '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '',
             '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']
     explanations = render_check_explanations(plan, results) if detail == 'full' else []

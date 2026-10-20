@@ -34,7 +34,7 @@ class TaskScopeTests(unittest.TestCase):
         rows={x['id']:x for x in r['checks']}; owners=ownership(r['work_items'])
         self.assertEqual([task_view(t,rows,owners)['level'] for t in r['work_items']],['P0','P1'])
         text=render(p,r,g)
-        self.assertIn('2 件事项，其中 1 件',text)
+        self.assertIn('还有 2 件事要先确认，其中 1 件',text)
         section=text.split('### W-LOOP')[1].split('## ',1)[0]
         self.assertIn('（P1）',section); self.assertIn('Acquire loop model',section)
         self.assertNotIn('Acquire short waveform',section); self.assertNotIn('Close short waveform',section)

@@ -519,19 +519,22 @@ class TaskTextTemplateTests(unittest.TestCase):
         self.assertNotIn('TEMPLATED_DESIGN_OPTION_REASON', self.codes(p, r))
 
     def test_report_conclusion_names_the_screen_without_changing_counts(self):
+        from test_render_and_pack import body
         from test_check_explanations import synthetic
         from render_report import render
         p, r = synthetic(['FAIL', 'INSUFFICIENT'])
         plain = render(p, r, {'valid': True})
-        self.assertNotIn('- **审查记录自检**', plain)
+        self.assertNotIn('审查记录自检有', plain)
         self.assertIn('| 审查记录自检提示（不计入结论） | 0 |', plain)
         gate = {'valid': True, 'quality_screening': {'candidates': [
             {'code': 'REUSED_RATIONALE_ACROSS_SCOPES', 'check_ids': ['a', 'b']},
             {'code': 'BOILERPLATE_ACQUISITION', 'check_ids': ['b']}]}}
         text = render(p, r, gate)
-        self.assertIn('- **审查记录自检**：2 条提示涉及 2 条检查（REUSED_RATIONALE_ACROSS_SCOPES 1、BOILERPLATE_ACQUISITION 1）', text)
-        self.assertIn('| 审查记录自检提示（不计入结论） | 2 |', text)
-        strip = lambda t: [l for l in t.splitlines() if '审查记录自检' not in l]
+        # The conclusion only says there are prompts; the code names are for the record keeper, in the count table.
+        self.assertIn('- 审查记录自检有 2 条写法提示', text)
+        self.assertNotIn('REUSED_RATIONALE_ACROSS_SCOPES', body(text))
+        self.assertIn('| 审查记录自检提示（不计入结论） | 2（REUSED_RATIONALE_ACROSS_SCOPES 1、BOILERPLATE_ACQUISITION 1） |', text)
+        strip = lambda t: [l for l in t.splitlines() if l and '审查记录自检' not in l and l != '**说明**：']
         self.assertEqual(strip(plain), strip(text))
 
 
