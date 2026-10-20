@@ -12,7 +12,7 @@ import unittest
 
 from test_review_stage_scope import decisive, downstream
 from test_validate_review import fixture, fail
-from ledger_v3 import validate_review
+from ledger_v3 import as_sent, validate_review
 from render_report import render
 
 GOLDEN = Path(__file__).resolve().parent / 'fixtures' / 'golden_reports'
@@ -36,7 +36,7 @@ def rendered(name):
     p, r, db = FIXTURES[name]()
     gate = json.loads(json.dumps(validate_review(p, r, db), default=sorted))
     assert gate['valid'], gate['errors']
-    return render(p, r, gate)
+    return render(p, as_sent(p, r), gate)   # the record the validator saw: schema 4 with its functions
 
 
 class GoldenReportTests(unittest.TestCase):

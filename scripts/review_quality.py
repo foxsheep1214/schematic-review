@@ -246,7 +246,8 @@ def screen_quality(plan, report, db=None):
         if not check or check.get('method') not in ('T', 'C', 'D', 'E', 'V'):
             continue  # automatic/coverage/history boilerplate is intentionally excluded
         rationale = row.get('rationale')
-        if isinstance(rationale, str) and rationale.strip():
+        # Rows bound to one function verdict cite it with one sentence; that is the proof, not a copy.
+        if isinstance(rationale, str) and rationale.strip() and not row.get('function_id'):
             normalized = re.sub(r'\s+', ' ', rationale).strip()
             scope = json.dumps([check.get('rule'), check.get('object'), check.get('criterion')],
                                sort_keys=True, ensure_ascii=False)

@@ -205,6 +205,32 @@ class DerivedLevelsTests(unittest.TestCase):
         self.assertNotIn('Richtek', section)
 
 
+class ReportTests(unittest.TestCase):
+    """The report answers per function (design §9): a verdict table after the conclusion and a first count row."""
+
+    def test_function_table_and_counts(self):
+        p, r, db = ledger(bias_function())
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(out['valid'], out['errors'])
+        text = render(p, r, out)
+        self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 0 / 0 / 1 |\n| 检查总数 |', text)
+        table = text.split('## 各功能的判断')[1].split('## 待办')[0]
+        self.assertIn('| FN-BIAS-VCC | %s | 未定 | VCC_min = 10.24 V；余量 0.74 V 对 VCC(off) max 9.5 V | W-AUX-5V-MIN |'
+                      % bias_function()['question'], table)
+        self.assertLess(text.index('## 结论'), text.index('## 各功能的判断'))
+        codes = [c.get('code') for c in (out.get('quality_screening') or {}).get('candidates') or []]
+        self.assertNotIn('REUSED_RATIONALE_ACROSS_SCOPES', codes)   # three rows citing one verdict is the proof
+        r['functions'][0].update(verdict='PASS', open=[])
+        for row in r['checks']:
+            if row['id'].startswith('PWR-C02'):
+                row.update(review_result='PASS'); row.pop('open_ref', None)
+        text = render(p, r, vr.validate_review(p, r, db))
+        self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 1 / 0 / 0 |', text)
+        self.assertIn('| 通过 | VCC_min = 10.24 V；余量 0.74 V 对 VCC(off) max 9.5 V | — |', text)
+        fn = r['functions'][0]; fn.pop('calculation'); fn['no_calculation_reason'] = '连接性检查，无数值'
+        self.assertIn('| 通过 | 连接性检查，无数值 | — |', render(p, r, vr.validate_review(p, r, db)))
+
+
 class BridgeTests(unittest.TestCase):
     def test_legacy_builders_still_validate_through_the_bridge(self):
         p, r, db = fixture()

@@ -311,6 +311,40 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
     return lines
 
 
+VERDICT_WORDS = {'PASS': '通过', 'FAIL': '没通过', 'OPEN': '未定'}
+
+
+def function_basis(fn):
+    """What the verdict rests on: the computed result and its margin, else why nothing was computed."""
+    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    parts = [calc.get('result')] if calc.get('result') else []
+    margin = calc.get('margin') if isinstance(calc.get('margin'), dict) else None
+    if margin and margin.get('value') is not None:
+        parts.append('余量 %s 对 %s' % (('%s %s' % (margin['value'], margin.get('unit') or '')).strip(),
+                                       margin.get('against') or ''))
+    if not parts and fn.get('no_calculation_reason'):
+        parts.append(fn['no_calculation_reason'])
+    return '；'.join(parts)
+
+
+def render_functions(functions):
+    """各功能的判断：一行一个功能，读者要的是“偏置：能，余量 0.74 V”。"""
+    if not functions:
+        return []
+    out = ['## 各功能的判断', '', '| 功能 | 问题 | 结论 | 余量或依据 | 待办编号 |', '|---|---|---|---|---|']
+    for fn in functions:
+        if not isinstance(fn, dict):
+            continue
+        items = [i for i in fn.get('open') or [] if isinstance(i, dict) and i.get('kind') != 'REQUIREMENT']
+        items += [i for i in fn.get('fails') or [] if isinstance(i, dict)]
+        ids = unique(results_model.work_item_id(i['key']) for i in items if isinstance(i.get('key'), str))
+        out.append('| %s | %s | %s | %s | %s |' % (
+            cell(fn.get('id', '')), cell(fn.get('question') or ''),
+            VERDICT_WORDS.get(fn.get('verdict'), cell(fn.get('verdict') or '')),
+            cell(function_basis(fn)), cell('、'.join(ids)) or '—'))
+    return out + ['']
+
+
 def covered_by_findings(task, checks, findings):
     """待办只是“改正已列出的错误”：全部检查都是 FAIL 且已归入某个问题。"""
     ids = task.get('check_ids') or []
@@ -552,6 +586,9 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     if remarks:
         out += [''.join(remarks), '']
 
+    functions = [f for f in results.get('functions') or [] if isinstance(f, dict)]
+    out += render_functions(functions)
+
     if findings:
         out += ['## 发现的错误', '', SEVERITY_LEGEND, '']
         for f in sorted(findings, key=lambda f: SEVERITIES.index(f['severity']) if f.get('severity') in SEVERITIES else 9):
@@ -665,7 +702,9 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     history_cell = str(history)
     if not history and any(isinstance(x, str) for x in results.get('history_inputs') or []):
         history_cell = '0（已声明上一版材料，但没有逐条复验行）' if revision else '0（首审不逐条登记）'
+    verdicts = Counter(f.get('verdict') for f in functions)
     counts_block = ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
+            '| 功能判定 通过 / 没通过 / 未定 | %d / %d / %d |' % (verdicts.get('PASS', 0), verdicts.get('FAIL', 0), verdicts.get('OPEN', 0)),
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
             '| 通过 / 没通过 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
             '| 与本产品无关（NA） | %d |' % counts.get('NA', 0),

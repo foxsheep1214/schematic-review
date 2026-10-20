@@ -7,6 +7,22 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function verdicts, step 4: the report answers per function (2026-10-20)
+
+The R5 report listed 17 work items and 142 open rows but nowhere said
+"bias: works, 0.74 V to spare". The report now opens its count table with
+"功能判定 通过 / 没通过 / 未定" and adds "各功能的判断" after the conclusion: one
+row per function with its question, verdict, computed result and margin (or
+why nothing was computed) and the work items its open/fail items derive to.
+Work items and counts already derive from the open items (step 1); the
+reused-rationale screen no longer flags rows bound to one function, since
+several rows citing the same verdict is the proof, not a copy. Golden reports
+now render the schema 4 record the validator saw.
+
+- Event: user:2026-10-20 (design docs/2026-10-20-function-verdicts-design.md §9, step 4), review:SR-20261019-R5-新版复审-2692b08/审查报告.md
+- Causes: judgment 1
+- Changed: scripts/render_report.py, scripts/review_quality.py, scripts/tests/test_review_functions.py, scripts/tests/test_review_quality.py, scripts/tests/test_golden_reports.py, scripts/tests/fixtures/golden_reports/clean.md, scripts/tests/fixtures/golden_reports/decisive.md, scripts/tests/fixtures/golden_reports/defect.md, scripts/tests/fixtures/golden_reports/downstream.md, references/report-and-remediation.md, docs/improvement-ledger.md
+
 ## Function verdicts, step 3: rows derive from the verdict (2026-10-20)
 
 With the frame bound (step 2) the reviewer still typed 15 rows for the R5

@@ -122,6 +122,12 @@ class QualityScreeningTests(unittest.TestCase):
         from review_quality import screen_quality
         self.screen = screen_quality
 
+    def test_rows_bound_to_one_function_may_share_its_rationale(self):
+        p, r, db = quality_fixture()
+        for row in r['checks']:
+            row.update(function_id='FN-CAPS', aspect='rating')
+        self.assertNotIn('REUSED_RATIONALE_ACROSS_SCOPES', [c['code'] for c in self.screen(p, r, db)['candidates']])
+
     def test_cross_criterion_copy_is_visible_without_electrical_verdict(self):
         p, r, db = quality_fixture(); before = deepcopy((p, r, db))
         out = self.screen(p, r, db)
