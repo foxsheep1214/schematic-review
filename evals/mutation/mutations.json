@@ -26,7 +26,7 @@
  {"id": "M13", "name": "F2 design value asked of a vendor accepted", "file": "scripts/review_functions.py",
   "old": "        if VENDOR_ASK_RE.search(asked):", "new": "        if False:"},
  {"id": "M14", "name": "F4 positive margin never decides", "file": "scripts/review_functions.py",
-  "old": "        if value is not None and value > 0 and isinstance(fn.get('open'), list):", "new": "        if False:"},
+  "old": "        if value > 0:   # a positive margin decides; an open item on the same aspect needs a reason", "new": "        if value > 0 and False:"},
  {"id": "M15", "name": "frame member bound to another function accepted", "file": "scripts/review_functions.py",
   "old": "            if row.get('function_id') != frame['id']:", "new": "            if False:"},
  {"id": "M16", "name": "derive_rows ignores open items", "file": "scripts/derive_rows.py",
@@ -36,5 +36,11 @@
  {"id": "M18", "name": "plan emits no function frames", "file": "scripts/plan_review.py",
   "old": "        self.functions.extend(frames.values())", "new": "        pass"},
  {"id": "M19", "name": "state-invariant rules expanded per state again", "file": "scripts/plan_review.py",
-  "old": "                    invariant = rule in catalog.STATE_INVARIANT", "new": "                    invariant = False"}
+  "old": "                    invariant = rule in catalog.STATE_INVARIANT", "new": "                    invariant = False"},
+ {"id": "M20", "name": "F4 shortfall kept open accepted", "file": "scripts/review_functions.py",
+  "old": "        if any(_covers(i, aspect) for i in fails):", "new": "        if True:"},
+ {"id": "M21", "name": "F8 design value without margin accepted", "file": "scripts/review_functions.py",
+  "old": "    if calculation.get('claim_ids'):   # F8", "new": "    if False:"},
+ {"id": "M22", "name": "document defect bound to a function accepted", "file": "scripts/review_functions.py",
+  "old": "        if fid is not None and result == 'FAIL' and document_row(cid):", "new": "        if False:"}
 ]

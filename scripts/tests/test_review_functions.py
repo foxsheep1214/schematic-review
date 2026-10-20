@@ -124,9 +124,43 @@ class FunctionShapeTests(unittest.TestCase):
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('0.8 V margin' in e for e in errors), errors)
         fn['open'][0]['decides'] = [{'aspect': '变换器电流应力'}]   # another aspect: the margin says nothing about it
+        fn['open'][0]['no_margin_reason'] = '电流应力取决于尚未选定的 Q2 封装'
         self.assertEqual(function_errors({'functions': [fn]}), [])
         fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']; del fn['calculation']['aspect']
         self.assertTrue(function_errors({'functions': [fn]}))   # a margin without aspect speaks for the whole function
+
+    def test_f4_no_headroom_is_a_fail_item_not_an_open_one(self):
+        """A computed shortfall against the limit kept open as "design not settled" is refused."""
+        fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']
+        fn['calculation'].update(result='VCC_min = 8.6 V', margin={'value': -0.2, 'unit': 'V', 'against': 'VCC(off) max 8.8 V'})
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('misses the limit' in e for e in errors), errors)
+        fn['open'][0]['margin_not_decisive_reason'] = 'VF 取 1 A 测试点，20 mA 下的曲线可把界收紧 0.3 V'
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        fn = bias_function('PASS'); fn['calculation']['margin']['value'] = 0
+        self.assertTrue(any('misses the limit' in e for e in function_errors({'functions': [fn]})))
+        fn.update(verdict='FAIL', fails=[{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC 无余量',
+                                          'decides': [{'aspect': ASPECT}]}])
+        self.assertEqual(function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]}), [])
+
+    def test_f4_margins_per_aspect(self):
+        fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']; del fn['calculation']['aspect']
+        fn['calculation']['margin'] = [{'value': 0.8, 'unit': 'V', 'against': 'VCC(off) max 8.8 V', 'aspect': '反馈驱动'},
+                                       {'value': -3, 'unit': '°C', 'against': 'Tj 115 °C（项目降额）', 'aspect': ASPECT}]
+        errors = function_errors({'functions': [fn]})
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn('-3 °C against Tj 115 °C', errors[0])
+        fn['calculation']['margin'][1]['aspect'] = ''
+        self.assertTrue(any('or a list of them' in e for e in function_errors({'functions': [fn]})))
+
+    def test_f8_a_design_value_open_beside_a_calculation_states_its_margin(self):
+        fn = bias_function(); del fn['calculation']['margin']
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('gives no margin' in e and 'BIAS-VCCMIN' in e for e in errors), errors)
+        fn['open'][0]['no_margin_reason'] = '辅助绕组匝数尚未选定，没有可比的设计值'
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        fn = bias_function(); del fn['calculation']['margin']; fn['calculation']['claim_ids'] = []
+        self.assertEqual(function_errors({'functions': [fn]}), [])   # nothing computed: F8 has nothing to ask
 
     def test_f6_a_changed_verdict_cites_a_clause_or_number(self):
         fn = bias_function()
@@ -175,6 +209,14 @@ class RowBindingTests(unittest.TestCase):
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
         self.assertEqual([t['id'] for t in out['workflow']['work_items']], ['W-VCC-LOW'])
+
+    def test_a_document_defect_is_not_bound_to_a_function(self):
+        rows = {'DOC-Q01.SUMMARY': {'id': 'DOC-Q01.SUMMARY', 'review_result': 'FAIL', 'function_id': 'FN-BIAS',
+                                    'aspect': ASPECT, 'fail_ref': 'FN-BIAS/X'}}
+        self.assertTrue(any('document defect' in e for e in binding_errors({}, rows, [bias_function()])))
+        rows['DOC-Q01.SUMMARY'].update(review_result='INSUFFICIENT', open_ref='FN-BIAS/AUX-5V-MIN')
+        rows['DOC-Q01.SUMMARY'].pop('fail_ref')
+        self.assertFalse(any('document defect' in e for e in binding_errors({}, rows, [bias_function()])))
 
     def test_binding_errors_name_an_unknown_function(self):
         rows = {'X': {'id': 'X', 'review_result': 'PASS', 'function_id': 'FN-NOPE', 'aspect': 'a'}}
@@ -229,6 +271,15 @@ class ReportTests(unittest.TestCase):
         self.assertIn('| 通过 | VCC_min = 9.6 V；余量 0.8 V 对 VCC(off) max 8.8 V | — |', text)
         fn = r['functions'][0]; fn.pop('calculation'); fn['no_calculation_reason'] = '连接性检查，无数值'
         self.assertIn('| 通过 | 连接性检查，无数值 | — |', render(p, r, vr.validate_review(p, r, db)))
+
+    def test_a_function_of_document_rows_is_not_counted(self):
+        p, r, db = ledger(bias_function('PASS'))
+        doc = copy.deepcopy(bias_function('PASS')); doc.update(id='FN-SUMMARIES', circuit='SUMMARIES', question='摘要是否一致')
+        r['functions'].append(doc)
+        r['checks'].append({'id': 'DOC-Q01.SUMMARY', 'review_result': 'PASS', 'function_id': 'FN-SUMMARIES'})
+        text = render(p, r, vr.validate_review(p, r, db))
+        self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 1 / 0 / 0 |', text)
+        self.assertNotIn('FN-SUMMARIES', text.split('## 各功能的判断')[1].split('\n## ')[0])
 
 
 class BridgeTests(unittest.TestCase):

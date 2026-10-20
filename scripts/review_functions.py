@@ -3,9 +3,12 @@
 A function verdict answers one question about one circuit block. Before it may leave anything open
 it must have listed the datasheet clauses that bear on the question (F1), kept a design value as a
 specification instead of a vendor request (F2), named what was checked and the worst case before
-asking a vendor (F3), and drawn the conclusion a computed margin already gives (F4). Rows only
-follow the verdict (F5); a changed verdict cites a clause or a number (F6); one open item does not
-spread over a whole block without saying why (F7). None of this proves the electrical judgement.
+asking a vendor (F3), and drawn the conclusion a computed margin already gives (F4: a positive margin
+passes, a margin at or below zero is a fail item). Rows only follow the verdict (F5); a changed verdict
+cites a clause or a number (F6); one open item does not spread over a whole block without saying why
+(F7); a design value left open beside a calculation states its margin (F8). Document checks are not
+functions: a document defect is not bound to one, and a function of document rows only is not counted.
+None of this proves the electrical judgement.
 """
 import re
 
@@ -43,6 +46,21 @@ def decides_row(item, aspect, state):
     return False
 
 
+def document_row(check_id):
+    return isinstance(check_id, str) and check_id.split('.')[0].startswith('DOC-')
+
+
+def circuit_functions(functions, checks):
+    """Function verdicts that answer a circuit: one whose bound rows are all document checks only
+    carries their open items and is not counted or listed as a function."""
+    rows = {}
+    for row in checks or []:
+        if isinstance(row, dict) and row.get('function_id') is not None:
+            rows.setdefault(row['function_id'], []).append(row.get('id'))
+    return [fn for fn in functions or [] if isinstance(fn, dict)
+            and not (rows.get(fn.get('id')) and all(document_row(c) for c in rows[fn['id']]))]
+
+
 def worst_verdict(fn):
     if fn.get('fails'):
         return 'FAIL'
@@ -51,11 +69,45 @@ def worst_verdict(fn):
     return 'PASS'
 
 
-def _margin_value(calculation):
-    margin = calculation.get('margin') if isinstance(calculation, dict) else None
-    if isinstance(margin, dict) and type(margin.get('value')) in (int, float):
-        return margin['value']
-    return None
+def _covers(item, aspect):
+    """A margin without aspect speaks for the whole function."""
+    return aspect is None or any(a == aspect for a, _ in _decides(item))
+
+
+def _margin_errors(fid, fn, calculation):
+    """F4 both ways, and F8: a design value left open beside a calculation states its margin."""
+    errors = []
+    found = [(m['value'], m.get('aspect') or calculation.get('aspect'), m)
+             for m in results_model.margins(calculation) if type(m['value']) in (int, float)]
+    opens = [i for i in fn.get('open') or [] if isinstance(i, dict)]
+    fails = [i for i in fn.get('fails') or [] if isinstance(i, dict)]
+    for value, aspect, m in found:
+        if value > 0:   # a positive margin decides; an open item on the same aspect needs a reason
+            for item in opens:
+                if _covers(item, aspect) and not text(item.get('margin_not_decisive_reason')):
+                    errors.append('%s/%s: calculation shows %s %s margin against %s, yet this stays open; conclude, '
+                                  'or say in margin_not_decisive_reason why the margin does not decide it'
+                                  % (fid, item.get('key', '?'), value, m.get('unit'), m.get('against')))
+            continue
+        # no headroom against the limit: the guarantee is not met, which is a fail item, not an open one
+        if any(_covers(i, aspect) for i in fails):
+            continue
+        if any(_covers(i, aspect) and text(i.get('margin_not_decisive_reason')) for i in opens):
+            continue
+        errors.append('%s: calculation shows %s %s against %s%s — the worst case misses the limit; record a fail item '
+                      'with its finding (保证要求未满足), or keep it open only with margin_not_decisive_reason naming the '
+                      'loose bound whose tightening could clear it'
+                      % (fid, value, m.get('unit'), m.get('against'), (' (' + aspect + ')') if aspect else ''))
+    if calculation.get('claim_ids'):   # F8
+        for item in opens:
+            if item.get('kind') != 'DESIGN_VALUE' or text(item.get('no_margin_reason')):
+                continue
+            if not any(_covers(item, aspect) for _, aspect, _ in found):
+                errors.append('%s/%s: the function computed %s but gives no margin on the aspects this design value '
+                              'leaves open; write calculation.margin for them (worst case against the limit, project '
+                              'derating included), or say in no_margin_reason what the design has not chosen yet'
+                              % (fid, item.get('key', '?'), '/'.join(calculation['claim_ids'])))
+    return errors
 
 
 def _item_errors(label, item, kind_field, condition_ids, finding_ids):
@@ -172,9 +224,11 @@ def function_errors(report):
         else:
             claim_ids = {c for c in calculation.get('claim_ids') or [] if isinstance(c, str)}
             margin = calculation.get('margin')
-            if margin is not None and not (isinstance(margin, dict) and type(margin.get('value')) in (int, float)
-                                           and text(margin.get('unit')) and text(margin.get('against'))):
-                errors.append(fid + ': calculation.margin is {value: number, unit, against}')
+            items = margin if isinstance(margin, list) else [margin]
+            if margin is not None and not (items and all(
+                    isinstance(m, dict) and type(m.get('value')) in (int, float) and text(m.get('unit'))
+                    and text(m.get('against')) and ('aspect' not in m or text(m['aspect'])) for m in items)):
+                errors.append(fid + ': calculation.margin is {value: number, unit, against[, aspect]} or a list of them')
         if not evidence(fn.get('evidence')):
             errors.append(fid + ': evidence locates the analysis (engineering record, calculation file)')
         if fn.get('verdict') not in VERDICTS:
@@ -200,18 +254,8 @@ def function_errors(report):
                         errors.append('%s: key %s already used by %s (keys are unique across functions)' % (label, key, seen_keys[key]))
                     seen_keys[key] = fid
                 errors.extend(_item_errors(label, item, field, condition_ids, finding_ids))
-        # F4: a positive computed margin decides; an open item on the same aspect needs a reason.
-        value = _margin_value(calculation)
-        if value is not None and value > 0 and isinstance(fn.get('open'), list):
-            aspect = calculation.get('aspect')
-            for item in fn['open']:
-                if not isinstance(item, dict) or text(item.get('margin_not_decisive_reason')):
-                    continue
-                if aspect is None or any(a == aspect for a, _ in _decides(item)):
-                    errors.append('%s/%s: calculation shows %s %s margin against %s, yet this stays open; conclude, '
-                                  'or say in margin_not_decisive_reason why the margin does not decide it'
-                                  % (fid, item.get('key', '?'), value, calculation['margin'].get('unit'),
-                                     calculation['margin'].get('against')))
+        if isinstance(calculation, dict):   # F4, F8
+            errors.extend(_margin_errors(fid, fn, calculation))
         # F6: a verdict change cites a clause or a number.
         history = fn.get('verdict_history')
         if history is not None:
@@ -242,6 +286,9 @@ def binding_errors(expected, checks, functions, history_ids=()):
         if fid is not None and fid not in functions:
             errors.append(cid + ': function_id names no function verdict')
             continue
+        if fid is not None and result == 'FAIL' and document_row(cid):
+            errors.append('%s: a document defect stands on its own row with its finding, not bound to %s; '
+                          'functions answer circuits' % (cid, fid))
         state = ((expected.get(cid) or {}).get('object') or {}).get('state')
         for field in ('open_ref', 'fail_ref'):
             ref = row.get(field)

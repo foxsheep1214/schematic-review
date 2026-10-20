@@ -252,17 +252,23 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 |---|---|
 | `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头 |
 | `conditions[]` | 第 1 步“先用手册里已有的界限”：每条 `id`/`source`/`locator`/`says`/`use`，`use` 写怎么用（相邻测试点夹界、门限上限、温度系数） |
-| `calculation` | 第 2 步：`result`、`margin{value,unit,against}`、`claim_ids`、`assumptions`；只针对一个方面时写 `aspect`。没有数值的功能写 `no_calculation_reason` |
+| `calculation` | 第 2 步：`result`、`margin{value,unit,against[,aspect]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值）、`claim_ids`、`assumptions`；只针对一个方面时写 `aspect`。没有数值的功能写 `no_calculation_reason` |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
-| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[{aspect, states?}]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`、`title`/`why` 可选。DESIGN_VALUE 另写 `spec` 和 `owner`（不许写成向厂家索取）；VENDOR_DATUM 另写 `checked`（条款 id）、`why_insufficient`、`acquisition`、`worst_case{result 或 not_boundable_reason}`；USER_DEFERRED 写 `instruction`；REQUIREMENT 不写 severity，走需求澄清。`decides` 超过 3 个方面要写 `decides_reason`；功能已算出正余量而仍开放时写 `margin_not_decisive_reason` |
+| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[{aspect, states?}]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`、`title`/`why` 可选。DESIGN_VALUE 另写 `spec` 和 `owner`（不许写成向厂家索取）；VENDOR_DATUM 另写 `checked`（条款 id）、`why_insufficient`、`acquisition`、`worst_case{result 或 not_boundable_reason}`；USER_DEFERRED 写 `instruction`；REQUIREMENT 不写 severity，走需求澄清。`decides` 超过 3 个方面要写 `decides_reason`；功能已算出正余量而仍开放、或余量不为正却不记失败项时写 `margin_not_decisive_reason`（后者要指出哪个边界取得松、收紧后可能翻转）；DESIGN_VALUE 在有计算的功能里没有对应方面的余量时写 `no_margin_reason`（设计还没选定什么） |
 | `fails[]` | 失败项：`key`、`finding_id`（指向 findings）、`what`、`decides`，可带 `title`/`why`/`due_stage`/`design_option` |
 | `handoffs[]` | 功能级移交，派生行时填进计划要求移交的行 |
 | `verdict_history[]` | 改过结论时写 `{from, to, basis: [条款或 claim id], note}`，basis 不能为空 |
 | `evidence` | 可定位的证据 |
 
-校验 F1–F7：F1 每个功能有问题、对象、至少一条完整的条款和结论；F2 DESIGN_VALUE 写规格与责任方，不向厂家要；
-F3 VENDOR_DATUM 写查过什么、为什么不够、最坏情况；F4 算出正余量就不能在同一方面保留开放项（除非写明理由）；
-F5 行跟随功能（见下）；F6 改结论要引条款或数字；F7 一个开放项铺过 3 个方面要写理由。
+校验 F1–F8：F1 每个功能有问题、对象、至少一条完整的条款和结论；F2 DESIGN_VALUE 写规格与责任方，不向厂家要；
+F3 VENDOR_DATUM 写查过什么、为什么不够、最坏情况；F4 算出正余量就不能在同一方面保留开放项，余量为零或为负就要有失败项
+（两者都可写明理由保留开放）；F5 行跟随功能（见下）；F6 改结论要引条款或数字；F7 一个开放项铺过 3 个方面要写理由；
+F8 功能已有计算时，DESIGN_VALUE 开放项要有对应方面的余量，或写明设计还没选定什么。
+
+**文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（摘要数字、选型记录、图纸卫生）不是电路。
+文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）；选型理由的复判走
+[选型复判](selection-review.md)。DOC 行证据不足时仍需一个开放项作入口，这种只含 DOC 行的功能不计入
+“功能判定”计数，也不进报告的功能表。
 
 隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是功能的方面，不另设合同：
 PRO-C03 在隔离功能里逐个列出变压器、光耦/数字隔离器、跨接电容的实际工作电压、重复峰值/频率和厂家资格条件

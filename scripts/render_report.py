@@ -19,6 +19,7 @@ import sys
 from collections import Counter, OrderedDict, defaultdict
 from difflib import SequenceMatcher
 from pathlib import Path
+from review_functions import circuit_functions
 from task_scope import ownership, task_view
 
 TOP_TASKS = 3
@@ -318,8 +319,7 @@ def function_basis(fn):
     """What the verdict rests on: the computed result and its margin, else why nothing was computed."""
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
     parts = [calc.get('result')] if calc.get('result') else []
-    margin = calc.get('margin') if isinstance(calc.get('margin'), dict) else None
-    if margin and margin.get('value') is not None:
+    for margin in results_model.margins(calc):
         parts.append('余量 %s 对 %s' % (('%s %s' % (margin['value'], margin.get('unit') or '')).strip(),
                                        margin.get('against') or ''))
     if not parts and fn.get('no_calculation_reason'):
@@ -586,7 +586,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     if remarks:
         out += [''.join(remarks), '']
 
-    functions = [f for f in results.get('functions') or [] if isinstance(f, dict)]
+    functions = circuit_functions(results.get('functions'), results.get('checks'))
     out += render_functions(functions)
 
     if findings:

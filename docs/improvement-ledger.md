@@ -7,6 +7,36 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A computed shortfall is a fail item; document checks are not functions (2026-10-20)
+
+A full re-review with function verdicts came back with 18 of 21 functions
+open and no circuit defect, while its own calculations showed a required
+LED compliance voltage above the guaranteed minimum, a linear pass device
+whose thermal target the design admitted it could not meet, and a junction
+temperature 0.2 °C under the absolute limit with no project derating. Each
+was written as DESIGN_VALUE "设计没定". The rule was already in the
+references (算出余量就下结论; 保证要求未满足 is FAIL), but F4 only looked at a
+positive `calculation.margin`, and margin was optional: no function in that
+record wrote one, so F4 never ran. Now F4 works both ways (a margin at or
+below zero needs a fail item, or a `margin_not_decisive_reason` naming the
+loose bound), `margin` may be a list with one entry per aspect, and F8 makes
+a DESIGN_VALUE item in a function that computed something state the margin
+on its aspects or say in `no_margin_reason` what the design has not chosen.
+The references say DESIGN_VALUE is only for quantities the design has not
+chosen, and that margins are taken against the limit with project derating.
+
+The same record wrapped three document defects (a stale summary number, a
+wrong rejection reason for a candidate part) into two self-made functions,
+so the report counted two failed functions that are not circuits. A DOC-*
+FAIL row bound to a function is now refused; a function whose rows are all
+DOC-* (still needed as the entry for a DOC INSUFFICIENT row) is left out of
+the function count and table. Mutations M20–M22 cover the new checks; M14
+follows the rewritten F4.
+
+- Event: user:2026-10-20 (re-review report: computed shortfalls kept open as design-open, document checks counted as failed functions)
+- Causes: rule_not_enforced 1, rule_missing 1
+- Changed: scripts/review_functions.py, scripts/results_model.py, scripts/render_report.py, scripts/derive_rows.py, scripts/tests/test_review_functions.py, scripts/tests/ledger_v3.py, references/plan-and-results.md, references/evidence-proportionality.md, references/verdicts-and-release.md, SKILL.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, docs/improvement-ledger.md
+
 ## First training round actually run: the loop was a specification (2026-10-20)
 
 User asked for one round of the self-evolution loop in `evals/training/README.md`

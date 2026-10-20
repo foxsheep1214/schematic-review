@@ -8,6 +8,7 @@ import re
 import catalog
 import results_model
 import validate_review as _validate_review
+from review_functions import document_row
 
 SYNTHETIC = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
 CAUSE_KIND = {v: k for k, v in results_model.KIND_CAUSE.items()}
@@ -157,7 +158,8 @@ def _functions(out, plan):
         return functions[fid]
 
     for task in tasks:
-        cids = [c for c in task.get('check_ids') or [] if c in rows and rows[c].get('review_result') in ('INSUFFICIENT', 'FAIL')]
+        cids = [c for c in task.get('check_ids') or [] if c in rows and rows[c].get('review_result') in ('INSUFFICIENT', 'FAIL')
+                and not (rows[c]['review_result'] == 'FAIL' and document_row(c))]   # a document defect stays on its row
         if not cids or any(c in owned for c in cids):
             continue   # a malformed or shared task stays as the builder wrote it: the validator names it
         owned.update(cids)
@@ -184,7 +186,8 @@ def _functions(out, plan):
     orphans = [cid for cid, row in rows.items()
                if row.get('review_result') == 'INSUFFICIENT' and cid not in owned and row.get('gaps') is not None]
     for cid, row in rows.items():
-        if row.get('review_result') == 'FAIL' and cid not in owned and (functions or orphans or cid in frame_of) and row.get('finding_id'):
+        if (row.get('review_result') == 'FAIL' and cid not in owned and not document_row(cid)
+                and (functions or orphans or cid in frame_of) and row.get('finding_id')):
             # Legacy builders left FAIL rows outside any task while the workflow was disabled; the
             # functions above enable it, so the defect gets the function the reviewer would write.
             fid = frame_of.get(cid) or 'FN-' + _slug(cid)

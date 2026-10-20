@@ -51,6 +51,13 @@ def text(value):
     return isinstance(value, str) and bool(value.strip())
 
 
+def margins(calculation):
+    """calculation.margin as a list: one {value, unit, against[, aspect]} or one per aspect."""
+    margin = calculation.get('margin') if isinstance(calculation, dict) else None
+    items = margin if isinstance(margin, list) else [margin] if margin is not None else []
+    return [m for m in items if isinstance(m, dict) and m.get('value') is not None]
+
+
 def shape_errors(report, history_ids=()):
     """Errors in the record as written, named in schema 4 terms. `history_ids` are REQ-H02 rows,
     which carry history dispositions instead of open items."""

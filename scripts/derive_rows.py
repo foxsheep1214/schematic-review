@@ -16,6 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json
+import results_model
 from results_model import text
 from review_functions import decides_row
 
@@ -23,10 +24,8 @@ DERIVED_FIELDS = ('review_result', 'open_ref', 'fail_ref', 'finding_id', 'severi
 
 
 def _margin(calculation):
-    margin = calculation.get('margin') if isinstance(calculation, dict) else None
-    if not isinstance(margin, dict) or margin.get('value') is None:
-        return ''
-    return '；余量 %s%s 对 %s' % (margin['value'], margin.get('unit') or '', margin.get('against') or '')
+    return ''.join('；余量 %s%s 对 %s' % (m['value'], m.get('unit') or '', m.get('against') or '')
+                   for m in results_model.margins(calculation))
 
 
 def _conclusion(fn):
