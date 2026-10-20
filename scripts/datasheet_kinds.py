@@ -54,19 +54,44 @@ def file_sha256(path):
     return digest.hexdigest()
 
 
+def pdf_page_texts(source, page):
+    """Reading-order and layout-order text of one PDF page (a quote may survive only one of them).
+
+    `source` is a path or the PDF bytes. pdftotext (poppler) is used when installed, otherwise
+    PyMuPDF; None when neither is available or the page cannot be read."""
+    if shutil.which('pdftotext'):
+        texts = []
+        for mode in ([], ['-layout']):
+            args = ['pdftotext', '-q', '-f', str(page), '-l', str(page), *mode]
+            try:
+                if isinstance(source, bytes):
+                    out = subprocess.run(args + ['-', '-'], input=source, capture_output=True, timeout=60)
+                else:
+                    out = subprocess.run(args + [source, '-'], capture_output=True, timeout=60)
+            except (OSError, subprocess.SubprocessError):
+                return None
+            if out.returncode != 0:
+                return None
+            texts.append(out.stdout.decode('utf-8', 'replace'))
+        return texts
+    try:
+        import fitz  # PyMuPDF
+    except ImportError:
+        return None
+    try:
+        with (fitz.open(stream=source, filetype='pdf') if isinstance(source, bytes) else fitz.open(source)) as doc:
+            if not 1 <= page <= doc.page_count:
+                return None
+            sheet = doc[page - 1]
+            return [sheet.get_text(), sheet.get_text(sort=True)]
+    except Exception:  # a damaged or encrypted PDF reads as no text, like a pdftotext failure
+        return None
+
+
 @functools.lru_cache(maxsize=512)
 def _page_text(path, page, mtime_ns, size):
-    if not shutil.which('pdftotext'):
-        return None
-    texts = []
-    for mode in ([], ['-layout']):            # reading order and layout order: a quote may survive only one
-        try:
-            out = subprocess.run(['pdftotext', '-q', '-f', str(page), '-l', str(page), *mode, path, '-'],
-                                 capture_output=True, timeout=60)
-        except (OSError, subprocess.SubprocessError):
-            return None
-        texts.append(out.stdout.decode('utf-8', 'replace'))
-    joined = '\n'.join(texts)
+    texts = pdf_page_texts(path, page)
+    joined = '\n'.join(texts or [])
     return joined if joined.strip() else None
 
 
@@ -89,7 +114,7 @@ def verify(declaration, document_path, read_page=None):
         return dict(result, status='NO_DOCUMENT', detail='datasheet audit has no AVAILABLE document for this ref')
     text = read_page(document_path, page)
     if text is None:
-        return dict(result, status='NO_TEXT', detail='page text unavailable (no pdftotext or image-only page)')
+        return dict(result, status='NO_TEXT', detail='page text unavailable (neither pdftotext nor PyMuPDF installed, or image-only page)')
     if not squash(quote) or squash(quote) not in squash(text):
         return dict(result, status='QUOTE_NOT_FOUND', detail=f'quote not found on page {page}')
     named = cues(quote)

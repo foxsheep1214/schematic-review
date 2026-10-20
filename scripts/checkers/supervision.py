@@ -18,6 +18,7 @@ from solve_dividers import parse_resistor
 
 import catalog
 import board_intent
+from datasheet_kinds import pdf_page_texts
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
@@ -264,10 +265,8 @@ def _source_page(raw, fmt, page):
         return raw.decode('utf-8') if page == 1 and not raw.startswith(b'%PDF') else ''
     if fmt != 'pdf' or not raw.startswith(b'%PDF'):
         return ''
-    completed = subprocess.run(['pdftotext', '-f', str(page), '-l', str(page),
-                                '-layout', '-', '-'], input=raw, capture_output=True,
-                               timeout=30)
-    return completed.stdout.decode('utf-8', errors='replace') if completed.returncode == 0 else ''
+    texts = pdf_page_texts(raw, page)
+    return texts[1] if texts else ''
 
 
 def _receiver_source_errors(source, graph, node):

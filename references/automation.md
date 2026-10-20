@@ -210,7 +210,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 - `page`：手册页码，从 1 开始。
 - `quote`：该页上写明器件类型的原文，例如 BCX56-16TX 写 `{"kind":"bjt","page":1,"quote":"80 V, 1 A NPN power bipolar transistors"}`。
 
-第二步，`audit_datasheets.py --intent intent.json` 读取 datasheet 解析表绑定给该位号的那份 PDF，用 pdftotext 抽取该页文本。比较时只保留字母和数字（PDF 常丢空格），逐条核验三点：
+第二步，`audit_datasheets.py --intent intent.json` 读取 datasheet 解析表绑定给该位号的那份 PDF，用 pdftotext 抽取该页文本（没装 poppler 时用 PyMuPDF，两者都没有才记 NO_TEXT）。比较时只保留字母和数字（PDF 常丢空格），逐条核验三点：
 - 原文确实在该页上；
 - 原文本身写明了所声明的类型，例如 NPN/bipolar、MOSFET/N-channel、Zener、TVS/ESD protection、rectifier/diode/Schottky、bridge rectifier、transformer、connector/receptacle/terminal block；
 - 原文没有同时指向别的类型，例如把 “ESD Protection Diode” 声明为普通二极管，判为 QUOTE_CONFLICT。

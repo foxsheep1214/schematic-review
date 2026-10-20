@@ -83,6 +83,28 @@ class KindVerificationTests(unittest.TestCase):
                              'VERIFIED')
             self.assertEqual(len(dk.file_sha256(path)), 64)
 
+    def test_text_layer_reads_without_pdftotext(self):
+        """A machine without poppler still reads the text layer through PyMuPDF (R5 review: NO_TEXT)."""
+        try:
+            import fitz  # noqa: F401
+        except ImportError:
+            self.skipTest('PyMuPDF not installed')
+        from unittest import mock
+        from checkers import supervision
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, 'ds.pdf')
+            minimal_pdf(path, ['SD05T1 Series', 'ESD Protection Diode'])
+            dk._page_text.cache_clear()
+            supervision._source_page.cache_clear()
+            with mock.patch.object(dk.shutil, 'which', return_value=None):
+                self.assertEqual(dk.verify({'kind': 'tvs', 'page': 1, 'quote': 'ESD Protection Diode'}, path)['status'],
+                                 'VERIFIED')
+                with open(path, 'rb') as f:
+                    self.assertIn('ESD Protection Diode', supervision._source_page(f.read(), 'pdf', 1))
+                self.assertIsNone(dk.page_text(path, 2))
+            dk._page_text.cache_clear()
+            supervision._source_page.cache_clear()
+
 
 if __name__ == '__main__':
     unittest.main()

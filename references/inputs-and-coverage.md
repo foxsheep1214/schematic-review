@@ -226,7 +226,7 @@ Cadence 的 `PIN_NUMBER` 可能是 BGA 字母数字脚号，且 `PINUSE` 与 `PI
 
 ### 五、PDF 处理
 
-- `pdftotext -layout sch.pdf out.txt`，按 `\f` 换页符分页；每页抓 `File:` 字段得页面标题 → 实际页面清单（目录页常过期，不可信）。
+- `pdftotext -layout sch.pdf out.txt`（没有 pdftotext 时用 PyMuPDF：`python3 -c "import fitz,sys;print('\\f'.join(p.get_text(sort=True) for p in fitz.open(sys.argv[1])))" sch.pdf`），按 `\f` 换页符分页；每页抓 `File:` 字段得页面标题 → 实际页面清单（目录页常过期，不可信）。
 - 单页渲染读图：`pdftoppm -png -r 150 -f N -l N sch.pdf page`（引脚图/表格细节用 `-r 200` 以上并裁剪局部）。
 - 扫描件 datasheet（无文本层）必须渲染目检。
 - **硬规则：提取出的表格出现列错位，必须渲染目检后才允许下结论。** 判别信号——同一行里出现本属不同列的值、
