@@ -17,8 +17,6 @@
 | 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | 0 |
 | 上一版问题的处理记录（不计入上面各行） | 0 |
 
-“条”是检查条数，待办“件”按同一原因合并，两者不能相加。
-
 ## 结论
 
 **还不能定稿。** 电路和文档都没有发现错误。另有 1 件事因为缺资料，现在还判断不了。
@@ -36,8 +34,9 @@
 
 类型：缺资料　可能后果：必需功能可能不达标（P1）　涉及 1 条检查
 
-- **缺什么**：Unfinished calculation；Synthetic independent input；适用范围：Peak amperes, pulse seconds and repetition at the specified supply limits
-- **怎么补**：Evaluate the local bound；System engineer derives controlled bound from installed loads and their startup data
+- **缺什么**：Unfinished calculation；适用范围：Peak amperes, pulse seconds and repetition at the specified supply limits
+- **为什么要紧**：Synthetic independent input
+- **还要做**：Evaluate the local bound；System engineer derives controlled bound from installed loads and their startup data
 - **怎样算通过**：Recompute current-limit margin and startup voltage; compare with required rails
 
 ## 索引

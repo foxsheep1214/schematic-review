@@ -165,6 +165,16 @@ def anchors(obj):
     return pick('ref', 'refs') or pick('net', 'nets')
 
 
+REF_SLOT = '\x00'
+
+
+def generic(text, refs):
+    """The text with this check's own refs/nets blanked, so per-part copies of one requirement compare equal."""
+    for ref in sorted(refs, key=len, reverse=True):
+        text = re.sub(r'(?<![A-Za-z0-9–~-])%s(?![0-9–~-])' % re.escape(ref), REF_SLOT, text)
+    return text
+
+
 def unique(values):
     seen = []
     for v in values:
@@ -201,6 +211,28 @@ def restates(short, long):
 
 
 SHARED_REASON_MIN_TASKS = 3
+READ_RE = re.compile(r'^已读([^；;]*)[；;]?\s*(.*)$', re.S)
+
+
+def split_read(values):
+    """What was already read, said once; what is still to do, apart (100W PD R5 W-BIAS: the work item and
+    its gap each opened with "已读ISC032N12LM6 p3–7、PMEG6010 p2–5…", and the report printed both)."""
+    read, todo = [], []
+    for value in unique(values):
+        m = READ_RE.match(value)
+        if m:
+            read.append(m.group(1).strip())
+            value = m.group(2).strip()
+        if value:
+            todo.append(value)
+    return drop_restated(read), drop_restated(todo)
+
+
+def drop_restated(values):
+    """Keep each statement once: drop one that a longer (or earlier, equally long) one already says."""
+    values = unique(values)
+    return [v for i, v in enumerate(values)
+            if not any(j != i and restates(v, o) and (len(o) > len(v) or j < i) for j, o in enumerate(values))]
 
 
 def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=()):
@@ -243,7 +275,10 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
     # Remove only that exact duplicate, never infer equivalence from similarity.
     if reason in scopes or reason in ['本任务只关闭：' + scope for scope in scopes] or reason in shared_reasons:
         reason = ''
-    missing = unique([task.get('root_cause'), reason])
+    root = (task.get('root_cause') or '').strip()
+    if reason and root and (restates(reason, root) or restates(root, reason)):
+        reason = ''   # "why it matters" that only re-says the gap
+    missing = unique([root])
     if scopes:
         missing.append('适用范围：' + join_statements(scopes))
     action = (task.get('next_action') or '').strip()
@@ -256,8 +291,11 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
     acquisitions = unique(q.get('acquisition') for q in requests)
     if action and any(action in a or restates(action, a) for a in acquisitions):
         action = ''   # the request text already carries the action (verbatim or reworded with page numbers)
+    read, todo = split_read([action] + acquisitions)
     fields = [('缺什么', missing),
-              ('怎么补', [action] + acquisitions),
+              ('为什么要紧', [reason]),
+              ('已查过', read),
+              ('还要做', todo),
               ('怎样算通过', criteria)]
     option = task.get('design_option') or {}
     if option.get('status') == 'PROPOSED':
@@ -287,9 +325,12 @@ SR_FEEDBACK_KINDS = (('false_alarm', '误报'), ('over_strict', '规则过严或
                      ('software_bug', '已复现的程序错误'), ('coverage_gap', '自动化覆盖或格式适配不足'))
 
 
-SR_TALK_RE = re.compile(r'\bSR\b|误报|改进效果|quality_screening|提示仍|技能')
+SR_TALK_RE = re.compile(r'(?<![A-Za-z])SR(?![A-Za-z])|误报|改进效果|quality_screening|提示仍|技能')
 # How the record was kept (screens worked through, files, ledger modes) is not news about the board
 # (100W PD R5 summary: "已逐条复核104条记录质量提示；43条位号与数值粘连已修复…history-handling.json…first").
+# The summary adds what the first line cannot: what changed and what to do first. The verdict and
+# how the review was run are not news (100W PD R5: "本次使用SR…重新导出、逐页读图和复算。当前仍不能定稿…").
+SUMMARY_REPEAT_RE = re.compile(r'不能定稿|可以定稿|能否定稿|重新导出|逐页读图|重新审查|本轮复核')
 RECORD_TALK_RE = re.compile(r'质量提示|自检提示|粘连|\.json(?![A-Za-z])|REQ-H0\d|(?<![A-Za-z])(?:first|revision)(?![A-Za-z])')
 
 
@@ -306,6 +347,10 @@ def notes_errors(notes):
         elif isinstance(text, str) and RECORD_TALK_RE.search(text):
             errors.append('%s talks about keeping the review record (%s); the designer-facing text stays about the board, '
                           'the record and its screens speak for themselves' % (where, RECORD_TALK_RE.search(text).group(0)))
+        elif where == 'summary' and isinstance(text, str) and SUMMARY_REPEAT_RE.search(text):
+            errors.append('summary repeats the verdict or describes how the review was run (%s); the first line already '
+                          'says whether it can be frozen, the summary says what changed and what to do first'
+                          % SUMMARY_REPEAT_RE.search(text).group(0))
     return errors
 
 
@@ -560,14 +605,26 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         groups = OrderedDict()
         for c in handoffs:
             groups.setdefault('、'.join(c['handoff'].get('receivers') or ['未指定']), []).append(c)
-        # One row per check: a receiver gets a list to tick off, not one merged paragraph.
+        # One row per requirement: checks that ask the same thing of different parts share a row
+        # (100W PD R5: C503, C504 and C505 got three rows differing only in the refdes).
         for who, rows in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+            same = OrderedDict()
             for c in sorted(rows, key=lambda c: c['id']):
                 h = c['handoff']
                 where = unique(anchors((planned.get(c['id']) or {}).get('object')))
+                key = tuple(generic(h.get(f) or '', where) for f in ('constraint', 'verification'))
+                same.setdefault(key, []).append((c, where))
+            for (constraint, verification), group in same.items():
+                ids = [c['id'] for c, _ in group]
+                where = unique(w for _, ws in group for w in ws)
                 shown = '、'.join(where[:6]) + ('等 %d 处' % len(where) if len(where) > 6 else '')
-                out.append('| %s | %s | %s | %s | %s |' % (cell(who), cell(c['id']), cell(shown or '整板'),
-                           cell(h.get('constraint') or ''), cell(h.get('verification') or '')))
+                if len(group) == 1:
+                    h = group[0][0]['handoff']
+                    constraint, verification = h.get('constraint') or '', h.get('verification') or ''
+                else:
+                    constraint, verification = (t.replace(REF_SLOT, '每只') for t in (constraint, verification))
+                out.append('| %s | %s | %s | %s | %s |' % (cell(who), cell('、'.join(ids)), cell(shown or '整板'),
+                           cell(constraint), cell(verification)))
         pending = (gate.get('stage_scope') or {}).get('requirements_pending_downstream') or []
         if pending:
             out += ['', '另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending))]
@@ -623,8 +680,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                  if classes else []) + [
             '| 交给后续环节的要求 | %d |' % len(handoffs),
             '| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | %d |' % len(screen),
-            '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '',
-            '“条”是检查条数，待办“件”按同一原因合并，两者不能相加。', '']
+            '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '']
     out[counts_at:counts_at] = counts_block
     explanations = render_check_explanations(plan, results) if detail == 'full' else []
     if explanations:

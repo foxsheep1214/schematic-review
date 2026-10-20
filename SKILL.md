@@ -152,7 +152,7 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 按 PWR → RST → CLK → SIG → ANA → PRO → DRV 推进，每条规则逐对象、逐状态给结果；全板项逐条给适用性和结果。
 功能包按实际 package/circuit/state/ref 归组并列必需成员 ID，跨包依赖说明真实路径；不能只按规则编号归组。
-隔离器件能否用于实际工作条件、电源反馈是否稳定，按[隔离器件与电源反馈的检查要求](references/closure-obligations.md)记录。报告直接写器件或环路“缺什么、怎么补、怎样算通过”；同一对象、同一补充动作和通过标准可合并，不同环路保留各自标准。
+隔离器件能否用于实际工作条件、电源反馈是否稳定，按[隔离器件与电源反馈的检查要求](references/closure-obligations.md)记录。报告直接写器件或环路“缺什么、为什么要紧、已查过、还要做、怎样算通过”（各节写法见[每节怎么写](references/report-and-remediation.md#每节怎么写)）；同一对象、同一补充动作和通过标准可合并，不同环路保留各自标准。
 按 [功能包依赖与状态核对](references/plan-and-results.md#功能包依赖与状态核对) 核全部实际成员、外围选值窗口与掉电路径。
 遇到共享控制网、多供源/状态、功能父项或共享整改任务，先读 [执行一致性](references/execution-consistency.md)。
 先按 [对象上下文录入](references/plan-and-results.md#对象上下文录入) 保存实际物理对象、状态、路径及出处、
