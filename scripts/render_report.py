@@ -481,8 +481,8 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         elif revision:
             remarks.append('上一版审查材料：本轮可见 %s，只用于“上一版问题”的复验，本轮结论按当前资料独立得出。' % seen)
         else:
-            remarks.append('上一版审查材料：本轮可见 %s，但这是首审，结论没有引用它，也不逐条复验上一版问题；'
-                           '要复验上一版问题，用改版复审。' % seen)
+            remarks.append('上一版审查材料：本轮可见 %s。这是首审：结论按当前资料重新得出，没有引用它；'
+                           '上一版问题没有逐条登记处理结果，要登记就用改版复审。' % seen)
         unreconciled = [c for c in screen if isinstance(c, dict) and c.get('code') == 'HISTORY_FINDINGS_UNRECONCILED']
         if unreconciled and revision:
             remarks.append('上一版问题未逐条复验：上一版记录的 %d 条问题（%s）没有历史复验行；每条写明已修、保留或撤回。'
@@ -593,7 +593,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     history = (summary.get('history') or {}).get('checks', 0)
     history_cell = str(history)
     if not history and any(isinstance(x, str) for x in results.get('history_inputs') or []):
-        history_cell = '0（已声明上一版材料，但没有逐条复验行）' if revision else '0（首审不复验上一版问题）'
+        history_cell = '0（已声明上一版材料，但没有逐条复验行）' if revision else '0（首审不逐条登记）'
     out += ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
             '| 通过 / 没通过 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),

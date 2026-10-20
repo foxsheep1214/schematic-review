@@ -285,11 +285,11 @@ class ReportWordingTests(unittest.TestCase):
                 json.dumps({'findings': [{'id': 'F-OLD-1'}]}), encoding='utf-8')
             r['history_inputs'] = [tmp]
             text, gate = report(p, r, db)
-        self.assertIn('但这是首审，结论没有引用它，也不逐条复验上一版问题；要复验上一版问题，用改版复审。', body(text))
+        self.assertIn('这是首审：结论按当前资料重新得出，没有引用它；上一版问题没有逐条登记处理结果，要登记就用改版复审。', body(text))
         self.assertNotIn('只用于“上一版问题”的复验', text)
         self.assertNotIn('上一版问题未逐条复验', text)
         self.assertNotIn(tmp, text)
-        self.assertIn('| 上一版问题的处理记录（不计入上面各行） | 0（首审不复验上一版问题） |', text)
+        self.assertIn('| 上一版问题的处理记录（不计入上面各行） | 0（首审不逐条登记） |', text)
 
     def test_gap_blockers_are_counted_by_work_item(self):
         from render_report import blocker_reasons
