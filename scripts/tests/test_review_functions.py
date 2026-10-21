@@ -105,13 +105,7 @@ class FunctionShapeTests(unittest.TestCase):
         self.assertTrue(any('not asked of a vendor' in e for e in function_errors({'functions': [fn]})))
 
     def test_f3_vendor_datum_names_what_was_checked_and_the_worst_case(self):
-        item = {'key': 'HV-IV', 'kind': 'VENDOR_DATUM', 'what': 'U1 HV 恒流源在 40–120 V 的电流下限',
-                'scope': '90 Vac、R4 压降后', 'closure': '40..120 V 启动电流下界 ≥ 2 mA',
-                'acquisition': '原厂应用支持', 'checked': ['c3'], 'why_insufficient': '表头只给 120 V 测试点',
-                'worst_case': {'result': '按 VHV(MIN) 40 V 仍工作，门限 116 V 以上充电'},
-                'decides': [{'aspect': ASPECT}],
-                'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'consequence': '低线不能启动'}}
-        fn = bias_function(); fn['open'] = [item]; del fn['calculation']['margin']   # the HV question has no bias margin
+        fn = with_datum(); fn['open'][0].update(margin_not_decisive_reason='120 V 点的斜率不保证 40 V', loose_bound='c3')
         self.assertEqual(function_errors({'functions': [fn]}), [])
         for field in ('checked', 'why_insufficient', 'worst_case', 'acquisition'):
             broken = copy.deepcopy(fn); del broken['open'][0][field]
@@ -135,13 +129,14 @@ class FunctionShapeTests(unittest.TestCase):
         fn['calculation'].update(result='VCC_min = 8.6 V', margin={'value': -0.2, 'unit': 'V', 'against': 'VCC(off) max 8.8 V'})
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('misses the limit' in e for e in errors), errors)
-        fn['open'][0]['margin_not_decisive_reason'] = 'VF 取 1 A 测试点，20 mA 下的曲线可把界收紧 0.3 V'
+        fn['open'][0].update(margin_not_decisive_reason='VF 取 1 A 测试点，20 mA 下的曲线可把界收紧 0.3 V', loose_bound='c1')
         self.assertEqual(function_errors({'functions': [fn]}), [])
         fn = bias_function('PASS'); fn['calculation']['margin']['value'] = 0
         self.assertTrue(any('misses the limit' in e for e in function_errors({'functions': [fn]})))
         fn.update(verdict='FAIL', fails=[{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC 无余量',
                                           'decides': [{'aspect': ASPECT}]}])
-        self.assertEqual(function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]}), [])
+        finding = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': 'R3 改 100 Ω'}}
+        self.assertEqual(function_errors({'functions': [fn], 'findings': [finding]}), [])
 
     def test_f4_margins_per_aspect(self):
         fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']; del fn['calculation']['aspect']
@@ -183,6 +178,121 @@ class FunctionShapeTests(unittest.TestCase):
         self.assertTrue(any('already used' in e for e in function_errors({'functions': [fn]})))
         fn = bias_function(); fn['open'][0].update(kind='REVIEW_INCOMPLETE')
         self.assertTrue(any('only belong to DESIGN_VALUE/VENDOR_DATUM' in e for e in function_errors({'functions': [fn]})))
+
+
+def hv_datum(**worst):
+    """A vendor datum shaped like the R5 items: the clauses read, and a worst case under the public bound."""
+    item = {'key': 'HV-IV', 'kind': 'VENDOR_DATUM', 'what': 'U1 HV 恒流源在 40–120 V 的电流下限',
+            'scope': '90 Vac、R4 压降后', 'closure': '40..120 V 启动电流下界 ≥ 2 mA',
+            'acquisition': '原厂应用支持', 'checked': ['c3'], 'why_insufficient': '表头只给 120 V 测试点',
+            'decides': [{'aspect': ASPECT}],
+            'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'consequence': '低线不能启动'}}
+    item['worst_case'] = worst or {
+        'bound': {'condition': 'c3', 'value': 'IHV ≥ 2.4 mA @120 V', 'basis': 'ADJACENT_TEST_POINT'},
+        'result': '按 120 V 测试点下界，40 V 时按线性外推 0.8 mA', 'margin': {'value': -1.2, 'unit': 'mA', 'against': '启动需求 2 mA'}}
+    return item
+
+
+def with_datum(**worst):
+    fn = bias_function(); fn['open'] = [hv_datum(**worst)]; del fn['calculation']['margin']
+    return fn
+
+
+class PublicBoundTests(unittest.TestCase):
+    """A vendor datum is asked for only after the public bound has been used: worst_case names the bound
+    (clause, value, how it bounds) and the margin under it, and that margin decides like any other (F4)."""
+
+    def test_f3_worst_case_names_the_public_bound_and_its_margin(self):
+        fn = with_datum(result='按 VHV(MIN) 40 V 仍工作')   # prose only, like the R5 items
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('public bound' in e for e in errors), errors)
+        fn = with_datum(); fn['open'][0].update(margin_not_decisive_reason='120 V 点的斜率不保证 40 V', loose_bound='c3')
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        for bad in ({'condition': 'c9', 'value': 'x', 'basis': 'ADJACENT_TEST_POINT'},
+                    {'condition': 'c3', 'value': 'x', 'basis': 'GUESS'}, {'condition': 'c3', 'basis': 'TYPICAL_CURVE'}):
+            broken = copy.deepcopy(fn); broken['open'][0]['worst_case']['bound'] = bad
+            self.assertTrue(any('public bound' in e for e in function_errors({'functions': [broken]})), bad)
+
+    def test_a_positive_margin_under_the_public_bound_decides(self):
+        fn = with_datum(); fn['open'][0]['worst_case']['margin'] = {'value': 0.4, 'unit': 'mA', 'against': '启动需求 2 mA'}
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('already decides' in e for e in errors), errors)
+        fn['open'][0]['margin_not_decisive_reason'] = '外推用的是典型斜率，保证值可能更陡'
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+
+    def test_a_shortfall_under_the_public_bound_is_a_fail_item_unless_the_loose_bound_is_named(self):
+        fn = with_datum()
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('misses the limit' in e for e in errors), errors)
+        fn['open'][0]['margin_not_decisive_reason'] = '120 V 测试点外推到 40 V 的斜率不是保证值'
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('loose_bound' in e for e in errors), errors)
+        fn['open'][0]['loose_bound'] = 'c9'
+        self.assertTrue(any('loose_bound' in e for e in function_errors({'functions': [fn]})))
+        fn['open'][0]['loose_bound'] = 'c3'
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+
+    def test_f4_a_shortfall_kept_open_in_the_calculation_also_names_the_loose_bound(self):
+        fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']
+        fn['calculation'].update(result='VCC_min = 8.6 V', margin={'value': -0.2, 'unit': 'V', 'against': 'VCC(off) max 8.8 V'})
+        fn['open'][0]['margin_not_decisive_reason'] = 'VF 取 1 A 测试点，20 mA 下的曲线可把界收紧 0.3 V'
+        self.assertTrue(any('loose_bound' in e for e in function_errors({'functions': [fn]})))
+        fn['open'][0]['loose_bound'] = 'c1'
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+
+    def test_a_shortfall_fail_item_carries_the_change_that_clears_it(self):
+        fn = bias_function('FAIL'); fn['calculation']['margin']['value'] = -0.2
+        fn['fails'] = [{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC 无余量', 'decides': [{'aspect': ASPECT}]}]
+        errors = function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]})
+        self.assertTrue(any('remediation' in e for e in errors), errors)
+        fixed = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': 'R3 改 100 Ω，VF 降 0.3 V'}}
+        self.assertEqual(function_errors({'functions': [fn], 'findings': [fixed]}), [])
+        fn['calculation']['margin']['value'] = 0.5   # no shortfall: the finding may still be in design
+        fn.update(verdict='FAIL')
+        self.assertEqual(function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]}), [])
+
+    def test_not_boundable_names_the_curves_and_tables_searched(self):
+        fn = with_datum(not_boundable_reason='手册没有 40 V 以下的任何测试点或曲线')
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('curves_checked' in e for e in errors), errors)
+        fn['open'][0]['worst_case']['curves_checked'] = [{'source': 'evidence/ds/U1.txt', 'locator': 'Fig. 12 IHV vs VHV'}]
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        fn['open'][0]['worst_case']['curves_checked'] = ['looked']
+        self.assertTrue(any('curves_checked' in e for e in function_errors({'functions': [fn]})))
+
+
+class DeliverablePendingTests(unittest.TestCase):
+    """A deliverable another stage owes (magnetics drawing, firmware application capability) is neither a
+    vendor datum nor an undecided design value: the item names it, its owner and what the verdict assumed."""
+
+    def pending(self):
+        return {'key': 'T1-DRAWING', 'kind': 'DELIVERABLE_PENDING', 'what': 'T1 带绝缘体系的磁件图纸还没有交付',
+                'scope': '加强绝缘、5000 m', 'deliverable': 'T1 磁件规格书：三重线型号、绕组顺序、边距、耐压试验值',
+                'owner': '磁件设计', 'assumed': '按 intent 的 48:6:21 匝比和三重线次级计算',
+                'closure': '规格书给出上述项且耐压 ≥ 3000 Vac',
+                'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN']}],
+                'margin_not_decisive_reason': '余量按假定的匝比算，匝比在待交付的图纸上',
+                'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'affects': 'T1', 'consequence': '图纸与假定不符时偏置电压不足'}}
+
+    def test_the_item_names_the_deliverable_its_owner_and_the_assumption(self):
+        fn = bias_function(); fn['open'] = [self.pending()]
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        for field in ('deliverable', 'owner', 'assumed', 'closure'):
+            broken = copy.deepcopy(fn); del broken['open'][0][field]
+            self.assertTrue(function_errors({'functions': [broken]}), field)
+        broken = copy.deepcopy(fn); broken['open'][0]['acquisition'] = '向厂家索取'
+        self.assertTrue(any('only belong' in e for e in function_errors({'functions': [broken]})))
+
+    def test_rows_count_the_deliverable_apart_from_data_and_design_gaps(self):
+        fn = bias_function(); fn['open'] = [self.pending()]
+        p, r, db = ledger(fn)
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual(out['insufficient_by_cause'], {'DELIVERABLE_PENDING': 2})
+        text = render(p, r, out)
+        self.assertIn('因为等交付物，现在还判断不了', text)
+        task = next(t for t in out['workflow']['work_items'] if t['id'] == 'W-T1-DRAWING')
+        self.assertEqual(task['next_action'], '由磁件设计交付：T1 磁件规格书：三重线型号、绕组顺序、边距、耐压试验值')
 
 
 class RowBindingTests(unittest.TestCase):
@@ -231,7 +341,9 @@ class DerivedLevelsTests(unittest.TestCase):
         fn = r['functions'][0]
         short = {'key': 'SHORT-SOA', 'kind': 'VENDOR_DATUM', 'what': 'Q5 短路关断轨迹', 'scope': '22.1 V 热态短路',
                  'closure': 'Q5 重复短路 SOA 内', 'acquisition': '原厂应用支持', 'checked': ['c3'],
-                 'why_insufficient': '手册无 VBUS 关断轨迹', 'worst_case': {'not_boundable_reason': '无驱动电流上限'},
+                 'why_insufficient': '手册无 VBUS 关断轨迹',
+                 'worst_case': {'not_boundable_reason': '无驱动电流上限',
+                                'curves_checked': [{'source': 'evidence/ds/U5.txt', 'locator': 'Fig. 3 SOA'}]},
                  'decides': [{'aspect': ASPECT, 'states': ['LATCH']}], 'margin_not_decisive_reason': '余量是偏置电压的，不是 Q5 的',
                  'severity': {'level': 'P0', 'class': 'DAMAGE_OR_HAZARD', 'hazard_path': 'FIRE', 'affects': 'Q5',
                               'consequence': 'Q5 烧毁起火'}}

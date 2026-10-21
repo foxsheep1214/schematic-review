@@ -257,15 +257,15 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 | `conditions[]` | 第 1 步“先用手册里已有的界限”：每条 `id`/`source`/`locator`/`says`/`use`，`use` 写怎么用（相邻测试点夹界、门限上限、温度系数） |
 | `calculation` | 第 2 步：`result`、`margin{value,unit,against[,aspect]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值）、`claim_ids`、`assumptions`；只针对一个方面时写 `aspect`。没有数值的功能写 `no_calculation_reason` |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
-| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[{aspect, states?}]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`、`title`/`why` 可选。DESIGN_VALUE 另写 `spec` 和 `owner`（不许写成向厂家索取）；VENDOR_DATUM 另写 `checked`（条款 id）、`why_insufficient`、`acquisition`、`worst_case{result 或 not_boundable_reason}`；USER_DEFERRED 写 `instruction`；REQUIREMENT 不写 severity，走需求澄清。`decides` 超过 3 个方面要写 `decides_reason`；功能已算出正余量而仍开放、或余量不为正却不记失败项时写 `margin_not_decisive_reason`（后者要指出哪个边界取得松、收紧后可能翻转）；DESIGN_VALUE 在有计算的功能里没有对应方面的余量时写 `no_margin_reason`（设计还没选定什么） |
+| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[{aspect, states?}]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`、`title`/`why` 可选。DESIGN_VALUE 另写 `spec` 和 `owner`（不许写成向厂家索取）；VENDOR_DATUM 另写 `checked`（条款 id）、`why_insufficient`、`acquisition` 和 `worst_case`：先按公开界算，`worst_case{bound{condition: 条款 id, value, basis: GUARANTEED_LIMIT/ADJACENT_TEST_POINT/TYPICAL_CURVE/PUBLISHED_TABLE/APPLICATION_NOTE}, result, margin{value,unit,against}}`，公开界下余量为正即已判定（要保留开放须写 `margin_not_decisive_reason` 说明该界漏了什么），为零或为负按 F4 处理；确实没有任何公开界时写 `worst_case{not_boundable_reason, curves_checked[{source, locator}]}`，列出为找界查过的手册曲线、特性表和应用笔记；DELIVERABLE_PENDING（另一阶段欠的交付物：定制磁件图纸、固件应用能力确认、配置表）另写 `deliverable`、`owner`、`assumed`（本判定按什么假定算的）和 `closure`，不写 acquisition/spec；USER_DEFERRED 写 `instruction`；REQUIREMENT 不写 severity，走需求澄清。`decides` 超过 3 个方面要写 `decides_reason`；功能已算出正余量而仍开放、或余量不为正却不记失败项时写 `margin_not_decisive_reason`（后者还要在 `loose_bound` 写取得松的那条条款 id，收紧后可能翻转）；DESIGN_VALUE 在有计算的功能里没有对应方面的余量时写 `no_margin_reason`（设计还没选定什么） |
 | `fails[]` | 失败项：`key`、`finding_id`（指向 findings）、`what`、`decides`，可带 `title`/`why`/`due_stage`/`design_option` |
 | `handoffs[]` | 功能级移交，派生行时填进计划要求移交的行 |
 | `verdict_history[]` | 改过结论时写 `{from, to, basis: [条款或 claim id], note}`，basis 不能为空 |
 | `evidence` | 可定位的证据 |
 
 校验 F1–F8：F1 每个功能有问题、对象、至少一条完整的条款和结论；F2 DESIGN_VALUE 写规格与责任方，不向厂家要；
-F3 VENDOR_DATUM 写查过什么、为什么不够、最坏情况；F4 算出正余量就不能在同一方面保留开放项，余量为零或为负就要有失败项
-（两者都可写明理由保留开放）；F5 行跟随功能（见下）；F6 改结论要引条款或数字；F7 一个开放项铺过 3 个方面要写理由；
+F3 VENDOR_DATUM 写查过什么、为什么不够，以及公开界下的最坏情况（界的条款、取值、依据和余量；没有界就列查过的曲线表），公开界下的余量和算出的余量一样决定结论；F4 算出正余量就不能在同一方面保留开放项，余量为零或为负就要有失败项，
+失败项指向的发现项带 `remediation`（清掉亏欠的改法）；要保留开放，正余量写 `margin_not_decisive_reason`，亏欠还要 `loose_bound` 点名取松的条款；F5 行跟随功能（见下）；F6 改结论要引条款或数字；F7 一个开放项铺过 3 个方面要写理由；
 F8 功能已有计算时，DESIGN_VALUE 开放项要有对应方面的余量，或写明设计还没选定什么。
 
 **文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（摘要数字、选型记录、图纸卫生）不是电路。
@@ -442,7 +442,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 ```
 
 `gap_cause`、`missing_inputs`、`input_requests`、`potential_severity`、`impact_assessment` 由开放项推出
-（DESIGN_VALUE→DESIGN_OPEN，VENDOR_DATUM→EXTERNAL_DATA，REQUIREMENT→REQUIREMENT_OPEN，其余同名），写了会被拒绝。
+（DESIGN_VALUE→DESIGN_OPEN，VENDOR_DATUM→EXTERNAL_DATA，REQUIREMENT→REQUIREMENT_OPEN，DELIVERABLE_PENDING 与其余同名），写了会被拒绝。
 
 由校验器推出、不写进台账的字段（写了会被拒绝）：
 - `blocking`：FAIL/INSUFFICIENT 默认阻塞。只有阶段允许暂留的 P2/P3 才写 `"blocking": false`。
@@ -472,7 +472,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   格式：`[{"text": "原文片段", "kind": "OBLIGATION", "result": "PASS", "check_ids": [...]}, {"text": "原文片段", "kind": "PREMISE"}]`。
   行结论 = 义务条款中最差的结论（FAIL > INSUFFICIENT > PASS > NA），校验强制。前提条款里的要求由相关器件/电路行执行，
   其他行发现的缺陷不连带本行；需求原文把该缺陷写成义务（如“各连续受电元件不得超出持续功率额定”）时才在本行判。
-- 证据不足的原因是开放项的 `kind`：DESIGN_VALUE、VENDOR_DATUM、REQUIREMENT、REVIEW_INCOMPLETE、USER_DEFERRED，
+- 证据不足的原因是开放项的 `kind`：DESIGN_VALUE、VENDOR_DATUM、DELIVERABLE_PENDING、REQUIREMENT、REVIEW_INCOMPLETE、USER_DEFERRED，
   含义见 [复核每条证据不足](evidence-proportionality.md#复核每条证据不足)。纯下游项不是 INSUFFICIENT，用阶段 NA。
   `scope` 写缺口要覆盖的电压/负载/状态/温度范围，不是标题或 `what` 的复述（`REQUEST_SCOPE_ECHOES_TASK` 提示，报告也不显示只复述的范围）；
   `acquisition` 以“已读 X 第 N 页，缺 Y”开头时，报告把“已读”部分单列为“已查过”。

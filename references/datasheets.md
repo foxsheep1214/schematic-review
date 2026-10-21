@@ -133,6 +133,14 @@ Agent 汇总 datasheet-audit.json.user_messages 的缺失物料/位号及检索�
 具体缺口（gaps：参数/身份/工况）、受影响检查、最小补证方法和关闭条件。
 共享缺口合并到同一 work_item，不为多个检查重复索取资料。
 
+### 公开曲线表先于索取
+
+记 VENDOR_DATUM 之前先在公开资料里找界，顺序见 [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)：
+手册电气表里不利方向上相邻的测试点、手册后部的典型曲线（转移特性、栅电荷、VF–IF–温度、CTR–IF）、厂家网站或样本的
+特性表（NTC 的逐度 R-T 表、电解电容的 ESR/纹波频率系数表、保险丝 I²t 曲线）、厂家应用笔记里的损耗与降额公式。
+这些是下载和阅读，不是索取；找到的界写进功能判定的 `conditions` 和 `worst_case.bound`，翻过而没有的写进 `curves_checked`。
+`acquisition` 写“向 X 取得本机工况下的保证”而公开表已能夹界的，是检索未完成（REVIEW_INCOMPLETE），不是缺资料。
+
 按 [逐参数补证与替代](evidence-proportionality.md#原定资料取不到时) 记录其他证据；
 同系列、近似后缀资料可辅助分析，但不得冒充原器件 datasheet 或更改身份/保证范围。
 审计状态只描述资料覆盖；审查者结论不能反向把 NOT_FOUND 改成 AVAILABLE。

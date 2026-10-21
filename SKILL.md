@@ -155,9 +155,11 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 1. **功能判定**：按计划 `functions[]` 的框架逐个填写 `review-results.json` 的 `functions[]`（字段与 F1–F8 见
    [功能判定](references/plan-and-results.md#功能判定functions)）。框架自带问题、科目行、每条规则的盲区和五步核对单；
    审查员读手册和自己的计算，不翻规则书。先列手册里与这个功能有关的条款（`conditions`），再算（`calculation`），
-   算出余量就下结论：余量为正判 PASS，为零或为负判 FAIL（保证要求未满足），设计里已有的值不记“设计没定”；
-   本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`），只有厂家才知道的参数才记 VENDOR_DATUM
-   并写查过哪几条、为什么不够、最坏情况。框架外的功能（intent 没有声明的电路）自己加，同样校验。
+   算出余量就下结论：余量为正判 PASS，为零或为负判 FAIL（保证要求未满足）且发现项带改法，设计里已有的值不记“设计没定”；
+   本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`）；另一阶段欠的交付物（磁件图纸、固件应用能力确认）记
+   DELIVERABLE_PENDING（`deliverable`+`owner`+`assumed`）；只有厂家才知道、公开界（保证限值、相邻测试点单调夹界、
+   公开特性表、典型曲线加余量、应用笔记公式）也兜不住的参数才记 VENDOR_DATUM，并写查过哪几条、为什么不够、
+   公开界下的最坏情况与余量（`worst_case.bound`/`margin`；没有界就列 `curves_checked`）。框架外的功能（intent 没有声明的电路）自己加，同样校验。
    隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是隔离/变换器功能的方面，在同一个功能判定里写条款与计算。
    文档检查（DOC-*）不是功能电路：文档错误直接在行上判 FAIL 并写 finding，不包成功能。
 2. **行派生**：跑 `derive_rows.py`（见第 7 步）；绑定了功能的行不手填。

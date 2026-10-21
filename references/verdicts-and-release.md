@@ -270,7 +270,7 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 |---|---|
 | `title` / `root_cause` | 开放项的 `title`（无则 `what`）/ `what` |
 | `reason` | `why`，无则 `severity.consequence` |
-| `next_action` | DESIGN_VALUE：“由 {owner} 确定：{spec}”；VENDOR_DATUM：`acquisition`；失败项：“按发现项 {finding_id} 的改法处理” |
+| `next_action` | DESIGN_VALUE：“由 {owner} 确定：{spec}”；VENDOR_DATUM：`acquisition`；DELIVERABLE_PENDING：“由 {owner} 交付：{deliverable}”；失败项：“按发现项 {finding_id} 的改法处理” |
 | `due_stage` / `design_option` | 开放项同名字段（`due_stage` 默认 `design_iteration`） |
 | `check_ids` | 用 `open_ref`/`fail_ref` 指向这一项的行（即 `decides` 命中的方面×状态） |
 | 等级 | 开放项的 `severity.level`；失败项取发现项 |
@@ -332,6 +332,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 | 实际漏感/PCB 寄生尖峰，已有适用的保守参数和吸收/钳位设计依据 | 设计子判据单独判定，实际波形测试阶段 NA；保守界限不足或算不过不能移交消失 |
 | 实际负载不明、保护配置未知、保证边界足以改变选型结论 | INSUFFICIENT + 具体缺口（gaps）；已证实违反则 FAIL |
 | 固件配置表缺失或自相矛盾 | INSUFFICIENT（DESIGN_OPEN），由 ASG 把配置表定下来 |
+| 定制磁件图纸、固件/OTP 应用能否实现所需控制策略的确认等另一阶段欠的交付物 | INSUFFICIENT（DELIVERABLE_PENDING）：写欠什么、谁欠、本判定按什么假定算；不记 EXTERNAL_DATA，不向芯片厂家索取 |
 | 烧录镜像、读回、编程夹具、量产校准 | 原理图前提单独判；镜像本身阶段 NA + HANDOFF 给固件/生产 |
 | 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`） |
 | 同一方法套在几个对象上（三只光耦的 CTR、几只电解的寿命） | 一件待办、多个位号，不拆成三件（`DUPLICATE_WORK_ITEMS`） |

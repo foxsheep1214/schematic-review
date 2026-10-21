@@ -33,14 +33,15 @@ RECORD_INDEX = (('review-results.json', '每条检查的结论、依据、缺的
                 ('lint-hot.json', '自动检查输出（加上器件资料）'),
                 ('evidence/', '引用的资料摘录、计算和图片'))
 OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计还没定'),
+                                ('DELIVERABLE_PENDING', '等交付物'),
                                 ('REQUIREMENT_OPEN', '需求还没定'), ('REVIEW_INCOMPLETE', '审查还没做完'),
                                 ('USER_DEFERRED', '暂缓处理')])
 RELEASE = {'GO': '可以定稿', 'CONDITIONAL_GO': '可以有条件定稿', 'NO_GO': '还不能定稿'}
-CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计没定'),
+CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计没定'), ('DELIVERABLE_PENDING', '等交付物'),
                       ('REQUIREMENT_OPEN', '需求没定'), ('REVIEW_INCOMPLETE', '审查没做完'),
                       ('USER_DEFERRED', '已暂缓')])
 KINDS = OrderedDict([('FAIL', '电路错误'), ('REQUIREMENT_OPEN', '需求没定'), ('DESIGN_OPEN', '设计没定'),
-                     ('EXTERNAL_DATA', '缺资料'), ('REVIEW_INCOMPLETE', '审查没做完'),
+                     ('EXTERNAL_DATA', '缺资料'), ('DELIVERABLE_PENDING', '等交付物'), ('REVIEW_INCOMPLETE', '审查没做完'),
                      ('USER_DEFERRED', '已暂缓')])
 SEVERITIES = ('P0', 'P1', 'P2', 'P3')
 SEVERITY_WORDS = {'P0': '可能损坏器件或危及安全', 'P1': '必需功能可能不达标',

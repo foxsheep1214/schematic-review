@@ -3,10 +3,13 @@
 A function verdict answers one question about one circuit block. Before it may leave anything open
 it must have listed the datasheet clauses that bear on the question (F1), kept a design value as a
 specification instead of a vendor request (F2), named what was checked and the worst case before
-asking a vendor (F3), and drawn the conclusion a computed margin already gives (F4: a positive margin
-passes, a margin at or below zero is a fail item). Rows only follow the verdict (F5); a changed verdict
+asking a vendor (F3: the worst case under the public bound, its margin deciding like any other, or the
+curves and tables searched before calling it unboundable), and drawn the conclusion a computed margin
+already gives (F4: a positive margin passes, a margin at or below zero is a fail item whose finding carries
+the change, or stays open only naming the loose bound). Rows only follow the verdict (F5); a changed verdict
 cites a clause or a number (F6); one open item does not spread over a whole block without saying why
-(F7); a design value left open beside a calculation states its margin (F8). Document checks are not
+(F7); a design value left open beside a calculation states its margin (F8); a deliverable another stage owes
+(DELIVERABLE_PENDING) names the deliverable, its owner and what the verdict assumed. Document checks are not
 functions: a document defect is not bound to one, and a function of document rows only is not counted.
 None of this proves the electrical judgement.
 """
@@ -14,9 +17,13 @@ import re
 
 import results_model
 from results_model import LEVELS, OPEN_KINDS, PHASES, VERDICTS, text
+from validate_remediation import READINESS
 
 CONDITION_FIELDS = ('id', 'source', 'locator', 'says', 'use')
 REQUEST_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM')
+# How a public number bounds the quantity at the design's operating point (F3).
+BOUND_BASES = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'TYPICAL_CURVE', 'PUBLISHED_TABLE', 'APPLICATION_NOTE')
+DELIVERABLE_FIELDS = ('deliverable', 'owner', 'assumed', 'closure')
 VENDOR_ASK_RE = re.compile(r'向[^，,；;。]{0,16}(?:原厂|厂商|厂家|供应商|[A-Z][A-Za-z]{2,})[^，,；;。]{0,8}(?:索取|取得|索要|要)'
                            r'|ask(?:ing)? (?:the )?(?:vendor|supplier|manufacturer)|request(?:ed)? from (?:the )?(?:vendor|supplier)', re.I)
 MANY_ASPECTS = 3
@@ -74,9 +81,35 @@ def _covers(item, aspect):
     return aspect is None or any(a == aspect for a, _ in _decides(item))
 
 
-def _margin_errors(fid, fn, calculation):
+def _loose_bound_errors(fid, items, condition_ids):
+    """An open item that keeps a shortfall open names the clause whose bound it took loose."""
+    errors = []
+    for item in items:
+        if not text(item.get('margin_not_decisive_reason')):
+            continue
+        if item.get('loose_bound') not in condition_ids:
+            errors.append('%s/%s: a shortfall kept open names in loose_bound the condition id whose bound was taken '
+                          'loose (the one whose tightening could clear it)' % (fid, item.get('key', '?')))
+    return errors
+
+
+def _shortfall_fix_errors(fid, fails, findings):
+    """A fail item recording a computed shortfall points at a finding that carries the change clearing it."""
+    errors = []
+    for item in fails:
+        finding = findings.get(item.get('finding_id')) or {}
+        remediation = finding.get('remediation')
+        if not (isinstance(remediation, dict) and remediation.get('readiness') in READINESS):
+            errors.append('%s/%s: a computed shortfall is cleared by a change; finding %s needs remediation '
+                          '(readiness %s and what it changes)'
+                          % (fid, item.get('key', '?'), item.get('finding_id'), '/'.join(READINESS)))
+    return errors
+
+
+def _margin_errors(fid, fn, calculation, condition_ids=frozenset(), findings=None):
     """F4 both ways, and F8: a design value left open beside a calculation states its margin."""
     errors = []
+    findings = findings or {}
     found = [(m['value'], m.get('aspect') or calculation.get('aspect'), m)
              for m in results_model.margins(calculation) if type(m['value']) in (int, float)]
     opens = [i for i in fn.get('open') or [] if isinstance(i, dict)]
@@ -90,9 +123,13 @@ def _margin_errors(fid, fn, calculation):
                                   % (fid, item.get('key', '?'), value, m.get('unit'), m.get('against')))
             continue
         # no headroom against the limit: the guarantee is not met, which is a fail item, not an open one
-        if any(_covers(i, aspect) for i in fails):
+        covering_fails = [i for i in fails if _covers(i, aspect)]
+        if covering_fails:
+            errors.extend(_shortfall_fix_errors(fid, covering_fails, findings))
             continue
-        if any(_covers(i, aspect) and text(i.get('margin_not_decisive_reason')) for i in opens):
+        kept = [i for i in opens if _covers(i, aspect) and text(i.get('margin_not_decisive_reason'))]
+        if kept:
+            errors.extend(_loose_bound_errors(fid, kept, condition_ids))
             continue
         errors.append('%s: calculation shows %s %s against %s%s — the worst case misses the limit; record a fail item '
                       'with its finding (保证要求未满足), or keep it open only with margin_not_decisive_reason naming the '
@@ -108,6 +145,60 @@ def _margin_errors(fid, fn, calculation):
                               'derating included), or say in no_margin_reason what the design has not chosen yet'
                               % (fid, item.get('key', '?'), '/'.join(calculation['claim_ids'])))
     return errors
+
+
+def _worst_case_errors(label, item, condition_ids):
+    """F3: the worst case under the public bound (which clause, what value, how it bounds) and its margin,
+    or the curves and tables searched before calling the quantity unboundable."""
+    worst = item.get('worst_case')
+    if not isinstance(worst, dict):
+        return [label + ': worst_case gives the result under the public bound, or why it cannot be bounded']
+    if text(worst.get('not_boundable_reason')):
+        if not evidence(worst.get('curves_checked')):
+            return [label + ': worst_case.curves_checked lists the datasheet figures, published tables and application '
+                            'notes searched for a bound (source, locator) before the quantity is called unboundable']
+        return []
+    errors = []
+    bound = worst.get('bound')
+    if not (isinstance(bound, dict) and bound.get('condition') in condition_ids and text(bound.get('value'))
+            and bound.get('basis') in BOUND_BASES):
+        errors.append('%s: worst_case.bound names the public bound used before asking the vendor: condition (a clause '
+                      'id), value, basis one of %s' % (label, '/'.join(BOUND_BASES)))
+    if not text(worst.get('result')):
+        errors.append(label + ': worst_case.result states the outcome under the public bound')
+    margin = worst.get('margin')
+    if not (isinstance(margin, dict) and type(margin.get('value')) in (int, float) and text(margin.get('unit'))
+            and text(margin.get('against'))):
+        errors.append(label + ': worst_case.margin {value: number, unit, against} under the public bound')
+    return errors
+
+
+def _datum_margin_errors(fid, fn, item, condition_ids, findings):
+    """The margin under the public bound decides like a computed one (F4): positive concludes, a shortfall is a
+    fail item on the aspect or stays open naming the loose bound."""
+    worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
+    margin = worst.get('margin') if isinstance(worst.get('margin'), dict) else {}
+    if type(margin.get('value')) not in (int, float):
+        return []
+    value = margin['value']
+    label = '%s/%s' % (fid, item.get('key', '?'))
+    if value > 0:
+        if text(item.get('margin_not_decisive_reason')):
+            return []
+        return ['%s: the worst case under the public bound (%s) shows %s %s margin against %s — the public bound '
+                'already decides; conclude PASS(B) with the bound in conditions, or say in margin_not_decisive_reason '
+                'what the bound misses' % (label, (worst.get('bound') or {}).get('value'), value, margin.get('unit'),
+                                          margin.get('against'))]
+    aspects = {a for a, _ in _decides(item)}
+    fails = [i for i in fn.get('fails') or [] if isinstance(i, dict) and any(_covers(i, a) for a in aspects)]
+    if fails:
+        return _shortfall_fix_errors(fid, fails, findings)
+    if text(item.get('margin_not_decisive_reason')):
+        return _loose_bound_errors(fid, [item], condition_ids)
+    return ['%s: the worst case under the public bound shows %s %s against %s — the worst case misses the limit; '
+            'record a fail item with its finding (保证要求未满足), or keep it open only with margin_not_decisive_reason '
+            'and loose_bound naming the clause whose bound was taken loose'
+            % (label, value, margin.get('unit'), margin.get('against'))]
 
 
 def _item_errors(label, item, kind_field, condition_ids, finding_ids):
@@ -148,7 +239,16 @@ def _item_errors(label, item, kind_field, condition_ids, finding_ids):
         for field in ('class', 'consequence'):
             if not text(severity.get(field)):
                 errors.append(label + ': severity.' + field + ' required')
-    if kind not in REQUEST_KINDS:
+    if kind == 'DELIVERABLE_PENDING':
+        stray = [f for f in ('spec', 'acquisition', 'checked', 'worst_case') if f in item]
+        if stray:
+            errors.append('%s: %s only belong to DESIGN_VALUE/VENDOR_DATUM' % (label, '/'.join(stray)))
+        for field in DELIVERABLE_FIELDS:
+            if not text(item.get(field)):
+                errors.append('%s: a pending deliverable names %s (what another stage owes, who owes it, what this '
+                              'verdict assumed from it, what closes it)' % (label, '/'.join(DELIVERABLE_FIELDS)))
+                break
+    elif kind not in REQUEST_KINDS:
         stray = [f for f in ('spec', 'owner', 'acquisition', 'closure', 'checked', 'worst_case') if f in item]
         if stray:
             errors.append('%s: %s only belong to DESIGN_VALUE/VENDOR_DATUM' % (label, '/'.join(stray)))
@@ -172,9 +272,7 @@ def _item_errors(label, item, kind_field, condition_ids, finding_ids):
             errors.append(label + ': why_insufficient says why the clauses read do not answer the question')
         if not text(item.get('acquisition')):
             errors.append(label + ': acquisition says who provides the datum')
-        worst = item.get('worst_case')
-        if not (isinstance(worst, dict) and (text(worst.get('result')) or text(worst.get('not_boundable_reason')))):
-            errors.append(label + ': worst_case gives the result under the datasheet worst case, or why it cannot be bounded')
+        errors.extend(_worst_case_errors(label, item, condition_ids))
     if kind == 'USER_DEFERRED' and not evidence(item.get('instruction')):
         errors.append(label + ': a deferral cites the user instruction (instruction evidence)')
     return errors
@@ -186,7 +284,8 @@ def function_errors(report):
     functions = report.get('functions')
     if not isinstance(functions, list):
         return errors   # results_model.shape_errors names this
-    finding_ids = {f.get('id') for f in report.get('findings') or [] if isinstance(f, dict)}
+    findings = {f.get('id'): f for f in report.get('findings') or [] if isinstance(f, dict)}
+    finding_ids = set(findings)
     seen_ids, seen_keys = set(), {}
     for fn in functions:
         if not isinstance(fn, dict) or not (text(fn.get('id')) and ID_RE.match(fn['id'])):
@@ -254,8 +353,10 @@ def function_errors(report):
                         errors.append('%s: key %s already used by %s (keys are unique across functions)' % (label, key, seen_keys[key]))
                     seen_keys[key] = fid
                 errors.extend(_item_errors(label, item, field, condition_ids, finding_ids))
+                if field == 'open' and item.get('kind') == 'VENDOR_DATUM':
+                    errors.extend(_datum_margin_errors(fid, fn, item, condition_ids, findings))
         if isinstance(calculation, dict):   # F4, F8
-            errors.extend(_margin_errors(fid, fn, calculation))
+            errors.extend(_margin_errors(fid, fn, calculation, condition_ids, findings))
         # F6: a verdict change cites a clause or a number.
         history = fn.get('verdict_history')
         if history is not None:

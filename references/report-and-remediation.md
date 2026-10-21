@@ -76,7 +76,7 @@ notes 不能改结论或计数，不写内部代码名（gap_cause、documented 
 - **缺什么**（开放项的 `what` + `scope`）：哪个器件缺哪个数或哪项设计没定，适用哪些工况。
 - **为什么要紧**（`why`，无则 `severity.consequence`）：缺了它判断不了什么、可能出什么事。只复述“缺什么”的句子不显示；三件以上共用的句子也不显示。
 - **已查过**（`acquisition` 开头的“已读……”）：读过哪份资料哪几页、查到了什么。几处写的同一份资料只显示一次。
-- **还要做**（其余部分：DESIGN_VALUE 是“由 {owner} 确定：{spec}”，VENDOR_DATUM 是 `acquisition`，失败项是“按发现项 … 的改法处理”）：向谁取得什么、算什么、改什么。
+- **还要做**（其余部分：DESIGN_VALUE 是“由 {owner} 确定：{spec}”，VENDOR_DATUM 是 `acquisition`，DELIVERABLE_PENDING 是“由 {owner} 交付：{deliverable}”，失败项是“按发现项 … 的改法处理”）：向谁取得什么、算什么、改什么。
 - **怎样算通过**（`closure`）：可以复核的数值或条件。
 
 `notes.items` 写成“审查员补充”，只写以上五行里没有的取舍或先后，不复述。

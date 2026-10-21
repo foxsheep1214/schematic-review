@@ -7,6 +7,42 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Open items stop being an exit: public bound first, shortfall means a fix, deliverables get their own kind (2026-10-20)
+
+A review record produced from the current skill carried 375 PASS, 0 FAIL and
+49 INSUFFICIENT rows behind ten work items, eight of them VENDOR_DATUM. Read
+against the datasheets already in its evidence folder, one item was half a
+data gap; the rest were quantities the public data already bounded (an
+adjacent test point on a monotonic curve, a gate-charge table plus the
+driver's own loss equation, a thermistor R-T table the vendor publishes), or
+computed shortfalls the reviewer had written into `worst_case` prose rather
+than into a fail item with the value change that clears them, or a firmware
+capability and a magnetics drawing that no circuit datum answers. The F-rules
+let all of that through because `worst_case` only had to be text. Four
+tightenings, tests first: (1) F3 `worst_case` names the public bound used
+(`bound{condition, value, basis}` with basis GUARANTEED_LIMIT /
+ADJACENT_TEST_POINT / TYPICAL_CURVE / PUBLISHED_TABLE / APPLICATION_NOTE),
+the result and a structured `margin`; that margin decides like a computed one:
+positive concludes unless `margin_not_decisive_reason` says what the bound
+misses, zero or negative is a fail item on the aspect. (2) F4 both ways: a
+shortfall kept open names in `loose_bound` the condition id whose bound was
+taken loose, and a shortfall recorded as a fail item points at a finding that
+carries `remediation`. (3) A new open kind DELIVERABLE_PENDING for what
+another stage owes (custom magnetics drawing with its insulation system,
+firmware/OTP application capability, configuration table): `deliverable`,
+`owner`, `assumed`, `closure`; its own gap cause, counted apart from 缺资料
+and 设计没定 in the report, no vendor acquisition. (4) Lookup before asking:
+calling a quantity unboundable requires `curves_checked` naming the datasheet
+figures, published tables and application notes searched; the references
+order the public bounds and say a request for "the vendor's guarantee at our
+operating point" is unfinished lookup, not a data gap. Mutations M27–M32 guard
+the six checks. The synthetic fixtures were updated to the structured
+`worst_case`; no stored review record in the repository wrote the field.
+
+- Event: user:2026-10-20 (R5 独立审查复盘：VENDOR_DATUM 先给公开界最坏值、裕量≤0 默认 FAIL+修改建议、新增交付物待就绪类别、lookup 优先公开曲线表)
+- Causes: rule_not_enforced 2, rule_missing 1, judgment 1
+- Changed: scripts/review_functions.py, scripts/results_model.py, scripts/review_stage_scope.py, scripts/render_report.py, scripts/catalog.py, scripts/tests/test_review_functions.py, scripts/tests/ledger_v3.py, scripts/tests/test_render_and_pack.py, scripts/tests/fixtures/golden_reports/clean.md, scripts/tests/fixtures/golden_reports/decisive.md, scripts/tests/fixtures/golden_reports/defect.md, scripts/tests/fixtures/golden_reports/downstream.md, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, references/plan-and-results.md, references/evidence-proportionality.md, references/verdicts-and-release.md, references/report-and-remediation.md, references/datasheets.md, SKILL.md, docs/improvement-ledger.md
+
 ## The pilot's three frictions fixed: a micro-injection floor, delegated frame rows, scoped ledgers (2026-10-20)
 
 User asked that the three things the hot-review pilot exposed be improved,

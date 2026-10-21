@@ -232,9 +232,14 @@ PWR-C14 的噪声子判据判 NA 前，按状态记录每个已识别敏感物�
    不是最坏情况，先按第 4 步取手册允许的最坏值再比。
 3. **本设计自己要定的量不向厂家要。** 变压器漏感、辅助绕组调整率、补偿码、配置值由设计决定：反算允许范围，
    写成设计规格交给 ASG，或移交样机实测（见上文“未约束的参数反算范围”）。只有器件本身的、厂家才知道的参数才向厂家索取。
-4. **没有保证值就按最坏情况判断。** 损坏、过热、保护类判据缺本器件保证值时，取手册允许的最坏值：
-   最坏情况下仍满足就 PASS；不满足就判 FAIL 或风险并提出改设计，不挂起等厂家回复。
-5. **只有走完 1–4 仍判不了**，才记证据不足，并在缺口里写明查过手册哪几条、为什么都不够。
+4. **没有保证值就按公开界判断。** 损坏、过热、保护类判据缺本工况的保证值时，按这个顺序找公开界并记在 `worst_case.bound`：
+   保证限值（GUARANTEED_LIMIT）→ 不利方向上相邻测试点的单调夹界（ADJACENT_TEST_POINT：VF 随电流单调，5 mA 的上限就是 1 mA 的上限；
+   阈值电压的测试电流低于工作电流时它只是下界，不能当上界）→ 厂家公开的特性表（PUBLISHED_TABLE：NTC 的 R-T 表、电解电容的
+   ESR/频率/温度表、MOS 的栅电荷表）→ 典型曲线加声明的余量或折减系数（TYPICAL_CURVE）→ 厂家应用笔记的公式（APPLICATION_NOTE）。
+   公开界下仍满足就 PASS(B)，把界写进 `conditions`；不满足就判 FAIL 并给改法，不挂起等厂家回复。厂家不会为一颗通用件出具
+   本机工况的承认窗口，“向 X 取得 Y 的保证”不是取得路径。
+5. **只有走完 1–4 仍判不了**，才记证据不足，并在缺口里写明查过手册哪几条、为什么都不够。公开界一条都没有时，
+   `worst_case.curves_checked` 列出为找界翻过的曲线、特性表和应用笔记。
 
 先用已有资料完成适用模型下的计算和定界。采用局部参数、典型曲线或外推时，记录模型适用的
 电流/电压、温度、工作区与拓扑范围、不利方向，以及误差和裕量依据；不能仅因加了余量就称为保守边界。
@@ -397,8 +402,9 @@ PART/VALUE 冲突，或图面/BOM 与链接资料互相矛盾时，建立身份�
 | 原因 | 开放项 `kind`（行的 `gap_cause` 由它推出） | 处理 |
 |---|---|---|
 | 需求待澄清 | REQUIREMENT（→ REQUIREMENT_OPEN） | 判据所依赖的需求缺失、含糊、冲突或待确认，例如输入电压范围与频率、环境（海拔、气候）、适用标准与抗扰度等级、能效版本、目标市场认证。不当作缺资料，反馈给需求责任方：按独立需求澄清协议记录唯一问题、已核输入、待决内容和关闭依据；归本轮任务（`design_iteration`）。需求定了但标准正文未取得，属 EXTERNAL_DATA。先按 [源条目到审查义务](requirement-clarifications.md#源条目到审查义务) 核实际语义；真正待需求责任方决定的条目在 intent 中写 `status: OPEN`（真实暂缓写 `status: DEFERRED`，归“用户明确暂缓”），校验据此归类。源标题 OPEN 下的已有要求、真实外部资料缺口及明确排除不机械录为 OPEN；只依赖真正待决要求的检查才归本类。复审时不得沿用上一版的归类，必须逐条重新归类。 |
-| 真实资料缺口 | VENDOR_DATUM（→ EXTERNAL_DATA） | 指出缺哪一参数/身份/工况、影响哪一判断，列最小取得方法和关闭阶段。`checked` 列查过的条款 id、`why_insufficient` 写为什么都不够，`acquisition` 写向谁取得，`worst_case` 写按手册允许的最坏值算出的结果（或为什么算不出）；没写查证位置的请求会被 `ACQUISITION_WITHOUT_LOOKUP` 提示。标准规定的量（预期短路电流、污染等级、海拔修正系数）按标准条款取值，手册首页的额定和分断类别直接读取，公开数据页抓取失败属 REVIEW_INCOMPLETE，这三类都不是缺资料。“已读 X 第 N 页，再按 … 复算”也不是缺资料：资料在手只差计算的，本轮算完或交 ASG。光耦寿命末期 CTR、电解寿命公式、MOS 热态 RDS 这类有公开曲线或行业折减系数的量，用 intent/evidence 里声明的系数（如 `ctr_derating`）计算，不向厂家索取“保证”。 |
+| 真实资料缺口 | VENDOR_DATUM（→ EXTERNAL_DATA） | 指出缺哪一参数/身份/工况、影响哪一判断，列最小取得方法和关闭阶段。`checked` 列查过的条款 id、`why_insufficient` 写为什么都不够，`acquisition` 写向谁取得，`worst_case` 写公开界下的最坏情况：`bound{condition, value, basis}`、`result` 和 `margin`，余量为正就已判定（保留开放要写 `margin_not_decisive_reason`），为零或为负走 F4；没有任何公开界时写 `not_boundable_reason` 加 `curves_checked`（翻过的曲线、特性表、应用笔记）。没写查证位置的请求会被 `ACQUISITION_WITHOUT_LOOKUP` 提示。标准规定的量（预期短路电流、污染等级、海拔修正系数）按标准条款取值，手册首页的额定和分断类别直接读取，公开数据页抓取失败属 REVIEW_INCOMPLETE，这三类都不是缺资料。“已读 X 第 N 页，再按 … 复算”也不是缺资料：资料在手只差计算的，本轮算完或交 ASG。光耦寿命末期 CTR、电解寿命公式、MOS 热态 RDS 这类有公开曲线或行业折减系数的量，用 intent/evidence 里声明的系数（如 `ctr_derating`）计算，不向厂家索取“保证”。 |
 | 设计尚未决定 | DESIGN_VALUE（→ DESIGN_OPEN） | 只用于设计还没有选定的量（未定的匝比、未选的封装、未写的配置）。设计里已有的值（电阻阻值、已选器件、已写的热目标）照常按最坏情况判 PASS/FAIL，不记设计没定。列需定型的规格/配置及约束；AI 先完成可做的选型/计算，到真实取舍点再请人决策。 |
+| 交付物待就绪 | DELIVERABLE_PENDING（同名） | 另一阶段欠的交付物，原理图只能约束不能代写：定制磁件图纸（绝缘体系、三重线型号、边距、耐压试验值）、固件/OTP 应用能否实现所需控制与恢复策略的确认、配置表。写 `deliverable`（欠什么）、`owner`、`assumed`（本判定按什么假定算的）和 `closure`；不是厂家资料，也不是设计没选的量，报告里单列“等交付物”，不计入缺资料。危险路径没有第二屏障时仍按后果定级，阻断投板不阻断原理图继续改。 |
 | 审查尚未完成 | REVIEW_INCOMPLETE（同名） | 明示还未执行的阅读、计算或录入并继续做，不说成外部资料不存在。临时台账可记证据不足，不能据此宣称审查完成。工具限制但审查者已核对完的，改按审查者结论判定并写 `manual_verification`，不用本原因。 |
 | 纯下游验证 | 不设（不是 INSUFFICIENT） | 按 [判定顺序](verdicts-and-release.md#纯下游验证项) 拆出原理图前提单独判；只能由样机/PCB/结构/试验产生的结果记阶段 NA + HANDOFF，产品要求仍待验证。 |
 | 用户明确暂缓 | USER_DEFERRED（同名） | 引用用户的暂缓指示，写明恢复时要补的内容；不当作缺资料。 |
@@ -413,7 +419,8 @@ PART/VALUE 冲突，或图面/BOM 与链接资料互相矛盾时，建立身份�
 不要写“缺完整手册/全部应力证据”或只写“待确认/待实测”。
 
 DESIGN_VALUE 写 `spec`（反算出的允许范围）、`owner` 和 `closure`；VENDOR_DATUM 写 `checked`（查过的条款 id）、
-`why_insufficient`、`acquisition`、`worst_case` 和 `closure`。其他 kind 不写这些：REQUIREMENT 走需求澄清记录，
+`why_insufficient`、`acquisition`、`worst_case`（公开界与余量，或 `curves_checked`）和 `closure`；DELIVERABLE_PENDING 写
+`deliverable`、`owner`、`assumed` 和 `closure`。其他 kind 不写这些：REQUIREMENT 走需求澄清记录，
 REVIEW_INCOMPLETE 本轮自己做完，USER_DEFERRED 引用暂缓指示（`instruction`）。字段全表见
 [功能判定](plan-and-results.md#功能判定functions)。
 

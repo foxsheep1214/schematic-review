@@ -15,7 +15,7 @@ from ledger_v3 import validate_review
 from render_report import render
 from pack_review import pack, REPORT, RECORD, LEDGER
 
-INTERNAL_CODES = ('EXTERNAL_DATA', 'DESIGN_OPEN', 'REQUIREMENT_OPEN', 'REVIEW_INCOMPLETE',
+INTERNAL_CODES = ('EXTERNAL_DATA', 'DESIGN_OPEN', 'DELIVERABLE_PENDING', 'REQUIREMENT_OPEN', 'REVIEW_INCOMPLETE',
                   'NA_OUTSIDE_STAGE', 'documented', 'gap_cause')
 
 
@@ -60,7 +60,7 @@ class RenderReportTests(unittest.TestCase):
         text, _ = report(p, r, db)
         self.assertLess(text.index('## 数字一览'), text.index('## 结论'))
         self.assertTrue(text.rstrip().split('\n## ')[-1].startswith('索引'))   # the file index closes the report
-        self.assertIn('| 资料不足的原因：缺资料 / 设计没定 / 需求没定 / 审查没做完 / 已暂缓 | 1 / 0 / 0 / 0 / 0 |', text)
+        self.assertIn('| 资料不足的原因：缺资料 / 设计没定 / 等交付物 / 需求没定 / 审查没做完 / 已暂缓 | 1 / 0 / 0 / 0 / 0 / 0 |', text)
         for jargon in ('冻结', '闸门', '移交', '接收方', '证据不足'):
             self.assertNotIn(jargon, text)
         for code in INTERNAL_CODES:

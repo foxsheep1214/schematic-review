@@ -38,7 +38,7 @@
  {"id": "M19", "name": "state-invariant rules expanded per state again", "file": "scripts/plan_review.py",
   "old": "                    invariant = rule in catalog.STATE_INVARIANT", "new": "                    invariant = False"},
  {"id": "M20", "name": "F4 shortfall kept open accepted", "file": "scripts/review_functions.py",
-  "old": "        if any(_covers(i, aspect) for i in fails):", "new": "        if True:"},
+  "old": "        if covering_fails:", "new": "        if True:"},
  {"id": "M21", "name": "F8 design value without margin accepted", "file": "scripts/review_functions.py",
   "old": "    if calculation.get('claim_ids'):   # F8", "new": "    if False:"},
  {"id": "M22", "name": "document defect bound to a function accepted", "file": "scripts/review_functions.py",
@@ -50,5 +50,17 @@
  {"id": "M25", "name": "delegated frame row accepted without object coverage", "file": "scripts/review_functions.py",
   "old": "                if delegated(row, planned_rows.get(member['check_id']), by_id):", "new": "                if True:"},
  {"id": "M26", "name": "review_scope ignored: scoped ledger owes every plan row", "file": "scripts/validate_review.py",
-  "old": "    in_scope = {k: v for k, v in expected.items() if k in scope_rows} if scope_decl else expected", "new": "    in_scope = expected"}
+  "old": "    in_scope = {k: v for k, v in expected.items() if k in scope_rows} if scope_decl else expected", "new": "    in_scope = expected"},
+ {"id": "M27", "name": "F3 public bound never required on a vendor datum", "file": "scripts/review_functions.py",
+  "old": "    if not (isinstance(bound, dict) and bound.get('condition') in condition_ids and text(bound.get('value'))\n            and bound.get('basis') in BOUND_BASES):", "new": "    if False:"},
+ {"id": "M28", "name": "positive margin under the public bound never decides", "file": "scripts/review_functions.py",
+  "old": "    if value > 0:\n        if text(item.get('margin_not_decisive_reason')):\n            return []", "new": "    if value > 0:\n        return []"},
+ {"id": "M29", "name": "shortfall kept open without naming the loose bound", "file": "scripts/review_functions.py",
+  "old": "        if item.get('loose_bound') not in condition_ids:", "new": "        if False:"},
+ {"id": "M30", "name": "pending deliverable accepted without deliverable/owner/assumed", "file": "scripts/review_functions.py",
+  "old": "        for field in DELIVERABLE_FIELDS:\n            if not text(item.get(field)):", "new": "        for field in ():\n            if not text(item.get(field)):"},
+ {"id": "M31", "name": "shortfall fail item accepted without remediation", "file": "scripts/review_functions.py",
+  "old": "        if not (isinstance(remediation, dict) and remediation.get('readiness') in READINESS):", "new": "        if False:"},
+ {"id": "M32", "name": "not_boundable accepted without curves_checked", "file": "scripts/review_functions.py",
+  "old": "        if not evidence(worst.get('curves_checked')):", "new": "        if False:"}
 ]

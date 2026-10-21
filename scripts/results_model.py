@@ -34,9 +34,9 @@ RETIRED_TOP_FIELDS = ('binding_version', 'remediation_version', 'workflow_versio
                       'lint_reviews',
                       # schema 4: work items are derived from the functions' open/fail items
                       'work_items')
-OPEN_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'REQUIREMENT', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
-KIND_CAUSE = {'DESIGN_VALUE': 'DESIGN_OPEN', 'VENDOR_DATUM': 'EXTERNAL_DATA', 'REQUIREMENT': 'REQUIREMENT_OPEN',
-              'REVIEW_INCOMPLETE': 'REVIEW_INCOMPLETE', 'USER_DEFERRED': 'USER_DEFERRED'}
+OPEN_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING', 'REQUIREMENT', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
+KIND_CAUSE = {'DESIGN_VALUE': 'DESIGN_OPEN', 'VENDOR_DATUM': 'EXTERNAL_DATA', 'DELIVERABLE_PENDING': 'DELIVERABLE_PENDING',
+              'REQUIREMENT': 'REQUIREMENT_OPEN', 'REVIEW_INCOMPLETE': 'REVIEW_INCOMPLETE', 'USER_DEFERRED': 'USER_DEFERRED'}
 VERDICTS = ('PASS', 'FAIL', 'OPEN')
 PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
 # Schema 3 always means the newest contract of each retired switch: consequence classes v2,
@@ -136,13 +136,15 @@ def work_item_id(key):
 def how_to_close(item):
     if item.get('kind') == 'DESIGN_VALUE':
         return '由%s确定：%s' % (item.get('owner') or '设计', item.get('spec') or '')
+    if item.get('kind') == 'DELIVERABLE_PENDING':
+        return '由%s交付：%s' % (item.get('owner') or '设计', item.get('deliverable') or '')
     return item.get('acquisition')
 
 
 def gap_of(item):
     """The row-level gap an open item stands for (schema 3 shape, for the validators and the report)."""
     gap = {'what': item.get('what'), 'scope': item.get('scope')}
-    if item.get('kind') in ('DESIGN_VALUE', 'VENDOR_DATUM'):
+    if item.get('kind') in ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING'):
         gap['how_to_close'] = how_to_close(item)
         gap['closure_criterion'] = item.get('closure')
     if isinstance(item.get('severity'), dict):
