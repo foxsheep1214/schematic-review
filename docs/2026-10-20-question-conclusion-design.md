@@ -190,6 +190,8 @@
 
 - `missing.from` 只有五个值：`DESIGN`（设计还没选）、`VENDOR`（目录器件的参数）、`REQUIREMENT`（需求没定）、
   `OTHER_STAGE`（另一阶段的交付物：定制件图纸、固件能力、配置表）、`USER`（用户明确暂缓，附指示出处）。
+  `PROCUREMENT` 能写但一定被拒：料号没定写成通过加约束（4.4 第 8 条）。同一缺口的第二条写 `missing {same_as}`。
+- `failure_path {mechanism, state}`：缺的量怎样让电路失效、在哪个状态（4.4 第 7 条）。
   现在的 6 种开放项、5 种缺口原因、3 种交付物子类全部归到这一个字段。
 - `basis`：用现有公开资料能算到哪里就算到哪里；推出的结论若已是通过或不通过，就不许挂起。`loose_input` 点名哪个
   有范围的输入太宽（收紧它可能翻转结论）。公开资料一个界都没有时不写 `basis`，写 `searched`（翻过的曲线表，source + locator）。
@@ -231,7 +233,9 @@
    - 有数字依据而推出通过或不通过 → 拒绝：公开界已经能定。公开界只覆盖一部分状态时按状态拆开写。
    - 有数字依据而推出判不了 → `loose_input` 是一个有范围的输入。
    - 没有依据 → 必须有 `searched`；`from = DESIGN/REQUIREMENT/OTHER_STAGE/USER` 时 `searched` 可空。
-   - 必须有 `missing.what`、`missing.from`、`closes_when`；除 `REQUIREMENT` 外必须有 `severity`；`USER` 附指示出处。
+   - 必须有 `missing.what`、`missing.from`、`closes_when`；除 `REQUIREMENT` 外必须有 `severity` 和 `failure_path`；
+     `USER` 附指示出处。写 `missing.same_as` 的只要 `failure_path`，其余在被指向的那条。
+   - 通过的依据除数字、事实外还可以是 `CONSTRAINT`（料号未定，约束交 BOM）和 `RECOMMENDED`（推荐配置无偏离）。
 4. 严重程度：`severity` 带 `level`、`class`（现有后果类）、`consequence`。
 5. 定稿（一句话）：存在 P0/P1 的不通过，或 P0 的判不了 → 不能定稿；其余按阶段规则。
 
@@ -257,6 +261,24 @@
 3. **一个改法记成多个缺陷**：两条不通过的 `fix.change` 相同、又没用 `same_as` 关联。缺陷数按独立改法计。
 4. **等级虚高**：`severity.level` 高于 `class` 的上限。
 5. **需求没定被评级**：`missing.from = REQUIREMENT` 的判不了带了 `severity`。
+
+过严更常见的表现不是误判不通过，而是大量没必要的判不了（第 2 批四轮 1789 行里有 28% 是证据不足）。
+下面这些规则管判不了这一侧：
+
+6. **公开值能定界却不用**：手册的典型值或 25 °C 保证值可以作为输入，写成 `{typical: v}` 或
+   `{at_25c: v 或 {min, max}}`，机器按固定下限放宽：典型值两向乘除 3，25 °C 值两端各放宽 20%。
+   审查者可以放得更宽（`widen`），不能更窄（ENGINEERING_TOO_NARROW），来源条款必须是手册（ENGINEERING_NOT_DATASHEET）。
+   放宽后余量仍为正就推出通过。`searched` 里记了数值却没有写成输入，报 BOUND_NOT_USED。
+7. **说不出怎么失效**：每条判不了（需求未定的除外）都要写 `failure_path {mechanism, state}`，state 取问题的状态之一；
+   缺了报 NO_FAILURE_PATH。机器只能确认写了，写得是否具体靠抽查。
+8. **没采购当成判不了**：`missing.from = PROCUREMENT` 的判不了一律拒绝（UNDECIDED_ON_PROCUREMENT），
+   改为通过，依据写 `CONSTRAINT {refs, requires}`；约束汇总到 `summary.constraints`，随 BOM 交出。
+9. **推荐配置不认**：电路就是手册或标准推荐的接法时，写通过，依据 `RECOMMENDED {clause, facts, deviations: []}`，
+   facts 在网表上核对；有偏离就逐条判偏离（RECOMMENDED_WITH_DEVIATION）。条款只能来自手册或标准
+   （RECOMMENDED_NOT_VENDOR）。依据是推荐配置且无偏离却写判不了，报 ALREADY_RECOMMENDED。
+10. **一个缺口记成多条**：两条判不了的 `missing.what` 相同又没关联，报 DUPLICATE_GAP；后一条写 `missing {same_as}`，
+    只在第一条计数（`summary.gaps`）。same_as 的结论仍要写自己的失效路径。父项（需求汇总）跟随子项：
+    子项全部关闭时父项不再单独判不了，子项未关时用 same_as 指向它。
 
 ### 4.5 明确不由机器检查的
 

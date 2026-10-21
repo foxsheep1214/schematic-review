@@ -1,0 +1,2198 @@
+{
+ "questions": [
+  {
+   "id": "ANA-C03.BATTERY-SENSE-BATTERY-ABSENT.U4",
+   "rules": [
+    "ANA-C03"
+   ],
+   "check_ids": [
+    "ANA-C03.BATTERY-SENSE-BATTERY-ABSENT.U4"
+   ],
+   "conditions": {
+    "states": [
+     "BATTERY_ABSENT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C01.BOARD",
+   "rules": [
+    "DEV-C01"
+   ],
+   "check_ids": [
+    "DEV-C01.BOARD"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C01.R8-HOLD",
+   "rules": [
+    "DEV-C01"
+   ],
+   "check_ids": [
+    "DEV-C01.R8-HOLD"
+   ],
+   "conditions": {
+    "states": [
+     "RESET_HOLD"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C01.STRESS-R8",
+   "rules": [
+    "DEV-C01"
+   ],
+   "check_ids": [
+    "DEV-C01.STRESS-R8"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C02.BOARD",
+   "rules": [
+    "DEV-C02"
+   ],
+   "check_ids": [
+    "DEV-C02.BOARD"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C04.BOARD",
+   "rules": [
+    "DEV-C04"
+   ],
+   "check_ids": [
+    "DEV-C04.BOARD"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C05.D6",
+   "rules": [
+    "DEV-C05"
+   ],
+   "check_ids": [
+    "DEV-C05.D6"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C05.D6-SUPPLY",
+   "rules": [
+    "DEV-C05"
+   ],
+   "check_ids": [
+    "DEV-C05.D6-SUPPLY"
+   ],
+   "conditions": {
+    "states": [
+     "ON"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C05.U1",
+   "rules": [
+    "DEV-C05"
+   ],
+   "check_ids": [
+    "DEV-C05.U1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C05.U3",
+   "rules": [
+    "DEV-C05"
+   ],
+   "check_ids": [
+    "DEV-C05.U3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-C05.U6",
+   "rules": [
+    "DEV-C05"
+   ],
+   "check_ids": [
+    "DEV-C05.U6"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D01.U10",
+   "rules": [
+    "DEV-D01"
+   ],
+   "check_ids": [
+    "DEV-D01.U10"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D02.D1",
+   "rules": [
+    "DEV-D02"
+   ],
+   "check_ids": [
+    "DEV-D02.D1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D02.D4",
+   "rules": [
+    "DEV-D02"
+   ],
+   "check_ids": [
+    "DEV-D02.D4"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D02.D5",
+   "rules": [
+    "DEV-D02"
+   ],
+   "check_ids": [
+    "DEV-D02.D5"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D02.J1",
+   "rules": [
+    "DEV-D02"
+   ],
+   "check_ids": [
+    "DEV-D02.J1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D02.J2",
+   "rules": [
+    "DEV-D02"
+   ],
+   "check_ids": [
+    "DEV-D02.J2"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D02.J3",
+   "rules": [
+    "DEV-D02"
+   ],
+   "check_ids": [
+    "DEV-D02.J3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D02.J4",
+   "rules": [
+    "DEV-D02"
+   ],
+   "check_ids": [
+    "DEV-D02.J4"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D02.U10",
+   "rules": [
+    "DEV-D02"
+   ],
+   "check_ids": [
+    "DEV-D02.U10"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D03.J1",
+   "rules": [
+    "DEV-D03"
+   ],
+   "check_ids": [
+    "DEV-D03.J1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D03.J2",
+   "rules": [
+    "DEV-D03"
+   ],
+   "check_ids": [
+    "DEV-D03.J2"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D03.J3",
+   "rules": [
+    "DEV-D03"
+   ],
+   "check_ids": [
+    "DEV-D03.J3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D03.J4",
+   "rules": [
+    "DEV-D03"
+   ],
+   "check_ids": [
+    "DEV-D03.J4"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.D6",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.D6"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.J1",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.J1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.J2",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.J2"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.J3",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.J3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.J4",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.J4"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-D1",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-D1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-D4",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-D4"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-D5",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-D5"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-D6",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-D6"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-J1",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-J1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-J2",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-J2"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-J3",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-J3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-J4",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-J4"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-U1",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-U1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-U3",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-U3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.PHYSICAL-U6",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.PHYSICAL-U6"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.U1",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.U1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.U10",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.U10"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.U3",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.U3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-D05.U6",
+   "rules": [
+    "DEV-D05"
+   ],
+   "check_ids": [
+    "DEV-D05.U6"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-E01.J1",
+   "rules": [
+    "DEV-E01"
+   ],
+   "check_ids": [
+    "DEV-E01.J1"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-E01.J2",
+   "rules": [
+    "DEV-E01"
+   ],
+   "check_ids": [
+    "DEV-E01.J2"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-E01.J3",
+   "rules": [
+    "DEV-E01"
+   ],
+   "check_ids": [
+    "DEV-E01.J3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-E01.J4",
+   "rules": [
+    "DEV-E01"
+   ],
+   "check_ids": [
+    "DEV-E01.J4"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "DEV-Q01.DATASHEETS",
+   "rules": [
+    "DEV-Q01"
+   ],
+   "check_ids": [
+    "DEV-Q01.DATASHEETS"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "PRO-C01.SOURCE-OR-TRANSFER.D2",
+   "rules": [
+    "PRO-C01"
+   ],
+   "check_ids": [
+    "PRO-C01.SOURCE-OR-TRANSFER.D2"
+   ],
+   "conditions": {
+    "states": [
+     "TRANSFER"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PRO-C01.SOURCE-OR-USB-RUN.D2",
+   "rules": [
+    "PRO-C01"
+   ],
+   "check_ids": [
+    "PRO-C01.SOURCE-OR-USB-RUN.D2"
+   ],
+   "conditions": {
+    "states": [
+     "USB_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PRO-D03.J2",
+   "rules": [
+    "PRO-D03"
+   ],
+   "check_ids": [
+    "PRO-D03.J2"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "PRO-D03.J3",
+   "rules": [
+    "PRO-D03"
+   ],
+   "check_ids": [
+    "PRO-D03.J3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "PRO-D03.J4",
+   "rules": [
+    "PRO-D03"
+   ],
+   "check_ids": [
+    "PRO-D03.J4"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C01.3-3V",
+   "rules": [
+    "PWR-C01"
+   ],
+   "check_ids": [
+    "PWR-C01.3-3V"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C01.3-3V-P",
+   "rules": [
+    "PWR-C01"
+   ],
+   "check_ids": [
+    "PWR-C01.3-3V-P"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C01.USB-SOURCE",
+   "rules": [
+    "PWR-C01"
+   ],
+   "check_ids": [
+    "PWR-C01.USB-SOURCE"
+   ],
+   "conditions": {
+    "states": [
+     "USB_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C01.VBATT",
+   "rules": [
+    "PWR-C01"
+   ],
+   "check_ids": [
+    "PWR-C01.VBATT"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C01.VIN",
+   "rules": [
+    "PWR-C01"
+   ],
+   "check_ids": [
+    "PWR-C01.VIN"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C02.PERIPH-LDO-OFF.U1",
+   "rules": [
+    "PWR-C02"
+   ],
+   "check_ids": [
+    "PWR-C02.PERIPH-LDO-OFF.U1"
+   ],
+   "conditions": {
+    "states": [
+     "OFF"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C02.PERIPH-LDO-ON.U1",
+   "rules": [
+    "PWR-C02"
+   ],
+   "check_ids": [
+    "PWR-C02.PERIPH-LDO-ON.U1"
+   ],
+   "conditions": {
+    "states": [
+     "ON"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C02.PERIPH-LDO-STARTUP.U1",
+   "rules": [
+    "PWR-C02"
+   ],
+   "check_ids": [
+    "PWR-C02.PERIPH-LDO-STARTUP.U1"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C02.STEP-PERIPH",
+   "rules": [
+    "PWR-C02"
+   ],
+   "check_ids": [
+    "PWR-C02.STEP-PERIPH"
+   ],
+   "conditions": {
+    "states": [
+     "100mA-extra-1ms"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C02.STEP-SYSTEM",
+   "rules": [
+    "PWR-C02"
+   ],
+   "check_ids": [
+    "PWR-C02.STEP-SYSTEM"
+   ],
+   "conditions": {
+    "states": [
+     "100mA-extra-1ms"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C02.SYS-LDO-BATTERY-RUN.U6",
+   "rules": [
+    "PWR-C02"
+   ],
+   "check_ids": [
+    "PWR-C02.SYS-LDO-BATTERY-RUN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "BATTERY_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C02.SYS-LDO-POWER-DOWN.U6",
+   "rules": [
+    "PWR-C02"
+   ],
+   "check_ids": [
+    "PWR-C02.SYS-LDO-POWER-DOWN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "POWER_DOWN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C02.SYS-LDO-USB-RUN.U6",
+   "rules": [
+    "PWR-C02"
+   ],
+   "check_ids": [
+    "PWR-C02.SYS-LDO-USB-RUN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "USB_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C03.PERIPH-LDO-ON.U1",
+   "rules": [
+    "PWR-C03"
+   ],
+   "check_ids": [
+    "PWR-C03.PERIPH-LDO-ON.U1"
+   ],
+   "conditions": {
+    "states": [
+     "ON"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C03.PERIPH-LDO-STARTUP.U1",
+   "rules": [
+    "PWR-C03"
+   ],
+   "check_ids": [
+    "PWR-C03.PERIPH-LDO-STARTUP.U1"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C03.SYS-LDO-BATTERY-RUN.U6",
+   "rules": [
+    "PWR-C03"
+   ],
+   "check_ids": [
+    "PWR-C03.SYS-LDO-BATTERY-RUN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "BATTERY_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C03.SYS-LDO-USB-RUN.U6",
+   "rules": [
+    "PWR-C03"
+   ],
+   "check_ids": [
+    "PWR-C03.SYS-LDO-USB-RUN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "USB_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C04.PERIPH-LDO-ON.U1",
+   "rules": [
+    "PWR-C04"
+   ],
+   "check_ids": [
+    "PWR-C04.PERIPH-LDO-ON.U1"
+   ],
+   "conditions": {
+    "states": [
+     "ON"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C04.PERIPH-LDO-STARTUP.U1",
+   "rules": [
+    "PWR-C04"
+   ],
+   "check_ids": [
+    "PWR-C04.PERIPH-LDO-STARTUP.U1"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C04.SYS-LDO-BATTERY-RUN.U6",
+   "rules": [
+    "PWR-C04"
+   ],
+   "check_ids": [
+    "PWR-C04.SYS-LDO-BATTERY-RUN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "BATTERY_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C04.SYS-LDO-USB-RUN.U6",
+   "rules": [
+    "PWR-C04"
+   ],
+   "check_ids": [
+    "PWR-C04.SYS-LDO-USB-RUN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "USB_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C05.PERIPH-LDO-OFF.U1",
+   "rules": [
+    "PWR-C05"
+   ],
+   "check_ids": [
+    "PWR-C05.PERIPH-LDO-OFF.U1"
+   ],
+   "conditions": {
+    "states": [
+     "OFF"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C05.PERIPH-LDO-ON.U1",
+   "rules": [
+    "PWR-C05"
+   ],
+   "check_ids": [
+    "PWR-C05.PERIPH-LDO-ON.U1"
+   ],
+   "conditions": {
+    "states": [
+     "ON"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C05.PERIPH-LDO-STARTUP.U1",
+   "rules": [
+    "PWR-C05"
+   ],
+   "check_ids": [
+    "PWR-C05.PERIPH-LDO-STARTUP.U1"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C05.SYS-LDO-BATTERY-RUN.U6",
+   "rules": [
+    "PWR-C05"
+   ],
+   "check_ids": [
+    "PWR-C05.SYS-LDO-BATTERY-RUN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "BATTERY_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C05.SYS-LDO-POWER-DOWN.U6",
+   "rules": [
+    "PWR-C05"
+   ],
+   "check_ids": [
+    "PWR-C05.SYS-LDO-POWER-DOWN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "POWER_DOWN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C05.SYS-LDO-USB-RUN.U6",
+   "rules": [
+    "PWR-C05"
+   ],
+   "check_ids": [
+    "PWR-C05.SYS-LDO-USB-RUN.U6"
+   ],
+   "conditions": {
+    "states": [
+     "USB_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C09.DECAP-318BF088C54F5C92F47A-CAPACITY.3-3V-P",
+   "rules": [
+    "PWR-C09"
+   ],
+   "check_ids": [
+    "PWR-C09.DECAP-318BF088C54F5C92F47A-CAPACITY.3-3V-P"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C09.DECAP-3CFE35E80BF45F01120B-CAPACITY.3-3V",
+   "rules": [
+    "PWR-C09"
+   ],
+   "check_ids": [
+    "PWR-C09.DECAP-3CFE35E80BF45F01120B-CAPACITY.3-3V"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C09.DECAP-4F55B105F0344CAC46A0-CAPACITY.3-3V-P",
+   "rules": [
+    "PWR-C09"
+   ],
+   "check_ids": [
+    "PWR-C09.DECAP-4F55B105F0344CAC46A0-CAPACITY.3-3V-P"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C09.DECAP-53A68FD9E374E08D8CA4-CAPACITY.3-3V",
+   "rules": [
+    "PWR-C09"
+   ],
+   "check_ids": [
+    "PWR-C09.DECAP-53A68FD9E374E08D8CA4-CAPACITY.3-3V"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C13.SOURCE-OR-BATTERY-RUN.D2",
+   "rules": [
+    "PWR-C13"
+   ],
+   "check_ids": [
+    "PWR-C13.SOURCE-OR-BATTERY-RUN.D2"
+   ],
+   "conditions": {
+    "states": [
+     "BATTERY_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C13.SOURCE-OR-TRANSFER.D2",
+   "rules": [
+    "PWR-C13"
+   ],
+   "check_ids": [
+    "PWR-C13.SOURCE-OR-TRANSFER.D2"
+   ],
+   "conditions": {
+    "states": [
+     "TRANSFER"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-C13.SOURCE-OR-USB-RUN.D2",
+   "rules": [
+    "PWR-C13"
+   ],
+   "check_ids": [
+    "PWR-C13.SOURCE-OR-USB-RUN.D2"
+   ],
+   "conditions": {
+    "states": [
+     "USB_RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-E02.U1-ESP45-Q-EN.U1-3",
+   "rules": [
+    "PWR-E02"
+   ],
+   "check_ids": [
+    "PWR-E02.U1-ESP45-Q-EN.U1-3"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-E02.U1-ESP45-Q-EN.U1-3-2",
+   "rules": [
+    "PWR-E02"
+   ],
+   "check_ids": [
+    "PWR-E02.U1-ESP45-Q-EN.U1-3-2"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-E02.U6-EN.U6-3",
+   "rules": [
+    "PWR-E02"
+   ],
+   "check_ids": [
+    "PWR-E02.U6-EN.U6-3"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "PWR-E02.U6-EN.U6-3-2",
+   "rules": [
+    "PWR-E02"
+   ],
+   "check_ids": [
+    "PWR-E02.U6-EN.U6-3-2"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-A01.LINT-COLD-10",
+   "rules": [
+    "RST-A01"
+   ],
+   "check_ids": [
+    "RST-A01.LINT-COLD-10"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-A01.LINT-COLD-11",
+   "rules": [
+    "RST-A01"
+   ],
+   "check_ids": [
+    "RST-A01.LINT-COLD-11"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-A01.LINT-COLD-12",
+   "rules": [
+    "RST-A01"
+   ],
+   "check_ids": [
+    "RST-A01.LINT-COLD-12"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-A01.LINT-HOT-10",
+   "rules": [
+    "RST-A01"
+   ],
+   "check_ids": [
+    "RST-A01.LINT-HOT-10"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-A01.LINT-HOT-11",
+   "rules": [
+    "RST-A01"
+   ],
+   "check_ids": [
+    "RST-A01.LINT-HOT-11"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-A01.LINT-HOT-12",
+   "rules": [
+    "RST-A01"
+   ],
+   "check_ids": [
+    "RST-A01.LINT-HOT-12"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-C01.ESP-START-RESET-HOLD.U3",
+   "rules": [
+    "RST-C01"
+   ],
+   "check_ids": [
+    "RST-C01.ESP-START-RESET-HOLD.U3"
+   ],
+   "conditions": {
+    "states": [
+     "RESET_HOLD"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-C01.ESP-START-SLEEP.U3",
+   "rules": [
+    "RST-C01"
+   ],
+   "check_ids": [
+    "RST-C01.ESP-START-SLEEP.U3"
+   ],
+   "conditions": {
+    "states": [
+     "SLEEP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-C01.ESP-START-STARTUP.U3",
+   "rules": [
+    "RST-C01"
+   ],
+   "check_ids": [
+    "RST-C01.ESP-START-STARTUP.U3"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-C01.GPIO0-RELEASE",
+   "rules": [
+    "RST-C01"
+   ],
+   "check_ids": [
+    "RST-C01.GPIO0-RELEASE"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-C01.GPIO46-DEFAULT",
+   "rules": [
+    "RST-C01"
+   ],
+   "check_ids": [
+    "RST-C01.GPIO46-DEFAULT"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-C02.ESP-START-SLEEP.U3",
+   "rules": [
+    "RST-C02"
+   ],
+   "check_ids": [
+    "RST-C02.ESP-START-SLEEP.U3"
+   ],
+   "conditions": {
+    "states": [
+     "SLEEP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-C02.ESP-START-STARTUP.U3",
+   "rules": [
+    "RST-C02"
+   ],
+   "check_ids": [
+    "RST-C02.ESP-START-STARTUP.U3"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-D01.ESP-START-SLEEP.U3",
+   "rules": [
+    "RST-D01"
+   ],
+   "check_ids": [
+    "RST-D01.ESP-START-SLEEP.U3"
+   ],
+   "conditions": {
+    "states": [
+     "SLEEP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-E01.U1-3",
+   "rules": [
+    "RST-E01"
+   ],
+   "check_ids": [
+    "RST-E01.U1-3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-E01.U3-41",
+   "rules": [
+    "RST-E01"
+   ],
+   "check_ids": [
+    "RST-E01.U3-41"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-E01.U3-45",
+   "rules": [
+    "RST-E01"
+   ],
+   "check_ids": [
+    "RST-E01.U3-45"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-E01.U6-3",
+   "rules": [
+    "RST-E01"
+   ],
+   "check_ids": [
+    "RST-E01.U6-3"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T01.U1-ESP45-Q-EN.U1-3",
+   "rules": [
+    "RST-T01"
+   ],
+   "check_ids": [
+    "RST-T01.U1-ESP45-Q-EN.U1-3"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T01.U1-ESP45-Q-EN.U1-3-2",
+   "rules": [
+    "RST-T01"
+   ],
+   "check_ids": [
+    "RST-T01.U1-ESP45-Q-EN.U1-3-2"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T01.U6-EN.U6-3",
+   "rules": [
+    "RST-T01"
+   ],
+   "check_ids": [
+    "RST-T01.U6-EN.U6-3"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T01.U6-EN.U6-3-2",
+   "rules": [
+    "RST-T01"
+   ],
+   "check_ids": [
+    "RST-T01.U6-EN.U6-3-2"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T02.RESET-CHAIN",
+   "rules": [
+    "RST-T02"
+   ],
+   "check_ids": [
+    "RST-T02.RESET-CHAIN"
+   ],
+   "conditions": {
+    "states": [
+     "RESET_HOLD/RELEASE"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T03.ESP-START-POWER-DOWN.U3",
+   "rules": [
+    "RST-T03"
+   ],
+   "check_ids": [
+    "RST-T03.ESP-START-POWER-DOWN.U3"
+   ],
+   "conditions": {
+    "states": [
+     "POWER_DOWN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T03.ESP-START-RESET-HOLD.U3",
+   "rules": [
+    "RST-T03"
+   ],
+   "check_ids": [
+    "RST-T03.ESP-START-RESET-HOLD.U3"
+   ],
+   "conditions": {
+    "states": [
+     "RESET_HOLD"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T03.ESP-START-SLEEP.U3",
+   "rules": [
+    "RST-T03"
+   ],
+   "check_ids": [
+    "RST-T03.ESP-START-SLEEP.U3"
+   ],
+   "conditions": {
+    "states": [
+     "SLEEP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T03.ESP-START-STARTUP.U3",
+   "rules": [
+    "RST-T03"
+   ],
+   "check_ids": [
+    "RST-T03.ESP-START-STARTUP.U3"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T04.ESP-START-POWER-DOWN.U3",
+   "rules": [
+    "RST-T04"
+   ],
+   "check_ids": [
+    "RST-T04.ESP-START-POWER-DOWN.U3"
+   ],
+   "conditions": {
+    "states": [
+     "POWER_DOWN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T04.ESP-START-RESET-HOLD.U3",
+   "rules": [
+    "RST-T04"
+   ],
+   "check_ids": [
+    "RST-T04.ESP-START-RESET-HOLD.U3"
+   ],
+   "conditions": {
+    "states": [
+     "RESET_HOLD"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T04.ESP-START-SLEEP.U3",
+   "rules": [
+    "RST-T04"
+   ],
+   "check_ids": [
+    "RST-T04.ESP-START-SLEEP.U3"
+   ],
+   "conditions": {
+    "states": [
+     "SLEEP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "RST-T04.ESP-START-STARTUP.U3",
+   "rules": [
+    "RST-T04"
+   ],
+   "check_ids": [
+    "RST-T04.ESP-START-STARTUP.U3"
+   ],
+   "conditions": {
+    "states": [
+     "STARTUP"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C01.I2C-1CA11BB87866E698E471.ESP9-SCL",
+   "rules": [
+    "SIG-C01"
+   ],
+   "check_ids": [
+    "SIG-C01.I2C-1CA11BB87866E698E471.ESP9-SCL"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C01.I2C-1D21C98C3620EE45BFFB.ESP8-SDA",
+   "rules": [
+    "SIG-C01"
+   ],
+   "check_ids": [
+    "SIG-C01.I2C-1D21C98C3620EE45BFFB.ESP8-SDA"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C01.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA",
+   "rules": [
+    "SIG-C01"
+   ],
+   "check_ids": [
+    "SIG-C01.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C01.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL",
+   "rules": [
+    "SIG-C01"
+   ],
+   "check_ids": [
+    "SIG-C01.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C05.USB-DEVICE-OFF.U3",
+   "rules": [
+    "SIG-C05"
+   ],
+   "check_ids": [
+    "SIG-C05.USB-DEVICE-OFF.U3"
+   ],
+   "conditions": {
+    "states": [
+     "OFF"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C05.USB-DEVICE-RUN.U3",
+   "rules": [
+    "SIG-C05"
+   ],
+   "check_ids": [
+    "SIG-C05.USB-DEVICE-RUN.U3"
+   ],
+   "conditions": {
+    "states": [
+     "RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C07.I2C-1CA11BB87866E698E471.ESP9-SCL",
+   "rules": [
+    "SIG-C07"
+   ],
+   "check_ids": [
+    "SIG-C07.I2C-1CA11BB87866E698E471.ESP9-SCL"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C07.I2C-1D21C98C3620EE45BFFB.ESP8-SDA",
+   "rules": [
+    "SIG-C07"
+   ],
+   "check_ids": [
+    "SIG-C07.I2C-1D21C98C3620EE45BFFB.ESP8-SDA"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C07.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA",
+   "rules": [
+    "SIG-C07"
+   ],
+   "check_ids": [
+    "SIG-C07.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C07.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL",
+   "rules": [
+    "SIG-C07"
+   ],
+   "check_ids": [
+    "SIG-C07.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C07.MICROSD-OFF.U3",
+   "rules": [
+    "SIG-C07"
+   ],
+   "check_ids": [
+    "SIG-C07.MICROSD-OFF.U3"
+   ],
+   "conditions": {
+    "states": [
+     "OFF"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C07.MICROSD-RUN.U3",
+   "rules": [
+    "SIG-C07"
+   ],
+   "check_ids": [
+    "SIG-C07.MICROSD-RUN.U3"
+   ],
+   "conditions": {
+    "states": [
+     "RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C07.UART0-RESCUE-RUN.U3",
+   "rules": [
+    "SIG-C07"
+   ],
+   "check_ids": [
+    "SIG-C07.UART0-RESCUE-RUN.U3"
+   ],
+   "conditions": {
+    "states": [
+     "RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C08.D6-OFF",
+   "rules": [
+    "SIG-C08"
+   ],
+   "check_ids": [
+    "SIG-C08.D6-OFF"
+   ],
+   "conditions": {
+    "states": [
+     "PERIPH_OFF"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C08.I2C-1CA11BB87866E698E471.ESP9-SCL",
+   "rules": [
+    "SIG-C08"
+   ],
+   "check_ids": [
+    "SIG-C08.I2C-1CA11BB87866E698E471.ESP9-SCL"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C08.I2C-1D21C98C3620EE45BFFB.ESP8-SDA",
+   "rules": [
+    "SIG-C08"
+   ],
+   "check_ids": [
+    "SIG-C08.I2C-1D21C98C3620EE45BFFB.ESP8-SDA"
+   ],
+   "conditions": {
+    "states": [
+     "LP_CUT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C08.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA",
+   "rules": [
+    "SIG-C08"
+   ],
+   "check_ids": [
+    "SIG-C08.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C08.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL",
+   "rules": [
+    "SIG-C08"
+   ],
+   "check_ids": [
+    "SIG-C08.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL"
+   ],
+   "conditions": {
+    "states": [
+     "DEFAULT"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C08.SD-OFF",
+   "rules": [
+    "SIG-C08"
+   ],
+   "check_ids": [
+    "SIG-C08.SD-OFF"
+   ],
+   "conditions": {
+    "states": [
+     "PERIPH_OFF"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C09.MICROSD-OFF.U3",
+   "rules": [
+    "SIG-C09"
+   ],
+   "check_ids": [
+    "SIG-C09.MICROSD-OFF.U3"
+   ],
+   "conditions": {
+    "states": [
+     "OFF"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-C09.MICROSD-RUN.U3",
+   "rules": [
+    "SIG-C09"
+   ],
+   "check_ids": [
+    "SIG-C09.MICROSD-RUN.U3"
+   ],
+   "conditions": {
+    "states": [
+     "RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-D10.MICROSD-OFF.U3",
+   "rules": [
+    "SIG-D10"
+   ],
+   "check_ids": [
+    "SIG-D10.MICROSD-OFF.U3"
+   ],
+   "conditions": {
+    "states": [
+     "OFF"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "SIG-D10.MICROSD-RUN.U3",
+   "rules": [
+    "SIG-D10"
+   ],
+   "check_ids": [
+    "SIG-D10.MICROSD-RUN.U3"
+   ],
+   "conditions": {
+    "states": [
+     "RUN"
+    ]
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-Q07.ANALOG",
+   "rules": [
+    "REQ-Q07"
+   ],
+   "check_ids": [
+    "REQ-Q07.ANALOG"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-Q07.I2C",
+   "rules": [
+    "REQ-Q07"
+   ],
+   "check_ids": [
+    "REQ-Q07.I2C"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-Q07.POWER-CONVERTER",
+   "rules": [
+    "REQ-Q07"
+   ],
+   "check_ids": [
+    "REQ-Q07.POWER-CONVERTER"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-Q07.RF",
+   "rules": [
+    "REQ-Q07"
+   ],
+   "check_ids": [
+    "REQ-Q07.RF"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-Q07.STORAGE",
+   "rules": [
+    "REQ-Q07"
+   ],
+   "check_ids": [
+    "REQ-Q07.STORAGE"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-D01.REQ-03",
+   "rules": [
+    "REQ-D01"
+   ],
+   "check_ids": [
+    "REQ-D01.REQ-03"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-D01.REQ-05",
+   "rules": [
+    "REQ-D01"
+   ],
+   "check_ids": [
+    "REQ-D01.REQ-05"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-D01.REQ-09",
+   "rules": [
+    "REQ-D01"
+   ],
+   "check_ids": [
+    "REQ-D01.REQ-09"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-D01.REQ-11",
+   "rules": [
+    "REQ-D01"
+   ],
+   "check_ids": [
+    "REQ-D01.REQ-11"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  },
+  {
+   "id": "REQ-D01.REQ-12",
+   "rules": [
+    "REQ-D01"
+   ],
+   "check_ids": [
+    "REQ-D01.REQ-12"
+   ],
+   "conditions": {
+    "states": []
+   },
+   "observations": []
+  }
+ ]
+}

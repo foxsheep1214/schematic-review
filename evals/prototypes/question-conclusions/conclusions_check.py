@@ -14,7 +14,10 @@ TRACE        clauses resolve to evidence files and say what kind of source they 
              criterion's; interior points are sampled and a result leaving the corner range is refused.
 STRICTNESS   no fail the favourable corner would pass, none against a limit the reviewer assumed or on an
              assumed point value; one change is one defect; severity no higher than its consequence class;
-             a requirement nobody has set is neither graded nor blocking.
+             a requirement nobody has set is neither graded nor blocking. On the undecided side: a typical or
+             25 °C datasheet value is an input once widened by a fixed floor, so a large margin decides; an
+             undecided conclusion names its failure path; a part not yet bought is a pass with a constraint
+             for the BOM; a recommended configuration with no deviation passes; one gap is counted once.
 
 What no check here proves: that a clause says what the conclusion claims, that the model fits, that an
 expression is monotone between the sampled points, or that the reasoning in `means` is right — those go to
@@ -39,11 +42,16 @@ from review_summary import IMPACT_CLASSES
 from validate_remediation import READINESS
 
 OUTCOMES = ('PASS', 'FAIL', 'UNDECIDED', 'NA')
-FROM = ('DESIGN', 'VENDOR', 'REQUIREMENT', 'OTHER_STAGE', 'USER')
+FROM = ('DESIGN', 'VENDOR', 'REQUIREMENT', 'OTHER_STAGE', 'USER', 'PROCUREMENT')
 LEVELS = ('P0', 'P1', 'P2', 'P3')
 DIRECTIONS = ('value_above_limit', 'value_below_limit')
 CLAUSE_KINDS = ('DATASHEET', 'STANDARD', 'REQUIREMENT', 'PRACTICE', 'ASSUMPTION')
 REL_TOL = 0.01
+# An engineering bound widens a datasheet value by at least this much: a typical value by a factor both ways,
+# a 25 °C guarantee by a fraction of its magnitude on each end.
+ENGINEERING = {'typical': 3.0, 'at_25c': 0.2}
+VENDOR_KINDS = ('DATASHEET', 'STANDARD')
+PASS_BASES = ('NUMERIC', 'FACT', 'CONSTRAINT', 'RECOMMENDED')
 PREFIX = {'p': 1e-12, 'n': 1e-9, 'u': 1e-6, 'µ': 1e-6, 'μ': 1e-6, 'm': 1e-3, '': 1.0, 'k': 1e3, 'K': 1e3,
           'M': 1e6, 'G': 1e9}
 # Dimension of each base unit as powers of (V, A, s).
@@ -278,8 +286,11 @@ class Checker:
                     self.error('CONSISTENCY', 'PASS_NOT_PROVEN', qid,
                                'the worst corner of the inputs does not pass (%s): the inputs give %s'
                                % (self._margins(conclusion), derived))
-            elif basis.get('kind') != 'FACT':
-                self.error('CONSISTENCY', 'PASS_WITHOUT_BASIS', qid, 'a pass rests on a NUMERIC or FACT basis')
+            elif basis.get('kind') not in PASS_BASES:
+                self.error('CONSISTENCY', 'PASS_WITHOUT_BASIS', qid, 'a pass rests on a %s basis' % '/'.join(PASS_BASES))
+            elif basis.get('kind') == 'RECOMMENDED' and basis.get('deviations') != []:
+                self.error('CONSISTENCY', 'RECOMMENDED_WITH_DEVIATION', qid,
+                           'a recommended configuration passes as such only with deviations: []; judge each deviation')
         if outcome == 'FAIL':
             fix = conclusion.get('fix')
             if not (isinstance(fix, dict) and (fix.get('same_as') or (
@@ -291,7 +302,7 @@ class Checker:
                 self.error('CONSISTENCY', 'FAIL_WITHOUT_BASIS', qid, 'a fail rests on a NUMERIC, FACT or UNSPECIFIED basis')
         if outcome == 'UNDECIDED':
             self._undecided(conclusion, qid, basis, derived)
-        if outcome in ('FAIL', 'UNDECIDED') and not self._requirement_open(conclusion):
+        if outcome in ('FAIL', 'UNDECIDED') and not self._requirement_open(conclusion) and not _same_gap(conclusion):
             severity = conclusion.get('severity')
             if not (isinstance(severity, dict) and severity.get('level') in LEVELS
                     and severity.get('class') in IMPACT_CLASSES and str(severity.get('consequence') or '').strip()):
@@ -302,6 +313,9 @@ class Checker:
         return conclusion.get('outcome') == 'UNDECIDED' and (conclusion.get('missing') or {}).get('from') == 'REQUIREMENT'
 
     def _undecided(self, conclusion, qid, basis, derived):
+        if _same_gap(conclusion):   # the gap is counted at its owner; the failure path is this question's own
+            self._failure_path(conclusion, qid)
+            return
         missing = conclusion.get('missing')
         if not (isinstance(missing, dict) and all(str(missing.get(f) or '').strip() for f in ('what', 'closes_when'))
                 and missing.get('from') in FROM):
@@ -310,6 +324,13 @@ class Checker:
             missing = missing if isinstance(missing, dict) else {}
         if missing.get('from') == 'USER' and not conclusion.get('instruction'):
             self.error('CONSISTENCY', 'USER_WITHOUT_INSTRUCTION', qid, 'a deferral cites the user instruction')
+        if missing.get('from') != 'REQUIREMENT':
+            self._failure_path(conclusion, qid)
+        if any(isinstance(s, dict) and 'value' in s for s in conclusion.get('searched') or []) and not basis:
+            self.error('CONSISTENCY', 'BOUND_NOT_USED', qid,
+                       'a searched source gives a value: make it an engineering-bound input (typical / at_25c)')
+        if basis.get('kind') == 'RECOMMENDED' and basis.get('deviations'):
+            return
         if not basis:
             if missing.get('from') == 'VENDOR' and not _locators(conclusion.get('searched')):
                 self.error('CONSISTENCY', 'NO_BOUND_NOT_SEARCHED', qid,
@@ -323,9 +344,17 @@ class Checker:
                        'the public bounds already give %s (%s); split by state if they cover only part'
                        % (derived, self._margins(conclusion)))
         loose = (basis.get('inputs') or {}).get(conclusion.get('loose_input'))
-        if not (isinstance(loose, dict) and _range(loose) and _range(loose)[0] < _range(loose)[1]):
+        if not (isinstance(loose, dict) and _input_range(loose) and _input_range(loose)[0] < _input_range(loose)[1]):
             self.error('CONSISTENCY', 'LOOSE_INPUT_UNKNOWN', qid,
                        'loose_input names the ranged input whose width keeps the outcome open')
+
+    def _failure_path(self, conclusion, qid):
+        path = conclusion.get('failure_path') if isinstance(conclusion.get('failure_path'), dict) else {}
+        states = list((self.questions.get(qid) or {}).get('conditions', {}).get('states') or [])
+        if not str(path.get('mechanism') or '').strip() or (states and path.get('state') not in states):
+            self.error('CONSISTENCY', 'NO_FAILURE_PATH', qid,
+                       'failure_path {mechanism%s}: how the open quantity makes the circuit fail'
+                       % (', state: one of ' + '/'.join(states) if states else ''))
 
     def _margins(self, conclusion):
         d = self.derived.get(id(conclusion)) or {}
@@ -359,6 +388,16 @@ class Checker:
                                'the fact breaks no datasheet, standard, requirement or practice clause')
             elif basis.get('kind') == 'UNSPECIFIED' and self._clause_kind(basis.get('clause')) != 'DATASHEET':
                 self.error('STRICTNESS', 'FAIL_ON_ASSUMED_LIMIT', qid, 'an unspecified operating point cites the datasheet')
+        if outcome == 'UNDECIDED' and (conclusion.get('missing') or {}).get('from') == 'PROCUREMENT':
+            self.error('STRICTNESS', 'UNDECIDED_ON_PROCUREMENT', qid,
+                       'a part not yet bought is a pass with basis CONSTRAINT {refs, requires} for the BOM')
+        if basis.get('kind') == 'RECOMMENDED':
+            if self._clause_kind(basis.get('clause')) not in VENDOR_KINDS:
+                self.error('STRICTNESS', 'RECOMMENDED_NOT_VENDOR', qid,
+                           'a recommended configuration cites a datasheet or standard clause')
+            if outcome == 'UNDECIDED' and basis.get('deviations') == []:
+                self.error('STRICTNESS', 'ALREADY_RECOMMENDED', qid,
+                           'the circuit is the recommended configuration with no deviation: that passes')
         severity = conclusion.get('severity') if isinstance(conclusion.get('severity'), dict) else {}
         if self._requirement_open(conclusion) and severity:
             self.error('STRICTNESS', 'REQUIREMENT_GRADED', qid,
@@ -389,6 +428,31 @@ class Checker:
                 self.error('CONSISTENCY', 'FIX_SAME_AS_UNKNOWN', c.get('question'),
                            'same_as names a question whose fail carries its own fix')
         return len(owners)
+
+    def gaps(self):
+        """One missing thing is one gap: a second undecided conclusion waiting on it says missing.same_as."""
+        owners = {}
+        for c in self.conclusions:
+            if c.get('outcome') != 'UNDECIDED' or _same_gap(c):
+                continue
+            what = ' '.join(str((c.get('missing') or {}).get('what') or '').split())
+            if what in owners:
+                self.error('STRICTNESS', 'DUPLICATE_GAP', c.get('question'),
+                           'the same missing thing already keeps %s open: write missing {same_as: "%s"}'
+                           % (owners[what], owners[what]))
+            else:
+                owners[what] = c.get('question')
+        standalone = set(owners.values())
+        for c in self.conclusions:
+            if c.get('outcome') == 'UNDECIDED' and _same_gap(c) and c['missing']['same_as'] not in standalone:
+                self.error('CONSISTENCY', 'MISSING_SAME_AS_UNKNOWN', c.get('question'),
+                           'same_as names a question whose undecided conclusion carries its own missing thing')
+        return len(owners)
+
+    def constraints(self):
+        return [{'question': c.get('question'), 'refs': c['basis'].get('refs'), 'requires': c['basis'].get('requires')}
+                for c in self.conclusions
+                if c.get('outcome') == 'PASS' and isinstance(c.get('basis'), dict) and c['basis'].get('kind') == 'CONSTRAINT']
 
     # TRACE ------------------------------------------------------------------------------------------
     def clause_ok(self, qid, clause_id):
@@ -424,7 +488,9 @@ class Checker:
         inputs = basis.get('inputs') if isinstance(basis.get('inputs'), dict) else {}
         ranges, units = {}, {}
         for name, item in inputs.items():
-            rng = _range(item)
+            rng = _input_range(item)
+            if any(k in item for k in ENGINEERING) if isinstance(item, dict) else False:
+                self._engineering(qid, name, item)
             if rng is None:
                 self.error('TRACE', 'INPUT_INCOMPLETE', qid, 'input %s needs a numeric value or min ≤ max' % name)
                 continue
@@ -480,6 +546,16 @@ class Checker:
             'question': qid, 'states': conclusion.get('states'), 'stated': conclusion.get('outcome'),
             'outcome': 'PASS' if worst > 0 else 'FAIL' if best <= 0 else 'UNDECIDED',
             'min': lo, 'max': hi, 'worst_margin': worst, 'best_margin': best, 'unit': criterion.get('unit')}
+
+    def _engineering(self, qid, name, item):
+        key = next(k for k in ENGINEERING if k in item)
+        widen = item.get('widen', ENGINEERING[key])
+        if not (_number(widen) and widen >= ENGINEERING[key]):
+            self.error('TRACE', 'ENGINEERING_TOO_NARROW', qid, 'input %s: a %s value is widened by at least %s'
+                       % (name, key, ENGINEERING[key]))
+        if self._clause_kind((item.get('from') or {}).get('clause')) != 'DATASHEET':
+            self.error('TRACE', 'ENGINEERING_NOT_DATASHEET', qid,
+                       'input %s: an engineering bound widens a value the datasheet gives' % name)
 
     def _turning_point(self, basis, ranges, lo, hi, scale, inputs):
         """Vary one ranged input through interior points with the others at each corner; return the first point
@@ -573,6 +649,17 @@ class Checker:
             return bool((parts.get(ref) or {}).get('nc')) == bool(fact['dnp_is'])
         return None
 
+    def trace_constraint(self, qid, basis):
+        refs = basis.get('refs')
+        if not (isinstance(refs, list) and refs and str(basis.get('requires') or '').strip()):
+            self.error('TRACE', 'CONSTRAINT_INCOMPLETE', qid, 'a constraint names refs and what the bought part requires')
+            return
+        for ref in refs:
+            if ref not in (self.db.get('parts') or {}):
+                self.error('TRACE', 'UNKNOWN_REF', qid, '%s is not in the netlist' % ref)
+        if basis.get('clause'):
+            self.clause_ok(qid, basis['clause'])
+
     def trace(self, conclusion):
         qid = conclusion.get('question')
         basis = conclusion.get('basis')
@@ -583,6 +670,11 @@ class Checker:
                 self.trace_facts(qid, basis)
             elif basis.get('kind') == 'UNSPECIFIED':
                 self.clause_ok(qid, basis.get('clause'))
+            elif basis.get('kind') == 'RECOMMENDED':
+                self.clause_ok(qid, basis.get('clause'))
+                self.trace_facts(qid, basis)
+            elif basis.get('kind') == 'CONSTRAINT':
+                self.trace_constraint(qid, basis)
         if conclusion.get('outcome') in ('PASS', 'FAIL', 'NA') and not isinstance(basis, dict):
             self.error('TRACE', 'BASIS_MISSING', qid, 'the conclusion states its basis')
 
@@ -594,6 +686,7 @@ class Checker:
             self.consistency(conclusion)
             self.strictness(conclusion)
         defects = self.defects()
+        gaps = self.gaps()
         outcomes = Counter(c.get('outcome') for c in self.conclusions)
         blocked = any((c.get('outcome') == 'FAIL' and (c.get('severity') or {}).get('level') in ('P0', 'P1'))
                       or (c.get('outcome') == 'UNDECIDED' and (c.get('severity') or {}).get('level') == 'P0')
@@ -602,6 +695,7 @@ class Checker:
                 'derived': [self.derived[id(c)] for c in self.conclusions if id(c) in self.derived],
                 'summary': {'questions': len(self.questions), 'conclusions': len(self.conclusions),
                             'outcomes': {k: outcomes[k] for k in OUTCOMES if outcomes[k]}, 'defects': defects,
+                            'gaps': gaps, 'constraints': self.constraints(),
                             'recomputed': self.recomputed, 'facts_checked': self.facts_checked,
                             'release': 'CANNOT_FREEZE' if blocked else 'CAN_FREEZE',
                             'errors_by_check': dict(Counter(e['check'] for e in self.errors))}}
@@ -619,6 +713,28 @@ def _range(item):
     if _number(item.get('min')) and _number(item.get('max')) and item['min'] <= item['max'] and 'value' not in item:
         return (item['min'], item['max'])
     return None
+
+
+def _input_range(item):
+    """(min, max) of an input: {value}, {min, max}, or an engineering bound {typical | at_25c: value or {min, max},
+    widen?} widened by `widen` (default the floor)."""
+    if not isinstance(item, dict):
+        return None
+    key = next((k for k in ENGINEERING if k in item), None)
+    if key is None:
+        return _range(item)
+    base = _range({'value': item[key]} if _number(item[key]) else item[key])
+    widen = item.get('widen', ENGINEERING[key])
+    if base is None or not (_number(widen) and widen > 0):
+        return None
+    if key == 'typical':
+        return (min(base[0] / widen, base[0] * widen), max(base[1] / widen, base[1] * widen))
+    return (base[0] - widen * abs(base[0]), base[1] + widen * abs(base[1]))
+
+
+def _same_gap(conclusion):
+    missing = conclusion.get('missing')
+    return conclusion.get('outcome') == 'UNDECIDED' and isinstance(missing, dict) and bool(missing.get('same_as'))
 
 
 def _locators(value):

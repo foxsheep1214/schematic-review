@@ -86,10 +86,12 @@ def conclusions():
          'basis': numeric(dict(led_inputs(), vf={'min': 1.8, 'max': 2.9, 'unit': 'V', 'from': {'clause': 'K-VF-COLD'}}),
                           {'min': 1.85, 'max': 3.45}),
          'loose_input': 'vf',
+         'failure_path': {'mechanism': '−20 °C 时 VF 升高，IF 低于 2 mA，指示偏暗'},
          'severity': {'level': 'P2', 'class': 'LOCAL_OR_DATA', 'consequence': '低温指示偏暗'}},
         {'question': 'Q-ESR', 'outcome': 'UNDECIDED',
          'missing': {'what': 'C5 在 −20 °C 的 ESR', 'from': 'VENDOR', 'closes_when': 'ESR ≤ 120 mΩ'},
          'searched': [{'source': 'ds/C5.txt', 'locator': 'p1 特性表'}],
+         'failure_path': {'mechanism': '低温 ESR 升高，输出纹波超出下游输入窗口'},
          'severity': {'level': 'P3', 'class': 'OPTIMIZATION', 'consequence': '低温纹波略大'}},
     ]
 
@@ -123,6 +125,8 @@ class CleanTests(Fixture):
         self.assertEqual(out['summary']['outcomes'], {'PASS': 3, 'FAIL': 1, 'UNDECIDED': 2})
         self.assertEqual(out['summary']['release'], 'CAN_FREEZE')
         self.assertEqual(out['summary']['defects'], 1)
+        self.assertEqual(out['summary']['gaps'], 2)
+        self.assertEqual(out['summary']['constraints'], [])
 
 
 class InjectedErrorTests(Fixture):
@@ -339,6 +343,121 @@ class StrictnessTests(Fixture):
         out = self.run_check(cs=cs)
         self.assertTrue(out['valid'], out['errors'])
         self.assertEqual(out['summary']['release'], 'CAN_FREEZE')
+
+
+class UndecidedTests(Fixture):
+    """Five guards against undecided conclusions that need not be: an engineering bound from public values,
+    a failure path, procurement as a constraint, a recommended configuration, one gap counted once."""
+
+    def c(self, cs, qid):
+        return next(c for c in cs if c['question'] == qid)
+
+    def vf_as(self, cs, item, result, outcome='UNDECIDED'):
+        c = self.c(cs, 'Q-VF')
+        c['basis']['inputs']['vf'] = dict(item, unit='V', **{'from': {'clause': 'K-VF'}})
+        c['basis']['result'] = result
+        c['outcome'] = outcome
+        if outcome == 'PASS':
+            for k in ('missing', 'loose_input', 'failure_path', 'severity'):
+                c.pop(k)
+        return c
+
+    def test_a_25c_guarantee_widened_by_the_floor_decides(self):
+        cs = conclusions(); self.vf_as(cs, {'at_25c': {'min': 1.8, 'max': 2.1}}, {'min': 2.23, 'max': 3.81})
+        self.assertIn(('CONSISTENCY', 'ALREADY_DECIDED'), self.codes(self.run_check(cs=cs)))
+        cs = conclusions(); self.vf_as(cs, {'at_25c': {'min': 1.8, 'max': 2.1}}, {'min': 2.23, 'max': 3.81}, 'PASS')
+        out = self.run_check(cs=cs)
+        self.assertTrue(out['valid'], out['errors'])
+        d = next(x for x in out['derived'] if x['question'] == 'Q-VF')
+        self.assertEqual(d['outcome'], 'PASS')
+
+    def test_a_typical_value_is_widened_threefold_both_ways(self):
+        cs = conclusions(); self.vf_as(cs, {'typical': 1.95}, {'min': 4.75 - 5.85, 'max': 5.25 - 0.65})
+        out = self.run_check(cs=cs)
+        self.assertTrue(out['valid'], out['errors'])
+        cs = conclusions(); self.vf_as(cs, {'typical': 1.95, 'widen': 2}, {'min': 4.75 - 3.9, 'max': 5.25 - 0.975})
+        self.assertIn(('TRACE', 'ENGINEERING_TOO_NARROW'), self.codes(self.run_check(cs=cs)))
+        cs = conclusions(); self.vf_as(cs, {'at_25c': 2.0, 'widen': 0.1}, {'min': 2.55, 'max': 3.45})
+        self.assertIn(('TRACE', 'ENGINEERING_TOO_NARROW'), self.codes(self.run_check(cs=cs)))
+
+    def test_an_engineering_bound_widens_a_datasheet_value_only(self):
+        cs = conclusions(); c = self.vf_as(cs, {'at_25c': {'min': 1.8, 'max': 2.1}}, {'min': 2.23, 'max': 3.81}, 'PASS')
+        c['basis']['inputs']['vf']['from'] = {'clause': 'K-ASSUME'}
+        self.assertIn(('TRACE', 'ENGINEERING_NOT_DATASHEET'), self.codes(self.run_check(cs=cs)))
+
+    def test_a_searched_value_left_unused_is_refused(self):
+        cs = conclusions(); self.c(cs, 'Q-ESR')['searched'][0]['value'] = '45 mΩ @ 20 °C'
+        self.assertIn(('CONSISTENCY', 'BOUND_NOT_USED'), self.codes(self.run_check(cs=cs)))
+
+    def test_an_undecided_conclusion_names_its_failure_path(self):
+        cs = conclusions(); del self.c(cs, 'Q-ESR')['failure_path']
+        self.assertIn(('CONSISTENCY', 'NO_FAILURE_PATH'), self.codes(self.run_check(cs=cs)))
+        cs = conclusions(); self.c(cs, 'Q-ESR')['failure_path']['mechanism'] = ' '
+        self.assertIn(('CONSISTENCY', 'NO_FAILURE_PATH'), self.codes(self.run_check(cs=cs)))
+        qs = questions(); next(q for q in qs['questions'] if q['id'] == 'Q-ESR')['conditions']['states'] = ['RUN', 'OFF']
+        cs = conclusions(); self.c(cs, 'Q-ESR')['failure_path']['state'] = 'SLEEP'
+        self.assertIn(('CONSISTENCY', 'NO_FAILURE_PATH'), self.codes(self.run_check(qs=qs, cs=cs)))
+        self.c(cs, 'Q-ESR')['failure_path']['state'] = 'RUN'
+        self.assertTrue(self.run_check(qs=qs, cs=cs)['valid'])
+
+    def test_procurement_is_a_constraint_not_an_open_question(self):
+        cs = conclusions(); self.c(cs, 'Q-ESR')['missing']['from'] = 'PROCUREMENT'
+        self.assertIn(('STRICTNESS', 'UNDECIDED_ON_PROCUREMENT'), self.codes(self.run_check(cs=cs)))
+        cs = conclusions(); c = self.c(cs, 'Q-LED')
+        c['basis'] = {'kind': 'CONSTRAINT', 'refs': ['R3'], 'requires': 'R3 额定功率 ≥ 0.1 W', 'clause': 'K-LED'}
+        out = self.run_check(cs=cs)
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual(out['summary']['constraints'],
+                         [{'question': 'Q-LED', 'refs': ['R3'], 'requires': 'R3 额定功率 ≥ 0.1 W'}])
+        c['basis']['refs'] = ['R9']
+        self.assertIn(('TRACE', 'UNKNOWN_REF'), self.codes(self.run_check(cs=cs)))
+        c['basis'].update(refs=['R3'], requires='')
+        self.assertIn(('TRACE', 'CONSTRAINT_INCOMPLETE'), self.codes(self.run_check(cs=cs)))
+        c['basis']['requires'] = 'x'; c['outcome'] = 'FAIL'; c['fix'] = {'change': 'y', 'readiness': 'READY'}
+        c['severity'] = {'level': 'P3', 'class': 'OPTIMIZATION', 'consequence': 'z'}
+        self.assertIn(('CONSISTENCY', 'FAIL_WITHOUT_BASIS'), self.codes(self.run_check(cs=cs)))
+
+    def recommended(self, clause='K-C5', deviations=()):
+        return {'kind': 'RECOMMENDED', 'clause': clause, 'deviations': list(deviations),
+                'facts': [{'ref': 'C5', 'ref_value_is': '100nF/50V', 'means': '按推荐值'}]}
+
+    def test_a_recommended_configuration_without_deviation_passes(self):
+        cs = conclusions(); e = self.c(cs, 'Q-ESR')
+        for k in ('missing', 'searched', 'failure_path', 'severity'):
+            e.pop(k)
+        e.update(outcome='PASS', basis=self.recommended())
+        out = self.run_check(cs=cs)
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual(out['summary']['facts_checked'], 4)
+        e['basis'] = self.recommended(deviations=['C5 换成 47 nF'])
+        self.assertIn(('CONSISTENCY', 'RECOMMENDED_WITH_DEVIATION'), self.codes(self.run_check(cs=cs)))
+        e['basis'] = self.recommended(clause='K-ASSUME')
+        self.assertIn(('STRICTNESS', 'RECOMMENDED_NOT_VENDOR'), self.codes(self.run_check(cs=cs)))
+        e['basis'] = dict(self.recommended(), facts=[{'ref': 'C5', 'ref_value_is': '1uF', 'means': 'x'}])
+        self.assertIn(('TRACE', 'FACT_FALSE'), self.codes(self.run_check(cs=cs)))
+        cs = conclusions(); e = self.c(cs, 'Q-ESR'); e.pop('searched'); e['basis'] = self.recommended()
+        self.assertIn(('STRICTNESS', 'ALREADY_RECOMMENDED'), self.codes(self.run_check(cs=cs)))
+
+    def test_one_gap_is_counted_once(self):
+        cs = conclusions(); e = self.c(cs, 'Q-ESR'); v = self.c(cs, 'Q-VF')
+        e['missing']['what'] = '  ' + v['missing']['what'].replace(' ', '  ')
+        self.assertIn(('STRICTNESS', 'DUPLICATE_GAP'), self.codes(self.run_check(cs=cs)))
+        for k in ('searched', 'severity'):
+            e.pop(k)
+        e['missing'] = {'same_as': 'Q-VF'}
+        out = self.run_check(cs=cs)
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual(out['summary']['gaps'], 1)
+        self.assertEqual(out['summary']['outcomes']['UNDECIDED'], 2)
+        e['missing'] = {'same_as': 'Q-LED'}
+        self.assertIn(('CONSISTENCY', 'MISSING_SAME_AS_UNKNOWN'), self.codes(self.run_check(cs=cs)))
+
+    def test_a_shared_gap_still_names_its_own_failure_path(self):
+        cs = conclusions(); e = self.c(cs, 'Q-ESR')
+        for k in ('searched', 'severity', 'failure_path'):
+            e.pop(k)
+        e['missing'] = {'same_as': 'Q-VF'}
+        self.assertIn(('CONSISTENCY', 'NO_FAILURE_PATH'), self.codes(self.run_check(cs=cs)))
 
 
 class StateSplitTests(Fixture):

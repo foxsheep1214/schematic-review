@@ -1,0 +1,3683 @@
+[
+ {
+  "question": "ANA-C03.BATTERY-SENSE-BATTERY-ABSENT.U4",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "实际开漏/HiZ配置、各域单独掉电允许驱动及Ioff/钳位电流边界，外端已同步供电且不独驱，无额外附件SKU请求",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U4 / BATTERY_ABSENT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明",
+   "state": "BATTERY_ABSENT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U4 / BATTERY_ABSENT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明"
+  }
+ },
+ {
+  "question": "DEV-C01.BOARD",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "受控采购额定尚未落BOM：R8至少0.16225W@环境70C/半功率；实际0.2W ERJPA2可满足但未选；连接器/开关/LED按component-review实际电流温度选型，普通电阻其余已满足允许ERJ2G/ERJPA2目录最弱档0.1W@环境70℃的50%",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "DEV-C01.BOARD：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "DEV-C01.BOARD：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏"
+  }
+ },
+ {
+  "question": "DEV-C01.R8-HOLD",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "受控采购额定尚未落BOM：R8至少0.16225W@环境70C/半功率；实际0.2W ERJPA2可满足但未选；连接器/开关/LED按component-review实际电流温度选型，普通电阻其余已满足允许ERJ2G/ERJPA2目录最弱档0.1W@环境70℃的50%",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "R8：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏",
+   "state": "RESET_HOLD"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "R8：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏"
+  }
+ },
+ {
+  "question": "DEV-C01.STRESS-R8",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "受控采购额定尚未落BOM：R8至少0.16225W@环境70C/半功率；实际0.2W ERJPA2可满足但未选；连接器/开关/LED按component-review实际电流温度选型，普通电阻其余已满足允许ERJ2G/ERJPA2目录最弱档0.1W@环境70℃的50%",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "R8：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "R8：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏"
+  }
+ },
+ {
+  "question": "DEV-C02.BOARD",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "DEV-C02.BOARD：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "DEV-C02.BOARD：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ },
+ {
+  "question": "DEV-C04.BOARD",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "受控采购额定尚未落BOM：R8至少0.16225W@环境70C/半功率；实际0.2W ERJPA2可满足但未选；连接器/开关/LED按component-review实际电流温度选型，普通电阻其余已满足允许ERJ2G/ERJPA2目录最弱档0.1W@环境70℃的50%",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "DEV-C04.BOARD / DEFAULT与LP_CUT/实际功能允许状态：本对象实际LED/接点额定及温度档未定，可能局部灯/接点过负荷或接口维护失效；按逐颗最大电流/温度反推最低额定，不复制R8长期复位热应力后果。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "DEV-C04.BOARD / DEFAULT与LP_CUT/实际功能允许状态：本对象实际LED/接点额定及温度档未定，可能局部灯/接点过负荷或接口维护失效；按逐颗最大电流/温度反推最低额定，不复制R8长期复位热应力后果。"
+  }
+ },
+ {
+  "question": "DEV-C05.D6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "选定D6真实B/C版本并取得3.20..3.40V及0..70°C运行、加载门限保证；C-V1.2最低3.7、B-V6最低3.3，不能合并成任意3.3兼容；GPIO46加载/关断另查",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D6：当前C分支3.3低于3.7；B-V6也不覆盖3.2下界且不是已选实物；可能RGB无法工作或输入影响GPIO46采样，未证全部身份分支都违反不作电气FAIL"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "D6：当前C分支3.3低于3.7；B-V6也不覆盖3.2下界且不是已选实物；可能RGB无法工作或输入影响GPIO46采样，未证全部身份分支都违反不作电气FAIL"
+  }
+ },
+ {
+  "question": "DEV-C05.D6-SUPPLY",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "选定D6真实B/C版本并取得3.20..3.40V及0..70°C运行、加载门限保证；C-V1.2最低3.7、B-V6最低3.3，不能合并成任意3.3兼容；GPIO46加载/关断另查",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D6：当前C分支3.3低于3.7；B-V6也不覆盖3.2下界且不是已选实物；可能RGB无法工作或输入影响GPIO46采样，未证全部身份分支都违反不作电气FAIL",
+   "state": "ON"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "D6：当前C分支3.3低于3.7；B-V6也不覆盖3.2下界且不是已选实物；可能RGB无法工作或输入影响GPIO46采样，未证全部身份分支都违反不作电气FAIL"
+  }
+ },
+ {
+  "question": "DEV-C05.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1 / DEFAULT与LP_CUT/实际功能允许状态：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1 / DEFAULT与LP_CUT/实际功能允许状态：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U1'}"
+   }
+  ]
+ },
+ {
+  "question": "DEV-C05.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：加载后本行发送低/高电平或EN默认窗口若越接收保证门限，所需I2C/UART/供电控制可能不能可靠工作；已核25°C算例只覆盖其来源条件"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：加载后本行发送低/高电平或EN默认窗口若越接收保证门限，所需I2C/UART/供电控制可能不能可靠工作；已核25°C算例只覆盖其来源条件"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U3'}"
+   }
+  ]
+ },
+ {
+  "question": "DEV-C05.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6 / DEFAULT与LP_CUT/实际功能允许状态：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6 / DEFAULT与LP_CUT/实际功能允许状态：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U6'}"
+   }
+  ]
+ },
+ {
+  "question": "DEV-D01.U10",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U10 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "U10 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D02.D1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "D1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D02.D4",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "D4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D02.D5",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D5 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "D5 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D02.J1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D02.J2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D02.J3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D02.J4",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D02.U10",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U10 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "U10 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D03.J1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D03.J2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D03.J3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D03.J4",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.D6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "这一路的实际DIN输出/掉电次序、Ioff/输入限幅边界及failsafe隔离；把内部MCU驱动纳入状态",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D6 / DEFAULT与LP_CUT/实际功能允许状态：系统3.3V仍在、periph0V且MCU输出高时，DIN3.3V超过两候选共同VDD+0.7V=0.7V绝限，可能损伤RGB输入；该可信分支潜在P0，需当前隔离或保证状态"
+  },
+  "severity": {
+   "level": "P0",
+   "class": "DAMAGE_OR_HAZARD",
+   "consequence": "D6 / DEFAULT与LP_CUT/实际功能允许状态：系统3.3V仍在、periph0V且MCU输出高时，DIN3.3V超过两候选共同VDD+0.7V=0.7V绝限，可能损伤RGB输入；该可信分支潜在P0，需当前隔离或保证状态"
+  }
+ },
+ {
+  "question": "DEV-D05.J1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.J2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.J3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.J4",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-D1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "D1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-D4",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "D4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-D5",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D5 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "D5 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-D6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "这一路的实际DIN输出/掉电次序、Ioff/输入限幅边界及failsafe隔离；把内部MCU驱动纳入状态",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D6 / DEFAULT与LP_CUT/实际功能允许状态：系统3.3V仍在、periph0V且MCU输出高时，DIN3.3V超过两候选共同VDD+0.7V=0.7V绝限，可能损伤RGB输入；该可信分支潜在P0，需当前隔离或保证状态"
+  },
+  "severity": {
+   "level": "P0",
+   "class": "DAMAGE_OR_HAZARD",
+   "consequence": "D6 / DEFAULT与LP_CUT/实际功能允许状态：系统3.3V仍在、periph0V且MCU输出高时，DIN3.3V超过两候选共同VDD+0.7V=0.7V绝限，可能损伤RGB输入；该可信分支潜在P0，需当前隔离或保证状态"
+  }
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-J1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-J2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-J3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-J4",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1 / DEFAULT与LP_CUT/实际功能允许状态：GPIO45门控驱动及默认偏置全温界未知可能使periph LDO错误开启/关闭，影响Qwiic/SD状态"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1 / DEFAULT与LP_CUT/实际功能允许状态：GPIO45门控驱动及默认偏置全温界未知可能使periph LDO错误开启/关闭，影响Qwiic/SD状态"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U1'}"
+   }
+  ]
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "GPIO0释放LED负载及GPIO46 DIN在采样窗的全温漏电/门限缺保证；内部45k仅典型不扩成保证。取准确D6漏电界，或移除GPIO0/46 strap负载并设计保证偏置；GPIO45 EN属独立W-DC。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U3'}"
+   }
+  ]
+ },
+ {
+  "question": "DEV-D05.PHYSICAL-U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6 / DEFAULT与LP_CUT/实际功能允许状态：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6 / DEFAULT与LP_CUT/实际功能允许状态：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U6'}"
+   }
+  ]
+ },
+ {
+  "question": "DEV-D05.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1 / DEFAULT与LP_CUT/实际功能允许状态：GPIO45门控驱动及默认偏置全温界未知可能使periph LDO错误开启/关闭，影响Qwiic/SD状态"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1 / DEFAULT与LP_CUT/实际功能允许状态：GPIO45门控驱动及默认偏置全温界未知可能使periph LDO错误开启/关闭，影响Qwiic/SD状态"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U1'}"
+   }
+  ]
+ },
+ {
+  "question": "DEV-D05.U10",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U10 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "U10 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-D05.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "GPIO0释放LED负载及GPIO46 DIN在采样窗的全温漏电/门限缺保证；内部45k仅典型不扩成保证。取准确D6漏电界，或移除GPIO0/46 strap负载并设计保证偏置；GPIO45 EN属独立W-DC。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U3'}"
+   }
+  ]
+ },
+ {
+  "question": "DEV-D05.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6 / DEFAULT与LP_CUT/实际功能允许状态：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6 / DEFAULT与LP_CUT/实际功能允许状态：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U6'}"
+   }
+  ]
+ },
+ {
+  "question": "DEV-E01.J1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J1 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-E01.J2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J2 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-E01.J3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J3 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-E01.J4",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J4 / DEFAULT与LP_CUT/实际功能允许状态：准确订货件针号、聚合或物理视图未绑定到上述本体端点，误装会影响该器件/接口；逻辑连接已经审完，未要求未指定外端SKU。"
+  }
+ },
+ {
+  "question": "DEV-Q01.DATASHEETS",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "取得该连接器/LED准确可订货号、原厂针图/视角与同版图面针1；J1聚合VBUS/GND/SBU/安装NC到实际接点映射不能由标准名称独自保证；不得索取未指定外端型号",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "DEV-Q01.DATASHEETS：若本对象脚号/视图与受控装配不对应，信号或供电接点会错配，当前逻辑端点表只证明板内功能连接"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "DEV-Q01.DATASHEETS：若本对象脚号/视图与受控装配不对应，信号或供电接点会错配，当前逻辑端点表只证明板内功能连接"
+  }
+ },
+ {
+  "question": "PRO-C01.SOURCE-OR-TRANSFER.D2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "Define actual USB insertion/source-transfer pulse envelope at design-owned input boundary and obtain selected TVS full-temperature maximum clamp/SOA at that pulse, D2 minimum transient drop only if credited; otherwise add guaranteed clamp/OVP-disconnect/isolation with default and negative/recovery behaviour",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "VUSB实际插接/切换过冲若经TVS残压/返回寄生和D2达到受电端绝限，可能损伤U5或U1/U6的供入端，造成电源与恢复功能失效；源pulse与full-T max尚未界定，未称实物必然损坏。",
+   "state": "TRANSFER"
+  },
+  "severity": {
+   "level": "P0",
+   "class": "DAMAGE_OR_HAZARD",
+   "consequence": "VUSB实际插接/切换过冲若经TVS残压/返回寄生和D2达到受电端绝限，可能损伤U5或U1/U6的供入端，造成电源与恢复功能失效；源pulse与full-T max尚未界定，未称实物必然损坏。"
+  }
+ },
+ {
+  "question": "PRO-C01.SOURCE-OR-USB-RUN.D2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "Define actual USB insertion/source-transfer pulse envelope at design-owned input boundary and obtain selected TVS full-temperature maximum clamp/SOA at that pulse, D2 minimum transient drop only if credited; otherwise add guaranteed clamp/OVP-disconnect/isolation with default and negative/recovery behaviour",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "VUSB实际插接/切换过冲若经TVS残压/返回寄生和D2达到受电端绝限，可能损伤U5或U1/U6的供入端，造成电源与恢复功能失效；源pulse与full-T max尚未界定，未称实物必然损坏。",
+   "state": "USB_RUN"
+  },
+  "severity": {
+   "level": "P0",
+   "class": "DAMAGE_OR_HAZARD",
+   "consequence": "VUSB实际插接/切换过冲若经TVS残压/返回寄生和D2达到受电端绝限，可能损伤U5或U1/U6的供入端，造成电源与恢复功能失效；源pulse与full-T max尚未界定，未称实物必然损坏。"
+  }
+ },
+ {
+  "question": "PRO-D03.J2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本外接口按实际外接使用定义本体ESD/浪涌电气边界与保护协调；读芯片HBM/IEC单器件不等同系统证书；若只是低压机内受控插接请写使用约束，不能默认每针必有TVS",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J2：受控插接边界和保护残压/回流未定，可造成该接口异常或维护损伤；当前无已承诺IEC系统等级，因此不制造缺TVS必然FAIL"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J2：受控插接边界和保护残压/回流未定，可造成该接口异常或维护损伤；当前无已承诺IEC系统等级，因此不制造缺TVS必然FAIL"
+  }
+ },
+ {
+  "question": "PRO-D03.J3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本外接口按实际外接使用定义本体ESD/浪涌电气边界与保护协调；读芯片HBM/IEC单器件不等同系统证书；若只是低压机内受控插接请写使用约束，不能默认每针必有TVS",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J3：受控插接边界和保护残压/回流未定，可造成该接口异常或维护损伤；当前无已承诺IEC系统等级，因此不制造缺TVS必然FAIL"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J3：受控插接边界和保护残压/回流未定，可造成该接口异常或维护损伤；当前无已承诺IEC系统等级，因此不制造缺TVS必然FAIL"
+  }
+ },
+ {
+  "question": "PRO-D03.J4",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本外接口按实际外接使用定义本体ESD/浪涌电气边界与保护协调；读芯片HBM/IEC单器件不等同系统证书；若只是低压机内受控插接请写使用约束，不能默认每针必有TVS",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J4：受控插接边界和保护残压/回流未定，可造成该接口异常或维护损伤；当前无已承诺IEC系统等级，因此不制造缺TVS必然FAIL"
+  },
+  "severity": {
+   "level": "P2",
+   "class": "LOCAL_OR_DATA",
+   "consequence": "J4：受控插接边界和保护残压/回流未定，可造成该接口异常或维护损伤；当前无已承诺IEC系统等级，因此不制造缺TVS必然FAIL"
+  }
+ },
+ {
+  "question": "PWR-C01.3-3V",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "3.3V：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "3.3V：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "power.loads_A/600margins"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "p1 rating;p6 minlimit25C"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C01.3-3V-P",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "3.3V_P：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "3.3V_P：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "power.loads_A/600margins"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "p1 rating;p6 minlimit25C"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C01.USB-SOURCE",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给TypeC电流许可与输入限流/充电协同方案：500mA目标充电后连续850mA、双轨同时峰值1.05A；双Rd仅声明Sink不检测Rp许可；默认USB电流下限制充电/板耗，或确认合规1.5A广告并受控检测",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "J1：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可",
+   "state": "USB_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "J1：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可"
+  }
+ },
+ {
+  "question": "PWR-C01.VBATT",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "VBATT：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "VBATT：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'net': 'VBATT'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C01.VIN",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给TypeC电流许可与输入限流/充电协同方案：500mA目标充电后连续850mA、双轨同时峰值1.05A；双Rd仅声明Sink不检测Rp许可；默认USB电流下限制充电/板耗，或确认合规1.5A广告并受控检测",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "VIN：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "VIN：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可"
+  }
+ },
+ {
+  "question": "PWR-C02.PERIPH-LDO-OFF.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "OFF"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'PERIPH-LDO', 'ref': 'U1', 'refs': ['U1', 'C3', 'C14', 'R17', 'R19', 'JP2', 'U3'], 'nets': ['VIN', '3.3V_P', 'ESP45/Q_EN'], 'state': 'OFF'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C02.PERIPH-LDO-ON.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "ON"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'PERIPH-LDO', 'ref': 'U1', 'refs': ['U1', 'C3', 'C14', 'R17', 'R19', 'JP2', 'U3'], 'nets': ['VIN', '3.3V_P', 'ESP45/Q_EN'], 'state': 'ON'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C02.PERIPH-LDO-STARTUP.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1 / STARTUP：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1 / STARTUP：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'PERIPH-LDO', 'ref': 'U1', 'refs': ['U1', 'C3', 'C14', 'R17', 'R19', 'JP2', 'U3'], 'nets': ['VIN', '3.3V_P', 'ESP45/Q_EN'], 'state': 'STARTUP'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C02.STEP-PERIPH",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本轨额外100mA/1ms，Ceff保证后须限定∫(Iload-Ireg)dt<=Ceff*允许ΔV并给ESR阶跃；仅电容承担1ms且ΔV.2需500uF。已有22.35/16.18uF仅容差名义对应44.7/32.36us满ΔI延迟预算，LDO真实响应须保证/受控模型",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败",
+   "state": "100mA-extra-1ms"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败"
+  }
+ },
+ {
+  "question": "PWR-C02.STEP-SYSTEM",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本轨额外100mA/1ms，Ceff保证后须限定∫(Iload-Ireg)dt<=Ceff*允许ΔV并给ESR阶跃；仅电容承担1ms且ΔV.2需500uF。已有22.35/16.18uF仅容差名义对应44.7/32.36us满ΔI延迟预算，LDO真实响应须保证/受控模型",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败",
+   "state": "100mA-extra-1ms"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败"
+  }
+ },
+ {
+  "question": "PWR-C02.SYS-LDO-BATTERY-RUN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6 / BATTERY_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "BATTERY_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6 / BATTERY_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'SYS-LDO', 'ref': 'U6', 'refs': ['U6', 'D2', 'D3', 'C10', 'C11', 'C13', 'R13'], 'nets': ['VIN', '3.3V', 'EN'], 'state': 'BATTERY_RUN'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C02.SYS-LDO-POWER-DOWN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "POWER_DOWN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'SYS-LDO', 'ref': 'U6', 'refs': ['U6', 'D2', 'D3', 'C10', 'C11', 'C13', 'R13'], 'nets': ['VIN', '3.3V', 'EN'], 'state': 'POWER_DOWN'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C02.SYS-LDO-USB-RUN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "USB_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'SYS-LDO', 'ref': 'U6', 'refs': ['U6', 'D2', 'D3', 'C10', 'C11', 'C13', 'R13'], 'nets': ['VIN', '3.3V', 'EN'], 'state': 'USB_RUN'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C03.PERIPH-LDO-ON.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "ON"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "power"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "§17.2passPMOS"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C03.PERIPH-LDO-STARTUP.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1 / STARTUP：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1 / STARTUP：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "power"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "§17.2passPMOS"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C03.SYS-LDO-BATTERY-RUN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6 / BATTERY_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "BATTERY_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6 / BATTERY_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "power"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "§17.2passPMOS"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C03.SYS-LDO-USB-RUN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "USB_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "power"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "§17.2passPMOS"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C04.PERIPH-LDO-ON.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格",
+   "state": "ON"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ },
+ {
+  "question": "PWR-C04.PERIPH-LDO-STARTUP.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ },
+ {
+  "question": "PWR-C04.SYS-LDO-BATTERY-RUN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格",
+   "state": "BATTERY_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ },
+ {
+  "question": "PWR-C04.SYS-LDO-USB-RUN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格",
+   "state": "USB_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ },
+ {
+  "question": "PWR-C05.PERIPH-LDO-OFF.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "OFF"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'PERIPH-LDO', 'ref': 'U1', 'refs': ['U1', 'C3', 'C14', 'R17', 'R19', 'JP2', 'U3'], 'nets': ['VIN', '3.3V_P', 'ESP45/Q_EN'], 'state': 'OFF'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C05.PERIPH-LDO-ON.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "ON"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'PERIPH-LDO', 'ref': 'U1', 'refs': ['U1', 'C3', 'C14', 'R17', 'R19', 'JP2', 'U3'], 'nets': ['VIN', '3.3V_P', 'ESP45/Q_EN'], 'state': 'ON'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C05.PERIPH-LDO-STARTUP.U1",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'PERIPH-LDO', 'ref': 'U1', 'refs': ['U1', 'C3', 'C14', 'R17', 'R19', 'JP2', 'U3'], 'nets': ['VIN', '3.3V_P', 'ESP45/Q_EN'], 'state': 'STARTUP'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C05.SYS-LDO-BATTERY-RUN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "BATTERY_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'SYS-LDO', 'ref': 'U6', 'refs': ['U6', 'D2', 'D3', 'C10', 'C11', 'C13', 'R13'], 'nets': ['VIN', '3.3V', 'EN'], 'state': 'BATTERY_RUN'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C05.SYS-LDO-POWER-DOWN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "POWER_DOWN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'SYS-LDO', 'ref': 'U6', 'refs': ['U6', 'D2', 'D3', 'C10', 'C11', 'C13', 'R13'], 'nets': ['VIN', '3.3V', 'EN'], 'state': 'POWER_DOWN'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C05.SYS-LDO-USB-RUN.U6",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "USB_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'SYS-LDO', 'ref': 'U6', 'refs': ['U6', 'D2', 'D3', 'C10', 'C11', 'C13', 'R13'], 'nets': ['VIN', '3.3V', 'EN'], 'state': 'USB_RUN'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C09.DECAP-318BF088C54F5C92F47A-CAPACITY.3-3V-P",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ },
+ {
+  "question": "PWR-C09.DECAP-3CFE35E80BF45F01120B-CAPACITY.3-3V",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ },
+ {
+  "question": "PWR-C09.DECAP-4F55B105F0344CAC46A0-CAPACITY.3-3V-P",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ },
+ {
+  "question": "PWR-C09.DECAP-53A68FD9E374E08D8CA4-CAPACITY.3-3V",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ },
+ {
+  "question": "PWR-C13.SOURCE-OR-BATTERY-RUN.D2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D2：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "BATTERY_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "D2：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'SOURCE-OR', 'ref': 'D2', 'refs': ['D2', 'D3', 'U5', 'J3'], 'nets': ['VUSB', 'VBATT', 'VIN', 'GND'], 'state': 'BATTERY_RUN'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-C13.SOURCE-OR-TRANSFER.D2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给TypeC电流许可与输入限流/充电协同方案：500mA目标充电后连续850mA、双轨同时峰值1.05A；双Rd仅声明Sink不检测Rp许可；默认USB电流下限制充电/板耗，或确认合规1.5A广告并受控检测",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D2：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可",
+   "state": "TRANSFER"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "D2：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可"
+  }
+ },
+ {
+  "question": "PWR-C13.SOURCE-OR-USB-RUN.D2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给TypeC电流许可与输入限流/充电协同方案：500mA目标充电后连续850mA、双轨同时峰值1.05A；双Rd仅声明Sink不检测Rp许可；默认USB电流下限制充电/板耗，或确认合规1.5A广告并受控检测",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D2：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可",
+   "state": "USB_RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "D2：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可"
+  }
+ },
+ {
+  "question": "PWR-E02.U1-ESP45-Q-EN.U1-3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1.3 / DEFAULT：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1.3 / DEFAULT：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U1', 'net': 'ESP45/Q_EN', 'node': 'U1.3', 'state': 'DEFAULT', 'power_up': 'U1-ESP45-Q-EN', 'power_up_digest': 'd078814c3dde462fd1cd7ccf936a45c57f8ebc63d660ce977ca6c3add12cd357'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-E02.U1-ESP45-Q-EN.U1-3-2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U1.3 / LP_CUT：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U1.3 / LP_CUT：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U1', 'net': 'ESP45/Q_EN', 'node': 'U1.3', 'state': 'LP_CUT', 'power_up': 'U1-ESP45-Q-EN', 'power_up_digest': 'd078814c3dde462fd1cd7ccf936a45c57f8ebc63d660ce977ca6c3add12cd357'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-E02.U6-EN.U6-3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6.3 / DEFAULT：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6.3 / DEFAULT：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U6', 'net': 'EN', 'node': 'U6.3', 'state': 'DEFAULT', 'power_up': 'U6-EN', 'power_up_digest': 'd078814c3dde462fd1cd7ccf936a45c57f8ebc63d660ce977ca6c3add12cd357'}"
+   }
+  ]
+ },
+ {
+  "question": "PWR-E02.U6-EN.U6-3-2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6.3 / LP_CUT：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6.3 / LP_CUT：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U6', 'net': 'EN', 'node': 'U6.3', 'state': 'LP_CUT', 'power_up': 'U6-EN', 'power_up_digest': 'd078814c3dde462fd1cd7ccf936a45c57f8ebc63d660ce977ca6c3add12cd357'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-A01.LINT-COLD-10",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "RST-A01.LINT-COLD-10：加载后本行发送低/高电平或EN默认窗口若越接收保证门限，所需I2C/UART/供电控制可能不能可靠工作；已核25°C算例只覆盖其来源条件"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "RST-A01.LINT-COLD-10：加载后本行发送低/高电平或EN默认窗口若越接收保证门限，所需I2C/UART/供电控制可能不能可靠工作；已核25°C算例只覆盖其来源条件"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'board': 'BOARD', 'lint_run': 'cold', 'lint_index': 10}"
+   }
+  ]
+ },
+ {
+  "question": "RST-A01.LINT-COLD-11",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "准确GPIO45默认弱下拉及RT EN IEN/VIH/VIL在0..70°C的保证界、GPIO45驱动接管/关断保证；或采用有保证硬件默认/门控控制。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'board': 'BOARD', 'lint_run': 'cold', 'lint_index': 11}"
+   },
+   {
+    "source": "calcs/engineering.json",
+    "locator": "straps.GPIO45 accurate factory/independent EN"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "p6 EN/IEN guaranteed test conditions"
+   }
+  ]
+ },
+ {
+  "question": "RST-A01.LINT-COLD-12",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "RST-A01.LINT-COLD-12：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "RST-A01.LINT-COLD-12：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-A01.LINT-HOT-10",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "RST-A01.LINT-HOT-10：加载后本行发送低/高电平或EN默认窗口若越接收保证门限，所需I2C/UART/供电控制可能不能可靠工作；已核25°C算例只覆盖其来源条件"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "RST-A01.LINT-HOT-10：加载后本行发送低/高电平或EN默认窗口若越接收保证门限，所需I2C/UART/供电控制可能不能可靠工作；已核25°C算例只覆盖其来源条件"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'board': 'BOARD', 'lint_run': 'hot', 'lint_index': 10}"
+   }
+  ]
+ },
+ {
+  "question": "RST-A01.LINT-HOT-11",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "准确GPIO45默认弱下拉及RT EN IEN/VIH/VIL在0..70°C的保证界、GPIO45驱动接管/关断保证；或采用有保证硬件默认/门控控制。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'board': 'BOARD', 'lint_run': 'hot', 'lint_index': 11}"
+   },
+   {
+    "source": "calcs/engineering.json",
+    "locator": "straps.GPIO45 accurate factory/independent EN"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "p6 EN/IEN guaranteed test conditions"
+   }
+  ]
+ },
+ {
+  "question": "RST-A01.LINT-HOT-12",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "RST-A01.LINT-HOT-12：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "RST-A01.LINT-HOT-12：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-C01.ESP-START-RESET-HOLD.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "GPIO0释放LED负载及GPIO46 DIN在采样窗的全温漏电/门限缺保证；内部45k仅典型不扩成保证。取准确D6漏电界，或移除GPIO0/46 strap负载并设计保证偏置；GPIO45 EN属独立W-DC。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。",
+   "state": "RESET_HOLD"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'ESP-START', 'ref': 'U3', 'refs': ['U3', 'SW1', 'SW2', 'R7', 'R8', 'C6', 'R17', 'R19', 'JP2', 'D1', 'D6'], 'nets': ['3.3V', 'ESP~{RST}', 'ESP0/STAT', 'ESP45/Q_EN', 'ESP46/LED'], 'state': 'RESET_HOLD'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-C01.ESP-START-SLEEP.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "GPIO0释放LED负载及GPIO46 DIN在采样窗的全温漏电/门限缺保证；内部45k仅典型不扩成保证。取准确D6漏电界，或移除GPIO0/46 strap负载并设计保证偏置；GPIO45 EN属独立W-DC。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。",
+   "state": "SLEEP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'ESP-START', 'ref': 'U3', 'refs': ['U3', 'SW1', 'SW2', 'R7', 'R8', 'C6', 'R17', 'R19', 'JP2', 'D1', 'D6'], 'nets': ['3.3V', 'ESP~{RST}', 'ESP0/STAT', 'ESP45/Q_EN', 'ESP46/LED'], 'state': 'SLEEP'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-C01.ESP-START-STARTUP.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "GPIO0释放LED负载及GPIO46 DIN在采样窗的全温漏电/门限缺保证；内部45k仅典型不扩成保证。取准确D6漏电界，或移除GPIO0/46 strap负载并设计保证偏置；GPIO45 EN属独立W-DC。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'ESP-START', 'ref': 'U3', 'refs': ['U3', 'SW1', 'SW2', 'R7', 'R8', 'C6', 'R17', 'R19', 'JP2', 'D1', 'D6'], 'nets': ['3.3V', 'ESP~{RST}', 'ESP0/STAT', 'ESP45/Q_EN', 'ESP46/LED'], 'state': 'STARTUP'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-C01.GPIO0-RELEASE",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "GPIO0释放LED负载及GPIO46 DIN在采样窗的全温漏电/门限缺保证；内部45k仅典型不扩成保证。取准确D6漏电界，或移除GPIO0/46 strap负载并设计保证偏置；GPIO45 EN属独立W-DC。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3.4：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3.4：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U3', 'node': 'U3.4', 'net': 'ESP0/STAT', 'state': 'STARTUP'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-C01.GPIO46-DEFAULT",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "GPIO0释放LED负载及GPIO46 DIN在采样窗的全温漏电/门限缺保证；内部45k仅典型不扩成保证。取准确D6漏电界，或移除GPIO0/46 strap负载并设计保证偏置；GPIO45 EN属独立W-DC。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3.44：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3.44：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U3', 'node': 'U3.44', 'net': 'ESP46/LED', 'state': 'STARTUP'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-C02.ESP-START-SLEEP.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证",
+   "state": "SLEEP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-C02.ESP-START-STARTUP.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-D01.ESP-START-SLEEP.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "GPIO0释放LED负载及GPIO46 DIN在采样窗的全温漏电/门限缺保证；内部45k仅典型不扩成保证。取准确D6漏电界，或移除GPIO0/46 strap负载并设计保证偏置；GPIO45 EN属独立W-DC。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。",
+   "state": "SLEEP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：GPIO0释放或GPIO46在采样窗读错会改变SPI/JointDownloadBoot；准确N4R2厂内固定VDD_SPI3.3V已核，GPIO45不承担这项Flash选择。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'ESP-START', 'ref': 'U3', 'refs': ['U3', 'SW1', 'SW2', 'R7', 'R8', 'C6', 'R17', 'R19', 'JP2', 'D1', 'D6'], 'nets': ['3.3V', 'ESP~{RST}', 'ESP0/STAT', 'ESP45/Q_EN', 'ESP46/LED'], 'state': 'SLEEP'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-E01.U1-3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "准确GPIO45默认弱下拉及RT EN IEN/VIH/VIL在0..70°C的保证界、GPIO45驱动接管/关断保证；或采用有保证硬件默认/门控控制。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'node': 'U1.3', 'net': 'ESP45/Q_EN', 'ref': 'U1'}"
+   },
+   {
+    "source": "calcs/engineering.json",
+    "locator": "straps.GPIO45 accurate factory/independent EN"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "p6 EN/IEN guaranteed test conditions"
+   }
+  ]
+ },
+ {
+  "question": "RST-E01.U3-41",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "准确GPIO45默认弱下拉及RT EN IEN/VIH/VIL在0..70°C的保证界、GPIO45驱动接管/关断保证；或采用有保证硬件默认/门控控制。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'node': 'U3.41', 'net': 'ESP45/Q_EN', 'ref': 'U3'}"
+   },
+   {
+    "source": "calcs/engineering.json",
+    "locator": "straps.GPIO45 accurate factory/independent EN"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "p6 EN/IEN guaranteed test conditions"
+   }
+  ]
+ },
+ {
+  "question": "RST-E01.U3-45",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3.45：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3.45：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-E01.U6-3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6.3 / DEFAULT与LP_CUT/实际功能允许状态：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6.3 / DEFAULT与LP_CUT/实际功能允许状态：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'node': 'U6.3', 'net': 'EN', 'ref': 'U6'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-T01.U1-ESP45-Q-EN.U1-3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "准确GPIO45默认弱下拉及RT EN IEN/VIH/VIL在0..70°C的保证界、GPIO45驱动接管/关断保证；或采用有保证硬件默认/门控控制。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U1', 'net': 'ESP45/Q_EN', 'node': 'U1.3', 'state': 'DEFAULT', 'power_up': 'U1-ESP45-Q-EN', 'power_up_digest': 'd078814c3dde462fd1cd7ccf936a45c57f8ebc63d660ce977ca6c3add12cd357'}"
+   },
+   {
+    "source": "calcs/engineering.json",
+    "locator": "straps.GPIO45 accurate factory/independent EN"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "p6 EN/IEN guaranteed test conditions"
+   }
+  ]
+ },
+ {
+  "question": "RST-T01.U1-ESP45-Q-EN.U1-3-2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "准确GPIO45默认弱下拉及RT EN IEN/VIH/VIL在0..70°C的保证界、GPIO45驱动接管/关断保证；或采用有保证硬件默认/门控控制。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U1', 'net': 'ESP45/Q_EN', 'node': 'U1.3', 'state': 'LP_CUT', 'power_up': 'U1-ESP45-Q-EN', 'power_up_digest': 'd078814c3dde462fd1cd7ccf936a45c57f8ebc63d660ce977ca6c3add12cd357'}"
+   },
+   {
+    "source": "calcs/engineering.json",
+    "locator": "straps.GPIO45 accurate factory/independent EN"
+   },
+   {
+    "source": "evidence/manuals/RT9080-local.pdf",
+    "locator": "p6 EN/IEN guaranteed test conditions"
+   }
+  ]
+ },
+ {
+  "question": "RST-T01.U6-EN.U6-3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6.3 / DEFAULT：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6.3 / DEFAULT：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U6', 'net': 'EN', 'node': 'U6.3', 'state': 'DEFAULT', 'power_up': 'U6-EN', 'power_up_digest': 'd078814c3dde462fd1cd7ccf936a45c57f8ebc63d660ce977ca6c3add12cd357'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-T01.U6-EN.U6-3-2",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6.3 / LP_CUT：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6.3 / LP_CUT：默认100kVIN上拉的全温漏电或ENVIL/VIH界未知可能使系统LDO不开/恢复失败"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'ref': 'U6', 'net': 'EN', 'node': 'U6.3', 'state': 'LP_CUT', 'power_up': 'U6-EN', 'power_up_digest': 'd078814c3dde462fd1cd7ccf936a45c57f8ebc63d660ce977ca6c3add12cd357'}"
+   }
+  ]
+ },
+ {
+  "question": "RST-T02.RESET-CHAIN",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "RST-T02.RESET-CHAIN：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证",
+   "state": "RESET_HOLD/RELEASE"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "RST-T02.RESET-CHAIN：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-T03.ESP-START-POWER-DOWN.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证",
+   "state": "POWER_DOWN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-T03.ESP-START-RESET-HOLD.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证",
+   "state": "RESET_HOLD"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-T03.ESP-START-SLEEP.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证",
+   "state": "SLEEP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-T03.ESP-START-STARTUP.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "RST-T04.ESP-START-POWER-DOWN.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "固件未接管阶段的实际pinmux、采样窗和受电/掉电次序；用硬件failsafe保证状态而不是依赖损坏应用",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3 / POWER_DOWN：默认内部GPIO输出/PU未受控时，periph关断不能由外端禁驱动保证，可能残供电/采样错或恢复失效；本条潜在P1，D6单独已记更严重损坏分支",
+   "state": "POWER_DOWN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3 / POWER_DOWN：默认内部GPIO输出/PU未受控时，periph关断不能由外端禁驱动保证，可能残供电/采样错或恢复失效；本条潜在P1，D6单独已记更严重损坏分支"
+  }
+ },
+ {
+  "question": "RST-T04.ESP-START-RESET-HOLD.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "固件未接管阶段的实际pinmux、采样窗和受电/掉电次序；用硬件failsafe保证状态而不是依赖损坏应用",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3 / RESET_HOLD：默认内部GPIO输出/PU未受控时，periph关断不能由外端禁驱动保证，可能残供电/采样错或恢复失效；本条潜在P1，D6单独已记更严重损坏分支",
+   "state": "RESET_HOLD"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3 / RESET_HOLD：默认内部GPIO输出/PU未受控时，periph关断不能由外端禁驱动保证，可能残供电/采样错或恢复失效；本条潜在P1，D6单独已记更严重损坏分支"
+  }
+ },
+ {
+  "question": "RST-T04.ESP-START-SLEEP.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "固件未接管阶段的实际pinmux、采样窗和受电/掉电次序；用硬件failsafe保证状态而不是依赖损坏应用",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3 / SLEEP：默认内部GPIO输出/PU未受控时，periph关断不能由外端禁驱动保证，可能残供电/采样错或恢复失效；本条潜在P1，D6单独已记更严重损坏分支",
+   "state": "SLEEP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3 / SLEEP：默认内部GPIO输出/PU未受控时，periph关断不能由外端禁驱动保证，可能残供电/采样错或恢复失效；本条潜在P1，D6单独已记更严重损坏分支"
+  }
+ },
+ {
+  "question": "RST-T04.ESP-START-STARTUP.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "固件未接管阶段的实际pinmux、采样窗和受电/掉电次序；用硬件failsafe保证状态而不是依赖损坏应用",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3 / STARTUP：默认内部GPIO输出/PU未受控时，periph关断不能由外端禁驱动保证，可能残供电/采样错或恢复失效；本条潜在P1，D6单独已记更严重损坏分支",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3 / STARTUP：默认内部GPIO输出/PU未受控时，periph关断不能由外端禁驱动保证，可能残供电/采样错或恢复失效；本条潜在P1，D6单独已记更严重损坏分支"
+  }
+ },
+ {
+  "question": "SIG-C01.I2C-1CA11BB87866E698E471.ESP9-SCL",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP9/SCL / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP9/SCL / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'net': 'ESP9/SCL', 'nets': ['ESP9/SCL'], 'state': 'LP_CUT', 'i2c_region': 'I2C-1ca11bb87866e698e471', 'i2c_topology_digest': '895efad3e85685c96eea7b6dde4c2bd29b9a8d374120245063ac81e74cdfcd2c'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C01.I2C-1D21C98C3620EE45BFFB.ESP8-SDA",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP8/SDA / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP8/SDA / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'net': 'ESP8/SDA', 'nets': ['ESP8/SDA'], 'state': 'LP_CUT', 'i2c_region': 'I2C-1d21c98c3620ee45bffb', 'i2c_topology_digest': '895efad3e85685c96eea7b6dde4c2bd29b9a8d374120245063ac81e74cdfcd2c'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C01.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP8/SDA / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP8/SDA / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'net': 'ESP8/SDA', 'nets': ['ESP8/SDA'], 'state': 'DEFAULT', 'i2c_region': 'I2C-8a780e8ade00aa6f4a10', 'i2c_topology_digest': '895efad3e85685c96eea7b6dde4c2bd29b9a8d374120245063ac81e74cdfcd2c'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C01.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP9/SCL / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP9/SCL / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'net': 'ESP9/SCL', 'nets': ['ESP9/SCL'], 'state': 'DEFAULT', 'i2c_region': 'I2C-a9bd6efccd87820cae81', 'i2c_topology_digest': '895efad3e85685c96eea7b6dde4c2bd29b9a8d374120245063ac81e74cdfcd2c'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C05.USB-DEVICE-OFF.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在",
+   "state": "OFF"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'USB-DEVICE', 'ref': 'U3', 'refs': ['U3', 'U2', 'J1', 'R10', 'R11'], 'nets': ['ESP19/D-', 'ESP20/D+', 'VUSB', 'GND'], 'state': 'OFF'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C05.USB-DEVICE-RUN.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "给TypeC电流许可与输入限流/充电协同方案：500mA目标充电后连续850mA、双轨同时峰值1.05A；双Rd仅声明Sink不检测Rp许可；默认USB电流下限制充电/板耗，或确认合规1.5A广告并受控检测",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可",
+   "state": "RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：实际可用电流小于所需时VBUS下跌或宿主限流，必要USB恢复/供电/500mA充电不能同时保证；现R16仅100mA不证明改后许可"
+  }
+ },
+ {
+  "question": "SIG-C07.I2C-1CA11BB87866E698E471.ESP9-SCL",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP9/SCL / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP9/SCL / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'net': 'ESP9/SCL', 'nets': ['ESP9/SCL'], 'state': 'LP_CUT', 'i2c_region': 'I2C-1ca11bb87866e698e471', 'i2c_topology_digest': '895efad3e85685c96eea7b6dde4c2bd29b9a8d374120245063ac81e74cdfcd2c'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C07.I2C-1D21C98C3620EE45BFFB.ESP8-SDA",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP8/SDA / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP8/SDA / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'net': 'ESP8/SDA', 'nets': ['ESP8/SDA'], 'state': 'LP_CUT', 'i2c_region': 'I2C-1d21c98c3620ee45bffb', 'i2c_topology_digest': '895efad3e85685c96eea7b6dde4c2bd29b9a8d374120245063ac81e74cdfcd2c'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C07.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP8/SDA / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP8/SDA / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'net': 'ESP8/SDA', 'nets': ['ESP8/SDA'], 'state': 'DEFAULT', 'i2c_region': 'I2C-8a780e8ade00aa6f4a10', 'i2c_topology_digest': '895efad3e85685c96eea7b6dde4c2bd29b9a8d374120245063ac81e74cdfcd2c'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C07.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP9/SCL / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP9/SCL / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'net': 'ESP9/SCL', 'nets': ['ESP9/SCL'], 'state': 'DEFAULT', 'i2c_region': 'I2C-a9bd6efccd87820cae81', 'i2c_topology_digest': '895efad3e85685c96eea7b6dde4c2bd29b9a8d374120245063ac81e74cdfcd2c'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C07.MICROSD-OFF.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "六SDIO在periph-off前停止事务、低/HiZ且禁内部PU的受控pinmux/顺序；或实际卡域failsafe隔离保证",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3 / OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏",
+   "state": "OFF"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3 / OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏"
+  }
+ },
+ {
+  "question": "SIG-C07.MICROSD-RUN.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "形成SD非UHS3.3V实际控制器配置、最大时钟和卡类电气/时序集成约束；DAT2/3/CMD/DAT0/1的10kPU实物及CLK10k已核，DET GPIO48轮询时必须受控使能PU；未承诺具体卡/高速产品不索取附件SKU",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：未锁pinmux/速率/DET偏置会造成枚举/识别或事务失保证；SDIOGPIO47/33/34/38/39/40路径在本体已明确，不能由仅连通证明非UHS时序",
+   "state": "RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：未锁pinmux/速率/DET偏置会造成枚举/识别或事务失保证；SDIOGPIO47/33/34/38/39/40路径在本体已明确，不能由仅连通证明非UHS时序"
+  }
+ },
+ {
+  "question": "SIG-C07.UART0-RESCUE-RUN.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：加载后本行发送低/高电平或EN默认窗口若越接收保证门限，所需I2C/UART/供电控制可能不能可靠工作；已核25°C算例只覆盖其来源条件",
+   "state": "RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：加载后本行发送低/高电平或EN默认窗口若越接收保证门限，所需I2C/UART/供电控制可能不能可靠工作；已核25°C算例只覆盖其来源条件"
+  },
+  "searched": [
+   {
+    "source": "calcs/engineering.json",
+    "locator": "actual rails/states/interfaces/guarantee conditions"
+   },
+   {
+    "source": "evidence/pin-context.json",
+    "locator": "{'circuit': 'UART0-RESCUE', 'ref': 'U3', 'refs': ['U3', 'U10'], 'nets': ['ESP43/TXO', 'ESP44/RXI', 'GND'], 'state': 'RUN'}"
+   }
+  ]
+ },
+ {
+  "question": "SIG-C08.D6-OFF",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "这一路的实际DIN输出/掉电次序、Ioff/输入限幅边界及failsafe隔离；把内部MCU驱动纳入状态",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "D6.3 / PERIPH_OFF：系统3.3V仍在、periph0V且MCU输出高时，DIN3.3V超过两候选共同VDD+0.7V=0.7V绝限，可能损伤RGB输入；该可信分支潜在P0，需当前隔离或保证状态",
+   "state": "PERIPH_OFF"
+  },
+  "severity": {
+   "level": "P0",
+   "class": "DAMAGE_OR_HAZARD",
+   "consequence": "D6.3 / PERIPH_OFF：系统3.3V仍在、periph0V且MCU输出高时，DIN3.3V超过两候选共同VDD+0.7V=0.7V绝限，可能损伤RGB输入；该可信分支潜在P0，需当前隔离或保证状态"
+  }
+ },
+ {
+  "question": "SIG-C08.I2C-1CA11BB87866E698E471.ESP9-SCL",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "实际开漏/HiZ配置、各域单独掉电允许驱动及Ioff/钳位电流边界，外端已同步供电且不独驱，无额外附件SKU请求",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP9/SCL / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP9/SCL / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明"
+  }
+ },
+ {
+  "question": "SIG-C08.I2C-1D21C98C3620EE45BFFB.ESP8-SDA",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "实际开漏/HiZ配置、各域单独掉电允许驱动及Ioff/钳位电流边界，外端已同步供电且不独驱，无额外附件SKU请求",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP8/SDA / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明",
+   "state": "LP_CUT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP8/SDA / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明"
+  }
+ },
+ {
+  "question": "SIG-C08.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "实际开漏/HiZ配置、各域单独掉电允许驱动及Ioff/钳位电流边界，外端已同步供电且不独驱，无额外附件SKU请求",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP8/SDA / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP8/SDA / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明"
+  }
+ },
+ {
+  "question": "SIG-C08.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "实际开漏/HiZ配置、各域单独掉电允许驱动及Ioff/钳位电流边界，外端已同步供电且不独驱，无额外附件SKU请求",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP9/SCL / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明",
+   "state": "DEFAULT"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP9/SCL / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明"
+  }
+ },
+ {
+  "question": "SIG-C08.SD-OFF",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "六SDIO在periph-off前停止事务、低/HiZ且禁内部PU的受控pinmux/顺序；或实际卡域failsafe隔离保证",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "SIG-C08.SD-OFF / PERIPH_OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏",
+   "state": "PERIPH_OFF"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "SIG-C08.SD-OFF / PERIPH_OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏"
+  }
+ },
+ {
+  "question": "SIG-C09.MICROSD-OFF.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "六SDIO在periph-off前停止事务、低/HiZ且禁内部PU的受控pinmux/顺序；或实际卡域failsafe隔离保证",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3 / OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏",
+   "state": "OFF"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3 / OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏"
+  }
+ },
+ {
+  "question": "SIG-C09.MICROSD-RUN.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "形成SD非UHS3.3V实际控制器配置、最大时钟和卡类电气/时序集成约束；DAT2/3/CMD/DAT0/1的10kPU实物及CLK10k已核，DET GPIO48轮询时必须受控使能PU；未承诺具体卡/高速产品不索取附件SKU",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：未锁pinmux/速率/DET偏置会造成枚举/识别或事务失保证；SDIOGPIO47/33/34/38/39/40路径在本体已明确，不能由仅连通证明非UHS时序",
+   "state": "RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：未锁pinmux/速率/DET偏置会造成枚举/识别或事务失保证；SDIOGPIO47/33/34/38/39/40路径在本体已明确，不能由仅连通证明非UHS时序"
+  }
+ },
+ {
+  "question": "SIG-D10.MICROSD-OFF.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "六SDIO在periph-off前停止事务、低/HiZ且禁内部PU的受控pinmux/顺序；或实际卡域failsafe隔离保证",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3 / OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏",
+   "state": "OFF"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3 / OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏"
+  }
+ },
+ {
+  "question": "SIG-D10.MICROSD-RUN.U3",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "形成SD非UHS3.3V实际控制器配置、最大时钟和卡类电气/时序集成约束；DAT2/3/CMD/DAT0/1的10kPU实物及CLK10k已核，DET GPIO48轮询时必须受控使能PU；未承诺具体卡/高速产品不索取附件SKU",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3：未锁pinmux/速率/DET偏置会造成枚举/识别或事务失保证；SDIOGPIO47/33/34/38/39/40路径在本体已明确，不能由仅连通证明非UHS时序",
+   "state": "RUN"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3：未锁pinmux/速率/DET偏置会造成枚举/识别或事务失保证；SDIOGPIO47/33/34/38/39/40路径在本体已明确，不能由仅连通证明非UHS时序"
+  }
+ },
+ {
+  "question": "REQ-Q07.ANALOG",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "实际开漏/HiZ配置、各域单独掉电允许驱动及Ioff/钳位电流边界，外端已同步供电且不独驱，无额外附件SKU请求",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U4 / BATTERY_ABSENT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP9/SCL / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U4 / BATTERY_ABSENT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP9/SCL / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明"
+  }
+ },
+ {
+  "question": "REQ-Q07.I2C",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件 | 实际开漏/HiZ配置、各域单独掉电允许驱动及Ioff/钳位电流边界，外端已同步供电且不独驱，无额外附件SKU请求 | 准确GPIO45默认弱下拉及RT EN IEN/VIH/VIL在0..70°C的保证界、GPIO45驱动接管/关断保证；或采用有保证硬件默认/门控控制。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP9/SCL / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP8/SDA / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP8/SDA / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP9/SCL / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP9/SCL / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP8/SDA / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP8/SDA / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP9/SCL / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP9/SCL / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP8/SDA / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP8/SDA / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP9/SCL / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP9/SCL / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP8/SDA / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP8/SDA / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP9/SCL / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "searched": [
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C01.I2C-1CA11BB87866E698E471.ESP9-SCL: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C01.I2C-1D21C98C3620EE45BFFB.ESP8-SDA: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C01.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C01.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C07.I2C-1CA11BB87866E698E471.ESP9-SCL: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C07.I2C-1D21C98C3620EE45BFFB.ESP8-SDA: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C07.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C07.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C08.I2C-1CA11BB87866E698E471.ESP9-SCL: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C08.I2C-1D21C98C3620EE45BFFB.ESP8-SDA: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C08.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-C08.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-D01.I2C-1CA11BB87866E698E471.ESP9-SCL: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-D01.I2C-1D21C98C3620EE45BFFB.ESP8-SDA: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-D01.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-D01.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-E01.ESP8-SDA: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-E01.ESP9-SCL: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-T02.I2C-1CA11BB87866E698E471.ESP9-SCL: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-T02.I2C-1D21C98C3620EE45BFFB.ESP8-SDA: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-T02.I2C-8A780E8ADE00AA6F4A10.ESP8-SDA: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-T02.I2C-A9BD6EFCCD87820CAE81.ESP9-SCL: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "RST-E01.U1-3: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "RST-E01.U3-41: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "RST-T01.U1-ESP45-Q-EN.U1-3: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "RST-T01.U1-ESP45-Q-EN.U1-3-2: INSUFFICIENT"
+   }
+  ]
+ },
+ {
+  "question": "REQ-Q07.POWER-CONVERTER",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替 | RT§18.4自身PMOS体二极管允许VOUT→VIN；取得源切换/快速VIN掉落时允许反向电流/能量界或明确保护。D2/D3全温IR和连续VF保证缺失，当前表25°C pulsed不外推；U5自动powerdown已核 | 指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛 | 本轨额外100mA/1ms，Ceff保证后须限定∫(Iload-Ireg)dt<=Ceff*允许ΔV并给ESR阶跃；仅电容承担1ms且ΔV.2需500uF。已有22.35/16.18uF仅容差名义对应44.7/32.36us满ΔI延迟预算，LDO真实响应须保证/受控模型",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6 / BATTERY_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在；U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格；U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在；U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U1 / STARTUP：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格；U6：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败；U1：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败；U1.3 / DEFAULT：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U1.3 / LP_CUT：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U6.3 / DEFAULT：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U6.3 / LP_CUT：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6 / BATTERY_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U6：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在；U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U6：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格；U1：Cout保留能量或尚带电信号在VIN先跌时可经LDO体二极管向VIN反供，边界不明可能影响系统掉电/恢复；纯电池不假设外USB5V持续存在；U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U1 / STARTUP：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U1：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格；U6：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败；U1：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败；U1.3 / DEFAULT：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U1.3 / LP_CUT：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U6.3 / DEFAULT：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U6.3 / LP_CUT：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.SYS-LDO-BATTERY-RUN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.SYS-LDO-POWER-DOWN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.SYS-LDO-USB-RUN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C03.SYS-LDO-BATTERY-RUN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C03.SYS-LDO-POWER-DOWN.U6: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C03.SYS-LDO-USB-RUN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C04.SYS-LDO-BATTERY-RUN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C04.SYS-LDO-POWER-DOWN.U6: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C04.SYS-LDO-USB-RUN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C05.SYS-LDO-BATTERY-RUN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C05.SYS-LDO-POWER-DOWN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C05.SYS-LDO-USB-RUN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C14.SYS-LDO-BATTERY-RUN.U6: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C14.SYS-LDO-POWER-DOWN.U6: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C14.SYS-LDO-USB-RUN.U6: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.PERIPH-LDO-OFF.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.PERIPH-LDO-ON.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.PERIPH-LDO-STARTUP.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C03.PERIPH-LDO-OFF.U1: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C03.PERIPH-LDO-ON.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C03.PERIPH-LDO-STARTUP.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C04.PERIPH-LDO-OFF.U1: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C04.PERIPH-LDO-ON.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C04.PERIPH-LDO-STARTUP.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C05.PERIPH-LDO-OFF.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C05.PERIPH-LDO-ON.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C05.PERIPH-LDO-STARTUP.U1: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C14.PERIPH-LDO-OFF.U1: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C14.PERIPH-LDO-ON.U1: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C14.PERIPH-LDO-STARTUP.U1: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.STEP-SYSTEM: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.STEP-PERIPH: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-E02.U1-ESP45-Q-EN.U1-3: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-E02.U1-ESP45-Q-EN.U1-3-2: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-E02.U6-EN.U6-3: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-E02.U6-EN.U6-3-2: INSUFFICIENT"
+   }
+  ]
+ },
+ {
+  "question": "REQ-Q07.RF",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C14.WIFI-MODULE-RUN.U3: NA"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "SIG-D12.WIFI-MODULE-RUN.U3: PASS"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.SYS-LDO-USB-RUN.U6: INSUFFICIENT"
+   }
+  ]
+ },
+ {
+  "question": "REQ-Q07.STORAGE",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "六SDIO在periph-off前停止事务、低/HiZ且禁内部PU的受控pinmux/顺序；或实际卡域failsafe隔离保证 | 形成SD非UHS3.3V实际控制器配置、最大时钟和卡类电气/时序集成约束；DAT2/3/CMD/DAT0/1的10kPU实物及CLK10k已核，DET GPIO48轮询时必须受控使能PU；未承诺具体卡/高速产品不索取附件SKU | RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "U3 / OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏；U3：未锁pinmux/速率/DET偏置会造成枚举/识别或事务失保证；SDIOGPIO47/33/34/38/39/40路径在本体已明确，不能由仅连通证明非UHS时序；SIG-C08.SD-OFF / PERIPH_OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏；U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "U3 / OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏；U3：未锁pinmux/速率/DET偏置会造成枚举/识别或事务失保证；SDIOGPIO47/33/34/38/39/40路径在本体已明确，不能由仅连通证明非UHS时序；SIG-C08.SD-OFF / PERIPH_OFF：系统仍在而卡域关时，MCU输出/内部PU若保留可能给卡残供电、破坏外设关闭和重新枚举；尚无指定卡输入绝限，不宣称确定损坏；U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  }
+ },
+ {
+  "question": "REQ-D01.REQ-03",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "受控采购额定尚未落BOM：R8至少0.16225W@环境70C/半功率；实际0.2W ERJPA2可满足但未选；连接器/开关/LED按component-review实际电流温度选型，普通电阻其余已满足允许ERJ2G/ERJPA2目录最弱档0.1W@环境70℃的50% | 给出系统3.3V爬升/掉电波形上界、C6工作点Ceff以及EN阈值/漏电全温界；R8=150Ω名义RC150us不能冒充有效复位脉宽。人工夹具20ms、≤0.1V与30mA已独立核满足电压/电流",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "R8：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏；RST-T02.RESET-CHAIN：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证；U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "R8：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏；RST-T02.RESET-CHAIN：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证；U3：无监督电路时，慢爬升或短暂掉电可能在电源未稳定时释放EN，或电容残压不足有效低脉宽，使必需SPI/ROM恢复不保证"
+  }
+ },
+ {
+  "question": "REQ-D01.REQ-05",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "RT9080§14准确度/线/负载/压差仅TA25°C且VIN>VOUT+1V；取得实际150/100mA、峰值250/200mA、0..70°C联合输出窗口/压差界；BATVF连续250/450mA全温上界；不以典型曲线±30%代替 | 本轨额外100mA/1ms，Ceff保证后须限定∫(Iload-Ireg)dt<=Ceff*允许ΔV并给ESR阶跃；仅电容承担1ms且ΔV.2需500uF。已有22.35/16.18uF仅容差名义对应44.7/32.36us满ΔI延迟预算，LDO真实响应须保证/受控模型",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "3.3V：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败；3.3V_P：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败；U6：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败；U1：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败；U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "3.3V：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败；3.3V_P：VF+drop可能耗尽VBAT3.7到3.2的0.5V裕量，或输出准确度/负载/线变化越过3.20..3.40，导致本轨必要负载工作失保证；不是由600mA25°C保守下界2.8V断言实际失败；U6：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败；U1：本轨储能+LDO响应若补偿不及时会越3.2..3.4，造成必要负载重启或事务失败；不以电容独供算例证明实际LDO板失败；U6 / USB_RUN：3.3V在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。；U1 / ON：3.3V_P在本状态的全温/联合调节或实际负载压差界未被25℃表覆盖，可能越3.20..3.40V而使此轨必要负载失保证；600mA点相加算例不是实际失败证据。"
+  },
+  "searched": [
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C01.3-3V: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C01.3-3V-P: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.STEP-SYSTEM: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.STEP-PERIPH: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.SYS-LDO-USB-RUN.U6: INSUFFICIENT"
+   },
+   {
+    "source": "review-results.json",
+    "locator": "PWR-C02.PERIPH-LDO-ON.U1: INSUFFICIENT"
+   }
+  ]
+ },
+ {
+  "question": "REQ-D01.REQ-09",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "本体接口已按25°C保证表计算；补ESP模块/芯片适用0..70°C输入门限、实际负载下VOL/VOH保证及相关控制IEN；IOH/IOL40/28mA是typ、VOH/VOL注明HiZ，不作为加载全温保证；外部UART已定义3.3V/115200/OFF不驱动不再索取未定附件 | 实际开漏/HiZ配置、各域单独掉电允许驱动及Ioff/钳位电流边界，外端已同步供电且不独驱，无额外附件SKU请求 | 准确GPIO45默认弱下拉及RT EN IEN/VIH/VIL在0..70°C的保证界、GPIO45驱动接管/关断保证；或采用有保证硬件默认/门控控制。",
+   "from": "VENDOR",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "ESP9/SCL / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP8/SDA / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP8/SDA / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP9/SCL / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP9/SCL / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP8/SDA / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP8/SDA / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP9/SCL / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "ESP9/SCL / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP8/SDA / LP_CUT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP8/SDA / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP9/SCL / DEFAULT：本体25℃算出1.4354mA<MAX4mA及195.726ns上升，但MCU受载全温VOL/输入界未知会导致本线100kHz逻辑读错，影响Qwiic及电池遥测；不推断必然芯片损伤。；ESP9/SCL / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP8/SDA / LP_CUT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP8/SDA / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；ESP9/SCL / DEFAULT：MAX缺电/PU域关闭但MCU仍有电时，未经保证的推挽/内部上拉和Ioff可能残供本总线，令遥测/Qwiic关闭和恢复不可靠；MAX数据IO5.5V允许值不构成无源Ioff证明；EN默认或受载驱动未有满温界，可能误开/误关外设轨影响Qwiic/SD的启动、关闭及恢复；厂内eFuse已固定Flash3.3V，未推定Flash错误。"
+  },
+  "searched": [
+   {
+    "source": "review-results.json",
+    "locator": "REQ-Q07.I2C: INSUFFICIENT"
+   }
+  ]
+ },
+ {
+  "question": "REQ-D01.REQ-11",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "受控采购额定尚未落BOM：R8至少0.16225W@环境70C/半功率；实际0.2W ERJPA2可满足但未选；连接器/开关/LED按component-review实际电流温度选型，普通电阻其余已满足允许ERJ2G/ERJPA2目录最弱档0.1W@环境70℃的50%",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "R8：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏；DEV-C04.BOARD / DEFAULT与LP_CUT/实际功能允许状态：本对象实际LED/接点额定及温度档未定，可能局部灯/接点过负荷或接口维护失效；按逐颗最大电流/温度反推最低额定，不复制R8长期复位热应力后果。"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "R8：未选低档R8在60min复位期间可违反半功率可靠性约束，影响复位后恢复；具体接触/LED最低规格分别按本行对象限定，不推定全板损坏；DEV-C04.BOARD / DEFAULT与LP_CUT/实际功能允许状态：本对象实际LED/接点额定及温度档未定，可能局部灯/接点过负荷或接口维护失效；按逐颗最大电流/温度反推最低额定，不复制R8长期复位热应力后果。"
+  }
+ },
+ {
+  "question": "REQ-D01.REQ-12",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "指定本组实际输出/输入MLCC系列、介质，保证工作偏压/0..70°C/容差后LDO输出Ceff>1uF且ESR>=1mΩ；输入>=1uF按真实§18条款；C6另需时序Ceff界，普通模块/燃料计/充电推荐不强加此门槛",
+   "from": "DESIGN",
+   "closes_when": "取得缺失输入后重判"
+  },
+  "failure_path": {
+   "mechanism": "DEV-C02.BOARD：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "DEV-C02.BOARD：该组未定Ceff或ESR可能不满足RT明确稳定窗口，令该轨振荡/启动不可靠；C6则影响EN释放/采样延时，额定电压已分别核合格"
+  }
+ }
+]

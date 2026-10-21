@@ -28,7 +28,8 @@ python3 -m pytest -q tests
 | 覆盖 | UNANSWERED、DUPLICATE_CONCLUSION、UNKNOWN_STATE、UNKNOWN_QUESTION、SUSPECT_UNANSWERED、MISSING_INPUT_UNDER_PASS、UNKNOWN_OBSERVATION |
 | 一致 | PASS_NOT_PROVEN、ALREADY_DECIDED、FAIL_WITHOUT_FIX、FIX_SAME_AS_UNKNOWN、LOOSE_INPUT_UNKNOWN、NO_BOUND_NOT_SEARCHED、MISSING_INCOMPLETE、UNSPECIFIED_NOT_FAIL、NA_NOT_OPEN、SEVERITY_MISSING … |
 | 可查 | UNKNOWN_CLAUSE、CLAUSE_INCOMPLETE、CLAUSE_SOURCE_MISSING、DB_VALUE_MISMATCH、DB_VALUE_UNREADABLE、RECOMPUTE_MISMATCH、RECOMPUTE_FAILED、UNIT_UNKNOWN、DIMENSION_MISMATCH、NON_MONOTONIC、FACT_FALSE、UNKNOWN_NODE … |
-| 不过严 | FAIL_NOT_PROVEN、FAIL_ON_ASSUMED_LIMIT、FAIL_ON_ASSUMED_POINT、DUPLICATE_DEFECT、SEVERITY_ABOVE_CLASS、REQUIREMENT_GRADED |
+| 不过严 | FAIL_NOT_PROVEN、FAIL_ON_ASSUMED_LIMIT、FAIL_ON_ASSUMED_POINT、DUPLICATE_DEFECT、SEVERITY_ABOVE_CLASS、REQUIREMENT_GRADED、UNDECIDED_ON_PROCUREMENT、RECOMMENDED_NOT_VENDOR、ALREADY_RECOMMENDED、DUPLICATE_GAP |
+| 判不了要有理由 | NO_FAILURE_PATH、BOUND_NOT_USED、MISSING_SAME_AS_UNKNOWN、RECOMMENDED_WITH_DEVIATION（一致）；ENGINEERING_TOO_NARROW、ENGINEERING_NOT_DATASHEET、CONSTRAINT_INCOMPLETE（可查） |
 
 - 数值结论：`basis = {kind: NUMERIC, criterion: {limit: 数 或 {min, max}, unit, direction, clause}, calc, inputs, result: {min, max}}`。
   每个输入写 `value` 或 `{min, max}`。机器在所有角点重算，得到结果范围，并推出结论：
@@ -56,6 +57,15 @@ python3 -m pytest -q tests
 - 按状态拆：结论可带 `states`，各状态结论不同时把一题拆成几条结论，合起来每个状态恰好一次；结论相同仍写一条结论。
 - 定稿：有 P0/P1 的不通过，或 P0 的判不了 → `CANNOT_FREEZE`。
 
+判不了这一侧（过严更常见的样子是大量没必要的判不了）：
+
+- 工程界：输入可写 `{typical: v}` 或 `{at_25c: v 或 {min, max}}`（来源条款须为手册），机器按下限放宽：
+  典型值两向乘除 3，25 °C 值两端各放宽 20%；`widen` 只能更宽。`searched` 里记了数值却不用，报 BOUND_NOT_USED。
+- 每条判不了写 `failure_path {mechanism, state}`（需求未定的除外）。
+- 料号未定不是判不了：写通过，依据 `CONSTRAINT {refs, requires}`，汇总在 `summary.constraints`。
+- 推荐配置无偏离：写通过，依据 `RECOMMENDED {clause, facts, deviations: []}`。
+- 同一缺口只计一次：`missing {same_as}`，`summary.gaps` 是缺口数；same_as 的结论仍写自己的失效路径。
+
 ## 与设计稿的出入（第 2 步前要人定）
 
 1. **NA**：设计只有三种结论。计划里有 UNDETERMINED 的行，原型允许这类问题的结论写 `NA`，并要求事实依据；
@@ -75,4 +85,6 @@ python3 -m pytest -q tests
 跨电路合并与按状态拆结论另加 4 处（漏状态、未知状态、疑点按题、合并键），均被杀死。
 区间推结论与防过严另加 12 处，11 处被杀死；剩下 1 处（定稿时跳过需求未定条目）是冗余条件：需求未定不许评级，本来就不会阻塞，已删去。
 单位、量纲与单调检测另加 10 处，均被杀死。
-一期对比结果见 [2026-10-20/summary.md](2026-10-20/summary.md)。
+判不了这一侧的五条规则另加 20 处，均被杀死。
+一期对比结果见 [2026-10-20/summary.md](2026-10-20/summary.md)；
+判不了一侧在 round-01 156 行证据不足上的实测见 [2026-10-21/round01/summary.md](2026-10-21/round01/summary.md)。
