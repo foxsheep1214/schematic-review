@@ -182,6 +182,17 @@ def b_injections(qs0, cs0):
     qs, cs = mk(); c(cs, 'SIG-C07', 'esp-reset')['severity']['level'] = 'P0'; out[13] = (qs, cs)
     qs, cs = mk(); c(cs, 'SIG-C08', 'esp-reset')['fix'] = copy.deepcopy(c(cs0, 'SIG-C07', 'esp-reset')['fix']); out[14] = (qs, cs)
     qs, cs = mk(); c(cs, 'SIG-C07', 'run')['missing']['from'] = 'REQUIREMENT'; out[15] = (qs, cs)
+    # 16 a prefix dropped: the limit means mA but the criterion says A, the result is raw V/kΩ arithmetic
+    qs, cs = mk(); c(cs, 'SIG-C08', 'run')['basis']['criterion']['unit'] = 'A'; out[16] = (qs, cs)
+    # 17 a wrong formula whose stated result follows its own raw arithmetic (Ω/F is not a time)
+    qs, cs = mk(); b = c(cs, 'SIG-C09')['basis']
+    b['calc'] = '2.2 * r19 / c_node'; b['result'] = {'min': 0.44, 'max': 2.2}; out[17] = (qs, cs)
+    # 18 an expression that turns inside the ranges: the corners agree, the middle does not
+    qs, cs = mk(); b = c(cs, 'SIG-C09')['basis']
+    b['calc'] = '2.2 * r19 * c_node * (2 - c_node / c_ref)'
+    b['inputs']['c_ref'] = {'value': 30, 'unit': 'pF', 'from': {'clause': 'K-ASSUME'}}
+    b['result'] = {'min': 2.2 * 10e3 * 10e-12 * (2 - 10 / 30) / 1e-9, 'max': 2.2 * 10e3 * 10e-12 * (2 - 10 / 30) / 1e-9}
+    out[18] = (qs, cs)
     return out
 
 def _t04(cs, card):
@@ -196,7 +207,9 @@ NAMES = {1: '余量为负却判通过', 2: '一个方面/问题没人回答', 3:
          5: '算式结果与最坏值不一致', 6: '公开界余量为正却挂起', 7: '判不了却没写找谁', 8: '工具疑点无人回应',
          9: '不通过没有改法', 10: '事实结论与网表不符（交叉写反）',
          11: '有利角点会通过却判不通过', 12: '按审查者自定限值判不通过', 13: '等级高于后果类上限',
-         14: '同一改法记成两个缺陷', 15: '没定的需求被评级'}
+         14: '同一改法记成两个缺陷', 15: '没定的需求被评级',
+         16: '单位前缀写错（mA 写成 A）', 17: '算式量纲不对', 18: '算式在范围内不单调'}
+A_NOT_APPLICABLE = (16, 17, 18)   # arm A keeps no formula or units to check
 
 def main():
     rr0, plan0 = load(W / 'a/review-results.json'), load(W / 'a/plan.json')
@@ -206,17 +219,20 @@ def main():
     assert not base_b['errors'], base_b
     res = []
     ai, bi = a_injections(rr0, plan0), b_injections(qs0, cs0)
-    for n in range(1, 16):
-        a, b = run_a(*ai[n], 'i%02d' % n), run_b(*bi[n], 'i%02d' % n)
+    for n in range(1, 19):
+        b = run_b(*bi[n], 'i%02d' % n)
+        a = {'derive_errors': [], 'errors': base_a['errors'], 'derive_exit': None} if n in A_NOT_APPLICABLE else run_a(*ai[n], 'i%02d' % n)
         na = [e for e in a['derive_errors'] + a['errors'] if e not in base_a['errors']]
         nb = [e for e in b['errors'] if e not in base_b['errors']]
-        res.append({'n': n, 'error': NAMES[n], 'A': {'caught': bool(na), 'by': na, 'derive_exit': a['derive_exit']},
+        res.append({'n': n, 'error': NAMES[n], 'A': {'caught': None if n in A_NOT_APPLICABLE else bool(na), 'by': na,
+                                                     'derive_exit': a['derive_exit']},
                     'B': {'caught': bool(nb), 'by': nb}})
     dump(res, W / ('injections-%s.json' % B.name))
     for r in res:
-        print('%2d %-22s A=%s B=%s' % (r['n'], r['error'], 'Y' if r['A']['caught'] else '-', 'Y' if r['B']['caught'] else '-'))
+        print('%2d %-22s A=%s B=%s' % (r['n'], r['error'], {True: 'Y', False: '-', None: 'n/a'}[r['A']['caught']],
+                                       'Y' if r['B']['caught'] else '-'))
         for e in r['A']['by'][:2]: print('     A:', e[:200])
         for e in r['B']['by'][:2]: print('     B:', e[:200])
-    print('A', sum(r['A']['caught'] for r in res), 'B', sum(r['B']['caught'] for r in res))
+    print('A', sum(bool(r['A']['caught']) for r in res), 'B', sum(r['B']['caught'] for r in res))
 
 main()

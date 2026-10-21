@@ -392,6 +392,67 @@ class StateSplitTests(Fixture):
         self.assertEqual(self.codes(out).count(('COVERAGE', 'SUSPECT_UNANSWERED')), 1)
 
 
+class UnitTests(Fixture):
+    """Inputs are taken to SI by their units, the result back to the criterion's unit; the expression's
+    dimension must be the criterion's."""
+
+    def led(self, cs):
+        return next(c for c in cs if c['question'] == 'Q-LED')
+
+    def test_units_parse_to_scale_and_dimension(self):
+        self.assertEqual(cc.parse_unit('kΩ'), (1e3, cc.dims('Ω')))
+        self.assertEqual(cc.parse_unit('pF'), (1e-12, cc.dims('F')))
+        self.assertEqual(cc.parse_unit('µs'), (1e-6, cc.dims('s')))
+        self.assertEqual(cc.parse_unit(''), (1.0, cc.dims('')))
+        self.assertIsNone(cc.parse_unit('furlong'))
+
+    def test_dimension_of_an_expression(self):
+        d = {'r': cc.dims('Ω'), 'c': cc.dims('F'), 'v': cc.dims('V')}
+        self.assertEqual(cc.dimension('2.2 * r * c', d), cc.dims('s'))
+        self.assertEqual(cc.dimension('v / r', d), cc.dims('A'))
+        self.assertEqual(cc.dimension('v ** 2 / r', d), cc.dims('W'))
+        self.assertEqual(cc.dimension('max(0, v - v) / r', d), cc.dims('A'))   # a literal 0 takes any dimension
+        for bad in ('v - r', 'max(v, r)', 'sqrt(v)', 'v ** r'):
+            with self.assertRaises(ValueError, msg=bad):
+                cc.dimension(bad, d)
+
+    def test_prefixes_are_resolved_not_trusted(self):
+        cs = conclusions(); b = self.led(cs)['basis']   # (V − V) / kΩ is mA: 2.65…3.45 mA
+        b['criterion'].update(unit='A', limit=0.002)
+        self.assertIn(('TRACE', 'RECOMPUTE_MISMATCH'), self.codes(self.run_check(cs=cs)))
+        b['result'] = {'min': 0.00265, 'max': 0.00345}
+        self.assertTrue(self.run_check(cs=cs)['valid'], self.run_check(cs=cs)['errors'])
+
+    def test_the_result_has_the_criterion_dimension(self):
+        cs = conclusions(); self.led(cs)['basis']['criterion']['unit'] = 'mV'
+        self.assertIn(('TRACE', 'DIMENSION_MISMATCH'), self.codes(self.run_check(cs=cs)))
+        cs = conclusions(); self.led(cs)['basis']['calc'] = '(v5 - vf) * r'
+        self.assertIn(('TRACE', 'DIMENSION_MISMATCH'), self.codes(self.run_check(cs=cs)))
+        cs = conclusions(); self.led(cs)['basis']['calc'] = 'v5 - r'
+        self.assertIn(('TRACE', 'DIMENSION_MISMATCH'), self.codes(self.run_check(cs=cs)))
+
+    def test_an_unknown_unit_is_refused(self):
+        cs = conclusions(); self.led(cs)['basis']['inputs']['vf']['unit'] = 'volts'
+        self.assertIn(('TRACE', 'UNIT_UNKNOWN'), self.codes(self.run_check(cs=cs)))
+
+
+class MonotonicTests(Fixture):
+    """Corners give the range only for an expression monotone in each input; points inside the ranges are
+    sampled and a value outside the corner range is refused."""
+
+    def test_a_turning_expression_is_refused(self):
+        cs = conclusions(); c = next(c for c in cs if c['question'] == 'Q-LED')
+        c['basis'] = {'kind': 'NUMERIC', 'calc': 'x * (1 - x)',
+                      'inputs': {'x': {'min': 0, 'max': 1, 'unit': '', 'from': {'clause': 'K-LED'}}},
+                      'result': {'min': 0, 'max': 0},
+                      'criterion': {'limit': 0.3, 'unit': '', 'direction': 'value_below_limit', 'clause': 'K-LED'}}
+        self.assertIn(('TRACE', 'NON_MONOTONIC'), self.codes(self.run_check(cs=cs)))
+
+    def test_monotone_expressions_pass_the_sampling(self):
+        out = self.run_check()
+        self.assertNotIn(('TRACE', 'NON_MONOTONIC'), self.codes(out))
+
+
 class ExpressionTests(unittest.TestCase):
     def test_arithmetic_and_whitelisted_functions(self):
         self.assertAlmostEqual(cc.evaluate('max(a, b) * sqrt(c) - abs(-d) ** 2', {'a': 1, 'b': 2, 'c': 9, 'd': 1}), 5)

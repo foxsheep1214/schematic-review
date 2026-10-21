@@ -279,5 +279,50 @@
     "STRICTNESS/REQUIREMENT_GRADED Q-SIG-C07-1e353e0130: nobody has set this requirement yet; it is not graded and does not block"
    ]
   }
+ },
+ {
+  "n": 16,
+  "error": "单位前缀写错（mA 写成 A）",
+  "A": {
+   "caught": null,
+   "by": [],
+   "derive_exit": null
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "TRACE/RECOMPUTE_MISMATCH Q-SIG-C08-1d4dc51519: the inputs give 0…1e-05, the conclusion says 0…0.01"
+   ]
+  }
+ },
+ {
+  "n": 17,
+  "error": "算式量纲不对",
+  "A": {
+   "caught": null,
+   "by": [],
+   "derive_exit": null
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "TRACE/DIMENSION_MISMATCH Q-SIG-C09-e47ef30d94: the expression gives V^2·A^-2·s^-1, the criterion is in s (ns)"
+   ]
+  }
+ },
+ {
+  "n": 18,
+  "error": "算式在范围内不单调",
+  "A": {
+   "caught": null,
+   "by": [],
+   "derive_exit": null
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "TRACE/NON_MONOTONIC Q-SIG-C09-e47ef30d94: at c_node=20 pF, c_ref=30 pF, r19=10 kΩ the result is 586.667, outside the corner range 366.667…366.667: the expression turns inside the ranges; split the range at the turning point"
+   ]
+  }
  }
 ]

@@ -27,7 +27,7 @@ python3 -m pytest -q tests
 |---|---|
 | 覆盖 | UNANSWERED、DUPLICATE_CONCLUSION、UNKNOWN_STATE、UNKNOWN_QUESTION、SUSPECT_UNANSWERED、MISSING_INPUT_UNDER_PASS、UNKNOWN_OBSERVATION |
 | 一致 | PASS_NOT_PROVEN、ALREADY_DECIDED、FAIL_WITHOUT_FIX、FIX_SAME_AS_UNKNOWN、LOOSE_INPUT_UNKNOWN、NO_BOUND_NOT_SEARCHED、MISSING_INCOMPLETE、UNSPECIFIED_NOT_FAIL、NA_NOT_OPEN、SEVERITY_MISSING … |
-| 可查 | UNKNOWN_CLAUSE、CLAUSE_INCOMPLETE、CLAUSE_SOURCE_MISSING、DB_VALUE_MISMATCH、DB_VALUE_UNREADABLE、RECOMPUTE_MISMATCH、RECOMPUTE_FAILED、FACT_FALSE、UNKNOWN_NODE … |
+| 可查 | UNKNOWN_CLAUSE、CLAUSE_INCOMPLETE、CLAUSE_SOURCE_MISSING、DB_VALUE_MISMATCH、DB_VALUE_UNREADABLE、RECOMPUTE_MISMATCH、RECOMPUTE_FAILED、UNIT_UNKNOWN、DIMENSION_MISMATCH、NON_MONOTONIC、FACT_FALSE、UNKNOWN_NODE … |
 | 不过严 | FAIL_NOT_PROVEN、FAIL_ON_ASSUMED_LIMIT、FAIL_ON_ASSUMED_POINT、DUPLICATE_DEFECT、SEVERITY_ABOVE_CLASS、REQUIREMENT_GRADED |
 
 - 数值结论：`basis = {kind: NUMERIC, criterion: {limit: 数 或 {min, max}, unit, direction, clause}, calc, inputs, result: {min, max}}`。
@@ -37,7 +37,13 @@ python3 -m pytest -q tests
   - 其余 → 判不了。
 
   写下的结论与推出的不一致即报错：写通过但推不出 → PASS_NOT_PROVEN；写不通过但推不出 → FAIL_NOT_PROVEN（过严）；
-  写判不了但已能定 → ALREADY_DECIDED。前提是算式对每个输入单调，不单调要拆开写。输出的 `derived` 列出每条数值结论的范围和两端余量。
+  写判不了但已能定 → ALREADY_DECIDED。输出的 `derived` 列出每条数值结论的范围和两端余量。
+- 单位：输入按单位换算到国际单位计算，结果换回判据的单位再与 `result` 比，所以前缀写错（mA 写成 A）会表现为复算不符。
+  受限算式还要过量纲检查：量纲按 (V, A, s) 的幂次推算，加减和 min/max 两边量纲必须相同，幂指数必须是数字，
+  结果量纲要等于判据单位的量纲，否则报 DIMENSION_MISMATCH。字面量 0 可以配任何量纲（例如 `max(0, v)`）。
+  不认识的单位报 UNIT_UNKNOWN。`calc.py` 函数按国际单位传参复算，但不做量纲检查。
+- 单调：角点法要求算式对每个输入单调。机器对每个有范围的输入，在其余输入取各角点时，再取范围内 1/4、1/2、3/4 三个点计算；
+  结果落到角点范围之外就报 NON_MONOTONIC，要求在转折点处把范围拆开。这是抽样，三个点之间的转折仍可能漏掉。
 - 条款带 `kind`：DATASHEET / STANDARD / REQUIREMENT / PRACTICE / ASSUMPTION。不通过的限值不能来自 ASSUMPTION；
   来自 ASSUMPTION 的输入要写成范围，不能是一个点。
 - 一个改法只算一个缺陷：第二条不通过写 `fix: {same_as: 问题 id}`。`summary.defects` 是缺陷数。
@@ -68,4 +74,5 @@ python3 -m pytest -q tests
 原型阶段不进主路径的变异门禁；手工变异 8 处（复算、网表值、公开界、事实、疑点、正余量、覆盖、算式白名单）均被杀死；
 跨电路合并与按状态拆结论另加 4 处（漏状态、未知状态、疑点按题、合并键），均被杀死。
 区间推结论与防过严另加 12 处，11 处被杀死；剩下 1 处（定稿时跳过需求未定条目）是冗余条件：需求未定不许评级，本来就不会阻塞，已删去。
+单位、量纲与单调检测另加 10 处，均被杀死。
 一期对比结果见 [2026-10-20/summary.md](2026-10-20/summary.md)。

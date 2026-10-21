@@ -9,15 +9,16 @@ CONSISTENCY  a numeric outcome is the one its input ranges give (worst corner pa
              corner fails → FAIL, otherwise UNDECIDED); an undecided conclusion names one missing thing, from
              whom and how it closes; a fail carries its fix; graded conclusions name a consequence class.
 TRACE        clauses resolve to evidence files and say what kind of source they are; facts hold on the
-             netlist; inputs taken from the schematic equal the netlist; every result is recomputed at the
-             corners of its inputs.
+             netlist; inputs taken from the schematic equal the netlist; every result is recomputed in SI at the
+             corners of its inputs and returned in the criterion's unit; the expression's dimension is the
+             criterion's; interior points are sampled and a result leaving the corner range is refused.
 STRICTNESS   no fail the favourable corner would pass, none against a limit the reviewer assumed or on an
              assumed point value; one change is one defect; severity no higher than its consequence class;
              a requirement nobody has set is neither graded nor blocking.
 
-What no check here proves: that a clause says what the conclusion claims, that the model fits (corners give the
-range only for an expression monotone in each input), or that the reasoning in `means` is right — those go to
-sampling review (design §5). Exit 0 valid, 1 errors, 2 malformed input. This never touches the main review path.
+What no check here proves: that a clause says what the conclusion claims, that the model fits, that an
+expression is monotone between the sampled points, or that the reasoning in `means` is right — those go to
+sampling review (design §5). calc.py functions are recomputed in SI but not dimension-checked. Exit 0 valid, 1 errors, 2 malformed input. This never touches the main review path.
 """
 import argparse
 import ast
@@ -45,7 +46,11 @@ CLAUSE_KINDS = ('DATASHEET', 'STANDARD', 'REQUIREMENT', 'PRACTICE', 'ASSUMPTION'
 REL_TOL = 0.01
 PREFIX = {'p': 1e-12, 'n': 1e-9, 'u': 1e-6, 'µ': 1e-6, 'μ': 1e-6, 'm': 1e-3, '': 1.0, 'k': 1e3, 'K': 1e3,
           'M': 1e6, 'G': 1e9}
-BASE_UNITS = ('ohm', 'Ω', 'R', 'F', 'V', 'A', 'W', 'Hz', 's', 'J')
+# Dimension of each base unit as powers of (V, A, s).
+BASE_DIMS = {'ohm': (1, -1, 0), 'Ω': (1, -1, 0), 'R': (1, -1, 0), 'F': (-1, 1, 1), 'V': (1, 0, 0), 'A': (0, 1, 0),
+             'W': (1, 1, 0), 'Hz': (0, 0, -1), 's': (0, 0, 1), 'J': (1, 1, 1), '': (0, 0, 0)}
+BASE_UNITS = tuple(u for u in BASE_DIMS if u)
+SAMPLES = (0.25, 0.5, 0.75)   # interior fractions of a range sampled for monotonicity
 FUNCTIONS = {'min': min, 'max': max, 'abs': abs, 'sqrt': math.sqrt}
 OPERATORS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv,
              ast.Pow: operator.pow, ast.USub: operator.neg, ast.UAdd: operator.pos}
@@ -77,15 +82,78 @@ def evaluate(expr, names):
     return walk(tree)
 
 
-def unit_scale(unit):
-    """Factor from `unit` to its SI base (kΩ → 1e3, nF → 1e-9); None when the unit is not known."""
+def dims(base):
+    return BASE_DIMS[base]
+
+
+def parse_unit(unit):
+    """(factor to SI, dimension) of `unit` (kΩ → 1e3, Ω); None when the unit is not known."""
     unit = (unit or '').strip()
     if unit == '':
-        return 1.0
+        return 1.0, BASE_DIMS['']
     for base in sorted(BASE_UNITS, key=len, reverse=True):
         if unit.endswith(base) and unit[:-len(base)] in PREFIX:
-            return PREFIX[unit[:-len(base)]]
+            return PREFIX[unit[:-len(base)]], BASE_DIMS[base]
     return None
+
+
+def unit_scale(unit):
+    parsed = parse_unit(unit)
+    return parsed[0] if parsed else None
+
+
+def dimension(expr, names):
+    """Dimension of a restricted expression whose names carry dimensions; ValueError when terms do not agree.
+    Numbers are dimensionless, except a literal 0, which takes the dimension of what it meets (max(0, v))."""
+    def same(a, b, what):
+        if a is None or b is None:
+            return b if a is None else a
+        if a != b:
+            raise ValueError('%s mixes %s and %s' % (what, _dim_text(a), _dim_text(b)))
+        return a
+
+    def walk(node):
+        if isinstance(node, ast.Expression):
+            return walk(node.body)
+        if isinstance(node, ast.Constant):
+            return None if node.value == 0 else BASE_DIMS['']
+        if isinstance(node, ast.Name):
+            return names[node.id]
+        if isinstance(node, ast.UnaryOp):
+            return walk(node.operand)
+        if isinstance(node, ast.BinOp):
+            left, right = walk(node.left), walk(node.right)
+            if isinstance(node.op, (ast.Add, ast.Sub)):
+                return same(left, right, 'a sum')
+            if left is None or right is None:
+                return None
+            if isinstance(node.op, ast.Mult):
+                return tuple(a + b for a, b in zip(left, right))
+            if isinstance(node.op, ast.Div):
+                return tuple(a - b for a, b in zip(left, right))
+            if not (isinstance(node.right, ast.Constant) and right == BASE_DIMS['']):
+                raise ValueError('a power takes a number as exponent')
+            if left != BASE_DIMS[''] and float(node.right.value) != int(node.right.value):
+                raise ValueError('a fractional power of %s' % _dim_text(left))
+            return tuple(int(a * node.right.value) for a in left)
+        if isinstance(node, ast.Call):
+            args = [walk(a) for a in node.args]
+            if node.func.id == 'sqrt':
+                if args[0] is not None and any(a % 2 for a in args[0]):
+                    raise ValueError('the square root of %s' % _dim_text(args[0]))
+                return None if args[0] is None else tuple(a // 2 for a in args[0])
+            out = None
+            for a in args:
+                out = same(out, a, node.func.id + '()')
+            return out
+        raise ValueError('not allowed: ' + type(node).__name__)
+    evaluate(expr, {n: 1.0 for n in names})   # same whitelist as the evaluator
+    return walk(ast.parse(expr, mode='eval'))
+
+
+def _dim_text(d):
+    text = '·'.join('%s%s' % (u, '' if n == 1 else '^%d' % n) for u, n in zip(('V', 'A', 's'), d) if n)
+    return text or 'a number'
 
 
 def db_value(part_value, parse):
@@ -350,14 +418,21 @@ class Checker:
             self.error('TRACE', 'CRITERION_INCOMPLETE', qid, 'criterion {limit: number or {min, max}, unit, direction, clause}')
             return
         self.clause_ok(qid, criterion.get('clause'))
+        target = parse_unit(criterion.get('unit'))
+        if target is None:
+            self.error('TRACE', 'UNIT_UNKNOWN', qid, 'criterion unit %r is not known' % criterion.get('unit'))
         inputs = basis.get('inputs') if isinstance(basis.get('inputs'), dict) else {}
-        ranges = {}
+        ranges, units = {}, {}
         for name, item in inputs.items():
             rng = _range(item)
             if rng is None:
                 self.error('TRACE', 'INPUT_INCOMPLETE', qid, 'input %s needs a numeric value or min ≤ max' % name)
                 continue
-            ranges[name] = rng
+            unit = parse_unit(item.get('unit'))
+            if unit is None:
+                self.error('TRACE', 'UNIT_UNKNOWN', qid, 'input %s: unit %r is not known' % (name, item.get('unit')))
+                continue
+            ranges[name], units[name] = (rng[0] * unit[0], rng[1] * unit[0]), unit[1]
             source = item.get('from') if isinstance(item.get('from'), dict) else {}
             if 'clause' in source:
                 self.clause_ok(qid, source['clause'])
@@ -368,16 +443,31 @@ class Checker:
         stated = _range(basis.get('result'))
         if stated is None:
             self.error('TRACE', 'RESULT_INCOMPLETE', qid, 'result {min, max} in the criterion\'s unit')
-        if len(ranges) != len(inputs) or stated is None:
+        if len(ranges) != len(inputs) or stated is None or target is None:
             return
+        if (basis.get('calc') or '') not in calc.FUNCTIONS:   # calc.py functions take SI inputs by name
+            try:
+                got = dimension(basis.get('calc') or '', units)
+                if got is not None and got != target[1]:
+                    raise ValueError('the expression gives %s, the criterion is in %s (%s)'
+                                     % (_dim_text(got), _dim_text(target[1]), criterion.get('unit')))
+            except ValueError as error:
+                self.error('TRACE', 'DIMENSION_MISMATCH', qid, str(error))
+                return
         try:
-            values = [self._compute(basis, dict(zip(ranges, corner)))
+            values = [self._compute(basis, dict(zip(ranges, corner))) / target[0]
                       for corner in itertools.product(*[sorted(set(r)) for r in ranges.values()])]
+            lo, hi = min(values), max(values)
+            turned = self._turning_point(basis, ranges, lo, hi, target[0], inputs)
         except (ValueError, TypeError, ZeroDivisionError, OverflowError) as error:
             self.error('TRACE', 'RECOMPUTE_FAILED', qid, 'calc: %s' % error)
             return
         self.recomputed += 1
-        lo, hi = min(values), max(values)
+        if turned:
+            self.error('TRACE', 'NON_MONOTONIC', qid,
+                       'at %s the result is %.6g, outside the corner range %.6g…%.6g: the expression turns inside '
+                       'the ranges; split the range at the turning point' % (turned[0], turned[1], lo, hi))
+            return
         if not (_close(lo, stated[0], max(abs(lo), abs(hi))) and _close(hi, stated[1], max(abs(lo), abs(hi)))):
             self.error('TRACE', 'RECOMPUTE_MISMATCH', qid,
                        'the inputs give %.6g…%.6g, the conclusion says %.6g…%.6g' % (lo, hi, stated[0], stated[1]))
@@ -390,6 +480,26 @@ class Checker:
             'question': qid, 'states': conclusion.get('states'), 'stated': conclusion.get('outcome'),
             'outcome': 'PASS' if worst > 0 else 'FAIL' if best <= 0 else 'UNDECIDED',
             'min': lo, 'max': hi, 'worst_margin': worst, 'best_margin': best, 'unit': criterion.get('unit')}
+
+    def _turning_point(self, basis, ranges, lo, hi, scale, inputs):
+        """Vary one ranged input through interior points with the others at each corner; return the first point
+        whose result leaves [lo, hi] (the corners then do not bound the result)."""
+        spread = max(abs(lo), abs(hi), 1e-12) * REL_TOL
+        names = list(ranges)
+        for name in names:
+            low, high = ranges[name]
+            if low == high:
+                continue
+            others = [n for n in names if n != name]
+            for corner in itertools.product(*[sorted(set(ranges[n])) for n in others]):
+                point = dict(zip(others, corner))
+                for f in SAMPLES:
+                    point[name] = low + f * (high - low)
+                    value = self._compute(basis, point) / scale
+                    if value < lo - spread or value > hi + spread:
+                        return ', '.join('%s=%.4g %s' % (n, v / unit_scale(inputs[n].get('unit')), inputs[n].get('unit') or '')
+                                         for n, v in sorted(point.items())), value
+        return None
 
     def _compute(self, basis, values):
         name = basis.get('calc') or ''

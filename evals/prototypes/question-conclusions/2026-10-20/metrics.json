@@ -131,8 +131,13 @@
   "release": "CANNOT_FREEZE",
   "injected": {
    "A": 7,
-   "B": 15,
-   "total": 15,
+   "B": 18,
+   "total": 18,
+   "A_not_applicable": [
+    16,
+    17,
+    18
+   ],
    "per_error": [
     {
      "n": 1,
@@ -223,6 +228,24 @@
      "error": "没定的需求被评级",
      "A": true,
      "B": true
+    },
+    {
+     "n": 16,
+     "error": "单位前缀写错（mA 写成 A）",
+     "A": null,
+     "B": true
+    },
+    {
+     "n": 17,
+     "error": "算式量纲不对",
+     "A": null,
+     "B": true
+    },
+    {
+     "n": 18,
+     "error": "算式在范围内不单调",
+     "A": null,
+     "B": true
     }
    ]
   },
@@ -232,6 +255,7 @@
     "run 态按 VF 典型值判通过（过松）"
    ],
    "B": []
-  }
+  },
+  "unit_and_monotonic_checks": "补检查后 arm-b3 原样有效；16–18 旧原型（336012d）全部放过"
  }
 }
