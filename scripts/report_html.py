@@ -18,7 +18,7 @@ details{background:var(--card);border-radius:8px;padding:8px 14px;margin:12px 0}
 """
 
 PASSTHROUGH = re.compile(r'^\s*</?(details|summary)\b.*$')
-IMAGE = re.compile(r'^!\[([^\]]*)\]\(([^)\s]+)\)\s*$')
+IMAGE = re.compile(r'^!\[([^\]]*)\]\(([^)]+)\)\s*$')
 INLINE = re.compile(r'\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)')
 
 
@@ -73,7 +73,10 @@ def to_html(markdown):
                 i += 1
             body.append('<%s>\n%s\n</%s>' % (tag, '\n'.join(items), tag))
         else:
-            para = []
+            # A line no other branch took starts a paragraph, so the loop always advances (a lone '|' line
+            # that no separator row follows is text, not a table).
+            para = [inline(line.strip())]
+            i += 1
             while i < len(lines) and lines[i].strip() and not (
                     PASSTHROUGH.match(lines[i]) or re.match(r'^(#{1,4} |- |\d+\. |\|)', lines[i]) or IMAGE.match(lines[i])):
                 para.append(inline(lines[i].strip()))

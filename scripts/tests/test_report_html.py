@@ -47,6 +47,15 @@ class ToHtmlTests(unittest.TestCase):
         self.assertIn('<li>细节</li>', self.html)
 
 
+    def test_a_pipe_line_without_a_separator_row_is_a_paragraph_not_a_hang(self):
+        html = to_html('# T\n\n| a | b\n下一行\n')
+        self.assertIn('<p>| a | b<br>\n下一行</p>', html)
+
+    def test_an_image_path_may_hold_a_space_and_the_alt_a_bracket(self):
+        html = to_html('![x](record/evidence/figures/a b.png)\n')
+        self.assertIn('<img src="record/evidence/figures/a b.png" alt="x">', html)
+
+
 class PackTests(unittest.TestCase):
     def test_pack_wants_the_html_copy_built_from_the_current_markdown(self):
         with tempfile.TemporaryDirectory() as d:

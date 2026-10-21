@@ -11,6 +11,7 @@ from test_remediation import actionable
 from test_validate_review import gap_with_task, proposed_option, fail, fixture
 from validate_remediation import validate_figures
 from render_report import render
+from report_html import to_html
 from review_quality import finding_wording
 
 
@@ -24,6 +25,11 @@ class ValidateFiguresTests(unittest.TestCase):
         for bad in ({'kind': 'PHOTO'}, {'source': 'figures/F1.pdf'}, {'locator': ''}, {'caption': ' '}):
             with self.subTest(bad=bad):
                 self.assertTrue(validate_figures('F1', [dict(figure(), **bad)]))
+
+    def test_a_figure_source_is_a_safe_relative_path_without_spaces(self):
+        for bad in ('figures/F1 actual.png', '../figures/F1.png', '/tmp/F1.png', 'figures/../../F1.png'):
+            with self.subTest(bad=bad):
+                self.assertTrue(validate_figures('F1', [figure(source=bad)]), bad)
 
     def test_the_actual_circuit_is_required(self):
         self.assertTrue(any('ACTUAL' in e for e in validate_figures('F1', None)))
@@ -95,6 +101,14 @@ class ReportTests(unittest.TestCase):
                                             '- **可能的损害**：放电时', '- **怎么改**：改成两级')]
         self.assertEqual(order, sorted(order))
 
+    def test_a_caption_with_brackets_still_renders_as_an_image(self):
+        p, r, db = actionable()
+        r['findings'][0]['figures'] = [figure(caption='TVS (D702) 接到 U1 [p8]')]
+        text = render(p, r, validate_review(p, r, db, require_actionable=True))
+        self.assertIn('![TVS D702 接到 U1 p8](record/evidence/figures/F1-actual.png)', text)
+        self.assertIn('图：现状。TVS (D702) 接到 U1 [p8]', text)
+        self.assertIn('<img src="record/evidence/figures/F1-actual.png"', to_html(text))
+
     def test_a_proposed_change_shows_its_figures_under_the_work_item(self):
         p, r, db = gap_with_task(proposed_option(figures=[figure(), figure('AFTER', 'figures/W-after.png', '改后：从稳压轨经肖特基供电')]))
         text = render(p, r, validate_review(p, r, db, require_actionable=True))
@@ -114,6 +128,9 @@ class RootCauseWordingTests(unittest.TestCase):
         self.assertEqual(['ROOT_CAUSE_IS_REMEDY'], [c['code'] for c in finding_wording([f])])
         f = dict(r['findings'][0], root_cause='单级 TVS 的钳位电压高于引脚耐受，中间没有限流')
         self.assertEqual([], finding_wording([f]))
+        for cause in ('缺口在 VCC 启动段：电压低于 VCC(off)', '缺省配置下 GPIO3 为高，PFC 一直禁能'):
+            with self.subTest(cause=cause):
+                self.assertEqual([], finding_wording([dict(r['findings'][0], root_cause=cause)]))
 
 
 if __name__ == '__main__':

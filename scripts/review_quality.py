@@ -458,7 +458,7 @@ def port_overvoltage_grading(report):
     return found
 
 
-REMEDY_OPENING = re.compile(r'^\s*(?:缺少?|未加|没加|没有|少了?)')
+REMEDY_OPENING = re.compile(r'^\s*(?:缺(?!口|省)少?|未加|没加|没有|少了?)')
 
 
 def finding_wording(findings):

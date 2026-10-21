@@ -329,7 +329,8 @@ def render_figures(figures):
         if not (isinstance(f, dict) and isinstance(f.get('source'), str) and f['source'].strip()):
             continue
         caption = cell(f.get('caption') or '')
-        lines += ['', '![%s](%s/evidence/%s)' % (caption, 'record', f['source'].strip()),
+        alt = re.sub(r'[\[\]()]', '', caption).strip()   # brackets would end the image's alt text or link early
+        lines += ['', '![%s](%s/evidence/%s)' % (alt, 'record', f['source'].strip()),
                   '', '图：%s。%s' % (FIGURE_WORDS.get(f.get('kind'), '示意'), caption), '']
     return lines
 
