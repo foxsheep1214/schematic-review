@@ -269,6 +269,10 @@
    `{at_25c: v 或 {min, max}}`，机器按固定下限放宽：典型值两向乘除 3，25 °C 值两端各放宽 20%。
    审查者可以放得更宽（`widen`），不能更窄（ENGINEERING_TOO_NARROW），来源条款必须是手册（ENGINEERING_NOT_DATASHEET）。
    放宽后余量仍为正就推出通过。`searched` 里记了数值却没有写成输入，报 BOUND_NOT_USED。
+   输入可以标 `quantity`，按该类量的下限放宽（不认识的类报 QUANTITY_UNKNOWN）。下限取本地 124 份手册里
+   同时给典型值和最大值的行，最大值/典型值的最坏比再乘 1.25（`2026-10-21/floors`）：门电荷、正向压降、电源电流两向乘除 2，
+   阈值电压、电容、导通电阻乘除 2.5，反向恢复电荷乘除 2.5。漏电流比默认宽得多：典型值乘除 1000；
+   25 °C 漏电按每 10 °C 翻倍放到 85 °C（上端 ×64，下端不低于 0）。不标 `quantity` 仍按乘除 3 与 ±20%。
 7. **说不出怎么失效**：每条判不了（需求未定的除外）都要写 `failure_path {mechanism, state}`，state 取问题的状态之一；
    缺了报 NO_FAILURE_PATH。机器只能确认写了，写得是否具体靠抽查。
 8. **没采购当成判不了**：`missing.from = PROCUREMENT` 的判不了一律拒绝（UNDECIDED_ON_PROCUREMENT），

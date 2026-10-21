@@ -17,18 +17,18 @@
   "rows": 156,
   "questions": 150,
   "outcomes": {
-   "PASS": 72,
-   "UNDECIDED": 78
+   "PASS": 71,
+   "UNDECIDED": 79
   },
-  "gaps": 15,
+  "gaps": 16,
   "constraints": 41,
   "errors_by_code": {
    "NO_FAILURE_PATH": 33
   },
   "refused_questions": 33,
   "derived": {
-   "UNDECIDED": 1,
-   "PASS": 28
+   "UNDECIDED": 2,
+   "PASS": 27
   }
  },
  "triage": {

@@ -66,7 +66,7 @@ GPIO45 = numeric('vdd * (r19 * rpd / (r19 + rpd)) / (r17 + r19 * rpd / (r19 + rp
     'rpd': inp({'typical': 45}, 'kΩ', 'K-ESP-PD')}, 0.9, 'V', 'value_above_limit', 'K-RT-EN')
 EN_R13 = numeric('vin - i * r', {
     'vin': inp({'min': 3.2, 'max': 5.25}, 'V', 'K-VIN'),
-    'i': inp({'at_25c': 0.1}, 'µA', 'K-IEN'),
+    'i': inp({'at_25c': 0.1, 'quantity': 'leakage_current'}, 'µA', 'K-IEN'),
     'r': inp({'min': 95, 'max': 105}, 'kΩ', {'ref': 'R13', 'parse': 'resistance'})}, 0.9, 'V', 'value_above_limit', 'K-RT-EN')
 
 
@@ -86,7 +86,7 @@ def engineering(row):
     if key == 'LDO EN漏电':
         return EN_R13
     if key == 'GPIO46默认':
-        return numeric('i * r', {'i': inp({'at_25c': 1}, 'µA', 'K-DIN-II'), 'r': inp({'typical': 45}, 'kΩ', 'K-ESP-PD')},
+        return numeric('i * r', {'i': inp({'at_25c': 1, 'quantity': 'leakage_current'}, 'µA', 'K-DIN-II'), 'r': inp({'typical': 45}, 'kΩ', 'K-ESP-PD')},
                        0.8, 'V', 'value_below_limit', 'K-ESP-VIL')
     if key == '3.3V轨容量':
         load = 0.25 if rid.endswith('3-3V') else 0.2
@@ -104,6 +104,12 @@ def engineering(row):
 # (the checker's DUPLICATE_GAP finds them): they share that owner's gap.
 MERGED = {'启动段调节窗口': '电池态LDO余量', 'LDO套开关规则': '电池态LDO余量', 'USB态LDO窗口': '电池态LDO余量'}
 WHY = {}
+# E keys whose quoted numbers no longer decide once the quantity's own floor applies: what stays open and how it fails.
+OPENED = {'GPIO46默认': {
+    'mechanism': '热态 DIN 漏电经内部下拉把 GPIO46 抬过 VIL，上电 strap 读错',
+    'missing': {'what': 'WS2812 DIN 输入漏电在最高工作温度下的保证值（手册只给 25 °C ≤1 µA）', 'from': 'VENDOR',
+                'closes_when': '取得高温漏电上限，或在 GPIO46 加外部下拉使漏电压降有界'},
+    'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'consequence': '启动模式读错，无法正常启动'}}}
 
 # Board-level procurement rows name no object; the parts their constraint is on.
 KEY_REFS = {'R8额定': ['R8'], '连接器载流': ['J1', 'J3', 'J4'], 'LDO输出Ceff': ['C1', 'C3', 'C4', 'C5', 'C7', 'C8', 'C11', 'C13'],
@@ -128,6 +134,13 @@ def fill(basis):
                 for c in itertools.product(*[sorted(set(r)) for r in ranges.values()])]
         basis = dict(basis, result={'min': min(vals), 'max': max(vals)})
     return basis
+
+
+def decided_pass(basis):
+    """True when the worst corner of a filled numeric basis already passes."""
+    lo, hi = basis['result']['min'], basis['result']['max']
+    limit = basis['criterion']['limit']
+    return limit - hi > 0 if basis['criterion']['direction'] == 'value_below_limit' else lo - limit > 0
 
 
 def as_written(row, check):
@@ -155,11 +168,13 @@ def rewritten(row, check, first, db):
             return None
         return {'question': row['id'], 'outcome': 'UNDECIDED', 'missing': {'same_as': first[key]},
                 'failure_path': {'mechanism': WHY[key]}}
+    opened = None
     if cls == 'E':
         basis = engineering(row)
-        if basis is not None:
+        if basis is not None and decided_pass(fill(basis)):
             return {'question': row['id'], 'outcome': 'PASS', 'basis': fill(basis)}
-        cls = 'P'   # quotes too little to rewrite: stays open on its own gap
+        # quotes too little to rewrite, or the floor leaves it open: stays open on its own gap
+        opened, cls = (fill(basis) if basis else None), 'P'
     if cls == 'B':
         tail = row['id'].split('.')[-1].replace('PHYSICAL-', '')
         refs = [r for r in (o.get('refs') or [o.get('ref'), tail]) if r in db['parts']] or KEY_REFS[key]
@@ -177,8 +192,13 @@ def rewritten(row, check, first, db):
     c = dict(base)
     c['failure_path'] = path
     if key == 'D6供电窗口':
-        c['basis'] = fill(D6_WINDOW)
-        c['loose_input'] = 'vdd'
+        opened, c['loose_input'] = fill(D6_WINDOW), 'vdd'
+    elif opened:
+        c['loose_input'] = next(n for n, i in opened['inputs'].items() if any(k in i for k in cc.ENGINEERING))
+        c['missing'], c['severity'] = OPENED[key]['missing'], OPENED[key]['severity']
+        c['failure_path'] = dict(path, mechanism=OPENED[key]['mechanism'])
+    if opened:
+        c['basis'] = opened
         c.pop('searched', None)
     return c
 
@@ -202,9 +222,10 @@ def run(round_dir, out_dir):
     # The first row of each key that stays open owns the gap; the rest say same_as.
     first = {}
     for row in rows:
-        if row['cls'] in ('P', 'N') or (row['cls'] == 'E' and engineering(row) is None):
+        basis = engineering(row) if row['cls'] == 'E' else None
+        if row['cls'] in ('P', 'N') or (row['cls'] == 'E' and not (basis and decided_pass(fill(basis)))):
             first.setdefault(row['key'], row['id'])
-            WHY.setdefault(row['key'], row['why'])
+            WHY.setdefault(row['key'], OPENED[row['key']]['mechanism'] if row['key'] in OPENED else row['why'])
     versions = {
         'as-written': [as_written(r, checks[r['id']]) for r in rows],
         'rewritten': [c for c in (rewritten(r, checks[r['id']], first, db) for r in rows) if c],

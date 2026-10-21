@@ -29,7 +29,7 @@ python3 -m pytest -q tests
 | 一致 | PASS_NOT_PROVEN、ALREADY_DECIDED、FAIL_WITHOUT_FIX、FIX_SAME_AS_UNKNOWN、LOOSE_INPUT_UNKNOWN、NO_BOUND_NOT_SEARCHED、MISSING_INCOMPLETE、UNSPECIFIED_NOT_FAIL、NA_NOT_OPEN、SEVERITY_MISSING … |
 | 可查 | UNKNOWN_CLAUSE、CLAUSE_INCOMPLETE、CLAUSE_SOURCE_MISSING、DB_VALUE_MISMATCH、DB_VALUE_UNREADABLE、RECOMPUTE_MISMATCH、RECOMPUTE_FAILED、UNIT_UNKNOWN、DIMENSION_MISMATCH、NON_MONOTONIC、FACT_FALSE、UNKNOWN_NODE … |
 | 不过严 | FAIL_NOT_PROVEN、FAIL_ON_ASSUMED_LIMIT、FAIL_ON_ASSUMED_POINT、DUPLICATE_DEFECT、SEVERITY_ABOVE_CLASS、REQUIREMENT_GRADED、UNDECIDED_ON_PROCUREMENT、RECOMMENDED_NOT_VENDOR、ALREADY_RECOMMENDED、DUPLICATE_GAP |
-| 判不了要有理由 | NO_FAILURE_PATH、BOUND_NOT_USED、MISSING_SAME_AS_UNKNOWN、RECOMMENDED_WITH_DEVIATION（一致）；ENGINEERING_TOO_NARROW、ENGINEERING_NOT_DATASHEET、CONSTRAINT_INCOMPLETE（可查） |
+| 判不了要有理由 | NO_FAILURE_PATH、BOUND_NOT_USED、MISSING_SAME_AS_UNKNOWN、RECOMMENDED_WITH_DEVIATION（一致）；ENGINEERING_TOO_NARROW、ENGINEERING_NOT_DATASHEET、QUANTITY_UNKNOWN、CONSTRAINT_INCOMPLETE（可查） |
 
 - 数值结论：`basis = {kind: NUMERIC, criterion: {limit: 数 或 {min, max}, unit, direction, clause}, calc, inputs, result: {min, max}}`。
   每个输入写 `value` 或 `{min, max}`。机器在所有角点重算，得到结果范围，并推出结论：
@@ -61,6 +61,8 @@ python3 -m pytest -q tests
 
 - 工程界：输入可写 `{typical: v}` 或 `{at_25c: v 或 {min, max}}`（来源条款须为手册），机器按下限放宽：
   典型值两向乘除 3，25 °C 值两端各放宽 20%；`widen` 只能更宽。`searched` 里记了数值却不用，报 BOUND_NOT_USED。
+  标了 `quantity` 的输入按该类的下限放宽：门电荷、正向压降、电源电流 ×2，阈值电压、电容、导通电阻、反向恢复电荷 ×2.5，
+  漏电流典型值 ×1000、25 °C 值放到 ×64（下端不低于 0）；依据见 `2026-10-21/floors`（`scan.py` 与 `ratios.json`）。
 - 每条判不了写 `failure_path {mechanism, state}`（需求未定的除外）。
 - 料号未定不是判不了：写通过，依据 `CONSTRAINT {refs, requires}`，汇总在 `summary.constraints`。
 - 推荐配置无偏离：写通过，依据 `RECOMMENDED {clause, facts, deviations: []}`。

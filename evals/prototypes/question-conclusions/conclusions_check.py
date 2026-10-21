@@ -15,7 +15,8 @@ TRACE        clauses resolve to evidence files and say what kind of source they 
 STRICTNESS   no fail the favourable corner would pass, none against a limit the reviewer assumed or on an
              assumed point value; one change is one defect; severity no higher than its consequence class;
              a requirement nobody has set is neither graded nor blocking. On the undecided side: a typical or
-             25 °C datasheet value is an input once widened by a fixed floor, so a large margin decides; an
+             25 °C datasheet value is an input once widened by a fixed floor (per quantity when the input
+             names one: leakage far wider, gate charge or VF narrower), so a large margin decides; an
              undecided conclusion names its failure path; a part not yet bought is a pass with a constraint
              for the BOM; a recommended configuration with no deviation passes; one gap is counted once.
 
@@ -50,6 +51,14 @@ REL_TOL = 0.01
 # An engineering bound widens a datasheet value by at least this much: a typical value by a factor both ways,
 # a 25 °C guarantee by a fraction of its magnitude on each end.
 ENGINEERING = {'typical': 3.0, 'at_25c': 0.2}
+# A named quantity has its own floor: max/typ of the rows that publish both, in 124 local datasheets, worst case
+# ×1.25 (2026-10-21/floors). Leakage spreads far wider than the default, and a 25 °C leakage grows to the hot
+# corner (doubling per 10 °C up to 85 °C) and never below zero.
+QUANTITY_FLOORS = {
+    'gate_charge': {'typical': 2.0}, 'recovery_charge': {'typical': 2.5}, 'capacitance': {'typical': 2.5},
+    'on_resistance': {'typical': 2.5}, 'forward_voltage': {'typical': 2.0}, 'threshold_voltage': {'typical': 2.5},
+    'supply_current': {'typical': 2.0}, 'leakage_current': {'typical': 1000.0, 'at_25c': 63.0},
+}
 VENDOR_KINDS = ('DATASHEET', 'STANDARD')
 PASS_BASES = ('NUMERIC', 'FACT', 'CONSTRAINT', 'RECOMMENDED')
 PREFIX = {'p': 1e-12, 'n': 1e-9, 'u': 1e-6, 'µ': 1e-6, 'μ': 1e-6, 'm': 1e-3, '': 1.0, 'k': 1e3, 'K': 1e3,
@@ -549,10 +558,14 @@ class Checker:
 
     def _engineering(self, qid, name, item):
         key = next(k for k in ENGINEERING if k in item)
-        widen = item.get('widen', ENGINEERING[key])
-        if not (_number(widen) and widen >= ENGINEERING[key]):
-            self.error('TRACE', 'ENGINEERING_TOO_NARROW', qid, 'input %s: a %s value is widened by at least %s'
-                       % (name, key, ENGINEERING[key]))
+        if 'quantity' in item and item['quantity'] not in QUANTITY_FLOORS:
+            self.error('TRACE', 'QUANTITY_UNKNOWN', qid, 'input %s: quantity is one of %s'
+                       % (name, ', '.join(QUANTITY_FLOORS)))
+        floor = _floor(key, item)
+        widen = item.get('widen', floor)
+        if not (_number(widen) and widen >= floor):
+            self.error('TRACE', 'ENGINEERING_TOO_NARROW', qid, 'input %s: a %s %s value is widened by at least %s'
+                       % (name, key, item.get('quantity', ''), floor))
         if self._clause_kind((item.get('from') or {}).get('clause')) != 'DATASHEET':
             self.error('TRACE', 'ENGINEERING_NOT_DATASHEET', qid,
                        'input %s: an engineering bound widens a value the datasheet gives' % name)
@@ -717,19 +730,27 @@ def _range(item):
 
 def _input_range(item):
     """(min, max) of an input: {value}, {min, max}, or an engineering bound {typical | at_25c: value or {min, max},
-    widen?} widened by `widen` (default the floor)."""
+    quantity?, widen?} widened by `widen` (default the floor of its quantity)."""
     if not isinstance(item, dict):
         return None
     key = next((k for k in ENGINEERING if k in item), None)
     if key is None:
         return _range(item)
     base = _range({'value': item[key]} if _number(item[key]) else item[key])
-    widen = item.get('widen', ENGINEERING[key])
+    widen = item.get('widen', _floor(key, item))
     if base is None or not (_number(widen) and widen > 0):
         return None
     if key == 'typical':
-        return (min(base[0] / widen, base[0] * widen), max(base[1] / widen, base[1] * widen))
-    return (base[0] - widen * abs(base[0]), base[1] + widen * abs(base[1]))
+        lo, hi = min(base[0] / widen, base[0] * widen), max(base[1] / widen, base[1] * widen)
+    else:
+        lo, hi = base[0] - widen * abs(base[0]), base[1] + widen * abs(base[1])
+    if item.get('quantity') == 'leakage_current':
+        lo = max(lo, 0.0)
+    return lo, hi
+
+
+def _floor(key, item):
+    return (QUANTITY_FLOORS.get(item.get('quantity')) or {}).get(key, ENGINEERING[key])
 
 
 def _same_gap(conclusion):

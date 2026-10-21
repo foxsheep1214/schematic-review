@@ -239,10 +239,10 @@
    "states": null,
    "stated": "PASS",
    "outcome": "PASS",
-   "min": 3.1874000000000002,
-   "max": 5.2424,
-   "worst_margin": 2.2874000000000003,
-   "best_margin": 4.3424,
+   "min": 2.5280000000000005,
+   "max": 5.25,
+   "worst_margin": 1.6280000000000006,
+   "best_margin": 4.35,
    "unit": "V"
   },
   {
@@ -261,10 +261,10 @@
    "states": null,
    "stated": "PASS",
    "outcome": "PASS",
-   "min": 3.1874000000000002,
-   "max": 5.2424,
-   "worst_margin": 2.2874000000000003,
-   "best_margin": 4.3424,
+   "min": 2.5280000000000005,
+   "max": 5.25,
+   "worst_margin": 1.6280000000000006,
+   "best_margin": 4.35,
    "unit": "V"
   },
   {
@@ -305,10 +305,10 @@
    "states": null,
    "stated": "PASS",
    "outcome": "PASS",
-   "min": 3.1874000000000002,
-   "max": 5.2424,
-   "worst_margin": 2.2874000000000003,
-   "best_margin": 4.3424,
+   "min": 2.5280000000000005,
+   "max": 5.25,
+   "worst_margin": 1.6280000000000006,
+   "best_margin": 4.35,
    "unit": "V"
   },
   {
@@ -327,10 +327,10 @@
    "states": null,
    "stated": "PASS",
    "outcome": "PASS",
-   "min": 3.1874000000000002,
-   "max": 5.2424,
-   "worst_margin": 2.2874000000000003,
-   "best_margin": 4.3424,
+   "min": 2.5280000000000005,
+   "max": 5.25,
+   "worst_margin": 1.6280000000000006,
+   "best_margin": 4.35,
    "unit": "V"
   },
   {
@@ -347,12 +347,12 @@
   {
    "question": "RST-C01.GPIO46-DEFAULT",
    "states": null,
-   "stated": "PASS",
-   "outcome": "PASS",
-   "min": 0.012,
-   "max": 0.162,
-   "worst_margin": 0.638,
-   "best_margin": 0.788,
+   "stated": "UNDECIDED",
+   "outcome": "UNDECIDED",
+   "min": 0.0,
+   "max": 8.639999999999999,
+   "worst_margin": -7.839999999999999,
+   "best_margin": 0.8,
    "unit": "V"
   },
   {
@@ -382,10 +382,10 @@
    "states": null,
    "stated": "PASS",
    "outcome": "PASS",
-   "min": 3.1874000000000002,
-   "max": 5.2424,
-   "worst_margin": 2.2874000000000003,
-   "best_margin": 4.3424,
+   "min": 2.5280000000000005,
+   "max": 5.25,
+   "worst_margin": 1.6280000000000006,
+   "best_margin": 4.35,
    "unit": "V"
   },
   {
@@ -415,10 +415,10 @@
    "states": null,
    "stated": "PASS",
    "outcome": "PASS",
-   "min": 3.1874000000000002,
-   "max": 5.2424,
-   "worst_margin": 2.2874000000000003,
-   "best_margin": 4.3424,
+   "min": 2.5280000000000005,
+   "max": 5.25,
+   "worst_margin": 1.6280000000000006,
+   "best_margin": 4.35,
    "unit": "V"
   },
   {
@@ -426,10 +426,10 @@
    "states": null,
    "stated": "PASS",
    "outcome": "PASS",
-   "min": 3.1874000000000002,
-   "max": 5.2424,
-   "worst_margin": 2.2874000000000003,
-   "best_margin": 4.3424,
+   "min": 2.5280000000000005,
+   "max": 5.25,
+   "worst_margin": 1.6280000000000006,
+   "best_margin": 4.35,
    "unit": "V"
   },
   {
@@ -525,11 +525,11 @@
   "questions": 150,
   "conclusions": 150,
   "outcomes": {
-   "PASS": 72,
-   "UNDECIDED": 78
+   "PASS": 71,
+   "UNDECIDED": 79
   },
   "defects": 0,
-  "gaps": 15,
+  "gaps": 16,
   "constraints": [
    {
     "question": "DEV-C01.BOARD",

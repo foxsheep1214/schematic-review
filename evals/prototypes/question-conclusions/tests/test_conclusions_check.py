@@ -380,6 +380,34 @@ class UndecidedTests(Fixture):
         cs = conclusions(); self.vf_as(cs, {'at_25c': 2.0, 'widen': 0.1}, {'min': 2.55, 'max': 3.45})
         self.assertIn(('TRACE', 'ENGINEERING_TOO_NARROW'), self.codes(self.run_check(cs=cs)))
 
+    def test_a_named_quantity_takes_its_own_typical_floor(self):
+        cs = conclusions(); self.vf_as(cs, {'typical': 1.95, 'quantity': 'forward_voltage'},
+                                       {'min': 4.75 - 3.9, 'max': 5.25 - 0.975})
+        out = self.run_check(cs=cs)
+        self.assertTrue(out['valid'], out['errors'])
+        cs = conclusions(); self.vf_as(cs, {'typical': 1.95, 'quantity': 'forward_voltage', 'widen': 1.5},
+                                       {'min': 4.75 - 2.925, 'max': 5.25 - 1.3})
+        self.assertIn(('TRACE', 'ENGINEERING_TOO_NARROW'), self.codes(self.run_check(cs=cs)))
+        cs = conclusions(); self.vf_as(cs, {'typical': 1.95, 'quantity': 'volts'}, {'min': 4.75 - 5.85, 'max': 5.25 - 0.65})
+        self.assertIn(('TRACE', 'QUANTITY_UNKNOWN'), self.codes(self.run_check(cs=cs)))
+
+    def test_a_leakage_current_is_widened_more_than_the_default(self):
+        cs = conclusions(); self.vf_as(cs, {'typical': 1.95, 'quantity': 'leakage_current'},
+                                       {'min': 4.75 - 1950, 'max': 5.25 - 0.00195})
+        out = self.run_check(cs=cs)
+        self.assertTrue(out['valid'], out['errors'])
+        cs = conclusions(); self.vf_as(cs, {'typical': 1.95, 'quantity': 'leakage_current', 'widen': 3},
+                                       {'min': 4.75 - 5.85, 'max': 5.25 - 0.65})
+        self.assertIn(('TRACE', 'ENGINEERING_TOO_NARROW'), self.codes(self.run_check(cs=cs)))
+
+    def test_a_25c_leakage_grows_to_the_hot_corner_and_not_below_zero(self):
+        cs = conclusions(); self.vf_as(cs, {'at_25c': 2.0, 'quantity': 'leakage_current'}, {'min': 4.75 - 128, 'max': 5.25})
+        out = self.run_check(cs=cs)
+        self.assertTrue(out['valid'], out['errors'])
+        cs = conclusions(); self.vf_as(cs, {'at_25c': 2.0, 'quantity': 'leakage_current', 'widen': 0.2},
+                                       {'min': 4.75 - 2.4, 'max': 5.25})
+        self.assertIn(('TRACE', 'ENGINEERING_TOO_NARROW'), self.codes(self.run_check(cs=cs)))
+
     def test_an_engineering_bound_widens_a_datasheet_value_only(self):
         cs = conclusions(); c = self.vf_as(cs, {'at_25c': {'min': 1.8, 'max': 2.1}}, {'min': 2.23, 'max': 3.81}, 'PASS')
         c['basis']['inputs']['vf']['from'] = {'clause': 'K-ASSUME'}

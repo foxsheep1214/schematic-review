@@ -97,6 +97,7 @@
    "class": "REQUIRED_FUNCTION",
    "consequence": "D6：当前C分支3.3低于3.7；B-V6也不覆盖3.2下界且不是已选实物；可能RGB无法工作或输入影响GPIO46采样，未证全部身份分支都违反不作电气FAIL"
   },
+  "loose_input": "vdd",
   "basis": {
    "kind": "NUMERIC",
    "calc": "vdd - vmin",
@@ -128,8 +129,7 @@
     "min": -0.5,
     "max": 0.10000000000000009
    }
-  },
-  "loose_input": "vdd"
+  }
  },
  {
   "question": "DEV-C05.D6-SUPPLY",
@@ -635,6 +635,7 @@
     },
     "i": {
      "at_25c": 0.1,
+     "quantity": "leakage_current",
      "unit": "µA",
      "from": {
       "clause": "K-IEN"
@@ -659,8 +660,8 @@
     "clause": "K-RT-EN"
    },
    "result": {
-    "min": 3.1874000000000002,
-    "max": 5.2424
+    "min": 2.5280000000000005,
+    "max": 5.25
    }
   }
  },
@@ -758,6 +759,7 @@
     },
     "i": {
      "at_25c": 0.1,
+     "quantity": "leakage_current",
      "unit": "µA",
      "from": {
       "clause": "K-IEN"
@@ -782,8 +784,8 @@
     "clause": "K-RT-EN"
    },
    "result": {
-    "min": 3.1874000000000002,
-    "max": 5.2424
+    "min": 2.5280000000000005,
+    "max": 5.25
    }
   }
  },
@@ -1469,6 +1471,7 @@
     },
     "i": {
      "at_25c": 0.1,
+     "quantity": "leakage_current",
      "unit": "µA",
      "from": {
       "clause": "K-IEN"
@@ -1493,8 +1496,8 @@
     "clause": "K-RT-EN"
    },
    "result": {
-    "min": 3.1874000000000002,
-    "max": 5.2424
+    "min": 2.5280000000000005,
+    "max": 5.25
    }
   }
  },
@@ -1589,6 +1592,7 @@
     },
     "i": {
      "at_25c": 0.1,
+     "quantity": "leakage_current",
      "unit": "µA",
      "from": {
       "clause": "K-IEN"
@@ -1613,8 +1617,8 @@
     "clause": "K-RT-EN"
    },
    "result": {
-    "min": 3.1874000000000002,
-    "max": 5.2424
+    "min": 2.5280000000000005,
+    "max": 5.25
    }
   }
  },
@@ -1731,13 +1735,29 @@
  },
  {
   "question": "RST-C01.GPIO46-DEFAULT",
-  "outcome": "PASS",
+  "outcome": "UNDECIDED",
+  "missing": {
+   "what": "WS2812 DIN 输入漏电在最高工作温度下的保证值（手册只给 25 °C ≤1 µA）",
+   "from": "VENDOR",
+   "closes_when": "取得高温漏电上限，或在 GPIO46 加外部下拉使漏电压降有界"
+  },
+  "failure_path": {
+   "mechanism": "热态 DIN 漏电经内部下拉把 GPIO46 抬过 VIL，上电 strap 读错",
+   "state": "STARTUP"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "启动模式读错，无法正常启动"
+  },
+  "loose_input": "i",
   "basis": {
    "kind": "NUMERIC",
    "calc": "i * r",
    "inputs": {
     "i": {
      "at_25c": 1,
+     "quantity": "leakage_current",
      "unit": "µA",
      "from": {
       "clause": "K-DIN-II"
@@ -1758,8 +1778,8 @@
     "clause": "K-ESP-VIL"
    },
    "result": {
-    "min": 0.012,
-    "max": 0.162
+    "min": 0.0,
+    "max": 8.639999999999999
    }
   }
  },
@@ -1937,6 +1957,7 @@
     },
     "i": {
      "at_25c": 0.1,
+     "quantity": "leakage_current",
      "unit": "µA",
      "from": {
       "clause": "K-IEN"
@@ -1961,8 +1982,8 @@
     "clause": "K-RT-EN"
    },
    "result": {
-    "min": 3.1874000000000002,
-    "max": 5.2424
+    "min": 2.5280000000000005,
+    "max": 5.25
    }
   }
  },
@@ -2097,6 +2118,7 @@
     },
     "i": {
      "at_25c": 0.1,
+     "quantity": "leakage_current",
      "unit": "µA",
      "from": {
       "clause": "K-IEN"
@@ -2121,8 +2143,8 @@
     "clause": "K-RT-EN"
    },
    "result": {
-    "min": 3.1874000000000002,
-    "max": 5.2424
+    "min": 2.5280000000000005,
+    "max": 5.25
    }
   }
  },
@@ -2143,6 +2165,7 @@
     },
     "i": {
      "at_25c": 0.1,
+     "quantity": "leakage_current",
      "unit": "µA",
      "from": {
       "clause": "K-IEN"
@@ -2167,8 +2190,8 @@
     "clause": "K-RT-EN"
    },
    "result": {
-    "min": 3.1874000000000002,
-    "max": 5.2424
+    "min": 2.5280000000000005,
+    "max": 5.25
    }
   }
  },
