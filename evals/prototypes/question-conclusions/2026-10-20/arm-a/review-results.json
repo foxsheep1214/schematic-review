@@ -1,0 +1,887 @@
+{
+ "schema_version": 4,
+ "review_mode": "first",
+ "plan_digest": "8fa92e27dec433c308baf704d61ffc01859daa5ea4bc8cfd43416ea717fdacb8",
+ "db_digest": "89cbc8b7ed84b62c53867722bd1f1edb9b6a7536ca77ba772097f61f637f0e0d",
+ "history_inputs": [],
+ "functions": [
+  {
+   "id": "FN-UART-XLAT",
+   "circuit": "UART-XLAT",
+   "question": "UART-XLAT（U1、U6、D6、D7、R18、R19）在 run/esp-reset 各状态下，两侧电平匹配、掉电注入、时序裕量和方向语义是否成立",
+   "objects": {
+    "refs": [
+     "U1",
+     "U6",
+     "D6",
+     "D7",
+     "R18",
+     "R19"
+    ],
+    "nets": [
+     "/GPIO1/U0TXD",
+     "/GPIO3/U0RXD",
+     "Net-(D7-A)",
+     "Net-(D6-K)",
+     "/+5V_USB",
+     "Net-(U1-V3)"
+    ]
+   },
+   "states": [
+    "run",
+    "esp-reset"
+   ],
+   "conditions": [
+    {
+     "id": "c1",
+     "source": "evidence/ds/esp32-wroom-32e.txt",
+     "locator": "p28 Table 13/14/15",
+     "says": "VDD33 abs max 3.6 V，推荐 3.0–3.6 V；VIH 0.75×VDD…VDD+0.3 V，VIL ≤ 0.25×VDD，VOH ≥ 0.8×VDD，VOL ≤ 0.1×VDD",
+     "use": "U6 引脚电压上限取 VDD33+0.3；VDD33 按 +3.3V 轨窗口 3.2–3.4 V 取 3.5–3.7 V"
+    },
+    {
+     "id": "c2",
+     "source": "evidence/ds/ch340ds1-v3c.txt",
+     "locator": "p8 §6.1、§6.2",
+     "says": "绝对最大 VIO −0.5…VCC+0.5 V；VCC=5 V 时 VIL ≤ 0.9 V、VIH 2.3 V…VCC、VOH ≥ VCC−0.6 V @2 mA、VOL ≤ 0.5 V @6 mA；V3 只接电容、不给输出窗口",
+     "use": "U1 RXD 在 5 V 模式允许到 VCC+0.5；TXD 高电平 ≥ 3.8 V 使 D6 反偏；V3 的保证窗口缺失"
+    },
+    {
+     "id": "c3",
+     "source": "evidence/ds/ch340ds1-v3c.txt",
+     "locator": "p5 §5 电源",
+     "says": "5 V 供电时 V3 外接 0.1 µF 退耦；CH340X 的 IO 在 3.3 V 供电时耐 5 V",
+     "use": "U1 的模式判定：VCC=/+5V_USB，V3 接 C8 → 5 V 模式"
+    },
+    {
+     "id": "c4",
+     "source": "evidence/ds/ch340ds1-v3c.txt",
+     "locator": "p13 §7.7 防倒灌",
+     "says": "CH340 RXD 上拉电流会经 MCU TXD 内部二极管倒灌到 MCU；推荐在该支路串 NMOS（Q5），MCU IO 耐 5 V 或自供电时才可省去",
+     "use": "本设计 R18 把 RXD 上拉到 5 V 且没有串联 NMOS，U6 引脚不耐 5 V（c1）"
+    },
+    {
+     "id": "c5",
+     "source": "db.json",
+     "locator": "nets.Net-(D7-A); nets./GPIO1/U0TXD; nets./GPIO3/U0RXD; parts.R18/R19/D6/D7",
+     "says": "R18 10 k：/+5V_USB–Net-(D7-A)；D7 A 在 Net-(D7-A)、K 在 /GPIO1/U0TXD；R19 10 k：Net-(U1-V3)–/GPIO3/U0RXD；D6 A 在 /GPIO3/U0RXD、K 在 Net-(D6-K)=U1.8",
+     "use": "拓扑与二极管方向"
+    },
+    {
+     "id": "c6",
+     "source": "references/commodity-floors.md",
+     "locator": "微注入上拉",
+     "says": "上拉节点上界高出 VDD+0.3 V ≤ 0.3 V 且注入 ≤ 30 µA（R ≥ 10 k）时 SIG-C07/C08 判 PASS（B）",
+     "use": "R19 10 k 到 V3：上界取 3.3 V 模式窗口上限 3.6 V，高出 3.5 V 共 0.1 V，注入 ≤ 10 µA → 适用"
+    }
+   ],
+   "calculation": {
+    "result": "esp-reset：U6.35 开路电压 4.65–5.25 V 对上限 3.6 V；run：ESP→CH340 高 2.8–3.6 V 对 VIH 2.3 V，低 ≤ 0.52 V 对 0.9 V；CH340→ESP 低 ≤ 0.7 V 对 0.8 V；115200 bps 位宽 8.7 µs 对 10 k×≤50 pF 上升 ≤ 1.1 µs；run：U6 U0RXD 经 R19 10 k 上拉到 V3（上界 3.6 V）对 VDD33+0.3 ≥ 3.5 V，超出 ≤ 0.1 V、注入 ≤ 10 µA，按微注入上拉底线 PASS（B）",
+    "margin": [
+     {
+      "value": -1.05,
+      "unit": "V",
+      "against": "U6 引脚上限 VDD33+0.3 = 3.6 V（esp-reset，最有利角点 VF=0.6 V）",
+      "aspect": "逻辑电平与驱动匹配"
+     },
+     {
+      "value": -0.165,
+      "unit": "mA",
+      "against": "允许注入 0 mA（U6 未给注入电流额定，取不允许）",
+      "aspect": "掉电与跨域注入"
+     },
+     {
+      "value": 7.6,
+      "unit": "µs",
+      "against": "115200 bps 位宽 8.7 µs 的上升时间预算",
+      "aspect": "时序裕量"
+     }
+    ],
+    "assumptions": [
+     "D7/D6 1N5819 VF 取 0–0.6 V（未读该手册，结论对 VF 不敏感）",
+     "节点电容 ≤ 50 pF",
+     "+3.3V 轨 3.2–3.4 V（intent.power_rails）",
+     "/+5V_USB 4.4–5.25 V"
+    ]
+   },
+   "verdict": "FAIL",
+   "fails": [
+    {
+     "key": "RXD-5V-PULLUP",
+     "finding_id": "F-001",
+     "what": "U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V",
+     "decides": [
+      {
+       "aspect": "逻辑电平与驱动匹配",
+       "states": [
+        "esp-reset"
+       ]
+      },
+      {
+       "aspect": "掉电与跨域注入",
+       "states": [
+        "esp-reset"
+       ]
+      }
+     ]
+    }
+   ],
+   "open": [],
+   "handoffs": [],
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "judgements": [
+    {
+     "aspect": "逻辑电平与驱动匹配",
+     "states": [
+      "run"
+     ],
+     "conditions": [
+      "c1",
+      "c2",
+      "c5"
+     ],
+     "says": "run：ESP→CH340 高 2.8–3.6 V ≥ VIH 2.3 V、低 ≤ 0.52 V ≤ VIL 0.9 V；CH340→ESP 低 ≤ 0.7 V ≤ 0.8 V，高经 R19 上拉到 V3"
+    },
+    {
+     "aspect": "掉电与跨域注入",
+     "states": [
+      "run"
+     ],
+     "conditions": [
+      "c2",
+      "c6"
+     ],
+     "says": "run：U0RXD 经 R19 10 k 上拉到 V3（上界 3.6 V），高出 VDD33+0.3 共 0.1 V、注入 ≤ 10 µA，按微注入上拉底线 PASS（B）"
+    },
+    {
+     "aspect": "接口方向语义",
+     "conditions": [
+      "c5"
+     ],
+     "says": "U1.8 TXD 经 D6 到 U6.34 U0RXD，U6.35 U0TXD 经 D7 到 U1.9 RXD，收发交叉正确"
+    }
+   ]
+  },
+  {
+   "id": "FN-UART-DBG",
+   "circuit": "UART-DBG",
+   "question": "UART-DBG（U1、U6、D6、D7、R18、R19）在 run/esp-reset 各状态下，收发器供电与默认态、方向语义和电平匹配是否成立",
+   "objects": {
+    "refs": [
+     "U1",
+     "U6",
+     "D6",
+     "D7",
+     "R18",
+     "R19"
+    ],
+    "nets": [
+     "/GPIO1/U0TXD",
+     "/GPIO3/U0RXD",
+     "Net-(D7-A)",
+     "Net-(D6-K)",
+     "/+5V_USB",
+     "Net-(U1-V3)"
+    ]
+   },
+   "states": [
+    "run",
+    "esp-reset"
+   ],
+   "conditions": [
+    {
+     "id": "c1",
+     "source": "evidence/ds/esp32-wroom-32e.txt",
+     "locator": "p28 Table 13/14/15",
+     "says": "VDD33 abs max 3.6 V，推荐 3.0–3.6 V；VIH 0.75×VDD…VDD+0.3 V，VIL ≤ 0.25×VDD，VOH ≥ 0.8×VDD，VOL ≤ 0.1×VDD",
+     "use": "U6 引脚电压上限取 VDD33+0.3；VDD33 按 +3.3V 轨窗口 3.2–3.4 V 取 3.5–3.7 V"
+    },
+    {
+     "id": "c2",
+     "source": "evidence/ds/ch340ds1-v3c.txt",
+     "locator": "p8 §6.1、§6.2",
+     "says": "绝对最大 VIO −0.5…VCC+0.5 V；VCC=5 V 时 VIL ≤ 0.9 V、VIH 2.3 V…VCC、VOH ≥ VCC−0.6 V @2 mA、VOL ≤ 0.5 V @6 mA；V3 只接电容、不给输出窗口",
+     "use": "U1 RXD 在 5 V 模式允许到 VCC+0.5；TXD 高电平 ≥ 3.8 V 使 D6 反偏；V3 的保证窗口缺失"
+    },
+    {
+     "id": "c3",
+     "source": "evidence/ds/ch340ds1-v3c.txt",
+     "locator": "p5 §5 电源",
+     "says": "5 V 供电时 V3 外接 0.1 µF 退耦；CH340X 的 IO 在 3.3 V 供电时耐 5 V",
+     "use": "U1 的模式判定：VCC=/+5V_USB，V3 接 C8 → 5 V 模式"
+    },
+    {
+     "id": "c4",
+     "source": "evidence/ds/ch340ds1-v3c.txt",
+     "locator": "p13 §7.7 防倒灌",
+     "says": "CH340 RXD 上拉电流会经 MCU TXD 内部二极管倒灌到 MCU；推荐在该支路串 NMOS（Q5），MCU IO 耐 5 V 或自供电时才可省去",
+     "use": "本设计 R18 把 RXD 上拉到 5 V 且没有串联 NMOS，U6 引脚不耐 5 V（c1）"
+    },
+    {
+     "id": "c5",
+     "source": "db.json",
+     "locator": "nets.Net-(D7-A); nets./GPIO1/U0TXD; nets./GPIO3/U0RXD; parts.R18/R19/D6/D7",
+     "says": "R18 10 k：/+5V_USB–Net-(D7-A)；D7 A 在 Net-(D7-A)、K 在 /GPIO1/U0TXD；R19 10 k：Net-(U1-V3)–/GPIO3/U0RXD；D6 A 在 /GPIO3/U0RXD、K 在 Net-(D6-K)=U1.8",
+     "use": "拓扑与二极管方向"
+    },
+    {
+     "id": "c6",
+     "source": "references/commodity-floors.md",
+     "locator": "微注入上拉",
+     "says": "上拉节点上界高出 VDD+0.3 V ≤ 0.3 V 且注入 ≤ 30 µA（R ≥ 10 k）时 SIG-C07/C08 判 PASS（B）",
+     "use": "R19 10 k 到 V3：上界取 3.3 V 模式窗口上限 3.6 V，高出 3.5 V 共 0.1 V，注入 ≤ 10 µA → 适用"
+    }
+   ],
+   "calculation": {
+    "result": "SIG-D08：U1 由 USB VBUS 独立供电（WCH §7.7 独立供电方式），run 态两线空闲为高；SIG-T04：U1.8 TXD→U6.34 U0RXD、U6.35 U0TXD→U1.9 RXD，交叉正确；电平与注入由 FN-UART-XLAT 判（本框架的 SIG-C07 行绑到它）",
+    "assumptions": [
+     "同 FN-UART-XLAT"
+    ]
+   },
+   "verdict": "PASS",
+   "fails": [],
+   "open": [],
+   "handoffs": [],
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-DBG"
+    }
+   ],
+   "judgements": [
+    {
+     "aspect": "串口与现场总线",
+     "conditions": [
+      "c3",
+      "c5"
+     ],
+     "says": "U1 只由 /+5V_USB 供电（独立供电方式），run 态两线空闲为高；esp-reset 时 U6 不驱动，电平问题归 FN-UART-XLAT"
+    },
+    {
+     "aspect": "接口方向语义",
+     "conditions": [
+      "c5"
+     ],
+     "says": "U1.8 TXD 经 D6 到 U6.34 U0RXD，U6.35 U0TXD 经 D7 到 U1.9 RXD，收发交叉正确"
+    }
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "id": "F-001",
+   "kind": "DEFECT",
+   "severity": "P1",
+   "check_ids": [
+    "SIG-C07.UART-XLAT-ESP-RESET.U1",
+    "SIG-C08.UART-XLAT-ESP-RESET.U1",
+    "SIG-C07.UART-DBG-ESP-RESET.U1"
+   ],
+   "title": "U6 复位期间 U0TXD 被 5 V 上拉经 D7 抬到引脚上限以上",
+   "observed": "R18 10 k 把 U1 RXD 节点 Net-(D7-A) 上拉到 /+5V_USB；D7 阳极在该节点、阴极在 U6.35 U0TXD；U6.35 不驱动时节点经 D7 正向把 U6.35 抬高，只靠 U6 焊盘 ESD 结构钳位。",
+   "criterion": "U6 引脚电压 ≤ VDD33+0.3 V（ESP32-WROOM-32E 手册 p28）；WCH 手册 §7.7 要求 RXD 上拉向 MCU TXD 内部二极管倒灌的路径加串联 NMOS。",
+   "impact": "U6 每次复位、上电（3.3 V 未建立）或 EN 拉低期间 U0TXD 超绝对最大值，注入 ≤ 0.165 mA；长期有焊盘损伤风险，也可能干扰 3.3 V 未建立时的上电。",
+   "scenario": "USB 插入（/+5V_USB 有电）且 U6 处于复位：按 RST1、EXT1.4 外部复位或每次上电都会发生。",
+   "root_cause": "ESP→CH340 方向用二极管加上拉做跨域互连，上拉轨选了 5 V 域且没有 WCH 推荐的串联 NMOS。",
+   "recommendation": "上拉轨改到 3.3 V 域，或在 D7 支路按 WCH §7.7 串 NMOS 电平转换（栅接 3.3 V），并把 R18 降到 1 k 保持 CH340 侧高电平。",
+   "verification": "网表：R18 另一端不再是 /+5V_USB，或 Net-(D7-A) 与 U6.35 之间有 NMOS；计算：U6 复位时 U6.35 开路电压 ≤ 3.5 V。",
+   "severity_reason": "只损伤 U6 一个器件的一个引脚，不打开安全危险路径：COMPONENT_DAMAGE，P1。",
+   "location": {
+    "pages": [
+     "1"
+    ],
+    "refs": [
+     "R18",
+     "D7",
+     "U6",
+     "U1"
+    ],
+    "nets": [
+     "Net-(D7-A)",
+     "/GPIO1/U0TXD",
+     "/+5V_USB"
+    ]
+   },
+   "remediation": {
+    "readiness": "READY",
+    "purpose": "让 U6 复位期间 U0TXD 引脚电压不超过 VDD33+0.3 V，同时保持 CH340 RXD 高电平 ≥ 2.3 V。",
+    "prerequisites": [],
+    "steps": [
+     {
+      "kind": "CONNECT",
+      "target": "R18.1",
+      "before": "R18.1 接 /+5V_USB",
+      "after": "R18.1 接 +3.3V",
+      "instruction": "把 R18 的上拉端从 /+5V_USB 改到 +3.3V，其余不动。",
+      "remove_connections": [
+       {
+        "from": "R18.1",
+        "to": "/+5V_USB"
+       }
+      ],
+      "add_connections": [
+       {
+        "from": "R18.1",
+        "to": "+3.3V"
+       }
+      ]
+     }
+    ],
+    "parameters": [
+     {
+      "target": "R18",
+      "specification": "10 kΩ，0402，上拉到 +3.3V；CH340 RXD 高电平 = 3.2–3.4 V ≥ VIH 2.3 V",
+      "status": "SELECTED",
+      "basis": [
+       {
+        "source": "evidence/ds/ch340ds1-v3c.txt",
+        "locator": "p8 §6.2 VIH"
+       },
+       {
+        "source": "evidence/ds/esp32-wroom-32e.txt",
+        "locator": "p28 Table 15"
+       }
+      ]
+     }
+    ],
+    "related_findings": [],
+    "impact_review": "改接后 U6 复位时 U6.35 最高 = 3.4 V ≤ 3.5 V；run 态 CH340 RXD 高电平 3.2–3.4 V 仍高于 VIH 2.3 V；USB 未插时 R18 接的是有电的 +3.3V，D7 反偏，不向无电的 U1 注入（CH340X IO 自带防倒灌，c3）。",
+    "verification": [
+     {
+      "stage": "NETLIST",
+      "method": "导出网表核 R18.1 所在网。",
+      "expected": "R18.1 在 +3.3V，不在 /+5V_USB。"
+     },
+     {
+      "stage": "CALCULATION",
+      "method": "按 +3.3V 窗口 3.2–3.4 V 重算 U6.35 开路电压与 CH340 VIH 余量。",
+      "expected": "U6.35 ≤ 3.5 V；CH340 RXD 高 ≥ 2.3 V。"
+     }
+    ],
+    "calculation_preflight": {
+     "applicable": false,
+     "reason": "只改上拉轨，数值是手册门限直接比较",
+     "evidence": [
+      {
+       "source": "evidence/engineering.md",
+       "locator": "## UART-XLAT"
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "checks": [
+  {
+   "id": "SIG-C07.UART-XLAT-ESP-RESET.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-XLAT",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "esp-reset"
+    },
+    "criterion": "先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确"
+   },
+   "function_id": "FN-UART-XLAT",
+   "aspect": "逻辑电平与驱动匹配",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "FAIL",
+   "fail_ref": "FN-UART-XLAT/RXD-5V-PULLUP",
+   "finding_id": "F-001",
+   "severity": "P1",
+   "rationale": "见功能判定 FN-UART-XLAT（逻辑电平与驱动匹配，esp-reset）：发现项 F-001——U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V"
+  },
+  {
+   "id": "SIG-C07.UART-XLAT-RUN.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-XLAT",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "run"
+    },
+    "criterion": "先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确"
+   },
+   "function_id": "FN-UART-XLAT",
+   "aspect": "逻辑电平与驱动匹配",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "PASS",
+   "rationale": "见功能判定 FN-UART-XLAT（逻辑电平与驱动匹配，run）：esp-reset：U6.35 开路电压 4.65–5.25 V 对上限 3.6 V；run：ESP→CH340 高 2.8–3.6 V 对 VIH 2.3 V，低 ≤ 0.52 V 对 0.9 V；CH340→ESP 低 ≤ 0.7 V 对 0.8 V；115200 bps 位宽 8.7 µs 对 10 k×≤50 pF 上升 ≤ 1.1 µs；run：U6 U0RXD 经 R19 10 k 上拉到 V3（上界 3.6 V）对 VDD33+0.3 ≥ 3.5 V，超出 ≤ 0.1 V、注入 ≤ 10 µA，按微注入上拉底线 PASS（B）；余量 -1.05V 对 U6 引脚上限 VDD33+0.3 = 3.6 V（esp-reset，最有利角点 VF=0.6 V）；余量 -0.165mA 对 允许注入 0 mA（U6 未给注入电流额定，取不允许）；余量 7.6µs 对 115200 bps 位宽 8.7 µs 的上升时间预算"
+  },
+  {
+   "id": "SIG-C08.UART-XLAT-ESP-RESET.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-XLAT",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "esp-reset"
+    },
+    "criterion": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+   },
+   "function_id": "FN-UART-XLAT",
+   "aspect": "掉电与跨域注入",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "FAIL",
+   "fail_ref": "FN-UART-XLAT/RXD-5V-PULLUP",
+   "finding_id": "F-001",
+   "severity": "P1",
+   "rationale": "见功能判定 FN-UART-XLAT（掉电与跨域注入，esp-reset）：发现项 F-001——U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V"
+  },
+  {
+   "id": "SIG-C08.UART-XLAT-RUN.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-XLAT",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "run"
+    },
+    "criterion": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+   },
+   "function_id": "FN-UART-XLAT",
+   "aspect": "掉电与跨域注入",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "PASS",
+   "rationale": "见功能判定 FN-UART-XLAT（掉电与跨域注入，run）：esp-reset：U6.35 开路电压 4.65–5.25 V 对上限 3.6 V；run：ESP→CH340 高 2.8–3.6 V 对 VIH 2.3 V，低 ≤ 0.52 V 对 0.9 V；CH340→ESP 低 ≤ 0.7 V 对 0.8 V；115200 bps 位宽 8.7 µs 对 10 k×≤50 pF 上升 ≤ 1.1 µs；run：U6 U0RXD 经 R19 10 k 上拉到 V3（上界 3.6 V）对 VDD33+0.3 ≥ 3.5 V，超出 ≤ 0.1 V、注入 ≤ 10 µA，按微注入上拉底线 PASS（B）；余量 -1.05V 对 U6 引脚上限 VDD33+0.3 = 3.6 V（esp-reset，最有利角点 VF=0.6 V）；余量 -0.165mA 对 允许注入 0 mA（U6 未给注入电流额定，取不允许）；余量 7.6µs 对 115200 bps 位宽 8.7 µs 的上升时间预算"
+  },
+  {
+   "id": "SIG-C09.UART-XLAT-ESP-RESET.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-XLAT",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "esp-reset"
+    },
+    "criterion": "按两端保证值核传播延迟、建立/保持、时钟偏斜、电平转换器延迟及上拉/开漏信号的上升时间，给出最坏角点裕量；主控厂商设计指南明确指定该器件型号、接法与时钟配置且本设计未偏离时，按厂商合格配对判 PASS(B)，时钟上限等配置作为固件约束移交，不因主控手册缺接口时序记 INSUFFICIENT；换型号/改接法/提高时钟时仍按两端保证值计算；布线延迟另交 SI HANDOFF"
+   },
+   "function_id": "FN-UART-XLAT",
+   "aspect": "时序裕量",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "PASS",
+   "rationale": "见功能判定 FN-UART-XLAT（时序裕量，esp-reset）：esp-reset：U6.35 开路电压 4.65–5.25 V 对上限 3.6 V；run：ESP→CH340 高 2.8–3.6 V 对 VIH 2.3 V，低 ≤ 0.52 V 对 0.9 V；CH340→ESP 低 ≤ 0.7 V 对 0.8 V；115200 bps 位宽 8.7 µs 对 10 k×≤50 pF 上升 ≤ 1.1 µs；run：U6 U0RXD 经 R19 10 k 上拉到 V3（上界 3.6 V）对 VDD33+0.3 ≥ 3.5 V，超出 ≤ 0.1 V、注入 ≤ 10 µA，按微注入上拉底线 PASS（B）；余量 -1.05V 对 U6 引脚上限 VDD33+0.3 = 3.6 V（esp-reset，最有利角点 VF=0.6 V）；余量 -0.165mA 对 允许注入 0 mA（U6 未给注入电流额定，取不允许）；余量 7.6µs 对 115200 bps 位宽 8.7 µs 的上升时间预算"
+  },
+  {
+   "id": "SIG-C09.UART-XLAT-RUN.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-XLAT",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "run"
+    },
+    "criterion": "按两端保证值核传播延迟、建立/保持、时钟偏斜、电平转换器延迟及上拉/开漏信号的上升时间，给出最坏角点裕量；主控厂商设计指南明确指定该器件型号、接法与时钟配置且本设计未偏离时，按厂商合格配对判 PASS(B)，时钟上限等配置作为固件约束移交，不因主控手册缺接口时序记 INSUFFICIENT；换型号/改接法/提高时钟时仍按两端保证值计算；布线延迟另交 SI HANDOFF"
+   },
+   "function_id": "FN-UART-XLAT",
+   "aspect": "时序裕量",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "PASS",
+   "rationale": "见功能判定 FN-UART-XLAT（时序裕量，run）：esp-reset：U6.35 开路电压 4.65–5.25 V 对上限 3.6 V；run：ESP→CH340 高 2.8–3.6 V 对 VIH 2.3 V，低 ≤ 0.52 V 对 0.9 V；CH340→ESP 低 ≤ 0.7 V 对 0.8 V；115200 bps 位宽 8.7 µs 对 10 k×≤50 pF 上升 ≤ 1.1 µs；run：U6 U0RXD 经 R19 10 k 上拉到 V3（上界 3.6 V）对 VDD33+0.3 ≥ 3.5 V，超出 ≤ 0.1 V、注入 ≤ 10 µA，按微注入上拉底线 PASS（B）；余量 -1.05V 对 U6 引脚上限 VDD33+0.3 = 3.6 V（esp-reset，最有利角点 VF=0.6 V）；余量 -0.165mA 对 允许注入 0 mA（U6 未给注入电流额定，取不允许）；余量 7.6µs 对 115200 bps 位宽 8.7 µs 的上升时间预算"
+  },
+  {
+   "id": "SIG-D08.UART-DBG-ESP-RESET.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-DBG",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "esp-reset"
+    },
+    "criterion": "UART/RS232/RS485/CAN 的收发器供电与 VIO、STBY/EN 默认态、端接策略（本端/对端书面明确）、空闲偏置、隔离与防护"
+   },
+   "function_id": "FN-UART-DBG",
+   "aspect": "串口与现场总线",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-DBG"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "PASS",
+   "rationale": "见功能判定 FN-UART-DBG（串口与现场总线，esp-reset）：SIG-D08：U1 由 USB VBUS 独立供电（WCH §7.7 独立供电方式），run 态两线空闲为高；SIG-T04：U1.8 TXD→U6.34 U0RXD、U6.35 U0TXD→U1.9 RXD，交叉正确；电平与注入由 FN-UART-XLAT 判（本框架的 SIG-C07 行绑到它）"
+  },
+  {
+   "id": "SIG-D08.UART-DBG-RUN.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-DBG",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "run"
+    },
+    "criterion": "UART/RS232/RS485/CAN 的收发器供电与 VIO、STBY/EN 默认态、端接策略（本端/对端书面明确）、空闲偏置、隔离与防护"
+   },
+   "function_id": "FN-UART-DBG",
+   "aspect": "串口与现场总线",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-DBG"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "PASS",
+   "rationale": "见功能判定 FN-UART-DBG（串口与现场总线，run）：SIG-D08：U1 由 USB VBUS 独立供电（WCH §7.7 独立供电方式），run 态两线空闲为高；SIG-T04：U1.8 TXD→U6.34 U0RXD、U6.35 U0TXD→U1.9 RXD，交叉正确；电平与注入由 FN-UART-XLAT 判（本框架的 SIG-C07 行绑到它）"
+  },
+  {
+   "id": "SIG-T04.UART-DBG.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-DBG",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ]
+    },
+    "criterion": "TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义复述，核对对端连接器视图与线缆针序；连通只证明导电路径"
+   },
+   "function_id": "FN-UART-DBG",
+   "aspect": "接口方向语义",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-DBG"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "PASS",
+   "rationale": "见功能判定 FN-UART-DBG（接口方向语义）：SIG-D08：U1 由 USB VBUS 独立供电（WCH §7.7 独立供电方式），run 态两线空闲为高；SIG-T04：U1.8 TXD→U6.34 U0RXD、U6.35 U0TXD→U1.9 RXD，交叉正确；电平与注入由 FN-UART-XLAT 判（本框架的 SIG-C07 行绑到它）"
+  },
+  {
+   "id": "SIG-T04.UART-XLAT.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-XLAT",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ]
+    },
+    "criterion": "TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义复述，核对对端连接器视图与线缆针序；连通只证明导电路径"
+   },
+   "function_id": "FN-UART-XLAT",
+   "aspect": "接口方向语义",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "PASS",
+   "rationale": "见功能判定 FN-UART-XLAT（接口方向语义）：esp-reset：U6.35 开路电压 4.65–5.25 V 对上限 3.6 V；run：ESP→CH340 高 2.8–3.6 V 对 VIH 2.3 V，低 ≤ 0.52 V 对 0.9 V；CH340→ESP 低 ≤ 0.7 V 对 0.8 V；115200 bps 位宽 8.7 µs 对 10 k×≤50 pF 上升 ≤ 1.1 µs；run：U6 U0RXD 经 R19 10 k 上拉到 V3（上界 3.6 V）对 VDD33+0.3 ≥ 3.5 V，超出 ≤ 0.1 V、注入 ≤ 10 µA，按微注入上拉底线 PASS（B）；余量 -1.05V 对 U6 引脚上限 VDD33+0.3 = 3.6 V（esp-reset，最有利角点 VF=0.6 V）；余量 -0.165mA 对 允许注入 0 mA（U6 未给注入电流额定，取不允许）；余量 7.6µs 对 115200 bps 位宽 8.7 µs 的上升时间预算"
+  },
+  {
+   "id": "SIG-C07.UART-DBG-RUN.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-DBG",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "run"
+    },
+    "criterion": "先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确"
+   },
+   "function_id": "FN-UART-XLAT",
+   "aspect": "逻辑电平与驱动匹配",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "PASS",
+   "rationale": "见功能判定 FN-UART-XLAT（逻辑电平与驱动匹配，run）：esp-reset：U6.35 开路电压 4.65–5.25 V 对上限 3.6 V；run：ESP→CH340 高 2.8–3.6 V 对 VIH 2.3 V，低 ≤ 0.52 V 对 0.9 V；CH340→ESP 低 ≤ 0.7 V 对 0.8 V；115200 bps 位宽 8.7 µs 对 10 k×≤50 pF 上升 ≤ 1.1 µs；run：U6 U0RXD 经 R19 10 k 上拉到 V3（上界 3.6 V）对 VDD33+0.3 ≥ 3.5 V，超出 ≤ 0.1 V、注入 ≤ 10 µA，按微注入上拉底线 PASS（B）；余量 -1.05V 对 U6 引脚上限 VDD33+0.3 = 3.6 V（esp-reset，最有利角点 VF=0.6 V）；余量 -0.165mA 对 允许注入 0 mA（U6 未给注入电流额定，取不允许）；余量 7.6µs 对 115200 bps 位宽 8.7 µs 的上升时间预算"
+  },
+  {
+   "id": "SIG-C07.UART-DBG-ESP-RESET.U1",
+   "applicability": "APPLICABLE",
+   "binding": {
+    "object": {
+     "circuit": "UART-DBG",
+     "ref": "U1",
+     "refs": [
+      "U1",
+      "U6",
+      "D6",
+      "D7",
+      "R18",
+      "R19"
+     ],
+     "nets": [
+      "/GPIO1/U0TXD",
+      "/GPIO3/U0RXD",
+      "Net-(D7-A)",
+      "Net-(D6-K)",
+      "/+5V_USB",
+      "Net-(U1-V3)"
+     ],
+     "state": "esp-reset"
+    },
+    "criterion": "先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确"
+   },
+   "function_id": "FN-UART-XLAT",
+   "aspect": "逻辑电平与驱动匹配",
+   "evidence": [
+    {
+     "source": "evidence/engineering.md",
+     "locator": "## UART-XLAT"
+    }
+   ],
+   "handoff": {
+    "required": false
+   },
+   "review_result": "FAIL",
+   "fail_ref": "FN-UART-XLAT/RXD-5V-PULLUP",
+   "finding_id": "F-001",
+   "severity": "P1",
+   "rationale": "见功能判定 FN-UART-XLAT（逻辑电平与驱动匹配，esp-reset）：发现项 F-001——U6 复位或 3.3 V 未建立时，R18 从 /+5V_USB 经 D7 把 U6.35 抬到 4.65–5.25 V（开路值），超过引脚上限 VDD33+0.3 V"
+  }
+ ],
+ "review_scope": {
+  "functions": [
+   "FN-UART-DBG",
+   "FN-UART-XLAT"
+  ],
+  "reason": "训练第 1 轮热审试点：只审 fix pair 缺陷所在的 UART 链路与其电平互连；整板其余行未审"
+ }
+}

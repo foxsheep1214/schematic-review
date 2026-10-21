@@ -1,0 +1,237 @@
+{
+ "phase": 1,
+ "scope": "UART-XLAT + UART-DBG（12 行）",
+ "record_count_per_8_3": {
+  "A": 15,
+  "B": 7,
+  "ratio": 0.47
+ },
+ "records_all": {
+  "A": 36,
+  "B": 14
+ },
+ "chars": {
+  "A": 20003,
+  "A_functions_findings": 8004,
+  "B": 4510
+ },
+ "machine_checked": {
+  "A_aspects_with_margin_or_judgement": "6/6（有即算，不复核）",
+  "B_recomputed": "4/4 数字结论",
+  "B_facts_checked": "10 条事实/3 条事实结论",
+  "B_db_inputs": 2
+ },
+ "injected": {
+  "A": 6,
+  "B": 10,
+  "per_error": [
+   {
+    "n": 1,
+    "error": "余量为负却判通过",
+    "A": true,
+    "B": true
+   },
+   {
+    "n": 2,
+    "error": "一个方面/问题没人回答",
+    "A": true,
+    "B": true
+   },
+   {
+    "n": 3,
+    "error": "网表阻值写成另一值参与计算",
+    "A": false,
+    "B": true
+   },
+   {
+    "n": 4,
+    "error": "引用不存在的条款",
+    "A": true,
+    "B": true
+   },
+   {
+    "n": 5,
+    "error": "算式结果与最坏值不一致",
+    "A": false,
+    "B": true
+   },
+   {
+    "n": 6,
+    "error": "公开界余量为正却挂起",
+    "A": true,
+    "B": true
+   },
+   {
+    "n": 7,
+    "error": "判不了却没写找谁",
+    "A": true,
+    "B": true
+   },
+   {
+    "n": 8,
+    "error": "工具疑点无人回应",
+    "A": false,
+    "B": true
+   },
+   {
+    "n": 9,
+    "error": "不通过没有改法",
+    "A": true,
+    "B": true
+   },
+   {
+    "n": 10,
+    "error": "事实结论与网表不符（交叉写反）",
+    "A": false,
+    "B": true
+   }
+  ]
+ },
+ "true_defect": {
+  "A": "F-001 P1 FAIL（R18/D7/U6）",
+  "B": "SIG-C07/C08 P1 FAIL（同位置）",
+  "note": "两组沿用试点结论，非盲"
+ },
+ "not_measured": [
+  "盲执行（两组同一人做）",
+  "过严人裁决",
+  "审查员 token",
+  "报告可读性盲评",
+  "抽查不同意率"
+ ],
+ "b2_after_friction_fix": {
+  "questions": 5,
+  "conclusions": 7,
+  "clauses": 7,
+  "chars": 4429,
+  "recomputed": 5,
+  "facts_checked": 6,
+  "record_count_ratio_vs_A": 0.47,
+  "injected": 10,
+  "per_state_outcomes": {
+   "FAIL": 2,
+   "PASS": "其余（C07/C08 的 run 态各一条 PASS 结论）"
+  },
+  "board_questions": 194,
+  "note": "同规则同对象的跨电路题合并（SIG-C07、SIG-T04）；SIG-C07/C08 按状态拆结论"
+ },
+ "b3_interval_and_strictness": {
+  "questions": 5,
+  "conclusions": 7,
+  "clauses": 7,
+  "chars": 4779,
+  "recomputed": 5,
+  "facts_checked": 6,
+  "outcomes": {
+   "PASS": 4,
+   "FAIL": 2,
+   "UNDECIDED": 1
+  },
+  "defects": 1,
+  "release": "CANNOT_FREEZE",
+  "injected": {
+   "A": 7,
+   "B": 15,
+   "total": 15,
+   "per_error": [
+    {
+     "n": 1,
+     "error": "余量为负却判通过",
+     "A": true,
+     "B": true
+    },
+    {
+     "n": 2,
+     "error": "一个方面/问题没人回答",
+     "A": true,
+     "B": true
+    },
+    {
+     "n": 3,
+     "error": "网表阻值写成另一值参与计算",
+     "A": false,
+     "B": true
+    },
+    {
+     "n": 4,
+     "error": "引用不存在的条款",
+     "A": true,
+     "B": true
+    },
+    {
+     "n": 5,
+     "error": "算式结果与最坏值不一致",
+     "A": false,
+     "B": true
+    },
+    {
+     "n": 6,
+     "error": "公开界余量为正却挂起",
+     "A": true,
+     "B": true
+    },
+    {
+     "n": 7,
+     "error": "判不了却没写找谁",
+     "A": true,
+     "B": true
+    },
+    {
+     "n": 8,
+     "error": "工具疑点无人回应",
+     "A": false,
+     "B": true
+    },
+    {
+     "n": 9,
+     "error": "不通过没有改法",
+     "A": true,
+     "B": true
+    },
+    {
+     "n": 10,
+     "error": "事实结论与网表不符（交叉写反）",
+     "A": false,
+     "B": true
+    },
+    {
+     "n": 11,
+     "error": "有利角点会通过却判不通过",
+     "A": false,
+     "B": true
+    },
+    {
+     "n": 12,
+     "error": "按审查者自定限值判不通过",
+     "A": false,
+     "B": true
+    },
+    {
+     "n": 13,
+     "error": "等级高于后果类上限",
+     "A": false,
+     "B": true
+    },
+    {
+     "n": 14,
+     "error": "同一改法记成两个缺陷",
+     "A": false,
+     "B": true
+    },
+    {
+     "n": 15,
+     "error": "没定的需求被评级",
+     "A": true,
+     "B": true
+    }
+   ]
+  },
+  "strictness_in_valid_records": {
+   "A": [
+    "SIG-C08 复位态按自定 0 mA 限值判不通过（基线有效）",
+    "run 态按 VF 典型值判通过（过松）"
+   ],
+   "B": []
+  }
+ }
+}

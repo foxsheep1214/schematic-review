@@ -1,0 +1,44 @@
+[
+ {
+  "id": "K-ESP-IO",
+  "source": "evidence/ds/esp32-wroom-32e.txt",
+  "locator": "p28 Table 13/14/15",
+  "says": "VDD33 abs max 3.6 V，推荐 3.0–3.6 V；VIH 0.75×VDD…VDD+0.3 V，VIL ≤ 0.25×VDD，VOH ≥ 0.8×VDD，VOL ≤ 0.1×VDD"
+ },
+ {
+  "id": "K-CH-IO",
+  "source": "evidence/ds/ch340ds1-v3c.txt",
+  "locator": "p8 §6.1、§6.2",
+  "says": "VCC=5 V 时 VIL ≤ 0.9 V、VIH 2.3 V…VCC、VOH ≥ VCC−0.6 V、VOL ≤ 0.5 V；V3 只接电容、不给输出窗口"
+ },
+ {
+  "id": "K-CH-PWR",
+  "source": "evidence/ds/ch340ds1-v3c.txt",
+  "locator": "p5 §5 电源",
+  "says": "5 V 供电时 V3 外接 0.1 µF 退耦"
+ },
+ {
+  "id": "K-CH-77",
+  "source": "evidence/ds/ch340ds1-v3c.txt",
+  "locator": "p13 §7.7 防倒灌",
+  "says": "RXD 上拉电流经 MCU TXD 内部二极管倒灌，推荐串 NMOS"
+ },
+ {
+  "id": "K-RAIL",
+  "source": "intent.json",
+  "locator": "power_rails",
+  "says": "+3.3V 3.2–3.4 V；/+5V_USB 4.4–5.25 V"
+ },
+ {
+  "id": "K-FLOOR",
+  "source": "references/commodity-floors.md",
+  "locator": "微注入上拉",
+  "says": "上拉节点高出 VDD+0.3 V ≤ 0.3 V 且注入 ≤ 30 µA（R ≥ 10 k）时判 PASS（B）"
+ },
+ {
+  "id": "K-ASSUME",
+  "source": "evidence/engineering.md",
+  "locator": "## 审查假定",
+  "says": "1N5819 VF 取 0–0.6 V（未读该手册）；节点电容 ≤ 50 pF；115200 bps 位宽 8680 ns"
+ }
+]

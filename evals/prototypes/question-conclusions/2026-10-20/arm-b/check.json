@@ -1,0 +1,16 @@
+{
+ "valid": true,
+ "errors": [],
+ "summary": {
+  "questions": 7,
+  "cards": 7,
+  "outcomes": {
+   "PASS": 4,
+   "FAIL": 3
+  },
+  "recomputed": 4,
+  "facts_checked": 10,
+  "release": "CANNOT_FREEZE",
+  "errors_by_check": {}
+ }
+}

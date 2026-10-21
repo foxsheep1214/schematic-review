@@ -1,0 +1,303 @@
+[
+ {
+  "question": "Q-SIG-C07-1e353e0130",
+  "states": [
+   "esp-reset"
+  ],
+  "outcome": "FAIL",
+  "basis": {
+   "kind": "NUMERIC",
+   "criterion": {
+    "limit": {
+     "min": 3.5,
+     "max": 3.7
+    },
+    "unit": "V",
+    "direction": "value_below_limit",
+    "clause": "K-ESP-IO"
+   },
+   "calc": "v5 - vf",
+   "inputs": {
+    "v5": {
+     "min": 4.4,
+     "max": 5.25,
+     "unit": "V",
+     "from": {
+      "clause": "K-RAIL"
+     }
+    },
+    "vf": {
+     "min": 0,
+     "max": 0.6,
+     "unit": "V",
+     "from": {
+      "clause": "K-ASSUME"
+     }
+    }
+   },
+   "result": {
+    "min": 3.8,
+    "max": 5.25
+   }
+  },
+  "fix": {
+   "change": "R18 上拉端从 /+5V_USB 改到 +3.3V（或按 WCH §7.7 在 D7 支路串 NMOS）",
+   "readiness": "READY",
+   "recheck": "U6 复位时 U6.35 开路电压 ≤ 3.5 V"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "COMPONENT_DAMAGE",
+   "consequence": "U6 复位/上电期间 U0TXD 超过 VDD+0.3，焊盘长期损伤"
+  },
+  "notes": "R18 经 D7 正向把不驱动的 U6.35 抬到 3.8–5.25 V；最有利角点（5 V 取 4.4、VF 取 0.6、VDD 取 3.4）仍超 0.1 V"
+ },
+ {
+  "question": "Q-SIG-C07-1e353e0130",
+  "states": [
+   "run"
+  ],
+  "outcome": "UNDECIDED",
+  "basis": {
+   "kind": "NUMERIC",
+   "criterion": {
+    "limit": {
+     "min": 0.8,
+     "max": 0.85
+    },
+    "unit": "V",
+    "direction": "value_below_limit",
+    "clause": "K-ESP-IO"
+   },
+   "calc": "vol_ch + vf",
+   "inputs": {
+    "vol_ch": {
+     "min": 0,
+     "max": 0.5,
+     "unit": "V",
+     "from": {
+      "clause": "K-CH-IO"
+     }
+    },
+    "vf": {
+     "min": 0,
+     "max": 0.6,
+     "unit": "V",
+     "from": {
+      "clause": "K-ASSUME"
+     }
+    }
+   },
+   "result": {
+    "min": 0,
+    "max": 1.1
+   }
+  },
+  "loose_input": "vf",
+  "missing": {
+   "what": "1N5819 在 0.3 mA 左右的 VF 上限（D6，CH340 拉低 U0RXD 时）",
+   "from": "VENDOR",
+   "closes_when": "VF ≤ 0.3 V @ 0.3 mA（全温度），则 U0RXD 低电平 ≤ 0.8 V"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "REQUIRED_FUNCTION",
+   "consequence": "CH340→ESP 低电平可能不被识别，串口下载/日志失效"
+  },
+  "notes": "ESP→CH340 方向：高 2.8–3.6 V ≥ 2.3 V、低 ≤ 0.32+VF ≤ 0.9 V 也同样依赖 VF；试点按典型 0.2 V 判过"
+ },
+ {
+  "question": "Q-SIG-C08-1d4dc51519",
+  "states": [
+   "esp-reset"
+  ],
+  "outcome": "FAIL",
+  "basis": {
+   "kind": "NUMERIC",
+   "criterion": {
+    "limit": {
+     "min": 3.5,
+     "max": 3.7
+    },
+    "unit": "V",
+    "direction": "value_below_limit",
+    "clause": "K-ESP-IO"
+   },
+   "calc": "v5 - vf",
+   "inputs": {
+    "v5": {
+     "min": 4.4,
+     "max": 5.25,
+     "unit": "V",
+     "from": {
+      "clause": "K-RAIL"
+     }
+    },
+    "vf": {
+     "min": 0,
+     "max": 0.6,
+     "unit": "V",
+     "from": {
+      "clause": "K-ASSUME"
+     }
+    }
+   },
+   "result": {
+    "min": 3.8,
+    "max": 5.25
+   }
+  },
+  "fix": {
+   "same_as": "Q-SIG-C07-1e353e0130"
+  },
+  "severity": {
+   "level": "P1",
+   "class": "COMPONENT_DAMAGE",
+   "consequence": "同 SIG-C07：经 U6 焊盘 ESD 结构注入"
+  }
+ },
+ {
+  "question": "Q-SIG-C08-1d4dc51519",
+  "states": [
+   "run"
+  ],
+  "outcome": "PASS",
+  "basis": {
+   "kind": "NUMERIC",
+   "criterion": {
+    "limit": 0.03,
+    "unit": "mA",
+    "direction": "value_below_limit",
+    "clause": "K-FLOOR"
+   },
+   "calc": "max(0, v3 - v_pin) / r19",
+   "inputs": {
+    "v3": {
+     "min": 3.0,
+     "max": 3.6,
+     "unit": "V",
+     "from": {
+      "clause": "K-ASSUME"
+     }
+    },
+    "v_pin": {
+     "min": 3.5,
+     "max": 3.7,
+     "unit": "V",
+     "from": {
+      "clause": "K-ESP-IO"
+     }
+    },
+    "r19": {
+     "value": 10,
+     "unit": "kΩ",
+     "from": {
+      "db": {
+       "ref": "R19",
+       "parse": "resistance"
+      }
+     }
+    }
+   },
+   "result": {
+    "min": 0,
+    "max": 0.01
+   }
+  },
+  "notes": "U0RXD 经 R19 上拉到 V3，最多高出 VDD+0.3 共 0.1 V（≤ 0.3 V），注入 ≤ 10 µA，按微注入底线通过"
+ },
+ {
+  "question": "Q-SIG-C09-e47ef30d94",
+  "outcome": "PASS",
+  "basis": {
+   "kind": "NUMERIC",
+   "criterion": {
+    "limit": 8680,
+    "unit": "ns",
+    "direction": "value_below_limit",
+    "clause": "K-ASSUME"
+   },
+   "calc": "2.2 * r19 * c_node",
+   "inputs": {
+    "r19": {
+     "value": 10,
+     "unit": "kΩ",
+     "from": {
+      "db": {
+       "ref": "R19",
+       "parse": "resistance"
+      }
+     }
+    },
+    "c_node": {
+     "min": 10,
+     "max": 50,
+     "unit": "pF",
+     "from": {
+      "clause": "K-ASSUME"
+     }
+    }
+   },
+   "result": {
+    "min": 220,
+    "max": 1100
+   }
+  }
+ },
+ {
+  "question": "Q-SIG-D08-558bdc0fde",
+  "outcome": "PASS",
+  "basis": {
+   "kind": "FACT",
+   "clauses": [
+    "K-CH-PWR",
+    "K-CH-77"
+   ],
+   "facts": [
+    {
+     "node": "U1.7",
+     "net_is": "/+5V_USB",
+     "means": "U1 只由 USB 5 V 供电，USB 插入时两线空闲为高"
+    },
+    {
+     "node": "U1.10",
+     "net_same_as": "C8.1",
+     "means": "V3 只接 C8，5 V 模式"
+    }
+   ]
+  }
+ },
+ {
+  "question": "Q-SIG-T04-0e2a9694ec",
+  "outcome": "PASS",
+  "basis": {
+   "kind": "FACT",
+   "clauses": [
+    "K-CH-IO",
+    "K-ESP-IO"
+   ],
+   "facts": [
+    {
+     "node": "U1.8",
+     "net_same_as": "D6.1",
+     "means": "U1 TXD 接 D6 阴极"
+    },
+    {
+     "node": "D6.2",
+     "net_same_as": "U6.34",
+     "means": "D6 阳极接 U6 U0RXD"
+    },
+    {
+     "node": "U6.35",
+     "net_same_as": "D7.1",
+     "means": "U6 U0TXD 接 D7 阴极"
+    },
+    {
+     "node": "D7.2",
+     "net_same_as": "U1.9",
+     "means": "D7 阳极接 U1 RXD"
+    }
+   ]
+  }
+ }
+]

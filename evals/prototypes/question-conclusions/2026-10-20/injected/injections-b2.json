@@ -1,0 +1,199 @@
+[
+ {
+  "n": 1,
+  "error": "余量为负却判通过",
+  "A": {
+   "caught": true,
+   "by": [
+    "FN-UART-XLAT: calculation shows -1.05 V against U6 引脚上限 VDD33+0.3 = 3.6 V（esp-reset，最有利角点 VF=0.6 V） (逻辑电平与驱动匹配) — the worst case misses the limit; record a fail item with its finding (保证要求未满足), or keep it open only with margin_not_decisive_reason naming the loose bound whose tightening could clear it",
+    "F-001: every defect link must be its own FAIL check"
+   ],
+   "derive_exit": 0
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "CONSISTENCY/PASS_WITHOUT_MARGIN Q-SIG-C07-1e353e0130: a numeric pass has a margin above zero"
+   ]
+  }
+ },
+ {
+  "n": 2,
+  "error": "一个方面/问题没人回答",
+  "A": {
+   "caught": true,
+   "by": [
+    "派生 11 行（PASS 8、FAIL 3、INSUFFICIENT 0），手填保留 0 行",
+    "ERROR SIG-T04.UART-XLAT.U1: function FN-UART-XLAT judges no 接口方向语义 — give that aspect its margin in calculation.margin or a judgements entry {aspect, conditions, says}; a row does not pass on another aspect's result",
+    "有错误，未写出 review-results.json",
+    "W-RXD-5V-PULLUP: check_ids must name unique unresolved checks (stage-NA tests are tracked by their handoff)",
+    "SIG-C07.UART-XLAT-ESP-RESET.U1: invalid result",
+    "SIG-C07.UART-XLAT-ESP-RESET.U1: missing rationale",
+    "SIG-C07.UART-XLAT-RUN.U1: invalid result",
+    "SIG-C07.UART-XLAT-RUN.U1: missing rationale",
+    "SIG-C08.UART-XLAT-ESP-RESET.U1: invalid result",
+    "SIG-C08.UART-XLAT-ESP-RESET.U1: missing rationale",
+    "SIG-C08.UART-XLAT-RUN.U1: invalid result",
+    "SIG-C08.UART-XLAT-RUN.U1: missing rationale",
+    "SIG-C09.UART-XLAT-ESP-RESET.U1: invalid result",
+    "SIG-C09.UART-XLAT-ESP-RESET.U1: missing rationale",
+    "SIG-C09.UART-XLAT-RUN.U1: invalid result",
+    "SIG-C09.UART-XLAT-RUN.U1: missing rationale",
+    "SIG-D08.UART-DBG-ESP-RESET.U1: invalid result",
+    "SIG-D08.UART-DBG-ESP-RESET.U1: missing rationale",
+    "SIG-D08.UART-DBG-RUN.U1: invalid result",
+    "SIG-D08.UART-DBG-RUN.U1: missing rationale",
+    "SIG-T04.UART-DBG.U1: invalid result",
+    "SIG-T04.UART-DBG.U1: missing rationale",
+    "SIG-T04.UART-XLAT.U1: invalid result",
+    "SIG-T04.UART-XLAT.U1: missing rationale",
+    "SIG-C07.UART-DBG-RUN.U1: invalid result",
+    "SIG-C07.UART-DBG-RUN.U1: missing rationale",
+    "SIG-C07.UART-DBG-ESP-RESET.U1: invalid result",
+    "SIG-C07.UART-DBG-ESP-RESET.U1: missing rationale",
+    "F-001: orphan defect",
+    "F-001: every defect link must be its own FAIL check"
+   ],
+   "derive_exit": 1
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "COVERAGE/UNANSWERED Q-SIG-T04-0e2a9694ec: no card answers this question"
+   ]
+  }
+ },
+ {
+  "n": 3,
+  "error": "网表阻值写成另一值参与计算",
+  "A": {
+   "caught": false,
+   "by": [],
+   "derive_exit": 0
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "TRACE/DB_VALUE_MISMATCH Q-SIG-C08-1d4dc51519: input r18 = 4.7 kΩ but the netlist has R18 '10k/R0402'"
+   ]
+  }
+ },
+ {
+  "n": 4,
+  "error": "引用不存在的条款",
+  "A": {
+   "caught": true,
+   "by": [
+    "FN-UART-XLAT/judgements[2]: names the aspect, the condition ids it rests on and what they settle (says)"
+   ],
+   "derive_exit": 0
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "TRACE/UNKNOWN_CLAUSE Q-SIG-T04-0e2a9694ec: clause K-NOPE is not in clauses.json"
+   ]
+  }
+ },
+ {
+  "n": 5,
+  "error": "算式结果与最坏值不一致",
+  "A": {
+   "caught": false,
+   "by": [],
+   "derive_exit": 0
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "TRACE/RECOMPUTE_MISMATCH Q-SIG-C09-e47ef30d94: worst case recomputes to 1100, the card says 300"
+   ]
+  }
+ },
+ {
+  "n": 6,
+  "error": "公开界余量为正却挂起",
+  "A": {
+   "caught": true,
+   "by": [
+    "FN-UART-XLAT/NODE-C: the worst case under the public bound (取 50 pF) shows 7.6 µs margin against 位宽 8.7 µs — the public bound already decides; conclude PASS(B) with the bound in conditions, or say in margin_not_decisive_reason what the bound misses"
+   ],
+   "derive_exit": 0
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "CONSISTENCY/BOUND_ALREADY_DECIDES Q-SIG-C09-e47ef30d94: the public bound leaves 7580 margin: the question is a pass (split it if the bound covers part)"
+   ]
+  }
+ },
+ {
+  "n": 7,
+  "error": "判不了却没写找谁",
+  "A": {
+   "caught": true,
+   "by": [
+    "SIG-C09.UART-XLAT-ESP-RESET.U1: input_requests[U1 RXD 输入电容未给] needs why_decisive/required_scope/acquisition/closure_criterion",
+    "SIG-C09.UART-XLAT-RUN.U1: input_requests[U1 RXD 输入电容未给] needs why_decisive/required_scope/acquisition/closure_criterion",
+    "FN-UART-XLAT/NODE-C: acquisition says who provides the datum"
+   ],
+   "derive_exit": 0
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "CONSISTENCY/MISSING_INCOMPLETE Q-SIG-C09-e47ef30d94: missing {what, from DESIGN/VENDOR/REQUIREMENT/OTHER_STAGE/USER, closes_when}"
+   ]
+  }
+ },
+ {
+  "n": 8,
+  "error": "工具疑点无人回应",
+  "A": {
+   "caught": false,
+   "by": [],
+   "derive_exit": 0
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "COVERAGE/SUSPECT_UNANSWERED Q-SIG-C09-e47ef30d94: O-1 (R19 把 U6 U0RXD 上拉到 Net-(U1-V3)，CH340 5 V 模式下 V3 无保证窗口): fail the question or say in disagrees why the tool is wrong"
+   ]
+  }
+ },
+ {
+  "n": 9,
+  "error": "不通过没有改法",
+  "A": {
+   "caught": true,
+   "by": [
+    "FN-UART-XLAT/RXD-5V-PULLUP: a computed shortfall is cleared by a change; finding F-001 needs remediation (readiness READY/CONDITIONAL/DESIGN_REQUIRED and what it changes)",
+    "FN-UART-XLAT/RXD-5V-PULLUP: a computed shortfall is cleared by a change; finding F-001 needs remediation (readiness READY/CONDITIONAL/DESIGN_REQUIRED and what it changes)",
+    "F-001: missing recommendation"
+   ],
+   "derive_exit": 0
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "CONSISTENCY/FAIL_WITHOUT_FIX Q-SIG-C07-1e353e0130: a fail carries fix {change, readiness READY/CONDITIONAL/DESIGN_REQUIRED}"
+   ]
+  }
+ },
+ {
+  "n": 10,
+  "error": "事实结论与网表不符（交叉写反）",
+  "A": {
+   "caught": false,
+   "by": [],
+   "derive_exit": 0
+  },
+  "B": {
+   "caught": true,
+   "by": [
+    "TRACE/FACT_FALSE Q-SIG-T04-0e2a9694ec: the netlist contradicts {\"node\": \"D6.2\", \"net_same_as\": \"U6.35\"}",
+    "TRACE/FACT_FALSE Q-SIG-T04-0e2a9694ec: the netlist contradicts {\"node\": \"U6.34\", \"net_same_as\": \"D7.1\"}"
+   ]
+  }
+ }
+]
