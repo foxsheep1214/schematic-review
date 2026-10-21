@@ -229,7 +229,9 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
   默认简洁报告保留全部缺陷、任务、通过标准及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
   `pack_review.py` 只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
-  顶层有其他文件或引用的证据找不到时打包失败。不另写 README 或说明文档；HTML 只能是脚本生成的那份。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
+  顶层有其他文件或引用的证据找不到时打包失败。声明的输入里有 ASG 交付（交付目录、其 `record/` 或其中文件，或交付里的原理图目录）时，
+  交付带 `selection.json` 要有通过 `review_selection.py validate` 的选型复核，带 `calculations/` 要有至少一条已复算的 `calc_claims.py` 结果，
+  带 `preflight-delivery.json` 要有读过该文件当前字节的派生摘要核对结果；三者都须被检查引用而进 `record/evidence/`，缺一项就拒绝打包。不另写 README 或说明文档；HTML 只能是脚本生成的那份。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。
 
 ### 8. 改版复审（H）

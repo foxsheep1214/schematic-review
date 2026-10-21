@@ -15,6 +15,9 @@ python3 scripts/review_selection.py worksheet <ASG交付目录> --out selection-
 python3 scripts/review_selection.py validate selection-review.json --asg <ASG交付目录>      # 校验并打印摘要
 ```
 
+复核表要被相关检查（如 DEV-D01 或报告处理清单对应的行）引用为证据；声明输入里有带 `selection.json` 的交付而没有
+通过 `validate` 的复核表时，`pack_review.py` 拒绝打包。首审也要逐条复核 `review-responses.json` 里已归因的意见。
+
 ## 复核表字段
 
 每个角色：

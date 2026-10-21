@@ -11,6 +11,12 @@
 Schematic projects, datasheets, requirements and earlier reviews are referenced by path and
 hash, never copied. Anything else at the top level, or a cited source that is neither packed
 nor a declared input, fails the pack so the directory stays exactly this shape.
+
+A declared ASG delivery (the input itself, its record/ or a file in it, or a folder inside the
+delivery such as the schematic) brings its own records for SR to re-judge: record/selection.json
+needs a selection review that passes review_selection.validate, record/calculations needs a
+calc_claims result with at least one recomputed claim, and record/preflight-delivery.json needs
+a document-summary audit that read that very file. Each must be cited evidence, so it is packed.
 """
 import argparse
 import hashlib
@@ -28,6 +34,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from render_report import SR_SECTION, jargon_in  # noqa: E402
 from report_html import to_html
+import review_selection
 
 HISTORY_RULE = 'REQ-H02'
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
@@ -148,6 +155,60 @@ def broken_report_links(out):
         if broken else []
 
 
+def delivery_records(inputs):
+    """record/ directories of ASG deliveries among the declared inputs."""
+    found = set()
+    for path in inputs:
+        path = Path(path).resolve()
+        for place in (path, path.parent):
+            rec = place if place.name == RECORD else place / RECORD
+            if (rec / 'selection.json').is_file() or (rec / 'calculations').is_dir() \
+                    or (rec / 'preflight-delivery.json').is_file():
+                found.add(rec)
+    return sorted(found)
+
+
+def delivery_review_errors(records, products):
+    """A delivery's own selection, calculations and preflight are re-judged, not only its schematic.
+    products: the packed JSON evidence files, {packed path: parsed value}."""
+    def kind(test):
+        return [k for k, v in products.items() if isinstance(v, dict) and v.get('schema_version') == 1 and test(v)]
+    selections = kind(lambda v: isinstance(v.get('roles'), list) and 'asg_record' in v)
+    claims = kind(lambda v: isinstance(v.get('claims'), list) and isinstance(v.get('summary'), dict))
+    audits = kind(lambda v: v.get('check_id') == 'DOC-Q01.DERIVED-SUMMARY')
+    cite = 'and cite it from the check it supports so it is packed'
+    errors = []
+    for rec in records:
+        if (rec / 'selection.json').is_file():
+            problems = {}
+            for key in selections:
+                try:
+                    problems[key] = review_selection.validate(products[key], rec.parent)
+                except (OSError, ValueError, AttributeError) as error:
+                    problems[key] = [str(error)]
+            if not any(p == [] for p in problems.values()):
+                detail = ('; '.join('%s: %s' % (k, '; '.join(v[:3])) for k, v in problems.items())
+                          or 'no selection review is cited')
+                errors.append('ASG delivery %s has selection.json but no finished selection review (%s); run '
+                              'review_selection.py worksheet/validate %s' % (rec, detail, cite))
+        if (rec / 'calculations').is_dir() and any(p.is_file() for p in (rec / 'calculations').rglob('*')):
+            computed = [k for k in claims if any(isinstance(c, dict) and c.get('status') in ('MATCH', 'MISMATCH')
+                                                 for c in products[k]['claims'])]
+            if not computed:
+                errors.append('ASG delivery %s has calculations but no cited calc_claims result with a recomputed '
+                              'claim%s; write the deciding design numbers as claims, run calc_claims.py --json %s'
+                              % (rec, ' (%s recompute nothing)' % ', '.join(claims) if claims else '', cite))
+        preflight = rec / 'preflight-delivery.json'
+        if preflight.is_file():
+            digest = sha256(preflight)
+            if not any(digest in (products[k].get('inputs_sha256') or {}).values() for k in audits):
+                errors.append('ASG delivery %s has %s but no cited audit_document_summaries.py result that read '
+                              'its current bytes%s; run it on the delivered calculations, preflight and report %s'
+                              % (rec, preflight.name, ' (%s audit other files)' % ', '.join(audits) if audits else '',
+                                 cite))
+    return errors
+
+
 def skill_version():
     root = Path(__file__).resolve().parents[1]
     try:
@@ -239,6 +300,14 @@ def pack(out, ledger, evidence_root, inputs):
             unresolved.append(source)
     if unresolved:
         errors.append('cited evidence is neither in --evidence-root nor a declared input: ' + ', '.join(unresolved))
+    products = {}
+    for key in packed:
+        if key.startswith(RECORD + '/evidence/') and key.endswith('.json'):
+            try:
+                products[key] = json.loads((out / key).read_text(encoding='utf-8'))
+            except (OSError, ValueError):
+                pass
+    errors += delivery_review_errors(delivery_records(inputs.values()), products)
     errors += broken_report_links(out)
     errors += packed_errors(out, packed)
     manifest = {'schema_version': 1, 'skill_version': skill_version(), 'inputs': declared,
