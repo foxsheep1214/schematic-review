@@ -117,8 +117,8 @@ DOC-V01 同时核原生图面的文字可读性。功能脚名、标签或关键
 
 ### 留档
 
-项目审查目录固定为 `审查报告.md` 加 `record/`，由 `scripts/pack_review.py` 生成：`record/` 含最终计划、结果、
-gate、`db.json`、`intent.json`、冷热 lint、`manifest.json`，以及 `evidence/` 下被检查证据引用的计算、裁图和复审 Diff。
+项目审查目录固定为 `审查报告.md`、`审查报告.html` 加 `record/`，由 `scripts/pack_review.py` 生成：`record/` 含最终计划、结果、
+gate、`db.json`、`intent.json`、冷热 lint、`manifest.json`，以及 `evidence/` 下被检查证据引用的计算、裁图、问题配图（`figures/`）和复审 Diff。
 原理图工程、数据手册、需求和旧审查只按路径与 SHA-256 记入 manifest，不复制；冷跑计划快照、日志、页面截图、
 脚本副本等中间文件留在工作目录（例如 /tmp/codex-work/<任务>/）。最终结论引用的证据必须进 `record/evidence/`，
 不能只留在临时目录：打包时引用找不到就失败。不要把客户原图、BOM、

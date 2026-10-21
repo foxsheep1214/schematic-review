@@ -15,7 +15,7 @@
 | 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | 0 / 0 / 0 / 0 |
 | 资料不足的原因：缺资料 / 设计没定 / 等交付物 / 需求没定 / 审查没做完 / 已暂缓 | 0 / 0 / 0 / 0 / 0 / 0 |
 | 交给后续环节的要求 | 0 |
-| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | 0 |
+| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | 1 |
 | 上一版问题的处理记录（不计入上面各行） | 0 |
 
 ## 结论
@@ -31,11 +31,23 @@
 类型：电路错误
 
 - **位置**：第1页　R1
+- **根因**：synthetic evidence
 - **问题**：synthetic evidence
-- **后果**：synthetic evidence
+- **可能的损害**：synthetic evidence
 - **怎么改**：synthetic evidence
 - **改完怎么验证**：synthetic evidence
 - **涉及的检查**：RST-E01.C1（没通过）
+
+## 对 SR 的反馈（设计者不用处理）
+
+<details>
+<summary>展开（给 SR 维护者）</summary>
+
+### 审查记录自检提示
+
+1 条，只要求复核写法和依据，不改变结论：ROOT_CAUSE_IS_REMEDY 1。明细在 record/review-gate.json 的 quality_screening。
+
+</details>
 
 ## 索引
 

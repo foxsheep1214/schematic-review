@@ -14,7 +14,8 @@ from gap_fixture import complete_gaps
 import validate_review as vr
 from ledger_v3 import validate_review
 from render_report import render
-from pack_review import pack, REPORT, RECORD, LEDGER
+from pack_review import pack, REPORT, REPORT_HTML, RECORD, LEDGER
+from report_html import to_html
 
 INTERNAL_CODES = ('EXTERNAL_DATA', 'DESIGN_OPEN', 'DELIVERABLE_PENDING', 'REQUIREMENT_OPEN', 'REVIEW_INCOMPLETE',
                   'NA_OUTSIDE_STAGE', 'documented', 'gap_cause')
@@ -23,6 +24,11 @@ INTERNAL_CODES = ('EXTERNAL_DATA', 'DESIGN_OPEN', 'DELIVERABLE_PENDING', 'REQUIR
 def report(p, r, db, notes=None):
     gate = json.loads(json.dumps(validate_review(p, r, db), default=sorted))
     return render(p, r, gate, notes), gate
+
+
+def write_report(out, text):
+    (out / REPORT).write_text(text, encoding='utf-8')
+    (out / REPORT_HTML).write_text(to_html(text), encoding='utf-8')
 
 
 def body(text):
@@ -460,7 +466,7 @@ class PackReviewTests(unittest.TestCase):
         for name, value in data.items():
             (self.work / name).write_text(json.dumps(value))
             self.ledger[name] = str(self.work / name)
-        (self.out / REPORT).write_text('# report')
+        write_report(self.out, '# report')
 
     def run_pack(self):
         return pack(self.out, self.ledger, str(self.work), {'requirements': str(self.inputs)})
@@ -513,7 +519,7 @@ class PackReviewTests(unittest.TestCase):
     def test_record_holds_ledger_and_cited_evidence_only(self):
         errors, manifest = self.run_pack()
         self.assertEqual(errors, [])
-        self.assertEqual(sorted(p.name for p in self.out.iterdir()), sorted([REPORT, RECORD]))
+        self.assertEqual(sorted(p.name for p in self.out.iterdir()), sorted([REPORT, REPORT_HTML, RECORD]))
         packed = {Path(k).relative_to(RECORD).as_posix() for k in manifest['packed']}
         self.assertEqual(packed, set(LEDGER) | {'evidence/calc/startup.md', 'evidence/synthetic-fixture.json'})
         self.assertFalse((self.out / RECORD / 'evidence' / 'debug.log').exists())
@@ -530,7 +536,7 @@ class PackReviewTests(unittest.TestCase):
         self.assertTrue(any('review not finished' in e and row['id'] in e for e in errors), errors)
 
     def test_jargon_in_report_body_fails_the_pack(self):
-        (self.out / REPORT).write_text('# r\n\n## 结论\n\n- 还不能冻结，见本行。\n\n## 对 SR 的反馈（设计者不用处理）\n\n- 原生映射\n')
+        write_report(self.out, '# r\n\n## 结论\n\n- 还不能冻结，见本行。\n\n## 对 SR 的反馈（设计者不用处理）\n\n- 原生映射\n')
         errors, _ = self.run_pack()
         hits = [e for e in errors if 'plain words' in e]
         self.assertEqual(len(hits), 1, errors)
@@ -560,7 +566,7 @@ class PackReviewTests(unittest.TestCase):
         self.assertTrue(any('shots/page-2.png' in e for e in errors), errors)
 
     def test_report_links_must_resolve_after_packing(self):
-        (self.out / REPORT).write_text('# report\n\n[算式](record/evidence/calc/startup.md) '
+        write_report(self.out, '# report\n\n[算式](record/evidence/calc/startup.md) '
                                        '[图](record/evidence/missing.png) [外链](https://example.com/x)\n')
         errors, _ = self.run_pack()
         self.assertEqual([e for e in errors if 'links to files missing' in e],

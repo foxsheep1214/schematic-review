@@ -52,7 +52,8 @@ notes 不能改结论或计数，不写内部代码名（gap_cause、documented 
   只写本设计算出来的要求；“回路尽量短、去耦就近、注意散热”这类通用布板常识不写（见
   [HANDOFF](verdicts-and-release.md#4-handoff-与集成约束)）。
   报告按负责方合并这些要求，并自动列出涉及的位号；同一负责方下的要求写法一致时只显示一次。
-审查目录只有 `审查报告.md` 与 `record/`（见 [留档](inputs-and-coverage.md#留档)），不另写 README、说明或 HTML。
+审查目录只有 `审查报告.md`、`审查报告.html` 与 `record/`（见 [留档](inputs-and-coverage.md#留档)），不另写 README 或说明。
+两份报告由 `render_report.py` 一次写出（`-o 审查报告.md` 同时生成同名 `.html`，图直接显示），内容相同；`pack_review.py` 核对 HTML 由当前 Markdown 生成，手改任一份都打包失败。
 
 ## 每节怎么写
 
@@ -65,7 +66,7 @@ notes 不能改结论或计数，不写内部代码名（gap_cause、documented 
 | 结论第二段 `summary` | 和上一版比变了什么；设计者现在先做什么 | 审查员 | 1–3 句，写位号和具体决定 | 能否定稿、错误数（第一句已说）；审查过程（用哪版 SR、重新导出、逐页读图、复算）；SR 自身问题 |
 | 最先要解决的 3 件事 | 先做哪几件 | 脚本 | 标题在前，等级和待办编号在后 | — |
 | 各功能的判断 | 每个功能能不能用、差多少 | 脚本（功能判定） | 一行一个功能：问题、结论（通过/没通过/未定）、计算结果与余量、待办编号 | 检查条数、规则号 |
-| 发现的错误 | 每处错在哪、怎么改 | 审查员（finding） | 问题写看到的事实和资料页；后果写对这块板的影响；怎么改写改哪个位号、改成什么 | 规则号、审查行话 |
+| 发现的错误 | 每处错在哪、会坏在哪、怎么改 | 审查员（finding） | 顺序固定：图 → 根因 → 问题 → 可能的损害 → 怎么改，写法见下文“用图说话” | 规则号、审查行话；只写“缺某器件”的根因 |
 | 待办 | 每件缺什么、怎么补 | 审查员（work item 与缺口） | 固定五行，见下 | 同一句套在几件待办上 |
 | 交给后续环节的要求 | 交给谁、做什么、怎么验 | 审查员（handoff） | 一件要求一行；只差位号的要求合成一行，位号列在“涉及位号”，验证写“每只” | 通用布板常识；“本行”“本项” |
 | 对 SR 的反馈 | SR 哪里不对、该怎么改 | 审查员（sr_feedback、manual_verification） | 每条点名规则、本板实例、建议 | 板子本身的问题 |
@@ -81,6 +82,43 @@ notes 不能改结论或计数，不写内部代码名（gap_cause、documented 
 - **怎样算通过**（`closure`）：可以复核的数值或条件。
 
 `notes.items` 写成“审查员补充”，只写以上五行里没有的取舍或先后，不复述。
+
+## 用图说话
+
+读者先看图再读字。每处 P0/P1 错误、每个提出的电路改法都配图，P2/P3 和待办能用图说清的也配。
+
+**配哪些图**（`figures[].kind`）：
+
+| kind | 报告标注 | 画什么 | 何时必需 |
+|---|---|---|---|
+| ACTUAL | 现状 | 原理图本页局部截图，框出相关位号和网络 | P0/P1 错误、PROPOSED 改法 |
+| REFERENCE | 原厂参考 | 手册典型应用或推荐电路的同一局部 | 改法改连接/加减器件时，与 AFTER 二选一 |
+| AFTER | 改后 | 改后的局部电路（示意或重画） | 同上 |
+| MECHANISM | 失效过程 | 电流/电压怎样一步步越过限值的示意，标出关键数值 | 根因靠数字链才能说清时 |
+
+改法的步骤含 CONNECT / COMPONENT / DESIGN 时必须有 REFERENCE 或 AFTER；只改装配、阻值或文档时只要 ACTUAL。
+
+**怎么做图**：图片放在 `--evidence-root` 下的 `figures/`，打包时进 `record/evidence/figures/`。
+
+- 截原理图和手册：`pdftoppm -png -r 200 -f 页 -l 页 -x X -y Y -W 宽 -H 高 原理图.pdf figures/F-001-actual`，只截相关局部，位号要看得清。
+- 示意图（AFTER、MECHANISM）用简单 SVG 手画：器件、网络名、电流方向和数值，不做装饰。
+- 每张图的 `caption` 用一句白话说图里看什么（例：“每条线只有一颗 TVS，直接接到 U601”），`locator` 写来源页和区域。
+
+**文字怎么配图**（同一 finding 的字段，报告按这个顺序显示）：
+
+1. **根因**（`root_cause`）：电路为什么会出问题——哪个量在哪个状态越过哪个限值，写数字。不写成缺哪个器件，缺的器件是改法。
+   例：不写“缺串阻和芯片端 TVS”，写“单级 TVS 在 ESD 电流下钳位 ≥9 V，高于 U601 引脚 6.5 V 耐受，中间没有限流”。
+2. **问题**（`observed`）：看到的事实和资料页。
+3. **可能的损害**（`impact`，`scenario` 不重复时接在后面）：对这块板的后果，坏哪个器件、丢哪个功能、在什么操作下发生。
+4. **怎么改**（`recommendation` + 修改方案）：改哪个位号、改成什么、为什么改后不再越限。
+
+根因只写缺什么器件、或与改法同一句时，自检提示 ROOT_CAUSE_IS_REMEDY。
+
+```json
+{"figures": [
+  {"kind": "ACTUAL", "source": "figures/F-001-actual.png", "locator": "原理图 p8 J701、D702–D705", "caption": "每条线只有一颗 TVS，直接接到 U601"},
+  {"kind": "REFERENCE", "source": "figures/F-001-ref.png", "locator": "U601 手册 p21 典型应用", "caption": "原厂：接口 TVS、串阻、芯片端 TVS 两级"}]}
+```
 
 ## 一、报告结构
 
@@ -305,6 +343,7 @@ Vmax、Cmax、Vsafe、tmax、温度，按 `R ≤ tmax/[Cmax·ln(Vmax/Vsafe)]` �
 }
 ```
 
+- `PROPOSED` 另带 `figures`（同上文“用图说话”）：至少 ACTUAL，改连接/加减器件时再加 AFTER 或 REFERENCE；报告把图放在该待办下面。
 - `status`：`PROPOSED`（有改法）或 `NONE`（无法靠改图消除，另给 `reason` 与可定位 `evidence`）。
 - `PROPOSED` 必填 `summary`、`preference`（DESIGN_FIRST / EVIDENCE_FIRST / EITHER）与 `preference_reason`、
   `remediation`（按上文结构校验）、`avoids`（每条含 problem、after_change 和关联的未关闭检查）、`tradeoffs`。

@@ -21,6 +21,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from review_functions import circuit_functions
 from task_scope import ownership, task_view
+from report_html import to_html
 
 TOP_TASKS = 3
 SR_SECTION = '## 对 SR 的反馈（设计者不用处理）'
@@ -312,7 +313,24 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
             lines.append('- **%s**：%s' % (label, join_statements(values)))
     if notes.get(task['id']):
         lines.append('- **审查员补充**：%s' % notes[task['id']])
+    if option.get('status') == 'PROPOSED':
+        lines += render_figures(option.get('figures'))
     lines.append('')
+    return lines
+
+
+FIGURE_WORDS = {'ACTUAL': '现状', 'REFERENCE': '原厂参考', 'AFTER': '改后', 'MECHANISM': '失效过程'}
+
+
+def render_figures(figures):
+    """Each figure as an image packed under record/evidence, with its kind and caption below it."""
+    lines = []
+    for f in figures if isinstance(figures, list) else []:
+        if not (isinstance(f, dict) and isinstance(f.get('source'), str) and f['source'].strip()):
+            continue
+        caption = cell(f.get('caption') or '')
+        lines += ['', '![%s](%s/evidence/%s)' % (caption, 'record', f['source'].strip()),
+                  '', '图：%s。%s' % (FIGURE_WORDS.get(f.get('kind'), '示意'), caption), '']
     return lines
 
 
@@ -605,9 +623,16 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             if item_notes.get(f.get('id')):
                 out += [item_notes[f['id']], '']
             where = f.get('location') or {}
-            for label, value in (('位置', '、'.join(('第%s页' % x) for x in where.get('pages') or []) +
-                                  ('　' + '、'.join(where.get('refs') or []) if where.get('refs') else '')),
-                                 ('问题', f.get('observed')), ('后果', f.get('impact')),
+            place = '、'.join(('第%s页' % x) for x in where.get('pages') or []) + \
+                ('　' + '、'.join(where.get('refs') or []) if where.get('refs') else '')
+            if place:
+                out.append('- **位置**：%s' % place)
+            out += render_figures(f.get('figures'))
+            harm = f.get('impact')
+            if f.get('scenario') and not restates(f['scenario'], harm or '') and not restates(harm or '', f['scenario']):
+                harm = join_statements([harm, f['scenario']])
+            for label, value in (('根因', f.get('root_cause')),
+                                 ('问题', f.get('observed')), ('可能的损害', harm),
                                  ('怎么改', f.get('recommendation')),
                                  ('改的目的', fix.get('purpose') if not same_text(fix.get('purpose'), f.get('title')) else None),
                                  ('改完怎么验证', f.get('verification')),
@@ -755,7 +780,9 @@ def main(argv=None):
         return 2
     text = render(load(args.plan), load(args.results), load(args.gate), notes, args.title, args.detail)
     Path(args.out).write_text(text, encoding='utf-8')
-    print('wrote', args.out)
+    html_out = Path(args.out).with_suffix('.html')
+    html_out.write_text(to_html(text), encoding='utf-8')
+    print('wrote', args.out, 'and', html_out)
     return 0
 
 

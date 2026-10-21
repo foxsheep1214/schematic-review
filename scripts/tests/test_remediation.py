@@ -32,6 +32,7 @@ def actionable():
     p, r, db = fixture(); fail(r)
     r['remediation_version'] = 2
     r['findings'][0]['remediation'] = ready()
+    r['findings'][0]['figures'] = [{'kind': 'ACTUAL', 'source': 'figures/F1-actual.png', 'locator': 'p1 U1 area', 'caption': 'Synthetic actual circuit'}]
     return p, r, db
 
 

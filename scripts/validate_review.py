@@ -17,7 +17,7 @@ from review_engine import validate_engine
 from review_summary import categorized_summary, validate_impact
 from requirement_clarifications import validate_clarifications
 from checkers import REGISTRY, passive_stress, validate_inventories
-from validate_remediation import validate_remediation, READINESS
+from validate_remediation import validate_remediation, validate_figures, changes_topology, READINESS
 from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
 from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check_id
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
@@ -443,6 +443,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     for fid, item in findings.items():
         if actionable or "remediation" in item:
             errors.extend(validate_remediation(fid, item.get("remediation"), set(findings), require_preflight=True))
+        if actionable and item.get("kind") == "DEFECT" and item.get("severity") in ("P0", "P1"):
+            errors.extend(validate_figures(fid, item.get("figures"), need_after=changes_topology(item.get("remediation"))))
         require(item.get("severity") in tuple(SEVERITIES), f"{fid}: invalid severity")
         require(item.get("kind") in ("DEFECT", "IMPROVEMENT"), f"{fid}: invalid finding kind")
         require(ids(item.get("check_ids")), f"{fid}: check_ids required")

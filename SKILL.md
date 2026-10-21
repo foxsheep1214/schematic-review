@@ -35,6 +35,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 6. **不通过必须可改**：每个 FAIL 给定位、旧→新、顺序操作、参数依据和通过标准；证据不足项写具体缺失输入，不能只写“待确认”；缺外部资料或设计未定的再给决定性影响、所需范围、取得方法及复审关闭条件。
    缺输入时给取得方法和条件方案，不编造料号、阻值或空闲 GPIO。能靠改原理图消除的证据不足，直接给电路改进建议；
    建议不改变本轮结论，改图并复审后才关闭。见 [报告与修改说明](references/report-and-remediation.md)。
+   **用图说话**：P0/P1 错误和提出的电路改法配现状局部图，改连接时再配原厂参考或改后图；文字按根因（哪个量越过哪个限值）→
+   可能的损害 → 怎么改写，根因不写成“缺某器件”。见 [用图说话](references/report-and-remediation.md#用图说话)。
 7. **守住范围**：准出对象是原理图；PCB、SI/PI、EMC、实测热和生产验证形成 HANDOFF，但原理图能判定的
    电气前提不能推给下游。分流只问一句：拿到这个数，今天能否在原理图上重判？能 → INSUFFICIENT（如实际负载、保护配置未知）；
    只能由样机/PCB/结构/试验产生 → 阶段 NA + HANDOFF，产品要求仍待验证。见 [纯下游验证项](references/verdicts-and-release.md#纯下游验证项)。
@@ -218,10 +220,10 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 - 进报告的文字（任务、finding、handoff、notes）用白话，不用 [写法要求](references/report-and-remediation.md) 列出的词；
   `pack_review.py` 会检查。
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
-- **交付只有两样**：项目审查目录顶层只放 `审查报告.md` 和 `record/`，其余中间文件留在工作目录。
+- **交付只有三样**：项目审查目录顶层只放 `审查报告.md`、`审查报告.html`（同一内容，图直接显示）和 `record/`，其余中间文件留在工作目录。
   报告由脚本从台账生成，agent 只在 `notes.json` 里补白话说明（格式见 [报告与修改说明](references/report-and-remediation.md)）：
 
-      python3 scripts/render_report.py review-plan.json review-results.json review-gate.json --notes notes.json -o <审查目录>/审查报告.md
+      python3 scripts/render_report.py review-plan.json review-results.json review-gate.json --notes notes.json -o <审查目录>/审查报告.md   # 同时写出 审查报告.html
       python3 scripts/pack_review.py <审查目录> --review-plan … --review-results … --review-gate … --db … --intent … \
         --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
 

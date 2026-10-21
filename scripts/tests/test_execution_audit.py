@@ -241,6 +241,7 @@ class ExecutionAuditTests(unittest.TestCase):
             'next_action':'Update record only','evidence':evidence,'design_option':{
                 'status':'PROPOSED','summary':'Correct identity only','preference':'DESIGN_FIRST',
                 'preference_reason':'No electrical change','remediation':repair,
+                'figures':[{'kind': 'ACTUAL', 'source': 'figures/F1-actual.png', 'locator': 'p1 U1 area', 'caption': 'Synthetic actual circuit'}],
                 'avoids':[{'problem':'Wrong name','after_change':'Matches source','check_ids':['REQ-D01.NAME']}],
                 'tradeoffs':['No electrical change']}},
             {'id':'W-CAP','title':'Obtain curve','root_cause':'No effective capacitance curve',

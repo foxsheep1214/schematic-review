@@ -5,10 +5,39 @@ from design_preflight import validate_calculations, text, evidence
 READINESS = ("READY", "CONDITIONAL", "DESIGN_REQUIRED")
 STEP_KINDS = ("CONNECT", "COMPONENT", "ASSEMBLY", "DOCUMENT", "DESIGN")
 STAGES = ("NETLIST", "CALCULATION", "DOCUMENT", "BENCH", "PCB")
+FIGURE_KINDS = ("ACTUAL", "REFERENCE", "AFTER", "MECHANISM")
+FIGURE_TYPES = (".png", ".svg", ".jpg", ".jpeg")
+TOPOLOGY_STEPS = ("CONNECT", "COMPONENT", "DESIGN")
 
 
 def nonempty(value):
     return isinstance(value, str) and bool(value.strip())
+
+
+def validate_figures(label, figures, need_after=False):
+    """Figures show the problem: the actual local circuit, and the changed or vendor circuit when the fix
+    changes topology. Structure only; whether the picture is right is the reviewer's."""
+    if not isinstance(figures, list):
+        figures = []
+    errors = []
+    for i, f in enumerate(figures):
+        ok = (isinstance(f, dict) and f.get("kind") in FIGURE_KINDS and nonempty(f.get("locator"))
+              and nonempty(f.get("caption")) and nonempty(f.get("source"))
+              and f["source"].lower().endswith(FIGURE_TYPES))
+        if not ok:
+            errors.append(f"{label}.figures[{i}]: kind ({'/'.join(FIGURE_KINDS)}), source image "
+                          f"({'/'.join(FIGURE_TYPES)}), locator and caption required")
+    kinds = {f.get("kind") for f in figures if isinstance(f, dict)}
+    if "ACTUAL" not in kinds:
+        errors.append(f"{label}.figures: show the ACTUAL local circuit (crop of the schematic page)")
+    if need_after and not kinds & {"AFTER", "REFERENCE"}:
+        errors.append(f"{label}.figures: a topology change also shows the AFTER or REFERENCE circuit")
+    return errors
+
+
+def changes_topology(remediation):
+    steps = remediation.get("steps") if isinstance(remediation, dict) else None
+    return any(isinstance(s, dict) and s.get("kind") in TOPOLOGY_STEPS for s in steps or [])
 
 
 def validate_remediation(fid, value, finding_ids, require_preflight=False):

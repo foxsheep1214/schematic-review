@@ -468,7 +468,9 @@ def proposed_option(**overrides):
             'calculation_preflight': {'applicable': False, 'reason': 'synthetic structure test', 'evidence': E}},
         'avoids': [{'problem': 'Minimum supply depends on an unguaranteed zener voltage',
                     'after_change': 'Only datasheet maxima set the minimum supply', 'check_ids': [C1]}],
-        'tradeoffs': ['Controller dissipates more at the highest rail voltage; thermal limit handed to PCB']}
+        'tradeoffs': ['Controller dissipates more at the highest rail voltage; thermal limit handed to PCB'],
+        'figures': [{'kind': 'ACTUAL', 'source': 'figures/W-actual.png', 'locator': 'p1 R1 area', 'caption': 'Zener bias today'},
+                    {'kind': 'AFTER', 'source': 'figures/W-after.png', 'locator': 'proposed', 'caption': 'Schottky from the rail'}]}
     option.update(overrides)
     return option
 

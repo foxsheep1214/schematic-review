@@ -22,10 +22,12 @@ import sys
 from pathlib import Path
 
 REPORT = '审查报告.md'
+REPORT_HTML = '审查报告.html'
 RECORD = 'record'
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from render_report import SR_SECTION, jargon_in  # noqa: E402
+from report_html import to_html
 
 HISTORY_RULE = 'REQ-H02'
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
@@ -162,12 +164,17 @@ def pack(out, ledger, evidence_root, inputs):
     if not (out / REPORT).is_file():
         errors.append('missing %s; run render_report.py first' % REPORT)
     else:
-        errors += plain_language_errors((out / REPORT).read_text(encoding='utf-8'))
-    extra = sorted(p.name for p in out.iterdir() if p.name not in (REPORT, RECORD) and not p.name.startswith('.')) \
-        if out.is_dir() else []
+        markdown = (out / REPORT).read_text(encoding='utf-8')
+        errors += plain_language_errors(markdown)
+        if not (out / REPORT_HTML).is_file():
+            errors.append('missing %s; run render_report.py, it writes both copies' % REPORT_HTML)
+        elif (out / REPORT_HTML).read_text(encoding='utf-8') != to_html(markdown):
+            errors.append('%s does not match %s; re-render instead of editing either copy' % (REPORT_HTML, REPORT))
+    extra = sorted(p.name for p in out.iterdir() if p.name not in (REPORT, REPORT_HTML, RECORD)
+                   and not p.name.startswith('.')) if out.is_dir() else []
     if extra:
-        errors.append('only %s and %s/ belong at the top level; move these to the work directory: %s'
-                      % (REPORT, RECORD, ', '.join(extra)))
+        errors.append('only %s, %s and %s/ belong at the top level; move these to the work directory: %s'
+                      % (REPORT, REPORT_HTML, RECORD, ', '.join(extra)))
     declared = {}
     for name, path in inputs.items():
         if not Path(path).exists():

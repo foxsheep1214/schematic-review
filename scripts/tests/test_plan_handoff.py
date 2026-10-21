@@ -108,7 +108,8 @@ class PlanHandoffTests(unittest.TestCase):
             report['findings'] = [{'id': 'F1', 'kind': 'DEFECT', 'severity': 'P1', 'check_ids': [target],
                 'location': {'pages': ['1'], 'refs': ['U1'], 'nets': ['CONTROL']},
                 **{k: 'Synthetic condition' for k in ('title', 'observed', 'criterion', 'impact', 'scenario',
-                      'root_cause', 'recommendation', 'verification', 'severity_reason')}, 'remediation': ready()}]
+                      'root_cause', 'recommendation', 'verification', 'severity_reason')}, 'remediation': ready(),
+                'figures': [{'kind': 'ACTUAL', 'source': 'figures/F1-actual.png', 'locator': 'p1 U1 area', 'caption': 'Synthetic actual circuit'}]}]
         return report
 
     def test_combined_cold_cli_preserves_standalone_plan(self):

@@ -23,7 +23,7 @@ def evidence(value):
 
 def design_option(key, value, unresolved, finding_ids):
     """Structure of a work item's schematic alternative; never proves the change is correct."""
-    from validate_remediation import validate_remediation
+    from validate_remediation import validate_remediation, validate_figures, changes_topology
     label = key + '.design_option'
     if not isinstance(value, dict) or value.get('status') not in ('PROPOSED', 'NONE'):
         return [label + ': status must be PROPOSED or NONE']
@@ -36,6 +36,7 @@ def design_option(key, value, unresolved, finding_ids):
     if value.get('preference') not in PREFERENCES or not text(value.get('preference_reason')):
         errors.append(label + ': preference (' + '/'.join(PREFERENCES) + ') and preference_reason required')
     errors.extend(validate_remediation(label, value.get('remediation'), finding_ids, require_preflight=True))
+    errors.extend(validate_figures(label, value.get('figures'), need_after=changes_topology(value.get('remediation'))))
     avoids = value.get('avoids')
     if not (isinstance(avoids, list) and avoids and all(isinstance(a, dict) for a in avoids)):
         errors.append(label + ': avoids must list the problems the changed circuit avoids')

@@ -27,7 +27,7 @@ DESIGN_GAP_RE = re.compile(r'未选|未定|缺少?手册|缺资料|无资料|未
 OPTIMIZATION_RE = re.compile(r'优化目标|成本|体积|报价|尽量|cost|volume', re.I)
 # 冻结阶段把以下两类提示当作“定级未完成”的放行阻断，不改变 valid。
 # Review records whose citation as evidence for a current conclusion suggests reuse of an earlier review.
-REVIEW_ARTIFACTS = {'review-results.json', 'review-gate.json', '审查报告.md', 'review-ledger.json'}
+REVIEW_ARTIFACTS = {'review-results.json', 'review-gate.json', '审查报告.md', '审查报告.html', 'review-ledger.json'}
 RECORD_FIELD_NAMES = {'missing_inputs': 'gaps[].what', 'required_scope': 'gaps[].scope',
                       'acquisition': 'gaps[].how_to_close', 'closure_criterion': 'gaps[].closure_criterion',
                       'consequence': 'gaps[].severity.consequence', 'affected_function': 'gaps[].severity.affects',
@@ -362,6 +362,7 @@ def screen_quality(plan, report, db=None):
     candidates.extend(text_hygiene(report, expected, known))
     candidates.extend(port_overvoltage_grading(report))
     candidates.extend(scope_echoes_task(report))
+    candidates.extend(finding_wording(report.get('findings') or []))
     candidates.extend(templated_handoffs(report))
     candidates.extend(stage_and_cause_misfiles(report, expected))
     nets = db.get('nets', {}) if isinstance(db, dict) else {}
@@ -454,6 +455,25 @@ def port_overvoltage_grading(report):
                                      'hides that path: grade it DAMAGE_OR_HAZARD / PORT_OVERVOLTAGE; when a latched OVP with '
                                      'evidenced threshold is the reason it stays P1, keep that class and write the exclusion, '
                                      'not COMPONENT_DAMAGE or REQUIRED_FUNCTION.'})
+    return found
+
+
+REMEDY_OPENING = re.compile(r'^\s*(?:缺少?|未加|没加|没有|少了?)')
+
+
+def finding_wording(findings):
+    """A root cause that only names the missing part is the fix, not the cause (a delivered review wrote
+    "缺串阻、缺芯片端 TVS" where the cause was a single TVS stage clamping above the pin rating)."""
+    found = []
+    for f in findings:
+        if not isinstance(f, dict) or not isinstance(f.get('root_cause'), str):
+            continue
+        cause = f['root_cause'].strip()
+        fix = (f.get('recommendation') or '').strip() if isinstance(f.get('recommendation'), str) else ''
+        if REMEDY_OPENING.match(cause) or (cause and cause == fix):
+            found.append({'code': 'ROOT_CAUSE_IS_REMEDY', 'finding_ids': [f.get('id')], 'check_ids': list(f.get('check_ids') or []),
+                          'message': 'The root cause names the missing part or repeats the fix; say why the circuit fails '
+                                     '(which quantity exceeds which limit, in which state) and leave the part to the fix.'})
     return found
 
 
