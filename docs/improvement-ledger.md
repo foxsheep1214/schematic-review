@@ -7,12 +7,51 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## No aspect passes by default; exits are typed and shown (2026-10-20)
+
+A delivered review record was replayed against the skill to ask what in the
+skill let its weaknesses through; the answer was structural, not a missing
+rule. (1) Rows passed by omission: `derive_rows.py` made every row PASS unless
+an open or fail item covered its aspect, citing the function's one result, so
+an aspect nobody judged passed (the replay: 101 of the record's PASS rows).
+Now a row passes only on its own aspect's positive margin or a `judgements`
+entry `{aspect, conditions, says[, states]}` citing the clauses; otherwise
+derive_rows and the validator both refuse it (F9). (2) Every gate had a
+free-text exit the reviewer certified alone: `manual_verification` could
+override any tool gate, including gaps the reviewer closes by supplying an
+input. Checkers now report the gap codes behind a block
+(`Checker.blocking_gaps`); a code headed intent/evidence/requirements/
+firmware/population/datasheet*/pinout/rail-requirement/level-standard cannot
+be overridden (declare it and regenerate the plan); one `method` text over
+different objects is refused; the report's SR section lists the gap codes.
+(3) Kinds were labels with regex discriminators that phrasing defeats both
+ways (a vendor-supplied firmware capability statement was refused, a vendor
+datum rephrased slipped through): DELIVERABLE_PENDING now states
+`deliverable_kind` (CUSTOM_PART_DRAWING / FIRMWARE_CAPABILITY /
+CONFIGURATION_TABLE) and the who-based regex is gone; an unboundable
+VENDOR_DATUM answers `operating_point_specified`, and `false` (the design
+relies on operation the datasheet does not specify) must be a fail item with a
+remediation, not a vendor request. (4) Exits were invisible to the reader: the
+work item now shows the worst case under the public bound and why a margin
+did not decide (with the loose clause). (5) One assumption sentence copied
+into several functions is refused. Also kept from the first pass of this
+entry: a pending deliverable requires `scope`, and the report shows its
+`assumed`, scope and closure. Replayed under the new rules the record goes
+from valid with 0 errors to 128 errors (101 unjudged aspects, 6 input gaps
+overridden by hand, 1 shared manual method, 16 public-bound gaps, 1 shared
+assumption, 1 loose bound, 2 stale engine). Not changed: report presentation
+of handoff refs and requirement ids, NA reused-rationale screening noise.
+Mutations M33 (rewritten), M36–M43; gate 43/43.
+
+- Event: user:2026-10-20 (逐章分析交付的审查报告后要求先总结 SR 架构问题再修改：方面缺省通过、出口自证、标签归类、出口不可见)
+- Causes: rule_not_enforced 3, rule_missing 2, judgment 1
+- Changed: scripts/derive_rows.py, scripts/review_functions.py, scripts/validate_review.py, scripts/checkers/base.py, scripts/checkers/i2c.py, scripts/results_model.py, scripts/review_workflow.py, scripts/render_report.py, scripts/tests/test_derive_rows.py, scripts/tests/test_review_functions.py, scripts/tests/test_render_and_pack.py, scripts/tests/ledger_v3.py, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, references/plan-and-results.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, SKILL.md, docs/improvement-ledger.md
+
 ## Open items stop being an exit: public bound first, shortfall means a fix, deliverables get their own kind (2026-10-20)
 
-A review record produced from the current skill carried 375 PASS, 0 FAIL and
-49 INSUFFICIENT rows behind ten work items, eight of them VENDOR_DATUM. Read
-against the datasheets already in its evidence folder, one item was half a
-data gap; the rest were quantities the public data already bounded (an
+A review record could leave most of its open work items as VENDOR_DATUM
+when, read against the datasheets already in its evidence folder, almost none
+was a real data gap; they were quantities the public data already bounded (an
 adjacent test point on a monotonic curve, a gate-charge table plus the
 driver's own loss equation, a thermistor R-T table the vendor publishes), or
 computed shortfalls the reviewer had written into `worst_case` prose rather
@@ -39,7 +78,7 @@ operating point" is unfinished lookup, not a data gap. Mutations M27–M32 guard
 the six checks. The synthetic fixtures were updated to the structured
 `worst_case`; no stored review record in the repository wrote the field.
 
-- Event: user:2026-10-20 (R5 独立审查复盘：VENDOR_DATUM 先给公开界最坏值、裕量≤0 默认 FAIL+修改建议、新增交付物待就绪类别、lookup 优先公开曲线表)
+- Event: user:2026-10-20 (独立审查复盘：VENDOR_DATUM 先给公开界最坏值、裕量≤0 默认 FAIL+修改建议、新增交付物待就绪类别、lookup 优先公开曲线表)
 - Causes: rule_not_enforced 2, rule_missing 1, judgment 1
 - Changed: scripts/review_functions.py, scripts/results_model.py, scripts/review_stage_scope.py, scripts/render_report.py, scripts/catalog.py, scripts/tests/test_review_functions.py, scripts/tests/ledger_v3.py, scripts/tests/test_render_and_pack.py, scripts/tests/fixtures/golden_reports/clean.md, scripts/tests/fixtures/golden_reports/decisive.md, scripts/tests/fixtures/golden_reports/defect.md, scripts/tests/fixtures/golden_reports/downstream.md, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, references/plan-and-results.md, references/evidence-proportionality.md, references/verdicts-and-release.md, references/report-and-remediation.md, references/datasheets.md, SKILL.md, docs/improvement-ledger.md
 

@@ -124,7 +124,8 @@ def _open_item(key, rows, task):
             item['checked'] = ['c1']
             item['why_insufficient'] = 'Synthetic: the stipulated clause does not give the datum'
             item['worst_case'] = {'not_boundable_reason': 'Synthetic: the fixture stipulates no public curve bounds it',
-                                  'curves_checked': [{'source': 'synthetic', 'locator': 'stipulated'}]}
+                                  'curves_checked': [{'source': 'synthetic', 'locator': 'stipulated'}],
+                                  'operating_point_specified': True}
     if kind == 'USER_DEFERRED':
         item['instruction'] = SYNTHETIC
     return {k: v for k, v in item.items() if v is not None}

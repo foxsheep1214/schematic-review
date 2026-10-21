@@ -83,6 +83,11 @@ class I2CTopologyChecker(Checker):
         return []
 
     def pass_blockers(self, key, planned, generated, inventory):
+        if self.blocking_gaps(key, planned, generated, inventory):
+            return [key + ': I2C topology gaps must be resolved in a regenerated plan before PASS']
+        return []
+
+    def blocking_gaps(self, key, planned, generated, inventory):
         obj = planned.get('object') if isinstance(planned.get('object'), dict) else {}
         region = self._regions(inventory).get(obj.get('i2c_region'))
         gaps = region['gaps'] if region else []
@@ -92,6 +97,4 @@ class I2CTopologyChecker(Checker):
             # and all evidence/binding requirements; this never assigns PASS.
             # Other topology gaps and C01/C07 electrical windows remain gated.
             gaps = [gap for gap in gaps if not gap.startswith('external-port:')]
-        if gaps:
-            return [key + ': I2C topology gaps must be resolved in a regenerated plan before PASS']
-        return []
+        return [gap for gap in gaps if isinstance(gap, str)]

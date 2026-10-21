@@ -176,6 +176,17 @@ def derived_work_items(report):
                 'check_ids': owners.get(ref, []), 'evidence': fn.get('evidence')}
         if 'design_option' in item:
             task['design_option'] = item['design_option']
+        if item.get('kind') == 'DELIVERABLE_PENDING':   # no input request carries these into the report
+            task.update(assumed=item.get('assumed'), required_scope=item.get('scope'), closure_criterion=item.get('closure'))
+        # Every exit from a margin reaches the reader: the worst case under the public bound, and why it did not decide.
+        worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
+        bound = worst.get('bound') if isinstance(worst.get('bound'), dict) else {}
+        if text(worst.get('result')):
+            task['worst_case'] = worst['result'] + (
+                '（界：%s，%s）' % (bound.get('value'), bound.get('condition')) if bound.get('value') else '')
+        if text(item.get('margin_not_decisive_reason')):
+            task['kept_open'] = item['margin_not_decisive_reason'] + (
+                '（取松的条款 %s）' % item['loose_bound'] if text(item.get('loose_bound')) else '')
         out.append(task)
     return out
 

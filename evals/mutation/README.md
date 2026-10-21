@@ -32,9 +32,14 @@ M23–M24（2026-10-20，训练第 1 轮裁决）守两条放宽：IC 双向脚�
 驱动脚经最多 3 级电阻可达的栅极降 CANDIDATE（`test_power_switch.py::ChainedDriverTest`）。
 M25–M26（2026-10-20，热审试点）守台账两条放宽：同对象框架的行只能绑到覆盖该行对象的功能（`test_review_functions.py::SharedObjectFrameTests`）、
 `review_scope` 只免范围外的行（`ScopedReviewTests`）。
-M27–M32（2026-10-20，R5 审查复盘）守开放项的四条收紧：VENDOR_DATUM 的 `worst_case` 必须给公开界（M27）、公开界下的正余量就是结论（M28）、
+M27–M32（2026-10-20）守开放项的四条收紧：VENDOR_DATUM 的 `worst_case` 必须给公开界（M27）、公开界下的正余量就是结论（M28）、
 亏欠保留开放要点名取松的条款（M29）、DELIVERABLE_PENDING 要写交付物/责任方/假定（M30）、亏欠的失败项要带改法（M31）、
 称“无法定界”要列查过的曲线表（M32），都由 `test_review_functions.py::PublicBoundTests` / `DeliverablePendingTests` 杀死。
+M33–M43（2026-10-20，架构收紧）守“没人判过的方面不默认通过、出口有类型且看得见”：交付物要写 `deliverable_kind`（M33）、
+`scope` 必填（M34）、报告显示 `assumed`（M35）、派生行不把没判过的方面判 PASS（M36）、校验拒绝没判过方面的 PASS 行（M37）、
+`judgements` 要引条款（M38）、手工核对覆盖不了缺输入的工具缺口（M39）、不同对象不共用一段核对方法（M40）、
+手册未规定的工作点不当缺资料（M41）、报告显示为什么不按余量下结论（M42）、同一句假定不抄进几个功能（M43），
+由 `test_derive_rows.py`、`test_review_functions.py`、`test_render_and_pack.py` 的对应测试杀死。
 
 ## 维护
 

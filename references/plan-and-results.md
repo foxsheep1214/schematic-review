@@ -256,8 +256,9 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 | `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头 |
 | `conditions[]` | 第 1 步“先用手册里已有的界限”：每条 `id`/`source`/`locator`/`says`/`use`，`use` 写怎么用（相邻测试点夹界、门限上限、温度系数） |
 | `calculation` | 第 2 步：`result`、`margin{value,unit,against[,aspect]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值）、`claim_ids`、`assumptions`；只针对一个方面时写 `aspect`。没有数值的功能写 `no_calculation_reason` |
+| `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条款 id], says[, states]}`，`says` 写这几条条款对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。行要判 PASS，本方面必须有正余量（`calculation.margin`）或一条 judgement，不能借别的方面的结论 |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
-| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[{aspect, states?}]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`、`title`/`why` 可选。DESIGN_VALUE 另写 `spec` 和 `owner`（不许写成向厂家索取）；VENDOR_DATUM 另写 `checked`（条款 id）、`why_insufficient`、`acquisition` 和 `worst_case`：先按公开界算，`worst_case{bound{condition: 条款 id, value, basis: GUARANTEED_LIMIT/ADJACENT_TEST_POINT/TYPICAL_CURVE/PUBLISHED_TABLE/APPLICATION_NOTE}, result, margin{value,unit,against}}`，公开界下余量为正即已判定（要保留开放须写 `margin_not_decisive_reason` 说明该界漏了什么），为零或为负按 F4 处理；确实没有任何公开界时写 `worst_case{not_boundable_reason, curves_checked[{source, locator}]}`，列出为找界查过的手册曲线、特性表和应用笔记；DELIVERABLE_PENDING（另一阶段欠的交付物：定制磁件图纸、固件应用能力确认、配置表）另写 `deliverable`、`owner`、`assumed`（本判定按什么假定算的）和 `closure`，不写 acquisition/spec；USER_DEFERRED 写 `instruction`；REQUIREMENT 不写 severity，走需求澄清。`decides` 超过 3 个方面要写 `decides_reason`；功能已算出正余量而仍开放、或余量不为正却不记失败项时写 `margin_not_decisive_reason`（后者还要在 `loose_bound` 写取得松的那条条款 id，收紧后可能翻转）；DESIGN_VALUE 在有计算的功能里没有对应方面的余量时写 `no_margin_reason`（设计还没选定什么） |
+| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[{aspect, states?}]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`、`title`/`why` 可选。DESIGN_VALUE 另写 `spec` 和 `owner`（不许写成向厂家索取）；VENDOR_DATUM 另写 `checked`（条款 id）、`why_insufficient`、`acquisition` 和 `worst_case`：先按公开界算，`worst_case{bound{condition: 条款 id, value, basis: GUARANTEED_LIMIT/ADJACENT_TEST_POINT/TYPICAL_CURVE/PUBLISHED_TABLE/APPLICATION_NOTE}, result, margin{value,unit,against}}`，公开界下余量为正即已判定（要保留开放须写 `margin_not_decisive_reason` 说明该界漏了什么），为零或为负按 F4 处理；确实没有任何公开界时写 `worst_case{not_boundable_reason, curves_checked[{source, locator}], operating_point_specified}`，列出为找界查过的手册曲线、特性表和应用笔记，并回答手册是否规定了器件在本工作点的工作（`false`：设计依赖手册未规定的工作区，这是设计风险，记失败项、发现项给出回到规定区的改法，不向厂家要）；DELIVERABLE_PENDING（另一阶段欠的交付物）另写 `deliverable_kind`（CUSTOM_PART_DRAWING 定制件图纸 / FIRMWARE_CAPABILITY 固件应用能力 / CONFIGURATION_TABLE 配置表）、`scope`、`deliverable`、`owner`、`assumed`（本判定按什么假定算的）和 `closure`，不写 acquisition/spec；归类看欠的是什么，不看向谁要——目录器件的参数不属于任何一种交付物，是 VENDOR_DATUM；USER_DEFERRED 写 `instruction`；REQUIREMENT 不写 severity，走需求澄清。`decides` 超过 3 个方面要写 `decides_reason`；功能已算出正余量而仍开放、或余量不为正却不记失败项时写 `margin_not_decisive_reason`（后者还要在 `loose_bound` 写取得松的那条条款 id，收紧后可能翻转）；DESIGN_VALUE 在有计算的功能里没有对应方面的余量时写 `no_margin_reason`（设计还没选定什么） |
 | `fails[]` | 失败项：`key`、`finding_id`（指向 findings）、`what`、`decides`，可带 `title`/`why`/`due_stage`/`design_option` |
 | `handoffs[]` | 功能级移交，派生行时填进计划要求移交的行 |
 | `verdict_history[]` | 改过结论时写 `{from, to, basis: [条款或 claim id], note}`，basis 不能为空 |
@@ -266,7 +267,8 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 校验 F1–F8：F1 每个功能有问题、对象、至少一条完整的条款和结论；F2 DESIGN_VALUE 写规格与责任方，不向厂家要；
 F3 VENDOR_DATUM 写查过什么、为什么不够，以及公开界下的最坏情况（界的条款、取值、依据和余量；没有界就列查过的曲线表），公开界下的余量和算出的余量一样决定结论；F4 算出正余量就不能在同一方面保留开放项，余量为零或为负就要有失败项，
 失败项指向的发现项带 `remediation`（清掉亏欠的改法）；要保留开放，正余量写 `margin_not_decisive_reason`，亏欠还要 `loose_bound` 点名取松的条款；F5 行跟随功能（见下）；F6 改结论要引条款或数字；F7 一个开放项铺过 3 个方面要写理由；
-F8 功能已有计算时，DESIGN_VALUE 开放项要有对应方面的余量，或写明设计还没选定什么。
+F8 功能已有计算时，DESIGN_VALUE 开放项要有对应方面的余量，或写明设计还没选定什么；F9 判 PASS 的每个方面有自己的正余量或 `judgements` 条目（引条款），没人判过的方面不会默认通过；
+同一句 `assumptions` 抄进几个功能的计算会被拒绝（写这次计算自己的假定，共用工况写进 intent 一次）。
 
 **文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（摘要数字、选型记录、图纸卫生）不是电路。
 文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）；选型理由的复判走
@@ -280,8 +282,9 @@ PRO-C03 在隔离功能里逐个列出变压器、光耦/数字隔离器、跨�
 
 **行跟随功能。** 绑定了功能的行（计划科目行，或审查员写了 `function_id` 的行；同一组对象声明了两个功能电路时，
 一个框架的科目行可以绑到另一框架的功能，条件是该功能的 `objects` 覆盖这一行的位号与网络，这样共用的科目只判一次、不复制开放项）：功能 PASS → 行 PASS；
-功能 FAIL → `fails[].decides` 命中的（方面，状态）FAIL 并带 `fail_ref`/`finding_id`，其余 PASS；功能 OPEN →
-`open[].decides` 命中的行 INSUFFICIENT 并带 `open_ref: "FN-ID/KEY"`，其余 PASS。`rationale` 写“见功能判定 FN-X（方面，状态）：结论 + 余量”。
+功能 FAIL → `fails[].decides` 命中的（方面，状态）FAIL 并带 `fail_ref`/`finding_id`；功能 OPEN →
+`open[].decides` 命中的行 INSUFFICIENT 并带 `open_ref: "FN-ID/KEY"`；其余的行只有本方面有正余量或 `judgements` 条目才 PASS，
+否则 `derive_rows.py` 报“judges no …”而不生成该行。`rationale` 写“见功能判定 FN-X（方面，状态）：”加本方面自己的结论和余量，或 judgement 的内容和条款。
 `derive_rows.py` 生成这些行；手填的行只对账不覆盖。校验强制：INSUFFICIENT 必有 `open_ref` 且其 `decides` 覆盖本行的方面和状态；
 绑定的行的 `aspect` 等于计划的方面；每个有已审成员的框架都有功能判定。
 
@@ -494,11 +497,14 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   `manual_verification: {tool_limitation, sr_improvement, method, evidence}`：
   SR 为什么做不到（哪个检查器、缺什么映射或模型）、建议怎么改进 SR（具体到规则、别名或模型）、这次怎么核对的。
   这是审查者（通常是 AI）自己的核对，不写成“人工核对”，除非确实有人参与并留有记录。可用 `reviewer_kind: "AI"` 或 `"HUMAN"` 明示实际核对者；未记录时不得推断为人员核对。
-  多条检查因同一限制、用同一核对方法时写相同文字，报告会合并显示。只能用在工具确实拦了的行上；
+  同一对象（只差状态）的几行可写相同文字，报告会合并显示；不同对象写同一段 `method` 会被拒绝，每行写清核对了哪些位号、节点和数值。只能用在工具确实拦了的行上；
   这类行不算 REVIEW_INCOMPLETE、不建开放项，gate 把工具限制列入 `sr_improvements`，不影响准出。
   资料或设计本身没给出的数值不是工具限制，仍按 EXTERNAL_DATA / DESIGN_OPEN 处理。
   工具提示的 `required_inputs` 指向 `intent:` 字段（如 `supervision.rail_requirements` 逐轨 `required=false` / `internal_monitor`，
   `optocouplers[].internal_pullup`）时，是声明缺失不是工具限制：先补 intent、重生成计划再判，不写 `manual_verification`。
+  校验按阻断的缺口代码强制这一条：`intent`、`evidence`、`requirements`、`firmware`、`population`、`datasheet*`、`unverified-device-pinout`、
+  `official-full-pinout`、`rail-requirement`、`level-standard` 开头的缺口是审查者可补的输入，`manual_verification` 覆盖不了；
+  其余（拓扑或模型识别不了，如 `pin-role-or-model:`）才算工具限制，报告“对 SR 的反馈”按缺口代码列出。
 
 ### 示例：一个功能的两个开放项决定两行
 
@@ -529,7 +535,9 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
       {"key": "C5-ESR", "kind": "VENDOR_DATUM", "what": "C5–C8 在 −20 °C 的 ESR 上限",
        "scope": "−20–40 °C 环境，5–12 V 输出", "checked": ["c3"], "why_insufficient": "c3 只给 20 °C ESR",
        "acquisition": "向电容厂家索取低温 ESR，或改用手册给出该值的系列",
-       "worst_case": {"not_boundable_reason": "手册没有低温倍率，无法取上界"},
+       "worst_case": {"not_boundable_reason": "手册和厂家系列特性表都没有低温倍率，无法取上界",
+                      "curves_checked": [{"source": "evidence/ds/C5.txt", "locator": "p1 特性表、p3 阻抗–频率曲线（仅 20 °C）"}],
+                      "operating_point_specified": true},
        "closure": "低温 ESR 满足控制器对输出电容零点的适用条件",
        "decides": [{"aspect": "变换器时序与输出电容条件"}],
        "severity": {"level": "P1", "class": "PERFORMANCE_OR_LIFE", "affects": "低温输出纹波",

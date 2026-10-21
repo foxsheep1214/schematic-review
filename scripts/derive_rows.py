@@ -16,23 +16,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json
-import results_model
 from results_model import text
-from review_functions import decides_row
+from review_functions import decides_row, judged, unjudged_message
 
 DERIVED_FIELDS = ('review_result', 'open_ref', 'fail_ref', 'finding_id', 'severity')
-
-
-def _margin(calculation):
-    return ''.join('；余量 %s%s 对 %s' % (m['value'], m.get('unit') or '', m.get('against') or '')
-                   for m in results_model.margins(calculation))
-
-
-def _conclusion(fn):
-    calc = fn.get('calculation')
-    if isinstance(calc, dict) and text(calc.get('result')):
-        return calc['result'] + _margin(calc)
-    return fn.get('no_calculation_reason') or fn.get('verdict') or ''
 
 
 def _handoff(fn, planned):
@@ -73,7 +60,10 @@ def derive_row(fn, planned, aspect, findings):
             row.update(review_result='INSUFFICIENT', open_ref='%s/%s' % (fn['id'], item['key']),
                        rationale='见功能判定 %s：开放项 %s——%s' % (where, item['key'], item.get('what') or ''))
             return row, None
-    row.update(review_result='PASS', rationale='见功能判定 %s：%s' % (where, _conclusion(fn)))
+    basis = judged(fn, aspect, state)
+    if basis is None:
+        return None, unjudged_message(planned['id'], fn['id'], aspect, state)
+    row.update(review_result='PASS', rationale='见功能判定 %s：%s' % (where, basis))
     return row, None
 
 

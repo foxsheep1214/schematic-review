@@ -105,6 +105,10 @@ class Checker:
         """返回该项判 PASS 时的阻断理由。"""
         return []
 
+    def blocking_gaps(self, key, planned, generated, inventory):
+        """阻断 PASS 的缺口代码（区分审查者可补的输入与工具缺的模型）。"""
+        return [g for g in (generated or {}).get('inventory_gaps') or [] if isinstance(g, str)]
+
     def context_intent(self, inventory):
         """从清单里取回重建所需的意图片段（共享声明与本检查器段），用于过期检测。"""
         if not isinstance(inventory, dict) or not isinstance(inventory.get('context'), dict):
@@ -112,10 +116,10 @@ class Checker:
         return deepcopy(inventory['context'])
 
 
-def validate_inventories(registry, plan, expected, db, require, planner_factory):
+def validate_inventories(registry, plan, expected, db, require, planner_factory, gaps=None):
     """通用清单校验：存在性、版本、过期、生成项一致、对象绑定。
 
-    返回 {check_id: [PASS 阻断理由]}，由调用方在结果为 PASS 时使用。
+    返回 {check_id: [PASS 阻断理由]}，由调用方在结果为 PASS 时使用；给了 `gaps` 就同时记下阻断的缺口代码。
     """
     gates = {}
     for checker in registry:
@@ -164,6 +168,8 @@ def validate_inventories(registry, plan, expected, db, require, planner_factory)
                 blockers = checker.pass_blockers(key, planned, generated.get(key), current)
                 if blockers:
                     gates.setdefault(key, []).extend(blockers)
+                    if gaps is not None:
+                        gaps.setdefault(key, []).extend(checker.blocking_gaps(key, planned, generated.get(key), current))
         except (ValueError, TypeError, KeyError, AttributeError) as error:
             require(False, checker.invalid_message + str(error))
     return gates

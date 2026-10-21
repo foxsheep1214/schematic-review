@@ -1,5 +1,6 @@
 """The delivery is one generated report plus a small record; numbers come only from the ledger."""
 import contextlib
+import copy
 import io
 import json
 import tempfile
@@ -148,18 +149,50 @@ class RenderReportTests(unittest.TestCase):
         self.assertNotIn('NA，', text)
         self.assertNotIn('## 待办', text)
 
-    def tool_gate(self, row_update):
+    def tool_gate(self, row_update, codes=(), rows=1, objects=None):
         p, r, db = fixture()
-        key = r['checks'][0]['id']
-        r['checks'][0].update(row_update)
+        keys = [c['id'] for c in r['checks'][:rows]]
+        for key, obj in zip(keys, objects or []):
+            next(c for c in p['checks'] if c['id'] == key)['object'] = obj
+        if objects:
+            r['plan_digest'] = vr.fingerprint(p)
+        for row in r['checks'][:rows]:
+            row.update(copy.deepcopy(row_update))
         real = vr.validate_inventories
 
-        def gated(*args):
-            gates = real(*args)
-            gates.setdefault(key, []).append(key + ': synthetic tool gap before PASS')
+        def gated(*args, gaps=None):
+            gates = real(*args, gaps=gaps)
+            for key in keys:
+                gates.setdefault(key, []).append(key + ': synthetic tool gap before PASS')
+                if gaps is not None:
+                    gaps.setdefault(key, []).extend(codes)
             return gates
         with mock.patch.object(vr, 'validate_inventories', gated):
-            return key, report(p, r, db)
+            return keys[0], report(p, r, db)
+
+    MANUAL = {'tool_limitation': 'Kelvin source pins not mapped', 'method': 'Traced pins on the vendor drawing',
+              'sr_improvement': 'Accept S1_KELVIN/S2_POWER as source aliases backed by the pin map',
+              'evidence': [{'source': 'synthetic-fixture.json', 'locator': 'Q1'}]}
+
+    def test_manual_verification_does_not_override_a_missing_input(self):
+        """A gap the reviewer closes by declaring an input (datasheet requirement, intent, evidence) is supplied and
+        the plan regenerated; only a model the tool lacks is verified by hand."""
+        key, (_, gate) = self.tool_gate({'manual_verification': self.MANUAL}, codes=['datasheet-requirement:capacitance'])
+        self.assertFalse(gate['valid'])
+        self.assertTrue(any(key in e and 'datasheet-requirement:capacitance' in e and 'regenerate' in e
+                            for e in gate['errors']), gate['errors'])
+        _, (text, gate) = self.tool_gate({'manual_verification': self.MANUAL}, codes=['pin-role-or-model:U2'])
+        self.assertTrue(gate['valid'], gate['errors'])
+        self.assertEqual(gate['sr_improvements'][0]['tool_gaps'], ['pin-role-or-model:U2'])
+        self.assertIn('pin-role-or-model:U2', text.split('## 对 SR 的反馈（设计者不用处理）')[1])
+
+    def test_one_manual_method_over_different_objects_is_refused(self):
+        _, (_, gate) = self.tool_gate({'manual_verification': self.MANUAL}, rows=2,
+                                      objects=[{'ref': 'Q1'}, {'ref': 'Q2'}])
+        self.assertTrue(any('manual_verification.method' in e for e in gate['errors']), gate['errors'])
+        _, (_, gate) = self.tool_gate({'manual_verification': self.MANUAL}, rows=2,
+                                      objects=[{'ref': 'Q1'}, {'ref': 'Q1'}])
+        self.assertFalse(any('manual_verification.method' in e for e in gate['errors']), gate['errors'])
 
     def test_tool_gap_still_blocks_pass_without_manual_verification(self):
         key, (_, gate) = self.tool_gate({})

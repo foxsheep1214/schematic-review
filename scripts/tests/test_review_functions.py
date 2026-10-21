@@ -181,7 +181,7 @@ class FunctionShapeTests(unittest.TestCase):
 
 
 def hv_datum(**worst):
-    """A vendor datum shaped like the R5 items: the clauses read, and a worst case under the public bound."""
+    """A vendor datum: the clauses read, and a worst case under the public bound."""
     item = {'key': 'HV-IV', 'kind': 'VENDOR_DATUM', 'what': 'U1 HV 恒流源在 40–120 V 的电流下限',
             'scope': '90 Vac、R4 压降后', 'closure': '40..120 V 启动电流下界 ≥ 2 mA',
             'acquisition': '原厂应用支持', 'checked': ['c3'], 'why_insufficient': '表头只给 120 V 测试点',
@@ -203,7 +203,7 @@ class PublicBoundTests(unittest.TestCase):
     (clause, value, how it bounds) and the margin under it, and that margin decides like any other (F4)."""
 
     def test_f3_worst_case_names_the_public_bound_and_its_margin(self):
-        fn = with_datum(result='按 VHV(MIN) 40 V 仍工作')   # prose only, like the R5 items
+        fn = with_datum(result='按 VHV(MIN) 40 V 仍工作')   # prose only, no bound or margin
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('public bound' in e for e in errors), errors)
         fn = with_datum(); fn['open'][0].update(margin_not_decisive_reason='120 V 点的斜率不保证 40 V', loose_bound='c3')
@@ -256,9 +256,55 @@ class PublicBoundTests(unittest.TestCase):
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('curves_checked' in e for e in errors), errors)
         fn['open'][0]['worst_case']['curves_checked'] = [{'source': 'evidence/ds/U1.txt', 'locator': 'Fig. 12 IHV vs VHV'}]
+        fn['open'][0]['worst_case']['operating_point_specified'] = True
         self.assertEqual(function_errors({'functions': [fn]}), [])
         fn['open'][0]['worst_case']['curves_checked'] = ['looked']
         self.assertTrue(any('curves_checked' in e for e in function_errors({'functions': [fn]})))
+
+    def test_an_operating_point_the_datasheet_does_not_specify_is_a_design_risk_not_a_vendor_request(self):
+        """Unboundable because the design runs where the datasheet specifies nothing (an output given only above
+        some supply): the answer is a fail item whose finding moves the design into the specified region."""
+        fn = with_datum(not_boundable_reason='V5 只在 VDD>6 V 时规定，本机 VDD 4.75 V',
+                        curves_checked=[{'source': 'evidence/ds/U1.txt', 'locator': 'p11 V5'}])
+        self.assertTrue(any('operating_point_specified' in e for e in function_errors({'functions': [fn]})))
+        fn['open'][0]['worst_case']['operating_point_specified'] = False
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('does not specify' in e and 'fail item' in e for e in errors), errors)
+
+
+class TemplateTextTests(unittest.TestCase):
+    def test_one_assumption_copied_into_every_function_is_refused(self):
+        """An assumption says what that calculation assumed; a sentence shared by every function assumes nothing."""
+        a, b = bias_function('PASS'), bias_function('PASS')
+        b['id'] = 'FN-BIAS2'
+        for i, fn in enumerate((a, b)):
+            fn['calculation']['assumptions'] = ['详见工程记录；条件预算不称原厂保证。', 'Ta = %d °C' % (50 + i)]
+        errors = function_errors({'functions': [a, b]})
+        self.assertTrue(any('FN-BIAS, FN-BIAS2' in e and 'assumption' in e for e in errors), errors)
+        b['calculation']['assumptions'] = ['Ta = 51 °C']
+        self.assertFalse(any('assumption' in e for e in function_errors({'functions': [a, b]})))
+
+
+class AspectJudgementTests(unittest.TestCase):
+    """A judgement for an aspect without a number cites the clauses it rests on."""
+
+    def test_a_judgement_names_its_aspect_clauses_and_what_they_settle(self):
+        fn = bias_function('PASS')
+        fn['judgements'] = [{'aspect': '启动与关断时序', 'conditions': ['c3'], 'says': 'U1 UVLO 处理掉电'}]
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        for broken in ({'conditions': ['c9']}, {'conditions': []}, {'says': ''}, {'aspect': ''}):
+            bad = copy.deepcopy(fn); bad['judgements'][0].update(broken)
+            self.assertTrue(any('judgements' in e for e in function_errors({'functions': [bad]})), broken)
+
+    def test_a_pass_row_needs_its_aspect_judged(self):
+        fn = bias_function('PASS')
+        del fn['calculation']['margin']
+        p, r, db = ledger(fn)
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(any('judges no' in e for e in out['errors']), out['errors'])
+        fn['judgements'] = [{'aspect': ASPECT, 'conditions': ['c3'], 'says': 'VCC_min 9.6 V 高于 VCC(off) max'}]
+        p, r, db = ledger(fn)
+        self.assertTrue(vr.validate_review(p, r, db)['valid'])
 
 
 class DeliverablePendingTests(unittest.TestCase):
@@ -269,6 +315,7 @@ class DeliverablePendingTests(unittest.TestCase):
         return {'key': 'T1-DRAWING', 'kind': 'DELIVERABLE_PENDING', 'what': 'T1 带绝缘体系的磁件图纸还没有交付',
                 'scope': '加强绝缘、5000 m', 'deliverable': 'T1 磁件规格书：三重线型号、绕组顺序、边距、耐压试验值',
                 'owner': '磁件设计', 'assumed': '按 intent 的 48:6:21 匝比和三重线次级计算',
+                'deliverable_kind': 'CUSTOM_PART_DRAWING',
                 'closure': '规格书给出上述项且耐压 ≥ 3000 Vac',
                 'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN']}],
                 'margin_not_decisive_reason': '余量按假定的匝比算，匝比在待交付的图纸上',
@@ -282,6 +329,20 @@ class DeliverablePendingTests(unittest.TestCase):
             self.assertTrue(function_errors({'functions': [broken]}), field)
         broken = copy.deepcopy(fn); broken['open'][0]['acquisition'] = '向厂家索取'
         self.assertTrue(any('only belong' in e for e in function_errors({'functions': [broken]})))
+        broken = copy.deepcopy(fn); del broken['open'][0]['scope']
+        self.assertTrue(any('scope' in e for e in function_errors({'functions': [broken]})))
+
+    def test_a_deliverable_says_what_kind_of_artifact_is_owed(self):
+        """Kind is decided by what is owed, not by who owes it: a firmware capability statement from the chip vendor is a
+        deliverable; a parameter of a catalog part is a VENDOR_DATUM with its public bound, and no deliverable kind fits it."""
+        fn = bias_function(); fn['open'] = [self.pending()]
+        del fn['open'][0]['deliverable_kind']
+        self.assertTrue(any('deliverable_kind' in e for e in function_errors({'functions': [fn]})))
+        fn['open'][0]['deliverable_kind'] = 'PART_PARAMETER'
+        self.assertTrue(any('deliverable_kind' in e for e in function_errors({'functions': [fn]})))
+        fn['open'][0].update(deliverable_kind='FIRMWARE_CAPABILITY', owner='芯片原厂应用支持',
+                             deliverable='向原厂取得所用 OTP 应用支持的控制接口与状态机说明')
+        self.assertEqual(function_errors({'functions': [fn]}), [])
 
     def test_rows_count_the_deliverable_apart_from_data_and_design_gaps(self):
         fn = bias_function(); fn['open'] = [self.pending()]
@@ -293,6 +354,32 @@ class DeliverablePendingTests(unittest.TestCase):
         self.assertIn('因为等交付物，现在还判断不了', text)
         task = next(t for t in out['workflow']['work_items'] if t['id'] == 'W-T1-DRAWING')
         self.assertEqual(task['next_action'], '由磁件设计交付：T1 磁件规格书：三重线型号、绕组顺序、边距、耐压试验值')
+
+    def test_the_report_shows_why_a_computed_margin_did_not_decide(self):
+        """Every exit from a margin is shown to the reader, with the clause taken loose."""
+        fn = bias_function()
+        p, r, db = ledger(fn)
+        out = vr.validate_review(p, r, db)
+        section = render(p, r, out).split('### W-AUX-5V-MIN')[1].split('\n## ')[0]
+        self.assertIn('- **为什么不按余量下结论**：余量按标称辅助电压算，辅助电压本身是待定的设计值', section)
+
+    def test_the_report_shows_the_worst_case_under_the_public_bound(self):
+        fn = with_datum()
+        fn['open'][0].update(margin_not_decisive_reason='40 V 外推取了线性，过松', loose_bound='c3')
+        p, r, db = ledger(fn)
+        out = vr.validate_review(p, r, db)
+        section = render(p, r, out).split('### W-HV-IV')[1].split('\n## ')[0]
+        self.assertIn('- **公开界下的最坏情况**：按 120 V 测试点下界，40 V 时按线性外推 0.8 mA（界：IHV ≥ 2.4 mA @120 V，c3）', section)
+        self.assertIn('- **为什么不按余量下结论**：40 V 外推取了线性，过松（取松的条款 c3）', section)
+
+    def test_the_report_shows_what_the_verdict_assumed_and_what_closes_it(self):
+        fn = bias_function(); fn['open'] = [self.pending()]
+        p, r, db = ledger(fn)
+        out = vr.validate_review(p, r, db)
+        section = render(p, r, out).split('### W-T1-DRAWING')[1].split('\n## ')[0]
+        self.assertIn('- **按什么假定判的**：按 intent 的 48:6:21 匝比和三重线次级计算', section)
+        self.assertIn('适用范围：加强绝缘、5000 m', section)
+        self.assertIn('- **怎样算通过**：规格书给出上述项且耐压 ≥ 3000 Vac', section)
 
 
 class RowBindingTests(unittest.TestCase):
@@ -342,7 +429,7 @@ class DerivedLevelsTests(unittest.TestCase):
         short = {'key': 'SHORT-SOA', 'kind': 'VENDOR_DATUM', 'what': 'Q5 短路关断轨迹', 'scope': '22.1 V 热态短路',
                  'closure': 'Q5 重复短路 SOA 内', 'acquisition': '原厂应用支持', 'checked': ['c3'],
                  'why_insufficient': '手册无 VBUS 关断轨迹',
-                 'worst_case': {'not_boundable_reason': '无驱动电流上限',
+                 'worst_case': {'not_boundable_reason': '无驱动电流上限', 'operating_point_specified': True,
                                 'curves_checked': [{'source': 'evidence/ds/U5.txt', 'locator': 'Fig. 3 SOA'}]},
                  'decides': [{'aspect': ASPECT, 'states': ['LATCH']}], 'margin_not_decisive_reason': '余量是偏置电压的，不是 Q5 的',
                  'severity': {'level': 'P0', 'class': 'DAMAGE_OR_HAZARD', 'hazard_path': 'FIRE', 'affects': 'Q5',

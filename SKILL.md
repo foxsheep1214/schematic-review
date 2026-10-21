@@ -159,7 +159,9 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
    本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`）；另一阶段欠的交付物（磁件图纸、固件应用能力确认）记
    DELIVERABLE_PENDING（`deliverable`+`owner`+`assumed`）；只有厂家才知道、公开界（保证限值、相邻测试点单调夹界、
    公开特性表、典型曲线加余量、应用笔记公式）也兜不住的参数才记 VENDOR_DATUM，并写查过哪几条、为什么不够、
-   公开界下的最坏情况与余量（`worst_case.bound`/`margin`；没有界就列 `curves_checked`）。框架外的功能（intent 没有声明的电路）自己加，同样校验。
+   公开界下的最坏情况与余量（`worst_case.bound`/`margin`；没有界就列 `curves_checked`，手册没规定本工作点的是设计风险，记失败项）。
+   没有数值的方面写 `judgements`（方面、条款、说明了什么）；行只有本方面有正余量或 judgement 才 PASS，没人判过的方面不默认通过。
+   框架外的功能（intent 没有声明的电路）自己加，同样校验。
    隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是隔离/变换器功能的方面，在同一个功能判定里写条款与计算。
    文档检查（DOC-*）不是功能电路：文档错误直接在行上判 FAIL 并写 finding，不包成功能。
 2. **行派生**：跑 `derive_rows.py`（见第 7 步）；绑定了功能的行不手填。
@@ -211,7 +213,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 - 执行审计（`--execution-audit`）是可选自检，不是交付门槛；用法见 [执行一致性](references/execution-consistency.md#可选的机器自检)。
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。
 - 已有资料尚未读算的项记 REVIEW_INCOMPLETE，本轮自己读算完；审查未完成时只交进度，`pack_review.py` 拒绝打包。
-  只剩 SR 工具自身限制、审查时已对照网表和原厂资料核对完的，按核对结论判定并写 `manual_verification`，不记 REVIEW_INCOMPLETE。
+  只剩 SR 工具自身限制、审查时已对照网表和原厂资料核对完的，按核对结论判定并写 `manual_verification`，不记 REVIEW_INCOMPLETE；
+  工具因缺输入（手册要求、intent 声明、证据）拦住的不是工具限制，补输入、重生成计划，`manual_verification` 覆盖不了。
 - 进报告的文字（任务、finding、handoff、notes）用白话，不用 [写法要求](references/report-and-remediation.md) 列出的词；
   `pack_review.py` 会检查。
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。

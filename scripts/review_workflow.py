@@ -101,7 +101,9 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
                                         {f.get('id') for f in report.get('findings') or [] if isinstance(f, dict)}))
         for cid in linked:
             owners.setdefault(cid, []).append(item)
-        tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option', 'request_keys') if k in item})
+        tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option', 'request_keys',
+                                     'assumed', 'required_scope', 'closure_criterion', 'worst_case', 'kept_open')
+                      if k in item})
     classes = results_model.IMPACT_CLASS_VERSION
     errors.extend(validate_scopes(tasks, checks, strict=True, classes=classes))
     task_owners = ownership(tasks)

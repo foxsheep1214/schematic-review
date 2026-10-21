@@ -264,14 +264,14 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
     requests = [req for _, _, req in view['requests']]
     names = [task.get(f).strip() for f in ('title', 'root_cause') if isinstance(task.get(f), str) and task[f].strip()]
     scopes = []
-    for scope in unique(q.get('required_scope') for q in requests):
+    for scope in unique([q.get('required_scope') for q in requests] + [task.get('required_scope')]):
         # A scope that only repeats the title/root cause adds nothing; show the remainder or nothing.
         rest = scope
         for name in names:
             rest = rest.replace(name, '')
         if re.sub(r'[\s，、；;：:。.()（）/]+', '', rest):
             scopes.append(scope)
-    criteria = unique(q.get('closure_criterion') for q in requests)
+    criteria = unique([q.get('closure_criterion') for q in requests] + [task.get('closure_criterion')])
     reason = (task.get('reason') or '').strip()
     # Old records sometimes put the scope in the impact field verbatim.
     # Remove only that exact duplicate, never infer equivalence from similarity.
@@ -296,6 +296,9 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
     read, todo = split_read([action] + acquisitions)
     fields = [('缺什么', missing),
               ('为什么要紧', [reason]),
+              ('按什么假定判的', [task.get('assumed')]),
+              ('公开界下的最坏情况', [task.get('worst_case')]),
+              ('为什么不按余量下结论', [task.get('kept_open')]),
               ('已查过', read),
               ('还要做', todo),
               ('怎样算通过', criteria)]
@@ -678,10 +681,13 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         same = OrderedDict()
         for t in tool_gaps:
             key = tuple(cell(t.get(f) or '') for f in ('tool_limitation', 'sr_improvement', 'method', 'reviewer_kind'))
+            key += ('、'.join(cell(g) for g in t.get('tool_gaps') or []),)
             same.setdefault(key, []).append(t['check_id'])
-        for (limit, improve, method, reviewer), ids in same.items():
-            sr += ['#### ' + '、'.join(ids), '',
-                   '- **SR 为什么做不到**：' + limit,
+        for (limit, improve, method, reviewer, gaps), ids in same.items():
+            sr += ['#### ' + '、'.join(ids), '']
+            if gaps:
+                sr.append('- **工具缺口**：' + gaps)
+            sr += ['- **SR 为什么做不到**：' + limit,
                    '- **建议怎么改进 SR**：' + improve,
                    '- **这次怎么核对的**：' + ({'AI': 'AI 核对：', 'HUMAN': '人员核对：'}.get(reviewer, '')) + method, '']
     sr += render_sr_feedback(notes.get('sr_feedback'))

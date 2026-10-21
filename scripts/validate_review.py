@@ -119,6 +119,16 @@ SCOPE = set(catalog.COVERAGE_RULES)
 
 # Why the automatic checker could not decide, and how the reviewer independently checked it.
 MANUAL_FIELDS = ('tool_limitation', 'sr_improvement', 'method')
+# Tool gaps the review closes itself by supplying an input (declaration, datasheet fact, evidence, requirement)
+# and regenerating the plan. Only the rest — a model or topology the tool lacks — may be verified by hand.
+INPUT_GAP_HEADS = ('intent', 'evidence', 'requirements', 'firmware', 'population', 'datasheet', 'datasheets',
+                   'datasheet-requirement', 'datasheet-audit', 'unverified-device-pinout', 'official-full-pinout',
+                   'rail-requirement', 'level-standard')
+
+
+def input_gap(code):
+    head = code.split(':', 1)[0].strip()
+    return head in INPUT_GAP_HEADS or head.split('.', 1)[0] in INPUT_GAP_HEADS
 
 
 def text(value):
@@ -260,8 +270,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                         rule + ': automatic check explanation missing or changed from saved inputs')
         except (ValueError, TypeError, KeyError, AttributeError) as error:
             require(False, 'invalid generated-check inputs: ' + str(error))
+    tool_gaps = {}
     gates = validate_inventories(REGISTRY, plan, expected, db, require,
-                                 lambda context: ReviewPlanner(db, context))
+                                 lambda context: ReviewPlanner(db, context), gaps=tool_gaps)
     checks = index(report.get("checks"), "results.checks")
     scope_errors, stage_scope = validate_stage_scope(checks, expected)
     errors.extend(scope_errors)
@@ -284,6 +295,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     errors.extend(stage['errors'])
     accepted = False
     sr_improvements = []
+    manual_methods = {}
     for key, item in checks.items():
         if bindings and key in expected:
             planned = expected[key]
@@ -311,12 +323,19 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             require(isinstance(manual, dict) and all(text(manual.get(f)) for f in MANUAL_FIELDS)
                     and evidence(manual.get('evidence')),
                     f'{key}: manual_verification needs ' + ', '.join(MANUAL_FIELDS) + ' and evidence')
+            inputs = [c for c in tool_gaps.get(key, []) if input_gap(c)]
+            require(not inputs, f'{key}: ' + ', '.join(inputs) + ' is an input the review supplies — declare it (intent, '
+                    'datasheet facts, evidence) and regenerate the plan; manual_verification is only for a model the tool lacks')
+            if isinstance(manual, dict) and text(manual.get('method')):
+                obj = {k: v for k, v in ((expected.get(key) or {}).get('object') or {}).items() if k != 'state'}
+                manual_methods.setdefault(manual['method'].strip(), {}).setdefault(
+                    json.dumps(obj, sort_keys=True, ensure_ascii=False), []).append(key)
             if isinstance(manual, dict) and 'reviewer_kind' in manual:
                 require(manual['reviewer_kind'] in ('AI', 'HUMAN'),
                         f'{key}: reviewer_kind must record the actual AI/HUMAN reviewer')
         if result in ('PASS', 'FAIL') and gates.get(key) and isinstance(manual, dict):
             # The reviewer's evidenced conclusion stands; the tool gap is an SR improvement, not design work.
-            sr_improvements.append({'check_id': key, 'tool_messages': gates[key],
+            sr_improvements.append({'check_id': key, 'tool_messages': gates[key], 'tool_gaps': tool_gaps.get(key, []),
                                     **{f: manual.get(f) for f in MANUAL_FIELDS},
                                     **({'reviewer_kind': manual['reviewer_kind']} if 'reviewer_kind' in manual else {})})
         elif result == 'PASS':
@@ -412,6 +431,11 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             if h.get("state") in ("ACCEPTED", "VERIFIED"):
                 require(evidence(h.get("evidence")), f"{key}: handoff acceptance/verification needs record")
 
+    for method, groups in manual_methods.items():
+        if len(groups) > 1:
+            rows_sharing = sorted(k for keys in groups.values() for k in keys)
+            errors.append(', '.join(rows_sharing) + ': one manual_verification.method over different objects; say what was '
+                          'checked on each row (its refs, nodes, values)')
     errors.extend(split_out_errors(checks, expected))
     errors.extend(history_citation_errors(report, checks, expected))
     errors.extend(validate_functions(plan, written, checks, history_ids))

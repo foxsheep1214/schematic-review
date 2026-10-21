@@ -71,10 +71,11 @@ notes 不能改结论或计数，不写内部代码名（gap_cause、documented 
 | 对 SR 的反馈 | SR 哪里不对、该怎么改 | 审查员（sr_feedback、manual_verification） | 每条点名规则、本板实例、建议 | 板子本身的问题 |
 | 索引 | 每个记录文件装什么 | 脚本 | — | — |
 
-待办固定五行，每行只装一种内容：
+待办固定五行，每行只装一种内容；另有三行只在有内容时出现：等交付物的“按什么假定判的”、缺资料的“公开界下的最坏情况”（`worst_case.result` 和界）、以及“为什么不按余量下结论”（`margin_not_decisive_reason`，带 `loose_bound` 点名的条款）——每个不按余量下结论的出口都给读者看见：
 
 - **缺什么**（开放项的 `what` + `scope`）：哪个器件缺哪个数或哪项设计没定，适用哪些工况。
 - **为什么要紧**（`why`，无则 `severity.consequence`）：缺了它判断不了什么、可能出什么事。只复述“缺什么”的句子不显示；三件以上共用的句子也不显示。
+- **按什么假定判的**（DELIVERABLE_PENDING 的 `assumed`）：交付物没到之前，本判定按什么假定算的，交付物到了先核这一条。
 - **已查过**（`acquisition` 开头的“已读……”）：读过哪份资料哪几页、查到了什么。几处写的同一份资料只显示一次。
 - **还要做**（其余部分：DESIGN_VALUE 是“由 {owner} 确定：{spec}”，VENDOR_DATUM 是 `acquisition`，DELIVERABLE_PENDING 是“由 {owner} 交付：{deliverable}”，失败项是“按发现项 … 的改法处理”）：向谁取得什么、算什么、改什么。
 - **怎样算通过**（`closure`）：可以复核的数值或条件。

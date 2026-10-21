@@ -24,6 +24,8 @@ REQUEST_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM')
 # How a public number bounds the quantity at the design's operating point (F3).
 BOUND_BASES = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'TYPICAL_CURVE', 'PUBLISHED_TABLE', 'APPLICATION_NOTE')
 DELIVERABLE_FIELDS = ('deliverable', 'owner', 'assumed', 'closure')
+# What another stage owes; a parameter of a catalog part is none of these (it is a VENDOR_DATUM with its public bound).
+DELIVERABLE_KINDS = ('CUSTOM_PART_DRAWING', 'FIRMWARE_CAPABILITY', 'CONFIGURATION_TABLE')
 VENDOR_ASK_RE = re.compile(r'向[^，,；;。]{0,16}(?:原厂|厂商|厂家|供应商|[A-Z][A-Za-z]{2,})[^，,；;。]{0,8}(?:索取|取得|索要|要)'
                            r'|ask(?:ing)? (?:the )?(?:vendor|supplier|manufacturer)|request(?:ed)? from (?:the )?(?:vendor|supplier)', re.I)
 MANY_ASPECTS = 3
@@ -51,6 +53,44 @@ def decides_row(item, aspect, state):
         if item_aspect == aspect and (states is None or state is None or state in states):
             return True
     return False
+
+
+def judged(fn, aspect, state=None):
+    """What settles `aspect` (in `state`) in favour of the design: a positive margin on that aspect, or a
+    judgements entry citing the clauses. None when nothing does — a row never passes on another aspect's result."""
+    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    for m in results_model.margins(calc):
+        if (m.get('aspect') or calc.get('aspect')) == aspect and type(m['value']) in (int, float) and m['value'] > 0:
+            return '%s；余量 %s%s 对 %s' % (calc.get('result') or '', m['value'], m.get('unit') or '', m.get('against') or '')
+    for j in fn.get('judgements') or []:
+        if not (isinstance(j, dict) and j.get('aspect') == aspect and text(j.get('says'))):
+            continue
+        states = j.get('states')
+        if not states or state is None or state in states:
+            return '%s（依据 %s）' % (j['says'], '、'.join(c for c in j.get('conditions') or [] if isinstance(c, str)))
+    return None
+
+
+def unjudged_message(cid, fid, aspect, state):
+    return ('%s: function %s judges no %s%s — give that aspect its margin in calculation.margin or a judgements '
+            'entry {aspect, conditions, says}; a row does not pass on another aspect\'s result'
+            % (cid, fid, aspect, (' in state ' + state) if state else ''))
+
+
+def _judgement_errors(fid, fn, condition_ids):
+    errors = []
+    judgements = fn.get('judgements')
+    if judgements is None:
+        return errors
+    if not isinstance(judgements, list):
+        return [fid + ': judgements is a list of {aspect, conditions, says[, states]}']
+    for i, j in enumerate(judgements):
+        conditions = j.get('conditions') if isinstance(j, dict) else None
+        if not (isinstance(j, dict) and text(j.get('aspect')) and text(j.get('says'))
+                and isinstance(conditions, list) and conditions and all(c in condition_ids for c in conditions)):
+            errors.append('%s/judgements[%d]: names the aspect, the condition ids it rests on and what they settle (says)'
+                          % (fid, i))
+    return errors
 
 
 def document_row(check_id):
@@ -157,6 +197,14 @@ def _worst_case_errors(label, item, condition_ids):
         if not evidence(worst.get('curves_checked')):
             return [label + ': worst_case.curves_checked lists the datasheet figures, published tables and application '
                             'notes searched for a bound (source, locator) before the quantity is called unboundable']
+        specified = worst.get('operating_point_specified')
+        if not isinstance(specified, bool):
+            return [label + ': worst_case.operating_point_specified says whether the datasheet specifies the part at '
+                            'this operating point at all (true: only the parameter is missing)']
+        if not specified:
+            return [label + ': the datasheet does not specify the part at this operating point; relying on it is a design '
+                            'risk — record a fail item whose finding moves the design into the specified region, '
+                            'not a vendor request']
         return []
     errors = []
     bound = worst.get('bound')
@@ -248,6 +296,11 @@ def _item_errors(label, item, kind_field, condition_ids, finding_ids):
                 errors.append('%s: a pending deliverable names %s (what another stage owes, who owes it, what this '
                               'verdict assumed from it, what closes it)' % (label, '/'.join(DELIVERABLE_FIELDS)))
                 break
+        if not text(item.get('scope')):
+            errors.append(label + ': scope required (the conditions the deliverable must cover)')
+        if item.get('deliverable_kind') not in DELIVERABLE_KINDS:
+            errors.append('%s: deliverable_kind is one of %s; a parameter of a catalog part is a VENDOR_DATUM with its '
+                          'public bound' % (label, '/'.join(DELIVERABLE_KINDS)))
     elif kind not in REQUEST_KINDS:
         stray = [f for f in ('spec', 'owner', 'acquisition', 'closure', 'checked', 'worst_case') if f in item]
         if stray:
@@ -328,6 +381,7 @@ def function_errors(report):
                     isinstance(m, dict) and type(m.get('value')) in (int, float) and text(m.get('unit'))
                     and text(m.get('against')) and ('aspect' not in m or text(m['aspect'])) for m in items)):
                 errors.append(fid + ': calculation.margin is {value: number, unit, against[, aspect]} or a list of them')
+        errors.extend(_judgement_errors(fid, fn, condition_ids))
         if not evidence(fn.get('evidence')):
             errors.append(fid + ': evidence locates the analysis (engineering record, calculation file)')
         if fn.get('verdict') not in VERDICTS:
@@ -371,7 +425,21 @@ def function_errors(report):
                     if not ok:
                         errors.append('%s/verdict_history[%d]: a changed verdict cites condition or claim ids in basis'
                                       % (fid, i))
+    errors.extend(_shared_assumption_errors(functions))
     return errors
+
+
+def _shared_assumption_errors(functions):
+    """An assumption says what that calculation assumed; one sentence copied into several functions assumes nothing."""
+    owners = {}
+    for fn in functions:
+        calc = fn.get('calculation') if isinstance(fn, dict) and isinstance(fn.get('calculation'), dict) else {}
+        for a in calc.get('assumptions') or []:
+            if text(a):
+                owners.setdefault(a.strip(), []).append(fn['id'])
+    return ['%s: the same assumption in every one of these calculations (%s); write what each calculation assumed, '
+            'and put a shared operating condition in intent once' % (', '.join(sorted(set(ids))), a[:40])
+            for a, ids in owners.items() if len(set(ids)) > 1]
 
 
 def binding_errors(expected, checks, functions, history_ids=()):
@@ -399,6 +467,9 @@ def binding_errors(expected, checks, functions, history_ids=()):
             if not decides_row(item, row['aspect'], state):
                 errors.append('%s: %s %s does not decide aspect %s%s; extend its decides or bind the row elsewhere'
                               % (cid, field, ref, row['aspect'], (' in state ' + state) if state else ''))
+        if (result == 'PASS' and fid is not None and cid not in history_ids and text(row.get('aspect'))
+                and judged(functions[fid], row['aspect'], state) is None):
+            errors.append(unjudged_message(cid, fid, row['aspect'], state))
         if result == 'FAIL' and fid is not None and cid not in history_ids and 'fail_ref' not in row:
             errors.append(cid + ': a FAIL row bound to a function names the fail item that records it (fail_ref)')
         if result == 'FAIL' and 'fail_ref' in row and row['fail_ref'] in items:
