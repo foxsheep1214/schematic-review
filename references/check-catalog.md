@@ -643,6 +643,25 @@
 | SCHEMATIC_COMPLIANCE 原理图可核部分 | 标准或认证中原理图能核的器件资格与电路要求逐条核 |
 | EXCLUDED_FUNCTION 明确排除 | 需求明确排除的功能或认证：记排除原文，相应检查记不适用（NA） |
 
+需求里的数字读进 `requirements[].parameters`（`name`、`min`/`max`、`unit`、`condition`）；每个数字须在该条原文里出现，条件须是原文里的一段，数值按下表换算到规范单位。
+
+| 参数 | 名称 | 规范单位 | 可写单位 |
+|---|---|---|---|
+| input_voltage | 输入电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC |
+| input_frequency | 输入频率 | Hz | Hz、kHz |
+| output_voltage | 输出电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC |
+| output_current | 输出电流 | A | A、mA |
+| output_power | 输出功率 | W | W、mW、kW |
+| ripple | 纹波 | V | V、mV、Vpp、mVpp |
+| accuracy | 精度 | % | % |
+| surge_voltage | 浪涌或瞬态电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC |
+| esd_voltage | 静电放电电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC |
+| ambient_temperature | 工作环境温度 | °C | °C、℃ |
+| storage_temperature | 储存温度 | °C | °C、℃ |
+| humidity | 相对湿度 | %RH | %RH、% |
+| altitude | 海拔 | m | m、km |
+| lifetime | 设计寿命 | 年 | 年、year、h |
+
 ## 覆盖维度
 
 | 维度（results.scope_checks 键） | 规则 |

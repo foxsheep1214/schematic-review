@@ -89,7 +89,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 
 从资料和对话提取功能/量化指标、接口角色与数量、输入范围/负载、温度、降额依据、保留/删除项，
 写入 `intent.json`（字段见 [计划与结果台账](references/plan-and-results.md)）：需求原文由
-`requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）和确认状态，判据由类别的审查方面模板生成；装配配置写入 `intent.assemblies`；设 `review_phase`（日常设计 `design_iteration`，
+`requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）、从原文读出的数字（`parameters`）和确认状态，判据由类别的审查方面模板生成；装配配置写入 `intent.assemblies`；设 `review_phase`（日常设计 `design_iteration`，
 用户明确要冻结才用 `schematic_freeze`）。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
 集中提出，先做不受影响的工作，不逐颗器件打断用户，也不自行接受风险。
 录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待定、

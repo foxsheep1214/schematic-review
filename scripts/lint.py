@@ -26,6 +26,7 @@ import io
 import json
 import os
 import re
+import requirement_parameters
 import sys
 from collections import defaultdict
 
@@ -180,7 +181,7 @@ class Lint:
         self.db_sha256 = db_fingerprint(db)
         self.datasheet_audit = datasheet_audit
         self.results = []
-        self.intent = intent or {}
+        self.intent = requirement_parameters.resolve(intent or {})
         self.evidence = evidence or {}
         self.nets = db['nets']
         self.parts = db['parts']

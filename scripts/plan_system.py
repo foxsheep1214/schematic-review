@@ -4,6 +4,7 @@
 ReviewPlanner 混入这里的方法。"""
 import board_intent
 import catalog
+import requirement_parameters
 from checkers.netgraph import IC, NetGraph
 
 SYSTEM_MATERIALS = {'PWR-T06': ('datasheets', 'platform_checklist'), 'SIG-D13': ('datasheets', 'platform_checklist'),
@@ -52,6 +53,13 @@ class SystemPlanning:
                      'question': catalog.system_frame_question(sid, sorted(nets), sorted(refs)),
                      'objects': {'refs': sorted(refs), 'nets': sorted(nets)}, 'states': ['run'], 'members': [],
                      'blind_spots': {}, 'checklist': list(catalog.BOUNDING_STEPS)}
+            if sid == 'SYS-POWER':
+                # The power tree is judged over the input range the requirements give.
+                found = [w for name in requirement_parameters.INPUT_PARAMETERS
+                         for w in requirement_parameters.windows(self.intent, name)]
+                frame['requirement_windows'] = found
+                if found:
+                    frame['question'] += '；需求输入 ' + '、'.join(requirement_parameters.text(w) for w in found)
             for row in sorted(members, key=lambda c: c['id']):
                 row['function_id'] = frame['id']
                 row['aspect'] = catalog.title(row['rule'])

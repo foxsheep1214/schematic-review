@@ -1013,5 +1013,75 @@
   "file": "scripts/catalog.py",
   "old": "            if aspect not in out:\n                out.append(aspect)",
   "new": "            if True:\n                out.append(aspect)"
+ },
+ {
+  "id": "M146",
+  "name": "a dash after a digit is read as a minus",
+  "file": "scripts/requirement_parameters.py",
+  "old": "        if sign and sign != '±' and match.start() > 0 and text[match.start() - 1].isdigit():\n            sign = None\n",
+  "new": ""
+ },
+ {
+  "id": "M147",
+  "name": "a plus-minus number gives only its positive value",
+  "file": "scripts/requirement_parameters.py",
+  "old": "            out.update((value, -value))",
+  "new": "            out.add(value)"
+ },
+ {
+  "id": "M148",
+  "name": "a parameter number not in the original text is accepted",
+  "file": "scripts/requirement_parameters.py",
+  "old": "            elif stated is not None and not any(abs(item[key] - v) < 1e-9 for v in stated):",
+  "new": "            elif False:"
+ },
+ {
+  "id": "M149",
+  "name": "a parameter condition not in the original text is accepted",
+  "file": "scripts/requirement_parameters.py",
+  "old": "or (original is not None and _squeeze(item['condition']) not in _squeeze(original))):",
+  "new": "):"
+ },
+ {
+  "id": "M150",
+  "name": "a parameter unit outside its table is accepted",
+  "file": "scripts/requirement_parameters.py",
+  "old": "        if item.get('unit') not in entry.units:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M151",
+  "name": "a scaled unit is not converted to the canonical unit",
+  "file": "scripts/requirement_parameters.py",
+  "old": "round(item[key] * scale, 9)",
+  "new": "round(item[key], 9)"
+ },
+ {
+  "id": "M152",
+  "name": "the planner reads a rail window that names a requirement as written",
+  "file": "scripts/plan_review.py",
+  "old": "        self.intent = requirement_parameters.resolve(intent or {})",
+  "new": "        self.intent = intent or {}"
+ },
+ {
+  "id": "M153",
+  "name": "part stress rows do not carry the requirement conditions",
+  "file": "scripts/plan_board.py",
+  "old": "                row['conditions'] = conditions",
+  "new": "                pass"
+ },
+ {
+  "id": "M154",
+  "name": "the envelope keeps the narrowest lower bound",
+  "file": "scripts/requirement_parameters.py",
+  "old": "    return {'min': min(lows) if lows else None,",
+  "new": "    return {'min': max(lows) if lows else None,"
+ },
+ {
+  "id": "M155",
+  "name": "the power-tree frame does not state the required input range",
+  "file": "scripts/plan_system.py",
+  "old": "                    frame['question'] += '；需求输入 '",
+  "new": "                    frame['question'] += ''"
  }
 ]

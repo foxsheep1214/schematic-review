@@ -21,6 +21,7 @@ Rule = namedtuple('Rule', 'id title criterion source scope')
 CircuitType = namedtuple('CircuitType', 'name title domain pattern subjects materials')
 RequirementCategory = namedtuple('RequirementCategory', 'name aspects targets')
 RequirementAspect = namedtuple('RequirementAspect', 'name template')
+RequirementParameter = namedtuple('RequirementParameter', 'title unit units')
 
 DOMAINS = (
     Domain('DOC', '图纸与数据', '导出与解析完整性、BOM/库字段、页面图形与命名、装配选项、测试节点、输入一致性',
@@ -969,6 +970,27 @@ REQUIREMENT_CATEGORIES = OrderedDict([
     ('EXCLUSION', RequirementCategory('明确排除', ('EXCLUDED_FUNCTION',), '被排除功能对应的行')),
 ])
 
+# Requirement parameters (fixed requirements, step 3): the numbers a reviewer reads from a requirement's original text,
+# by name; `units` maps each accepted spelling to its factor into the canonical unit.
+_VOLTS = {'V': 1, 'mV': 1e-3, 'kV': 1e3, 'Vac': 1, 'VAC': 1, 'Vdc': 1, 'VDC': 1}
+_CELSIUS = {'°C': 1, '℃': 1}
+REQUIREMENT_PARAMETERS = OrderedDict([
+    ('input_voltage', RequirementParameter('输入电压', 'V', _VOLTS)),
+    ('input_frequency', RequirementParameter('输入频率', 'Hz', {'Hz': 1, 'kHz': 1e3})),
+    ('output_voltage', RequirementParameter('输出电压', 'V', _VOLTS)),
+    ('output_current', RequirementParameter('输出电流', 'A', {'A': 1, 'mA': 1e-3})),
+    ('output_power', RequirementParameter('输出功率', 'W', {'W': 1, 'mW': 1e-3, 'kW': 1e3})),
+    ('ripple', RequirementParameter('纹波', 'V', {'V': 1, 'mV': 1e-3, 'Vpp': 1, 'mVpp': 1e-3})),
+    ('accuracy', RequirementParameter('精度', '%', {'%': 1})),
+    ('surge_voltage', RequirementParameter('浪涌或瞬态电压', 'V', _VOLTS)),
+    ('esd_voltage', RequirementParameter('静电放电电压', 'V', _VOLTS)),
+    ('ambient_temperature', RequirementParameter('工作环境温度', '°C', _CELSIUS)),
+    ('storage_temperature', RequirementParameter('储存温度', '°C', _CELSIUS)),
+    ('humidity', RequirementParameter('相对湿度', '%RH', {'%RH': 1, '%': 1})),
+    ('altitude', RequirementParameter('海拔', 'm', {'m': 1, 'km': 1e3})),
+    ('lifetime', RequirementParameter('设计寿命', '年', {'年': 1, 'year': 1, 'h': 1 / 8760})),
+])
+
 
 def requirement_aspects(categories):
     """The aspects a requirement in these categories asks: their union in table order of first appearance."""
@@ -1504,6 +1526,11 @@ def render_markdown():
     lines += ['', '| 审查方面 | 判据模板 |', '|---|---|']
     for key, aspect in REQUIREMENT_ASPECTS.items():
         lines.append('| %s %s | %s |' % (key, aspect.name, _cell(aspect.template)))
+    lines += ['', '需求里的数字读进 `requirements[].parameters`（`name`、`min`/`max`、`unit`、`condition`）；'
+              '每个数字须在该条原文里出现，条件须是原文里的一段，数值按下表换算到规范单位。', '',
+              '| 参数 | 名称 | 规范单位 | 可写单位 |', '|---|---|---|---|']
+    for key, parameter in REQUIREMENT_PARAMETERS.items():
+        lines.append('| %s | %s | %s | %s |' % (key, parameter.title, parameter.unit, '、'.join(parameter.units)))
     lines += ['', '## 覆盖维度', '', '| 维度（results.scope_checks 键） | 规则 |', '|---|---|']
     for name, rule in COVERAGE_RULES.items():
         lines.append('| %s | %s %s |' % (name, rule, title(rule)))

@@ -149,5 +149,15 @@
 | M143 | a free requirement criterion is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::IntentTests::test_a_free_criterion_is_refused |
 | M144 | the interpretation is not carried on the row | `scripts/plan_board.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::PlanTests::test_one_row_per_requirement_and_aspect_with_the_template_criterion |
 | M145 | repeated aspects of several categories are kept twice | `scripts/catalog.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::CategoryTableTests::test_aspects_of_several_categories_are_their_union_without_repeats |
+| M146 | a dash after a digit is read as a minus | `scripts/requirement_parameters.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::IntentTests::test_a_dash_after_a_digit_is_a_range_not_a_minus |
+| M147 | a plus-minus number gives only its positive value | `scripts/requirement_parameters.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::IntentTests::test_a_dash_after_a_digit_is_a_range_not_a_minus |
+| M148 | a parameter number not in the original text is accepted | `scripts/requirement_parameters.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::IntentTests::test_a_number_not_in_the_original_text_is_refused |
+| M149 | a parameter condition not in the original text is accepted | `scripts/requirement_parameters.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::IntentTests::test_name_unit_condition_and_bounds_are_checked |
+| M150 | a parameter unit outside its table is accepted | `scripts/requirement_parameters.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::IntentTests::test_name_unit_condition_and_bounds_are_checked |
+| M151 | a scaled unit is not converted to the canonical unit | `scripts/requirement_parameters.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::IntentTests::test_a_scaled_unit_is_normalized_to_the_canonical_unit |
+| M152 | the planner reads a rail window that names a requirement as written | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::PlanTests::test_a_rail_window_can_come_from_a_requirement |
+| M153 | part stress rows do not carry the requirement conditions | `scripts/plan_board.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::PlanTests::test_the_ambient_temperature_reaches_the_part_stress_rows |
+| M154 | the envelope keeps the narrowest lower bound | `scripts/requirement_parameters.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::IntentTests::test_the_envelope_of_several_windows_takes_the_widest_bounds |
+| M155 | the power-tree frame does not state the required input range | `scripts/plan_system.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::PlanTests::test_the_input_range_reaches_the_power_tree_frame |
 
 全部杀死。

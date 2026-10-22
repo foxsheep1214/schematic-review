@@ -6,6 +6,7 @@ import re
 
 import board_intent
 import catalog
+import requirement_parameters
 import requirements_extract
 from audit_datasheets import datasheet_audit_all_available
 from checkers import registry_cold_rules, registry_hot_rules
@@ -171,6 +172,7 @@ class BoardPlanning:
                 row = self.add_check('REQ-D01', dict(obj, aspect=aspect), key=aspect,
                                      criterion=catalog.requirement_criterion(aspect), trigger=[original['locator']])
                 row['interpretation'] = item['interpretation']
+                row['parameters'] = [requirement_parameters.normalized(p) for p in item.get('parameters') or []]
                 row['source_text'] = {'locator': original['locator'], 'section': original['section'],
                                       'columns': [dict(c) for c in original['columns']]}
         # The declared inventory includes symbol pins omitted from connected nets.
@@ -197,6 +199,15 @@ class BoardPlanning:
             if device:
                 official_only, symbol_only = board_intent.pin_sets(self.db, ref, device)
                 item['pin_difference'] = {'official_only': official_only, 'symbol_only': symbol_only}
+
+    def plan_stress_conditions(self):
+        """Part stress rows are judged under the requirement numbers they depend on (fixed requirements, step 3)."""
+        for row in self.checks:
+            names = requirement_parameters.STRESS_CONDITIONS.get(row['rule'], ())
+            conditions = {name: requirement_parameters.envelope(found) for name in names
+                          for found in [requirement_parameters.windows(self.intent, name)] if found}
+            if conditions:
+                row['conditions'] = conditions
 
     def _two_terminal_package(self, ref):
         """两脚符号（一阳一阴）配两端封装时返回封装名：脚集合由封装决定，无需原厂全脚表；

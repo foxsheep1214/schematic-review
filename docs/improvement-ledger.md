@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A requirement's numbers are read into fixed parameters that the plan uses (2026-10-22)
+
+Step 3 of the fixed-requirements design. On the R5 bench the two reviewers' rail windows agreed on 3 of 13 shared
+rails, and the requirement numbers (input range, output levels, ambient temperature, lifetime) stayed in requirement
+prose that no row or calculation read. The catalog has a requirement parameter table (14 names, each with a canonical
+unit and the spellings it accepts) rendered into check-catalog.md; `requirements[].parameters` holds
+{name, min, max, unit, condition}, and `requirement_parameters.py` (new) refuses an unknown name or unit, a number
+that does not appear in that requirement's original text (a ± number gives both signs; a dash right after a digit is a
+range), a condition that is not a piece of the text, and min above max. The parameters, in canonical units, ride on
+each requirement row outside the check identity; `power_rails.<net>.voltage_v: {"requirement": <id>}` takes that
+requirement's voltage range in the planner, the lint and the intent check; the required input range reaches the
+SYS-POWER frame (`requirement_windows` and its question), and the ambient temperature and lifetime reach the part
+stress rows (DEV-C01/C02/C05 `conditions`, the plan's `conditions` listing each source). R5 bench: 20 parameters read
+from 10 requirements, none refused against the real text, check keys identical to step 2, 54 stress rows carry the
+conditions, the output rail's window taken from its requirement. Only the output rail corresponds to a requirement;
+the other rails' windows are internal stress ranges whose derivation is step 5. Tests first
+(test_requirement_parameters, 12 tests), 1885 tests pass, contract 500, replay bench 195/195, mutations M146–M155
+added and killed (M155 survived first: the frame test checked only the number, now the whole phrase).
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (requirements, power_rails), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (requirements, power_rails), user:2026-10-22 (分步完成第 1 到第 7 步)
+- Causes: rule_not_enforced 1
+- Changed: scripts/requirement_parameters.py, scripts/catalog.py, scripts/plan_review.py, scripts/plan_board.py, scripts/plan_system.py, scripts/lint.py, scripts/tests/test_requirement_parameters.py, SKILL.md, references/plan-and-results.md, references/automation.md, references/check-catalog.md, docs/2026-10-22-fixed-requirements-and-review-points.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## A requirement is placed in fixed categories and asks each category's aspects (2026-10-22)
 
 Step 2 of the fixed-requirements design. After step 1 the R5 pair still paired none of the 38 requirement rows: both

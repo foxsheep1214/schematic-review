@@ -30,6 +30,7 @@ import circuit_decisions
 import check_key
 import row_owner
 import interfaces
+import requirement_parameters
 import requirements_extract
 import plan_board
 import plan_circuits
@@ -119,7 +120,8 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
                 errors.append(f'{label}.available 必须为 boolean')
             if item.get('available') and not _text(item.get('citation')):
                 errors.append(f'{label}.citation 缺失')
-    rails = intent.get('power_rails', {})
+    errors.extend(requirement_parameters.rail_errors(intent))
+    rails = requirement_parameters.resolve(intent).get('power_rails', {})
     if not isinstance(rails, dict):
         errors.append('power_rails 必须为按网络名索引的 object')
     else:
@@ -205,6 +207,8 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
             if source is not None and _text(item.get('id')) and item['id'] not in originals:
                 errors.append('requirement.%s 不在 requirement_source 里；需求只取自需求文档' % item['id'])
             original = originals.get(item.get('id'))
+            if 'parameters' in item:
+                errors.extend(requirement_parameters.errors(item.get('id'), item['parameters'], original))
             if original and _text(item.get('interpretation')) and _squeeze(item['interpretation']) == _squeeze(original):
                 errors.append('requirement.%s.interpretation 抄了需求原文；写这条需求要在原理图上落实什么' % item.get('id'))
             if 'status' in item and item['status'] not in REQUIREMENT_STATUSES:
@@ -252,7 +256,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.i2c_topology = self.inventories['i2c_topology']
         self.decoupling = self.inventories['decoupling']
         self.db_sha256 = db_fingerprint(db)
-        self.intent = intent or {}
+        self.intent = requirement_parameters.resolve(intent or {})
         self.evidence = evidence or {}
         self.datasheet_audit = datasheet_audit
         self.previous_plan = previous_plan
@@ -491,6 +495,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.plan_interfaces()
         self.plan_system()
         self.plan_owned_parts()
+        self.plan_stress_conditions()
 
 
     def build(self):
@@ -562,6 +567,9 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             'rule_plan': self.rule_plan,
             'checks': self.checks,
             'functions': sorted(self.functions, key=lambda x: x['id']),
+            'conditions': {name: requirement_parameters.windows(self.intent, name) for name in sorted(
+                {n for names in requirement_parameters.STRESS_CONDITIONS.values() for n in names})
+                if requirement_parameters.windows(self.intent, name)},
             'diagnostics': self.diagnostics,
             'domains': self.domains,
         }

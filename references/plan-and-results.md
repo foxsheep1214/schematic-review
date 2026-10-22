@@ -40,7 +40,8 @@
   "requirement_source": {"path": "/绝对路径/需求.md", "sha256": "requirements_extract.py 输出的 sha256"},
   "requirements": [{
     "id": "REQ-USB", "status": "CONFIRMED", "categories": ["PROTOCOL"],
-    "interpretation": "PHY 与连接器双向链路、供电及外部带电状态满足接口条件"
+    "interpretation": "PHY 与连接器双向链路、供电及外部带电状态满足接口条件",
+    "parameters": [{"name": "output_voltage", "min": 4.75, "max": 5.25, "unit": "V"}]
   }],
   "circuits": [{
     "id": "USB-PORT", "type": "USB",
@@ -86,6 +87,13 @@
   不适用的方面在结果里判 NA 并给依据，不从类别里删方面。需求文档里每个编号都要有一项（优化目标、明确排除也一样），
   文档里没有的编号被拒收；文档改了 sha256 就变，重新抄录并复看改过的需求。源不是表格时先整理成同格式的需求表并存档。
   计划的 REQ-D01 行带 `source_text`（出处、章节、各列原文），每个方面行结果的 `requirement_clauses` 按顺序拼接都须等于这段原文。
+- `requirements[].parameters`：从原文读出的数字，每项 `{name, min, max, unit, condition}`；`name` 与 `unit` 取
+  [规则总表](check-catalog.md#需求类别与审查方面)的需求参数表，至少给 `min`、`max` 之一，每个数字须在该条原文里出现
+  （`±5%` 同时给出 −5 和 5；数字后紧跟的短横是范围，不是负号），`condition` 须是原文里的一段（如“3 A 线缆时”）。
+  参数按规范单位换算后挂在该需求的每一行上（`parameters`，不进检查标识）。计划使用这些数字：
+  `power_rails.<网>.voltage_v` 可以只写 `{"requirement": "<需求编号>"}`（该需求同时有输入和输出电压时加 `parameter`），
+  窗口取那条需求电压参数的上下限；输入电压、频率写进 SYS-POWER 框架的 `requirement_windows` 和问题；
+  工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02）作为 `conditions` 挂在器件应力行上，计划顶层 `conditions` 列出各条来源。
 - `requirements[].status`：已确认（CONFIRMED）、提案（PROPOSED）、未定（OPEN）、暂缓（DEFERRED）。
   保留需求原文和源状态，先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求)
   确定本次判据的实际确认状态，不省略真实未定项。OPEN 的 REQ-D01 必须 INSUFFICIENT + REQUIREMENT_OPEN；
