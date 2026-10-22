@@ -281,6 +281,9 @@ schema 1，`rules_version` 2026-10-21.1，绑定 `db_sha256` 与 intent 的 `inp
 - 生成对器件顺序和页码变化是确定的；候选文件随记录打包，改了 db 或 intent 的输入指纹就重新生成、重新决定。
 - 行归属（`scripts/row_owner.py`）：计划汇总时给每行写 `owner`，按行对象、规则和各电路拥有的器件推出，写入计划的 `owners`；
   `validate_review.py` 按 `owners` 重算，写错的行被拒绝。
+- 接口（`scripts/interfaces.py`）：从各电路拥有的器件和网表推电路对、链路、供电、对外四种接口及端点角色、参考地分区、供电，写入计划 `interfaces`。
+  轨 = 电源树找到源的网，或 intent.power_rails 声明且有 IC 取电或大容量储能电容的网；名字像电源轨不算。
+  源 = 轨上电源树的源脚（库类型不是输入），否则轨上整流管（二极管阴极、整流桥 + 脚）的唯一所属；都没有记缺口。
 
 **装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
 与 `citation`。`population` 只接受 JSON `true/false`，缺项表示未知；`jumpers` 按位号填

@@ -7,6 +7,30 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function tree, step 3: interfaces derived from ownership and the netlist (2026-10-21)
+
+Step 3 of the function-tree design lists the interfaces between owners so that step 4 can expand interface rules
+per interface: before it, the R5 records had 8 and 11 interface rows, all written by hand. `scripts/interfaces.py`
+(new) treats a net joining pins of two owners as an interface net and joins the nets between one pair into one
+interface; ground nets never are one. Kinds: CIRCUIT_PAIR `IF-<A>~<B>`, LINK `LINK-<chain>` (the chain's own parts
+and every net reaching them; such a net does not also enter a circuit pair), SUPPLY `RAIL-<net>` and EXTERNAL
+`EXT-<connector>` (all pins; a ground pin lists only the connector's own endpoint). Ids use the circuits' candidate
+ids, so renaming keeps them. Each endpoint is `{owner, pin, role, basis, domain, supply}`, the role from the library
+pin type, the part kind, the power tree or a pin name the module lists, and a pin none gives is a gap. A rail is a
+net the power tree finds a source for or a declared rail that behaves as a supply, never a name alone; its source
+is the power tree's when the pin is on the rail and not typed as an input (on R5 the power tree had picked a
+controller's sense input as a rail's source), else the single owner of the rail's rectifiers, else a gap. The plan
+carries the section as `interfaces`; no rule expands over it yet. R5 bench (one candidate set; both intents and a
+third decision set renaming every circuit): identical interfaces, 19 in all (5 circuit pairs with 1–7 nets, 4
+links, 8 rails, 2 connectors), 37 nets, 168 endpoints, 1 role gap, 5 of 8 rails without a source; acceptance 2
+holds, and the interface count exceeds acceptance 4's bound (14) by the rails, a decision left to step 4. Tests
+first (test_interfaces, 10 tests, with a reviewed golden file of the synthetic board), 1805 tests pass, mutations
+M85–M90 added and killed.
+
+- Event: user:2026-10-21 (迁移分 7 步逐步来做，每做完一步形成一份提交；第 3 步：接口识别), review:SR-20261021-R5-claude-fd6a6dd/record/review-plan.json (interface rows), review:SR-20261021-R5-codex-fd6a6dd/record/review-plan.json (interface rows)
+- Causes: rule_missing 2
+- Changed: scripts/interfaces.py, scripts/plan_review.py, scripts/tests/test_interfaces.py, scripts/tests/fixtures/interfaces-flyback-usb.json, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, SKILL.md, references/plan-and-results.md, references/automation.md, docs/2026-10-21-function-tree-design.md, docs/improvement-ledger.md
+
 ## Function tree, step 2: every row has one owner and a circuit row is named by its candidates (2026-10-21)
 
 Step 2 of the function-tree design gives every plan row an owner and stops circuit-level rows from drifting with

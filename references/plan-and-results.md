@@ -365,6 +365,12 @@ F12 计划带 `clamp_refs` 的连接器行（PRO-D03）必须绑定功能：钳�
 （多颗器件须同属一块）；其余归全板（`BOARD`）。计划的 `owners` 列出每块电路拥有的器件，`summary.owners` 是按所属的行数。
 校验器按 `owners` 重算每行的所属，拒绝写错的行；审查员后加的拆分行可以不写。
 
+**接口。** 计划的 `interfaces`（`scripts/interfaces.py`）列出所属对象之间的接口：一条网络连着两个所属对象的器件脚就是它们之间的接口网络，
+同一对之间的网络合成一个接口；地网不是接口网络。四种：电路对 `IF-<A>~<B>`、链路 `LINK-<跨电路候选>`（带它自有的器件 `parts`）、
+供电 `RAIL-<轨>`（带 `source` 与 `basis`）、对外 `EXT-<连接器>`（连接器全部脚）。编号用电路的候选编号，改电路名不改接口。
+每个端点 `{owner, pin, role, basis, domain, supply}`：角色 DRIVER / RECEIVER / BIDIRECTIONAL / PASSIVE 按库引脚类型、器件类别、电源树和引脚名推，
+推不出的进 `gaps`（`reason: role`），轨推不出源的也进 `gaps`（`reason: source`）。第 3 步只列接口，规则还没有按接口展开。
+
 **文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（摘要数字、选型记录、图纸卫生）不是电路。
 文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）；选型理由的复判走
 [选型复判](selection-review.md)。DOC 行证据不足时仍需一个开放项作入口，这种只含 DOC 行的功能不计入

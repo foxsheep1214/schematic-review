@@ -586,5 +586,47 @@
   "file": "scripts/plan_review.py",
   "old": "'circuit_key': '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']])),",
   "new": "'circuit_key': circuit['id'],"
+ },
+ {
+  "id": "M85",
+  "name": "ground nets become interface nets",
+  "file": "scripts/interfaces.py",
+  "old": "        return [n for n in sorted(self.graph.nets) if n not in self.grounds and n not in self.graph.pseudo]",
+  "new": "        return [n for n in sorted(self.graph.nets) if n not in self.graph.pseudo]"
+ },
+ {
+  "id": "M86",
+  "name": "a net reaching a chain's own part also joins a circuit pair",
+  "file": "scripts/interfaces.py",
+  "old": "            if basis is not None or touched:\n                continue",
+  "new": "            if basis is not None:\n                continue"
+ },
+ {
+  "id": "M87",
+  "name": "a rail-like name alone makes a supply interface",
+  "file": "scripts/interfaces.py",
+  "old": "            basis = basis if basis in (powertree.DECLARED, powertree.DRIVER) else (",
+  "new": "            basis = basis if basis is not None else ("
+ },
+ {
+  "id": "M88",
+  "name": "a power-tree source pin the library calls an input is taken as the rail's source",
+  "file": "scripts/interfaces.py",
+  "old": "        if found and not found['path'] and self.typed_role(found['source']) != RECEIVER:",
+  "new": "        if found and not found['path']:"
+ },
+ {
+  "id": "M89",
+  "name": "interface ids use the circuits' display names",
+  "file": "scripts/interfaces.py",
+  "old": "        self.key = {cid: '+'.join(sorted(c.get('candidate_ids') or [cid])) for cid, c in self.circuits.items()}",
+  "new": "        self.key = {cid: cid for cid, c in self.circuits.items()}"
+ },
+ {
+  "id": "M90",
+  "name": "an endpoint without a role is not a gap",
+  "file": "scripts/interfaces.py",
+  "old": "            if role is None:\n                self.gaps.append",
+  "new": "            if False:\n                self.gaps.append"
  }
 ]

@@ -1,0 +1,684 @@
+{
+ "gaps": [
+  {
+   "interface": "EXT-J1",
+   "pin": "RV1.2",
+   "reason": "role"
+  },
+  {
+   "interface": "IF-ANALOG-U4~POWER_CONVERTER-U1",
+   "pin": "U4.3",
+   "reason": "role"
+  },
+  {
+   "interface": "LINK-POWER_PROTECTION-U1.FAULT",
+   "pin": "U1.7",
+   "reason": "role"
+  }
+ ],
+ "interfaces": [
+  {
+   "id": "EXT-J1",
+   "kind": "EXTERNAL",
+   "nets": [
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": null,
+       "owner": "POWER_PROTECTION-J1",
+       "pin": "F1.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": null,
+       "owner": "POWER_PROTECTION-J1",
+       "pin": "J1.1",
+       "role": "PASSIVE",
+       "supply": []
+      }
+     ],
+     "net": "AC_L"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-J1",
+       "pin": "BR1.2",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-J1",
+       "pin": "J1.2",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": null,
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-J1",
+       "pin": "RV1.2",
+       "role": null,
+       "supply": []
+      }
+     ],
+     "net": "AC_N"
+    }
+   ],
+   "owners": [
+    "POWER_PROTECTION-J1"
+   ]
+  },
+  {
+   "id": "EXT-J2",
+   "kind": "EXTERNAL",
+   "nets": [
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "J2.A5",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "pin-name",
+       "domain": "SEC",
+       "owner": "ANALOG-U5",
+       "pin": "U5.3",
+       "role": "BIDIRECTIONAL",
+       "supply": []
+      }
+     ],
+     "net": "CC1"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "D6.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "J2.A7",
+       "role": "PASSIVE",
+       "supply": []
+      }
+     ],
+     "net": "DN"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "D5.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "J2.A6",
+       "role": "PASSIVE",
+       "supply": []
+      }
+     ],
+     "net": "DP"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "J2.A1",
+       "role": "PASSIVE",
+       "supply": []
+      }
+     ],
+     "net": "SGND"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "C7.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "J2.A4",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "Q2.3",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "ANALOG-U5",
+       "pin": "R14.2",
+       "role": "PASSIVE",
+       "supply": []
+      }
+     ],
+     "net": "VBUS"
+    }
+   ],
+   "owners": [
+    "ANALOG-U5",
+    "USB-J2"
+   ]
+  },
+  {
+   "id": "IF-ANALOG-U4~POWER_CONVERTER-U1",
+   "kind": "CIRCUIT_PAIR",
+   "nets": [
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "R7.2",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "U3.1",
+       "role": "RECEIVER",
+       "supply": []
+      },
+      {
+       "basis": null,
+       "domain": "SEC",
+       "owner": "ANALOG-U4",
+       "pin": "U4.3",
+       "role": null,
+       "supply": []
+      }
+     ],
+     "net": "FB_LED"
+    }
+   ],
+   "owners": [
+    "ANALOG-U4",
+    "POWER_CONVERTER-U1"
+   ]
+  },
+  {
+   "id": "IF-ANALOG-U5~USB-J2",
+   "kind": "CIRCUIT_PAIR",
+   "nets": [
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "J2.A5",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "pin-name",
+       "domain": "SEC",
+       "owner": "ANALOG-U5",
+       "pin": "U5.3",
+       "role": "BIDIRECTIONAL",
+       "supply": []
+      }
+     ],
+     "net": "CC1"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "R43.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "pin-name",
+       "domain": "SEC",
+       "owner": "ANALOG-U5",
+       "pin": "U5.8",
+       "role": "BIDIRECTIONAL",
+       "supply": []
+      }
+     ],
+     "net": "FLT_DRV"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "R8.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "pin-type",
+       "domain": "SEC",
+       "owner": "ANALOG-U5",
+       "pin": "U5.5",
+       "role": "DRIVER",
+       "supply": []
+      }
+     ],
+     "net": "PORT_G"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "C7.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "J2.A4",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "Q2.3",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "ANALOG-U5",
+       "pin": "R14.2",
+       "role": "PASSIVE",
+       "supply": []
+      }
+     ],
+     "net": "VBUS"
+    }
+   ],
+   "owners": [
+    "ANALOG-U5",
+    "USB-J2"
+   ]
+  },
+  {
+   "id": "LINK-ISOLATION-PRI/SEC",
+   "kind": "LINK",
+   "nets": [],
+   "owners": [
+    "ISOLATION-PRI/SEC"
+   ],
+   "parts": [
+    "CY1"
+   ]
+  },
+  {
+   "id": "LINK-POWER_PROTECTION-U1.FAULT",
+   "kind": "LINK",
+   "nets": [
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-U1.FAULT",
+       "pin": "C41.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-U1.FAULT",
+       "pin": "R42.2",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": null,
+       "domain": "PRI",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "U1.7",
+       "role": null,
+       "supply": [
+        "VCC"
+       ]
+      }
+     ],
+     "net": "FLT"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "R43.2",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "POWER_PROTECTION-U1.FAULT",
+       "pin": "U9.1",
+       "role": "RECEIVER",
+       "supply": []
+      }
+     ],
+     "net": "FLT_A"
+    }
+   ],
+   "owners": [
+    "POWER_CONVERTER-U1",
+    "POWER_PROTECTION-U1.FAULT",
+    "USB-J2"
+   ],
+   "parts": [
+    "C41",
+    "R42",
+    "U9"
+   ]
+  },
+  {
+   "id": "LINK-STARTUP-U1.HV",
+   "kind": "LINK",
+   "nets": [
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "STARTUP-U1.HV",
+       "pin": "R41.2",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "pin-name",
+       "domain": "PRI",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "U1.5",
+       "role": "RECEIVER",
+       "supply": [
+        "VCC"
+       ]
+      }
+     ],
+     "net": "HV_IN"
+    },
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-J1",
+       "pin": "BR1.3",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-J1",
+       "pin": "C1.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "STARTUP-U1.HV",
+       "pin": "R41.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "T1.1",
+       "role": "PASSIVE",
+       "supply": []
+      }
+     ],
+     "net": "RECT"
+    }
+   ],
+   "owners": [
+    "POWER_CONVERTER-U1",
+    "POWER_PROTECTION-J1",
+    "STARTUP-U1.HV"
+   ],
+   "parts": [
+    "R41"
+   ]
+  },
+  {
+   "basis": "declared",
+   "id": "RAIL-RECT",
+   "kind": "SUPPLY",
+   "nets": [
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-J1",
+       "pin": "BR1.3",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-J1",
+       "pin": "C1.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "STARTUP-U1.HV",
+       "pin": "R41.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "T1.1",
+       "role": "PASSIVE",
+       "supply": []
+      }
+     ],
+     "net": "RECT"
+    }
+   ],
+   "owners": [
+    "POWER_CONVERTER-U1",
+    "POWER_PROTECTION-J1",
+    "STARTUP-U1.HV"
+   ],
+   "source": "POWER_PROTECTION-J1"
+  },
+  {
+   "basis": "driver",
+   "id": "RAIL-V5",
+   "kind": "SUPPLY",
+   "nets": [
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "C6.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": null,
+       "pin": "R99.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "DEBUG-BOARD",
+       "pin": "TP1.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "power-source",
+       "domain": "SEC",
+       "owner": "ANALOG-U5",
+       "pin": "U5.4",
+       "role": "DRIVER",
+       "supply": []
+      }
+     ],
+     "net": "V5"
+    }
+   ],
+   "owners": [
+    "ANALOG-U5",
+    "DEBUG-BOARD",
+    "USB-J2"
+   ],
+   "source": "ANALOG-U5"
+  },
+  {
+   "basis": "declared",
+   "id": "RAIL-VOUT",
+   "kind": "SUPPLY",
+   "nets": [
+    {
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "C3.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "D2.2",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "Q2.2",
+       "role": "DRIVER",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "ANALOG-U4",
+       "pin": "R5.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "R7.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "pin-name",
+       "domain": "SEC",
+       "owner": "ANALOG-U5",
+       "pin": "U5.1",
+       "role": "RECEIVER",
+       "supply": []
+      },
+      {
+       "basis": "pin-name",
+       "domain": "SEC",
+       "owner": "POWER_CONVERTER-U7",
+       "pin": "U7.1",
+       "role": "RECEIVER",
+       "supply": [
+        "VOUT"
+       ]
+      }
+     ],
+     "net": "VOUT"
+    }
+   ],
+   "owners": [
+    "ANALOG-U4",
+    "ANALOG-U5",
+    "POWER_CONVERTER-U1",
+    "POWER_CONVERTER-U7",
+    "USB-J2"
+   ],
+   "source": "POWER_CONVERTER-U1"
+  }
+ ],
+ "schema_version": 1
+}

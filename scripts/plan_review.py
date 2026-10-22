@@ -29,6 +29,7 @@ from checkers import REGISTRY, domains as domains_lib, passive_stress, registry_
 import circuit_decisions
 import check_key
 import row_owner
+import interfaces
 from checkers import powertree
 from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, RAIL_RE, is_ground, CONNECTOR, IC, MOSFET, TVS, UNKNOWN, ZENER, NetGraph, is_analog_sense_pair, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
@@ -1231,6 +1232,7 @@ class ReviewPlanner:
             check['check_key'] = check_key.key(check)
             check['owner'] = row_owner.owner(check, parts)
         plan['owners'] = row_owner.table(circuits, parts)
+        plan['interfaces'] = interfaces.derive(self.db, self.intent, self.datasheet_audit)
         plan['summary']['owners'] = row_owner.counts(plan['checks'])
         return plan
 
