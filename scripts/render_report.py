@@ -766,6 +766,14 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             sr += ['- **SR 为什么做不到**：' + limit,
                    '- **建议怎么改进 SR**：' + improve,
                    '- **这次怎么核对的**：' + ({'AI': 'AI 核对：', 'HUMAN': '人员核对：'}.get(reviewer, '')) + method, '']
+    gaps = gate.get('rule_gaps') or []
+    if gaps:   # fixed requirements, step 7: each gap goes to the improvement ledger and becomes a rule the tool writes
+        sr += ['### 审查员补加的检查（规则缺口）', '',
+               '下面 %d 条检查计划里原本没有，由审查员登记为规则缺口后补加，照常判过；每条记进改进台账，变成工具生成的规则。'
+               % len(gaps), '', '| 检查 | 缺什么规则 | 依据 | 结论 |', '|---|---|---|---|']
+        sr += ['| %s | %s | %s | %s |' % (cell(g.get('check_id') or ''), cell(g.get('missing') or ''),
+                                          cell(g.get('basis') or ''), cell(g.get('result') or '未判')) for g in gaps]
+        sr.append('')
     sr += render_sr_feedback(notes.get('sr_feedback'))
     if screen:
         sr += ['### 审查记录自检提示', '',

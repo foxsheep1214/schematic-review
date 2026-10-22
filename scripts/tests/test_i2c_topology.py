@@ -485,10 +485,9 @@ class TopologyTests(unittest.TestCase):
 
     def test_same_context_merge_preserves_manual_check(self):
         db, intent = fixture()
+        intent['rule_gaps'] = [{'id': 'MANUAL-1', 'rule': 'DEV-C01', 'object': {'ref': 'U1'}, 'criterion': 'synthetic endpoint stress check', 'missing': 'synthetic: no generated rule', 'basis': 'synthetic review note'}]   # a reviewer-added row is a registered rule gap
         before = build_review_plan(db, intent)
-        manual = copy.deepcopy(before['checks'][0])
-        manual['id'] = manual['rule'] + '.MANUAL-1'
-        before['checks'].append(manual)
+        manual = next(p for p in before['checks'] if p.get('origin') == 'REVIEWER_ADDED')
         after = build_review_plan(db, intent, previous_plan=before)
         self.assertTrue(any(x['id'] == manual['id'] for x in after['checks']))
 

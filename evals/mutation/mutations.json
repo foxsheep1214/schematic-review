@@ -1279,5 +1279,96 @@
   "file": "scripts/decoupling.py",
   "old": "                if explicit_only and (ref, net) not in entries:",
   "new": "                if (ref, net) not in entries:"
+ },
+ {
+  "id": "M184",
+  "name": "a gap missing a required field accepted",
+  "file": "scripts/rule_gaps.py",
+  "old": "            if not _text(item.get(field)):\n                out.append('%s.%s 缺失' % (label, field))",
+  "new": "            if False:\n                out.append('%s.%s 缺失' % (label, field))"
+ },
+ {
+  "id": "M185",
+  "name": "a gap under REQ-D01 accepted",
+  "file": "scripts/rule_gaps.py",
+  "old": "        elif rule == 'REQ-D01':",
+  "new": "        elif rule == 'REQ-D01-NEVER':"
+ },
+ {
+  "id": "M186",
+  "name": "a gap under an unknown rule accepted",
+  "file": "scripts/rule_gaps.py",
+  "old": "        if _text(rule) and not catalog.known(rule):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M187",
+  "name": "a gap on a part not in the netlist accepted",
+  "file": "scripts/rule_gaps.py",
+  "old": "                if ref not in parts:",
+  "new": "                if False:"
+ },
+ {
+  "id": "M188",
+  "name": "a repeated gap id accepted",
+  "file": "scripts/rule_gaps.py",
+  "old": "            if item['id'] in seen:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M189",
+  "name": "a gap row is not marked reviewer-added",
+  "file": "scripts/rule_gaps.py",
+  "old": "        row['origin'] = ORIGIN\n",
+  "new": "        row['origin'] = None\n"
+ },
+ {
+  "id": "M190",
+  "name": "a hand-added row carried by the merge",
+  "file": "scripts/plan_review.py",
+  "old": "            if rule_gaps.unwritten(item):   # fixed requirements, step 7: an added row is a registered rule gap\n                raise ValueError(rule_gaps.message(key))\n",
+  "new": ""
+ },
+ {
+  "id": "M191",
+  "name": "a hand-added row passes the gate",
+  "file": "scripts/validate_review.py",
+  "old": "                require(cid in planned_ids or not rule_gaps.unwritten(row), rule_gaps.message(cid))",
+  "new": "                require(True, rule_gaps.message(cid))"
+ },
+ {
+  "id": "M192",
+  "name": "every row outside the planner counts as written",
+  "file": "scripts/rule_gaps.py",
+  "old": "    return not ('lint_kind' in row or revision_impact.is_revision_check(row) or 'prior_check' in row",
+  "new": "    return False and not ('lint_kind' in row or revision_impact.is_revision_check(row) or 'prior_check' in row"
+ },
+ {
+  "id": "M193",
+  "name": "reviewer-added rows enter the pairing rate",
+  "file": "scripts/compare_reviews.py",
+  "old": "            and c.get('origin') != rule_gaps.ORIGIN]",
+  "new": "            ]"
+ },
+ {
+  "id": "M194",
+  "name": "the plan does not count reviewer-added rows",
+  "file": "scripts/plan_review.py",
+  "old": "        plan['summary']['reviewer_added'] = len(rule_gaps.added(plan['checks']))",
+  "new": "        plan['summary']['reviewer_added'] = 0"
+ },
+ {
+  "id": "M195",
+  "name": "the gate lists a gap without its result",
+  "file": "scripts/rule_gaps.py",
+  "old": "                 result=(answered.get(row['id']) or {}).get('review_result'))",
+  "new": "                 result=None)"
+ },
+ {
+  "id": "M196",
+  "name": "the report leaves the gaps out",
+  "file": "scripts/render_report.py",
+  "old": "    gaps = gate.get('rule_gaps') or []\n",
+  "new": "    gaps = []\n"
  }
 ]

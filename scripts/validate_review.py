@@ -29,6 +29,7 @@ import check_key
 import row_owner
 import interfaces
 import requirement_bindings
+import rule_gaps
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -283,6 +284,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             planner = ReviewPlanner(db, inputs['intent'], inputs['evidence'],
                                     plan.get('review_mode'), datasheet_audit=inputs['datasheet_audit'])
             planner.generate()
+            planned_ids = {generated['id'] for generated in planner.checks}
+            for cid, row in expected.items():   # fixed requirements, step 7: an added row is a registered rule gap
+                require(cid in planned_ids or not rule_gaps.unwritten(row), rule_gaps.message(cid))
             for generated in planner.checks:
                 actual = expected.get(generated['id'])
                 require(actual is not None and revision_digest(check_spec(actual)) == revision_digest(check_spec(generated)),
@@ -615,6 +619,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "insufficient_by_cause": gap_causes,
             "stage_scope": stage_scope,
             "sr_improvements": sr_improvements,
+            "rule_gaps": rule_gaps.listing(plan, report),
             "requirement_clarification_summary": clarifications['summary'],
             "requirement_clarifications": clarifications['items'],
             # REQ-D01 results per requirement confirmation state: a PASS against PROPOSED is conditional on that proposal.

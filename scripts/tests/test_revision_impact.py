@@ -39,6 +39,17 @@ def check(key, ref):
             'required_inputs': [], 'trigger': [], 'handoff': {'required': False}}
 
 
+def gap_intent(gid='MANUAL', ref='R1'):
+    """A reviewer-added check is a registered rule gap (fixed requirements, step 7); its row is planner-written."""
+    return {'rule_gaps': [{'id': gid, 'rule': 'DEV-C01', 'object': {'ref': ref},
+                           'criterion': 'Evaluate this independent synthetic resistor',
+                           'missing': 'synthetic: no generated rule for this resistor', 'basis': 'synthetic review note'}]}
+
+
+def gap_id(gid='MANUAL', ref='R1'):
+    return 'DEV-C01.GAP-%s.%s' % (gid, ref)
+
+
 def focused(db, checks=None, old_db=None, old_plan=None, complete=True, intent=None):
     checks = deepcopy(checks if checks is not None else [check('DEV-C01.R1', 'R1'), check('DEV-C01.R10', 'R10')])
     intent = deepcopy(intent or {})
@@ -312,17 +323,17 @@ class RevisionWorkflowTests(unittest.TestCase):
         self.assertFalse(self.validate(self.plan, report)['valid'])
 
     def test_additional_lint_snapshot_prevents_omitting_manual_check(self):
-        cold = deepcopy(self.plan)
-        cold['checks'].append(check('DEV-C01.MANUAL-IN-COLD', 'R1'))
-        final = build_review_plan(self.new, old_db=self.old, old_plan=self.base, previous_plan=cold)
+        intent = gap_intent('MANUAL-IN-COLD')
+        cold = build_review_plan(self.new, intent, old_db=self.old, old_plan=self.base)
+        final = build_review_plan(self.new, intent, old_db=self.old, old_plan=self.base, previous_plan=cold)
         run = {'review_plan': cold, 'findings': []}
         report = self.report(final)
         report['lint_reviews'] = [{'run_digest': digest(run), 'items': {}}]
         result = self.validate(final, report, lint_runs=[run])
         self.assertTrue(result['valid'], result)
         bad = deepcopy(final)
-        bad['checks'] = [c for c in bad['checks'] if c['id'] != 'DEV-C01.MANUAL-IN-COLD']
-        attach_metadata(bad, self.new, old_db=self.old, old_plan=self.base)
+        bad['checks'] = [c for c in bad['checks'] if c['id'] != gap_id('MANUAL-IN-COLD')]
+        attach_metadata(bad, self.new, intent, old_db=self.old, old_plan=self.base)
         missing = self.report(bad)
         missing['lint_reviews'] = report['lint_reviews']
         self.assertFalse(self.validate(bad, missing, lint_runs=[run])['valid'])
@@ -384,25 +395,22 @@ class RevisionWorkflowTests(unittest.TestCase):
                 build_review_plan(self.new, old_db=wrong, old_plan=self.base)
 
     def test_same_revision_merge_retains_manual_checks_not_results(self):
-        cold = deepcopy(self.plan)
-        manual = check('DEV-C01.MANUAL', 'R1')
-        manual['review_result'] = 'PASS'
-        cold['checks'].append(manual)
-        final = build_review_plan(self.new, previous_plan=cold, old_db=self.old, old_plan=self.base)
-        self.assertIsNone(next(c for c in final['checks'] if c['id'] == 'DEV-C01.MANUAL')['review_result'])
-        self.assertTrue(entries(final)['DEV-C01.MANUAL']['required'])
+        cold = build_review_plan(self.new, gap_intent(), old_db=self.old, old_plan=self.base)
+        next(c for c in cold['checks'] if c['id'] == gap_id())['review_result'] = 'PASS'
+        final = build_review_plan(self.new, gap_intent(), previous_plan=cold, old_db=self.old, old_plan=self.base)
+        self.assertIsNone(next(c for c in final['checks'] if c['id'] == gap_id())['review_result'])
+        self.assertTrue(entries(final)[gap_id()]['required'])
         with self.assertRaisesRegex(ValueError, 'revision baseline changed'):
-            build_review_plan(self.new, previous_plan=cold)
+            build_review_plan(self.new, gap_intent(), previous_plan=cold)
 
     def test_hot_restored_old_check_keeps_cold_provisional_disposition(self):
-        self.base['checks'].append(check('DEV-C01.PRIOR-STATE', 'R1'))
+        self.base['checks'].append(check(gap_id('PRIOR-STATE'), 'R1'))
         attach_metadata(self.base, self.old)
         cold = build_review_plan(self.new, old_db=self.old, old_plan=self.base)
-        restored = deepcopy(cold)
-        restored['checks'].append(check('DEV-C01.PRIOR-STATE', 'R1'))
-        final = build_review_plan(self.new, old_db=self.old, old_plan=self.base, previous_plan=restored)
+        final = build_review_plan(self.new, gap_intent('PRIOR-STATE'), old_db=self.old, old_plan=self.base,
+                                  previous_plan=cold)
         self.assertTrue({c['id'] for c in cold['checks']} <= {c['id'] for c in final['checks']})
-        self.assertIn('DEV-C01.PRIOR-STATE', entries(final))
+        self.assertIn(gap_id('PRIOR-STATE'), entries(final))
         run = {'review_plan': cold, 'findings': []}
         report = self.report(final)
         report['lint_reviews'] = [{'run_digest': digest(run), 'items': {}}]

@@ -187,5 +187,18 @@
 | M181 | a group entry with derived fields is accepted | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling.py::DecouplingInventoryTests::test_duplicate_pin_membership_and_wrong_role_are_rejected |
 | M182 | a verified connector is grouped without an entry | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_asg_review_scope.py::VerifiedConnectorScopeTests::test_verified_connector_stops_implicit_ic_decoupling_but_retains_pinout |
 | M183 | only nets with an entry become groups | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling.py::DecouplingInventoryTests::test_official_power_pin_absent_from_netlist_is_a_group_with_a_gap |
+| M184 | a gap missing a required field accepted | `scripts/rule_gaps.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::IntentTests::test_a_gap_names_object_rule_criterion_what_is_missing_and_the_basis |
+| M185 | a gap under REQ-D01 accepted | `scripts/rule_gaps.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::IntentTests::test_an_unknown_rule_a_requirement_row_a_repeated_id_and_an_unknown_part_are_refused |
+| M186 | a gap under an unknown rule accepted | `scripts/rule_gaps.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::IntentTests::test_an_unknown_rule_a_requirement_row_a_repeated_id_and_an_unknown_part_are_refused |
+| M187 | a gap on a part not in the netlist accepted | `scripts/rule_gaps.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::IntentTests::test_an_unknown_rule_a_requirement_row_a_repeated_id_and_an_unknown_part_are_refused |
+| M188 | a repeated gap id accepted | `scripts/rule_gaps.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::IntentTests::test_an_unknown_rule_a_requirement_row_a_repeated_id_and_an_unknown_part_are_refused |
+| M189 | a gap row is not marked reviewer-added | `scripts/rule_gaps.py` | KILLED | FAILED scripts/tests/test_check_explanations.py::PlanExplanationTests::test_merged_rows_drop_legacy_per_row_copies |
+| M190 | a hand-added row carried by the merge | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::PlanTests::test_a_row_carried_from_a_previous_plan_must_be_a_rule_gap |
+| M191 | a hand-added row passes the gate | `scripts/validate_review.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::GateTests::test_a_hand_added_row_is_refused_and_a_gap_row_is_listed_for_the_ledger |
+| M192 | every row outside the planner counts as written | `scripts/rule_gaps.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::PlanTests::test_a_row_carried_from_a_previous_plan_must_be_a_rule_gap |
+| M193 | reviewer-added rows enter the pairing rate | `scripts/compare_reviews.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::CompareTests::test_reviewer_added_rows_are_counted_apart_and_left_out_of_the_pairing_rate |
+| M194 | the plan does not count reviewer-added rows | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::PlanTests::test_the_planner_writes_one_reviewer_added_row_per_gap_counted_apart |
+| M195 | the gate lists a gap without its result | `scripts/rule_gaps.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::GateTests::test_a_hand_added_row_is_refused_and_a_gap_row_is_listed_for_the_ledger |
+| M196 | the report leaves the gaps out | `scripts/render_report.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::ReportTests::test_the_report_lists_each_gap_for_the_sr_maintainers |
 
 全部杀死。

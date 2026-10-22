@@ -1,5 +1,4 @@
 """Check explanations survive generation, review and rendering without inventing defects."""
-import copy
 import re
 import sys
 from pathlib import Path
@@ -78,12 +77,11 @@ class PlanExplanationTests(unittest.TestCase):
 
     def test_merged_rows_drop_legacy_per_row_copies(self):
         db = sample_db()
-        old = build_review_plan(db)
-        row = copy.deepcopy(next(c for c in old['checks'] if c['rule'] == 'DEV-C01'))
-        row['id'] = 'DEV-C01.MANUAL_EXTRA'
+        intent = {'rule_gaps': [{'id': 'MANUAL-EXTRA', 'rule': 'DEV-C01', 'object': {'feature': 'MANUAL-EXTRA'}, 'criterion': 'synthetic extra stress check', 'missing': 'synthetic: no generated rule', 'basis': 'synthetic review note'}]}   # a reviewer-added row is a registered rule gap
+        old = build_review_plan(db, intent)
+        row = next(c for c in old['checks'] if c.get('origin') == 'REVIEWER_ADDED')
         row['check_explanation'] = {'purpose': '旧', 'risk_if_omitted': '旧', 'connections': '旧'}
-        old['checks'].append(row)
-        new = build_review_plan(db, previous_plan=old)
+        new = build_review_plan(db, intent, previous_plan=old)
         self.assertNotIn('check_explanation', next(c for c in new['checks'] if c['id'] == row['id']))
 
     def test_current_plan_explanation_cannot_be_changed_or_dropped(self):

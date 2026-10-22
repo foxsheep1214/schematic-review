@@ -7,6 +7,34 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A row the reviewer adds is a rule gap (2026-10-22)
+
+Step 7 of the fixed-requirements design. Recomputing the two R5 plans with the planner of that run, one reviewer had
+added 6 rows by hand and the other 16, outside the automatic-scan rows; one object was added by both, with criteria
+worded apart, so no key matched, and the next review would add others. A reviewer who thinks something is to be
+checked that the plan does not ask now registers a rule gap in intent.rule_gaps (object, the catalog rule it is judged
+under, criterion, what rule or derivation the tool lacks, basis; REQ-D01 refused, requirement rows come from the
+requirement source; a part not in the netlist, an unknown rule or a repeated id refused). The planner writes each as
+a row with origin REVIEWER_ADDED and its rule_gap, judged like any other; the plan counts them (summary.reviewer_added),
+the comparison of two records lists them apart and leaves them out of the pairing rate, the gate lists each gap with
+its result (rule_gaps) and the report shows them in the SR feedback section. A row the planner did not write, other
+than automatic-scan rows and revision records, is refused when a previous plan is merged and when the gate rebuilds
+the plan; the hand-written splits of a board-wide row become rule gaps too. R5 bench: 6 and 9 gaps accepted, 7
+requirement rows written as tests refused; whole plan without the added rows 504 of 504 and 508 (alignment 99.6 %),
+98.1 % if they were counted. The 15 gaps, each a rule the tool should write next: current an IC pin takes through an
+external resistor into an internal switch, sense or protection pin (6, five objects), the stress of one switch in one state
+(3), recalculation of a figure the design report claims (2), sampling-divider accuracy, connector current, the PCB
+implementation handoff and a port ESD test (1 each). The two-record comparison over steps 1-7 is in the design doc's
+acceptance table: requirement rows 61 of 61 (0 of 38 before), whole plan 99.2 % (94.8 % before), rail and circuit
+candidates equal, +9.1 % rows; category and parameter agreement between two agents is left for the next two-agent
+run. Tests first (test_rule_gaps, 7 tests; the tests that carried manual rows through a previous plan register them as
+gaps), 1915 tests pass, contract 500, replay bench 195/195, mutations M184-M196 added and killed, the mutations on the
+touched files rerun.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/review-plan.json (6 hand-added rows), review:SR-20261021-R5-codex-fd6a6dd/record/review-plan.json (16 hand-added rows), user:2026-10-22 (分步完成第 1 到第 7 步)
+- Causes: rule_not_enforced 1, rule_missing 15
+- Changed: scripts/rule_gaps.py, scripts/plan_review.py, scripts/validate_review.py, scripts/compare_reviews.py, scripts/render_report.py, scripts/tests/test_rule_gaps.py, scripts/tests/test_manual_decoupling.py, scripts/tests/test_revision_impact.py, scripts/tests/test_check_explanations.py, scripts/tests/test_decoupling.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_plan_handoff.py, SKILL.md, references/plan-and-results.md, references/automation.md, references/check-catalog.md, docs/2026-10-22-fixed-requirements-and-review-points.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## Every official supply pin of a declared device is a decoupling group (2026-10-22)
 
 Step 6 of the fixed-requirements design. On the R5 bench one reviewer declared a decoupling group on a startup

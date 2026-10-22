@@ -34,6 +34,7 @@ import interfaces
 import requirement_bindings
 import requirement_parameters
 import requirements_extract
+import rule_gaps
 import plan_board
 import plan_circuits
 import plan_system
@@ -279,6 +280,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
     for checker in REGISTRY:
         errors.extend(checker.validate_intent(intent, db))
     errors.extend(validate_declarations(intent))
+    errors.extend(rule_gaps.errors(intent, db))
     candidate_based = 'circuit_decisions' in intent or 'circuit_candidates_sha256' in intent
     if candidates is None and (candidate_based or (require_candidates and intent.get('circuits'))):
         errors.append('intent.circuits come from record/circuit-candidates.json and intent.circuit_decisions; pass the '
@@ -514,6 +516,8 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                 if any(item.get(field) != current[key].get(field) for field in identity):
                     raise ValueError(f'{key}: check identity/criterion changed; resolve the plan explicitly')
                 continue
+            if rule_gaps.unwritten(item):   # fixed requirements, step 7: an added row is a registered rule gap
+                raise ValueError(rule_gaps.message(key))
             # Final results live in review-results.json. Do not turn old plan annotations into verdicts.
             retained = deepcopy(item)
             retained.pop('check_explanation', None)
@@ -547,6 +551,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.plan_interfaces()
         self.plan_system()
         self.plan_owned_parts()
+        rule_gaps.plan(self)
         self.plan_stress_conditions()
 
 
@@ -672,6 +677,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         requirement_bindings.attach(plan['checks'])
         plan['rail_candidates'] = rail_candidates(self.db, self.intent)
         plan['summary']['owners'] = row_owner.counts(plan['checks'])
+        plan['summary']['reviewer_added'] = len(rule_gaps.added(plan['checks']))
         return plan
 
 

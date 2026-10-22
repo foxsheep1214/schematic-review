@@ -59,6 +59,10 @@
     "datasheets": {"path": "/绝对路径/datasheets/"}
   },
   "rail_exclusions": {"VBAT_SNS": "电池电压检测分压点，不对任何器件供电"},
+  "rule_gaps": [{"id": "Q7-REVERSE", "rule": "PWR-T05", "object": {"ref": "Q7"},
+                 "criterion": "Q7 体二极管在反接时承受的反向电流与功耗在额定以内",
+                 "missing": "反接保护 MOSFET 的反向导通应力没有生成规则",
+                 "basis": "设计报告 Rev.B 3.2 节：Q7 兼作反接保护"}],
   "power_rails": {
     "VCC_3V3": {
       "voltage_v": {"min": 3.2, "max": 3.4}, "load_a": {"min": 0, "max": 0.5}, "available_a_min": 1.0,
@@ -82,6 +86,11 @@
 - `rail_exclusions`：网表上像电源（有 IC 从它取电，或 ≥1 µF 电容到地）而名字不像轨的网，每条都要在 `power_rails`
   声明成轨或在这里写它不是轨的依据，否则拒收；只能排除这类网，且不能同时声明。计划的 `rail_candidates` 列出每条这类网
   及其确认方式（`name` 名字像轨、`declared`、`excluded`）。名字像轨的网照旧按名字识别。
+- `rule_gaps`：审查员认为该查、计划里没有的检查。每条写 `id`、`rule`（按总表哪条规则判，不能是 REQ-D01：需求行由需求文档生成）、
+  `object`（非空；位号须在网表里）、`criterion`、`missing`（工具缺什么规则或推导）和 `basis`（依据）。计划工具写成一行
+  `origin: REVIEWER_ADDED` 的检查（`rule_gap` 记缺口编号、`missing`、`basis`），照常判；计划 `summary.reviewer_added` 计数，
+  两份记录比较时这些行单独列出、不计入配对率；门禁结果 `rule_gaps` 列出每条缺口与结论，报告在“对 SR 的反馈”里列出，
+  每条记进改进台账，变成工具生成的规则。
 - `assemblies`（1–32 个，各带 `id` 与 `citation`）是全部检查器共用的装配状态；`devices` 是按位号的官方脚表。
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
 - 需求不手抄：`python3 scripts/requirements_extract.py 需求.md --json record/requirements.json` 逐字抄录需求表
@@ -145,21 +154,20 @@
 
 ### 生成与合并
 
-- 网表扫描 `lint.py --plan-json review-plan-cold.json` 保存计划和候选；审查者补查项加入该计划。
+- 网表扫描 `lint.py --plan-json review-plan-cold.json` 保存计划和候选；审查者要补的检查登记到 `intent.rule_gaps` 后重新生成，计划工具没写的行（自动扫描行与改版记录以外）在合并和校验时都被拒。
 - intent 声明电路时两次扫描都带 `--candidates record/circuit-candidates.json`；计划顶层 `circuit_candidates` 记候选文件的 `db_sha256`、`rules_version`、候选编号、决定和未归属器件，
   功能框架的 objects 直接取电路（即候选经决定后的）成员；候选文件随计划一起打包（`pack_review.py --circuit-candidates`）。
 - 证据扫描 `--merge-plan review-plan-cold.json --plan-json review-plan.json` 产生**唯一最终计划**。
-  合并要求 `db_sha256` 与当前输入一致且规则指纹相同，保留审查者补查项；相同 ID 的对象/判据冲突时拒绝自动覆盖。
+  合并要求 `db_sha256` 与当前输入一致且规则指纹相同；相同 ID 的对象/判据冲突时拒绝自动覆盖。
 - 匹配证据后保留基础覆盖项，按 evidence ID 生成带 `parent_check_id` 的状态子项；基础项只汇总覆盖，不能代替子项结果。
 - 计划合并不读取或迁移结果；后续补查先更新计划，再更新 digest 和逐项结果。
-- 审查者补查项从总表选规则，`id` 写成 `规则编号.自定义键`，并填与总表一致的 `rule`/`method`/`domain`、
-  `object`、`criterion`、`applicability`、`readiness`、`handoff`。
-- **拆分实例的命名**：一条规则需要逐对象或逐判据给出不同结果时，拆成多个补查实例，自定义键写成
-  `<对象>[-<判据>]`，对象用位号、网络或电路 ID，判据用简短大写词。例如全板项 DEV-C01 逐颗判定时写
-  `DEV-C01.C12`、`DEV-C01.Q3`，IC 脚经外接电阻驱动内部开关时写 `DEV-C01.U2-VBUS`；PWR-C02 拆窗口与调节能力时写 `PWR-C02.U1-WINDOW`、`PWR-C02.U1-REGULATION`。
+- 补查项按 `intent.rule_gaps` 生成，`id` 为 `规则编号.GAP-<缺口编号>.锚点`，`rule`/`method`/`domain` 随总表。
+- **拆分实例的命名**：一条规则需要逐对象或逐判据给出不同结果时，逐个登记规则缺口，缺口编号写成
+  `<对象>[-<判据>]`，对象用位号、网络或电路 ID，判据用简短大写词。例如全板项 DEV-C01 逐颗判定时登记
+  `C12`、`Q3`，IC 脚经外接电阻驱动内部开关时登记 `U2-VBUS`（行 `DEV-C01.GAP-U2-VBUS.U2`）；PWR-C02 拆窗口与调节能力时登记 `U1-WINDOW`、`U1-REGULATION`。
   自动生成的原计划项（如 `DEV-C01.BOARD`）保持不变（校验会按保存的输入重建它），在结果行写
   `split_out: [拆分实例 ID…]`：原项的结论只覆盖拆出实例**以外**的对象，拆出的对象各自给结论。
-  这样一颗 C201 缺规格只让 `DEV-C01.C201` 资料不足，其余已核对象仍可让 `DEV-C01.BOARD` 通过，
+  这样一颗 C201 缺规格只让 `DEV-C01.GAP-C201.C201` 资料不足，其余已核对象仍可让 `DEV-C01.BOARD` 通过，
   不会被一个对象拖成整板资料不足。拆出实例须同规则、只属于一个原项，且不再嵌套拆分（`validate_review.py` 检查）；
   原项 rationale 写清其余对象核到了哪些、依据是什么。报告在拆出实例下注明所属原项。
   对 DEV-C01/02/03/04 的整板待核项先定位实际器件、额定/寿命/精度判据，保留与原检查的显式映射。
@@ -484,7 +492,7 @@ NA 写明本机为什么不暴露于该风险；纯下游项写明本阶段可�
 清单核对；PWR-D02/C09 是否合格须另对本器件、本脚组、工况的条款判断。有适用替代接法/阻抗证明才可
 据此放行；资料尚不能证明替代合规时记具体 INSUFFICIENT，不从“没有直接电容”统一判实物失效。
 
-审查者旁路补查必须保留自动生成项。`object` 用独立 `manual_group`，准确 `ref`、`nodes`、`return_nodes` 与
+审查者旁路补查（登记在 `intent.rule_gaps`）必须保留自动生成项。`object` 用独立 `manual_group`，准确 `ref`、`nodes`、`return_nodes` 与
 已声明 `state`；官方角色未在清单设备声明时，补 `manual_pin_roles`（物理节点→`power/return`）
 与 `manual_pin_citation` 的独立官方脚表出处；`manual_pin_source` 用绝对 `path`、文件 `sha256` 和
 `locator` 绑定原文。节点必须在当前原生输入存在；已有官方映射的冲突角色不能以审查者声明覆盖。

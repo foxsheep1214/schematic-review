@@ -589,12 +589,12 @@ class DecouplingPlanTests(unittest.TestCase):
 
     def test_manual_check_is_preserved_without_result_migration(self):
         db, intent = fixture()
+        intent['rule_gaps'] = [{'id': 'MANUAL-POWER', 'rule': 'REQ-Q02', 'object': {'feature': 'MANUAL-POWER'}, 'criterion': 'synthetic power chain trace', 'missing': 'synthetic: no generated rule', 'basis': 'synthetic review note'}]   # a reviewer-added row is a registered rule gap
         before = build_review_plan(db, intent)
-        manual = copy.deepcopy(next(p for p in before['checks'] if p['rule'] == 'REQ-Q02'))
-        manual.update(id='REQ-Q02.MANUAL-POWER', review_result='PASS', evidence_confidence='A')
-        before['checks'].append(manual)
+        manual = next(p for p in before['checks'] if p.get('origin') == 'REVIEWER_ADDED')
+        manual.update(review_result='PASS', evidence_confidence='A')
         after = build_review_plan(db, intent, previous_plan=before)
-        kept = next(p for p in after['checks'] if p['id'] == 'REQ-Q02.MANUAL-POWER')
+        kept = next(p for p in after['checks'] if p['id'] == manual['id'])
         self.assertIsNone(kept['review_result'])
 
     def test_tampered_inventory_deleted_check_and_changed_criterion_rejected(self):

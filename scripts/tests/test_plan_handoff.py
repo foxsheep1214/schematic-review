@@ -143,12 +143,13 @@ class PlanHandoffTests(unittest.TestCase):
         self.assertEqual(result['release'], 'GO')
 
     def test_manual_check_retained_and_old_plan_not_mutated(self):
-        manual = deepcopy(self.cold['checks'][0])
-        manual.update(id='PWR-T01.MANUAL-RETURN-PATH', rule='PWR-T01', method='T', domain='PWR',
-                      criterion='Review return path', review_result='PASS', evidence_confidence='A')
+        context = self.inventory_context()   # a reviewer-added row is a registered rule gap
+        context['rule_gaps'] = [{'id': 'MANUAL-RETURN-PATH', 'rule': 'PWR-T01', 'object': {'ref': 'U1'}, 'criterion': 'Review return path', 'missing': 'synthetic: no generated rule', 'basis': 'synthetic review note'}]
+        self.inventory_context = lambda: deepcopy(context)
+        previous = build_review_plan(self.db, context, lint_findings=Lint(self.db, None, context).run())
+        manual = next(c for c in previous['checks'] if c.get('origin') == 'REVIEWER_ADDED')
+        manual.update(review_result='PASS', evidence_confidence='A')
         manual['check_explanation'] = catalog.explanation('PWR-T01')
-        previous = deepcopy(self.cold)
-        previous['checks'].append(manual)
         snapshot = deepcopy(previous)
         final, runs = self.runs(previous)
         retained = next(c for c in final['checks'] if c['id'] == manual['id'])

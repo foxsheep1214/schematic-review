@@ -322,7 +322,7 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 写明未判定的部分，计算角点保留在 calculation。
 
 **校验**：`validate_review.py --db` 重建清单并逐项对比，拒绝被删检查、改写判据、被篡改的
-摘要/缺口与过期绑定。审查者补查项必须使用独立对象，不得复用生成项的对象。摘要只绑定被审
+摘要/缺口与过期绑定。审查者补查项（`intent.rule_gaps`）必须使用独立对象，不得复用生成项的对象。摘要只绑定被审
 输入，不验证引用文字真实，也不替代工程审查。
 
 **规则编号**：检查器的规则与其他规则共用[规则总表](check-catalog.md)的编号（`内容域-方式序号`），

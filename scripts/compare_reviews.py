@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json
 from review_stage_scope import outside_stage
 import check_key
+import rule_gaps
 from review_functions import located
 
 MATCH_FLOOR = 0.25   # least share of parts two circuits of one type must have in common to be the same block
@@ -186,7 +187,8 @@ def _ratio(num, den):
 
 def _keys(side):
     """{check key: [plan row ids]}, the rows whose stored key is stale, and whether the plan carries keys at all."""
-    rows = [c for c in side['plan'].get('checks') or [] if isinstance(c, dict) and c.get('id')]
+    rows = [c for c in side['plan'].get('checks') or [] if isinstance(c, dict) and c.get('id')
+            and c.get('origin') != rule_gaps.ORIGIN]   # fixed requirements, step 7: added rows are counted apart
     out, stale = {}, []
     for c in rows:
         key = check_key.key(c, side['plan'].get('assemblies'))
@@ -262,6 +264,8 @@ def strict(a, b, aliases=(), same_netlist=True):
         'missing_result': [{'A': p['A'], 'B': p['B'], 'A_verdict': p['A_verdict'], 'B_verdict': p['B_verdict']}
                            for p in pairs if p not in answered],
         'aliases_refused': refused,
+        'reviewer_added': {side: sorted(c['id'] for c in rule_gaps.added(s['plan'].get('checks') or []))
+                           for side, s in (('A', a), ('B', b))},
         'fail_vs_pass': [p for p in answered if {p['A_verdict'], p['B_verdict']} == {'PASS', 'FAIL'}],
         'severe_disagreements': [p for p in answered if p['A_verdict'] != p['B_verdict'] and (p['A'] in severe or p['B'] in severe)],
     }
@@ -359,6 +363,8 @@ def markdown(report):
             lines.append('%s 有重复的检查项：%s' % (side, '；'.join('、'.join(d['ids']) for d in st['duplicates'][side])))
     lines += ['', '只在 A：%d 行；只在 B：%d 行；缺结论的配对：%d；被拒的别名：%d。' % (
         len(st['unmatched']['A']), len(st['unmatched']['B']), len(st['missing_result']), len(st['aliases_refused']))]
+    lines += ['', '审查员补加（规则缺口，不计入配对）：A %d 行，B %d 行。' % (
+        len(st['reviewer_added']['A']), len(st['reviewer_added']['B']))]
     rows = sug['rows']
     lines += ['', '## 建议配对（按电路与位号重合，不进入上面的指标）', '',
               '精确配对之外按重合度建议配对 %d 对，供人工核对是否同一项检查。' % len(st['suggested_pairs']), '',
