@@ -570,6 +570,10 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                     'refdes': material.get('refdes', []),
                     'message': material.get('message'),
                 })
+        unread = passive_stress.unread_values(self.db)
+        if unread:   # a value the parser cannot read is reported, not dropped in silence
+            self.diagnostics.append({'code': 'RESISTOR_VALUE_UNREAD', 'values': unread,
+                                     'message': '阻值读不出；改成 阻值[/公差][/额定功率][/额定电压][/封装] 的写法或确认阻值后重跑'})
         for conflict in self.domains['conflicts']:
             self.diagnostics.append(dict(conflict, detail='参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表'))
         self.checks.sort(key=lambda x: x['id'])
@@ -804,6 +808,8 @@ def main():
           f"applicability={summary['applicability']}")
     print(f"  readiness={summary['readiness']}  "
           f"handoff_required={summary['handoff_required']}")
+    for line in passive_stress.unread_lines(plan):
+        print(line)
     gaps = passive_stress.rail_gaps(plan)
     if gaps:
         print('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))

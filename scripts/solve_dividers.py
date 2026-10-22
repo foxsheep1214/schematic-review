@@ -87,6 +87,20 @@ def parse_resistor(value, default_tol=None, exact=False):
     package = re.fullmatch(r'(.*?)\s*/\s*R(?:01005|0201|0402|0603|0805|1206|1210|1812|2010|2512)\s*', remainder)
     if package:
         remainder = package.group(1)
+    # A rated power and a rated voltage between the tolerance and the package (1k5/1%/1W, 100k/1%/250mW,
+    # 1M/1%/250V), each at most once, are read and kept; mW is uppercased to MW here, and no resistor is rated in
+    # megawatts. Any other word still makes the value unreadable.
+    ratings = {}
+    while True:
+        rating = re.fullmatch(r'(.*?)\s*/\s*(\d+(?:\.\d+)?)\s*(M?W|V)\s*', remainder)
+        if not rating:
+            break
+        field = 'voltage_v' if rating.group(3) == 'V' else 'power_w'
+        amount = float(rating.group(2)) / (1000.0 if rating.group(3) == 'MW' else 1.0)
+        if field in ratings or not (math.isfinite(amount) and amount > 0):
+            return None
+        ratings[field] = amount
+        remainder = rating.group(1)
     # Only a single complete tolerance may follow the value/unit. Searching
     # anywhere in the input would accept junk or skip a conflicting tolerance.
     tol_match = None
@@ -102,6 +116,7 @@ def parse_resistor(value, default_tol=None, exact=False):
     if tol is not None and (not math.isfinite(tol) or tol < 0 or tol >= 1):
         return None
     result = {'kohm': number * scale, 'tol': tol}
+    result.update(ratings)
     if exact:
         result['ohm_exact'] = str(Fraction(decimal_number) * {
             'mR': Fraction(1, 1000), 'R': 1, '': 1, 'K': 1000, 'M': 1000000}[unit])

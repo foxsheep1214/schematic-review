@@ -7,6 +7,27 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A resistor value with its rated power or voltage is read, and one still unreadable is reported (2026-10-22)
+
+Measuring the per-pin rows on the R5 bench showed that the resistor parser read no resistance for 22 of the 47 fitted
+resistors: the values carried a rated power or a rated voltage after the tolerance (1k5/1%/1W, 1M/1%/250V) or a word
+(47R/1%/2W/pulse). The grammar took only value, tolerance and package and refused anything else, which is right for a
+word it does not know but left every stress bound, divider window and pin current on those parts uncomputed, and
+nothing told the reviewer or the user. The value grammar is now value[/tolerance][/rated power][/rated voltage]
+[/package]: a rated power (W, mW) and a rated voltage (V), each at most once, are read and kept as power_w and
+voltage_v; a rating given twice, a zero rating, a rating after the package or before the tolerance and any other word
+still make the value unreadable. Every fitted resistor whose value is still unreadable is a plan diagnostic,
+RESISTOR_VALUE_UNREAD, with each part and its value as written; the plan commands (plan_review.py, lint.py --plan-json)
+print them, and SKILL.md asks the reviewer to tell the user at once, with the parts and their values, and not to guess
+a resistance. R5 bench: unreadable values 22 -> 3 (the three with "pulse", now reported); the bus-sense pin row gets its
+pin current (14.1 mA), rows and pairing unchanged (506 of 506 and 510). Tests first (5 parser tests, 2 reporting tests),
+1885 tests pass, contract 500, replay bench 195/195, mutations M205-M212 added and killed, the parser and scan
+mutations rerun and killed.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/db.json (22 resistor values unreadable), user:2026-10-22 (1k5 这种写法认不出就要及时反馈)
+- Causes: rule_not_enforced 1, knowledge_missing 1
+- Changed: scripts/solve_dividers.py, scripts/checkers/passive_stress.py, scripts/plan_review.py, scripts/lint.py, scripts/tests/test_native_resistor_value.py, scripts/tests/test_unread_values.py, SKILL.md, references/wca-formulas.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## SR does not take the designer's documents as reference (2026-10-22)
 
 The step-7 recheck proposed one DOC-Q01 row per figure the design report or calculation file claims, because on R5 one

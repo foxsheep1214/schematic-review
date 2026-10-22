@@ -208,5 +208,13 @@
 | M202 | the pin current ignores the resistor tolerance | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_pin_feeds.py::PinFeedTests::test_the_row_carries_the_worst_current_through_the_resistor |
 | M203 | pin rows are not written | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_pin_feeds.py::PinFeedTests::test_a_multi_supply_ic_counts_its_lowest_supply |
 | M204 | the checkers read the unresolved rail windows | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::PlanTests::test_a_rail_window_from_a_requirement_reaches_the_checkers |
+| M205 | a rated power is not read | `scripts/solve_dividers.py` | KILLED | FAILED scripts/tests/test_native_resistor_value.py::NativeResistorValueTests::test_a_power_rating_after_the_tolerance_is_read |
+| M206 | a rated voltage is not read | `scripts/solve_dividers.py` | KILLED | FAILED scripts/tests/test_native_resistor_value.py::NativeResistorValueTests::test_a_rated_voltage_is_read_like_the_rated_power |
+| M207 | a rating given twice is accepted | `scripts/solve_dividers.py` | KILLED | FAILED scripts/tests/test_native_resistor_value.py::NativeResistorValueTests::test_an_unknown_word_or_a_rating_out_of_place_still_fails_closed |
+| M208 | milliwatts are read as watts | `scripts/solve_dividers.py` | KILLED | FAILED scripts/tests/test_native_resistor_value.py::NativeResistorValueTests::test_a_power_rating_after_the_tolerance_is_read |
+| M209 | the ratings are not kept | `scripts/solve_dividers.py` | KILLED | FAILED scripts/tests/test_native_resistor_value.py::NativeResistorValueTests::test_a_power_rating_after_the_tolerance_is_read |
+| M210 | an unreadable value is not reported | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_unread_values.py::UnreadValueTests::test_an_unreadable_resistor_value_is_a_plan_diagnostic_with_the_value_as_written |
+| M211 | a part marked NC is reported | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_unread_values.py::UnreadValueTests::test_a_readable_value_an_empty_one_and_a_part_not_fitted_are_not_reported |
+| M212 | the plan leaves the unread values out | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_unread_values.py::UnreadValueTests::test_an_unreadable_resistor_value_is_a_plan_diagnostic_with_the_value_as_written |
 
 全部杀死。

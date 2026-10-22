@@ -343,6 +343,28 @@ def proposal_for(inventory, state_id, ref):
     return None
 
 
+def unread_values(db):
+    """{位号: 原值}：未标 NC、值不为空而阻值读不出的电阻；计划诊断与计划命令列出，由审查员当场告诉用户。"""
+    graph = ng.NetGraph(db)
+    out = {}
+    for ref, part in sorted((db.get('parts') or {}).items()):
+        value = part.get('value') if isinstance(part, dict) else None
+        if (isinstance(part, dict) and not part.get('nc') and isinstance(value, str) and value.strip()
+                and graph.kind(ref) == ng.RESISTOR and parse_resistor(value) is None):
+            out[ref] = value
+    return out
+
+
+def unread_lines(plan):
+    """计划命令打印的“阻值读不出”提示行。"""
+    found = next((d for d in plan.get('diagnostics') or [] if d.get('code') == 'RESISTOR_VALUE_UNREAD'), None)
+    if not found:
+        return []
+    return ['  阻值读不出的电阻（%d 颗，阻容预判与脚电流算不出）：%s' % (
+                len(found['values']), '、'.join('%s「%s」' % item for item in found['values'].items())),
+            '    请当场告诉用户：BOM 值改成 阻值[/公差][/额定功率][/额定电压][/封装] 的写法（如 47R/1%/2W），或确认阻值后重跑']
+
+
 def rail_gaps(plan):
     """统计因轨电压未声明而没有预判的行：{轨: 行数}，供计划命令提示补 intent。"""
     counts = {}

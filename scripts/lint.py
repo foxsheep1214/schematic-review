@@ -33,7 +33,7 @@ from collections import defaultdict
 from audit_datasheets import validate_datasheet_audit
 from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID, registry_hot_rules
 from checkers.powertree import declared_supply_nets
-from checkers import netgraph as ng
+from checkers import netgraph as ng, passive_stress
 from checkers.netgraph import (CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER, TVS,
                                TWO_TERMINAL, NetGraph, rail_voltage as _volt)
 from electrical_contract import bounded, db_fingerprint, load_json, readiness_gaps, validate_evidence
@@ -1054,6 +1054,8 @@ def main():
           f"applicability={summary['applicability']}")
     print(f"  readiness={summary['readiness']}  "
           f"handoff_required={summary['handoff_required']}")
+    for line in passive_stress.unread_lines(review_plan):
+        print(line)
     if a.plan_json:
         json.dump(review_plan, io.open(a.plan_json, 'w', encoding='utf-8'),
                   ensure_ascii=False, indent=2)

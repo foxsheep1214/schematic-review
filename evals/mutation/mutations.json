@@ -1426,5 +1426,61 @@
   "file": "scripts/plan_review.py",
   "old": "            requirement_parameters.resolve(intent) if isinstance(intent, dict) else intent, datasheet_audit)",
   "new": "            intent, datasheet_audit)"
+ },
+ {
+  "id": "M205",
+  "name": "a rated power is not read",
+  "file": "scripts/solve_dividers.py",
+  "old": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
+  "new": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(V)\\s*', remainder)"
+ },
+ {
+  "id": "M206",
+  "name": "a rated voltage is not read",
+  "file": "scripts/solve_dividers.py",
+  "old": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
+  "new": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W)\\s*', remainder)"
+ },
+ {
+  "id": "M207",
+  "name": "a rating given twice is accepted",
+  "file": "scripts/solve_dividers.py",
+  "old": "        if field in ratings or not (math.isfinite(amount) and amount > 0):",
+  "new": "        if not (math.isfinite(amount) and amount > 0):"
+ },
+ {
+  "id": "M208",
+  "name": "milliwatts are read as watts",
+  "file": "scripts/solve_dividers.py",
+  "old": "        amount = float(rating.group(2)) / (1000.0 if rating.group(3) == 'MW' else 1.0)",
+  "new": "        amount = float(rating.group(2))"
+ },
+ {
+  "id": "M209",
+  "name": "the ratings are not kept",
+  "file": "scripts/solve_dividers.py",
+  "old": "    result.update(ratings)\n",
+  "new": ""
+ },
+ {
+  "id": "M210",
+  "name": "an unreadable value is not reported",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                and graph.kind(ref) == ng.RESISTOR and parse_resistor(value) is None):",
+  "new": "                and graph.kind(ref) == ng.RESISTOR and False):"
+ },
+ {
+  "id": "M211",
+  "name": "a part marked NC is reported",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if (isinstance(part, dict) and not part.get('nc') and isinstance(value, str) and value.strip()",
+  "new": "        if (isinstance(part, dict) and isinstance(value, str) and value.strip()"
+ },
+ {
+  "id": "M212",
+  "name": "the plan leaves the unread values out",
+  "file": "scripts/plan_review.py",
+  "old": "        unread = passive_stress.unread_values(self.db)\n",
+  "new": "        unread = {}\n"
  }
 ]
