@@ -9,9 +9,9 @@ from decoupling import build_decoupling_inventory, validate_decoupling_intent
 
 from .base import Checker
 from .passive_stress import OVERRIDE_CODES, proposal_for
-from .planutil import slug
 
-# 器件条款的三类要求各对应一条规则；缺条款时用规则总表里的默认判据。
+# 每个去耦组固定问三类要求，各对应一条规则，问题用规则总表的判据；审查员每类至多写一条手册条款（判据 + 出处），
+# 挂在行的 `clause` 上，不进检查项标识。缺连接或容量条款的行等手册；额定没有条款时按总表默认判据预判。
 REQUIREMENT_RULES = (('connection', 'PWR-D02'), ('capacitance', 'PWR-C09'), ('rating', 'PWR-C10'))
 PLAN_RULES = frozenset({'PWR-D01', 'PWR-T03'} | {rule for _, rule in REQUIREMENT_RULES})
 
@@ -73,7 +73,7 @@ class DecouplingChecker(Checker):
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion',
                         'readiness', 'required_inputs', 'trigger', 'inventory_gaps',
                         'required_material_refs', 'qualification_refs', 'handoff', 'full_inventory_gaps',
-                        'proposal')
+                        'proposal', 'clause')
 
     def incomplete_message(self, key):
         return key + ': incomplete decoupling planned coverage'
@@ -114,38 +114,38 @@ class DecouplingChecker(Checker):
                 no_cap = group.get('purpose') == 'no_direct_capacitor' and not group['fitted_capacitors']
                 if group.get('purpose', 'bypass') != 'bypass':
                     item['trigger'] = sorted(set(item['trigger']) | {'decoupling-purpose:' + group['purpose']})
+                clauses = {r['kind']: {'criterion': r['criterion'], 'citation': r['citation']} for r in group['requirements']}
                 for kind, rule in REQUIREMENT_RULES:
                     if no_cap and kind in ('capacitance', 'rating'):
-                        # 原厂条款说不需要直接电容且图上也没有：容量与额定无对象，按 NA 记出处。
-                        cite = next(r['citation'] for r in group['requirements'] if r['kind'] == 'connection')
+                        # 原厂条款说不需要直接电容且图上也没有：容量与额定无对象，按 NA 记出处（连接条款）。
                         item = planner.add_check(rule, deepcopy(obj), key=group['id'], applicability='NOT_APPLICABLE',
-                            criterion='本组按原厂条款不需要直接电容，图上也没有：%s；无容量/额定对象' % cite,
+                            criterion='本组按原厂条款不需要直接电容，图上也没有；无容量/额定对象',
                             trigger=['decoupling-group:' + group['id'], 'decoupling-purpose:no_direct_capacitor'])
+                        item['clause'] = deepcopy(clauses['connection'])
                         item['inventory_gaps'] = []
                         continue
-                    requirements = [r for r in group['requirements'] if r['kind'] == kind]
-                    for req in requirements or [None]:
-                        gaps = (connection_gaps if kind == 'connection' else group['gaps']) + (group['capacitance_gaps'] if kind == 'capacitance' else [])
-                        if req is None and kind != 'rating':
-                            # Capacitance/connection need the device clause; voltage
-                            # rating against the rail uses the catalog default criterion.
-                            gaps = gaps + ['datasheet-requirement:' + kind]
-                        key = group['id'] + ('-' + slug(req['id']) if req else '')
-                        item = planner.add_check(rule, deepcopy(obj), key=key,
-                            criterion=req['criterion'] if req else None,
-                            readiness='WAITING_EVIDENCE',
-                            required_inputs=gaps + ['state-specific engineering evidence: ' + kind],
-                            trigger=['decoupling-group:' + group['id']] + ([req['citation']] if req else []),)
-                        item['inventory_gaps'] = sorted(set(gaps))
-                        item['full_inventory_gaps'] = group['gaps']
-                        item['analysis_required'] = True
-                        item['required_material_refs'] = sorted(set([group['ref']] + group['fitted_capacitors']))
-                        if kind == 'rating':
-                            item['qualification_refs'] = sorted(group['fitted_capacitors'])
-                            item['required_inputs'].extend('capacitor-qualification:' + ref
-                                                          for ref in item['qualification_refs'])
-                            if req is None and not item['inventory_gaps']:
-                                item['proposal'] = rating_proposal(planner, state['id'], item['qualification_refs'])
+                    clause = clauses.get(kind)
+                    gaps = (connection_gaps if kind == 'connection' else group['gaps']) + (group['capacitance_gaps'] if kind == 'capacitance' else [])
+                    if clause is None and kind != 'rating':
+                        # Capacitance/connection need the device clause; voltage
+                        # rating against the rail uses the catalog default criterion.
+                        gaps = gaps + ['datasheet-requirement:' + kind]
+                    item = planner.add_check(rule, deepcopy(obj), key=group['id'],
+                        readiness='WAITING_EVIDENCE',
+                        required_inputs=gaps + ['state-specific engineering evidence: ' + kind],
+                        trigger=['decoupling-group:' + group['id']] + ([clause['citation']] if clause else []),)
+                    if clause:
+                        item['clause'] = deepcopy(clause)
+                    item['inventory_gaps'] = sorted(set(gaps))
+                    item['full_inventory_gaps'] = group['gaps']
+                    item['analysis_required'] = True
+                    item['required_material_refs'] = sorted(set([group['ref']] + group['fitted_capacitors']))
+                    if kind == 'rating':
+                        item['qualification_refs'] = sorted(group['fitted_capacitors'])
+                        item['required_inputs'].extend('capacitor-qualification:' + ref
+                                                      for ref in item['qualification_refs'])
+                        if clause is None and not item['inventory_gaps']:
+                            item['proposal'] = rating_proposal(planner, state['id'], item['qualification_refs'])
 
     def binds(self, item):
         obj = item.get('object')

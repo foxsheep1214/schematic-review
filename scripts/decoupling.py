@@ -19,7 +19,9 @@ from i2c_topology import digest, validate_db_shape
 
 KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other',
          'bridge_rectifier', 'transformer'}
-SECTION_SCHEMA_VERSION = 2
+# 3: a group no longer lists its return pins (every official return pin of the part, `return_net` only where they
+# sit on several nets) and states at most one datasheet clause per requirement kind, without an id.
+SECTION_SCHEMA_VERSION = 3
 # Datasheet-verified device kinds (intent.device_kinds) that have no IC supply pins to bypass.
 NO_SUPPLY_KINDS = {'bridge_rectifier', 'transformer', 'connector'}
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
@@ -134,7 +136,7 @@ def validate_decoupling_intent(intent, db=None):
         if not isinstance(group, dict):
             require(False, 'group must be an object')
             continue
-        fields(group, ('id', 'ref', 'supply_nodes', 'return_nodes', 'citation', 'requirements', 'purpose'), 'group')
+        fields(group, ('id', 'ref', 'supply_nodes', 'return_net', 'citation', 'requirements', 'purpose'), 'group')
         purpose = group.get('purpose', 'bypass')
         require(purpose in GROUP_PURPOSES, 'unsupported group purpose')
         if purpose != 'bypass':
@@ -151,31 +153,44 @@ def validate_decoupling_intent(intent, db=None):
         require(_text(group.get('citation')), 'group needs grouping/return citation')
         pins = device.get('pins', {}) if isinstance(device, dict) else {}
         pins = pins if isinstance(pins, dict) else {}
-        for field, role in (('supply_nodes', 'power'), ('return_nodes', 'return')):
-            nodes = group.get(field)
-            require(_strings(nodes), field + ' needs unique physical nodes')
-            for node in nodes if _strings(nodes) else []:
-                prefix, _, number = node.partition('.')
-                spec = pins.get(number)
-                require(prefix == ref and isinstance(spec, dict) and spec.get('role') == role, field + ' must match device physical pin roles: ' + node)
-                if role == 'power':
-                    require(node not in used, 'supply node belongs to multiple groups: ' + node)
-                    used.add(node)
+        nodes = group.get('supply_nodes')
+        require(_strings(nodes), 'supply_nodes needs unique physical nodes')
+        for node in nodes if _strings(nodes) else []:
+            prefix, _, number = node.partition('.')
+            spec = pins.get(number)
+            require(prefix == ref and isinstance(spec, dict) and spec.get('role') == 'power',
+                    'supply_nodes must match device physical pin roles: ' + node)
+            require(node not in used, 'supply node belongs to multiple groups: ' + node)
+            used.add(node)
+        if db is not None and _text(ref):
+            nets = sorted({db.get('pin2net', {}).get(n) for n in return_pins(ref, pins)} - {None})
+            if len(nets) > 1:
+                require(group.get('return_net') in nets, '%s: the return pins of %s sit on %s; name the group\'s '
+                        'return_net (one of them) with the grouping citation' % (gid, ref, ', '.join(nets)))
+            else:
+                require('return_net' not in group, '%s: return_net is only for a part whose return pins sit on '
+                        'more than one net' % gid)
+        elif 'return_net' in group:
+            require(_text(group['return_net']), 'return_net must be a net name')
         requirements = group.get('requirements', [])
         require(isinstance(requirements, list), 'requirements must be an array')
-        req_ids = set()
+        kinds = set()
         for req in requirements if isinstance(requirements, list) else []:
             if not isinstance(req, dict):
                 require(False, 'requirement must be an object')
                 continue
-            fields(req, ('id', 'kind', 'criterion', 'citation'), 'requirement')
-            rid = req.get('id')
-            require(_text(rid) and rid not in req_ids, 'requirement id missing/duplicate')
-            if _text(rid):
-                req_ids.add(rid)
+            fields(req, ('kind', 'criterion', 'citation'), 'requirement')
             require(isinstance(req.get('kind'), str) and req['kind'] in REQUIREMENT_KINDS, 'unsupported requirement kind')
+            require(req.get('kind') not in kinds, 'one clause per kind: %s states %s twice' % (gid, req.get('kind')))
+            kinds.add(req.get('kind'))
             require(_text(req.get('criterion')) and _text(req.get('citation')), 'requirement needs criterion/citation')
     return errors
+
+
+def return_pins(ref, pins):
+    """Every pin of `ref` the official pin map gives the return role."""
+    return sorted(ref + '.' + number for number, spec in (pins or {}).items()
+                  if isinstance(spec, dict) and spec.get('role') == 'return')
 
 
 class Inventory:
@@ -299,7 +314,14 @@ class Inventory:
                         for n in group[field]) and bool(group['supply_nodes']) and bool(group['return_nodes']))
 
     def groups(self):
-        groups = [dict(deepcopy(g), origin='declared') for g in self.cfg.get('groups', [])]
+        groups = []
+        for declared in self.cfg.get('groups', []):
+            group = dict(deepcopy(declared), origin='declared')
+            returns = return_pins(group['ref'], self.devices.get(group['ref'], {}).get('pins'))
+            if group.get('return_net'):
+                returns = [n for n in returns if self.pin2net.get(n) == group['return_net']]
+            group['return_nodes'] = returns
+            groups.append(group)
         assigned = {n for g in groups for n in g['supply_nodes']}
         for ref, device in self.devices.items():
             self.nodes[ref].update(ref + '.' + pin for pin in device['pins'])

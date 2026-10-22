@@ -126,5 +126,13 @@
 | M120 | an assembly key ignores the jumpers | `scripts/check_key.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyKeyTests::test_the_plan_maps_each_assembly_name_to_a_content_key |
 | M121 | a plan without its assembly map is accepted | `scripts/validate_review.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyMapTests::test_a_plan_without_its_assembly_map_is_refused |
 | M122 | compare_reviews keys rows without the assembly map | `scripts/compare_reviews.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyKeyTests::test_compare_reviews_pairs_the_renamed_assembly |
+| M123 | a group asks only the kinds it states a clause for | `scripts/checkers/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling.py::DecouplingPlanTests::test_missing_requirements_or_population_cannot_pass |
+| M124 | the agent's clause becomes the row's criterion | `scripts/checkers/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::FixedKindTests::test_the_clause_rides_on_the_row_and_its_wording_does_not_split_the_check |
+| M125 | a group keeps one return pin, not every official one | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::ReturnPinTests::test_the_return_pins_are_every_official_return_pin |
+| M126 | the named return net does not pick the return pins | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::ReturnPinTests::test_return_pins_on_two_nets_need_the_group_to_name_its_return_net |
+| M127 | return pins on two nets accepted without a return net | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::ReturnPinTests::test_return_pins_on_two_nets_need_the_group_to_name_its_return_net |
+| M128 | a return net on a part with one return net accepted | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::ReturnPinTests::test_a_return_net_on_a_part_whose_returns_share_one_net_is_refused |
+| M129 | two clauses of one kind accepted | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::FixedKindTests::test_a_clause_without_its_citation_two_of_one_kind_or_a_named_clause_is_refused |
+| M130 | a no-capacitor row carries the clause citation in its criterion | `scripts/checkers/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::NoCapacitorTests::test_a_no_capacitor_group_states_the_reason_as_its_clause_not_in_its_criterion |
 
 全部杀死。

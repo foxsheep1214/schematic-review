@@ -7,6 +7,32 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A decoupling group asks a fixed set of checks and takes its return pins from the pin map (2026-10-22)
+
+After the assembly keys the R5 pair paired 424 of 461 and 466 rows; 33 of the remaining non-requirement rows were
+decoupling rows of five groups both reviewers had declared on the same supply pins. One reviewer stated connection
+and capacitance clauses, the other also a rating; each named its clauses its own way (`U201-VCC-CAP` against
+`U201-VCC-capacitance`) and worded them its own way, and both the name (in the row id) and the wording (as the row
+criterion) entered the row; on three groups one listed a single ground pin and the other every ground pin with the
+exposed pad. Now (decoupling section schema 3) every declared group asks PWR-T03 and exactly one PWR-D02, PWR-C09 and
+PWR-C10 row with the catalog's question; the agent states at most one datasheet clause per kind, only `kind`,
+`criterion` and `citation`, and the clause rides on its row as `clause` (outside the check identity, compared as a
+generated field); a missing connection or capacitance clause keeps its row waiting for the datasheet, a missing rating
+clause falls back to the catalog criterion and its proposal as before; the no-capacitor rows keep a fixed criterion
+and carry the connection clause. The return pins are no longer written: they are every pin the official pin map gives
+the return role, and only where those pins sit on more than one net does the group name `return_net`, which is
+refused otherwise. Schema-2 sections, requirement ids and declared return pins are refused, also in reviewed
+declaration snapshots. R5 bench, with both intents' decoupling sections rewritten in the new form (each keeping its own
+clauses, without the clause ids and the hand-listed return pins): decoupling rows pair 20 of 20 and 24, all rows 442
+of 461 and 466 (94.8 %; 98.9 % without requirement rows), row counts unchanged; what remains is 38 requirement rows,
+the HV group only one reviewer declared (4 rows) and one debug test point. Tests first (test_decoupling_fixed_kinds,
+9 tests; the shared decoupling fixture and four older fixtures move to schema 3), 1853 tests pass, contract 500,
+replay bench 195/195, mutations M123–M130 added and killed.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (decoupling groups), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (decoupling groups), user:2026-10-22 (去耦行：要求种类固定，返回脚由网表与官方脚表推出，Agent 只写判据与出处)
+- Causes: rule_not_enforced 1
+- Changed: scripts/decoupling.py, scripts/checkers/decoupling.py, scripts/reviewed_declarations.py, scripts/tests/test_decoupling_fixed_kinds.py, scripts/tests/test_decoupling.py, scripts/tests/test_asg_review_scope.py, scripts/tests/test_plan_handoff.py, scripts/tests/test_reviewed_declarations.py, references/automation.md, references/plan-and-results.md, references/reviewed-declarations.md, docs/2026-10-21-function-tree-design.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## Check keys name an assembly by its content, not by the reviewer's name for it (2026-10-22)
 
 After step 6 the R5 pair still paired 391 of 461 and 466 rows (83.9 %, acceptance 3 asks 90 %). Apart from the 38

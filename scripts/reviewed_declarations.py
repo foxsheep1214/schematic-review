@@ -89,10 +89,12 @@ def resolve(intent, db=None):
         if ref in devices and devices[ref] != spec:
             raise ValueError(KEY + ': conflicting official device declaration: ' + ref)
         devices[ref] = deepcopy(spec)
-    cfg = out.setdefault('decoupling', {'schema_version': 2, 'groups': [], 'components': {}})
+    import checkers  # noqa: F401 -- decoupling and the checkers import each other; the registry must load first
+    from decoupling import SECTION_SCHEMA_VERSION   # decoupling imports this module
+    cfg = out.setdefault('decoupling', {'schema_version': SECTION_SCHEMA_VERSION, 'groups': [], 'components': {}})
     extra = payload['decoupling']
-    if not isinstance(cfg, dict) or extra.get('schema_version') != 2 or set(extra) - {'schema_version', 'groups', 'components'}:
-        raise ValueError(KEY + ': decoupling must use schema 2')
+    if not isinstance(cfg, dict) or extra.get('schema_version') != SECTION_SCHEMA_VERSION or set(extra) - {'schema_version', 'groups', 'components'}:
+        raise ValueError(KEY + ': decoupling must use schema %d' % SECTION_SCHEMA_VERSION)
     groups, components = extra.get('groups', []), extra.get('components', {})
     if not (isinstance(groups, list) and isinstance(components, dict)
             and isinstance(cfg.get('groups', []), list) and isinstance(cfg.get('components', {}), dict)):

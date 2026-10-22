@@ -51,10 +51,10 @@ class VerifiedConnectorScopeTests(unittest.TestCase):
     def test_explicit_connector_requirements_remain_enforced(self):
         db, intent, audit = connector_fixture()
         intent['decoupling']['groups'].append({'id': 'PORT-INPUT', 'ref': 'Z7',
-            'supply_nodes': ['Z7.1'], 'return_nodes': ['Z7.2'], 'citation': 'Synthetic port input requirement',
-            'requirements': [{'id': 'CAP', 'kind': 'capacitance', 'criterion': 'Explicit input capacitance limit', 'citation': 'Synthetic interface clause'}]})
+            'supply_nodes': ['Z7.1'], 'citation': 'Synthetic port input requirement',
+            'requirements': [{'kind': 'capacitance', 'criterion': 'Explicit input capacitance limit', 'citation': 'Synthetic interface clause'}]})
         plan = build_review_plan(db, intent=intent, datasheet_audit=audit)
-        self.assertTrue(any(c['rule'] == 'PWR-C09' and c['object'].get('ref') == 'Z7' and c['criterion'] == 'Explicit input capacitance limit' for c in plan['checks']))
+        self.assertTrue(any(c['rule'] == 'PWR-C09' and c['object'].get('ref') == 'Z7' and c.get('clause', {}).get('criterion') == 'Explicit input capacitance limit' for c in plan['checks']))
         self.assertEqual(plan['decoupling']['non_decoupling_connectors'], [])
 
     def test_capacitor_rating_targets_are_fitted_caps_not_the_supplied_ic(self):

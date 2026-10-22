@@ -17,7 +17,7 @@
   "declarations": {
     "devices": {},
     "decoupling": {
-      "schema_version": 2,
+      "schema_version": 3,
       "components": {},
       "groups": []
     }
@@ -26,7 +26,7 @@
 ```
 
 `devices` 仅补已核定的准确脚表，可省略；已有脚表冲突时报错，不能覆盖。`decoupling` 沿用
-[去耦格式](automation.md#去耦覆盖decoupling)：组内写准确物理供电脚、返回脚、用途、适用条款与出处。
+[去耦格式](automation.md#去耦覆盖decoupling)：组内写准确物理供电脚、用途、适用条款与出处，返回脚由官方脚表推出。
 各声明的 citation 指向 sources 中的具体依据；sources 应覆盖实际用到的原始文件，而不只引用旧总结。
 
 桥式整流器、定制变压器经核对后，可在 `components` 分别写

@@ -445,11 +445,11 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
                               "2": {"name": "VSS", "role": "return"},
                               "3": {"name": "IO", "role": "other"}}}},
   "decoupling": {
-    "schema_version": 2,
+    "schema_version": 3,
     "components": {"C1": {"kind": "capacitor", "citation": "BOM/符号确认 C1 为两脚电容"}},
-    "groups": [{"id": "U1-VDD", "ref": "U1", "supply_nodes": ["U1.1"], "return_nodes": ["U1.2"],
-                "citation": "准确器件电源分组与返回节点要求 Rev.A 第 8 页",
-                "requirements": [{"id": "VDD-CONNECTION", "kind": "connection",
+    "groups": [{"id": "U1-VDD", "ref": "U1", "supply_nodes": ["U1.1"],
+                "citation": "准确器件电源分组要求 Rev.A 第 8 页",
+                "requirements": [{"kind": "connection",
                                   "criterion": "填写本组实际适用的电容接法条款，不用通用每脚一颗规则",
                                   "citation": "官方适用条款版本/页码/表号"}]}]
   }
@@ -464,8 +464,10 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   DEV-D05 附未接网脚与"标 nc 却接了网"的脚，仍由审查者逐脚定判。
 - 官方脚表与符号/网表脚表做双向差集，各自记录多出的脚（`official_only_nodes/symbol_only_nodes` 保留完整差集）；去耦缺口只对电源/地角色的差异脚计入，其他功能脚的差异由 DEV-D02 逐脚处置。官方 power 脚未入 group 时自动列候选。
   不得为消除缺口把缺失电源脚改成 `other`。
-- `groups`：按器件具体条款划分，不要求每个电源脚单独一颗电容。节点必须属于该器件对应官方角色，
-  供电脚不能重复分组；每组只支持一个直接供电网和一个明确返回网。跨网分组不合并，保持缺口。
+- `groups`：按器件具体条款划分，不要求每个电源脚单独一颗电容。供电脚必须属于该器件官方 power 角色，
+  不能重复分组；每组只支持一个直接供电网。返回脚不写：取官方脚表里该器件全部 return 角色的脚；这些脚落在
+  不止一个网上时，组写 `return_net`（其中一个网，出处写在组的 `citation`），只取这个网上的返回脚；只有一个返回网时写
+  `return_net` 被拒绝。跨网分组不合并，保持缺口。
   飞跨/bootstrap/补偿以及内部稳压输出端的必需外接电容按专用条款另审；
   组可加 `purpose`：默认 `bypass`；`no_direct_capacitor` 表示按原厂条款该脚不需要直接电容（如高压启动/检测脚 HV），
   图上也没有直接电容时 PWR-C09/PWR-C10 记不适用，PWR-T03/PWR-D02 仍核接法；`regulator_output` 表示片内稳压器
@@ -476,9 +478,11 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 - `components`：支持 `capacitor/resistor/ferrite/inductor/jumper/switch/bridge_rectifier/transformer/other`，都要有出处。
   C/R/L/FB/JP 前缀仅为候选类型；计入确认容量前需核类型与装配。`other` 是有证据的类别排除，
   不是规避官方电源脚审查的通用开关。
-- `requirements`：唯一 `id`、`kind`（`connection/capacitance/rating`）、`criterion`、`citation`，
-  每条单独入计划；缺某类时生成判据未补齐的检查项，不默认 NA。数组对声明的全部 states 适用，状态相关的
-  限值必须在条款中写清条件。
+- `requirements`：手册条款，每类（`connection/capacitance/rating`）至多一条，只写 `kind`、`criterion`、`citation`，不写编号。
+  每组固定问 PWR-T03 和三类各一行（PWR-D02 连接、PWR-C09 容量、PWR-C10 额定），问题用规则总表的判据；
+  条款挂在对应行的 `clause` 上，不进检查项标识，所以两人措辞不同仍是同一项检查。缺连接或容量条款的行等手册
+  （`datasheet-requirement:<类>`），不默认 NA；额定没有条款时按总表默认判据预判。条款对声明的全部 states 适用，
+  状态相关的限值必须在条款中写清条件。
 
 | 字段 | 含义 |
 |---|---|

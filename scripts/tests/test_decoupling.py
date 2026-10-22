@@ -27,15 +27,15 @@ def add_device(db, intent, ref, supply='VCC_3V3', ground='GND'):
         'pins': {'1': {'name': 'VDD', 'role': 'power'}, '2': {'name': 'VSS', 'role': 'return'},
                  '3': {'name': 'GPIO', 'role': 'other'}}}
     intent['decoupling']['groups'].append({'id': ref + '-VDD', 'ref': ref, 'supply_nodes': [ref + '.1'],
-        'return_nodes': [ref + '.2'], 'citation': 'synthetic grouping requirement section 2',
-        'requirements': [{'id': kind, 'kind': kind, 'criterion': 'synthetic ' + kind + ' requirement',
+        'citation': 'synthetic grouping requirement section 2',
+        'requirements': [{'kind': kind, 'criterion': 'synthetic ' + kind + ' requirement',
                           'citation': 'synthetic applicable specification section ' + kind}
                          for kind in ('connection', 'capacitance', 'rating')]})
 
 
 def fixture(values=('100nF', '1uF')):
     db = {'parts': {}, 'nets': {}, 'pin2net': {}, 'pinname': {}, 'pseudo_nets': []}
-    intent = {'devices': {}, 'decoupling': {'schema_version': 2, 'components': {}, 'groups': []},
+    intent = {'devices': {}, 'decoupling': {'schema_version': 3, 'components': {}, 'groups': []},
               'assemblies': [{'id': 'run', 'citation': 'synthetic BOM B option A', 'population': {}}]}
     add_device(db, intent, 'U1')
     for i, value in enumerate(values, 1):
@@ -212,7 +212,8 @@ class DecouplingInventoryTests(unittest.TestCase):
 
     def test_group_spanning_supply_or_return_nets_stays_incomplete(self):
         db, intent = fixture()
-        for role, field in [('power', 'supply_nodes'), ('return', 'return_nodes')]:
+        # return pins are derived from the pin map; one on another net needs return_net (test_decoupling_fixed_kinds)
+        for role, field in [('power', 'supply_nodes')]:
             broken, cfg = copy.deepcopy(db), copy.deepcopy(intent)
             broken['pin2net']['U1.4'] = 'OTHER'
             broken['pinname']['U1.4'] = 'OTHER'
@@ -490,14 +491,14 @@ class DecouplingPlanTests(unittest.TestCase):
         db, intent = fixture(())
         group_cfg = intent['decoupling']['groups'][0]
         group_cfg['purpose'] = 'no_direct_capacitor'
-        group_cfg['requirements'] = [{'id': 'hv', 'kind': 'connection', 'criterion': 'HV pin needs no bypass capacitor',
+        group_cfg['requirements'] = [{'kind': 'connection', 'criterion': 'HV pin needs no bypass capacitor',
                                       'citation': 'synthetic datasheet HV pin description'}]
         self.assertEqual(validate_decoupling_intent(intent, db), [])
         plan = build_review_plan(db, intent)
         rows = {p['rule']: p for p in plan['checks'] if p['rule'] in PLAN_RULES and p['object'].get('nodes') == ['U1.1']}
         for rule in ('PWR-C09', 'PWR-C10'):
             self.assertEqual(rows[rule]['applicability'], 'NOT_APPLICABLE')
-            self.assertIn('synthetic datasheet HV pin description', rows[rule]['criterion'])
+            self.assertEqual(rows[rule]['clause']['citation'], 'synthetic datasheet HV pin description')
         self.assertEqual(rows['PWR-T03']['applicability'], 'APPLICABLE')
         self.assertIn('decoupling-purpose:no_direct_capacitor', rows['PWR-T03']['trigger'])
 
@@ -554,7 +555,7 @@ class DecouplingPlanTests(unittest.TestCase):
         plan = build_review_plan(db, intent)
         report = ledger(plan, db)
         for kind in ('connection', 'capacitance'):
-            selected = next(p['id'] for p in plan['checks'] if p['rule'] in PLAN_RULES and p['criterion'] == 'synthetic ' + kind + ' requirement')
+            selected = next(p['id'] for p in plan['checks'] if p['rule'] in PLAN_RULES and p.get('clause', {}).get('criterion') == 'synthetic ' + kind + ' requirement')
             mark_pass(next(r for r in report['checks'] if r['id'] == selected))
             outcome = validate_review(plan, report, db)
             self.assertEqual(outcome['valid'], kind == 'connection', outcome['errors'])

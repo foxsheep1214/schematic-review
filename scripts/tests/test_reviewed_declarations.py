@@ -71,7 +71,7 @@ class ReviewedDeclarationsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'readable file'):resolve(bound,self.db)
 
     def test_payload_tampering_and_conflicting_pin_map_rejected(self):
-        bound=self.applied();bound[KEY]['declarations']['decoupling']['groups'][0]['return_nodes']=['U1.3']
+        bound=self.applied();bound[KEY]['declarations']['decoupling']['groups'][0]['supply_nodes']=['U1.3']
         with self.assertRaisesRegex(ValueError,'modified'):resolve(bound,self.db)
         self.draft['declarations']['devices']={'U1':copy.deepcopy(self.intent['devices']['U1'])}
         self.draft['declarations']['devices']['U1']['pins']['1']['role']='other'

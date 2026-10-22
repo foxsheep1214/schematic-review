@@ -852,5 +852,61 @@
   "file": "scripts/compare_reviews.py",
   "old": "        key = check_key.key(c, side['plan'].get('assemblies'))",
   "new": "        key = check_key.key(c)"
+ },
+ {
+  "id": "M123",
+  "name": "a group asks only the kinds it states a clause for",
+  "file": "scripts/checkers/decoupling.py",
+  "old": "                        gaps = gaps + ['datasheet-requirement:' + kind]\n",
+  "new": "                        continue\n"
+ },
+ {
+  "id": "M124",
+  "name": "the agent's clause becomes the row's criterion",
+  "file": "scripts/checkers/decoupling.py",
+  "old": "                    item = planner.add_check(rule, deepcopy(obj), key=group['id'],\n                        readiness='WAITING_EVIDENCE',",
+  "new": "                    item = planner.add_check(rule, deepcopy(obj), key=group['id'],\n                        criterion=clause['criterion'] if clause else None, readiness='WAITING_EVIDENCE',"
+ },
+ {
+  "id": "M125",
+  "name": "a group keeps one return pin, not every official one",
+  "file": "scripts/decoupling.py",
+  "old": "            group['return_nodes'] = returns\n",
+  "new": "            group['return_nodes'] = returns[:1]\n"
+ },
+ {
+  "id": "M126",
+  "name": "the named return net does not pick the return pins",
+  "file": "scripts/decoupling.py",
+  "old": "            if group.get('return_net'):\n                returns = [n for n in returns if self.pin2net.get(n) == group['return_net']]",
+  "new": "            if False:\n                returns = [n for n in returns if self.pin2net.get(n) == group['return_net']]"
+ },
+ {
+  "id": "M127",
+  "name": "return pins on two nets accepted without a return net",
+  "file": "scripts/decoupling.py",
+  "old": "                require(group.get('return_net') in nets,",
+  "new": "                require(True,"
+ },
+ {
+  "id": "M128",
+  "name": "a return net on a part with one return net accepted",
+  "file": "scripts/decoupling.py",
+  "old": "                require('return_net' not in group,",
+  "new": "                require(True,"
+ },
+ {
+  "id": "M129",
+  "name": "two clauses of one kind accepted",
+  "file": "scripts/decoupling.py",
+  "old": "            require(req.get('kind') not in kinds,",
+  "new": "            require(True,"
+ },
+ {
+  "id": "M130",
+  "name": "a no-capacitor row carries the clause citation in its criterion",
+  "file": "scripts/checkers/decoupling.py",
+  "old": "                            criterion='本组按原厂条款不需要直接电容，图上也没有；无容量/额定对象',",
+  "new": "                            criterion='本组按原厂条款不需要直接电容，图上也没有：%s；无容量/额定对象' % clauses['connection']['citation'],"
  }
 ]
