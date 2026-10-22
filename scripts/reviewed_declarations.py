@@ -100,11 +100,12 @@ def resolve(intent, db=None):
             and isinstance(cfg.get('groups', []), list) and isinstance(cfg.get('components', {}), dict)):
         raise ValueError(KEY + ': malformed groups/components')
     for g in groups:
-        if not isinstance(g, dict) or not text(g.get('id')):
-            raise ValueError(KEY + ': each group needs an ID')
-        prior = [x for x in cfg.get('groups', []) if isinstance(x, dict) and x.get('id') == g['id']]
+        if not isinstance(g, dict) or not text(g.get('ref')) or not text(g.get('net')):
+            raise ValueError(KEY + ': each group names its ref and supply net')
+        same = lambda x: isinstance(x, dict) and (x.get('ref'), x.get('net')) == (g['ref'], g['net'])
+        prior = [x for x in cfg.get('groups', []) if same(x)]
         if prior and any(x != g for x in prior):
-            raise ValueError(KEY + ': conflicting group: ' + g['id'])
+            raise ValueError(KEY + ': conflicting group: %s:%s' % (g['ref'], g['net']))
         if not prior:
             cfg.setdefault('groups', []).append(deepcopy(g))
     for ref, spec in components.items():

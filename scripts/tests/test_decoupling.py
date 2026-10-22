@@ -26,7 +26,7 @@ def add_device(db, intent, ref, supply='VCC_3V3', ground='GND'):
         'citation': 'synthetic full pinout table 1', 'pinout_complete': True,
         'pins': {'1': {'name': 'VDD', 'role': 'power'}, '2': {'name': 'VSS', 'role': 'return'},
                  '3': {'name': 'GPIO', 'role': 'other'}}}
-    intent['decoupling']['groups'].append({'id': ref + '-VDD', 'ref': ref, 'supply_nodes': [ref + '.1'],
+    intent['decoupling']['groups'].append({'ref': ref, 'net': supply,
         'citation': 'synthetic grouping requirement section 2',
         'requirements': [{'kind': kind, 'criterion': 'synthetic ' + kind + ' requirement',
                           'citation': 'synthetic applicable specification section ' + kind}
@@ -35,7 +35,7 @@ def add_device(db, intent, ref, supply='VCC_3V3', ground='GND'):
 
 def fixture(values=('100nF', '1uF')):
     db = {'parts': {}, 'nets': {}, 'pin2net': {}, 'pinname': {}, 'pseudo_nets': []}
-    intent = {'devices': {}, 'decoupling': {'schema_version': 3, 'components': {}, 'groups': []},
+    intent = {'devices': {}, 'decoupling': {'schema_version': 4, 'components': {}, 'groups': []},
               'assemblies': [{'id': 'run', 'citation': 'synthetic BOM B option A', 'population': {}}]}
     add_device(db, intent, 'U1')
     for i, value in enumerate(values, 1):
@@ -146,20 +146,19 @@ class DecouplingInventoryTests(unittest.TestCase):
         db['pin2net']['U1.4'] = 'VCC_3V3'
         db['pinname']['U1.4'] = 'VDD2'
         db['nets']['VCC_3V3'].append('U1.4')
-        intent['devices']['U1']['pins']['4'] = {'name': 'VDD2', 'role': 'power'}
-        intent['decoupling']['groups'][0]['supply_nodes'].append('U1.4')
+        intent['devices']['U1']['pins']['4'] = {'name': 'VDD2', 'role': 'power'}   # same net: one group
         rebind(db, intent)
         g = group(build_decoupling_inventory(db, intent))
         self.assertEqual(g['supply_nodes'], ['U1.1', 'U1.4'])
         self.assertEqual(g['fitted_count'], 1)
 
-    def test_official_power_pin_absent_from_netlist_becomes_candidate(self):
+    def test_official_power_pin_absent_from_netlist_is_a_group_with_a_gap(self):
         db, intent = fixture()
         intent['devices']['U1']['pins']['EP'] = {'name': 'VDD_EP', 'role': 'power'}
         inv = build_decoupling_inventory(db, intent)
-        candidates = [g for g in state(inv)['groups'] if g['origin'] == 'candidate']
-        self.assertEqual(candidates[0]['supply_nodes'], ['U1.EP'])
-        self.assertIn('unconnected-or-pseudo-pin:U1.EP', candidates[0]['gaps'])
+        absent = [g for g in state(inv)['groups'] if g['supply_nodes'] == ['U1.EP']]
+        self.assertEqual([g['declared_id'] for g in absent], ['U1:UNCONNECTED:U1.EP'])
+        self.assertIn('unconnected-or-pseudo-pin:U1.EP', absent[0]['gaps'])
         self.assertIn('official-pin-absent:U1.EP', inv['discovery_gaps'])
 
     def test_symbol_only_unconnected_power_pin_is_not_lost(self):
@@ -191,6 +190,7 @@ class DecouplingInventoryTests(unittest.TestCase):
         move_pin(db, 'C1.1', 'NEGATIVE_A')
         db['pinname']['U1.1'] = 'P1'
         db['pinname']['U1.2'] = 'P2'
+        intent['decoupling']['groups'][0]['net'] = 'NEGATIVE_A'
         rebind(db, intent)
         g = group(build_decoupling_inventory(db, intent))
         self.assertEqual(g['supply_nets'], ['NEGATIVE_A'])
@@ -201,6 +201,7 @@ class DecouplingInventoryTests(unittest.TestCase):
             with self.subTest(value=value):
                 db, intent = fixture(('10uF',))
                 move_pin(db, 'U1.1', 'LOCAL')
+                intent['decoupling']['groups'][0]['net'] = 'LOCAL'
                 add(db, ref, value, [('1', '1', 'VCC_3V3'), ('2', '2', 'LOCAL')])
                 intent['assemblies'][0]['population'][ref] = True
                 rebind(db, intent)
@@ -210,20 +211,20 @@ class DecouplingInventoryTests(unittest.TestCase):
                 self.assertEqual(g['boundaries'][0]['ref'], ref)
                 self.assertFalse(g['boundaries'][0]['crossed'])
 
-    def test_group_spanning_supply_or_return_nets_stays_incomplete(self):
+    def test_supply_pins_on_two_nets_are_two_groups(self):
+        # Groups come from the pin map, one per supply net (test_decoupling_auto_groups); a return pin on another
+        # net needs return_net (test_decoupling_fixed_kinds).
         db, intent = fixture()
-        # return pins are derived from the pin map; one on another net needs return_net (test_decoupling_fixed_kinds)
-        for role, field in [('power', 'supply_nodes')]:
-            broken, cfg = copy.deepcopy(db), copy.deepcopy(intent)
-            broken['pin2net']['U1.4'] = 'OTHER'
-            broken['pinname']['U1.4'] = 'OTHER'
-            broken['nets']['OTHER'] = ['U1.4']
-            cfg['devices']['U1']['pins']['4'] = {'name': 'OTHER', 'role': role}
-            cfg['decoupling']['groups'][0][field].append('U1.4')
-            rebind(broken, cfg)
-            g = group(build_decoupling_inventory(broken, cfg))
-            self.assertEqual(g['coverage'], 'INCOMPLETE')
-            self.assertFalse(g['fitted_capacitors'])
+        db['pin2net']['U1.4'] = 'OTHER'
+        db['pinname']['U1.4'] = 'OTHER'
+        db['nets']['OTHER'] = ['U1.4']
+        intent['devices']['U1']['pins']['4'] = {'name': 'OTHER', 'role': 'power'}
+        rebind(db, intent)
+        groups = [g for g in state(build_decoupling_inventory(db, intent))['groups'] if g['ref'] == 'U1']
+        self.assertEqual(sorted((g['supply_nets'], g['supply_nodes']) for g in groups),
+                         [(['OTHER'], ['U1.4']), (['VCC_3V3'], ['U1.1'])])
+        other = next(g for g in groups if g['supply_nets'] == ['OTHER'])
+        self.assertFalse(other['fitted_capacitors'])
 
     def test_unparsed_fitted_cap_keeps_count_and_partial_sum(self):
         db, intent = fixture(('100nF', 'CAP_UNKNOWN'))

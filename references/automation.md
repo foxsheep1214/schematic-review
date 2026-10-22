@@ -445,10 +445,9 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
                               "2": {"name": "VSS", "role": "return"},
                               "3": {"name": "IO", "role": "other"}}}},
   "decoupling": {
-    "schema_version": 3,
+    "schema_version": 4,
     "components": {"C1": {"kind": "capacitor", "citation": "BOM/符号确认 C1 为两脚电容"}},
-    "groups": [{"id": "U1-VDD", "ref": "U1", "supply_nodes": ["U1.1"],
-                "citation": "准确器件电源分组要求 Rev.A 第 8 页",
+    "groups": [{"ref": "U1", "net": "VCC_3V3",
                 "requirements": [{"kind": "connection",
                                   "criterion": "填写本组实际适用的电容接法条款，不用通用每脚一颗规则",
                                   "citation": "官方适用条款版本/页码/表号"}]}]
@@ -462,17 +461,19 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   审查者声明，脚本不读 PDF 验证真实性，也不因字段齐全自动判通过。器件类型另写在 `intent.device_kinds`，
   由手册审计核验原文，见上文“器件类型以原厂手册为准，由工具核验原文”。声明后计划项 DEV-D02 附双向差集、
   DEV-D05 附未接网脚与"标 nc 却接了网"的脚，仍由审查者逐脚定判。
-- 官方脚表与符号/网表脚表做双向差集，各自记录多出的脚（`official_only_nodes/symbol_only_nodes` 保留完整差集）；去耦缺口只对电源/地角色的差异脚计入，其他功能脚的差异由 DEV-D02 逐脚处置。官方 power 脚未入 group 时自动列候选。
+- 官方脚表与符号/网表脚表做双向差集，各自记录多出的脚（`official_only_nodes/symbol_only_nodes` 保留完整差集）；去耦缺口只对电源/地角色的差异脚计入，其他功能脚的差异由 DEV-D02 逐脚处置。
   不得为消除缺口把缺失电源脚改成 `other`。
-- `groups`：按器件具体条款划分，不要求每个电源脚单独一颗电容。供电脚必须属于该器件官方 power 角色，
-  不能重复分组；每组只支持一个直接供电网。返回脚不写：取官方脚表里该器件全部 return 角色的脚；这些脚落在
-  不止一个网上时，组写 `return_net`（其中一个网，出处写在组的 `citation`），只取这个网上的返回脚；只有一个返回网时写
-  `return_net` 被拒绝。跨网分组不合并，保持缺口。
+- 组由官方脚表推出（schema 4）：`intent.devices` 里每个器件、每个供电网一组，同网的 power 脚并成一组，
+  不在网表上的 power 脚自成一组并留缺口；核验为连接器、整流桥、变压器的器件不自动成组。审查员不列组、不写 `id`
+  和 `supply_nodes`，只对需要说明的组按（`ref`，`net`）写一条：`purpose`、`requirements`，返回脚跨网时的
+  `return_net`（其中一个网，出处写在 `citation`）；`net` 必须是该器件某个 power 脚所在的网，同一（ref，net）只写一条。
+  没写条目的组照样问四行，连接与容量行等手册条款。返回脚不写：取官方脚表里该器件全部 return 角色的脚；
+  只有一个返回网时写 `return_net` 被拒绝。脚表里没有官方 power 脚表的器件（未声明脚表）仍按脚名列候选组。
   飞跨/bootstrap/补偿以及内部稳压输出端的必需外接电容按专用条款另审；
   组可加 `purpose`：默认 `bypass`；`no_direct_capacitor` 表示按原厂条款该脚不需要直接电容（如高压启动/检测脚 HV），
   图上也没有直接电容时 PWR-C09/PWR-C10 记不适用，PWR-T03/PWR-D02 仍核接法；`regulator_output` 表示片内稳压器
   输出电容（如 V5/VCAP/REG）。两者都必须有带出处的 `connection` 条款。
-  声明组只需本组供电/返回脚在 `intent.devices.pins` 里有角色和出处：整颗器件脚表不完整时
+  脚表组只需本组供电/返回脚在 `intent.devices.pins` 里有角色和出处：整颗器件脚表不完整时
   `official-full-pinout` 只留在 PWR-D01，不再挡这一组；本组器件上未核实的供电脚差异仍挡本组。
 从官方逐脚外围要求核这些对象，不因符号输出类型或没有 VDD/VCC 名称而漏掉，也不从"连到电容"推断属于普通组。
 - `components`：支持 `capacitor/resistor/ferrite/inductor/jumper/switch/bridge_rectifier/transformer/other`，都要有出处。

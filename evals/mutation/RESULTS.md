@@ -180,5 +180,12 @@
 | M174 | features for a circuit type the candidates found are accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::FeatureTests::test_with_candidates_features_only_explain_types_the_candidates_did_not_find |
 | M175 | an APPLICABLE feature without a candidate circuit is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::FeatureTests::test_with_candidates_features_only_explain_types_the_candidates_did_not_find |
 | M176 | the plan does not list how supply nets were confirmed | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::RailTests::test_the_plan_lists_the_rail_candidates_and_how_each_was_confirmed |
+| M177 | pins of one device on one net are not merged into one group | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_asg_review_scope.py::VerifiedConnectorScopeTests::test_explicit_connector_requirements_remain_enforced |
+| M178 | a group entry's clauses are not carried to its group | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_asg_review_scope.py::VerifiedConnectorScopeTests::test_explicit_connector_requirements_remain_enforced |
+| M179 | a group entry on a net no power pin of its device sits on is accepted | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_auto_groups.py::GroupingTests::test_an_entry_names_a_supply_net_of_its_device_once_and_no_derived_field |
+| M180 | a group entry given twice is accepted | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_auto_groups.py::GroupingTests::test_an_entry_names_a_supply_net_of_its_device_once_and_no_derived_field |
+| M181 | a group entry with derived fields is accepted | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling.py::DecouplingInventoryTests::test_duplicate_pin_membership_and_wrong_role_are_rejected |
+| M182 | a verified connector is grouped without an entry | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_asg_review_scope.py::VerifiedConnectorScopeTests::test_verified_connector_stops_implicit_ic_decoupling_but_retains_pinout |
+| M183 | only nets with an entry become groups | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling.py::DecouplingInventoryTests::test_official_power_pin_absent_from_netlist_is_a_group_with_a_gap |
 
 全部杀死。

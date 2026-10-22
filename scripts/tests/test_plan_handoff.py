@@ -48,7 +48,7 @@ class PlanHandoffTests(unittest.TestCase):
         return {'input_sha256': input_fingerprint(self.db),
                 'assemblies': [{'id': 'synthetic-signal-only', 'citation': 'Stipulated input-only test model',
                                 'population': {r: True for r in self.db['parts']}}],
-                'decoupling': {'schema_version': 3, 'components': {'U1': {'kind': 'other',
+                'decoupling': {'schema_version': 4, 'components': {'U1': {'kind': 'other',
                     'citation': 'Synthetic one-pin input stub; no supply terminal modeled in this ledger-handoff test'}}}}
 
     def merged(self, previous=None):

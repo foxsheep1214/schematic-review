@@ -7,6 +7,30 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Every official supply pin of a declared device is a decoupling group (2026-10-22)
+
+Step 6 of the fixed-requirements design. On the R5 bench one reviewer declared a decoupling group on a startup
+controller's HV pin and the other did not, so four rows existed in one plan only; each reviewer's group list matched
+exactly the power-role pins of their own pin map, so the list repeated the pin map by hand and could drift from it.
+Decoupling section schema 4: the inventory makes one group per declared device and supply net from the official pin
+map (power pins of one device on one net merged, a power pin off the netlist its own group with its gap, a verified
+connector, bridge or transformer grouped only by an explicit entry); a group entry names its (ref, net) and gives only
+the purpose, the clauses and, where the return pins sit on several nets, the return net, and an entry on a net no
+power pin of its device sits on, an entry given twice, or one writing id or supply_nodes is refused; reviewed
+declarations merge entries by (ref, net). The other checker sections were not changed: on R5 their objects were
+already equal (power switches 15, inductive loads 6, optocouplers 6, supervision 1 row), the optocoupler section only
+carries values. R5 bench: groups equal each reviewer's power pins (5 and 6), decoupling rows 20 of 20 and 24, the
+same with no entries at all; the remaining group is one pin-role reading (the HV pin power in one map, other in the
+other), now visible only in the pin map. The replay bench gets contract decoupling-pin-map-v1: in
+rh-ad8495-thermocouple-pinmap U201:VCC is a pin-map group instead of a candidate to confirm (one gap fewer). Tests first
+(test_decoupling_auto_groups, 7 tests; the decoupling fixtures move to (ref, net) entries and the tests of hand-listed
+supply nodes to pin-map groups), 1908 tests pass, contract 500, replay bench 195/195, mutations M177–M183 added and
+killed, M126 and M127 retargeted to the rewritten code and killed, the other mutations on the touched files rerun.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (decoupling, devices), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (decoupling, devices), user:2026-10-22 (分步完成第 1 到第 7 步)
+- Causes: rule_not_enforced 1
+- Changed: scripts/decoupling.py, scripts/reviewed_declarations.py, scripts/tests/test_decoupling_auto_groups.py, scripts/tests/test_decoupling.py, scripts/tests/test_decoupling_fixed_kinds.py, scripts/tests/test_manual_decoupling.py, scripts/tests/test_asg_review_scope.py, scripts/tests/test_plan_handoff.py, scripts/tests/test_reviewed_declarations.py, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/decoupling-pin-map-v1/manifest.json, evals/kicad_replay_bench/revisions/decoupling-pin-map-v1/cases.json, evals/kicad_replay_bench/revisions/decoupling-pin-map-v1/expected.json, evals/kicad_replay_bench/revisions/decoupling-pin-map-v1/sources.json, SKILL.md, references/automation.md, references/plan-and-results.md, references/reviewed-declarations.md, docs/2026-10-22-fixed-requirements-and-review-points.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## What decides which rows exist is derived, and the reviewer only confirms (2026-10-22)
 
 Step 5 of the fixed-requirements design. On the R5 bench one reviewer declared a platform checklist available and

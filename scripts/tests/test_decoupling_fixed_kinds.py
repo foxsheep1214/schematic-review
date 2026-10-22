@@ -86,13 +86,13 @@ class ReturnPinTests(unittest.TestCase):
 
     def test_declared_return_pins_and_an_old_section_are_refused(self):
         db, intent = fixture()
-        self.assertEqual(SECTION_SCHEMA_VERSION, 3)
+        self.assertEqual(SECTION_SCHEMA_VERSION, 4)
         declared = copy.deepcopy(intent)
         declared['decoupling']['groups'][0]['return_nodes'] = ['U1.2']
         self.assertTrue(any('unsupported fields' in e for e in validate_decoupling_intent(declared, db)))
         old = copy.deepcopy(intent)
-        old['decoupling']['schema_version'] = 2
-        self.assertTrue(any('schema_version must be 3' in e for e in validate_decoupling_intent(old, db)))
+        old['decoupling']['schema_version'] = 3
+        self.assertTrue(any('schema_version must be 4' in e for e in validate_decoupling_intent(old, db)))
 
     def split(self):
         db, intent = fixture()

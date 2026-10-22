@@ -97,7 +97,7 @@ class ManualDecouplingTests(unittest.TestCase):
         self.assertFalse(validate_review(plan, report, db)['valid'])
 
     def test_ferrite_upstream_caps_are_not_local_caps_in_manual_trace(self):
-        db, intent = fixture(('100nF',)); move_pin(db, 'U1.1', 'FILTERED')
+        db, intent = fixture(('100nF',)); move_pin(db, 'U1.1', 'FILTERED'); intent['decoupling']['groups'][0]['net'] = 'FILTERED'
         add(db, 'FB1', 'FERRITE', [('1','1','VCC_3V3'), ('2','2','FILTERED')])
         intent['decoupling']['components']['FB1']={'kind':'ferrite','citation':'synthetic BOM ferrite'}
         intent['assemblies'][0]['population']['FB1']=True; rebind(db,intent)

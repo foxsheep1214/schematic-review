@@ -1,0 +1,15 @@
+{
+ "revision": "decoupling-pin-map-v1",
+ "parents": {
+  "revisions/rail-confirmation-v1/expected.json": "fe9317d9f2f828764614c3b27ecbe55c10b48e82400a3e5d24eac7fbe4ed1833",
+  "revisions/rail-confirmation-v1/cases.json": "8035c7cd37fb9882f87701f0dcc261f61851419af352c562ed0083ffcae04338",
+  "revisions/rail-confirmation-v1/sources.json": "7a850a6f18b8a5d603a4295b99dc65ea8e2c5df980a6ec9bd6cd64aa53673be3",
+  "revisions/rail-confirmation-v1/manifest.json": "0b762f4302f23b05f31d0720ed1c5ed430c1741858ba6d7b4db0d8d9e3bf82b7"
+ },
+ "derived_files": {
+  "revisions/decoupling-pin-map-v1/expected.json": "5c4854fea589944a1414ff85b59b76a054cc19cb9e68d3950bb1f63862a95b1b",
+  "revisions/decoupling-pin-map-v1/cases.json": "8035c7cd37fb9882f87701f0dcc261f61851419af352c562ed0083ffcae04338",
+  "revisions/decoupling-pin-map-v1/sources.json": "7a850a6f18b8a5d603a4295b99dc65ea8e2c5df980a6ec9bd6cd64aa53673be3"
+ },
+ "scope": "需求固化第 6 步：去耦组按官方脚表成组（每个已声明器件、每个供电网一组），审查员只按（位号，网）写用途、条款与回流网；rh-ad8495-thermocouple-pinmap 的 U201:VCC 由候选组变为脚表组，少一项 confirm-group-and-return 缺口，其余答案不变。rail-confirmation-v1 文件保持原字节。"
+}

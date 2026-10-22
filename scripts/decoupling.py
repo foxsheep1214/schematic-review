@@ -21,7 +21,9 @@ KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'ot
          'bridge_rectifier', 'transformer'}
 # 3: a group no longer lists its return pins (every official return pin of the part, `return_net` only where they
 # sit on several nets) and states at most one datasheet clause per requirement kind, without an id.
-SECTION_SCHEMA_VERSION = 3
+# 4: groups come from the official pin map, one per declared device and supply net; a group entry names its
+# (ref, net) and gives only the purpose, the clauses and the return net (fixed requirements, step 6).
+SECTION_SCHEMA_VERSION = 4
 # Datasheet-verified device kinds (intent.device_kinds) that have no IC supply pins to bypass.
 NO_SUPPLY_KINDS = {'bridge_rectifier', 'transformer', 'connector'}
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
@@ -131,42 +133,42 @@ def validate_decoupling_intent(intent, db=None):
         require(_text(comp.get('citation')), 'component kind needs citation')
     groups = cfg.get('groups', [])
     require(isinstance(groups, list), 'groups must be an array')
-    seen, used = set(), set()
+    seen = set()
     for group in groups if isinstance(groups, list) else []:
         if not isinstance(group, dict):
             require(False, 'group must be an object')
             continue
-        fields(group, ('id', 'ref', 'supply_nodes', 'return_net', 'citation', 'requirements', 'purpose'), 'group')
+        derived = {'id', 'supply_nodes'} & set(group)
+        require(not derived, '%s are derived from the official pin map (one group per device and supply net); '
+                'name the group by ref and net' % ', '.join(sorted(derived)))
+        fields({k: v for k, v in group.items() if k not in derived},
+               ('ref', 'net', 'return_net', 'citation', 'requirements', 'purpose'), 'group')
         purpose = group.get('purpose', 'bypass')
         require(purpose in GROUP_PURPOSES, 'unsupported group purpose')
         if purpose != 'bypass':
             reqs = group.get('requirements') if isinstance(group.get('requirements'), list) else []
             require(any(isinstance(r, dict) and r.get('kind') == 'connection' and _text(r.get('citation'))
                         for r in reqs), purpose + ' group needs a cited connection requirement')
-        gid, ref = group.get('id'), group.get('ref')
-        require(_text(gid) and gid not in seen, 'group id missing/duplicate')
-        if _text(gid):
-            seen.add(gid)
+        ref, net = group.get('ref'), group.get('net')
+        gid = '%s:%s' % (ref, net)
+        require(_text(ref) and _text(net), 'a group entry names its ref and supply net')
+        require(gid not in seen, 'group %s is given twice' % gid)
+        seen.add(gid)
         require(ref_ok(ref), 'group ref missing/unknown')
         device = devices.get(ref) if _text(ref) else None
-        require(isinstance(device, dict), 'group needs exact device pin map in intent.devices')
-        require(_text(group.get('citation')), 'group needs grouping/return citation')
+        require(isinstance(device, dict), 'group ref needs an exact device pin map in intent.devices')
         pins = device.get('pins', {}) if isinstance(device, dict) else {}
         pins = pins if isinstance(pins, dict) else {}
-        nodes = group.get('supply_nodes')
-        require(_strings(nodes), 'supply_nodes needs unique physical nodes')
-        for node in nodes if _strings(nodes) else []:
-            prefix, _, number = node.partition('.')
-            spec = pins.get(number)
-            require(prefix == ref and isinstance(spec, dict) and spec.get('role') == 'power',
-                    'supply_nodes must match device physical pin roles: ' + node)
-            require(node not in used, 'supply node belongs to multiple groups: ' + node)
-            used.add(node)
+        if db is not None and _text(ref) and _text(net):
+            supply = {db.get('pin2net', {}).get(n) or 'UNCONNECTED:' + n for n in supply_pins(ref, pins)}
+            require(net in supply, '%s: no official power pin of %s sits on %s (its supply nets: %s)'
+                    % (gid, ref, net, ', '.join(sorted(supply)) or 'none'))
         if db is not None and _text(ref):
             nets = sorted({db.get('pin2net', {}).get(n) for n in return_pins(ref, pins)} - {None})
             if len(nets) > 1:
-                require(group.get('return_net') in nets, '%s: the return pins of %s sit on %s; name the group\'s '
-                        'return_net (one of them) with the grouping citation' % (gid, ref, ', '.join(nets)))
+                require(group.get('return_net') in nets and _text(group.get('citation')),
+                        '%s: the return pins of %s sit on %s; name the group\'s return_net (one of them) with the '
+                        'grouping citation' % (gid, ref, ', '.join(nets)))
             else:
                 require('return_net' not in group, '%s: return_net is only for a part whose return pins sit on '
                         'more than one net' % gid)
@@ -185,6 +187,12 @@ def validate_decoupling_intent(intent, db=None):
             kinds.add(req.get('kind'))
             require(_text(req.get('criterion')) and _text(req.get('citation')), 'requirement needs criterion/citation')
     return errors
+
+
+def supply_pins(ref, pins):
+    """Every pin of `ref` the official pin map gives the power role."""
+    return sorted(ref + '.' + number for number, spec in (pins or {}).items()
+                  if isinstance(spec, dict) and spec.get('role') == 'power')
 
 
 def return_pins(ref, pins):
@@ -314,14 +322,30 @@ class Inventory:
                         for n in group[field]) and bool(group['supply_nodes']) and bool(group['return_nodes']))
 
     def groups(self):
+        """One group per declared device and supply net from the official pin map (origin 'declared': the pin map is
+        the declaration), with the reviewer's entry for that (ref, net); candidate groups for parts without a map."""
+        entries = {(g.get('ref'), g.get('net')): g for g in self.cfg.get('groups', [])}
         groups = []
-        for declared in self.cfg.get('groups', []):
-            group = dict(deepcopy(declared), origin='declared')
-            returns = return_pins(group['ref'], self.devices.get(group['ref'], {}).get('pins'))
-            if group.get('return_net'):
-                returns = [n for n in returns if self.pin2net.get(n) == group['return_net']]
-            group['return_nodes'] = returns
-            groups.append(group)
+        for ref, device in sorted(self.devices.items()):
+            # A verified connector, bridge or transformer has no IC supply to bypass; an explicit entry still wins.
+            explicit_only = self.verified_kinds.get(ref, {}).get('kind') in NO_SUPPLY_KINDS
+            by_net = defaultdict(list)
+            for node in supply_pins(ref, device.get('pins')):
+                by_net[self.pin2net.get(node) or 'UNCONNECTED:' + node].append(node)
+            for net, supplies in sorted(by_net.items()):
+                if explicit_only and (ref, net) not in entries:
+                    continue
+                entry = entries.get((ref, net), {})
+                group = {'id': ref + ':' + net, 'ref': ref, 'supply_nodes': supplies, 'origin': 'declared',
+                         'requirements': deepcopy(entry.get('requirements', [])),
+                         'purpose': entry.get('purpose', 'bypass'),
+                         'citation': entry.get('citation') or device.get('citation')}
+                returns = return_pins(ref, device.get('pins'))
+                if entry.get('return_net'):
+                    group['return_net'] = entry['return_net']
+                    returns = [n for n in returns if self.pin2net.get(n) == entry['return_net']]
+                group['return_nodes'] = returns
+                groups.append(group)
         assigned = {n for g in groups for n in g['supply_nodes']}
         for ref, device in self.devices.items():
             self.nodes[ref].update(ref + '.' + pin for pin in device['pins'])

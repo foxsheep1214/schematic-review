@@ -878,14 +878,14 @@
   "id": "M126",
   "name": "the named return net does not pick the return pins",
   "file": "scripts/decoupling.py",
-  "old": "            if group.get('return_net'):\n                returns = [n for n in returns if self.pin2net.get(n) == group['return_net']]",
-  "new": "            if False:\n                returns = [n for n in returns if self.pin2net.get(n) == group['return_net']]"
+  "old": "                    returns = [n for n in returns if self.pin2net.get(n) == entry['return_net']]",
+  "new": "                    pass"
  },
  {
   "id": "M127",
   "name": "return pins on two nets accepted without a return net",
   "file": "scripts/decoupling.py",
-  "old": "                require(group.get('return_net') in nets,",
+  "old": "                require(group.get('return_net') in nets and _text(group.get('citation')),",
   "new": "                require(True,"
  },
  {
@@ -1230,5 +1230,54 @@
   "file": "scripts/plan_review.py",
   "old": "        plan['rail_candidates'] = rail_candidates(self.db, self.intent)",
   "new": "        plan['rail_candidates'] = {}"
+ },
+ {
+  "id": "M177",
+  "name": "pins of one device on one net are not merged into one group",
+  "file": "scripts/decoupling.py",
+  "old": "            for node in supply_pins(ref, device.get('pins')):\n                by_net[self.pin2net.get(node) or 'UNCONNECTED:' + node].append(node)",
+  "new": "            for node in supply_pins(ref, device.get('pins')):\n                by_net[node].append(node)"
+ },
+ {
+  "id": "M178",
+  "name": "a group entry's clauses are not carried to its group",
+  "file": "scripts/decoupling.py",
+  "old": "                         'requirements': deepcopy(entry.get('requirements', [])),",
+  "new": "                         'requirements': [],"
+ },
+ {
+  "id": "M179",
+  "name": "a group entry on a net no power pin of its device sits on is accepted",
+  "file": "scripts/decoupling.py",
+  "old": "            require(net in supply, ",
+  "new": "            require(True, "
+ },
+ {
+  "id": "M180",
+  "name": "a group entry given twice is accepted",
+  "file": "scripts/decoupling.py",
+  "old": "        require(gid not in seen, 'group %s is given twice' % gid)",
+  "new": "        require(True, 'group %s is given twice' % gid)"
+ },
+ {
+  "id": "M181",
+  "name": "a group entry with derived fields is accepted",
+  "file": "scripts/decoupling.py",
+  "old": "        require(not derived, '%s are derived from the official pin map",
+  "new": "        require(True, '%s are derived from the official pin map"
+ },
+ {
+  "id": "M182",
+  "name": "a verified connector is grouped without an entry",
+  "file": "scripts/decoupling.py",
+  "old": "                if explicit_only and (ref, net) not in entries:",
+  "new": "                if False:"
+ },
+ {
+  "id": "M183",
+  "name": "only nets with an entry become groups",
+  "file": "scripts/decoupling.py",
+  "old": "                if explicit_only and (ref, net) not in entries:",
+  "new": "                if (ref, net) not in entries:"
  }
 ]
