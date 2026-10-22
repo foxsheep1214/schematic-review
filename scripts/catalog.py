@@ -991,6 +991,32 @@ REQUIREMENT_PARAMETERS = OrderedDict([
     ('lifetime', RequirementParameter('设计寿命', '年', {'年': 1, 'year': 1, 'h': 1 / 8760})),
 ])
 
+# The tree rules that carry an aspect (fixed requirements, step 4): a requirement row is bound to their rows and
+# takes its result from them. An aspect not listed is judged on the requirement row. A board aspect binds every row
+# of its rules when the requirement names no owners.
+ASPECT_RULES = OrderedDict([
+    ('INPUT_STAGE_RATING', ('DEV-C01', 'PWR-C02', 'PWR-C13')),
+    ('INPUT_THRESHOLDS', ('PWR-C06', 'PRO-C02')),
+    ('CONVERTER_INPUT_RANGE', ('PWR-C02', 'DEV-C05')),
+    ('OUTPUT_LEVELS', ('PWR-E01', 'PWR-C15')),
+    ('OUTPUT_LIMITS', ('PWR-C01', 'PWR-C03', 'PWR-C06')),
+    ('OUTPUT_ACCURACY', ('PWR-C14', 'DEV-C03', 'ANA-C01')),
+    ('PROTOCOL_ROLE', ('SIG-T04', 'SIG-D04')),
+    ('PORT_DETECTION', ('SIG-D04', 'SIG-C05')),
+    ('EXTERNAL_PINOUT', ('DEV-D03',)),
+    ('FAULT_DETECTION', ('ANA-T01', 'ANA-C04', 'PWR-T04')),
+    ('FAULT_THRESHOLD', ('PWR-C06', 'PRO-C02')),
+    ('FAULT_RESPONSE', ('PRO-C01', 'PRO-D03', 'RST-T03')),
+    ('TEMPERATURE_GRADE', ('DEV-C05',)),
+    ('TEMPERATURE_DERATING', ('DEV-C01',)),
+    ('TEMPERATURE_DRIFT', ('ANA-C01', 'DEV-C03')),
+    ('ISOLATION_PARTS', ('PRO-C03', 'PRO-D01')),
+    ('ISOLATION_PATHS', ('PRO-D02',)),
+    ('LIFETIME_BASIS', ('DEV-C02',)),
+    ('MISSION_PROFILE', ('DEV-C02',)),
+])
+BOARD_ASPECTS = ('TEMPERATURE_GRADE', 'TEMPERATURE_DERATING', 'LIFETIME_BASIS', 'MISSION_PROFILE')
+
 
 def requirement_aspects(categories):
     """The aspects a requirement in these categories asks: their union in table order of first appearance."""
@@ -1523,9 +1549,14 @@ def render_markdown():
     for key, category in REQUIREMENT_CATEGORIES.items():
         lines.append('| %s | %s | %s | %s |' % (key, category.name, '、'.join(
             '%s %s' % (a, REQUIREMENT_ASPECTS[a].name) for a in category.aspects), category.targets))
-    lines += ['', '| 审查方面 | 判据模板 |', '|---|---|']
+    lines += ['', '方面有树上的检查承担时，需求行绑定这些规则的行（需求 `owners` 点名的电路、接口、系统功能拥有的行；'
+              '没写 `owners` 时，全板方面绑定全板这些规则的行），结论取绑定行中最差者，需求行不再另判；'
+              '没有检查承担的方面由需求行自己判。', '',
+              '| 审查方面 | 判据模板 | 承担的检查 |', '|---|---|---|']
     for key, aspect in REQUIREMENT_ASPECTS.items():
-        lines.append('| %s %s | %s |' % (key, aspect.name, _cell(aspect.template)))
+        carried = '、'.join(ASPECT_RULES.get(key, ())) or '需求行自判'
+        lines.append('| %s %s | %s | %s%s |' % (key, aspect.name, _cell(aspect.template), carried,
+                                                '（全板）' if key in BOARD_ASPECTS else ''))
     lines += ['', '需求里的数字读进 `requirements[].parameters`（`name`、`min`/`max`、`unit`、`condition`）；'
               '每个数字须在该条原文里出现，条件须是原文里的一段，数值按下表换算到规范单位。', '',
               '| 参数 | 名称 | 规范单位 | 可写单位 |', '|---|---|---|---|']

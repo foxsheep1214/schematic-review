@@ -30,6 +30,7 @@ import circuit_decisions
 import check_key
 import row_owner
 import interfaces
+import requirement_bindings
 import requirement_parameters
 import requirements_extract
 import plan_board
@@ -209,6 +210,9 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
             original = originals.get(item.get('id'))
             if 'parameters' in item:
                 errors.extend(requirement_parameters.errors(item.get('id'), item['parameters'], original))
+            if 'owners' in item and (not isinstance(item['owners'], list) or not item['owners']
+                                     or not all(_text(x) for x in item['owners'])):
+                errors.append('requirement.%s.owners 须为非空字符串数组（电路、接口或系统功能的 id）' % item.get('id'))
             if original and _text(item.get('interpretation')) and _squeeze(item['interpretation']) == _squeeze(original):
                 errors.append('requirement.%s.interpretation 抄了需求原文；写这条需求要在原理图上落实什么' % item.get('id'))
             if 'status' in item and item['status'] not in REQUIREMENT_STATUSES:
@@ -617,6 +621,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             check['owner'] = row_owner.owner(check, parts, nets)
         plan['owners'] = row_owner.table(circuits, parts)
         plan['interfaces'] = self.interfaces
+        requirement_bindings.attach(plan['checks'])
         plan['summary']['owners'] = row_owner.counts(plan['checks'])
         return plan
 

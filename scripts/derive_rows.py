@@ -16,6 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json
+import requirement_bindings
 from results_model import text
 from review_functions import decides_row, judged, unjudged_message
 
@@ -111,6 +112,9 @@ def derive(plan, results):
             rows[row['id']] = row
         summary['derived'] += 1
         summary[row['review_result']] += 1
+    # Requirement rows bound to tree rows follow those rows (fixed requirements, step 4).
+    summary['requirements'], requirement_errors = requirement_bindings.derive(plan, results)
+    errors.extend(requirement_errors)
     return results, summary, errors
 
 
@@ -124,8 +128,9 @@ def main(argv=None):
     results, summary, errors = derive(plan, results)
     if args.out and not errors:
         Path(args.out).write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('派生 %d 行（PASS %d、FAIL %d、INSUFFICIENT %d），手填保留 %d 行' % (
-        summary['derived'], summary['PASS'], summary['FAIL'], summary['INSUFFICIENT'], summary['kept']))
+    print('派生 %d 行（PASS %d、FAIL %d、INSUFFICIENT %d），手填保留 %d 行；需求行由绑定行派生 %d 行' % (
+        summary['derived'], summary['PASS'], summary['FAIL'], summary['INSUFFICIENT'], summary['kept'],
+        summary['requirements']))
     for error in errors:
         print('ERROR ' + error)
     if errors and args.out:

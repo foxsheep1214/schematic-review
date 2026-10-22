@@ -173,6 +173,7 @@ class BoardPlanning:
                                      criterion=catalog.requirement_criterion(aspect), trigger=[original['locator']])
                 row['interpretation'] = item['interpretation']
                 row['parameters'] = [requirement_parameters.normalized(p) for p in item.get('parameters') or []]
+                row['requirement_owners'] = list(item.get('owners') or [])
                 row['source_text'] = {'locator': original['locator'], 'section': original['section'],
                                       'columns': [dict(c) for c in original['columns']]}
         # The declared inventory includes symbol pins omitted from connected nets.

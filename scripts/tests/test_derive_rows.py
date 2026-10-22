@@ -59,7 +59,7 @@ class DeriveTests(unittest.TestCase):
         p, r, db = bias_plan()
         r, summary, errors = derive_rows.derive(p, r)
         self.assertEqual(errors, [])
-        self.assertEqual(summary, {'derived': 15, 'kept': 0, 'PASS': 13, 'FAIL': 0, 'INSUFFICIENT': 2})
+        self.assertEqual(summary, {'derived': 15, 'kept': 0, 'PASS': 13, 'FAIL': 0, 'INSUFFICIENT': 2, 'requirements': 0})
         rows = bias_rows(r)
         self.assertEqual(len(rows), 15)
         open_rows = {k for k, v in rows.items() if v['review_result'] == 'INSUFFICIENT'}

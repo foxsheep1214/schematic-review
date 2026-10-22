@@ -159,5 +159,15 @@
 | M153 | part stress rows do not carry the requirement conditions | `scripts/plan_board.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::PlanTests::test_the_ambient_temperature_reaches_the_part_stress_rows |
 | M154 | the envelope keeps the narrowest lower bound | `scripts/requirement_parameters.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::IntentTests::test_the_envelope_of_several_windows_takes_the_widest_bounds |
 | M155 | the power-tree frame does not state the required input range | `scripts/plan_system.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::PlanTests::test_the_input_range_reaches_the_power_tree_frame |
+| M156 | a requirement binds rows its owners do not own | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::PlanTests::test_owners_bind_the_rows_they_own |
+| M157 | a board aspect without owners binds nothing | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::PlanTests::test_a_board_aspect_binds_every_row_of_its_rules |
+| M158 | a bound requirement row that disagrees with its bound rows is accepted | `scripts/validate_review.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::ResultTests::test_a_bound_requirement_row_that_disagrees_with_its_bound_rows_is_refused |
+| M159 | a bound requirement row takes the best bound result | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::ResultTests::test_the_worst_bound_result_is_the_requirement_result |
+| M160 | NA bound rows count as judged | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::ResultTests::test_the_worst_bound_result_is_the_requirement_result |
+| M161 | bound_checks edited in the plan are accepted | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::PlanTests::test_owners_must_be_a_list_and_own_rows_and_bindings_must_match |
+| M162 | a requirement owner that owns no row is accepted | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::PlanTests::test_owners_must_be_a_list_and_own_rows_and_bindings_must_match |
+| M163 | a derived failing requirement row is not linked from its finding | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::ResultTests::test_derive_rows_writes_the_bound_requirement_rows |
+| M164 | a hand-filled requirement row is overwritten | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::ResultTests::test_a_hand_filled_requirement_row_is_kept_and_compared |
+| M165 | the planner does not bind requirement rows | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::PlanTests::test_a_board_aspect_binds_every_row_of_its_rules |
 
 全部杀死。

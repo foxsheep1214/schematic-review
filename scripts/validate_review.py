@@ -28,6 +28,7 @@ from review_functions import validate_functions
 import check_key
 import row_owner
 import interfaces
+import requirement_bindings
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -253,6 +254,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         require(False, message)
     for message in row_owner.coverage_errors(plan, db) + interfaces.coverage_errors(plan):   # step 6: tree coverage
         require(False, message)
+    for message in requirement_bindings.errors(plan):   # fixed requirements, step 4: requirement rows bound to tree rows
+        require(False, message)
     document_pages, page_checks = None, {}
     if db is not None:
         try:
@@ -402,7 +405,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             require(result == "INSUFFICIENT" and item.get("gap_cause") == REQUIREMENT_GAP[req_status],
                     f"{key}: 需求状态为{REQUIREMENT_LABEL[req_status]}，结果须为 INSUFFICIENT 且 gap_cause 为 {REQUIREMENT_GAP[req_status]}")
         elif clauses_required and expected.get(key, {}).get("rule") == "REQ-D01" and result != "NA":
-            errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))
+            derived = requirement_bindings.derived_result(expected[key], checks)
+            if derived is None:
+                errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))
+            else:   # the aspect is carried by tree rows; the requirement row is not judged again
+                require(result == derived, f"{key}: 需求方面由绑定行承担（{'、'.join(expected[key]['bound_checks'])}），"
+                                           f"结论须等于绑定行中最差的结论（{derived}）；用 derive_rows.py 写出")
         if result == "FAIL":
             require(item.get("severity") in tuple(SEVERITIES), f"{key}: invalid severity")
             fid = item.get("finding_id")

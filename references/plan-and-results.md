@@ -94,6 +94,11 @@
   `power_rails.<网>.voltage_v` 可以只写 `{"requirement": "<需求编号>"}`（该需求同时有输入和输出电压时加 `parameter`），
   窗口取那条需求电压参数的上下限；输入电压、频率写进 SYS-POWER 框架的 `requirement_windows` 和问题；
   工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02）作为 `conditions` 挂在器件应力行上，计划顶层 `conditions` 列出各条来源。
+- `requirements[].owners`（可选）：落实这条需求的电路、接口或系统功能的 id。规则总表给每个审查方面列出承担它的检查；
+  计划把需求行绑定到这些规则中 `owners` 拥有的行，没写 `owners` 时全板方面（器件温度等级、按温度降额、寿命）绑定全板这些规则的行，
+  写在需求行的 `bound_checks`（不进检查标识，校验时重算，点名的 id 必须拥有计划里的行）。有绑定行判过（不算 NA）的需求行不再另判：
+  `derive_rows.py` 取绑定行中最差的结论写出（`derived_from`；FAIL 带上该发现项并把需求行加进它的 `check_ids`，INSUFFICIENT 带上 `open_ref`），
+  手填的需求行只对账不覆盖；校验要求结论等于绑定行中最差者，这种行不要求条款。没有绑定行、或绑定行全是 NA 的方面由需求行自己判，照常拆条款。
 - `requirements[].status`：已确认（CONFIRMED）、提案（PROPOSED）、未定（OPEN）、暂缓（DEFERRED）。
   保留需求原文和源状态，先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求)
   确定本次判据的实际确认状态，不省略真实未定项。OPEN 的 REQ-D01 必须 INSUFFICIENT + REQUIREMENT_OPEN；

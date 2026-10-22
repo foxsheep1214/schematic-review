@@ -89,7 +89,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 
 从资料和对话提取功能/量化指标、接口角色与数量、输入范围/负载、温度、降额依据、保留/删除项，
 写入 `intent.json`（字段见 [计划与结果台账](references/plan-and-results.md)）：需求原文由
-`requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）、从原文读出的数字（`parameters`）和确认状态，判据由类别的审查方面模板生成；装配配置写入 `intent.assemblies`；设 `review_phase`（日常设计 `design_iteration`，
+`requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）、从原文读出的数字（`parameters`）、落实它的电路或系统功能（`owners`，可选）和确认状态，判据由类别的审查方面模板生成；装配配置写入 `intent.assemblies`；设 `review_phase`（日常设计 `design_iteration`，
 用户明确要冻结才用 `schematic_freeze`）。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
 集中提出，先做不受影响的工作，不逐颗器件打断用户，也不自行接受风险。
 录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待定、
@@ -197,7 +197,7 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
    框架外的功能（intent 没有声明的电路）自己加，同样校验。
    隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是隔离/变换器功能的方面，在同一个功能判定里写条款与计算。
    文档检查（DOC-*）不是功能电路：文档错误直接在行上判 FAIL 并写 finding，不包成功能。
-2. **行派生**：跑 `derive_rows.py`（见第 7 步）；绑定了功能的行不手填。
+2. **行派生**：跑 `derive_rows.py`（见第 7 步）；绑定了功能的行不手填，绑定了树上检查的需求行（`bound_checks`）取绑定行中最差的结论，也不手填。
 3. **手填剩余行**：图面目检、引脚表、器件身份、需求条款等事实性检查照下面的写法；这些行要判资料不足，也必须先建一个功能判定。
 
 按 PWR → RST → CLK → SIG → ANA → PRO → DRV 推进，每条规则逐对象、逐状态给结果；全板项逐条给适用性和结果。

@@ -1083,5 +1083,75 @@
   "file": "scripts/plan_system.py",
   "old": "                    frame['question'] += '；需求输入 '",
   "new": "                    frame['question'] += ''"
+ },
+ {
+  "id": "M156",
+  "name": "a requirement binds rows its owners do not own",
+  "file": "scripts/requirement_bindings.py",
+  "old": "                  and (not owners or (c.get('owner') or {}).get('id') in owners))",
+  "new": "                  )"
+ },
+ {
+  "id": "M157",
+  "name": "a board aspect without owners binds nothing",
+  "file": "scripts/requirement_bindings.py",
+  "old": "    if not rules or not (owners or aspect in catalog.BOARD_ASPECTS):",
+  "new": "    if not rules or not owners:"
+ },
+ {
+  "id": "M158",
+  "name": "a bound requirement row that disagrees with its bound rows is accepted",
+  "file": "scripts/validate_review.py",
+  "old": "                require(result == derived,",
+  "new": "                require(True,"
+ },
+ {
+  "id": "M159",
+  "name": "a bound requirement row takes the best bound result",
+  "file": "scripts/requirement_bindings.py",
+  "old": "    return max((r['review_result'] for r in judged), key=ORDER.get) if judged else None",
+  "new": "    return min((r['review_result'] for r in judged), key=ORDER.get) if judged else None"
+ },
+ {
+  "id": "M160",
+  "name": "NA bound rows count as judged",
+  "file": "scripts/requirement_bindings.py",
+  "old": "    return [r for r in found if r.get('review_result') in ORDER]",
+  "new": "    return [r for r in found if r.get('review_result')]"
+ },
+ {
+  "id": "M161",
+  "name": "bound_checks edited in the plan are accepted",
+  "file": "scripts/requirement_bindings.py",
+  "old": "        if (row.get('bound_checks') or []) != bound(checks, row):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M162",
+  "name": "a requirement owner that owns no row is accepted",
+  "file": "scripts/requirement_bindings.py",
+  "old": "            if owner not in owned:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M163",
+  "name": "a derived failing requirement row is not linked from its finding",
+  "file": "scripts/requirement_bindings.py",
+  "old": "                ids.append(planned['id'])",
+  "new": "                pass"
+ },
+ {
+  "id": "M164",
+  "name": "a hand-filled requirement row is overwritten",
+  "file": "scripts/requirement_bindings.py",
+  "old": "        if existing is not None and existing.get('review_result') and not existing.get('derived'):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M165",
+  "name": "the planner does not bind requirement rows",
+  "file": "scripts/plan_review.py",
+  "old": "        requirement_bindings.attach(plan['checks'])",
+  "new": "        pass"
  }
 ]

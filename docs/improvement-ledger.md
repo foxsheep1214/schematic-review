@@ -7,6 +7,28 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A requirement aspect a tree check already asks is bound to that check (2026-10-22)
+
+Step 4 of the fixed-requirements design. After step 2 every (requirement, aspect) had its own REQ-D01 row, so an
+aspect the tree already asks (the parts' temperature grade is the recommended-operating-condition rows, derating is
+the stress rows, the lifetime basis is the capacitor-life rows) was judged twice, once in requirement prose that could
+disagree with the tree rows. The catalog names, for 19 of the 26 aspects, the tree rules that carry it
+(ASPECT_RULES, rendered in check-catalog.md), four of them aspects of the whole board; a requirement may name the
+circuits, interfaces or system functions that implement it (`owners`). `requirement_bindings.py` (new) binds each
+requirement row to the rows of its aspect's rules those owners own, or, for a board aspect with no owners, to every
+row of those rules (`bound_checks`, outside the check identity); the validator recomputes the bindings and refuses an
+owner that owns no row; a requirement row with a judged bound row takes the worst bound result (the validator
+refuses another result, and such a row needs no clauses), and derive_rows.py writes it, carrying the failing row's
+finding (and linking the requirement row from it) or the open item, and comparing, never overwriting, a hand-filled
+row. R5 bench with one owner assignment for both reviewers: 41 of 61 requirement rows bound (299 bindings, 123
+distinct tree rows), 20 judged on the requirement row, bindings 61/61 equal, check keys and row counts unchanged.
+Tests first (test_requirement_bindings, 9 tests), 1894 tests pass, contract 500, replay bench 195/195, mutations
+M156–M165 added and killed.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (requirements), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (requirements), user:2026-10-22 (分步完成第 1 到第 7 步)
+- Causes: rule_not_enforced 1
+- Changed: scripts/requirement_bindings.py, scripts/catalog.py, scripts/plan_review.py, scripts/plan_board.py, scripts/validate_review.py, scripts/derive_rows.py, scripts/tests/test_requirement_bindings.py, scripts/tests/test_derive_rows.py, SKILL.md, references/plan-and-results.md, references/automation.md, references/check-catalog.md, docs/2026-10-22-fixed-requirements-and-review-points.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## A requirement's numbers are read into fixed parameters that the plan uses (2026-10-22)
 
 Step 3 of the fixed-requirements design. On the R5 bench the two reviewers' rail windows agreed on 3 of 13 shared
