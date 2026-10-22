@@ -541,9 +541,9 @@ RULES = (
 
     # REQ 需求与闭环
     Rule('REQ-A01', '关键器件计数',
-         '按意图清单核对关键器件数量（该有的写 ≥1，该删的写 0）；缺意图时不执行并列入未执行', 'lint', 'board'),
+         '按需求定出的关键器件清单（intent.expect）核对数量（该有的写 ≥1，该删的写 0）；缺清单时不执行并列入未执行', 'lint', 'board'),
     Rule('REQ-A02', '要求的功能未检出',
-         '验证设计意图要求的功能是否已在原理图中实现', 'plan', 'circuit_type'),
+         '验证需求要求的功能是否已在原理图中实现', 'plan', 'circuit_type'),
     Rule('REQ-D01', '需求逐条追溯',
          '需求逐条按类别展开成审查方面，每个方面一项，落到实现电路与检查项；原文由需求文档抄录，判据取方面模板，'
          '审查员对需求的理解写 interpretation、不写判据；'
@@ -1044,7 +1044,7 @@ METHOD_BY_CODE = {m.code: m for m in METHODS}
 INPUTS = OrderedDict([
     ('netlist', '网表'),
     ('export_log', '导出日志'),
-    ('intent', '设计意图声明'),
+    ('intent', '审查意图声明'),
     ('assembly', '装配与状态表'),
     ('datasheet', '规格书数值'),
     ('requirement', '需求'),
@@ -1478,7 +1478,7 @@ def render_markdown():
               '方式字母说明谁来做；下表说明判这条规则要什么输入。网表扫描、证据扫描与审查阶段由输入依赖推出，'
               '规则编号不随自动化程度改变。', '',
               '| 阶段 | 条件 | 规则数 |', '|---|---|---|',
-              '| 网表扫描 | 脚本执行，只用网表、导出日志或设计意图声明 | %d |' % len(rules(stage='cold')),
+              '| 网表扫描 | 脚本执行，只用网表、导出日志或审查意图声明 | %d |' % len(rules(stage='cold')),
               '| 证据扫描 | 脚本执行，还要规格书数值（evidence.json） | %d |' % len(rules(stage='hot')),
               '| 审查员 | 审查员对照资料、需求和图面判 | %d |' % len(rules(stage='review')),
               '| 复审 | 需要上一版网表与意见 | %d |' % len(rules(stage='revision'))]

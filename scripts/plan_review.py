@@ -33,6 +33,7 @@ import row_owner
 import interfaces
 import requirement_bindings
 import requirement_parameters
+import independence
 import requirements_extract
 import rule_gaps
 import plan_board
@@ -281,6 +282,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
         errors.extend(checker.validate_intent(intent, db))
     errors.extend(validate_declarations(intent))
     errors.extend(rule_gaps.errors(intent, db))
+    errors.extend(independence.intent_errors(intent))
     candidate_based = 'circuit_decisions' in intent or 'circuit_candidates_sha256' in intent
     if candidates is None and (candidate_based or (require_candidates and intent.get('circuits'))):
         errors.append('intent.circuits come from record/circuit-candidates.json and intent.circuit_decisions; pass the '
@@ -733,7 +735,7 @@ def main():
     parser = argparse.ArgumentParser(
         description='按规则总表生成逐项检查计划（适用性、准备度与证据缺口）')
     parser.add_argument('db', help='parse_netlist.py 产出的 db.json')
-    parser.add_argument('--intent', help='设计意图 JSON')
+    parser.add_argument('--intent', help='审查意图 JSON')
     parser.add_argument('--evidence', help='资料取证形成的结构化证据 JSON')
     parser.add_argument(
         '--datasheet-audit',

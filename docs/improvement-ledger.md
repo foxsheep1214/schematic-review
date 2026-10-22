@@ -7,6 +7,35 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## The review intent and row evidence do not draw on the designer's documents (2026-10-22)
+
+After the designer-document tools were removed, what else from the designer could still reach a review was looked for
+in the R5 records and in SR's own text. One record cited the design report as the reason a function does not apply,
+and 8 row evidences on 6 rows came from the designer's calculation results, two self-check records, the design report
+and the designer's replies; nothing refused a citation or an evidence by where it came from. SR's text also invited it:
+intent.json was called the design intent (设计意图) in the docs, the catalog and the command help; the key-part counts
+(REQ-A01) were to be taken from the schematic revision record, the required functions (REQ-A02) from the design intent,
+a not-applicable reason from the design intent; the handoff said only the selection, calculation and attribution
+records are not used, leaving the designer's electrical intent, requirement trace, device contracts, open items,
+self-check and visual summaries, delivery evidence and downstream constraints unstated, and passed ASG's self-check
+gaps to SR as they were; a review from scratch started from the design proposal. SR now reads four inputs only: the
+requirements, the design results (schematic, netlist, BOM, schematic PDF), manufacturer and standards documents and its
+own calculations. independence.py (new) names a designer document by a fixed set of words (design report, design
+proposal file, calculation file, electrical intent, requirement trace, device contracts, delivery evidence, design
+self-check, replies, selection and lessons records, visual review, downstream constraints, the designer's
+record/calculations/); validate_intent refuses any string of the review intent that names one, and validate_review
+refuses any row evidence whose source does (a folder named 设计方案/ holding the design results and SR's own
+calculation-preflight are not designer documents). intent.json is the review intent everywhere; REQ-A01 takes its
+key-part list from the requirements and REQ-A02 its functions from the requirements; the handoff lists the five roles
+SR reads and states the rest are carried, not used. R5 bench: one record 1 intent citation and 8 evidences on 6 rows
+refused, the other none. Tests first (test_independent_review, 4 new tests; a rule-gap test fixture that cited a design
+report now cites a requirement and a datasheet), 1887 tests pass, contract 500, replay bench 195/195, mutations
+M213-M219 added and killed.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (features.I2C.citation), review:SR-20261021-R5-claude-fd6a6dd/record/review-results.json (8 evidences on 6 rows), user:2026-10-22 (除了数据之外还有没有利用设计报告中的信息)
+- Causes: rule_not_enforced 2, knowledge_wrong 3
+- Changed: scripts/independence.py, scripts/plan_review.py, scripts/validate_review.py, scripts/catalog.py, scripts/plan_board.py, scripts/plan_circuits.py, scripts/checkers/powertree.py, scripts/tests/test_independent_review.py, scripts/tests/test_rule_gaps.py, SKILL.md, references/automation.md, references/check-catalog.md, references/commodity-floors.md, references/plan-and-results.md, references/revision-review.md, references/workflow-handoff.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## A resistor value with its rated power or voltage is read, and one still unreadable is reported (2026-10-22)
 
 Measuring the per-pin rows on the R5 bench showed that the resistor parser read no resistance for 22 of the 47 fitted

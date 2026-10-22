@@ -28,7 +28,7 @@ def gap(**changes):
     item = {'id': 'R1-SURGE', 'rule': 'DEV-C01', 'object': {'ref': 'R1'},
             'criterion': 'R1 承受启动浪涌的脉冲功率在手册脉冲负荷曲线以内',
             'missing': '启动通路串联电阻的脉冲负荷没有生成规则',
-            'basis': 'synthetic design report section 3: R1 limits the startup inrush'}
+            'basis': 'synthetic requirement 2.1 startup inrush and resistor datasheet pulse-load curve'}
     item.update(changes)
     return item
 

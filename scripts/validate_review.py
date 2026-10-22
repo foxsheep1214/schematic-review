@@ -29,6 +29,7 @@ import check_key
 import row_owner
 import interfaces
 import requirement_bindings
+import independence
 import rule_gaps
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
@@ -302,6 +303,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     gates = validate_inventories(REGISTRY, plan, expected, db, require,
                                  lambda context: ReviewPlanner(db, context), gaps=tool_gaps)
     checks = index(report.get("checks"), "results.checks")
+    errors.extend(independence.evidence_errors(checks.values()))   # SR does not take the designer's documents
     scope_errors, stage_scope = validate_stage_scope(checks, expected)
     errors.extend(scope_errors)
     findings = index(report.get("findings"), "findings")

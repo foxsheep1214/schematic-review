@@ -111,7 +111,7 @@ class BoardPlanning:
             'APPLICABLE' if expect else 'UNDETERMINED',
             'READY' if expect else 'WAITING_EVIDENCE',
             required_inputs=[] if expect else ['intent.expect'],
-            reason='必须由设计意图定义“该有/该删”')
+            reason='必须由需求定出“该有/该删”（intent.expect）')
         for rule in BUILTIN_EVIDENCE_RULES:
             name = catalog.title(rule)
             instances = by_rule.get(rule, [])

@@ -156,7 +156,7 @@ class CircuitPlanning:
                 self.diagnostics.append({
                     'code': 'REQUIRED_FEATURE_NOT_DETECTED',
                     'feature': name,
-                    'detail': '设计意图要求该功能，但网表未检测到对应特征',
+                    'detail': '需求要求该功能，但网表未检测到对应特征',
                 })
             summary = self.add_check(
                 'REQ-Q07', {'circuit_type': name}, criterion=catalog.circuit_type_criterion(name),

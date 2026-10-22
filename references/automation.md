@@ -30,7 +30,7 @@ E 规则的每条结果另记 `check_results`（PASS/FAIL/INSUFFICIENT）与 `pa
 已有资料尚未阅读或计算时列审查待完成，补证尺度见 [最小充分证据](evidence-proportionality.md)。
 
 **未检出特征不等于不适用**：网表检测不到 DDR/RF 等关键字时，对应功能电路列入 REQ-Q08 待确认；
-只有设计意图给出可引用的不适用依据，功能电路才标 `NOT_APPLICABLE` 并最终写 NA。适用但缺材料写
+只有需求或设计结果（原理图、BOM）给出可引用的不适用依据，功能电路才标 `NOT_APPLICABLE` 并最终写 NA；不引用设计方的报告或说明。适用但缺材料写
 `INSUFFICIENT`。
 
 自动扫描的输出是疑似清单，不是判决。合法结构（Bob-Smith 终端、补偿网络、DNP 选项、有意单端
@@ -90,8 +90,8 @@ E 规则的每条结果另记 `check_results`（PASS/FAIL/INSUFFICIENT）与 `pa
 
 ### 关键器件计数（REQ-A01）
 
-REQ-A01 的输入不是网表，而是阶段 0 的意图清单：从需求/规格书、原理图修订记录、历史评审记录中
-提取，写入 `intent.json` 随报告留档。扩展字段见 [plan-and-results.md](plan-and-results.md)。
+REQ-A01 的输入不是网表，而是阶段 0 的审查意图清单：只从需求/规格书和 SR 自己的历史审查记录中
+提取（不取设计方的修订记录或说明），写入 `intent.json` 随报告留档。扩展字段见 [plan-and-results.md](plan-and-results.md)。
 
 ```json
 {

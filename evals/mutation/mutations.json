@@ -1482,5 +1482,54 @@
   "file": "scripts/plan_review.py",
   "old": "        unread = passive_stress.unread_values(self.db)\n",
   "new": "        unread = {}\n"
+ },
+ {
+  "id": "M213",
+  "name": "an intent citing a designer document is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "    errors.extend(independence.intent_errors(intent))\n",
+  "new": ""
+ },
+ {
+  "id": "M214",
+  "name": "row evidence from a designer document is accepted",
+  "file": "scripts/validate_review.py",
+  "old": "    errors.extend(independence.evidence_errors(checks.values()))   # SR does not take the designer's documents\n",
+  "new": ""
+ },
+ {
+  "id": "M215",
+  "name": "the design report is not a designer document",
+  "file": "scripts/independence.py",
+  "old": "r'设计报告|设计说明|",
+  "new": "r'设计说明|"
+ },
+ {
+  "id": "M216",
+  "name": "a folder named 设计方案 counts as a designer document",
+  "file": "scripts/independence.py",
+  "old": "设计方案(?!/)|",
+  "new": "设计方案|"
+ },
+ {
+  "id": "M217",
+  "name": "SR own calculation preflight counts as a designer document",
+  "file": "scripts/independence.py",
+  "old": "(?<!calculation-)preflight|",
+  "new": "preflight|"
+ },
+ {
+  "id": "M218",
+  "name": "the designer calculation results are not a designer document",
+  "file": "scripts/independence.py",
+  "old": "|record/calculations/', re.I)",
+  "new": "', re.I)"
+ },
+ {
+  "id": "M219",
+  "name": "a citation inside a list is not checked",
+  "file": "scripts/independence.py",
+  "old": "            errors.extend(intent_errors(value, '%s[%d]' % (path, index)))",
+  "new": "            pass"
  }
 ]

@@ -216,5 +216,12 @@
 | M210 | an unreadable value is not reported | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_unread_values.py::UnreadValueTests::test_an_unreadable_resistor_value_is_a_plan_diagnostic_with_the_value_as_written |
 | M211 | a part marked NC is reported | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_unread_values.py::UnreadValueTests::test_a_readable_value_an_empty_one_and_a_part_not_fitted_are_not_reported |
 | M212 | the plan leaves the unread values out | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_unread_values.py::UnreadValueTests::test_an_unreadable_resistor_value_is_a_plan_diagnostic_with_the_value_as_written |
+| M213 | an intent citing a designer document is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_independent_review.py::DesignerDocumentTests::test_an_intent_citing_a_designer_document_is_refused |
+| M214 | row evidence from a designer document is accepted | `scripts/validate_review.py` | KILLED | FAILED scripts/tests/test_independent_review.py::DesignerDocumentTests::test_row_evidence_from_a_designer_document_is_refused |
+| M215 | the design report is not a designer document | `scripts/independence.py` | KILLED | FAILED scripts/tests/test_independent_review.py::DesignerDocumentTests::test_an_intent_citing_a_designer_document_is_refused |
+| M216 | a folder named 设计方案 counts as a designer document | `scripts/independence.py` | KILLED | FAILED scripts/tests/test_independent_review.py::DesignerDocumentTests::test_designer_documents_are_named_and_design_results_are_not |
+| M217 | SR own calculation preflight counts as a designer document | `scripts/independence.py` | KILLED | FAILED scripts/tests/test_independent_review.py::DesignerDocumentTests::test_designer_documents_are_named_and_design_results_are_not |
+| M218 | the designer calculation results are not a designer document | `scripts/independence.py` | KILLED | FAILED scripts/tests/test_independent_review.py::DesignerDocumentTests::test_designer_documents_are_named_and_design_results_are_not |
+| M219 | a citation inside a list is not checked | `scripts/independence.py` | KILLED | FAILED scripts/tests/test_independent_review.py::DesignerDocumentTests::test_an_intent_citing_a_designer_document_is_refused |
 
 全部杀死。
