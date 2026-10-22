@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Requirements are transcribed by a tool, never retyped (2026-10-22)
+
+Step 1 of the fixed-requirements design. On the R5 bench the two reviewers took the same 19 requirement ids from one
+requirement table and agreed on every status, yet not one transcribed text matched once punctuation was set aside:
+the table has a requirement column and a boundary column, and each joined, cut and punctuated them its own way. The
+rule, the clause check and the intent check also disagreed: the catalog said the acceptance criterion is the original
+text, the clause error said the clauses must rebuild the original text, the clause check compared them with the
+reviewer's criterion, and `validate_intent` refused a criterion that copies the text. `requirements_extract.py` (new)
+reads Markdown tables keyed by an id column, and `- <ID>：<text>` list items, verbatim, each column apart, with the
+section, a file:line locator and the file's sha256, and refuses a repeated id; the intent's `requirement_source` names
+the file and digest, and each `requirements[]` entry holds only `id`, `criterion` and `status` (text and citation are
+refused). The planner transcribes the file again when it builds the plan, every source id must be in the intent and
+every intent id in the source, a changed file is refused until transcribed again, the REQ-D01 row carries the
+transcription as `source_text`, its clauses must rebuild that original text, and the catalog entry now says the
+criterion states what is judged on the schematic and is not a copy. R5 bench: the tool reads 19 requirements from the
+document, exactly the ids both reviewers took, both columns apart, no errors. Tests first (test_requirement_source,
+11 tests, and a clause test; fixtures move to a transcribed source), 1865 tests pass, contract 500, replay bench
+195/195, mutations M131–M138 added and killed and the earlier mutations on the touched files rerun.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (requirements), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (requirements), user:2026-10-22 (需求整理结果要相对固化；分步完成第 1 到第 7 步)
+- Causes: rule_not_enforced 1, knowledge_wrong 1
+- Changed: scripts/requirements_extract.py, scripts/plan_review.py, scripts/plan_board.py, scripts/validate_review.py, scripts/catalog.py, scripts/tests/test_requirement_source.py, scripts/tests/test_requirement_clauses.py, scripts/tests/ledger_v3.py, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, scripts/tests/test_review_v2.py, scripts/tests/fixtures/execution-audit/synthetic.json, SKILL.md, references/plan-and-results.md, references/requirement-clarifications.md, references/automation.md, references/check-catalog.md, docs/2026-10-22-fixed-requirements-and-review-points.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## A decoupling group asks a fixed set of checks and takes its return pins from the pin map (2026-10-22)
 
 After the assembly keys the R5 pair paired 424 of 461 and 466 rows; 33 of the remaining non-requirement rows were

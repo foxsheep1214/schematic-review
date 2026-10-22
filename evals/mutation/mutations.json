@@ -908,5 +908,61 @@
   "file": "scripts/checkers/decoupling.py",
   "old": "                            criterion='本组按原厂条款不需要直接电容，图上也没有；无容量/额定对象',",
   "new": "                            criterion='本组按原厂条款不需要直接电容，图上也没有：%s；无容量/额定对象' % clauses['connection']['citation'],"
+ },
+ {
+  "id": "M131",
+  "name": "the extractor keeps only the first requirement column",
+  "file": "scripts/requirements_extract.py",
+  "old": "for k, name in enumerate(header[1:], 1)]",
+  "new": "for k, name in enumerate(header[1:2], 1)]"
+ },
+ {
+  "id": "M132",
+  "name": "a table not keyed by id is read as requirements",
+  "file": "scripts/requirements_extract.py",
+  "old": "header = cells if cells and cells[0].strip().lower() in ID_HEADERS else []",
+  "new": "header = cells"
+ },
+ {
+  "id": "M133",
+  "name": "a repeated requirement id is accepted",
+  "file": "scripts/requirements_extract.py",
+  "old": "        if len(at) > 1:\n",
+  "new": "        if len(at) > 99:\n"
+ },
+ {
+  "id": "M134",
+  "name": "a changed requirement document is read through",
+  "file": "scripts/requirements_extract.py",
+  "old": "    if out['sha256'] != source['sha256']:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M135",
+  "name": "text or citation written in the intent is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "                if key in item:\n                    errors.append('requirement.%s.%s 不写",
+  "new": "                if False:\n                    errors.append('requirement.%s.%s 不写"
+ },
+ {
+  "id": "M136",
+  "name": "a source requirement missing from the intent is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "        for rid in sorted(set(originals) - seen):",
+  "new": "        for rid in []:"
+ },
+ {
+  "id": "M137",
+  "name": "an intent requirement not in the source is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "            if source is not None and _text(item.get('id')) and item['id'] not in originals:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M138",
+  "name": "requirement clauses are checked against the criterion",
+  "file": "scripts/validate_review.py",
+  "old": "errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))",
+  "new": "errors.extend(requirement_clause_errors(key, item, expected[key].get(\"criterion\")))"
  }
 ]

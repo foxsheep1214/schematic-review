@@ -232,12 +232,14 @@ class ReviewPlanTests(unittest.TestCase):
         # 2026-10-21: one reviewer copied all 19 requirement texts into criterion and then passed cost and size
         # targets; the other wrote what the schematic can be judged on and marked those NA with the text cited.
         text = '按 1 万台估算，整机物料目标 60 元/台；不含税、线缆、组装和认证。'
-        req = {'id': 'REQ-COST-001', 'text': text, 'citation': '用户需求.md', 'status': 'CONFIRMED',
-               'criterion': '按1万台估算，整机物料目标60元/台；不含税、线缆、组装和认证'}
-        errors = validate_intent({'schema_version': 3, 'requirements': [req]})
+        from test_requirement_source import doc_for
+        req = {'id': 'REQ-COST-001', 'status': 'CONFIRMED', 'criterion': '按1万台估算，整机物料目标60元/台；不含税、线缆、组装和认证'}
+        src = doc_for({'REQ-COST-001': text})
+        errors = validate_intent({'schema_version': 3, 'requirement_source': src, 'requirements': [req]})
         self.assertTrue(any('REQ-COST-001.criterion 抄了需求原文' in e for e in errors), errors)
         req['criterion'] = '成本目标由整机 BOM 报价核算，原理图没有判据'
-        self.assertFalse(any('抄了需求原文' in e for e in validate_intent({'schema_version': 3, 'requirements': [req]})))
+        self.assertFalse(any('抄了需求原文' in e for e in validate_intent(
+            {'schema_version': 3, 'requirement_source': src, 'requirements': [req]})))
 
     def test_intent_validation_rejects_unproven_na(self):
         errors = validate_intent({

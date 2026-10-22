@@ -307,7 +307,8 @@ def _whole_clauses(plan, report):
         planned = rules.get(row.get('id')) if isinstance(row, dict) and isinstance(row.get('id'), str) else None
         if (planned and planned.get('rule') == 'REQ-D01' and 'requirement_clauses' not in row
                 and row.get('review_result') in ('PASS', 'FAIL', 'INSUFFICIENT')):
-            row['requirement_clauses'] = [{'text': planned.get('criterion'), 'kind': 'OBLIGATION',
+            original = ''.join(c.get('text') or '' for c in (planned.get('source_text') or {}).get('columns') or [])
+            row['requirement_clauses'] = [{'text': original or planned.get('criterion'), 'kind': 'OBLIGATION',
                                            'result': row['review_result']}]
 
 

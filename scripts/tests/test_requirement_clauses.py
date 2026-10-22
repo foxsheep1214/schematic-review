@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from plan_review import build_review_plan
 from ledger_v3 import validate_review
 from test_decoupling import fixture, ledger, mark_pass, rebind
+from test_requirement_source import source, write
 
 TEXT = '+3V3=3.3V±5%，环境0～50°C。电阻采购公差1%；元件按实际物料额定审查。'
 OBLIGATION = '+3V3=3.3V±5%，环境0～50°C。'
@@ -16,8 +17,11 @@ PREMISES = ('电阻采购公差1%；', '元件按实际物料额定审查。')
 class RequirementClauseTests(unittest.TestCase):
     def setUp(self):
         self.db, intent = fixture(('100nF',))
-        intent['requirements'] = [{'id': 'REQ-02', 'text': TEXT, 'criterion': TEXT,
-                                   'status': 'CONFIRMED', 'citation': 'synthetic requirements REQ-02'}]
+        doc = write('# 需求\n\n| ID | 当前要求 | 适用边界 |\n|---|---|---|\n| REQ-02 | %s | %s |\n'
+                    % (OBLIGATION, ''.join(PREMISES)))
+        intent['requirement_source'] = source(doc)
+        intent['requirements'] = [{'id': 'REQ-02', 'criterion': '+3V3 轨稳压器输出精度与环境温度范围在图上的实现',
+                                   'status': 'CONFIRMED'}]
         rebind(self.db, intent)
         self.plan = build_review_plan(self.db, intent)
         self.key = next(c['id'] for c in self.plan['checks'] if c['rule'] == 'REQ-D01')
@@ -54,6 +58,10 @@ class RequirementClauseTests(unittest.TestCase):
         self.assertTrue(self.errors('PASS', self.clauses()[:2]))
         self.assertTrue(self.errors('PASS', list(reversed(self.clauses()))))
         self.assertTrue(self.errors('PASS', []))
+
+    def test_clauses_split_the_original_text_not_the_criterion(self):
+        planned = next(c for c in self.plan['checks'] if c['id'] == self.key)
+        self.assertTrue(self.errors('PASS', [{'text': planned['criterion'], 'kind': 'OBLIGATION', 'result': 'PASS'}]))
 
 if __name__ == '__main__':
     unittest.main()

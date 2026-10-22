@@ -10,6 +10,7 @@ ROOT = SCRIPTS.parent
 sys.path.insert(0, str(SCRIPTS))
 
 import catalog
+from test_requirement_source import doc_for
 from checkers import REGISTRY_BY_ID
 from lint import Lint
 from plan_review import BOARD_MATERIALS, build_review_plan
@@ -122,8 +123,8 @@ class GeneratedOutputTest(unittest.TestCase):
         db = self.board()
         intent = {'schema_version': 3, 'expect': {'SOC': 1},
                   'features': {'CUSTOM': {'applicability': 'APPLICABLE', 'citation': 'synthetic requirement'}},
-                  'requirements': [{'id': 'REQ-1', 'text': 'synthetic', 'citation': 'synthetic',
-                                    'criterion': 'synthetic criterion'}],
+                  'requirement_source': doc_for({'REQ-1': 'synthetic'}),
+                  'requirements': [{'id': 'REQ-1', 'criterion': 'synthetic criterion'}],
                   'circuits': [{'id': 'C-' + p.name, 'type': p.name, 'refs': ['U1'], 'states': ['run'],
                                 'citation': 'synthetic'} for p in catalog.CIRCUIT_TYPES]}
         plans = [build_review_plan(db, intent), build_review_plan(self.board())]

@@ -6,6 +6,7 @@ import re
 
 import board_intent
 import catalog
+import requirements_extract
 from audit_datasheets import datasheet_audit_all_available
 from checkers import registry_cold_rules, registry_hot_rules
 from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, normalize
@@ -158,13 +159,16 @@ class BoardPlanning:
     def plan_coverage(self):
         for name, rule in catalog.COVERAGE_RULES.items():
             self.add_check(rule, {'feature': name}, trigger=['coverage-protocol'])
+        source, _ = requirements_extract.load(self.intent.get('requirement_source')) if self.intent.get('requirements') else (None, [])
+        originals = {i['id']: i for i in (source or {}).get('items', [])}
         for item in self.intent.get('requirements', []):
             obj = {'requirement_id': item['id'], 'feature': item['id']}
             if 'status' in item:
                 obj['requirement_status'] = item['status']
-            self.add_check('REQ-D01', obj,
-                           criterion=item['criterion'],
-                           trigger=[item['citation'], item['text']])
+            original = originals[item['id']]
+            row = self.add_check('REQ-D01', obj, criterion=item['criterion'], trigger=[original['locator']])
+            row['source_text'] = {'locator': original['locator'], 'section': original['section'],
+                                  'columns': [dict(c) for c in original['columns']]}
         # The declared inventory includes symbol pins omitted from connected nets.
         devices = self.intent.get('devices') or {}
         for ref, part in sorted(self.db.get('parts', {}).items()):

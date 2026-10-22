@@ -93,7 +93,17 @@
         "domain": "REQ",
         "applicability": "APPLICABLE",
         "object": {},
-        "criterion": "Controlled synthetic criterion for REQ-D01.BOOT-FUNCTION"
+        "criterion": "Controlled synthetic criterion for REQ-D01.BOOT-FUNCTION",
+        "source_text": {
+          "locator": "synthetic requirements table REQ-D01.BOOT-FUNCTION",
+          "section": null,
+          "columns": [
+            {
+              "name": "text",
+              "text": "Controlled synthetic criterion for REQ-D01.BOOT-FUNCTION"
+            }
+          ]
+        }
       },
       {
         "id": "REQ-D01.NAME",
@@ -106,7 +116,17 @@
           "node": "U2.1",
           "net": "EN"
         },
-        "criterion": "Controlled synthetic criterion for REQ-D01.NAME"
+        "criterion": "Controlled synthetic criterion for REQ-D01.NAME",
+        "source_text": {
+          "locator": "synthetic requirements table REQ-D01.NAME",
+          "section": null,
+          "columns": [
+            {
+              "name": "text",
+              "text": "Controlled synthetic criterion for REQ-D01.NAME"
+            }
+          ]
+        }
       },
       {
         "id": "PWR-C01.CEFF",

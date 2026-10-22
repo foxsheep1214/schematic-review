@@ -30,6 +30,7 @@ import circuit_decisions
 import check_key
 import row_owner
 import interfaces
+import requirements_extract
 import plan_board
 import plan_circuits
 import plan_system
@@ -174,15 +175,25 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
         errors.append('requirements 必须为数组')
     else:
         seen = set()
+        source, source_errors = (requirements_extract.load(intent.get('requirement_source'))
+                                 if requirements or 'requirement_source' in intent else (None, []))
+        errors.extend(source_errors)
+        originals = {i['id']: requirements_extract.text(i) for i in (source or {}).get('items', [])}
         for item in requirements:
             if not isinstance(item, dict):
                 errors.append('requirement 必须为 object')
                 continue
-            for key in ('id', 'text', 'citation', 'criterion'):
+            for key in ('text', 'citation'):
+                if key in item:
+                    errors.append('requirement.%s.%s 不写：原文与出处由 requirements_extract.py 从 requirement_source 抄录'
+                                  % (item.get('id'), key))
+            for key in ('id', 'criterion'):
                 if not _text(item.get(key)):
                     errors.append(f'requirement.{key} 缺失')
-            if _text(item.get('text')) and _text(item.get('criterion')) and \
-                    _squeeze(item['criterion']) == _squeeze(item['text']):
+            if source is not None and _text(item.get('id')) and item['id'] not in originals:
+                errors.append('requirement.%s 不在 requirement_source 里；需求只取自需求文档' % item['id'])
+            original = originals.get(item.get('id'))
+            if original and _text(item.get('criterion')) and _squeeze(item['criterion']) == _squeeze(original):
                 errors.append('requirement.%s.criterion 抄了需求原文；写本次在原理图上判什么、对照什么（优化目标或范围说明写明'
                               '没有原理图判据）' % item.get('id'))
             if 'status' in item and item['status'] not in REQUIREMENT_STATUSES:
@@ -192,6 +203,8 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
                 if rid in seen:
                     errors.append(f'requirement id 重复: {rid}')
                 seen.add(rid)
+        for rid in sorted(set(originals) - seen):
+            errors.append('requirement %s 在需求文档里却不在 intent.requirements：每条需求都要有一项（优化目标、明确排除也一样）' % rid)
     if isinstance(intent, dict) and board_intent.VERIFIED_KEY in intent:
         # Only the datasheet audit may mark a device kind as verified.
         errors.append(board_intent.VERIFIED_KEY + ' 由手册核验生成，不能在 intent 中声明')

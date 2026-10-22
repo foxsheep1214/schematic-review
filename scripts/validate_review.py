@@ -39,6 +39,12 @@ CLAUSE_ORDER = {"NA": 0, "PASS": 1, "INSUFFICIENT": 2, "FAIL": 3}
 CLAUSE_TEXT_STRIP = re.compile(r"[\s，。；;,.、：:（）()]")
 
 
+def source_text(planned):
+    """A requirement row's original text: the transcribed columns in order (requirements_extract)."""
+    columns = (planned.get("source_text") or {}).get("columns") if isinstance(planned.get("source_text"), dict) else None
+    return "".join(c.get("text") or "" for c in columns or [] if isinstance(c, dict))
+
+
 def requirement_clause_errors(key, item, criterion):
     """REQ-D01：需求全文按原文顺序拆成条款，只有要求条款带结论，行结论 = 要求条款中最差的结论。"""
     clauses = item.get("requirement_clauses")
@@ -396,7 +402,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             require(result == "INSUFFICIENT" and item.get("gap_cause") == REQUIREMENT_GAP[req_status],
                     f"{key}: 需求状态为{REQUIREMENT_LABEL[req_status]}，结果须为 INSUFFICIENT 且 gap_cause 为 {REQUIREMENT_GAP[req_status]}")
         elif clauses_required and expected.get(key, {}).get("rule") == "REQ-D01" and result != "NA":
-            errors.extend(requirement_clause_errors(key, item, expected[key].get("criterion")))
+            errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))
         if result == "FAIL":
             require(item.get("severity") in tuple(SEVERITIES), f"{key}: invalid severity")
             fid = item.get("finding_id")

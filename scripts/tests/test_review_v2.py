@@ -16,6 +16,7 @@ from solve_dividers import Solver
 from diff_netlists import connected, evaluate_claims, validate_claims
 from test_solve_dividers import divider_db
 from test_lint import sample_db
+from test_requirement_source import doc_for
 
 
 def network(parts, nets, pinname=None):
@@ -71,8 +72,8 @@ class V2Regressions(unittest.TestCase):
 
     def test_requirement_validation_and_state_expansion_coexist(self):
         intent = {
-            'requirements': [{'id': 'REQ-01', 'text': 'Startup guaranteed',
-                              'criterion': 'Defined state throughout sampling', 'citation': 'SYNTHETIC REQ'}],
+            'requirement_source': doc_for({'REQ-01': 'Startup guaranteed'}),
+            'requirements': [{'id': 'REQ-01', 'criterion': 'Defined state throughout sampling'}],
             'circuits': [{'id': 'BOOT', 'type': 'STARTUP', 'refs': ['U1'],
                           'states': ['cold-start', 'brownout'], 'citation': 'SYNTHETIC states'}]}
         self.assertEqual(validate_intent(intent), [])
@@ -93,8 +94,8 @@ class V2Regressions(unittest.TestCase):
         self.assertTrue(check_matches(sample_db(), evidence['checks'][0], 'RST-E01', {'node': 'U1.1', 'ref': 'U1'}))
 
     def test_requirement_and_full_pin_audits_are_planned(self):
-        intent = {'requirements': [{'id': 'REQ-USB', 'text': 'USB port required',
-                   'criterion': 'end-to-end connectivity', 'citation': 'REQ Rev.A section 1'}]}
+        intent = {'requirement_source': doc_for({'REQ-USB': 'USB port required'}),
+                  'requirements': [{'id': 'REQ-USB', 'criterion': 'end-to-end connectivity'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
         self.assertTrue(any(x['object'].get('requirement_id') == 'REQ-USB' for x in plan['checks']))
@@ -102,8 +103,8 @@ class V2Regressions(unittest.TestCase):
                             for x in plan['checks']))
 
     def test_requirement_status_reaches_the_planned_check(self):
-        intent = {'requirements': [{'id': 'REQ-T', 'text': 'derate by temperature', 'status': 'OPEN',
-                   'criterion': 'derating points', 'citation': 'REQ Rev.A section 2'}]}
+        intent = {'requirement_source': doc_for({'REQ-T': 'derate by temperature'}),
+                  'requirements': [{'id': 'REQ-T', 'status': 'OPEN', 'criterion': 'derating points'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
         row = next(x for x in plan['checks'] if x['object'].get('requirement_id') == 'REQ-T')

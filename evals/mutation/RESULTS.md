@@ -134,5 +134,13 @@
 | M128 | a return net on a part with one return net accepted | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::ReturnPinTests::test_a_return_net_on_a_part_whose_returns_share_one_net_is_refused |
 | M129 | two clauses of one kind accepted | `scripts/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::FixedKindTests::test_a_clause_without_its_citation_two_of_one_kind_or_a_named_clause_is_refused |
 | M130 | a no-capacitor row carries the clause citation in its criterion | `scripts/checkers/decoupling.py` | KILLED | FAILED scripts/tests/test_decoupling_fixed_kinds.py::NoCapacitorTests::test_a_no_capacitor_group_states_the_reason_as_its_clause_not_in_its_criterion |
+| M131 | the extractor keeps only the first requirement column | `scripts/requirements_extract.py` | KILLED | FAILED scripts/tests/test_requirement_clauses.py::RequirementClauseTests::test_premise_clauses_do_not_carry_other_rows_defects |
+| M132 | a table not keyed by id is read as requirements | `scripts/requirements_extract.py` | KILLED | FAILED scripts/tests/test_requirement_source.py::ExtractTests::test_only_tables_keyed_by_id_and_id_list_items_are_requirements |
+| M133 | a repeated requirement id is accepted | `scripts/requirements_extract.py` | KILLED | FAILED scripts/tests/test_requirement_source.py::ExtractTests::test_two_reads_are_identical_and_a_repeated_id_is_an_error |
+| M134 | a changed requirement document is read through | `scripts/requirements_extract.py` | KILLED | FAILED scripts/tests/test_requirement_source.py::IntentTests::test_a_missing_or_stale_source_is_refused |
+| M135 | text or citation written in the intent is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_source.py::IntentTests::test_text_or_citation_written_in_the_intent_is_refused |
+| M136 | a source requirement missing from the intent is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_source.py::IntentTests::test_every_source_requirement_is_in_the_intent_and_every_intent_requirement_in_the_source |
+| M137 | an intent requirement not in the source is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_source.py::IntentTests::test_every_source_requirement_is_in_the_intent_and_every_intent_requirement_in_the_source |
+| M138 | requirement clauses are checked against the criterion | `scripts/validate_review.py` | KILLED | FAILED scripts/tests/test_requirement_clauses.py::RequirementClauseTests::test_clauses_split_the_original_text_not_the_criterion |
 
 全部杀死。

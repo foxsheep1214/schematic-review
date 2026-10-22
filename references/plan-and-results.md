@@ -37,9 +37,9 @@
       "pins": {"1": {"name": "VIN", "role": "power"}, "2": {"name": "GND", "role": "return"}}
     }
   },
+  "requirement_source": {"path": "/绝对路径/需求.md", "sha256": "requirements_extract.py 输出的 sha256"},
   "requirements": [{
-    "id": "REQ-USB", "text": "提供一路 USB 设备接口", "status": "CONFIRMED",
-    "citation": "Requirements v1.2 section 4.1",
+    "id": "REQ-USB", "status": "CONFIRMED",
     "criterion": "PHY 与连接器双向链路、供电及外部带电状态满足接口条件"
   }],
   "circuits": [{
@@ -77,6 +77,12 @@
 - `materials.<name>.available=true` 必须带 `citation`。逐物料审计（`--datasheet-audit`）优先于这些全局布尔值。
 - `assemblies`（1–32 个，各带 `id` 与 `citation`）是全部检查器共用的装配状态；`devices` 是按位号的官方脚表。
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
+- 需求不手抄：`python3 scripts/requirements_extract.py 需求.md --json record/requirements.json` 逐字抄录需求表
+  （首列为 ID/编号的表格行，或 `- <编号>：<文字>` 列表项），每条各列分开、带所在章节与 `文件:行号`，并给文件 sha256。
+  `requirement_source` 写文件路径和这个 sha256，`requirements[]` 每项只写 `id`、`criterion`（本次在原理图上判什么，
+  不抄原文）和 `status`，不写 `text`、`citation`。需求文档里每个编号都要有一项（优化目标、明确排除也一样），
+  文档里没有的编号被拒收；文档改了 sha256 就变，重新抄录并复看改过的需求。源不是表格时先整理成同格式的需求表并存档。
+  计划的 REQ-D01 行带 `source_text`（出处、章节、各列原文），结果的 `requirement_clauses` 按顺序拼接须等于这段原文。
 - `requirements[].status`：已确认（CONFIRMED）、提案（PROPOSED）、未定（OPEN）、暂缓（DEFERRED）。
   保留需求原文和源状态，先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求)
   确定本次判据的实际确认状态，不省略真实未定项。OPEN 的 REQ-D01 必须 INSUFFICIENT + REQUIREMENT_OPEN；
