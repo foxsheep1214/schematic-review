@@ -225,6 +225,17 @@ def _functions(out, plan):
                                     **{k: task[k] for k in ('due_stage', 'design_option') if k in task},
                                     **({'why': task['reason']} if task.get('reason') else {})})
                 r['function_id'], r['fail_ref'] = fid, fid + '/' + key
+    aspect_of = {m['check_id']: m.get('aspect') for f in frames.values() for m in f.get('members') or [] if isinstance(m, dict)}
+    for cid, fid in frame_of.items():   # a passed frame row binds to its frame and rests on a judgement there
+        row = rows.get(cid)
+        if row and row.get('review_result') == 'PASS' and 'function_id' not in row and aspect_of.get(cid):
+            fn = function(fid, [cid], 'Synthetic question for ' + cid)
+            row['function_id'] = fid
+            row.setdefault('aspect', aspect_of[cid])
+            judged = fn.setdefault('judgements', [])
+            if row['aspect'] not in {j['aspect'] for j in judged}:
+                judged.append({'aspect': row['aspect'], 'conditions': ['c2'],
+                               'says': 'Synthetic: the stipulated connection holds for %s' % row['aspect']})
     orphans = [cid for cid, row in rows.items()
                if row.get('review_result') == 'INSUFFICIENT' and cid not in owned and row.get('gaps') is not None]
     for cid, row in rows.items():

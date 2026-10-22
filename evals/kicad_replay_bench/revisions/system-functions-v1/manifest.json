@@ -1,0 +1,15 @@
+{
+ "revision": "system-functions-v1",
+ "parents": {
+  "revisions/interface-rows-v1/expected.json": "76c5b8fe6af5befab2dbadb28a84f6a45fcd504a41c3e17bd0c3114b53b627d1",
+  "revisions/interface-rows-v1/cases.json": "b914898413608ab29a7a893c74c5f733c7b1845dcd32e59deea9e31b1fc9e83a",
+  "revisions/interface-rows-v1/sources.json": "c2747d3ad3f382346b6b05ed54e0be4b5e17ca00fde34d7ba432c4ac03dd4547",
+  "revisions/interface-rows-v1/manifest.json": "1caaf29e550432f8fe26229edf56754b59dce8d5db27522972a4606012fd8778"
+ },
+ "derived_files": {
+  "revisions/system-functions-v1/expected.json": "fe9317d9f2f828764614c3b27ecbe55c10b48e82400a3e5d24eac7fbe4ed1833",
+  "revisions/system-functions-v1/cases.json": "765a3b0760eb509b05c22c292a3500de03f1a467ccb9ff88244bdc513f872bc9",
+  "revisions/system-functions-v1/sources.json": "c2747d3ad3f382346b6b05ed54e0be4b5e17ca00fde34d7ba432c4ac03dd4547"
+ },
+ "scope": "功能电路树第 5 步：系统功能有对象才生成（PWR-T06 需两个以上地网，RST-T03 需两条以上电源轨且全板一行，SIG-D13 需可能是主控的 IC），每个有行的系统功能一个框架；DEV-C01/C02/C03 每电路自有器件一行，未归属器件全板一行。interface-rows-v1 文件保持原字节。"
+}

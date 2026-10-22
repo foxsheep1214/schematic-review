@@ -31,7 +31,7 @@ import check_key
 import row_owner
 import interfaces
 from checkers import powertree
-from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, RAIL_RE, is_ground, CONNECTOR, IC, MOSFET, TVS, UNKNOWN, ZENER, NetGraph, is_analog_sense_pair, normalize
+from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, RAIL_RE, is_ground, CAPACITOR, CONNECTOR, IC, MOSFET, RESISTOR, TESTPOINT, TVS, UNKNOWN, ZENER, NetGraph, is_analog_sense_pair, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
@@ -76,13 +76,16 @@ GATE_CLAMP_NOTRIP = ('不误动作侧（栅源限幅，正常驱动中允许钳�
                      '钳位电流与功耗（含驱动源限流）在器件额定内；不要求正常工作永不导通')
 # 全板规则执行前需要的资料；未列出的规则只需网表。
 BOARD_MATERIALS = {
-    'DOC-D02': ('requirements',), 'DOC-V02': ('schematic_pdf',),
-    'DEV-C01': ('datasheets', 'requirements'), 'DEV-C02': ('datasheets', 'requirements'),
-    'DEV-C03': ('requirements',),
-    'PWR-T06': ('datasheets', 'platform_checklist'),
-    'SIG-D13': ('datasheets', 'platform_checklist'), 'REQ-D02': ('requirements',),
+    'DOC-D02': ('requirements',), 'DOC-V02': ('schematic_pdf',), 'REQ-D02': ('requirements',),
 }
 INTERFACE_MATERIALS = {'DEV-C04': ('datasheets', 'requirements')}
+SYSTEM_MATERIALS = {'PWR-T06': ('datasheets', 'platform_checklist'), 'SIG-D13': ('datasheets', 'platform_checklist'),
+                    'RST-T03': ('requirements', 'datasheets')}
+OWNED_PART_MATERIALS = {'DEV-C01': ('datasheets', 'requirements'), 'DEV-C02': ('datasheets', 'requirements'),
+                        'DEV-C03': ('requirements',)}
+# 逐电路自有器件的检查项取哪些器件（第 5 步）：应力不含连接器（载流归 DEV-C04）与测试点。
+OWNED_PART_KINDS = {'DEV-C01': lambda kind: kind not in (CONNECTOR, TESTPOINT),
+                    'DEV-C02': lambda kind: kind == CAPACITOR, 'DEV-C03': lambda kind: kind == RESISTOR}
 
 
 # 网表扫描规则所需的 db 索引；规则名称与判据在 catalog 中。
@@ -365,7 +368,7 @@ class ReviewPlanner:
         entry = catalog.get(rule)
         anchor = (obj.get('node') or obj.get('net') or obj.get('ref') or obj.get('feature')
                   or obj.get('circuit_type') or obj.get('assembly') or obj.get('page')
-                  or obj.get('interface') or obj.get('board') or 'GLOBAL')
+                  or obj.get('circuit') or obj.get('interface') or obj.get('system') or obj.get('board') or 'GLOBAL')
         base = '.'.join([rule] + ([_slug(key)] if key else []) + [_slug(anchor)])
         check_id, suffix = base, 2
         while check_id in self._ids:
@@ -1124,6 +1127,73 @@ class ReviewPlanner:
         self.plan_checkers()
         self.plan_explicit_evidence()
         self.plan_interfaces()
+        self.plan_system()
+        self.plan_owned_parts()
+
+    def plan_system(self):
+        """系统功能的行（功能树设计第 5 步），有对象才生成：两个以上地网问 PWR-T06，两条以上电源轨问 RST-T03（全板一次），
+        有可能是主控的 IC（核验为 mcu 或通用 ic，或没核验）问 SIG-D13。电源树和监控的行由逐轨展开和监控检查器生成。"""
+        graph = NetGraph(board_intent.graph_db(self.db, self.kind_intent))
+        grounds = sorted(self.domains['grounds'])
+        rails = sorted(c['object']['net'] for c in self.checks if c['rule'] == 'PWR-T01' and (c.get('object') or {}).get('net'))
+        if len(grounds) >= 2:
+            self._ready_check('PWR-T06', {'system': 'SYS-GROUND', 'nets': grounds},
+                              self._materials_gap(SYSTEM_MATERIALS['PWR-T06']), [f'grounds:{len(grounds)}'])
+        if len(rails) >= 2:
+            self._ready_check('RST-T03', {'system': 'SYS-SEQUENCE', 'rails': rails},
+                              self._materials_gap(SYSTEM_MATERIALS['RST-T03']), [f'rails:{len(rails)}'])
+        controllers = sorted(ref for ref in graph.parts if graph.is_fitted(ref) and graph.kind(ref) == IC
+                             and graph.role_kind(ref) in (None, 'mcu', 'ic'))
+        if controllers:
+            self._ready_check('SIG-D13', {'system': 'SYS-PINMAP', 'refs': controllers},
+                              self._materials_gap(SYSTEM_MATERIALS['SIG-D13']), [f'controller-candidates:{len(controllers)}'])
+
+    def plan_owned_parts(self):
+        """DEV-C01/C02/C03 每块电路对它拥有的器件一行（按 OWNED_PART_KINDS 取器件），没有电路拥有的器件全板一行。"""
+        graph = NetGraph(board_intent.graph_db(self.db, self.kind_intent))
+        circuits = self.intent.get('circuits', [])
+        owners = row_owner.part_owners(circuits)
+        fitted = [ref for ref in sorted(graph.parts) if graph.is_fitted(ref)]
+        for rule in catalog.OWNED_PART_RULES:
+            wanted = [ref for ref in fitted if OWNED_PART_KINDS[rule](graph.kind(ref))]
+            gaps = self._materials_gap(OWNED_PART_MATERIALS[rule])
+            for circuit in circuits:
+                refs = [ref for ref in wanted if owners.get(ref) == circuit['id']]
+                if refs:
+                    key = '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']]))
+                    self._ready_check(rule, {'circuit': circuit['id'], 'circuit_key': key, 'refs': refs}, gaps,
+                                      [f'intent.circuits:{circuit["id"]}'])
+            residual = [ref for ref in wanted if ref not in owners]
+            if residual:
+                self._ready_check(rule, {'board': 'BOARD', 'refs': residual}, gaps, ['board', 'unowned-parts'])
+
+    def plan_system_frames(self):
+        """每个有行的系统功能一个框架；成员是归它的行（按电路或接口展开的不算）。行没有点名网络或器件的
+        （如逐电源域监控覆盖），框架的对象取全板电源轨。"""
+        rails = sorted(c['object']['net'] for c in self.checks if c['rule'] == 'PWR-T01' and (c.get('object') or {}).get('net'))
+        for sid in catalog.SYSTEM_FUNCTIONS:
+            members = [c for c in self.checks if catalog.SYSTEM_OF_RULE.get(c['rule']) == sid
+                       and not (c.get('object') or {}).get('circuit') and not (c.get('object') or {}).get('interface')]
+            if not members:
+                continue
+            nets, refs = set(), set()
+            for row in members:
+                obj = row.get('object') or {}
+                nets.update(n for key in ('nets', 'rails') for n in obj.get(key) or [])
+                nets.update([obj['net']] if obj.get('net') else [])
+                refs.update(obj.get('refs') or [])
+            if not nets and not refs:
+                nets.update(rails)
+            frame = {'id': 'FN-' + sid, 'system': sid,
+                     'question': catalog.system_frame_question(sid, sorted(nets), sorted(refs)),
+                     'objects': {'refs': sorted(refs), 'nets': sorted(nets)}, 'states': ['run'], 'members': [],
+                     'blind_spots': {}, 'checklist': list(catalog.BOUNDING_STEPS)}
+            for row in sorted(members, key=lambda c: c['id']):
+                row['function_id'] = frame['id']
+                row['aspect'] = catalog.title(row['rule'])
+                frame['members'].append({'check_id': row['id'], 'rule': row['rule'], 'aspect': row['aspect'], 'state': None})
+                frame['blind_spots'][row['rule']] = catalog.explanation(row['rule'])['risk_if_omitted']
+            self.functions.append(frame)
 
     def plan_interfaces(self):
         """接口检查项（功能树设计第 4 步）：电路对、链路逐接口问 catalog.INTERFACE_SUBJECTS，两端供电或参考地不同的
@@ -1177,6 +1247,7 @@ class ReviewPlanner:
         self.generate()
         self.merge_previous_checks()
         self.attach_lint_findings()
+        self.plan_system_frames()
         for material in (self.datasheet_audit or {}).get('materials', []):
             if material.get('status') == 'NOT_FOUND':
                 self.diagnostics.append({

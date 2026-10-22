@@ -22,6 +22,8 @@ SOURCE_FILES = {
     'plan': ['plan_review.py', 'catalog.py'],
     'revision': ['revision_impact.py', 'diff_netlists.py', 'plan_review.py'],
     'interface': ['plan_review.py', 'catalog.py'],
+    'system': ['plan_review.py', 'catalog.py'],
+    'owned_parts': ['plan_review.py', 'catalog.py'],
 }
 GENERIC_SOURCES = {'subject', 'board'}
 
@@ -55,6 +57,10 @@ class CatalogTest(unittest.TestCase):
                     self.assertIn(rule.scope, ('circuit', 'link'))
                 if rule.source == 'interface':
                     self.assertEqual(rule.scope, 'interface')
+                if rule.source == 'system':
+                    self.assertIn(rule.id, catalog.SYSTEM_OF_RULE)
+                if rule.source == 'owned_parts':
+                    self.assertIn(rule.id, catalog.OWNED_PART_RULES)
         self.assertTrue(set(BOARD_MATERIALS) <= {r.id for r in catalog.rules()
                                                   if r.scope == 'board' and r.id[4] != 'Q'})
 

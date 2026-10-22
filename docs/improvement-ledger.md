@@ -7,6 +7,32 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function tree, step 5: system functions exist when their object does, and parts are asked by owning circuit (2026-10-22)
+
+Step 5 of the function-tree design gives the board's system functions their own rows and frames and stops asking
+part stress, capacitance and precision once for the whole board. Before it, PWR-T06, SIG-D13 and DEV-C01/C02/C03 were
+one board row each on every board, whatever it held, and RST-T03 was asked per STARTUP circuit and state although
+power-on order is the board's. Now (§7 decision: no object, no function) `plan_review.plan_system` asks PWR-T06 only
+with two or more ground nets (SYS-GROUND), RST-T03 once for the board with two or more rails (SYS-SEQUENCE, its
+object listing them; dropped from the STARTUP circuit type) and SIG-D13 only while some IC could be a controller
+(verified as mcu or generic ic, or not verified; SYS-PINMAP); `plan_system_frames` builds one frame per system
+function with rows, its objects the nets and parts its rows name or, where they name none (per-domain monitoring),
+the board's rails. `plan_owned_parts` asks DEV-C01 (all owned parts but connectors and test points), DEV-C02
+(capacitors) and DEV-C03 (resistors) once per circuit over the parts it owns, with `circuit_key` so a changed member
+list asks the same check, and once for the board over the parts no circuit owns. The rule contracts for PWR-T06 and
+RST-T03 now hold a trigger and a near-miss board. The shared test bridge (ledger_v3) binds a passed frame row to its
+frame with a judgement citing a clause, as a reviewer would, before it decides which stray failed rows get a function.
+R5 bench: 461 rows, +9.8 % over step 3's 420 (acceptance 4: at most 15 %); 4 system frames; system rows pair 20 of
+21, the miss being the monitoring row whose object carries the assembly-state name each reviewer chose; all rows pair
+391 of 461 and 466. The replay bench moves to `system-functions-v1`, every case's count change checked by rebuilding
+its plan as the sum of the PWR-T06, SIG-D13, RST-T03 and owned-part row changes (195/195). Tests first
+(test_system_functions, 7 tests; catalog, plan-review, electrical-safety and v2 tests now select circuit rows by
+circuit type), 1819 tests pass, mutations M98–M103 added and killed.
+
+- Event: user:2026-10-21 (迁移分 7 步逐步来做，每做完一步形成一份提交；第 5 步：系统级), review:SR-20261021-R5-claude-fd6a6dd/record/review-plan.json (system and board rows), review:SR-20261021-R5-codex-fd6a6dd/record/review-plan.json (system and board rows)
+- Causes: rule_missing 1, rule_not_enforced 1
+- Changed: scripts/catalog.py, scripts/plan_review.py, scripts/tests/test_system_functions.py, scripts/tests/ledger_v3.py, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, scripts/tests/test_electrical_safety.py, scripts/tests/test_review_v2.py, references/check-catalog.md, evals/rule_contracts/boards/PWR-T06.json, evals/rule_contracts/boards/RST-T03.json, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/system-functions-v1/, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, SKILL.md, references/plan-and-results.md, references/automation.md, docs/2026-10-21-function-tree-design.md, docs/improvement-ledger.md
+
 ## Function tree, step 4: interface rules are asked once per interface (2026-10-22)
 
 Step 4 of the function-tree design expands the interface rules over the plan's interfaces instead of leaving them

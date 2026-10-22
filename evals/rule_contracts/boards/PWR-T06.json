@@ -1,9 +1,66 @@
 {
  "rule": "PWR-T06",
  "runner": "plan",
- "note": "ground-partition item planned once per board",
+ "note": "ground-partition item planned once when the board has two or more ground nets (SYS-GROUND); one ground net has no partition to check",
  "trigger": {
   "parts": [
+   {
+    "ref": "U1",
+    "value": "ADC",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "AGND",
+      "AGND"
+     ],
+     [
+      "3",
+      "DGND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "0R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "AGND"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "ADC",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
    {
     "ref": "R1",
     "value": "10K",
@@ -11,17 +68,15 @@
      [
       "1",
       "1",
-      "NODE_A"
+      "VCC_3V3"
      ],
      [
       "2",
       "2",
-      "NODE_B"
+      "GND"
      ]
     ]
    }
   ]
- },
- "near_miss": null,
- "always": "全板通用规则：计划对每块板都生成一项（含空板），不存在不生成的近似板"
+ }
 }

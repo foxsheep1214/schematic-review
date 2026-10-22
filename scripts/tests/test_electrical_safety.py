@@ -289,7 +289,7 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.assertEqual(len(parents), 1)
         self.assertEqual({x['parent_check_id'] for x in hot}, {parents[0]['id']})
         self.assertEqual({x['object']['state'] for x in hot}, {'cold', 'hot'})
-        circuit = [x for x in plan['checks'] if x['object'].get('circuit') == 'REGULATOR']
+        circuit = [x for x in plan['checks'] if x['object'].get('circuit') == 'REGULATOR' and x.get('circuit_type')]
         self.assertEqual(len(circuit), 2 * len(catalog.circuit_type('POWER_CONVERTER').subjects))
         self.assertEqual({x['circuit_type'] for x in circuit}, {'POWER_CONVERTER'})
         self.assertTrue(all(x['review_result'] is None for x in circuit))

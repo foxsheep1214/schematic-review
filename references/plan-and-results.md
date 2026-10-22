@@ -378,6 +378,12 @@ DEV-C04 载流、PRO-D03 对外防护（对象 `{interface: EXT-<连接器>, ref
 电路对、链路和连接器各一个接口框架（`functions[]` 里带 `interface`、`interface_kind`，没有 `circuit`），成员是该接口的行；
 供电接口只有行，不建框架。按声明的总线电路展开的同名规则仍问电路内部的链路。
 
+**系统功能。** 有对象才生成：两个以上地网问 PWR-T06（`{system: SYS-GROUND, nets}`），两条以上电源轨问 RST-T03
+（`{system: SYS-SEQUENCE, rails}`，全板一行），有可能是主控的 IC 问 SIG-D13（`{system: SYS-PINMAP, refs}`）；电源树与监控的行
+（PWR-T01/C01/A01/A04、PWR-T04/A06）照旧生成。每个有行的系统功能一个框架（`functions[]` 里带 `system`），成员是归它的行。
+**自有器件。** DEV-C01 应力、DEV-C02 电容、DEV-C03 精度每块电路对它拥有的器件一行（`{circuit, circuit_key, refs}`，
+按器件类别取），没有电路拥有的器件全板一行（`{board: BOARD, refs}`）。
+
 **文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（摘要数字、选型记录、图纸卫生）不是电路。
 文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）；选型理由的复判走
 [选型复判](selection-review.md)。DOC 行证据不足时仍需一个开放项作入口，这种只含 DOC 行的功能不计入

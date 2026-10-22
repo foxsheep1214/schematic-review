@@ -677,5 +677,47 @@
   "file": "scripts/row_owner.py",
   "old": "INTERFACE_ORDER = ('EXTERNAL', 'LINK', 'CIRCUIT_PAIR', 'SUPPLY')",
   "new": "INTERFACE_ORDER = ('CIRCUIT_PAIR', 'LINK', 'EXTERNAL', 'SUPPLY')"
+ },
+ {
+  "id": "M98",
+  "name": "ground partition asked on a board with one ground net",
+  "file": "scripts/plan_review.py",
+  "old": "        if len(grounds) >= 2:",
+  "new": "        if len(grounds) >= 1:"
+ },
+ {
+  "id": "M99",
+  "name": "power-on order asked on a board with one rail",
+  "file": "scripts/plan_review.py",
+  "old": "        if len(rails) >= 2:",
+  "new": "        if len(rails) >= 1:"
+ },
+ {
+  "id": "M100",
+  "name": "pin map asked although every IC is verified as no controller",
+  "file": "scripts/plan_review.py",
+  "old": "                             and graph.role_kind(ref) in (None, 'mcu', 'ic'))",
+  "new": "                             )"
+ },
+ {
+  "id": "M101",
+  "name": "capacitance asked over every part a circuit owns, not its capacitors",
+  "file": "scripts/plan_review.py",
+  "old": "                    'DEV-C02': lambda kind: kind == CAPACITOR,",
+  "new": "                    'DEV-C02': lambda kind: True,"
+ },
+ {
+  "id": "M102",
+  "name": "parts no circuit owns are not asked stress, capacitance or precision",
+  "file": "scripts/plan_review.py",
+  "old": "            residual = [ref for ref in wanted if ref not in owners]",
+  "new": "            residual = []"
+ },
+ {
+  "id": "M103",
+  "name": "a system function with rows gets no frame",
+  "file": "scripts/plan_review.py",
+  "old": "            if not members:\n                continue\n            nets, refs = set(), set()",
+  "new": "            if True:\n                continue\n            nets, refs = set(), set()"
  }
 ]

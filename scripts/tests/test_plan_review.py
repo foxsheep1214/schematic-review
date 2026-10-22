@@ -7,7 +7,7 @@ sys.path.insert(0, str(SCRIPTS))
 
 import catalog
 from board_intent import input_fingerprint
-from plan_review import BOARD_MATERIALS, build_review_plan, validate_intent
+from plan_review import BOARD_MATERIALS, OWNED_PART_MATERIALS, SYSTEM_MATERIALS, build_review_plan, validate_intent
 
 
 def sample_db():
@@ -350,7 +350,8 @@ class ReviewPlanTests(unittest.TestCase):
     def test_board_rules_are_planned_once_with_material_readiness(self):
         plan = build_review_plan(sample_db())
         board = [x for x in plan['checks'] if x['object'].get('board') == 'BOARD']
-        expected = {r.id for r in catalog.rules(source='board')} | {'DOC-T01', 'REQ-Q08'}
+        # with no circuit every part is unowned: stress and precision are asked once for the board (no capacitor here)
+        expected = {r.id for r in catalog.rules(source='board')} | {'DOC-T01', 'REQ-Q08', 'DEV-C01', 'DEV-C03'}
         self.assertEqual(sorted(x['rule'] for x in board), sorted(expected))
         by_rule = {x['rule']: x for x in board}
         self.assertEqual(by_rule['DOC-D01']['readiness'], 'READY')
@@ -361,7 +362,7 @@ class ReviewPlanTests(unittest.TestCase):
             for key in ('requirements', 'datasheets', 'platform_checklist', 'schematic_pdf')}}
         ready = build_review_plan(sample_db(), intent)
         self.assertTrue(all(x['readiness'] == 'READY' for x in ready['checks']
-                            if x['rule'] in BOARD_MATERIALS))
+                            if x['rule'] in {**BOARD_MATERIALS, **OWNED_PART_MATERIALS, **SYSTEM_MATERIALS}))
 
     def test_devices_and_connectors_get_individual_disposition_checks(self):
         plan = build_review_plan(sample_db())
@@ -657,7 +658,7 @@ class FunctionFrameTests(unittest.TestCase):
         self.assertEqual([f['id'] for f in circuit_frames(plan)], ['FN-REG-3V3'])
         frame = circuit_frames(plan)[0]
         rules = catalog.circuit_type('POWER_CONVERTER').subjects
-        members = [c for c in plan['checks'] if c['object'].get('circuit') == 'REG-3V3']
+        members = [c for c in plan['checks'] if c['object'].get('circuit') == 'REG-3V3' and c.get('circuit_type')]
         self.assertEqual(len(members), 2 * len(rules))
         self.assertEqual({m['check_id'] for m in frame['members']}, {c['id'] for c in members})
         self.assertIn('VCC_3V3 3.2–3.4 V', frame['question'])
@@ -682,7 +683,7 @@ class FunctionFrameTests(unittest.TestCase):
         rules = catalog.circuit_type('POWER_PROTECTION').subjects
         invariant = [r for r in rules if r in catalog.STATE_INVARIANT]
         self.assertEqual(invariant, ['PWR-T05'])
-        members = [c for c in plan['checks'] if c['object'].get('circuit') == 'IN-PROT']
+        members = [c for c in plan['checks'] if c['object'].get('circuit') == 'IN-PROT' and c.get('circuit_type')]
         self.assertEqual(len(members), 2 * (len(rules) - 1) + 1)
         once = [c for c in members if c['rule'] == 'PWR-T05']
         self.assertEqual([c['id'] for c in once], ['PWR-T05.IN-PROT.D1'])
@@ -703,7 +704,7 @@ class FunctionFrameTests(unittest.TestCase):
         self.assertIn(catalog.NO_WINDOW, circuit_frames(plan)[0]['question'])
         bare = build_review_plan(sample_db())
         self.assertEqual(circuit_frames(bare), [])
-        self.assertTrue(all(f['interface_kind'] == 'EXTERNAL' for f in bare['functions']))   # a connector's frame only
+        self.assertTrue(all(f.get('interface_kind') == 'EXTERNAL' or f.get('system') for f in bare['functions']))
 
 
 if __name__ == '__main__':

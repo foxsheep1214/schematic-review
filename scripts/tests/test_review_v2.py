@@ -77,7 +77,7 @@ class V2Regressions(unittest.TestCase):
                           'states': ['cold-start', 'brownout'], 'citation': 'SYNTHETIC states'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
-        states = {x['object']['state'] for x in plan['checks'] if x['object'].get('circuit') == 'BOOT'}
+        states = {x['object']['state'] for x in plan['checks'] if x['object'].get('circuit') == 'BOOT' and x.get('circuit_type')}
         self.assertEqual(states, {'cold-start', 'brownout'})
         self.assertTrue(any(x['object'].get('requirement_id') == 'REQ-01' for x in plan['checks']))
         del intent['requirements'][0]['criterion']

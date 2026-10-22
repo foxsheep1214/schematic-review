@@ -286,6 +286,8 @@ schema 1，`rules_version` 2026-10-21.1，绑定 `db_sha256` 与 intent 的 `inp
   源 = 轨上电源树的源脚（库类型不是输入），否则轨上整流管（二极管阴极、整流桥 + 脚）的唯一所属；都没有记缺口。
 - 接口检查项：`plan_review.plan_interfaces` 按 `catalog.INTERFACE_SUBJECTS` / `INTERFACE_NET_SUBJECTS` 逐接口出行并建接口框架；
   `catalog.INTERFACE_RULES` 的其余行（检查器、扫描）网络都落在一个接口上时由 `row_owner` 归该接口，连接器的接口优先。
+- 系统功能：`plan_review.plan_system` 按触发生成 PWR-T06（地网 ≥ 2）、RST-T03（电源轨 ≥ 2）、SIG-D13（有可能是主控的 IC），
+  `plan_system_frames` 给每个有行的系统功能建框架；`plan_owned_parts` 按各电路拥有的器件生成 DEV-C01/C02/C03。
 
 **装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
 与 `citation`。`population` 只接受 JSON `true/false`，缺项表示未知；`jumpers` 按位号填

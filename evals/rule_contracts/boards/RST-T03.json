@@ -1,7 +1,7 @@
 {
  "rule": "RST-T03",
  "runner": "plan",
- "note": "STARTUP package declared applicable vs only a RESET name hit left UNDETERMINED",
+ "note": "power-on order and recovery planned once for the board when two or more rails exist (SYS-SEQUENCE); a single rail has no order",
  "trigger": {
   "parts": [
    {
@@ -15,25 +15,22 @@
      ],
      [
       "2",
+      "VDDCORE",
+      "VCC_1V8"
+     ],
+     [
+      "3",
       "GND",
       "GND"
      ],
      [
-      "3",
+      "4",
       "NRST",
       "MCU_RESET"
      ]
     ]
    }
-  ],
-  "intent": {
-   "features": {
-    "STARTUP": {
-     "applicability": "APPLICABLE",
-     "citation": "synthetic requirement R-1"
-    }
-   }
-  }
+  ]
  },
  "near_miss": {
   "parts": [
