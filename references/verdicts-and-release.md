@@ -117,7 +117,7 @@
 
 | consequence_class | 含义 | 潜在等级 |
 |---|---|---|
-| `DAMAGE_OR_HAZARD` | 安全危险：火灾、触电、绝缘屏障、危险能量、用户端口过压，或使一项安全保护失效 | P0；须在 `severity.hazard_path` 写明是哪条路径：`FIRE` / `SHOCK` / `INSULATION` / `HAZARDOUS_ENERGY` / `PORT_OVERVOLTAGE` / `PROTECTION_LOSS`；该路径已有独立排除依据时写 `exclusion` 后可为 P1 |
+| `DAMAGE_OR_HAZARD` | 安全危险：火灾、触电、绝缘跨域器件、危险能量、用户端口过压，或使一项安全保护失效 | P0；须在 `severity.hazard_path` 写明是哪条路径：`FIRE` / `SHOCK` / `INSULATION` / `HAZARDOUS_ENERGY` / `PORT_OVERVOLTAGE` / `PROTECTION_LOSS`；该路径已有独立排除依据时写 `exclusion` 后可为 P1 |
 | `CORE_LINK_LOSS` | 唯一必需供电或核心链路可能断开 | P0（同上，须写 `hazard_path`，有 `exclusion` 可为 P1） |
 | `COMPONENT_DAMAGE` | 某个器件可能不可逆损坏，但不打开上面任何一条危险路径（例如二次侧低压开关管短路 SOA、同步整流管交叉导通、信号脚 ESD 损伤） | P1（版本 2 新增；版本 1 没有这一类，当时这类缺口只能写 `DAMAGE_OR_HAZARD`） |
 | `REQUIRED_FUNCTION` | 必需功能、启动/恢复、协议不保证 | P1 |
@@ -133,7 +133,7 @@
 此时类别仍写 `DAMAGE_OR_HAZARD` + `hazard_path: PORT_OVERVOLTAGE`，用 `exclusion` 写明是哪个锁定式 OVP 及其门限出处后降为 P1；
 不能改写成 `COMPONENT_DAMAGE` 或 `REQUIRED_FUNCTION` 把路径藏起来（`PORT_OVERVOLTAGE_GRADED_BELOW_P0` 提示）；
 熔断器分断能力：IEC 60127 高分断（H，1500 A）熔断器用于插墙电源时按额定分断能力核，不要求电网可用短路电流数据。
-仍是 P0 的情形：绝缘屏障器件（变压器、光耦、Y 电容）的长期工作电压/环境条件缺证（`INSULATION`）；
+仍是 P0 的情形：绝缘跨域器件（变压器、光耦、Y 电容）的长期工作电压/环境条件缺证（`INSULATION`）；
 保护元件本身额定不明且其失效会让一次侧故障持续（`FIRE`/`PROTECTION_LOSS`）；端口可能出现超出受控上限的电压或能量（`PORT_OVERVOLTAGE`）。报告“数字一览”按类别计数，
 结论里的资料缺口按待办（同一原因合并）计件，同时注明涉及的检查条数。
 
@@ -285,7 +285,8 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 - 一个开放项只开一条危险路径：P0 开放项的 `severity.hazard_path` 唯一；同一功能里后果等级不同的缺口分开写开放项，
   `decides` 各自限定方面与状态，P1 的方面不并进 P0 的开放项。
 - 只有文字相似、同一器件或同一本手册不构成同一开放项。根因相同的 FAIL 行引用同一个失败项，改法在发现项里。
-- 能按物理对象/判据拆开时优先拆开放项的 `decides`，而不是让一个开放项铺满整块电路（超过 3 个方面要写 `decides_reason`）。
+- 能按物理对象/判据拆开时优先拆开放项，而不是让一个开放项铺满整块电路。`decides` 的每条影响条目写 `via`（缺的量进到哪条条件或哪个计算输入）
+  和 `rationale`；一个缺口挡几个方面不限数，超过 3 个只出 WIDE_GAP 提示。
 - 阻断表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
 - REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过。
   只剩 SR 工具自身限制、审查时已对照网表和原厂资料核对完的，不记 REVIEW_INCOMPLETE，按核对结论判定并写 `manual_verification`
@@ -312,9 +313,9 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 缺它或它自相矛盾记 INSUFFICIENT（DESIGN_OPEN）；引脚、上拉、GPIO 冲突、编程口与功能脚复用在原理图上判；
 烧录镜像、读回 hash、编程模式/夹具、量产校准结果只能在生产/固件环节产生，记阶段 NA + HANDOFF（接收方“固件/生产”），
 不阻塞原理图冻结（`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 提示）。
-复合 REQ-D01、功能电路汇总或 PRO-C01 不能整行改 NA；设计义务照常判，纯测试义务另立检查并关联。
+复合 REQ-D01、功能电路汇总或 PRO-C01 不能整行改 NA；设计要求照常判，纯测试要求另立检查并关联。
 需求行（计划按 `intent.requirements` 生成的 `REQ-D01.<需求 ID>`）整行写 `OUTSIDE_SCHEMATIC_STAGE` 会被校验拒绝：
-“工作温度 −10..50 °C”里器件温度等级是设计义务，闭壳温升才是试验，各写各的条款。
+“工作温度 −10..50 °C”里器件温度等级是设计要求，闭壳温升才是试验，各写各的条款。
 生成计划的自动判据不得删改来绕过这一拆分。
 
 阶段 NA 行的固定写法（校验强制）：
@@ -340,12 +341,12 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 | 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`） |
 | 同一方法套在几个对象上（三只光耦的 CTR、几只电解的寿命） | 一件待办、多个位号，不拆成三件（`DUPLICATE_WORK_ITEMS`） |
 | 成本、体积、效率等明确的优化目标 | 必须要求满足后列 IMPROVEMENT 或 P3，不制造未知项；它的需求行（成本目标、尺寸重量尽量小、取舍优先级、不申请某认证这类优化目标或范围说明）记 `NOT_APPLICABLE` 并在 `applicability_evidence` 引需求原文——没有判据就没有“通过”，也不是下游试验，不写 PASS、不记阶段 NA |
-| 需求同时含设计与“通过某测试” | 设计义务照常判；测试义务条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE` 并链接阶段 NA 检查 |
+| 需求同时含设计与“通过某测试” | 设计要求照常判；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE` 并链接阶段 NA 检查 |
 
 `gap_cause: DOWNSTREAM_VERIFICATION` 已取消，校验拒绝；纯下游项只能走阶段 NA。
 统计中阶段 NA 单列为 `NA_OUTSIDE_STAGE`，不计入普通 NA；含阶段 NA 条款的需求行列在
 `stage_scope.requirements_pending_downstream`，报告标“待下游验证”，不得写成“不适用”。
-`quality_screening` 的下游分流提示只辅助判断；工具映射失败不是产品不适用，不用阶段 NA 隐藏覆盖缺口。
+`quality_screening` 的分出下游工作提示只辅助判断；工具映射失败不是产品不适用，不用阶段 NA 隐藏覆盖缺口。
 
 ## 6. 准出
 

@@ -221,7 +221,7 @@ def sexpr_to_xml(text):
 
 
 def parse(xml_text, export_errors=()):
-    """kicadxml 文本（或 KiCad s-expression 网表）-> db 契约。"""
+    """kicadxml 文本（或 KiCad s-expression 网表）-> db 格式。"""
     head = xml_text.lstrip()[:7]
     if head in ('(export', b'(export'):
         xml_text = sexpr_to_xml(xml_text.decode('utf-8') if isinstance(xml_text, bytes) else xml_text)
@@ -361,7 +361,7 @@ def _stacked_unit_pins(root):
 
 
 def build(path, executable=None):
-    """输入 .kicad_sch、kicadxml 或 KiCad s-expression 网表（KiCad 5 的 .net）；返回 db 契约。"""
+    """输入 .kicad_sch、kicadxml 或 KiCad s-expression 网表（KiCad 5 的 .net）；返回 db 格式。"""
     if not os.path.isfile(path):
         raise RuntimeError('缺少输入文件: %s' % path)
     if path.lower().endswith('.kicad_sch'):

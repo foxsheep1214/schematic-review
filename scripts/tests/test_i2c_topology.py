@@ -472,7 +472,7 @@ class TopologyTests(unittest.TestCase):
         self.assertEqual(len(electrical), 2 * len(members))
         self.assertTrue(all(p['readiness'] == 'WAITING_EVIDENCE' and p['circuit_type'] == 'I2C' for p in electrical))
         self.assertTrue(any(p['rule'] == 'SIG-E01' for p in plan['checks']))
-        # 区域已逐个展开时，不再按功能电路重复生成一套科目项。
+        # 区域已逐个展开时，不再按功能电路重复生成一套检查项。
         self.assertFalse([p for p in plan['checks'] if p['object'].get('circuit_type') == 'I2C'
                           and p['rule'] != 'REQ-Q07'])
 

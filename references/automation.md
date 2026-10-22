@@ -14,8 +14,8 @@
 
 | 运行 | 输入 | 执行 |
 |---|---|---|
-| 冷跑 | `db.json`，可选 `--intent`、`--log` | 全部 A 规则；REQ-A01 需要意图中的 `expect`；DOC-A01/DOC-A02 需要导出日志，未给 `--log` 时二者列入“本趟未执行”；给了但内容为空（kicad-cli 导出成功时就是空的）按零命中执行，导出是否成功仍以命令退出码为准；日志按中英文分级：导出错误/中止记 FINDING，批注（位号）错误记 CANDIDATE，其他告警记 INFO，退出码 0 不等于没有告警 |
-| 热跑 | 冷跑输入 + `evidence.json` + `datasheet-audit.json` | 全部 A 规则 + 已提供证据的 E 规则 |
+| 网表扫描 | `db.json`，可选 `--intent`、`--log` | 全部 A 规则；REQ-A01 需要意图中的 `expect`；DOC-A01/DOC-A02 需要导出日志，未给 `--log` 时二者列入“本趟未执行”；给了但内容为空（kicad-cli 导出成功时就是空的）按零命中执行，导出是否成功仍以命令退出码为准；日志按中英文分级：导出错误/中止记 FINDING，批注（位号）错误记 CANDIDATE，其他告警记 INFO，退出码 0 不等于没有告警 |
+| 证据扫描 | 网表扫描输入 + `evidence.json` + `datasheet-audit.json` | 全部 A 规则 + 已提供证据的 E 规则 |
 | 改版比对 | 旧/新 `db.json`、旧计划、历史意见断言 | REQ-H01（`diff_netlists.py`）与改版影响清单 |
 
 **输出分三类**：`FINDING` 是疑似缺陷，逐条排除；`CANDIDATE` 是待资料取证定夺的优先级清单，直接
@@ -26,7 +26,7 @@ E 规则的每条结果另记 `check_results`（PASS/FAIL/INSUFFICIENT）与 `pa
 **未执行不等于通过**：`lint.py` 每次在末尾列出本次没执行的规则及原因（缺 `--intent`、未提供证据）。
 扫出 0 条与根本没扫，输出必须能区分。
 
-**命名检出不等于功能适用**：名称候选先确认实际角色/模式，再展开审查科目；
+**命名检出不等于功能适用**：名称候选先确认实际角色/模式，再展开电路检查项；
 已有资料尚未阅读或计算时列审查待完成，补证尺度见 [最小充分证据](evidence-proportionality.md)。
 
 **未检出特征不等于不适用**：网表检测不到 DDR/RF 等关键字时，对应功能电路列入 REQ-Q08 待确认；
@@ -163,7 +163,7 @@ DEV-C05 逐项核。
 不是电气求解器，也不产生准出结论。加一个检查器只需新增模块并登记到
 `scripts/checkers/__init__.py` 的 `REGISTRY`，计划、lint 与校验都按注册表遍历。
 
-### 共用契约
+### 共用约定
 
 以下规则对所有检查器一致，各节不再重复。
 
@@ -205,6 +205,10 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 
 第一步，审查者读手册，在 `intent.device_kinds.<ref>` 写下声明：`kind`、`page`、`quote`。
 - `kind`：bjt/mosfet/diode/zener/tvs/opto/bridge_rectifier/transformer/connector 等，与检查器的器件类别一致。
+  集成电路声明它的**角色**（`board_intent.IC_KINDS`）：pwm_controller、gate_driver、sr_controller、pd_controller、
+  regulator、supervisor、opamp_comparator、shunt_reference、mcu、transceiver、isolator；手册标题没有这些角色的才写
+  泛称 `ic`。角色决定哪些 IC 是电路候选的核心器件（`ANCHOR_KINDS`：除 isolator 与 ic 之外的全部角色），
+  所以 U/M 位号与 Q/D 位号一样，没有核验过的类别就在 DEV-D02 登记 `intent.device_kinds.<ref>` 缺口。
   核验通过的 bridge_rectifier/transformer/connector 没有需要 IC 旁路的供电脚，不再留 PWR-D01 的 `unverified-device-pinout` 缺口；
   极性、绕组、额定、绝缘与针表仍由各自检查核对。
 - `page`：手册页码，从 1 开始。
@@ -214,11 +218,17 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 - 原文确实在该页上；
 - 原文本身写明了所声明的类型，例如 NPN/bipolar、MOSFET/N-channel、Zener、TVS/ESD protection、rectifier/diode/Schottky、bridge rectifier、transformer、connector/receptacle/terminal block；
 - 原文没有同时指向别的类型，例如把 “ESD Protection Diode” 声明为普通二极管，判为 QUOTE_CONFLICT。
+  IC 角色由标题词判定（PWM/PFC/flyback/current-mode controller、gate driver、synchronous rectifier controller、
+  USB PD / Type-C controller、voltage regulator / LDO / DC-DC converter、supervisor / voltage monitor / watchdog、
+  operational amplifier / comparator、shunt regulator / voltage reference、microcontroller、transceiver / PHY、
+  digital isolator）；角色词同句里的 MOSFET、rectifier 是它驱动的负载，不算冲突；“microprocessor supervisor”
+  不是 MCU，“optoisolator” 是光耦不是隔离器。声明为泛称 `ic` 的原文若写明了某个角色，判 QUOTE_CONFLICT，
+  要求改声明为该角色。
 
 核验结果写入审计的 `device_kinds` 段：
 - 状态为 VERIFIED / QUOTE_NOT_FOUND / QUOTE_LACKS_TYPE / QUOTE_CONFLICT / NO_DOCUMENT / NO_TEXT。
 - 通过时附手册 SHA-256。
-- 未声明的分立半导体标 UNDECLARED，附首页候选类型和所在行，只作提示。
+- 未声明的分立半导体和集成电路标 UNDECLARED，附首页候选类型和所在行，只作提示。
 
 只有 VERIFIED 的声明会进入分析（basis `datasheet`），并随清单上下文保存为 `device_kinds_verified`。该字段由工具生成，intent 中手写会被拒绝。未核验、核验失败或抽取不到文本时，一律按缺口处理，不会因为抽取出错得出结论。
 
@@ -229,10 +239,44 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 
 依据为后两种时不能作为结论：
 - 功率开关登记 `datasheet-kind:<ref>` 缺口，在补上并重生成计划之前不得判 PASS；
-- Q/D/ZD/TVS 位号的 DEV-D02 登记缺口，缺口文字带审计状态和候选类型。
+- Q/D/ZD/TVS/U/M 位号的 DEV-D02 登记缺口，缺口文字带审计状态和候选类型。
   例外：D/ZD/TVS/LED 位号的符号恰有一阳一阴两脚、封装名是两端封装（0402/0603…、SOD、SMA/SMB/SMC、DO、MELF、两引脚 LED_D3/D5mm）时，脚集合由封装决定，DEV-D02 直接就绪，不要求原厂全脚表、确切料号或类型声明；焊盘与阴/阳极标记的对应移交 PCB 阶段。双向两脚（A1/A2 或 1/2）同样按两端封装就绪，实际是单向还是双向由类型/功能检查判定，不属于脚集差。1/2 位单排连接器（封装名含 1x01/1x02，符号脚号恰为 1..N，封装无安装/屏蔽焊盘）同理就绪，脚义由 DEV-D03/DEV-E01 核对。三脚及以上、多焊盘 LED 封装（PLCC、RGB、散热焊盘、带脚数后缀）、带安装或屏蔽焊盘的连接器，或封装名看不出两端时仍登记缺口。
 
 工具不从 PDF 抽数值参数，数值仍按 datasheet-facts 的审查者核对流程处理。
+
+**参考地分区、跨域器件与截止网络**（`checkers/domains.py`，写入 `review-plan.json` 顶层 `domains`，schema 1）：
+电路候选的边界不由审查员画，按连接关系推导。
+- 地 = 名字是地或回流（GND 族、`_RTN`/`_RETURN`、`GND_<域>`）或 `power_rails` 窗口 min = max = 0 的网；
+  域标签取 `power_rails.<地>.domain`，未声明的地按网名各成一域，两个地写同一标签就是一个域。
+- 域 = 经直流导通的器件能到达同一个地的网络集合。电容、变压器、光耦、继电器、晶振、连接器、测试点、
+  电池、未分类器件和核验为 isolator 的 IC 不导通；其余器件在它的全部引脚之间导通。
+  只经电容相连、到不了任何地的网列在 `unreferenced`。
+- 跨域器件（`barriers`）= 引脚跨两个域的已贴器件，带类别和两侧域名：变压器、光耦、Y 电容、数字隔离器。
+- 核心器件（`anchors`）= 角色在 `ANCHOR_KINDS` 的已贴 IC；没有核验角色的 IC 列在 `undeclared_ics`。
+- 截止网络（`rail_stops`）= 候选从核心器件向外走时停下的网：地（`ground`）、IC 输出脚驱动的网
+  （`driver`，沿用 powertree 的来源推导）、声明轨中被两个以上核心器件直接或经一颗两端件到达的网
+  （`anchors:<位号,...>`，经地或伪网的那一跳不算）。只被一个核心器件用的声明轨是那个电路的内部节点，
+  不是截止网络；开关节点永远不是。
+- 冲突只记录，不改声明：导通器件把两个不同标签的地连到一起记 `DOMAIN_MERGED`（带那颗器件），
+  `power_rails.<网>.domain` 与推导不一致记 `DOMAIN_CONFLICT`；两者都进计划的 `diagnostics`。
+
+**电路候选**（`scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json`，
+schema 1，`rules_version` 2026-10-21.1，绑定 `db_sha256` 与 intent 的 `input_sha256`）：电路不由审查员画，由网表、已核实的器件类别和检查器库存生成，
+审查员只做决定（见[计划与结果](plan-and-results.md#一intentjsonschema_version-3)）。
+- 候选 = 类型 + 核心器件，编号 `<类型>-<核心器件>`（链为 `<类型>-<核心器件>.<脚>`），工作态按类型固定（`catalog.CANDIDATE_STATES`：
+  变换器和输入保护 startup/run/fault，USB unattached/attached/fault，ANALOG run/fault，ISOLATION run，STARTUP power-on/restart，DEBUG run）。
+  成员各带 `role`、`via`（走到它的路径，是归属关系，不是导通主张）和 `hops`；页码只作显示，不决定归属。
+- 走线只经两端件（电阻、电容、电感、二极管、保险、压敏、NTC），最多 4 跳（ANALOG 2 跳、输入走线 6 跳），
+  到截止网络、地、其他核心器件、跨域器件即停；截止网络 = `domains.rail_stops` ∪ 地 ∪ 感性负载库存的轨/输出/回流网 ∪ 输入走线的首个储能网，无人驱动的开关算作核心器件重算截止网络。
+- 规则按确定性从高到低：输入保护 `POWER_PROTECTION-<连接器>`（从电源连接器走到首个储能电容或变换器输入轨，桥和四脚共模扼流圈直通，至少含一件保护件）；
+  链 `POWER_PROTECTION-<核心器件>.<脚>` / `STARTUP-<核心器件>.<脚>`（保护脚、启动脚沿两端件和光耦走到截止网络或开关节点，另一核心器件作终点，跨电路）；
+  变换器 `POWER_CONVERTER-<核心器件>`（核心器件 = pwm_controller / sr_controller / regulator / gate_driver 的 IC，或无人驱动、或 `power_switches` 声明了角色而驱动 IC 没有核验角色的开关：
+  所属开关、栅极下拉、吸收网络、感性件与它的其他绕组、绕组上的整流和输出电容、反馈光耦；辅助绕组的整流归它供电的变换器；sr_controller 与声明的同步整流管不收感性件）；
+  隔离 `ISOLATION-<域A>/<域B>`（该域对的全部跨域器件，跨电路）；`ANALOG-<核心器件>`（pd_controller / supervisor / mcu / transceiver 的检测脚，运放、基准的全部信号脚；
+  两地之间的分流电阻）；`USB-<连接器>`（CC/D± 脚一跳、PD 控制器及其 VBUS 开关与钳位）；`DEBUG-BOARD`（测试点、调试连接器，不走线）。
+- 裁决：一件器件两个候选都走到，路径短的得；同距离列入两者并记 `shared`；核心器件不共享；跨电路候选不参与。
+  谁都没走到的已贴器件进 `unassigned`（REQ-Q08 逐颗列出），没核验角色的 IC 和缺引脚名的感性件进 `gaps`。
+- 生成对器件顺序和页码变化是确定的；候选文件随记录打包，改了 db 或 intent 的输入指纹就重新生成、重新决定。
 
 **装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
 与 `citation`。`population` 只接受 JSON `true/false`，缺项表示未知；`jumpers` 按位号填
@@ -661,7 +705,7 @@ ESP32-C3-MINI-1-N4 的 EN8 是复位接收输入（模组 datasheet v2.2，Table
 - 喂狗输入状态：`tied`（直接坐在电源/地上）、`driven`（有其他 IC/连接器脚驱动）、
   `pulled-only`（仅有上/下拉）、`floating`。
 - 轨的监测覆盖分 `sense-pin`、`divider`（经电阻到 sense 网）、`supervisor-supply`（仅供电给监控器，
-  是否等于被监测需资料证据）与未监测。轨本身按电源树识别（见共用契约），逐条记 `basis`；
+  是否等于被监测需资料证据）与未监测。轨本身按电源树识别（见共用约定），逐条记 `basis`；
   只靠轨名认出的轨另记 `rail-identity` 缺口。
 
 自动扫描：`RST-A05` 喂狗输入悬空或固定电平（CANDIDATE）；`RST-A06` 复位/看门狗输出未到任何复位输入
@@ -721,7 +765,7 @@ SENSE/RESET 拓扑。没有 `rail_requirements` 的旧配置保持原扫描与�
 严格正值、有限的实际电阻供入原厂明确内部并联稳压器的实际 `power_in` 物理脚。
 它不加入共享 PowerTree 的等价连通，不改变原生脚型，不把接收脚改成 `power_out`，
 也不证明 VDD、最小偏置、ICC、PG、UVLO、门限、动作、时序或原生零 ERC。
-原有三种来源角色及 0Ω 上游路径的资格保持原合同。
+原有三种来源角色及 0Ω 上游路径的资格保持原约定。
 
 新角色保留已有完整来源器件 `part/prim/value/jedec`、脚名、全原生脚型与出处字段，
 并增加唯一 `feed_provenance` 对象：
@@ -753,7 +797,7 @@ pintype/declared_pintype/declared_pinname/no_connect`。脚集合、互反归网
 仅本角色允许未选供入的 passive 触点带真实 NC marker：它须位于独占 NC 伪网且全声明一致。
 选中的供入触点不得 NC、地、伪网或 active；实体电源网的 NC、不完整或冲突声明不成立。
 同一外供连接器的多个并联供电触点不当作独立多源；另一有受控外供状态声明的连接器/独立来源
-或原生输出源经当前已贴非零电阻、正向二极管及供入链可达目标域也拒绝本单来源合同，
+或原生输出源经当前已贴非零电阻、正向二极管及供入链可达目标域也拒绝本单来源约定，
 不局限于源触点直接位于供入/目标网；装配状态及源带电状态逐一生效。
 额外 MOS/BJT 的 S/D（E/C）及多接点开关可能导通的 bypass 也拒绝，未知控制不等于关断。
 gate/base、继电器线圈、普通 IC 信号脚不当作导通端；未解析的多端 passive 器件跨域可能通路
@@ -765,7 +809,7 @@ gate/base、继电器线圈、普通 IC 信号脚不当作导通端；未解析�
 资格成立时 `source_path` 保留原非零值、实际 receiver `power_in` 与来源 SHA，明确
 `electrical_equivalence=false/performance_guarantee=false`；原 `observation_gaps` 留档。
 清单上下文额外保存实际 `power_sources` 以便重建与过期拒绝，不改变旧角色上下文。
-这仅解除来源身份及明确 `required=false` 的书面监控义务对应缺口，PWR-T04 仍等待审查者核验；
+这仅解除来源身份及明确 `required=false` 的书面监控要求对应缺口，PWR-T04 仍等待审查者核验；
 `required=true` 无实际监控、其他轨/状态、调节与 PG 等独立缺口仍保留，绝不自动形成电气 PASS。
 
 ### 高速差分电平 `diff_levels`
@@ -834,7 +878,7 @@ PASS 不覆盖开关速度、温度角与隔离耐压。
 `scripts/model_bounds.py` 用来复算设计脚本里容易写反的模型，不判通过：`ntc_resistance_bounds` 对 R25 与 B 的四个公差角逐一计算，
 给出 R(T) 最小/最大值及所用角点（25°C 以上最小阻值是 R25min+Bmax），超出 B 值拟合区间或额定温区只标记、不外推；
 `cc_discharge_with_tail` 把恒流放电在合规交界 I×(串阻+尾段电阻) 处切成恒流段与 RC 尾段，尾段电阻须取自器件 I-V 资料。
-DOC-Q01 重放计算合同只说明格式与输入可追溯，**合同有效不等于模型正确**：温度单调方向、公差角点和分段模型的适用区间要另行复算。
+DOC-Q01 重放计算约定只说明格式与输入可追溯，**约定有效不等于模型正确**：温度单调方向、公差角点和分段模型的适用区间要另行复算。
 
 `model_bounds.crm_boost_capacitor_ripple` 核理想 CrM Boost：输入有效值 `input_rms_v`、恒定母线 `bus_v`、
 功率 `power_w`，以及原厂给出的高频相对两倍工频纹波额定系数 `hf_ripple_factor`（默认 1，不给高频增益）。
@@ -878,6 +922,6 @@ reference 另给原厂文件 `sha256`；source 是本地文件路径，locator �
 
 | 类别 | 脚本 |
 |---|---|
-| 入口：执行流程里按顺序调用 | `parse_kicad.py`、`parse_netlist.py`、`lint.py`（冷/热跑，同时生成计划）、`audit_datasheets.py`、`gap_inventory.py`、`calc_claims.py`、`derive_rows.py`（功能判定写完后派生已绑定的行）、`validate_review.py`、`render_report.py`、`pack_review.py`、`diff_netlists.py`；维护时 `catalog.py --write-doc` |
-| 专用工具：特定情形手动调用 | `compare_reviews.py`（两份同板记录按电路对齐，列出结论不同的行、只有一边的发现和待办）、`plan_review.py`（单独重建计划，日常由 `lint.py` 代办）、`calc.py`、`simulate_rc.py`、`solve_dividers.py`（仅探索）、`decoupling.py`、`i2c_topology.py`、`datasheet_facts.py`、`electrical_contract.py`、`reviewed_declarations.py`、`audit_document_summaries.py`、`audit_parameter_claims.py`、`execution_audit.py`（可选自检）、`install_kicad_cli.py` |
+| 入口：执行流程里按顺序调用 | `parse_kicad.py`、`parse_netlist.py`、`lint.py`（网表扫描和证据扫描，同时生成计划）、`audit_datasheets.py`、`gap_inventory.py`、`calc_claims.py`、`derive_rows.py`（功能判定写完后派生已绑定的行）、`validate_review.py`、`render_report.py`、`pack_review.py`、`diff_netlists.py`；维护时 `catalog.py --write-doc` |
+| 专用工具：特定情形手动调用 | `compare_reviews.py`（两份同板记录先按检查项标识严格配对，报配对率、已答比例、一致率、通过对失败和严重分歧；按电路对齐的结果只作建议配对，`--alias` 加入经核实的别名）、`plan_review.py`（单独重建计划，日常由 `lint.py` 代办）、`calc.py`、`simulate_rc.py`、`solve_dividers.py`（仅探索）、`decoupling.py`、`i2c_topology.py`、`datasheet_facts.py`、`electrical_contract.py`、`reviewed_declarations.py`、`audit_document_summaries.py`、`audit_parameter_claims.py`、`execution_audit.py`（可选自检）、`install_kicad_cli.py` |
 | 库：只被导入 | `results_model.py`、`review_functions.py`（功能判定校验 F1–F12）、`review_engine.py`、`skill_identity.py`、`board_intent.py`、`board_scans.py`、`page_inventory.py`、`datasheet_kinds.py`、`design_preflight.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`revision_impact.py`、`requirement_clarifications.py`、`task_scope.py`、`validate_remediation.py`、`asg_summary_adapter.py`、计算模块（`circuit_bounds.py`、`model_bounds.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`）、`checkers/` |

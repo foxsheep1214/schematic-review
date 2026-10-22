@@ -1,0 +1,15 @@
+{
+ "revision": "circuit-candidates-v1",
+ "parents": {
+  "revisions/state-invariant-v1/expected.json": "50498805c5d4e329778c41d504aae1851aad7696c3a0867e87c8195a4c236450",
+  "revisions/state-invariant-v1/cases.json": "c5befd8a24785ce259b41c5ac9b07b2e6c0961976a5a32c2c6f65502b5cca206",
+  "revisions/state-invariant-v1/sources.json": "741eb7de9f06bf81f3f4005def4316f3ee9f52f95756d1c98757eabc8596e259",
+  "revisions/state-invariant-v1/manifest.json": "792e945fcd895983a19b4d74a19ac2261004d1db41e3e70044fe2dda93f61f4d"
+ },
+ "derived_files": {
+  "revisions/circuit-candidates-v1/expected.json": "c536ebbd667e2837ec8fb74e4f7d1e7892a6d0ee9d937ceb22729315eb99f910",
+  "revisions/circuit-candidates-v1/cases.json": "653b4620b5b23db09d0d15c442bad1d6f0c97f305688276dccdb38b42df42f9d",
+  "revisions/circuit-candidates-v1/sources.json": "434e123cd8efac8fe21ed6533611507d7eafbf1ca83adde8f668d7e07cdfb088"
+ },
+ "scope": "intent.circuits 由 record/circuit-candidates.json 与 intent.circuit_decisions 推出，lint --candidates 必需，手画电路列表被拒绝：rf1-c2000-float-flyback-frames 改用候选文件与 4 条决定，电路 3→1、检查数 325→313、FN-PRI-FLYBACK 成员 10→15（三态）；其余用例与字段不变。state-invariant-v1 文件保持原字节。"
+}

@@ -25,10 +25,15 @@ BATTERY, BRIDGE_RECTIFIER = 'battery', 'bridge_rectifier'
 KIND_CONSTANTS = {k: k for k in (RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER, MOSFET, BJT,
                                  RELAY, OPTO, CRYSTAL, TRANSFORMER, FUSE, JUMPER, TESTPOINT, SWITCH,
                                  IC, CONNECTOR, BATTERY, BRIDGE_RECTIFIER, UNKNOWN)}
+# A datasheet-declared IC role (board_intent.IC_KINDS) classifies as IC; the role itself is read with
+# NetGraph.role_kind. ANCHOR_ROLES are the roles a circuit candidate is built around.
+IC_ROLES = frozenset({'pwm_controller', 'gate_driver', 'sr_controller', 'pd_controller', 'regulator', 'supervisor',
+                      'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver', 'isolator', IC})
+ANCHOR_ROLES = IC_ROLES - {'isolator', IC}
 
 PREFIX_KINDS = (
     (r'^JP\d', JUMPER), (r'^TP\d', TESTPOINT), (r'^FB\d', FERRITE),
-    (r'^R\d', RESISTOR), (r'^RN\d', RESISTOR), (r'^C\d', CAPACITOR),
+    (r'^R\d', RESISTOR), (r'^RN\d', RESISTOR), (r'^C\d', CAPACITOR), (r'^C[XY]\d', CAPACITOR),
     (r'^L\d', INDUCTOR), (r'^D\d', DIODE), (r'^Q\d', MOSFET),
     (r'^K\d', RELAY), (r'^Y\d', CRYSTAL), (r'^X\d', CRYSTAL),
     (r'^T\d', TRANSFORMER), (r'^F\d', FUSE), (r'^SW\d', SWITCH),
@@ -192,7 +197,7 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     """
     if declared:
         # Declared kinds come from JSON; return the module constant so identity checks agree.
-        kind = KIND_CONSTANTS.get(declared, declared)
+        kind = IC if declared in IC_ROLES else KIND_CONSTANTS.get(declared, declared)
         sig = pin_signature(pin_names)
         if kind in (MOSFET, BJT) and sig and sig != kind:
             return UNKNOWN, f'datasheet says {kind} but symbol pin names say {sig}'
@@ -343,6 +348,15 @@ class NetGraph:
     def basis(self, ref):
         self.kind(ref)
         return self._kinds[ref][1]
+
+    def role_kind(self, ref):
+        """The datasheet-verified IC role (board_intent.IC_KINDS), or None for an undeclared or non-IC part."""
+        declared = (self.db.get('device_kinds') or {}).get(ref, {}).get('kind')
+        return declared if declared in IC_ROLES and self.kind(ref) == IC else None
+
+    def is_anchor(self, ref):
+        """A fitted IC whose verified role can anchor a circuit candidate."""
+        return self.is_fitted(ref) and self.role_kind(ref) in ANCHOR_ROLES
 
     def qualified_connector_contact(self, ref):
         """Whether part identity supports an intentionally unused passive contact.

@@ -274,7 +274,7 @@ def materialize_evidence(db, evidence, audit, facts_path):
 def _report(rows):
     return {'schema_version': 1, 'checks': rows,
             'affected_check_ids': [row['check_id'] for row in rows if row['gaps']],
-            'scope': '仅 Vref 参数复用/失效影响；不是热跑就绪或电气 PASS/准出结论'}
+            'scope': '仅 Vref 参数复用/失效影响；不是证据扫描就绪或电气 PASS/准出结论'}
 
 
 def check_bindings(db, evidence, audit):

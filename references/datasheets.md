@@ -1,6 +1,6 @@
 # 器件资料与证据计算
 
-本页覆盖三件事：资料覆盖审计与补取（`audit_datasheets.py`）、证据计算的保证值契约（`evidence.json`，方式 E）、PWR-E01 的 Vref 参数复用（`datasheet_facts.py`）。资料只描述“应当怎样”；当前网表/BOM 证明“实际怎样”。
+本页覆盖三件事：资料覆盖审计与补取（`audit_datasheets.py`）、证据计算的保证值约定（`evidence.json`，方式 E）、PWR-E01 的 Vref 参数复用（`datasheet_facts.py`）。资料只描述“应当怎样”；当前网表/BOM 证明“实际怎样”。
 
 ## 一、资料覆盖审计与补取
 
@@ -57,7 +57,7 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
 datasheet-audit.json 存在时，它覆盖
 intent.materials.datasheets.available 这个全局布尔值，并按位号控制 DEV-D01
 准备度。状态不是 AVAILABLE 的物料，依赖其 datasheet 的自动准备度仍为 WAITING_EVIDENCE；
-这不直接判定所有审查者检查的电气结果。T/C/D 按具体主张核实补充证据，自动 E 仍遵守保证值契约。
+这不直接判定所有审查者检查的电气结果。T/C/D 按具体主张核实补充证据，自动 E 仍遵守保证值约定。
 计划与 lint 还会核对审计里的物料/位号是否与当前 db.json 一致。
 
 ### Audit 状态
@@ -139,7 +139,7 @@ Agent 汇总 datasheet-audit.json.user_messages 的缺失物料/位号及检索�
 手册电气表里不利方向上相邻的测试点、手册后部的典型曲线（转移特性、栅电荷、VF–IF–温度、CTR–IF）、厂家网站或样本的
 特性表（NTC 的逐度 R-T 表、电解电容的 ESR/纹波频率系数表、保险丝 I²t 曲线）、厂家应用笔记里的损耗与降额公式。
 这些是下载和阅读，不是索取；找到的界写进功能判定的 `conditions` 和 `worst_case.bound`，翻过而没有的写进 `curves_checked`。
-`acquisition` 写“向 X 取得本机工况下的保证”而公开表已能夹界的，是检索未完成（REVIEW_INCOMPLETE），不是缺资料。
+`acquisition` 写“向 X 取得本机工况下的保证”而公开表已能夹出界限的，是检索未完成（REVIEW_INCOMPLETE），不是缺资料。
 
 按 [逐参数补证与替代](evidence-proportionality.md#原定资料取不到时) 记录其他证据；
 同系列、近似后缀资料可辅助分析，但不得冒充原器件 datasheet 或更改身份/保证范围。
@@ -165,9 +165,9 @@ evidence.basis.sources 还须记录确切的身份解释和实际文档指纹。
 订货表匹配实际后缀/封装，不要求系列文档标题逐字等于每个订货号。
 
 临时下载可放 /tmp；最终引用的 PDF、审计及补取记录须保存到项目审查目录，并更新文档
-路径。文档内容不变时指纹不变；路径不存在会使热跑保持证据不足，不能只交临时目录中的证据。
+路径。文档内容不变时指纹不变；路径不存在会使证据扫描保持证据不足，不能只交临时目录中的证据。
 
-## 二、证据计算契约（evidence schema_version 2）
+## 二、证据计算约定（evidence schema_version 2）
 
 `evidence.json` 为证据计算规则（[规则总表](check-catalog.md)中方式为 E 的规则）提供带出处的保证值。
 `schema_version` 必须为 2。缺少依赖、保证范围或状态时不执行计算，输出逐项 INSUFFICIENT（例外见 [自动证据计算的例外](evidence-proportionality.md#自动证据计算的例外)）。
@@ -175,7 +175,7 @@ evidence.basis.sources 还须记录确切的身份解释和实际文档指纹。
 每项 id 唯一、citation 可定位。证据计算结果不是整板准出。
 
 缺原厂 datasheet 时，[逐参数补证与替代](evidence-proportionality.md#原定资料取不到时)
-用于审查者 T/C/D 取证与条件计算，不扩展本自动契约。相似型号参数、反算要求或样本实测值
+用于审查者 T/C/D 取证与条件计算，不扩展本自动约定。相似型号参数、反算要求或样本实测值
 不能冒充本器件保证值；其他文档不满足既有 AVAILABLE/来源绑定要求时，不强行填入 E。
 审查者结论引用实际证据并说明覆盖差异，自动 E 缺口如实保留。
 
@@ -201,7 +201,7 @@ basis 包含：
 python3 scripts/electrical_contract.py db.json --document /tmp/codex-work/task/datasheets/part.pdf
 ```
 
-热跑命令见 [SKILL.md](../SKILL.md)；额外关键物料通过
+证据扫描命令见 [SKILL.md](../SKILL.md)；额外关键物料通过
 `audit_datasheets.py --require-ref L1 --require-ref F1` 加入依赖，相关来源仍须写回 evidence。
 
 audit 按需覆盖依赖位号。NOT_FOUND 必须先记录 LCSC/立创与原厂检索；MISSING/
@@ -251,7 +251,7 @@ NEEDS_VERIFICATION/NOT_FOUND 均不能让依赖检查变 READY。无关物料缺
 电阻公差从各 VALUE 提取。resistor_tolerance 是有 BOM/采购规格支持时才可显式设置的
 统一回退值；不覆盖已写明的单颗公差。共享支路/桥式正电阻网络可在完整模型与来源绑定
 下走线性节点分析，规模、角点与数值边界见 [wca-formulas.md](wca-formulas.md)。
-未知支路、多参考域、0Ω、未解析电阻或超限继续 INSUFFICIENT。ignored_nodes 只允许
+未知支路、多参考地分区、0Ω、未解析电阻或超限继续 INSUFFICIENT。ignored_nodes 只允许
 已说明输入负载的 U/M 和 DC 下已证明可忽略的 C 节点，新节点路径的 U/M 必须位于 FB 网，
 不支持用该字段绕过中间输入电流或 Q/D。给定 reference_net 为计算的零点，
 它与实际负载地的偏差另建检查；不把 PGND/AGND 等名称视作同一网。
@@ -308,7 +308,7 @@ kind=operating_range、`ref`、所接轨 `net` 与 `supply_v`（资料保证的�
 
 ### 检查器的证据计算规则
 
-检查器的证据计算规则与上列规则同一契约：同样要 id/rule/kind/citation、目标坐标、
+检查器的证据计算规则与上列规则同一约定：同样要 id/rule/kind/citation、目标坐标、
 depends_on 与 basis，同样按资料审计绑定文档。差别只在各自的保证值字段——**缺任一项即
 INSUFFICIENT，不得用典型值、经验值或"常见做法"顶替**；比值/系数类门槛（体电容比、CTR
 寿命衰减）必须来自项目规定。各规则字段：
@@ -401,7 +401,7 @@ lint.json 的 check_results 每条保留 check_id、review_result、detail/citat
 
 ### 2. 为本次检查声明身份与请求工况
 
-仍按上文证据计算契约建 `basis` 和全部依赖。
+仍按上文证据计算约定建 `basis` 和全部依赖。
 在目标 `basis.sources` 项添加 `mpn`、`package`：它们是按当前 BOM/订货表核实的精确
 身份，**不是**工具自动识别的结果。原 `identity_resolution` 必须解释 VALUE/PART/PRIM/
 JEDEC 与真实订货码/封装的对应及冲突解决；仅把事实里的型号复制过来不算身份核对。
@@ -431,7 +431,7 @@ PWR-E01 检查加以下请求，可暂不填写 `vref`：
 请求必须来自本次真实工况，与 `basis.state`、需求和实际配置相符，不从状态文字猜测。
 目标必须是本检查反馈器件；多对象/多工况各自建检查 ID，多个 ID 可以复用同一 fact。
 
-### 3. 生成证据，再用原热跑流程
+### 3. 生成证据，再用原证据扫描流程
 
 以下命令的脚本路径按技能安装位置调整，输入/输出路径指向项目审查目录。
 输出和报告必须使用**尚不存在的新文件名**，不要将项目证据写进技能仓库。
@@ -452,10 +452,10 @@ python3 scripts/datasheet_facts.py materialize db.json \
 退出 0 仅表示请求的 Vref 已物化，不保证偏置/公差/模型就绪，更不是电气 PASS。
 
 再按 SKILL.md 对生成的 evidence.json 执行原有 lint/计划合并与独立结果校验。
-计划和热跑每次都重读事实、复核 PDF 内容和唯一适用性；值被手改、记录变化、新增冲突
+计划和证据扫描每次都重读事实、复核 PDF 内容和唯一适用性；值被手改、记录变化、新增冲突
 记录、对象/状态/条件/来源变化、PDF 缺失或变更均使使用者回到证据不足。原来的依赖、
 公差、模型及准出门保留；未使用事实字段的手工 evidence 不受影响。
-资料审计、物化、检查、计划和热跑共用严格 JSON 读取器，重复键不会被“最后一个值”
+资料审计、物化、检查、计划和证据扫描共用严格 JSON 读取器，重复键不会被“最后一个值”
 静默覆盖；该类歧义输入退出 2，不生成新结果。物化与下游也共用物理脚/网络一致性检查。
 
 ### 4. 查看失效影响
@@ -468,5 +468,5 @@ python3 scripts/datasheet_facts.py check db.json \
 
 只读输入，列出**这份 evidence 中**所有事实使用者及失效原因；不会扫描其他项目，
 不会修改历史结果或自动准出。PDF/事实/工况变更后先核对原件、更新事实及 audit/basis，
-再生成新版本 evidence，重新热跑并复核受影响的最终结果；不能只刷新哈希解除阻断。
+再生成新版本 evidence，重新证据扫描并复核受影响的最终结果；不能只刷新哈希解除阻断。
 项目搬迁后重新物化以更新绝对路径。事实和原件持久保存在项目，不放进全局技能缓存。

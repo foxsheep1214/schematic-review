@@ -1,0 +1,1255 @@
+{
+ "schema_version": 1,
+ "rules_version": "2026-10-21.1",
+ "db_sha256": "d3c481f4dc7f6318ffb37af68d19f982fde59bba5bdfc8c60188b23d48021d2f",
+ "input_sha256": "73f5a4b872f03aa8df8fdb8409baa9f354a297f41319380e8ceb9e8bb2a3de59",
+ "domains": {
+  "grounds": {
+   "GND": "GND",
+   "GND_CTRL": "GND_CTRL"
+  },
+  "barriers": [],
+  "anchors": {},
+  "rail_stops": {
+   "GND": "ground",
+   "GND_CTRL": "ground",
+   "Net-(U10-OUT)": "driver",
+   "PWM_PRI_OUT": "driver",
+   "RAIL_3V3_PRI": "driver",
+   "RAIL_3V3_SEC": "driver",
+   "RAIL_8V25": "driver"
+  },
+  "conflicts": [
+   {
+    "code": "DOMAIN_MERGED",
+    "domains": [
+     "GND",
+     "GND_CTRL"
+    ],
+    "via": [
+     "U10"
+    ]
+   }
+  ]
+ },
+ "stops": [
+  "GND",
+  "GND_CTRL",
+  "Net-(U10-OUT)",
+  "PWM_PRI_OUT",
+  "RAIL_3V3_PRI",
+  "RAIL_3V3_SEC",
+  "RAIL_8V25",
+  "VIN"
+ ],
+ "candidates": [
+  {
+   "id": "POWER_CONVERTER-Q1",
+   "type": "POWER_CONVERTER",
+   "anchor": "Q1",
+   "domain": "GND",
+   "cross_cutting": false,
+   "nets": {
+    "output": "ISENSE_P",
+    "input": "VIN",
+    "switch": "SW_PRI"
+   },
+   "states": [
+    "startup",
+    "run",
+    "fault"
+   ],
+   "members": [
+    {
+     "ref": "C3",
+     "role": "capacitor",
+     "via": "walk T1.4 -> VOUT_P -> C3"
+    },
+    {
+     "ref": "C4",
+     "role": "capacitor",
+     "via": "walk T1.4 -> VOUT_P -> C4"
+    },
+    {
+     "ref": "C40",
+     "role": "capacitor",
+     "via": "walk T1.4 -> VOUT_P -> R9 -> HV_BIAS -> R22 -> BIAS_SENSE -> C40"
+    },
+    {
+     "ref": "C43",
+     "role": "capacitor",
+     "via": "walk T1.4 -> VOUT_P -> C43"
+    },
+    {
+     "ref": "C44",
+     "role": "capacitor",
+     "via": "walk T1.4 -> VOUT_P -> C44"
+    },
+    {
+     "ref": "D1",
+     "role": "snubber",
+     "via": "power_switch:Q1-GATE-Q1 snubber clamp-tvs"
+    },
+    {
+     "ref": "D3",
+     "role": "tvs",
+     "via": "walk T1.4 -> VOUT_P -> R9 -> HV_BIAS -> D3"
+    },
+    {
+     "ref": "Out1",
+     "role": "connector",
+     "via": "walk T1.4 -> VOUT_P -> Out1"
+    },
+    {
+     "ref": "Q1",
+     "role": "anchor",
+     "via": "anchor:discrete switch nobody drives"
+    },
+    {
+     "ref": "R11",
+     "role": "resistor",
+     "via": "walk Q1.1 -> GATE_Q1 -> R11"
+    },
+    {
+     "ref": "R13",
+     "role": "resistor",
+     "via": "walk T1.4 -> VOUT_P -> R13"
+    },
+    {
+     "ref": "R19",
+     "role": "resistor",
+     "via": "walk Q1.3 -> ISENSE_P -> R19"
+    },
+    {
+     "ref": "R22",
+     "role": "resistor",
+     "via": "walk T1.4 -> VOUT_P -> R9 -> HV_BIAS -> R22"
+    },
+    {
+     "ref": "R23",
+     "role": "resistor",
+     "via": "walk T1.4 -> VOUT_P -> R9 -> HV_BIAS -> R22 -> BIAS_SENSE -> R23"
+    },
+    {
+     "ref": "R7",
+     "role": "gate_pull",
+     "via": "power_switch:Q1-GATE-Q1 gate_pull"
+    },
+    {
+     "ref": "R9",
+     "role": "resistor",
+     "via": "walk T1.4 -> VOUT_P -> R9"
+    },
+    {
+     "ref": "T1",
+     "role": "inductive",
+     "via": "power_switch:Q1-GATE-Q1 switch_node_evidence inductive:T1"
+    }
+   ],
+   "pages": [
+    3,
+    4,
+    5
+   ]
+  },
+  {
+   "id": "POWER_CONVERTER-Q2",
+   "type": "POWER_CONVERTER",
+   "anchor": "Q2",
+   "domain": "GND",
+   "cross_cutting": false,
+   "nets": {
+    "output": "VOUT_N",
+    "input": "SW_SEC",
+    "switch": "SW_SEC"
+   },
+   "states": [
+    "startup",
+    "run",
+    "fault"
+   ],
+   "members": [
+    {
+     "ref": "C18",
+     "role": "capacitor",
+     "via": "walk Q2.3 -> VOUT_N -> C18"
+    },
+    {
+     "ref": "C23",
+     "role": "capacitor",
+     "via": "walk Q2.3 -> VOUT_N -> C23"
+    },
+    {
+     "ref": "C3",
+     "role": "capacitor",
+     "via": "walk Q2.3 -> VOUT_N -> C3"
+    },
+    {
+     "ref": "C4",
+     "role": "capacitor",
+     "via": "walk Q2.3 -> VOUT_N -> C4"
+    },
+    {
+     "ref": "C40",
+     "role": "capacitor",
+     "via": "walk Q2.3 -> VOUT_N -> R10 -> HV_BIAS -> R22 -> BIAS_SENSE -> C40"
+    },
+    {
+     "ref": "C42",
+     "role": "capacitor",
+     "via": "walk Q2.3 -> VOUT_N -> C42"
+    },
+    {
+     "ref": "C43",
+     "role": "capacitor",
+     "via": "walk Q2.3 -> VOUT_N -> C43"
+    },
+    {
+     "ref": "C44",
+     "role": "capacitor",
+     "via": "walk Q2.3 -> VOUT_N -> C44"
+    },
+    {
+     "ref": "C45",
+     "role": "capacitor",
+     "via": "walk Q2.3 -> VOUT_N -> C45"
+    },
+    {
+     "ref": "D3",
+     "role": "tvs",
+     "via": "walk Q2.3 -> VOUT_N -> R10 -> HV_BIAS -> D3"
+    },
+    {
+     "ref": "D4",
+     "role": "snubber",
+     "via": "power_switch:Q2-GATE-Q2 snubber clamp-tvs"
+    },
+    {
+     "ref": "Out1",
+     "role": "connector",
+     "via": "walk Q2.3 -> VOUT_N -> Out1"
+    },
+    {
+     "ref": "Q2",
+     "role": "anchor",
+     "via": "anchor:discrete switch nobody drives"
+    },
+    {
+     "ref": "R10",
+     "role": "resistor",
+     "via": "walk Q2.3 -> VOUT_N -> R10"
+    },
+    {
+     "ref": "R12",
+     "role": "resistor",
+     "via": "walk Q2.1 -> GATE_Q2 -> R12"
+    },
+    {
+     "ref": "R14",
+     "role": "resistor",
+     "via": "walk Q2.3 -> VOUT_N -> R14"
+    },
+    {
+     "ref": "R22",
+     "role": "resistor",
+     "via": "walk Q2.3 -> VOUT_N -> R10 -> HV_BIAS -> R22"
+    },
+    {
+     "ref": "R23",
+     "role": "resistor",
+     "via": "walk Q2.3 -> VOUT_N -> R10 -> HV_BIAS -> R22 -> BIAS_SENSE -> R23"
+    },
+    {
+     "ref": "R8",
+     "role": "gate_pull",
+     "via": "power_switch:Q2-GATE-Q2 gate_pull"
+    }
+   ],
+   "pages": [
+    3,
+    4,
+    5
+   ]
+  },
+  {
+   "id": "POWER_CONVERTER-Q3",
+   "type": "POWER_CONVERTER",
+   "anchor": "Q3",
+   "domain": "GND",
+   "cross_cutting": false,
+   "nets": {
+    "output": "CS_TOP",
+    "input": "HV80_IN",
+    "switch": "HV80_IN"
+   },
+   "states": [
+    "startup",
+    "run",
+    "fault"
+   ],
+   "members": [
+    {
+     "ref": "J1",
+     "role": "connector",
+     "via": "walk Q3.3 -> HV80_IN -> J1"
+    },
+    {
+     "ref": "Q3",
+     "role": "anchor",
+     "via": "anchor:discrete switch nobody drives"
+    },
+    {
+     "ref": "R26",
+     "role": "gate_pull",
+     "via": "power_switch:Q3-CS-GATE gate_pull"
+    }
+   ],
+   "pages": [
+    5
+   ]
+  },
+  {
+   "id": "POWER_CONVERTER-Q4",
+   "type": "POWER_CONVERTER",
+   "anchor": "Q4",
+   "domain": "GND",
+   "cross_cutting": false,
+   "nets": {
+    "output": "CS_EMIT",
+    "input": "CS_GATE",
+    "switch": "CS_GATE"
+   },
+   "states": [
+    "startup",
+    "run",
+    "fault"
+   ],
+   "members": [
+    {
+     "ref": "C40",
+     "role": "capacitor",
+     "via": "walk Q4.2 -> CS_EMIT -> R25 -> HV_BIAS -> R22 -> BIAS_SENSE -> C40"
+    },
+    {
+     "ref": "D3",
+     "role": "tvs",
+     "via": "walk Q4.2 -> CS_EMIT -> R25 -> HV_BIAS -> D3"
+    },
+    {
+     "ref": "Q4",
+     "role": "anchor",
+     "via": "anchor:discrete switch nobody drives"
+    },
+    {
+     "ref": "R22",
+     "role": "resistor",
+     "via": "walk Q4.2 -> CS_EMIT -> R25 -> HV_BIAS -> R22"
+    },
+    {
+     "ref": "R23",
+     "role": "resistor",
+     "via": "walk Q4.2 -> CS_EMIT -> R25 -> HV_BIAS -> R22 -> BIAS_SENSE -> R23"
+    },
+    {
+     "ref": "R25",
+     "role": "resistor",
+     "via": "walk Q4.2 -> CS_EMIT -> R25"
+    }
+   ],
+   "pages": [
+    5
+   ]
+  },
+  {
+   "id": "POWER_PROTECTION-Out1",
+   "type": "POWER_PROTECTION",
+   "anchor": "Out1",
+   "domain": "GND",
+   "cross_cutting": false,
+   "nets": {
+    "storage": "RAIL_3V3_SEC"
+   },
+   "states": [
+    "startup",
+    "run",
+    "fault"
+   ],
+   "members": [
+    {
+     "ref": "C18",
+     "role": "capacitor",
+     "via": "walk Out1.2 -> VOUT_N -> C18"
+    },
+    {
+     "ref": "C23",
+     "role": "capacitor",
+     "via": "walk Out1.2 -> VOUT_N -> C23"
+    },
+    {
+     "ref": "C3",
+     "role": "capacitor",
+     "via": "walk Out1.1 -> VOUT_P -> C3"
+    },
+    {
+     "ref": "C4",
+     "role": "capacitor",
+     "via": "walk Out1.1 -> VOUT_P -> C4"
+    },
+    {
+     "ref": "C40",
+     "role": "capacitor",
+     "via": "walk Out1.1 -> VOUT_P -> R9 -> HV_BIAS -> R22 -> BIAS_SENSE -> C40"
+    },
+    {
+     "ref": "C42",
+     "role": "capacitor",
+     "via": "walk Out1.2 -> VOUT_N -> C42"
+    },
+    {
+     "ref": "C43",
+     "role": "capacitor",
+     "via": "walk Out1.1 -> VOUT_P -> C43"
+    },
+    {
+     "ref": "C44",
+     "role": "capacitor",
+     "via": "walk Out1.1 -> VOUT_P -> C44"
+    },
+    {
+     "ref": "C45",
+     "role": "capacitor",
+     "via": "walk Out1.2 -> VOUT_N -> C45"
+    },
+    {
+     "ref": "D3",
+     "role": "protective",
+     "via": "walk Out1.1 -> VOUT_P -> R9 -> HV_BIAS -> D3"
+    },
+    {
+     "ref": "Out1",
+     "role": "connector",
+     "via": "anchor:input connector"
+    },
+    {
+     "ref": "R10",
+     "role": "resistor",
+     "via": "walk Out1.2 -> VOUT_N -> R10"
+    },
+    {
+     "ref": "R13",
+     "role": "resistor",
+     "via": "walk Out1.1 -> VOUT_P -> R13"
+    },
+    {
+     "ref": "R14",
+     "role": "resistor",
+     "via": "walk Out1.2 -> VOUT_N -> R14"
+    },
+    {
+     "ref": "R22",
+     "role": "resistor",
+     "via": "walk Out1.1 -> VOUT_P -> R9 -> HV_BIAS -> R22"
+    },
+    {
+     "ref": "R23",
+     "role": "resistor",
+     "via": "walk Out1.1 -> VOUT_P -> R9 -> HV_BIAS -> R22 -> BIAS_SENSE -> R23"
+    },
+    {
+     "ref": "R9",
+     "role": "resistor",
+     "via": "walk Out1.1 -> VOUT_P -> R9"
+    }
+   ],
+   "pages": [
+    3,
+    4,
+    5
+   ]
+  }
+ ],
+ "shared": [
+  {
+   "ref": "C18",
+   "candidates": [
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> C18",
+    "POWER_PROTECTION-Out1": "walk Out1.2 -> VOUT_N -> C18"
+   }
+  },
+  {
+   "ref": "C23",
+   "candidates": [
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> C23",
+    "POWER_PROTECTION-Out1": "walk Out1.2 -> VOUT_N -> C23"
+   }
+  },
+  {
+   "ref": "C3",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> C3",
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> C3",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> C3"
+   }
+  },
+  {
+   "ref": "C4",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> C4",
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> C4",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> C4"
+   }
+  },
+  {
+   "ref": "C40",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_CONVERTER-Q2",
+    "POWER_CONVERTER-Q4",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> R9 -> HV_BIAS -> R22 -> BIAS_SENSE -> C40",
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> R10 -> HV_BIAS -> R22 -> BIAS_SENSE -> C40",
+    "POWER_CONVERTER-Q4": "walk Q4.2 -> CS_EMIT -> R25 -> HV_BIAS -> R22 -> BIAS_SENSE -> C40",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> R9 -> HV_BIAS -> R22 -> BIAS_SENSE -> C40"
+   }
+  },
+  {
+   "ref": "C42",
+   "candidates": [
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> C42",
+    "POWER_PROTECTION-Out1": "walk Out1.2 -> VOUT_N -> C42"
+   }
+  },
+  {
+   "ref": "C43",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> C43",
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> C43",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> C43"
+   }
+  },
+  {
+   "ref": "C44",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> C44",
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> C44",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> C44"
+   }
+  },
+  {
+   "ref": "C45",
+   "candidates": [
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> C45",
+    "POWER_PROTECTION-Out1": "walk Out1.2 -> VOUT_N -> C45"
+   }
+  },
+  {
+   "ref": "D3",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_CONVERTER-Q2",
+    "POWER_CONVERTER-Q4",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> R9 -> HV_BIAS -> D3",
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> R10 -> HV_BIAS -> D3",
+    "POWER_CONVERTER-Q4": "walk Q4.2 -> CS_EMIT -> R25 -> HV_BIAS -> D3",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> R9 -> HV_BIAS -> D3"
+   }
+  },
+  {
+   "ref": "Out1",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_CONVERTER-Q2"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> Out1",
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> Out1"
+   }
+  },
+  {
+   "ref": "R10",
+   "candidates": [
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> R10",
+    "POWER_PROTECTION-Out1": "walk Out1.2 -> VOUT_N -> R10"
+   }
+  },
+  {
+   "ref": "R13",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> R13",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> R13"
+   }
+  },
+  {
+   "ref": "R14",
+   "candidates": [
+    "POWER_CONVERTER-Q2",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> R14",
+    "POWER_PROTECTION-Out1": "walk Out1.2 -> VOUT_N -> R14"
+   }
+  },
+  {
+   "ref": "R22",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_CONVERTER-Q2",
+    "POWER_CONVERTER-Q4",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> R9 -> HV_BIAS -> R22",
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> R10 -> HV_BIAS -> R22",
+    "POWER_CONVERTER-Q4": "walk Q4.2 -> CS_EMIT -> R25 -> HV_BIAS -> R22",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> R9 -> HV_BIAS -> R22"
+   }
+  },
+  {
+   "ref": "R23",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_CONVERTER-Q2",
+    "POWER_CONVERTER-Q4",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> R9 -> HV_BIAS -> R22 -> BIAS_SENSE -> R23",
+    "POWER_CONVERTER-Q2": "walk Q2.3 -> VOUT_N -> R10 -> HV_BIAS -> R22 -> BIAS_SENSE -> R23",
+    "POWER_CONVERTER-Q4": "walk Q4.2 -> CS_EMIT -> R25 -> HV_BIAS -> R22 -> BIAS_SENSE -> R23",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> R9 -> HV_BIAS -> R22 -> BIAS_SENSE -> R23"
+   }
+  },
+  {
+   "ref": "R9",
+   "candidates": [
+    "POWER_CONVERTER-Q1",
+    "POWER_PROTECTION-Out1"
+   ],
+   "via": {
+    "POWER_CONVERTER-Q1": "walk T1.4 -> VOUT_P -> R9",
+    "POWER_PROTECTION-Out1": "walk Out1.1 -> VOUT_P -> R9"
+   }
+  }
+ ],
+ "unassigned": [
+  {
+   "ref": "C1",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "VIN"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C10",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_8V25"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C13",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_8V25"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C14",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C15",
+   "kind": "capacitor",
+   "nets": [
+    "3V3_CTRL",
+    "GND_CTRL"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C16",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C19",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_8V25"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C21",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_8V25"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C24",
+   "kind": "capacitor",
+   "nets": [
+    "GND_CTRL",
+    "VOUT_FBACK"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C25",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C26",
+   "kind": "capacitor",
+   "nets": [
+    "3V3_CTRL",
+    "GND_CTRL"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C28",
+   "kind": "capacitor",
+   "nets": [
+    "3V3_CTRL",
+    "GND_CTRL"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C29",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "TEMP"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C30",
+   "kind": "capacitor",
+   "nets": [
+    "GND_CTRL",
+    "TEMP_PRI_FBACK"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C31",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C32",
+   "kind": "capacitor",
+   "nets": [
+    "3V3_CTRL",
+    "GND_CTRL"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C33",
+   "kind": "capacitor",
+   "nets": [
+    "GND_CTRL",
+    "ISENSE_PRI_FBACK"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C34",
+   "kind": "capacitor",
+   "nets": [
+    "3V3_CTRL",
+    "GND_CTRL"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C35",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C36",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "VAR_GATE"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C38",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C39",
+   "kind": "capacitor",
+   "nets": [
+    "3V3_CTRL",
+    "GND_CTRL"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C41",
+   "kind": "capacitor",
+   "nets": [
+    "BIAS_FBACK",
+    "GND_CTRL"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "C9",
+   "kind": "capacitor",
+   "nets": [
+    "GND",
+    "VIN"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "CpuIn1",
+   "kind": "connector",
+   "nets": [
+    "3V3_CTRL",
+    "BIAS_FBACK",
+    "GND_CTRL",
+    "ISENSE_PRI_FBACK",
+    "TEMP_PRI_FBACK",
+    "VOUT_FBACK",
+    "unconnected-(CpuIn1-Pin_11-Pad11)",
+    "unconnected-(CpuIn1-Pin_13-Pad13)",
+    "unconnected-(CpuIn1-Pin_15-Pad15)"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "CpuOut1",
+   "kind": "connector",
+   "nets": [
+    "3V3_CTRL",
+    "EN_PRI_IN",
+    "GND_CTRL",
+    "PWM_BIAS_IN",
+    "PWM_PRI_IN",
+    "unconnected-(CpuOut1-Pin_11-Pad11)",
+    "unconnected-(CpuOut1-Pin_13-Pad13)",
+    "unconnected-(CpuOut1-Pin_15-Pad15)",
+    "unconnected-(CpuOut1-Pin_9-Pad9)"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "In1",
+   "kind": "connector",
+   "nets": [
+    "GND",
+    "VIN"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "Q5",
+   "kind": "mosfet",
+   "nets": [
+    "GND",
+    "HV_BIAS",
+    "VAR_GATE"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R1",
+   "kind": "resistor",
+   "nets": [
+    "GND",
+    "Net-(Reg1-ADJ)"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R15",
+   "kind": "resistor",
+   "nets": [
+    "VOUT_FBACK",
+    "VOUT_FBACK_RAW"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R16",
+   "kind": "resistor",
+   "nets": [
+    "GND",
+    "TEMP"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R17",
+   "kind": "resistor",
+   "nets": [
+    "Net-(U8-OUT)",
+    "TEMP_PRI_FBACK"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R18",
+   "kind": "resistor",
+   "nets": [
+    "ISENSE_PRI_FBACK",
+    "Net-(U9-OUT)"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R2",
+   "kind": "resistor",
+   "nets": [
+    "Net-(Reg1-ADJ)",
+    "RAIL_8V25"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R20",
+   "kind": "resistor",
+   "nets": [
+    "Net-(U10-OUT)",
+    "VAR_GATE"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R21",
+   "kind": "resistor",
+   "nets": [
+    "RAIL_3V3_PRI",
+    "VAR_GATE"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R24",
+   "kind": "resistor",
+   "nets": [
+    "BIAS_FBACK",
+    "Net-(U11-OUT)"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R3",
+   "kind": "resistor",
+   "nets": [
+    "EN_PRI_IN",
+    "Net-(R3-Pad2)"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R4",
+   "kind": "resistor",
+   "nets": [
+    "EN_PRI_OUT",
+    "RAIL_8V25"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "R5",
+   "kind": "resistor",
+   "nets": [
+    "GND_CTRL",
+    "PWM_PRI_IN"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "Reg1",
+   "kind": "unknown",
+   "nets": [
+    "Net-(Reg1-ADJ)",
+    "RAIL_8V25",
+    "VIN"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "Reg2",
+   "kind": "unknown",
+   "nets": [
+    "GND",
+    "RAIL_3V3_PRI",
+    "RAIL_8V25"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "Reg3",
+   "kind": "unknown",
+   "nets": [
+    "RAIL_3V3_SEC",
+    "VOUT_N",
+    "VOUT_P"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "TH1",
+   "kind": "unknown",
+   "nets": [
+    "RAIL_3V3_PRI",
+    "TEMP"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "U1",
+   "kind": "ic",
+   "nets": [
+    "EN_PRI_OUT",
+    "GND",
+    "Net-(U1-OUT)",
+    "PWM_PRI_OUT",
+    "RAIL_8V25"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "U10",
+   "kind": "ic",
+   "nets": [
+    "3V3_CTRL",
+    "GND",
+    "GND_CTRL",
+    "Net-(U10-OUT)",
+    "PWM_BIAS_IN",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "U11",
+   "kind": "ic",
+   "nets": [
+    "3V3_CTRL",
+    "BIAS_SENSE",
+    "GND",
+    "GND_CTRL",
+    "Net-(U11-OUT)",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "U12",
+   "kind": "ic",
+   "nets": [
+    "Net-(U12-VG)",
+    "REG_SR",
+    "SW_SEC",
+    "VOUT_N",
+    "VOUT_P"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "U3",
+   "kind": "ic",
+   "nets": [
+    "3V3_CTRL",
+    "GND",
+    "GND_CTRL",
+    "PWM_PRI_IN",
+    "PWM_PRI_OUT",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "U5",
+   "kind": "opto",
+   "nets": [
+    "EN_PRI_OUT",
+    "GND",
+    "GND_CTRL",
+    "Net-(R3-Pad2)"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "U7",
+   "kind": "ic",
+   "nets": [
+    "3V3_CTRL",
+    "GND_CTRL",
+    "RAIL_3V3_SEC",
+    "VOUT_FBACK_RAW",
+    "VOUT_N",
+    "VOUT_SENSE"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "U8",
+   "kind": "ic",
+   "nets": [
+    "3V3_CTRL",
+    "GND",
+    "GND_CTRL",
+    "Net-(U8-OUT)",
+    "RAIL_3V3_PRI",
+    "TEMP"
+   ],
+   "reason": "no candidate walk reached it"
+  },
+  {
+   "ref": "U9",
+   "kind": "ic",
+   "nets": [
+    "3V3_CTRL",
+    "GND",
+    "GND_CTRL",
+    "ISENSE_P",
+    "Net-(U9-OUT)",
+    "RAIL_3V3_PRI"
+   ],
+   "reason": "no candidate walk reached it"
+  }
+ ],
+ "gaps": [
+  {
+   "kind": "device-kind",
+   "ref": "U1",
+   "need": "intent.device_kinds.U1: datasheet page + verbatim quote stating the role"
+  },
+  {
+   "kind": "device-kind",
+   "ref": "U10",
+   "need": "intent.device_kinds.U10: datasheet page + verbatim quote stating the role"
+  },
+  {
+   "kind": "device-kind",
+   "ref": "U11",
+   "need": "intent.device_kinds.U11: datasheet page + verbatim quote stating the role"
+  },
+  {
+   "kind": "device-kind",
+   "ref": "U12",
+   "need": "intent.device_kinds.U12: datasheet page + verbatim quote stating the role"
+  },
+  {
+   "kind": "device-kind",
+   "ref": "U3",
+   "need": "intent.device_kinds.U3: datasheet page + verbatim quote stating the role"
+  },
+  {
+   "kind": "device-kind",
+   "ref": "U7",
+   "need": "intent.device_kinds.U7: datasheet page + verbatim quote stating the role"
+  },
+  {
+   "kind": "device-kind",
+   "ref": "U8",
+   "need": "intent.device_kinds.U8: datasheet page + verbatim quote stating the role"
+  },
+  {
+   "kind": "device-kind",
+   "ref": "U9",
+   "need": "intent.device_kinds.U9: datasheet page + verbatim quote stating the role"
+  }
+ ]
+}

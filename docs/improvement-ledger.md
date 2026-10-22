@@ -7,6 +7,191 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Plain words for SR's coined terms (2026-10-21)
+
+The user found "义务" (obligation) hard to read when the strict comparison
+was explained, and asked that every such term in SR be replaced. Terms SR
+had coined or borrowed as metaphors are now plain: 义务 is 检查项 where it
+names one plan row (检查项标识 `check_key`, 同一项检查) and 要求 where it
+names what a requirement asks (要求条款, 分项要求, 设计要求, 测试要求);
+严格层/对齐率/作答率 are 精确配对/配对率/已答比例; 依赖边 is 影响条目;
+the margin basis kinds read 保证最坏值, 确会出现的工况, 完整最坏范围 and
+估算; 公开界/夹界 are 公开资料界限/夹出界限; 审查科目 is 电路检查项;
+冷跑/热跑 are 网表扫描/证据扫描; 纲要 is 审查要点; 合同/契约 are 约定;
+锚器件/停点/屏障 are 核心器件/截止网络/跨域器件; 参考域 is 参考地分区;
+底账 is 明细. Words engineers already use (裕量, 角点, 盲区, 闭环, 口径,
+开放项, 移交, 准出) are kept. `scripts/obligation.py` becomes
+`scripts/check_key.py` and the row field `obligation_key` becomes
+`check_key`; English API names that predate this work (the requirement
+clause kind OBLIGATION, the execution audit's obligations fields) are kept.
+The replacement covered SKILL.md, every reference (check-catalog.md
+regenerated), the circuit-candidates design doc, the mutation and replay
+bench READMEs and the Chinese text in scripts and tests; frozen bench
+expectations, dated design docs, scenarios and this ledger's earlier entries
+keep their words. Mechanical replacement produced a few doubled phrases
+("功能电路电路检查项", "纯网表网表扫描规则"), fixed by hand; every in-document
+anchor still resolves.
+
+- Event: user:2026-10-21 (不要叫“义务”了，太难懂了。相应的SR里面如果有这种难懂的名词，都帮我改正)
+- Causes: knowledge_wrong 1
+- Changed: scripts/check_key.py, scripts/plan_review.py, scripts/validate_review.py, scripts/compare_reviews.py, scripts/revision_impact.py, scripts/review_functions.py, scripts/catalog.py, scripts/lint.py, scripts/render_report.py, scripts/review_quality.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/checkers/domains.py, scripts/checkers/base.py, scripts/checkers/hotmath.py, scripts/checkers/passive_stress.py, scripts/datasheet_facts.py, scripts/parse_kicad.py, scripts/solve_dividers.py, scripts/tests/test_compare_reviews.py, scripts/tests/test_validate_review.py, scripts/tests/test_review_functions.py, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, scripts/tests/test_review_quality.py, scripts/tests/test_checkers_framework.py, scripts/tests/test_i2c_topology.py, scripts/tests/electrical_fixtures.py, scripts/tests/fixtures/execution-audit/README.md, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, evals/kicad_replay_bench/README.md, SKILL.md, references/check-catalog.md, references/plan-and-results.md, references/automation.md, references/requirement-clarifications.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/review-charter.md, references/workflow-handoff.md, docs/2026-10-21-circuit-candidates-design.md, docs/improvement-ledger.md
+
+## Merge plan §3–§5: dependency edges, evidence kinds and margin basis, strict check identity (2026-10-21)
+
+The F7 cap (a DESIGN_VALUE or VENDOR_DATUM decides at most 3 aspects) and
+the reason sentences around it were the wrong guard: one undecided number
+can honestly enter many obligations, and a cap only pushed reviewers to
+split or reword. Every `decides[]` entry is now an edge `{aspect, states?,
+check_ids?, effect BLOCKS_PROOF|INFORMATION_ONLY, via, rationale}`; a gap in
+a quantity names in `via` what the quantity enters (a condition of the
+function, or a calculation claim and one of `calculation.inputs`) and in
+`rationale` why the available bound does not decide it. More than 3 aspects
+is a WIDE_GAP hint and a repeated reason a TEMPLATE_REASON hint, neither
+refused; `decides_reason`, `margin_not_decisive_reason` and `loose_bound`
+are retired and refused. A located citation and what it proves are now two
+checks: every condition has a kind — NUMERIC_LIMIT (limit min/max with unit,
+quoted, with its regime), MANDATORY_CLAUSE (a quoted normative sentence and
+the precondition it applies under, no number needed, never a typical
+application), NETLIST_FACT (named nets or REF.PIN pins, checked against the
+netlist, a leaf name matching two nets is ambiguous), TYPICAL_REFERENCE,
+ENGINEERING_ASSUMPTION — and every margin a basis: GUARANTEED_BOUND passes
+when met and only fails to prove when missed, REACHABLE_CASE fails when
+missed, EXACT_ENVELOPE decides both ways, ESTIMATE neither; GE lets a zero
+margin pass and GT does not; a decisive basis names its NUMERIC_LIMIT, does
+not rest on typical values or assumptions, and needs a conversion across
+regimes. A judgement rests on a mandatory clause or a netlist fact and cites
+no numeric limit; a fail rests on a proven shortfall or a violated mandatory
+clause; PASS and FAIL evidence over one scope is EVIDENCE_CONFLICT; evidence
+without `states` covers only stateless rows. Checks get an identity:
+`scripts/check_key.py` (first written as obligation.py, renamed the same day) keys a row by rule, rule revision (catalog entry and
+question template), the physical object without the circuit's display name,
+and the criterion; the planner writes `check_key`, the validator
+recomputes it and refuses a check asked twice. `compare_reviews.py`
+now reports a strict layer first — exact keys plus `--alias` pairs that
+share rule, criterion and netlist and cite a located place — with alignment
+2M/(N_A+N_B), answer rate, agreement A/C and full agreement, fail-vs-pass
+and P0/P1 disagreements, transitions, contract and baseline status; the old
+circuit-overlap result is kept as `suggested`. On the two R5 records (both
+LEGACY_CONTRACT): 423 and 487 obligations, 234 exact pairs, all answered,
+193 agreeing (82.5 %, the same as Codex's own strict comparer), alignment
+51.4 %, full agreement 42.4 %, 5 fail-vs-pass pairs, 5 severe
+disagreements, 62 suggested pairs (the overlap layer had 296 shared rows,
+222 agreeing). The work-item line "这个缺口影响哪些判断" lists the edges.
+Tests first (EvidenceBasisTests, StrictIdentityTests, F4/F7/F9 cases,
+duplicate obligation), 1776 tests pass, contract layer 491, prototypes 67,
+replay bench 195/195; twelve mutations moved to the new code (M46 now
+guards the edge's via, M47 a judgement citing a numeric limit) and
+M62–M72 added, all killed.
+
+- Event: user:2026-10-21 (Codex merge plan SR技能优化/20261021-双方合并方案 §3–§5), review:SR-20261021-R5-claude-fd6a6dd/record/review-results.json, review:SR-20261021-R5-codex-fd6a6dd/record/review-results.json
+- Causes: rule_missing 3, rule_not_enforced 1
+- Changed: scripts/review_functions.py, scripts/check_key.py, scripts/plan_review.py, scripts/validate_review.py, scripts/compare_reviews.py, scripts/derive_rows.py, scripts/results_model.py, scripts/render_report.py, scripts/review_workflow.py, scripts/review_quality.py, scripts/revision_impact.py, scripts/tests/test_review_functions.py, scripts/tests/test_derive_rows.py, scripts/tests/test_validate_review.py, scripts/tests/test_compare_reviews.py, scripts/tests/ledger_v3.py, scripts/tests/fixtures/golden_reports/decisive.md, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, SKILL.md, references/plan-and-results.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/automation.md, docs/2026-10-21-circuit-candidates-design.md, docs/improvement-ledger.md
+
+## Circuit candidates from the netlist, steps 3–7: generation, chains, decisions, bench, old records refused (2026-10-21)
+
+The reviewer no longer draws `intent.circuits`. `scripts/circuit_candidates.py`
+builds `record/circuit-candidates.json` from the netlist, the verified device
+kinds and the checker inventories: a candidate is a type plus the anchor it
+is built around (a role IC, a switch nobody drives, or a switch whose role
+`power_switches` declares while its driver IC has no verified kind), its
+members carry the path that reached them (`via`, a membership relation, not
+a conduction claim) and their hop count, its states are fixed per type
+(`catalog.CANDIDATE_STATES`). Walks pass two-terminal parts only and stop at
+rail stops, grounds, other anchors and barrier parts; the stop set is the
+domains' rail stops plus the inductive-load rail, output and return nets and
+the input walk's first storage net (the step-2 finding). Rules, from the most
+certain: input protection from a power connector to the first storage
+capacitor, protection and startup chains from the named pins through
+optocouplers to a stop or switch node (cross-cutting, built first so
+converter walks are blocked from them), converters with their switches,
+pulls, snubbers, inductive element and its other windings, the rectifiers
+and output capacitors on them, the feedback opto (an aux rectifier goes to
+the converter it feeds; an SR controller and a declared synchronous
+rectifier keep no inductive part), isolation per domain pair, analog from
+sense pins, USB from CC/D± pins with the PD controller and VBUS switch,
+debug without a walk. Adjudication: the shorter path wins, ties are listed
+in both as `shared`, anchors are never shared; parts no walk reaches are
+`unassigned` and go to REQ-Q08, ICs without a verified role and inductive
+parts without pin names are `gaps`. `intent.circuit_decisions` gives every
+candidate exactly one decision (accept / merge / split / reject with
+OUTSIDE_SCOPE, NOT_A_CIRCUIT or DUPLICATE_OF / add of unassigned parts only),
+every change to membership carries a citation a reader can open;
+`scripts/circuit_decisions.py --write` derives `intent.circuits` (with
+`candidate_ids`, `cross_cutting`, `anchors`) and `circuit_candidates_sha256`,
+a non-anchor part belongs to at most two circuits and then one is
+cross-cutting; `validate_intent` with `--candidates` (lint, plan) and
+`pack_review --circuit-candidates` refuse a hand-drawn list, a decision set
+that differs from the circuits, or an intent with circuits and no candidate
+file, so the two R5 records are refused as they stand. Measured on the R5 db
+with the four controller kinds simulated as verified: 12 candidates, 0
+shared, 8 unassigned, 2 pin-name gaps; coverage of the reviewers' circuits
+at Jaccard ≥ 0.8 is 6 of 10 (Claude, mean 0.83) and 4 of 11 (Codex, mean
+0.67), below the design's target of 9 of 10 — the rest are rule choices
+(startup chains one per pin, the SR candidate without the transformer, a
+port circuit the reviewer drew around the output shunt, circuits drawn by
+page), not noise; two decision sets on the same candidates give plans that
+share 410 of 420 rows, the 10 others being the unmerged HV startup chain.
+The KiCad replay bench moves to contract `circuit-candidates-v1`: the rf1
+frames case takes a frozen candidate file and four decisions (merge Q1+Q2
+into PRI-FLYBACK, the Out1 walk a duplicate of it, Q3/Q4 a linear bias
+stage), circuits 3→1, checks 325→313 (298 + 5 rules × 3 states). Tests
+first (test_circuit_candidates, test_circuit_decisions, plan, lint, pack and
+bench cases), 1760 tests pass, mutations M56–M61 killed (a Y capacitor
+listed as a snubber survived M56 until barrier parts were kept out of the
+inventory-sourced members). Not done: the Codex merge plan's §3–§5 (per-edge
+dependency proof instead of the F7 cap, MANDATORY_CLAUSE and evidence basis
+kinds, strict obligation identity with fuzzy comparison as a suggestion
+layer), recorded in the design doc §6.
+
+- Event: user:2026-10-21 (design docs/2026-10-21-circuit-candidates-design.md §4.7 steps 3–7; Codex merge plan SR技能优化/20261021-双方合并方案 §6, §8), review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (circuits), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (circuits)
+- Causes: rule_missing 3, rule_not_enforced 1
+- Changed: scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/catalog.py, scripts/plan_review.py, scripts/lint.py, scripts/pack_review.py, scripts/tests/test_circuit_candidates.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_plan_review.py, scripts/tests/test_render_and_pack.py, scripts/tests/conftest.py, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/circuit-candidates-v1/, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.circuit-candidates-v1.intent.json, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.circuit-candidates-v1.candidates.json, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, SKILL.md, references/automation.md, references/plan-and-results.md, references/inputs-and-coverage.md, docs/2026-10-21-circuit-candidates-design.md, docs/improvement-ledger.md
+
+## Circuit candidates from the netlist, steps 1–2: IC role kinds, ground domains, barriers and rail stops (2026-10-21)
+
+The two R5 first reviews still differed where the reviewer drew
+`intent.circuits` by hand (10 circuits against 11, members of the same
+converter apart by 5–8 parts, a startup chain with two parts in common), and
+nothing in the record could refuse that; the design in
+`docs/2026-10-21-circuit-candidates-design.md` makes the plan generate circuit
+candidates from the netlist instead. This entry lands its first two steps,
+which change no record format. Step 1: an integrated circuit declares the role
+its datasheet title gives it, through the existing `intent.device_kinds`
+(page + verbatim quote, verified by the datasheet audit): pwm_controller,
+gate_driver, sr_controller, pd_controller, regulator, supervisor,
+opamp_comparator, shunt_reference, mcu, transceiver, isolator, or the generic
+`ic` when the quote names no role — a generic `ic` whose quote does name one is
+QUOTE_CONFLICT; a role word in the same sentence as MOSFET or rectifier names
+the controller, "microprocessor supervisor" is not an MCU and "optoisolator"
+is an opto; the role classifies as IC for every checker and is read with
+`NetGraph.role_kind`, `is_anchor` says whether it anchors a candidate; a
+fitted U/M part without a verified kind is a DEV-D02 gap like a Q/D part
+(both R5 records: exactly the four controller ICs). Step 2:
+`checkers/domains.py` derives, into the plan's top-level `domains`, the
+ground domains (nets that reach one ground through DC-conducting parts;
+capacitors, transformers, optocouplers, relays, crystals, connectors, unknown
+parts and verified isolators do not conduct), the barriers (fitted parts whose
+pins touch two domains), the anchors and undeclared ICs, and the rail stops
+where a candidate walk ends (grounds, IC-driven nets, declared rails that two
+or more anchors reach directly or through one two-terminal part, never
+through a ground); a conducting part joining two differently labelled grounds
+is DOMAIN_MERGED with that part named, a declared `power_rails.<net>.domain`
+the netlist contradicts is DOMAIN_CONFLICT, both plan diagnostics. Measured
+on both R5 records: the derived domains agree with all 13 declared ones, the
+barriers are the transformer, the three optocouplers and the Y capacitor,
+there are no conflicts; with the four IC roles supplied, the stops are the
+grounds, the two driven secondary rails, the controller supply and bias
+rails and the PD supply, while the PFC output, the rectified input and the
+port rail are not stops (no anchor reaches them within a hop) — step 3 must
+add the inductive-load output nets to the stop set or the PFC walk crosses
+into the flyback clamp. Tests first (test_ic_kinds, test_domains, both
+contract), mutations M52–M55 added, 1722 tests pass. Not done: candidate
+generation, reviewer decisions and the intent validator (steps 3–7).
+
+- Event: user:2026-10-21 (design docs/2026-10-21-circuit-candidates-design.md §4.7 steps 1–2), review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (circuits), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (circuits)
+- Causes: rule_missing 2
+- Changed: scripts/board_intent.py, scripts/datasheet_kinds.py, scripts/checkers/netgraph.py, scripts/checkers/domains.py, scripts/checkers/passive_stress.py, scripts/plan_review.py, scripts/tests/test_ic_kinds.py, scripts/tests/test_domains.py, scripts/tests/test_plan_review.py, scripts/tests/conftest.py, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, SKILL.md, references/automation.md, references/plan-and-results.md, docs/2026-10-21-circuit-candidates-design.md, docs/improvement-ledger.md
+
 ## Two reviewers of one board: what the record let differ, now refused (2026-10-21)
 
 Two reviews of the same R5 schematic (SR-20261021-R5-claude-fd6a6dd and

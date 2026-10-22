@@ -104,7 +104,7 @@ DOC-V01 同时核原生图面的文字可读性。功能脚名、标签或关键
 2. 判定时对每个 PASS 问“是否只因没报错/沿用模板/典型值/样机调通”；对每个 P0/P1 检查
    身份、贴装、方向、工况、计算与独立保护，收窄过度结论但保留已证实的偏离。
 3. 形成修改建议时验算额定/全角/启动/接口，记录可能引入的新问题；实际修改后按依赖范围复验。
-4. 冷/热所有候选逐条关联最终检查和处置；各规则的 planned/executed/pending 分对象统计。
+4. 两次扫描的所有候选逐条关联最终检查和处置；各规则的 planned/executed/pending 分对象统计。
 5. 统计唯一缺陷 ID 与逐项结果两个口径；标题数字、正文、需求矩阵和闭环列表一致。
 
 交付带计算派生摘要时，按 [派生摘要核对](document-summaries.md) 比较受控 README/报告的实际声明、
@@ -118,8 +118,8 @@ DOC-V01 同时核原生图面的文字可读性。功能脚名、标签或关键
 ### 留档
 
 项目审查目录固定为 `审查报告.md`、`审查报告.html` 加 `record/`，由 `scripts/pack_review.py` 生成：`record/` 含最终计划、结果、
-gate、`db.json`、`intent.json`、冷热 lint、`manifest.json`，以及 `evidence/` 下被检查证据引用的计算、裁图、问题配图（`figures/`）和复审 Diff。
-原理图工程、数据手册、需求和旧审查只按路径与 SHA-256 记入 manifest，不复制；冷跑计划快照、日志、页面截图、
+gate、`db.json`、`intent.json`、两次扫描的 lint、`manifest.json`、声明了电路时的 `circuit-candidates.json`（`--circuit-candidates`；intent 有 `circuits` 或 `circuit_decisions` 而没有它，或决定与候选、db 不符，打包失败，手画电路的旧记录不再打包），以及 `evidence/` 下被检查证据引用的计算、裁图、问题配图（`figures/`）和复审 Diff。
+原理图工程、数据手册、需求和旧审查只按路径与 SHA-256 记入 manifest，不复制；网表扫描计划快照、日志、页面截图、
 脚本副本等中间文件留在工作目录（例如 /tmp/codex-work/<任务>/）。最终结论引用的证据必须进 `record/evidence/`，
 不能只留在临时目录：打包时引用找不到就失败。声明输入里有 ASG 交付时，选型复核（[选型与归因复核](selection-review.md)）、
 设计数值复算（`calc_claims.py`）和派生摘要核对（[派生摘要核对](document-summaries.md)）按交付里实有的
@@ -241,7 +241,7 @@ Cadence 的 `PIN_NUMBER` 可能是 BGA 字母数字脚号，且 `PINUSE` 与 `PI
 ### 六、其他 EDA 适配
 
 本 skill 当前只随附 Cadence/OrCAD 三件套解析器；下列是适配输入路线，不代表仓内已有
-对应脚本。适配后必须生成同一 db.json 契约并建立格式 fixture/覆盖自检。
+对应脚本。适配后必须生成同一 db.json 约定并建立格式 fixture/覆盖自检。
 
 - KiCad：`.kicad_sch` 本身即文本（S 表达式），可直接解析；或用 `kicad-cli sch export netlist`。
 - Altium：导出 EDIF/Protel 网表，按 `(` 分组解析。
@@ -258,8 +258,8 @@ Cadence 的 `PIN_NUMBER` 可能是 BGA 字母数字脚号，且 `PINUSE` 与 `PI
 
 严格失败先区分编号/归网丢失、功能名/类型覆盖不足、官方库存差集与导出中止；缺功能名不等于硬件断路，
 官方未用脚允许浮空也不等于库存完整。逐物理对象用原生编号、官方角色、装配状态及实际路径记录局部事实，
-全量 DOC-Q01/库存缺口独立保留。去耦和 I²C 清单的原生 PASS 仍遵守各检查器的完整缺口合同：已有局部
-观察不能靠编辑清单、删完整性缺口、假报完整脚表或另设窄项绕过。仍被合同阻断时保留 INSUFFICIENT，
+全量 DOC-Q01/库存缺口独立保留。去耦和 I²C 清单的原生 PASS 仍遵守各检查器的完整缺口约定：已有局部
+观察不能靠编辑清单、删完整性缺口、假报完整脚表或另设窄项绕过。仍被约定阻断时保留 INSUFFICIENT，
 明确局部已证实范围与剩余输入/建模缺口；不把这种工具覆盖缺口改写为电气 FAIL 或要求改受保护符号来过门禁。
 
 去耦清单只有一个由工具判定的收窄：自检失败的**唯一**原因是功能脚缺名，且每个缺名脚都在
@@ -354,4 +354,4 @@ input/passive/free/no_connect 时，另列 `unnamed_jumper_contact_pins`，按�
 
 不为无名称电阻/电容等补造 pinname，不将 passive 强行转成信号或电源脚。此处理仅修正
 解析完整性判据；不替代原厂 pinout、极性、额定值和实际连接审查。Cadence/旧适配器没有
-原生类型契约时保留原有名称覆盖率检查。使用 `parse_kicad.py` 默认严格检查；严格失败后的 `db.json` 用来定位缺口，不用 `--no-strict` 掩盖缺口。
+原生类型约定时保留原有名称覆盖率检查。使用 `parse_kicad.py` 默认严格检查；严格失败后的 `db.json` 用来定位缺口，不用 `--no-strict` 掩盖缺口。

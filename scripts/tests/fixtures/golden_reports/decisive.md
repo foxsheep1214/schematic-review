@@ -44,6 +44,7 @@
 
 - **缺什么**：startup load current envelope；适用范围：Peak amperes, pulse seconds and repetition at the specified supply limits
 - **为什么要紧**：Synthetic independent input
+- **这个缺口影响哪些判断**：使能极性与耐压，经 c1：Synthetic: W-1 leaves 使能极性与耐压 undecided
 - **还要做**：System engineer derives controlled bound from installed loads and their startup data
 - **怎样算通过**：Recompute current-limit margin and startup voltage; compare with required rails
 

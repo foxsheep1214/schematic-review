@@ -229,7 +229,7 @@ class ObjectiveAlignmentTest(unittest.TestCase):
 
 
 class QuestionTemplateTest(unittest.TestCase):
-    """审查科目的问题模板：每条都有、都能填空、都不含禁止句；五步核对单抄自参考文档。"""
+    """电路检查项的问题模板：每条都有、都能填空、都不含禁止句；五步核对单抄自参考文档。"""
 
     def test_every_package_member_rule_has_a_question_free_of_prohibitions(self):
         members = {rule for package in catalog.CIRCUIT_TYPES for rule in package.subjects}

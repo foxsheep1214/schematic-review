@@ -16,24 +16,45 @@ from render_report import render
 ASPECT = '变换器电压裕量'   # catalog title of PWR-C02
 
 
+STATES = ['STARTUP', 'RUN', 'LATCH']
+
+
 def bias_function(verdict='OPEN'):
+    """The bias example: three numeric limits, a mandatory clause and a netlist fact; a guaranteed-bound margin over the
+    states it covers (all three when nothing is open, LATCH beside the open auxiliary-voltage gap)."""
     fn = {
         'id': 'FN-BIAS', 'circuit': 'BIAS',
         'question': '默认 5 V 输出、−10..105 °C、辅助绕组取最低电压时，Q2 偏置路径能否让 U1 VCC 保持在 8.8 V 以上',
         'objects': {'refs': ['Q2', 'D2', 'D3', 'C3'], 'nets': ['AUX', 'BIAS', 'VCC']},
-        'states': ['STARTUP', 'RUN', 'LATCH'],
+        'states': list(STATES),
         'conditions': [
-            {'id': 'c1', 'source': 'evidence/ds/D2.txt', 'locator': 'p3 Table 7',
-             'says': 'VF ≤ 0.35 V @10 mA, ≤ 0.45 V @100 mA (25 °C)', 'use': '20 mA 在两点之间，单调，取 0.45 V 上界'},
-            {'id': 'c2', 'source': 'evidence/ds/Q2.txt', 'locator': 'p4 Table 4',
-             'says': 'VGS(th) 1.0–2.0 V @250 µA', 'use': '20 mA 取 2.0 V + 0.5 V 余量'},
-            {'id': 'c3', 'source': 'evidence/ds/U1.txt', 'locator': 'p7 Table 7', 'says': 'VCC(off) max 8.8 V', 'use': '判据'}],
-        'calculation': {'claim_ids': ['BIAS-VCCMIN'], 'result': 'VCC_min = 9.6 V',
-                        'margin': {'value': 0.8, 'unit': 'V', 'against': 'VCC(off) max 8.8 V'}, 'aspect': ASPECT},
+            {'id': 'c1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D2.txt', 'locator': 'p3 Table 7',
+             'says': 'VF ≤ 0.35 V @10 mA, ≤ 0.45 V @100 mA (25 °C)', 'limit': {'max': 0.45, 'unit': 'V'},
+             'regime': '25 °C, 10–100 mA', 'use': '20 mA 在两点之间，单调，取 0.45 V 上界'},
+            {'id': 'c2', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/Q2.txt', 'locator': 'p4 Table 4',
+             'says': 'VGS(th) 1.0–2.0 V @250 µA', 'limit': {'min': 1.0, 'max': 2.0, 'unit': 'V'},
+             'regime': '25 °C, 250 µA', 'use': '20 mA 取 2.0 V + 0.5 V 余量'},
+            {'id': 'c3', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p7 Table 7',
+             'says': 'VCC(off) max 8.8 V', 'limit': {'max': 8.8, 'unit': 'V'}, 'regime': '−10..105 °C', 'use': '判据'},
+            {'id': 'c4', 'kind': 'MANDATORY_CLAUSE', 'source': 'evidence/ds/U1.txt', 'locator': 'p9 §7.3',
+             'says': 'VCC 引脚必须经外部电容去耦，UVLO 释放前不得由 HV 脚以外的路径反灌', 'applies': 'U1 由外部偏置供电时',
+             'use': '偏置路径的连接要求'},
+            # the validator fixture's netlist has one net, A: the fact names it, so it is checked against a real netlist
+            {'id': 'c5', 'kind': 'NETLIST_FACT', 'source': 'db.json', 'locator': 'net A', 'nets': ['A'],
+             'says': 'A 网把辅助绕组整流接到 Q2 栅极', 'use': '路径'}],
+        'calculation': {'claim_ids': ['BIAS-VCCMIN'], 'inputs': ['v_aux_min', 'vf_d2', 'vgs_q2'], 'result': 'VCC_min = 9.6 V',
+                        'margin': {'value': 0.8, 'unit': 'V', 'against': 'VCC(off) max 8.8 V',
+                                   'states': list(STATES) if verdict == 'PASS' else ['LATCH'], 'basis': guaranteed()},
+                        'aspect': ASPECT},
         'verdict': verdict, 'fails': [], 'open': [], 'evidence': [{'source': 'evidence/engineering.md', 'locator': '## BIAS'}]}
     if verdict == 'OPEN':
         fn['open'] = [aux_open()]
     return fn
+
+
+def guaranteed(**extra):
+    return dict({'kind': 'GUARANTEED_BOUND', 'comparison': 'GT', 'limit': 'c3', 'conditions': ['c1', 'c2'],
+                 'scope': '−10..105 °C，VF 与 VGS(th) 取保证上界', 'regime': '−10..105 °C'}, **extra)
 
 
 def aux_open():
@@ -41,8 +62,8 @@ def aux_open():
             'what': 'T1 辅助绕组在 5 V 空载时的最低峰值电压还没有定',
             'scope': '5 V 空载、−10..105 °C', 'spec': '辅助绕组峰值 ≥ 13.5 V', 'owner': '磁件设计',
             'closure': '磁件规格写明 5 V 空载最低峰值电压且 ≥ 13.5 V',
-            'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN']}],
-            'margin_not_decisive_reason': '余量按标称辅助电压算，辅助电压本身是待定的设计值',
+            'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN'], 'via': {'condition': 'c3'},
+                         'rationale': '启动和运行态 VCC 由辅助绕组经 Q2 供给，最低峰值未定，与 VCC(off) 的比较缺这一项'}],
             'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'affects': 'U1 供电',
                          'consequence': '辅助电压低于规格时 U1 在 5 V 待机掉电重启'}}
 
@@ -90,7 +111,7 @@ class FunctionShapeTests(unittest.TestCase):
             fn = bias_function(); mutate(fn)
             self.assertTrue(function_errors({'functions': [fn]}), fn)
         fn = bias_function(); fn.pop('calculation'); fn['no_calculation_reason'] = '连接性检查，无数值'
-        self.assertEqual(function_errors({'functions': [fn]}), [])
+        self.assertEqual(function_errors({'functions': [fn]}), [])   # the gap's edge still cites the VCC(off) limit
 
     def test_verdict_follows_the_items(self):
         fn = bias_function('PASS'); fn['open'] = [aux_open()]
@@ -105,7 +126,7 @@ class FunctionShapeTests(unittest.TestCase):
         self.assertTrue(any('not asked of a vendor' in e for e in function_errors({'functions': [fn]})))
 
     def test_f3_vendor_datum_names_what_was_checked_and_the_worst_case(self):
-        fn = with_datum(); fn['open'][0].update(margin_not_decisive_reason='120 V 点的斜率不保证 40 V', loose_bound='c3')
+        fn = with_datum()
         self.assertEqual(function_errors({'functions': [fn]}), [])
         for field in ('checked', 'why_insufficient', 'worst_case', 'acquisition'):
             broken = copy.deepcopy(fn); del broken['open'][0][field]
@@ -113,35 +134,46 @@ class FunctionShapeTests(unittest.TestCase):
         broken = copy.deepcopy(fn); broken['open'][0]['checked'] = ['c9']
         self.assertTrue(function_errors({'functions': [broken]}))
 
-    def test_f4_a_positive_margin_decides_unless_a_reason_says_why_not(self):
-        fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']
+    def test_f4_a_margin_that_proves_the_aspect_leaves_no_gap_over_the_same_states(self):
+        """A guaranteed bound over STARTUP and RUN proves them; the auxiliary-voltage gap may not block them too. If the bound
+        rests on the undecided value it is an estimate, and then the gap is what decides."""
+        fn = bias_function(); fn['calculation']['margin']['states'] = list(STATES)
         errors = function_errors({'functions': [fn]})
-        self.assertTrue(any('0.8 V margin' in e for e in errors), errors)
-        fn['open'][0]['decides'] = [{'aspect': '变换器电流应力'}]   # another aspect: the margin says nothing about it
-        fn['open'][0]['no_margin_reason'] = '电流应力取决于尚未选定的 Q2 封装'
+        self.assertTrue(any('proves this aspect, yet the item blocks it' in e for e in errors), errors)
+        fn['calculation']['margin']['basis'] = {'kind': 'ESTIMATE', 'comparison': 'GT', 'conditions': ['c1', 'c2'],
+                                                'scope': '按标称辅助电压'}
         self.assertEqual(function_errors({'functions': [fn]}), [])
-        fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']; del fn['calculation']['aspect']
-        self.assertTrue(function_errors({'functions': [fn]}))   # a margin without aspect speaks for the whole function
+        fn['open'][0]['decides'][0]['effect'] = 'INFORMATION_ONLY'   # the gap only informs: nothing decides STARTUP/RUN now
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('decides nothing' in e for e in errors), errors)
 
-    def test_f4_no_headroom_is_a_fail_item_not_an_open_one(self):
-        """A computed shortfall against the limit kept open as "design not settled" is refused."""
-        fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']
-        fn['calculation'].update(result='VCC_min = 8.6 V', margin={'value': -0.2, 'unit': 'V', 'against': 'VCC(off) max 8.8 V'})
+    def test_f4_a_proven_shortfall_is_a_fail_item_a_missed_bound_only_fails_to_prove(self):
+        """A missed guaranteed bound proves nothing either way (E2); a reachable case that misses proves the fail (E3)."""
+        fn = bias_function()
+        fn['calculation'].update(result='VCC_min = 8.6 V', margin={'value': -0.2, 'unit': 'V', 'against': 'VCC(off) max 8.8 V',
+                                                                   'states': ['STARTUP', 'RUN'], 'basis': guaranteed()})
+        self.assertEqual(function_errors({'functions': [fn]}), [])   # the open gap decides; no fail is proven
+        fn['calculation']['margin']['basis'] = guaranteed(kind='REACHABLE_CASE', joint='满载与 105 °C 同时出现于额定工况')
         errors = function_errors({'functions': [fn]})
-        self.assertTrue(any('misses the limit' in e for e in errors), errors)
-        fn['open'][0].update(margin_not_decisive_reason='VF 取 1 A 测试点，20 mA 下的曲线可把界收紧 0.3 V', loose_bound='c1')
-        self.assertEqual(function_errors({'functions': [fn]}), [])
-        fn = bias_function('PASS'); fn['calculation']['margin']['value'] = 0
-        self.assertTrue(any('misses the limit' in e for e in function_errors({'functions': [fn]})))
-        fn.update(verdict='FAIL', fails=[{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC 无余量',
-                                          'decides': [{'aspect': ASPECT}]}])
+        self.assertTrue(any('proves the worst case misses the limit' in e for e in errors), errors)
+        fn.update(verdict='FAIL', open=[], fails=[{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC 无余量',
+                                                   'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN']}]}])
         finding = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': 'R3 改 100 Ω'}}
         self.assertEqual(function_errors({'functions': [fn], 'findings': [finding]}), [])
+        fn['calculation']['margin']['basis'] = guaranteed()   # the same fail over a merely missed bound rests on nothing
+        errors = function_errors({'functions': [fn], 'findings': [finding]})
+        self.assertTrue(any('a fail rests on a shortfall a margin proves' in e for e in errors), errors)
 
     def test_f4_margins_per_aspect(self):
-        fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']; del fn['calculation']['aspect']
-        fn['calculation']['margin'] = [{'value': 0.8, 'unit': 'V', 'against': 'VCC(off) max 8.8 V', 'aspect': '反馈驱动'},
-                                       {'value': -3, 'unit': '°C', 'against': 'Tj 115 °C（项目降额）', 'aspect': ASPECT}]
+        fn = bias_function()
+        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'project-derating.md', 'locator': '§2 表 1',
+                                 'says': 'Tj ≤ 115 °C（项目降额）', 'limit': {'max': 115, 'unit': '°C'}, 'regime': 'Ta 50 °C',
+                                 'use': '降额判据'})
+        fn['calculation']['margin'] = [
+            dict(fn['calculation']['margin'], aspect=ASPECT),
+            {'value': -3, 'unit': '°C', 'against': 'Tj 115 °C（项目降额）', 'aspect': '变换器电流应力', 'states': ['RUN'],
+             'basis': {'kind': 'REACHABLE_CASE', 'comparison': 'GE', 'limit': 'c6', 'conditions': [], 'scope': '满载 RUN',
+                       'regime': 'Ta 50 °C', 'joint': '满载与 Ta 50 °C 是同一额定工况'}}]
         errors = function_errors({'functions': [fn]})
         self.assertEqual(len(errors), 1, errors)
         self.assertIn('-3 °C against Tj 115 °C', errors[0])
@@ -153,8 +185,10 @@ class FunctionShapeTests(unittest.TestCase):
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('gives no margin' in e and 'BIAS-VCCMIN' in e for e in errors), errors)
         fn['open'][0]['no_margin_reason'] = '辅助绕组匝数尚未选定，没有可比的设计值'
+        fn['open'][0]['decides'][0]['states'] = list(STATES)
         self.assertEqual(function_errors({'functions': [fn]}), [])
         fn = bias_function(); del fn['calculation']['margin']; fn['calculation']['claim_ids'] = []
+        fn['open'][0]['decides'][0]['states'] = list(STATES)
         self.assertEqual(function_errors({'functions': [fn]}), [])   # nothing computed: F8 has nothing to ask
 
     def test_f6_a_changed_verdict_cites_a_clause_or_number(self):
@@ -166,22 +200,25 @@ class FunctionShapeTests(unittest.TestCase):
         fn['verdict_history'] = [{'from': 'PASS', 'to': 'OPEN', 'basis': ['BIAS-VCCMIN'], 'note': '算例假设'}]
         self.assertEqual(function_errors({'functions': [fn]}), [])
 
-    def test_f7_a_design_value_over_many_aspects_is_refused_a_deliverable_needs_a_reason(self):
-        # 2026-10-21: one reviewer's DESIGN_VALUE items decided 10–12 aspects each (28 rows apiece) behind a
-        # decides_reason copied onto every item; a number the design has not chosen enters a few aspects, not a block.
+    def test_f7_every_edge_of_a_gap_says_what_the_quantity_enters_however_many_there_are(self):
+        """Merge plan §3 (D1): one reference value legitimately entering five calculations is one gap with five edges; a
+        single edge with no path into the calculation is refused. The count is a hint, never a limit."""
+        from review_functions import template_hints
         fn = bias_function()
-        fn['open'][0]['decides'] = [{'aspect': a} for a in ('A', 'B', 'C', 'D')]
-        fn['open'][0]['decides_reason'] = '四个方面都依赖同一个辅助电压'
-        self.assertTrue(any('decides 4 aspects, more than 3' in e for e in function_errors({'functions': [fn]})))
-        fn['open'][0]['decides'] = [{'aspect': a} for a in ('A', 'B', 'C')]
-        self.assertFalse(any('more than 3' in e or 'decides covers' in e for e in function_errors({'functions': [fn]})))
-        fn['open'][0].update(kind='DELIVERABLE_PENDING', deliverable='T1 磁件图纸', assumed='按 BOM 规格算',
-                             deliverable_kind='CUSTOM_PART_DRAWING', decides=[{'aspect': a} for a in ('A', 'B', 'C', 'D')])
-        for f in ('spec', 'decides_reason'):
-            fn['open'][0].pop(f, None)
-        self.assertTrue(any('decides covers 4 aspects' in e for e in function_errors({'functions': [fn]})))
-        fn['open'][0]['decides_reason'] = '图纸同时决定漏感、饱和电流和绝缘'
-        self.assertFalse(any('decides covers' in e for e in function_errors({'functions': [fn]})))
+        fn['open'][0]['decides'] = [{'aspect': a, 'states': ['RUN'], 'via': {'claim': 'BIAS-VCCMIN', 'input': 'v_aux_min'},
+                                     'rationale': '%s 的比较取辅助绕组最低峰值，它还没定' % a} for a in ('A', 'B', 'C', 'D', 'E')]
+        fn['open'][0]['no_margin_reason'] = '这五个方面的设计值都还没选定'
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        self.assertEqual([h['code'] for h in template_hints([fn])], ['WIDE_GAP'])
+        broken = copy.deepcopy(fn); broken['open'][0]['decides'] = [{'aspect': 'A', 'states': ['RUN']}]
+        errors = function_errors({'functions': [broken]})
+        self.assertTrue(any('via names what the missing quantity enters' in e for e in errors), errors)
+        self.assertTrue(any('rationale says why' in e for e in errors), errors)
+        for via in ({'claim': 'NOPE'}, {'condition': 'c9'}, {'claim': 'BIAS-VCCMIN', 'input': 'v_nope'}):
+            broken = copy.deepcopy(fn); broken['open'][0]['decides'][0]['via'] = via
+            self.assertTrue(function_errors({'functions': [broken]}), via)
+        broken = copy.deepcopy(fn); broken['open'][0]['decides_reason'] = '都依赖同一个辅助电压'
+        self.assertTrue(any('decides_reason is retired' in e for e in function_errors({'functions': [broken]})))
 
     def test_keys_are_unique_and_stray_request_fields_are_refused(self):
         fn = bias_function(); fn['open'].append(dict(aux_open(), decides=[{'aspect': 'X'}]))
@@ -191,15 +228,18 @@ class FunctionShapeTests(unittest.TestCase):
 
 
 def hv_datum(**worst):
-    """A vendor datum: the clauses read, and a worst case under the public bound."""
+    """A vendor datum: the clauses read, and a worst case under the public bound (an extrapolation: an estimate)."""
     item = {'key': 'HV-IV', 'kind': 'VENDOR_DATUM', 'what': 'U1 HV 恒流源在 40–120 V 的电流下限',
             'scope': '90 Vac、R4 压降后', 'closure': '40..120 V 启动电流下界 ≥ 2 mA',
             'acquisition': '原厂应用支持', 'checked': ['c3'], 'why_insufficient': '表头只给 120 V 测试点',
-            'decides': [{'aspect': ASPECT}],
-            'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'consequence': '低线不能启动'}}
+            'decides': [{'aspect': ASPECT, 'states': list(STATES), 'via': {'condition': 'c3'},
+                         'rationale': '启动电流决定 VCC 能否在 HV 供电下升过 UVLO，40 V 处没有保证值'}],
+            'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'affects': 'U1 启动', 'consequence': '低线不能启动'}}
     item['worst_case'] = worst or {
         'bound': {'condition': 'c3', 'value': 'IHV ≥ 2.4 mA @120 V', 'basis': 'ADJACENT_TEST_POINT'},
-        'result': '按 120 V 测试点下界，40 V 时按线性外推 0.8 mA', 'margin': {'value': -1.2, 'unit': 'mA', 'against': '启动需求 2 mA'}}
+        'result': '按 120 V 测试点下界，40 V 时按线性外推 0.8 mA',
+        'margin': {'value': -1.2, 'unit': 'mA', 'against': '启动需求 2 mA',
+                   'basis': {'kind': 'ESTIMATE', 'comparison': 'GE', 'conditions': ['c3'], 'scope': '40 V，线性外推'}}}
     return item
 
 
@@ -216,49 +256,46 @@ class PublicBoundTests(unittest.TestCase):
         fn = with_datum(result='按 VHV(MIN) 40 V 仍工作')   # prose only, no bound or margin
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('public bound' in e for e in errors), errors)
-        fn = with_datum(); fn['open'][0].update(margin_not_decisive_reason='120 V 点的斜率不保证 40 V', loose_bound='c3')
+        fn = with_datum()
         self.assertEqual(function_errors({'functions': [fn]}), [])
         for bad in ({'condition': 'c9', 'value': 'x', 'basis': 'ADJACENT_TEST_POINT'},
                     {'condition': 'c3', 'value': 'x', 'basis': 'GUESS'}, {'condition': 'c3', 'basis': 'TYPICAL_CURVE'}):
             broken = copy.deepcopy(fn); broken['open'][0]['worst_case']['bound'] = bad
             self.assertTrue(any('public bound' in e for e in function_errors({'functions': [broken]})), bad)
+        broken = copy.deepcopy(fn); del broken['open'][0]['worst_case']['margin']['basis']
+        self.assertTrue(any('worst_case.margin: margin basis' in e for e in function_errors({'functions': [broken]})))
 
-    def test_a_positive_margin_under_the_public_bound_decides(self):
-        fn = with_datum(); fn['open'][0]['worst_case']['margin'] = {'value': 0.4, 'unit': 'mA', 'against': '启动需求 2 mA'}
+    def test_a_proving_margin_under_the_public_bound_decides(self):
+        fn = with_datum()
+        fn['open'][0]['worst_case']['margin'].update(value=0.4, basis=guaranteed(conditions=['c3'], comparison='GE'))
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('already decides' in e for e in errors), errors)
-        fn['open'][0]['margin_not_decisive_reason'] = '外推用的是典型斜率，保证值可能更陡'
+        fn['open'][0]['worst_case']['margin']['basis'] = {'kind': 'ESTIMATE', 'comparison': 'GE', 'conditions': ['c3'],
+                                                          'scope': '外推用的是典型斜率'}
         self.assertEqual(function_errors({'functions': [fn]}), [])
 
-    def test_a_shortfall_under_the_public_bound_is_a_fail_item_unless_the_loose_bound_is_named(self):
+    def test_a_proven_shortfall_under_the_public_bound_is_a_fail_item(self):
         fn = with_datum()
+        self.assertEqual(function_errors({'functions': [fn]}), [])   # an extrapolation proves nothing: the datum is asked
+        fn['open'][0]['worst_case']['margin']['basis'] = guaranteed(kind='REACHABLE_CASE', conditions=['c3'],
+                                                                    joint='90 Vac 低线与 R4 压降同时出现')
         errors = function_errors({'functions': [fn]})
-        self.assertTrue(any('misses the limit' in e for e in errors), errors)
-        fn['open'][0]['margin_not_decisive_reason'] = '120 V 测试点外推到 40 V 的斜率不是保证值'
-        errors = function_errors({'functions': [fn]})
-        self.assertTrue(any('loose_bound' in e for e in errors), errors)
-        fn['open'][0]['loose_bound'] = 'c9'
-        self.assertTrue(any('loose_bound' in e for e in function_errors({'functions': [fn]})))
-        fn['open'][0]['loose_bound'] = 'c3'
-        self.assertEqual(function_errors({'functions': [fn]}), [])
+        self.assertTrue(any('the shortfall is proven' in e for e in errors), errors)
 
-    def test_f4_a_shortfall_kept_open_in_the_calculation_also_names_the_loose_bound(self):
-        fn = bias_function(); del fn['open'][0]['margin_not_decisive_reason']
-        fn['calculation'].update(result='VCC_min = 8.6 V', margin={'value': -0.2, 'unit': 'V', 'against': 'VCC(off) max 8.8 V'})
-        fn['open'][0]['margin_not_decisive_reason'] = 'VF 取 1 A 测试点，20 mA 下的曲线可把界收紧 0.3 V'
-        self.assertTrue(any('loose_bound' in e for e in function_errors({'functions': [fn]})))
-        fn['open'][0]['loose_bound'] = 'c1'
-        self.assertEqual(function_errors({'functions': [fn]}), [])
 
     def test_a_shortfall_fail_item_carries_the_change_that_clears_it(self):
-        fn = bias_function('FAIL'); fn['calculation']['margin']['value'] = -0.2
-        fn['fails'] = [{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC 无余量', 'decides': [{'aspect': ASPECT}]}]
+        fn = bias_function('FAIL'); fn['calculation']['margin'].update(
+            value=-0.2, basis=guaranteed(kind='REACHABLE_CASE', joint='满载与 105 °C 同时出现于额定工况'))
+        fn['fails'] = [{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC 无余量',
+                        'decides': [{'aspect': ASPECT, 'states': ['LATCH']}]}]
         errors = function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]})
         self.assertTrue(any('remediation' in e for e in errors), errors)
         fixed = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': 'R3 改 100 Ω，VF 降 0.3 V'}}
         self.assertEqual(function_errors({'functions': [fn], 'findings': [fixed]}), [])
-        fn['calculation']['margin']['value'] = 0.5   # no shortfall: the finding may still be in design
-        fn.update(verdict='FAIL')
+        fn['calculation']['margin']['value'] = 0.5   # the reachable case meets the limit: it proves nothing about the fail
+        errors = function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]})
+        self.assertTrue(any('a fail rests on a shortfall a margin proves' in e for e in errors), errors)
+        fn['fails'][0]['conditions'] = ['c4']   # a violated mandatory clause carries the fail on its own
         self.assertEqual(function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]}), [])
 
     def test_not_boundable_names_the_curves_and_tables_searched(self):
@@ -300,11 +337,18 @@ class AspectJudgementTests(unittest.TestCase):
 
     def test_a_judgement_names_its_aspect_clauses_and_what_they_settle(self):
         fn = bias_function('PASS')
-        fn['judgements'] = [{'aspect': '启动与关断时序', 'conditions': ['c3'], 'says': 'U1 UVLO 处理掉电'}]
+        fn['judgements'] = [{'aspect': '启动与关断时序', 'conditions': ['c4'], 'says': 'U1 UVLO 处理掉电', 'states': list(STATES)}]
         self.assertEqual(function_errors({'functions': [fn]}), [])
-        for broken in ({'conditions': ['c9']}, {'conditions': []}, {'says': ''}, {'aspect': ''}):
+        for broken in ({'conditions': ['c9']}, {'conditions': []}, {'says': ''}, {'aspect': ''}, {'states': []}):
             bad = copy.deepcopy(fn); bad['judgements'][0].update(broken)
             self.assertTrue(any('judgements' in e for e in function_errors({'functions': [bad]})), broken)
+
+    def test_a_number_is_compared_in_a_margin_not_settled_in_a_sentence(self):
+        """Merge plan §4 (E6): a judgement citing a numeric limit is a calculation written as prose."""
+        fn = bias_function('PASS')
+        fn['judgements'] = [{'aspect': '启动与关断时序', 'conditions': ['c3', 'c5'], 'says': 'VCC 高于 VCC(off)'}]
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('cites a numeric limit (c3)' in e for e in errors), errors)
 
     def test_a_pass_row_needs_its_aspect_judged(self):
         fn = bias_function('PASS')
@@ -312,9 +356,23 @@ class AspectJudgementTests(unittest.TestCase):
         p, r, db = ledger(fn)
         out = vr.validate_review(p, r, db)
         self.assertTrue(any('judges no' in e for e in out['errors']), out['errors'])
-        fn['judgements'] = [{'aspect': ASPECT, 'conditions': ['c3'], 'says': 'VCC_min 9.6 V 高于 VCC(off) max'}]
+        fn['judgements'] = [{'aspect': ASPECT, 'conditions': ['c4', 'c5'], 'says': '偏置路径按 U1 的连接要求接到 VCC',
+                             'states': list(STATES)}]
         p, r, db = ledger(fn)
-        self.assertTrue(vr.validate_review(p, r, db)['valid'])
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(out['valid'], out['errors'])
+
+    def test_evidence_without_states_covers_only_stateless_rows(self):
+        """Merge plan §3 (D3): RUN evidence does not close STARTUP, and evidence that names no state covers no row that has one."""
+        fn = bias_function('PASS'); fn['calculation']['margin']['states'] = ['RUN']
+        p, r, db = ledger(fn)
+        errors = vr.validate_review(p, r, db)['errors']
+        self.assertTrue(any('PWR-C02.BIAS-STARTUP.Q2' in e and 'judges no' in e for e in errors), errors)
+        self.assertFalse(any('PWR-C02.BIAS-RUN.Q2' in e for e in errors), errors)
+        del fn['calculation']['margin']['states']
+        p, r, db = ledger(fn)
+        errors = vr.validate_review(p, r, db)['errors']
+        self.assertEqual(len([e for e in errors if 'judges no' in e]), 3, errors)
 
 
 class DeliverablePendingTests(unittest.TestCase):
@@ -327,8 +385,8 @@ class DeliverablePendingTests(unittest.TestCase):
                 'owner': '磁件设计', 'assumed': '按 intent 的 48:6:21 匝比和三重线次级计算',
                 'deliverable_kind': 'CUSTOM_PART_DRAWING',
                 'closure': '规格书给出上述项且耐压 ≥ 3000 Vac',
-                'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN']}],
-                'margin_not_decisive_reason': '余量按假定的匝比算，匝比在待交付的图纸上',
+                'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN'], 'via': {'claim': 'BIAS-VCCMIN', 'input': 'v_aux_min'},
+                             'rationale': '辅助电压按假定的匝比算，匝比在待交付的图纸上'}],
                 'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'affects': 'T1', 'consequence': '图纸与假定不符时偏置电压不足'}}
 
     def test_the_item_names_the_deliverable_its_owner_and_the_assumption(self):
@@ -365,22 +423,22 @@ class DeliverablePendingTests(unittest.TestCase):
         task = next(t for t in out['workflow']['work_items'] if t['id'] == 'W-T1-DRAWING')
         self.assertEqual(task['next_action'], '由磁件设计交付：T1 磁件规格书：三重线型号、绕组顺序、边距、耐压试验值')
 
-    def test_the_report_shows_why_a_computed_margin_did_not_decide(self):
-        """Every exit from a margin is shown to the reader, with the clause taken loose."""
+    def test_the_report_shows_which_judgements_the_gap_holds_open(self):
+        """Every row a gap blocks reaches the reader, with what the missing quantity enters and why."""
         fn = bias_function()
         p, r, db = ledger(fn)
         out = vr.validate_review(p, r, db)
         section = render(p, r, out).split('### W-AUX-5V-MIN')[1].split('\n## ')[0]
-        self.assertIn('- **为什么不按余量下结论**：余量按标称辅助电压算，辅助电压本身是待定的设计值', section)
+        self.assertIn('- **这个缺口影响哪些判断**：%s（STARTUP、RUN），经 c3：启动和运行态 VCC 由辅助绕组经 Q2 供给' % ASPECT, section)
 
     def test_the_report_shows_the_worst_case_under_the_public_bound(self):
         fn = with_datum()
-        fn['open'][0].update(margin_not_decisive_reason='40 V 外推取了线性，过松', loose_bound='c3')
         p, r, db = ledger(fn)
         out = vr.validate_review(p, r, db)
+        self.assertTrue(out['valid'], out['errors'])
         section = render(p, r, out).split('### W-HV-IV')[1].split('\n## ')[0]
-        self.assertIn('- **公开界下的最坏情况**：按 120 V 测试点下界，40 V 时按线性外推 0.8 mA（界：IHV ≥ 2.4 mA @120 V，c3）', section)
-        self.assertIn('- **为什么不按余量下结论**：40 V 外推取了线性，过松（取松的条款 c3）', section)
+        self.assertIn('- **公开资料界限下的最坏情况**：按 120 V 测试点下界，40 V 时按线性外推 0.8 mA（界：IHV ≥ 2.4 mA @120 V，c3）', section)
+        self.assertIn('经 c3：启动电流决定 VCC 能否在 HV 供电下升过 UVLO', section)
 
     def test_the_report_shows_what_the_verdict_assumed_and_what_closes_it(self):
         fn = bias_function(); fn['open'] = [self.pending()]
@@ -411,7 +469,8 @@ class RowBindingTests(unittest.TestCase):
         self.assertTrue(any('fail_ref' in e for e in vr.validate_review(p, r, db)['errors']))
         fn = r['functions'][0]
         fn.update(verdict='FAIL', fails=[{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC below 8.8 V',
-                                          'decides': [{'aspect': ASPECT, 'states': ['RUN']}]}])
+                                          'decides': [{'aspect': ASPECT, 'states': ['RUN']}], 'conditions': ['c4']}])
+        fn['calculation']['margin']['states'] = ['STARTUP', 'LATCH']
         run['fail_ref'] = 'FN-BIAS/VCC-LOW'
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
@@ -441,10 +500,13 @@ class DerivedLevelsTests(unittest.TestCase):
                  'why_insufficient': '手册无 VBUS 关断轨迹',
                  'worst_case': {'not_boundable_reason': '无驱动电流上限', 'operating_point_specified': True,
                                 'curves_checked': [{'source': 'evidence/ds/U5.txt', 'locator': 'Fig. 3 SOA'}]},
-                 'decides': [{'aspect': ASPECT, 'states': ['LATCH']}], 'margin_not_decisive_reason': '余量是偏置电压的，不是 Q5 的',
+                 'decides': [{'aspect': ASPECT, 'states': ['LATCH'], 'via': {'condition': 'c3'},
+                              'rationale': '短路时 VCC 是否保持取决于 Q5 关断前的轨迹，手册没有'}],
                  'severity': {'level': 'P0', 'class': 'DAMAGE_OR_HAZARD', 'hazard_path': 'FIRE', 'affects': 'Q5',
                               'consequence': 'Q5 烧毁起火'}}
         fn['open'].append(short)
+        fn['calculation']['margin']['basis'] = {'kind': 'ESTIMATE', 'comparison': 'GT', 'conditions': ['c1', 'c2', 'c3'],
+                                                'scope': '不含短路轨迹'}
         latch = next(c for c in r['checks'] if c['id'].endswith('LATCH.Q2'))
         latch.update(review_result='INSUFFICIENT', open_ref='FN-BIAS/SHORT-SOA')
         out = vr.validate_review(p, r, db)
@@ -532,7 +594,7 @@ class FrameTests(unittest.TestCase):
 
 
 class SharedObjectFrameTests(unittest.TestCase):
-    """2026-10-20 热审试点：同一组对象声明了两个功能电路（如 UART 与 LEVEL_SHIFT）时，重复的科目行可以绑到
+    """2026-10-20 热审试点：同一组对象声明了两个功能电路（如 UART 与 LEVEL_SHIFT）时，重复的检查行可以绑到
     另一框架的功能，不必复制开放项；对象不同的框架仍各自作答。"""
 
     def two_frames(self, other_refs=('Q2',)):
@@ -606,18 +668,20 @@ class ReviewerAgreementTests(unittest.TestCase):
     the PFC gate driver, a connector row with four clamp parts passed by hand, and a requirement row made stage NA
     whole. Each is now refused; the other reviewer's record passes every one of these unchanged."""
 
-    def test_f1_a_function_needs_a_condition_a_reader_can_open_and_that_says_a_number(self):
+    def test_f1_a_function_needs_a_clause_that_carries_the_verdict(self):
         fn = bias_function('PASS')
         fn['conditions'] = [
-            {'id': 'CONN', 'source': 'evidence/component-connections.txt', 'locator': '相关位号所有物理脚',
-             'says': '本轮新导出R5的实际连接', 'use': '核对供电、信号及回流'},
-            {'id': 'ENG', 'source': 'evidence/engineering.md', 'locator': '## BIAS',
+            {'id': 'CONN', 'kind': 'ENGINEERING_ASSUMPTION', 'source': 'evidence/component-connections.txt',
+             'locator': '相关位号所有物理脚', 'says': '本轮新导出R5的实际连接', 'use': '核对供电、信号及回流'},
+            {'id': 'ENG', 'kind': 'ENGINEERING_ASSUMPTION', 'source': 'evidence/engineering.md', 'locator': '## BIAS',
              'says': '本轮原厂条款摘录、独立推导和适用边界', 'use': '依据所列原厂页码逐项判断'}]
+        fn['calculation']['margin']['basis'] = {'kind': 'ESTIMATE', 'comparison': 'GT', 'conditions': ['ENG'], 'scope': '笔记'}
         errors = function_errors({'functions': [fn]})
-        self.assertTrue(any('no condition is a clause' in e and '相关位号所有物理脚' in e for e in errors), errors)
-        fn['conditions'].append({'id': 'c3', 'source': 'evidence/ds/U1.txt', 'locator': 'p7 Table 7',
-                                 'says': 'VCC(off) max 8.8 V', 'use': '判据'})
-        self.assertFalse(any('no condition is a clause' in e for e in function_errors({'functions': [fn]})))
+        self.assertTrue(any('no clause carries the verdict' in e for e in errors), errors)
+        fn['conditions'].append(bias_function()['conditions'][2])   # c3 listed but cited by nothing: still no clause
+        self.assertTrue(any('no clause carries the verdict' in e for e in function_errors({'functions': [fn]})))
+        fn['calculation']['margin']['basis'] = guaranteed(conditions=[])   # cited as the limit of a guaranteed bound
+        self.assertFalse(any('no clause carries the verdict' in e for e in function_errors({'functions': [fn]})))
 
     def test_located_means_a_page_table_section_id_or_named_nets(self):
         from review_functions import located, clause
@@ -626,51 +690,60 @@ class ReviewerAgreementTests(unittest.TestCase):
             self.assertTrue(located({'locator': locator}), locator)
         for locator in ('相关位号所有物理脚', '## BIAS', 'BIAS实际位号/物理节点', 'MONITOR', 'stipulated clause'):
             self.assertFalse(located({'locator': locator}), locator)
-        self.assertTrue(clause({'locator': 'p3 Table 7', 'says': 'VF ≤ 0.35 V'}))
-        self.assertFalse(clause({'locator': 'p4 功能框图', 'says': '电压环为内部跨导放大器'}))   # located, qualitative
+        limit = {'kind': 'NUMERIC_LIMIT', 'locator': 'p3 Table 7', 'says': 'VF ≤ 0.35 V', 'limit': {'max': 0.35, 'unit': 'V'}}
+        self.assertTrue(clause(limit))
+        self.assertFalse(clause(dict(limit, says='见表 3 第 7 行')))   # a number in the text that is not the limit (E1)
+        self.assertFalse(clause({'kind': 'TYPICAL_REFERENCE', 'locator': 'p4 功能框图', 'says': '电压环为内部跨导放大器'}))
+        # merge plan §4 (E1): a qualitative mandatory clause is a clause without any number; a typical application is not
+        unused = {'kind': 'MANDATORY_CLAUSE', 'locator': 'p12 §8.2', 'says': '未用的 EN 输入必须接地', 'applies': 'EN 不用时'}
+        self.assertTrue(clause(unused))
+        self.assertFalse(clause(dict(unused, locator='p20 典型应用')))
+        self.assertFalse(clause(dict(unused, says='EN 输入通常接地')))
 
     def test_a_document_function_needs_no_clause(self):
         p, r, db = ledger(bias_function('PASS'))
         fn = {'id': 'FN-DOC', 'question': '计算书数值是否按实际工作点算', 'objects': {'refs': ['R1']},
-              'conditions': [{'id': 'c1', 'source': 'evidence/calc-claims.json', 'locator': 'NOLOAD-R209-R211',
-                              'says': '复算 70.4 mW，所称 35 mW', 'use': '文档数值判据'}],
+              'conditions': [{'id': 'c1', 'kind': 'ENGINEERING_ASSUMPTION', 'source': 'evidence/calc-claims.json',
+                              'locator': 'NOLOAD-R209-R211', 'says': '复算 70.4 mW，所称 35 mW', 'use': '文档数值判据'}],
               'no_calculation_reason': 'claims 已复算', 'verdict': 'PASS', 'open': [], 'fails': [], 'evidence': E}
         r['functions'].append(fn)
-        fn['conditions'][0]['locator'] = 'claims'
         r['checks'].append({'id': 'DOC-Q01.X', 'applicability': 'APPLICABLE', 'review_result': 'PASS', 'evidence': E,
                             'rationale': 'see FN-DOC', 'handoff': {'required': False}, 'function_id': 'FN-DOC', 'aspect': 'a'})
         fn['judgements'] = [{'aspect': 'a', 'conditions': ['c1'], 'says': '复算一致'}]
         p['checks'].append(planned('DOC-Q01.X'))
         r['plan_digest'] = fingerprint(p)
         errors = validate_functions(p, r, {c['id']: c for c in r['checks']})
-        self.assertFalse(any('no condition is a clause' in e for e in errors), errors)
-        self.assertTrue(any('rests on no located' in e for e in errors), errors)   # F9 still: "claims" locates nothing
+        self.assertFalse(any('no clause carries' in e for e in errors), errors)
+        self.assertTrue(any('rests on no mandatory clause or netlist fact' in e for e in errors), errors)   # F9 still
 
-    def test_f9_a_judgement_rests_on_a_located_condition(self):
+    def test_f9_a_judgement_rests_on_a_mandatory_clause_or_a_netlist_fact(self):
         fn = bias_function('PASS')
-        fn['conditions'].append({'id': 'ENG', 'source': 'evidence/engineering.md', 'locator': '## BIAS',
-                                 'says': '本轮推导', 'use': '见笔记'})
+        fn['conditions'].append({'id': 'ENG', 'kind': 'ENGINEERING_ASSUMPTION', 'source': 'evidence/engineering.md',
+                                 'locator': '## BIAS', 'says': '本轮推导', 'use': '见笔记'})
         fn['judgements'] = [{'aspect': 'X', 'conditions': ['ENG'], 'says': 'Q2 为源跟随'}]
         errors = function_errors({'functions': [fn]})
-        self.assertTrue(any('judgements[0] (X): rests on no located condition (ENG)' in e for e in errors), errors)
-        fn['judgements'][0]['conditions'] = ['ENG', 'c2']
-        self.assertFalse(any('rests on no located' in e for e in function_errors({'functions': [fn]})))
-        # a netlist fact with named nets is located too
-        fn['conditions'].append({'id': 'c7', 'source': 'db.json', 'locator': 'nets AUX、BIAS',
-                                 'says': 'AUX → D2 → Q2 栅极', 'use': '路径'})
-        fn['judgements'][0]['conditions'] = ['c7']
-        self.assertFalse(any('rests on no located' in e for e in function_errors({'functions': [fn]})))
+        self.assertTrue(any('judgements[0] (X): rests on no mandatory clause or netlist fact (ENG)' in e for e in errors), errors)
+        fn['judgements'][0]['conditions'] = ['ENG', 'c5']   # the netlist fact with named nets carries it
+        self.assertFalse(any('rests on no' in e for e in function_errors({'functions': [fn]})))
+        fn['conditions'][4]['nets'] = []
+        self.assertTrue(any('names the nets and/or pins' in e for e in function_errors({'functions': [fn]})))
 
-    def test_f10_one_reason_sentence_on_several_items_is_a_template(self):
+    def test_f10_one_reason_sentence_on_several_items_is_a_hint_not_an_error(self):
+        """Merge plan §3: the same reason on several gaps is a quality hint (they may be one gap); rewording passes no more
+        than repeating does, because what is checked is each edge's path into the calculation."""
+        from review_functions import template_hints
         fn = bias_function()
         fn['open'][0]['no_margin_reason'] = '该项实际配置或工作包络尚未确定'
         other = bias_function(); other['id'] = 'FN-HV'
-        other['open'][0].update(key='HV-X', no_margin_reason='该项实际配置或工作包络尚未确定',
-                                margin_not_decisive_reason='另一个理由')
-        errors = function_errors({'functions': [fn, other]})
-        self.assertTrue(any('the same no_margin_reason on every one of these items (该项实际配置' in e for e in errors), errors)
+        other['open'][0].update(key='HV-X', no_margin_reason='该项实际配置或工作包络尚未确定')
+        self.assertFalse(any('the same no_margin_reason' in e for e in function_errors({'functions': [fn, other]})))
+        hints = template_hints([fn, other])
+        self.assertTrue(any(h['code'] == 'TEMPLATE_REASON' and h['field'] == 'no_margin_reason'
+                            and h['items'] == ['FN-BIAS/AUX-5V-MIN', 'FN-HV/HV-X'] for h in hints), hints)
+        self.assertTrue(any(h['code'] == 'TEMPLATE_REASON' and h['field'] == 'rationale' for h in hints), hints)
         other['open'][0]['no_margin_reason'] = 'HV 启动电流还没有定'
-        self.assertFalse(any('no_margin_reason on every' in e for e in function_errors({'functions': [fn, other]})))
+        other['open'][0]['decides'][0]['rationale'] = 'HV 启动电流进入 VCC 上升的计算'
+        self.assertEqual(template_hints([fn, other]), [])
 
     def test_f10_one_unlocated_condition_in_several_functions_is_a_template(self):
         note = {'id': 'ENG', 'source': 'evidence/engineering.md', 'locator': '## X', 'says': '本轮原厂条款摘录', 'use': '依据'}
@@ -722,6 +795,94 @@ class ReviewerAgreementTests(unittest.TestCase):
         self.assertTrue(any('PRO-D03.J1: the plan lists clamp parts D7, D8' in e for e in errors), errors)
         row.update(review_result='NA', applicability='NOT_APPLICABLE')   # not reviewed: nothing to judge
         self.assertFalse(any('clamp parts' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
+
+
+
+class EvidenceBasisTests(unittest.TestCase):
+    """Merge plan of 2026-10-21 §4: what a margin proves comes from its basis, a comparison across regimes needs a
+    conversion, and PASS and FAIL evidence over one scope is a conflict, not a choice by order."""
+
+    def test_e4_ge_passes_at_zero_gt_does_not_and_a_margin_is_finite(self):
+        from review_functions import margin_verdict
+        m = {'value': 0, 'basis': guaranteed(comparison='GE')}
+        self.assertEqual(margin_verdict(m), 'PASS')
+        self.assertEqual(margin_verdict(dict(m, basis=guaranteed(comparison='GT'))), 'OPEN')
+        self.assertEqual(margin_verdict(dict(m, basis=guaranteed(kind='EXACT_ENVELOPE', comparison='GT'))), 'FAIL')
+        self.assertEqual(margin_verdict({'value': 5, 'basis': {'kind': 'ESTIMATE', 'comparison': 'GE'}}), 'OPEN')
+        self.assertEqual(margin_verdict({'value': -5, 'basis': guaranteed(kind='REACHABLE_CASE')}), 'FAIL')
+        self.assertEqual(margin_verdict({'value': 5, 'basis': guaranteed(kind='REACHABLE_CASE')}), 'OPEN')
+        fn = bias_function('PASS'); fn['calculation']['margin']['value'] = float('nan')
+        self.assertTrue(any('finite number' in e for e in function_errors({'functions': [fn]})))
+        fn = bias_function('PASS'); fn['calculation']['margin']['basis']['comparison'] = 'GTE'
+        self.assertTrue(any('comparison GE/GT' in e for e in function_errors({'functions': [fn]})))
+
+    def test_kind_specific_fields_are_required(self):
+        fn = bias_function('PASS'); fn['calculation']['margin']['basis']['kind'] = 'EXACT_ENVELOPE'
+        self.assertTrue(any('model, domain' in e for e in function_errors({'functions': [fn]})))
+        fn['calculation']['margin']['basis'].update(model='源跟随线性模型', domain='−10..105 °C、VF 与 VGS(th) 全范围',
+                                                    extremum='VCC 随 VF、VGS(th) 单调下降，极值在两者上界')
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        fn = bias_function('PASS'); fn['calculation']['margin']['basis']['limit'] = 'c4'   # a clause, not a numeric limit
+        self.assertTrue(any('names in basis.limit the NUMERIC_LIMIT' in e for e in function_errors({'functions': [fn]})))
+
+    def test_a_guaranteed_bound_does_not_rest_on_typical_values_or_assumptions(self):
+        fn = bias_function('PASS')
+        fn['conditions'].append({'id': 'c6', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/Q2.txt', 'locator': 'Fig. 5',
+                                 'says': 'VGS 典型 1.6 V', 'use': '典型'})
+        fn['calculation']['margin']['basis']['conditions'].append('c6')
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('does not rest on typical values or assumptions (c6)' in e for e in errors), errors)
+
+    def test_e5_a_comparison_across_regimes_needs_a_conversion(self):
+        """An 8/20 µs clamp voltage against a static pin limit is not a decisive comparison by itself."""
+        fn = bias_function('PASS'); fn['calculation']['margin']['basis']['regime'] = '8/20 µs 浪涌'
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('a decisive comparison across regimes names the conversion' in e for e in errors), errors)
+        fn['calculation']['margin']['basis']['conversion'] = 'BIAS-VCCMIN'
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        fn = bias_function('PASS'); fn['calculation']['margin']['basis'].pop('regime')
+        self.assertTrue(any('basis.regime says where' in e for e in function_errors({'functions': [fn]})))
+        fn = bias_function('PASS'); fn['calculation']['margin']['basis'] = {'kind': 'ESTIMATE', 'comparison': 'GT',
+                                                                           'conditions': ['c3'], 'scope': '浪涌'}
+        fn['judgements'] = [{'aspect': ASPECT, 'conditions': ['c4'], 'says': '按连接要求', 'states': list(STATES)}]
+        self.assertEqual(function_errors({'functions': [fn]}), [])   # an estimate claims nothing, so no conversion is asked
+
+    def test_e7_pass_and_fail_over_one_scope_conflict_over_two_scopes_they_stand(self):
+        fn = bias_function('FAIL')
+        fn['fails'] = [{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC 低', 'conditions': ['c4'],
+                        'decides': [{'aspect': ASPECT, 'states': ['RUN']}]}]
+        fn['calculation']['margin']['states'] = list(STATES)
+        errors = function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]})
+        self.assertTrue(any('EVIDENCE_CONFLICT' in e for e in errors), errors)
+        fn['calculation']['margin']['states'] = ['STARTUP', 'LATCH']
+        self.assertEqual(function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]}), [])
+        fn['calculation']['margin'] = [dict(fn['calculation']['margin'], states=['RUN']),
+                                       dict(fn['calculation']['margin'], value=-0.3, states=['RUN'],
+                                            basis=guaranteed(kind='REACHABLE_CASE', joint='满载高温同时出现'))]
+        errors = function_errors({'functions': [fn], 'findings': [{'id': 'F1', 'remediation': {'readiness': 'READY'}}]})
+        self.assertTrue(any('EVIDENCE_CONFLICT — margin -0.3 V' in e for e in errors), errors)
+
+    def test_check_ids_narrow_an_entry_to_named_rows(self):
+        fn = bias_function('PASS')
+        fn['calculation']['margin']['check_ids'] = ['PWR-C02.BIAS-RUN.Q2']
+        p, r, db = ledger(fn)
+        errors = vr.validate_review(p, r, db)['errors']
+        self.assertTrue(any('PWR-C02.BIAS-LATCH.Q2' in e and 'judges no' in e for e in errors), errors)
+        self.assertFalse(any('PWR-C02.BIAS-RUN.Q2' in e for e in errors), errors)
+
+    def test_a_netlist_fact_names_nets_the_netlist_has_by_their_full_path(self):
+        from review_functions import _condition_errors
+        fact = {'id': 'n1', 'kind': 'NETLIST_FACT', 'nets': ['TEMP'], 'pins': ['U1.3'], 'locator': 'net TEMP', 'says': 'x'}
+        db = {'nets': {'/A/TEMP': ['U1.3'], '/B/TEMP': ['U2.3'], 'VCC': []}, 'pin2net': {'U1.3': '/A/TEMP'}}
+        self.assertTrue(any('ambiguous' in e for e in _condition_errors('n1', fact, db)))
+        self.assertEqual(_condition_errors('n1', dict(fact, nets=['/A/TEMP']), db), [])
+        self.assertTrue(any('not in the netlist' in e for e in _condition_errors('n1', dict(fact, pins=['U9.1'], nets=['VCC']), db)))
+        self.assertEqual(_condition_errors('n1', dict(fact, nets=['VCC'], pins=[]), {'nets': {'/P/VCC': []}}), [])
+
+    def test_retired_fields_name_what_replaced_them(self):
+        fn = bias_function(); fn['open'][0]['margin_not_decisive_reason'] = '按标称值算'
+        self.assertTrue(any("margin_not_decisive_reason is retired; the margin's basis" in e
+                            for e in function_errors({'functions': [fn]})))
 
 
 if __name__ == '__main__':

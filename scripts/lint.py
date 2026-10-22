@@ -9,14 +9,14 @@
         [--datasheet-audit datasheet-audit.json] \
         [--plan-json review-plan.json] [--json out.json]
 
-冷跑只执行自动扫描；提供 --evidence 的热跑再执行证据计算。
+网表扫描只执行自动扫描；提供 --evidence 的证据扫描再执行证据计算。
 **扫描输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、补偿网络、
 DNP 选项、被删外设的引出脚、工具伪网络）由执行 agent 逐条排除。
 规则依赖命名和已知图结构；零命中不表示检查完整或电气通过。
 
 电源追踪只把实际输出脚或已声明的外部供电节点当作来源候选。
 电感/磁珠/保险丝/0R 是导通边；二极管和 MOS 需要对应状态的有向模型。
-冷跑路径和网络名均不是电压、载流能力或上电时序的 PASS 证据。
+网表扫描路径和网络名均不是电压、载流能力或上电时序的 PASS 证据。
 """
 import argparse
 import board_scans
@@ -639,7 +639,7 @@ class Lint:
                         'DOC-A03', 'BOM/库字段含首尾空白（影响比对）',
                         f'{ref}.{field}: {value!r}', ref)
 
-        # REQ-A01 关键器件计数（冷跑·参数化：需第 0 步意图清单）
+        # REQ-A01 关键器件计数（网表扫描·参数化：需第 0 步意图清单）
         expect = (self.intent or {}).get('expect') or {}
         if expect:
             for key, want in expect.items():
@@ -735,7 +735,7 @@ class Lint:
             rule = check['rule']
             gaps = readiness_gaps(self.db, check, self.datasheet_audit, self.db_sha256)
             if gaps:
-                self.add(rule, '热跑证据/模型尚未就绪', '; '.join(gaps),
+                self.add(rule, '证据扫描所需的证据/模型尚未就绪', '; '.join(gaps),
                          kind='CANDIDATE', check_id=check['id'],
                          citation=check['citation'], required_inputs=gaps)
                 continue
@@ -988,6 +988,7 @@ def main():
     ap.add_argument('--revision-impact-json', help='另存改版影响与必需复验清单')
     ap.add_argument('--claims', help='历史评审断言 JSON（用于执行计划准备度）')
     ap.add_argument('--plan-json', help='单独写出逐项检查计划 JSON')
+    ap.add_argument('--candidates', help='circuit_candidates.py 生成的 record/circuit-candidates.json；intent 声明电路时必需')
     ap.add_argument('--i2c-topology-json', help='另存本次计划中的 I2C 连接覆盖清单；不是电气判决')
     ap.add_argument('--decoupling-json', help='另存本次计划中的去耦清单；不是电气判决')
     ap.add_argument('--checker-json', action='append', default=[], metavar='ID=PATH',
@@ -1005,6 +1006,7 @@ def main():
         previous_plan = load_json(a.merge_plan) if a.merge_plan else None
         old_db = load_json(a.old_db) if a.old_db else None
         old_plan = load_json(a.old_plan) if a.old_plan else None
+        candidates = load_json(a.candidates) if a.candidates else None
     except (OSError, ValueError) as error:
         ap.error(str(error))
     if a.intent and not isinstance(intent, dict):
@@ -1012,7 +1014,7 @@ def main():
     for supplied, value, label in ((a.old_db, old_db, '--old-db'), (a.old_plan, old_plan, '--old-plan')):
         if supplied and not isinstance(value, dict):
             ap.error(label + ' JSON root must be an object')
-    intent_errors = validate_intent(intent, db)
+    intent_errors = validate_intent(intent, db, candidates=candidates, require_candidates=True)
     if intent_errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(intent_errors))
     if a.evidence:
@@ -1037,7 +1039,7 @@ def main():
             old_db_available=bool(a.old_db),
             claims_available=bool(a.claims),
             datasheet_audit=datasheet_audit, previous_plan=previous_plan,
-            old_db=old_db, old_plan=old_plan, lint_findings=F)
+            old_db=old_db, old_plan=old_plan, lint_findings=F, candidates=candidates)
     except ValueError as error:
         sys.exit(f'[FATAL] {error}')
     if a.revision_impact_json:

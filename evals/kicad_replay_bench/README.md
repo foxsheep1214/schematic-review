@@ -1,40 +1,42 @@
 # KiCad Replay Bench：KiCad 原生交付层的冻结答案回放
 
 SR 现在主要审 ASG 生成的 KiCad 工程。`circuit_bench` 只覆盖 PWR-E01/SIG-E01/RST-E02 计算、输入是合成的
-Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率。两者都不测 **KiCad 原生交付这一层**：
+Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的网表扫描检出率。两者都不测 **KiCad 原生交付这一层**：
 严格解析能不能产出 db、缺名脚怎么记、导出日志怎么算、去耦清单在缺口下怎么分组。本基准用 ASG 已冻结的
 真实交付回放这一层，每个字段都有人工核对后冻结的预期答案。每次改 SR 都应跑一次，几秒即可。
 
 ## 运行
 
-当前候选的页面库存行为使用独立 `page-inventory-v1` 契约，位于
+当前候选的页面库存行为使用独立 `page-inventory-v1` 约定，位于
 `revisions/page-inventory-v1/`。原 `expected.json`、`cases.json`、`sources.json`、
 原脚表 intent 和所有原 XML 夹具保持原字节；`manifest.json` 同时绑定历史父项
 与新派生项的 SHA256。独立读取原有公开 XML 的 sheet 声明与组件路径，确认
-6 种回放模式遗漏真实空根页；新契约只使它们的 DOC-V01 检查数加 1，
+6 种回放模式遗漏真实空根页；新约定只使它们的 DOC-V01 检查数加 1，
 其他电气/完整性冻结字段不变。脚表声明仅绑定新输入指纹，不迁移旧审查结果。
-`--contract legacy` 用于重放历史契约，
+`--contract legacy` 用于重放历史约定，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认契约是 `state-invariant-v1`（`revisions/state-invariant-v1/`，2026-10-20）：与工作态无关的审查科目（`catalog.STATE_INVARIANT`：PWR-T05、ANA-D01、SIG-T04、SIG-D07、SIG-D04）每电路只生成一行，object 不带 state；只有 rf1-c2000-float-flyback-frames 受影响（PWR-T05 两态并成一行，检查数 326→325，FN-HV-CLAMP 成员 12→11），其余答案不变。
+当前默认约定是 `circuit-candidates-v1`（`revisions/circuit-candidates-v1/`，2026-10-21）：intent 的电路由 `circuit_candidates.py` 生成的候选文件与 `intent.circuit_decisions` 推出，lint 对声明电路的 intent 必须带 `--candidates`（用例新增 `candidates` 字段），手画电路列表被拒绝；只有 rf1-c2000-float-flyback-frames 受影响：生成器在没有已核实 IC 类别的夹具上给出 5 个候选，4 条决定（Q1+Q2 合并为 PRI-FLYBACK、Out1 走线为其重复、Q3/Q4 不是电路）推出 1 个三态电路，检查数 325→313（298 + 5 条规则 × 3 态），FN-PRI-FLYBACK 成员 10→15；其余答案不变。
 
-此前的默认契约是 `function-frames-v1`（`revisions/function-frames-v1/`，2026-10-20）：计划 schema 4，intent 声明的每个电路生成一个功能框架（新增观测字段 `plan.functions`：框架 id、成员数、状态；父用例的 intent 都没有 circuits，全为空），科目行带 question/function_id/aspect。新增用例 rf1-c2000-float-flyback-frames（同板 intent 再声明反激变换器、TVS 钳位、NTC 检测 3 个电路，检查数 298→326 = 5×2+6×2+6×1 条科目行），其余答案不变。
+此前的默认约定是 `state-invariant-v1`（`revisions/state-invariant-v1/`，2026-10-20）：与工作态无关的电路检查项（`catalog.STATE_INVARIANT`：PWR-T05、ANA-D01、SIG-T04、SIG-D07、SIG-D04）每电路只生成一行，object 不带 state；只有 rf1-c2000-float-flyback-frames 受影响（PWR-T05 两态并成一行，检查数 326→325，FN-HV-CLAMP 成员 12→11），其余答案不变。
 
-此前的默认契约是 `lint-checks-v1`（`revisions/lint-checks-v1/`，2026-10-19）：冷检规则的 FINDING/CANDIDATE 发现各成一项计划检查（lint_reviews 退役），检查数只增加该例冷检发现数（r01 178→192、r02 200→216、r03 313→365、r04 50→54、rf1 286→298、rf2 74→78），其余答案不变。
+此前的默认约定是 `function-frames-v1`（`revisions/function-frames-v1/`，2026-10-20）：计划 schema 4，intent 声明的每个电路生成一个功能框架（新增观测字段 `plan.functions`：框架 id、成员数、状态；父用例的 intent 都没有 circuits，全为空），检查行带 question/function_id/aspect。新增用例 rf1-c2000-float-flyback-frames（同板 intent 再声明反激变换器、TVS 钳位、NTC 检测 3 个电路，检查数 298→326 = 5×2+6×2+6×1 条检查行），其余答案不变。
 
-此前的默认契约是 `typical-boards-v1`（`revisions/typical-boards-v1/`，2026-10-18）：K 位号超过 8 脚不当继电器、VBUS+CC1+CC2 脚组认作 USB-C 连接器；r02 检查数 198→200，其余答案不变。
+此前的默认约定是 `lint-checks-v1`（`revisions/lint-checks-v1/`，2026-10-19）：冷检规则的 FINDING/CANDIDATE 发现各成一项计划检查（lint_reviews 退役），检查数只增加该例冷检发现数（r01 178→192、r02 200→216、r03 313→365、r04 50→54、rf1 286→298、rf2 74→78），其余答案不变。
 
-此前的默认契约是 `name-heuristics-v1`（`revisions/name-heuristics-v1/`，2026-10-18）：统一地名与轨名判定、原生 power_out 脚作为电源来源；r03 检查数 311→313（VSYS 识别为轨），r05 64→65（PWR-T04），其余答案不变。
+此前的默认约定是 `typical-boards-v1`（`revisions/typical-boards-v1/`，2026-10-18）：K 位号超过 8 脚不当继电器、VBUS+CC1+CC2 脚组认作 USB-C 连接器；r02 检查数 198→200，其余答案不变。
 
-此前的默认契约是 `testpoint-kind-v1`（`revisions/testpoint-kind-v1/`，2026-10-18）：库条目名为 TestPoint 的符号（`Connector:TestPoint`、`SparkFun-Connector:TestPoint_1.0mm`）按测试点归类、不再套连接器检查，只把 r01 的检查数由 186 改为 178，其余答案不变。
+此前的默认约定是 `name-heuristics-v1`（`revisions/name-heuristics-v1/`，2026-10-18）：统一地名与轨名判定、原生 power_out 脚作为电源来源；r03 检查数 311→313（VSYS 识别为轨），r05 64→65（PWR-T04），其余答案不变。
 
-此前的默认契约是 `real-flyback-v1`（`revisions/real-flyback-v1/`，2026-10-17）：在 `threshold-window-v1` 的 9 个用例上
+此前的默认约定是 `testpoint-kind-v1`（`revisions/testpoint-kind-v1/`，2026-10-18）：库条目名为 TestPoint 的符号（`Connector:TestPoint`、`SparkFun-Connector:TestPoint_1.0mm`）按测试点归类、不再套连接器检查，只把 r01 的检查数由 186 改为 178，其余答案不变。
+
+此前的默认约定是 `real-flyback-v1`（`revisions/real-flyback-v1/`，2026-10-17）：在 `threshold-window-v1` 的 9 个用例上
 新增两块公开反激板的 3 个用例，父版本答案逐字段不变。上游为 KiCad 10/8 格式，降级与导出步骤及独立核对工具见
 `tools/`：`downgrade.mjs`（调用 HubertHQH/kicad-version-converter，GPL-3.0，不随仓库分发）、`k7_power_pins.py`、
 `conn_compare.py`（降级前后连接相关内容逐项比对）、`geo_netlist.py`（在原始文件上自算连通并与导出网表比对）、
 `indep_check.py`（不调用 SR，直接读 XML 重算器件/网数、缺名脚与去耦组，输入为 `run.py --out` 的 results.json）。
 
-此前的默认契约是 `name-gap-scope-v1`（`revisions/name-gap-scope-v1/`，2026-10-13）：严格自检仅因缺功能名失败、
+此前的默认约定是 `name-gap-scope-v1`（`revisions/name-gap-scope-v1/`，2026-10-13）：严格自检仅因缺功能名失败、
 且缺名脚没有完整官方脚表时，缺口只记在缺名器件自身的去耦组和 `discovery_gaps`（`pin-name-unresolved:<脚>`），
 不再给每个去耦组加整网缺口 `netlist-integrity/export`。缺名只改变该器件引脚角色，不改变网络连通。
 其余字段与 `page-inventory-v1` 相同；后者文件保持原字节，可用 `--contract page-inventory-v1` 重放。
@@ -43,7 +45,7 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的冷跑检出率
 python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out <输出目录>] [--compare <旧 results.json>] [--case <用例>]
 ```
 
-- 每个用例按审查员冷跑的方式执行：`parse_kicad.py`（严格模式；严格模式没写出 db 时，另用 `--no-strict`
+- 每个用例按审查员网表扫描的方式执行：`parse_kicad.py`（严格模式；严格模式没写出 db 时，另用 `--no-strict`
   取得 db 供后续步骤使用，并把“没写出”记为观测值），再执行
   `lint.py --log <日志> [--intent <intent>] --json --plan-json --decoupling-json`。
 - 每个字段判为 **一致**（等于冻结答案）、**已知偏差**（等于 `known_deviations` 记录的 main 现值，原因已登记）
@@ -58,7 +60,7 @@ python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out 
 |---|---|---|
 | r01-thingplus-esp32s3 | ASG 第 01 轮最终导出 | 严格自检通过；SparkFun 电容库不按位号推断种类（component-kind 缺口） |
 | r02-dasduino-coreplus | ASG 第 02 轮最终导出 | 晶振 X1 缺名脚算功能缺名；三焊盘跳线触点不算；缺名缺口只落在 X1 自身去耦组（name-gap-scope-v1） |
-| r03-nrf9151-feather | ASG 第 03 轮最终导出（6 页） | 单个缺名控制脚 U8.4；29 个去耦组；DNP 件在冷跑中的缺口 |
+| r03-nrf9151-feather | ASG 第 03 轮最终导出（6 页） | 单个缺名控制脚 U8.4；29 个去耦组；DNP 件在网表扫描中的缺口 |
 | r04-host-usb-pmod | ASG 第 04 轮最终导出 | 小板基线 |
 | r04-c1-return-moved | 第 04 轮门禁反例（C1 回流脚改接 +3V3） | 电容离开直连供电/回流对后从去耦组消失 |
 | r05-lipo-charger | ASG 第 05 轮最终导出 | 回流在 BAT_NEG 的保护芯片去耦组；连接器 VBUS 候选组 |
@@ -68,7 +70,7 @@ python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out 
 | rf1-c2000-float-flyback | 公开同步整流反激板（CERN-OHL-S-2.0） | 4 子图 85 器件；Reg 位号稳压器按原生电源脚识别；RAIL_/HV 轨名、VOUT_N 回流、VOUT_FBACK 反馈线；TVS 开关节点钳位保留 PRO-C02；NTC 只在检测脚生成 ANA-C04 |
 | rf1-c2000-float-flyback-intent | 同上 + 带出处 intent | 反激绕组映射与 TVS 漏感钳位、R19 源极采样回地、UCC24612 同步整流最小声明 |
 | rf2-hv-flyback-lt3957a | 公开 LT3957A 高压反激板（CERN-OHL-W-2.0） | 连接器信号针 ESD 归入 PRO-D03；电源轨 TVS 与开关节点齐纳保留 PRO-C02；HV 输出按轨审查 |
-| rf1-c2000-float-flyback-frames | 同上 + 声明 3 个电路的 intent | 每个电路一个功能框架；科目行数 = 随状态的包审查科目 × 状态 + 与状态无关的规则各 1 行（function-frames-v1、state-invariant-v1） |
+| rf1-c2000-float-flyback-frames | 同上 + 候选文件与 4 条决定推出 1 个电路的 intent | 每个电路一个功能框架；检查行数 = 随状态的包电路检查项 × 状态 + 与状态无关的规则各 1 行（function-frames-v1、state-invariant-v1）；电路不手画，来自候选与决定（circuit-candidates-v1） |
 
 日志模式 `empty` 指给 `--log` 但文件为空，这是 kicad-cli 干净导出时的实际情况；`none` 指不给 `--log`。
 
@@ -88,7 +90,7 @@ python3 -B evals/kicad_replay_bench/run.py [--sut <另一个 SR 副本>] [--out 
   再按 DOC-Q01 的口径去掉连接器和跳线触点。
 - 去耦组：从原始 XML 自算每组供电网与地网之间的两端电容，55 个组逐组一致；组上的缺口按规则逐条核对
   （自检失败→`netlist-integrity/export`，无回流网→`need-one-explicit-return-net`，非 Device 库电容→`component-kind`）。
-- 器件清单、检查数、NA 数、DOC-Q01：对照方法文档逐行审读（小板逐项看过计划清单；冷跑没有 intent 声明，
+- 器件清单、检查数、NA 数、DOC-Q01：对照方法文档逐行审读（小板逐项看过计划清单；网表扫描没有 intent 声明，
   NA 必为 0）。
 - 每例的核对记录写在 `expected.json` 的 `verification` 字段。
 
@@ -111,14 +113,14 @@ pinmap 用例的去耦字段和各例的 `pin_names_resolved_by_official_pinout`
 
 - 只测**自动层的输入与计划结构**：解析、自检、日志扫描是否执行、去耦清单的缺口和分组、计划的检查数和 NA 数。
   不测任何检查结论（PASS/FAIL）、发现内容、严重度、报告或准出判定，也不测专家审查。
-- 去耦字段只锁定**清单**（哪些电容归哪组、缺什么证据），不是 PDN 或电气判决。冷跑里的保守分组
-  （开关节点 SW、连接器 VBUS、无脚表时把 -VS 所在的 GND 当供电组）按合同是候选组、必须由审查者对照资料核对（通常由 AI 完成，不代表人员确认），
+- 去耦字段只锁定**清单**（哪些电容归哪组、缺什么证据），不是 PDN 或电气判决。网表扫描里的保守分组
+  （开关节点 SW、连接器 VBUS、无脚表时把 -VS 所在的 GND 当供电组）按约定是候选组、必须由审查者对照资料核对（通常由 AI 完成，不代表人员确认），
   冻结它们不表示这些分组在工程上正确。
 - 检查数和 NA 数是回归锁：核对的是合理性，不是逐条独立推导的数目。规则表或展开方式有意改动时，
   这两个数会变，需要逐条说明后更新答案。
 - 只有 6 块板、9 个用例，全部来自 ASG 2026-10 批次与一次演练，器件库以 KiCad 官方库、SparkFun、
   e-radionica 为主。没有覆盖的情形：kicad-cli 导出报错的日志、带 No_connect 被忽略告警的日志、
-  `.kicad_sch` 直接输入（本基准只用已导出的 XML，不依赖 kicad-cli）、多装配状态、带完整 intent 的热跑、
+  `.kicad_sch` 直接输入（本基准只用已导出的 XML，不依赖 kicad-cli）、多装配状态、带完整 intent 的证据扫描、
   I²C 拓扑及其他检查器清单、改版对比。
 - `known_deviations` 只说明“这个值是已知问题”，不说明问题已修。
 

@@ -92,10 +92,10 @@
  },
  {
   "id": "M14",
-  "name": "F4 positive margin never decides",
+  "name": "a margin that proves PASS never decides",
   "file": "scripts/review_functions.py",
-  "old": "        if value > 0:   # a positive margin decides; an open item on the same aspect needs a reason",
-  "new": "        if value > 0 and False:"
+  "old": "    if met and kind in ('GUARANTEED_BOUND', 'EXACT_ENVELOPE'):\n        return 'PASS'",
+  "new": "    if False and met and kind in ('GUARANTEED_BOUND', 'EXACT_ENVELOPE'):\n        return 'PASS'"
  },
  {
   "id": "M15",
@@ -134,17 +134,17 @@
  },
  {
   "id": "M20",
-  "name": "F4 shortfall kept open accepted",
+  "name": "a proven shortfall without a fail item accepted",
   "file": "scripts/review_functions.py",
-  "old": "        if covering_fails:",
-  "new": "        if True:"
+  "old": "            else:\n                errors.append('%s: margin %s (%s) proves the worst case misses the limit; record a fail item with its '",
+  "new": "            elif False:\n                errors.append('%s: margin %s (%s) proves the worst case misses the limit; record a fail item with its '"
  },
  {
   "id": "M21",
   "name": "F8 design value without margin accepted",
   "file": "scripts/review_functions.py",
-  "old": "    if calculation.get('claim_ids'):   # F8",
-  "new": "    if False:"
+  "old": "    if calculation.get('claim_ids'):\n        for item in fn.get('open') or []:",
+  "new": "    if False:\n        for item in fn.get('open') or []:"
  },
  {
   "id": "M22",
@@ -190,17 +190,17 @@
  },
  {
   "id": "M28",
-  "name": "positive margin under the public bound never decides",
+  "name": "a proving margin under the public bound never decides",
   "file": "scripts/review_functions.py",
-  "old": "    if value > 0:\n        if text(item.get('margin_not_decisive_reason')):\n            return []",
-  "new": "    if value > 0:\n        return []"
+  "old": "    if verdict == 'PASS':\n        return ['%s: the worst case under the public bound",
+  "new": "    if False:\n        return ['%s: the worst case under the public bound"
  },
  {
   "id": "M29",
-  "name": "shortfall kept open without naming the loose bound",
+  "name": "a proven shortfall under the public bound kept open",
   "file": "scripts/review_functions.py",
-  "old": "        if item.get('loose_bound') not in condition_ids:",
-  "new": "        if False:"
+  "old": "    if verdict == 'FAIL':\n        aspects = {a for a, _ in _decides(item)}",
+  "new": "    if False:\n        aspects = {a for a, _ in _decides(item)}"
  },
  {
   "id": "M30",
@@ -255,15 +255,15 @@
   "id": "M37",
   "name": "a PASS row whose aspect the function never judged accepted",
   "file": "scripts/review_functions.py",
-  "old": "                and judged(functions[fid], row['aspect'], state) is None):",
-  "new": "                and False):"
+  "old": "                and judged(functions[fid], row['aspect'], state, cid) is None):",
+  "new": "                and judged(functions[fid], row['aspect'], state, cid) is None and False):"
  },
  {
   "id": "M38",
   "name": "judgement accepted without the clauses it rests on",
   "file": "scripts/review_functions.py",
-  "old": "                and isinstance(conditions, list) and conditions and all(c in condition_ids for c in conditions)):",
-  "new": "                and True):"
+  "old": "                and isinstance(conditions, list) and conditions and all(c in conditions_by_id for c in conditions)):\n            errors.append('%s/judgements[%d]: names the aspect",
+  "new": "                and isinstance(conditions, list) and conditions):\n            errors.append('%s/judgements[%d]: names the aspect"
  },
  {
   "id": "M39",
@@ -288,10 +288,10 @@
  },
  {
   "id": "M42",
-  "name": "report hides why a margin did not decide",
+  "name": "report hides which judgements a gap holds open",
   "file": "scripts/render_report.py",
-  "old": "              ('为什么不按余量下结论', [task.get('kept_open')]),",
-  "new": "              ('为什么不按余量下结论', []),"
+  "old": "              ('这个缺口影响哪些判断', task.get('blocks') or []),",
+  "new": "              ('这个缺口影响哪些判断', []),"
  },
  {
   "id": "M43",
@@ -302,31 +302,31 @@
  },
  {
   "id": "M44",
-  "name": "a function with no located clause accepted",
+  "name": "a function with no cited clause accepted",
   "file": "scripts/review_functions.py",
-  "old": "            if conditions_by_id and fid not in document_only and not any(clause(c) for c in conditions_by_id.values()):",
-  "new": "            if False and conditions_by_id and fid not in document_only and not any(clause(c) for c in conditions_by_id.values()):"
+  "old": "            if conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()):",
+  "new": "            if False and conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()):"
  },
  {
   "id": "M45",
-  "name": "a judgement resting only on working notes accepted",
+  "name": "a judgement resting only on typical values or notes accepted",
   "file": "scripts/review_functions.py",
-  "old": "        elif not any(located(conditions_by_id[c]) for c in conditions):   # F9",
-  "new": "        elif False and not any(located(conditions_by_id[c]) for c in conditions):   # F9"
+  "old": "        elif not kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}:   # F9",
+  "new": "        elif False:   # F9"
  },
  {
   "id": "M46",
-  "name": "a design value over many aspects accepted with a reason",
+  "name": "a gap edge that names no path into the calculation accepted",
   "file": "scripts/review_functions.py",
-  "old": "        if len(aspects) > MANY_ASPECTS and item.get('kind') in REQUEST_KINDS:   # F7, no reason admits it",
-  "new": "        if len(aspects) > MANY_ASPECTS and item.get('kind') in REQUEST_KINDS and not text(item.get('decides_reason')):   # F7, no reason admits it"
+  "old": "        if not isinstance(via, dict) or not (via.get('condition') in conditions or via.get('claim') in claim_ids):",
+  "new": "        if False:"
  },
  {
   "id": "M47",
-  "name": "one reason sentence on every open item accepted",
+  "name": "a numeric limit settled in a judgement sentence accepted",
   "file": "scripts/review_functions.py",
-  "old": "              % (', '.join(labels), field, sentence[:40]) for (field, sentence), labels in reasons.items() if len(labels) > 1]",
-  "new": "              % (', '.join(labels), field, sentence[:40]) for (field, sentence), labels in reasons.items() if False]"
+  "old": "        if 'NUMERIC_LIMIT' in kinds:",
+  "new": "        if False:"
  },
  {
   "id": "M48",
@@ -355,5 +355,152 @@
   "file": "scripts/review_stage_scope.py",
   "old": "            if isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):",
   "new": "            if False and isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):"
+ },
+ {
+  "id": "M52",
+  "name": "an integrated circuit without a verified role kind planned without a gap",
+  "file": "scripts/plan_review.py",
+  "old": "            if re.match(r'^(Q|D|ZD|TVS|U|M)\\d', ref, re.I) and ref not in board_intent.declared_kinds(self.kind_intent):",
+  "new": "            if re.match(r'^(Q|D|ZD|TVS)\\d', ref, re.I) and ref not in board_intent.declared_kinds(self.kind_intent):"
+ },
+ {
+  "id": "M53",
+  "name": "a generic ic declaration accepted although its quote names a role",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "        if named:\n            return dict(result, status='QUOTE_CONFLICT', detail=f'quote names {sorted(named)}; declare that kind, not ic')",
+  "new": "        if False and named:\n            return dict(result, status='QUOTE_CONFLICT', detail=f'quote names {sorted(named)}; declare that kind, not ic')"
+ },
+ {
+  "id": "M54",
+  "name": "capacitors conduct when deriving ground domains",
+  "file": "scripts/checkers/domains.py",
+  "old": "NON_CONDUCTING = frozenset({ng.CAPACITOR, ng.TRANSFORMER, ng.OPTO, ng.RELAY, ng.CRYSTAL, ng.CONNECTOR,",
+  "new": "NON_CONDUCTING = frozenset({ng.TRANSFORMER, ng.OPTO, ng.RELAY, ng.CRYSTAL, ng.CONNECTOR,"
+ },
+ {
+  "id": "M55",
+  "name": "the one-hop rail-stop rule passes through ground",
+  "file": "scripts/checkers/domains.py",
+  "old": "                if other not in grounds and other not in graph.pseudo:",
+  "new": "                if other not in graph.pseudo:"
+ },
+ {
+  "id": "M56",
+  "name": "a candidate walk passes through a barrier part",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                if ref == owner or ref in blocked or ref in self.anchors or ref in self.barriers:",
+  "new": "                if ref == owner or ref in blocked or ref in self.anchors:"
+ },
+ {
+  "id": "M57",
+  "name": "a part two candidates reach at the same distance is given to the first",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            keep = sorted(cid for h, cid in entries if h == best)",
+  "new": "            keep = sorted(cid for h, cid in entries if h == best)[:1]"
+ },
+ {
+  "id": "M58",
+  "name": "a candidate without a decision accepted",
+  "file": "scripts/circuit_decisions.py",
+  "old": "    for cid in by_id:\n        if cid not in decided:",
+  "new": "    for cid in by_id:\n        if False and cid not in decided:"
+ },
+ {
+  "id": "M59",
+  "name": "a split that leaves members unplaced accepted",
+  "file": "scripts/circuit_decisions.py",
+  "old": "            if left:\n                errors.append(f'{cand[\"id\"]}: split leaves members {left} unplaced; every member goes to a part')",
+  "new": "            if left and False:\n                errors.append(f'{cand[\"id\"]}: split leaves members {left} unplaced; every member goes to a part')"
+ },
+ {
+  "id": "M60",
+  "name": "hand-drawn circuits that differ from the decisions accepted",
+  "file": "scripts/circuit_decisions.py",
+  "old": "        if sorted(set(have.get('refs') or [])) != want['refs']:",
+  "new": "        if False and sorted(set(have.get('refs') or [])) != want['refs']:"
+ },
+ {
+  "id": "M61",
+  "name": "a review with circuits packed without its candidate file",
+  "file": "scripts/pack_review.py",
+  "old": "    errors += candidate_errors(record)",
+  "new": "    errors += []"
+ },
+ {
+  "id": "M62",
+  "name": "a GT comparison passes a zero margin",
+  "file": "scripts/review_functions.py",
+  "old": "    met = m['value'] >= 0 if basis.get('comparison') == 'GE' else m['value'] > 0",
+  "new": "    met = m['value'] >= 0"
+ },
+ {
+  "id": "M63",
+  "name": "evidence over one state covers every state",
+  "file": "scripts/review_functions.py",
+  "old": "    return ((a[0] is None or b[0] is None or a[0] == b[0]) and bool(a[1] & b[1])",
+  "new": "    return ((a[0] is None or b[0] is None or a[0] == b[0]) and True"
+ },
+ {
+  "id": "M64",
+  "name": "a fail and a pass over the same scope not reported as a conflict",
+  "file": "scripts/review_functions.py",
+  "old": "            if overlaps(isc, osc):\n                errors.append('%s/%s: EVIDENCE_CONFLICT",
+  "new": "            if False:\n                errors.append('%s/%s: EVIDENCE_CONFLICT"
+ },
+ {
+  "id": "M65",
+  "name": "a decisive comparison across regimes accepted without a conversion",
+  "file": "scripts/review_functions.py",
+  "old": "              and not (basis.get('conversion') in conditions or basis.get('conversion') in claim_ids)):",
+  "new": "              and False):"
+ },
+ {
+  "id": "M66",
+  "name": "a typical application accepted as a mandatory clause",
+  "file": "scripts/review_functions.py",
+  "old": "        return bool(NORMATIVE_RE.search(condition.get('says') or '')) and not TYPICAL_PLACE_RE.search(condition.get('locator') or '')",
+  "new": "        return bool(NORMATIVE_RE.search(condition.get('says') or ''))"
+ },
+ {
+  "id": "M67",
+  "name": "a fail resting on no proven shortfall or mandatory clause accepted",
+  "file": "scripts/review_functions.py",
+  "old": "        if not proven and not any(c.get('kind') == 'MANDATORY_CLAUSE' for c in cited):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M68",
+  "name": "a guaranteed bound built on typical values accepted",
+  "file": "scripts/review_functions.py",
+  "old": "    if weak:\n        errors.append('%s: a %s does not rest on",
+  "new": "    if False:\n        errors.append('%s: a %s does not rest on"
+ },
+ {
+  "id": "M69",
+  "name": "a circuit name enters the check identity",
+  "file": "scripts/check_key.py",
+  "old": "DISPLAY_FIELDS = ('circuit',)",
+  "new": "DISPLAY_FIELDS = ()"
+ },
+ {
+  "id": "M70",
+  "name": "one check asked twice accepted",
+  "file": "scripts/validate_review.py",
+  "old": "        require(len(cids) == 1, f\"{', '.join(sorted(cids))}: the same check",
+  "new": "        require(True, f\"{', '.join(sorted(cids))}: the same check"
+ },
+ {
+  "id": "M71",
+  "name": "an alias without a located citation counted as a pair",
+  "file": "scripts/compare_reviews.py",
+  "old": "        elif not located({'locator': alias.get('evidence')}):",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M72",
+  "name": "a proving margin and a gap blocking the same scope accepted",
+  "file": "scripts/review_functions.py",
+  "old": "                if overlaps(sc, isc):\n                    errors.append('%s/%s: margin %s is a %s that proves this aspect",
+  "new": "                if False:\n                    errors.append('%s/%s: margin %s is a %s that proves this aspect"
  }
 ]

@@ -18,9 +18,14 @@ MAX_ASSEMBLIES = 32
 DEVICE_FIELDS = ('mpn', 'package', 'identity_citation', 'citation', 'pinout_complete', 'pins')
 # Device type as stated by the manufacturer's datasheet (same strings as checkers.netgraph kinds).
 # intent.device_kinds declares it; only declarations the datasheet audit VERIFIED reach the analysis.
-DEVICE_KINDS = ('bjt', 'mosfet', 'diode', 'zener', 'tvs', 'opto', 'relay', 'ic', 'resistor', 'capacitor',
+# An integrated circuit declares the role its datasheet title gives it (IC_KINDS); the generic `ic` is for a
+# part whose quote names none of those roles. ANCHOR_KINDS are the roles a circuit candidate is built around.
+IC_KINDS = ('pwm_controller', 'gate_driver', 'sr_controller', 'pd_controller', 'regulator', 'supervisor',
+            'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver', 'isolator', 'ic')
+ANCHOR_KINDS = tuple(k for k in IC_KINDS if k not in ('isolator', 'ic'))
+DEVICE_KINDS = ('bjt', 'mosfet', 'diode', 'zener', 'tvs', 'opto', 'relay', 'resistor', 'capacitor',
                 'inductor', 'ferrite', 'transformer', 'bridge_rectifier', 'fuse', 'crystal', 'connector', 'switch',
-                'jumper')
+                'jumper') + IC_KINDS
 PIN_ROLES = ('power', 'return', 'nc', 'other')
 SHARED_KEYS = ('input_sha256', 'assemblies', 'devices', 'device_kinds')
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""热跑计算器的共享数值工具。
+"""证据扫描计算器的共享数值工具。
 
 只做区间算术与字段检查：保证值缺失就报缺口（INSUFFICIENT），不用典型值顶替，
 也不代替专家判断适用条件。
@@ -37,7 +37,7 @@ def negate(bounds):
 
 
 def structure_errors(check, label, spans=(), numbers=(), texts=(), choices=()):
-    """热跑证据的结构校验；与既有 validate_evidence 的文案风格一致。"""
+    """证据扫描所用证据的结构校验；与既有 validate_evidence 的文案风格一致。"""
     errors = []
     for field in spans:
         if field in check and span(check[field]) is None:

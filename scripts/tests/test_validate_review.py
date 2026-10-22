@@ -242,13 +242,23 @@ class ReviewGateTests(unittest.TestCase):
     def test_same_defect_multiple_checks_counted_once(self):
         p, r, db = fixture(); fail(r)
         second = copy.deepcopy(r['checks'][0]); second['id'] = C2
-        p['checks'].append(planned(C2))
+        p['checks'].append(dict(planned(C2), object={'ref': 'R2'}))   # a second object: one check is asked once
         r['plan_digest'] = fingerprint(p); r['checks'].append(second)
         r['findings'][0]['check_ids'].append(C2)
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['summary']['results']['FAIL'], 2)
         self.assertEqual(result['summary']['confirmed_defects'], 1)
+
+    def test_one_check_asked_twice_is_refused(self):
+        """Merge plan §5 (I3): two rows asking the same rule of the same object under the same criterion are a duplicate
+        check, named, not silently counted twice."""
+        p, r, db = fixture()
+        second = copy.deepcopy(r['checks'][0]); second['id'] = C2
+        p['checks'].append(planned(C2))
+        r['plan_digest'] = fingerprint(p); r['checks'].append(second)
+        errors = validate_review(p, r, db)['errors']
+        self.assertTrue(any('the same check (rule, object, criterion) asked 2 times' in e for e in errors), errors)
 
     def test_summary_and_claimed_release_cannot_hide_failure(self):
         p, r, db = fixture(); fail(r); r['release'] = 'GO'

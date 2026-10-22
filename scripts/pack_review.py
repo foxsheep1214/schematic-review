@@ -35,10 +35,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from render_report import SR_SECTION, jargon_in  # noqa: E402
 from report_html import to_html
 import review_selection
+import circuit_decisions
 
 HISTORY_RULE = 'REQ-H02'
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
           'lint-cold.json', 'lint-hot.json')
+OPTIONAL_LEDGER = ('circuit-candidates.json',)      # required as soon as the intent declares circuits
 
 
 def plain_language_errors(report):
@@ -160,6 +162,28 @@ def broken_report_links(out):
 DELIVERY_DEPTH = 3
 
 
+def candidate_errors(record):
+    """A review whose intent declares circuits carries the candidate file they were decided from, bound to its
+    netlist, and the circuits equal the decisions; a hand-drawn circuit list is not packed (no legacy path)."""
+    try:
+        intent = json.loads((record / 'intent.json').read_text(encoding='utf-8'))
+        db = json.loads((record / 'db.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return []
+    if not isinstance(intent, dict) or not (intent.get('circuits') or intent.get('circuit_decisions')
+                                            or 'circuit_candidates_sha256' in intent):
+        return []
+    path = record / 'circuit-candidates.json'
+    if not path.is_file():
+        return ['intent.circuits without record/circuit-candidates.json: circuits are decided from candidates '
+                '(circuit_candidates.py, then circuit_decisions.py --write); a hand-drawn circuit list is not packed']
+    try:
+        candidates = json.loads(path.read_text(encoding='utf-8'))
+    except ValueError:
+        return ['record/circuit-candidates.json is not JSON']
+    return ['circuit-candidates: ' + e for e in circuit_decisions.validate(intent, candidates, db)]
+
+
 def delivery_records(inputs):
     """record/ directories of ASG deliveries among the declared inputs."""
     found = set()
@@ -255,7 +279,7 @@ def pack(out, ledger, evidence_root, inputs):
     if not contained(record / 'evidence', out):
         return ['record/evidence escapes review directory'], None
     for name, src in ledger.items():
-        if name not in LEDGER or not contained(record / name, out):
+        if name not in LEDGER + OPTIONAL_LEDGER or not contained(record / name, out):
             errors.append('unsafe ledger target: ' + name)
         if not Path(src).is_file():
             errors.append('missing ledger: ' + str(src))
@@ -271,6 +295,7 @@ def pack(out, ledger, evidence_root, inputs):
             shutil.copyfile(src, target)
         packed[RECORD + '/' + name] = sha256(target)
     results = json.loads((record / 'review-results.json').read_text(encoding='utf-8'))
+    errors += candidate_errors(record)
     unfinished = sorted(c.get('id', '?') for c in results.get('checks') or [] if isinstance(c, dict)
                         and c.get('review_result') == 'INSUFFICIENT' and c.get('gap_cause') == 'REVIEW_INCOMPLETE'
                         and not str(c.get('id', '')).startswith(HISTORY_RULE + '.'))
@@ -328,11 +353,14 @@ def main(argv=None):
     parser.add_argument('out', help='review directory holding 审查报告.md')
     for name in LEDGER:
         parser.add_argument('--' + name.split('.')[0], required=True, metavar='PATH')
+    for name in OPTIONAL_LEDGER:
+        parser.add_argument('--' + name.split('.')[0], metavar='PATH', help='required when intent.json declares circuits')
     parser.add_argument('--evidence-root', help='work directory that cited evidence paths are relative to')
     parser.add_argument('--input', action='append', default=[], metavar='NAME=PATH',
                         help='schematic project, datasheets, requirements, previous review ... (referenced, not copied)')
     args = parser.parse_args(argv)
-    ledger = {name: getattr(args, name.split('.')[0].replace('-', '_')) for name in LEDGER}
+    ledger = {name: getattr(args, name.split('.')[0].replace('-', '_')) for name in LEDGER + OPTIONAL_LEDGER
+              if getattr(args, name.split('.')[0].replace('-', '_'))}
     inputs = dict(item.split('=', 1) for item in args.input)
     errors, _ = pack(args.out, ledger, args.evidence_root, inputs)
     for e in errors:

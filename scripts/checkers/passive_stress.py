@@ -60,13 +60,17 @@ def _package(part, prefix):
 
 
 # 隔离电源常见的分域地/回流网：PORT_GND、P_GND、SR_RETURN、GND_ISO。只在本预判里当 0 V，
-# 并按名字各成一个参考域；跨域（Y 电容、隔离电阻）的两端件不给上界。
+# 并按名字各成一个参考地分区；跨域（Y 电容、隔离电阻）的两端件不给上界。
 GROUND_TOKENS = {'GND', 'PGND', 'AGND', 'DGND', 'SGND', 'EGND', 'RTN', 'RETURN'}
 
 
-def _ground_name(net):
+def ground_name(net):
+    """地或回流网的名字：GND 族、以 RTN/RETURN 结尾、或 GND_<域>；domains 与本预判共用。"""
     tokens = ng.normalize(net).split('_')
     return ng.is_ground(net) or tokens[-1] in GROUND_TOKENS or (len(tokens) == 2 and tokens[0] in GROUND_TOKENS)
+
+
+_ground_name = ground_name
 
 
 def _declared_rails(intent):
@@ -95,7 +99,7 @@ class _Bounds:
         return None
 
     def domain(self, net):
-        """参考域：声明的 domain 优先；GND/AGND 等通用地名同属 GND 域，其余地名（P_GND、PORT_GND）
+        """参考地分区：声明的 domain 优先；GND/AGND 等通用地名同属 GND 域，其余地名（P_GND、PORT_GND）
         各成一域；其他为 None（不参与跨域判断）。"""
         if net in self.rails:
             declared = self.rails[net][1]
@@ -119,7 +123,7 @@ class _Bounds:
         return self._ic[ref]
 
     def window(self, net):
-        """返回 ((lo, hi), 依据, 参考域集合) 或 (None, 缺口, 参考域集合)。"""
+        """返回 ((lo, hi), 依据, 参考地分区集合) 或 (None, 缺口, 参考地分区集合)。"""
         fixed = self._fixed(net)
         if fixed is not None:
             domain = self.domain(net)
@@ -286,7 +290,7 @@ def rail_gaps(plan):
 
 
 def ground_domains(db, intent):
-    """{参考域: [地网]}：本预判按 0 V 处理的全部网及其参考域，供审查者核对与改正 domain。"""
+    """{参考地分区: [地网]}：本预判按 0 V 处理的全部网及其参考地分区，供审查者核对与改正 domain。"""
     nets = set((db or {}).get('nets') or {})
     bounds = _Bounds(None, _declared_rails(intent))
     found = {}
@@ -297,7 +301,7 @@ def ground_domains(db, intent):
 
 
 def node_gaps(plan):
-    """统计因多端件/连接器/跨域而无界的行：{缺口: 行数}，供计划命令提示补节点电压窗口或参考域。"""
+    """统计因多端件/连接器/跨域而无界的行：{缺口: 行数}，供计划命令提示补节点电压窗口或参考地分区。"""
     counts = {}
     for check in plan.get('checks', []):
         for basis in (check.get('proposal') or {}).get('bases') or []:

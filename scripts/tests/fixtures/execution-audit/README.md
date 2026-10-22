@@ -97,13 +97,13 @@ For a multi-hop passive source, declare `model_support.source_branches: [["R1.1"
 
 执行审计是可选自检，不是交付门槛；`--require-execution-audit` 仅在使用者明确要求时加。
 
-- 使用时在冷/热计划范围确定后、专家结果录入前，固定 `plan.execution_inputs` 受控摘录和
+- 使用时在两次扫描的计划范围确定后、专家结果录入前，固定 `plan.execution_inputs` 受控摘录和
   `plan.execution_contract`（v1）；它们独立于 revision `review_inputs`，不改原生连接。
   新声明的工况/物理模型、输入依赖及作用域须引用原始材料，不能从草稿结论生成“已证明”标志。
 - 结果保存后生成单独 `execution-audit.json`，绑定最终 plan/results/db 的规范 JSON 摘要。
   有新工况、真实依赖或资料变化时更新受控范围并重跑；原始报告不迁移、不重标成绩。
-- 无适用数值项可在受控库存中明确为空，不能用空清单删掉已识别义务。已确认不存在的功能电路保留有来源的 NA；
-  功能范围未定的包保留 INS，不为填合同创造成员或改成 PASS。
+- 无适用数值项可在受控库存中明确为空，不能用空清单删掉已识别的检查项。已确认不存在的功能电路保留有来源的 NA；
+  功能范围未定的包保留 INS，不为填约定创造成员或改成 PASS。
 - 数值工具仅复算有明确保证要求且已核模型的单极充电和电阻连续功耗；未知支路/越保证条件的输入
   不得借简化模型得 PASS/FAIL。其他拓扑仍须独立工程计算，库存写明其方法/边界。
 - 实际参数不可得时用 `null`，并在本行 required-minus-available 输入中保留缺口；结果为 INS，未知计算单元
@@ -111,4 +111,4 @@ For a multi-hop passive source, declare `model_support.source_branches: [["R1.1"
 - 单极 RC 网可以没有网内驱动脚：用被动支路到上游源的原生路径与模型证明，不把电阻或接收脚冒充驱动。
 - 多跳被动供源在 `model_support.source_branches` 列出每条导电支路的两物理脚；图追踪逐网核
   `pin2net`/`nets` 互反。电阻/二极管/连接器的物理性质和等效模型仍由来源证明，不能把被动脚当内部短路。
-- 一致性通过只证明声明间可对账，不证明全部适用义务已发现、原始资料完整或模型正确。
+- 一致性通过只证明声明间可对账，不证明全部适用的要求已发现、原始资料完整或模型正确。

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """检查器接口与通用校验。
 
-每个检查器只声明：认什么对象、生成哪些计划项、冷跑报什么、清单怎么绑定。
-计划项结构、证据契约、准出语义仍由既有流程决定，检查器不自造结论。
+每个检查器只声明：认什么对象、生成哪些计划项、网表扫描报什么、清单怎么绑定。
+计划项结构、证据约定、准出语义仍由既有流程决定，检查器不自造结论。
 """
 from copy import deepcopy
 
@@ -72,7 +72,7 @@ class Checker:
         """通过 planner.add_check 生成计划项。"""
 
     def cold_findings(self, lint, inventory):
-        """通过 lint.add 输出冷跑发现。"""
+        """通过 lint.add 输出网表扫描发现。"""
 
     def hot_check(self, lint, check):
         """执行本检查器的证据计算规则（证据已就绪）。"""
@@ -83,7 +83,7 @@ class Checker:
         return []
 
     def model_gaps(self, check):
-        """缺哪些保证值就不能热跑；返回非空即 INSUFFICIENT，不得用典型值顶替。"""
+        """缺哪些保证值就不能做证据扫描；返回非空即 INSUFFICIENT，不得用典型值顶替。"""
         return []
 
     def rule_instances(self, rule, inventory):

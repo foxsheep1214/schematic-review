@@ -1,4 +1,4 @@
-# 计算条件合同 v1
+# 计算条件约定 v1
 
 本技能自带 `scripts/design_preflight.py`，独立运行，不依赖其他技能；修改后运行 `test_calculation_preflight.py`。
 在审查里它用于严格核对：保证条件覆盖不到的计算只能是 CONDITIONAL，不能当作通过的证据。
@@ -32,7 +32,7 @@ NTC 的 B25/50 跨温区外推和运行时偏置切换能力也要逐项注明�
 ```json
 {
   "id": "SYNTHETIC_MARGIN",
-  "model": "仅演示合同：已推导的保守电压上界与器件保证耐压比较",
+  "model": "仅演示约定：已推导的保守电压上界与器件保证耐压比较",
   "expression": "rating - stress",
   "output_unit": "V",
   "assumptions": [],

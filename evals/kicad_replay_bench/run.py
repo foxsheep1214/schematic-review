@@ -4,7 +4,7 @@
 For every case in cases.json, run the SR checkout under test on a frozen KiCad XML
 fixture exactly as a reviewer would start a cold pass:
   parse_kicad.py (strict; --no-strict only to obtain a db when strict wrote none)
-  lint.py --log <log> [--intent <intent>] --json --plan-json --decoupling-json
+  lint.py --log <log> [--intent <intent> [--candidates <circuit-candidates>]] --json --plan-json --decoupling-json
 and compare the observed automatic results with expected.json:
   MATCH           observed == frozen answer
   KNOWN           observed == the recorded value of a known, documented deviation
@@ -20,10 +20,10 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CONTRACT_REVISION = 'state-invariant-v1'
+CONTRACT_REVISION = 'circuit-candidates-v1'
 REVISIONS = ('legacy', 'page-inventory-v1', 'name-gap-scope-v1', 'passive-stress-v1', 'threshold-window-v1',
              'real-flyback-v1', 'testpoint-kind-v1', 'name-heuristics-v1', 'typical-boards-v1', 'lint-checks-v1',
-             'function-frames-v1', CONTRACT_REVISION)
+             'function-frames-v1', 'state-invariant-v1', CONTRACT_REVISION)
 
 
 def contract_path(name, revision=CONTRACT_REVISION):
@@ -73,6 +73,8 @@ def observe(sut, case, work):
         raise ValueError('unknown log mode %r' % case['log'])
     if case.get('intent'):
         cmd += ['--intent', str(HERE / case['intent'])]
+    if case.get('candidates'):
+        cmd += ['--candidates', str(HERE / case['candidates'])]
     proc = _run(cmd)
     obs['lint.exit'] = proc.returncode
     lint, plan, dec = _load(lint_json), _load(plan_json), _load(dec_json)

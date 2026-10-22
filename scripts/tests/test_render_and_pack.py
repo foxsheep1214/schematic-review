@@ -477,6 +477,29 @@ class PackReviewTests(unittest.TestCase):
         data['checks'][0]['evidence'].append({'source': str(source), 'locator': 'test'})
         path.write_text(json.dumps(data))
 
+    def test_hand_drawn_circuits_are_not_packed_without_their_candidate_file(self):
+        path = self.work / 'intent.json'
+        path.write_text(json.dumps({'schema_version': 3, 'circuits': [
+            {'id': 'BIAS', 'type': 'POWER_CONVERTER', 'refs': ['Q2'], 'states': ['run'], 'citation': 'p1'}]}))
+        errors, _ = self.run_pack()
+        self.assertTrue(any('circuit-candidates.json' in e for e in errors), errors)
+        import circuit_candidates
+        db = json.loads((self.work / 'db.json').read_text())
+        candidates = circuit_candidates.build(db, {})
+        (self.work / 'circuit-candidates.json').write_text(json.dumps(candidates))
+        self.ledger['circuit-candidates.json'] = str(self.work / 'circuit-candidates.json')
+        errors, _ = self.run_pack()
+        self.assertTrue(any('circuit_decisions missing' in e for e in errors), errors)
+        intent = {'schema_version': 3, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]}
+        import circuit_decisions
+        path.write_text(json.dumps(circuit_decisions.write_circuits(intent, candidates)))
+        errors, _ = self.run_pack()
+        self.assertFalse(any('circuit' in e for e in errors), errors)
+        stale = dict(candidates, db_sha256='0' * 64)
+        (self.work / 'circuit-candidates.json').write_text(json.dumps(stale))
+        errors, _ = self.run_pack()
+        self.assertTrue(any('db_sha256' in e for e in errors), errors)
+
     def test_absolute_declared_input_is_not_a_packed_member(self):
         self.cite(self.inputs / 'spec.md')
         errors, manifest = self.run_pack()

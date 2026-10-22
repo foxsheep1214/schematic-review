@@ -310,7 +310,7 @@ class RequestOwnershipAndWordingTests(unittest.TestCase):
         for i, row in enumerate(r['checks']):
             row['impact_assessment']['consequence'] = f'N{i} consequence'
         row = r['checks'][0]
-        row['impact_assessment'].update(consequence='合同过压可使端口负载损坏', consequence_class='COMPONENT_DAMAGE')
+        row['impact_assessment'].update(consequence='约定过压可使端口负载损坏', consequence_class='COMPONENT_DAMAGE')
         self.assertEqual([row['id']], self.found(p, r, 'PORT_OVERVOLTAGE_GRADED_BELOW_P0')[0]['check_ids'])
         row['impact_assessment'].update(consequence_class='DAMAGE_OR_HAZARD', hazard_path='PORT_OVERVOLTAGE',
                                         exclusion='U11 锁定式 OVP，门限见 DS01 p12')

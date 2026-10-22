@@ -1,6 +1,6 @@
-# ASG/SR 工作流交接合同 v1
+# ASG/SR 工作流交接约定 v1
 
-本合同只封装技能之间的交接，不替代技能内部的电气判据。独立使用 ASG/SR 不要求安装控制器。
+本约定只封装技能之间的交接，不替代技能内部的电气判据。独立使用 ASG/SR 不要求安装控制器。
 参与薄控制器流程时读本页；`contract.py` 校验封装，`adapters.py` 调用现有技能校验器。
 
 ## 输入：task.json
@@ -9,7 +9,7 @@
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version: 1`、`id`、`project_id` | 合同版本、唯一任务、项目身份 |
+| `schema_version: 1`、`id`、`project_id` | 约定版本、唯一任务、项目身份 |
 | `skill` | `ASG` 或 `SR` |
 | `design_version` | 当前用户可读版本；每次候选另由任务 ID 唯一标识 |
 | `phase` | 默认 `design_iteration`；明确申请冻结后为 `schematic_freeze` |
@@ -68,7 +68,7 @@ ASG 自检或目检未通过/未完成时必须保留开放项。SR 封装必须
 | `electrical_intent` | ASG 板级电气意图 |
 | `requirements` | 全部需求基线文件，字节哈希与 task 完全一致；可多个 |
 | `requirement_trace` | 需求到模块/图页的追溯表 |
-| `device_contracts` | 确切 MPN、引脚和外围合同及适用资料 |
+| `device_contracts` | 确切 MPN、引脚和外围约定及适用资料 |
 | `calculations` | 计算/适用仿真及条件；无需计算时保存有依据的不适用说明 |
 | `open_items` | 设计内部 OPEN 台账，不用封装的短摘要替代 |
 | `native_summary` | 现有 verify_schematic.py 的 summary.json，保留原始状态和 gates |
@@ -79,7 +79,7 @@ ASG 自检或目检未通过/未完成时必须保留开放项。SR 封装必须
 除 requirements 外，每个上述角色恰好指向一个文件，可用索引文件组织多份器件/计算证据。
 ASG 交付包的 `record/selection.json`（核心器件选型）、`record/lessons.json` 和 `review-responses.json` 的 `cause`
 （上一轮意见的归因）随包收入 files；SR 的复核结果 `selection-review.json` 随审查包返回，
-格式与校验见 [选型与归因复核](selection-review.md)。这两项不新增合同角色，封装仍为 v1。
+格式与校验见 [选型与归因复核](selection-review.md)。这两项不新增约定角色，封装仍为 v1。
 控制器重跑 ASG 新鲜度检查，拒绝遗漏有效图页和证据引用。自检缺口原样交给 SR；FRESH 不是电气通过。
 改版还应收入 change contract、preflight、基线和复验记录，可使用附加角色。
 
@@ -93,7 +93,7 @@ ASG 交付包的 `record/selection.json`（核心器件选型）、`record/lesso
 
 1. SR intent 等于最终 plan 的 review_inputs.intent，审查阶段与 task.phase 一致。
 2. 用当前 SR parse_kicad.py 重新解析 ASG 交付的 XML；db 必须与解析结果完整一致。
-3. 重跑 validate_review.py，带 `--db`、冷/热 lint、`--require-actionable`、`--require-bindings`。
+3. 重跑 validate_review.py，带 `--db`、两次扫描的 lint、`--require-actionable`、`--require-bindings`。
 4. review_mode=revision 时必须包含 old_db/old_plan 角色，绑定 task.previous_review 的对应文件，
    并使用 `--require-revision-impact`。规则变更后可进行完整 first 审查，不能盲复用历史结论。
 5. supplied review_gate 必须与重跑结果一致，且 valid=true。NO_GO 的有效报告仍可交付，用于整改。

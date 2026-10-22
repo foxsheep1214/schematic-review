@@ -554,8 +554,10 @@ def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=Fal
             if {k for k, c in actual_checks.items() if is_revision_check(c)} != {
                     k for k, c in expected_checks.items() if is_revision_check(c)}:
                 errors.append('revision disposition check set is incomplete or unexpected')
+            def asked(check):   # the check key is derived from the row itself, not part of the disposition
+                return {k: v for k, v in check.items() if k != 'check_key'} if isinstance(check, dict) else check
             for key, check in expected_checks.items():
-                if is_revision_check(check) and actual_checks.get(key) != check:
+                if is_revision_check(check) and asked(actual_checks.get(key)) != asked(check):
                     errors.append(key + ': missing/modified revision disposition check')
         return errors, expected.get('revision_impact')
     except (ValueError, TypeError, KeyError, AttributeError, OSError) as exc:

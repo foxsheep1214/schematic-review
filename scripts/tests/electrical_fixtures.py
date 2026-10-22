@@ -6,7 +6,7 @@ from electrical_contract import db_fingerprint, dependency_refs, document_finger
 
 
 def bound_intent(db, sections=None, populated=True, state='run', **extra):
-    """新契约下的意图骨架：共享绑定 + 一个装配状态 + 各检查器段。"""
+    """新约定下的意图骨架：共享绑定 + 一个装配状态 + 各检查器段。"""
     intent = {'input_sha256': input_fingerprint(db),
               'assemblies': [{'id': state, 'citation': 'synthetic BOM option A',
                               'population': {ref: True for ref in db['parts']} if populated else {}}]}

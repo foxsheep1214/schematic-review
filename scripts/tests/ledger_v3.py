@@ -97,7 +97,22 @@ def _objects(plan, cids, rows=None):
     return objects
 
 
-def _open_item(key, rows, task):
+def _edges(rows, states, key):
+    """One edge per aspect the rows have, scoped to their states (none: the rows have no state); a gap in a quantity
+    enters the stipulated limit c1."""
+    out = {}
+    for r in rows:
+        edge = out.setdefault(r['aspect'], {'aspect': r['aspect'], 'via': {'condition': 'c1'},
+                                            'rationale': 'Synthetic: %s leaves %s undecided' % (key, r['aspect'])})
+        state = states.get(r.get('id'))
+        if state:
+            edge.setdefault('states', [])
+            if state not in edge['states']:
+                edge['states'].append(state)
+    return list(out.values())
+
+
+def _open_item(key, rows, task, states=None):
     """One open item for the gaps a task (or an orphan row) owns; the row gaps were written in schema 3 shape."""
     gaps = [g for row in rows for g in row.get('gaps') or []]
     cause = rows[0].get('gap_cause')
@@ -105,7 +120,7 @@ def _open_item(key, rows, task):
     whats = list(dict.fromkeys(g.get('what') for g in gaps if g.get('what')))
     first = gaps[0] if gaps else {}
     item = {'key': key, 'kind': kind, 'what': '；'.join(whats) or (task or {}).get('root_cause') or 'Synthetic gap',
-            'decides': [{'aspect': a} for a in dict.fromkeys(r['aspect'] for r in rows)]}
+            'decides': _edges(rows, states or {}, key)}
     if task:
         item['title'] = task.get('title')
         if task.get('reason'):
@@ -141,10 +156,19 @@ def _open_item(key, rows, task):
     return {k: v for k, v in item.items() if v is not None}
 
 
+def _fail_edge(row, states):
+    state = states.get(row.get('id'))
+    return {'aspect': row['aspect'], **({'states': [state]} if state else {})}
+
+
 def _stipulated(fid, question, objects, verdict):
     return {'id': fid, 'question': question, 'objects': objects,
-            'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'p1 Table 1 (stipulated clause)',
-                            'says': 'stipulated limit 1 V', 'use': 'stipulated'}],
+            'conditions': [{'id': 'c1', 'kind': 'NUMERIC_LIMIT', 'source': 'synthetic-fixture.json',
+                            'locator': 'p1 Table 1 (stipulated clause)', 'says': 'stipulated limit 1 V',
+                            'limit': {'max': 1, 'unit': 'V'}, 'regime': 'stipulated', 'use': 'stipulated'},
+                           {'id': 'c2', 'kind': 'MANDATORY_CLAUSE', 'source': 'synthetic-fixture.json',
+                            'locator': 'p1 §1 (stipulated clause)', 'says': 'the stipulated connection must hold',
+                            'applies': 'stipulated', 'use': 'stipulated'}],
             'no_calculation_reason': 'synthetic fixture', 'evidence': SYNTHETIC, 'open': [], 'fails': [], 'verdict': verdict}
 
 
@@ -155,6 +179,12 @@ def _functions(out, plan):
     tasks = [t for t in out.get('work_items') or [] if isinstance(t, dict) and isinstance(t.get('id'), str)]
     frames = {f['id']: f for f in (plan or {}).get('functions') or [] if isinstance(f, dict) and isinstance(f.get('id'), str)}
     frame_of = {m['check_id']: f['id'] for f in frames.values() for m in f.get('members') or [] if isinstance(m, dict)}
+    states = {c['id']: (c.get('object') or {}).get('state') for c in (plan or {}).get('checks') or []
+              if isinstance(c, dict) and isinstance(c.get('id'), str) and isinstance(c.get('object'), dict)}
+    for cid, row in rows.items():   # without a plan, the row's own binding says its state
+        obj = (row.get('binding') or {}).get('object') if isinstance(row.get('binding'), dict) else None
+        if cid not in states and isinstance(obj, dict):
+            states[cid] = obj.get('state')
     for row in rows.values():
         if row.get('review_result') in ('INSUFFICIENT', 'FAIL'):
             row.setdefault('aspect', _aspect(plan, row))
@@ -185,13 +215,13 @@ def _functions(out, plan):
             ins = [rows[c] for c in members if rows[c].get('review_result') == 'INSUFFICIENT']
             fails = [rows[c] for c in members if rows[c].get('review_result') == 'FAIL']
             if ins:
-                fn['open'].append(_open_item(task['id'], ins, task))
+                fn['open'].append(_open_item(task['id'], ins, task, states))
                 for r in ins:
                     r['function_id'], r['open_ref'] = fid, fid + '/' + task['id']
             for r in fails:
                 key = task['id'] if not ins and len(fails) == 1 else task['id'] + '-' + _slug(r['id'])
                 fn['fails'].append({'key': key, 'finding_id': r.get('finding_id'), 'what': task.get('root_cause') or 'Synthetic defect',
-                                    'title': task.get('title'), 'decides': [{'aspect': r['aspect']}],
+                                    'title': task.get('title'), 'decides': [_fail_edge(r, states)], 'conditions': ['c2'],
                                     **{k: task[k] for k in ('due_stage', 'design_option') if k in task},
                                     **({'why': task['reason']} if task.get('reason') else {})})
                 r['function_id'], r['fail_ref'] = fid, fid + '/' + key
@@ -205,12 +235,12 @@ def _functions(out, plan):
             fid = frame_of.get(cid) or 'FN-' + _slug(cid)
             fn = function(fid, [cid], 'Synthetic question for ' + cid)
             fn['fails'].append({'key': _slug(cid), 'finding_id': row['finding_id'], 'what': 'Synthetic defect',
-                                'decides': [{'aspect': row['aspect']}]})
+                                'decides': [_fail_edge(row, states)], 'conditions': ['c2']})
             row['function_id'], row['fail_ref'] = fid, fid + '/' + _slug(cid)
         if row.get('review_result') == 'INSUFFICIENT' and cid not in owned and row.get('gaps') is not None:
             fid = frame_of.get(cid) or 'FN-' + _slug(cid)
             fn = function(fid, [cid], 'Synthetic question for ' + cid)
-            fn['open'].append(_open_item(_slug(cid), [row], None))
+            fn['open'].append(_open_item(_slug(cid), [row], None, states))
             row['function_id'], row['open_ref'] = fid, fid + '/' + _slug(cid)
     for cid, fid in frame_of.items():
         row = rows.get(cid)

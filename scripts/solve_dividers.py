@@ -420,7 +420,7 @@ class Solver:
             }
         references = {p['terminal'] for p in ground}
         if len(references) != 1:
-            return {'status': 'ambiguous', 'reason': '下臂跨多个地/参考域，禁止按名称合并', 'paths': paths}
+            return {'status': 'ambiguous', 'reason': '下臂跨多个地/参考地分区，禁止按名称合并', 'paths': paths}
         sources = sorted({p['terminal'] for p in upper})
         if len(sources) != 1:
             return {

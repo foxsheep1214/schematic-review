@@ -25,6 +25,7 @@ from page_inventory import validate_document_pages
 from execution_audit import validate_execution_audit
 from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
 from review_functions import validate_functions
+import check_key
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -37,7 +38,7 @@ CLAUSE_TEXT_STRIP = re.compile(r"[\s，。；;,.、：:（）()]")
 
 
 def requirement_clause_errors(key, item, criterion):
-    """REQ-D01：需求全文按原文顺序拆成条款，只有义务条款带结论，行结论 = 义务条款中最差的结论。"""
+    """REQ-D01：需求全文按原文顺序拆成条款，只有要求条款带结论，行结论 = 要求条款中最差的结论。"""
     clauses = item.get("requirement_clauses")
     if not isinstance(clauses, list) or not clauses or not all(isinstance(c, dict) for c in clauses):
         return [f"{key}: REQ-D01 须给 requirement_clauses（按原文顺序拆分的条款，kind 为 OBLIGATION/PREMISE）"]
@@ -54,13 +55,13 @@ def requirement_clause_errors(key, item, criterion):
             errors.append(f"{key}: 条款 {i} 是前提（条件/方法/范围），不带结论")
         elif kind == "OBLIGATION":
             if result not in CLAUSE_ORDER:
-                errors.append(f"{key}: 义务条款 {i} 须给 PASS/FAIL/INSUFFICIENT/NA 结论")
+                errors.append(f"{key}: 要求条款 {i} 须给 PASS/FAIL/INSUFFICIENT/NA 结论")
             elif worst is None or CLAUSE_ORDER[result] > CLAUSE_ORDER[worst]:
                 worst = result
     if worst is None and not errors:
-        errors.append(f"{key}: 至少一条义务条款；整条都是前提时按适用性改判 NA 并给依据")
+        errors.append(f"{key}: 至少一条要求条款；整条都是前提时按适用性改判 NA 并给依据")
     elif worst is not None and item.get("review_result") != worst:
-        errors.append(f"{key}: 行结论须等于义务条款中最差的结论（{worst}）；前提条款与其他行的缺陷不连带本行")
+        errors.append(f"{key}: 行结论须等于要求条款中最差的结论（{worst}）；前提条款与其他行的缺陷不连带本行")
     return errors
 def _under(source, root):
     source, root = source.replace('\\', '/').rstrip('/'), root.replace('\\', '/').rstrip('/')
@@ -232,6 +233,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             blockers.append('input netlist failed integrity/export checks')
         require(report.get("db_digest") == fingerprint(db), "db_digest mismatch")
     expected = index(plan.get("checks"), "plan.checks")
+    asked = {}
+    for cid, planned in expected.items():   # merge plan §5: one check is asked once (the key is recomputed, never trusted)
+        asked.setdefault(check_key.key(planned), []).append(cid)
+    for key, cids in asked.items():
+        require(len(cids) == 1, f"{', '.join(sorted(cids))}: the same check (rule, object, criterion) asked "
+                                f"{len(cids)} times; keep one row, or split the object or criterion")
     document_pages, page_checks = None, {}
     if db is not None:
         try:
@@ -438,7 +445,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                           'checked on each row (its refs, nodes, values)')
     errors.extend(split_out_errors(checks, expected))
     errors.extend(history_citation_errors(report, checks, expected))
-    errors.extend(validate_functions(plan, written, checks, history_ids))
+    errors.extend(validate_functions(plan, written, checks, history_ids, db))
 
     for fid, item in findings.items():
         if actionable or "remediation" in item:

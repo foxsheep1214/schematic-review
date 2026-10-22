@@ -46,7 +46,7 @@ def derive_row(fn, planned, aspect, findings):
         return None, error
     row['handoff'] = handoff
     for item in fn.get('fails') or []:
-        if isinstance(item, dict) and decides_row(item, aspect, state):
+        if isinstance(item, dict) and decides_row(item, aspect, state, planned['id']):
             finding = findings.get(item.get('finding_id'))
             if finding is None:
                 return None, '%s: fail item %s names finding %s, which the results do not list' % (
@@ -56,11 +56,11 @@ def derive_row(fn, planned, aspect, findings):
                        rationale='见功能判定 %s：发现项 %s——%s' % (where, item['finding_id'], item.get('what') or ''))
             return row, None
     for item in fn.get('open') or []:
-        if isinstance(item, dict) and decides_row(item, aspect, state):
+        if isinstance(item, dict) and decides_row(item, aspect, state, planned['id']):
             row.update(review_result='INSUFFICIENT', open_ref='%s/%s' % (fn['id'], item['key']),
                        rationale='见功能判定 %s：开放项 %s——%s' % (where, item['key'], item.get('what') or ''))
             return row, None
-    basis = judged(fn, aspect, state)
+    basis = judged(fn, aspect, state, planned['id'])
     if basis is None:
         return None, unjudged_message(planned['id'], fn['id'], aspect, state)
     row.update(review_result='PASS', rationale='见功能判定 %s：%s' % (where, basis))

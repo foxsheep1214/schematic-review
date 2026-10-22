@@ -43,9 +43,9 @@ DOMAINS = (
 
 METHODS = (
     Method('A', '自动扫描', '脚本', '网表；关键器件计数另需意图', '疑点 FINDING / 候选 CANDIDATE / 提示 INFO',
-           '冷跑与热跑都执行'),
+           '网表扫描与证据扫描都执行'),
     Method('E', '证据计算', '脚本', '网表 + 结构化证据 + 资料审计', '逐项 PASS / FAIL / INSUFFICIENT',
-           '热跑执行，缺任一保证值即 INSUFFICIENT'),
+           '证据扫描执行，缺任一保证值即 INSUFFICIENT'),
     Method('T', '连接追踪', '审查者', '网表、图面、装配与状态表', '逐项结果',
            '专家审查：逐跳追源、负载、使能与返回路径'),
     Method('C', '工程计算', '审查者', '资料保证值、公差、工况与需求', '逐项结果',
@@ -61,7 +61,7 @@ METHODS = (
 SOURCES = {
     'lint': 'Lint 内置',
     'plan': '计划逐对象生成',
-    'subject': '功能电路审查科目',
+    'subject': '功能电路检查项',
     'board': '全板通用',
     'revision': '改版比对',
     'i2c_topology': '检查器·I²C 连接覆盖',
@@ -537,8 +537,8 @@ RULES = (
     Rule('REQ-A02', '要求的功能未检出',
          '验证设计意图要求的功能是否已在原理图中实现', 'plan', 'circuit_type'),
     Rule('REQ-D01', '需求逐条追溯',
-         '需求条款逐条落到实现电路与检查项，验收判据取需求原文；原文拆成义务/前提条款，只有义务条款带结论，'
-         '行结论取义务条款中最差者，前提条款与其他行的缺陷不连带本行', 'plan', 'requirement'),
+         '需求条款逐条落到实现电路与检查项，验收判据取需求原文；原文拆成要求/前提条款，只有要求条款带结论，'
+         '行结论取要求条款中最差者，前提条款与其他行的缺陷不连带本行', 'plan', 'requirement'),
     Rule('REQ-D02', '需求口径一致',
          '需求/规格书与原理图参数口径统一（电流/电压数字唯一来源）', 'board', 'board'),
     Rule('REQ-Q01', '需求覆盖',
@@ -552,16 +552,16 @@ RULES = (
     Rule('REQ-Q05', '改版影响覆盖',
          '核对新旧基线、变化、依赖缺口及扩大复验范围；全部必需项使用本轮证据，不迁移旧结论。', 'revision', 'history'),
     Rule('REQ-Q07', '功能电路覆盖',
-         '功能电路的全部审查科目逐电路、逐工况完成后汇总；功能电路只汇总覆盖，不能代替审查科目', 'plan', 'circuit_type'),
+         '功能电路的全部电路检查项逐电路、逐工况完成后汇总；功能电路只汇总覆盖，不能代替电路检查项', 'plan', 'circuit_type'),
     Rule('REQ-Q08', '未检出功能确认',
          '网表未检出且未声明的功能电路逐个确认不适用并给出依据；未检出特征不等于不适用', 'plan', 'board'),
     Rule('REQ-H01', '改版 Diff 与历史意见闭环',
          '按历史意见断言核对新旧器件字段、引脚换网与网络成员变化，防止假闭环', 'revision', 'history'),
     Rule('REQ-H02', '改版删除项复核',
-         '核对旧项在本版冷/热阶段的消失、恢复或替代及连带影响，不能以清单增减证明修复。', 'revision', 'history'),
+         '核对旧项在本版两次扫描的消失、恢复或替代及连带影响，不能以清单增减证明修复。', 'revision', 'history'),
 )
 
-# 主纲要用于维护规则目的，不向项目台账新增字段；跨域关系由实际判据和 HANDOFF 保留。
+# 主审查要点用于维护规则目的，不向项目台账新增字段；跨域关系由实际判据和 HANDOFF 保留。
 OBJECTIVES = {
     'G1': ('需求与功能符合', '要求的功能、接口和性能是否落实到电路？'),
     'G2': ('器件与连接正确', '实际器件、物理脚、装配与端到端连接是否正确？'),
@@ -598,23 +598,23 @@ OBJECTIVE_RULES = {
 def build_objective_index(rule_ids, groups, objectives=OBJECTIVES):
     """Reject unaligned, duplicated or stale maintenance mappings, without judging circuits."""
     if set(groups) != set(objectives):
-        raise ValueError('纲要分组与已定义纲要不一致')
+        raise ValueError('审查要点分组与已定义审查要点不一致')
     index = {}
     for goal, members in groups.items():
         if not members:
-            raise ValueError('纲要没有规则: ' + goal)
+            raise ValueError('审查要点没有规则: ' + goal)
         for rule_id in members:
             if rule_id in index:
-                raise ValueError('规则重复归属纲要: ' + rule_id)
+                raise ValueError('规则重复归属审查要点: ' + rule_id)
             index[rule_id] = goal
     missing, extra = set(rule_ids) - set(index), set(index) - set(rule_ids)
     if missing or extra:
-        raise ValueError('纲要映射遗漏/过期: missing=%s extra=%s' % (sorted(missing), sorted(extra)))
+        raise ValueError('审查要点映射遗漏/过期: missing=%s extra=%s' % (sorted(missing), sorted(extra)))
     return index
 
 
 # 功能电路：正则名称命中仅作候选；声明或已确认拓扑使其适用，再逐电路×工况
-# （未声明电路时按类型一次）生成全部审查科目。意图中 features 的键与 circuits[].type 取类型名。
+# （未声明电路时按类型一次）生成全部电路检查项。意图中 features 的键与 circuits[].type 取类型名。
 # PWR-C14 噪声预算挂在敏感负载的包上（ANALOG/CLOCK/RF），变换器本身不生成。
 CIRCUIT_TYPES = (
     CircuitType('POWER_CONVERTER', '变换器与稳压器', 'PWR',
@@ -701,7 +701,7 @@ CIRCUIT_TYPES = (
             ('datasheets',)),
 )
 
-# 审查科目的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），行的 question 就是审查员要回答的
+# 电路检查项的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），行的 question 就是审查员要回答的
 # 问题；通用 criterion 保留为提示。问题只说要算什么、对照什么，禁止句（“不得…”“不把…外推”）由 question_errors 拒绝。
 QUESTIONS = {
     'PWR-C02': '{state} 时 {circuit}（{refs}）在要求的输入、负载和温度范围内，输出是否落在负载要求的窗口 {window} 内；允许关断或保护时，动作与恢复是否安全',
@@ -754,10 +754,22 @@ QUESTIONS = {
     'SIG-D06': '{state} 时 {circuit}（{refs}）的 UART/JTAG/SWD 信号电气引出、串阻与 ESD 是否满足调试/烧录要求',
 }
 
-# 功能框架的问题：每个 intent 电路一句，由该科目问题归纳；审查员可改写。
-# 答案不随工作态变化的审查科目（导通方向、接口语义、USB 物理层与角色、传感器接法）：计划每电路只问一次，
+# 功能框架的问题：每个 intent 电路一句，由该检查项问题归纳；审查员可改写。
+# 答案不随工作态变化的电路检查项（导通方向、接口语义、USB 物理层与角色、传感器接法）：计划每电路只问一次，
 # 行的 object 不带 state，问题模板也不带“{state} 时”。纹波预算（PWR-C14）和变换器各条随负载/模式变化，仍逐状态。
 STATE_INVARIANT = frozenset({'PWR-T05', 'ANA-D01', 'SIG-T04', 'SIG-D07', 'SIG-D04'})
+
+# 电路候选的基础工作态（scripts/circuit_candidates.py）：按类型固定，审查员增减一个态要引用手册里的模式名。
+# 控制器的 LL/HL、突发、掉电等模式是在这个基础清单上按资料补充的，候选一致不等于工作态覆盖完整。
+CANDIDATE_STATES = {
+    'POWER_CONVERTER': ('startup', 'run', 'fault'),
+    'POWER_PROTECTION': ('startup', 'run', 'fault'),
+    'USB': ('unattached', 'attached', 'fault'),
+    'ANALOG': ('run', 'fault'),
+    'ISOLATION': ('run',),
+    'STARTUP': ('power-on', 'restart'),
+    'DEBUG': ('run',),       # 调试口的答案不随工作态变化，仍要一个态来展开行
+}
 
 FRAME_QUESTIONS = {
     'POWER_CONVERTER': '输出是否落在负载要求的窗口 {window} 内，电流应力、时序/电容条件、损耗和反馈环路是否都在保证范围内',
@@ -789,7 +801,7 @@ BOUNDING_STEPS = (
     '先用手册里已有的界限。',
     '算出了余量就下结论。',
     '本设计自己要定的量不向厂家要。',
-    '没有保证值就按公开界判断。',
+    '没有保证值就按公开资料界限判断。',
     '只有走完 1–4 仍判不了，才记证据不足，并在缺口里写明查过手册哪几条、为什么都不够。',
 )
 
@@ -797,7 +809,7 @@ QUESTION_BAN_RE = re.compile(r'禁止|严禁|勿|不(得|能|可|准|要|把|以
 
 
 def question(rule_id, state, circuit, refs, window=None):
-    """审查科目的问题，按电路填空；没有模板的规则返回 None。"""
+    """电路检查项的问题，按电路填空；没有模板的规则返回 None。"""
     template = QUESTIONS.get(rule_id)
     if template is None:
         return None
@@ -805,7 +817,7 @@ def question(rule_id, state, circuit, refs, window=None):
 
 
 def frame_question(type_name, circuit, refs, states, window=None):
-    body = FRAME_QUESTIONS.get(type_name) or '审查科目的问题是否都成立'
+    body = FRAME_QUESTIONS.get(type_name) or '电路检查项的问题是否都成立'
     return (FRAME_PREFIX + body).format(circuit=circuit, refs='、'.join(refs), states='/'.join(states),
                                         window=window or NO_WINDOW)
 
@@ -838,7 +850,7 @@ DOMAIN_BY_CODE = {d.code: d for d in DOMAINS}
 METHOD_BY_CODE = {m.code: m for m in METHODS}
 
 # -- 输入依赖与执行阶段 ---------------------------------------------------
-# 方式字母同时编码了“谁来做”和“要什么输入”。这里把输入依赖单列，冷跑、热跑与审查阶段由它推出；
+# 方式字母同时编码了“谁来做”和“要什么输入”。这里把输入依赖单列，网表扫描、证据扫描与审查阶段由它推出；
 # 规则编号不变。
 INPUTS = OrderedDict([
     ('netlist', '网表'),
@@ -867,7 +879,7 @@ INPUT_OVERRIDES = {
     'REQ-A01': ('netlist', 'intent'),
 }
 COLD_INPUTS = {'netlist', 'export_log', 'intent'}
-STAGES = OrderedDict([('cold', '冷跑'), ('hot', '热跑'), ('review', '审查员'), ('revision', '复审')])
+STAGES = OrderedDict([('cold', '网表扫描'), ('hot', '证据扫描'), ('review', '审查员'), ('revision', '复审')])
 
 # 每条规则的检查说明（第 2 版）。风险描述是检查理由，不是本次缺陷或自动严重度；
 # inputs 中的规则只是复用方向，只有同一实际对象/状态的证据才构成项目依赖。
@@ -1014,7 +1026,7 @@ EXPLANATIONS = {
     'PRO-C01': _x('单个保护器件合格，整条链的动作电压、时序和能量仍可能配合不上', '按实际保护链逐段核动作电压、时序与能量配合即关闭；缺工况不定判', inputs='PRO-C02 的门限、DRV-C01/C02 的耐受'),
     'PRO-C02': _x('只核一侧窗口：可能正常工作时误触发，或故障时触发不了', '两侧各有保证值或有据上界与门限比较且有裕量即关闭；不要求全温曲线', inputs='ANA-T01 的检测路径', false_alarms='连接器信号线 ESD 归 PRO-D03；栅源稳压管正常限幅属允许用途；跨开关 TVS 是能量钳位'),
     'PRO-D01': _x('光耦能传信号，隔离等级、工作电压或参考地归属仍可能不满足要求', '两侧网络归属、参考地、跨接器件和耐压都核实即关闭；爬电距离交版图', inputs='DEV-D01 的器件身份'),
-    'PRO-D02': _x('跨隔离带的 Y 电容或误连网络可能绕过加强绝缘', '每个跨隔离器件与网络归属核实；不能代替PRO-C03工作资格，实际爬电另验', inputs='PWR-T06 的参考域'),
+    'PRO-D02': _x('跨隔离带的 Y 电容或误连网络可能绕过加强绝缘', '每个跨隔离器件与网络归属核实；不能代替PRO-C03工作资格，实际爬电另验', inputs='PWR-T06 的参考地分区'),
     'PRO-C03': _x('短时耐压测试值、绝缘目标或无直流跨接被错当成实际工作条件下的元件资格', '每个跨隔离器件均有工作应力与资格条件的对照，未满足前提不得移作阶段NA', inputs='隔离器件清单、实际波形/工作电压及准确订货变体资格'),
     'PRO-D03': _x('有 ESD 器件不等于端口受保护：可能挂在非活线上或钳位电压过高', '每个对外针的防护与泄放路径、所列钳位的工作与钳位电压都核实即关闭', inputs='DEV-D03 的端口定义', false_alarms='板内互连连接器可按依据判不适用'),
     'DRV-A01': _x('被开关的线圈没有释放路径时，关断尖峰会击穿开关管', '找到续流、钳位、RC 或有据的集成钳位路径即关闭；额定归 DRV-C01', false_alarms='驱动器内部钳位（需资料）；反激变压器的能量经次级送出'),
@@ -1028,15 +1040,15 @@ EXPLANATIONS = {
     'DRV-D01': _x('驱动接对了，死区、自举欠压或负压等条款仍可能被遗漏', '实际拓扑适用的驱动器条款逐项满足即关闭；计算归 DRV-C01/C02', inputs='DRV-T01 的拓扑'),
     'REQ-A01': _x('数量对了不等于功能实现；该有的器件也可能被换成别的料号', '按意图清单数量一致即关闭；功能实现归 REQ-D01', false_alarms='意图清单把同一功能的替代料分开计数'),
     'REQ-A02': _x('名称没命中不等于功能缺失；命中了也不等于真实现', '按真实连接确认功能存在或缺失即关闭', false_alarms='功能由非典型命名或片内模块实现'),
-    'REQ-D01': _x('局部电路都能工作，产品仍可能漏掉需求要求的功能或边界', '每条需求的义务条款都落到电路与检查并有结论即关闭'),
+    'REQ-D01': _x('局部电路都能工作，产品仍可能漏掉需求要求的功能或边界', '每条需求的要求条款都落到电路与检查并有结论即关闭'),
     'REQ-D02': _x('各模块各自正确，可能按不同的电流、电压口径设计', '同一参数在需求、计算和图面中只有一个数字来源即关闭', inputs='DOC-Q01 的版本一致性'),
     'REQ-Q01': _x('需求可能只在说明里提到，没有任何检查去验证', '每条需求都有检查去向，检查也能追回需求即关闭'),
     'REQ-Q02': _x('只查到局部引脚时，会漏掉链路另一端或中间转换', '每条接口、电源、检测、使能、复位和时钟链路都追到终点和返回即关闭'),
     'REQ-Q03': _x('正常状态通过，可能掩盖启动、掉电或故障时的错误', '每个关键电路的需求内状态都已覆盖即关闭；不新增需求之外的工况', inputs='RST-T03 的顺序结论'),
     'REQ-Q04': _x('历史意见可能因换版或改位号而无声消失', '每条历史意见都有复验结论：修复、保留或有依据撤回即关闭', inputs='REQ-H01 的复验结果'),
     'REQ-Q05': _x('只复验修改点，会漏掉改动对其他电路的连带影响', '改动影响的供电、控制和保护范围都用本轮证据复验即关闭', inputs='REQ-H01 的差异与依赖'),
-    'REQ-Q07': _x('整类电路一次性通过可能掩盖某个子电路或状态没查', '功能电路的全部审查科目逐电路、逐状态完成即关闭'),
-    'REQ-Q08': _x('命名或符号不典型的电路可能被自动计划漏掉', '每个未检出的功能电路都确认不适用并有依据，或已补审查科目即关闭'),
+    'REQ-Q07': _x('整类电路一次性通过可能掩盖某个子电路或状态没查', '功能电路的全部电路检查项逐电路、逐状态完成即关闭'),
+    'REQ-Q08': _x('命名或符号不典型的电路可能被自动计划漏掉', '每个未检出的功能电路都确认不适用并有依据，或已补电路检查项即关闭'),
     'REQ-H01': _x('只改说明或换位号可能被误当成修复', '历史意见对应的器件字段、换网和网络成员变化都用新版证据核过即关闭', inputs='DOC-Q01 绑定的新旧输入'),
     'REQ-H02': _x('旧检查对象消失可能被误当成问题已关闭', '每个消失项都确认是删除、替代还是遗漏即关闭', inputs='REQ-H01 的差异'),
 }
@@ -1145,10 +1157,10 @@ def _build_index():
             raise ValueError('输入依赖定义错误: ' + rule_id)
     for kind in CIRCUIT_TYPES:
         if not kind.subjects or any(rule[4] in 'AEHQ' for rule in kind.subjects):
-            raise ValueError('审查科目须为审查者逐项执行的规则: ' + kind.name)
+            raise ValueError('电路检查项须为审查者逐项执行的规则: ' + kind.name)
     for rule in RULES:
         if rule.source == 'subject' and not circuit_types_of(rule.id):
-            raise ValueError('审查科目未编入任何功能电路: ' + rule.id)
+            raise ValueError('电路检查项未编入任何功能电路: ' + rule.id)
 
 
 def known(rule_id):
@@ -1218,12 +1230,12 @@ def circuit_types_of(rule_id):
 
 
 def circuit_type_criterion(name):
-    """功能电路汇总项的判据：列出本类型审查科目；项目自定义功能没有审查科目，由审查者补充。"""
+    """功能电路汇总项的判据：列出本类型电路检查项；项目自定义功能没有电路检查项，由审查者补充。"""
     item = CIRCUIT_TYPE_BY_NAME.get(name)
     if item is None:
-        return '执行项目自定义功能 %s 的原理图检查；审查科目由审查者按需求逐项补充' % name
+        return '执行项目自定义功能 %s 的原理图检查；电路检查项由审查者按需求逐项补充' % name
     members = '、'.join('%s %s' % (rule, title(rule)) for rule in item.subjects)
-    return '执行%s功能电路：%s；审查科目全部完成后汇总，禁止整类电路一次性 PASS' % (item.title, members)
+    return '执行%s功能电路：%s；电路检查项全部完成后汇总，禁止整类电路一次性 PASS' % (item.title, members)
 
 
 def order(rule_id):
@@ -1262,10 +1274,10 @@ def _cell(text):
 
 
 def render_markdown():
-    lines = ['## 审查纲要与规则归属', '',
-             '目的与取舍见 [审查纲要](review-charter.md)。每条在用规则有一个主纲要，跨域约束仍按判据与 HANDOFF 处理。',
+    lines = ['## 审查审查要点与规则归属', '',
+             '目的与取舍见 [审查审查要点](review-charter.md)。每条在用规则有一个主审查要点，跨域约束仍按判据与 HANDOFF 处理。',
              '这是维护映射，不增加项目检查或填写字段；映射齐全不等于实际审查正确。', '',
-             '| 纲要 | 要回答的问题 | 主归属规则数 |', '|---|---|---|']
+             '| 审查要点 | 要回答的问题 | 主归属规则数 |', '|---|---|---|']
     for goal, (name, question) in OBJECTIVES.items():
         lines.append('| %s %s | %s | %d |' % (goal, name, question, len(OBJECTIVE_RULES[goal])))
     lines += ['', '## 检查方式', '',
@@ -1274,11 +1286,11 @@ def render_markdown():
     for m in METHODS:
         lines.append('| %s | %s | %s | %s | %s | %s |' % tuple(_cell(x) for x in m))
     lines += ['', '## 输入依赖与执行阶段', '',
-              '方式字母说明谁来做；下表说明判这条规则要什么输入。冷跑、热跑与审查阶段由输入依赖推出，'
+              '方式字母说明谁来做；下表说明判这条规则要什么输入。网表扫描、证据扫描与审查阶段由输入依赖推出，'
               '规则编号不随自动化程度改变。', '',
               '| 阶段 | 条件 | 规则数 |', '|---|---|---|',
-              '| 冷跑 | 脚本执行，只用网表、导出日志或设计意图声明 | %d |' % len(rules(stage='cold')),
-              '| 热跑 | 脚本执行，还要规格书数值（evidence.json） | %d |' % len(rules(stage='hot')),
+              '| 网表扫描 | 脚本执行，只用网表、导出日志或设计意图声明 | %d |' % len(rules(stage='cold')),
+              '| 证据扫描 | 脚本执行，还要规格书数值（evidence.json） | %d |' % len(rules(stage='hot')),
               '| 审查员 | 审查员对照资料、需求和图面判 | %d |' % len(rules(stage='review')),
               '| 复审 | 需要上一版网表与意见 | %d |' % len(rules(stage='revision'))]
     lines += ['', '## 内容域', '',
@@ -1289,9 +1301,9 @@ def render_markdown():
             d.code, d.name, _cell(d.scope), len(rules(domain=d.code)), _cell(d.handoff or '—')))
     lines += ['', '## 来源与展开粒度', '',
               '| 来源 | 何时生成计划项 |', '|---|---|',
-              '| Lint 内置 / 检查器 | 自动扫描随冷跑、热跑执行；证据计算项与检查器项按识别到的对象生成 |',
+              '| Lint 内置 / 检查器 | 自动扫描随网表扫描、证据扫描执行；证据计算项与检查器项按识别到的对象生成 |',
               '| 计划逐对象生成 | 按“粒度”列逐对象生成（页、器件、电源轨、链路、需求等） |',
-              '| 审查科目 | 所属功能电路适用时生成：声明了电路则逐电路×工况，否则按功能电路生成一次 |',
+              '| 电路检查项 | 所属功能电路适用时生成：声明了电路则逐电路×工况，否则按功能电路生成一次 |',
               '| 全板通用 | 每块板各生成一项，审查者给出适用性与结果 |',
               '| 改版比对 | 复审时由改版影响与历史意见断言生成 |', '',
               '| 粒度代码 | 含义 |', '|---|---|']
@@ -1309,7 +1321,7 @@ def render_markdown():
         lines.append('| %s %s | %s |' % (d.code, d.name, ' | '.join(cells)))
     for d in DOMAINS:
         lines += ['', '## %s %s' % (d.code, d.name), '',
-                  '| 编号 | 纲要 | 方式 | 输入 | 检查项 | 判据要点 | 粒度 | 来源 | 功能电路 |', '|---|---|---|---|---|---|---|---|---|']
+                  '| 编号 | 审查要点 | 方式 | 输入 | 检查项 | 判据要点 | 粒度 | 来源 | 功能电路 |', '|---|---|---|---|---|---|---|---|---|']
         for rule in sorted(rules(domain=d.code), key=lambda r: order(r.id)):
             lines.append('| %s | %s | %s | %s | %s | %s | %s | %s | %s |' % (
                 rule.id, OBJECTIVE_BY_RULE[rule.id], METHOD_BY_CODE[rule.id[4]].name,
@@ -1332,11 +1344,11 @@ def render_markdown():
         lines.append('')
     lines += ['', '## 功能电路', '',
               '名称命中先生成 UNDETERMINED 候选；意图声明（`features` 键、`circuits[].type` 取类型名）或已确认拓扑使功能电路适用，再生成 REQ-Q07 '
-              '覆盖项与审查科目，逐科目再核实际用途。未检出且未声明的功能电路汇总到一项 REQ-Q08 确认；'
+              '覆盖项与电路检查项，逐项再核实际用途。未检出且未声明的功能电路汇总到一项 REQ-Q08 确认；'
               '不必为排除它们在 `features` 中逐个写 NOT_APPLICABLE，逐个声明会为每个类型各生成一行 REQ-Q07。'
               '分立 MOSFET 电平转换器没有名称线索，须在 `intent.circuits` 中声明（在 I²C 等总线上则并入该总线电路），'
               '转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划与结果台账](plan-and-results.md)。', '',
-              '| 功能电路 | 名称 | 内容域 | 审查科目 | 必需资料 | 检出特征（正则） |',
+              '| 功能电路 | 名称 | 内容域 | 电路检查项 | 必需资料 | 检出特征（正则） |',
               '|---|---|---|---|---|---|']
     for p in CIRCUIT_TYPES:
         lines.append('| %s | %s | %s | %s | %s | `%s` |' % (

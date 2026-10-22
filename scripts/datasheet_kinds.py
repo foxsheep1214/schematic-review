@@ -16,6 +16,22 @@ import subprocess
 # Cue words on ASCII-alphanumeric text with spaces removed (PDF extraction often drops spaces).
 KIND_CUES = (
     ('opto', ('optocoupler', 'photocoupler', 'optoisolator', 'opticallycoupled', 'opticalisolator', 'opticalcoupler')),
+    # Integrated-circuit roles (board_intent.IC_KINDS): the datasheet title names what the part does.
+    ('pd_controller', ('pdcontroller', 'powerdelivery', 'usbpd', 'typeccontroller', 'usbccontroller')),
+    ('sr_controller', ('synchronousrectif', 'srcontroller')),
+    ('gate_driver', ('gatedriver', 'mosfetdriver', 'igbtdriver', 'bridgedriver', 'fetdriver')),
+    ('pwm_controller', ('pwmcontroller', 'pfccontroller', 'flybackcontroller', 'currentmodecontroller',
+                        'voltagemodecontroller', 'switchingcontroller', 'offlinecontroller', 'quasiresonantcontroller',
+                        'boostcontroller', 'buckcontroller', 'powerfactorcorrectioncontroller', 'resonantcontroller',
+                        'llccontroller', 'switchmodecontroller', 'pwmcontrol')),
+    ('regulator', ('voltageregulator', 'lowdropout', 'ldoregulator', 'dcdcconverter', 'buckconverter',
+                   'boostconverter', 'switchingregulator', 'stepdownconverter', 'stepupconverter', 'loadswitch')),
+    ('supervisor', ('supervisor', 'supervisory', 'voltagemonitor', 'resetcircuit', 'resetic', 'watchdog')),
+    ('opamp_comparator', ('operationalamplifier', 'opamp', 'comparator', 'erroramplifier', 'instrumentationamplifier')),
+    ('shunt_reference', ('shuntregulator', 'voltagereference', 'shuntreference')),
+    ('mcu', ('microcontroller', 'microprocessor', 'systemonchip', 'mcu')),
+    ('transceiver', ('transceiver', 'ethernetphy', 'linedriver', 'busdriver')),
+    ('isolator', ('digitalisolator', 'isolatedgatedriver', 'isolator')),
     ('bjt', ('npn', 'pnp', 'bipolar')),
     ('mosfet', ('mosfet', 'nchannel', 'pchannel', 'superjunction')),
     ('tvs', ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress')),
@@ -25,8 +41,12 @@ KIND_CUES = (
     ('transformer', ('transformer',)),
     ('connector', ('connector', 'receptacle', 'terminalblock')),
 )
+IC_ROLE_CUES = {'pd_controller', 'sr_controller', 'gate_driver', 'pwm_controller', 'regulator', 'supervisor',
+                'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver', 'isolator'}
+DISCRETE_CUES = {'mosfet', 'bjt', 'diode', 'zener', 'tvs', 'bridge_rectifier'}
 SPECIFIC_DIODES = {'tvs', 'zener', 'bridge_rectifier'}      # a quote naming these is not evidence for a plain diode
-SEMICONDUCTOR_REF = re.compile(r'^(Q|D|ZD|TVS)\d', re.I)
+SEMICONDUCTOR_REF = re.compile(r'^(Q|D|ZD|TVS|U|M)\d', re.I)   # discretes and integrated circuits need a kind
+GENERIC_IC = 'ic'
 STATUSES = ('VERIFIED', 'QUOTE_NOT_FOUND', 'QUOTE_LACKS_TYPE', 'QUOTE_CONFLICT', 'NO_DOCUMENT', 'NO_TEXT')
 
 
@@ -41,8 +61,17 @@ def cues(text, specific=True):
     if specific and found & SPECIFIC_DIODES:
         found.discard('diode')
     if specific and 'opto' in found:
-        # An optocoupler quote names its emitter diode and phototransistor too.
-        found -= {'diode', 'bjt'}
+        # An optocoupler quote names its emitter diode and phototransistor too, and "optoisolator" is not a digital isolator.
+        found -= {'diode', 'bjt', 'isolator'}
+    if specific and found & IC_ROLE_CUES:
+        # "MOSFET gate driver", "synchronous rectifier controller": the role is the kind, the discrete is its load.
+        found -= DISCRETE_CUES
+    if specific and 'supervisor' in found:
+        found.discard('mcu')             # "microprocessor supervisor" watches an MCU, it is not one
+    if specific and 'isolator' in found and 'gate_driver' in found:
+        found.discard('gate_driver')     # an isolated gate driver is declared by its barrier
+    if specific and 'regulator' in found and found & {'pwm_controller', 'sr_controller', 'pd_controller'}:
+        found.discard('regulator')       # "... controller for boost converters" names the controller
     return found
 
 
@@ -118,6 +147,10 @@ def verify(declaration, document_path, read_page=None):
     if not squash(quote) or squash(quote) not in squash(text):
         return dict(result, status='QUOTE_NOT_FOUND', detail=f'quote not found on page {page}')
     named = cues(quote)
+    if kind == GENERIC_IC:
+        if named:
+            return dict(result, status='QUOTE_CONFLICT', detail=f'quote names {sorted(named)}; declare that kind, not ic')
+        return dict(result, status='VERIFIED')
     if kind not in cues(quote, specific=False):
         return dict(result, status='QUOTE_LACKS_TYPE', detail=f'quote names {sorted(named) or "no device type"}')
     if named - {kind}:

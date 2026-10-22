@@ -21,7 +21,7 @@ from plan_review import ReviewPlanner, build_review_plan
 
 
 def whole_board():
-    """一块同时命中全部检查器的合成板，用于框架级契约测试。"""
+    """一块同时命中全部检查器的合成板，用于框架级约定测试。"""
     db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {},
           'pseudo_nets': [], 'ref2page': {}}
     add = relay_fixture.add
@@ -516,7 +516,7 @@ class PowerSourceCandidateTest(unittest.TestCase):
 
 
 class WholeBoardContractTest(unittest.TestCase):
-    """全部检查器在同一块板上的框架级契约：识别、绑定、过期、缺口门。"""
+    """全部检查器在同一块板上的框架级约定：识别、绑定、过期、缺口门。"""
 
     @classmethod
     def setUpClass(cls):

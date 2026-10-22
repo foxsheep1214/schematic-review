@@ -7,7 +7,7 @@
 
 ## 输入与入口
 
-冷跑读取已交付文件；热跑及报告定稿后使用最终文件重放同一入口。全部输入只读：
+网表扫描读取已交付文件；证据扫描及报告定稿后使用最终文件重放同一入口。全部输入只读：
 
 ```bash
 python3 scripts/audit_document_summaries.py --calculations calculations.json --preflight calculation-preflight.json --document README.md --document report.md --json document-summary-audit.json
@@ -18,7 +18,7 @@ python3 scripts/audit_document_summaries.py --calculations calculations.json --p
 先界定当前全库存声明的语义范围，不把历史示例或局部计数当当前全板声明。
 不支持的格式先记 INSUFFICIENT，审查者按同一三向判据核原文并留证，不能改写原冻结材料来过门。
 
-库存契约为 `schema_version: 1` 与 `calculations` 非空列表，每行有非空规范字符串 `id` 和
+库存约定为 `schema_version: 1` 与 `calculations` 非空列表，每行有非空规范字符串 `id` 和
 `claim`（`SUPPORTED`、`CONDITIONAL`、`FAIL`）。其他字段留给算术/电气检查器。
 preflight 为 `schema_version: 1`、顶层 `status`（`PASS`、`FAIL`、`INSUFFICIENT`）与非空
 `results` 对象，键为 ID，每行的 `status` 使用相同三个支持状态；顶层 PASS 不替代逐行状态。
@@ -41,11 +41,11 @@ Calculation summary: total=15; SUPPORTED=6; CONDITIONAL=9; FAIL=0
 
 另支持 ASG 的非空计算 list（每项 `id/conclusion/coverage/checks`），以及执行后的
 `preflight-delivery.json`（`status`、`calculations` 状态 map）。调用时增加
-`--preflight-contract design-preflight.json`，该文件是输入合同，不能代替执行结果。
-适配器只接受合同子项 inputs.evidence 中明确指向当前计算文件、locator 为 `父ID / 检查name` 的关联；
-相对 source 从合同目录及其项目上一级解析。不能按 ID 后缀或相同数量猜对应。
+`--preflight-contract design-preflight.json`，该文件是输入约定，不能代替执行结果。
+适配器只接受约定子项 inputs.evidence 中明确指向当前计算文件、locator 为 `父ID / 检查name` 的关联；
+相对 source 从约定目录及其项目上一级解析。不能按 ID 后缀或相同数量猜对应。
 
-先核合同和执行结果的全部子 ID、子 claim/status、每个父项的子检查覆盖，再汇总父项：任一子项 FAIL 即 FAIL；
+先核约定和执行结果的全部子 ID、子 claim/status、每个父项的子检查覆盖，再汇总父项：任一子项 FAIL 即 FAIL；
 无 FAIL 但有条件、partial、assumptions 或 omitted_terms 的保持 CONDITIONAL；只有完整且无条件才 SUPPORTED。
 重复、未知状态、未对应项保留缺口或矛盾，不能取最后一条来消除问题。`adapter.links` 保留关联路径。
 父计算总数与子检查总数分别保存，不能将 22 项计算与 66 条不等式直接判成资料冲突。
@@ -78,8 +78,8 @@ INSUFFICIENT（本工具不推定该缺口的电气严重度）；所有要求�
 审查者将该候选按实际原文语义复核、独立绑定计划对象和判据，不能把它覆盖到原有局部输入资格或需求 PASS。
 修改动作是修正摘要或库存/结果的受控版本，复验相同集合和状态；未经证明不指定应改哪一侧。
 
-## 冷/热与缓存边界
+## 两次扫描与缓存边界
 
 本入口不使用缓存，每趟从输入字节重新解析、核对并计算哈希；输出 `cache.enabled=false`、`hits=0`。
-冷/热重复执行只是复算，不能宣称缓存命中。若其他 SR 入口有缓存，保留其独立真实记录，不把缓存复用当
-本项内容一致性证据。冷热都保留调用 argv、返回码、工具/规则身份、输入哈希与各自 JSON。
+两次扫描重复执行只是复算，不能宣称缓存命中。若其他 SR 入口有缓存，保留其独立真实记录，不把缓存复用当
+本项内容一致性证据。两次扫描都保留调用 argv、返回码、工具/规则身份、输入哈希与各自 JSON。

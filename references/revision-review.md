@@ -12,12 +12,12 @@
 
 ### 输入与操作
 
-数据契约版本为 `dependency_version: 1`，计划保存 `review_inputs`、`check_dependencies`。
+数据约定版本为 `dependency_version: 1`，计划保存 `review_inputs`、`check_dependencies`。
 `review_inputs` 包含完整当前 db 的规范化摘要、intent、evidence、datasheet-audit 和本地
 文档的实际内容哈希；自身也有 digest。它是项目内的审查记录，不放入公共仓库。
-旧版最终计划作为 `--old-plan`；本版冷跑计划才是 `--merge-plan`，二者不能混用。
+旧版最终计划作为 `--old-plan`；本版网表扫描计划才是 `--merge-plan`，二者不能混用。
 
-复审冷/热跑均传同一前版基线，热跑额外传本版证据、资料审计及 merge-plan：
+复审网表扫描和证据扫描均传同一前版基线，证据扫描额外传本版证据、资料审计及 merge-plan：
 
 ```sh
 python3 scripts/lint.py db.json --intent intent.json \
@@ -41,7 +41,7 @@ python3 scripts/lint.py db.json --intent intent.json \
 
 - `check_digest`：本项定义的规范化摘要，含对象、状态、判据、适用性和 HANDOFF 等。
 - `refs/nodes/nets/states`：来自明确对象、物理脚、电路组与声明的依赖。
-- `check_ids`：其他检查的明确依赖边；使用完整 ID 传播，环不会导致无限遍历。
+- `check_ids`：其他检查的明确影响条目；使用完整 ID 传播，环不会导致无限遍历。
 - `evidence_ids/sources`：该项热证据 ID 和已登记的本地文档路径。
 - `scope`：GLOBAL / PARTIAL / DECLARED；`gaps` 与 `citation` 解释范围。
 
@@ -156,7 +156,7 @@ python3 scripts/validate_review.py review-plan.json review-results.json \
 
 校验从当前 db、保存的输入、仍可读的文件及明确旧基线重建依赖/影响，核对必需项、旧项
 消失记录与自动检查；删条目、篡改变化、换基线、旧复验摘要不能靠更新 plan_digest 绕过。
-冷跑暂缺、热跑恢复的旧状态检查，其暂缺/恢复处置记录也保留，不能破坏冷/热台账交接。
+网表扫描暂缺、证据扫描恢复的旧状态检查，其暂缺/恢复处置记录也保留，不能破坏两次扫描之间的台账交接。
 它验证的是记录一致性，不识别伪造的工程主张；单纯复制所有新摘要不会使旧计算变正确。
 输入快照是本轮已声明版本；未提供的新需求/装配不能被工具凭空发现，输入版本仍须审查者确认。
 

@@ -6,6 +6,7 @@ not defects. Shared proofs and indirect dependencies can be legitimate.
 from collections import defaultdict
 from pathlib import Path
 import results_model
+import review_functions
 import json
 import re
 
@@ -17,7 +18,7 @@ TEMPLATE_MIN_ROWS, TEMPLATE_MIN_RULES = 10, 3
 GRADE_RE = re.compile(r'P[0-3]')
 # 同规则整批同级：本规则至少这么多行证据不足且全部同级时提示逐行定级。
 RULE_UNIFORM_MIN_ROWS = 10
-# 下游分流线索：缺口文字只指向样机/试验结果，或把优化目标记成阻断缺口。关键词只生成提示，不改结论。
+# 分出下游工作线索：缺口文字只指向样机/试验结果，或把优化目标记成阻断缺口。关键词只生成提示，不改结论。
 DOWNSTREAM_RE = re.compile(r'实测|样机|样品|闭壳|温升测试|热测|EMC|传导|辐射|认证|一致性测试|兼容性测试|寿命试验|'
                            r'能效测试|整机测试|PCB寄生|实际寄生|实物波形|prototype|bench|compliance|certif', re.I)
 # “插墙”是应用场景不是下游验证（一份台账曾把保险丝分断缺口因此标成下游项，下一轮证实为 P0 缺陷）。
@@ -367,6 +368,13 @@ def screen_quality(plan, report, db=None):
     candidates.extend(stage_and_cause_misfiles(report, expected))
     nets = db.get('nets', {}) if isinstance(db, dict) else {}
     candidates.extend(duplicate_work_items(report, known | {n.rsplit('/', 1)[-1] for n in nets if isinstance(n, str) and n} if isinstance(nets, dict) else known))
+    owners = defaultdict(set)
+    for row in report['checks']:
+        if isinstance(row, dict) and isinstance(row.get('open_ref'), str):
+            owners[row['open_ref']].add(row.get('id'))
+    for hint in review_functions.template_hints(report.get('functions')):
+        refs = hint.get('items') or ['%s/%s' % (hint.get('function_id'), hint.get('key'))]
+        candidates.append(dict(hint, check_ids=sorted({c for ref in refs for c in owners.get(ref, ()) if c})))
     for candidate in candidates:  # name fields the way a schema 3 record writes them
         if candidate.get('field') in RECORD_FIELD_NAMES:
             candidate['field'] = RECORD_FIELD_NAMES[candidate['field']]

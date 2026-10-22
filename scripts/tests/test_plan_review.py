@@ -490,7 +490,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
         members = [x for x in plan['checks'] if x.get('circuit_type') == 'USB' and x['rule'] != 'REQ-Q07']
-        # SIG-T04/SIG-D07/SIG-D04 与工作态无关，每电路一行；其余审查科目两个状态各一行。
+        # SIG-T04/SIG-D07/SIG-D04 与工作态无关，每电路一行；其余电路检查项两个状态各一行。
         invariant = [r for r in catalog.circuit_type('USB').subjects if r in catalog.STATE_INVARIANT]
         self.assertEqual(len(members), 2 * (len(catalog.circuit_type('USB').subjects) - len(invariant)) + len(invariant))
         self.assertEqual({x['object']['state'] for x in members if x['rule'] not in invariant}, {'host', 'unpowered'})
@@ -552,9 +552,14 @@ class ReviewPlanTests(unittest.TestCase):
                                 '5': {'name': 'VOUT', 'role': 'power'}, '6': {'name': 'NC', 'role': 'nc'}}},
                 'U2': {'mpn': 'SOC-X-1', 'package': 'BGA', 'identity_citation': 'BOM row U2',
                        'citation': 'SOC-X datasheet Rev.B partial table', 'pinout_complete': False,
-                       'pins': {'1': {'name': 'BOOT0', 'role': 'nc'}}}}}
+                       'pins': {'1': {'name': 'BOOT0', 'role': 'nc'}}}},
+            # an integrated circuit's role is a datasheet-verified kind like a discrete's type
+            'device_kinds': {'U1': {'kind': 'regulator', 'page': 1, 'quote': 'Low Dropout Voltage Regulator'},
+                             'U2': {'kind': 'mcu', 'page': 1, 'quote': '32-bit Microcontroller'}}}
         self.assertEqual(validate_intent(intent, db), [])
-        plan = build_review_plan(db, intent)
+        audit = {'device_kinds': {ref: dict(item, status='VERIFIED', document='synthetic.pdf', document_sha256='a' * 64)
+                                  for ref, item in intent['device_kinds'].items()}}
+        plan = build_review_plan(db, intent, datasheet_audit=audit)
         self.assertEqual(sorted(x['id'] for x in plan['checks'] if x['rule'] == 'DOC-T01'),
                          ['DOC-T01.BASE', 'DOC-T01.NO-USB'])
         complete = next(x for x in plan['checks'] if x['id'] == 'DEV-D02.U1')
@@ -632,7 +637,7 @@ class ReviewPlanTests(unittest.TestCase):
 
 
 class FunctionFrameTests(unittest.TestCase):
-    """计划 schema 5：每个 intent 电路一个功能框架，科目行带问题、function_id 和方面。"""
+    """计划 schema 5：每个 intent 电路一个功能框架，检查行带问题、function_id 和方面。"""
 
     def circuit(self, nets=('VCC_3V3',)):
         return {'id': 'REG-3V3', 'type': 'POWER_CONVERTER', 'refs': ['U1', 'R1'], 'nets': list(nets),
@@ -665,7 +670,7 @@ class FunctionFrameTests(unittest.TestCase):
         self.assertEqual(catalog.question_errors(plan), [])
 
     def test_state_invariant_rules_get_one_row_per_circuit(self):
-        # 导通方向、接口语义这类答案不随工作态变化的规则，两个状态只问一次；其余审查科目仍逐状态。
+        # 导通方向、接口语义这类答案不随工作态变化的规则，两个状态只问一次；其余电路检查项仍逐状态。
         circuit = {'id': 'IN-PROT', 'type': 'POWER_PROTECTION', 'refs': ['D1', 'Q1'], 'nets': ['VIN'],
                    'states': ['run', 'surge'], 'citation': 'synthetic input protection'}
         plan = build_review_plan(sample_db(), {'schema_version': 3, 'circuits': [circuit]})

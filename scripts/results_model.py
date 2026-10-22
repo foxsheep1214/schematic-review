@@ -184,9 +184,16 @@ def derived_work_items(report):
         if text(worst.get('result')):
             task['worst_case'] = worst['result'] + (
                 '（界：%s，%s）' % (bound.get('value'), bound.get('condition')) if bound.get('value') else '')
-        if text(item.get('margin_not_decisive_reason')):
-            task['kept_open'] = item['margin_not_decisive_reason'] + (
-                '（取松的条款 %s）' % item['loose_bound'] if text(item.get('loose_bound')) else '')
+        reached = []
+        for d in item.get('decides') or []:
+            if isinstance(d, dict) and d.get('effect', 'BLOCKS_PROOF') == 'BLOCKS_PROOF' and text(d.get('rationale')):
+                via = d.get('via') if isinstance(d.get('via'), dict) else {}
+                through = via.get('condition') or '/'.join(x for x in (via.get('claim'), via.get('input')) if x)
+                states = '、'.join(d['states']) if isinstance(d.get('states'), list) else ''
+                reached.append('%s%s%s：%s' % (d.get('aspect'), '（%s）' % states if states else '',
+                                              '，经 %s' % through if through else '', d['rationale']))
+        if reached:
+            task['blocks'] = reached
         out.append(task)
     return out
 

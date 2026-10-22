@@ -298,8 +298,8 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
     fields = [('缺什么', missing),
               ('为什么要紧', [reason]),
               ('按什么假定判的', [task.get('assumed')]),
-              ('公开界下的最坏情况', [task.get('worst_case')]),
-              ('为什么不按余量下结论', [task.get('kept_open')]),
+              ('公开资料界限下的最坏情况', [task.get('worst_case')]),
+              ('这个缺口影响哪些判断', task.get('blocks') or []),
               ('已查过', read),
               ('还要做', todo),
               ('怎样算通过', criteria)]
