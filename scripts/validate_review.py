@@ -27,6 +27,7 @@ from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
 from review_functions import validate_functions
 import check_key
 import row_owner
+import interfaces
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -241,6 +242,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         require(len(cids) == 1, f"{', '.join(sorted(cids))}: the same check (rule, object, criterion) asked "
                                 f"{len(cids)} times; keep one row, or split the object or criterion")
     for message in row_owner.errors(plan):   # function-tree step 2: the owner is recomputed from the owner table
+        require(False, message)
+    for message in row_owner.coverage_errors(plan, db) + interfaces.coverage_errors(plan):   # step 6: tree coverage
         require(False, message)
     document_pages, page_checks = None, {}
     if db is not None:

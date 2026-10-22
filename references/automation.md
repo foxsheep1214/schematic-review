@@ -288,6 +288,7 @@ schema 1，`rules_version` 2026-10-21.1，绑定 `db_sha256` 与 intent 的 `inp
   `catalog.INTERFACE_RULES` 的其余行（检查器、扫描）网络都落在一个接口上时由 `row_owner` 归该接口，连接器的接口优先。
 - 系统功能：`plan_review.plan_system` 按触发生成 PWR-T06（地网 ≥ 2）、RST-T03（电源轨 ≥ 2）、SIG-D13（有可能是主控的 IC），
   `plan_system_frames` 给每个有行的系统功能建框架；`plan_owned_parts` 按各电路拥有的器件生成 DEV-C01/C02/C03。
+- 覆盖审计：`row_owner.coverage_errors(plan, db)` 查每颗贴装器件恰归一块电路或在 REQ-Q08 清单上，`interfaces.coverage_errors(plan)` 查每个接口有它的行和框架；两条都由 `validate_review.py` 执行，归属审计只在电路来自候选时启用。
 
 **装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
 与 `citation`。`population` 只接受 JSON `true/false`，缺项表示未知；`jumpers` 按位号填

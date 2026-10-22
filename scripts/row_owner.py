@@ -89,3 +89,21 @@ def errors(plan):
             out.append(f"{check.get('id')}: owner {check['owner']} is not {owner(check, parts, nets)} "
                        f"(from the row object, its rule, the parts each circuit owns and the interface nets)")
     return out
+
+
+def coverage_errors(plan, db):
+    """Ownership coverage (REQ-Q08 extended, function-tree step 6): when the circuits come from candidates, every fitted
+    part is owned by exactly one circuit or is on the REQ-Q08 list for review."""
+    if not plan.get('circuit_candidates') or plan.get('owners') is None or not isinstance(db, dict):
+        return []
+    owned = Counter(ref for e in plan['owners'] if e.get('kind') == 'CIRCUIT' for ref in e.get('parts', []))
+    listed = {ref for c in plan.get('checks') or [] if isinstance(c, dict) and c.get('rule') == 'REQ-Q08'
+              for ref in (c.get('object') or {}).get('unassigned') or []}
+    out = []
+    for ref in sorted(r for r, part in (db.get('parts') or {}).items() if not (part or {}).get('nc')):
+        if owned[ref] > 1:
+            out.append(f'{ref}: owned by {owned[ref]} circuits; a part has one owning circuit')
+        elif not owned[ref] and ref not in listed:
+            out.append(f'{ref}: fitted part owned by no circuit and not on the REQ-Q08 list; '
+                       f'decide which circuit takes it (circuit_decisions) or list it for review')
+    return out

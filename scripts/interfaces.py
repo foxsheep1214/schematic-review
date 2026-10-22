@@ -203,6 +203,41 @@ class Deriver:
                 'gaps': [{'interface': i, 'pin': p or None, 'reason': r} for i, p, r in gaps]}
 
 
+def coverage_errors(plan):
+    """Interface coverage (REQ-Q07 extended, function-tree step 6): every interface carries the rows its kind asks
+    (catalog.INTERFACE_SUBJECTS, SIG-C08 on each cross-supply net, PWR-C14 on a rail a sensitive circuit draws from)
+    and, unless it is a rail, a frame."""
+    import catalog
+    section = plan.get('interfaces')
+    if not isinstance(section, dict):
+        return []
+    asked = {((c.get('object') or {}).get('interface'), c.get('rule'), (c.get('object') or {}).get('net'))
+             for c in plan.get('checks') or [] if isinstance(c, dict)}
+    asked_any = {(i, r) for i, r, _ in asked}
+    framed = {f.get('interface') for f in plan.get('functions') or [] if isinstance(f, dict)}
+    types = {f.get('circuit'): f.get('circuit_type') for f in plan.get('functions') or [] if isinstance(f, dict)}
+    out = []
+    for item in section.get('interfaces') or []:
+        iid, kind, nets = item['id'], item['kind'], item.get('nets') or []
+        if kind == 'SUPPLY':
+            if any(types.get(o) in catalog.NOISE_SENSITIVE_TYPES for o in item.get('loads') or []) \
+                    and (iid, 'PWR-C14') not in asked_any:
+                out.append(f'{iid}: PWR-C14 row missing (a noise-sensitive circuit draws from this rail)')
+            continue
+        if kind != 'EXTERNAL' and not nets:
+            continue
+        for rule in catalog.INTERFACE_SUBJECTS.get(kind, ()):
+            if (iid, rule) not in asked_any:
+                out.append(f'{iid}: {rule} row missing')
+        for rule in catalog.INTERFACE_NET_SUBJECTS.get(kind, ()):
+            for entry in nets:
+                if entry.get('cross_supply') and (iid, rule, entry['net']) not in asked:
+                    out.append(f'{iid}: {rule} row missing on {entry["net"]} (its ends draw from different supplies)')
+        if iid not in framed:
+            out.append(f'{iid}: interface frame missing')
+    return out
+
+
 def derive(db, intent, datasheet_audit=None):
     """The plan's `interfaces` section."""
     return Deriver(db, intent, datasheet_audit).derive()

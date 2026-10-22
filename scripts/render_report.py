@@ -350,22 +350,55 @@ def function_basis(fn):
     return '；'.join(parts)
 
 
-def render_functions(functions):
-    """各功能的判断：一行一个功能，读者要的是“偏置：能，余量 0.8 V”。"""
-    if not functions:
+# 报告按功能树的顺序（功能树设计 §3.7）：系统功能，功能电路，接口；计划里没有框架的功能（审查员另建）排最后。
+TREE_GROUPS = (('system', '系统功能'), ('circuit', '功能电路'), ('interface', '接口'))
+OTHER_GROUP = '审查员另建的功能'
+OWNER_WORDS = {'SYSTEM': '系统功能', 'CIRCUIT': '功能电路', 'INTERFACE': '接口', 'BOARD': '全板与文档'}
+
+
+def function_row(fn):
+    items = [i for i in fn.get('open') or [] if isinstance(i, dict) and i.get('kind') != 'REQUIREMENT']
+    items += [i for i in fn.get('fails') or [] if isinstance(i, dict)]
+    ids = unique(results_model.work_item_id(i['key']) for i in items if isinstance(i.get('key'), str))
+    return '| %s | %s | %s | %s | %s |' % (
+        cell(fn.get('id', '')), cell(fn.get('question') or ''),
+        VERDICT_WORDS.get(fn.get('verdict'), cell(fn.get('verdict') or '')),
+        cell(function_basis(fn)), cell('、'.join(ids)) or '—')
+
+
+def render_functions(functions, plan=None):
+    """各功能的判断：一行一个功能，读者要的是“偏置：能，余量 0.8 V”；计划有功能树的框架时按系统功能、电路、接口分节。"""
+    rows = [fn for fn in functions or [] if isinstance(fn, dict)]
+    if not rows:
         return []
-    out = ['## 各功能的判断', '', '| 功能 | 问题 | 结论 | 余量或依据 | 待办编号 |', '|---|---|---|---|---|']
-    for fn in functions:
-        if not isinstance(fn, dict):
-            continue
-        items = [i for i in fn.get('open') or [] if isinstance(i, dict) and i.get('kind') != 'REQUIREMENT']
-        items += [i for i in fn.get('fails') or [] if isinstance(i, dict)]
-        ids = unique(results_model.work_item_id(i['key']) for i in items if isinstance(i.get('key'), str))
-        out.append('| %s | %s | %s | %s | %s |' % (
-            cell(fn.get('id', '')), cell(fn.get('question') or ''),
-            VERDICT_WORDS.get(fn.get('verdict'), cell(fn.get('verdict') or '')),
-            cell(function_basis(fn)), cell('、'.join(ids)) or '—'))
-    return out + ['']
+    head = ['| 功能 | 问题 | 结论 | 余量或依据 | 待办编号 |', '|---|---|---|---|---|']
+    frames = {f['id']: f for f in (plan or {}).get('functions') or [] if isinstance(f, dict) and f.get('id')}
+
+    def group(fn):
+        frame = frames.get(fn.get('id')) or {}
+        return next((label for key, label in TREE_GROUPS if frame.get(key)), OTHER_GROUP)
+
+    if not any(group(fn) != OTHER_GROUP for fn in rows):
+        return ['## 各功能的判断', ''] + head + [function_row(fn) for fn in rows] + ['']
+    out = ['## 各功能的判断', '']
+    for label in [label for _, label in TREE_GROUPS] + [OTHER_GROUP]:
+        members = sorted((fn for fn in rows if group(fn) == label), key=lambda fn: str(fn.get('id', '')))
+        if members:
+            out += ['### ' + label, ''] + head + [function_row(fn) for fn in members] + ['']
+    return out
+
+
+def finding_owners(finding, plan):
+    """“所属”一行：问题涉及的检查归哪些系统功能、电路、接口或全板，按树的顺序；计划行没有 owner 时为 None。"""
+    planned = {c.get('id'): c for c in (plan or {}).get('checks') or [] if isinstance(c, dict)}
+    owners = [planned[cid]['owner'] for cid in finding.get('check_ids') or []
+              if isinstance(planned.get(cid), dict) and isinstance(planned[cid].get('owner'), dict)]
+    if not owners:
+        return None
+    order = list(OWNER_WORDS)
+    keys = sorted({(o.get('kind'), o.get('id') or '') for o in owners if o.get('kind') in OWNER_WORDS},
+                  key=lambda k: (order.index(k[0]), k[1]))
+    return '、'.join((OWNER_WORDS[kind] + ' ' + oid).strip() for kind, oid in keys)
 
 
 def covered_by_findings(task, checks, findings):
@@ -624,7 +657,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         out += [''.join(remarks), '']
 
     functions = circuit_functions(results.get('functions'), results.get('checks'))
-    out += render_functions(functions)
+    out += render_functions(functions, plan)
 
     if findings:
         out += ['## 发现的错误', '', SEVERITY_LEGEND, '']
@@ -642,6 +675,9 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                 ('　' + '、'.join(where.get('refs') or []) if where.get('refs') else '')
             if place:
                 out.append('- **位置**：%s' % place)
+            owners = finding_owners(f, plan)
+            if owners:
+                out.append('- **所属**：%s' % owners)
             out += render_figures(f.get('figures'))
             harm = f.get('impact')
             if f.get('scenario') and not restates(f['scenario'], harm or '') and not restates(harm or '', f['scenario']):

@@ -550,6 +550,9 @@ class ReviewPlanner:
         unassigned = []
         if self.candidates:
             unassigned = circuit_decisions.discovery_refs(self.candidates, self.intent.get('circuit_decisions') or [])
+            owned = row_owner.part_owners(self.intent.get('circuits', []))   # function tree, step 6: every fitted part
+            unassigned = sorted(set(unassigned) | {ref for ref, part in self.db.get('parts', {}).items()
+                                                   if not part.get('nc') and ref not in owned})
         if undetected or unassigned:
             titles = [(name, catalog.circuit_type(name).title) for name in undetected]
             criterion = catalog.criterion('REQ-Q08')

@@ -719,5 +719,54 @@
   "file": "scripts/plan_review.py",
   "old": "            if not members:\n                continue\n            nets, refs = set(), set()",
   "new": "            if True:\n                continue\n            nets, refs = set(), set()"
+ },
+ {
+  "id": "M104",
+  "name": "the ownership coverage audit is never run",
+  "file": "scripts/row_owner.py",
+  "old": "    if not plan.get('circuit_candidates') or plan.get('owners') is None or not isinstance(db, dict):\n        return []",
+  "new": "    if True:\n        return []"
+ },
+ {
+  "id": "M105",
+  "name": "a part owned by two circuits passes the coverage audit",
+  "file": "scripts/row_owner.py",
+  "old": "        if owned[ref] > 1:\n            out.append(",
+  "new": "        if owned[ref] > 99:\n            out.append("
+ },
+ {
+  "id": "M106",
+  "name": "unowned fitted parts are not added to the REQ-Q08 list",
+  "file": "scripts/plan_review.py",
+  "old": "            unassigned = sorted(set(unassigned) | {ref for ref, part in self.db.get('parts', {}).items()\n                                                   if not part.get('nc') and ref not in owned})",
+  "new": "            unassigned = sorted(set(unassigned))"
+ },
+ {
+  "id": "M107",
+  "name": "a missing interface row passes the interface coverage audit",
+  "file": "scripts/interfaces.py",
+  "old": "            if (iid, rule) not in asked_any:\n                out.append(f'{iid}: {rule} row missing')",
+  "new": "            if False:\n                out.append(f'{iid}: {rule} row missing')"
+ },
+ {
+  "id": "M108",
+  "name": "a missing interface frame passes the interface coverage audit",
+  "file": "scripts/interfaces.py",
+  "old": "        if iid not in framed:\n            out.append(f'{iid}: interface frame missing')",
+  "new": "        if False:\n            out.append(f'{iid}: interface frame missing')"
+ },
+ {
+  "id": "M109",
+  "name": "the report function table is not grouped by the tree",
+  "file": "scripts/render_report.py",
+  "old": "    if not any(group(fn) != OTHER_GROUP for fn in rows):",
+  "new": "    if True:"
+ },
+ {
+  "id": "M110",
+  "name": "a finding does not name the owners of its checks",
+  "file": "scripts/render_report.py",
+  "old": "                out.append('- **所属**：%s' % owners)",
+  "new": "                pass"
  }
 ]

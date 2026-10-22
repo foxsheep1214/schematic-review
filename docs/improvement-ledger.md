@@ -7,6 +7,30 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function tree, step 6: coverage over the tree and a report in tree order (2026-10-22)
+
+Step 6 of the function-tree design turns ownership and interfaces into two machine-countable audits and lays the
+report out along the tree. Before it, a fitted part that no circuit owned and that the candidate file did not list
+could leave the plan unasked, and an interface could lose its rows or frame without the validator noticing.
+`row_owner.coverage_errors` now refuses, when the circuits come from candidates, a fitted part owned by two circuits
+or owned by none and missing from the REQ-Q08 list; the planner puts every fitted part no circuit owns on that list,
+not only the candidate file's `unassigned`. `interfaces.coverage_errors` refuses an interface without the rows its
+kind asks (catalog.INTERFACE_SUBJECTS, SIG-C08 on each cross-supply net, PWR-C14 on a rail a noise-sensitive
+circuit draws from) or, unless it is a rail or a chain without nets, without its frame. `validate_review.py` runs
+both. The report's function table, when the plan has tree frames, runs system functions, circuits, interfaces and
+then the functions the reviewer added; every finding gains a line naming the owners of its checks. SKILL §2 and the
+plan, automation references describe the tree in one place. R5 bench: both plans have 0 ownership and 0 interface
+errors and 8 parts on the REQ-Q08 list (acceptance 1); circuit rows pair 157 of 157 and 158 (99.4 %, acceptance 3
+first half); all rows pair 391 of 461 and 466 (83.9 %), short of the 90 % target: 38 unpaired rows are requirement
+rows each intent states for itself, and 31 more pairs match once the assembly-state names and inventory digests in
+the objects are set aside; those differences lie outside the tree and are left for a follow-up. Tests first
+(test_tree_coverage, 10 tests), 1829 tests pass, contract 500, replay bench 195/195, mutations M104–M110 added and
+killed.
+
+- Event: user:2026-10-21 (迁移分 7 步逐步来做，每做完一步形成一份提交；第 6 步：全板与覆盖), review:SR-20261021-R5-claude-fd6a6dd/record/review-plan.json (ownership and interface coverage), review:SR-20261021-R5-codex-fd6a6dd/record/review-plan.json (ownership and interface coverage)
+- Causes: rule_not_enforced 2
+- Changed: scripts/row_owner.py, scripts/interfaces.py, scripts/plan_review.py, scripts/validate_review.py, scripts/render_report.py, scripts/tests/test_tree_coverage.py, SKILL.md, references/plan-and-results.md, references/automation.md, docs/2026-10-21-function-tree-design.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## Function tree, step 5: system functions exist when their object does, and parts are asked by owning circuit (2026-10-22)
 
 Step 5 of the function-tree design gives the board's system functions their own rows and frames and stops asking
