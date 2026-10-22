@@ -358,6 +358,9 @@ F12 计划带 `clamp_refs` 的连接器行（PRO-D03）必须绑定功能：钳�
 同日合并 Codex 方案后，一个缺口挡多少方面不再设上限，改为逐条写影响条目；条件的“能定位”和“是哪种证据”分开校验；余量写明余量依据。
 
 **检查项标识。** `plan_review.py` 给每行写 `check_key`：规则、规则版本（目录条目与问题模板）、去掉 `circuit` 名称后的对象、判据四项的摘要。
+装配状态按内容命名：计划的 `assemblies` 给 intent.assemblies 的每个名字一个由贴装表和跳线算出的键（`ASSEMBLY-…`），检查器行的 `state`/`states`
+和装配检查的 `assembly` 用这个键进标识，所以两人给同一装配起不同的名字仍是同一项检查；电路行的 `state` 是工作态，不换。
+检查器清单的摘要（`*_digest`）和句柄（`decoupling_group`、`power_switch`、`supervision` 等，见 `check_key.INVENTORY_FIELDS`）只是指回清单，不进标识。
 校验器总是重算这个键，不信记录里存的值；同一项检查在计划里问了两次被拒绝。改电路名不改检查项，换规则模板或判据才改。
 `scripts/compare_reviews.py` 先按这个键严格配对两份记录，再给出按电路的建议配对（见 [自动检查](automation.md#脚本分类)）。
 电路级行的对象带 `circuit_key`（电路来自的候选编号，合并的用 `+` 连接）：有它时成员表、核心器件和网络不进标识，

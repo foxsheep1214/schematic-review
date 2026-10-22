@@ -803,5 +803,54 @@
   "file": "scripts/revision_impact.py",
   "old": "        if old_plan.get('schema_version') != PLAN_SCHEMA_VERSION:",
   "new": "        if old_plan.get('schema_version') not in (5, PLAN_SCHEMA_VERSION):"
+ },
+ {
+  "id": "M116",
+  "name": "a checker row keeps the reviewer's assembly name in its identity",
+  "file": "scripts/check_key.py",
+  "old": "    if names:   # a circuit row's state is a working state, never an assembly\n",
+  "new": "    if False:   # a circuit row's state is a working state, never an assembly\n"
+ },
+ {
+  "id": "M117",
+  "name": "inventory handles enter the identity",
+  "file": "scripts/check_key.py",
+  "old": "    obj = {k: v for k, v in obj.items() if k not in INVENTORY_FIELDS and not k.endswith('_digest')}",
+  "new": "    obj = {k: v for k, v in obj.items() if not k.endswith('_digest')}"
+ },
+ {
+  "id": "M118",
+  "name": "inventory digests enter the identity",
+  "file": "scripts/check_key.py",
+  "old": "    obj = {k: v for k, v in obj.items() if k not in INVENTORY_FIELDS and not k.endswith('_digest')}",
+  "new": "    obj = {k: v for k, v in obj.items() if k not in INVENTORY_FIELDS}"
+ },
+ {
+  "id": "M119",
+  "name": "a circuit row's working state is read as an assembly",
+  "file": "scripts/check_key.py",
+  "old": "        if 'circuit_key' not in obj:\n            if 'state' in obj:",
+  "new": "        if True:\n            if 'state' in obj:"
+ },
+ {
+  "id": "M120",
+  "name": "an assembly key ignores the jumpers",
+  "file": "scripts/check_key.py",
+  "old": "                       'jumpers': dict(state.get('jumpers') or {})}",
+  "new": "                       'jumpers': {}}"
+ },
+ {
+  "id": "M121",
+  "name": "a plan without its assembly map is accepted",
+  "file": "scripts/validate_review.py",
+  "old": "    require(isinstance(plan.get('assemblies'), list),",
+  "new": "    require(True,"
+ },
+ {
+  "id": "M122",
+  "name": "compare_reviews keys rows without the assembly map",
+  "file": "scripts/compare_reviews.py",
+  "old": "        key = check_key.key(c, side['plan'].get('assemblies'))",
+  "new": "        key = check_key.key(c)"
  }
 ]

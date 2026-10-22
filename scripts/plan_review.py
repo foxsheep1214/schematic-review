@@ -579,8 +579,9 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         circuits = self.intent.get('circuits', [])
         parts = row_owner.part_owners(circuits)
         nets = row_owner.interface_nets(self.interfaces)
+        plan['assemblies'] = check_key.assembly_map(self.intent.get('assemblies'))
         for check in plan['checks']:   # merge plan §5: rows are compared by what they ask, not by their ids or names
-            check['check_key'] = check_key.key(check)
+            check['check_key'] = check_key.key(check, plan['assemblies'])
             check['owner'] = row_owner.owner(check, parts, nets)
         plan['owners'] = row_owner.table(circuits, parts)
         plan['interfaces'] = self.interfaces

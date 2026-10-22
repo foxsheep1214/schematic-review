@@ -124,6 +124,7 @@
       "interfaces": [],
       "gaps": []
     },
+    "assemblies": [],
     "execution_inputs": {
       "numeric_scope": {
         "networks": [

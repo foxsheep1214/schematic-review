@@ -189,7 +189,7 @@ def _keys(side):
     rows = [c for c in side['plan'].get('checks') or [] if isinstance(c, dict) and c.get('id')]
     out, stale = {}, []
     for c in rows:
-        key = check_key.key(c)
+        key = check_key.key(c, side['plan'].get('assemblies'))
         out.setdefault(key, []).append(c['id'])
         if 'check_key' in c and c['check_key'] != key:
             stale.append(c['id'])

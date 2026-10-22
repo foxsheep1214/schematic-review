@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Check keys name an assembly by its content, not by the reviewer's name for it (2026-10-22)
+
+After step 6 the R5 pair still paired 391 of 461 and 466 rows (83.9 %, acceptance 3 asks 90 %). Apart from the 38
+requirement rows each intent states for itself, the largest group was 28 checker rows with the same id on both
+sides whose objects differed only in the assembly state, which the two intents named "R5-BOM" and "R5" for one
+assembly (125 parts fitted, no jumpers), and in the checker inventory digest computed from it; the assembly check,
+the supervision coverage row (`rails-<state>`), the I2C region and three decoupling groups (hashed handles) followed.
+`check_key.assembly_map` now gives each intent.assemblies name a key from its population and jumpers, the planner
+writes it as the plan's `assemblies`, and the check key names a checker row's state, states and an assembly check's
+assembly by that key (a circuit row's state is a working state and is left alone); a checker's inventory digest and
+its handle into the inventory (`check_key.INVENTORY_FIELDS`) stay out of the identity, the parts, nets, nodes, state,
+rule and criterion saying what is asked. The validator refuses a plan without `assemblies` and keys with it, and
+`compare_reviews.py` keys each side with its own map. R5 bench: all rows pair 424 of 461 and 466 (91.0 %; 94.9 %
+without requirement rows), circuit rows stay 157 of 157 and 158, and neither plan has a repeated key; what remains
+is what the reviewers declared differently: 38 requirement rows, 33 decoupling requirement rows (own criteria and
+requirement kinds, one extra group, different return pins on three groups) and one debug test point only one
+declared. Tests first (test_assembly_identity, 8 tests), 1844 tests pass, contract 500, replay bench 195/195, mutations M116–M122 added and
+killed and the earlier mutations on the touched files rerun.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (assembly "R5-BOM"), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (assembly "R5"), user:2026-10-22 (剩下的配对缺口：装配状态名和清单摘要)
+- Causes: rule_not_enforced 1
+- Changed: scripts/check_key.py, scripts/plan_review.py, scripts/validate_review.py, scripts/compare_reviews.py, scripts/tests/test_assembly_identity.py, scripts/tests/test_validate_review.py, scripts/tests/fixtures/execution-audit/synthetic.json, references/plan-and-results.md, docs/2026-10-21-function-tree-design.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## Function tree, step 7: the planner is laid out along the tree and old records are refused (2026-10-22)
 
 Step 7 of the function-tree design splits `plan_review.py` (1506 lines) by tree level and ends the reading of

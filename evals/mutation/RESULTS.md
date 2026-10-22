@@ -119,5 +119,12 @@
 | M113 | the validator reads a schema-5 plan alongside schema 6 | `scripts/validate_review.py` | KILLED | FAILED scripts/tests/test_tree_modules.py::OldRecordTests::test_the_validator_refuses_a_schema_5_record |
 | M114 | a schema-5 previous plan is merged | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_tree_modules.py::OldRecordTests::test_a_schema_5_plan_is_not_merged_or_compared |
 | M115 | a schema-5 old plan is compared for revision impact | `scripts/revision_impact.py` | KILLED | FAILED scripts/tests/test_tree_modules.py::OldRecordTests::test_a_schema_5_plan_is_not_merged_or_compared |
+| M116 | a checker row keeps the reviewer's assembly name in its identity | `scripts/check_key.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyKeyTests::test_a_different_population_asks_different_checks |
+| M117 | inventory handles enter the identity | `scripts/check_key.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyKeyTests::test_compare_reviews_pairs_the_renamed_assembly |
+| M118 | inventory digests enter the identity | `scripts/check_key.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyKeyTests::test_compare_reviews_pairs_the_renamed_assembly |
+| M119 | a circuit row's working state is read as an assembly | `scripts/check_key.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyKeyTests::test_a_working_state_is_not_read_as_an_assembly |
+| M120 | an assembly key ignores the jumpers | `scripts/check_key.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyKeyTests::test_the_plan_maps_each_assembly_name_to_a_content_key |
+| M121 | a plan without its assembly map is accepted | `scripts/validate_review.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyMapTests::test_a_plan_without_its_assembly_map_is_refused |
+| M122 | compare_reviews keys rows without the assembly map | `scripts/compare_reviews.py` | KILLED | FAILED scripts/tests/test_assembly_identity.py::AssemblyKeyTests::test_compare_reviews_pairs_the_renamed_assembly |
 
 全部杀死。

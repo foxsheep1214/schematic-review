@@ -236,8 +236,10 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         require(report.get("db_digest") == fingerprint(db), "db_digest mismatch")
     expected = index(plan.get("checks"), "plan.checks")
     asked = {}
+    require(isinstance(plan.get('assemblies'), list),
+            'plan.assemblies missing: the check keys name each assembly by its content; regenerate the plan')
     for cid, planned in expected.items():   # merge plan §5: one check is asked once (the key is recomputed, never trusted)
-        asked.setdefault(check_key.key(planned), []).append(cid)
+        asked.setdefault(check_key.key(planned, plan.get('assemblies')), []).append(cid)
     for key, cids in asked.items():
         require(len(cids) == 1, f"{', '.join(sorted(cids))}: the same check (rule, object, criterion) asked "
                                 f"{len(cids)} times; keep one row, or split the object or criterion")
