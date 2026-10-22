@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """全板与文档、需求、覆盖（功能树设计 §3.5、§3.8）：全板规则、装配状态、需求条款、覆盖审计项、逐器件身份与引脚表，
 以及规则级台账。ReviewPlanner 混入这里的方法。"""
+import os
 import re
 
 import board_intent
@@ -33,10 +34,15 @@ COLD_RULE_INDEXES = {
 BUILTIN_EVIDENCE_RULES = tuple(rule.id for rule in catalog.rules(stage='hot', source='lint'))
 
 def _material_available(intent, key, datasheet_audit=None):
+    """A material is available when the file it names exists (fixed requirements, step 5): requirements from the
+    requirement source, datasheets from the datasheet audit, the rest from intent.materials.<key>.path."""
     if key == 'datasheets' and datasheet_audit is not None:
         return datasheet_audit_all_available(datasheet_audit)
+    source = (intent or {}).get('requirement_source')
+    if key == 'requirements' and isinstance(source, dict) and isinstance(source.get('path'), str) and os.path.isfile(source['path']):
+        return True
     item = (intent or {}).get('materials', {}).get(key, {})
-    return isinstance(item, dict) and item.get('available') is True
+    return isinstance(item, dict) and isinstance(item.get('path'), str) and os.path.exists(item['path'])
 
 # Two-terminal SMD/THT package names (chip sizes, SOD/SMA/DO/MELF, 2-lead THT LEDs); multi-pad LED
 # packages (PLCC, RGB, thermal pad, numbered pin counts) never qualify.

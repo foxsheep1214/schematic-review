@@ -55,11 +55,10 @@
     "DDR": {"applicability": "NOT_APPLICABLE", "citation": "Requirements v1.2 section 2.3"}
   },
   "materials": {
-    "requirements": {"available": true, "citation": "Requirements v1.2"},
-    "schematic_pdf": {"available": true, "citation": "SCH-100 rev.B.pdf"},
-    "datasheets": {"available": true, "citation": "datasheet-manifest.json 2026-08-31"},
-    "platform_checklist": {"available": false}
+    "schematic_pdf": {"path": "/绝对路径/SCH-100 rev.B.pdf"},
+    "datasheets": {"path": "/绝对路径/datasheets/"}
   },
+  "rail_exclusions": {"VBAT_SNS": "电池电压检测分压点，不对任何器件供电"},
   "power_rails": {
     "VCC_3V3": {
       "voltage_v": {"min": 3.2, "max": 3.4}, "load_a": {"min": 0, "max": 0.5}, "available_a_min": 1.0,
@@ -75,7 +74,14 @@
   `applicability` 为 APPLICABLE / NOT_APPLICABLE / UNDETERMINED，前两者必须带 `citation`。
 - 名称命中只生成 UNDETERMINED 候选，不展开成员；由电路声明、features 出处或已确认拓扑确认后再展开。
   带出处的不适用声明可排除误命中；与已确认拓扑冲突则保留证据不足。没搜到关键字不能推出 NOT_APPLICABLE。
-- `materials.<name>.available=true` 必须带 `citation`。逐物料审计（`--datasheet-audit`）优先于这些全局布尔值。
+  电路来自候选（有 `circuit_decisions`）时，电路类别由候选与决定推出：`features` 不写 `intent.circuits` 已有的类别，
+  也不写 APPLICABLE（候选没检出却要审，就在 `circuit_decisions` 里补电路），只给规则总表有、候选没检出的类别写不适用依据。
+- `materials.<name>` 只写 `path`（文件或目录），文件存在即可用，不写 `available`；路径不存在被拒收。
+  需求由 `requirement_source` 推出（不必再写 `materials.requirements`），规格书由逐物料审计（`--datasheet-audit`）推出；
+  没有的资料不写，依赖它的行等资料。
+- `rail_exclusions`：网表上像电源（有 IC 从它取电，或 ≥1 µF 电容到地）而名字不像轨的网，每条都要在 `power_rails`
+  声明成轨或在这里写它不是轨的依据，否则拒收；只能排除这类网，且不能同时声明。计划的 `rail_candidates` 列出每条这类网
+  及其确认方式（`name` 名字像轨、`declared`、`excluded`）。名字像轨的网照旧按名字识别。
 - `assemblies`（1–32 个，各带 `id` 与 `citation`）是全部检查器共用的装配状态；`devices` 是按位号的官方脚表。
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
 - 需求不手抄：`python3 scripts/requirements_extract.py 需求.md --json record/requirements.json` 逐字抄录需求表

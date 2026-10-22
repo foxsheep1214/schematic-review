@@ -169,5 +169,16 @@
 | M163 | a derived failing requirement row is not linked from its finding | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::ResultTests::test_derive_rows_writes_the_bound_requirement_rows |
 | M164 | a hand-filled requirement row is overwritten | `scripts/requirement_bindings.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::ResultTests::test_a_hand_filled_requirement_row_is_kept_and_compared |
 | M165 | the planner does not bind requirement rows | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_bindings.py::PlanTests::test_a_board_aspect_binds_every_row_of_its_rules |
+| M166 | supply candidates are only the declared nets | `scripts/checkers/powertree.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::RailTests::test_a_supply_net_without_a_rail_name_is_declared_or_excluded |
+| M167 | a supply net neither declared nor excluded is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::RailTests::test_a_supply_net_without_a_rail_name_is_declared_or_excluded |
+| M168 | an exclusion of a net that is not a supply candidate is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::RailTests::test_an_exclusion_is_a_candidate_with_a_reason_and_not_also_declared |
+| M169 | a rail exclusion without a reason is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::RailTests::test_an_exclusion_is_a_candidate_with_a_reason_and_not_also_declared |
+| M170 | a net both declared and excluded is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::RailTests::test_an_exclusion_is_a_candidate_with_a_reason_and_not_also_declared |
+| M171 | a material is available without its file | `scripts/plan_board.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::MaterialTests::test_a_material_is_available_when_its_file_exists |
+| M172 | a written material availability is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::MaterialTests::test_available_is_not_written_and_a_missing_file_is_refused |
+| M173 | requirements are not available from the requirement source | `scripts/plan_board.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::MaterialTests::test_requirements_are_available_from_the_requirement_source |
+| M174 | features for a circuit type the candidates found are accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::FeatureTests::test_with_candidates_features_only_explain_types_the_candidates_did_not_find |
+| M175 | an APPLICABLE feature without a candidate circuit is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::FeatureTests::test_with_candidates_features_only_explain_types_the_candidates_did_not_find |
+| M176 | the plan does not list how supply nets were confirmed | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_derived_declarations.py::RailTests::test_the_plan_lists_the_rail_candidates_and_how_each_was_confirmed |
 
 全部杀死。

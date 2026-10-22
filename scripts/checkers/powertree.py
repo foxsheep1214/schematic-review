@@ -42,11 +42,22 @@ def declared_supply_nets(graph, intent):
     declaration alone is not rail identity. A declared net counts when a fitted IC draws
     supply from it or it carries bulk storage to ground. Name hints stay separate.
     """
-    from decoupling import parse_capacitance
-    native = (graph.db.get('native_pintype') or {}) if isinstance(graph.db, dict) else {}
     rails = (intent or {}).get('power_rails') or {}
     if not isinstance(rails, dict):
         return set()
+    return _supply_nets(graph, rails, rails)
+
+
+def supply_candidates(graph, intent):
+    """Every net that behaves as a supply on the netlist, declared or not (fixed requirements, step 5): the reviewer
+    declares each one without a rail name in power_rails or excludes it in rail_exclusions."""
+    rails = (intent or {}).get('power_rails') or {}
+    return _supply_nets(graph, rails if isinstance(rails, dict) else {}, graph.nets)
+
+
+def _supply_nets(graph, rails, nets):
+    from decoupling import parse_capacitance
+    native = (graph.db.get('native_pintype') or {}) if isinstance(graph.db, dict) else {}
 
     def window(net):
         v = rails[net].get('voltage_v') if isinstance(rails.get(net), dict) else None
@@ -55,7 +66,7 @@ def declared_supply_nets(graph, intent):
     # A declared window that never rises above 0 V is a return (SEC_RTN), not a supply.
     returns = {net for net in rails if (window(net) or {}).get('max', 1) <= 0}
     found = set()
-    for net in rails:
+    for net in nets:
         if net not in graph.nets or ng.is_ground(net) or net in graph.pseudo or net in returns:
             continue
         for node in graph.nodes_on(net):

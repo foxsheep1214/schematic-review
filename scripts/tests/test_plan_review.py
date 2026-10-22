@@ -361,7 +361,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(by_rule['DOC-V02']['required_inputs'], ['schematic_pdf'])
         self.assertEqual(by_rule['DOC-D01']['id'], 'DOC-D01.BOARD')
         intent = {'schema_version': 3, 'materials': {
-            key: {'available': True, 'citation': 'synthetic material'}
+            key: {'path': str(pathlib.Path(__file__).resolve())}
             for key in ('requirements', 'datasheets', 'platform_checklist', 'schematic_pdf')}}
         ready = build_review_plan(sample_db(), intent)
         self.assertTrue(all(x['readiness'] == 'READY' for x in ready['checks']

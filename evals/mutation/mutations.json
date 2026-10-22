@@ -1153,5 +1153,82 @@
   "file": "scripts/plan_review.py",
   "old": "        requirement_bindings.attach(plan['checks'])",
   "new": "        pass"
+ },
+ {
+  "id": "M166",
+  "name": "supply candidates are only the declared nets",
+  "file": "scripts/checkers/powertree.py",
+  "old": "    return _supply_nets(graph, rails if isinstance(rails, dict) else {}, graph.nets)",
+  "new": "    return _supply_nets(graph, rails if isinstance(rails, dict) else {}, rails if isinstance(rails, dict) else {})"
+ },
+ {
+  "id": "M167",
+  "name": "a supply net neither declared nor excluded is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "        if status == 'unconfirmed':",
+  "new": "        if False:"
+ },
+ {
+  "id": "M168",
+  "name": "an exclusion of a net that is not a supply candidate is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "        if found.get(net) not in ('excluded', 'declared'):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M169",
+  "name": "a rail exclusion without a reason is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "            errors.append('rail_exclusions.%s 须写依据' % net)",
+  "new": "            pass"
+ },
+ {
+  "id": "M170",
+  "name": "a net both declared and excluded is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "            errors.append('rail_exclusions.%s 已在 power_rails 声明成轨，二者只取一个' % net)",
+  "new": "            pass"
+ },
+ {
+  "id": "M171",
+  "name": "a material is available without its file",
+  "file": "scripts/plan_board.py",
+  "old": "    return isinstance(item, dict) and isinstance(item.get('path'), str) and os.path.exists(item['path'])",
+  "new": "    return isinstance(item, dict) and isinstance(item.get('path'), str)"
+ },
+ {
+  "id": "M172",
+  "name": "a written material availability is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "            if 'available' in item:\n                errors.append(f'{label}.available 不写",
+  "new": "            if False:\n                errors.append(f'{label}.available 不写"
+ },
+ {
+  "id": "M173",
+  "name": "requirements are not available from the requirement source",
+  "file": "scripts/plan_board.py",
+  "old": "    if key == 'requirements' and isinstance(source, dict)",
+  "new": "    if False and isinstance(source, dict)"
+ },
+ {
+  "id": "M174",
+  "name": "features for a circuit type the candidates found are accepted",
+  "file": "scripts/plan_review.py",
+  "old": "            if candidate_based and str(key).upper() in circuit_types:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M175",
+  "name": "an APPLICABLE feature without a candidate circuit is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "            if candidate_based and isinstance(item, dict) and item.get('applicability') == 'APPLICABLE':",
+  "new": "            if False:"
+ },
+ {
+  "id": "M176",
+  "name": "the plan does not list how supply nets were confirmed",
+  "file": "scripts/plan_review.py",
+  "old": "        plan['rail_candidates'] = rail_candidates(self.db, self.intent)",
+  "new": "        plan['rail_candidates'] = {}"
  }
 ]

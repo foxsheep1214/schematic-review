@@ -25,7 +25,8 @@ import hashlib
 import re
 import sys
 from collections import Counter
-from checkers import REGISTRY, domains as domains_lib, passive_stress
+from checkers import REGISTRY, domains as domains_lib, passive_stress, powertree
+from checkers.netgraph import NetGraph, RAIL_RE
 import circuit_decisions
 import check_key
 import row_owner
@@ -68,6 +69,39 @@ def _squeeze(value):
     return _SQUEEZE_RE.sub('', value)
 
 
+def rail_candidates(db, intent):
+    """{net: 'name' | 'declared' | 'excluded' | 'unconfirmed'} for every net that behaves as a supply on the netlist
+    (fixed requirements, step 5): a net without a rail name is a rail only when power_rails declares it."""
+    rails = intent.get('power_rails') if isinstance(intent.get('power_rails'), dict) else {}
+    excluded = intent.get('rail_exclusions') if isinstance(intent.get('rail_exclusions'), dict) else {}
+    out = {}
+    for net in sorted(powertree.supply_candidates(NetGraph(board_intent.graph_db(db, intent)), intent)):
+        out[net] = ('name' if RAIL_RE.match(net) else 'declared' if net in rails
+                    else 'excluded' if net in excluded else 'unconfirmed')
+    return out
+
+
+def _rail_errors(intent, db):
+    excluded = intent.get('rail_exclusions', {})
+    if not isinstance(excluded, dict):
+        return ['rail_exclusions 必须为按网络名索引的 object（值写不是电源轨的依据）']
+    if not isinstance(db, dict) or not isinstance(db.get('nets'), dict):
+        return []   # the netlist is checked on its own
+    found, rails, errors = rail_candidates(db, intent), intent.get('power_rails') or {}, []
+    for net, status in found.items():
+        if status == 'unconfirmed':
+            errors.append('power_rails: 网 %s 在网表上像电源（有 IC 从它取电或大电容到地），名字不像轨；'
+                          '声明成轨（power_rails）或在 rail_exclusions 写它不是轨的依据' % net)
+    for net, reason in excluded.items():
+        if found.get(net) not in ('excluded', 'declared'):
+            errors.append('rail_exclusions.%s 不是待确认的电源网；只排除网表上像电源、名字不像轨的网' % net)
+        if net in rails:
+            errors.append('rail_exclusions.%s 已在 power_rails 声明成轨，二者只取一个' % net)
+        if not _text(reason):
+            errors.append('rail_exclusions.%s 须写依据' % net)
+    return errors
+
+
 def validate_intent(intent, db=None, candidates=None, require_candidates=False):
     """验证 intent；给出 db 时同时核对网表绑定。"""
     if intent is None:
@@ -91,6 +125,8 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
             elif value < 0:
                 errors.append(f'expect.{key} 不得小于 0')
     features = intent.get('features', {})
+    candidate_based = 'circuit_decisions' in intent or 'circuit_candidates_sha256' in intent
+    circuit_types = {c.get('type') for c in intent.get('circuits') or [] if isinstance(c, dict)}
     if not isinstance(features, dict):
         errors.append('features 必须为 object')
     else:
@@ -98,6 +134,13 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
             label = f'features.{key}'
             if str(key).upper() not in catalog.CIRCUIT_TYPE_BY_NAME:
                 errors.append(f'{label} 不是功能电路名（取 check-catalog.md 中的功能电路名）')
+                continue
+            if candidate_based and str(key).upper() in circuit_types:
+                errors.append(f'{label} 不写：这类电路由候选与电路决定推出（intent.circuits 已有）')
+                continue
+            if candidate_based and isinstance(item, dict) and item.get('applicability') == 'APPLICABLE':
+                errors.append(f'{label} 不写 APPLICABLE：候选没检出这类电路；要审就在 circuit_decisions 里补电路，'
+                              '只对规则总表有、候选没检出的类别写不适用（NOT_APPLICABLE）依据')
                 continue
             if not _text(key) or not isinstance(item, dict):
                 errors.append(f'{label} 必须为 object')
@@ -117,11 +160,16 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
             if not _text(key) or not isinstance(item, dict):
                 errors.append(f'{label} 必须为 object')
                 continue
-            if not isinstance(item.get('available'), bool):
-                errors.append(f'{label}.available 必须为 boolean')
+            if 'available' in item:
+                errors.append(f'{label}.available 不写：资料是否可用由 path 指向的文件是否存在推出')
+            if not _text(item.get('path')):
+                errors.append(f'{label}.path 缺失：写资料文件或目录的路径')
+            elif not os.path.exists(item['path']):
+                errors.append(f'{label}.path {item["path"]} 不存在')
             if item.get('available') and not _text(item.get('citation')):
                 errors.append(f'{label}.citation 缺失')
     errors.extend(requirement_parameters.rail_errors(intent))
+    errors.extend(_rail_errors(intent, db))
     rails = requirement_parameters.resolve(intent).get('power_rails', {})
     if not isinstance(rails, dict):
         errors.append('power_rails 必须为按网络名索引的 object')
@@ -622,6 +670,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         plan['owners'] = row_owner.table(circuits, parts)
         plan['interfaces'] = self.interfaces
         requirement_bindings.attach(plan['checks'])
+        plan['rail_candidates'] = rail_candidates(self.db, self.intent)
         plan['summary']['owners'] = row_owner.counts(plan['checks'])
         return plan
 

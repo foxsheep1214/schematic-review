@@ -1,0 +1,15 @@
+{
+ "revision": "rail-confirmation-v1",
+ "parents": {
+  "revisions/system-functions-v1/expected.json": "fe9317d9f2f828764614c3b27ecbe55c10b48e82400a3e5d24eac7fbe4ed1833",
+  "revisions/system-functions-v1/cases.json": "765a3b0760eb509b05c22c292a3500de03f1a467ccb9ff88244bdc513f872bc9",
+  "revisions/system-functions-v1/sources.json": "c2747d3ad3f382346b6b05ed54e0be4b5e17ca00fde34d7ba432c4ac03dd4547",
+  "revisions/system-functions-v1/manifest.json": "d4f7a4bf628161a25997378227590a21c146c98e0587f1a8a798439ac16e7a76"
+ },
+ "derived_files": {
+  "revisions/rail-confirmation-v1/expected.json": "fe9317d9f2f828764614c3b27ecbe55c10b48e82400a3e5d24eac7fbe4ed1833",
+  "revisions/rail-confirmation-v1/cases.json": "8035c7cd37fb9882f87701f0dcc261f61851419af352c562ed0083ffcae04338",
+  "revisions/rail-confirmation-v1/sources.json": "7a850a6f18b8a5d603a4295b99dc65ea8e2c5df980a6ec9bd6cd64aa53673be3"
+ },
+ "scope": "需求固化第 5 步：网表上像电源而名字不像轨的网须声明成轨或在 rail_exclusions 写依据；rf1 两个带 intent 的用例改用加了 VOUT_N 排除依据的 intent 副本，其余输入、用例与答案不变。system-functions-v1 文件保持原字节。"
+}

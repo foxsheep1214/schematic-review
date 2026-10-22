@@ -7,6 +7,32 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## What decides which rows exist is derived, and the reviewer only confirms (2026-10-22)
+
+Step 5 of the fixed-requirements design. On the R5 bench one reviewer declared a platform checklist available and
+the other did not, which set rows waiting or ready; one listed seven circuit types as applicable that the candidates
+had already found; both reached the same nine rails only because both happened to declare the same name-unlike supply
+nets. A material is now available when the file `materials.<key>.path` names exists (requirements from the
+requirement source, datasheets from the datasheet audit), and `available` is refused, as is a path that does not
+exist; with circuits from candidates, `features` may not name a type intent.circuits has nor say APPLICABLE, so it
+only explains why a catalog type the candidates did not find does not apply; `powertree.supply_candidates` scans every
+net, and each one that behaves as a supply (a fitted IC draws supply from it, or 1 uF or more to ground) without a
+rail name must be declared in power_rails or excluded with a reason in `rail_exclusions` (an exclusion of another net,
+without a reason or of a declared net is refused); the plan lists them as `rail_candidates`. R5 bench: both reviewers
+get the same 11 candidates (4 by name, 5 declared, 2 excluded), all rows 504 of 504 and 508 (99.2 %), paired rows
+with the same readiness and inputs 492 of 504 (489 of 503 before); what remains is the load refs of nine rail
+budgets, one connector pinout and one I2C not-applicable only one reviewer wrote. Rails are not identified from the
+netlist alone (the R5 sets were already equal) and the window-source priority is not enforced (nothing machine-checks
+it). The replay bench gets contract rail-confirmation-v1: the two rf1 cases with an intent use copies that exclude
+VOUT_N, the isolated output return, and the frozen revisions keep their bytes. Tests first
+(test_derived_declarations, 7 tests; material fixtures move to paths), 1901 tests pass, contract 500, replay bench
+195/195, mutations M166–M176 added and killed (M168, M171, M174 survived first; their tests had another error or only
+an existing file).
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (materials, features, power_rails), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (materials, features, power_rails), user:2026-10-22 (分步完成第 1 到第 7 步)
+- Causes: rule_not_enforced 1
+- Changed: scripts/checkers/powertree.py, scripts/plan_review.py, scripts/plan_board.py, scripts/tests/test_derived_declarations.py, scripts/tests/test_electrical_safety.py, scripts/tests/test_plan_review.py, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/rail-confirmation-v1/manifest.json, evals/kicad_replay_bench/revisions/rail-confirmation-v1/cases.json, evals/kicad_replay_bench/revisions/rail-confirmation-v1/expected.json, evals/kicad_replay_bench/revisions/rail-confirmation-v1/sources.json, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.intent.json, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.frames.intent.json, SKILL.md, references/plan-and-results.md, docs/2026-10-22-fixed-requirements-and-review-points.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## A requirement aspect a tree check already asks is bound to that check (2026-10-22)
 
 Step 4 of the fixed-requirements design. After step 2 every (requirement, aspect) had its own REQ-D01 row, so an

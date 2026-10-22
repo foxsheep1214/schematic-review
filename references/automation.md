@@ -508,7 +508,7 @@ PWR-T03 与连接型 PWR-D02 只审本组供电/返回连接；在完整官方�
 数量/容量（PWR-C09）与额定值（PWR-C10）；`requirements` 的三类 `kind` 依次对应这三条规则。电气行的
 `required_material_refs` 列出目标器件与本组已确认贴装的电容，供资料取证时按需
 `audit_datasheets.py --require-ref C1`；按实际判据绑定受控电容规格，依赖具体偏压/ESR/寿命特性时核准确订货码，不能用一般
-`datasheets.available` 代替适用参数。容量缺口不自动否定另一个
+全局的 `materials.datasheets` 代替适用参数。容量缺口不自动否定另一个
 已证实的窄连接结论。标准无源符号类别不再重复索取 components 声明；power_in 只生成候选，
 HV 启动/检测或端口储能等角色须按实际器件条款确认，不能由该类型强制本地去耦。
 

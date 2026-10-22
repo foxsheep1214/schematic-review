@@ -16,9 +16,11 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的网表扫描检
 `--contract legacy` 用于重放历史约定，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认约定是 `system-functions-v1`（`revisions/system-functions-v1/`，2026-10-22）：系统功能有对象才生成——两个以上地网才问 PWR-T06，两条以上电源轨才问 RST-T03（全板一行），有可能是主控的 IC 才问 SIG-D13；DEV-C01/C02/C03 每块电路对自有器件一行、未归属器件全板一行；每个有行的系统功能一个框架（FN-SYS-*）。逐例重建计划核对检查数变化等于这几项之和，其余答案不变。
+当前默认约定是 `rail-confirmation-v1`（`revisions/rail-confirmation-v1/`，2026-10-22）：网表上像电源（有 IC 从它取电或大电容到地）而名字不像轨的网须在 intent 里声明成轨或在 `rail_exclusions` 写依据；rf1 两个带 intent 的用例改用加了 VOUT_N（隔离输出回流网）排除依据的 intent 副本，其余输入、用例与答案不变。
 
-此前的默认约定是 `interface-rows-v1`（`revisions/interface-rows-v1/`，2026-10-22）：连接器的对端定义、载流、对外防护三行改挂对外接口 `EXT-<连接器>`，DEV-C04 由全板一行改为每个连接器一行，每个连接器一个接口框架（3 个成员）；各用例检查数的变化逐例等于连接器数减 1（没识别出连接器的 r04 两例减 1），其余答案不变；用例里没有两块以上电路，电路对、链路与供电接口的行不出现。
+此前的默认约定是 `system-functions-v1`（`revisions/system-functions-v1/`，2026-10-22）：系统功能有对象才生成——两个以上地网才问 PWR-T06，两条以上电源轨才问 RST-T03（全板一行），有可能是主控的 IC 才问 SIG-D13；DEV-C01/C02/C03 每块电路对自有器件一行、未归属器件全板一行；每个有行的系统功能一个框架（FN-SYS-*）。逐例重建计划核对检查数变化等于这几项之和，其余答案不变。
+
+更早的默认约定是 `interface-rows-v1`（`revisions/interface-rows-v1/`，2026-10-22）：连接器的对端定义、载流、对外防护三行改挂对外接口 `EXT-<连接器>`，DEV-C04 由全板一行改为每个连接器一行，每个连接器一个接口框架（3 个成员）；各用例检查数的变化逐例等于连接器数减 1（没识别出连接器的 r04 两例减 1），其余答案不变；用例里没有两块以上电路，电路对、链路与供电接口的行不出现。
 
 此前的默认约定是 `circuit-owners-v1`（`revisions/circuit-owners-v1/`，2026-10-21）：候选文件升到 schema 2，每个成员带 `owned`，每颗被持有的器件恰好归一块电路，intent.circuits 新增 `owned`；rf1-c2000-float-flyback-frames 换用重新生成的候选与 intent 夹具（候选、成员与路径不变，输出连接器由其被判为重复的候选让给 PRI-FLYBACK），答案不变。
 

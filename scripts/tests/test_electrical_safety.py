@@ -399,8 +399,8 @@ class ElectricalSafetyTests(unittest.TestCase):
     def test_power_budget_needs_quantified_rail_inputs(self):
         db, check = divider_db(), fb_check()
         _, audit = self.run_check(db, check)
-        intent = {'materials': {'requirements': {'available': True, 'citation': 'requirement'},
-                                'datasheets': {'available': True, 'citation': 'datasheet'}}}
+        here = str(pathlib.Path(__file__).resolve())
+        intent = {'materials': {'requirements': {'path': here}, 'datasheets': {'path': here}}}
         plan = build_review_plan(db, intent, datasheet_audit=audit)
         item = next(x for x in plan['checks'] if x['rule'] == 'PWR-C01')
         self.assertEqual(item['readiness'], 'WAITING_EVIDENCE')
