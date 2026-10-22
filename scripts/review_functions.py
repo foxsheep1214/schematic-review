@@ -8,9 +8,19 @@ curves and tables searched before calling it unboundable), and drawn the conclus
 already gives (F4: a positive margin passes, a margin at or below zero is a fail item whose finding carries
 the change, or stays open only naming the loose bound). Rows only follow the verdict (F5); a changed verdict
 cites a clause or a number (F6); one open item does not spread over a whole block without saying why
-(F7); a design value left open beside a calculation states its margin (F8); a deliverable another stage owes
-(DELIVERABLE_PENDING) names the deliverable, its owner and what the verdict assumed. Document checks are not
-functions: a document defect is not bound to one, and a function of document rows only is not counted.
+(F7; a design value or vendor datum never over more than MANY_ASPECTS aspects); a design value left open beside a
+calculation states its margin (F8); a deliverable another stage owes (DELIVERABLE_PENDING) names the deliverable,
+its owner and what the verdict assumed. Document checks are not functions: a document defect is not bound to one,
+and a function of document rows only is not counted.
+
+Two reviewers of the same board diverged most where the record let a judgement rest on nothing a reader can
+open: a condition whose locator was "相关位号所有物理脚" or "## BIAS" and whose says quoted no number, copied into
+every function, with one reason sentence on every open item. So a condition counts as a clause only when it is
+located (page, table, section, a datasheet section title, a requirement or record id, a designator, named nets
+or pins) and quotes a number; every circuit function lists at least one (F1), every judgement rests on at least
+one located condition (F9), the same unlocated condition or the same reason sentence in several places is a
+template (F10), a frame's function judges the frame's objects and a row the reviewer binds to a function names
+an object of that function (F11), and a connector row with clamp parts is judged in a function (F12).
 None of this proves the electrical judgement.
 """
 import re
@@ -29,6 +39,19 @@ DELIVERABLE_KINDS = ('CUSTOM_PART_DRAWING', 'FIRMWARE_CAPABILITY', 'CONFIGURATIO
 VENDOR_ASK_RE = re.compile(r'向[^，,；;。]{0,16}(?:原厂|厂商|厂家|供应商|[A-Z][A-Za-z]{2,})[^，,；;。]{0,8}(?:索取|取得|索要|要)'
                            r'|ask(?:ing)? (?:the )?(?:vendor|supplier|manufacturer)|request(?:ed)? from (?:the )?(?:vendor|supplier)', re.I)
 MANY_ASPECTS = 3
+# A located condition names a place in its source a reader can open: a page, table, figure, section or chapter,
+# a datasheet section title, a requirement or record id, a designator, or named nets/pins. "相关位号所有物理脚"
+# and "## BIAS" locate nothing. Words are matched without case, ids with it.
+LOCATOR_WORDS_RE = re.compile(
+    r'(?<![a-z])pp?\.?\s*\d|第\s*\d+\s*[页节条章]'
+    r'|\b(?:table|tab|fig(?:ure)?|section|sec|chapter|clause|note|eq(?:uation)?)\.?\s*[a-z]?\d'
+    r'|[表图]\s*\d|§\s*\d'
+    r'|电气特性|绝对最大|推荐工作|引脚说明|引脚定义|订货|功能框图|特性曲线|热阻|应用说明|典型应用|电气参数'
+    r'|electrical characteristics|absolute maximum|recommended operating|pin description|pin assignment|ordering'
+    r'|block diagram|typical (?:characteristics|application)|thermal'
+    r'|(?:\bnets?\b|\bpins?\b|\bnodes?\b|网络|引脚|位号|节点)\s*[:：]?\s*/?[a-z][a-z0-9_/.-]+', re.I)
+LOCATOR_IDS_RE = re.compile(r'\b[A-Z]{1,4}\d{1,4}\b|\b[A-Z]+(?:-[A-Z0-9]+)*-[A-Z]*\d[A-Z0-9]*\b')
+TEMPLATE_FIELDS = ('decides_reason', 'no_margin_reason', 'margin_not_decisive_reason', 'why_insufficient')
 ID_RE = re.compile(r'^FN-[A-Za-z0-9][A-Za-z0-9_.-]*$')
 KEY_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]*$')
 
@@ -36,6 +59,22 @@ KEY_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]*$')
 def evidence(value):
     return isinstance(value, list) and bool(value) and all(
         isinstance(x, dict) and text(x.get('source')) and text(x.get('locator')) for x in value)
+
+
+def located(condition):
+    """The condition's locator names a place a reader can open in its source."""
+    locator = condition.get('locator') if isinstance(condition, dict) else None
+    return text(locator) and bool(LOCATOR_WORDS_RE.search(locator) or LOCATOR_IDS_RE.search(locator))
+
+
+def clause(condition):
+    """A located condition that quotes a number: what a datasheet, standard or requirement says."""
+    return located(condition) and bool(re.search(r'\d', condition.get('says') or ''))
+
+
+def net_name(net):
+    """A net without its sheet path: /07_PD/TEMP and TEMP are the same net."""
+    return net.rsplit('/', 1)[-1] if isinstance(net, str) else net
 
 
 def _decides(item):
@@ -77,7 +116,7 @@ def unjudged_message(cid, fid, aspect, state):
             % (cid, fid, aspect, (' in state ' + state) if state else ''))
 
 
-def _judgement_errors(fid, fn, condition_ids):
+def _judgement_errors(fid, fn, conditions_by_id):
     errors = []
     judgements = fn.get('judgements')
     if judgements is None:
@@ -87,9 +126,13 @@ def _judgement_errors(fid, fn, condition_ids):
     for i, j in enumerate(judgements):
         conditions = j.get('conditions') if isinstance(j, dict) else None
         if not (isinstance(j, dict) and text(j.get('aspect')) and text(j.get('says'))
-                and isinstance(conditions, list) and conditions and all(c in condition_ids for c in conditions)):
+                and isinstance(conditions, list) and conditions and all(c in conditions_by_id for c in conditions)):
             errors.append('%s/judgements[%d]: names the aspect, the condition ids it rests on and what they settle (says)'
                           % (fid, i))
+        elif not any(located(conditions_by_id[c]) for c in conditions):   # F9
+            errors.append('%s/judgements[%d] (%s): rests on no located condition (%s); cite the clause or netlist fact it '
+                          'is read from — a page, table or section, a requirement id, or named nets/pins — not a working '
+                          'note' % (fid, i, j['aspect'], ', '.join(conditions)))
     return errors
 
 
@@ -260,7 +303,11 @@ def _item_errors(label, item, kind_field, condition_ids, finding_ids):
         errors.append(label + ': decides lists the aspects (and states) this item leaves undecided')
     else:
         aspects = {a for a, _ in _decides(item)}
-        if len(aspects) > MANY_ASPECTS and not text(item.get('decides_reason')):   # F7
+        if len(aspects) > MANY_ASPECTS and item.get('kind') in REQUEST_KINDS:   # F7, no reason admits it
+            errors.append('%s: a %s decides %d aspects, more than %d; one undecided number does not undo that much — '
+                          'compute the aspects it does not enter, or record what another stage owes as a '
+                          'DELIVERABLE_PENDING with its deliverable' % (label, item['kind'], len(aspects), MANY_ASPECTS))
+        elif len(aspects) > MANY_ASPECTS and not text(item.get('decides_reason')):   # F7
             errors.append('%s: decides covers %d aspects; say in decides_reason why one item undoes that much'
                           % (label, len(aspects)))
     if 'due_stage' in item and item['due_stage'] not in PHASES:
@@ -331,8 +378,9 @@ def _item_errors(label, item, kind_field, condition_ids, finding_ids):
     return errors
 
 
-def function_errors(report):
-    """F1–F4, F6, F7 and the shape of every function verdict; no plan needed."""
+def function_errors(report, document_only=()):
+    """F1–F4, F6, F7, F9, F10 and the shape of every function verdict; no plan needed. `document_only` names the
+    functions that carry document rows only (validate_functions finds them); they need no clause."""
     errors = []
     functions = report.get('functions')
     if not isinstance(functions, list):
@@ -355,7 +403,7 @@ def function_errors(report):
                 isinstance(obj.get(k), list) and obj[k] and all(text(x) for x in obj[k]) for k in ('refs', 'nets'))):
             errors.append(fid + ': objects names the refs and/or nets the question is about')
         conditions = fn.get('conditions')
-        condition_ids = set()
+        condition_ids, conditions_by_id = set(), {}
         if not (isinstance(conditions, list) and conditions):   # F1
             errors.append(fid + ': conditions lists the datasheet/standard clauses that bear on the question (at least one)')
         else:
@@ -366,6 +414,11 @@ def function_errors(report):
                 if c['id'] in condition_ids:
                     errors.append('%s/conditions: duplicate id %s' % (fid, c['id']))
                 condition_ids.add(c['id'])
+                conditions_by_id[c['id']] = c
+            if conditions_by_id and fid not in document_only and not any(clause(c) for c in conditions_by_id.values()):
+                errors.append('%s: no condition is a clause — one with a place a reader can open in its source (page, '
+                              'table or section, a datasheet section title, a requirement id, named nets/pins) and the '
+                              'number it says; "%s" locates nothing' % (fid, next(iter(conditions_by_id.values()))['locator']))
         calculation = fn.get('calculation')
         claim_ids = set()
         if calculation is None:
@@ -381,7 +434,7 @@ def function_errors(report):
                     isinstance(m, dict) and type(m.get('value')) in (int, float) and text(m.get('unit'))
                     and text(m.get('against')) and ('aspect' not in m or text(m['aspect'])) for m in items)):
                 errors.append(fid + ': calculation.margin is {value: number, unit, against[, aspect]} or a list of them')
-        errors.extend(_judgement_errors(fid, fn, condition_ids))
+        errors.extend(_judgement_errors(fid, fn, conditions_by_id))
         if not evidence(fn.get('evidence')):
             errors.append(fid + ': evidence locates the analysis (engineering record, calculation file)')
         if fn.get('verdict') not in VERDICTS:
@@ -426,6 +479,30 @@ def function_errors(report):
                         errors.append('%s/verdict_history[%d]: a changed verdict cites condition or claim ids in basis'
                                       % (fid, i))
     errors.extend(_shared_assumption_errors(functions))
+    errors.extend(_template_errors(functions))
+    return errors
+
+
+def _template_errors(functions):
+    """F10: one reason sentence on several open items, or one unlocated condition in several functions, is a
+    template; each item says why it is undecided, each function quotes what bears on its own question."""
+    reasons, notes = {}, {}
+    for fn in functions:
+        if not isinstance(fn, dict) or not text(fn.get('id')):
+            continue
+        for item in fn.get('open') or []:
+            if not isinstance(item, dict):
+                continue
+            for field in TEMPLATE_FIELDS:
+                if text(item.get(field)):
+                    reasons.setdefault((field, item[field].strip()), []).append('%s/%s' % (fn['id'], item.get('key', '?')))
+        for c in fn.get('conditions') or []:
+            if isinstance(c, dict) and text(c.get('says')) and not located(c):
+                notes.setdefault(c['says'].strip(), set()).add(fn['id'])
+    errors = ['%s: the same %s on every one of these items (%s); say why each is undecided'
+              % (', '.join(labels), field, sentence[:40]) for (field, sentence), labels in reasons.items() if len(labels) > 1]
+    errors += ['%s: the same unlocated condition in every one of these functions (%s); quote, with its place, what bears '
+               'on each question' % (', '.join(sorted(ids)), sentence[:40]) for sentence, ids in notes.items() if len(ids) > 1]
     return errors
 
 
@@ -506,6 +583,54 @@ def delegated(row, planned, functions_by_id):
     return bool(refs or nets) and refs <= set(objects.get('refs') or []) and nets <= set(objects.get('nets') or [])
 
 
+def _objects(fn):
+    objects = fn.get('objects') if isinstance(fn.get('objects'), dict) else {}
+    return ({r for r in objects.get('refs') or [] if text(r)},
+            {net_name(n) for n in objects.get('nets') or [] if text(n)})
+
+
+def scope_errors(plan, checks, by_id, members):
+    """F11: a frame's function judges the frame's objects (the intent circuit; add a part there and regenerate the
+    plan, do not widen the verdict), and a row the reviewer binds to a function is about an object of that
+    function — a gap of one block does not reach into another through a binding. F12: a connector row whose plan
+    lists clamp parts (clamp_refs) is judged in a function, where the clamp voltage meets the pin limit as clauses."""
+    errors = []
+    for frame in (plan or {}).get('functions') or []:
+        fn = by_id.get(frame.get('id')) if isinstance(frame, dict) else None
+        if fn is None:
+            continue
+        refs, nets = _objects(fn)
+        frame_refs, frame_nets = _objects(frame)
+        extra = sorted(refs - frame_refs) + sorted(nets - frame_nets)
+        if extra and (frame_refs or frame_nets):
+            errors.append('%s: objects name %s, which intent circuit %s does not list; declare them in intent.circuits and '
+                          'regenerate the plan, or judge them in their own function'
+                          % (fn['id'], ', '.join(extra), frame.get('circuit') or frame['id']))
+    planned_rows = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and text(c.get('id'))}
+    for cid, row in checks.items():
+        if not isinstance(row, dict) or row.get('review_result') not in REVIEWED:
+            continue
+        planned = planned_rows.get(cid) or {}
+        clamps = planned.get('clamp_refs')
+        if clamps and row.get('function_id') is None:
+            errors.append('%s: the plan lists clamp parts %s on this connector; their clamp voltage against the protected '
+                          'pin limit is a function judgement — bind the row to the port\'s function and quote both as '
+                          'clauses' % (cid, ', '.join(clamps)))
+        fn = by_id.get(row.get('function_id'))
+        if fn is None or cid in members:
+            continue
+        refs, nets = row_anchors(planned)
+        fn_refs, fn_nets = _objects(fn)
+        if refs and not refs <= fn_refs:
+            errors.append('%s: bound to %s, which is not about %s; a row names an object of its function — bind it to the '
+                          'function that judges %s, or declare that part in that circuit'
+                          % (cid, fn['id'], ', '.join(sorted(refs - fn_refs)), ', '.join(sorted(refs))))
+        elif not refs and nets and not {net_name(n) for n in nets} <= fn_nets:
+            errors.append('%s: bound to %s, which is not about net %s; a row names an object of its function'
+                          % (cid, fn['id'], ', '.join(sorted(nets))))
+    return errors
+
+
 def frame_errors(plan, checks, functions):
     """Plan frames (one per intent circuit) are answered: a reviewed member row binds to its frame's
     function (or to another frame's function whose objects cover the row) and keeps the frame's aspect;
@@ -514,6 +639,9 @@ def frame_errors(plan, checks, functions):
     by_id = {fn['id']: fn for fn in functions or [] if isinstance(fn, dict) and text(fn.get('id'))}
     ids = set(by_id)
     planned_rows = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and text(c.get('id'))}
+    members = {m.get('check_id') for f in (plan or {}).get('functions') or [] if isinstance(f, dict)
+               for m in f.get('members') or [] if isinstance(m, dict)}
+    errors.extend(scope_errors(plan, checks, by_id, members))
     for frame in (plan or {}).get('functions') or []:
         if not isinstance(frame, dict) or not text(frame.get('id')):
             continue
@@ -541,5 +669,8 @@ def frame_errors(plan, checks, functions):
 def validate_functions(plan, report, checks, history_ids=()):
     """All function-verdict errors for validate_review. `report` is the record as written."""
     expected = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and isinstance(c.get('id'), str)}
-    return (function_errors(report) + binding_errors(expected, checks, report.get('functions'), history_ids)
+    functions = report.get('functions') if isinstance(report.get('functions'), list) else []
+    circuits = {fn.get('id') for fn in circuit_functions(functions, list(checks.values()))}
+    document_only = {fn.get('id') for fn in functions if isinstance(fn, dict) and fn.get('id') not in circuits}
+    return (function_errors(report, document_only) + binding_errors(expected, checks, report.get('functions'), history_ids)
             + frame_errors(plan, checks, report.get('functions')))

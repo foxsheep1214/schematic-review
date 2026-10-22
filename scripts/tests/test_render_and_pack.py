@@ -652,6 +652,14 @@ class DeliveryReviewTests(unittest.TestCase):
             'calculations': str(rec / 'calculations'), 'preflight': str(rec / 'preflight-delivery.json')})
         self.assertEqual(3, len([e for e in errors if 'ASG delivery' in e]), errors)
 
+    def test_a_schematic_file_inside_the_delivery_finds_it_too(self):
+        # 2026-10-21: a reviewer declared the delivery's sheets one file at a time (<delivery>/原理图/*.kicad_sch) and
+        # packed without re-judging its selection, calculations and preflight.
+        sheet = self.asg / '原理图' / 'PD100_R5.kicad_sch'
+        sheet.write_text('(kicad_sch)')
+        errors, _ = pack(self.out, self.ledger, str(self.work), {'requirements': str(self.inputs), 'raw001': str(sheet)})
+        self.assertEqual(3, len([e for e in errors if 'ASG delivery' in e]), errors)
+
     def test_review_left_in_the_work_directory_does_not_count(self):
         self.all_products()
         results = json.loads((self.work / 'review-results.json').read_text())

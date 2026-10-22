@@ -77,14 +77,24 @@ def _aspect(plan, row):
         return 'general'
 
 
-def _objects(plan, cids):
+def _objects(plan, cids, rows=None):
+    """The parts and nets of the rows a synthetic function answers, from the plan or, without one, from the
+    rows' own binding objects (a reviewer lists what the function is about; F11 holds the rows to it)."""
     refs, nets = [], []
-    for c in (plan or {}).get('checks') or []:
-        if isinstance(c, dict) and c.get('id') in cids and isinstance(c.get('object'), dict):
-            o = c['object']
+    planned = [c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and c.get('id') in cids]
+    objects = [c.get('object') for c in planned] or [((rows or {}).get(cid) or {}).get('binding', {}).get('object') for cid in cids]
+    for o in objects:
+        if isinstance(o, dict):
             refs += [x for x in ([o.get('ref')] if isinstance(o.get('ref'), str) else []) + list(o.get('refs') or []) if isinstance(x, str)]
+            if isinstance(o.get('node'), str):   # a pin row is about its part, as row_anchors reads it
+                refs.append(o['node'].partition('.')[0])
             nets += [x for x in ([o.get('net')] if isinstance(o.get('net'), str) else []) + list(o.get('nets') or []) if isinstance(x, str)]
-    return {'refs': list(dict.fromkeys(refs)) or ['SYNTHETIC']} if not nets or refs else {'nets': list(dict.fromkeys(nets))}
+    objects = {}
+    if refs or not nets:
+        objects['refs'] = list(dict.fromkeys(refs)) or ['SYNTHETIC']
+    if nets:
+        objects['nets'] = list(dict.fromkeys(nets))
+    return objects
 
 
 def _open_item(key, rows, task):
@@ -122,7 +132,7 @@ def _open_item(key, rows, task):
         else:
             item['acquisition'] = first.get('how_to_close')
             item['checked'] = ['c1']
-            item['why_insufficient'] = 'Synthetic: the stipulated clause does not give the datum'
+            item['why_insufficient'] = 'Synthetic: the stipulated clause does not give the datum of %s' % key
             item['worst_case'] = {'not_boundable_reason': 'Synthetic: the fixture stipulates no public curve bounds it',
                                   'curves_checked': [{'source': 'synthetic', 'locator': 'stipulated'}],
                                   'operating_point_specified': True}
@@ -133,8 +143,8 @@ def _open_item(key, rows, task):
 
 def _stipulated(fid, question, objects, verdict):
     return {'id': fid, 'question': question, 'objects': objects,
-            'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'stipulated clause',
-                            'says': 'stipulated', 'use': 'stipulated'}],
+            'conditions': [{'id': 'c1', 'source': 'synthetic-fixture.json', 'locator': 'p1 Table 1 (stipulated clause)',
+                            'says': 'stipulated limit 1 V', 'use': 'stipulated'}],
             'no_calculation_reason': 'synthetic fixture', 'evidence': SYNTHETIC, 'open': [], 'fails': [], 'verdict': verdict}
 
 
@@ -154,7 +164,7 @@ def _functions(out, plan):
         if fid not in functions:
             frame = frames.get(fid)
             fn = _stipulated(fid, frame['question'] if frame else fallback_question,
-                             frame['objects'] if frame else _objects(plan, cids), 'PASS')
+                             frame['objects'] if frame else _objects(plan, cids, rows), 'PASS')
             fn['evidence'] = SYNTHETIC
             functions[fid] = fn
         return functions[fid]

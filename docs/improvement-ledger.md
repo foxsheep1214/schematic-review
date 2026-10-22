@@ -7,6 +7,58 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Two reviewers of one board: what the record let differ, now refused (2026-10-21)
+
+Two reviews of the same R5 schematic (SR-20261021-R5-claude-fd6a6dd and
+SR-20261021-R5-codex-fd6a6dd, same db_sha256, same skill commit) were
+compared row by row. They shared 287 of 423 / 487 plan rows and agreed on
+184 of them; one found a port ESD defect and a document error, the other a
+PFC line-mode shortfall, and neither found the other's; one left 51 rows
+undecided, the other 168, with 161 of those called "design not decided".
+Both records were valid with zero errors. What the record had let through,
+each now a hard error in `review_functions.py` / `review_stage_scope.py` /
+`plan_review.py`: (1) every function's `conditions` were two working notes
+("相关位号所有物理脚", "## BIAS", says "本轮原厂条款摘录") copied into all
+eleven functions, and every judgement rested on them — a condition now
+counts as a clause only when its locator names a place a reader can open
+(page, table, section, a datasheet section title, a requirement or record
+id, a designator, named nets/pins) and its says quotes a number; each
+circuit function needs one (F1), each judgement rests on a located
+condition (F9), the same unlocated condition in several functions or the
+same reason sentence on several open items is a template (F10). (2) One
+DESIGN_VALUE decided 10–12 aspects (28 rows each) behind a decides_reason
+copied onto every item — a design value or vendor datum decides at most 3
+aspects, no reason admits more (F7). (3) Function `objects` were widened past
+the intent circuit so a bias gap made the PFC gate-driver and the controller
+rows undecided — a frame's function keeps the frame's objects and a row the
+reviewer binds to a function names one of its objects (F11). (4) The
+connector row with four clamp parts was passed by hand with "各有一颗 TVS"
+while the other reviewer computed 9 V clamp against the 6.5 V pin limit — a
+PRO-D03 row with `clamp_refs` must be judged in a function (F12). (5) Two
+requirement rows were stage NA whole (温度, 寿命) where the other reviewer
+passed the temperature grades — a `REQ-D01.<id>` row is never stage NA as a
+whole. (6) All 19 requirement criteria were the requirement text verbatim,
+and cost/size targets then "passed" — intent refuses a criterion equal to its
+text; optimization goals are NA with the text cited (verdicts-and-release).
+(7) The delivery's sheets declared one file at a time escaped the delivery
+re-judgement gate — pack_review now finds a delivery up to three folders
+above any declared file. Replayed under the new rules the second record goes
+from 0 to 52 errors in exactly these classes; the first stays at 0 (only the
+engine fingerprint moves). `scripts/compare_reviews.py` (new) aligns two
+records by circuit (type and shared parts, names and state case aside), keys
+rows by rule, circuit, state and part, and lists the rows judged differently,
+the findings and open items only one side raised, and the function verdicts
+side by side; on the pair it aligns 296 rows with 222 agreeing (75 %).
+Not changed: intent circuits are still the reviewer's to draw (the two records
+had 10 and 11 with different names and states), so row ids still drift and
+only the comparison tool bridges them; the kind chosen for a firmware
+configuration (DELIVERABLE_PENDING vs DESIGN_VALUE) is documented, not
+guarded. Mutations M44–M51; 1692 tests pass.
+
+- Event: review:原理图审查结果/SR-20261021-R5-codex-fd6a6dd (对照 SR-20261021-R5-claude-fd6a6dd 的逐行差异), user:2026-10-21 (两份结果差异过大，要求让不同 agent 的审查趋同)
+- Causes: rule_not_enforced 5, rule_missing 2
+- Changed: scripts/review_functions.py, scripts/review_stage_scope.py, scripts/plan_review.py, scripts/pack_review.py, scripts/compare_reviews.py, scripts/tests/test_review_functions.py, scripts/tests/test_review_stage_scope.py, scripts/tests/test_plan_review.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_compare_reviews.py, scripts/tests/conftest.py, scripts/tests/ledger_v3.py, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, references/plan-and-results.md, references/verdicts-and-release.md, references/automation.md, SKILL.md, docs/improvement-ledger.md
+
 ## No aspect passes by default; exits are typed and shown (2026-10-20)
 
 A delivered review record was replayed against the skill to ask what in the

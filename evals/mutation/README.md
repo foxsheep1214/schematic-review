@@ -40,6 +40,10 @@ M33–M43（2026-10-20，架构收紧）守“没人判过的方面不默认通�
 `judgements` 要引条款（M38）、手工核对覆盖不了缺输入的工具缺口（M39）、不同对象不共用一段核对方法（M40）、
 手册未规定的工作点不当缺资料（M41）、报告显示为什么不按余量下结论（M42）、同一句假定不抄进几个功能（M43），
 由 `test_derive_rows.py`、`test_review_functions.py`、`test_render_and_pack.py` 的对应测试杀死。
+M44–M51（2026-10-21，两名审查员同板记录对比）守七条让记录趋同的护栏：功能至少一条能定位、带数字的条款（M44）、
+判断至少引一条能定位的条件（M45）、DESIGN_VALUE/VENDOR_DATUM 写了理由也不许超过 3 个方面（M46）、同一句理由不抄到几个开放项（M47）、
+框架功能的对象不越出 intent 电路（M48）、审查员绑定的行要在功能对象上（M49）、带 clamp_refs 的连接器行不手填（M50）、
+需求行不整行阶段 NA（M51），由 `test_review_functions.py::ReviewerAgreementTests` 和 `test_review_stage_scope.py` 杀死。
 
 ## 维护
 

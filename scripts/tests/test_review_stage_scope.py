@@ -71,6 +71,19 @@ class StageScopeTests(unittest.TestCase):
         self.assertEqual(out['release'], 'GO')
         self.assertEqual(r['checks'][0]['handoff']['product_requirement_status'], 'PENDING_VERIFICATION')
 
+    def test_a_requirement_row_is_not_stage_na_as_a_whole(self):
+        # 2026-10-21: one reviewer made REQ-D01.REQ-TEMP-001 and REQ-LIFE-001 stage NA whole, the other judged their
+        # design obligations (temperature grades, life calculations) and passed them; the test clause alone is NA.
+        p, r, db = downstream()
+        p['checks'][0]['object'] = {'requirement_id': 'REQ-TEMP', 'feature': 'REQ-TEMP'}
+        from validate_review import fingerprint
+        r['plan_digest'] = fingerprint(p)
+        errors, _ = validate_stage_scope({c['id']: c for c in r['checks']}, {c['id']: c for c in p['checks']})
+        self.assertTrue(any('a requirement row judges its design obligations' in e for e in errors), errors)
+        p['checks'][0]['object'] = {'ref': 'U1'}
+        errors, _ = validate_stage_scope({c['id']: c for c in r['checks']}, {c['id']: c for c in p['checks']})
+        self.assertFalse(any('requirement row' in e for e in errors), errors)
+
     def test_stage_na_keeps_product_applicability(self):
         p, r, db = downstream()
         r['checks'][0].update(applicability='NOT_APPLICABLE', applicability_evidence=E)

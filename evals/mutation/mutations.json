@@ -1,88 +1,359 @@
 [
- {"id": "M1", "name": "NET-A01 silent on single-pin nets", "file": "scripts/lint.py",
-  "old": "            if len(nds) == 1:\n                ref = nds[0]", "new": "            if len(nds) == 99:\n                ref = nds[0]"},
- {"id": "M2", "name": "opto CTR derating ignored", "file": "scripts/checkers/optocoupler.py",
-  "old": "ic_available = if_min * ctr_min * derating", "new": "ic_available = if_min * ctr_min"},
- {"id": "M3", "name": "DAMAGE_OR_HAZARD graded P1", "file": "scripts/review_summary.py",
-  "old": "IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P0'", "new": "IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P1'"},
- {"id": "M4", "name": "DEV-E02 low margin ignored", "file": "scripts/lint.py",
-  "old": "if window['margin_low_v'] < 0 or window['margin_high_v'] < 0:", "new": "if window['margin_high_v'] < 0:"},
- {"id": "M5", "name": "DRV-A03 floating gate never reported", "file": "scripts/checkers/power_switch.py",
-  "old": "if not switch['drivers'] and not switch['gate_pulls']:", "new": "if False and not switch['drivers'] and not switch['gate_pulls']:"},
- {"id": "M6", "name": "opto LED-off check removed", "file": "scripts/checkers/optocoupler.py",
-  "old": "        if if_min <= 0:\n", "new": "        if if_min < -1e9:\n"},
- {"id": "M7", "name": "pin map mismatch never reported", "file": "scripts/lint.py",
-  "old": "            if actual is None or not (pin_name_tokens(actual) & set(allowed)):", "new": "            if False:"},
- {"id": "M8", "name": "report says 0 P0 always", "file": "scripts/render_report.py",
-  "old": "p0 = sum(level_of(t) == 'P0' for t in gap_tasks)", "new": "p0 = 0"},
- {"id": "M9", "name": "NET-A03 passive-only auto net never reported", "file": "scripts/lint.py",
-  "old": "if not any(r[0] in 'UJMY' for r in rs):", "new": "if False:"},
- {"id": "M10", "name": "PWR-A04 same-base rails never reported", "file": "scripts/lint.py",
-  "old": "        if len(grp) > 1:", "new": "        if len(grp) > 99:"},
- {"id": "M11", "name": "RST-A01 EN pull candidates never reported", "file": "scripts/lint.py",
-  "old": "            if pulls:", "new": "            if False:"},
- {"id": "M12", "name": "REQ-A01 key-part count mismatch never reported", "file": "scripts/lint.py",
-  "old": "                if len(got) != want:", "new": "                if False:"},
- {"id": "M13", "name": "F2 design value asked of a vendor accepted", "file": "scripts/review_functions.py",
-  "old": "        if VENDOR_ASK_RE.search(asked):", "new": "        if False:"},
- {"id": "M14", "name": "F4 positive margin never decides", "file": "scripts/review_functions.py",
-  "old": "        if value > 0:   # a positive margin decides; an open item on the same aspect needs a reason", "new": "        if value > 0 and False:"},
- {"id": "M15", "name": "frame member bound to another function accepted", "file": "scripts/review_functions.py",
-  "old": "            if row.get('function_id') != frame['id']:", "new": "            if False:"},
- {"id": "M16", "name": "derive_rows ignores open items", "file": "scripts/derive_rows.py",
-  "old": "    for item in fn.get('open') or []:", "new": "    for item in []:"},
- {"id": "M17", "name": "question prohibition ban never fires on rows", "file": "scripts/catalog.py",
-  "old": "        if isinstance(item, dict) and isinstance(item.get('question'), str) and QUESTION_BAN_RE.search(item['question']):", "new": "        if False:"},
- {"id": "M18", "name": "plan emits no function frames", "file": "scripts/plan_review.py",
-  "old": "        self.functions.extend(frames.values())", "new": "        pass"},
- {"id": "M19", "name": "state-invariant rules expanded per state again", "file": "scripts/plan_review.py",
-  "old": "                    invariant = rule in catalog.STATE_INVARIANT", "new": "                    invariant = False"},
- {"id": "M20", "name": "F4 shortfall kept open accepted", "file": "scripts/review_functions.py",
-  "old": "        if covering_fails:", "new": "        if True:"},
- {"id": "M21", "name": "F8 design value without margin accepted", "file": "scripts/review_functions.py",
-  "old": "    if calculation.get('claim_ids'):   # F8", "new": "    if False:"},
- {"id": "M22", "name": "document defect bound to a function accepted", "file": "scripts/review_functions.py",
-  "old": "        if fid is not None and result == 'FAIL' and document_row(cid):", "new": "        if False:"},
- {"id": "M23", "name": "bidirectional single-node net reported as FINDING again", "file": "scripts/lint.py",
-  "old": "                        and ng.normalize(self.pintype.get(nds[0])) in BIDIR_PINTYPES):", "new": "                        and False):"},
- {"id": "M24", "name": "driver behind a resistor chain ignored", "file": "scripts/checkers/power_switch.py",
-  "old": "                elif switch.get('chained_drivers'):", "new": "                elif False:"},
- {"id": "M25", "name": "delegated frame row accepted without object coverage", "file": "scripts/review_functions.py",
-  "old": "                if delegated(row, planned_rows.get(member['check_id']), by_id):", "new": "                if True:"},
- {"id": "M26", "name": "review_scope ignored: scoped ledger owes every plan row", "file": "scripts/validate_review.py",
-  "old": "    in_scope = {k: v for k, v in expected.items() if k in scope_rows} if scope_decl else expected", "new": "    in_scope = expected"},
- {"id": "M27", "name": "F3 public bound never required on a vendor datum", "file": "scripts/review_functions.py",
-  "old": "    if not (isinstance(bound, dict) and bound.get('condition') in condition_ids and text(bound.get('value'))\n            and bound.get('basis') in BOUND_BASES):", "new": "    if False:"},
- {"id": "M28", "name": "positive margin under the public bound never decides", "file": "scripts/review_functions.py",
-  "old": "    if value > 0:\n        if text(item.get('margin_not_decisive_reason')):\n            return []", "new": "    if value > 0:\n        return []"},
- {"id": "M29", "name": "shortfall kept open without naming the loose bound", "file": "scripts/review_functions.py",
-  "old": "        if item.get('loose_bound') not in condition_ids:", "new": "        if False:"},
- {"id": "M30", "name": "pending deliverable accepted without deliverable/owner/assumed", "file": "scripts/review_functions.py",
-  "old": "        for field in DELIVERABLE_FIELDS:\n            if not text(item.get(field)):", "new": "        for field in ():\n            if not text(item.get(field)):"},
- {"id": "M31", "name": "shortfall fail item accepted without remediation", "file": "scripts/review_functions.py",
-  "old": "        if not (isinstance(remediation, dict) and remediation.get('readiness') in READINESS):", "new": "        if False:"},
- {"id": "M32", "name": "not_boundable accepted without curves_checked", "file": "scripts/review_functions.py",
-  "old": "        if not evidence(worst.get('curves_checked')):", "new": "        if False:"},
- {"id": "M33", "name": "pending deliverable accepted without a deliverable kind", "file": "scripts/review_functions.py",
-  "old": "        if item.get('deliverable_kind') not in DELIVERABLE_KINDS:", "new": "        if False:"},
- {"id": "M34", "name": "pending deliverable accepted without scope", "file": "scripts/review_functions.py",
-  "old": "            errors.append(label + ': scope required (the conditions the deliverable must cover)')", "new": "            pass"},
- {"id": "M35", "name": "report drops what a pending deliverable assumed", "file": "scripts/render_report.py",
-  "old": "              ('按什么假定判的', [task.get('assumed')]),", "new": "              ('按什么假定判的', []),"},
- {"id": "M36", "name": "an aspect nobody judged passes by default when rows are derived", "file": "scripts/derive_rows.py",
-  "old": "    if basis is None:\n        return None, unjudged_message(", "new": "    if False:\n        return None, unjudged_message("},
- {"id": "M37", "name": "a PASS row whose aspect the function never judged accepted", "file": "scripts/review_functions.py",
-  "old": "                and judged(functions[fid], row['aspect'], state) is None):", "new": "                and False):"},
- {"id": "M38", "name": "judgement accepted without the clauses it rests on", "file": "scripts/review_functions.py",
-  "old": "                and isinstance(conditions, list) and conditions and all(c in condition_ids for c in conditions)):", "new": "                and True):"},
- {"id": "M39", "name": "manual verification overrides a missing input", "file": "scripts/validate_review.py",
-  "old": "            require(not inputs, f'{key}: '", "new": "            require(True, f'{key}: '"},
- {"id": "M40", "name": "one manual method over different objects accepted", "file": "scripts/validate_review.py",
-  "old": "    for method, groups in manual_methods.items():\n        if len(groups) > 1:", "new": "    for method, groups in manual_methods.items():\n        if False:"},
- {"id": "M41", "name": "unspecified operating point accepted as a vendor request", "file": "scripts/review_functions.py",
-  "old": "        if not specified:\n", "new": "        if False:\n"},
- {"id": "M42", "name": "report hides why a margin did not decide", "file": "scripts/render_report.py",
-  "old": "              ('为什么不按余量下结论', [task.get('kept_open')]),", "new": "              ('为什么不按余量下结论', []),"},
- {"id": "M43", "name": "one assumption copied into several functions accepted", "file": "scripts/review_functions.py",
-  "old": "            for a, ids in owners.items() if len(set(ids)) > 1]", "new": "            for a, ids in owners.items() if False]"}
+ {
+  "id": "M1",
+  "name": "NET-A01 silent on single-pin nets",
+  "file": "scripts/lint.py",
+  "old": "            if len(nds) == 1:\n                ref = nds[0]",
+  "new": "            if len(nds) == 99:\n                ref = nds[0]"
+ },
+ {
+  "id": "M2",
+  "name": "opto CTR derating ignored",
+  "file": "scripts/checkers/optocoupler.py",
+  "old": "ic_available = if_min * ctr_min * derating",
+  "new": "ic_available = if_min * ctr_min"
+ },
+ {
+  "id": "M3",
+  "name": "DAMAGE_OR_HAZARD graded P1",
+  "file": "scripts/review_summary.py",
+  "old": "IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P0'",
+  "new": "IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P1'"
+ },
+ {
+  "id": "M4",
+  "name": "DEV-E02 low margin ignored",
+  "file": "scripts/lint.py",
+  "old": "if window['margin_low_v'] < 0 or window['margin_high_v'] < 0:",
+  "new": "if window['margin_high_v'] < 0:"
+ },
+ {
+  "id": "M5",
+  "name": "DRV-A03 floating gate never reported",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "if not switch['drivers'] and not switch['gate_pulls']:",
+  "new": "if False and not switch['drivers'] and not switch['gate_pulls']:"
+ },
+ {
+  "id": "M6",
+  "name": "opto LED-off check removed",
+  "file": "scripts/checkers/optocoupler.py",
+  "old": "        if if_min <= 0:\n",
+  "new": "        if if_min < -1e9:\n"
+ },
+ {
+  "id": "M7",
+  "name": "pin map mismatch never reported",
+  "file": "scripts/lint.py",
+  "old": "            if actual is None or not (pin_name_tokens(actual) & set(allowed)):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M8",
+  "name": "report says 0 P0 always",
+  "file": "scripts/render_report.py",
+  "old": "p0 = sum(level_of(t) == 'P0' for t in gap_tasks)",
+  "new": "p0 = 0"
+ },
+ {
+  "id": "M9",
+  "name": "NET-A03 passive-only auto net never reported",
+  "file": "scripts/lint.py",
+  "old": "if not any(r[0] in 'UJMY' for r in rs):",
+  "new": "if False:"
+ },
+ {
+  "id": "M10",
+  "name": "PWR-A04 same-base rails never reported",
+  "file": "scripts/lint.py",
+  "old": "        if len(grp) > 1:",
+  "new": "        if len(grp) > 99:"
+ },
+ {
+  "id": "M11",
+  "name": "RST-A01 EN pull candidates never reported",
+  "file": "scripts/lint.py",
+  "old": "            if pulls:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M12",
+  "name": "REQ-A01 key-part count mismatch never reported",
+  "file": "scripts/lint.py",
+  "old": "                if len(got) != want:",
+  "new": "                if False:"
+ },
+ {
+  "id": "M13",
+  "name": "F2 design value asked of a vendor accepted",
+  "file": "scripts/review_functions.py",
+  "old": "        if VENDOR_ASK_RE.search(asked):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M14",
+  "name": "F4 positive margin never decides",
+  "file": "scripts/review_functions.py",
+  "old": "        if value > 0:   # a positive margin decides; an open item on the same aspect needs a reason",
+  "new": "        if value > 0 and False:"
+ },
+ {
+  "id": "M15",
+  "name": "frame member bound to another function accepted",
+  "file": "scripts/review_functions.py",
+  "old": "            if row.get('function_id') != frame['id']:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M16",
+  "name": "derive_rows ignores open items",
+  "file": "scripts/derive_rows.py",
+  "old": "    for item in fn.get('open') or []:",
+  "new": "    for item in []:"
+ },
+ {
+  "id": "M17",
+  "name": "question prohibition ban never fires on rows",
+  "file": "scripts/catalog.py",
+  "old": "        if isinstance(item, dict) and isinstance(item.get('question'), str) and QUESTION_BAN_RE.search(item['question']):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M18",
+  "name": "plan emits no function frames",
+  "file": "scripts/plan_review.py",
+  "old": "        self.functions.extend(frames.values())",
+  "new": "        pass"
+ },
+ {
+  "id": "M19",
+  "name": "state-invariant rules expanded per state again",
+  "file": "scripts/plan_review.py",
+  "old": "                    invariant = rule in catalog.STATE_INVARIANT",
+  "new": "                    invariant = False"
+ },
+ {
+  "id": "M20",
+  "name": "F4 shortfall kept open accepted",
+  "file": "scripts/review_functions.py",
+  "old": "        if covering_fails:",
+  "new": "        if True:"
+ },
+ {
+  "id": "M21",
+  "name": "F8 design value without margin accepted",
+  "file": "scripts/review_functions.py",
+  "old": "    if calculation.get('claim_ids'):   # F8",
+  "new": "    if False:"
+ },
+ {
+  "id": "M22",
+  "name": "document defect bound to a function accepted",
+  "file": "scripts/review_functions.py",
+  "old": "        if fid is not None and result == 'FAIL' and document_row(cid):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M23",
+  "name": "bidirectional single-node net reported as FINDING again",
+  "file": "scripts/lint.py",
+  "old": "                        and ng.normalize(self.pintype.get(nds[0])) in BIDIR_PINTYPES):",
+  "new": "                        and False):"
+ },
+ {
+  "id": "M24",
+  "name": "driver behind a resistor chain ignored",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "                elif switch.get('chained_drivers'):",
+  "new": "                elif False:"
+ },
+ {
+  "id": "M25",
+  "name": "delegated frame row accepted without object coverage",
+  "file": "scripts/review_functions.py",
+  "old": "                if delegated(row, planned_rows.get(member['check_id']), by_id):",
+  "new": "                if True:"
+ },
+ {
+  "id": "M26",
+  "name": "review_scope ignored: scoped ledger owes every plan row",
+  "file": "scripts/validate_review.py",
+  "old": "    in_scope = {k: v for k, v in expected.items() if k in scope_rows} if scope_decl else expected",
+  "new": "    in_scope = expected"
+ },
+ {
+  "id": "M27",
+  "name": "F3 public bound never required on a vendor datum",
+  "file": "scripts/review_functions.py",
+  "old": "    if not (isinstance(bound, dict) and bound.get('condition') in condition_ids and text(bound.get('value'))\n            and bound.get('basis') in BOUND_BASES):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M28",
+  "name": "positive margin under the public bound never decides",
+  "file": "scripts/review_functions.py",
+  "old": "    if value > 0:\n        if text(item.get('margin_not_decisive_reason')):\n            return []",
+  "new": "    if value > 0:\n        return []"
+ },
+ {
+  "id": "M29",
+  "name": "shortfall kept open without naming the loose bound",
+  "file": "scripts/review_functions.py",
+  "old": "        if item.get('loose_bound') not in condition_ids:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M30",
+  "name": "pending deliverable accepted without deliverable/owner/assumed",
+  "file": "scripts/review_functions.py",
+  "old": "        for field in DELIVERABLE_FIELDS:\n            if not text(item.get(field)):",
+  "new": "        for field in ():\n            if not text(item.get(field)):"
+ },
+ {
+  "id": "M31",
+  "name": "shortfall fail item accepted without remediation",
+  "file": "scripts/review_functions.py",
+  "old": "        if not (isinstance(remediation, dict) and remediation.get('readiness') in READINESS):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M32",
+  "name": "not_boundable accepted without curves_checked",
+  "file": "scripts/review_functions.py",
+  "old": "        if not evidence(worst.get('curves_checked')):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M33",
+  "name": "pending deliverable accepted without a deliverable kind",
+  "file": "scripts/review_functions.py",
+  "old": "        if item.get('deliverable_kind') not in DELIVERABLE_KINDS:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M34",
+  "name": "pending deliverable accepted without scope",
+  "file": "scripts/review_functions.py",
+  "old": "            errors.append(label + ': scope required (the conditions the deliverable must cover)')",
+  "new": "            pass"
+ },
+ {
+  "id": "M35",
+  "name": "report drops what a pending deliverable assumed",
+  "file": "scripts/render_report.py",
+  "old": "              ('按什么假定判的', [task.get('assumed')]),",
+  "new": "              ('按什么假定判的', []),"
+ },
+ {
+  "id": "M36",
+  "name": "an aspect nobody judged passes by default when rows are derived",
+  "file": "scripts/derive_rows.py",
+  "old": "    if basis is None:\n        return None, unjudged_message(",
+  "new": "    if False:\n        return None, unjudged_message("
+ },
+ {
+  "id": "M37",
+  "name": "a PASS row whose aspect the function never judged accepted",
+  "file": "scripts/review_functions.py",
+  "old": "                and judged(functions[fid], row['aspect'], state) is None):",
+  "new": "                and False):"
+ },
+ {
+  "id": "M38",
+  "name": "judgement accepted without the clauses it rests on",
+  "file": "scripts/review_functions.py",
+  "old": "                and isinstance(conditions, list) and conditions and all(c in condition_ids for c in conditions)):",
+  "new": "                and True):"
+ },
+ {
+  "id": "M39",
+  "name": "manual verification overrides a missing input",
+  "file": "scripts/validate_review.py",
+  "old": "            require(not inputs, f'{key}: '",
+  "new": "            require(True, f'{key}: '"
+ },
+ {
+  "id": "M40",
+  "name": "one manual method over different objects accepted",
+  "file": "scripts/validate_review.py",
+  "old": "    for method, groups in manual_methods.items():\n        if len(groups) > 1:",
+  "new": "    for method, groups in manual_methods.items():\n        if False:"
+ },
+ {
+  "id": "M41",
+  "name": "unspecified operating point accepted as a vendor request",
+  "file": "scripts/review_functions.py",
+  "old": "        if not specified:\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M42",
+  "name": "report hides why a margin did not decide",
+  "file": "scripts/render_report.py",
+  "old": "              ('为什么不按余量下结论', [task.get('kept_open')]),",
+  "new": "              ('为什么不按余量下结论', []),"
+ },
+ {
+  "id": "M43",
+  "name": "one assumption copied into several functions accepted",
+  "file": "scripts/review_functions.py",
+  "old": "            for a, ids in owners.items() if len(set(ids)) > 1]",
+  "new": "            for a, ids in owners.items() if False]"
+ },
+ {
+  "id": "M44",
+  "name": "a function with no located clause accepted",
+  "file": "scripts/review_functions.py",
+  "old": "            if conditions_by_id and fid not in document_only and not any(clause(c) for c in conditions_by_id.values()):",
+  "new": "            if False and conditions_by_id and fid not in document_only and not any(clause(c) for c in conditions_by_id.values()):"
+ },
+ {
+  "id": "M45",
+  "name": "a judgement resting only on working notes accepted",
+  "file": "scripts/review_functions.py",
+  "old": "        elif not any(located(conditions_by_id[c]) for c in conditions):   # F9",
+  "new": "        elif False and not any(located(conditions_by_id[c]) for c in conditions):   # F9"
+ },
+ {
+  "id": "M46",
+  "name": "a design value over many aspects accepted with a reason",
+  "file": "scripts/review_functions.py",
+  "old": "        if len(aspects) > MANY_ASPECTS and item.get('kind') in REQUEST_KINDS:   # F7, no reason admits it",
+  "new": "        if len(aspects) > MANY_ASPECTS and item.get('kind') in REQUEST_KINDS and not text(item.get('decides_reason')):   # F7, no reason admits it"
+ },
+ {
+  "id": "M47",
+  "name": "one reason sentence on every open item accepted",
+  "file": "scripts/review_functions.py",
+  "old": "              % (', '.join(labels), field, sentence[:40]) for (field, sentence), labels in reasons.items() if len(labels) > 1]",
+  "new": "              % (', '.join(labels), field, sentence[:40]) for (field, sentence), labels in reasons.items() if False]"
+ },
+ {
+  "id": "M48",
+  "name": "a frame function widened past its intent circuit accepted",
+  "file": "scripts/review_functions.py",
+  "old": "        if extra and (frame_refs or frame_nets):",
+  "new": "        if False and extra and (frame_refs or frame_nets):"
+ },
+ {
+  "id": "M49",
+  "name": "a row bound to a function not about its part accepted",
+  "file": "scripts/review_functions.py",
+  "old": "        if refs and not refs <= fn_refs:",
+  "new": "        if False and refs and not refs <= fn_refs:"
+ },
+ {
+  "id": "M50",
+  "name": "a connector row with clamp parts passed by hand",
+  "file": "scripts/review_functions.py",
+  "old": "        if clamps and row.get('function_id') is None:",
+  "new": "        if False and clamps and row.get('function_id') is None:"
+ },
+ {
+  "id": "M51",
+  "name": "a requirement row made stage NA whole accepted",
+  "file": "scripts/review_stage_scope.py",
+  "old": "            if isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):",
+  "new": "            if False and isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):"
+ }
 ]

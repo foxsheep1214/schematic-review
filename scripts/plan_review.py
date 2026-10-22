@@ -103,6 +103,13 @@ def _text(value):
     return isinstance(value, str) and bool(value.strip())
 
 
+_SQUEEZE_RE = re.compile(r'[\s，。；;,.、：:（）()]')
+
+
+def _squeeze(value):
+    return _SQUEEZE_RE.sub('', value)
+
+
 def validate_intent(intent, db=None):
     """验证 intent；给出 db 时同时核对网表绑定。"""
     if intent is None:
@@ -219,6 +226,10 @@ def validate_intent(intent, db=None):
             for key in ('id', 'text', 'citation', 'criterion'):
                 if not _text(item.get(key)):
                     errors.append(f'requirement.{key} 缺失')
+            if _text(item.get('text')) and _text(item.get('criterion')) and \
+                    _squeeze(item['criterion']) == _squeeze(item['text']):
+                errors.append('requirement.%s.criterion 抄了需求原文；写本次在原理图上判什么、对照什么（优化目标或范围说明写明'
+                              '没有原理图判据）' % item.get('id'))
             if 'status' in item and item['status'] not in REQUIREMENT_STATUSES:
                 errors.append('requirement.status 须为 已确认（CONFIRMED）/提案（PROPOSED）/未定（OPEN）/暂缓（DEFERRED）之一，字段值写英文')
             rid = item.get('id')

@@ -166,11 +166,21 @@ class FunctionShapeTests(unittest.TestCase):
         fn['verdict_history'] = [{'from': 'PASS', 'to': 'OPEN', 'basis': ['BIAS-VCCMIN'], 'note': '算例假设'}]
         self.assertEqual(function_errors({'functions': [fn]}), [])
 
-    def test_f7_an_item_over_many_aspects_needs_a_reason(self):
+    def test_f7_a_design_value_over_many_aspects_is_refused_a_deliverable_needs_a_reason(self):
+        # 2026-10-21: one reviewer's DESIGN_VALUE items decided 10–12 aspects each (28 rows apiece) behind a
+        # decides_reason copied onto every item; a number the design has not chosen enters a few aspects, not a block.
         fn = bias_function()
         fn['open'][0]['decides'] = [{'aspect': a} for a in ('A', 'B', 'C', 'D')]
-        self.assertTrue(any('decides covers 4 aspects' in e for e in function_errors({'functions': [fn]})))
         fn['open'][0]['decides_reason'] = '四个方面都依赖同一个辅助电压'
+        self.assertTrue(any('decides 4 aspects, more than 3' in e for e in function_errors({'functions': [fn]})))
+        fn['open'][0]['decides'] = [{'aspect': a} for a in ('A', 'B', 'C')]
+        self.assertFalse(any('more than 3' in e or 'decides covers' in e for e in function_errors({'functions': [fn]})))
+        fn['open'][0].update(kind='DELIVERABLE_PENDING', deliverable='T1 磁件图纸', assumed='按 BOM 规格算',
+                             deliverable_kind='CUSTOM_PART_DRAWING', decides=[{'aspect': a} for a in ('A', 'B', 'C', 'D')])
+        for f in ('spec', 'decides_reason'):
+            fn['open'][0].pop(f, None)
+        self.assertTrue(any('decides covers 4 aspects' in e for e in function_errors({'functions': [fn]})))
+        fn['open'][0]['decides_reason'] = '图纸同时决定漏感、饱和电流和绝缘'
         self.assertFalse(any('decides covers' in e for e in function_errors({'functions': [fn]})))
 
     def test_keys_are_unique_and_stray_request_fields_are_refused(self):
@@ -559,7 +569,7 @@ class ScopedReviewTests(unittest.TestCase):
     def scoped(self):
         p, r, db = ledger(bias_function())
         p['checks'].append(dict(planned('RST-E01.C9'), object={'ref': 'C9'}))   # outside the scope, no result row
-        p['functions'] = [{'id': 'FN-BIAS', 'circuit': 'BIAS', 'question': 'bias', 'objects': {'refs': ['Q2'], 'nets': []},
+        p['functions'] = [{'id': 'FN-BIAS', 'circuit': 'BIAS', 'question': 'bias', 'objects': bias_function()['objects'],
                            'members': [{'check_id': 'PWR-C02.BIAS-%s.Q2' % s, 'rule': 'PWR-C02', 'aspect': ASPECT, 'state': s}
                                        for s in ('STARTUP', 'RUN', 'LATCH')]}]
         r['checks'] = [c for c in r['checks'] if c['id'].startswith('PWR-C02')]
@@ -586,6 +596,132 @@ class ScopedReviewTests(unittest.TestCase):
         r['review_scope'] = {'functions': ['FN-NOPE'], 'reason': ''}
         errors = vr.validate_review(p, r, db)['errors']
         self.assertTrue(any('review_scope' in e for e in errors), errors)
+
+
+class ReviewerAgreementTests(unittest.TestCase):
+    """2026-10-21: two reviewers of the same board (SR-20261021-R5-claude / -codex) agreed on 184 of 287 shared rows
+    and on no finding. The record let the divergence through: conditions that located nothing ("相关位号所有物理脚",
+    "## BIAS") copied into every function, judgements resting only on them, one reason sentence on ten open items,
+    a design value deciding twelve aspects, function objects widened past the intent circuit so a bias gap reached
+    the PFC gate driver, a connector row with four clamp parts passed by hand, and a requirement row made stage NA
+    whole. Each is now refused; the other reviewer's record passes every one of these unchanged."""
+
+    def test_f1_a_function_needs_a_condition_a_reader_can_open_and_that_says_a_number(self):
+        fn = bias_function('PASS')
+        fn['conditions'] = [
+            {'id': 'CONN', 'source': 'evidence/component-connections.txt', 'locator': '相关位号所有物理脚',
+             'says': '本轮新导出R5的实际连接', 'use': '核对供电、信号及回流'},
+            {'id': 'ENG', 'source': 'evidence/engineering.md', 'locator': '## BIAS',
+             'says': '本轮原厂条款摘录、独立推导和适用边界', 'use': '依据所列原厂页码逐项判断'}]
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('no condition is a clause' in e and '相关位号所有物理脚' in e for e in errors), errors)
+        fn['conditions'].append({'id': 'c3', 'source': 'evidence/ds/U1.txt', 'locator': 'p7 Table 7',
+                                 'says': 'VCC(off) max 8.8 V', 'use': '判据'})
+        self.assertFalse(any('no condition is a clause' in e for e in function_errors({'functions': [fn]})))
+
+    def test_located_means_a_page_table_section_id_or_named_nets(self):
+        from review_functions import located, clause
+        for locator in ('p4 订货表', 'Table 4-5（p154）', '电气特性 MIN_TON', 'nets PGND/SGND', 'R5-BIAS value.AUXmax_V',
+                        'REQ-LIFE-001', 'E-ENERGY-01、§6.1', '第 3 页', '引脚说明 VCC'):
+            self.assertTrue(located({'locator': locator}), locator)
+        for locator in ('相关位号所有物理脚', '## BIAS', 'BIAS实际位号/物理节点', 'MONITOR', 'stipulated clause'):
+            self.assertFalse(located({'locator': locator}), locator)
+        self.assertTrue(clause({'locator': 'p3 Table 7', 'says': 'VF ≤ 0.35 V'}))
+        self.assertFalse(clause({'locator': 'p4 功能框图', 'says': '电压环为内部跨导放大器'}))   # located, qualitative
+
+    def test_a_document_function_needs_no_clause(self):
+        p, r, db = ledger(bias_function('PASS'))
+        fn = {'id': 'FN-DOC', 'question': '计算书数值是否按实际工作点算', 'objects': {'refs': ['R1']},
+              'conditions': [{'id': 'c1', 'source': 'evidence/calc-claims.json', 'locator': 'NOLOAD-R209-R211',
+                              'says': '复算 70.4 mW，所称 35 mW', 'use': '文档数值判据'}],
+              'no_calculation_reason': 'claims 已复算', 'verdict': 'PASS', 'open': [], 'fails': [], 'evidence': E}
+        r['functions'].append(fn)
+        fn['conditions'][0]['locator'] = 'claims'
+        r['checks'].append({'id': 'DOC-Q01.X', 'applicability': 'APPLICABLE', 'review_result': 'PASS', 'evidence': E,
+                            'rationale': 'see FN-DOC', 'handoff': {'required': False}, 'function_id': 'FN-DOC', 'aspect': 'a'})
+        fn['judgements'] = [{'aspect': 'a', 'conditions': ['c1'], 'says': '复算一致'}]
+        p['checks'].append(planned('DOC-Q01.X'))
+        r['plan_digest'] = fingerprint(p)
+        errors = validate_functions(p, r, {c['id']: c for c in r['checks']})
+        self.assertFalse(any('no condition is a clause' in e for e in errors), errors)
+        self.assertTrue(any('rests on no located' in e for e in errors), errors)   # F9 still: "claims" locates nothing
+
+    def test_f9_a_judgement_rests_on_a_located_condition(self):
+        fn = bias_function('PASS')
+        fn['conditions'].append({'id': 'ENG', 'source': 'evidence/engineering.md', 'locator': '## BIAS',
+                                 'says': '本轮推导', 'use': '见笔记'})
+        fn['judgements'] = [{'aspect': 'X', 'conditions': ['ENG'], 'says': 'Q2 为源跟随'}]
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('judgements[0] (X): rests on no located condition (ENG)' in e for e in errors), errors)
+        fn['judgements'][0]['conditions'] = ['ENG', 'c2']
+        self.assertFalse(any('rests on no located' in e for e in function_errors({'functions': [fn]})))
+        # a netlist fact with named nets is located too
+        fn['conditions'].append({'id': 'c7', 'source': 'db.json', 'locator': 'nets AUX、BIAS',
+                                 'says': 'AUX → D2 → Q2 栅极', 'use': '路径'})
+        fn['judgements'][0]['conditions'] = ['c7']
+        self.assertFalse(any('rests on no located' in e for e in function_errors({'functions': [fn]})))
+
+    def test_f10_one_reason_sentence_on_several_items_is_a_template(self):
+        fn = bias_function()
+        fn['open'][0]['no_margin_reason'] = '该项实际配置或工作包络尚未确定'
+        other = bias_function(); other['id'] = 'FN-HV'
+        other['open'][0].update(key='HV-X', no_margin_reason='该项实际配置或工作包络尚未确定',
+                                margin_not_decisive_reason='另一个理由')
+        errors = function_errors({'functions': [fn, other]})
+        self.assertTrue(any('the same no_margin_reason on every one of these items (该项实际配置' in e for e in errors), errors)
+        other['open'][0]['no_margin_reason'] = 'HV 启动电流还没有定'
+        self.assertFalse(any('no_margin_reason on every' in e for e in function_errors({'functions': [fn, other]})))
+
+    def test_f10_one_unlocated_condition_in_several_functions_is_a_template(self):
+        note = {'id': 'ENG', 'source': 'evidence/engineering.md', 'locator': '## X', 'says': '本轮原厂条款摘录', 'use': '依据'}
+        fn = bias_function('PASS'); fn['conditions'].append(dict(note))
+        other = bias_function('PASS'); other['id'] = 'FN-HV'; other['conditions'].append(dict(note))
+        errors = function_errors({'functions': [fn, other]})
+        self.assertTrue(any('FN-BIAS, FN-HV: the same unlocated condition' in e for e in errors), errors)
+        # a located clause may be cited by two functions (the same VCC(off) limit bears on bias and start-up)
+        fn['conditions'][-1] = dict(fn['conditions'][2]); other['conditions'][-1] = dict(fn['conditions'][2])
+        self.assertFalse(any('unlocated condition' in e for e in function_errors({'functions': [fn, other]})))
+
+    def test_f11_a_frame_function_judges_the_frame_objects(self):
+        from test_derive_rows import bias_plan
+        p, r, db = bias_plan()
+        p['functions'][0]['objects'] = {'refs': ['Q2', 'D2', 'D3', 'C3'], 'nets': ['AUX', 'BIAS', 'VCC']}
+        r['plan_digest'] = fingerprint(p)
+        self.assertEqual([e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions']) if 'objects name' in e], [])
+        r['functions'][0]['objects']['refs'].append('Q7')
+        errors = frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])
+        self.assertTrue(any('FN-BIAS: objects name Q7, which intent circuit BIAS does not list' in e for e in errors), errors)
+        r['functions'][0]['objects']['refs'].pop()
+        r['functions'][0]['objects']['nets'] = ['/05_Bias/AUX', 'BIAS', 'VCC']   # a sheet path is the same net
+        self.assertEqual([e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions']) if 'objects name' in e], [])
+
+    def test_f11_a_row_the_reviewer_binds_names_an_object_of_the_function(self):
+        p, r, db = ledger(bias_function())
+        p['checks'].append(dict(planned('DEV-C05.Q7'), object={'ref': 'Q7'}))
+        r['checks'].append({'id': 'DEV-C05.Q7', 'applicability': 'APPLICABLE', 'review_result': 'INSUFFICIENT', 'evidence': E,
+                            'rationale': 'see FN-BIAS', 'handoff': {'required': False}, 'function_id': 'FN-BIAS',
+                            'aspect': ASPECT, 'open_ref': 'FN-BIAS/AUX-5V-MIN'})
+        errors = frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])
+        self.assertTrue(any('DEV-C05.Q7: bound to FN-BIAS, which is not about Q7' in e for e in errors), errors)
+        p['checks'][-1]['object'] = {'ref': 'Q2'}
+        self.assertFalse(any('bound to' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
+        p['checks'][-1]['object'] = {'net': '/05_Bias/VCC'}   # a net row: the net, path stripped
+        self.assertFalse(any('bound to' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
+        p['checks'][-1]['object'] = {'net': 'VBUS'}
+        self.assertTrue(any('not about net VBUS' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
+        p['checks'][-1]['object'] = {'requirement_id': 'REQ-1'}   # no anchor: a requirement may lean on any function
+        self.assertFalse(any('bound to' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
+
+    def test_f12_a_connector_row_with_clamp_parts_is_judged_in_a_function(self):
+        p, r, db = ledger(bias_function('PASS'))
+        p['checks'].append(dict(planned('PRO-D03.J1'), object={'ref': 'J1'}, clamp_refs=['D7', 'D8']))
+        row = {'id': 'PRO-D03.J1', 'applicability': 'APPLICABLE', 'review_result': 'PASS', 'evidence': E,
+               'rationale': 'J1 CC/D± 各有一颗 TVS', 'handoff': {'required': False}}
+        r['checks'].append(row)
+        errors = frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])
+        self.assertTrue(any('PRO-D03.J1: the plan lists clamp parts D7, D8' in e for e in errors), errors)
+        row.update(review_result='NA', applicability='NOT_APPLICABLE')   # not reviewed: nothing to judge
+        self.assertFalse(any('clamp parts' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
 
 
 if __name__ == '__main__':

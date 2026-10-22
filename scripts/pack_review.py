@@ -155,16 +155,23 @@ def broken_report_links(out):
         if broken else []
 
 
+# How far up from a declared file a delivery is looked for: a schematic file sits two folders below the delivery
+# (<delivery>/原理图/<file>); the record directory of a delivery is never deeper than that from its declared files.
+DELIVERY_DEPTH = 3
+
+
 def delivery_records(inputs):
     """record/ directories of ASG deliveries among the declared inputs."""
     found = set()
     for path in inputs:
         path = Path(path).resolve()
-        for place in (path, path.parent):
+        places = [path] + list(path.parents)[:DELIVERY_DEPTH]
+        for place in places:
             rec = place if place.name == RECORD else place / RECORD
             if (rec / 'selection.json').is_file() or (rec / 'calculations').is_dir() \
                     or (rec / 'preflight-delivery.json').is_file():
                 found.add(rec)
+                break
     return sorted(found)
 
 

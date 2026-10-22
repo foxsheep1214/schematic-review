@@ -313,6 +313,8 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 烧录镜像、读回 hash、编程模式/夹具、量产校准结果只能在生产/固件环节产生，记阶段 NA + HANDOFF（接收方“固件/生产”），
 不阻塞原理图冻结（`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 提示）。
 复合 REQ-D01、功能电路汇总或 PRO-C01 不能整行改 NA；设计义务照常判，纯测试义务另立检查并关联。
+需求行（计划按 `intent.requirements` 生成的 `REQ-D01.<需求 ID>`）整行写 `OUTSIDE_SCHEMATIC_STAGE` 会被校验拒绝：
+“工作温度 −10..50 °C”里器件温度等级是设计义务，闭壳温升才是试验，各写各的条款。
 生成计划的自动判据不得删改来绕过这一拆分。
 
 阶段 NA 行的固定写法（校验强制）：
@@ -337,7 +339,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 | 烧录镜像、读回、编程夹具、量产校准 | 原理图前提单独判；镜像本身阶段 NA + HANDOFF 给固件/生产 |
 | 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`） |
 | 同一方法套在几个对象上（三只光耦的 CTR、几只电解的寿命） | 一件待办、多个位号，不拆成三件（`DUPLICATE_WORK_ITEMS`） |
-| 成本、体积、效率等明确的优化目标 | 必须要求满足后列 IMPROVEMENT 或 P3，不制造未知项 |
+| 成本、体积、效率等明确的优化目标 | 必须要求满足后列 IMPROVEMENT 或 P3，不制造未知项；它的需求行（成本目标、尺寸重量尽量小、取舍优先级、不申请某认证这类优化目标或范围说明）记 `NOT_APPLICABLE` 并在 `applicability_evidence` 引需求原文——没有判据就没有“通过”，也不是下游试验，不写 PASS、不记阶段 NA |
 | 需求同时含设计与“通过某测试” | 设计义务照常判；测试义务条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE` 并链接阶段 NA 检查 |
 
 `gap_cause: DOWNSTREAM_VERIFICATION` 已取消，校验拒绝；纯下游项只能走阶段 NA。

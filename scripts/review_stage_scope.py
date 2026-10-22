@@ -46,6 +46,11 @@ def validate_stage_scope(checks, expected):
         if row.get('na_reason') == OUTSIDE_STAGE and not outside_stage(row):
             errors.append(cid + ': OUTSIDE_SCHEMATIC_STAGE requires NA')
         if outside_stage(row):
+            planned_object = (expected.get(cid) or {}).get('object') if isinstance(expected.get(cid), dict) else None
+            if isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):
+                errors.append(cid + ': a requirement row judges its design obligations (requirement_clauses); a test '
+                              'obligation is one clause marked NA/OUTSIDE_SCHEMATIC_STAGE linked to its own stage-NA '
+                              'check, not the whole row')
             if row.get('applicability') != 'APPLICABLE':
                 errors.append(cid + ': stage NA keeps applicability APPLICABLE; the product requirement still applies')
             if row.get('blocking') is not False or any(k in row for k in

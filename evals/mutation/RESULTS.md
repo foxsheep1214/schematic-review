@@ -49,3 +49,11 @@
 | M43 | one assumption copied into several functions accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::TemplateTextTests::test_one_assumption_copied_into_every_function_is_refused |
 
 全部杀死。
+| M44 | a function with no located clause accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::ReviewerAgreementTests::test_f1_a_function_needs_a_condition_a_reader_can_open_and_that_says_a_number |
+| M45 | a judgement resting only on working notes accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::ReviewerAgreementTests::test_a_document_function_needs_no_clause |
+| M46 | a design value over many aspects accepted with a reason | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::FunctionShapeTests::test_f7_a_design_value_over_many_aspects_is_refused_a_deliverable_needs_a_reason |
+| M47 | one reason sentence on every open item accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::ReviewerAgreementTests::test_f10_one_reason_sentence_on_several_items_is_a_template |
+| M48 | a frame function widened past its intent circuit accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::ReviewerAgreementTests::test_f11_a_frame_function_judges_the_frame_objects |
+| M49 | a row bound to a function not about its part accepted | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::ReviewerAgreementTests::test_f11_a_row_the_reviewer_binds_names_an_object_of_the_function |
+| M50 | a connector row with clamp parts passed by hand | `scripts/review_functions.py` | KILLED | FAILED scripts/tests/test_review_functions.py::ReviewerAgreementTests::test_f12_a_connector_row_with_clamp_parts_is_judged_in_a_function |
+| M51 | a requirement row made stage NA whole accepted | `scripts/review_stage_scope.py` | KILLED | FAILED scripts/tests/test_review_stage_scope.py::StageScopeTests::test_a_requirement_row_is_not_stage_na_as_a_whole |
