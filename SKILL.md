@@ -59,7 +59,6 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 工程计算公式 | [wca-formulas.md](references/wca-formulas.md)；修改建议的计算预检查见 [calculation-preflight.md](references/calculation-preflight.md) |
 | 写报告和修改说明 | [report-and-remediation.md](references/report-and-remediation.md) |
 | 复审、改版影响 | [revision-review.md](references/revision-review.md) |
-| ASG 交付带选型记录与意见归因 | [selection-review.md](references/selection-review.md) |
 
 ## 与 ASG 的有状态工作流交接
 
@@ -130,8 +129,9 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 `unassigned` 与 `gaps`（没核验角色的 IC、缺引脚名）先清。
 格式见 [计划与结果](references/plan-and-results.md#一intentjsonschema_version-3)，规则见 [自动检查](references/automation.md#二检查器)。
 
-交付含计算库存、preflight 与 README/报告摘要时，网表扫描另执行 [派生摘要核对](references/document-summaries.md)；
-证据扫描及报告定稿后用最终文件重放，候选按 DOC-Q01 单独入计划，不迁移局部输入资格 PASS。
+SR 独立审查：设计方的设计报告、计算书、选型记录和自检结果不作参考，也不逐条复算其中所称的数值；
+每个数值都由 SR 从原理图、需求和原厂资料自己算。原理图上看不出、只写在设计文档里的事实（固件设定的门限、寄存器配置等），
+写成移交项请设计方确认，确认后作为需求或输入进入审查，不直接引用设计文档。
 
 网表扫描后先出资料请求：`python3 scripts/gap_inventory.py review-plan-cold.json --datasheet-audit datasheet-audit.json --md 资料请求.md`，按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取。
 
@@ -139,7 +139,7 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 检查器（I²C、去耦、感性负载、功率开关、输入滤波、上电、监控、差分电平、光耦等）每趟都跑；
 名称线索只生成待复核候选，清单绑定输入指纹，不能编辑清单消缺口。见 [自动检查](references/automation.md)。
 计划命令列出“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考地分区 `domain`
-（由审查者按需求、稳压器/钳位手册和设计计算书自行定界，逐条写 `citation`），再证据扫描；空的 `power_rails` 会让全部阻容预判失效。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
+（由审查者按需求和稳压器/钳位手册自行定界，逐条写 `citation`），再证据扫描；空的 `power_rails` 会让全部阻容预判失效。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
 
 ### 3. 资料取证与器件身份（DEV-D01、DEV-D02）
 
@@ -160,9 +160,6 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
   下次先验证声明，输入变化则重新核对，不能只刷新摘要。`manual_*` 兼容字段不代表人员确认，核对者身份须如实记录。
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
   PDF 提取的关键数值对照渲染页核单位。证据计算所需保证值整理成 `evidence.json`。
-- ASG 交付包带 `record/selection.json`（核心器件选型）和归因记录时，按 [选型与归因复核](references/selection-review.md)
-  用 `scripts/review_selection.py` 生成复核表，逐角色独立给 AGREE/DISAGREE/INSUFFICIENT，不同意要给候选之外的型号或点名 ASG 理由的错误；
-  复核摘要进报告处理清单。
 
 ### 4. 证据扫描：证据计算
 
@@ -216,7 +213,7 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 - **工程计算**：按 [WCA 公式](references/wca-formulas.md) 先确认模型，再代入实际串并联、输入/温度/负载和公差角点；
   原厂已覆盖工况的 Min/Max 直接使用。区分设定目标与物理可达输出（FB 公式不代表升压能力、RC 不等于复位脉宽、
   有 TVS 不等于防护通过）。阈值型保护（齐纳、电源轨 TVS、门限脚）两侧都算（PRO-C02），连接器信号线 ESD 随 PRO-D03 核；传感器开短路按控制器实际偏置档与环境全范围判别（ANA-C04）。连续可调输出在全范围扫描应力。判“缺保护”前计入 IC 自带保护（寄存器设定的门限归固件任务）；改频率/阻值/保护管时连带复算。
-- **复算设计给出的数值**：设计计算书、配置表、报告里决定结论的数值，逐条写成 claim（出处、`calc.py` 计算名、带出处的输入、所称结果）用 `python3 scripts/calc_claims.py claims.json --json evidence/calc-claims.json` 复算；`circuit_bounds.*`（分压、RC 跨阈、线性稳压热、逻辑电平裕量、电容纹波折算、电阻功耗、串阻电流）与 `model_bounds.*` 自行枚举公差角点。MISMATCH 是文档错误候选，读原文确认后才入 DOC-Q01/相关检查；约定格式有效不等于模型正确。
+- **自己算关键数值**：决定结论的数值由 SR 按原理图、需求和原厂资料自己算，`circuit_bounds.*`（分压、RC 跨阈、线性稳压热、逻辑电平裕量、电容纹波折算、电阻功耗、串阻电流）与 `model_bounds.*` 自行枚举公差角点。不复算设计文档所称的数值，也不拿它当判据。
 - **核对模型和原表**：CrM Boost 输出电容用 `model_bounds.crm_boost_capacitor_ripple` 独立核二极管导通相位，并按控制器实际母线模式分别算；不沿用设计脚本的公式证明自身。厂家参数引用用 `audit_parameter_claims.py` 对比独立摘录的原表，给料号/材料、文档哈希、页码、温度/激励条件、典型或保证值口径；工程设计限值另核裕量，不能当厂家额定值引用。工具不代替原表摘录核实，详见 [自动检查](references/automation.md)。
 - **动态数值证据**：需要有界 R/C 工作点或瞬态时按 [仿真证据](references/simulation-evidence.md)；样本在窗口内不直接等于规则 PASS。
 - **条款核对**：每颗 IC/模组核推荐工作条件（DEV-C05）和逐脚处置（DEV-D05）；连接器核对端定义（DEV-D03）和对外防护（PRO-D03）；
@@ -262,9 +259,7 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 
   默认简洁报告保留全部缺陷、任务、通过标准及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
   `pack_review.py` 只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
-  顶层有其他文件或引用的证据找不到时打包失败。声明的输入里有 ASG 交付（交付目录、其 `record/` 或其中文件，或交付里的原理图目录）时，
-  交付带 `selection.json` 要有通过 `review_selection.py validate` 的选型复核，带 `calculations/` 要有至少一条已复算的 `calc_claims.py` 结果，
-  带 `preflight-delivery.json` 要有读过该文件当前字节的派生摘要核对结果；三者都须被检查引用而进 `record/evidence/`，缺一项就拒绝打包。不另写 README 或说明文档；HTML 只能是脚本生成的那份。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
+  顶层有其他文件或引用的证据找不到时打包失败。不另写 README 或说明文档；HTML 只能是脚本生成的那份。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。
 
 ### 8. 改版复审（H）

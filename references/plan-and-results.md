@@ -62,12 +62,12 @@
   "rule_gaps": [{"id": "Q7-REVERSE", "rule": "PWR-T05", "object": {"ref": "Q7"},
                  "criterion": "Q7 体二极管在反接时承受的反向电流与功耗在额定以内",
                  "missing": "反接保护 MOSFET 的反向导通应力没有生成规则",
-                 "basis": "设计报告 Rev.B 3.2 节：Q7 兼作反接保护"}],
+                 "basis": "网表：Q7 串在输入正端，体二极管方向构成反接保护"}],
   "power_rails": {
     "VCC_3V3": {
       "voltage_v": {"min": 3.2, "max": 3.4}, "load_a": {"min": 0, "max": 0.5}, "available_a_min": 1.0,
       "refs": ["U1", "L1", "F1"], "state": "BOM B; stated Vin/load/temperature corners",
-      "citation": "Load budget Rev.B table 2 and component guaranteed ratings"
+      "citation": "Requirements Rev.B load table 2 and component guaranteed ratings"
     }
   }
 }
@@ -121,7 +121,7 @@
 - `power_rails` 支撑 PWR-C01 与 DEV-E02：给电压/最大负载、源端最弱保证可供电流和条件；READY 不等于 PASS。
   片内稳压输出（如 MCU 的 1.1 V 内核轨）、仅板内使用的中间轨同样要声明电压：阻容预判按同簇器件的全部供电轨定界，缺一条就整簇不出预判。计划命令末尾会列出“未声明电压的轨”及受阻行数，能从稳压器手册或需求定出时补齐后重跑。
   隔离或多地设计给各轨与各地写 `domain`（如 PRI/SEC），地写 `voltage_v: {min: 0, max: 0}`；栅极/检测节点可按计算声明窗口。
-  窗口由审查者独立定界：取需求输入范围、稳压器/钳位/保护门限的保证值和故障上限；设计计算书只作线索，逐条核出处后写 `citation`，不照抄设计方数值。
+  窗口由审查者独立定界：取需求输入范围、稳压器/钳位/保护门限的保证值和故障上限，逐条写 `citation`；不取设计方计算的数值。
   证据扫描前 `power_rails` 仍为空却有 DEV-C01/PWR-C10 行，属审查准备未完成，先补齐再录结论。
 - 条件导通另可声明 `power_sources`（某状态的供入节点）与 `power_paths`（某状态可导通的方向，不是理想短路或载流声明），
   不得把未上电的稳压器或端口标成 source 来消除告警。
@@ -429,9 +429,8 @@ DEV-C04 载流、PRO-D03 对外防护（对象 `{interface: EXT-<连接器>, ref
 或列在 REQ-Q08 的 `unassigned` 上（计划把没有电路拥有的贴装器件都列进去）；每个接口都有它该问的行（`interfaces.coverage_errors`），电路对、链路（有网络时）和连接器另有框架。
 **报告分组。** 计划有树框架时，报告的功能表分系统功能、功能电路、接口和审查员另建的功能四组；每个发现项多一行“所属”，写它的行归哪个系统功能、电路、接口或全板。
 
-**文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（摘要数字、选型记录、图纸卫生）不是电路。
-文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）；选型理由的复判走
-[选型复判](selection-review.md)。DOC 行证据不足时仍需一个开放项作入口，这种只含 DOC 行的功能不计入
+**文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（输入版本、图纸卫生）不是电路。
+文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）。DOC 行证据不足时仍需一个开放项作入口，这种只含 DOC 行的功能不计入
 “功能判定”计数，也不进报告的功能表。
 
 隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是功能的方面，不另设约定：

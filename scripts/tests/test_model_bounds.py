@@ -78,17 +78,13 @@ class CrmBoostRippleTest(unittest.TestCase):
         self.assertAlmostEqual(result['capacitor_rms_a']**2,
                                result['twice_line_rms_a']**2 + result['switching_rms_a']**2)
 
-    def test_phase_reversal_claim_is_detected(self):
-        from calc_claims import check
+    def test_the_model_integrates_the_diode_off_fraction_not_the_mos_on_fraction(self):
+        from model_bounds import crm_boost_capacitor_ripple
         vac, bus, p = 100, 300, 80
-        # Wrong model integrates MOS on fraction instead of diode off fraction.
+        # The wrong model integrates the MOS on fraction instead of the diode off fraction.
         wrong_ms = 4 * p*p / (3*vac*vac) - 32*math.sqrt(2)*p*p/(9*math.pi*vac*bus) - (p/bus)**2
-        rows, errors = check([{'id': 'CAP', 'source': 'synthetic.md', 'locator': 'ripple',
-            'calculation': 'model_bounds.crm_boost_capacitor_ripple',
-            'inputs': dict(input_rms_v=vac, bus_v=bus, power_w=p),
-            'claimed': {'capacitor_rms_a': math.sqrt(wrong_ms)}}])
-        self.assertFalse(errors)
-        self.assertEqual(rows[0]['status'], 'MISMATCH')
+        result = crm_boost_capacitor_ripple(input_rms_v=vac, bus_v=bus, power_w=p)
+        self.assertGreater(abs(result['capacitor_rms_a'] - math.sqrt(wrong_ms)), 0.01 * result['capacitor_rms_a'])
 
     def test_invalid_operating_point_and_factor_are_rejected(self):
         from model_bounds import crm_boost_capacitor_ripple as calc

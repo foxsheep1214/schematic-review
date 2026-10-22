@@ -620,110 +620,26 @@ class PackReviewTests(unittest.TestCase):
 
 
 class DeliveryReviewTests(unittest.TestCase):
-    """An ASG delivery carries its own selection, calculation inventory and preflight result; a review that
-    declares such a delivery and has not re-judged them is not finished, so it is not packed."""
-
-    cite = PackReviewTests.cite
+    """An ASG delivery carries its own selection, calculation inventory and preflight result. SR reviews the
+    schematic from scratch and does not re-judge those records, so a review that declares the delivery packs without
+    them (2026-10-22: SR is independent of the designer's documents)."""
 
     def setUp(self):
         PackReviewTests.setUp(self)
-        from test_review_selection import asg_record
-        self.asg = asg_record(self.tmp / 'asg')
-        (self.asg / '原理图').mkdir()
+        self.asg = self.tmp / 'asg'
         rec = self.asg / 'record'
-        (rec / 'calculations').mkdir()
+        (rec / 'calculations').mkdir(parents=True)
+        (self.asg / '原理图').mkdir()
+        (rec / 'selection.json').write_text(json.dumps({'schema_version': 1, 'roles': []}))
         (rec / 'calculations' / 'results.json').write_text(json.dumps(
             {'schema_version': 1, 'calculations': [{'id': 'PFC-1', 'claim': 'SUPPORTED'}]}))
         (rec / 'preflight-delivery.json').write_text(json.dumps(
             {'schema_version': 1, 'status': 'PASS', 'results': {'PFC-1': {'status': 'PASS'}}}))
 
-    def run_pack(self, **inputs):
-        declared = {'requirements': str(self.inputs), 'schematic': str(self.asg / '原理图')}
-        declared.update(inputs)
-        return pack(self.out, self.ledger, str(self.work), declared)
-
-    def product(self, name, value):
-        (self.work / name).write_text(json.dumps(value, ensure_ascii=False))
-        self.cite(name)
-
-    def selection_review(self):
-        import review_selection as rs
-        review = rs.worksheet(self.asg)
-        review['roles'][0].update(verdict='AGREE', conditions_complete=True, basis='p.1 输入范围覆盖 90–264 Vac')
-        review['attribution'][0]['agree'] = True
-        return review
-
-    def summary_audit(self):
-        from audit_document_summaries import audit
-        rec = self.asg / 'record'
-        return audit(calculations=rec / 'calculations' / 'results.json', preflight=rec / 'preflight-delivery.json')
-
-    def all_products(self):
-        self.product('selection-review.json', self.selection_review())
-        self.product('calc-claims.json', {'schema_version': 1, 'summary': {'MATCH': 1, 'MISMATCH': 0, 'NOT_COMPUTED': 0,
-                     'ERROR': 0}, 'claims': [{'id': 'PFC-1', 'status': 'MATCH'}]})
-        self.product('document-summary.json', self.summary_audit())
-
-    def test_delivery_without_its_reviews_is_not_packed(self):
-        # 真实反例：R5 首审只声明了交付目录，没有做选型复核、设计数值复算和摘要核对，照样打包通过。
-        errors, _ = self.run_pack()
-        missing = [e for e in errors if 'ASG delivery' in e]
-        self.assertEqual(3, len(missing), errors)
-        for tool in ('review_selection.py', 'calc_claims.py', 'audit_document_summaries.py'):
-            self.assertTrue(any(tool in e for e in missing), (tool, missing))
-
-    def test_cited_reviews_of_the_delivery_pack(self):
-        self.all_products()
-        errors, manifest = self.run_pack()
+    def test_a_delivery_packs_without_reviewing_its_own_records(self):
+        errors, _ = pack(self.out, self.ledger, str(self.work),
+                         {'requirements': str(self.inputs), 'schematic': str(self.asg / '原理图')})
         self.assertEqual(errors, [])
-        self.assertIn(RECORD + '/evidence/selection-review.json', manifest['packed'])
-
-    def test_delivery_files_declared_one_by_one_are_found_too(self):
-        rec = self.asg / 'record'
-        errors, _ = pack(self.out, self.ledger, str(self.work), {
-            'requirements': str(self.inputs), 'selection': str(rec / 'selection.json'),
-            'calculations': str(rec / 'calculations'), 'preflight': str(rec / 'preflight-delivery.json')})
-        self.assertEqual(3, len([e for e in errors if 'ASG delivery' in e]), errors)
-
-    def test_a_schematic_file_inside_the_delivery_finds_it_too(self):
-        # 2026-10-21: a reviewer declared the delivery's sheets one file at a time (<delivery>/原理图/*.kicad_sch) and
-        # packed without re-judging its selection, calculations and preflight.
-        sheet = self.asg / '原理图' / 'PD100_R5.kicad_sch'
-        sheet.write_text('(kicad_sch)')
-        errors, _ = pack(self.out, self.ledger, str(self.work), {'requirements': str(self.inputs), 'raw001': str(sheet)})
-        self.assertEqual(3, len([e for e in errors if 'ASG delivery' in e]), errors)
-
-    def test_review_left_in_the_work_directory_does_not_count(self):
-        self.all_products()
-        results = json.loads((self.work / 'review-results.json').read_text())
-        results['checks'][0]['evidence'] = [e for e in results['checks'][0]['evidence']
-                                            if e['source'] != 'calc-claims.json']
-        (self.work / 'review-results.json').write_text(json.dumps(results))
-        errors, _ = self.run_pack()
-        self.assertEqual(['calc_claims.py'], [t for t in ('review_selection.py', 'calc_claims.py',
-                         'audit_document_summaries.py') if any(t in e for e in errors)], errors)
-
-    def test_blank_selection_worksheet_does_not_count(self):
-        self.all_products()
-        import review_selection as rs
-        self.product('selection-review.json', rs.worksheet(self.asg))
-        errors, _ = self.run_pack()
-        self.assertTrue(any('review_selection.py' in e and 'verdict' in e for e in errors), errors)
-
-    def test_claims_file_with_nothing_recomputed_does_not_count(self):
-        self.all_products()
-        self.product('calc-claims.json', {'schema_version': 1, 'summary': {'MATCH': 0, 'MISMATCH': 0,
-                     'NOT_COMPUTED': 1, 'ERROR': 0}, 'claims': [{'id': 'PFC-1', 'status': 'NOT_COMPUTED'}]})
-        errors, _ = self.run_pack()
-        self.assertTrue(any('calc_claims.py' in e for e in errors), errors)
-
-    def test_summary_audit_of_an_older_preflight_does_not_count(self):
-        self.all_products()
-        (self.asg / 'record' / 'preflight-delivery.json').write_text(json.dumps(
-            {'schema_version': 1, 'status': 'FAIL', 'results': {'PFC-1': {'status': 'FAIL'}}}))
-        errors, _ = self.run_pack()
-        self.assertTrue(any('audit_document_summaries.py' in e and 'preflight-delivery.json' in e
-                            for e in errors), errors)
 
     def test_plain_input_folders_ask_for_nothing(self):
         errors, _ = pack(self.out, self.ledger, str(self.work), {'requirements': str(self.inputs)})

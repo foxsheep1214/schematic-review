@@ -16,7 +16,7 @@ Prose about it.
 
 - Event: review:SR-20260101-示例审查-0000000/W-1, user:2026-10-19
 - Causes: rule_missing 1, knowledge_missing 2
-- Changed: SKILL.md, scripts/review_selection.py
+- Changed: SKILL.md, scripts/pack_review.py
 
 ## Older entry
 
@@ -33,7 +33,7 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual([], check_ledger.check_entry(check_ledger.latest_entry(GOOD)))
         bad = GOOD.replace('review:SR-20260101-示例审查-0000000/W-1, user:2026-10-19', 'the last review') \
                   .replace('rule_missing 1, knowledge_missing 2', 'various') \
-                  .replace('scripts/review_selection.py', 'scripts/nope.py')
+                  .replace('scripts/pack_review.py', 'scripts/nope.py')
         problems = check_ledger.check_entry(check_ledger.latest_entry(bad))
         self.assertEqual(3, len(problems), problems)
         self.assertTrue(any('Event:' in p for p in problems))
@@ -45,7 +45,7 @@ class LedgerTests(unittest.TestCase):
             p = Path(tmp) / 'l.md'
             p.write_text(GOOD, encoding='utf-8')
             self.assertEqual(0, check_ledger.main([str(p)]))
-            p.write_text(GOOD.replace('- Changed: SKILL.md, scripts/review_selection.py', ''), encoding='utf-8')
+            p.write_text(GOOD.replace('- Changed: SKILL.md, scripts/pack_review.py', ''), encoding='utf-8')
             self.assertEqual(1, check_ledger.main([str(p)]))
 
 

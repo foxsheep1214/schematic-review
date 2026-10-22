@@ -1,14 +1,9 @@
-"""circuit_bounds picks every worst-case corner itself; calc_claims flags stated numbers that disagree."""
-import contextlib
-import io
-import json
+"""circuit_bounds and model_bounds pick every worst-case corner themselves."""
 import math
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import calc_claims
 from circuit_bounds import (capacitor_ripple_capability, divider_bounds, linear_regulator_thermal,
                             logic_level_margins, rc_crossing_time, resistor_power, series_resistor_current)
 
@@ -94,43 +89,13 @@ class MiscTest(unittest.TestCase):
         self.assertAlmostEqual(led['i_max_a'], (5.25 - 1.8) / (330 * 0.95))
 
 
-class ClaimsTest(unittest.TestCase):
-    def claim(self, **over):
-        base = {'id': 'NTC-150', 'source': 'design/calc.md', 'locator': 'table 3',
-                'calculation': 'model_bounds.ntc_resistance_bounds',
-                'inputs': {'r25_ohm': 10e3, 'r25_tol': 0.01, 'beta_k': 3435, 'beta_tol': 0.01, 'temp_c': 150},
-                'claimed': {'r_min_ohm': 1.0}}
-        base.update(over)
-        return base
-
-    def test_wrong_corner_is_a_mismatch_and_right_one_matches(self):
+class CornerTest(unittest.TestCase):
+    def test_ntc_minimum_takes_the_beta_corner_that_gives_the_lowest_resistance(self):
         from model_bounds import ntc_resistance_bounds
         right = ntc_resistance_bounds(r25_ohm=10e3, r25_tol=0.01, beta_k=3435, beta_tol=0.01, temp_c=150)['r_min_ohm']
-        wrong = 9900 * math.exp(3435 * 0.99 * (1 / 423.15 - 1 / 298.15))   # Bmin, as the design script did
-        rows, errors = calc_claims.check([self.claim(claimed={'r_min_ohm': wrong}),
-                                          self.claim(id='NTC-OK', claimed={'r_min_ohm': right})])
-        self.assertEqual(errors, [])
-        self.assertEqual([r['status'] for r in rows], ['MISMATCH', 'MATCH'])
-
-    def test_bad_inputs_and_malformed_claims(self):
-        rows, errors = calc_claims.check([self.claim(inputs={'r25_ohm': -1})])
-        self.assertEqual(rows[0]['status'], 'ERROR')
-        self.assertTrue(calc_claims.check([self.claim(claimed={})])[1])
-        self.assertTrue(calc_claims.check([self.claim(), self.claim()])[1])
-        self.assertTrue(calc_claims.check([])[1])
-
-    def test_cli_exit_codes_and_evidence_file(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            path, out = Path(tmp) / 'claims.json', Path(tmp) / 'out.json'
-            path.write_text(json.dumps([self.claim()]))
-            with contextlib.redirect_stdout(io.StringIO()):
-                code = calc_claims.main([str(path), '--json', str(out)])
-            self.assertEqual(code, 1)
-            self.assertEqual(json.loads(out.read_text())['summary']['MISMATCH'], 1)
-            path.write_text('{}')
-            with contextlib.redirect_stdout(io.StringIO()):
-                self.assertEqual(calc_claims.main([str(path)]), 2)
-
+        wrong = 9900 * math.exp(3435 * 0.99 * (1 / 423.15 - 1 / 298.15))   # Bmin, the corner that is easy to take
+        self.assertAlmostEqual(right, 9900 * math.exp(3435 * 1.01 * (1 / 423.15 - 1 / 298.15)))
+        self.assertLess(right, wrong)
 
 if __name__ == '__main__':
     unittest.main()

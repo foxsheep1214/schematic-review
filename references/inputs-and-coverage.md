@@ -107,10 +107,6 @@ DOC-V01 同时核原生图面的文字可读性。功能脚名、标签或关键
 4. 两次扫描的所有候选逐条关联最终检查和处置；各规则的 planned/executed/pending 分对象统计。
 5. 统计唯一缺陷 ID 与逐项结果两个口径；标题数字、正文、需求矩阵和闭环列表一致。
 
-交付带计算派生摘要时，按 [派生摘要核对](document-summaries.md) 比较受控 README/报告的实际声明、
-计算库存唯一 ID/claim 与 preflight 逐项状态；文件哈希一致不能替代这项内容核对。
-仅数据/导出资格通过不能关闭派生摘要矛盾；公式和电气保证另按各自判据审查。
-
 覆盖维度不能混成单个漂亮百分比。在附录台账保留需求、页面、器件、物理引脚、轨、链路、状态、
 文档章节和历史意见的总数/完成/NA/不足/未执行。未知总数写 UNKNOWN，不能写 100%。
 自动校验可核对象遗漏与记录矛盾，工程上遗漏了哪些判据仍由审查负责。
@@ -121,9 +117,7 @@ DOC-V01 同时核原生图面的文字可读性。功能脚名、标签或关键
 gate、`db.json`、`intent.json`、两次扫描的 lint、`manifest.json`、声明了电路时的 `circuit-candidates.json`（`--circuit-candidates`；intent 有 `circuits` 或 `circuit_decisions` 而没有它，或决定与候选、db 不符，打包失败，手画电路的旧记录不再打包），以及 `evidence/` 下被检查证据引用的计算、裁图、问题配图（`figures/`）和复审 Diff。
 原理图工程、数据手册、需求和旧审查只按路径与 SHA-256 记入 manifest，不复制；网表扫描计划快照、日志、页面截图、
 脚本副本等中间文件留在工作目录（例如 /tmp/codex-work/<任务>/）。最终结论引用的证据必须进 `record/evidence/`，
-不能只留在临时目录：打包时引用找不到就失败。声明输入里有 ASG 交付时，选型复核（[选型与归因复核](selection-review.md)）、
-设计数值复算（`calc_claims.py`）和派生摘要核对（[派生摘要核对](document-summaries.md)）按交付里实有的
-`selection.json`、`calculations/`、`preflight-delivery.json` 逐项必需，必须被检查引用而进 `record/evidence/`，缺了打包失败。不要把客户原图、BOM、
+不能只留在临时目录：打包时引用找不到就失败。ASG 交付里的选型记录、计算库存与自检结果不复核、不引用。不要把客户原图、BOM、
 私有手册、人员姓名或项目路径复制到公开 skill 仓库，用最小脱敏 fixture 做回归。
 
 冻结审查证据时，先完成报告、逐行复核与校验，再生成注明路径基准的 SHA-256 清单并保存原始清单字节，

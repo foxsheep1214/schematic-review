@@ -894,7 +894,7 @@ PASS 不覆盖开关速度、温度角与隔离耐压。
 
 ### 模型角点与适用区间
 
-`scripts/model_bounds.py` 用来复算设计脚本里容易写反的模型，不判通过：`ntc_resistance_bounds` 对 R25 与 B 的四个公差角逐一计算，
+`scripts/model_bounds.py` 由 SR 自己算容易写反的模型，不判通过：`ntc_resistance_bounds` 对 R25 与 B 的四个公差角逐一计算，
 给出 R(T) 最小/最大值及所用角点（25°C 以上最小阻值是 R25min+Bmax），超出 B 值拟合区间或额定温区只标记、不外推；
 `cc_discharge_with_tail` 把恒流放电在合规交界 I×(串阻+尾段电阻) 处切成恒流段与 RC 尾段，尾段电阻须取自器件 I-V 资料。
 DOC-Q01 重放计算约定只说明格式与输入可追溯，**约定有效不等于模型正确**：温度单调方向、公差角点和分段模型的适用区间要另行复算。
@@ -914,10 +914,6 @@ DOC-Q01 重放计算约定只说明格式与输入可追溯，**约定有效不�
 （RC 节点跨阈值窗口的最短/最长时间）、`linear_regulator_thermal`（线性稳压功耗与结温）、`logic_level_margins`
 （VIH 按电源比例给出时取接收端电源最大值，VIL 取最小值）、`capacitor_ripple_capability`（按手册频率/温度系数表取
 较低的相邻系数、表外不外推）、`resistor_power`、`series_resistor_current`（LED/光耦串阻电流）。每项输出注明取了哪个角点。
-
-`scripts/calc_claims.py` 把设计文档里的数值写成 claim 逐条复算：每条给 `id/source/locator/calculation/inputs/claimed`
-与可选 `rel_tol`（默认 1%），输出 MATCH / MISMATCH / NOT_COMPUTED / ERROR 及相对差，可直接存为证据。
-MISMATCH 只说明在 SR 的模型下所称数值不能由所称输入推出，确认原文和模型适用后才记文档错误。
 
 ### 厂家参数引用核对
 
@@ -941,6 +937,6 @@ reference 另给原厂文件 `sha256`；source 是本地文件路径，locator �
 
 | 类别 | 脚本 |
 |---|---|
-| 入口：执行流程里按顺序调用 | `requirements_extract.py`（逐字抄录需求文档）、`parse_kicad.py`、`parse_netlist.py`、`lint.py`（网表扫描和证据扫描，同时生成计划）、`audit_datasheets.py`、`gap_inventory.py`、`calc_claims.py`、`derive_rows.py`（功能判定写完后派生已绑定的行）、`validate_review.py`、`render_report.py`、`pack_review.py`、`diff_netlists.py`；维护时 `catalog.py --write-doc` |
-| 专用工具：特定情形手动调用 | `compare_reviews.py`（两份同板记录先按检查项标识严格配对，报配对率、已答比例、一致率、通过对失败和严重分歧；按电路对齐的结果只作建议配对，`--alias` 加入经核实的别名）、`plan_review.py`（单独重建计划，日常由 `lint.py` 代办）、`calc.py`、`simulate_rc.py`、`solve_dividers.py`（仅探索）、`decoupling.py`、`i2c_topology.py`、`datasheet_facts.py`、`electrical_contract.py`、`reviewed_declarations.py`、`audit_document_summaries.py`、`audit_parameter_claims.py`、`execution_audit.py`（可选自检）、`install_kicad_cli.py` |
-| 库：只被导入 | `results_model.py`、计划生成的各层（`plan_circuits.py`、`plan_system.py`、`plan_board.py`）、`interfaces.py`、`row_owner.py`、`requirement_parameters.py`（需求参数的校验与取窗）、`requirement_bindings.py`（需求行绑定树上的检查与派生）、`review_functions.py`（功能判定校验 F1–F12）、`review_engine.py`、`skill_identity.py`、`board_intent.py`、`board_scans.py`、`page_inventory.py`、`datasheet_kinds.py`、`design_preflight.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`revision_impact.py`、`requirement_clarifications.py`、`task_scope.py`、`validate_remediation.py`、`asg_summary_adapter.py`、计算模块（`circuit_bounds.py`、`model_bounds.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`）、`checkers/` |
+| 入口：执行流程里按顺序调用 | `requirements_extract.py`（逐字抄录需求文档）、`parse_kicad.py`、`parse_netlist.py`、`lint.py`（网表扫描和证据扫描，同时生成计划）、`audit_datasheets.py`、`gap_inventory.py`、`derive_rows.py`（功能判定写完后派生已绑定的行）、`validate_review.py`、`render_report.py`、`pack_review.py`、`diff_netlists.py`；维护时 `catalog.py --write-doc` |
+| 专用工具：特定情形手动调用 | `compare_reviews.py`（两份同板记录先按检查项标识严格配对，报配对率、已答比例、一致率、通过对失败和严重分歧；按电路对齐的结果只作建议配对，`--alias` 加入经核实的别名）、`plan_review.py`（单独重建计划，日常由 `lint.py` 代办）、`calc.py`、`simulate_rc.py`、`solve_dividers.py`（仅探索）、`decoupling.py`、`i2c_topology.py`、`datasheet_facts.py`、`electrical_contract.py`、`reviewed_declarations.py`、`audit_parameter_claims.py`、`execution_audit.py`（可选自检）、`install_kicad_cli.py` |
+| 库：只被导入 | `results_model.py`、计划生成的各层（`plan_circuits.py`、`plan_system.py`、`plan_board.py`）、`interfaces.py`、`row_owner.py`、`requirement_parameters.py`（需求参数的校验与取窗）、`requirement_bindings.py`（需求行绑定树上的检查与派生）、`review_functions.py`（功能判定校验 F1–F12）、`review_engine.py`、`skill_identity.py`、`board_intent.py`、`board_scans.py`、`page_inventory.py`、`datasheet_kinds.py`、`design_preflight.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`revision_impact.py`、`requirement_clarifications.py`、`task_scope.py`、`validate_remediation.py`、计算模块（`circuit_bounds.py`、`model_bounds.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`）、`checkers/` |

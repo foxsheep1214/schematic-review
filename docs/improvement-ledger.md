@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## SR does not take the designer's documents as reference (2026-10-22)
+
+The step-7 recheck proposed one DOC-Q01 row per figure the design report or calculation file claims, because on R5 one
+reviewer recomputed two such figures and found both wrong and the other did not look. The user rejected it: referring
+to the designer's calculated values lets the design documents set the review (which states, inputs and figures are
+looked at), and SR is to be an independent review that derives every value from the schematic, the requirements and
+the manufacturer datasheets. SR therefore no longer recomputes designer claims (calc_claims.py removed), audits the
+designer's derived summaries (audit_document_summaries.py, asg_summary_adapter.py and document-summaries.md removed;
+DOC-Q01 checks only input versions, hashes, export completeness and contradictions between netlist, PDF and BOM) or
+re-judges the designer's selection and attribution records (review_selection.py and selection-review.md removed); the
+pack no longer requires these for a declared ASG delivery; rail windows come from requirement parameters or the
+regulator datasheets with SR's own calculation, not from design calculations. A fact only the design documents state
+(a firmware threshold, a register setting) goes to the designer as a handoff and enters the review as a requirement or
+input once confirmed. The step-7 entry and the design doc no longer count the two recalculation rows as gaps. Tests
+first (test_independent_review: the tools and their docs are gone, no SR script or doc names them, DOC-Q01 does not
+audit designer summaries; the pack test of an ASG delivery now packs without reviewing its records; the circuit and
+model bound tests that went through calc_claims test the models directly), 1878 tests pass, contract 500, replay
+bench 195/195, no mutation targeted the removed code and all 204 still match.
+
+- Event: user:2026-10-22 (不应该去参考设计报告中的内容，SR 本来就应该是独立的审核过程)
+- Causes: judgment 1
+- Changed: scripts/pack_review.py, scripts/catalog.py, scripts/tests/test_independent_review.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_circuit_bounds.py, scripts/tests/test_model_bounds.py, scripts/tests/test_ledger.py, SKILL.md, references/automation.md, references/check-catalog.md, references/inputs-and-coverage.md, references/plan-and-results.md, references/workflow-handoff.md, docs/2026-10-22-fixed-requirements-and-review-points.md, docs/improvement-ledger.md
+
 ## An IC pin fed through a resistor from a rail above the IC's lowest supply gets its own row (2026-10-22)
 
 The first derivation gap from the step-7 recheck. On the R5 bench both reviewers added DEV-C01 rows by hand for the
@@ -53,7 +76,8 @@ object (an IC's fault and high-voltage startup pins, connector current, an exter
 accuracy); 7 have only a whole-circuit row, not one per part or pin (the stress of three switches, the discharge and
 sense pins of an IC fed through a resistor from a high-voltage node), and the derivation to add is a row per IC pin fed
 through a resistor from a high-voltage node, which the DEV-C01 criterion already asks for; 3 have no row: 2 recalculate
-a figure the design report or calculation file claims (the derivation to add is one DOC-Q01 row per claimed figure),
+a figure the design report or calculation file claims (no gap: SR does not refer to the designer's documents, see the
+entry of the same day),
 and 1, the PCB implementation handoff, was put under the wrong rule (DOC-D02 is test-node reservation) and is carried by
 a row's handoff, so it is no gap. The recheck compared rule and part only; whether the 5 existing rows ask the same
 question is still to be read row by row. The two-record comparison over steps 1-7 is in the design doc's
