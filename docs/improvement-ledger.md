@@ -7,6 +7,31 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## An IC pin fed through a resistor from a rail above the IC's lowest supply gets its own row (2026-10-22)
+
+The first derivation gap from the step-7 recheck. On the R5 bench both reviewers added DEV-C01 rows by hand for the
+discharge and bus-sense pins of one controller, each fed through one resistor from a rail above the controller's lowest
+supply, where the resistor is the only limit on the pin current; the plan had one DEV-C01 row for the whole circuit,
+although the DEV-C01 criterion asks for such pins one by one. The passive-stress inventory (version 3) now lists, per
+assembly state, every IC pin that is not a power or return pin, whose net holds only that pin, series resistors and
+capacitors with no resistor to ground, and where a resistor's far end is a declared rail above the lowest declared
+supply of the IC (supplies from the official pin map, else the symbol's power inputs); each gets a DEV-C01.PIN row with
+the source maximum, the resistor minimum and the worst pin current as a calculation and no proposed result. Pull-ups to
+the IC's own supply, pins shared with another IC and divider taps get none. Measuring it found a bug from step 3: the
+planner built the checkers from the intent before the rail windows a requirement gives were resolved (the netlist scan
+already used the resolved ones), so a rail whose window came from a requirement had no window in any checker; the
+planner now gives the checkers the resolved intent. R5 bench: both plans get the same two pin rows (2 of 2 paired, the
+two hand-added rows of one reviewer and one of the other), no other row or proposal changes, whole plan 506 of 506 and
+510; the R5 resistor values are written with power and pulse suffixes the resistor parser does not read, so the
+current stays uncomputed there. Of the 7 hand rows that had only a whole-circuit row, 3 now have their pin row and the
+other 4 (three switches and a sense pin behind a resistor network) stay rule gaps. Tests first (test_pin_feeds, 7
+tests; one test that requirement windows reach the checkers), 1923 tests pass, contract 500, replay bench 195/195,
+mutations M197-M204 added and killed, all 204 mutations rerun and killed.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/review-plan.json (2 hand-added pin rows), review:SR-20261021-R5-codex-fd6a6dd/record/review-plan.json (1 hand-added pin row), user:2026-10-22 (先修 1)
+- Causes: rule_not_enforced 2
+- Changed: scripts/checkers/passive_stress.py, scripts/plan_review.py, scripts/tests/test_pin_feeds.py, scripts/tests/test_requirement_parameters.py, references/commodity-floors.md, references/plan-and-results.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## A row the reviewer adds is a rule gap (2026-10-22)
 
 Step 7 of the fixed-requirements design. Recomputing the two R5 plans with the planner of that run, one reviewer had

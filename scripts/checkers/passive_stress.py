@@ -43,6 +43,8 @@ OVERRIDE_CODES = {
 }
 CRITERION = ('按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；'
              '建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由')
+PIN_CRITERION = ('源轨最高电压经串联电阻最小阻值流入该 IC 脚的电流不超过手册对该脚的电流上限（放电、泄放、启动、检测等经电阻'
+                 '接到高于本 IC 最低供电的轨的脚），该脚电压在手册绝对最大额定内，串联电阻承受的功耗与脉冲在额定内')
 PACKAGE_RE = re.compile(r'^(Resistor|Capacitor)_SMD:[RC]_(0201|0402|0603|0805|1206|1210|2010|2512)_', re.I)
 # 电荷泵、自举、开关、高边驱动等节点可超出所接器件的供电轨。
 UNBOUNDED_PIN_RE = re.compile(
@@ -200,6 +202,68 @@ def _signal_series(graph, nets):
     return {a, b} == {frozenset({'connector'}), frozenset({'ic-signal'})}
 
 
+def _supply_nets(graph, ref, pins):
+    """该 IC 的供电网：官方脚表的 power 脚所在网；没有脚表时取符号的电源输入脚。"""
+    if pins:
+        return {graph.pin2net.get(ref + '.' + n) for n, spec in pins.items()
+                if isinstance(spec, dict) and spec.get('role') == 'power'} - {None}
+    return {net for pin, net in graph.pins_of(ref).items() if graph.pintype.get(ref + '.' + pin) == 'power_in'}
+
+
+def _pin_feeds(db, intent, state):
+    """经串联电阻接到高于本 IC 最低供电的声明轨的 IC 脚（fixed requirements 补加行的缺口：逐脚核脚电流）。
+
+    脚不是 power/return 脚，所在网只有这一个脚、串联电阻和电容，没有电阻到地（分压另按窗口核），至少一颗电阻的
+    另一端是声明了窗口的轨，且该轨上限高于本 IC 各供电网中最低的上限。"""
+    graph = ng.NetGraph(db, fitted=set(state['fitted']))
+    rails = _declared_rails(intent)
+    devices = (intent or {}).get('devices') or {}
+    found = []
+    for ref in sorted(graph.fitted):
+        if graph.kind(ref) != ng.IC:
+            continue
+        pins = (devices.get(ref) or {}).get('pins') if isinstance(devices.get(ref), dict) else None
+        supplies = [rails[net][0][1] for net in _supply_nets(graph, ref, pins) if net in rails]
+        if not supplies:
+            continue
+        lowest = min(supplies)
+        for pin, net in sorted(graph.pins_of(ref).items()):
+            node = ref + '.' + pin
+            role = ((pins or {}).get(pin) or {}).get('role') if isinstance((pins or {}).get(pin), dict) else None
+            if (role in ('power', 'return') or graph.pintype.get(node) in POWER_PINTYPES or not net
+                    or net in rails or _ground_name(net) or net in graph.pseudo):
+                continue
+            others = [n for n in graph.nodes_on(net) if n != node and graph.is_fitted(n.partition('.')[0])]
+            kinds = {n: graph.kind(n.partition('.')[0]) for n in others}
+            if not others or any(k not in (ng.RESISTOR, ng.CAPACITOR) for k in kinds.values()):
+                continue
+            feeds, divider = [], False
+            for other, kind in sorted(kinds.items()):
+                resistor = other.partition('.')[0]
+                far = [n for n in graph.nets_of(resistor) if n != net] if kind == ng.RESISTOR else []
+                if len(far) != 1:
+                    continue
+                if _ground_name(far[0]):
+                    divider = True
+                elif far[0] in rails and rails[far[0]][0][1] > lowest:
+                    feeds.append((resistor, far[0]))
+            if feeds and not divider:
+                found.append({'ref': ref, 'node': node, 'net': net, 'lowest_supply_max_v': lowest,
+                              'feeds': [{'ref': r, 'net': n, 'source_max_v': rails[n][0][1],
+                                         'value': graph.parts.get(r, {}).get('value')} for r, n in feeds]})
+    return found
+
+
+def _pin_calculation(entry):
+    feeds = []
+    for feed in entry['feeds']:
+        parsed = parse_resistor(feed['value'], default_tol=DEFAULT_TOL)
+        r_min = round(parsed['kohm'] * 1000 * (1 - parsed['tol']), 6) if parsed else None
+        feeds.append({'ref': feed['ref'], 'net': feed['net'], 'source_max_v': feed['source_max_v'], 'r_min_ohm': r_min,
+                      'i_max_a': round(feed['source_max_v'] / r_min, 9) if r_min else None})
+    return {'feeds': feeds, 'lowest_supply_max_v': entry['lowest_supply_max_v']}
+
+
 def _scan(db, intent, state):
     graph = ng.NetGraph(db, fitted=set(state['fitted']))
     bounds = _Bounds(graph, _declared_rails(intent))
@@ -326,13 +390,14 @@ class PassiveStressChecker(Checker):
     title = '通用阻容应力预判'
     plan_key = 'passive_stress'
     version_key = 'passive_stress_version'
-    version = 2
+    version = 3
     allow_manual_bound_objects = False
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion', 'readiness',
                         'inventory_gaps', 'proposal')
 
     def build(self, db, intent):
-        return inv.build(db, intent, 'power_rails', 'parts', lambda state: _scan(db, intent, state))
+        return inv.build(db, intent, 'power_rails', 'parts', lambda state: _scan(db, intent, state),
+                         extra=lambda state: {'pins': _pin_feeds(db, intent, state)})
 
     def plan(self, planner, inventory):
         for state, entry, state_ids in inv.walk_distinct(inventory, 'parts'):
@@ -348,6 +413,18 @@ class PassiveStressChecker(Checker):
                                 'assumptions': ['环境 ≤70 ℃（未声明时的假设）',
                                                 '非轨网电压不超出同簇所接器件的最高声明供电'],
                                 'override_codes': sorted(OVERRIDE_CODES)}
+        for state, entry, state_ids in inv.walk_distinct(inventory, 'pins'):
+            obj = dict({'ref': entry['ref'], 'node': entry['node'], 'net': entry['net'],
+                        'feeds': [f['ref'] for f in entry['feeds']], 'passive_stress_digest': inventory['digest']},
+                       **inv.state_fields(state_ids))
+            note = '最大脚电流按源轨上限除以串联电阻最小阻值估计（脚端电压按 0 V），与手册该脚电流上限比较由审查者判定'
+            if state['gaps']:
+                note = '装配状态未核实：' + '；'.join(state['gaps'])
+            item = planner.add_check('DEV-C01', obj, key='PIN', criterion=PIN_CRITERION)
+            item['inventory_gaps'] = list(state['gaps'])
+            item['proposal'] = {'result': None, 'calculation': _pin_calculation(entry), 'note': note,
+                                'nets': [entry['net']] + [f['net'] for f in entry['feeds']], 'bases': ['declared-rails'],
+                                'assumptions': [], 'override_codes': sorted(OVERRIDE_CODES)}
 
     def binds(self, item):
         obj = item.get('object')

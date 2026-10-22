@@ -1370,5 +1370,61 @@
   "file": "scripts/render_report.py",
   "old": "    gaps = gate.get('rule_gaps') or []\n",
   "new": "    gaps = []\n"
+ },
+ {
+  "id": "M197",
+  "name": "a pin on a divider gets a pin row",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                if _ground_name(far[0]):\n                    divider = True",
+  "new": "                if _ground_name(far[0]):\n                    divider = False"
+ },
+ {
+  "id": "M198",
+  "name": "the highest supply is taken instead of the lowest",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        lowest = min(supplies)",
+  "new": "        lowest = max(supplies)"
+ },
+ {
+  "id": "M199",
+  "name": "a pull-up to the IC own supply gets a pin row",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                elif far[0] in rails and rails[far[0]][0][1] > lowest:",
+  "new": "                elif far[0] in rails and rails[far[0]][0][1] >= lowest:"
+ },
+ {
+  "id": "M200",
+  "name": "a pin sharing its net with another IC gets a pin row",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "            if not others or any(k not in (ng.RESISTOR, ng.CAPACITOR) for k in kinds.values()):",
+  "new": "            if not others:"
+ },
+ {
+  "id": "M201",
+  "name": "a power pin gets a pin row",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "            if (role in ('power', 'return') or graph.pintype.get(node) in POWER_PINTYPES or not net",
+  "new": "            if (graph.pintype.get(node) in POWER_PINTYPES or not net"
+ },
+ {
+  "id": "M202",
+  "name": "the pin current ignores the resistor tolerance",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        r_min = round(parsed['kohm'] * 1000 * (1 - parsed['tol']), 6) if parsed else None",
+  "new": "        r_min = round(parsed['kohm'] * 1000, 6) if parsed else None"
+ },
+ {
+  "id": "M203",
+  "name": "pin rows are not written",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        for state, entry, state_ids in inv.walk_distinct(inventory, 'pins'):",
+  "new": "        for state, entry, state_ids in inv.walk_distinct(inventory, 'no-pins'):"
+ },
+ {
+  "id": "M204",
+  "name": "the checkers read the unresolved rail windows",
+  "file": "scripts/plan_review.py",
+  "old": "            requirement_parameters.resolve(intent) if isinstance(intent, dict) else intent, datasheet_audit)",
+  "new": "            intent, datasheet_audit)"
  }
 ]

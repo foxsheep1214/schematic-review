@@ -302,7 +302,9 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.candidates = candidates
         self.lint_findings = lint_findings or []
         self.document_inventory = document_inventory(db)
-        self.kind_intent = board_intent.with_verified_kinds(intent, datasheet_audit)
+        # The checkers read the windows a requirement gives (fixed requirements, step 3), like the netlist scan does.
+        self.kind_intent = board_intent.with_verified_kinds(
+            requirement_parameters.resolve(intent) if isinstance(intent, dict) else intent, datasheet_audit)
         analysis_db = board_intent.graph_db(db, self.kind_intent)
         self.inventories = {checker.id: checker.build(analysis_db, self.kind_intent) for checker in REGISTRY}
         self.domains = domains_lib.build_section(analysis_db, self.kind_intent)

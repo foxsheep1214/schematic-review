@@ -200,5 +200,13 @@
 | M194 | the plan does not count reviewer-added rows | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::PlanTests::test_the_planner_writes_one_reviewer_added_row_per_gap_counted_apart |
 | M195 | the gate lists a gap without its result | `scripts/rule_gaps.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::GateTests::test_a_hand_added_row_is_refused_and_a_gap_row_is_listed_for_the_ledger |
 | M196 | the report leaves the gaps out | `scripts/render_report.py` | KILLED | FAILED scripts/tests/test_rule_gaps.py::ReportTests::test_the_report_lists_each_gap_for_the_sr_maintainers |
+| M197 | a pin on a divider gets a pin row | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_pin_feeds.py::PinFeedTests::test_a_divider_another_ic_pin_or_a_power_pin_gets_no_pin_row |
+| M198 | the highest supply is taken instead of the lowest | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_pin_feeds.py::PinFeedTests::test_a_multi_supply_ic_counts_its_lowest_supply |
+| M199 | a pull-up to the IC own supply gets a pin row | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_pin_feeds.py::PinFeedTests::test_a_pull_up_to_the_ic_own_supply_gets_no_pin_row |
+| M200 | a pin sharing its net with another IC gets a pin row | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_pin_feeds.py::PinFeedTests::test_a_divider_another_ic_pin_or_a_power_pin_gets_no_pin_row |
+| M201 | a power pin gets a pin row | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_pin_feeds.py::PinFeedTests::test_a_divider_another_ic_pin_or_a_power_pin_gets_no_pin_row |
+| M202 | the pin current ignores the resistor tolerance | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_pin_feeds.py::PinFeedTests::test_the_row_carries_the_worst_current_through_the_resistor |
+| M203 | pin rows are not written | `scripts/checkers/passive_stress.py` | KILLED | FAILED scripts/tests/test_pin_feeds.py::PinFeedTests::test_a_multi_supply_ic_counts_its_lowest_supply |
+| M204 | the checkers read the unresolved rail windows | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_parameters.py::PlanTests::test_a_rail_window_from_a_requirement_reaches_the_checkers |
 
 全部杀死。

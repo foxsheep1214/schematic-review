@@ -129,6 +129,15 @@ class PlanTests(unittest.TestCase):
             db, value = self.board(rails={'VCC_3V3': {'voltage_v': {'requirement': bad}}})
             self.assertTrue(any('power_rails' in e and bad in e for e in errors(value)), bad)
 
+    def test_a_rail_window_from_a_requirement_reaches_the_checkers(self):
+        # The checkers read the same resolved windows as the planner and the netlist scan: a pull-up on a rail whose
+        # window comes from a requirement gets its stress bound from that window.
+        db, value = self.board(rails={'VCC_3V3': {'voltage_v': {'requirement': 'REQ-IN-01'}}})
+        planner = ReviewPlanner(db, value)
+        self.assertEqual(planner.kind_intent['power_rails']['VCC_3V3']['voltage_v']['max'], 36)
+        rails = planner.inventories['passive_stress']['context']['power_rails']
+        self.assertEqual(rails['VCC_3V3']['voltage_v']['max'], 36)
+
     def test_the_input_range_reaches_the_power_tree_frame(self):
         db, value = self.board()
         frame = next(f for f in build_review_plan(db, value)['functions'] if f['id'] == 'FN-SYS-POWER')
