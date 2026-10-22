@@ -654,7 +654,7 @@ class FunctionFrameTests(unittest.TestCase):
                   'power_rails': {'VCC_3V3': {'voltage_v': {'min': 3.2, 'max': 3.4}, 'refs': ['U1'],
                                               'citation': 'synthetic rail'}}}
         plan = build_review_plan(sample_db(), intent)
-        self.assertEqual(plan['schema_version'], 5)
+        self.assertEqual(plan['schema_version'], 6)
         self.assertEqual([f['id'] for f in circuit_frames(plan)], ['FN-REG-3V3'])
         frame = circuit_frames(plan)[0]
         rules = catalog.circuit_type('POWER_CONVERTER').subjects

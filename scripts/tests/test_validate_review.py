@@ -27,7 +27,8 @@ def planned(key):
 
 def fixture(first_key=C1):
     keys = [first_key] + [scope_id(k) for k in sorted(SCOPE)]
-    plan = {'schema_version': PLAN_SCHEMA_VERSION, 'checks': [planned(k) for k in keys]}
+    plan = {'schema_version': PLAN_SCHEMA_VERSION, 'checks': [planned(k) for k in keys], 'owners': [],
+            'interfaces': {'schema_version': 1, 'interfaces': [], 'gaps': []}}
     db = {'parts': {'R1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
           'ref2page': {'R1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
     report = {'requirement_clarification_version': 1, 'requirement_clarifications': [],

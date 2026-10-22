@@ -1,7 +1,7 @@
 {
   "description": "Synthetic controlled values, no proprietary hardware. Not engineering evidence.",
   "plan": {
-    "schema_version": 5,
+    "schema_version": 6,
     "checks": [
       {
         "id": "RST-E01.C1",
@@ -118,6 +118,12 @@
         "criterion": "Controlled synthetic criterion for PWR-C01.CEFF"
       }
     ],
+    "owners": [],
+    "interfaces": {
+      "schema_version": 1,
+      "interfaces": [],
+      "gaps": []
+    },
     "execution_inputs": {
       "numeric_scope": {
         "networks": [

@@ -110,7 +110,10 @@
   由下一个认领者拥有，打平的要 own 决定。一颗非核心器件最多被两块电路持有。
   审查员认为候选漏了器件，不往电路里手加：那是规则或网表的缺口，记在 REQ-Q08（候选生成没有归属的器件逐颗列出）并改规则。
 
-## 二、review-plan.json（schema_version 5）
+## 二、review-plan.json（schema_version 6）
+
+6 版的行带 `owner` 与 `check_key`，计划带所属表 `owners` 和接口 `interfaces`；5 版及更早的计划（含据它写的结果）不再读，
+校验、合并（`--merge-plan`）和改版比对（`--old-plan`）都拒收，按当前规则重新生成计划、重新审。
 
 ### 生成与合并
 

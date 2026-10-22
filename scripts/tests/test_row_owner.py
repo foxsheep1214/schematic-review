@@ -47,6 +47,13 @@ class OwnerTests(unittest.TestCase):
             if (row.get('object') or {}).get('circuit'):
                 self.assertEqual(row['owner'], {'kind': 'CIRCUIT', 'id': row['object']['circuit']}, row['id'])
 
+    def test_a_circuit_row_of_a_system_rule_stays_with_its_circuit(self):
+        # no circuit type expands a system rule now (RST-T03 moved to SYS-SEQUENCE), but a row whose object names a
+        # circuit is that circuit's whatever its rule
+        row = {'rule': 'RST-T03', 'object': {'circuit': 'STARTUP-U1.HV', 'circuit_key': 'STARTUP-U1.HV', 'state': 'run'}}
+        self.assertIn('RST-T03', catalog.SYSTEM_OF_RULE)
+        self.assertEqual(row_owner.owner(row, {}), {'kind': 'CIRCUIT', 'id': 'STARTUP-U1.HV'})
+
     def test_a_part_row_belongs_to_the_circuit_that_owns_the_part(self):
         def owners(plan):
             out = {}

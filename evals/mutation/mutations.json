@@ -121,14 +121,14 @@
  {
   "id": "M18",
   "name": "plan emits no function frames",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_circuits.py",
   "old": "        self.functions.extend(frames.values())",
   "new": "        pass"
  },
  {
   "id": "M19",
   "name": "state-invariant rules expanded per state again",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_circuits.py",
   "old": "                    invariant = rule in catalog.STATE_INVARIANT",
   "new": "                    invariant = False"
  },
@@ -359,7 +359,7 @@
  {
   "id": "M52",
   "name": "an integrated circuit without a verified role kind planned without a gap",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_board.py",
   "old": "            if re.match(r'^(Q|D|ZD|TVS|U|M)\\d', ref, re.I) and ref not in board_intent.declared_kinds(self.kind_intent):",
   "new": "            if re.match(r'^(Q|D|ZD|TVS)\\d', ref, re.I) and ref not in board_intent.declared_kinds(self.kind_intent):"
  },
@@ -583,7 +583,7 @@
  {
   "id": "M84",
   "name": "a circuit row is keyed by its display name, not its candidate ids",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_circuits.py",
   "old": "'circuit_key': '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']])),",
   "new": "'circuit_key': circuit['id'],"
  },
@@ -632,21 +632,21 @@
  {
   "id": "M91",
   "name": "SIG-C08 asked on every interface net, not only where supplies differ",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/interfaces.py",
   "old": "                    if entry['cross_supply']:",
   "new": "                    if True:"
  },
  {
   "id": "M92",
   "name": "a connector is not asked its current",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_circuits.py",
   "old": "            self._ready_check('DEV-C04', dict(port), self._materials_gap(INTERFACE_MATERIALS['DEV-C04']), connector_trigger)\n",
   "new": ""
  },
  {
   "id": "M93",
   "name": "every rail is asked its noise, sensitive load or not",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/interfaces.py",
   "old": "                loads = [o for o in item.get('loads', []) if circuit_types.get(o) in catalog.NOISE_SENSITIVE_TYPES]",
   "new": "                loads = list(item.get('loads', []))"
  },
@@ -660,7 +660,7 @@
  {
   "id": "M95",
   "name": "a rail gets an interface frame",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/interfaces.py",
   "old": "                    row['question'] = catalog.interface_question('PWR-C14', iid, nets, loads=loads)\n                continue",
   "new": "                    row['question'] = catalog.interface_question('PWR-C14', iid, nets, loads=loads)"
  },
@@ -681,42 +681,42 @@
  {
   "id": "M98",
   "name": "ground partition asked on a board with one ground net",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_system.py",
   "old": "        if len(grounds) >= 2:",
   "new": "        if len(grounds) >= 1:"
  },
  {
   "id": "M99",
   "name": "power-on order asked on a board with one rail",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_system.py",
   "old": "        if len(rails) >= 2:",
   "new": "        if len(rails) >= 1:"
  },
  {
   "id": "M100",
   "name": "pin map asked although every IC is verified as no controller",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_system.py",
   "old": "                             and graph.role_kind(ref) in (None, 'mcu', 'ic'))",
   "new": "                             )"
  },
  {
   "id": "M101",
   "name": "capacitance asked over every part a circuit owns, not its capacitors",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_circuits.py",
   "old": "                    'DEV-C02': lambda kind: kind == CAPACITOR,",
   "new": "                    'DEV-C02': lambda kind: True,"
  },
  {
   "id": "M102",
   "name": "parts no circuit owns are not asked stress, capacitance or precision",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_circuits.py",
   "old": "            residual = [ref for ref in wanted if ref not in owners]",
   "new": "            residual = []"
  },
  {
   "id": "M103",
   "name": "a system function with rows gets no frame",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_system.py",
   "old": "            if not members:\n                continue\n            nets, refs = set(), set()",
   "new": "            if True:\n                continue\n            nets, refs = set(), set()"
  },
@@ -737,7 +737,7 @@
  {
   "id": "M106",
   "name": "unowned fitted parts are not added to the REQ-Q08 list",
-  "file": "scripts/plan_review.py",
+  "file": "scripts/plan_circuits.py",
   "old": "            unassigned = sorted(set(unassigned) | {ref for ref, part in self.db.get('parts', {}).items()\n                                                   if not part.get('nc') and ref not in owned})",
   "new": "            unassigned = sorted(set(unassigned))"
  },
@@ -768,5 +768,40 @@
   "file": "scripts/render_report.py",
   "old": "                out.append('- **所属**：%s' % owners)",
   "new": "                pass"
+ },
+ {
+  "id": "M111",
+  "name": "a plan without its owner table is read through",
+  "file": "scripts/row_owner.py",
+  "old": "    if not isinstance(plan.get('owners'), list):\n        return ['plan.owners missing: plans before schema 6 carry no owner table; regenerate the plan']",
+  "new": "    if not isinstance(plan.get('owners'), list):\n        return []"
+ },
+ {
+  "id": "M112",
+  "name": "a plan without interfaces is read through",
+  "file": "scripts/interfaces.py",
+  "old": "        return ['plan.interfaces missing: plans before schema 6 carry no interfaces; regenerate the plan']",
+  "new": "        return []"
+ },
+ {
+  "id": "M113",
+  "name": "the validator reads a schema-5 plan alongside schema 6",
+  "file": "scripts/validate_review.py",
+  "old": "    require(plan.get(\"schema_version\") == PLAN_SCHEMA_VERSION,",
+  "new": "    require(plan.get(\"schema_version\") in (5, PLAN_SCHEMA_VERSION),"
+ },
+ {
+  "id": "M114",
+  "name": "a schema-5 previous plan is merged",
+  "file": "scripts/plan_review.py",
+  "old": "        if not isinstance(previous, dict) or previous.get('schema_version') != PLAN_SCHEMA_VERSION:",
+  "new": "        if not isinstance(previous, dict) or previous.get('schema_version') not in (5, PLAN_SCHEMA_VERSION):"
+ },
+ {
+  "id": "M115",
+  "name": "a schema-5 old plan is compared for revision impact",
+  "file": "scripts/revision_impact.py",
+  "old": "        if old_plan.get('schema_version') != PLAN_SCHEMA_VERSION:",
+  "new": "        if old_plan.get('schema_version') not in (5, PLAN_SCHEMA_VERSION):"
  }
 ]

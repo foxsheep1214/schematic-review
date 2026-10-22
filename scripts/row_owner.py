@@ -79,8 +79,8 @@ def counts(checks):
 
 def errors(plan):
     """Rows whose written owner is not the one the plan's owner table gives."""
-    if plan.get('owners') is None:
-        return []
+    if not isinstance(plan.get('owners'), list):
+        return ['plan.owners missing: plans before schema 6 carry no owner table; regenerate the plan']
     parts = {ref: e['id'] for e in plan['owners'] if e.get('kind') == 'CIRCUIT' for ref in e.get('parts', [])}
     nets = interface_nets(plan.get('interfaces'))
     out = []

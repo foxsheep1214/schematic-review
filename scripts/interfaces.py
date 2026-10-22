@@ -25,8 +25,11 @@ own net); the supply is the rails the part draws from. Only what the netlist joi
 import re
 
 import board_intent
+import catalog
 import row_owner
+from audit_datasheets import datasheet_entry_for_ref
 from checkers import domains as domains_lib, netgraph as ng, powertree
+from checkers.planutil import slug as _slug
 
 SCHEMA_VERSION = 1
 CONNECTOR_RE = re.compile(r'^(J|P|CN)\d', re.I)
@@ -210,9 +213,10 @@ def coverage_errors(plan):
     import catalog
     section = plan.get('interfaces')
     if not isinstance(section, dict):
-        return []
-    asked = {((c.get('object') or {}).get('interface'), c.get('rule'), (c.get('object') or {}).get('net'))
-             for c in plan.get('checks') or [] if isinstance(c, dict)}
+        return ['plan.interfaces missing: plans before schema 6 carry no interfaces; regenerate the plan']
+    asked = {tuple(v if isinstance(v, str) else None for v in ((c.get('object') or {}).get('interface'), c.get('rule'),
+                                                              (c.get('object') or {}).get('net')))
+             for c in plan.get('checks') or [] if isinstance(c, dict) and isinstance(c.get('object') or {}, dict)}
     asked_any = {(i, r) for i, r, _ in asked}
     framed = {f.get('interface') for f in plan.get('functions') or [] if isinstance(f, dict)}
     types = {f.get('circuit'): f.get('circuit_type') for f in plan.get('functions') or [] if isinstance(f, dict)}
@@ -241,3 +245,55 @@ def coverage_errors(plan):
 def derive(db, intent, datasheet_audit=None):
     """The plan's `interfaces` section."""
     return Deriver(db, intent, datasheet_audit).derive()
+
+
+class InterfacePlanning:
+    """接口检查项与接口框架（功能树设计 §3.3、§3.8）；ReviewPlanner 混入。"""
+
+    def plan_interfaces(self):
+        """接口检查项（功能树设计第 4 步）：电路对、链路逐接口问 catalog.INTERFACE_SUBJECTS，两端供电或参考地不同的
+        网络问 SIG-C08，敏感电路取电的轨问 PWR-C14；连接器的三行在连接器循环里生成。电路对、链路和连接器各建一个框架。"""
+        circuit_types = {c['id']: c.get('type') for c in self.intent.get('circuits', [])}
+        role_gaps = {}
+        for gap in self.interfaces['gaps']:
+            role_gaps.setdefault(gap['interface'], []).append(
+                f'interface-role:{gap["pin"]}' if gap['reason'] == 'role' else f'rail-source:{gap["interface"]}')
+        for item in self.interfaces['interfaces']:
+            iid, kind = item['id'], item['kind']
+            nets = [n['net'] for n in item['nets']]
+            parts = sorted({e['pin'].partition('.')[0] for n in item['nets'] for e in n['endpoints'] if e['owner']})
+            gaps = role_gaps.get(iid, []) + [
+                f'datasheet:{ref}' for ref in parts if self.db.get('parts', {}).get(ref) and powertree.IC_REF_RE.match(ref)
+                and not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
+            trigger = [f'interface:{iid}']
+            if kind == 'SUPPLY':
+                loads = [o for o in item.get('loads', []) if circuit_types.get(o) in catalog.NOISE_SENSITIVE_TYPES]
+                if loads:
+                    row = self._ready_check('PWR-C14', {'interface': iid, 'net': nets[0], 'loads': loads}, gaps, trigger)
+                    row['question'] = catalog.interface_question('PWR-C14', iid, nets, loads=loads)
+                continue
+            if kind != 'EXTERNAL' and not nets:
+                continue
+            for rule in catalog.INTERFACE_SUBJECTS.get(kind, ()) if kind != 'EXTERNAL' else ():
+                row = self._ready_check(rule, {'interface': iid, 'nets': nets}, gaps, trigger)
+                row['question'] = catalog.interface_question(rule, iid, nets, parts)
+            for rule in catalog.INTERFACE_NET_SUBJECTS.get(kind, ()):
+                for entry in item['nets']:
+                    if entry['cross_supply']:
+                        row = self._ready_check(rule, {'interface': iid, 'net': entry['net']}, gaps, trigger, key=iid)
+                        row['question'] = catalog.interface_question(rule, iid, [entry['net']])
+            members = [c for c in self.checks if (c.get('object') or {}).get('interface') == iid]
+            if not members:
+                continue
+            frame = {'id': 'FN-' + _slug(iid), 'interface': iid, 'interface_kind': kind,
+                     'question': catalog.interface_frame_question(kind, iid, item['owners'], nets, parts),
+                     'objects': {'refs': parts, 'nets': nets}, 'states': ['run'], 'members': [],
+                     'blind_spots': {}, 'checklist': list(catalog.BOUNDING_STEPS)}
+            for row in members:
+                if kind == 'EXTERNAL':
+                    row['question'] = catalog.interface_question(row['rule'], iid, nets, [row['object']['ref']])
+                row['function_id'] = frame['id']
+                row['aspect'] = catalog.title(row['rule'])
+                frame['members'].append({'check_id': row['id'], 'rule': row['rule'], 'aspect': row['aspect'], 'state': None})
+                frame['blind_spots'][row['rule']] = catalog.explanation(row['rule'])['risk_if_omitted']
+            self.functions.append(frame)

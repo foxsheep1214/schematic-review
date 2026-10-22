@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function tree, step 7: the planner is laid out along the tree and old records are refused (2026-10-22)
+
+Step 7 of the function-tree design splits `plan_review.py` (1506 lines) by tree level and ends the reading of
+records made before the tree. `plan_review.py` (729 lines) keeps the flow: adding rows, merging the previous plan,
+attaching scan findings and assembling the plan; `ReviewPlanner` mixes in `plan_circuits.CircuitPlanning` (circuit
+types, circuit rows and frames, part and pin evidence, threshold windows, owned-part rows), `interfaces.
+InterfacePlanning` (interface rows and frames), `plan_system.SystemPlanning` (system rows and frames) and
+`plan_board.BoardPlanning` (board, document, requirement and coverage rows, device identity, rule ledger); the moved
+constants and helpers live with their level and the names other modules import are re-exported. The plan schema
+moves to 6 (rows carry owner and check_key, the plan carries the owner table and interfaces): a schema-5 plan is
+refused by the validator, by `--merge-plan` and by `--old-plan`, and a plan without `owners` or `interfaces` is
+refused instead of being read as one with nothing to check. The interface coverage audit no longer crashes on a
+malformed row object. R5 bench: the code before and after the split builds identical plans from both intents but
+for `schema_version` and the engine digest, so the pairing stays at 157 of 157 and 158 circuit rows and 391 of 461
+and 466 rows; both R5 records are refused by the new validator (schema 5, no owner table, no interfaces). Fifteen
+earlier mutations were retargeted to the module their code moved to and the whole gate was run again; M81 (a circuit row of a system rule) had survived since step 5 took RST-T03 out of the STARTUP type and is now killed by a direct test of `row_owner.owner`. Tests first
+(test_tree_modules, 6 tests, and one owner test; the validator and execution-audit fixtures carry schema 6), 1836 tests pass, contract
+500, replay bench 195/195, mutations M111–M115 added and killed, full mutation gate 115 of 115 killed.
+
+- Event: user:2026-10-21 (迁移分 7 步逐步来做，每做完一步形成一份提交；第 7 步：拆分计划生成、旧记录拒绝), review:SR-20261021-R5-claude-fd6a6dd/record/review-plan.json (refused as schema 5), review:SR-20261021-R5-codex-fd6a6dd/record/review-plan.json (refused as schema 5)
+- Causes: rule_not_enforced 1
+- Changed: scripts/plan_review.py, scripts/plan_circuits.py, scripts/plan_system.py, scripts/plan_board.py, scripts/interfaces.py, scripts/row_owner.py, scripts/electrical_contract.py, scripts/tests/test_tree_modules.py, scripts/tests/test_row_owner.py, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, scripts/tests/test_validate_review.py, scripts/tests/fixtures/execution-audit/synthetic.json, SKILL.md, references/plan-and-results.md, references/automation.md, docs/2026-10-21-function-tree-design.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## Function tree, step 6: coverage over the tree and a report in tree order (2026-10-22)
 
 Step 6 of the function-tree design turns ownership and interfaces into two machine-countable audits and lays the

@@ -279,6 +279,8 @@ schema 1，`rules_version` 2026-10-21.1，绑定 `db_sha256` 与 intent 的 `inp
   隔离带 4、链路的核心器件与端点 5；最强的唯一认领者拥有它，其余候选只引用它。打平的器件谁也不拥有，列入 `shared`，由 own 决定裁定。
   谁都没走到的已贴器件进 `unassigned`（REQ-Q08 逐颗列出），没核验角色的 IC 和缺引脚名的感性件进 `gaps`。
 - 生成对器件顺序和页码变化是确定的；候选文件随记录打包，改了 db 或 intent 的输入指纹就重新生成、重新决定。
+- 计划生成按功能树分模块：`plan_review.py` 只管加行、合并、挂接扫描发现和汇总，电路与器件的行在 `plan_circuits.py`，接口的行与框架在
+  `interfaces.py`，系统功能在 `plan_system.py`，全板、文档、需求与覆盖在 `plan_board.py`（`ReviewPlanner` 混入这四个模块的方法）。
 - 行归属（`scripts/row_owner.py`）：计划汇总时给每行写 `owner`，按行对象、规则和各电路拥有的器件推出，写入计划的 `owners`；
   `validate_review.py` 按 `owners` 重算，写错的行被拒绝。
 - 接口（`scripts/interfaces.py`）：从各电路拥有的器件和网表推电路对、链路、供电、对外四种接口及端点角色、参考地分区、供电，写入计划 `interfaces`。
@@ -936,4 +938,4 @@ reference 另给原厂文件 `sha256`；source 是本地文件路径，locator �
 |---|---|
 | 入口：执行流程里按顺序调用 | `parse_kicad.py`、`parse_netlist.py`、`lint.py`（网表扫描和证据扫描，同时生成计划）、`audit_datasheets.py`、`gap_inventory.py`、`calc_claims.py`、`derive_rows.py`（功能判定写完后派生已绑定的行）、`validate_review.py`、`render_report.py`、`pack_review.py`、`diff_netlists.py`；维护时 `catalog.py --write-doc` |
 | 专用工具：特定情形手动调用 | `compare_reviews.py`（两份同板记录先按检查项标识严格配对，报配对率、已答比例、一致率、通过对失败和严重分歧；按电路对齐的结果只作建议配对，`--alias` 加入经核实的别名）、`plan_review.py`（单独重建计划，日常由 `lint.py` 代办）、`calc.py`、`simulate_rc.py`、`solve_dividers.py`（仅探索）、`decoupling.py`、`i2c_topology.py`、`datasheet_facts.py`、`electrical_contract.py`、`reviewed_declarations.py`、`audit_document_summaries.py`、`audit_parameter_claims.py`、`execution_audit.py`（可选自检）、`install_kicad_cli.py` |
-| 库：只被导入 | `results_model.py`、`review_functions.py`（功能判定校验 F1–F12）、`review_engine.py`、`skill_identity.py`、`board_intent.py`、`board_scans.py`、`page_inventory.py`、`datasheet_kinds.py`、`design_preflight.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`revision_impact.py`、`requirement_clarifications.py`、`task_scope.py`、`validate_remediation.py`、`asg_summary_adapter.py`、计算模块（`circuit_bounds.py`、`model_bounds.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`）、`checkers/` |
+| 库：只被导入 | `results_model.py`、计划生成的各层（`plan_circuits.py`、`plan_system.py`、`plan_board.py`）、`interfaces.py`、`row_owner.py`、`review_functions.py`（功能判定校验 F1–F12）、`review_engine.py`、`skill_identity.py`、`board_intent.py`、`board_scans.py`、`page_inventory.py`、`datasheet_kinds.py`、`design_preflight.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`revision_impact.py`、`requirement_clarifications.py`、`task_scope.py`、`validate_remediation.py`、`asg_summary_adapter.py`、计算模块（`circuit_bounds.py`、`model_bounds.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`）、`checkers/` |
