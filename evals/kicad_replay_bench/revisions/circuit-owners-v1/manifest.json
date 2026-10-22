@@ -1,0 +1,15 @@
+{
+ "revision": "circuit-owners-v1",
+ "parents": {
+  "revisions/circuit-candidates-v1/expected.json": "c536ebbd667e2837ec8fb74e4f7d1e7892a6d0ee9d937ceb22729315eb99f910",
+  "revisions/circuit-candidates-v1/cases.json": "653b4620b5b23db09d0d15c442bad1d6f0c97f305688276dccdb38b42df42f9d",
+  "revisions/circuit-candidates-v1/sources.json": "434e123cd8efac8fe21ed6533611507d7eafbf1ca83adde8f668d7e07cdfb088",
+  "revisions/circuit-candidates-v1/manifest.json": "6402b5b21d89a5393dd4de9afbc48c082698fbaaf1ce52935a523c25b5122d17"
+ },
+ "derived_files": {
+  "revisions/circuit-owners-v1/expected.json": "75706b1993b26d343d225e27c1910fa55167b177362193e1c1ce121ac631371b",
+  "revisions/circuit-owners-v1/cases.json": "f0386b9423c695168452a13685211c78ccd4565da572c60ffdb4f1f52820d529",
+  "revisions/circuit-owners-v1/sources.json": "c2747d3ad3f382346b6b05ed54e0be4b5e17ca00fde34d7ba432c4ac03dd4547"
+ },
+ "scope": "候选文件 schema 2：每个成员带 owned，器件归属唯一（电路核心器件 > 电路成员 > 电路端点 > 链路成员 > 隔离带 > 链路端点，打平由 own 决定裁定）；intent.circuits 新增 owned。只有 rf1-c2000-float-flyback-frames 换用新候选与 intent 夹具，答案不变。circuit-candidates-v1 文件保持原字节。"
+}

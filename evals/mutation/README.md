@@ -52,6 +52,7 @@ M56–M61（2026-10-21，电路候选步 3–7）守候选生成与决定：走�
 有电路的记录没有候选文件也能打包（M61，`test_render_and_pack.py`）。
 M62–M72（2026-10-21，Codex 合并方案 §3–§5）守影响条目、证据依据和检查项标识：GT 比较把零裕量当通过（M62）、没写 states 的证据覆盖全部状态（M63）、同一范围的通过与失败不报 EVIDENCE_CONFLICT（M64）、跨 regime 比较不写换算（M65）、典型应用当作强制条款（M66）、失败项既无已证缺口也无强制条款（M67）、保证最坏值建在典型值上（M68），由 `test_review_functions.py::EvidenceBasisTests` 和 `FunctionShapeTests` 杀死；电路名进入检查项标识（M69）、同一项检查问两次（M70）、没有定位引用的别名算作配对（M71），由 `test_compare_reviews.py::StrictIdentityTests` 和 `test_validate_review.py` 杀死；证明通过的裕量与阻断同一范围的缺口并存（M72）。
 同一批改指向：F7 的 3 个方面上限和 decides_reason 退役后，M46 改守"缺口的每条影响条目都要写 via"；F10 的理由模板降为提示后，M47 改守"判断句不许引数字限值"。M14、M20、M21、M28、M29、M37、M38、M42、M44、M45 跟着新代码换了注入位置，守的行为不变（M42 从"不显示裕量为何不决定"改为"不显示缺口影响哪些判断"）。
+M73–M79（2026-10-21，功能电路树第 1 步：器件归属唯一）守认领次序与归属：链路成员与隔离带同级（M73）、电路成员不强于链路成员（M74）、打平的器件归每个打平者（M75），由 `test_circuit_candidates.py::OwnershipTests` 杀死；没有 own 决定的打平被接受（M76）、own 决定没有定位引用（M77）、候选文件里一颗器件两个所属（M78）、手写的 owned 与决定不符（M79），由 `test_circuit_decisions.py::OwnershipTests` 杀死。M57 改指向归属一步生成的共享清单（原先的共享清单代码已删除）。
 
 ## 维护
 

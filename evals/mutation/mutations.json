@@ -395,8 +395,8 @@
   "id": "M57",
   "name": "a part two candidates reach at the same distance is given to the first",
   "file": "scripts/circuit_candidates.py",
-  "old": "            keep = sorted(cid for h, cid in entries if h == best)",
-  "new": "            keep = sorted(cid for h, cid in entries if h == best)[:1]"
+  "old": "                shared.append({'ref': ref, 'candidates': cids,",
+  "new": "                shared.append({'ref': ref, 'candidates': cids[:1],"
  },
  {
   "id": "M58",
@@ -502,5 +502,54 @@
   "file": "scripts/review_functions.py",
   "old": "                if overlaps(sc, isc):\n                    errors.append('%s/%s: margin %s is a %s that proves this aspect",
   "new": "                if False:\n                    errors.append('%s/%s: margin %s is a %s that proves this aspect"
+ },
+ {
+  "id": "M73",
+  "name": "a chain member claims a part as strongly as the isolation band",
+  "file": "scripts/circuit_candidates.py",
+  "old": "    return 4 if candidate.get('type') == 'ISOLATION' else 3",
+  "new": "    return 4"
+ },
+ {
+  "id": "M74",
+  "name": "a circuit member claims a part no more strongly than a chain member",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        return 2 if identity else 1\n",
+  "new": "        return 2 if identity else 3\n"
+ },
+ {
+  "id": "M75",
+  "name": "a part whose best claims tie is owned by every tied candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                    cand['members'][ref]['owned'] = cids == [cid]",
+  "new": "                    cand['members'][ref]['owned'] = cid in cids"
+ },
+ {
+  "id": "M76",
+  "name": "a tie no own decision settles is accepted",
+  "file": "scripts/circuit_decisions.py",
+  "old": "        if len(tied) > 1:\n            errors.append(f'{ref} is claimed equally by",
+  "new": "        if False:\n            errors.append(f'{ref} is claimed equally by"
+ },
+ {
+  "id": "M77",
+  "name": "an own decision without a located citation accepted",
+  "file": "scripts/circuit_decisions.py",
+  "old": "        if not located(decision.get('citation')):\n            errors.append(f'own {ref}: needs a citation",
+  "new": "        if False:\n            errors.append(f'own {ref}: needs a citation"
+ },
+ {
+  "id": "M78",
+  "name": "a candidate file with two owners of one part accepted",
+  "file": "scripts/circuit_decisions.py",
+  "old": "        if len(cids) > 1:\n            errors.append(f'{ref} is owned by two candidates",
+  "new": "        if False:\n            errors.append(f'{ref} is owned by two candidates"
+ },
+ {
+  "id": "M79",
+  "name": "hand-written ownership that differs from the decisions accepted",
+  "file": "scripts/circuit_decisions.py",
+  "old": "        if sorted(have.get('owned') or []) != want['owned']:",
+  "new": "        if False:"
  }
 ]

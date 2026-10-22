@@ -324,9 +324,53 @@ class CandidateTests(unittest.TestCase):
                             '--datasheet-audit', str(tmp / 'audit.json'), '--json', str(tmp / 'circuit-candidates.json')])
             self.assertEqual(code, 0)
             out = json.loads((tmp / 'circuit-candidates.json').read_text(encoding='utf-8'))
-        self.assertEqual(out['schema_version'], 1)
+        self.assertEqual(out['schema_version'], 2)
         self.assertEqual(out['db_sha256'], cc.db_fingerprint(db))
         self.assertEqual(sorted(c['id'] for c in out['candidates']), sorted(by_id(generate(db))))
+
+
+
+class OwnershipTests(unittest.TestCase):
+    """Every member says whether its candidate owns it (function-tree design, step 1). One candidate owns each part and
+    the others only refer to it: a circuit's anchor first, then a circuit member, then a chain member, then the
+    isolation band, then a chain's anchor or endpoint. Equal claims are left to a decision and listed as shared."""
+
+    @staticmethod
+    def owners(result):
+        out = {}
+        for cand in result['candidates']:
+            for m in cand['members']:
+                if m['owned']:
+                    out.setdefault(m['ref'], []).append(cand['id'])
+        return out
+
+    def test_each_held_part_is_owned_by_exactly_one_candidate(self):
+        result = generate()
+        self.assertEqual(result['schema_version'], 2)
+        owners = self.owners(result)
+        held = {m['ref'] for cand in result['candidates'] for m in cand['members']}
+        self.assertEqual(sorted(held), sorted(owners))
+        self.assertEqual({ref: len(v) for ref, v in owners.items() if len(v) != 1}, {})
+        self.assertTrue(all(m['owned'] in (True, False) for cand in result['candidates'] for m in cand['members']))
+
+    def test_a_circuit_owns_its_anchor_and_its_members_before_a_chain_and_the_isolation_band(self):
+        owners = {ref: v[0] for ref, v in self.owners(generate()).items()}
+        self.assertEqual(owners['U1'], 'POWER_CONVERTER-U1')          # the converter's anchor anchors two chains too
+        self.assertEqual(owners['U5'], 'ANALOG-U5')                   # an anchor; a chain's endpoint, the port's PD controller
+        self.assertEqual(owners['T1'], 'POWER_CONVERTER-U1')          # the transformer is also a barrier of the band
+        self.assertEqual(owners['U3'], 'POWER_CONVERTER-U1')          # the feedback optocoupler
+        self.assertEqual(owners['R43'], 'USB-J2')                     # a port part a protection chain also walks
+        self.assertEqual(owners['U9'], 'POWER_PROTECTION-U1.FAULT')   # the chain's optocoupler: the chain before the band
+        self.assertEqual(owners['CY1'], 'ISOLATION-PRI/SEC')          # held by the band alone
+        self.assertEqual(owners['R41'], 'STARTUP-U1.HV')
+
+    def test_a_part_two_circuits_reach_at_the_same_distance_is_owned_by_neither_until_a_decision(self):
+        db = board()
+        fixture.add(db, 'U8', 'OPAMP', [('1', 'VDD', 'V5'), ('2', 'GND', 'SGND'), ('3', 'IN', 'SHARED_IN'), ('4', 'OUT', 'OPA_OUT')])
+        fixture.add(db, 'R20', '1K', [('1', '1', 'SHARED_IN'), ('2', '2', 'ISNS_P')])
+        result = generate(db, kinds=dict(KINDS, U8='opamp_comparator'))
+        self.assertNotIn('R20', self.owners(result))
+        self.assertEqual({s['ref']: s['candidates'] for s in result['shared']}, {'R20': ['ANALOG-U5', 'ANALOG-U8']})
 
 
 if __name__ == '__main__':

@@ -7,9 +7,11 @@
 推导。走线停在截止网络（地、IC 输出脚驱动的网、两个以上核心器件到达的声明轨、该变换器电感负载的输入/输出网）、
 别的核心器件、跨域器件（变压器、光耦、Y 电容、隔离器：隔离候选的成员，别的候选不穿过）。
 
-页面与名字只作展示，不决定归属。两个候选在同一距离走到的器件两边都列，记入 shared；走线更短的候选
-赢得器件。没有候选走到的器件列在 unassigned（REQ-Q08 的复核对象），没有核验角色的 IC 和 pin-roles
-缺口列在 gaps。相同输入与规则版本得到相同文件。
+页面与名字只作展示，不决定归属。两个候选在同一距离走到的器件两边都列；走线更短的候选赢得器件。
+每颗被持有的器件恰好由一个候选拥有（成员的 `owned`），其余持有它的候选只引用它：电路的核心器件 > 电路成员 >
+电路里的端点类角色 > 链路成员 > 隔离带 > 链路的核心器件与端点（`claim_rank`）。同一级打平的器件谁也不拥有，
+记入 shared，由审查员的 own 决定裁定。没有候选走到的器件列在 unassigned（REQ-Q08 的复核对象），没有核验角色的
+IC 和 pin-roles 缺口列在 gaps。相同输入与规则版本得到相同文件。
 """
 import argparse
 import json
@@ -22,8 +24,8 @@ import catalog
 from electrical_contract import db_fingerprint, load_json
 from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
 
-SCHEMA_VERSION = 1
-RULES_VERSION = '2026-10-21.1'
+SCHEMA_VERSION = 2
+RULES_VERSION = '2026-10-21.2'
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -40,6 +42,31 @@ DEBUG_PIN_RE = re.compile(r'^(SWDIO|SWCLK|SWO|TCK|TMS|TDI|TDO|NTRST|JTAG\w*)$', 
 PROTECTIVE_RE = re.compile(r'VARISTOR|\bMOV\b|THERMISTOR|\bNTC\b|FUSE|BRIDGE|\bGDT\b|SPARK', re.I)
 PASS_THROUGH = frozenset({ng.BRIDGE_RECTIFIER})      # multi-pin parts the input walk passes
 WALK, STOP = 'walk', 'stop'
+IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a part's identity in a candidate, not its body
+
+
+def claim_rank(candidate, member):
+    """How strongly a candidate claims a member; the lowest rank owns the part. A circuit's anchor (0), a circuit member
+    (1), a circuit's endpoint-type role such as the port's PD controller (2), a chain member (3), the isolation band (4),
+    a chain's anchor or endpoint (5)."""
+    identity = member.get('role') in IDENTITY_ROLES
+    if not candidate.get('cross_cutting'):
+        if member['ref'] == candidate.get('anchor'):
+            return 0
+        return 2 if identity else 1
+    if identity:
+        return 5
+    return 4 if candidate.get('type') == 'ISOLATION' else 3
+
+
+def best_claims(holders):
+    """{ref: [holder ids with the best claim]} from {holder id: [(ref, rank)]}."""
+    ranks = {}
+    for hid, claims in holders.items():
+        for ref, rank in claims:
+            ranks.setdefault(ref, []).append((rank, hid))
+    return {ref: sorted({hid for rank, hid in entries if rank == min(r for r, _ in entries)})
+            for ref, entries in ranks.items()}
 
 
 def _blob(part):
@@ -572,7 +599,7 @@ class Generator:
 
     # -- assembly --------------------------------------------------------------
     def adjudicate(self):
-        """A part two candidates reach: the shorter path wins; equal paths are shared and listed in both."""
+        """A part two circuit candidates reach: the shorter path wins; equal paths keep it in both (ownership decides)."""
         owners = {}
         for cid, cand in self.candidates.items():
             if cand['cross_cutting']:
@@ -581,18 +608,24 @@ class Generator:
                 if ref == cand['anchor']:
                     continue          # a candidate's own anchor is its identity, never shared away
                 owners.setdefault(ref, []).append((member['hops'], cid))
-        shared = []
         for ref, entries in sorted(owners.items()):
-            if len(entries) < 2:
-                continue
             best = min(h for h, _ in entries)
-            keep = sorted(cid for h, cid in entries if h == best)
             for h, cid in entries:
                 if h != best:
                     del self.candidates[cid]['members'][ref]
-            if len(keep) > 1:
-                shared.append({'ref': ref, 'candidates': keep,
-                               'via': {cid: self.candidates[cid]['members'][ref]['via'] for cid in keep}})
+
+    def ownership(self):
+        """Mark each member owned or referenced; a part whose best claims tie is owned by no candidate and listed shared."""
+        winners = best_claims({cid: [(ref, claim_rank(cand, m)) for ref, m in cand['members'].items()]
+                               for cid, cand in self.candidates.items()})
+        shared = []
+        for ref, cids in sorted(winners.items()):
+            for cid, cand in self.candidates.items():
+                if ref in cand['members']:
+                    cand['members'][ref]['owned'] = cids == [cid]
+            if len(cids) > 1:
+                shared.append({'ref': ref, 'candidates': cids,
+                               'via': {cid: self.candidates[cid]['members'][ref]['via'] for cid in cids}})
         return shared
 
     def build(self):
@@ -608,7 +641,8 @@ class Generator:
                                for ref, m in cand['members'].items() if ref != cand['anchor'] and m['hops'] <= 1}
         self.ports()
         self.debug()
-        shared = self.adjudicate()
+        self.adjudicate()
+        shared = self.ownership()
         assigned = {ref for cand in self.candidates.values() for ref in cand['members']}
         unassigned = []
         for ref in sorted(self.graph.parts):
@@ -658,7 +692,8 @@ def build(db, intent=None, datasheet_audit=None):
 def summary(result):
     lines = [f"候选 {len(result['candidates'])} 个，共享 {len(result['shared'])} 件，未归属 {len(result['unassigned'])} 件，缺口 {len(result['gaps'])} 条"]
     for cand in result['candidates']:
-        lines.append(f"  {cand['id']:<28} {len(cand['members']):>3} 件  " + ' '.join(m['ref'] for m in cand['members']))
+        lines.append(f"  {cand['id']:<28} {len(cand['members']):>3} 件  " + ' '.join(
+            m['ref'] if m.get('owned') else '(' + m['ref'] + ')' for m in cand['members']))
     for item in result['unassigned']:
         lines.append(f"  未归属 {item['ref']} ({item['kind']}) {','.join(item['nets'])}")
     for gap in result['gaps']:

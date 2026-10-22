@@ -7,6 +7,33 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function tree, step 1: every part has one owning circuit (2026-10-21)
+
+The function-tree design (docs/2026-10-21-function-tree-design.md) organizes the review as board, system
+functions, circuits with their parts, and interfaces; interfaces can only be derived when each part belongs to
+one circuit. Reviewer-drawn circuits had 9 (Claude) and 30 (Codex) parts in several circuits, and the generated
+candidates still let a chain, the isolation band and a converter hold the same part. Candidate files move to
+schema 2: every member carries `owned`, decided by `circuit_candidates.claim_rank` (a circuit's anchor 0, a
+circuit member 1, a circuit's endpoint-type role such as the port's PD controller 2, a chain member 3, the
+isolation band 4, a chain's anchor or endpoint 5); the strongest single claimant owns the part and the others
+only refer to it, and a tie is owned by nobody and listed in `shared` (the old shared list built in adjudicate
+is removed). `circuit_decisions.derive` recomputes ownership among the circuits the decisions keep, so a part a
+rejected or duplicate candidate gave up goes to the next claimant; a new `own` decision (ref, candidate, located
+citation) settles a tie and nothing else; derived circuits carry `owned` beside `refs`, validate compares it,
+and a candidate file whose flags differ from the rule, that gives a part two owners, or that has no ownership
+(schema 1) is refused. The old rule that a part held by two circuits needs one of them cross-cutting is dropped
+(a reference is now explicit), the limit of two holders stays. R5 bench (four controller roles simulated as
+verified): 12 candidates hold 117 parts, every one with exactly one owner, no ties, 8 unassigned; circuits own
+105, the four chains 12. The replay bench moves to contract `circuit-owners-v1`: the rf1 frames case takes a
+regenerated schema-2 candidate file (same candidates, members and paths) and its intent with `owned`; the
+output connector, tied between two converters before, is owned by its own candidate and handed to PRI-FLYBACK
+when that candidate is judged a duplicate; answers unchanged (195/195). Tests first (OwnershipTests in both
+test files, 9 new), 1785 tests pass, mutations M73–M79 added and killed, M57 retargeted to the new shared list.
+
+- Event: user:2026-10-21 (按设计稿实施第 1 步：器件归属唯一；七步逐步做，每做完一步提交一次), review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (circuits), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (circuits)
+- Causes: rule_missing 2
+- Changed: scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/tests/test_circuit_candidates.py, scripts/tests/test_circuit_decisions.py, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/circuit-owners-v1/, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.circuit-owners-v1.candidates.json, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.circuit-owners-v1.intent.json, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, SKILL.md, references/plan-and-results.md, references/automation.md, docs/2026-10-21-function-tree-design.md, docs/improvement-ledger.md
+
 ## Plain words for SR's coined terms (2026-10-21)
 
 The user found "义务" (obligation) hard to read when the strict comparison

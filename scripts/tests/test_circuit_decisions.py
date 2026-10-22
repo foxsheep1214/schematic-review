@@ -2,7 +2,8 @@
 
 Every candidate gets exactly one decision; merge and split keep every member accounted for; an added circuit
 takes only parts no candidate holds and names the net each part sits on; an extra working state cites a
-located clause; a part belongs to at most two circuits and then one of them is cross-cutting. The planner
+located clause; a part belongs to at most two circuits; every part a circuit
+holds is owned by exactly one circuit, and a part two candidates claim equally is owned through an `own` decision. The planner
 takes the derived circuits, so a frame's objects are the candidate's members by construction.
 """
 import copy
@@ -145,11 +146,116 @@ class DeriveTests(unittest.TestCase):
         _, errors = cd.derive(self.candidates, decisions)
         self.assertTrue(any('burst' in e for e in errors), errors)
 
-    def test_a_part_in_two_circuit_candidates_is_refused_in_three_too(self):
+    def test_a_part_two_circuits_claim_equally_needs_an_owner_and_three_circuits_are_refused(self):
         add = {'decision': 'add', 'id': 'X', 'type': 'ANALOG', 'members': ['R99'], 'via': {'R99': 'V5'}, 'citation': 'p1'}
         twice = [dict(add), dict(add, id='Y')]
         _, errors = cd.derive(self.candidates, accept_all(self.candidates) + twice)
-        self.assertTrue(any('R99' in e and 'two circuits' in e for e in errors), errors)
+        self.assertTrue(any('R99' in e and 'claimed equally' in e for e in errors), errors)
+        _, errors = cd.derive(self.candidates, accept_all(self.candidates) + twice + [dict(add, id='Z')])
+        self.assertTrue(any('R99' in e and 'at most two' in e for e in errors), errors)
+
+
+
+def owned_by(circuits):
+    out = {}
+    for circuit in circuits:
+        for ref in circuit['owned']:
+            out.setdefault(ref, []).append(circuit['id'])
+    return out
+
+
+def shared_board():
+    db = fx.board()
+    fx.fixture.add(db, 'U8', 'OPAMP', [('1', 'VDD', 'V5'), ('2', 'GND', 'SGND'), ('3', 'IN', 'SHARED_IN'), ('4', 'OUT', 'OPA_OUT')])
+    fx.fixture.add(db, 'R20', '1K', [('1', '1', 'SHARED_IN'), ('2', '2', 'ISNS_P')])
+    intent, audit = fx.intent_for(db, kinds=dict(fx.KINDS, U8='opamp_comparator'))
+    return cc.build(db, intent, audit)
+
+
+OWN_R20 = {'decision': 'own', 'ref': 'R20', 'candidate': 'ANALOG-U5',
+           'citation': 'schematic p4 06_Sense: R20 sets the U5 sense gain'}
+
+
+class OwnershipTests(unittest.TestCase):
+    """A derived circuit lists what it owns (`owned`) beside every part it holds (`refs`); each held part has one owner."""
+
+    def setUp(self):
+        self.db, self.intent, self.audit, self.candidates = setup()
+
+    def test_accepted_circuits_own_what_their_candidates_own(self):
+        circuits, errors = cd.derive(self.candidates, accept_all(self.candidates))
+        self.assertEqual(errors, [])
+        owners = owned_by(circuits)
+        self.assertEqual({ref: v for ref, v in owners.items() if len(v) != 1}, {})
+        self.assertEqual(sorted({ref for c in circuits for ref in c['refs']}), sorted(owners))
+        band = next(c for c in circuits if c['id'] == 'ISOLATION-PRI/SEC')
+        self.assertEqual(band['owned'], ['CY1'])
+        self.assertIn('T1', band['refs'])                       # held for the band's own judgement, owned by the converter
+        self.assertEqual(owners['T1'], ['POWER_CONVERTER-U1'])
+
+    def test_a_shared_part_is_owned_through_an_own_decision_with_a_located_citation(self):
+        candidates = shared_board()
+        _, errors = cd.derive(candidates, accept_all(candidates))
+        self.assertTrue(any('R20' in e and 'own' in e for e in errors), errors)
+        circuits, errors = cd.derive(candidates, accept_all(candidates) + [OWN_R20])
+        self.assertEqual(errors, [])
+        self.assertEqual(owned_by(circuits)['R20'], ['ANALOG-U5'])
+        self.assertIn('R20', next(c for c in circuits if c['id'] == 'ANALOG-U8')['refs'])
+        for bad, word in ((dict(OWN_R20, citation='it is closer'), 'citation'),
+                          (dict(OWN_R20, candidate='USB-J2'), 'USB-J2'),
+                          (dict(OWN_R20, ref='R14'), 'R14')):
+            _, errors = cd.derive(candidates, accept_all(candidates) + [bad])
+            self.assertTrue(any(word in e for e in errors), (bad, errors))
+        _, errors = cd.derive(candidates, accept_all(candidates) + [OWN_R20, dict(OWN_R20, candidate='ANALOG-U8')])
+        self.assertTrue(any('R20' in e and 'two' in e for e in errors), errors)
+
+    def test_merge_and_split_keep_one_owner_per_part(self):
+        merge = {'candidate': ['ANALOG-U4', 'ANALOG-U5'], 'decision': 'merge', 'id': 'SENSE',
+                 'citation': 'schematic p4 06_Sense: one current and voltage sense function'}
+        decisions = [d for d in accept_all(self.candidates) if d['candidate'] not in ('ANALOG-U4', 'ANALOG-U5')] + [merge]
+        circuits, errors = cd.derive(self.candidates, decisions)
+        self.assertEqual(errors, [])
+        self.assertEqual(next(c for c in circuits if c['id'] == 'SENSE')['owned'], ['R14', 'R15', 'R5', 'R6', 'U4', 'U5'])
+        split = {'candidate': 'POWER_CONVERTER-U7', 'decision': 'split', 'citation': 'U7 datasheet p12 Figure 9',
+                 'into': [{'id': 'BUCK-POWER', 'members': ['U7', 'L2', 'C10']}, {'id': 'BUCK-FB', 'members': ['R11', 'R12']}]}
+        circuits, errors = cd.derive(self.candidates, accept_all(self.candidates, **{'POWER_CONVERTER-U7': split}))
+        self.assertEqual(errors, [])
+        parts = {c['id']: c['owned'] for c in circuits if c['id'].startswith('BUCK-')}
+        self.assertEqual(parts, {'BUCK-POWER': ['C10', 'L2', 'U7'], 'BUCK-FB': ['R11', 'R12']})
+
+    def test_a_duplicate_hands_what_it_owns_to_the_circuit_it_duplicates(self):
+        candidates = copy.deepcopy(self.candidates)
+        converter = next(c for c in candidates['candidates'] if c['id'] == 'POWER_CONVERTER-U1')
+        next(m for m in converter['members'] if m['ref'] == 'R1')['owned'] = False
+        candidates['candidates'].append({'id': 'ANALOG-R1', 'type': 'ANALOG', 'anchor': 'R1', 'domain': 'PRI',
+                                         'cross_cutting': False, 'nets': {}, 'states': ['run', 'fault'], 'pages': [],
+                                         'members': [{'ref': 'R1', 'role': 'resistor', 'via': 'synthetic', 'owned': True}]})
+        duplicate = {'candidate': 'ANALOG-R1', 'decision': 'reject', 'reason': 'DUPLICATE_OF', 'of': 'POWER_CONVERTER-U1',
+                     'citation': 'schematic p2: R1 is the converter current sense'}
+        circuits, errors = cd.derive(candidates, accept_all(candidates, **{'ANALOG-R1': duplicate}))
+        self.assertEqual(errors, [])
+        self.assertEqual(owned_by(circuits)['R1'], ['POWER_CONVERTER-U1'])
+
+    def test_a_candidate_file_with_two_owners_or_no_ownership_is_refused(self):
+        candidates = copy.deepcopy(self.candidates)
+        band = next(c for c in candidates['candidates'] if c['id'] == 'ISOLATION-PRI/SEC')
+        next(m for m in band['members'] if m['ref'] == 'T1')['owned'] = True
+        _, errors = cd.derive(candidates, accept_all(candidates))
+        self.assertTrue(any('T1' in e and 'owned by two' in e for e in errors), errors)
+        old = copy.deepcopy(self.candidates)
+        for cand in old['candidates']:
+            for m in cand['members']:
+                m.pop('owned')
+        old['schema_version'] = 1
+        self.assertTrue(any('schema_version 2' in e for e in cd.validate(cd.write_circuits(
+            dict(self.intent, circuit_decisions=accept_all(old)), old), old, self.db)))
+
+    def test_hand_written_ownership_that_differs_from_the_decisions_is_refused(self):
+        intent = cd.write_circuits(dict(self.intent, circuit_decisions=accept_all(self.candidates)), self.candidates)
+        band = next(c for c in intent['circuits'] if c['id'] == 'ISOLATION-PRI/SEC')
+        band['owned'] = ['CY1', 'T1']
+        errors = cd.validate(intent, self.candidates, self.db)
+        self.assertTrue(any('ISOLATION-PRI/SEC' in e and 'owned' in e for e in errors), errors)
 
 
 class IntentTests(unittest.TestCase):

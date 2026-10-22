@@ -102,7 +102,12 @@
   - `split`：`into: [{id, members}]`，每部分成员是该候选成员的子集，所有成员都要有去处，`citation` 可定位。
   - `reject`：`reason` 为 OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF（后者带 `of: <已推出的电路>`，成员须都在它里面），`citation` 可定位；被拒候选的成员进 REQ-Q08 复核。
   - `add`：生成器没找到的功能，`id`、`type`（规则总表的包名）、`members` 只能收 `unassigned` 中的器件、`via` 为每颗写它所在的网，`citation` 可定位。
-  推出的电路带 `id`、`type`、`refs`、`nets`、`states`、`citation`、`candidate_ids`、`cross_cutting`、`anchors`；一颗非核心器件最多属于两个电路，属于两个时其中一个是跨电路的。
+  - `own`：`ref`、`candidate`、`citation`（可定位）：同一级认领打平的器件归 `candidate` 所在的电路。只裁定打平，不改已有的归属；每颗至多一条。
+  推出的电路带 `id`、`type`、`refs`、`owned`、`nets`、`states`、`citation`、`candidate_ids`、`cross_cutting`、`anchors`。
+  `refs` 是电路持有的全部器件，`owned` 是其中归它所有的：每颗被持有的器件恰好在一块电路的 `owned` 里，其余持有它的电路只引用它
+  （可在条件与计算里引用，第 2 步起不为它生成行）。归属在决定后保留的电路之间按认领强弱判定：电路的核心器件 > 电路成员 >
+  电路里的端点类角色（端口的 PD 控制器）> 链路成员（启动链、保护链）> 隔离带 > 链路的核心器件与端点；被拒或判为重复的候选让出的器件
+  由下一个认领者拥有，打平的要 own 决定。一颗非核心器件最多被两块电路持有。
   审查员认为候选漏了器件，不往电路里手加：那是规则或网表的缺口，记在 REQ-Q08（候选生成没有归属的器件逐颗列出）并改规则。
 
 ## 二、review-plan.json（schema_version 5）
