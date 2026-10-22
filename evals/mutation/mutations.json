@@ -577,7 +577,7 @@
   "id": "M83",
   "name": "a written owner the owner table does not give is accepted",
   "file": "scripts/row_owner.py",
-  "old": "        if isinstance(check, dict) and 'owner' in check and check['owner'] != owner(check, parts):",
+  "old": "        if isinstance(check, dict) and 'owner' in check and check['owner'] != owner(check, parts, nets):",
   "new": "        if False:"
  },
  {
@@ -628,5 +628,54 @@
   "file": "scripts/interfaces.py",
   "old": "            if role is None:\n                self.gaps.append",
   "new": "            if False:\n                self.gaps.append"
+ },
+ {
+  "id": "M91",
+  "name": "SIG-C08 asked on every interface net, not only where supplies differ",
+  "file": "scripts/plan_review.py",
+  "old": "                    if entry['cross_supply']:",
+  "new": "                    if True:"
+ },
+ {
+  "id": "M92",
+  "name": "a connector is not asked its current",
+  "file": "scripts/plan_review.py",
+  "old": "            self._ready_check('DEV-C04', dict(port), self._materials_gap(INTERFACE_MATERIALS['DEV-C04']), connector_trigger)\n",
+  "new": ""
+ },
+ {
+  "id": "M93",
+  "name": "every rail is asked its noise, sensitive load or not",
+  "file": "scripts/plan_review.py",
+  "old": "                loads = [o for o in item.get('loads', []) if circuit_types.get(o) in catalog.NOISE_SENSITIVE_TYPES]",
+  "new": "                loads = list(item.get('loads', []))"
+ },
+ {
+  "id": "M94",
+  "name": "an interface row belongs to the board",
+  "file": "scripts/row_owner.py",
+  "old": "    if obj.get('interface'):\n        return {'kind': 'INTERFACE', 'id': obj['interface']}",
+  "new": ""
+ },
+ {
+  "id": "M95",
+  "name": "a rail gets an interface frame",
+  "file": "scripts/plan_review.py",
+  "old": "                    row['question'] = catalog.interface_question('PWR-C14', iid, nets, loads=loads)\n                continue",
+  "new": "                    row['question'] = catalog.interface_question('PWR-C14', iid, nets, loads=loads)"
+ },
+ {
+  "id": "M96",
+  "name": "a scan row of an interface rule on an interface net stays with the board",
+  "file": "scripts/row_owner.py",
+  "old": "    if check.get('rule') in catalog.INTERFACE_RULES and nets:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M97",
+  "name": "a net on a connector goes to a circuit pair before the connector",
+  "file": "scripts/row_owner.py",
+  "old": "INTERFACE_ORDER = ('EXTERNAL', 'LINK', 'CIRCUIT_PAIR', 'SUPPLY')",
+  "new": "INTERFACE_ORDER = ('CIRCUIT_PAIR', 'LINK', 'EXTERNAL', 'SUPPLY')"
  }
 ]

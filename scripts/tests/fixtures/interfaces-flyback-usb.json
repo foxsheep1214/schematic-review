@@ -22,6 +22,7 @@
    "kind": "EXTERNAL",
    "nets": [
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -43,6 +44,7 @@
      "net": "AC_L"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -81,6 +83,7 @@
    "kind": "EXTERNAL",
    "nets": [
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -102,6 +105,7 @@
      "net": "CC1"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -123,6 +127,7 @@
      "net": "DN"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -144,6 +149,7 @@
      "net": "DP"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -157,6 +163,7 @@
      "net": "SGND"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -204,6 +211,7 @@
    "kind": "CIRCUIT_PAIR",
    "nets": [
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -243,6 +251,7 @@
    "kind": "CIRCUIT_PAIR",
    "nets": [
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -264,6 +273,7 @@
      "net": "CC1"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -285,6 +295,7 @@
      "net": "FLT_DRV"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -306,6 +317,7 @@
      "net": "PORT_G"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -364,6 +376,7 @@
    "kind": "LINK",
    "nets": [
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -395,6 +408,7 @@
      "net": "FLT"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -432,6 +446,7 @@
    "kind": "LINK",
    "nets": [
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -455,6 +470,7 @@
      "net": "HV_IN"
     },
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -505,8 +521,13 @@
    "basis": "declared",
    "id": "RAIL-RECT",
    "kind": "SUPPLY",
+   "loads": [
+    "POWER_CONVERTER-U1",
+    "STARTUP-U1.HV"
+   ],
    "nets": [
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -555,8 +576,13 @@
    "basis": "driver",
    "id": "RAIL-V5",
    "kind": "SUPPLY",
+   "loads": [
+    "DEBUG-BOARD",
+    "USB-J2"
+   ],
    "nets": [
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",
@@ -605,8 +631,15 @@
    "basis": "declared",
    "id": "RAIL-VOUT",
    "kind": "SUPPLY",
+   "loads": [
+    "ANALOG-U4",
+    "ANALOG-U5",
+    "POWER_CONVERTER-U7",
+    "USB-J2"
+   ],
    "nets": [
     {
+     "cross_supply": false,
      "endpoints": [
       {
        "basis": "part-kind",

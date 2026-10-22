@@ -11,7 +11,10 @@ them. Four kinds:
   power tree finds a source for or one intent.power_rails declares that behaves as a supply (a name alone is not).
   The source is the power tree's when its pin sits on the rail itself and its library type is not an input, else the one owner of the rectifiers (a diode's cathode, a bridge's + pin) on the
   rail; a rail with none is a gap;
-- EXTERNAL `EXT-<connector>`: every pin of a fitted connector.
+- EXTERNAL `EXT-<connector>`: every pin of a fitted connector (a J/P/CN designator or a part classified as one).
+
+A supply interface lists its `loads` (the owners other than the source). An interface net is `cross_supply` when its
+IC endpoints draw from different rails or sit on different reference domains; SIG-C08 is asked only there.
 
 Circuits are named in ids by their candidate ids (`circuit_key`), so renaming a circuit keeps its interfaces; the
 display names are in `owners`. Every endpoint is `{owner, pin, role, basis, domain, supply}`: the role comes from the
@@ -26,6 +29,7 @@ import row_owner
 from checkers import domains as domains_lib, netgraph as ng, powertree
 
 SCHEMA_VERSION = 1
+CONNECTOR_RE = re.compile(r'^(J|P|CN)\d', re.I)
 DRIVER, RECEIVER, BIDIRECTIONAL, PASSIVE = 'DRIVER', 'RECEIVER', 'BIDIRECTIONAL', 'PASSIVE'
 NATIVE_ROLES = {'output': DRIVER, 'open_collector': DRIVER, 'open_emitter': DRIVER, 'tri_state': DRIVER,
                 'power_out': DRIVER, 'input': RECEIVER, 'power_in': RECEIVER, 'bidirectional': BIDIRECTIONAL}
@@ -125,6 +129,14 @@ class Deriver:
                         'domain': self.reference(ref, net), 'supply': self.supply(ref)})
         return out
 
+    def is_connector(self, ref):
+        return CONNECTOR_RE.match(ref) is not None or self.graph.kind(ref) == ng.CONNECTOR
+
+    def cross_supply(self, endpoints):
+        ics = [e for e in endpoints if self.graph.kind(e['pin'].partition('.')[0]) == ng.IC]
+        return (len({tuple(e['supply']) for e in ics if e['supply']}) > 1
+                or len({e['domain'] for e in ics if e['domain']}) > 1)
+
     def owners_on(self, net):
         return {self.owner_of[ref] for ref in self.graph.refs_on(net) if ref in self.owner_of}
 
@@ -138,7 +150,8 @@ class Deriver:
             item = found.setdefault(iid, dict({'id': iid, 'kind': kind, 'owners': [], 'nets': []}, **extra))
             item['owners'] = sorted(set(item['owners']) | set(owners))
             if net is not None and net not in {n['net'] for n in item['nets']}:
-                item['nets'].append({'net': net, 'endpoints': self.endpoints(net, iid)})
+                ends = self.endpoints(net, iid)
+                item['nets'].append({'net': net, 'endpoints': ends, 'cross_supply': self.cross_supply(ends)})
 
         links = {cid for cid, c in self.circuits.items() if c.get('cross_cutting')}
         for cid in sorted(links):
@@ -155,7 +168,8 @@ class Deriver:
                 source = self.source(net)
                 if source is None:
                     self.gaps.append({'interface': 'RAIL-' + net, 'pin': None, 'reason': 'source'})
-                add('RAIL-' + net, 'SUPPLY', owners, net, basis=basis, source=source)
+                add('RAIL-' + net, 'SUPPLY', owners, net, basis=basis, source=source,
+                    loads=sorted(owners - {source}))
             touched = owners & links
             for cid in sorted(touched):
                 add('LINK-' + self.key[cid], 'LINK', owners, net)
@@ -166,7 +180,7 @@ class Deriver:
                 for b in ordinary[i + 1:]:
                     add('IF-%s~%s' % (self.key[a], self.key[b]), 'CIRCUIT_PAIR', [a, b], net)
         for ref in sorted(self.graph.parts):
-            if not self.graph.is_fitted(ref) or self.graph.kind(ref) != ng.CONNECTOR:
+            if not self.graph.is_fitted(ref) or not self.is_connector(ref):
                 continue
             iid = 'EXT-' + ref
             owner = self.owner_of.get(ref)
@@ -175,10 +189,12 @@ class Deriver:
                 if net in self.graph.pseudo or net in {n['net'] for n in found[iid]['nets']}:
                     continue
                 if net in self.grounds:   # the pinout names the return, the ground net itself is the system's
-                    found[iid]['nets'].append({'net': net, 'endpoints': self.endpoints(net, iid, only=ref)})
+                    found[iid]['nets'].append({'net': net, 'endpoints': self.endpoints(net, iid, only=ref),
+                                               'cross_supply': False})
                 else:
                     found[iid]['owners'] = sorted(set(found[iid]['owners']) | self.owners_on(net))
-                    found[iid]['nets'].append({'net': net, 'endpoints': self.endpoints(net, iid)})
+                    ends = self.endpoints(net, iid)
+                    found[iid]['nets'].append({'net': net, 'endpoints': ends, 'cross_supply': self.cross_supply(ends)})
         items = sorted(found.values(), key=lambda i: i['id'])
         for item in items:
             item['nets'].sort(key=lambda n: n['net'])

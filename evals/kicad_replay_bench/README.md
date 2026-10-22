@@ -16,7 +16,9 @@ Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的网表扫描检
 `--contract legacy` 用于重放历史约定，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认约定是 `circuit-owners-v1`（`revisions/circuit-owners-v1/`，2026-10-21）：候选文件升到 schema 2，每个成员带 `owned`，每颗被持有的器件恰好归一块电路，intent.circuits 新增 `owned`；rf1-c2000-float-flyback-frames 换用重新生成的候选与 intent 夹具（候选、成员与路径不变，输出连接器由其被判为重复的候选让给 PRI-FLYBACK），答案不变。
+当前默认约定是 `interface-rows-v1`（`revisions/interface-rows-v1/`，2026-10-22）：连接器的对端定义、载流、对外防护三行改挂对外接口 `EXT-<连接器>`，DEV-C04 由全板一行改为每个连接器一行，每个连接器一个接口框架（3 个成员）；各用例检查数的变化逐例等于连接器数减 1（没识别出连接器的 r04 两例减 1），其余答案不变；用例里没有两块以上电路，电路对、链路与供电接口的行不出现。
+
+此前的默认约定是 `circuit-owners-v1`（`revisions/circuit-owners-v1/`，2026-10-21）：候选文件升到 schema 2，每个成员带 `owned`，每颗被持有的器件恰好归一块电路，intent.circuits 新增 `owned`；rf1-c2000-float-flyback-frames 换用重新生成的候选与 intent 夹具（候选、成员与路径不变，输出连接器由其被判为重复的候选让给 PRI-FLYBACK），答案不变。
 
 此前的默认约定是 `circuit-candidates-v1`（`revisions/circuit-candidates-v1/`，2026-10-21）：intent 的电路由 `circuit_candidates.py` 生成的候选文件与 `intent.circuit_decisions` 推出，lint 对声明电路的 intent 必须带 `--candidates`（用例新增 `candidates` 字段），手画电路列表被拒绝；只有 rf1-c2000-float-flyback-frames 受影响：生成器在没有已核实 IC 类别的夹具上给出 5 个候选，4 条决定（Q1+Q2 合并为 PRI-FLYBACK、Out1 走线为其重复、Q3/Q4 不是电路）推出 1 个三态电路，检查数 325→313（298 + 5 条规则 × 3 态），FN-PRI-FLYBACK 成员 10→15；其余答案不变。
 

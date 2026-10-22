@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Which circuit, system function or the board each plan row belongs to (function-tree design §3.1, step 2).
+"""Which circuit, interface, system function or the board each plan row belongs to (function-tree design §3.1).
 
-A row about a circuit belongs to that circuit. A row of a system rule (catalog.SYSTEM_FUNCTIONS) belongs to that system
-function. A row about parts belongs to the circuit that owns them (circuit_decisions writes `owned`; a hand-drawn
+A row about a circuit belongs to that circuit, a row about an interface to that interface. A row of a system rule
+(catalog.SYSTEM_FUNCTIONS) belongs to that system function. A row of an interface rule (catalog.INTERFACE_RULES)
+whose nets all lie on one interface belongs to it; a net on a connector belongs to the connector's interface first,
+then a chain's, a circuit pair's and a rail's. A row about parts belongs to the circuit that owns them (circuit_decisions writes `owned`; a hand-drawn
 circuit owns the parts no other circuit lists). Everything else belongs to the board. The planner writes `owner` on
 each row, the `owners` table (each circuit's parts) and the row counts in the summary; the validator recomputes the
 owner from the table and refuses a row whose written owner differs. A row the reviewer adds later needs none.
@@ -11,7 +13,8 @@ from collections import Counter
 
 import catalog
 
-KINDS = ('SYSTEM', 'CIRCUIT', 'BOARD')
+KINDS = ('SYSTEM', 'CIRCUIT', 'INTERFACE', 'BOARD')
+INTERFACE_ORDER = ('EXTERNAL', 'LINK', 'CIRCUIT_PAIR', 'SUPPLY')
 
 
 def part_owners(circuits):
@@ -24,13 +27,31 @@ def part_owners(circuits):
     return {ref: cid for ref, cid in claims if count[ref] == 1}
 
 
-def owner(check, parts):
+def interface_nets(section):
+    """{net: interface id} from the plan's interfaces section, a connector's interface first."""
+    out = {}
+    items = sorted((section or {}).get('interfaces') or [],
+                   key=lambda i: (INTERFACE_ORDER.index(i['kind']) if i.get('kind') in INTERFACE_ORDER else 9, i['id']))
+    for item in items:
+        for entry in item.get('nets') or []:
+            out.setdefault(entry['net'], item['id'])
+    return out
+
+
+def owner(check, parts, nets=None):
     obj = check.get('object') if isinstance(check.get('object'), dict) else {}
     if obj.get('circuit'):
         return {'kind': 'CIRCUIT', 'id': obj['circuit']}
+    if obj.get('interface'):
+        return {'kind': 'INTERFACE', 'id': obj['interface']}
     system = catalog.SYSTEM_OF_RULE.get(check.get('rule'))
     if system:
         return {'kind': 'SYSTEM', 'id': system}
+    row_nets = obj.get('nets') if isinstance(obj.get('nets'), list) and obj.get('nets') else [obj.get('net')]
+    if check.get('rule') in catalog.INTERFACE_RULES and nets:
+        held = {nets.get(n) for n in row_nets}
+        if len(held) == 1 and None not in held:
+            return {'kind': 'INTERFACE', 'id': held.pop()}
     refs = obj.get('refs') if isinstance(obj.get('refs'), list) and obj.get('refs') else [obj.get('ref')]
     held = {parts.get(ref) for ref in refs}
     if len(held) == 1 and None not in held:
@@ -61,9 +82,10 @@ def errors(plan):
     if plan.get('owners') is None:
         return []
     parts = {ref: e['id'] for e in plan['owners'] if e.get('kind') == 'CIRCUIT' for ref in e.get('parts', [])}
+    nets = interface_nets(plan.get('interfaces'))
     out = []
     for check in plan.get('checks') or []:
-        if isinstance(check, dict) and 'owner' in check and check['owner'] != owner(check, parts):
-            out.append(f"{check.get('id')}: owner {check['owner']} is not {owner(check, parts)} "
-                       f"(from the row object, its rule and the parts each circuit owns)")
+        if isinstance(check, dict) and 'owner' in check and check['owner'] != owner(check, parts, nets):
+            out.append(f"{check.get('id')}: owner {check['owner']} is not {owner(check, parts, nets)} "
+                       f"(from the row object, its rule, the parts each circuit owns and the interface nets)")
     return out

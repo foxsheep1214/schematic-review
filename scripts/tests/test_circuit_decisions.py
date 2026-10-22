@@ -289,7 +289,7 @@ class IntentTests(unittest.TestCase):
     def test_the_plan_frames_each_derived_circuit_on_the_candidate_members(self):
         intent = cd.write_circuits(self.intent, self.candidates)
         plan = build_review_plan(self.db, intent, datasheet_audit=self.audit, candidates=self.candidates)
-        frames = {f['circuit']: f for f in plan['functions']}
+        frames = {f['circuit']: f for f in plan['functions'] if f.get('circuit')}
         cand = next(c for c in self.candidates['candidates'] if c['id'] == 'POWER_CONVERTER-U1')
         self.assertEqual(frames['POWER_CONVERTER-U1']['objects']['refs'], sorted(m['ref'] for m in cand['members']))
         self.assertEqual(plan['circuit_candidates']['unassigned'], ['R99'])

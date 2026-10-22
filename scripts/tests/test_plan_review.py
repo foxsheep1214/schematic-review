@@ -636,6 +636,11 @@ class ReviewPlanTests(unittest.TestCase):
                               if x['rule'] == 'DOC-T01')['required_inputs'], ['intent.assemblies'])
 
 
+def circuit_frames(plan):
+    """The plan's circuit frames; interface frames (function tree, step 4) carry `interface` instead."""
+    return [f for f in plan['functions'] if f.get('circuit')]
+
+
 class FunctionFrameTests(unittest.TestCase):
     """计划 schema 5：每个 intent 电路一个功能框架，检查行带问题、function_id 和方面。"""
 
@@ -649,8 +654,8 @@ class FunctionFrameTests(unittest.TestCase):
                                               'citation': 'synthetic rail'}}}
         plan = build_review_plan(sample_db(), intent)
         self.assertEqual(plan['schema_version'], 5)
-        self.assertEqual([f['id'] for f in plan['functions']], ['FN-REG-3V3'])
-        frame = plan['functions'][0]
+        self.assertEqual([f['id'] for f in circuit_frames(plan)], ['FN-REG-3V3'])
+        frame = circuit_frames(plan)[0]
         rules = catalog.circuit_type('POWER_CONVERTER').subjects
         members = [c for c in plan['checks'] if c['object'].get('circuit') == 'REG-3V3']
         self.assertEqual(len(members), 2 * len(rules))
@@ -683,7 +688,7 @@ class FunctionFrameTests(unittest.TestCase):
         self.assertEqual([c['id'] for c in once], ['PWR-T05.IN-PROT.D1'])
         self.assertNotIn('state', once[0]['object'])
         self.assertEqual(once[0]['question'], 'IN-PROT（D1、Q1）防反接电路的导通方向、体二极管朝向与栅极钳位是否正确')
-        frame = plan['functions'][0]
+        frame = circuit_frames(plan)[0]
         self.assertEqual(frame['states'], ['run', 'surge'])
         self.assertEqual([m['state'] for m in frame['members'] if m['rule'] == 'PWR-T05'], [None])
         self.assertEqual(len(frame['members']), len(members))
@@ -695,8 +700,10 @@ class FunctionFrameTests(unittest.TestCase):
         plan = build_review_plan(sample_db(), {'schema_version': 3, 'circuits': [self.circuit(nets=())]})
         row = next(c for c in plan['checks'] if c['rule'] == 'PWR-C02' and c['object'].get('circuit'))
         self.assertIn(catalog.NO_WINDOW, row['question'])
-        self.assertIn(catalog.NO_WINDOW, plan['functions'][0]['question'])
-        self.assertEqual(build_review_plan(sample_db())['functions'], [])
+        self.assertIn(catalog.NO_WINDOW, circuit_frames(plan)[0]['question'])
+        bare = build_review_plan(sample_db())
+        self.assertEqual(circuit_frames(bare), [])
+        self.assertTrue(all(f['interface_kind'] == 'EXTERNAL' for f in bare['functions']))   # a connector's frame only
 
 
 if __name__ == '__main__':

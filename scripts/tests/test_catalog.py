@@ -21,6 +21,7 @@ SOURCE_FILES = {
     'lint': ['lint.py', 'board_scans.py'],
     'plan': ['plan_review.py', 'catalog.py'],
     'revision': ['revision_impact.py', 'diff_netlists.py', 'plan_review.py'],
+    'interface': ['plan_review.py', 'catalog.py'],
 }
 GENERIC_SOURCES = {'subject', 'board'}
 
@@ -52,6 +53,8 @@ class CatalogTest(unittest.TestCase):
                     self.assertEqual(rule.scope, 'board')
                 if rule.source == 'subject':
                     self.assertIn(rule.scope, ('circuit', 'link'))
+                if rule.source == 'interface':
+                    self.assertEqual(rule.scope, 'interface')
         self.assertTrue(set(BOARD_MATERIALS) <= {r.id for r in catalog.rules()
                                                   if r.scope == 'board' and r.id[4] != 'Q'})
 
@@ -249,6 +252,12 @@ class QuestionTemplateTest(unittest.TestCase):
             with self.subTest(name):
                 self.assertIsNone(catalog.QUESTION_BAN_RE.search(body), body)
         self.assertIn(catalog.NO_WINDOW, catalog.question('PWR-C02', 'RUN', 'BIAS', ['Q2']))
+        interface_rules = {r for rules in list(catalog.INTERFACE_SUBJECTS.values()) + list(catalog.INTERFACE_NET_SUBJECTS.values())
+                           for r in rules}
+        self.assertEqual(interface_rules, set(catalog.INTERFACE_QUESTIONS))
+        self.assertLessEqual(interface_rules, catalog.INTERFACE_RULES)
+        for body in list(catalog.INTERFACE_QUESTIONS.values()) + list(catalog.INTERFACE_FRAME_QUESTIONS.values()):
+            self.assertIsNone(catalog.QUESTION_BAN_RE.search(body), body)
         self.assertIsNone(catalog.question('DOC-V01', 'RUN', 'BIAS', ['Q2']))
 
     def test_bounding_steps_are_copied_from_the_reference(self):

@@ -369,7 +369,14 @@ F12 计划带 `clamp_refs` 的连接器行（PRO-D03）必须绑定功能：钳�
 同一对之间的网络合成一个接口；地网不是接口网络。四种：电路对 `IF-<A>~<B>`、链路 `LINK-<跨电路候选>`（带它自有的器件 `parts`）、
 供电 `RAIL-<轨>`（带 `source` 与 `basis`）、对外 `EXT-<连接器>`（连接器全部脚）。编号用电路的候选编号，改电路名不改接口。
 每个端点 `{owner, pin, role, basis, domain, supply}`：角色 DRIVER / RECEIVER / BIDIRECTIONAL / PASSIVE 按库引脚类型、器件类别、电源树和引脚名推，
-推不出的进 `gaps`（`reason: role`），轨推不出源的也进 `gaps`（`reason: source`）。第 3 步只列接口，规则还没有按接口展开。
+推不出的进 `gaps`（`reason: role`），轨推不出源的也进 `gaps`（`reason: source`）。
+
+**接口检查项。** 计划按 `catalog.INTERFACE_SUBJECTS` 逐接口生成行，对象带 `interface`：电路对问 SIG-T04 方向语义与 SIG-C07 电平，
+链路问 SIG-C07（两端电平），两端 IC 供电轨或参考地分区不同的接口网络（`cross_supply`）另问 SIG-C08；连接器问 DEV-D03 对端定义、
+DEV-C04 载流、PRO-D03 对外防护（对象 `{interface: EXT-<连接器>, ref}`）；供电轨在敏感电路（ANALOG、CLOCK、RF）取电时问 PWR-C14
+（对象带 `loads`）。行的缺口取接口的角色缺口（`interface-role:<脚>`）、轨源缺口（`rail-source:<接口>`）和端点 IC 的资料。
+电路对、链路和连接器各一个接口框架（`functions[]` 里带 `interface`、`interface_kind`，没有 `circuit`），成员是该接口的行；
+供电接口只有行，不建框架。按声明的总线电路展开的同名规则仍问电路内部的链路。
 
 **文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（摘要数字、选型记录、图纸卫生）不是电路。
 文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）；选型理由的复判走

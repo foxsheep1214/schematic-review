@@ -7,6 +7,32 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function tree, step 4: interface rules are asked once per interface (2026-10-22)
+
+Step 4 of the function-tree design expands the interface rules over the plan's interfaces instead of leaving them
+to hand-written rows: the R5 plan rebuilt from one candidate set after step 3 had 1 SIG-T04 row and 2 PWR-C14
+rows, all tied to circuits, and no SIG-C07 or SIG-C08 row. `catalog` gains
+INTERFACE_SUBJECTS (a circuit pair: SIG-T04 and SIG-C07; a chain: SIG-C07; a connector: DEV-D03, DEV-C04, PRO-D03;
+a rail: PWR-C14), INTERFACE_NET_SUBJECTS (SIG-C08 on an interface net whose IC endpoints draw from different rails or
+sit on different references, `cross_supply` in interfaces.py), INTERFACE_RULES (design appendix A) and question
+templates; DEV-C04, DEV-D03, PRO-D03 and PWR-C14 move to source and scope `interface`. `plan_review.plan_interfaces`
+writes the rows with object `interface` (gaps from the interface's role and source gaps and its ICs' datasheets) and
+one frame per circuit pair, chain and connector (`interface`, `interface_kind`); a rail gets rows only. DEV-C04 is one
+row per connector instead of one board row, PWR-C14 one row per rail a noise-sensitive circuit draws from instead of
+one per ANALOG/CLOCK/RF circuit and state. row_owner gives interface rows to their interface and any other row of an
+interface rule whose nets lie on one interface to it (a connector's interface first). Bus circuits declared by hand
+still ask SIG-T04/C07/C08 inside themselves, and SIG-C09 stays with them, since nothing declares a timing requirement
+on an interface yet. R5 bench: 420 → 434 rows (+3.3 %), 21 interface rows, all 21 paired between the two intents,
+10 interface frames against acceptance 4's bound of 14, no cross-supply net. The replay bench moves to
+`interface-rows-v1`: every case's count changes by its connectors minus one (one DEV-C04 per connector, the board row
+gone), each connector a 3-member frame, other answers unchanged (195/195). Tests first (test_interface_rows, 7
+tests; catalog, plan-review and rule-gap tests updated to the new placement), 1812 tests pass, mutations M91–M97
+added and killed, M83 retargeted.
+
+- Event: user:2026-10-21 (迁移分 7 步逐步来做，每做完一步形成一份提交；第 4 步：接口规则迁移), review:SR-20261021-R5-claude-fd6a6dd/record/review-plan.json (interface rows), review:SR-20261021-R5-codex-fd6a6dd/record/review-plan.json (interface rows)
+- Causes: rule_missing 2
+- Changed: scripts/catalog.py, scripts/plan_review.py, scripts/interfaces.py, scripts/row_owner.py, scripts/tests/test_interface_rows.py, scripts/tests/test_interfaces.py, scripts/tests/fixtures/interfaces-flyback-usb.json, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_row_owner.py, scripts/tests/test_rule_gaps_from_reviews.py, references/check-catalog.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/interface-rows-v1/, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, SKILL.md, references/plan-and-results.md, references/automation.md, docs/2026-10-21-function-tree-design.md, docs/improvement-ledger.md
+
 ## Function tree, step 3: interfaces derived from ownership and the netlist (2026-10-21)
 
 Step 3 of the function-tree design lists the interfaces between owners so that step 4 can expand interface rules

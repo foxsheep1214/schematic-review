@@ -58,7 +58,7 @@ STRAP_RE = re.compile(
 I2C_RE = re.compile(r'(^|_)(I2C\w*|SCL\d*|SDA\d*)(_|$)', re.I)
 FB_NAMES = {'FB', 'ADJ', 'VFB', 'FBX', 'VSENSE', 'VOSNS', 'VOUT_SENSE'}
 DEVICE_RE = re.compile(r'^[UM]\d', re.I)
-CONNECTOR_RE = re.compile(r'^(J|P|CN)\d', re.I)
+CONNECTOR_RE = interfaces.CONNECTOR_RE
 # 保护门限脚与传感器只作发现线索：命中即生成计算项，不据名称判定门限或传感器类型。
 PROTECT_PIN_RE = re.compile(
     r'^(FAULT\w*|FLT\w*|OVP\w*|UVP\w*|OV|UV|OVLO|UVLO|OCP\w*|OTP\w*|ILIM\w*|PROT\w*|TRIP\w*)$', re.I)
@@ -78,10 +78,11 @@ GATE_CLAMP_NOTRIP = ('不误动作侧（栅源限幅，正常驱动中允许钳�
 BOARD_MATERIALS = {
     'DOC-D02': ('requirements',), 'DOC-V02': ('schematic_pdf',),
     'DEV-C01': ('datasheets', 'requirements'), 'DEV-C02': ('datasheets', 'requirements'),
-    'DEV-C03': ('requirements',), 'DEV-C04': ('datasheets', 'requirements'),
+    'DEV-C03': ('requirements',),
     'PWR-T06': ('datasheets', 'platform_checklist'),
     'SIG-D13': ('datasheets', 'platform_checklist'), 'REQ-D02': ('requirements',),
 }
+INTERFACE_MATERIALS = {'DEV-C04': ('datasheets', 'requirements')}
 
 
 # 网表扫描规则所需的 db 索引；规则名称与判据在 catalog 中。
@@ -328,6 +329,7 @@ class ReviewPlanner:
         analysis_db = board_intent.graph_db(db, self.kind_intent)
         self.inventories = {checker.id: checker.build(analysis_db, self.kind_intent) for checker in REGISTRY}
         self.domains = domains_lib.build_section(analysis_db, self.kind_intent)
+        self.interfaces = interfaces.derive(db, intent or {}, datasheet_audit)
         self.i2c_topology = self.inventories['i2c_topology']
         self.decoupling = self.inventories['decoupling']
         self.db_sha256 = db_fingerprint(db)
@@ -363,7 +365,7 @@ class ReviewPlanner:
         entry = catalog.get(rule)
         anchor = (obj.get('node') or obj.get('net') or obj.get('ref') or obj.get('feature')
                   or obj.get('circuit_type') or obj.get('assembly') or obj.get('page')
-                  or obj.get('board') or 'GLOBAL')
+                  or obj.get('interface') or obj.get('board') or 'GLOBAL')
         base = '.'.join([rule] + ([_slug(key)] if key else []) + [_slug(anchor)])
         check_id, suffix = base, 2
         while check_id in self._ids:
@@ -694,9 +696,11 @@ class ReviewPlanner:
                 required_inputs=[] if ready else ['connector drawing/opposite-side pinout'],
                 trigger=connector_trigger)
             gaps, audit_trigger = self._datasheet_readiness(ref, part)
-            self._ready_check('DEV-D03', {'ref': ref}, self._materials_gap(['requirements']), connector_trigger)
+            port = {'interface': 'EXT-' + ref, 'ref': ref}   # the connector's interface (function tree, step 4)
+            self._ready_check('DEV-D03', dict(port), self._materials_gap(['requirements']), connector_trigger)
+            self._ready_check('DEV-C04', dict(port), self._materials_gap(INTERFACE_MATERIALS['DEV-C04']), connector_trigger)
             self._disposition_check(ref, gaps, connector_trigger + audit_trigger)
-            self.add_check('PRO-D03', {'ref': ref}, trigger=connector_trigger)
+            self.add_check('PRO-D03', dict(port), trigger=connector_trigger)
 
         # 每条电源轨分别检查拓扑（连接追踪）和功耗预算（工程计算）。
         # 轨名不像电源（BULK、HVDC、PRI_AUX）但 intent.power_rails 已声明且确实供电的网同样是轨。
@@ -1119,6 +1123,55 @@ class ReviewPlanner:
         self.plan_concrete_checks()
         self.plan_checkers()
         self.plan_explicit_evidence()
+        self.plan_interfaces()
+
+    def plan_interfaces(self):
+        """接口检查项（功能树设计第 4 步）：电路对、链路逐接口问 catalog.INTERFACE_SUBJECTS，两端供电或参考地不同的
+        网络问 SIG-C08，敏感电路取电的轨问 PWR-C14；连接器的三行在连接器循环里生成。电路对、链路和连接器各建一个框架。"""
+        circuit_types = {c['id']: c.get('type') for c in self.intent.get('circuits', [])}
+        role_gaps = {}
+        for gap in self.interfaces['gaps']:
+            role_gaps.setdefault(gap['interface'], []).append(
+                f'interface-role:{gap["pin"]}' if gap['reason'] == 'role' else f'rail-source:{gap["interface"]}')
+        for item in self.interfaces['interfaces']:
+            iid, kind = item['id'], item['kind']
+            nets = [n['net'] for n in item['nets']]
+            parts = sorted({e['pin'].partition('.')[0] for n in item['nets'] for e in n['endpoints'] if e['owner']})
+            gaps = role_gaps.get(iid, []) + [
+                f'datasheet:{ref}' for ref in parts if self.db.get('parts', {}).get(ref) and powertree.IC_REF_RE.match(ref)
+                and not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
+            trigger = [f'interface:{iid}']
+            if kind == 'SUPPLY':
+                loads = [o for o in item.get('loads', []) if circuit_types.get(o) in catalog.NOISE_SENSITIVE_TYPES]
+                if loads:
+                    row = self._ready_check('PWR-C14', {'interface': iid, 'net': nets[0], 'loads': loads}, gaps, trigger)
+                    row['question'] = catalog.interface_question('PWR-C14', iid, nets, loads=loads)
+                continue
+            if kind != 'EXTERNAL' and not nets:
+                continue
+            for rule in catalog.INTERFACE_SUBJECTS.get(kind, ()) if kind != 'EXTERNAL' else ():
+                row = self._ready_check(rule, {'interface': iid, 'nets': nets}, gaps, trigger)
+                row['question'] = catalog.interface_question(rule, iid, nets, parts)
+            for rule in catalog.INTERFACE_NET_SUBJECTS.get(kind, ()):
+                for entry in item['nets']:
+                    if entry['cross_supply']:
+                        row = self._ready_check(rule, {'interface': iid, 'net': entry['net']}, gaps, trigger, key=iid)
+                        row['question'] = catalog.interface_question(rule, iid, [entry['net']])
+            members = [c for c in self.checks if (c.get('object') or {}).get('interface') == iid]
+            if not members:
+                continue
+            frame = {'id': 'FN-' + _slug(iid), 'interface': iid, 'interface_kind': kind,
+                     'question': catalog.interface_frame_question(kind, iid, item['owners'], nets, parts),
+                     'objects': {'refs': parts, 'nets': nets}, 'states': ['run'], 'members': [],
+                     'blind_spots': {}, 'checklist': list(catalog.BOUNDING_STEPS)}
+            for row in members:
+                if kind == 'EXTERNAL':
+                    row['question'] = catalog.interface_question(row['rule'], iid, nets, [row['object']['ref']])
+                row['function_id'] = frame['id']
+                row['aspect'] = catalog.title(row['rule'])
+                frame['members'].append({'check_id': row['id'], 'rule': row['rule'], 'aspect': row['aspect'], 'state': None})
+                frame['blind_spots'][row['rule']] = catalog.explanation(row['rule'])['risk_if_omitted']
+            self.functions.append(frame)
 
     def build(self):
         self.generate()
@@ -1228,11 +1281,12 @@ class ReviewPlanner:
         plan['check_explanations_version'] = catalog.EXPLANATION_VERSION
         circuits = self.intent.get('circuits', [])
         parts = row_owner.part_owners(circuits)
+        nets = row_owner.interface_nets(self.interfaces)
         for check in plan['checks']:   # merge plan §5: rows are compared by what they ask, not by their ids or names
             check['check_key'] = check_key.key(check)
-            check['owner'] = row_owner.owner(check, parts)
+            check['owner'] = row_owner.owner(check, parts, nets)
         plan['owners'] = row_owner.table(circuits, parts)
-        plan['interfaces'] = interfaces.derive(self.db, self.intent, self.datasheet_audit)
+        plan['interfaces'] = self.interfaces
         plan['summary']['owners'] = row_owner.counts(plan['checks'])
         return plan
 

@@ -64,11 +64,10 @@ class ChannelAndNoiseScopeTest(unittest.TestCase):
     def test_noise_budget_is_not_generated_for_a_converter_alone(self):
         self.assertNotIn(('PWR-C14', 'BUCK'), plan_rules([('BUCK', 'POWER_CONVERTER')]))
 
-    def test_noise_budget_follows_sensitive_load_circuits(self):
+    def test_noise_budget_is_asked_on_the_rail_not_on_each_sensitive_circuit(self):
+        # function tree, step 4: one row per rail feeding a sensitive circuit (test_interface_rows)
         rules = plan_rules([('BUCK', 'POWER_CONVERTER'), ('ADC-IN', 'ANALOG'), ('PLL', 'CLOCK'), ('ANT', 'RF')])
-        self.assertNotIn(('PWR-C14', 'BUCK'), rules)
-        for circuit in ('ADC-IN', 'PLL', 'ANT'):
-            self.assertIn(('PWR-C14', circuit), rules)
+        self.assertEqual({circuit for rule, circuit in rules if rule == 'PWR-C14'} - {None}, set())
 
 
 class NonIcDeviceKindTest(unittest.TestCase):

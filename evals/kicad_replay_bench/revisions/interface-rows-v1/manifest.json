@@ -1,0 +1,15 @@
+{
+ "revision": "interface-rows-v1",
+ "parents": {
+  "revisions/circuit-owners-v1/expected.json": "75706b1993b26d343d225e27c1910fa55167b177362193e1c1ce121ac631371b",
+  "revisions/circuit-owners-v1/cases.json": "f0386b9423c695168452a13685211c78ccd4565da572c60ffdb4f1f52820d529",
+  "revisions/circuit-owners-v1/sources.json": "c2747d3ad3f382346b6b05ed54e0be4b5e17ca00fde34d7ba432c4ac03dd4547",
+  "revisions/circuit-owners-v1/manifest.json": "e2d1c2b2c5b182c883b5fe3208de87426181e65b3e9f5b5741482158096bda2e"
+ },
+ "derived_files": {
+  "revisions/interface-rows-v1/expected.json": "76c5b8fe6af5befab2dbadb28a84f6a45fcd504a41c3e17bd0c3114b53b627d1",
+  "revisions/interface-rows-v1/cases.json": "b914898413608ab29a7a893c74c5f733c7b1845dcd32e59deea9e31b1fc9e83a",
+  "revisions/interface-rows-v1/sources.json": "c2747d3ad3f382346b6b05ed54e0be4b5e17ca00fde34d7ba432c4ac03dd4547"
+ },
+ "scope": "功能电路树第 4 步：连接器的 DEV-D03/DEV-C04/PRO-D03 归对外接口 EXT-<连接器>，DEV-C04 每连接器一行，每个连接器一个接口框架；电路对、链路、供电接口的行在本台架用例里不出现（没有两块以上的电路）。circuit-owners-v1 文件保持原字节。"
+}

@@ -63,6 +63,7 @@ SOURCES = {
     'plan': '计划逐对象生成',
     'subject': '功能电路检查项',
     'board': '全板通用',
+    'interface': '接口逐个生成',
     'revision': '改版比对',
     'i2c_topology': '检查器·I²C 连接覆盖',
     'decoupling': '检查器·去耦覆盖',
@@ -87,6 +88,7 @@ SCOPES = {
     'rail': '逐电源轨',
     'link': '逐链路/区域',
     'circuit': '逐电路×工况',
+    'interface': '逐接口',
     'circuit_type': '逐功能电路',
     'assembly': '逐装配配置',
     'requirement': '逐需求',
@@ -169,7 +171,7 @@ RULES = (
     Rule('DEV-C04', '连接器载流',
          '按实际并针降额、接触电阻/均流、线缆与故障电流核连接器载流，不能按单针额定乘针数放行；'
          '额定取实际采购系列的资料，只有间距或泛称时不借用他厂系列额定或“通常”值放行，按范围未定处理；'
-         'PCB 走线载流另交 HANDOFF', 'board', 'board'),
+         'PCB 走线载流另交 HANDOFF', 'interface', 'interface'),
     Rule('DEV-C05', '推荐工作条件覆盖',
          '逐颗核供电电压、输入电压、负载、频率及温度等级/参数保证条件覆盖声明工况；'
          '区分环境温度、壳温与结温，形成允许温度约束，实际结温实现转 HANDOFF；'
@@ -185,7 +187,7 @@ RULES = (
          '实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；'
          '计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图', 'plan', 'device'),
     Rule('DEV-D03', '连接器对端定义',
-         'pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则', 'plan', 'device'),
+         'pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则', 'interface', 'interface'),
     Rule('DEV-D04', '库与物料卫生',
          '实际实例采购字段、BOM 参数与原厂 MPN 订货组合一致，包含关键无源件；'
          '已证实的物料/参数/资料冲突判本项FAIL，典型值或测试条件不得改称额定保证；'
@@ -297,8 +299,8 @@ RULES = (
     Rule('PWR-C13', '热插拔浪涌与输入电容',
          '按实际接口/输入方式核浪涌与源端能力；有明确平台电容限制时对照该限制，不默认热插拔或模板电容上限', 'subject', 'circuit'),
     Rule('PWR-C14', '纹波与噪声预算',
-         '随敏感负载所在功能电路（ANALOG、CLOCK、RF）逐电路生成，不随变换器生成；按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；'
-         '实测另交 HANDOFF', 'subject', 'circuit'),
+         '逐供电接口生成：轨的负载里有敏感功能电路（ANALOG、CLOCK、RF）时每条轨一项，不随变换器生成；按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；'
+         '实测另交 HANDOFF', 'interface', 'interface'),
     Rule('PWR-D01', '去耦清单完整性',
          '结合完整器件/官方物理脚清单核对供电脚与去耦分组覆盖；无名称命中不代表不适用', 'decoupling', 'board'),
     Rule('PWR-D02', '去耦接法',
@@ -501,7 +503,7 @@ RULES = (
          '逐个跨隔离器件核实际工作电压、重复峰值/频率、绝缘类别和厂家资格适用条件；耐压试验数值或无直流跨接'
          '不能代替工作资格。缺少元件选型前提保留原理图缺口，实际PCB/机构距离与实物耐压另验', 'subject', 'circuit'),
     Rule('PRO-D03', '对外连接器防护',
-         '对外连接器逐针考虑防护，ESD 器件挂在活线上，并核所列信号线钳位（clamp_refs）的工作电压不低于信号摆幅、钳位电压不超过被保护脚耐受；板内互连器件可按依据判不适用', 'plan', 'device'),
+         '对外连接器逐针考虑防护，ESD 器件挂在活线上，并核所列信号线钳位（clamp_refs）的工作电压不低于信号摆幅、钳位电压不超过被保护脚耐受；板内互连器件可按依据判不适用', 'interface', 'interface'),
 
     # DRV 功率驱动
     Rule('DRV-A01', '感性负载无续流/钳位路径',
@@ -627,7 +629,7 @@ CIRCUIT_TYPES = (
             ('requirements', 'datasheets')),
     CircuitType('ANALOG', '模拟前端与监测', 'ANA',
             r'(^|[:_-])(AIN\d*|ADC\w*|VREF\w*|REFIN|REFOUT|OPA\w*|INA\d*|ISENSE\w*|CSP|CSN|NTC\w*|THERM\w*)([:_-]|$)',
-            ('ANA-C01', 'ANA-C02', 'ANA-C03', 'ANA-T01', 'ANA-D01', 'PWR-C14'),
+            ('ANA-C01', 'ANA-C02', 'ANA-C03', 'ANA-T01', 'ANA-D01'),
             ('requirements', 'datasheets')),
     CircuitType('STARTUP', '上电、复位与启动', 'RST',
             r'RESET|(^|_)RST|POR(_|$)|(^|[:_-])(BOOT\w*|STRAP\w*|PWRON\w*)([:_-]|$)',
@@ -635,7 +637,7 @@ CIRCUIT_TYPES = (
             ('requirements', 'datasheets')),
     CircuitType('CLOCK', '时钟', 'CLK',
             r'CLK|CLOCK|OSC|XTAL|XIN|XOUT|32K',
-            ('CLK-C01', 'CLK-D01', 'CLK-D03', 'PWR-C14'),
+            ('CLK-C01', 'CLK-D01', 'CLK-D03'),
             ('datasheets',)),
     CircuitType('I2C', 'I²C', 'SIG',
             r'(^|[:_-])(I2C\w*|SCL\d*|SDA\d*)([:_-]|$)',
@@ -681,7 +683,7 @@ CIRCUIT_TYPES = (
             ('requirements', 'datasheets', 'platform_checklist')),
     CircuitType('RF', '射频与模组', 'SIG',
             r'(^|[:_-])(RF|ANT|WIFI|WLAN|LTE|GNSS|SIM)([:_-]|$)',
-            ('SIG-D12', 'PWR-C14'),
+            ('SIG-D12',),
             ('requirements', 'datasheets')),
     CircuitType('HSSERIAL', '高速串行', 'SIG',
             r'PCIE|PCI_E|SATA|SERDES|USB3|SSTX|SSRX|PERST|CLKREQ',
@@ -719,7 +721,6 @@ QUESTIONS = {
     'ANA-C02': '{state} 时 {circuit}（{refs}）的 GBW/压摆率/容性负载或 ADC 源阻抗、采样保持获取时间与建立误差是否满足要求',
     'ANA-C03': '{state} 时 {circuit}（{refs}）的 ADC 基准驱动与误差、输入满量程及钳位/注入电流（含掉电状态）是否在限值内',
     'ANA-D01': '{circuit}（{refs}）的温度传感器电气连接、量程和接口是否正确',
-    'PWR-C14': '{state} 时 {circuit}（{refs}）的电源纹波与噪声（含开关频率、后级 LDO/滤波与去耦）是否满足敏感负载的噪声/PSRR 要求',
     'RST-C01': '{state} 时 {circuit}（{refs}）每个采样窗口内 strap/EN 的保证电压（含内部拉阻、LED、泄漏、电容和门限）是否落在要求的电平',
     'RST-C02': '{state} 时 {circuit}（{refs}）按 V(t) 穿越门限时刻算出的复位脉宽/释放与采样 setup/hold 是否满足要求',
     'RST-T03': '{state} 时 {circuit}（{refs}）在慢爬升、棕断、短暂掉电、单域掉电、外部先供电和重试下的上电顺序与恢复是否成立',
@@ -769,6 +770,47 @@ SYSTEM_FUNCTIONS = {
     'SYS-PINMAP': ('SIG-D13',),
 }
 SYSTEM_OF_RULE = {rule: sid for sid, rules in SYSTEM_FUNCTIONS.items() for rule in rules}
+
+# 接口检查项（功能树设计 §3.3，第 4 步）：计划按 interfaces 逐接口展开，行归接口。电路对问方向语义和电平，
+# 链路问两端电平，连接器问对端定义、载流和对外防护，供电轨在敏感功能电路取电时问纹波与噪声。
+# 两端 IC 的供电轨或参考地分区不同的接口网络另问一行掉电与跨域注入（SIG-C08）。
+# 声明的总线电路（I2C、SPI 等）内部的链路仍由电路检查项问，接口只问不同所属对象之间的网络。
+INTERFACE_SUBJECTS = {
+    'CIRCUIT_PAIR': ('SIG-T04', 'SIG-C07'),
+    'LINK': ('SIG-C07',),
+    'EXTERNAL': ('DEV-D03', 'DEV-C04', 'PRO-D03'),
+    'SUPPLY': ('PWR-C14',),
+}
+INTERFACE_NET_SUBJECTS = {'CIRCUIT_PAIR': ('SIG-C08',), 'LINK': ('SIG-C08',)}
+NOISE_SENSITIVE_TYPES = ('ANALOG', 'CLOCK', 'RF')
+# 归接口的规则（设计稿附录 A）：按电路展开的行仍归电路；其余行的网络都落在同一个接口上时归该接口。
+INTERFACE_RULES = frozenset({
+    'DEV-C04', 'DEV-D03', 'PRO-D03', 'PWR-C14', 'RST-A04', 'RST-A06', 'RST-T01', 'RST-T02',
+    'SIG-A01', 'SIG-A02', 'SIG-E02', 'SIG-T01', 'SIG-T03', 'SIG-T04', 'SIG-C07', 'SIG-C08', 'SIG-C09'})
+INTERFACE_QUESTIONS = {
+    'SIG-T04': '{interface}（{nets}）两端的 TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义是否对应',
+    'SIG-C07': '{interface}（{nets}）每条网络驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动能力与接收端耐压是否匹配',
+    'SIG-C08': '{interface} 的 {nets} 两端供电或参考地分区不同：一端掉电或外设先上电时，Ioff、输入耐压与注入电流是否在限值内',
+    'DEV-D03': '{interface}（{refs}）每针本端定义与对端定义是否逐针相容',
+    'DEV-C04': '{interface}（{refs}）按实际系列的并针降额、接触电阻和故障电流核算的载流是否够',
+    'PRO-D03': '{interface}（{refs}）每个对外针的防护与泄放路径、所列钳位的工作与钳位电压对被保护脚耐受是否成立',
+    'PWR-C14': '{interface} 供给敏感电路 {loads} 的纹波与噪声（含开关频率、后级滤波与去耦）是否满足其噪声/PSRR 要求',
+}
+INTERFACE_FRAME_QUESTIONS = {
+    'CIRCUIT_PAIR': '{interface}（{owners}）之间的网络 {nets}，方向、电平与跨域注入是否都成立',
+    'LINK': '链路 {interface}（{refs}）两端网络 {nets} 的电平与跨域注入是否成立',
+    'EXTERNAL': '连接器 {interface} 的针定义、载流与对外防护是否成立',
+}
+
+
+def interface_question(rule_id, interface, nets=(), refs=(), loads=()):
+    return INTERFACE_QUESTIONS[rule_id].format(interface=interface, nets='、'.join(nets) or '无信号网络',
+                                               refs='、'.join(refs), loads='、'.join(loads))
+
+
+def interface_frame_question(kind, interface, owners=(), nets=(), refs=()):
+    return INTERFACE_FRAME_QUESTIONS[kind].format(interface=interface, owners='、'.join(owners),
+                                                  nets='、'.join(nets) or '无信号网络', refs='、'.join(refs))
 
 # 电路候选的基础工作态（scripts/circuit_candidates.py）：按类型固定，审查员增减一个态要引用手册里的模式名。
 # 控制器的 LL/HL、突发、掉电等模式是在这个基础清单上按资料补充的，候选一致不等于工作态覆盖完整。

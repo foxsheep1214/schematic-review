@@ -34,8 +34,8 @@ class OwnerTests(unittest.TestCase):
 
     def test_every_row_has_one_owner_of_a_known_kind(self):
         kinds = {c['owner']['kind'] for c in self.plan['checks']}
-        self.assertLessEqual(kinds, {'CIRCUIT', 'SYSTEM', 'BOARD'})
-        circuits = {f['circuit'] for f in self.plan['functions']}
+        self.assertLessEqual(kinds, {'CIRCUIT', 'INTERFACE', 'SYSTEM', 'BOARD'})
+        circuits = {f['circuit'] for f in self.plan['functions'] if f.get('circuit')}
         for row in self.plan['checks']:
             if row['owner']['kind'] == 'CIRCUIT':
                 self.assertIn(row['owner']['id'], circuits, row['id'])
