@@ -20,11 +20,12 @@ class RequirementClauseTests(unittest.TestCase):
         doc = write('# 需求\n\n| ID | 当前要求 | 适用边界 |\n|---|---|---|\n| REQ-02 | %s | %s |\n'
                     % (OBLIGATION, ''.join(PREMISES)))
         intent['requirement_source'] = source(doc)
-        intent['requirements'] = [{'id': 'REQ-02', 'criterion': '+3V3 轨稳压器输出精度与环境温度范围在图上的实现',
-                                   'status': 'CONFIRMED'}]
+        intent['requirements'] = [{'id': 'REQ-02', 'categories': ['OUTPUT_SPEC'],
+                                   'interpretation': '+3V3 轨稳压器输出精度与环境温度范围在图上的实现', 'status': 'CONFIRMED'}]
         rebind(self.db, intent)
         self.plan = build_review_plan(self.db, intent)
-        self.key = next(c['id'] for c in self.plan['checks'] if c['rule'] == 'REQ-D01')
+        # Every aspect row of the requirement splits the same original text.
+        self.key = [c['id'] for c in self.plan['checks'] if c['rule'] == 'REQ-D01'][-1]
 
     def errors(self, result, clauses, versioned=True):
         report = ledger(self.plan, self.db)

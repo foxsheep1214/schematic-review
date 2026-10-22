@@ -346,7 +346,7 @@
 |---|---|---|---|---|---|---|---|---|
 | REQ-A01 | G1 | 自动扫描 | 网表、设计意图声明 | 关键器件计数 | 按意图清单核对关键器件数量（该有的写 ≥1，该删的写 0）；缺意图时不执行并列入未执行 | 全板一次 | Lint 内置 | — |
 | REQ-A02 | G1 | 自动扫描 | 网表 | 要求的功能未检出 | 验证设计意图要求的功能是否已在原理图中实现 | 逐功能电路 | 计划逐对象生成 | — |
-| REQ-D01 | G1 | 条款核对 | 网表、规格书数值、需求 | 需求逐条追溯 | 需求条款逐条落到实现电路与检查项；原文由需求文档抄录，判据写本次在原理图上判什么、对照什么，不抄原文；原文拆成要求/前提条款（按顺序拼接等于原文），只有要求条款带结论，行结论取要求条款中最差者，前提条款与其他行的缺陷不连带本行 | 逐需求 | 计划逐对象生成 | — |
+| REQ-D01 | G1 | 条款核对 | 网表、规格书数值、需求 | 需求逐条追溯 | 需求逐条按类别展开成审查方面，每个方面一项，落到实现电路与检查项；原文由需求文档抄录，判据取方面模板，审查员对需求的理解写 interpretation、不写判据；原文拆成要求/前提条款（按顺序拼接等于原文），只有要求条款带结论，行结论取要求条款中最差者，前提条款与其他行的缺陷不连带本行 | 逐需求 | 计划逐对象生成 | — |
 | REQ-D02 | G1 | 条款核对 | 网表、规格书数值、需求 | 需求口径一致 | 需求/规格书与原理图参数口径统一（电流/电压数字唯一来源） | 全板一次 | 全板通用 | — |
 | REQ-Q01 | G7 | 覆盖审计 | 计划与结果台账 | 需求覆盖 | 需求逐条拆解并与电路检查双向追溯，缺口不得隐藏 | 全板一次 | 计划逐对象生成 | — |
 | REQ-Q02 | G7 | 覆盖审计 | 计划与结果台账 | 链路覆盖 | 全部接口/电源/检测/使能/复位/时钟逐路终点与返回路径覆盖 | 全板一次 | 计划逐对象生成 | — |
@@ -595,6 +595,53 @@
 | AV | 音视频接口 | SIG | SIG-D15、SIG-C07 | requirements、datasheets | `HDMI\|MIPI\|(^\|[:_-])(CSI\|DSI\|EDP\|LCD)\w*\|(^\|[:_-])I2S\|MCLK\|LRCK\|BCLK\|CODEC\|(^\|[:_-])(SPK\|MIC)([:_-]\|\d\|$)` |
 | ISOLATION | 隔离 | PRO | PRO-D02、PRO-C01、PRO-C03 | requirements、datasheets | `ISOLAT\|(^\|_)ISO(_\|$)\|DIGITAL_ISO` |
 | DEBUG | 调试与烧录 | SIG | SIG-D06 | datasheets | `JTAG\|SWDIO\|SWCLK\|(^\|[:_-])(SWD\|TCK\|TMS\|TDI\|TDO\|TRST\w*)([:_-]\|$)\|(^\|[:_-])(DEBUG\|DBG)` |
+
+## 需求类别与审查方面
+
+每条需求在 `intent.requirements[].categories` 选一个或几个类别；每个类别的审查方面固定，计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。几个类别的方面取并集。
+
+| 类别 | 名称 | 审查方面 | 落到 |
+|---|---|---|---|
+| INPUT_RANGE | 输入电气范围 | INPUT_STAGE_RATING 输入级器件额定覆盖、INPUT_THRESHOLDS 启动与欠压门限覆盖、CONVERTER_INPUT_RANGE 变换级工作范围覆盖 | 系统 SYS-POWER，输入相关电路 |
+| OUTPUT_SPEC | 输出电气规格 | OUTPUT_LEVELS 各档输出可达、OUTPUT_LIMITS 电流与功率限制、OUTPUT_ACCURACY 精度与纹波 | 输出相关电路、供电接口 |
+| PROTOCOL | 协议与接口功能 | PROTOCOL_ROLE 协议角色与能力、PORT_DETECTION 端口识别通路、EXTERNAL_PINOUT 对外引脚定义 | 接口、主控电路 |
+| PROTECTION | 保护与故障响应 | FAULT_DETECTION 检测通路存在、FAULT_THRESHOLD 动作门限、FAULT_RESPONSE 动作后状态与恢复 | 保护电路、监控 SYS-MONITOR |
+| ENVIRONMENT | 环境条件 | TEMPERATURE_GRADE 器件温度等级覆盖、TEMPERATURE_DERATING 按温度降额、TEMPERATURE_DRIFT 敏感参数温漂、ALTITUDE_HUMIDITY 海拔与湿度影响额定 | 全板器件应力，各电路 |
+| SAFETY_ISOLATION | 安规与隔离 | ISOLATION_PARTS 跨隔离器件资格、ISOLATION_PATHS 隔离路径唯一、DOWNSTREAM_HANDOFF 原理图外部分移交 | 隔离接口、链路 |
+| LIFETIME | 寿命与可靠性 | LIFETIME_BASIS 寿命计算依据、MISSION_PROFILE 按任务剖面复算 | 相关电路器件行 |
+| INDICATION | 指示与人机 | INDICATOR_PRESENT 指示功能存在、INDICATOR_SUPPLY 指示供电独立 | 相关电路 |
+| OPTIMIZATION | 优化目标 | NO_SCHEMATIC_CRITERION 没有原理图判据 | 全板 |
+| COMPLIANCE | 合规与认证 | SCHEMATIC_COMPLIANCE 原理图可核部分、DOWNSTREAM_HANDOFF 原理图外部分移交 | 全板，移交 |
+| EXCLUSION | 明确排除 | EXCLUDED_FUNCTION 明确排除 | 被排除功能对应的行 |
+
+| 审查方面 | 判据模板 |
+|---|---|
+| INPUT_STAGE_RATING 输入级器件额定覆盖 | 需求输入范围的上下限与瞬态下，输入级器件的电压、电流额定覆盖并有余量 |
+| INPUT_THRESHOLDS 启动与欠压门限覆盖 | 启动、欠压与过压门限落在需求输入范围之外或边界上，范围内不误动作 |
+| CONVERTER_INPUT_RANGE 变换级工作范围覆盖 | 变换级控制器与功率器件的工作输入范围覆盖需求输入范围 |
+| OUTPUT_LEVELS 各档输出可达 | 需求的每个输出电压档或范围由反馈与设定网络算得可达，并留调节余量 |
+| OUTPUT_LIMITS 电流与功率限制 | 需求的电流与功率限值有采样与限制通路，限值按元件值算得落在需求窗口内 |
+| OUTPUT_ACCURACY 精度与纹波 | 输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内 |
+| PROTOCOL_ROLE 协议角色与能力 | 所选控制器的协议角色与能力覆盖需求，外围连接与配置交付可追溯 |
+| PORT_DETECTION 端口识别通路 | 需求依赖的对端、线缆或附件识别有完整信号通路 |
+| EXTERNAL_PINOUT 对外引脚定义 | 对外连接器的每个引脚定义与需求一致，未用引脚的处理有依据 |
+| FAULT_DETECTION 检测通路存在 | 需求的每种故障有检测通路接到能动作的器件 |
+| FAULT_THRESHOLD 动作门限 | 检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作 |
+| FAULT_RESPONSE 动作后状态与恢复 | 故障动作后的输出状态、锁定或自动恢复方式与需求一致 |
+| TEMPERATURE_GRADE 器件温度等级覆盖 | 器件温度等级覆盖需求环境温度加内部温升 |
+| TEMPERATURE_DERATING 按温度降额 | 器件额定按需求温度降额后仍有余量；需求要求随温度降额输出时，有温度检测与降额通路 |
+| TEMPERATURE_DRIFT 敏感参数温漂 | 基准、门限、采样等敏感参数在需求温度范围的漂移计入窗口 |
+| ALTITUDE_HUMIDITY 海拔与湿度影响额定 | 需求的海拔、湿度、气候条件对器件额定与绝缘等级的影响已计入 |
+| ISOLATION_PARTS 跨隔离器件资格 | 跨隔离边界的每个器件绝缘等级与资格满足需求的绝缘类别 |
+| ISOLATION_PATHS 隔离路径唯一 | 隔离边界两侧之间只经有资格的跨隔离器件相连，没有别的电气路径 |
+| DOWNSTREAM_HANDOFF 原理图外部分移交 | 原理图判不了的部分（爬电与电气间隙、整机试验、认证）列为移交项并写复验条件 |
+| LIFETIME_BASIS 寿命计算依据 | 寿命关键件有按需求工作条件算的寿命依据 |
+| MISSION_PROFILE 按任务剖面复算 | 寿命按需求任务剖面（工作时间、温度、负载）复算，实测温度后复算的条件写明 |
+| INDICATOR_PRESENT 指示功能存在 | 需求的每个指示有驱动通路，指示的状态与需求一致 |
+| INDICATOR_SUPPLY 指示供电独立 | 指示的供电与被指示对象的关断或故障互不影响，与需求一致 |
+| NO_SCHEMATIC_CRITERION 没有原理图判据 | 优化目标或取舍原则在原理图上没有判据：记不适用（NA）并引原文 |
+| SCHEMATIC_COMPLIANCE 原理图可核部分 | 标准或认证中原理图能核的器件资格与电路要求逐条核 |
+| EXCLUDED_FUNCTION 明确排除 | 需求明确排除的功能或认证：记排除原文，相应检查记不适用（NA） |
 
 ## 覆盖维度
 

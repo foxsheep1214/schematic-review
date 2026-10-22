@@ -187,15 +187,26 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
                 if key in item:
                     errors.append('requirement.%s.%s 不写：原文与出处由 requirements_extract.py 从 requirement_source 抄录'
                                   % (item.get('id'), key))
-            for key in ('id', 'criterion'):
+            if 'criterion' in item:
+                errors.append('requirement.%s.criterion 不写：判据由类别的审查方面模板生成；对需求的理解写 interpretation'
+                              % item.get('id'))
+            for key in ('id', 'interpretation'):
                 if not _text(item.get(key)):
                     errors.append(f'requirement.{key} 缺失')
+            categories = item.get('categories')
+            if not isinstance(categories, list) or not categories:
+                errors.append('requirement.%s.categories 须为非空数组，取 check-catalog.md 需求类别表的类别' % item.get('id'))
+            else:
+                for category in categories:
+                    if category not in catalog.REQUIREMENT_CATEGORIES:
+                        errors.append('requirement.%s.categories 不支持: %r（取需求类别表的类别）' % (item.get('id'), category))
+                if len(set(map(str, categories))) != len(categories):
+                    errors.append('requirement.%s.categories 重复' % item.get('id'))
             if source is not None and _text(item.get('id')) and item['id'] not in originals:
                 errors.append('requirement.%s 不在 requirement_source 里；需求只取自需求文档' % item['id'])
             original = originals.get(item.get('id'))
-            if original and _text(item.get('criterion')) and _squeeze(item['criterion']) == _squeeze(original):
-                errors.append('requirement.%s.criterion 抄了需求原文；写本次在原理图上判什么、对照什么（优化目标或范围说明写明'
-                              '没有原理图判据）' % item.get('id'))
+            if original and _text(item.get('interpretation')) and _squeeze(item['interpretation']) == _squeeze(original):
+                errors.append('requirement.%s.interpretation 抄了需求原文；写这条需求要在原理图上落实什么' % item.get('id'))
             if 'status' in item and item['status'] not in REQUIREMENT_STATUSES:
                 errors.append('requirement.status 须为 已确认（CONFIRMED）/提案（PROPOSED）/未定（OPEN）/暂缓（DEFERRED）之一，字段值写英文')
             rid = item.get('id')

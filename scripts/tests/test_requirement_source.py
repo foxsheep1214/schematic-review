@@ -5,8 +5,8 @@ status, yet not one transcribed text matched: the table has a requirement column
 reviewer joined, cut and punctuated them their own way. `requirements_extract.py` reads the table verbatim, each
 column apart, with the section, a file:line locator and the file's digest; the intent names the source and states
 for each requirement only what the reviewer decides. Every source requirement must be in the intent and every intent
-requirement in the source. A requirement row's clauses split the original text, and its criterion says what is
-judged on the schematic, never a copy of the text.
+requirement in the source. A requirement row's clauses split the original text; its criterion comes from the
+category templates (test_requirement_categories).
 """
 import copy
 import hashlib
@@ -55,9 +55,13 @@ def source(path):
     return {'path': str(path), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
 
 
-def entries(criteria=None):
-    criteria = criteria or {}
-    return [{'id': rid, 'criterion': criteria.get(rid, 'synthetic schematic criterion for ' + rid), 'status': status}
+CATEGORIES = {'REQ-IN-01': ['INPUT_RANGE'], 'REQ-TEMP-01': ['ENVIRONMENT'], 'REQ-OPEN-01': ['OUTPUT_SPEC']}
+
+
+def entries(categories=None, interpretations=None):
+    categories, interpretations = dict(CATEGORIES, **(categories or {})), interpretations or {}
+    return [{'id': rid, 'categories': categories[rid],
+             'interpretation': interpretations.get(rid, 'synthetic reading of ' + rid), 'status': status}
             for rid, status in (('REQ-IN-01', 'CONFIRMED'), ('REQ-TEMP-01', 'CONFIRMED'), ('REQ-OPEN-01', 'OPEN'))]
 
 
@@ -67,10 +71,10 @@ def doc_for(texts):
     return source(write('# 需求\n\n| ID | 要求 |\n|---|---|\n' + rows))
 
 
-def requirement_intent(path=None, criteria=None):
+def requirement_intent(path=None, categories=None, interpretations=None):
     """The intent fields a synthetic board needs for its requirements (used by other tests)."""
     path = path or write()
-    return {'requirement_source': source(path), 'requirements': entries(criteria)}
+    return {'requirement_source': source(path), 'requirements': entries(categories, interpretations)}
 
 
 class ExtractTests(unittest.TestCase):
@@ -132,13 +136,9 @@ class IntentTests(unittest.TestCase):
         dropped['requirements'] = dropped['requirements'][:2]
         self.assertTrue(any('REQ-OPEN-01' in e for e in self.errors(dropped)))
         invented = copy.deepcopy(self.intent)
-        invented['requirements'].append({'id': 'REQ-NEW-01', 'criterion': 'x on the schematic', 'status': 'CONFIRMED'})
+        invented['requirements'].append({'id': 'REQ-NEW-01', 'categories': ['OUTPUT_SPEC'], 'interpretation': 'x',
+                                         'status': 'CONFIRMED'})
         self.assertTrue(any('REQ-NEW-01' in e for e in self.errors(invented)))
-
-    def test_a_criterion_copied_from_the_original_text_is_refused(self):
-        intent = dict({'schema_version': 3}, **requirement_intent(
-            self.path, {'REQ-IN-01': '工作输入 9–36 V DC；40 V 持续 100 ms 不损坏'}))
-        self.assertTrue(any('抄了需求原文' in e for e in self.errors(intent)))
 
 
 class PlanRowTests(unittest.TestCase):
@@ -148,13 +148,14 @@ class PlanRowTests(unittest.TestCase):
         row = next(c for c in plan['checks'] if c['rule'] == 'REQ-D01' and c['object']['requirement_id'] == 'REQ-IN-01')
         self.assertEqual(row['source_text']['locator'], str(path) + ':9')
         self.assertEqual([c['text'] for c in row['source_text']['columns']], ['工作输入 9–36 V DC', '40 V 持续 100 ms 不损坏'])
-        self.assertEqual(row['criterion'], 'synthetic schematic criterion for REQ-IN-01')
+        self.assertEqual(row['interpretation'], 'synthetic reading of REQ-IN-01')
         self.assertIn(str(path) + ':9', row['trigger'])
 
     def test_the_rule_says_clauses_split_the_original_text_and_the_criterion_is_not_a_copy(self):
         criterion = catalog.BY_ID['REQ-D01'].criterion
         self.assertNotIn('验收判据取需求原文', criterion)
         self.assertIn('拼接等于原文', criterion)
+        self.assertIn('模板', criterion)
 
 
 if __name__ == '__main__':

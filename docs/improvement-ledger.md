@@ -7,6 +7,32 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A requirement is placed in fixed categories and asks each category's aspects (2026-10-22)
+
+Step 2 of the fixed-requirements design. After step 1 the R5 pair still paired none of the 38 requirement rows: both
+took the same ids, texts and statuses, but each wrote its own criterion, one copying the text and the other rewriting
+it, and a rewrite often kept one or two aspects (a temperature requirement checked only the temperature grade, not
+derating or drift; a lifetime requirement only the electrolytic capacitors). The catalog now has a requirement
+category table (11 categories, 26 aspects, each aspect with a criterion template, one aspect shared by two categories)
+and renders it into check-catalog.md; each `requirements[]` entry names its `categories` and writes its reading as
+`interpretation` (a free `criterion` is refused, an interpretation that copies the original text is refused, unknown
+or repeated categories are refused); the planner writes one REQ-D01 row per (requirement, aspect), the aspect in the
+row object and the template as the criterion, several categories asking the union of their aspects, and the
+interpretation rides on the row outside the check identity. R5 bench with both intents in the category form (one
+category assignment for both, each reviewer's old criterion as its interpretation): requirement rows 61/61 paired,
+all rows 503 of 503 and 508 (99.0 %, acceptance 4 met), 42 more rows per plan than after step 1 (9.1 %, within the
+15 % of acceptance 6), the rest being the decoupling group only one reviewer declared and one test point; the 19
+interpretations that copy the text are refused. Category agreement between two agents (acceptance 2) cannot be read
+from these records and waits for the next two-agent run; the section-to-status map and the column pre-split were not
+done (statuses already agree 19/19 and requirement-clarifications.md asks for each source label to be split, not
+mapped by section; clauses stay out of the check identity). Tests first (test_requirement_categories, 9 tests;
+requirement fixtures move to categories and interpretation), 1873 tests pass, contract 500, replay bench 195/195,
+mutations M139–M145 added and killed.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/intent.json (requirements), review:SR-20261021-R5-codex-fd6a6dd/record/intent.json (requirements), user:2026-10-22 (分步完成第 1 到第 7 步)
+- Causes: rule_not_enforced 1
+- Changed: scripts/catalog.py, scripts/plan_review.py, scripts/plan_board.py, scripts/tests/test_requirement_categories.py, scripts/tests/test_requirement_source.py, scripts/tests/test_requirement_clauses.py, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, scripts/tests/test_review_v2.py, SKILL.md, references/plan-and-results.md, references/check-catalog.md, docs/2026-10-22-fixed-requirements-and-review-points.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## Requirements are transcribed by a tool, never retyped (2026-10-22)
 
 Step 1 of the fixed-requirements design. On the R5 bench the two reviewers took the same 19 requirement ids from one

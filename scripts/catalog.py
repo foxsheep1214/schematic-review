@@ -19,6 +19,8 @@ Domain = namedtuple('Domain', 'code name scope handoff')
 Method = namedtuple('Method', 'code name executor inputs output stage')
 Rule = namedtuple('Rule', 'id title criterion source scope')
 CircuitType = namedtuple('CircuitType', 'name title domain pattern subjects materials')
+RequirementCategory = namedtuple('RequirementCategory', 'name aspects targets')
+RequirementAspect = namedtuple('RequirementAspect', 'name template')
 
 DOMAINS = (
     Domain('DOC', '图纸与数据', '导出与解析完整性、BOM/库字段、页面图形与命名、装配选项、测试节点、输入一致性',
@@ -542,7 +544,8 @@ RULES = (
     Rule('REQ-A02', '要求的功能未检出',
          '验证设计意图要求的功能是否已在原理图中实现', 'plan', 'circuit_type'),
     Rule('REQ-D01', '需求逐条追溯',
-         '需求条款逐条落到实现电路与检查项；原文由需求文档抄录，判据写本次在原理图上判什么、对照什么，不抄原文；'
+         '需求逐条按类别展开成审查方面，每个方面一项，落到实现电路与检查项；原文由需求文档抄录，判据取方面模板，'
+         '审查员对需求的理解写 interpretation、不写判据；'
          '原文拆成要求/前提条款（按顺序拼接等于原文），只有要求条款带结论，'
          '行结论取要求条款中最差者，前提条款与其他行的缺陷不连带本行', 'plan', 'requirement'),
     Rule('REQ-D02', '需求口径一致',
@@ -915,6 +918,72 @@ COVERAGE_RULES = {
     'datasheets': 'DEV-Q01',
     'history': 'REQ-Q04',
 }
+
+# Requirement categories (fixed requirements, step 2). The reviewer places each requirement in one or more categories;
+# a category asks a fixed set of aspects and each aspect's criterion is its template, so two reviewers who place a
+# requirement alike ask the same REQ-D01 rows. Several categories ask the union of their aspects.
+REQUIREMENT_ASPECTS = OrderedDict([
+    ('INPUT_STAGE_RATING', RequirementAspect('输入级器件额定覆盖', '需求输入范围的上下限与瞬态下，输入级器件的电压、电流额定覆盖并有余量')),
+    ('INPUT_THRESHOLDS', RequirementAspect('启动与欠压门限覆盖', '启动、欠压与过压门限落在需求输入范围之外或边界上，范围内不误动作')),
+    ('CONVERTER_INPUT_RANGE', RequirementAspect('变换级工作范围覆盖', '变换级控制器与功率器件的工作输入范围覆盖需求输入范围')),
+    ('OUTPUT_LEVELS', RequirementAspect('各档输出可达', '需求的每个输出电压档或范围由反馈与设定网络算得可达，并留调节余量')),
+    ('OUTPUT_LIMITS', RequirementAspect('电流与功率限制', '需求的电流与功率限值有采样与限制通路，限值按元件值算得落在需求窗口内')),
+    ('OUTPUT_ACCURACY', RequirementAspect('精度与纹波', '输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内')),
+    ('PROTOCOL_ROLE', RequirementAspect('协议角色与能力', '所选控制器的协议角色与能力覆盖需求，外围连接与配置交付可追溯')),
+    ('PORT_DETECTION', RequirementAspect('端口识别通路', '需求依赖的对端、线缆或附件识别有完整信号通路')),
+    ('EXTERNAL_PINOUT', RequirementAspect('对外引脚定义', '对外连接器的每个引脚定义与需求一致，未用引脚的处理有依据')),
+    ('FAULT_DETECTION', RequirementAspect('检测通路存在', '需求的每种故障有检测通路接到能动作的器件')),
+    ('FAULT_THRESHOLD', RequirementAspect('动作门限', '检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作')),
+    ('FAULT_RESPONSE', RequirementAspect('动作后状态与恢复', '故障动作后的输出状态、锁定或自动恢复方式与需求一致')),
+    ('TEMPERATURE_GRADE', RequirementAspect('器件温度等级覆盖', '器件温度等级覆盖需求环境温度加内部温升')),
+    ('TEMPERATURE_DERATING', RequirementAspect('按温度降额', '器件额定按需求温度降额后仍有余量；需求要求随温度降额输出时，有温度检测与降额通路')),
+    ('TEMPERATURE_DRIFT', RequirementAspect('敏感参数温漂', '基准、门限、采样等敏感参数在需求温度范围的漂移计入窗口')),
+    ('ALTITUDE_HUMIDITY', RequirementAspect('海拔与湿度影响额定', '需求的海拔、湿度、气候条件对器件额定与绝缘等级的影响已计入')),
+    ('ISOLATION_PARTS', RequirementAspect('跨隔离器件资格', '跨隔离边界的每个器件绝缘等级与资格满足需求的绝缘类别')),
+    ('ISOLATION_PATHS', RequirementAspect('隔离路径唯一', '隔离边界两侧之间只经有资格的跨隔离器件相连，没有别的电气路径')),
+    ('DOWNSTREAM_HANDOFF', RequirementAspect('原理图外部分移交', '原理图判不了的部分（爬电与电气间隙、整机试验、认证）列为移交项并写复验条件')),
+    ('LIFETIME_BASIS', RequirementAspect('寿命计算依据', '寿命关键件有按需求工作条件算的寿命依据')),
+    ('MISSION_PROFILE', RequirementAspect('按任务剖面复算', '寿命按需求任务剖面（工作时间、温度、负载）复算，实测温度后复算的条件写明')),
+    ('INDICATOR_PRESENT', RequirementAspect('指示功能存在', '需求的每个指示有驱动通路，指示的状态与需求一致')),
+    ('INDICATOR_SUPPLY', RequirementAspect('指示供电独立', '指示的供电与被指示对象的关断或故障互不影响，与需求一致')),
+    ('NO_SCHEMATIC_CRITERION', RequirementAspect('没有原理图判据', '优化目标或取舍原则在原理图上没有判据：记不适用（NA）并引原文')),
+    ('SCHEMATIC_COMPLIANCE', RequirementAspect('原理图可核部分', '标准或认证中原理图能核的器件资格与电路要求逐条核')),
+    ('EXCLUDED_FUNCTION', RequirementAspect('明确排除', '需求明确排除的功能或认证：记排除原文，相应检查记不适用（NA）')),
+])
+REQUIREMENT_CATEGORIES = OrderedDict([
+    ('INPUT_RANGE', RequirementCategory('输入电气范围', ('INPUT_STAGE_RATING', 'INPUT_THRESHOLDS', 'CONVERTER_INPUT_RANGE'),
+                                        '系统 SYS-POWER，输入相关电路')),
+    ('OUTPUT_SPEC', RequirementCategory('输出电气规格', ('OUTPUT_LEVELS', 'OUTPUT_LIMITS', 'OUTPUT_ACCURACY'),
+                                        '输出相关电路、供电接口')),
+    ('PROTOCOL', RequirementCategory('协议与接口功能', ('PROTOCOL_ROLE', 'PORT_DETECTION', 'EXTERNAL_PINOUT'), '接口、主控电路')),
+    ('PROTECTION', RequirementCategory('保护与故障响应', ('FAULT_DETECTION', 'FAULT_THRESHOLD', 'FAULT_RESPONSE'),
+                                       '保护电路、监控 SYS-MONITOR')),
+    ('ENVIRONMENT', RequirementCategory('环境条件', ('TEMPERATURE_GRADE', 'TEMPERATURE_DERATING', 'TEMPERATURE_DRIFT',
+                                                 'ALTITUDE_HUMIDITY'), '全板器件应力，各电路')),
+    ('SAFETY_ISOLATION', RequirementCategory('安规与隔离', ('ISOLATION_PARTS', 'ISOLATION_PATHS', 'DOWNSTREAM_HANDOFF'),
+                                             '隔离接口、链路')),
+    ('LIFETIME', RequirementCategory('寿命与可靠性', ('LIFETIME_BASIS', 'MISSION_PROFILE'), '相关电路器件行')),
+    ('INDICATION', RequirementCategory('指示与人机', ('INDICATOR_PRESENT', 'INDICATOR_SUPPLY'), '相关电路')),
+    ('OPTIMIZATION', RequirementCategory('优化目标', ('NO_SCHEMATIC_CRITERION',), '全板')),
+    ('COMPLIANCE', RequirementCategory('合规与认证', ('SCHEMATIC_COMPLIANCE', 'DOWNSTREAM_HANDOFF'), '全板，移交')),
+    ('EXCLUSION', RequirementCategory('明确排除', ('EXCLUDED_FUNCTION',), '被排除功能对应的行')),
+])
+
+
+def requirement_aspects(categories):
+    """The aspects a requirement in these categories asks: their union in table order of first appearance."""
+    out = []
+    for category in categories:
+        for aspect in REQUIREMENT_CATEGORIES[category].aspects:
+            if aspect not in out:
+                out.append(aspect)
+    return out
+
+
+def requirement_criterion(aspect):
+    entry = REQUIREMENT_ASPECTS[aspect]
+    return '%s：%s' % (entry.name, entry.template)
+
 
 ID_RE = re.compile(r'^([A-Z]{3})-([A-Z])(\d{2})$')
 METHOD_ORDER = ''.join(m.code for m in METHODS)
@@ -1425,6 +1494,16 @@ def render_markdown():
     for p in CIRCUIT_TYPES:
         lines.append('| %s | %s | %s | %s | %s | `%s` |' % (
             p.name, p.title, p.domain, '、'.join(p.subjects), '、'.join(p.materials), _cell(p.pattern)))
+    lines += ['', '## 需求类别与审查方面', '',
+              '每条需求在 `intent.requirements[].categories` 选一个或几个类别；每个类别的审查方面固定，'
+              '计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。几个类别的方面取并集。', '',
+              '| 类别 | 名称 | 审查方面 | 落到 |', '|---|---|---|---|']
+    for key, category in REQUIREMENT_CATEGORIES.items():
+        lines.append('| %s | %s | %s | %s |' % (key, category.name, '、'.join(
+            '%s %s' % (a, REQUIREMENT_ASPECTS[a].name) for a in category.aspects), category.targets))
+    lines += ['', '| 审查方面 | 判据模板 |', '|---|---|']
+    for key, aspect in REQUIREMENT_ASPECTS.items():
+        lines.append('| %s %s | %s |' % (key, aspect.name, _cell(aspect.template)))
     lines += ['', '## 覆盖维度', '', '| 维度（results.scope_checks 键） | 规则 |', '|---|---|']
     for name, rule in COVERAGE_RULES.items():
         lines.append('| %s | %s %s |' % (name, rule, title(rule)))

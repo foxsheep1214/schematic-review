@@ -124,7 +124,7 @@ class GeneratedOutputTest(unittest.TestCase):
         intent = {'schema_version': 3, 'expect': {'SOC': 1},
                   'features': {'CUSTOM': {'applicability': 'APPLICABLE', 'citation': 'synthetic requirement'}},
                   'requirement_source': doc_for({'REQ-1': 'synthetic'}),
-                  'requirements': [{'id': 'REQ-1', 'criterion': 'synthetic criterion'}],
+                  'requirements': [{'id': 'REQ-1', 'categories': ['OUTPUT_SPEC'], 'interpretation': 'synthetic reading'}],
                   'circuits': [{'id': 'C-' + p.name, 'type': p.name, 'refs': ['U1'], 'states': ['run'],
                                 'citation': 'synthetic'} for p in catalog.CIRCUIT_TYPES]}
         plans = [build_review_plan(db, intent), build_review_plan(self.board())]

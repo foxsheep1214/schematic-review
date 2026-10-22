@@ -964,5 +964,54 @@
   "file": "scripts/validate_review.py",
   "old": "errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))",
   "new": "errors.extend(requirement_clause_errors(key, item, expected[key].get(\"criterion\")))"
+ },
+ {
+  "id": "M139",
+  "name": "a requirement asks only its first category's aspects",
+  "file": "scripts/catalog.py",
+  "old": "    for category in categories:\n        for aspect in REQUIREMENT_CATEGORIES[category].aspects:",
+  "new": "    for category in categories[:1]:\n        for aspect in REQUIREMENT_CATEGORIES[category].aspects:"
+ },
+ {
+  "id": "M140",
+  "name": "the reviewer's interpretation becomes the row criterion",
+  "file": "scripts/plan_board.py",
+  "old": "criterion=catalog.requirement_criterion(aspect), trigger=[original['locator']])",
+  "new": "criterion=item['interpretation'], trigger=[original['locator']])"
+ },
+ {
+  "id": "M141",
+  "name": "the aspect is left out of the row object",
+  "file": "scripts/plan_board.py",
+  "old": "row = self.add_check('REQ-D01', dict(obj, aspect=aspect), key=aspect,",
+  "new": "row = self.add_check('REQ-D01', dict(obj), key=aspect,"
+ },
+ {
+  "id": "M142",
+  "name": "an unknown requirement category is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "                    if category not in catalog.REQUIREMENT_CATEGORIES:",
+  "new": "                    if False:"
+ },
+ {
+  "id": "M143",
+  "name": "a free requirement criterion is accepted",
+  "file": "scripts/plan_review.py",
+  "old": "            if 'criterion' in item:\n                errors.append('requirement.%s.criterion 不写",
+  "new": "            if False:\n                errors.append('requirement.%s.criterion 不写"
+ },
+ {
+  "id": "M144",
+  "name": "the interpretation is not carried on the row",
+  "file": "scripts/plan_board.py",
+  "old": "                row['interpretation'] = item['interpretation']\n",
+  "new": ""
+ },
+ {
+  "id": "M145",
+  "name": "repeated aspects of several categories are kept twice",
+  "file": "scripts/catalog.py",
+  "old": "            if aspect not in out:\n                out.append(aspect)",
+  "new": "            if True:\n                out.append(aspect)"
  }
 ]

@@ -166,9 +166,13 @@ class BoardPlanning:
             if 'status' in item:
                 obj['requirement_status'] = item['status']
             original = originals[item['id']]
-            row = self.add_check('REQ-D01', obj, criterion=item['criterion'], trigger=[original['locator']])
-            row['source_text'] = {'locator': original['locator'], 'section': original['section'],
-                                  'columns': [dict(c) for c in original['columns']]}
+            # One row per (requirement, aspect); the reviewer's reading rides on the row, outside the check identity.
+            for aspect in catalog.requirement_aspects(item['categories']):
+                row = self.add_check('REQ-D01', dict(obj, aspect=aspect), key=aspect,
+                                     criterion=catalog.requirement_criterion(aspect), trigger=[original['locator']])
+                row['interpretation'] = item['interpretation']
+                row['source_text'] = {'locator': original['locator'], 'section': original['section'],
+                                      'columns': [dict(c) for c in original['columns']]}
         # The declared inventory includes symbol pins omitted from connected nets.
         devices = self.intent.get('devices') or {}
         for ref, part in sorted(self.db.get('parts', {}).items()):

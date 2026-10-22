@@ -142,5 +142,12 @@
 | M136 | a source requirement missing from the intent is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_source.py::IntentTests::test_every_source_requirement_is_in_the_intent_and_every_intent_requirement_in_the_source |
 | M137 | an intent requirement not in the source is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_source.py::IntentTests::test_every_source_requirement_is_in_the_intent_and_every_intent_requirement_in_the_source |
 | M138 | requirement clauses are checked against the criterion | `scripts/validate_review.py` | KILLED | FAILED scripts/tests/test_requirement_clauses.py::RequirementClauseTests::test_clauses_split_the_original_text_not_the_criterion |
+| M139 | a requirement asks only its first category's aspects | `scripts/catalog.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::CategoryTableTests::test_aspects_of_several_categories_are_their_union_without_repeats |
+| M140 | the reviewer's interpretation becomes the row criterion | `scripts/plan_board.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::PlanTests::test_one_row_per_requirement_and_aspect_with_the_template_criterion |
+| M141 | the aspect is left out of the row object | `scripts/plan_board.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::PlanTests::test_one_row_per_requirement_and_aspect_with_the_template_criterion |
+| M142 | an unknown requirement category is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::IntentTests::test_a_requirement_names_known_categories_once_each_and_an_interpretation |
+| M143 | a free requirement criterion is accepted | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::IntentTests::test_a_free_criterion_is_refused |
+| M144 | the interpretation is not carried on the row | `scripts/plan_board.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::PlanTests::test_one_row_per_requirement_and_aspect_with_the_template_criterion |
+| M145 | repeated aspects of several categories are kept twice | `scripts/catalog.py` | KILLED | FAILED scripts/tests/test_requirement_categories.py::CategoryTableTests::test_aspects_of_several_categories_are_their_union_without_repeats |
 
 全部杀死。

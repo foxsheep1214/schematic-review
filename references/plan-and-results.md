@@ -39,8 +39,8 @@
   },
   "requirement_source": {"path": "/绝对路径/需求.md", "sha256": "requirements_extract.py 输出的 sha256"},
   "requirements": [{
-    "id": "REQ-USB", "status": "CONFIRMED",
-    "criterion": "PHY 与连接器双向链路、供电及外部带电状态满足接口条件"
+    "id": "REQ-USB", "status": "CONFIRMED", "categories": ["PROTOCOL"],
+    "interpretation": "PHY 与连接器双向链路、供电及外部带电状态满足接口条件"
   }],
   "circuits": [{
     "id": "USB-PORT", "type": "USB",
@@ -79,10 +79,13 @@
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
 - 需求不手抄：`python3 scripts/requirements_extract.py 需求.md --json record/requirements.json` 逐字抄录需求表
   （首列为 ID/编号的表格行，或 `- <编号>：<文字>` 列表项），每条各列分开、带所在章节与 `文件:行号`，并给文件 sha256。
-  `requirement_source` 写文件路径和这个 sha256，`requirements[]` 每项只写 `id`、`criterion`（本次在原理图上判什么，
-  不抄原文）和 `status`，不写 `text`、`citation`。需求文档里每个编号都要有一项（优化目标、明确排除也一样），
+  `requirement_source` 写文件路径和这个 sha256，`requirements[]` 每项只写 `id`、`categories`、`interpretation`
+  和 `status`，不写 `text`、`citation`、`criterion`。`categories` 从 [规则总表](check-catalog.md#需求类别与审查方面)
+  的需求类别表选一个或几个；每个类别的审查方面固定，计划按（需求，方面）各生成一行 REQ-D01，判据取方面模板，
+  几个类别的方面取并集。`interpretation` 写这条需求要在原理图上落实什么（不抄原文），挂在每一行上，不进检查标识；
+  不适用的方面在结果里判 NA 并给依据，不从类别里删方面。需求文档里每个编号都要有一项（优化目标、明确排除也一样），
   文档里没有的编号被拒收；文档改了 sha256 就变，重新抄录并复看改过的需求。源不是表格时先整理成同格式的需求表并存档。
-  计划的 REQ-D01 行带 `source_text`（出处、章节、各列原文），结果的 `requirement_clauses` 按顺序拼接须等于这段原文。
+  计划的 REQ-D01 行带 `source_text`（出处、章节、各列原文），每个方面行结果的 `requirement_clauses` 按顺序拼接都须等于这段原文。
 - `requirements[].status`：已确认（CONFIRMED）、提案（PROPOSED）、未定（OPEN）、暂缓（DEFERRED）。
   保留需求原文和源状态，先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求)
   确定本次判据的实际确认状态，不省略真实未定项。OPEN 的 REQ-D01 必须 INSUFFICIENT + REQUIREMENT_OPEN；
