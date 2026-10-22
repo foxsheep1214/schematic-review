@@ -21,10 +21,17 @@ its result (rule_gaps) and the report shows them in the SR feedback section. A r
 than automatic-scan rows and revision records, is refused when a previous plan is merged and when the gate rebuilds
 the plan; the hand-written splits of a board-wide row become rule gaps too. R5 bench: 6 and 9 gaps accepted, 7
 requirement rows written as tests refused; whole plan without the added rows 504 of 504 and 508 (alignment 99.6 %),
-98.1 % if they were counted. The 15 gaps, each a rule the tool should write next: current an IC pin takes through an
-external resistor into an internal switch, sense or protection pin (6, five objects), the stress of one switch in one state
-(3), recalculation of a figure the design report claims (2), sampling-divider accuracy, connector current, the PCB
-implementation handoff and a port ESD test (1 each). The two-record comparison over steps 1-7 is in the design doc's
+98.1 % if they were counted. The 15 gaps all sit under rules the catalog already has
+(DEV-C01, DEV-C03, DEV-C04, DOC-Q01, DOC-D02, PRO-D03): what is missing is the derivation that puts a rule on a
+given object, not the rule. Rechecked against the current planner by rule and part: 5 already have a row for the same
+object (an IC's fault and high-voltage startup pins, connector current, an external port's protection, sampling
+accuracy); 7 have only a whole-circuit row, not one per part or pin (the stress of three switches, the discharge and
+sense pins of an IC fed through a resistor from a high-voltage node), and the derivation to add is a row per IC pin fed
+through a resistor from a high-voltage node, which the DEV-C01 criterion already asks for; 3 have no row: 2 recalculate
+a figure the design report or calculation file claims (the derivation to add is one DOC-Q01 row per claimed figure),
+and 1, the PCB implementation handoff, was put under the wrong rule (DOC-D02 is test-node reservation) and is carried by
+a row's handoff, so it is no gap. The recheck compared rule and part only; whether the 5 existing rows ask the same
+question is still to be read row by row. The two-record comparison over steps 1-7 is in the design doc's
 acceptance table: requirement rows 61 of 61 (0 of 38 before), whole plan 99.2 % (94.8 % before), rail and circuit
 candidates equal, +9.1 % rows; category and parameter agreement between two agents is left for the next two-agent
 run. Tests first (test_rule_gaps, 7 tests; the tests that carried manual rows through a previous plan register them as
@@ -32,7 +39,7 @@ gaps), 1915 tests pass, contract 500, replay bench 195/195, mutations M184-M196 
 touched files rerun.
 
 - Event: review:SR-20261021-R5-claude-fd6a6dd/record/review-plan.json (6 hand-added rows), review:SR-20261021-R5-codex-fd6a6dd/record/review-plan.json (16 hand-added rows), user:2026-10-22 (分步完成第 1 到第 7 步)
-- Causes: rule_not_enforced 1, rule_missing 15
+- Causes: rule_not_enforced 10, judgment 1
 - Changed: scripts/rule_gaps.py, scripts/plan_review.py, scripts/validate_review.py, scripts/compare_reviews.py, scripts/render_report.py, scripts/tests/test_rule_gaps.py, scripts/tests/test_manual_decoupling.py, scripts/tests/test_revision_impact.py, scripts/tests/test_check_explanations.py, scripts/tests/test_decoupling.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_plan_handoff.py, SKILL.md, references/plan-and-results.md, references/automation.md, references/check-catalog.md, docs/2026-10-22-fixed-requirements-and-review-points.md, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
 
 ## Every official supply pin of a declared device is a decoupling group (2026-10-22)
