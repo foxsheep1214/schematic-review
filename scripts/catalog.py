@@ -759,6 +759,17 @@ QUESTIONS = {
 # 行的 object 不带 state，问题模板也不带“{state} 时”。纹波预算（PWR-C14）和变换器各条随负载/模式变化，仍逐状态。
 STATE_INVARIANT = frozenset({'PWR-T05', 'ANA-D01', 'SIG-T04', 'SIG-D07', 'SIG-D04'})
 
+# 系统功能（功能树设计 §3.4）：这些规则问的是全板的电源树、地、监控、时序和主控引脚，行归该系统功能。
+# 按电路展开的行仍归电路（RST-T03 到第 5 步才移到 SYS-SEQUENCE）。
+SYSTEM_FUNCTIONS = {
+    'SYS-POWER': ('PWR-T01', 'PWR-C01', 'PWR-A01', 'PWR-A04'),
+    'SYS-GROUND': ('PWR-T06',),
+    'SYS-MONITOR': ('PWR-A06', 'PWR-T04'),
+    'SYS-SEQUENCE': ('RST-T03',),
+    'SYS-PINMAP': ('SIG-D13',),
+}
+SYSTEM_OF_RULE = {rule: sid for sid, rules in SYSTEM_FUNCTIONS.items() for rule in rules}
+
 # 电路候选的基础工作态（scripts/circuit_candidates.py）：按类型固定，审查员增减一个态要引用手册里的模式名。
 # 控制器的 LL/HL、突发、掉电等模式是在这个基础清单上按资料补充的，候选一致不等于工作态覆盖完整。
 CANDIDATE_STATES = {

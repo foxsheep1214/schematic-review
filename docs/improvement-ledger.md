@@ -7,6 +7,31 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Function tree, step 2: every row has one owner and a circuit row is named by its candidates (2026-10-21)
+
+Step 2 of the function-tree design gives every plan row an owner and stops circuit-level rows from drifting with
+how a reviewer drew the circuit. On the R5 pair each reviewer's own circuits share none of the 107 and 163
+circuit-level rows: the rows carried the member list, the core part and the net spellings in their identity.
+`scripts/row_owner.py` (new) writes `owner` on each row when the plan is assembled: a row about a circuit belongs
+to it, a row of a system rule (`catalog.SYSTEM_FUNCTIONS`: SYS-POWER, GROUND, MONITOR, SEQUENCE, PINMAP) to that
+system function, a row about parts to the circuit that owns them (step 1's `owned`; several parts must share one
+owner), the rest to the board. The plan lists each circuit's owned parts in `owners` and the rows per owner in
+`summary.owners`; validate_review recomputes every written owner from `owners` and refuses a row whose owner
+differs, a row the reviewer adds later needs none. Circuit-level row objects carry `circuit_key` (the candidate
+ids, joined with `+` for a merge); with it, `check_key` leaves `ref`, `refs` and `nets` out of the identity.
+Revision checks ignore `owner` as they ignore `check_key`. The report's count table gains one row splitting the
+checks by owner (the tree order is step 6); circuit-expanded RST-T03 rows stay with their circuit until step 5.
+R5 bench: once both intents accept one candidate set, 132 of 132 and 133 circuit-level rows pair (the extra one
+is a debug port one reviewer judged applicable) and 350 of 420 and 425 rows overall; with every circuit drawn one
+member short and its nets spelled with the sheet path on one side, the old identity pairs 0 and the new 132; 190
+of 200 and 194 of 204 part rows go to a circuit; system 21 rows, circuits 322 and 327, board 77. Tests first
+(test_row_owner, 9 tests, and a report case), 1795 tests pass, contract 500, prototypes 67, replay bench 195/195
+unchanged, mutations M80–M84 added and killed.
+
+- Event: user:2026-10-21 (迁移分 7 步逐步来做，每做完一步形成一份提交；第 2 步：行归属), review:SR-20261021-R5-claude-fd6a6dd/record/review-plan.json (circuit rows), review:SR-20261021-R5-codex-fd6a6dd/record/review-plan.json (circuit rows)
+- Causes: rule_missing 1, rule_not_enforced 1
+- Changed: scripts/row_owner.py, scripts/catalog.py, scripts/check_key.py, scripts/plan_review.py, scripts/validate_review.py, scripts/revision_impact.py, scripts/render_report.py, scripts/tests/test_row_owner.py, scripts/tests/test_render_and_pack.py, evals/mutation/mutations.json, evals/mutation/README.md, evals/mutation/RESULTS.md, SKILL.md, references/plan-and-results.md, references/automation.md, docs/2026-10-21-function-tree-design.md, docs/improvement-ledger.md
+
 ## Function tree, step 1: every part has one owning circuit (2026-10-21)
 
 The function-tree design (docs/2026-10-21-function-tree-design.md) organizes the review as board, system

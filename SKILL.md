@@ -120,7 +120,8 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 候选 = 类型 + 核心器件（核验角色的 IC，或无人驱动 / 声明了角色的开关），成员带走到它的路径（`via`，是归属关系不是导通主张）；
 决定每个候选恰一条：accept / merge / split / reject（OUTSIDE_SCOPE、NOT_A_CIRCUIT、DUPLICATE_OF）/ add（只收未归属器件），
 merge、split、reject、add 和加工作态都要能定位的引用。每颗被持有的器件恰好归一块电路（`owned`），其余持有它的电路只引用它；
-同一级打平的器件（候选的 `shared`）写 own 决定（`ref`、`candidate`、可定位引用）裁定归谁。候选漏了器件不手加：记 REQ-Q08、改规则；
+同一级打平的器件（候选的 `shared`）写 own 决定（`ref`、`candidate`、可定位引用）裁定归谁。
+计划每行带所属对象 `owner`（电路、系统功能或全板），器件行归拥有该器件的电路；电路级行按候选编号与工作态识别，不随画法变。候选漏了器件不手加：记 REQ-Q08、改规则；
 `unassigned` 与 `gaps`（没核验角色的 IC、缺引脚名）先清。
 格式见 [计划与结果](references/plan-and-results.md#一intentjsonschema_version-3)，规则见 [自动检查](references/automation.md#二检查器)。
 

@@ -551,5 +551,40 @@
   "file": "scripts/circuit_decisions.py",
   "old": "        if sorted(have.get('owned') or []) != want['owned']:",
   "new": "        if False:"
+ },
+ {
+  "id": "M80",
+  "name": "a circuit row's member list and nets stay in its identity",
+  "file": "scripts/check_key.py",
+  "old": "        obj = {k: v for k, v in obj.items() if k not in DRAWING_FIELDS}",
+  "new": "        obj = dict(obj)"
+ },
+ {
+  "id": "M81",
+  "name": "a circuit row of a system rule goes to the system function",
+  "file": "scripts/row_owner.py",
+  "old": "    if obj.get('circuit'):\n        return {'kind': 'CIRCUIT', 'id': obj['circuit']}",
+  "new": "    if obj.get('circuit') and check.get('rule') not in catalog.SYSTEM_OF_RULE:\n        return {'kind': 'CIRCUIT', 'id': obj['circuit']}"
+ },
+ {
+  "id": "M82",
+  "name": "a part belongs to every circuit that lists it, not the one that owns it",
+  "file": "scripts/row_owner.py",
+  "old": "    if all('owned' in c for c in circuits):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M83",
+  "name": "a written owner the owner table does not give is accepted",
+  "file": "scripts/row_owner.py",
+  "old": "        if isinstance(check, dict) and 'owner' in check and check['owner'] != owner(check, parts):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M84",
+  "name": "a circuit row is keyed by its display name, not its candidate ids",
+  "file": "scripts/plan_review.py",
+  "old": "'circuit_key': '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']])),",
+  "new": "'circuit_key': circuit['id'],"
  }
 ]

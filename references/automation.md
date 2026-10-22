@@ -279,6 +279,8 @@ schema 1，`rules_version` 2026-10-21.1，绑定 `db_sha256` 与 intent 的 `inp
   隔离带 4、链路的核心器件与端点 5；最强的唯一认领者拥有它，其余候选只引用它。打平的器件谁也不拥有，列入 `shared`，由 own 决定裁定。
   谁都没走到的已贴器件进 `unassigned`（REQ-Q08 逐颗列出），没核验角色的 IC 和缺引脚名的感性件进 `gaps`。
 - 生成对器件顺序和页码变化是确定的；候选文件随记录打包，改了 db 或 intent 的输入指纹就重新生成、重新决定。
+- 行归属（`scripts/row_owner.py`）：计划汇总时给每行写 `owner`，按行对象、规则和各电路拥有的器件推出，写入计划的 `owners`；
+  `validate_review.py` 按 `owners` 重算，写错的行被拒绝。
 
 **装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
 与 `citation`。`population` 只接受 JSON `true/false`，缺项表示未知；`jumpers` 按位号填

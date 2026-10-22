@@ -28,6 +28,7 @@ from collections import Counter
 from checkers import REGISTRY, domains as domains_lib, passive_stress, registry_cold_rules, registry_hot_rules
 import circuit_decisions
 import check_key
+import row_owner
 from checkers import powertree
 from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, RAIL_RE, is_ground, CONNECTOR, IC, MOSFET, TVS, UNKNOWN, ZENER, NetGraph, is_analog_sense_pair, normalize
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
@@ -583,7 +584,8 @@ class ReviewPlanner:
                     invariant = rule in catalog.STATE_INVARIANT
                     if invariant and index:
                         continue   # asked once per circuit, with the first state's rows
-                    obj = {'circuit': circuit['id'], 'ref': refs[0], 'refs': refs, 'nets': circuit.get('nets', [])}
+                    obj = {'circuit': circuit['id'], 'circuit_key': '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']])),
+                           'ref': refs[0], 'refs': refs, 'nets': circuit.get('nets', [])}
                     if not invariant:
                         obj['state'] = state
                     key = circuit['id'] if invariant else f'{circuit["id"]}-{state}'
@@ -1223,8 +1225,13 @@ class ReviewPlanner:
             check.pop('check_explanation', None)
         plan['check_explanations'] = catalog.explanations_for(c['rule'] for c in plan['checks'])
         plan['check_explanations_version'] = catalog.EXPLANATION_VERSION
+        circuits = self.intent.get('circuits', [])
+        parts = row_owner.part_owners(circuits)
         for check in plan['checks']:   # merge plan §5: rows are compared by what they ask, not by their ids or names
             check['check_key'] = check_key.key(check)
+            check['owner'] = row_owner.owner(check, parts)
+        plan['owners'] = row_owner.table(circuits, parts)
+        plan['summary']['owners'] = row_owner.counts(plan['checks'])
         return plan
 
 

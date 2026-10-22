@@ -73,6 +73,16 @@ class RenderReportTests(unittest.TestCase):
         for code in INTERNAL_CODES:
             self.assertNotIn(code, text)
 
+    def test_counts_split_the_checks_by_owner_when_the_plan_records_owners(self):
+        p, r, db = decisive()
+        text, gate = report(p, r, db)
+        self.assertNotIn('检查按所属', text)   # a plan without owners shows no owner row
+        p.setdefault('summary', {})['owners'] = [{'kind': 'SYSTEM', 'id': 'SYS-POWER', 'rows': 2},
+                                  {'kind': 'CIRCUIT', 'id': 'A', 'rows': 5}, {'kind': 'CIRCUIT', 'id': 'B', 'rows': 1},
+                                  {'kind': 'BOARD', 'rows': 7}]
+        text = render(p, r, gate)
+        self.assertIn('| 检查按所属：系统功能 / 功能电路 / 全板与文档 | 2 / 6（2 块电路） / 7 |', text)
+
     def test_one_todo_list_ordered_by_potential_consequence(self):
         rows = [{'id': 'C%d' % i, 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA',
                  'potential_severity': sev} for i, sev in enumerate(('P2', 'P0', 'P1'))]

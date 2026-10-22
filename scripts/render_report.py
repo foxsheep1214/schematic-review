@@ -501,6 +501,20 @@ def render_check_explanations(plan, results):
     return out
 
 
+def owner_counts(plan):
+    """One count row splitting the plan's checks by owner (function tree, step 2); none for a plan without owners."""
+    owners = (plan.get('summary') or {}).get('owners')
+    if not isinstance(owners, list) or not owners:
+        return []
+    rows = Counter()
+    for entry in owners:
+        if isinstance(entry, dict) and isinstance(entry.get('rows'), int):
+            rows[entry.get('kind')] += entry['rows']
+    circuits = sum(1 for e in owners if isinstance(e, dict) and e.get('kind') == 'CIRCUIT')
+    return ['| 检查按所属：系统功能 / 功能电路 / 全板与文档 | %d / %d（%d 块电路） / %d |' % (
+        rows['SYSTEM'], rows['CIRCUIT'], circuits, rows['BOARD'])]
+
+
 def render(plan, results, gate, notes=None, title=None, detail='compact'):
     results = results_model.expand(results)
     revision = (plan or {}).get('review_mode') == 'revision'
@@ -739,6 +753,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     counts_block = ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
             '| 功能判定 通过 / 没通过 / 未定 | %d / %d / %d |' % (verdicts.get('PASS', 0), verdicts.get('FAIL', 0), verdicts.get('OPEN', 0)),
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
+            ] + owner_counts(plan) + [
             '| 通过 / 没通过 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
             '| 与本产品无关（NA） | %d |' % counts.get('NA', 0),
             '| 原理图阶段不判、交给后续环节 | %d |' % counts.get('NA_OUTSIDE_STAGE', 0),

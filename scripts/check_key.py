@@ -6,6 +6,8 @@ pins, state, assembly; a page where the rule is about the page) and the atomic c
 presentation, so a renamed circuit asks the same check; a net is never shortened to its last path segment, so
 /A/TEMP and /B/TEMP stay two checks. The rule revision is a digest of the catalog entry: a reworded rule asks a
 new check.
+A circuit-level row names its circuit by `circuit_key` (the candidate ids it came from) and its state; the member list,
+the core part and the net spellings are how that circuit was drawn, not what the row asks (function-tree design, step 2).
 """
 import hashlib
 import json
@@ -13,6 +15,7 @@ import json
 import catalog
 
 DISPLAY_FIELDS = ('circuit',)
+DRAWING_FIELDS = ('ref', 'refs', 'nets')
 
 
 def _digest(value, n):
@@ -37,8 +40,10 @@ def canonical(value):
 
 def identity(check):
     rule = check.get('rule') or str(check.get('id', '')).split('.')[0]
-    return {'rule': rule, 'rule_revision': rule_revision(rule),
-            'object': canonical(check.get('object') if isinstance(check.get('object'), dict) else {}),
+    obj = check.get('object') if isinstance(check.get('object'), dict) else {}
+    if 'circuit_key' in obj:
+        obj = {k: v for k, v in obj.items() if k not in DRAWING_FIELDS}
+    return {'rule': rule, 'rule_revision': rule_revision(rule), 'object': canonical(obj),
             'criterion': check.get('criterion')}
 
 
