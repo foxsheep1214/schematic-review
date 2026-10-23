@@ -7,6 +7,19 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A datasheet title naming a power factor controller verifies as a PWM controller (2026-10-23)
+
+The first acceptance re-review of R5 stopped at the datasheet audit: a PFC controller's datasheet title says
+"Power Factor Controller", the quote was found on the page, but the kind check answered QUOTE_LACKS_TYPE because the
+PWM-controller cue words knew "PFC controller" and "power factor correction controller" only. The IC was then not a
+verified anchor, its converter circuit was not built and its pin-table row waited for a declaration the reviewer
+could not give without rewording the vendor's title. The cue words now include "power factor controller". Tests
+first; mutation M398 added and killed.
+
+- Event: review:SR-20261023-R5-验收-codex-6d74689/SR缺陷.md (SR-001, QUOTE_LACKS_TYPE on a verbatim title)
+- Causes: knowledge_missing 1
+- Changed: docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, scripts/datasheet_kinds.py, scripts/tests/test_ic_kinds.py
+
 ## Life and ageing are judged on one mission profile, and every wear-out part gets a fixed life row (2026-10-23)
 
 Two independent R5 reviews read "10 years" two ways: one took 87600 h of full-time operation, the other 29200 h of

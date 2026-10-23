@@ -100,6 +100,8 @@ class QuoteVerificationTests(unittest.TestCase):
 
     def test_a_pd_controller_quote_is_not_a_pwm_controller(self):
         self.assertEqual(dk.cues('USB PD controller with integrated power switch'), {'pd_controller'})
+        # a datasheet title that names the PFC role without the word "correction"
+        self.assertEqual(dk.cues('Enhanced, High-Efficiency Power Factor Controller'), {'pwm_controller'})
 
     def test_audit_covers_integrated_circuits_and_suggests_their_role(self):
         materials = [{'status': 'AVAILABLE', 'refdes': ['U7', 'R1'], 'document': {'path': 'u.pdf'}}]
