@@ -53,7 +53,7 @@ KINDS = {'U1': 'pwm_controller', 'U3': 'opto', 'U4': 'shunt_reference', 'U5': 'p
 
 
 def intent_for(db, kinds=KINDS, rails=None):
-    intent = {'schema_version': 3, 'input_sha256': board_intent.input_fingerprint(db), 'device_kinds': {},
+    intent = {'schema_version': 4, 'input_sha256': board_intent.input_fingerprint(db), 'device_kinds': {},
               'power_rails': rails if rails is not None else {
                   'PGND': {'voltage_v': {'min': 0, 'max': 0}, 'domain': 'PRI'},
                   'SGND': {'voltage_v': {'min': 0, 'max': 0}, 'domain': 'SEC'},

@@ -102,7 +102,7 @@ def derive(plan, results):
                                   % (planned['id'], field, existing.get(field), fid, row.get(field)))
             continue
         if existing is not None:
-            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence'):
+            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings'):
                 if field in existing:
                     row[field] = existing[field]
             existing.clear()

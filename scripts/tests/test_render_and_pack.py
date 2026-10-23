@@ -454,7 +454,7 @@ class PackReviewTests(unittest.TestCase):
 
     def test_hand_drawn_circuits_are_not_packed_without_their_candidate_file(self):
         path = self.work / 'intent.json'
-        path.write_text(json.dumps({'schema_version': 3, 'circuits': [
+        path.write_text(json.dumps({'schema_version': 4, 'circuits': [
             {'id': 'BIAS', 'type': 'POWER_CONVERTER', 'refs': ['Q2'], 'states': ['run'], 'citation': 'p1'}]}))
         errors, _ = self.run_pack()
         self.assertTrue(any('circuit-candidates.json' in e for e in errors), errors)
@@ -465,7 +465,7 @@ class PackReviewTests(unittest.TestCase):
         self.ledger['circuit-candidates.json'] = str(self.work / 'circuit-candidates.json')
         errors, _ = self.run_pack()
         self.assertTrue(any('circuit_decisions missing' in e for e in errors), errors)
-        intent = {'schema_version': 3, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]}
+        intent = {'schema_version': 4, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]}
         import circuit_decisions
         path.write_text(json.dumps(circuit_decisions.write_circuits(intent, candidates)))
         errors, _ = self.run_pack()

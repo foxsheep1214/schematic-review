@@ -1,0 +1,274 @@
+{
+  "schema_version": 4,
+  "rail_exclusions": {
+    "VOUT_N": "隔离输出的回流网（输出负端），不是供电轨"
+  },
+  "input_sha256": "73f5a4b872f03aa8df8fdb8409baa9f354a297f41319380e8ceb9e8bb2a3de59",
+  "assemblies": [
+    {
+      "id": "run",
+      "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 BOM: every placed symbol in_bom/on_board, no DNP",
+      "population": {
+        "C1": true,
+        "C9": true,
+        "C10": true,
+        "C13": true,
+        "C14": true,
+        "In1": true,
+        "R1": true,
+        "R2": true,
+        "Reg1": true,
+        "Reg2": true,
+        "C3": true,
+        "C4": true,
+        "C44": true,
+        "C45": true,
+        "D1": true,
+        "D4": true,
+        "Out1": true,
+        "Q1": true,
+        "Q2": true,
+        "R7": true,
+        "R8": true,
+        "R9": true,
+        "R10": true,
+        "R19": true,
+        "Reg3": true,
+        "T1": true,
+        "C15": true,
+        "C16": true,
+        "C18": true,
+        "C19": true,
+        "C21": true,
+        "C23": true,
+        "C24": true,
+        "C25": true,
+        "C26": true,
+        "C28": true,
+        "C29": true,
+        "C30": true,
+        "C31": true,
+        "C32": true,
+        "C33": true,
+        "C42": true,
+        "C43": true,
+        "CpuIn1": true,
+        "CpuOut1": true,
+        "R3": true,
+        "R4": true,
+        "R5": true,
+        "R11": true,
+        "R12": true,
+        "R13": true,
+        "R14": true,
+        "R15": true,
+        "R16": true,
+        "R17": true,
+        "R18": true,
+        "TH1": true,
+        "U1": true,
+        "U3": true,
+        "U5": true,
+        "U7": true,
+        "U8": true,
+        "U9": true,
+        "U12": true,
+        "C34": true,
+        "C35": true,
+        "C36": true,
+        "C38": true,
+        "C39": true,
+        "C40": true,
+        "C41": true,
+        "D3": true,
+        "J1": true,
+        "Q3": true,
+        "Q4": true,
+        "Q5": true,
+        "R20": true,
+        "R21": true,
+        "R22": true,
+        "R23": true,
+        "R24": true,
+        "R25": true,
+        "R26": true,
+        "U10": true,
+        "U11": true
+      }
+    }
+  ],
+  "inductive_loads": {
+    "schema_version": 2,
+    "loads": [
+      {
+        "id": "FLY",
+        "ref": "T1",
+        "kind": "flyback_transformer",
+        "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 gen_symboles.py MSD1514: L1 pins 1(dot)-3 per msd1514.pdf p3; L2 pins 2-4, pin-2 dot assumed by symmetry (author: to verify on a real part)",
+        "windings": [
+          {
+            "role": "primary",
+            "pins": [
+              "1",
+              "3"
+            ],
+            "dot": "1"
+          },
+          {
+            "role": "secondary",
+            "pins": [
+              "2",
+              "4"
+            ],
+            "dot": "2"
+          }
+        ]
+      }
+    ]
+  },
+  "power_switches": {
+    "schema_version": 2,
+    "switches": [
+      {
+        "id": "QPRI",
+        "ref": "Q1",
+        "role": "flyback_primary",
+        "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 flyback.kicad_sch: Q1 drain SW_PRI on T1.3",
+        "source_return": {
+          "ref": "R19",
+          "ground_net": "GND",
+          "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 flyback.kicad_sch: R19 7m5 ISENSE_P to GND"
+        }
+      },
+      {
+        "id": "QSR",
+        "ref": "Q2",
+        "role": "synchronous_rectifier",
+        "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 README: UCC24612 drives Q2 SR",
+        "synchronous_rectifier": {
+          "controller_ref": "U12",
+          "channel": "n",
+          "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 flyback.kicad_sch: U12 VD=SW_SEC, VS=VOUT_N, VG to Q2 gate"
+        }
+      }
+    ]
+  },
+  "circuit_decisions": [
+    {
+      "candidate": [
+        "POWER_CONVERTER-Q1",
+        "POWER_CONVERTER-Q2"
+      ],
+      "decision": "merge",
+      "id": "PRI-FLYBACK",
+      "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 flyback.kicad_sch (page 3): T1 secondary SW_SEC/VOUT_P is rectified by Q2, whose gate U12 drives (VD=SW_SEC, VS=VOUT_N); the primary switch Q1 and the synchronous rectifier Q2 are one flyback converter"
+    },
+    {
+      "candidate": "POWER_PROTECTION-Out1",
+      "decision": "reject",
+      "reason": "DUPLICATE_OF",
+      "of": "PRI-FLYBACK",
+      "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 flyback.kicad_sch (page 3): Out1 on VOUT_P/VOUT_N is the converter output connector; every part the walk reaches from it (C3, C4, C43, C44, D3, R9, R13) is the output stage of PRI-FLYBACK"
+    },
+    {
+      "candidate": "POWER_CONVERTER-Q3",
+      "decision": "reject",
+      "reason": "NOT_A_CIRCUIT",
+      "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 page 5: J1 HV80_IN feeds Q3 (BSS127I, gate R26 on CS_GATE) and Q4 (MMBT2222 on CS_TOP/CS_EMIT), a linear current-limited bias feed into HV_BIAS, not a switching converter"
+    },
+    {
+      "candidate": "POWER_CONVERTER-Q4",
+      "decision": "reject",
+      "reason": "NOT_A_CIRCUIT",
+      "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 page 5: Q4 (MMBT2222 on CS_TOP/CS_EMIT) limits the current of the Q3 bias feed into HV_BIAS; with Q3 it is a linear stage, not a switching converter"
+    }
+  ],
+  "circuits": [
+    {
+      "id": "PRI-FLYBACK",
+      "type": "POWER_CONVERTER",
+      "refs": [
+        "C18",
+        "C23",
+        "C3",
+        "C4",
+        "C40",
+        "C42",
+        "C43",
+        "C44",
+        "C45",
+        "D1",
+        "D3",
+        "D4",
+        "Out1",
+        "Q1",
+        "Q2",
+        "R10",
+        "R11",
+        "R12",
+        "R13",
+        "R14",
+        "R19",
+        "R22",
+        "R23",
+        "R7",
+        "R8",
+        "R9",
+        "T1"
+      ],
+      "nets": [
+        "ISENSE_P",
+        "SW_PRI",
+        "SW_SEC",
+        "VIN",
+        "VOUT_N"
+      ],
+      "states": [
+        "startup",
+        "run",
+        "fault"
+      ],
+      "citation": "Nicolboy/KICAD-C2000-float-flyback@29fb9d9 flyback.kicad_sch (page 3): T1 secondary SW_SEC/VOUT_P is rectified by Q2, whose gate U12 drives (VD=SW_SEC, VS=VOUT_N); the primary switch Q1 and the synchronous rectifier Q2 are one flyback converter",
+      "candidate_ids": [
+        "POWER_CONVERTER-Q1",
+        "POWER_CONVERTER-Q2"
+      ],
+      "cross_cutting": false,
+      "anchors": [
+        "Out1",
+        "Q1",
+        "Q2"
+      ],
+      "owned": [
+        "C18",
+        "C23",
+        "C3",
+        "C4",
+        "C40",
+        "C42",
+        "C43",
+        "C44",
+        "C45",
+        "D1",
+        "D3",
+        "D4",
+        "Out1",
+        "Q1",
+        "Q2",
+        "R10",
+        "R11",
+        "R12",
+        "R13",
+        "R14",
+        "R19",
+        "R22",
+        "R23",
+        "R7",
+        "R8",
+        "R9",
+        "T1"
+      ]
+    }
+  ],
+  "circuit_candidates_sha256": "d3c481f4dc7f6318ffb37af68d19f982fde59bba5bdfc8c60188b23d48021d2f"
+}

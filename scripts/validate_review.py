@@ -23,7 +23,7 @@ from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
 from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
-from review_functions import validate_functions
+from review_functions import netlist_evidence_errors, validate_functions
 import check_key
 import row_owner
 import interfaces
@@ -387,6 +387,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     f"{key}: applicability changed without evidence")
         if result == "NA" and not outside_stage(item):  # stage NA keeps APPLICABLE (review_stage_scope)
             require(app == "NOT_APPLICABLE", f"{key}: NA requires NOT_APPLICABLE")
+            if (expected.get(key) or {}).get('requires'):
+                errors.extend(netlist_evidence_errors(key, item.get('applicability_evidence'), db))
         elif app == "NOT_APPLICABLE":
             require(False, f"{key}: NOT_APPLICABLE requires NA")
         elif app == "UNDETERMINED":

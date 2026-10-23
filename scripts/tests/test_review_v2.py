@@ -72,7 +72,7 @@ class V2Regressions(unittest.TestCase):
         intent = {
             'requirement_source': doc_for({'REQ-01': 'Startup guaranteed'}),
             'requirements': [{'id': 'REQ-01', 'categories': ['PROTOCOL'], 'interpretation': 'Defined state throughout sampling'}],
-            'circuits': [{'id': 'BOOT', 'type': 'STARTUP', 'refs': ['U1'],
+            'circuits': [{'id': 'BOOT', 'type': 'STARTUP', 'refs': ['U5'],   # U5 has the BOOT0 strap
                           'states': ['cold-start', 'brownout'], 'citation': 'SYNTHETIC states'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)

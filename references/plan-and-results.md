@@ -21,7 +21,7 @@
 
 ```json
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "review_mode": "first",
   "review_phase": "design_iteration",
   "input_sha256": "填写 decoupling.py 候选清单里的 input_sha256",
@@ -93,6 +93,14 @@
   每条记进改进台账，变成工具生成的规则。
 - `assemblies`（1–32 个，各带 `id` 与 `citation`）是全部检查器共用的装配状态；`devices` 是按位号的官方脚表。
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
+- `devices.<位号>.configurable`（intent 格式 4 起，一致性方案第 3 条）：可编程器件的配置组，每组
+  `{group, citation, allowed, affects[, title, required, set_points]}`——`group` 是角色的固定组（`catalog.CONFIG_GROUPS`，
+  pd_controller 为 CAPABILITY 能力发布、CABLE_VCONN 线缆与 VCONN、PROTECTION 保护门限与动作、SENSING 检测通道、GPIO 角色/默认态/
+  对外控制时序、COMPENSATION 环路补偿、SEQUENCE 放电与上下电时序）或自定组（须写 `title`），`citation` 是手册寄存器或配置章节，
+  `allowed` 是手册允许的范围，`affects` 是这组设置决定的方面，`required` 是需求要求的值，`set_points` 是这组选出的输出档位。
+  计划给已核验角色的每个固定组和每个声明组一行 CFG-D01（`CFG-D01.<组>.<位号>`，不随工况重复；没声明的组 WAITING_EVIDENCE），
+  mcu 这类没有固定组的可编程角色没声明任何组时给一行 `CFG-D01.DECLARE.<位号>` 要求声明或说明为什么没有；写了 `set_points`
+  的组另加一行 `PWR-C02.SET-POINT-<组>.<位号>` 逐档核输出精度。某组对该器件不存在时，该行记 NA 并引手册条款。
 - 需求不手抄：`python3 scripts/requirements_extract.py 需求.md --json record/requirements.json` 逐字抄录需求表
   （首列为 ID/编号的表格行，或 `- <编号>：<文字>` 列表项），每条各列分开、带所在章节与 `文件:行号`，并给文件 sha256。
   `requirement_source` 写文件路径和这个 sha256，`requirements[]` 每项只写 `id`、`categories`、`interpretation`
@@ -147,9 +155,10 @@
   由下一个认领者拥有，打平的要 own 决定。一颗非核心器件最多被两块电路持有。
   审查员认为候选漏了器件，不往电路里手加：那是规则或网表的缺口，记在 REQ-Q08（候选生成没有归属的器件逐颗列出）并改规则。
 
-## 二、review-plan.json（schema_version 6）
+## 二、review-plan.json（schema_version 7）
 
-6 版的行带 `owner` 与 `check_key`，计划带所属表 `owners` 和接口 `interfaces`；5 版及更早的计划（含据它写的结果）不再读，
+6 版起行带 `owner` 与 `check_key`，计划带所属表 `owners` 和接口 `interfaces`；7 版起电路检查项只在网表上有它问的机制时生成
+（见下文“电路规则的前提”），行带 `requires`，功能框架带 `not_asked`。6 版及更早的计划（含据它写的结果）不再读，
 校验、合并（`--merge-plan`）和改版比对（`--old-plan`）都拒收，按当前规则重新生成计划、重新审。
 
 ### 生成与合并
@@ -188,10 +197,12 @@
 | `trigger` | 实例化该项的可复现依据 |
 | `handoff` | 独立下游动作，可与任一结果并存；`constraint`/`verification` 逐条写接收方要做和要测的事，不写“执行 X 原文及其全部工况”这类只换编号的套话（`TEMPLATED_HANDOFF` 提示） |
 | `question` / `function_id` / `aspect` | 电路检查行才有：按规则模板填了电路、位号、状态和需求窗口的问题；所属功能框架；方面（= 规则标题）。问题里不许有禁止句（“不得…”“不把…外推”），校验 `question_errors` 拒绝，审查员补加的行同样受限 |
+| `requires` | 带前提的电路检查行才有：`{id, found[, unread]}`，前提名（`catalog.SUBJECT_REQUIRES`）、网表上满足前提的器件、网表说不清的器件；行 `object.ref` 取 `found`（没有时取 `unread`）的第一个 |
 
 `rule_plan[]` 回答“这类规则要不要跑”，`checks[]` 回答“具体审哪一项”，`functions[]` 是功能框架：
 每个 intent 电路一条，含 `id`（`FN-<电路 id>`）、`question`（由成员问题归纳，审查员可改）、`objects`、`states`、
-`members[]`（检查行 id、规则、方面、状态）、`blind_spots`（每条电路检查项的盲区一句）和 `checklist`
+`members[]`（检查行 id、规则、方面、状态）、`blind_spots`（每条问了的电路检查项的盲区一句）、`not_asked[]`
+（前提不成立、没有问的规则：`rule`、`aspect`、`requires`、`why`）和 `checklist`
 （判“证据不足”之前的五步原文）。审查员照框架写功能判定，不翻规则书。
 
 - APPLICABLE + READY：本轮执行；READY 不代表 PASS。
@@ -215,6 +226,14 @@
 - **功能电路**：汇总项 REQ-Q07 只汇总覆盖，由工具写出：计划把它绑定到同类电路的全部适用行（`bound_checks`），各行都有结论后 `derive_rows.py` 写它为 PASS，不复制任何子项的结论；手填结论不同被拒绝；功能电路适用后生成电路检查项，声明了电路时逐电路×工况（答案不随工作态变化的电路检查项
   每电路一行，行的 `object` 不带 `state`，见 `catalog.STATE_INVARIANT`），否则按功能电路一次；各检查项仍须按 [最小充分证据](evidence-proportionality.md) 核适用性。
   未检出也未声明的功能电路汇总到一项 REQ-Q08，逐个确认不适用并给依据。
+- **电路规则的前提**（一致性方案第 2 条）：`catalog.SUBJECT_REQUIRES` 给部分“类型 × 规则”一个由网表判断的前提，
+  如 DRV-C02 要电路里有 MOSFET/BJT，PWR-C15 要电路或与它相接的 IC（经电路里的电阻接到开关栅极、或脚在电路网上）有
+  反馈/补偿脚、电路里的 IC 有稳压输出脚，或有分压/光耦把输出送到 IC，RST-* 要有带复位、使能或启动配置脚的 IC；全表见
+  [规则总表](check-catalog.md#功能电路)。前提不成立就不生成这一行，框架记 `not_asked`，报告在“各功能的判断”下列
+  “FN-… 未问：方面（电路里没有…）”。地按网名和各域的参考地（`_RTN` 一类回流）认。网表说不清时照问：器件不在网表、
+  类别未知（两脚件不算晶体管或 IC，整流桥和符号名出热敏/压敏的件不算未知）、IC 没有脚名。漏问的经 `intent.rule_gaps` 补回。
+  一种类型对某电路问到的规则不到一半时，计划诊断 `CIRCUIT_TYPE_MISFIT` 并在计划命令输出里提示换类型，或不建这块电路、
+  让器件走器件行。
 - **电平转换（LEVEL_SHIFT）**：用于独立转换模块和通用 GPIO 跨电压域互连。转换器位于已声明的 I²C/SPI/UART 等
   总线上时，把转换器列入该总线电路的 refs，不另声明 LEVEL_SHIFT，避免同一链路重复检查；此时 REQ-Q08 中的
   LEVEL_SHIFT 以“已并入 <电路 ID>”为依据关闭，不写成“不适用”。分立 MOSFET 转换器没有名称线索，须在 `intent.circuits`
@@ -332,7 +351,7 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 | 字段 | 含义 |
 |---|---|
 | `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头 |
-| `conditions[]` | 第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`，`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一 |
+| `conditions[]` | 第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`；只在可编程器件某个设置下成立的条件写 `setting{ref, group, value}`，该器件该组的 CFG-D01 结果行 `settings[{value, function}]` 须列出这个值，配置表缺口（DELIVERABLE_PENDING / CONFIGURATION_TABLE）只挡 CFG-D01 行和需求行；`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一 |
 | `calculation` | 第 2 步：`result`、`margin{value,unit,against,basis[,aspect,states,check_ids]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值）、`claim_ids`、`inputs`（计算的输入量名，影响条目的 `via.input` 从这里取）、`assumptions`；只针对一个方面时写 `aspect`。同一功能里 `value`、`unit`、`against` 都相同的余量只能有一条：一个缺陷落在证明它的那个方面，要落到别的方面须是另一个量、另一条余量。没有数值的功能写 `no_calculation_reason` |
 | `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。厂家参考电路也可以撑起判断：该 TYPICAL_REFERENCE 条件写 `reference_circuit{figure, connection, load}`——参考电路的图号或页、本板与它相同的接法、它的元件值与本板负载的对照（本板不重于它），报告依据写“厂家参考电路 + 图号”。行要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
@@ -394,7 +413,8 @@ F4 结论跟着余量的依据走：证明通过的余量与挡住同一范围�
 F5 行跟随功能（见下）；F6 改结论要引条款或数字；F7 缺口的每条影响条目写 `via` 和 `rationale`，`via` 指向本功能的条件或计算的 claim 与输入；
 F8 功能已有计算时，DESIGN_VALUE 开放项要有对应方面的余量，或写明设计还没选定什么；
 F9 判 PASS 的每个方面在该状态有证明通过的余量或 `judgements` 条目，每条 judgement 至少引一条 MANDATORY_CLAUSE、NETLIST_FACT 或写明 `reference_circuit` 的厂家参考电路，不引 NUMERIC_LIMIT
-（数字限值在余量里比较，不在判断句里宣布满足），判断与挡住同一范围的边冲突，没人判过的方面不会默认通过；
+（数字限值在余量里比较，不在判断句里宣布满足），只说“不适用 / 无此问题 / 按拓扑无… / 不涉及”而不引 NETLIST_FACT 的判断被拒绝（改记 NA），
+判断与挡住同一范围的边冲突，没人判过的方面不会默认通过；
 F10 同一条不能定位的条件出现在两个以上功能里被拒绝（能定位的条款可以被几个功能共同引用；同一句 `assumptions` 抄进几个功能的计算同样拒绝，共用工况写进 intent 一次）；
 同一句 `no_margin_reason`/`why_insufficient` 出现在几个开放项上只出 TEMPLATE_REASON 提示；
 F11 框架功能的 `objects` 不超出 intent 电路声明的位号与网络（要扩大先改 intent 再重生成计划，不在判定里放宽），审查员自己绑定的行要是该功能对象上的行
@@ -676,7 +696,9 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。
   复合要求不能整体 NA；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，
   `check_ids` 链接独立阶段 NA 检查，不得只改条款结果让测试消失。
-- 普通 NA 必须 NOT_APPLICABLE；修改自动计划的适用性需 `applicability_evidence`。UNDETERMINED 只能落 INSUFFICIENT。
+- 普通 NA 必须 NOT_APPLICABLE；修改自动计划的适用性需 `applicability_evidence`。计划行带 `requires`（网表上找到了它问的机制）
+  时，NA 的 `applicability_evidence` 里至少一条写 `nets` 和/或 `pins`（`REF.PIN`），名字须在网表里，说明是哪条网表事实排除了它；
+  只写一句能定位的话不够。UNDETERMINED 只能落 INSUFFICIENT。
 - `disposition`（默认 OPEN，不写）：FIXED_VERIFIED / RETRACTED 只用于当前 PASS/NA 并须 `closure_evidence`；ACCEPTED 保留
   FAIL/INSUFFICIENT，附 `acceptance`（by/date/scope/reason/record，来自真实授权记录）。P0/P1 潜在未知默认阻断。
 - 必需 handoff 的 receivers/constraint/verification 不可空；ACCEPTED/VERIFIED 须有 evidence；

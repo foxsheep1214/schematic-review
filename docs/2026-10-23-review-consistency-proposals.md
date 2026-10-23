@@ -351,3 +351,16 @@ R5 核对：RT7209 第 3 页简化电路、第 21 页典型电路中 GPIO1–3 �
 - 第 5 条：5a 同一功能里 value、unit、against 都相同的余量拒收。5b REQ-Q07 由计划绑定到同类电路的全部适用行，`derive_rows.py` 写出；按 execution-consistency.md 既有口径，覆盖项只答各行是否都已审，各行都有结论即为 PASS，不复制子项的 FAIL 或开放项，手填不同被拒。5c 四档：参考电路的条件写 `reference_circuit{figure, connection, load}` 后可撑起判断（F9 的有条件例外），报告依据写“厂家参考电路 + 图号”；`operating_point_specified: true` 要写 `specified_by`；`outside_specified.curves_checked` 须含推荐工作条件或电气特性节，引脚工作点另须含引脚说明节。
 - 第 7 条：DRV-C02.PORT-SHORT、PWR-C13.NTC-HOT、DRV-C01.RCD、DEV-C05.PIN-LED、SIG-C09.ENABLE-LINK 五类固定行。R5 上分别派到 Q701、TH101、R304/R305、U601 的两个 GPIO、U202→U201 DIS 脚；PFC 升压二极管、电源路径 PMOS、地网 LED、被 IC 读取的 NTC 不派。KiCad 回放答案修订 `single-fault-rows-v1`：回放板上只有 MCP73831 的 STAT 脚驱动 LED 触发，r01、r05 各 +1。
 - 第 9 条：`compare_reviews.py` 给每个结论不同的精确配对标原因（一边没通过 / 资料不足对通过（按开放项边经过的是需求条款、数值限值还是计算输入分组）/ NA 对通过 / 其他），并给两边计过严、过松信号。对 R5 两份旧记录：资料不足对通过 118 行（112 行经需求条款，6 行经计算输入加需求条款），NA 对通过 42 行，一边没通过 9 行；经需求条款的边 A 163 条、B 4 条，决定结论的余量 A 3 条、B 32 条。这是改动前的基线。
+
+**第 2 条（2026-10-23，计划格式 7）**
+- 2a：前提表按定稿做，另按回放板和 R5 逐行核对补了四处，避免漏问：反馈/补偿脚和驱动脚也认与电路相接的外部 IC（经电路里的电阻接到开关栅极，或脚在电路网上）——回放板上那块分立功率级的驱动器和输出隔离放大器都在别的电路里，按初稿会把它的 PWR-C04、PWR-C15 删掉；输出经分压或光耦送到 IC 也算有反馈环；`_RTN` 一类参考地按地处理（R5 的同步整流电阻都回到 SEC_RTN，不算分压）；串在电源里的 NTC 是限流不是传感器。网表说不清的照问：器件不在网表、类别未知（两脚件不算晶体管和 IC，整流桥和符号名出热敏/压敏的件不算未知）、IC 没有脚名。
+- 2b：一种类型对某电路问到的规则不到一半时出 `CIRCUIT_TYPE_MISFIT`，计划命令输出里提示换类型或不建电路。
+- 2c：只说“不适用 / 无此问题 / 按拓扑无… / 不涉及”、不引 NETLIST_FACT 的判断被拒。2d：计划行带 `requires` 仍记 NA 的，`applicability_evidence` 须有一条写网表里有的 `nets`/`pins`。
+- 结果：KiCad 回放板一行不少（答案修订不变）；R5 上不再问的是 LED 指示的 9 行模拟规则、源跟随与同步整流的补偿、交流输入的开关与防反接、故障锁死链的开关/浪涌/防反接、HV 启动的 8 行复位规则、VCC 去耦的 16 行，后三块电路提示换类型；保留的行对象都换成前提找到的器件（如 PWR-C15 落在控制器上而不是第一颗电容）。
+
+**第 3 条（2026-10-23，intent 格式 4）**
+- 3a/3b：新内容域 CFG、新规则 CFG-D01，逐器件逐配置组一行、不随工况重复；手册核验为 pd_controller 的器件固定七组，mcu 这类没有固定组的可编程角色没声明组时出一行 `CFG-D01.DECLARE.<位号>`；组写在 `intent.devices.<位号>.configurable`（出处、允许范围、决定的方面，可写需求值、自定组名、输出档位），没声明的组 WAITING_EVIDENCE。“手册有寄存器/OTP/NVM”工具读不出，审查员对任何器件声明了组就照样派行。
+- 3c：条件写 `setting{ref, group, value}`，该器件该组的 CFG-D01 结果行 `settings[{value, function}]` 须列出；组 id 带下划线时行号里是连字符，按器件和组找行。3d：CONFIGURATION_TABLE 开放项只能挡 CFG-D01 行和 REQ-D01 行（“按 1d 绑定到需求的行”取需求行本身，不含被需求绑定的硬件行，否则配置缺口又能挡硬件行）。
+- 3e/3f：verdicts-and-release.md、evidence-proportionality.md 里配置表统一为 DELIVERABLE_PENDING / CONFIGURATION_TABLE，删去 DESIGN_OPEN 的写法；工厂选项归 DEV-D01；环路增益、相位裕量记阶段 NA 并移交。
+- 第 7 条第六类：写了 `set_points` 的组另加 `PWR-C02.SET-POINT-<组>.<位号>`，逐档核输出精度。
+- 回放板答案修订 `intent-format-4-v1`：三份 intent 夹具只改 schema_version，答案不变。R5 按核验角色模拟，U601 得到七行 CFG-D01（等声明）。第 6 条的任务剖面（mission profile）未做。

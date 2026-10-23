@@ -395,13 +395,27 @@ def render_functions(functions, plan=None, checks=None):
         return next((label for key, label in TREE_GROUPS if frame.get(key)), OTHER_GROUP)
 
     if not any(group(fn) != OTHER_GROUP for fn in rows):
-        return ['## 各功能的判断', ''] + head + [function_row(fn, effective.get(fn.get('id'))) for fn in rows] + ['']
+        return (['## 各功能的判断', ''] + head + [function_row(fn, effective.get(fn.get('id'))) for fn in rows] + ['']
+                + not_asked_lines(plan))
     out = ['## 各功能的判断', '']
     for label in [label for _, label in TREE_GROUPS] + [OTHER_GROUP]:
         members = sorted((fn for fn in rows if group(fn) == label), key=lambda fn: str(fn.get('id', '')))
         if members:
             out += ['### ' + label, ''] + head + [function_row(fn, effective.get(fn.get('id'))) for fn in members] + ['']
-    return out
+    return out + not_asked_lines(plan)
+
+
+def not_asked_lines(plan):
+    """The circuit rules the plan did not ask, and why (consistency proposals of 2026-10-23, item 2)."""
+    lines = []
+    for frame in (plan or {}).get('functions') or []:
+        items = [i for i in (frame.get('not_asked') or []) if isinstance(i, dict)] if isinstance(frame, dict) else []
+        if items:
+            lines.append('- %s 未问：%s' % (frame.get('id'), '；'.join(
+                '%s（%s）' % (i.get('aspect') or i.get('rule'), i.get('why') or '') for i in items)))
+    if not lines:
+        return []
+    return ['电路里没有它问的机制、计划没有问的电路规则（漏问的经 intent.rule_gaps 补回）：', ''] + lines + ['']
 
 
 def gap_subclass_counts(results, gaps):

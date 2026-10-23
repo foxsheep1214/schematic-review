@@ -52,7 +52,7 @@ from plan_board import BOARD_MATERIALS, COLD_RULE_INDEXES, _material_available, 
 from plan_circuits import OWNED_PART_MATERIALS, _differential_pairs  # noqa: F401
 from plan_system import SYSTEM_MATERIALS  # noqa: F401
 
-INTENT_SCHEMA_VERSION = 3
+INTENT_SCHEMA_VERSION = 4
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
 RESULT_STATUSES = ('PASS', 'FAIL', 'INSUFFICIENT', 'NA')
@@ -755,6 +755,9 @@ def main():
           f"handoff_required={summary['handoff_required']}")
     for line in passive_stress.unread_lines(plan):
         print(line)
+    for diagnostic in plan['diagnostics']:
+        if diagnostic.get('code') == 'CIRCUIT_TYPE_MISFIT':
+            print('  ' + diagnostic['detail'])
     gaps = passive_stress.rail_gaps(plan)
     if gaps:
         print('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))

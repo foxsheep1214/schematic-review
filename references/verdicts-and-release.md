@@ -311,8 +311,11 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
    不能（数只能由样机、PCB、结构或试验产生）→ 阶段 NA + HANDOFF。
 
 实际负载未知、保护门限/故障输出配置未知，都是第 3 步的“能”，记 INSUFFICIENT，不是下游验证。
-**固件与配置**按同一顺序拆：配置表（PDO/PPS 能力、NTC 切档阈值、OVP 编码、GPIO 角色、恢复策略）是设计交付，
-缺它或它自相矛盾记 INSUFFICIENT（DESIGN_OPEN）；引脚、上拉、GPIO 冲突、编程口与功能脚复用在原理图上判；
+**固件与配置**按同一顺序拆：硬件能力按手册允许的配置范围判（允许范围内每个设置都满足 → 通过；有满足的设置 → 通过，
+所需设置在条件上标 `setting{ref, group, value}` 并写进配置行；没有满足的设置 → 没通过），配置未知不挡硬件行。
+配置表（PDO/PPS 能力、NTC 切档阈值、OVP 编码、GPIO 角色、恢复策略）是交付物，由逐配置组的 CFG-D01 行核，
+缺它或它自相矛盾记 INSUFFICIENT（DELIVERABLE_PENDING，`deliverable_kind: CONFIGURATION_TABLE`），只挡 CFG-D01 行和需求行；
+订货代码决定的工厂选项是器件身份，在 DEV-D01 核；引脚、上拉、GPIO 冲突、编程口与功能脚复用在原理图上判；
 烧录镜像、读回 hash、编程模式/夹具、量产校准结果只能在生产/固件环节产生，记阶段 NA + HANDOFF（接收方“固件/生产”），
 不阻塞原理图冻结（`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 提示）。
 复合 REQ-D01、功能电路汇总或 PRO-C01 不能整行改 NA；设计要求照常判，纯测试要求另立检查并关联。
@@ -337,7 +340,8 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 | 只能靠样机取得的能效、EMC、闭壳热、寿命/环境、协议一致性及结构试验结果 | 纯测试行阶段 NA + HANDOFF，产品验收仍待完成 |
 | 实际漏感/PCB 寄生尖峰，已有适用的保守参数和吸收/钳位设计依据 | 设计子判据单独判定，实际波形测试阶段 NA；保守界限不足或算不过不能移交消失 |
 | 实际负载不明、保护配置未知、保证边界足以改变选型结论 | INSUFFICIENT + 具体缺口（gaps）；已证实违反则 FAIL |
-| 固件配置表缺失或自相矛盾 | INSUFFICIENT（DESIGN_OPEN），由 ASG 把配置表定下来 |
+| 固件配置表缺失或自相矛盾 | CFG-D01 行 INSUFFICIENT（DELIVERABLE_PENDING / CONFIGURATION_TABLE），硬件行按允许的配置范围照常判；FIRMWARE_CAPABILITY 只用于“固件能不能实现某个行为” |
+| 环路增益、相位裕量这类只有样机能给的结论 | 阶段 NA + HANDOFF，补偿参数进 CFG-D01 的环路补偿组；“靠实测”不能作通过的依据 |
 | 定制磁件图纸、固件/OTP 应用能否实现所需控制策略的确认等另一阶段欠的交付物 | INSUFFICIENT（DELIVERABLE_PENDING）：写欠什么、谁欠、本判定按什么假定算；不记 EXTERNAL_DATA，不向芯片厂家索取 |
 | 烧录镜像、读回、编程夹具、量产校准 | 原理图前提单独判；镜像本身阶段 NA + HANDOFF 给固件/生产 |
 | 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`） |

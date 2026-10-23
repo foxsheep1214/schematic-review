@@ -50,9 +50,9 @@ class OldRecordTests(unittest.TestCase):
     def setUp(self):
         self.plan = plan_for()
 
-    def test_a_plan_carries_schema_6_with_its_owner_table_and_interfaces(self):
-        self.assertEqual(PLAN_SCHEMA_VERSION, 6)
-        self.assertEqual(self.plan['schema_version'], 6)
+    def test_a_plan_carries_schema_7_with_its_owner_table_and_interfaces(self):
+        self.assertEqual(PLAN_SCHEMA_VERSION, 7)
+        self.assertEqual(self.plan['schema_version'], 7)
         self.assertIsInstance(self.plan['owners'], list)
         self.assertIsInstance(self.plan['interfaces'], dict)
 
@@ -63,22 +63,22 @@ class OldRecordTests(unittest.TestCase):
             errors = row_owner.errors(plan) + interfaces.coverage_errors(plan)
             self.assertTrue(any(section in e for e in errors), (section, errors))
 
-    def test_the_validator_refuses_a_schema_5_record(self):
+    def test_the_validator_refuses_a_schema_6_record(self):
         plan, report, db = fixture()
-        plan['schema_version'] = 5
+        plan['schema_version'] = 6
         report['plan_digest'] = fingerprint(plan)
         gate = validate_review(plan, report, db)
         self.assertFalse(gate['valid'])
-        self.assertTrue(any('schema_version must be 6' in e for e in gate['errors']), gate['errors'])
+        self.assertTrue(any('schema_version must be 7' in e for e in gate['errors']), gate['errors'])
 
-    def test_a_schema_5_plan_is_not_merged_or_compared(self):
+    def test_a_schema_6_plan_is_not_merged_or_compared(self):
         old = copy.deepcopy(self.plan)
-        old['schema_version'] = 5
-        with self.assertRaisesRegex(ValueError, 'schema_version must be 6'):
-            planner = plan_review.ReviewPlanner({'parts': {}, 'nets': {}}, {'schema_version': 3})
+        old['schema_version'] = 6
+        with self.assertRaisesRegex(ValueError, 'schema_version must be 7'):
+            planner = plan_review.ReviewPlanner({'parts': {}, 'nets': {}}, {'schema_version': 4})
             planner.previous_plan = old
             planner.merge_previous_checks()
-        with self.assertRaisesRegex(ValueError, 'schema_version != 6'):
+        with self.assertRaisesRegex(ValueError, 'schema_version != 7'):
             revision_impact._baseline({'parts': {}, 'nets': {}}, old)
 
 

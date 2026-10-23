@@ -1,0 +1,15 @@
+{
+ "revision": "intent-format-4-v1",
+ "parents": {
+  "revisions/single-fault-rows-v1/expected.json": "8132a46523070365977f9e27d598e16bfdbce864a8c3517d653164788135d0a8",
+  "revisions/single-fault-rows-v1/cases.json": "8035c7cd37fb9882f87701f0dcc261f61851419af352c562ed0083ffcae04338",
+  "revisions/single-fault-rows-v1/sources.json": "7a850a6f18b8a5d603a4295b99dc65ea8e2c5df980a6ec9bd6cd64aa53673be3",
+  "revisions/single-fault-rows-v1/manifest.json": "e3178d031dfb83ef27972547d50b3fdd23af31482ec8a6dd564a96baf16f6d2c"
+ },
+ "derived_files": {
+  "revisions/intent-format-4-v1/expected.json": "8132a46523070365977f9e27d598e16bfdbce864a8c3517d653164788135d0a8",
+  "revisions/intent-format-4-v1/cases.json": "3592bcc5ca660fc17fac24f28ef3aadda61b6d20cdf3da5a23d1cfd942c9a062",
+  "revisions/intent-format-4-v1/sources.json": "b647bc58e9be715dc4d16d9a13a22e1bef12c53f53b1af12e45aabaf8f4559a7"
+ },
+ "scope": "intent 格式升到 4（可编程器件配置组 devices.<位号>.configurable）：三份 intent 夹具只把 schema_version 改为 4，另存为 *.intent-format-4-v1.intent.json，用例改指新夹具；答案不变（回放板上没有已核验为 pd_controller/mcu 的器件，不派 CFG-D01）。single-fault-rows-v1 文件保持原字节。"
+}

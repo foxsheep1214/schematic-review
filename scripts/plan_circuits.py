@@ -11,14 +11,16 @@ import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
 from checkers.netgraph import (BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET, OPTO,
-                               RAIL_RE, RESISTOR, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER,
-                               NetGraph, is_analog_sense_pair, is_ground, normalize)
+                               PASSIVE_LINKS, RAIL_RE, RESISTOR, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER,
+                               NetGraph, is_analog_sense_pair, is_ground, name_matches, normalize)
+from checkers.netgraph import is_ground as netgraph_ground
 from checkers.planutil import slug as _slug
 from electrical_contract import bounded, finite
 from interfaces import CONNECTOR_RE
 from page_inventory import LIMITED
 from plan_board import _material_available, _text
 import requirement_parameters
+from solve_dividers import parse_resistor_noted
 
 EN_RE = re.compile(
     r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN|PWR_EN)(_|\d|$)', re.I)
@@ -125,8 +127,140 @@ RCD_CRITERION = ('RCD 钳位：%s 与 %s、%s 在开关节点上吸收漏感能�
                  '（钳位电压减母线）对其耐压')
 PIN_LED_CRITERION = ('%s 直接驱动 %s 的 LED：按该脚手册的电流限值核；手册没给限值时，厂家参考电路有同样接法且负载不更重可判通过，'
                      '手册写了这种用法但没给数值记缺厂家数据，手册没写这种用法记失败项（超出规定区）')
+CONFIG_CRITERION = ('%s 的%s（%s）：手册允许 %s；这一组的设置决定 %s；%s配置值须落在允许范围内、满足需求，并包含硬件判定写下的'
+                    '设置（setting）；配置表未交付记 DELIVERABLE_PENDING（CONFIGURATION_TABLE）')
+CONFIG_UNDECLARED_CRITERION = ('%s 的%s：先在 intent.devices.%s.configurable 按手册寄存器或配置章节写出处、允许范围和它决定的方面；'
+                               '这一组对该器件不存在时本行记 NA 并引手册条款')
+CONFIG_DECLARE_CRITERION = ('%s 是可编程器件（%s）：在 intent.devices.%s.configurable 按手册寄存器、OTP/NVM 或配置章节声明配置组，'
+                            '或在本行说明它为什么没有可配置项')
+SET_POINT_CRITERION = ('%s 经%s设定输出（设定点 %s）：逐个设定点按基准或 DAC 的保证误差、分压公差与温漂核输出窗口，对照需求；'
+                       '中间档不由两端档推出')
 ENABLE_LINK_CRITERION = ('光耦 %s 使能或关断 %s（%s 脚）：核上电时两侧供电建立的先后、使能门限与光耦传输延时，以及掉电后再上电能否'
                          '恢复工作')
+
+
+# Circuit-rule preconditions (consistency proposals of 2026-10-23, item 2; catalog.SUBJECT_REQUIRES): the pins and
+# parts each one looks for. A regulator output pin of an IC in the circuit stands for an internal loop and its
+# output-capacitor condition; a feedback or drive pin also counts on an IC outside the circuit wired to it.
+FEEDBACK_NAME_RE = re.compile(r'(V?FB\w*|COMP\w*|VCTRL|VC|ITH|ADJ|VSENSE|VOSNS|FEEDBACK)$', re.I)
+DRIVE_NAME_RE = re.compile(r'(GATE\w*|G?DRV\w*|GD\w*|HO|LO|HG|LG|OUT[AB]?|SW\d*|LX\d*|PH|PHASE\d*)$', re.I)
+REGULATOR_OUT_RE = re.compile(r'(V?OUT\d*|VO|VREG\w*)$', re.I)
+PROTECT_NAME_RE = re.compile(r'(UV\w*|OV\w*|ILIM\w*|OCP\w*|OTP\w*|FAULT\w*|EN|ENABLE|SHDN|SHUTDOWN)$', re.I)
+ANALOG_NAME_RE = re.compile(r'(AIN\w*|ADC\w*|VREF\w*|REF(IN|OUT)?|[+-]IN\w*|IN[+-PN]\w*|V?IN[AB]?[+-]|OPA\w*|CS[PN+-]\w*'
+                            r'|ISENSE\w*|ISNS\w*|NTC\w*|THERM\w*|TEMP\w*|VTEMP|TS)$', re.I)
+START_NAME_RE = re.compile(r'(N?RST\w*|N?RESET\w*|MR|POR\w*|BOOT\w*|STRAP\w*|EN|CHIP_EN|CHIP_PU|PWRON\w*|MODE\d*|CFG\w*)$',
+                           re.I)
+SENSE_NAME_RE = re.compile(r'(CS\w*|CS[+-]|ISENSE\w*|ISNS\w*|I?SENSE[+-PN]?|VSENSE\w*|IMON\w*|ISET)$', re.I)
+IC_OR_SWITCH = ('POWER_SWITCH', 'SUPPLY_SWITCH', 'FEEDBACK_PIN', 'SWITCH_PIN', 'ANALOG_PIN', 'START_PIN')
+PROTECTION_TEXT_RE = re.compile(r'NTC|PTC|MOV|VARISTOR|压敏|SMBJ|SMAJ|SMCJ|TVS', re.I)
+SHUNT_OHM = 1.0
+
+
+def subject_precondition(graph, names, requires, refs, nets, grounds=()):
+    """(found, unread) for one precondition over a circuit: the parts on the netlist that hold it, and the parts the
+    netlist cannot tell about (not in the netlist, of unknown kind, an IC without pin names); empty both means the
+    mechanism is absent and the rule is not asked. `grounds` are the reference grounds of the board's domains."""
+    grounds = set(grounds)
+
+    def is_ground(net):
+        return netgraph_ground(net) or net in grounds
+
+    fitted = [ref for ref in refs if ref in graph.parts and graph.is_fitted(ref)]
+    members = set(fitted)
+    def text_of(ref):
+        part = graph.parts.get(ref) or {}
+        return ' '.join(str(part.get(k) or '') for k in ('value', 'prim', 'part'))
+
+    def identified(ref):   # a thermistor or varistor symbol names the part though no kind is classified
+        return bool(NTC_RE.search(text_of(ref)) or PROTECTION_TEXT_RE.search(text_of(ref)))
+
+    # A part of unknown kind keeps the rule unless it cannot be what the precondition looks for: a bridge rectifier
+    # or a part its symbol names is none of them, a two-terminal part is no transistor and no IC.
+    unread = sorted(ref for ref in refs if ref not in graph.parts
+                    or (graph.kind(ref) == UNKNOWN and not BRIDGE_RE.match(ref) and not identified(ref)
+                        and not (requires in IC_OR_SWITCH and len(graph.pins_of(ref)) <= 2))
+                    or (graph.kind(ref) == IC and not any(names.get(ref + '.' + pin) for pin in graph.pins_of(ref))))
+    ics = [ref for ref in fitted if graph.kind(ref) == IC]
+    around = {n for n in {n for ref in fitted for n in graph.nets_of(ref)} | set(nets) if not is_ground(n)}
+
+    def ic_pins(adjacent):
+        """(ref, pin) of the circuit's ICs; with `adjacent`, also of the ICs outside it whose pin is on a circuit net or
+        one circuit resistor away (a controller driving the circuit's switch through a gate resistor)."""
+        found = [(ref, pin) for ref in ics for pin in sorted(graph.pins_of(ref))]
+        if adjacent:
+            near = around | {other for net in around for r, other in graph.neighbors(net, {RESISTOR})
+                             if r in members and not is_ground(other)}
+            for net in sorted(near):
+                for node in graph.nodes_on(net):
+                    ref, _, pin = node.partition('.')
+                    if ref not in members and graph.is_fitted(ref) and graph.kind(ref) == IC:
+                        found.append((ref, pin))
+        return found
+
+    def with_pin(patterns, adjacent=False):
+        hits = [ref for ref, pin in ic_pins(adjacent) if normalize(names.get(ref + '.' + pin))
+                and any(name_matches(p, names.get(ref + '.' + pin), pin) for p in patterns)]
+        return list(dict.fromkeys(hits))
+
+    def dividers():
+        """ICs with a signal pin on a circuit net that two circuit resistors divide (to two different nets)."""
+        hits = []
+        for net in sorted(around):
+            legs = {other for r, other in graph.neighbors(net, {RESISTOR}) if r in members}
+            if len(legs) < 2:
+                continue
+            for node in graph.nodes_on(net):
+                ref, _, pin = node.partition('.')
+                name = str(names.get(node) or '')
+                if (graph.is_fitted(ref) and graph.kind(ref) == IC and not powertree.SUPPLY_IN_PIN_RE.match(name)
+                        and not is_ground(name) and ref not in hits):
+                    hits.append(ref)
+        return hits
+
+    def sensing_ntcs():
+        """Thermistors an IC reads (a pin on one of its nets); one in series with the supply limits inrush."""
+        return [ref for ref in fitted if NTC_RE.search(text_of(ref)) and any(
+            graph.kind(node.partition('.')[0]) == IC for net in graph.nets_of(ref) if not is_ground(net)
+            for node in graph.nodes_on(net))]
+
+    if requires == 'POWER_SWITCH':
+        found = [ref for ref in fitted if graph.kind(ref) in (MOSFET, BJT)]
+    elif requires == 'SUPPLY_SWITCH':
+        found = []
+        for ref in fitted:
+            ends = [graph.pin2net.get(graph.node_named(ref, role) or '') for role in ('drain', 'source')]
+            if graph.kind(ref) == MOSFET and all(ends) and not any(is_ground(n) for n in ends):
+                found.append(ref)
+    elif requires == 'FEEDBACK_PIN':   # a loop: a feedback pin, an output sensed through a divider or an optocoupler
+        found = list(dict.fromkeys(with_pin((FEEDBACK_NAME_RE,), adjacent=True) + with_pin((REGULATOR_OUT_RE,)) + dividers()
+                                   + [ref for ref in fitted if graph.kind(ref) == OPTO]))
+    elif requires == 'SWITCH_PIN':
+        found = list(dict.fromkeys(with_pin((DRIVE_NAME_RE,), adjacent=True) + with_pin((REGULATOR_OUT_RE,))))
+    elif requires == 'CONNECTOR_INPUT':   # the power path: an IC's signal pin on a connector is no input path
+        reach = set()
+        for net in {n for ref in fitted if graph.kind(ref) != IC for n in graph.nets_of(ref) if not is_ground(n)} | (
+                around & set(nets)):
+            reach |= {n for n in graph.series_path(net, PASSIVE_LINKS | {DIODE}) if not is_ground(n)}
+        found = sorted({ref for ref in fitted if graph.kind(ref) == CONNECTOR}
+                       | {ref for net in reach for ref in graph.refs_on(net) if graph.kind(ref) == CONNECTOR})
+    elif requires == 'PROTECTION_PART':
+        found = sorted({ref for ref in fitted if graph.kind(ref) in (FUSE, TVS, ZENER)
+                        or PROTECTION_TEXT_RE.search(text_of(ref))} | set(with_pin((PROTECT_NAME_RE, PROTECT_PIN_RE))))
+    elif requires == 'SENSE_ELEMENT':
+        found = []
+        for ref in fitted:
+            parsed = parse_resistor_noted((graph.parts.get(ref) or {}).get('value')) if graph.kind(ref) == RESISTOR else None
+            if parsed and 0 < parsed['kohm'] * 1000 < SHUNT_OHM:
+                found.append(ref)
+        found = list(dict.fromkeys(found + sensing_ntcs() + dividers() + with_pin((PROTECT_PIN_RE, SENSE_NAME_RE))))
+    elif requires == 'ANALOG_PIN':
+        found = sorted(set(with_pin((ANALOG_NAME_RE,))) | set(sensing_ntcs())
+                       | {ref for ref in ics if graph.role_kind(ref) == 'opamp_comparator'})
+    elif requires == 'START_PIN':
+        found = sorted(set(with_pin((START_NAME_RE,))) | {ref for ref in ics if graph.role_kind(ref) == 'mcu'})
+    else:
+        raise ValueError('unknown precondition ' + requires)
+    return found, [ref for ref in unread if ref not in found]
 
 
 class CircuitPlanning:
@@ -236,20 +370,38 @@ class CircuitPlanning:
     def plan_subjects(self, kind, circuits, missing):
         """声明了电路则逐电路×工况展开电路检查项并建功能框架（答案不随工作态变化的规则每电路一行），
         否则按功能电路展开一次；已有 I²C 区域时由检查器逐区域展开。"""
-        members = []
+        members, not_asked, requirements = [], {}, {}
+        graph = NetGraph(board_intent.graph_db(self.db, self.kind_intent)) if circuits else None
+        names = dict(self.db.get('declared_pinname') or {}, **(self.db.get('pinname') or {}))
         for circuit in circuits:
             refs = circuit['refs']
             gaps = [f'datasheet:{ref}' for ref in refs
                     if not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
             gaps += [f'unknown ref:{ref}' for ref in refs if ref not in self.db.get('parts', {})]
             trigger = f'intent.circuits:{circuit["citation"]}'
+            asked = {}   # rule -> (object ref, requires) for the rules whose precondition holds
+            not_asked[circuit['id']] = []
+            for rule in kind.subjects:
+                requires = catalog.SUBJECT_REQUIRES.get((kind.name, rule))
+                if requires is None:
+                    asked[rule] = (refs[0], None)
+                    continue
+                found, unread = subject_precondition(graph, names, requires, refs, circuit.get('nets', []),
+                                                     self.domains['grounds'])
+                if found or unread:
+                    asked[rule] = ((found or unread)[0], dict({'id': requires, 'found': found},
+                                                              **({'unread': unread} if unread else {})))
+                else:
+                    not_asked[circuit['id']].append({'rule': rule, 'aspect': catalog.title(rule), 'requires': requires,
+                                                     'why': catalog.SUBJECT_PRECONDITIONS[requires]})
+            requirements[circuit['id']] = asked
             for index, state in enumerate(circuit['states']):
                 for rule in kind.subjects:
                     invariant = rule in catalog.STATE_INVARIANT
-                    if invariant and index:
-                        continue   # asked once per circuit, with the first state's rows
+                    if rule not in asked or (invariant and index):
+                        continue   # an invariant rule is asked once per circuit, with the first state's rows
                     obj = {'circuit': circuit['id'], 'circuit_key': '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']])),
-                           'ref': refs[0], 'refs': refs, 'nets': circuit.get('nets', [])}
+                           'ref': asked[rule][0], 'refs': refs, 'nets': circuit.get('nets', [])}
                     if not invariant:
                         obj['state'] = state
                     key = circuit['id'] if invariant else f'{circuit["id"]}-{state}'
@@ -269,13 +421,24 @@ class CircuitPlanning:
                 'objects': {'refs': list(circuit['refs']), 'nets': list(circuit.get('nets', []))},
                 'states': list(circuit['states']),
                 'members': [],
-                'blind_spots': {rule: catalog.explanation(rule)['risk_if_omitted'] for rule in kind.subjects},
+                'blind_spots': {rule: catalog.explanation(rule)['risk_if_omitted'] for rule in kind.subjects
+                                if rule in requirements[circuit['id']]},
+                'not_asked': not_asked[circuit['id']],
                 'checklist': list(catalog.BOUNDING_STEPS),
             }
+            asked = [rule for rule in kind.subjects if rule in requirements[circuit['id']]]
+            if 2 * len(asked) < len(kind.subjects):   # proposals item 2b: the type asks almost nothing of this circuit
+                self.diagnostics.append({
+                    'code': 'CIRCUIT_TYPE_MISFIT', 'circuit': circuit['id'], 'circuit_type': kind.name, 'asked': asked,
+                    'detail': '%s 按 %s 只问到 %d/%d 条电路规则：换一个类型，或不建这块电路、让器件走器件行' % (
+                        circuit['id'], kind.name, len(asked), len(kind.subjects))})
         for rule, obj, key, gaps, trigger in members:
             frame = frames.get(obj.get('circuit'))
             item = self._ready_check(rule, dict(obj), gaps, [trigger], key=key)
             item['circuit_type'] = kind.name
+            requires = requirements.get(obj.get('circuit'), {}).get(rule, (None, None))[1]
+            if requires:
+                item['requires'] = requires
             item['analysis_required'] = True
             item['scope'] = '原理图电气条件；PCB/实测验证另建 HANDOFF'
             if frame is not None:
@@ -553,6 +716,44 @@ class CircuitPlanning:
         self.plan_life_rows(graph, fitted)
         self.plan_feedback_open_rows(graph)
         self.plan_single_fault_rows(graph, fitted)
+        self.plan_configuration_rows(graph, fitted)
+
+    def plan_configuration_rows(self, graph, fitted):
+        """CFG-D01 per programmable device and configuration group (consistency proposals of 2026-10-23, item 3): the
+        fixed groups of its role and the groups intent.devices.<ref>.configurable declares; a programmable role with
+        neither gets a row asking for them. A group that selects output levels also asks each set point's accuracy."""
+        devices = self.intent.get('devices') or {}
+        for ref in fitted:
+            role = graph.role_kind(ref)
+            declared = {g['group']: g for g in (devices.get(ref) or {}).get('configurable') or []
+                        if isinstance(g, dict) and isinstance(g.get('group'), str)}
+            fixed = [group for group, _ in catalog.CONFIG_GROUPS.get(role, ())]
+            groups = fixed + [g for g in declared if g not in fixed]
+            if not groups:
+                if role in catalog.PROGRAMMABLE_ROLES:
+                    self.add_check('CFG-D01', {'ref': ref, 'config_group': 'DECLARE'}, key='DECLARE',
+                                   criterion=CONFIG_DECLARE_CRITERION % (ref, role, ref), readiness='WAITING_EVIDENCE',
+                                   required_inputs=['intent.devices.%s.configurable' % ref], trigger=['role:%s' % role])
+                continue
+            for group in groups:
+                item = declared.get(group)
+                title = catalog.CONFIG_GROUP_TITLES.get(group) or (item or {}).get('title') or group
+                if item is None:
+                    self.add_check('CFG-D01', {'ref': ref, 'config_group': group}, key=group,
+                                   criterion=CONFIG_UNDECLARED_CRITERION % (ref, title, ref), readiness='WAITING_EVIDENCE',
+                                   required_inputs=['intent.devices.%s.configurable.%s' % (ref, group)],
+                                   trigger=['role:%s' % role])
+                    continue
+                required = ('需求要求 %s；' % item['required']) if item.get('required') else ''
+                self.add_check('CFG-D01', {'ref': ref, 'config_group': group}, key=group,
+                               criterion=CONFIG_CRITERION % (ref, title, item['citation'], item['allowed'],
+                                                             '、'.join(item['affects']), required),
+                               readiness='READY', trigger=['intent.devices.%s.configurable.%s' % (ref, group)])
+                if item.get('set_points'):   # proposals item 7, sixth trigger
+                    self.add_check('PWR-C02', {'ref': ref, 'config_group': group, 'set_points': list(item['set_points'])},
+                                   key='SET-POINT-' + group,
+                                   criterion=SET_POINT_CRITERION % (ref, title, '、'.join(item['set_points'])),
+                                   readiness='READY', trigger=['intent.devices.%s.configurable.%s.set_points' % (ref, group)])
 
     def plan_single_fault_rows(self, graph, fitted):
         """The single faults one reviewer asks and another does not, asked wherever their feature is on the netlist."""

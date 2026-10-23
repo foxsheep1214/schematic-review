@@ -44,7 +44,7 @@ class PinResistorCurrentLimitTest(unittest.TestCase):
 def plan_rules(circuits):
     from plan_review import build_review_plan
     from test_checkers_framework import whole_board
-    intent = {'schema_version': 3, 'circuits': [
+    intent = {'schema_version': 4, 'circuits': [
         {'id': cid, 'type': kind, 'refs': ['U1'], 'states': ['run'], 'citation': 'synthetic'}
         for cid, kind in circuits]}
     return {(c['rule'], (c.get('object') or {}).get('circuit'))

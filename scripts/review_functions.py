@@ -73,6 +73,8 @@ NORMATIVE_RE = re.compile(r'\b(?:must|shall|required|do not|never|not (?:be )?(?
 TYPICAL_PLACE_RE = re.compile(r'典型应用|应用电路|应用说明|参考设计|typical application|reference design|application (?:note|circuit)', re.I)
 NUMBER_RE = re.compile(r'[-+]?\d+(?:\.\d+)?')
 PIN_RE = re.compile(r'^[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_+-]+$')
+# A judgement that only says the aspect does not apply (proposals of 2026-10-23, item 2c).
+NOT_APPLIES_RE = re.compile(r'不适用|无此问题|按拓扑(无|不)|不涉及')
 # A located condition names a place in its source a reader can open: a page, table, figure, section or chapter,
 # a datasheet section title, a requirement or record id, a designator, or named nets/pins. "相关位号所有物理脚"
 # and "## BIAS" locate nothing. Words are matched without case, ids with it.
@@ -245,7 +247,11 @@ def _condition_errors(label, c, db=None):
     elif kind == 'TYPICAL_REFERENCE' and 'reference_circuit' in c and not reference_circuit(c):
         errors.append(label + ': reference_circuit is {figure (the figure or page of the vendor circuit), connection '
                               '(how this board connects the same way), load (its values against this board: no heavier)}')
-    elif kind == 'NETLIST_FACT':
+    if 'setting' in c and not (isinstance(c['setting'], dict) and set(c['setting']) == {'ref', 'group', 'value'}
+                               and all(text(v) for v in c['setting'].values())):
+        errors.append(label + ': setting is {ref, group, value}: the device, its configuration group and the value the '
+                              'condition holds at')
+    if kind == 'NETLIST_FACT':
         nets = [n for n in c.get('nets') or [] if text(n)] if isinstance(c.get('nets'), list) else []
         pins = [n for n in c.get('pins') or [] if text(n)] if isinstance(c.get('pins'), list) else []
         if not (nets or pins) or any(not PIN_RE.match(n) for n in pins):
@@ -322,6 +328,24 @@ def _netlist_name_errors(label, nets, pins, db):
             errors.append('%s: net %s is not in the netlist' % (label, net))
     pin2net = db.get('pin2net') if isinstance(db.get('pin2net'), dict) else {}
     errors += ['%s: pin %s is not in the netlist' % (label, pin) for pin in pins if pin not in pin2net]
+    return errors
+
+
+def netlist_evidence_errors(label, entries, db):
+    """An NA where the plan found the mechanism (consistency proposals item 2d): some entry names the nets and/or pins
+    (REF.PIN) that rule it out, and the netlist has them."""
+    named = [e for e in entries or [] if isinstance(e, dict) and (e.get('nets') or e.get('pins'))]
+    if not named:
+        return [label + ': the plan found this rule\'s mechanism; an NA names the netlist fact that rules it out: an '
+                        'applicability_evidence entry with nets and/or pins (REF.PIN) the netlist has']
+    errors = []
+    for e in named:
+        nets = [n for n in e.get('nets') or [] if text(n)] if isinstance(e.get('nets'), list) else []
+        pins = [n for n in e.get('pins') or [] if text(n)] if isinstance(e.get('pins'), list) else []
+        if any(not PIN_RE.match(n) for n in pins) or not (nets or pins):
+            errors.append(label + ': applicability_evidence nets and pins are lists of names (pins as REF.PIN)')
+        elif isinstance(db, dict):
+            errors.extend(_netlist_name_errors(label, nets, pins, db))
     return errors
 
 
@@ -485,6 +509,10 @@ def _judgement_errors(fid, fn, conditions_by_id):
                           'application circuit or an assumption does not settle a row — a vendor reference circuit does '
                           'when its condition states reference_circuit{figure, connection, load}' % (
                               fid, i, j['aspect'], ', '.join(conditions)))
+        if NOT_APPLIES_RE.search(j['says']) and 'NETLIST_FACT' not in kinds:   # consistency proposals item 2c
+            errors.append('%s/judgements[%d] (%s): says only that the aspect does not apply, with no netlist fact; record '
+                          'the rows NA with applicability_evidence naming the nets or pins that rule the mechanism out'
+                          % (fid, i, j['aspect']))
         if 'states' in j and not (isinstance(j['states'], list) and j['states'] and all(text(x) for x in j['states'])):
             errors.append('%s/judgements[%d]: states is a non-empty list' % (fid, i))
     return errors
@@ -1324,6 +1352,46 @@ def requirement_edge_errors(plan, checks, functions):
     return errors
 
 
+CONFIG_ROWS = ('CFG-D01', 'REQ-D01')
+
+
+def configuration_errors(expected, checks, functions):
+    """Consistency proposals of 2026-10-23, item 3: a condition that holds only at one setting of a programmable device
+    names it (setting{ref, group, value}) and the configuration row CFG-D01.<group>.<ref> lists it (3c); a missing
+    configuration table blocks only the configuration rows and the requirement rows (3d)."""
+    errors = []
+    rows = {((c.get('object') or {}).get('ref'), (c.get('object') or {}).get('config_group')): cid
+            for cid, c in expected.items() if c.get('rule') == 'CFG-D01'}
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not text(fn.get('id')):
+            continue
+        for c in fn.get('conditions') or []:
+            setting = c.get('setting') if isinstance(c, dict) else None
+            if not (isinstance(setting, dict) and all(text(setting.get(k)) for k in ('ref', 'group', 'value'))):
+                continue
+            cid = rows.get((setting['ref'], setting['group']), 'CFG-D01.%s.%s' % (setting['group'], setting['ref']))
+            if cid not in expected:
+                errors.append('%s/%s: holds at a setting of %s group %s, which the plan has no row %s for; declare the '
+                              'group in intent.devices.%s.configurable' % (fn['id'], c.get('id'), setting['ref'],
+                                                                           setting['group'], cid, setting['ref']))
+                continue
+            listed = (checks.get(cid) or {}).get('settings')
+            if not any(isinstance(x, dict) and x.get('value') == setting['value'] for x in listed or []):
+                errors.append('%s/%s: holds at setting %r of %s; list it in %s settings[{value, function}] so the '
+                              'configuration row checks it' % (fn['id'], c.get('id'), setting['value'], setting['ref'], cid))
+        for item in fn.get('open') or []:
+            if not (isinstance(item, dict) and item.get('deliverable_kind') == 'CONFIGURATION_TABLE'):
+                continue
+            ref = '%s/%s' % (fn['id'], item.get('key'))
+            blocked = sorted(cid for cid, row in checks.items() if isinstance(row, dict) and row.get('open_ref') == ref
+                             and (expected.get(cid) or {}).get('rule') not in CONFIG_ROWS)
+            if blocked:
+                errors.append('%s: a configuration table blocks only its configuration rows (CFG-D01) and the requirement '
+                              'rows, not %s; judge those over the configuration range the datasheet allows, and mark a '
+                              'condition that holds at one setting with setting{ref, group, value}' % (ref, '、'.join(blocked)))
+    return errors
+
+
 def validate_functions(plan, report, checks, history_ids=(), db=None):
     """All function-verdict errors for validate_review. `report` is the record as written."""
     expected = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and isinstance(c.get('id'), str)}
@@ -1332,7 +1400,8 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
     document_only = {fn.get('id') for fn in functions if isinstance(fn, dict) and fn.get('id') not in circuits}
     errors = (function_errors(report, document_only, db) + binding_errors(expected, checks, report.get('functions'), history_ids)
               + frame_errors(plan, checks, report.get('functions'))
-              + requirement_edge_errors(plan, checks, report.get('functions')))
+              + requirement_edge_errors(plan, checks, report.get('functions'))
+              + configuration_errors(expected, checks, functions))
     if isinstance(db, dict):   # a commodity part's rating is a BOM constraint, not an open item
         import bom_constraints
         from checkers.netgraph import NetGraph

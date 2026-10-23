@@ -98,7 +98,7 @@ RAILS = {'PGND': {'voltage_v': {'min': 0, 'max': 0}, 'domain': 'PRI'},
 
 
 def intent_for(db, kinds=KINDS, rails=RAILS):
-    intent = {'schema_version': 3, 'input_sha256': board_intent.input_fingerprint(db), 'device_kinds': {},
+    intent = {'schema_version': 4, 'input_sha256': board_intent.input_fingerprint(db), 'device_kinds': {},
               'power_rails': rails}
     audit = {'device_kinds': {}}
     for ref, kind in kinds.items():

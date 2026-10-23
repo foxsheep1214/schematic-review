@@ -27,7 +27,7 @@ from test_requirement_source import requirement_intent, write
 
 def board(owners=None, categories=None):
     db, value = fixture(('100nF',))
-    value.update(dict({'schema_version': 3}, **requirement_intent(write(), categories=categories)))
+    value.update(dict({'schema_version': 4}, **requirement_intent(write(), categories=categories)))
     for item in value['requirements']:
         if owners and item['id'] in owners:
             item['owners'] = owners[item['id']]

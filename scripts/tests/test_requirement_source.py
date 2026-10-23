@@ -110,7 +110,7 @@ class ExtractTests(unittest.TestCase):
 class IntentTests(unittest.TestCase):
     def setUp(self):
         self.path = write()
-        self.intent = dict({'schema_version': 3}, **requirement_intent(self.path))
+        self.intent = dict({'schema_version': 4}, **requirement_intent(self.path))
 
     def errors(self, intent):
         return [e for e in validate_intent(intent) if 'requirement' in e]
@@ -144,7 +144,7 @@ class IntentTests(unittest.TestCase):
 class PlanRowTests(unittest.TestCase):
     def test_a_requirement_row_carries_its_source_text_and_locator(self):
         path = write()
-        plan = build_review_plan({'parts': {}, 'nets': {}, 'pin2net': {}}, dict({'schema_version': 3}, **requirement_intent(path)))
+        plan = build_review_plan({'parts': {}, 'nets': {}, 'pin2net': {}}, dict({'schema_version': 4}, **requirement_intent(path)))
         row = next(c for c in plan['checks'] if c['rule'] == 'REQ-D01' and c['object']['requirement_id'] == 'REQ-IN-01')
         self.assertEqual(row['source_text']['locator'], str(path) + ':9')
         self.assertEqual([c['text'] for c in row['source_text']['columns']], ['工作输入 9–36 V DC', '40 V 持续 100 ms 不损坏'])

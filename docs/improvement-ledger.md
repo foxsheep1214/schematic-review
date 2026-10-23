@@ -7,6 +7,62 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A programmable device is judged over its allowed configuration range, and its configuration is a row of its own (2026-10-23)
+
+Two independent R5 reviews split one PD controller's configuration three ways: one let a single "configuration table
+not delivered" block 57 rows (28 of which the other passed) and recorded on-chip compensation as a design value; the
+other passed on the datasheet defaults with three configuration work items and passed the loop on "gain measured on
+the prototype"; the configuration table was written as FIRMWARE_CAPABILITY, CONFIGURATION_TABLE and, in the
+references, DESIGN_OPEN. Intent format 4: a new domain CFG with rule CFG-D01 "配置值满足要求", one row per device and
+configuration group, not repeated per state; a verified pd_controller gets SR's seven fixed groups (capability,
+cable/VCONN, protection thresholds and actions, sensing, GPIO role/default/external timing, compensation, discharge and
+sequencing), a programmable role without fixed groups (mcu) gets a row asking for its groups, and the reviewer declares
+each group in intent.devices.<ref>.configurable {group, citation, allowed, affects[, title, required, set_points]}
+(an undeclared group waits for that declaration). Hardware is judged over the allowed range; a condition that holds
+only at one setting says setting{ref, group, value} and the device's CFG-D01 row lists it in settings[]; an open item
+of kind CONFIGURATION_TABLE blocks only CFG-D01 rows and requirement rows; the references now say configuration tables
+are DELIVERABLE_PENDING/CONFIGURATION_TABLE, factory options are identity (DEV-D01), and loop gain or phase margin is a
+stage NA with a handoff. A group that lists output set points also gets PWR-C02.SET-POINT-<group>.<ref> for each set
+point's accuracy (proposals item 7, sixth trigger). Format-3 intents are refused; the KiCad replay bench moves to
+revision intent-format-4-v1 (three intent fixtures copied with schema_version 4, answers unchanged). On R5, with the
+datasheet-verified roles, U601 gets the seven CFG-D01 rows, waiting for their declarations. Tests first; 1894 tests
+pass, contract 513, KiCad replay 195/195, typical circuits no new unclassified, mutations M360-M373 added and the
+mutations on changed files killed.
+
+- Event: review:SR-20261023-R5-全新独立复审-1fe4df6/record/review-results.json and review:SR-20261023-R5-从头审查-claude-5802e8c/record/review-results.json (configuration gap blocks 57 rows vs 3 work items), user:2026-10-23 (第 3 条按建议定：3a–3f 都做，已知角色用 SR 固定的配置组，intent 格式升到 4。)
+- Causes: rule_missing 3, knowledge_wrong 1
+- Changed: SKILL.md, docs/2026-10-23-review-consistency-proposals.md, docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/revisions/intent-format-4-v1/cases.json, evals/kicad_replay_bench/revisions/intent-format-4-v1/expected.json, evals/kicad_replay_bench/revisions/intent-format-4-v1/manifest.json, evals/kicad_replay_bench/revisions/intent-format-4-v1/sources.json, evals/kicad_replay_bench/fixtures/rh-ad8495-thermocouple.page-inventory-v1.intent-format-4-v1.intent.json, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.intent-format-4-v1.intent.json, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.frames.intent-format-4-v1.intent.json, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/automation.md, references/check-catalog.md, references/evidence-proportionality.md, references/plan-and-results.md, references/verdicts-and-release.md, scripts/board_intent.py, scripts/catalog.py, scripts/derive_rows.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/review_functions.py, scripts/tests/test_configurable_devices.py, scripts/tests/test_catalog.py, scripts/tests/test_circuit_candidates.py, scripts/tests/test_derived_declarations.py, scripts/tests/test_domains.py, scripts/tests/test_ic_kinds.py, scripts/tests/test_independent_review.py, scripts/tests/test_plan_review.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_requirement_bindings.py, scripts/tests/test_requirement_categories.py, scripts/tests/test_requirement_parameters.py, scripts/tests/test_requirement_source.py, scripts/tests/test_review_v2.py, scripts/tests/test_rule_gaps.py, scripts/tests/test_rule_gaps_from_reviews.py, scripts/tests/test_source_variant_calibration.py, scripts/tests/test_tree_modules.py
+
+## A circuit rule is asked only where its mechanism is on the netlist (2026-10-23)
+
+Two independent R5 reviews wrote 42 rows NA on one side and PASS on the other with the same facts: the plan asked every
+rule of a circuit type of every circuit of that type (a power-switch SOA of an AC input with no switch, a compensation
+of a source follower or a synchronous rectifier with no loop, reset straps of a start-up circuit with no processor,
+all six protection rules of a decoupling group typed as input protection), and took the circuit's first part as the
+row object, so one review answered a bridge rectifier's surge rating under the switch SOA. Plan format 7: each
+circuit-type rule may carry a precondition judged on the netlist (catalog.SUBJECT_REQUIRES, 17 type-rule pairs over 9
+preconditions); a rule whose precondition fails is not asked, the frame lists it under not_asked and the report says
+"未问：方面（电路里没有…）"; the row object is the part the precondition found and the row carries requires{id, found
+[, unread]}. A precondition drops a rule only on netlist evidence: a part not in the netlist, of unknown kind (a
+two-terminal part is no transistor or IC; a bridge, a thermistor or varistor symbol is identified) or an IC without
+pin names keeps it; feedback and drive pins count on an IC outside the circuit wired to a circuit net or through a
+circuit resistor (a power stage whose driver and output amplifier sit in other circuits keeps its loop rows); named
+returns (_RTN) are grounds; an inrush thermistor is no sensor. A type that asks under half its rules of a circuit gets
+a CIRCUIT_TYPE_MISFIT hint. A judgement that only says the aspect does not apply, with no netlist fact, is refused
+(record NA), and an NA where the plan found the mechanism names the nets or pins that rule it out. On the KiCad replay
+boards no row is dropped (the one declared flyback keeps PWR-C04 and PWR-C15 through its external gate driver and
+output divider, after the first draft wrongly dropped them); on R5 the plan no longer asks the LED indicator's 9
+analog rows, the follower's and the synchronous rectifier's compensation, the AC input's switch and reverse-polarity
+rows, the fault latch's switch, inrush and reverse-polarity rows, the HV start-up's 8 reset rows and the decoupling
+group's 16 rows, and hints at retyping the three circuits that keep none; every row it keeps names its found part.
+Tests first; 1879 tests pass, contract 513, KiCad replay 195/195 (unchanged, revision single-fault-rows-v1), typical
+circuits no new unclassified, mutations M340-M359 added, M113-M115 re-pointed to the format-6 plan, and the mutations
+on changed files killed (179 with item 3).
+
+- Event: review:SR-20261023-R5-全新独立复审-1fe4df6/record/review-results.json and review:SR-20261023-R5-从头审查-claude-5802e8c/record/review-results.json (42 NA-vs-PASS rows), user:2026-10-23 (第 2 条按建议定：2a–2d 都做，计划格式升到 7。)
+- Causes: rule_missing 2, rule_not_enforced 2
+- Changed: SKILL.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/check-catalog.md, references/plan-and-results.md, scripts/catalog.py, scripts/electrical_contract.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/render_report.py, scripts/review_functions.py, scripts/validate_review.py, scripts/tests/test_subject_requires.py, scripts/tests/test_catalog.py, scripts/tests/test_plan_review.py, scripts/tests/test_review_v2.py, scripts/tests/test_tree_modules.py
+
 ## Two reviews of one board drift less: bounds say how they were derived, gaps block through numbers (2026-10-23)
 
 Two independent R5 reviews (Codex at 1fe4df6, Claude at 5802e8c) agreed on 347 of 516 exactly paired rows. The

@@ -28,6 +28,7 @@ DOMAINS = (
            '测试点可触达性、邻近地、夹具与 ICT 覆盖'),
     Domain('DEV', '器件与引脚', '料号/封装/符号身份、物理脚与引脚处置、工作条件、应力与降额、连接器定义与载流',
            '特殊封装/摆放要求；PCB 走线载流'),
+    Domain('CFG', '配置', '可编程器件逐配置组的配置值：允许范围、需求要求与硬件判定依赖的设置', '配置表与固件的交付'),
     Domain('NET', '网络连接', '悬空网、网名分裂、无源孤岛、NC 网络、引脚类型冲突', ''),
     Domain('PWR', '电源', '电源树、电源脚与地脚、地网、变换器/LDO、输入保护与滤波、去耦、纹波、监控覆盖',
            '去耦/储能位置与回路、大电流铜皮、PCB 压降与载流、散热与实测温升'),
@@ -184,6 +185,10 @@ RULES = (
          'plan', 'device'),
     Rule('DEV-D01', '器件身份与封装',
          '核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突', 'plan', 'device'),
+    Rule('CFG-D01', '配置值满足要求',
+         '可编程器件逐配置组核配置值（寄存器、OTP/NVM、引脚设定）：落在手册允许范围内、满足需求要求的值，并包含硬件判定写下的设置'
+         '（setting）；配置表未交付记 DELIVERABLE_PENDING（CONFIGURATION_TABLE），只挡本行与需求行；某组对该器件不存在记 NA 并引手册条款；'
+         '订货代码决定的工厂选项是器件身份，归 DEV-D01', 'plan', 'device'),
     Rule('DEV-D02', '官方物理脚差集',
          '官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；'
          '已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；'
@@ -579,7 +584,7 @@ OBJECTIVES = {
     'G7': ('证据覆盖、改进建议与复验闭环', '是否查全且结论有据，不通过项是否明确如何改进、如何复验？'),
 }
 OBJECTIVE_RULES = {
-    'G1': tuple('REQ-A01 REQ-A02 REQ-D01 REQ-D02'.split()),
+    'G1': tuple('REQ-A01 REQ-A02 REQ-D01 REQ-D02 CFG-D01'.split()),
     'G2': tuple(('DOC-A02 DOC-T01 DOC-D01 DOC-V01 '
                  'DEV-A02 DEV-E01 DEV-D01 DEV-D02 DEV-D03 DEV-D04 DEV-D05 '
                  'NET-A01 NET-A02 NET-A03 NET-A04 NET-A06 NET-A07 '
@@ -707,6 +712,52 @@ CIRCUIT_TYPES = (
             ('SIG-D06',),
             ('datasheets',)),
 )
+
+# 可编程器件的配置组（一致性方案第 3 条，intent 格式 4）：已知角色的组由 SR 固定，每组一行 CFG-D01；没有固定组的可编程角色
+# 要求审查员在 intent.devices.<位号>.configurable 按手册寄存器或配置章节声明组。某组对该器件不存在时，该行记 NA 并引手册条款。
+CONFIG_GROUPS = {
+    'pd_controller': (('CAPABILITY', '能力发布'), ('CABLE_VCONN', '线缆与 VCONN'), ('PROTECTION', '保护门限与动作'),
+                      ('SENSING', '检测通道'), ('GPIO', 'GPIO 角色、默认态与对外控制时序'),
+                      ('COMPENSATION', '环路补偿（片内可编程时）'), ('SEQUENCE', '放电与上下电时序')),
+}
+PROGRAMMABLE_ROLES = ('pd_controller', 'mcu')
+CONFIG_GROUP_TITLES = {group: title for groups in CONFIG_GROUPS.values() for group, title in groups}
+
+
+# 电路规则的对象前提（一致性方案第 2 条，计划格式 7）：（类型，规则）→ 前提，由 plan_circuits 按网表判断；不成立不派这一行，
+# 功能框架记 not_asked，报告列“未问”；成立时行对象取前提找到的器件。没列的组合对该类型的每块电路都问。
+# 前提只去掉电路里不存在的机制的行；网表说不清（器件类别未知、IC 没有脚名）时照问。
+SUBJECT_PRECONDITIONS = {
+    'POWER_SWITCH': '电路里没有 MOSFET 或 BJT',
+    'SUPPLY_SWITCH': '电路里没有 D、S 都不接地的 MOSFET',
+    'FEEDBACK_PIN': '电路里没有反馈环：电路和与它相接的 IC 都没有反馈/补偿脚（FB、VFB、COMP、VCTRL、ITH、ADJ）或稳压输出脚，'
+                    '也没有分压或光耦把输出送到 IC',
+    'SWITCH_PIN': '电路里没有受控开关：电路和与它相接的 IC 都没有驱动/开关脚（GATE、DRV、OUT、SW、LX）或稳压输出脚',
+    'CONNECTOR_INPUT': '电路里没有连接器，也不在连接器的输入路径上',
+    'PROTECTION_PART': '电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC',
+    'SENSE_ELEMENT': '电路里没有采样电阻（<1 Ω）、NTC 或接到 IC 检测脚的分压',
+    'ANALOG_PIN': '电路里没有放大器、ADC 或温度传感器的脚',
+    'START_PIN': '电路里没有带复位、使能或启动配置脚（RESET、EN、BOOT、strap）的 IC',
+}
+SUBJECT_REQUIRES = {
+    ('POWER_CONVERTER', 'PWR-C04'): 'SWITCH_PIN',
+    ('POWER_CONVERTER', 'PWR-C15'): 'FEEDBACK_PIN',
+    ('POWER_PROTECTION', 'PWR-C06'): 'PROTECTION_PART',
+    ('POWER_PROTECTION', 'DRV-C02'): 'POWER_SWITCH',
+    ('POWER_PROTECTION', 'PRO-C01'): 'PROTECTION_PART',
+    ('POWER_PROTECTION', 'PWR-C13'): 'CONNECTOR_INPUT',
+    ('POWER_PROTECTION', 'PWR-T05'): 'SUPPLY_SWITCH',
+    ('POWER_PROTECTION', 'ANA-T01'): 'SENSE_ELEMENT',
+    ('ANALOG', 'ANA-C01'): 'ANALOG_PIN',
+    ('ANALOG', 'ANA-C02'): 'ANALOG_PIN',
+    ('ANALOG', 'ANA-C03'): 'ANALOG_PIN',
+    ('ANALOG', 'ANA-T01'): 'SENSE_ELEMENT',
+    ('ANALOG', 'ANA-D01'): 'ANALOG_PIN',
+    ('STARTUP', 'RST-C01'): 'START_PIN',
+    ('STARTUP', 'RST-C02'): 'START_PIN',
+    ('STARTUP', 'RST-T04'): 'START_PIN',
+    ('STARTUP', 'RST-D01'): 'START_PIN',
+}
 
 # 电路检查项的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），行的 question 就是审查员要回答的
 # 问题；通用 criterion 保留为提示。问题只说要算什么、对照什么，禁止句（“不得…”“不把…外推”）由 question_errors 拒绝。
@@ -1108,6 +1159,7 @@ EXPLANATIONS = {
     'DEV-C03': _x('默认用 1% 器件，输出或测量仍可能超出允许误差窗口', '按实际误差传递，公差与温漂合计落在允许窗口内即关闭', inputs='需求给出的误差目标'),
     'DEV-C04': _x('单针额定乘针数会高估并联载流，接触电阻不均会让个别针过载', '按实际采购系列的并针降额和故障电流核完即关闭；走线载流交 PCB', inputs='PWR-C01 的电流预算'),
     'DEV-C05': _x('在绝对最大额定内，仍可能不满足推荐条件而功能不受保证', '供电、输入、负载、频率和温度等级逐项落在保证条件内即关闭', inputs='DEV-D01 的身份、PWR-T01 的电源路径'),
+    'CFG-D01': _x('硬件按某个设置判了通过，配置表却写了别的值或超出手册允许范围，通过不成立', '每个配置组的值在手册允许范围内、满足需求并包含硬件判定写下的设置即关闭', inputs='intent.devices.<位号>.configurable 与配置表'),
     'DEV-D01': _x('同系列不同后缀的门限、封装或额定不同，可能拿错手册证明本器件', '实例 MPN、后缀和封装与所引用手册的订货信息一致即关闭'),
     'DEV-D02': _x('漏画的 EP、隐藏电源脚或错脚号会让后续计算建立在错的脚上', '官方脚与符号脚双向差集为空，或每处差异都有依据即关闭', inputs='DEV-D01 确认的器件身份'),
     'DEV-D03': _x('板内自洽的针序到了对端，电源、地或收发方向仍可能冲突', '每针本端定义与对端定义逐针相容即关闭；防护归 PRO-D03', inputs='DEV-E01 的触点映射'),
@@ -1330,6 +1382,10 @@ def _build_index():
             raise ValueError('功能电路定义错误: ' + kind.name)
         re.compile(kind.pattern)
         CIRCUIT_TYPE_BY_NAME[kind.name] = kind
+    for (name, rule), requires in SUBJECT_REQUIRES.items():
+        if name not in CIRCUIT_TYPE_BY_NAME or rule not in CIRCUIT_TYPE_BY_NAME[name].subjects \
+                or requires not in SUBJECT_PRECONDITIONS:
+            raise ValueError('电路规则前提定义错误: %s %s' % (name, rule))
     referenced = [rule for p in CIRCUIT_TYPES for rule in p.subjects] + list(COVERAGE_RULES.values())
     for rule in referenced:
         if rule not in BY_ID:
@@ -1534,6 +1590,12 @@ def render_markdown():
     for p in CIRCUIT_TYPES:
         lines.append('| %s | %s | %s | %s | %s | `%s` |' % (
             p.name, p.title, p.domain, '、'.join(p.subjects), '、'.join(p.materials), _cell(p.pattern)))
+    lines += ['', '下表的电路检查项只在网表上有它问的机制时生成，行对象取前提找到的器件；前提不成立的规则记在功能框架的 '
+              '`not_asked`，报告在功能下列“未问”。网表说不清（器件类别未知、IC 没有脚名）时照问；漏问的可经 '
+              '`intent.rule_gaps` 补回。', '',
+              '| 功能电路 | 电路检查项 | 前提 | 不成立时 |', '|---|---|---|---|']
+    for (name, rule), requires in SUBJECT_REQUIRES.items():
+        lines.append('| %s | %s | %s | %s |' % (name, rule, requires, SUBJECT_PRECONDITIONS[requires]))
     lines += ['', '## 需求类别与审查方面', '',
               '每条需求在 `intent.requirements[].categories` 选一个或几个类别；每个类别的审查方面固定，'
               '计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。几个类别的方面取并集。', '',

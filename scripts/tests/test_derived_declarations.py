@@ -30,7 +30,7 @@ def existing_file():
 
 class MaterialTests(unittest.TestCase):
     def errors(self, intent):
-        return [e for e in validate_intent(dict({'schema_version': 3}, **intent)) if 'materials' in e]
+        return [e for e in validate_intent(dict({'schema_version': 4}, **intent)) if 'materials' in e]
 
     def test_a_material_is_available_when_its_file_exists(self):
         db = {'parts': {}, 'nets': {}, 'pin2net': {}}
@@ -53,13 +53,13 @@ class MaterialTests(unittest.TestCase):
         db = {'parts': {}, 'nets': {}, 'pin2net': {}}
         row = lambda plan: next(c for c in plan['checks'] if c['rule'] == 'REQ-D02')
         self.assertEqual(row(build_review_plan(db, {}))['required_inputs'], ['requirements'])
-        intent = dict({'schema_version': 3}, **requirement_intent(write()))
+        intent = dict({'schema_version': 4}, **requirement_intent(write()))
         self.assertEqual(row(build_review_plan(db, intent))['required_inputs'], [])
 
 
 class FeatureTests(unittest.TestCase):
     def errors(self, features):
-        intent = {'schema_version': 3, 'circuit_decisions': [],
+        intent = {'schema_version': 4, 'circuit_decisions': [],
                   'circuits': [{'id': 'C1', 'type': 'POWER_CONVERTER', 'refs': ['U1'], 'states': ['run'],
                                 'citation': 'synthetic'}], 'features': features}
         return [e for e in validate_intent(intent) if 'features' in e]

@@ -757,24 +757,24 @@
  },
  {
   "id": "M113",
-  "name": "the validator reads a schema-5 plan alongside schema 6",
+  "name": "the validator reads a schema-6 plan alongside schema 7",
   "file": "scripts/validate_review.py",
   "old": "    require(plan.get(\"schema_version\") == PLAN_SCHEMA_VERSION,",
-  "new": "    require(plan.get(\"schema_version\") in (5, PLAN_SCHEMA_VERSION),"
+  "new": "    require(plan.get(\"schema_version\") in (6, PLAN_SCHEMA_VERSION),"
  },
  {
   "id": "M114",
-  "name": "a schema-5 previous plan is merged",
+  "name": "a schema-6 previous plan is merged",
   "file": "scripts/plan_review.py",
   "old": "        if not isinstance(previous, dict) or previous.get('schema_version') != PLAN_SCHEMA_VERSION:",
-  "new": "        if not isinstance(previous, dict) or previous.get('schema_version') not in (5, PLAN_SCHEMA_VERSION):"
+  "new": "        if not isinstance(previous, dict) or previous.get('schema_version') not in (6, PLAN_SCHEMA_VERSION):"
  },
  {
   "id": "M115",
-  "name": "a schema-5 old plan is compared for revision impact",
+  "name": "a schema-6 old plan is compared for revision impact",
   "file": "scripts/revision_impact.py",
   "old": "        if old_plan.get('schema_version') != PLAN_SCHEMA_VERSION:",
-  "new": "        if old_plan.get('schema_version') not in (5, PLAN_SCHEMA_VERSION):"
+  "new": "        if old_plan.get('schema_version') not in (6, PLAN_SCHEMA_VERSION):"
  },
  {
   "id": "M116",
@@ -2343,5 +2343,243 @@
   "file": "scripts/results_model.py",
   "old": "SCHEMA_VERSION = 5",
   "new": "SCHEMA_VERSION = 4"
+ },
+ {
+  "id": "M340",
+  "name": "every circuit rule is asked whatever the netlist holds",
+  "file": "scripts/plan_circuits.py",
+  "old": "requires = catalog.SUBJECT_REQUIRES.get((kind.name, rule))",
+  "new": "requires = None"
+ },
+ {
+  "id": "M341",
+  "name": "a part the netlist cannot tell about drops the rule",
+  "file": "scripts/plan_circuits.py",
+  "old": "    return found, [ref for ref in unread if ref not in found]",
+  "new": "    return found, []"
+ },
+ {
+  "id": "M342",
+  "name": "a feedback pin counts only on an IC inside the circuit",
+  "file": "scripts/plan_circuits.py",
+  "old": "with_pin((FEEDBACK_NAME_RE,), adjacent=True)",
+  "new": "with_pin((FEEDBACK_NAME_RE,), adjacent=False)"
+ },
+ {
+  "id": "M343",
+  "name": "a drive pin counts only on an IC inside the circuit",
+  "file": "scripts/plan_circuits.py",
+  "old": "with_pin((DRIVE_NAME_RE,), adjacent=True)",
+  "new": "with_pin((DRIVE_NAME_RE,), adjacent=False)"
+ },
+ {
+  "id": "M344",
+  "name": "a connector on a ground the power path reaches counts as an input path",
+  "file": "scripts/plan_circuits.py",
+  "old": "reach |= {n for n in graph.series_path(net, PASSIVE_LINKS | {DIODE}) if not is_ground(n)}",
+  "new": "reach |= set(graph.series_path(net, PASSIVE_LINKS | {DIODE}))"
+ },
+ {
+  "id": "M345",
+  "name": "an inrush thermistor is taken for a sensor",
+  "file": "scripts/plan_circuits.py",
+  "old": "if NTC_RE.search(text_of(ref)) and any(",
+  "new": "if NTC_RE.search(text_of(ref)) or any("
+ },
+ {
+  "id": "M346",
+  "name": "a low-side switch is taken for a reverse-polarity switch",
+  "file": "scripts/plan_circuits.py",
+  "old": "if graph.kind(ref) == MOSFET and all(ends) and not any(is_ground(n) for n in ends):",
+  "new": "if graph.kind(ref) == MOSFET and all(ends):"
+ },
+ {
+  "id": "M347",
+  "name": "a named return is no ground for the preconditions",
+  "file": "scripts/plan_circuits.py",
+  "old": "return netgraph_ground(net) or net in grounds",
+  "new": "return netgraph_ground(net)"
+ },
+ {
+  "id": "M348",
+  "name": "one resistor makes a divider",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if len(legs) < 2:\n                continue\n            for node in graph.nodes_on(net):",
+  "new": "            if len(legs) < 1:\n                continue\n            for node in graph.nodes_on(net):"
+ },
+ {
+  "id": "M349",
+  "name": "a gate driver's OUT pin is taken for a regulator output",
+  "file": "scripts/plan_circuits.py",
+  "old": "with_pin((REGULATOR_OUT_RE,)) + dividers()",
+  "new": "with_pin((REGULATOR_OUT_RE,), adjacent=True) + dividers()"
+ },
+ {
+  "id": "M350",
+  "name": "a two-terminal part of unknown kind keeps the transistor and IC rules",
+  "file": "scripts/plan_circuits.py",
+  "old": "                        and not (requires in IC_OR_SWITCH and len(graph.pins_of(ref)) <= 2))",
+  "new": "                        )"
+ },
+ {
+  "id": "M351",
+  "name": "a thermistor symbol of unknown kind keeps every rule",
+  "file": "scripts/plan_circuits.py",
+  "old": "not BRIDGE_RE.match(ref) and not identified(ref)",
+  "new": "not BRIDGE_RE.match(ref)"
+ },
+ {
+  "id": "M352",
+  "name": "the row object stays the circuit's first part",
+  "file": "scripts/plan_circuits.py",
+  "old": "asked[rule] = ((found or unread)[0],",
+  "new": "asked[rule] = (refs[0],"
+ },
+ {
+  "id": "M353",
+  "name": "a frame lists blind spots of rules it does not ask",
+  "file": "scripts/plan_circuits.py",
+  "old": "for rule in kind.subjects\n                                if rule in requirements[circuit['id']]}",
+  "new": "for rule in kind.subjects}"
+ },
+ {
+  "id": "M354",
+  "name": "no hint when a type asks almost nothing",
+  "file": "scripts/plan_circuits.py",
+  "old": "if 2 * len(asked) < len(kind.subjects):",
+  "new": "if 2 * len(asked) < 0:"
+ },
+ {
+  "id": "M355",
+  "name": "the report does not say what was not asked",
+  "file": "scripts/render_report.py",
+  "old": "    return out + not_asked_lines(plan)",
+  "new": "    return out"
+ },
+ {
+  "id": "M356",
+  "name": "a PASS saying only does-not-apply is kept",
+  "file": "scripts/review_functions.py",
+  "old": "if NOT_APPLIES_RE.search(j['says']) and 'NETLIST_FACT' not in kinds:",
+  "new": "if False:"
+ },
+ {
+  "id": "M357",
+  "name": "an NA on a found mechanism needs no netlist fact",
+  "file": "scripts/validate_review.py",
+  "old": "if (expected.get(key) or {}).get('requires'):",
+  "new": "if False:"
+ },
+ {
+  "id": "M358",
+  "name": "an NA netlist fact is not checked against the netlist",
+  "file": "scripts/review_functions.py",
+  "old": "            errors.extend(_netlist_name_errors(label, nets, pins, db))\n    return errors\n\n\ndef _basis_errors",
+  "new": "            pass\n    return errors\n\n\ndef _basis_errors"
+ },
+ {
+  "id": "M359",
+  "name": "a format-6 plan is read as format 7",
+  "file": "scripts/electrical_contract.py",
+  "old": "PLAN_SCHEMA_VERSION = 7",
+  "new": "PLAN_SCHEMA_VERSION = 6"
+ },
+ {
+  "id": "M360",
+  "name": "a format-3 intent is read as format 4",
+  "file": "scripts/plan_review.py",
+  "old": "INTENT_SCHEMA_VERSION = 4",
+  "new": "INTENT_SCHEMA_VERSION = 3"
+ },
+ {
+  "id": "M361",
+  "name": "a pd_controller gets no fixed configuration groups",
+  "file": "scripts/plan_circuits.py",
+  "old": "fixed = [group for group, _ in catalog.CONFIG_GROUPS.get(role, ())]",
+  "new": "fixed = []"
+ },
+ {
+  "id": "M362",
+  "name": "a programmable device without groups is not asked to declare them",
+  "file": "scripts/plan_circuits.py",
+  "old": "                if role in catalog.PROGRAMMABLE_ROLES:",
+  "new": "                if False:"
+ },
+ {
+  "id": "M363",
+  "name": "an undeclared group is ready",
+  "file": "scripts/plan_circuits.py",
+  "old": "criterion=CONFIG_UNDECLARED_CRITERION % (ref, title, ref), readiness='WAITING_EVIDENCE',",
+  "new": "criterion=CONFIG_UNDECLARED_CRITERION % (ref, title, ref), readiness='READY',"
+ },
+ {
+  "id": "M364",
+  "name": "declared set points ask no accuracy row",
+  "file": "scripts/plan_circuits.py",
+  "old": "                if item.get('set_points'):   # proposals item 7, sixth trigger",
+  "new": "                if False:"
+ },
+ {
+  "id": "M365",
+  "name": "a group may omit its datasheet section or range",
+  "file": "scripts/board_intent.py",
+  "old": "        for field in ('citation', 'allowed'):\n            if not _text(item.get(field)):",
+  "new": "        for field in ():\n            if not _text(item.get(field)):"
+ },
+ {
+  "id": "M366",
+  "name": "a group need not say what it affects",
+  "file": "scripts/board_intent.py",
+  "old": "        if not (isinstance(affects, list) and affects and all(_text(a) for a in affects)):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M367",
+  "name": "a group of one's own needs no title",
+  "file": "scripts/board_intent.py",
+  "old": "            if group not in catalog.CONFIG_GROUP_TITLES and not _text(item.get('title')):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M368",
+  "name": "a group may be declared twice",
+  "file": "scripts/board_intent.py",
+  "old": "        elif group in seen:\n            errors.append('%s.group %s is declared twice' % (at, group))",
+  "new": "        elif False:\n            errors.append('%s.group %s is declared twice' % (at, group))"
+ },
+ {
+  "id": "M369",
+  "name": "a setting need not appear in its configuration row",
+  "file": "scripts/review_functions.py",
+  "old": "            if not any(isinstance(x, dict) and x.get('value') == setting['value'] for x in listed or []):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M370",
+  "name": "a setting of a group the plan does not have is accepted",
+  "file": "scripts/review_functions.py",
+  "old": "            if cid not in expected:\n                errors.append('%s/%s: holds at a setting of",
+  "new": "            if False:\n                errors.append('%s/%s: holds at a setting of"
+ },
+ {
+  "id": "M371",
+  "name": "a configuration table blocks hardware rows",
+  "file": "scripts/review_functions.py",
+  "old": "                             and (expected.get(cid) or {}).get('rule') not in CONFIG_ROWS)",
+  "new": "                             and False)"
+ },
+ {
+  "id": "M372",
+  "name": "a setting row is looked up by id only",
+  "file": "scripts/review_functions.py",
+  "old": "            cid = rows.get((setting['ref'], setting['group']), 'CFG-D01.%s.%s' % (setting['group'], setting['ref']))",
+  "new": "            cid = 'CFG-D01.%s.%s' % (setting['group'], setting['ref'])"
+ },
+ {
+  "id": "M373",
+  "name": "a malformed setting is accepted",
+  "file": "scripts/review_functions.py",
+  "old": "    if 'setting' in c and not (isinstance(c['setting'], dict) and set(c['setting']) == {'ref', 'group', 'value'}",
+  "new": "    if False and not (isinstance(c['setting'], dict) and set(c['setting']) == {'ref', 'group', 'value'}"
  }
 ]

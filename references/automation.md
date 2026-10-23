@@ -94,7 +94,7 @@ REQ-A01 的输入不是网表，而是阶段 0 的审查意图清单：只从需
 
 ```json
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "expect": {
     "TPS16530": 2,
     "RTL8326B-CG": 0
