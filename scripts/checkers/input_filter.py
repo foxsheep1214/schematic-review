@@ -3,7 +3,7 @@
 """开关稳压器输入滤波与阻尼检查器。
 
 识别开关稳压器输入网上的串联电感/磁珠、两侧电容与阻尼支路，登记逐状态清单。
-负输入阻抗判据由证据计算（PWR-E03）按资料保证值判定，并声明其为一阶判据：全频阻抗裕量、
+负输入阻抗判据由保证值核对（PWR-E03）按资料保证值判定，并声明其为一阶判据：全频阻抗裕量、
 阶跃响应与温度角仍需仿真或实测。
 """
 import re
@@ -11,7 +11,6 @@ import re
 import catalog
 from decoupling import parse_capacitance
 
-from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
 from . import powertree
@@ -122,8 +121,7 @@ class InputFilterChecker(Checker):
     version = 1
     intent_key = 'input_filters'
     cold_rules = catalog.titles(stage='cold', source='input_filter')
-    hot_rules = catalog.titles(stage='hot', source='input_filter')
-    evidence_kinds = {'PWR-E03': {'input_filter_damping'}}
+    e_rules = catalog.titles(method='E', source='input_filter')
 
     missing_inventory_message = 'input filter checks require their inventory'
     inventory_type_message = 'input filter inventory must be an object'
@@ -148,13 +146,12 @@ class InputFilterChecker(Checker):
             obj = {'ref': item['ref'], 'net': item['input_net'], 'state': state['id'],
                    'input_filter': item['id'], 'input_filter_digest': inventory['digest']}
             gaps = item['gaps']
-            ready = planner.evidence_ready('PWR-E03', obj)
             check = planner.add_check(
                 'PWR-E03', dict(obj), key=item['id'],
-                readiness='READY' if ready else 'WAITING_EVIDENCE',
-                required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: PWR-E03 输入电压/功率、ESR、电感与电容保证值',
-                    'intent: 体电容与输入电容比值的项目规定']))),
+                readiness='WAITING_EVIDENCE',
+                required_inputs=sorted(set(gaps + [
+                    'datasheet: PWR-E03 输入电压/功率、ESR、电感与电容保证值',
+                    'intent: 体电容与输入电容比值的项目规定'])),
                 trigger=['input-filter:' + item['id']])
             check['inventory_gaps'] = gaps
             check = planner.add_check(
@@ -175,62 +172,6 @@ class InputFilterChecker(Checker):
                      % (item['ref'], state['id'], item['input_net'],
                         '、'.join(x['ref'] for x in item['series_elements'])),
                      item['ref'], kind='CANDIDATE')
-
-    def hot_check(self, lint, check):
-        vin_min = hotmath.number(check['vin_min_v'])
-        p_max = hotmath.number(check['pin_max_w'])
-        esr = hotmath.span(check['esr_bulk_ohm'])
-        c_bulk = hotmath.span(check['c_bulk_f'])
-        c_in = hotmath.span(check['c_in_f'])
-        inductance = hotmath.span(check['l_filter_h'])
-        ratio_min = hotmath.number(check['c_bulk_ratio_min'])
-        r_in = vin_min * vin_min / p_max
-        esr_floor = inductance[1] / (c_bulk[0] * r_in)
-        ratio = c_bulk[0] / c_in[1]
-        problems = []
-        if esr[1] >= r_in:
-            problems.append('体电容 ESR 上限 %s 不低于负输入阻抗 %s'
-                            % (hotmath.fmt(esr[1], 'Ω'), hotmath.fmt(r_in, 'Ω')))
-        if esr[0] <= esr_floor:
-            problems.append('体电容 ESR 下限 %s 不高于阻尼下界 L/(C·|Rin|)=%s'
-                            % (hotmath.fmt(esr[0], 'Ω'), hotmath.fmt(esr_floor, 'Ω')))
-        if ratio < ratio_min:
-            problems.append('体电容/输入电容比值 %s 低于项目规定 %s'
-                            % (hotmath.fmt(ratio), hotmath.fmt(ratio_min)))
-        calculation = {'r_in_ohm': r_in, 'esr_floor_ohm': esr_floor,
-                       'esr_bulk_ohm': {'min': esr[0], 'max': esr[1]},
-                       'c_bulk_over_c_in': ratio, 'c_bulk_ratio_min': ratio_min}
-        detail = '%s: |Rin|=%s，ESR=[%s, %s]Ω，阻尼下界=%s，C_bulk/C_in=%s（规定≥%s）；%s' % (
-            check.get('net') or check.get('ref'), hotmath.fmt(r_in, 'Ω'),
-            hotmath.fmt(esr[0]), hotmath.fmt(esr[1]), hotmath.fmt(esr_floor, 'Ω'),
-            hotmath.fmt(ratio), hotmath.fmt(ratio_min), lint._citation(check))
-        if problems:
-            lint.add('PWR-E03', '输入滤波阻尼一阶判据不满足', detail + '；' + '；'.join(problems),
-                     check.get('ref'), check_id=check['id'], citation=check['citation'],
-                     calculation=calculation)
-        else:
-            lint.record_pass('PWR-E03', check, detail,
-                             scope='所给保证值下的一阶阻尼判据；全频输入阻抗裕量、阶跃与温度角未判定',
-                             calculation=calculation)
-
-    def evidence_errors(self, check, label):
-        errors = hotmath.structure_errors(
-            check, label, spans=('esr_bulk_ohm', 'c_bulk_f', 'c_in_f', 'l_filter_h'),
-            numbers=('vin_min_v', 'pin_max_w', 'c_bulk_ratio_min'))
-        for field in ('vin_min_v', 'pin_max_w'):
-            value = hotmath.number(check.get(field))
-            if value is not None and value <= 0:
-                errors.append('%s.%s 必须为正数' % (label, field))
-        for field in ('esr_bulk_ohm', 'c_bulk_f', 'c_in_f', 'l_filter_h'):
-            bounds = hotmath.span(check.get(field))
-            if bounds is not None and bounds[0] <= 0:
-                errors.append('%s.%s.min 必须为正数' % (label, field))
-        return errors
-
-    def model_gaps(self, check):
-        return hotmath.missing_gaps(
-            check, spans=('esr_bulk_ohm', 'c_bulk_f', 'c_in_f', 'l_filter_h'),
-            numbers=('vin_min_v', 'pin_max_w', 'c_bulk_ratio_min'))
 
     def rule_instances(self, rule, inventory):
         return sorted({item['id'] for _, item in inv.walk(inventory, 'converters')})

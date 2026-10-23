@@ -13,7 +13,7 @@ from test_i2c_topology import add
 from reviewed_declarations import capture, resolve, KEY, digest
 from decoupling import build_decoupling_inventory
 from plan_review import build_review_plan, validate_intent
-from ledger_v3 import validate_review
+from validate_review import validate_review
 
 
 class ReviewedDeclarationsTests(unittest.TestCase):

@@ -1,7 +1,6 @@
 {
  "rule": "SIG-E02",
- "runner": "hot",
- "note": "driver common mode 2.4-2.6V above the receiver 0.3-2.2V window vs 1.1-1.3V",
+ "runner": "plan",
  "trigger": {
   "parts": [
    {
@@ -11,12 +10,12 @@
      [
       "1",
       "OUTP",
-      "CLK_P"
+      "CLK_TX_P"
      ],
      [
       "2",
       "OUTN",
-      "CLK_N"
+      "CLK_TX_N"
      ],
      [
       "3",
@@ -57,8 +56,72 @@
     ]
    },
    {
-    "ref": "R5",
-    "value": "100R",
+    "ref": "C1",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_P"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_P"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_N"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_N"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "150R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_P"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "150R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_N"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R3",
+    "value": "130R",
     "pins": [
      [
       "1",
@@ -68,7 +131,23 @@
      [
       "2",
       "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R4",
+    "value": "130R",
+    "pins": [
+     [
+      "1",
+      "1",
       "CLK_N"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
      ]
     ]
    }
@@ -79,33 +158,20 @@
    "U2.1": "IN",
    "U2.2": "IN"
   },
-  "evidence": [
-   {
-    "id": "LEVELS",
-    "rule": "SIG-E02",
-    "kind": "diff_level",
-    "ref": "U2",
-    "net": "CLK_P",
-    "coupling": "dc",
-    "driver_common_mode_v": {
-     "min": 2.4,
-     "max": 2.6
-    },
-    "driver_swing_v": {
-     "min": 0.25,
-     "max": 0.45
-    },
-    "receiver_common_mode_v": {
-     "min": 0.3,
-     "max": 2.2
-    },
-    "receiver_input_diff_v": {
-     "min": 0.1,
-     "max": 1.0
-    },
-    "citation": "Synthetic driver and receiver guaranteed level ranges"
+  "intent": {
+   "bound": true,
+   "diff_levels": {
+    "schema_version": 2,
+    "pairs": [
+     {
+      "id": "CLK-TX",
+      "ref": "U1",
+      "standard": "LVPECL",
+      "citation": "clock tree level definition"
+     }
+    ]
    }
-  ]
+  }
  },
  "near_miss": {
   "parts": [
@@ -116,12 +182,12 @@
      [
       "1",
       "OUTP",
-      "CLK_P"
+      "CLK_TX_P"
      ],
      [
       "2",
       "OUTN",
-      "CLK_N"
+      "CLK_TX_N"
      ],
      [
       "3",
@@ -162,8 +228,72 @@
     ]
    },
    {
-    "ref": "R5",
-    "value": "100R",
+    "ref": "C1",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_P"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_P"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_N"
+     ],
+     [
+      "2",
+      "2",
+      "CLK_N"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "150R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_P"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "150R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CLK_TX_N"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R3",
+    "value": "130R",
     "pins": [
      [
       "1",
@@ -173,7 +303,23 @@
      [
       "2",
       "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R4",
+    "value": "130R",
+    "pins": [
+     [
+      "1",
+      "1",
       "CLK_N"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
      ]
     ]
    }
@@ -183,33 +329,7 @@
    "U1.2": "OUT",
    "U2.1": "IN",
    "U2.2": "IN"
-  },
-  "evidence": [
-   {
-    "id": "LEVELS",
-    "rule": "SIG-E02",
-    "kind": "diff_level",
-    "ref": "U2",
-    "net": "CLK_P",
-    "coupling": "dc",
-    "driver_common_mode_v": {
-     "min": 1.1,
-     "max": 1.3
-    },
-    "driver_swing_v": {
-     "min": 0.25,
-     "max": 0.45
-    },
-    "receiver_common_mode_v": {
-     "min": 0.3,
-     "max": 2.2
-    },
-    "receiver_input_diff_v": {
-     "min": 0.1,
-     "max": 1.0
-    },
-    "citation": "Synthetic driver and receiver guaranteed level ranges"
-   }
-  ]
- }
+  }
+ },
+ "note": "LVPECL pair declared in intent gets a level-window row vs the same pair known only by name hint"
 }

@@ -1,7 +1,6 @@
 {
  "rule": "PWR-E03",
- "runner": "hot",
- "note": "bulk ESR 9-12 ohm outside the damping window vs 0.15-0.6 ohm",
+ "runner": "plan",
  "trigger": {
   "parts": [
    {
@@ -126,35 +125,6 @@
      ]
     ]
    }
-  ],
-  "evidence": [
-   {
-    "id": "IF",
-    "rule": "PWR-E03",
-    "kind": "input_filter_damping",
-    "ref": "U1",
-    "net": "VIN_12",
-    "vin_min_v": 10.8,
-    "pin_max_w": 12.0,
-    "esr_bulk_ohm": {
-     "min": 9.0,
-     "max": 12.0
-    },
-    "c_bulk_f": {
-     "min": 8e-05,
-     "max": 0.00012
-    },
-    "c_in_f": {
-     "min": 6e-06,
-     "max": 1e-05
-    },
-    "l_filter_h": {
-     "min": 8e-07,
-     "max": 1.2e-06
-    },
-    "c_bulk_ratio_min": 4.0,
-    "citation": "Synthetic project damping rule and guaranteed component data"
-   }
   ]
  },
  "near_miss": {
@@ -183,7 +153,8 @@
       "FB",
       "FB"
      ]
-    ]
+    ],
+    "nc": true
    },
    {
     "ref": "C1",
@@ -281,35 +252,7 @@
      ]
     ]
    }
-  ],
-  "evidence": [
-   {
-    "id": "IF",
-    "rule": "PWR-E03",
-    "kind": "input_filter_damping",
-    "ref": "U1",
-    "net": "VIN_12",
-    "vin_min_v": 10.8,
-    "pin_max_w": 12.0,
-    "esr_bulk_ohm": {
-     "min": 0.15,
-     "max": 0.6
-    },
-    "c_bulk_f": {
-     "min": 8e-05,
-     "max": 0.00012
-    },
-    "c_in_f": {
-     "min": 6e-06,
-     "max": 1e-05
-    },
-    "l_filter_h": {
-     "min": 8e-07,
-     "max": 1.2e-06
-    },
-    "c_bulk_ratio_min": 4.0,
-    "citation": "Synthetic project damping rule and guaranteed component data"
-   }
   ]
- }
+ },
+ "note": "fitted converter gets an input-filter damping row vs the same converter not fitted"
 }

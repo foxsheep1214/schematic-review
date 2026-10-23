@@ -204,22 +204,6 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertTrue(any(x['code'] == 'INTENT_NETLIST_CONFLICT'
                             for x in plan['diagnostics']))
 
-    def test_unbound_structured_evidence_does_not_make_hot_instance_ready(self):
-        evidence = {
-            'schema_version': 2,
-            'checks': [{
-                'id': 'U1-FB', 'rule': 'PWR-E01', 'kind': 'divider',
-                'net': 'REG_FB', 'vref': 0.8,
-                'expected': {'min': 2.9, 'max': 3.4},
-                'citation': 'REG-X datasheet Rev.A p.10',
-            }],
-        }
-        plan = build_review_plan(sample_db(), evidence=evidence)
-        item = next(x for x in plan['checks']
-                    if x['rule'] == 'PWR-E01')
-        self.assertEqual(item['readiness'], 'WAITING_EVIDENCE')
-        self.assertTrue(item['required_inputs'])
-
     def test_enable_net_does_not_turn_passive_pins_into_checks(self):
         db = sample_db()
         db['pinname'].update({'R3.1': '1', 'R3.2': '2'})

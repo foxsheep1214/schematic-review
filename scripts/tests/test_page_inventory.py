@@ -14,7 +14,8 @@ from parse_netlist import self_check
 from plan_review import build_review_plan
 from test_validate_review import fixture, planned, E
 from validate_review import fingerprint
-from ledger_v3 import validate_review
+from validate_review import validate_review
+from ledger4 import gap
 
 XML = (Path(__file__).parent / 'fixtures/page_inventory/empty-root.xml').read_text()
 
@@ -37,7 +38,7 @@ def ledger():
         p['checks'].append(item)
         r['checks'].append({'id': key, 'applicability': 'APPLICABLE', 'review_result': 'PASS',
             'evidence_confidence': 'A', 'evidence': E, 'rationale': 'Synthetic page independently viewed',
-            'blocking': False, 'handoff': {'required': False}})
+            'handoff': {'required': False}})
     r['coverage']['pages'] = {str(x['page']): ['DOC-V01.' + str(x['page'])] for x in p['page_inventory']['pages']}
     return bind(p, r, db)
 
@@ -157,9 +158,7 @@ class PageLedgerTests(unittest.TestCase):
 
     def test_unreviewed_root_remains_review_incomplete(self):
         p, r, db = ledger()
-        root = next(x for x in r['checks'] if x['id'] == 'DOC-V01.7')
-        root.update(review_result='REVIEW_INCOMPLETE', evidence_confidence='C',
-                    missing_inputs=['Root page graphics not yet inspected'])
+        gap(r, 'DOC-V01.7', 'ROOT-VIEW', plan=p, what='Root page graphics not yet inspected')
         out = validate_review(p, r, db)
         self.assertEqual(out['release'], 'NO_GO')
         self.assertTrue(any('DOC-V01.7' in x for x in out['blockers'] + out['errors']))

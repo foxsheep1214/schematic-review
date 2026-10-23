@@ -10,7 +10,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import catalog
 import derive_rows
 import validate_review as vr
-from ledger_v3 import record
 from test_review_functions import bias_function, aux_open, ASPECT
 from test_validate_review import fixture, planned, E
 from validate_review import fingerprint
@@ -24,7 +23,6 @@ def bias_plan():
     p, r, db = fixture()
     for item in p['checks']:   # bindings are all-or-nothing: the base rows get one too
         item['criterion'] = 'stipulated'
-    r = record(r, p)
     for row in r['checks']:
         row['binding'] = {'object': {}, 'criterion': 'stipulated'}
     members = []

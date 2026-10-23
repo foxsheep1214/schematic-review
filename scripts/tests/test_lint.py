@@ -6,8 +6,7 @@ import tempfile
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 
-from lint import Lint, _pin_class, validate_evidence
-from electrical_fixtures import bind_evidence, pin_analysis, divider_model
+from lint import Lint, _pin_class
 
 
 def sample_db():
@@ -45,49 +44,6 @@ def sample_db():
     }
 
 
-def hot_evidence():
-    return {
-        'schema_version': 2,
-        'checks': [
-            {
-                'id': 'EN-ABS',
-                'rule': 'RST-E01',
-                'kind': 'pin_bias',
-                'node': 'U3.1',
-                'required_default': 'high',
-                'abs_max_v': 5.5,
-                'citation': 'U3 datasheet Rev.A p.4',
-            },
-            {
-                'id': 'SCL-PULL',
-                'rule': 'SIG-E01',
-                'kind': 'required_pull',
-                'net': 'I2C_SCL',
-                'direction': 'up',
-                'to': 'VCC_3V3',
-                'resistance_ohm': {'min': 1000, 'max': 4700},
-                'citation': 'U4 HDG v1 p.8',
-            },
-            {
-                'id': 'J1-MAP',
-                'rule': 'DEV-E01',
-                'kind': 'pin_map',
-                'ref': 'J1',
-                'expected': {'1': 'VBUS'},
-                'citation': 'J1 drawing Rev.B p.2',
-            },
-            {
-                'id': 'BOOT-LOW',
-                'rule': 'RST-E02',
-                'kind': 'strap',
-                'node': 'U5.1',
-                'required': 'low',
-                'citation': 'U5 datasheet Rev.C Table 3',
-            },
-        ],
-    }
-
-
 def divider_db():
     nets = {
         'VOUT_2V4': ['R10.1'],
@@ -115,90 +71,8 @@ class LintTests(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
 
-    def bound_lint(self, database, evidence):
-        audit = bind_evidence(database, evidence, self.directory.name)
-        return Lint(database, intent={'expect': {}}, evidence=evidence, datasheet_audit=audit)
-
     def test_cadence_bi_pinuse_maps_to_bidirectional(self):
         self.assertEqual(_pin_class('BI'), 'BIDI')
-
-    def test_evidence_validation_requires_citation(self):
-        evidence = hot_evidence()
-        del evidence['checks'][0]['citation']
-        self.assertTrue(validate_evidence(evidence))
-
-    def test_evidence_validation_rejects_duplicate_and_bad_ranges(self):
-        evidence = {
-            'schema_version': 2,
-            'checks': [
-                {
-                    'id': 'DUP', 'rule': 'PWR-E01', 'kind': 'divider',
-                    'net': 'FB',
-                    'vref': {'min': 0.81, 'typ': 0.8, 'max': 0.79},
-                    'resistor_tolerance': 1.2,
-                    'expected': {'min': 3.4, 'max': 3.3},
-                    'citation': 'REG datasheet Rev.A p.9',
-                },
-                {
-                    'id': 'DUP', 'rule': 'RST-E01', 'kind': 'pin_bias',
-                    'node': 'U1.1', 'required_default': 'high',
-                    'citation': 'REG datasheet Rev.A p.4',
-                },
-            ],
-        }
-        errors = validate_evidence(evidence)
-        self.assertTrue(any('重复' in error for error in errors))
-        self.assertTrue(any('min <= typ <= max' in error for error in errors))
-        self.assertTrue(any('resistor_tolerance' in error for error in errors))
-        self.assertTrue(any('expected.min 不得大于 max' in error
-                            for error in errors))
-
-    def test_evidence_validation_handles_non_string_schema_values(self):
-        evidence = {
-            'schema_version': 2,
-            'checks': [{
-                'id': ['bad'], 'rule': ['RST-E01'], 'kind': ['pin_bias'],
-                'node': ['U1.1'], 'required_default': ['high'],
-                'citation': ['not text'],
-            }],
-        }
-        errors = validate_evidence(evidence)
-        self.assertGreaterEqual(len(errors), 4)
-
-    def test_pinuse_and_hot_rules_execute(self):
-        evidence = hot_evidence()
-        self.assertEqual(validate_evidence(evidence), [])
-        evidence['checks'][0].update(vih_min_v=2.0, abs_min_v=-.3, voltage_analysis=pin_analysis(12, 12))
-        evidence['checks'][3].update(vil_max_v=0.8, voltage_analysis=pin_analysis(3.3, 3.3))
-        lint = self.bound_lint(sample_db(), evidence)
-        findings = lint.run()
-        rules = {item['rule'] for item in findings
-                 if item['kind'] == 'FINDING'}
-        self.assertIn('NET-A06', rules)
-        self.assertIn('RST-E01', rules)
-        self.assertIn('SIG-E01', rules)
-        self.assertIn('DEV-E01', rules)
-        self.assertIn('RST-E02', rules)
-        self.assertEqual(
-            lint.hot_executed, {'SIG-E01', 'RST-E01', 'DEV-E01', 'RST-E02'})
-        self.assertTrue(any(item[0] == 'NET-A06' for item in lint.skipped))
-
-    def pin_map_run(self, db, expected):
-        evidence = hot_evidence()
-        evidence['checks'] = [c for c in evidence['checks'] if c['id'] == 'J1-MAP']
-        evidence['checks'][0]['expected'] = expected
-        lint = self.bound_lint(db, evidence)
-        findings = [i for i in lint.run() if i['rule'] == 'DEV-E01' and i['kind'] == 'FINDING']
-        passes = [p for p in lint.passes if p['rule'] == 'DEV-E01']
-        self.assertIn('DEV-E01', lint.hot_executed)
-        return findings, passes
-
-    def test_hot_pin_map_reads_declared_name_for_passive_pins(self):
-        # Bridge AC terminals and windings have no functional name in pinname;
-        # the symbol's declared name is the one to compare.
-        db = sample_db(); db['pinname'].pop('J1.1'); db['declared_pinname'] = {'J1.1': 'VBUS'}
-        findings, passes = self.pin_map_run(db, {'1': 'VBUS'})
-        self.assertEqual([], findings)
 
     def test_pull_through_factory_closed_solder_jumper_reaches_the_rail(self):
         def board(prim, pads):
@@ -219,100 +93,6 @@ class LintTests(unittest.TestCase):
             self.assertEqual((link['other'], link.get('via')), ('VCC_3V3', 'JP1'), prim)
         # An open jumper is a population choice, not copper: the pull-up's far end stays where it is drawn.
         self.assertEqual(board('Jumper:SolderJumper_2_Open', 2).resistor_links('SDA')[0]['other'], 'TOP')
-
-    def test_hot_pin_map_matches_one_alternate_function_of_a_multiplexed_pin(self):
-        # Module symbols name pins by every function ('IO2/GPIO2/ADC1_CH2/FSPIQ');
-        # the official name only has to be one of them. Overbars do not change the name.
-        db = sample_db(); db['pinname']['J1.1'] = 'IO2/GPIO2/ADC1_CH2/FSPIQ'
-        findings, _ = self.pin_map_run(db, {'1': 'IO2'})
-        self.assertEqual([], findings)
-        db['pinname']['J1.1'] = '~{INT}'
-        self.assertEqual([], self.pin_map_run(db, {'1': ['ALERT', 'INT']})[0])
-        # A different function is still a mismatch, and a substring is not a token.
-        db['pinname']['J1.1'] = 'IO2/GPIO2/ADC1_CH2/FSPIQ'
-        self.assertEqual(1, len(self.pin_map_run(db, {'1': 'IO3'})[0]))
-        self.assertEqual(1, len(self.pin_map_run(db, {'1': 'GPIO'})[0]))
-
-    def test_hot_pin_map_accepts_pins_the_symbol_leaves_unnamed(self):
-        # KiCad exports "~" pins with no name at all (bridge AC terminals): the parser
-        # yields no declared name either. The pin exists, so the number is confirmed.
-        db = sample_db(); db['pinname'].pop('J1.1'); db['declared_pinname'] = {}
-        findings, passes = self.pin_map_run(db, {'1': ['~', 'AC', 'AC1']})
-        self.assertEqual([], findings)
-        self.assertIn("unnamed_in_symbol=['J1.1']", passes[0]['detail'])
-        # A pin the netlist does not have at all is still a mismatch.
-        findings, _ = self.pin_map_run(db, {'1': ['AC1'], '9': ['AC2']})
-        self.assertEqual(1, len(findings))
-        self.assertIn('J1.9: actual=None', findings[0]['detail'])
-
-    def test_hot_divider_uses_worst_case_window(self):
-        evidence = {
-            'schema_version': 2,
-            'checks': [
-                {
-                    'id': 'FB-WCA',
-                    'rule': 'PWR-E01',
-                    'kind': 'divider',
-                    'net': 'FB',
-                    'vref': {'typ': 0.8, 'min': 0.792, 'max': 0.808},
-                    'expected': {'min': 2.39, 'max': 2.41},
-                    'citation': 'REG datasheet Rev.A p.9',
-                }
-            ],
-        }
-        self.assertEqual(validate_evidence(evidence), [])
-        model = divider_model('VOUT_2V4')
-        model['ignored_nodes'] = {'U10.1': 'Synthetic FB input current included in model'}
-        evidence['checks'][0]['divider_model'] = model
-        lint = self.bound_lint(divider_db(), evidence)
-        findings = lint.run()
-        self.assertTrue(any(x['rule'] == 'PWR-E01' for x in findings))
-        self.assertIn('PWR-E01', lint.hot_executed)
-
-    def test_conflicting_pulls_remain_candidate(self):
-        database = sample_db()
-        database['nets']['GND'] = ['R3.2']
-        database['nets']['EN_NET'].append('R3.1')
-        database['parts']['R3'] = {
-            'value': '10K/1%', 'part': 'R', 'prim': 'R', 'nc': False}
-        database['pin2net']['R3.1'] = 'EN_NET'
-        database['pin2net']['R3.2'] = 'GND'
-        evidence = {
-            'schema_version': 2,
-            'checks': [{
-                'id': 'EN-BIAS', 'rule': 'RST-E01', 'kind': 'pin_bias',
-                'node': 'U3.1', 'required_default': 'high',
-                'citation': 'U3 datasheet Rev.A p.4',
-            }],
-        }
-        lint = self.bound_lint(database, evidence)
-        findings = lint.run()
-        self.assertTrue(any(
-            item['rule'] == 'RST-E01' and item['kind'] == 'CANDIDATE'
-            and item.get('review_result') == 'INSUFFICIENT'
-            for item in findings))
-        self.assertFalse(any(
-            item['rule'] == 'RST-E01' and item['check_id'] == 'EN-BIAS'
-            for item in lint.passes))
-
-    def test_required_series_honors_explicit_rail_target(self):
-        database = sample_db()
-        evidence = {
-            'schema_version': 2,
-            'checks': [{
-                'id': 'EN-SERIES', 'rule': 'SIG-E01',
-                'kind': 'required_series', 'net': 'EN_NET',
-                'to': 'VCC_12V',
-                'resistance_ohm': {'min': 9000, 'max': 11000},
-                'citation': 'U3 datasheet Rev.A p.4',
-            }],
-        }
-        self.assertEqual(validate_evidence(evidence), [])
-        lint = self.bound_lint(database, evidence)
-        lint.run()
-        self.assertTrue(any(
-            item['rule'] == 'SIG-E01' and item['check_id'] == 'EN-SERIES'
-            for item in lint.passes))
 
     def test_export_log_rules_are_listed_as_not_executed_without_a_log(self):
         lint = Lint(sample_db(), intent={'expect': {}})

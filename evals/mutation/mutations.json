@@ -7,13 +7,6 @@
   "new": "            if len(nds) == 99:\n                ref = nds[0]"
  },
  {
-  "id": "M2",
-  "name": "opto CTR derating ignored",
-  "file": "scripts/checkers/optocoupler.py",
-  "old": "ic_available = if_min * ctr_min * derating",
-  "new": "ic_available = if_min * ctr_min"
- },
- {
   "id": "M3",
   "name": "DAMAGE_OR_HAZARD graded P1",
   "file": "scripts/review_summary.py",
@@ -21,32 +14,11 @@
   "new": "IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P1'"
  },
  {
-  "id": "M4",
-  "name": "DEV-E02 low margin ignored",
-  "file": "scripts/lint.py",
-  "old": "if window['margin_low_v'] < 0 or window['margin_high_v'] < 0:",
-  "new": "if window['margin_high_v'] < 0:"
- },
- {
   "id": "M5",
   "name": "DRV-A03 floating gate never reported",
   "file": "scripts/checkers/power_switch.py",
   "old": "if not switch['drivers'] and not switch['gate_pulls']:",
   "new": "if False and not switch['drivers'] and not switch['gate_pulls']:"
- },
- {
-  "id": "M6",
-  "name": "opto LED-off check removed",
-  "file": "scripts/checkers/optocoupler.py",
-  "old": "        if if_min <= 0:\n",
-  "new": "        if if_min < -1e9:\n"
- },
- {
-  "id": "M7",
-  "name": "pin map mismatch never reported",
-  "file": "scripts/lint.py",
-  "old": "            if actual is None or not (pin_name_tokens(actual) & set(allowed)):",
-  "new": "            if False:"
  },
  {
   "id": "M8",
@@ -2028,5 +2000,26 @@
   "file": "scripts/catalog.py",
   "old": "    if plan.get('check_explanations_version') != EXPLANATION_VERSION:\n",
   "new": "    if False:\n"
+ },
+ {
+  "id": "M291",
+  "name": "an unfinished review is packed",
+  "file": "scripts/pack_review.py",
+  "old": "                        and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'REVIEW_INCOMPLETE'",
+  "new": "                        and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'NEVER'"
+ },
+ {
+  "id": "M292",
+  "name": "a malformed checked list crashes the gate",
+  "file": "scripts/review_functions.py",
+  "old": "all(isinstance(c, str) and c in condition_ids for c in checked)",
+  "new": "all(c in condition_ids for c in checked)"
+ },
+ {
+  "id": "M293",
+  "name": "a checked value that is not a list crashes the gate",
+  "file": "scripts/review_functions.py",
+  "old": "out.update(c for c in (item['checked'] if isinstance(item.get('checked'), list) else []) if isinstance(c, str))",
+  "new": "out.update(c for c in item.get('checked') or [] if isinstance(c, str))"
  }
 ]

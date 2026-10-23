@@ -9,7 +9,6 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from solve_dividers import Solver, linear_feedback_window
 from test_solve_dividers import divider_db
 from electrical_fixtures import divider_model
-from electrical_contract import dependency_refs, model_gaps
 
 
 def shared_stem():
@@ -108,14 +107,6 @@ class LinearFeedbackTests(unittest.TestCase):
         network['resistors'] = [dict(seed, ref='R%d' % i, tol=.01, tol_exact='1/100') for i in range(11)]
         with self.assertRaisesRegex(ValueError, '非零公差'):
             linear_feedback_window(network, {'min': .8, 'typ': .8, 'max': .8}, {'min': 0, 'max': 0})
-
-    def test_malformed_endpoint_stays_a_model_gap(self):
-        for source in (['VOUT_3V3'], {'net': 'VOUT_3V3'}):
-            check = {'rule': 'PWR-E01', 'net': 'FB_NET', 'divider_model': divider_model(source)}
-            self.assertTrue(model_gaps(check))
-            self.assertIn('U1', dependency_refs(shared_stem(), check))
-            with self.assertRaises(ValueError):
-                Solver(shared_stem(), model=check['divider_model']).linear_network('FB_NET')
 
     def test_numerically_unreliable_network_rejects(self):
         network = self.network()

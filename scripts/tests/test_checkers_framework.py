@@ -96,8 +96,7 @@ class RegistryTest(unittest.TestCase):
         for checker in REGISTRY:
             with self.subTest(checker.id):
                 self.assertEqual(checker.cold_rules, catalog.titles(method='A', source=checker.id))
-                self.assertEqual(checker.hot_rules, catalog.titles(method='E', source=checker.id))
-                self.assertEqual(set(checker.evidence_kinds), set(checker.hot_rules))
+                self.assertEqual(checker.e_rules, catalog.titles(method='E', source=checker.id))
         self.assertEqual(set(registry_cold_rules()),
                          {rule.id for rule in catalog.rules(method='A') if rule.source in REGISTRY_BY_ID})
 

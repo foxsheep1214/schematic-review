@@ -22,7 +22,6 @@ from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
 from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check_id
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
-from execution_audit import validate_execution_audit
 from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
 from review_functions import validate_functions
 import check_key
@@ -202,8 +201,7 @@ def review_scope(plan, report, require):
 
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
-                    require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
-                    execution_audit=None, require_execution_audit=False):
+                    require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -283,8 +281,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         # edited check list. Manual additions stay independently reviewable.
         try:
             inputs = plan['review_inputs']
-            planner = ReviewPlanner(db, inputs['intent'], inputs['evidence'],
-                                    plan.get('review_mode'), datasheet_audit=inputs['datasheet_audit'])
+            planner = ReviewPlanner(db, inputs['intent'], plan.get('review_mode'),
+                                    datasheet_audit=inputs['datasheet_audit'])
             planner.generate()
             planned_ids = {generated['id'] for generated in planner.checks}
             for cid, row in expected.items():   # fixed requirements, step 7: an added row is a registered rule gap
@@ -571,7 +569,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     for key, planned in run_checks.items():
                         require(key in expected, f'{digest}: final plan omits lint check {key}')
                         if key in expected:
-                            fields = ('rule', 'object', 'criterion', 'evidence_check_id', 'parent_check_id')
+                            fields = ('rule', 'object', 'criterion')
                             require(all(planned.get(k) == expected[key].get(k) for k in fields),
                                     f'{key}: final plan changed the lint check identity/criterion')
             findings_list = run.get('findings', []) if isinstance(run, dict) else run
@@ -582,16 +580,11 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 if not isinstance(finding, dict):
                     require(False, f'{digest}[{number}]: invalid lint finding')
                     continue
-                if finding.get('check_id'):
-                    targets = {k for k, item in expected.items() if item.get('evidence_check_id') == finding['check_id']}
-                    require(bool(targets), f'{digest}[{number}]: evidence result has no planned state check')
-                elif finding.get('kind') in LINT_REVIEW_KINDS:
+                if finding.get('kind') in LINT_REVIEW_KINDS:
                     key = lint_check_id(finding)
                     require(key in expected and expected[key].get('criterion') == lint_check(finding)['criterion'],
                             f'{digest}[{number}]: final plan omits the check for lint finding {key}')
 
-    execution = validate_execution_audit(plan, report, db, execution_audit, require_execution_audit, record=written)
-    errors.extend(execution['errors'])
     counts = dict(Counter(x.get("review_result") for x in checks.values()
                           if isinstance(x.get("review_result"), str)))
     severity_counts = {s: sum(x.get("severity") == s and x.get("kind") == "DEFECT"
@@ -617,7 +610,6 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     x["remediation"].get("readiness") == state for x in findings.values())
                     for state in READINESS}
     return {"quality_screening": screen_quality(plan, report, db),
-            "execution_audit": execution,
             "scope": scope_decl,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
@@ -650,15 +642,12 @@ def main():
     parser.add_argument("--require-revision-impact", action="store_true",
                         help="require current revision dependencies and re-verification records")
     parser.add_argument("--json")
-    parser.add_argument("--lint", action="append", help="cold/hot lint JSON; repeat for each run")
+    parser.add_argument("--lint", action="append", help="lint JSON of each scan run; repeat for each run")
     parser.add_argument("--require-release", action="store_true")
     parser.add_argument("--require-actionable", action="store_true",
                         help="require detailed repair instructions for every finding")
     parser.add_argument("--require-bindings", action="store_true",
                         help="require explicit reviewed-object/criterion bindings and finding target consistency")
-    parser.add_argument("--execution-audit", help="source-bound v1 execution-audit.json")
-    parser.add_argument("--require-execution-audit", action="store_true",
-                        help="require source-bound execution reconciliation (not electrical approval)")
     args = parser.parse_args()
     try:
         read = load_json
@@ -666,8 +655,6 @@ def main():
                                  [read(x) for x in args.lint] if args.lint else None,
                                  require_actionable=args.require_actionable,
                                  require_bindings=args.require_bindings,
-                                 execution_audit=read(args.execution_audit) if args.execution_audit else None,
-                                 require_execution_audit=args.require_execution_audit,
                                  old_db=read(args.old_db) if args.old_db else None,
                                  old_plan=read(args.old_plan) if args.old_plan else None,
                                  require_revision=args.require_revision_impact,

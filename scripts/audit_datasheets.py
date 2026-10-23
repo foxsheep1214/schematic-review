@@ -579,7 +579,6 @@ def main():
         '--resolution', help='agent 写回的 datasheet-resolution.json')
     parser.add_argument('--require-ref', action='append', default=[],
                         help='需要额定值/曲线/引脚定义的 L/F/Y/J/C/R 等关键物料；可重复')
-    parser.add_argument('--evidence', help='自动纳入 evidence 中 depends_on 和目标器件的资料依赖')
     parser.add_argument('--intent', help='intent.json：按 device_kinds 声明逐条核验手册页原文')
     parser.add_argument('--json', required=True, help='写出 datasheet-audit.json')
     parser.add_argument(
@@ -590,7 +589,6 @@ def main():
     try:
         db = load_json(args.db)
         resolution = load_json(args.resolution) if args.resolution else None
-        evidence = load_json(args.evidence) if args.evidence else None
         intent = load_json(args.intent) if args.intent else {}
     except (OSError, ValueError) as error:
         parser.error(str(error))
@@ -602,10 +600,6 @@ def main():
             sys.exit('[FATAL] datasheet-resolution.json 无效:\n  - '
                      + '\n  - '.join(errors))
     required_refs = set(args.require_ref)
-    if args.evidence:
-        from electrical_contract import dependency_refs
-        for check in evidence.get('checks', []):
-            required_refs.update(dependency_refs(db, check))
     try:
         audit = build_datasheet_audit(
             db, args.datasheet_dir, resolution, resolution_base, sorted(required_refs),

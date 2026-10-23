@@ -18,8 +18,7 @@ class Checker:
     version = None
     intent_key = None        # intent 中的配置段
     cold_rules = {}          # 自动扫描（A）规则编号 -> 名称，取自 catalog
-    hot_rules = {}           # 证据计算（E）规则编号 -> 名称，取自 catalog
-    evidence_kinds = {}      # 证据计算规则编号 -> 允许的 kind 集合
+    e_rules = {}             # 保证值核对（E）规则编号 -> 名称，取自 catalog
 
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion')
     allow_manual_bound_objects = True
@@ -73,18 +72,6 @@ class Checker:
 
     def cold_findings(self, lint, inventory):
         """通过 lint.add 输出网表扫描发现。"""
-
-    def hot_check(self, lint, check):
-        """执行本检查器的证据计算规则（证据已就绪）。"""
-        raise NotImplementedError(self.id + ': hot rule handler missing')
-
-    def evidence_errors(self, check, label):
-        """校验本检查器证据的结构；缺字段属结构错误，数值缺口走 model_gaps。"""
-        return []
-
-    def model_gaps(self, check):
-        """缺哪些保证值就不能做证据扫描；返回非空即 INSUFFICIENT，不得用典型值顶替。"""
-        return []
 
     def rule_instances(self, rule, inventory):
         """该规则本次扫描覆盖到的对象标识。"""

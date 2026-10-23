@@ -3,7 +3,7 @@
 """监控与看门狗检查器：复位链、喂狗输入与逐电源域监控覆盖。
 
 识别监控器/看门狗器件、被监测的轨、复位输出到复位输入的路径与喂狗来源。
-哪些轨必须监测由需求裁定，本检查器只登记覆盖与缺口；脉宽是否足够由证据计算（RST-E03）按保证值判定。
+哪些轨必须监测由需求裁定，本检查器只登记覆盖与缺口；脉宽是否足够由保证值核对（RST-E03）按保证值判定。
 """
 import re
 import hashlib
@@ -19,7 +19,6 @@ from solve_dividers import parse_resistor
 import catalog
 import board_intent
 from datasheet_kinds import pdf_page_texts
-from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
 from . import powertree
@@ -837,8 +836,7 @@ class SupervisionChecker(Checker):
     version = 1
     intent_key = 'supervision'
     cold_rules = catalog.titles(stage='cold', source='supervision')
-    hot_rules = catalog.titles(stage='hot', source='supervision')
-    evidence_kinds = {'RST-E03': {'reset_pulse'}}
+    e_rules = catalog.titles(method='E', source='supervision')
 
     missing_inventory_message = 'supervision checks require their inventory'
     inventory_type_message = 'supervision inventory must be an object'
@@ -871,12 +869,11 @@ class SupervisionChecker(Checker):
                     'datasheet:监控器阈值/脉宽/输出类型', 'firmware:启动期喂狗与超时窗口'])),
                 trigger=['supervision:' + item['id']])
             check['inventory_gaps'] = gaps
-            ready = planner.evidence_ready('RST-E03', obj)
             check = planner.add_check(
                 'RST-E03', dict(obj), key=item['id'],
-                readiness='READY' if ready else 'WAITING_EVIDENCE',
-                required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: RST-E03 复位脉宽保证值与目标器件要求']))),
+                readiness='WAITING_EVIDENCE',
+                required_inputs=sorted(set(gaps + [
+                    'datasheet: RST-E03 复位脉宽保证值与目标器件要求'])),
                 trigger=['supervision:' + item['id']])
             check['inventory_gaps'] = gaps
         for state in inventory['states']:
@@ -930,42 +927,6 @@ class SupervisionChecker(Checker):
                          '状态 %s：%s 未见监测点（sense 脚或到 sense 的分压）；'
                          '哪些轨必须监测由需求裁定'
                          % (state['id'], '、'.join(unmonitored)), kind='CANDIDATE')
-
-    def hot_check(self, lint, check):
-        pulse = hotmath.span(check['pulse_width_s'])
-        required = hotmath.span(check['required_width_s'])
-        net = lint.target_net(check)
-        problems = []
-        if pulse[0] < required[1]:
-            problems.append('最小复位脉宽 %s 低于目标器件要求 %s'
-                            % (hotmath.fmt(pulse[0], 's'), hotmath.fmt(required[1], 's')))
-        pulls = [x for x in lint.pulls(net or '') if x['state'] == 'high']
-        if check.get('output_type') == 'open_drain' and not pulls:
-            problems.append('开漏输出所在网 %s 上未找到到电源轨的上拉电阻' % net)
-        calculation = {'pulse_width_s': {'min': pulse[0], 'max': pulse[1]},
-                       'required_width_s': {'min': required[0], 'max': required[1]},
-                       'output_type': check.get('output_type'),
-                       'pullups': [x['ref'] for x in pulls]}
-        detail = '%s: 复位脉宽 [%s, %s]s，要求 [%s, %s]s，输出类型 %s；%s' % (
-            net, hotmath.fmt(pulse[0]), hotmath.fmt(pulse[1]), hotmath.fmt(required[0]),
-            hotmath.fmt(required[1]), check.get('output_type'), lint._citation(check))
-        if problems:
-            lint.add('RST-E03', '复位脉宽/输出条件不满足要求', detail + '；' + '；'.join(problems),
-                     check.get('ref'), check_id=check['id'], citation=check['citation'],
-                     calculation=calculation)
-        else:
-            lint.record_pass('RST-E03', check, detail,
-                             scope='所给保证值下的复位脉宽与上拉存在性；阈值精度、迟滞与喂狗时序未判定',
-                             calculation=calculation)
-
-    def evidence_errors(self, check, label):
-        return hotmath.structure_errors(
-            check, label, spans=('pulse_width_s', 'required_width_s'),
-            choices=(('output_type', {'open_drain', 'push_pull'}),))
-
-    def model_gaps(self, check):
-        return hotmath.missing_gaps(
-            check, spans=('pulse_width_s', 'required_width_s'), texts=('output_type',))
 
     def rule_instances(self, rule, inventory):
         if rule == 'PWR-A06':

@@ -9,8 +9,9 @@ from checkers import passive_stress
 from checkers.passive_stress import OVERRIDE_CODES
 from plan_review import build_review_plan
 import render_report
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from test_decoupling import add, fixture, ledger, mark_pass, rebind
+from ledger4 import gap
 
 R0402 = 'Resistor_SMD:R_0402_1005Metric'
 C0402 = 'Capacitor_SMD:C_0402_1005Metric'
@@ -226,18 +227,16 @@ class OverrideGateTests(unittest.TestCase):
 
     def report_with(self, **fields):
         report = ledger(self.plan, self.db)
-        row = next(c for c in report['checks'] if c['id'] == self.key)
-        mark_pass(row)
-        row.update(fields)
+        mark_pass(report, self.plan, self.key).update(fields)
         return report
 
     def errors(self, report):
         return [e for e in validate_review(self.plan, report, self.db)['errors'] if self.key in e]
 
     def insufficient(self, **extra):
-        return self.report_with(review_result='INSUFFICIENT', evidence_confidence='C',
-                                missing_inputs=['R1 实际料号'], potential_severity='P3',
-                                gap_cause='DESIGN_OPEN', **extra)
+        report = self.report_with(**extra)
+        gap(report, self.key, 'R1-PART', 'DESIGN_VALUE', plan=self.plan, what='R1 实际料号', level='P3')
+        return report
 
     def test_procurement_insufficient_without_override_is_rejected(self):
         self.assertTrue(any('proposal_override' in e for e in self.errors(self.insufficient())))
@@ -286,10 +285,8 @@ class DecouplingRatingProposalTests(unittest.TestCase):
     def test_rating_override_needs_a_code(self):
         db, plan, row = self.rating_row()
         report = ledger(plan, db)
-        entry = next(c for c in report['checks'] if c['id'] == row['id'])
-        mark_pass(entry)
-        entry.update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['C1 受控耐压'],
-                     potential_severity='P3', gap_cause='DESIGN_OPEN')
+        mark_pass(report, plan, row['id'])
+        gap(report, row['id'], 'C1-RATING', 'DESIGN_VALUE', plan=plan, what='C1 受控耐压', level='P3')
         errors = validate_review(plan, report, db)['errors']
         self.assertTrue(any(row['id'] in e and 'proposal_override' in e for e in errors))
 

@@ -25,20 +25,14 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 BENCHES = ('test_typical_circuits.py', 'test_seeded_bench.py', 'test_kicad_replay_bench.py')
-TRAINING_RUNS = Path('evals') / 'training' / 'runs'
 
 
 def IGNORE(directory, names):
-    """What the working copy leaves out: VCS/cache dirs, the top-level review runs, and inside the
-    tracked training rounds only the untracked bench/cold-run artefacts. Dropping every directory
-    named `runs` used to drop the training rounds the ledger's latest entry lists, so the ledger
-    test failed in every copy and every mutation looked killed."""
+    """What the working copy leaves out: VCS/cache dirs and the top-level review runs."""
     rel = Path(directory).resolve().relative_to(ROOT.resolve()) if Path(directory).resolve() != ROOT.resolve() else Path('.')
     skip = {n for n in names if n in ('.git', '.claude', '__pycache__', '.pytest_cache')}
     if rel == Path('.'):
         skip |= {n for n in names if n == 'runs'}
-    if rel == TRAINING_RUNS or TRAINING_RUNS in rel.parents:
-        skip |= {n for n in names if n in ('reviews', 'seeded', 'replay', 'critic') or n.endswith('.log')}
     return skip
 
 

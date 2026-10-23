@@ -44,14 +44,14 @@ def registry_cold_rules():
     return table
 
 
-def registry_hot_rules():
-    """证据计算规则编号 -> (名称, 检查器)。"""
+def registry_e_rules():
+    """保证值核对（E）规则编号 -> (名称, 检查器)。"""
     table = {}
     for checker in REGISTRY:
-        for rule, name in checker.hot_rules.items():
+        for rule, name in checker.e_rules.items():
             table[rule] = (name, checker)
     return table
 
 
 __all__ = ['Checker', 'PowerTree', 'REGISTRY', 'REGISTRY_BY_ID', 'registry_cold_rules',
-           'registry_hot_rules', 'validate_inventories']
+           'registry_e_rules', 'validate_inventories']

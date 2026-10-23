@@ -7,9 +7,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import catalog
 from electrical_contract import PLAN_SCHEMA_VERSION
 from plan_review import lint_check
-from validate_review import fingerprint, SCOPE
-from ledger_v3 import validate_review
-from gap_fixture import complete_gap
+from validate_review import fingerprint, SCOPE, validate_review
+import results_model
+from ledger4 import gap, severity
 
 E = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
 C1, C2 = 'RST-E01.C1', 'RST-E01.C2'
@@ -31,11 +31,11 @@ def fixture(first_key=C1):
             'interfaces': {'schema_version': 1, 'interfaces': [], 'gaps': []}, 'assemblies': []}
     db = {'parts': {'R1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
           'ref2page': {'R1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
-    report = {'requirement_clarification_version': 1, 'requirement_clarifications': [],
-        'schema_version': 2, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
+    report = {'requirement_clarifications': [], 'functions': [],
+        'schema_version': results_model.SCHEMA_VERSION, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
         'checks': [{'id': k, 'applicability': 'APPLICABLE', 'review_result': 'PASS',
                     'evidence_confidence': 'A', 'evidence': E, 'rationale': 'stipulated compliant fixture',
-                    'blocking': False, 'handoff': {'required': False}} for k in keys],
+                    'handoff': {'required': False}} for k in keys],
         'findings': [], 'scope_checks': {k: scope_id(k) for k in SCOPE},
         'coverage': {'components': {'R1': [first_key]}, 'pins': {'R1.1': [first_key], 'R1.2': [first_key]},
                      'nets': {'A': [first_key]}, 'pages': {'1': [first_key]}, 'requirements': {}}}
@@ -102,9 +102,7 @@ class ReviewGateTests(unittest.TestCase):
 
     def test_unknown_is_separate_and_blocks_for_potential_p0(self):
         p, r, db = fixture()
-        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C',
-                              missing_inputs=['assembly BOM'], potential_severity='P0')
-        complete_gap(r['checks'][0], cause='EXTERNAL_DATA')
+        gap(r, C1, 'BOM', 'VENDOR_DATUM', plan=p, what='assembly BOM', level='P0')
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['release'], 'NO_GO')
@@ -112,49 +110,38 @@ class ReviewGateTests(unittest.TestCase):
 
     def test_gap_cause_is_counted_and_limited_to_insufficient(self):
         p, r, db = fixture()
-        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['firmware OVP table'],
-                              potential_severity='P2', gap_cause='EXTERNAL_DATA')
-        complete_gap(r['checks'][0])
+        item = gap(r, C1, 'OVP-TABLE', 'VENDOR_DATUM', plan=p, what='firmware OVP table')
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['insufficient_by_cause'], {'EXTERNAL_DATA': 1})
-        from ledger_v3 import record
-        sent = record(r, p)
-        sent['functions'][0]['open'][0]['kind'] = 'TOO_STRICT'
-        self.assertFalse(validate_review(p, sent, db)['valid'])
+        item['kind'] = 'TOO_STRICT'
+        self.assertFalse(validate_review(p, r, db)['valid'])
         p, r, db = fixture()
         r['checks'][0]['open_ref'] = 'FN-X/Y'   # a PASS row names no open item
         self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_insufficient_without_an_open_item_is_refused_and_counted_unspecified(self):
-        from ledger_v3 import record
         p, r, db = fixture()
-        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['magnetics Isat'],
-                              potential_severity='P2')
-        complete_gap(r['checks'][0])
-        sent = record(r, p); del sent['checks'][0]['open_ref']
-        out = validate_review(p, sent, db)
+        gap(r, C1, 'ISAT', plan=p, what='magnetics Isat')
+        del r['checks'][0]['open_ref']
+        out = validate_review(p, r, db)
         self.assertFalse(out['valid'])  # the open item that decides the row is mandatory; the count still shows what is missing
         self.assertEqual(out['insufficient_by_cause'], {'UNSPECIFIED': 1})
 
     def test_open_or_deferred_requirement_cannot_be_judged(self):
-        def run(status, **row):
+        def run(status, kind=None):
             p, r, db = fixture()
             p['checks'][0]['object'] = dict(p['checks'][0].get('object') or {}, requirement_status=status)
             r['plan_digest'] = fingerprint(p)
-            r['checks'][0].update(row)
-            if row.get('gap_cause') == 'REQUIREMENT_OPEN':
-                r['checks'][0].pop('potential_severity', None)
-                r['checks'][0]['blocking'] = True
-                r.update(workflow_version=1, work_items=[], requirement_clarifications=[clarification()])
-            complete_gap(r['checks'][0])
+            if kind:
+                gap(r, C1, 'DERATING', kind, plan=p, what='derating temperature points')
+            if kind == 'REQUIREMENT':
+                r['requirement_clarifications'] = [clarification()]
             return validate_review(p, r, db)
-        gap = dict(review_result='INSUFFICIENT', evidence_confidence='C', potential_severity='P2',
-                   missing_inputs=['derating temperature points'])
-        self.assertFalse(run('OPEN')['valid'])                                   # PASS on an undecided requirement
-        self.assertFalse(run('OPEN', **gap, gap_cause='EXTERNAL_DATA')['valid'])  # filed as missing data
-        self.assertTrue(run('OPEN', **gap, gap_cause='REQUIREMENT_OPEN')['valid'])
-        self.assertTrue(run('DEFERRED', **gap, gap_cause='USER_DEFERRED')['valid'])
+        self.assertFalse(run('OPEN')['valid'])                       # PASS on an undecided requirement
+        self.assertFalse(run('OPEN', 'VENDOR_DATUM')['valid'])       # filed as missing data
+        self.assertTrue(run('OPEN', 'REQUIREMENT')['valid'])
+        self.assertTrue(run('DEFERRED', 'USER_DEFERRED')['valid'])
         out = run('PROPOSED')
         self.assertTrue(out['valid'], out)
         self.assertEqual(out['requirements_by_status'], {'PROPOSED': {'PASS': 1}})
@@ -162,9 +149,8 @@ class ReviewGateTests(unittest.TestCase):
     def test_requirement_open_is_listed_as_unique_current_decision(self):
         p, r, db = fixture()
         p['review_phase'] = 'design_iteration'; r['plan_digest'] = fingerprint(p)
-        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', blocking=True,
-                              missing_inputs=['operating input voltage range'], gap_cause='REQUIREMENT_OPEN')
-        r.update(workflow_version=1, work_items=[], requirement_clarifications=[clarification()])
+        gap(r, C1, 'INPUT-RANGE', 'REQUIREMENT', plan=p, what='operating input voltage range')
+        r['requirement_clarifications'] = [clarification()]
         current = validate_review(p, r, db)
         self.assertTrue(current['valid'], current)
         self.assertEqual(current['requirement_clarification_summary']['open'], 1)
@@ -231,11 +217,8 @@ class ReviewGateTests(unittest.TestCase):
 
     def test_accepted_thermal_handoff_does_not_clear_missing_electrical_load(self):
         p, r, db = self.thermal_handoff_fixture()
-        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C',
-                              rationale='Load is unknown, so loss and rating cannot be compared',
-                              potential_severity='P1', blocking=True,
-                              missing_inputs=['Maximum continuous current through R1'])
-        complete_gap(r['checks'][0], cause='EXTERNAL_DATA')
+        r['checks'][0]['rationale'] = 'Load is unknown, so loss and rating cannot be compared'
+        gap(r, 'DEV-C01.BOARD', 'R1-LOAD', 'VENDOR_DATUM', plan=p, what='Maximum continuous current through R1', level='P1')
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['release'], 'NO_GO')
@@ -318,7 +301,6 @@ def bound_fixture():
     p['checks'][0].update(object={'ref': 'U10', 'node': 'U10.4', 'net': 'EN',
                                   'state': 'RUN', 'configuration': 'A'}, criterion='EN >= 2.0 V')
     r['plan_digest'] = fingerprint(p)
-    r['binding_version'] = 1
     for planned, result in zip(p['checks'], r['checks']):
         result['binding'] = {k: copy.deepcopy(planned[k]) for k in ('object', 'criterion')}
     return p, r
@@ -445,9 +427,7 @@ class ReviewBindingTests(unittest.TestCase):
 
     def test_insufficient_and_na_keep_existing_semantics(self):
         p, r = bound_fixture()
-        r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C',
-                              missing_inputs=['guaranteed startup peak'], potential_severity='P1')
-        complete_gap(r['checks'][0], cause='EXTERNAL_DATA')
+        gap(r, C1, 'STARTUP-PEAK', 'VENDOR_DATUM', plan=p, what='guaranteed startup peak', level='P1')
         out = validate_review(p, r)
         self.assertTrue(out['valid'], out); self.assertEqual(out['release'], 'NO_GO')
         p, r = bound_fixture()
@@ -455,18 +435,13 @@ class ReviewBindingTests(unittest.TestCase):
         self.assertTrue(validate_review(p, r)['valid'])
 
 
-def gap_with_task(design_option=None, cause='EXTERNAL_DATA'):
+def gap_with_task(design_option=None, kind='VENDOR_DATUM'):
     p, r, db = fixture()
     p['review_phase'] = 'design_iteration'; r['plan_digest'] = fingerprint(p)
-    r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C', potential_severity='P2',
-                          missing_inputs=['zener voltage below its 5 mA test current'], gap_cause=cause)
-    complete_gap(r['checks'][0])
-    item = {'id': 'W-BIAS', 'title': 'Bias reference outside its guaranteed current', 'check_ids': [C1],
-            'root_cause': 'Reference runs below the vendor test current', 'due_stage': 'design_iteration',
-            'reason': 'Affects minimum supply', 'next_action': 'Apply the proposed circuit change', 'evidence': E}
-    if design_option is not None:
-        item['design_option'] = design_option
-    r.update(workflow_version=1, work_items=[item], remediation_version=2)
+    gap(r, C1, 'W-BIAS', kind, plan=p, what='zener voltage below its 5 mA test current',
+        title='Bias reference outside its guaranteed current', why='Affects minimum supply', due_stage='design_iteration',
+        **({'design_option': design_option} if design_option is not None else {}))
+    r['functions'][0]['evidence'] = E
     return p, r, db
 
 
@@ -528,11 +503,10 @@ class DesignOptionTests(unittest.TestCase):
             p, r, db = gap_with_task(option)
             self.assertFalse(validate_review(p, r, db, require_actionable=True)['valid'], option)
 
-    def test_other_gap_causes_and_legacy_results_need_no_option(self):
-        p, r, db = gap_with_task(cause='USER_DEFERRED')
+    def test_other_gap_kinds_and_a_ledger_not_held_actionable_need_no_option(self):
+        p, r, db = gap_with_task(kind='USER_DEFERRED')
         self.assertTrue(validate_review(p, r, db, require_actionable=True)['valid'])
         p, r, db = gap_with_task()
-        del r['remediation_version']
         self.assertTrue(validate_review(p, r, db)['valid'])
 
 
@@ -542,9 +516,8 @@ class SplitOutTests(unittest.TestCase):
     def ledger(self):
         p, r, db = fixture()
         p['checks'].append(planned(C2))
-        r['checks'].append(dict(copy.deepcopy(r['checks'][0]), id=C2, review_result='INSUFFICIENT',
-                                evidence_confidence='C', missing_inputs=['C2 ripple rating']))
-        complete_gap(r['checks'][-1], cause='EXTERNAL_DATA')
+        r['checks'].append(dict(copy.deepcopy(r['checks'][0]), id=C2, evidence_confidence='C'))
+        gap(r, C2, 'C2-RIPPLE', 'VENDOR_DATUM', plan=p, what='C2 ripple rating')
         r['plan_digest'] = fingerprint(p)
         return p, r, db
 
@@ -567,14 +540,9 @@ class SplitOutTests(unittest.TestCase):
 class ImpactClassTests(unittest.TestCase):
     """真实反例：八十多项资料不足全部是 P0/P1，等级需要逐项的后果类别作依据。"""
 
-    def ledger(self, cls, severity, **extra):
+    def ledger(self, cls, level, **extra):
         p, r, db = fixture()
-        r['impact_class_version'] = 1
-        row = r['checks'][0]
-        row.update(review_result='INSUFFICIENT', evidence_confidence='C', missing_inputs=['x rating'],
-                   potential_severity=severity)
-        complete_gap(row, cause='EXTERNAL_DATA', severity=severity)
-        row['impact_assessment'].update(consequence_class=cls, **extra)
+        gap(r, C1, 'X-RATING', 'VENDOR_DATUM', plan=p, what='x rating', severity=severity(level, cls, **extra))
         return p, r, db
 
     def class_errors(self, *args, **extra):
@@ -596,21 +564,19 @@ class ImpactClassTests(unittest.TestCase):
         impact = validate_review(p, r, db)['categorized_summary']['insufficient_impact']
         self.assertEqual(impact['by_consequence_class'], {'PERFORMANCE_OR_LIFE': 1})
 
-    def errors_v2(self, cls, severity, **extra):
-        p, r, db = self.ledger(cls, severity, **extra)
-        r['impact_class_version'] = 2
-        return [e for e in validate_review(p, r, db)['errors']
-                if 'consequence_class' in e or 'hazard_path' in e or 'impact_class_version' in e]
+    def grade_errors(self, cls, level, **extra):
+        p, r, db = self.ledger(cls, level, **extra)
+        return [e for e in validate_review(p, r, db)['errors'] if 'consequence_class' in e or 'hazard_path' in e]
 
-    def test_v2_grades_component_damage_p1_and_asks_hazard_p0_for_its_path(self):
+    def test_component_damage_is_p1_and_a_hazard_p0_names_its_path(self):
         # 真实反例：三十多条“可能损坏”全被 DAMAGE_OR_HAZARD 顶成 P0；器件损坏与安全危险要分开。
-        self.assertEqual(self.errors_v2('COMPONENT_DAMAGE', 'P1'), [])
-        self.assertTrue(self.errors_v2('DAMAGE_OR_HAZARD', 'P0'))               # P0 must name its hazard path
-        self.assertEqual(self.errors_v2('DAMAGE_OR_HAZARD', 'P0', hazard_path='INSULATION'), [])
-        self.assertTrue(self.errors_v2('DAMAGE_OR_HAZARD', 'P0', hazard_path='SMOKE'))
-        self.assertTrue(self.errors_v2('CORE_LINK_LOSS', 'P0'))
-        self.assertEqual(self.errors_v2('CORE_LINK_LOSS', 'P0', hazard_path='PROTECTION_LOSS'), [])
-        self.assertEqual(self.class_errors('DAMAGE_OR_HAZARD', 'P0'), [])      # v1 contract unchanged
+        self.assertEqual(self.grade_errors('COMPONENT_DAMAGE', 'P1'), [])
+        self.assertTrue(self.grade_errors('DAMAGE_OR_HAZARD', 'P0'))               # P0 must name its hazard path
+        self.assertEqual(self.grade_errors('DAMAGE_OR_HAZARD', 'P0', hazard_path='INSULATION'), [])
+        self.assertTrue(self.grade_errors('DAMAGE_OR_HAZARD', 'P0', hazard_path='SMOKE'))
+        self.assertTrue(self.grade_errors('CORE_LINK_LOSS', 'P0'))
+        self.assertEqual(self.grade_errors('CORE_LINK_LOSS', 'P0', hazard_path='PROTECTION_LOSS'), [])
+        self.assertEqual(self.class_errors('DAMAGE_OR_HAZARD', 'P0'), [])      # the class itself fits P0; only the path is missing
 
 
 

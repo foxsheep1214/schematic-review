@@ -7,6 +7,46 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## SR states its architecture, and an architecture change waits for a person's confirmation (2026-10-23)
+
+SR had no single statement of how it is built: the flow in SKILL.md listed steps and commands, the script table in
+automation.md still named two removed scripts and missed thirteen, and nothing said which changes to SR a person must
+agree to first. SKILL.md now opens with an architecture section, before the review discipline: a five-ring pipeline
+(read in, plan, judge, gate, report) with who does each ring, which file it writes, what the reviewer may not do there,
+six standing decisions, and the rule that an architecture change (a ring or the files between rings, a format version,
+who judges, the inputs or the delivery, a standing decision, a flow step or entry script) is proposed to a person and
+waits for confirmation before code or docs change. references/architecture.md carries the files between rings with
+their format versions, every script's ring and kind (it replaces the script table in automation.md) and the record of
+architecture decisions. test_architecture.py (contract tier) fails when a script is not placed, a placed script does
+not exist, the review flow calls a script that is not an entry, or a format version differs from the code's.
+1768 tests pass, contract 507, replay bench 195/195.
+
+- Event: user:2026-10-23 (整个SR技能应当有明确的架构……涉及到架构相关的调整，也应该和人进行交互确认)
+- Causes: knowledge_missing 1
+- Changed: SKILL.md, references/architecture.md, references/automation.md, scripts/tests/test_architecture.py, scripts/tests/conftest.py, docs/improvement-ledger.md
+
+## The automatic guaranteed-value path is retired and the tests write function verdicts directly (2026-10-23)
+
+Both R5 reviews executed none of the automatic E (guaranteed-value) checks: every E row stayed WAITING_EVIDENCE and was
+answered through a function verdict, so evidence.json, the checkers' hot_check computations, datasheet_facts
+materialisation, execution_audit and the hot bench served only the September synthetic benches. They are removed: the
+E rows are still planned from the netlist or the checker inventories (WAITING_EVIDENCE) and the reviewer judges them
+against both datasheets' guaranteed limits; DEV-E02 is retired (DEV-C05 covers it); the formula library (calc.py and its
+modules, circuit_bounds, model_bounds, solve_dividers, hotmath number/span) stays for the reviewer's own calculations;
+the second lint run only merges the datasheet audit into the final plan; the E rule contracts run on the plan runner
+with new near-miss boards. The stopped evals (circuit_bench, hot_bench, prototypes, scenarios, training,
+workflow_guidance) are archived in git history (last at 932eb1f) and bench_coverage.py counts A rules only. The test
+bridge that turned schema 3 rows into function verdicts (ledger_v3, gap_fixture) is gone: 32 test files write
+schema 4 directly through ledger4 (gap, defect, passed, judged, whole_clause). Writing them directly found two defects
+the bridge hid: pack_review read gap_cause from the raw record, which schema 4 never writes, so an unfinished review
+(REVIEW_INCOMPLETE open item) was packed; and an open item whose checked field was not a list of ids crashed the gate.
+Both are fixed (M291-M293). The references drop the evidence.json conventions, the Vref fact reuse and the hot stage,
+and datasheets.md states the E judgement points once. 1764 tests pass, replay bench 195/195, contracts all pass.
+
+- Event: review:SR-20261021-R5-claude-fd6a6dd/record/review-results.json (hot_executed 0, 12 E rows WAITING_EVIDENCE), user:2026-10-22 (按照A/B/C/D的顺序，依次执行)
+- Causes: rule_not_enforced 2, knowledge_wrong 1
+- Changed: README.md, SKILL.md, evals/bench_coverage.py, evals/kicad_replay_bench/README.md, evals/mutation/mutations.json, evals/mutation/run.py, evals/rule_contracts/README.md, evals/rule_contracts/boards/DEV-E01.json, evals/rule_contracts/boards/DRV-E01.json, evals/rule_contracts/boards/PRO-E01.json, evals/rule_contracts/boards/PWR-E01.json, evals/rule_contracts/boards/PWR-E02.json, evals/rule_contracts/boards/PWR-E03.json, evals/rule_contracts/boards/RST-E01.json, evals/rule_contracts/boards/RST-E02.json, evals/rule_contracts/boards/RST-E03.json, evals/rule_contracts/boards/SIG-E01.json, evals/rule_contracts/boards/SIG-E02.json, evals/rule_contracts/contracts.py, evals/typical_circuits/README.md, references/automation.md, references/check-catalog.md, references/datasheets.md, references/evidence-proportionality.md, references/execution-consistency.md, references/plan-and-results.md, references/revision-review.md, references/verdicts-and-release.md, references/wca-formulas.md, scripts/audit_datasheets.py, scripts/catalog.py, scripts/checkers/__init__.py, scripts/checkers/base.py, scripts/checkers/diff_levels.py, scripts/checkers/hotmath.py, scripts/checkers/input_filter.py, scripts/checkers/optocoupler.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/supervision.py, scripts/electrical_contract.py, scripts/lint.py, scripts/pack_review.py, scripts/plan_board.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/review_functions.py, scripts/revision_impact.py, scripts/tests/electrical_fixtures.py, scripts/tests/ledger4.py, scripts/tests/test_assembly_identity.py, scripts/tests/test_bom_constraints.py, scripts/tests/test_catalog.py, scripts/tests/test_check_explanations.py, scripts/tests/test_checkers_framework.py, scripts/tests/test_decoupling.py, scripts/tests/test_decoupling_local_scope.py, scripts/tests/test_derive_rows.py, scripts/tests/test_diff_levels.py, scripts/tests/test_electrical_safety.py, scripts/tests/test_esp32_poe_iso_calibration.py, scripts/tests/test_figures.py, scripts/tests/test_golden_reports.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_independent_review.py, scripts/tests/test_input_filter.py, scripts/tests/test_insufficient_impact.py, scripts/tests/test_linear_feedback.py, scripts/tests/test_lint.py, scripts/tests/test_manual_decoupling.py, scripts/tests/test_optocoupler.py, scripts/tests/test_page_inventory.py, scripts/tests/test_passive_stress.py, scripts/tests/test_pin_feeds.py, scripts/tests/test_plan_handoff.py, scripts/tests/test_plan_review.py, scripts/tests/test_power_switch.py, scripts/tests/test_power_up.py, scripts/tests/test_remediation.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_report_gaps_from_reviews.py, scripts/tests/test_requirement_bindings.py, scripts/tests/test_requirement_clarifications.py, scripts/tests/test_requirement_clauses.py, scripts/tests/test_review_evolution.py, scripts/tests/test_review_functions.py, scripts/tests/test_review_quality.py, scripts/tests/test_review_stage_scope.py, scripts/tests/test_review_v2.py, scripts/tests/test_reviewed_declarations.py, scripts/tests/test_revision_impact.py, scripts/tests/test_rule_gaps.py, scripts/tests/test_supervision.py, scripts/tests/test_tree_modules.py, scripts/tests/test_validate_review.py, scripts/validate_review.py, docs/improvement-ledger.md
+
 ## The review intent and row evidence do not draw on the designer's documents (2026-10-22)
 
 After the designer-document tools were removed, what else from the designer could still reach a review was looked for

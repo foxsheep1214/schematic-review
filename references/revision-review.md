@@ -17,7 +17,7 @@
 文档的实际内容哈希；自身也有 digest。它是项目内的审查记录，不放入公共仓库。
 旧版最终计划作为 `--old-plan`；本版网表扫描计划才是 `--merge-plan`，二者不能混用。
 
-复审网表扫描和证据扫描均传同一前版基线，证据扫描额外传本版证据、资料审计及 merge-plan：
+复审两次 lint 均传同一前版基线，第二次额外传资料审计及 merge-plan：
 
 ```sh
 python3 scripts/lint.py db.json --intent intent.json \
@@ -26,7 +26,7 @@ python3 scripts/lint.py db.json --intent intent.json \
 
 python3 scripts/lint.py db.json --intent intent.json \
   --review-mode revision --old-db old-db.json --old-plan old-review-plan.json \
-  --claims review-claims.json --evidence evidence.json --datasheet-audit datasheet-audit.json \
+  --claims review-claims.json --datasheet-audit datasheet-audit.json \
   --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json \
   --revision-impact-json revision-impact.json
 ```
@@ -156,7 +156,7 @@ python3 scripts/validate_review.py review-plan.json review-results.json \
 
 校验从当前 db、保存的输入、仍可读的文件及明确旧基线重建依赖/影响，核对必需项、旧项
 消失记录与自动检查；删条目、篡改变化、换基线、旧复验摘要不能靠更新 plan_digest 绕过。
-网表扫描暂缺、证据扫描恢复的旧状态检查，其暂缺/恢复处置记录也保留，不能破坏两次扫描之间的台账交接。
+网表扫描暂缺、合并扫描恢复的旧状态检查，其暂缺/恢复处置记录也保留，不能破坏两次扫描之间的台账交接。
 它验证的是记录一致性，不识别伪造的工程主张；单纯复制所有新摘要不会使旧计算变正确。
 输入快照是本轮已声明版本；未提供的新需求/装配不能被工具凭空发现，输入版本仍须审查者确认。
 

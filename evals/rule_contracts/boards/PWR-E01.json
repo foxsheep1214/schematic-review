@@ -1,7 +1,6 @@
 {
  "rule": "PWR-E01",
- "runner": "hot",
- "note": "30k/10k divider gives 3.2V outside [2.3, 2.5] vs 20k/10k giving 2.4V",
+ "runner": "plan",
  "trigger": {
   "parts": [
    {
@@ -47,35 +46,6 @@
      ]
     ]
    }
-  ],
-  "evidence": [
-   {
-    "id": "FB",
-    "rule": "PWR-E01",
-    "kind": "divider",
-    "net": "FB_NET",
-    "vref": {
-     "min": 0.792,
-     "typ": 0.8,
-     "max": 0.808
-    },
-    "expected": {
-     "min": 2.3,
-     "max": 2.5
-    },
-    "divider_model": {
-     "source_net": "VOUT_3V3",
-     "reference_net": "GND",
-     "bias_current_a": {
-      "min": 0,
-      "max": 0
-     },
-     "ignored_nodes": {
-      "U1.1": "Synthetic zero-current FB input, bias included in model"
-     }
-    },
-    "citation": "Synthetic FB reference/load guarantee specification"
-   }
   ]
  },
  "near_miss": {
@@ -86,14 +56,14 @@
     "pins": [
      [
       "1",
-      "FB",
+      "IN",
       "FB_NET"
      ]
     ]
    },
    {
     "ref": "R1",
-    "value": "20K/1%",
+    "value": "30K/1%",
     "pins": [
      [
       "1",
@@ -123,35 +93,7 @@
      ]
     ]
    }
-  ],
-  "evidence": [
-   {
-    "id": "FB",
-    "rule": "PWR-E01",
-    "kind": "divider",
-    "net": "FB_NET",
-    "vref": {
-     "min": 0.792,
-     "typ": 0.8,
-     "max": 0.808
-    },
-    "expected": {
-     "min": 2.3,
-     "max": 2.5
-    },
-    "divider_model": {
-     "source_net": "VOUT_3V3",
-     "reference_net": "GND",
-     "bias_current_a": {
-      "min": 0,
-      "max": 0
-     },
-     "ignored_nodes": {
-      "U1.1": "Synthetic zero-current FB input, bias included in model"
-     }
-    },
-    "citation": "Synthetic FB reference/load guarantee specification"
-   }
   ]
- }
+ },
+ "note": "the divider tap reaches an input named IN, not a feedback pin"
 }

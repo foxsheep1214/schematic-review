@@ -12,10 +12,8 @@ sys.path.insert(0, str(SCRIPTS))
 from checkers.decoupling import PLAN_RULES
 from decoupling import build_decoupling_inventory, input_fingerprint, parse_capacitance, validate_decoupling_intent
 from plan_review import build_review_plan, validate_intent
-from validate_review import fingerprint
-from ledger_v3 import validate_review
-from gap_fixture import validating
-validate_review = validating(validate_review)  # gap records are not this file's subject
+from validate_review import fingerprint, validate_review
+from ledger4 import passed, whole_clause
 from test_i2c_topology import add, pending_report
 
 
@@ -73,11 +71,13 @@ def ledger(plan, db):
     return report
 
 
-def mark_pass(row):
-    row.update(review_result='PASS', evidence_confidence='B',
-               rationale='Synthetic narrow criterion reviewed, not physical performance')
-    row.pop('missing_inputs', None)
-    row.pop('potential_severity', None)
+def mark_pass(report, plan, row):
+    """`row` (a row or its id) PASS on a synthetic narrow review."""
+    row = passed(report, row if isinstance(row, str) else row['id'], plan,
+                 rationale='Synthetic narrow criterion reviewed, not physical performance')
+    if row['id'].startswith('REQ-D01.'):
+        whole_clause(plan, row)
+    return row
 
 
 class CapacitanceParserTests(unittest.TestCase):
@@ -546,7 +546,7 @@ class DecouplingPlanTests(unittest.TestCase):
         selected = {p['id'] for p in plan['checks'] if p['rule'] == 'PWR-T03'}
         for row in report['checks']:
             if row['id'] in selected:
-                mark_pass(row)
+                mark_pass(report, plan, row)
         outcome = validate_review(plan, report, db, require_bindings=True)
         self.assertTrue(outcome['valid'], outcome['errors'])
         self.assertEqual(outcome['release'], 'NO_GO')
@@ -557,7 +557,7 @@ class DecouplingPlanTests(unittest.TestCase):
         report = ledger(plan, db)
         for kind in ('connection', 'capacitance'):
             selected = next(p['id'] for p in plan['checks'] if p['rule'] in PLAN_RULES and p.get('clause', {}).get('criterion') == 'synthetic ' + kind + ' requirement')
-            mark_pass(next(r for r in report['checks'] if r['id'] == selected))
+            mark_pass(report, plan, selected)
             outcome = validate_review(plan, report, db)
             self.assertEqual(outcome['valid'], kind == 'connection', outcome['errors'])
 
@@ -571,7 +571,7 @@ class DecouplingPlanTests(unittest.TestCase):
             plan = build_review_plan(db, intent)
             report = ledger(plan, db)
             key = next(p['id'] for p in plan['checks'] if p['rule'] == 'PWR-D02')
-            mark_pass(next(r for r in report['checks'] if r['id'] == key))
+            mark_pass(report, plan, key)
             outcome = validate_review(plan, report, db)
             self.assertTrue(any('decoupling gaps must be resolved' in e for e in outcome['errors']))
 
@@ -592,7 +592,7 @@ class DecouplingPlanTests(unittest.TestCase):
         intent['rule_gaps'] = [{'id': 'MANUAL-POWER', 'rule': 'REQ-Q02', 'object': {'feature': 'MANUAL-POWER'}, 'criterion': 'synthetic power chain trace', 'missing': 'synthetic: no generated rule', 'basis': 'synthetic review note'}]   # a reviewer-added row is a registered rule gap
         before = build_review_plan(db, intent)
         manual = next(p for p in before['checks'] if p.get('origin') == 'REVIEWER_ADDED')
-        manual.update(review_result='PASS', evidence_confidence='A')
+        manual.update(review_result='PASS', evidence_confidence='A')   # a plan row, not a result row
         after = build_review_plan(db, intent, previous_plan=before)
         kept = next(p for p in after['checks'] if p['id'] == manual['id'])
         self.assertIsNone(kept['review_result'])

@@ -8,10 +8,8 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from validate_review import fingerprint
-from ledger_v3 import record, validate_review
-from gap_fixture import validating
-validate_review = validating(validate_review)  # gap records are not this file's subject
+from validate_review import fingerprint, validate_review
+from ledger4 import defect, gap, whole_clause
 from test_validate_review import fixture, planned, E
 
 REQ = 'REQ-D01.REQ-LOAD'
@@ -19,20 +17,20 @@ POWER = 'PWR-C05.U1'
 PROOF = 'PWR-C01.VOUT'
 
 
-def sample():
+def sample(power='REQUIREMENT'):
+    """REQ and POWER both wait on the undecided maximum load (POWER on `power` open item kind)."""
     p, r, db = fixture(REQ)
     p['review_phase'] = 'design_iteration'
     p['checks'][0]['object'] = {'requirement_id': 'REQ-LOAD', 'requirement_status': 'OPEN'}
     p['checks'].append(planned(POWER))
     r['checks'].append(copy.deepcopy(r['checks'][0]))
     r['checks'][-1]['id'] = POWER
-    for row in (r['checks'][0], r['checks'][-1]):
-        row.update(review_result='INSUFFICIENT', gap_cause='REQUIREMENT_OPEN',
-                   evidence_confidence='C', missing_inputs=['maximum load current'], blocking=True)
+    gap(r, REQ, 'LOAD', 'REQUIREMENT', plan=p, what='maximum load current')
+    gap(r, POWER, 'LOAD-RATING', power, plan=p, what='maximum load current', level='P1')
+    whole_clause(p, r['checks'][0])
     r['plan_digest'] = fingerprint(p)
     r['coverage']['requirements'] = {'REQ-LOAD': [REQ]}
-    r.update(workflow_version=1, work_items=[], requirement_clarification_version=1,
-             requirement_clarifications=[{
+    r.update(requirement_clarifications=[{
                  'id': 'CL-LOAD', 'title': 'Decide maximum load', 'kind': 'MISSING', 'status': 'OPEN',
                  'question': 'Controlled requirement leaves maximum load undecided',
                  'decision_needed': 'Select and confirm the supported load range',
@@ -57,6 +55,15 @@ def covered(p, r):
         if row['id'] in (REQ, POWER):
             row['blocking'] = False
     r['plan_digest'] = fingerprint(p)
+
+
+def passed(p, *rows):
+    for row in rows:
+        row.update(review_result='PASS', evidence_confidence='A')
+        for key in ('blocking', 'function_id', 'open_ref', 'aspect'):
+            row.pop(key, None)
+        if row['id'] == REQ:
+            whole_clause(p, row)
 
 
 class RequirementClarificationTests(unittest.TestCase):
@@ -103,11 +110,9 @@ class RequirementClarificationTests(unittest.TestCase):
             self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_requirement_is_not_given_a_defect_grade_or_waived_as_risk(self):
-        from ledger_v3 import record
-        p, r, db = sample(); sent = record(r, p)
-        next(fn for fn in sent['functions'] if fn['open'][0]['kind'] == 'REQUIREMENT')['open'][0]['severity'] = {
-            'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'consequence': 'synthetic'}
-        self.assertFalse(validate_review(p, sent, db)['valid'])
+        p, r, db = sample()
+        r['functions'][0]['open'][0]['severity'] = {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'consequence': 'synthetic'}
+        self.assertFalse(validate_review(p, r, db)['valid'])
         for extra in ({'blocking': False},
                       {'disposition': 'ACCEPTED', 'acceptance': {k: 'synthetic' for k in ('by', 'date', 'scope', 'reason', 'record')}}):
             p, r, db = sample(); r['checks'][0].update(extra)
@@ -116,8 +121,7 @@ class RequirementClarificationTests(unittest.TestCase):
         self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_clarification_cannot_absorb_an_electrical_evidence_gap(self):
-        p, r, db = sample()
-        r['checks'][-1].update(gap_cause='EXTERNAL_DATA', potential_severity='P1')
+        p, r, db = sample(power='VENDOR_DATUM')
         self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_two_decisions_on_one_check_combine_blocking_effect(self):
@@ -127,7 +131,7 @@ class RequirementClarificationTests(unittest.TestCase):
                       freeze_impact='BLOCKING', decision_due='BEFORE_DESIGN')
         second.pop('coverage')
         r['requirement_clarifications'].append(second)
-        r['checks'][-2]['blocking'] = True  # POWER precedes appended proof
+        del r['checks'][-2]['blocking']  # POWER precedes appended proof; it blocks again
         out = validate_review(p, r, db)
         self.assertTrue(out['valid'], out)
         self.assertEqual(out['release'], 'NO_GO')
@@ -135,13 +139,10 @@ class RequirementClarificationTests(unittest.TestCase):
         self.assertEqual(out['requirement_clarification_summary']['affected_checks'], 2)
 
     def test_a_requirement_question_is_not_turned_into_a_design_item(self):
-        from ledger_v3 import record
         p, r, db = sample()
-        sent = record(r, p)
-        item = next(fn for fn in sent['functions'] if fn['open'][0]['kind'] == 'REQUIREMENT')['open'][0]
-        item.update(kind='DESIGN_VALUE', spec='2 A', owner='designer', scope='all loads', closure='decided',
-                    severity={'level': 'P2', 'class': 'LOCAL_OR_DATA', 'consequence': 'synthetic'})
-        self.assertFalse(validate_review(p, sent, db)['valid'])
+        r['functions'][0]['open'][0].update(kind='DESIGN_VALUE', spec='2 A', owner='designer', scope='all loads', closure='decided',
+                                            severity={'level': 'P2', 'class': 'LOCAL_OR_DATA', 'consequence': 'synthetic'})
+        self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_resolution_requires_decision_record_and_current_reverification(self):
         p, r, db = sample()
@@ -152,9 +153,8 @@ class RequirementClarificationTests(unittest.TestCase):
                             'requirement_revision': 'Synthetic Rev B', 'evidence': E, 'reverification': E}
         p['checks'][0]['object']['requirement_status'] = 'CONFIRMED'
         r['plan_digest'] = fingerprint(p)
-        for row in (r['checks'][0], r['checks'][-1]):
-            row.update(review_result='PASS', evidence_confidence='A', blocking=False)
-            row.pop('gap_cause'); row.pop('missing_inputs')
+        r['functions'] = []
+        passed(p, r['checks'][0], r['checks'][-1])
         out = validate_review(p, r, db)
         self.assertTrue(out['valid'], out)
         self.assertEqual(out['release'], 'GO')
@@ -168,14 +168,14 @@ class RequirementClarificationTests(unittest.TestCase):
         fid, key = 'F1', 'DEV-C01.BOARD'
         p['checks'].append(planned(key)); r['plan_digest'] = fingerprint(p)
         row = copy.deepcopy(r['checks'][1])
-        row.update(id=key, review_result='FAIL', severity='P1', finding_id=fid, blocking=True)
+        row.update(id=key, severity='P1')
         r['checks'].append(row)
         r['findings'] = [{'id': fid, 'kind': 'DEFECT', 'severity': 'P1', 'check_ids': [key],
                           'location': {'pages': ['1'], 'refs': ['R1'], 'nets': ['A']},
                           **{k: 'synthetic exceeded rating' for k in ('title','observed','criterion','impact','scenario','root_cause',
                                                                      'recommendation','verification','severity_reason')}}]
-        r['work_items'] = [{'id': 'W-F1', 'title': 'Repair rating', 'root_cause': 'undersized part', 'check_ids': [key],
-                            'due_stage': 'design_iteration', 'reason': 'exceeded rating', 'next_action': 'replace', 'evidence': E}]
+        defect(r, key, 'W-F1', fid, plan=p, what='undersized part', title='Repair rating', why='exceeded rating',
+               due_stage='design_iteration')
         out = validate_review(p, r, db)
         self.assertTrue(out['valid'], out)
         self.assertEqual(out['release'], 'NO_GO')
@@ -183,8 +183,6 @@ class RequirementClarificationTests(unittest.TestCase):
 
     def test_new_report_with_no_questions_has_zero_summary(self):
         p, r, db = fixture()
-        r.update(requirement_clarification_version=1, requirement_clarifications=[],
-                 workflow_version=1, work_items=[])
         out = validate_review(p, r, db)
         self.assertTrue(out['valid'], out)
         self.assertEqual(out['release'], 'GO')
@@ -200,15 +198,13 @@ class RequirementClarificationTests(unittest.TestCase):
         p, r, db = sample()
         p['checks'][0]['object']['requirement_status'] = 'CONFIRMED'
         r['plan_digest'] = fingerprint(p)
-        r['checks'][0].update(review_result='PASS', evidence_confidence='A', blocking=False)
-        r['checks'][0].pop('gap_cause'); r['checks'][0].pop('missing_inputs')
-        r['checks'][-1].update(gap_cause='EXTERNAL_DATA', potential_severity='P1', missing_inputs=['applicable part rating'])
+        r['functions'] = []
+        passed(p, r['checks'][0])
+        gap(r, POWER, 'W-DATA', 'VENDOR_DATUM', plan=p, what='applicable part rating', level='P1', title='Get rating',
+            why='required rating unknown', due_stage='design_iteration', acquisition='read applicable datasheet')
         issue = r['requirement_clarifications'][0]
         issue.update(status='RESOLVED', closure={'by': 'Synthetic owner', 'date': '2026-10-06',
                      'decision': 'Confirmed 2 A', 'requirement_revision': 'Rev B', 'evidence': E, 'reverification': E})
-        r['work_items'] = [{'id': 'W-DATA', 'title': 'Get rating', 'root_cause': 'datasheet absent',
-                            'check_ids': [POWER], 'due_stage': 'design_iteration', 'reason': 'required rating unknown',
-                            'next_action': 'read applicable datasheet', 'evidence': E}]
         out = validate_review(p, r, db)
         self.assertTrue(out['valid'], out)
         self.assertEqual(out['release'], 'NO_GO')
@@ -220,9 +216,8 @@ class RequirementClarificationTests(unittest.TestCase):
         issue.update(status='RETRACTED', closure={'by': 'Synthetic reviewer', 'date': '2026-10-06',
                      'decision': 'Previously overlooked Rev A already states 2 A', 'requirement_revision': 'Rev A',
                      'evidence': E, 'reverification': E})
-        for row in (r['checks'][0], r['checks'][-1]):
-            row.update(review_result='PASS', evidence_confidence='A', blocking=False)
-            row.pop('gap_cause'); row.pop('missing_inputs')
+        r['functions'] = []
+        passed(p, r['checks'][0], r['checks'][-1])
         self.assertFalse(validate_review(p, r, db)['valid'])
         p['checks'][0]['object']['requirement_status'] = 'CONFIRMED'
         r['plan_digest'] = fingerprint(p)
@@ -260,7 +255,7 @@ class RequirementClarificationTests(unittest.TestCase):
         script = pathlib.Path(__file__).resolve().parents[1] / 'validate_review.py'
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            for name, data in (('plan', p), ('report', record(r))):
+            for name, data in (('plan', p), ('report', r)):
                 (root/name).write_text(json.dumps(data))
             args = [sys.executable, '-B', str(script), str(root/'plan'), str(root/'report')]
             run = subprocess.run(args, capture_output=True, text=True)

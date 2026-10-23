@@ -9,7 +9,6 @@
 import re
 
 import catalog
-from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
 from . import powertree
@@ -182,8 +181,7 @@ class PowerUpChecker(Checker):
     version = 1
     intent_key = 'power_up'
     cold_rules = catalog.titles(stage='cold', source='power_up')
-    hot_rules = catalog.titles(stage='hot', source='power_up')
-    evidence_kinds = {'PWR-E02': {'dropout'}}
+    e_rules = catalog.titles(method='E', source='power_up')
 
     missing_inventory_message = 'power up checks require their inventory'
     inventory_type_message = 'power up inventory must be an object'
@@ -216,12 +214,11 @@ class PowerUpChecker(Checker):
                 trigger=['power-up:' + item['id'], 'enable-source:' + item['enable_source']],)
             check['inventory_gaps'] = gaps
             if item['kind'] == 'linear':
-                ready = planner.evidence_ready('PWR-E02', obj)
                 check = planner.add_check(
                     'PWR-E02', dict(obj), key=item['id'],
-                    readiness='READY' if ready else 'WAITING_EVIDENCE',
-                    required_inputs=sorted(set(gaps + ([] if ready else [
-                        'evidence: PWR-E02 输入下限、最坏压差与负载要求下限']))),
+                    readiness='WAITING_EVIDENCE',
+                    required_inputs=sorted(set(gaps + [
+                        'datasheet: PWR-E02 输入下限、最坏压差与负载要求下限'])),
                     trigger=['power-up:' + item['id']])
                 check['inventory_gaps'] = gaps
             else:
@@ -257,44 +254,6 @@ class PowerUpChecker(Checker):
                          # EN tied to IN is the standard hookup of a linear regulator; a switcher
                          # starting at its internal UVLO under slow input ramps is worth a look.
                          item['ref'], kind='CANDIDATE' if item['kind'] == 'switching' else 'INFO')
-
-    def hot_check(self, lint, check):
-        vin_min = hotmath.number(check['vin_min_v'])
-        dropout = hotmath.number(check['dropout_max_v'])
-        required = hotmath.number(check['vout_required_min_v'])
-        available = vin_min - dropout
-        margin = available - required
-        calculation = {'vin_min_v': vin_min, 'dropout_max_v': dropout,
-                       'available_v': available, 'vout_required_min_v': required,
-                       'margin_v': margin}
-        detail = '%s: 最低输入 %s − 最坏压差 %s = %s，负载要求下限 %s，裕量 %s；%s' % (
-            check.get('ref') or check.get('net'), hotmath.fmt(vin_min, 'V'),
-            hotmath.fmt(dropout, 'V'), hotmath.fmt(available, 'V'),
-            hotmath.fmt(required, 'V'), hotmath.fmt(margin, 'V'), lint._citation(check))
-        if margin < 0:
-            lint.add('PWR-E02', '最坏压差下输出低于负载要求', detail,
-                     check.get('ref'), check_id=check['id'], citation=check['citation'],
-                     calculation=calculation)
-        else:
-            lint.record_pass('PWR-E02', check, detail,
-                             scope='所给保证值下的静态压差裕量；负载瞬态、启动与热关断未判定',
-                             calculation=calculation)
-
-    def evidence_errors(self, check, label):
-        errors = hotmath.structure_errors(
-            check, label, numbers=('vin_min_v', 'dropout_max_v', 'vout_required_min_v'))
-        for field in ('vin_min_v', 'vout_required_min_v'):
-            value = hotmath.number(check.get(field))
-            if value is not None and value <= 0:
-                errors.append('%s.%s 必须为正数' % (label, field))
-        dropout = hotmath.number(check.get('dropout_max_v'))
-        if dropout is not None and dropout < 0:
-            errors.append('%s.dropout_max_v 不得为负' % label)
-        return errors
-
-    def model_gaps(self, check):
-        return hotmath.missing_gaps(
-            check, numbers=('vin_min_v', 'dropout_max_v', 'vout_required_min_v'))
 
     def rule_instances(self, rule, inventory):
         if rule == 'RST-A02':

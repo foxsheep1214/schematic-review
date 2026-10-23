@@ -8,8 +8,7 @@ sys.path.insert(0, str(SCRIPTS))
 import catalog
 
 from checkers.power_switch import PowerSwitchChecker, build_inventory, validate_power_switch_intent
-from electrical_contract import validate_evidence
-from electrical_fixtures import bind_evidence, bound_intent
+from electrical_fixtures import bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -56,15 +55,6 @@ CHECKER_RULES = {rule.id for rule in catalog.rules(source='power_switch')}
 
 def findings(db, intent=None):
     return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
-
-
-def gate_check(**overrides):
-    check = {'id': 'GATE-DRIVE', 'rule': 'DRV-E01', 'kind': 'gate_drive', 'node': 'Q1.1',
-             'channel': 'n', 'vgs_drive_v': {'min': 9.0, 'max': 12.6},
-             'vgs_rds_on_v': 4.5, 'vgs_abs_v': {'min': -20.0, 'max': 20.0},
-             'citation': 'Synthetic driver supply window and MOSFET guaranteed conditions'}
-    check.update(overrides)
-    return check
 
 
 class RecognitionTest(unittest.TestCase):
@@ -325,55 +315,6 @@ class HotRuleTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-
-    def run_check(self, check, db=None):
-        db = db or switch_board(snubber='rc')
-        evidence = {'schema_version': 2, 'checks': [check]}
-        audit = bind_evidence(db, evidence, self.directory.name)
-        self.assertEqual(validate_evidence(evidence), [])
-        lint = Lint(db, evidence=evidence, datasheet_audit=audit)
-        lint.run()
-        results = [x for x in lint.results if x['check_id'] == check['id']]
-        self.assertEqual(len(results), 1)
-        return results[0]
-
-    def test_sufficient_drive_passes(self):
-        result = self.run_check(gate_check())
-        self.assertEqual(result['review_result'], 'PASS')
-        self.assertEqual(result['rule'], 'DRV-E01')
-        self.assertIn('SOA', result['scope'])
-
-    def test_drive_below_rds_on_condition_fails(self):
-        result = self.run_check(gate_check(vgs_drive_v={'min': 3.0, 'max': 5.0}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('低于所需导通栅压', result['detail'])
-
-    def test_drive_above_absolute_maximum_fails(self):
-        result = self.run_check(gate_check(vgs_drive_v={'min': 9.0, 'max': 25.0}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('超出绝对最大范围', result['detail'])
-
-    def test_p_channel_is_compared_on_magnitude(self):
-        result = self.run_check(gate_check(channel='p', vgs_drive_v={'min': -12.6, 'max': -9.0},
-                                           vgs_rds_on_v=-4.5))
-        self.assertEqual(result['review_result'], 'PASS')
-        result = self.run_check(gate_check(channel='p', vgs_drive_v={'min': -3.0, 'max': -1.0},
-                                           vgs_rds_on_v=-4.5))
-        self.assertEqual(result['review_result'], 'FAIL')
-
-    def test_missing_guaranteed_values_stay_insufficient(self):
-        check = gate_check()
-        check.pop('vgs_abs_v')
-        result = self.run_check(check)
-        self.assertEqual(result['review_result'], 'INSUFFICIENT')
-        self.assertIn('vgs_abs_v 缺少保证 min/max', result['detail'])
-
-    def test_malformed_evidence_is_rejected_by_the_contract(self):
-        evidence = {'schema_version': 2, 'checks': [gate_check(channel='x')]}
-        self.assertTrue(any('channel' in error for error in validate_evidence(evidence)))
-        evidence = {'schema_version': 2, 'checks': [gate_check(kind='divider')]}
-        self.assertTrue(any('kind' in error for error in validate_evidence(evidence)))
-
 
 if __name__ == '__main__':
     unittest.main()

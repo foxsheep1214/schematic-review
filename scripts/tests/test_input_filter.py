@@ -8,8 +8,7 @@ sys.path.insert(0, str(SCRIPTS))
 import catalog
 
 from checkers.input_filter import InputFilterChecker, build_inventory, validate_input_filter_intent
-from electrical_contract import validate_evidence
-from electrical_fixtures import bind_evidence, bound_intent
+from electrical_fixtures import bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -50,19 +49,6 @@ CHECKER_RULES = {rule.id for rule in catalog.rules(source='input_filter')}
 
 def findings(db, intent=None):
     return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
-
-
-def damping_check(**overrides):
-    check = {'id': 'IF', 'rule': 'PWR-E03', 'kind': 'input_filter_damping', 'ref': 'U1',
-             'net': 'VIN_12', 'vin_min_v': 10.8, 'pin_max_w': 12.0,
-             'esr_bulk_ohm': {'min': 0.15, 'max': 0.6},
-             'c_bulk_f': {'min': 80e-6, 'max': 120e-6},
-             'c_in_f': {'min': 6e-6, 'max': 10e-6},
-             'l_filter_h': {'min': 0.8e-6, 'max': 1.2e-6},
-             'c_bulk_ratio_min': 4.0,
-             'citation': 'Synthetic project damping rule and guaranteed component data'}
-    check.update(overrides)
-    return check
 
 
 class RecognitionTest(unittest.TestCase):
@@ -133,50 +119,6 @@ class HotRuleTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-
-    def run_check(self, check, db=None):
-        db = db or converter(damper='rc')
-        evidence = {'schema_version': 2, 'checks': [check]}
-        audit = bind_evidence(db, evidence, self.directory.name)
-        self.assertEqual(validate_evidence(evidence), [])
-        lint = Lint(db, evidence=evidence, datasheet_audit=audit)
-        lint.run()
-        results = [x for x in lint.results if x['check_id'] == check['id']]
-        self.assertEqual(len(results), 1)
-        return results[0]
-
-    def test_damped_filter_passes(self):
-        result = self.run_check(damping_check())
-        self.assertEqual(result['review_result'], 'PASS')
-        self.assertAlmostEqual(result['calculation']['r_in_ohm'], 10.8 ** 2 / 12.0)
-        self.assertIn('一阶', result['scope'])
-
-    def test_esr_above_negative_input_impedance_fails(self):
-        result = self.run_check(damping_check(esr_bulk_ohm={'min': 9.0, 'max': 12.0}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('不低于负输入阻抗', result['detail'])
-
-    def test_esr_below_damping_floor_fails(self):
-        result = self.run_check(damping_check(esr_bulk_ohm={'min': 1e-4, 'max': 2e-4}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('阻尼下界', result['detail'])
-
-    def test_capacitance_ratio_below_project_rule_fails(self):
-        result = self.run_check(damping_check(c_bulk_f={'min': 20e-6, 'max': 24e-6}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('比值', result['detail'])
-
-    def test_missing_project_ratio_stays_insufficient(self):
-        check = damping_check()
-        check.pop('c_bulk_ratio_min')
-        result = self.run_check(check)
-        self.assertEqual(result['review_result'], 'INSUFFICIENT')
-        self.assertIn('c_bulk_ratio_min 缺少保证值', result['detail'])
-
-    def test_nonpositive_inputs_are_rejected_by_the_contract(self):
-        evidence = {'schema_version': 2, 'checks': [damping_check(pin_max_w=0)]}
-        self.assertTrue(any('pin_max_w 必须为正数' in error for error in validate_evidence(evidence)))
-
 
 if __name__ == '__main__':
     unittest.main()

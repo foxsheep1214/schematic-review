@@ -118,11 +118,11 @@
   保留需求原文和源状态，先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求)
   确定本次判据的实际确认状态，不省略真实未定项。OPEN 的 REQ-D01 必须 INSUFFICIENT + REQUIREMENT_OPEN；
   DEFERRED 必须 INSUFFICIENT + USER_DEFERRED；PROPOSED 可判定，但结论以提案为前提。
-- `power_rails` 支撑 PWR-C01 与 DEV-E02：给电压/最大负载、源端最弱保证可供电流和条件；READY 不等于 PASS。
+- `power_rails` 支撑 PWR-C01 与 DEV-C05：给电压/最大负载、源端最弱保证可供电流和条件；READY 不等于 PASS。
   片内稳压输出（如 MCU 的 1.1 V 内核轨）、仅板内使用的中间轨同样要声明电压：阻容预判按同簇器件的全部供电轨定界，缺一条就整簇不出预判。计划命令末尾会列出“未声明电压的轨”及受阻行数，能从稳压器手册或需求定出时补齐后重跑。
   隔离或多地设计给各轨与各地写 `domain`（如 PRI/SEC），地写 `voltage_v: {min: 0, max: 0}`；栅极/检测节点可按计算声明窗口。
   窗口由审查者独立定界：取需求输入范围、稳压器/钳位/保护门限的保证值和故障上限，逐条写 `citation`；不取设计方计算的数值。
-  证据扫描前 `power_rails` 仍为空却有 DEV-C01/PWR-C10 行，属审查准备未完成，先补齐再录结论。
+  合并扫描前 `power_rails` 仍为空却有 DEV-C01/PWR-C10 行，属审查准备未完成，先补齐再录结论。
 - 条件导通另可声明 `power_sources`（某状态的供入节点）与 `power_paths`（某状态可导通的方向，不是理想短路或载流声明），
   不得把未上电的稳压器或端口标成 source 来消除告警。
 - 各检查器的 intent 段（`i2c_topology`、`decoupling`、`device_kinds` 等）见 [自动检查](automation.md)。
@@ -157,7 +157,7 @@
 - 网表扫描 `lint.py --plan-json review-plan-cold.json` 保存计划和候选；审查者要补的检查登记到 `intent.rule_gaps` 后重新生成，计划工具没写的行（自动扫描行与改版记录以外）在合并和校验时都被拒。
 - intent 声明电路时两次扫描都带 `--candidates record/circuit-candidates.json`；计划顶层 `circuit_candidates` 记候选文件的 `db_sha256`、`rules_version`、候选编号、决定和未归属器件，
   功能框架的 objects 直接取电路（即候选经决定后的）成员；候选文件随计划一起打包（`pack_review.py --circuit-candidates`）。
-- 证据扫描 `--merge-plan review-plan-cold.json --plan-json review-plan.json` 产生**唯一最终计划**。
+- 合并扫描 `--merge-plan review-plan-cold.json --plan-json review-plan.json` 产生**唯一最终计划**。
   合并要求 `db_sha256` 与当前输入一致且规则指纹相同；相同 ID 的对象/判据冲突时拒绝自动覆盖。
 - 匹配证据后保留基础覆盖项，按 evidence ID 生成带 `parent_check_id` 的状态子项；基础项只汇总覆盖，不能代替子项结果。
 - 计划合并不读取或迁移结果；后续补查先更新计划，再更新 digest 和逐项结果。
@@ -211,8 +211,7 @@
   热敏等传感器每个接到 IC 的检测脚生成 ANA-C04（开短路判别）；传感器接电源轨的一端和轨上 IC 的供电脚不算检测脚。
   声明了 `intent.devices` 的位号，DEV-D02 带官方/符号双向差集，DEV-D05 带待复核引脚清单（不是结论）。
 - **需求与覆盖**：每条需求实例化为 REQ-D01；另有六类覆盖审计项 DOC-Q01、REQ-Q01～Q04、DEV-Q01。
-- **证据计算（E）**：READY 须当前网表指纹、文档指纹、准确型号/版本/定位、依赖物料 AVAILABLE 及必要模型输入齐全，
-  否则 WAITING_EVIDENCE。每条匹配证据生成独立状态子项。
+- **保证值核对（E）**：网表或检查器定出对象，计划行一律 WAITING_EVIDENCE，审查者按两端规格书保证值经功能判定作答。
 - **功能电路**：汇总项 REQ-Q07 只汇总覆盖；功能电路适用后生成电路检查项，声明了电路时逐电路×工况（答案不随工作态变化的电路检查项
   每电路一行，行的 `object` 不带 `state`，见 `catalog.STATE_INVARIANT`），否则按功能电路一次；各检查项仍须按 [最小充分证据](evidence-proportionality.md) 核适用性。
   未检出也未声明的功能电路汇总到一项 REQ-Q08，逐个确认不适用并给依据。
@@ -753,8 +752,8 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   无位置/改法、虚假汇总、陈旧规则指纹均被拒绝。
 - **自动扫描发现即计划检查**：冷检每条 FINDING/CANDIDATE 在计划里自成一行（id 形如
   `PWR-A01.AUX-DC-b17ec0`，判据为“规则名：发现原文”），像其他检查一样写结论；INFO 进计划
-  `diagnostics`（`LINT_INFO`），不计疑点。证据计算结果由对应状态子项作答。两次 `--lint` 提供两次扫描的 JSON，
-  校验核对每条发现都有计划行；结果不再写 `lint_reviews`。无证据时也保存一次未带证据的证据扫描。仅 PDF 模式明确 NA 并留依据。
+  `diagnostics`（`LINT_INFO`），不计疑点。两次 `--lint` 提供两次扫描的 JSON，
+  校验核对每条发现都有计划行；结果不再写 `lint_reviews`。仅 PDF 模式明确 NA 并留依据。
 - **输出**：`summary`（检查结果计数、唯一缺陷及 P0–P3）、`categorized_summary`（当前/历史检查、唯一缺陷、
   唯一任务、必需移交及其状态）、`insufficient_by_cause`、`requirement_clarification_summary`、`workflow`、
   `release`/`blockers`、`remediation_validation`、`binding_validation`。

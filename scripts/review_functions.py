@@ -635,7 +635,7 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
                           % VENDOR_ASK_RE.search(asked).group(0))
     if kind == 'VENDOR_DATUM':   # F3
         checked = item.get('checked')
-        if not (isinstance(checked, list) and checked and all(c in condition_ids for c in checked)):
+        if not (isinstance(checked, list) and checked and all(isinstance(c, str) and c in condition_ids for c in checked)):
             errors.append(label + ': checked lists the condition ids read before asking the vendor')
         if not text(item.get('why_insufficient')):
             errors.append(label + ': why_insufficient says why the clauses read do not answer the question')
@@ -659,7 +659,7 @@ def cited_conditions(fn):
         worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
         bases.append((worst.get('margin') or {}).get('basis') if isinstance(worst.get('margin'), dict) else None)
         out.add((worst.get('bound') or {}).get('condition') if isinstance(worst.get('bound'), dict) else None)
-        out.update(c for c in item.get('checked') or [] if isinstance(c, str))
+        out.update(c for c in (item['checked'] if isinstance(item.get('checked'), list) else []) if isinstance(c, str))
         out.update((d.get('via') or {}).get('condition') for d in item.get('decides') or []
                    if isinstance(d, dict) and isinstance(d.get('via'), dict))
     for basis in bases:

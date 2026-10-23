@@ -9,8 +9,6 @@ import tempfile
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from parse_netlist import parse_pstxnet, self_check, is_not_populated, build
 from plan_review import build_review_plan, validate_intent
-from electrical_contract import check_matches
-from electrical_fixtures import bind_evidence, divider_model
 from lint import Lint
 from solve_dividers import Solver
 from diff_netlists import connected, evaluate_claims, validate_claims
@@ -88,11 +86,6 @@ class V2Regressions(unittest.TestCase):
         db = network({'D1': {'value': 'TVS'}}, {'VDD_A': ['D1.1'], 'GND': ['D1.2']})
         self.assertFalse(Lint(db).driven('VDD_A'))
 
-    def test_evidence_for_one_en_does_not_cover_another(self):
-        evidence = {'checks': [{'rule': 'RST-E01', 'node': 'U1.1', 'ref': 'U1'}]}
-        self.assertFalse(check_matches(sample_db(), evidence['checks'][0], 'RST-E01', {'node': 'U1.2', 'ref': 'U1'}))
-        self.assertTrue(check_matches(sample_db(), evidence['checks'][0], 'RST-E01', {'node': 'U1.1', 'ref': 'U1'}))
-
     def test_requirement_and_full_pin_audits_are_planned(self):
         intent = {'requirement_source': doc_for({'REQ-USB': 'USB port required'}),
                   'requirements': [{'id': 'REQ-USB', 'categories': ['PROTOCOL'], 'interpretation': 'end-to-end connectivity'}]}
@@ -131,25 +124,6 @@ class V2Regressions(unittest.TestCase):
         self.assertEqual(board_intent.declared_kinds(ctx), board_intent.declared_kinds(analysis))
         self.assertEqual(board_intent.graph_db({'parts': {}}, ctx)['device_kinds']['Q1']['kind'], 'bjt')
         self.assertTrue(validate_intent(dict(intent, device_kinds_verified={})))
-
-    def test_source_rail_is_not_divided_pin_voltage(self):
-        db = network({'U1': {}, 'R1': {'value': '100K'}, 'R2': {'value': '10K'}},
-                     {'VCC_24V': ['R1.1'], 'EN': ['R1.2', 'R2.1', 'U1.1'], 'GND': ['R2.2']},
-                     {'U1.1': 'EN'})
-        check = {'id': 'EN', 'rule': 'RST-E01', 'kind': 'pin_bias', 'node': 'U1.1',
-                 'required_default': 'high', 'abs_max_v': 5.5, 'citation': 'SYNTHETIC Rev.A p.1'}
-        lint = Lint(db, evidence={'checks': [check]})
-        findings = [x for x in lint.run() if x.get('check_id') == 'EN']
-        self.assertTrue(findings)
-        self.assertTrue(all(x['kind'] == 'CANDIDATE' for x in findings))
-        self.assertFalse(lint.passes)
-
-    def test_missing_explicit_float_net_never_passes(self):
-        check = {'id': 'F', 'rule': 'RST-E02', 'kind': 'strap', 'net': 'MISSING',
-                 'required': 'float', 'citation': 'SYNTHETIC Rev.A p.1'}
-        lint = Lint(sample_db(), evidence={'checks': [check]})
-        lint.run()
-        self.assertFalse(lint.passes)
 
     def test_shared_upper_lower_resistor_requires_node_analysis(self):
         db = network({'R1': {'value': '1K'}, 'R2': {'value': '10K'}, 'R3': {'value': '20K'}},
@@ -191,37 +165,6 @@ class V2Regressions(unittest.TestCase):
         self.assertIsNone(connected(db, 'U1.1', 'U2.1'))
         self.assertTrue(validate_claims({'schema_version': 1, 'claims': [
             {'id': 'F1', 'expect': [{'kind': 'pins_connected', 'nodes': ['U1.1']}]}]}))
-
-    def test_nominal_vref_cannot_be_reported_as_wca_pass(self):
-        db = divider_db()
-        check = {'id': 'FB', 'rule': 'PWR-E01', 'kind': 'divider', 'net': 'FB_NET',
-                 'vref': 0.8, 'expected': {'min': 2.0, 'max': 3.0},
-                 'citation': 'SYNTHETIC Rev.A p.1'}
-        lint = Lint(db, evidence={'checks': [check]})
-        findings = [x for x in lint.run() if x.get('check_id') == 'FB']
-        self.assertTrue(findings)
-        self.assertTrue(all(x['kind'] == 'CANDIDATE' for x in findings))
-        self.assertFalse(lint.passes)
-
-    def test_default_resistor_tolerance_cannot_pass_wca(self):
-        db = divider_db()
-        db['parts']['R1']['value'] = '20K'
-        check = {'id': 'FB', 'rule': 'PWR-E01', 'kind': 'divider', 'net': 'FB_NET',
-                 'vref': {'min': 0.792, 'typ': 0.8, 'max': 0.808},
-                 'divider_model': divider_model(), 'depends_on': ['R1', 'R2'],
-                 'expected': {'min': 2.0, 'max': 3.0}, 'citation': 'SYNTHETIC Rev.A p.1'}
-        evidence = {'schema_version': 2, 'checks': [check]}
-        with tempfile.TemporaryDirectory() as directory:
-            audit = bind_evidence(db, evidence, directory)
-            lint = Lint(db, evidence=evidence, datasheet_audit=audit)
-            lint.run()
-            self.assertFalse(lint.passes)
-            self.assertTrue(any(x.get('check_id') == 'FB' and x['kind'] == 'CANDIDATE'
-                                for x in lint.F))
-            check['resistor_tolerance'] = 0.01
-            lint = Lint(db, evidence=evidence, datasheet_audit=audit)
-            lint.run()
-            self.assertTrue(any(x['check_id'] == 'FB' for x in lint.passes))
 
     def test_parser_keeps_symbol_pin_omitted_from_netlist(self):
         with tempfile.TemporaryDirectory() as directory:

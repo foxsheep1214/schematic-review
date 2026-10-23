@@ -8,8 +8,7 @@ sys.path.insert(0, str(SCRIPTS))
 import catalog
 
 from checkers.power_up import PowerUpChecker, build_inventory, validate_power_up_intent
-from electrical_contract import validate_evidence
-from electrical_fixtures import bind_evidence, bound_intent
+from electrical_fixtures import bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -53,14 +52,6 @@ CHECKER_RULES = {rule.id for rule in catalog.rules(source='power_up')}
 
 def findings(db, intent=None):
     return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
-
-
-def dropout_check(**overrides):
-    check = {'id': 'DROPOUT', 'rule': 'PWR-E02', 'kind': 'dropout', 'ref': 'U1',
-             'vin_min_v': 3.6, 'dropout_max_v': 0.25, 'vout_required_min_v': 3.2,
-             'citation': 'Synthetic LDO dropout at minimum temperature and maximum load'}
-    check.update(overrides)
-    return check
 
 
 class RecognitionTest(unittest.TestCase):
@@ -172,39 +163,6 @@ class HotRuleTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-
-    def run_check(self, check):
-        db = rail_board()
-        evidence = {'schema_version': 2, 'checks': [check]}
-        audit = bind_evidence(db, evidence, self.directory.name)
-        self.assertEqual(validate_evidence(evidence), [])
-        lint = Lint(db, evidence=evidence, datasheet_audit=audit)
-        lint.run()
-        results = [x for x in lint.results if x['check_id'] == check['id']]
-        self.assertEqual(len(results), 1)
-        return results[0]
-
-    def test_sufficient_headroom_passes(self):
-        result = self.run_check(dropout_check())
-        self.assertEqual(result['review_result'], 'PASS')
-        self.assertAlmostEqual(result['calculation']['margin_v'], 0.15)
-
-    def test_insufficient_headroom_fails(self):
-        result = self.run_check(dropout_check(dropout_max_v=0.6))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('最坏压差', result['detail'])
-
-    def test_missing_dropout_stays_insufficient(self):
-        check = dropout_check()
-        check.pop('dropout_max_v')
-        result = self.run_check(check)
-        self.assertEqual(result['review_result'], 'INSUFFICIENT')
-        self.assertIn('dropout_max_v 缺少保证值', result['detail'])
-
-    def test_negative_dropout_is_rejected_by_the_contract(self):
-        evidence = {'schema_version': 2, 'checks': [dropout_check(dropout_max_v=-1)]}
-        self.assertTrue(any('dropout_max_v 不得为负' in error for error in validate_evidence(evidence)))
-
 
 if __name__ == '__main__':
     unittest.main()

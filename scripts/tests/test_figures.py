@@ -6,7 +6,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from test_remediation import actionable
 from test_validate_review import gap_with_task, proposed_option, fail, fixture
 from validate_remediation import validate_figures

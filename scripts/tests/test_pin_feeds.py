@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import check_key
 from checkers import passive_stress
 from checkers.passive_stress import PIN_CRITERION
-from ledger_v3 import validate_review
+from validate_review import validate_review
 import render_report
 from render_report import render
 from plan_review import REGISTRY, ReviewPlanner, build_review_plan
@@ -109,7 +109,7 @@ class PinFeedTests(unittest.TestCase):
         report = ledger(plan, db)
         key = pin_rows(db, intent)[0]['id']
         row = next(c for c in report['checks'] if c['id'] == key)
-        mark_pass(row)
+        mark_pass(report, plan, row)
         row.update(fields)
         return [e for e in validate_review(plan, report, db)['errors'] if key in e]
 

@@ -18,9 +18,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import catalog
 import derive_rows
 import requirement_bindings as rb
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from plan_review import build_review_plan, validate_intent
 from test_decoupling import fixture, ledger, mark_pass, rebind
+from ledger4 import defect
 from test_requirement_source import requirement_intent, write
 
 
@@ -92,10 +93,11 @@ class ResultTests(unittest.TestCase):
     def report(self, bound_result):
         report = ledger(self.plan, self.db)
         for row in report['checks']:
-            mark_pass(row)
+            mark_pass(report, self.plan, row)
         bound = next(r for r in report['checks'] if r['id'] == 'DEV-C05.U1')
         if bound_result == 'FAIL':
-            bound.update(review_result='FAIL', severity='P2', finding_id='F-1')
+            bound['severity'] = 'P2'
+            defect(report, 'DEV-C05.U1', 'F-1', 'F-1', plan=self.plan)
             report.setdefault('findings', []).append({'id': 'F-1', 'severity': 'P2', 'check_ids': ['DEV-C05.U1'],
                                                       'title': 'x', 'evidence': bound['evidence']})
         return report

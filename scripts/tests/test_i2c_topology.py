@@ -15,10 +15,9 @@ from board_intent import input_fingerprint
 from i2c_topology import build_i2c_topology, validate_i2c_intent
 from lint import Lint
 from plan_review import build_review_plan, validate_intent
-from validate_review import fingerprint, SCOPE
-from ledger_v3 import validate_review
-from gap_fixture import validating
-validate_review = validating(validate_review)  # gap records are not this file's subject
+from validate_review import fingerprint, SCOPE, validate_review
+import results_model
+from ledger4 import gap, passed, slug
 
 
 def add(db, ref, value, pins, nc=False):
@@ -69,7 +68,8 @@ def at(output, net='I2C_SDA', state='run'):
 
 def report_for(plan, db):
     # Only used to isolate validator contract errors; not an electrical review.
-    return {'requirement_clarification_version': 1, 'requirement_clarifications': [], 'schema_version': 2, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
+    return {'requirement_clarifications': [], 'schema_version': results_model.SCHEMA_VERSION, 'functions': [],
+            'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
             'checks': [], 'findings': [], 'coverage': {}, 'summary': {}}
 
 
@@ -79,20 +79,23 @@ def pending_report(plan, db):
     for item in plan['checks']:
         row = {'id': item['id'], 'applicability': item['applicability'],
                'review_result': 'NA' if item['applicability'] == 'NOT_APPLICABLE' else 'INSUFFICIENT',
-               'evidence_confidence': 'C', 'blocking': True,
                'rationale': 'Synthetic fixture has no electrical acceptance evidence',
                'evidence': [{'source': 'synthetic-fixture', 'locator': 'declared topology only'}],
                'handoff': copy.deepcopy(item['handoff']),
                'binding': {k: copy.deepcopy(item[k]) for k in ('object', 'criterion')}}
-        if row['review_result'] == 'INSUFFICIENT':
-            row.update(missing_inputs=['applicable specifications and state analysis'], potential_severity='P1')
         rows.append(row)
     scope = {k: next(p['id'] for p in plan['checks'] if p['rule'] == catalog.COVERAGE_RULES[k]) for k in SCOPE}
-    return {'requirement_clarification_version': 1, 'requirement_clarifications': [], 'schema_version': 2, 'binding_version': 1, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
-            'checks': rows, 'findings': [], 'scope_checks': scope,
-            'coverage': {'components': {r: [scope['chains']] for r in db['parts']},
-                'nets': {n: [scope['chains']] for n in db['nets']},
-                'pins': {n: [scope['chains']] for n in db['pin2net']}, 'pages': {}, 'requirements': {}}}
+    report = {'requirement_clarifications': [], 'schema_version': results_model.SCHEMA_VERSION, 'functions': [],
+              'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
+              'checks': rows, 'findings': [], 'scope_checks': scope,
+              'coverage': {'components': {r: [scope['chains']] for r in db['parts']},
+                  'nets': {n: [scope['chains']] for n in db['nets']},
+                  'pins': {n: [scope['chains']] for n in db['pin2net']}, 'pages': {}, 'requirements': {}}}
+    for row in rows:
+        if row['review_result'] == 'INSUFFICIENT':
+            gap(report, row['id'], slug(row['id']), plan=plan, level='P1',
+                what='applicable specifications and state analysis')
+    return report
 
 
 class TopologyTests(unittest.TestCase):
@@ -216,18 +219,6 @@ class TopologyTests(unittest.TestCase):
         rebind(db, intent)
         self.assertIn('external-port:J1', at(build_i2c_topology(db, intent))['gaps'])
 
-    def test_parallel_pullups_are_listed_once_with_existing_equivalent_unchanged(self):
-        db, intent = fixture(('0R',))
-        add(db, 'R9', '4.7K/1%', [('1', '1', 'EXT_SDA_0'), ('2', '2', 'VCC_3V3')])
-        intent['assemblies'][0]['population']['R9'] = True
-        rebind(db, intent)
-        r = at(build_i2c_topology(db, intent))
-        self.assertEqual([p['ref'] for p in r['pullups']], ['R1', 'R9'])
-        lint = Lint(db)
-        lint._hot_required_passive({'id': 'direct', 'net': 'EXT_SDA_0', 'kind': 'required_pull',
-            'to': 'VCC_3V3', 'citation': 'synthetic', 'resistance_ohm': {'min': 2000, 'max': 3000}})
-        self.assertEqual(lint.results[0]['review_result'], 'INSUFFICIENT')  # series branch still unsupported by SIG-E01
-
     def test_no_intent_only_produces_unconfirmed_inventory(self):
         db, intent = fixture()
         result = build_i2c_topology(db)
@@ -280,9 +271,8 @@ class TopologyTests(unittest.TestCase):
         narrow = {c['id'] for c in plan['checks'] if c['rule'] in ('SIG-T02', 'SIG-D01', 'SIG-C08') and c['object'].get('i2c_region')}
         for row in report['checks']:
             if row['id'] in narrow:
-                row.update(review_result='PASS', evidence_confidence='B', blocking=False,
-                           rationale='Synthetic manual review of physical map/address/off-state path only; full electrical windows unresolved')
-                row.pop('missing_inputs'); row.pop('potential_severity')
+                passed(report, row['id'], plan,
+                       rationale='Synthetic manual review of physical map/address/off-state path only; full electrical windows unresolved')
         result = validate_review(plan, report, db, require_bindings=True)
         self.assertTrue(result['valid'], result['errors'])
         self.assertEqual(result['release'], 'NO_GO')
@@ -296,9 +286,7 @@ class TopologyTests(unittest.TestCase):
             with self.subTest(rule=rule):
                 report = pending_report(plan, db)
                 key = next(c['id'] for c in plan['checks'] if c['rule'] == rule and c['object'].get('i2c_region'))
-                row = next(r for r in report['checks'] if r['id'] == key)
-                row.update(review_result='PASS', evidence_confidence='B')
-                row.pop('missing_inputs'); row.pop('potential_severity')
+                passed(report, key, plan)
                 result = validate_review(plan, report, db, require_bindings=True)
                 self.assertTrue(any('topology gaps must be resolved' in e for e in result['errors']))
 
@@ -310,9 +298,7 @@ class TopologyTests(unittest.TestCase):
             with self.subTest(rule=rule):
                 report = pending_report(plan, db)
                 key = next(c['id'] for c in plan['checks'] if c['rule'] == rule and c['object'].get('i2c_region') and c['object']['net'] == 'I2C_SDA')
-                row = next(r for r in report['checks'] if r['id'] == key)
-                row.update(review_result='PASS', evidence_confidence='B')
-                row.pop('missing_inputs'); row.pop('potential_severity')
+                passed(report, key, plan)
                 result = validate_review(plan, report, db, require_bindings=True)
                 self.assertTrue(any('topology gaps must be resolved' in e for e in result['errors']))
 
@@ -338,9 +324,7 @@ class TopologyTests(unittest.TestCase):
         ids = {p['id'] for p in plan['checks'] if p['rule'] == 'SIG-T02'}
         for row in report['checks']:
             if row['id'] in ids:
-                row.update(review_result='PASS', evidence_confidence='B', rationale='Synthetic topology and population verified')
-                row.pop('missing_inputs')
-                row.pop('potential_severity')
+                passed(report, row['id'], plan, rationale='Synthetic topology and population verified')
         outcome = validate_review(plan, report, db, require_bindings=True)
         self.assertTrue(outcome['valid'], outcome['errors'])
         self.assertEqual(outcome['release'], 'NO_GO')

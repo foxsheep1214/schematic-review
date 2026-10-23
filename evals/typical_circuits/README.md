@@ -62,7 +62,7 @@ python3 -B evals/typical_circuits/run.py [--case <id>] [--show] [--sut <另一�
 
 ## 覆盖与局限
 
-- 只测自动冷跑层的发现，不测计划、证据计算、专家审查或报告。
+- 只测自动冷跑层的发现，不测计划、保证值核对、专家审查或报告。
 - 这些板是能工作的公开设计，`expected` 多是审查线索而不是确认缺陷；缺陷检出率见 `evals/seeded_bench`
   （同一批板子按缺陷类型程序化植入）。
 - KiCad 5 旧格式 `.sch` 的板子 kicad-cli 7/10 都不能导出，未收；KiCad 8+ 新格式自 v2 起用 kicad-cli 10 导出。

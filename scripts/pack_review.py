@@ -29,6 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from render_report import SR_SECTION, jargon_in  # noqa: E402
 from report_html import to_html
 import circuit_decisions
+import results_model
 
 HISTORY_RULE = 'REQ-H02'
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
@@ -228,8 +229,10 @@ def pack(out, ledger, evidence_root, inputs):
         packed[RECORD + '/' + name] = sha256(target)
     results = json.loads((record / 'review-results.json').read_text(encoding='utf-8'))
     errors += candidate_errors(record)
+    items = results_model.open_items(results)
     unfinished = sorted(c.get('id', '?') for c in results.get('checks') or [] if isinstance(c, dict)
-                        and c.get('review_result') == 'INSUFFICIENT' and c.get('gap_cause') == 'REVIEW_INCOMPLETE'
+                        and c.get('review_result') == 'INSUFFICIENT'
+                        and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'REVIEW_INCOMPLETE'
                         and not str(c.get('id', '')).startswith(HISTORY_RULE + '.'))
     if unfinished:
         errors.append('review not finished, nothing to deliver yet: finish reading/computing these checks, or record '

@@ -1,7 +1,6 @@
 {
  "rule": "RST-E03",
- "runner": "hot",
- "note": "reset pulse 10-20ms below the 100ms requirement vs 140-280ms",
+ "runner": "plan",
  "trigger": {
   "parts": [
    {
@@ -130,26 +129,7 @@
    "U3.4": "OUT",
    "U4.2": "IN",
    "U5.1": "OUT"
-  },
-  "evidence": [
-   {
-    "id": "RESET",
-    "rule": "RST-E03",
-    "kind": "reset_pulse",
-    "ref": "U3",
-    "net": "SYS_RST_N",
-    "output_type": "open_drain",
-    "pulse_width_s": {
-     "min": 0.01,
-     "max": 0.02
-    },
-    "required_width_s": {
-     "min": 0.001,
-     "max": 0.1
-    },
-    "citation": "Synthetic supervisor pulse width and SoC reset requirement"
-   }
-  ]
+  }
  },
  "near_miss": {
   "parts": [
@@ -182,7 +162,8 @@
       "GND",
       "GND"
      ]
-    ]
+    ],
+    "nc": true
    },
    {
     "ref": "R7",
@@ -279,25 +260,7 @@
    "U3.4": "OUT",
    "U4.2": "IN",
    "U5.1": "OUT"
-  },
-  "evidence": [
-   {
-    "id": "RESET",
-    "rule": "RST-E03",
-    "kind": "reset_pulse",
-    "ref": "U3",
-    "net": "SYS_RST_N",
-    "output_type": "open_drain",
-    "pulse_width_s": {
-     "min": 0.14,
-     "max": 0.28
-    },
-    "required_width_s": {
-     "min": 0.001,
-     "max": 0.1
-    },
-    "citation": "Synthetic supervisor pulse width and SoC reset requirement"
-   }
-  ]
- }
+  }
+ },
+ "note": "fitted supervisor gets a reset pulse row vs supervisor not populated"
 }

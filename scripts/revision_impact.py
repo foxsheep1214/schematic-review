@@ -11,7 +11,7 @@ import os
 
 import catalog
 from review_engine import engine_identity
-from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, dependency_refs, validate_evidence
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint
 from diff_netlists import diff_databases
 from i2c_topology import validate_db_shape
 
@@ -20,8 +20,7 @@ COVERAGE_RULE = 'REQ-Q05'
 REMOVED_RULE = 'REQ-H02'
 COVERAGE_ID = COVERAGE_RULE + '.GLOBAL'
 FIELDS = ('refs', 'nodes', 'nets', 'states', 'check_ids')
-SPEC_FIELDS = ('id', 'rule', 'method', 'domain', 'circuit_type', 'object', 'criterion', 'applicability',
-               'evidence_check_id', 'parent_check_id', 'handoff')
+SPEC_FIELDS = ('id', 'rule', 'method', 'domain', 'circuit_type', 'object', 'criterion', 'applicability', 'handoff')
 
 
 def digest(value):
@@ -106,18 +105,16 @@ def validate_declarations(intent):
     return errors
 
 
-def input_snapshot(db, intent=None, evidence=None, audit=None):
+def input_snapshot(db, intent=None, audit=None):
     """Freeze actual inputs and freshly hash available local source documents.
 
     No cached stat-based hash here: same-size file replacements must be visible.
     Unreadable documents are recorded, never silently removed from the manifest.
     """
-    for label, value in (('intent', intent), ('evidence', evidence), ('datasheet_audit', audit)):
+    for label, value in (('intent', intent), ('datasheet_audit', audit)):
         if value is not None and not isinstance(value, dict):
             raise ValueError(label + ' must be an object')
     errors = validate_declarations(intent)
-    if evidence:
-        errors.extend(validate_evidence(evidence))
     if errors:
         raise ValueError('; '.join(errors))
     documents = {}
@@ -146,7 +143,7 @@ def input_snapshot(db, intent=None, evidence=None, audit=None):
         except OSError:
             item.update(sha256=None, status='UNREADABLE')
     snapshot = {'schema_version': VERSION, 'db_digest': digest(db),
-                'intent': deepcopy(intent or {}), 'evidence': deepcopy(evidence or {}),
+                'intent': deepcopy(intent or {}),
                 'datasheet_audit': deepcopy(audit),
                 'documents': [documents[k] for k in sorted(documents)]}
     snapshot['digest'] = digest(snapshot)
@@ -167,20 +164,11 @@ def _add_targets(target, obj):
 def dependency_catalog(plan, db, snapshot):
     checks = index_checks(plan)
     declarations = snapshot['intent'].get('review_dependencies', {})
-    evidence_checks = {x['id']: x for x in snapshot['evidence'].get('checks', [])}
     result = {}
     for key, check in checks.items():
         targets = {field: set() for field in FIELDS}
         _add_targets(targets, check['object'])
         targets['refs'].update(check.get('required_material_refs') or [])
-        if check.get('parent_check_id'):
-            targets['check_ids'].add(check['parent_check_id'])
-        source = evidence_checks.get(check.get('evidence_check_id'))
-        if source:
-            _add_targets(targets, source)
-            targets['refs'].update(dependency_refs(db, source))
-            model = source.get('divider_model') or {}
-            targets['nets'].update(model[k] for k in ('source_net', 'reference_net') if text(model.get(k)))
         declaration = declarations.get(key)
         declared_sources = (declaration or {}).get('source_ids', [])
         source_map = {s['id']: s['path'] for s in snapshot['intent'].get('review_sources', [])}
@@ -218,7 +206,6 @@ def dependency_catalog(plan, db, snapshot):
             check_digest=digest(check_spec(check)),
             scope='GLOBAL' if global_scope else ('PARTIAL' if gaps else 'DECLARED'),
             gaps=sorted(set(gaps)), citation=declaration.get('citation') if declaration else None,
-            evidence_ids=[source['id']] if source else [],
             sources=[d['path'] for d in snapshot['documents']
                      if global_scope or set(d['refs']) & targets['refs']
                      or d['path'] in {source_map[sid] for sid in declared_sources if sid in source_map}])
@@ -282,7 +269,7 @@ def collect_changes(old_db, db, old_inputs, inputs):
         before, after = old_inputs['intent'].get(field), inputs['intent'].get(field)
         if digest(before) != digest(after):
             changes.append(_event('intent', field, before, after, global_scope=True))
-    for field in ('evidence', 'datasheet_audit'):
+    for field in ('datasheet_audit',):
         if digest(old_inputs[field]) != digest(inputs[field]):
             changes.append(_event(field, field, old_inputs[field], inputs[field], global_scope=True))
     before = {x['path']: x for x in old_inputs['documents']}
@@ -342,7 +329,7 @@ def _verify_frozen_inputs(inputs, db):
         raise ValueError('revision input snapshot db digest mismatch')
     if inputs.get('digest') != digest({k: v for k, v in inputs.items() if k != 'digest'}):
         raise ValueError('revision input snapshot digest mismatch')
-    for field in ('intent', 'evidence'):
+    for field in ('intent',):
         if not isinstance(inputs.get(field), dict):
             raise ValueError('revision snapshot.' + field + ' must be an object')
     if not isinstance(inputs.get('documents'), list):
@@ -372,7 +359,7 @@ def build_impact(plan, db, old_db=None, old_plan=None):
             why.append('check-definition-changed')
         # A renewed declaration's citation/digest is not a changed electrical
         # dependency. The definition and actual dependency sets are compared.
-        if previous and any(dep.get(k) != previous.get(k) for k in (*FIELDS, 'sources', 'evidence_ids', 'scope', 'gaps')):
+        if previous and any(dep.get(k) != previous.get(k) for k in (*FIELDS, 'sources', 'scope', 'gaps')):
             why.append('dependency-scope-changed')
         for change in changes:
             if (change['global'] or dep['scope'] == 'GLOBAL' or previous.get('scope') == 'GLOBAL'
@@ -434,7 +421,7 @@ def build_impact(plan, db, old_db=None, old_plan=None):
     return impact
 
 
-def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=None, old_plan=None):
+def attach_metadata(plan, db, intent=None, audit=None, old_db=None, old_plan=None):
     """Called after same-revision cold/hot/manual merging; never reads results."""
     if old_plan is not None and old_db is None:
         raise ValueError('old_plan requires old_db')
@@ -509,7 +496,7 @@ def attach_metadata(plan, db, intent=None, evidence=None, audit=None, old_db=Non
     plan['checks'].sort(key=lambda c: c['id'])
     plan['review_engine'] = engine_identity()
     plan['dependency_version'] = VERSION
-    plan['review_inputs'] = input_snapshot(db, intent, evidence, audit)
+    plan['review_inputs'] = input_snapshot(db, intent, audit)
     plan['check_dependencies'] = dependency_catalog(plan, db, plan['review_inputs'])
     plan['dependency_unmatched'] = sorted(set((intent or {}).get('review_dependencies', {})) -
                                           set(plan['check_dependencies']))
@@ -540,8 +527,7 @@ def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=Fal
         _verify_frozen_inputs(inputs, db)
         if revision and plan.get('review_mode') != 'revision':
             raise ValueError('revision impact requires revision review_mode')
-        expected = attach_metadata(deepcopy(plan), db, inputs['intent'], inputs['evidence'],
-                                   inputs['datasheet_audit'], old_db, old_plan)
+        expected = attach_metadata(deepcopy(plan), db, inputs['intent'], inputs['datasheet_audit'], old_db, old_plan)
         for key in ('review_engine', 'review_inputs', 'check_dependencies', 'dependency_unmatched'):
             if plan.get(key) != expected[key]:
                 errors.append(key + ': stale or modified dependency/input snapshot')

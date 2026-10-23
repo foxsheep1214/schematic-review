@@ -22,7 +22,7 @@ from plan_review import build_review_plan
 import test_circuit_candidates as fx
 import test_circuit_decisions as dfx
 from test_validate_review import fixture
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from validate_review import fingerprint
 
 

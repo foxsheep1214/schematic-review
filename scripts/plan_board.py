@@ -10,7 +10,7 @@ import catalog
 import requirement_parameters
 import requirements_extract
 from audit_datasheets import datasheet_audit_all_available
-from checkers import registry_cold_rules, registry_hot_rules
+from checkers import registry_cold_rules, registry_e_rules
 from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, normalize
 from interfaces import CONNECTOR_RE
 
@@ -30,8 +30,8 @@ COLD_RULE_INDEXES = {
     'DEV-A03': ['parts', 'nets'], 'NET-A07': ['pintype'], 'SIG-A03': ['nets', 'parts'],
 }
 
-# 由网表实例化的内置证据计算规则。
-BUILTIN_EVIDENCE_RULES = tuple(rule.id for rule in catalog.rules(stage='hot', source='lint'))
+# 由网表实例化的内置保证值核对（E）规则。
+BUILTIN_EVIDENCE_RULES = tuple(rule.id for rule in catalog.rules(method='E', source='plan'))
 
 def _material_available(intent, key, datasheet_audit=None):
     """A material is available when the file it names exists (fixed requirements, step 5): requirements from the
@@ -84,7 +84,7 @@ class BoardPlanning:
                            required_inputs=['intent.assemblies'], trigger=['assembly-options'])
 
     def plan_rules(self):
-        """规则级台账：自动扫描、证据计算、版本比对及按实例汇总的检测点规则。"""
+        """规则级台账：自动扫描、保证值核对、版本比对及按实例汇总的检测点规则。"""
         for rule, indexes in sorted(COLD_RULE_INDEXES.items()):
             missing = [key for key in indexes if not self.db.get(key)]
             self.add_rule(
@@ -121,7 +121,7 @@ class BoardPlanning:
                 self.add_rule(
                     rule, name, 'APPLICABLE',
                     'READY' if ready else 'WAITING_EVIDENCE', instances=instances,
-                    required_inputs=[] if ready else ['structured evidence'],
+                    required_inputs=[] if ready else ['datasheet: guaranteed values'],
                     reason='由网表中的具体位号/网络实例化')
             else:
                 self.add_rule(
@@ -129,15 +129,15 @@ class BoardPlanning:
                     required_inputs=['design intent/platform applicability'],
                     reason='网表未检测到实例，但不能据此直接判 NA')
 
-        for rule, (name, checker) in sorted(registry_hot_rules().items()):
+        for rule, (name, checker) in sorted(registry_e_rules().items()):
             instances = by_rule.get(rule, [])
             planned = [x for x in self.checks if x['id'] in instances]
             ready = bool(planned) and all(x['readiness'] == 'READY' for x in planned)
             self.add_rule(
                 rule, name, 'APPLICABLE' if instances else 'UNDETERMINED',
                 'READY' if ready else 'WAITING_EVIDENCE', instances=instances,
-                required_inputs=[] if ready else ['structured evidence'],
-                reason='检查器证据扫描规则；未检测到实例也不得直接判 NA')
+                required_inputs=[] if ready else ['datasheet: guaranteed values'],
+                reason='检查器的保证值核对规则；未检测到实例也不得直接判 NA')
 
         pintype = self.db.get('pintype', {})
         self.add_rule(

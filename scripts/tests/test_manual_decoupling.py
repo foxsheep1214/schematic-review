@@ -9,9 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from test_decoupling import fixture, ledger, mark_pass, move_pin, rebind
 from test_i2c_topology import add
 from plan_review import build_review_plan
-from ledger_v3 import validate_review
-from gap_fixture import validating
-validate_review = validating(validate_review)  # gap records are not this file's subject
+from validate_review import validate_review
 
 
 def independent(db, intent, rule='PWR-T03', **changes):
@@ -31,12 +29,12 @@ class ManualDecouplingTests(unittest.TestCase):
         intent['decoupling']['groups'][0]['requirements'] = []
         plan, manual = independent(db, intent)
         report = ledger(plan, db)
-        mark_pass(next(r for r in report['checks'] if r['id'] == manual['id']))
+        mark_pass(report, plan, manual['id'])
         result = validate_review(plan, report, db, require_bindings=True)
         self.assertTrue(result['valid'], result['errors'])
         self.assertEqual(result['release'], 'NO_GO')
         generated = next(p for p in plan['checks'] if p['rule'] == 'PWR-D02')
-        mark_pass(next(r for r in report['checks'] if r['id'] == generated['id']))
+        mark_pass(report, plan, generated['id'])
         self.assertFalse(validate_review(plan, report, db)['valid'])
 
     def test_source_bound_manual_roles_without_generated_device_declaration(self):
@@ -47,7 +45,7 @@ class ManualDecouplingTests(unittest.TestCase):
         roles = dict(manual_pin_source={'path': str(source), 'sha256': hashlib.sha256(source.read_bytes()).hexdigest(), 'locator': 'pin table'}, manual_pin_roles={'U1.1': 'power', 'U1.2': 'return'})
         plan, row = independent(db, intent, manual_pin_citation='synthetic independent official pin table 1', **roles)
         report = ledger(plan, db)
-        mark_pass(next(r for r in report['checks'] if r['id'] == row['id']))
+        mark_pass(report, plan, row['id'])
         result = validate_review(plan, report, db)
         self.assertTrue(result['valid'], result['errors'])
         self.assertEqual(result['release'], 'NO_GO')
@@ -76,13 +74,13 @@ class ManualDecouplingTests(unittest.TestCase):
     def test_manual_pass_does_not_restore_failed_source_integrity(self):
         db, intent = fixture(); db['integrity'] = {'self_check_passed': False}; rebind(db, intent)
         plan, manual = independent(db, intent); report = ledger(plan, db)
-        mark_pass(next(r for r in report['checks'] if r['id'] == manual['id']))
+        mark_pass(report, plan, manual['id'])
         result = validate_review(plan, report, db)
         self.assertTrue(result['valid'], result['errors'])
         self.assertEqual(result['release'], 'NO_GO')
         self.assertIn('input netlist failed integrity/export checks', result['blockers'])
         generated = next(p for p in plan['checks'] if p['rule'] == 'PWR-T03' and p['id'] != manual['id'])
-        mark_pass(next(r for r in report['checks'] if r['id'] == generated['id']))
+        mark_pass(report, plan, generated['id'])
         self.assertFalse(validate_review(plan, report, db)['valid'])
 
     def test_ferrite_upstream_caps_are_not_local_caps_in_manual_trace(self):
@@ -94,7 +92,7 @@ class ManualDecouplingTests(unittest.TestCase):
         group=next(g for g in plan['decoupling']['states'][0]['groups'] if g['ref']=='U1')
         self.assertEqual(group['fitted_capacitors'], [])
         self.assertTrue(group['boundaries'])
-        report=ledger(plan,db);mark_pass(next(r for r in report['checks'] if r['id']==manual['id']))
+        report=ledger(plan,db);mark_pass(report, plan, manual['id'])
         result=validate_review(plan,report,db)
         self.assertTrue(result['valid'],result['errors'])
         self.assertEqual(result['release'],'NO_GO')

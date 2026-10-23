@@ -6,44 +6,37 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from test_validate_review import fixture, planned, E
-from validate_review import fingerprint
-from ledger_v3 import validate_review
-from gap_fixture import complete_gap
+from validate_review import fingerprint, validate_review
+from ledger4 import gap, severity
 from review_workflow import workflow
 
 
 def unfinished():
     p, r, db = fixture()
-    r['checks'][0].update(review_result='INSUFFICIENT', evidence_confidence='C',
-                         missing_inputs=['Synthetic calculation not performed'],
-                         potential_severity='P2', gap_cause='REVIEW_INCOMPLETE')
-    complete_gap(r['checks'][0])
+    gap(r, r['checks'][0]['id'], 'CALC', plan=p, what='Synthetic calculation not performed')
     return p, r, db
 
 
-def staged(cause='REVIEW_INCOMPLETE', due='design_iteration'):
-    p, r, db = unfinished()
+def staged(kind='REVIEW_INCOMPLETE', due='design_iteration', level='P2', **item):
+    """One row open on task W-1 of `kind`, due at `due`."""
+    p, r, db = fixture()
     p['review_phase'] = 'design_iteration'
     r['plan_digest'] = fingerprint(p)
-    r['checks'][0]['gap_cause'] = cause
-    r.update(workflow_version=1, work_items=[{
-        'id': 'W-1', 'title': 'Synthetic task', 'root_cause': 'Unfinished calculation',
-        'reason': 'Synthetic independent input', 'next_action': 'Evaluate the local bound',
-        'due_stage': due, 'check_ids': [r['checks'][0]['id']], 'evidence': E}])
+    gap(r, r['checks'][0]['id'], 'W-1', kind, plan=p, level=level, title='Synthetic task',
+        why='Synthetic independent input', due_stage=due, **dict({'what': 'Synthetic calculation not performed'}, **item))
+    r['functions'][0]['evidence'] = E
     return p, r, db
 
 
-def accepted_handoff(cause):
-    p, r, db = staged(cause, 'prototype_verification')
+def accepted_handoff(kind):
+    p, r, db = staged(kind, 'prototype_verification', level='P1')
     p['checks'][0]['handoff'] = {'required': True}
     r['plan_digest'] = fingerprint(p)
-    r['checks'][0].update(potential_severity='P1', handoff={
+    r['checks'][0]['handoff'] = {
         'required': True, 'state': 'ACCEPTED', 'scope': 'downstream_verification',
         'receivers': ['Synthetic PCB owner'], 'constraint': 'Controlled layout bound',
         'verification': 'Prototype measurement', 'evidence': E,
-        'schematic_prerequisites': [r['checks'][1]['id']]})
-    if cause is None:
-        r['checks'][0].pop('gap_cause')
+        'schematic_prerequisites': [r['checks'][1]['id']]}
     return p, r, db
 
 
@@ -56,10 +49,11 @@ class CompletionGuardTests(unittest.TestCase):
         self.assertTrue(any('review work not completed' in s for s in out['blockers']))
 
     def test_unfinished_is_not_risk_acceptance_at_any_severity(self):
-        for severity in ('P0', 'P1', 'P2', 'P3'):
-            with self.subTest(severity=severity):
+        for level in ('P0', 'P1', 'P2', 'P3'):
+            with self.subTest(level=level):
                 p, r, db = unfinished()
-                r['checks'][0].update(potential_severity=severity, disposition='ACCEPTED',
+                r['functions'][0]['open'][0]['severity'] = severity(level)
+                r['checks'][0].update(disposition='ACCEPTED',
                     acceptance={k: 'synthetic record' for k in ('by', 'date', 'scope', 'reason', 'record')})
                 self.assertEqual(validate_review(p, r, db)['release'], 'NO_GO')
 
@@ -77,15 +71,16 @@ class CompletionGuardTests(unittest.TestCase):
         self.assertTrue(any('unfinished review' in e for e in out['errors']))
 
     def test_explicit_electrical_gap_cannot_use_downstream_shortcut(self):
-        for cause in ('EXTERNAL_DATA', 'DESIGN_OPEN', 'REVIEW_INCOMPLETE', 'USER_DEFERRED', None):
-            with self.subTest(cause=cause):
-                p, r, db = accepted_handoff(cause)
+        for kind in ('VENDOR_DATUM', 'DESIGN_VALUE', 'REVIEW_INCOMPLETE', 'USER_DEFERRED'):
+            with self.subTest(kind=kind):
+                p, r, db = accepted_handoff(kind)
                 out = validate_review(p, r, db)
                 self.assertEqual(out['release'], 'NO_GO')
 
     def test_retired_downstream_gap_cause_is_rejected(self):
         # Pure downstream tests are stage NA (test_review_stage_scope); there is no INSUFFICIENT shortcut.
-        p, r, db = accepted_handoff('DOWNSTREAM_VERIFICATION')
+        p, r, db = accepted_handoff('REVIEW_INCOMPLETE')
+        r['functions'][0]['open'][0]['kind'] = 'DOWNSTREAM_VERIFICATION'
         self.assertFalse(validate_review(p, r, db)['valid'])
 
     def test_screening_is_integrated_without_changing_release(self):
@@ -428,8 +423,7 @@ class FreezeGradingGateTests(unittest.TestCase):
         flagged = {'code': code, 'check_ids': ['X'] * 12}
         fake = lambda *a, **k: {'candidates': [flagged]}
         with mock.patch.object(vr, 'screen_quality', fake):
-            from ledger_v3 import record
-            return vr.validate_review(plan, record(ledger(plan, db)), db)
+            return vr.validate_review(plan, ledger(plan, db), db)
 
     def test_freeze_blocks_and_iteration_does_not(self):
         freeze = self.gate('schematic_freeze')

@@ -8,8 +8,7 @@ sys.path.insert(0, str(SCRIPTS))
 import catalog
 
 from checkers.diff_levels import DiffLevelsChecker, build_inventory, validate_diff_levels_intent
-from electrical_contract import validate_evidence
-from electrical_fixtures import bind_evidence, bound_intent
+from electrical_fixtures import bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -58,18 +57,6 @@ def declared_intent(db, standard='LVPECL'):
         'schema_version': 2,
         'pairs': [{'id': 'CLK-TX', 'ref': 'U1', 'standard': standard,
                    'citation': 'clock tree level definition'}]}})
-
-
-def level_check(**overrides):
-    check = {'id': 'LEVELS', 'rule': 'SIG-E02', 'kind': 'diff_level', 'ref': 'U2',
-             'net': 'CLK_P', 'coupling': 'dc',
-             'driver_common_mode_v': {'min': 1.1, 'max': 1.3},
-             'driver_swing_v': {'min': 0.25, 'max': 0.45},
-             'receiver_common_mode_v': {'min': 0.3, 'max': 2.2},
-             'receiver_input_diff_v': {'min': 0.1, 'max': 1.0},
-             'citation': 'Synthetic driver and receiver guaranteed level ranges'}
-    check.update(overrides)
-    return check
 
 
 class RecognitionTest(unittest.TestCase):
@@ -165,44 +152,6 @@ class HotRuleTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-
-    def run_check(self, check, db=None):
-        db = db or link_board(coupling='dc')
-        evidence = {'schema_version': 2, 'checks': [check]}
-        audit = bind_evidence(db, evidence, self.directory.name)
-        self.assertEqual(validate_evidence(evidence), [])
-        lint = Lint(db, evidence=evidence, datasheet_audit=audit)
-        lint.run()
-        results = [x for x in lint.results if x['check_id'] == check['id']]
-        self.assertEqual(len(results), 1)
-        return results[0]
-
-    def test_compatible_dc_link_passes(self):
-        result = self.run_check(level_check())
-        self.assertEqual(result['review_result'], 'PASS')
-        self.assertEqual(result['calculation']['common_mode_source'], 'driver_common_mode_v')
-
-    def test_common_mode_outside_receiver_range_fails(self):
-        result = self.run_check(level_check(driver_common_mode_v={'min': 2.4, 'max': 2.6}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('共模', result['detail'])
-
-    def test_swing_outside_receiver_range_fails(self):
-        result = self.run_check(level_check(driver_swing_v={'min': 1.2, 'max': 1.6}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('差分摆幅', result['detail'])
-
-    def test_ac_coupling_uses_the_biased_common_mode(self):
-        check = level_check(coupling='ac', bias_common_mode_v={'min': 1.9, 'max': 2.1})
-        result = self.run_check(check, db=link_board())
-        self.assertEqual(result['review_result'], 'PASS')
-        self.assertEqual(result['calculation']['common_mode_source'], 'bias_common_mode_v')
-
-    def test_ac_coupling_without_bias_range_stays_insufficient(self):
-        result = self.run_check(level_check(coupling='ac'), db=link_board())
-        self.assertEqual(result['review_result'], 'INSUFFICIENT')
-        self.assertIn('bias_common_mode_v 缺少保证 min/max', result['detail'])
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -17,11 +17,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import compare_reviews as cr
 from plan_review import build_review_plan, validate_intent
-from gap_fixture import complete_gaps, validating
 from test_i2c_topology import pending_report
 from test_revision_impact import database
-from ledger_v3 import validate_review
-validate_review = validating(validate_review)  # gap records are not this file's subject
+from validate_review import validate_review
 
 
 def gap(**changes):
@@ -88,7 +86,7 @@ class PlanTests(unittest.TestCase):
 
 class GateTests(unittest.TestCase):
     def validate(self, plan, db):
-        return validate_review(plan, complete_gaps(pending_report(plan, db)), db)
+        return validate_review(plan, pending_report(plan, db), db)
 
     def test_a_hand_added_row_is_refused_and_a_gap_row_is_listed_for_the_ledger(self):
         db = database()

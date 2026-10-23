@@ -2,7 +2,8 @@ import copy
 import unittest
 
 from test_validate_review import fixture
-from ledger_v3 import validate_review
+from validate_review import validate_review
+from ledger4 import gap as open_gap, severity
 from review_summary import categorized_summary, validate_impact
 
 
@@ -44,19 +45,15 @@ class ImpactTests(unittest.TestCase):
 
     def test_impact_is_always_enforced_without_changing_evidence_or_release(self):
         p, r, db = fixture()
-        row = r['checks'][0]
-        row.update(gap()); row['id'] = p['checks'][0]['id']
-        row.update(evidence_confidence='C', missing_inputs=['Guaranteed diagnostic timing'],
-                   input_requests={'Guaranteed diagnostic timing': {
-                       'why_decisive': 'Timing decides whether the diagnostic is valid at cold startup',
-                       'required_scope': 'Maximum delay at cold startup supply limits',
-                       'acquisition': 'Read supplier timing table',
-                       'closure_criterion': 'Compare maximum delay with the diagnostic window'}})
+        r['checks'][0]['rationale'] = 'Timing decides whether the diagnostic is valid at cold startup'
+        item = open_gap(r, r['checks'][0]['id'], 'DIAG-TIMING', 'VENDOR_DATUM', plan=p,
+                        what='Guaranteed diagnostic timing', scope='Maximum delay at cold startup supply limits',
+                        acquisition='Read supplier timing table', closure='Compare maximum delay with the diagnostic window',
+                        severity=severity('P2', affects='Auxiliary diagnostic signal', consequence='Indication may be unavailable'))
         out = validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
         self.assertEqual(out['release'], 'NO_GO')  # P2 can independently block freeze.
-        self.assertEqual(row['evidence_confidence'], 'C')
-        del row['impact_assessment']
+        del item['severity']
         self.assertFalse(validate_review(p, r, db)['valid'])  # No switch or version marker can skip it.
 
 
@@ -64,9 +61,8 @@ class ImpactTests(unittest.TestCase):
         p, r, db = fixture()
         p['checks'][0]['rule'] = 'REQ-H02'
         row = r['checks'][0]
-        row.update(gap()); row['id'] = p['checks'][0]['id']
-        row.update(evidence_confidence='C', missing_inputs=['Historical item evidence'])
-        del row['impact_assessment']
+        row.update(review_result='INSUFFICIENT', rationale='Historical item evidence not in this round')
+        row.pop('evidence_confidence')
         errors = validate_review(p, r, db)['errors']
         self.assertFalse([e for e in errors if 'impact_assessment' in e or 'input_requests' in e], errors)
 

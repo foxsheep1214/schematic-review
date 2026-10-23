@@ -116,6 +116,17 @@ class GeneratedOutputTest(unittest.TestCase):
         db['pin2net'].update({'D9.1': 'FAULT_IN', 'U4.10': 'FAULT_IN', 'TH9.1': 'TEMP_SENSE',
                               'U4.11': 'TEMP_SENSE', 'D9.2': 'GND', 'TH9.2': 'GND'})
         db['pinname'].update({'D9.1': 'K', 'D9.2': 'A', 'U4.10': 'FAULT', 'U4.11': 'ADC0'})
+        # 反馈分压与 strap 下拉：PWR-E01、RST-E02 的对象由计划从网表定出。
+        for ref, a, b in (('R91', 'VCC_3V3', 'FB_SET'), ('R92', 'FB_SET', 'GND'), ('R93', 'BOOT0', 'GND')):
+            db['parts'][ref] = {'value': '10K/1%', 'part': '10K/1%', 'nc': False}
+            for pin, net in (('1', a), ('2', b)):
+                db['nets'].setdefault(net, []).append('%s.%s' % (ref, pin))
+                db['pin2net']['%s.%s' % (ref, pin)] = net
+                db['pinname']['%s.%s' % (ref, pin)] = pin
+        for pin, name, net in (('12', 'FB', 'FB_SET'), ('13', 'BOOT0', 'BOOT0')):
+            db['nets'][net].append('U4.' + pin)
+            db['pin2net']['U4.' + pin] = net
+            db['pinname']['U4.' + pin] = name
         db['ref2page'] = {ref: 1 for ref in db['parts']}
         return db
 

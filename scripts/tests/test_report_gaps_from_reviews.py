@@ -12,16 +12,13 @@ class HowToCloseShownOnceTest(unittest.TestCase):
 
     def test_next_action_that_restates_the_gap_is_not_printed_twice(self):
         p, r, db = decisive()
-        acquisition = r['checks'][0]['input_requests']['startup load current envelope']['acquisition']
-        r['work_items'][0]['next_action'] = 'System engineer derives controlled bound (p3–5) from installed loads'
+        acquisition = r['functions'][0]['open'][0]['acquisition']
         text = body(report(p, r, db)[0])
         line = next(l for l in text.splitlines() if l.startswith('- **还要做**'))
         self.assertEqual(line, '- **还要做**：' + acquisition)
 
     def test_a_different_next_action_stays(self):
-        from ledger_v3 import record
         p, r, db = decisive()
-        r = record(r, p)
         r['functions'][0]['open'][0]['acquisition'] = 'Ask the PSU vendor for the hiccup timing table'
         line = next(l for l in body(report(p, r, db)[0]).splitlines() if l.startswith('- **还要做**'))
         self.assertIn('Ask the PSU vendor for the hiccup timing table', line)

@@ -8,8 +8,7 @@ sys.path.insert(0, str(SCRIPTS))
 import catalog
 
 from checkers.supervision import SupervisionChecker, build_inventory, validate_supervision_intent
-from electrical_contract import validate_evidence
-from electrical_fixtures import bind_evidence, bound_intent
+from electrical_fixtures import bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -58,16 +57,6 @@ CHECKER_RULES = {rule.id for rule in catalog.rules(source='supervision')}
 
 def findings(db, intent=None):
     return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
-
-
-def pulse_check(**overrides):
-    check = {'id': 'RESET', 'rule': 'RST-E03', 'kind': 'reset_pulse', 'ref': 'U3',
-             'net': 'SYS_RST_N', 'output_type': 'open_drain',
-             'pulse_width_s': {'min': 0.14, 'max': 0.28},
-             'required_width_s': {'min': 0.001, 'max': 0.1},
-             'citation': 'Synthetic supervisor pulse width and SoC reset requirement'}
-    check.update(overrides)
-    return check
 
 
 class RecognitionTest(unittest.TestCase):
@@ -171,45 +160,6 @@ class HotRuleTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-
-    def run_check(self, check, db=None):
-        db = db or supervised_board()
-        evidence = {'schema_version': 2, 'checks': [check]}
-        audit = bind_evidence(db, evidence, self.directory.name)
-        self.assertEqual(validate_evidence(evidence), [])
-        lint = Lint(db, evidence=evidence, datasheet_audit=audit)
-        lint.run()
-        results = [x for x in lint.results if x['check_id'] == check['id']]
-        self.assertEqual(len(results), 1)
-        return results[0]
-
-    def test_sufficient_pulse_with_pullup_passes(self):
-        result = self.run_check(pulse_check())
-        self.assertEqual(result['review_result'], 'PASS')
-        self.assertEqual(result['calculation']['pullups'], ['R9'])
-
-    def test_short_pulse_fails(self):
-        result = self.run_check(pulse_check(pulse_width_s={'min': 0.01, 'max': 0.02}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('低于目标器件要求', result['detail'])
-
-    def test_open_drain_without_pullup_fails(self):
-        result = self.run_check(pulse_check(), db=supervised_board(pullup=False))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('未找到到电源轨的上拉电阻', result['detail'])
-
-    def test_push_pull_without_pullup_passes(self):
-        result = self.run_check(pulse_check(output_type='push_pull'),
-                                db=supervised_board(pullup=False))
-        self.assertEqual(result['review_result'], 'PASS')
-
-    def test_missing_output_type_stays_insufficient(self):
-        check = pulse_check()
-        check.pop('output_type')
-        result = self.run_check(check)
-        self.assertEqual(result['review_result'], 'INSUFFICIENT')
-        self.assertIn('output_type 缺少声明', result['detail'])
-
 
 if __name__ == '__main__':
     unittest.main()

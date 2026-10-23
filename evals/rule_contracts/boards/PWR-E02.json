@@ -1,7 +1,6 @@
 {
  "rule": "PWR-E02",
- "runner": "hot",
- "note": "worst-case dropout 0.6V leaves VOUT below 3.2V vs 0.25V dropout",
+ "runner": "plan",
  "trigger": {
   "parts": [
    {
@@ -62,18 +61,6 @@
      ]
     ]
    }
-  ],
-  "evidence": [
-   {
-    "id": "DROPOUT",
-    "rule": "PWR-E02",
-    "kind": "dropout",
-    "ref": "U1",
-    "vin_min_v": 3.6,
-    "dropout_max_v": 0.6,
-    "vout_required_min_v": 3.2,
-    "citation": "Synthetic LDO dropout at minimum temperature and maximum load"
-   }
   ]
  },
  "near_miss": {
@@ -88,11 +75,6 @@
       "V12"
      ],
      [
-      "2",
-      "EN",
-      "EN_3V3"
-     ],
-     [
       "3",
       "GND",
       "GND"
@@ -103,51 +85,8 @@
       "VCC_3V3"
      ]
     ]
-   },
-   {
-    "ref": "R1",
-    "value": "100K",
-    "pins": [
-     [
-      "1",
-      "1",
-      "V12"
-     ],
-     [
-      "2",
-      "2",
-      "EN_3V3"
-     ]
-    ]
-   },
-   {
-    "ref": "R2",
-    "value": "22K",
-    "pins": [
-     [
-      "1",
-      "1",
-      "EN_3V3"
-     ],
-     [
-      "2",
-      "2",
-      "GND"
-     ]
-    ]
-   }
-  ],
-  "evidence": [
-   {
-    "id": "DROPOUT",
-    "rule": "PWR-E02",
-    "kind": "dropout",
-    "ref": "U1",
-    "vin_min_v": 3.6,
-    "dropout_max_v": 0.25,
-    "vout_required_min_v": 3.2,
-    "citation": "Synthetic LDO dropout at minimum temperature and maximum load"
    }
   ]
- }
+ },
+ "note": "linear regulator with an EN pin gets a dropout headroom row vs regulator without EN"
 }

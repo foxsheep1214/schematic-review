@@ -8,15 +8,14 @@
 
 用法：
     python3 plan_review.py db.json --intent intent.json \
-        --datasheet-audit datasheet-audit.json \
-        --evidence evidence.json --json review-plan.json
+        --datasheet-audit datasheet-audit.json --json review-plan.json
 """
 import argparse
 from copy import deepcopy
 import board_intent
 import catalog
 from review_engine import engine_identity
-from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, check_matches, readiness_gaps, validate_evidence, bounded, finite, load_json
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, bounded, finite, load_json
 from page_inventory import inventory as document_inventory
 import io
 import json
@@ -296,7 +295,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                     plan_board.BoardPlanning):
     """计划的主流程：加行、合并上一份计划、挂接扫描发现、汇总成计划；按功能树的各层（电路、接口、系统功能、全板）
     在各自模块里展开。"""
-    def __init__(self, db, intent=None, evidence=None, review_mode=None,
+    def __init__(self, db, intent=None, review_mode=None,
                  old_db_available=False, claims_available=False,
                  datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None, lint_findings=None,
                  candidates=None):
@@ -315,7 +314,6 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.decoupling = self.inventories['decoupling']
         self.db_sha256 = db_fingerprint(db)
         self.intent = requirement_parameters.resolve(intent or {})
-        self.evidence = evidence or {}
         self.datasheet_audit = datasheet_audit
         self.previous_plan = previous_plan
         self.old_db, self.old_plan = old_db, old_plan
@@ -329,15 +327,6 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.rule_plan = []
         self.diagnostics = []
         self._ids = set()
-
-    def matching_evidence(self, rule, obj):
-        return [check for check in self.evidence.get('checks', [])
-                if check_matches(self.db, check, rule, obj)]
-
-    def evidence_ready(self, rule, obj):
-        matches = self.matching_evidence(rule, obj)
-        return bool(matches) and all(not readiness_gaps(self.db, x, self.datasheet_audit, self.db_sha256)
-                                     for x in matches)
 
     def add_check(self, rule, obj, key=None, criterion=None,
                   applicability='APPLICABLE', readiness='READY',
@@ -370,31 +359,6 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             'evidence_confidence': None,
             'handoff': handoff or _empty_handoff(),
         }
-        matches = self.matching_evidence(rule, obj) if item['method'] == 'E' else []
-        if matches:
-            # Retain the cold check as a coverage parent; state children carry the individual verdicts.
-            item['role'] = 'coverage_parent'
-            item['aggregation'] = '逐状态子检查完成后汇总，不能替代子项结果'
-            self.checks.append(item)
-            for evidence in matches:
-                child = deepcopy(item)
-                child_base = child['id'] + '.' + _slug(evidence['id'])
-                child_id, child_suffix = child_base, 2
-                while child_id in self._ids:
-                    child_id = f'{child_base}-{child_suffix}'
-                    child_suffix += 1
-                child['id'] = child_id
-                self._ids.add(child_id)
-                child['evidence_check_id'] = evidence['id']
-                child['parent_check_id'] = item['id']
-                child.pop('role', None)
-                child.pop('aggregation', None)
-                child['object']['state'] = (evidence.get('basis') or {}).get('state')
-                gaps = readiness_gaps(self.db, evidence, self.datasheet_audit, self.db_sha256)
-                child['readiness'] = 'WAITING_EVIDENCE' if gaps else 'READY'
-                child['required_inputs'] = gaps
-                self.checks.append(child)
-            return self.checks[-1]
         if rule == 'REQ-Q07':
             item['role'] = 'coverage_parent'
             item['aggregation'] = '逐电路/状态电路检查项完成后汇总，禁止整类电路一次性 PASS'
@@ -451,22 +415,6 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                 checker.plan(self, inventory)
 
 
-    def plan_explicit_evidence(self):
-        # Explicit targets must not disappear because their nets/pins lack a familiar name.
-        for evidence in self.evidence.get('checks', []):
-            if any(x.get('evidence_check_id') == evidence['id'] for x in self.checks):
-                continue
-            obj = {k: evidence[k] for k in ('node', 'net', 'ref') if evidence.get(k)}
-            gaps = readiness_gaps(self.db, evidence, self.datasheet_audit, self.db_sha256)
-            item = self.add_check(evidence['rule'], obj, key='PROVIDED',
-                criterion='按对应 evidence_check_id 的条款核对显式目标与状态',
-                readiness='WAITING_EVIDENCE' if gaps else 'READY',
-                required_inputs=gaps)
-            if not item.get('evidence_check_id'):
-                # Invalid coordinates remain visible as waiting work, not fabricated matches.
-                item['evidence_check_id'] = evidence['id']
-                item['object']['state'] = (evidence.get('basis') or {}).get('state')
-
     def merge_previous_checks(self):
         """Carry manual checks forward on the same electrical baseline, never carry results."""
         previous = self.previous_plan
@@ -494,16 +442,14 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             raise ValueError('merge plan checks must be an array')
         current = {item['id']: item for item in self.checks}
         seen = set()
-        identity = ('rule', 'method', 'domain', 'object', 'criterion', 'evidence_check_id', 'parent_check_id')
+        identity = ('rule', 'method', 'domain', 'object', 'criterion')
         for item in checks:
             if not isinstance(item, dict) or not _text(item.get('id')) or item['id'] in seen:
                 raise ValueError('merge plan contains an invalid or duplicate check id')
             key = item['id']
             seen.add(key)
             if item.get('rule') == 'REQ-Q05' and previous.get('revision_impact_version') == 1:
-                # Coverage is regenerated. Keep cold provisional removal records
-                # even if hot evidence later restores the prior state check.
-                continue
+                continue   # coverage is regenerated
             if (not all(_text(item.get(k)) for k in ('rule', 'method', 'domain', 'criterion'))
                     or not isinstance(item.get('object'), dict)
                     or item.get('applicability') not in APPLICABILITY
@@ -533,8 +479,8 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         """Every A-rule FINDING/CANDIDATE becomes its own check; INFO becomes a plan diagnostic."""
         present = {c['id'] for c in self.checks}
         for finding in self.lint_findings:
-            if not isinstance(finding, dict) or finding.get('check_id'):
-                continue  # evidence (E) results are answered by their planned evidence checks
+            if not isinstance(finding, dict):
+                continue
             if finding.get('kind') == 'INFO':
                 self.diagnostics.append({'code': 'LINT_INFO', 'rule': finding.get('rule'),
                                          'detail': finding.get('detail')})
@@ -551,7 +497,6 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.plan_circuit_types()
         self.plan_concrete_checks()
         self.plan_checkers()
-        self.plan_explicit_evidence()
         self.plan_interfaces()
         self.plan_system()
         self.plan_owned_parts()
@@ -662,7 +607,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             plan[checker.plan_key] = inventory
             if checker.version_key is not None:
                 plan[checker.version_key] = checker.version
-        attach_metadata(plan, self.db, self.intent, self.evidence, self.datasheet_audit,
+        attach_metadata(plan, self.db, self.intent, self.datasheet_audit,
                         self.old_db, self.old_plan)
         plan['summary'].update(
             checks_total=len(plan['checks']),
@@ -726,16 +671,12 @@ def lint_check(finding):
             'handoff': {'required': False, 'state': None}, 'review_result': None, 'evidence_confidence': None}
 
 
-def build_review_plan(db, intent=None, evidence=None, review_mode=None,
+def build_review_plan(db, intent=None, review_mode=None,
                       old_db_available=False, claims_available=False,
                       datasheet_audit=None, previous_plan=None, old_db=None, old_plan=None, lint_findings=None,
                       candidates=None):
-    if evidence is not None:
-        errors = validate_evidence(evidence)
-        if errors:
-            raise ValueError('evidence.json 无效: ' + '; '.join(errors))
     return ReviewPlanner(
-        db, intent, evidence, review_mode, old_db_available,
+        db, intent, review_mode, old_db_available,
         claims_available, datasheet_audit, previous_plan, old_db, old_plan, lint_findings, candidates=candidates).build()
 
 
@@ -744,7 +685,6 @@ def main():
         description='按规则总表生成逐项检查计划（适用性、准备度与证据缺口）')
     parser.add_argument('db', help='parse_netlist.py 产出的 db.json')
     parser.add_argument('--intent', help='审查意图 JSON')
-    parser.add_argument('--evidence', help='资料取证形成的结构化证据 JSON')
     parser.add_argument(
         '--datasheet-audit',
         help='audit_datasheets.py 产出的逐物料覆盖审计 JSON')
@@ -766,7 +706,6 @@ def main():
     try:
         db = load_json(args.db)
         intent = load_json(args.intent) if args.intent else None
-        evidence = load_json(args.evidence) if args.evidence else None
         datasheet_audit = load_json(args.datasheet_audit) if args.datasheet_audit else None
         old_db = load_json(args.old_db) if args.old_db else None
         old_plan = load_json(args.old_plan) if args.old_plan else None
@@ -781,10 +720,6 @@ def main():
     errors = validate_intent(intent, db, candidates=candidates, require_candidates=True)
     if errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(errors))
-    if evidence is not None:
-        errors = validate_evidence(evidence)
-        if errors:
-            sys.exit('[FATAL] evidence.json 无效: ' + '; '.join(errors))
     if datasheet_audit is not None:
         errors = validate_datasheet_audit(datasheet_audit, db)
         if errors:
@@ -793,10 +728,10 @@ def main():
     from lint import Lint  # the scan findings are part of the plan; lint imports this module
     try:
         plan = build_review_plan(
-            db, intent, evidence, args.review_mode,
+            db, intent, args.review_mode,
             old_db_available=bool(args.old_db), claims_available=bool(args.claims),
             datasheet_audit=datasheet_audit, old_db=old_db, old_plan=old_plan,
-            lint_findings=Lint(db, None, intent, evidence, datasheet_audit).run(), candidates=candidates)
+            lint_findings=Lint(db, None, intent, datasheet_audit).run(), candidates=candidates)
     except ValueError as error:
         parser.error(str(error))
     if args.revision_impact_json:

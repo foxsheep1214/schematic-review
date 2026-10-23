@@ -20,7 +20,7 @@ import plan_review
 import plan_system
 import revision_impact
 import row_owner
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from electrical_contract import PLAN_SCHEMA_VERSION
 from test_interface_rows import plan_for
 from test_validate_review import fixture

@@ -1,7 +1,0 @@
-{
- "note": "按仓库划分，同一仓库只进一边；人签。",
- "train": [
-  "https://github.com/OLIMEX/ESP32-POE-ISO"
- ],
- "holdout": []
-}

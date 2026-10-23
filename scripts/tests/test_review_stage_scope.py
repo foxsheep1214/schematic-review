@@ -2,24 +2,21 @@
 import unittest
 from test_validate_review import fixture, E
 from test_review_quality import staged
-from ledger_v3 import record, validate_review
-
-
-def sent(p, r):
-    """The schema 4 ledger a builder's rows become; tests about open items mutate this."""
-    return record(r, p)
+from validate_review import fingerprint, validate_review
+from ledger4 import gap
+from results_model import expand
 from review_stage_scope import OUTSIDE_STAGE, REQUEST_FIELDS, validate_stage_scope
 
 INPUT = 'startup load current envelope'
 
 
 def downstream():
-    p, r, db = staged('EXTERNAL_DATA', 'prototype_verification')
+    p, r, db = fixture()
+    p['review_phase'] = 'design_iteration'
+    r['plan_digest'] = fingerprint(p)
     row = r['checks'][0]
-    for field in ('missing_inputs', 'potential_severity', 'gap_cause', 'impact_assessment'):
-        row.pop(field, None)
-    r['work_items'] = []
-    row.update(review_result='NA', applicability='APPLICABLE', na_reason=OUTSIDE_STAGE, blocking=False, handoff={
+    row.pop('evidence_confidence')
+    row.update(review_result='NA', applicability='APPLICABLE', na_reason=OUTSIDE_STAGE, handoff={
         'required': True, 'state': 'OPEN', 'scope': 'downstream_verification',
         'receivers': ['Synthetic test engineer'], 'constraint': 'Retain controlled product test criterion',
         'verification': 'Measure prototype under controlled test configuration',
@@ -28,21 +25,14 @@ def downstream():
     return p, r, db
 
 
-def request():
-    return {'why_decisive': 'Current and duration determine whether regulator current limit prevents startup',
-            'required_scope': 'Peak amperes, pulse seconds and repetition at the specified supply limits',
-            'acquisition': 'System engineer derives controlled bound from installed loads and their startup data',
-            'closure_criterion': 'Recompute current-limit margin and startup voltage; compare with required rails'}
-
-
-IMPACT = {k: 'Synthetic' for k in ('affected_function', 'operating_condition', 'consequence',
-                                     'severity_reason', 'blocking_reason')}
+REQUEST = {'scope': 'Peak amperes, pulse seconds and repetition at the specified supply limits',
+           'acquisition': 'System engineer derives controlled bound from installed loads and their startup data',
+           'closure': 'Recompute current-limit margin and startup voltage; compare with required rails'}
 
 
 def decisive():
-    p, r, db = staged('EXTERNAL_DATA')
-    r['checks'][0].update(missing_inputs=[INPUT], potential_severity='P1', blocking=True,
-                          input_requests={INPUT: request()}, impact_assessment=dict(IMPACT))
+    p, r, db = staged('VENDOR_DATUM', level='P1', what=INPUT, **REQUEST)
+    r['checks'][0]['rationale'] = 'Current and duration determine whether regulator current limit prevents startup'
     return p, r, db
 
 
@@ -76,12 +66,12 @@ class StageScopeTests(unittest.TestCase):
         # design obligations (temperature grades, life calculations) and passed them; the test clause alone is NA.
         p, r, db = downstream()
         p['checks'][0]['object'] = {'requirement_id': 'REQ-TEMP', 'feature': 'REQ-TEMP'}
-        from validate_review import fingerprint
         r['plan_digest'] = fingerprint(p)
-        errors, _ = validate_stage_scope({c['id']: c for c in r['checks']}, {c['id']: c for c in p['checks']})
+        rows = {c['id']: c for c in expand(r)['checks']}
+        errors, _ = validate_stage_scope(rows, {c['id']: c for c in p['checks']})
         self.assertTrue(any('a requirement row judges its design obligations' in e for e in errors), errors)
         p['checks'][0]['object'] = {'ref': 'U1'}
-        errors, _ = validate_stage_scope({c['id']: c for c in r['checks']}, {c['id']: c for c in p['checks']})
+        errors, _ = validate_stage_scope(rows, {c['id']: c for c in p['checks']})
         self.assertFalse(any('requirement row' in e for e in errors), errors)
 
     def test_stage_na_keeps_product_applicability(self):
@@ -90,14 +80,14 @@ class StageScopeTests(unittest.TestCase):
         self.assertFalse(gate(p, r, db)['valid'])
 
     def test_prerequisite_is_graded_on_its_own_not_escalated_by_stage_na(self):
-        for severity, blocking, expect in (('P3', False, 'GO'), ('P1', True, 'NO_GO')):
-            with self.subTest(severity=severity):
+        for level, blocking, expect in (('P3', False, 'GO'), ('P1', True, 'NO_GO')):
+            with self.subTest(level=level):
                 p, r, db = downstream()
                 row = r['checks'][1]
-                gap = decisive()[1]['checks'][0]
-                row.update({k: v for k, v in gap.items() if k != 'id'})
-                row.update(potential_severity=severity, blocking=blocking)
-                r['work_items'] = [dict(gap_task(r), check_ids=[row['id']])]
+                gap(r, row['id'], 'W-GAP', 'VENDOR_DATUM', plan=p, level=level, what=INPUT, title='Synthetic task',
+                    why='Synthetic independent input', due_stage='design_iteration', **REQUEST)
+                if not blocking:
+                    row['blocking'] = False
                 r['checks'][0]['handoff'].update(state='ACCEPTED', evidence=E)
                 out = gate(p, r, db)
                 self.assertTrue(out['valid'], out['errors'])
@@ -125,12 +115,11 @@ class StageScopeTests(unittest.TestCase):
     def test_stage_na_cannot_keep_hidden_electrical_gap(self):
         for field, value in [('missing_inputs', ['unknown load']), ('potential_severity', 'P1'),
                              ('gap_cause', 'EXTERNAL_DATA'), ('gaps', [{'what': 'unknown load'}]), ('blocking', True)]:
-            p, r, db = downstream(); r = record(r); r['checks'][0][field] = value
+            p, r, db = downstream(); r['checks'][0][field] = value
             self.assertFalse(gate(p, r, db)['valid'], field)
 
     def test_stage_na_is_tracked_by_handoff_not_work_item(self):
         p, r, db = decisive()
-        r = sent(p, r)
         r['checks'][1].update(review_result='NA', applicability='APPLICABLE', na_reason=OUTSIDE_STAGE,
                               open_ref=r['checks'][0]['open_ref'])
         self.assertFalse(gate(p, r, db)['valid'])
@@ -144,12 +133,12 @@ class StageScopeTests(unittest.TestCase):
 
     def test_a_request_gap_needs_each_actionable_field(self):
         for field in ('scope', 'acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
-            p, r, db = decisive(); r = sent(p, r)
+            p, r, db = decisive()
             del r['functions'][0]['open'][0][field]
             self.assertFalse(gate(p, r, db)['valid'], field)
 
     def test_each_open_item_key_is_unique_across_functions(self):
-        p, r, db = decisive(); r = sent(p, r)
+        p, r, db = decisive()
         twin = dict(r['functions'][0], id='FN-TWIN')
         r['functions'].append(twin)
         self.assertFalse(gate(p, r, db)['valid'])
@@ -157,7 +146,7 @@ class StageScopeTests(unittest.TestCase):
     def test_requests_only_for_real_input_or_design_gaps(self):
         for kind in ('REVIEW_INCOMPLETE', 'USER_DEFERRED'):
             with self.subTest(kind=kind):
-                p, r, db = decisive(); r = sent(p, r)
+                p, r, db = decisive()
                 item = r['functions'][0]['open'][0]
                 item['kind'] = kind
                 if kind == 'USER_DEFERRED':
@@ -168,19 +157,17 @@ class StageScopeTests(unittest.TestCase):
                 self.assertTrue(gate(p, r, db)['valid'], gate(p, r, db)['errors'])
 
     def test_kind_is_mandatory_and_downstream_kind_is_retired(self):
-        p, r, db = decisive(); r = sent(p, r); del r['functions'][0]['open'][0]['kind']
+        p, r, db = decisive(); del r['functions'][0]['open'][0]['kind']
         self.assertFalse(gate(p, r, db)['valid'])
-        p, r, db = decisive(); r = sent(p, r); r['functions'][0]['open'][0]['kind'] = 'DOWNSTREAM_VERIFICATION'
+        p, r, db = decisive(); r['functions'][0]['open'][0]['kind'] = 'DOWNSTREAM_VERIFICATION'
         self.assertFalse(validate_review(p, r, db)['valid'])
 
-    def test_requests_are_always_required_for_real_gaps(self):
-        p, r, db = decisive(); del r['checks'][0]['input_requests']
-        self.assertFalse(gate(p, r, db)['valid'])
-
     def test_malformed_requests_report_errors_without_crashing(self):
-        for value in (None, {}, [None], [{}], {INPUT: None}, {INPUT: []}):
-            p, r, db = decisive(); r['checks'][0]['input_requests'] = value
-            self.assertFalse(gate(p, r, db)['valid'])
+        for field in ('scope', 'acquisition', 'closure', 'checked', 'worst_case'):
+            for value in (None, {}, [None], [{}], 3):
+                with self.subTest(field=field, value=value):
+                    p, r, db = decisive(); r['functions'][0]['open'][0][field] = value
+                    self.assertFalse(gate(p, r, db)['valid'])
 
     def test_downstream_clause_requires_separate_handoff_check(self):
         p, r, db = downstream()
@@ -188,12 +175,12 @@ class StageScopeTests(unittest.TestCase):
         clause = {'text': 'prototype temperature test', 'kind': 'OBLIGATION', 'result': 'NA',
                   'na_reason': OUTSIDE_STAGE, 'check_ids': [r['checks'][0]['id']]}
         parent['requirement_clauses'] = [clause]
-        rows = {x['id']: x for x in r['checks']}
+        rows = {x['id']: x for x in expand(r)['checks']}
         expected = {x['id']: x for x in p['checks']}
         errors, summary = validate_stage_scope(rows, expected)
         self.assertEqual(errors, [])
         self.assertEqual(summary['requirements_pending_downstream'], [parent['id']])
-        clause['check_ids'] = []
+        rows[parent['id']]['requirement_clauses'][0]['check_ids'] = []
         self.assertTrue(validate_stage_scope(rows, expected)[0])
 
     def test_ordinary_na_still_needs_not_applicable(self):
@@ -205,12 +192,6 @@ class StageScopeTests(unittest.TestCase):
         self.assertEqual(out['stage_scope']['not_applicable'], [r['checks'][0]['id']])
         r['checks'][0]['applicability'] = 'APPLICABLE'
         self.assertFalse(validate_review(p, r, db)['valid'])
-
-
-def gap_task(r):
-    return {'id': 'W-GAP', 'title': 'Synthetic task', 'root_cause': 'Synthetic input gap',
-            'reason': 'Synthetic independent input', 'next_action': 'Obtain the bound',
-            'due_stage': 'design_iteration', 'check_ids': [], 'evidence': E}
 
 
 if __name__ == '__main__':

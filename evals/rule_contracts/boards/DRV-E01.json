@@ -1,7 +1,6 @@
 {
  "rule": "DRV-E01",
- "runner": "hot",
- "note": "gate drive 3-5V below the 4.5V Rds(on) condition vs 9-12.6V drive",
+ "runner": "plan",
  "trigger": {
   "parts": [
    {
@@ -126,46 +125,27 @@
      ]
     ]
    }
-  ],
-  "evidence": [
-   {
-    "id": "GATE-DRIVE",
-    "rule": "DRV-E01",
-    "kind": "gate_drive",
-    "node": "Q1.1",
-    "channel": "n",
-    "vgs_drive_v": {
-     "min": 3.0,
-     "max": 5.0
-    },
-    "vgs_rds_on_v": 4.5,
-    "vgs_abs_v": {
-     "min": -20.0,
-     "max": 20.0
-    },
-    "citation": "Synthetic driver supply window and MOSFET guaranteed conditions"
-   }
   ]
  },
  "near_miss": {
   "parts": [
    {
     "ref": "Q1",
-    "value": "AO3400",
+    "value": "MMBT3904",
     "pins": [
      [
       "1",
-      "G",
+      "B",
       "GATE"
      ],
      [
       "2",
-      "D",
+      "C",
       "SW_OUT"
      ],
      [
       "3",
-      "S",
+      "E",
       "GND"
      ]
     ]
@@ -271,25 +251,7 @@
      ]
     ]
    }
-  ],
-  "evidence": [
-   {
-    "id": "GATE-DRIVE",
-    "rule": "DRV-E01",
-    "kind": "gate_drive",
-    "node": "Q1.1",
-    "channel": "n",
-    "vgs_drive_v": {
-     "min": 9.0,
-     "max": 12.6
-    },
-    "vgs_rds_on_v": 4.5,
-    "vgs_abs_v": {
-     "min": -20.0,
-     "max": 20.0
-    },
-    "citation": "Synthetic driver supply window and MOSFET guaranteed conditions"
-   }
   ]
- }
+ },
+ "note": "a MOSFET switch gets a gate-drive window row vs the same stage built with an NPN transistor"
 }

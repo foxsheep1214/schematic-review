@@ -5,8 +5,9 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from plan_review import build_review_plan
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from test_decoupling import fixture, ledger, mark_pass, rebind
+from ledger4 import defect
 from test_requirement_source import source, write
 
 TEXT = '+3V3=3.3V±5%，环境0～50°C。电阻采购公差1%；元件按实际物料额定审查。'
@@ -27,14 +28,12 @@ class RequirementClauseTests(unittest.TestCase):
         # Every aspect row of the requirement splits the same original text.
         self.key = [c['id'] for c in self.plan['checks'] if c['rule'] == 'REQ-D01'][-1]
 
-    def errors(self, result, clauses, versioned=True):
+    def errors(self, result, clauses):
         report = ledger(self.plan, self.db)
-        if versioned:
-            report['requirement_clauses_version'] = 1
-        row = next(c for c in report['checks'] if c['id'] == self.key)
-        mark_pass(row)
+        row = mark_pass(report, self.plan, self.key)
         if result == 'FAIL':
-            row.update(review_result='FAIL', severity='P2', finding_id='F-1')
+            row['severity'] = 'P2'
+            defect(report, self.key, 'F-1', 'F-1', plan=self.plan)
             report.setdefault('findings', []).append({'id': 'F-1', 'severity': 'P2', 'check_ids': [self.key],
                                                       'title': 'x', 'evidence': row['evidence']})
         if clauses is not None:

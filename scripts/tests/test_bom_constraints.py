@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import bom_constraints
 import render_report
 from checkers.netgraph import NetGraph
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from render_report import render
 import review_functions
 from review_functions import row_anchors
@@ -33,7 +33,7 @@ class ConstraintTests(unittest.TestCase):
             plan['review_phase'] = phase
         report = ledger(plan, db)
         row = next(c for c in report['checks'] if c['id'] == rows['R1']['id'])
-        mark_pass(row)
+        mark_pass(report, plan, row)
         row['bom_constraint'] = dict(CONSTRAINT, **constraint)
         return plan, report, validate_review(plan, report, db)
 

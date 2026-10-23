@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 import catalog
 import independence
 from plan_review import validate_intent
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from test_validate_review import fixture
 
 REMOVED = ('calc_claims', 'audit_document_summaries', 'review_selection', 'asg_summary_adapter')

@@ -3,13 +3,12 @@
 """高速差分电平互连检查器。
 
 按网名成对与共同器件识别差分对，登记耦合方式、端接与偏置网络。电平标准来自
-声明或名称线索：名称只产生待复核候选，不产生结论。共模/摆幅是否兼容由证据计算
+声明或名称线索：名称只产生待复核候选，不产生结论。共模/摆幅是否兼容由保证值核对
 （SIG-E02）按资料保证范围判定；阻抗、等长、间距与回流属 PCB HANDOFF。
 """
 import re
 
 import catalog
-from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
 from . import powertree
@@ -157,8 +156,7 @@ class DiffLevelsChecker(Checker):
     version = 1
     intent_key = 'diff_levels'
     cold_rules = catalog.titles(stage='cold', source='diff_levels')
-    hot_rules = catalog.titles(stage='hot', source='diff_levels')
-    evidence_kinds = {'SIG-E02': {'diff_level'}}
+    e_rules = catalog.titles(method='E', source='diff_levels')
 
     missing_inventory_message = 'diff level checks require their inventory'
     inventory_type_message = 'diff level inventory must be an object'
@@ -185,13 +183,12 @@ class DiffLevelsChecker(Checker):
                    'diff_pair': pair['id'], 'diff_levels_digest': inventory['digest']}
             applicability = 'APPLICABLE' if pair['basis'] == 'declared' else 'UNDETERMINED'
             gaps = pair['gaps']
-            ready = applicability == 'APPLICABLE' and planner.evidence_ready('SIG-E02', obj)
             check = planner.add_check(
                 'SIG-E02', dict(obj), key=pair['id'], applicability=applicability,
-                readiness='READY' if ready else 'WAITING_EVIDENCE',
-                required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: SIG-E02 两端共模/摆幅保证范围',
-                    'intent.diff_levels: 电平标准与出处']))),
+                readiness='WAITING_EVIDENCE',
+                required_inputs=sorted(set(gaps + [
+                    'datasheet: SIG-E02 两端共模/摆幅保证范围',
+                    'intent.diff_levels: 电平标准与出处'])),
                 trigger=['diff-pair:' + pair['id'], 'basis:' + pair['basis']])
             check['inventory_gaps'] = gaps
             check = planner.add_check(
@@ -225,58 +222,6 @@ class DiffLevelsChecker(Checker):
                              + ' 交流耦合后未见偏置或端接网络；'
                                '若由接收端内部偏置/端接需给出资料证据',
                              anchor, kind='CANDIDATE')
-
-    def hot_check(self, lint, check):
-        coupling = check['coupling']
-        swing = hotmath.span(check['driver_swing_v'])
-        receiver_cm = hotmath.span(check['receiver_common_mode_v'])
-        receiver_diff = hotmath.span(check['receiver_input_diff_v'])
-        source = ('bias_common_mode_v' if coupling == 'ac' else 'driver_common_mode_v')
-        common_mode = hotmath.span(check[source])
-        problems = []
-        if common_mode[0] < receiver_cm[0] or common_mode[1] > receiver_cm[1]:
-            problems.append('共模 [%s, %s]V 超出接收端范围 [%s, %s]V'
-                            % (hotmath.fmt(common_mode[0]), hotmath.fmt(common_mode[1]),
-                               hotmath.fmt(receiver_cm[0]), hotmath.fmt(receiver_cm[1])))
-        if swing[0] < receiver_diff[0] or swing[1] > receiver_diff[1]:
-            problems.append('差分摆幅 [%s, %s]V 超出接收端差分输入范围 [%s, %s]V'
-                            % (hotmath.fmt(swing[0]), hotmath.fmt(swing[1]),
-                               hotmath.fmt(receiver_diff[0]), hotmath.fmt(receiver_diff[1])))
-        calculation = {'coupling': coupling, 'common_mode_source': source,
-                       'common_mode_v': {'min': common_mode[0], 'max': common_mode[1]},
-                       'driver_swing_v': {'min': swing[0], 'max': swing[1]},
-                       'receiver_common_mode_v': {'min': receiver_cm[0], 'max': receiver_cm[1]},
-                       'receiver_input_diff_v': {'min': receiver_diff[0], 'max': receiver_diff[1]}}
-        detail = '%s: %s 耦合，共模 [%s, %s]V vs 接收 [%s, %s]V，摆幅 [%s, %s]V vs [%s, %s]V；%s' % (
-            check.get('net') or check.get('ref'), coupling,
-            hotmath.fmt(common_mode[0]), hotmath.fmt(common_mode[1]),
-            hotmath.fmt(receiver_cm[0]), hotmath.fmt(receiver_cm[1]),
-            hotmath.fmt(swing[0]), hotmath.fmt(swing[1]),
-            hotmath.fmt(receiver_diff[0]), hotmath.fmt(receiver_diff[1]), lint._citation(check))
-        if problems:
-            lint.add('SIG-E02', '差分电平不兼容', detail + '；' + '；'.join(problems),
-                     check.get('ref'), check_id=check['id'], citation=check['citation'],
-                     calculation=calculation)
-        else:
-            lint.record_pass('SIG-E02', check, detail,
-                             scope='所给保证范围下的共模/摆幅兼容；抖动、低频截止、阻抗与回流未判定',
-                             calculation=calculation)
-
-    def evidence_errors(self, check, label):
-        return hotmath.structure_errors(
-            check, label,
-            spans=('driver_common_mode_v', 'driver_swing_v', 'bias_common_mode_v',
-                   'receiver_common_mode_v', 'receiver_input_diff_v'),
-            choices=(('coupling', {'ac', 'dc'}),))
-
-    def model_gaps(self, check):
-        spans = ['driver_swing_v', 'receiver_common_mode_v', 'receiver_input_diff_v']
-        coupling = check.get('coupling')
-        if coupling == 'ac':
-            spans.append('bias_common_mode_v')
-        elif coupling == 'dc':
-            spans.append('driver_common_mode_v')
-        return hotmath.missing_gaps(check, spans=spans, texts=('coupling',))
 
     def rule_instances(self, rule, inventory):
         return sorted({pair['id'] for _, pair in inv.walk(inventory, 'pairs')

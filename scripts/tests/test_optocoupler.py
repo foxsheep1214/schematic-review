@@ -8,8 +8,7 @@ sys.path.insert(0, str(SCRIPTS))
 import catalog
 
 from checkers.optocoupler import OptocouplerChecker, build_inventory, validate_optocoupler_intent
-from electrical_contract import validate_evidence
-from electrical_fixtures import bind_evidence, bound_intent
+from electrical_fixtures import bound_intent
 from lint import Lint
 from plan_review import build_review_plan
 from test_inductive_load import add
@@ -53,19 +52,6 @@ CHECKER_RULES = {rule.id for rule in catalog.rules(source='optocoupler')}
 
 def findings(db, intent=None):
     return [f for f in Lint(db, '', intent).run() if f['rule'] in CHECKER_RULES]
-
-
-def ctr_check(**overrides):
-    check = {'id': 'OPTO', 'rule': 'PRO-E01', 'kind': 'opto_ctr', 'ref': 'OK1',
-             'net': 'OPTO_OUT', 'drive_v': {'min': 4.75, 'max': 5.25},
-             'vf_v': {'min': 1.0, 'max': 1.4}, 'driver_drop_v': {'min': 0.0, 'max': 0.4},
-             'r_led_ohm': {'min': 970.0, 'max': 1030.0},
-             'r_pullup_ohm': {'min': 9700.0, 'max': 10300.0},
-             'v_pullup_v': {'min': 3.15, 'max': 3.45}, 'vol_required_v': 0.4,
-             'ctr_min': 0.5, 'ctr_derating': 0.5, 'if_abs_max_a': 0.05,
-             'citation': 'Synthetic optocoupler CTR and project lifetime derating rule'}
-    check.update(overrides)
-    return check
 
 
 class RecognitionTest(unittest.TestCase):
@@ -172,51 +158,6 @@ class HotRuleTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-
-    def run_check(self, check):
-        db = opto_board()
-        evidence = {'schema_version': 2, 'checks': [check]}
-        audit = bind_evidence(db, evidence, self.directory.name)
-        self.assertEqual(validate_evidence(evidence), [])
-        lint = Lint(db, evidence=evidence, datasheet_audit=audit)
-        lint.run()
-        results = [x for x in lint.results if x['check_id'] == check['id']]
-        self.assertEqual(len(results), 1)
-        return results[0]
-
-    def test_sufficient_transfer_passes(self):
-        result = self.run_check(ctr_check())
-        self.assertEqual(result['review_result'], 'PASS')
-        self.assertGreater(result['calculation']['ic_available_a'],
-                           result['calculation']['ic_required_a'])
-
-    def test_derated_ctr_below_requirement_fails(self):
-        result = self.run_check(ctr_check(ctr_derating=0.05))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('低于拉低上拉所需', result['detail'])
-
-    def test_forward_current_above_rating_fails(self):
-        result = self.run_check(ctr_check(r_led_ohm={'min': 50.0, 'max': 55.0}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('超过额定', result['detail'])
-
-    def test_led_not_conducting_fails(self):
-        result = self.run_check(ctr_check(drive_v={'min': 1.0, 'max': 1.2}))
-        self.assertEqual(result['review_result'], 'FAIL')
-        self.assertIn('LED 不导通', result['detail'])
-
-    def test_missing_project_derating_stays_insufficient(self):
-        check = ctr_check()
-        check.pop('ctr_derating')
-        result = self.run_check(check)
-        self.assertEqual(result['review_result'], 'INSUFFICIENT')
-        self.assertIn('ctr_derating 缺少保证值', result['detail'])
-
-    def test_out_of_range_derating_is_rejected_by_the_contract(self):
-        evidence = {'schema_version': 2, 'checks': [ctr_check(ctr_derating=1.5)]}
-        self.assertTrue(any('ctr_derating 必须在 (0, 1] 内' in error
-                            for error in validate_evidence(evidence)))
-
 
 if __name__ == '__main__':
     unittest.main()

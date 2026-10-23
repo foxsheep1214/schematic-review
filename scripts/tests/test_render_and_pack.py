@@ -10,9 +10,8 @@ from unittest import mock
 
 from test_review_stage_scope import decisive, downstream
 from test_validate_review import fixture, fail
-from gap_fixture import complete_gaps
 import validate_review as vr
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from render_report import render
 from pack_review import pack, REPORT, REPORT_HTML, RECORD, LEDGER
 from report_html import to_html
@@ -238,7 +237,7 @@ class RenderReportTests(unittest.TestCase):
 
     def test_invalid_records_are_flagged_before_anything_else(self):
         p, r, db = decisive()
-        del r['checks'][0]['input_requests']
+        del r['functions'][0]['open'][0]['acquisition']
         text, gate = report(p, r, db)
         self.assertFalse(gate['valid'])
         self.assertIn('审查记录本身有错', text.splitlines()[2])
@@ -427,7 +426,6 @@ class PackReviewTests(unittest.TestCase):
         self.work, self.out = self.tmp / 'work', self.tmp / 'review'
         self.work.mkdir(); self.out.mkdir()
         p, r, db = decisive()
-        complete_gaps(r)
         r['checks'][0]['evidence'] = [{'source': 'calc/startup.md', 'locator': 'section 1'},
                                       {'source': 'spec.md', 'locator': 'REQ-1'}]
         gate = json.loads(json.dumps(validate_review(p, r, db), default=sorted))
@@ -529,8 +527,10 @@ class PackReviewTests(unittest.TestCase):
     def test_unfinished_review_cannot_be_packed(self):
         results = json.loads((self.work / 'review-results.json').read_text())
         row = results['checks'][0]
-        row['gap_cause'] = 'REVIEW_INCOMPLETE'
-        row.pop('input_requests', None)
+        item = results['functions'][0]['open'][0]
+        item['kind'] = 'REVIEW_INCOMPLETE'
+        for field in ('acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
+            item.pop(field)
         (self.work / 'review-results.json').write_text(json.dumps(results))
         errors, _ = self.run_pack()
         self.assertTrue(any('review not finished' in e and row['id'] in e for e in errors), errors)

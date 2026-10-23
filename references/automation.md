@@ -1,10 +1,10 @@
-# 自动检查：扫描、证据计算与检查器
+# 自动检查：扫描、保证值核对与检查器
 
-自动扫描（A）与证据计算（E）只按连接关系和带出处的保证值产生候选与计算结果；最终结论由审查者复核，映射见 [结论与准出](verdicts-and-release.md#1-四种检查结果)。
+自动扫描（A）只按连接关系产生候选，保证值核对（E）由网表定出待审对象；最终结论由审查者给出，映射见 [结论与准出](verdicts-and-release.md#1-四种检查结果)。
 
-## 一、自动扫描与证据计算
+## 一、自动扫描与保证值核对
 
-本文说明方式 A（自动扫描）与方式 E（证据计算）怎么执行、输出怎么读。规则编号、名称和判据要点
+本文说明方式 A（自动扫描）怎么执行、方式 E（保证值核对）的对象怎么定出、输出怎么读。规则编号、名称和判据要点
 以 [check-catalog.md](check-catalog.md) 为准，本文不再重复规则表。
 
 ### 两次运行
@@ -15,15 +15,14 @@
 | 运行 | 输入 | 执行 |
 |---|---|---|
 | 网表扫描 | `db.json`，可选 `--intent`、`--log` | 全部 A 规则；REQ-A01 需要意图中的 `expect`；DOC-A01/DOC-A02 需要导出日志，未给 `--log` 时二者列入“本趟未执行”；给了但内容为空（kicad-cli 导出成功时就是空的）按零命中执行，导出是否成功仍以命令退出码为准；日志按中英文分级：导出错误/中止记 FINDING，批注（位号）错误记 CANDIDATE，其他告警记 INFO，退出码 0 不等于没有告警 |
-| 证据扫描 | 网表扫描输入 + `evidence.json` + `datasheet-audit.json` | 全部 A 规则 + 已提供证据的 E 规则 |
+| 合并扫描 | 网表扫描输入 + `datasheet-audit.json` + `--merge-plan` | 全部 A 规则，并入资料审计，写出唯一最终计划；E 行留待审查者判定 |
 | 改版比对 | 旧/新 `db.json`、旧计划、历史意见断言 | REQ-H01（`diff_netlists.py`）与改版影响清单 |
 
 **输出分三类**：`FINDING` 是疑似缺陷，逐条排除；`CANDIDATE` 是待资料取证定夺的优先级清单，直接
 决定先读哪几份 datasheet；`INFO` 是提示，不计入疑点，但准出前仍要核实（如 NET-A04 判为工具伪网络的
 NC 网）。FINDING/CANDIDATE 各成审查计划的一行检查，与其他检查一样作答；INFO 进计划 `diagnostics`。同一条规则可同时产出多类，例如 PRO-A02 按型号或轨名推断的电压只作候选。
-E 规则的每条结果另记 `check_results`（PASS/FAIL/INSUFFICIENT）与 `passes`。
 
-**未执行不等于通过**：`lint.py` 每次在末尾列出本次没执行的规则及原因（缺 `--intent`、未提供证据）。
+**未执行不等于通过**：`lint.py` 每次在末尾列出本次没执行的规则及原因（如缺 `--intent`、`--log`）。
 扫出 0 条与根本没扫，输出必须能区分。
 
 **命名检出不等于功能适用**：名称候选先确认实际角色/模式，再展开电路检查项；
@@ -140,18 +139,9 @@ DEV-E01 只核证据中列出的引脚；完整物理脚差集由 DEV-D02 负责
 
 不贴装（解析器 `nc`）的器件不报；其他装配变体的差异由审查者按 `intent.assemblies` 排除。
 
-### 推荐工作条件验算（DEV-E02）
-
-kind=operating_range，给 `ref`、所接轨 `net` 与资料保证的 `supply_v.min/max`；设计工况取
-`intent.power_rails.<net>.voltage_v` 的 min/max。两边都齐才计算裕量：设计窗口越界为 FAIL，
-缺设计窗口保持 CANDIDATE/INSUFFICIENT，不用推荐范围反推设计。温度、负载、频率与瞬态仍由
-DEV-C05 逐项核。
-
 ### 覆盖补充
 
-- `hot_executed` 只说明规则被调用；`hot_uncovered_instances` 列出计划中证据缺失、过期或模型未就绪
-  的证据计算实例。审查者仍需复核计划完整性与最终结果，它不是全板覆盖证明。
-- RST-E01/RST-E02 用包含负载与采样时序的保证电压窗口比较门限；缺模型时为 CANDIDATE，不能拿
+- RST-E01/RST-E02 用包含负载与采样时序的保证电压窗口比较门限；缺模型时判资料不足，不能拿
   上拉电源电压直接当分压后的脚压。
 - DOC-A01 提示导出错误或中止；DOC-A02 的 No-Connect 告警须逐项核，不能与真实导出失败等同。
 - 单独另存某个检查器的清单：`python3 scripts/lint.py db.json --checker-json <检查器id>=out.json`；
@@ -192,8 +182,8 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 
 | 依据 | 来源 | 可产生 |
 |---|---|---|
-| `declared` | intent 明确声明并带出处 | 自动扫描发现、计划项、证据计算 |
-| `topology` | 连接关系加引脚角色成立 | 自动扫描发现、计划项、证据计算 |
+| `declared` | intent 明确声明并带出处 | 自动扫描发现、计划项、保证值核对 |
+| `topology` | 连接关系加引脚角色成立 | 自动扫描发现、计划项、保证值核对 |
 | `name-hint` | 只有网名/型号线索 | 计划项（`UNDETERMINED`，需 intent 确认） |
 
 名称线索、`nc=false`、库名 `Bridged`、焊盘默认图形不能证明装配或功能模式。
@@ -316,8 +306,8 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 不触发自动通过。缺口必须补齐或保持 `INSUFFICIENT`；带缺口的对象不能写 PASS。电气判据初始
 一律 `WAITING_EVIDENCE`，需专家提供适用规格、工况计算与逐项结论。
 
-**证据计算**：检查器的证据计算规则（方式 E）走同一条 `evidence.json` 管线（字段见
-[datasheets.md](datasheets.md)）。输入只接受带出处的保证值：
+**保证值核对**：检查器的保证值核对规则（方式 E）由检查器定出对象，计划行为 WAITING_EVIDENCE，
+审查者按 [datasheets.md](datasheets.md#二保证值核对方式-e) 的判据要点判定。只接受带出处的保证值：
 缺任一项即 INSUFFICIENT，不用典型值顶替；比值与寿命系数必须来自项目规定。PASS 的 scope
 写明未判定的部分，计算角点保留在 calculation。
 
@@ -326,8 +316,8 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 输入，不验证引用文字真实，也不替代工程审查。
 
 **规则编号**：检查器的规则与其他规则共用[规则总表](check-catalog.md)的编号（`内容域-方式序号`），
-在 `scripts/catalog.py` 以检查器 id 为来源登记；检查器类只引用编号，自动扫描（A）与证据计算（E）
-规则由 `cold_rules`/`hot_rules` 从总表取出。下文各节列出每个检查器使用的规则。
+在 `scripts/catalog.py` 以检查器 id 为来源登记；检查器类只引用编号，自动扫描（A）与保证值核对（E）
+规则由 `cold_rules`/`e_rules` 从总表取出。下文各节列出每个检查器使用的规则。
 
 ### I²C 连接覆盖（`i2c_topology`）
 
@@ -401,7 +391,7 @@ kind 仍为 resistor；共端阵列须由原件证明共端，不能把所有焊
 灌电流/上升时间、SIG-C07 电平与驱动、SIG-C08 掉电与跨域注入、SIG-D01 地址/复用/装配状态），
 不再按功能电路重复生成一套。有限串阻各段保留节点做关联分析，有源器件两侧另查传输条件。
 不能由"有一只上拉"生成 PASS。本清单与 SIG-E01 的直接连接/直接并联计算并存，不扩大后者模型，
-也不自动把清单或 state population 注入证据计算；不同装配变体需各自的 db 与绑定该 db/状态的 evidence。
+也不自动把清单或 state population 注入保证值核对；不同装配变体需各自的 db。
 
 **外部端口**：`external-port:*` 保留在清单、`required_inputs` 和 WAITING_EVIDENCE 中，不伪装成已建模端点。
 SIG-T02 连接覆盖、SIG-D01 地址/选件和 SIG-C08 掉电路径可依据已绑定原图、端口定义、适用工况和约束审查者判局部 PASS，
@@ -655,8 +645,8 @@ CS/触发/消隐/最小导通及关断关联条件。核CrM/DCM/CCM和故障的�
 自动扫描：`DRV-A03` 栅极既无驱动源也无下拉/上拉（上电与驱动高阻时状态不确定）；
 `DRV-A04` 开关节点接感性元件或半桥中点但无吸收/钳位（CANDIDATE）。
 
-证据计算 `DRV-E01`（`gate_drive`）仅适用需要保证导通能力的 MOS 开关：最小栅源驱动不低于 `vgs_rds_on_v`，且驱动窗口不超
-栅源绝限。`vgs_rds_on_v` 取 RDS(on) 保证条件的 VGS，或取本型号输出/转移曲线在实际电流与温度下证明导通够用的栅压
+保证值核对 `DRV-E01` 仅适用需要保证导通能力的 MOS 开关：最小栅源驱动不低于导通所需栅压，且驱动窗口不超
+栅源绝限。导通所需栅压取 RDS(on) 保证条件的 VGS，或取本型号输出/转移曲线在实际电流与温度下证明导通够用的栅压
 （引用曲线页码并说明是典型还是保证值）；测试 VGS 本身不是硬门槛，见证据尺度文档的“功率开关：实际栅压”。P 沟道按量纲翻转后比较。PASS 不覆盖开关速度、米勒导通、SOA 与热。
 
 计划项：栅源驱动（DRV-E01）、安全工作区与降额（DRV-C02，结温按实际散热
@@ -673,10 +663,10 @@ CS/触发/消隐/最小导通及关断关联条件。核CrM/DCM/CCM和故障的�
 
 自动扫描：`PWR-A05` 输入经串联 L/磁珠滤波但既无 RC 阻尼支路也无体电容候选（CANDIDATE）。
 
-证据计算 `PWR-E03`（`input_filter_damping`）：|R<sub>IN</sub>| = V<sub>IN,min</sub>²/P<sub>IN,max</sub>；
+保证值核对 `PWR-E03`：|R<sub>IN</sub>| = V<sub>IN,min</sub>²/P<sub>IN,max</sub>；
 判据为 ESR<sub>bulk,max</sub> < |R<sub>IN</sub>|、ESR<sub>bulk,min</sub> > L<sub>max</sub>/(C<sub>bulk,min</sub>·|R<sub>IN</sub>|)、
 C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶判据**：全频输入阻抗裕量、
-阶跃响应与温度角仍需仿真或实测，PASS 的 scope 已写明。
+阶跃响应与温度角仍需仿真或实测，PASS 写明不覆盖这些。
 
 计划项：阻尼判据（PWR-E03）、滤波元件饱和/压降/衰减需求（PWR-C11）。
 
@@ -695,7 +685,7 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 登记）；`RST-A03` 稳压器使能直连输入网且无分压/RC（CANDIDATE）；`RST-A04` 使能网上既无驱动源也无
 分压/RC/上下拉——悬空或来源不明（CANDIDATE；器件内部上/下拉需资料证据）。
 
-证据计算 `PWR-E02`（`dropout`）：V<sub>IN,min</sub> − V<sub>dropout,max</sub>(声明温度与负载范围)
+保证值核对 `PWR-E02`：V<sub>IN,min</sub> − V<sub>dropout,max</sub>(声明温度与负载范围)
 ≥ 负载要求的 V<sub>OUT,min</sub>。PASS 不覆盖负载瞬态、启动过程与热关断。
 
 计划项：使能来源与 UVLO/时序（RST-T01）、线性轨的
@@ -732,7 +722,7 @@ ESP32-C3-MINI-1-N4 的 EN8 是复位接收输入（模组 datasheet v2.2，Table
 监测的轨（CANDIDATE）。**没有任何监控器时不报 PWR-A06**：全板是否需要监控属需求问题，由计划中的
 逐电源域覆盖项（PWR-T04）承接。
 
-证据计算 `RST-E03`（`reset_pulse`）：复位输出最小脉宽不低于目标复位输入要求；`output_type=open_drain`
+保证值核对 `RST-E03`：复位输出最小脉宽不低于目标复位输入要求；输出为开漏
 时还要求该网上存在到电源轨的上拉电阻（由网表核实）。PASS 不覆盖阈值精度、迟滞与喂狗时序。
 
 计划项：复位链逐跳与喂狗策略（RST-T02）、复位脉宽（RST-E03）、逐电源域监控覆盖（PWR-T04，逐状态一项，
@@ -844,7 +834,7 @@ gate/base、继电器线圈、普通 IC 信号脚不当作导通端；未解析�
 自动扫描：`SIG-A01` 仅对 LVPECL/PECL 类电流型电平成立——交流耦合且发送侧无到地/到轨直流通路
 （声明依据=FINDING，名称线索=CANDIDATE）；`SIG-A02` 交流耦合接收侧既无端接也无偏置（CANDIDATE）。
 
-证据计算 `SIG-E02`（`diff_level`）：直流耦合用发送端共模、交流耦合用偏置后共模，须落在接收端共模
+保证值核对 `SIG-E02`：直流耦合用发送端共模、交流耦合用偏置后共模，须落在接收端共模
 范围内；发送摆幅须落在接收端差分输入范围内。PASS 不覆盖抖动、低频截止、阻抗与回流。
 
 计划项：电平兼容（SIG-E02）、端接与偏置（SIG-T03）。
@@ -865,11 +855,11 @@ gate/base、继电器线圈、普通 IC 信号脚不当作导通端；未解析�
 `bias_v` 可省略：已证有内部上拉时不因尚缺偏置电压而继续报缺外部电阻；偏置电压缺口留给传输能力计算。
 掉电、高阻及动态 CTR 不自动通过。该模型随 intent/装配/网表摘要进入库存绑定。
 
-证据计算 `PRO-E01`（`opto_ctr`）：
+保证值核对 `PRO-E01`：
 I<sub>F,min</sub> = (V<sub>drive,min</sub> − V<sub>F,max</sub> − V<sub>drop,max</sub>)/R<sub>LED,max</sub>，
 I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>·寿命衰减系数，
 需满足 I<sub>C,可用</sub> ≥ (V<sub>pullup,max</sub> − V<sub>OL,要求</sub>)/R<sub>pullup,min</sub>，
-同时 I<sub>F,max</sub> 不超额定。寿命衰减系数必须来自项目规定，缺规定即 INSUFFICIENT。
+同时 I<sub>F,max</sub> 不超额定。寿命衰减系数必须来自项目规定，缺规定判资料不足。
 PASS 不覆盖开关速度、温度角与隔离耐压。
 
 计划项：传输能力（PRO-E01）、隔离归属与耐压（PRO-D01）。
@@ -933,10 +923,4 @@ reference 另给原厂文件 `sha256`；source 是本地文件路径，locator �
 
 ## 脚本分类
 
-新脚本先归入下表；只有入口写进 SKILL.md 的执行流程。
-
-| 类别 | 脚本 |
-|---|---|
-| 入口：执行流程里按顺序调用 | `requirements_extract.py`（逐字抄录需求文档）、`parse_kicad.py`、`parse_netlist.py`、`lint.py`（网表扫描和证据扫描，同时生成计划）、`audit_datasheets.py`、`gap_inventory.py`、`derive_rows.py`（功能判定写完后派生已绑定的行）、`validate_review.py`、`render_report.py`、`pack_review.py`、`diff_netlists.py`；维护时 `catalog.py --write-doc` |
-| 专用工具：特定情形手动调用 | `compare_reviews.py`（两份同板记录先按检查项标识严格配对，报配对率、已答比例、一致率、通过对失败和严重分歧；按电路对齐的结果只作建议配对，`--alias` 加入经核实的别名）、`plan_review.py`（单独重建计划，日常由 `lint.py` 代办）、`calc.py`、`simulate_rc.py`、`solve_dividers.py`（仅探索）、`decoupling.py`、`i2c_topology.py`、`datasheet_facts.py`、`electrical_contract.py`、`reviewed_declarations.py`、`audit_parameter_claims.py`、`execution_audit.py`（可选自检）、`install_kicad_cli.py` |
-| 库：只被导入 | `results_model.py`、计划生成的各层（`plan_circuits.py`、`plan_system.py`、`plan_board.py`）、`interfaces.py`、`row_owner.py`、`requirement_parameters.py`（需求参数的校验与取窗）、`requirement_bindings.py`（需求行绑定树上的检查与派生）、`review_functions.py`（功能判定校验 F1–F12）、`review_engine.py`、`skill_identity.py`、`board_intent.py`、`board_scans.py`、`page_inventory.py`、`datasheet_kinds.py`、`design_preflight.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`revision_impact.py`、`requirement_clarifications.py`、`task_scope.py`、`validate_remediation.py`、计算模块（`circuit_bounds.py`、`model_bounds.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`）、`checkers/` |
+每个脚本属于哪一环、是入口还是工具或库，见 [架构说明](architecture.md#二每个脚本属于哪一环)。

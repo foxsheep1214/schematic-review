@@ -8,12 +8,11 @@
 合同文件 boards/<规则>.json：
     rule       规则编号
     runner     cold = 冷跑 Lint，看 FINDING/CANDIDATE（INFO 不算触发；近似板还要求本规则未被跳过）
-               hot  = 热跑证据，触发板须得 FAIL，近似板须得 PASS
-               plan = 计划，触发板须有 APPLICABLE 计划项，近似板须没有
+               plan = 计划，触发板须有 APPLICABLE 计划项，近似板须没有（T、V 规则，E 规则的对象）
                rule_plan = 同上，但看计划的规则级 rule_plan 行（改版闭环 REQ-H01 只在这一层）
     trigger / near_miss   板：parts=[{ref, value, pins:[[脚号, 脚名, 网络]], nc?}]，
                可选 pintype、pseudo_nets、native_pintype、intent（bound=true 时套共享装配绑定）、
-               evidence（证据 checks 列表）、log、ref2page、old（旧版板，计划按它另建旧计划，用于改版规则）
+               log、ref2page、old（旧版板，计划按它另建旧计划，用于改版规则）
     note       两块板差在哪
     always     全板规则每块板都生成计划项、没有近似板时写明原因，near_miss 为 null
 方式 C/D/Q 由审查者判定，不在代码合同范围内（OUT_OF_SCOPE_METHODS）。
@@ -22,7 +21,6 @@ import argparse
 import copy
 import json
 import sys
-import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -86,20 +84,6 @@ def observe(rule, runner, board):
         lint = Lint(db, board.get('log'), intent)
         hits = [f for f in lint.run() if f['rule'] == rule and f['kind'] in ('FINDING', 'CANDIDATE')]
         return bool(hits), not _rule_skipped(lint, rule), [f['detail'] for f in hits]
-    if runner == 'hot':
-        from electrical_contract import validate_evidence
-        from electrical_fixtures import bind_evidence
-        evidence = {'schema_version': 2, 'checks': copy.deepcopy(board['evidence'])}
-        with tempfile.TemporaryDirectory() as directory:
-            audit = bind_evidence(db, evidence, directory)
-            errors = validate_evidence(evidence)
-            if errors:
-                raise AssertionError('invalid contract evidence: %s' % errors)
-            lint = Lint(db, intent=intent, evidence=evidence, datasheet_audit=audit)
-            lint.run()
-        results = [x for x in lint.results if x.get('rule') == rule]
-        verdicts = sorted({x['review_result'] for x in results})
-        return 'FAIL' in verdicts, verdicts == ['PASS'], verdicts
     if runner in ('plan', 'rule_plan'):
         from plan_review import build_review_plan
         kwargs = {}

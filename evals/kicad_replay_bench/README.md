@@ -1,7 +1,6 @@
 # KiCad Replay Bench：KiCad 原生交付层的冻结答案回放
 
-SR 现在主要审 ASG 生成的 KiCad 工程。`circuit_bench` 只覆盖 PWR-E01/SIG-E01/RST-E02 计算、输入是合成的
-Cadence 网表；`seeded_bench` 统计真实电路植入缺陷的网表扫描检出率。两者都不测 **KiCad 原生交付这一层**：
+SR 现在主要审 ASG 生成的 KiCad 工程。`seeded_bench` 统计真实电路植入缺陷的网表扫描检出率，不测 **KiCad 原生交付这一层**：
 严格解析能不能产出 db、缺名脚怎么记、导出日志怎么算、去耦清单在缺口下怎么分组。本基准用 ASG 已冻结的
 真实交付回放这一层，每个字段都有人工核对后冻结的预期答案。每次改 SR 都应跑一次，几秒即可。
 
@@ -132,7 +131,7 @@ pinmap 用例的去耦字段和各例的 `pin_names_resolved_by_official_pinout`
   这两个数会变，需要逐条说明后更新答案。
 - 只有 6 块板、9 个用例，全部来自 ASG 2026-10 批次与一次演练，器件库以 KiCad 官方库、SparkFun、
   e-radionica 为主。没有覆盖的情形：kicad-cli 导出报错的日志、带 No_connect 被忽略告警的日志、
-  `.kicad_sch` 直接输入（本基准只用已导出的 XML，不依赖 kicad-cli）、多装配状态、带完整 intent 的证据扫描、
+  `.kicad_sch` 直接输入（本基准只用已导出的 XML，不依赖 kicad-cli）、多装配状态、带完整 intent 的合并扫描、
   I²C 拓扑及其他检查器清单、改版对比。
 - `known_deviations` 只说明“这个值是已知问题”，不说明问题已修。
 

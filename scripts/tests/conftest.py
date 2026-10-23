@@ -21,7 +21,7 @@ CONTRACT_FILES = {
     'test_validate_review.py', 'test_review_v2.py', 'test_review_quality.py', 'test_checkers_framework.py',
     'test_import_integrity.py', 'test_catalog.py', 'test_review_functions.py', 'test_results_model.py',
     'test_derive_rows.py', 'test_compare_reviews.py', 'test_ic_kinds.py', 'test_domains.py',
-    'test_circuit_candidates.py', 'test_circuit_decisions.py',
+    'test_circuit_candidates.py', 'test_circuit_decisions.py', 'test_architecture.py',
     # parsers
     'test_parse_netlist.py', 'test_parse_kicad.py', 'test_page_inventory.py', 'test_kicad_declared_contacts.py',
     'test_dotted_physical_pins.py',

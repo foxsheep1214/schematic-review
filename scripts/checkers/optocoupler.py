@@ -3,7 +3,7 @@
 """光耦隔离传输检查器。
 
 识别光耦的 LED 回路（限流电阻与驱动源）与输出侧（上拉电阻与参考），登记逐状态
-清单。电流传输比与寿命衰减后的驱动能力由证据计算（PRO-E01）按资料保证值判定；寿命衰减系数
+清单。电流传输比与寿命衰减后的驱动能力由保证值核对（PRO-E01）按资料保证值判定；寿命衰减系数
 必须来自项目规定，缺规定即 INSUFFICIENT。隔离耐压与爬电距离不在本检查器。
 """
 import catalog
@@ -152,8 +152,7 @@ class OptocouplerChecker(Checker):
     version = 1
     intent_key = 'optocouplers'
     cold_rules = catalog.titles(stage='cold', source='optocoupler')
-    hot_rules = catalog.titles(stage='hot', source='optocoupler')
-    evidence_kinds = {'PRO-E01': {'opto_ctr'}}
+    e_rules = catalog.titles(method='E', source='optocoupler')
 
     missing_inventory_message = 'optocoupler checks require their inventory'
     inventory_type_message = 'optocoupler inventory must be an object'
@@ -180,13 +179,12 @@ class OptocouplerChecker(Checker):
             if item['collector_net']:
                 obj['net'] = item['collector_net']
             gaps = item['gaps']
-            ready = planner.evidence_ready('PRO-E01', obj)
             check = planner.add_check(
                 'PRO-E01', dict(obj), key=item['id'],
-                readiness='READY' if ready else 'WAITING_EVIDENCE',
-                required_inputs=sorted(set(gaps + ([] if ready else [
-                    'evidence: PRO-E01 VF/CTR/电阻与上拉保证值',
-                    'intent: CTR 寿命衰减系数的项目规定']))),
+                readiness='WAITING_EVIDENCE',
+                required_inputs=sorted(set(gaps + [
+                    'datasheet: PRO-E01 VF/CTR/电阻与上拉保证值',
+                    'intent: CTR 寿命衰减系数的项目规定'])),
                 trigger=['optocoupler:' + item['id']])
             check['inventory_gaps'] = gaps
             check = planner.add_check(
@@ -210,72 +208,6 @@ class OptocouplerChecker(Checker):
                          + ' 上未见到电源轨的上拉电阻；若由接收端内部上拉或有源负载（控制器 FB/COMP/DIS 一类脚常见），'
                          '在 intent optocouplers[].internal_pullup 写明接收脚、阻值范围与出处即关闭',
                          item['ref'], kind='CANDIDATE')
-
-    def hot_check(self, lint, check):
-        drive = hotmath.span(check['drive_v'])
-        vf = hotmath.span(check['vf_v'])
-        drop = hotmath.span(check['driver_drop_v'])
-        r_led = hotmath.span(check['r_led_ohm'])
-        r_pullup = hotmath.span(check['r_pullup_ohm'])
-        v_pullup = hotmath.span(check['v_pullup_v'])
-        ctr_min = hotmath.number(check['ctr_min'])
-        derating = hotmath.number(check['ctr_derating'])
-        vol_required = hotmath.number(check['vol_required_v'])
-        if_abs_max = hotmath.number(check['if_abs_max_a'])
-        if_min = (drive[0] - vf[1] - drop[1]) / r_led[1]
-        if_max = (drive[1] - vf[0] - drop[0]) / r_led[0]
-        ic_available = if_min * ctr_min * derating
-        ic_required = (v_pullup[1] - vol_required) / r_pullup[0]
-        problems = []
-        if if_min <= 0:
-            problems.append('最小正向电流为 %s，最坏条件下 LED 不导通'
-                            % hotmath.fmt(if_min, 'A'))
-        elif ic_available < ic_required:
-            problems.append('寿命衰减后可用集电极电流 %s 低于拉低上拉所需 %s'
-                            % (hotmath.fmt(ic_available, 'A'), hotmath.fmt(ic_required, 'A')))
-        if if_max > if_abs_max:
-            problems.append('最大正向电流 %s 超过额定 %s'
-                            % (hotmath.fmt(if_max, 'A'), hotmath.fmt(if_abs_max, 'A')))
-        calculation = {'if_min_a': if_min, 'if_max_a': if_max, 'ctr_min': ctr_min,
-                       'ctr_derating': derating, 'ic_available_a': ic_available,
-                       'ic_required_a': ic_required, 'if_abs_max_a': if_abs_max}
-        detail = '%s: IF=[%s, %s]A，CTR_min=%s×衰减%s，可用 IC=%s vs 需求 %s；%s' % (
-            check.get('ref') or check.get('net'), hotmath.fmt(if_min), hotmath.fmt(if_max),
-            hotmath.fmt(ctr_min), hotmath.fmt(derating), hotmath.fmt(ic_available, 'A'),
-            hotmath.fmt(ic_required, 'A'), lint._citation(check))
-        if problems:
-            lint.add('PRO-E01', '光耦传输电流不满足要求', detail + '；' + '；'.join(problems),
-                     check.get('ref'), check_id=check['id'], citation=check['citation'],
-                     calculation=calculation)
-        else:
-            lint.record_pass('PRO-E01', check, detail,
-                             scope='所给保证值与项目衰减系数下的静态传输能力；'
-                                   '开关速度、温度角与隔离耐压未判定',
-                             calculation=calculation)
-
-    def evidence_errors(self, check, label):
-        errors = hotmath.structure_errors(
-            check, label,
-            spans=('drive_v', 'vf_v', 'driver_drop_v', 'r_led_ohm', 'r_pullup_ohm', 'v_pullup_v'),
-            numbers=('ctr_min', 'ctr_derating', 'vol_required_v', 'if_abs_max_a'))
-        for field in ('r_led_ohm', 'r_pullup_ohm'):
-            bounds = hotmath.span(check.get(field))
-            if bounds is not None and bounds[0] <= 0:
-                errors.append('%s.%s.min 必须为正数' % (label, field))
-        for field in ('ctr_min', 'if_abs_max_a'):
-            value = hotmath.number(check.get(field))
-            if value is not None and value <= 0:
-                errors.append('%s.%s 必须为正数' % (label, field))
-        derating = hotmath.number(check.get('ctr_derating'))
-        if derating is not None and not 0 < derating <= 1:
-            errors.append('%s.ctr_derating 必须在 (0, 1] 内' % label)
-        return errors
-
-    def model_gaps(self, check):
-        return hotmath.missing_gaps(
-            check,
-            spans=('drive_v', 'vf_v', 'driver_drop_v', 'r_led_ohm', 'r_pullup_ohm', 'v_pullup_v'),
-            numbers=('ctr_min', 'ctr_derating', 'vol_required_v', 'if_abs_max_a'))
 
     def rule_instances(self, rule, inventory):
         return sorted({item['id'] for _, item in inv.walk(inventory, 'optocouplers')})

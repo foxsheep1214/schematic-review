@@ -3,7 +3,7 @@
 """功率开关：栅极驱动、开关节点吸收与安全工作区检查器。
 
 按引脚角色识别分立开关管，登记每个装配状态下的栅极驱动源、栅源下拉、
-开关节点上的感性元件与吸收网络。栅源驱动窗口由证据计算（DRV-E01）按资料保证值判定；
+开关节点上的感性元件与吸收网络。栅源驱动窗口由保证值核对（DRV-E01）按资料保证值判定；
 安全工作区、死区、自举欠压及热相关电气前提由专家按器件资料判定；实际热实现移交下游。
 """
 import re
@@ -13,7 +13,6 @@ from . import inventory as inv
 from . import netgraph as ng
 from . import powertree
 from . import states as state_lib
-from . import hotmath
 from solve_dividers import parse_resistor
 from decoupling import parse_capacitance
 from .base import Checker
@@ -527,8 +526,7 @@ class PowerSwitchChecker(Checker):
     version = 1
     intent_key = 'power_switches'
     cold_rules = catalog.titles(stage='cold', source='power_switch')
-    hot_rules = catalog.titles(stage='hot', source='power_switch')
-    evidence_kinds = {'DRV-E01': {'gate_drive'}}
+    e_rules = catalog.titles(method='E', source='power_switch')
 
     missing_inventory_message = 'power switch checks require their inventory'
     inventory_type_message = 'power switch inventory must be an object'
@@ -564,12 +562,11 @@ class PowerSwitchChecker(Checker):
             # MOS on-resistance evidence is meaningless for BJT/linear stages.
             # DRV-C02 retains the device and its actual drive/operating-point duty.
             if switch['kind'] == ng.MOSFET and not linear:
-                ready = planner.evidence_ready('DRV-E01', obj)
                 item = planner.add_check(
                     'DRV-E01', dict(obj), key=switch['id'],
-                    readiness='READY' if ready else 'WAITING_EVIDENCE',
-                    required_inputs=sorted(set(gaps + ([] if ready else [
-                        'evidence: DRV-E01 栅源驱动/绝限/RDS(on) 条件保证值']))),
+                    readiness='WAITING_EVIDENCE',
+                    required_inputs=sorted(set(gaps + [
+                        'datasheet: DRV-E01 栅源驱动/绝限/RDS(on) 条件保证值'])),
                     trigger=['power-switch:' + switch['id'], 'topology:' + switch['topology']])
                 item['inventory_gaps'] = gaps
             item = planner.add_check(
@@ -648,48 +645,6 @@ class PowerSwitchChecker(Checker):
                          + ' 上有 ' + '、'.join(switch['switch_node_evidence'])
                          + '，但未见 RC/RCD 吸收或钳位；关断尖峰与振铃需按器件耐压核实',
                          switch['ref'], kind='CANDIDATE')
-
-    def hot_check(self, lint, check):
-        drive = hotmath.span(check['vgs_drive_v'])
-        limits = hotmath.span(check['vgs_abs_v'])
-        spec = hotmath.number(check['vgs_rds_on_v'])
-        if check.get('channel') == 'p':
-            drive, limits, spec = hotmath.negate(drive), hotmath.negate(limits), -spec
-        problems = []
-        if drive[0] < spec:
-            problems.append('最小栅源驱动 %s 低于所需导通栅压 %s（RDS(on) 条件或有据曲线点）'
-                            % (hotmath.fmt(drive[0], 'V'), hotmath.fmt(spec, 'V')))
-        if drive[1] > limits[1] or drive[0] < limits[0]:
-            problems.append('栅源驱动窗口 [%s, %s] 超出绝对最大范围 [%s, %s]'
-                            % (hotmath.fmt(drive[0]), hotmath.fmt(drive[1]),
-                               hotmath.fmt(limits[0]), hotmath.fmt(limits[1])))
-        calculation = {'channel': check.get('channel'),
-                       'vgs_drive_v': {'min': drive[0], 'max': drive[1]},
-                       'vgs_rds_on_v': spec,
-                       'vgs_abs_v': {'min': limits[0], 'max': limits[1]},
-                       'normalized': check.get('channel') == 'p'}
-        target = check.get('node') or check.get('net') or check.get('ref')
-        detail = '%s: 栅源驱动 [%s, %s]V，RDS(on) 条件 %sV，绝限 [%s, %s]V；%s' % (
-            target, hotmath.fmt(drive[0]), hotmath.fmt(drive[1]), hotmath.fmt(spec),
-            hotmath.fmt(limits[0]), hotmath.fmt(limits[1]), lint._citation(check))
-        if problems:
-            lint.add('DRV-E01', '栅源驱动窗口不满足保证条件', detail + '；' + '；'.join(problems),
-                     str(check.get('ref') or '').split('.')[0] or None,
-                     check_id=check['id'], citation=check['citation'], calculation=calculation)
-        else:
-            lint.record_pass('DRV-E01', check, detail,
-                             scope='所给保证值下的栅源驱动窗口；开关速度、米勒导通、SOA 与热未判定',
-                             calculation=calculation)
-
-    def evidence_errors(self, check, label):
-        return hotmath.structure_errors(
-            check, label, spans=('vgs_drive_v', 'vgs_abs_v'),
-            numbers=('vgs_rds_on_v',), choices=(('channel', {'n', 'p'}),))
-
-    def model_gaps(self, check):
-        return hotmath.missing_gaps(
-            check, spans=('vgs_drive_v', 'vgs_abs_v'), numbers=('vgs_rds_on_v',),
-            texts=('channel',))
 
     def rule_instances(self, rule, inventory):
         return sorted({switch['id'] for _, switch in inv.walk(inventory, 'switches')

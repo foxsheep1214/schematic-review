@@ -16,7 +16,7 @@ from validate_remediation import validate_remediation
 from test_revision_impact import database, focused, entries, reviewed_records, check
 from test_remediation import ready, actionable
 from validate_review import fingerprint
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from test_calculation_preflight import calculation
 from test_validate_review import fixture
 

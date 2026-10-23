@@ -8,7 +8,6 @@ import unittest
 
 from test_validate_review import fixture, planned, E, C1
 from validate_review import fingerprint
-from ledger_v3 import record, validate_review as bridged_validate
 import results_model
 import validate_review as vr
 from review_functions import function_errors, binding_errors, frame_errors, validate_functions
@@ -83,7 +82,6 @@ def ledger(fn):
         rows.append(row)
     r['checks'] += rows
     r['plan_digest'] = fingerprint(p)
-    r = record(r, p)
     r['functions'] = [fn]
     for row in r['checks'][-3:]:
         state = row['id'].split('.')[1].split('-')[1]
@@ -601,12 +599,6 @@ class ReportTests(unittest.TestCase):
         text = render(p, r, vr.validate_review(p, r, db))
         self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 1 / 0 / 0 |', text)
         self.assertNotIn('FN-SUMMARIES', text.split('## 各功能的判断')[1].split('\n## ')[0])
-
-
-class BridgeTests(unittest.TestCase):
-    def test_legacy_builders_still_validate_through_the_bridge(self):
-        p, r, db = fixture()
-        self.assertTrue(bridged_validate(p, r, db)['valid'])
 
 
 class FrameTests(unittest.TestCase):

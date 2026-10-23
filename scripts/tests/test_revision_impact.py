@@ -14,9 +14,8 @@ from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint
 from plan_review import build_review_plan, validate_intent
 from revision_impact import (attach_metadata, check_spec, COVERAGE_ID, digest,
                              validate_metadata, validate_reverification)
-from ledger_v3 import record, validate_review
-from gap_fixture import validating, complete_gaps
-validate_review = validating(validate_review)  # gap records are not this file's subject
+from validate_review import validate_review
+from ledger4 import passed
 from test_i2c_topology import add, fixture as i2c_fixture, pending_report
 
 
@@ -290,7 +289,7 @@ class RevisionWorkflowTests(unittest.TestCase):
 
     def report(self, plan=None):
         plan = plan or self.plan
-        return complete_gaps(reviewed_records(plan, pending_report(plan, self.new)))
+        return reviewed_records(plan, pending_report(plan, self.new))
 
     def validate(self, plan, report, **kwargs):
         return validate_review(plan, report, self.new, old_db=self.old, old_plan=self.base,
@@ -304,11 +303,8 @@ class RevisionWorkflowTests(unittest.TestCase):
 
     def test_fresh_scope_review_can_pass_without_passing_electrical_checks(self):
         report = self.report()
-        scope = next(row for row in report['checks'] if row['id'] == COVERAGE_ID)
-        scope.update(review_result='PASS', evidence_confidence='B',
-                     rationale='Synthetic exercise reviewed the expanded scope; electrical evidence gaps remain below')
-        for field in ('missing_inputs', 'potential_severity', 'gap_cause', 'impact_assessment'):
-            scope.pop(field)
+        passed(report, COVERAGE_ID, self.plan,
+               rationale='Synthetic exercise reviewed the expanded scope; electrical evidence gaps remain below')
         result = self.validate(self.plan, report)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['summary']['results']['PASS'], 1)
@@ -328,20 +324,18 @@ class RevisionWorkflowTests(unittest.TestCase):
         final = build_review_plan(self.new, intent, old_db=self.old, old_plan=self.base, previous_plan=cold)
         run = {'review_plan': cold, 'findings': []}
         report = self.report(final)
-        report['lint_reviews'] = [{'run_digest': digest(run), 'items': {}}]
         result = self.validate(final, report, lint_runs=[run])
         self.assertTrue(result['valid'], result)
         bad = deepcopy(final)
         bad['checks'] = [c for c in bad['checks'] if c['id'] != gap_id('MANUAL-IN-COLD')]
         attach_metadata(bad, self.new, intent, old_db=self.old, old_plan=self.base)
         missing = self.report(bad)
-        missing['lint_reviews'] = report['lint_reviews']
         self.assertFalse(self.validate(bad, missing, lint_runs=[run])['valid'])
 
     def test_old_verdict_without_fresh_record_fails_even_after_digest_update(self):
         report = self.report()
         row = next(r for r in report['checks'] if r['id'] != COVERAGE_ID and entries(self.plan)[r['id']]['required'])
-        row.update(review_result='PASS', evidence_confidence='A')
+        passed(report, row['id'], self.plan, evidence_confidence='A')
         row.pop('reverification')
         self.assertTrue(any('re-verification record required' in e for e in self.validate(self.plan, report)['errors']))
 
@@ -353,7 +347,6 @@ class RevisionWorkflowTests(unittest.TestCase):
 
     def test_revision_mode_cannot_disable_object_bindings(self):
         report = self.report()
-        report.pop('binding_version')
         for row in report['checks']:
             row.pop('binding')
         self.assertFalse(self.validate(self.plan, report)['valid'])
@@ -369,8 +362,7 @@ class RevisionWorkflowTests(unittest.TestCase):
     def test_missing_old_plan_cannot_become_pass_coverage(self):
         plan = build_review_plan(self.new, review_mode='revision', old_db=self.old)
         report = self.report(plan)
-        row = next(r for r in report['checks'] if r['id'] == COVERAGE_ID)
-        row.update(review_result='PASS', evidence_confidence='A')
+        passed(report, COVERAGE_ID, plan, evidence_confidence='A')
         result = validate_review(plan, report, self.new, old_db=self.old)
         self.assertFalse(result['valid'])
         self.assertTrue(any('must remain INSUFFICIENT' in e for e in result['errors']))
@@ -413,7 +405,6 @@ class RevisionWorkflowTests(unittest.TestCase):
         self.assertIn(gap_id('PRIOR-STATE'), entries(final))
         run = {'review_plan': cold, 'findings': []}
         report = self.report(final)
-        report['lint_reviews'] = [{'run_digest': digest(run), 'items': {}}]
         result = self.validate(final, report, lint_runs=[run])
         self.assertTrue(result['valid'], result)
 
@@ -446,7 +437,7 @@ class RevisionWorkflowTests(unittest.TestCase):
         plan = json.loads(output.read_text())
         self.assertEqual(plan['revision_impact'], json.loads(impact.read_text()))
         self.assertEqual(plan, json.loads(lint.read_text())['review_plan'])
-        result = self.cli('validate_review.py', output, self.write('report.json', record(self.report(plan))),
+        result = self.cli('validate_review.py', output, self.write('report.json', self.report(plan)),
                           '--db', db, '--old-db', old, '--old-plan', base, '--require-revision-impact')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         result = self.cli('plan_review.py', db, '--old-db', old, '--old-plan', base, '--json', self.root/'standalone.json')

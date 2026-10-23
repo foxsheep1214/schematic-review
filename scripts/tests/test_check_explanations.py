@@ -9,7 +9,7 @@ import catalog
 from plan_review import build_review_plan
 from render_report import render, render_check_explanations
 from validate_review import fingerprint
-from ledger_v3 import validate_review
+from validate_review import validate_review
 from test_plan_review import sample_db
 from test_validate_review import fixture
 

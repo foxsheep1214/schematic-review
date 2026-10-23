@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""电路级与器件检查项（功能树设计 §3.8）：功能电路类型的发现与逐电路展开、电路功能框架、器件与引脚的证据计算、
+"""电路级与器件检查项（功能树设计 §3.8）：功能电路类型的发现与逐电路展开、电路功能框架、器件与引脚的保证值核对、
 阈值窗口，以及每块电路对它拥有的器件问的应力、电容和精度。ReviewPlanner 混入这里的方法。"""
 import re
 
@@ -275,33 +275,30 @@ class CircuitPlanning:
         pin2net = db.get('pin2net', {})
         pseudo = set(db.get('pseudo_nets', []))
 
-        # 证据计算：反馈分压、使能、strap 与 I2C 上拉。
+        # 反馈分压、使能、strap 与 I2C 上拉：审查者按手册保证值核。
         for node, pin in sorted(pinname.items()):
             net = pin2net.get(node)
             upper_pin = str(pin).strip().upper()
             ref = node.split('.')[0]
             if upper_pin in FB_NAMES and net:
                 obj = {'node': node, 'net': net, 'ref': ref}
-                ready = self.evidence_ready('PWR-E01', obj)
                 self.add_check(
-                    'PWR-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
-                    required_inputs=[] if ready else ['datasheet:Vref/目标窗口'],
+                    'PWR-E01', obj, readiness='WAITING_EVIDENCE',
+                    required_inputs=['datasheet:Vref/目标窗口'],
                     trigger=[f'pinname:{pin}'])
             if net and (EN_RE.search(upper_pin) or (
                     EN_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))):
                 obj = {'node': node, 'net': net, 'ref': ref}
-                ready = self.evidence_ready('RST-E01', obj)
                 self.add_check(
-                    'RST-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
-                    required_inputs=[] if ready else ['datasheet:pin function/Abs Max'],
+                    'RST-E01', obj, readiness='WAITING_EVIDENCE',
+                    required_inputs=['datasheet:pin function/Abs Max'],
                     trigger=[f'pinname:{pin}', f'net:{net}'])
             if net and (STRAP_RE.search(upper_pin) or (
                     STRAP_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))):
                 obj = {'node': node, 'net': net, 'ref': ref}
-                ready = self.evidence_ready('RST-E02', obj)
                 self.add_check(
-                    'RST-E02', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
-                    required_inputs=[] if ready else ['datasheet:strap table/mandatory wording'],
+                    'RST-E02', obj, readiness='WAITING_EVIDENCE',
+                    required_inputs=['datasheet:strap table/mandatory wording'],
                     trigger=[f'pinname:{pin}', f'net:{net}'])
 
         i2c_nets = set()
@@ -311,13 +308,12 @@ class CircuitPlanning:
                 i2c_nets.add(net)
         for net in sorted(i2c_nets - pseudo):
             obj = {'net': net}
-            ready = self.evidence_ready('SIG-E01', obj)
             self.add_check(
-                'SIG-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
-                required_inputs=[] if ready else ['datasheet/platform:I2C pull requirement'],
+                'SIG-E01', obj, readiness='WAITING_EVIDENCE',
+                required_inputs=['datasheet/platform:I2C pull requirement'],
                 trigger=[f'net:{net}'])
 
-        # 连接器：pin map（证据计算）、对端定义、未用针处置与对外防护逐个一项。
+        # 连接器：pin map、对端定义、未用针处置与对外防护逐个一项。
         connector_graph = NetGraph(board_intent.graph_db(db, self.kind_intent))
         for ref, part in sorted(db.get('parts', {}).items()):
             if part.get('nc') or not (CONNECTOR_RE.match(ref) or connector_graph.kind(ref) == CONNECTOR):
@@ -325,10 +321,9 @@ class CircuitPlanning:
             connector_trigger = [f'refdes:{ref}',
                                  f'connector-kind:{connector_graph.basis(ref)}']
             obj = {'ref': ref}
-            ready = self.evidence_ready('DEV-E01', obj)
             self.add_check(
-                'DEV-E01', obj, readiness='READY' if ready else 'WAITING_EVIDENCE',
-                required_inputs=[] if ready else ['connector drawing/opposite-side pinout'],
+                'DEV-E01', obj, readiness='WAITING_EVIDENCE',
+                required_inputs=['connector drawing/opposite-side pinout'],
                 trigger=connector_trigger)
             gaps, audit_trigger = self._datasheet_readiness(ref, part)
             port = {'interface': 'EXT-' + ref, 'ref': ref}   # the connector's interface (function tree, step 4)

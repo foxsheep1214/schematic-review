@@ -6,9 +6,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from plan_review import build_review_plan
-from ledger_v3 import validate_review
-from gap_fixture import validating
-validate_review = validating(validate_review)  # gap records are not this file's subject
+from validate_review import validate_review
 from test_decoupling import fixture, rebind, ledger, mark_pass
 
 
@@ -40,7 +38,7 @@ class LocalConnectionScopeTests(unittest.TestCase):
         selected = {r['id'] for r in rows}
         for row in report['checks']:
             if row['id'] in selected:
-                mark_pass(row)
+                mark_pass(report, plan, row)
         gate = validate_review(plan, report, db, require_bindings=True)
         self.assertTrue(gate['valid'], gate['errors'])
         self.assertEqual(len([c for c in report['checks'] if c['review_result'] == 'PASS']), 2)
@@ -51,7 +49,7 @@ class LocalConnectionScopeTests(unittest.TestCase):
             report = ledger(plan, db)
             selected = next(c for c in plan['checks'] if c['rule'] == rule and
                             (rule == 'PWR-D01' or c['object'].get('nodes') == ['U1.1']))
-            mark_pass(next(c for c in report['checks'] if c['id'] == selected['id']))
+            mark_pass(report, plan, selected['id'])
             gate = validate_review(plan, report, db)
             self.assertFalse(gate['valid'], rule)
             self.assertTrue(any('decoupling gaps' in e for e in gate['errors']), gate['errors'])
@@ -68,7 +66,7 @@ class LocalConnectionScopeTests(unittest.TestCase):
         report = ledger(plan, db)
         for row in report['checks']:
             if row['id'] in {c['id'] for c in local_rows(plan)}:
-                mark_pass(row)
+                mark_pass(report, plan, row)
         self.assertFalse(validate_review(plan, report, db)['valid'])
 
     def test_missing_population_and_return_connection_remain_blocking(self):
@@ -82,7 +80,7 @@ class LocalConnectionScopeTests(unittest.TestCase):
                 plan = build_review_plan(db, intent); report = ledger(plan, db)
                 for row in report['checks']:
                     if row['id'] in {c['id'] for c in local_rows(plan)}:
-                        mark_pass(row)
+                        mark_pass(report, plan, row)
                 self.assertFalse(validate_review(plan, report, db)['valid'])
 
     def test_discovered_unconfirmed_group_cannot_use_the_scope_exception(self):
@@ -92,7 +90,7 @@ class LocalConnectionScopeTests(unittest.TestCase):
         self.assertEqual(len(foreign), 1)
         self.assertTrue(any('confirm-group-and-return' in g for g in foreign[0]['inventory_gaps']))
         report = ledger(plan, db)
-        mark_pass(next(c for c in report['checks'] if c['id'] == foreign[0]['id']))
+        mark_pass(report, plan, foreign[0]['id'])
         self.assertFalse(validate_review(plan, report, db)['valid'])
 
     def test_missing_connection_requirement_and_export_integrity_still_block(self):
@@ -105,7 +103,7 @@ class LocalConnectionScopeTests(unittest.TestCase):
                     db['export_errors'] = ['Synthetic interrupted export']; rebind(db, intent)
                 plan = build_review_plan(db, intent); report = ledger(plan, db)
                 selected = next(c for c in local_rows(plan) if c['rule'] == 'PWR-D02')
-                mark_pass(next(c for c in report['checks'] if c['id'] == selected['id']))
+                mark_pass(report, plan, selected['id'])
                 self.assertFalse(validate_review(plan, report, db)['valid'])
 
     def test_full_gap_metadata_cannot_be_deleted_to_hide_inventory_difference(self):

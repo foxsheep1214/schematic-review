@@ -20,11 +20,10 @@ python3 evals/rule_contracts/contracts.py NET-A03    # 只跑某几条
 | runner | 适用 | 触发板 | 近似板 |
 |---|---|---|---|
 | `cold` | Lint 内置与检查器的 A 规则 | 冷跑出现该规则的 FINDING/CANDIDATE（INFO 不算） | 没有，且该规则不在 `skipped` 里 |
-| `hot` | E 规则 | 热跑证据算出 FAIL | 只有 PASS |
-| `plan` | T、V 规则与 REQ-A02 | 计划里有该规则的 APPLICABLE 检查项 | 没有 APPLICABLE 项（NA/UNDETERMINED 不算） |
+| `plan` | E、T、V 规则与 REQ-A02 | 计划里有该规则的 APPLICABLE 检查项 | 没有 APPLICABLE 项（NA/UNDETERMINED 不算） |
 | `rule_plan` | REQ-H01 | 计划 `rule_plan` 行为 APPLICABLE | 不是 APPLICABLE |
 
-热跑证据按 `scripts/tests/electrical_fixtures.bind_evidence` 绑定合成资料；`intent.bound=true`
+`intent.bound=true`
 表示套用共享装配绑定（`bound_intent`）。计划规则的近似板多数是“同一结构只有名称线索、没有意图声明”，
 用来锁住适用性门槛：名称命中只能是 UNDETERMINED，不能直接排程为 APPLICABLE。
 
@@ -56,4 +55,4 @@ DOC-T01、DOC-V02、PWR-T06 是全板通用规则，计划对每块板（含空�
 方式 C（工程计算，36 条）、D（条款核对，34 条）、Q（覆盖审计，9 条）由审查者逐项判定，代码只负责排程，
 判据靠审查者对资料和需求，不存在“必触发/必不触发”的确定性合成板。它们的计划排程由
 `test_catalog.py` 的可达性测试覆盖（每条 plan/package/board 规则都能被计划生成），审查质量由
-`evals/training/` 的真值闭环衡量。
+两份同板记录的对比（`scripts/compare_reviews.py`）与 [一致性基准](../consistency_bench/README.md) 衡量。

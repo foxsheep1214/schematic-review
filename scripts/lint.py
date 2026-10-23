@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-自动扫描（方式 A）与证据计算（方式 E）——规则编号见 scripts/catalog.py
+自动扫描（方式 A）——规则编号见 scripts/catalog.py
 
 用法:
     python3 lint.py db.json [--log netlist.log] [--intent intent.json]
-    python3 lint.py db.json --evidence evidence.json \
-        [--datasheet-audit datasheet-audit.json] \
-        [--plan-json review-plan.json] [--json out.json]
+    python3 lint.py db.json --datasheet-audit datasheet-audit.json \
+        [--merge-plan review-plan-cold.json] [--plan-json review-plan.json] [--json out.json]
 
-网表扫描只执行自动扫描；提供 --evidence 的证据扫描再执行证据计算。
+第二趟带资料审计，按核实的器件类型重扫并合并成最终计划。E 规则的行由审查者按手册保证值判定。
 **扫描输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、补偿网络、
 DNP 选项、被删外设的引出脚、工具伪网络）由执行 agent 逐条排除。
 规则依赖命名和已知图结构；零命中不表示检查完整或电气通过。
@@ -31,17 +30,15 @@ import sys
 from collections import defaultdict
 
 from audit_datasheets import validate_datasheet_audit
-from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID, registry_hot_rules
+from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID
 from checkers.powertree import declared_supply_nets
 from checkers import netgraph as ng, passive_stress
 from checkers.netgraph import (CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER, TVS,
                                TWO_TERMINAL, NetGraph, rail_voltage as _volt)
-from electrical_contract import bounded, db_fingerprint, load_json, readiness_gaps, validate_evidence
-from fractions import Fraction
-from itertools import product
+from electrical_contract import db_fingerprint, load_json
 import board_intent
 from plan_review import build_review_plan, validate_intent
-from solve_dividers import Solver, divider_window, linear_feedback_window, parse_resistor
+from solve_dividers import parse_resistor
 
 # 导出日志分级（英文与中文界面）：导出错误/中止、批注错误、其他告警。退出码 0 不等于没有告警。
 EXPORT_ERROR_RE = re.compile(r'ERROR\s*\(|Aborting Netlisting|错误\s*[（(]|中止|已终止', re.I)
@@ -136,11 +133,6 @@ def _ground_like(net):
     return any(GND_TOKEN_RE.match(t) for t in re.split(r'[^A-Z0-9]+', str(net).upper()) if t)
 
 
-def hot_rules():
-    """全部证据计算规则（内置与检查器）；未执行的照样要列出来。"""
-    return [(rule.id, rule.title) for rule in catalog.rules(stage='hot')]
-
-
 BRIDGED_JUMPER_RE = re.compile(r'SolderJumper_(\d)_Bridged(\d*)')
 
 
@@ -176,13 +168,11 @@ def clamp_volt(blob):
 
 
 class Lint:
-    def __init__(self, db, log_text=None, intent=None, evidence=None, datasheet_audit=None):
+    def __init__(self, db, log_text=None, intent=None, datasheet_audit=None):
         self.db = db
         self.db_sha256 = db_fingerprint(db)
         self.datasheet_audit = datasheet_audit
-        self.results = []
         self.intent = requirement_parameters.resolve(intent or {})
-        self.evidence = evidence or {}
         self.nets = db['nets']
         self.parts = db['parts']
         self.pinname = db['pinname']
@@ -192,9 +182,7 @@ class Lint:
         self.pseudo = set(db.get('pseudo_nets', []))
         self.log = log_text
         self.F = []
-        self.passes = []
         self.skipped = []      # 未执行的规则及原因——绝不静默跳过
-        self.hot_executed = set()
         self._ends_cache = {}
         analysis = board_intent.with_verified_kinds(self.intent, datasheet_audit)   # datasheet-verified kinds
         analysis_db = board_intent.graph_db(db, analysis)
@@ -211,9 +199,6 @@ class Lint:
 
     def refs_of(self, net):
         return {x.split('.')[0] for x in self.nets.get(net, [])}
-
-    def target_net(self, check):
-        return check.get('net') or self.pin2net.get(check.get('node'))
 
     def resistor_links(self, net):
         links = []
@@ -280,28 +265,7 @@ class Lint:
         if ref:
             item['ref'] = ref
         item.update(extra)
-        if extra.get('check_id'):
-            evidence = next((x for x in self.evidence.get('checks', [])
-                             if x.get('id') == extra['check_id']), {})
-            item['state'] = (evidence.get('basis') or {}).get('state')
-            if 'vref_binding' in evidence:
-                item['vref_binding'] = evidence['vref_binding']
-            item['review_result'] = 'INSUFFICIENT' if kind == 'CANDIDATE' else 'FAIL'
-            self.results.append(item)
         self.F.append(item)
-
-    def record_pass(self, rule, check, detail, scope=None, calculation=None):
-        item = {
-            'rule': rule, 'check_id': check['id'], 'detail': detail,
-            'citation': check['citation'], 'review_result': 'PASS',
-            'scope': scope or check['kind'], 'state': check.get('basis', {}).get('state'),
-        }
-        if calculation is not None:
-            item['calculation'] = calculation
-        if 'vref_binding' in check:
-            item['vref_binding'] = check['vref_binding']
-        self.passes.append(item)
-        self.results.append(item)
 
     def power_path(self, net):
         """Return a source-to-load candidate path, never a rail signoff."""
@@ -654,14 +618,10 @@ class Lint:
         else:
             self.skipped.append(('REQ-A01', catalog.title('REQ-A01'), '意图中缺少器件计数目标 intent.expect'))
 
-        # RST-A01 使能脚上下拉：网络名或引脚功能名命中；已有 RST-E01 证据的网络交证据计算
-        covered_rule12_nets = {
-            self.target_net(check) for check in self.evidence.get('checks', [])
-            if check.get('rule') == 'RST-E01'
-        }
+        # RST-A01 使能脚上下拉：网络名或引脚功能名命中
         for n, nds in nets.items():
             pin_hit = any(EN_RE.search(pinname.get(node, '')) for node in nds)
-            if n in self.pseudo or n in covered_rule12_nets or not (
+            if n in self.pseudo or not (
                     EN_RE.search(n) or pin_hit):
                 continue
             pulls = []
@@ -725,246 +685,7 @@ class Lint:
             inventory = self.inventories.get(checker.id)
             if inventory is not None:
                 checker.cold_findings(self, inventory)
-
-        if self.evidence:
-            self.run_hot()
         return self.F
-
-    def run_hot(self):
-        """执行已提供结构化证据的证据计算规则；未提供的继续保持 pending。"""
-        for check in self.evidence.get('checks', []):
-            rule = check['rule']
-            gaps = readiness_gaps(self.db, check, self.datasheet_audit, self.db_sha256)
-            if gaps:
-                self.add(rule, '证据扫描所需的证据/模型尚未就绪', '; '.join(gaps),
-                         kind='CANDIDATE', check_id=check['id'],
-                         citation=check['citation'], required_inputs=gaps)
-                continue
-            self.hot_executed.add(rule)
-            builtin = {
-                'PWR-E01': self._hot_divider,
-                'SIG-E01': self._hot_required_passive,
-                'RST-E01': self._hot_pin_bias,
-                'DEV-E01': self._hot_pin_map,
-                'DEV-E02': self._hot_operating_range,
-                'RST-E02': self._hot_strap,
-            }
-            if rule in builtin:
-                builtin[rule](check)
-            else:
-                registry_hot_rules()[rule][1].hot_check(self, check)
-
-    @staticmethod
-    def _citation(check):
-        return f"[{check['id']}] {check['citation']}"
-
-    def _hot_divider(self, check):
-        tolerance = check.get('resistor_tolerance')
-        model = check.get('divider_model') or {}
-        try:
-            if len({check['net'], model.get('source_net'), model.get('reference_net')}) != 3:
-                raise ValueError('FB、源端和参考地必须不同')
-            solver = Solver(self.db, default_tol=tolerance, model=model)
-            solution = solver.solve_net(check['net'])
-            vref = check['vref']
-            typ, minimum, maximum = (float(vref[k]) for k in ('typ', 'min', 'max'))
-            bias = model['bias_current_a']
-            if solution.get('status') == 'ok':
-                window = divider_window(solution, typ, minimum, maximum)
-                corners = [v * (1 + up / lo) + current * up * 1000
-                           for v, up, lo, current in product(
-                               (minimum, maximum), (solution['up']['min'], solution['up']['max']),
-                               (solution['lo']['min'], solution['lo']['max']),
-                               (bias['min'], bias['max']))]
-                window.update(min=min(corners), max=max(corners))
-                window['typ_note'] = 'typ 为零偏置标称值；min/max 包含偏置电流'
-            else:
-                network = solver.linear_network(check['net'])
-                # Newly supported networks require bindings for every resistor
-                # and ignored load, not only devices directly on the FB net.
-                expanded = dict(check, depends_on=sorted(
-                    set(check.get('depends_on') or []) | set(network['required_refs'])))
-                gaps = readiness_gaps(self.db, expanded, self.datasheet_audit, self.db_sha256)
-                if gaps:
-                    raise ValueError('节点网络参数来源未就绪：' + '; '.join(gaps))
-                window = linear_feedback_window(network, vref, bias)
-        except ValueError as error:
-            self.add(
-                'PWR-E01', '分压网络无法无歧义求解',
-                f"{check['net']}: {error}；{self._citation(check)}",
-                kind='CANDIDATE', check_id=check['id'], citation=check['citation'])
-            return
-        expected = check['expected']
-        low = float(expected.get('min', float('-inf')))
-        high = float(expected.get('max', float('inf')))
-        detail = (
-            f"{check['net']}: Vout typ={window['typ']:.6g}V, "
-            f"window=[{window['min']:.6g}, {window['max']:.6g}]V, "
-            f"要求=[{low:g}, {high:g}]V；{self._citation(check)}")
-        if 'bounds_exact' in window:
-            outside = (('min' in expected and Fraction(window['bounds_exact']['min']) < Fraction(str(expected['min'])))
-                       or ('max' in expected and Fraction(window['bounds_exact']['max']) > Fraction(str(expected['max']))))
-        else:
-            outside = window['min'] < low or window['max'] > high
-        if outside:
-            self.add(
-                'PWR-E01', '分压最坏情况窗口不满足要求', detail,
-                kind='FINDING', check_id=check['id'],
-                citation=check['citation'], calculation=window)
-        else:
-            self.record_pass('PWR-E01', check, detail,
-                             scope='所给反馈/监控阈值的静态分压窗口；工作余量/启动/稳定性另查', calculation=window)
-
-    def _hot_required_passive(self, check):
-        net = self.target_net(check)
-        links = self.resistor_links(net)
-        destination = check.get('to')
-        if destination:
-            candidates = [x for x in links if x['other'] == destination]
-        else:
-            candidates = [x for x in links if (
-                ng.is_ground(x['other']) if check.get('direction') == 'down'
-                else RAIL_RE.match(x['other']))]
-        limits = check.get('resistance_ohm') or {}
-        detail = f"{net}: {check['kind']} -> {destination or '*'}; candidates={candidates}"
-        if not candidates:
-            self.add('SIG-E01', '未找到要求的直接电阻连接', detail,
-                     kind='CANDIDATE' if links else 'FINDING',
-                     check_id=check['id'], citation=check['citation'])
-            return
-        # A set of parallel pull-ups is one equivalent load on the bus driver.
-        if len({x['other'] for x in candidates}) != 1:
-            self.add('SIG-E01', '电阻连接多个电源域，需节点分析', detail,
-                     kind='CANDIDATE', check_id=check['id'], citation=check['citation'])
-            return
-        if limits and any(x not in candidates for x in links):
-            self.add('SIG-E01', '存在其他电阻支路，等效模型不完整', detail,
-                     kind='CANDIDATE', check_id=check['id'], citation=check['citation'])
-            return
-        if not limits:
-            self.record_pass('SIG-E01', check, detail,
-                             scope='仅电阻装配及两端连接；电平、时序和阻值窗口未判定')
-            return
-        if any(x['ohm'] is None or x['tol'] is None or x['ohm'] <= 0 for x in candidates):
-            self.add('SIG-E01', '阻值/公差不完整或含短路支路', detail,
-                     kind='CANDIDATE', check_id=check['id'], citation=check['citation'])
-            return
-        equivalent = {key: 1 / sum(1 / (x['ohm'] * (1 + sign * x['tol']))
-                                    for x in candidates)
-                      for key, sign in (('min', -1), ('typ', 0), ('max', 1))}
-        detail += f'; 等效阻值窗口={equivalent} ohm'
-        if (equivalent['min'] < float(limits.get('min', float('-inf')))
-                or equivalent['max'] > float(limits.get('max', float('inf')))):
-            self.add('SIG-E01', '等效电阻窗口不满足要求', detail,
-                     check_id=check['id'], citation=check['citation'], calculation=equivalent)
-        else:
-            self.record_pass('SIG-E01', check, detail,
-                             scope='指定两网间直接电阻的等效值；不含总线电平/上升时间',
-                             calculation=equivalent)
-
-    def _bias_result(self, check, rule):
-        net = self.target_net(check)
-        required = check.get('required_default') or check.get('required')
-        if not net or net not in self.nets:
-            self.add(rule, '目标引脚无网络', str(check.get('node') or net),
-                     check_id=check['id'], citation=check['citation'])
-            return False
-        if required == 'float':
-            if not check.get('node'):
-                self.add(rule, 'must-float 需要精确引脚', net, kind='CANDIDATE',
-                         check_id=check['id'], citation=check['citation'])
-                return False
-            others = [x for x in self.nets[net] if x != check['node']
-                      and not self.parts.get(x.split('.')[0], {}).get('nc')]
-            if others:
-                self.add(rule, '要求无外部连接的引脚仍有连接', f'{net}: {others}',
-                         check_id=check['id'], citation=check['citation'])
-                return False
-            self.record_pass(rule, check, f'{net}: 无已装配的外部连接',
-                             scope='仅外部连接；不推断内部上拉/电压')
-            return True
-        analysis = check['voltage_analysis']
-        voltage = analysis['voltage_v']
-        threshold = check['vih_min_v'] if required == 'high' else check['vil_max_v']
-        compliant = voltage['min'] >= threshold if required == 'high' else voltage['max'] <= threshold
-        issues = []
-        if not compliant:
-            issues.append('电压窗口不满足保证逻辑门限；不等于每颗样品必然失效')
-        if check.get('abs_min_v') is not None and voltage['min'] < check['abs_min_v']:
-            issues.append('引脚电压窗口低于给定负向绝对最大额定')
-        if check.get('abs_max_v') is not None and voltage['max'] > float(check['abs_max_v']):
-            issues.append('引脚电压窗口超过给定正向绝对最大额定')
-        detail = (f"{net}: {required}, voltage={voltage}, threshold={threshold}V; "
-                  f"sample={analysis['sample_window_s']}s; {analysis['calculation']}")
-        if issues:
-            self.add(rule, '引脚保证条件不满足', detail + '; ' + '; '.join(issues),
-                     check_id=check['id'], citation=check['citation'], calculation=analysis)
-            return False
-        self.record_pass(rule, check, detail,
-                         scope='仅所述状态/采样窗口及给定逻辑门限/电压额定；注入电流另查',
-                         calculation=analysis)
-        return True
-
-    def _hot_pin_bias(self, check):
-        self._bias_result(check, 'RST-E01')
-
-    def _hot_strap(self, check):
-        self._bias_result(check, 'RST-E02')
-
-    def _hot_operating_range(self, check):
-        """按保证的推荐工作条件窗口核对该轨的设计电压范围；设计窗口取自 intent.power_rails。"""
-        ref, net = check['ref'], check['net']
-        design = (self.intent.get('power_rails', {}).get(net) or {}).get('voltage_v')
-        recommended = check['supply_v']
-        if not bounded(design):
-            self.add('DEV-E02', '缺少该轨的设计电压窗口',
-                     f'{ref} @ {net}: 需要 intent.power_rails.{net}.voltage_v 的 min/max；'
-                     f'{self._citation(check)}',
-                     ref, kind='CANDIDATE', check_id=check['id'], citation=check['citation'],
-                     required_inputs=[f'power_rails.{net}.voltage_v.min/max'])
-            return
-        window = {'design_v': dict(design), 'recommended_v': dict(recommended),
-                  'margin_low_v': design['min'] - recommended['min'],
-                  'margin_high_v': recommended['max'] - design['max']}
-        detail = (f"{ref} @ {net}: 设计=[{design['min']:g}, {design['max']:g}]V, "
-                  f"推荐=[{recommended['min']:g}, {recommended['max']:g}]V; {self._citation(check)}")
-        if window['margin_low_v'] < 0 or window['margin_high_v'] < 0:
-            self.add('DEV-E02', '设计电压范围超出推荐工作条件', detail, ref,
-                     check_id=check['id'], citation=check['citation'], calculation=window)
-        else:
-            self.record_pass('DEV-E02', check, detail, calculation=window,
-                             scope='仅该轨的直流电压窗口；温度、负载、频率与瞬态另查（DEV-C05）')
-
-    def _hot_pin_map(self, check):
-        ref = check['ref']
-        mismatches = []
-        declared = self.db.get('declared_pinname') or {}
-        unnamed = []
-        for pin, expected in sorted(check['expected'].items()):
-            node = f'{ref}.{pin}'
-            # The functional-name index skips passive pins (bridge AC terminals,
-            # transformer windings); compare the symbol's declared name there.
-            actual = self.pinname.get(node) or declared.get(node)
-            allowed = expected if isinstance(expected, list) else [expected]
-            allowed = [str(x).strip().upper() for x in allowed]
-            if actual is None and node in self.pin2net:
-                # KiCad exports an unnamed pin ("~") without a name: the pin exists,
-                # so the number is confirmed and there is no name to disagree with.
-                unnamed.append(node)
-                continue
-            if actual is None or not (pin_name_tokens(actual) & set(allowed)):
-                mismatches.append(
-                    f'{node}: actual={actual!r}, expected={allowed}')
-        detail = (
-            f"{ref}: checked={len(check['expected'])}, "
-            f"mismatches={mismatches}, unnamed_in_symbol={unnamed}; {self._citation(check)}")
-        if mismatches:
-            self.add(
-                'DEV-E01', '符号引脚映射与官方定义不符', detail, ref,
-                check_id=check['id'], citation=check['citation'])
-        else:
-            self.record_pass('DEV-E01', check, detail, scope='仅 expected 列出的引脚及名称')
-
 
 def _table(by, keys):
     for k in keys:
@@ -972,13 +693,11 @@ def _table(by, keys):
 
 
 def main():
-    ap = argparse.ArgumentParser(description='自动扫描与证据计算（扫描输出为疑似清单）')
+    ap = argparse.ArgumentParser(description='自动扫描（扫描输出为疑似清单）')
     ap.add_argument('db', help='parse_netlist.py 产出的 db.json')
     ap.add_argument('--log', help='netlist.log（导出日志，含 No_connect 等免费证据）')
     ap.add_argument('--intent',
                     help='第 0 步意图清单 JSON（适用性发现与 REQ-A01 所需）')
-    ap.add_argument('--evidence',
-                    help='资料取证形成的结构化证据 JSON；提供后执行对应证据计算规则')
     ap.add_argument(
         '--datasheet-audit',
         help='audit_datasheets.py 产出的逐物料覆盖审计 JSON')
@@ -1002,7 +721,6 @@ def main():
         db = load_json(a.db)
         log = io.open(a.log, encoding='utf-8', errors='replace').read() if a.log else None
         intent = load_json(a.intent) if a.intent else None
-        evidence = load_json(a.evidence) if a.evidence else None
         datasheet_audit = load_json(a.datasheet_audit) if a.datasheet_audit else None
         previous_plan = load_json(a.merge_plan) if a.merge_plan else None
         old_db = load_json(a.old_db) if a.old_db else None
@@ -1018,10 +736,6 @@ def main():
     intent_errors = validate_intent(intent, db, candidates=candidates, require_candidates=True)
     if intent_errors:
         sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(intent_errors))
-    if a.evidence:
-        errors = validate_evidence(evidence)
-        if errors:
-            sys.exit('[FATAL] evidence.json 无效:\n  - ' + '\n  - '.join(errors))
     if datasheet_audit is not None:
         errors = validate_datasheet_audit(datasheet_audit, db)
         if errors:
@@ -1031,12 +745,12 @@ def main():
         if path and not os.path.isfile(path):
             sys.exit(f'[FATAL] {label} 文件不存在: {path}')
 
-    lint = Lint(db, log, intent, evidence, datasheet_audit)
+    lint = Lint(db, log, intent, datasheet_audit)
     F = lint.run()
     try:
         # Each automatic-scan finding is answered in the ledger like any other check.
         review_plan = build_review_plan(
-            db, intent, evidence, a.review_mode,
+            db, intent, a.review_mode,
             old_db_available=bool(a.old_db),
             claims_available=bool(a.claims),
             datasheet_audit=datasheet_audit, previous_plan=previous_plan,
@@ -1082,7 +796,7 @@ def main():
     cand = [k for k in order if k[1] == 'CANDIDATE']
     info = [k for k in order if k[1] == 'INFO']
 
-    print('=== 自动扫描与证据计算汇总（疑似清单，非判决）===')
+    print('=== 自动扫描汇总（疑似清单，非判决）===')
     _table(by, find)
     n_find = sum(len(by[k]) for k in find)
     print(f'  {"合计":45s} {n_find:5d} 条')
@@ -1097,33 +811,14 @@ def main():
         print('\n=== INFO：提示（非缺陷，准出前仍需图面或属性证据）===')
         _table(by, info)
 
-    if lint.passes:
-        print('\n=== 自动验证通过（证据留痕）===')
-        passed = defaultdict(list)
-        for item in lint.passes:
-            passed[item['rule']].append(item)
-        for rule in sorted(passed):
-            print(f'  {rule:12s} {len(passed[rule]):5d} 条')
-
     # 未执行的规则必须报出来——扫出 0 条与根本没扫，绝不能长得一样
     print('\n=== 本趟未执行（0 条 ≠ 通过）===')
     for rid, name, why in lint.skipped:
         print(f'  {rid:12s} {name:32s} {why}')
-    for rid, name in hot_rules():
-        if rid not in lint.hot_executed:
-            print(f'  {rid:12s} {name:32s} 未提供对应的结构化证据')
 
     if a.json:
-        pending = [list(item) for item in hot_rules()
-                   if item[0] not in lint.hot_executed]
         json.dump({'findings': F,
-                   'check_results': lint.results,
-                   'passes': lint.passes,
                    'skipped': [list(s) for s in lint.skipped],
-                   'hot_executed': sorted(lint.hot_executed),
-                   'hot_pending': pending,
-                   'hot_uncovered_instances': [x['id'] for x in review_plan['checks']
-                       if x.get('rule') in {r for r, _ in hot_rules()} and x['readiness'] != 'READY'],
                    'review_plan': review_plan,
                    'coverage': {
                        'pintype_available': bool(db.get('pintype')),
@@ -1132,7 +827,6 @@ def main():
                        'pintype_ratio': (
                            len(db.get('pintype', {}))
                            / max(len(db.get('pin2net', {})), 1)),
-                       'evidence_checks': len((evidence or {}).get('checks', [])),
                        'finding_count': len([x for x in F
                                              if x['kind'] == 'FINDING']),
                        'candidate_count': len([x for x in F

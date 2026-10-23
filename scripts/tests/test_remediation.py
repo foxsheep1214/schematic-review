@@ -7,11 +7,10 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from ledger_v3 import record, validate_review
 from test_validate_review import fixture, fail, E
 from test_calculation_preflight import calculation
 from review_engine import engine_identity
-from validate_review import fingerprint
+from validate_review import fingerprint, validate_review
 
 
 def ready():
@@ -30,14 +29,13 @@ def ready():
 
 def actionable():
     p, r, db = fixture(); fail(r)
-    r['remediation_version'] = 2
     r['findings'][0]['remediation'] = ready()
     r['findings'][0]['figures'] = [{'kind': 'ACTUAL', 'source': 'figures/F1-actual.png', 'locator': 'p1 U1 area', 'caption': 'Synthetic actual circuit'}]
     return p, r, db
 
 
 class RemediationTests(unittest.TestCase):
-    def test_legacy_is_compatible_but_does_not_pass_new_gate(self):
+    def test_a_defect_without_remediation_fails_only_the_actionable_gate(self):
         p, r, db = fixture(); fail(r)
         self.assertTrue(validate_review(p, r, db)['valid'])
         self.assertFalse(validate_review(p, r, db, require_actionable=True)['valid'])
@@ -119,7 +117,7 @@ class RemediationTests(unittest.TestCase):
         script = pathlib.Path(__file__).resolve().parents[1] / 'validate_review.py'
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            for name, value in [('plan', p), ('report', record(r)), ('db', db)]:
+            for name, value in [('plan', p), ('report', r), ('db', db)]:
                 (root/name).write_text(json.dumps(value))
             args = [sys.executable, str(script), str(root/'plan'), str(root/'report'),
                     '--db', str(root/'db'), '--require-actionable']
@@ -128,7 +126,7 @@ class RemediationTests(unittest.TestCase):
             self.assertEqual(json.loads(result.stdout)['release'], 'NO_GO')
             self.assertEqual(subprocess.run(args+['--require-release'], capture_output=True).returncode, 2)
             del r['findings'][0]['remediation']
-            (root/'report').write_text(json.dumps(record(r)))
+            (root/'report').write_text(json.dumps(r))
             self.assertEqual(subprocess.run(args, capture_output=True).returncode, 2)
 
 
