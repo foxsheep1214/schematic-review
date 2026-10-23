@@ -62,6 +62,10 @@ EDGE_EFFECTS = ('BLOCKS_PROOF', 'INFORMATION_ONLY')
 EDGE_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING')   # gaps in a quantity: each edge says what it enters
 STATELESS = 'STATELESS'
 WIDE_GAP = 3                     # more blocked aspects than this is reported for a second look, never refused
+# Life rows (consistency proposals of 2026-10-23, item 6): an endurance or wear-out life rests on an estimate on the
+# mission profile, written as a BOM constraint; no vendor-data item is opened for it.
+LIFE_ROW_RE = re.compile(r'^(DEV-C02\.LIFE|DEV-C06)\.')
+LIFE_ASPECTS = ('电容有效容量与寿命', '耗损件寿命')   # catalog titles of DEV-C02 and DEV-C06
 RETIRED_ITEM_FIELDS = {
     'margin_not_decisive_reason': "the margin's basis says whether it decides (an ESTIMATE or a missed GUARANTEED_BOUND "
                                   "does not); the open item's edges say what it blocks and why",
@@ -211,6 +215,24 @@ def judged(fn, aspect, state=None, check_id=None):
             names = ['厂家参考电路 ' + by_id[c]['reference_circuit']['figure'] if reference_circuit(by_id.get(c)) else c
                      for c in j.get('conditions') or [] if isinstance(c, str)]
             return '%s（依据 %s）' % (j['says'], '、'.join(names))
+    return life_estimate(fn, aspect, state, check_id)
+
+
+def life_row(check_id):
+    return isinstance(check_id, str) and bool(LIFE_ROW_RE.match(check_id))
+
+
+def life_estimate(fn, aspect, state=None, check_id=None):
+    """On a life row, an ESTIMATE margin that meets its target: the row passes as a BOM constraint (item 6a)."""
+    if not life_row(check_id):
+        return None
+    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    for m in results_model.margins(calc):
+        basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
+        met = _finite(m.get('value')) and (m['value'] >= 0 if basis.get('comparison') == 'GE' else m['value'] > 0)
+        if basis.get('kind') == 'ESTIMATE' and met and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
+            return '%s；估算余量 %s%s 对 %s' % (calc.get('result') or '', m['value'], m.get('unit') or '',
+                                          m.get('against') or '')
     return None
 
 
@@ -597,7 +619,8 @@ def _decision_errors(fid, fn, calculation, conditions, findings):
         else:
             deciding = ([sc2 for m2, sc2, v2 in margins if v2 != 'OPEN'] + [jsc for _, jsc in judgements]
                         + [isc for _, isc in opens] + [isc for _, isc in fails])
-            if not any(overlaps(sc, other) for other in deciding):
+            if (not any(overlaps(sc, other) for other in deciding)
+                    and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE' and sc[0] in LIFE_ASPECTS)):
                 errors.append('%s: margin %s (basis %s) decides nothing; record the open item it leaves, whose edge names '
                               'the bound still missing' % (fid, name(m), (m.get('basis') or {}).get('kind')))
     for j, jsc in judgements:
@@ -1103,7 +1126,8 @@ def binding_errors(expected, checks, functions, history_ids=()):
         elif (result == 'PASS' and fid is not None and cid not in history_ids and text(row.get('aspect'))
               and (expected.get(cid) or {}).get('method') == 'C'
               and not margin_proves(functions[fid], row['aspect'], state, cid)
-              and not reference_judged(functions[fid], row['aspect'], state, cid)):   # 1e
+              and not reference_judged(functions[fid], row['aspect'], state, cid)
+              and not life_estimate(functions[fid], row['aspect'], state, cid)):   # 1e
             errors.append('%s: aspect %s is an engineering calculation (method C); it passes on a margin of %s that '
                           'proves it, not on a sentence (a vendor reference circuit with reference_circuit also settles '
                           'it); a sentence closes connection tracing and clause checks' % (cid, row['aspect'], fid))
@@ -1355,6 +1379,35 @@ def requirement_edge_errors(plan, checks, functions):
 CONFIG_ROWS = ('CFG-D01', 'REQ-D01')
 
 
+def life_errors(checks, functions):
+    """Item 6a: a life row passing on an estimate states its BOM constraint as an estimate, and no life row is blocked
+    by a vendor-data item."""
+    errors, by_id = [], {fn.get('id'): fn for fn in functions or [] if isinstance(fn, dict)}
+    for cid, row in sorted(checks.items()):
+        fn = by_id.get(row.get('function_id')) if isinstance(row, dict) else None
+        if not (fn and life_row(cid) and row.get('review_result') == 'PASS' and text(row.get('aspect'))):
+            continue
+        if margin_proves(fn, row['aspect'], None, cid) or not life_estimate(fn, row['aspect'], None, cid):
+            continue
+        constraint = row.get('bom_constraint')
+        if not isinstance(constraint, dict):
+            errors.append('%s: a life row passing on an estimate writes the endurance it needs as a bom_constraint '
+                          '(“耐久 ≥ X h @T（估算，热点 ≤ Y °C）”)' % cid)
+        elif '估算' not in str(constraint.get('requirement') or ''):
+            errors.append('%s: the bom_constraint of a life estimate says it is one (估算) and the hot spot it assumes' % cid)
+    for fn in by_id.values():
+        for item in fn.get('open') or []:
+            if not (isinstance(item, dict) and item.get('kind') == 'VENDOR_DATUM'):
+                continue
+            ref = '%s/%s' % (fn.get('id'), item.get('key'))
+            rows = [cid for cid, row in checks.items() if isinstance(row, dict) and row.get('open_ref') == ref]
+            if rows and all(life_row(cid) for cid in rows):
+                errors.append('%s: a life row opens no VENDOR_DATUM; estimate on the mission profile with the vendor life '
+                              'formula or the 10 °C doubling rule (ESTIMATE), write the result as a bom_constraint and hand '
+                              'the hot spot to thermal design (%s)' % (ref, ', '.join(sorted(rows))))
+    return errors
+
+
 def configuration_errors(expected, checks, functions):
     """Consistency proposals of 2026-10-23, item 3: a condition that holds only at one setting of a programmable device
     names it (setting{ref, group, value}) and the configuration row CFG-D01.<group>.<ref> lists it (3c); a missing
@@ -1401,7 +1454,7 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
     errors = (function_errors(report, document_only, db) + binding_errors(expected, checks, report.get('functions'), history_ids)
               + frame_errors(plan, checks, report.get('functions'))
               + requirement_edge_errors(plan, checks, report.get('functions'))
-              + configuration_errors(expected, checks, functions))
+              + configuration_errors(expected, checks, functions) + life_errors(checks, functions))
     if isinstance(db, dict):   # a commodity part's rating is a BOM constraint, not an open item
         import bom_constraints
         from checkers.netgraph import NetGraph

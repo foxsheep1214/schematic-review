@@ -101,6 +101,12 @@
   计划给已核验角色的每个固定组和每个声明组一行 CFG-D01（`CFG-D01.<组>.<位号>`，不随工况重复；没声明的组 WAITING_EVIDENCE），
   mcu 这类没有固定组的可编程角色没声明任何组时给一行 `CFG-D01.DECLARE.<位号>` 要求声明或说明为什么没有；写了 `set_points`
   的组另加一行 `PWR-C02.SET-POINT-<组>.<位号>` 逐档核输出精度。某组对该器件不存在时，该行记 NA 并引手册条款。
+- `mission_profile`（intent 格式 4，一致性方案第 6 条）：所有寿命行共用的一份任务剖面
+  `{requirement, phases[{name, share, load, ambient_c, citation[, requirement]}], events[{event, count, citation[, refs, requirement]}]}`。
+  `requirement` 是给出设计寿命（`lifetime` 参数）的需求；`share` 是这一段占设计寿命时间的比例，各段合计为 1；`load` 是负载占额定的
+  比例（0–1）；`ambient_c` 是环境温度；`event` 取 `catalog.LIFE_EVENTS`（开关机、浪涌、故障动作、动作、插拔、充放电循环、擦写），
+  `count` 是设计寿命内的总次数，`refs` 只给点名的器件；每个 `citation` 须是所引需求原文里的一段。规则见
+  [寿命与耗损件](commodity-floors.md#寿命与耗损件)。
 - 需求不手抄：`python3 scripts/requirements_extract.py 需求.md --json record/requirements.json` 逐字抄录需求表
   （首列为 ID/编号的表格行，或 `- <编号>：<文字>` 列表项），每条各列分开、带所在章节与 `文件:行号`，并给文件 sha256。
   `requirement_source` 写文件路径和这个 sha256，`requirements[]` 每项只写 `id`、`categories`、`interpretation`
@@ -116,7 +122,7 @@
   参数按规范单位换算后挂在该需求的每一行上（`parameters`，不进检查标识）。计划使用这些数字：
   `power_rails.<网>.voltage_v` 可以只写 `{"requirement": "<需求编号>"}`（该需求同时有输入和输出电压时加 `parameter`），
   窗口取那条需求电压参数的上下限；输入电压、频率写进 SYS-POWER 框架的 `requirement_windows` 和问题；
-  工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02）作为 `conditions` 挂在器件应力行上，计划顶层 `conditions` 列出各条来源。
+  工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02/C06）作为 `conditions` 挂在器件应力行上，计划顶层 `conditions` 列出各条来源。
 - `requirements[].owners`（可选）：落实这条需求的电路、接口或系统功能的 id。规则总表给每个审查方面列出承担它的检查；
   计划把需求行绑定到这些规则中 `owners` 拥有的行，没写 `owners` 时全板方面（器件温度等级、按温度降额、寿命）绑定全板这些规则的行，
   写在需求行的 `bound_checks`（不进检查标识，校验时重算，点名的 id 必须拥有计划里的行）。有绑定行判过（不算 NA）的需求行不再另判：
@@ -682,7 +688,10 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   [BOM 约束怎么定级](commodity-floors.md#bom-约束怎么定级)，等级由类别决定；`status` 为 TO_WRITE（冻结阶段阻断）或
   WRITTEN（`written_at` 指向 BOM 上写明它的那一行）。报告单列“BOM 要写明的额定与规格”一节。
   校验拒收：开放项（DESIGN_VALUE / VENDOR_DATUM）挡住的行全是常规器件的 DEV-C01/DEV-C02 行，或挡住全板 BOM 行（DEV-D04）而文字只点名常规器件时，应改写成 `bom_constraint`。
-  需求有寿命参数（`lifetime`）时，计划给每颗电解电容一行 `DEV-C02.LIFE.<位号>`，按上面写器件规格要求。
+  需求有寿命参数（`lifetime`）时，计划按 `mission_profile` 给每颗电解、固态或超级电容一行 `DEV-C02.LIFE.<位号>`（带移交热设计），
+  给每颗耗损件一行 `DEV-C06.<类别>.<位号>`（按次数核而次数没给的直接 NA）；寿命行可凭估算余量（`ESTIMATE`）判 PASS，
+  这时须写 `bom_constraint` 且 `requirement` 写明“估算”和所设热点；寿命行不开 VENDOR_DATUM，见
+  [寿命与耗损件](commodity-floors.md#寿命与耗损件)。
 - 光耦输出接在控制器的反馈脚（FB/VFB/COMP）上时，计划给这个脚一行 `PRO-C01.FEEDBACK-OPEN.<位号-脚>`：反馈断开（光耦或串阻开路、副边控制失效）后控制器按开环送能，按手册的保护检测延时算到保护动作为止输出侧电压的上界，对照输出侧器件耐压；这一单一故障不看审查员是否想到。
 - 其他常见单一故障也按网表特征派固定行（2026-10-23），行只问问题、不预设结论，没有特征就不派：
   - 开关管一端接连接器、该端不给任何 IC 供电，另一端是变换器或稳压器输出（声明的电源轨，或能追到来源且有对地大电容）、本身不接连接器：`DRV-C02.PORT-SHORT`，端口硬短路时储能经开关释放，核 SOA、I²t 与关断尖峰；

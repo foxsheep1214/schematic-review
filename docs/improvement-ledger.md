@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Life and ageing are judged on one mission profile, and every wear-out part gets a fixed life row (2026-10-23)
+
+Two independent R5 reviews read "10 years" two ways: one took 87600 h of full-time operation, the other 29200 h of
+daily full load; one refused the 10 °C doubling rule and opened a vendor-data item for the bulk capacitors' life
+model and another for "the project's CTR decay factor", while the other used the doubling rule and wrote a BOM
+constraint and did not ask the optocouplers; life rows found only capacitors drawn with a polarized symbol, and no
+other wearing part was asked. Intent format 4 now carries `mission_profile` (phases with their share of the design
+life, load as a fraction of rated and ambient, counts of power cycles, surges, trips, actuations, matings, charge
+cycles and writes, each citing the requirement text), and every life row is planned on it or waits for it. An
+electrolytic, solid or super capacitor is found by its symbol, its BOM part number or specification, or an aluminium
+package with a voltage and at least 1 µF (tantalum is none); its endurance is estimated with the vendor life formula or
+the 10 °C doubling rule, passes as a bom_constraint that says 估算 and the hot spot it assumes, hands the hot spot to
+thermal design and opens no VENDOR_DATUM. A new rule DEV-C06 asks each wear-out part (battery, optocoupler, LED,
+varistor, fuse, inrush NTC, resettable fuse, relay, connector, switch, memory); a class judged on a count the profile
+does not give is planned NA with that reason. The optocoupler row writes the CTR fraction the chain needs at end of
+life; PRO-E01 asks no project decay factor. On R5 with a two-phase profile: the same eight capacitor life rows, four
+time-based wear-out rows and five NA rows. Tests first; full suite, contract, KiCad replay 195/195 and typical circuits
+unchanged, mutations M374-M397 added, M263 and M332 re-pointed, all 176 on changed files killed.
+
+- Event: review:SR-20261023-R5-全新独立复审-1fe4df6/record/review-results.json and review:SR-20261023-R5-从头审查-claude-5802e8c/record/review-results.json (87600 h vs 29200 h, W-LIFE vendor item vs BOM constraint, optocoupler decay item on one side only), user:2026-10-23 (我同意：按“对寿命敏感的器件类型”表定检测范围)
+- Causes: rule_missing 3, knowledge_wrong 1, judgment 1
+- Changed: SKILL.md, docs/2026-10-23-review-consistency-proposals.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/check-catalog.md, references/commodity-floors.md, references/plan-and-results.md, scripts/catalog.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/requirement_parameters.py, scripts/review_functions.py, scripts/tests/test_catalog.py, scripts/tests/test_life_rows.py, scripts/tests/test_wearout_rows.py
+
 ## A programmable device is judged over its allowed configuration range, and its configuration is a row of its own (2026-10-23)
 
 Two independent R5 reviews split one PD controller's configuration three ways: one let a single "configuration table

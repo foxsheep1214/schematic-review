@@ -167,7 +167,9 @@ RULES = (
     Rule('DEV-C02', '电容有效容量与寿命',
          '按电容实际用途核耐压与容量；仅当该用途的原厂条款或受控需求依赖有效容量/ESR时索取对应边界，'
          '不能给所有旁路、BOOT或SS电容统一加联合Ceff/ESR证明；'
-         '寿命按需求负载谱/温度和器件模型估算，不默认高温全时满载；热点温度与最终寿命验证移交结构/样机', 'owned_parts', 'owned_parts'),
+         '电解、固态与超级电容的寿命按 intent.mission_profile 估算所需耐久等级（厂家寿命公式，没有就 10 °C 翻倍，都标估算），'
+         '写成 bom_constraint“耐久 ≥ X h @T（估算，热点 ≤ Y °C）”，不开厂家数据缺口；热点温度与纹波自热移交热设计实测后复算',
+         'owned_parts', 'owned_parts'),
     Rule('DEV-C03', '精度器件选择',
          '分压、采样、ZQ 等精度要求由允许误差窗口与器件要求决定，不能默认 1% 即合格；'
          '按实际误差传递及适用角点核本项，不用无关热、载流或接口接受任务替代精度判据；'
@@ -182,6 +184,11 @@ RULES = (
          '借用相似器件保证范围或典型±30%估算仅用于后果不超过P2的判据，不能据此放行P1核心反馈、损坏边界或保护保证；'
          '本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；'
          '供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围',
+         'plan', 'device'),
+    Rule('DEV-C06', '耗损件寿命',
+         '有寿命需求时，按 intent.mission_profile 逐颗核耗损件（WEAROUT_CLASSES：电池、光耦、LED、压敏电阻、保险丝、浪涌限制 NTC、'
+         '自恢复保险丝、继电器、连接器与开关、Flash/EEPROM）的寿命；按次数核的类别，需求与剖面都没给次数时记 NA 并写明，不开缺口项；'
+         '结论写成选型或 bom_constraint；参数漂移并入精度预算，绝缘老化归隔离检查，热循环、焊点疲劳和衰减实测记阶段 NA 并移交',
          'plan', 'device'),
     Rule('DEV-D01', '器件身份与封装',
          '核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突', 'plan', 'device'),
@@ -492,8 +499,8 @@ RULES = (
     Rule('PRO-A04', '光耦输出集电极无上拉',
          '光耦集电极网上未见外部上拉，且无本状态适用、可定位到接收脚的内部上拉依据', 'optocoupler', 'device'),
     Rule('PRO-E01', '光耦传输能力',
-         '按最小正向电流、保证 CTR 与项目规定的寿命衰减系数核输出可用电流是否满足'
-         '上拉与负载要求；同时核最大正向电流不超额定', 'optocoupler', 'device'),
+         '按最小正向电流与保证 CTR（初始值）核输出可用电流是否满足上拉与负载要求；同时核最大正向电流不超额定；'
+         '寿命末所需的 CTR 保留比例在寿命行 DEV-C06 算出并写成约束，本行不要求项目衰减系数', 'optocoupler', 'device'),
     Rule('PRO-C01', '防护器件协调',
          'TVS 的 VRWM/VBR/VC 按实际浪涌波形、电流与温度对照后级绝限；熔断器/PTC 的额定、时间电流与熔断能量按项目'
          '降额核对；熔断器另核额定分断能力不低于安装点预期短路电流（插墙一次侧无项目值时按 IEC 60127 H 档 1500 A，'
@@ -596,7 +603,7 @@ OBJECTIVE_RULES = {
                  'CLK-D01 CLK-D03 SIG-A01 SIG-A02 SIG-A03 SIG-E02 SIG-C01 SIG-C03 SIG-C04 SIG-C07 SIG-C09 '
                  'SIG-D01 SIG-D02 SIG-D03 SIG-D04 SIG-D07 SIG-D08 SIG-D09 SIG-D10 SIG-D11 SIG-D12 SIG-D14 SIG-D15 '
                  'ANA-T01 ANA-C01 ANA-C02 ANA-D01 PRO-A03 PRO-A04 PRO-E01 DRV-A03 DRV-E01').split()),
-    'G4': tuple(('DEV-A01 DEV-A03 DEV-C01 DEV-C02 DEV-C03 DEV-C04 DEV-C05 '
+    'G4': tuple(('DEV-A01 DEV-A03 DEV-C01 DEV-C02 DEV-C03 DEV-C04 DEV-C05 DEV-C06 '
                  'PWR-A05 PWR-E01 PWR-E02 PWR-E03 PWR-C01 PWR-C02 PWR-C03 PWR-C05 '
                  'PWR-C09 PWR-C10 PWR-C11 PWR-C14 CLK-C01 DRV-C02').split()),
     'G5': tuple(('PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
@@ -722,6 +729,30 @@ CONFIG_GROUPS = {
 }
 PROGRAMMABLE_ROLES = ('pd_controller', 'mcu')
 CONFIG_GROUP_TITLES = {group: title for groups in CONFIG_GROUPS.values() for group, title in groups}
+
+# 寿命（一致性方案第 6 条）：intent.mission_profile.events 可写的次数，按设计寿命总计。
+LIFE_EVENTS = OrderedDict([
+    ('power_cycles', '开关机次数'), ('surges', '浪涌次数'), ('fault_trips', '故障动作次数'), ('actuations', '动作次数'),
+    ('mating_cycles', '插拔次数'), ('charge_cycles', '充放电循环次数'), ('memory_writes', '擦写次数'),
+])
+# 有寿命需求时派 DEV-C06 的耗损件类别：核什么、依据，以及按哪种次数核（None 按剖面时间核）。
+# 电解、固态与超级电容由 DEV-C02 寿命行核（6a）。
+WearoutClass = namedtuple('WearoutClass', 'title checks basis event')
+WEAROUT_CLASSES = OrderedDict([
+    ('BATTERY', WearoutClass('电池', '循环次数、容量保持、充电电压和温度', '手册循环寿命和日历寿命', None)),
+    ('OPTO', WearoutClass('光耦', '按最小正向电流和保证 CTR 算出这条链寿命末所需的 CTR 保留比例，写成选型或 bom_constraint；'
+                                  '厂家给了 CTR 随时间的曲线才用曲线核对，SR 不自编衰减系数', '手册衰减曲线', None)),
+    ('LED', WearoutClass('指示或照明 LED', 'LED 光衰对可视要求；需求没有亮度或可视要求时记 NA 并写明', '手册衰减曲线', None)),
+    ('VARISTOR', WearoutClass('压敏电阻', '浪涌幅值和次数对脉冲寿命降额曲线，持续工作电压', '需求浪涌等级和次数', 'surges')),
+    ('FUSE', WearoutClass('保险丝', '开机浪涌 I²t 和次数对脉冲降额', '剖面里的开关机次数', 'power_cycles')),
+    ('INRUSH_NTC', WearoutClass('浪涌限制 NTC', '负载电容对最大允许值、循环次数（热态重启另由 PWR-C13 热态重接入行核）',
+                                '剖面开关机次数', 'power_cycles')),
+    ('PTC', WearoutClass('自恢复保险丝', '动作次数与动作后阻值', '需求故障次数', 'fault_trips')),
+    ('RELAY', WearoutClass('继电器', '负载电流和性质对电气寿命，动作次数对机械寿命', '剖面动作次数', 'actuations')),
+    ('CONNECTOR', WearoutClass('连接器', '插拔次数', '需求次数', 'mating_cycles')),
+    ('SWITCH', WearoutClass('开关、电位器、编码器', '动作次数', '需求次数', 'actuations')),
+    ('MEMORY', WearoutClass('Flash / EEPROM', '擦写次数，数据保持年限对温度', '固件写入频度', 'memory_writes')),
+])
 
 
 # 电路规则的对象前提（一致性方案第 2 条，计划格式 7）：（类型，规则）→ 前提，由 plan_circuits 按网表判断；不成立不派这一行，
@@ -1062,8 +1093,8 @@ ASPECT_RULES = OrderedDict([
     ('TEMPERATURE_DRIFT', ('ANA-C01', 'DEV-C03')),
     ('ISOLATION_PARTS', ('PRO-C03', 'PRO-D01')),
     ('ISOLATION_PATHS', ('PRO-D02',)),
-    ('LIFETIME_BASIS', ('DEV-C02',)),
-    ('MISSION_PROFILE', ('DEV-C02',)),
+    ('LIFETIME_BASIS', ('DEV-C02', 'DEV-C06')),
+    ('MISSION_PROFILE', ('DEV-C02', 'DEV-C06')),
 ])
 BOARD_ASPECTS = ('TEMPERATURE_GRADE', 'TEMPERATURE_DERATING', 'LIFETIME_BASIS', 'MISSION_PROFILE', 'ISOLATION_PARTS',
                  'ISOLATION_PATHS')
@@ -1158,6 +1189,7 @@ EXPLANATIONS = {
     'DEV-C02': _x('陶瓷电容直流偏压、电解电容高温下的有效容量可能远低于标称', '只有用途依赖有效容量或 ESR 时才索取边界；按用途核完耐压和容量即关闭'),
     'DEV-C03': _x('默认用 1% 器件，输出或测量仍可能超出允许误差窗口', '按实际误差传递，公差与温漂合计落在允许窗口内即关闭', inputs='需求给出的误差目标'),
     'DEV-C04': _x('单针额定乘针数会高估并联载流，接触电阻不均会让个别针过载', '按实际采购系列的并针降额和故障电流核完即关闭；走线载流交 PCB', inputs='PWR-C01 的电流预算'),
+    'DEV-C06': _x('电解电容之外，光耦、保险丝、继电器、连接器等也会随时间或次数耗损', '按任务剖面算出的寿命或次数在器件能力内，或需求与剖面都没给次数时记 NA 即关闭', inputs='intent.mission_profile'),
     'DEV-C05': _x('在绝对最大额定内，仍可能不满足推荐条件而功能不受保证', '供电、输入、负载、频率和温度等级逐项落在保证条件内即关闭', inputs='DEV-D01 的身份、PWR-T01 的电源路径'),
     'CFG-D01': _x('硬件按某个设置判了通过，配置表却写了别的值或超出手册允许范围，通过不成立', '每个配置组的值在手册允许范围内、满足需求并包含硬件判定写下的设置即关闭', inputs='intent.devices.<位号>.configurable 与配置表'),
     'DEV-D01': _x('同系列不同后缀的门限、封装或额定不同，可能拿错手册证明本器件', '实例 MPN、后缀和封装与所引用手册的订货信息一致即关闭'),

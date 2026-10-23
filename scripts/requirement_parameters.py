@@ -172,3 +172,111 @@ def text(window):
     span = ('%s–%s' % (fmt(lo), fmt(hi)) if lo is not None and hi is not None
             else ('≥' + fmt(lo)) if lo is not None else ('≤' + fmt(hi)))
     return '%s %s（%s）' % (span, window['unit'], window['requirement'])
+
+
+# The mission profile (consistency proposals of 2026-10-23, item 6d): one profile in the intent that every life row is
+# planned on — the phases of the design life with their share of the time, the load as a fraction of the rated load
+# and the ambient, and the counts (catalog.LIFE_EVENTS, over the design life); each cites a piece of its requirement.
+PROFILE_FIELDS = ('requirement', 'phases', 'events')
+PHASE_FIELDS = ('name', 'share', 'load', 'ambient_c', 'citation', 'requirement')
+EVENT_FIELDS = ('event', 'count', 'refs', 'citation', 'requirement')
+SHARE_TOLERANCE = 0.01
+
+
+def _cited(label, item, default, ids, originals):
+    rid = item.get('requirement', default)
+    if rid not in ids:
+        return ['%s.requirement %r 不是 intent.requirements 里的需求' % (label, rid)]
+    citation, original = item.get('citation'), originals.get(rid)
+    if not (isinstance(citation, str) and citation.strip()):
+        return [label + '.citation 须是需求原文里的一段']
+    if original is not None and _squeeze(citation) not in _squeeze(original):
+        return ['%s.citation 须是需求 %s 原文里的一段' % (label, rid)]
+    return []
+
+
+def mission_profile_errors(intent, originals, refs=None):
+    """Errors of intent.mission_profile; `originals` {requirement id: original text}, `refs` the board's designators."""
+    profile = intent.get('mission_profile') if isinstance(intent, dict) else None
+    if profile is None:
+        return []
+    if not isinstance(profile, dict) or set(profile) - set(PROFILE_FIELDS):
+        return ['mission_profile 是 {requirement, phases[, events]}']
+    ids = {r.get('id') for r in intent.get('requirements') or [] if isinstance(r, dict)}
+    rid, out = profile.get('requirement'), []
+    if rid not in ids:
+        out.append('mission_profile.requirement %r 不是 intent.requirements 里的需求' % (rid,))
+    elif not [w for w in windows(intent, 'lifetime') if w['requirement'] == rid]:
+        out.append('mission_profile.requirement %s 没有 lifetime 参数；剖面写在给出设计寿命的需求下' % rid)
+    phases = profile.get('phases')
+    if not (isinstance(phases, list) and phases):
+        return out + ['mission_profile.phases 须为非空数组']
+    names, total = set(), 0.0
+    for n, phase in enumerate(phases, 1):
+        label = 'mission_profile.phases[%d]' % n
+        if not isinstance(phase, dict) or set(phase) - set(PHASE_FIELDS):
+            out.append(label + ' 是 {name, share, load, ambient_c, citation[, requirement]}')
+            continue
+        name = phase.get('name')
+        if not (isinstance(name, str) and name.strip()) or name in names:
+            out.append(label + '.name 缺失或重复')
+        names.add(name)
+        share = phase.get('share')
+        if not (_number(share) and 0 < share <= 1):
+            out.append(label + '.share 是这一段占设计寿命时间的比例（0–1）')
+        else:
+            total += share
+        if not (_number(phase.get('load')) and 0 <= phase['load'] <= 1):
+            out.append(label + '.load 是负载占额定负载的比例（0–1）')
+        if not _number(phase.get('ambient_c')):
+            out.append(label + '.ambient_c 是这一段的环境温度（°C）')
+        out.extend(_cited(label, phase, rid, ids, originals))
+    if abs(total - 1) > SHARE_TOLERANCE and not any('share' in e for e in out):
+        out.append('mission_profile.phases 各段 share 合计 %.3f，须为 1（覆盖整个设计寿命）' % total)
+    events = profile.get('events', [])
+    if not isinstance(events, list):
+        return out + ['mission_profile.events 须为数组']
+    for n, event in enumerate(events, 1):
+        label = 'mission_profile.events[%d]' % n
+        if not isinstance(event, dict) or set(event) - set(EVENT_FIELDS):
+            out.append(label + ' 是 {event, count, citation[, refs, requirement]}')
+            continue
+        if event.get('event') not in catalog.LIFE_EVENTS:
+            out.append('%s.event 取 %s' % (label, '/'.join(catalog.LIFE_EVENTS)))
+        if not (_number(event.get('count')) and event['count'] > 0):
+            out.append(label + '.count 是设计寿命内的总次数（正数）')
+        if 'refs' in event and not (isinstance(event['refs'], list) and event['refs']
+                                    and all(isinstance(r, str) and (refs is None or r in refs) for r in event['refs'])):
+            out.append(label + '.refs 是本板位号的非空数组')
+        out.extend(_cited(label, event, rid, ids, originals))
+    return out
+
+
+def mission_profile(intent):
+    """The well-formed mission profile in hours: {requirement, years, hours, phases[{name, share, load, ambient_c,
+    hours}], events[{event, count, refs}]}; None without one or with errors."""
+    profile = intent.get('mission_profile') if isinstance(intent, dict) else None
+    if profile is None or mission_profile_errors(intent, {}):
+        return None
+    lives = [w for w in windows(intent, 'lifetime') if w['requirement'] == profile['requirement']]
+    years = max(v for w in lives for v in (w['min'], w['max']) if v is not None)
+    hours = round(years * 8760, 6)
+    return {'requirement': profile['requirement'], 'years': years, 'hours': hours,
+            'phases': [dict({k: p[k] for k in ('name', 'share', 'load', 'ambient_c')}, hours=p['share'] * hours)
+                       for p in profile['phases']],
+            'events': [{'event': e['event'], 'count': e['count'], 'refs': e.get('refs')}
+                       for e in profile.get('events') or []]}
+
+
+def profile_text(profile):
+    """'任务剖面（REQ-LIFE-1，10 年共 87600 h）：充电 33.3%（29200 h，负载 100%，40 °C）；…' for a life row."""
+    return '任务剖面（%s，%g 年共 %g h）：%s' % (profile['requirement'], profile['years'], profile['hours'], '；'.join(
+        '%s %.1f%%（%g h，负载 %g%%，%g °C）' % (p['name'], p['share'] * 100, round(p['hours']), round(p['load'] * 100, 1),
+                                           p['ambient_c']) for p in profile['phases']))
+
+
+def profile_count(profile, event, ref):
+    """The count the profile gives `event` for part `ref`, or None."""
+    counts = [e['count'] for e in (profile or {}).get('events') or []
+              if e['event'] == event and (not e.get('refs') or ref in e['refs'])]
+    return max(counts) if counts else None

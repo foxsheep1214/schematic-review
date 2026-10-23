@@ -80,7 +80,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 5. **先算再判证据不足**：已有资料能回答的先读、先算、先定界；可信边界已违反就判 FAIL。
    只索取会改变本条判断的缺口，并分清缺外部资料、设计未定、需求未定和审查未完成。
    电阻、电容、电感、二极管等常规器件只排查风险：按最弱档定界，超出写 BOM 约束，需求有特殊要求（精度、宽温、寿命等）
-   才提器件规格要求；不因无料号、无 datasheet、无额定记证据不足，不向厂家要常规件数据，见
+   才提器件规格要求；寿命按 `intent.mission_profile` 一份任务剖面算，电解电容耐久写成估算的 BOM 约束，其他耗损件走 DEV-C06 固定行，
+   次数没给记 NA（[寿命与耗损件](references/commodity-floors.md#寿命与耗损件)）；不因无料号、无 datasheet、无额定记证据不足，不向厂家要常规件数据，见
    [通用件最弱档基准](references/commodity-floors.md#常规器件只排查风险)。
    规则见 [最小充分证据](references/evidence-proportionality.md)。每项证据不足按
    [危险度分类原则](references/verdicts-and-release.md#证据不足的危险度分类原则) 评估有物理依据且尚未排除的最严重后果，

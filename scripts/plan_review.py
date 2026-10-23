@@ -273,6 +273,8 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
                 seen.add(rid)
         for rid in sorted(set(originals) - seen):
             errors.append('requirement %s 在需求文档里却不在 intent.requirements：每条需求都要有一项（优化目标、明确排除也一样）' % rid)
+        parts = db.get('parts') if isinstance(db, dict) and isinstance(db.get('parts'), dict) else None
+        errors.extend(requirement_parameters.mission_profile_errors(intent, originals, parts))
     if isinstance(intent, dict) and board_intent.VERIFIED_KEY in intent:
         # Only the datasheet audit may mark a device kind as verified.
         errors.append(board_intent.VERIFIED_KEY + ' 由手册核验生成，不能在 intent 中声明')

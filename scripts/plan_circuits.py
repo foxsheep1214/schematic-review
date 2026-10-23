@@ -10,8 +10,9 @@ import circuit_decisions
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
-from checkers.netgraph import (BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET, OPTO,
-                               PASSIVE_LINKS, RAIL_RE, RESISTOR, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER,
+from checkers.netgraph import (BATTERY, BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET,
+                               OPTO, PASSIVE_LINKS, RAIL_RE, RELAY, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN,
+                               ZENER,
                                NetGraph, is_analog_sense_pair, is_ground, name_matches, normalize)
 from checkers.netgraph import is_ground as netgraph_ground
 from checkers.planutil import slug as _slug
@@ -101,6 +102,26 @@ def _differential_pairs(db):
 
 # An electrolytic capacitor by its symbol (Device:C_Polarized, CP, CP_Small): the part a lifetime falls on.
 POLARIZED_RE = re.compile(r'(^|[:\s])(C_Polarized|CP)(_|\b)', re.I)
+# 6c: or its BOM part number or specification names an electrolytic, solid or super capacitor (an endurance rating
+# "12000h@105°C" names one too), or an aluminium package with a stated voltage holds at least 1 µF; tantalum is none.
+ELECTROLYTIC_RE = re.compile(r'电解|固态|铝|ELECTROLYTIC|ALUMIN|\bE-?CAP\b|POLYMER|OS-?CON|SUPER ?CAP|EDLC|超级电容'
+                             r'|\d\s*h\s*@\s*\d+\s*°?C', re.I)
+TANTALUM_RE = re.compile(r'TANTAL|钽', re.I)
+ALUMINIUM_PACKAGE_RE = re.compile(r'(^|[:_])CP_|_Elec|Radial', re.I)
+VOLTAGE_RE = re.compile(r'\d\s*V(\b|$)', re.I)
+SUPERCAP_FARAD = 0.1
+LIFE_CRITERION = ('%s；电解、固态与超级电容按此剖面估算所需耐久等级：厂家有寿命公式（含厂家通用技术说明）用公式，没有就按 10 °C '
+                  '翻倍，两种都标估算（ESTIMATE）；写成 bom_constraint“耐久 ≥ X h @T（估算，热点 ≤ Y °C）”，热点温度和纹波自热'
+                  '移交热设计实测后复算，不开厂家数据缺口（VENDOR_DATUM）%s')
+LIFE_HANDOFF = {'required': True, 'state': 'OPEN', 'receivers': ['热设计'],
+                'constraint': '电解电容热点温度不超过寿命约束写的 Y °C', 'verification': '样机热点与纹波自热实测后按同一剖面复算'}
+WEAROUT_CRITERION = '%s %s（%s）：核%s；依据%s；%s'
+WEAROUT_NA_CRITERION = '%s %s（%s）：需求与任务剖面都没给%s，按次数核的寿命记 NA（写明这一原因），不开缺口项；单次应力由各自的应力行核'
+INRUSH_NTC_RE = re.compile(r'NTC', re.I)
+PTC_RE = re.compile(r'POLY ?FUSE|POLYSWITCH|PPTC|\bPTC\b|RESETTABLE|自恢复|MF-[A-Z]', re.I)
+VARISTOR_RE = re.compile(r'VARISTOR|\bMOV\b|压敏', re.I)
+SWITCHLIKE_RE = re.compile(r'POTENTIOMETER|\bPOT\b|TRIM|ENCODER|电位器|编码器', re.I)
+MEMORY_RE = re.compile(r'EEPROM|FLASH|\bFRAM\b|24(LC|AA|C)\d|25(LC|AA|Q)\d|W25Q|AT2[45]|M24C|M95', re.I)
 # Parts whose identity, pin disposition and operating conditions are checked whether declared or not: transistors,
 # optocouplers, threshold and clamp diodes, bridge rectifiers and custom magnetics. A plain diode or an ordinary inductor
 # is a commodity part (commodity-floors.md) and gets these rows only when intent.devices declares it.
@@ -872,17 +893,90 @@ class CircuitPlanning:
                                        key='FEEDBACK-OPEN', criterion=FEEDBACK_OPEN_CRITERION % (opto['ref'], ref),
                                        trigger=['optocoupler:%s' % opto['ref'], 'feedback-pin:%s' % node])
 
+    def _part_text(self, graph, ref):
+        part = graph.parts.get(ref) or {}
+        bom = self._bom_fields(ref)
+        return ' '.join(str(v or '') for v in [part.get(k) for k in ('value', 'prim', 'part', 'footprint')]
+                        + [bom.get(k) for k in ('MPN', 'Electrical specification', 'Footprint', 'Value')])
+
+    def electrolytic(self, graph, ref):
+        """'super', 'electrolytic' or None for a fitted capacitor (6c)."""
+        if graph.kind(ref) != CAPACITOR:
+            return None
+        from decoupling import parse_capacitance
+        part, text = graph.parts.get(ref) or {}, self._part_text(graph, ref)
+        if TANTALUM_RE.search(text):
+            return None
+        farads = parse_capacitance(part.get('value'))
+        if farads is not None and farads >= SUPERCAP_FARAD:
+            return 'super'
+        symbol = ' '.join(str(part.get(k) or '') for k in ('prim', 'part'))
+        if POLARIZED_RE.search(symbol) or ELECTROLYTIC_RE.search(text):
+            return 'electrolytic'
+        if (ALUMINIUM_PACKAGE_RE.search(text) and VOLTAGE_RE.search(str(part.get('value') or ''))
+                and (farads or 0) >= BULK_FARAD):
+            return 'electrolytic'
+        return None
+
+    def wearout_class(self, graph, ref):
+        """The catalog.WEAROUT_CLASSES entry a fitted part falls in, or None (6e)."""
+        kind, text = graph.kind(ref), self._part_text(graph, ref)
+        if kind == BATTERY:
+            return 'BATTERY'
+        if kind == OPTO:
+            return 'OPTO'
+        if kind == DIODE and (LED_RE.search(text) or re.match(r'^LED\d', ref, re.I)):
+            return 'LED'
+        if VARISTOR_RE.search(text):
+            return 'VARISTOR'
+        if kind == FUSE:
+            return 'PTC' if PTC_RE.search(text) else 'FUSE'
+        if INRUSH_NTC_RE.search(text):
+            ends = graph.terminals(ref)
+            on_ends = {graph.kind(r) for n in ends for r in graph.refs_on(n) if r != ref}
+            return 'INRUSH_NTC' if ends and not any(is_ground(n) for n in ends) and IC not in on_ends else None
+        if kind == RELAY:
+            return 'RELAY'
+        if kind == CONNECTOR:
+            return 'CONNECTOR'
+        if kind == SWITCH or SWITCHLIKE_RE.search(text):
+            return 'SWITCH'
+        if kind == IC and (MEMORY_RE.search(text) or graph.role_kind(ref) == 'mcu'):
+            return 'MEMORY'
+        return None
+
     def plan_life_rows(self, graph, fitted):
-        """A lifetime requirement falls on every electrolytic capacitor: one DEV-C02 row each, answered as a
-        specification the BOM must state (bom_constraint), graded by what a short-life part would do."""
+        """A lifetime requirement falls on every electrolytic, solid or super capacitor (DEV-C02 life row, 6a/6c) and on
+        every part of a wear-out class (DEV-C06, 6e), all planned on the one intent.mission_profile (6d); without it
+        the rows wait for it. A wear-out class judged on a count the profile does not give is NA with that reason."""
         lives = requirement_parameters.windows(self.intent, 'lifetime')
         if not lives:
             return
-        cited = '、'.join(sorted({w['requirement'] for w in lives}))
-        criterion = ('电解电容按需求 %s 的寿命与环境温度（任务剖面）定耐久等级与寿命模型；常规件写成 bom_constraint '
-                     '（耐久 ≥ X h @T，按任务剖面算），已指定系列的按该系列原厂寿命模型核' % cited)
+        profile = requirement_parameters.mission_profile(self.intent)
+        trigger = ['requirement:' + w['requirement'] for w in lives]
+        wait = {} if profile else {'readiness': 'WAITING_EVIDENCE', 'required_inputs': ['intent.mission_profile']}
+        basis = (requirement_parameters.profile_text(profile) if profile else
+                 '需求 %s 给了设计寿命，intent.mission_profile 还没写任务剖面' % '、'.join(sorted({w['requirement'] for w in lives})))
         for ref in fitted:
-            if graph.kind(ref) == CAPACITOR and POLARIZED_RE.search(' '.join(
-                    str((graph.parts.get(ref) or {}).get(k) or '') for k in ('prim', 'part'))):
-                self.add_check('DEV-C02', {'ref': ref}, key='LIFE', criterion=criterion,
-                               trigger=['requirement:' + w['requirement'] for w in lives])
+            cap = self.electrolytic(graph, ref)
+            if cap:
+                extra = '；超级电容另核电压降额' if cap == 'super' else ''
+                self.add_check('DEV-C02', {'ref': ref}, key='LIFE', criterion=LIFE_CRITERION % (basis, extra),
+                               trigger=trigger, handoff=dict(LIFE_HANDOFF), **wait)
+                continue
+            name = self.wearout_class(graph, ref)
+            if name is None:
+                continue
+            entry = catalog.WEAROUT_CLASSES[name]
+            count = requirement_parameters.profile_count(profile, entry.event, ref) if entry.event else None
+            if profile and entry.event and count is None:
+                self.add_check('DEV-C06', {'ref': ref, 'wearout': name}, key=name, applicability='NOT_APPLICABLE',
+                               criterion=WEAROUT_NA_CRITERION % (entry.title, ref, basis,
+                                                                 catalog.LIFE_EVENTS[entry.event]),
+                               trigger=trigger)
+                continue
+            counted = ('%s %g 次' % (catalog.LIFE_EVENTS[entry.event], count)) if count is not None else ''
+            self.add_check('DEV-C06', {'ref': ref, 'wearout': name}, key=name,
+                           criterion=WEAROUT_CRITERION % (entry.title, ref, basis, entry.checks, entry.basis,
+                                                          counted or '结论写成选型或 bom_constraint'),
+                           trigger=trigger, **wait)

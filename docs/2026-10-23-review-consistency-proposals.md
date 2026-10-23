@@ -364,3 +364,10 @@ R5 核对：RT7209 第 3 页简化电路、第 21 页典型电路中 GPIO1–3 �
 - 3e/3f：verdicts-and-release.md、evidence-proportionality.md 里配置表统一为 DELIVERABLE_PENDING / CONFIGURATION_TABLE，删去 DESIGN_OPEN 的写法；工厂选项归 DEV-D01；环路增益、相位裕量记阶段 NA 并移交。
 - 第 7 条第六类：写了 `set_points` 的组另加 `PWR-C02.SET-POINT-<组>.<位号>`，逐档核输出精度。
 - 回放板答案修订 `intent-format-4-v1`：三份 intent 夹具只改 schema_version，答案不变。R5 按核验角色模拟，U601 得到七行 CFG-D01（等声明）。第 6 条的任务剖面（mission profile）未做。
+
+**第 6 条（2026-10-23，寿命与老化，intent 格式 4 内）**
+- 6d：`intent.mission_profile{requirement, phases[{name, share, load, ambient_c, citation}], events[{event, count, citation[, refs]}]}`，`requirement` 须有 `lifetime` 参数，各段 share 合计为 1，load 是占额定的比例，每段和每个次数的 `citation` 须是需求原文里的一段；次数种类固定为 `catalog.LIFE_EVENTS`（开关机、浪涌、故障动作、动作、插拔、充放电循环、擦写）。所有寿命行的判据写同一段剖面文字（各段小时数、负载、温度）；没写剖面时寿命行 WAITING_EVIDENCE。字段校验放在 `requirement_parameters.py`（它要用需求原文，与需求参数同处），没有放进 `board_intent.py`。
+- 6a/6c：电解、固态与超级电容按极性符号、BOM 料号/规格（含“h@温度”耐久额定）或铝电容封装加耐压与 ≥ 1 µF 识别，钽电容不出；行带移交热设计。寿命行（DEV-C02.LIFE、DEV-C06）可凭达标的 ESTIMATE 余量判 PASS，这时须写 `bom_constraint` 且 requirement 写“估算”；只有寿命方面的估算余量可以不留开放项；寿命行不开 VENDOR_DATUM。没有放进 `bom_constraints.py`、`checkers/netgraph.py`：校验写在 `review_functions.life_errors`，器件类别识别写在 `plan_circuits`（只有寿命行用）。
+- 6b/6e：新规则 DEV-C06“耗损件寿命”，`catalog.WEAROUT_CLASSES` 十一类按定稿表；按次数核的类别在剖面没给该次数时计划直接记 NA（写明没给哪种次数），不靠审查员判。PRO-E01 不再要求“项目规定的寿命衰减系数”，寿命末 CTR 保留比例归 DEV-C06。
+- 结果：KiCad 回放、典型电路不变。R5 按两段剖面模拟：8 颗电解电容各一行 DEV-C02.LIFE（与原来相同），3 颗光耦和 1 颗 LED 各一行 DEV-C06，保险丝、浪涌限制 NTC、压敏电阻和两个连接器 5 行因剖面没给次数记 NA。
+

@@ -1809,8 +1809,8 @@
   "id": "M263",
   "name": "P4: every capacitor gets a lifetime row",
   "file": "scripts/plan_circuits.py",
-  "old": "if graph.kind(ref) == CAPACITOR and POLARIZED_RE.search(",
-  "new": "if graph.kind(ref) == CAPACITOR or POLARIZED_RE.search("
+  "old": "            return 'electrolytic'\n        return None\n\n    def wearout_class",
+  "new": "            return 'electrolytic'\n        return 'electrolytic'\n\n    def wearout_class"
  },
  {
   "id": "M264",
@@ -2292,8 +2292,8 @@
   "id": "M332",
   "name": "a vendor reference circuit does not pass a calculation row",
   "file": "scripts/review_functions.py",
-  "old": "              and not reference_judged(functions[fid], row['aspect'], state, cid)):   # 1e",
-  "new": "              ):   # 1e"
+  "old": "              and not reference_judged(functions[fid], row['aspect'], state, cid)\n              and not life_estimate(",
+  "new": "              and not life_estimate("
  },
  {
   "id": "M333",
@@ -2581,5 +2581,173 @@
   "file": "scripts/review_functions.py",
   "old": "    if 'setting' in c and not (isinstance(c['setting'], dict) and set(c['setting']) == {'ref', 'group', 'value'}",
   "new": "    if False and not (isinstance(c['setting'], dict) and set(c['setting']) == {'ref', 'group', 'value'}"
+ },
+ {
+  "id": "M374",
+  "name": "profile shares need not cover the design life",
+  "file": "scripts/requirement_parameters.py",
+  "old": "    if abs(total - 1) > SHARE_TOLERANCE and not any('share' in e for e in out):",
+  "new": "    if False and abs(total - 1) > SHARE_TOLERANCE and not any('share' in e for e in out):"
+ },
+ {
+  "id": "M375",
+  "name": "a profile citation need not come from the requirement text",
+  "file": "scripts/requirement_parameters.py",
+  "old": "    if original is not None and _squeeze(citation) not in _squeeze(original):",
+  "new": "    if False and original is not None and _squeeze(citation) not in _squeeze(original):"
+ },
+ {
+  "id": "M376",
+  "name": "a profile load may exceed the rated load",
+  "file": "scripts/requirement_parameters.py",
+  "old": "        if not (_number(phase.get('load')) and 0 <= phase['load'] <= 1):",
+  "new": "        if not _number(phase.get('load')):"
+ },
+ {
+  "id": "M377",
+  "name": "the profile may sit under a requirement without a lifetime",
+  "file": "scripts/requirement_parameters.py",
+  "old": "    elif not [w for w in windows(intent, 'lifetime') if w['requirement'] == rid]:",
+  "new": "    elif False:"
+ },
+ {
+  "id": "M378",
+  "name": "an event count may be zero",
+  "file": "scripts/requirement_parameters.py",
+  "old": "        if not (_number(event.get('count')) and event['count'] > 0):",
+  "new": "        if not _number(event.get('count')):"
+ },
+ {
+  "id": "M379",
+  "name": "an event count for named parts applies to every part",
+  "file": "scripts/requirement_parameters.py",
+  "old": "              if e['event'] == event and (not e.get('refs') or ref in e['refs'])]",
+  "new": "              if e['event'] == event]"
+ },
+ {
+  "id": "M380",
+  "name": "the profile hours ignore the design life",
+  "file": "scripts/requirement_parameters.py",
+  "old": "    hours = round(years * 8760, 6)",
+  "new": "    hours = 8760"
+ },
+ {
+  "id": "M381",
+  "name": "an electrolytic is found by its symbol only",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if POLARIZED_RE.search(symbol) or ELECTROLYTIC_RE.search(text):",
+  "new": "        if POLARIZED_RE.search(symbol):"
+ },
+ {
+  "id": "M382",
+  "name": "an aluminium package is not an electrolytic",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if (ALUMINIUM_PACKAGE_RE.search(text) and VOLTAGE_RE.search(str(part.get('value') or ''))",
+  "new": "        if (False and VOLTAGE_RE.search(str(part.get('value') or ''))"
+ },
+ {
+  "id": "M383",
+  "name": "a tantalum capacitor gets a life row",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if TANTALUM_RE.search(text):\n            return None",
+  "new": "        if False:\n            return None"
+ },
+ {
+  "id": "M384",
+  "name": "a super capacitor is no special case",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if farads is not None and farads >= SUPERCAP_FARAD:\n            return 'super'",
+  "new": "        if farads is not None and farads >= SUPERCAP_FARAD:\n            return 'electrolytic'"
+ },
+ {
+  "id": "M385",
+  "name": "the life row has no thermal handoff",
+  "file": "scripts/plan_circuits.py",
+  "old": "                               trigger=trigger, handoff=dict(LIFE_HANDOFF), **wait)",
+  "new": "                               trigger=trigger, **wait)"
+ },
+ {
+  "id": "M386",
+  "name": "a life row without a profile does not wait",
+  "file": "scripts/plan_circuits.py",
+  "old": "        wait = {} if profile else {'readiness': 'WAITING_EVIDENCE', 'required_inputs': ['intent.mission_profile']}",
+  "new": "        wait = {}"
+ },
+ {
+  "id": "M387",
+  "name": "a count class without its count is asked",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if profile and entry.event and count is None:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M388",
+  "name": "a sensing NTC is an inrush NTC",
+  "file": "scripts/plan_circuits.py",
+  "old": "            return 'INRUSH_NTC' if ends and not any(is_ground(n) for n in ends) and IC not in on_ends else None",
+  "new": "            return 'INRUSH_NTC'"
+ },
+ {
+  "id": "M389",
+  "name": "a resettable fuse is a fuse",
+  "file": "scripts/plan_circuits.py",
+  "old": "            return 'PTC' if PTC_RE.search(text) else 'FUSE'",
+  "new": "            return 'FUSE'"
+ },
+ {
+  "id": "M390",
+  "name": "an EEPROM is no wear-out part",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if kind == IC and (MEMORY_RE.search(text) or graph.role_kind(ref) == 'mcu'):",
+  "new": "        if kind == IC and graph.role_kind(ref) == 'mcu':"
+ },
+ {
+  "id": "M391",
+  "name": "a potentiometer is no switch",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if kind == SWITCH or SWITCHLIKE_RE.search(text):",
+  "new": "        if kind == SWITCH:"
+ },
+ {
+  "id": "M392",
+  "name": "an estimate passes any calculation row",
+  "file": "scripts/review_functions.py",
+  "old": "    if not life_row(check_id):\n        return None",
+  "new": "    if False:\n        return None"
+ },
+ {
+  "id": "M393",
+  "name": "an estimate of a life row needs no target met",
+  "file": "scripts/review_functions.py",
+  "old": "        if basis.get('kind') == 'ESTIMATE' and met and covers(scope(m, calc.get('aspect')), aspect, state, check_id):",
+  "new": "        if basis.get('kind') == 'ESTIMATE' and covers(scope(m, calc.get('aspect')), aspect, state, check_id):"
+ },
+ {
+  "id": "M394",
+  "name": "a life estimate passes without a bom constraint",
+  "file": "scripts/review_functions.py",
+  "old": "        if not isinstance(constraint, dict):\n            errors.append('%s: a life row passing on an estimate",
+  "new": "        if False:\n            errors.append('%s: a life row passing on an estimate"
+ },
+ {
+  "id": "M395",
+  "name": "a life constraint need not say it is an estimate",
+  "file": "scripts/review_functions.py",
+  "old": "        elif '估算' not in str(constraint.get('requirement') or ''):",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M396",
+  "name": "a life row may open a vendor datum",
+  "file": "scripts/review_functions.py",
+  "old": "            if rows and all(life_row(cid) for cid in rows):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M397",
+  "name": "an estimate margin of any aspect decides nothing silently",
+  "file": "scripts/review_functions.py",
+  "old": "                    and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE' and sc[0] in LIFE_ASPECTS)):",
+  "new": "                    and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE')):"
  }
 ]
