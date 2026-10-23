@@ -7,6 +7,7 @@
 python3 evals/mutation/run.py                 # 全部变异 × 单元层与约定测试，结果写 RESULTS.md
 python3 evals/mutation/run.py --only M4       # 只跑某几条
 python3 evals/mutation/run.py --tier unit     # 只跑单元层（门槛）
+python3 evals/mutation/run.py --changed      # 只跑落在未提交改动文件上的变异（日常；--changed main 比到 main），不改写 RESULTS.md
 ```
 
 - **单元层**：`pytest scripts/tests -x`，去掉典型电路、种子基准与 KiCad 回放三块板级基准。
@@ -78,6 +79,8 @@ M213–M219（2026-10-22，审查意图的出处与行证据不引用设计方�
 M220–M250（2026-10-22，R5 两份复审对比出的 C1–C9）守：文档类 FAIL 没有待办（M220）、感性负载行按整个续流回路判归属（M221）、功能框架与器件行不带 BOM 文字（M222、M223）、每行都相同的 BOM 列挂到每颗件上（M224）、一行多个位号只认第一个（M225）、BOM 写的电阻额定与电容耐压不用（M226、M227）、写了两次的额定照读（M228）、“工作点在手册规定区外”不算失败依据（M229）、它不列查过的曲线（M230）、它引网表事实（M231）、它引的条款不算被引用（M232）、BOM 行上只点名常规件的开放项不拒（M233）、非位号的词当位号（M234）、值后一个词让阻值读不出（M235）、DNP 当备注词（M236）、这个词不进诊断（M237）、同一交付物不提示（M238）、料号当位号（M239）、反馈断开行不出（M240）、以 FB 开头的脚都算反馈脚（M241）、晶体管与钳位二极管要声明才出器件行（M242）、普通二极管也固定出（M243）、定制电感要声明（M244）、“见功能判定”前缀与对象回显遮住模板（M245、M246）、同一器件的身份/脚表/引脚处置算不同问题（M247）、需求各方面算同一问题（M248）、同一规则各状态共用判断也报（M249）、空话通过不阻断冻结（M250）；由 `test_validate_review.py`、`test_review_functions.py`、`test_read_bom.py`、`test_passive_stress.py`、`test_bom_constraints.py`、`test_pin_feeds.py`、`test_feedback_open.py`、`test_fixed_device_rows.py`、`test_declared_device_coverage.py`、`test_review_quality.py` 杀死。M228 首轮存活（测试电容的电压两个耐压都够，看不出取了哪个），补了 `bom_ratings` 的直接断言后杀死。实现改写后 M67、M210 的原文改指新代码；M211 因 `47R/pulse` 现在读得出而存活，测试改用真正读不出的 `47R/5%/1%` 后杀死。
 
 M251–M289（2026-10-22，R5 复审总结里的 P1–P10）守：阻容应力清单不存 `devices` 段、清单上下文丢掉扫描另读的段（M251、M252）、REQ-Q08 未归属清单行被当成手加行、任何 REQ-Q08 行都被放过（M253、M254）、没有封装的阻容静默跳过、每颗都出行、算不出应力也当超出预判、超出所写耐压照判通过、值里写的额定不用、值里的耐压读不出、按假定封装预判的位号不进诊断（M255–M261）、寿命需求不出逐颗行、每颗电容都出寿命行（M262、M263）、串阻读不出时脚电流行不写计算也能通过、算出的串阻当成没算（M264、M265）、改写后的框架问题不点名本电路、成员行在别处 FAIL 或资料不足时框架仍算通过、计数与功能表读写入的结论（M266–M270）、同一原因逐个方面重复、入口显示内部条件编号（M271、M272）、计划诊断不进报告（M273）、资料不足子类分错或不进待办和计数（M274–M277）、BOM 约束不进报告（M278）、BOM 约束站在非 PASS 行、最低要求不是数、等级不跟后果类别、已写入不给 BOM 行位置、待写入不阻断冻结、形状不校验、冻结不看（M279–M285）、常规件额定留作开放项、需求跟随行打断拒收、安全电容当常规件、非应力行的缺口也拒（M286–M289）；由 `test_passive_stress.py`、`test_pin_feeds.py`、`test_tree_coverage.py`、`test_bom_constraints.py`、`test_review_functions.py`、`test_render_and_pack.py` 等杀死。M254、M267、M269、M279、M286、M288 首轮存活：分别补了“别的 REQ-Q08 行仍算手加”、成员行在别处 FAIL、数字一览的功能计数、非 PASS 行的约束、审查闸门整体拒收常规件开放项、安全电容不是常规件的测试后杀死。
+
+M290（2026-10-22，删旧格式兼容）守：说明版本不是当前版本的计划照读。由 `test_check_explanations.py::test_a_plan_of_an_earlier_explanation_version_is_refused` 杀死。
 
 ## 维护
 

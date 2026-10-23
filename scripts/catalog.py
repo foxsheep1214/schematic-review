@@ -1080,8 +1080,6 @@ EXPLANATION_VERSION = 2
 EXPLANATION_FIELDS = ('risk_if_omitted', 'closes_when', 'inputs', 'false_alarms')
 REQUIRED_EXPLANATION_FIELDS = ('risk_if_omitted', 'closes_when')
 EXPLANATION_LIMITS = {'risk_if_omitted': 40, 'closes_when': 50, 'inputs': 40, 'false_alarms': 50}
-# 第 1 版字段：只用于读取和校验旧计划、旧结果中的说明。
-LEGACY_EXPLANATION_FIELDS = ('purpose', 'risk_if_omitted', 'connections')
 
 
 def _x(risk, closes, inputs='', false_alarms=''):
@@ -1249,23 +1247,22 @@ def explanations_for(rule_ids):
 
 
 def plan_explanation_errors(plan):
-    """计划级说明须覆盖每个检查的规则。当前版本须与规则说明逐字一致；
-    旧版本计划只核结构，不拿现行文字改写历史记录。没有该字段的旧计划不检查。"""
+    """计划级说明须覆盖每个检查的规则，并与现行规则说明逐字一致；旧版本计划不兼容，重新生成。
+    没有该字段的计划只出现在手工合成的夹具里：真实计划的说明由校验按保存的输入重建核对。"""
     saved = plan.get('check_explanations')
     if saved is None:
         return []
     if not isinstance(saved, dict):
         return ['check_explanations must be an object keyed by rule']
-    current = plan.get('check_explanations_version') == EXPLANATION_VERSION
+    if plan.get('check_explanations_version') != EXPLANATION_VERSION:
+        return ['check_explanations_version is not %d; regenerate the plan (earlier plans are not read)' % EXPLANATION_VERSION]
     errors = []
     for rule in sorted({c.get('rule') for c in plan.get('checks') or [] if isinstance(c, dict)} - {None}):
         if rule not in saved:
             errors.append('check_explanations 缺少规则 %s' % rule)
-        elif current and saved[rule] != explanation(rule):
+        elif saved[rule] != explanation(rule):
             errors.extend(explanation_errors(saved[rule]) or
                           ['计划 check_explanations.%s 与规则说明不同；对象化说明写入结果行' % rule])
-        elif not current:
-            errors.extend('check_explanations.%s: %s' % (rule, e) for e in explanation_errors(saved[rule]))
     return errors
 
 
@@ -1278,10 +1275,7 @@ def explanation_errors(value, partial=False):
     """结构检查。partial=True 用于结果行的对象化覆盖：只写需要改的字段。"""
     if not isinstance(value, dict):
         return ["check_explanation must be an object"]
-    if set(value) <= set(LEGACY_EXPLANATION_FIELDS) and set(value) - set(EXPLANATION_FIELDS):
-        fields, required = LEGACY_EXPLANATION_FIELDS, LEGACY_EXPLANATION_FIELDS
-    else:
-        fields, required = EXPLANATION_FIELDS, REQUIRED_EXPLANATION_FIELDS
+    fields, required = EXPLANATION_FIELDS, REQUIRED_EXPLANATION_FIELDS
     errors = ["check_explanation has unknown field " + key for key in sorted(set(value) - set(fields))]
     errors += ["check_explanation needs non-empty " + key for key in fields
                if (key in value or (key in required and not partial))

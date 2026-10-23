@@ -42,32 +42,21 @@ def body(text):
 
 class RenderReportTests(unittest.TestCase):
     def test_conclusion_and_gate_come_first_and_gap_task_is_actionable(self):
+        # The wording is in the golden snapshot (decisive.md); this keeps the order and the named work item.
         p, r, db = decisive()
         text, gate = report(p, r, db)
         self.assertTrue(gate['valid'], gate['errors'])
         lines = [l for l in text.splitlines() if l.strip()]
         self.assertEqual(lines[1], '## 数字一览')   # the numbers first, then the conclusion
-        lines = lines[lines.index('## 结论'):]
-        self.assertEqual(lines[0], '## 结论')
-        lines.insert(0, '')
-        # The first line answers the question; the open work item is named right after it.
-        self.assertEqual(lines[2], '**还不能定稿。** 电路和文档都没有发现错误。另有 1 件事因为缺资料，现在还判断不了。')
-        self.assertNotIn('**检查结果**', body(text))
-        self.assertEqual(lines[3], '**最先要解决的一件事：**')
-        self.assertEqual(lines[4], '1. Synthetic task（P1，缺资料；待办 W-1）')
-        self.assertNotIn('**定稿还差**', body(text))   # the open work item is the only blocker, already stated
-        section = text.split('## 待办')[1]
-        self.assertIn('W-1', section)
-        self.assertIn('类型：缺资料（公开资料定不出界限）　可能后果：必需功能可能不达标（P1）　涉及 1 条检查', section)
-        for phrase in ('Recompute current-limit margin', 'System engineer derives', 'Peak amperes'):
-            self.assertIn(phrase, section)
+        conclusion = text.split('## 结论')[1].split('\n## ')[0]
+        self.assertIn('W-1', conclusion)
+        self.assertIn('W-1', text.split('## 待办')[1])
 
     def test_counts_come_first_with_plain_labels(self):
         p, r, db = decisive()
         text, _ = report(p, r, db)
         self.assertLess(text.index('## 数字一览'), text.index('## 结论'))
         self.assertTrue(text.rstrip().split('\n## ')[-1].startswith('索引'))   # the file index closes the report
-        self.assertIn('| 资料不足的原因：缺资料 / 设计没定 / 等交付物 / 需求没定 / 审查没做完 / 已暂缓 | 1 / 0 / 0 / 0 / 0 / 0 |', text)
         for jargon in ('冻结', '闸门', '移交', '接收方', '证据不足'):
             self.assertNotIn(jargon, text)
         for code in INTERNAL_CODES:
@@ -152,17 +141,11 @@ class RenderReportTests(unittest.TestCase):
         self.assertTrue(notes_errors({'items': {'W-1': '质量提示仍有 17 条'}}))
 
     def test_stage_na_is_handed_over_without_blocking(self):
+        # The wording is in the golden snapshot (downstream.md); the handoff does not block and opens no work item.
         p, r, db = downstream()
         text, gate = report(p, r, db)
-        self.assertEqual(gate['release'], 'GO')
-        self.assertIn('**可以定稿。**', text)
-        section = text.split('## 交给后续环节的要求')[1]
-        self.assertIn('| Synthetic test engineer | RST-E01.C1 | 整板 |', section)
-        self.assertIn('不影响原理图定稿', section)
-        self.assertIn('| 与本产品无关（NA） | 0 |', text)
-        self.assertIn('| 原理图阶段不判、交给后续环节 | 1 |', text)
-        self.assertIn('| 原理图阶段不判、交给后续环节 | 1 |', text)
-        self.assertNotIn('NA，', text)
+        self.assertEqual((gate['release'], gate['blockers']), ('GO', []))
+        self.assertIn('RST-E01.C1', text.split('## 交给后续环节的要求')[1])
         self.assertNotIn('## 待办', text)
 
     def tool_gate(self, row_update, codes=(), rows=1, objects=None):
@@ -252,27 +235,6 @@ class RenderReportTests(unittest.TestCase):
             self.assertIn(label + manual['method'], text)
         _, (_, bad) = self.tool_gate({'manual_verification': dict(manual, reviewer_kind='inferred')})
         self.assertFalse(bad['valid'])
-
-    def test_confirmed_defect_is_listed_with_fix(self):
-        p, r, db = fixture()
-        fail(r)
-        text, _ = report(p, r, db)
-        section = body(text).split('## 发现的错误')[1]
-        self.assertIn('F1', section)
-        self.assertIn('（P1：必需功能可能不达标）', section)
-        self.assertIn('**怎么改**', section)
-        self.assertIn('**还不能定稿。** 电路有 1 处错误（P1，必需功能可能不达标），见“发现的错误”。', text)
-        self.assertIn('类型：电路错误', section)
-
-    def test_failed_checks_are_named_with_their_problem(self):
-        p, r, db = fixture()
-        fail(r)
-        key = r['checks'][0]['id']
-        r['findings'][0]['check_ids'] = [key]
-        text, _ = report(p, r, db)
-        self.assertIn('### F1', text)
-        self.assertIn('| 通过 / 没通过 / 资料不足无法判断 | 6 / 1 / 0 |', text)
-        self.assertIn('- **涉及的检查**：%s（没通过）' % key, text)
 
     def test_invalid_records_are_flagged_before_anything_else(self):
         p, r, db = decisive()

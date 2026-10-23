@@ -2021,5 +2021,12 @@
   "file": "scripts/bom_constraints.py",
   "old": "                elif rule not in PART_STRESS_RULES:\n                    break",
   "new": "                elif False:\n                    break"
+ },
+ {
+  "id": "M290",
+  "name": "a plan of an earlier explanation version is read",
+  "file": "scripts/catalog.py",
+  "old": "    if plan.get('check_explanations_version') != EXPLANATION_VERSION:\n",
+  "new": "    if False:\n"
  }
 ]

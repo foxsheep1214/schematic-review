@@ -75,14 +75,14 @@ class PlanExplanationTests(unittest.TestCase):
             if check['applicability'] != 'NOT_APPLICABLE':
                 self.assertIsNone(check['review_result'])
 
-    def test_merged_rows_drop_legacy_per_row_copies(self):
+    def test_a_previous_plan_with_first_version_row_explanations_is_not_merged(self):
         db = sample_db()
         intent = {'rule_gaps': [{'id': 'MANUAL-EXTRA', 'rule': 'DEV-C01', 'object': {'feature': 'MANUAL-EXTRA'}, 'criterion': 'synthetic extra stress check', 'missing': 'synthetic: no generated rule', 'basis': 'synthetic review note'}]}   # a reviewer-added row is a registered rule gap
         old = build_review_plan(db, intent)
         row = next(c for c in old['checks'] if c.get('origin') == 'REVIEWER_ADDED')
         row['check_explanation'] = {'purpose': '旧', 'risk_if_omitted': '旧', 'connections': '旧'}
-        new = build_review_plan(db, intent, previous_plan=old)
-        self.assertNotIn('check_explanation', next(c for c in new['checks'] if c['id'] == row['id']))
+        with self.assertRaisesRegex(ValueError, 'unknown field purpose'):
+            build_review_plan(db, intent, previous_plan=old)
 
     def test_current_plan_explanation_cannot_be_changed_or_dropped(self):
         p, r, db = fixture()
@@ -98,15 +98,15 @@ class PlanExplanationTests(unittest.TestCase):
         r['plan_digest'] = fingerprint(p)
         self.assertTrue(any('缺少规则' in e for e in validate_review(p, r, db)['errors']))
 
-    def test_older_plan_versions_are_checked_for_structure_not_rewritten(self):
+    def test_a_plan_of_an_earlier_explanation_version_is_refused(self):
         p, r, db = fixture()
-        p['check_explanations'] = {c['rule']: {'purpose': '旧目的', 'risk_if_omitted': '旧风险', 'connections': '旧衔接'}
-                                   for c in p['checks']}
+        p['check_explanations'] = {c['rule']: catalog.explanation(c['rule']) for c in p['checks']}
+        p['check_explanations_version'] = catalog.EXPLANATION_VERSION - 1
+        r['plan_digest'] = fingerprint(p)
+        self.assertTrue(any('regenerate the plan' in e for e in validate_review(p, r, db)['errors']))
+        p['check_explanations_version'] = catalog.EXPLANATION_VERSION
         r['plan_digest'] = fingerprint(p)
         self.assertTrue(validate_review(p, r, db)['valid'], validate_review(p, r, db)['errors'])
-        p['check_explanations'][p['checks'][0]['rule']]['purpose'] = ' '
-        r['plan_digest'] = fingerprint(p)
-        self.assertTrue(any('check_explanations' in e for e in validate_review(p, r, db)['errors']))
 
     def test_object_override_does_not_change_verdict(self):
         p, r, db = fixture()
@@ -145,11 +145,11 @@ class RenderExplanationTests(unittest.TestCase):
         text = '\n'.join(render_check_explanations(plan, result))
         self.assertIn('所属汇总项**：DRV-C01.PASS（其余对象通过）', text)
 
-    def test_legacy_explanations_still_render(self):
-        legacy = {'purpose': '旧目的', 'risk_if_omitted': '旧风险', 'connections': '旧衔接'}
-        text = '\n'.join(render_check_explanations(*synthetic(['FAIL'], legacy)))
-        for value in legacy.values():
-            self.assertIn(value, text)
+    def test_a_first_version_explanation_is_refused(self):
+        # SR keeps no compatibility with earlier records: the first version's purpose/connections fields are refused.
+        errors = catalog.explanation_errors({'purpose': 'p', 'risk_if_omitted': 'r', 'connections': 'c'})
+        self.assertIn('check_explanation has unknown field purpose', errors)
+        self.assertIn('check_explanation has unknown field connections', errors)
 
     def test_records_without_explanations_do_not_borrow_the_live_catalog(self):
         p, r, db = fixture()

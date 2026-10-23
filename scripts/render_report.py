@@ -545,8 +545,7 @@ def same_text(a, b):
 
 
 EXPLANATION_LABELS = (('risk_if_omitted', '不查会漏掉什么'), ('closes_when', '怎样算通过'),
-                      ('false_alarms', '常见误报/合法结构'),
-                      ('purpose', '在检查什么'), ('connections', '与其他检查怎样衔接'))  # 后两项为第 1 版记录
+                      ('false_alarms', '常见误报/合法结构'))
 
 
 def render_check_explanations(plan, results):

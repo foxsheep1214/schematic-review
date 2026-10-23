@@ -5,6 +5,7 @@
     python3 evals/mutation/run.py                 全部变异 × 单元测试层与合同层，写 evals/mutation/RESULTS.md
     python3 evals/mutation/run.py --only M4 M9    只跑这几条
     python3 evals/mutation/run.py --tier unit     只跑单元测试层
+    python3 evals/mutation/run.py --changed       只跑落在未提交改动文件上的变异（日常）；--changed main 比到 main
 
 单元测试层 = scripts/tests 去掉三块板级基准（典型电路、种子基准、KiCad 回放）；合同层 = 其中 `-m contract`。
 门槛：每条变异都必须被单元测试层杀死（任一测试失败），有存活即退出 1。合同层一列只报告，不设门槛。
@@ -105,17 +106,33 @@ def table(rows, tiers):
     return '\n'.join(lines)
 
 
+def changed_files(base):
+    """Repository paths changed against `base` (commit or branch), including untracked files."""
+    git = lambda *a: subprocess.run(('git', '-C', str(ROOT)) + a, capture_output=True, text=True, check=True).stdout.split()
+    return set(git('diff', '--name-only', base)) | set(git('ls-files', '--others', '--exclude-standard'))
+
+
 def main():
     parser = argparse.ArgumentParser(description='变异门：注入具名缺陷，确认单元测试能杀死')
     parser.add_argument('--only', nargs='*', help='只跑这些变异编号')
+    parser.add_argument('--changed', nargs='?', const='HEAD', metavar='BASE',
+                        help='只跑落在相对 BASE（默认 HEAD）改过的文件上的变异；不写 RESULTS.md，除非给 --out')
     parser.add_argument('--tier', choices=('unit', 'contract', 'both'), default='both')
     parser.add_argument('--jobs', type=int, default=max(1, (os.cpu_count() or 2) // 2))
-    parser.add_argument('--out', default=str(HERE / 'RESULTS.md'), help='结果表（Markdown）')
+    parser.add_argument('--out', help='结果表（Markdown）；全量运行默认写 RESULTS.md')
     parser.add_argument('--json', help='另存 JSON')
     args = parser.parse_args()
     mutations = json.loads((HERE / 'mutations.json').read_text(encoding='utf-8'))
     if args.only:
         mutations = [m for m in mutations if m['id'] in args.only]
+    if args.changed:
+        files = changed_files(args.changed)
+        mutations = [m for m in mutations if m['file'] in files]
+        print('%d mutations on %d changed files' % (len(mutations), len(files)))
+        if not mutations:
+            return 0
+    elif not args.only and not args.out:
+        args.out = str(HERE / 'RESULTS.md')
     tiers = ['unit', 'contract'] if args.tier == 'both' else [args.tier]
     with tempfile.TemporaryDirectory(prefix='sr-mutation-') as workdir:
         if not clean_copy_passes(tiers, workdir):

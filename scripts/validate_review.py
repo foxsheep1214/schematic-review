@@ -294,9 +294,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 require(actual is not None and revision_digest(check_spec(actual)) == revision_digest(check_spec(generated)),
                         generated['id'] + ': automatic check missing or changed from saved inputs')
             saved = plan.get('check_explanations') or {}
-            current = plan.get('check_explanations_version') == catalog.EXPLANATION_VERSION
             for rule in sorted({generated['rule'] for generated in planner.checks}):
-                require(rule in saved and (not current or saved[rule] == catalog.explanation(rule)),
+                require(rule in saved and saved[rule] == catalog.explanation(rule),
                         rule + ': automatic check explanation missing or changed from saved inputs')
         except (ValueError, TypeError, KeyError, AttributeError) as error:
             require(False, 'invalid generated-check inputs: ' + str(error))
