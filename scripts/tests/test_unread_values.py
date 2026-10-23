@@ -20,14 +20,14 @@ from test_passive_stress import board
 class UnreadValueTests(unittest.TestCase):
     def test_an_unreadable_resistor_value_is_a_plan_diagnostic_with_the_value_as_written(self):
         db, intent = board()
-        db['parts']['R1']['value'] = '47R/1%/2W/pulse'
+        db['parts']['R1']['value'] = '47R/1%/2W/5%'
         rebind(db, intent)
-        self.assertEqual(unread_values(db), {'R1': '47R/1%/2W/pulse'})
+        self.assertEqual(unread_values(db), {'R1': '47R/1%/2W/5%'})
         found = [d for d in build_review_plan(db, intent)['diagnostics'] if d['code'] == 'RESISTOR_VALUE_UNREAD']
         self.assertEqual(len(found), 1)
-        self.assertEqual(found[0]['values'], {'R1': '47R/1%/2W/pulse'})
+        self.assertEqual(found[0]['values'], {'R1': '47R/1%/2W/5%'})
         lines = unread_lines(build_review_plan(db, intent))
-        self.assertIn('R1「47R/1%/2W/pulse」', lines[0])
+        self.assertIn('R1「47R/1%/2W/5%」', lines[0])
         self.assertIn('当场告诉用户', lines[1])
         self.assertEqual(unread_lines({'diagnostics': []}), [])
 
@@ -40,7 +40,7 @@ class UnreadValueTests(unittest.TestCase):
         self.assertFalse([d for d in plan['diagnostics'] if d['code'] == 'RESISTOR_VALUE_UNREAD'])
         db['parts']['R1']['value'] = ''
         self.assertEqual(unread_values(db), {})
-        db['parts']['R1'].update(value='47R/pulse', nc=True)
+        db['parts']['R1'].update(value='47R/5%/1%', nc=True)   # unreadable, but not fitted
         self.assertEqual(unread_values(db), {})
 
 

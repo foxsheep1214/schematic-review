@@ -576,6 +576,14 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         if unread:   # a value the parser cannot read is reported, not dropped in silence
             self.diagnostics.append({'code': 'RESISTOR_VALUE_UNREAD', 'values': unread,
                                      'message': '阻值读不出；改成 阻值[/公差][/额定功率][/额定电压][/封装] 的写法或确认阻值后重跑'})
+        worded = passive_stress.word_values(self.db)
+        if worded:   # the value is read; the word after it is a requirement the BOM has to state
+            self.diagnostics.append({'code': 'RESISTOR_VALUE_WORD', 'values': worded,
+                                     'message': '阻值照读；值后面的词（如 pulse）说不清要求，写成 BOM 规格（抗脉冲能量、额定电压等）'})
+        assumed = passive_stress.assumed_package_refs(self.inventories.get('passive_stress'))
+        if assumed:   # judged on an assumed package, said where the designer reads it
+            self.diagnostics.append({'code': 'PASSIVE_PACKAGE_UNKNOWN', 'refs': assumed,
+                                     'message': '没有封装：按 %s 的额定预判，值里写了额定的按所写' % passive_stress.ASSUMED_PACKAGE})
         for conflict in self.domains['conflicts']:
             self.diagnostics.append(dict(conflict, detail='参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表'))
         self.checks.sort(key=lambda x: x['id'])
@@ -631,7 +639,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             },
             'rule_plan': self.rule_plan,
             'checks': self.checks,
-            'functions': sorted(self.functions, key=lambda x: x['id']),
+            'functions': sorted((self._with_bom_specs(f) for f in self.functions), key=lambda x: x['id']),
             'conditions': {name: requirement_parameters.windows(self.intent, name) for name in sorted(
                 {n for names in requirement_parameters.STRESS_CONDITIONS.values() for n in names})
                 if requirement_parameters.windows(self.intent, name)},

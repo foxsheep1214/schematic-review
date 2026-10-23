@@ -11,7 +11,7 @@
 import re
 
 from decoupling import parse_capacitance
-from solve_dividers import parse_resistor
+from solve_dividers import parse_resistor, parse_resistor_noted
 
 from . import inventory as inv
 from . import netgraph as ng
@@ -45,6 +45,11 @@ CRITERION = ('按 intent.power_rails 声明的轨压给两端电压定上界，�
              '建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由')
 PIN_CRITERION = ('源轨最高电压经串联电阻最小阻值流入该 IC 脚的电流不超过手册对该脚的电流上限（放电、泄放、启动、检测等经电阻'
                  '接到高于本 IC 最低供电的轨的脚），该脚电压在手册绝对最大额定内，串联电阻承受的功耗与脉冲在额定内')
+# A schematic without footprints (drawn before the PCB) has no package; the smallest package commonly used in power
+# and control boards bounds it, and a rating written in the value replaces the package floor.
+ASSUMED_PACKAGE = '0402'
+WRITTEN_V_RE = re.compile(r'^(\d+(?:\.\d+)?)\s*V$', re.I)
+WRITTEN_W_RE = re.compile(r'^(\d+(?:\.\d+)?)\s*W$', re.I)
 PACKAGE_RE = re.compile(r'^(Resistor|Capacitor)_SMD:[RC]_(0201|0402|0603|0805|1206|1210|2010|2512)_', re.I)
 # 电荷泵、自举、开关、高边驱动等节点可超出所接器件的供电轨。
 UNBOUNDED_PIN_RE = re.compile(
@@ -257,11 +262,17 @@ def _pin_feeds(db, intent, state):
 def _pin_calculation(entry):
     feeds = []
     for feed in entry['feeds']:
-        parsed = parse_resistor(feed['value'], default_tol=DEFAULT_TOL)
+        parsed = parse_resistor_noted(feed['value'], default_tol=DEFAULT_TOL)
         r_min = round(parsed['kohm'] * 1000 * (1 - parsed['tol']), 6) if parsed else None
         feeds.append({'ref': feed['ref'], 'net': feed['net'], 'source_max_v': feed['source_max_v'], 'r_min_ohm': r_min,
                       'i_max_a': round(feed['source_max_v'] / r_min, 9) if r_min else None})
     return {'feeds': feeds, 'lowest_supply_max_v': entry['lowest_supply_max_v']}
+
+
+def _uncomputed_feeds(generated):
+    """Feed resistors of a pin row whose current the tool could not compute (value unreadable)."""
+    calc = ((generated or {}).get('proposal') or {}).get('calculation') or {}
+    return [f['ref'] for f in calc.get('feeds') or [] if f.get('i_max_a') is None]
 
 
 def _scan(db, intent, state):
@@ -272,11 +283,19 @@ def _scan(db, intent, state):
         part, kind = graph.parts.get(ref, {}), graph.kind(ref)
         prefix = {ng.RESISTOR: 'R', ng.CAPACITOR: 'C'}.get(kind)
         package = _package(part, prefix) if prefix else None
+        assumed = bool(prefix and not package and not str(part.get('jedec') or '').strip())
+        if assumed:   # no footprint at all (a schematic before the PCB): the smallest common package bounds it
+            package = ASSUMED_PACKAGE
         pins = graph.pins_of(ref)
         if not package or len(pins) != 2:
             continue
         entry = {'ref': ref, 'kind': kind, 'package': package, 'value': part.get('value'),
                  'nets': sorted(pins.values())}
+        if assumed:
+            entry['package_assumed'] = True
+        written = bom_ratings(((db.get('bom') or {}).get('parts') or {}).get(ref))
+        if written:
+            entry['bom_ratings'] = written
         if kind == ng.RESISTOR and not any(_ground_name(net) for net in entry['nets']):
             entry['signal_series'] = _signal_series(graph, entry['nets'])
         windows, domains = [], set()
@@ -304,14 +323,20 @@ def _proposal(entry):
                      '不用跨轨 V²/R，也不只算稳态电流')
         return None, {}, note
     if entry['kind'] == ng.RESISTOR:
-        parsed = parse_resistor(entry['value'], default_tol=DEFAULT_TOL)
+        parsed = parse_resistor_noted(entry['value'], default_tol=DEFAULT_TOL)
         if not parsed or parsed['kohm'] * 1000 < 1:
             return None, {'v_across_max': v}, '阻值不可解析或 <1 Ω（跳线/检流不适用最弱档表）'
         r_min = parsed['kohm'] * 1000 * (1 - parsed['tol'])
         p_floor, v_floor = RESISTOR_FLOORS[entry['package']]
+        bom = entry.get('bom_ratings') or {}
+        power_w, voltage_v = parsed.get('power_w') or bom.get('power_w'), parsed.get('voltage_v') or bom.get('voltage_v')
+        p_floor, v_floor = power_w or p_floor, voltage_v or v_floor   # a written rating is the floor
         calc = {'v_across_max': v, 'r_min_ohm': round(r_min, 6), 'p_max_w': round(v * v / r_min, 9),
                 'p_floor_w': p_floor, 'v_floor_v': v_floor,
                 'power_ratio': round(v * v / r_min / p_floor, 6), 'voltage_ratio': round(v / v_floor, 6)}
+        basis = _floor_basis(entry, power_w, voltage_v)
+        if basis:
+            calc['floor_basis'] = basis
         ok = calc['power_ratio'] <= POWER_LIMIT and calc['voltage_ratio'] <= VOLTAGE_LIMIT
         if not ok:
             return None, calc, '超出未受控采购范围的预判边界，按 commodity-floors 判定表由审查者判定'
@@ -323,6 +348,14 @@ def _proposal(entry):
     farads = parse_capacitance(entry['value'])
     if farads is None:
         return None, {'v_across_max': v}, '容值不可解析'
+    if entry.get('package_assumed'):   # no footprint: only a voltage written in the value bounds it
+        written = written_voltage(entry['value']) or (entry.get('bom_ratings') or {}).get('voltage_v')
+        calc = {'v_across_max': v, 'capacitance_f': farads, 'written_v': written}
+        if written is None:
+            return None, calc, '没有封装也没写耐压：耐压 ≥%gV 写进 BOM 约束（DEV-D04），由审查者按 commodity-floors 判定' % v
+        if v <= written:
+            return 'PASS', calc, '两端电压 ≤ 值里所写耐压 %gV' % written
+        return None, calc, '两端电压超过值里所写耐压 %gV，由审查者判定' % written
     tiers = [t for t in MLCC_ORDERABLE if t[0] == entry['package'] and farads <= t[1] * (1 + 1e-9)]
     best = max(tiers, key=lambda t: t[2], default=None)
     calc = {'v_across_max': v, 'capacitance_f': farads,
@@ -330,6 +363,50 @@ def _proposal(entry):
     if best and v <= best[2]:
         return 'PASS', calc, '所需耐压 ≥%gV 在该封装/容值可订购档内（%s %gV）；耐压约束记 DEV-D04' % (v, best[3], best[2])
     return None, calc, '可订购档表未覆盖该封装/容值/耐压，由审查者按目录判定'
+
+
+def _beyond_prejudgement(result, calc):
+    """A computed stress that the pre-judgement did not pass: a resistor's ratios, a capacitor's written voltage."""
+    return result != 'PASS' and ('power_ratio' in calc or calc.get('written_v') is not None)
+
+
+def _floor_basis(entry, power_w, voltage_v):
+    """Where the rating floor came from, when not the footprint's package: the value, or the assumed package."""
+    if power_w and voltage_v:
+        return 'written'
+    assumed = 'assumed ' + entry['package'] if entry.get('package_assumed') else 'package ' + entry['package']
+    if not power_w and not voltage_v:
+        return assumed if entry.get('package_assumed') else None
+    return 'power %s, voltage %s' % ('written' if power_w else assumed, 'written' if voltage_v else assumed)
+
+
+def written_voltage(value):
+    """A rated voltage written as one segment of the value (100n/10V, 47u/35V/X7R, 4.7uF 10V); None without one."""
+    for segment in re.split(r'[/\s]+', str(value or '')):
+        match = WRITTEN_V_RE.match(segment.strip())
+        if match:
+            return float(match.group(1))
+    return None
+
+
+def bom_ratings(fields):
+    """Ratings the BOM writes as segments of their own (`…/160V/…`, `…，2W，…`); a voltage or power written twice, or
+    inside a sentence, is not read."""
+    found = {'voltage_v': set(), 'power_w': set()}
+    for text in (fields or {}).values():
+        for segment in re.split(r'[/，,；;、\s]+', str(text or '')):
+            v, w = WRITTEN_V_RE.match(segment), WRITTEN_W_RE.match(segment)
+            if v:
+                found['voltage_v'].add(float(v.group(1)))
+            if w:
+                found['power_w'].add(float(w.group(1)))
+    return {k: next(iter(vals)) for k, vals in found.items() if len(vals) == 1}
+
+
+def assumed_package_refs(inventory):
+    """Parts judged on the assumed package, over every assembly state."""
+    return sorted({p['ref'] for state in (inventory or {}).get('states', []) for p in state.get('parts', [])
+                   if p.get('package_assumed')})
 
 
 def proposal_for(inventory, state_id, ref):
@@ -343,16 +420,23 @@ def proposal_for(inventory, state_id, ref):
     return None
 
 
-def unread_values(db):
-    """{位号: 原值}：未标 NC、值不为空而阻值读不出的电阻；计划诊断与计划命令列出，由审查员当场告诉用户。"""
+def _resistor_values(db):
     graph = ng.NetGraph(db)
-    out = {}
     for ref, part in sorted((db.get('parts') or {}).items()):
         value = part.get('value') if isinstance(part, dict) else None
         if (isinstance(part, dict) and not part.get('nc') and isinstance(value, str) and value.strip()
-                and graph.kind(ref) == ng.RESISTOR and parse_resistor(value) is None):
-            out[ref] = value
-    return out
+                and graph.kind(ref) == ng.RESISTOR):
+            yield ref, value, parse_resistor_noted(value)
+
+
+def unread_values(db):
+    """{位号: 原值}：未标 NC、值不为空而阻值读不出的电阻；计划诊断与计划命令列出，由审查员当场告诉用户。"""
+    return {ref: value for ref, value, parsed in _resistor_values(db) if parsed is None}
+
+
+def word_values(db):
+    """{位号: 原值}：阻值读得出、后面另有读不出的词（如 pulse）的电阻；词说的要求写成 BOM 规格。"""
+    return {ref: value for ref, value, parsed in _resistor_values(db) if parsed and parsed.get('notes')}
 
 
 def unread_lines(plan):
@@ -412,20 +496,22 @@ class PassiveStressChecker(Checker):
     title = '通用阻容应力预判'
     plan_key = 'passive_stress'
     version_key = 'passive_stress_version'
-    version = 3
+    version = 4   # 4: parts without a footprint are judged on the assumed package
     allow_manual_bound_objects = False
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion', 'readiness',
                         'inventory_gaps', 'proposal')
 
     def build(self, db, intent):
         return inv.build(db, intent, 'power_rails', 'parts', lambda state: _scan(db, intent, state),
-                         extra=lambda state: {'pins': _pin_feeds(db, intent, state)})
+                         extra=lambda state: {'pins': _pin_feeds(db, intent, state)}, context_keys=('devices',))
 
     def plan(self, planner, inventory):
         for state, entry, state_ids in inv.walk_distinct(inventory, 'parts'):
             obj = dict({'ref': entry['ref'], 'passive_stress_digest': inventory['digest']},
                        **inv.state_fields(state_ids))
             result, calc, note = _proposal(entry)
+            if entry.get('package_assumed') and not _beyond_prejudgement(result, calc):
+                continue   # no footprint: only a computed stress beyond the pre-judgement gets its own row
             if state['gaps']:
                 result, note = None, '装配状态未核实：' + '；'.join(state['gaps'])
             item = planner.add_check('DEV-C01', obj, criterion=CRITERION)
@@ -458,7 +544,15 @@ class PassiveStressChecker(Checker):
     def pass_blockers(self, key, planned, generated, inventory):
         if generated and generated.get('inventory_gaps'):
             return [key + ': passive_stress gaps must be resolved in a regenerated plan before PASS']
+        unread = _uncomputed_feeds(generated)
+        if unread:
+            return [key + ': pin current not computed (feed resistor value unreadable: %s); a PASS records the '
+                    'reviewer calculation' % ', '.join(unread)]
         return []
+
+    def blocking_gaps(self, key, planned, generated, inventory):
+        return super().blocking_gaps(key, planned, generated, inventory) + [
+            'resistor-value-unread:' + ref for ref in _uncomputed_feeds(generated)]
 
     def object_errors(self, key, obj, inventory):
         if obj.get('passive_stress_digest') != inventory['digest']:

@@ -261,6 +261,17 @@ class ReviewGateTests(unittest.TestCase):
         errors = validate_review(p, r, db)['errors']
         self.assertTrue(any('the same check (rule, object, criterion) asked 2 times' in e for e in errors), errors)
 
+    def test_a_document_defect_gets_its_work_item_from_its_finding(self):
+        # A document FAIL may not bind to a function (functions answer circuits) and work items came only from
+        # functions, so the row had no work item and a reviewer recorded the defect as missing data instead.
+        p, r, db = fixture('DOC-D01.BOARD'); fail(r)
+        r['findings'][0]['check_ids'] = ['DOC-D01.BOARD']
+        p['review_phase'] = 'design_iteration'; r['plan_digest'] = fingerprint(p)
+        result = validate_review(p, r, db)
+        self.assertTrue(result['valid'], result['errors'])
+        task = next(t for t in result['workflow']['work_items'] if t['id'] == 'W-F1')
+        self.assertEqual(task['check_ids'], ['DOC-D01.BOARD'])
+
     def test_summary_and_claimed_release_cannot_hide_failure(self):
         p, r, db = fixture(); fail(r); r['release'] = 'GO'
         self.assertFalse(validate_review(p, r, db)['valid'])

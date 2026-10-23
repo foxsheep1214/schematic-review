@@ -58,7 +58,7 @@ class RenderReportTests(unittest.TestCase):
         self.assertNotIn('**定稿还差**', body(text))   # the open work item is the only blocker, already stated
         section = text.split('## 待办')[1]
         self.assertIn('W-1', section)
-        self.assertIn('类型：缺资料　可能后果：必需功能可能不达标（P1）　涉及 1 条检查', section)
+        self.assertIn('类型：缺资料（公开资料定不出界限）　可能后果：必需功能可能不达标（P1）　涉及 1 条检查', section)
         for phrase in ('Recompute current-limit margin', 'System engineer derives', 'Peak amperes'):
             self.assertIn(phrase, section)
 
@@ -437,6 +437,11 @@ class ReportWordingTests(unittest.TestCase):
         from render_report import jargon_in
         self.assertEqual(jargon_in('按remediation同步fit清单，交下游'), ['下游', 'remediation', 'fit'])
         self.assertEqual(jargon_in('Q201 栅极经 R203 到 PFC_GATE，fitted 状态'), [])
+
+    def test_a_check_id_the_plan_generated_is_not_jargon(self):
+        from render_report import jargon_in
+        self.assertEqual(jargon_in('| 整机试验 | REQ-D01.DOWNSTREAM-HANDOFF.REQ-MARKET-001 | 整板 |'), [])
+        self.assertEqual(jargon_in('REQ-D01.DOWNSTREAM-HANDOFF.REQ-FORM-001 交给 handoff'), ['handoff'])
 
     def test_root_gap_count_not_check_count_and_details_preserve_evidence(self):
         from test_check_explanations import synthetic

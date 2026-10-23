@@ -12,6 +12,7 @@ notes.json (optional):
                     "instance": "what happened on this board", "suggestion": "how SR should change"}]}
 """
 import results_model
+import bom_constraints
 import argparse
 import json
 import re
@@ -71,6 +72,7 @@ DOCUMENT_RULES = {'DOC-A01', 'DOC-A02', 'DOC-A03', 'DOC-A04', 'DOC-T01', 'DOC-D0
 # Words readers found obscure; record text that reaches the report must not use them.
 JARGON = ('冻结', '闸门', '原生', '下游', '移交', '接收方', '闭合', '绑定', '本行', '证据不足', '技能',
           'remediation', 'handoff', 'fit')
+CHECK_ID_RE = re.compile(r'\b[A-Z]{3}-[A-Z]\d{2}(?:\.[A-Za-z0-9_~-]+)+')
 
 
 def cell(text):
@@ -131,6 +133,7 @@ def blocker_reasons(blockers, results, tasks=None, skip=()):
 
 
 def jargon_in(text):
+    text = CHECK_ID_RE.sub(' ', text)   # a check id the plan generated is a name, not wording
     found = []
     for word in JARGON:
         pattern = r'(?<![A-Za-z])%s(?![A-Za-z])' % word if word.isascii() else re.escape(word)
@@ -256,8 +259,11 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
     breakdown = ''
     if len([k for k in branch_levels if k]) > 1:
         breakdown = '（%s）' % '、'.join('%s %d' % (k, branch_levels[k]) for k in SEVERITIES if branch_levels.get(k))
+    sub = results_model.GAP_SUBCLASSES.get(task.get('subclass'))
+    kind = item_kind(rows)
     meta = '类型：%s　可能后果：%s　涉及 %d 条检查%s' % (
-        item_kind(rows), ('%s（%s）' % (SEVERITY_WORDS[level], level)) if level else '未定级', len(rows), breakdown)
+        '%s（%s）' % (kind, sub) if sub and kind != KINDS['FAIL'] and sub != kind else kind,
+        ('%s（%s）' % (SEVERITY_WORDS[level], level)) if level else '未定级', len(rows), breakdown)
     lines = [head, '', meta, '']
     if view['ambiguous_checks']:
         lines += ['风险和资料需求尚未按任务分清：' + '、'.join(view['ambiguous_checks']) +
@@ -356,36 +362,89 @@ OTHER_GROUP = '审查员另建的功能'
 OWNER_WORDS = {'SYSTEM': '系统功能', 'CIRCUIT': '功能电路', 'INTERFACE': '接口', 'BOARD': '全板与文档'}
 
 
-def function_row(fn):
+def function_row(fn, effective=None):
     items = [i for i in fn.get('open') or [] if isinstance(i, dict) and i.get('kind') != 'REQUIREMENT']
     items += [i for i in fn.get('fails') or [] if isinstance(i, dict)]
-    ids = unique(results_model.work_item_id(i['key']) for i in items if isinstance(i.get('key'), str))
+    verdict, delegated = effective or (fn.get('verdict'), [])
+    ids = unique([results_model.work_item_id(i['key']) for i in items if isinstance(i.get('key'), str)] + delegated)
     return '| %s | %s | %s | %s | %s |' % (
         cell(fn.get('id', '')), cell(fn.get('question') or ''),
-        VERDICT_WORDS.get(fn.get('verdict'), cell(fn.get('verdict') or '')),
+        VERDICT_WORDS.get(verdict, cell(verdict or '')),
         cell(function_basis(fn)), cell('、'.join(ids)) or '—')
 
 
-def render_functions(functions, plan=None):
+def render_functions(functions, plan=None, checks=None):
     """各功能的判断：一行一个功能，读者要的是“偏置：能，余量 0.8 V”；计划有功能树的框架时按系统功能、电路、接口分节。"""
     rows = [fn for fn in functions or [] if isinstance(fn, dict)]
     if not rows:
         return []
     head = ['| 功能 | 问题 | 结论 | 余量或依据 | 待办编号 |', '|---|---|---|---|---|']
     frames = {f['id']: f for f in (plan or {}).get('functions') or [] if isinstance(f, dict) and f.get('id')}
+    effective = results_model.effective_verdicts(rows, plan, checks)
 
     def group(fn):
         frame = frames.get(fn.get('id')) or {}
         return next((label for key, label in TREE_GROUPS if frame.get(key)), OTHER_GROUP)
 
     if not any(group(fn) != OTHER_GROUP for fn in rows):
-        return ['## 各功能的判断', ''] + head + [function_row(fn) for fn in rows] + ['']
+        return ['## 各功能的判断', ''] + head + [function_row(fn, effective.get(fn.get('id'))) for fn in rows] + ['']
     out = ['## 各功能的判断', '']
     for label in [label for _, label in TREE_GROUPS] + [OTHER_GROUP]:
         members = sorted((fn for fn in rows if group(fn) == label), key=lambda fn: str(fn.get('id', '')))
         if members:
-            out += ['### ' + label, ''] + head + [function_row(fn) for fn in members] + ['']
+            out += ['### ' + label, ''] + head + [function_row(fn, effective.get(fn.get('id'))) for fn in members] + ['']
     return out
+
+
+def gap_subclass_counts(results, gaps):
+    """One count line by the kind of gap each open row's item is (results_model.GAP_SUBCLASSES); none without any."""
+    items = results_model.open_items(results)
+    subs = Counter(results_model.gap_subclass(items[c['open_ref']][1]) for c in gaps
+                   if c.get('open_ref') in items)
+    if not any(subs.get(k) for k in results_model.GAP_SUBCLASSES):
+        return []
+    names = results_model.GAP_SUBCLASSES
+    return ['| 资料不足细分：%s | %s |' % (' / '.join(names.values()), ' / '.join(str(subs.get(k, 0)) for k in names))]
+
+
+def render_bom_constraints(checks):
+    """What the BOM must state for commodity parts (commodity-floors.md): not defects, not missing data."""
+    rows = bom_constraints.constraints(checks)
+    if not rows:
+        return []
+    out = ['## BOM 要写明的额定与规格', '',
+           '这些是常规器件（电阻、电容、电感、二极管）按现在的 BOM 可能买错的地方：审查已算出最低要求，'
+           '设计者把它写进 BOM 即可，不是电路错误，也不是资料不足。等级按买到与 BOM 已写字段相符的最弱常规件会怎样定。', '',
+           '| 位号 | 要写明的要求 | 依据 | 买错会怎样（等级） | 状态 |', '|---|---|---|---|---|']
+    for _, c in rows:
+        cls = c.get('consequence_class')
+        word = '误选件仍在额定内，只缺降额余量' if cls == 'OPTIMIZATION' else IMPACT_CLASS_WORDS.get(cls, cls or '')
+        out.append('| %s | %s | %s | %s（%s） | %s |' % (
+            cell('、'.join(c.get('refs') or [])), cell(c.get('requirement') or ''), cell(c.get('basis') or ''),
+            cell(word), c.get('level') or '', '已写入' if c.get('status') == 'WRITTEN' else '待写入'))
+    return out + ['']
+
+
+# Plan diagnostics about how the design input is written: the designer rewrites these, so they reach the report.
+INPUT_NOTES = {'RESISTOR_VALUE_UNREAD': '下面这些电阻的值读不出阻值，相关的应力和脚电流没有算；'
+                                        '请改成 阻值[/公差][/额定功率][/额定电压][/封装] 的写法，或确认阻值。',
+               'RESISTOR_VALUE_WORD': '下面这些电阻的阻值照读，值后面的词说不清要求（如 pulse）；'
+                                      '请把它说的要求写成 BOM 规格（抗脉冲能量、额定电压等）：',
+               'PASSIVE_PACKAGE_UNKNOWN': '下面这些电阻电容没有封装，按最小常用封装（0402）的额定预判，值里写了额定的按所写；'
+                                          '定了封装或在值里写明额定后重跑：'}
+
+
+def render_input_notes(plan):
+    out = []
+    for diagnostic in (plan or {}).get('diagnostics') or []:
+        if not isinstance(diagnostic, dict) or diagnostic.get('code') not in INPUT_NOTES:
+            continue
+        values = diagnostic.get('values') if isinstance(diagnostic.get('values'), dict) else {}
+        refs = [r for r in diagnostic.get('refs') or [] if isinstance(r, str)]
+        out += [INPUT_NOTES[diagnostic['code']], ''] + ['- %s：`%s`' % (ref, value) for ref, value in sorted(values.items())]
+        out += ['、'.join(refs)] if refs else []
+        out += ['']
+    return ['## 设计输入要改的写法', ''] + out if out else []
 
 
 def finding_owners(finding, plan):
@@ -657,7 +716,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         out += [''.join(remarks), '']
 
     functions = circuit_functions(results.get('functions'), results.get('checks'))
-    out += render_functions(functions, plan)
+    out += render_functions(functions, plan, results.get('checks'))
 
     if findings:
         out += ['## 发现的错误', '', SEVERITY_LEGEND, '']
@@ -700,8 +759,9 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         out += ['## 待办', '']
         if not findings:
             out += [SEVERITY_LEGEND, '']
+        # Within a level a gap the public bound already shows short comes first: it is the one likeliest to need a change.
         rank = lambda t: (SEVERITIES.index(task_level(t, checks, task_owners, classes)) if task_level(t, checks, task_owners, classes) else len(SEVERITIES),
-                          -len(t.get('check_ids') or []))
+                          t.get('subclass') != 'PUBLIC_BOUND_SHORT', -len(t.get('check_ids') or []))
         # One reason sentence on many work items says nothing about any of them (a delivered report: 15 of 18).
         reason_count = Counter(t['reason'].strip() for t in tasks if isinstance(t.get('reason'), str))
         shared_reasons = {r for r, n in reason_count.items() if n >= SHARED_REASON_MIN_TASKS}
@@ -712,6 +772,9 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                         '按上文“发现的错误”中问题 %s 的改法处理，这里不重复。' % '、'.join(owners), '']
                 continue
             out += render_item(task, checks, item_notes, task_owners, classes, shared_reasons)
+
+    out += render_bom_constraints(checks)
+    out += render_input_notes(plan)
 
     if handoffs:
         out += ['## 交给后续环节的要求', '',
@@ -793,7 +856,8 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     history_cell = str(history)
     if not history and any(isinstance(x, str) for x in results.get('history_inputs') or []):
         history_cell = '0（已声明上一版材料，但没有逐条复验行）' if revision else '0（首审不逐条登记）'
-    verdicts = Counter(f.get('verdict') for f in functions)
+    effective = results_model.effective_verdicts(functions, plan, results.get('checks'))
+    verdicts = Counter(effective.get(f.get('id'), (f.get('verdict'),))[0] for f in functions)
     counts_block = ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
             '| 功能判定 通过 / 没通过 / 未定 | %d / %d / %d |' % (verdicts.get('PASS', 0), verdicts.get('FAIL', 0), verdicts.get('OPEN', 0)),
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
@@ -806,7 +870,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             '| 待办（同一原因合并） | %d 件 |' % len(tasks),
             '| 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(pot.get(s, 0)) for s in SEVERITIES),
             '| 资料不足的原因：%s | %s |' % (' / '.join(CAUSES.values()), ' / '.join(str(cause.get(k, 0)) for k in CAUSES)),
-            ] + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),
+            ] + gap_subclass_counts(results, gaps) + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),
                                                   ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
                  if classes else []) + [
             '| 交给后续环节的要求 | %d |' % len(handoffs),

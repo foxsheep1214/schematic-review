@@ -33,7 +33,7 @@ RECORD_FIELD_NAMES = {'missing_inputs': 'gaps[].what', 'required_scope': 'gaps[]
                       'acquisition': 'gaps[].how_to_close', 'closure_criterion': 'gaps[].closure_criterion',
                       'consequence': 'gaps[].severity.consequence', 'affected_function': 'gaps[].severity.affects',
                       'potential_severity': 'gaps[].severity.level'}
-FREEZE_BLOCKING_CODES = ('TEMPLATED_SEVERITY_REASON', 'UNIFORM_SEVERITY_WITHIN_RULE')
+FREEZE_BLOCKING_CODES = ('TEMPLATED_SEVERITY_REASON', 'UNIFORM_SEVERITY_WITHIN_RULE', 'TEMPLATED_PASS_RATIONALE')
 # 资料获取方式/无改图理由模板：同一句话服务于多件待办时，说明没有按对象写出真实来源或真实替代方案。
 ACQUISITION_MIN_TASKS = 3
 DESIGN_OPTION_MIN_TASKS = 3
@@ -359,6 +359,7 @@ def screen_quality(plan, report, db=None):
             'message': 'A current conclusion cites a review results/gate/report file. If it is an earlier review, '
                        're-derive the conclusion from current sources and declare the file in history_inputs.'})
     candidates.extend(templated_task_text(report, expected))
+    candidates.extend(templated_pass_rationale(report, expected))
     candidates.extend(unreconciled_history(report, expected, (plan or {}).get("review_mode")))
     candidates.extend(text_hygiene(report, expected, known))
     candidates.extend(port_overvoltage_grading(report))
@@ -372,7 +373,8 @@ def screen_quality(plan, report, db=None):
     for row in report['checks']:
         if isinstance(row, dict) and isinstance(row.get('open_ref'), str):
             owners[row['open_ref']].add(row.get('id'))
-    for hint in review_functions.template_hints(report.get('functions')):
+    parts = set((db.get('parts') or {}) if isinstance(db, dict) else ()) or None
+    for hint in review_functions.template_hints(report.get('functions'), parts):
         refs = hint.get('items') or ['%s/%s' % (hint.get('function_id'), hint.get('key'))]
         candidates.append(dict(hint, check_ids=sorted({c for ref in refs for c in owners.get(ref, ()) if c})))
     for candidate in candidates:  # name fields the way a schema 3 record writes them
@@ -383,6 +385,47 @@ def screen_quality(plan, report, db=None):
                   candidate_count=len(candidates),
                   flagged_check_count=len({cid for x in candidates for cid in x['check_ids']}))
     return output
+
+
+# A PASS rationale reduced to its reasoning: without the "see function" prefix, an object echo and a basis tag, which
+# made one paragraph look different on every row.
+SEE_FUNCTION_RE = re.compile(r'^见功能判定 \S+?（[^）]*）：')
+OBJECT_ECHO_RE = re.compile(r'；(对象|已核范围)\s*[：:]?\s*\{.*$', re.S)
+BASIS_TAG_RE = re.compile(r'（依据 [^）]*）\s*$')
+REQUIREMENT_ID_RE = re.compile(r'REQ-[A-Z]+-\d+')
+TEMPLATE_MIN_CHARS = 30
+# One part's identity, pin set and pin disposition are one question about one part; one paragraph may answer them.
+DEVICE_FAMILY = {'DEV-D01': 'DEV-D', 'DEV-D02': 'DEV-D', 'DEV-D05': 'DEV-D'}
+
+
+def pass_core(text):
+    text = re.sub(r'\s+', ' ', str(text or '')).strip()
+    text = BASIS_TAG_RE.sub('', OBJECT_ECHO_RE.sub('', SEE_FUNCTION_RE.sub('', text))).strip(' ；;。')
+    return REQUIREMENT_ID_RE.sub('REQ', text)
+
+
+def _question(cid, rule):
+    """What a row asks, for the template screen: its rule, a requirement row's aspect, a device row's family."""
+    if rule == 'REQ-D01':
+        return '.'.join(cid.split('.')[:2])
+    return DEVICE_FAMILY.get(rule, rule)
+
+
+def templated_pass_rationale(report, expected):
+    """PASS rows of different rules closed by one paragraph: each criterion asks its own question, so one text that
+    answers several of them answers none (freeze-blocking)."""
+    groups = defaultdict(list)
+    for row in report.get('checks') or []:
+        if not isinstance(row, dict) or row.get('review_result') != 'PASS':
+            continue
+        core = pass_core(row.get('rationale'))
+        if len(core) >= TEMPLATE_MIN_CHARS:
+            rule = (expected.get(row.get('id')) or {}).get('rule') or str(row.get('id', '')).split('.')[0]
+            groups[core].append((row['id'], _question(row['id'], rule)))
+    return [{'code': 'TEMPLATED_PASS_RATIONALE', 'check_ids': sorted(cid for cid, _ in rows), 'template': core[:120],
+             'message': '%d PASS rows asking %d different questions rest on one paragraph; write for each criterion '
+                        'what was compared and against what' % (len(rows), len({q for _, q in rows}))}
+            for core, rows in sorted(groups.items()) if len({q for _, q in rows}) > 1]
 
 
 def unreconciled_history(report, expected, review_mode=None):

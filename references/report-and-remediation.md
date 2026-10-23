@@ -130,7 +130,7 @@ notes 不能改结论或计数，不写内部代码名（gap_cause、documented 
 - 设计迭代阶段的首段按“唯一根因”写：确认缺陷数、潜在 P0 根因数、本轮设计任务数（`current_work_items`）、
   移交到样机的任务数，再给每个本轮任务一句话。检查行数放在下面的计数表，不写进标题或首句；
   一个根因按多个状态/规则展开出的几十行是同一件事，不说成“还有几百项没过”。
-- 质量提示（`quality_screening`）中有 TEMPLATED_SEVERITY_REASON / UNIFORM_SEVERITY_WITHIN_RULE 时，先重新定级再出报告；
+- 质量提示（`quality_screening`）中有 TEMPLATED_PASS_RATIONALE 时，先给这些通过行逐行写出比较的数值与对照；有 TEMPLATED_SEVERITY_REASON / UNIFORM_SEVERITY_WITHIN_RULE 时，先重新定级再出报告；
   来不及时在结论里写明“等级尚未逐行复核”，不把模板等级当结论展示。
 - BOILERPLATE_ACQUISITION / TEMPLATED_DESIGN_OPTION_REASON / TEMPLATED_WORK_ITEM_REASON 表示多件待办共用同一句“怎么拿资料”、同一句“为什么不改图”或同一句 `reason`；逐件写出真实来源（文件、供应商联系、测量）、不改图的具体理由或该件为什么在这个阶段、为什么这些检查归一件，或提出改法。三件以上共用的 `reason` 报告不显示。报告结论里的自检行只报数量，不改结论。
 - MARGIN_COMPUTED_BUT_OPEN 表示记录里已经算出了“X > 限值”之类的余量，检查却仍是证据不足：余量够就判 PASS（B）并写明假设和样机实测移交，不够就判 FAIL 或风险并给改法。DESIGN_VALUE_ASKED_OF_VENDOR 表示设计没定的量写成了向厂家索取：反算允许范围写成设计规格，见 [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)。

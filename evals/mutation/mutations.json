@@ -465,8 +465,8 @@
   "id": "M67",
   "name": "a fail resting on no proven shortfall or mandatory clause accepted",
   "file": "scripts/review_functions.py",
-  "old": "        if not proven and not any(c.get('kind') == 'MANDATORY_CLAUSE' for c in cited):",
-  "new": "        if False:"
+  "old": "        elif not proven and not any(c.get('kind') == 'MANDATORY_CLAUSE' for c in cited):",
+  "new": "        elif False:"
  },
  {
   "id": "M68",
@@ -1466,8 +1466,8 @@
   "id": "M210",
   "name": "an unreadable value is not reported",
   "file": "scripts/checkers/passive_stress.py",
-  "old": "                and graph.kind(ref) == ng.RESISTOR and parse_resistor(value) is None):",
-  "new": "                and graph.kind(ref) == ng.RESISTOR and False):"
+  "old": "    return {ref: value for ref, value, parsed in _resistor_values(db) if parsed is None}",
+  "new": "    return {}"
  },
  {
   "id": "M211",
@@ -1531,5 +1531,495 @@
   "file": "scripts/independence.py",
   "old": "            errors.extend(intent_errors(value, '%s[%d]' % (path, index)))",
   "new": "            pass"
+ },
+ {
+  "id": "M220",
+  "name": "C5: a document defect gets no work item",
+  "file": "scripts/results_model.py",
+  "old": "    out.extend(document_work_items(report))\n",
+  "new": ""
+ },
+ {
+  "id": "M221",
+  "name": "C6: an inductive load row anchored on its whole loop",
+  "file": "scripts/review_functions.py",
+  "old": "    if 'inductive_load' in obj:   # the loop's",
+  "new": "    if False:   # the loop's"
+ },
+ {
+  "id": "M222",
+  "name": "C1: frames carry no BOM text",
+  "file": "scripts/plan_review.py",
+  "old": "sorted((self._with_bom_specs(f) for f in self.functions)",
+  "new": "sorted((f for f in self.functions)"
+ },
+ {
+  "id": "M223",
+  "name": "C1: device rows carry no BOM fields",
+  "file": "scripts/plan_circuits.py",
+  "old": "                item['bom_fields'] = self._bom_fields(ref)",
+  "new": "                pass"
+ },
+ {
+  "id": "M224",
+  "name": "C1: a column written the same on every line kept on each part",
+  "file": "scripts/read_bom.py",
+  "old": "    uniform = [h for h in keep if len(seen[h]) == 1 and all(f[h] for _, f in lines)]",
+  "new": "    uniform = []"
+ },
+ {
+  "id": "M225",
+  "name": "C1: a BOM line naming several parts gives only the first",
+  "file": "scripts/read_bom.py",
+  "old": "        for ref in refs:\n            parts[ref] = own",
+  "new": "        for ref in refs[:1]:\n            parts[ref] = own"
+ },
+ {
+  "id": "M226",
+  "name": "C1: a resistor rating the BOM writes is ignored",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "power_w, voltage_v = parsed.get('power_w') or bom.get('power_w'), parsed.get('voltage_v') or bom.get('voltage_v')",
+  "new": "power_w, voltage_v = parsed.get('power_w'), parsed.get('voltage_v')"
+ },
+ {
+  "id": "M227",
+  "name": "C1: a capacitor voltage the BOM writes is ignored",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "written = written_voltage(entry['value']) or (entry.get('bom_ratings') or {}).get('voltage_v')",
+  "new": "written = written_voltage(entry['value'])"
+ },
+ {
+  "id": "M228",
+  "name": "C1: a rating written twice in the BOM is read anyway",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "for k, vals in found.items() if len(vals) == 1}",
+  "new": "for k, vals in found.items() if vals}"
+ },
+ {
+  "id": "M229",
+  "name": "C4: an operating point outside the specified region is no fail basis",
+  "file": "scripts/review_functions.py",
+  "old": "        if outside is not None:\n            errors.extend(_outside_errors(",
+  "new": "        if False:\n            errors.extend(_outside_errors("
+ },
+ {
+  "id": "M230",
+  "name": "C4: outside_specified accepted without the curves searched",
+  "file": "scripts/review_functions.py",
+  "old": "    if not evidence(outside.get('curves_checked')):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M231",
+  "name": "C4: outside_specified accepted on a netlist fact",
+  "file": "scripts/review_functions.py",
+  "old": "    if (conditions.get(outside.get('condition')) or {}).get('kind') not in CLAUSE_KINDS:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M232",
+  "name": "C4: the outside_specified clause is not counted as cited",
+  "file": "scripts/review_functions.py",
+  "old": "                out.add(entry['outside_specified'].get('condition'))",
+  "new": "                pass"
+ },
+ {
+  "id": "M233",
+  "name": "C8: a BOM row gap naming only commodity parts kept open",
+  "file": "scripts/bom_constraints.py",
+  "old": "                    refs = named_parts(item, graph)",
+  "new": "                    refs = set()"
+ },
+ {
+  "id": "M234",
+  "name": "C8: words that are not parts of the board counted as parts",
+  "file": "scripts/bom_constraints.py",
+  "old": "    return {r for r in REF_RE.findall(words) if r in graph.parts}",
+  "new": "    return set(REF_RE.findall(words))"
+ },
+ {
+  "id": "M235",
+  "name": "C7: a trailing word makes the whole value unreadable again",
+  "file": "scripts/solve_dividers.py",
+  "old": "    parsed = parse_resistor(core, default_tol=default_tol, exact=exact) if notes else None",
+  "new": "    parsed = None"
+ },
+ {
+  "id": "M236",
+  "name": "C7: a not-fitted mark taken as a note",
+  "file": "scripts/solve_dividers.py",
+  "old": "        if not word or word.group(2).upper() in NOT_FITTED_WORDS:",
+  "new": "        if not word:"
+ },
+ {
+  "id": "M237",
+  "name": "C7: the trailing word is not reported",
+  "file": "scripts/plan_review.py",
+  "old": "        worded = passive_stress.word_values(self.db)",
+  "new": "        worded = {}"
+ },
+ {
+  "id": "M238",
+  "name": "C7: gaps awaiting one document of one part give no hint",
+  "file": "scripts/review_functions.py",
+  "old": "    for (kind, part), refs in sorted(awaited.items()):\n        if len(set(refs)) > 1:",
+  "new": "    for (kind, part), refs in sorted(awaited.items()):\n        if False:"
+ },
+ {
+  "id": "M239",
+  "name": "C7: a part number counted as a part",
+  "file": "scripts/review_functions.py",
+  "old": "set(DESIGNATOR_RE.findall(item['deliverable'])) & (known_refs or set(DESIGNATOR_RE.findall(item['deliverable'])))",
+  "new": "set(DESIGNATOR_RE.findall(item['deliverable']))"
+ },
+ {
+  "id": "M240",
+  "name": "C2: no feedback-open row",
+  "file": "scripts/plan_circuits.py",
+  "old": "        self.plan_feedback_open_rows(graph)\n",
+  "new": ""
+ },
+ {
+  "id": "M241",
+  "name": "C2: any pin beginning with FB taken for feedback",
+  "file": "scripts/plan_circuits.py",
+  "old": "not FEEDBACK_PIN_RE.fullmatch(",
+  "new": "not FEEDBACK_PIN_RE.match("
+ },
+ {
+  "id": "M242",
+  "name": "C9: transistors and clamp diodes get device rows only when declared",
+  "file": "scripts/plan_circuits.py",
+  "old": "or (fixed and not connector)",
+  "new": "or False"
+ },
+ {
+  "id": "M243",
+  "name": "C9: a plain diode gets fixed device rows",
+  "file": "scripts/plan_circuits.py",
+  "old": "BRIDGE_RE = re.compile(r'^(BR|DB)\\d', re.I)",
+  "new": "BRIDGE_RE = re.compile(r'^(BR|DB|D)\\d', re.I)"
+ },
+ {
+  "id": "M244",
+  "name": "C9: a custom inductor gets device rows only when declared",
+  "file": "scripts/plan_circuits.py",
+  "old": "(kind == INDUCTOR and CUSTOM_PART_RE.search(",
+  "new": "(False and CUSTOM_PART_RE.search("
+ },
+ {
+  "id": "M245",
+  "name": "C3: the see-function prefix hides a template",
+  "file": "scripts/review_quality.py",
+  "old": "OBJECT_ECHO_RE.sub('', SEE_FUNCTION_RE.sub('', text))",
+  "new": "OBJECT_ECHO_RE.sub('', text)"
+ },
+ {
+  "id": "M246",
+  "name": "C3: the object echo hides a template",
+  "file": "scripts/review_quality.py",
+  "old": "BASIS_TAG_RE.sub('', OBJECT_ECHO_RE.sub('', SEE_FUNCTION_RE.sub('', text)))",
+  "new": "BASIS_TAG_RE.sub('', SEE_FUNCTION_RE.sub('', text))"
+ },
+ {
+  "id": "M247",
+  "name": "C3: one part identity paragraph flagged across its device rows",
+  "file": "scripts/review_quality.py",
+  "old": "    return DEVICE_FAMILY.get(rule, rule)",
+  "new": "    return rule"
+ },
+ {
+  "id": "M248",
+  "name": "C3: requirement aspects counted as one question",
+  "file": "scripts/review_quality.py",
+  "old": "        return '.'.join(cid.split('.')[:2])",
+  "new": "        return rule"
+ },
+ {
+  "id": "M249",
+  "name": "C3: one judgement shared by the states of one rule flagged",
+  "file": "scripts/review_quality.py",
+  "old": "for core, rows in sorted(groups.items()) if len({q for _, q in rows}) > 1]",
+  "new": "for core, rows in sorted(groups.items()) if len(rows) > 1]"
+ },
+ {
+  "id": "M250",
+  "name": "C3: a templated PASS does not block freeze",
+  "file": "scripts/review_quality.py",
+  "old": "'UNIFORM_SEVERITY_WITHIN_RULE', 'TEMPLATED_PASS_RATIONALE')",
+  "new": "'UNIFORM_SEVERITY_WITHIN_RULE')"
+ },
+ {
+  "id": "M251",
+  "name": "P1: the passive-stress inventory does not save the devices section",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "extra=lambda state: {'pins': _pin_feeds(db, intent, state)}, context_keys=('devices',))",
+  "new": "extra=lambda state: {'pins': _pin_feeds(db, intent, state)})"
+ },
+ {
+  "id": "M252",
+  "name": "P1: inventory context drops the extra intent sections a scan reads",
+  "file": "scripts/checkers/inventory.py",
+  "old": "board_intent.context(source, section, context_keys)",
+  "new": "board_intent.context(source, section)"
+ },
+ {
+  "id": "M253",
+  "name": "P2: the REQ-Q08 unassigned-parts row counted as hand-added",
+  "file": "scripts/rule_gaps.py",
+  "old": "or 'prior_checks' in row or _from_candidates(row))",
+  "new": "or 'prior_checks' in row)"
+ },
+ {
+  "id": "M254",
+  "name": "P2: any REQ-Q08 row excused as the candidates row",
+  "file": "scripts/rule_gaps.py",
+  "old": "return row.get('rule') == 'REQ-Q08' and 'circuit-candidates:unassigned' in (row.get('trigger') or [])",
+  "new": "return row.get('rule') == 'REQ-Q08'"
+ },
+ {
+  "id": "M255",
+  "name": "P3: a part without a footprint skipped in silence",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if assumed:   # no footprint at all",
+  "new": "        if False:   # no footprint at all"
+ },
+ {
+  "id": "M256",
+  "name": "P3: every unpackaged part gets its own row",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "if entry.get('package_assumed') and not _beyond_prejudgement(result, calc):",
+  "new": "if entry.get('package_assumed') and False:"
+ },
+ {
+  "id": "M257",
+  "name": "P3: an uncomputed capacitor stress taken as beyond the pre-judgement",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "return result != 'PASS' and ('power_ratio' in calc or calc.get('written_v') is not None)",
+  "new": "return result != 'PASS'"
+ },
+ {
+  "id": "M258",
+  "name": "P3: a capacitor over its written voltage passed",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if v <= written:\n",
+  "new": "        if v <= written * 10:\n"
+ },
+ {
+  "id": "M259",
+  "name": "P3: a rating written in the value ignored",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "p_floor, v_floor = power_w or p_floor, voltage_v or v_floor",
+  "new": "p_floor, v_floor = p_floor, v_floor"
+ },
+ {
+  "id": "M260",
+  "name": "P3: a voltage written in the value not read",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if match:\n            return float(match.group(1))",
+  "new": "        if False:\n            return float(match.group(1))"
+ },
+ {
+  "id": "M261",
+  "name": "P3: parts on the assumed package not reported",
+  "file": "scripts/plan_review.py",
+  "old": "        if assumed:   # judged on an assumed package",
+  "new": "        if False:   # judged on an assumed package"
+ },
+ {
+  "id": "M262",
+  "name": "P4: no lifetime rows",
+  "file": "scripts/plan_circuits.py",
+  "old": "        self.plan_life_rows(graph, fitted)",
+  "new": "        pass"
+ },
+ {
+  "id": "M263",
+  "name": "P4: every capacitor gets a lifetime row",
+  "file": "scripts/plan_circuits.py",
+  "old": "if graph.kind(ref) == CAPACITOR and POLARIZED_RE.search(",
+  "new": "if graph.kind(ref) == CAPACITOR or POLARIZED_RE.search("
+ },
+ {
+  "id": "M264",
+  "name": "P5: a pin row with an unreadable feed resistor may pass without a calculation",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        unread = _uncomputed_feeds(generated)\n        if unread:",
+  "new": "        unread = _uncomputed_feeds(generated)\n        if False:"
+ },
+ {
+  "id": "M265",
+  "name": "P5: a computed feed counted as uncomputed",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "if f.get('i_max_a') is None]",
+  "new": "if f.get('i_max_a') is not None]"
+ },
+ {
+  "id": "M266",
+  "name": "P6: a rewritten frame question need not name the circuit",
+  "file": "scripts/review_functions.py",
+  "old": "    return any(name and name in question for name in names)",
+  "new": "    return True"
+ },
+ {
+  "id": "M267",
+  "name": "P6: a member row failed under another function leaves the frame passed",
+  "file": "scripts/results_model.py",
+  "old": "                verdict, ref = 'FAIL', row.get('fail_ref')",
+  "new": "                continue"
+ },
+ {
+  "id": "M268",
+  "name": "P6: a member row left open under another function leaves the frame passed",
+  "file": "scripts/results_model.py",
+  "old": "verdict, ref = ('OPEN' if verdict == 'PASS' else verdict), row.get('open_ref')",
+  "new": "verdict, ref = verdict, row.get('open_ref')"
+ },
+ {
+  "id": "M269",
+  "name": "P6: the counts read the written verdict, not the effective one",
+  "file": "scripts/render_report.py",
+  "old": "verdicts = Counter(effective.get(f.get('id'), (f.get('verdict'),))[0] for f in functions)",
+  "new": "verdicts = Counter(f.get('verdict') for f in functions)"
+ },
+ {
+  "id": "M270",
+  "name": "P6: the function table reads the written verdict",
+  "file": "scripts/render_report.py",
+  "old": "        VERDICT_WORDS.get(verdict, cell(verdict or '')),",
+  "new": "        VERDICT_WORDS.get(fn.get('verdict'), cell(verdict or '')),"
+ },
+ {
+  "id": "M271",
+  "name": "P8: each aspect repeats the same reason",
+  "file": "scripts/results_model.py",
+  "old": "groups.setdefault((through, d['rationale']), [])",
+  "new": "groups.setdefault((through, d['rationale'], d.get('aspect')), [])"
+ },
+ {
+  "id": "M272",
+  "name": "P8: the entry point shown by internal condition id",
+  "file": "scripts/results_model.py",
+  "old": "    return ' '.join(x for x in (str(condition.get('source') or '').rsplit('/', 1)[-1], condition.get('locator')) if text(x)) or cid",
+  "new": "    return cid"
+ },
+ {
+  "id": "M273",
+  "name": "P9: plan diagnostics on the input wording not in the report",
+  "file": "scripts/render_report.py",
+  "old": "    out += render_input_notes(plan)\n",
+  "new": ""
+ },
+ {
+  "id": "M274",
+  "name": "P10: a public bound short classed as unguaranteed",
+  "file": "scripts/results_model.py",
+  "old": "return 'PUBLIC_BOUND_SHORT' if value < 0 else",
+  "new": "return 'PUBLIC_BOUND_SHORT' if value > 0 else"
+ },
+ {
+  "id": "M275",
+  "name": "P10: a custom-part drawing classed as configuration",
+  "file": "scripts/results_model.py",
+  "old": "return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'CONFIGURATION'",
+  "new": "return 'CONFIGURATION'"
+ },
+ {
+  "id": "M276",
+  "name": "P10: the gap subclass does not reach the work list",
+  "file": "scripts/review_workflow.py",
+  "old": "'closure_criterion', 'worst_case', 'blocks', 'subclass')",
+  "new": "'closure_criterion', 'worst_case', 'blocks')"
+ },
+ {
+  "id": "M277",
+  "name": "P10: no subclass count line",
+  "file": "scripts/render_report.py",
+  "old": "] + gap_subclass_counts(results, gaps) + (",
+  "new": "] + ("
+ },
+ {
+  "id": "M278",
+  "name": "P10: BOM constraints not in the report",
+  "file": "scripts/render_report.py",
+  "old": "    out += render_bom_constraints(checks)\n",
+  "new": ""
+ },
+ {
+  "id": "M279",
+  "name": "P10: a bom_constraint accepted on a non-PASS row",
+  "file": "scripts/bom_constraints.py",
+  "old": "    if row.get('review_result') != 'PASS':\n        errors.append(",
+  "new": "    if False:\n        errors.append("
+ },
+ {
+  "id": "M280",
+  "name": "P10: a bom_constraint requirement without a minimum accepted",
+  "file": "scripts/bom_constraints.py",
+  "old": "if not (text(constraint.get('requirement')) and RATING_RE.search(constraint['requirement'])):",
+  "new": "if not text(constraint.get('requirement')):"
+ },
+ {
+  "id": "M281",
+  "name": "P10: a bom_constraint level not tied to its consequence class",
+  "file": "scripts/bom_constraints.py",
+  "old": "    elif constraint.get('level') != IMPACT_CLASSES[cls]:",
+  "new": "    elif False:"
+ },
+ {
+  "id": "M282",
+  "name": "P10: a WRITTEN bom_constraint without its BOM line accepted",
+  "file": "scripts/bom_constraints.py",
+  "old": "elif constraint['status'] == 'WRITTEN' and not text(constraint.get('written_at')):",
+  "new": "elif False:"
+ },
+ {
+  "id": "M283",
+  "name": "P10: a constraint still to write does not block freeze",
+  "file": "scripts/bom_constraints.py",
+  "old": "pending = [cid for cid, c in constraints(checks) if c.get('status') != 'WRITTEN']",
+  "new": "pending = []"
+ },
+ {
+  "id": "M284",
+  "name": "P10: bom_constraint shape not validated",
+  "file": "scripts/validate_review.py",
+  "old": "        errors.extend(bom_constraints.constraint_errors(key, item))\n",
+  "new": ""
+ },
+ {
+  "id": "M285",
+  "name": "P10: freeze ignores constraints still to write",
+  "file": "scripts/validate_review.py",
+  "old": "        blockers.extend(bom_constraints.freeze_blockers(checks))\n",
+  "new": ""
+ },
+ {
+  "id": "M286",
+  "name": "P10: a commodity rating kept as an open item",
+  "file": "scripts/review_functions.py",
+  "old": "    if isinstance(db, dict):   # a commodity part's rating",
+  "new": "    if False:   # a commodity part's rating"
+ },
+ {
+  "id": "M287",
+  "name": "P10: a requirement aspect row stops the commodity refusal",
+  "file": "scripts/bom_constraints.py",
+  "old": "                    continue   # a requirement aspect row follows",
+  "new": "                    break   # a requirement aspect row follows"
+ },
+ {
+  "id": "M288",
+  "name": "P10: a safety capacitor taken for a commodity part",
+  "file": "scripts/bom_constraints.py",
+  "old": "and not SAFETY_RE.search(str(part.get('value') or ''))",
+  "new": "and not False"
+ },
+ {
+  "id": "M289",
+  "name": "P10: a rating gap on a non-stress row refused",
+  "file": "scripts/bom_constraints.py",
+  "old": "                elif rule not in PART_STRESS_RULES:\n                    break",
+  "new": "                elif False:\n                    break"
  }
 ]

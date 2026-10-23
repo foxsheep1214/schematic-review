@@ -31,6 +31,7 @@ import interfaces
 import requirement_bindings
 import independence
 import rule_gaps
+import bom_constraints
 
 RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -379,6 +380,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if 'check_explanation' in item:
             errors.extend(f'{key}: {message}' for message in
                           catalog.explanation_errors(item['check_explanation'], partial=True))
+        errors.extend(bom_constraints.constraint_errors(key, item))
         require(text(item.get("rationale")), f"{key}: missing rationale")
         require(evidence(item.get("evidence")), f"{key}: missing locatable evidence")
         require(isinstance(item.get("blocking"), bool), f"{key}: blocking must be boolean")
@@ -601,9 +603,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if "summary" in report:
         require(report["summary"] == computed, "summary does not match unique findings/check results")
     if plan.get("review_phase", "schematic_freeze") == "schematic_freeze":
+        blockers.extend(bom_constraints.freeze_blockers(checks))
         for item in screen_quality(plan, report, db)["candidates"]:
             if item["code"] in FREEZE_BLOCKING_CODES:
-                blockers.append(f"{item['code']}: {len(item['check_ids'])} evidence gaps need individual grading before freeze")
+                blockers.append(f"{item['code']}: {len(item['check_ids'])} " + (
+                    "PASS rows need their own comparison before freeze" if item['code'] == 'TEMPLATED_PASS_RATIONALE'
+                    else "evidence gaps need individual grading before freeze"))
     release = "NO_GO" if errors or blockers else ("CONDITIONAL_GO" if accepted else "GO")
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")

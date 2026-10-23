@@ -14,6 +14,7 @@
 | 待办（同一原因合并） | 1 件 |
 | 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | 0 / 1 / 0 / 0 |
 | 资料不足的原因：缺资料 / 设计没定 / 等交付物 / 需求没定 / 审查没做完 / 已暂缓 | 1 / 0 / 0 / 0 / 0 / 0 |
+| 资料不足细分：设计还要定 / 等配置表 / 等定制件图纸 / 按公开资料界限算不够 / 按公开资料界限算够，但不是保证值 / 公开资料定不出界限 | 0 / 0 / 0 / 0 / 0 / 1 |
 | 资料不足的可能后果：损坏或危险 / 核心链路断开 / 器件损坏（不致危险） / 必需功能 / 性能或寿命 / 局部或资料 / 可选优化 | 0 / 0 / 0 / 1 / 0 / 0 / 0 |
 | 交给后续环节的要求 | 0 |
 | 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | 0 |
@@ -40,11 +41,11 @@
 
 ### W-1　Synthetic task
 
-类型：缺资料　可能后果：必需功能可能不达标（P1）　涉及 1 条检查
+类型：缺资料（公开资料定不出界限）　可能后果：必需功能可能不达标（P1）　涉及 1 条检查
 
 - **缺什么**：startup load current envelope；适用范围：Peak amperes, pulse seconds and repetition at the specified supply limits
 - **为什么要紧**：Synthetic independent input
-- **这个缺口影响哪些判断**：使能极性与耐压，经 c1：Synthetic: W-1 leaves 使能极性与耐压 undecided
+- **这个缺口影响哪些判断**：使能极性与耐压，经 synthetic-fixture.json p1 Table 1 (stipulated clause)：Synthetic: W-1 leaves 使能极性与耐压 undecided
 - **还要做**：System engineer derives controlled bound from installed loads and their startup data
 - **怎样算通过**：Recompute current-limit margin and startup voltage; compare with required rails
 

@@ -455,10 +455,31 @@ def _decision_errors(fid, fn, calculation, conditions, findings):
         cited = [conditions.get(c) for c in item.get('conditions') or [] if c in conditions]
         if any(c not in conditions for c in item.get('conditions') or []):
             errors.append('%s/%s: conditions names condition ids of this function' % (fid, item.get('key', '?')))
-        if not proven and not any(c.get('kind') == 'MANDATORY_CLAUSE' for c in cited):
-            errors.append('%s/%s: a fail rests on a shortfall a margin proves (REACHABLE_CASE or EXACT_ENVELOPE) or on a '
-                          'violated MANDATORY_CLAUSE in its conditions; a difference from a typical circuit alone is not '
+        outside = item.get('outside_specified')
+        if outside is not None:
+            errors.extend(_outside_errors('%s/%s' % (fid, item.get('key', '?')), outside, conditions))
+        elif not proven and not any(c.get('kind') == 'MANDATORY_CLAUSE' for c in cited):
+            errors.append('%s/%s: a fail rests on a shortfall a margin proves (REACHABLE_CASE or EXACT_ENVELOPE), on a '
+                          'violated MANDATORY_CLAUSE in its conditions, or on an operating point outside the region the '
+                          'datasheet specifies (outside_specified); a difference from a typical circuit alone is not '
                           'a defect' % (fid, item.get('key', '?')))
+    return errors
+
+
+def _outside_errors(label, outside, conditions):
+    """A fail on a point the datasheet does not specify: the clause giving the region it does specify, this board's
+    point, and the figures and tables searched for any coverage of that point."""
+    if not isinstance(outside, dict):
+        return [label + ': outside_specified is {condition, operating_point, curves_checked}']
+    errors = []
+    if (conditions.get(outside.get('condition')) or {}).get('kind') not in CLAUSE_KINDS:
+        errors.append(label + ': outside_specified.condition names the NUMERIC_LIMIT or MANDATORY_CLAUSE of this function '
+                              'that gives the region the datasheet does specify')
+    if not text(outside.get('operating_point')):
+        errors.append(label + ': outside_specified.operating_point states where this board runs the part')
+    if not evidence(outside.get('curves_checked')):
+        errors.append(label + ': outside_specified.curves_checked lists the figures and tables searched (source, locator) '
+                              'for any coverage of this point')
     return errors
 
 
@@ -500,8 +521,8 @@ def _worst_case_errors(label, item, condition_ids):
                             'this operating point at all (true: only the parameter is missing)']
         if not specified:
             return [label + ': the datasheet does not specify the part at this operating point; relying on it is a design '
-                            'risk — record a fail item whose finding moves the design into the specified region, '
-                            'not a vendor request']
+                            'risk — record a fail item (outside_specified) whose finding moves the design into the '
+                            'specified region, not a vendor request']
         return []
     errors = []
     bound = worst.get('bound')
@@ -648,6 +669,8 @@ def cited_conditions(fn):
     for entry in list(fn.get('judgements') or []) + list(fn.get('fails') or []):
         if isinstance(entry, dict):
             out.update(c for c in entry.get('conditions') or [] if isinstance(c, str))
+            if isinstance(entry.get('outside_specified'), dict):
+                out.add(entry['outside_specified'].get('condition'))
     out.discard(None)
     return out
 
@@ -787,7 +810,10 @@ def _template_errors(functions):
             'on each question' % (', '.join(sorted(ids)), sentence[:40]) for sentence, ids in notes.items() if len(ids) > 1]
 
 
-def template_hints(functions):
+DESIGNATOR_RE = re.compile(r'(?<![A-Za-z0-9])([A-Z]{1,3}\d+[A-Z]?)(?![A-Za-z0-9])')
+
+
+def template_hints(functions, known_refs=None):
     """Quality hints, never errors: one reason sentence on several gaps (if it is one gap, keep one item and let its edges
     reach every row; rewording does not make two gaps), and a gap blocking more than WIDE_GAP aspects."""
     reasons, hints = {}, []
@@ -810,6 +836,19 @@ def template_hints(functions):
                               'aspects': sorted(aspects),
                               'message': 'One gap blocks %d aspects; read each edge: does the missing quantity really '
                                          'enter every one of them?' % len(aspects)})
+    awaited = {}
+    for fn in functions or []:
+        if isinstance(fn, dict) and text(fn.get('id')):
+            for item in fn.get('open') or []:
+                if isinstance(item, dict) and item.get('kind') == 'DELIVERABLE_PENDING' and text(item.get('deliverable')):
+                    for part in set(DESIGNATOR_RE.findall(item['deliverable'])) & (known_refs or set(DESIGNATOR_RE.findall(item['deliverable']))):
+                        awaited.setdefault((item.get('deliverable_kind'), part), []).append(
+                            '%s/%s' % (fn['id'], item.get('key', '?')))
+    for (kind, part), refs in sorted(awaited.items()):
+        if len(set(refs)) > 1:
+            hints.append({'code': 'SAME_DELIVERABLE', 'refs': [part], 'deliverable_kind': kind, 'items': sorted(set(refs)),
+                          'message': '%d gaps await %s of %s; if one document closes them, keep one item whose edges '
+                                     'carry each consequence' % (len(set(refs)), kind, part)})
     for (field, sentence), refs in sorted(reasons.items()):
         if len(set(refs)) > 1:
             hints.append({'code': 'TEMPLATE_REASON', 'field': field, 'items': sorted(set(refs)),
@@ -883,6 +922,8 @@ def row_anchors(planned):
     obj = (planned or {}).get('object') if isinstance(planned, dict) else None
     if not isinstance(obj, dict):
         return set(), set()
+    if 'inductive_load' in obj:   # the loop's other parts and nets are context: the row is about the inductor's node
+        return {r for r in (obj.get('ref'),) if text(r)}, {n for n in (obj.get('net'),) if text(n)}
     refs = {obj.get('ref')} | set(obj.get('refs') or [])
     if isinstance(obj.get('node'), str):
         refs.add(obj['node'].partition('.')[0])
@@ -950,6 +991,15 @@ def scope_errors(plan, checks, by_id, members):
     return errors
 
 
+def _names_frame(question, frame):
+    """A reviewer may sharpen a frame's question; the sharpened one still names the circuit, a part or a net of it."""
+    refs, nets = _objects(frame)
+    if not refs and not nets:
+        return True   # a frame without objects gives nothing to name
+    names = refs | nets | {n.rsplit('/', 1)[-1] for n in nets} | {frame.get('circuit') or ''}
+    return any(name and name in question for name in names)
+
+
 def frame_errors(plan, checks, functions):
     """Plan frames (one per intent circuit) are answered: a reviewed member row binds to its frame's
     function (or to another frame's function whose objects cover the row) and keeps the frame's aspect;
@@ -964,6 +1014,10 @@ def frame_errors(plan, checks, functions):
     for frame in (plan or {}).get('functions') or []:
         if not isinstance(frame, dict) or not text(frame.get('id')):
             continue
+        written = (by_id.get(frame['id']) or {}).get('question')
+        if text(written) and text(frame.get('question')) and written != frame['question'] and not _names_frame(written, frame):
+            errors.append('%s: a rewritten question names none of the circuit, its parts or its nets; sharpen the planned '
+                          'question about this circuit, do not replace it with a scope note' % frame['id'])
         answered = False
         for member in frame.get('members') or []:
             row = checks.get(member.get('check_id')) if isinstance(member, dict) else None
@@ -991,5 +1045,10 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
     functions = report.get('functions') if isinstance(report.get('functions'), list) else []
     circuits = {fn.get('id') for fn in circuit_functions(functions, list(checks.values()))}
     document_only = {fn.get('id') for fn in functions if isinstance(fn, dict) and fn.get('id') not in circuits}
-    return (function_errors(report, document_only, db) + binding_errors(expected, checks, report.get('functions'), history_ids)
-            + frame_errors(plan, checks, report.get('functions')))
+    errors = (function_errors(report, document_only, db) + binding_errors(expected, checks, report.get('functions'), history_ids)
+              + frame_errors(plan, checks, report.get('functions')))
+    if isinstance(db, dict):   # a commodity part's rating is a BOM constraint, not an open item
+        import bom_constraints
+        from checkers.netgraph import NetGraph
+        errors += bom_constraints.rating_gap_errors(expected, checks, functions, NetGraph(db), row_anchors)
+    return errors

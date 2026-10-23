@@ -133,6 +133,84 @@ def work_item_id(key):
     return key if key.startswith('W-') else 'W-' + key
 
 
+# What kind of gap an open item is, for the reader (commodity-floors / P10): who closes it, and for a vendor datum
+# which way the public bound leans. Requirement, review-incomplete and deferred items keep their cause words.
+GAP_SUBCLASSES = {'DESIGN_DECISION': '设计还要定', 'CONFIGURATION': '等配置表', 'PART_DRAWING': '等定制件图纸',
+                  'PUBLIC_BOUND_SHORT': '按公开资料界限算不够', 'PUBLIC_BOUND_UNGUARANTEED': '按公开资料界限算够，但不是保证值',
+                  'NOT_BOUNDABLE': '公开资料定不出界限'}
+
+
+def gap_subclass(item):
+    kind = item.get('kind')
+    if kind == 'DESIGN_VALUE':
+        return 'DESIGN_DECISION'
+    if kind == 'DELIVERABLE_PENDING':
+        return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'CONFIGURATION'
+    if kind == 'VENDOR_DATUM':
+        worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
+        if text(worst.get('not_boundable_reason')):
+            return 'NOT_BOUNDABLE'
+        margin = worst.get('margin') if isinstance(worst.get('margin'), dict) else {}
+        value = margin.get('value')
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return 'PUBLIC_BOUND_SHORT' if value < 0 else 'PUBLIC_BOUND_UNGUARANTEED'
+    return None   # a datum with neither a margin nor an unboundable reason is not classed
+
+
+def condition_place(fn, cid):
+    """Where a condition of `fn` stands, for the reader (file name and locator); its id when the function lacks it."""
+    condition = next((c for c in fn.get('conditions') or [] if isinstance(c, dict) and c.get('id') == cid), None)
+    if not condition:
+        return cid
+    return ' '.join(x for x in (str(condition.get('source') or '').rsplit('/', 1)[-1], condition.get('locator')) if text(x)) or cid
+
+
+def blocked_judgements(item, fn):
+    """What a gap holds open, for the reader: aspects blocked through the same entry point for the same reason share
+    one line, and the entry point is the condition's source and locator, not its internal id."""
+    def entry(via):
+        if via.get('condition'):
+            return condition_place(fn, via['condition'])
+        return '/'.join(x for x in (via.get('claim'), via.get('input')) if x)
+
+    groups = {}
+    for d in item.get('decides') or []:
+        if isinstance(d, dict) and d.get('effect', 'BLOCKS_PROOF') == 'BLOCKS_PROOF' and text(d.get('rationale')):
+            through = entry(d.get('via') if isinstance(d.get('via'), dict) else {})
+            states = '、'.join(d['states']) if isinstance(d.get('states'), list) else ''
+            groups.setdefault((through, d['rationale']), []).append('%s%s' % (d.get('aspect'), '（%s）' % states if states else ''))
+    return ['%s%s：%s' % ('、'.join(dict.fromkeys(aspects)), '，经 %s' % through if through else '', why)
+            for (through, why), aspects in groups.items()]
+
+
+def effective_verdicts(functions, plan, checks):
+    """{function id: (verdict, work ids)} as the report counts it. A plan frame's function follows its member rows:
+    a member left open or failed under another function (delegated) makes the frame OPEN or FAIL, naming the work
+    item that holds the row, so moving a row out cannot make the circuit read as passed."""
+    rows = {c['id']: c for c in checks or [] if isinstance(c, dict) and text(c.get('id'))}
+    frames = {f['id']: f for f in (plan or {}).get('functions') or [] if isinstance(f, dict) and text(f.get('id'))}
+    out = {}
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not text(fn.get('id')):
+            continue
+        verdict, ids = fn.get('verdict'), []
+        for member in (frames.get(fn['id']) or {}).get('members') or []:
+            row = rows.get(member.get('check_id')) if isinstance(member, dict) else None
+            if not isinstance(row, dict) or row.get('function_id') in (None, fn['id']):
+                continue
+            result = row.get('review_result')
+            if result == 'FAIL':
+                verdict, ref = 'FAIL', row.get('fail_ref')
+            elif result == 'INSUFFICIENT':
+                verdict, ref = ('OPEN' if verdict == 'PASS' else verdict), row.get('open_ref')
+            else:
+                continue
+            if text(ref) and work_item_id(ref.split('/', 1)[-1]) not in ids:   # a ref is '<function id>/<key>'
+                ids.append(work_item_id(ref.split('/', 1)[-1]))
+        out[fn['id']] = (verdict, ids)
+    return out
+
+
 def how_to_close(item):
     if item.get('kind') == 'DESIGN_VALUE':
         return '由%s确定：%s' % (item.get('owner') or '设计', item.get('spec') or '')
@@ -176,6 +254,8 @@ def derived_work_items(report):
                 'check_ids': owners.get(ref, []), 'evidence': fn.get('evidence')}
         if 'design_option' in item:
             task['design_option'] = item['design_option']
+        if gap_subclass(item):
+            task['subclass'] = gap_subclass(item)
         if item.get('kind') == 'DELIVERABLE_PENDING':   # no input request carries these into the report
             task.update(assumed=item.get('assumed'), required_scope=item.get('scope'), closure_criterion=item.get('closure'))
         # Every exit from a margin reaches the reader: the worst case under the public bound, and why it did not decide.
@@ -183,18 +263,32 @@ def derived_work_items(report):
         bound = worst.get('bound') if isinstance(worst.get('bound'), dict) else {}
         if text(worst.get('result')):
             task['worst_case'] = worst['result'] + (
-                '（界：%s，%s）' % (bound.get('value'), bound.get('condition')) if bound.get('value') else '')
-        reached = []
-        for d in item.get('decides') or []:
-            if isinstance(d, dict) and d.get('effect', 'BLOCKS_PROOF') == 'BLOCKS_PROOF' and text(d.get('rationale')):
-                via = d.get('via') if isinstance(d.get('via'), dict) else {}
-                through = via.get('condition') or '/'.join(x for x in (via.get('claim'), via.get('input')) if x)
-                states = '、'.join(d['states']) if isinstance(d.get('states'), list) else ''
-                reached.append('%s%s%s：%s' % (d.get('aspect'), '（%s）' % states if states else '',
-                                              '，经 %s' % through if through else '', d['rationale']))
+                '（界：%s，%s）' % (bound.get('value'), condition_place(fn, bound.get('condition'))) if bound.get('value') else '')
+        reached = blocked_judgements(item, fn)
         if reached:
             task['blocks'] = reached
         out.append(task)
+    out.extend(document_work_items(report))
+    return out
+
+
+def document_work_items(report):
+    """A document FAIL stands on its own row, not in a function (functions answer circuits): its finding is the
+    work item, holding every unbound document row that names it."""
+    findings = {f['id']: f for f in report.get('findings') or [] if isinstance(f, dict) and text(f.get('id'))}
+    rows = {}
+    for row in report.get('checks') or []:
+        if (isinstance(row, dict) and row.get('review_result') == 'FAIL' and str(row.get('id', '')).startswith('DOC-')
+                and row.get('function_id') is None and row.get('finding_id') in findings):
+            rows.setdefault(row['finding_id'], []).append(row)
+    out = []
+    for fid, linked in rows.items():
+        finding = findings[fid]
+        evidence = [e for row in linked for e in row.get('evidence') or []]
+        out.append({'id': work_item_id(fid), 'title': finding.get('title'), 'root_cause': finding.get('root_cause'),
+                    'reason': finding.get('impact') or finding.get('severity_reason'),
+                    'next_action': '按发现项 %s 的改法处理' % fid, 'due_stage': 'design_iteration',
+                    'check_ids': [row['id'] for row in linked], 'evidence': evidence or finding.get('evidence')})
     return out
 
 

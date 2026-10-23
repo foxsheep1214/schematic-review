@@ -18,10 +18,11 @@ def digest(payload):
     return hashlib.sha256(blob.encode('utf-8')).hexdigest()
 
 
-def build(db, intent, section, key, scanner, discovery_gaps=(), extra=None):
+def build(db, intent, section, key, scanner, discovery_gaps=(), extra=None, context_keys=()):
     """按 intent.assemblies 的装配状态逐一扫描；未声明时用按图状态并保留缺口。
 
     extra(state) 返回同一状态下的附加清单字段，避免为第二类对象重复解析状态。
+    context_keys：扫描另读的 intent 段，随清单保存，过期检测才能复现。
     """
     source = intent if isinstance(intent, dict) else {}
     states = []
@@ -34,7 +35,7 @@ def build(db, intent, section, key, scanner, discovery_gaps=(), extra=None):
     inventory = {
         'schema_version': 1,
         'input_sha256': db_fingerprint(db),
-        'context': board_intent.context(source, section),
+        'context': board_intent.context(source, section, context_keys),
         'discovery_gaps': sorted(discovery_gaps),
         'states': states,
     }

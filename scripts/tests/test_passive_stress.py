@@ -5,8 +5,10 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from checkers import passive_stress
 from checkers.passive_stress import OVERRIDE_CODES
 from plan_review import build_review_plan
+import render_report
 from ledger_v3 import validate_review
 from test_decoupling import add, fixture, ledger, mark_pass, rebind
 
@@ -71,6 +73,64 @@ class ProposalTests(unittest.TestCase):
                 if constraint:
                     self.assertAlmostEqual(calc['procurement_min_power_w'], 2 * calc['p_max_w'], places=9)
                     self.assertIn('DEV-D04', proposal['note'])
+
+    def unpackaged(self, r1='10k', c1='100nF'):
+        """The board with no footprints at all, as a schematic drawn before the PCB has none."""
+        db, intent = board()
+        for ref, value in (('R1', r1), ('C1', c1)):
+            db['parts'][ref].update(jedec='', value=value)
+        rebind(db, intent)
+        return db, intent
+
+    def test_a_part_without_a_footprint_gets_a_row_only_beyond_the_prejudgement(self):
+        # A schematic without footprints left every resistor and capacitor out of the inventory, with nothing said;
+        # judged on the smallest common package, a pre-judged pass or an unbounded stress stays in the circuit row.
+        _, rows = proposals(*self.unpackaged())
+        self.assertNotIn('R1', rows)
+        self.assertNotIn('C1', rows)
+        _, rows = proposals(*self.unpackaged(r1='22R'))   # 3.465² / 20.9 Ω = 0.57 W on an assumed 0402
+        calc = rows['R1']['proposal']['calculation']
+        self.assertIsNone(rows['R1']['proposal']['result'])
+        self.assertEqual((calc['p_floor_w'], calc['v_floor_v'], calc['floor_basis']), (1 / 16, 25.0, 'assumed 0402'))
+
+    def test_a_rating_written_in_the_value_is_the_floor(self):
+        _, rows = proposals(*self.unpackaged(r1='22R/1%/0.25W/50V'))
+        calc = rows['R1']['proposal']['calculation']
+        self.assertEqual((calc['p_floor_w'], calc['v_floor_v'], calc['floor_basis']), (0.25, 50.0, 'written'))
+        _, rows = proposals(*self.unpackaged(r1='22R/1%/2W'))
+        self.assertNotIn('R1', rows)
+
+    def test_a_capacitor_without_a_footprint_is_judged_on_its_written_voltage(self):
+        for value in ('100n/2.5V', '100nF 2.5V'):
+            _, rows = proposals(*self.unpackaged(c1=value))
+            self.assertEqual(rows['C1']['proposal']['calculation']['written_v'], 2.5)
+            self.assertIsNone(rows['C1']['proposal']['result'])
+        for value in ('100n/10V', '100n'):
+            _, rows = proposals(*self.unpackaged(c1=value))
+            self.assertNotIn('C1', rows)
+        self.assertEqual(passive_stress.written_voltage('4.7uF 10V'), 10.0)
+
+    def test_a_rating_the_bom_writes_as_its_own_segment_is_the_floor(self):
+        # The BOM's specification column states ratings the value leaves out; read as written, never from a sentence.
+        db, intent = self.unpackaged(r1='22R', c1='100n')
+        db['bom'] = {'parts': {'R1': {'Electrical specification': '22Ω±1%，2W，工作耐压≥50V'},
+                               'C1': {'Electrical specification': '100nF±10%/2.5V/X7R'}}}
+        _, rows = proposals(db, intent)
+        self.assertNotIn('R1', rows)   # 0.57 W on a written 2 W stays within the pre-judgement
+        self.assertEqual(rows['C1']['proposal']['calculation']['written_v'], 2.5)
+        db['bom']['parts']['C1'] = {'Electrical specification': '启动时 18V，额定 50V'}   # two voltages in a sentence
+        _, rows = proposals(db, intent)
+        self.assertNotIn('C1', rows)
+        # Two voltages leave the rating unread; one, written as its own segment, is read.
+        self.assertEqual(passive_stress.bom_ratings({'Spec': '启动时 18V，额定 50V'}), {})
+        self.assertEqual(passive_stress.bom_ratings({'Spec': '10µF±20%/160V/105°C', 'Note': '2W'}),
+                         {'voltage_v': 160.0, 'power_w': 2.0})
+
+    def test_parts_judged_on_an_assumed_package_are_reported(self):
+        plan, _ = proposals(*self.unpackaged())
+        diagnostic = next(d for d in plan['diagnostics'] if d['code'] == 'PASSIVE_PACKAGE_UNKNOWN')
+        self.assertEqual(diagnostic['refs'], ['C1', 'R1'])
+        self.assertIn('C1、R1', '\n'.join(render_report.render_input_notes(plan)))
 
     def test_rating_beyond_orderable_tier_is_not_proposed(self):
         _, rows = proposals(*board({'VCC_3V3': {'voltage_v': {'min': 55, 'max': 60}}}))

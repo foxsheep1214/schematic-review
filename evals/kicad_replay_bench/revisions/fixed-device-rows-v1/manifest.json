@@ -1,0 +1,15 @@
+{
+ "revision": "fixed-device-rows-v1",
+ "parents": {
+  "revisions/decoupling-pin-map-v1/expected.json": "5c4854fea589944a1414ff85b59b76a054cc19cb9e68d3950bb1f63862a95b1b",
+  "revisions/decoupling-pin-map-v1/cases.json": "8035c7cd37fb9882f87701f0dcc261f61851419af352c562ed0083ffcae04338",
+  "revisions/decoupling-pin-map-v1/sources.json": "7a850a6f18b8a5d603a4295b99dc65ea8e2c5df980a6ec9bd6cd64aa53673be3",
+  "revisions/decoupling-pin-map-v1/manifest.json": "b0b33de8b4ddb7a1efcea6a49f245fbc15cc531008bda2ca623f2f18d841073c"
+ },
+ "derived_files": {
+  "revisions/fixed-device-rows-v1/expected.json": "2168e2e2c2271d28546060e9580fbd9bee06b3c7ab0eb1d45f7ae5e2d2067b6f",
+  "revisions/fixed-device-rows-v1/cases.json": "8035c7cd37fb9882f87701f0dcc261f61851419af352c562ed0083ffcae04338",
+  "revisions/fixed-device-rows-v1/sources.json": "7a850a6f18b8a5d603a4295b99dc65ea8e2c5df980a6ec9bd6cd64aa53673be3"
+ },
+ "scope": "晶体管、光耦、稳压/TVS 二极管、整流桥、变压器与定制电感不经 intent.devices 声明也生成身份、引脚处置与工况行（DEV-D01/DEV-D05/DEV-C05），普通二极管与普通电感按常规件只在声明时生成；r02 +6（Q1、Q2），rf1 三例 +27（Q1–Q5、D1、D3、D4、T1），rf2 +12（D1–D3、TR1），每颗 3 行，其余答案不变。decoupling-pin-map-v1 文件保持原字节。"
+}

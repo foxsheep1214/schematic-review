@@ -124,6 +124,28 @@ def parse_resistor(value, default_tol=None, exact=False):
                                else str(Fraction(str(default_tol))) if default_tol is not None else None)
     return result
 
+NOT_FITTED_WORDS = {'DNP', 'DNI', 'DNF', 'NOPOP', 'NOFIT'}
+
+
+def parse_resistor_noted(value, default_tol=None, exact=False):
+    """parse_resistor, and when it fails only for trailing words of their own (47R/1%/2W/pulse), the value without
+    them, the words kept as `notes`; a not-fitted mark is never a note."""
+    parsed = parse_resistor(value, default_tol=default_tol, exact=exact)
+    if parsed is not None:
+        return parsed
+    core, notes = str(value or '').strip(), []
+    while True:
+        word = re.fullmatch(r'(.*?)\s*/\s*([A-Za-z][A-Za-z-]{2,})\s*', core)
+        if not word or word.group(2).upper() in NOT_FITTED_WORDS:
+            break
+        notes.insert(0, word.group(2))
+        core = word.group(1)
+    parsed = parse_resistor(core, default_tol=default_tol, exact=exact) if notes else None
+    if parsed is not None:
+        parsed['notes'] = notes
+    return parsed
+
+
 def r_kohm(value):
     """兼容旧调用：只返回标称 kΩ。"""
     parsed = parse_resistor(value)

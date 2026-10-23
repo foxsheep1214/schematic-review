@@ -16,7 +16,10 @@ import circuit_candidates as cc
 import circuit_decisions as cd
 import interfaces
 import render_report
+import results_model
+import review_functions
 import row_owner
+import rule_gaps
 from plan_review import build_review_plan
 from test_interface_rows import plan_for
 from test_render_and_pack import body, report
@@ -34,6 +37,13 @@ class OwnershipCoverageTests(unittest.TestCase):
         self.assertEqual(row_owner.coverage_errors(self.plan, self.db), [])
         q08 = next(c for c in self.plan['checks'] if c['rule'] == 'REQ-Q08')
         self.assertIn('R99', q08['object']['unassigned'])
+
+    def test_the_review_list_row_is_a_planner_row_the_gate_cannot_regenerate(self):
+        # The gate regenerates the plan from the saved inputs, which do not hold the candidate file; the REQ-Q08 row
+        # listing the parts no circuit owns comes from that file, so the gate does not take it for a row added by hand.
+        q08 = next(c for c in self.plan['checks'] if c['rule'] == 'REQ-Q08')
+        self.assertFalse(rule_gaps.unwritten(q08))
+        self.assertTrue(rule_gaps.unwritten(dict(q08, trigger=['reviewer'])))   # another REQ-Q08 row is still hand-added
 
     def test_a_part_dropped_from_both_lists_is_refused(self):
         plan = copy.deepcopy(self.plan)
@@ -98,6 +108,47 @@ class TreeReportTests(unittest.TestCase):
         converter = next(f['id'] for f in plan['functions'] if f.get('circuit') == 'POWER_CONVERTER-U1')
         self.assertLess(text.index('FN-SYS-POWER'), text.index(converter))
         self.assertLess(text.index(converter), text.index('FN-EXT-J1'))
+
+    def delegated(self):
+        """A circuit frame whose member row is left open under another (reviewer-built) function."""
+        plan = plan_for()
+        frame = next(f for f in plan['functions'] if f.get('circuit') == 'POWER_CONVERTER-U1')
+        member = frame['members'][0]['check_id']
+        functions = [{'id': frame['id'], 'question': frame['question'], 'verdict': 'PASS', 'no_calculation_reason': 'synthetic'},
+                     {'id': 'FN-OWN', 'question': 'reviewer-built', 'verdict': 'OPEN', 'open': [{'key': 'GAP-X', 'kind': 'VENDOR_DATUM'}]}]
+        checks = [{'id': member, 'review_result': 'INSUFFICIENT', 'function_id': 'FN-OWN', 'open_ref': 'FN-OWN/GAP-X'}]
+        return plan, frame, functions, checks
+
+    def test_a_frame_with_a_member_left_open_elsewhere_counts_as_open(self):
+        # Rows moved to a reviewer-built function let the circuit read "PASS" while its own rows stayed open; the
+        # count and the table now follow the member rows, naming the work item that holds them.
+        plan, frame, functions, checks = self.delegated()
+        self.assertEqual(results_model.effective_verdicts(functions, plan, checks)[frame['id']], ('OPEN', ['W-GAP-X']))
+        row = next(l for l in render_report.render_functions(functions, plan, checks) if l.startswith('| ' + frame['id']))
+        self.assertIn('未定', row)
+        self.assertIn('W-GAP-X', row)
+        text = render_report.render(plan, {'functions': functions, 'checks': checks}, {})
+        self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 0 / 0 / 2 |', text)
+
+    def test_a_frame_with_a_member_failed_elsewhere_counts_as_failed(self):
+        plan, frame, functions, checks = self.delegated()
+        checks[0].update(review_result='FAIL', fail_ref='FN-OWN/BAD-X')
+        checks[0].pop('open_ref')
+        self.assertEqual(results_model.effective_verdicts(functions, plan, checks)[frame['id']], ('FAIL', ['W-BAD-X']))
+
+    def test_a_frame_whose_members_all_pass_keeps_its_verdict(self):
+        plan, frame, functions, checks = self.delegated()
+        checks[0]['review_result'] = 'PASS'
+        self.assertEqual(results_model.effective_verdicts(functions, plan, checks)[frame['id']], ('PASS', []))
+
+    def test_a_rewritten_frame_question_still_names_the_circuit(self):
+        plan, frame, functions, checks = self.delegated()
+        functions[0]['question'] = 'only the connections kept in this section'
+        rows = {c['id']: c for c in checks}
+        self.assertTrue(any('question' in e and frame['id'] in e for e in review_functions.frame_errors(plan, rows, functions)))
+        for question in (frame['question'], 'U1 output at 5 V and 3 A stays in the 4.75-5.25 V window'):
+            functions[0]['question'] = question
+            self.assertFalse(any('question' in e for e in review_functions.frame_errors(plan, rows, functions)))
 
     def test_a_finding_names_the_owners_of_its_checks(self):
         plan = plan_for()

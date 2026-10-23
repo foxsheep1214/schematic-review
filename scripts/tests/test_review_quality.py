@@ -416,7 +416,7 @@ class DownstreamTriageTests(unittest.TestCase):
 class FreezeGradingGateTests(unittest.TestCase):
     """Templated grading blocks release only in schematic_freeze; valid is unaffected."""
 
-    def gate(self, phase):
+    def gate(self, phase, code='TEMPLATED_SEVERITY_REASON'):
         from unittest import mock
         import validate_review as vr
         from test_passive_stress import board, proposals
@@ -425,7 +425,7 @@ class FreezeGradingGateTests(unittest.TestCase):
         if phase:
             intent['review_phase'] = phase
         plan, _ = proposals(db, intent)
-        flagged = {'code': 'TEMPLATED_SEVERITY_REASON', 'check_ids': ['X'] * 12}
+        flagged = {'code': code, 'check_ids': ['X'] * 12}
         fake = lambda *a, **k: {'candidates': [flagged]}
         with mock.patch.object(vr, 'screen_quality', fake):
             from ledger_v3 import record
@@ -437,9 +437,13 @@ class FreezeGradingGateTests(unittest.TestCase):
         iteration = self.gate('design_iteration')
         self.assertFalse(any(b.startswith('TEMPLATED_SEVERITY_REASON') for b in iteration['blockers']))
 
+    def test_a_templated_pass_blocks_freeze_and_says_what_to_write(self):
+        freeze = self.gate('schematic_freeze', 'TEMPLATED_PASS_RATIONALE')
+        blocker = next(b for b in freeze['blockers'] if b.startswith('TEMPLATED_PASS_RATIONALE'))
+        self.assertIn('PASS rows', blocker)
+        self.assertFalse(any(b.startswith('TEMPLATED_PASS_RATIONALE')
+                             for b in self.gate('design_iteration', 'TEMPLATED_PASS_RATIONALE')['blockers']))
 
-if __name__ == '__main__':
-    unittest.main()
 
 
 def task_text_fixture(shared=True):
@@ -536,3 +540,43 @@ class HistoryReconciliationTests(unittest.TestCase):
             self.assertNotIn('HISTORY_FINDINGS_UNRECONCILED', self.codes(p, r))
             r['history_inputs'] = [tmp + '/missing']
             self.assertNotIn('HISTORY_FINDINGS_UNRECONCILED', self.codes(p, r))
+
+
+class TemplatedPassTests(unittest.TestCase):
+    """A PASS whose reasoning is a paragraph about something else: on one board a drawing-consistency paragraph closed
+    50 rows of different rules, the GPIO sink-current row among them, behind a "see function" prefix and an object echo
+    that kept the reuse screen from seeing it."""
+
+    BOILER = '图纸 p1 系统框图与 p2..p8 实电路相符；图框均 R5，所有器件和物理端点另见逐脚表，未发现图面重叠导致功能脚混读。'
+
+    def rows(self, *specs):
+        report = {'checks': [{'id': cid, 'review_result': result, 'rationale': text} for cid, result, text in specs]}
+        expected = {cid: {'rule': cid.split('.')[0]} for cid, _, _ in specs}
+        from review_quality import templated_pass_rationale
+        return templated_pass_rationale(report, expected)
+
+    def test_one_paragraph_passing_rows_of_different_rules_is_a_template(self):
+        found = self.rows(
+            ('SIG-C07.LINK', 'PASS', '见功能判定 FN-LINK（逻辑电平与驱动匹配）：' + self.BOILER + '；对象 {"nets": ["LATCH_N"]} 的本方面按以上核对'),
+            ('DOC-D01.BOARD', 'PASS', self.BOILER + '（依据 path、requirement）'),
+            ('DEV-D05.U1', 'PASS', self.BOILER))
+        self.assertEqual([(c['code'], c['check_ids']) for c in found],
+                         [('TEMPLATED_PASS_RATIONALE', ['DEV-D05.U1', 'DOC-D01.BOARD', 'SIG-C07.LINK'])])
+
+    def test_one_judgement_shared_by_the_states_of_one_rule_is_not(self):
+        text = '见功能判定 FN-BIAS（变换器电压裕量）：VCC 最低 9.6 V 高于 VCC(off) 上限 8.8 V，余量 0.8 V。'
+        self.assertEqual(self.rows(('PWR-C02.BIAS-RUN.Q2', 'PASS', text), ('PWR-C02.BIAS-FAULT.Q2', 'PASS', text)), [])
+        self.assertEqual(self.rows(('PWR-C02.X', 'PASS', '短'), ('PWR-C03.X', 'PASS', '短')), [])   # too short to judge
+        self.assertEqual(self.rows(('PWR-C02.X', 'INSUFFICIENT', self.BOILER), ('PWR-C03.X', 'INSUFFICIENT', self.BOILER)), [])
+
+    def test_a_part_identity_paragraph_answers_its_device_rows_and_requirement_aspects_are_separate_questions(self):
+        ident = 'D1 实际型号 BZT52H-C5V1；物理端点 {"1": {"name": "K", "net": "ZBASE"}, "2": {"name": "A", "net": "PGND"}}'
+        self.assertEqual(self.rows(('DEV-D01.D1', 'PASS', ident), ('DEV-D02.D1', 'PASS', ident), ('DEV-D05.D1', 'PASS', ident)), [])
+        generic = 'REQ-LED-001：当前原理图能判的器件等级、路径/指示及条件计算已按独立记录核对；实际整机试验待后续执行。'
+        found = self.rows(('REQ-D01.INDICATOR-PRESENT.REQ-LED-001', 'PASS', generic),
+                          ('REQ-D01.TEMPERATURE-GRADE.REQ-TEMP-001', 'PASS', generic.replace('REQ-LED-001', 'REQ-TEMP-001')))
+        self.assertEqual(len(found), 1)
+
+
+if __name__ == '__main__':
+    unittest.main()

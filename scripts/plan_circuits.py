@@ -10,13 +10,15 @@ import circuit_decisions
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
-from checkers.netgraph import (CAPACITOR, CONNECTOR, IC, MOSFET, RAIL_RE, RESISTOR, TESTPOINT, TVS, UNKNOWN, ZENER,
+from checkers.netgraph import (BJT, CAPACITOR, CONNECTOR, IC, INDUCTOR, MOSFET, OPTO, RAIL_RE, RESISTOR, TESTPOINT,
+                               TRANSFORMER, TVS, UNKNOWN, ZENER,
                                NetGraph, is_analog_sense_pair, is_ground, normalize)
 from checkers.planutil import slug as _slug
 from electrical_contract import bounded, finite
 from interfaces import CONNECTOR_RE
 from page_inventory import LIMITED
 from plan_board import _material_available, _text
+import requirement_parameters
 
 EN_RE = re.compile(
     r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN|PWR_EN)(_|\d|$)', re.I)
@@ -94,6 +96,19 @@ def _differential_pairs(db):
                 found.add((net, other))
     return sorted(found)
 
+
+# An electrolytic capacitor by its symbol (Device:C_Polarized, CP, CP_Small): the part a lifetime falls on.
+POLARIZED_RE = re.compile(r'(^|[:\s])(C_Polarized|CP)(_|\b)', re.I)
+# Parts whose identity, pin disposition and operating conditions are checked whether declared or not: transistors,
+# optocouplers, threshold and clamp diodes, bridge rectifiers and custom magnetics. A plain diode or an ordinary inductor
+# is a commodity part (commodity-floors.md) and gets these rows only when intent.devices declares it.
+FIXED_DEVICE_KINDS = (MOSFET, BJT, OPTO, ZENER, TVS, TRANSFORMER)
+BRIDGE_RE = re.compile(r'^(BR|DB)\d', re.I)
+CUSTOM_PART_RE = re.compile(r'CUSTOM', re.I)
+FEEDBACK_PIN_RE = re.compile(r'(V?FB|COMP|FEEDBACK)([/_-](V?FB|COMP))?', re.I)
+FEEDBACK_OPEN_CRITERION = ('反馈环单一故障：光耦 %s 或它的串阻开路、副边控制失效时，%s 按开环送能；按控制器手册的保护检测延时'
+                           '与开环最大送能，算到保护动作为止输出侧电压的上界，对照输出侧器件（输出电容、同步整流、端口开关、'
+                           '副边控制器）的耐压；保护来得及时判 PASS，来不及时记失败项')
 
 class CircuitPlanning:
     """功能电路与器件的检查项。"""
@@ -388,16 +403,32 @@ class CircuitPlanning:
             declared = ref in (self.intent.get('devices') or {})
             connector = CONNECTOR_RE.match(ref) or connector_graph.kind(ref) == CONNECTOR
             by_function = not DEVICE_RE.match(ref) and active_by_function(ref)
-            if part.get('nc') or not (DEVICE_RE.match(ref) or by_function or (declared and not connector)):
+            kind = connector_graph.kind(ref)
+            fixed = (kind in FIXED_DEVICE_KINDS or BRIDGE_RE.match(ref) or (kind == INDUCTOR and CUSTOM_PART_RE.search(
+                ' '.join(str(part.get(k) or '') for k in ('part', 'value')))))
+            if part.get('nc') or not (DEVICE_RE.match(ref) or by_function or (fixed and not connector)
+                                      or (declared and not connector)):
                 continue
             gaps, audit_trigger = self._datasheet_readiness(ref, part)
             trigger = ([f'refdes:{ref}', f'part:{part.get("part", "")}'] + audit_trigger
                        + (['native-power-pins:active-device'] if by_function else []))
-            self._ready_check('DEV-D01', {'ref': ref}, gaps, trigger)
+            item = self._ready_check('DEV-D01', {'ref': ref}, gaps, trigger)
+            if self._bom_fields(ref):
+                item['bom_fields'] = self._bom_fields(ref)
             self._disposition_check(ref, gaps, trigger)
             self._ready_check('DEV-C05', {'ref': ref}, gaps + self._materials_gap(['requirements']), trigger)
 
         self.plan_threshold_checks(connector_graph)
+
+    def _bom_fields(self, ref):
+        """The part's own BOM columns (read_bom.py), or {} without a BOM."""
+        return dict(((self.db.get('bom') or {}).get('parts') or {}).get(ref) or {})
+
+    def _with_bom_specs(self, frame):
+        """A function frame with what the BOM writes about its parts, beside their values."""
+        refs = (frame.get('objects') or {}).get('refs') or []
+        specs = {ref: self._bom_fields(ref) for ref in refs if self._bom_fields(ref)}
+        return dict(frame, bom_specs=specs) if specs else frame
 
     def plan_threshold_checks(self, graph):
         """阈值型保护器件/门限脚两侧窗口（PRO-C02）与传感器开短路判别（ANA-C04），逐对象一项。"""
@@ -505,3 +536,38 @@ class CircuitPlanning:
             residual = [ref for ref in wanted if ref not in owners]
             if residual:
                 self._ready_check(rule, {'board': 'BOARD', 'refs': residual}, gaps, ['board', 'unowned-parts'])
+        self.plan_life_rows(graph, fitted)
+        self.plan_feedback_open_rows(graph)
+
+    def plan_feedback_open_rows(self, graph):
+        """A controller regulated through an optocoupler on its feedback pin: one row for the feedback opening, the
+        single fault whose output overshoot only the protection delay bounds."""
+        names = dict(self.db.get('declared_pinname') or {}, **(self.db.get('pinname') or {}))
+        seen = set()
+        for state in (self.inventories.get('optocoupler') or {}).get('states') or []:
+            for opto in state.get('optocouplers') or []:
+                for net in (opto.get('collector_net'), opto.get('emitter_net')):
+                    for node in sorted((self.db.get('nets') or {}).get(net) or []):
+                        ref = node.split('.')[0]
+                        if (ref == opto['ref'] or graph.kind(ref) != IC
+                                or not FEEDBACK_PIN_RE.fullmatch(str(names.get(node) or '')) or (opto['ref'], node) in seen):
+                            continue
+                        seen.add((opto['ref'], node))
+                        self.add_check('PRO-C01', {'ref': ref, 'node': node, 'net': net, 'optocoupler': opto['ref']},
+                                       key='FEEDBACK-OPEN', criterion=FEEDBACK_OPEN_CRITERION % (opto['ref'], ref),
+                                       trigger=['optocoupler:%s' % opto['ref'], 'feedback-pin:%s' % node])
+
+    def plan_life_rows(self, graph, fitted):
+        """A lifetime requirement falls on every electrolytic capacitor: one DEV-C02 row each, answered as a
+        specification the BOM must state (bom_constraint), graded by what a short-life part would do."""
+        lives = requirement_parameters.windows(self.intent, 'lifetime')
+        if not lives:
+            return
+        cited = '、'.join(sorted({w['requirement'] for w in lives}))
+        criterion = ('电解电容按需求 %s 的寿命与环境温度（任务剖面）定耐久等级与寿命模型；常规件写成 bom_constraint '
+                     '（耐久 ≥ X h @T，按任务剖面算），已指定系列的按该系列原厂寿命模型核' % cited)
+        for ref in fitted:
+            if graph.kind(ref) == CAPACITOR and POLARIZED_RE.search(' '.join(
+                    str((graph.parts.get(ref) or {}).get(k) or '') for k in ('prim', 'part'))):
+                self.add_check('DEV-C02', {'ref': ref}, key='LIFE', criterion=criterion,
+                               trigger=['requirement:' + w['requirement'] for w in lives])

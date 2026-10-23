@@ -273,6 +273,10 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 
 ### 功能判定（functions）
 
+计划框架的问题可以改得更具体，但改后的问题仍要点名这块电路、它的器件或网络，不能换成“本节保留的已核方面”这类范围说明。
+框架的成员行转给别的功能（`function_id` 指向别的功能）后仍是这块电路的行：成员行里有证据不足或不符合时，报告把这块电路
+计为未定或不符合，并列出那一行所在的待办，不随转出变成“通过”。
+
 以一个合成例子说明：反激控制器 U1 的 VCC 由辅助绕组经整流、源跟随管 Q2 供电，数字全部是编的，只为展示字段：
 
 ```json
@@ -334,7 +338,7 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 | `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。行要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
 | `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[影响条目]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`、`title`/`why` 可选。DESIGN_VALUE 另写 `spec` 和 `owner`（不许写成向厂家索取）；VENDOR_DATUM 另写 `checked`（条件 id）、`why_insufficient`、`acquisition` 和 `worst_case`：先按公开资料界限算，`worst_case{bound{condition: 条件 id, value, basis: GUARANTEED_LIMIT/ADJACENT_TEST_POINT/TYPICAL_CURVE/PUBLISHED_TABLE/APPLICATION_NOTE}, result, margin{value,unit,against,basis}}`，这个余量按它的余量依据决定结论（见下）；确实没有任何公开资料界限时写 `worst_case{not_boundable_reason, curves_checked[{source, locator}], operating_point_specified}`，列出为找界查过的手册曲线、特性表和应用笔记，并回答手册是否规定了器件在本工作点的工作（`false`：设计依赖手册未规定的工作区，这是设计风险，记失败项、发现项给出回到规定区的改法，不向厂家要）；DELIVERABLE_PENDING（另一阶段欠的交付物）另写 `deliverable_kind`（CUSTOM_PART_DRAWING 定制件图纸 / FIRMWARE_CAPABILITY 固件应用能力 / CONFIGURATION_TABLE 配置表）、`scope`、`deliverable`、`owner`、`assumed`（本判定按什么假定算的）和 `closure`，不写 acquisition/spec；归类看欠的是什么，不看向谁要——目录器件的参数不属于任何一种交付物，是 VENDOR_DATUM；USER_DEFERRED 写 `instruction`；REQUIREMENT 不写 severity，走需求澄清。DESIGN_VALUE 在有计算的功能里没有对应方面的余量时写 `no_margin_reason`（设计还没选定什么） |
-| `fails[]` | 失败项：`key`、`finding_id`（指向 findings）、`what`、`decides`，可带 `conditions`（被违反的强制条款）、`title`/`why`/`due_stage`/`design_option` |
+| `fails[]` | 失败项：`key`、`finding_id`（指向 findings）、`what`、`decides`，可带 `conditions`（被违反的强制条款）、`title`/`why`/`due_stage`/`design_option`；依据三选一：余量证明不够（REACHABLE_CASE/EXACT_ENVELOPE）、违反强制条款、或 `outside_specified{condition, operating_point, curves_checked}`——器件工作在手册没规定的区域：`condition` 是本功能里给出手册规定区的条款，`operating_point` 写本机工作点，`curves_checked` 列查过的曲线和表；不要把“没规定”写成限值 0 去比较 |
 | `handoffs[]` | 功能级移交，派生行时填进计划要求移交的行 |
 | `verdict_history[]` | 改过结论时写 `{from, to, basis: [条件或 claim id], note}`，basis 不能为空 |
 | `evidence` | 可定位的证据 |
@@ -386,7 +390,7 @@ F9 判 PASS 的每个方面在该状态有证明通过的余量或 `judgements` 
 F10 同一条不能定位的条件出现在两个以上功能里被拒绝（能定位的条款可以被几个功能共同引用；同一句 `assumptions` 抄进几个功能的计算同样拒绝，共用工况写进 intent 一次）；
 同一句 `no_margin_reason`/`why_insufficient` 出现在几个开放项上只出 TEMPLATE_REASON 提示；
 F11 框架功能的 `objects` 不超出 intent 电路声明的位号与网络（要扩大先改 intent 再重生成计划，不在判定里放宽），审查员自己绑定的行要是该功能对象上的行
-（位号行的位号、网络行的网络在功能 `objects` 里，网络名不计图纸路径；需求行、全板行没有对应的器件或网络，不受此限）——一块电路的缺口不借绑定伸进另一块电路；
+（位号行的位号、网络行的网络在功能 `objects` 里，网络名不计图纸路径；感性负载行只看电感本身和它的开关节点，续流回路里别的器件只是上下文；需求行、全板行没有对应的器件或网络，不受此限）——一块电路的缺口不借绑定伸进另一块电路；
 F12 计划带 `clamp_refs` 的连接器行（PRO-D03）必须绑定功能：钳位电压对被保护脚绝限是功能判定里的条款和判断，不手填 PASS。
 
 这几条是 2026-10-21 两名审查员审同一块板的记录对比后加的：共同的 287 行里 184 行结论一致，发现的错误没有一条相同；
@@ -430,7 +434,7 @@ DEV-C04 载流、PRO-D03 对外防护（对象 `{interface: EXT-<连接器>, ref
 **报告分组。** 计划有树框架时，报告的功能表分系统功能、功能电路、接口和审查员另建的功能四组；每个发现项多一行“所属”，写它的行归哪个系统功能、电路、接口或全板。
 
 **文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（输入版本、图纸卫生）不是电路。
-文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）。DOC 行证据不足时仍需一个开放项作入口，这种只含 DOC 行的功能不计入
+文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）；这件待办由 finding 生成（`W-<finding id>`，含指向它的全部 DOC FAIL 行），不要改记证据不足。DOC 行证据不足时仍需一个开放项作入口，这种只含 DOC 行的功能不计入
 “功能判定”计数，也不进报告的功能表。
 
 隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是功能的方面，不另设约定：
@@ -641,6 +645,17 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   位号与数值之间留空格或标点（“R12 100°C”，不写“R12100°C”）。
 - 计划行带 `proposal.result = PASS` 而结论为 FAIL/INSUFFICIENT 时，须给 `proposal_override`（code 与 reason），
   code 的封闭清单见 [通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗行)。
+- `bom_constraint`：常规器件（电阻、电容、电感、二极管）超出最弱档、或需求的特殊要求（寿命、精度、宽温等）落到这颗器件时，
+  在 PASS 行上写 BOM 必须写明的要求，不建开放项、不记证据不足（规则见 [通用件最弱档基准](commodity-floors.md#常规器件只排查风险)）：
+  `{refs, requirement, basis, consequence_class, level, status, hazard_path?, written_at?}`。`requirement` 写最低值（“额定功率 ≥ 0.09 W”
+  “耐久 ≥ 10000 h @105 ℃”）；`basis` 写算出它的计算或需求编号；`consequence_class`/`level` 按
+  [BOM 约束怎么定级](commodity-floors.md#bom-约束怎么定级)，等级由类别决定；`status` 为 TO_WRITE（冻结阶段阻断）或
+  WRITTEN（`written_at` 指向 BOM 上写明它的那一行）。报告单列“BOM 要写明的额定与规格”一节。
+  校验拒收：开放项（DESIGN_VALUE / VENDOR_DATUM）挡住的行全是常规器件的 DEV-C01/DEV-C02 行，或挡住全板 BOM 行（DEV-D04）而文字只点名常规器件时，应改写成 `bom_constraint`。
+  需求有寿命参数（`lifetime`）时，计划给每颗电解电容一行 `DEV-C02.LIFE.<位号>`，按上面写器件规格要求。
+- 光耦输出接在控制器的反馈脚（FB/VFB/COMP）上时，计划给这个脚一行 `PRO-C01.FEEDBACK-OPEN.<位号-脚>`：反馈断开（光耦或串阻开路、副边控制失效）后控制器按开环送能，按手册的保护检测延时算到保护动作为止输出侧电压的上界，对照输出侧器件耐压；这一单一故障不看审查员是否想到。
+- 器件行（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）对晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成，不靠 `intent.devices` 声明；普通二极管和普通电感是常规件，声明了才生成。
+- 脚电流行（`DEV-C01.PIN.*`）的串阻读不出阻值、计划没算出脚电流时，判 PASS 须附 `manual_verification`，在 `method` 里写出自己的脚电流计算。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
   `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。
   复合要求不能整体 NA；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，

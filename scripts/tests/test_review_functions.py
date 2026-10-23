@@ -9,6 +9,7 @@ import unittest
 from test_validate_review import fixture, planned, E, C1
 from validate_review import fingerprint
 from ledger_v3 import record, validate_review as bridged_validate
+import results_model
 import validate_review as vr
 from review_functions import function_errors, binding_errors, frame_errors, validate_functions
 from render_report import render
@@ -319,6 +320,23 @@ class PublicBoundTests(unittest.TestCase):
         self.assertTrue(any('does not specify' in e and 'fail item' in e for e in errors), errors)
 
 
+    def test_a_fail_may_rest_on_an_operating_point_outside_the_specified_region(self):
+        # The rule above sends such a design to a fail item, but a fail item took only a margin or a mandatory clause,
+        # so a reviewer wrote the unspecified point as a limit of 0 mA to compare against.
+        fn = bias_function('FAIL'); fn['open'] = []; fn['calculation'].pop('margin')
+        fn['fails'] = [{'key': 'D2-LOW-I', 'finding_id': 'F1', 'what': 'D2 工作在 20 µA，手册只规定 10–100 mA',
+                        'decides': [{'aspect': ASPECT, 'states': ['LATCH']}],
+                        'outside_specified': {'condition': 'c1', 'operating_point': 'D2 正向电流 20 µA',
+                                              'curves_checked': [{'source': 'evidence/ds/D2.txt', 'locator': 'Fig. 2 IF-VF'}]}}]
+        finding = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': 'R3 改 1 kΩ，使 D2 回到 10 mA 以上'}}
+        self.assertEqual(function_errors({'functions': [fn], 'findings': [finding]}), [])
+        del fn['fails'][0]['outside_specified']['curves_checked']
+        errors = function_errors({'functions': [fn], 'findings': [finding]})
+        self.assertTrue(any('outside_specified' in e and 'curves_checked' in e for e in errors), errors)
+        fn['fails'][0]['outside_specified'].update(condition='c5', curves_checked=[{'source': 'x', 'locator': 'y'}])
+        errors = function_errors({'functions': [fn], 'findings': [finding]})
+        self.assertTrue(any('outside_specified' in e and 'condition' in e for e in errors), errors)
+
 class TemplateTextTests(unittest.TestCase):
     def test_one_assumption_copied_into_every_function_is_refused(self):
         """An assumption says what that calculation assumed; a sentence shared by every function assumes nothing."""
@@ -429,7 +447,39 @@ class DeliverablePendingTests(unittest.TestCase):
         p, r, db = ledger(fn)
         out = vr.validate_review(p, r, db)
         section = render(p, r, out).split('### W-AUX-5V-MIN')[1].split('\n## ')[0]
-        self.assertIn('- **这个缺口影响哪些判断**：%s（STARTUP、RUN），经 c3：启动和运行态 VCC 由辅助绕组经 Q2 供给' % ASPECT, section)
+        self.assertIn('- **这个缺口影响哪些判断**：%s（STARTUP、RUN），经 U1.txt p7 Table 7：启动和运行态 VCC 由辅助绕组经 Q2 供给' % ASPECT, section)
+
+    def test_the_kind_of_missing_data_is_named(self):
+        # Five vendor-data gaps on the R5 bench all had a negative margin under the public bound and read "missing
+        # data", as if a file were missing; the type line now says what kind of gap it is.
+        fn = with_datum()
+        p, r, db = ledger(fn)
+        out = vr.validate_review(p, r, db)
+        section = render(p, r, out).split('### W-HV-IV')[1].split('\n## ')[0]
+        self.assertIn('类型：缺资料（按公开资料界限算不够）', section)
+        self.assertIn('| 资料不足细分：设计还要定 / 等配置表 / 等定制件图纸 / 按公开资料界限算不够 / '
+                      '按公开资料界限算够，但不是保证值 / 公开资料定不出界限 | 0 / 0 / 0 / 3 / 0 / 0 |', render(p, r, out))
+        sub = results_model.gap_subclass
+        self.assertEqual(sub({'kind': 'VENDOR_DATUM', 'worst_case': {'margin': {'value': 0.3}}}), 'PUBLIC_BOUND_UNGUARANTEED')
+        self.assertEqual(sub({'kind': 'VENDOR_DATUM', 'worst_case': {'not_boundable_reason': 'x'}}), 'NOT_BOUNDABLE')
+        self.assertEqual(sub({'kind': 'DESIGN_VALUE'}), 'DESIGN_DECISION')
+        self.assertEqual(sub({'kind': 'DELIVERABLE_PENDING', 'deliverable_kind': 'CUSTOM_PART_DRAWING'}), 'PART_DRAWING')
+        self.assertEqual(sub({'kind': 'DELIVERABLE_PENDING', 'deliverable_kind': 'CONFIGURATION_TABLE'}), 'CONFIGURATION')
+        self.assertIsNone(sub({'kind': 'REQUIREMENT'}))
+
+    def test_aspects_one_gap_blocks_for_the_same_reason_share_one_line(self):
+        # One gap blocking 22 aspects printed the same sentence 22 times, each after an internal condition id
+        # ("经 requirement"); aspects with the same entry point and reason now share one line, and the entry point is
+        # the condition's source and locator.
+        fn = bias_function()
+        item = fn['open'][0]
+        why = item['decides'][0]['rationale']
+        item['decides'] = [{'aspect': 'A', 'states': ['RUN'], 'via': {'condition': 'c3'}, 'rationale': why},
+                           {'aspect': 'B', 'states': ['STARTUP', 'RUN'], 'via': {'condition': 'c3'}, 'rationale': why},
+                           {'aspect': 'C', 'via': {'condition': 'c3'}, 'rationale': 'another reason'}]
+        self.assertEqual(results_model.blocked_judgements(item, fn),
+                         ['A（RUN）、B（STARTUP、RUN），经 U1.txt p7 Table 7：' + why,
+                          'C，经 U1.txt p7 Table 7：another reason'])
 
     def test_the_report_shows_the_worst_case_under_the_public_bound(self):
         fn = with_datum()
@@ -437,8 +487,8 @@ class DeliverablePendingTests(unittest.TestCase):
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
         section = render(p, r, out).split('### W-HV-IV')[1].split('\n## ')[0]
-        self.assertIn('- **公开资料界限下的最坏情况**：按 120 V 测试点下界，40 V 时按线性外推 0.8 mA（界：IHV ≥ 2.4 mA @120 V，c3）', section)
-        self.assertIn('经 c3：启动电流决定 VCC 能否在 HV 供电下升过 UVLO', section)
+        self.assertIn('- **公开资料界限下的最坏情况**：按 120 V 测试点下界，40 V 时按线性外推 0.8 mA（界：IHV ≥ 2.4 mA @120 V，U1.txt p7 Table 7）', section)
+        self.assertIn('经 U1.txt p7 Table 7：启动电流决定 VCC 能否在 HV 供电下升过 UVLO', section)
 
     def test_the_report_shows_what_the_verdict_assumed_and_what_closes_it(self):
         fn = bias_function(); fn['open'] = [self.pending()]
@@ -745,6 +795,24 @@ class ReviewerAgreementTests(unittest.TestCase):
         other['open'][0]['decides'][0]['rationale'] = 'HV 启动电流进入 VCC 上升的计算'
         self.assertEqual(template_hints([fn, other]), [])
 
+    def test_several_gaps_awaiting_one_document_of_one_part_are_a_hint(self):
+        # Three items awaited the same coupling figure of one transformer, from one magnetics drawing, at P1, P1 and P3.
+        from review_functions import template_hints
+
+        def pending(fid, key, deliverable):
+            fn = bias_function(); fn['id'] = fid
+            fn['open'][0] = {'key': key, 'kind': 'DELIVERABLE_PENDING', 'deliverable_kind': 'CUSTOM_PART_DRAWING',
+                             'deliverable': deliverable, 'decides': [{'aspect': ASPECT}]}
+            return fn
+        fns = [pending('FN-BIAS', 'T1-AUX', 'T1 辅助绕组对副边的漏感'), pending('FN-OVP', 'AUX-COUPLING', 'T1 辅助绕组耦合实测曲线')]
+        hints = [h for h in template_hints(fns) if h['code'] == 'SAME_DELIVERABLE']
+        self.assertEqual([(h['refs'], h['items']) for h in hints], [(['T1'], ['FN-BIAS/T1-AUX', 'FN-OVP/AUX-COUPLING'])])
+        fns[1]['open'][0]['deliverable'] = 'L2 饱和电流'
+        self.assertFalse([h for h in template_hints(fns) if h['code'] == 'SAME_DELIVERABLE'])
+        fns[1]['open'][0]['deliverable'] = 'T1 辅助绕组耦合实测曲线'
+        fns[0]['open'][0]['deliverable'] = fns[1]['open'][0]['deliverable'] = 'RT7209 配置表'   # a part number, not a part
+        self.assertFalse([h for h in template_hints(fns, {'T1', 'U1'}) if h['code'] == 'SAME_DELIVERABLE'])
+
     def test_f10_one_unlocated_condition_in_several_functions_is_a_template(self):
         note = {'id': 'ENG', 'source': 'evidence/engineering.md', 'locator': '## X', 'says': '本轮原厂条款摘录', 'use': '依据'}
         fn = bias_function('PASS'); fn['conditions'].append(dict(note))
@@ -784,6 +852,20 @@ class ReviewerAgreementTests(unittest.TestCase):
         self.assertTrue(any('not about net VBUS' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
         p['checks'][-1]['object'] = {'requirement_id': 'REQ-1'}   # no anchor: a requirement may lean on any function
         self.assertFalse(any('bound to' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
+
+    def test_f11_an_inductive_load_row_belongs_where_its_inductor_is(self):
+        # The freewheel loop of a boost inductor runs through the input and bulk capacitors of other blocks; binding
+        # the row to the inductor's block was refused, so a reviewer made a second function and a duplicate gap.
+        p, r, db = ledger(bias_function())
+        loop = {'ref': 'D2', 'net': 'AUX', 'inductive_load': 'D2-AUX', 'inductive_load_digest': 'x',
+                'application': 'boost_converter', 'refs': ['C9', 'D2', 'Q2'], 'nets': ['AUX', 'RECT', 'PGND']}
+        p['checks'].append(dict(planned('DRV-C01.D2-AUX.AUX'), object=loop))
+        r['checks'].append({'id': 'DRV-C01.D2-AUX.AUX', 'applicability': 'APPLICABLE', 'review_result': 'INSUFFICIENT',
+                            'evidence': E, 'rationale': 'see FN-BIAS', 'handoff': {'required': False},
+                            'function_id': 'FN-BIAS', 'aspect': ASPECT, 'open_ref': 'FN-BIAS/AUX-5V-MIN'})
+        self.assertFalse(any('bound to' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
+        p['checks'][-1]['object'] = dict(loop, ref='L9')
+        self.assertTrue(any('not about L9' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
 
     def test_f12_a_connector_row_with_clamp_parts_is_judged_in_a_function(self):
         p, r, db = ledger(bias_function('PASS'))

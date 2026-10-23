@@ -177,8 +177,10 @@ FAIL/INSUFFICIENT 默认阻断；只有阶段允许暂留的 P2/P3 才写 `"bloc
 （`OVERPRECISE_CLOSURE_VALUE`，如 257.121uA；写手册/标准边界和条件，不写样例结果）、缺资料请求没写查证位置
 （`ACQUISITION_WITHOUT_LOOKUP`）。
 另有两类定级提示：同一句带 P0–P3 的话作为 ≥10 行、≥3 条规则的定级理由（`TEMPLATED_SEVERITY_REASON`），
-以及同一规则 ≥10 行证据不足全部同级（`UNIFORM_SEVERITY_WITHIN_RULE`）。设计迭代阶段只提示；
-`schematic_freeze` 阶段二者计入放行阻断（`valid` 不变），须逐行按本对象后果路径重新定级后才能放行。
+以及同一规则 ≥10 行证据不足全部同级（`UNIFORM_SEVERITY_WITHIN_RULE`）。还有一类通过理由提示：同一段话（去掉“见功能判定…”前缀、
+对象回显和“（依据 …）”后缀，需求编号不计）判通过了问不同问题的行（`TEMPLATED_PASS_RATIONALE`；同一器件的身份、脚表与引脚处置算一个问题，
+需求行按需求方面分），例如一段图纸核对或电路走线描述关掉了灌电流、应力和指示灯亮度。设计迭代阶段三者只提示；
+`schematic_freeze` 阶段三者计入放行阻断（`valid` 不变），定级类须逐行按本对象后果路径重新定级，通过理由类须逐行写出比较了什么、对照什么，才能放行。
 批量录入脚本不得用一句固定兜底语给全部证据不足定级。
 审查者按上述步骤核理由与本项判据；补齐证据后重新判断，可能成为 PASS 或任意等级的 FAIL。
 需求未定（REQUIREMENT_OPEN）的检查不填等级，改由 [需求澄清项](requirement-clarifications.md) 记录决策时点和冻结影响。

@@ -71,7 +71,12 @@ def added(checks):
 def unwritten(row):
     """A row outside what the planner writes may stand only as an automatic-scan row or a revision record."""
     return not ('lint_kind' in row or revision_impact.is_revision_check(row) or 'prior_check' in row
-                or 'prior_checks' in row)
+                or 'prior_checks' in row or _from_candidates(row))
+
+
+def _from_candidates(row):
+    """REQ-Q08 listing the parts no circuit owns: written from the candidate file, which the gate's saved inputs lack."""
+    return row.get('rule') == 'REQ-Q08' and 'circuit-candidates:unassigned' in (row.get('trigger') or [])
 
 
 def message(cid):

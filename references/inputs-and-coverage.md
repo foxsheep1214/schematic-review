@@ -301,6 +301,7 @@ DNP/DNI/DNF/NC 只按分隔词识别为不贴，不能误判 NCP1117 型号。�
 | `page_inventory` | 全部原生 `design/sheet` 的 number/name/tstamps，v1 | 包括没有功能器件的根页；页号可不连续，页面身份按真实编号和路径绑定 |
 | `declared_pinname` / `declared_pintype` | libpart 的全部引脚 | 含网表里没出现的脚，用于官方脚表双向差集 |
 | `export_meta` | `design` 的 source/tool/date | 用于核对导出版本与 PDF 是否同版 |
+| `bom` | `read_bom.py db.json BOM.csv` 读入的装配 BOM：每个位号除位号、值以外的非空列（`parts`），每行都相同的列（`uniform_columns`），两边对不上的位号（`not_in_netlist` / `not_in_bom`），文件哈希 | 器件规格照用；BOM 里写的设计方计算值不用；位号对不上时按 DOC-Q01 核 |
 
 `page_inventory.scope=native_declared_sheets` 时，DOC-V01 对库存每页唯一展开，
 `coverage.pages` 必须全量列出并链接本页的 DOC-V01；空根页只要求图面目检，

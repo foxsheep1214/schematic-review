@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CONTRACT_REVISION = 'decoupling-pin-map-v1'
+CONTRACT_REVISION = 'fixed-device-rows-v1'
 REVISIONS = ('legacy', 'page-inventory-v1', 'name-gap-scope-v1', 'passive-stress-v1', 'threshold-window-v1',
              'real-flyback-v1', 'testpoint-kind-v1', 'name-heuristics-v1', 'typical-boards-v1', 'lint-checks-v1',
              'function-frames-v1', 'state-invariant-v1', 'circuit-candidates-v1', 'circuit-owners-v1',
