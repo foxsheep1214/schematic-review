@@ -265,15 +265,18 @@ def _unassigned_nets(candidates, ref):
 
 
 def discovery_refs(candidates, decisions):
-    """Parts REQ-Q08 asks about: unassigned parts and the members of rejected candidates (not duplicates)."""
+    """Parts REQ-Q08 asks about: unassigned parts and the members of rejected candidates (not duplicates), less the
+    parts an add decision placed in a circuit."""
     by_id = {c['id']: c for c in candidates.get('candidates', [])}
-    refs = {u['ref'] for u in candidates.get('unassigned', [])}
+    refs, added = {u['ref'] for u in candidates.get('unassigned', [])}, set()
     for decision in decisions if isinstance(decisions, list) else []:
         if isinstance(decision, dict) and decision.get('decision') == 'reject' and decision.get('reason') != 'DUPLICATE_OF':
             cand = by_id.get(decision.get('candidate'))
             if cand:
                 refs |= {m['ref'] for m in cand['members']}
-    return sorted(refs)
+        elif isinstance(decision, dict) and decision.get('decision') == 'add' and isinstance(decision.get('members'), list):
+            added |= {r for r in decision['members'] if isinstance(r, str)}
+    return sorted(refs - added)
 
 
 def validate(intent, candidates, db=None):

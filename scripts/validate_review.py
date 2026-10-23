@@ -281,8 +281,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         # edited check list. Manual additions stay independently reviewable.
         try:
             inputs = plan['review_inputs']
+            # The planner reads the candidate file only for the parts REQ-Q08 asks about, which the plan keeps.
+            summary = plan.get('circuit_candidates')
+            candidates = ({'candidates': [], 'unassigned': [{'ref': r} for r in summary.get('unassigned') or []]}
+                          if isinstance(summary, dict) else None)
             planner = ReviewPlanner(db, inputs['intent'], plan.get('review_mode'),
-                                    datasheet_audit=inputs['datasheet_audit'])
+                                    datasheet_audit=inputs['datasheet_audit'], candidates=candidates)
             planner.generate()
             planned_ids = {generated['id'] for generated in planner.checks}
             for cid, row in expected.items():   # fixed requirements, step 7: an added row is a registered rule gap

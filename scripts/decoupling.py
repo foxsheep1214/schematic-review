@@ -26,6 +26,8 @@ KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'ot
 SECTION_SCHEMA_VERSION = 4
 # Datasheet-verified device kinds (intent.device_kinds) that have no IC supply pins to bypass.
 NO_SUPPLY_KINDS = {'bridge_rectifier', 'transformer', 'connector'}
+# Netlist kinds that carry no IC supply pin (checkers.netgraph kinds).
+NO_SUPPLY_PARTS = {'inductor', 'transformer', 'ferrite', 'resistor', 'capacitor', 'fuse', 'bridge_rectifier'}
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
 # 组用途：普通旁路；按原厂条款不需要直接电容（如高压启动/检测脚）；片内稳压器输出电容（如 V5/VCAP）。
 # 后两类必须有对应的 connection 条款作出处。
@@ -510,7 +512,11 @@ def build_decoupling_inventory(db, intent=None):
     discovery_gaps = set(inv.input_gaps) | {'unverified-device-pinout:' + r for r in unknown}
     discovery_gaps.update('pin-name-unresolved:' + n for n in inv.unresolved_pin_names)
     for device in device_records:
-        if not device['pinout_complete']:
+        # An inductor, transformer or other part without a supply pin has no IC supply to bypass: its incomplete pin
+        # table is not a decoupling gap (its terminals and ratings are checked elsewhere).
+        passive = (classify(device['ref'], inv.parts.get(device['ref']) or {})[0] in NO_SUPPLY_PARTS
+                   or inv.verified_kinds.get(device['ref'], {}).get('kind') in NO_SUPPLY_KINDS)
+        if not device['pinout_complete'] and not (passive and not supply_pins(device['ref'], device.get('pins'))):
             discovery_gaps.add('official-full-pinout:' + device['ref'])
         discovery_gaps.update('official-pin-absent:' + n for n in device['official_only_nodes'] if inv.supply_pin(n))
         discovery_gaps.update('pin-not-in-official-map:' + n for n in device['symbol_only_nodes'] if inv.supply_pin(n))

@@ -79,6 +79,13 @@ class BomConditionTests(unittest.TestCase):
         self.assertEqual(errors_with(self.condition('漏感≤12µH')), [])
         self.assertEqual(errors_with(self.condition('漏感 ≤ 12 µH')), [])   # spacing is not content
 
+    def test_the_value_column_is_part_of_the_bom_row(self):
+        # read_bom keeps the Value column out of db.bom (it is the part's value in the netlist); a quote of it stands
+        db = bom_db()
+        db['parts']['T1'] = {'value': '12µH/2A'}
+        report = self.condition('12µH/2A')
+        self.assertEqual(errors_with(report, db), [])
+
     def test_text_not_in_the_bom_row_is_refused(self):
         errors = errors_with(self.condition('漏感≤12µH（实测）'))
         self.assertTrue(any('b1' in e and 'BOM' in e for e in errors), errors)

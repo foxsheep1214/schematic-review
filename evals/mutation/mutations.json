@@ -2756,5 +2756,47 @@
   "file": "scripts/datasheet_kinds.py",
   "old": "'powerfactorcorrectioncontroller', 'powerfactorcontroller',",
   "new": "'powerfactorcorrectioncontroller',"
+ },
+ {
+  "id": "M399",
+  "name": "the gate rebuilds the review-list row without the candidates' unassigned parts",
+  "file": "scripts/validate_review.py",
+  "old": "                                    datasheet_audit=inputs['datasheet_audit'], candidates=candidates)",
+  "new": "                                    datasheet_audit=inputs['datasheet_audit'])"
+ },
+ {
+  "id": "M400",
+  "name": "a part an add decision placed is still asked about",
+  "file": "scripts/circuit_decisions.py",
+  "old": "    return sorted(refs - added)",
+  "new": "    return sorted(refs)"
+ },
+ {
+  "id": "M401",
+  "name": "a quote of the BOM Value column is refused",
+  "file": "scripts/review_functions.py",
+  "old": "    return {ref: dict(row, Value=(values.get(ref) or {}).get('value')) if isinstance(row, dict)",
+  "new": "    return {ref: row if isinstance(row, dict)"
+ },
+ {
+  "id": "M402",
+  "name": "derivation overrides a row the reviewer judged NA",
+  "file": "scripts/derive_rows.py",
+  "old": "        if existing is not None and existing.get('review_result') == 'NA' and not existing.get('derived'):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M403",
+  "name": "deriving again drops the bom constraint and requirement clauses",
+  "file": "scripts/derive_rows.py",
+  "old": "            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings',\n                          'bom_constraint', 'requirement_clauses'):",
+  "new": "            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings'):"
+ },
+ {
+  "id": "M404",
+  "name": "a magnetic part without supply pins needs a full pinout for decoupling",
+  "file": "scripts/decoupling.py",
+  "old": "        if not device['pinout_complete'] and not (passive and not supply_pins(device['ref'], device.get('pins'))):",
+  "new": "        if not device['pinout_complete']:"
  }
 ]

@@ -86,6 +86,9 @@ def derive(plan, results):
         if fn is None:
             errors.append('%s: function_id %s names no function verdict' % (planned['id'], fid))
             continue
+        if existing is not None and existing.get('review_result') == 'NA' and not existing.get('derived'):
+            summary['kept'] += 1   # an ordinary or stage NA is the reviewer's disposition, not the function's verdict
+            continue
         aspect = (existing or {}).get('aspect') or planned.get('aspect')
         if not text(aspect):
             errors.append('%s: a bound row names the aspect it covers' % planned['id'])
@@ -102,7 +105,8 @@ def derive(plan, results):
                                   % (planned['id'], field, existing.get(field), fid, row.get(field)))
             continue
         if existing is not None:
-            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings'):
+            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings',
+                          'bom_constraint', 'requirement_clauses'):
                 if field in existing:
                     row[field] = existing[field]
             existing.clear()

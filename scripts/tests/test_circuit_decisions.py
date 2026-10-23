@@ -118,6 +118,9 @@ class DeriveTests(unittest.TestCase):
         circuits, errors = cd.derive(self.candidates, accept_all(self.candidates) + [add])
         self.assertEqual(errors, [])
         self.assertEqual(next(c for c in circuits if c['id'] == 'BLEEDER')['candidate_ids'], [])
+        # a part an add decision placed is no longer asked about
+        self.assertNotIn('R99', cd.discovery_refs(self.candidates, accept_all(self.candidates) + [add]))
+        self.assertIn('R99', cd.discovery_refs(self.candidates, accept_all(self.candidates)))
         held = dict(add, members=['R99', 'C7'], via={'R99': 'V5', 'C7': 'VBUS'})
         _, errors = cd.derive(self.candidates, accept_all(self.candidates) + [held])
         self.assertTrue(any('C7' in e and 'USB-J2' in e for e in errors), errors)

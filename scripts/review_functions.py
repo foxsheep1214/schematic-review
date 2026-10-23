@@ -284,9 +284,15 @@ def _condition_errors(label, c, db=None):
 
 
 def bom_parts(db):
+    """The BOM rows by designator, each with its Value column (read_bom keeps that one in db.parts)."""
     bom = db.get('bom') if isinstance(db, dict) else None
     parts = bom.get('parts') if isinstance(bom, dict) else None
-    return parts if isinstance(parts, dict) else {}
+    if not isinstance(parts, dict):
+        return {}
+    values = db.get('parts') if isinstance(db.get('parts'), dict) else {}
+    return {ref: dict(row, Value=(values.get(ref) or {}).get('value')) if isinstance(row, dict)
+            and isinstance(values.get(ref), dict) and (values.get(ref) or {}).get('value') else row
+            for ref, row in parts.items()}
 
 
 def _squeeze(value):

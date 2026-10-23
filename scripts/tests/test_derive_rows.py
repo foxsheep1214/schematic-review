@@ -122,6 +122,31 @@ class DeriveTests(unittest.TestCase):
         self.assertEqual(len(errors), 2, errors)   # review_result and open_ref disagree
         self.assertIn("hand-filled review_result 'PASS' disagrees", errors[0])
 
+    def test_a_row_the_reviewer_judged_na_is_kept(self):
+        # an ordinary or stage NA on a planned member row is the reviewer's disposition; derivation does not ask the
+        # function for a PASS, FAIL or INSUFFICIENT on it
+        p, r, db = bias_plan()
+        r['functions'][0]['calculation']['margin'] = r['functions'][0]['calculation']['margin'][:-1]   # no PWR-C15 margin
+        for state in STATES:
+            r['checks'].append({'id': 'PWR-C15.BIAS-%s.Q2' % state, 'applicability': 'APPLICABLE', 'review_result': 'NA',
+                                'na_reason': 'OUTSIDE_SCHEMATIC_STAGE', 'rationale': 'loop gain is measured on the prototype',
+                                'evidence': E, 'handoff': {'required': False}, 'function_id': 'FN-BIAS',
+                                'aspect': catalog.title('PWR-C15')})
+        r, summary, errors = derive_rows.derive(p, r)
+        self.assertEqual((errors, summary['kept'], summary['derived']), ([], 3, 12))
+        self.assertEqual(bias_rows(r)['PWR-C15.BIAS-RUN.Q2']['review_result'], 'NA')
+
+    def test_deriving_again_keeps_the_bom_constraint_and_requirement_clauses(self):
+        p, r, db = bias_plan()
+        derive_rows.derive(p, r)
+        row = bias_rows(r)['PWR-C03.BIAS-RUN.Q2']
+        row['bom_constraint'] = {'refs': ['Q2'], 'requirement': 'ID ≥ 0.6 A'}
+        row['requirement_clauses'] = [{'text': 'clause'}]
+        derive_rows.derive(p, r)
+        row = bias_rows(r)['PWR-C03.BIAS-RUN.Q2']
+        self.assertEqual(row['bom_constraint'], {'refs': ['Q2'], 'requirement': 'ID ≥ 0.6 A'})
+        self.assertEqual(row['requirement_clauses'], [{'text': 'clause'}])
+
     def test_a_fail_item_makes_its_rows_fail_with_the_finding(self):
         p, r, db = bias_plan()
         fn = r['functions'][0]

@@ -114,6 +114,25 @@ class LocalConnectionScopeTests(unittest.TestCase):
         self.assertFalse(gate['valid'])
         self.assertTrue(any('generated criterion/object changed' in e for e in gate['errors']))
 
+    def test_a_magnetic_part_without_supply_pins_needs_no_full_pinout(self):
+        # an inductor or transformer has no IC supply pin to bypass: its incomplete pin table is no decoupling gap
+        from test_decoupling import add
+        db, intent = with_foreign_group_pin()
+        intent['devices']['U1']['pinout_complete'] = False
+        add(db, 'L1', 'L_Coupled', [('1', 'A', 'VCC_3V3'), ('2', 'B', 'L_OUT')])
+        add(db, 'T1', 'TRANSFORMER', [('1', 'P', 'VCC_3V3'), ('2', 'S', 'T_OUT')])
+        for ref, names in (('L1', ('A', 'B')), ('T1', ('P', 'S'))):
+            intent['devices'][ref] = {'mpn': ref + '-CUSTOM', 'package': 'custom', 'identity_citation': 'BOM row ' + ref,
+                                      'citation': 'custom part drawing pending', 'pinout_complete': False,
+                                      'pins': {str(i): {'name': n, 'role': 'other'} for i, n in enumerate(names, 1)}}
+        intent['assemblies'][0]['population'] = {r: True for r in db['parts']}
+        rebind(db, intent)
+        gaps = build_review_plan(db, intent)['decoupling']['discovery_gaps']
+        self.assertIn('official-full-pinout:U1', gaps)
+        self.assertTrue(any(g.endswith('U1.4') for g in gaps), gaps)   # the plan built its inventory
+        self.assertNotIn('official-full-pinout:L1', gaps)
+        self.assertNotIn('official-full-pinout:T1', gaps)
+
 
 if __name__ == '__main__':
     unittest.main()

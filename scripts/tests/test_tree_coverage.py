@@ -45,6 +45,15 @@ class OwnershipCoverageTests(unittest.TestCase):
         self.assertFalse(rule_gaps.unwritten(q08))
         self.assertTrue(rule_gaps.unwritten(dict(q08, trigger=['reviewer'])))   # another REQ-Q08 row is still hand-added
 
+    def test_the_gate_regenerates_the_review_list_row_with_its_unassigned_parts(self):
+        # The row lists both circuit types nobody declared and parts the candidates left unassigned; the gate rebuilds
+        # it from the candidate summary the plan keeps, so it is not taken for a changed automatic row.
+        import validate_review as vr
+        q08 = next(c for c in self.plan['checks'] if c['rule'] == 'REQ-Q08')
+        self.assertTrue(q08['object']['circuit_types'] and q08['object']['unassigned'])
+        errors = vr.validate_review(self.plan, {'checks': [], 'schema_version': results_model.SCHEMA_VERSION}, self.db)['errors']
+        self.assertFalse([e for e in errors if e.startswith('REQ-Q08.BOARD: automatic check')], errors[:3])
+
     def test_a_part_dropped_from_both_lists_is_refused(self):
         plan = copy.deepcopy(self.plan)
         q08 = next(c for c in plan['checks'] if c['rule'] == 'REQ-Q08')

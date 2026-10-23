@@ -7,6 +7,24 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Five tool defects the first full acceptance re-review of R5 met (2026-10-23)
+
+The Codex acceptance re-review of R5 judged all 548 rows and stopped at the gate on SR defects it recorded without
+patching SR: the gate rebuilt the plan without the candidate file, so a REQ-Q08 row listing both undeclared circuit
+types and unassigned parts was taken for a changed automatic row (B01); parts an add decision had placed stayed on
+the add/reject list (B02); a limit quoted from the BOM Value column was refused because read_bom keeps that column
+in db.parts (B03); derive_rows asked a function for PASS/FAIL/INSUFFICIENT on rows the reviewer judged NA or stage
+NA, and re-deriving a row dropped its bom_constraint and requirement_clauses, which life rows and requirement rows
+need (B04); and an inductor or transformer declared with an incomplete pin table and no supply pin put
+official-full-pinout on the board's decoupling inventory, which no manual verification could clear (B05, the gate
+blocker). The gate now rebuilds with the candidate summary the plan keeps, discovery leaves out added parts, the BOM
+row includes its Value, derivation keeps a reviewer's NA and the two fields, and a part of a kind without supply pins
+and no declared supply pin needs no full pin table for decoupling. Tests first; 1929 tests pass, contract 515, KiCad replay 195/195, typical circuits unchanged, mutations M399-M404 added and all 121 on changed files killed.
+
+- Event: review:SR-20261023-R5-验收-codex-3cfce85/SR缺陷.md (SR-B01 to SR-B05)
+- Causes: rule_not_enforced 1, judgment 4
+- Changed: docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, scripts/circuit_decisions.py, scripts/decoupling.py, scripts/derive_rows.py, scripts/review_functions.py, scripts/validate_review.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_custom_part_spec.py, scripts/tests/test_decoupling_local_scope.py, scripts/tests/test_derive_rows.py, scripts/tests/test_tree_coverage.py
+
 ## A datasheet title naming a power factor controller verifies as a PWM controller (2026-10-23)
 
 The first acceptance re-review of R5 stopped at the datasheet audit: a PFC controller's datasheet title says
