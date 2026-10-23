@@ -7,6 +7,17 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A frame whose rows are all NA needs no function verdict (2026-10-23)
+
+After the B01-B05 fixes the Codex acceptance re-review of R5 met one more: a link frame judged NA throughout (an
+analog high-voltage start-up pin has no logic receiver) had no function verdict, and derive_rows refused its rows
+because the function lookup ran before the branch that keeps a reviewer's NA; the gate refused a row naming a function
+nobody wrote. Both now leave an NA row that names its frame alone. Tests first; 1930 tests pass, contract 516, KiCad replay 195/195, mutations M405-M406 added and all 87 on changed files killed.
+
+- Event: review:SR-20261023-R5-验收-codex-3cfce85/SR缺陷.md (SR-B06)
+- Causes: judgment 1
+- Changed: docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, scripts/derive_rows.py, scripts/review_functions.py, scripts/tests/test_derive_rows.py
+
 ## Five tool defects the first full acceptance re-review of R5 met (2026-10-23)
 
 The Codex acceptance re-review of R5 judged all 548 rows and stopped at the gate on SR defects it recorded without

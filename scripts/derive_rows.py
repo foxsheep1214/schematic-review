@@ -82,12 +82,12 @@ def derive(plan, results):
         fid = (existing or {}).get('function_id') or planned.get('function_id')
         if fid is None:
             continue
+        if existing is not None and existing.get('review_result') == 'NA' and not existing.get('derived'):
+            summary['kept'] += 1   # an ordinary or stage NA is the reviewer's disposition, not the function's verdict
+            continue
         fn = functions.get(fid)
         if fn is None:
             errors.append('%s: function_id %s names no function verdict' % (planned['id'], fid))
-            continue
-        if existing is not None and existing.get('review_result') == 'NA' and not existing.get('derived'):
-            summary['kept'] += 1   # an ordinary or stage NA is the reviewer's disposition, not the function's verdict
             continue
         aspect = (existing or {}).get('aspect') or planned.get('aspect')
         if not text(aspect):

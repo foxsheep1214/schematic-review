@@ -136,6 +136,20 @@ class DeriveTests(unittest.TestCase):
         self.assertEqual((errors, summary['kept'], summary['derived']), ([], 3, 12))
         self.assertEqual(bias_rows(r)['PWR-C15.BIAS-RUN.Q2']['review_result'], 'NA')
 
+    def test_an_na_row_of_a_frame_without_a_function_verdict_is_kept(self):
+        # every member of a frame judged NA: the frame needs no function verdict for its rows to stand
+        p, r, db = bias_plan()
+        r['functions'] = []
+        for row in [c for c in p['checks'] if '.BIAS-' in c['id']]:
+            r['checks'].append({'id': row['id'], 'applicability': 'NOT_APPLICABLE', 'review_result': 'NA',
+                                'rationale': 'no such mechanism', 'evidence': E, 'handoff': {'required': False},
+                                'function_id': 'FN-BIAS', 'aspect': row['aspect'], 'applicability_evidence': E,
+                                'binding': {'object': row['object'], 'criterion': row['criterion']}})
+        r, summary, errors = derive_rows.derive(p, r)
+        self.assertEqual((errors, summary['kept']), ([], 15))
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(out['valid'], out['errors'][:3])
+
     def test_deriving_again_keeps_the_bom_constraint_and_requirement_clauses(self):
         p, r, db = bias_plan()
         derive_rows.derive(p, r)

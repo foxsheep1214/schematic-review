@@ -1111,8 +1111,10 @@ def binding_errors(expected, checks, functions, history_ids=()):
             continue
         result = row.get('review_result')
         fid = row.get('function_id')
-        if fid is not None and fid not in functions:
+        if fid is not None and fid not in functions and result != 'NA':   # an all-NA frame needs no verdict
             errors.append(cid + ': function_id names no function verdict')
+            continue
+        if fid is not None and fid not in functions:
             continue
         if fid is not None and result == 'FAIL' and document_row(cid):
             errors.append('%s: a document defect stands on its own row with its finding, not bound to %s; '

@@ -107,3 +107,5 @@ M374–M397（2026-10-23，一致性方案第 6 条，寿命与老化）守：�
 M398（2026-10-23，R5 验收重审发现）守：手册标题写“Power Factor Controller”（没有 correction 一词）也核验为 pwm_controller，由 `test_ic_kinds.py` 杀死。
 
 M399–M404（2026-10-23，R5 验收重审 SR-B01–B05）守：门禁按计划存的候选摘要重建 REQ-Q08 行（M399）、add 已归属的器件不再要求 add/reject（M400）、引 BOM 的 Value 列原文算在 BOM 行里（M401）、派生不覆盖审查员判的 NA 行（M402）、重新派生保留 bom_constraint 和需求条款（M403）、没有供电脚的磁件不要求去耦用的完整脚表（M404），由 `test_tree_coverage.py`、`test_circuit_decisions.py`、`test_custom_part_spec.py`、`test_derive_rows.py`、`test_decoupling_local_scope.py` 杀死。
+
+M405–M406（2026-10-23，R5 验收重审 SR-B06）守：全 NA 框架没有功能判定时，派生（M405）和门禁（M406）都不要求它，由 `test_derive_rows.py` 杀死。

@@ -2798,5 +2798,19 @@
   "file": "scripts/decoupling.py",
   "old": "        if not device['pinout_complete'] and not (passive and not supply_pins(device['ref'], device.get('pins'))):",
   "new": "        if not device['pinout_complete']:"
+ },
+ {
+  "id": "M405",
+  "name": "an NA row of a frame without a verdict asks for the verdict in derivation",
+  "file": "scripts/derive_rows.py",
+  "old": "        if fid is None:\n            continue\n        if existing is not None and existing.get('review_result') == 'NA' and not existing.get('derived'):",
+  "new": "        if fid is None:\n            continue\n        if functions.get(fid) and existing is not None and existing.get('review_result') == 'NA' and not existing.get('derived'):"
+ },
+ {
+  "id": "M406",
+  "name": "an NA row of a frame without a verdict is refused at the gate",
+  "file": "scripts/review_functions.py",
+  "old": "        if fid is not None and fid not in functions and result != 'NA':   # an all-NA frame needs no verdict",
+  "new": "        if fid is not None and fid not in functions:   # an all-NA frame needs no verdict"
  }
 ]
