@@ -38,7 +38,7 @@ def row(**extra):
 
 
 def ledger(*rows, functions=None):
-    return {'schema_version': 4, 'functions': [function(open_item())] if functions is None else functions,
+    return {'schema_version': rm.SCHEMA_VERSION, 'functions': [function(open_item())] if functions is None else functions,
             'checks': list(rows)}
 
 

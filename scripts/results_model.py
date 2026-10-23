@@ -18,7 +18,7 @@ Derived here (never written):
 import copy
 from collections import Counter
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 LEVELS = ('P0', 'P1', 'P2', 'P3')
 REQUEST_CAUSES = ('EXTERNAL_DATA', 'DESIGN_OPEN')
 # Fields schema 3 derives; a record that still writes them would carry two answers to one question.
@@ -65,7 +65,8 @@ def shape_errors(report, history_ids=()):
     if not isinstance(report, dict):
         return ['results must be an object']
     if report.get('schema_version') != SCHEMA_VERSION:
-        return ['results.schema_version must be 4; an older ledger is not read, review again with this SR']
+        return ['results.schema_version must be %d; an older ledger is not read, review again with this SR'
+                % SCHEMA_VERSION]
     errors = ['results.%s is retired in schema 4 (the newest meaning always applies)' % k
               for k in RETIRED_TOP_FIELDS if k in report]
     if not isinstance(report.get('functions'), list):

@@ -157,7 +157,7 @@
   "id": "M27",
   "name": "F3 public bound never required on a vendor datum",
   "file": "scripts/review_functions.py",
-  "old": "    if not (isinstance(bound, dict) and bound.get('condition') in condition_ids and text(bound.get('value'))\n            and bound.get('basis') in BOUND_BASES):",
+  "old": "    if not (isinstance(bound, dict) and bound.get('condition') in conditions and text(bound.get('value'))\n            and bound.get('basis') in BOUND_BASES):",
   "new": "    if False:"
  },
  {
@@ -283,8 +283,8 @@
   "id": "M45",
   "name": "a judgement resting only on typical values or notes accepted",
   "file": "scripts/review_functions.py",
-  "old": "        elif not kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}:   # F9",
-  "new": "        elif False:   # F9"
+  "old": "        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}\n",
+  "new": "        elif False and not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}\n"
  },
  {
   "id": "M46",
@@ -2026,8 +2026,8 @@
   "id": "M294",
   "name": "the feedback-open row carries no optocoupler digest",
   "file": "scripts/plan_circuits.py",
-  "old": "'optocoupler_digest': optocouplers['digest']},",
-  "new": "},"
+  "old": "'optocoupler_digest': optocouplers['digest']},\n                                       key='FEEDBACK-OPEN',",
+  "new": "},\n                                       key='FEEDBACK-OPEN',"
  },
  {
   "id": "M295",
@@ -2140,5 +2140,208 @@
   "file": "scripts/review_functions.py",
   "old": "        holders = [f['id'] for f in circuits if refs and refs <= _objects(f)[0]]",
   "new": "        holders = []"
+ },
+ {
+  "id": "M311",
+  "name": "a custom part drawing need not list the parameters the BOM leaves out",
+  "file": "scripts/review_functions.py",
+  "old": "        elif item['deliverable_kind'] == 'CUSTOM_PART_DRAWING':\n",
+  "new": "        elif False:\n"
+ },
+ {
+  "id": "M312",
+  "name": "a parameter the BOM states may be called missing",
+  "file": "scripts/review_functions.py",
+  "old": "            if _stated_in_bom(_bom_text(parts, ref), m['name'], m['unit']):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M313",
+  "name": "a limit cited from the BOM need not be in the BOM row",
+  "file": "scripts/review_functions.py",
+  "old": "    if not any(_squeeze(c.get('says')) in _bom_text(parts, r) for r in refs):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M314",
+  "name": "one margin may be copied onto another aspect",
+  "file": "scripts/review_functions.py",
+  "old": "                    if same in stated:",
+  "new": "                    if False:"
+ },
+ {
+  "id": "M315",
+  "name": "a vendor reference circuit settles no judgement",
+  "file": "scripts/review_functions.py",
+  "old": "                  or any(reference_circuit(conditions_by_id[c]) for c in conditions)):   # F9",
+  "new": "                  or False):   # F9"
+ },
+ {
+  "id": "M316",
+  "name": "a described usage need not say where the datasheet describes it",
+  "file": "scripts/review_functions.py",
+  "old": "        if (conditions.get(worst.get('specified_by')) or {}).get('kind') not in CLAUSE_KINDS + ('TYPICAL_REFERENCE',):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M317",
+  "name": "a fail outside the specified region need not search the operating-condition sections",
+  "file": "scripts/review_functions.py",
+  "old": "    if not OPERATING_SECTION_RE.search(searched):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M318",
+  "name": "a pin's unspecified point need not search the pin description",
+  "file": "scripts/review_functions.py",
+  "old": "    if PIN_POINT_RE.search(outside.get('operating_point') or '') and not PIN_SECTION_RE.search(searched):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M319",
+  "name": "a hand-filled coverage row may differ from its coverage",
+  "file": "scripts/requirement_bindings.py",
+  "old": "        if derived is not None and result != derived:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M320",
+  "name": "the coverage row copies its worst member's result",
+  "file": "scripts/requirement_bindings.py",
+  "old": "        coverage = planned['rule'] == COVERAGE\n",
+  "new": "        coverage = False\n"
+ },
+ {
+  "id": "M321",
+  "name": "a power-path switch between two connector rails gets a port-short row",
+  "file": "scripts/plan_circuits.py",
+  "old": "                            and not connectors_on(supply)\n",
+  "new": "                            and True\n"
+ },
+ {
+  "id": "M322",
+  "name": "a sensing thermistor read by an IC gets an inrush row",
+  "file": "scripts/plan_circuits.py",
+  "old": "                if IC not in touching and (touching",
+  "new": "                if (touching"
+ },
+ {
+  "id": "M323",
+  "name": "a boost diode into a bulk rail is taken for an RCD clamp",
+  "file": "scripts/plan_circuits.py",
+  "old": "                    if bulk(clamp):   # a rail with storage to ground (a boost output) is not a clamp node",
+  "new": "                    if False:"
+ },
+ {
+  "id": "M324",
+  "name": "a LED on the ground net makes every pin on ground a LED driver",
+  "file": "scripts/plan_circuits.py",
+  "old": "                    if node and graph.pin2net.get(node) and not is_ground(graph.pin2net[node]):",
+  "new": "                    if node and graph.pin2net.get(node):"
+ },
+ {
+  "id": "M325",
+  "name": "a disable pin behind an optocoupler gets no enable row",
+  "file": "scripts/plan_circuits.py",
+  "old": "                        if not ENABLE_LINK_PIN_RE.search(",
+  "new": "                        if not EN_RE.search("
+ },
+ {
+  "id": "M326",
+  "name": "an edge through a requirement clause is counted as an ordinary clause",
+  "file": "scripts/compare_reviews.py",
+  "old": "    if condition.get('kind') in CLAUSE_KINDS and REQUIREMENT_SOURCE_RE.search(where):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M327",
+  "name": "a decisive margin with its corners in the basis counts as without corners",
+  "file": "scripts/compare_reviews.py",
+  "old": "        'decisive_margins_without_corners': sum(not (m.get('corners') or (m.get('basis') or {}).get('corners'))",
+  "new": "        'decisive_margins_without_corners': sum(not m.get('corners')"
+ },
+ {
+  "id": "M328",
+  "name": "a requirement clause blocks rows of other questions",
+  "file": "scripts/review_functions.py",
+  "old": "                    if blocked:\n                        errors.append('%s: the edge on %s goes through requirement clause",
+  "new": "                    if False:\n                        errors.append('%s: the edge on %s goes through requirement clause"
+ },
+ {
+  "id": "M329",
+  "name": "only the requirement source file is a requirement document",
+  "file": "scripts/review_functions.py",
+  "old": "        if name == own or (folder and home and (home == folder or home.endswith('/' + folder))):",
+  "new": "        if name == own:"
+ },
+ {
+  "id": "M330",
+  "name": "an insulation requirement binds no isolation row",
+  "file": "scripts/catalog.py",
+  "old": "'MISSION_PROFILE', 'ISOLATION_PARTS',\n                 'ISOLATION_PATHS')",
+  "new": "'MISSION_PROFILE')"
+ },
+ {
+  "id": "M331",
+  "name": "an engineering-calculation row passes on a sentence",
+  "file": "scripts/review_functions.py",
+  "old": "              and (expected.get(cid) or {}).get('method') == 'C'\n",
+  "new": "              and False\n"
+ },
+ {
+  "id": "M332",
+  "name": "a vendor reference circuit does not pass a calculation row",
+  "file": "scripts/review_functions.py",
+  "old": "              and not reference_judged(functions[fid], row['aspect'], state, cid)):   # 1e",
+  "new": "              ):   # 1e"
+ },
+ {
+  "id": "M333",
+  "name": "a decisive margin need not say how its bound was derived",
+  "file": "scripts/review_functions.py",
+  "old": "    if derivation not in DERIVATIONS:\n        return [",
+  "new": "    if False:\n        return ["
+ },
+ {
+  "id": "M334",
+  "name": "a bound read off a typical curve decides",
+  "file": "scripts/review_functions.py",
+  "old": "    if derivation == 'TYPICAL_CURVE':\n",
+  "new": "    if False:\n"
+ },
+ {
+  "id": "M335",
+  "name": "a test point on the unfavourable side bounds the point",
+  "file": "scripts/review_functions.py",
+  "old": "        elif mono.get('side') != 'FAVORABLE':",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M336",
+  "name": "a corner may take an end its condition does not give",
+  "file": "scripts/review_functions.py",
+  "old": "        elif not _finite((condition.get('limit') or {}).get(corner['picked'])):",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M337",
+  "name": "an unboundable quantity need not say why the test point does not bound it",
+  "file": "scripts/review_functions.py",
+  "old": "        if not (isinstance(tried, dict) and all(text(tried.get(f)) for f in ('unfavorable_side', 'why_not'))):   # 1c",
+  "new": "        if False:   # 1c"
+ },
+ {
+  "id": "M338",
+  "name": "a bound through a temperature coefficient need not cite it",
+  "file": "scripts/review_functions.py",
+  "old": "    if derivation == 'TEMPCO' and (conditions.get(basis.get('tempco')) or {}).get('kind') != 'NUMERIC_LIMIT':",
+  "new": "    if False:"
+ },
+ {
+  "id": "M339",
+  "name": "a format-4 record is read as format 5",
+  "file": "scripts/results_model.py",
+  "old": "SCHEMA_VERSION = 5",
+  "new": "SCHEMA_VERSION = 4"
  }
 ]

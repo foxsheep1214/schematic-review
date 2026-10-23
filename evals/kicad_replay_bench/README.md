@@ -15,7 +15,9 @@ SR 现在主要审 ASG 生成的 KiCad 工程。`seeded_bench` 统计真实电�
 `--contract legacy` 用于重放历史约定，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认约定是 `fixed-device-rows-v1`（`revisions/fixed-device-rows-v1/`，2026-10-22）：晶体管、光耦、稳压/TVS 二极管、整流桥、变压器与定制电感不经 intent.devices 声明也生成身份、引脚处置与工况行，普通二极管与普通电感只在声明时生成；r02 +6，rf1 三例各 +27，rf2 +12，每颗器件 3 行，其余答案不变。
+当前默认约定是 `single-fault-rows-v1`（`revisions/single-fault-rows-v1/`，2026-10-23）：常见单一故障按网表特征派固定行（端口短路、NTC 热态重接入、RCD 钳位电阻、IC 脚直接驱动 LED/光耦、光耦使能）；回放板上只有 MCP73831 的 STAT 脚直接驱动 LED 触发 DEV-C05.PIN-LED，r01 +1、r05 +1，其余答案不变。
+
+此前的默认约定是 `fixed-device-rows-v1`（`revisions/fixed-device-rows-v1/`，2026-10-22）：晶体管、光耦、稳压/TVS 二极管、整流桥、变压器与定制电感不经 intent.devices 声明也生成身份、引脚处置与工况行，普通二极管与普通电感只在声明时生成；r02 +6，rf1 三例各 +27，rf2 +12，每颗器件 3 行，其余答案不变。
 
 此前的默认约定是 `decoupling-pin-map-v1`（`revisions/decoupling-pin-map-v1/`，2026-10-22）：去耦组按官方脚表成组，每个已声明器件、每个供电网一组，审查员只按（位号，网）写用途、条款与回流网；rh-ad8495-thermocouple-pinmap 的 U201:VCC 由待确认的候选组变为脚表组，少一项 `confirm-group-and-return` 缺口，其余答案不变。
 

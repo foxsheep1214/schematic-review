@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import catalog
 import derive_rows
 import validate_review as vr
-from test_review_functions import bias_function, aux_open, ASPECT
+from test_review_functions import bias_function, aux_open, guaranteed, ASPECT
 from test_validate_review import fixture, planned, E
 from validate_review import fingerprint
 
@@ -36,16 +36,18 @@ def bias_plan():
     p['functions'] = [{'id': 'FN-BIAS', 'circuit': 'BIAS', 'question': 'bias frame', 'members': members}]
     r['plan_digest'] = fingerprint(p)
     r['functions'] = [bias_function()]
-    r['functions'][0]['judgements'] = judgements()
+    calc = r['functions'][0]['calculation']
+    calc['margin'] = [dict(calc['margin'], aspect=ASPECT)] + other_margins()
     return p, r, db
 
 
-def judgements():
-    """The aspects other than the computed one, each judged against a clause of the function."""
-    says = {'PWR-C03': 'Q2 源极跟随输出经 C3 储能，负载阶跃由 C3 承担', 'PWR-C04': 'VCC 掉电由 U1 UVLO 处理，无外部放电要求',
-            'PWR-C05': 'Q2 VGS 由 D2 钳位，不超过手册绝限', 'PWR-C15': '源极跟随无外置反馈补偿网络'}
-    return [{'aspect': catalog.title(rule), 'conditions': ['c4', 'c5'], 'says': says[rule], 'states': list(STATES)}
-            for rule in RULES if rule != 'PWR-C02']
+def other_margins():
+    """The aspects other than the bias voltage are engineering calculations too (1e): each has its own margin."""
+    against = {'PWR-C03': 'Q2 ID 额定 0.5 A', 'PWR-C04': 'C3 保持时间需求 2 ms', 'PWR-C05': 'Q2 耗散额定 0.3 W',
+               'PWR-C15': '源极跟随相位裕度需求 45°'}
+    return [{'value': (0.1, 0.2, 0.3, 0.4)[i], 'unit': 'A' if rule == 'PWR-C03' else 'x', 'against': against[rule],
+             'aspect': catalog.title(rule), 'states': list(STATES), 'basis': guaranteed()}
+            for i, rule in enumerate(r for r in RULES if r != 'PWR-C02')]
 
 
 def bias_rows(r):
@@ -76,7 +78,7 @@ class DeriveTests(unittest.TestCase):
     def test_an_aspect_nobody_judged_does_not_pass_by_default(self):
         """A row passes only on its own aspect's margin or judgement, never on another aspect's result."""
         p, r, db = bias_plan()
-        del r['functions'][0]['judgements']
+        r['functions'][0]['calculation']['margin'] = r['functions'][0]['calculation']['margin'][:1]
         _, summary, errors = derive_rows.derive(p, r)
         self.assertEqual(len(errors), 12, errors)
         self.assertTrue(all('judges no' in e for e in errors), errors)
@@ -85,8 +87,9 @@ class DeriveTests(unittest.TestCase):
         r, _, errors = derive_rows.derive(p, r)
         self.assertEqual(errors, [])
         self.assertEqual(bias_rows(r)['PWR-C15.BIAS-RUN.Q2']['rationale'],
-                         '见功能判定 FN-BIAS（%s，RUN）：源极跟随无外置反馈补偿网络（依据 c4、c5）' % catalog.title('PWR-C15'))
-        r['functions'][0]['judgements'] = r['functions'][0]['judgements'][:-1]
+                         '见功能判定 FN-BIAS（%s，RUN）：VCC_min = 9.6 V；余量 0.4x 对 源极跟随相位裕度需求 45°'
+                         % catalog.title('PWR-C15'))
+        r['functions'][0]['calculation']['margin'] = r['functions'][0]['calculation']['margin'][:-1]
         out = vr.validate_review(p, r, db)
         self.assertFalse(out['valid'])
         self.assertTrue(any('PWR-C15.BIAS-RUN.Q2' in e and 'judges no' in e for e in out['errors']), out['errors'])
@@ -98,7 +101,7 @@ class DeriveTests(unittest.TestCase):
         derive_rows.derive(p, r)
         self.assertEqual(r, once)
         r['functions'][0].update(verdict='PASS', open=[])
-        r['functions'][0]['calculation']['margin']['states'] = list(STATES)   # the bound now covers every state
+        r['functions'][0]['calculation']['margin'][0]['states'] = list(STATES)   # the bound now covers every state
         _, summary, errors = derive_rows.derive(p, r)
         self.assertEqual((errors, summary['INSUFFICIENT'], summary['PASS']), ([], 0, 15))
         self.assertTrue(vr.validate_review(p, r, db)['valid'])
@@ -114,7 +117,7 @@ class DeriveTests(unittest.TestCase):
         self.assertEqual((errors, summary['kept'], summary['derived']), ([], 1, 14))
         self.assertEqual(bias_rows(r)['PWR-C03.BIAS-RUN.Q2']['rationale'], 'checked by hand')
         r['functions'][0]['open'][0]['decides'] = [dict(aux_open()['decides'][0], aspect=catalog.title('PWR-C03'), states=['RUN'])]
-        r['functions'][0]['calculation']['margin']['states'] = list(STATES)
+        r['functions'][0]['calculation']['margin'][0]['states'] = list(STATES)
         _, _, errors = derive_rows.derive(p, r)
         self.assertEqual(len(errors), 2, errors)   # review_result and open_ref disagree
         self.assertIn("hand-filled review_result 'PASS' disagrees", errors[0])
@@ -124,7 +127,7 @@ class DeriveTests(unittest.TestCase):
         fn = r['functions'][0]
         fn.update(verdict='FAIL', open=[], fails=[{'key': 'D3-REV', 'finding_id': 'F1', 'what': 'D3 reversed',
                                                    'decides': [{'aspect': ASPECT, 'states': ['LATCH']}], 'conditions': ['c4']}])
-        fn['calculation']['margin']['states'] = ['STARTUP', 'RUN']   # LATCH is the reversed-diode fail, not a pass
+        fn['calculation']['margin'][0]['states'] = ['STARTUP', 'RUN']   # LATCH is the reversed-diode fail, not a pass
         r['findings'] = [{'id': 'F1', 'kind': 'DEFECT', 'severity': 'P1', 'check_ids': ['PWR-C02.BIAS-LATCH.Q2'],
                           'location': {'pages': ['1'], 'refs': ['Q2'], 'nets': ['A']},
                           **{k: 'synthetic evidence' for k in ('title', 'observed', 'criterion', 'impact', 'scenario',

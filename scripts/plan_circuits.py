@@ -10,8 +10,8 @@ import circuit_decisions
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
-from checkers.netgraph import (BJT, CAPACITOR, CONNECTOR, IC, INDUCTOR, MOSFET, OPTO, RAIL_RE, RESISTOR, TESTPOINT,
-                               TRANSFORMER, TVS, UNKNOWN, ZENER,
+from checkers.netgraph import (BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET, OPTO,
+                               RAIL_RE, RESISTOR, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER,
                                NetGraph, is_analog_sense_pair, is_ground, normalize)
 from checkers.planutil import slug as _slug
 from electrical_contract import bounded, finite
@@ -109,6 +109,25 @@ FEEDBACK_PIN_RE = re.compile(r'(V?FB|COMP|FEEDBACK)([/_-](V?FB|COMP))?', re.I)
 FEEDBACK_OPEN_CRITERION = ('反馈环单一故障：光耦 %s 或它的串阻开路、副边控制失效时，%s 按开环送能；按控制器手册的保护检测延时'
                            '与开环最大送能，算到保护动作为止输出侧电压的上界，对照输出侧器件（输出电容、同步整流、端口开关、'
                            '副边控制器）的耐压；保护来得及时判 PASS，来不及时记失败项')
+
+# Common single faults asked on netlist features (consistency proposals of 2026-10-23, item 7): each row only asks.
+NTC_RE = re.compile(r'NTC', re.I)
+LED_RE = re.compile(r'(^|[:\s_])LED(_|\b)', re.I)
+BULK_FARAD = 1e-6
+# Pins that start or stop a controller: enable and its disable, inhibit and standby forms.
+ENABLE_LINK_PIN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN|PWR_EN|DIS|DISABLE|INH|INHIBIT|STBY|STANDBY'
+                                r'|ON_?OFF|RUN)(_|\d|$)', re.I)
+PORT_SHORT_CRITERION = ('端口硬短路：%s 把 %s 接到连接器 %s；端口对地短路时，输出电容储能和变换器电流经它释放，按短路检测与关断'
+                        '时间核它的 SOA 与 I²t，并核关断时的电压尖峰')
+NTC_HOT_CRITERION = ('热态重接入：%s 限制输入浪涌；断电后 NTC 还没冷却就重新上电时，浪涌只受线路与器件阻抗限制，核整流桥 '
+                     'IFSM/I²t、保险 I²t 与输入电容承受的浪涌')
+RCD_CRITERION = ('RCD 钳位：%s 与 %s、%s 在开关节点上吸收漏感能量；电阻功率按 ½·Llk·Ipk²·fsw·Vc/(Vc−Vor) 核降额，电阻两端电压'
+                 '（钳位电压减母线）对其耐压')
+PIN_LED_CRITERION = ('%s 直接驱动 %s 的 LED：按该脚手册的电流限值核；手册没给限值时，厂家参考电路有同样接法且负载不更重可判通过，'
+                     '手册写了这种用法但没给数值记缺厂家数据，手册没写这种用法记失败项（超出规定区）')
+ENABLE_LINK_CRITERION = ('光耦 %s 使能或关断 %s（%s 脚）：核上电时两侧供电建立的先后、使能门限与光耦传输延时，以及掉电后再上电能否'
+                         '恢复工作')
+
 
 class CircuitPlanning:
     """功能电路与器件的检查项。"""
@@ -533,6 +552,104 @@ class CircuitPlanning:
                 self._ready_check(rule, {'board': 'BOARD', 'refs': residual}, gaps, ['board', 'unowned-parts'])
         self.plan_life_rows(graph, fitted)
         self.plan_feedback_open_rows(graph)
+        self.plan_single_fault_rows(graph, fitted)
+
+    def plan_single_fault_rows(self, graph, fitted):
+        """The single faults one reviewer asks and another does not, asked wherever their feature is on the netlist."""
+        names = dict(self.db.get('declared_pinname') or {}, **(self.db.get('pinname') or {}))
+        native = self.db.get('native_pintype') or {}
+        from decoupling import parse_capacitance
+        tree = powertree.PowerTree(graph, self.intent)
+        # A declared rail is a supply checked against its declared returns too; it stands for a converter output the
+        # trace cannot reach (a transformer secondary).
+        declared = powertree.declared_supply_nets(graph, self.intent)
+
+        def text_of(ref):
+            part = graph.parts.get(ref) or {}
+            return ' '.join(str(part.get(k) or '') for k in ('value', 'prim', 'part'))
+
+        def bulk(net):
+            return any(graph.kind(c) == CAPACITOR and any(is_ground(n) for n in graph.nets_of(c) if n != net)
+                       and (parse_capacitance((graph.parts.get(c) or {}).get('value')) or 0) >= BULK_FARAD
+                       for c in graph.refs_on(net))
+
+        def connectors_on(net):
+            return [c for c in graph.refs_on(net) if graph.kind(c) == CONNECTOR]
+
+        def feeds_ic(net):
+            return any(graph.kind(n.split('.')[0]) == IC and (native.get(n) == 'power_in'
+                       or powertree.SUPPLY_IN_PIN_RE.match(str(names.get(n) or ''))) for n in graph.nodes_on(net))
+
+        def signal_pins(net):
+            for node in graph.nodes_on(net):
+                ref, name = node.split('.')[0], str(names.get(node) or '')
+                if (graph.is_fitted(ref) and graph.kind(ref) == IC and not is_ground(name)
+                        and native.get(node) not in ('power_in', 'power_out')
+                        and not powertree.SUPPLY_IN_PIN_RE.match(name)):
+                    yield ref, node
+
+        for ref in fitted:
+            kind = graph.kind(ref)
+            if kind == MOSFET:
+                ends = [graph.pin2net.get(graph.node_named(ref, role) or '') for role in ('drain', 'source')]
+                # A dedicated output port: the switch's far net reaches a connector and feeds no IC, and the near net is
+                # a converter or regulator output with bulk storage, not itself a connector rail (a battery or
+                # power-path switch) nor a rail the switch itself feeds.
+                for supply, port in (ends, ends[::-1]):
+                    connectors = connectors_on(port) if port else []
+                    if (supply and port and not is_ground(port) and connectors and not feeds_ic(port)
+                            and not connectors_on(supply)
+                            and (supply in declared or (bulk(supply) and tree.driven(supply)))):
+                        self.add_check('DRV-C02', {'ref': ref, 'net': port, 'connector': connectors[0]}, key='PORT-SHORT',
+                                       criterion=PORT_SHORT_CRITERION % (ref, supply, connectors[0]),
+                                       trigger=['switch:%s' % ref, 'connector:%s' % connectors[0], 'bulk:%s' % supply])
+            ends = graph.terminals(ref)
+            if NTC_RE.search(text_of(ref)) and ends and not any(is_ground(n) for n in ends):
+                touching = {graph.kind(r) for n in ends for r in graph.refs_on(n) if r != ref}
+                bridge = any(BRIDGE_RE.match(r) for n in ends for r in graph.refs_on(n))
+                if IC not in touching and (touching & {BRIDGE_RECTIFIER, DIODE, FUSE, CONNECTOR} or bridge):
+                    self.add_check('PWR-C13', {'ref': ref}, key='NTC-HOT', criterion=NTC_HOT_CRITERION % ref,
+                                   trigger=['thermistor:%s' % ref])
+            if kind == DIODE and len(ends) == 2:
+                for switch, clamp in (ends, ends[::-1]):
+                    on_switch = {graph.kind(r) for r in graph.refs_on(switch)}
+                    drains = [n for n in graph.nodes_on(switch) if graph.kind(n.split('.')[0]) == MOSFET
+                              and graph.role(n) == 'drain']
+                    if not (drains and on_switch & {TRANSFORMER, INDUCTOR}):
+                        continue
+                    if bulk(clamp):   # a rail with storage to ground (a boost output) is not a clamp node
+                        continue
+                    caps = {other: c for c, other in graph.neighbors(clamp, {CAPACITOR}) if other != switch}
+                    for resistor, other in graph.neighbors(clamp, {RESISTOR}):
+                        if other in caps:
+                            self.add_check('DRV-C01', {'ref': resistor, 'diode': ref, 'net': clamp}, key='RCD',
+                                           criterion=RCD_CRITERION % (resistor, ref, caps[other]),
+                                           trigger=['clamp-diode:%s' % ref, 'switch-node:%s' % switch])
+        led_nets = {}
+        for ref in fitted:
+            if graph.kind(ref) == OPTO or (graph.kind(ref) == DIODE and (LED_RE.search(text_of(ref))
+                                                                           or re.match(r'^LED\d', ref, re.I))):
+                for role in ('led_anode', 'led_cathode', 'anode', 'cathode'):
+                    node = graph.node_named(ref, role)
+                    if node and graph.pin2net.get(node) and not is_ground(graph.pin2net[node]):
+                        led_nets.setdefault(graph.pin2net[node], ref)
+        for net, led in sorted(led_nets.items()):
+            for ref, node in signal_pins(net):
+                self.add_check('DEV-C05', {'ref': ref, 'node': node, 'net': net, 'led': led}, key='PIN-LED',
+                               criterion=PIN_LED_CRITERION % (node, led), trigger=['led:%s' % led, 'pin:%s' % node])
+        optocouplers = self.inventories.get('optocoupler') or {}
+        seen = set()
+        for state in optocouplers.get('states') or []:
+            for opto in state.get('optocouplers') or []:
+                for net in (opto.get('collector_net'), opto.get('emitter_net')):
+                    for ref, node in signal_pins(net) if net else ():
+                        if not ENABLE_LINK_PIN_RE.search(str(names.get(node) or '')) or (opto['ref'], node) in seen:
+                            continue
+                        seen.add((opto['ref'], node))
+                        self.add_check('SIG-C09', {'ref': ref, 'node': node, 'net': net, 'optocoupler': opto['id'],
+                                                   'optocoupler_digest': optocouplers['digest']},
+                                       key='ENABLE-LINK', criterion=ENABLE_LINK_CRITERION % (opto['ref'], ref, node),
+                                       trigger=['optocoupler:%s' % opto['ref'], 'enable-pin:%s' % node])
 
     def plan_feedback_open_rows(self, graph):
         """A controller regulated through an optocoupler on its feedback pin: one row for the feedback opening, the

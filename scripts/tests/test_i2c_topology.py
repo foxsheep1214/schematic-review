@@ -16,6 +16,7 @@ from i2c_topology import build_i2c_topology, validate_i2c_intent
 from lint import Lint
 from plan_review import build_review_plan, validate_intent
 from validate_review import fingerprint, SCOPE, validate_review
+import requirement_bindings
 import results_model
 from ledger4 import gap, passed, slug
 
@@ -76,6 +77,7 @@ def report_for(plan, db):
 def pending_report(plan, db):
     """Complete but unresolved synthetic ledger for end-to-end gate validation."""
     rows = []
+    coverage = {p['id'] for p in plan['checks'] if p['rule'] == 'REQ-Q07' and p['applicability'] == 'APPLICABLE'}
     for item in plan['checks']:
         row = {'id': item['id'], 'applicability': item['applicability'],
                'review_result': 'NA' if item['applicability'] == 'NOT_APPLICABLE' else 'INSUFFICIENT',
@@ -92,9 +94,11 @@ def pending_report(plan, db):
                   'nets': {n: [scope['chains']] for n in db['nets']},
                   'pins': {n: [scope['chains']] for n in db['pin2net']}, 'pages': {}, 'requirements': {}}}
     for row in rows:
-        if row['review_result'] == 'INSUFFICIENT':
+        if row['review_result'] == 'INSUFFICIENT' and row['id'] not in coverage:
             gap(report, row['id'], slug(row['id']), plan=plan, level='P1',
                 what='applicable specifications and state analysis')
+    report['checks'] = [r for r in rows if r['id'] not in coverage]
+    requirement_bindings.derive(plan, report)   # coverage rows follow the rows of their circuit type
     return report
 
 

@@ -54,7 +54,11 @@ def bias_function(verdict='OPEN'):
 
 def guaranteed(**extra):
     return dict({'kind': 'GUARANTEED_BOUND', 'comparison': 'GT', 'limit': 'c3', 'conditions': ['c1', 'c2'],
-                 'scope': '−10..105 °C，VF 与 VGS(th) 取保证上界', 'regime': '−10..105 °C'}, **extra)
+                 'scope': '−10..105 °C，VF 与 VGS(th) 取保证上界', 'regime': '−10..105 °C',
+                 'derivation': 'GUARANTEED_LIMIT',
+                 'corners': [{'input': 'vf_d2', 'condition': 'c1', 'picked': 'max', 'why': 'VF 越大 VCC 越低'},
+                             {'input': 'vgs_q2', 'condition': 'c2', 'picked': 'max', 'why': 'VGS(th) 越大 VCC 越低'}]},
+                **extra)
 
 
 def aux_open():
@@ -172,7 +176,8 @@ class FunctionShapeTests(unittest.TestCase):
             dict(fn['calculation']['margin'], aspect=ASPECT),
             {'value': -3, 'unit': '°C', 'against': 'Tj 115 °C（项目降额）', 'aspect': '变换器电流应力', 'states': ['RUN'],
              'basis': {'kind': 'REACHABLE_CASE', 'comparison': 'GE', 'limit': 'c6', 'conditions': [], 'scope': '满载 RUN',
-                       'regime': 'Ta 50 °C', 'joint': '满载与 Ta 50 °C 是同一额定工况'}}]
+                       'regime': 'Ta 50 °C', 'joint': '满载与 Ta 50 °C 是同一额定工况', 'derivation': 'GUARANTEED_LIMIT',
+                       'corners': [], 'no_corners_reason': '满载电流按需求取定值'}}]
         errors = function_errors({'functions': [fn]})
         self.assertEqual(len(errors), 1, errors)
         self.assertIn('-3 °C against Tj 115 °C', errors[0])
@@ -298,11 +303,11 @@ class PublicBoundTests(unittest.TestCase):
         self.assertEqual(function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]}), [])
 
     def test_not_boundable_names_the_curves_and_tables_searched(self):
-        fn = with_datum(not_boundable_reason='手册没有 40 V 以下的任何测试点或曲线')
+        fn = with_datum(not_boundable_reason='手册没有 40 V 以下的任何测试点或曲线', monotonic_tried={'unfavorable_side': '测试点以下', 'why_not': '手册没说单调'})
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('curves_checked' in e for e in errors), errors)
         fn['open'][0]['worst_case']['curves_checked'] = [{'source': 'evidence/ds/U1.txt', 'locator': 'Fig. 12 IHV vs VHV'}]
-        fn['open'][0]['worst_case']['operating_point_specified'] = True
+        fn['open'][0]['worst_case'].update(operating_point_specified=True, specified_by='c3')
         self.assertEqual(function_errors({'functions': [fn]}), [])
         fn['open'][0]['worst_case']['curves_checked'] = ['looked']
         self.assertTrue(any('curves_checked' in e for e in function_errors({'functions': [fn]})))
@@ -310,7 +315,7 @@ class PublicBoundTests(unittest.TestCase):
     def test_an_operating_point_the_datasheet_does_not_specify_is_a_design_risk_not_a_vendor_request(self):
         """Unboundable because the design runs where the datasheet specifies nothing (an output given only above
         some supply): the answer is a fail item whose finding moves the design into the specified region."""
-        fn = with_datum(not_boundable_reason='V5 只在 VDD>6 V 时规定，本机 VDD 4.75 V',
+        fn = with_datum(not_boundable_reason='V5 只在 VDD>6 V 时规定，本机 VDD 4.75 V', monotonic_tried={'unfavorable_side': '测试点以下', 'why_not': '手册没说单调'},
                         curves_checked=[{'source': 'evidence/ds/U1.txt', 'locator': 'p11 V5'}])
         self.assertTrue(any('operating_point_specified' in e for e in function_errors({'functions': [fn]})))
         fn['open'][0]['worst_case']['operating_point_specified'] = False
@@ -325,7 +330,8 @@ class PublicBoundTests(unittest.TestCase):
         fn['fails'] = [{'key': 'D2-LOW-I', 'finding_id': 'F1', 'what': 'D2 工作在 20 µA，手册只规定 10–100 mA',
                         'decides': [{'aspect': ASPECT, 'states': ['LATCH']}],
                         'outside_specified': {'condition': 'c1', 'operating_point': 'D2 正向电流 20 µA',
-                                              'curves_checked': [{'source': 'evidence/ds/D2.txt', 'locator': 'Fig. 2 IF-VF'}]}}]
+                                              'curves_checked': [{'source': 'evidence/ds/D2.txt', 'locator': 'Fig. 2 IF-VF'},
+                                                                 {'source': 'evidence/ds/D2.txt', 'locator': 'p3 电气特性'}]}}]
         finding = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': 'R3 改 1 kΩ，使 D2 回到 10 mA 以上'}}
         self.assertEqual(function_errors({'functions': [fn], 'findings': [finding]}), [])
         del fn['fails'][0]['outside_specified']['curves_checked']
@@ -333,7 +339,7 @@ class PublicBoundTests(unittest.TestCase):
         self.assertTrue(any('outside_specified' in e and 'curves_checked' in e for e in errors), errors)
         fn['fails'][0]['outside_specified'].update(condition='c5', curves_checked=[{'source': 'x', 'locator': 'y'}])
         errors = function_errors({'functions': [fn], 'findings': [finding]})
-        self.assertTrue(any('outside_specified' in e and 'condition' in e for e in errors), errors)
+        self.assertTrue(any('outside_specified.condition' in e for e in errors), errors)
 
 class TemplateTextTests(unittest.TestCase):
     def test_one_assumption_copied_into_every_function_is_refused(self):
@@ -384,9 +390,8 @@ class AspectJudgementTests(unittest.TestCase):
         p, r, db = ledger(fn)
         out = vr.validate_review(p, r, db)
         self.assertTrue(any('judges no' in e for e in out['errors']), out['errors'])
-        fn['judgements'] = [{'aspect': ASPECT, 'conditions': ['c4', 'c5'], 'says': '偏置路径按 U1 的连接要求接到 VCC',
-                             'states': list(STATES)}]
-        p, r, db = ledger(fn)
+        # PWR-C02 is an engineering calculation: its margin judges it (a sentence would not, test_calculation_aspects)
+        p, r, db = ledger(bias_function('PASS'))
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
 
@@ -412,6 +417,7 @@ class DeliverablePendingTests(unittest.TestCase):
                 'scope': '加强绝缘、5000 m', 'deliverable': 'T1 磁件规格书：三重线型号、绕组顺序、边距、耐压试验值',
                 'owner': '磁件设计', 'assumed': '按 intent 的 48:6:21 匝比和三重线次级计算',
                 'deliverable_kind': 'CUSTOM_PART_DRAWING',
+                'missing_parameters': [{'name': '绕组顺序'}, {'name': '耐压试验值', 'unit': 'Vac'}],
                 'closure': '规格书给出上述项且耐压 ≥ 3000 Vac',
                 'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN'], 'via': {'claim': 'BIAS-VCCMIN', 'input': 'v_aux_min'},
                              'rationale': '辅助电压按假定的匝比算，匝比在待交付的图纸上'}],
@@ -575,6 +581,8 @@ class DerivedLevelsTests(unittest.TestCase):
                  'closure': 'Q5 重复短路 SOA 内', 'acquisition': '原厂应用支持', 'checked': ['c3'],
                  'why_insufficient': '手册无 VBUS 关断轨迹',
                  'worst_case': {'not_boundable_reason': '无驱动电流上限', 'operating_point_specified': True,
+                                'monotonic_tried': {'unfavorable_side': '关断轨迹整段', 'why_not': '手册无短路轨迹曲线'},
+                                'specified_by': 'c3',
                                 'curves_checked': [{'source': 'evidence/ds/U5.txt', 'locator': 'Fig. 3 SOA'}]},
                  'decides': [{'aspect': ASPECT, 'states': ['LATCH'], 'via': {'condition': 'c3'},
                               'rationale': '短路时 VCC 是否保持取决于 Q5 关断前的轨迹，手册没有'}],

@@ -60,6 +60,17 @@ class PlanTests(unittest.TestCase):
         self.assertEqual(req_row(plan, 'REQ-TEMP-01', 'ALTITUDE_HUMIDITY')['bound_checks'], [])
         self.assertEqual(rb.errors(plan), [])
 
+    def test_isolation_is_an_aspect_of_the_whole_board(self):
+        # A gap may block a row through a requirement clause only when the row is bound to that requirement
+        # (consistency proposals 2026-10-23, 1d): an insulation requirement binds every isolation row.
+        checks = [{'id': 'PRO-D01.U2', 'rule': 'PRO-D01', 'applicability': 'APPLICABLE'},
+                  {'id': 'PRO-C03.U2', 'rule': 'PRO-C03', 'applicability': 'APPLICABLE'},
+                  {'id': 'PRO-D02.BOARD', 'rule': 'PRO-D02', 'applicability': 'APPLICABLE'}]
+        parts = {'id': 'R', 'rule': 'REQ-D01', 'object': {'aspect': 'ISOLATION_PARTS'}}
+        paths = {'id': 'P', 'rule': 'REQ-D01', 'object': {'aspect': 'ISOLATION_PATHS'}}
+        self.assertEqual(rb.bound(checks, parts), ['PRO-C03.U2', 'PRO-D01.U2'])
+        self.assertEqual(rb.bound(checks, paths), ['PRO-D02.BOARD'])
+
     def test_owners_bind_the_rows_they_own(self):
         plan = build_review_plan(*board({'REQ-OPEN-01': ['SYS-POWER']}))
         row = req_row(plan, 'REQ-OPEN-01', 'OUTPUT_LIMITS')

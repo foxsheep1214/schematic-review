@@ -132,7 +132,9 @@ def gap(report, cids, key, kind='REVIEW_INCOMPLETE', fid=None, plan=None, what=N
                    why_insufficient='Synthetic: the stipulated clause does not give the datum of %s' % key,
                    worst_case={'not_boundable_reason': 'Synthetic: the fixture stipulates no public curve bounds it',
                                'curves_checked': [{'source': 'synthetic-fixture.json', 'locator': 'stipulated'}],
-                               'operating_point_specified': True})
+                               'operating_point_specified': True, 'specified_by': 'c1',
+                               'monotonic_tried': {'unfavorable_side': 'Synthetic: the stipulated side',
+                                                   'why_not': 'Synthetic: the fixture stipulates no monotonic curve'}})
     elif kind == 'USER_DEFERRED':
         out['instruction'] = SYNTHETIC
     out.update(item)

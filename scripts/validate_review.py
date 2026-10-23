@@ -302,6 +302,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                                  lambda context: ReviewPlanner(db, context), gaps=tool_gaps)
     checks = index(report.get("checks"), "results.checks")
     errors.extend(independence.evidence_errors(checks.values()))   # SR does not take the designer's documents
+    errors.extend(requirement_bindings.coverage_errors(expected, checks))   # REQ-Q07 follows its circuit type's rows
     scope_errors, stage_scope = validate_stage_scope(checks, expected)
     errors.extend(scope_errors)
     findings = index(report.get("findings"), "findings")

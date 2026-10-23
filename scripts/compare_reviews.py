@@ -17,9 +17,16 @@ numbers are diagnostic only.
 The overlap layer (`suggested`) aligns circuits by type and shared parts, rows by rule, aligned circuit, state and
 part, and open items and findings by the rows they decide; it suggests pairs among the unmatched rows and never
 enters a denominator. The numbers measure how far two records of one method drift; they do not say which is right.
+
+Each exact pair that disagrees is given a cause (`causes`, consistency proposals of 2026-10-23, item 9): NA against
+PASS, INSUFFICIENT against PASS grouped by what the open item's edges go through (a requirement clause, a numeric
+limit, a calculation), a FAIL against anything else. `signals` counts, per side, what makes a review stricter or
+looser than its evidence: edges through a requirement clause, passes that only say "not applicable", decisive
+margins without their corners, fails outside the specified region and passes resting on a measurement.
 """
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -35,6 +42,11 @@ MATCH_FLOOR = 0.25   # least share of parts two circuits of one type must have i
 SIDES = ('A', 'B')
 ANSWERS = ('PASS', 'FAIL', 'INSUFFICIENT', 'NA', 'NA_STAGE')
 SEVERE = ('P0', 'P1')
+CLAUSE_KINDS = ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE')
+DECISIVE_BASES = ('GUARANTEED_BOUND', 'REACHABLE_CASE', 'EXACT_ENVELOPE')
+REQUIREMENT_SOURCE_RE = re.compile(r'需求|requirement|\bREQ-', re.I)
+NOT_APPLICABLE_RE = re.compile(r'不适用|not applicable', re.I)
+MEASUREMENT_RE = re.compile(r'实测|测量|measure', re.I)
 
 
 def load(where):
@@ -199,6 +211,87 @@ def _keys(side):
     return out, sorted(stale), contract
 
 
+def _conditions(fn):
+    return {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+
+
+def via_kind(fn, edge):
+    """What an edge goes through: REQUIREMENT_CLAUSE, a condition kind, CALCULATION or NONE."""
+    via = edge.get('via') if isinstance(edge.get('via'), dict) else {}
+    if via.get('claim'):
+        return 'CALCULATION'
+    condition = _conditions(fn).get(via.get('condition'))
+    if not condition:
+        return 'NONE'
+    where = '%s %s' % (condition.get('source') or '', condition.get('locator') or '')
+    if condition.get('kind') in CLAUSE_KINDS and REQUIREMENT_SOURCE_RE.search(where):
+        return 'REQUIREMENT_CLAUSE'
+    return condition.get('kind') or 'NONE'
+
+
+def _items(side):
+    for fn in side['results'].get('functions') or []:
+        if isinstance(fn, dict):
+            for field in ('open', 'fails'):
+                for item in fn.get(field) or []:
+                    if isinstance(item, dict):
+                        yield fn, field, item
+
+
+def _item_via(side, ref):
+    for fn, _, item in _items(side):
+        if '%s/%s' % (fn.get('id'), item.get('key')) == ref:
+            kinds = {via_kind(fn, d) for d in item.get('decides') or [] if isinstance(d, dict)}
+            return '+'.join(sorted(kinds)) or 'NONE'
+    return 'NONE'
+
+
+def causes(a, b, answered, results):
+    """Why each answered pair disagrees."""
+    out = []
+    for pair in answered:
+        va, vb = pair['A_verdict'], pair['B_verdict']
+        if va == vb:
+            continue
+        entry = {'A': pair['A'], 'B': pair['B'], 'A_verdict': va, 'B_verdict': vb, 'via': None}
+        if 'FAIL' in (va, vb):
+            entry['cause'] = 'FAIL_VS_OTHER'
+        elif {va, vb} == {'INSUFFICIENT', 'PASS'}:
+            side, name = (a, 'A') if va == 'INSUFFICIENT' else (b, 'B')
+            entry['cause'] = 'INSUFFICIENT_VS_PASS'
+            entry['open_ref'] = (results[name].get(pair[name]) or {}).get('open_ref')
+            entry['via'] = _item_via(side, entry['open_ref'])
+        elif 'PASS' in (va, vb) and (va.startswith('NA') or vb.startswith('NA')):
+            entry['cause'] = 'NA_VS_PASS'
+        else:
+            entry['cause'] = 'OTHER'
+        out.append(entry)
+    return out
+
+
+def signals(side):
+    """Counts that make one review stricter or looser than its evidence."""
+    rows = [r for r in side['results'].get('checks') or [] if isinstance(r, dict)]
+    passes = [r for r in rows if r.get('review_result') == 'PASS']
+    edges = [via_kind(fn, d) for fn, _, item in _items(side) for d in item.get('decides') or [] if isinstance(d, dict)]
+    margins = []
+    for fn in side['results'].get('functions') or []:
+        calc = fn.get('calculation') if isinstance(fn, dict) and isinstance(fn.get('calculation'), dict) else {}
+        found = calc.get('margin')
+        margins += [m for m in (found if isinstance(found, list) else [found]) if isinstance(m, dict)]
+    decisive = [m for m in margins if (m.get('basis') or {}).get('kind') in DECISIVE_BASES]
+    return {
+        'requirement_clause_edges': edges.count('REQUIREMENT_CLAUSE'),
+        'not_applicable_passes': sum(bool(NOT_APPLICABLE_RE.search(r.get('rationale') or '')) for r in passes),
+        'decisive_margins': len(decisive),
+        'decisive_margins_without_corners': sum(not (m.get('corners') or (m.get('basis') or {}).get('corners'))
+                                                for m in decisive),
+        'outside_specified_fails': sum(1 for _, field, item in _items(side) if field == 'fails'
+                                       and isinstance(item.get('outside_specified'), dict)),
+        'measurement_only_passes': sum(bool(MEASUREMENT_RE.search(r.get('rationale') or '')) for r in passes),
+    }
+
+
 def _severe_rows(side):
     return {cid for f in side['results'].get('findings') or [] if isinstance(f, dict) and f.get('severity') in SEVERE
             for cid in f.get('check_ids') or []}
@@ -248,7 +341,12 @@ def strict(a, b, aliases=(), same_netlist=True):
     same = [p for p in answered if p['A_verdict'] == p['B_verdict']]
     n_a, n_b, m = len(keys_a), len(keys_b), len(pairs)
     transitions = Counter((p['A_verdict'], p['B_verdict']) for p in answered)
+    found = causes(a, b, answered, results)
+    cause_counts = Counter((c['cause'], c['via']) for c in found)
     return {
+        'causes': found,
+        'cause_counts': [{'cause': k, 'via': v, 'rows': n} for (k, v), n in sorted(cause_counts.items(),
+                                                                                   key=lambda x: (x[0][0], x[0][1] or ''))],
         'contract': {'A': contract_a, 'B': contract_b},
         'stale_keys': {'A': stale_a, 'B': stale_b},
         'counts': {'N_A': n_a, 'N_B': n_b, 'exact': sum(p['match'] == 'EXACT' for p in pairs),
@@ -276,7 +374,8 @@ def compare(a, b, aliases=()):
     report = {'schema_version': 2, 'inputs': {'A': a['where'], 'B': b['where']},
               'baseline': {'status': 'SAME_INPUT' if same_netlist else 'BASELINE_MISMATCH',
                            'db_sha256': {'A': a['plan'].get('db_sha256'), 'B': b['plan'].get('db_sha256')}},
-              'strict': strict(a, b, aliases, same_netlist), 'suggested': suggested(a, b)}
+              'strict': strict(a, b, aliases, same_netlist), 'suggested': suggested(a, b),
+              'signals': {'A': signals(a), 'B': signals(b)}}
     unmatched_a, unmatched_b = set(report['strict']['unmatched']['A']), set(report['strict']['unmatched']['B'])
     pairs = []
     for key in report['suggested']['rows']['shared_keys']:
@@ -365,6 +464,13 @@ def markdown(report):
         len(st['unmatched']['A']), len(st['unmatched']['B']), len(st['missing_result']), len(st['aliases_refused']))]
     lines += ['', '审查员补加（规则缺口，不计入配对）：A %d 行，B %d 行。' % (
         len(st['reviewer_added']['A']), len(st['reviewer_added']['B']))]
+    lines += ['', '## 差异原因', '', '| 原因 | 开放项的边经过 | 行数 |', '|---|---|---|']
+    lines += ['| %s | %s | %d |' % (CAUSE_NAMES.get(c['cause'], c['cause']),
+                                    '+'.join(VIA_NAMES.get(v, v) for v in c['via'].split('+')) if c['via'] else '—',
+                                    c['rows']) for c in st['cause_counts']]
+    sig = report['signals']
+    lines += ['', '## 过严与过松信号', '', '| 信号 | A | B |', '|---|---|---|']
+    lines += ['| %s | %d | %d |' % (name, sig['A'][key], sig['B'][key]) for key, name in SIGNAL_NAMES]
     rows = sug['rows']
     lines += ['', '## 建议配对（按电路与位号重合，不进入上面的指标）', '',
               '精确配对之外按重合度建议配对 %d 对，供人工核对是否同一项检查。' % len(st['suggested_pairs']), '',
@@ -399,6 +505,18 @@ def markdown(report):
         for i in sug['open_items']['only_' + side]:
             lines.append('- 只在 %s：%s %s/%s，%d 个方面，%d 行：%s' % (side, i['ref'], i['kind'], i['level'], i['aspects'], len(i['rows']), i.get('what') or ''))
     return '\n'.join(lines) + '\n'
+
+
+CAUSE_NAMES = {'FAIL_VS_OTHER': '一边没通过', 'INSUFFICIENT_VS_PASS': '资料不足对通过', 'NA_VS_PASS': 'NA 对通过',
+               'OTHER': '其他'}
+VIA_NAMES = {'REQUIREMENT_CLAUSE': '需求条款', 'NUMERIC_LIMIT': '数值限值', 'MANDATORY_CLAUSE': '强制条款',
+             'CALCULATION': '计算输入', 'NONE': '没写', None: '—'}
+SIGNAL_NAMES = (('requirement_clause_edges', '经需求条款挡行的边（过严）'),
+                ('not_applicable_passes', '理由只写“不适用”的通过（过松）'),
+                ('decisive_margins', '决定结论的余量'),
+                ('decisive_margins_without_corners', '其中没写角点取法的（过松）'),
+                ('outside_specified_fails', '超出规定区判没通过（过严时要看依据）'),
+                ('measurement_only_passes', '理由靠实测的通过（过松）'))
 
 
 def _counts(counter):

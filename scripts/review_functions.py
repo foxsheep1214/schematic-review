@@ -54,6 +54,10 @@ CLAUSE_KINDS = ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE')       # what a vendor, a st
 WEAK_KINDS = ('TYPICAL_REFERENCE', 'ENGINEERING_ASSUMPTION')
 BASIS_KINDS = ('GUARANTEED_BOUND', 'REACHABLE_CASE', 'EXACT_ENVELOPE', 'ESTIMATE')
 COMPARISONS = ('GE', 'GT')       # GE: a zero margin passes; GT: it does not
+# How a decisive bound was obtained (results 5, consistency proposals 2026-10-23 1a): a limit holding at this point, a
+# test point carried over a monotonic curve, a temperature coefficient, a published table; a typical curve only estimates.
+DERIVATIONS = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'MONOTONIC', 'TEMPCO', 'PUBLISHED_TABLE', 'TYPICAL_CURVE')
+CORNER_ENDS = ('min', 'max')
 EDGE_EFFECTS = ('BLOCKS_PROOF', 'INFORMATION_ONLY')
 EDGE_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING')   # gaps in a quantity: each edge says what it enters
 STATELESS = 'STATELESS'
@@ -109,6 +113,21 @@ def quotes(condition, value):
     """The condition's own text says this number."""
     return any(abs(n - value) <= 1e-9 * max(1.0, abs(value)) or abs(abs(n) - abs(value)) <= 1e-9 * max(1.0, abs(value))
                for n in _numbers(condition.get('says')))
+
+
+PIN_SECTION_RE = re.compile(r'引脚说明|引脚定义|引脚功能|管脚|pin (?:description|function|assignment|configuration)s?', re.I)
+OPERATING_SECTION_RE = re.compile(r'推荐工作|recommended operating|电气特性|电气参数|electrical characteristics'
+                                  r'|绝对最大|absolute maximum', re.I)
+PIN_POINT_RE = re.compile(r'引脚|脚|\bpins?\b', re.I)
+REFERENCE_FIELDS = ('figure', 'connection', 'load')
+
+
+def reference_circuit(condition):
+    """A vendor reference circuit stated against this board: the figure, the same connection and a load no heavier
+    (proposals of 2026-10-23, 5c tier 2). Only this kind of typical reference settles a judgement."""
+    rc = condition.get('reference_circuit') if isinstance(condition, dict) else None
+    return (condition.get('kind') == 'TYPICAL_REFERENCE' and isinstance(rc, dict)
+            and all(text(rc.get(f)) for f in REFERENCE_FIELDS) and bool(LOCATOR_WORDS_RE.search(rc['figure'])))
 
 
 def clause(condition):
@@ -186,7 +205,10 @@ def judged(fn, aspect, state=None, check_id=None):
             return '%s；余量 %s%s 对 %s' % (calc.get('result') or '', m['value'], m.get('unit') or '', m.get('against') or '')
     for j in fn.get('judgements') or []:
         if isinstance(j, dict) and text(j.get('says')) and j.get('aspect') == aspect and covers(scope(j), aspect, state, check_id):
-            return '%s（依据 %s）' % (j['says'], '、'.join(c for c in j.get('conditions') or [] if isinstance(c, str)))
+            by_id = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+            names = ['厂家参考电路 ' + by_id[c]['reference_circuit']['figure'] if reference_circuit(by_id.get(c)) else c
+                     for c in j.get('conditions') or [] if isinstance(c, str)]
+            return '%s（依据 %s）' % (j['says'], '、'.join(names))
     return None
 
 
@@ -208,6 +230,8 @@ def _condition_errors(label, c, db=None):
         elif not all(quotes(c, v) for v in values):
             errors.append('%s: says does not quote the limit %s; quote the clause that gives it'
                           % (label, '/'.join(str(v) for v in values)))
+        if re.search(r'bom', c.get('source') or '', re.I) and bom_parts(db):
+            errors.extend(_bom_quote_errors(label, c, bom_parts(db)))
         if not text(c.get('regime')):
             errors.append(label + ': regime says where the limit holds (temperature, waveform or pulse width, mode, variant)')
     elif kind == 'MANDATORY_CLAUSE':
@@ -218,6 +242,9 @@ def _condition_errors(label, c, db=None):
             errors.append(label + ': a typical application is a TYPICAL_REFERENCE, not a mandatory clause')
         if not text(c.get('applies')):
             errors.append(label + ': applies says the precondition under which the clause binds this design')
+    elif kind == 'TYPICAL_REFERENCE' and 'reference_circuit' in c and not reference_circuit(c):
+        errors.append(label + ': reference_circuit is {figure (the figure or page of the vendor circuit), connection '
+                              '(how this board connects the same way), load (its values against this board: no heavier)}')
     elif kind == 'NETLIST_FACT':
         nets = [n for n in c.get('nets') or [] if text(n)] if isinstance(c.get('nets'), list) else []
         pins = [n for n in c.get('pins') or [] if text(n)] if isinstance(c.get('pins'), list) else []
@@ -225,6 +252,60 @@ def _condition_errors(label, c, db=None):
             errors.append(label + ': a NETLIST_FACT names the nets and/or pins (REF.PIN) it is about')
         elif isinstance(db, dict):
             errors.extend(_netlist_name_errors(label, nets, pins, db))
+    return errors
+
+
+def bom_parts(db):
+    bom = db.get('bom') if isinstance(db, dict) else None
+    parts = bom.get('parts') if isinstance(bom, dict) else None
+    return parts if isinstance(parts, dict) else {}
+
+
+def _squeeze(value):
+    """BOM text compared without spacing; the Greek mu and the micro sign are one letter."""
+    return re.sub(r'\s+', '', str(value or '')).replace('\u03bc', '\u00b5')
+
+
+def _bom_text(parts, ref):
+    row = parts.get(ref)
+    return _squeeze(' '.join(str(v) for v in row.values())) if isinstance(row, dict) else ''
+
+
+def _bom_quote_errors(label, c, parts):
+    """A limit taken from the BOM (a custom part bought to its specification) quotes that part's BOM row."""
+    refs = [r for r in DESIGNATOR_RE.findall(c.get('locator') or '') if r in parts]
+    if not refs:
+        return ['%s: a limit from the BOM names, in locator, the part whose BOM row it quotes' % label]
+    if not any(_squeeze(c.get('says')) in _bom_text(parts, r) for r in refs):
+        return ['%s: says is not in the BOM row of %s; quote the specification as the BOM writes it'
+                % (label, '/'.join(refs))]
+    return []
+
+
+def _stated_in_bom(text_, name, unit):
+    """The BOM text gives the parameter a value: its name, then a number in its unit."""
+    return bool(re.search(re.escape(_squeeze(name)) + r'[^0-9]{0,6}?[-+]?\d+(?:\.\d+)?' + re.escape(_squeeze(unit)),
+                          text_, re.I))
+
+
+def _missing_parameter_errors(label, item, db):
+    """A pending custom-part drawing lists the parameters the verdict needs and the BOM does not state."""
+    missing = item.get('missing_parameters')
+    if not (isinstance(missing, list) and missing and all(isinstance(m, dict) and text(m.get('name')) for m in missing)):
+        return ['%s: a custom part drawing lists missing_parameters [{name[, unit]}] — the parameters the verdict needs '
+                'that the BOM specification does not state; what the BOM states is a design value, cite it as a '
+                'NUMERIC_LIMIT from the BOM row' % label]
+    parts = bom_parts(db)
+    refs = [r for r in DESIGNATOR_RE.findall(' '.join(str(item.get(f) or '') for f in ('deliverable', 'what')))
+            if r in parts]
+    errors = []
+    for m in missing:
+        if not text(m.get('unit')):
+            continue   # a qualification or an insulation approval has no value to find
+        for ref in refs:
+            if _stated_in_bom(_bom_text(parts, ref), m['name'], m['unit']):
+                errors.append('%s: the BOM row of %s already states %s; it is a design value — cite it as a '
+                              'NUMERIC_LIMIT from the BOM row, not a missing parameter' % (label, ref, m['name']))
     return errors
 
 
@@ -270,6 +351,7 @@ def _basis_errors(label, m, conditions, claim_ids):
         errors.append('%s: a %s does not rest on %s (%s); a bound built on them is an ESTIMATE'
                       % (label, kind, 'an assumption' if kind == 'REACHABLE_CASE' else 'typical values or assumptions',
                          ', '.join(weak)))
+    errors.extend(_derivation_errors(label, basis, conditions))
     if kind == 'EXACT_ENVELOPE' and not all(text(basis.get(f)) for f in ('model', 'domain', 'extremum')):
         errors.append(label + ': an EXACT_ENVELOPE names the model, the domain it covers and why the extremum is in it '
                               '(model, domain, extremum)')
@@ -284,6 +366,42 @@ def _basis_errors(label, m, conditions, claim_ids):
             errors.append('%s: the quantity holds at %s and the limit %s at %s; a decisive comparison across regimes names '
                           'the conversion or envelope (basis.conversion: a condition or claim id)'
                           % (label, basis['regime'], limit['id'], limit['regime']))
+    return errors
+
+
+def _derivation_errors(label, basis, conditions):
+    """1a–1b: how a decisive bound was derived, and which end of each toleranced input it took."""
+    derivation = basis.get('derivation')
+    if derivation not in DERIVATIONS:
+        return ['%s: basis.derivation says how the bound was obtained, one of %s' % (label, '/'.join(DERIVATIONS))]
+    errors = []
+    if derivation == 'TYPICAL_CURVE':
+        errors.append(label + ': a bound read off a TYPICAL_CURVE decides nothing; mark the margin ESTIMATE')
+    if derivation in ('ADJACENT_TEST_POINT', 'MONOTONIC'):
+        mono = basis.get('monotonic')
+        if not (isinstance(mono, dict) and mono.get('curve') in conditions):
+            errors.append('%s: a bound carried from a test point gives basis.monotonic{curve: the condition of this '
+                          'function showing the monotonic shape, side: FAVORABLE}' % label)
+        elif mono.get('side') != 'FAVORABLE':
+            errors.append('%s: the operating point lies on the unfavourable side of the test point, which bounds nothing '
+                          'there; only side FAVORABLE carries the bound over' % label)
+    if derivation == 'TEMPCO' and (conditions.get(basis.get('tempco')) or {}).get('kind') != 'NUMERIC_LIMIT':
+        errors.append(label + ': a bound through a temperature coefficient names in basis.tempco the NUMERIC_LIMIT giving '
+                              'its min/max')
+    corners = basis.get('corners')
+    if not isinstance(corners, list) or (not corners and not text(basis.get('no_corners_reason'))):
+        errors.append(label + ': basis.corners[{input, condition, picked: min|max, why}] lists each toleranced input and '
+                              'the end of its condition taken (no_corners_reason when no input has a tolerance)')
+        return errors
+    for i, corner in enumerate(corners):
+        condition = conditions.get(corner.get('condition')) if isinstance(corner, dict) else None
+        if not (isinstance(corner, dict) and text(corner.get('input')) and text(corner.get('why'))
+                and corner.get('picked') in CORNER_ENDS and condition and condition.get('kind') == 'NUMERIC_LIMIT'):
+            errors.append('%s: basis.corners[%d] is {input, condition (a NUMERIC_LIMIT of this function), picked min|max, '
+                          'why}' % (label, i))
+        elif not _finite((condition.get('limit') or {}).get(corner['picked'])):
+            errors.append('%s: basis.corners[%d] takes the %s of %s, which gives no %s; take the end the condition gives'
+                          % (label, i, corner['picked'], condition['id'], corner['picked']))
     return errors
 
 
@@ -326,6 +444,21 @@ def unjudged_message(cid, fid, aspect, state):
             % (cid, fid, aspect, (' in state ' + state) if state else ''))
 
 
+def margin_proves(fn, aspect, state=None, check_id=None):
+    """A margin of the function whose basis proves `aspect` in `state`."""
+    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    return any(margin_verdict(m) == 'PASS' and covers(scope(m, calc.get('aspect')), aspect, state, check_id)
+               for m in results_model.margins(calc))
+
+
+def reference_judged(fn, aspect, state=None, check_id=None):
+    """A judgement of `aspect` resting on a vendor reference circuit stated against this board (5c, tier 2)."""
+    by_id = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+    return any(isinstance(j, dict) and j.get('aspect') == aspect and covers(scope(j), aspect, state, check_id)
+               and any(reference_circuit(by_id.get(c)) for c in j.get('conditions') or [])
+               for j in fn.get('judgements') or [])
+
+
 def _judgement_errors(fid, fn, conditions_by_id):
     errors = []
     judgements = fn.get('judgements')
@@ -346,9 +479,11 @@ def _judgement_errors(fid, fn, conditions_by_id):
                           'with its basis, not settled in a sentence' % (
                               fid, i, j['aspect'], ', '.join(c for c in conditions
                                                              if conditions_by_id[c].get('kind') == 'NUMERIC_LIMIT')))
-        elif not kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}:   # F9
+        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}
+                  or any(reference_circuit(conditions_by_id[c]) for c in conditions)):   # F9
             errors.append('%s/judgements[%d] (%s): rests on no mandatory clause or netlist fact (%s); a typical value, an '
-                          'application circuit or an assumption does not settle a row' % (
+                          'application circuit or an assumption does not settle a row — a vendor reference circuit does '
+                          'when its condition states reference_circuit{figure, connection, load}' % (
                               fid, i, j['aspect'], ', '.join(conditions)))
         if 'states' in j and not (isinstance(j['states'], list) and j['states'] and all(text(x) for x in j['states'])):
             errors.append('%s/judgements[%d]: states is a non-empty list' % (fid, i))
@@ -480,6 +615,14 @@ def _outside_errors(label, outside, conditions):
     if not evidence(outside.get('curves_checked')):
         errors.append(label + ': outside_specified.curves_checked lists the figures and tables searched (source, locator) '
                               'for any coverage of this point')
+        return errors
+    searched = ' '.join(c['locator'] for c in outside['curves_checked'])
+    if not OPERATING_SECTION_RE.search(searched):
+        errors.append(label + ': outside_specified.curves_checked includes the recommended operating conditions or '
+                              'electrical characteristics section — where the datasheet would specify this point')
+    if PIN_POINT_RE.search(outside.get('operating_point') or '') and not PIN_SECTION_RE.search(searched):
+        errors.append(label + ': the point is a pin\'s; outside_specified.curves_checked includes the pin description '
+                              'section — where the datasheet would describe this usage')
     return errors
 
 
@@ -505,7 +648,7 @@ def _f8_errors(fid, fn, calculation):
     return errors
 
 
-def _worst_case_errors(label, item, condition_ids):
+def _worst_case_errors(label, item, conditions):
     """F3: the worst case under the public bound (which clause, what value, how it bounds) and its margin,
     or the curves and tables searched before calling the quantity unboundable."""
     worst = item.get('worst_case')
@@ -515,6 +658,10 @@ def _worst_case_errors(label, item, condition_ids):
         if not evidence(worst.get('curves_checked')):
             return [label + ': worst_case.curves_checked lists the datasheet figures, published tables and application '
                             'notes searched for a bound (source, locator) before the quantity is called unboundable']
+        tried = worst.get('monotonic_tried')
+        if not (isinstance(tried, dict) and all(text(tried.get(f)) for f in ('unfavorable_side', 'why_not'))):   # 1c
+            return [label + ': worst_case.monotonic_tried{unfavorable_side, why_not} says which side the adjacent test '
+                            'point cannot bound and why; a side it does bound is decided, only the other stays open']
         specified = worst.get('operating_point_specified')
         if not isinstance(specified, bool):
             return [label + ': worst_case.operating_point_specified says whether the datasheet specifies the part at '
@@ -523,10 +670,14 @@ def _worst_case_errors(label, item, condition_ids):
             return [label + ': the datasheet does not specify the part at this operating point; relying on it is a design '
                             'risk — record a fail item (outside_specified) whose finding moves the design into the '
                             'specified region, not a vendor request']
+        if (conditions.get(worst.get('specified_by')) or {}).get('kind') not in CLAUSE_KINDS + ('TYPICAL_REFERENCE',):
+            return [label + ': worst_case.specified_by names the condition of this function where the datasheet describes '
+                            'this usage (a limit, a clause or its application text); a usage it does not describe is '
+                            'outside the specified region']
         return []
     errors = []
     bound = worst.get('bound')
-    if not (isinstance(bound, dict) and bound.get('condition') in condition_ids and text(bound.get('value'))
+    if not (isinstance(bound, dict) and bound.get('condition') in conditions and text(bound.get('value'))
             and bound.get('basis') in BOUND_BASES):
         errors.append('%s: worst_case.bound names the public bound used before asking the vendor: condition (a clause '
                       'id), value, basis one of %s' % (label, '/'.join(BOUND_BASES)))
@@ -567,7 +718,7 @@ def _datum_margin_errors(fid, fn, item, conditions, claim_ids, findings):
     return []
 
 
-def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=None):
+def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=None, db=None):
     """One open or fail item: F2, F3, F7 and the shared shape (key, decides, severity)."""
     condition_ids = set(conditions)
     errors = ['%s: %s is retired; %s' % (label, field, why) for field, why in RETIRED_ITEM_FIELDS.items() if field in item]
@@ -617,6 +768,8 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
         if item.get('deliverable_kind') not in DELIVERABLE_KINDS:
             errors.append('%s: deliverable_kind is one of %s; a parameter of a catalog part is a VENDOR_DATUM with its '
                           'public bound' % (label, '/'.join(DELIVERABLE_KINDS)))
+        elif item['deliverable_kind'] == 'CUSTOM_PART_DRAWING':
+            errors.extend(_missing_parameter_errors(label, item, db))
     elif kind not in REQUEST_KINDS:
         stray = [f for f in ('spec', 'owner', 'acquisition', 'closure', 'checked', 'worst_case') if f in item]
         if stray:
@@ -641,7 +794,7 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
             errors.append(label + ': why_insufficient says why the clauses read do not answer the question')
         if not text(item.get('acquisition')):
             errors.append(label + ': acquisition says who provides the datum')
-        errors.extend(_worst_case_errors(label, item, condition_ids))
+        errors.extend(_worst_case_errors(label, item, conditions))
     if kind == 'USER_DEFERRED' and not evidence(item.get('instruction')):
         errors.append(label + ': a deferral cites the user instruction (instruction evidence)')
     return errors
@@ -736,8 +889,15 @@ def function_errors(report, document_only=(), db=None):
                 errors.append(fid + ': calculation.margin is {value: finite number, unit, against, basis[, aspect, states]} '
                                     'or a list of them')
             elif margin is not None:
+                stated = {}
                 for k, m in enumerate(items):
                     errors.extend(_basis_errors('%s/margin[%d]' % (fid, k), m, conditions_by_id, claim_ids))
+                    same = (m['value'], m['unit'].strip(), m['against'].strip())
+                    if same in stated:
+                        errors.append('%s/margin[%d]: the same margin as margin[%d] (%s %s against %s); a defect lands on '
+                                      'the aspect its margin proves — another aspect needs another quantity'
+                                      % (fid, k, stated[same], m['value'], m['unit'], m['against']))
+                    stated.setdefault(same, k)
                     for field in ('states', 'check_ids'):
                         if field in m and not (isinstance(m[field], list) and m[field] and all(text(x) for x in m[field])):
                             errors.append('%s/margin[%d]: %s is a non-empty list' % (fid, k, field))
@@ -770,7 +930,7 @@ def function_errors(report, document_only=(), db=None):
                         errors.append('%s: key %s already used by %s (keys are unique across functions)' % (label, key, seen_keys[key]))
                     seen_keys[key] = fid
                 errors.extend(_item_errors(label, item, field, conditions_by_id, finding_ids,
-                                           calculation if isinstance(calculation, dict) else None))
+                                           calculation if isinstance(calculation, dict) else None, db))
                 if field == 'open' and item.get('kind') == 'VENDOR_DATUM':
                     errors.extend(_datum_margin_errors(fid, fn, item, conditions_by_id, claim_ids, findings))
         errors.extend(_decision_errors(fid, fn, calculation if isinstance(calculation, dict) else {}, conditions_by_id,
@@ -912,6 +1072,13 @@ def binding_errors(expected, checks, functions, history_ids=()):
         if (result == 'PASS' and fid is not None and cid not in history_ids and text(row.get('aspect'))
                 and judged(functions[fid], row['aspect'], state, cid) is None):
             errors.append(unjudged_message(cid, fid, row['aspect'], state))
+        elif (result == 'PASS' and fid is not None and cid not in history_ids and text(row.get('aspect'))
+              and (expected.get(cid) or {}).get('method') == 'C'
+              and not margin_proves(functions[fid], row['aspect'], state, cid)
+              and not reference_judged(functions[fid], row['aspect'], state, cid)):   # 1e
+            errors.append('%s: aspect %s is an engineering calculation (method C); it passes on a margin of %s that '
+                          'proves it, not on a sentence (a vendor reference circuit with reference_circuit also settles '
+                          'it); a sentence closes connection tracing and clause checks' % (cid, row['aspect'], fid))
         if result == 'PASS' and fid is not None and cid not in history_ids and text(row.get('aspect')):
             fn = functions[fid]
             blocking = [i.get('key') for f in ('fails', 'open') for i in fn.get(f) or []
@@ -1092,6 +1259,71 @@ def frame_errors(plan, checks, functions):
     return errors
 
 
+def requirement_rows(plan):
+    """(requirement document paths, {requirement id: the rows bound to it}) from the plan's REQ-D01 rows."""
+    documents, rows = set(), {}
+    for c in (plan or {}).get('checks') or []:
+        if not (isinstance(c, dict) and c.get('rule') == 'REQ-D01'):
+            continue
+        locator = ((c.get('source_text') or {}).get('locator') or '') if isinstance(c.get('source_text'), dict) else ''
+        if locator:
+            documents.add(re.sub(r':\d+$', '', locator).replace('\\', '/'))
+        rid = (c.get('object') or {}).get('requirement_id')
+        if text(rid):
+            rows.setdefault(rid, set()).update([c['id']] + list(c.get('bound_checks') or []))
+    return documents, rows
+
+
+def _requirement_document(source, documents):
+    """A file of the requirement folder: the requirement source itself or another document beside it (an engineering
+    specification), written with its full path or a path relative to that folder's parent."""
+    source = str(source or '').replace('\\', '/')
+    folder, _, name = source.rpartition('/')
+    for document in documents:
+        home, _, own = document.rpartition('/')
+        if name == own or (folder and home and (home == folder or home.endswith('/' + folder))):
+            return True
+    return False
+
+
+def requirement_edge_errors(plan, checks, functions):
+    """1d (consistency proposals of 2026-10-23): an edge through a clause of the requirement document blocks only the
+    rows bound to that requirement; any other row is blocked through the number the missing quantity enters."""
+    documents, bound = requirement_rows(plan)
+    if not documents:
+        return []
+    planned = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and text(c.get('id'))}
+    errors = []
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not text(fn.get('id')):
+            continue
+        conditions = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+        for field in ('open', 'fails'):
+            for item in fn.get(field) or []:
+                if not isinstance(item, dict):
+                    continue
+                ref = '%s/%s' % (fn['id'], item.get('key'))
+                for edge in edges(item):
+                    via = edge.get('via') if isinstance(edge.get('via'), dict) else {}
+                    clause_ = conditions.get(via.get('condition'))
+                    if not clause_ or not _requirement_document(clause_.get('source'), documents):
+                        continue
+                    said = '%s %s' % (clause_.get('locator') or '', clause_.get('says') or '')
+                    named = [rid for rid in bound if rid in said] or list(bound)
+                    allowed = set().union(*(bound[rid] for rid in named))
+                    blocked = sorted(cid for cid, row in checks.items() if isinstance(row, dict)
+                                     and ref in (row.get('open_ref'), row.get('fail_ref')) and cid not in allowed
+                                     and covers(scope(edge), row.get('aspect'),
+                                                ((planned.get(cid) or {}).get('object') or {}).get('state'), cid))
+                    if blocked:
+                        errors.append('%s: the edge on %s goes through requirement clause %s (%s), which blocks only the '
+                                      'rows bound to that requirement, not %s; answer those rows, or write which number '
+                                      'the missing quantity enters (a numeric limit, a calculation input, a datasheet or '
+                                      'standard clause)' % (ref, edge['aspect'], clause_['id'], '、'.join(named),
+                                                            '、'.join(blocked)))
+    return errors
+
+
 def validate_functions(plan, report, checks, history_ids=(), db=None):
     """All function-verdict errors for validate_review. `report` is the record as written."""
     expected = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and isinstance(c.get('id'), str)}
@@ -1099,7 +1331,8 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
     circuits = {fn.get('id') for fn in circuit_functions(functions, list(checks.values()))}
     document_only = {fn.get('id') for fn in functions if isinstance(fn, dict) and fn.get('id') not in circuits}
     errors = (function_errors(report, document_only, db) + binding_errors(expected, checks, report.get('functions'), history_ids)
-              + frame_errors(plan, checks, report.get('functions')))
+              + frame_errors(plan, checks, report.get('functions'))
+              + requirement_edge_errors(plan, checks, report.get('functions')))
     if isinstance(db, dict):   # a commodity part's rating is a BOM constraint, not an open item
         import bom_constraints
         from checkers.netgraph import NetGraph

@@ -134,7 +134,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（网表扫描、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
 计划里没有、审查员认为该查的项不直接加行，登记到 `intent.rule_gaps`（对象、按哪条规则判、判据、缺什么规则、依据），计划工具写成 `REVIEWER_ADDED` 行：照常判，单独计数，不计入两份记录的配对率；门禁列出每条缺口，记进改进台账，变成工具生成的规则。直接加进计划的行被拒。
 
-功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（第 2 步）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
+功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（第 2 步）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各行写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
 
 ## 执行流程
 
@@ -253,7 +253,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
    本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`）；另一阶段欠的交付物（磁件图纸、固件应用能力确认）记
    DELIVERABLE_PENDING（`deliverable`+`owner`+`assumed`）；只有厂家才知道、公开资料界限（保证限值、相邻测试点单调夹出的界限、
    公开特性表、典型曲线加余量、应用笔记公式）也兜不住的参数才记 VENDOR_DATUM，并写查过哪几条、为什么不够、
-   公开资料界限下的最坏情况与余量（`worst_case.bound`/`margin`；没有界就列 `curves_checked`，手册没规定本工作点的是设计风险，记失败项）。
+   公开资料界限下的最坏情况与余量（`worst_case.bound`/`margin`；决定结论的余量写 `basis.derivation` 与 `basis.corners`，判定不出界的先答 `monotonic_tried`；没有界就列 `curves_checked`，手册写了这种用法只缺数值的写 `specified_by`，没写这种用法的是设计风险，记失败项；厂家参考电路同接法、负载不更重的可判通过）。
    没有数值的方面写 `judgements`（方面、条件、说明了什么）；行只有本方面本状态有证明通过的余量或 judgement 才 PASS，没人判过的方面不默认通过。
    开放项的 `decides` 每条是一条影响条目：方面、状态、`via`（缺的量进到哪条条件或哪个计算输入）和 `rationale`（现有的界为什么不够）；
    一个缺口挡几个方面不限数，超过 3 个只提示复看。

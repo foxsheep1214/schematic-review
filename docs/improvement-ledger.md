@@ -7,6 +7,36 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Two reviews of one board drift less: bounds say how they were derived, gaps block through numbers (2026-10-23)
+
+Two independent R5 reviews (Codex at 1fe4df6, Claude at 5802e8c) agreed on 347 of 516 exactly paired rows. The
+disagreements came from a few habits the record allowed: one review blocked 163 rows through clauses of the requirement
+documents and wrote 3 margins in all, the other passed calculation rows on sentences, marked a bound on the unfavourable
+side of a test point as guaranteed and took an NTC at its nominal value; one shortfall was copied into three identical
+margins; a coverage row carried a defect the reviewer picked; a pin sinking an LED current the datasheet gives no
+number for was a design defect in one review and absent from the other; and common single faults (port short, hot
+restart through the inrush NTC, clamp resistor power, a pin driving an optocoupler, an enable across an optocoupler)
+were asked by one side only. Results format 5: a decisive margin names how its bound was derived and the end of each
+toleranced input it took, an unboundable quantity first says why the adjacent test point does not bound it, a
+requirement clause blocks only the rows bound to that requirement (isolation is now a whole-board aspect), and a
+calculation aspect passes only on a margin or the vendor's reference circuit. One margin is not copied onto another
+aspect; REQ-Q07 is written by derive_rows.py as coverage and copies no member result; a datasheet's silence is judged in
+four tiers (limit exceeded fails, the vendor's reference circuit with the same connection and a load no heavier passes,
+a described usage without the number is a vendor datum, an undescribed usage fails outside the specified region with the
+operating-condition and pin-description sections searched); a custom part's BOM specification is a design value and its
+pending drawing lists only the parameters the BOM leaves out; five single-fault rows are planned on netlist features;
+compare_reviews.py names the cause of each disagreement and counts the strict and loose signals per side. On the two
+R5 records: 118 INSUFFICIENT-vs-PASS rows (112 through a requirement clause), 42 NA-vs-PASS, 9 with a FAIL; 1d refuses
+117 edges in one record and 4 in the other, 1e refuses 32 and 70 calculation rows passed on a sentence; the R5 plan gets
+all five single-fault kinds (Q701, TH101, R304/R305, the two U601 GPIO optocoupler drives, U202 to the U201 DIS pin) and
+none on the PFC boost diode. Tests first; 1845 tests pass, contract 513, KiCad replay 195/195 under revision
+single-fault-rows-v1 (r01, r05 +1 each: an MCP73831 STAT pin driving its LED), typical circuits no new unclassified,
+mutations M311-M339 added and the 131 on changed files killed.
+
+- Event: review:SR-20261023-R5-全新独立复审-1fe4df6/record/review-results.json and review:SR-20261023-R5-从头审查-claude-5802e8c/record/review-results.json (347/516 exact pairs agree), user:2026-10-23 (第 1 条按修正后的建议定：1a–1e 都做，1d 用“需求条款只能挡绑定该需求的行”，格式升到 5；首先可以用三分法加参考电路；我同意)
+- Causes: rule_missing 3, rule_not_enforced 3, judgment 2
+- Changed: SKILL.md, docs/2026-10-23-review-consistency-proposals.md, docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/revisions/single-fault-rows-v1/cases.json, evals/kicad_replay_bench/revisions/single-fault-rows-v1/expected.json, evals/kicad_replay_bench/revisions/single-fault-rows-v1/manifest.json, evals/kicad_replay_bench/revisions/single-fault-rows-v1/sources.json, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/check-catalog.md, references/commodity-floors.md, references/evidence-proportionality.md, references/execution-consistency.md, references/plan-and-results.md, scripts/catalog.py, scripts/compare_reviews.py, scripts/plan_circuits.py, scripts/requirement_bindings.py, scripts/results_model.py, scripts/review_functions.py, scripts/validate_review.py, scripts/tests/ledger4.py, scripts/tests/test_bound_derivation.py, scripts/tests/test_calculation_aspects.py, scripts/tests/test_compare_causes.py, scripts/tests/test_coverage_rows.py, scripts/tests/test_custom_part_spec.py, scripts/tests/test_derive_rows.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_operating_point_tiers.py, scripts/tests/test_requirement_bindings.py, scripts/tests/test_requirement_edges.py, scripts/tests/test_results_model.py, scripts/tests/test_review_functions.py, scripts/tests/test_single_fault_rows.py
+
 ## SR states its architecture, and an architecture change waits for a person's confirmation (2026-10-23)
 
 SR had no single statement of how it is built: the flow in SKILL.md listed steps and commands, the script table in

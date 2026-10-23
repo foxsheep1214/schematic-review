@@ -88,6 +88,8 @@ NA 行写了 blocking 给出 FAIL/INSUFFICIENT 的提示（M305）、串联分�
 由 `test_passive_stress.py`、`test_pin_feeds.py`、`test_review_functions.py`、`test_catalog.py`、`test_supply_net_names.py`、
 `test_review_quality.py`、`test_review_stage_scope.py` 杀死。M271 随 `blocked_judgements` 重写改了注入位置（按理由分组），守的行为不变。
 M308–M309（2026-10-23，B5 架构决定）守：框架行挂到审查员自建的功能（M308）、计划电路的行从自建功能取开放项（M309）、位号全在一个电路框架里的自建功能通过（M310），由 `test_review_functions.py::SharedObjectFrameTests` 杀死。
+M311–M327（2026-10-23，一致性方案第 4、5、7、9 条）守：定制件图纸要列 BOM 没写的参数（M311）、BOM 写了的参数不算缺（M312）、引自 BOM 的限值要在 BOM 行里（M313）、同一余量不能抄到别的方面（M314）、厂家参考电路能撑起判断（M315）、手册写了用法的要指出在哪写的（M316）、超出规定区要查过工作条件节（M317）和引脚说明节（M318）、REQ-Q07 手填须等于覆盖结果（M319）且不复制子项结论（M320）、端口短路行不派给两侧都是连接器轨的开关（M321）、被 IC 读取的 NTC 不派浪涌行（M322）、接到母线大电容的升压二极管不算 RCD（M323）、地网上的 LED 不把地脚当驱动脚（M324）、光耦接 DIS 等关断脚也派使能行（M325）、对比工具认出需求条款的边（M326）和余量依据里写的角点（M327），由 `test_custom_part_spec.py`、`test_operating_point_tiers.py`、`test_coverage_rows.py`、`test_single_fault_rows.py`、`test_compare_causes.py` 杀死。
+M328–M339（2026-10-23，一致性方案第 1 条，结果格式 5）守：经需求条款的边只挡绑定该需求的行（M328）、需求目录下的其他文档也是需求文档（M329）、绝缘需求绑定隔离行（M330）、计算类方面一句话不能判通过（M331）而厂家参考电路可以（M332）、决定结论的余量写推界方式（M333）、典型曲线推出的界不决定（M334）、不利一侧的测试点不能外推（M335）、公差端须是条件给出的那一端（M336）、定不出界先答单调定界尝试（M337）、经温度系数推须引系数（M338）、格式 4 不读（M339），由 `test_requirement_edges.py`、`test_requirement_bindings.py`、`test_calculation_aspects.py`、`test_bound_derivation.py` 杀死。
 
 ## 维护
 
