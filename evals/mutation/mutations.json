@@ -2021,5 +2021,19 @@
   "file": "scripts/review_functions.py",
   "old": "out.update(c for c in (item['checked'] if isinstance(item.get('checked'), list) else []) if isinstance(c, str))",
   "new": "out.update(c for c in item.get('checked') or [] if isinstance(c, str))"
+ },
+ {
+  "id": "M294",
+  "name": "the feedback-open row carries no optocoupler digest",
+  "file": "scripts/plan_circuits.py",
+  "old": "'optocoupler_digest': optocouplers['digest']},",
+  "new": "},"
+ },
+ {
+  "id": "M295",
+  "name": "the decoupling context drops the rails the rating proposal reads",
+  "file": "scripts/decoupling.py",
+  "old": "extra=('devices', 'power_rails')",
+  "new": "extra=('devices',)"
  }
 ]

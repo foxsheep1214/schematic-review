@@ -539,7 +539,8 @@ class CircuitPlanning:
         single fault whose output overshoot only the protection delay bounds."""
         names = dict(self.db.get('declared_pinname') or {}, **(self.db.get('pinname') or {}))
         seen = set()
-        for state in (self.inventories.get('optocoupler') or {}).get('states') or []:
+        optocouplers = self.inventories.get('optocoupler') or {}
+        for state in optocouplers.get('states') or []:
             for opto in state.get('optocouplers') or []:
                 for net in (opto.get('collector_net'), opto.get('emitter_net')):
                     for node in sorted((self.db.get('nets') or {}).get(net) or []):
@@ -548,7 +549,8 @@ class CircuitPlanning:
                                 or not FEEDBACK_PIN_RE.fullmatch(str(names.get(node) or '')) or (opto['ref'], node) in seen):
                             continue
                         seen.add((opto['ref'], node))
-                        self.add_check('PRO-C01', {'ref': ref, 'node': node, 'net': net, 'optocoupler': opto['ref']},
+                        self.add_check('PRO-C01', {'ref': ref, 'node': node, 'net': net, 'optocoupler': opto['id'],
+                                                   'optocoupler_digest': optocouplers['digest']},
                                        key='FEEDBACK-OPEN', criterion=FEEDBACK_OPEN_CRITERION % (opto['ref'], ref),
                                        trigger=['optocoupler:%s' % opto['ref'], 'feedback-pin:%s' % node])
 

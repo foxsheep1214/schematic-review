@@ -516,7 +516,8 @@ def build_decoupling_inventory(db, intent=None):
         discovery_gaps.update('pin-not-in-official-map:' + n for n in device['symbol_only_nodes'] if inv.supply_pin(n))
     states = (intent or {}).get('assemblies') or [{'id': 'UNSPECIFIED', 'population': {}}]
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'input_sha256': input_fingerprint(db),
-              'context': deepcopy(board_intent.context(intent, 'decoupling', extra=('devices',))), 'scope': 'direct-net schematic inventory only; nominal is not effective capacitance; no electrical or PCB PASS',
+              # power_rails: the PWR-C10 rating proposal reads the passive-stress pre-judgement, which needs the rails
+              'context': deepcopy(board_intent.context(intent, 'decoupling', extra=('devices', 'power_rails'))), 'scope': 'direct-net schematic inventory only; nominal is not effective capacitance; no electrical or PCB PASS',
               'devices': device_records, 'unverified_device_refs': unknown,
               'pin_names_resolved_by_official_pinout': inv.names_resolved_by_official_pinout,
               'non_decoupling_connectors': inv.non_decoupling_connectors,
