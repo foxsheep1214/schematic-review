@@ -143,7 +143,7 @@
   "id": "M25",
   "name": "delegated frame row accepted without object coverage",
   "file": "scripts/review_functions.py",
-  "old": "                if delegated(row, planned_rows.get(member['check_id']), by_id):",
+  "old": "                if row.get('function_id') in frame_ids and delegated(row, planned_rows.get(member['check_id']), by_id):",
   "new": "                if True:"
  },
  {
@@ -1865,8 +1865,8 @@
   "id": "M271",
   "name": "P8: each aspect repeats the same reason",
   "file": "scripts/results_model.py",
-  "old": "groups.setdefault((through, d['rationale']), [])",
-  "new": "groups.setdefault((through, d['rationale'], d.get('aspect')), [])"
+  "old": "aspects, throughs = groups.setdefault(why, ([], []))",
+  "new": "aspects, throughs = groups.setdefault(why + '\\u200b' * len(groups), ([], []))"
  },
  {
   "id": "M272",
@@ -2035,5 +2035,110 @@
   "file": "scripts/decoupling.py",
   "old": "extra=('devices', 'power_rails')",
   "new": "extra=('devices',)"
+ },
+ {
+  "id": "M296",
+  "name": "a part with a part number or datasheet is judged on the assumed package",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "\n                       and not identified(db, ref))",
+  "new": ")"
+ },
+ {
+  "id": "M297",
+  "name": "a word the BOM specification already states is asked again",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "if parsed and parsed.get('notes') and not states_specification(db, ref)}",
+  "new": "if parsed and parsed.get('notes')}"
+ },
+ {
+  "id": "M298",
+  "name": "one calculation result copied into several functions passes",
+  "file": "scripts/review_functions.py",
+  "old": "    errors.extend(_shared_result_errors(functions))\n",
+  "new": ""
+ },
+ {
+  "id": "M299",
+  "name": "a margin written per aspect is printed once per aspect",
+  "file": "scripts/render_report.py",
+  "old": "    parts = unique(parts)\n",
+  "new": ""
+ },
+ {
+  "id": "M300",
+  "name": "a margin is printed with every digit the float carries",
+  "file": "scripts/render_report.py",
+  "old": "else '%.4g' % value",
+  "new": "else value"
+ },
+ {
+  "id": "M301",
+  "name": "a reason that only restates the gap is printed per aspect",
+  "file": "scripts/results_model.py",
+  "old": "            why = ''\n",
+  "new": "            pass\n"
+ },
+ {
+  "id": "M302",
+  "name": "the connecting nets' rails are read as the load's output window",
+  "file": "scripts/catalog.py",
+  "old": "refs='、'.join(refs), window=WINDOW % window if window else NO_WINDOW)",
+  "new": "refs='、'.join(refs), window=window or NO_WINDOW)"
+ },
+ {
+  "id": "M303",
+  "name": "a tool-named node with a capacitor to ground becomes a rail",
+  "file": "scripts/checkers/powertree.py",
+  "old": "kind == ng.CAPACITOR and not ng.is_auto_named(net)",
+  "new": "kind == ng.CAPACITOR"
+ },
+ {
+  "id": "M304",
+  "name": "glued designators in function text are not screened",
+  "file": "scripts/review_quality.py",
+  "old": "for field, text in _function_texts(fn):",
+  "new": "for field, text in ():"
+ },
+ {
+  "id": "M305",
+  "name": "a written blocking on an NA row gets the FAIL/INSUFFICIENT message",
+  "file": "scripts/results_model.py",
+  "old": "if row.get('review_result') == 'NA'\n",
+  "new": "if False\n"
+ },
+ {
+  "id": "M306",
+  "name": "a series divider string takes the full rail on every resistor",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "chains, taps = _series_chains(graph, bounds)",
+  "new": "chains, taps = {}, {}"
+ },
+ {
+  "id": "M307",
+  "name": "a capacitor-held tap does not split the string into segments",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "            if not chain_held[j]:\n                continue\n",
+  "new": "            if True:\n                continue\n"
+ },
+ {
+  "id": "M308",
+  "name": "a member row is delegated to a function of the reviewer's own",
+  "file": "scripts/review_functions.py",
+  "old": "if row.get('function_id') in frame_ids and delegated(",
+  "new": "if delegated("
+ },
+ {
+  "id": "M309",
+  "name": "a planned circuit's row takes its gap from a function of the reviewer's own",
+  "file": "scripts/review_functions.py",
+  "old": "                if owner and owner not in ids:\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M310",
+  "name": "a function of the reviewer's own over one circuit's parts passes",
+  "file": "scripts/review_functions.py",
+  "old": "        holders = [f['id'] for f in circuits if refs and refs <= _objects(f)[0]]",
+  "new": "        holders = []"
  }
 ]

@@ -344,13 +344,21 @@ def render_figures(figures):
 VERDICT_WORDS = {'PASS': '通过', 'FAIL': '没通过', 'OPEN': '未定'}
 
 
+def _shown(value):
+    """A margin as a reader takes it: about four significant figures, whole numbers as written."""
+    if isinstance(value, float) and value != int(value):
+        return '%.0f' % value if abs(value) >= 1000 else '%.4g' % value   # no exponent for a large margin
+    return value
+
+
 def function_basis(fn):
     """What the verdict rests on: the computed result and its margin, else why nothing was computed."""
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
     parts = [calc.get('result')] if calc.get('result') else []
-    for margin in results_model.margins(calc):
-        parts.append('余量 %s 对 %s' % (('%s %s' % (margin['value'], margin.get('unit') or '')).strip(),
+    for margin in results_model.margins(calc):   # one margin written per aspect is stated once
+        parts.append('余量 %s 对 %s' % (('%s %s' % (_shown(margin['value']), margin.get('unit') or '')).strip(),
                                        margin.get('against') or ''))
+    parts = unique(parts)
     if not parts and fn.get('no_calculation_reason'):
         parts.append(fn['no_calculation_reason'])
     return '；'.join(parts)
@@ -430,7 +438,8 @@ INPUT_NOTES = {'RESISTOR_VALUE_UNREAD': '下面这些电阻的值读不出阻值
                                         '请改成 阻值[/公差][/额定功率][/额定电压][/封装] 的写法，或确认阻值。',
                'RESISTOR_VALUE_WORD': '下面这些电阻的阻值照读，值后面的词说不清要求（如 pulse）；'
                                       '请把它说的要求写成 BOM 规格（抗脉冲能量、额定电压等）：',
-               'PASSIVE_PACKAGE_UNKNOWN': '下面这些电阻电容没有封装，按最小常用封装（0402）的额定预判，值里写了额定的按所写；'
+               'PASSIVE_PACKAGE_UNKNOWN': '下面这些电阻电容没有封装，也没有料号或原厂资料，按最小常用封装（0402）的额定预判，'
+                                          '值里写了额定的按所写（有料号或原厂资料的按资料判，不在此列）；'
                                           '定了封装或在值里写明额定后重跑：'}
 
 

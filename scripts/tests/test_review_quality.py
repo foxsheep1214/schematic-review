@@ -292,6 +292,22 @@ class WorkItemAndTextHygieneTests(unittest.TestCase):
         self.assertEqual(set(), self.codes(p, r, db))
 
 
+    def test_glued_refs_in_function_text_are_flagged(self):
+        # The report's function table and work items read "R4034.7k", "C40347u": the reviewer wrote them in the function
+        # verdicts, which the screen did not read.
+        p, r = impact_fixture(n=1)
+        db = {'parts': {'R12': {}, 'C3': {}, 'U1': {}}}
+        r['functions'] = [{'id': 'FN-A', 'question': 'U1 偏置', 'calculation': {'result': 'R124.7k 时 0.1 W'},
+                           'open': [{'key': 'K', 'what': 'C347u 的寿命', 'decides': [{'rationale': 'U1 停止'}]}],
+                           'fails': [{'key': 'F', 'what': 'U1 门限'}]}]
+        glued = [x for x in self.screen(p, r, db)['candidates'] if x['code'] == 'REF_GLUED_TO_VALUE' and x['function_ids']]
+        self.assertEqual({('FN-A', 'calculation.result', 'R12'), ('FN-A', 'open[K].what', 'C3')},
+                         {(x['function_ids'][0], x['field'], x['refs'][0]) for x in glued})
+        r['functions'][0]['calculation']['result'] = 'R12 4.7k 时 0.1 W'
+        r['functions'][0]['open'][0]['what'] = 'C3 47u 的寿命'
+        self.assertFalse([x for x in self.screen(p, r, db)['candidates'] if x['code'] == 'REF_GLUED_TO_VALUE'])
+
+
 class RequestOwnershipAndWordingTests(unittest.TestCase):
     def setUp(self):
         from review_quality import screen_quality

@@ -270,6 +270,12 @@ class QuestionTemplateTest(unittest.TestCase):
             with self.subTest(name):
                 self.assertIsNone(catalog.QUESTION_BAN_RE.search(body), body)
         self.assertIn(catalog.NO_WINDOW, catalog.question('PWR-C02', 'RUN', 'BIAS', ['Q2']))
+        # The rails come from the circuit's connecting nets: a flyback's input bus read as "the load's window".
+        for asked in (catalog.question('PWR-C02', 'RUN', 'FLY', ['U1'], 'VBUS 0–400 V'),
+                      catalog.frame_question('POWER_CONVERTER', 'FLY', ['U1'], ['run'], 'VBUS 0–400 V')):
+            self.assertIn('电路连接网络上已声明的轨：VBUS 0–400 V', asked)
+            self.assertIn('哪条是输出由审查员按拓扑认定', asked)
+            self.assertNotIn('窗口 VBUS', asked)
         interface_rules = {r for rules in list(catalog.INTERFACE_SUBJECTS.values()) + list(catalog.INTERFACE_NET_SUBJECTS.values())
                            for r in rules}
         self.assertEqual(interface_rules, set(catalog.INTERFACE_QUESTIONS))

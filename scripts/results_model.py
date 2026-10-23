@@ -16,6 +16,7 @@ Derived here (never written):
   work_items           one per open/fail item of every function (ids keep the W- prefix)
 """
 import copy
+from collections import Counter
 
 SCHEMA_VERSION = 4
 LEVELS = ('P0', 'P1', 'P2', 'P3')
@@ -78,7 +79,8 @@ def shape_errors(report, history_ids=()):
             if field in row:
                 errors.append('%s: %s is retired in schema 4; write %s' % (key, field, instead))
         if 'blocking' in row and not (row['blocking'] is False and row.get('review_result') in ('FAIL', 'INSUFFICIENT')):
-            errors.append(key + ': blocking is derived; write it only as false on a FAIL/INSUFFICIENT that does not block')
+            errors.append(key + (': on an NA row (stage NA included) omit blocking, it is derived false' if row.get('review_result') == 'NA'
+                                 else ': blocking is derived; write it only as false on a FAIL/INSUFFICIENT that does not block'))
         if row.get('evidence_confidence') in ('B', 'C'):
             errors.append(key + ': evidence_confidence is derived; write it only to claim A')
         if row.get('disposition') == 'OPEN':
@@ -166,21 +168,42 @@ def condition_place(fn, cid):
 
 
 def blocked_judgements(item, fn):
-    """What a gap holds open, for the reader: aspects blocked through the same entry point for the same reason share
-    one line, and the entry point is the condition's source and locator, not its internal id."""
+    """What a gap holds open, for the reader: aspects blocked for the same reason share one line listing their entry
+    points (the condition's source and locator, not its internal id). The item's heading already names the gap, so
+    a reason that restates it is cut back to what it adds, and a sentence that only swaps in the aspect name
+    ("<gap>; this datum enters <aspect>") adds nothing and is not printed."""
     def entry(via):
         if via.get('condition'):
             return condition_place(fn, via['condition'])
         return '/'.join(x for x in (via.get('claim'), via.get('input')) if x)
 
+    what = (item.get('what') or '').strip()
+    punct = ' ；;，,。.：:'
+
+    def reason(d):
+        r = d['rationale'].strip()
+        return r.replace(what, '').strip(punct) if what and what in r else r
+
+    edges = [d for d in item.get('decides') or []
+             if isinstance(d, dict) and d.get('effect', 'BLOCKS_PROOF') == 'BLOCKS_PROOF' and text(d.get('rationale'))]
+    # A reason that reads the same once its own aspect is masked out is one template filled per aspect.
+    masked = Counter(reason(d).replace(str(d.get('aspect') or ''), '\0') for d in edges
+                     if what and what in d['rationale'] and str(d.get('aspect') or '') in reason(d))
     groups = {}
-    for d in item.get('decides') or []:
-        if isinstance(d, dict) and d.get('effect', 'BLOCKS_PROOF') == 'BLOCKS_PROOF' and text(d.get('rationale')):
-            through = entry(d.get('via') if isinstance(d.get('via'), dict) else {})
-            states = '、'.join(d['states']) if isinstance(d.get('states'), list) else ''
-            groups.setdefault((through, d['rationale']), []).append('%s%s' % (d.get('aspect'), '（%s）' % states if states else ''))
-    return ['%s%s：%s' % ('、'.join(dict.fromkeys(aspects)), '，经 %s' % through if through else '', why)
-            for (through, why), aspects in groups.items()]
+    for d in edges:
+        why = reason(d)
+        if what and what in d['rationale'] and masked.get(why.replace(str(d.get('aspect') or ''), '\0'), 0) > 1:
+            why = ''
+        states = '、'.join(d['states']) if isinstance(d.get('states'), list) else ''
+        aspects, throughs = groups.setdefault(why, ([], []))
+        aspects.append('%s%s' % (d.get('aspect'), '（%s）' % states if states else ''))
+        throughs.append(entry(d.get('via') if isinstance(d.get('via'), dict) else {}))
+    out = []
+    for why, (aspects, throughs) in groups.items():
+        through = '、'.join(t for t in dict.fromkeys(throughs) if t)
+        out.append('%s%s%s' % ('、'.join(dict.fromkeys(aspects)), '，经 %s' % through if through else '',
+                               '：' + why if why else ''))
+    return out
 
 
 def effective_verdicts(functions, plan, checks):

@@ -148,6 +148,17 @@ class PinFeedTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIn('RESISTOR_VALUE_UNREAD', {d['code'] for d in build_review_plan(*fed(value=value))['diagnostics']})
 
+    def test_a_word_the_bom_specification_already_states_is_not_asked_again(self):
+        # The report asked the designer to spell out "pulse" for resistors whose BOM specification column already
+        # gave the pulse energy; a column that only names the part or its place says nothing about the word.
+        db, intent = fed(value='47R/2W/pulse')
+        db['bom'] = {'parts': {'R1': {'MPN': 'RX-47R', 'Circuit': 'Output', 'Electrical specification': '单次脉冲 0.4 J'}}}
+        codes = {d['code'] for d in build_review_plan(db, intent)['diagnostics']}
+        self.assertNotIn('RESISTOR_VALUE_WORD', codes)
+        db['bom']['parts']['R1'] = {'MPN': 'RX-47R', 'Circuit': 'Output', 'Footprint': 'R_2512', 'Qty': '1'}
+        codes = {d['code']: d for d in build_review_plan(db, intent)['diagnostics']}
+        self.assertEqual(codes['RESISTOR_VALUE_WORD']['values'], {'R1': '47R/2W/pulse'})
+
     def test_two_reviewers_with_different_windows_ask_the_same_pin_row(self):
         a = pin_rows(*fed())[0]
         b = pin_rows(*fed(rails={'VHIGH': {'voltage_v': {'min': 0, 'max': 30}}}))[0]

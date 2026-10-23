@@ -205,7 +205,7 @@ class CircuitPlanning:
                 trigger=['circuit-type-discovery'] + (['circuit-candidates:unassigned'] if unassigned else []))
 
     def _rail_window(self, nets):
-        """电路网络里 intent.power_rails 给了电压窗口的轨；没有就 None（问题写“需求未给窗口”）。"""
+        """电路网络里 intent.power_rails 给了电压窗口的轨；没有就 None（问题写 catalog.NO_WINDOW）。"""
         rails = self.intent.get('power_rails') or {}
         parts = []
         for net in nets:

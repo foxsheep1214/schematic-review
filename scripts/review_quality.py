@@ -702,6 +702,25 @@ def _task_texts(task):
         yield 'design_option.summary', option['summary']
 
 
+def _function_texts(fn):
+    """(field, text) a function verdict puts in the report: its question, result, and its items' gaps and reasons."""
+    if isinstance(fn.get('question'), str):
+        yield 'question', fn['question']
+    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    if isinstance(calc.get('result'), str):
+        yield 'calculation.result', calc['result']
+    for group in ('open', 'fails'):
+        for item in fn.get(group) or []:
+            if not isinstance(item, dict):
+                continue
+            label = '%s[%s]' % (group, item.get('key', '?'))
+            if isinstance(item.get('what'), str):
+                yield label + '.what', item['what']
+            for i, edge in enumerate(item.get('decides') or []):
+                if isinstance(edge, dict) and isinstance(edge.get('rationale'), str):
+                    yield '%s.decides[%d].rationale' % (label, i), edge['rationale']
+
+
 def _request_texts(row):
     requests = row.get('input_requests')
     for key, q in (requests.items() if isinstance(requests, dict) else []):
@@ -760,9 +779,17 @@ def text_hygiene(report, expected, known):
                               'request': key, 'values': sorted(set(OVERPRECISE_RE.findall(text))),
                               'message': 'The acceptance criterion carries an intermediate value from the reviewer\'s own '
                                          'calculation; state the datasheet/standard bound and the condition, not the sample result.'})
+    for fn in report.get('functions') or []:   # the function table and work items print these as written
+        if isinstance(fn, dict) and isinstance(fn.get('id'), str):
+            for field, text in _function_texts(fn):
+                hits = glued_refs(text, known)
+                if hits:
+                    glued_hits[('function:' + fn['id'], field)] |= hits
     for (owner, field), refs in sorted(glued_hits.items()):
-        found.append({'code': 'REF_GLUED_TO_VALUE', 'check_ids': [owner] if not owner.startswith('task:') else [],
-                      'task_ids': [owner[5:]] if owner.startswith('task:') else [], 'field': field, 'refs': sorted(refs),
+        kind, _, name = owner.partition(':') if owner.startswith(('task:', 'function:')) else ('check', '', owner)
+        found.append({'code': 'REF_GLUED_TO_VALUE', 'check_ids': [name] if kind == 'check' else [],
+                      'task_ids': [name] if kind == 'task' else [], 'function_ids': [name] if kind == 'function' else [],
+                      'field': field, 'refs': sorted(refs),
                       'message': 'A reference designator runs straight into a number (R12100°C); separate them so the '
                                  'designator and the value both stay readable.'})
     return found

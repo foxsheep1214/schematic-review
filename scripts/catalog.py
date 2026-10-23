@@ -711,7 +711,7 @@ CIRCUIT_TYPES = (
 # 电路检查项的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），行的 question 就是审查员要回答的
 # 问题；通用 criterion 保留为提示。问题只说要算什么、对照什么，禁止句（“不得…”“不把…外推”）由 question_errors 拒绝。
 QUESTIONS = {
-    'PWR-C02': '{state} 时 {circuit}（{refs}）在要求的输入、负载和温度范围内，输出是否落在负载要求的窗口 {window} 内；允许关断或保护时，动作与恢复是否安全',
+    'PWR-C02': '{state} 时 {circuit}（{refs}）在要求的输入、负载和温度范围内，输出是否落在负载要求的窗口内（{window}）；允许关断或保护时，动作与恢复是否安全',
     'PWR-C03': '{state} 时 {circuit}（{refs}）按实际拓扑算出的电流应力（开关变换器的电感峰值/RMS、Isat 与限流；线性电路的偏置与负载能力）是否在器件保证范围内',
     'PWR-C04': '{state} 时 {circuit}（{refs}）的最小导通/关断时间与输出电容是否满足控制器手册的适用条件；允许失调节的故障或关断状态下，动作与恢复是否成立',
     'PWR-C05': '{state} 时 {circuit}（{refs}）在声明工况下的损耗、反向电流、预偏置与放电路径是否在器件允许范围内，损耗边界和允许的温度约束是多少',
@@ -845,7 +845,7 @@ CANDIDATE_STATES = {
 }
 
 FRAME_QUESTIONS = {
-    'POWER_CONVERTER': '输出是否落在负载要求的窗口 {window} 内，电流应力、时序/电容条件、损耗和反馈环路是否都在保证范围内',
+    'POWER_CONVERTER': '输出是否落在负载要求的窗口内（{window}），电流应力、时序/电容条件、损耗和反馈环路是否都在保证范围内',
     'POWER_PROTECTION': '保护门限、功率管 SOA、防护器件协调、浪涌与防反接是否都成立',
     'ANALOG': '检测链的直流误差、动态、基准与保护、噪声预算是否满足测量要求',
     'STARTUP': '采样窗口电平、复位时序、上电顺序、IO 默认态与救砖通道是否成立',
@@ -867,7 +867,9 @@ FRAME_QUESTIONS = {
     'DEBUG': '调试接口电气引出、串阻与 ESD 是否满足烧录/调试要求',
 }
 FRAME_PREFIX = '{circuit}（{refs}）在 {states} 各状态下，'
-NO_WINDOW = '（需求未给窗口）'
+# The rails named come from the circuit's connecting nets, input and output alike: the reviewer says which is the output.
+WINDOW = '电路连接网络上已声明的轨：%s；哪条是输出由审查员按拓扑认定'
+NO_WINDOW = '电路连接网络上没有声明窗口的轨'
 
 # 判“证据不足”之前的五步（原文见 evidence-proportionality.md），随功能框架交给审查员。
 BOUNDING_STEPS = (
@@ -886,13 +888,13 @@ def question(rule_id, state, circuit, refs, window=None):
     template = QUESTIONS.get(rule_id)
     if template is None:
         return None
-    return template.format(state=state, circuit=circuit, refs='、'.join(refs), window=window or NO_WINDOW)
+    return template.format(state=state, circuit=circuit, refs='、'.join(refs), window=WINDOW % window if window else NO_WINDOW)
 
 
 def frame_question(type_name, circuit, refs, states, window=None):
     body = FRAME_QUESTIONS.get(type_name) or '电路检查项的问题是否都成立'
     return (FRAME_PREFIX + body).format(circuit=circuit, refs='、'.join(refs), states='/'.join(states),
-                                        window=window or NO_WINDOW)
+                                        window=WINDOW % window if window else NO_WINDOW)
 
 
 def question_errors(plan):

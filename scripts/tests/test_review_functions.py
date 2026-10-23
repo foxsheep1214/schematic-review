@@ -348,6 +348,18 @@ class TemplateTextTests(unittest.TestCase):
         self.assertFalse(any('assumption' in e for e in function_errors({'functions': [a, b]})))
 
 
+    def test_one_calculation_result_copied_into_another_function_is_refused(self):
+        """The report's margin column showed a sense-chain calculation beside a firmware and an optocoupler function: the
+        reviewer had pasted one result into several functions, so each borrowed numbers it never computed."""
+        a, b = bias_function('PASS'), bias_function('PASS')
+        b['id'] = 'FN-BIAS2'
+        b['calculation']['result'] = a['calculation']['result']
+        errors = function_errors({'functions': [a, b]})
+        self.assertTrue(any('FN-BIAS, FN-BIAS2' in e and 'calculation.result' in e for e in errors), errors)
+        b['calculation']['result'] = a['calculation']['result'] + '；本功能另算 0.8 V'
+        self.assertFalse(any('calculation.result' in e for e in function_errors({'functions': [a, b]})))
+
+
 class AspectJudgementTests(unittest.TestCase):
     """A judgement for an aspect without a number cites the clauses it rests on."""
 
@@ -479,6 +491,22 @@ class DeliverablePendingTests(unittest.TestCase):
                          ['A（RUN）、B（STARTUP、RUN），经 U1.txt p7 Table 7：' + why,
                           'C，经 U1.txt p7 Table 7：another reason'])
 
+    def test_a_reason_that_only_restates_the_gap_is_not_printed_per_aspect(self):
+        # One gap printed its own title once per blocked aspect ("<gap>；this datum enters <aspect>"), through
+        # several entry points, so the list could not be read; the aspects now share one line and the restated
+        # title is left to the item's heading.
+        fn = bias_function()
+        item = fn['open'][0]
+        what = item['what']
+        item['decides'] = [{'aspect': a, 'via': {'condition': c}, 'rationale': '%s；这一数据进入%s的比较' % (what, a)}
+                           for a, c in (('A', 'c3'), ('B', 'c3'), ('C', 'c4'))]
+        item['decides'].append({'aspect': 'D', 'via': {'condition': 'c3'}, 'rationale': 'D 由另一条款单独决定'})
+        lines = results_model.blocked_judgements(item, fn)
+        self.assertEqual(len(lines), 2, lines)
+        self.assertTrue(lines[0].startswith('A、B、C，经 U1.txt p7 Table 7、'), lines)
+        self.assertNotIn(what, '\n'.join(lines))
+        self.assertEqual(lines[1], 'D，经 U1.txt p7 Table 7：D 由另一条款单独决定')
+
     def test_the_report_shows_the_worst_case_under_the_public_bound(self):
         fn = with_datum()
         p, r, db = ledger(fn)
@@ -568,6 +596,19 @@ class DerivedLevelsTests(unittest.TestCase):
 
 class ReportTests(unittest.TestCase):
     """The report answers per function (design §9): a verdict table after the conclusion and a first count row."""
+
+    def test_the_basis_column_states_each_margin_once_and_rounded(self):
+        """One margin written for three aspects showed three times, each as -0.0612103174603175 us."""
+        from render_report import function_basis
+        margin = {'value': -0.0612103174603175, 'unit': 'us', 'against': 'demag ≥ min on-time'}
+        fn = {'calculation': {'result': 'demag 0.839 us', 'margin': [dict(margin, aspect=a) for a in ('t', 'loss', 'drive')]}}
+        self.assertEqual(function_basis(fn), 'demag 0.839 us；余量 -0.06121 us 对 demag ≥ min on-time')
+        fn['calculation']['margin'][1]['value'] = 12.3456789
+        self.assertEqual(function_basis(fn).count('余量'), 2)
+        self.assertIn('余量 12.35 us', function_basis(fn))
+        fn['calculation']['margin'] = [{'value': 0.8, 'unit': 'V', 'against': 'x'}, {'value': 150000, 'unit': 'Hz', 'against': 'y'}]
+        self.assertIn('余量 0.8 V', function_basis(fn))
+        self.assertIn('余量 150000 Hz', function_basis(fn))
 
     def test_function_table_and_counts(self):
         p, r, db = ledger(bias_function())
@@ -664,6 +705,55 @@ class SharedObjectFrameTests(unittest.TestCase):
         r['plan_digest'] = fingerprint(p)
         errors = vr.validate_review(p, r, db)['errors']
         self.assertTrue(any('PWR-C02.AUX-RUN.Q2' in e and 'FN-BIAS' in e for e in errors), errors)
+
+
+    def test_a_member_row_is_not_delegated_to_a_function_of_the_reviewers_own(self):
+        # On one board each gap of a circuit went into a function the reviewer made for it, its rows moved there
+        # and the circuit's own function said PASS: the report listed every work item a second time as a function.
+        p, r, db = self.two_frames()
+        own = bias_function(); own['id'] = 'FN-GAP'
+        r['functions'].append(own)
+        r['checks'][-1]['function_id'] = 'FN-GAP'
+        errors = vr.validate_review(p, r, db)['errors']
+        self.assertTrue(any('PWR-C02.AUX-RUN.Q2' in e and 'FN-GAP' in e and
+                            "write it in the owning frame, let other frames' rows use open_ref" in e for e in errors), errors)
+
+    def test_a_planned_circuits_row_takes_its_gap_from_a_planned_function(self):
+        # The same pattern with the rows left in place: the circuit's rows pointed their open_ref at a function the
+        # reviewer made to hold the gap. A planned circuit's gap is an item of a planned function.
+        p, r, db = ledger(bias_function())
+        p['functions'] = [{'id': 'FN-BIAS', 'circuit': 'BIAS', 'question': 'bias', 'objects': bias_function()['objects'],
+                           'members': [{'check_id': 'PWR-C02.BIAS-%s.Q2' % s, 'rule': 'PWR-C02', 'aspect': ASPECT, 'state': s}
+                                       for s in ('STARTUP', 'RUN', 'LATCH')]}]
+        own = bias_function(); own['id'] = 'FN-GAP'
+        own['objects'] = {'refs': ['Q2', 'Q9'], 'nets': []}   # Q9 outside the circuit: only the open_ref is at issue
+        r['functions'].append(own)
+        r['plan_digest'] = fingerprint(p)
+        message = lambda errors: [e for e in errors if 'takes its open_ref' in e]
+        self.assertFalse(message(vr.validate_review(p, r, db)['errors']))
+        for row in r['checks']:
+            if row.get('open_ref') == 'FN-BIAS/AUX-5V-MIN':
+                row['open_ref'] = 'FN-GAP/AUX-5V-MIN'
+        found = message(vr.validate_review(p, r, db)['errors'])
+        self.assertTrue(found and all('FN-GAP' in e and "write it in the owning frame, let other frames' rows use open_ref" in e
+                                      for e in found), found)
+
+
+    def test_a_function_of_the_reviewers_own_takes_only_objects_no_circuit_holds(self):
+        # A function the reviewer made over parts one circuit already holds restates that circuit's question; a function
+        # over parts outside every circuit (a circuit the plan missed) is allowed, with the hint to declare it.
+        p, r, db = self.two_frames()
+        p['functions'].append({'id': 'FN-SYS-PINMAP', 'system': 'SYS-PINMAP', 'question': 'pins',
+                               'objects': {'refs': ['Q2', 'Q7'], 'nets': []}, 'members': []})
+        r['plan_digest'] = fingerprint(p)
+        own = bias_function(); own['id'] = 'FN-GAP'
+        own['objects'] = {'refs': ['Q2'], 'nets': []}
+        r['functions'].append(own)
+        found = [e for e in vr.validate_review(p, r, db)['errors'] if e.startswith('FN-GAP:')]
+        self.assertTrue(any('write it into frame FN-BIAS' in e and 'circuit_decisions' in e for e in found), found)
+        own['objects'] = {'refs': ['Q2', 'Q7'], 'nets': []}   # Q7 is in no circuit (only in a system frame)
+        found = [e for e in vr.validate_review(p, r, db)['errors'] if e.startswith('FN-GAP:')]
+        self.assertFalse([e for e in found if 'write it into frame' in e], found)
 
 
 class ScopedReviewTests(unittest.TestCase):

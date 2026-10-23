@@ -792,6 +792,7 @@ def function_errors(report, document_only=(), db=None):
                         errors.append('%s/verdict_history[%d]: a changed verdict cites condition or claim ids in basis'
                                       % (fid, i))
     errors.extend(_shared_assumption_errors(functions))
+    errors.extend(_shared_result_errors(functions))
     errors.extend(_template_errors(functions))
     return errors
 
@@ -855,6 +856,19 @@ def template_hints(functions, known_refs=None):
                           'message': 'The same %s on several gaps (%s); if they are one gap keep one item, otherwise say '
                                      'why each is undecided' % (field, sentence[:40])})
     return hints
+
+
+def _shared_result_errors(functions):
+    """A calculation result is what that function computed; one text in two functions puts borrowed numbers beside
+    a function that never computed them (the report's margin column reads it as that function's basis)."""
+    owners = {}
+    for fn in functions:
+        calc = fn.get('calculation') if isinstance(fn, dict) and isinstance(fn.get('calculation'), dict) else {}
+        if text(calc.get('result')):
+            owners.setdefault(calc['result'].strip(), []).append(fn['id'])
+    return ['%s: one calculation.result in several functions (%s); write what each function computed, or give '
+            'no_calculation_reason where it computed nothing' % (', '.join(sorted(set(ids))), r[:40])
+            for r, ids in owners.items() if len(set(ids)) > 1]
 
 
 def _shared_assumption_errors(functions):
@@ -1000,6 +1014,43 @@ def _names_frame(question, frame):
     return any(name and name in question for name in names)
 
 
+OWNING_FRAME = "write it in the owning frame, let other frames' rows use open_ref"
+
+
+def own_function_errors(plan, checks, functions):
+    """A planned circuit's gap is an item of a planned function: a member row of a frame takes its open_ref/fail_ref
+    from a planned function, never from one the reviewer made to hold that gap (the report then listed every work item
+    a second time as a function and the circuit read as passed). Rows outside every frame (device, checker, board
+    rows) may still be judged in functions of the reviewer's own, but such a function takes only parts no circuit
+    frame fully holds: over a circuit's own parts it only restates that circuit's question (decision 3, 2026-10-23)."""
+    frames = [f for f in (plan or {}).get('functions') or [] if isinstance(f, dict) and text(f.get('id'))]
+    ids = {f['id'] for f in frames}
+    errors = []
+    for frame in frames:
+        for member in frame.get('members') or []:
+            row = checks.get(member.get('check_id')) if isinstance(member, dict) else None
+            if not isinstance(row, dict):
+                continue
+            for field in ('open_ref', 'fail_ref'):
+                ref = row.get(field)
+                owner = ref.split('/', 1)[0] if isinstance(ref, str) else None
+                if owner and owner not in ids:
+                    errors.append('%s: a member of frame %s takes its %s from %s, a function of your own; %s'
+                                  % (member['check_id'], frame['id'], field, owner, OWNING_FRAME))
+    circuits = [f for f in frames if text(f.get('circuit'))]
+    for fn in functions or []:   # a function of your own takes only objects no circuit frame fully holds
+        if not isinstance(fn, dict) or not text(fn.get('id')) or fn['id'] in ids:
+            continue
+        refs, _ = _objects(fn)
+        holders = [f['id'] for f in circuits if refs and refs <= _objects(f)[0]]
+        if holders:
+            errors.append('%s: a function of your own over parts frame %s already holds; write it into frame %s (its '
+                          'open or fail item; %s). A circuit the plan missed is declared as an add decision in '
+                          'intent.circuit_decisions and the plan regenerated' % (fn['id'], holders[0], holders[0],
+                                                                                 OWNING_FRAME))
+    return errors
+
+
 def frame_errors(plan, checks, functions):
     """Plan frames (one per intent circuit) are answered: a reviewed member row binds to its frame's
     function (or to another frame's function whose objects cover the row) and keeps the frame's aspect;
@@ -1008,9 +1059,11 @@ def frame_errors(plan, checks, functions):
     by_id = {fn['id']: fn for fn in functions or [] if isinstance(fn, dict) and text(fn.get('id'))}
     ids = set(by_id)
     planned_rows = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and text(c.get('id'))}
+    frame_ids = {f['id'] for f in (plan or {}).get('functions') or [] if isinstance(f, dict) and text(f.get('id'))}
     members = {m.get('check_id') for f in (plan or {}).get('functions') or [] if isinstance(f, dict)
                for m in f.get('members') or [] if isinstance(m, dict)}
     errors.extend(scope_errors(plan, checks, by_id, members))
+    errors.extend(own_function_errors(plan, checks, functions))
     for frame in (plan or {}).get('functions') or []:
         if not isinstance(frame, dict) or not text(frame.get('id')):
             continue
@@ -1024,11 +1077,11 @@ def frame_errors(plan, checks, functions):
             if not isinstance(row, dict) or row.get('review_result') not in REVIEWED:
                 continue
             if row.get('function_id') != frame['id']:
-                if delegated(row, planned_rows.get(member['check_id']), by_id):
+                if row.get('function_id') in frame_ids and delegated(row, planned_rows.get(member['check_id']), by_id):
                     continue
-                errors.append('%s: a member of frame %s binds to it (function_id), not to %s'
-                              ' (another function may take the row only when its objects cover the row)'
-                              % (member['check_id'], frame['id'], row.get('function_id')))
+                errors.append('%s: a member of frame %s binds to it (function_id), not to %s (only another plan frame '
+                              'whose objects cover the row may take it, never a function of your own; a gap that spans '
+                              'circuits: %s)' % (member['check_id'], frame['id'], row.get('function_id'), OWNING_FRAME))
                 continue
             answered = True
             if 'aspect' in row and row['aspect'] != member.get('aspect'):

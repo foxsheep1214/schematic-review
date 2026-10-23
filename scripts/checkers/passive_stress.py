@@ -275,15 +275,103 @@ def _uncomputed_feeds(generated):
     return [f['ref'] for f in calc.get('feeds') or [] if f.get('i_max_a') is None]
 
 
+def _series_chains(graph, bounds):
+    """Pure series resistor strings between two fixed nets (a declared rail or ground): {ref: (bound V, basis)} for
+    each resistor, and {net: (lo, hi)} for each filtered tap (a node with a capacitor to ground).
+
+    A tap carries only the two string resistors, capacitors to ground and IC input pins (their current neglected);
+    anything else on a tap leaves the string to the cluster bound. Between taps the resistors divide the voltage
+    across the segment; a capacitor-held tap stays within its divider ratio of the end windows (an RC ladder with
+    grounded capacitors never overshoots its DC gain), so a segment spans at most the difference of its ends' ranges."""
+    native = graph.db.get('native_pintype') or {}
+
+    def ohms(ref):
+        parsed = parse_resistor_noted(graph.parts.get(ref, {}).get('value'), default_tol=DEFAULT_TOL)
+        if not parsed or parsed['kohm'] <= 0:
+            return None
+        r = parsed['kohm'] * 1000
+        return r * (1 - parsed['tol']), r * (1 + parsed['tol'])
+
+    def step(net, came):
+        """(next resistor, held by a capacitor) leaving tap `net`; None when the tap is not pure."""
+        nxt, held = [], False
+        for node in graph.nodes_on(net):
+            ref = node.partition('.')[0]
+            if ref == came or not graph.is_fitted(ref):
+                continue
+            kind = graph.kind(ref)
+            if kind == ng.RESISTOR and len(graph.pins_of(ref)) == 2:
+                nxt.append(ref)
+            elif kind == ng.CAPACITOR and len(graph.pins_of(ref)) == 2 and all(
+                    bounds._fixed(n) == (0.0, 0.0) for n in graph.nets_of(ref) if n != net):
+                held = True
+            elif not (kind == ng.IC and native.get(node) == 'input'):
+                return None
+        return (nxt[0], held) if len(nxt) == 1 else None
+
+    bounds_by_ref, taps, done = {}, {}, set()
+    for ref in sorted(graph.fitted):
+        if ref in done or graph.kind(ref) != ng.RESISTOR or len(graph.nets_of(ref)) != 2:
+            continue
+        a, b = graph.nets_of(ref)
+        sides = []
+        for start in (a, b):   # walk from ref through each end to a fixed net
+            nets, refs, held, net, came = [], [], [], start, ref
+            while bounds._fixed(net) is None and net not in nets:
+                found = step(net, came) if net not in graph.pseudo else None
+                if found is None:
+                    break
+                came, is_held = found
+                nets.append(net); held.append(is_held); refs.append(came)
+                others = [n for n in graph.nets_of(came) if n != net]
+                if len(others) != 1:
+                    break
+                net = others[0]
+            sides.append((nets, refs, held, net))
+        (na, ra, ha, end_a), (nb, rb, hb, end_b) = sides
+        if bounds._fixed(end_a) is None or bounds._fixed(end_b) is None or end_a == end_b:
+            continue
+        chain_refs = list(reversed(ra)) + [ref] + rb      # from end_a to end_b
+        chain_nets = [end_a] + list(reversed(na)) + nb + [end_b]
+        chain_held = [True] + list(reversed(ha)) + hb + [True]   # the ends are anchors too
+        values = [ohms(r) for r in chain_refs]
+        if None in values or len(set(chain_refs)) != len(chain_refs):
+            continue
+        done |= set(chain_refs)
+        (lo_a, hi_a), (lo_b, hi_b) = bounds._fixed(end_a), bounds._fixed(end_b)
+        ranges = {0: (lo_a, hi_a), len(chain_nets) - 1: (lo_b, hi_b)}
+        for j in range(1, len(chain_nets) - 1):
+            if not chain_held[j]:
+                continue
+            before, after = values[:j], values[j:]
+            # v_j = g·v_a + (1 - g)·v_b with g the share of the string after the tap, over the tolerances
+            gains = (sum(v[0] for v in after) / (sum(v[0] for v in after) + sum(v[1] for v in before)),
+                     sum(v[1] for v in after) / (sum(v[1] for v in after) + sum(v[0] for v in before)))
+            corners = [g * va + (1 - g) * vb for g in gains for va, vb in ((lo_a, lo_b), (hi_a, hi_b))]
+            ranges[j] = (min(corners), max(corners))
+            taps[chain_nets[j]] = ranges[j]
+        anchors = sorted(ranges)
+        basis = 'series-chain:' + '+'.join(chain_refs if hi_a >= hi_b else reversed(chain_refs))   # from the rail
+        for p, q in zip(anchors, anchors[1:]):
+            span = max(ranges[p][1] - ranges[q][0], ranges[q][1] - ranges[p][0])
+            segment = list(range(p, q))   # resistors chain_refs[p..q-1] sit between nets p and q
+            for i in segment:
+                rest = sum(values[k][0] for k in segment if k != i)
+                bounds_by_ref[chain_refs[i]] = (round(span * values[i][1] / (values[i][1] + rest), 6), basis)
+    return bounds_by_ref, taps
+
+
 def _scan(db, intent, state):
     graph = ng.NetGraph(db, fitted=set(state['fitted']))
     bounds = _Bounds(graph, _declared_rails(intent))
+    chains, taps = _series_chains(graph, bounds)
     parts = []
     for ref in sorted(graph.fitted):
         part, kind = graph.parts.get(ref, {}), graph.kind(ref)
         prefix = {ng.RESISTOR: 'R', ng.CAPACITOR: 'C'}.get(kind)
         package = _package(part, prefix) if prefix else None
-        assumed = bool(prefix and not package and not str(part.get('jedec') or '').strip())
+        assumed = bool(prefix and not package and not str(part.get('jedec') or '').strip()
+                       and not identified(db, ref))
         if assumed:   # no footprint at all (a schematic before the PCB): the smallest common package bounds it
             package = ASSUMED_PACKAGE
         pins = graph.pins_of(ref)
@@ -309,8 +397,41 @@ def _scan(db, intent, state):
         elif None not in windows:
             (lo_a, hi_a), (lo_b, hi_b) = windows
             entry['v_across_max'] = round(max(hi_a - lo_b, hi_b - lo_a), 6)
+            # a resistor of a series string shares the string's voltage; a capacitor on a filtered tap sees the tap
+            shared = chains.get(ref) if kind == ng.RESISTOR else None
+            tap = next((taps[n] for n in entry['nets'] if n in taps), None) if kind == ng.CAPACITOR else None
+            if tap is not None and all(bounds._fixed(n) == (0.0, 0.0) for n in entry['nets'] if n not in taps):
+                shared = (round(max(abs(tap[0]), abs(tap[1])), 6), 'series-chain-tap')
+            if shared and shared[0] < entry['v_across_max']:
+                entry['v_across_max'] = shared[0]
+                entry['bases'].append(shared[1])
         parts.append(entry)
     return parts
+
+
+# BOM columns that name the part, its place or its count; any other non-empty column states a specification.
+IDENTITY_COLUMNS = {'mpn', 'manufacturer', 'mfr', 'mfg', 'part number', 'part_number', 'partnumber', 'footprint',
+                    'package', 'datasheet', 'circuit', 'sheet', 'page', 'qty', 'quantity', 'status',
+                    'selection status'}
+
+
+def _bom_fields(db, ref):
+    fields = ((db.get('bom') or {}).get('parts') or {}).get(ref)
+    return fields if isinstance(fields, dict) else {}
+
+
+def identified(db, ref):
+    """A part named by a BOM part number or a datasheet link: its own datasheet rates it, not an assumed package."""
+    part = (db.get('parts') or {}).get(ref) or {}
+    return bool(str(part.get('datasheet') or '').strip() or any(
+        str(v or '').strip() for k, v in _bom_fields(db, ref).items()
+        if k.strip().lower() in ('mpn', 'part number', 'part_number', 'partnumber')))
+
+
+def states_specification(db, ref):
+    """The BOM row says something about the part beyond naming, placing or counting it."""
+    return any(str(v or '').strip() for k, v in _bom_fields(db, ref).items()
+               if k.strip().lower() not in IDENTITY_COLUMNS)
 
 
 def _proposal(entry):
@@ -435,8 +556,10 @@ def unread_values(db):
 
 
 def word_values(db):
-    """{位号: 原值}：阻值读得出、后面另有读不出的词（如 pulse）的电阻；词说的要求写成 BOM 规格。"""
-    return {ref: value for ref, value, parsed in _resistor_values(db) if parsed and parsed.get('notes')}
+    """{位号: 原值}：阻值读得出、后面另有读不出的词（如 pulse）的电阻；词说的要求写成 BOM 规格。BOM 那一行已写规格的
+    不列（规格由审查员按 BOM 原文核）。"""
+    return {ref: value for ref, value, parsed in _resistor_values(db)
+            if parsed and parsed.get('notes') and not states_specification(db, ref)}
 
 
 def unread_lines(plan):
@@ -496,7 +619,7 @@ class PassiveStressChecker(Checker):
     title = '通用阻容应力预判'
     plan_key = 'passive_stress'
     version_key = 'passive_stress_version'
-    version = 4   # 4: parts without a footprint are judged on the assumed package
+    version = 5   # 5: identified parts take no assumed package; series strings share the rail voltage
     allow_manual_bound_objects = False
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion', 'readiness',
                         'inventory_gaps', 'proposal')

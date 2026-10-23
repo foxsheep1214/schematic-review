@@ -285,6 +285,14 @@ def is_analog_sense_pair(positive):
     return bool(ANALOG_PAIR_BASE_RE.search(base))
 
 
+AUTO_NET_RE = re.compile(r'(^|/)(Net|unconnected)-\(')
+
+
+def is_auto_named(net):
+    """A net name the schematic tool generated from a pin (KiCad Net-(…)/unconnected-(…)): nobody named it a rail."""
+    return bool(AUTO_NET_RE.search(str(net or '')))
+
+
 def is_rail(net):
     return bool(net) and not is_ground(net) and bool(RAIL_RE.match(str(net)))
 

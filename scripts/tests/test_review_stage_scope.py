@@ -53,6 +53,15 @@ class StageScopeTests(unittest.TestCase):
         self.assertEqual(out['release'], 'GO')  # an open handoff travels with the schematic, it does not block
         self.assertEqual(out['blockers'], [])
 
+    def test_a_written_blocking_on_stage_na_is_refused_with_how_to_write_it(self):
+        # A reviewer read "stage NA is not blocking" as "write blocking: false" and took the refusal for a
+        # contradiction between two rules; blocking is derived, and the message now says to leave it out.
+        p, r, db = downstream()
+        r['checks'][0]['blocking'] = False
+        out = gate(p, r, db)
+        self.assertFalse(out['valid'])
+        self.assertTrue(any('stage NA' in e and 'omit blocking' in e for e in out['errors']), out['errors'])
+
     def test_accepted_handoff_can_release_schematic_not_product(self):
         p, r, db = downstream()
         r['checks'][0]['handoff'].update(state='ACCEPTED', evidence=E)

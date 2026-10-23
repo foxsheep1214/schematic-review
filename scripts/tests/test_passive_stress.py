@@ -133,6 +133,57 @@ class ProposalTests(unittest.TestCase):
         self.assertEqual(diagnostic['refs'], ['C1', 'R1'])
         self.assertIn('C1、R1', '\n'.join(render_report.render_input_notes(plan)))
 
+    def test_a_part_with_a_part_number_or_datasheet_is_not_judged_on_the_assumed_package(self):
+        # A bulk electrolytic and a safety capacitor with their part numbers were listed as "no package, judged as
+        # 0402": a part with an identity is judged against its own datasheet, only an anonymous one on the assumption.
+        db, intent = self.unpackaged(r1='22R')
+        db['bom'] = {'parts': {'R1': {'MPN': 'RX-22R-2W'}}}
+        db['parts']['C1']['datasheet'] = 'vendor-c1.pdf'
+        rebind(db, intent)
+        plan, rows = proposals(db, intent)
+        self.assertNotIn('R1', rows)   # 0.57 W on an assumed 0402 is no longer a row: R1's datasheet answers it
+        self.assertFalse(any(d['code'] == 'PASSIVE_PACKAGE_UNKNOWN' for d in plan['diagnostics']))
+        db['bom'] = {'parts': {'R1': {'Circuit': 'Input'}}}   # a column that names no part leaves R1 anonymous
+        rebind(db, intent)
+        plan, rows = proposals(db, intent)
+        self.assertIn('R1', rows)
+        self.assertEqual(next(d for d in plan['diagnostics'] if d['code'] == 'PASSIVE_PACKAGE_UNKNOWN')['refs'], ['R1'])
+        self.assertIn('料号或原厂资料', '\n'.join(render_report.render_input_notes(plan)))
+
+    def divider(self, break_chain=False):
+        """VHV (0..400 V) - R2 1M - N1 - R3 1M - U1_IO (U1 input, C2 100p) - R4 10k - GND."""
+        db, intent = fixture(('100nF',))
+        db['parts']['C1']['jedec'] = C0402
+        for ref, value, a, b, fp in (('R2', '1M', 'VHV', 'N1', R0402), ('R3', '1M', 'N1', 'U1_IO', R0402),
+                                     ('R4', '10k', 'U1_IO', 'GND', R0402), ('C2', '100p', 'U1_IO', 'GND', C0402)):
+            add(db, ref, value, [('1', '1', a), ('2', '2', b)])
+            db['parts'][ref]['jedec'] = fp
+        if break_chain:
+            add(db, 'D1', 'DIODE', [('1', 'A', 'N1'), ('2', 'K', 'GND')])
+        db['native_pintype'] = {'U1.3': 'input'}
+        intent['assemblies'][0]['population'] = {r: True for r in db['parts']}
+        intent['power_rails'] = dict(copy.deepcopy(RAIL), VHV={'voltage_v': {'min': 0, 'max': 400}})
+        rebind(db, intent)
+        return proposals(db, intent)[1]
+
+    def test_a_series_divider_shares_the_rail_voltage(self):
+        # Every resistor of a high-voltage sense string and the feedback node's capacitor were bounded by the full
+        # 400 V of the rail; a pure series string divides it, and the filtered tap is bounded by its divider ratio.
+        rows = self.divider()
+        v = {ref: rows[ref]['proposal']['calculation']['v_across_max'] for ref in ('R2', 'R3', 'R4', 'C2')}
+        top = 400 * 1.05e6 / (1.05e6 + 0.95e6)   # the held tap may sit at 0 V while the rail is at 400 V
+        self.assertAlmostEqual(v['R2'], top, places=3)
+        self.assertAlmostEqual(v['R3'], top, places=3)
+        tap = 400 * 10.5e3 / (10.5e3 + 1.9e6)
+        self.assertAlmostEqual(v['R4'], tap, places=4)
+        self.assertAlmostEqual(v['C2'], tap, places=4)
+        self.assertIn('series-chain:R2+R3+R4', rows['R2']['proposal']['bases'])
+        self.assertIn('series-chain-tap', rows['C2']['proposal']['bases'])
+
+    def test_a_string_with_another_part_on_a_tap_keeps_the_rail_bound(self):
+        rows = self.divider(break_chain=True)
+        self.assertEqual(rows['R2']['proposal']['calculation']['v_across_max'], 400)
+
     def test_rating_beyond_orderable_tier_is_not_proposed(self):
         _, rows = proposals(*board({'VCC_3V3': {'voltage_v': {'min': 55, 'max': 60}}}))
         self.assertIsNone(rows['C1']['proposal']['result'])

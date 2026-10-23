@@ -79,7 +79,9 @@ def _supply_nets(graph, rails, nets):
                     native.get(node) == 'power_in' or ng.name_matches(SUPPLY_IN_PIN_RE, name, pin)):
                 found.add(net)
                 break
-            if kind == ng.CAPACITOR and any(ng.is_ground(n) or n in returns for n in graph.nets_of(ref) if n != net):
+            # Bulk storage makes a named net a supply; a tool-named node with a capacitor is a filter or LED node.
+            if (kind == ng.CAPACITOR and not ng.is_auto_named(net)
+                    and any(ng.is_ground(n) or n in returns for n in graph.nets_of(ref) if n != net)):
                 value = parse_capacitance(graph.parts.get(ref, {}).get('value'))
                 if value is not None and value >= 1e-6:
                     found.add(net)
