@@ -11,7 +11,7 @@ import difflib
 from copy import deepcopy
 import board_intent
 import catalog
-from electrical_contract import (PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, engine_identity, finite,
+from electrical_contract import (LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, engine_identity, finite,
                                  squeeze_words)
 from page_inventory import inventory as document_inventory
 import os
@@ -254,9 +254,16 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
             original = originals.get(item.get('id'))
             if 'parameters' in item:
                 errors.extend(requirement_parameters.errors(item.get('id'), item['parameters'], original))
-            if 'owners' in item and (not isinstance(item['owners'], list) or not item['owners']
-                                     or not all(_text(x) for x in item['owners'])):
-                errors.append('requirement.%s.owners 须为非空字符串数组（电路、接口或系统功能的 id）' % item.get('id'))
+            if 'owners' in item and (not isinstance(item['owners'], list) or not all(_text(x) for x in item['owners'])):
+                errors.append('requirement.%s.owners 须为字符串数组（电路、接口或系统功能的 id；[] 表示不绑任何电路，须带 no_owner_reason）'
+                              % item.get('id'))
+            if 'owners' in item and isinstance(item['owners'], list) and not item['owners']:
+                reason = item.get('no_owner_reason')
+                if not _text(reason) or not (LOCATOR_WORDS_RE.search(reason) or LOCATOR_IDS_RE.search(reason)):
+                    errors.append('requirement.%s.owners 为 [] 时 no_owner_reason 须写能定位的理由（位号、网络、页码或需求条款）'
+                                  % item.get('id'))
+            elif 'no_owner_reason' in item:
+                errors.append('requirement.%s.no_owner_reason 只在 owners 为 [] 时写' % item.get('id'))
             if original and _text(item.get('interpretation')) and _squeeze(item['interpretation']) == _squeeze(original):
                 errors.append('requirement.%s.interpretation 抄了需求原文；写这条需求要在原理图上落实什么' % item.get('id'))
             if 'status' in item and item['status'] not in REQUIREMENT_STATUSES:
@@ -632,7 +639,11 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             check['owner'] = row_owner.owner(check, parts, nets)
         plan['owners'] = row_owner.table(circuits, parts)
         plan['interfaces'] = self.interfaces
-        requirement_bindings.attach(plan['checks'])
+        requirement_bindings.attach(plan['checks'], plan['owners'])
+        missing = requirement_bindings.missing_owner_errors(plan['checks'])
+        if missing:
+            raise ValueError('intent.json 的需求没写 owners（有候选时必填）:\n  - ' + '\n  - '.join(missing))
+        self.diagnostics.extend(requirement_bindings.outside_candidates(plan['checks']))
         plan['rail_candidates'] = rail_candidates(self.db, self.intent)
         plan['summary']['owners'] = row_owner.counts(plan['checks'])
         plan['summary']['reviewer_added'] = len(rule_gaps.added(plan['checks']))
@@ -681,7 +692,8 @@ def diagnostic_lines(plan, db, intent):
     """What the plan asks the reviewer to fix before judging, as printed by the planning entry: unread resistor
     values, circuit types that ask almost nothing, rails without a voltage, the ground domains, unbounded nodes."""
     lines = list(passive_stress.unread_lines(plan))
-    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD')]
+    lines += ['  ' + d['detail'] for d in plan['diagnostics']
+              if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES')]
     gaps = passive_stress.rail_gaps(plan)
     if gaps:
         lines.append('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))

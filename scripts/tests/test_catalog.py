@@ -143,7 +143,8 @@ class GeneratedOutputTest(unittest.TestCase):
                   'device_kinds_verified': {'U4': {'kind': 'mcu', 'citation': 'synthetic'}},   # CFG-D01 asks its groups
                   'features': {'CUSTOM': {'applicability': 'APPLICABLE', 'citation': 'synthetic requirement'}},
                   'requirement_source': doc_for({'REQ-1': 'synthetic', 'REQ-2': '设计寿命 10 年'}),
-                  'requirements': [{'id': 'REQ-1', 'categories': ['OUTPUT_SPEC'], 'interpretation': 'synthetic reading'},
+                  'requirements': [{'id': 'REQ-1', 'categories': ['OUTPUT_SPEC'], 'interpretation': 'synthetic reading',
+                                    'owners': ['C-POWER_CONVERTER']},
                                    {'id': 'REQ-2', 'categories': ['LIFETIME'], 'interpretation': 'wear-out rows',
                                     'parameters': [{'name': 'lifetime', 'unit': '年', 'min': 10}]}],
                   'circuits': [{'id': 'C-' + p.name, 'type': p.name, 'refs': refs, 'states': ['run'],

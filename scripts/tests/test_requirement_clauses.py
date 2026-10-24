@@ -22,7 +22,8 @@ class RequirementClauseTests(unittest.TestCase):
                     % (OBLIGATION, ''.join(PREMISES)))
         intent['requirement_source'] = source(doc)
         intent['requirements'] = [{'id': 'REQ-02', 'categories': ['OUTPUT_SPEC'],
-                                   'interpretation': '+3V3 轨稳压器输出精度与环境温度范围在图上的实现', 'status': 'CONFIRMED'}]
+                                   'interpretation': '+3V3 轨稳压器输出精度与环境温度范围在图上的实现', 'status': 'CONFIRMED',
+                                   'owners': [], 'no_owner_reason': '+3V3 由板外供入，U1 所在轨上没有变换器电路，需求行自判'}]
         rebind(self.db, intent)
         self.plan = build_review_plan(self.db, intent)
         # Every aspect row of the requirement splits the same original text.

@@ -981,10 +981,10 @@
  },
  {
   "id": "M145",
-  "name": "repeated aspects of several categories are kept twice",
+  "name": "aspects of a second category are dropped",
   "file": "scripts/catalog.py",
-  "old": "            if aspect not in out:\n                out.append(aspect)",
-  "new": "            if True:\n                out.append(aspect)"
+  "old": "    for category in categories:\n        for aspect in REQUIREMENT_CATEGORIES[category].aspects:\n            if not names or not REQUIREMENT_ASPECTS[aspect].parameters:",
+  "new": "    for category in categories[:1]:\n        for aspect in REQUIREMENT_CATEGORIES[category].aspects:\n            if not names or not REQUIREMENT_ASPECTS[aspect].parameters:"
  },
  {
   "id": "M146",
@@ -1123,7 +1123,7 @@
   "id": "M165",
   "name": "the planner does not bind requirement rows",
   "file": "scripts/plan_review.py",
-  "old": "        requirement_bindings.attach(plan['checks'])",
+  "old": "        requirement_bindings.attach(plan['checks'], plan['owners'])",
   "new": "        pass"
  },
  {
@@ -2278,8 +2278,8 @@
   "id": "M330",
   "name": "an insulation requirement binds no isolation row",
   "file": "scripts/catalog.py",
-  "old": "'MISSION_PROFILE', 'ISOLATION_PARTS',\n                 'ISOLATION_PATHS')",
-  "new": "'MISSION_PROFILE')"
+  "old": "'MISSION_PROFILE', 'ISOLATION_PARTS',\n                 'ISOLATION_PATHS', 'TEST_ACCESS')",
+  "new": "'MISSION_PROFILE', 'TEST_ACCESS')"
  },
  {
   "id": "M331",
@@ -3433,8 +3433,8 @@
   "id": "M495",
   "name": "a misfit circuit type is not printed",
   "file": "scripts/plan_review.py",
-  "old": "    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD')]\n",
-  "new": "    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') == 'REQUIREMENT_NUMBERS_UNREAD']\n"
+  "old": "              if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES')]",
+  "new": "              if d.get('code') in ('REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES')]"
  },
  {
   "id": "M496",
@@ -3729,5 +3729,54 @@
   "file": "scripts/requirement_parameters.py",
   "old": "            if not any(round(v, 9) in stated for v in values):",
   "new": "            if True:"
+ },
+ {
+  "id": "M538",
+  "name": "a requirement with a candidate owner and no owners is planned anyway",
+  "file": "scripts/plan_review.py",
+  "old": "        if missing:\n            raise ValueError('intent.json 的需求没写 owners（有候选时必填）",
+  "new": "        if False:\n            raise ValueError('intent.json 的需求没写 owners（有候选时必填）"
+ },
+ {
+  "id": "M539",
+  "name": "candidate circuits are not filtered by the aspect's types",
+  "file": "scripts/requirement_bindings.py",
+  "old": "        if owner['kind'] == 'CIRCUIT' and types.get(owner['id']) not in wanted:\n            continue",
+  "new": "        if False:\n            continue"
+ },
+ {
+  "id": "M540",
+  "name": "owners: [] needs no reason",
+  "file": "scripts/plan_review.py",
+  "old": "                if not _text(reason) or not (LOCATOR_WORDS_RE.search(reason) or LOCATOR_IDS_RE.search(reason)):",
+  "new": "                if False:"
+ },
+ {
+  "id": "M541",
+  "name": "an OPEN requirement is also refused without owners",
+  "file": "scripts/requirement_bindings.py",
+  "old": "        if row['object'].get('requirement_status') in ('OPEN', 'DEFERRED'):\n            continue   # its rows stay INSUFFICIENT + REQUIREMENT_OPEN and are never derived",
+  "new": "        if False:\n            continue"
+ },
+ {
+  "id": "M542",
+  "name": "owners outside the candidates are not reported",
+  "file": "scripts/plan_review.py",
+  "old": "        self.diagnostics.extend(requirement_bindings.outside_candidates(plan['checks']))",
+  "new": "        pass"
+ },
+ {
+  "id": "M543",
+  "name": "the validator does not recompute owner candidates",
+  "file": "scripts/requirement_bindings.py",
+  "old": "        if (row.get('owner_candidates') or []) != candidates(checks, row, plan.get('owners')):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M544",
+  "name": "the comparison does not report owners differences",
+  "file": "scripts/compare_reviews.py",
+  "old": "        same = ea is not None and eb is not None and ea['owners'] == eb['owners'] and ea['judged'] == eb['judged']",
+  "new": "        same = True"
  }
 ]

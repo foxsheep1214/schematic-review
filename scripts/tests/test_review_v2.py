@@ -69,7 +69,8 @@ class V2Regressions(unittest.TestCase):
     def test_requirement_validation_and_state_expansion_coexist(self):
         intent = {'schema_version': 4,
             'requirement_source': doc_for({'REQ-01': 'Startup guaranteed'}),
-            'requirements': [{'id': 'REQ-01', 'categories': ['PROTOCOL'], 'interpretation': 'Defined state throughout sampling'}],
+            'requirements': [{'id': 'REQ-01', 'categories': ['PROTOCOL'], 'interpretation': 'Defined state throughout sampling',
+                              'owners': ['EXT-J1']}],
             'circuits': [{'id': 'BOOT', 'type': 'STARTUP', 'refs': ['U5'],   # U5 has the BOOT0 strap
                           'states': ['cold-start', 'brownout'], 'citation': 'SYNTHETIC states'}]}
         self.assertEqual(validate_intent(intent), [])
@@ -86,7 +87,8 @@ class V2Regressions(unittest.TestCase):
 
     def test_requirement_and_full_pin_audits_are_planned(self):
         intent = {'schema_version': 4,'requirement_source': doc_for({'REQ-USB': 'USB port required'}),
-                  'requirements': [{'id': 'REQ-USB', 'categories': ['PROTOCOL'], 'interpretation': 'end-to-end connectivity'}]}
+                  'requirements': [{'id': 'REQ-USB', 'categories': ['PROTOCOL'], 'interpretation': 'end-to-end connectivity',
+                                    'owners': ['EXT-J1']}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
         self.assertTrue(any(x['object'].get('requirement_id') == 'REQ-USB' for x in plan['checks']))

@@ -7,6 +7,28 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Requirement owners are recommended by the plan and required when there is a candidate (SR framework review, 2026-10-24)
+
+`owners` was optional and decided how a requirement row is judged: named, the row was bound to the owners' tree rows and
+derived from them; unnamed (and not a board aspect), the row bound nothing and the reviewer judged it by hand with
+clauses. No rule said when to name owners and nothing told the reviewer whom to name, so two reviewers of one board
+produced one derived and one hand-judged REQ-D01 row of the same name, and the comparison tool paired them without
+seeing why they differed. Now the plan computes each requirement row's candidate owners (`owner_candidates`): circuits
+of the aspect's types (`catalog.ASPECT_OWNER_TYPES`) and every system function or interface that own an applicable row
+of the aspect's rules; board aspects have none. A CONFIRMED or PROPOSED requirement with a candidate and no `owners` is
+refused at planning with the candidates printed; `owners: []` with a located `no_owner_reason` leaves the row to
+itself (`self_judged: DECLARED`), a requirement with no candidate is judged on its row (`self_judged: NO_OWNER_CANDIDATE`),
+owners outside the candidates are allowed and printed as `REQUIREMENT_OWNER_OUTSIDE_CANDIDATES`; a single candidate is
+still written by hand (user: A). The validator recomputes candidates and `self_judged`; `compare_reviews.py` gains a
+section listing each requirement's owners and judging mode on both sides. Plan rows gain `owner_candidates` and
+`self_judged` without a format bump (user's decision; old plans lacking them read as "no candidate"); the owners table
+carries each circuit's type. Four test fixtures that declared requirements without owners now name them or write `[]`
+with a reason, as the proposal expected. Proposal: docs/2026-10-24-requirement-owners-proposal.md. 2050 tests pass, KiCad replay 195/195, typical circuits unchanged, all 93 mutations on changed files killed (M145, M165, M330, M495 repointed to the changed lines).
+
+- Event: user:2026-10-24 (SR framework review: "三条都做；一个候选时也要手写 owners（A）；计划行加字段不升版本。开工。")
+- Causes: rule_missing 1, rule_not_enforced 1
+- Changed: SKILL.md, docs/2026-10-24-requirement-owners-proposal.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/check-catalog.md, references/plan-and-results.md, scripts/catalog.py, scripts/compare_reviews.py, scripts/plan_board.py, scripts/plan_review.py, scripts/requirement_bindings.py, scripts/row_owner.py, scripts/tests/test_catalog.py, scripts/tests/test_requirement_bindings.py, scripts/tests/test_requirement_clauses.py, scripts/tests/test_review_v2.py
+
 ## Requirements decompose by quantity (SR framework review, 2026-10-24)
 
 A requirement was decomposed by the categories the reviewer chose: every aspect of every chosen category became a

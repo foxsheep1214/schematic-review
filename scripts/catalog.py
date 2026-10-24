@@ -1285,6 +1285,24 @@ ASPECT_RULES = OrderedDict([
 BOARD_ASPECTS = ('TEMPERATURE_GRADE', 'TEMPERATURE_DERATING', 'LIFETIME_BASIS', 'MISSION_PROFILE', 'ISOLATION_PARTS',
                  'ISOLATION_PATHS', 'TEST_ACCESS')
 
+# The circuit types that usually carry an aspect (requirement owners, 2026-10-24). A requirement row's candidate
+# owners are the circuits of these types, and every system function and interface, that own an applicable row of the
+# aspect's rules; with a candidate the requirement must name its owners (or `owners: []` with a located reason).
+# Board aspects bind every row and have no candidates.
+_INPUT_TYPES = ('POWER_PROTECTION', 'POWER_CONVERTER')
+_BUS_TYPES = ('USB', 'CAN', 'RS485', 'UART', 'SPI', 'I2C', 'ETHERNET', 'HSSERIAL', 'AV', 'STORAGE', 'DDR')
+ASPECT_OWNER_TYPES = OrderedDict([
+    ('INPUT_STAGE_RATING', _INPUT_TYPES), ('INPUT_THRESHOLDS', _INPUT_TYPES), ('CONVERTER_INPUT_RANGE', _INPUT_TYPES),
+    ('OUTPUT_LEVELS', ('POWER_CONVERTER',)), ('OUTPUT_LIMITS', ('POWER_CONVERTER',)), ('OUTPUT_ACCURACY', ('POWER_CONVERTER',)),
+    ('PROTOCOL_ROLE', _BUS_TYPES), ('PORT_DETECTION', _BUS_TYPES), ('EXTERNAL_PINOUT', ()),
+    ('FAULT_DETECTION', ('POWER_PROTECTION', 'POWER_CONVERTER', 'ANALOG')),
+    ('FAULT_THRESHOLD', ('POWER_PROTECTION', 'POWER_CONVERTER', 'ANALOG')),
+    ('FAULT_RESPONSE', ('POWER_PROTECTION', 'POWER_CONVERTER', 'ANALOG')),
+    ('MEASUREMENT_CHAIN', ('ANALOG',)), ('MEASUREMENT_ACCURACY', ('ANALOG',)),
+    ('POWER_SEQUENCE', ('STARTUP',)), ('STARTUP_TIMING', ('STARTUP',)),
+    ('CLOCK_ACCURACY', ('CLOCK',)),
+])
+
 
 def requirement_aspects(categories, parameters=None):
     """The aspects a requirement asks, in table order: the qualitative aspects of its categories plus the numeric
@@ -1831,12 +1849,21 @@ def render_markdown():
     lines += ['', '方面有树上的检查承担时，需求行绑定这些规则的行（需求 `owners` 点名的电路、接口、系统功能拥有的行；'
               '没写 `owners` 时，全板方面绑定全板这些规则的行），结论取绑定行中最差者，需求行不再另判；'
               '没有检查承担的方面由需求行自己判。', '',
-              '| 审查方面 | 何时问 | 判据模板 | 承担的检查 |', '|---|---|---|---|']
+              '有候选所属的方面（下表“候选所属”列）要求需求写 `owners`：候选 = 这些类型的电路，以及拥有该方面规则适用行的系统功能和接口；'
+              '有候选而没写 owners 的需求计划拒绝生成，并打印候选；需求不落在任何候选上时写 `owners: []` 加能定位的 `no_owner_reason`，需求行自判。', '',
+              '| 审查方面 | 何时问 | 判据模板 | 承担的检查 | 候选所属 |', '|---|---|---|---|---|']
     for key, aspect in REQUIREMENT_ASPECTS.items():
         carried = '、'.join(ASPECT_RULES.get(key, ())) or '需求行自判'
         asked = '原文有 ' + ' / '.join(aspect.parameters) if aspect.parameters else '类别选中'
-        lines.append('| %s %s | %s | %s | %s%s |' % (key, aspect.name, asked, _cell(aspect.template), carried,
-                                                     '（全板）' if key in BOARD_ASPECTS else ''))
+        if key in BOARD_ASPECTS:
+            owners = '全板，不要求 owners'
+        elif key in ASPECT_RULES:
+            owners = '、'.join(ASPECT_OWNER_TYPES.get(key, ())) or '—'
+            owners += '；拥有这些行的系统功能与接口'
+        else:
+            owners = '—'
+        lines.append('| %s %s | %s | %s | %s%s | %s |' % (key, aspect.name, asked, _cell(aspect.template), carried,
+                                                          '（全板）' if key in BOARD_ASPECTS else '', owners))
     lines += ['', '需求里的数字读进 `requirements[].parameters`（`name`、`min`/`max`、`unit`、`condition`）；'
               '每个数字须在该条原文里出现，条件须是原文里的一段，数值按下表换算到规范单位。', '',
               '| 参数 | 名称 | 规范单位 | 可写单位 | 问的方面 |', '|---|---|---|---|---|']

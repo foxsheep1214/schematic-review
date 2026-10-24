@@ -29,6 +29,80 @@ def bound(checks, row):
                   and (not owners or (c.get('owner') or {}).get('id') in owners))
 
 
+def candidates(checks, row, owners_table):
+    """The owners a requirement row could name: circuits of the aspect's types (catalog.ASPECT_OWNER_TYPES), and every
+    system function and interface, that own an applicable row of the aspect's rules. Board aspects have none."""
+    aspect = (row.get('object') or {}).get('aspect')
+    rules = catalog.ASPECT_RULES.get(aspect, ())
+    if not rules or aspect in catalog.BOARD_ASPECTS:
+        return []
+    types = {e['id']: e.get('type') for e in owners_table or () if e.get('kind') == 'CIRCUIT'}
+    wanted = set(catalog.ASPECT_OWNER_TYPES.get(aspect, ()))
+    found = {}
+    for c in checks:
+        owner = c.get('owner') or {}
+        if c.get('rule') not in rules or c.get('applicability') != 'APPLICABLE' or not owner.get('id'):
+            continue
+        if owner['kind'] == 'CIRCUIT' and types.get(owner['id']) not in wanted:
+            continue
+        entry = {'id': owner['id'], 'kind': owner['kind']}
+        if owner['kind'] == 'CIRCUIT':
+            entry['type'] = types.get(owner['id'])
+        found[owner['id']] = entry
+    return [found[k] for k in sorted(found)]
+
+
+def self_judged(row):
+    """Why a requirement row with carrying rules is judged on its own: NO_OWNER_CANDIDATE, DECLARED (owners: []), or
+    None when it is bound (or has no carrying rule)."""
+    aspect = (row.get('object') or {}).get('aspect')
+    if not catalog.ASPECT_RULES.get(aspect) or aspect in catalog.BOARD_ASPECTS:
+        return None
+    if row.get('requirement_owners'):
+        return None
+    if row.get('requirement_owners') == []:
+        return 'DECLARED'
+    return None if row.get('owner_candidates') else 'NO_OWNER_CANDIDATE'
+
+
+def missing_owner_errors(checks):
+    """Requirement rows with candidate owners and no `owners` written (not even `[]`); OPEN and DEFERRED requirements
+    are exempt, their rows are never derived."""
+    by_requirement = {}
+    for row in checks:
+        if row.get('rule') != 'REQ-D01' or 'requirement_owners' in row or not row.get('owner_candidates'):
+            continue
+        if row['object'].get('requirement_status') in ('OPEN', 'DEFERRED'):
+            continue   # its rows stay INSUFFICIENT + REQUIREMENT_OPEN and are never derived
+        rid = row['object']['requirement_id']
+        by_requirement.setdefault(rid, ([], {}))
+        by_requirement[rid][0].append(row['object']['aspect'])
+        for c in row['owner_candidates']:
+            by_requirement[rid][1][c['id']] = c
+    out = []
+    for rid, (aspects, found) in sorted(by_requirement.items()):
+        named = '、'.join('%s（%s）' % (c['id'], c.get('type') or c['kind']) for c in found.values())
+        out.append('requirement.%s.owners 缺：方面 %s 由 %s 拥有的行承担；写 owners 后需求行由这些行派生。'
+                   '不落在任何候选上的写 owners: [] 并给能定位的 no_owner_reason' % (rid, '/'.join(aspects), named))
+    return out
+
+
+def outside_candidates(checks):
+    """Diagnostics: requirement rows whose owners are not among their candidates (allowed; the reviewer may know better)."""
+    out = []
+    for row in checks:
+        if row.get('rule') != 'REQ-D01' or not row.get('requirement_owners') or not row.get('owner_candidates'):
+            continue
+        ids = {c['id'] for c in row['owner_candidates']}
+        outside = [o for o in row['requirement_owners'] if o not in ids]
+        if outside:
+            out.append({'code': 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES', 'requirement': row['object']['requirement_id'],
+                        'aspect': row['object']['aspect'], 'owners': outside, 'candidates': sorted(ids),
+                        'detail': '需求 %s 的方面 %s 写了候选以外的 owners %s（候选：%s）；确认它们确实落实这条需求' % (
+                            row['object']['requirement_id'], row['object']['aspect'], '、'.join(outside), '、'.join(sorted(ids)))})
+    return out
+
+
 def circuit_type(row):
     obj = row.get('object') if isinstance(row.get('object'), dict) else {}
     return row.get('circuit_type') or obj.get('circuit_type')
@@ -45,10 +119,17 @@ COVERAGE = 'REQ-Q07'
 BINDERS = {'REQ-D01': bound, COVERAGE: coverage_bound}
 
 
-def attach(checks):
+def attach(checks, owners_table=None):
     for row in checks:
         if row.get('rule') in BINDERS:
             row['bound_checks'] = BINDERS[row['rule']](checks, row)
+        if row.get('rule') == 'REQ-D01':
+            row['owner_candidates'] = candidates(checks, row, owners_table)
+            reason = self_judged(row)
+            if reason:
+                row['self_judged'] = reason
+            else:
+                row.pop('self_judged', None)
 
 
 def errors(plan):
@@ -68,6 +149,12 @@ def errors(plan):
         if (row.get('bound_checks') or []) != bound(checks, row):
             out.append('%s: bound_checks differ from the rows of %s its owners carry; rebuild the plan'
                        % (row.get('id'), '、'.join(catalog.ASPECT_RULES.get((row.get('object') or {}).get('aspect'), ())) or '—'))
+        if (row.get('owner_candidates') or []) != candidates(checks, row, plan.get('owners')):
+            out.append('%s: owner_candidates differ from the owners of the applicable rows its aspect\'s rules have; rebuild the plan'
+                       % row.get('id'))
+        if row.get('self_judged') != self_judged(row):
+            out.append('%s: self_judged must be %s' % (row.get('id'), self_judged(row) or 'absent'))
+    out.extend(missing_owner_errors(checks))
     return out
 
 

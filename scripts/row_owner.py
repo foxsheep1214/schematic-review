@@ -61,7 +61,8 @@ def owner(check, parts, nets=None):
 
 def table(circuits, parts):
     """The plan's owner table: every circuit with the parts it owns."""
-    return [{'kind': 'CIRCUIT', 'id': c['id'], 'parts': sorted(ref for ref, cid in parts.items() if cid == c['id'])}
+    return [{'kind': 'CIRCUIT', 'id': c['id'], 'type': c.get('type'),
+             'parts': sorted(ref for ref, cid in parts.items() if cid == c['id'])}
             for c in sorted(circuits, key=lambda c: c['id'])]
 
 

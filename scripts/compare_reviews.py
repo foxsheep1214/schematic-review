@@ -462,13 +462,37 @@ def strict(a, b, aliases=(), same_netlist=True):
     }
 
 
+def requirement_owners(a, b):
+    """Per requirement id, each record's owners and how its rows are judged (bound to tree rows or on the row itself),
+    so an owners difference shows here instead of hiding in the pairing rate."""
+    def side(record):
+        out = {}
+        for row in record['plan'].get('checks') or []:
+            if row.get('rule') != 'REQ-D01':
+                continue
+            obj = row.get('object') if isinstance(row.get('object'), dict) else {}
+            rid = obj.get('requirement_id') or row.get('id')
+            entry = out.setdefault(rid, {'owners': None, 'judged': {}})
+            if 'requirement_owners' in row:
+                entry['owners'] = sorted(row['requirement_owners'])
+            entry['judged'][obj.get('aspect') or '—'] = 'DERIVED' if row.get('bound_checks') else 'SELF'
+        return out
+    sa, sb = side(a), side(b)
+    rows = []
+    for rid in sorted(set(sa) | set(sb)):
+        ea, eb = sa.get(rid), sb.get(rid)
+        same = ea is not None and eb is not None and ea['owners'] == eb['owners'] and ea['judged'] == eb['judged']
+        rows.append({'requirement': rid, 'A': ea, 'B': eb, 'same': same})
+    return {'rows': rows, 'different': sum(1 for r in rows if not r['same'])}
+
+
 def compare(a, b, aliases=()):
     same_netlist = a['plan'].get('db_sha256') == b['plan'].get('db_sha256')
     report = {'schema_version': 2, 'inputs': {'A': a['where'], 'B': b['where']},
               'baseline': {'status': 'SAME_INPUT' if same_netlist else 'BASELINE_MISMATCH',
                            'db_sha256': {'A': a['plan'].get('db_sha256'), 'B': b['plan'].get('db_sha256')}},
               'strict': strict(a, b, aliases, same_netlist), 'suggested': suggested(a, b),
-              'signals': {'A': signals(a), 'B': signals(b)}}
+              'signals': {'A': signals(a), 'B': signals(b)}, 'requirement_owners': requirement_owners(a, b)}
     unmatched_a, unmatched_b = set(report['strict']['unmatched']['A']), set(report['strict']['unmatched']['B'])
     pairs = []
     for key in report['suggested']['rows']['shared_keys']:
@@ -573,6 +597,23 @@ def markdown(report):
         lines += ['| %s | %s | %s | %d | %s |' % (ref, opener, decided, n, '、'.join(sorted(files[(opener, ref, decided)])))
                   for (opener, ref, decided), n in sorted(groups.items(), key=lambda x: (-x[1], x[0]))]
     sig = report['signals']
+    owners = report.get('requirement_owners') or {'rows': [], 'different': 0}
+    lines += ['', '## 需求的 owners 与判法', '',
+              '两边 %d 条需求，owners 或判法不同的 %d 条（派生 = 绑到树上的行，自判 = 需求行自己判）。' % (
+                  len(owners['rows']), owners['different']), '',
+              '| 需求 | A owners | A 判法 | B owners | B 判法 |', '|---|---|---|---|---|']
+    for row in owners['rows']:
+        if row['same']:
+            continue
+        cells = []
+        for s in SIDES:
+            e = row[s]
+            if e is None:
+                cells += ['—', '—']
+                continue
+            cells.append('没写' if e['owners'] is None else ('[]' if not e['owners'] else '、'.join(e['owners'])))
+            cells.append('、'.join('%s %s' % (k, '派生' if v == 'DERIVED' else '自判') for k, v in sorted(e['judged'].items())))
+        lines.append('| %s | %s |' % (row['requirement'], ' | '.join(cells)))
     lines += ['', '## 过严与过松信号', '', '| 信号 | A | B |', '|---|---|---|']
     lines += ['| %s | %d | %d |' % (name, sig['A'][key], sig['B'][key]) for key, name in SIGNAL_NAMES]
     rows = sug['rows']

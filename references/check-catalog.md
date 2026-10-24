@@ -640,43 +640,45 @@
 
 方面有树上的检查承担时，需求行绑定这些规则的行（需求 `owners` 点名的电路、接口、系统功能拥有的行；没写 `owners` 时，全板方面绑定全板这些规则的行），结论取绑定行中最差者，需求行不再另判；没有检查承担的方面由需求行自己判。
 
-| 审查方面 | 何时问 | 判据模板 | 承担的检查 |
-|---|---|---|---|
-| INPUT_STAGE_RATING 输入级器件额定覆盖 | 原文有 input_voltage / surge_voltage | 需求输入范围的上下限与瞬态下，输入级器件的电压、电流额定覆盖并有余量 | DEV-C01、PWR-C02、PWR-C13 |
-| INPUT_THRESHOLDS 启动与欠压门限覆盖 | 原文有 input_voltage | 启动、欠压与过压门限落在需求输入范围之外或边界上，范围内不误动作 | PWR-C06、PRO-C02 |
-| CONVERTER_INPUT_RANGE 变换级工作范围覆盖 | 原文有 input_voltage / input_frequency | 变换级控制器与功率器件的工作输入范围覆盖需求输入范围 | PWR-C02、DEV-C05 |
-| OUTPUT_LEVELS 各档输出可达 | 原文有 output_voltage | 需求的每个输出电压档或范围由反馈与设定网络算得可达，并留调节余量 | PWR-E01、PWR-C15 |
-| OUTPUT_LIMITS 电流与功率限制 | 原文有 output_current / output_power | 需求的电流与功率限值有采样与限制通路，限值按元件值算得落在需求窗口内 | PWR-C01、PWR-C03、PWR-C06 |
-| OUTPUT_ACCURACY 精度与纹波 | 原文有 ripple / accuracy | 输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内 | PWR-C14、DEV-C03、ANA-C01 |
-| FUNCTION_PRESENT 功能与接口存在且数量达标 | 类别选中 | 需求的每个功能、接口由实际器件与连接落实，路数、端口数与需求一致 | 需求行自判 |
-| PROTOCOL_ROLE 协议角色与能力 | 类别选中 | 所选控制器的协议角色与能力覆盖需求，外围连接与配置交付可追溯 | SIG-T04、SIG-D04 |
-| PORT_DETECTION 端口识别通路 | 类别选中 | 需求依赖的对端、线缆或附件识别有完整信号通路 | SIG-D04、SIG-C05 |
-| EXTERNAL_PINOUT 对外引脚定义 | 类别选中 | 对外连接器的每个引脚定义与需求一致，未用引脚的处理有依据 | DEV-D03 |
-| POWER_SEQUENCE 上电与掉电顺序 | 类别选中 | 需求的供电建立顺序、掉电顺序与恢复由使能、监控或时序链保证 | RST-T03 |
-| STARTUP_TIMING 启动、复位与保持时间 | 原文有 startup_time / hold_up_time / reset_time | 启动时间、复位脉宽与掉电保持时间按元件值与器件参数算得在需求窗口内 | RST-C02 |
-| FAULT_DETECTION 检测通路存在 | 类别选中 | 需求的每种故障有检测通路接到能动作的器件 | ANA-T01、ANA-C04、PWR-T04 |
-| FAULT_THRESHOLD 动作门限 | 原文有 trip_current / trip_voltage / surge_voltage / esd_voltage | 检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作 | PWR-C06、PRO-C02 |
-| FAULT_RESPONSE 动作后状态与恢复 | 类别选中 | 故障动作后的输出状态、锁定或自动恢复方式与需求一致 | PRO-C01、PRO-D03、RST-T03 |
-| MEASUREMENT_CHAIN 检测链完整 | 类别选中 | 需求的每个被测量有取样、返回地与判决链，取样点与被测量一致 | ANA-T01 |
-| MEASUREMENT_ACCURACY 测量精度 | 原文有 measurement_accuracy | 测量误差按传感器、偏置、采样链与 ADC 的误差和温漂合计在需求窗口内 | ANA-C01 |
-| TEMPERATURE_GRADE 器件温度等级覆盖 | 原文有 ambient_temperature / storage_temperature | 器件温度等级覆盖需求环境温度加内部温升 | DEV-C05（全板） |
-| TEMPERATURE_DERATING 按温度降额 | 原文有 ambient_temperature | 器件额定按需求温度降额后仍有余量；需求要求随温度降额输出时，有温度检测与降额通路 | DEV-C01（全板） |
-| TEMPERATURE_DRIFT 敏感参数温漂 | 原文有 ambient_temperature | 基准、门限、采样等敏感参数在需求温度范围的漂移计入窗口 | ANA-C01、DEV-C03 |
-| ALTITUDE_HUMIDITY 海拔与湿度影响额定 | 原文有 humidity / altitude | 需求的海拔、湿度、气候条件对器件额定与绝缘等级的影响已计入 | 需求行自判 |
-| ISOLATION_PARTS 跨隔离器件资格 | 原文有 isolation_voltage | 跨隔离边界的每个器件绝缘等级与资格满足需求的绝缘类别 | PRO-C03、PRO-D01（全板） |
-| ISOLATION_PATHS 隔离路径唯一 | 类别选中 | 隔离边界两侧之间只经有资格的跨隔离器件相连，没有别的电气路径 | PRO-D02（全板） |
-| DOWNSTREAM_HANDOFF 原理图外部分移交 | 类别选中 | 原理图判不了的部分（爬电与电气间隙、整机试验、认证）列为移交项并写复验条件 | 需求行自判 |
-| LIFETIME_BASIS 寿命计算依据 | 原文有 lifetime | 寿命关键件有按需求工作条件算的寿命依据 | DEV-C02、DEV-C06（全板） |
-| MISSION_PROFILE 按任务剖面复算 | 原文有 lifetime | 寿命按需求任务剖面（工作时间、温度、负载）复算，实测温度后复算的条件写明 | DEV-C02、DEV-C06（全板） |
-| STANDBY_POWER 待机与静态功耗上界 | 原文有 standby_power / quiescent_current | 待机或静态功耗按各轨空载电流与器件静态电流算得上界在需求窗口内 | 需求行自判 |
-| EFFICIENCY 效率 | 原文有 efficiency | 效率只能样机实测：原理图核拓扑与主要损耗上界是否允许达到需求值，实测列为移交 | 需求行自判 |
-| CLOCK_ACCURACY 时钟频率精度 | 原文有 clock_accuracy | 晶体或振荡器的频率精度、负载电容偏差与温漂合计在需求 ppm 窗口内 | CLK-C01 |
-| TEST_ACCESS 测试点与烧录调试口 | 类别选中 | 需求的测试点、烧录与调试接口在原理图上电气预留；可触达性与夹具交移交 | DOC-D02（全板） |
-| INDICATOR_PRESENT 指示功能存在 | 类别选中 | 需求的每个指示有驱动通路，指示的状态与需求一致 | 需求行自判 |
-| INDICATOR_SUPPLY 指示供电独立 | 类别选中 | 指示的供电与被指示对象的关断或故障互不影响，与需求一致 | 需求行自判 |
-| NO_SCHEMATIC_CRITERION 没有原理图判据 | 类别选中 | 优化目标或取舍原则在原理图上没有判据：记不适用（NA）并引原文 | 需求行自判 |
-| SCHEMATIC_COMPLIANCE 原理图可核部分 | 类别选中 | 标准或认证中原理图能核的器件资格与电路要求逐条核 | 需求行自判 |
-| EXCLUDED_FUNCTION 明确排除 | 类别选中 | 需求明确排除的功能或认证：记排除原文，相应检查记不适用（NA） | 需求行自判 |
+有候选所属的方面（下表“候选所属”列）要求需求写 `owners`：候选 = 这些类型的电路，以及拥有该方面规则适用行的系统功能和接口；有候选而没写 owners 的需求计划拒绝生成，并打印候选；需求不落在任何候选上时写 `owners: []` 加能定位的 `no_owner_reason`，需求行自判。
+
+| 审查方面 | 何时问 | 判据模板 | 承担的检查 | 候选所属 |
+|---|---|---|---|---|
+| INPUT_STAGE_RATING 输入级器件额定覆盖 | 原文有 input_voltage / surge_voltage | 需求输入范围的上下限与瞬态下，输入级器件的电压、电流额定覆盖并有余量 | DEV-C01、PWR-C02、PWR-C13 | POWER_PROTECTION、POWER_CONVERTER；拥有这些行的系统功能与接口 |
+| INPUT_THRESHOLDS 启动与欠压门限覆盖 | 原文有 input_voltage | 启动、欠压与过压门限落在需求输入范围之外或边界上，范围内不误动作 | PWR-C06、PRO-C02 | POWER_PROTECTION、POWER_CONVERTER；拥有这些行的系统功能与接口 |
+| CONVERTER_INPUT_RANGE 变换级工作范围覆盖 | 原文有 input_voltage / input_frequency | 变换级控制器与功率器件的工作输入范围覆盖需求输入范围 | PWR-C02、DEV-C05 | POWER_PROTECTION、POWER_CONVERTER；拥有这些行的系统功能与接口 |
+| OUTPUT_LEVELS 各档输出可达 | 原文有 output_voltage | 需求的每个输出电压档或范围由反馈与设定网络算得可达，并留调节余量 | PWR-E01、PWR-C15 | POWER_CONVERTER；拥有这些行的系统功能与接口 |
+| OUTPUT_LIMITS 电流与功率限制 | 原文有 output_current / output_power | 需求的电流与功率限值有采样与限制通路，限值按元件值算得落在需求窗口内 | PWR-C01、PWR-C03、PWR-C06 | POWER_CONVERTER；拥有这些行的系统功能与接口 |
+| OUTPUT_ACCURACY 精度与纹波 | 原文有 ripple / accuracy | 输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内 | PWR-C14、DEV-C03、ANA-C01 | POWER_CONVERTER；拥有这些行的系统功能与接口 |
+| FUNCTION_PRESENT 功能与接口存在且数量达标 | 类别选中 | 需求的每个功能、接口由实际器件与连接落实，路数、端口数与需求一致 | 需求行自判 | — |
+| PROTOCOL_ROLE 协议角色与能力 | 类别选中 | 所选控制器的协议角色与能力覆盖需求，外围连接与配置交付可追溯 | SIG-T04、SIG-D04 | USB、CAN、RS485、UART、SPI、I2C、ETHERNET、HSSERIAL、AV、STORAGE、DDR；拥有这些行的系统功能与接口 |
+| PORT_DETECTION 端口识别通路 | 类别选中 | 需求依赖的对端、线缆或附件识别有完整信号通路 | SIG-D04、SIG-C05 | USB、CAN、RS485、UART、SPI、I2C、ETHERNET、HSSERIAL、AV、STORAGE、DDR；拥有这些行的系统功能与接口 |
+| EXTERNAL_PINOUT 对外引脚定义 | 类别选中 | 对外连接器的每个引脚定义与需求一致，未用引脚的处理有依据 | DEV-D03 | —；拥有这些行的系统功能与接口 |
+| POWER_SEQUENCE 上电与掉电顺序 | 类别选中 | 需求的供电建立顺序、掉电顺序与恢复由使能、监控或时序链保证 | RST-T03 | STARTUP；拥有这些行的系统功能与接口 |
+| STARTUP_TIMING 启动、复位与保持时间 | 原文有 startup_time / hold_up_time / reset_time | 启动时间、复位脉宽与掉电保持时间按元件值与器件参数算得在需求窗口内 | RST-C02 | STARTUP；拥有这些行的系统功能与接口 |
+| FAULT_DETECTION 检测通路存在 | 类别选中 | 需求的每种故障有检测通路接到能动作的器件 | ANA-T01、ANA-C04、PWR-T04 | POWER_PROTECTION、POWER_CONVERTER、ANALOG；拥有这些行的系统功能与接口 |
+| FAULT_THRESHOLD 动作门限 | 原文有 trip_current / trip_voltage / surge_voltage / esd_voltage | 检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作 | PWR-C06、PRO-C02 | POWER_PROTECTION、POWER_CONVERTER、ANALOG；拥有这些行的系统功能与接口 |
+| FAULT_RESPONSE 动作后状态与恢复 | 类别选中 | 故障动作后的输出状态、锁定或自动恢复方式与需求一致 | PRO-C01、PRO-D03、RST-T03 | POWER_PROTECTION、POWER_CONVERTER、ANALOG；拥有这些行的系统功能与接口 |
+| MEASUREMENT_CHAIN 检测链完整 | 类别选中 | 需求的每个被测量有取样、返回地与判决链，取样点与被测量一致 | ANA-T01 | ANALOG；拥有这些行的系统功能与接口 |
+| MEASUREMENT_ACCURACY 测量精度 | 原文有 measurement_accuracy | 测量误差按传感器、偏置、采样链与 ADC 的误差和温漂合计在需求窗口内 | ANA-C01 | ANALOG；拥有这些行的系统功能与接口 |
+| TEMPERATURE_GRADE 器件温度等级覆盖 | 原文有 ambient_temperature / storage_temperature | 器件温度等级覆盖需求环境温度加内部温升 | DEV-C05（全板） | 全板，不要求 owners |
+| TEMPERATURE_DERATING 按温度降额 | 原文有 ambient_temperature | 器件额定按需求温度降额后仍有余量；需求要求随温度降额输出时，有温度检测与降额通路 | DEV-C01（全板） | 全板，不要求 owners |
+| TEMPERATURE_DRIFT 敏感参数温漂 | 原文有 ambient_temperature | 基准、门限、采样等敏感参数在需求温度范围的漂移计入窗口 | ANA-C01、DEV-C03 | —；拥有这些行的系统功能与接口 |
+| ALTITUDE_HUMIDITY 海拔与湿度影响额定 | 原文有 humidity / altitude | 需求的海拔、湿度、气候条件对器件额定与绝缘等级的影响已计入 | 需求行自判 | — |
+| ISOLATION_PARTS 跨隔离器件资格 | 原文有 isolation_voltage | 跨隔离边界的每个器件绝缘等级与资格满足需求的绝缘类别 | PRO-C03、PRO-D01（全板） | 全板，不要求 owners |
+| ISOLATION_PATHS 隔离路径唯一 | 类别选中 | 隔离边界两侧之间只经有资格的跨隔离器件相连，没有别的电气路径 | PRO-D02（全板） | 全板，不要求 owners |
+| DOWNSTREAM_HANDOFF 原理图外部分移交 | 类别选中 | 原理图判不了的部分（爬电与电气间隙、整机试验、认证）列为移交项并写复验条件 | 需求行自判 | — |
+| LIFETIME_BASIS 寿命计算依据 | 原文有 lifetime | 寿命关键件有按需求工作条件算的寿命依据 | DEV-C02、DEV-C06（全板） | 全板，不要求 owners |
+| MISSION_PROFILE 按任务剖面复算 | 原文有 lifetime | 寿命按需求任务剖面（工作时间、温度、负载）复算，实测温度后复算的条件写明 | DEV-C02、DEV-C06（全板） | 全板，不要求 owners |
+| STANDBY_POWER 待机与静态功耗上界 | 原文有 standby_power / quiescent_current | 待机或静态功耗按各轨空载电流与器件静态电流算得上界在需求窗口内 | 需求行自判 | — |
+| EFFICIENCY 效率 | 原文有 efficiency | 效率只能样机实测：原理图核拓扑与主要损耗上界是否允许达到需求值，实测列为移交 | 需求行自判 | — |
+| CLOCK_ACCURACY 时钟频率精度 | 原文有 clock_accuracy | 晶体或振荡器的频率精度、负载电容偏差与温漂合计在需求 ppm 窗口内 | CLK-C01 | CLOCK；拥有这些行的系统功能与接口 |
+| TEST_ACCESS 测试点与烧录调试口 | 类别选中 | 需求的测试点、烧录与调试接口在原理图上电气预留；可触达性与夹具交移交 | DOC-D02（全板） | 全板，不要求 owners |
+| INDICATOR_PRESENT 指示功能存在 | 类别选中 | 需求的每个指示有驱动通路，指示的状态与需求一致 | 需求行自判 | — |
+| INDICATOR_SUPPLY 指示供电独立 | 类别选中 | 指示的供电与被指示对象的关断或故障互不影响，与需求一致 | 需求行自判 | — |
+| NO_SCHEMATIC_CRITERION 没有原理图判据 | 类别选中 | 优化目标或取舍原则在原理图上没有判据：记不适用（NA）并引原文 | 需求行自判 | — |
+| SCHEMATIC_COMPLIANCE 原理图可核部分 | 类别选中 | 标准或认证中原理图能核的器件资格与电路要求逐条核 | 需求行自判 | — |
+| EXCLUDED_FUNCTION 明确排除 | 类别选中 | 需求明确排除的功能或认证：记排除原文，相应检查记不适用（NA） | 需求行自判 | — |
 
 需求里的数字读进 `requirements[].parameters`（`name`、`min`/`max`、`unit`、`condition`）；每个数字须在该条原文里出现，条件须是原文里的一段，数值按下表换算到规范单位。
 
