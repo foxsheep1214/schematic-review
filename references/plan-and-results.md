@@ -129,7 +129,7 @@
   窗口取那条需求电压参数的上下限；输入电压、频率写进 SYS-POWER 框架的 `requirement_windows` 和问题；
   工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02/C06）作为 `conditions` 挂在器件应力行上，计划顶层 `conditions` 列出各条来源。
 - `requirements[].owners`，**承接电路**：落实这条需求的功能电路、系统功能或接口的 id。规则总表给每个审查方面列出承担它的检查和可承接的电路类型；
-  计划替每个需求行找出**可承接的电路**，写在 `owner_candidates`（拥有承担该方面的行的所属里，类型在表内的电路，加上系统功能和接口）。
+  计划替每个需求行找出**可承接的电路**，写在 `owner_candidates`（拥有承担该方面的行的所属里，电路类型、系统功能、接口种类在该方面那一格里的那些；表外的不算）。
   **有可承接的电路的需求必须写 owners**（OPEN、DEFERRED 的除外），没写的计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []`
   加能定位的 `no_owner_reason`，需求行自判（行记 `self_judged: DECLARED`，“审查员认定没有承接电路”）；没有可承接的电路的不要求写，需求行自判
   （`self_judged: NO_OWNER_CANDIDATE`，“没有可承接的电路”）。写了可承接之外的 id 允许，计划打诊断 `REQUIREMENT_OWNER_OUTSIDE_CANDIDATES` 供复核。

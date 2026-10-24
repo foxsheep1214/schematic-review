@@ -135,3 +135,4 @@ M526–M530（2026-10-24，SR 自查第二组 2.5）守：报告单列“需求�
 M531–M532（2026-10-24，SR 自查 5.8 导入方向）守：读入不从检查器取器件词（M531），派生行不从校验取功能判定的读法（M532），由 `test_ring_imports.py` 杀死。
 M533–M537（2026-10-24，需求按量分解）守：带参数的方面没有参数不问（M533）、参数在所选类别之外也问它的方面（M534）、计划按参数而不只按类别展开需求行（M535）、原文里没读进参数的带单位数字列成诊断（M536）、参数已写的数字不算没读（M537），由 `test_requirement_categories.py::ParameterDecompositionTests` 杀死。
 M538–M544（2026-10-24，需求行的 owners）守：有候选没写 owners 被拒（M538）、候选电路按方面的类型过滤（M539）、`owners: []` 要能定位的理由（M540）、OPEN 的需求不要求 owners（M541）、候选外的 owners 出诊断（M542）、校验重算候选（M543）、对比工具报 owners 差异（M544），由 `test_requirement_bindings.py::OwnerCandidateTests` 杀死。
+M545–M546（2026-10-24，可承接的电路按方面白名单过滤）守：系统功能（M545）和接口（M546）不在方面那一格里就不是可承接的电路，M539 改为电路类型不过滤；由 `test_requirement_bindings.py::OwnerCandidateTests` 杀死。

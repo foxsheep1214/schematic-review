@@ -146,67 +146,94 @@ class ResultTests(unittest.TestCase):
 
 
 class OwnerCandidateTests(unittest.TestCase):
-    """owners are recommended by the plan and required when there is a candidate (requirement owners, 2026-10-24):
-    a candidate is a circuit of the aspect's types, or any system function or interface, that owns an applicable row
-    of the aspect's rules; a requirement with a candidate and no `owners` is refused, `owners: []` needs a located
-    reason, and a requirement with no candidate is judged on its row (`self_judged: NO_OWNER_CANDIDATE`)."""
+    """owners (承接电路) are recommended by the plan and required when there is a candidate (requirement owners,
+    2026-10-24): a candidate (可承接的电路) is a circuit of the aspect's types, a system function the aspect lists, or
+    an interface of a kind the aspect lists, that owns an applicable row of the aspect's rules; a requirement with a
+    candidate and no `owners` is refused, `owners: []` needs a located reason, and a requirement with no candidate is
+    judged on its row (`self_judged: NO_OWNER_CANDIDATE`)."""
 
-    def confirmed(self, owners=None, **fields):
-        db, value = board(owners)
-        for item in value['requirements']:
-            if item['id'] == 'REQ-OPEN-01':
-                item['status'] = 'CONFIRMED'
-                item.update(fields)
-        return db, value
+    def pinout(self, status='CONFIRMED', **fields):
+        """The sample board (connector J1 → interface EXT-J1 with a DEV-D03 row) and a pin-definition requirement."""
+        from test_plan_review import sample_db
+        from test_requirement_source import doc_for
+        item = dict({'id': 'REQ-PIN', 'categories': ['PROTOCOL'], 'interpretation': 'J1 的每个引脚按需求定义',
+                     'status': status}, **fields)
+        return sample_db(), {'schema_version': 4, 'requirement_source': doc_for({'REQ-PIN': '对外连接器引脚定义见附表'}),
+                             'requirements': [item]}
 
-    def test_candidates_are_circuits_of_the_aspect_types_and_every_system_function_or_interface(self):
+    def test_candidates_follow_the_aspect_cell_for_circuits_system_functions_and_interfaces(self):
         checks = [{'id': 'a', 'rule': 'PWR-E01', 'applicability': 'APPLICABLE', 'owner': {'kind': 'CIRCUIT', 'id': 'C1'}},
                   {'id': 'b', 'rule': 'PWR-E01', 'applicability': 'APPLICABLE', 'owner': {'kind': 'CIRCUIT', 'id': 'C2'}},
                   {'id': 'c', 'rule': 'PWR-C15', 'applicability': 'NOT_APPLICABLE', 'owner': {'kind': 'CIRCUIT', 'id': 'C3'}},
-                  {'id': 'd', 'rule': 'PWR-E01', 'applicability': 'APPLICABLE', 'owner': {'kind': 'SYSTEM', 'id': 'SYS-POWER'}},
-                  {'id': 'e', 'rule': 'DEV-C01', 'applicability': 'APPLICABLE', 'owner': {'kind': 'CIRCUIT', 'id': 'C1'}}]
+                  {'id': 'd', 'rule': 'PWR-C01', 'applicability': 'APPLICABLE', 'owner': {'kind': 'SYSTEM', 'id': 'SYS-POWER'}},
+                  {'id': 'e', 'rule': 'PWR-C14', 'applicability': 'APPLICABLE', 'owner': {'kind': 'INTERFACE', 'id': 'SUP-VCC'}},
+                  {'id': 'f', 'rule': 'DEV-D03', 'applicability': 'APPLICABLE', 'owner': {'kind': 'INTERFACE', 'id': 'EXT-J1'}},
+                  {'id': 'g', 'rule': 'PWR-C02', 'applicability': 'APPLICABLE', 'owner': {'kind': 'SYSTEM', 'id': 'SYS-POWER'}},
+                  {'id': 'h', 'rule': 'PRO-D03', 'applicability': 'APPLICABLE', 'owner': {'kind': 'INTERFACE', 'id': 'EXT-J1'}}]
         table = [{'kind': 'CIRCUIT', 'id': 'C1', 'type': 'POWER_CONVERTER'}, {'kind': 'CIRCUIT', 'id': 'C2', 'type': 'I2C'},
                  {'kind': 'CIRCUIT', 'id': 'C3', 'type': 'POWER_CONVERTER'}]
-        row = {'rule': 'REQ-D01', 'object': {'aspect': 'OUTPUT_LEVELS'}}
-        self.assertEqual(rb.candidates(checks, row, table), [{'id': 'C1', 'kind': 'CIRCUIT', 'type': 'POWER_CONVERTER'},
-                                                              {'id': 'SYS-POWER', 'kind': 'SYSTEM'}])
-        self.assertEqual(rb.candidates(checks, {'rule': 'REQ-D01', 'object': {'aspect': 'TEMPERATURE_GRADE'}}, table), [])
-        self.assertEqual(rb.candidates(checks, {'rule': 'REQ-D01', 'object': {'aspect': 'FUNCTION_PRESENT'}}, table), [])
-        for aspect, types in catalog.ASPECT_OWNER_TYPES.items():
+        interfaces = {'interfaces': [{'id': 'SUP-VCC', 'kind': 'SUPPLY'}, {'id': 'EXT-J1', 'kind': 'EXTERNAL'}]}
+        row = lambda aspect: {'rule': 'REQ-D01', 'object': {'aspect': aspect}}
+        # OUTPUT_LEVELS: converter circuits yes, an I2C circuit no, SYS-POWER no (not in the cell), the supply interface
+        # only through a rule the aspect carries.
+        self.assertEqual(rb.candidates(checks, row('OUTPUT_LEVELS'), table, interfaces),
+                         [{'id': 'C1', 'kind': 'CIRCUIT', 'type': 'POWER_CONVERTER'}])
+        self.assertEqual(rb.candidates(checks, row('OUTPUT_ACCURACY'), table, interfaces),
+                         [{'id': 'SUP-VCC', 'kind': 'INTERFACE', 'type': 'SUPPLY'}])
+        self.assertEqual(rb.candidates(checks, row('OUTPUT_LIMITS'), table, interfaces), [])
+        self.assertEqual(rb.candidates(checks, row('CONVERTER_INPUT_RANGE'), table, interfaces),
+                         [{'id': 'SYS-POWER', 'kind': 'SYSTEM'}])
+        self.assertEqual(rb.candidates(checks, row('EXTERNAL_PINOUT'), table, interfaces),
+                         [{'id': 'EXT-J1', 'kind': 'INTERFACE', 'type': 'EXTERNAL'}])
+        # An interface of a kind the cell does not list is not a candidate even when it owns a row of the aspect's rules.
+        self.assertEqual(rb.candidates(checks, row('FAULT_RESPONSE'), table, interfaces), [])
+        self.assertEqual(rb.candidates(checks, row('TEMPERATURE_GRADE'), table, interfaces), [])
+        self.assertEqual(rb.candidates(checks, row('FUNCTION_PRESENT'), table, interfaces), [])
+        for aspect, cell in catalog.ASPECT_OWNER_TYPES.items():
             self.assertIn(aspect, catalog.ASPECT_RULES)
             self.assertNotIn(aspect, catalog.BOARD_ASPECTS)
-            self.assertTrue(all(any(c.name == t for c in catalog.CIRCUIT_TYPES) for t in types), aspect)
+            self.assertTrue(all(any(c.name == t for c in catalog.CIRCUIT_TYPES) for t in cell.circuits), aspect)
+            self.assertTrue(all(s in catalog.SYSTEM_FUNCTIONS for s in cell.systems), aspect)
+            self.assertTrue(all(k in catalog.INTERFACE_SUBJECTS for k in cell.interfaces), aspect)
+            self.assertTrue(cell.circuits or cell.systems or cell.interfaces, aspect)
 
-    def test_the_plan_writes_candidates_and_an_open_requirement_needs_no_owners(self):
+    def test_a_system_function_outside_the_cell_is_not_a_candidate(self):
+        # SYS-POWER owns the PWR-C01 row the OUTPUT_LIMITS aspect carries, but the output cell names no system function:
+        # binding an output-limit requirement to the power budget would pass it without any row checking a limit.
         plan = build_review_plan(*board())
         row = req_row(plan, 'REQ-OPEN-01', 'OUTPUT_LIMITS')
-        self.assertEqual(row['owner_candidates'], [{'id': 'SYS-POWER', 'kind': 'SYSTEM'}])
+        self.assertEqual(row['owner_candidates'], [])
+        self.assertEqual(rb.errors(plan), [])
+
+    def test_the_plan_writes_candidates_and_an_open_requirement_needs_no_owners(self):
+        plan = build_review_plan(*self.pinout(status='OPEN'))
+        row = req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT')
+        self.assertEqual(row['owner_candidates'], [{'id': 'EXT-J1', 'kind': 'INTERFACE', 'type': 'EXTERNAL'}])
         self.assertNotIn('requirement_owners', row)
         self.assertNotIn('self_judged', row)
         self.assertEqual(rb.errors(plan), [])
 
     def test_a_requirement_with_a_candidate_and_no_owners_is_refused_naming_the_candidate(self):
         with self.assertRaises(ValueError) as caught:
-            build_review_plan(*self.confirmed())
-        self.assertIn('REQ-OPEN-01.owners 缺', str(caught.exception))
-        self.assertIn('SYS-POWER（SYSTEM）', str(caught.exception))
-        self.assertIn('OUTPUT_LIMITS', str(caught.exception))
+            build_review_plan(*self.pinout())
+        self.assertIn('REQ-PIN.owners 缺', str(caught.exception))
+        self.assertIn('EXT-J1（EXTERNAL）', str(caught.exception))
+        self.assertIn('EXTERNAL_PINOUT', str(caught.exception))
 
     def test_owners_empty_needs_a_located_reason_and_leaves_the_row_to_itself(self):
-        db, value = self.confirmed(owners=None, owners_=None)
-        value['requirements'][2]['owners'] = []
+        db, value = self.pinout(owners=[])
         self.assertTrue(any('no_owner_reason' in e for e in validate_intent(value)))
-        value['requirements'][2]['no_owner_reason'] = '输出纹波由板外滤波决定'
+        value['requirements'][0]['no_owner_reason'] = '由线束方另行给出'
         self.assertTrue(any('no_owner_reason' in e for e in validate_intent(value)))
-        value['requirements'][2]['no_owner_reason'] = 'VCC_3V3 由 J1 直接供入，板上没有变换器电路（第 2 页）'
+        value['requirements'][0]['no_owner_reason'] = 'J1 的引脚定义由线束方给出（需求附表第 2 页）'
         self.assertFalse(any('owners' in e for e in validate_intent(value)))
         plan = build_review_plan(db, value)
-        row = req_row(plan, 'REQ-OPEN-01', 'OUTPUT_LIMITS')
+        row = req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT')
         self.assertEqual(row['requirement_owners'], [])
         self.assertEqual(row['bound_checks'], [])
         self.assertEqual(row['self_judged'], 'DECLARED')
         self.assertEqual(rb.errors(plan), [])
-        value['requirements'][2]['owners'] = ['SYS-POWER']
+        value['requirements'][0]['owners'] = ['EXT-J1']
         self.assertTrue(any('no_owner_reason 只在' in e for e in validate_intent(value)))
 
     def test_no_candidate_means_the_row_is_judged_on_itself(self):
@@ -218,46 +245,43 @@ class OwnerCandidateTests(unittest.TestCase):
 
     def test_owners_outside_the_candidates_are_a_printed_diagnostic_not_a_refusal(self):
         from plan_review import diagnostic_lines
-        db, value = self.confirmed({'REQ-OPEN-01': ['SYS-MONITOR']})
+        db, value = self.pinout(owners=['SYS-POWER'])
         plan = build_review_plan(db, value)
         found = [d for d in plan['diagnostics'] if d['code'] == 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES']
         self.assertEqual([(d['requirement'], d['owners'], d['candidates']) for d in found],
-                         [('REQ-OPEN-01', ['SYS-MONITOR'], ['SYS-POWER'])])
-        self.assertTrue(any('SYS-MONITOR' in line for line in diagnostic_lines(plan, db, value)))
-        plan = build_review_plan(*self.confirmed({'REQ-OPEN-01': ['SYS-POWER']}))
+                         [('REQ-PIN', ['SYS-POWER'], ['EXT-J1'])])
+        self.assertTrue(any('SYS-POWER' in line for line in diagnostic_lines(plan, db, value)))
+        plan = build_review_plan(*self.pinout(owners=['EXT-J1']))
         self.assertEqual([d for d in plan['diagnostics'] if d['code'] == 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES'], [])
-        self.assertEqual(req_row(plan, 'REQ-OPEN-01', 'OUTPUT_LIMITS')['bound_checks'], ['PWR-C01.VCC-3V3'])
+        self.assertEqual(req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT')['bound_checks'], ['DEV-D03.J1'])
 
     def test_the_validator_recomputes_candidates_and_self_judged(self):
-        plan = build_review_plan(*board())
-        req_row(plan, 'REQ-OPEN-01', 'OUTPUT_LIMITS')['owner_candidates'] = []
+        plan = build_review_plan(*self.pinout(status='OPEN'))
+        req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT')['owner_candidates'] = []
         self.assertTrue(any('owner_candidates' in e for e in rb.errors(plan)))
         plan = build_review_plan(*board())
         req_row(plan, 'REQ-IN-01', 'INPUT_THRESHOLDS').pop('self_judged')
         self.assertTrue(any('self_judged' in e for e in rb.errors(plan)))
-        plan = build_review_plan(*board())
-        row = req_row(plan, 'REQ-OPEN-01', 'OUTPUT_LIMITS')
-        row['object']['requirement_status'] = 'CONFIRMED'
+        plan = build_review_plan(*self.pinout(status='OPEN'))
+        req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT')['object']['requirement_status'] = 'CONFIRMED'
         self.assertTrue(any('owners 缺' in e for e in rb.errors(plan)))
 
     def test_compare_reports_owners_and_judging_differences_per_requirement(self):
         import compare_reviews
-        a = {'where': 'A', 'plan': build_review_plan(*self.confirmed({'REQ-OPEN-01': ['SYS-POWER']})), 'results': {}}
-        db, value = self.confirmed()
-        value['requirements'][2].update(owners=[], no_owner_reason='VCC_3V3 由 J1 直接供入')
-        b = {'where': 'B', 'plan': build_review_plan(db, value), 'results': {}}
+        a = {'where': 'A', 'plan': build_review_plan(*self.pinout(owners=['EXT-J1'])), 'results': {}}
+        b = {'where': 'B', 'plan': build_review_plan(*self.pinout(owners=[], no_owner_reason='J1 的引脚定义由线束方给出')),
+             'results': {}}
         report = compare_reviews.requirement_owners(a, b)
         diff = {r['requirement']: r for r in report['rows'] if not r['same']}
-        self.assertEqual(list(diff), ['REQ-OPEN-01'])
-        self.assertEqual(diff['REQ-OPEN-01']['A']['owners'], ['SYS-POWER'])
-        self.assertEqual(diff['REQ-OPEN-01']['A']['judged']['OUTPUT_LIMITS'], 'DERIVED')
-        self.assertEqual(diff['REQ-OPEN-01']['B']['owners'], [])
-        self.assertEqual(diff['REQ-OPEN-01']['B']['judged']['OUTPUT_LIMITS'], 'SELF')
+        self.assertEqual(list(diff), ['REQ-PIN'])
+        self.assertEqual(diff['REQ-PIN']['A']['owners'], ['EXT-J1'])
+        self.assertEqual(diff['REQ-PIN']['A']['judged']['EXTERNAL_PINOUT'], 'DERIVED')
+        self.assertEqual(diff['REQ-PIN']['B']['owners'], [])
+        self.assertEqual(diff['REQ-PIN']['B']['judged']['EXTERNAL_PINOUT'], 'SELF')
         self.assertEqual(report['different'], 1)
         text = compare_reviews.markdown(compare_reviews.compare(a, b))
         self.assertIn('## 需求的承接电路与判法', text)
-        self.assertIn('| REQ-OPEN-01 | SYS-POWER |', text)
-
+        self.assertIn('| REQ-PIN | EXT-J1 |', text)
 
 if __name__ == '__main__':
     unittest.main()

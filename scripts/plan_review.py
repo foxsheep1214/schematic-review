@@ -639,7 +639,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             check['owner'] = row_owner.owner(check, parts, nets)
         plan['owners'] = row_owner.table(circuits, parts)
         plan['interfaces'] = self.interfaces
-        requirement_bindings.attach(plan['checks'], plan['owners'])
+        requirement_bindings.attach(plan['checks'], plan['owners'], plan['interfaces'])
         missing = requirement_bindings.missing_owner_errors(plan['checks'])
         if missing:
             raise ValueError('intent.json 的需求没写承接电路 owners（有可承接的电路时必填）:\n  - ' + '\n  - '.join(missing))

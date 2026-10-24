@@ -29,25 +29,34 @@ def bound(checks, row):
                   and (not owners or (c.get('owner') or {}).get('id') in owners))
 
 
-def candidates(checks, row, owners_table):
-    """The owners a requirement row could name: circuits of the aspect's types (catalog.ASPECT_OWNER_TYPES), and every
-    system function and interface, that own an applicable row of the aspect's rules. Board aspects have none."""
+def _interface_kinds(interfaces):
+    items = interfaces.get('interfaces') if isinstance(interfaces, dict) else interfaces
+    return {i['id']: i.get('kind') for i in items or () if isinstance(i, dict) and i.get('id')}
+
+
+def candidates(checks, row, owners_table, interfaces=None):
+    """The owners a requirement row could name (可承接的电路): the circuits of the aspect's types, the system functions
+    and the interface kinds its cell of catalog.ASPECT_OWNER_TYPES lists, that own an applicable row of the aspect's
+    rules. Owners outside the cell are not candidates; board aspects have none."""
     aspect = (row.get('object') or {}).get('aspect')
     rules = catalog.ASPECT_RULES.get(aspect, ())
-    if not rules or aspect in catalog.BOARD_ASPECTS:
+    cell = catalog.ASPECT_OWNER_TYPES.get(aspect)
+    if not rules or aspect in catalog.BOARD_ASPECTS or cell is None:
         return []
     types = {e['id']: e.get('type') for e in owners_table or () if e.get('kind') == 'CIRCUIT'}
-    wanted = set(catalog.ASPECT_OWNER_TYPES.get(aspect, ()))
+    kinds = _interface_kinds(interfaces)
     found = {}
     for c in checks:
         owner = c.get('owner') or {}
         if c.get('rule') not in rules or c.get('applicability') != 'APPLICABLE' or not owner.get('id'):
             continue
-        if owner['kind'] == 'CIRCUIT' and types.get(owner['id']) not in wanted:
+        label = {'CIRCUIT': types.get(owner['id']), 'SYSTEM': owner['id'], 'INTERFACE': kinds.get(owner['id'])}.get(owner['kind'])
+        allowed = {'CIRCUIT': cell.circuits, 'SYSTEM': cell.systems, 'INTERFACE': cell.interfaces}.get(owner['kind'], ())
+        if label not in allowed:
             continue
         entry = {'id': owner['id'], 'kind': owner['kind']}
-        if owner['kind'] == 'CIRCUIT':
-            entry['type'] = types.get(owner['id'])
+        if owner['kind'] != 'SYSTEM':
+            entry['type'] = label
         found[owner['id']] = entry
     return [found[k] for k in sorted(found)]
 
@@ -119,12 +128,12 @@ COVERAGE = 'REQ-Q07'
 BINDERS = {'REQ-D01': bound, COVERAGE: coverage_bound}
 
 
-def attach(checks, owners_table=None):
+def attach(checks, owners_table=None, interfaces=None):
     for row in checks:
         if row.get('rule') in BINDERS:
             row['bound_checks'] = BINDERS[row['rule']](checks, row)
         if row.get('rule') == 'REQ-D01':
-            row['owner_candidates'] = candidates(checks, row, owners_table)
+            row['owner_candidates'] = candidates(checks, row, owners_table, interfaces)
             reason = self_judged(row)
             if reason:
                 row['self_judged'] = reason
@@ -149,7 +158,7 @@ def errors(plan):
         if (row.get('bound_checks') or []) != bound(checks, row):
             out.append('%s: bound_checks differ from the rows of %s its owners carry; rebuild the plan'
                        % (row.get('id'), '、'.join(catalog.ASPECT_RULES.get((row.get('object') or {}).get('aspect'), ())) or '—'))
-        if (row.get('owner_candidates') or []) != candidates(checks, row, plan.get('owners')):
+        if (row.get('owner_candidates') or []) != candidates(checks, row, plan.get('owners'), plan.get('interfaces')):
             out.append('%s: owner_candidates differ from the owners of the applicable rows its aspect\'s rules have; rebuild the plan'
                        % row.get('id'))
         if row.get('self_judged') != self_judged(row):

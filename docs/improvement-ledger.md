@@ -7,6 +7,25 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Candidate owners follow the aspect cell for system functions and interfaces too (SR framework review, 2026-10-24)
+
+The first implementation filtered only circuits by the aspect's types and let every system function and interface that
+owned a row of the aspect's rules be a candidate. SYS-POWER owns the power-budget row PWR-C01, which the OUTPUT_LIMITS
+aspect carries, so on almost every board it was the candidate for an output-limit requirement, and a reviewer who
+followed the prompt bound "输出限流 3 A" to the power budget: a PASS there passed the requirement with no row checking
+a limit. The proposal's table never listed SYS-POWER there. Now each cell of `catalog.ASPECT_OWNER_TYPES` lists the
+circuit types, the system functions and the interface kinds that may carry the aspect (`AspectOwners`), and
+`requirement_bindings.candidates` filters all three; an owner outside the cell is not a candidate whatever it owns. The
+cells follow the proposal's table: input aspects → SYS-POWER; output aspects → SUPPLY interfaces; protocol aspects →
+CIRCUIT_PAIR and LINK interfaces; external pinout → EXTERNAL interfaces; fault aspects → SYS-MONITOR and SYS-SEQUENCE;
+measurement → SYS-MONITOR; timing → SYS-SEQUENCE; clock → none. The catalog document's column lists the three parts.
+Owner-candidate tests move to the sample board, whose connector J1 makes an EXTERNAL interface with a DEV-D03 row, and
+one test states that SYS-POWER is not a candidate for OUTPUT_LIMITS. 2051 tests pass, KiCad replay 195/195, typical circuits unchanged, all 62 mutations on changed files killed (M165, M543 repointed; M546 first survived until the test gained an interface of the wrong kind owning a row of the aspect's rules).
+
+- Event: user:2026-10-24 (SR framework review: "改修法 A：系统功能和接口也按方面白名单过滤，表按提案里那张候选表写。")
+- Causes: knowledge_wrong 1
+- Changed: docs/2026-10-24-requirement-owners-proposal.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/check-catalog.md, references/plan-and-results.md, scripts/catalog.py, scripts/plan_review.py, scripts/requirement_bindings.py, scripts/tests/test_requirement_bindings.py
+
 ## Plain words for requirement owners (SR framework review, 2026-10-24)
 
 The reviewer-facing text called a requirement's owners "所属" or left the English, and the plan's candidate owners

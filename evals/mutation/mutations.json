@@ -1123,7 +1123,7 @@
   "id": "M165",
   "name": "the planner does not bind requirement rows",
   "file": "scripts/plan_review.py",
-  "old": "        requirement_bindings.attach(plan['checks'], plan['owners'])",
+  "old": "        requirement_bindings.attach(plan['checks'], plan['owners'], plan['interfaces'])",
   "new": "        pass"
  },
  {
@@ -3734,15 +3734,15 @@
   "id": "M538",
   "name": "a requirement with a candidate owner and no owners is planned anyway",
   "file": "scripts/plan_review.py",
-  "old": "        if missing:\n            raise ValueError('intent.json 的需求没写 owners（有候选时必填）",
-  "new": "        if False:\n            raise ValueError('intent.json 的需求没写 owners（有候选时必填）"
+  "old": "        if missing:\n            raise ValueError('intent.json 的需求没写承接电路 owners（有可承接的电路时必填）",
+  "new": "        if False:\n            raise ValueError('intent.json 的需求没写承接电路 owners（有可承接的电路时必填）"
  },
  {
   "id": "M539",
   "name": "candidate circuits are not filtered by the aspect's types",
   "file": "scripts/requirement_bindings.py",
-  "old": "        if owner['kind'] == 'CIRCUIT' and types.get(owner['id']) not in wanted:\n            continue",
-  "new": "        if False:\n            continue"
+  "old": "        allowed = {'CIRCUIT': cell.circuits, 'SYSTEM': cell.systems, 'INTERFACE': cell.interfaces}.get(owner['kind'], ())",
+  "new": "        allowed = {'CIRCUIT': (types.get(owner['id']),), 'SYSTEM': cell.systems, 'INTERFACE': cell.interfaces}.get(owner['kind'], ())"
  },
  {
   "id": "M540",
@@ -3769,7 +3769,7 @@
   "id": "M543",
   "name": "the validator does not recompute owner candidates",
   "file": "scripts/requirement_bindings.py",
-  "old": "        if (row.get('owner_candidates') or []) != candidates(checks, row, plan.get('owners')):",
+  "old": "        if (row.get('owner_candidates') or []) != candidates(checks, row, plan.get('owners'), plan.get('interfaces')):",
   "new": "        if False:"
  },
  {
@@ -3778,5 +3778,19 @@
   "file": "scripts/compare_reviews.py",
   "old": "        same = ea is not None and eb is not None and ea['owners'] == eb['owners'] and ea['judged'] == eb['judged']",
   "new": "        same = True"
+ },
+ {
+  "id": "M545",
+  "name": "system functions are candidates whatever the aspect cell says",
+  "file": "scripts/requirement_bindings.py",
+  "old": "        allowed = {'CIRCUIT': cell.circuits, 'SYSTEM': cell.systems, 'INTERFACE': cell.interfaces}.get(owner['kind'], ())",
+  "new": "        allowed = {'CIRCUIT': cell.circuits, 'SYSTEM': (owner['id'],), 'INTERFACE': cell.interfaces}.get(owner['kind'], ())"
+ },
+ {
+  "id": "M546",
+  "name": "interfaces are candidates whatever their kind",
+  "file": "scripts/requirement_bindings.py",
+  "old": "        allowed = {'CIRCUIT': cell.circuits, 'SYSTEM': cell.systems, 'INTERFACE': cell.interfaces}.get(owner['kind'], ())",
+  "new": "        allowed = {'CIRCUIT': cell.circuits, 'SYSTEM': cell.systems, 'INTERFACE': (kinds.get(owner['id']),)}.get(owner['kind'], ())"
  }
 ]

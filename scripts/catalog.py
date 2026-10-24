@@ -1290,18 +1290,27 @@ BOARD_ASPECTS = ('TEMPERATURE_GRADE', 'TEMPERATURE_DERATING', 'LIFETIME_BASIS', 
 # the circuits of these types, and every system function and interface, that own an applicable row of the aspect's
 # rules; with a candidate the requirement must name its owners (or `owners: []` with a located reason). Board aspects
 # bind every row and have no candidates.
+# Each cell lists the circuit types, the system functions and the interface kinds that may carry the aspect; an owner
+# of another type, function or kind is not a candidate even when it owns a row of the aspect's rules (user, 2026-10-24:
+# 系统功能和接口也按方面白名单过滤).
+AspectOwners = namedtuple('AspectOwners', 'circuits systems interfaces')
 _INPUT_TYPES = ('POWER_PROTECTION', 'POWER_CONVERTER')
+_FAULT_TYPES = ('POWER_PROTECTION', 'POWER_CONVERTER', 'ANALOG')
 _BUS_TYPES = ('USB', 'CAN', 'RS485', 'UART', 'SPI', 'I2C', 'ETHERNET', 'HSSERIAL', 'AV', 'STORAGE', 'DDR')
+_INPUT = AspectOwners(_INPUT_TYPES, ('SYS-POWER',), ())
+_OUTPUT = AspectOwners(('POWER_CONVERTER',), (), ('SUPPLY',))
+_PROTOCOL = AspectOwners(_BUS_TYPES, (), ('CIRCUIT_PAIR', 'LINK'))
+_FAULT = AspectOwners(_FAULT_TYPES, ('SYS-MONITOR', 'SYS-SEQUENCE'), ())
+_MEASUREMENT = AspectOwners(('ANALOG',), ('SYS-MONITOR',), ())
+_TIMING = AspectOwners(('STARTUP',), ('SYS-SEQUENCE',), ())
 ASPECT_OWNER_TYPES = OrderedDict([
-    ('INPUT_STAGE_RATING', _INPUT_TYPES), ('INPUT_THRESHOLDS', _INPUT_TYPES), ('CONVERTER_INPUT_RANGE', _INPUT_TYPES),
-    ('OUTPUT_LEVELS', ('POWER_CONVERTER',)), ('OUTPUT_LIMITS', ('POWER_CONVERTER',)), ('OUTPUT_ACCURACY', ('POWER_CONVERTER',)),
-    ('PROTOCOL_ROLE', _BUS_TYPES), ('PORT_DETECTION', _BUS_TYPES), ('EXTERNAL_PINOUT', ()),
-    ('FAULT_DETECTION', ('POWER_PROTECTION', 'POWER_CONVERTER', 'ANALOG')),
-    ('FAULT_THRESHOLD', ('POWER_PROTECTION', 'POWER_CONVERTER', 'ANALOG')),
-    ('FAULT_RESPONSE', ('POWER_PROTECTION', 'POWER_CONVERTER', 'ANALOG')),
-    ('MEASUREMENT_CHAIN', ('ANALOG',)), ('MEASUREMENT_ACCURACY', ('ANALOG',)),
-    ('POWER_SEQUENCE', ('STARTUP',)), ('STARTUP_TIMING', ('STARTUP',)),
-    ('CLOCK_ACCURACY', ('CLOCK',)),
+    ('INPUT_STAGE_RATING', _INPUT), ('INPUT_THRESHOLDS', _INPUT), ('CONVERTER_INPUT_RANGE', _INPUT),
+    ('OUTPUT_LEVELS', _OUTPUT), ('OUTPUT_LIMITS', _OUTPUT), ('OUTPUT_ACCURACY', _OUTPUT),
+    ('PROTOCOL_ROLE', _PROTOCOL), ('PORT_DETECTION', _PROTOCOL), ('EXTERNAL_PINOUT', AspectOwners((), (), ('EXTERNAL',))),
+    ('FAULT_DETECTION', _FAULT), ('FAULT_THRESHOLD', _FAULT), ('FAULT_RESPONSE', _FAULT),
+    ('MEASUREMENT_CHAIN', _MEASUREMENT), ('MEASUREMENT_ACCURACY', _MEASUREMENT),
+    ('POWER_SEQUENCE', _TIMING), ('STARTUP_TIMING', _TIMING),
+    ('CLOCK_ACCURACY', AspectOwners(('CLOCK',), (), ())),
 ])
 
 
@@ -1851,7 +1860,7 @@ def render_markdown():
               '没写 `owners` 时，全板方面绑定全板这些规则的行），结论取绑定行中最差者，需求行不再另判；'
               '没有检查承担的方面由需求行自己判。', '',
               '需求的承接电路写在 `owners`（落实这条需求的功能电路；系统功能和接口也可以承接）。计划替每条需求找出可承接的电路：'
-              '下表“可承接的电路”列的类型里、拥有承担该方面的行的电路，以及拥有这些行的系统功能和接口。'
+              '下表“可承接的电路”列出的电路类型、系统功能和接口种类里，拥有承担该方面的行的那些；表外的所属不算。'
               '有可承接的电路而没写 owners 的需求，计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []` 加能定位的 `no_owner_reason`，需求行自判。', '',
               '| 审查方面 | 何时问 | 判据模板 | 承担的检查 | 可承接的电路 |', '|---|---|---|---|---|']
     for key, aspect in REQUIREMENT_ASPECTS.items():
@@ -1859,9 +1868,12 @@ def render_markdown():
         asked = '原文有 ' + ' / '.join(aspect.parameters) if aspect.parameters else '类别选中'
         if key in BOARD_ASPECTS:
             owners = '全板，不要求 owners'
-        elif key in ASPECT_RULES:
-            owners = '、'.join(ASPECT_OWNER_TYPES.get(key, ())) or '—'
-            owners += '；拥有这些行的系统功能与接口'
+        elif key in ASPECT_OWNER_TYPES:
+            cell = ASPECT_OWNER_TYPES[key]
+            owners = '；'.join(part for part in (
+                '电路 ' + '、'.join(cell.circuits) if cell.circuits else '',
+                '系统功能 ' + '、'.join(cell.systems) if cell.systems else '',
+                '接口 ' + '、'.join(cell.interfaces) if cell.interfaces else '') if part)
         else:
             owners = '—'
         lines.append('| %s %s | %s | %s | %s%s | %s |' % (key, aspect.name, asked, _cell(aspect.template), carried,
