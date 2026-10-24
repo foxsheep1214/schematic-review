@@ -133,7 +133,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱动、REQ 需求与闭环、CFG 配置（可编程器件逐配置组，组写在 `intent.devices.<位号>.configurable`；硬件按允许的配置范围判，配置表缺口只挡 CFG-D01 行和需求行）。
 方式：A 自动扫描、E 保证值核对、T 连接追踪、C 工程计算、D 条款核对、V 图面目检、Q 覆盖审计、H 版本比对。
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（网表扫描、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
-计划里没有、审查员认为该查的项不直接加行，登记到 `intent.rule_gaps`（对象、按哪条规则判、判据、缺什么规则、依据），计划工具写成 `REVIEWER_ADDED` 行：照常判，单独计数，不计入两份记录的配对率；门禁列出每条缺口，记进改进台账，变成工具生成的规则。直接加进计划的行被拒。
+计划里没有、审查员认为该查的项不直接加行（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/plan-and-results.md#一intentjsonschema_version-4)。
 
 功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（第 2 步）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各行写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
 
@@ -244,33 +244,15 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 判断的单位是**功能**，不是检查行。分三小步：
 
-1. **功能判定**：按计划 `functions[]` 的框架逐个填写 `review-results.json` 的 `functions[]`（字段与 F1–F12 见
-   [功能判定](references/plan-and-results.md#功能判定functions)）。框架自带问题、检查行、每条规则的盲区和五步核对单；
-   审查员读手册和自己的计算，不翻规则书。先列手册里与这个功能有关的条件（`conditions`）：每条写页码/表号/节名或点名的网络、引脚，
-   “见 engineering.md”不定位任何东西；再写它是哪种证据（`kind`）：数字限值 NUMERIC_LIMIT（`limit` 的 min/max 与单位、引出这个数、`regime`），
-   强制条款 MANDATORY_CLAUSE（引出“必须/不得”句、`applies`；典型应用不算），网表事实 NETLIST_FACT（点名网络或 REF.PIN），
-   典型参考 TYPICAL_REFERENCE，工程假设 ENGINEERING_ASSUMPTION；每条判断（`judgements`）至少引一条强制条款或网表事实，数字限值只在余量里比较；
-   功能的 `objects` 就是电路（候选经决定）的位号和网络，要扩大先改决定（merge/split）或候选规则，再重生成候选与计划；
-   一个电路的缺口和失败写在它自己的功能里（开放项、失败项）；计划电路的行（框架成员）挂到审查员自建的功能上，
-   或从自建功能取 `open_ref`/`fail_ref`，校验拒收。跨电路的缺口只写一次，写在拥有缺失量的框架里，开放项的 `decides`
-   另加一条影响条目，`check_ids` 点名另一电路受它挡住的行，`derive_rows.py` 就让那些行指向这个开放项（失败项不跨功能）。
-   自建功能只装不属于任何框架的行（器件、检查器、全板行），对象（位号）全在某个电路框架里的拒收，改写进那个框架；
-   计划漏了电路就在 `intent.circuit_decisions` 登记 add 决定后重生成计划；再算（`calculation`），
-   算出余量就按它的依据（`margin.basis.kind`）下结论：保证最坏值 GUARANTEED_BOUND 满足判 PASS，不满足只是没证明；确会出现的工况 REACHABLE_CASE
-   不满足判 FAIL；完整最坏范围 EXACT_ENVELOPE 两头都判；估算 ESTIMATE 什么都不判，只有用于必需功能或性能、写了
-   `consequence_class` 和样机实测移交 `handoff` 时满足判 PASS（损坏、过热、保护类规则除外）。`comparison` 为 GE 时零余量算满足、GT 时不算；
-   与限值的 `regime` 不同要写 `conversion`。证明不满足的余量记失败项且发现项带改法，设计里已有的值不记“设计没定”；
-   余量、判断和影响条目不写 `states` 时只覆盖不带状态的行，不覆盖全部状态；
-   本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`，`undecided` 列出没选的器件参数，BOM 已写的不算；由另一个开项决定的写 `depends_on`）；另一阶段欠的交付物（磁件图纸、固件应用能力确认）记
-   DELIVERABLE_PENDING（`deliverable`+`owner`+`assumed`）；只有厂家才知道、公开资料界限（保证限值、相邻测试点单调夹出的界限、
-   公开特性表、典型曲线加余量、应用笔记公式）也兜不住的参数才记 VENDOR_DATUM，并写查过哪几条、为什么不够、
-   公开资料界限下的最坏情况与余量（`worst_case.bound`/`margin`；决定结论的余量写 `basis.derivation` 与 `basis.corners`，器件参数按[工作点定界表](references/bounding-table.md)的推法和公式定界（余量写 `basis.cell`/`method`/`formula`，门禁重算），判定不出界的先用数答 `monotonic_tried`（定界表的格、开着哪一侧、工作点范围、测试点数值，工作点在两个测试点之间就要定界）；没有界就列 `curves_checked`，手册写了这种用法只缺数值的写 `specified_by`（不能是没覆盖工作点的测试点；引典型曲线（`curve: true`）时写 `typical_estimate`，典型值都不够判失败），没写这种用法的是设计风险，记失败项；厂家参考电路同接法、本板负载不重于参考电路的可判通过）。
-   没有数值的方面写 `judgements`（方面、条件、说明了什么）；行只有本方面本状态有证明通过的余量或 judgement 才 PASS，没人判过的方面不默认通过。
-   开放项的 `decides` 每条是一条影响条目：方面、状态、`via`（缺的量进到哪条条件或哪个计算输入）和 `rationale`（现有的界为什么不够）；
-   一个缺口挡几个方面不限数，超过 3 个只提示复看。
-   不属于任何电路框架的行（器件、检查器、全板行）可以自建功能，同样校验；要新电路写 add 决定，不自建功能装它。
-   隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是隔离/变换器功能的方面，在同一个功能判定里写条款与计算。
-   文档检查（DOC-*）不是功能电路：文档错误直接在行上判 FAIL 并写 finding，不包成功能。
+1. **功能判定**：按计划 `functions[]` 的框架逐个填写 `review-results.json` 的 `functions[]`；字段、条件的五种、余量依据和开放项
+   都按 [功能判定](references/plan-and-results.md#功能判定functions)。框架自带问题、检查行、每条规则的盲区和五步核对单，审查员读手册、自己算，不翻规则书。要点：
+   - 条件（`conditions`）先能定位，再写种类；判断（`judgements`）引强制条款或网表事实，数字限值只在余量里比较。
+   - `objects` 就是电路（候选经决定）的成员；要扩大或漏了电路，改 `intent.circuit_decisions` 后重生成。一个电路的缺口和失败写在它自己的功能里；
+     跨电路的缺口只写一次，影响条目用 `check_ids` 点名另一电路的行。自建功能只装不属于任何框架的行；文档检查（DOC-*）在行上判，不包成功能。
+   - 余量按 `margin.basis.kind` 下结论（GUARANTEED_BOUND 满足才 PASS、REACHABLE_CASE 不满足才 FAIL、EXACT_ENVELOPE 两头都判、ESTIMATE 不判，
+     例外见该节“估算判通过”）；器件参数按[工作点定界表](references/bounding-table.md)定界，门禁重算。
+   - 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，再分 DESIGN_VALUE / DELIVERABLE_PENDING / VENDOR_DATUM；
+     行只在本方面本状态有证明通过的余量或判断时 PASS，没人判过的方面不默认通过。
 2. **行派生**：跑 `derive_rows.py`（见第 7 步）；绑定了功能的行不手填，绑定了树上检查的需求行（`bound_checks`）取绑定行中最差的结论，也不手填。
 3. **手填剩余行**：图面目检、引脚表、器件身份、需求条款等事实性检查照下面的写法；这些行要判资料不足，也必须先建一个功能判定。
 
@@ -321,8 +303,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。
 - 已有资料尚未读算的项记 REVIEW_INCOMPLETE，本轮自己读算完；审查未完成时只交进度，`pack_review.py` 拒绝打包。
-  只剩 SR 工具自身限制、审查时已对照网表和原厂资料核对完的，按核对结论判定并写 `manual_verification`，不记 REVIEW_INCOMPLETE；
-  工具因缺输入（手册要求、intent 声明、证据）拦住的不是工具限制，补输入、重生成计划，`manual_verification` 覆盖不了。
+  只剩 SR 工具自身限制、已手工核完的写 `manual_verification`（什么算工具限制见 [单条检查](references/plan-and-results.md#单条检查)）。
 - 进报告的文字（任务、finding、handoff、notes）用白话，不用 [写法要求](references/report-and-remediation.md) 列出的词；
   `pack_review.py` 会检查。
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
@@ -353,7 +334,6 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 - 同一块板由两名审查员（或两次运行）各出一份记录时，用 `python3 scripts/compare_reviews.py <记录A> <记录B> --md compare.md` 对比：
   精确配对只按检查项标识（`check_key`：规则、规则版本、去掉电路名的对象、判据）配对，报配对率、已答比例和一致率，列出通过对失败和 P0/P1 分歧；
   按电路对齐的结果只作建议配对，确认后用 `--alias` 带位置引用加入精确配对。差异里反复出现的写法先找现有校验为什么放过，再加机器能数的护栏，不加措辞要求。
-  2026-10-21 的基线：两份记录各有 423 / 487 项检查，精确配对 234 项，一致 193 项（82.5 %），配对率 51.4 %。
 - 新脚本先在 [架构说明](references/architecture.md#二每个脚本属于哪一环) 归环归类：入口（执行流程里直接调用）、工具（特定情形手动调用）、库（只被导入）。只有入口写进执行流程；新增入口属于架构调整。
 - 工程规则身份由 `scripts/review_engine.py` 与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。
 - 规则编号、判据、审查要点归属和功能电路只在 `scripts/catalog.py` 登记，改后运行

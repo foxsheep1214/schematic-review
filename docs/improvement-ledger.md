@@ -7,6 +7,27 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Shorter, one place per rule, no dead code (SR self-check group 5, 2026-10-24)
+
+Group 5 of the self-check asked for concision. SKILL.md step 5's first sub-step goes from 25 lines to a short list with
+links to plan-and-results.md (5.1); the open-item cell of plan-and-results.md, about 3000 characters, becomes the common
+fields and a table of the six kinds with what each must and must not carry (5.2). Rules stated at length in several
+places keep one authority and a link elsewhere: rule_gaps (SKILL.md), the Zener low-current bound and the commodity-part
+50 % rule (evidence-proportionality.md), manual_verification (SKILL.md and verdicts-and-release.md) (5.3; the other
+topics listed were already one-line pointers). The stale report structure went in group 1 (5.4). The 2026-10-21
+baseline numbers in SKILL.md and the plan's version history and comparison narrative in plan-and-results.md go; that
+history is in architecture.md (5.5). `run_regression.py` and `tests/regression/` are deleted, and `solve_dividers.py`
+keeps only resistor value parsing (696 to 116 lines), moved to the reading libraries; the solver tests, the linear
+feedback tests and their fixture go with it, and wca-formulas.md says how a divider window is computed now (5.7,
+recorded in architecture.md). 5.6 (moving the per-parameter entries of evidence-proportionality.md into the bounding
+table) is left for the user: those entries are the cells' cited sources and the table is generated from the catalog.
+2035 tests pass (26 tested only deleted code), contract 515 (3 of those were contract tests), KiCad replay 195/195,
+typical circuits unchanged, all 7 mutations on changed files killed.
+
+- Event: user:2026-10-24 (SR self-check, "先改1、3、4、5组"; group 5 of docs/2026-10-24-sr-consistency-audit.md; 5.7: "两个都删")
+- Causes: judgment 5
+- Changed: README.md, SKILL.md, docs/improvement-ledger.md, references/architecture.md, references/datasheets.md, references/evidence-proportionality.md, references/plan-and-results.md, references/verdicts-and-release.md, references/wca-formulas.md, scripts/solve_dividers.py, scripts/tests/electrical_fixtures.py, scripts/tests/test_electrical_safety.py, scripts/tests/test_one_judgment.py, scripts/tests/test_review_v2.py, scripts/tests/test_solve_dividers.py
+
 ## One planning entry (SR self-check group 2, item 2.9, 2026-10-24)
 
 `plan_review.py` and `lint.py` each had a main that wrote the review plan, and the two had drifted apart in the intent

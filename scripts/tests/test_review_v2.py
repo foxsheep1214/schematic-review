@@ -10,9 +10,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from parse_netlist import parse_pstxnet, self_check, is_not_populated, build
 from plan_review import build_review_plan, validate_intent
 from lint import Lint
-from solve_dividers import Solver
 from diff_netlists import connected, evaluate_claims, validate_claims
-from test_solve_dividers import divider_db
 from test_lint import sample_db
 from test_requirement_source import doc_for
 
@@ -124,28 +122,6 @@ class V2Regressions(unittest.TestCase):
         self.assertEqual(board_intent.declared_kinds(ctx), board_intent.declared_kinds(analysis))
         self.assertEqual(board_intent.graph_db({'parts': {}}, ctx)['device_kinds']['Q1']['kind'], 'bjt')
         self.assertTrue(validate_intent(dict(intent, device_kinds_verified={})))
-
-    def test_shared_upper_lower_resistor_requires_node_analysis(self):
-        db = network({'R1': {'value': '1K'}, 'R2': {'value': '10K'}, 'R3': {'value': '20K'}},
-                     {'FB': ['R1.1'], 'MID': ['R1.2', 'R2.1', 'R3.1'],
-                      'GND': ['R2.2'], 'VOUT': ['R3.2']})
-        self.assertEqual(Solver(db).solve_net('FB')['status'], 'ambiguous')
-
-    def test_unknown_parallel_resistor_does_not_silently_disappear(self):
-        db = divider_db(parallel=True)
-        db['parts']['R3']['value'] = 'UNKNOWN'
-        self.assertEqual(Solver(db).solve_net('FB_NET')['status'], 'ambiguous')
-
-    def test_truncated_branch_does_not_produce_partial_solution(self):
-        db = divider_db()
-        for i in range(3, 16):
-            db['parts'][f'R{i}'] = {'value': '10K'}
-            a = 'FB_NET' if i == 3 else f'MID{i-1}'
-            b = 'VOUT_OTHER' if i == 15 else f'MID{i}'
-            db['nets'].setdefault(a, []).append(f'R{i}.1')
-            db['nets'].setdefault(b, []).append(f'R{i}.2')
-            db['pin2net'][f'R{i}.1'], db['pin2net'][f'R{i}.2'] = a, b
-        self.assertEqual(Solver(db).solve_net('FB_NET')['status'], 'ambiguous')
 
     def test_changed_only_claim_does_not_close_repair(self):
         old, new = sample_db(), sample_db()

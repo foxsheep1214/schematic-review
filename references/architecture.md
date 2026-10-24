@@ -28,13 +28,13 @@ SKILL.md 的“架构”一节是总图：五环流水线、各环谁做、不�
 
 | 环 | 入口 | 工具 | 库 |
 |---|---|---|---|
-| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py` |
+| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`solve_dividers.py`（电阻值解析） |
 | ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`plan_circuits.py`、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`checkers/` |
-| ③ 判断 | `derive_rows.py` | `calc.py`、`solve_dividers.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py` |
+| ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py` |
 | ④ 校验 | `validate_review.py` | — | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`requirement_clarifications.py`、`validate_remediation.py`、`review_engine.py`、`skill_identity.py`、`check_key.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
 | 复审 | `diff_netlists.py` | — | `revision_impact.py` |
-| 维护 SR | `catalog.py --write-doc` | `compare_reviews.py`、`check_ledger.py`、`run_regression.py` | — |
+| 维护 SR | `catalog.py --write-doc` | `compare_reviews.py`、`check_ledger.py` | — |
 
 `catalog.py` 是规则的唯一登记处，既被出计划导入，维护时也用它重写规则总表。
 `independence.py` 在出计划时拒收引用设计方文档的声明，在校验时拒收这样的证据，两环共用。
@@ -58,6 +58,7 @@ SKILL.md 的“架构”一节是总图：五环流水线、各环谁做、不�
 | 2026-10-23 | 结果格式 6 加两处（定界一致性方案第 2、3 条）：缺厂家数据的 `specified_by` 不得是没覆盖工作点的测试点，引典型曲线时写 `typical_estimate`，估算已经不够记失败项、失败项余量可按典型曲线记 REACHABLE_CASE（第 2 条，2-A 用户原话“2A，算。”）；设计值写 `undecided[{ref, parameter[, unit]}]`，BOM 行已写的参数不算没定，由另一个开项决定的量写 `depends_on`（只挂一层），它挡的行在待办和报告里并到那个开项下（第 3 条；用户在逐项选择中对第 2、3 条选“做”） | 一份审查的 19 条缺厂家数据都拿没覆盖工作点的测试点当“写了这种用法”；反激故障钳位记成设计值，其实由板上保护链决定、另一份审查算出了 P1 |
 | 2026-10-23 | 工作点定界表：器件参数能不能定界、按什么推法和公式、推不出记哪一档，登记在 `catalog.BOUNDS`（每格：器件类别、参数、开着的一侧、随什么变和方向、按顺序的推法 G1–G10/SOA/强制 β 及其公式、推不出时 VENDOR_DATUM / OUTSIDE_SPECIFIED / BOUNDED），公式在 `bound_formulas.py`，`references/bounding-table.md` 由表生成；表里有的必须按表（A，用户：“必须按表”），判“定不出界”写格（`monotonic_tried.cell`，表外写 NONE），门禁核对格的一侧、档位和单调方向，余量写 `basis.cell/method/formula` 时门禁重算；MOS 高温 SOA 按持续时间选曲线、按开始壳温降额、恒功率段 100%/热不稳定段 80%，允许壳温和散热要求交热设计与 PCB（B，“B 热不稳定段按修订写法定：按持续时间选曲线、按开始壳温降额、降额后留 80%。”“这里也可以给出散热结构设计上的要求，交给下游的PCB设计”）；检测用 NTC 有表用表、没表按 B 值加公差算保证（C，“有表用表，没表外推算保证”）；BJT 饱和按强制 β、k = 2（D）；浪涌限制 NTC 热态按 0 Ω 定结论（E）；不变的决定第 4 条补一句：定界按表执行、门禁按表重算核对，工具仍不自动出结论（用户在逐项选择中对定界表选“做”） | 同一张手册表，一份审查判“推不出”开项，另一份推出来判通过或失败；定界原则散在四份参考文档和十几条判据里，是文字不是公式，门禁比不了数 |
 | 2026-10-24 | 8b 的做法定下来：跨电路的缺口只写在一个功能的开放项上，开放项的 `decides` 用 `check_ids` 点名另一电路受它挡住的行，`derive_rows.py` 让那些行的 `open_ref` 指向它；没点名的行仍只能取本功能的开放项，失败项不跨功能（SR 自查 2.6，用户选：“允许指向别的功能的开项”） | 8b 原先写成“其他框架的行用 open_ref 指向它”，校验却要求 open_ref 属于本行的功能，照着做被拒收，只能各抄一份缺口 |
+| 2026-10-24 | 删 `run_regression.py`（连同 `tests/regression/`）；`solve_dividers.py` 只留电阻值解析，归 ① 读入的库，分压求解器、线性反馈窗口和命令行删去（SR 自查 5.7，用户选：“两个都删”） | 回归脚本对着已读不了的旧记录空转（两块板都 SKIPPED 却报 PASS）；求解器只剩测试在用，分压窗口由审查员按 wca-formulas 算、`calc.py` 复算 |
 | 2026-10-24 | 出计划只有 `lint.py` 一个入口：`plan_review.py` 删去 `main`，归为库（SR 自查 2.9，用户选：“删 plan_review.main”：只留 lint.py，plan_review.py 改归为库） | 两个命令都写计划，对 intent 的检查和打印的诊断已经分叉，同一份输入两条路出的计划可能不同 |
 | 2026-10-24 | 打包强制“报告只从台账生成”：`pack_review.py` 用打包的计划、结果、门禁和 `notes.json`（按渲染时的 `--title`、`--detail`）重新渲染报告，与交付的不同就拒绝；门禁 `valid` 不为真、结果声明 `review_scope` 不打包；`notes.json` 随台账进 `record/`（SR 自查 2.3，用户选：“重新渲染比对 + 要求 valid”） | 不变的决定第 6 条和文档都写手改报告打包失败、局部热审不打包，打包却只核 HTML 与 Markdown 一致、只记哈希；打包不重跑门禁，门禁结果本身是否最新仍由流程保证 |
 | 2026-10-24 | 估算可以判通过：`ESTIMATE` 余量写 `consequence_class`（只能是 REQUIRED_FUNCTION 或 PERFORMANCE_OR_LIFE）和 `handoff`（本功能 `handoffs` 里样机实测那一条的序号），满足时行判 PASS，派生行带上这条移交；损坏、过热、保护类规则（DEV-C01、DEV-C04、PWR-C03、PWR-C06、PWR-C10、DRV-C01、全部 PRO）不走这条路（SR 自查 2.1，用户选：“估算 + 样机移交可判通过”） | 文档和 DEV-C05、DRV-C02 判据都写“相似器件或典型 ±30% 估算、结论不变就 PASS(B) 并移交样机”，门禁却对 ESTIMATE 什么都不判，照着做被拒收 |

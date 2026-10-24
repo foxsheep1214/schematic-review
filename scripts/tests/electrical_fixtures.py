@@ -19,9 +19,3 @@ def pin_analysis(low, high, time_low=0, time_high=1):
             'calculation': 'Voltage bounds follow the explicitly supplied synthetic circuit conditions',
             'loading': 'Synthetic test specifies all loading; no additional unmodelled leakage',
             'conditions': 'Synthetic test specifies rails, initial conditions, sample times and tolerances'}
-
-
-def divider_model(source='VOUT_3V3', reference='GND'):
-    return {'source_net': source, 'reference_net': reference,
-            'bias_current_a': {'min': 0, 'max': 0},
-            'ignored_nodes': {'U1.1': 'Synthetic zero-current FB input, bias included in model'}}

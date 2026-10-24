@@ -30,7 +30,7 @@ def own_patterns(words):
     """(file, name) of module-level patterns outside netgraph that hold one of these words."""
     found = []
     for p in sorted(SCRIPTS.glob('*.py')) + sorted(SCRIPTS.glob('checkers/*.py')):
-        if p.name in ('netgraph.py', 'solve_dividers.py'):      # solve_dividers keeps only resistor parsing (group 5)
+        if p.name == 'netgraph.py':
             continue
         for name, pattern in module_regexes(p).items():
             if name.endswith(OTHER_QUESTIONS) or name in OTHER_NAMES:

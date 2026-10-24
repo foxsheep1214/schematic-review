@@ -163,7 +163,7 @@ BOM 中仅有通用阻容值时先解析实际 MPN，不能把
 [保证值核对的例外](evidence-proportionality.md#保证值核对的例外)）；不填 1% 电阻公差、零 Vref 误差、零偏置电流，
 不用典型值、经验值、相似型号参数、反算要求或样本实测值冒充本器件保证值；比值/系数类门槛（体电容比）
 必须来自项目规定；光耦寿命末所需的 CTR 保留比例由寿命行 DEV-C06 算出并写成选型约束，SR 不自编衰减系数。每个数值写出处（文档、版本、页码/表号），文档覆盖多个后缀时定位订货表对应行。
-最坏角点按 [wca-formulas.md](wca-formulas.md) 计算，`scripts/calc.py` 与 `scripts/solve_dividers.py` 可做数值复算。
+最坏角点按 [wca-formulas.md](wca-formulas.md) 计算，`scripts/calc.py` 可做数值复算。
 
 各规则的判据要点：
 

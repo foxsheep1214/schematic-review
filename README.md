@@ -37,6 +37,5 @@
 
 回放台架、规则合同与变异门的用法见 [SKILL.md](SKILL.md) 的“规则维护”一节。
 评测只测声明范围内的工具能力，不代替真实项目审查或电路准出。
-`python3 scripts/run_regression.py` 对 `tests/regression/boards.json` 登记的真实审查记录只读重跑结果校验，校验错误增多或准出变差即 FAIL（`--update-baseline` 接受当前数字）。
 
 MIT License，见 [LICENSE](LICENSE)。

@@ -166,8 +166,8 @@
 
 ## 二、review-plan.json（schema_version 7）
 
-6 版起行带 `owner` 与 `check_key`，计划带所属表 `owners` 和接口 `interfaces`；7 版起电路检查项只在网表上有它问的机制时生成
-（见下文“电路规则的前提”），行带 `requires`，功能框架带 `not_asked`。6 版及更早的计划（含据它写的结果）不再读，
+行带 `owner`、`check_key` 和 `requires`，计划带所属表 `owners` 和接口 `interfaces`，功能框架带 `not_asked`；电路检查项只在网表上有它问的机制时生成
+（见下文“电路规则的前提”）。更早格式的计划（含据它写的结果）不再读，
 校验、合并（`--merge-plan`）和改版比对（`--old-plan`）都拒收，按当前规则重新生成计划、重新审。
 
 ### 生成与合并
@@ -370,11 +370,22 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 | `calculation` | 同节第 2 步“算出了余量就下结论”：`result`、`margin{value,unit,against,basis[,aspect,states,check_ids]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值）、`claim_ids`、`inputs`（计算的输入量名，影响条目的 `via.input` 从这里取）、`assumptions`；只针对一个方面时写 `aspect`。同一功能里 `value`、`unit`、`against` 都相同的余量只能有一条：一个缺陷落在证明它的那个方面，要落到别的方面须是另一个量、另一条余量。没有数值的功能写 `no_calculation_reason` |
 | `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。厂家参考电路也可以撑起判断：该 TYPICAL_REFERENCE 条件写 `reference_circuit{figure, connection, load}`——参考电路的图号或页、本板与它相同的接法、它的元件值与本板负载的对照（本板不重于它），报告依据写“厂家参考电路 + 图号”。行要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
-| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[影响条目]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`、`title`/`why` 可选。DESIGN_VALUE 另写 `spec` 和 `owner`（不许写成向厂家索取），并写 `undecided[{ref, parameter[, unit]}]` 列出设计还没选的器件参数：所列位号的 BOM 行里已有“参数名 + 该单位的数”时校验拒收，这个量由板上器件定了，按 BOM 行计算；缺的量由本审查另一个开项决定时（例如保护阈值还在等厂家数据），不写 `undecided`，写 `depends_on: <那个开项的 key>`，只挂一层，它挡的行在待办和报告里并到那个开项下计；VENDOR_DATUM 另写 `checked`（条件 id）、`why_insufficient`、`acquisition` 和 `worst_case`：先按公开资料界限算，`worst_case{bound{condition: 条件 id, value, basis: GUARANTEED_LIMIT/ADJACENT_TEST_POINT/TYPICAL_CURVE/PUBLISHED_TABLE/APPLICATION_NOTE}, result, margin{value,unit,against,basis}}`，这个余量按它的余量依据决定结论（见下）；确实没有任何公开资料界限时写 `worst_case{not_boundable_reason, curves_checked[{source, locator}], operating_point_specified}`，列出为找界查过的手册曲线、特性表和应用笔记，并回答手册是否规定了器件在本工作点的工作（`true`：手册写了这种用法、只是没给这个数，另写 `specified_by` 指向本功能里写了这种用法的条件（不能是 `monotonic_tried.test_points` 里那条没覆盖工作点的测试点；可以是条款、应用说明，或 `regime` 覆盖工作点的典型曲线（条件写 `curve: true`），引典型曲线时另写 `typical_estimate{value, unit, against, basis: ESTIMATE 并引这条曲线}`，估算已经不够就是失败项，余量按典型曲线记 REACHABLE_CASE），资料不足按后果定级；`false`：设计依赖手册未规定的工作区，这是设计风险，记失败项、发现项给出回到规定区的改法，不向厂家要）；DELIVERABLE_PENDING（另一阶段欠的交付物）另写 `deliverable_kind`（CUSTOM_PART_DRAWING 定制件图纸 / FIRMWARE_CAPABILITY 固件应用能力 / CONFIGURATION_TABLE 配置表）、`scope`、`deliverable`、`owner`、`assumed`（本判定按什么假定算的）和 `closure`，不写 acquisition/spec；CUSTOM_PART_DRAWING 另写 `missing_parameters[{name[, unit]}]`，只列判定需要、BOM 规格没写的参数（饱和电流、Bmax、绝缘结构等；资格认可这类没有数值的不写 unit）。写了 unit 的参数，若 `deliverable`/`what` 点名的位号的 BOM 行里已有“参数名 + 该单位的数”，校验拒收：BOM 写了的是设计值，按 BOM 行引作 NUMERIC_LIMIT（见[常规器件下限](commodity-floors.md)）；归类看欠的是什么，不看向谁要——目录器件的参数不属于任何一种交付物，是 VENDOR_DATUM；USER_DEFERRED 写 `instruction`；REQUIREMENT 不写 severity，走需求澄清。DESIGN_VALUE 在有计算的功能里没有对应方面的余量时写 `no_margin_reason`（设计还没选定什么） |
+| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[影响条目]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`，`title`/`why` 可选；各种 `kind` 另要的字段见下面“开放项的六种” |
 | `fails[]` | 失败项：`key`、`finding_id`（指向 findings）、`what`、`decides`，可带 `conditions`（被违反的强制条款）、`title`/`why`/`due_stage`/`design_option`；依据三选一：余量证明不够（REACHABLE_CASE/EXACT_ENVELOPE）、违反强制条款、或 `outside_specified{condition, operating_point, curves_checked}`——器件工作在手册没规定的区域：`condition` 是本功能里给出手册规定区的条款，`operating_point` 写本机工作点，`curves_checked` 列查过的曲线和表，其中须有推荐工作条件或电气特性节，工作点是某个引脚的还须有引脚说明节；不要把“没规定”写成限值 0 去比较 |
 | `handoffs[]` | 功能级移交，派生行时填进计划要求移交的行 |
 | `verdict_history[]` | 改过结论时写 `{from, to, basis: [条件或 claim id], note}`，basis 不能为空 |
 | `evidence` | 可定位的证据 |
+
+**开放项的六种。** 归类看欠的是什么，不看向谁要：
+
+| `kind` | 必写 | 不写 | 说明 |
+|---|---|---|---|
+| DESIGN_VALUE（设计还没定） | `spec`、`owner`；`undecided[{ref, parameter[, unit]}]` 列出没选的器件参数，或 `depends_on: <开项 key>` | 向厂家索取（`spec` 不许写成这样） | `undecided` 所列位号的 BOM 行已有“参数名 + 该单位的数”时拒收：这个量板上已定，按 BOM 行算。缺的量由本审查另一个开项决定时（例如保护阈值等厂家数据）写 `depends_on`，只挂一层，它挡的行在待办和报告里并到那个开项下计。有计算的功能里没有对应方面的余量时写 `no_margin_reason`（还没选定什么） |
+| VENDOR_DATUM（只有厂家知道） | `checked`（条件 id）、`why_insufficient`、`acquisition`、`worst_case` | — | 先按公开资料界限算：`worst_case{bound{condition, value, basis: GUARANTEED_LIMIT/ADJACENT_TEST_POINT/TYPICAL_CURVE/PUBLISHED_TABLE/APPLICATION_NOTE}, result, margin{value,unit,against,basis}}`，这个余量按它的依据决定结论。确实没有公开界限时写 `worst_case{not_boundable_reason, curves_checked[{source, locator}], operating_point_specified}`：`true` 是手册写了这种用法只缺数值，另写 `specified_by` 指向写了这种用法的条件（不能是 `monotonic_tried.test_points` 里没覆盖工作点的测试点；可以是条款、应用说明或 `regime` 覆盖工作点的典型曲线），引典型曲线（`curve: true`）时另写 `typical_estimate{value, unit, against, basis: ESTIMATE 并引这条曲线}`，估算已经不够就是失败项（余量记 REACHABLE_CASE），资料不足按后果定级；`false` 是设计依赖手册未规定的工作区，记失败项，发现项给出回到规定区的改法，不向厂家要。目录器件的参数是这一种，不是交付物 |
+| DELIVERABLE_PENDING（另一阶段欠的交付物） | `deliverable_kind`（CUSTOM_PART_DRAWING 定制件图纸 / FIRMWARE_CAPABILITY 固件应用能力 / CONFIGURATION_TABLE 配置表）、`scope`、`deliverable`、`owner`、`assumed`（本判定按什么假定算的）、`closure` | `acquisition`、`spec` | CUSTOM_PART_DRAWING 另写 `missing_parameters[{name[, unit]}]`，只列判定需要、BOM 规格没写的参数（饱和电流、Bmax、绝缘结构；资格认可这类没有数值的不写 unit）；写了 unit 的参数若 `deliverable`/`what` 点名位号的 BOM 行已有“参数名 + 该单位的数”则拒收，按 BOM 行引作 NUMERIC_LIMIT（见[常规器件下限](commodity-floors.md)） |
+| USER_DEFERRED（用户暂缓） | `instruction` | — | — |
+| REQUIREMENT（需求没定） | — | `severity` | 走[需求澄清](requirement-clarifications.md) |
+| REVIEW_INCOMPLETE（审查没做完） | — | — | 本轮自己读算完；有这种开项时不打包 |
 
 **条件的五种。** 每条条件先要能定位：`locator` 给页码、表号、图号、章节、手册的节名（电气特性、绝对最大、引脚说明……）、
 需求或记录编号、位号，或点名的网络/引脚（“nets PGND/SGND”）；“相关位号所有物理脚”“## BIAS”不定位任何东西。再按它是什么写 `kind`：
@@ -454,10 +465,6 @@ F10 同一条不能定位的条件出现在两个以上功能里被拒绝（能�
 F11 框架功能的 `objects` 不超出 intent 电路声明的位号与网络（要扩大先改 intent 再重生成计划，不在判定里放宽），审查员自己绑定的行要是该功能对象上的行
 （位号行的位号、网络行的网络在功能 `objects` 里，网络名不计图纸路径；感性负载行只看电感本身和它的开关节点，续流回路里别的器件只是上下文；需求行、全板行没有对应的器件或网络，不受此限）——一块电路的缺口不借绑定伸进另一块电路；
 F12 计划带 `clamp_refs` 的连接器行（PRO-D03）必须绑定功能：钳位电压对被保护脚绝限是功能判定里的条款和判断，不手填 PASS。
-
-这几条是 2026-10-21 两名审查员审同一块板的记录对比后加的：共同的 287 行里 184 行结论一致，发现的错误没有一条相同；
-差异集中在条件不可定位、判断只引笔记、一个开放项铺 10–12 个方面、功能对象越出 intent 电路、钳位行手填通过、需求行整行阶段 NA。
-同日合并 Codex 方案后，一个缺口挡多少方面不再设上限，改为逐条写影响条目；条件的“能定位”和“是哪种证据”分开校验；余量写明余量依据。
 
 **检查项标识。** `plan_review.py` 给每行写 `check_key`：规则、规则版本（目录条目与问题模板）、去掉 `circuit` 名称后的对象、判据四项的摘要。
 装配状态按内容命名：计划的 `assemblies` 给 intent.assemblies 的每个名字一个由贴装表和跳线算出的键（`ASSEMBLY-…`），检查器行的 `state`/`states`

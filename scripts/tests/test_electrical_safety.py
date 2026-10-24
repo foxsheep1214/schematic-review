@@ -7,9 +7,8 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from audit_datasheets import build_datasheet_audit, validate_datasheet_audit
 from electrical_contract import db_fingerprint
-from electrical_fixtures import divider_model
 from lint import Lint
-from solve_dividers import Solver, parse_resistor
+from solve_dividers import parse_resistor
 from test_solve_dividers import divider_db
 
 
@@ -69,19 +68,6 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.assertEqual(items[0]['kind'], 'CANDIDATE')
         self.assertNotIn('上电即', items[0]['detail'])
 
-    def test_unresolved_resistor_depth_and_separate_grounds(self):
-        db = divider_db(series_lower=True)
-        self.assertEqual(Solver(db, max_depth=1).solve_net('FB_NET')['status'], 'ambiguous')
-        db['parts']['R4']['value'] = 'UNKNOWN'
-        self.assertEqual(Solver(db).solve_net('FB_NET')['status'], 'ambiguous')
-        db = divider_db()
-        db['parts']['R3'] = {'value': '10K/1%', 'nc': False}
-        db['nets']['FB_NET'].append('R3.1')
-        db['nets']['AGND'] = ['R3.2']
-        db['pin2net'].update({'R3.1': 'FB_NET', 'R3.2': 'AGND'})
-        self.assertEqual(Solver(db).solve_net('FB_NET')['status'], 'ambiguous')
-        self.assertEqual(Solver(db, model=divider_model()).solve_net('FB_NET')['status'], 'ambiguous')
-
     def test_audit_expands_critical_passives_and_rejects_unknown_ref(self):
         db = divider_db()
         audit = build_datasheet_audit(db, required_refs=['R1'])
@@ -95,13 +81,6 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.assertIsNone(parse_resistor('20K', float('nan')))
         self.assertAlmostEqual(parse_resistor('20Kohm/1%')['kohm'], 20)
 
-    def test_missing_vref_bounds_cli_preserves_only_nominal_estimate(self):
-        from solve_dividers import _row
-        result = Solver(divider_db()).solve_net('FB_NET')
-        row = _row('U1', 'FB_NET', result, .8, None)
-        self.assertEqual(row['review_result'], 'INSUFFICIENT')
-        self.assertAlmostEqual(row['voltage_nominal'], 2.4)
-        self.assertNotIn('voltage', row)
 
 if __name__ == '__main__':
     unittest.main()
