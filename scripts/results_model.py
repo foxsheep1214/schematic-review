@@ -1,4 +1,4 @@
-"""review-results.json schema 4: what the reviewer writes, and the view the validators read.
+"""review-results.json (schema 6): what the reviewer writes, and the view the validators read.
 
 The unit of judgement is a function verdict (`functions[]`): the question one circuit block must
 answer, the datasheet clauses that bear on it, the calculation and its margin, the verdict and the
@@ -60,7 +60,7 @@ def margins(calculation):
 
 
 def shape_errors(report, history_ids=()):
-    """Errors in the record as written, named in schema 4 terms. `history_ids` are REQ-H02 rows,
+    """Errors in the record as written, named in the current format's terms. `history_ids` are REQ-H02 rows,
     which carry history dispositions instead of open items."""
     if not isinstance(report, dict):
         return ['results must be an object']
@@ -244,7 +244,7 @@ def how_to_close(item):
 
 
 def gap_of(item):
-    """The row-level gap an open item stands for (schema 3 shape, for the validators and the report)."""
+    """The row-level gap an open item stands for (the row shape the validators and the report read)."""
     gap = {'what': item.get('what'), 'scope': item.get('scope')}
     if item.get('kind') in ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING'):
         gap['how_to_close'] = how_to_close(item)
@@ -350,7 +350,7 @@ def _worst(gaps):
 
 
 def expand(report):
-    """The validators' view of a schema 4 record (call after shape_errors is clean)."""
+    """The validators' view of a record (call after shape_errors is clean)."""
     out = copy.deepcopy(report)
     out.setdefault('requirement_clarifications', [])
     items = open_items(out)

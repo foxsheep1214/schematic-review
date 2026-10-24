@@ -91,7 +91,7 @@ class ReviewFieldScopeTests(unittest.TestCase):
         r['checks'][0]['impact_assessment'] = {'consequence': 'R1/C1 form a different reset circuit.'}
         out = screen_quality(p, r, db)
         flag = next(c for c in out['candidates'] if c['code'] == 'IMPACT_REFERENCES_OUTSIDE_SCOPE')
-        self.assertEqual(flag['field'], 'gaps[].severity.consequence')
+        self.assertEqual(flag['field'], 'open[].severity.consequence')
         self.assertEqual(flag['observed_refs'], ['C1', 'R1'])
         self.assertNotIn('release', out)
 

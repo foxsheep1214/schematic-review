@@ -251,7 +251,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
   `power_rails.<网>.domain` 与推导不一致记 `DOMAIN_CONFLICT`；两者都进计划的 `diagnostics`。
 
 **电路候选**（`scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json`，
-schema 1，`rules_version` 2026-10-21.1，绑定 `db_sha256` 与 intent 的 `input_sha256`）：电路不由审查员画，由网表、已核实的器件类别和检查器库存生成，
+schema 2，带 `rules_version`，绑定 `db_sha256` 与 intent 的 `input_sha256`）：电路不由审查员画，由网表、已核实的器件类别和检查器库存生成，
 审查员只做决定（见[计划与结果](plan-and-results.md#一intentjsonschema_version-4)）。
 - 候选 = 类型 + 核心器件，编号 `<类型>-<核心器件>`（链为 `<类型>-<核心器件>.<脚>`），工作态按类型固定（`catalog.CANDIDATE_STATES`：
   变换器和输入保护 startup/run/fault，USB unattached/attached/fault，ANALOG run/fault，ISOLATION run，STARTUP power-on/restart，DEBUG run）。
@@ -276,10 +276,10 @@ schema 1，`rules_version` 2026-10-21.1，绑定 `db_sha256` 与 intent 的 `inp
 - 接口（`scripts/interfaces.py`）：从各电路拥有的器件和网表推电路对、链路、供电、对外四种接口及端点角色、参考地分区、供电，写入计划 `interfaces`。
   轨 = 电源树找到源的网，或 intent.power_rails 声明且有 IC 取电或大容量储能电容的网；名字像电源轨不算。
   源 = 轨上电源树的源脚（库类型不是输入），否则轨上整流管（二极管阴极、整流桥 + 脚）的唯一所属；都没有记缺口。
-- 接口检查项：`plan_review.plan_interfaces` 按 `catalog.INTERFACE_SUBJECTS` / `INTERFACE_NET_SUBJECTS` 逐接口出行并建接口框架；
+- 接口检查项：`interfaces.py` 的 `plan_interfaces` 按 `catalog.INTERFACE_SUBJECTS` / `INTERFACE_NET_SUBJECTS` 逐接口出行并建接口框架；
   `catalog.INTERFACE_RULES` 的其余行（检查器、扫描）网络都落在一个接口上时由 `row_owner` 归该接口，连接器的接口优先。
-- 系统功能：`plan_review.plan_system` 按触发生成 PWR-T06（地网 ≥ 2）、RST-T03（电源轨 ≥ 2）、SIG-D13（有可能是主控的 IC），
-  `plan_system_frames` 给每个有行的系统功能建框架；`plan_owned_parts` 按各电路拥有的器件生成 DEV-C01/C02/C03。
+- 系统功能：`plan_system.py` 的 `plan_system` 按触发生成 PWR-T06（地网 ≥ 2）、RST-T03（电源轨 ≥ 2）、SIG-D13（有可能是主控的 IC），
+  `plan_system_frames` 给每个有行的系统功能建框架；`plan_circuits.py` 的 `plan_owned_parts` 按各电路拥有的器件生成 DEV-C01/C02/C03。
 - 覆盖审计：`row_owner.coverage_errors(plan, db)` 查每颗贴装器件恰归一块电路或在 REQ-Q08 清单上，`interfaces.coverage_errors(plan)` 查每个接口有它的行和框架；两条都由 `validate_review.py` 执行，归属审计只在电路来自候选时启用。
 
 **装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
@@ -863,6 +863,11 @@ I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>（初始保证值）
 PASS 不覆盖开关速度、温度角与隔离耐压。
 
 计划项：传输能力（PRO-E01）、隔离归属与耐压（PRO-D01）。
+
+### 通用阻容应力预判 `passive_stress`
+
+`scripts/checkers/passive_stress.py` 给 DEV-C01 逐颗行预填电压、功耗与降额的 `proposal`，并给出扫描提示（阻值读不出的电阻、
+未声明电压的轨、按 0 V 处理的地网、无界节点）；判据与预判口径见[通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗行)。
 
 ## 条件性故障能量工具
 

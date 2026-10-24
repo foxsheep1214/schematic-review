@@ -232,7 +232,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     errors.extend(shape)
     written, report = report, results_model.expand(report)
     errors.extend(validate_engine(plan, require_current_engine))
-    clauses_required = True  # schema 3: REQ-D01 always splits its requirement into clauses
+    clauses_required = True  # REQ-D01 always splits its requirement into clauses
     impact_classes = results_model.IMPACT_CLASS_VERSION
     require(plan.get("schema_version") == PLAN_SCHEMA_VERSION,
             f"plan.schema_version must be {PLAN_SCHEMA_VERSION}; plans with retired check IDs must be regenerated")

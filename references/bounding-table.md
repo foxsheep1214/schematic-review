@@ -57,35 +57,35 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | 格 | 器件类别 | 参数 | 开着的一侧 | 随什么变 / 方向 | 推法（公式） | 推不出时 | 出处 |
 |---|---|---|---|---|---|---|---|
 | `ZENER-VZ-UPPER` | zener | VZ 上界 | UPPER | 工作电流 IZ / INCREASING | G1；G2 | `VENDOR_DATUM` | evidence-proportionality.md“齐纳管低电流” |
-| `ZENER-VZ-LOWER` | zener | VZ 下界 | LOWER | 工作电流 IZ / INCREASING | G1；G2；G3（`slope_bound`）；G8 | `VENDOR_DATUM` | evidence-proportionality.md“齐纳管低电流”；1-A、2-A |
+| `ZENER-VZ-LOWER` | zener | VZ 下界 | LOWER | 工作电流 IZ / INCREASING | G1；G2；G3（`slope_bound`）；G8 | `VENDOR_DATUM` | evidence-proportionality.md“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界 |
 | `ZENER-VZ-TEMP` | zener、shunt_reference | VZ / 基准电压随温度 | — | 温度 / NONMONOTONIC | G1；G4（`tempco_bound`） | `VENDOR_DATUM` | evidence-proportionality.md第 4 步“温度系数的 min/max” |
-| `REF-IKA-MIN` | shunt_reference | 最小阴极电流 Ika | LOWER | 工作态 / — | G1 | `OUTSIDE_SPECIFIED` | 定界表方案 3.1 |
+| `REF-IKA-MIN` | shunt_reference | 最小阴极电流 Ika | LOWER | 工作态 / — | G1 | `OUTSIDE_SPECIFIED` | 定界表决定（architecture.md 2026-10-23） |
 | `TVS-STANDOFF` | tvs | 正常最大值不超过 VRWM | UPPER | 工作电压 / — | G1 | `OUTSIDE_SPECIFIED` | wca-formulas.md TVS 行 |
 | `TVS-VC` | tvs | 钳位电压上界 | UPPER | 冲击电流 Ipp（同一波形） / INCREASING | G1；G2 | `VENDOR_DATUM` | wca-formulas.md TVS 行 |
-| `TVS-LEAK-HOT` | tvs | 高温漏电 | UPPER | 温度 / INCREASING | G1；G2；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表方案 3.2 |
+| `TVS-LEAK-HOT` | tvs | 高温漏电 | UPPER | 温度 / INCREASING | G1；G2；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
 | `DIODE-VF` | diode、bridge_rectifier | VF 上界随电流 | UPPER | 正向电流 IF / INCREASING | G1；G2 | `VENDOR_DATUM` | evidence-proportionality.md“单调外推” |
 | `DIODE-VF-COLD` | diode、bridge_rectifier | VF 上界随温度（冷态最差） | UPPER | 温度 / DECREASING | G1；G2；G4（`tempco_bound`）；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“单调外推” |
 | `DIODE-IR-HOT` | diode、bridge_rectifier、zener | 高温反向漏电 | UPPER | 温度 / INCREASING | G1；G2；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“二极管反向漏电” |
 | `DIODE-SURGE` | diode、bridge_rectifier | 浪涌 IFSM 换算到其他脉宽 | UPPER | 脉宽 / DECREASING | G1；G2；G5（`half_sine_i2t`、`surge_current_at_width`） | `VENDOR_DATUM` | evidence-proportionality.md“脉冲与浪涌” |
 | `MOS-VGS-ON` | mosfet | 导通所需 VGS | UPPER | 漏极电流 ID / INCREASING | G1；G2；G7 | `VENDOR_DATUM` | wca-formulas.md VGS 三档 |
 | `MOS-RDS-HOT` | mosfet | 高温 RDS(on) | UPPER | 结温 / INCREASING | G1；G2；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“MOS 热态 RDS” |
-| `MOS-SOA-HOT` | mosfet | 高温 SOA | UPPER | 开始壳温 / DECREASING | SOA（`soa_allowed_power`、`soa_case_temperature`、`heatsink_requirement`、`zth_junction_temperature`） | `BOUNDED` | 定界表方案第五节 B |
+| `MOS-SOA-HOT` | mosfet | 高温 SOA | UPPER | 开始壳温 / DECREASING | SOA（`soa_allowed_power`、`soa_case_temperature`、`heatsink_requirement`、`zth_junction_temperature`） | `BOUNDED` | 本表“几条口径”MOS 高温 SOA |
 | `MOS-LINEAR` | mosfet | 线性工作点的 VGS（源跟随、线性稳压） | — | 漏极电流与温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`）；G8 | `VENDOR_DATUM` | evidence-proportionality.md“按实际用途选模型” |
-| `BJT-SAT` | bjt | 饱和导通所需基极电流 | LOWER | 集电极电流 IC / — | FORCED_BETA（`forced_beta_base_current`） | `BOUNDED` | 定界表方案第五节 D |
-| `BJT-HFE` | bjt | 线性区 hFE | LOWER | 集电极电流与温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表方案 3.4 |
+| `BJT-SAT` | bjt | 饱和导通所需基极电流 | LOWER | 集电极电流 IC / — | FORCED_BETA（`forced_beta_base_current`） | `BOUNDED` | 本表“几条口径”BJT 饱和开关 |
+| `BJT-HFE` | bjt | 线性区 hFE | LOWER | 集电极电流与温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
 | `OPTO-CTR` | opto | CTR 随 IF 和温度 | LOWER | 输入电流 IF 与温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“身份冲突与身份分支”（取最低档） |
-| `NTC-SENSE` | ntc | 检测用 NTC 的 R(T) | — | 温度 / DECREASING | G5（`ntc_table_bound`、`ntc_beta_bound`） | `BOUNDED` | 定界表方案第五节 C；datasheets.md“公开曲线表先于索取” |
-| `NTC-INRUSH-HOT` | ntc | 浪涌限制 NTC 热态重新接入 | LOWER | 热态 / — | G6（`inrush_peak_current`、`inrush_i2t`） | `BOUNDED` | 定界表方案第五节 E |
+| `NTC-SENSE` | ntc | 检测用 NTC 的 R(T) | — | 温度 / DECREASING | G5（`ntc_table_bound`、`ntc_beta_bound`） | `BOUNDED` | 本表“几条口径”检测用 NTC；datasheets.md“公开曲线表先于索取” |
+| `NTC-INRUSH-HOT` | ntc | 浪涌限制 NTC 热态重新接入 | LOWER | 热态 / — | G6（`inrush_peak_current`、`inrush_i2t`） | `BOUNDED` | 本表“几条口径”浪涌限制 NTC |
 | `RES-POWER` | resistor | 电阻功率、脉冲、TCR 与耐压 | UPPER | 温度与脉宽 / — | G1；G5 | `VENDOR_DATUM` | commodity-floors.md 片式电阻 |
 | `MLCC-EFFECTIVE-C` | capacitor | MLCC 有效容量（偏压、温度、老化） | LOWER | 直流偏压与温度 / DECREASING | G1；G2；G5（`table_interpolate`） | `VENDOR_DATUM` | commodity-floors.md MLCC；wca-formulas.md |
 | `ECAP-ESR-RIPPLE` | electrolytic | 电解 ESR 与纹波电流（温度、频率系数表） | — | 温度与频率 / NONMONOTONIC | G1；G5（`table_interpolate`） | `VENDOR_DATUM` | commodity-floors.md 电解 |
 | `IND-ISAT` | inductor、transformer | 电感 Isat（按资料定义取温度最坏值） | LOWER | 温度 / DECREASING | G1；G2；G5（`table_interpolate`） | `VENDOR_DATUM` | commodity-floors.md 电感 |
 | `FUSE-I2T` | fuse | 保险丝 I²t 与温度降额 | — | 脉宽与温度 / NONMONOTONIC | G1；G5（`table_interpolate`） | `VENDOR_DATUM` | commodity-floors.md |
-| `IC-THRESHOLD` | ic 及各 IC 角色 | 门限、基准 | — | 温度 / NONMONOTONIC | G1；G4（`tempco_bound`）；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表方案 3.8 |
+| `IC-THRESHOLD` | ic 及各 IC 角色 | 门限、基准 | — | 温度 / NONMONOTONIC | G1；G4（`tempco_bound`）；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
 | `IC-QUIESCENT` | ic 及各 IC 角色 | 静态电流、按模式的功耗 | UPPER | 模式与温度 / — | G1；G9（`typical_band`） | `VENDOR_DATUM` | evidence-proportionality.md“只有典型值的参数” |
-| `IC-TIMING` | ic 及各 IC 角色 | 时序参数（最小导通、延时、消隐） | — | 温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表方案 3.8 |
-| `IC-IO-LEVEL` | ic 及各 IC 角色 | IO 的 VOH/VOL | — | 负载电流与 VDD / INCREASING | G1；G2 | `VENDOR_DATUM` | 定界表方案 3.8 |
-| `IC-IO-CURRENT` | ic 及各 IC 角色 | IO 灌/拉电流超出规定 | UPPER | 负载电流 / — | G1；G10 | `VENDOR_DATUM` | 结果四档（5c） |
+| `IC-TIMING` | ic 及各 IC 角色 | 时序参数（最小导通、延时、消隐） | — | 温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
+| `IC-IO-LEVEL` | ic 及各 IC 角色 | IO 的 VOH/VOL | — | 负载电流与 VDD / INCREASING | G1；G2 | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
+| `IC-IO-CURRENT` | ic 及各 IC 角色 | IO 灌/拉电流超出规定 | UPPER | 负载电流 / — | G1；G10 | `VENDOR_DATUM` | evidence-proportionality.md“手册的情况按四档判” |
 | `IC-RECOMMENDED` | ic 及各 IC 角色 | 推荐工作条件（绝对最大额定只算损坏边界） | — | 工作条件 / — | G1 | `OUTSIDE_SPECIFIED` | DEV-C05 |
 
 <!-- bounds:end -->

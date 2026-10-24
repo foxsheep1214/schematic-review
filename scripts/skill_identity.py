@@ -8,9 +8,8 @@ from pathlib import Path
 import re
 import tokenize
 
-NON_RULE_REFS = {"workflow-handoff.md", "improvement-ledger.md", "release-validation.md",
-                 "upstream-integration.md", "upstream-sources.json"}
-INTERFACE_SECTIONS = {"参考文件", "有状态工作流交接", "与 ASG 的有状态工作流交接", "规则维护"}
+NON_RULE_REFS = {"workflow-handoff.md"}
+INTERFACE_SECTIONS = {"参考文件", "与 ASG 的有状态工作流交接", "规则维护"}
 
 
 def _hash(value):
@@ -124,8 +123,7 @@ def engineering_identity(root):
     paths = [root / "SKILL.md"]
     for directory in ("scripts", "references"):
         paths.extend(p for p in (root / directory).rglob("*") if p.is_file() and _usable(p.relative_to(root))
-                     and not (directory == "references" and
-                              (p.name in NON_RULE_REFS or "upstream-licenses" in p.parts)))
+                     and not (directory == "references" and p.name in NON_RULE_REFS))
     files = {p.relative_to(root).as_posix(): _normalized_hash(p.read_bytes(), p.suffix, p.name == "SKILL.md") for p in sorted(paths)}
     return {"schema_version": 2, "digest": _digest(files), "files": files}
 

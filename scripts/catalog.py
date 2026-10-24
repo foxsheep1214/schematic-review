@@ -573,7 +573,8 @@ RULES = (
     Rule('REQ-Q07', '功能电路覆盖',
          '功能电路的全部电路检查项逐电路、逐工况完成后汇总；功能电路只汇总覆盖，不能代替电路检查项', 'plan', 'circuit_type'),
     Rule('REQ-Q08', '未检出功能确认',
-         '网表未检出且未声明的功能电路逐个确认不适用并给出依据；未检出特征不等于不适用', 'plan', 'board'),
+         '网表未检出的功能电路逐个确认不适用并给出依据；候选没有归属的器件和被拒候选的成员逐颗确认去处'
+         '（写 add 决定，或留在清单上写原因）；未检出特征不等于不适用', 'plan', 'board'),
     Rule('REQ-H01', '改版 Diff 与历史意见闭环',
          '按历史意见断言核对新旧器件字段、引脚换网与网络成员变化，防止假闭环', 'revision', 'history'),
     Rule('REQ-H02', '改版删除项复核',
@@ -632,8 +633,8 @@ def build_objective_index(rule_ids, groups, objectives=OBJECTIVES):
     return index
 
 
-# 功能电路：正则名称命中仅作候选；声明或已确认拓扑使其适用，再逐电路×工况
-# （未声明电路时按类型一次）生成全部电路检查项。意图中 features 的键与 circuits[].type 取类型名。
+# 功能电路：正则名称命中仅作候选；由电路候选与决定推出的电路或已确认拓扑使其适用，再逐电路×工况
+# （没有推出电路时按类型一次）生成全部电路检查项。意图中 features 的键与 circuits[].type 取类型名。
 # PWR-C14 噪声预算挂在敏感负载的包上（ANALOG/CLOCK/RF），变换器本身不生成。
 CIRCUIT_TYPES = (
     CircuitType('POWER_CONVERTER', '变换器与稳压器', 'PWR',
@@ -999,18 +1000,18 @@ BOUNDS = OrderedDict((b.id, b) for b in (
     Bound('ZENER-VZ-UPPER', ('zener',), 'VZ 上界', 'UPPER', '工作电流 IZ', 'INCREASING', (('G1', ()), ('G2', ())),
           'VENDOR_DATUM', _EP + '“齐纳管低电流”'),
     Bound('ZENER-VZ-LOWER', ('zener',), 'VZ 下界', 'LOWER', '工作电流 IZ', 'INCREASING',
-          (('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“齐纳管低电流”；1-A、2-A'),
+          (('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界'),
     Bound('ZENER-VZ-TEMP', ('zener', 'shunt_reference'), 'VZ / 基准电压随温度', None, '温度', 'NONMONOTONIC',
           (('G1', ()), ('G4', ('tempco_bound',))), 'VENDOR_DATUM', _EP + '第 4 步“温度系数的 min/max”'),
     Bound('REF-IKA-MIN', ('shunt_reference',), '最小阴极电流 Ika', 'LOWER', '工作态', None, (('G1', ()),),
-          'OUTSIDE_SPECIFIED', '定界表方案 3.1'),
+          'OUTSIDE_SPECIFIED', '定界表决定（architecture.md 2026-10-23）'),
     # 3.2 TVS
     Bound('TVS-STANDOFF', ('tvs',), '正常最大值不超过 VRWM', 'UPPER', '工作电压', None, (('G1', ()),),
           'OUTSIDE_SPECIFIED', 'wca-formulas.md TVS 行'),
     Bound('TVS-VC', ('tvs',), '钳位电压上界', 'UPPER', '冲击电流 Ipp（同一波形）', 'INCREASING', (('G1', ()), ('G2', ())),
           'VENDOR_DATUM', 'wca-formulas.md TVS 行'),
     Bound('TVS-LEAK-HOT', ('tvs',), '高温漏电', 'UPPER', '温度', 'INCREASING', (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))),
-          'VENDOR_DATUM', '定界表方案 3.2'),
+          'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
     # 3.3 二极管、整流桥
     Bound('DIODE-VF', ('diode', 'bridge_rectifier'), 'VF 上界随电流', 'UPPER', '正向电流 IF', 'INCREASING',
           (('G1', ()), ('G2', ())), 'VENDOR_DATUM', _EP + '“单调外推”'),
@@ -1027,21 +1028,21 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”'),
     Bound('MOS-SOA-HOT', ('mosfet',), '高温 SOA', 'UPPER', '开始壳温', 'DECREASING',
           (('SOA', ('soa_allowed_power', 'soa_case_temperature', 'heatsink_requirement', 'zth_junction_temperature')),),
-          'BOUNDED', '定界表方案第五节 B'),
+          'BOUNDED', '本表“几条口径”MOS 高温 SOA'),
     Bound('MOS-LINEAR', ('mosfet',), '线性工作点的 VGS（源跟随、线性稳压）', None, '漏极电流与温度', 'NONMONOTONIC',
           (('G1', ()), ('G7', ('ratio_extrapolation',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“按实际用途选模型”'),
     Bound('BJT-SAT', ('bjt',), '饱和导通所需基极电流', 'LOWER', '集电极电流 IC', None,
-          (('FORCED_BETA', ('forced_beta_base_current',)),), 'BOUNDED', '定界表方案第五节 D'),
+          (('FORCED_BETA', ('forced_beta_base_current',)),), 'BOUNDED', '本表“几条口径”BJT 饱和开关'),
     Bound('BJT-HFE', ('bjt',), '线性区 hFE', 'LOWER', '集电极电流与温度', 'NONMONOTONIC',
-          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表方案 3.4'),
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
     # 3.5 光耦
     Bound('OPTO-CTR', ('opto',), 'CTR 随 IF 和温度', 'LOWER', '输入电流 IF 与温度', 'NONMONOTONIC',
           (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“身份冲突与身份分支”（取最低档）'),
     # 3.6 NTC
     Bound('NTC-SENSE', ('ntc',), '检测用 NTC 的 R(T)', None, '温度', 'DECREASING',
-          (('G5', ('ntc_table_bound', 'ntc_beta_bound')),), 'BOUNDED', '定界表方案第五节 C；datasheets.md“公开曲线表先于索取”'),
+          (('G5', ('ntc_table_bound', 'ntc_beta_bound')),), 'BOUNDED', '本表“几条口径”检测用 NTC；datasheets.md“公开曲线表先于索取”'),
     Bound('NTC-INRUSH-HOT', ('ntc',), '浪涌限制 NTC 热态重新接入', 'LOWER', '热态', None,
-          (('G6', ('inrush_peak_current', 'inrush_i2t')),), 'BOUNDED', '定界表方案第五节 E'),
+          (('G6', ('inrush_peak_current', 'inrush_i2t')),), 'BOUNDED', '本表“几条口径”浪涌限制 NTC'),
     # 3.7 无源件
     Bound('RES-POWER', ('resistor',), '电阻功率、脉冲、TCR 与耐压', 'UPPER', '温度与脉宽', None, (('G1', ()), ('G5', ())),
           'VENDOR_DATUM', 'commodity-floors.md 片式电阻'),
@@ -1055,15 +1056,15 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md'),
     # 3.8 IC 通用参数
     Bound('IC-THRESHOLD', _IC_ROLES, '门限、基准', None, '温度', 'NONMONOTONIC',
-          (('G1', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表方案 3.8'),
+          (('G1', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
     Bound('IC-QUIESCENT', _IC_ROLES, '静态电流、按模式的功耗', 'UPPER', '模式与温度', None,
           (('G1', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _EP + '“只有典型值的参数”'),
     Bound('IC-TIMING', _IC_ROLES, '时序参数（最小导通、延时、消隐）', None, '温度', 'NONMONOTONIC',
-          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表方案 3.8'),
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
     Bound('IC-IO-LEVEL', _IC_ROLES, 'IO 的 VOH/VOL', None, '负载电流与 VDD', 'INCREASING', (('G1', ()), ('G2', ())),
-          'VENDOR_DATUM', '定界表方案 3.8'),
+          'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
     Bound('IC-IO-CURRENT', _IC_ROLES, 'IO 灌/拉电流超出规定', 'UPPER', '负载电流', None, (('G1', ()), ('G10', ())),
-          'VENDOR_DATUM', '结果四档（5c）'),
+          'VENDOR_DATUM', _EP + '“手册的情况按四档判”'),
     Bound('IC-RECOMMENDED', _IC_ROLES, '推荐工作条件（绝对最大额定只算损坏边界）', None, '工作条件', None, (('G1', ()),),
           'OUTSIDE_SPECIFIED', 'DEV-C05'),
 ))
@@ -1422,7 +1423,7 @@ EXPLANATIONS = {
     'PRO-A02': _x('钳位器件按型号看似合适，正常工作时可能导通、故障时又来不及钳位', '按实际用途交 PRO-C02 两侧核算即关闭；本项只是检索提示', false_alarms='连接器信号针上的 ESD 已归 PRO-D03；型号与轨名只能作线索'),
     'PRO-A03': _x('光耦 LED 没有限流时，驱动端与 LED 都可能过流，隔离信号仍可能偶尔能传', '回路有串阻或经证实的恒流驱动即关闭；电流归 PRO-E01', false_alarms='恒流驱动或驱动脚自带限流；串阻画在另一条腿上'),
     'PRO-A04': _x('光耦输出没有上拉时，高电平靠漏电建立，输出状态不确定', '接收端有外部上拉或经证实的内部上拉即关闭；能力归 PRO-E01', false_alarms='接收端 MCU 内部上拉已启用；推挽输出的光耦'),
-    'PRO-E01': _x('光耦能传信号，CTR 随寿命衰减后输出电流可能不足以拉低负载', '最小正向电流乘保证 CTR 与寿命系数后满足负载，最大电流不超额即关闭', inputs='PRO-D01 的两侧电平'),
+    'PRO-E01': _x('光耦能传信号，CTR 随寿命衰减后输出电流可能不足以拉低负载', '最小正向电流乘保证 CTR 初始值后满足负载，最大电流不超额即关闭', inputs='PRO-D01 的两侧电平'),
     'PRO-C01': _x('单个保护器件合格，整条链的动作电压、时序和能量仍可能配合不上', '按实际保护链逐段核动作电压、时序与能量配合即关闭；缺工况不定判', inputs='PRO-C02 的门限、DRV-C01/C02 的耐受'),
     'PRO-C02': _x('只核一侧窗口：可能正常工作时误触发，或故障时触发不了', '两侧各有保证值或有据上界与门限比较且有裕量即关闭；不要求全温曲线', inputs='ANA-T01 的检测路径', false_alarms='连接器信号线 ESD 归 PRO-D03；栅源稳压管正常限幅属允许用途；跨开关 TVS 是能量钳位'),
     'PRO-D01': _x('光耦能传信号，隔离等级、工作电压或参考地归属仍可能不满足要求', '两侧网络归属、参考地、跨接器件和耐压都核实即关闭；爬电距离交版图', inputs='DEV-D01 的器件身份'),
@@ -1448,7 +1449,7 @@ EXPLANATIONS = {
     'REQ-Q04': _x('历史意见可能因换版或改位号而无声消失', '每条历史意见都有复验结论：修复、保留或有依据撤回即关闭', inputs='REQ-H01 的复验结果'),
     'REQ-Q05': _x('只复验修改点，会漏掉改动对其他电路的连带影响', '改动影响的供电、控制和保护范围都用本轮证据复验即关闭', inputs='REQ-H01 的差异与依赖'),
     'REQ-Q07': _x('整类电路一次性通过可能掩盖某个子电路或状态没查', '功能电路的全部电路检查项逐电路、逐状态完成即关闭'),
-    'REQ-Q08': _x('命名或符号不典型的电路可能被自动计划漏掉', '每个未检出的功能电路都确认不适用并有依据，或已补电路检查项即关闭'),
+    'REQ-Q08': _x('命名或符号不典型的电路可能被自动计划漏掉', '未检出的功能电路都有不适用依据或已补检查，未归属器件都有去处或原因即关闭'),
     'REQ-H01': _x('只改说明或换位号可能被误当成修复', '历史意见对应的器件字段、换网和网络成员变化都用新版证据核过即关闭', inputs='DOC-Q01 绑定的新旧输入'),
     'REQ-H02': _x('旧检查对象消失可能被误当成问题已关闭', '每个消失项都确认是删除、替代还是遗漏即关闭', inputs='REQ-H01 的差异'),
 }
@@ -1674,8 +1675,8 @@ def _cell(text):
 
 
 def render_markdown():
-    lines = ['## 审查审查要点与规则归属', '',
-             '目的与取舍见 [审查审查要点](review-charter.md)。每条在用规则有一个主审查要点，跨域约束仍按判据与 HANDOFF 处理。',
+    lines = ['## 审查要点与规则归属', '',
+             '目的与取舍见 [审查要点](review-charter.md)。每条在用规则有一个主审查要点，跨域约束仍按判据与 HANDOFF 处理。',
              '这是维护映射，不增加项目检查或填写字段；映射齐全不等于实际审查正确。', '',
              '| 审查要点 | 要回答的问题 | 主归属规则数 |', '|---|---|---|']
     for goal, (name, question) in OBJECTIVES.items():
@@ -1742,10 +1743,10 @@ def render_markdown():
             lines.append('| ' + ' | '.join(_cell(v) for v in cells) + ' |')
         lines.append('')
     lines += ['', '## 功能电路', '',
-              '名称命中先生成 UNDETERMINED 候选；意图声明（`features` 键、`circuits[].type` 取类型名）或已确认拓扑使功能电路适用，再生成 REQ-Q07 '
-              '覆盖项与电路检查项，逐项再核实际用途。未检出且未声明的功能电路汇总到一项 REQ-Q08 确认；'
+              '电路由电路候选与 `intent.circuit_decisions` 推出；名称命中只生成 UNDETERMINED 候选。推出的电路或已确认拓扑'
+              '使功能电路适用，再生成 REQ-Q07 覆盖项与电路检查项，逐项再核实际用途。未检出的功能电路汇总到一项 REQ-Q08 确认；'
               '不必为排除它们在 `features` 中逐个写 NOT_APPLICABLE，逐个声明会为每个类型各生成一行 REQ-Q07。'
-              '分立 MOSFET 电平转换器没有名称线索，须在 `intent.circuits` 中声明（在 I²C 等总线上则并入该总线电路），'
+              '分立 MOSFET 电平转换器没有名称线索，候选没检出时写 add 决定（在 I²C 等总线上则并入该总线电路），'
               '转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划与结果台账](plan-and-results.md)。', '',
               '| 功能电路 | 名称 | 内容域 | 电路检查项 | 必需资料 | 检出特征（正则） |',
               '|---|---|---|---|---|---|']

@@ -7,6 +7,25 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Stale text says what the code does now (SR self-check group 4, 2026-10-24)
+
+Group 4 of the self-check listed text that had fallen behind the code. The hand-written head of check-catalog.md gives
+the current format versions (intent 4, plan 7, results 6, candidates 2), drops the retired input manifest, and puts
+the circuit candidates and decisions in the stage table; the functional-circuit text says circuits come from candidates
+and decisions, and a level shifter the candidates miss takes an add decision. REQ-Q08 also confirms where each
+unassigned part and each member of a rejected candidate goes; PRO-E01 no longer asks for a life factor (DEV-C06 does).
+automation.md gives the candidate schema 2, the modules the planning functions live in and the resistor-capacitor
+stress checker; inputs-and-coverage.md says the KiCad parser ships, drops the nested section numbers and no longer
+treats designer material as something to check (it is not an input); the bounding table's sources point inside the
+skill; quality prompts name the open-item fields the reviewer writes; the identity hash no longer lists files and
+sections that do not exist. REQ-Q07 left unwritten when every bound row is NA, the life rows' thermal handoff, the
+derived gap_cause and a retired CONDITIONAL value are written as the code has them; "审查审查要点" is "审查要点".
+2020 tests pass, contract 516, KiCad replay 195/195, typical circuits unchanged; text only, no mutation added, all 49 on changed files killed.
+
+- Event: user:2026-10-24 (SR self-check, "先改1、3、4、5组"; group 4 of docs/2026-10-24-sr-consistency-audit.md)
+- Causes: knowledge_wrong 14
+- Changed: docs/improvement-ledger.md, references/automation.md, references/bounding-table.md, references/check-catalog.md, references/execution-consistency.md, references/inputs-and-coverage.md, references/plan-and-results.md, references/review-charter.md, references/verdicts-and-release.md, scripts/catalog.py, scripts/results_model.py, scripts/review_quality.py, scripts/skill_identity.py, scripts/tests/test_asg_review_scope.py, scripts/validate_review.py
+
 ## Following the documents no longer runs into a refusal (SR self-check group 1, 2026-10-24)
 
 The self-check of 2026-10-24 found fourteen places where doing what SR says either fails or is refused. The command

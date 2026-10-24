@@ -28,16 +28,16 @@ DESIGN_GAP_RE = re.compile(r'未选|未定|缺少?手册|缺资料|无资料|未
 OPTIMIZATION_RE = re.compile(r'优化目标|成本|体积|报价|尽量|cost|volume', re.I)
 # 冻结阶段把以下两类提示当作“定级未完成”的放行阻断，不改变 valid。
 # Review records whose citation as evidence for a current conclusion suggests reuse of an earlier review.
-REVIEW_ARTIFACTS = {'review-results.json', 'review-gate.json', '审查报告.md', '审查报告.html', 'review-ledger.json'}
-RECORD_FIELD_NAMES = {'missing_inputs': 'gaps[].what', 'required_scope': 'gaps[].scope',
-                      'acquisition': 'gaps[].how_to_close', 'closure_criterion': 'gaps[].closure_criterion',
-                      'consequence': 'gaps[].severity.consequence', 'affected_function': 'gaps[].severity.affects',
-                      'potential_severity': 'gaps[].severity.level'}
+REVIEW_ARTIFACTS = {'review-results.json', 'review-gate.json', '审查报告.md', '审查报告.html'}
+RECORD_FIELD_NAMES = {'missing_inputs': 'open[].what', 'required_scope': 'open[].scope',
+                      'acquisition': 'open[].acquisition', 'closure_criterion': 'open[].closure',
+                      'consequence': 'open[].severity.consequence', 'affected_function': 'open[].severity.affects',
+                      'potential_severity': 'open[].severity.level'}
 FREEZE_BLOCKING_CODES = ('TEMPLATED_SEVERITY_REASON', 'UNIFORM_SEVERITY_WITHIN_RULE', 'TEMPLATED_PASS_RATIONALE')
 # 资料获取方式/无改图理由模板：同一句话服务于多件待办时，说明没有按对象写出真实来源或真实替代方案。
 ACQUISITION_MIN_TASKS = 3
 DESIGN_OPTION_MIN_TASKS = 3
-IMPACT_TEXT_FIELDS = ('consequence',)  # schema 3 derives severity_reason from it
+IMPACT_TEXT_FIELDS = ('consequence',)  # the derived row view takes severity_reason from it
 
 
 def analysis_text(text, check):
@@ -377,7 +377,7 @@ def screen_quality(plan, report, db=None):
     for hint in review_functions.template_hints(report.get('functions'), parts):
         refs = hint.get('items') or ['%s/%s' % (hint.get('function_id'), hint.get('key'))]
         candidates.append(dict(hint, check_ids=sorted({c for ref in refs for c in owners.get(ref, ()) if c})))
-    for candidate in candidates:  # name fields the way a schema 3 record writes them
+    for candidate in candidates:  # name fields the way the reviewer writes them (a function's open item)
         if candidate.get('field') in RECORD_FIELD_NAMES:
             candidate['field'] = RECORD_FIELD_NAMES[candidate['field']]
     candidates.sort(key=lambda x: (x['code'], x['check_ids']))
