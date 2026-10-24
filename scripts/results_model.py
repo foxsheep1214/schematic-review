@@ -42,7 +42,7 @@ VERDICTS = ('PASS', 'FAIL', 'OPEN')
 PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
 # Schema 3 always means the newest contract of each retired switch: consequence classes v2,
 # REQ-D01 clauses, staged work items. Bindings and actionable instructions are required by
-# validate_review's --require-bindings/--require-actionable.
+# validate_review's bindings (always on the command line) and --require-actionable.
 IMPACT_CLASS_VERSION = 2
 GAP_TEXT = ('what', 'scope', 'how_to_close', 'closure_criterion')
 SEVERITY_TEXT = ('affects', 'consequence')
@@ -72,6 +72,13 @@ def shape_errors(report, history_ids=()):
     if not isinstance(report.get('functions'), list):
         errors.append('results.functions must be a list of function verdicts (empty when the review has none)')
     refs = function_refs(report)
+    named_rows = {}   # 'FN-ID/KEY' -> rows its decides names in check_ids
+    for fn in report.get('functions') or []:
+        for item in (fn.get('open') or []) if isinstance(fn, dict) else []:
+            if isinstance(item, dict):
+                named_rows['%s/%s' % (fn.get('id'), item.get('key'))] = {
+                    c for d in item.get('decides') or [] if isinstance(d, dict)
+                    for c in (d.get('check_ids') if isinstance(d.get('check_ids'), list) else [])}
     for row in report.get('checks') or []:
         if not isinstance(row, dict):
             continue
@@ -101,8 +108,10 @@ def shape_errors(report, history_ids=()):
             errors.append(key + ': fail_ref only belongs to FAIL')
         for field in ('open_ref', 'fail_ref'):
             if field in row and row[field] in refs[field] and 'function_id' in row \
-                    and row['function_id'] != row[field].split('/', 1)[0]:
-                errors.append('%s: %s belongs to another function than function_id' % (key, field))
+                    and row['function_id'] != row[field].split('/', 1)[0] \
+                    and not (field == 'open_ref' and key in named_rows.get(row[field], ())):
+                errors.append('%s: %s belongs to another function than function_id; another function\'s open item '
+                              'decides this row only when its decides names the row in check_ids' % (key, field))
     return errors
 
 

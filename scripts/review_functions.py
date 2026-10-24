@@ -274,6 +274,9 @@ def _condition_errors(label, c, db=None):
     elif kind == 'TYPICAL_REFERENCE' and 'reference_circuit' in c and not reference_circuit(c):
         errors.append(label + ': reference_circuit is {figure (the figure or page of the vendor circuit), connection '
                               '(how this board connects the same way), load (its values against this board: no heavier)}')
+    if kind == 'TYPICAL_REFERENCE' and 'curve' in c and not isinstance(c['curve'], bool):
+        errors.append(label + ': curve is true when the reference is a typical curve or characteristic plot, false or '
+                              'absent for application text')
     if 'setting' in c and not (isinstance(c['setting'], dict) and set(c['setting']) == {'ref', 'group', 'value'}
                                and all(text(v) for v in c['setting'].values())):
         errors.append(label + ': setting is {ref, group, value}: the device, its configuration group and the value the '
@@ -779,8 +782,8 @@ def _worst_case_errors(label, item, conditions, calculation=None):
             return [label + ': worst_case.specified_by names %s, a test point that does not reach the operating point; '
                             'name where the datasheet describes this usage: a clause, its application text, or a curve '
                             'whose regime covers the point' % named]
-        if conditions[named]['kind'] == 'TYPICAL_REFERENCE':
-            return _typical_estimate_errors(label, worst, conditions)
+        if conditions[named]['kind'] == 'TYPICAL_REFERENCE' and conditions[named].get('curve') is True:
+            return _typical_estimate_errors(label, worst, conditions)   # application text needs no estimate (2.4)
         return []
     errors = []
     bound = worst.get('bound')

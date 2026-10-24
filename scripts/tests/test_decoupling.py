@@ -628,7 +628,7 @@ class DecouplingPlanTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             folder = Path(temp)
             (folder / 'db.json').write_text(json.dumps(db))
-            (folder / 'intent.json').write_text(json.dumps(intent))
+            (folder / 'intent.json').write_text(json.dumps(dict(intent, schema_version=4)))
             outputs = []
             for script in ('decoupling.py', 'plan_review.py', 'lint.py'):
                 target = folder / (script + '-inventory.json')

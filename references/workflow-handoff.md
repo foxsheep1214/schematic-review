@@ -93,7 +93,7 @@ ASG 自检缺口留在 ASG 的开放项里，不作 SR 的输入；FRESH 不是�
 
 1. SR intent 等于最终 plan 的 review_inputs.intent，审查阶段与 task.phase 一致。
 2. 用当前 SR parse_kicad.py 重新解析 ASG 交付的 XML；db 必须与解析结果完整一致。
-3. 重跑 validate_review.py，带 `--db`、两次扫描的 lint、`--require-actionable`、`--require-bindings`。
+3. 重跑 validate_review.py，带 `--db`、两次扫描的 lint、`--require-actionable`（绑定总是要求，不用参数）。
 4. review_mode=revision 时必须包含 old_db/old_plan 角色，绑定 task.previous_review 的对应文件，
    并使用 `--require-revision-impact`。规则变更后可进行完整 first 审查，不能盲复用历史结论。
 5. supplied review_gate 必须与重跑结果一致，且 valid=true。NO_GO 的有效报告仍可交付，用于整改。

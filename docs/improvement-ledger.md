@@ -7,6 +7,24 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Choices on what the rules say, first batch (SR self-check group 2, 2026-10-24)
+
+Group 2 of the self-check listed places where the rules could be read two ways; the user chose how each reads. A
+typical reference marks a curve with `curve: true`, and only a curve-type reference asks for an estimate of where the
+board sits on it (a bool, checked by the gate). A row's `open_ref` may point to an open item of another function when
+that item's edge names the row in `check_ids` and decides it; derive_rows finds such an item after the function's own
+and before judged, and the function verdict still counts only its own items. The defaults that were lenient on the
+real gate path are now required: `validate_review.py` always asks for the bindings and, given a database, for the
+plan's dependency record (`--require-bindings` is gone). The intent takes only the fields it documents, suggests the
+closest name for an unknown one and needs `schema_version` 4. verdicts-and-release.md says a confirmed P0 cannot be
+accepted while a potential P0 can be accepted in writing, giving a conditional release. The late import of netgraph
+in i2c_topology removes the circular import group 3 left. Recorded in architecture.md. Tests first; 2040 tests pass,
+contract 518, KiCad replay 195/195, typical circuits unchanged, mutations M507-M512 added, M434 re-pointed, all 193 on changed files killed.
+
+- Event: user:2026-10-24 (SR self-check group 2: "曲线标出来，只有曲线要估算", "允许指向别的功能的开项", "改成必填", "字段白名单 + 版本必填", "可以接受放行")
+- Causes: rule_missing 3, rule_not_enforced 2
+- Changed: SKILL.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/evidence-proportionality.md, references/plan-and-results.md, references/revision-review.md, references/verdicts-and-release.md, references/workflow-handoff.md, scripts/derive_rows.py, scripts/i2c_topology.py, scripts/plan_review.py, scripts/results_model.py, scripts/review_functions.py, scripts/tests/test_decoupling.py, scripts/tests/test_derive_rows.py, scripts/tests/test_described_usage.py, scripts/tests/test_gate_defaults.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_intent_fields.py, scripts/tests/test_plan_handoff.py, scripts/tests/test_remediation.py, scripts/tests/test_requirement_clarifications.py, scripts/tests/test_review_v2.py, scripts/tests/test_validate_review.py, scripts/validate_review.py
+
 ## One concept, one judgment (SR self-check group 3, 2026-10-24)
 
 Group 3 of the self-check found concepts the code judged several ways that disagreed. A ground is now asked of

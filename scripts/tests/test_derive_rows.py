@@ -54,6 +54,58 @@ def bias_rows(r):
     return {c['id']: c for c in r['checks'] if '.BIAS-' in c['id']}
 
 
+OTHER_ROW = 'PWR-C02.OTHER-RUN.Q9'
+
+
+def two_frames():
+    """A second circuit frame with one row whose gap is the bias frame's open item (SR self-check 2.6): the item's
+    decides names that row in check_ids, so the row points at it instead of a copy of the gap."""
+    p, r, db = bias_plan()
+    p['checks'].append(dict(planned(OTHER_ROW), object={'circuit': 'OTHER', 'ref': 'Q9', 'state': 'RUN'},
+                            criterion=catalog.criterion('PWR-C02'), function_id='FN-OTHER',
+                            aspect=catalog.title('PWR-C02'), handoff={'required': False}))
+    p['functions'].append({'id': 'FN-OTHER', 'circuit': 'OTHER', 'question': 'other frame',
+                           'members': [{'check_id': OTHER_ROW, 'rule': 'PWR-C02', 'aspect': catalog.title('PWR-C02'),
+                                        'state': 'RUN'}]})
+    other = copy.deepcopy(r['functions'][0])
+    other.update(id='FN-OTHER', circuit='OTHER', open=[], verdict='PASS')   # its own items: none
+    other['calculation']['result'] = 'VCC_min(OTHER) = 9.7 V'
+    r['functions'].append(other)
+    r['functions'][0]['open'][0]['decides'].append(
+        {'aspect': ASPECT, 'states': ['RUN'], 'check_ids': [OTHER_ROW], 'via': {'condition': 'c3'},
+         'rationale': 'OTHER 的 Q9 也由同一辅助绕组供电，最低峰值未定'})
+    r['plan_digest'] = fingerprint(p)
+    return p, r, db
+
+
+class CrossFunctionTests(unittest.TestCase):
+    def test_a_row_takes_another_functions_open_item_that_names_it(self):
+        p, r, db = two_frames()
+        r, summary, errors = derive_rows.derive(p, r)
+        self.assertEqual(errors, [])
+        row = next(c for c in r['checks'] if c['id'] == OTHER_ROW)
+        self.assertEqual((row['review_result'], row['function_id'], row['open_ref']),
+                         ('INSUFFICIENT', 'FN-OTHER', 'FN-BIAS/AUX-5V-MIN'))
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(out['valid'], out['errors'])
+        work = next(t for t in out['workflow']['work_items'] if t['id'] == 'W-AUX-5V-MIN')
+        self.assertIn(OTHER_ROW, work['check_ids'])
+
+    def test_an_item_that_does_not_name_the_row_is_not_taken(self):
+        p, r, db = two_frames()
+        unnamed = copy.deepcopy(r)
+        unnamed['functions'][0]['open'][0]['decides'].pop()
+        unnamed, _, _ = derive_rows.derive(p, unnamed)
+        row = next((c for c in unnamed['checks'] if c['id'] == OTHER_ROW), {})
+        self.assertNotEqual(row.get('open_ref'), 'FN-BIAS/AUX-5V-MIN')
+        r, _, _ = derive_rows.derive(p, r)
+        row = next(c for c in r['checks'] if c['id'] == OTHER_ROW)
+        row.update(review_result='INSUFFICIENT', open_ref='FN-BIAS/AUX-5V-MIN')
+        r['functions'][0]['open'][0]['decides'].pop()
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(any(OTHER_ROW in e and 'check_ids' in e for e in out['errors']), out['errors'])
+
+
 class DeriveTests(unittest.TestCase):
     def test_the_bias_example_derives_two_open_rows_and_thirteen_pass(self):
         p, r, db = bias_plan()

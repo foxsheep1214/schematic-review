@@ -199,7 +199,8 @@ def review_scope(plan, report, require):
 
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
-                    require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False):
+                    require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
+                    require_dependencies=False):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -274,6 +275,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         errors.extend(validate_reverification(plan, report, revision))
     if 'revision_impact_version' in report and revision is None:
         require(False, 'revision results require a valid revision-impact plan')
+    if require_dependencies and db is not None and 'dependency_version' not in plan:
+        require(False, 'plan.dependency_version is missing, so the automatic checks cannot be re-derived; regenerate the '
+                       'plan with lint.py')
     if 'dependency_version' in plan and db is not None:
         # Recreate automatic checks from raw saved inputs, not the possibly
         # edited check list. Manual additions stay independently reviewable.
@@ -651,15 +655,13 @@ def main():
     parser.add_argument("--require-release", action="store_true")
     parser.add_argument("--require-actionable", action="store_true",
                         help="require detailed repair instructions for every finding")
-    parser.add_argument("--require-bindings", action="store_true",
-                        help="require explicit reviewed-object/criterion bindings and finding target consistency")
     args = parser.parse_args()
     try:
         read = load_json
         result = validate_review(read(args.plan), read(args.results), read(args.db) if args.db else None,
                                  [read(x) for x in args.lint] if args.lint else None,
                                  require_actionable=args.require_actionable,
-                                 require_bindings=args.require_bindings,
+                                 require_bindings=True, require_dependencies=True,   # the gate is strict without flags
                                  old_db=read(args.old_db) if args.old_db else None,
                                  old_plan=read(args.old_plan) if args.old_plan else None,
                                  require_revision=args.require_revision_impact,

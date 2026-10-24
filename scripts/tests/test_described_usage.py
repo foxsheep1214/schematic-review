@@ -20,7 +20,10 @@ from test_one_sided_bounds import unboundable
 from test_review_functions import bias_function
 
 CURVE = {'id': 'k1', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/D2.txt', 'locator': 'p9 Fig. 4 IZ-VZ',
-         'says': 'IZ-VZ 典型曲线画到 10 µA', 'regime': 'IZ 10 µA..10 mA，25 °C', 'use': '低电流的 VZ'}
+         'says': 'IZ-VZ 典型曲线画到 10 µA', 'regime': 'IZ 10 µA..10 mA，25 °C', 'use': '低电流的 VZ', 'curve': True}
+# An application note's text describing the usage is a typical reference but not a curve (SR self-check 2.4).
+NOTE = {'id': 'k2', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/D2.txt', 'locator': 'p12 §9 Application',
+        'says': '应用说明：齐纳管可作偏置钳位，低电流下工作', 'use': '这种用法写在应用说明里'}
 
 
 def estimate(value=0.3):
@@ -52,6 +55,20 @@ class TestPointTests(unittest.TestCase):
         fn = unboundable()
         fn['open'][0]['worst_case']['specified_by'] = 'z1'
         self.assertTrue(about(errors(fn), 'test point'), errors(fn))
+
+
+class ApplicationTextTests(unittest.TestCase):
+    def test_application_text_needs_no_regime_or_estimate(self):
+        fn = unboundable()
+        fn['conditions'].append(copy.deepcopy(NOTE))
+        fn['open'][0]['checked'].append('k2')
+        fn['open'][0]['worst_case']['specified_by'] = 'k2'
+        self.assertEqual(errors(fn), [])
+
+    def test_curve_is_a_boolean(self):
+        fn = on_curve()
+        next(c for c in fn['conditions'] if c['id'] == 'k1')['curve'] = 'yes'
+        self.assertTrue(about(errors(fn), 'curve'))
 
 
 class TypicalCurveTests(unittest.TestCase):

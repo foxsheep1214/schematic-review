@@ -3006,8 +3006,8 @@
   "id": "M434",
   "name": "a typical curve as the usage needs no estimate",
   "file": "scripts/review_functions.py",
-  "old": "        if conditions[named]['kind'] == 'TYPICAL_REFERENCE':\n            return _typical_estimate_errors(label, worst, conditions)",
-  "new": "        if False:\n            return _typical_estimate_errors(label, worst, conditions)"
+  "old": "        if conditions[named]['kind'] == 'TYPICAL_REFERENCE' and conditions[named].get('curve') is True:\n            return _typical_estimate_errors(label, worst, conditions)   # application text needs no estimate (2.4)",
+  "new": "        if False:\n            return _typical_estimate_errors(label, worst, conditions)   # application text needs no estimate (2.4)"
  },
  {
   "id": "M435",
@@ -3512,5 +3512,47 @@
   "file": "scripts/circuit_candidates.py",
   "old": "or bool(PROTECTIVE_RE.search(blob) or ng.NTC_RE.search(blob) or ng.VARISTOR_RE.search(blob))",
   "new": "or bool(PROTECTIVE_RE.search(blob) or ng.VARISTOR_RE.search(blob))"
+ },
+ {
+  "id": "M507",
+  "name": "application text needs a typical estimate again",
+  "file": "scripts/review_functions.py",
+  "old": "if conditions[named]['kind'] == 'TYPICAL_REFERENCE' and conditions[named].get('curve') is True:",
+  "new": "if conditions[named]['kind'] == 'TYPICAL_REFERENCE':"
+ },
+ {
+  "id": "M508",
+  "name": "another function's open item is taken without naming the row",
+  "file": "scripts/derive_rows.py",
+  "old": "if isinstance(item, dict) and any(planned['id'] in (d.get('check_ids') or []) for d in edges(item)) \\",
+  "new": "if isinstance(item, dict) and any(True for d in edges(item)) \\"
+ },
+ {
+  "id": "M509",
+  "name": "a row may not name another function's open item at all",
+  "file": "scripts/results_model.py",
+  "old": "                    and not (field == 'open_ref' and key in named_rows.get(row[field], ())):",
+  "new": "                    and True:"
+ },
+ {
+  "id": "M510",
+  "name": "the gate does not ask for the dependency record",
+  "file": "scripts/validate_review.py",
+  "old": "require_bindings=True, require_dependencies=True,",
+  "new": "require_bindings=True, require_dependencies=False,"
+ },
+ {
+  "id": "M511",
+  "name": "a misspelt intent field passes",
+  "file": "scripts/plan_review.py",
+  "old": "    for key in sorted(set(intent) - INTENT_FIELDS, key=str):",
+  "new": "    for key in []:"
+ },
+ {
+  "id": "M512",
+  "name": "an intent without schema_version passes",
+  "file": "scripts/plan_review.py",
+  "old": "    if intent.get('schema_version') != INTENT_SCHEMA_VERSION:",
+  "new": "    if 'schema_version' in intent and intent['schema_version'] != INTENT_SCHEMA_VERSION:"
  }
 ]

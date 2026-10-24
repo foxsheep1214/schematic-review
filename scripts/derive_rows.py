@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json
 import requirement_bindings
 from results_model import text
-from review_functions import decides_row, judged, unjudged_message
+from review_functions import decides_row, edges, judged, unjudged_message
 
 DERIVED_FIELDS = ('review_result', 'open_ref', 'fail_ref', 'finding_id', 'severity')
 
@@ -35,7 +35,21 @@ def _handoff(fn, planned):
             'constraint': first.get('constraint'), 'verification': first.get('verification')}, None
 
 
-def derive_row(fn, planned, aspect, findings):
+def named_elsewhere(functions, fn, planned, aspect):
+    """Another function's open item whose decides names this row in check_ids (SR self-check 2.6, user: 允许指向别的功能
+    的开项): a gap shared by two circuits is written once, in one function, and the other circuit's row points at it."""
+    state = (planned.get('object') or {}).get('state')
+    for other in functions.values():
+        if other is fn:
+            continue
+        for item in other.get('open') or []:
+            if isinstance(item, dict) and any(planned['id'] in (d.get('check_ids') or []) for d in edges(item)) \
+                    and decides_row(item, aspect, state, planned['id']):
+                return other, item
+    return None, None
+
+
+def derive_row(fn, planned, aspect, findings, functions=None):
     """The row `planned` takes from function `fn` for `aspect`; returns (row, error)."""
     state = (planned.get('object') or {}).get('state')
     where = '%s（%s%s）' % (fn['id'], aspect, ('，' + state) if state else '')
@@ -61,6 +75,11 @@ def derive_row(fn, planned, aspect, findings):
             row.update(review_result='INSUFFICIENT', open_ref='%s/%s' % (fn['id'], item['key']),
                        rationale='见功能判定 %s：开放项 %s——%s' % (where, item['key'], item.get('what') or ''))
             return row, None
+    owner, item = named_elsewhere(functions or {}, fn, planned, aspect)
+    if item is not None:
+        row.update(review_result='INSUFFICIENT', open_ref='%s/%s' % (owner['id'], item['key']),
+                   rationale='见功能判定 %s：开放项 %s/%s——%s' % (where, owner['id'], item['key'], item.get('what') or ''))
+        return row, None
     basis = judged(fn, aspect, state, planned['id'])
     if basis is None:
         return None, unjudged_message(planned['id'], fn['id'], aspect, state)
@@ -93,7 +112,7 @@ def derive(plan, results):
         if not text(aspect):
             errors.append('%s: a bound row names the aspect it covers' % planned['id'])
             continue
-        row, error = derive_row(fn, planned, aspect, findings)
+        row, error = derive_row(fn, planned, aspect, findings, functions)
         if error:
             errors.append(error)
             continue

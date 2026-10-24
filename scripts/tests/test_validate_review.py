@@ -25,6 +25,19 @@ def planned(key):
             'domain': catalog.domain_of(rule), 'applicability': 'APPLICABLE', 'object': {}}
 
 
+def bind(plan, report):
+    """The command line asks every row for its binding (SR self-check 2.7): bind the fixture's rows to their plan items."""
+    planned_items = {item['id']: item for item in plan['checks']}
+    for item in plan['checks']:
+        item.setdefault('object', {})
+        if not item.get('criterion'):
+            item['criterion'] = 'stipulated'
+    for row in report['checks']:
+        if row.get('id') in planned_items:
+            planned_item = planned_items[row['id']]
+            row['binding'] = {'object': planned_item['object'], 'criterion': planned_item['criterion']}
+
+
 def fixture(first_key=C1):
     keys = [first_key] + [scope_id(k) for k in sorted(SCOPE)]
     plan = {'schema_version': PLAN_SCHEMA_VERSION, 'checks': [planned(k) for k in keys], 'owners': [],

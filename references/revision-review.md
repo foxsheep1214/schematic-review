@@ -151,7 +151,7 @@ PASS/FAIL/NA/INSUFFICIENT 的原有证据规则不变；reverification 不替代
 python3 scripts/validate_review.py review-plan.json review-results.json \
   --db db.json --old-db old-db.json --old-plan old-review-plan.json \
   --lint lint-cold.json --lint lint-hot.json \
-  --require-bindings --require-actionable --require-revision-impact --json review-gate.json
+  --require-actionable --require-revision-impact --json review-gate.json
 ```
 
 校验从当前 db、保存的输入、仍可读的文件及明确旧基线重建依赖/影响，核对必需项、旧项

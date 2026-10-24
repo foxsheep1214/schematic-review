@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from test_validate_review import fixture, fail, E
+from test_validate_review import bind, fixture, fail, E
 from test_calculation_preflight import calculation
 from review_engine import engine_identity
 from validate_review import fingerprint, validate_review
@@ -113,14 +113,14 @@ class RemediationTests(unittest.TestCase):
 
     def test_cli_requires_details_and_keeps_no_go_semantics(self):
         p, r, db = actionable()
+        bind(p, r)   # the command line asks for bindings; without --db it does not re-derive the automatic checks
         p['review_engine'] = engine_identity(); r['plan_digest'] = fingerprint(p)
         script = pathlib.Path(__file__).resolve().parents[1] / 'validate_review.py'
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            for name, value in [('plan', p), ('report', r), ('db', db)]:
+            for name, value in [('plan', p), ('report', r)]:
                 (root/name).write_text(json.dumps(value))
-            args = [sys.executable, str(script), str(root/'plan'), str(root/'report'),
-                    '--db', str(root/'db'), '--require-actionable']
+            args = [sys.executable, str(script), str(root/'plan'), str(root/'report'), '--require-actionable']
             result = subprocess.run(args, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stdout+result.stderr)
             self.assertEqual(json.loads(result.stdout)['release'], 'NO_GO')

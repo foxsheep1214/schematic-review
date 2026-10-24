@@ -251,8 +251,9 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
    强制条款 MANDATORY_CLAUSE（引出“必须/不得”句、`applies`；典型应用不算），网表事实 NETLIST_FACT（点名网络或 REF.PIN），
    典型参考 TYPICAL_REFERENCE，工程假设 ENGINEERING_ASSUMPTION；每条判断（`judgements`）至少引一条强制条款或网表事实，数字限值只在余量里比较；
    功能的 `objects` 就是电路（候选经决定）的位号和网络，要扩大先改决定（merge/split）或候选规则，再重生成候选与计划；
-   一个电路的缺口和失败写在它自己的功能里（开放项、失败项），别的电路的行用 `open_ref` 指向它；计划电路的行（框架成员）挂到审查员自建的功能上，
-   或从自建功能取 `open_ref`/`fail_ref`，校验拒收；跨电路的缺口写在拥有缺失量的框架里，其他框架的行用 `open_ref` 指向它。
+   一个电路的缺口和失败写在它自己的功能里（开放项、失败项）；计划电路的行（框架成员）挂到审查员自建的功能上，
+   或从自建功能取 `open_ref`/`fail_ref`，校验拒收。跨电路的缺口只写一次，写在拥有缺失量的框架里，开放项的 `decides`
+   另加一条影响条目，`check_ids` 点名另一电路受它挡住的行，`derive_rows.py` 就让那些行指向这个开放项（失败项不跨功能）。
    自建功能只装不属于任何框架的行（器件、检查器、全板行），对象（位号）全在某个电路框架里的拒收，改写进那个框架；
    计划漏了电路就在 `intent.circuit_decisions` 登记 add 决定后重生成计划；再算（`calculation`），
    算出余量就按它的依据（`margin.basis.kind`）下结论：保证最坏值 GUARANTEED_BOUND 满足判 PASS，不满足只是没证明；确会出现的工况 REACHABLE_CASE
@@ -262,7 +263,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
    本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`，`undecided` 列出没选的器件参数，BOM 已写的不算；由另一个开项决定的写 `depends_on`）；另一阶段欠的交付物（磁件图纸、固件应用能力确认）记
    DELIVERABLE_PENDING（`deliverable`+`owner`+`assumed`）；只有厂家才知道、公开资料界限（保证限值、相邻测试点单调夹出的界限、
    公开特性表、典型曲线加余量、应用笔记公式）也兜不住的参数才记 VENDOR_DATUM，并写查过哪几条、为什么不够、
-   公开资料界限下的最坏情况与余量（`worst_case.bound`/`margin`；决定结论的余量写 `basis.derivation` 与 `basis.corners`，器件参数按[工作点定界表](references/bounding-table.md)的推法和公式定界（余量写 `basis.cell`/`method`/`formula`，门禁重算），判定不出界的先用数答 `monotonic_tried`（定界表的格、开着哪一侧、工作点范围、测试点数值，工作点在两个测试点之间就要定界）；没有界就列 `curves_checked`，手册写了这种用法只缺数值的写 `specified_by`（不能是没覆盖工作点的测试点；引典型曲线时写 `typical_estimate`，典型值都不够判失败），没写这种用法的是设计风险，记失败项；厂家参考电路同接法、本板负载不重于参考电路的可判通过）。
+   公开资料界限下的最坏情况与余量（`worst_case.bound`/`margin`；决定结论的余量写 `basis.derivation` 与 `basis.corners`，器件参数按[工作点定界表](references/bounding-table.md)的推法和公式定界（余量写 `basis.cell`/`method`/`formula`，门禁重算），判定不出界的先用数答 `monotonic_tried`（定界表的格、开着哪一侧、工作点范围、测试点数值，工作点在两个测试点之间就要定界）；没有界就列 `curves_checked`，手册写了这种用法只缺数值的写 `specified_by`（不能是没覆盖工作点的测试点；引典型曲线（`curve: true`）时写 `typical_estimate`，典型值都不够判失败），没写这种用法的是设计风险，记失败项；厂家参考电路同接法、本板负载不重于参考电路的可判通过）。
    没有数值的方面写 `judgements`（方面、条件、说明了什么）；行只有本方面本状态有证明通过的余量或 judgement 才 PASS，没人判过的方面不默认通过。
    开放项的 `decides` 每条是一条影响条目：方面、状态、`via`（缺的量进到哪条条件或哪个计算输入）和 `rationale`（现有的界为什么不够）；
    一个缺口挡几个方面不限数，超过 3 个只提示复看。
@@ -315,7 +316,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 完成后对账：
 
-    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --require-bindings --json review-gate.json
+    python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --json review-gate.json
 
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。
 - 已有资料尚未读算的项记 REVIEW_INCOMPLETE，本轮自己读算完；审查未完成时只交进度，`pack_review.py` 拒绝打包。

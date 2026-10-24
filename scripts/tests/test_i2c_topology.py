@@ -494,7 +494,7 @@ class TopologyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             folder = Path(temp)
             (folder / 'db.json').write_text(json.dumps(db))
-            (folder / 'intent.json').write_text(json.dumps(intent))
+            (folder / 'intent.json').write_text(json.dumps(dict(intent, schema_version=4)))
             for script, args in [('i2c_topology.py', ['--json', str(folder / 'inventory.json')]),
                 ('plan_review.py', ['--json', str(folder / 'plan.json'), '--i2c-topology-json', str(folder / 'plan-topology.json')]),
                 ('lint.py', ['--plan-json', str(folder / 'lint-plan.json'), '--i2c-topology-json', str(folder / 'lint-topology.json')])]:

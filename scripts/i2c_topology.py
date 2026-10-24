@@ -15,13 +15,18 @@ import re
 import board_intent
 from board_intent import validate_db_shape
 from electrical_contract import db_fingerprint, finite, load_json
-from checkers.netgraph import is_ground, is_rail
 from solve_dividers import parse_resistor
 
 MAX_TRACE_NETS = 1024
 SECTION_SCHEMA_VERSION = 2
 KINDS = {'resistor', 'jumper', 'endpoint', 'connector', 'level_shifter', 'isolator', 'switch'}
 BARRIERS = {'level_shifter', 'isolator', 'switch'}
+def _netgraph():
+    """Grounds and rails are netgraph's; imported late because checkers.i2c imports this module."""
+    from checkers import netgraph
+    return netgraph
+
+
 SIGNAL = re.compile(r'(^|[_/.-])(SDA\d*|SCL\d*)(?=$|[_/.-])', re.I)
 I2C_HINT = re.compile(r'(^|[_/.-])I2C\w*(?=$|[_/.-])', re.I)
 
@@ -177,7 +182,7 @@ class Inventory:
         return 'unmodeled'
 
     def rail(self, net):
-        return bool(net in self.rails or is_rail(net) or is_ground(net))
+        return bool(net in self.rails or _netgraph().is_rail(net) or _netgraph().is_ground(net))
 
     def seeds(self):
         buses = [dict(deepcopy(b), origin='declared') for b in self.cfg.get('buses', [])]
@@ -349,7 +354,7 @@ class Inventory:
                             if signal_net not in members or signal_end or len(rail_end) != 1:
                                 continue
                             rail = next(iter(rail_end))
-                            if rail == '__trace_limit__' or is_ground(rail):
+                            if rail == '__trace_limit__' or _netgraph().is_ground(rail):
                                 continue
                             # A 0R rail terminator reached through a finite
                             # resistor is a supply link, not a second pullup or

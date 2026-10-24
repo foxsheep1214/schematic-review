@@ -11,6 +11,7 @@
         --datasheet-audit datasheet-audit.json --json review-plan.json
 """
 import argparse
+import difflib
 from copy import deepcopy
 import board_intent
 import catalog
@@ -53,6 +54,12 @@ from plan_circuits import OWNED_PART_MATERIALS, _differential_pairs  # noqa: F40
 from plan_system import SYSTEM_MATERIALS  # noqa: F401
 
 INTENT_SCHEMA_VERSION = 4
+# Every top-level intent field, the checker sections included; a key outside it is refused (SR self-check 2.8).
+INTENT_FIELDS = {'schema_version', 'review_mode', 'review_phase', 'input_sha256', 'assemblies', 'devices', 'device_kinds',
+                 'requirement_source', 'requirements', 'circuit_decisions', 'circuits', 'circuit_candidates_sha256',
+                 'expect', 'features', 'materials', 'rail_exclusions', 'rule_gaps', 'power_rails', 'power_sources',
+                 'power_paths', 'active_state', 'mission_profile', 'review_sources', 'review_dependencies'} | {
+    checker.intent_key for checker in REGISTRY if checker.intent_key}
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
 RESULT_STATUSES = ('PASS', 'FAIL', 'INSUFFICIENT', 'NA')
@@ -106,8 +113,11 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
     if not isinstance(intent, dict):
         return ['intent 根对象必须为 object']
     errors = []
-    if 'schema_version' in intent and intent['schema_version'] != INTENT_SCHEMA_VERSION:
-        errors.append('schema_version 必须为 %d' % INTENT_SCHEMA_VERSION)
+    if intent.get('schema_version') != INTENT_SCHEMA_VERSION:
+        errors.append('schema_version 必须写，且为 %d' % INTENT_SCHEMA_VERSION)
+    for key in sorted(set(intent) - INTENT_FIELDS, key=str):
+        near = difflib.get_close_matches(str(key), sorted(INTENT_FIELDS), n=1)
+        errors.append('intent.%s 不是 intent 的字段%s' % (key, '（是不是 %s？）' % near[0] if near else ''))
     if intent.get('review_mode') not in (None, 'first', 'revision'):
         errors.append('review_mode 必须为 first/revision')
     if 'review_phase' in intent and intent['review_phase'] not in PHASES:
