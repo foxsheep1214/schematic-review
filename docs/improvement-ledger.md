@@ -7,6 +7,25 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Step ① tasks say where each intent field is written and when a task is done (SR framework review, 2026-10-24)
+
+Task 1.1 (requirements and baseline) had grown into the place every intent field was listed — material paths, rail
+exclusions, feature applicability, decoupling groups, assemblies — although the inputs for those come from later tasks,
+and 1.3 said its own verification command lived in 2.1's list. No task said what "done" looks like, so a reviewer could
+leave 1.3 with unverified device kinds and discover it as DEV-D02 gaps in step ③. Now 1.1 keeps requirements, the review
+phase and the input hashes and names where the rest goes (assemblies 1.2, material paths / pin tables / device kinds 1.3,
+power rails 2.1); 1.3 shows the `audit_datasheets.py --intent` command itself (2.1's list keeps it as ② with a note that
+it reruns after each batch of device kinds; architecture.md already lists the script under step ①); the rail-exclusion and
+`features` sentences move next to the scan prompts in 2.1; and each of 1.1, 1.2, 1.3 ends with 做完的标志 built from signals
+the tools already emit (owners present or `[]` with a reason, numbers read into parameters, export log clean, device kinds
+VERIFIED, `DEVICE_KIND_GENERIC` and `DEVICE_PINS_NO_SUPPLY` looked at, missing datasheets left to 2.2). The cold scan stays
+in 2.1: `lint.py` is step ②'s entry and writes a plan file, so making it a step ① task would change the files the steps
+exchange, which is an architecture change this entry does not make. Wording only; structure and contract tests pass.
+
+- Event: user:2026-10-24 (SR framework review: "先做步骤1的任务整理")
+- Causes: judgment 1
+- Changed: SKILL.md, docs/improvement-ledger.md
+
 ## Circuit decisions are compared and the pin table gets guards (SR framework review, 2026-10-24)
 
 Two reviewer-typed inputs the pipeline trusted without a check. First, `intent.circuit_decisions`: the decision machinery

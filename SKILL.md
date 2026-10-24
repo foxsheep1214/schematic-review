@@ -155,13 +155,16 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 
 从资料和对话提取功能/量化指标、接口角色与数量、输入范围/负载、温度、降额依据、保留/删除项，
 写入 `intent.json`（字段见 [计划与结果台账](references/plan-and-results.md)）：需求原文由
-`requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）、从原文读出的数字（`parameters`）、承接它的电路（`owners`，承接电路：落实这条需求的功能电路、系统功能或接口；计划会列出可承接的电路，有就必须写，认定没有承接电路写 `[]` 加能定位的理由）和确认状态，审查方面由参数和类别推出（有参数的方面只在原文读出了那个数时才问，拿不准的类别多选），判据取方面模板，扫描会列出原文里没读进参数的数字；资料只写路径（`materials.<名>.path`，文件在即可用），网表上像电源而名字不像轨的网逐条声明成轨或写进 `rail_exclusions`，候选流程下 `features` 只给候选没检出的类别写不适用依据；去耦组由官方脚表逐器件逐供电网推出，只按（位号，网）写用途与条款；装配配置写入 `intent.assemblies`；设 `review_phase`（日常设计 `design_iteration`，
-用户明确要冻结才用 `schematic_freeze`）。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
+`requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）、从原文读出的数字（`parameters`）、承接它的电路（`owners`，承接电路：落实这条需求的功能电路、系统功能或接口；计划会列出可承接的电路，有就必须写，认定没有承接电路写 `[]` 加能定位的理由）和确认状态，审查方面由参数和类别推出（有参数的方面只在原文读出了那个数时才问，拿不准的类别多选），判据取方面模板，扫描会列出原文里没读进参数的数字；设 `review_phase`（日常设计 `design_iteration`，
+用户明确要冻结才用 `schematic_freeze`）。其余 intent 字段在有它的输入的那个任务里写：装配配置 1.2，资料路径、脚表、器件类别 1.3，电源轨 2.1。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
 集中提出，先做不受影响的工作，不逐颗器件打断用户，也不自行接受风险。
 录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待定、
 客观设计要求、明确排除和下游工作；不能把源文件的 OPEN 标题机械变成责任方待决。
 按 [输入与覆盖](references/inputs-and-coverage.md) 记录输入版本/哈希；PDF 与网表须核修订号证明同版。
 仅有 PDF 时逐页读图并声明范围，不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装须另获授权。
+
+做完的标志：`requirements` 每条有类别、理解、参数和承接电路（或 `[]` 加理由）；需求原文里带单位的数字都读进了参数，
+或在理解里说明为什么不读；`requirement_source`、输入文件的版本与哈希已记录；`review_phase` 已设。
 
 #### 1.2 解析与完整性
 
@@ -173,21 +176,28 @@ BOM 里每个位号除位号、值以外的列原样进 db，计划把它们挂�
 里面写的器件规格（额定、公差、漏感上限等器件必须满足的值）是设计结果，照用；写在那里的设计方计算值不用。
 
 核对重复归网、缺失 primitive、索引互反、符号声明脚与网表实有脚；导出日志有错误或中止（DOC-A01）先作为输入阻断。
-NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联通路视为断开，多配置分别分析。
+NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联通路视为断开，多配置分别分析，装配配置（贴装、跳线）写入 `intent.assemblies`。
 原生输入受阻仍按 [受限输入中的独立主张](references/inputs-and-coverage.md#受限输入中的独立主张)
 审查可读材料；记录具体资料矛盾或保证缺口，不用全板通用阻断代替逐项结论。
 逐页提取 PDF 文本并建页码/页名/网表路径映射；极性、旋转不清时渲染局部放大。
 
+做完的标志：`db.json` 生成，导出日志没有错误（有则 DOC-A01 阻断，先解决）；装配 BOM 已读入；装配配置已写；
+PDF 与网表核过同版；页码映射建好。阻值读不出、轨没电压这类提示由 2.1 的冷扫给出，在那里处理。
+
 #### 1.3 资料取证与器件身份（DEV-D01、DEV-D02）
 
-命令在 2.1 的清单里：取证是 ②，排在冷扫 ① 之后，因为候选要用核验过的器件类别；资料补齐后的重审计是 ⑦（2.2）。
+    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --intent intent.json --json datasheet-audit.json   # 取证并核验 intent.device_kinds
+
+这条命令在 2.1 的清单里是 ②：候选（③）要用核验过的器件类别，所以器件类别每补一批就重跑；资料补齐后的重审计是 ⑦（2.2）。
+资料只在 intent 写路径（`materials.<名>.path`，文件在即可用）。
 
 - 先核 MPN、封装/温度/档位与 BOM/符号；关键采样电阻、保护/安规件、储能电容和磁件也按原厂订货表核对
   阻值/容量/耐压组合，不把系列范围当具体后缀的可订购范围。候选不代表身份成立。
 - PART/VALUE 冲突或图面/BOM 与链接资料矛盾时，按 [身份冲突与身份分支](references/evidence-proportionality.md#身份冲突与身份分支)
   处理：不一致本身判 DEV-D04 FAIL，电气判据逐分支给条件结论，全部分支都违反才判电气 FAIL。
 - 按实际用途读引脚、额定/推荐条件、相关 min/max、模式和 errata；“官方物理脚”指手册引脚定义的编号或名称，
-  焊盘映射属于 PCB 阶段。核过的脚表写入 `intent.devices`，DEV-D02 差集和 DEV-D05 引脚处置据此列出。
+  焊盘映射属于 PCB 阶段。核过的脚表写入 `intent.devices`（声明抄全的脚表要含封装名说出的每个脚号），DEV-D02 差集和 DEV-D05 引脚处置据此列出；
+  去耦组由官方脚表逐器件逐供电网推出，只按（位号，网）写用途与条款。
 - 器件类别写 `intent.device_kinds`（手册页码加原文，`audit_datasheets.py --intent` 核验）：分立半导体和连接器写
   类型，集成电路写手册标题给出的角色（角色登记表见 [检查目录·器件角色](references/check-catalog.md#器件角色)，
   `catalog.DEVICE_ROLES`；标题没有任何登记角色的才写泛称 ic，计划把每个 ic 列成 `DEVICE_KIND_GENERIC` 诊断：这些器件
@@ -198,14 +208,18 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
   PDF 提取的关键数值对照渲染页核单位。
 
+做完的标志：审计跑过，每颗 U/M、Q/D 位号的 `device_kinds` 核验 VERIFIED（DEV-D02 不再列器件类别缺口）；
+`DEVICE_KIND_GENERIC` 列出的泛称 ic 逐颗看过标题；关键器件脚表 `pinout_complete`，`DEVICE_PINS_NO_SUPPLY` 逐颗看过；
+资料没拿到的留给 2.2 的资料请求，不在这里卡住。
+
 ### ② 出计划
 
 #### 2.1 冷扫、候选与决定
 
-② 出计划的命令按这个顺序跑（1.3 的取证 ②、⑦ 穿插在中间）：
+② 出计划的命令按这个顺序跑（② 是 1.3 的取证，⑦ 是 2.2 的重审计，穿插在中间）：
 
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan-cold.json --json lint-cold.json       # ① 冷扫：还没有电路决定
-    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --intent intent.json --json datasheet-audit.json             # ② 取证，核验 intent.device_kinds（1.3）
+    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --intent intent.json --json datasheet-audit.json             # ② 1.3 的取证命令，器件类别补全后再跑一次
     python3 scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json   # ③ 候选
     python3 scripts/circuit_decisions.py intent.json record/circuit-candidates.json --db db.json --write                               # ④ 决定，推出 intent.circuits
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --datasheet-audit datasheet-audit.json --candidates record/circuit-candidates.json --plan-json review-plan-cold.json --json lint-cold.json   # ⑤ 带候选重跑冷扫
@@ -228,6 +242,7 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 系统功能、电路对、链路和连接器各有一个框架，与电路框架一样下功能判定；报告的功能表按系统功能、功能电路、接口分组，每个发现项写所属。
 校验覆盖两条：每颗贴装器件恰归一块电路或列在 REQ-Q08 待审清单上，每个接口都有它的行和框架。候选漏了器件不手加计划行：
 属于某块电路的写 add 决定（`intent.circuit_decisions`）后重生成；不属于任何电路的留在 REQ-Q08 清单上写原因；候选规则该认出而没认出的，另记改进台账改规则。
+`features` 只给候选没检出的电路类型写不适用依据，不逐类型写。
 `unassigned` 与 `gaps`（没核验角色的 IC、缺引脚名）先清。
 格式见 [计划与结果](references/plan-and-results.md#一intentjsonschema_version-4)，规则见 [自动检查](references/automation.md#二检查器)。
 
@@ -243,7 +258,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 检查器（I²C、去耦、感性负载、功率开关、输入滤波、上电、监控、差分电平、光耦等）每趟都跑；
 名称线索只生成待复核候选，清单绑定输入指纹，不能编辑清单消缺口。见 [自动检查](references/automation.md)。
 扫描提示“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考地分区 `domain`
-（由审查者按需求和稳压器/钳位手册自行定界，逐条写 `citation`），再合并扫描；空的 `power_rails` 会让全部阻容预判失效。扫描提示“阻值读不出的电阻”时当场告诉用户：列出位号和原值，请设计方改成 `阻值[/公差][/额定功率][/额定电压][/封装]` 的写法或确认阻值，不自行猜阻值；未改之前这些电阻的预判和脚电流不算。值后面多一个说不清的词（如 `47R/1%/2W/pulse`）时阻值照读，诊断 `RESISTOR_VALUE_WORD` 只列这个词：它说的要求（抗脉冲能量、额定电压）是特殊要求，写成 BOM 约束，不开“阻值读不出”的待办。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
+（由审查者按需求和稳压器/钳位手册自行定界，逐条写 `citation`），网表上像电源而名字不像轨的网逐条声明成轨或写进 `rail_exclusions`，再合并扫描；空的 `power_rails` 会让全部阻容预判失效。扫描提示“阻值读不出的电阻”时当场告诉用户：列出位号和原值，请设计方改成 `阻值[/公差][/额定功率][/额定电压][/封装]` 的写法或确认阻值，不自行猜阻值；未改之前这些电阻的预判和脚电流不算。值后面多一个说不清的词（如 `47R/1%/2W/pulse`）时阻值照读，诊断 `RESISTOR_VALUE_WORD` 只列这个词：它说的要求（抗脉冲能量、额定电压）是特殊要求，写成 BOM 约束，不开“阻值读不出”的待办。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
 
 #### 2.2 资料请求与重审计
 
