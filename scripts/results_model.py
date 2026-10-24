@@ -18,7 +18,7 @@ Derived here (never written):
 import copy
 from collections import Counter
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 LEVELS = ('P0', 'P1', 'P2', 'P3')
 REQUEST_CAUSES = ('EXTERNAL_DATA', 'DESIGN_OPEN')
 # Fields schema 3 derives; a record that still writes them would carry two answers to one question.

@@ -7,6 +7,21 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## An unboundable quantity is written in numbers (results format 6, 2026-10-23)
+
+On the R5 acceptance re-review one review called 19 quantities unboundable, 16 with one sentence as the unfavourable
+side and the not-boundable reason copied as why_not; one sat between two datasheet test points the other review
+bounded from. `worst_case.monotonic_tried` is now {side UPPER/LOWER, quantity, operating_point{min, max, unit},
+test_points[{condition in checked, at{value, unit}}], why_not other than the reason, other_side DECIDED (a margin on
+the aspect) or NOT_DECISIVE (with a reason)}; a range within the test points is refused as unboundable, a range partly
+within opens only open_range outside them and the part within is a margin, and each edge names the open side. A
+format-5 record is not read. Tests first; 1958 tests pass, contract 516, KiCad replay 195/195, mutations M419-M432
+added, M337 and M339 re-pointed, all 106 on changed files killed.
+
+- Event: user:2026-10-23 (bounding consistency proposals, item 1: "做")
+- Causes: rule_not_enforced 1
+- Changed: SKILL.md, docs/2026-10-23-bounding-consistency-proposals.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/plan-and-results.md, scripts/results_model.py, scripts/review_functions.py, scripts/tests/ledger4.py, scripts/tests/test_bound_derivation.py, scripts/tests/test_one_sided_bounds.py, scripts/tests/test_operating_point_tiers.py, scripts/tests/test_review_functions.py
+
 ## Three contradictions in the bounding guidance are settled (2026-10-23)
 
 Moving the scattered bounding guidance into one table (bounding table proposal, section F) found three texts that

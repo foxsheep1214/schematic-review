@@ -10,7 +10,7 @@ taken), and an unboundable quantity carries `monotonic_tried`.
 import copy
 import unittest
 
-from test_review_functions import bias_function, guaranteed, with_datum
+from test_review_functions import HV_TRIED, bias_function, guaranteed, with_datum
 import results_model
 from review_functions import function_errors
 
@@ -77,18 +77,18 @@ class MonotonicTriedTests(unittest.TestCase):
                  'curves_checked': [{'source': 'evidence/ds/U1.txt', 'locator': 'Fig. 12 IHV vs VHV'}]}
         fn = with_datum(**worst)
         self.assertTrue(any('monotonic_tried' in e for e in function_errors({'functions': [fn]})))
-        fn['open'][0]['worst_case']['monotonic_tried'] = {'unfavorable_side': '低于 120 V 测试点时电流下限',
-                                                          'why_not': '手册没说 IHV 随 VHV 单调'}
+        fn['open'][0]['worst_case']['monotonic_tried'] = dict(HV_TRIED)
         self.assertEqual(function_errors({'functions': [fn]}), [])
-        fn['open'][0]['worst_case']['monotonic_tried'] = {'unfavorable_side': '低于测试点'}
+        # format 5 wrote the side as a sentence; format 6 writes it in numbers (test_one_sided_bounds.py)
+        fn['open'][0]['worst_case']['monotonic_tried'] = {'unfavorable_side': '低于测试点', 'why_not': '手册没说单调'}
         self.assertTrue(any('monotonic_tried' in e for e in function_errors({'functions': [fn]})))
 
 
 class FormatTests(unittest.TestCase):
-    def test_the_results_format_is_5_and_format_4_is_not_read(self):
-        self.assertEqual(results_model.SCHEMA_VERSION, 5)
+    def test_an_older_results_format_is_not_read(self):
+        self.assertEqual(results_model.SCHEMA_VERSION, 6)
         errors = results_model.shape_errors({'schema_version': 4, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be 5' in e for e in errors), errors)
+        self.assertTrue(any('schema_version must be 6' in e for e in errors), errors)
 
 
 if __name__ == '__main__':

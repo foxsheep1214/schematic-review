@@ -2327,8 +2327,8 @@
   "id": "M337",
   "name": "an unboundable quantity need not say why the test point does not bound it",
   "file": "scripts/review_functions.py",
-  "old": "        if not (isinstance(tried, dict) and all(text(tried.get(f)) for f in ('unfavorable_side', 'why_not'))):   # 1c",
-  "new": "        if False:   # 1c"
+  "old": "        found = _monotonic_errors(label, item, worst, calculation)   # 1c",
+  "new": "        found = []   # 1c"
  },
  {
   "id": "M338",
@@ -2339,10 +2339,10 @@
  },
  {
   "id": "M339",
-  "name": "a format-4 record is read as format 5",
+  "name": "a format-5 record is read as format 6",
   "file": "scripts/results_model.py",
-  "old": "SCHEMA_VERSION = 5",
-  "new": "SCHEMA_VERSION = 4"
+  "old": "SCHEMA_VERSION = 6",
+  "new": "SCHEMA_VERSION = 5"
  },
  {
   "id": "M340",
@@ -2896,5 +2896,103 @@
   "file": "scripts/catalog.py",
   "old": "'仅凭典型应用等效的路径可用于必需功能和性能（P1时另记样机验证移交），不能放行损坏/保护保证；'",
   "new": "'仅凭典型应用等效的路径限后果不超过P2，不能放行P1核心功能或损坏/保护保证；'"
+ },
+ {
+  "id": "M419",
+  "name": "the open side may be any sentence",
+  "file": "scripts/review_functions.py",
+  "old": "    if tried.get('side') not in OPEN_SIDES:",
+  "new": "    if tried.get('side') is None:"
+ },
+ {
+  "id": "M420",
+  "name": "the quantity need not be named",
+  "file": "scripts/review_functions.py",
+  "old": "    if not text(tried.get('quantity')):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M421",
+  "name": "the operating range need not be numbers",
+  "file": "scripts/review_functions.py",
+  "old": "    span = _span(point) if text(point.get('unit')) else None",
+  "new": "    span = _span(point) or (0, 0)"
+ },
+ {
+  "id": "M422",
+  "name": "a test point need not be a condition read",
+  "file": "scripts/review_functions.py",
+  "old": "p.get('condition') in read and _finite(where.get('value'))",
+  "new": "_finite(where.get('value'))"
+ },
+ {
+  "id": "M423",
+  "name": "a test point may be in another unit",
+  "file": "scripts/review_functions.py",
+  "old": "and span and _unit(where.get('unit')) == _unit(point.get('unit'))):",
+  "new": "and span):"
+ },
+ {
+  "id": "M424",
+  "name": "a micro sign spelt u is another unit",
+  "file": "scripts/review_functions.py",
+  "old": "    return '\\u00b5' + unit[1:] if len(unit) > 1 and unit[0] == 'u' else unit",
+  "new": "    return unit"
+ },
+ {
+  "id": "M425",
+  "name": "why_not may repeat the not-boundable reason",
+  "file": "scripts/review_functions.py",
+  "old": "or _squeeze(tried['why_not']) == _squeeze(worst.get('not_boundable_reason')):",
+  "new": "or False:"
+ },
+ {
+  "id": "M426",
+  "name": "the other side need not be named",
+  "file": "scripts/review_functions.py",
+  "old": "    if other not in OTHER_SIDES:",
+  "new": "    if other not in OTHER_SIDES + (None,):"
+ },
+ {
+  "id": "M427",
+  "name": "a not-decisive other side needs no reason",
+  "file": "scripts/review_functions.py",
+  "old": "    elif other == 'NOT_DECISIVE' and not text(tried.get('other_side_reason')):",
+  "new": "    elif False:"
+ },
+ {
+  "id": "M428",
+  "name": "a decided other side needs no margin",
+  "file": "scripts/review_functions.py",
+  "old": "    elif other == 'DECIDED' and not margined:",
+  "new": "    elif False:"
+ },
+ {
+  "id": "M429",
+  "name": "an edge need not name the open side",
+  "file": "scripts/review_functions.py",
+  "old": "    if any(d.get('side') != tried.get('side') for d in edges(item)):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M430",
+  "name": "a range within the test points may stay open",
+  "file": "scripts/review_functions.py",
+  "old": "    if low <= span[0] and span[1] <= high:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M431",
+  "name": "any open_range is taken",
+  "file": "scripts/review_functions.py",
+  "old": "        if not (opened and span[0] <= opened[0] and opened[1] <= span[1] and (opened[1] <= low or opened[0] >= high)):",
+  "new": "        if not opened:"
+ },
+ {
+  "id": "M432",
+  "name": "the part within the test points needs no margin",
+  "file": "scripts/review_functions.py",
+  "old": "        if not margined:\n",
+  "new": "        if False:\n"
  }
 ]

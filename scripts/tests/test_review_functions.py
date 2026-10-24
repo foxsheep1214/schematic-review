@@ -231,12 +231,19 @@ class FunctionShapeTests(unittest.TestCase):
         self.assertTrue(any('only belong to DESIGN_VALUE/VENDOR_DATUM' in e for e in function_errors({'functions': [fn]})))
 
 
+# results format 6: the HV current below the 120 V test point, written in numbers (bounding consistency item 1)
+HV_TRIED = {'side': 'LOWER', 'quantity': 'U1 HV 恒流源电流下限', 'operating_point': {'min': 40, 'max': 120, 'unit': 'V'},
+            'test_points': [{'condition': 'c3', 'at': {'value': 120, 'unit': 'V'}}],
+            'why_not': '手册只给 120 V 测试点，没说 IHV 随 VHV 单调', 'other_side': 'NOT_DECISIVE',
+            'other_side_reason': '电流上限不决定 VCC 能否升过 UVLO'}
+
+
 def hv_datum(**worst):
     """A vendor datum: the clauses read, and a worst case under the public bound (an extrapolation: an estimate)."""
     item = {'key': 'HV-IV', 'kind': 'VENDOR_DATUM', 'what': 'U1 HV 恒流源在 40–120 V 的电流下限',
             'scope': '90 Vac、R4 压降后', 'closure': '40..120 V 启动电流下界 ≥ 2 mA',
             'acquisition': '原厂应用支持', 'checked': ['c3'], 'why_insufficient': '表头只给 120 V 测试点',
-            'decides': [{'aspect': ASPECT, 'states': list(STATES), 'via': {'condition': 'c3'},
+            'decides': [{'aspect': ASPECT, 'states': list(STATES), 'via': {'condition': 'c3'}, 'side': 'LOWER',
                          'rationale': '启动电流决定 VCC 能否在 HV 供电下升过 UVLO，40 V 处没有保证值'}],
             'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'affects': 'U1 启动', 'consequence': '低线不能启动'}}
     item['worst_case'] = worst or {
@@ -303,7 +310,7 @@ class PublicBoundTests(unittest.TestCase):
         self.assertEqual(function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]}), [])
 
     def test_not_boundable_names_the_curves_and_tables_searched(self):
-        fn = with_datum(not_boundable_reason='手册没有 40 V 以下的任何测试点或曲线', monotonic_tried={'unfavorable_side': '测试点以下', 'why_not': '手册没说单调'})
+        fn = with_datum(not_boundable_reason='手册没有 40 V 以下的任何测试点或曲线', monotonic_tried=HV_TRIED)
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('curves_checked' in e for e in errors), errors)
         fn['open'][0]['worst_case']['curves_checked'] = [{'source': 'evidence/ds/U1.txt', 'locator': 'Fig. 12 IHV vs VHV'}]
@@ -315,7 +322,7 @@ class PublicBoundTests(unittest.TestCase):
     def test_an_operating_point_the_datasheet_does_not_specify_is_a_design_risk_not_a_vendor_request(self):
         """Unboundable because the design runs where the datasheet specifies nothing (an output given only above
         some supply): the answer is a fail item whose finding moves the design into the specified region."""
-        fn = with_datum(not_boundable_reason='V5 只在 VDD>6 V 时规定，本机 VDD 4.75 V', monotonic_tried={'unfavorable_side': '测试点以下', 'why_not': '手册没说单调'},
+        fn = with_datum(not_boundable_reason='V5 只在 VDD>6 V 时规定，本机 VDD 4.75 V', monotonic_tried=HV_TRIED,
                         curves_checked=[{'source': 'evidence/ds/U1.txt', 'locator': 'p11 V5'}])
         self.assertTrue(any('operating_point_specified' in e for e in function_errors({'functions': [fn]})))
         fn['open'][0]['worst_case']['operating_point_specified'] = False
@@ -581,10 +588,10 @@ class DerivedLevelsTests(unittest.TestCase):
                  'closure': 'Q5 重复短路 SOA 内', 'acquisition': '原厂应用支持', 'checked': ['c3'],
                  'why_insufficient': '手册无 VBUS 关断轨迹',
                  'worst_case': {'not_boundable_reason': '无驱动电流上限', 'operating_point_specified': True,
-                                'monotonic_tried': {'unfavorable_side': '关断轨迹整段', 'why_not': '手册无短路轨迹曲线'},
+                                'monotonic_tried': dict(HV_TRIED, quantity='Q5 关断轨迹电流', why_not='手册无短路轨迹曲线'),
                                 'specified_by': 'c3',
                                 'curves_checked': [{'source': 'evidence/ds/U5.txt', 'locator': 'Fig. 3 SOA'}]},
-                 'decides': [{'aspect': ASPECT, 'states': ['LATCH'], 'via': {'condition': 'c3'},
+                 'decides': [{'aspect': ASPECT, 'states': ['LATCH'], 'via': {'condition': 'c3'}, 'side': 'LOWER',
                               'rationale': '短路时 VCC 是否保持取决于 Q5 关断前的轨迹，手册没有'}],
                  'severity': {'level': 'P0', 'class': 'DAMAGE_OR_HAZARD', 'hazard_path': 'FIRE', 'affects': 'Q5',
                               'consequence': 'Q5 烧毁起火'}}

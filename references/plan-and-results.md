@@ -272,7 +272,7 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 工况，未证路径留具体缺口，不添加需求未承诺的零待机电流门槛。结果、父项、发现项和任务同步核
 实际页码、型号、物理脚/网络与状态，避免把封装/文档错误误写为实体错连。
 
-## 三、review-results.json（schema_version 5）
+## 三、review-results.json（schema_version 6）
 
 ### 顶层字段
 
@@ -396,7 +396,16 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 - `derivation`：GUARANTEED_LIMIT（手册限值就在本工况成立）、ADJACENT_TEST_POINT 或 MONOTONIC（从测试点推过来，另写 `monotonic{curve: 本功能里说明单调形状的条件 id, side: FAVORABLE}`，实际工况须在有利一侧，不利一侧的测试点什么都定不了）、TEMPCO（经温度系数推，`tempco` 指向给出温度系数 min/max 的 NUMERIC_LIMIT）、PUBLISHED_TABLE（公开数表）；TYPICAL_CURVE 只能出 ESTIMATE。
 - `corners[{input, condition, picked: min|max, why}]`：每个带公差的输入取了哪条 NUMERIC_LIMIT 的哪一端，以及为什么那一端不利；取的那一端必须是该条件给出的数。没有带公差的输入时写空列表加 `no_corners_reason`。
 
-开放项判“定不出界”（`worst_case.not_boundable_reason`）时，先答 `monotonic_tried{unfavorable_side, why_not}`：相邻测试点推不出的是哪一侧、为什么推不出；能推出的那一侧当场结案，只开推不出的一侧。
+开放项判“定不出界”（`worst_case.not_boundable_reason`）时，先用数写 `monotonic_tried`（结果格式 6）：
+- `side`：开着的是上界还是下界（UPPER 或 LOWER）；`quantity`：哪个量的界。
+- `operating_point{min, max, unit}`：本板上测试点所在那个变量的范围（如齐纳电流 0.06–1.3 mA）。
+- `test_points[{condition, at{value, unit}}]`：手册给这个量或它斜率的测试点，条件须在 `checked` 里，单位与工作点相同（u、μ 按 µ 算）。
+- `why_not`：这些测试点为什么给不出开着的那个界，不得照抄 `not_boundable_reason`。
+- `other_side`：另一个界 DECIDED（本功能有同一方面的余量）或 NOT_DECISIVE（写 `other_side_reason`）。
+
+工作点整段落在两个测试点之间时，门禁拒收“定不出界”，按相邻测试点定界（ADJACENT_TEST_POINT）；只有一部分在测试点之外时，
+`open_range{min, max}` 写开着的那段（在工作点之内、不跨进测试点之间），测试点之间那段写成本功能同一方面的余量。
+开放项的每条边写 `side`，与 `monotonic_tried.side` 相同。
 
 计算类（规则方法 C）的方面判 PASS 必须有证明它的余量；一句判断只能收掉连接追踪（T）和条款核对（D）类方面，写明 `reference_circuit` 的厂家参考电路例外。
 

@@ -254,3 +254,9 @@ A 那 16 条套话开项挡住了 92 行里的 56 行。
 | 其余 4 个开项（三条电源预算、调试口电平） | 通过 | 各 1 | PWM 控制器手册、PD 控制器手册 |
 
 下一轮在格式 6 上重做验收时，按这三项看第 1–3 条和定界表有没有起作用：前两项应降到 0；第三项剩下的，才是同一份资料上真正的判断分歧。
+
+**第 1 条（2026-10-23，结果格式 6）**
+- `worst_case.monotonic_tried` 改为用数写：`side`（UPPER 或 LOWER）、`quantity`、`operating_point{min, max, unit}`、`test_points[{condition, at{value, unit}}]`（条件须在 `checked` 里，单位与工作点相同，u 按 µ 算）、`why_not`（不得与 `not_boundable_reason` 相同）、`other_side`（DECIDED：本功能有同一方面的余量；NOT_DECISIVE：写 `other_side_reason`）。
+- 工作点整段在测试点范围以内（含工作点就是测试点的情形）时拒收，提示按相邻测试点定界；只有一部分在范围以内时，`open_range` 写开着的那段（在工作点之内，不跨进测试点之间），里面那段须是本功能同一方面的余量。开放项每条边写 `side`，须与 `monotonic_tried.side` 相同。
+- 方案原文要求“另一侧在同一功能里须有一条余量”，实施时加了 NOT_DECISIVE 一档：只有一个界决定判据时（例如只关心下界），不强求另一侧的余量，但要写理由，避免过严。
+- 测试：新增 `test_one_sided_bounds.py`；`ledger4.py` 与几处旧写法的测试改到格式 6。全部 1958 个测试通过，约定检查 516，KiCad 回放 195/195；变异 M419–M432 已加，M337、M339 改指，改动文件上 106 条全部被杀死。

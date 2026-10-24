@@ -7,6 +7,12 @@ import catalog
 
 SYNTHETIC = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
 # a level already implies a consequence class; tests about classes pass their own
+# results format 6: an unboundable quantity is written in numbers; the stipulated c1 test point lies above the range
+MONOTONIC_TRIED = {'side': 'LOWER', 'quantity': 'Synthetic: the stipulated quantity',
+                   'operating_point': {'min': 0, 'max': 0.5, 'unit': 'V'},
+                   'test_points': [{'condition': 'c1', 'at': {'value': 1, 'unit': 'V'}}],
+                   'why_not': 'Synthetic: the fixture stipulates no test point below 1 V',
+                   'other_side': 'NOT_DECISIVE', 'other_side_reason': 'Synthetic: the stipulated upper bound decides nothing'}
 LEVEL_CLASS = {'P0': 'CORE_LINK_LOSS', 'P1': 'REQUIRED_FUNCTION', 'P2': 'LOCAL_OR_DATA', 'P3': 'OPTIMIZATION'}
 
 
@@ -133,8 +139,9 @@ def gap(report, cids, key, kind='REVIEW_INCOMPLETE', fid=None, plan=None, what=N
                    worst_case={'not_boundable_reason': 'Synthetic: the fixture stipulates no public curve bounds it',
                                'curves_checked': [{'source': 'synthetic-fixture.json', 'locator': 'stipulated'}],
                                'operating_point_specified': True, 'specified_by': 'c1',
-                               'monotonic_tried': {'unfavorable_side': 'Synthetic: the stipulated side',
-                                                   'why_not': 'Synthetic: the fixture stipulates no monotonic curve'}})
+                               'monotonic_tried': MONOTONIC_TRIED})
+        for edge in out['decides']:
+            edge['side'] = 'LOWER'
     elif kind == 'USER_DEFERRED':
         out['instruction'] = SYNTHETIC
     out.update(item)

@@ -44,6 +44,9 @@ CONDITION_FIELDS = ('id', 'source', 'locator', 'says', 'use')
 REQUEST_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM')
 # How a public number bounds the quantity at the design's operating point (F3).
 BOUND_BASES = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'TYPICAL_CURVE', 'PUBLISHED_TABLE', 'APPLICATION_NOTE')
+# An unboundable quantity leaves one bound open (results format 6) and says how the other one is settled.
+OPEN_SIDES = ('UPPER', 'LOWER')
+OTHER_SIDES = ('DECIDED', 'NOT_DECISIVE')
 DELIVERABLE_FIELDS = ('deliverable', 'owner', 'assumed', 'closure')
 # What another stage owes; a parameter of a catalog part is none of these (it is a VENDOR_DATUM with its public bound).
 DELIVERABLE_KINDS = ('CUSTOM_PART_DRAWING', 'FIRMWARE_CAPABILITY', 'CONFIGURATION_TABLE')
@@ -705,7 +708,7 @@ def _f8_errors(fid, fn, calculation):
     return errors
 
 
-def _worst_case_errors(label, item, conditions):
+def _worst_case_errors(label, item, conditions, calculation=None):
     """F3: the worst case under the public bound (which clause, what value, how it bounds) and its margin,
     or the curves and tables searched before calling the quantity unboundable."""
     worst = item.get('worst_case')
@@ -715,10 +718,9 @@ def _worst_case_errors(label, item, conditions):
         if not evidence(worst.get('curves_checked')):
             return [label + ': worst_case.curves_checked lists the datasheet figures, published tables and application '
                             'notes searched for a bound (source, locator) before the quantity is called unboundable']
-        tried = worst.get('monotonic_tried')
-        if not (isinstance(tried, dict) and all(text(tried.get(f)) for f in ('unfavorable_side', 'why_not'))):   # 1c
-            return [label + ': worst_case.monotonic_tried{unfavorable_side, why_not} says which side the adjacent test '
-                            'point cannot bound and why; a side it does bound is decided, only the other stays open']
+        found = _monotonic_errors(label, item, worst, calculation)   # 1c
+        if found:
+            return found
         specified = worst.get('operating_point_specified')
         if not isinstance(specified, bool):
             return [label + ': worst_case.operating_point_specified says whether the datasheet specifies the part at '
@@ -745,6 +747,85 @@ def _worst_case_errors(label, item, conditions):
             and text(margin.get('against'))):
         errors.append(label + ': worst_case.margin {value: number, unit, against} under the public bound')
     return errors
+
+
+def _unit(unit):
+    """A unit as compared: squeezed, and a micro sign spelt u is µ."""
+    unit = _squeeze(unit) if isinstance(unit, str) else ''
+    return '\u00b5' + unit[1:] if len(unit) > 1 and unit[0] == 'u' else unit
+
+
+def _span(value):
+    if isinstance(value, dict) and _finite(value.get('min')) and _finite(value.get('max')) and value['min'] <= value['max']:
+        return value['min'], value['max']
+    return None
+
+
+def _monotonic_errors(label, item, worst, calculation):
+    """1c in numbers (bounding consistency proposals, item 1): the open side, the quantity, this board's range of the
+    variable and the datasheet test points with their values. A range inside two test points is bounded from them; a
+    range partly outside opens only the part outside (open_range) and the part inside is a margin. Each edge names
+    the open side; the other side is a margin of this function or is not decisive, with why."""
+    head = label + ': worst_case.monotonic_tried'
+    tried = worst.get('monotonic_tried')
+    if not isinstance(tried, dict):
+        return [head + '{side, quantity, operating_point, test_points, why_not, other_side} says which bound the test '
+                       'points leave open and why; a bound they do give is decided, only the other stays open']
+    errors, at = [], []
+    if tried.get('side') not in OPEN_SIDES:
+        errors.append(head + '.side is UPPER or LOWER: the bound left open')
+    if not text(tried.get('quantity')):
+        errors.append(head + '.quantity names the quantity whose bound is open')
+    point = tried.get('operating_point') if isinstance(tried.get('operating_point'), dict) else {}
+    span = _span(point) if text(point.get('unit')) else None
+    if span is None:
+        errors.append(head + '.operating_point{min, max, unit} is this board\'s range of the variable the test points '
+                             'are given at')
+    points = tried.get('test_points')
+    read = item.get('checked') if isinstance(item.get('checked'), list) else []
+    if not (isinstance(points, list) and points):
+        errors.append(head + '.test_points lists the datasheet test points of the quantity or of its slope: '
+                             '{condition (in checked), at{value, unit}}')
+    else:
+        for p in points:
+            where = p.get('at') if isinstance(p, dict) and isinstance(p.get('at'), dict) else {}
+            if (isinstance(p, dict) and p.get('condition') in read and _finite(where.get('value'))
+                    and span and _unit(where.get('unit')) == _unit(point.get('unit'))):
+                at.append(where['value'])
+            else:
+                errors.append(head + '.test_points: %s is a condition in checked with at{value, unit} in the unit of '
+                                     'operating_point' % (p.get('condition') if isinstance(p, dict) else p))
+    if not text(tried.get('why_not')) or _squeeze(tried['why_not']) == _squeeze(worst.get('not_boundable_reason')):
+        errors.append(head + '.why_not says why these test points do not give the open bound, not the '
+                             'not_boundable_reason again')
+    aspects = {a for a, _ in _decides(item)}
+    calc = calculation if isinstance(calculation, dict) else {}
+    margined = any((m.get('aspect') or calc.get('aspect')) in aspects for m in results_model.margins(calc))
+    other = tried.get('other_side')
+    if other not in OTHER_SIDES:
+        errors.append(head + '.other_side is DECIDED (a margin of this function settles the other bound) or NOT_DECISIVE '
+                             '(with other_side_reason)')
+    elif other == 'NOT_DECISIVE' and not text(tried.get('other_side_reason')):
+        errors.append(head + '.other_side_reason says why the other bound decides nothing here')
+    elif other == 'DECIDED' and not margined:
+        errors.append(head + '.other_side is DECIDED but no margin of this function is on %s' % '/'.join(sorted(aspects)))
+    if any(d.get('side') != tried.get('side') for d in edges(item)):
+        errors.append(label + ': each decides edge names side, the bound left open (monotonic_tried.side)')
+    if errors:
+        return errors
+    low, high = min(at), max(at)
+    if low <= span[0] and span[1] <= high:
+        return [head + ': operating_point %g–%g %s lies within the test points %g–%g; bound it from them '
+                       '(ADJACENT_TEST_POINT) instead of opening it' % (span[0], span[1], point['unit'], low, high)]
+    if min(span[1], high) - max(span[0], low) > 0:
+        opened = _span(tried.get('open_range'))
+        if not (opened and span[0] <= opened[0] and opened[1] <= span[1] and (opened[1] <= low or opened[0] >= high)):
+            return [head + '.open_range{min, max} is the part of operating_point outside the test points %g–%g; only '
+                           'that part stays open' % (low, high)]
+        if not margined:
+            return [head + ': the part of operating_point inside the test points %g–%g is decided by a margin of this '
+                           'function on %s' % (low, high, '/'.join(sorted(aspects)))]
+    return []
 
 
 def _datum_margin_errors(fid, fn, item, conditions, claim_ids, findings):
@@ -851,7 +932,7 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
             errors.append(label + ': why_insufficient says why the clauses read do not answer the question')
         if not text(item.get('acquisition')):
             errors.append(label + ': acquisition says who provides the datum')
-        errors.extend(_worst_case_errors(label, item, conditions))
+        errors.extend(_worst_case_errors(label, item, conditions, calculation))
     if kind == 'USER_DEFERRED' and not evidence(item.get('instruction')):
         errors.append(label + ': a deferral cites the user instruction (instruction evidence)')
     return errors

@@ -10,7 +10,7 @@ describe, or a point outside its ratings, fails as outside the specified region.
 import copy
 import unittest
 
-from test_review_functions import ASPECT, STATES, bias_function, guaranteed, with_datum
+from test_review_functions import ASPECT, HV_TRIED, STATES, bias_function, guaranteed, with_datum
 from review_functions import function_errors, judged
 
 REFERENCE = {'id': 'c6', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/U1.txt', 'locator': 'p21 Figure 20 典型应用电路',
@@ -68,7 +68,7 @@ class DescribedUsageTests(unittest.TestCase):
 
     def unboundable(self, **worst):
         return with_datum(not_boundable_reason='手册写了这种用法，没给灌电流', operating_point_specified=True,
-                          monotonic_tried={'unfavorable_side': '灌电流整段', 'why_not': '手册没有任何灌电流测试点'},
+                          monotonic_tried=HV_TRIED,
                           curves_checked=[{'source': 'evidence/ds/U1.txt', 'locator': 'p11 电气特性'}], **worst)
 
     def test_specified_names_the_clause_that_describes_the_usage(self):
