@@ -7,6 +7,19 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## One planning entry (SR self-check group 2, item 2.9, 2026-10-24)
+
+`plan_review.py` and `lint.py` each had a main that wrote the review plan, and the two had drifted apart in the intent
+checks they ran and the diagnostics they printed, so one input could give two plans. `plan_review.py` loses its main
+and is a library; `lint.py --plan-json` is the only command that writes a plan. The tests that ran plan_review.py as a
+command now run lint.py; revision-review.md and automation.md no longer name it as a command; the script table in
+architecture.md moves it to the libraries. Recorded in architecture.md. Tests first; 2061 tests pass, contract 518,
+KiCad replay 195/195, typical circuits unchanged, all 28 mutations on changed files killed.
+
+- Event: user:2026-10-24 (SR self-check group 2, item 2.9: "删 plan_review.main")
+- Causes: judgment 1
+- Changed: docs/improvement-ledger.md, references/architecture.md, references/automation.md, references/revision-review.md, scripts/plan_review.py, scripts/tests/test_decoupling.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_one_planning_entry.py, scripts/tests/test_revision_impact.py
+
 ## Requirement clarifications have their own report section (SR self-check group 2, item 2.5, 2026-10-24)
 
 An open requirement clarification reached the report only as a count under 定稿还差 and as a work item that left out

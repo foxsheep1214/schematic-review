@@ -1,29 +1,23 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """检查计划生成：按规则总表（scripts/catalog.py）把审查展开为逐项计划。
 
-这个脚本只回答“哪些检查需要执行、按什么规则和方式执行、还缺什么证据”，
+这个模块只回答“哪些检查需要执行、按什么规则和方式执行、还缺什么证据”，
 不提前给 PASS/FAIL。每个计划项带规则编号、检查方式与内容域，检查 ID 以
 规则编号开头。HANDOFF 是独立下游动作，可以与后续 PASS/FAIL/INSUFFICIENT 并存。
 
-用法：
-    python3 plan_review.py db.json --intent intent.json \
-        --datasheet-audit datasheet-audit.json --json review-plan.json
+它是库：出计划的命令只有 lint.py（`--plan-json`），见 SKILL.md 第 2 步（SR 自查 2.9）。
 """
-import argparse
 import difflib
 from copy import deepcopy
 import board_intent
 import catalog
 from review_engine import engine_identity
-from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, bounded, finite, load_json, squeeze_words
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, bounded, finite, squeeze_words
 from page_inventory import inventory as document_inventory
-import io
 import json
 import os
 import hashlib
 import re
-import sys
 from collections import Counter
 from checkers import REGISTRY, domains as domains_lib, passive_stress, powertree
 from checkers.netgraph import NetGraph, RAIL_RE
@@ -42,10 +36,7 @@ import plan_system
 from checkers.planutil import empty_handoff as _empty_handoff, slug as _slug
 from revision_impact import attach_metadata, digest as revision_digest, validate_declarations
 
-from audit_datasheets import (
-    datasheet_entry_for_ref,
-    validate_datasheet_audit,
-)
+from audit_datasheets import datasheet_entry_for_ref
 
 
 from review_workflow import PHASES
@@ -708,84 +699,3 @@ def diagnostic_lines(plan, db, intent):
         lines.append('    栅极/检测/开关节点可按计算给 power_rails.<网>.voltage_v；隔离地给 domain；不能定界的留审查者计算')
     return lines
 
-
-def main():
-    parser = argparse.ArgumentParser(
-        description='按规则总表生成逐项检查计划（适用性、准备度与证据缺口）')
-    parser.add_argument('db', help='parse_netlist.py 产出的 db.json')
-    parser.add_argument('--intent', help='审查意图 JSON')
-    parser.add_argument(
-        '--datasheet-audit',
-        help='audit_datasheets.py 产出的逐物料覆盖审计 JSON')
-    parser.add_argument('--review-mode', choices=('first', 'revision'))
-    parser.add_argument('--old-db', help='实际读取复审旧版 db.json 并生成变化清单')
-    parser.add_argument('--old-plan', help='上一设计版本最终计划；不是本版网表扫描 merge-plan')
-    parser.add_argument('--revision-impact-json', help='另存本次改版影响与必需复验清单')
-    parser.add_argument('--claims', help='历史意见断言 JSON（只判定可用性）')
-    parser.add_argument('--json', required=True, help='写出 review-plan.json')
-    parser.add_argument('--candidates', help='circuit_candidates.py 生成的 record/circuit-candidates.json；intent 声明电路时必需')
-    parser.add_argument('--i2c-topology-json', help='另存本次生成的 I2C 连接覆盖清单')
-    parser.add_argument('--decoupling-json', help='另存去耦连接/装配/标称容量清单；不是电气判决')
-    args = parser.parse_args()
-
-    for label, path in (('--old-db', args.old_db), ('--claims', args.claims)):
-        if path and not os.path.isfile(path):
-            sys.exit(f'[FATAL] {label} 文件不存在: {path}')
-
-    try:
-        db = load_json(args.db)
-        intent = load_json(args.intent) if args.intent else None
-        datasheet_audit = load_json(args.datasheet_audit) if args.datasheet_audit else None
-        old_db = load_json(args.old_db) if args.old_db else None
-        old_plan = load_json(args.old_plan) if args.old_plan else None
-        candidates = load_json(args.candidates) if args.candidates else None
-    except (OSError, ValueError) as error:
-        parser.error(str(error))
-    if args.intent and not isinstance(intent, dict):
-        parser.error('explicit intent.json root must be an object')
-    for supplied, value, label in ((args.old_db, old_db, '--old-db'), (args.old_plan, old_plan, '--old-plan')):
-        if supplied and not isinstance(value, dict):
-            parser.error(label + ' JSON root must be an object')
-    errors = validate_intent(intent, db, candidates=candidates, require_candidates=True)
-    if errors:
-        sys.exit('[FATAL] intent.json 无效:\n  - ' + '\n  - '.join(errors))
-    if datasheet_audit is not None:
-        errors = validate_datasheet_audit(datasheet_audit, db)
-        if errors:
-            sys.exit('[FATAL] datasheet-audit.json 无效:\n  - '
-                     + '\n  - '.join(errors))
-    from lint import Lint  # the scan findings are part of the plan; lint imports this module
-    try:
-        plan = build_review_plan(
-            db, intent, args.review_mode,
-            old_db_available=bool(args.old_db), claims_available=bool(args.claims),
-            datasheet_audit=datasheet_audit, old_db=old_db, old_plan=old_plan,
-            lint_findings=Lint(db, None, intent, datasheet_audit).run(), candidates=candidates)
-    except ValueError as error:
-        parser.error(str(error))
-    if args.revision_impact_json:
-        if 'revision_impact' not in plan:
-            parser.error('--revision-impact-json requires revision mode')
-        with open(args.revision_impact_json, 'w', encoding='utf-8') as stream:
-            json.dump(plan['revision_impact'], stream, ensure_ascii=False, indent=2, allow_nan=False)
-    if args.i2c_topology_json:
-        with open(args.i2c_topology_json, 'w', encoding='utf-8') as stream:
-            json.dump(plan['i2c_topology'], stream, ensure_ascii=False, indent=2)
-    if args.decoupling_json:
-        with open(args.decoupling_json, 'w', encoding='utf-8') as stream:
-            json.dump(plan['decoupling'], stream, ensure_ascii=False, indent=2, allow_nan=False)
-    json.dump(plan, io.open(args.json, 'w', encoding='utf-8'),
-              ensure_ascii=False, indent=2)
-    summary = plan['summary']
-    print('=== 检查计划（规则总表展开） ===')
-    print(f"  checks={summary['checks_total']}  "
-          f"applicability={summary['applicability']}")
-    print(f"  readiness={summary['readiness']}  "
-          f"handoff_required={summary['handoff_required']}")
-    for line in diagnostic_lines(plan, db, intent):
-        print(line)
-    print(f'  -> {args.json}')
-
-
-if __name__ == '__main__':
-    main()

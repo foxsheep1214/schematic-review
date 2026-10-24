@@ -623,14 +623,14 @@ class DecouplingPlanTests(unittest.TestCase):
         outcome = validate_review(plan, ledger(plan, db))
         self.assertTrue(any('decoupling inventory validation requires --db' in e for e in outcome['errors']))
 
-    def test_cli_three_entrypoints_emit_same_inventory(self):
+    def test_cli_both_entrypoints_emit_same_inventory(self):
         db, intent = fixture()
         with tempfile.TemporaryDirectory() as temp:
             folder = Path(temp)
             (folder / 'db.json').write_text(json.dumps(db))
             (folder / 'intent.json').write_text(json.dumps(dict(intent, schema_version=4)))
             outputs = []
-            for script in ('decoupling.py', 'plan_review.py', 'lint.py'):
+            for script in ('decoupling.py', 'lint.py'):
                 target = folder / (script + '-inventory.json')
                 args = ['--json', str(target)] if script == 'decoupling.py' else ['--decoupling-json', str(target), '--json', str(folder / (script + '-output.json'))]
                 run = subprocess.run([sys.executable, '-B', str(SCRIPTS / script), str(folder / 'db.json'),
@@ -638,7 +638,6 @@ class DecouplingPlanTests(unittest.TestCase):
                 self.assertEqual(run.returncode, 0, run.stderr)
                 outputs.append(json.loads(target.read_text()))
             self.assertEqual(outputs[0], outputs[1])
-            self.assertEqual(outputs[0], outputs[2])
 
     def test_cli_rejects_malformed_and_ambiguous_json_without_output(self):
         db, intent = fixture()
@@ -648,7 +647,7 @@ class DecouplingPlanTests(unittest.TestCase):
                         '{"decoupling":{"x":NaN}}'):
                 (folder / 'db.json').write_text(json.dumps(db))
                 (folder / 'intent.json').write_text(bad)
-                for script in ('decoupling.py', 'plan_review.py', 'lint.py'):
+                for script in ('decoupling.py', 'lint.py'):
                     target = folder / (script + '.json')
                     run = subprocess.run([sys.executable, '-B', str(SCRIPTS / script), str(folder / 'db.json'),
                         '--intent', str(folder / 'intent.json'), '--json', str(target)], text=True, capture_output=True)

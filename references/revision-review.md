@@ -31,7 +31,6 @@ python3 scripts/lint.py db.json --intent intent.json --candidates record/circuit
   --revision-impact-json revision-impact.json
 ```
 
-`plan_review.py` 同样支持 `--old-db`、`--old-plan`、`--revision-impact-json`。
 提供旧基线且未显式指定模式时使用 revision；显式 first 与旧基线冲突则拒绝。
 `--claims` 仍是历史断言材料的准备度输入，不代表已经执行或通过断言。
 

@@ -297,7 +297,7 @@ schema 2，带 `rules_version`，绑定 `db_sha256` 与 intent 的 `input_sha256
 （覆盖电气指纹、符号声明脚、伪网与输入完整性），旧声明不得静默用于新网表。取值：候选清单输出
 的 `input_sha256` 字段，或 `python3 scripts/decoupling.py db.json --json candidates.json`。
 
-**清单与计划**：`plan_review.py` / `lint.py` 每次重新生成清单并嵌入 `review-plan.json` 的
+**清单与计划**：`lint.py` 每次重新生成清单并嵌入 `review-plan.json` 的
 对应顶层键，不读取旧清单当事实。另存清单：
 
 ```sh

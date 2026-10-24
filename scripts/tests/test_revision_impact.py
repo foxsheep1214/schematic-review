@@ -440,16 +440,13 @@ class RevisionWorkflowTests(unittest.TestCase):
         result = self.cli('validate_review.py', output, self.write('report.json', self.report(plan)),
                           '--db', db, '--old-db', old, '--old-plan', base, '--require-revision-impact')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        result = self.cli('plan_review.py', db, '--old-db', old, '--old-plan', base, '--json', self.root/'standalone.json')
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertEqual(json.loads((self.root/'standalone.json').read_text()), plan)
 
     def test_invalid_old_json_duplicate_keys_and_nonfinite_rejected_before_output(self):
         db = self.write('new.json', self.new)
         old = self.root/'invalid.json'
         for raw in ('{"parts":{},"parts":{}}', '{"value":NaN}', '[]', 'null'):
             old.write_text(raw)
-            result = self.cli('plan_review.py', db, '--old-db', old, '--json', self.root/'no-output.json')
+            result = self.cli('lint.py', db, '--old-db', old, '--plan-json', self.root/'no-output.json')
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse((self.root/'no-output.json').exists())
 

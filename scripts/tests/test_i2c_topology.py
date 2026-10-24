@@ -422,7 +422,7 @@ class TopologyTests(unittest.TestCase):
             folder = Path(temp)
             (folder / 'db.json').write_text(json.dumps(db))
             (folder / 'intent.json').write_text(json.dumps(intent))
-            for script in ('i2c_topology.py', 'plan_review.py', 'lint.py'):
+            for script in ('i2c_topology.py', 'lint.py'):
                 target = folder / (script + '.json')
                 run = subprocess.run([sys.executable, '-B', str(SCRIPTS / script), str(folder / 'db.json'),
                     '--intent', str(folder / 'intent.json'), '--json', str(target)], text=True, capture_output=True)
@@ -437,7 +437,7 @@ class TopologyTests(unittest.TestCase):
             folder = Path(temp)
             (folder / 'db.json').write_text(json.dumps(db))
             (folder / 'intent.json').write_text('null')
-            for script in ('i2c_topology.py', 'plan_review.py', 'lint.py'):
+            for script in ('i2c_topology.py', 'lint.py'):
                 target = folder / (script + '.json')
                 base = [sys.executable, '-B', str(SCRIPTS / script), str(folder / 'db.json'), '--json', str(target)]
                 run = subprocess.run(base + ['--intent', str(folder / 'intent.json')], text=True, capture_output=True)
@@ -496,13 +496,11 @@ class TopologyTests(unittest.TestCase):
             (folder / 'db.json').write_text(json.dumps(db))
             (folder / 'intent.json').write_text(json.dumps(dict(intent, schema_version=4)))
             for script, args in [('i2c_topology.py', ['--json', str(folder / 'inventory.json')]),
-                ('plan_review.py', ['--json', str(folder / 'plan.json'), '--i2c-topology-json', str(folder / 'plan-topology.json')]),
                 ('lint.py', ['--plan-json', str(folder / 'lint-plan.json'), '--i2c-topology-json', str(folder / 'lint-topology.json')])]:
                 run = subprocess.run([sys.executable, '-B', str(SCRIPTS / script), str(folder / 'db.json'),
                     '--intent', str(folder / 'intent.json')] + args, text=True, capture_output=True)
                 self.assertEqual(run.returncode, 0, run.stderr)
             expected = json.loads((folder / 'inventory.json').read_text())
-            self.assertEqual(json.loads((folder / 'plan-topology.json').read_text()), expected)
             self.assertEqual(json.loads((folder / 'lint-topology.json').read_text()), expected)
             (folder / 'intent.json').write_text('{"i2c_topology":{},"i2c_topology":{}}')
             run = subprocess.run([sys.executable, '-B', str(SCRIPTS / 'i2c_topology.py'), str(folder / 'db.json'),
