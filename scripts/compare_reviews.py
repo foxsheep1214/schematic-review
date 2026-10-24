@@ -598,10 +598,10 @@ def markdown(report):
                   for (opener, ref, decided), n in sorted(groups.items(), key=lambda x: (-x[1], x[0]))]
     sig = report['signals']
     owners = report.get('requirement_owners') or {'rows': [], 'different': 0}
-    lines += ['', '## 需求的 owners 与判法', '',
-              '两边 %d 条需求，owners 或判法不同的 %d 条（派生 = 绑到树上的行，自判 = 需求行自己判）。' % (
+    lines += ['', '## 需求的承接电路与判法', '',
+              '两边 %d 条需求，承接电路（owners）或判法不同的 %d 条（派生 = 绑到承接电路的行，自判 = 需求行自己判）。' % (
                   len(owners['rows']), owners['different']), '',
-              '| 需求 | A owners | A 判法 | B owners | B 判法 |', '|---|---|---|---|---|']
+              '| 需求 | A 承接电路 | A 判法 | B 承接电路 | B 判法 |', '|---|---|---|---|---|']
     for row in owners['rows']:
         if row['same']:
             continue

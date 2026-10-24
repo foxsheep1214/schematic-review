@@ -255,7 +255,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
             if 'parameters' in item:
                 errors.extend(requirement_parameters.errors(item.get('id'), item['parameters'], original))
             if 'owners' in item and (not isinstance(item['owners'], list) or not all(_text(x) for x in item['owners'])):
-                errors.append('requirement.%s.owners 须为字符串数组（电路、接口或系统功能的 id；[] 表示不绑任何电路，须带 no_owner_reason）'
+                errors.append('requirement.%s.owners 承接电路须为字符串数组（电路、接口或系统功能的 id；[] 表示没有承接电路，须带 no_owner_reason）'
                               % item.get('id'))
             if 'owners' in item and isinstance(item['owners'], list) and not item['owners']:
                 reason = item.get('no_owner_reason')
@@ -642,7 +642,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         requirement_bindings.attach(plan['checks'], plan['owners'])
         missing = requirement_bindings.missing_owner_errors(plan['checks'])
         if missing:
-            raise ValueError('intent.json 的需求没写 owners（有候选时必填）:\n  - ' + '\n  - '.join(missing))
+            raise ValueError('intent.json 的需求没写承接电路 owners（有可承接的电路时必填）:\n  - ' + '\n  - '.join(missing))
         self.diagnostics.extend(requirement_bindings.outside_candidates(plan['checks']))
         plan['rail_candidates'] = rail_candidates(self.db, self.intent)
         plan['summary']['owners'] = row_owner.counts(plan['checks'])

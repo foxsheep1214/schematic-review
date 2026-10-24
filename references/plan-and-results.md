@@ -128,11 +128,12 @@
   `power_rails.<网>.voltage_v` 可以只写 `{"requirement": "<需求编号>"}`（该需求同时有输入和输出电压时加 `parameter`），
   窗口取那条需求电压参数的上下限；输入电压、频率写进 SYS-POWER 框架的 `requirement_windows` 和问题；
   工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02/C06）作为 `conditions` 挂在器件应力行上，计划顶层 `conditions` 列出各条来源。
-- `requirements[].owners`：落实这条需求的电路、接口或系统功能的 id。规则总表给每个审查方面列出承担它的检查和候选所属的电路类型；
-  计划给每个需求行算出候选 `owner_candidates`（拥有该方面规则适用行的所属里，类型在表内的电路，加上系统功能和接口）。
-  **有候选的需求必须写 owners**（OPEN、DEFERRED 的除外），没写的计划拒绝生成并打印候选；需求不落在任何候选上时写 `owners: []`
-  加能定位的 `no_owner_reason`，需求行自判（行记 `self_judged: DECLARED`）；没有候选的不要求写，需求行自判（`self_judged: NO_OWNER_CANDIDATE`）。
-  写了候选以外的 id 允许，计划打诊断 `REQUIREMENT_OWNER_OUTSIDE_CANDIDATES` 供复核。只有一个候选也要手写，不自动填。
+- `requirements[].owners`，**承接电路**：落实这条需求的功能电路、系统功能或接口的 id。规则总表给每个审查方面列出承担它的检查和可承接的电路类型；
+  计划替每个需求行找出**可承接的电路**，写在 `owner_candidates`（拥有承担该方面的行的所属里，类型在表内的电路，加上系统功能和接口）。
+  **有可承接的电路的需求必须写 owners**（OPEN、DEFERRED 的除外），没写的计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []`
+  加能定位的 `no_owner_reason`，需求行自判（行记 `self_judged: DECLARED`，“审查员认定没有承接电路”）；没有可承接的电路的不要求写，需求行自判
+  （`self_judged: NO_OWNER_CANDIDATE`，“没有可承接的电路”）。写了可承接之外的 id 允许，计划打诊断 `REQUIREMENT_OWNER_OUTSIDE_CANDIDATES` 供复核。
+  只有一个可承接的电路也要手写，不自动填。
   计划把需求行绑定到这些规则中 `owners` 拥有的行，没写 `owners` 时全板方面（器件温度等级、按温度降额、寿命）绑定全板这些规则的行，
   写在需求行的 `bound_checks`（不进检查标识，校验时重算，点名的 id 必须拥有计划里的行）。有绑定行判过（不算 NA）的需求行不再另判：
   `derive_rows.py` 取绑定行中最差的结论写出（`derived_from`；FAIL 带上该发现项并把需求行加进它的 `check_ids`，INSUFFICIENT 带上 `open_ref`），

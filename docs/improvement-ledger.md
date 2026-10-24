@@ -7,6 +7,20 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Plain words for requirement owners (SR framework review, 2026-10-24)
+
+The reviewer-facing text called a requirement's owners "所属" or left the English, and the plan's candidate owners
+"候选" — a translation word that explains nothing. The user asked for everyday words: a requirement's owners are now
+承接电路 (the functional circuits, system functions or interfaces that realise it) and the ones the plan finds are
+可承接的电路; the planning refusal, the outside-candidates diagnostic, the intent validation message, the catalog's
+aspect table column, plan-and-results.md, SKILL.md 1.1 and the comparison section heading say so. JSON field names
+(`owners`, `owner_candidates`, `self_judged`) and the generic per-row "所属" are unchanged. Wording only; tests that
+quote the messages updated.
+
+- Event: user:2026-10-24 (SR framework review: "我建议改成通俗一点的语言，比如owner可以写成“承接功能的模块”…“候选”也请改个名" → "按你的推荐来")
+- Causes: judgment 1
+- Changed: SKILL.md, docs/improvement-ledger.md, references/check-catalog.md, references/plan-and-results.md, scripts/catalog.py, scripts/compare_reviews.py, scripts/plan_review.py, scripts/requirement_bindings.py, scripts/tests/test_requirement_bindings.py
+
 ## Requirement owners are recommended by the plan and required when there is a candidate (SR framework review, 2026-10-24)
 
 `owners` was optional and decided how a requirement row is judged: named, the row was bound to the owners' tree rows and

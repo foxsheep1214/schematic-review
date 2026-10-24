@@ -82,8 +82,8 @@ def missing_owner_errors(checks):
     out = []
     for rid, (aspects, found) in sorted(by_requirement.items()):
         named = '、'.join('%s（%s）' % (c['id'], c.get('type') or c['kind']) for c in found.values())
-        out.append('requirement.%s.owners 缺：方面 %s 由 %s 拥有的行承担；写 owners 后需求行由这些行派生。'
-                   '不落在任何候选上的写 owners: [] 并给能定位的 no_owner_reason' % (rid, '/'.join(aspects), named))
+        out.append('requirement.%s.owners 缺：方面 %s 可承接的电路是 %s（它们拥有承担该方面的行）；写上承接电路后需求行由这些行派生。'
+                   '认定没有承接电路的写 owners: [] 并给能定位的 no_owner_reason' % (rid, '/'.join(aspects), named))
     return out
 
 
@@ -98,7 +98,7 @@ def outside_candidates(checks):
         if outside:
             out.append({'code': 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES', 'requirement': row['object']['requirement_id'],
                         'aspect': row['object']['aspect'], 'owners': outside, 'candidates': sorted(ids),
-                        'detail': '需求 %s 的方面 %s 写了候选以外的 owners %s（候选：%s）；确认它们确实落实这条需求' % (
+                        'detail': '需求 %s 的方面 %s 的承接电路 %s 不在计划找到的可承接电路里（%s）；确认它们确实承接这条需求' % (
                             row['object']['requirement_id'], row['object']['aspect'], '、'.join(outside), '、'.join(sorted(ids)))})
     return out
 

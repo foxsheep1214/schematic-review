@@ -1285,10 +1285,11 @@ ASPECT_RULES = OrderedDict([
 BOARD_ASPECTS = ('TEMPERATURE_GRADE', 'TEMPERATURE_DERATING', 'LIFETIME_BASIS', 'MISSION_PROFILE', 'ISOLATION_PARTS',
                  'ISOLATION_PATHS', 'TEST_ACCESS')
 
-# The circuit types that usually carry an aspect (requirement owners, 2026-10-24). A requirement row's candidate
-# owners are the circuits of these types, and every system function and interface, that own an applicable row of the
-# aspect's rules; with a candidate the requirement must name its owners (or `owners: []` with a located reason).
-# Board aspects bind every row and have no candidates.
+# The circuit types that usually carry an aspect (requirement owners, 2026-10-24; in Chinese 承接电路, the circuits
+# that realise the requirement, and 可承接的电路 for the ones the plan finds). A requirement row's candidate owners are
+# the circuits of these types, and every system function and interface, that own an applicable row of the aspect's
+# rules; with a candidate the requirement must name its owners (or `owners: []` with a located reason). Board aspects
+# bind every row and have no candidates.
 _INPUT_TYPES = ('POWER_PROTECTION', 'POWER_CONVERTER')
 _BUS_TYPES = ('USB', 'CAN', 'RS485', 'UART', 'SPI', 'I2C', 'ETHERNET', 'HSSERIAL', 'AV', 'STORAGE', 'DDR')
 ASPECT_OWNER_TYPES = OrderedDict([
@@ -1849,9 +1850,10 @@ def render_markdown():
     lines += ['', '方面有树上的检查承担时，需求行绑定这些规则的行（需求 `owners` 点名的电路、接口、系统功能拥有的行；'
               '没写 `owners` 时，全板方面绑定全板这些规则的行），结论取绑定行中最差者，需求行不再另判；'
               '没有检查承担的方面由需求行自己判。', '',
-              '有候选所属的方面（下表“候选所属”列）要求需求写 `owners`：候选 = 这些类型的电路，以及拥有该方面规则适用行的系统功能和接口；'
-              '有候选而没写 owners 的需求计划拒绝生成，并打印候选；需求不落在任何候选上时写 `owners: []` 加能定位的 `no_owner_reason`，需求行自判。', '',
-              '| 审查方面 | 何时问 | 判据模板 | 承担的检查 | 候选所属 |', '|---|---|---|---|---|']
+              '需求的承接电路写在 `owners`（落实这条需求的功能电路；系统功能和接口也可以承接）。计划替每条需求找出可承接的电路：'
+              '下表“可承接的电路”列的类型里、拥有承担该方面的行的电路，以及拥有这些行的系统功能和接口。'
+              '有可承接的电路而没写 owners 的需求，计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []` 加能定位的 `no_owner_reason`，需求行自判。', '',
+              '| 审查方面 | 何时问 | 判据模板 | 承担的检查 | 可承接的电路 |', '|---|---|---|---|---|']
     for key, aspect in REQUIREMENT_ASPECTS.items():
         carried = '、'.join(ASPECT_RULES.get(key, ())) or '需求行自判'
         asked = '原文有 ' + ' / '.join(aspect.parameters) if aspect.parameters else '类别选中'

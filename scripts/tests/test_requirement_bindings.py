@@ -255,7 +255,7 @@ class OwnerCandidateTests(unittest.TestCase):
         self.assertEqual(diff['REQ-OPEN-01']['B']['judged']['OUTPUT_LIMITS'], 'SELF')
         self.assertEqual(report['different'], 1)
         text = compare_reviews.markdown(compare_reviews.compare(a, b))
-        self.assertIn('## 需求的 owners 与判法', text)
+        self.assertIn('## 需求的承接电路与判法', text)
         self.assertIn('| REQ-OPEN-01 | SYS-POWER |', text)
 
 
