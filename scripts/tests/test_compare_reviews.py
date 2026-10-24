@@ -92,7 +92,7 @@ class CompareTests(unittest.TestCase):
                 rec.mkdir(parents=True)
                 (rec / 'review-plan.json').write_text(json.dumps(s['plan']), encoding='utf-8')
                 (rec / 'review-results.json').write_text(json.dumps(s['results']), encoding='utf-8')
-                (rec.parent / 'intent.json').write_text(json.dumps({'circuit_decisions': [
+                ((rec / 'intent.json') if name == 'a' else (rec.parent / 'intent.json')).write_text(json.dumps({'circuit_decisions': [
                     {'candidate': 'POWER_CONVERTER-U1', 'decision': 'accept', 'id': 'BIAS' if name == 'a' else 'BIAS2'}]}), encoding='utf-8')
                 (rec / 'circuit-candidates.json').write_text(json.dumps({'candidates': [{'id': 'POWER_CONVERTER-U1', 'members': []}],
                                                                          'unassigned': []}), encoding='utf-8')

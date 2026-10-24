@@ -65,10 +65,13 @@ def load(where):
     plan = load_json(record / 'review-plan.json')
     results = load_json(record / 'review-results.json')
     side = {'where': str(where), 'plan': plan, 'results': results}
-    # the circuit decisions live in the intent beside the record and the candidates in the record (both optional here)
-    for key, path in (('intent', record.parent / 'intent.json'), ('candidates', record / 'circuit-candidates.json')):
-        if path.is_file():
-            side[key] = load_json(path)
+    # the circuit decisions live in the intent (packed into record/, or beside it while the review runs) and the
+    # candidates in the record; both are optional here
+    for key, paths in (('intent', (record / 'intent.json', record.parent / 'intent.json')),
+                       ('candidates', (record / 'circuit-candidates.json',))):
+        found = next((p for p in paths if p.is_file()), None)
+        if found:
+            side[key] = load_json(found)
     return side
 
 
