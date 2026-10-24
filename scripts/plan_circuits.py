@@ -446,6 +446,7 @@ class CircuitPlanning:
                                 if rule in requirements[circuit['id']]},
                 'not_asked': not_asked[circuit['id']],
                 'checklist': list(catalog.BOUNDING_STEPS),
+                'bounds': self._frame_bounds(graph, circuit['refs']),
             }
             asked = [rule for rule in kind.subjects if rule in requirements[circuit['id']]]
             if 2 * len(asked) < len(kind.subjects):   # proposals item 2b: the type asks almost nothing of this circuit
@@ -898,6 +899,30 @@ class CircuitPlanning:
         bom = self._bom_fields(ref)
         return ' '.join(str(v or '') for v in [part.get(k) for k in ('value', 'prim', 'part', 'footprint')]
                         + [bom.get(k) for k in ('MPN', 'Electrical specification', 'Footprint', 'Value')])
+
+    def bound_kinds(self, graph, ref):
+        """The device classes of the bounding table (catalog.BOUNDS) a part falls in: an NTC is an NTC, an
+        electrolytic is not an MLCC, and an IC also has its verified role."""
+        kind = graph.kind(ref)
+        if kind in (RESISTOR, FUSE) and NTC_RE.search(self._part_text(graph, ref)):
+            return {'ntc'}
+        if kind == CAPACITOR and self.electrolytic(graph, ref):
+            return {'electrolytic'}
+        return {kind, graph.role_kind(ref)} - {None}
+
+    def _frame_bounds(self, graph, refs):
+        """The bounding-table cells for the parts of a frame, in table order, so the reviewer follows the table
+        (decision A) without reading it."""
+        kinds = {ref: self.bound_kinds(graph, ref) for ref in refs}
+        out = []
+        for bound in catalog.BOUNDS.values():
+            hit = [ref for ref in refs if kinds[ref] & set(bound.kinds)]
+            if hit:
+                out.append({'cell': bound.id, 'refs': hit, 'parameter': bound.parameter, 'side': bound.side,
+                            'methods': [code for code, _ in bound.methods],
+                            'formulas': [name for _, names in bound.methods for name in names],
+                            'fallback': bound.fallback})
+        return out
 
     def electrolytic(self, graph, ref):
         """'super', 'electrolytic' or None for a fitted capacitor (6c)."""

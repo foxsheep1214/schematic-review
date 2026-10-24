@@ -1047,7 +1047,7 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'VENDOR_DATUM', 'commodity-floors.md 片式电阻'),
     Bound('MLCC-EFFECTIVE-C', ('capacitor',), 'MLCC 有效容量（偏压、温度、老化）', 'LOWER', '直流偏压与温度', 'DECREASING',
           (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md MLCC；wca-formulas.md'),
-    Bound('ECAP-ESR-RIPPLE', ('capacitor',), '电解 ESR 与纹波电流（温度、频率系数表）', None, '温度与频率', 'NONMONOTONIC',
+    Bound('ECAP-ESR-RIPPLE', ('electrolytic',), '电解 ESR 与纹波电流（温度、频率系数表）', None, '温度与频率', 'NONMONOTONIC',
           (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md 电解'),
     Bound('IND-ISAT', ('inductor', 'transformer'), '电感 Isat（按资料定义取温度最坏值）', 'LOWER', '温度', 'DECREASING',
           (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md 电感'),

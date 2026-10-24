@@ -208,8 +208,9 @@
 `rule_plan[]` 回答“这类规则要不要跑”，`checks[]` 回答“具体审哪一项”，`functions[]` 是功能框架：
 每个 intent 电路一条，含 `id`（`FN-<电路 id>`）、`question`（由成员问题归纳，审查员可改）、`objects`、`states`、
 `members[]`（检查行 id、规则、方面、状态）、`blind_spots`（每条问了的电路检查项的盲区一句）、`not_asked[]`
-（前提不成立、没有问的规则：`rule`、`aspect`、`requires`、`why`）和 `checklist`
-（判“证据不足”之前的五步原文）。审查员照框架写功能判定，不翻规则书。
+（前提不成立、没有问的规则：`rule`、`aspect`、`requires`、`why`）、`checklist`
+（判“证据不足”之前的五步原文）和 `bounds[]`（框架里器件对应的[工作点定界表](bounding-table.md)的格：`cell`、`refs`、`parameter`、
+`side`、`methods`（按顺序）、`formulas`、`fallback`；NTC 按 NTC、电解按电解、IC 另按核实过的角色取格）。审查员照框架写功能判定，不翻规则书。
 
 - APPLICABLE + READY：本轮执行；READY 不代表 PASS。
 - APPLICABLE + WAITING_EVIDENCE：必须执行但缺材料，未补齐时为 INSUFFICIENT。

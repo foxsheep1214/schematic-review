@@ -3372,5 +3372,54 @@
   "file": "scripts/calc.py",
   "old": "FUNCTIONS.update(('bound_formulas.' + name, fn) for name, fn in bound_formulas.FORMULAS.items())",
   "new": "FUNCTIONS.update()"
+ },
+ {
+  "id": "M487",
+  "name": "a frame carries no bounding-table cells",
+  "file": "scripts/plan_circuits.py",
+  "old": "                'bounds': self._frame_bounds(graph, circuit['refs']),",
+  "new": "                'bounds': [],"
+ },
+ {
+  "id": "M488",
+  "name": "an NTC is bounded as a plain resistor",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if kind in (RESISTOR, FUSE) and NTC_RE.search(self._part_text(graph, ref)):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M489",
+  "name": "an electrolytic is bounded as an MLCC",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if kind == CAPACITOR and self.electrolytic(graph, ref):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M490",
+  "name": "an IC is not bounded by its class",
+  "file": "scripts/plan_circuits.py",
+  "old": "        return {kind, graph.role_kind(ref)} - {None}",
+  "new": "        return {graph.role_kind(ref)} - {None}"
+ },
+ {
+  "id": "M491",
+  "name": "a frame cell lists every part of the frame",
+  "file": "scripts/plan_circuits.py",
+  "old": "            hit = [ref for ref in refs if kinds[ref] & set(bound.kinds)]",
+  "new": "            hit = list(refs) if any(kinds[ref] & set(bound.kinds) for ref in refs) else []"
+ },
+ {
+  "id": "M492",
+  "name": "a frame cell leaves out its formulas",
+  "file": "scripts/plan_circuits.py",
+  "old": "                            'formulas': [name for _, names in bound.methods for name in names],",
+  "new": "                            'formulas': [],"
+ },
+ {
+  "id": "M493",
+  "name": "an electrolytic takes the MLCC cell kind",
+  "file": "scripts/catalog.py",
+  "old": "    Bound('ECAP-ESR-RIPPLE', ('electrolytic',),",
+  "new": "    Bound('ECAP-ESR-RIPPLE', ('capacitor',),"
  }
 ]

@@ -7,6 +7,20 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A circuit frame carries the bounding-table cells of its parts (2026-10-24)
+
+Decision A makes the bounding table binding, so the reviewer should not have to look it up: every circuit frame of
+the plan now lists `bounds[]`, the table cells that apply to its parts in table order, each with the parts it applies
+to, the parameter, the side, the methods in order, their formulas and the fallback. A part takes the cells of its
+netlist class; an NTC (a resistor or fuse whose part text says NTC) takes the NTC cells, an electrolytic capacitor
+(the 6c test) takes the electrolytic cell instead of the MLCC one, and an IC also takes those of its verified role.
+Interface and board frames are unchanged; the plan format is not bumped. Tests first; 2011 tests pass, contract 516,
+KiCad replay 195/195, typical circuits unchanged, mutations M487-M493 added, all 69 on changed files killed.
+
+- Event: user:2026-10-23 (bounding table proposal, section 七 and implementation step 4: "做")
+- Causes: rule_not_enforced 1
+- Changed: docs/2026-10-23-bounding-table-proposal.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/bounding-table.md, references/plan-and-results.md, scripts/catalog.py, scripts/plan_circuits.py, scripts/tests/test_frame_bounds.py
+
 ## The operating-point bounding table (2026-10-23)
 
 The same datasheet table was "not boundable" in one review and bounded to a pass or a fail in the other; the
