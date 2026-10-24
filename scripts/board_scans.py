@@ -8,11 +8,9 @@
 """
 import re
 
-from checkers.netgraph import CONNECTOR, IC, RESISTOR, TESTPOINT, is_ground, is_rail, rail_voltage
+from checkers.netgraph import CONNECTOR, IC, LED_RE, RESISTOR, TESTPOINT, is_ground, is_rail, rail_voltage
+from checkers.passive_stress import rated_voltage   # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 
-# BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
-RATING_RE = re.compile(r'(?<![\d.])(\d+(?:\.\d+)?)\s*V(?![\dA-Z])', re.I)
-LED_RE = re.compile(r'(^|[^A-Z])LED(S|[^A-Z]|$)', re.I)
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
 REFDES_RE = re.compile(r'^(?!.*\?)[A-Za-z][A-Za-z0-9_/+-]*?\d+[A-Za-z]?$')   # USB-C1, PS2_KBD1, PGM/DBG1 are annotated
 I2C_LINE_RE = re.compile(r'^(SDA|SCL)\d*$')
@@ -35,12 +33,6 @@ def _positive_supply(lint, net):
     return _named_rail(net) or lint.driven(net) or bool(lint._external_entry(net))
 
 
-def _rated_v(value):
-    """BOM 值里写明的耐压；写了多个取最小，写不明返回 None。"""
-    ratings = [float(x) for x in RATING_RE.findall(str(value or ''))]
-    return min(ratings) if ratings else None
-
-
 def _nodes(lint, ref):
     return sorted(node for node in lint.pin2net if node.partition('.')[0] == ref)
 
@@ -55,7 +47,7 @@ def capacitor_ratings(lint):
     for ref, part in sorted(lint.parts.items()):
         if part.get('nc') or not _is_capacitor(ref, part):
             continue
-        rated = _rated_v(part.get('value'))
+        rated = rated_voltage(part.get('value'))
         if rated is None:
             continue
         for node in _nodes(lint, ref):

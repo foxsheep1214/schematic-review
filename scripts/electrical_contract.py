@@ -8,6 +8,7 @@ import hashlib
 import json
 import math
 import os
+import re
 from functools import lru_cache
 
 
@@ -36,6 +37,19 @@ def _file_hash(path, size, mtime_ns):
 def document_fingerprint(path):
     stat = os.stat(path)
     return _file_hash(os.path.abspath(path), stat.st_size, stat.st_mtime_ns)
+
+
+WORD_PUNCTUATION_RE = re.compile(r'[\s，。；;,.、：:（）()]')
+
+
+def squeeze(text):
+    """Text compared without spacing; the Greek mu and the micro sign are one letter (µ, U+00B5)."""
+    return re.sub(r'\s+', '', str(text or '')).replace('\u03bc', '\u00b5')
+
+
+def squeeze_words(text):
+    """Text compared as words: without spacing and punctuation."""
+    return WORD_PUNCTUATION_RE.sub('', squeeze(text))
 
 
 def finite(value):

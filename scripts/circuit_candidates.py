@@ -25,11 +25,11 @@ from electrical_contract import db_fingerprint, load_json
 from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-10-21.2'
+RULES_VERSION = '2026-10-24.1'   # shared part words and grounds (SR self-check 3.1–3.3)
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
-STORAGE_FARAD = 10e-6
+STORAGE_FARAD = 10e-6     # the input ends at its bulk capacitor; a 1 µF filter capacitor (plan_circuits.BULK_FARAD) does not end it
 CONVERTER_ROLES = frozenset({'pwm_controller', 'sr_controller', 'regulator', 'gate_driver'})
 ANALOG_ROLES = frozenset({'pd_controller', 'supervisor', 'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver'})
 ALL_PIN_ROLES = frozenset({'opamp_comparator', 'shunt_reference'})     # every signal pin is a sense pin
@@ -39,7 +39,7 @@ STARTUP_PIN_RE = re.compile(r'^(HV|VSTART|HVS|EN|ENABLE|INH|INHIBIT|UVLO|SS|SOFT
 SENSE_PIN_RE = re.compile(r'^(CS|CS[+-]|CS_?[PN]|ISNS|ISENSE|ISEN|VSNS|VSENSE|FB|NTC|TEMP|RT|ZCD|ZCD/OPP|CS/ZCD|AIN\d*|VIN_?SNS)$', re.I)
 USB_PIN_RE = re.compile(r'^(CC[12]|D[+-]|DP|DN|DM|D_P|D_N|SBU[12])$', re.I)
 DEBUG_PIN_RE = re.compile(r'^(SWDIO|SWCLK|SWO|TCK|TMS|TDI|TDO|NTRST|JTAG\w*)$', re.I)
-PROTECTIVE_RE = re.compile(r'VARISTOR|\bMOV\b|THERMISTOR|\bNTC\b|FUSE|BRIDGE|\bGDT\b|SPARK', re.I)
+PROTECTIVE_RE = re.compile(r'THERMISTOR|FUSE|BRIDGE|\bGDT\b|SPARK', re.I)   # with netgraph's NTC and varistor words
 PASS_THROUGH = frozenset({ng.BRIDGE_RECTIFIER})      # multi-pin parts the input walk passes
 WALK, STOP = 'walk', 'stop'
 IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a part's identity in a candidate, not its body
@@ -431,7 +431,7 @@ class Generator:
                     continue
                 kind = self.graph.kind(ref)
                 blob = _blob(self.graph.parts.get(ref, {}))
-                is_protective = kind in (ng.FUSE, ng.TVS, ng.BRIDGE_RECTIFIER) or bool(PROTECTIVE_RE.search(blob))
+                is_protective = kind in (ng.FUSE, ng.TVS, ng.BRIDGE_RECTIFIER) or bool(PROTECTIVE_RE.search(blob) or ng.NTC_RE.search(blob) or ng.VARISTOR_RE.search(blob))
                 if self.two_terminal(ref):
                     members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
                     protective |= is_protective

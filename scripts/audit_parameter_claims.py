@@ -12,6 +12,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+from electrical_contract import finite
 
 # Deliberately small, explicit unit registry. Unknown units remain unverified.
 UNITS = {'T': ('flux', 1), 'mT': ('flux', 1e-3), 'V': ('voltage', 1),
@@ -32,7 +33,7 @@ def _validate(row, reference=False):
         raise ValueError('explicit test conditions required')
     json.dumps(row['conditions'], allow_nan=False)
     value = row.get('value')
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if not finite(value):
         raise ValueError('value must be finite')
     digest = hashlib.sha256(Path(row['source']).read_bytes()).hexdigest()
     if reference:

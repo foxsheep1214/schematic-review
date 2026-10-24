@@ -286,7 +286,9 @@ schema 2，带 `rules_version`，绑定 `db_sha256` 与 intent 的 `input_sha256
 与 `citation`。`population` 只接受 JSON `true/false`，缺项表示未知；`jumpers` 按位号填
 `closed/open/unknown`，跳线还需 `population=true` 才导通。经核对的状态声明可以覆盖解析器的
 `nc` 标记，输出保留原标记，并在 citation 说明变体依据。未声明时按网表 `nc` 形成"按图状态"，
-同时登记 `assembly state unverified` 缺口。检查器段里写 `states` 会被拒绝。
+同时登记 `assembly state unverified` 缺口。
+去耦覆盖与 I²C 连接覆盖不同：它们不把网表 `nc` 当装配证据，未声明时每颗器件的贴装状态都是未知
+（`population:<位号>` / `population-unverified`），覆盖记 INCOMPLETE，资料请求按位号列出要补的装配状态。检查器段里写 `states` 会被拒绝。
 
 **器件脚表**：`intent.devices` 按位号声明准确 MPN/封装、身份解释与完整官方物理脚表，供去耦分组、
 官方物理脚差集（DEV-D02）与引脚处置（DEV-D05）共用。

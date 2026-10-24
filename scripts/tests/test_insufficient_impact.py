@@ -35,6 +35,16 @@ class ImpactTests(unittest.TestCase):
         self.assertEqual(out['insufficient_impact']['blocking'], 1)
         self.assertEqual(out['result_labels']['INSUFFICIENT'], '证据不足（INSUFFICIENT）')
 
+    def test_the_summary_counts_documented_as_the_gate_does(self):
+        # SR self-check of 2026-10-24, 3.7: the gate also checks the consequence class; the count follows it.
+        row = gap()
+        self.assertEqual(categorized_summary({'G1': row}, {}, {}, {})['insufficient_impact']['documented'], 1)
+        out = categorized_summary({'G1': row}, {}, {}, {}, classes=2)['insufficient_impact']
+        self.assertEqual((out['documented'], out['undocumented']), (0, 1))
+        row['impact_assessment']['consequence_class'] = 'LOCAL_OR_DATA'
+        out = categorized_summary({'G1': row}, {}, {}, {}, classes=2)['insufficient_impact']
+        self.assertEqual(out['documented'], 1)
+
     def test_requirement_open_is_unrated(self):
         row = gap(); row['gap_cause'] = 'REQUIREMENT_OPEN'
         del row['potential_severity']; del row['impact_assessment']

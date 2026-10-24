@@ -5,10 +5,11 @@ magnetic energy packet is counted separately. No acceptance or severity is infer
 """
 import math
 from decimal import Decimal
+from electrical_contract import finite
 
 
 def _number(value, name, positive=False):
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if not finite(value):
         raise ValueError(name + ' must be finite')
     if value < 0 or (positive and value == 0):
         raise ValueError(name + (' must be positive' if positive else ' must be nonnegative'))

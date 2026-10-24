@@ -12,6 +12,7 @@ import subprocess
 
 from decoupling import parse_capacitance
 from solve_dividers import parse_resistor
+from electrical_contract import finite
 
 
 def sha(path):
@@ -19,7 +20,7 @@ def sha(path):
 
 
 def number(value):
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if not finite(value):
         raise ValueError('Expected a finite numeric parameter')
     return value
 

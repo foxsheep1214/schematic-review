@@ -8,10 +8,10 @@ window `power_rails.<net>.voltage_v: {"requirement": <id>}` takes that requireme
 reaches the power-tree frame and the ambient temperature reaches the part stress rows.
 """
 import copy
-import math
 import re
 
 import catalog
+from electrical_contract import finite, squeeze
 
 NUMBER_RE = re.compile(r'(±|[-−+])?(\d+(?:\.\d+)?)')
 RAIL_PARAMETERS = ('input_voltage', 'output_voltage')
@@ -21,12 +21,10 @@ STRESS_CONDITIONS = {'DEV-C01': ('ambient_temperature',), 'DEV-C02': ('ambient_t
                      'DEV-C05': ('ambient_temperature',)}
 
 
-def _number(value):
-    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+_number = finite
 
 
-def _squeeze(text):
-    return re.sub(r'\s', '', text or '')
+_squeeze = squeeze
 
 
 def numbers(text):

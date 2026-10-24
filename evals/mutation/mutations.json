@@ -1557,8 +1557,8 @@
   "id": "M227",
   "name": "C1: a capacitor voltage the BOM writes is ignored",
   "file": "scripts/checkers/passive_stress.py",
-  "old": "written = written_voltage(entry['value']) or (entry.get('bom_ratings') or {}).get('voltage_v')",
-  "new": "written = written_voltage(entry['value'])"
+  "old": "written = rated_voltage(entry['value']) or (entry.get('bom_ratings') or {}).get('voltage_v')",
+  "new": "written = rated_voltage(entry['value'])"
  },
  {
   "id": "M228",
@@ -1788,8 +1788,8 @@
   "id": "M260",
   "name": "P3: a voltage written in the value not read",
   "file": "scripts/checkers/passive_stress.py",
-  "old": "        if match:\n            return float(match.group(1))",
-  "new": "        if False:\n            return float(match.group(1))"
+  "old": "    return found.pop() if len(found) == 1 else None",
+  "new": "    return None"
  },
  {
   "id": "M261",
@@ -2635,8 +2635,8 @@
   "id": "M381",
   "name": "an electrolytic is found by its symbol only",
   "file": "scripts/plan_circuits.py",
-  "old": "        if POLARIZED_RE.search(symbol) or ELECTROLYTIC_RE.search(text):",
-  "new": "        if POLARIZED_RE.search(symbol):"
+  "old": "        if POLARIZED_SYMBOL_RE.search(symbol) or ELECTROLYTIC_RE.search(text):",
+  "new": "        if POLARIZED_SYMBOL_RE.search(symbol):"
  },
  {
   "id": "M382",
@@ -3449,5 +3449,68 @@
   "file": "scripts/catalog.py",
   "old": "接法相同、本板负载不重于参考电路",
   "new": "接法相同、负载不重于本板"
+ },
+ {
+  "id": "M498",
+  "name": "a VSS net is not a ground again",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "GROUND_NAME_RE = re.compile(r'^(?:[A-Z0-9]{0,3}GND|[AD]?VSS)(?:[_-]?([A-Z0-9]{1,6}))?$')",
+  "new": "GROUND_NAME_RE = re.compile(r'^(?:[A-Z0-9]{0,3}GND)(?:[_-]?([A-Z0-9]{1,6}))?$')"
+ },
+ {
+  "id": "M499",
+  "name": "a TPS tantalum part number is not a tantalum",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "TANTALUM_RE = re.compile(r'TANTAL|钽|\\bTPS[A-Z]', re.I)",
+  "new": "TANTALUM_RE = re.compile(r'TANTAL|钽', re.I)"
+ },
+ {
+  "id": "M500",
+  "name": "ALUM is not an electrolytic word",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "|\\bALUM|",
+  "new": "|ALUMIN|"
+ },
+ {
+  "id": "M501",
+  "name": "two different written ratings read as the lower one",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "return found.pop() if len(found) == 1 else None",
+  "new": "return min(found) if found else None"
+ },
+ {
+  "id": "M502",
+  "name": "the summary counts documented without the consequence class",
+  "file": "scripts/review_summary.py",
+  "old": "documented = sum(not validate_impact(c, classes) for c in graded)",
+  "new": "documented = sum(not validate_impact(c) for c in graded)"
+ },
+ {
+  "id": "M503",
+  "name": "the Greek mu is not the micro sign",
+  "file": "scripts/electrical_contract.py",
+  "old": "return re.sub(r'\\s+', '', str(text or '')).replace('\\u03bc', '\\u00b5')",
+  "new": "return re.sub(r'\\s+', '', str(text or ''))"
+ },
+ {
+  "id": "M504",
+  "name": "a huge integer raises in finite",
+  "file": "scripts/electrical_contract.py",
+  "old": "    except OverflowError:\n        return False\n",
+  "new": "    except ValueError:\n        return False\n"
+ },
+ {
+  "id": "M505",
+  "name": "a varistor by its words is not a protection part",
+  "file": "scripts/plan_circuits.py",
+  "old": "return bool(PROTECTION_TEXT_RE.search(text) or NTC_RE.search(text) or VARISTOR_RE.search(text))",
+  "new": "return bool(PROTECTION_TEXT_RE.search(text) or NTC_RE.search(text))"
+ },
+ {
+  "id": "M506",
+  "name": "an NTC by its words is not a protective input part",
+  "file": "scripts/circuit_candidates.py",
+  "old": "or bool(PROTECTIVE_RE.search(blob) or ng.NTC_RE.search(blob) or ng.VARISTOR_RE.search(blob))",
+  "new": "or bool(PROTECTIVE_RE.search(blob) or ng.VARISTOR_RE.search(blob))"
  }
 ]

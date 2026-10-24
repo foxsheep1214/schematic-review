@@ -1,0 +1,15 @@
+{
+ "revision": "shared-part-words-v1",
+ "parents": {
+  "revisions/intent-format-4-v1/expected.json": "8132a46523070365977f9e27d598e16bfdbce864a8c3517d653164788135d0a8",
+  "revisions/intent-format-4-v1/cases.json": "3592bcc5ca660fc17fac24f28ef3aadda61b6d20cdf3da5a23d1cfd942c9a062",
+  "revisions/intent-format-4-v1/sources.json": "b647bc58e9be715dc4d16d9a13a22e1bef12c53f53b1af12e45aabaf8f4559a7",
+  "revisions/intent-format-4-v1/manifest.json": "601e31e5ca0737a40c2974db7982bcb2038ad1a54e807288c4bad008231ad120"
+ },
+ "derived_files": {
+  "revisions/shared-part-words-v1/expected.json": "43a751e4f0f1513be60fde9c205e07dcac379e3c3b0f2d9fb06d697b8b099a51",
+  "revisions/shared-part-words-v1/cases.json": "3592bcc5ca660fc17fac24f28ef3aadda61b6d20cdf3da5a23d1cfd942c9a062",
+  "revisions/shared-part-words-v1/sources.json": "b647bc58e9be715dc4d16d9a13a22e1bef12c53f53b1af12e45aabaf8f4559a7"
+ },
+ "scope": "器件用词（LED、NTC、压敏、电解、钽）与地名判定统一到 netgraph 一处（SR 自查第三组）：料号写成 0402LED 的三颗 LED 被认出，r02 多三行 DEV-C05.PIN-LED，检查数 226→229；其余答案不变。intent-format-4-v1 文件保持原字节。"
+}

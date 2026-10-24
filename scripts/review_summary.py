@@ -56,7 +56,7 @@ def validate_impact(item, classes=False):
     return errors
 
 
-def categorized_summary(checks, expected, findings, stage):
+def categorized_summary(checks, expected, findings, stage, classes=False):
     def count(keys):
         # Stage NA is counted apart: the product requirement still applies and awaits downstream verification.
         return {'checks': len(keys), 'results': dict(Counter(
@@ -66,7 +66,7 @@ def categorized_summary(checks, expected, findings, stage):
     current = set(checks) - history
     gaps = [checks[k] for k in current if checks[k].get('review_result') == 'INSUFFICIENT']
     graded = [c for c in gaps if c.get('gap_cause') != 'REQUIREMENT_OPEN']
-    documented = sum(not validate_impact(c) for c in graded)
+    documented = sum(not validate_impact(c, classes) for c in graded)   # as the gate checks it
     impact = {'by_potential_severity': {p: sum(c.get('potential_severity') == p for c in graded)
                                       for p in ('P0', 'P1', 'P2', 'P3')},
               'requirement_open': len(gaps) - len(graded),

@@ -7,6 +7,25 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## One concept, one judgment (SR self-check group 3, 2026-10-24)
+
+Group 3 of the self-check found concepts the code judged several ways that disagreed. A ground is now asked of
+`netgraph.is_ground` everywhere (it also takes the VSS family: VSS, AVSS, DVSS, VSSA), and the I²C inventory and the
+lint island scan ask netgraph for grounds and rails instead of their own patterns. The part words (electrolytic, with
+the EEE/EEU series and the ALUM abbreviation; tantalum, with the TPS series; NTC; varistor; LED; the polarized symbol)
+live in netgraph and every module uses them; the LED word is the one board_scans had, so parts named `0402LED` are
+LEDs on the plan too (the KiCad replay gains three DEV-C05.PIN-LED rows on r02, new revision shared-part-words-v1;
+circuit candidate rules 2026-10-24.1). A value's rated voltage is read by `passive_stress.rated_voltage` (a segment of
+its own; two different voltages are not read), finite numbers by `electrical_contract.finite` (a huge integer no longer
+raises in calc.py), text without spacing by `electrical_contract.squeeze` / `squeeze_words`. The 1 µF and 10 µF
+capacitor thresholds and the per-part assembly fallback of decoupling and I²C differ on purpose and now say why; the
+summary counts documented impacts with the consequence class, as the gate does. Tests first; 2030 tests pass,
+contract 516, KiCad replay 195/195 on the new revision, typical circuits unchanged, mutations M498-M506 added, M227, M260 and M381 re-pointed, all 314 on changed files killed.
+
+- Event: user:2026-10-24 (SR self-check, "先改1、3、4、5组"; group 3 of docs/2026-10-24-sr-consistency-audit.md)
+- Causes: rule_not_enforced 7
+- Changed: docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/revisions/shared-part-words-v1/manifest.json, evals/kicad_replay_bench/revisions/shared-part-words-v1/expected.json, evals/kicad_replay_bench/revisions/shared-part-words-v1/cases.json, evals/kicad_replay_bench/revisions/shared-part-words-v1/sources.json, evals/mutation/README.md, evals/mutation/mutations.json, references/automation.md, scripts/audit_datasheets.py, scripts/audit_parameter_claims.py, scripts/board_scans.py, scripts/bound_formulas.py, scripts/checkers/input_filter.py, scripts/checkers/netgraph.py, scripts/checkers/passive_stress.py, scripts/circuit_bounds.py, scripts/circuit_candidates.py, scripts/decoupling.py, scripts/design_preflight.py, scripts/electrical_contract.py, scripts/fault_energy.py, scripts/flyback_stop.py, scripts/i2c_topology.py, scripts/lint.py, scripts/model_bounds.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/requirement_parameters.py, scripts/review_functions.py, scripts/review_summary.py, scripts/simulate_rc.py, scripts/tests/test_insufficient_impact.py, scripts/tests/test_one_judgment.py, scripts/tests/test_passive_stress.py, scripts/validate_review.py, scripts/zener_fault.py
+
 ## Stale text says what the code does now (SR self-check group 4, 2026-10-24)
 
 Group 4 of the self-check listed text that had fallen behind the code. The hand-written head of check-catalog.md gives

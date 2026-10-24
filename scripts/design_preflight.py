@@ -4,8 +4,9 @@ Self-contained so it can be vendored unchanged wherever it is needed.
 Arithmetic is bounded AST evaluation, never eval or executable source input.
 """
 import ast
-import math
 import operator
+
+from electrical_contract import finite
 
 OPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}
 COMPARISONS = {'>=': operator.ge, '<=': operator.le, '>': operator.gt, '<': operator.lt}
@@ -15,11 +16,7 @@ def text(value):
     return isinstance(value, str) and bool(value.strip())
 
 
-def number(value):
-    try:
-        return type(value) in (int, float) and math.isfinite(value)
-    except OverflowError:
-        return False
+number = finite
 
 
 def evidence(value):

@@ -33,12 +33,12 @@ netlist fact (F9), the same unlocated condition in several functions is a templa
 judges the frame's objects and a row the reviewer binds to a function names an object of that function (F11),
 and a connector row with clamp parts is judged in a function (F12). None of this proves the electrical judgement.
 """
-import math
 import re
 
 import bound_formulas
 import catalog
 import results_model
+from electrical_contract import finite, squeeze
 from results_model import LEVELS, OPEN_KINDS, PHASES, VERDICTS, text
 from validate_remediation import READINESS
 
@@ -117,8 +117,7 @@ def _numbers(says):
     return [float(x) for x in NUMBER_RE.findall(str(says or '').replace('−', '-').replace(',', ''))]
 
 
-def _finite(value):
-    return type(value) in (int, float) and math.isfinite(value)
+_finite = finite
 
 
 def quotes(condition, value):
@@ -301,9 +300,7 @@ def bom_parts(db):
             for ref, row in parts.items()}
 
 
-def _squeeze(value):
-    """BOM text compared without spacing; the Greek mu and the micro sign are one letter."""
-    return re.sub(r'\s+', '', str(value or '')).replace('\u03bc', '\u00b5')
+_squeeze = squeeze   # BOM text compared without spacing
 
 
 def _bom_text(parts, ref):

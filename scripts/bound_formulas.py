@@ -7,6 +7,7 @@ conditional on the inputs the reviewer copied from the datasheet; it is not a ve
 import math
 
 import model_bounds
+from electrical_contract import finite
 
 SIDES = ('UPPER', 'LOWER')
 SOA_SEGMENTS = {'CONSTANT_POWER': 1.0, 'THERMAL_INSTABILITY': 0.8}   # decision B: 100 % / 80 % after derating
@@ -16,7 +17,7 @@ KELVIN = 273.15
 
 
 def _n(value, name, positive=False):
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if not finite(value):
         raise ValueError(name + ' must be a finite number')
     if positive and value <= 0:
         raise ValueError(name + ' must be positive')

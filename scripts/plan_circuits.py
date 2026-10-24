@@ -12,7 +12,7 @@ from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
 from checkers.netgraph import (BATTERY, BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET,
                                OPTO, PASSIVE_LINKS, RAIL_RE, RELAY, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN,
-                               ZENER,
+                               ZENER, ELECTROLYTIC_RE, LED_RE, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR_RE,
                                NetGraph, is_analog_sense_pair, is_ground, name_matches, normalize)
 from checkers.netgraph import is_ground as netgraph_ground
 from checkers.planutil import slug as _slug
@@ -40,9 +40,9 @@ DEVICE_RE = re.compile(r'^[UM]\d', re.I)
 PROTECT_PIN_RE = re.compile(
     r'^(FAULT\w*|FLT\w*|OVP\w*|UVP\w*|OV|UV|OVLO|UVLO|OCP\w*|OTP\w*|ILIM\w*|PROT\w*|TRIP\w*)$', re.I)
 
-SENSOR_RE = re.compile(r'THERMISTOR|NTC|PTC|\bRTD\b|PT100|THERMOCOUPLE|热敏', re.I)
+SENSOR_RE = re.compile(r'THERMISTOR|PTC|\bRTD\b|PT100|THERMOCOUPLE|热敏', re.I)   # with netgraph's NTC word
 
-GROUND_RE = re.compile(r'^([A-Z]{0,2}GND[A-Z0-9]{0,3}|[AD]?VSS[A-Z0-9]{0,3}|EP|PAD)$', re.I)
+GROUND_PIN_RE = re.compile(r'^([A-Z]{0,2}GND[A-Z0-9]{0,3}|[AD]?VSS[A-Z0-9]{0,3}|EP|PAD)$', re.I)   # a pin name, not a net
 
 # 阈值型保护两侧分别成项，避免只核一侧即通过。
 WINDOW_SIDES = (
@@ -100,13 +100,9 @@ def _differential_pairs(db):
     return sorted(found)
 
 
-# An electrolytic capacitor by its symbol (Device:C_Polarized, CP, CP_Small): the part a lifetime falls on.
-POLARIZED_RE = re.compile(r'(^|[:\s])(C_Polarized|CP)(_|\b)', re.I)
-# 6c: or its BOM part number or specification names an electrolytic, solid or super capacitor (an endurance rating
-# "12000h@105°C" names one too), or an aluminium package with a stated voltage holds at least 1 µF; tantalum is none.
-ELECTROLYTIC_RE = re.compile(r'电解|固态|铝|ELECTROLYTIC|ALUMIN|\bE-?CAP\b|POLYMER|OS-?CON|SUPER ?CAP|EDLC|超级电容'
-                             r'|\d\s*h\s*@\s*\d+\s*°?C', re.I)
-TANTALUM_RE = re.compile(r'TANTAL|钽', re.I)
+# An electrolytic capacitor (the part a lifetime falls on) by its symbol (Device:C_Polarized, CP, CP_Small) or, 6c, by
+# its BOM words (netgraph.ELECTROLYTIC_RE), or an aluminium package with a stated voltage holding at least 1 µF;
+# tantalum is none.
 ALUMINIUM_PACKAGE_RE = re.compile(r'(^|[:_])CP_|_Elec|Radial', re.I)
 VOLTAGE_RE = re.compile(r'\d\s*V(\b|$)', re.I)
 SUPERCAP_FARAD = 0.1
@@ -117,9 +113,7 @@ LIFE_HANDOFF = {'required': True, 'state': 'OPEN', 'receivers': ['热设计'],
                 'constraint': '电解电容热点温度不超过寿命约束写的 Y °C', 'verification': '样机热点与纹波自热实测后按同一剖面复算'}
 WEAROUT_CRITERION = '%s %s（%s）：核%s；依据%s；%s'
 WEAROUT_NA_CRITERION = '%s %s（%s）：需求与任务剖面都没给%s，按次数核的寿命记 NA（写明这一原因），不开缺口项；单次应力由各自的应力行核'
-INRUSH_NTC_RE = re.compile(r'NTC', re.I)
 PTC_RE = re.compile(r'POLY ?FUSE|POLYSWITCH|PPTC|\bPTC\b|RESETTABLE|自恢复|MF-[A-Z]', re.I)
-VARISTOR_RE = re.compile(r'VARISTOR|\bMOV\b|压敏', re.I)
 SWITCHLIKE_RE = re.compile(r'POTENTIOMETER|\bPOT\b|TRIM|ENCODER|电位器|编码器', re.I)
 MEMORY_RE = re.compile(r'EEPROM|FLASH|\bFRAM\b|24(LC|AA|C)\d|25(LC|AA|Q)\d|W25Q|AT2[45]|M24C|M95', re.I)
 # Parts whose identity, pin disposition and operating conditions are checked whether declared or not: transistors,
@@ -134,8 +128,9 @@ FEEDBACK_OPEN_CRITERION = ('反馈环单一故障：光耦 %s 或它的串阻开
                            '副边控制器）的耐压；保护来得及时判 PASS，来不及时记失败项')
 
 # Common single faults asked on netlist features (consistency proposals of 2026-10-23, item 7): each row only asks.
-NTC_RE = re.compile(r'NTC', re.I)
-LED_RE = re.compile(r'(^|[:\s_])LED(_|\b)', re.I)
+# A net holds charge when a capacitor of at least 1 µF ties it to ground: enough to mark a supply or a boost output.
+# The candidate input walk stops at the first 10 µF instead (circuit_candidates.STORAGE_FARAD): there a 1 µF filter
+# capacitor is still the input, the bulk capacitor ends it.
 BULK_FARAD = 1e-6
 # Pins that start or stop a controller: enable and its disable, inhibit and standby forms.
 ENABLE_LINK_PIN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN|PWR_EN|DIS|DISABLE|INH|INHIBIT|STBY|STANDBY'
@@ -173,7 +168,12 @@ START_NAME_RE = re.compile(r'(N?RST\w*|N?RESET\w*|MR|POR\w*|BOOT\w*|STRAP\w*|EN|
                            re.I)
 SENSE_NAME_RE = re.compile(r'(CS\w*|CS[+-]|ISENSE\w*|ISNS\w*|I?SENSE[+-PN]?|VSENSE\w*|IMON\w*|ISET)$', re.I)
 IC_OR_SWITCH = ('POWER_SWITCH', 'SUPPLY_SWITCH', 'FEEDBACK_PIN', 'SWITCH_PIN', 'ANALOG_PIN', 'START_PIN')
-PROTECTION_TEXT_RE = re.compile(r'NTC|PTC|MOV|VARISTOR|压敏|SMBJ|SMAJ|SMCJ|TVS', re.I)
+PROTECTION_TEXT_RE = re.compile(r'PTC|SMBJ|SMAJ|SMCJ|TVS', re.I)
+
+
+def protection_text(text):
+    """A protection part by its words: an NTC, a PTC, a varistor or a TVS."""
+    return bool(PROTECTION_TEXT_RE.search(text) or NTC_RE.search(text) or VARISTOR_RE.search(text))
 SHUNT_OHM = 1.0
 
 
@@ -193,7 +193,7 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
         return ' '.join(str(part.get(k) or '') for k in ('value', 'prim', 'part'))
 
     def identified(ref):   # a thermistor or varistor symbol names the part though no kind is classified
-        return bool(NTC_RE.search(text_of(ref)) or PROTECTION_TEXT_RE.search(text_of(ref)))
+        return bool(NTC_RE.search(text_of(ref)) or protection_text(text_of(ref)))
 
     # A part of unknown kind keeps the rule unless it cannot be what the precondition looks for: a bridge rectifier
     # or a part its symbol names is none of them, a two-terminal part is no transistor and no IC.
@@ -266,7 +266,7 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
                        | {ref for net in reach for ref in graph.refs_on(net) if graph.kind(ref) == CONNECTOR})
     elif requires == 'PROTECTION_PART':
         found = sorted({ref for ref in fitted if graph.kind(ref) in (FUSE, TVS, ZENER)
-                        or PROTECTION_TEXT_RE.search(text_of(ref))} | set(with_pin((PROTECT_NAME_RE, PROTECT_PIN_RE))))
+                        or protection_text(text_of(ref))} | set(with_pin((PROTECT_NAME_RE, PROTECT_PIN_RE))))
     elif requires == 'SENSE_ELEMENT':
         found = []
         for ref in fitted:
@@ -638,7 +638,7 @@ class CircuitPlanning:
         requirements = self._materials_gap(['requirements'])
 
         def grounded(net):
-            return is_ground(net) or bool(GROUND_RE.match(str(net).rsplit('/', 1)[-1]))
+            return is_ground(net)
 
         def window(obj, gaps, trigger, gate_clamp=False):
             for side, criterion in WINDOW_SIDES:
@@ -689,7 +689,8 @@ class CircuitPlanning:
                 window({'ref': ref}, gaps, [f'refdes:{ref}', f'device-kind:{kind}:{graph.basis(ref)}'] + audit
                        + ([f'gate-source-clamp:{switch}'] if switch else []), gate_clamp=bool(switch))
                 continue
-            if not SENSOR_RE.search(' '.join(str(part.get(k, '')) for k in ('part', 'value', 'prim'))):
+            words = ' '.join(str(part.get(k, '')) for k in ('part', 'value', 'prim'))
+            if not (SENSOR_RE.search(words) or NTC_RE.search(words)):
                 continue
             # 传感器接电源轨的一端只是偏置，不是检测脚；轨上 IC 的供电脚也不判别开短路。
             for net in sorted(set(graph.pins_of(ref).values())):
@@ -698,7 +699,7 @@ class CircuitPlanning:
                     continue
                 for node in sorted(nets.get(net, [])):
                     owner = node.split('.')[0]
-                    if (owner == ref or graph.kind(owner) != IC or GROUND_RE.match(normalize(names.get(node)))
+                    if (owner == ref or graph.kind(owner) != IC or GROUND_PIN_RE.match(normalize(names.get(node)))
                             or (db.get('native_pintype') or {}).get(node) in ('power_in', 'power_out')):
                         continue
                     sensor_gaps, audit = self._datasheet_readiness(ref, part)
@@ -936,7 +937,7 @@ class CircuitPlanning:
         if farads is not None and farads >= SUPERCAP_FARAD:
             return 'super'
         symbol = ' '.join(str(part.get(k) or '') for k in ('prim', 'part'))
-        if POLARIZED_RE.search(symbol) or ELECTROLYTIC_RE.search(text):
+        if POLARIZED_SYMBOL_RE.search(symbol) or ELECTROLYTIC_RE.search(text):
             return 'electrolytic'
         if (ALUMINIUM_PACKAGE_RE.search(text) and VOLTAGE_RE.search(str(part.get('value') or ''))
                 and (farads or 0) >= BULK_FARAD):
@@ -956,7 +957,7 @@ class CircuitPlanning:
             return 'VARISTOR'
         if kind == FUSE:
             return 'PTC' if PTC_RE.search(text) else 'FUSE'
-        if INRUSH_NTC_RE.search(text):
+        if NTC_RE.search(text):
             ends = graph.terminals(ref)
             on_ends = {graph.kind(r) for n in ends for r in graph.refs_on(n) if r != ref}
             return 'INRUSH_NTC' if ends and not any(is_ground(n) for n in ends) and IC not in on_ends else None

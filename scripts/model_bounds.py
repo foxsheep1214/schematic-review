@@ -5,6 +5,7 @@ hand-picked one, and reports where the model stops being applicable. Units are
 SI except temperatures in degrees Celsius.
 """
 import math
+from electrical_contract import finite
 
 KELVIN = 273.15
 
@@ -39,7 +40,7 @@ def crm_boost_capacitor_ripple(*, input_rms_v, bus_v, power_w, hf_ripple_factor=
 
 
 def _n(x, name, positive=False):
-    if isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x):
+    if not finite(x):
         raise ValueError(name + ' must be finite')
     if x < 0 or (positive and x == 0):
         raise ValueError(name + ' must be ' + ('positive' if positive else 'nonnegative'))
@@ -69,7 +70,7 @@ B-value fit range or the part's rated range the result is flagged, not extended.
     beta = _n(beta_k, 'beta_k', True)
     if rt >= 1 or bt >= 1:
         raise ValueError('tolerances are fractions below 1 (0.01 = 1 %)')
-    if isinstance(temp_c, bool) or not isinstance(temp_c, (int, float)) or not math.isfinite(temp_c):
+    if not finite(temp_c):
         raise ValueError('temp_c must be finite')
     if temp_c <= -KELVIN:
         raise ValueError('temp_c must be above absolute zero')

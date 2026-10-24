@@ -76,7 +76,6 @@ EN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN)(_|\d|$)', re.I)
 CLAMP_RE = re.compile(r'ZENER|TVS|BZT|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)
 # EN 脚耐压绝大多数 <=6V；超过此值的上拉优先查 Abs Max（提示，非判定）
 EN_PULL_ALERT_V = 6.0
-GND_TOKEN_RE = re.compile(r'^([A-Z]{0,2}GND[A-Z0-9]{0,3}|[AD]?VSS[A-Z0-9]{0,3})$')
 KICAD_UNCONNECTED_RE = re.compile(r'^unconnected-\(', re.I)
 DATASHEET_NC_PIN_RE = re.compile(r'^(N\.?C\.?|DNC|NIC|RSVD|RESERVED)(?:$|[_\-\d])', re.I)
 BIDIR_PINTYPES = {'BI', 'BIDI', 'BIDIR', 'BIDIRECTIONAL', 'IO', 'I/O', 'TRISTATE', '3STATE'}
@@ -130,7 +129,7 @@ def net_name_split(a, b):
 
 def _ground_like(net):
     """网名含地记号（GND、GNDA、AGND、PGND_ISO、Net-(U1-GND)、VSS…），只作孤岛扫描的候选范围。"""
-    return any(GND_TOKEN_RE.match(t) for t in re.split(r'[^A-Z0-9]+', str(net).upper()) if t)
+    return any(ng.is_ground(t) for t in re.split(r'[^A-Z0-9]+', str(net).upper()) if t)
 
 
 BRIDGED_JUMPER_RE = re.compile(r'SolderJumper_(\d)_Bridged(\d*)')

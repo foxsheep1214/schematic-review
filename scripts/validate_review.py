@@ -6,7 +6,6 @@ import argparse
 from collections import Counter
 import hashlib
 import json
-import re
 from pathlib import Path
 import sys
 import catalog
@@ -18,7 +17,7 @@ from review_summary import categorized_summary, validate_impact
 from requirement_clarifications import validate_clarifications
 from checkers import REGISTRY, passive_stress, validate_inventories
 from validate_remediation import validate_remediation, validate_figures, changes_topology, READINESS
-from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json, squeeze_words
 from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check_id
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
@@ -39,7 +38,6 @@ APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
 REQUIREMENT_GAP = {"OPEN": "REQUIREMENT_OPEN", "DEFERRED": "USER_DEFERRED"}
 CLAUSE_KINDS = ("OBLIGATION", "PREMISE")
 CLAUSE_ORDER = {"NA": 0, "PASS": 1, "INSUFFICIENT": 2, "FAIL": 3}
-CLAUSE_TEXT_STRIP = re.compile(r"[\s，。；;,.、：:（）()]")
 
 
 def source_text(planned):
@@ -55,7 +53,7 @@ def requirement_clause_errors(key, item, criterion):
         return [f"{key}: REQ-D01 须给 requirement_clauses（按原文顺序拆分的条款，kind 为 OBLIGATION/PREMISE）"]
     errors = []
     texts = [c.get("text") if isinstance(c.get("text"), str) else "" for c in clauses]
-    if CLAUSE_TEXT_STRIP.sub("", "".join(texts)) != CLAUSE_TEXT_STRIP.sub("", criterion or ""):
+    if squeeze_words("".join(texts)) != squeeze_words(criterion):
         errors.append(f"{key}: requirement_clauses 的 text 按顺序拼接须等于需求原文（不遗漏、不改写）")
     worst = None
     for i, clause in enumerate(clauses, 1):
@@ -620,7 +618,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "scope": scope_decl,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
-            "categorized_summary": categorized_summary(checks, expected, findings, stage),
+            "categorized_summary": categorized_summary(checks, expected, findings, stage, impact_classes),
             "insufficient_by_cause": gap_causes,
             "stage_scope": stage_scope,
             "sr_improvements": sr_improvements,

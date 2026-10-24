@@ -20,7 +20,6 @@ from .planutil import slug
 
 VIN_PIN_RE = re.compile(r'^(VIN|PVIN|VINA|VCC_IN|VDD_IN|VBUS_IN)\d*$', re.I)
 SERIES_KINDS = {ng.INDUCTOR, ng.FERRITE}
-BULK_RE = re.compile(r'ELEC|ALUM|TANT|POLYMER|OSCON|EEE|EEU|TPS[A-Z]|铝电解|钽', re.I)
 MAX_INPUTS = 128
 
 
@@ -48,8 +47,8 @@ class _Scan:
             for ref in self.graph.between(net, ground, {ng.CAPACITOR}):
                 value = self.graph.parts.get(ref, {}).get('value')
                 found.append({'ref': ref, 'to': ground, 'farads': parse_capacitance(value),
-                              'bulk_candidate': bool(BULK_RE.search(str(value or '')
-                                                     + str(self.graph.parts.get(ref, {}).get('part') or '')))})
+                              'bulk_candidate': ng.is_polarized_capacitor(str(value or '') + ' '
+                                                                       + str(self.graph.parts.get(ref, {}).get('part') or ''))})
         return sorted(found, key=lambda item: item['ref'])
 
     def _series(self, net):

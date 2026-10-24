@@ -8,12 +8,13 @@ import itertools
 import math
 
 from model_bounds import _n
+from electrical_contract import finite
 
 BASIS = 'CONDITIONAL_ON_CALLER_BOUNDS'
 
 
 def _finite(value, name):
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if not finite(value):
         raise ValueError(name + ' must be finite')
     return float(value)
 
@@ -73,7 +74,7 @@ threshold the node never reaches (outside V0..Vf) is an error, not infinity.
     rt = _tol(r_tol, 'r_tol')
     c = _n(c_f, 'c_f', True)
     cm, cp = _tol(c_tol_minus, 'c_tol_minus'), _n(c_tol_plus, 'c_tol_plus')
-    if not all(isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+    if not all(finite(v)
                for v in (v_start_v, v_final_v, v_threshold_min_v, v_threshold_max_v)):
         raise ValueError('voltages must be finite')
     v0, vf = float(v_start_v), float(v_final_v)
@@ -104,7 +105,7 @@ theta_JA must be the board-relevant value, not the JEDEC headline, when known.
     i, iq = _n(iout_max_a, 'iout_max_a'), _n(iq_max_a, 'iq_max_a')
     theta = _n(theta_ja_c_per_w, 'theta_ja_c_per_w', True)
     for value, name in ((ambient_max_c, 'ambient_max_c'), (tj_max_c, 'tj_max_c')):
-        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        if not finite(value):
             raise ValueError(name + ' must be finite')
     p = (vin - vout) * i + vin * iq
     tj = ambient_max_c + p * theta

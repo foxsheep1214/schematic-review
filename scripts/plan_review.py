@@ -15,7 +15,7 @@ from copy import deepcopy
 import board_intent
 import catalog
 from review_engine import engine_identity
-from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, bounded, finite, load_json
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, bounded, finite, load_json, squeeze_words
 from page_inventory import inventory as document_inventory
 import io
 import json
@@ -63,11 +63,7 @@ HANDOFF_STATES = ('OPEN', 'ACCEPTED', 'VERIFIED')
 REQUIREMENT_STATUSES = ('CONFIRMED', 'PROPOSED', 'OPEN', 'DEFERRED')
 
 
-_SQUEEZE_RE = re.compile(r'[\s，。；;,.、：:（）()]')
-
-
-def _squeeze(value):
-    return _SQUEEZE_RE.sub('', value)
+_squeeze = squeeze_words
 
 
 def rail_candidates(db, intent):

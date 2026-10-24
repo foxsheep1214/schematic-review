@@ -40,7 +40,7 @@ NATIVE_SYMBOL_KINDS = {
     'Device:Ferrite_Bead': 'ferrite', 'Device:Ferrite_Bead_Small': 'ferrite',
 }
 POWER = re.compile(r'(^|[_/.-])(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|DVCC\w*|VIN|VOUT|VBAT|VBUS)(?=$|[_/.-])', re.I)
-GROUND = re.compile(r'(^|[_/.-])(?:GND\w*|[APD]?VSS\w*|[APD]GND\w*)(?=$|[_/.-])', re.I)
+RETURN_PIN_RE = re.compile(r'(^|[_/.-])(?:GND\w*|[APD]?VSS\w*|[APD]GND\w*)(?=$|[_/.-])', re.I)   # a pin name
 PASSIVE_PREFIX = re.compile(r'^(?:R|C|L|FB|F|JP|TP|J|P|CN|Y)\d', re.I)
 CAP_TOKEN = re.compile(r'^(?:(\d+(?:\.\d*)?|\.\d+)([eE][+-]?\d+)?\s*([pPnNuUµμm]?)[fF]|'
                        r'(\d+(?:\.\d*)?|\.\d+)\s*([pPnNuUµμm])|'
@@ -307,7 +307,7 @@ class Inventory:
         if spec:
             return spec['role']
         name, kind = self.names.get(node, ''), self.types.get(node, '').upper()
-        if GROUND.search(name) or kind in ('GROUND', 'GND'):
+        if RETURN_PIN_RE.search(name) or kind in ('GROUND', 'GND'):
             return 'return'
         if POWER.search(name) or kind in ('POWER', 'POWER_IN', 'POWER_OUT'):
             return 'power'
@@ -520,6 +520,8 @@ def build_decoupling_inventory(db, intent=None):
             discovery_gaps.add('official-full-pinout:' + device['ref'])
         discovery_gaps.update('official-pin-absent:' + n for n in device['official_only_nodes'] if inv.supply_pin(n))
         discovery_gaps.update('pin-not-in-official-map:' + n for n in device['symbol_only_nodes'] if inv.supply_pin(n))
+    # Without declared assemblies every part's population is unknown (netlist nc is not assembly proof, as in
+    # i2c_topology); the other checkers use the as-built state with one gap instead (automation.md 装配状态).
     states = (intent or {}).get('assemblies') or [{'id': 'UNSPECIFIED', 'population': {}}]
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'input_sha256': input_fingerprint(db),
               # power_rails: the PWR-C10 rating proposal reads the passive-stress pre-judgement, which needs the rails

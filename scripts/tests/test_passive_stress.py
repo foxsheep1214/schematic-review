@@ -109,7 +109,7 @@ class ProposalTests(unittest.TestCase):
         for value in ('100n/10V', '100n'):
             _, rows = proposals(*self.unpackaged(c1=value))
             self.assertNotIn('C1', rows)
-        self.assertEqual(passive_stress.written_voltage('4.7uF 10V'), 10.0)
+        self.assertEqual(passive_stress.rated_voltage('4.7uF 10V'), 10.0)
 
     def test_a_rating_the_bom_writes_as_its_own_segment_is_the_floor(self):
         # The BOM's specification column states ratings the value leaves out; read as written, never from a sentence.

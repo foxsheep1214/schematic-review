@@ -470,7 +470,7 @@ def _proposal(entry):
     if farads is None:
         return None, {'v_across_max': v}, '容值不可解析'
     if entry.get('package_assumed'):   # no footprint: only a voltage written in the value bounds it
-        written = written_voltage(entry['value']) or (entry.get('bom_ratings') or {}).get('voltage_v')
+        written = rated_voltage(entry['value']) or (entry.get('bom_ratings') or {}).get('voltage_v')
         calc = {'v_across_max': v, 'capacitance_f': farads, 'written_v': written}
         if written is None:
             return None, calc, '没有封装也没写耐压：耐压 ≥%gV 写进 BOM 约束（DEV-D04），由审查者按 commodity-floors 判定' % v
@@ -501,13 +501,14 @@ def _floor_basis(entry, power_w, voltage_v):
     return 'power %s, voltage %s' % ('written' if power_w else assumed, 'written' if voltage_v else assumed)
 
 
-def written_voltage(value):
-    """A rated voltage written as one segment of the value (100n/10V, 47u/35V/X7R, 4.7uF 10V); None without one."""
-    for segment in re.split(r'[/\s]+', str(value or '')):
-        match = WRITTEN_V_RE.match(segment.strip())
-        if match:
-            return float(match.group(1))
-    return None
+SEGMENT_SPLIT_RE = re.compile(r'[/，,；;、\s]+')
+
+
+def rated_voltage(value):
+    """The rated voltage a value writes as a segment of its own (100n/10V, 47u/35V/X7R, 4.7uF 10V); None without one,
+    or when two different voltages are written (10uF/16V/25V is not read). Every module reads a rating here."""
+    found = {float(m.group(1)) for m in (WRITTEN_V_RE.match(seg) for seg in SEGMENT_SPLIT_RE.split(str(value or ''))) if m}
+    return found.pop() if len(found) == 1 else None
 
 
 def bom_ratings(fields):
@@ -515,7 +516,7 @@ def bom_ratings(fields):
     inside a sentence, is not read."""
     found = {'voltage_v': set(), 'power_w': set()}
     for text in (fields or {}).values():
-        for segment in re.split(r'[/，,；;、\s]+', str(text or '')):
+        for segment in SEGMENT_SPLIT_RE.split(str(text or '')):
             v, w = WRITTEN_V_RE.match(segment), WRITTEN_W_RE.match(segment)
             if v:
                 found['voltage_v'].add(float(v.group(1)))

@@ -23,7 +23,7 @@ import os
 import re
 import sys
 from collections import Counter
-from electrical_contract import load_json
+from electrical_contract import load_json, squeeze
 
 
 # Active parts and every discrete semiconductor prefix (ZD/TVS were silently skipped before).
@@ -55,7 +55,7 @@ def normalize_identity(value):
     if _parameter_value(value):
         # Preserve magnitude and SI prefix case. A quantity is not an MPN:
         # punctuation removal conflates 1.0/10 and exponent/sign variants.
-        quantity = re.sub(r'\s+', '', value.strip()).replace('µ', 'u').replace('μ', 'u')
+        quantity = squeeze(value).replace('µ', 'u')   # the key spells micro u
         return 'Q:' + quantity
     return re.sub(r'[^A-Z0-9]+', '', str(value or '').upper())
 

@@ -3,10 +3,11 @@
 No controller timing, parasitic model, automatic SOA verdict or severity inference.
 """
 import math
+from electrical_contract import finite
 
 
 def _finite(value, name, positive=False):
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if not finite(value):
         raise ValueError(name + ' needs an evidenced finite input; missing is not zero')
     if value < 0 or (positive and value == 0):
         raise ValueError(name + ' out of physical range')

@@ -16,6 +16,24 @@ RAIL_RE = re.compile(
     r'|[0-9]+(?:\.[0-9]+)?V|HV(?=$|\d|[_+](?!EN)))'
     r'(?!.*(?:[_-](?:N|NEG|RTN|RET|MINUS)|-)$)(?!.*[_-](?:FB|FBACK|FEEDBACK|SENSE|SNS|DET|DETECT|PG|PGOOD|MON)(?:$|[_-]))', re.I)
 
+# Part words read from a part's text (value, symbol, part number), one vocabulary for every module.
+# An electrolytic, solid or super capacitor by its words (an endurance rating "12000h@105°C" names one too; EEE/EEU are
+# aluminium part-number series); a tantalum is polarized but not an electrolytic that wears out.
+POLARIZED_SYMBOL_RE = re.compile(r'(^|[:\s])(C_Polarized|CP)(_|\b)', re.I)
+ELECTROLYTIC_RE = re.compile(r'电解|固态|铝|ELECTROLYTIC|\bELEC\b|\bALUM|\bE-?CAP\b|POLYMER|OS-?CON|SUPER ?CAP|EDLC|超级电容'
+                             r'|\bEE[EU]|\d\s*h\s*@\s*\d+\s*°?C', re.I)
+TANTALUM_RE = re.compile(r'TANTAL|钽|\bTPS[A-Z]', re.I)
+NTC_RE = re.compile(r'NTC', re.I)
+VARISTOR_RE = re.compile(r'VARISTOR|\bMOV\b|压敏', re.I)
+LED_RE = re.compile(r'(^|[^A-Z])LED(S|[^A-Z]|$)', re.I)
+
+
+def is_polarized_capacitor(text):
+    """A capacitor whose polarity matters: a polarized symbol, an electrolytic or a tantalum."""
+    text = str(text or '')
+    return bool(POLARIZED_SYMBOL_RE.search(text) or ELECTROLYTIC_RE.search(text) or TANTALUM_RE.search(text))
+
+
 RESISTOR, CAPACITOR, INDUCTOR, FERRITE = 'resistor', 'capacitor', 'inductor', 'ferrite'
 DIODE, TVS, ZENER, MOSFET, BJT = 'diode', 'tvs', 'zener', 'mosfet', 'bjt'
 RELAY, OPTO, CRYSTAL, TRANSFORMER = 'relay', 'opto', 'crystal', 'transformer'
@@ -260,9 +278,10 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     return UNKNOWN, 'no classification evidence'
 
 
-# A ground by its name token: GND with up to a 3-character unseparated prefix (SGND, PGND, CHGND) and a
-# short domain suffix (GND_ISO, GNDA, GND2), or 0V. Kelvin/sense/detect lines to ground are signals.
-GROUND_NAME_RE = re.compile(r'^[A-Z0-9]{0,3}GND(?:[_-]?([A-Z0-9]{1,6}))?$')
+# A ground by its name token: GND with up to a 3-character unseparated prefix (SGND, PGND, CHGND), or VSS with an
+# A/D prefix (AVSS, DVSS), and a short domain suffix (GND_ISO, GNDA, GND2, VSSA), or 0V. Kelvin/sense/detect lines to
+# ground are signals. Every module asks is_ground; none keeps its own ground pattern.
+GROUND_NAME_RE = re.compile(r'^(?:[A-Z0-9]{0,3}GND|[AD]?VSS)(?:[_-]?([A-Z0-9]{1,6}))?$')
 GROUND_SIGNAL_SUFFIXES = {'SENSE', 'SNS', 'KELVIN', 'DET', 'FB', 'EN', 'SW'}
 
 

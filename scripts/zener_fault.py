@@ -4,11 +4,11 @@ Caller establishes topology, applicability, tolerances and source provenance.
 Fixed-temperature monotone zener I-V is required for trip_drive. A test-point
 maximum cannot supply a below-test-current voltage minimum. Units are SI.
 """
-import math
+from electrical_contract import finite
 
 
 def _n(x, name, positive=False):
-    if isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x):
+    if not finite(x):
         raise ValueError(name + ' must be finite')
     if x < 0 or (positive and x == 0):
         raise ValueError(name + ' must be ' + ('positive' if positive else 'nonnegative'))
