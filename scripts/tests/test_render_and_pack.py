@@ -441,7 +441,13 @@ class PackReviewTests(unittest.TestCase):
         for name, value in data.items():
             (self.work / name).write_text(json.dumps(value))
             self.ledger[name] = str(self.work / name)
-        write_report(self.out, '# report')
+        self.render_current()
+
+    def render_current(self, notes=None, title=None, detail='compact'):
+        """The report as render_report.py writes it from the work ledger (the pack renders it again, 2.3)."""
+        load = lambda name: json.loads((self.work / name).read_text())
+        write_report(self.out, render(load('review-plan.json'), load('review-results.json'), load('review-gate.json'),
+                                      notes, title, detail))
 
     def run_pack(self):
         return pack(self.out, self.ledger, str(self.work), {'requirements': str(self.inputs)})
@@ -451,6 +457,7 @@ class PackReviewTests(unittest.TestCase):
         data = json.loads(path.read_text())
         data['checks'][0]['evidence'].append({'source': str(source), 'locator': 'test'})
         path.write_text(json.dumps(data))
+        self.render_current()
 
     def test_hand_drawn_circuits_are_not_packed_without_their_candidate_file(self):
         path = self.work / 'intent.json'
@@ -590,6 +597,8 @@ class DeliveryReviewTests(unittest.TestCase):
     """An ASG delivery carries its own selection, calculation inventory and preflight result. SR reviews the
     schematic from scratch and does not re-judge those records, so a review that declares the delivery packs without
     them (2026-10-22: SR is independent of the designer's documents)."""
+
+    render_current = PackReviewTests.render_current
 
     def setUp(self):
         PackReviewTests.setUp(self)

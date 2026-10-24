@@ -7,6 +7,20 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## The pack renders the report again and needs a valid gate (SR self-check group 2, item 2.3, 2026-10-24)
+
+Standing decision 6 and the documents said a hand-edited report fails the pack and a scoped hot review is not packed,
+but `pack_review.py` only checked that the HTML copy matched the Markdown, read no gate result and no `review_scope`.
+It now renders the report again from the packed plan, results, gate and notes (`--notes`, packed as
+`record/notes.json`; `--title` and `--detail` as rendered) and refuses any difference, refuses a gate whose `valid` is
+not true and results that declare `review_scope`. The pack does not run the gate again: whether the gate is current is
+still the workflow's. Recorded in architecture.md. Tests first; 2054 tests pass, contract 518, KiCad replay 195/195,
+typical circuits unchanged, mutations M521-M525 added, all 7 on changed files killed.
+
+- Event: user:2026-10-24 (SR self-check group 2, item 2.3: "重新渲染比对 + 要求 valid")
+- Causes: rule_not_enforced 1
+- Changed: SKILL.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/report-and-remediation.md, scripts/pack_review.py, scripts/tests/test_pack_rerender.py, scripts/tests/test_render_and_pack.py
+
 ## An estimate passes with a prototype handoff (SR self-check group 2, item 2.1, 2026-10-24)
 
 The documents and the DEV-C05 and DRV-C02 criteria let a similar part's guaranteed range or typical ±30 % pass a

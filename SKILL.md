@@ -50,7 +50,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 3. 判断的单位是功能：缺口和失败只在功能判定里写一次，检查行由功能派生；计划电路的缺口写在计划功能里，不另建功能装它。
 4. 每个决定结论的数值由审查员自己算；工具只定对象、提供公式和对账，不替审查员下电气结论。器件参数能不能定界、推不出记哪一档，按工作点定界表执行，门禁按表重算核对（2026-10-23）。
 5. 校验只证明记录一致，不证明审查正确。
-6. 报告只从台账生成；交付只有报告两份和 `record/`。
+6. 报告只从台账生成（打包时按台账重新渲染比对，门禁须 valid）；交付只有报告两份和 `record/`。
 
 **改架构先问人**：修改 SR 本身时，下面任何一项都算架构调整，动代码或文档之前先把方案交给人确认，确认后才改：
 
@@ -331,10 +331,10 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
       python3 scripts/render_report.py review-plan.json review-results.json review-gate.json --notes notes.json -o <审查目录>/审查报告.md   # 同时写出 审查报告.html
       python3 scripts/pack_review.py <审查目录> --review-plan … --review-results … --review-gate … --db … --intent … \
-        --circuit-candidates record/circuit-candidates.json --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
+        --circuit-candidates record/circuit-candidates.json --notes notes.json --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
 
   默认简洁报告保留全部缺陷、任务、通过标准及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
-  `pack_review.py` 只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
+  `pack_review.py` 用打包的计划、结果、门禁和 `notes.json` 重新渲染报告，与 `审查报告.md` 不同（手改过，或台账改了没重出）就拒绝；渲染时用了 `--title`、`--detail` 的，打包时同样传。门禁不 valid、结果声明了 `review_scope` 都不打包。它只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
   顶层有其他文件或引用的证据找不到时打包失败。不另写 README 或说明文档；HTML 只能是脚本生成的那份。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。
 

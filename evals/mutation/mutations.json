@@ -3610,5 +3610,40 @@
   "file": "scripts/review_functions.py",
   "old": "    return estimate[0] if estimate else None",
   "new": "    return None"
+ },
+ {
+  "id": "M521",
+  "name": "the pack takes any report text",
+  "file": "scripts/pack_review.py",
+  "old": "    if (out / REPORT).read_text(encoding='utf-8') != render(plan, results, gate, notes, title, detail):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M522",
+  "name": "the pack re-renders without the notes",
+  "file": "scripts/pack_review.py",
+  "old": "    notes = load('notes.json') if (record / 'notes.json').is_file() else None\n",
+  "new": "    notes = None\n"
+ },
+ {
+  "id": "M523",
+  "name": "the pack packs a gate that is not valid",
+  "file": "scripts/pack_review.py",
+  "old": "    if gate.get('valid') is not True:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M524",
+  "name": "the pack packs a scoped hot review",
+  "file": "scripts/pack_review.py",
+  "old": "    if results.get('review_scope') is not None:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M525",
+  "name": "the pack ignores the title and detail",
+  "file": "scripts/pack_review.py",
+  "old": "    errors += rendered_errors(out, record, title, detail)",
+  "new": "    errors += rendered_errors(out, record)"
  }
 ]

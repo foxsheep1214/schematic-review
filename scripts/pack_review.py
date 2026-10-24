@@ -6,10 +6,13 @@
       record/
         manifest.json      inputs by path + SHA-256, SR version, packed files
         review-plan.json  review-results.json  review-gate.json  db.json  intent.json  lint-cold/hot.json
+        circuit-candidates.json  notes.json   when the intent declares circuits / the report has notes
         evidence/          only files that a check's evidence actually cites
 
-Schematic projects, datasheets, requirements and earlier reviews are referenced by path and
-hash, never copied. Anything else at the top level, or a cited source that is neither packed
+The report is rendered again from the packed plan, results, gate and notes (with the title and
+detail it was rendered with) and must be the same text; the gate must be valid and the ledger a
+board verdict, not a scoped hot review (SR self-check 2.3). Schematic projects, datasheets,
+requirements and earlier reviews are referenced by path and hash, never copied. Anything else at the top level, or a cited source that is neither packed
 nor a declared input, fails the pack so the directory stays exactly this shape.
 """
 import argparse
@@ -26,7 +29,7 @@ REPORT_HTML = '审查报告.html'
 RECORD = 'record'
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from render_report import SR_SECTION, jargon_in  # noqa: E402
+from render_report import SR_SECTION, jargon_in, notes_errors, render, sr_feedback_errors  # noqa: E402
 from report_html import to_html
 import circuit_decisions
 import results_model
@@ -34,7 +37,8 @@ import results_model
 HISTORY_RULE = 'REQ-H02'
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
           'lint-cold.json', 'lint-hot.json')
-OPTIONAL_LEDGER = ('circuit-candidates.json',)      # required as soon as the intent declares circuits
+OPTIONAL_LEDGER = ('circuit-candidates.json',       # required as soon as the intent declares circuits
+                   'notes.json')                    # the plain-language notes the report was rendered with
 
 
 def plain_language_errors(report):
@@ -182,7 +186,28 @@ def skill_version():
         return None
 
 
-def pack(out, ledger, evidence_root, inputs):
+def rendered_errors(out, record, title=None, detail='compact'):
+    """The report is what render_report.py writes from the packed ledger; the gate is valid and a board verdict."""
+    load = lambda name: json.loads((record / name).read_text(encoding='utf-8'))
+    plan, results, gate = load('review-plan.json'), load('review-results.json'), load('review-gate.json')
+    notes = load('notes.json') if (record / 'notes.json').is_file() else None
+    errors = []
+    if gate.get('valid') is not True:
+        errors.append('review-gate.json is not valid; fix what validate_review.py reports and run it again before packing')
+    if results.get('review_scope') is not None:
+        errors.append('review-results.json declares review_scope: a scoped hot review is not a board verdict and is not '
+                      'delivered')
+    problems = sr_feedback_errors((notes or {}).get('sr_feedback')) + notes_errors(notes)
+    if problems:
+        return errors + ['notes.json: ' + '; '.join(problems)]
+    if (out / REPORT).read_text(encoding='utf-8') != render(plan, results, gate, notes, title, detail):
+        errors.append('%s is not what render_report.py writes from the packed ledger%s; re-render it from the current '
+                      'plan, results, gate and notes (pass --notes, --title and --detail as rendered) instead of '
+                      'editing it' % (REPORT, ' and notes.json' if notes is not None else ''))
+    return errors
+
+
+def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
     out = Path(out)
     errors = []
     record = out / RECORD
@@ -228,6 +253,7 @@ def pack(out, ledger, evidence_root, inputs):
             shutil.copyfile(src, target)
         packed[RECORD + '/' + name] = sha256(target)
     results = json.loads((record / 'review-results.json').read_text(encoding='utf-8'))
+    errors += rendered_errors(out, record, title, detail)
     errors += candidate_errors(record)
     items = results_model.open_items(results)
     unfinished = sorted(c.get('id', '?') for c in results.get('checks') or [] if isinstance(c, dict)
@@ -280,8 +306,11 @@ def main(argv=None):
     parser.add_argument('out', help='review directory holding 审查报告.md')
     for name in LEDGER:
         parser.add_argument('--' + name.split('.')[0], required=True, metavar='PATH')
-    for name in OPTIONAL_LEDGER:
-        parser.add_argument('--' + name.split('.')[0], metavar='PATH', help='required when intent.json declares circuits')
+    parser.add_argument('--circuit-candidates', metavar='PATH', help='required when intent.json declares circuits')
+    parser.add_argument('--notes', metavar='PATH', help='the notes.json the report was rendered with')
+    parser.add_argument('--title', help='the --title the report was rendered with')
+    parser.add_argument('--detail', choices=('compact', 'full'), default='compact',
+                        help='the --detail the report was rendered with')
     parser.add_argument('--evidence-root', help='work directory that cited evidence paths are relative to')
     parser.add_argument('--input', action='append', default=[], metavar='NAME=PATH',
                         help='schematic project, datasheets, requirements, previous review ... (referenced, not copied)')
@@ -289,7 +318,7 @@ def main(argv=None):
     ledger = {name: getattr(args, name.split('.')[0].replace('-', '_')) for name in LEDGER + OPTIONAL_LEDGER
               if getattr(args, name.split('.')[0].replace('-', '_'))}
     inputs = dict(item.split('=', 1) for item in args.input)
-    errors, _ = pack(args.out, ledger, args.evidence_root, inputs)
+    errors, _ = pack(args.out, ledger, args.evidence_root, inputs, args.title, args.detail)
     for e in errors:
         print('ERROR:', e)
     print('FAIL' if errors else 'PASS')

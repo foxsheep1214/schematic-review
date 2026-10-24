@@ -51,7 +51,7 @@ notes 不能改结论或计数，不写内部代码名（gap_cause、documented 
   [HANDOFF](verdicts-and-release.md#4-handoff-与集成约束)）。
   报告按负责方合并这些要求，并自动列出涉及的位号；同一负责方下的要求写法一致时只显示一次。
 审查目录只有 `审查报告.md`、`审查报告.html` 与 `record/`（见 [留档](inputs-and-coverage.md#留档)），不另写 README 或说明。
-两份报告由 `render_report.py` 一次写出（`-o 审查报告.md` 同时生成同名 `.html`，图直接显示），内容相同；`pack_review.py` 核对 HTML 由当前 Markdown 生成，手改任一份都打包失败。
+两份报告由 `render_report.py` 一次写出（`-o 审查报告.md` 同时生成同名 `.html`，图直接显示），内容相同；`pack_review.py` 用打包的台账和 `notes.json`（`--notes`）重新渲染报告比对 Markdown，再核对 HTML 由当前 Markdown 生成，手改任一份、台账改了没重出都打包失败；门禁不 valid 不打包。
 
 ## 每节怎么写
 
