@@ -257,7 +257,8 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
    自建功能只装不属于任何框架的行（器件、检查器、全板行），对象（位号）全在某个电路框架里的拒收，改写进那个框架；
    计划漏了电路就在 `intent.circuit_decisions` 登记 add 决定后重生成计划；再算（`calculation`），
    算出余量就按它的依据（`margin.basis.kind`）下结论：保证最坏值 GUARANTEED_BOUND 满足判 PASS，不满足只是没证明；确会出现的工况 REACHABLE_CASE
-   不满足判 FAIL；完整最坏范围 EXACT_ENVELOPE 两头都判；估算 ESTIMATE 什么都不判。`comparison` 为 GE 时零余量算满足、GT 时不算；
+   不满足判 FAIL；完整最坏范围 EXACT_ENVELOPE 两头都判；估算 ESTIMATE 什么都不判，只有用于必需功能或性能、写了
+   `consequence_class` 和样机实测移交 `handoff` 时满足判 PASS（损坏、过热、保护类规则除外）。`comparison` 为 GE 时零余量算满足、GT 时不算；
    与限值的 `regime` 不同要写 `conversion`。证明不满足的余量记失败项且发现项带改法，设计里已有的值不记“设计没定”；
    余量、判断和影响条目不写 `states` 时只覆盖不带状态的行，不覆盖全部状态；
    本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`，`undecided` 列出没选的器件参数，BOM 已写的不算；由另一个开项决定的写 `depends_on`）；另一阶段欠的交付物（磁件图纸、固件应用能力确认）记

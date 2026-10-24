@@ -396,7 +396,13 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 | GUARANTEED_BOUND | 在要求范围内余量的下界：满足则 PASS，不满足只说明没证明（OPEN） | 不依赖 TYPICAL_REFERENCE 或 ENGINEERING_ASSUMPTION |
 | REACHABLE_CASE | 一个确会出现的工况：不满足则 FAIL，满足不证明整个范围（OPEN） | `joint` 说明这些参数为什么会同时出现；不依赖 ENGINEERING_ASSUMPTION |
 | EXACT_ENVELOPE | 完整的最坏包络：满足 PASS，不满足 FAIL | `model`、`domain`、`extremum`；同 GUARANTEED_BOUND 不依赖典型值或假设 |
-| ESTIMATE | 什么都不决定 | 无 |
+| ESTIMATE | 什么都不决定；用于必需功能或性能且移交样机实测时，满足判 PASS（见下） | 判 PASS 时写 `consequence_class` 与 `handoff` |
+
+估算判通过（SR 自查 2.1）：相似器件保证范围或典型 ±30% 这类估算在整个范围内结论不变时，`basis` 另写 `consequence_class`
+（REQUIRED_FUNCTION 或 PERFORMANCE_OR_LIFE，估算错了的后果）和 `handoff`（本功能 `handoffs` 里样机实测那一条的序号，
+那一条写全 receivers、constraint、verification），满足就判 PASS，派生行带上这条移交（`required: true`，OPEN）。
+损坏、过热和保护类规则（DEV-C01、DEV-C04、PWR-C03、PWR-C06、PWR-C10、DRV-C01、全部 PRO）不走这条路，仍要保证值。
+寿命行另有自己的估算路径（见 DEV-C02/DEV-C06）。
 
 `comparison` 为 GE 时零余量算满足，GT 时不算。除 ESTIMATE 外，`limit` 指向被比较的 NUMERIC_LIMIT，`regime` 写算出量成立的条件；
 与限值的 `regime` 不同时，`conversion` 要指向一条条件或 claim（换算或包络），否则跨条件比较被拒绝。

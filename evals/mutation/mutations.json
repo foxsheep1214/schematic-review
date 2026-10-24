@@ -2747,8 +2747,8 @@
   "id": "M397",
   "name": "an estimate margin of any aspect decides nothing silently",
   "file": "scripts/review_functions.py",
-  "old": "                    and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE' and sc[0] in LIFE_ASPECTS)):",
-  "new": "                    and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE')):"
+  "old": "                    and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE' and sc[0] in LIFE_ASPECTS)\n",
+  "new": "                    and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE')\n"
  },
  {
   "id": "M398",
@@ -3554,5 +3554,61 @@
   "file": "scripts/plan_review.py",
   "old": "    if intent.get('schema_version') != INTENT_SCHEMA_VERSION:",
   "new": "    if 'schema_version' in intent and intent['schema_version'] != INTENT_SCHEMA_VERSION:"
+ },
+ {
+  "id": "M513",
+  "name": "an estimate passes a damage or protection rule",
+  "file": "scripts/review_functions.py",
+  "old": "    if isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id):\n        return None\n    calc",
+  "new": "    if False:\n        return None\n    calc"
+ },
+ {
+  "id": "M514",
+  "name": "an estimate passes whatever its consequence class",
+  "file": "scripts/review_functions.py",
+  "old": "    return (basis.get('kind') == 'ESTIMATE' and basis.get('consequence_class') in ESTIMATE_PASS_CLASSES\n",
+  "new": "    return (basis.get('kind') == 'ESTIMATE'\n"
+ },
+ {
+  "id": "M515",
+  "name": "an incomplete prototype handoff carries an estimate",
+  "file": "scripts/review_functions.py",
+  "old": "            and text(h.get('constraint')) and text(h.get('verification'))):\n        return None\n    return h",
+  "new": "            ):\n        return None\n    return h"
+ },
+ {
+  "id": "M516",
+  "name": "a bool is a handoff index",
+  "file": "scripts/review_functions.py",
+  "old": "    if not (type(k) is int and isinstance(handoffs, list)",
+  "new": "    if not (isinstance(k, int) and isinstance(handoffs, list)"
+ },
+ {
+  "id": "M517",
+  "name": "a row passing on an estimate takes no handoff",
+  "file": "scripts/derive_rows.py",
+  "old": "    if estimate and basis == estimate[0]:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M518",
+  "name": "a hand-filled estimate pass may drop the handoff",
+  "file": "scripts/review_functions.py",
+  "old": "                and not (isinstance(row.get('handoff'), dict) and row['handoff'].get('required')):",
+  "new": "                and False:"
+ },
+ {
+  "id": "M519",
+  "name": "an estimate may name a damage class",
+  "file": "scripts/review_functions.py",
+  "old": "        if 'consequence_class' in basis and basis['consequence_class'] not in ESTIMATE_PASS_CLASSES:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M520",
+  "name": "an estimate with a prototype handoff still passes nothing",
+  "file": "scripts/review_functions.py",
+  "old": "    return estimate[0] if estimate else None",
+  "new": "    return None"
  }
 ]

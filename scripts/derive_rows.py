@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json
 import requirement_bindings
 from results_model import text
-from review_functions import decides_row, edges, judged, unjudged_message
+from review_functions import decides_row, edges, judged, prototype_estimate, unjudged_message
 
 DERIVED_FIELDS = ('review_result', 'open_ref', 'fail_ref', 'finding_id', 'severity')
 
@@ -83,6 +83,11 @@ def derive_row(fn, planned, aspect, findings, functions=None):
     basis = judged(fn, aspect, state, planned['id'])
     if basis is None:
         return None, unjudged_message(planned['id'], fn['id'], aspect, state)
+    estimate = prototype_estimate(fn, aspect, state, planned['id'])
+    if estimate and basis == estimate[0]:   # passing on an estimate hands the prototype test on (2.1)
+        h = estimate[1]
+        row['handoff'] = {'required': True, 'state': 'OPEN', 'receivers': list(h['receivers']),
+                          'constraint': h['constraint'], 'verification': h['verification']}
     row.update(review_result='PASS', rationale='见功能判定 %s：%s' % (where, basis))
     return row, None
 

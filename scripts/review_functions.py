@@ -72,6 +72,11 @@ WIDE_GAP = 3                     # more blocked aspects than this is reported fo
 # mission profile, written as a BOM constraint; no vendor-data item is opened for it.
 LIFE_ROW_RE = re.compile(r'^(DEV-C02\.LIFE|DEV-C06)\.')
 LIFE_ASPECTS = ('电容有效容量与寿命', '耗损件寿命')   # catalog titles of DEV-C02 and DEV-C06
+# An estimate passes a required function or a performance when a prototype test is handed on (SR self-check 2.1, user:
+# 估算 + 样机移交可判通过); damage, overheating and protection still need a guaranteed bound, so the rules about them
+# (stress and rating, connector current, converter current stress, protection thresholds, clamps, all of PRO) take none.
+ESTIMATE_PASS_CLASSES = ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE')
+NO_ESTIMATE_PASS_RE = re.compile(r'^(?:(?:DEV-C01|DEV-C04|PWR-C03|PWR-C06|PWR-C10|DRV-C01)\.|PRO-)')
 RETIRED_ITEM_FIELDS = {
     'margin_not_decisive_reason': "the margin's basis says whether it decides (an ESTIMATE or a missed GUARANTEED_BOUND "
                                   "does not); the open item's edges say what it blocks and why",
@@ -220,7 +225,11 @@ def judged(fn, aspect, state=None, check_id=None):
             names = ['厂家参考电路 ' + by_id[c]['reference_circuit']['figure'] if reference_circuit(by_id.get(c)) else c
                      for c in j.get('conditions') or [] if isinstance(c, str)]
             return '%s（依据 %s）' % (j['says'], '、'.join(names))
-    return life_estimate(fn, aspect, state, check_id)
+    life = life_estimate(fn, aspect, state, check_id)
+    if life is not None:
+        return life
+    estimate = prototype_estimate(fn, aspect, state, check_id)
+    return estimate[0] if estimate else None
 
 
 def life_row(check_id):
@@ -238,6 +247,41 @@ def life_estimate(fn, aspect, state=None, check_id=None):
         if basis.get('kind') == 'ESTIMATE' and met and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
             return '%s；估算余量 %s%s 对 %s' % (calc.get('result') or '', m['value'], m.get('unit') or '',
                                           m.get('against') or '')
+    return None
+
+
+def estimate_handoff(fn, basis):
+    """The function handoff an ESTIMATE basis names in `handoff` (an index into fn.handoffs), when it is complete."""
+    k, handoffs = basis.get('handoff'), fn.get('handoffs')
+    if not (type(k) is int and isinstance(handoffs, list) and 0 <= k < len(handoffs)):
+        return None
+    h = handoffs[k]
+    if not (isinstance(h, dict) and isinstance(h.get('receivers'), list) and h['receivers']
+            and text(h.get('constraint')) and text(h.get('verification'))):
+        return None
+    return h
+
+
+def _estimate_passes(fn, m):
+    """An ESTIMATE margin written to pass a required function or a performance on a prototype handoff (2.1)."""
+    basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
+    return (basis.get('kind') == 'ESTIMATE' and basis.get('consequence_class') in ESTIMATE_PASS_CLASSES
+            and estimate_handoff(fn, basis) is not None)
+
+
+def prototype_estimate(fn, aspect, state=None, check_id=None):
+    """An ESTIMATE margin that meets its target, used for a required function or a performance and handed to the
+    prototype test it names (2.1): (rationale, handoff) or None. Not on a rule about damage, overheating or protection."""
+    if isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id):
+        return None
+    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    for m in results_model.margins(calc):
+        basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
+        met = _finite(m.get('value')) and (m['value'] >= 0 if basis.get('comparison') == 'GE' else m['value'] > 0)
+        if met and _estimate_passes(fn, m) and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
+            handoff = estimate_handoff(fn, basis)
+            return ('%s；估算余量 %s%s 对 %s，样机实测移交：%s' % (calc.get('result') or '', m['value'], m.get('unit') or '',
+                                                     m.get('against') or '', handoff['verification']), handoff)
     return None
 
 
@@ -437,6 +481,12 @@ def _basis_errors(label, m, conditions, claim_ids):
     errors.extend(_formula_errors(label, basis))
     kind = basis['kind']
     if kind == 'ESTIMATE':
+        if 'consequence_class' in basis and basis['consequence_class'] not in ESTIMATE_PASS_CLASSES:
+            errors.append('%s: an estimate passes only a required function or a performance (consequence_class %s); '
+                          'damage, overheating and protection need a guaranteed bound' % (label, '/'.join(ESTIMATE_PASS_CLASSES)))
+        if ('consequence_class' in basis) != ('handoff' in basis):
+            errors.append(label + ': an estimate that passes names both its consequence_class and the prototype handoff '
+                                  '(handoff: index into the function\'s handoffs)')
         return errors
     limit = conditions.get(basis.get('limit'))
     if not (limit and limit.get('kind') == 'NUMERIC_LIMIT'):
@@ -672,7 +722,8 @@ def _decision_errors(fid, fn, calculation, conditions, findings):
             deciding = ([sc2 for m2, sc2, v2 in margins if v2 != 'OPEN'] + [jsc for _, jsc in judgements]
                         + [isc for _, isc in opens] + [isc for _, isc in fails])
             if (not any(overlaps(sc, other) for other in deciding)
-                    and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE' and sc[0] in LIFE_ASPECTS)):
+                    and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE' and sc[0] in LIFE_ASPECTS)
+                    and not _estimate_passes(fn, m)):
                 errors.append('%s: margin %s (basis %s) decides nothing; record the open item it leaves, whose edge names '
                               'the bound still missing' % (fid, name(m), (m.get('basis') or {}).get('kind')))
     for j, jsc in judgements:
@@ -1178,6 +1229,11 @@ def function_errors(report, document_only=(), db=None):
                 stated = {}
                 for k, m in enumerate(items):
                     errors.extend(_basis_errors('%s/margin[%d]' % (fid, k), m, conditions_by_id, claim_ids))
+                    basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
+                    if basis.get('kind') == 'ESTIMATE' and 'handoff' in basis and not estimate_handoff(fn, basis):
+                        errors.append('%s/margin[%d]: basis.handoff is the index of a complete entry of the function\'s '
+                                      'handoffs {receivers, constraint, verification}: the prototype test that confirms '
+                                      'the estimate' % (fid, k))
                     same = (m['value'], m['unit'].strip(), m['against'].strip())
                     if same in stated:
                         errors.append('%s/margin[%d]: the same margin as margin[%d] (%s %s against %s); a defect lands on '
@@ -1365,7 +1421,8 @@ def binding_errors(expected, checks, functions, history_ids=()):
               and (expected.get(cid) or {}).get('method') == 'C'
               and not margin_proves(functions[fid], row['aspect'], state, cid)
               and not reference_judged(functions[fid], row['aspect'], state, cid)
-              and not life_estimate(functions[fid], row['aspect'], state, cid)):   # 1e
+              and not life_estimate(functions[fid], row['aspect'], state, cid)
+              and not prototype_estimate(functions[fid], row['aspect'], state, cid)):   # 1e
             errors.append('%s: aspect %s is an engineering calculation (method C); it passes on a margin of %s that '
                           'proves it, not on a sentence (a vendor reference circuit with reference_circuit also settles '
                           'it); a sentence closes connection tracing and clause checks' % (cid, row['aspect'], fid))
@@ -1646,6 +1703,22 @@ def life_errors(checks, functions):
     return errors
 
 
+def estimate_pass_errors(expected, checks, functions):
+    """2.1: a row passing on an estimate carries the prototype handoff its margin names."""
+    errors, by_id = [], {fn.get('id'): fn for fn in functions or [] if isinstance(fn, dict)}
+    for cid, row in sorted(checks.items()):
+        fn = by_id.get(row.get('function_id')) if isinstance(row, dict) else None
+        if not (fn and row.get('review_result') == 'PASS' and text(row.get('aspect'))):
+            continue
+        state = ((expected.get(cid) or {}).get('object') or {}).get('state')
+        estimate = prototype_estimate(fn, row['aspect'], state, cid)
+        if estimate and judged(fn, row['aspect'], state, cid) == estimate[0] \
+                and not (isinstance(row.get('handoff'), dict) and row['handoff'].get('required')):
+            errors.append('%s: a row passing on an estimate hands the prototype test on: handoff.required with the '
+                          'function\'s handoff (%s)' % (cid, estimate[1]['verification']))
+    return errors
+
+
 def configuration_errors(expected, checks, functions):
     """Consistency proposals of 2026-10-23, item 3: a condition that holds only at one setting of a programmable device
     names it (setting{ref, group, value}) and the configuration row CFG-D01.<group>.<ref> lists it (3c); a missing
@@ -1692,7 +1765,8 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
     errors = (function_errors(report, document_only, db) + binding_errors(expected, checks, report.get('functions'), history_ids)
               + frame_errors(plan, checks, report.get('functions'))
               + requirement_edge_errors(plan, checks, report.get('functions'))
-              + configuration_errors(expected, checks, functions) + life_errors(checks, functions))
+              + configuration_errors(expected, checks, functions) + life_errors(checks, functions)
+              + estimate_pass_errors(expected, checks, functions))
     if isinstance(db, dict):   # a commodity part's rating is a BOM constraint, not an open item
         import bom_constraints
         from checkers.netgraph import NetGraph

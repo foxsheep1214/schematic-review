@@ -7,6 +7,22 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## An estimate passes with a prototype handoff (SR self-check group 2, item 2.1, 2026-10-24)
+
+The documents and the DEV-C05 and DRV-C02 criteria let a similar part's guaranteed range or typical ±30 % pass a
+required-function or performance row (P1 included) when the conclusion holds over the whole range and the prototype
+measurement is a required handoff; the gate passed nothing on an ESTIMATE except a life row, so following them was
+refused. An ESTIMATE margin that names its `consequence_class` (REQUIRED_FUNCTION or PERFORMANCE_OR_LIFE) and in
+`handoff` the complete function handoff that measures it on the prototype now passes its row, the derived row carries
+that handoff, and a hand-filled row that drops it is refused. The rules about damage, overheating and protection
+(DEV-C01, DEV-C04, PWR-C03, PWR-C06, PWR-C10, DRV-C01, all of PRO) take no estimate. Recorded in architecture.md.
+Tests first; 2048 tests pass, contract 518, KiCad replay 195/195, typical circuits unchanged, mutations M513-M520
+added, M397 re-pointed, all 143 on changed files killed.
+
+- Event: user:2026-10-24 (SR self-check group 2, item 2.1: "估算 + 样机移交可判通过")
+- Causes: rule_not_enforced 1
+- Changed: SKILL.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/evidence-proportionality.md, references/plan-and-results.md, scripts/derive_rows.py, scripts/review_functions.py, scripts/tests/test_estimate_pass.py
+
 ## Choices on what the rules say, first batch (SR self-check group 2, 2026-10-24)
 
 Group 2 of the self-check listed places where the rules could be read two ways; the user chose how each reads. A
