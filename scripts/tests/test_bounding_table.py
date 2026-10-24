@@ -42,6 +42,15 @@ class TableTests(unittest.TestCase):
                 for name in formulas:
                     self.assertIn(name, bound_formulas.FORMULAS, b.id)
 
+    def test_a_monotonic_cell_the_gate_bounds_by_g2_allows_g2(self):
+        # the gate refuses to open such a cell when a favourable test point exists (G2), so a margin by G2 is allowed
+        for b in catalog.BOUNDS.values():
+            if b.direction in ('INCREASING', 'DECREASING') and b.fallback == 'VENDOR_DATUM':
+                self.assertIn('G2', dict(b.methods), b.id)
+
+    def test_a_reference_circuit_covers_a_board_load_no_heavier_than_its_own(self):
+        self.assertIn('本板负载不重于参考电路', catalog.BOUND_METHODS['G10'].name)
+
     def test_the_decided_cells(self):
         cell = catalog.BOUNDS
         self.assertEqual(dict(cell['ZENER-VZ-LOWER'].methods)['G3'], ('slope_bound',))   # 1-A

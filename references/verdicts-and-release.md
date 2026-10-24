@@ -174,8 +174,7 @@ FAIL/INSUFFICIENT 默认阻断；只有阶段允许暂留的 P2/P3 才写 `"bloc
 以及至少 10 项证据不足中九成以上落在同一潜在等级（`UNIFORM_POTENTIAL_SEVERITY`）。
 收到提示时逐项复核后果路径，确属共用分析的写明它与各判据的关系。
 写法提示（不阻断）：位号与数值粘连（`REF_GLUED_TO_VALUE`，如 R12100°C）、通过条件里带三位以上小数的算例中间值
-（`OVERPRECISE_CLOSURE_VALUE`，如 257.121uA；写手册/标准边界和条件，不写样例结果）、缺资料请求没写查证位置
-（`ACQUISITION_WITHOUT_LOOKUP`）。
+（`OVERPRECISE_CLOSURE_VALUE`，如 257.121uA；写手册/标准边界和条件，不写样例结果）。
 另有两类定级提示：同一句带 P0–P3 的话作为 ≥10 行、≥3 条规则的定级理由（`TEMPLATED_SEVERITY_REASON`），
 以及同一规则 ≥10 行证据不足全部同级（`UNIFORM_SEVERITY_WITHIN_RULE`）。还有一类通过理由提示：同一段话（去掉“见功能判定…”前缀、
 对象回显和“（依据 …）”后缀，需求编号不计）判通过了问不同问题的行（`TEMPLATED_PASS_RATIONALE`；同一器件的身份、脚表与引脚处置算一个问题，
@@ -281,7 +280,7 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
   所以不再有“一行被几件待办分缺口”的归属字段；两个功能缺同一份资料时各写各的开放项（key 不同），报告按文字合并显示。
 - 关联 DESIGN_VALUE / VENDOR_DATUM 开放项的待办须有 `design_option`（写在开放项上）：
   能改图消除缺口时写 `PROPOSED` 的电路改进建议及其规避的问题，不能时写 `NONE` 和原因。
-  字段见 [证据不足项的电路改进建议](report-and-remediation.md#三证据不足项的电路改进建议)；`--require-actionable` 时强制校验。
+  字段见 [证据不足项的电路改进建议](report-and-remediation.md#证据不足项的电路改进建议)；`--require-actionable` 时强制校验。
   改法不得以缺口的不利结果为前提（“改为更高分断方案”先假定了保险不够）；缺口能靠查标准条款或手册关闭的，
   `preference` 写 `EVIDENCE_FIRST`，先查再决定改不改。
 - 一个开放项只开一条危险路径：P0 开放项的 `severity.hazard_path` 唯一；同一功能里后果等级不同的缺口分开写开放项，
@@ -351,7 +350,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 
 `gap_cause: DOWNSTREAM_VERIFICATION` 已取消，校验拒绝；纯下游项只能走阶段 NA。
 统计中阶段 NA 单列为 `NA_OUTSIDE_STAGE`，不计入普通 NA；含阶段 NA 条款的需求行列在
-`stage_scope.requirements_pending_downstream`，报告标“待下游验证”，不得写成“不适用”。
+`stage_scope.requirements_pending_downstream`，报告在“交给后续环节的要求”末尾列为要等样机或测试结果才能最终确认，不得写成“不适用”。
 `quality_screening` 的分出下游工作提示只辅助判断；工具映射失败不是产品不适用，不用阶段 NA 隐藏覆盖缺口。
 
 ## 6. 准出

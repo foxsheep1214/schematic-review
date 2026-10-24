@@ -682,6 +682,27 @@ def build_review_plan(db, intent=None, review_mode=None,
         claims_available, datasheet_audit, previous_plan, old_db, old_plan, lint_findings, candidates=candidates).build()
 
 
+def diagnostic_lines(plan, db, intent):
+    """What the plan asks the reviewer to fix before judging, as printed by the planning entry: unread resistor
+    values, circuit types that ask almost nothing, rails without a voltage, the ground domains, unbounded nodes."""
+    lines = list(passive_stress.unread_lines(plan))
+    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') == 'CIRCUIT_TYPE_MISFIT']
+    gaps = passive_stress.rail_gaps(plan)
+    if gaps:
+        lines.append('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))
+        lines.append('    能从稳压器手册或需求定出时补 intent.power_rails.<轨>.voltage_v 后重跑')
+    grounds = passive_stress.ground_domains(db, intent)
+    if grounds:
+        lines.append('  按 0 V 处理的地网及参考地分区：' + '；'.join('%s=%s' % (k, '/'.join(v)) for k, v in grounds.items()))
+        if len(grounds) > 1:
+            lines.append('    不同域之间的两端件不出预判；实为同一参考的地在 power_rails.<网> 写相同 domain')
+    nodes = passive_stress.node_gaps(plan)
+    if nodes:
+        lines.append('  无界节点/跨域（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in list(nodes.items())[:12]))
+        lines.append('    栅极/检测/开关节点可按计算给 power_rails.<网>.voltage_v；隔离地给 domain；不能定界的留审查者计算')
+    return lines
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='按规则总表生成逐项检查计划（适用性、准备度与证据缺口）')
@@ -755,24 +776,8 @@ def main():
           f"applicability={summary['applicability']}")
     print(f"  readiness={summary['readiness']}  "
           f"handoff_required={summary['handoff_required']}")
-    for line in passive_stress.unread_lines(plan):
+    for line in diagnostic_lines(plan, db, intent):
         print(line)
-    for diagnostic in plan['diagnostics']:
-        if diagnostic.get('code') == 'CIRCUIT_TYPE_MISFIT':
-            print('  ' + diagnostic['detail'])
-    gaps = passive_stress.rail_gaps(plan)
-    if gaps:
-        print('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))
-        print('    能从稳压器手册或需求定出时补 intent.power_rails.<轨>.voltage_v 后重跑')
-    grounds = passive_stress.ground_domains(db, intent)
-    if grounds:
-        print('  按 0 V 处理的地网及参考地分区：' + '；'.join('%s=%s' % (k, '/'.join(v)) for k, v in grounds.items()))
-        if len(grounds) > 1:
-            print('    不同域之间的两端件不出预判；实为同一参考的地在 power_rails.<网> 写相同 domain')
-    nodes = passive_stress.node_gaps(plan)
-    if nodes:
-        print('  无界节点/跨域（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in list(nodes.items())[:12]))
-        print('    栅极/检测/开关节点可按计算给 power_rails.<网>.voltage_v；隔离地给 domain；不能定界的留审查者计算')
     print(f'  -> {args.json}')
 
 

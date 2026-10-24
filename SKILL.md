@@ -170,12 +170,20 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 
 ### 2. 网表扫描：自动扫描与计划
 
-    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan-cold.json --json lint-cold.json
+第 2–4 步的命令按这个顺序跑（第 3 步的取证穿插在中间，因为候选要用核验过的器件类别）：
 
-电路不手画：器件类别核验后生成候选，审查员只对候选做决定，再推出 `intent.circuits`，之后的两次扫描都带 `--candidates`：
+    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan-cold.json --json lint-cold.json       # ① 冷扫：还没有电路决定
+    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --intent intent.json --json datasheet-audit.json             # ② 取证，核验 intent.device_kinds（第 3 步）
+    python3 scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json   # ③ 候选
+    python3 scripts/circuit_decisions.py intent.json record/circuit-candidates.json --db db.json --write                               # ④ 决定，推出 intent.circuits
+    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --datasheet-audit datasheet-audit.json --candidates record/circuit-candidates.json --plan-json review-plan-cold.json --json lint-cold.json   # ⑤ 带候选重跑冷扫
+    python3 scripts/gap_inventory.py review-plan-cold.json --datasheet-audit datasheet-audit.json --md 资料请求.md                      # ⑥ 资料请求
+    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --intent intent.json --json datasheet-audit.json   # ⑦ 补齐资料后重审计（第 4 步）
+    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --datasheet-audit datasheet-audit.json --candidates record/circuit-candidates.json --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json   # ⑧ 合并扫描，出最终计划
 
-    python3 scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json
-    python3 scripts/circuit_decisions.py intent.json record/circuit-candidates.json --db db.json --write
+intent 一旦写了 `circuit_decisions`，每次扫描都要带 `--candidates`，否则直接报错。每次扫描都会打印计划要你先处理的提示（阻值读不出、电路类型问不到规则、未声明电压的轨、无界节点/跨域），这些提示也写在计划的 `diagnostics` 里。
+
+电路不手画：器件类别核验后生成候选，审查员只对候选做决定，再推出 `intent.circuits`。
 
 候选 = 类型 + 核心器件（核验角色的 IC，或无人驱动 / 声明了角色的开关），成员带走到它的路径（`via`，是归属关系不是导通主张）；
 决定每个候选恰一条：accept / merge / split / reject（OUTSIDE_SCOPE、NOT_A_CIRCUIT、DUPLICATE_OF）/ add（只收未归属器件），
@@ -186,9 +194,10 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 计划的 `interfaces` 列出电路之间、链路、供电轨和连接器四种接口及端点角色，推不出的角色和轨源列为缺口；
 接口规则逐接口问（电路对的方向与电平、链路两端电平、供电不同的网络的跨域注入、连接器的对端定义/载流/防护、敏感电路取电轨的噪声）。
 系统功能、电路对、链路和连接器各有一个框架，与电路框架一样下功能判定；报告的功能表按系统功能、功能电路、接口分组，每个发现项写所属。
-校验覆盖两条：每颗贴装器件恰归一块电路或列在 REQ-Q08 待审清单上，每个接口都有它的行和框架。候选漏了器件不手加：记 REQ-Q08、改规则；
+校验覆盖两条：每颗贴装器件恰归一块电路或列在 REQ-Q08 待审清单上，每个接口都有它的行和框架。候选漏了器件不手加计划行：
+属于某块电路的写 add 决定（`intent.circuit_decisions`）后重生成；不属于任何电路的留在 REQ-Q08 清单上写原因；候选规则该认出而没认出的，另记改进台账改规则。
 `unassigned` 与 `gaps`（没核验角色的 IC、缺引脚名）先清。
-格式见 [计划与结果](references/plan-and-results.md#一intentjsonschema_version-3)，规则见 [自动检查](references/automation.md#二检查器)。
+格式见 [计划与结果](references/plan-and-results.md#一intentjsonschema_version-4)，规则见 [自动检查](references/automation.md#二检查器)。
 
 SR 独立审查，只用四类输入：需求、设计结果（原理图、网表、BOM、原理图 PDF）、原厂与标准资料、SR 自己的计算。
 设计方的设计报告、设计方案、计算书、选型记录、电气意图、需求追溯、器件约定、开放项、自检与目检记录、交付证据、下游约束
@@ -196,19 +205,19 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 校验拒收（`independence.py`）。每个数值都由 SR 从原理图、需求和原厂资料自己算。原理图上看不出、只写在设计文档里的事实（固件设定的门限、寄存器配置等），
 写成移交项请设计方确认，确认后作为需求或输入进入审查，不直接引用设计文档。
 
-网表扫描后先出资料请求：`python3 scripts/gap_inventory.py review-plan-cold.json --datasheet-audit datasheet-audit.json --md 资料请求.md`，按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取。
+网表扫描后先出资料请求（命令 ⑥），按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取。
 
 冷检的 FINDING/CANDIDATE 已各成计划一行，与其他检查一样作答。补齐命名启发式漏掉的对象/工况，登记到 `intent.rule_gaps` 后重新生成计划。排除候选须有反证，无特征不等于 NA。
-电路检查项只在网表上有它问的机制时生成（功能框架的 `not_asked` 列出没问的和原因）；计划提示 `CIRCUIT_TYPE_MISFIT` 时换电路类型或不建该电路。
+电路检查项只在网表上有它问的机制时生成（功能框架的 `not_asked` 列出没问的和原因）；扫描提示某电路类型问不到一半规则（`CIRCUIT_TYPE_MISFIT`）时换电路类型或不建该电路。
 计划行带 `requires` 仍记 NA 的，`applicability_evidence` 写排除它的 `nets`/`pins`；只说“不适用”的通过被拒，改记 NA。
 检查器（I²C、去耦、感性负载、功率开关、输入滤波、上电、监控、差分电平、光耦等）每趟都跑；
 名称线索只生成待复核候选，清单绑定输入指纹，不能编辑清单消缺口。见 [自动检查](references/automation.md)。
-计划命令列出“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考地分区 `domain`
-（由审查者按需求和稳压器/钳位手册自行定界，逐条写 `citation`），再合并扫描；空的 `power_rails` 会让全部阻容预判失效。计划命令列出“阻值读不出的电阻”时当场告诉用户：列出位号和原值，请设计方改成 `阻值[/公差][/额定功率][/额定电压][/封装]` 的写法或确认阻值，不自行猜阻值；未改之前这些电阻的预判和脚电流不算。值后面多一个说不清的词（如 `47R/1%/2W/pulse`）时阻值照读，诊断 `RESISTOR_VALUE_WORD` 只列这个词：它说的要求（抗脉冲能量、额定电压）是特殊要求，写成 BOM 约束，不开“阻值读不出”的待办。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
+扫描提示“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考地分区 `domain`
+（由审查者按需求和稳压器/钳位手册自行定界，逐条写 `citation`），再合并扫描；空的 `power_rails` 会让全部阻容预判失效。扫描提示“阻值读不出的电阻”时当场告诉用户：列出位号和原值，请设计方改成 `阻值[/公差][/额定功率][/额定电压][/封装]` 的写法或确认阻值，不自行猜阻值；未改之前这些电阻的预判和脚电流不算。值后面多一个说不清的词（如 `47R/1%/2W/pulse`）时阻值照读，诊断 `RESISTOR_VALUE_WORD` 只列这个词：它说的要求（抗脉冲能量、额定电压）是特殊要求，写成 BOM 约束，不开“阻值读不出”的待办。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
 
 ### 3. 资料取证与器件身份（DEV-D01、DEV-D02）
 
-    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --json datasheet-audit.json
+命令是第 2 步的 ②；资料补齐后的重审计是 ⑦。
 
 - 先核 MPN、封装/温度/档位与 BOM/符号；关键采样电阻、保护/安规件、储能电容和磁件也按原厂订货表核对
   阻值/容量/耐压组合，不把系列范围当具体后缀的可订购范围。候选不代表身份成立。
@@ -228,10 +237,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 ### 4. 资料审计与计划合并
 
-    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --intent intent.json --json datasheet-audit.json
-    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --datasheet-audit datasheet-audit.json --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json
-
-`review-plan.json` 是唯一最终计划。保证值核对（E）行由网表定出对象，审查者按两端规格书的保证 Min/Max 判定；
+命令是第 2 步的 ⑦、⑧。`review-plan.json` 是唯一最终计划。保证值核对（E）行由网表定出对象，审查者按两端规格书的保证 Min/Max 判定；
 资料未 AVAILABLE 时判资料不足，例外见 [保证值核对的例外](references/evidence-proportionality.md#保证值核对的例外)。
 
 ### 5. 专家审查：连接追踪（T）、工程计算（C）、条款核对（D）
@@ -256,11 +262,11 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
    本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`，`undecided` 列出没选的器件参数，BOM 已写的不算；由另一个开项决定的写 `depends_on`）；另一阶段欠的交付物（磁件图纸、固件应用能力确认）记
    DELIVERABLE_PENDING（`deliverable`+`owner`+`assumed`）；只有厂家才知道、公开资料界限（保证限值、相邻测试点单调夹出的界限、
    公开特性表、典型曲线加余量、应用笔记公式）也兜不住的参数才记 VENDOR_DATUM，并写查过哪几条、为什么不够、
-   公开资料界限下的最坏情况与余量（`worst_case.bound`/`margin`；决定结论的余量写 `basis.derivation` 与 `basis.corners`，器件参数按[工作点定界表](references/bounding-table.md)的推法和公式定界（余量写 `basis.cell`/`method`/`formula`，门禁重算），判定不出界的先用数答 `monotonic_tried`（定界表的格、开着哪一侧、工作点范围、测试点数值，工作点在两个测试点之间就要定界）；没有界就列 `curves_checked`，手册写了这种用法只缺数值的写 `specified_by`（不能是没覆盖工作点的测试点；引典型曲线时写 `typical_estimate`，典型值都不够判失败），没写这种用法的是设计风险，记失败项；厂家参考电路同接法、负载不更重的可判通过）。
+   公开资料界限下的最坏情况与余量（`worst_case.bound`/`margin`；决定结论的余量写 `basis.derivation` 与 `basis.corners`，器件参数按[工作点定界表](references/bounding-table.md)的推法和公式定界（余量写 `basis.cell`/`method`/`formula`，门禁重算），判定不出界的先用数答 `monotonic_tried`（定界表的格、开着哪一侧、工作点范围、测试点数值，工作点在两个测试点之间就要定界）；没有界就列 `curves_checked`，手册写了这种用法只缺数值的写 `specified_by`（不能是没覆盖工作点的测试点；引典型曲线时写 `typical_estimate`，典型值都不够判失败），没写这种用法的是设计风险，记失败项；厂家参考电路同接法、本板负载不重于参考电路的可判通过）。
    没有数值的方面写 `judgements`（方面、条件、说明了什么）；行只有本方面本状态有证明通过的余量或 judgement 才 PASS，没人判过的方面不默认通过。
    开放项的 `decides` 每条是一条影响条目：方面、状态、`via`（缺的量进到哪条条件或哪个计算输入）和 `rationale`（现有的界为什么不够）；
    一个缺口挡几个方面不限数，超过 3 个只提示复看。
-   框架外的功能（intent 没有声明的电路）自己加，同样校验。
+   不属于任何电路框架的行（器件、检查器、全板行）可以自建功能，同样校验；要新电路写 add 决定，不自建功能装它。
    隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是隔离/变换器功能的方面，在同一个功能判定里写条款与计算。
    文档检查（DOC-*）不是功能电路：文档错误直接在行上判 FAIL 并写 finding，不包成功能。
 2. **行派生**：跑 `derive_rows.py`（见第 7 步）；绑定了功能的行不手填，绑定了树上检查的需求行（`bound_checks`）取绑定行中最差的结论，也不手填。

@@ -20,11 +20,11 @@
 复审两次 lint 均传同一前版基线，第二次额外传资料审计及 merge-plan：
 
 ```sh
-python3 scripts/lint.py db.json --intent intent.json \
+python3 scripts/lint.py db.json --intent intent.json --candidates record/circuit-candidates.json \
   --review-mode revision --old-db old-db.json --old-plan old-review-plan.json \
   --claims review-claims.json --plan-json review-plan-cold.json --json lint-cold.json
 
-python3 scripts/lint.py db.json --intent intent.json \
+python3 scripts/lint.py db.json --intent intent.json --candidates record/circuit-candidates.json \
   --review-mode revision --old-db old-db.json --old-plan old-review-plan.json \
   --claims review-claims.json --datasheet-audit datasheet-audit.json \
   --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json \

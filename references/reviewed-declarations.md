@@ -40,7 +40,7 @@
 python3 scripts/reviewed_declarations.py capture db.json intent.json declaration-draft.json -o reviewed-declarations.json
 python3 scripts/reviewed_declarations.py apply db.json intent.json reviewed-declarations.json -o intent-reviewed.json
 python3 scripts/reviewed_declarations.py status db.json intent-reviewed.json
-python3 scripts/lint.py db.json --intent intent-reviewed.json --plan-json review-plan.json --json lint.json
+python3 scripts/lint.py db.json --intent intent-reviewed.json --candidates record/circuit-candidates.json --plan-json review-plan-cold.json --json lint-cold.json
 ```
 
 生成的 `reviewed-declarations.json` 可随审查记录保存，`apply` 将其嵌入工作用 intent。

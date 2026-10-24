@@ -37,7 +37,7 @@ from checkers.netgraph import (CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_L
                                TWO_TERMINAL, NetGraph, rail_voltage as _volt)
 from electrical_contract import db_fingerprint, load_json
 import board_intent
-from plan_review import build_review_plan, validate_intent
+from plan_review import build_review_plan, diagnostic_lines, validate_intent
 from solve_dividers import parse_resistor
 
 # 导出日志分级（英文与中文界面）：导出错误/中止、批注错误、其他告警。退出码 0 不等于没有告警。
@@ -768,7 +768,7 @@ def main():
           f"applicability={summary['applicability']}")
     print(f"  readiness={summary['readiness']}  "
           f"handoff_required={summary['handoff_required']}")
-    for line in passive_stress.unread_lines(review_plan):
+    for line in diagnostic_lines(review_plan, db, intent):
         print(line)
     if a.plan_json:
         json.dump(review_plan, io.open(a.plan_json, 'w', encoding='utf-8'),

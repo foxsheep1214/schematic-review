@@ -15,7 +15,7 @@
 
 “资料不足”只有一个入口：先有功能判定的开放项，才有 INSUFFICIENT 的行。
 
-## 一、intent.json（schema_version 3）
+## 一、intent.json（schema_version 4）
 
 合成示例（数值仅说明结构）：
 
@@ -43,15 +43,16 @@
     "interpretation": "PHY 与连接器双向链路、供电及外部带电状态满足接口条件",
     "parameters": [{"name": "output_voltage", "min": 4.75, "max": 5.25, "unit": "V"}]
   }],
-  "circuits": [{
-    "id": "USB-PORT", "type": "USB",
-    "refs": ["U1", "J1"], "nets": ["USB_DP", "USB_DM", "VBUS"],
-    "states": ["startup", "run", "external-power-only"],
-    "citation": "Requirements v1.2 section 4.1; schematic page 2"
-  }],
+  "circuit_decisions": [
+    {"candidate": "USB-J2", "decision": "accept", "id": "USB-PORT",
+     "states_add": ["external-power-only"], "citation": "Requirements v1.2 section 4.1"},
+    {"candidate": "DEBUG-BOARD", "decision": "reject", "reason": "OUTSIDE_SCOPE",
+     "citation": "Requirements v1.2 section 2.3：调试口不在本轮范围"},
+    {"decision": "add", "id": "V5-SENSE", "type": "ANALOG", "members": ["R99"], "via": {"R99": "V5"},
+     "citation": "schematic page 3 V5 检测分压"}
+  ],
   "expect": {"USB_PHY": 1},
   "features": {
-    "USB": {"applicability": "APPLICABLE", "citation": "Requirements v1.2 section 4.1"},
     "DDR": {"applicability": "NOT_APPLICABLE", "citation": "Requirements v1.2 section 2.3"}
   },
   "materials": {
@@ -73,6 +74,7 @@
 }
 ```
 
+- `circuit_decisions` 的写法见下文“电路不手画”；`circuits` 和 `circuit_candidates_sha256` 由 `circuit_decisions.py --write` 写入，不手写。
 - `review_mode`：`first` 或 `revision`。`review_phase` 取值见 [结论与准出](verdicts-and-release.md#5-审查阶段)。
 - `features` 的键与 `circuits[].type` 取 [规则总表](check-catalog.md)“功能电路”中的包名，否则拒绝；
   `applicability` 为 APPLICABLE / NOT_APPLICABLE / UNDETERMINED，前两者必须带 `citation`。
@@ -328,7 +330,10 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
   "calculation": {"claim_ids": ["BIAS-VCCMIN"], "inputs": ["v_aux_min", "vf_d2", "vgs_q2"], "result": "VCC_min = 9.6 V",
                   "margin": {"value": 0.8, "unit": "V", "against": "VCC(off) max 8.8 V", "states": ["LATCH"],
                              "basis": {"kind": "GUARANTEED_BOUND", "comparison": "GT", "limit": "c3", "conditions": ["c1", "c2"],
-                                       "scope": "−10..105 °C，VF 与 VGS(th) 取保证上界", "regime": "−10..105 °C"}},
+                                       "scope": "−10..105 °C，VF 与 VGS(th) 取保证上界", "regime": "−10..105 °C",
+                                       "derivation": "GUARANTEED_LIMIT",
+                                       "corners": [{"input": "vf_d2", "condition": "c1", "picked": "max", "why": "VF 越大 VCC 越低"},
+                                                   {"input": "vgs_q2", "condition": "c2", "picked": "max", "why": "VGS(th) 越大 VCC 越低"}]}},
                   "assumptions": ["辅助绕组 −10%", "Na/Ns = 3"], "aspect": "变换器电压裕量"},
   "judgements": [{"aspect": "偏置路径连接", "conditions": ["c4", "c5"], "states": ["STARTUP", "RUN", "LATCH"],
                   "says": "C3 跨接 VCC 与地，AUX 只经 Q2 进入 VCC，无 HV 脚以外的反灌路径"}],
@@ -344,7 +349,8 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
                  "rationale": "启动和运行态 VCC 由辅助绕组经 Q2 供给，最低峰值未定，与 VCC(off) 的比较缺这一项"}],
     "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "U1 供电",
                  "consequence": "辅助电压低于规格时 U1 在 5 V 待机掉电重启"},
-    "design_option": {"status": "NONE", "reason": "先定磁件规格；定不下来再改为有保证压差的受控偏置"}
+    "design_option": {"status": "NONE", "reason": "先定磁件规格；定不下来再改为有保证压差的受控偏置",
+                      "evidence": [{"source": "evidence/ds/U1.txt", "locator": "p7 Table 7"}]}
   }],
   "fails": [],
   "handoffs": [{"receivers": ["样机试验"], "constraint": "5 V 空载、−10 °C 时 VCC ≥ 8.8 V", "verification": "实测 C3 电压"}],
@@ -395,7 +401,7 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 与限值的 `regime` 不同时，`conversion` 要指向一条条件或 claim（换算或包络），否则跨条件比较被拒绝。
 
 除 ESTIMATE 外，`basis` 还写这个界怎么来的：
-- `derivation`：GUARANTEED_LIMIT（手册限值就在本工况成立）、ADJACENT_TEST_POINT 或 MONOTONIC（从测试点推过来，另写 `monotonic{curve: 本功能里说明单调形状的条件 id, side: FAVORABLE}`，实际工况须在有利一侧，不利一侧的测试点什么都定不了）、TEMPCO（经温度系数推，`tempco` 指向给出温度系数 min/max 的 NUMERIC_LIMIT）、PUBLISHED_TABLE（公开数表）；TYPICAL_CURVE 只能出 ESTIMATE。
+- `derivation`：GUARANTEED_LIMIT（手册限值就在本工况成立）、ADJACENT_TEST_POINT 或 MONOTONIC（从测试点推过来，另写 `monotonic{curve: 本功能里说明单调形状的条件 id, side: FAVORABLE}`，实际工况须在有利一侧，不利一侧的测试点什么都定不了）、TEMPCO（经温度系数推，`tempco` 指向给出温度系数 min/max 的 NUMERIC_LIMIT）、PUBLISHED_TABLE（公开数表）；TYPICAL_CURVE 只能用于 REACHABLE_CASE（典型件已经不够）；按典型曲线读出的估算记 ESTIMATE，不写 `derivation`。
 - `cell`、`method`、`formula`（任何种类的余量都可写）：按[工作点定界表](bounding-table.md)定的界写格和推法编号（须是这一格允许的推法）；
   推法带公式时写 `formula{name: bound_formulas 里的函数, inputs, value}`，门禁用同样的输入重算，差超过 0.5% 拒收。
 - `corners[{input, condition, picked: min|max, why}]`：每个带公差的输入取了哪条 NUMERIC_LIMIT 的哪一端，以及为什么那一端不利；取的那一端必须是该条件给出的数。没有带公差的输入时写空列表加 `no_corners_reason`。
@@ -752,9 +758,17 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
     "id": "FN-QR", "circuit": "QR", "question": "90–264 Vac、5–12 V、空载至 3 A 时反激各输出档是否稳定且关断时间不低于 tOFF(min)",
     "objects": {"refs": ["U1", "Q1", "T1", "C5"], "nets": ["BULK", "VOUT"]}, "states": ["RUN"],
     "conditions": [
-      {"id": "c1", "source": "evidence/ds/U1.txt", "locator": "p13 Feedback, p21 补偿网络", "says": "内部补偿适用条件", "use": "FB 外接与条件一致"},
-      {"id": "c2", "source": "evidence/ds/U1.txt", "locator": "p8 tOFF(min)", "says": "tOFF(min) 典型/最大", "use": "判据"},
-      {"id": "c3", "source": "evidence/ds/C5.txt", "locator": "p1 特性表", "says": "20 °C ESR", "use": "低温 ESR 未给"}
+      {"id": "c1", "kind": "MANDATORY_CLAUSE", "source": "evidence/ds/U1.txt", "locator": "p13 Feedback, p21 补偿网络",
+       "says": "使用内部补偿时，功率级增益和输出电容零点须在规定范围内", "applies": "FB 不外接补偿时", "use": "FB 外接与条件一致"},
+      {"id": "c2", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/U1.txt", "locator": "p8 Table 6",
+       "says": "tOFF(min) ≤ 1.2 µs（−40..125 °C）", "limit": {"max": 1.2, "unit": "µs"}, "regime": "−40..125 °C",
+       "use": "判据：关断时间不小于 1.2 µs"},
+      {"id": "c3", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/C5.txt", "locator": "p1 特性表",
+       "says": "ESR ≤ 50 mΩ @20 °C、100 kHz", "limit": {"max": 50, "unit": "mΩ"}, "regime": "20 °C，100 kHz",
+       "use": "低温 ESR 未给"},
+      {"id": "c4", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/C5.txt", "locator": "p1 规格表",
+       "says": "使用温度范围 −40..+105 °C", "limit": {"min": -40, "max": 105, "unit": "°C"}, "regime": "全系列",
+       "use": "−20 °C 在规定使用范围内"}
     ],
     "no_calculation_reason": "功率级增益和关断时间都要 Lp 与匝比，规格未定",
     "verdict": "OPEN",
@@ -765,21 +779,33 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
        "owner": "磁件设计", "closure": "按 Lp 下限算出的关断时间不小于 tOFF(min)；各输出档满足内部补偿适用条件",
        "undecided": [{"ref": "T1", "parameter": "Lp", "unit": "µH"}, {"ref": "T1", "parameter": "匝比"},
                      {"ref": "T1", "parameter": "漏感", "unit": "µH"}],
-       "decides": [{"aspect": "反馈模型与补偿资格"}, {"aspect": "变换器时序与输出电容条件"}],
+       "decides": [{"aspect": "反馈模型与补偿资格", "via": {"condition": "c1"},
+                    "rationale": "功率级增益由 Lp 与匝比决定，没有它判断不了是否在内部补偿的适用范围内"},
+                   {"aspect": "变换器时序与输出电容条件", "via": {"condition": "c2"},
+                    "rationale": "关断时间由 Lp 下限和匝比算出，规格未定时无法和 tOFF(min) 比较"}],
        "severity": {"level": "P1", "class": "REQUIRED_FUNCTION", "affects": "反激输出调节",
                     "consequence": "功率级模型未知时无法证明各输出档在全输入范围内稳定；关断时间低于下限时轻载跳周期"},
-       "design_option": {"status": "NONE", "reason": "磁件参数是设计输入，改图不能代替规格"}},
+       "design_option": {"status": "NONE", "reason": "磁件参数是设计输入，改图不能代替规格",
+                         "evidence": [{"source": "evidence/ds/U1.txt", "locator": "p8 Table 6"}]}},
       {"key": "C5-ESR", "kind": "VENDOR_DATUM", "what": "C5–C8 在 −20 °C 的 ESR 上限",
-       "scope": "−20–40 °C 环境，5–12 V 输出", "checked": ["c3"], "why_insufficient": "c3 只给 20 °C ESR",
+       "scope": "−20–40 °C 环境，5–12 V 输出", "checked": ["c3", "c4"], "why_insufficient": "c3 只给 20 °C ESR，c4 只给使用温度范围",
        "acquisition": "向电容厂家索取低温 ESR，或改用手册给出该值的系列",
        "worst_case": {"not_boundable_reason": "手册和厂家系列特性表都没有低温倍率，无法取上界",
                       "curves_checked": [{"source": "evidence/ds/C5.txt", "locator": "p1 特性表、p3 阻抗–频率曲线（仅 20 °C）"}],
-                      "operating_point_specified": true},
+                      "operating_point_specified": true, "specified_by": "c4",
+                      "monotonic_tried": {"side": "UPPER", "cell": "ECAP-ESR-RIPPLE", "quantity": "C5 的 ESR 上限",
+                                          "operating_point": {"min": -20, "max": 40, "unit": "°C"},
+                                          "test_points": [{"condition": "c3", "at": {"value": 20, "unit": "°C"}}],
+                                          "why_not": "只有 20 °C 一个测试点，ESR 随温度降低而升高，升多少没给",
+                                          "other_side": "NOT_DECISIVE",
+                                          "other_side_reason": "ESR 偏低只让零点频率升高，在适用范围的另一侧还有余量"}},
        "closure": "低温 ESR 满足控制器对输出电容零点的适用条件",
-       "decides": [{"aspect": "变换器时序与输出电容条件"}],
+       "decides": [{"aspect": "变换器时序与输出电容条件", "via": {"condition": "c3"}, "side": "UPPER",
+                    "rationale": "低温 ESR 决定输出电容零点的位置，20 °C 的上限给不出 −20 °C 的界"}],
        "severity": {"level": "P1", "class": "PERFORMANCE_OR_LIFE", "affects": "低温输出纹波",
                     "consequence": "低温 ESR 升高使输出电容零点移出适用范围，纹波超出规格"},
-       "design_option": {"status": "NONE", "reason": "先查现有型号的低温 ESR；换型号同样需要该值"}}
+       "design_option": {"status": "NONE", "reason": "先查现有型号的低温 ESR；换型号同样需要该值",
+                         "evidence": [{"source": "evidence/ds/C5.txt", "locator": "p1 特性表"}]}}
     ],
     "fails": [], "evidence": [{"source": "evidence/engineering.md", "locator": "## QR"}]
   }],

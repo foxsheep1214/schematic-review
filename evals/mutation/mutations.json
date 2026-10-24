@@ -3421,5 +3421,33 @@
   "file": "scripts/catalog.py",
   "old": "    Bound('ECAP-ESR-RIPPLE', ('electrolytic',),",
   "new": "    Bound('ECAP-ESR-RIPPLE', ('capacitor',),"
+ },
+ {
+  "id": "M494",
+  "name": "lint prints only the unread resistor lines again",
+  "file": "scripts/lint.py",
+  "old": "for line in diagnostic_lines(review_plan, db, intent):",
+  "new": "for line in passive_stress.unread_lines(review_plan):"
+ },
+ {
+  "id": "M495",
+  "name": "a misfit circuit type is not printed",
+  "file": "scripts/plan_review.py",
+  "old": "    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') == 'CIRCUIT_TYPE_MISFIT']\n",
+  "new": ""
+ },
+ {
+  "id": "M496",
+  "name": "a hot MOSFET RDS cannot be bounded from a favourable test point",
+  "file": "scripts/catalog.py",
+  "old": "          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”'),",
+  "new": "          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”'),"
+ },
+ {
+  "id": "M497",
+  "name": "a reference circuit covers a board heavier than its own",
+  "file": "scripts/catalog.py",
+  "old": "接法相同、本板负载不重于参考电路",
+  "new": "接法相同、负载不重于本板"
  }
 ]

@@ -34,29 +34,18 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
      文件格式标记不证明原厂身份或内容有效，不能把文本改名为 PDF 来冒充原件；图形、曲线、极性/封装视图
      的结论仍需可定位的原始图形证据，文本 AVAILABLE 不支持这些结论。
 
-3. Agent 把结果写入 datasheet-resolution.json，再次运行审计：
+3. Agent 把结果写入 datasheet-resolution.json，再次运行审计（带 `--intent` 才核验 `intent.device_kinds`）：
 
        python3 scripts/audit_datasheets.py db.json \
          --datasheet-dir <资料包目录> \
          --resolution datasheet-resolution.json \
+         --intent intent.json \
          --json datasheet-audit.json
 
-4. 把审计结果传入计划或 lint：
+4. 把审计结果传入合并扫描，命令见 SKILL.md 第 4 步。
 
-       python3 scripts/plan_review.py db.json \
-         --intent intent.json \
-         --datasheet-audit datasheet-audit.json \
-         --json review-plan.json
-
-       python3 scripts/lint.py db.json \
-         --intent intent.json \
-         --datasheet-audit datasheet-audit.json \
-         --plan-json review-plan.json \
-         --json lint-cold.json
-
-datasheet-audit.json 存在时，它覆盖
-intent.materials.datasheets.available 这个全局布尔值，并按位号控制 DEV-D01
-准备度。状态不是 AVAILABLE 的物料，依赖其 datasheet 的自动准备度仍为 WAITING_EVIDENCE；
+没有 datasheet-audit.json 时，资料是否可用按 `intent.materials.datasheets.path` 是否存在推（intent 不写 `available`，写了被拒）；
+有审计文件时按位号控制 DEV-D01 准备度。状态不是 AVAILABLE 的物料，依赖其 datasheet 的自动准备度仍为 WAITING_EVIDENCE；
 这不直接判定所有审查者检查的电气结果。T/C/D 按具体主张核实补充证据，E 行仍只认本器件保证值。
 计划与 lint 还会核对审计里的物料/位号是否与当前 db.json 一致。
 

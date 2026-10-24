@@ -7,6 +7,27 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Following the documents no longer runs into a refusal (SR self-check group 1, 2026-10-24)
+
+The self-check of 2026-10-24 found fourteen places where doing what SR says either fails or is refused. The command
+blocks now pass `--candidates` wherever the intent has circuit decisions, and SKILL.md step 2 is one numbered command
+sequence (cold scan, datasheet audit, candidates, decisions, scan with candidates, request list, audit with the
+resolution, merge scan) instead of a candidate command that needs a file two steps later. `lint.py` prints the plan's
+prompts (unread resistor values, circuit types that ask almost nothing, rails without a voltage, ground domains,
+unbounded nodes) from `plan_review.diagnostic_lines`, which `plan_review.main` also uses. The eight monotonic cells the
+gate bounds by G2 now allow G2, and G10 says the board's load is no heavier than the reference circuit's (it said the
+reverse). The three JSON examples of plan-and-results.md follow the current formats (circuit decisions instead of a
+hand-written circuit list, derivation and corners, condition kinds, gap edges with via and rationale, monotonic_tried
+with its cell, design_option NONE with evidence) and a test runs them through the gates. The report section of
+report-and-remediation.md follows what render_report.py writes; five quality codes that do not exist are gone; the
+TYPICAL_CURVE, intent schema 4, `materials.available`, own-function and add-decision texts match the code. Tests
+first; 2020 tests pass, contract 516, KiCad replay 195/195, typical circuits unchanged, mutations M494-M497 added, all
+43 on changed files killed.
+
+- Event: user:2026-10-24 (SR self-check, "先改1、3、4、5组"; group 1 of docs/2026-10-24-sr-consistency-audit.md)
+- Causes: knowledge_wrong 11, rule_not_enforced 3
+- Changed: SKILL.md, docs/2026-10-24-sr-consistency-audit.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/automation.md, references/bounding-table.md, references/datasheets.md, references/evidence-proportionality.md, references/plan-and-results.md, references/report-and-remediation.md, references/reviewed-declarations.md, references/revision-review.md, references/verdicts-and-release.md, scripts/catalog.py, scripts/lint.py, scripts/plan_review.py, scripts/tests/test_bounding_table.py, scripts/tests/test_doc_examples.py, scripts/tests/test_plan_diagnostic_lines.py
+
 ## A circuit frame carries the bounding-table cells of its parts (2026-10-24)
 
 Decision A makes the bounding table binding, so the reviewer should not have to look it up: every circuit frame of
