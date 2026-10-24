@@ -73,7 +73,7 @@ class CornerTests(unittest.TestCase):
 
 class MonotonicTriedTests(unittest.TestCase):
     def test_an_unboundable_quantity_says_why_the_test_point_does_not_bound_it(self):
-        worst = {'not_boundable_reason': '手册没有 40 V 以下的测试点', 'operating_point_specified': True, 'specified_by': 'c3',
+        worst = {'not_boundable_reason': '手册没有 40 V 以下的测试点', 'operating_point_specified': True, 'specified_by': 'c4',
                  'curves_checked': [{'source': 'evidence/ds/U1.txt', 'locator': 'Fig. 12 IHV vs VHV'}]}
         fn = with_datum(**worst)
         self.assertTrue(any('monotonic_tried' in e for e in function_errors({'functions': [fn]})))

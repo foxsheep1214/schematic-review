@@ -138,7 +138,7 @@ def gap(report, cids, key, kind='REVIEW_INCOMPLETE', fid=None, plan=None, what=N
                    why_insufficient='Synthetic: the stipulated clause does not give the datum of %s' % key,
                    worst_case={'not_boundable_reason': 'Synthetic: the fixture stipulates no public curve bounds it',
                                'curves_checked': [{'source': 'synthetic-fixture.json', 'locator': 'stipulated'}],
-                               'operating_point_specified': True, 'specified_by': 'c1',
+                               'operating_point_specified': True, 'specified_by': 'c2',
                                'monotonic_tried': MONOTONIC_TRIED})
         for edge in out['decides']:
             edge['side'] = 'LOWER'

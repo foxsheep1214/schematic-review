@@ -2180,7 +2180,7 @@
   "id": "M316",
   "name": "a described usage need not say where the datasheet describes it",
   "file": "scripts/review_functions.py",
-  "old": "        if (conditions.get(worst.get('specified_by')) or {}).get('kind') not in CLAUSE_KINDS + ('TYPICAL_REFERENCE',):",
+  "old": "        if (conditions.get(named) or {}).get('kind') not in CLAUSE_KINDS + ('TYPICAL_REFERENCE',):",
   "new": "        if False:"
  },
  {
@@ -2306,8 +2306,8 @@
   "id": "M334",
   "name": "a bound read off a typical curve decides",
   "file": "scripts/review_functions.py",
-  "old": "    if derivation == 'TYPICAL_CURVE':\n",
-  "new": "    if False:\n"
+  "old": "    if derivation == 'TYPICAL_CURVE' and basis.get('kind') != 'REACHABLE_CASE':",
+  "new": "    if False:"
  },
  {
   "id": "M335",
@@ -2994,5 +2994,75 @@
   "file": "scripts/review_functions.py",
   "old": "        if not margined:\n",
   "new": "        if False:\n"
+ },
+ {
+  "id": "M433",
+  "name": "the test point that misses the point may stand for the described usage",
+  "file": "scripts/review_functions.py",
+  "old": "        if named in {p.get('condition') for p in points if isinstance(p, dict)}:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M434",
+  "name": "a typical curve as the usage needs no estimate",
+  "file": "scripts/review_functions.py",
+  "old": "        if conditions[named]['kind'] == 'TYPICAL_REFERENCE':\n            return _typical_estimate_errors(label, worst, conditions)",
+  "new": "        if False:\n            return _typical_estimate_errors(label, worst, conditions)"
+ },
+ {
+  "id": "M435",
+  "name": "the curve need not say the range it covers",
+  "file": "scripts/review_functions.py",
+  "old": "    if not text(curve.get('regime')):\n        return [label + ': the curve named in specified_by",
+  "new": "    if False:\n        return [label + ': the curve named in specified_by"
+ },
+ {
+  "id": "M436",
+  "name": "the estimate need not be numbers",
+  "file": "scripts/review_functions.py",
+  "old": "    if not (isinstance(estimate, dict) and _finite(estimate.get('value')) and text(estimate.get('unit'))\n            and text(estimate.get('against'))):",
+  "new": "    if not isinstance(estimate, dict):"
+ },
+ {
+  "id": "M437",
+  "name": "the estimate may cite another condition",
+  "file": "scripts/review_functions.py",
+  "old": "    if basis.get('kind') != 'ESTIMATE' or curve['id'] not in (basis.get('conditions') or []):",
+  "new": "    if basis.get('kind') != 'ESTIMATE':"
+ },
+ {
+  "id": "M438",
+  "name": "the estimate may be another kind of margin",
+  "file": "scripts/review_functions.py",
+  "old": "    if basis.get('kind') != 'ESTIMATE' or curve['id']",
+  "new": "    if False or curve['id']"
+ },
+ {
+  "id": "M439",
+  "name": "a short typical estimate stays a vendor request",
+  "file": "scripts/review_functions.py",
+  "old": "    if not (estimate['value'] >= 0 if basis.get('comparison') == 'GE' else estimate['value'] > 0):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M440",
+  "name": "a GT estimate at zero counts as met",
+  "file": "scripts/review_functions.py",
+  "old": "estimate['value'] >= 0 if basis.get('comparison') == 'GE' else estimate['value'] > 0",
+  "new": "estimate['value'] >= 0"
+ },
+ {
+  "id": "M441",
+  "name": "a reachable case may not rest on a typical curve",
+  "file": "scripts/review_functions.py",
+  "old": "    if derivation == 'TYPICAL_CURVE' and basis.get('kind') != 'REACHABLE_CASE':",
+  "new": "    if derivation == 'TYPICAL_CURVE':"
+ },
+ {
+  "id": "M442",
+  "name": "any decisive margin may rest on a typical curve",
+  "file": "scripts/review_functions.py",
+  "old": "    if derivation == 'TYPICAL_CURVE' and basis.get('kind') != 'REACHABLE_CASE':",
+  "new": "    if derivation == 'TYPICAL_CURVE' and False:"
  }
 ]

@@ -7,6 +7,21 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Where the datasheet describes the usage, not the test point that misses it (2026-10-23)
+
+On the R5 acceptance re-review all 19 vendor-data items of one review named, as the clause where the datasheet
+describes the usage, the very test-point limit that does not reach the operating point; the other review judged the
+same points outside the specified region. `worst_case.specified_by` may no longer be one of
+`monotonic_tried.test_points`; it names a clause or application text, or a typical curve with a regime, and with a
+curve the item gives `worst_case.typical_estimate` (an ESTIMATE citing the curve). An estimate already short is a fail
+item, whose margin may be a REACHABLE_CASE read off the typical curve; derivation TYPICAL_CURVE is allowed only for a
+reachable case. Tests first; 1967 tests pass, contract 516, KiCad replay 195/195, mutations M433-M442 added, M316 and
+M334 re-pointed, all 106 on changed files killed.
+
+- Event: user:2026-10-23 (bounding consistency proposals, item 2 and decision 2-A: "2A，算。")
+- Causes: rule_not_enforced 1
+- Changed: SKILL.md, docs/2026-10-23-bounding-consistency-proposals.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/evidence-proportionality.md, references/plan-and-results.md, scripts/review_functions.py, scripts/tests/ledger4.py, scripts/tests/test_bound_derivation.py, scripts/tests/test_described_usage.py, scripts/tests/test_review_functions.py
+
 ## An unboundable quantity is written in numbers (results format 6, 2026-10-23)
 
 On the R5 acceptance re-review one review called 19 quantities unboundable, 16 with one sentence as the unfavourable

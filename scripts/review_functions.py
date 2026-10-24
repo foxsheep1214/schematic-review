@@ -430,8 +430,9 @@ def _derivation_errors(label, basis, conditions):
     if derivation not in DERIVATIONS:
         return ['%s: basis.derivation says how the bound was obtained, one of %s' % (label, '/'.join(DERIVATIONS))]
     errors = []
-    if derivation == 'TYPICAL_CURVE':
-        errors.append(label + ': a bound read off a TYPICAL_CURVE decides nothing; mark the margin ESTIMATE')
+    if derivation == 'TYPICAL_CURVE' and basis.get('kind') != 'REACHABLE_CASE':   # a typical part is reachable (2-A)
+        errors.append(label + ': a bound read off a TYPICAL_CURVE proves nothing for every part; mark the margin ESTIMATE, '
+                              'or REACHABLE_CASE when the typical part already falls short')
     if derivation in ('ADJACENT_TEST_POINT', 'MONOTONIC'):
         mono = basis.get('monotonic')
         if not (isinstance(mono, dict) and mono.get('curve') in conditions):
@@ -729,10 +730,18 @@ def _worst_case_errors(label, item, conditions, calculation=None):
             return [label + ': the datasheet does not specify the part at this operating point; relying on it is a design '
                             'risk — record a fail item (outside_specified) whose finding moves the design into the '
                             'specified region, not a vendor request']
-        if (conditions.get(worst.get('specified_by')) or {}).get('kind') not in CLAUSE_KINDS + ('TYPICAL_REFERENCE',):
+        named = worst.get('specified_by')
+        if (conditions.get(named) or {}).get('kind') not in CLAUSE_KINDS + ('TYPICAL_REFERENCE',):
             return [label + ': worst_case.specified_by names the condition of this function where the datasheet describes '
                             'this usage (a limit, a clause or its application text); a usage it does not describe is '
                             'outside the specified region']
+        points = worst['monotonic_tried'].get('test_points') or []
+        if named in {p.get('condition') for p in points if isinstance(p, dict)}:
+            return [label + ': worst_case.specified_by names %s, a test point that does not reach the operating point; '
+                            'name where the datasheet describes this usage: a clause, its application text, or a curve '
+                            'whose regime covers the point' % named]
+        if conditions[named]['kind'] == 'TYPICAL_REFERENCE':
+            return _typical_estimate_errors(label, worst, conditions)
         return []
     errors = []
     bound = worst.get('bound')
@@ -747,6 +756,32 @@ def _worst_case_errors(label, item, conditions, calculation=None):
             and text(margin.get('against'))):
         errors.append(label + ': worst_case.margin {value: number, unit, against} under the public bound')
     return errors
+
+
+def _typical_estimate_errors(label, worst, conditions):
+    """Decision 2-A: a typical curve covering the operating point describes the usage; the item gives the estimate read
+    off it, and an estimate already short is a fail, since a typical part is a reachable case."""
+    curve = conditions[worst['specified_by']]
+    if not text(curve.get('regime')):
+        return [label + ': the curve named in specified_by (%s) says in regime the range it covers, which includes the '
+                        'operating point' % curve['id']]
+    estimate = worst.get('typical_estimate')
+    head = label + '/worst_case.typical_estimate'
+    if not (isinstance(estimate, dict) and _finite(estimate.get('value')) and text(estimate.get('unit'))
+            and text(estimate.get('against'))):
+        return [head + ' {value, unit, against, basis} is the margin read off the curve in specified_by at the '
+                       'operating point']
+    errors = _basis_errors(head, estimate, conditions, ())
+    basis = estimate.get('basis') if isinstance(estimate.get('basis'), dict) else {}
+    if errors:
+        return errors
+    if basis.get('kind') != 'ESTIMATE' or curve['id'] not in (basis.get('conditions') or []):
+        return [head + ': the basis is an ESTIMATE whose conditions include the curve %s' % curve['id']]
+    if not (estimate['value'] >= 0 if basis.get('comparison') == 'GE' else estimate['value'] > 0):
+        return [head + ': the typical estimate already falls short (%s %s against %s); a typical part is a reachable '
+                       'case, so this is a fail item whose margin is that estimate as a REACHABLE_CASE (derivation '
+                       'TYPICAL_CURVE), not a vendor request' % (estimate['value'], estimate['unit'], estimate['against'])]
+    return []
 
 
 def _unit(unit):

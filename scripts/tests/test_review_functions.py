@@ -314,7 +314,7 @@ class PublicBoundTests(unittest.TestCase):
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('curves_checked' in e for e in errors), errors)
         fn['open'][0]['worst_case']['curves_checked'] = [{'source': 'evidence/ds/U1.txt', 'locator': 'Fig. 12 IHV vs VHV'}]
-        fn['open'][0]['worst_case'].update(operating_point_specified=True, specified_by='c3')
+        fn['open'][0]['worst_case'].update(operating_point_specified=True, specified_by='c4')
         self.assertEqual(function_errors({'functions': [fn]}), [])
         fn['open'][0]['worst_case']['curves_checked'] = ['looked']
         self.assertTrue(any('curves_checked' in e for e in function_errors({'functions': [fn]})))
@@ -589,7 +589,7 @@ class DerivedLevelsTests(unittest.TestCase):
                  'why_insufficient': '手册无 VBUS 关断轨迹',
                  'worst_case': {'not_boundable_reason': '无驱动电流上限', 'operating_point_specified': True,
                                 'monotonic_tried': dict(HV_TRIED, quantity='Q5 关断轨迹电流', why_not='手册无短路轨迹曲线'),
-                                'specified_by': 'c3',
+                                'specified_by': 'c4',
                                 'curves_checked': [{'source': 'evidence/ds/U5.txt', 'locator': 'Fig. 3 SOA'}]},
                  'decides': [{'aspect': ASPECT, 'states': ['LATCH'], 'via': {'condition': 'c3'}, 'side': 'LOWER',
                               'rationale': '短路时 VCC 是否保持取决于 Q5 关断前的轨迹，手册没有'}],
