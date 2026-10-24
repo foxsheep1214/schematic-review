@@ -7,6 +7,30 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## R6 acceptance: four independent first reviews compared (2026-10-24)
+
+Four reviewers on SR 05c8ae7 (two Codex gpt-6.1-sol high, two Claude opus 5.5 medium) reviewed the R6 board under the
+R5 independence rules; three records are gate-valid (NO_GO), codex1 stopped at step ④ on a tool defect. Same-model
+agreement by exact pairing: Codex 81.9 % (alignment 78.1 %), Claude 83.7 % (89.6 %); cross-model 75.5–82.6 % with
+alignment 89.0–90.4 % (R5: 69.2 % / 91.1 %; target 85 %). The layers guarded since 10-21 converged: device roles, the
+twelve candidate decisions, circuit members and the fourteen mission-profile phases are identical across all four
+records. Alignment is lost to reviewer-free inputs the rules still allow — one requirement document in
+`requirement_source` while the brief named two (195 rows in codex1 only), mission-profile phase names and the
+configurable groups' citation text inside criteria (17 + 7 rows unpaired in every pair), optional `intent.devices`
+declarations of commodity diodes (21 rows), per-type `features` NOT_APPLICABLE declarations (13 REQ-Q07 rows), and an
+add decision for two unassigned transistors against leaving them to REQ-Q08 (26 interface rows). Agreement among paired
+rows is lost mainly to INSUFFICIENT-vs-PASS through a numeric limit (49–75 rows per pair): the same unknown (T301
+magnetics, RT7209 configuration, L101 drawing, CC capacitance, zener low-current VZ) opens an item on one side and passes
+on a typical or conservative value on the other — the step ③ judgment layer, untouched this round. Three real
+engineering disagreements: D404 low-current VZ, PWR-C04 U501, no-load power. Reviewers reported six tool defects and six
+pieces of feedback (docs/2026-10-24-r6-acceptance.md §五). A maintenance commit during the run (f0ca5ad) moved HEAD and
+made both Claude reviewers regenerate their plans; nothing is committed during an acceptance run from now on. Fix list
+and the decisions it needs are in the same document (§六); the comparison tool's intent path fix is the only code change.
+
+- Event: user:2026-10-24 ("R6已经设计完了，请按照这个约定，再跑一轮验收对比。claude跑的时候用opus5.5 medium，codex跑的时候用sol 6.1 high"); review: 原理图审查结果/SR-20261024-R6-验收-{codex1,codex2,claude1,claude2}-05c8ae7
+- Causes: rule_missing 3, rule_not_enforced 3, judgment 1
+- Changed: docs/2026-10-24-r6-acceptance.md, docs/improvement-ledger.md, scripts/compare_reviews.py, scripts/tests/test_compare_reviews.py
+
 ## Step ① tasks say where each intent field is written and when a task is done (SR framework review, 2026-10-24)
 
 Task 1.1 (requirements and baseline) had grown into the place every intent field was listed — material paths, rail
