@@ -7,7 +7,7 @@
 删除的编号不再登记。计划、Lint、证据校验、结果校验与文档规则表都从这里取规则，不另写副本。
 
     python3 catalog.py                     打印规则总表（Markdown）
-    python3 catalog.py --write-doc PATH    重写文档标记区间内的规则总表
+    python3 catalog.py --write-doc PATH    重写文档标记区间内的规则总表（references/bounding-table.md 写定界表）
     python3 catalog.py --check-doc PATH    文档与本表不一致时退出 1
 """
 import argparse
@@ -962,6 +962,136 @@ BOUNDING_STEPS = (
     '只有走完 1–4 仍判不了，才记证据不足，并在缺口里写明查过手册哪几条、为什么都不够。',
 )
 
+
+# -- 工作点定界表（定界表方案 2026-10-23；用户：“必须按表”）--------------------------------
+# 每格：哪类器件的哪个参数，随什么变、往哪个方向单调，允许的推法（G 编号 → bound_formulas 里的公式）按顺序，
+# 推法用完仍推不出时落到哪一档。门禁按格核对：判“定不出界”的缺厂家数据写 monotonic_tried.cell，
+# 余量依据写 basis.cell/method/formula 时按公式重算。
+BoundMethod = namedtuple('BoundMethod', 'code name basis')
+Bound = namedtuple('Bound', 'id kinds parameter side varies_with direction methods fallback source')
+
+BOUND_METHODS = OrderedDict((m.code, m) for m in (
+    BoundMethod('G1', '保证限值直接覆盖：工作点在限值的测试条件内', '保证最坏值'),
+    BoundMethod('G2', '单调有利侧：参数随 x 单调，工作点在测试点的有利一侧', '保证最坏值'),
+    BoundMethod('G3', '两测试点之间的斜率界：取区间内斜率最大一端的保证上限', '保证最坏值'),
+    BoundMethod('G4', '温度系数：P(T) = P(T₀) + S·(T − T₀)，S 取不利一端', '保证最坏值'),
+    BoundMethod('G5', '公开特性表：表内插值，公差取表给的上下限', '保证最坏值'),
+    BoundMethod('G6', '物理约束：节点电压不超过供电轨或钳位保证值，电流不超过上游限流', '保证最坏值'),
+    BoundMethod('G7', '同一测试点比例外推：典型曲线 × 保证值 / 同点典型值', '估算'),
+    BoundMethod('G8', '典型曲线覆盖工作点：按曲线取值；典型值已不够判失败（可达的反例）', '估算'),
+    BoundMethod('G9', '只有典型值：同类参数 min/max 比例、同系列保证范围或典型 ±30%', '估算'),
+    BoundMethod('G10', '厂家参考电路同接法：接法相同、负载不重于本板，引图号', '可判通过'),
+    BoundMethod('SOA', '按持续时间选 25 °C 曲线，按开始壳温降额，恒功率段留 100%、热不稳定段留 80%', '保证最坏值'),
+    BoundMethod('FORCED_BETA', '饱和开关按强制 β：IB ≥ IC /（hFE_min / 2）', '保证最坏值'),
+))
+BOUND_FALLBACKS = OrderedDict((
+    ('VENDOR_DATUM', '缺厂家数据（第三档），按后果定级'),
+    ('OUTSIDE_SPECIFIED', '超出规定区（第四档），记失败项'),
+    ('BOUNDED', '总能定界，不开“定不出界”的项'),
+))
+BOUND_DIRECTIONS = ('INCREASING', 'DECREASING', 'NONMONOTONIC')
+
+_EP = 'evidence-proportionality.md'
+_IC_ROLES = ('ic', 'pwm_controller', 'gate_driver', 'sr_controller', 'pd_controller', 'regulator', 'supervisor',
+             'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver', 'isolator')
+BOUNDS = OrderedDict((b.id, b) for b in (
+    # 3.1 齐纳管、电压基准
+    Bound('ZENER-VZ-UPPER', ('zener',), 'VZ 上界', 'UPPER', '工作电流 IZ', 'INCREASING', (('G1', ()), ('G2', ())),
+          'VENDOR_DATUM', _EP + '“齐纳管低电流”'),
+    Bound('ZENER-VZ-LOWER', ('zener',), 'VZ 下界', 'LOWER', '工作电流 IZ', 'INCREASING',
+          (('G1', ()), ('G3', ('slope_bound',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“齐纳管低电流”；1-A、2-A'),
+    Bound('ZENER-VZ-TEMP', ('zener', 'shunt_reference'), 'VZ / 基准电压随温度', None, '温度', 'NONMONOTONIC',
+          (('G1', ()), ('G4', ('tempco_bound',))), 'VENDOR_DATUM', _EP + '第 4 步“温度系数的 min/max”'),
+    Bound('REF-IKA-MIN', ('shunt_reference',), '最小阴极电流 Ika', 'LOWER', '工作态', None, (('G1', ()),),
+          'OUTSIDE_SPECIFIED', '定界表方案 3.1'),
+    # 3.2 TVS
+    Bound('TVS-STANDOFF', ('tvs',), '正常最大值不超过 VRWM', 'UPPER', '工作电压', None, (('G1', ()),),
+          'OUTSIDE_SPECIFIED', 'wca-formulas.md TVS 行'),
+    Bound('TVS-VC', ('tvs',), '钳位电压上界', 'UPPER', '冲击电流 Ipp（同一波形）', 'INCREASING', (('G1', ()), ('G2', ())),
+          'VENDOR_DATUM', 'wca-formulas.md TVS 行'),
+    Bound('TVS-LEAK-HOT', ('tvs',), '高温漏电', 'UPPER', '温度', 'INCREASING', (('G1', ()), ('G7', ('ratio_extrapolation',))),
+          'VENDOR_DATUM', '定界表方案 3.2'),
+    # 3.3 二极管、整流桥
+    Bound('DIODE-VF', ('diode', 'bridge_rectifier'), 'VF 上界随电流', 'UPPER', '正向电流 IF', 'INCREASING',
+          (('G1', ()), ('G2', ())), 'VENDOR_DATUM', _EP + '“单调外推”'),
+    Bound('DIODE-VF-COLD', ('diode', 'bridge_rectifier'), 'VF 上界随温度（冷态最差）', 'UPPER', '温度', 'DECREASING',
+          (('G1', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“单调外推”'),
+    Bound('DIODE-IR-HOT', ('diode', 'bridge_rectifier', 'zener'), '高温反向漏电', 'UPPER', '温度', 'INCREASING',
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“二极管反向漏电”'),
+    Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',
+          (('G1', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'VENDOR_DATUM', _EP + '“脉冲与浪涌”'),
+    # 3.4 MOSFET、BJT
+    Bound('MOS-VGS-ON', ('mosfet',), '导通所需 VGS', 'UPPER', '漏极电流 ID', 'INCREASING', (('G1', ()), ('G2', ()), ('G7', ())),
+          'VENDOR_DATUM', 'wca-formulas.md VGS 三档'),
+    Bound('MOS-RDS-HOT', ('mosfet',), '高温 RDS(on)', 'UPPER', '结温', 'INCREASING',
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”'),
+    Bound('MOS-SOA-HOT', ('mosfet',), '高温 SOA', 'UPPER', '开始壳温', 'DECREASING',
+          (('SOA', ('soa_allowed_power', 'soa_case_temperature', 'heatsink_requirement', 'zth_junction_temperature')),),
+          'BOUNDED', '定界表方案第五节 B'),
+    Bound('MOS-LINEAR', ('mosfet',), '线性工作点的 VGS（源跟随、线性稳压）', None, '漏极电流与温度', 'NONMONOTONIC',
+          (('G1', ()), ('G7', ('ratio_extrapolation',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“按实际用途选模型”'),
+    Bound('BJT-SAT', ('bjt',), '饱和导通所需基极电流', 'LOWER', '集电极电流 IC', None,
+          (('FORCED_BETA', ('forced_beta_base_current',)),), 'BOUNDED', '定界表方案第五节 D'),
+    Bound('BJT-HFE', ('bjt',), '线性区 hFE', 'LOWER', '集电极电流与温度', 'NONMONOTONIC',
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表方案 3.4'),
+    # 3.5 光耦
+    Bound('OPTO-CTR', ('opto',), 'CTR 随 IF 和温度', 'LOWER', '输入电流 IF 与温度', 'NONMONOTONIC',
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“身份冲突与身份分支”（取最低档）'),
+    # 3.6 NTC
+    Bound('NTC-SENSE', ('ntc',), '检测用 NTC 的 R(T)', None, '温度', 'DECREASING',
+          (('G5', ('ntc_table_bound', 'ntc_beta_bound')),), 'BOUNDED', '定界表方案第五节 C；datasheets.md“公开曲线表先于索取”'),
+    Bound('NTC-INRUSH-HOT', ('ntc',), '浪涌限制 NTC 热态重新接入', 'LOWER', '热态', None,
+          (('G6', ('inrush_peak_current', 'inrush_i2t')),), 'BOUNDED', '定界表方案第五节 E'),
+    # 3.7 无源件
+    Bound('RES-POWER', ('resistor',), '电阻功率、脉冲、TCR 与耐压', 'UPPER', '温度与脉宽', None, (('G1', ()), ('G5', ())),
+          'VENDOR_DATUM', 'commodity-floors.md 片式电阻'),
+    Bound('MLCC-EFFECTIVE-C', ('capacitor',), 'MLCC 有效容量（偏压、温度、老化）', 'LOWER', '直流偏压与温度', 'DECREASING',
+          (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md MLCC；wca-formulas.md'),
+    Bound('ECAP-ESR-RIPPLE', ('capacitor',), '电解 ESR 与纹波电流（温度、频率系数表）', None, '温度与频率', 'NONMONOTONIC',
+          (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md 电解'),
+    Bound('IND-ISAT', ('inductor', 'transformer'), '电感 Isat（按资料定义取温度最坏值）', 'LOWER', '温度', 'DECREASING',
+          (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md 电感'),
+    Bound('FUSE-I2T', ('fuse',), '保险丝 I²t 与温度降额', None, '脉宽与温度', 'NONMONOTONIC',
+          (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md'),
+    # 3.8 IC 通用参数
+    Bound('IC-THRESHOLD', _IC_ROLES, '门限、基准', None, '温度', 'NONMONOTONIC',
+          (('G1', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表方案 3.8'),
+    Bound('IC-QUIESCENT', _IC_ROLES, '静态电流、按模式的功耗', 'UPPER', '模式与温度', None,
+          (('G1', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _EP + '“只有典型值的参数”'),
+    Bound('IC-TIMING', _IC_ROLES, '时序参数（最小导通、延时、消隐）', None, '温度', 'NONMONOTONIC',
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表方案 3.8'),
+    Bound('IC-IO-LEVEL', _IC_ROLES, 'IO 的 VOH/VOL', None, '负载电流与 VDD', 'INCREASING', (('G1', ()), ('G2', ())),
+          'VENDOR_DATUM', '定界表方案 3.8'),
+    Bound('IC-IO-CURRENT', _IC_ROLES, 'IO 灌/拉电流超出规定', 'UPPER', '负载电流', None, (('G1', ()), ('G10', ())),
+          'VENDOR_DATUM', '结果四档（5c）'),
+    Bound('IC-RECOMMENDED', _IC_ROLES, '推荐工作条件（绝对最大额定只算损坏边界）', None, '工作条件', None, (('G1', ()),),
+          'OUTSIDE_SPECIFIED', 'DEV-C05'),
+))
+
+
+def bounds_for(kinds):
+    """The table cells for these device kinds, in table order."""
+    kinds = set(kinds)
+    return [b for b in BOUNDS.values() if kinds & set(b.kinds)]
+
+
+def render_bounds_markdown():
+    """references/bounding-table.md 的标记区间：推法、档位和逐格表。"""
+    out = ['### 推法', '', '| 编号 | 推法 | 得到的依据 |', '|---|---|---|']
+    out += ['| %s | %s | %s |' % (m.code, _cell(m.name), m.basis) for m in BOUND_METHODS.values()]
+    out += ['', '### 推不出时', '', '| 写法 | 意思 |', '|---|---|']
+    out += ['| `%s` | %s |' % item for item in BOUND_FALLBACKS.items()]
+    out += ['', '### 逐格', '', '| 格 | 器件类别 | 参数 | 开着的一侧 | 随什么变 / 方向 | 推法（公式） | 推不出时 | 出处 |',
+            '|---|---|---|---|---|---|---|---|']
+    for b in BOUNDS.values():
+        methods = '；'.join(code + ('（%s）' % '、'.join('`%s`' % f for f in formulas) if formulas else '')
+                           for code, formulas in b.methods)
+        kinds = '、'.join(b.kinds) if b.kinds != _IC_ROLES else 'ic 及各 IC 角色'
+        out.append('| `%s` | %s | %s | %s | %s / %s | %s | `%s` | %s |' % (
+            b.id, kinds, _cell(b.parameter), b.side or '—', _cell(b.varies_with), b.direction or '—', methods,
+            b.fallback, _cell(b.source)))
+    return '\n'.join(out) + '\n'
+
 QUESTION_BAN_RE = re.compile(r'禁止|严禁|勿|不(得|能|可|准|要|把|以|强加|默认|另|自动|单|统一|套|据此|强制|推翻|代替|归|随|再|必|需)')
 
 
@@ -1654,12 +1784,19 @@ def render_markdown():
     return '\n'.join(lines) + '\n'
 
 
+BOUNDS_BEGIN = '<!-- bounds:begin（由 scripts/catalog.py --write-doc 生成，勿手改） -->'
+BOUNDS_END = '<!-- bounds:end -->'
+
+
 def render_doc(text):
-    if text.count(DOC_BEGIN) != 1 or text.count(DOC_END) != 1:
+    """The marked region of a document: the rule table, or the bounding table in references/bounding-table.md."""
+    begin, end, body = ((BOUNDS_BEGIN, BOUNDS_END, render_bounds_markdown) if BOUNDS_BEGIN in text
+                        else (DOC_BEGIN, DOC_END, render_markdown))
+    if text.count(begin) != 1 or text.count(end) != 1:
         raise ValueError('文档缺少唯一的规则总表标记')
-    head, rest = text.split(DOC_BEGIN)
-    _, tail = rest.split(DOC_END)
-    return head + DOC_BEGIN + '\n\n' + render_markdown() + '\n' + DOC_END + tail
+    head, rest = text.split(begin)
+    _, tail = rest.split(end)
+    return head + begin + '\n\n' + body() + '\n' + end + tail
 
 
 def main():

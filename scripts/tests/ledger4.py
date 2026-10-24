@@ -8,7 +8,7 @@ import catalog
 SYNTHETIC = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
 # a level already implies a consequence class; tests about classes pass their own
 # results format 6: an unboundable quantity is written in numbers; the stipulated c1 test point lies above the range
-MONOTONIC_TRIED = {'side': 'LOWER', 'quantity': 'Synthetic: the stipulated quantity',
+MONOTONIC_TRIED = {'side': 'LOWER', 'cell': 'NONE', 'quantity': 'Synthetic: the stipulated quantity',
                    'operating_point': {'min': 0, 'max': 0.5, 'unit': 'V'},
                    'test_points': [{'condition': 'c1', 'at': {'value': 1, 'unit': 'V'}}],
                    'why_not': 'Synthetic: the fixture stipulates no test point below 1 V',

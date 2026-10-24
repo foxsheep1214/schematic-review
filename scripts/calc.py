@@ -10,6 +10,7 @@ import json
 import sys
 
 import boost_switch_loss
+import bound_formulas
 import circuit_bounds
 import fault_energy
 import flyback_stop
@@ -37,6 +38,7 @@ FUNCTIONS = {
     'zener_fault.no_trip_budget': zener_fault.no_trip_budget,
     'zener_fault.hold_charge': zener_fault.hold_charge,
 }
+FUNCTIONS.update(('bound_formulas.' + name, fn) for name, fn in bound_formulas.FORMULAS.items())
 
 
 def run(name, kwargs):

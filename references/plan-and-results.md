@@ -395,10 +395,14 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 
 除 ESTIMATE 外，`basis` 还写这个界怎么来的：
 - `derivation`：GUARANTEED_LIMIT（手册限值就在本工况成立）、ADJACENT_TEST_POINT 或 MONOTONIC（从测试点推过来，另写 `monotonic{curve: 本功能里说明单调形状的条件 id, side: FAVORABLE}`，实际工况须在有利一侧，不利一侧的测试点什么都定不了）、TEMPCO（经温度系数推，`tempco` 指向给出温度系数 min/max 的 NUMERIC_LIMIT）、PUBLISHED_TABLE（公开数表）；TYPICAL_CURVE 只能出 ESTIMATE。
+- `cell`、`method`、`formula`（任何种类的余量都可写）：按[工作点定界表](bounding-table.md)定的界写格和推法编号（须是这一格允许的推法）；
+  推法带公式时写 `formula{name: bound_formulas 里的函数, inputs, value}`，门禁用同样的输入重算，差超过 0.5% 拒收。
 - `corners[{input, condition, picked: min|max, why}]`：每个带公差的输入取了哪条 NUMERIC_LIMIT 的哪一端，以及为什么那一端不利；取的那一端必须是该条件给出的数。没有带公差的输入时写空列表加 `no_corners_reason`。
 
 开放项判“定不出界”（`worst_case.not_boundable_reason`）时，先用数写 `monotonic_tried`（结果格式 6）：
 - `side`：开着的是上界还是下界（UPPER 或 LOWER）；`quantity`：哪个量的界。
+- `cell`：[工作点定界表](bounding-table.md)里这个参数的格（表里没有写 `NONE`）。格有开着的一侧时须与 `side` 相同；
+  格落到 `BOUNDED`（总能定界）或 `OUTSIDE_SPECIFIED`（记失败项）时拒收；参数单调时，有利一侧给了这一侧限值的测试点就定了界，拒收。
 - `operating_point{min, max, unit}`：本板上测试点所在那个变量的范围（如齐纳电流 0.06–1.3 mA）。
 - `test_points[{condition, at{value, unit}}]`：手册给这个量或它斜率的测试点，条件须在 `checked` 里，单位与工作点相同（u、μ 按 µ 算）。
 - `why_not`：这些测试点为什么给不出开着的那个界，不得照抄 `not_boundable_reason`。

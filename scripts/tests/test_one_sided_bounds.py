@@ -23,7 +23,7 @@ REASON = '手册只在 5 mA 给 VZ，低电流下界推不出'
 
 
 def tried(**extra):
-    out = {'side': 'LOWER', 'quantity': 'D2 稳压值 VZ', 'operating_point': {'min': 0.06, 'max': 1.3, 'unit': 'mA'},
+    out = {'side': 'LOWER', 'cell': 'ZENER-VZ-LOWER', 'quantity': 'D2 稳压值 VZ', 'operating_point': {'min': 0.06, 'max': 1.3, 'unit': 'mA'},
            'test_points': [{'condition': 'z1', 'at': {'value': 5, 'unit': 'mA'}}],
            'why_not': '0.06–1.3 mA 全在 5 mA 测试点以下，手册没有更低电流的 VZ 或 rdif 保证值',
            'other_side': 'NOT_DECISIVE', 'other_side_reason': '上界只决定 Q2 栅压不超额定，已在别的方面算过'}

@@ -233,7 +233,7 @@ class FunctionShapeTests(unittest.TestCase):
 
 
 # results format 6: the HV current below the 120 V test point, written in numbers (bounding consistency item 1)
-HV_TRIED = {'side': 'LOWER', 'quantity': 'U1 HV 恒流源电流下限', 'operating_point': {'min': 40, 'max': 120, 'unit': 'V'},
+HV_TRIED = {'side': 'LOWER', 'cell': 'NONE', 'quantity': 'U1 HV 恒流源电流下限', 'operating_point': {'min': 40, 'max': 120, 'unit': 'V'},
             'test_points': [{'condition': 'c3', 'at': {'value': 120, 'unit': 'V'}}],
             'why_not': '手册只给 120 V 测试点，没说 IHV 随 VHV 单调', 'other_side': 'NOT_DECISIVE',
             'other_side_reason': '电流上限不决定 VCC 能否升过 UVLO'}

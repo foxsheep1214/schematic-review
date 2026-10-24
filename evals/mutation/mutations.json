@@ -2327,7 +2327,7 @@
   "id": "M337",
   "name": "an unboundable quantity need not say why the test point does not bound it",
   "file": "scripts/review_functions.py",
-  "old": "        found = _monotonic_errors(label, item, worst, calculation)   # 1c",
+  "old": "        found = _monotonic_errors(label, item, worst, calculation, conditions)   # 1c",
   "new": "        found = []   # 1c"
  },
  {
@@ -3155,5 +3155,222 @@
   "file": "scripts/render_report.py",
   "old": "items[results_model.lead_ref(items, c['open_ref'])][1]",
   "new": "items[c['open_ref']][1]"
+ },
+ {
+  "id": "M456",
+  "name": "an unboundable datum need not name its table cell",
+  "file": "scripts/review_functions.py",
+  "old": "    if cell != 'NONE' and cell not in catalog.BOUNDS:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M457",
+  "name": "the table cell of an unboundable datum is never read",
+  "file": "scripts/review_functions.py",
+  "old": "        found = _cell_errors(head, catalog.BOUNDS[cell], tried, span, conditions)",
+  "new": "        found = []"
+ },
+ {
+  "id": "M458",
+  "name": "a cell bounding one side may stand for the other",
+  "file": "scripts/review_functions.py",
+  "old": "    if bound.side and bound.side != tried['side']:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M459",
+  "name": "a cell that always bounds may be opened",
+  "file": "scripts/review_functions.py",
+  "old": "    if bound.fallback == 'BOUNDED':",
+  "new": "    if False:"
+ },
+ {
+  "id": "M460",
+  "name": "a cell outside the specified region may be a vendor request",
+  "file": "scripts/review_functions.py",
+  "old": "    if bound.fallback == 'OUTSIDE_SPECIFIED':",
+  "new": "    if False:"
+ },
+ {
+  "id": "M461",
+  "name": "the favourable test point is looked for at the wrong end",
+  "file": "scripts/review_functions.py",
+  "old": "    above = upper == (bound.direction == 'INCREASING')",
+  "new": "    above = upper != (bound.direction == 'INCREASING')"
+ },
+ {
+  "id": "M462",
+  "name": "a test point bounds the side its limit does not give",
+  "file": "scripts/review_functions.py",
+  "old": "_finite(limit.get('max' if upper else 'min'))",
+  "new": "_finite(limit.get('max') or limit.get('min'))"
+ },
+ {
+  "id": "M463",
+  "name": "a parameter that is not monotonic is bounded from one test point",
+  "file": "scripts/review_functions.py",
+  "old": "    if bound.direction not in ('INCREASING', 'DECREASING'):\n        return []",
+  "new": "    if False:\n        return []"
+ },
+ {
+  "id": "M464",
+  "name": "a margin by a table cell is never checked",
+  "file": "scripts/review_functions.py",
+  "old": "    errors.extend(_formula_errors(label, basis))",
+  "new": "    pass"
+ },
+ {
+  "id": "M465",
+  "name": "a margin may use a method its cell does not allow",
+  "file": "scripts/review_functions.py",
+  "old": "        if basis.get('method') not in methods:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M466",
+  "name": "a computed method need not write its formula",
+  "file": "scripts/review_functions.py",
+  "old": "        if formulas and 'formula' not in basis:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M467",
+  "name": "a method may use another method's formula",
+  "file": "scripts/review_functions.py",
+  "old": "    if formulas is not None and formula['name'] not in formulas:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M468",
+  "name": "a written formula value is never compared with the rerun",
+  "file": "scripts/review_functions.py",
+  "old": "    if abs(value - formula['value']) > FORMULA_TOLERANCE * max(abs(value), 1e-12):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M469",
+  "name": "a rerun formula must match exactly",
+  "file": "scripts/review_functions.py",
+  "old": "FORMULA_TOLERANCE = 0.005",
+  "new": "FORMULA_TOLERANCE = 0"
+ },
+ {
+  "id": "M470",
+  "name": "the slope bound moves towards the side asked",
+  "file": "scripts/bound_formulas.py",
+  "old": "    return p0 + step if _side(side) == 'UPPER' else p0 - step",
+  "new": "    return p0 - step if _side(side) == 'UPPER' else p0 + step"
+ },
+ {
+  "id": "M471",
+  "name": "the temperature coefficient takes the favourable end",
+  "file": "scripts/bound_formulas.py",
+  "old": "    return max(ends) if _side(side) == 'UPPER' else min(ends)",
+  "new": "    return min(ends) if _side(side) == 'UPPER' else max(ends)"
+ },
+ {
+  "id": "M472",
+  "name": "a table bound reads the other column",
+  "file": "scripts/bound_formulas.py",
+  "old": "    col = 2 if _side(side) == 'UPPER' else 1\n    return _interpolate",
+  "new": "    col = 1 if _side(side) == 'UPPER' else 2\n    return _interpolate"
+ },
+ {
+  "id": "M473",
+  "name": "an NTC table is interpolated against T, not 1/T",
+  "file": "scripts/bound_formulas.py",
+  "old": "    points = [(1 / (r[0] + KELVIN), math.log(r[col])) for r in rows]",
+  "new": "    points = [(r[0], math.log(r[col])) for r in rows]"
+ },
+ {
+  "id": "M474",
+  "name": "the beta model gives the other corner",
+  "file": "scripts/bound_formulas.py",
+  "old": "    return found['r_max_ohm'] if _side(side) == 'UPPER' else found['r_min_ohm']",
+  "new": "    return found['r_min_ohm'] if _side(side) == 'UPPER' else found['r_max_ohm']"
+ },
+ {
+  "id": "M475",
+  "name": "the thermal-instability segment keeps the full derated curve",
+  "file": "scripts/bound_formulas.py",
+  "old": "'THERMAL_INSTABILITY': 0.8}",
+  "new": "'THERMAL_INSTABILITY': 1.0}"
+ },
+ {
+  "id": "M476",
+  "name": "the SOA curve is not derated to the starting case temperature",
+  "file": "scripts/bound_formulas.py",
+  "old": "    return _n(p_curve_w, 'p_curve_w', True) * max(tj - tc, 0.0) / (tj - 25) * SOA_SEGMENTS[segment]",
+  "new": "    return _n(p_curve_w, 'p_curve_w', True) * SOA_SEGMENTS[segment]"
+ },
+ {
+  "id": "M477",
+  "name": "the heatsink requirement multiplies by the power",
+  "file": "scripts/bound_formulas.py",
+  "old": "    return (_n(tc_allowed_c, 'tc_allowed_c') - _n(ta_max_c, 'ta_max_c')) / _n(p_w, 'p_w', True)",
+  "new": "    return (_n(tc_allowed_c, 'tc_allowed_c') - _n(ta_max_c, 'ta_max_c')) * _n(p_w, 'p_w', True)"
+ },
+ {
+  "id": "M478",
+  "name": "a saturated BJT is driven at hFE min",
+  "file": "scripts/bound_formulas.py",
+  "old": "FORCED_BETA_K = 2",
+  "new": "FORCED_BETA_K = 1"
+ },
+ {
+  "id": "M479",
+  "name": "a typical value is taken ±20 %",
+  "file": "scripts/bound_formulas.py",
+  "old": "TYPICAL_BAND = 0.3",
+  "new": "TYPICAL_BAND = 0.2"
+ },
+ {
+  "id": "M480",
+  "name": "a surge rating stretches to a longer pulse",
+  "file": "scripts/bound_formulas.py",
+  "old": "    if t > rated:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M481",
+  "name": "a table is extrapolated",
+  "file": "scripts/bound_formulas.py",
+  "old": "    if not xs[0] <= x <= xs[-1]:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M482",
+  "name": "a hot-inrush I²t drops the factor of two",
+  "file": "scripts/bound_formulas.py",
+  "old": "/ (2 * _n(r_other_ohm, 'r_other_ohm', True))",
+  "new": "/ _n(r_other_ohm, 'r_other_ohm', True)"
+ },
+ {
+  "id": "M483",
+  "name": "every cell belongs to every device class",
+  "file": "scripts/catalog.py",
+  "old": "    return [b for b in BOUNDS.values() if kinds & set(b.kinds)]",
+  "new": "    return list(BOUNDS.values())"
+ },
+ {
+  "id": "M484",
+  "name": "a sensing NTC without a table is opened as a vendor datum",
+  "file": "scripts/catalog.py",
+  "old": "          (('G5', ('ntc_table_bound', 'ntc_beta_bound')),), 'BOUNDED',",
+  "new": "          (('G5', ('ntc_table_bound', 'ntc_beta_bound')),), 'VENDOR_DATUM',"
+ },
+ {
+  "id": "M485",
+  "name": "the bounding table document is written as the rule table",
+  "file": "scripts/catalog.py",
+  "old": "(BOUNDS_BEGIN, BOUNDS_END, render_bounds_markdown) if BOUNDS_BEGIN in text",
+  "new": "(BOUNDS_BEGIN, BOUNDS_END, render_bounds_markdown) if False"
+ },
+ {
+  "id": "M486",
+  "name": "the bounding formulas are not calculations of the library",
+  "file": "scripts/calc.py",
+  "old": "FUNCTIONS.update(('bound_formulas.' + name, fn) for name, fn in bound_formulas.FORMULAS.items())",
+  "new": "FUNCTIONS.update()"
  }
 ]

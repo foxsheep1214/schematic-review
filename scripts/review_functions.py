@@ -36,6 +36,8 @@ and a connector row with clamp parts is judged in a function (F12). None of this
 import math
 import re
 
+import bound_formulas
+import catalog
 import results_model
 from results_model import LEVELS, OPEN_KINDS, PHASES, VERDICTS, text
 from validate_remediation import READINESS
@@ -47,6 +49,7 @@ BOUND_BASES = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'TYPICAL_CURVE', 'PUBL
 # An unboundable quantity leaves one bound open (results format 6) and says how the other one is settled.
 OPEN_SIDES = ('UPPER', 'LOWER')
 OTHER_SIDES = ('DECIDED', 'NOT_DECISIVE')
+FORMULA_TOLERANCE = 0.005   # a rerun bounding formula may differ from the written value by rounding only
 DELIVERABLE_FIELDS = ('deliverable', 'owner', 'assumed', 'closure')
 # What another stage owes; a parameter of a catalog part is none of these (it is a VENDOR_DATUM with its public bound).
 DELIVERABLE_KINDS = ('CUSTOM_PART_DRAWING', 'FIRMWARE_CAPABILITY', 'CONFIGURATION_TABLE')
@@ -431,6 +434,7 @@ def _basis_errors(label, m, conditions, claim_ids):
     if any(c not in conditions for c in ids):
         errors.append('%s: basis.conditions names condition ids of this function (%s)' % (
             label, ', '.join(str(c) for c in ids if c not in conditions)))
+    errors.extend(_formula_errors(label, basis))
     kind = basis['kind']
     if kind == 'ESTIMATE':
         return errors
@@ -757,7 +761,7 @@ def _worst_case_errors(label, item, conditions, calculation=None):
         if not evidence(worst.get('curves_checked')):
             return [label + ': worst_case.curves_checked lists the datasheet figures, published tables and application '
                             'notes searched for a bound (source, locator) before the quantity is called unboundable']
-        found = _monotonic_errors(label, item, worst, calculation)   # 1c
+        found = _monotonic_errors(label, item, worst, calculation, conditions)   # 1c
         if found:
             return found
         specified = worst.get('operating_point_specified')
@@ -834,7 +838,7 @@ def _span(value):
     return None
 
 
-def _monotonic_errors(label, item, worst, calculation):
+def _monotonic_errors(label, item, worst, calculation, conditions):
     """1c in numbers (bounding consistency proposals, item 1): the open side, the quantity, this board's range of the
     variable and the datasheet test points with their values. A range inside two test points is bounded from them; a
     range partly outside opens only the part outside (open_range) and the part inside is a margin. Each edge names
@@ -884,8 +888,16 @@ def _monotonic_errors(label, item, worst, calculation):
         errors.append(head + '.other_side is DECIDED but no margin of this function is on %s' % '/'.join(sorted(aspects)))
     if any(d.get('side') != tried.get('side') for d in edges(item)):
         errors.append(label + ': each decides edge names side, the bound left open (monotonic_tried.side)')
+    cell = tried.get('cell')
+    if cell != 'NONE' and cell not in catalog.BOUNDS:
+        errors.append(head + '.cell names the cell of the bounding table (references/bounding-table.md) for this '
+                             'parameter, or NONE when the table has none')
     if errors:
         return errors
+    if cell != 'NONE':
+        found = _cell_errors(head, catalog.BOUNDS[cell], tried, span, conditions)
+        if found:
+            return found
     low, high = min(at), max(at)
     if low <= span[0] and span[1] <= high:
         return [head + ': operating_point %g–%g %s lies within the test points %g–%g; bound it from them '
@@ -898,6 +910,66 @@ def _monotonic_errors(label, item, worst, calculation):
         if not margined:
             return [head + ': the part of operating_point inside the test points %g–%g is decided by a margin of this '
                            'function on %s' % (low, high, '/'.join(sorted(aspects)))]
+    return []
+
+
+def _cell_errors(head, bound, tried, span, conditions):
+    """Decision A: the table cell, not the reviewer, says whether this parameter can be left unbounded."""
+    if bound.side and bound.side != tried['side']:
+        return ['%s: cell %s bounds the %s side, not %s' % (head, bound.id, bound.side, tried['side'])]
+    if bound.fallback == 'BOUNDED':
+        return ['%s: cell %s always bounds (%s); compute the bound, do not open it'
+                % (head, bound.id, '/'.join(code for code, _ in bound.methods))]
+    if bound.fallback == 'OUTSIDE_SPECIFIED':
+        return ['%s: cell %s has no bound outside the specified region; this is a fail item (fails[] with '
+                'outside_specified), not a vendor request' % (head, bound.id)]
+    if bound.direction not in ('INCREASING', 'DECREASING'):
+        return []
+    upper = tried['side'] == 'UPPER'
+    above = upper == (bound.direction == 'INCREASING')   # the favourable test point lies above the range
+    for p in tried['test_points']:
+        limit = (conditions.get(p['condition']) or {}).get('limit')
+        value = p['at']['value']
+        if (isinstance(limit, dict) and _finite(limit.get('max' if upper else 'min'))
+                and (value >= span[1] if above else value <= span[0])):
+            return ['%s: per cell %s the parameter is %s in %s, so the %s at %s (%g %s) bounds the %s side over '
+                    '%g–%g (G2); decide it' % (head, bound.id, bound.direction, bound.varies_with,
+                                              'maximum' if upper else 'minimum', p['condition'], value, p['at']['unit'],
+                                              tried['side'], span[0], span[1])]
+    return []
+
+
+def _formula_errors(label, basis):
+    """Decision A: a margin that names its table cell uses one of the cell's methods, and a formula it names is
+    rerun on its inputs."""
+    formulas = None
+    if 'cell' in basis:
+        bound = catalog.BOUNDS.get(basis['cell'])
+        if bound is None:
+            return ['%s: basis.cell names a cell of the bounding table (references/bounding-table.md)' % label]
+        methods = dict(bound.methods)
+        if basis.get('method') not in methods:
+            return ['%s: basis.method is one of the methods of %s (%s)' % (label, bound.id, '/'.join(methods))]
+        formulas = methods[basis['method']]
+        if formulas and 'formula' not in basis:
+            return ['%s: %s by %s is computed; write basis.formula{name: %s, inputs, value}'
+                    % (label, bound.id, basis['method'], ' or '.join(formulas))]
+    if 'formula' not in basis:
+        return []
+    formula = basis['formula']
+    if not (isinstance(formula, dict) and formula.get('name') in bound_formulas.FORMULAS
+            and isinstance(formula.get('inputs'), dict) and _finite(formula.get('value'))):
+        return ['%s: basis.formula is {name: a bound_formulas function, inputs{...}, value}' % label]
+    if formulas is not None and formula['name'] not in formulas:
+        return ['%s: %s by %s uses %s, not %s' % (label, basis['cell'], basis['method'], ' or '.join(formulas),
+                                                  formula['name'])]
+    try:
+        value = bound_formulas.FORMULAS[formula['name']](**formula['inputs'])
+    except (TypeError, ValueError) as error:
+        return ['%s: basis.formula %s does not run on its inputs: %s' % (label, formula['name'], error)]
+    if abs(value - formula['value']) > FORMULA_TOLERANCE * max(abs(value), 1e-12):
+        return ['%s: basis.formula %s gives %.4g on its inputs, not %s' % (label, formula['name'], value,
+                                                                           formula['value'])]
     return []
 
 

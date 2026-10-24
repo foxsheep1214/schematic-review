@@ -7,6 +7,28 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## The operating-point bounding table (2026-10-23)
+
+The same datasheet table was "not boundable" in one review and bounded to a pass or a fail in the other; the
+bounding principles sat in four references and a dozen rule criteria as prose, which the gate could not compare.
+`catalog.BOUNDS` now registers 31 cells (zener and references, TVS, diodes and bridges, MOSFET and BJT, optocouplers,
+NTC, passives, IC parameters), each with the device classes, the parameter, the side it bounds, what it varies with
+and which way, the bounding methods in order (G1-G10, SOA, forced beta) with their formulas, and where it falls when
+they all fail (VENDOR_DATUM, OUTSIDE_SPECIFIED or BOUNDED); `scripts/bound_formulas.py` holds the 16 formulas
+(registered in `calc.py`) and `references/bounding-table.md` is generated from the table. A vendor datum called
+unboundable names its cell (`monotonic_tried.cell`, or NONE): the cell's side must match, a BOUNDED cell is refused,
+an OUTSIDE_SPECIFIED cell is a fail item, and a test point on the favourable side that gives that side's limit bounds
+a monotonic parameter (G2). A margin naming its cell uses one of the cell's methods, a computed method writes
+`basis.formula`, and the gate reruns it (0.5 % rounding). SOA by duration and starting case temperature with 100 % /
+80 % by segment and the heatsink requirement handed to PCB design (B), NTC table or Beta model with tolerances as a
+guarantee (C), forced beta k = 2 (D), hot inrush NTC at 0 ohm (E). Tests first; 2007 tests pass, contract 516, KiCad
+replay 195/195, typical circuits unchanged, mutations M456-M486 added, M337 re-pointed, all 153 on changed files
+killed.
+
+- Event: user:2026-10-23 (bounding table proposal: "做"; A "必须按表"; B "B 热不稳定段按修订写法定：按持续时间选曲线、按开始壳温降额、降额后留 80%。"; C "有表用表，没表外推算保证"; D k = 2; E 0 Ω)
+- Causes: rule_missing 1
+- Changed: SKILL.md, docs/2026-10-23-bounding-table-proposal.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/bounding-table.md, references/evidence-proportionality.md, references/plan-and-results.md, scripts/bound_formulas.py, scripts/calc.py, scripts/catalog.py, scripts/review_functions.py, scripts/tests/ledger4.py, scripts/tests/test_bound_formulas.py, scripts/tests/test_bounding_table.py, scripts/tests/test_one_sided_bounds.py, scripts/tests/test_review_functions.py
+
 ## A design value names what the design has not chosen (2026-10-23)
 
 On the R5 acceptance re-review one review opened a design value for a fault clamp the board's own protection chain
