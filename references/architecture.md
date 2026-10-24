@@ -1,15 +1,15 @@
 # SR 架构说明
 
-SKILL.md 的“架构”一节是总图：五环流水线、各环谁做、不变的决定、改架构先问人。本页是它的明细：
-环与环之间传哪些文件、每个文件的格式版本、每个脚本属于哪一环，以及历次架构决定。
+SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁做、不变的决定、改架构先问人。本页是它的明细：
+步骤之间传哪些文件、每个文件的格式版本、每个脚本属于哪一步，以及历次架构决定。
 本页的数据文件表和脚本表由 `scripts/tests/test_architecture.py` 对照代码检查：新增、删除脚本或改格式版本而不改本页，测试失败。
 
-## 一、环与环之间的文件
+## 一、步骤之间传的文件
 
-每一环只读前面各环写下的文件，自己只写下表里属于它的文件。审查员的声明集中在 `intent.json`，
-它不是某一环的产物，是审查员给“读入”和“出计划”两环的输入。
+每一步只读前面各步写下的文件，自己只写下表里属于它的文件。审查员的声明集中在 `intent.json`，
+它不是某一步的产物，是审查员给“读入”和“出计划”两步的输入。
 
-| 文件 | 谁写 | 写在哪一环 | 格式版本 | 内容 |
+| 文件 | 谁写 | 写在哪一步 | 格式版本 | 内容 |
 |---|---|---|---|---|
 | `db.json` | 工具 | ① 读入 | — | 网表、BOM 列、页、符号脚：图上实际是什么 |
 | `requirement_source`（需求原文抄录） | 工具 | ① 读入 | 1 | 需求文档逐字抄录与 sha256 |
@@ -21,12 +21,12 @@ SKILL.md 的“架构”一节是总图：五环流水线、各环谁做、不�
 | `review-gate.json` | 工具 | ④ 校验 | — | 对账结果、阻断项、待办 |
 | `审查报告.md` / `审查报告.html`、`record/` | 工具 | ⑤ 出报告 | — | 交付物：报告与留档 |
 
-## 二、每个脚本属于哪一环
+## 二、每个脚本属于哪一步
 
 “入口”是执行流程里直接调用的命令，只有入口写进 SKILL.md 的执行流程；“工具”是特定情形手动调用的命令；
-“库”只被导入。新脚本先在这里归环归类，再写代码。
+“库”只被导入。新脚本先在这里归到一步并分类，再写代码。
 
-| 环 | 入口 | 工具 | 库 |
+| 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
 | ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`part_words.py`、`solve_dividers.py`（电阻值解析） |
 | ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`checkers/` |
@@ -37,7 +37,7 @@ SKILL.md 的“架构”一节是总图：五环流水线、各环谁做、不�
 | 维护 SR | `catalog.py --write-doc` | `compare_reviews.py`、`check_ledger.py` | — |
 
 `catalog.py` 是规则的唯一登记处，既被出计划导入，维护时也用它重写规则总表。
-`independence.py` 在出计划时拒收引用设计方文档的声明，在校验时拒收这样的证据，两环共用。
+`independence.py` 在出计划时拒收引用设计方文档的声明，在校验时拒收这样的证据，两步共用。
 
 ## 三、历次架构决定
 
@@ -63,5 +63,5 @@ SKILL.md 的“架构”一节是总图：五环流水线、各环谁做、不�
 | 2026-10-24 | 打包强制“报告只从台账生成”：`pack_review.py` 用打包的计划、结果、门禁和 `notes.json`（按渲染时的 `--title`、`--detail`）重新渲染报告，与交付的不同就拒绝；门禁 `valid` 不为真、结果声明 `review_scope` 不打包；`notes.json` 随台账进 `record/`（SR 自查 2.3，用户选：“重新渲染比对 + 要求 valid”） | 不变的决定第 6 条和文档都写手改报告打包失败、局部热审不打包，打包却只核 HTML 与 Markdown 一致、只记哈希；打包不重跑门禁，门禁结果本身是否最新仍由流程保证 |
 | 2026-10-24 | 估算可以判通过：`ESTIMATE` 余量写 `consequence_class`（只能是 REQUIRED_FUNCTION 或 PERFORMANCE_OR_LIFE）和 `handoff`（本功能 `handoffs` 里样机实测那一条的序号），满足时行判 PASS，派生行带上这条移交；损坏、过热、保护类规则（DEV-C01、DEV-C04、PWR-C03、PWR-C06、PWR-C10、DRV-C01、全部 PRO）不走这条路（SR 自查 2.1，用户选：“估算 + 样机移交可判通过”） | 文档和 DEV-C05、DRV-C02 判据都写“相似器件或典型 ±30% 估算、结论不变就 PASS(B) 并移交样机”，门禁却对 ESTIMATE 什么都不判，照着做被拒收 |
 | 2026-10-24 | intent 与计划、结果一样严：`schema_version` 必写，顶层只认 `INTENT_FIELDS` 与各检查器的段；门禁命令行总是要求绑定和计划的依赖记录（去掉 `--require-bindings`），宽松默认只留给直接调用库的测试（SR 自查 2.7、2.8，用户选：“改成必填”“字段白名单 + 版本必填”） | 拼错的顶层字段（`power_rail`）静默放行、全部轨没声明；真实计划都带这些键，缺了反而少查 |
-| 2026-10-24 | 脚本的导入方向与环归属一致：共用的格式约定（`PHASES`、`text`、“能定位”的正则、后果分类表、`engine_identity`）并进 `electrical_contract.py`；功能判定的读法单列 `function_reading.py`（③ 的库），`review_functions.py` 只留校验；器件用词从 `checkers/netgraph.py` 移到 `part_words.py`（① 的库）；`skill_identity.py` 改记 ① 的库、`check_key.py` 改记 ② 的库；不留旧位置别名；`test_ring_imports.py` 按本表核每个脚本的导入，后环不得被前环导入（SR 自查 5.8，用户选：“做”“并进 contract”“单列新库”“一次改完”；check_key “改记 ② 的库”；engine_identity “并进 contract”） | 表把脚本按环排开，代码却有 8 处前环导入后环（读入取检查器的器件词、计划取校验的规则身份、派生行取校验的功能判定读法等），新脚本照表归环会被误导，改 ④ 会波及前面的环 |
-| 2026-10-24 | 执行只留一条线：审查员沿计划的功能树走，判断逻辑写成一条链（对象 → 问题 → 条件与余量 → 行 → 对账 → 报告），每层只在一处定义；执行流程按环重编号为 1.1–1.3、2.1–2.3、3.1–3.3、4、5，图面目检并入 3.3，改版复审不占步骤号；“按 PWR → RST → … 推进”和 check-catalog.md 的“审查流程”表删去，审查要点 G1–G7 从 SKILL.md 目的段撤到 review-charter.md，只作改规则时的坐标（用户：“方案通过，直接按三条改 SKILL.md、check-catalog.md 和 architecture.md，步骤按环重编号。”） | 五套坐标里只有功能树参与出计划、校验和报告，审查要点、内容域、方式字母在代码里只是标签，文档却把同一条流程按三种坐标讲了三遍，环 ① 对应步骤 0、1、3 要来回查表 |
+| 2026-10-24 | 脚本的导入方向与步骤归属一致：共用的格式约定（`PHASES`、`text`、“能定位”的正则、后果分类表、`engine_identity`）并进 `electrical_contract.py`；功能判定的读法单列 `function_reading.py`（③ 的库），`review_functions.py` 只留校验；器件用词从 `checkers/netgraph.py` 移到 `part_words.py`（① 的库）；`skill_identity.py` 改记 ① 的库、`check_key.py` 改记 ② 的库；不留旧位置别名；`test_ring_imports.py` 按本表核每个脚本的导入，后环不得被前环导入（SR 自查 5.8，用户选：“做”“并进 contract”“单列新库”“一次改完”；check_key “改记 ② 的库”；engine_identity “并进 contract”） | 表把脚本按环排开，代码却有 8 处前环导入后环（读入取检查器的器件词、计划取校验的规则身份、派生行取校验的功能判定读法等），新脚本照表归环会被误导，改 ④ 会波及前面的环 |
+| 2026-10-24 | 执行只留一条线：审查员沿计划的功能树走，判断逻辑写成一条链（对象 → 问题 → 条件与余量 → 行 → 对账 → 报告），每层只在一处定义；执行流程按步骤重编号为 1.1–1.3、2.1–2.3、3.1–3.3、4、5，图面目检并入 3.3，改版复审不占步骤号；“按 PWR → RST → … 推进”和 check-catalog.md 的“审查流程”表删去，审查要点 G1–G7 从 SKILL.md 目的段撤到 review-charter.md，只作改规则时的坐标（用户：“方案通过，直接按三条改 SKILL.md、check-catalog.md 和 architecture.md，步骤按环重编号。”） | 五套坐标里只有功能树参与出计划、校验和报告，审查要点、内容域、方式字母在代码里只是标签，文档却把同一条流程按三种坐标讲了三遍，环 ① 对应步骤 0、1、3 要来回查表 |

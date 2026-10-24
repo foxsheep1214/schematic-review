@@ -24,7 +24,7 @@ def script_table():
     out = {}
     for line in section(DOC, '## 二、').splitlines():
         cells = [c.strip() for c in line.strip().strip('|').split('|')]
-        if len(cells) != 4 or not cells[0] or cells[0] in ('环',) or set(cells[0]) <= set('-'):
+        if len(cells) != 4 or not cells[0] or cells[0] in ('步骤',) or set(cells[0]) <= set('-'):
             continue
         for column, cell in zip(('entry', 'tool', 'library'), cells[1:]):
             for name in NAME.findall(cell):
