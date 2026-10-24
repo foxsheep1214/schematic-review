@@ -3064,5 +3064,96 @@
   "file": "scripts/review_functions.py",
   "old": "    if derivation == 'TYPICAL_CURVE' and basis.get('kind') != 'REACHABLE_CASE':",
   "new": "    if derivation == 'TYPICAL_CURVE' and False:"
+ },
+ {
+  "id": "M443",
+  "name": "a design value need not name what is undecided",
+  "file": "scripts/review_functions.py",
+  "old": "        errors.extend(_undecided_errors(label, item, db))",
+  "new": "        pass"
+ },
+ {
+  "id": "M444",
+  "name": "an undecided entry need not name a parameter",
+  "file": "scripts/review_functions.py",
+  "old": "isinstance(u, dict) and text(u.get('parameter')) and ('ref' not in u or text(u['ref'])) for u in undecided)",
+  "new": "isinstance(u, dict) for u in undecided)"
+ },
+ {
+  "id": "M445",
+  "name": "a parameter the BOM row states stays undecided",
+  "file": "scripts/review_functions.py",
+  "old": "            if u.get('ref') in parts and text(u.get('unit'))",
+  "new": "            if False"
+ },
+ {
+  "id": "M446",
+  "name": "a parameter without a unit is matched against the BOM",
+  "file": "scripts/review_functions.py",
+  "old": "            if u.get('ref') in parts and text(u.get('unit'))",
+  "new": "            if u.get('ref') in parts"
+ },
+ {
+  "id": "M447",
+  "name": "an empty depends_on accepted",
+  "file": "scripts/review_functions.py",
+  "old": "        if not text(item['depends_on']):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M448",
+  "name": "any open item may name undecided parameters or hang on another",
+  "file": "scripts/review_functions.py",
+  "old": "    if kind != 'DESIGN_VALUE' and ('undecided' in item or 'depends_on' in item):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M449",
+  "name": "a design value may hang on an item that does not exist",
+  "file": "scripts/review_functions.py",
+  "old": "        if target not in leads:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M450",
+  "name": "a design value may hang on an item that hangs on another",
+  "file": "scripts/review_functions.py",
+  "old": "        elif 'depends_on' in leads[target]:",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M451",
+  "name": "a hung design value is its own item",
+  "file": "scripts/results_model.py",
+  "old": "    target = found[1].get('depends_on') if found and found[2] == 'open' else None",
+  "new": "    target = None"
+ },
+ {
+  "id": "M452",
+  "name": "a hung design value still makes a work item",
+  "file": "scripts/results_model.py",
+  "old": "        if lead_ref(items, ref) != ref:\n            continue",
+  "new": "        if False:\n            continue"
+ },
+ {
+  "id": "M453",
+  "name": "a hung design value keeps its rows",
+  "file": "scripts/results_model.py",
+  "old": "owners.setdefault(lead_ref(items, row[field]), [])",
+  "new": "owners.setdefault(row[field], [])"
+ },
+ {
+  "id": "M454",
+  "name": "a row of a hung design value keeps its own cause",
+  "file": "scripts/results_model.py",
+  "old": "items.get(lead_ref(items, row['open_ref']))",
+  "new": "items.get(row['open_ref'])"
+ },
+ {
+  "id": "M455",
+  "name": "the report counts a hung design value as a design decision",
+  "file": "scripts/render_report.py",
+  "old": "items[results_model.lead_ref(items, c['open_ref'])][1]",
+  "new": "items[c['open_ref']][1]"
  }
 ]

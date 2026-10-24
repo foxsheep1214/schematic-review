@@ -346,6 +346,44 @@ def _missing_parameter_errors(label, item, db):
     return errors
 
 
+def _undecided_errors(label, item, db):
+    """Consistency item 3: a design value lists the part parameters the design has not chosen, or hangs on the open
+    item that decides it (depends_on, checked across the review). A parameter its part's BOM row states is set by the
+    board."""
+    if 'depends_on' in item:
+        if not text(item['depends_on']):
+            return [label + ': depends_on is the key of the open item of this review that decides this quantity']
+        return []
+    undecided = item.get('undecided')
+    if not (isinstance(undecided, list) and undecided and all(
+            isinstance(u, dict) and text(u.get('parameter')) and ('ref' not in u or text(u['ref'])) for u in undecided)):
+        return ['%s: a design value lists undecided [{ref, parameter[, unit]}] — the part parameters the design has not '
+                'chosen — or names in depends_on the open item of this review that decides it' % label]
+    parts = bom_parts(db)
+    return ['%s: this quantity is set by %s on the board — its BOM row states %s; compute it from the BOM row (a '
+            'NUMERIC_LIMIT), or hang the item on the open item that decides it (depends_on)'
+            % (label, u['ref'], u['parameter']) for u in undecided
+            if u.get('ref') in parts and text(u.get('unit'))
+            and _stated_in_bom(_bom_text(parts, u['ref']), u['parameter'], u['unit'])]
+
+
+def _dependency_errors(functions):
+    """A design value hangs on an open item of this review, not on itself, one level deep."""
+    items = results_model.open_items({'functions': [fn for fn in functions if isinstance(fn, dict)]})
+    leads = {item['key']: item for item, field in ((v[1], v[2]) for v in items.values()) if field == 'open'}
+    errors = []
+    for ref, (_, item, field) in items.items():
+        target = item.get('depends_on')
+        if field != 'open' or not text(target):
+            continue
+        if target not in leads:
+            errors.append('%s: depends_on names %s, which is not another open item of this review' % (ref, target))
+        elif 'depends_on' in leads[target]:
+            errors.append('%s: depends_on names %s, which itself hangs on %s; hang it on the item that decides it'
+                          % (ref, target, leads[target]['depends_on']))
+    return errors
+
+
 def _netlist_name_errors(label, nets, pins, db):
     errors = []
     known = db.get('nets') if isinstance(db.get('nets'), dict) else {}
@@ -951,7 +989,10 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
         for field in ('scope', 'closure'):
             if not text(item.get(field)):
                 errors.append(label + ': ' + field + ' required (the conditions it must cover; what counts as closed)')
+    if kind != 'DESIGN_VALUE' and ('undecided' in item or 'depends_on' in item):
+        errors.append(label + ': undecided/depends_on only belong to DESIGN_VALUE')
     if kind == 'DESIGN_VALUE':   # F2
+        errors.extend(_undecided_errors(label, item, db))
         for field in ('spec', 'owner'):
             if not text(item.get(field)):
                 errors.append(label + ': a design value is back-calculated into spec and given an owner, not requested')
@@ -1124,6 +1165,7 @@ def function_errors(report, document_only=(), db=None):
                     if not ok:
                         errors.append('%s/verdict_history[%d]: a changed verdict cites condition or claim ids in basis'
                                       % (fid, i))
+    errors.extend(_dependency_errors(functions))
     errors.extend(_shared_assumption_errors(functions))
     errors.extend(_shared_result_errors(functions))
     errors.extend(_template_errors(functions))

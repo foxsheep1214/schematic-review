@@ -421,7 +421,7 @@ def not_asked_lines(plan):
 def gap_subclass_counts(results, gaps):
     """One count line by the kind of gap each open row's item is (results_model.GAP_SUBCLASSES); none without any."""
     items = results_model.open_items(results)
-    subs = Counter(results_model.gap_subclass(items[c['open_ref']][1]) for c in gaps
+    subs = Counter(results_model.gap_subclass(items[results_model.lead_ref(items, c['open_ref'])][1]) for c in gaps
                    if c.get('open_ref') in items)
     if not any(subs.get(k) for k in results_model.GAP_SUBCLASSES):
         return []

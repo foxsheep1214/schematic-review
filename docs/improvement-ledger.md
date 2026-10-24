@@ -7,6 +7,22 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A design value names what the design has not chosen (2026-10-23)
+
+On the R5 acceptance re-review one review opened a design value for a fault clamp the board's own protection chain
+sets, while it held the protection threshold open as a vendor datum; the other review computed the clamp and found a
+P1. A design value now lists `undecided[{ref, parameter[, unit]}]`, and a parameter the part's BOM row already states
+(its name, then a number in its unit) is refused: the board sets it, so it is computed. A quantity another open item
+of the review decides is written `depends_on: <key>`, one level deep, onto an open item that exists; only a design
+value carries these fields. A hung design value makes no work item of its own: its rows join the work item of the
+item it hangs on, take that item's gap cause, and count under it in the report. Tests first; 1977 tests pass,
+contract 516, KiCad replay 195/195, typical circuits unchanged, mutations M443-M455 added, all 143 on changed files
+killed.
+
+- Event: user:2026-10-23 (bounding consistency proposals, item 3: "做")
+- Causes: rule_not_enforced 1
+- Changed: SKILL.md, docs/2026-10-23-bounding-consistency-proposals.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/architecture.md, references/plan-and-results.md, scripts/render_report.py, scripts/results_model.py, scripts/review_functions.py, scripts/tests/ledger4.py, scripts/tests/test_design_value_scope.py, scripts/tests/test_review_functions.py
+
 ## Where the datasheet describes the usage, not the test point that misses it (2026-10-23)
 
 On the R5 acceptance re-review all 19 vendor-data items of one review named, as the clause where the datasheet

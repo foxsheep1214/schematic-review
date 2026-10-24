@@ -253,7 +253,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
    不满足判 FAIL；完整最坏范围 EXACT_ENVELOPE 两头都判；估算 ESTIMATE 什么都不判。`comparison` 为 GE 时零余量算满足、GT 时不算；
    与限值的 `regime` 不同要写 `conversion`。证明不满足的余量记失败项且发现项带改法，设计里已有的值不记“设计没定”；
    余量、判断和影响条目不写 `states` 时只覆盖不带状态的行，不覆盖全部状态；
-   本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`）；另一阶段欠的交付物（磁件图纸、固件应用能力确认）记
+   本设计还没选定的量写成规格（DESIGN_VALUE，`spec`+`owner`，`undecided` 列出没选的器件参数，BOM 已写的不算；由另一个开项决定的写 `depends_on`）；另一阶段欠的交付物（磁件图纸、固件应用能力确认）记
    DELIVERABLE_PENDING（`deliverable`+`owner`+`assumed`）；只有厂家才知道、公开资料界限（保证限值、相邻测试点单调夹出的界限、
    公开特性表、典型曲线加余量、应用笔记公式）也兜不住的参数才记 VENDOR_DATUM，并写查过哪几条、为什么不够、
    公开资料界限下的最坏情况与余量（`worst_case.bound`/`margin`；决定结论的余量写 `basis.derivation` 与 `basis.corners`，判定不出界的先用数答 `monotonic_tried`（开着哪一侧、工作点范围、测试点数值，工作点在两个测试点之间就要定界）；没有界就列 `curves_checked`，手册写了这种用法只缺数值的写 `specified_by`（不能是没覆盖工作点的测试点；引典型曲线时写 `typical_estimate`，典型值都不够判失败），没写这种用法的是设计风险，记失败项；厂家参考电路同接法、负载不更重的可判通过）。

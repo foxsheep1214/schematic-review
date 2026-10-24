@@ -65,6 +65,7 @@ def aux_open():
     return {'key': 'AUX-5V-MIN', 'kind': 'DESIGN_VALUE',
             'what': 'T1 辅助绕组在 5 V 空载时的最低峰值电压还没有定',
             'scope': '5 V 空载、−10..105 °C', 'spec': '辅助绕组峰值 ≥ 13.5 V', 'owner': '磁件设计',
+            'undecided': [{'ref': 'T1', 'parameter': '辅助绕组峰值', 'unit': 'V'}],
             'closure': '磁件规格写明 5 V 空载最低峰值电压且 ≥ 13.5 V',
             'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN'], 'via': {'condition': 'c3'},
                          'rationale': '启动和运行态 VCC 由辅助绕组经 Q2 供给，最低峰值未定，与 VCC(off) 的比较缺这一项'}],

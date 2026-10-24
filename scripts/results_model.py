@@ -254,18 +254,32 @@ def gap_of(item):
     return {k: v for k, v in gap.items() if v is not None}
 
 
+def lead_ref(items, ref):
+    """The open item whose rows these are: a design value that hangs on another open item (depends_on) is counted
+    there (bounding consistency proposals, item 3)."""
+    found = items.get(ref)
+    target = found[1].get('depends_on') if found and found[2] == 'open' else None
+    for other, (_, item, field) in items.items():
+        if target and field == 'open' and item.get('key') == target:
+            return other
+    return ref
+
+
 def derived_work_items(report):
     """One work item per open/fail item; rows that name the item are its check_ids."""
+    items = open_items(report)
     owners = {}
     for row in report.get('checks') or []:
         if isinstance(row, dict):
             for field in ('open_ref', 'fail_ref'):
                 if isinstance(row.get(field), str):
-                    owners.setdefault(row[field], []).append(row.get('id'))
+                    owners.setdefault(lead_ref(items, row[field]), []).append(row.get('id'))
     out = []
-    for ref, (fn, item, field) in open_items(report).items():
+    for ref, (fn, item, field) in items.items():
         if field == 'open' and item.get('kind') == 'REQUIREMENT':
             continue  # requirement gaps are managed by clarification records
+        if lead_ref(items, ref) != ref:
+            continue  # hung on another item, which carries its rows
         severity = item.get('severity') if isinstance(item.get('severity'), dict) else {}
         if field == 'open':
             next_action = how_to_close(item) or item.get('what')
@@ -346,7 +360,7 @@ def expand(report):
         if not isinstance(row, dict):
             continue
         result = row.get('review_result')
-        ref = items.get(row.get('open_ref')) if isinstance(row.get('open_ref'), str) else None
+        ref = items.get(lead_ref(items, row['open_ref'])) if isinstance(row.get('open_ref'), str) else None
         if result == 'INSUFFICIENT' and ref is not None:
             row['gap_cause'] = KIND_CAUSE.get(ref[1].get('kind'))
             row['gaps'] = [gap_of(ref[1])]

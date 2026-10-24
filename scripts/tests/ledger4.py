@@ -132,7 +132,8 @@ def gap(report, cids, key, kind='REVIEW_INCOMPLETE', fid=None, plan=None, what=N
         out['scope'] = scope
         out['severity'] = severity(level, cls, consequence)
     if kind == 'DESIGN_VALUE':
-        out.update(spec='Synthetic specification', owner='Synthetic designer', closure='Synthetic recheck')
+        out.update(spec='Synthetic specification', owner='Synthetic designer', closure='Synthetic recheck',
+                   undecided=[{'parameter': 'Synthetic parameter'}])
     elif kind == 'VENDOR_DATUM':
         out.update(acquisition='Synthetic source', closure='Synthetic recheck', checked=['c1'],
                    why_insufficient='Synthetic: the stipulated clause does not give the datum of %s' % key,
