@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import board_intent
 import datasheet_kinds as dk
 from checkers import netgraph as ng
+import part_words as pw
 from plan_review import build_review_plan
 import test_inductive_load as fixture
 
@@ -121,7 +122,7 @@ class GraphRoleTests(unittest.TestCase):
         db = board()
         intent, audit = verified(db, {'U1': 'pwm_controller'})
         graph = ng.NetGraph(board_intent.graph_db(db, board_intent.with_verified_kinds(intent, audit)))
-        self.assertEqual(graph.kind('U1'), ng.IC)
+        self.assertEqual(graph.kind('U1'), pw.IC)
         self.assertEqual(graph.basis('U1'), 'datasheet')
         self.assertEqual(graph.role_kind('U1'), 'pwm_controller')
         self.assertTrue(graph.is_anchor('U1'))
@@ -129,7 +130,7 @@ class GraphRoleTests(unittest.TestCase):
 
     def test_undeclared_ic_has_no_role_and_is_not_an_anchor(self):
         graph = ng.NetGraph(board())
-        self.assertEqual(graph.kind('U1'), ng.IC)
+        self.assertEqual(graph.kind('U1'), pw.IC)
         self.assertIsNone(graph.role_kind('U1'))
         self.assertFalse(graph.is_anchor('U1'))
 
@@ -137,7 +138,7 @@ class GraphRoleTests(unittest.TestCase):
         db = board()
         intent, audit = verified(db, {'U1': 'ic'})
         graph = ng.NetGraph(board_intent.graph_db(db, board_intent.with_verified_kinds(intent, audit)))
-        self.assertEqual((graph.kind('U1'), graph.role_kind('U1'), graph.is_anchor('U1')), (ng.IC, 'ic', False))
+        self.assertEqual((graph.kind('U1'), graph.role_kind('U1'), graph.is_anchor('U1')), (pw.IC, 'ic', False))
 
 
 class PlannerGapTests(unittest.TestCase):

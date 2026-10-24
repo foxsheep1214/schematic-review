@@ -11,6 +11,7 @@ import re
 import catalog
 from . import inventory as inv
 from . import netgraph as ng
+import part_words as pw
 from . import powertree
 from . import states as state_lib
 from .base import Checker
@@ -50,19 +51,19 @@ class _Scan:
         graph = self.graph
         if enable_net in input_nets:
             return 'tied-to-input', []
-        to_rail = [(ref, other) for ref, other in graph.neighbors(enable_net, {ng.RESISTOR})
+        to_rail = [(ref, other) for ref, other in graph.neighbors(enable_net, {pw.RESISTOR})
                    if self.tree.is_rail(other) or (other not in self.grounds and self.feed.driven(other))]
-        to_ground = [(ref, other) for ref, other in graph.neighbors(enable_net, {ng.RESISTOR})
+        to_ground = [(ref, other) for ref, other in graph.neighbors(enable_net, {pw.RESISTOR})
                      if other in self.grounds]
         caps = [ref for ground in sorted(self.grounds)
-                for ref in graph.between(enable_net, ground, {ng.CAPACITOR})]
+                for ref in graph.between(enable_net, ground, {pw.CAPACITOR})]
         drivers = []
         for node in graph.nodes_on(enable_net):
             ref = node.partition('.')[0]
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != pw.IC:
                 continue
-            name = ng.normalize(graph.pinname.get(node))
-            pintype = ng.normalize(graph.pintype.get(node))
+            name = pw.normalize(graph.pinname.get(node))
+            pintype = pw.normalize(graph.pintype.get(node))
             if name and GOOD_PIN_RE.match(name):
                 drivers.append({'node': node, 'source': 'power-good'})
             elif pintype in {'OUT', 'OUTPUT', 'TRISTATE', '3STATE', 'BI', 'BIDI', 'BIDIR'}:
@@ -96,7 +97,7 @@ class _Scan:
             return self._regulators
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != pw.IC:
                 continue
             enables = self.graph.named_pins(ref, ENABLE_PIN_RE)
             outputs = self.graph.named_pins(ref, OUTPUT_PIN_RE)
@@ -134,7 +135,7 @@ class _Scan:
         graph, found = self.graph, []
         regulators = {item['ref'] for item in self.regulators()}
         for ref in sorted(graph.parts):
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != pw.IC:
                 continue
             if ref in regulators:
                 continue

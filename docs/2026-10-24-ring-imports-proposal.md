@@ -9,6 +9,8 @@
 | 功能判定的读法 | “单列新库”：移到 `function_reading.py`，归 ③，`review_functions.py` 只留校验 |
 | 旧位置留不留别名 | “一次改完”：不留兼容层，变异条目跟着改 |
 
+2026-10-24 已做完：`check_key.py` 按用户选“改记 ② 的库”、`engine_identity` 按“并进 contract”处理；见 architecture.md 决定表。
+
 ## 现状
 
 `references/architecture.md`“二、每个脚本属于哪一环”把脚本按 ① 读入 → ② 出计划 → ③ 判断 → ④ 校验 → ⑤ 出报告排开，

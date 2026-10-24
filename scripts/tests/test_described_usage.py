@@ -72,7 +72,7 @@ class ApplicationTextTests(unittest.TestCase):
 
 
 class TypicalCurveTests(unittest.TestCase):
-    def test_a_curve_covering_the_point_with_its_estimate_passes(self):
+    def test_a_curve_covering_the_point_with_itsestimate_passes(self):
         self.assertEqual(errors(on_curve()), [])
 
     def test_the_curve_says_the_range_it_covers(self):

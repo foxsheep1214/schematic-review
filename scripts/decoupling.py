@@ -14,7 +14,7 @@ import re
 import board_intent
 from board_intent import input_fingerprint
 from electrical_contract import db_fingerprint, finite, load_json
-from checkers.netgraph import CONNECTOR, classify
+from part_words import CONNECTOR, classify
 from i2c_topology import digest, validate_db_shape
 
 KINDS = {'capacitor', 'resistor', 'ferrite', 'inductor', 'jumper', 'switch', 'other',

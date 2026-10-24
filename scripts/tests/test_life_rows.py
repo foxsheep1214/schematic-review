@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import catalog
 import requirement_parameters
 from plan_review import build_review_plan, validate_intent
-from review_summary import IMPACT_CLASSES
+from electrical_contract import IMPACT_CLASSES
 from test_decoupling import add, rebind
 from test_requirement_bindings import board as req_board
 from test_requirement_source import DOC, source, write
@@ -188,7 +188,7 @@ class EstimateTests(unittest.TestCase):
     def errors(self, *args, **kw):
         return vr.validate_review(*life_ledger(*args, **kw))['errors']
 
-    def test_an_estimate_passes_as_a_bom_constraint(self):
+    def test_anestimate_passes_as_a_bom_constraint(self):
         errors = self.errors(life_function())
         self.assertFalse([e for e in errors if 'DEV-C02.LIFE.R1' in e], errors)
 

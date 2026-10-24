@@ -5,16 +5,15 @@
 不提前给 PASS/FAIL。每个计划项带规则编号、检查方式与内容域，检查 ID 以
 规则编号开头。HANDOFF 是独立下游动作，可以与后续 PASS/FAIL/INSUFFICIENT 并存。
 
-它是库：出计划的命令只有 lint.py（`--plan-json`），见 SKILL.md 第 2 步（SR 自查 2.9）。
+它是库：出计划的命令只有 lint.py（`--plan-json`），见 SKILL.md 2.1（SR 自查 2.9）。
 """
 import difflib
 from copy import deepcopy
 import board_intent
 import catalog
-from review_engine import engine_identity
-from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, bounded, finite, squeeze_words
+from electrical_contract import (PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, engine_identity, finite,
+                                 squeeze_words)
 from page_inventory import inventory as document_inventory
-import json
 import os
 import hashlib
 import re
@@ -39,7 +38,6 @@ from revision_impact import attach_metadata, digest as revision_digest, validate
 from audit_datasheets import datasheet_entry_for_ref
 
 
-from review_workflow import PHASES
 from plan_board import BOARD_MATERIALS, COLD_RULE_INDEXES, _material_available, _text  # noqa: F401 (re-exported)
 from plan_circuits import OWNED_PART_MATERIALS, _differential_pairs  # noqa: F401
 from plan_system import SYSTEM_MATERIALS  # noqa: F401

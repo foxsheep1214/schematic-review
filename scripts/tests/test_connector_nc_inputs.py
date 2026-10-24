@@ -15,7 +15,7 @@ for option in list(sys.argv):
         sys.argv.remove(option)
 sys.path.insert(0, str(SCRIPTS))
 from lint import Lint
-from checkers.netgraph import classify, CONNECTOR, IC, MOSFET
+from part_words import classify, CONNECTOR, IC, MOSFET
 
 
 def contact(part='MICRO-B_USB', ref='U3', marked=True):

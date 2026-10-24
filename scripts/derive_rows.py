@@ -15,10 +15,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from electrical_contract import load_json
+from electrical_contract import load_json, text
 import requirement_bindings
-from results_model import text
-from review_functions import decides_row, edges, judged, prototype_estimate, unjudged_message
+from function_reading import decides_row, edges, judged, prototype_estimate, unjudged_message
 
 DERIVED_FIELDS = ('review_result', 'open_ref', 'fail_ref', 'finding_id', 'severity')
 

@@ -11,6 +11,7 @@ import re
 import catalog
 from . import inventory as inv
 from . import netgraph as ng
+import part_words as pw
 from . import powertree
 from . import states as state_lib
 from .base import Checker
@@ -18,7 +19,7 @@ from .planutil import slug
 
 SUFFIXES = (('_P', '_N'), ('_DP', '_DN'), ('_DP', '_DM'), ('P', 'N'), ('+', '-'))
 STANDARD_RE = re.compile(r'(LVDS|LVPECL|PECL|CML|HCSL|SSTL|HSTL)', re.I)
-DC_PATH_KINDS = {ng.RESISTOR, ng.INDUCTOR, ng.FERRITE}
+DC_PATH_KINDS = {pw.RESISTOR, pw.INDUCTOR, pw.FERRITE}
 OUT_PINTYPES = {'OUT', 'OUTPUT', 'TRISTATE', '3STATE'}
 IN_PINTYPES = {'IN', 'INPUT'}
 MAX_PAIRS = 128
@@ -67,19 +68,19 @@ class _Scan:
 
     def _devices(self, net):
         return [ref for ref in self.graph.refs_on(net)
-                if self.graph.kind(ref) in (ng.IC, ng.CONNECTOR)]
+                if self.graph.kind(ref) in (pw.IC, pw.CONNECTOR)]
 
     def _leg(self, net, other_leg):
         graph = self.graph
-        series = [(ref, other) for ref, other in graph.neighbors(net, {ng.CAPACITOR})
+        series = [(ref, other) for ref, other in graph.neighbors(net, {pw.CAPACITOR})
                   if other not in self.grounds]
         terminations = [{'ref': ref, 'to': other}
-                        for ref, other in graph.neighbors(net, {ng.RESISTOR})]
+                        for ref, other in graph.neighbors(net, {pw.RESISTOR})]
         dc_path = sorted({other for ref, other in graph.neighbors(net, DC_PATH_KINDS)
                           if other in self.grounds or self.tree.is_rail(other)})
         direction = 'unknown'
         for node in graph.nodes_on(net):
-            pintype = ng.normalize(graph.pintype.get(node))
+            pintype = pw.normalize(graph.pintype.get(node))
             if pintype in OUT_PINTYPES:
                 direction = 'driver'
             elif pintype in IN_PINTYPES and direction == 'unknown':

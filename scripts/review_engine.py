@@ -1,11 +1,5 @@
 """Identity of engineering rules; interface docs/tests do not reopen electrical review."""
-from pathlib import Path
-from skill_identity import engineering_identity
-
-
-def engine_identity(root=None):
-    root = Path(root) if root else Path(__file__).resolve().parents[1]
-    return engineering_identity(root)
+from electrical_contract import engine_identity
 
 
 def validate_engine(plan, require_current=False):

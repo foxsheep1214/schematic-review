@@ -4,7 +4,7 @@ import sys
 import unittest
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
-from checkers.netgraph import classify, OPTO, BJT
+from part_words import classify, OPTO, BJT
 from checkers.optocoupler import build_inventory
 from plan_review import build_review_plan
 from test_optocoupler import opto_board, optos_of, findings

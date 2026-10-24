@@ -14,6 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from checkers import netgraph as ng  # noqa: E402
+import part_words as pw  # noqa: E402
 
 EN_RE = re.compile(r'^~?\{?(EN|ENABLE|CE|SHDN|ON|RUN)\}?$', re.I)
 I2C_RE = re.compile(r'(^|[/:_-])(SDA|SCL)\d*($|[:_-])', re.I)
@@ -90,7 +91,7 @@ def two_pins(g, ref):
 
 
 def name(db, node):
-    return ng.normalize(db.get('pinname', {}).get(node)).upper()
+    return pw.normalize(db.get('pinname', {}).get(node)).upper()
 
 
 # --- operators --------------------------------------------------------------
@@ -99,7 +100,7 @@ def gnd_pin(db):
     """D-GND-PIN: move one IC ground pin onto a ground-named island."""
     g = graph(db)
     for ref in sorted(db['parts']):
-        if g.kind(ref) != ng.IC or not fitted(db, ref):
+        if g.kind(ref) != pw.IC or not fitted(db, ref):
             continue
         gnd = sorted(n for n, net in db['pin2net'].items() if n.split('.', 1)[0] == ref and ng.is_ground(net))
         if len(gnd) >= 2:
@@ -112,7 +113,7 @@ def rail_split(db):
     for net, nodes in sorted(db['nets'].items()):
         if not ng.is_rail(net) or len(nodes) < 3:
             continue
-        ic = [n for n in nodes if g.kind(n.split('.', 1)[0]) == ng.IC and fitted(db, n.split('.', 1)[0])]
+        ic = [n for n in nodes if g.kind(n.split('.', 1)[0]) == pw.IC and fitted(db, n.split('.', 1)[0])]
         if ic:
             twin = net + '_1' if not net.endswith('_1') else net + 'A'
             yield Mutation('D-RAIL-SPLIT', ('PWR-A04', 'NET-A02', 'PWR-A01', 'PWR-A02'),
@@ -125,7 +126,7 @@ def cap_pol(db):
     for ref, part in sorted(db['parts'].items()):
         pins = two_pins(g, ref)
         blob = ' '.join(str(part.get(k, '')) for k in ('prim', 'part', 'value'))
-        if g.kind(ref) != ng.CAPACITOR or not pins or not POLAR_RE.search(blob) or not fitted(db, ref):
+        if g.kind(ref) != pw.CAPACITOR or not pins or not POLAR_RE.search(blob) or not fitted(db, ref):
             continue
         nets = [net for _, net in pins]
         if any(ng.is_ground(n) for n in nets):
@@ -138,7 +139,7 @@ def cap_vr(db):
     g = graph(db)
     for ref, part in sorted(db['parts'].items()):
         pins = two_pins(g, ref)
-        if g.kind(ref) != ng.CAPACITOR or not pins or not fitted(db, ref):
+        if g.kind(ref) != pw.CAPACITOR or not pins or not fitted(db, ref):
             continue
         volts = [ng.rail_voltage(net) for _, net in pins if rail_like(net)]
         volts = [v for v in volts if v and v >= 5]
@@ -163,7 +164,7 @@ def led_r(db):
                 continue
             rref = other[0].split('.', 1)[0]
             rpins = two_pins(g, rref)
-            if g.kind(rref) != ng.RESISTOR or not rpins:
+            if g.kind(rref) != pw.RESISTOR or not rpins:
                 continue
             far = [n for p, n in rpins if rref + '.' + p != other[0]][0]
             mine = [n for p, n in pins if p != pin][0]
@@ -179,7 +180,7 @@ def tvs_stub(db):
     """D-TVS-STUB: the protected-line end of a TVS/ESD part goes to an isolated label."""
     g = graph(db)
     for ref in sorted(db['parts']):
-        if g.kind(ref) != ng.TVS or not fitted(db, ref):
+        if g.kind(ref) != pw.TVS or not fitted(db, ref):
             continue
         for pin, net in sorted(g.pins_of(ref).items()):
             if not ng.is_ground(net) and len(db['nets'].get(net, [])) >= 2:
@@ -203,12 +204,12 @@ def flyback(db):
     """D-FLY-MISS / D-FLY-REV on diodes directly across a relay coil or inductor."""
     g = graph(db)
     for ref in sorted(db['parts']):
-        if g.kind(ref) not in (ng.RELAY, ng.INDUCTOR) or not fitted(db, ref):
+        if g.kind(ref) not in (pw.RELAY, pw.INDUCTOR) or not fitted(db, ref):
             continue
         coil = set(g.pins_of(ref).values())
         for dref in sorted(db['parts']):
             pins = two_pins(g, dref)
-            if g.kind(dref) not in (ng.DIODE, ng.ZENER) or not pins or not fitted(db, dref):
+            if g.kind(dref) not in (pw.DIODE, pw.ZENER) or not pins or not fitted(db, dref):
                 continue
             if {n for _, n in pins} <= coil and len({n for _, n in pins}) == 2:
                 a, b = (dref + '.' + p for p, _ in pins)
@@ -220,12 +221,12 @@ def opto(db):
     """D-OPTO-R / D-OPTO-PU: drop the LED series resistor or the output pull-up."""
     g = graph(db)
     for ref in sorted(db['parts']):
-        if g.kind(ref) != ng.OPTO or not fitted(db, ref):
+        if g.kind(ref) != pw.OPTO or not fitted(db, ref):
             continue
         for pin, net in sorted(g.pins_of(ref).items()):
             pname = name(db, ref + '.' + pin)
             res = [n.split('.', 1)[0] for n in db['nets'].get(net, [])
-                   if g.kind(n.split('.', 1)[0]) == ng.RESISTOR and fitted(db, n.split('.', 1)[0])]
+                   if g.kind(n.split('.', 1)[0]) == pw.RESISTOR and fitted(db, n.split('.', 1)[0])]
             if len(res) != 1:
                 continue
             if LED_PIN_RE.match(pname):
@@ -246,7 +247,7 @@ def i2c_pu(db):
             pins = two_pins(g, ref)
             # Pull-up: the far end is not a bus line and not ground (it may reach the
             # rail through a solder jumper, so do not require a rail name there).
-            if (g.kind(ref) == ng.RESISTOR and pins and fitted(db, ref)
+            if (g.kind(ref) == pw.RESISTOR and pins and fitted(db, ref)
                     and not any(ng.is_ground(n) or (n != net and I2C_RE.search(n)) for _, n in pins)):
                 pulls.append(ref)
         if pulls:

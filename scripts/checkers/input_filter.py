@@ -13,13 +13,14 @@ from decoupling import parse_capacitance
 
 from . import inventory as inv
 from . import netgraph as ng
+import part_words as pw
 from . import powertree
 from . import states as state_lib
 from .base import Checker
 from .planutil import slug
 
 VIN_PIN_RE = re.compile(r'^(VIN|PVIN|VINA|VCC_IN|VDD_IN|VBUS_IN)\d*$', re.I)
-SERIES_KINDS = {ng.INDUCTOR, ng.FERRITE}
+SERIES_KINDS = {pw.INDUCTOR, pw.FERRITE}
 MAX_INPUTS = 128
 
 
@@ -44,10 +45,10 @@ class _Scan:
     def _caps_to_ground(self, net):
         found = []
         for ground in sorted(self.grounds):
-            for ref in self.graph.between(net, ground, {ng.CAPACITOR}):
+            for ref in self.graph.between(net, ground, {pw.CAPACITOR}):
                 value = self.graph.parts.get(ref, {}).get('value')
                 found.append({'ref': ref, 'to': ground, 'farads': parse_capacitance(value),
-                              'bulk_candidate': ng.is_polarized_capacitor(str(value or '') + ' '
+                              'bulk_candidate': pw.is_polarized_capacitor(str(value or '') + ' '
                                                                        + str(self.graph.parts.get(ref, {}).get('part') or ''))})
         return sorted(found, key=lambda item: item['ref'])
 
@@ -64,9 +65,9 @@ class _Scan:
     def _dampers(self, net):
         """串联 RC 阻尼支路：输入网 → 电阻 → 中间节点 → 电容 → 地。"""
         found = []
-        for ref, middle in self.graph.neighbors(net, {ng.RESISTOR}):
+        for ref, middle in self.graph.neighbors(net, {pw.RESISTOR}):
             for ground in sorted(self.grounds):
-                for cap in self.graph.between(middle, ground, {ng.CAPACITOR}):
+                for cap in self.graph.between(middle, ground, {pw.CAPACITOR}):
                     found.append({'ref': ref + '+' + cap, 'resistor': ref, 'capacitor': cap,
                                   'farads': parse_capacitance(
                                       self.graph.parts.get(cap, {}).get('value'))})
@@ -75,7 +76,7 @@ class _Scan:
     def converters(self):
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != pw.IC:
                 continue
             input_nets = self._pin_nets(ref, VIN_PIN_RE)
             if not input_nets or not self._pin_nets(ref, powertree.SWITCH_NODE_PIN_RE):

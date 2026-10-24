@@ -12,6 +12,7 @@ import catalog
 import test_inductive_load as relay_fixture
 from checkers import REGISTRY, REGISTRY_BY_ID, registry_cold_rules, validate_inventories
 from checkers import netgraph as ng
+import part_words as pw
 from checkers import powertree
 from checkers.supervision import build_inventory as supervision_inventory
 from lint import Lint
@@ -175,8 +176,8 @@ class NetGraphTest(unittest.TestCase):
 
     def test_common_optocoupler_part_numbers_are_classified(self):
         for part in ('SFH617A-3', 'EL817', 'PS2561', 'TCMT1100', 'PC817'):
-            kind, _ = ng.classify('U9', {'part': part, 'value': part, 'prim': 'X', 'jedec': ''}, 4)
-            self.assertEqual(kind, ng.OPTO, part)
+            kind, _ = pw.classify('U9', {'part': part, 'value': part, 'prim': 'X', 'jedec': ''}, 4)
+            self.assertEqual(kind, pw.OPTO, part)
 
     def test_return_named_nets_are_not_rails(self):
         # rf1 公开板：Q2 源极在 VOUT_N（输出负端回流），曾按名字判成高边。
@@ -190,62 +191,62 @@ class NetGraphTest(unittest.TestCase):
             self.assertFalse(ng.is_rail(net), net)
 
     def test_classification_prefers_part_keyword_over_prefix(self):
-        self.assertEqual(self.graph.kind('Q1'), ng.MOSFET)
+        self.assertEqual(self.graph.kind('Q1'), pw.MOSFET)
         self.assertEqual(self.graph.basis('Q1'), 'part-keyword')
-        self.assertEqual(self.graph.kind('K1'), ng.RELAY)
+        self.assertEqual(self.graph.kind('K1'), pw.RELAY)
 
     def test_two_pin_part_is_not_classified_as_a_transistor(self):
-        kind, basis = ng.classify('Q9', {'part': 'AO3400', 'value': '', 'prim': '', 'jedec': ''}, 2)
-        self.assertEqual(kind, ng.UNKNOWN)
+        kind, basis = pw.classify('Q9', {'part': 'AO3400', 'value': '', 'prim': '', 'jedec': ''}, 2)
+        self.assertEqual(kind, pw.UNKNOWN)
         self.assertIn('pin count', basis)
 
     def test_kicad_library_prefix_classifies_unlisted_bjt(self):
         part = {'part': 'BCX56-16TX', 'value': 'BCX56-16TX', 'prim': 'Transistor_BJT:BCX56-16TX', 'jedec': ''}
-        self.assertEqual(ng.classify('Q7', part, 3), (ng.BJT, 'part-keyword'))
+        self.assertEqual(pw.classify('Q7', part, 3), (pw.BJT, 'part-keyword'))
 
     def test_symbol_pin_names_classify_transistor_without_keyword(self):
         part = {'part': 'XYZ123', 'value': 'XYZ123', 'prim': 'Project:SOT89_npn', 'jedec': ''}
         bce = [('E', '1'), ('C', '2'), ('B', '3')]
-        self.assertEqual(ng.classify('Q7', part, 3, bce), (ng.BJT, 'pin-names'))
+        self.assertEqual(pw.classify('Q7', part, 3, bce), (pw.BJT, 'pin-names'))
         gds = [('G', '1'), ('D5', '5'), ('S1', '1')]
-        self.assertEqual(ng.classify('Q7', part, 3, gds), (ng.MOSFET, 'pin-names'))
-        self.assertEqual(ng.classify('Q7', part, 3, [('1', '1'), ('2', '2'), ('3', '3')]), (ng.MOSFET, 'refdes-prefix'))
+        self.assertEqual(pw.classify('Q7', part, 3, gds), (pw.MOSFET, 'pin-names'))
+        self.assertEqual(pw.classify('Q7', part, 3, [('1', '1'), ('2', '2'), ('3', '3')]), (pw.MOSFET, 'refdes-prefix'))
 
     def test_keyword_contradicting_symbol_pins_is_unknown(self):
         part = {'part': 'MMBT3904', 'value': 'MMBT3904', 'prim': 'Project:SOT23', 'jedec': ''}
-        kind, basis = ng.classify('Q7', part, 3, [('G', '1'), ('D', '2'), ('S', '3')])
-        self.assertEqual(kind, ng.UNKNOWN)
+        kind, basis = pw.classify('Q7', part, 3, [('G', '1'), ('D', '2'), ('S', '3')])
+        self.assertEqual(kind, pw.UNKNOWN)
         self.assertIn('pin names', basis)
         both = dict(part, prim='Project:Q_NMOS')
-        self.assertEqual(ng.classify('Q7', both, 3)[0], ng.UNKNOWN)
+        self.assertEqual(pw.classify('Q7', both, 3)[0], pw.UNKNOWN)
 
     def test_graph_uses_symbol_pin_names_for_kind(self):
         db = {'parts': {'Q7': {'part': 'XYZ123', 'value': 'XYZ123', 'prim': 'Project:SOT89', 'jedec': ''}},
               'pin2net': {'Q7.1': 'OUT', 'Q7.2': 'VIN', 'Q7.3': 'BIAS'},
               'pinname': {'Q7.1': 'E', 'Q7.2': 'C', 'Q7.3': 'B'}, 'nets': {}}
         graph = ng.NetGraph(db)
-        self.assertEqual(graph.kind('Q7'), ng.BJT)
+        self.assertEqual(graph.kind('Q7'), pw.BJT)
         self.assertEqual(graph.role('Q7.3'), 'gate')
 
     def test_datasheet_declared_kind_is_authoritative_and_cross_checked(self):
         part = {'part': 'XYZ123', 'value': 'XYZ123', 'prim': 'Project:SOT89', 'jedec': ''}
         bce = [('E', '1'), ('C', '2'), ('B', '3')]
-        self.assertEqual(ng.classify('Q7', part, 3, bce, declared=ng.BJT), (ng.BJT, 'datasheet'))
-        kind, basis = ng.classify('Q7', part, 3, bce, declared=ng.MOSFET)      # wrong symbol for the part
-        self.assertEqual(kind, ng.UNKNOWN)
+        self.assertEqual(pw.classify('Q7', part, 3, bce, declared=pw.BJT), (pw.BJT, 'datasheet'))
+        kind, basis = pw.classify('Q7', part, 3, bce, declared=pw.MOSFET)      # wrong symbol for the part
+        self.assertEqual(kind, pw.UNKNOWN)
         self.assertIn('datasheet', basis)
         named = dict(part, part='MMBT3904')
-        self.assertEqual(ng.classify('Q7', named, 3, (), declared=ng.MOSFET)[0], ng.UNKNOWN)
+        self.assertEqual(pw.classify('Q7', named, 3, (), declared=pw.MOSFET)[0], pw.UNKNOWN)
 
     def test_kind_gap_only_for_heuristic_basis(self):
         db = {'parts': {'Q7': {'part': 'XYZ123', 'value': 'XYZ123', 'prim': '', 'jedec': ''}},
               'pin2net': {'Q7.1': 'OUT', 'Q7.2': 'VIN', 'Q7.3': 'BIAS'},
               'pinname': {'Q7.1': 'E', 'Q7.2': 'C', 'Q7.3': 'B'}, 'nets': {}}
-        self.assertEqual(ng.kind_gap(ng.NetGraph(db), 'Q7'), 'datasheet-kind:Q7')
+        self.assertEqual(pw.kind_gap(ng.NetGraph(db), 'Q7'), 'datasheet-kind:Q7')
         declared = dict(db, device_kinds={'Q7': {'kind': 'bjt', 'citation': 'DS p1 NPN transistor'}})
         graph = ng.NetGraph(declared)
-        self.assertEqual((graph.kind('Q7'), graph.basis('Q7')), (ng.BJT, 'datasheet'))
-        self.assertIsNone(ng.kind_gap(graph, 'Q7'))
+        self.assertEqual((graph.kind('Q7'), graph.basis('Q7')), (pw.BJT, 'datasheet'))
+        self.assertIsNone(pw.kind_gap(graph, 'Q7'))
 
     def test_roles_come_from_pin_names_only(self):
         self.assertEqual(self.graph.role('Q1.2'), 'drain')
@@ -254,10 +255,10 @@ class NetGraphTest(unittest.TestCase):
         self.assertIsNone(graph.role('D1.1'))
 
     def test_between_and_neighbors_respect_population(self):
-        self.assertEqual(self.graph.between('RELAY_DRV', 'V24', {ng.DIODE}), ['D1'])
+        self.assertEqual(self.graph.between('RELAY_DRV', 'V24', {pw.DIODE}), ['D1'])
         unfitted = ng.NetGraph(relay_fixture.relay_board(clamp_nc=True))
-        self.assertEqual(unfitted.between('RELAY_DRV', 'V24', {ng.DIODE}), [])
-        self.assertEqual([ref for ref, _ in self.graph.neighbors('RELAY_DRV', {ng.DIODE})], ['D1'])
+        self.assertEqual(unfitted.between('RELAY_DRV', 'V24', {pw.DIODE}), [])
+        self.assertEqual([ref for ref, _ in self.graph.neighbors('RELAY_DRV', {pw.DIODE})], ['D1'])
 
     def test_rail_and_ground_naming(self):
         self.assertTrue(ng.is_rail('VCC_3V3'))
@@ -326,17 +327,17 @@ class PinNameAliasTest(unittest.TestCase):
     """写法差异不该让识别失效；极性标记不能被抹掉。"""
 
     def test_exporter_and_index_decorations_are_recovered(self):
-        self.assertIn('EN', ng.pin_aliases('EN_12', '12'))
-        self.assertIn('G', ng.pin_aliases('G1', '3'))
-        self.assertIn('VDD', ng.pin_aliases('VDD_1', '1'))
+        self.assertIn('EN', pw.pin_aliases('EN_12', '12'))
+        self.assertIn('G', pw.pin_aliases('G1', '3'))
+        self.assertIn('VDD', pw.pin_aliases('VDD_1', '1'))
 
     def test_overbar_and_compound_names_are_recovered(self):
-        self.assertIn('RESET', ng.pin_aliases('~{RESET}', '5'))
-        self.assertIn('SCL', ng.pin_aliases('PB6/SCL', '6'))
+        self.assertIn('RESET', pw.pin_aliases('~{RESET}', '5'))
+        self.assertIn('SCL', pw.pin_aliases('PB6/SCL', '6'))
 
     def test_active_low_markers_are_preserved(self):
-        self.assertEqual(ng.pin_aliases('NRST', '4'), ('NRST',))
-        self.assertNotIn('RESET', ng.pin_aliases('RESET_N', '4'))
+        self.assertEqual(pw.pin_aliases('NRST', '4'), ('NRST',))
+        self.assertNotIn('RESET', pw.pin_aliases('RESET_N', '4'))
 
     def test_raw_name_wins_over_a_stripped_alias(self):
         db = relay_fixture.relay_board()

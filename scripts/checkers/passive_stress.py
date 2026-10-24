@@ -15,6 +15,7 @@ from solve_dividers import parse_resistor, parse_resistor_noted
 
 from . import inventory as inv
 from . import netgraph as ng
+import part_words as pw
 from .base import Checker
 
 # commodity-floors「片式电阻」表：封装 -> (70 ℃ 最弱档功率 W, 最弱档最高工作电压 V)
@@ -54,8 +55,8 @@ PACKAGE_RE = re.compile(r'^(Resistor|Capacitor)_SMD:[RC]_(0201|0402|0603|0805|12
 # 电荷泵、自举、开关、高边驱动等节点可超出所接器件的供电轨。
 UNBOUNDED_PIN_RE = re.compile(
     r'^(SW\d*|LX\d*|PH\d*|VSW|SWITCH|BOOT\w*|BST\w*|VCP|CP\w*|VGH|VBOOST|HO|HG|GH\w*|HB|HS)$', re.I)
-LINK_KINDS = {ng.RESISTOR, ng.CAPACITOR, ng.FERRITE, ng.DIODE, ng.ZENER, ng.TVS,
-              ng.JUMPER, ng.FUSE, ng.SWITCH, ng.CRYSTAL, ng.TESTPOINT}
+LINK_KINDS = {pw.RESISTOR, pw.CAPACITOR, pw.FERRITE, pw.DIODE, pw.ZENER, pw.TVS,
+              pw.JUMPER, pw.FUSE, pw.SWITCH, pw.CRYSTAL, pw.TESTPOINT}
 POWER_PINTYPES = {'power_in', 'power_out'}
 # 分类器未识别、但两脚且不升压的 LED/热敏电阻：只作定界连通件，本身不生成预判行。
 TWO_TERMINAL_LINK_RE = re.compile(r'^(LED|TH|NTC|RT)\d', re.I)
@@ -73,7 +74,7 @@ GROUND_TOKENS = {'GND', 'PGND', 'AGND', 'DGND', 'SGND', 'EGND', 'RTN', 'RETURN'}
 
 def ground_name(net):
     """地或回流网的名字：GND 族、以 RTN/RETURN 结尾、或 GND_<域>；domains 与本预判共用。"""
-    tokens = ng.normalize(net).split('_')
+    tokens = pw.normalize(net).split('_')
     return ng.is_ground(net) or tokens[-1] in GROUND_TOKENS or (len(tokens) == 2 and tokens[0] in GROUND_TOKENS)
 
 
@@ -114,7 +115,7 @@ class _Bounds:
                 return declared
         if ng.is_ground(net):
             return 'GND'          # 通用地名沿用旧行为：视为同一参考
-        return ng.normalize(net) if _ground_name(net) else None
+        return pw.normalize(net) if _ground_name(net) else None
 
     def ic_supply(self, ref):
         if ref not in self._ic:
@@ -149,12 +150,12 @@ class _Bounds:
                 if not graph.is_fitted(ref):
                     continue
                 kind = graph.kind(ref)
-                if kind == ng.UNKNOWN and TWO_TERMINAL_LINK_RE.match(ref) and len(graph.pins_of(ref)) == 2:
-                    kind = ng.RESISTOR
-                if ng.name_matches(UNBOUNDED_PIN_RE, graph.pinname.get(node), pin):
+                if kind == pw.UNKNOWN and TWO_TERMINAL_LINK_RE.match(ref) and len(graph.pins_of(ref)) == 2:
+                    kind = pw.RESISTOR
+                if pw.name_matches(UNBOUNDED_PIN_RE, graph.pinname.get(node), pin):
                     gap = 'unbounded-pin:' + node
                     break
-                if kind == ng.IC:
+                if kind == pw.IC:
                     supply = self.ic_supply(ref)
                     if supply is None or isinstance(supply, str):
                         gap = 'undeclared-supply:%s(%s)' % (ref, supply or 'no-declared-rail')
@@ -171,7 +172,7 @@ class _Bounds:
                             tops.append(fixed[1])
                             domains |= {self.domain(other)} - {None}
                             continue
-                        ac = ac or kind == ng.CAPACITOR
+                        ac = ac or kind == pw.CAPACITOR
                         seen.add(other)
                         queue.append(other)
                 else:
@@ -196,9 +197,9 @@ def _signal_series(graph, nets):
         for node in graph.nodes_on(net):
             ref = node.partition('.')[0]
             kind = graph.kind(ref) if graph.is_fitted(ref) else None
-            if kind == ng.CONNECTOR:
+            if kind == pw.CONNECTOR:
                 found.add('connector')
-            elif kind == ng.IC and graph.pintype.get(node) not in POWER_PINTYPES:
+            elif kind == pw.IC and graph.pintype.get(node) not in POWER_PINTYPES:
                 found.add('ic-signal')
         return frozenset(found)
     if any(ng.is_rail(net) for net in nets):
@@ -225,7 +226,7 @@ def _pin_feeds(db, intent, state):
     devices = (intent or {}).get('devices') or {}
     found = []
     for ref in sorted(graph.fitted):
-        if graph.kind(ref) != ng.IC:
+        if graph.kind(ref) != pw.IC:
             continue
         pins = (devices.get(ref) or {}).get('pins') if isinstance(devices.get(ref), dict) else None
         supplies = [rails[net][0][1] for net in _supply_nets(graph, ref, pins) if net in rails]
@@ -240,12 +241,12 @@ def _pin_feeds(db, intent, state):
                 continue
             others = [n for n in graph.nodes_on(net) if n != node and graph.is_fitted(n.partition('.')[0])]
             kinds = {n: graph.kind(n.partition('.')[0]) for n in others}
-            if not others or any(k not in (ng.RESISTOR, ng.CAPACITOR) for k in kinds.values()):
+            if not others or any(k not in (pw.RESISTOR, pw.CAPACITOR) for k in kinds.values()):
                 continue
             feeds, divider = [], False
             for other, kind in sorted(kinds.items()):
                 resistor = other.partition('.')[0]
-                far = [n for n in graph.nets_of(resistor) if n != net] if kind == ng.RESISTOR else []
+                far = [n for n in graph.nets_of(resistor) if n != net] if kind == pw.RESISTOR else []
                 if len(far) != 1:
                     continue
                 if _ground_name(far[0]):
@@ -300,18 +301,18 @@ def _series_chains(graph, bounds):
             if ref == came or not graph.is_fitted(ref):
                 continue
             kind = graph.kind(ref)
-            if kind == ng.RESISTOR and len(graph.pins_of(ref)) == 2:
+            if kind == pw.RESISTOR and len(graph.pins_of(ref)) == 2:
                 nxt.append(ref)
-            elif kind == ng.CAPACITOR and len(graph.pins_of(ref)) == 2 and all(
+            elif kind == pw.CAPACITOR and len(graph.pins_of(ref)) == 2 and all(
                     bounds._fixed(n) == (0.0, 0.0) for n in graph.nets_of(ref) if n != net):
                 held = True
-            elif not (kind == ng.IC and native.get(node) == 'input'):
+            elif not (kind == pw.IC and native.get(node) == 'input'):
                 return None
         return (nxt[0], held) if len(nxt) == 1 else None
 
     bounds_by_ref, taps, done = {}, {}, set()
     for ref in sorted(graph.fitted):
-        if ref in done or graph.kind(ref) != ng.RESISTOR or len(graph.nets_of(ref)) != 2:
+        if ref in done or graph.kind(ref) != pw.RESISTOR or len(graph.nets_of(ref)) != 2:
             continue
         a, b = graph.nets_of(ref)
         sides = []
@@ -368,7 +369,7 @@ def _scan(db, intent, state):
     parts = []
     for ref in sorted(graph.fitted):
         part, kind = graph.parts.get(ref, {}), graph.kind(ref)
-        prefix = {ng.RESISTOR: 'R', ng.CAPACITOR: 'C'}.get(kind)
+        prefix = {pw.RESISTOR: 'R', pw.CAPACITOR: 'C'}.get(kind)
         package = _package(part, prefix) if prefix else None
         assumed = bool(prefix and not package and not str(part.get('jedec') or '').strip()
                        and not identified(db, ref))
@@ -384,7 +385,7 @@ def _scan(db, intent, state):
         written = bom_ratings(((db.get('bom') or {}).get('parts') or {}).get(ref))
         if written:
             entry['bom_ratings'] = written
-        if kind == ng.RESISTOR and not any(_ground_name(net) for net in entry['nets']):
+        if kind == pw.RESISTOR and not any(_ground_name(net) for net in entry['nets']):
             entry['signal_series'] = _signal_series(graph, entry['nets'])
         windows, domains = [], set()
         for net in entry['nets']:
@@ -398,8 +399,8 @@ def _scan(db, intent, state):
             (lo_a, hi_a), (lo_b, hi_b) = windows
             entry['v_across_max'] = round(max(hi_a - lo_b, hi_b - lo_a), 6)
             # a resistor of a series string shares the string's voltage; a capacitor on a filtered tap sees the tap
-            shared = chains.get(ref) if kind == ng.RESISTOR else None
-            tap = next((taps[n] for n in entry['nets'] if n in taps), None) if kind == ng.CAPACITOR else None
+            shared = chains.get(ref) if kind == pw.RESISTOR else None
+            tap = next((taps[n] for n in entry['nets'] if n in taps), None) if kind == pw.CAPACITOR else None
             if tap is not None and all(bounds._fixed(n) == (0.0, 0.0) for n in entry['nets'] if n not in taps):
                 shared = (round(max(abs(tap[0]), abs(tap[1])), 6), 'series-chain-tap')
             if shared and shared[0] < entry['v_across_max']:
@@ -443,7 +444,7 @@ def _proposal(entry):
             note += ('。信号串阻：按 wca-formulas.md“信号串联电阻”行定界（直流 I²R 加动态 ½·C·ΔV²·N_tr），'
                      '不用跨轨 V²/R，也不只算稳态电流')
         return None, {}, note
-    if entry['kind'] == ng.RESISTOR:
+    if entry['kind'] == pw.RESISTOR:
         parsed = parse_resistor_noted(entry['value'], default_tol=DEFAULT_TOL)
         if not parsed or parsed['kohm'] * 1000 < 1:
             return None, {'v_across_max': v}, '阻值不可解析或 <1 Ω（跳线/检流不适用最弱档表）'
@@ -547,7 +548,7 @@ def _resistor_values(db):
     for ref, part in sorted((db.get('parts') or {}).items()):
         value = part.get('value') if isinstance(part, dict) else None
         if (isinstance(part, dict) and not part.get('nc') and isinstance(value, str) and value.strip()
-                and graph.kind(ref) == ng.RESISTOR):
+                and graph.kind(ref) == pw.RESISTOR):
             yield ref, value, parse_resistor_noted(value)
 
 

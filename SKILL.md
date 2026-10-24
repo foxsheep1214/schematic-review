@@ -9,8 +9,6 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 
 依据当前需求、设计数据和器件保证条件，判断原理图在规定工况下能否实现预期功能；找出有证据的偏离，
 给出可执行、可复验的修改建议，支持设计迭代及原理图冻结进入 PCB Layout。
-审查按 [七项审查要点](references/review-charter.md) 组织：需求与功能、器件与连接、工况功能与性能、
-参数裕量与应力、保护与异常响应、实施与下游约束、证据覆盖与复验闭环。
 
 ## 架构
 
@@ -33,15 +31,25 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 ⑤ 出报告    工具     只从台账生成报告并打包                                   → 审查报告.md / .html + record/
 ```
 
-| 环 | 执行流程步骤 | 审查员要做的 | 审查员不能做的 |
-|---|---|---|---|
-| ① 读入 | 0、1、3 | 核器件身份和资料，在 `intent.json` 写有出处的声明 | 引用设计方文档；猜阻值、料号 |
-| ② 出计划 | 2、4 | 对候选电路逐个下决定，补齐电源轨后重生成计划 | 手画电路、手加计划行（该查没查的登记 `intent.rule_gaps`） |
-| ③ 判断 | 5、6 | 按功能写判定，数值全部自己算 | 逐行各写一套结论；让工具或设计文档替自己下结论 |
-| ④ 校验 | 7 | 按错误改记录，按疑点复核 | 为了过校验改结论、删检查 |
-| ⑤ 出报告 | 7 | 在 `notes.json` 补白话说明 | 手改报告；交三样以外的文件 |
+审查员从头到尾只沿一条线走：计划的功能树（系统功能 → 功能电路 → 接口 → 全板）。判断逻辑是一条链，每一层只在一个地方定义，其他文件只链接：
 
-改版复审（第 8 步）不是另一条路：在②和④两环加上旧网表和旧计划，按改动扩大复验范围。
+```
+对象（功能树，catalog.py）→ 问题（功能框架，catalog.py）→ 条件与余量（审查员自己算，plan-and-results.md）
+→ 行（derive_rows.py 派生）→ 对账（validate_review.py）→ 报告（render_report.py 只读台账）
+```
+
+规则编号里的内容域和方式字母只是行上的标签，说明一条规则查什么、怎么查，不是审查的顺序；
+七项审查要点 G1–G7 是改规则时回答“为什么有这条规则”的坐标（[审查要点](references/review-charter.md)），审查员不按它走。
+
+| 环 | 执行流程 | 审查员要做的 | 审查员不能做的 |
+|---|---|---|---|
+| ① 读入 | 1.1–1.3 | 核器件身份和资料，在 `intent.json` 写有出处的声明 | 引用设计方文档；猜阻值、料号 |
+| ② 出计划 | 2.1–2.3 | 对候选电路逐个下决定，补齐电源轨后重生成计划 | 手画电路、手加计划行（该查没查的登记 `intent.rule_gaps`） |
+| ③ 判断 | 3.1–3.3 | 按功能写判定，数值全部自己算 | 逐行各写一套结论；让工具或设计文档替自己下结论 |
+| ④ 校验 | 4 | 按错误改记录，按疑点复核 | 为了过校验改结论、删检查 |
+| ⑤ 出报告 | 5 | 在 `notes.json` 补白话说明 | 手改报告；交三样以外的文件 |
+
+改版复审不是另一条路：在②和④两环加上旧网表和旧计划，按改动扩大复验范围（执行流程末尾）。
 
 **不变的决定**（每条都是架构的一部分，改动按下面“改架构先问人”办理）：
 
@@ -102,7 +110,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 何时读 | 文件 |
 |---|---|
 | 架构明细：环间文件、格式版本、脚本归属、历次架构决定 | [architecture.md](references/architecture.md) |
-| 审查目的、七项审查要点、规则取舍 | [review-charter.md](references/review-charter.md) |
+| 改规则时：审查目的、七项审查要点、规则取舍 | [review-charter.md](references/review-charter.md) |
 | 规则编号、判据、功能电路 | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
@@ -135,13 +143,15 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（网表扫描、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
 计划里没有、审查员认为该查的项不直接加行（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/plan-and-results.md#一intentjsonschema_version-4)。
 
-功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（第 2 步）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各行写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
+功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（2.1）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各行写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
 
 ## 执行流程
 
 大工程分批推进并保留进度，不缩小覆盖范围；身份或图形疑点立即前置。
 
-### 0. 基线与需求
+### ① 读入
+
+#### 1.1 需求与基线
 
 从资料和对话提取功能/量化指标、接口角色与数量、输入范围/负载、温度、降额依据、保留/删除项，
 写入 `intent.json`（字段见 [计划与结果台账](references/plan-and-results.md)）：需求原文由
@@ -153,7 +163,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 按 [输入与覆盖](references/inputs-and-coverage.md) 记录输入版本/哈希；PDF 与网表须核修订号证明同版。
 仅有 PDF 时逐页读图并声明范围，不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装须另获授权。
 
-### 1. 解析与完整性
+#### 1.2 解析与完整性
 
     python3 scripts/parse_netlist.py <allegro目录> -o db.json
     python3 scripts/parse_kicad.py <文件.kicad_sch|kicadxml> -o db.json
@@ -168,17 +178,39 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 审查可读材料；记录具体资料矛盾或保证缺口，不用全板通用阻断代替逐项结论。
 逐页提取 PDF 文本并建页码/页名/网表路径映射；极性、旋转不清时渲染局部放大。
 
-### 2. 网表扫描：自动扫描与计划
+#### 1.3 资料取证与器件身份（DEV-D01、DEV-D02）
 
-第 2–4 步的命令按这个顺序跑（第 3 步的取证穿插在中间，因为候选要用核验过的器件类别）：
+命令在 2.1 的清单里：取证是 ②，排在冷扫 ① 之后，因为候选要用核验过的器件类别；资料补齐后的重审计是 ⑦（2.2）。
+
+- 先核 MPN、封装/温度/档位与 BOM/符号；关键采样电阻、保护/安规件、储能电容和磁件也按原厂订货表核对
+  阻值/容量/耐压组合，不把系列范围当具体后缀的可订购范围。候选不代表身份成立。
+- PART/VALUE 冲突或图面/BOM 与链接资料矛盾时，按 [身份冲突与身份分支](references/evidence-proportionality.md#身份冲突与身份分支)
+  处理：不一致本身判 DEV-D04 FAIL，电气判据逐分支给条件结论，全部分支都违反才判电气 FAIL。
+- 按实际用途读引脚、额定/推荐条件、相关 min/max、模式和 errata；“官方物理脚”指手册引脚定义的编号或名称，
+  焊盘映射属于 PCB 阶段。核过的脚表写入 `intent.devices`，DEV-D02 差集和 DEV-D05 引脚处置据此列出。
+- 器件类别写 `intent.device_kinds`（手册页码加原文，`audit_datasheets.py --intent` 核验）：分立半导体和连接器写
+  类型，集成电路写手册标题给出的角色（pwm_controller、gate_driver、sr_controller、pd_controller、regulator、
+  supervisor、opamp_comparator、shunt_reference、mcu、transceiver、isolator，都不是才写 ic）。没核验过的
+  U/M 位号与 Q/D 位号一样是 DEV-D02 缺口；角色决定电路候选的核心器件，计划顶层 `domains` 据此列出参考地分区、
+  跨域器件与截止网络（[自动检查](references/automation.md)）。
+- AI 已逐端核对的器件角色和电源/返回分组按 [可复用声明](references/reviewed-declarations.md) 保存来源与输入指纹；
+  下次先验证声明，输入变化则重新核对，不能只刷新摘要。`manual_*` 兼容字段不代表人员确认，核对者身份须如实记录。
+- 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
+  PDF 提取的关键数值对照渲染页核单位。
+
+### ② 出计划
+
+#### 2.1 冷扫、候选与决定
+
+② 出计划的命令按这个顺序跑（1.3 的取证 ②、⑦ 穿插在中间）：
 
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan-cold.json --json lint-cold.json       # ① 冷扫：还没有电路决定
-    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --intent intent.json --json datasheet-audit.json             # ② 取证，核验 intent.device_kinds（第 3 步）
+    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --intent intent.json --json datasheet-audit.json             # ② 取证，核验 intent.device_kinds（1.3）
     python3 scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json   # ③ 候选
     python3 scripts/circuit_decisions.py intent.json record/circuit-candidates.json --db db.json --write                               # ④ 决定，推出 intent.circuits
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --datasheet-audit datasheet-audit.json --candidates record/circuit-candidates.json --plan-json review-plan-cold.json --json lint-cold.json   # ⑤ 带候选重跑冷扫
     python3 scripts/gap_inventory.py review-plan-cold.json --datasheet-audit datasheet-audit.json --md 资料请求.md                      # ⑥ 资料请求
-    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --intent intent.json --json datasheet-audit.json   # ⑦ 补齐资料后重审计（第 4 步）
+    python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --resolution datasheet-resolution.json --intent intent.json --json datasheet-audit.json   # ⑦ 补齐资料后重审计（2.2）
     python3 scripts/lint.py db.json --log netlist.log --intent intent.json --datasheet-audit datasheet-audit.json --candidates record/circuit-candidates.json --merge-plan review-plan-cold.json --plan-json review-plan.json --json lint-hot.json   # ⑧ 合并扫描，出最终计划
 
 intent 一旦写了 `circuit_decisions`，每次扫描都要带 `--candidates`，否则直接报错。每次扫描都会打印计划要你先处理的提示（阻值读不出、电路类型问不到规则、未声明电压的轨、无界节点/跨域），这些提示也写在计划的 `diagnostics` 里。
@@ -205,8 +237,6 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 校验拒收（`independence.py`）。每个数值都由 SR 从原理图、需求和原厂资料自己算。原理图上看不出、只写在设计文档里的事实（固件设定的门限、寄存器配置等），
 写成移交项请设计方确认，确认后作为需求或输入进入审查，不直接引用设计文档。
 
-网表扫描后先出资料请求（命令 ⑥），按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取。
-
 冷检的 FINDING/CANDIDATE 已各成计划一行，与其他检查一样作答。补齐命名启发式漏掉的对象/工况，登记到 `intent.rule_gaps` 后重新生成计划。排除候选须有反证，无特征不等于 NA。
 电路检查项只在网表上有它问的机制时生成（功能框架的 `not_asked` 列出没问的和原因）；扫描提示某电路类型问不到一半规则（`CIRCUIT_TYPE_MISFIT`）时换电路类型或不建该电路。
 计划行带 `requires` 仍记 NA 的，`applicability_evidence` 写排除它的 `nets`/`pins`；只说“不适用”的通过被拒，改记 NA。
@@ -215,48 +245,33 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 扫描提示“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考地分区 `domain`
 （由审查者按需求和稳压器/钳位手册自行定界，逐条写 `citation`），再合并扫描；空的 `power_rails` 会让全部阻容预判失效。扫描提示“阻值读不出的电阻”时当场告诉用户：列出位号和原值，请设计方改成 `阻值[/公差][/额定功率][/额定电压][/封装]` 的写法或确认阻值，不自行猜阻值；未改之前这些电阻的预判和脚电流不算。值后面多一个说不清的词（如 `47R/1%/2W/pulse`）时阻值照读，诊断 `RESISTOR_VALUE_WORD` 只列这个词：它说的要求（抗脉冲能量、额定电压）是特殊要求，写成 BOM 约束，不开“阻值读不出”的待办。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
 
-### 3. 资料取证与器件身份（DEV-D01、DEV-D02）
+#### 2.2 资料请求与重审计
 
-命令是第 2 步的 ②；资料补齐后的重审计是 ⑦。
+命令是 2.1 清单的 ⑥、⑦。网表扫描后先出资料请求（⑥），按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取。资料补齐后重审计（⑦）。
 
-- 先核 MPN、封装/温度/档位与 BOM/符号；关键采样电阻、保护/安规件、储能电容和磁件也按原厂订货表核对
-  阻值/容量/耐压组合，不把系列范围当具体后缀的可订购范围。候选不代表身份成立。
-- PART/VALUE 冲突或图面/BOM 与链接资料矛盾时，按 [身份冲突与身份分支](references/evidence-proportionality.md#身份冲突与身份分支)
-  处理：不一致本身判 DEV-D04 FAIL，电气判据逐分支给条件结论，全部分支都违反才判电气 FAIL。
-- 按实际用途读引脚、额定/推荐条件、相关 min/max、模式和 errata；“官方物理脚”指手册引脚定义的编号或名称，
-  焊盘映射属于 PCB 阶段。核过的脚表写入 `intent.devices`，DEV-D02 差集和 DEV-D05 引脚处置据此列出。
-- 器件类别写 `intent.device_kinds`（手册页码加原文，`audit_datasheets.py --intent` 核验）：分立半导体和连接器写
-  类型，集成电路写手册标题给出的角色（pwm_controller、gate_driver、sr_controller、pd_controller、regulator、
-  supervisor、opamp_comparator、shunt_reference、mcu、transceiver、isolator，都不是才写 ic）。没核验过的
-  U/M 位号与 Q/D 位号一样是 DEV-D02 缺口；角色决定电路候选的核心器件，计划顶层 `domains` 据此列出参考地分区、
-  跨域器件与截止网络（[自动检查](references/automation.md)）。
-- AI 已逐端核对的器件角色和电源/返回分组按 [可复用声明](references/reviewed-declarations.md) 保存来源与输入指纹；
-  下次先验证声明，输入变化则重新核对，不能只刷新摘要。`manual_*` 兼容字段不代表人员确认，核对者身份须如实记录。
-- 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
-  PDF 提取的关键数值对照渲染页核单位。
+#### 2.3 合并扫描
 
-### 4. 资料审计与计划合并
-
-命令是第 2 步的 ⑦、⑧。`review-plan.json` 是唯一最终计划。保证值核对（E）行由网表定出对象，审查者按两端规格书的保证 Min/Max 判定；
+命令是 2.1 清单的 ⑧。`review-plan.json` 是唯一最终计划。保证值核对（E）行由网表定出对象，审查者按两端规格书的保证 Min/Max 判定；
 资料未 AVAILABLE 时判资料不足，例外见 [保证值核对的例外](references/evidence-proportionality.md#保证值核对的例外)。
 
-### 5. 专家审查：连接追踪（T）、工程计算（C）、条款核对（D）
+### ③ 判断
 
-判断的单位是**功能**，不是检查行。分三小步：
+判断的单位是**功能**，不是检查行。分三小步：先逐个功能写判定（3.1），再由工具派生绑定的行（3.2），最后手填框架外的行（3.3）。
 
-1. **功能判定**：按计划 `functions[]` 的框架逐个填写 `review-results.json` 的 `functions[]`；字段、条件的五种、余量依据和开放项
-   都按 [功能判定](references/plan-and-results.md#功能判定functions)。框架自带问题、检查行、每条规则的盲区和五步核对单，审查员读手册、自己算，不翻规则书。要点：
-   - 条件（`conditions`）先能定位，再写种类；判断（`judgements`）引强制条款或网表事实，数字限值只在余量里比较。
-   - `objects` 就是电路（候选经决定）的成员；要扩大或漏了电路，改 `intent.circuit_decisions` 后重生成。一个电路的缺口和失败写在它自己的功能里；
-     跨电路的缺口只写一次，影响条目用 `check_ids` 点名另一电路的行。自建功能只装不属于任何框架的行；文档检查（DOC-*）在行上判，不包成功能。
-   - 余量按 `margin.basis.kind` 下结论（GUARANTEED_BOUND 满足才 PASS、REACHABLE_CASE 不满足才 FAIL、EXACT_ENVELOPE 两头都判、ESTIMATE 不判，
-     例外见该节“估算判通过”）；器件参数按[工作点定界表](references/bounding-table.md)定界，门禁重算。
-   - 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，再分 DESIGN_VALUE / DELIVERABLE_PENDING / VENDOR_DATUM；
-     行只在本方面本状态有证明通过的余量或判断时 PASS，没人判过的方面不默认通过。
-2. **行派生**：跑 `derive_rows.py`（见第 7 步）；绑定了功能的行不手填，绑定了树上检查的需求行（`bound_checks`）取绑定行中最差的结论，也不手填。
-3. **手填剩余行**：图面目检、引脚表、器件身份、需求条款等事实性检查照下面的写法；这些行要判资料不足，也必须先建一个功能判定。
+#### 3.1 功能判定
 
-按 PWR → RST → CLK → SIG → ANA → PRO → DRV 推进，每条规则逐对象、逐状态给结果；全板项逐条给适用性和结果。
+按计划 `functions[]` 的框架逐个填写 `review-results.json` 的 `functions[]`；字段、条件的五种、余量依据和开放项
+都按 [功能判定](references/plan-and-results.md#功能判定functions)。框架自带问题、检查行、每条规则的盲区和五步核对单，审查员读手册、自己算，不翻规则书。要点：
+
+- 条件（`conditions`）先能定位，再写种类；判断（`judgements`）引强制条款或网表事实，数字限值只在余量里比较。
+- `objects` 就是电路（候选经决定）的成员；要扩大或漏了电路，改 `intent.circuit_decisions` 后重生成。一个电路的缺口和失败写在它自己的功能里；
+  跨电路的缺口只写一次，影响条目用 `check_ids` 点名另一电路的行。自建功能只装不属于任何框架的行；文档检查（DOC-*）在行上判，不包成功能。
+- 余量按 `margin.basis.kind` 下结论（GUARANTEED_BOUND 满足才 PASS、REACHABLE_CASE 不满足才 FAIL、EXACT_ENVELOPE 两头都判、ESTIMATE 不判，
+  例外见该节“估算判通过”）；器件参数按[工作点定界表](references/bounding-table.md)定界，门禁重算。
+- 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，再分 DESIGN_VALUE / DELIVERABLE_PENDING / VENDOR_DATUM；
+  行只在本方面本状态有证明通过的余量或判断时 PASS，没人判过的方面不默认通过。
+
+按计划 `functions[]` 的顺序推进：系统功能 → 功能电路 → 接口 → 全板；每个功能逐对象、逐状态给结果，全板项逐条给适用性和结果。
 功能电路按实际 package/circuit/state/ref 归组并列必需检查项 ID，跨类型依赖说明真实路径；不能只按规则编号归组。
 按 [功能电路依赖与状态核对](references/plan-and-results.md#功能电路依赖与状态核对) 核全部实际检查项、外围选值窗口与掉电路径。
 遇到共享控制网、多供源/状态、功能父项或共享整改任务，先读 [执行一致性](references/execution-consistency.md)。
@@ -278,35 +293,41 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 - **条款核对**：每颗 IC/模组核推荐工作条件（DEV-C05）和逐脚处置（DEV-D05）；连接器核对端定义（DEV-D03）和对外防护（PRO-D03）；
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
 
-### 6. 图面目检（V）
+#### 3.2 行派生
 
-所有页面留目检记录（DOC-V01），新页和变更区细读；极性、pin1/视图、选项表、同名端、NC 标记以图形为证据。
-注释、遗留命名和图框版本按 DOC-V02，装配选项互斥与完整性按 DOC-T01。
-
-### 7. 结果、报告与校验
-
-结果独立保存为 `review-results.json`，绑定最终计划；批量脚本只录入已审结论。功能判定是判断单位，逐项检查是审计明细，
-待办由功能判定的开放项派生（编号 W-<key>），见 [台账三层](references/plan-and-results.md)。局部额定/寿命缺口用同规则 `split_out` 定位到实际对象；保留其余对象的已核范围，
-不为降低条数合并独立电源级或补证动作。录入前按 [功能复核](references/plan-and-results.md#功能复核) 核每个功能的条款、计算、开放项的
-`decides` 范围和手填行的对象、路径、因果、需求的分项要求（含多个分项要求的需求只有全部适用分项要求通过才 PASS）；校验的 F1–F12 和质量筛查零提示不能代替这一步。
-   审查员自己绑到功能的行必须是该功能对象上的行；需求行（REQ-D01.<需求 ID>）不整行记阶段 NA，
-   测试要求只在它的条款上记 NA 并链接单独的阶段 NA 行；成本、体积、取舍优先级这类优化目标或范围说明的需求行记 NOT_APPLICABLE 并引需求原文，不写 PASS。
-证据不足先按 [分出下游工作](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
-批量脚本不能用一句固定兜底语给全部证据不足定级。
-功能判定写完后先派生已绑定的行（结论、open_ref/fail_ref、rationale 都从功能来；手填的行只对账不覆盖），再手填框架外的行：
+功能判定写完后先派生已绑定的行（结论、open_ref/fail_ref、rationale 都从功能来；手填的行只对账不覆盖）；
+绑定了功能的行不手填，绑定了树上检查的需求行（`bound_checks`）取绑定行中最差的结论，也不手填：
 
     python3 scripts/derive_rows.py review-plan.json review-results.json -o review-results.json
 
-完成后对账：
+#### 3.3 手填剩余行与图面目检（V）
+
+框架外的行手填：图面目检、引脚表、器件身份、需求条款等事实性检查；这些行要判资料不足，也必须先建一个功能判定。
+审查员自己绑到功能的行必须是该功能对象上的行；需求行（REQ-D01.<需求 ID>）不整行记阶段 NA，
+测试要求只在它的条款上记 NA 并链接单独的阶段 NA 行；成本、体积、取舍优先级这类优化目标或范围说明的需求行记 NOT_APPLICABLE 并引需求原文，不写 PASS。
+所有页面留目检记录（DOC-V01），新页和变更区细读；极性、pin1/视图、选项表、同名端、NC 标记以图形为证据。
+注释、遗留命名和图框版本按 DOC-V02，装配选项互斥与完整性按 DOC-T01。
+
+### ④ 校验
+
+结果独立保存为 `review-results.json`，绑定最终计划；批量脚本只录入已审结论。功能判定是判断单位，逐项检查是审计明细，
+待办由功能判定的开放项派生（编号 W-<key>），见 [台账三层](references/plan-and-results.md)。局部额定/寿命缺口用同规则 `split_out` 定位到实际对象；保留其余对象的已核范围，
+不为降低条数合并独立电源级或补证动作。对账前先按 [功能复核](references/plan-and-results.md#功能复核) 核每个功能的条款、计算、开放项的
+`decides` 范围和手填行的对象、路径、因果、需求的分项要求（含多个分项要求的需求只有全部适用分项要求通过才 PASS）；校验的 F1–F12 和质量筛查零提示不能代替这一步。
+证据不足先按 [分出下游工作](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
+批量脚本不能用一句固定兜底语给全部证据不足定级。
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --json review-gate.json
 
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。
 - 已有资料尚未读算的项记 REVIEW_INCOMPLETE，本轮自己读算完；审查未完成时只交进度，`pack_review.py` 拒绝打包。
   只剩 SR 工具自身限制、已手工核完的写 `manual_verification`（什么算工具限制见 [单条检查](references/plan-and-results.md#单条检查)）。
+- 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
+
+### ⑤ 出报告
+
 - 进报告的文字（任务、finding、handoff、notes）用白话，不用 [写法要求](references/report-and-remediation.md) 列出的词；
   `pack_review.py` 会检查。
-- 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
 - **交付只有三样**：项目审查目录顶层只放 `审查报告.md`、`审查报告.html`（同一内容，图直接显示）和 `record/`，其余中间文件留在工作目录。
   报告由脚本从台账生成，agent 只在 `notes.json` 里补白话说明（格式见 [报告与修改说明](references/report-and-remediation.md)）：
 
@@ -319,7 +340,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   顶层有其他文件或引用的证据找不到时打包失败。不另写 README 或说明文档；HTML 只能是脚本生成的那份。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。
 
-### 8. 改版复审（H）
+### 改版复审（H）
 
 网表扫描和合并扫描传同一 `--old-db`、`--old-plan`，与本版 `--merge-plan` 分开；沿变更的供电/控制/保护依赖扩展复验。
 保留每个历史 ID，区分撤回、复发、接受、已修复；断言要证明期望的电气状态，“字段变了”不足以关闭（REQ-H01）；
@@ -335,7 +356,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   精确配对只按检查项标识（`check_key`：规则、规则版本、去掉电路名的对象、判据）配对，报配对率、已答比例和一致率，列出通过对失败和 P0/P1 分歧；
   按电路对齐的结果只作建议配对，确认后用 `--alias` 带位置引用加入精确配对。差异里反复出现的写法先找现有校验为什么放过，再加机器能数的护栏，不加措辞要求。
 - 新脚本先在 [架构说明](references/architecture.md#二每个脚本属于哪一环) 归环归类：入口（执行流程里直接调用）、工具（特定情形手动调用）、库（只被导入）。只有入口写进执行流程；新增入口属于架构调整。
-- 工程规则身份由 `scripts/review_engine.py` 与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。
+- 工程规则身份由 `scripts/electrical_contract.py`（`engine_identity`）与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。
 - 规则编号、判据、审查要点归属和功能电路只在 `scripts/catalog.py` 登记，改后运行
   `python3 scripts/catalog.py --write-doc references/check-catalog.md`。来源为“全板通用”“电路检查项”的新规则
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在计划生成的对应层（电路与器件 `plan_circuits.py`、接口 `interfaces.py`、

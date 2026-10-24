@@ -10,6 +10,7 @@ import catalog
 from . import hotmath
 from . import inventory as inv
 from . import netgraph as ng
+import part_words as pw
 from . import powertree
 from . import states as state_lib
 from .base import Checker
@@ -67,7 +68,7 @@ class _Scan:
     def _series_resistors(self, nets):
         found = []
         for net in nets:
-            for ref, other in self.graph.neighbors(net, {ng.RESISTOR}):
+            for ref, other in self.graph.neighbors(net, {pw.RESISTOR}):
                 found.append({'ref': ref, 'from': net, 'to': other,
                               'value': self.graph.parts.get(ref, {}).get('value')})
         return sorted(found, key=lambda item: item['ref'])
@@ -79,12 +80,12 @@ class _Scan:
                 ref = node.partition('.')[0]
                 if ref == opto_ref or not self.graph.is_fitted(ref):
                     continue
-                if self.graph.kind(ref) in (ng.IC, ng.CONNECTOR, ng.MOSFET, ng.BJT):
+                if self.graph.kind(ref) in (pw.IC, pw.CONNECTOR, pw.MOSFET, pw.BJT):
                     found.append({'node': node, 'kind': self.graph.kind(ref)})
         return sorted(found, key=lambda item: item['node'])
 
     def _pullups(self, net):
-        return sorted({ref for ref, other in self.graph.neighbors(net, {ng.RESISTOR})
+        return sorted({ref for ref, other in self.graph.neighbors(net, {pw.RESISTOR})
                        if self.tree.is_rail(other)})
 
     def _internal_pullup(self, ref, collector):
@@ -92,7 +93,7 @@ class _Scan:
         if pull is None or internal_pullup_errors(pull, self.graph.db):
             return None
         receiver = pull['node'].partition('.')[0]
-        if (receiver != ref and self.graph.kind(receiver) == ng.IC
+        if (receiver != ref and self.graph.kind(receiver) == pw.IC
                 and self.graph.is_fitted(receiver) and self.state['id'] in pull['states']
                 and self.graph.pin2net.get(pull['node']) == collector):
             return pull
@@ -103,7 +104,7 @@ class _Scan:
         for ref in sorted(graph.parts):
             if ref in self.excluded or not graph.is_fitted(ref):
                 continue
-            if graph.kind(ref) != ng.OPTO:
+            if graph.kind(ref) != pw.OPTO:
                 continue
             nodes = {role: graph.node_named(ref, role)
                      for role in ('led_anode', 'led_cathode', 'out_collector', 'out_emitter')}

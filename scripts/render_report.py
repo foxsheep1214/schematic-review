@@ -20,6 +20,7 @@ import sys
 from collections import Counter, OrderedDict, defaultdict
 from difflib import SequenceMatcher
 from pathlib import Path
+import function_reading
 from review_functions import circuit_functions
 from task_scope import ownership, task_view
 from report_html import to_html
@@ -355,7 +356,7 @@ def function_basis(fn):
     """What the verdict rests on: the computed result and its margin, else why nothing was computed."""
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
     parts = [calc.get('result')] if calc.get('result') else []
-    for margin in results_model.margins(calc):   # one margin written per aspect is stated once
+    for margin in function_reading.margins(calc):   # one margin written per aspect is stated once
         parts.append('余量 %s 对 %s' % (('%s %s' % (_shown(margin['value']), margin.get('unit') or '')).strip(),
                                        margin.get('against') or ''))
     parts = unique(parts)

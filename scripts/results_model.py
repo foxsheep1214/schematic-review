@@ -17,6 +17,7 @@ Derived here (never written):
 """
 import copy
 from collections import Counter
+from electrical_contract import text
 
 SCHEMA_VERSION = 6
 LEVELS = ('P0', 'P1', 'P2', 'P3')
@@ -39,24 +40,12 @@ OPEN_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING', 'REQUIREMEN
 KIND_CAUSE = {'DESIGN_VALUE': 'DESIGN_OPEN', 'VENDOR_DATUM': 'EXTERNAL_DATA', 'DELIVERABLE_PENDING': 'DELIVERABLE_PENDING',
               'REQUIREMENT': 'REQUIREMENT_OPEN', 'REVIEW_INCOMPLETE': 'REVIEW_INCOMPLETE', 'USER_DEFERRED': 'USER_DEFERRED'}
 VERDICTS = ('PASS', 'FAIL', 'OPEN')
-PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
 # Schema 3 always means the newest contract of each retired switch: consequence classes v2,
 # REQ-D01 clauses, staged work items. Bindings and actionable instructions are required by
 # validate_review's bindings (always on the command line) and --require-actionable.
 IMPACT_CLASS_VERSION = 2
 GAP_TEXT = ('what', 'scope', 'how_to_close', 'closure_criterion')
 SEVERITY_TEXT = ('affects', 'consequence')
-
-
-def text(value):
-    return isinstance(value, str) and bool(value.strip())
-
-
-def margins(calculation):
-    """calculation.margin as a list: one {value, unit, against[, aspect]} or one per aspect."""
-    margin = calculation.get('margin') if isinstance(calculation, dict) else None
-    items = margin if isinstance(margin, list) else [margin] if margin is not None else []
-    return [m for m in items if isinstance(m, dict) and m.get('value') is not None]
 
 
 def shape_errors(report, history_ids=()):

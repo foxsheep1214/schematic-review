@@ -172,6 +172,7 @@ class DeclaredKindIdentityTest(unittest.TestCase):
     def test_json_declared_opto_enters_the_inventory(self):
         # 真实反例：三颗已核验为光耦的器件，清单仍为空（kind 用 is 比较）。
         from checkers import netgraph as ng
+        import part_words as pw
         db = json_declared_opto_board()
-        self.assertIs(ng.NetGraph(db).kind('OK1'), ng.OPTO)
+        self.assertIs(ng.NetGraph(db).kind('OK1'), pw.OPTO)
         self.assertIn('OK1', optos_of(build_inventory(db)))

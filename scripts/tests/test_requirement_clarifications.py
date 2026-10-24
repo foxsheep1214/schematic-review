@@ -249,7 +249,7 @@ class RequirementClarificationTests(unittest.TestCase):
 
     def test_cli_enforces_new_contract(self):
         p, r, db = sample()
-        from review_engine import engine_identity
+        from electrical_contract import engine_identity
         from validate_review import fingerprint
         from test_validate_review import bind
         bind(p, r)   # the command line asks for bindings

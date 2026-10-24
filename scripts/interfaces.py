@@ -29,6 +29,7 @@ import catalog
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import domains as domains_lib, netgraph as ng, powertree
+import part_words as pw
 from checkers.planutil import slug as _slug
 
 SCHEMA_VERSION = 1
@@ -40,8 +41,8 @@ PINTYPE_ROLES = {'OUT': DRIVER, 'OCL': DRIVER, 'OEM': DRIVER, 'TRI': DRIVER, 'IN
 PART_ROLES = {'gate': RECEIVER, 'drain': DRIVER, 'source': PASSIVE, 'anode': PASSIVE, 'cathode': PASSIVE,
               'led_anode': RECEIVER, 'led_cathode': RECEIVER, 'out_collector': DRIVER, 'out_emitter': PASSIVE,
               'coil': RECEIVER, 'contact': PASSIVE}
-PASSIVE_KINDS = ng.TWO_TERMINAL | {ng.CONNECTOR, ng.TESTPOINT, ng.TRANSFORMER, ng.CRYSTAL, ng.BRIDGE_RECTIFIER,
-                                   ng.FUSE, ng.JUMPER, ng.SWITCH, ng.BATTERY}
+PASSIVE_KINDS = pw.TWO_TERMINAL | {pw.CONNECTOR, pw.TESTPOINT, pw.TRANSFORMER, pw.CRYSTAL, pw.BRIDGE_RECTIFIER,
+                                   pw.FUSE, pw.JUMPER, pw.SWITCH, pw.BATTERY}
 # IC pin names whose direction is conventional; anything else needs the library type or the datasheet.
 NAME_ROLES = (
     (re.compile(r'^(V?OUT\d*|VO|DRV\w*|GATE\w*|G?DRV|PWM\w*|TX\w*|DO|SDO|MOSI|INT\w*|PG|PGOOD|FLT_?OUT)$', re.I), DRIVER),
@@ -83,10 +84,10 @@ class Deriver:
         if found and found['source'] == node:
             return DRIVER, 'power-source'
         name, pin = self.graph.pinname.get(node), node.partition('.')[2]
-        if ng.name_matches(powertree.SUPPLY_IN_PIN_RE, name, pin):
+        if pw.name_matches(powertree.SUPPLY_IN_PIN_RE, name, pin):
             return RECEIVER, 'pin-name'
         for pattern, role in NAME_ROLES:
-            if ng.name_matches(pattern, name, pin):
+            if pw.name_matches(pattern, name, pin):
                 return role, 'pin-name'
         return None, None
 
@@ -97,11 +98,11 @@ class Deriver:
         return self.domains['nets'].get(net)
 
     def supply(self, ref):
-        if self.graph.kind(ref) != ng.IC:
+        if self.graph.kind(ref) != pw.IC:
             return []
         return sorted({net for pin, net in self.graph.pins_of(ref).items() if net not in self.grounds
                        and (self.native.get(ref + '.' + pin) == 'power_in'
-                            or ng.name_matches(powertree.SUPPLY_IN_PIN_RE, self.graph.pinname.get(ref + '.' + pin), pin))})
+                            or pw.name_matches(powertree.SUPPLY_IN_PIN_RE, self.graph.pinname.get(ref + '.' + pin), pin))})
 
     def source(self, net):
         found = self.tree.source_of(net)
@@ -114,8 +115,8 @@ class Deriver:
             kind = self.graph.kind(ref)
             if not self.graph.is_fitted(ref):
                 continue
-            if (kind == ng.DIODE and self.graph.role(node) == 'cathode') or (
-                    kind == ng.BRIDGE_RECTIFIER and self.graph.pinname.get(node) == '+'):
+            if (kind == pw.DIODE and self.graph.role(node) == 'cathode') or (
+                    kind == pw.BRIDGE_RECTIFIER and self.graph.pinname.get(node) == '+'):
                 owners.add(self.owner_of.get(ref))
         return owners.pop() if len(owners) == 1 else None
 
@@ -133,10 +134,10 @@ class Deriver:
         return out
 
     def is_connector(self, ref):
-        return CONNECTOR_RE.match(ref) is not None or self.graph.kind(ref) == ng.CONNECTOR
+        return CONNECTOR_RE.match(ref) is not None or self.graph.kind(ref) == pw.CONNECTOR
 
     def cross_supply(self, endpoints):
-        ics = [e for e in endpoints if self.graph.kind(e['pin'].partition('.')[0]) == ng.IC]
+        ics = [e for e in endpoints if self.graph.kind(e['pin'].partition('.')[0]) == pw.IC]
         return (len({tuple(e['supply']) for e in ics if e['supply']}) > 1
                 or len({e['domain'] for e in ics if e['domain']}) > 1)
 

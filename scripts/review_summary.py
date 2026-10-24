@@ -1,5 +1,6 @@
 """Keep present checks, historical dispositions and handoffs separately visible."""
 from collections import Counter
+from electrical_contract import HAZARD_PATHS, IMPACT_CLASSES
 from review_stage_scope import outside_stage
 
 RESULT_LABELS = {'PASS': '通过（PASS）', 'FAIL': '不符合（FAIL）', 'INSUFFICIENT': '证据不足（INSUFFICIENT）',
@@ -8,16 +9,7 @@ IMPACT_FIELDS = ('affected_function', 'operating_condition', 'consequence',
                  'severity_reason', 'blocking_reason')
 
 
-# Consequence class -> potential level (verdicts-and-release.md 等级边界). A damage/hazard or
-# core-link class drops to P1 only with a written independent exclusion of that path.
-# impact_class_version 2 separates COMPONENT_DAMAGE (a part may be destroyed, nothing else
-# follows: P1) from DAMAGE_OR_HAZARD, which then must name the hazard path it opens.
-IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P0', 'CORE_LINK_LOSS': 'P0',
-                  'COMPONENT_DAMAGE': 'P1',
-                  'REQUIRED_FUNCTION': 'P1', 'PERFORMANCE_OR_LIFE': 'P1',
-                  'LOCAL_OR_DATA': 'P2', 'OPTIMIZATION': 'P3'}
 V2_ONLY_CLASSES = {'COMPONENT_DAMAGE'}
-HAZARD_PATHS = ('FIRE', 'SHOCK', 'INSULATION', 'HAZARDOUS_ENERGY', 'PORT_OVERVOLTAGE', 'PROTECTION_LOSS')
 
 
 def impact_class_errors(key, assessment, severity, version=1):

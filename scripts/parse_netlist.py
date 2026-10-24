@@ -36,7 +36,7 @@ import os
 import re
 import sys
 
-from checkers.netgraph import CONNECTOR, classify
+from part_words import CONNECTOR, classify
 
 
 def _read(path):

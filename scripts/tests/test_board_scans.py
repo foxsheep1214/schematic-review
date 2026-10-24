@@ -249,12 +249,12 @@ class TypicalBoardClassificationTest(unittest.TestCase):
     """典型电路基准：Soldered 库把连接器编为 K、手画继电器没有脚名、Olimex 位号带下划线。"""
 
     def test_sixteen_pin_k_part_is_not_a_relay_and_usb_c_pins_make_a_connector(self):
-        from checkers import netgraph as ng
-        self.assertEqual(ng.classify('K9', {'value': 'HDR'}, 16)[0], ng.UNKNOWN)
+        import part_words as pw
+        self.assertEqual(pw.classify('K9', {'value': 'HDR'}, 16)[0], pw.UNKNOWN)
         names = [('VBUS', 'A4'), ('CC1', 'A5'), ('CC2', 'B5'), ('GND', 'A1'), ('SBU1', 'A8')]
-        self.assertEqual(ng.classify('K1', {'value': 'U262-161N'}, 16, names)[0], ng.CONNECTOR)
+        self.assertEqual(pw.classify('K1', {'value': 'U262-161N'}, 16, names)[0], pw.CONNECTOR)
         controller = names + [('VDD', '1'), ('SCL', '2')]
-        self.assertNotEqual(ng.classify('U1', {'value': 'FUSB302'}, 14, controller)[0], ng.CONNECTOR)
+        self.assertNotEqual(pw.classify('U1', {'value': 'FUSB302'}, 14, controller)[0], pw.CONNECTOR)
 
     def test_relay_without_pin_names_takes_contact_roles_from_net_names(self):
         db = board({'K1': 'SRD_RELAY_5V', 'K3': 'TERMINAL_KF235-5.0-3P'},
@@ -307,9 +307,9 @@ class SeededDetectionTest(unittest.TestCase):
         self.assertEqual({f['kind'] for f in scans(db, 'SIG-A03')}, {'INFO'})
 
     def test_bosch_footprint_is_not_an_oscillator(self):
-        from checkers import netgraph as ng
-        self.assertEqual(ng.classify('U1', {'prim': 'DS-sensors:BME280',
-                                            'jedec': 'DS-sensors:Bosch_LGA-8_2.5x2.5mm'}, 8)[0], ng.IC)
+        import part_words as pw
+        self.assertEqual(pw.classify('U1', {'prim': 'DS-sensors:BME280',
+                                            'jedec': 'DS-sensors:Bosch_LGA-8_2.5x2.5mm'}, 8)[0], pw.IC)
 
 
 if __name__ == '__main__':

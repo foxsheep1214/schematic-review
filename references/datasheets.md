@@ -42,7 +42,7 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
          --intent intent.json \
          --json datasheet-audit.json
 
-4. 把审计结果传入合并扫描，命令见 SKILL.md 第 4 步。
+4. 把审计结果传入合并扫描，命令见 SKILL.md 2.2（命令 ⑦）。
 
 没有 datasheet-audit.json 时，资料是否可用按 `intent.materials.datasheets.path` 是否存在推（intent 不写 `available`，写了被拒）；
 有审计文件时按位号控制 DEV-D01 准备度。状态不是 AVAILABLE 的物料，依赖其 datasheet 的自动准备度仍为 WAITING_EVIDENCE；

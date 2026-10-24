@@ -33,8 +33,9 @@ from audit_datasheets import validate_datasheet_audit
 from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID
 from checkers.powertree import declared_supply_nets
 from checkers import netgraph as ng, passive_stress
-from checkers.netgraph import (CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER, TVS,
-                               TWO_TERMINAL, NetGraph, rail_voltage as _volt)
+import part_words as pw
+from checkers.netgraph import NetGraph, rail_voltage as _volt
+from part_words import CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER, TVS, TWO_TERMINAL
 from electrical_contract import db_fingerprint, load_json
 import board_intent
 from plan_review import build_review_plan, diagnostic_lines, validate_intent
@@ -290,7 +291,7 @@ class Lint:
         the IC's internal regulator output, not an undriven rail."""
         ref = node.partition('.')[0]
         others = [n for n in self.graph.nodes_on(net) if n.partition('.')[0] != ref]
-        return bool(others) and all(self.graph.kind(n.partition('.')[0]) == ng.CAPACITOR for n in others)
+        return bool(others) and all(self.graph.kind(n.partition('.')[0]) == pw.CAPACITOR for n in others)
 
     # -- rules -----------------------------------------------------------
     def _relay_nc_contact(self, net, nodes):
@@ -429,7 +430,7 @@ class Lint:
                     continue
                 detail = f'{n} <- {nds[0]} ({parts.get(ref, {}).get("value", "")})'
                 if (self.graph.kind(ref) == IC
-                        and ng.normalize(self.pintype.get(nds[0])) in BIDIR_PINTYPES):
+                        and pw.normalize(self.pintype.get(nds[0])) in BIDIR_PINTYPES):
                     # 2026-10-20 第 1 轮裁决：双向（兼 GPIO）脚只挂一个标签多是未用的调制解调/GPIO 线，
                     # 不是标签分裂；输入、输出与电源脚仍按 FINDING 报。
                     self.add('NET-A01', '单节点悬空网',
@@ -480,7 +481,7 @@ class Lint:
         for node in sorted(set(pinname) | {k for k, t in native.items() if t == 'power_in'}):
             pn = pinname.get(node, '')
             ref = node.split('.')[0]
-            if self.graph.kind(ref) in (CONNECTOR, ng.TESTPOINT):
+            if self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT):
                 continue
             if not (SUPPLY_PIN_RE.match(pn) or native.get(node) == 'power_in') or BOOTSTRAP_PIN_RE.match(pn):
                 continue
@@ -503,7 +504,7 @@ class Lint:
                   and not self._local_regulator_node(node, n)):
                 entry = self._external_entry(n)
                 jumpers = [r for r in self._feed_tree.source_of(n)['path']
-                           if self.graph.kind(r) == ng.JUMPER] if entry else []
+                           if self.graph.kind(r) == pw.JUMPER] if entry else []
                 if jumpers:
                     self.add('PWR-A02', '电源脚经跳线供电',
                              f'{node} ({pn}) <- {n}：经跳线 {"、".join(jumpers)} 才接到供电，核该装配下跳线是否闭合',
@@ -603,7 +604,7 @@ class Lint:
                         'DOC-A03', 'BOM/库字段含首尾空白（影响比对）',
                         f'{ref}.{field}: {value!r}', ref)
 
-        # REQ-A01 关键器件计数（网表扫描·参数化：需第 0 步意图清单）
+        # REQ-A01 关键器件计数（网表扫描·参数化：需 1.1 的意图清单）
         expect = (self.intent or {}).get('expect') or {}
         if expect:
             for key, want in expect.items():
@@ -696,7 +697,7 @@ def main():
     ap.add_argument('db', help='parse_netlist.py 产出的 db.json')
     ap.add_argument('--log', help='netlist.log（导出日志，含 No_connect 等免费证据）')
     ap.add_argument('--intent',
-                    help='第 0 步意图清单 JSON（适用性发现与 REQ-A01 所需）')
+                    help='1.1 的意图清单 JSON（适用性发现与 REQ-A01 所需）')
     ap.add_argument(
         '--datasheet-audit',
         help='audit_datasheets.py 产出的逐物料覆盖审计 JSON')

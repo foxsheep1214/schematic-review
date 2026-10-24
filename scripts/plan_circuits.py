@@ -10,10 +10,11 @@ import circuit_decisions
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
-from checkers.netgraph import (BATTERY, BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET,
-                               OPTO, PASSIVE_LINKS, RAIL_RE, RELAY, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN,
-                               ZENER, ELECTROLYTIC_RE, LED_RE, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR_RE,
-                               NetGraph, is_analog_sense_pair, is_ground, name_matches, normalize)
+from checkers.netgraph import RAIL_RE, NetGraph, is_analog_sense_pair, is_ground
+from part_words import (BATTERY, BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET, OPTO,
+                        PASSIVE_LINKS, RELAY, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER,
+                        ELECTROLYTIC_RE, LED_RE, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR_RE, name_matches,
+                        normalize)
 from checkers.netgraph import is_ground as netgraph_ground
 from checkers.planutil import slug as _slug
 from electrical_contract import bounded, finite

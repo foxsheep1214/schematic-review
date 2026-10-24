@@ -9,7 +9,7 @@
  {
   "id": "M3",
   "name": "DAMAGE_OR_HAZARD graded P1",
-  "file": "scripts/review_summary.py",
+  "file": "scripts/electrical_contract.py",
   "old": "IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P0'",
   "new": "IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P1'"
  },
@@ -65,7 +65,7 @@
  {
   "id": "M14",
   "name": "a margin that proves PASS never decides",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "    if met and kind in ('GUARANTEED_BOUND', 'EXACT_ENVELOPE'):\n        return 'PASS'",
   "new": "    if False and met and kind in ('GUARANTEED_BOUND', 'EXACT_ENVELOPE'):\n        return 'PASS'"
  },
@@ -129,7 +129,7 @@
   "id": "M23",
   "name": "bidirectional single-node net reported as FINDING again",
   "file": "scripts/lint.py",
-  "old": "                        and ng.normalize(self.pintype.get(nds[0])) in BIDIR_PINTYPES):",
+  "old": "                        and pw.normalize(self.pintype.get(nds[0])) in BIDIR_PINTYPES):",
   "new": "                        and False):"
  },
  {
@@ -346,8 +346,8 @@
   "id": "M54",
   "name": "capacitors conduct when deriving ground domains",
   "file": "scripts/checkers/domains.py",
-  "old": "NON_CONDUCTING = frozenset({ng.CAPACITOR, ng.TRANSFORMER, ng.OPTO, ng.RELAY, ng.CRYSTAL, ng.CONNECTOR,",
-  "new": "NON_CONDUCTING = frozenset({ng.TRANSFORMER, ng.OPTO, ng.RELAY, ng.CRYSTAL, ng.CONNECTOR,"
+  "old": "NON_CONDUCTING = frozenset({pw.CAPACITOR, pw.TRANSFORMER, pw.OPTO, pw.RELAY, pw.CRYSTAL, pw.CONNECTOR,",
+  "new": "NON_CONDUCTING = frozenset({pw.TRANSFORMER, pw.OPTO, pw.RELAY, pw.CRYSTAL, pw.CONNECTOR,"
  },
  {
   "id": "M55",
@@ -401,14 +401,14 @@
  {
   "id": "M62",
   "name": "a GT comparison passes a zero margin",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "    met = m['value'] >= 0 if basis.get('comparison') == 'GE' else m['value'] > 0",
   "new": "    met = m['value'] >= 0"
  },
  {
   "id": "M63",
   "name": "evidence over one state covers every state",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "    return ((a[0] is None or b[0] is None or a[0] == b[0]) and bool(a[1] & b[1])",
   "new": "    return ((a[0] is None or b[0] is None or a[0] == b[0]) and True"
  },
@@ -1368,7 +1368,7 @@
   "id": "M200",
   "name": "a pin sharing its net with another IC gets a pin row",
   "file": "scripts/checkers/passive_stress.py",
-  "old": "            if not others or any(k not in (ng.RESISTOR, ng.CAPACITOR) for k in kinds.values()):",
+  "old": "            if not others or any(k not in (pw.RESISTOR, pw.CAPACITOR) for k in kinds.values()):",
   "new": "            if not others:"
  },
  {
@@ -2089,8 +2089,8 @@
   "id": "M303",
   "name": "a tool-named node with a capacitor to ground becomes a rail",
   "file": "scripts/checkers/powertree.py",
-  "old": "kind == ng.CAPACITOR and not ng.is_auto_named(net)",
-  "new": "kind == ng.CAPACITOR"
+  "old": "kind == pw.CAPACITOR and not ng.is_auto_named(net)",
+  "new": "kind == pw.CAPACITOR"
  },
  {
   "id": "M304",
@@ -2711,14 +2711,14 @@
  {
   "id": "M392",
   "name": "an estimate passes any calculation row",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "    if not life_row(check_id):\n        return None",
   "new": "    if False:\n        return None"
  },
  {
   "id": "M393",
   "name": "an estimate of a life row needs no target met",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "        if basis.get('kind') == 'ESTIMATE' and met and covers(scope(m, calc.get('aspect')), aspect, state, check_id):",
   "new": "        if basis.get('kind') == 'ESTIMATE' and covers(scope(m, calc.get('aspect')), aspect, state, check_id):"
  },
@@ -3460,14 +3460,14 @@
  {
   "id": "M499",
   "name": "a TPS tantalum part number is not a tantalum",
-  "file": "scripts/checkers/netgraph.py",
+  "file": "scripts/part_words.py",
   "old": "TANTALUM_RE = re.compile(r'TANTAL|钽|\\bTPS[A-Z]', re.I)",
   "new": "TANTALUM_RE = re.compile(r'TANTAL|钽', re.I)"
  },
  {
   "id": "M500",
   "name": "ALUM is not an electrolytic word",
-  "file": "scripts/checkers/netgraph.py",
+  "file": "scripts/part_words.py",
   "old": "|\\bALUM|",
   "new": "|ALUMIN|"
  },
@@ -3510,8 +3510,8 @@
   "id": "M506",
   "name": "an NTC by its words is not a protective input part",
   "file": "scripts/circuit_candidates.py",
-  "old": "or bool(PROTECTIVE_RE.search(blob) or ng.NTC_RE.search(blob) or ng.VARISTOR_RE.search(blob))",
-  "new": "or bool(PROTECTIVE_RE.search(blob) or ng.VARISTOR_RE.search(blob))"
+  "old": "or bool(PROTECTIVE_RE.search(blob) or pw.NTC_RE.search(blob) or pw.VARISTOR_RE.search(blob))",
+  "new": "or bool(PROTECTIVE_RE.search(blob) or pw.VARISTOR_RE.search(blob))"
  },
  {
   "id": "M507",
@@ -3558,28 +3558,28 @@
  {
   "id": "M513",
   "name": "an estimate passes a damage or protection rule",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "    if isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id):\n        return None\n    calc",
   "new": "    if False:\n        return None\n    calc"
  },
  {
   "id": "M514",
   "name": "an estimate passes whatever its consequence class",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "    return (basis.get('kind') == 'ESTIMATE' and basis.get('consequence_class') in ESTIMATE_PASS_CLASSES\n",
   "new": "    return (basis.get('kind') == 'ESTIMATE'\n"
  },
  {
   "id": "M515",
   "name": "an incomplete prototype handoff carries an estimate",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "            and text(h.get('constraint')) and text(h.get('verification'))):\n        return None\n    return h",
   "new": "            ):\n        return None\n    return h"
  },
  {
   "id": "M516",
   "name": "a bool is a handoff index",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "    if not (type(k) is int and isinstance(handoffs, list)",
   "new": "    if not (isinstance(k, int) and isinstance(handoffs, list)"
  },
@@ -3607,7 +3607,7 @@
  {
   "id": "M520",
   "name": "an estimate with a prototype handoff still passes nothing",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "    return estimate[0] if estimate else None",
   "new": "    return None"
  },
@@ -3680,5 +3680,19 @@
   "file": "scripts/render_report.py",
   "old": "if isinstance(c, dict) and c.get('status') == 'OPEN']",
   "new": "if isinstance(c, dict)]"
+ },
+ {
+  "id": "M531",
+  "name": "the netlist parser reads part kinds from the checkers again",
+  "file": "scripts/parse_netlist.py",
+  "old": "from part_words import CONNECTOR, classify",
+  "new": "from checkers.netgraph import CONNECTOR, classify"
+ },
+ {
+  "id": "M532",
+  "name": "row derivation reads function verdicts from the gate again",
+  "file": "scripts/derive_rows.py",
+  "old": "from function_reading import decides_row, edges, judged, prototype_estimate, unjudged_message",
+  "new": "from review_functions import decides_row, edges, judged, prototype_estimate, unjudged_message"
  }
 ]

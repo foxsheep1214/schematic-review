@@ -20,8 +20,7 @@ import sys
 
 import catalog
 from circuit_candidates import SCHEMA_VERSION, best_claims, claim_rank
-from electrical_contract import db_fingerprint, load_json
-from review_functions import LOCATOR_IDS_RE, LOCATOR_WORDS_RE
+from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, db_fingerprint, load_json
 
 DECISIONS = ('accept', 'merge', 'split', 'reject', 'add', 'own')
 REJECT_REASONS = ('OUTSIDE_SCOPE', 'NOT_A_CIRCUIT', 'DUPLICATE_OF')

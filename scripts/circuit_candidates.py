@@ -23,6 +23,7 @@ import board_intent
 import catalog
 from electrical_contract import db_fingerprint, load_json
 from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
+import part_words as pw
 
 SCHEMA_VERSION = 2
 RULES_VERSION = '2026-10-24.1'   # shared part words and grounds (SR self-check 3.1–3.3)
@@ -40,7 +41,7 @@ SENSE_PIN_RE = re.compile(r'^(CS|CS[+-]|CS_?[PN]|ISNS|ISENSE|ISEN|VSNS|VSENSE|FB
 USB_PIN_RE = re.compile(r'^(CC[12]|D[+-]|DP|DN|DM|D_P|D_N|SBU[12])$', re.I)
 DEBUG_PIN_RE = re.compile(r'^(SWDIO|SWCLK|SWO|TCK|TMS|TDI|TDO|NTRST|JTAG\w*)$', re.I)
 PROTECTIVE_RE = re.compile(r'THERMISTOR|FUSE|BRIDGE|\bGDT\b|SPARK', re.I)   # with netgraph's NTC and varistor words
-PASS_THROUGH = frozenset({ng.BRIDGE_RECTIFIER})      # multi-pin parts the input walk passes
+PASS_THROUGH = frozenset({pw.BRIDGE_RECTIFIER})      # multi-pin parts the input walk passes
 WALK, STOP = 'walk', 'stop'
 IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a part's identity in a candidate, not its body
 
@@ -70,7 +71,7 @@ def best_claims(holders):
 
 
 def _blob(part):
-    return ' '.join(ng.normalize(part.get(k)) for k in ('part', 'value', 'prim', 'jedec'))
+    return ' '.join(pw.normalize(part.get(k)) for k in ('part', 'value', 'prim', 'jedec'))
 
 
 class Generator:
@@ -113,7 +114,7 @@ class Generator:
         return self.graph.pinname.get(node) or ''
 
     def matches(self, pattern, node):
-        return ng.name_matches(pattern, self.pin_name(node), node.partition('.')[2])
+        return pw.name_matches(pattern, self.pin_name(node), node.partition('.')[2])
 
     def domain_of(self, ref):
         found = sorted({self.domains['nets'].get(n) for n in self.graph.nets_of(ref)} - {None})
@@ -122,7 +123,7 @@ class Generator:
     def ground_caps(self, net):
         """Capacitors between a net and any ground."""
         return sorted(ref for ref in self.graph.refs_on(net)
-                      if self.graph.kind(ref) == ng.CAPACITOR and self.two_terminal(ref)
+                      if self.graph.kind(ref) == pw.CAPACITOR and self.two_terminal(ref)
                       and any(n in self.grounds for n in self.graph.nets_of(ref) if n != net))
 
     def add(self, cid, ref, role, via, hops):
@@ -332,7 +333,7 @@ class Generator:
             if not self.matches(FEEDBACK_PIN_RE, anchor + '.' + pin):
                 continue
             for ref in self.graph.refs_on(net):
-                if self.graph.kind(ref) != ng.OPTO or ref not in self.barriers:
+                if self.graph.kind(ref) != pw.OPTO or ref not in self.barriers:
                     continue
                 self.add(cid, ref, 'feedback_opto', f'feedback: optocoupler on {anchor}.{pin} net {net}', 0)
                 led = [n for n in self.graph.nets_of(ref) if n != net and n not in self.grounds
@@ -348,7 +349,7 @@ class Generator:
         for ref in inductive:
             for net in self.graph.nets_of(ref):
                 for diode in self.graph.refs_on(net):
-                    if diode not in cand['members'] or self.graph.kind(diode) not in (ng.DIODE, ng.TVS, ng.ZENER):
+                    if diode not in cand['members'] or self.graph.kind(diode) not in (pw.DIODE, pw.TVS, pw.ZENER):
                         continue
                     other = next((n for n in self.graph.nets_of(diode) if n != net), None)
                     if other is None or other in self.grounds:
@@ -377,7 +378,7 @@ class Generator:
             if not self.matches(powertree.SWITCH_OUTPUT_PIN_RE, anchor + '.' + pin):
                 continue
             for ref in self.graph.refs_on(net):
-                if ref in cand['members'] and self.graph.kind(ref) == ng.INDUCTOR and self.two_terminal(ref):
+                if ref in cand['members'] and self.graph.kind(ref) == pw.INDUCTOR and self.two_terminal(ref):
                     cand['members'][ref]['role'] = 'inductive'
                     other = next(n for n in self.graph.nets_of(ref) if n != net)
                     cand['nets'].setdefault('switch', net)
@@ -386,12 +387,12 @@ class Generator:
                         self.add(cid, cap, 'output_capacitor', f'output_capacitor: on {other} reached by {ref} from {anchor}.{pin}', 0)
 
     def usb_connector(self, ref):
-        return self.graph.kind(ref) == ng.CONNECTOR and any(
+        return self.graph.kind(ref) == pw.CONNECTOR and any(
             self.matches(USB_PIN_RE, ref + '.' + pin) for pin in self.graph.pins_of(ref))
 
     def inputs(self):
         for ref in sorted(self.graph.parts):
-            if not self.fitted(ref) or self.graph.kind(ref) != ng.CONNECTOR or self.usb_connector(ref):
+            if not self.fitted(ref) or self.graph.kind(ref) != pw.CONNECTOR or self.usb_connector(ref):
                 continue
             cid = 'POWER_PROTECTION-' + ref
             found = self.input_walk(ref)
@@ -431,12 +432,12 @@ class Generator:
                     continue
                 kind = self.graph.kind(ref)
                 blob = _blob(self.graph.parts.get(ref, {}))
-                is_protective = kind in (ng.FUSE, ng.TVS, ng.BRIDGE_RECTIFIER) or bool(PROTECTIVE_RE.search(blob) or ng.NTC_RE.search(blob) or ng.VARISTOR_RE.search(blob))
+                is_protective = kind in (pw.FUSE, pw.TVS, pw.BRIDGE_RECTIFIER) or bool(PROTECTIVE_RE.search(blob) or pw.NTC_RE.search(blob) or pw.VARISTOR_RE.search(blob))
                 if self.two_terminal(ref):
                     members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
                     protective |= is_protective
                     queue.append((next(n for n in self.graph.nets_of(ref) if n != net), hops + 1, f'{path} -> {net} -> {ref}'))
-                elif kind in PASS_THROUGH or (kind == ng.INDUCTOR and len(self.graph.pins_of(ref)) == 4):
+                elif kind in PASS_THROUGH or (kind == pw.INDUCTOR and len(self.graph.pins_of(ref)) == 4):
                     members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
                     protective |= is_protective
                     for other in self.graph.nets_of(ref):
@@ -470,7 +471,7 @@ class Generator:
                     continue
                 if net in self.stops:
                     continue          # a pin tied straight to a rail is no chain
-                name = re.sub(r'[^A-Z0-9]+', '_', ng.normalize(self.pin_name(node)) or pin).strip('_')
+                name = re.sub(r'[^A-Z0-9]+', '_', pw.normalize(self.pin_name(node)) or pin).strip('_')
                 cid = f'{ctype}-{anchor}.{name}'
                 cand = self.new(cid, ctype, anchor, self.domain_of(anchor), {'pin': node, 'net': net}, cross_cutting=True)
                 self.add(cid, anchor, 'anchor', f'anchor:{label} pin {node}', 0)
@@ -498,7 +499,7 @@ class Generator:
                 if ref in self.anchors or ref in self.discrete_anchors:
                     self.add(cid, ref, 'endpoint', via, hops + 1)
                     continue
-                if self.graph.kind(ref) == ng.OPTO and ref in self.barriers:
+                if self.graph.kind(ref) == pw.OPTO and ref in self.barriers:
                     self.add(cid, ref, 'optocoupler', via, hops + 1)
                     for other in self.graph.nets_of(ref):
                         if other != net:
@@ -574,7 +575,7 @@ class Generator:
                                for n in self.graph.nets_of(ref) if n in self.grounds}
             for ground in sorted(grounds_reached):
                 for ref in self.graph.refs_on(ground):
-                    if self.two_terminal(ref) and self.graph.kind(ref) == ng.RESISTOR and all(
+                    if self.two_terminal(ref) and self.graph.kind(ref) == pw.RESISTOR and all(
                             n in self.grounds for n in self.graph.nets_of(ref)):
                         self.add(cid, ref, 'shunt', f'shunt between grounds {"/".join(self.graph.nets_of(ref))} reached from {anchor}', 1)
 
@@ -584,10 +585,10 @@ class Generator:
             if not self.fitted(ref):
                 continue
             kind = self.graph.kind(ref)
-            if kind == ng.TESTPOINT:
+            if kind == pw.TESTPOINT:
                 nets = [n for n in self.graph.nets_of(ref) if n not in self.graph.pseudo]
                 found.append((ref, 'testpoint', f'testpoint on {",".join(nets) or "no net"}'))
-            elif kind == ng.CONNECTOR and any(self.matches(DEBUG_PIN_RE, ref + '.' + pin) for pin in self.graph.pins_of(ref)):
+            elif kind == pw.CONNECTOR and any(self.matches(DEBUG_PIN_RE, ref + '.' + pin) for pin in self.graph.pins_of(ref)):
                 found.append((ref, 'debug_connector', 'debug connector: ' + ','.join(
                     sorted(self.pin_name(ref + '.' + pin) for pin in self.graph.pins_of(ref) if self.matches(DEBUG_PIN_RE, ref + '.' + pin)))))
         if not found:

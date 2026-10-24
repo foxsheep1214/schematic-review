@@ -9,6 +9,7 @@
 """
 import re
 
+import part_words as pw
 from solve_dividers import parse_resistor
 
 from . import netgraph as ng
@@ -75,12 +76,12 @@ def _supply_nets(graph, rails, nets):
                 continue
             kind = graph.kind(ref)
             name = graph.pinname.get(node)
-            if kind == ng.IC and not ng.is_ground(name or '') and (
-                    native.get(node) == 'power_in' or ng.name_matches(SUPPLY_IN_PIN_RE, name, pin)):
+            if kind == pw.IC and not ng.is_ground(name or '') and (
+                    native.get(node) == 'power_in' or pw.name_matches(SUPPLY_IN_PIN_RE, name, pin)):
                 found.add(net)
                 break
             # Bulk storage makes a named net a supply; a tool-named node with a capacitor is a filter or LED node.
-            if (kind == ng.CAPACITOR and not ng.is_auto_named(net)
+            if (kind == pw.CAPACITOR and not ng.is_auto_named(net)
                     and any(ng.is_ground(n) or n in returns for n in graph.nets_of(ref) if n != net)):
                 value = parse_capacitance(graph.parts.get(ref, {}).get('value'))
                 if value is not None and value >= 1e-6:
@@ -117,7 +118,7 @@ class PowerTree:
 
     def is_switch_node(self, net):
         """网上有 SW/LX/PH/BOOT 类引脚：开关节点，不按直流轨处理。"""
-        return any(ng.name_matches(SWITCH_NODE_PIN_RE, self.graph.pinname.get(node),
+        return any(pw.name_matches(SWITCH_NODE_PIN_RE, self.graph.pinname.get(node),
                                    node.partition('.')[2])
                    for node in self.graph.nodes_on(net))
 
@@ -151,21 +152,21 @@ class PowerTree:
                 if node in self.sources:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'declared source', 'state': self.state}
-                if self.feed and graph.kind(ref) in (ng.CONNECTOR, ng.BATTERY):
+                if self.feed and graph.kind(ref) in (pw.CONNECTOR, pw.BATTERY):
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'off-board contact (connector or battery)'}
-                if self.feed and graph.kind(ref) == ng.MOSFET and graph.role(node) in ('drain', 'source'):
+                if self.feed and graph.kind(ref) == pw.MOSFET and graph.role(node) in ('drain', 'source'):
                     other_role = 'source' if graph.role(node) == 'drain' else 'drain'
                     for other_node, other_net in graph.pins_of(ref).items():
                         if graph.role(ref + '.' + other_node) == other_role and other_net != current:
                             queue.append((other_net, path + [ref]))
                 pin = node.partition('.')[2]
-                output_name = ng.name_matches(SOURCE_PIN_RE, graph.pinname.get(node), pin)
+                output_name = pw.name_matches(SOURCE_PIN_RE, graph.pinname.get(node), pin)
                 if IC_REF_RE.match(ref) and output_name:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'pin-name candidate; verify function and upstream power'}
                 if (IC_REF_RE.match(ref)
-                        and ng.name_matches(PLAIN_OUT_PIN_RE, graph.pinname.get(node), pin)
+                        and pw.name_matches(PLAIN_OUT_PIN_RE, graph.pinname.get(node), pin)
                         and set(graph.named_pins(ref, PLAIN_IN_PIN_RE).values()) - {current}):
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'OUT pin beside IN pin (regulator/load-switch shape); '
@@ -179,7 +180,7 @@ class PowerTree:
                             'basis': 'power-type output pin name on non-IC refdes; '
                                      'verify module function and upstream power'}
                 if (IC_REF_RE.match(ref) and path and self._via_storage_inductor(ref, path)
-                        and ng.name_matches(SWITCH_OUTPUT_PIN_RE, graph.pinname.get(node), pin)):
+                        and pw.name_matches(SWITCH_OUTPUT_PIN_RE, graph.pinname.get(node), pin)):
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'switch node via storage inductor; verify converter '
                                      'topology, FB target and upstream power'}
@@ -188,7 +189,7 @@ class PowerTree:
                     continue
                 other = ends[0] if ends[1] == current else ends[1]
                 # 二极管 OR：只从阴极侧回溯到阳极侧
-                if graph.kind(ref) == ng.DIODE:
+                if graph.kind(ref) == pw.DIODE:
                     cathode = graph.node_named(ref, 'cathode')
                     if (graph.node_named(ref, 'anode') and cathode
                             and graph.pin2net.get(cathode) == current):
@@ -197,7 +198,7 @@ class PowerTree:
                 resistor = parse_resistor(part.get('value')) if re.match(r'^R\d', ref) else None
                 if SERIES_REF_RE.match(ref) or (resistor and resistor['kohm'] == 0):
                     queue.append((other, path + [ref]))
-                elif self.feed and (graph.kind(ref) in (ng.SWITCH, ng.FUSE, ng.FERRITE, ng.INDUCTOR, ng.JUMPER)
+                elif self.feed and (graph.kind(ref) in (pw.SWITCH, pw.FUSE, pw.FERRITE, pw.INDUCTOR, pw.JUMPER)
                                     or (resistor and resistor['kohm'] <= FEED_RESISTOR_KOHM)):
                     queue.append((other, path + [ref]))
             # 多脚 MOS 模型按端点精确匹配验证
@@ -214,7 +215,7 @@ class PowerTree:
         """最后一跳是电感，且该器件的供电输入脚不在电感远端网（排除升压输入侧）。"""
         graph = self.graph
         inductor = path[-1]
-        if graph.kind(inductor) != ng.INDUCTOR:
+        if graph.kind(inductor) != pw.INDUCTOR:
             return False
         far = set(graph.nets_of(inductor))
         own = set(graph.named_pins(ref, SWITCH_OUTPUT_PIN_RE).values())

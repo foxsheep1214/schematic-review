@@ -9,7 +9,7 @@ for option in list(sys.argv):
         SCRIPTS = pathlib.Path(option.split('=', 1)[1]) / 'scripts'
         sys.argv.remove(option)
 sys.path.insert(0, str(SCRIPTS))
-from checkers.netgraph import classify, CONNECTOR, RELAY, JUMPER, IC
+from part_words import classify, CONNECTOR, RELAY, JUMPER, IC
 from checkers.inductive_load import build_inventory
 from plan_review import build_review_plan
 from lint import Lint

@@ -12,14 +12,15 @@ import re
 import catalog
 from . import inventory as inv
 from . import netgraph as ng
+import part_words as pw
 from . import powertree
 from . import states as state_lib
 from .base import Checker
 from .planutil import slug
 
-SWITCH_KINDS = {ng.MOSFET, ng.BJT}
-CLAMP_KINDS = {ng.DIODE, ng.TVS, ng.ZENER}
-LOAD_KINDS = {ng.RELAY, ng.INDUCTOR, ng.TRANSFORMER}
+SWITCH_KINDS = {pw.MOSFET, pw.BJT}
+CLAMP_KINDS = {pw.DIODE, pw.TVS, pw.ZENER}
+LOAD_KINDS = {pw.RELAY, pw.INDUCTOR, pw.TRANSFORMER}
 DRIVER_PIN_RE = re.compile(r'^(OUT\w*|DRV\w*|O\d+|HO|LO|SOURCE\d*|SINK\d*)$', re.I)
 INTEGRATED_CLAMP_RE = re.compile(r'^(COM|CLAMP\w*|VS|FREEWHEEL\w*)$', re.I)
 LOAD_NAME_RE = re.compile(r'(^|_)(MOTOR|SOLENOID|VALVE|COIL|RELAY|PUMP|BRAKE|FAN|ACTUATOR)\w*(_|$)', re.I)
@@ -60,7 +61,7 @@ def _flyback_winding_errors(item, db):
     actual = graph.pins_of(ref)
     # Unmapped pins are allowed only when they connect to nothing (NC or a single-pin net).
     unmapped = [pin for pin in actual if pin not in pins]
-    if (graph.kind(ref) != ng.TRANSFORMER or not set(pins) <= set(actual)
+    if (graph.kind(ref) != pw.TRANSFORMER or not set(pins) <= set(actual)
             or any(ref + '.' + pin not in db.get('no_connect_nodes', [])
                    and actual[pin] not in graph.pseudo
                    and len(graph.nodes_on(actual[pin])) > 1 for pin in unmapped)):
@@ -110,7 +111,7 @@ def _filter_winding_errors(item, db):
     if db is None:
         return []
     ref = item.get('ref')
-    if ng.NetGraph(db).kind(ref) not in (ng.INDUCTOR, ng.TRANSFORMER):
+    if ng.NetGraph(db).kind(ref) not in (pw.INDUCTOR, pw.TRANSFORMER):
         return ['common_mode_input_filter requires an inductor/transformer component']
     actual = {node.partition('.')[2] for node in db.get('pin2net', {})
               if node.partition('.')[0] == ref}
@@ -166,7 +167,7 @@ class _Scan:
 
     def _flyback(self, ref, kind):
         declaration = self.flybacks.get(ref)
-        if declaration is None or kind != ng.TRANSFORMER:
+        if declaration is None or kind != pw.TRANSFORMER:
             return None
         graph = self.graph
         gaps = _flyback_winding_errors(declaration, self.db)
@@ -193,11 +194,11 @@ class _Scan:
             gaps.append('flyback-primary-dot:verify-switched-winding-polarity')
         entry = self._entry(ref, kind, switch_net, rail_net, switch_ref, 'declared', gaps)
         rcd = []
-        for diode, middle in graph.neighbors(switch_net, {ng.DIODE}):
+        for diode, middle in graph.neighbors(switch_net, {pw.DIODE}):
             if middle == rail_net:
                 continue
-            capacitors = graph.between(middle, rail_net, {ng.CAPACITOR})
-            resistors = graph.between(middle, rail_net, {ng.RESISTOR})
+            capacitors = graph.between(middle, rail_net, {pw.CAPACITOR})
+            resistors = graph.between(middle, rail_net, {pw.RESISTOR})
             if not capacitors or not resistors:
                 continue
             anode, cathode = (graph.node_named(diode, role) for role in ('anode', 'cathode'))
@@ -209,7 +210,7 @@ class _Scan:
         # Without an RCD, a TVS/zener across the switch or the primary is the leakage clamp;
         # its clamp voltage must exceed Vin + reflected voltage (rated in DRV-C01).
         leakage = rcd or [dict(c, leakage_clamp=True) for c in entry['clamps']
-                          if c['type'].endswith(('-' + ng.TVS, '-' + ng.ZENER))]
+                          if c['type'].endswith(('-' + pw.TVS, '-' + pw.ZENER))]
         if rcd:
             entry['clamps'] = rcd
             entry['gaps'] = [gap for gap in entry['gaps'] if gap != 'clamp:none-found']
@@ -247,7 +248,7 @@ class _Scan:
         this never adds winding edges to the shared graph or joins L/N.
         """
         declaration = self.filters.get(ref)
-        if declaration is None or kind not in (ng.INDUCTOR, ng.TRANSFORMER):
+        if declaration is None or kind not in (pw.INDUCTOR, pw.TRANSFORMER):
             return None
         gaps = _filter_winding_errors(declaration, self.db)
         nets = self.graph.nets_of(ref)
@@ -264,12 +265,12 @@ class _Scan:
                         gaps.append('common-mode-filter-active-node:' + net)
                 for node in self.graph.nodes_on(net):
                     other, _, pin = node.partition('.')
-                    if self.graph.is_fitted(other) and self.graph.kind(other) == ng.IC and (
-                            ng.name_matches(DRIVER_PIN_RE, self.graph.pinname.get(node), pin)
-                            or ng.name_matches(powertree.SWITCH_NODE_PIN_RE,
+                    if self.graph.is_fitted(other) and self.graph.kind(other) == pw.IC and (
+                            pw.name_matches(DRIVER_PIN_RE, self.graph.pinname.get(node), pin)
+                            or pw.name_matches(powertree.SWITCH_NODE_PIN_RE,
                                                self.graph.pinname.get(node), pin)):
                         gaps.append('common-mode-filter-active-node:' + net)
-                pending.extend(other for _, other in self.graph.neighbors(net, ng.PASSIVE_LINKS)
+                pending.extend(other for _, other in self.graph.neighbors(net, pw.PASSIVE_LINKS)
                                if other not in seen)
         entry = self._entry(ref, kind, None, None, None, 'declared', gaps)
         entry['classification_citation'] = declaration.get('citation')
@@ -301,9 +302,9 @@ class _Scan:
                     return ref, 'switch:' + ref + '(pin roles unknown)'
         for node in graph.nodes_on(net):
             ref = node.partition('.')[0]
-            if graph.kind(ref) != ng.IC or ref in self.excluded:
+            if graph.kind(ref) != pw.IC or ref in self.excluded:
                 continue
-            if ng.name_matches(DRIVER_PIN_RE, graph.pinname.get(node), node.partition('.')[2]):
+            if pw.name_matches(DRIVER_PIN_RE, graph.pinname.get(node), node.partition('.')[2]):
                 return ref, 'driver-pin:' + node
         return None, None
 
@@ -320,12 +321,12 @@ class _Scan:
             return None
         high = {net for net in nets - set(switched)
                 if self.tree.is_rail(net)
-                or any(self.tree.is_rail(other) for _, other in graph.neighbors(net, ng.PASSIVE_LINKS))}
+                or any(self.tree.is_rail(other) for _, other in graph.neighbors(net, pw.PASSIVE_LINKS))}
         return sorted(switched + sorted(high)) if len(high) == 1 else None
 
     def _is_converter_node(self, net):
         for node in self.graph.nodes_on(net):
-            if ng.name_matches(powertree.SWITCH_NODE_PIN_RE, self.graph.pinname.get(node),
+            if pw.name_matches(powertree.SWITCH_NODE_PIN_RE, self.graph.pinname.get(node),
                                node.partition('.')[2]):
                 return True
         return False
@@ -341,7 +342,7 @@ class _Scan:
                 continue
             seen.add(net)
             queue.extend((other, path + [ref]) for ref, other in self.graph.neighbors(
-                net, {ng.RESISTOR, ng.JUMPER}) if other not in seen)
+                net, {pw.RESISTOR, pw.JUMPER}) if other not in seen)
         return None
 
     def _boost(self, ref, kind, switch_net, input_net, switch_ref, basis, gaps):
@@ -352,7 +353,7 @@ class _Scan:
         MOS channel polarity, voltages, ratings and operating mode need review.
         """
         graph = self.graph
-        if kind != ng.INDUCTOR or graph.kind(switch_ref) != ng.MOSFET:
+        if kind != pw.INDUCTOR or graph.kind(switch_ref) != pw.MOSFET:
             return None
         drain, source, gate = (graph.node_named(switch_ref, role)
                                for role in ('drain', 'source', 'gate'))
@@ -365,16 +366,16 @@ class _Scan:
         if switches != [switch_ref]:
             return None
         candidates = []
-        for diode, output in graph.neighbors(switch_net, {ng.DIODE}):
+        for diode, output in graph.neighbors(switch_net, {pw.DIODE}):
             if output in (input_net, switch_net) or ng.is_ground(output) or output in graph.pseudo:
                 continue
             anode, cathode = (graph.node_named(diode, role) for role in ('anode', 'cathode'))
             if not anode or not cathode:
                 continue
-            for cap, ret in graph.neighbors(output, {ng.CAPACITOR}):
+            for cap, ret in graph.neighbors(output, {pw.CAPACITOR}):
                 if not ng.is_ground(ret):
                     continue
-                inputs = graph.between(input_net, ret, {ng.CAPACITOR})
+                inputs = graph.between(input_net, ret, {pw.CAPACITOR})
                 path = self._resistive_return(graph.pin2net[source], ret)
                 if inputs and path is not None:
                     candidates.append((diode, output, ret, inputs, path, anode, cathode))
@@ -388,7 +389,7 @@ class _Scan:
         entry['gaps'] = [gap for gap in entry['gaps'] if gap != 'clamp:none-found']
         if orientation == 'reversed':
             entry['gaps'].append('boost-transfer-diode:reversed')
-        caps = graph.between(output, ret, {ng.CAPACITOR})
+        caps = graph.between(output, ret, {pw.CAPACITOR})
         entry.update(application='boost_converter', output_net=output, return_net=ret,
                      input_capacitors=inputs, output_capacitors=caps,
                      switch_nodes={'drain': drain, 'source': source, 'gate': gate},
@@ -425,12 +426,12 @@ class _Scan:
                     continue
                 found.append({'ref': ref, 'type': 'switch-clamp-' + graph.kind(ref),
                               'orientation': 'unknown', 'across': 'switch'})
-        for ref, middle in graph.neighbors(switch_net, {ng.RESISTOR}):
-            for cap in graph.between(middle, rail_net, {ng.CAPACITOR}):
+        for ref, middle in graph.neighbors(switch_net, {pw.RESISTOR}):
+            for cap in graph.between(middle, rail_net, {pw.CAPACITOR}):
                 found.append({'ref': ref + '+' + cap, 'type': 'rc-snubber',
                               'orientation': 'n/a', 'across': 'load'})
             for ground in sorted(self._grounds()):
-                for cap in graph.between(middle, ground, {ng.CAPACITOR}):
+                for cap in graph.between(middle, ground, {pw.CAPACITOR}):
                     found.append({'ref': ref + '+' + cap, 'type': 'rc-snubber',
                                   'orientation': 'n/a', 'across': 'switch'})
         return sorted(found, key=lambda item: (item['ref'], item['type']))
@@ -440,10 +441,10 @@ class _Scan:
 
     def _integrated_clamp(self, switch_ref, rail_net):
         graph = self.graph
-        if switch_ref is None or graph.kind(switch_ref) != ng.IC:
+        if switch_ref is None or graph.kind(switch_ref) != pw.IC:
             return []
         for node, net in graph.pins_of(switch_ref).items():
-            if net == rail_net and ng.name_matches(
+            if net == rail_net and pw.name_matches(
                     INTEGRATED_CLAMP_RE, graph.pinname.get(switch_ref + '.' + node), node):
                 return [{'ref': switch_ref, 'type': 'integrated-clamp-candidate',
                          'orientation': 'unknown', 'across': 'driver',
@@ -469,7 +470,7 @@ class _Scan:
             terminals = graph.terminals(ref)
             gaps = []
             if len(terminals) != 2:
-                if kind == ng.RELAY:
+                if kind == pw.RELAY:
                     coil = [graph.pin2net[node] for node in sorted(graph.pin2net)
                             if node.startswith(ref + '.') and graph.role(node) == 'coil']
                     terminals = sorted(set(coil))
@@ -495,22 +496,22 @@ class _Scan:
             if boost is not None:
                 found.append(boost)
                 continue
-            if kind != ng.RELAY and self._is_converter_node(switch_net):
+            if kind != pw.RELAY and self._is_converter_node(switch_net):
                 continue
-            if kind == ng.INDUCTOR and basis != 'declared' and self._series_filter(switch_net, rail_net, switch_ref):
+            if kind == pw.INDUCTOR and basis != 'declared' and self._series_filter(switch_net, rail_net, switch_ref):
                 continue
             found.append(self._entry(ref, kind, switch_net, rail_net, switch_ref, basis, gaps))
         found.extend(self._external_loads())
         return sorted(found, key=lambda item: item['id'])[:MAX_LOADS]
 
     def _grounded_cap(self, net):
-        return any(ng.is_ground(other) for _, other in self.graph.neighbors(net, {ng.CAPACITOR}))
+        return any(ng.is_ground(other) for _, other in self.graph.neighbors(net, {pw.CAPACITOR}))
 
     def _series_filter(self, driven_net, far_net, switch_ref):
         """An IC output feeding an LC filter (LDO into a pi filter, class-D into its output filter):
         a capacitor to ground on the driven side, or on a far side that is not a supply rail.
         A coil from an IC output to a supply rail stays a switched load."""
-        if self.graph.kind(switch_ref) != ng.IC:
+        if self.graph.kind(switch_ref) != pw.IC:
             return False
         return self._grounded_cap(driven_net) or (not self.tree.is_rail(far_net) and self._grounded_cap(far_net))
 
@@ -521,7 +522,7 @@ class _Scan:
             if not LOAD_NAME_RE.search(net) or net in graph.pseudo:
                 continue
             switch_ref, _ = self._switch_on(net)
-            connectors = [ref for ref in graph.refs_on(net) if graph.kind(ref) == ng.CONNECTOR]
+            connectors = [ref for ref in graph.refs_on(net) if graph.kind(ref) == pw.CONNECTOR]
             if switch_ref is None or not connectors:
                 continue
             if any(item['switch_net'] == net for item in found):

@@ -8,7 +8,8 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from review_engine import engine_identity, validate_engine
+from electrical_contract import engine_identity
+from review_engine import validate_engine
 from revision_impact import validate_reverification
 from plan_review import build_review_plan
 from review_summary import categorized_summary

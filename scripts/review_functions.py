@@ -37,9 +37,13 @@ import re
 
 import bound_formulas
 import catalog
+import function_reading
 import results_model
-from electrical_contract import finite, squeeze
-from results_model import LEVELS, OPEN_KINDS, PHASES, VERDICTS, text
+from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, finite, squeeze, text
+from function_reading import (ESTIMATE_PASS_CLASSES, covers, decides_row, edges, estimate_handoff,
+    estimate_passes, judged, life_estimate, life_row, margin_proves, margin_verdict, overlaps,
+    prototype_estimate, reference_circuit, reference_judged, scope, unjudged_message)
+from results_model import LEVELS, OPEN_KINDS, VERDICTS
 from validate_remediation import READINESS
 
 CONDITION_FIELDS = ('id', 'source', 'locator', 'says', 'use')
@@ -66,17 +70,8 @@ DERIVATIONS = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'MONOTONIC', 'TEMPCO',
 CORNER_ENDS = ('min', 'max')
 EDGE_EFFECTS = ('BLOCKS_PROOF', 'INFORMATION_ONLY')
 EDGE_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING')   # gaps in a quantity: each edge says what it enters
-STATELESS = 'STATELESS'
 WIDE_GAP = 3                     # more blocked aspects than this is reported for a second look, never refused
-# Life rows (consistency proposals of 2026-10-23, item 6): an endurance or wear-out life rests on an estimate on the
-# mission profile, written as a BOM constraint; no vendor-data item is opened for it.
-LIFE_ROW_RE = re.compile(r'^(DEV-C02\.LIFE|DEV-C06)\.')
 LIFE_ASPECTS = ('电容有效容量与寿命', '耗损件寿命')   # catalog titles of DEV-C02 and DEV-C06
-# An estimate passes a required function or a performance when a prototype test is handed on (SR self-check 2.1, user:
-# 估算 + 样机移交可判通过); damage, overheating and protection still need a guaranteed bound, so the rules about them
-# (stress and rating, connector current, converter current stress, protection thresholds, clamps, all of PRO) take none.
-ESTIMATE_PASS_CLASSES = ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE')
-NO_ESTIMATE_PASS_RE = re.compile(r'^(?:(?:DEV-C01|DEV-C04|PWR-C03|PWR-C06|PWR-C10|DRV-C01)\.|PRO-)')
 RETIRED_ITEM_FIELDS = {
     'margin_not_decisive_reason': "the margin's basis says whether it decides (an ESTIMATE or a missed GUARANTEED_BOUND "
                                   "does not); the open item's edges say what it blocks and why",
@@ -90,18 +85,6 @@ NUMBER_RE = re.compile(r'[-+]?\d+(?:\.\d+)?')
 PIN_RE = re.compile(r'^[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_+-]+$')
 # A judgement that only says the aspect does not apply (proposals of 2026-10-23, item 2c).
 NOT_APPLIES_RE = re.compile(r'不适用|无此问题|按拓扑(无|不)|不涉及')
-# A located condition names a place in its source a reader can open: a page, table, figure, section or chapter,
-# a datasheet section title, a requirement or record id, a designator, or named nets/pins. "相关位号所有物理脚"
-# and "## BIAS" locate nothing. Words are matched without case, ids with it.
-LOCATOR_WORDS_RE = re.compile(
-    r'(?<![a-z])pp?\.?\s*\d|第\s*\d+\s*[页节条章]'
-    r'|\b(?:table|tab|fig(?:ure)?|section|sec|chapter|clause|note|eq(?:uation)?)\.?\s*[a-z]?\d'
-    r'|[表图]\s*\d|§\s*\d'
-    r'|电气特性|绝对最大|推荐工作|引脚说明|引脚定义|订货|功能框图|特性曲线|热阻|应用说明|典型应用|电气参数'
-    r'|electrical characteristics|absolute maximum|recommended operating|pin description|pin assignment|ordering'
-    r'|block diagram|typical (?:characteristics|application)|thermal'
-    r'|(?:\bnets?\b|\bpins?\b|\bnodes?\b|网络|引脚|位号|节点)\s*[:：]?\s*/?[a-z][a-z0-9_/.-]+', re.I)
-LOCATOR_IDS_RE = re.compile(r'\b[A-Z]{1,4}\d{1,4}\b|\b[A-Z]+(?:-[A-Z0-9]+)*-[A-Z]*\d[A-Z0-9]*\b')
 TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient')
 ID_RE = re.compile(r'^FN-[A-Za-z0-9][A-Za-z0-9_.-]*$')
 KEY_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]*$')
@@ -135,15 +118,6 @@ PIN_SECTION_RE = re.compile(r'引脚说明|引脚定义|引脚功能|管脚|pin 
 OPERATING_SECTION_RE = re.compile(r'推荐工作|recommended operating|电气特性|电气参数|electrical characteristics'
                                   r'|绝对最大|absolute maximum', re.I)
 PIN_POINT_RE = re.compile(r'引脚|脚|\bpins?\b', re.I)
-REFERENCE_FIELDS = ('figure', 'connection', 'load')
-
-
-def reference_circuit(condition):
-    """A vendor reference circuit stated against this board: the figure, the same connection and a load no heavier
-    (proposals of 2026-10-23, 5c tier 2). Only this kind of typical reference settles a judgement."""
-    rc = condition.get('reference_circuit') if isinstance(condition, dict) else None
-    return (condition.get('kind') == 'TYPICAL_REFERENCE' and isinstance(rc, dict)
-            and all(text(rc.get(f)) for f in REFERENCE_FIELDS) and bool(LOCATOR_WORDS_RE.search(rc['figure'])))
 
 
 def clause(condition):
@@ -162,127 +136,10 @@ def net_name(net):
     return net.rsplit('/', 1)[-1] if isinstance(net, str) else net
 
 
-def scope(entry, default_aspect=None):
-    """(aspect or None, states, check_ids or None) an entry speaks for. No states is STATELESS, never every state."""
-    states = entry.get('states')
-    states = frozenset(s for s in states if text(s)) if isinstance(states, list) and states else frozenset([STATELESS])
-    ids = entry.get('check_ids')
-    ids = frozenset(c for c in ids if text(c)) if isinstance(ids, list) and ids else None
-    return (entry.get('aspect') or default_aspect, states, ids)
-
-
-def overlaps(a, b):
-    return ((a[0] is None or b[0] is None or a[0] == b[0]) and bool(a[1] & b[1])
-            and (a[2] is None or b[2] is None or bool(a[2] & b[2])))
-
-
-def covers(entry_scope, aspect, state, check_id=None):
-    return overlaps(entry_scope, (aspect, frozenset([state if text(state) else STATELESS]),
-                                  frozenset([check_id]) if check_id else None))
-
-
-def edges(item, effect='BLOCKS_PROOF'):
-    return [d for d in item.get('decides') or [] if isinstance(d, dict) and text(d.get('aspect'))
-            and d.get('effect', 'BLOCKS_PROOF') == effect]
-
-
 def _decides(item):
     """(aspect, states or None) per blocking edge, for the shape checks that only need the aspects."""
     return [(d['aspect'], set(d['states']) if isinstance(d.get('states'), list) and d['states'] else None)
             for d in edges(item)]
-
-
-def decides_row(item, aspect, state, check_id=None):
-    """Whether an open/fail item blocks (or fails) the row covering `aspect` in `state`."""
-    return any(covers(scope(d), aspect, state, check_id) for d in edges(item))
-
-
-def margin_verdict(m):
-    """PASS, FAIL or OPEN: what a margin proves under its basis. A guaranteed lower bound proves acceptance, a reachable
-    case proves rejection, the exact envelope proves both, an estimate proves neither."""
-    basis = m.get('basis') if isinstance(m, dict) else None
-    if not (isinstance(basis, dict) and _finite(m.get('value'))):
-        return 'OPEN'
-    met = m['value'] >= 0 if basis.get('comparison') == 'GE' else m['value'] > 0
-    kind = basis.get('kind')
-    if met and kind in ('GUARANTEED_BOUND', 'EXACT_ENVELOPE'):
-        return 'PASS'
-    if not met and kind in ('REACHABLE_CASE', 'EXACT_ENVELOPE'):
-        return 'FAIL'
-    return 'OPEN'
-
-
-def judged(fn, aspect, state=None, check_id=None):
-    """What settles `aspect` (in `state`) in favour of the design: a margin whose basis proves it, or a judgements entry
-    citing the clauses. None when nothing does — a row never passes on another aspect's or another state's result."""
-    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
-    for m in results_model.margins(calc):
-        if margin_verdict(m) == 'PASS' and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
-            return '%s；余量 %s%s 对 %s' % (calc.get('result') or '', m['value'], m.get('unit') or '', m.get('against') or '')
-    for j in fn.get('judgements') or []:
-        if isinstance(j, dict) and text(j.get('says')) and j.get('aspect') == aspect and covers(scope(j), aspect, state, check_id):
-            by_id = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
-            names = ['厂家参考电路 ' + by_id[c]['reference_circuit']['figure'] if reference_circuit(by_id.get(c)) else c
-                     for c in j.get('conditions') or [] if isinstance(c, str)]
-            return '%s（依据 %s）' % (j['says'], '、'.join(names))
-    life = life_estimate(fn, aspect, state, check_id)
-    if life is not None:
-        return life
-    estimate = prototype_estimate(fn, aspect, state, check_id)
-    return estimate[0] if estimate else None
-
-
-def life_row(check_id):
-    return isinstance(check_id, str) and bool(LIFE_ROW_RE.match(check_id))
-
-
-def life_estimate(fn, aspect, state=None, check_id=None):
-    """On a life row, an ESTIMATE margin that meets its target: the row passes as a BOM constraint (item 6a)."""
-    if not life_row(check_id):
-        return None
-    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
-    for m in results_model.margins(calc):
-        basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
-        met = _finite(m.get('value')) and (m['value'] >= 0 if basis.get('comparison') == 'GE' else m['value'] > 0)
-        if basis.get('kind') == 'ESTIMATE' and met and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
-            return '%s；估算余量 %s%s 对 %s' % (calc.get('result') or '', m['value'], m.get('unit') or '',
-                                          m.get('against') or '')
-    return None
-
-
-def estimate_handoff(fn, basis):
-    """The function handoff an ESTIMATE basis names in `handoff` (an index into fn.handoffs), when it is complete."""
-    k, handoffs = basis.get('handoff'), fn.get('handoffs')
-    if not (type(k) is int and isinstance(handoffs, list) and 0 <= k < len(handoffs)):
-        return None
-    h = handoffs[k]
-    if not (isinstance(h, dict) and isinstance(h.get('receivers'), list) and h['receivers']
-            and text(h.get('constraint')) and text(h.get('verification'))):
-        return None
-    return h
-
-
-def _estimate_passes(fn, m):
-    """An ESTIMATE margin written to pass a required function or a performance on a prototype handoff (2.1)."""
-    basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
-    return (basis.get('kind') == 'ESTIMATE' and basis.get('consequence_class') in ESTIMATE_PASS_CLASSES
-            and estimate_handoff(fn, basis) is not None)
-
-
-def prototype_estimate(fn, aspect, state=None, check_id=None):
-    """An ESTIMATE margin that meets its target, used for a required function or a performance and handed to the
-    prototype test it names (2.1): (rationale, handoff) or None. Not on a rule about damage, overheating or protection."""
-    if isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id):
-        return None
-    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
-    for m in results_model.margins(calc):
-        basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
-        met = _finite(m.get('value')) and (m['value'] >= 0 if basis.get('comparison') == 'GE' else m['value'] > 0)
-        if met and _estimate_passes(fn, m) and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
-            handoff = estimate_handoff(fn, basis)
-            return ('%s；估算余量 %s%s 对 %s，样机实测移交：%s' % (calc.get('result') or '', m['value'], m.get('unit') or '',
-                                                     m.get('against') or '', handoff['verification']), handoff)
-    return None
 
 
 def _condition_errors(label, c, db=None):
@@ -586,27 +443,6 @@ def _edge_errors(label, item, conditions, calculation):
     return errors
 
 
-def unjudged_message(cid, fid, aspect, state):
-    return ('%s: function %s judges no %s%s — give that aspect its margin in calculation.margin or a judgements '
-            'entry {aspect, conditions, says}; a row does not pass on another aspect\'s result'
-            % (cid, fid, aspect, (' in state ' + state) if state else ''))
-
-
-def margin_proves(fn, aspect, state=None, check_id=None):
-    """A margin of the function whose basis proves `aspect` in `state`."""
-    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
-    return any(margin_verdict(m) == 'PASS' and covers(scope(m, calc.get('aspect')), aspect, state, check_id)
-               for m in results_model.margins(calc))
-
-
-def reference_judged(fn, aspect, state=None, check_id=None):
-    """A judgement of `aspect` resting on a vendor reference circuit stated against this board (5c, tier 2)."""
-    by_id = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
-    return any(isinstance(j, dict) and j.get('aspect') == aspect and covers(scope(j), aspect, state, check_id)
-               and any(reference_circuit(by_id.get(c)) for c in j.get('conditions') or [])
-               for j in fn.get('judgements') or [])
-
-
 def _judgement_errors(fid, fn, conditions_by_id):
     errors = []
     judgements = fn.get('judgements')
@@ -690,7 +526,7 @@ def _decision_errors(fid, fn, calculation, conditions, findings):
     proven shortfall or a violated mandatory clause, never on a typical circuit alone."""
     errors = []
     default = calculation.get('aspect') if isinstance(calculation, dict) else None
-    margins = [(m, scope(m, default), margin_verdict(m)) for m in results_model.margins(calculation or {})
+    margins = [(m, scope(m, default), margin_verdict(m)) for m in function_reading.margins(calculation or {})
                if _finite(m.get('value'))]
     judgements = [(j, scope(j)) for j in fn.get('judgements') or [] if isinstance(j, dict) and text(j.get('aspect'))]
     opens = [(i, scope(d)) for i in fn.get('open') or [] if isinstance(i, dict) for d in edges(i)]
@@ -723,7 +559,7 @@ def _decision_errors(fid, fn, calculation, conditions, findings):
                         + [isc for _, isc in opens] + [isc for _, isc in fails])
             if (not any(overlaps(sc, other) for other in deciding)
                     and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE' and sc[0] in LIFE_ASPECTS)
-                    and not _estimate_passes(fn, m)):
+                    and not estimate_passes(fn, m)):
                 errors.append('%s: margin %s (basis %s) decides nothing; record the open item it leaves, whose edge names '
                               'the bound still missing' % (fid, name(m), (m.get('basis') or {}).get('kind')))
     for j, jsc in judgements:
@@ -789,7 +625,7 @@ def _evidence_name(entry):
 def _f8_errors(fid, fn, calculation):
     """F8: a design value left open beside a calculation states its margin."""
     errors = []
-    found = [m.get('aspect') or calculation.get('aspect') for m in results_model.margins(calculation)]
+    found = [m.get('aspect') or calculation.get('aspect') for m in function_reading.margins(calculation)]
     if calculation.get('claim_ids'):
         for item in fn.get('open') or []:
             if not isinstance(item, dict) or item.get('kind') != 'DESIGN_VALUE' or text(item.get('no_margin_reason')):
@@ -928,7 +764,7 @@ def _monotonic_errors(label, item, worst, calculation, conditions):
                              'not_boundable_reason again')
     aspects = {a for a, _ in _decides(item)}
     calc = calculation if isinstance(calculation, dict) else {}
-    margined = any((m.get('aspect') or calc.get('aspect')) in aspects for m in results_model.margins(calc))
+    margined = any((m.get('aspect') or calc.get('aspect')) in aspects for m in function_reading.margins(calc))
     other = tried.get('other_side')
     if other not in OTHER_SIDES:
         errors.append(head + '.other_side is DECIDED (a margin of this function settles the other bound) or NOT_DECISIVE '
@@ -1142,7 +978,7 @@ def cited_conditions(fn):
     judgements, fail items and gap edges. A clause nobody cites proves nothing (F1)."""
     out = set()
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
-    bases = [m.get('basis') for m in results_model.margins(calc)]
+    bases = [m.get('basis') for m in function_reading.margins(calc)]
     for item in fn.get('open') or []:
         if not isinstance(item, dict):
             continue

@@ -11,25 +11,8 @@
 - 计划项 ID 为 `规则编号[.实例键].锚点`，例如 `RST-T02.U3.SYS-RST-N`。审查员要补的检查登记在 `intent.rule_gaps`，
   计划工具写成 `REVIEWER_ADDED` 行，ID 为 `规则编号.GAP-<缺口编号>.锚点`，如 `PWR-T05.GAP-Q7-REVERSE.Q7`。每个计划项带 `rule`、`method`、`domain`，合并计划和校验结果时逐项核对。
 - 格式版本（`schema_version`）：intent 4、计划 7、结果 6、电路候选 2；版本不符的文件按当前总表重新生成。
-
-## 审查流程
-
-流程按检查方式排列；同一内容域的规则分散在不同阶段执行，靠编号前缀汇总。
-
-| 阶段 | 做什么 | 方式 | 主要产物 |
-|---|---|---|---|
-| 0 输入准备 | 输入版本与哈希、需求、工况、装配配置，写入 intent | — | `intent.json` |
-| 1 解析 | 解析网表并自检完整性 | — | `db.json` |
-| 2 冷跑 | 自动扫描全部内容域，生成计划 | A | `lint-cold.json`、`review-plan-cold.json` |
-| 3 资料取证与电路 | 器件身份、官方脚表、资料审计；按核过的器件类别生成电路候选，逐个决定 | D（DEV 域先做） | `datasheet-audit.json`、`record/circuit-candidates.json`、`intent.circuit_decisions` |
-| 4 合并扫描 | 再次自动扫描，并入资料审计，合并最终计划 | A | `lint-hot.json`、`review-plan.json` |
-| 5 专家审查 | 按内容域逐项追踪、计算、核对条款与保证值 | E、T、C、D | `review-results.json` 各项 |
-| 6 图面目检 | 每页留目检记录 | V | 页面记录 |
-| 7 覆盖审计与报告 | 覆盖维度、功能电路汇总与未检出确认、结果校验、报告 | Q | `review-gate.json`、报告 |
-| 8 改版复验 | 新旧比对、历史意见闭环（仅复审） | H | `diff.json`、改版影响清单 |
-
-专家审查建议按 PWR → RST → CLK → SIG → ANA → PRO → DRV 推进；DOC、DEV、NET、REQ 的
-非自动项在对应阶段穿插完成。
+- 内容域和方式只是编号的拼法，不是审查的顺序：审查流程（五环）和审查员沿着走的功能树见 [SKILL.md 架构](../SKILL.md#架构)，
+  环间文件和脚本归属见 [架构说明](architecture.md)。
 
 ## 方式要点
 

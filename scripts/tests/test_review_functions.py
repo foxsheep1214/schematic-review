@@ -983,7 +983,7 @@ class EvidenceBasisTests(unittest.TestCase):
     conversion, and PASS and FAIL evidence over one scope is a conflict, not a choice by order."""
 
     def test_e4_ge_passes_at_zero_gt_does_not_and_a_margin_is_finite(self):
-        from review_functions import margin_verdict
+        from function_reading import margin_verdict
         m = {'value': 0, 'basis': guaranteed(comparison='GE')}
         self.assertEqual(margin_verdict(m), 'PASS')
         self.assertEqual(margin_verdict(dict(m, basis=guaranteed(comparison='GT'))), 'OPEN')

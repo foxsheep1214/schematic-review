@@ -11,7 +11,7 @@ import requirement_parameters
 import requirements_extract
 from audit_datasheets import datasheet_audit_all_available
 from checkers import registry_cold_rules, registry_e_rules
-from checkers.netgraph import ANODE_NAMES, CATHODE_NAMES, normalize
+from part_words import ANODE_NAMES, CATHODE_NAMES, normalize
 from interfaces import CONNECTOR_RE
 
 # 全板规则执行前需要的资料；未列出的规则只需网表。

@@ -8,6 +8,7 @@ SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import board_intent
 from checkers import netgraph as ng
+import part_words as pw
 from checkers.supervision import SupervisionChecker, build_inventory, validate_supervision_intent
 from test_supervision_requirements import board, requirement, intent_for, coverage
 from test_inductive_load import add
@@ -243,7 +244,7 @@ def verified_series_fixture(ref, value, kind):
                     db[field][ref + node[len(old):]] = db[field].pop(node)
         for net, nodes in db['nets'].items():
             db['nets'][net] = [ref + n[len(old):] if n.startswith(old + '.') else n for n in nodes]
-    identity = 'Device:R' if kind == ng.RESISTOR else kind
+    identity = 'Device:R' if kind == pw.RESISTOR else kind
     db['parts'][ref].update(part=identity, prim=identity, value=value)
     intent = source_intent(db)
     declaration = {'kind': kind, 'page': 1, 'quote': 'Synthetic manufacturer classification: ' + kind}
@@ -273,7 +274,7 @@ class VerifiedSeriesPathTests(unittest.TestCase):
         for ref in ('F8', 'L8', 'FB8'):
             for value in invalid:
                 with self.subTest(ref=ref, value=value):
-                    db, analysis, check, rail, blockers = self.route(ref, value, ng.RESISTOR)
+                    db, analysis, check, rail, blockers = self.route(ref, value, pw.RESISTOR)
                     self.assertTrue(validate_supervision_intent(analysis, db))
                     self.assertFalse(rail['scope_qualified'])
                     self.assertIsNone(rail['requirement'])
@@ -286,7 +287,7 @@ class VerifiedSeriesPathTests(unittest.TestCase):
         for ref in ('R8', 'F8', 'L8', 'FB8'):
             for value in zero_values:
                 with self.subTest(ref=ref, value=value):
-                    db, analysis, check, rail, blockers = self.route(ref, value, ng.RESISTOR)
+                    db, analysis, check, rail, blockers = self.route(ref, value, pw.RESISTOR)
                     self.assertEqual(validate_supervision_intent(analysis, db), [])
                     self.assertTrue(rail['scope_qualified'])
                     self.assertEqual(check['inventory_gaps'], [])
@@ -297,8 +298,8 @@ class VerifiedSeriesPathTests(unittest.TestCase):
                     self.assertEqual([p['ref'] for p in rail['source_path']], ['D8', ref])
 
     def test_true_inductor_ferrite_and_fuse_keep_their_nonresistor_labels(self):
-        for ref, value, kind in [('L8', '10uH', ng.INDUCTOR),
-                                 ('FB8', '120R@100MHz', ng.FERRITE), ('F8', '2A', ng.FUSE)]:
+        for ref, value, kind in [('L8', '10uH', pw.INDUCTOR),
+                                 ('FB8', '120R@100MHz', pw.FERRITE), ('F8', '2A', pw.FUSE)]:
             with self.subTest(ref=ref, kind=kind):
                 db, analysis, check, rail, blockers = self.route(ref, value, kind)
                 self.assertEqual(validate_supervision_intent(analysis, db), [])

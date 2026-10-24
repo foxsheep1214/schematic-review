@@ -21,6 +21,7 @@ import board_intent
 from datasheet_kinds import pdf_page_texts
 from . import inventory as inv
 from . import netgraph as ng
+import part_words as pw
 from . import powertree
 from . import states as state_lib
 from .base import Checker
@@ -52,8 +53,8 @@ PIN_DIRECTIONS = {
 
 def _exact_model(part, model):
     """Placed part AND value must prove the MPN; prim only cross-checks it."""
-    identities = {key: ng.normalize(part.get(key)) for key in ('part', 'value', 'prim')}
-    pattern = r'(?:[^:\s]+:)?' + re.escape(ng.normalize(model))
+    identities = {key: pw.normalize(part.get(key)) for key in ('part', 'value', 'prim')}
+    pattern = r'(?:[^:\s]+:)?' + re.escape(pw.normalize(model))
     return (bool(identities['part'] and identities['value']) and all(
         re.fullmatch(pattern, value) for value in identities.values() if value))
 
@@ -66,7 +67,7 @@ def _pin_direction(graph, node):
     for field in ('pintype', 'native_pintype', 'declared_pintype', 'declared_native_pintype'):
         if node not in graph.db.get(field, {}):
             continue
-        value = ng.normalize(graph.db[field][node])
+        value = pw.normalize(graph.db[field][node])
         direction = next((key for key, aliases in PIN_DIRECTIONS.items() if value in aliases), None)
         if direction is None:
             return None
@@ -76,10 +77,10 @@ def _pin_direction(graph, node):
 
 def _physical_pin(graph, ref, pin, names, directions):
     node = ref + '.' + pin
-    aliases = set(ng.pin_aliases(graph.pinname.get(node), pin))
+    aliases = set(pw.pin_aliases(graph.pinname.get(node), pin))
     declared = graph.db.get('declared_pinname', {}).get(node)
     return (node in graph.pin2net and bool(aliases & names)
-            and (declared is None or bool(set(ng.pin_aliases(declared, pin)) & names))
+            and (declared is None or bool(set(pw.pin_aliases(declared, pin)) & names))
             and _pin_direction(graph, node) in directions)
 
 
@@ -122,7 +123,7 @@ def _snapshot_complete(graph, ref):
 def _shunt_upstream_contact(graph, node):
     """Only this role admits unused passive pads with actual isolated NC marks."""
     ref = node.partition('.')[0]
-    if (not _snapshot_complete(graph, ref) or graph.kind(ref) not in (ng.CONNECTOR, ng.UNKNOWN)
+    if (not _snapshot_complete(graph, ref) or graph.kind(ref) not in (pw.CONNECTOR, pw.UNKNOWN)
             or graph.db['native_pintype'].get(node) != 'passive'
             or node in graph.db.get('no_connect_nodes', [])
             or ng.is_ground(graph.pin2net.get(node)) or graph.pin2net.get(node) in graph.pseudo):
@@ -132,7 +133,7 @@ def _shunt_upstream_contact(graph, node):
         if data['native_pintype'] not in ('passive', 'no_connect'):
             return False
         expected = ('UNSPEC', 'UNSPECIFIED', 'PASSIVE') if data['native_pintype'] == 'passive' else ('NC',)
-        if any(ng.normalize(data[field]) not in expected for field in ('pintype', 'declared_pintype')):
+        if any(pw.normalize(data[field]) not in expected for field in ('pintype', 'declared_pintype')):
             return False
         if data['no_connect']:
             if (net not in graph.pseudo or graph.nodes_on(net) != [pad]
@@ -199,7 +200,7 @@ def _feed_edges(graph, omitted=()):
         kind = graph.kind(ref)
         nodes = [ref + '.' + p for p in graph.pins_of(ref)
                  if ref + '.' + p not in graph.db.get('no_connect_nodes', [])]
-        if kind in (ng.MOSFET, ng.BJT):
+        if kind in (pw.MOSFET, pw.BJT):
             # All duplicate physical S/D (or E/C) pads participate; gate/base do not.
             left = [n for n in nodes if graph.role(n) == 'source']
             right = [n for n in nodes if graph.role(n) == 'drain']
@@ -214,7 +215,7 @@ def _feed_edges(graph, omitted=()):
                 for a in contacts:
                     for b in contacts:
                         edge(graph.pin2net[a], graph.pin2net[b])
-        elif kind in (ng.SWITCH, ng.RELAY) or (kind == ng.UNKNOWN and len(nodes) > 2):
+        elif kind in (pw.SWITCH, pw.RELAY) or (kind == pw.UNKNOWN and len(nodes) > 2):
             # Unknown multi-terminal passive devices may conduct between contacts;
             # controls/coils are excluded. This is rejection coverage, not a model.
             contacts = [n for n in nodes if graph.role(n) != 'coil'
@@ -222,15 +223,15 @@ def _feed_edges(graph, omitted=()):
             for a in contacts:
                 for b in contacts:
                     edge(graph.pin2net[a], graph.pin2net[b])
-        elif kind == ng.DIODE:
+        elif kind == pw.DIODE:
             a, b = graph.node_named(ref, 'anode'), graph.node_named(ref, 'cathode')
             if a in nodes and b in nodes:
                 edge(graph.pin2net[a], graph.pin2net[b], False)
             elif len(nodes) == 2:
                 # Missing polarity is uncertainty, not evidence of reverse blocking.
                 edge(graph.pin2net[nodes[0]], graph.pin2net[nodes[1]])
-        elif len(nodes) == 2 and kind in (ng.RESISTOR, ng.INDUCTOR, ng.FERRITE,
-                                         ng.FUSE, ng.JUMPER, ng.UNKNOWN):
+        elif len(nodes) == 2 and kind in (pw.RESISTOR, pw.INDUCTOR, pw.FERRITE,
+                                         pw.FUSE, pw.JUMPER, pw.UNKNOWN):
             edge(graph.pin2net[nodes[0]], graph.pin2net[nodes[1]])
     return edges
 
@@ -293,7 +294,7 @@ def _receiver_source_errors(source, graph, node):
     except (OSError, UnicodeError, subprocess.SubprocessError):
         return ['internal shunt receiver source unreadable']
     ref, _, pin = node.partition('.')
-    mpn = ng.normalize(graph.parts[ref].get('part', '')).rsplit(':', 1)[-1]
+    mpn = pw.normalize(graph.parts[ref].get('part', '')).rsplit(':', 1)[-1]
     name = graph.pinname.get(node, '')
     identity_quote, role_quote, pin_quote = (
         _quote_key(source[k]) for k in ('identity_quote', 'role_quote', 'pin_quote'))
@@ -333,7 +334,7 @@ def _internal_shunt_feed(scan, item, intent):
                for ref in (upstream_ref, receiver_ref, feed_ref)):
         return ['internal shunt source/receiver/feed absent or DNP'], None
     receiver_part = graph.parts[receiver_ref]
-    receiver_model = ng.normalize(receiver_part.get('part', '')).rsplit(':', 1)[-1]
+    receiver_model = pw.normalize(receiver_part.get('part', '')).rsplit(':', 1)[-1]
     if not _exact_model(receiver_part, receiver_model):
         errors.append('internal shunt receiver part/value/symbol identity conflict')
     expected_part = {k: graph.parts[upstream_ref].get(k, '') for k in PART_IDENTITY_FIELDS}
@@ -346,7 +347,7 @@ def _internal_shunt_feed(scan, item, intent):
     if (proof['receiver_pins'] != _physical_snapshot(graph, receiver_ref)
             or not _snapshot_complete(graph, receiver_ref)
             or graph.db.get('native_pintype', {}).get(receiver) != 'power_in'
-            or any(ng.normalize(graph.db.get(field, {}).get(receiver)) not in ('POWER', 'PWR', 'POWER_IN', 'POWER_INPUT')
+            or any(pw.normalize(graph.db.get(field, {}).get(receiver)) not in ('POWER', 'PWR', 'POWER_IN', 'POWER_INPUT')
                    for field in ('pintype', 'declared_pintype'))
             or receiver in graph.db.get('no_connect_nodes', [])
             or graph.pin2net.get(receiver) != net or net in graph.pseudo or ng.is_ground(net)):
@@ -354,7 +355,7 @@ def _internal_shunt_feed(scan, item, intent):
     expected_feed_part = {k: graph.parts[feed_ref].get(k, '') for k in PART_IDENTITY_FIELDS}
     if (feed['part'] != expected_feed_part or feed['pins'] != _physical_snapshot(graph, feed_ref)
             or not _snapshot_complete(graph, feed_ref) or not _native_contacts(graph, feed_ref)
-            or graph.kind(feed_ref) != ng.RESISTOR):
+            or graph.kind(feed_ref) != pw.RESISTOR):
         errors.append('internal shunt feed is not the actual complete passive resistor')
     try:
         resistance = _feed_resistance(graph.parts[feed_ref].get('value'))
@@ -443,14 +444,14 @@ def _native_contacts(graph, ref, *, allow_nc=False):
             return False
         if pintype == 'passive':
             if (node in db.get('no_connect_nodes', []) or net in graph.pseudo
-                    or any(ng.normalize(db.get(field, {}).get(node)) not in ('UNSPEC', 'UNSPECIFIED', 'PASSIVE')
+                    or any(pw.normalize(db.get(field, {}).get(node)) not in ('UNSPEC', 'UNSPECIFIED', 'PASSIVE')
                            for field in ('pintype', 'declared_pintype') if node in db.get(field, {}))):
                 return False
         elif (not allow_nc or pintype != 'no_connect' or declared.get(node) != 'no_connect'
               or node not in db.get('no_connect_nodes', []) or net not in graph.pseudo
               or ng.is_ground(net) or ng.is_rail(net)
               or graph.nodes_on(net) != [node]
-              or any(ng.normalize(db.get(field, {}).get(node)) != 'NC'
+              or any(pw.normalize(db.get(field, {}).get(node)) != 'NC'
                      for field in ('pintype', 'declared_pintype') if node in db.get(field, {}))):
             return False
     return True
@@ -466,7 +467,7 @@ def _external_source_qualified(graph, node):
             and net is not None and not ng.is_ground(net) and net not in graph.pseudo
             and node in graph.nodes_on(net) and _native_contacts(graph, ref, allow_nc=True)
             and (graph.qualified_connector_contact(ref)
-                 or graph.kind(ref) in (ng.CONNECTOR, ng.UNKNOWN)))
+                 or graph.kind(ref) in (pw.CONNECTOR, pw.UNKNOWN)))
 
 
 def _upstream_external_path(scan, node, net, citation):
@@ -486,21 +487,21 @@ def _upstream_external_path(scan, node, net, citation):
         kind = graph.kind(ref)
         if (not graph.is_fitted(ref) or len(ends) != 2 or current not in ends
                 or len(nodes) != 2 or not _native_contacts(graph, ref)
-                or kind not in (ng.DIODE, ng.RESISTOR, ng.INDUCTOR, ng.FERRITE, ng.FUSE)):
+                or kind not in (pw.DIODE, pw.RESISTOR, pw.INDUCTOR, pw.FERRITE, pw.FUSE)):
             return None
         other = ends[0] if ends[1] == current else ends[1]
         if any(ng.is_ground(n) or n in graph.pseudo for n in (current, other)):
             return None
-        if kind == ng.RESISTOR:
+        if kind == pw.RESISTOR:
             try:
                 resistance = parse_resistor(graph.parts[ref].get('value'), exact=True)
             except (ValueError, OverflowError):
                 return None
             if resistance is None or resistance.get('ohm_exact') != '0':
                 return None
-        if kind == ng.DIODE:
+        if kind == pw.DIODE:
             anode, cathode = graph.node_named(ref, 'anode'), graph.node_named(ref, 'cathode')
-            if (ng.kind_gap(graph, ref) or not anode or not cathode
+            if (pw.kind_gap(graph, ref) or not anode or not cathode
                     or graph.pin2net.get(anode) != current or graph.pin2net.get(cathode) != other):
                 return None
         start = next((n for n in nodes if graph.pin2net[n] == current), None)
@@ -591,7 +592,7 @@ def _requirement_errors(item, db, intent, state=None, scan=None, rails=()):
     if isinstance(monitor, dict) and isinstance(monitor.get('node'), str):
         mref = monitor['node'].partition('.')[0]
         require(graph.pin2net.get(monitor['node']) == net and graph.is_fitted(mref)
-                and graph.kind(mref) == ng.IC,
+                and graph.kind(mref) == pw.IC,
                 'internal_monitor node must be a fitted IC pin on this rail')
     return errors
 
@@ -613,7 +614,7 @@ def _self_monitor_errors(item, db, intent, state, scan, rails):
         return ['net is not an actual supply rail']
     ref = node.partition('.')[0] if isinstance(node, str) else None
     if not (ref in rail['loads'] and graph.pin2net.get(node) == net and graph.is_fitted(ref)
-            and SUPPLY_PIN_RE.match(ng.normalize(graph.pinname.get(node)) or '')):
+            and SUPPLY_PIN_RE.match(pw.normalize(graph.pinname.get(node)) or '')):
         errors.append('internal_monitor without identity must be a fitted load supply pin on this rail')
     return errors
 
@@ -659,16 +660,16 @@ class _Scan:
                 continue
             kind = self.graph.kind(ref)
             pin = node.partition('.')[2]
-            named_reset = ng.name_matches(RESET_IN_RE, self.graph.pinname.get(node), pin)
+            named_reset = pw.name_matches(RESET_IN_RE, self.graph.pinname.get(node), pin)
             model_reset = (_exact_model(self.graph.parts[ref], MODEL_RESET_RECEIVER)
                            and _physical_pin(self.graph, ref, '8', {'EN'}, {'input'})
                            and pin == '8')
-            if (kind == ng.IC and _pin_direction(self.graph, node) in ('input', 'bidirectional')
+            if (kind == pw.IC and _pin_direction(self.graph, node) in ('input', 'bidirectional')
                     and (named_reset or model_reset)):
                 found.append({'node': node, 'role': 'reset-input'})
-            elif kind == ng.IC:
+            elif kind == pw.IC:
                 found.append({'node': node, 'role': 'other-pin'})
-            elif kind == ng.CONNECTOR:
+            elif kind == pw.CONNECTOR:
                 found.append({'node': node, 'role': 'external'})
         return sorted(found, key=lambda item: item['node'])
 
@@ -678,14 +679,14 @@ class _Scan:
             ref = node.partition('.')[0]
             if ref == source_ref or not self.graph.is_fitted(ref):
                 continue
-            if self.graph.kind(ref) in (ng.IC, ng.CONNECTOR):
+            if self.graph.kind(ref) in (pw.IC, pw.CONNECTOR):
                 drivers.append(node)
         if ng.is_rail(net) or net in self.grounds:
             state = 'tied'          # 直接坐在电源/地上，喂狗不可能翻转
         elif drivers:
             state = 'driven'
         elif any(ng.is_rail(other) or other in self.grounds
-                 for _, other in self.graph.neighbors(net, {ng.RESISTOR})):
+                 for _, other in self.graph.neighbors(net, {pw.RESISTOR})):
             state = 'pulled-only'
         else:
             state = 'floating'
@@ -694,7 +695,7 @@ class _Scan:
     def supervisors(self):
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
-            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != ng.IC:
+            if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != pw.IC:
                 continue
             watchdogs = self.graph.named_pins(ref, WATCHDOG_IN_RE)
             senses = self.graph.named_pins(ref, SENSE_RE)
@@ -704,8 +705,8 @@ class _Scan:
             # supervisor output, whatever SENSE/MR pins the part also has.
             outputs = {node: net for node, net in self.graph.named_pins(ref, RESET_OUT_RE).items()
                        if native.get(node) not in NATIVE_NON_OUTPUTS
-                       and (ng.normalize(graph.pintype.get(node)) in OUT_PINTYPES
-                            or ng.normalize(graph.pinname.get(node)) in {'WDO', 'PFO'}
+                       and (pw.normalize(graph.pintype.get(node)) in OUT_PINTYPES
+                            or pw.normalize(graph.pinname.get(node)) in {'WDO', 'PFO'}
                             or watchdogs or senses or manual)}
             if (_exact_model(graph.parts[ref], MODEL_WATCHDOG)
                     and _physical_pin(graph, ref, '4', {'DONE'}, {'input'})
@@ -726,7 +727,7 @@ class _Scan:
                 'reset_outputs': [
                     {'node': node, 'net': net,
                      'destinations': self._reset_destinations(net, ref),
-                     'pulls': sorted({other for _, other in graph.neighbors(net, {ng.RESISTOR})
+                     'pulls': sorted({other for _, other in graph.neighbors(net, {pw.RESISTOR})
                                       if self.tree.is_rail(other)})}
                     for node, net in sorted(outputs.items())],
                 'gaps': sorted(set(self.state['gaps'])),
@@ -744,11 +745,11 @@ class _Scan:
             if basis is None:
                 continue
             loads = [node for node in graph.nodes_on(net)
-                     if graph.kind(node.partition('.')[0]) == ng.IC
-                     and SUPPLY_PIN_RE.match(ng.normalize(graph.pinname.get(node)) or '')]
+                     if graph.kind(node.partition('.')[0]) == pw.IC
+                     and SUPPLY_PIN_RE.match(pw.normalize(graph.pinname.get(node)) or '')]
             if not loads:
                 continue
-            divided = [other for _, other in graph.neighbors(net, {ng.RESISTOR})
+            divided = [other for _, other in graph.neighbors(net, {pw.RESISTOR})
                        if other in sensed]
             monitor = ('sense-pin' if net in sensed else
                        'divider' if divided else

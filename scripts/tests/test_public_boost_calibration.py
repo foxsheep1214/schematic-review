@@ -13,6 +13,7 @@ import unittest
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 from checkers import netgraph as ng
+import part_words as pw
 from checkers.power_switch import build_inventory as switches
 from checkers.power_up import build_inventory as regulators
 from electrical_fixtures import bound_intent
@@ -34,7 +35,7 @@ def board():
 class PublicBoostCalibrationTests(unittest.TestCase):
     def test_abc_jumper_is_not_a_bjt_or_a_power_switch(self):
         db = board()
-        self.assertEqual(ng.NetGraph(db).kind('JP1'), ng.JUMPER)
+        self.assertEqual(ng.NetGraph(db).kind('JP1'), pw.JUMPER)
         inv = switches(db, bound_intent(db))
         self.assertEqual(inv['states'][0]['switches'], [])
         self.assertFalse(any(f['rule'] == 'DRV-A03' for f in Lint(db).run()))
@@ -56,7 +57,7 @@ class PublicBoostCalibrationTests(unittest.TestCase):
         add(db, 'Q2', 'UNLISTED-PART', [('1', 'B', 'FLOAT_BASE'),
             ('2', 'C', 'LOAD'), ('3', 'E', 'GND')])
         graph = ng.NetGraph(db)
-        self.assertEqual(graph.kind('Q2'), ng.BJT)
+        self.assertEqual(graph.kind('Q2'), pw.BJT)
         hits = [f for f in Lint(db).run() if f['rule'] == 'DRV-A03']
         self.assertEqual(len(hits), 1)
         self.assertIn('Q2', hits[0]['detail'])

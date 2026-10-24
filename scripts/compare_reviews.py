@@ -42,9 +42,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json
 from review_stage_scope import outside_stage
 import check_key
-import results_model
 import rule_gaps
-from review_functions import located, margin_verdict
+import function_reading
+from function_reading import margin_verdict
+from review_functions import located
 
 MATCH_FLOOR = 0.25   # least share of parts two circuits of one type must have in common to be the same block
 SIDES = ('A', 'B')
@@ -350,7 +351,7 @@ def _deciding_sources(side, row):
     wanted = 'PASS' if row.get('review_result') == 'PASS' else 'FAIL'
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
     ids = []
-    for m in results_model.margins(calc):
+    for m in function_reading.margins(calc):
         aspect = m.get('aspect') or calc.get('aspect')
         if margin_verdict(m) == wanted and not (aspect and row.get('aspect') and aspect != row['aspect']):
             basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}

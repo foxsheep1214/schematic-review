@@ -17,6 +17,7 @@ SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import electrical_contract as ec
 from checkers import netgraph as ng
+import part_words as pw
 from checkers import passive_stress
 
 
@@ -27,10 +28,11 @@ OTHER_NAMES = {'NEGATIVE_NET_RE', 'ANALOG_NAME_RE',
 
 
 def own_patterns(words):
-    """(file, name) of module-level patterns outside netgraph that hold one of these words."""
+    """(file, name) of module-level patterns outside netgraph (net names) and part_words (part words) that hold one
+    of these words."""
     found = []
     for p in sorted(SCRIPTS.glob('*.py')) + sorted(SCRIPTS.glob('checkers/*.py')):
-        if p.name == 'netgraph.py':
+        if p.name in ('netgraph.py', 'part_words.py'):
             continue
         for name, pattern in module_regexes(p).items():
             if name.endswith(OTHER_QUESTIONS) or name in OTHER_NAMES:
@@ -66,25 +68,25 @@ class GroundTests(unittest.TestCase):
 class PartWordTests(unittest.TestCase):
     def test_one_vocabulary(self):
         words = {'NTC_RE', 'VARISTOR_RE', 'LED_RE', 'POLARIZED_SYMBOL_RE', 'ELECTROLYTIC_RE', 'TANTALUM_RE'}
-        self.assertTrue(words <= set(module_regexes(SCRIPTS / 'checkers' / 'netgraph.py')))
+        self.assertTrue(words <= set(module_regexes(SCRIPTS / 'part_words.py')))
         self.assertEqual(own_patterns(('NTC', 'VARISTOR', 'MOV', 'LED', 'TANT', 'ELECTROLYTIC', 'C_Polarized')), [])
 
     def test_electrolytic_tantalum_and_polarized(self):
-        self.assertTrue(ng.ELECTROLYTIC_RE.search('EEU-FR1V101'))
-        self.assertTrue(ng.ELECTROLYTIC_RE.search('100uF ELEC'))
-        self.assertFalse(ng.ELECTROLYTIC_RE.search('CP_Elec_8x10'))       # a footprint name needs the voltage rule
-        self.assertTrue(ng.TANTALUM_RE.search('TPSD107K010R0100'))
-        self.assertFalse(ng.TANTALUM_RE.search('TPS54331'))
+        self.assertTrue(pw.ELECTROLYTIC_RE.search('EEU-FR1V101'))
+        self.assertTrue(pw.ELECTROLYTIC_RE.search('100uF ELEC'))
+        self.assertFalse(pw.ELECTROLYTIC_RE.search('CP_Elec_8x10'))       # a footprint name needs the voltage rule
+        self.assertTrue(pw.TANTALUM_RE.search('TPSD107K010R0100'))
+        self.assertFalse(pw.TANTALUM_RE.search('TPS54331'))
         for text in ('Device:C_Polarized', 'Device:CP_Small', 'ALUMINUM 100uF', '钽电容 10uF', 'TPSB106K016'):
-            self.assertTrue(ng.is_polarized_capacitor(text), text)
-        self.assertFalse(ng.is_polarized_capacitor('Device:C 100nF X7R'))
+            self.assertTrue(pw.is_polarized_capacitor(text), text)
+        self.assertFalse(pw.is_polarized_capacitor('Device:C 100nF X7R'))
 
     def test_ntc_varistor_led(self):
-        self.assertTrue(ng.NTC_RE.search('NTC10K'))
-        self.assertTrue(ng.VARISTOR_RE.search('压敏电阻 14D471K'))
-        self.assertTrue(ng.LED_RE.search('Device:LED'))
-        self.assertTrue(ng.LED_RE.search('LEDS_RGB'))
-        self.assertFalse(ng.LED_RE.search('SLED_DRIVER'))
+        self.assertTrue(pw.NTC_RE.search('NTC10K'))
+        self.assertTrue(pw.VARISTOR_RE.search('压敏电阻 14D471K'))
+        self.assertTrue(pw.LED_RE.search('Device:LED'))
+        self.assertTrue(pw.LED_RE.search('LEDS_RGB'))
+        self.assertFalse(pw.LED_RE.search('SLED_DRIVER'))
 
 
     def test_an_ntc_or_varistor_by_its_words_is_a_protection_part(self):

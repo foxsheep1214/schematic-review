@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import derive_rows
-import review_functions as rf
+import function_reading
 import validate_review as vr
 from test_derive_rows import OTHER_ROW, two_frames
 from test_review_functions import ASPECT
@@ -73,7 +73,7 @@ class EstimatePassTests(unittest.TestCase):
             _, _, errors = derive_rows.derive(p, r)
             self.assertTrue(any(OTHER_ROW in e and 'judges no' in e for e in errors), (extra, errors))
 
-    def test_damage_or_protection_is_not_a_class_an_estimate_passes(self):
+    def test_damage_or_protection_is_not_a_class_anestimate_passes(self):
         for cls in ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD', 'CORE_LINK_LOSS', 'LOCAL_OR_DATA', 'NONE'):
             p, r, db = estimated(consequence_class=cls)
             out = vr.validate_review(p, r, db)
@@ -101,10 +101,10 @@ class EstimatePassTests(unittest.TestCase):
     def test_damage_overheating_and_protection_rules_take_no_estimate(self):
         _, r, _ = estimated()
         fn = r['functions'][1]
-        self.assertIsNotNone(rf.prototype_estimate(fn, ASPECT, 'RUN', OTHER_ROW))
+        self.assertIsNotNone(function_reading.prototype_estimate(fn, ASPECT, 'RUN', OTHER_ROW))
         for cid in ('DEV-C01.Q9', 'DEV-C04.J1', 'PWR-C03.OTHER-RUN.Q9', 'PWR-C06.OTHER-RUN.Q9',
                     'PWR-C10.C3', 'DRV-C01.D2', 'PRO-C01.TVS1', 'PRO-C02.F1'):
-            self.assertIsNone(rf.prototype_estimate(fn, ASPECT, 'RUN', cid), cid)
+            self.assertIsNone(function_reading.prototype_estimate(fn, ASPECT, 'RUN', cid), cid)
 
     def test_a_proving_margin_needs_no_handoff(self):
         p, r, db = estimated()

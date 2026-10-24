@@ -10,6 +10,9 @@ import math
 import os
 import re
 from functools import lru_cache
+from pathlib import Path
+
+from skill_identity import engineering_identity
 
 
 def db_fingerprint(db):
@@ -101,3 +104,42 @@ if __name__ == '__main__':
         parser.error(str(error))
     result['documents'] = {p: document_fingerprint(p) for p in args.document}
     print(json.dumps(result, ensure_ascii=False, indent=2))
+
+# Format agreements every ring reads (SR self-check 5.8, user: 并进 contract): the review phases, a non-empty text,
+# what locates a condition, the consequence classes and the SR rule fingerprint. They lived in the gate's modules and
+# the plan and the row derivation imported them from there.
+PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
+
+
+def text(value):
+    return isinstance(value, str) and bool(value.strip())
+
+
+# A located condition names a place in its source a reader can open: a page, table, figure, section or chapter,
+# a datasheet section title, a requirement or record id, a designator, or named nets/pins. "相关位号所有物理脚"
+# and "## BIAS" locate nothing. Words are matched without case, ids with it.
+LOCATOR_WORDS_RE = re.compile(
+    r'(?<![a-z])pp?\.?\s*\d|第\s*\d+\s*[页节条章]'
+    r'|\b(?:table|tab|fig(?:ure)?|section|sec|chapter|clause|note|eq(?:uation)?)\.?\s*[a-z]?\d'
+    r'|[表图]\s*\d|§\s*\d'
+    r'|电气特性|绝对最大|推荐工作|引脚说明|引脚定义|订货|功能框图|特性曲线|热阻|应用说明|典型应用|电气参数'
+    r'|electrical characteristics|absolute maximum|recommended operating|pin description|pin assignment|ordering'
+    r'|block diagram|typical (?:characteristics|application)|thermal'
+    r'|(?:\bnets?\b|\bpins?\b|\bnodes?\b|网络|引脚|位号|节点)\s*[:：]?\s*/?[a-z][a-z0-9_/.-]+', re.I)
+LOCATOR_IDS_RE = re.compile(r'\b[A-Z]{1,4}\d{1,4}\b|\b[A-Z]+(?:-[A-Z0-9]+)*-[A-Z]*\d[A-Z0-9]*\b')
+
+# Consequence class -> potential level (verdicts-and-release.md 等级边界). A damage/hazard or
+# core-link class drops to P1 only with a written independent exclusion of that path.
+# impact_class_version 2 separates COMPONENT_DAMAGE (a part may be destroyed, nothing else
+# follows: P1) from DAMAGE_OR_HAZARD, which then must name the hazard path it opens.
+IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P0', 'CORE_LINK_LOSS': 'P0',
+                  'COMPONENT_DAMAGE': 'P1',
+                  'REQUIRED_FUNCTION': 'P1', 'PERFORMANCE_OR_LIFE': 'P1',
+                  'LOCAL_OR_DATA': 'P2', 'OPTIMIZATION': 'P3'}
+HAZARD_PATHS = ('FIRE', 'SHOCK', 'INSULATION', 'HAZARDOUS_ENERGY', 'PORT_OVERVOLTAGE', 'PROTECTION_LOSS')
+
+
+def engine_identity(root=None):
+    """The SR rule fingerprint the plan records and the gate compares (skill_identity.engineering_identity)."""
+    root = Path(root) if root else Path(__file__).resolve().parents[1]
+    return engineering_identity(root)

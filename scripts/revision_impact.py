@@ -10,8 +10,7 @@ import json
 import os
 
 import catalog
-from review_engine import engine_identity
-from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, engine_identity
 from diff_netlists import diff_databases
 from i2c_topology import validate_db_shape
 

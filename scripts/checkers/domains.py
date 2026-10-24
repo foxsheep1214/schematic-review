@@ -11,6 +11,7 @@
 记冲突，不改声明。
 """
 from . import netgraph as ng
+import part_words as pw
 from . import passive_stress
 from . import powertree
 
@@ -18,8 +19,8 @@ SCHEMA_VERSION = 1
 GROUND = 'ground'
 DRIVER = 'driver'
 # Parts that do not conduct DC between their pins for the purpose of ground reference.
-NON_CONDUCTING = frozenset({ng.CAPACITOR, ng.TRANSFORMER, ng.OPTO, ng.RELAY, ng.CRYSTAL, ng.CONNECTOR,
-                            ng.TESTPOINT, ng.BATTERY, ng.UNKNOWN})   # an unclassified part merges nothing
+NON_CONDUCTING = frozenset({pw.CAPACITOR, pw.TRANSFORMER, pw.OPTO, pw.RELAY, pw.CRYSTAL, pw.CONNECTOR,
+                            pw.TESTPOINT, pw.BATTERY, pw.UNKNOWN})   # an unclassified part merges nothing
 ISOLATOR = 'isolator'
 
 
@@ -46,7 +47,7 @@ def ground_labels(graph, intent):
         if not (passive_stress.ground_name(net) or zero):
             continue
         domain = rail.get('domain') if isinstance(rail.get('domain'), str) and rail['domain'].strip() else None
-        labels[net] = domain or ng.normalize(net).rsplit('/', 1)[-1]
+        labels[net] = domain or pw.normalize(net).rsplit('/', 1)[-1]
     return labels
 
 
@@ -128,7 +129,7 @@ def derive(graph, intent=None):
             barriers.append({'ref': ref, 'kind': graph.kind(ref), 'domains': touched})
 
     anchors = {ref: graph.role_kind(ref) for ref in sorted(graph.parts) if graph.is_anchor(ref)}
-    undeclared = sorted(ref for ref in graph.parts if graph.is_fitted(ref) and graph.kind(ref) == ng.IC
+    undeclared = sorted(ref for ref in graph.parts if graph.is_fitted(ref) and graph.kind(ref) == pw.IC
                         and graph.role_kind(ref) is None)
     return {
         'schema_version': SCHEMA_VERSION,
@@ -162,7 +163,7 @@ def rail_stops(graph, intent, grounds, anchors):
         for ref in graph.refs_on(net):
             if ref in anchors:
                 reached.add(ref)
-            elif graph.kind(ref) in ng.TWO_TERMINAL and len(graph.nets_of(ref)) == 2:
+            elif graph.kind(ref) in pw.TWO_TERMINAL and len(graph.nets_of(ref)) == 2:
                 other = next(n for n in graph.nets_of(ref) if n != net)
                 # one two-terminal hop, but never through a ground or another stop: a bypass capacitor to
                 # ground does not make every IC on that ground reach the net

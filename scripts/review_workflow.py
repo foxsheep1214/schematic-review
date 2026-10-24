@@ -4,7 +4,7 @@ This is supplementary to validate_review's evidence and release checks.
 Work-item grouping is explicit,
 not a text-similarity claim that different electrical causes are equivalent.
 """
-PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
+from electrical_contract import PHASES
 import results_model
 from task_scope import ownership, task_view, validate_scopes
 # Gaps a schematic change can often remove: the reviewer must propose that change or say why none exists.

@@ -11,7 +11,8 @@ import copy
 import unittest
 
 from test_review_functions import ASPECT, HV_TRIED, STATES, bias_function, guaranteed, with_datum
-from review_functions import function_errors, judged
+from function_reading import judged
+from review_functions import function_errors
 
 REFERENCE = {'id': 'c6', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/U1.txt', 'locator': 'p21 Figure 20 典型应用电路',
              'says': '光耦 LED 经 1 kΩ 接 OPTO 脚', 'use': '同样的接法',

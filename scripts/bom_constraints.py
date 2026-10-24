@@ -8,10 +8,10 @@ open item: a gap whose rows are all part-stress rows of commodity parts is refus
 """
 import re
 
-from checkers import netgraph as ng
-from review_summary import HAZARD_PATHS, IMPACT_CLASSES
+import part_words as pw
+from electrical_contract import HAZARD_PATHS, IMPACT_CLASSES
 
-COMMODITY_KINDS = {ng.RESISTOR, ng.CAPACITOR, ng.INDUCTOR, ng.FERRITE, ng.DIODE, ng.ZENER}
+COMMODITY_KINDS = {pw.RESISTOR, pw.CAPACITOR, pw.INDUCTOR, pw.FERRITE, pw.DIODE, pw.ZENER}
 SAFETY_RE = re.compile(r'(^|[/\s])(X1|X2|Y1|Y2)([/\s]|$)', re.I)
 CUSTOM_RE = re.compile(r'CUSTOM', re.I)
 STATUSES = ('TO_WRITE', 'WRITTEN')

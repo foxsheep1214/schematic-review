@@ -8,7 +8,8 @@
 """
 import re
 
-from checkers.netgraph import CONNECTOR, IC, LED_RE, RESISTOR, TESTPOINT, is_ground, is_rail, rail_voltage
+from checkers.netgraph import is_ground, is_rail, rail_voltage
+from part_words import CONNECTOR, IC, LED_RE, RESISTOR, TESTPOINT
 from checkers.passive_stress import rated_voltage   # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
@@ -121,7 +122,7 @@ def _i2c_segment(lint, net):
 def _switched_pullups(lint, segment):
     """(switch, resistor) pairs: a DIP switch or solder jumper on the segment whose other contact
     reaches a resistor to a non-ground net, i.e. a pull-up the user can select."""
-    from checkers.netgraph import JUMPER, SWITCH
+    from part_words import JUMPER, SWITCH
     found = []
     for n in sorted(segment):
         for ref in lint.graph.refs_on(n):

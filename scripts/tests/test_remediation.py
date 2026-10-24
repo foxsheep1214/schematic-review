@@ -9,7 +9,7 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from test_validate_review import bind, fixture, fail, E
 from test_calculation_preflight import calculation
-from review_engine import engine_identity
+from electrical_contract import engine_identity
 from validate_review import fingerprint, validate_review
 
 

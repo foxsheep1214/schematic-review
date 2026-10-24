@@ -15,7 +15,7 @@ SR 现在主要审 ASG 生成的 KiCad 工程。`seeded_bench` 统计真实电�
 `--contract legacy` 用于重放历史约定，
 新模型对历史检查数的差异仍会明确报出，不能当作历史 checksum 一致。
 
-当前默认约定是 `shared-part-words-v1`（`revisions/shared-part-words-v1/`，2026-10-24）：器件用词（LED、NTC、压敏、电解、钽）与地名判定统一到 netgraph 一处，料号写成 0402LED 的三颗 LED 被认出，r02 多三行 DEV-C05.PIN-LED（检查数 226→229），其余答案不变。上一约定 `intent-format-4-v1`（`revisions/intent-format-4-v1/`，2026-10-23）：intent 格式升到 4，三份 intent 夹具只把 `schema_version` 改为 4、另存为 `*.intent-format-4-v1.intent.json`，答案不变。上一约定 `single-fault-rows-v1`（2026-10-23）：常见单一故障按网表特征派固定行（端口短路、NTC 热态重接入、RCD 钳位电阻、IC 脚直接驱动 LED/光耦、光耦使能）；回放板上只有 MCP73831 的 STAT 脚直接驱动 LED 触发 DEV-C05.PIN-LED，r01 +1、r05 +1，其余答案不变。
+当前默认约定是 `shared-part-words-v1`（`revisions/shared-part-words-v1/`，2026-10-24）：器件用词（LED、NTC、压敏、电解、钽）与地名判定统一到一处（当时在 netgraph，5.8 起器件用词在 `part_words.py`），料号写成 0402LED 的三颗 LED 被认出，r02 多三行 DEV-C05.PIN-LED（检查数 226→229），其余答案不变。上一约定 `intent-format-4-v1`（`revisions/intent-format-4-v1/`，2026-10-23）：intent 格式升到 4，三份 intent 夹具只把 `schema_version` 改为 4、另存为 `*.intent-format-4-v1.intent.json`，答案不变。上一约定 `single-fault-rows-v1`（2026-10-23）：常见单一故障按网表特征派固定行（端口短路、NTC 热态重接入、RCD 钳位电阻、IC 脚直接驱动 LED/光耦、光耦使能）；回放板上只有 MCP73831 的 STAT 脚直接驱动 LED 触发 DEV-C05.PIN-LED，r01 +1、r05 +1，其余答案不变。
 
 此前的默认约定是 `fixed-device-rows-v1`（`revisions/fixed-device-rows-v1/`，2026-10-22）：晶体管、光耦、稳压/TVS 二极管、整流桥、变压器与定制电感不经 intent.devices 声明也生成身份、引脚处置与工况行，普通二极管与普通电感只在声明时生成；r02 +6，rf1 三例各 +27，rf2 +12，每颗器件 3 行，其余答案不变。
 

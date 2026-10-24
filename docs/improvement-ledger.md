@@ -7,6 +7,47 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## One line to walk: the function tree (SR framework review, 2026-10-24)
+
+Five coordinates organised SR: the function tree (owner), the seven review objectives G1–G7, the twelve content
+domains, the eight method letters and the verdict system. Only the function tree takes part in planning, validation
+and the report; in the code the objectives are a maintenance mapping in `catalog.py`, the domain and the method letter
+are labels on a plan row. The documents still told the same flow three times, each along a different coordinate: the
+five rings in the SKILL.md architecture, the steps 0–8 of the execution flow (ring ① was steps 0, 1 and 3; ring ②
+steps 2 and 4), and a "review flow" table in check-catalog.md whose stages were method letters; step 5 told the
+reviewer to advance by domain (PWR → RST → CLK …) while the same step said the unit of judgement is the function. Now
+SKILL.md states one line to walk, the plan's function tree, and the judgement as one chain (object → question →
+conditions and margins → rows → reconciliation → report), each layer defined in one file; the steps are renumbered by
+ring (1.1–1.3, 2.1–2.3, 3.1–3.3, 4, 5; the drawing check joins 3.3; revision review has no step number); the domain
+order sentence and the check-catalog flow table are gone; G1–G7 leave the SKILL.md purpose paragraph for
+review-charter.md, as the coordinate for changing rules. Rule ids, `catalog.py`, format versions, gate and report
+logic are untouched. 40 structure tests and 515 contract tests pass; no "第 N 步" reference to the old numbering is
+left in SKILL.md, references or scripts (design notes under docs/ keep their own step numbers).
+
+- Event: user:2026-10-24 (SR framework review: "方案通过，直接按三条改 SKILL.md、check-catalog.md 和 architecture.md，步骤按环重编号。")
+- Causes: judgment 1
+- Changed: SKILL.md, docs/improvement-ledger.md, references/architecture.md, references/check-catalog.md, references/datasheets.md, scripts/lint.py, scripts/plan_review.py
+
+## Script imports follow the rings (SR self-check 5.8, 2026-10-24)
+
+architecture.md puts every script in a ring, read in, plan, judge, validate, report, but eight imports ran the other way:
+the netlist parser took part kinds from the checkers, the plan took the rule identity, the phase list and the locator
+patterns from the gate, row derivation took the reading of a function verdict and a text helper from the gate, and the
+BOM constraints took the consequence classes from the summary. Shared format definitions (`PHASES`, `text`, the locator
+patterns, `IMPACT_CLASSES` and `HAZARD_PATHS`, `engine_identity`) now live in `electrical_contract.py`; the reading of a
+function verdict (margins, scope, covers, judged, the estimate pass and the rest) moves from `review_functions.py` to the
+new judge-ring library `function_reading.py`, and `review_functions.py` keeps only validation; the part words gathered
+into `checkers/netgraph.py` by group 3 move to the new read-in library `part_words.py`, which netgraph and the parser
+import. `skill_identity.py` is listed as a read-in library and `check_key.py` as a planning library; their code did not
+move. No aliases are left at the old places. `test_ring_imports.py` reads the table and fails on any script without a
+ring or any import of a later ring, late imports included. 18 mutations were repointed to the moved code and M531–M532
+guard the two main directions. 2037 tests pass, contract 515, KiCad replay 195/195, typical circuits unchanged,
+all 392 mutations on changed files killed.
+
+- Event: user:2026-10-24 (SR self-check 5.8, docs/2026-10-24-ring-imports-proposal.md: "做", "并进 contract", "单列新库", "一次改完"; check_key: "改记 ② 的库"; engine_identity: "并进 contract")
+- Causes: rule_not_enforced 1
+- Changed: SKILL.md, docs/2026-10-24-ring-imports-proposal.md, docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/mutation/README.md, evals/mutation/mutations.json, evals/seeded_bench/mutators.py, references/architecture.md, scripts/board_scans.py, scripts/bom_constraints.py, scripts/checkers/diff_levels.py, scripts/checkers/domains.py, scripts/checkers/inductive_load.py, scripts/checkers/input_filter.py, scripts/checkers/netgraph.py, scripts/checkers/optocoupler.py, scripts/checkers/passive_stress.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/powertree.py, scripts/checkers/supervision.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/compare_reviews.py, scripts/decoupling.py, scripts/derive_rows.py, scripts/electrical_contract.py, scripts/function_reading.py, scripts/interfaces.py, scripts/lint.py, scripts/parse_netlist.py, scripts/part_words.py, scripts/plan_board.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/plan_system.py, scripts/render_report.py, scripts/results_model.py, scripts/review_engine.py, scripts/review_functions.py, scripts/review_summary.py, scripts/review_workflow.py, scripts/revision_impact.py, scripts/tests/test_board_scans.py, scripts/tests/test_checkers_framework.py, scripts/tests/test_connector_nc_inputs.py, scripts/tests/test_connector_roles.py, scripts/tests/test_described_usage.py, scripts/tests/test_estimate_pass.py, scripts/tests/test_ic_kinds.py, scripts/tests/test_life_rows.py, scripts/tests/test_one_judgment.py, scripts/tests/test_operating_point_tiers.py, scripts/tests/test_optical_library.py, scripts/tests/test_optocoupler.py, scripts/tests/test_public_boost_calibration.py, scripts/tests/test_remediation.py, scripts/tests/test_requirement_clarifications.py, scripts/tests/test_review_evolution.py, scripts/tests/test_review_functions.py, scripts/tests/test_ring_imports.py, scripts/tests/test_supervision_external_paths.py
+
 ## Shorter, one place per rule, no dead code (SR self-check group 5, 2026-10-24)
 
 Group 5 of the self-check asked for concision. SKILL.md step 5's first sub-step goes from 25 lines to a short list with

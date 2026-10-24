@@ -5,7 +5,8 @@ ReviewPlanner 混入这里的方法。"""
 import board_intent
 import catalog
 import requirement_parameters
-from checkers.netgraph import IC, NetGraph
+from checkers.netgraph import NetGraph
+from part_words import IC
 
 SYSTEM_MATERIALS = {'PWR-T06': ('datasheets', 'platform_checklist'), 'SIG-D13': ('datasheets', 'platform_checklist'),
                     'RST-T03': ('requirements', 'datasheets')}
