@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import board_intent
+import catalog
 import datasheet_kinds as dk
 from checkers import netgraph as ng
 import part_words as pw
@@ -31,6 +32,13 @@ ROLE_QUOTES = {
     'mcu': '32-bit Arm Cortex-M0+ Microcontroller',
     'transceiver': 'High-Speed CAN Transceiver',
     'isolator': 'Dual-Channel Digital Isolator',
+    'load_switch': 'Load Switch with Adjustable Current Limit',
+    'charger': 'Switch-Mode Li-Ion Battery Charger with Buck Regulator',
+    'adc_dac': '24-Bit Delta-Sigma ADC with PGA',
+    'oscillator': 'Low-Jitter Crystal Oscillator',
+    'memory': '128-Mbit Serial Flash Memory with Quad SPI',
+    'level_shifter': 'Bidirectional Voltage-Level Translator',
+    'motor_driver': 'H-Bridge Motor Driver with Current Regulation',
 }
 
 
@@ -64,12 +72,24 @@ class VocabularyTests(unittest.TestCase):
         self.assertTrue(any('kind must be one of' in e for e in
                             board_intent.device_kind_errors({'U1': {'kind': 'controller', 'page': 1, 'quote': 'x'}}, None)))
 
-    def test_anchor_kinds_are_the_role_kinds_that_drive_or_regulate(self):
+    def test_anchor_kinds_are_the_registry_roles_with_circuit_types(self):
         self.assertEqual(set(board_intent.ANCHOR_KINDS),
-                         {'pwm_controller', 'gate_driver', 'sr_controller', 'pd_controller', 'regulator',
-                          'supervisor', 'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver'})
-        self.assertNotIn('ic', board_intent.ANCHOR_KINDS)
-        self.assertNotIn('isolator', board_intent.ANCHOR_KINDS)
+                         {name for name, role in catalog.DEVICE_ROLES.items() if role.circuits})
+        self.assertEqual(set(board_intent.ANCHOR_KINDS) & {'ic', 'isolator'}, set())
+        for role in ('pwm_controller', 'regulator', 'mcu', 'transceiver', 'load_switch', 'memory', 'oscillator'):
+            self.assertIn(role, board_intent.ANCHOR_KINDS)
+
+    def test_every_role_list_reads_the_registry(self):
+        """The five former copies of the role list are views of catalog.DEVICE_ROLES."""
+        roles = tuple(catalog.DEVICE_ROLES)
+        self.assertEqual(board_intent.IC_KINDS, roles)
+        self.assertEqual(pw.IC_ROLES, frozenset(roles))
+        self.assertEqual(pw.ANCHOR_ROLES, frozenset(board_intent.ANCHOR_KINDS))
+        self.assertEqual(dk.IC_ROLE_CUES, set(roles) - {'ic'})
+        self.assertEqual(dict(dk.KIND_CUES)['load_switch'], catalog.DEVICE_ROLES['load_switch'].cues)
+        self.assertEqual(catalog.device_role_errors(), [])
+        self.assertEqual(roles[-1], 'ic')
+        self.assertEqual(catalog.DEVICE_ROLES['ic'].cues, ())
 
 
 class QuoteVerificationTests(unittest.TestCase):
@@ -98,6 +118,16 @@ class QuoteVerificationTests(unittest.TestCase):
     def test_physical_dimensions_do_not_make_a_transceiver(self):
         self.assertEqual(dk.cues('Physical dimensions of the package'), set())
         self.assertEqual(dk.cues('10/100 Ethernet PHY transceiver'), {'transceiver'})
+
+    def test_registry_disambiguation_keeps_the_named_role(self):
+        self.assertEqual(dk.cues('Three-Phase Smart Gate Driver'), {'gate_driver'})
+        self.assertEqual(dk.cues('H-Bridge Driver for Brushed DC Motors'), {'motor_driver'})
+        self.assertEqual(dk.cues('32-bit MCU with 2 MB Flash memory and internal oscillator'), {'mcu'})
+        self.assertEqual(dk.cues('Low Dropout Voltage Regulator'), {'regulator'})
+        # a load switch used to be a regulator cue; declaring it as regulator now lacks the type
+        result = dk.verify({'kind': 'regulator', 'page': 1, 'quote': ROLE_QUOTES['load_switch']}, 'u.pdf',
+                           self.page(ROLE_QUOTES['load_switch']))
+        self.assertEqual(result['status'], 'QUOTE_LACKS_TYPE')
 
     def test_a_pd_controller_quote_is_not_a_pwm_controller(self):
         self.assertEqual(dk.cues('USB PD controller with integrated power switch'), {'pd_controller'})
@@ -162,6 +192,75 @@ class PlannerGapTests(unittest.TestCase):
         intent, _ = verified(db, {'U1': 'pwm_controller'})
         row = self.row(db, intent, {'device_kinds': {'U1': {'status': 'QUOTE_NOT_FOUND'}}})
         self.assertTrue(any(g.startswith('intent.device_kinds.U1:') and 'QUOTE_NOT_FOUND' in g for g in row['required_inputs']))
+
+
+def bus_board():
+    """U2 is a bus transceiver on J1 with a termination resistor; U3 a serial memory on the MCU's SPI nets."""
+    db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {}, 'pseudo_nets': [], 'ref2page': {}}
+    add = fixture.add
+    add(db, 'U2', 'XCVR-8', [('1', 'TXD', 'TXD'), ('2', 'GND', 'GND'), ('3', 'VCC', 'VCC'), ('4', 'RXD', 'RXD'),
+                             ('6', 'CANL', 'CANL'), ('7', 'CANH', 'CANH')])
+    add(db, 'R1', '120R', [('1', '1', 'CANH'), ('2', '2', 'CANL')])
+    add(db, 'J1', 'CONN-3', [('1', 'H', 'CANH'), ('2', 'L', 'CANL'), ('3', 'G', 'GND')])
+    add(db, 'C1', '100nF', [('1', '1', 'VCC'), ('2', '2', 'GND')])
+    add(db, 'U3', 'MEM-8', [('1', 'CS', 'CS'), ('2', 'SO', 'MISO'), ('5', 'SI', 'MOSI'), ('6', 'SCK', 'SCK'),
+                            ('4', 'GND', 'GND'), ('8', 'VCC', 'VCC')])
+    add(db, 'R2', '10k', [('1', '1', 'CS'), ('2', '2', 'VCC')])
+    return db
+
+
+class InterfaceCandidateTests(unittest.TestCase):
+    """A registry role that targets interface circuits anchors a candidate of the type its datasheet title names."""
+
+    def candidates(self, kinds, quotes=None):
+        import circuit_candidates
+        db = bus_board()
+        intent, audit = verified(db, kinds)
+        for ref, quote in (quotes or {}).items():
+            intent['device_kinds'][ref]['quote'] = quote
+            audit['device_kinds'][ref]['quote'] = quote
+        return circuit_candidates.build(db, intent, audit)
+
+    def test_transceiver_title_picks_the_bus_and_the_connector_joins(self):
+        result = self.candidates({'U2': 'transceiver'})
+        cand = next(c for c in result['candidates'] if c['id'] == 'CAN-U2')
+        self.assertEqual(cand['type'], 'CAN')
+        roles = {m['ref']: m['role'] for m in cand['members']}
+        self.assertEqual(roles['U2'], 'anchor')
+        self.assertEqual(roles['R1'], 'resistor')
+        self.assertEqual(roles['J1'], 'connector')
+        self.assertIn('CAN', next(m['via'] for m in cand['members'] if m['ref'] == 'U2'))
+        self.assertEqual([g for g in result['gaps'] if g['kind'] == 'role-bus'], [])
+
+    def test_rs485_title_makes_an_rs485_candidate(self):
+        result = self.candidates({'U2': 'transceiver'}, {'U2': 'Half-Duplex RS-485 Transceiver'})
+        self.assertEqual([c['type'] for c in result['candidates'] if c['anchor'] == 'U2'], ['RS485'])
+
+    def test_memory_title_picks_spi_and_a_title_without_a_bus_is_a_gap(self):
+        result = self.candidates({'U3': 'memory'})
+        self.assertEqual([c['id'] for c in result['candidates'] if c['anchor'] == 'U3'], ['SPI-U3'])
+        self.assertIn('R2', [m['ref'] for c in result['candidates'] if c['id'] == 'SPI-U3' for m in c['members']])
+        result = self.candidates({'U3': 'memory'}, {'U3': '1-Mbit EEPROM'})
+        self.assertEqual([c for c in result['candidates'] if c['anchor'] == 'U3'], [])
+        gap = next(g for g in result['gaps'] if g['kind'] == 'role-bus')
+        self.assertEqual(gap['ref'], 'U3')
+        self.assertIn('SPI/I2C/DDR/STORAGE', gap['need'])
+
+    def test_single_type_role_needs_no_title_cue(self):
+        result = self.candidates({'U3': 'level_shifter'}, {'U3': 'Bidirectional Voltage-Level Translator'})
+        self.assertEqual([c['id'] for c in result['candidates'] if c['anchor'] == 'U3'], ['LEVEL_SHIFT-U3'])
+        self.assertEqual(catalog.interface_type('level_shifter', None), 'LEVEL_SHIFT')
+
+    def test_generic_ic_is_listed_as_a_planning_diagnostic(self):
+        db = bus_board()
+        intent, audit = verified(db, {'U2': 'ic', 'U3': 'memory'})
+        intent['device_kinds']['U2']['quote'] = audit['device_kinds']['U2']['quote'] = 'Quad 2-input NAND gate'
+        plan = build_review_plan(db, intent, datasheet_audit=audit)
+        generic = [d for d in plan['diagnostics'] if d['code'] == 'DEVICE_KIND_GENERIC']
+        self.assertEqual([d['ref'] for d in generic], ['U2'])
+        self.assertIn('NAND gate', generic[0]['detail'])
+        from plan_review import diagnostic_lines
+        self.assertTrue(any('U2 声明为泛称 ic' in line for line in diagnostic_lines(plan, db, intent)))
 
 
 if __name__ == '__main__':

@@ -521,6 +521,12 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                     'refdes': material.get('refdes', []),
                     'message': material.get('message'),
                 })
+        for ref, item in sorted((self.intent.get('device_kinds') or {}).items()):
+            if isinstance(item, dict) and item.get('kind') == catalog.GENERIC_IC_ROLE:
+                # a generic ic anchors nothing: listed so the reviewer sees which parts SR has no role for
+                self.diagnostics.append({'code': 'DEVICE_KIND_GENERIC', 'ref': ref, 'quote': item.get('quote'),
+                                         'detail': '%s 声明为泛称 ic（手册标题“%s”没有登记表里的角色）：不作核心器件、不生成电路候选；'
+                                                   '标题确有角色的改写该角色，登记表缺这类器件的记入规则维护' % (ref, item.get('quote'))})
         unread = passive_stress.unread_values(self.db)
         if unread:   # a value the parser cannot read is reported, not dropped in silence
             self.diagnostics.append({'code': 'RESISTOR_VALUE_UNREAD', 'values': unread,
@@ -693,7 +699,8 @@ def diagnostic_lines(plan, db, intent):
     values, circuit types that ask almost nothing, rails without a voltage, the ground domains, unbounded nodes."""
     lines = list(passive_stress.unread_lines(plan))
     lines += ['  ' + d['detail'] for d in plan['diagnostics']
-              if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES')]
+              if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',
+                                   'DEVICE_KIND_GENERIC')]
     gaps = passive_stress.rail_gaps(plan)
     if gaps:
         lines.append('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))

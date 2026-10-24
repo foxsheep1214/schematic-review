@@ -11,7 +11,7 @@
 每颗被持有的器件恰好由一个候选拥有（成员的 `owned`），其余持有它的候选只引用它：电路的核心器件 > 电路成员 >
 电路里的端点类角色 > 链路成员 > 隔离带 > 链路的核心器件与端点（`claim_rank`）。同一级打平的器件谁也不拥有，
 记入 shared，由审查员的 own 决定裁定。没有候选走到的器件列在 unassigned（REQ-Q08 的复核对象），没有核验角色的
-IC 和 pin-roles 缺口列在 gaps。相同输入与规则版本得到相同文件。
+IC、pin-roles 缺口和标题挑不出总线的接口角色（role-bus）列在 gaps。相同输入与规则版本得到相同文件。
 """
 import argparse
 import json
@@ -26,14 +26,17 @@ from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
 import part_words as pw
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-10-24.1'   # shared part words and grounds (SR self-check 3.1–3.3)
+RULES_VERSION = '2026-10-24.2'   # device-role registry: interface candidates from roles, bus picked by the datasheet title
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
 STORAGE_FARAD = 10e-6     # the input ends at its bulk capacitor; a 1 µF filter capacitor (plan_circuits.BULK_FARAD) does not end it
-CONVERTER_ROLES = frozenset({'pwm_controller', 'sr_controller', 'regulator', 'gate_driver'})
-ANALOG_ROLES = frozenset({'pd_controller', 'supervisor', 'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver'})
-ALL_PIN_ROLES = frozenset({'opamp_comparator', 'shunt_reference'})     # every signal pin is a sense pin
+# Which roles anchor which candidate type comes from the role registry (catalog.DEVICE_ROLES).
+CONVERTER_ROLES = frozenset(catalog.roles_for('POWER_CONVERTER'))
+ANALOG_ROLES = frozenset(catalog.roles_for('ANALOG'))
+ALL_PIN_ROLES = frozenset(name for name, role in catalog.DEVICE_ROLES.items() if role.pins == 'all')   # every signal pin is a sense pin
+INTERFACE_ROLES = frozenset(name for name, role in catalog.DEVICE_ROLES.items()
+                            if any(t in catalog.INTERFACE_TYPES for t in role.circuits))
 FEEDBACK_PIN_RE = re.compile(r'^(FB|VFB|COMP|FB/\w+|\w+/FB)$', re.I)
 PROTECTION_PIN_RE = re.compile(r'^(OVP|UVP|OCP|OTP|OLP|LATCH|FAULT|FLT|BO|BROWNOUT|PROT|SCP|OVLO)$', re.I)
 STARTUP_PIN_RE = re.compile(r'^(HV|VSTART|HVS|EN|ENABLE|INH|INHIBIT|UVLO|SS|SOFT_?START|RUN|DELAY|DIS|DISABLE|TRIG/DIS|PG|PGOOD|RESET|NRST|RST)$', re.I)
@@ -97,6 +100,7 @@ class Generator:
                     self.stops.add(load[key])
         self.candidates = {}
         self.analog_members = set()
+        self.role_gaps = []
 
     @staticmethod
     def _first_state(inventory, key):
@@ -579,6 +583,35 @@ class Generator:
                             n in self.grounds for n in self.graph.nets_of(ref)):
                         self.add(cid, ref, 'shunt', f'shunt between grounds {"/".join(self.graph.nets_of(ref))} reached from {anchor}', 1)
 
+    def interfaces(self):
+        """An interface anchor (transceiver, memory, clock source, level shifter, load switch ...): its circuit type comes
+        from the registry, picked by the datasheet title when the role spans several buses; every signal pin walks two
+        hops, and the connectors on the nets reached join as members. A role whose title names no bus is a gap."""
+        for anchor, role in sorted(self.anchors.items()):
+            if role not in INTERFACE_ROLES:
+                continue
+            quote = board_intent.declared_kinds(self.kind_intent).get(anchor, {}).get('quote')
+            ctype = catalog.interface_type(role, quote)
+            if ctype is None:
+                self.role_gaps.append({'kind': 'role-bus', 'ref': anchor,
+                                       'need': f'intent.device_kinds.{anchor} quote names none of {"/".join(t for t in catalog.DEVICE_ROLES[role].circuits if t in catalog.INTERFACE_TYPES)}; '
+                                               f'declare the circuit with circuit_decisions add'})
+                continue
+            seeds = [(anchor + '.' + pin, net) for pin, net in sorted(self.graph.pins_of(anchor).items())
+                     if net not in self.grounds and net not in self.graph.pseudo and net not in self.stops]
+            if not seeds:
+                continue
+            cid = f'{ctype}-{anchor}'
+            self.new(cid, ctype, anchor, self.domain_of(anchor))
+            self.add(cid, anchor, 'anchor', f'anchor:{role} -> {ctype}' + (f' (title: {quote})' if len(
+                [t for t in catalog.DEVICE_ROLES[role].circuits if t in catalog.INTERFACE_TYPES]) > 1 else ''), 0)
+            self.walk(cid, seeds, self.stops, ANALOG_HOPS, blocked=self.chain_members)
+            nets = {net for _, net in seeds} | {n for ref in list(self.candidates[cid]['members']) for n in self.graph.nets_of(ref)}
+            for net in sorted(nets - self.grounds - set(self.stops)):
+                for ref in self.graph.refs_on(net):
+                    if ref != anchor and self.fitted(ref) and self.graph.kind(ref) == pw.CONNECTOR:
+                        self.add(cid, ref, 'connector', f'connector on {net} reached from {anchor}', 1)
+
     def debug(self):
         found = []
         for ref in sorted(self.graph.parts):
@@ -641,6 +674,7 @@ class Generator:
         self.analog_members = {ref for cand in self.candidates.values() if cand['type'] == 'ANALOG'
                                for ref, m in cand['members'].items() if ref != cand['anchor'] and m['hops'] <= 1}
         self.ports()
+        self.interfaces()
         self.debug()
         self.adjudicate()
         shared = self.ownership()
@@ -658,6 +692,7 @@ class Generator:
             if load.get('id', '').endswith('UNRESOLVED'):
                 gaps.append({'kind': 'pin-roles', 'ref': load['ref'],
                              'need': f'intent.devices.{load["ref"]}: winding/pin roles from the datasheet'})
+        gaps += self.role_gaps
         pages = self.db.get('ref2page') or {}
         candidates = []
         for cid in sorted(self.candidates):

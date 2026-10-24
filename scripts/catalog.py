@@ -721,6 +721,116 @@ CIRCUIT_TYPES = (
             ('datasheets',)),
 )
 
+# 器件角色登记表：集成电路在 intent.device_kinds 声明的角色，一行一个。board_intent.IC_KINDS、part_words.IC_ROLES、
+# datasheet_kinds.KIND_CUES 的 IC 部分和 circuit_candidates 的核心器件规则都从这张表读，加角色只改这里。
+#   cues     手册标题词：去掉非字母数字、转小写后的子串（PDF 提取常丢空格）；核验用，标题含别的角色词即冲突。
+#   circuits 该角色作核心器件时生成的电路类型；空表示不作核心器件（isolator 是跨域器件，ic 是泛称）。
+#            多于一种且都在 INTERFACE_TYPES 内时，按 BUS_CUES 从手册标题挑一种；挑不出的记候选缺口，不猜。
+#   pins     ANALOG 走线从哪些脚出发：sense 只走检测脚（circuit_candidates.SENSE_PIN_RE），all 走全部信号脚；
+#            接口电路（INTERFACE_TYPES）的走线总是从全部信号脚出发，与 pins 无关。
+# 泛称 ic 只能在标题不含任何角色词时声明（datasheet_kinds.verify），计划把每个 ic 列成 DEVICE_KIND_GENERIC 诊断：
+# 这些器件不生成电路候选，累计清单就是下一批角色的来源。
+DeviceRole = namedtuple('DeviceRole', 'title cues circuits pins', defaults=('sense',))
+DEVICE_ROLES = OrderedDict([
+    ('pwm_controller', DeviceRole('开关电源控制器', (
+        'pwmcontroller', 'pfccontroller', 'flybackcontroller', 'currentmodecontroller', 'voltagemodecontroller',
+        'switchingcontroller', 'offlinecontroller', 'quasiresonantcontroller', 'boostcontroller', 'buckcontroller',
+        'powerfactorcorrectioncontroller', 'powerfactorcontroller', 'resonantcontroller', 'llccontroller',
+        'switchmodecontroller', 'pwmcontrol'), ('POWER_CONVERTER',))),
+    ('gate_driver', DeviceRole('栅极驱动器', ('gatedriver', 'mosfetdriver', 'igbtdriver', 'bridgedriver', 'fetdriver'),
+                               ('POWER_CONVERTER',))),
+    ('sr_controller', DeviceRole('同步整流控制器', ('synchronousrectif', 'srcontroller'), ('POWER_CONVERTER',))),
+    ('pd_controller', DeviceRole('USB PD 控制器', ('pdcontroller', 'powerdelivery', 'usbpd', 'typeccontroller', 'usbccontroller'),
+                                 ('USB', 'ANALOG'))),
+    ('regulator', DeviceRole('稳压器与变换器', (
+        'voltageregulator', 'lowdropout', 'ldoregulator', 'dcdcconverter', 'buckconverter', 'boostconverter',
+        'switchingregulator', 'stepdownconverter', 'stepupconverter', 'powermanagementic', 'pmic', 'chargepump'),
+        ('POWER_CONVERTER',))),
+    ('supervisor', DeviceRole('电压监控与复位', ('supervisor', 'supervisory', 'voltagemonitor', 'resetcircuit', 'resetic', 'watchdog'),
+                              ('ANALOG',))),
+    ('opamp_comparator', DeviceRole('运放、比较器与放大器', (
+        'operationalamplifier', 'opamp', 'comparator', 'erroramplifier', 'instrumentationamplifier',
+        'currentsenseamplifier', 'currentshuntmonitor', 'differenceamplifier', 'audioamplifier'), ('ANALOG',), 'all')),
+    ('shunt_reference', DeviceRole('并联基准', ('shuntregulator', 'voltagereference', 'shuntreference'), ('ANALOG',), 'all')),
+    ('mcu', DeviceRole('微控制器与处理器', ('microcontroller', 'microprocessor', 'systemonchip', 'mcu'), ('ANALOG',))),
+    ('transceiver', DeviceRole('总线收发器与 PHY', ('transceiver', 'ethernetphy', 'linedriver', 'busdriver'),
+                               ('ANALOG', 'CAN', 'RS485', 'UART', 'ETHERNET', 'HSSERIAL'))),
+    ('isolator', DeviceRole('数字隔离器', ('digitalisolator', 'isolatedgatedriver', 'isolator'), ())),
+    # 2026-10-24 第一批补充：规则表里有检查项却没有角色能靶到的电路类型。
+    ('load_switch', DeviceRole('负载开关与热插拔保护', (
+        'loadswitch', 'hotswap', 'efuse', 'idealdiode', 'powerdistributionswitch', 'currentlimitswitch', 'highsideswitch'),
+        ('POWER_PROTECTION',))),
+    ('charger', DeviceRole('电池充电器', ('batterycharger', 'chargecontroller', 'chargemanagement', 'switchingcharger', 'linearcharger', 'chargeric'),
+                           ('POWER_CONVERTER',))),
+    ('adc_dac', DeviceRole('ADC 与 DAC', (
+        'analogtodigital', 'digitaltoanalog', 'bitadc', 'bitdac', 'channeladc', 'channeldac', 'audiodac', 'audioadc',
+        'sigmadeltaadc', 'deltasigmaadc'), ('ANALOG',), 'all')),
+    ('oscillator', DeviceRole('时钟源', (
+        'crystaloscillator', 'clockgenerator', 'clockbuffer', 'clocksynthesizer', 'jittercleaner', 'oscillator',
+        'clockdistribution', 'realtimeclock', 'clockmultiplier'), ('CLOCK',))),
+    ('memory', DeviceRole('存储器', (
+        'flashmemory', 'serialflash', 'spiflash', 'eeprom', 'sdram', 'lpddr', 'ddr2', 'ddr3', 'ddr4', 'ddr5',
+        'nandflash', 'norflash', 'sram', 'emmc'), ('SPI', 'I2C', 'DDR', 'STORAGE'))),
+    ('level_shifter', DeviceRole('电平转换器', ('leveltranslat', 'levelshifter', 'voltagetranslat', 'voltageleveltranslat'),
+                                 ('LEVEL_SHIFT',))),
+    ('motor_driver', DeviceRole('电机驱动器', (
+        'motordriver', 'steppermotor', 'brushlessdc', 'bldc', 'brusheddc', 'hbridgedriver', 'fullbridgedriver',
+        'halfbridgedriver'), ('POWER_CONVERTER',))),
+    ('ic', DeviceRole('泛称：手册标题没有登记的角色', (), ())),
+])
+GENERIC_IC_ROLE = 'ic'
+# 一个角色能靶多种接口电路时，从手册标题（原文，区分大小写只对 CAN）挑第一个命中的类型；都不命中记候选缺口 role-bus。
+BUS_CUES = OrderedDict([
+    ('CAN', re.compile(r'\bCAN(?:[ -]?FD)?\b')),
+    ('RS485', re.compile(r'RS[- ]?4(?:85|22)\b|\bPROFIBUS\b', re.I)),
+    ('UART', re.compile(r'RS[- ]?232\b|\bUART\b|\bLIN\b', re.I)),
+    ('ETHERNET', re.compile(r'\bETHERNET\b|\bPHY\b|\b(?:RG|R|SG)?MII\b', re.I)),
+    ('HSSERIAL', re.compile(r'\bLVDS\b|\bSERDES\b|\bPCIE?\b|PCI EXPRESS|\bSATA\b|\bUSB ?3', re.I)),
+    ('I2C', re.compile(r'I[²2]C|\bSMBUS\b|TWO[- ]WIRE', re.I)),
+    ('SPI', re.compile(r'\bQ?SPI\b|QUAD[- ]SPI|SERIAL (?:NOR )?FLASH|\bNOR FLASH\b', re.I)),
+    ('DDR', re.compile(r'\bL?P?DDR\d?\b|\bSDRAM\b', re.I)),
+    ('STORAGE', re.compile(r'\bE?MMC\b|\bNAND\b', re.I)),
+])
+# 接口电路：核心器件的全部信号脚走两跳到截止网络，连接器作成员；别的类型各有自己的走法（circuit_candidates）。
+INTERFACE_TYPES = ('POWER_PROTECTION', 'CLOCK', 'I2C', 'LEVEL_SHIFT', 'SPI', 'UART', 'CAN', 'RS485', 'ETHERNET', 'DDR',
+                   'STORAGE', 'RF', 'HSSERIAL', 'AV')
+
+
+def roles_for(circuit_type):
+    """作核心器件时生成该电路类型的角色。"""
+    return tuple(name for name, role in DEVICE_ROLES.items() if circuit_type in role.circuits)
+
+
+def interface_type(role_name, quote):
+    """角色作核心器件时生成的接口电路类型：唯一的直接取；多种的按 BUS_CUES 从手册标题挑；挑不出返回 None。"""
+    types = [t for t in DEVICE_ROLES[role_name].circuits if t in INTERFACE_TYPES]
+    if len(types) == 1:
+        return types[0]
+    for name, pattern in BUS_CUES.items():
+        if name in types and pattern.search(str(quote or '')):
+            return name
+    return None
+
+
+def device_role_errors():
+    """登记表自检：角色电路类型在功能电路表内，标题词不重复，pins 取值合法。"""
+    errors = []
+    seen = {}
+    for name, role in DEVICE_ROLES.items():
+        for ctype in role.circuits:
+            if ctype not in CIRCUIT_TYPE_BY_NAME:
+                errors.append('角色 %s 的电路类型不在功能电路表: %s' % (name, ctype))
+        if len([t for t in role.circuits if t in INTERFACE_TYPES]) > 1 and not any(t in BUS_CUES for t in role.circuits):
+            errors.append('角色 %s 靶多种接口电路却没有 BUS_CUES 能挑' % name)
+        for cue in role.cues:
+            if cue in seen:
+                errors.append('标题词 %s 同时属于 %s 与 %s' % (cue, seen[cue], name))
+            seen[cue] = name
+        if role.pins not in ('sense', 'all'):
+            errors.append('角色 %s 的 pins 只能是 sense/all' % name)
+    return errors
+
+
 # 可编程器件的配置组（一致性方案第 3 条，intent 格式 4）：已知角色的组由 SR 固定，每组一行 CFG-D01；没有固定组的可编程角色
 # 要求审查员在 intent.devices.<位号>.configurable 按手册寄存器或配置章节声明组。某组对该器件不存在时，该行记 NA 并引手册条款。
 CONFIG_GROUPS = {
@@ -993,8 +1103,7 @@ BOUND_FALLBACKS = OrderedDict((
 BOUND_DIRECTIONS = ('INCREASING', 'DECREASING', 'NONMONOTONIC')
 
 _EP = 'evidence-proportionality.md'
-_IC_ROLES = ('ic', 'pwm_controller', 'gate_driver', 'sr_controller', 'pd_controller', 'regulator', 'supervisor',
-             'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver', 'isolator')
+_IC_ROLES = tuple(DEVICE_ROLES)      # 器件角色登记表的全部角色，含泛称 ic
 BOUNDS = OrderedDict((b.id, b) for b in (
     # 3.1 齐纳管、电压基准
     Bound('ZENER-VZ-UPPER', ('zener',), 'VZ 上界', 'UPPER', '工作电流 IZ', 'INCREASING', (('G1', ()), ('G2', ())),
@@ -1847,6 +1956,22 @@ def render_markdown():
               '| 功能电路 | 电路检查项 | 前提 | 不成立时 |', '|---|---|---|---|']
     for (name, rule), requires in SUBJECT_REQUIRES.items():
         lines.append('| %s | %s | %s | %s |' % (name, rule, requires, SUBJECT_PRECONDITIONS[requires]))
+    lines += ['', '## 器件角色', '',
+              '集成电路在 `intent.device_kinds` 声明手册标题给出的角色（`audit_datasheets.py --intent` 用标题词核验原文），'
+              '角色决定它作核心器件时生成哪些电路候选；泛称 `ic` 只在标题不含任何角色词时可写，计划把每个 `ic` 列成 '
+              '`DEVICE_KIND_GENERIC` 诊断（不生成电路候选），这张清单是下一批角色的来源。加角色只改 `catalog.DEVICE_ROLES` 一行：'
+              '标题词、靶的电路类型、走哪些脚。', '',
+              '| 角色 | 名称 | 手册标题词（去空格小写的子串） | 作核心器件生成的电路 | ANALOG 走线从哪些脚出发 |', '|---|---|---|---|---|']
+    for name, role in DEVICE_ROLES.items():
+        lines.append('| `%s` | %s | %s | %s | %s |' % (
+            name, role.title, '、'.join(role.cues) or '—', '、'.join(role.circuits) or '不作核心器件',
+            {'sense': '检测脚', 'all': '全部信号脚'}[role.pins] if 'ANALOG' in role.circuits else '—'))
+    lines += ['', '接口电路（%s）的走线总是从核心器件的全部信号脚出发走两跳，到达的网上的连接器作成员。' % '、'.join(INTERFACE_TYPES)]
+    lines += ['', '一个角色能靶多种接口电路（上表 transceiver、memory）时，按下表从手册标题挑第一个命中的类型，都不命中记候选缺口 '
+              '`role-bus`，由审查员写 `circuit_decisions` add。', '',
+              '| 接口电路 | 标题里的词（正则） |', '|---|---|']
+    for name, pattern in BUS_CUES.items():
+        lines.append('| %s | `%s` |' % (name, _cell(pattern.pattern)))
     lines += ['', '## 需求类别与审查方面', '',
               '每条需求分解成审查方面，计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。分解的单位是需求里的量：'
               '带参数的方面由 `requirements[].parameters` 里有没有这个参数决定，有就问，不管选了哪些类别；'

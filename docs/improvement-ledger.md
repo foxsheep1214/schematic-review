@@ -7,6 +7,34 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Device roles are one registry and grow by a listed gap (SR framework review, 2026-10-24)
+
+The eleven IC roles a reviewer may declare in `intent.device_kinds` were a fixed list copied into five modules
+(`board_intent.IC_KINDS`, `part_words.IC_ROLES`, `datasheet_kinds.KIND_CUES`/`IC_ROLE_CUES`, `catalog._IC_ROLES`,
+`circuit_candidates.CONVERTER_ROLES`/`ANALOG_ROLES`/`ALL_PIN_ROLES`) and three documents, with no check that they agreed,
+and only six circuit types (POWER_CONVERTER, ANALOG, STARTUP, ISOLATION, USB, DEBUG) could be anchored by a role: a CAN
+transceiver, a clock generator or a serial flash declared with the right role produced no candidate, and a part declared
+`ic` was silently skipped by the generator. Now `catalog.DEVICE_ROLES` is the one registry — per role its title cue words,
+the circuit types it anchors and which pins the ANALOG walk starts from — and every former copy is a view of it
+(`test_every_role_list_reads_the_registry`); `device_role_errors()` checks the table itself. The generator gains an
+interface walk: a role whose registry row names interface types anchors `<TYPE>-<ref>` from all its signal pins, two hops,
+connectors on the nets reached join as members; a role that spans several buses (transceiver, memory) takes the type
+`catalog.BUS_CUES` finds in the verified datasheet title (verified kinds now carry the quote), and a title naming no bus
+is a `role-bus` gap, not a guess. First batch of roles: load_switch (POWER_PROTECTION; the `loadswitch` cue leaves
+regulator), charger and motor_driver (POWER_CONVERTER), adc_dac (ANALOG, all pins), oscillator (CLOCK), memory
+(SPI/I2C/DDR/STORAGE by title), level_shifter (LEVEL_SHIFT); transceiver titles route to CAN/RS485/UART/ETHERNET/HSSERIAL;
+regulator and opamp_comparator gain cue words (PMIC, charge pump, current-sense amplifier …); disambiguation keeps a
+motor driver from being a gate driver and an MCU from being its own flash or oscillator. Every `ic` declaration is a
+planning diagnostic `DEVICE_KIND_GENERIC` printed with the other prompts, so the parts SR has no role for are a countable
+list that feeds the next batch. The catalog document gains a 器件角色 section with both tables. Candidate rules version
+2026-10-24.2. 2058 tests pass, contract 522, KiCad replay 195/195, typical circuits unchanged, all 67 mutations on changed
+files killed (M398 and M495 repointed to the moved lines; M552 first survived until the test gained a title naming both a
+bridge driver and a motor).
+
+- Event: user:2026-10-24 (SR framework review: "角色是一张固定清单…这是存在问题的…请考虑这个角色清单的数量是不是现在就可以增多，以后怎么随着审查的电路越来越多而增强" → "直接开工：先把 5 处角色清单收成 catalog 里一张登记表，再按你列的第一批补角色和 ic 诊断")
+- Causes: rule_missing 1, rule_not_enforced 1
+- Changed: scripts/catalog.py, scripts/board_intent.py, scripts/part_words.py, scripts/datasheet_kinds.py, scripts/circuit_candidates.py, scripts/plan_review.py, scripts/tests/test_ic_kinds.py, references/check-catalog.md, references/automation.md, references/plan-and-results.md, SKILL.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+
 ## Candidate owners follow the aspect cell for system functions and interfaces too (SR framework review, 2026-10-24)
 
 The first implementation filtered only circuits by the aspect's types and let every system function and interface that

@@ -13,25 +13,13 @@ import re
 import shutil
 import subprocess
 
+import catalog
+
 # Cue words on ASCII-alphanumeric text with spaces removed (PDF extraction often drops spaces).
+# Integrated-circuit roles come from the role registry (catalog.DEVICE_ROLES): the datasheet title names what the part does.
 KIND_CUES = (
     ('opto', ('optocoupler', 'photocoupler', 'optoisolator', 'opticallycoupled', 'opticalisolator', 'opticalcoupler')),
-    # Integrated-circuit roles (board_intent.IC_KINDS): the datasheet title names what the part does.
-    ('pd_controller', ('pdcontroller', 'powerdelivery', 'usbpd', 'typeccontroller', 'usbccontroller')),
-    ('sr_controller', ('synchronousrectif', 'srcontroller')),
-    ('gate_driver', ('gatedriver', 'mosfetdriver', 'igbtdriver', 'bridgedriver', 'fetdriver')),
-    ('pwm_controller', ('pwmcontroller', 'pfccontroller', 'flybackcontroller', 'currentmodecontroller',
-                        'voltagemodecontroller', 'switchingcontroller', 'offlinecontroller', 'quasiresonantcontroller',
-                        'boostcontroller', 'buckcontroller', 'powerfactorcorrectioncontroller', 'powerfactorcontroller',
-                        'resonantcontroller', 'llccontroller', 'switchmodecontroller', 'pwmcontrol')),
-    ('regulator', ('voltageregulator', 'lowdropout', 'ldoregulator', 'dcdcconverter', 'buckconverter',
-                   'boostconverter', 'switchingregulator', 'stepdownconverter', 'stepupconverter', 'loadswitch')),
-    ('supervisor', ('supervisor', 'supervisory', 'voltagemonitor', 'resetcircuit', 'resetic', 'watchdog')),
-    ('opamp_comparator', ('operationalamplifier', 'opamp', 'comparator', 'erroramplifier', 'instrumentationamplifier')),
-    ('shunt_reference', ('shuntregulator', 'voltagereference', 'shuntreference')),
-    ('mcu', ('microcontroller', 'microprocessor', 'systemonchip', 'mcu')),
-    ('transceiver', ('transceiver', 'ethernetphy', 'linedriver', 'busdriver')),
-    ('isolator', ('digitalisolator', 'isolatedgatedriver', 'isolator')),
+) + tuple((name, role.cues) for name, role in catalog.DEVICE_ROLES.items() if role.cues) + (
     ('bjt', ('npn', 'pnp', 'bipolar')),
     ('mosfet', ('mosfet', 'nchannel', 'pchannel', 'superjunction')),
     ('tvs', ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress')),
@@ -41,12 +29,11 @@ KIND_CUES = (
     ('transformer', ('transformer',)),
     ('connector', ('connector', 'receptacle', 'terminalblock')),
 )
-IC_ROLE_CUES = {'pd_controller', 'sr_controller', 'gate_driver', 'pwm_controller', 'regulator', 'supervisor',
-                'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver', 'isolator'}
+IC_ROLE_CUES = {name for name, role in catalog.DEVICE_ROLES.items() if role.cues}
 DISCRETE_CUES = {'mosfet', 'bjt', 'diode', 'zener', 'tvs', 'bridge_rectifier'}
 SPECIFIC_DIODES = {'tvs', 'zener', 'bridge_rectifier'}      # a quote naming these is not evidence for a plain diode
 SEMICONDUCTOR_REF = re.compile(r'^(Q|D|ZD|TVS|U|M)\d', re.I)   # discretes and integrated circuits need a kind
-GENERIC_IC = 'ic'
+GENERIC_IC = catalog.GENERIC_IC_ROLE
 STATUSES = ('VERIFIED', 'QUOTE_NOT_FOUND', 'QUOTE_LACKS_TYPE', 'QUOTE_CONFLICT', 'NO_DOCUMENT', 'NO_TEXT')
 
 
@@ -70,8 +57,12 @@ def cues(text, specific=True):
         found.discard('mcu')             # "microprocessor supervisor" watches an MCU, it is not one
     if specific and 'isolator' in found and 'gate_driver' in found:
         found.discard('gate_driver')     # an isolated gate driver is declared by its barrier
-    if specific and 'regulator' in found and found & {'pwm_controller', 'sr_controller', 'pd_controller'}:
+    if specific and 'regulator' in found and found & {'pwm_controller', 'sr_controller', 'pd_controller', 'charger'}:
         found.discard('regulator')       # "... controller for boost converters" names the controller
+    if specific and 'motor_driver' in found:
+        found.discard('gate_driver')     # "H-bridge motor driver" is the motor driver; a bare "gate driver" stays one
+    if specific and 'mcu' in found:
+        found -= {'oscillator', 'memory'}   # "MCU with 2 MB flash memory and internal oscillator" is the MCU
     return found
 
 

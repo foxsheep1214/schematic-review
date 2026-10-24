@@ -2753,9 +2753,9 @@
  {
   "id": "M398",
   "name": "a datasheet title naming a power factor controller is no PWM controller",
-  "file": "scripts/datasheet_kinds.py",
-  "old": "'powerfactorcorrectioncontroller', 'powerfactorcontroller',",
-  "new": "'powerfactorcorrectioncontroller',"
+  "file": "scripts/catalog.py",
+  "old": "        'powerfactorcorrectioncontroller', 'powerfactorcontroller', 'resonantcontroller', 'llccontroller',",
+  "new": "        'powerfactorcorrectioncontroller', 'resonantcontroller', 'llccontroller',"
  },
  {
   "id": "M399",
@@ -3433,8 +3433,8 @@
   "id": "M495",
   "name": "a misfit circuit type is not printed",
   "file": "scripts/plan_review.py",
-  "old": "              if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES')]",
-  "new": "              if d.get('code') in ('REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES')]"
+  "old": "              if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',",
+  "new": "              if d.get('code') in ('REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',"
  },
  {
   "id": "M496",
@@ -3792,5 +3792,47 @@
   "file": "scripts/requirement_bindings.py",
   "old": "        allowed = {'CIRCUIT': cell.circuits, 'SYSTEM': cell.systems, 'INTERFACE': cell.interfaces}.get(owner['kind'], ())",
   "new": "        allowed = {'CIRCUIT': cell.circuits, 'SYSTEM': cell.systems, 'INTERFACE': (kinds.get(owner['id']),)}.get(owner['kind'], ())"
+ },
+ {
+  "id": "M547",
+  "name": "transceiver titles all become CAN",
+  "file": "scripts/catalog.py",
+  "old": "        if name in types and pattern.search(str(quote or '')):\n            return name\n    return None",
+  "new": "        if name in types:\n            return name\n    return None"
+ },
+ {
+  "id": "M548",
+  "name": "a title without a bus is silently skipped",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            if ctype is None:\n                self.role_gaps.append(",
+  "new": "            if ctype is None:\n                continue\n                self.role_gaps.append("
+ },
+ {
+  "id": "M549",
+  "name": "connectors on the interface nets are not members",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                    if ref != anchor and self.fitted(ref) and self.graph.kind(ref) == pw.CONNECTOR:",
+  "new": "                    if False:"
+ },
+ {
+  "id": "M550",
+  "name": "generic ic is not listed",
+  "file": "scripts/plan_review.py",
+  "old": "            if isinstance(item, dict) and item.get('kind') == catalog.GENERIC_IC_ROLE:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M551",
+  "name": "anchor kinds ignore the registry circuits",
+  "file": "scripts/board_intent.py",
+  "old": "ANCHOR_KINDS = tuple(name for name, role in catalog.DEVICE_ROLES.items() if role.circuits)",
+  "new": "ANCHOR_KINDS = tuple(name for name, role in catalog.DEVICE_ROLES.items() if name != 'ic')"
+ },
+ {
+  "id": "M552",
+  "name": "motor driver titles stay gate drivers too",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    if specific and 'motor_driver' in found:\n        found.discard('gate_driver')",
+  "new": "    if False:\n        found.discard('gate_driver')"
  }
 ]

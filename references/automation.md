@@ -195,10 +195,11 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 
 第一步，审查者读手册，在 `intent.device_kinds.<ref>` 写下声明：`kind`、`page`、`quote`。
 - `kind`：bjt/mosfet/diode/zener/tvs/opto/bridge_rectifier/transformer/connector 等，与检查器的器件类别一致。
-  集成电路声明它的**角色**（`board_intent.IC_KINDS`）：pwm_controller、gate_driver、sr_controller、pd_controller、
-  regulator、supervisor、opamp_comparator、shunt_reference、mcu、transceiver、isolator；手册标题没有这些角色的才写
-  泛称 `ic`。角色决定哪些 IC 是电路候选的核心器件（`ANCHOR_KINDS`：除 isolator 与 ic 之外的全部角色），
-  所以 U/M 位号与 Q/D 位号一样，没有核验过的类别就在 DEV-D02 登记 `intent.device_kinds.<ref>` 缺口。
+  集成电路声明它的**角色**，角色登记表是 `catalog.DEVICE_ROLES`（[检查目录·器件角色](check-catalog.md#器件角色)：每个角色的
+  手册标题词、它作核心器件时生成的电路类型、ANALOG 走线从哪些脚出发；`board_intent.IC_KINDS`、`part_words.IC_ROLES`、
+  `datasheet_kinds.KIND_CUES` 都从这张表读，加角色只改这一行）。手册标题没有任何登记角色的才写泛称 `ic`；计划把每个 `ic`
+  列成 `DEVICE_KIND_GENERIC` 诊断，这些器件不生成电路候选。角色决定哪些 IC 是电路候选的核心器件（`ANCHOR_KINDS`：登记表里有
+  电路类型的角色，isolator 与 ic 除外），所以 U/M 位号与 Q/D 位号一样，没有核验过的类别就在 DEV-D02 登记 `intent.device_kinds.<ref>` 缺口。
   核验通过的 bridge_rectifier/transformer/connector 没有需要 IC 旁路的供电脚，不再留 PWR-D01 的 `unverified-device-pinout` 缺口；
   极性、绕组、额定、绝缘与针表仍由各自检查核对。
 - `page`：手册页码，从 1 开始。
@@ -260,10 +261,12 @@ schema 2，带 `rules_version`，绑定 `db_sha256` 与 intent 的 `input_sha256
   到截止网络、地、其他核心器件、跨域器件即停；截止网络 = `domains.rail_stops` ∪ 地 ∪ 感性负载库存的轨/输出/回流网 ∪ 输入走线的首个储能网，无人驱动的开关算作核心器件重算截止网络。
 - 规则按确定性从高到低：输入保护 `POWER_PROTECTION-<连接器>`（从电源连接器走到首个储能电容或变换器输入轨，桥和四脚共模扼流圈直通，至少含一件保护件）；
   链 `POWER_PROTECTION-<核心器件>.<脚>` / `STARTUP-<核心器件>.<脚>`（保护脚、启动脚沿两端件和光耦走到截止网络或开关节点，另一核心器件作终点，跨电路）；
-  变换器 `POWER_CONVERTER-<核心器件>`（核心器件 = pwm_controller / sr_controller / regulator / gate_driver 的 IC，或无人驱动、或 `power_switches` 声明了角色而驱动 IC 没有核验角色的开关：
+  变换器 `POWER_CONVERTER-<核心器件>`（核心器件 = 登记表里靶 POWER_CONVERTER 的角色（pwm_controller / sr_controller / regulator / gate_driver / charger / motor_driver）的 IC，或无人驱动、或 `power_switches` 声明了角色而驱动 IC 没有核验角色的开关：
   所属开关、栅极下拉、吸收网络、感性件与它的其他绕组、绕组上的整流和输出电容、反馈光耦；辅助绕组的整流归它供电的变换器；sr_controller 与声明的同步整流管不收感性件）；
   隔离 `ISOLATION-<域A>/<域B>`（该域对的全部跨域器件，跨电路）；`ANALOG-<核心器件>`（pd_controller / supervisor / mcu / transceiver 的检测脚，运放、基准的全部信号脚；
-  两地之间的分流电阻）；`USB-<连接器>`（CC/D± 脚一跳、PD 控制器及其 VBUS 开关与钳位）；`DEBUG-BOARD`（测试点、调试连接器，不走线）。
+  两地之间的分流电阻）；`USB-<连接器>`（CC/D± 脚一跳、PD 控制器及其 VBUS 开关与钳位）；接口 `<类型>-<核心器件>`（登记表里靶接口电路的角色：
+  transceiver、memory、oscillator、level_shifter、load_switch 等，全部信号脚走两跳，到达的网上的连接器作成员；一个角色靶多种总线的按手册标题
+  `catalog.BUS_CUES` 挑一种，挑不出记 `role-bus` 缺口，由审查员写 `circuit_decisions` add）；`DEBUG-BOARD`（测试点、调试连接器，不走线）。
 - 裁决：一件器件两个电路候选都走到，路径短的得；同距离留在两者里；核心器件不共享；跨电路候选不参与。
 - 归属（schema 2）：每个成员带 `owned`。认领强弱 `claim_rank`：电路的核心器件 0、电路成员 1、电路里的端点类角色 2、链路成员 3、
   隔离带 4、链路的核心器件与端点 5；最强的唯一认领者拥有它，其余候选只引用它。打平的器件谁也不拥有，列入 `shared`，由 own 决定裁定。

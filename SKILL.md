@@ -189,10 +189,10 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 - 按实际用途读引脚、额定/推荐条件、相关 min/max、模式和 errata；“官方物理脚”指手册引脚定义的编号或名称，
   焊盘映射属于 PCB 阶段。核过的脚表写入 `intent.devices`，DEV-D02 差集和 DEV-D05 引脚处置据此列出。
 - 器件类别写 `intent.device_kinds`（手册页码加原文，`audit_datasheets.py --intent` 核验）：分立半导体和连接器写
-  类型，集成电路写手册标题给出的角色（pwm_controller、gate_driver、sr_controller、pd_controller、regulator、
-  supervisor、opamp_comparator、shunt_reference、mcu、transceiver、isolator，都不是才写 ic）。没核验过的
-  U/M 位号与 Q/D 位号一样是 DEV-D02 缺口；角色决定电路候选的核心器件，计划顶层 `domains` 据此列出参考地分区、
-  跨域器件与截止网络（[自动检查](references/automation.md)）。
+  类型，集成电路写手册标题给出的角色（角色登记表见 [检查目录·器件角色](references/check-catalog.md#器件角色)，
+  `catalog.DEVICE_ROLES`；标题没有任何登记角色的才写泛称 ic，计划把每个 ic 列成 `DEVICE_KIND_GENERIC` 诊断：这些器件
+  不生成电路候选，累计清单是下一批角色的来源）。没核验过的 U/M 位号与 Q/D 位号一样是 DEV-D02 缺口；角色决定电路候选的
+  核心器件和它生成的电路类型，计划顶层 `domains` 据此列出参考地分区、跨域器件与截止网络（[自动检查](references/automation.md)）。
 - AI 已逐端核对的器件角色和电源/返回分组按 [可复用声明](references/reviewed-declarations.md) 保存来源与输入指纹；
   下次先验证声明，输入变化则重新核对，不能只刷新摘要。`manual_*` 兼容字段不代表人员确认，核对者身份须如实记录。
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；

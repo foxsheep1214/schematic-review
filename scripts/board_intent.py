@@ -10,6 +10,7 @@ import hashlib
 import json
 import re
 
+import catalog
 from electrical_contract import db_fingerprint
 
 ASSEMBLY_FIELDS = ('id', 'citation', 'population', 'jumpers')
@@ -21,11 +22,11 @@ CONFIG_FIELDS = ('group', 'title', 'citation', 'allowed', 'affects', 'required',
 CONFIG_GROUP_RE = re.compile(r'^[A-Z][A-Z0-9_]*$')
 # Device type as stated by the manufacturer's datasheet (same strings as checkers.netgraph kinds).
 # intent.device_kinds declares it; only declarations the datasheet audit VERIFIED reach the analysis.
-# An integrated circuit declares the role its datasheet title gives it (IC_KINDS); the generic `ic` is for a
-# part whose quote names none of those roles. ANCHOR_KINDS are the roles a circuit candidate is built around.
-IC_KINDS = ('pwm_controller', 'gate_driver', 'sr_controller', 'pd_controller', 'regulator', 'supervisor',
-            'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver', 'isolator', 'ic')
-ANCHOR_KINDS = tuple(k for k in IC_KINDS if k not in ('isolator', 'ic'))
+# An integrated circuit declares the role its datasheet title gives it (catalog.DEVICE_ROLES, the role registry);
+# the generic `ic` is for a part whose quote names none of those roles. ANCHOR_KINDS are the roles a circuit
+# candidate is built around: those the registry gives circuit types.
+IC_KINDS = tuple(catalog.DEVICE_ROLES)
+ANCHOR_KINDS = tuple(name for name, role in catalog.DEVICE_ROLES.items() if role.circuits)
 DEVICE_KINDS = ('bjt', 'mosfet', 'diode', 'zener', 'tvs', 'opto', 'relay', 'resistor', 'capacitor',
                 'inductor', 'ferrite', 'transformer', 'bridge_rectifier', 'fuse', 'crystal', 'connector', 'switch',
                 'jumper') + IC_KINDS
@@ -155,7 +156,7 @@ VERIFIED_KEY = 'device_kinds_verified'
 
 
 def verified_kinds(intent, datasheet_audit):
-    """{ref: {kind, citation}} for declarations the datasheet audit VERIFIED against the bound PDF."""
+    """{ref: {kind, quote, citation}} for declarations the datasheet audit VERIFIED against the bound PDF."""
     declared = (intent or {}).get('device_kinds') if isinstance(intent, dict) else None
     section = (datasheet_audit or {}).get('device_kinds') if isinstance(datasheet_audit, dict) else None
     out = {}
@@ -164,7 +165,7 @@ def verified_kinds(intent, datasheet_audit):
         if (isinstance(item, dict) and entry.get('status') == 'VERIFIED'
                 and all(entry.get(k) == item.get(k) for k in ('kind', 'page', 'quote'))):
             name = str(entry.get('document', '')).replace('\\', '/').rsplit('/', 1)[-1]
-            out[ref] = {'kind': item['kind'],
+            out[ref] = {'kind': item['kind'], 'quote': item['quote'],
                         'citation': f'{name} p{item["page"]}: "{item["quote"]}" (sha256 {entry.get("document_sha256", "")[:12]})'}
     return dict(sorted(out.items()))
 

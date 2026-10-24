@@ -5,6 +5,8 @@ vocabulary is a reading library; checkers/netgraph.py asks it and keeps only net
 """
 import re
 
+import catalog
+
 
 # Part words read from a part's text (value, symbol, part number), one vocabulary for every module.
 # An electrolytic, solid or super capacitor by its words (an endurance rating "12000h@105°C" names one too; EEE/EEU are
@@ -33,11 +35,10 @@ BATTERY, BRIDGE_RECTIFIER = 'battery', 'bridge_rectifier'
 KIND_CONSTANTS = {k: k for k in (RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER, MOSFET, BJT,
                                  RELAY, OPTO, CRYSTAL, TRANSFORMER, FUSE, JUMPER, TESTPOINT, SWITCH,
                                  IC, CONNECTOR, BATTERY, BRIDGE_RECTIFIER, UNKNOWN)}
-# A datasheet-declared IC role (board_intent.IC_KINDS) classifies as IC; the role itself is read with
-# NetGraph.role_kind. ANCHOR_ROLES are the roles a circuit candidate is built around.
-IC_ROLES = frozenset({'pwm_controller', 'gate_driver', 'sr_controller', 'pd_controller', 'regulator', 'supervisor',
-                      'opamp_comparator', 'shunt_reference', 'mcu', 'transceiver', 'isolator', IC})
-ANCHOR_ROLES = IC_ROLES - {'isolator', IC}
+# A datasheet-declared IC role (catalog.DEVICE_ROLES) classifies as IC; the role itself is read with
+# NetGraph.role_kind. ANCHOR_ROLES are the roles a circuit candidate is built around (registry rows with circuits).
+IC_ROLES = frozenset(catalog.DEVICE_ROLES)
+ANCHOR_ROLES = frozenset(name for name, role in catalog.DEVICE_ROLES.items() if role.circuits)
 
 PREFIX_KINDS = (
     (r'^JP\d', JUMPER), (r'^TP\d', TESTPOINT), (r'^FB\d', FERRITE),

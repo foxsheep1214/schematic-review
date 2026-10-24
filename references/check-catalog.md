@@ -614,6 +614,48 @@
 | STARTUP | RST-T04 | START_PIN | 电路里没有带复位、使能或启动配置脚（RESET、EN、BOOT、strap）的 IC |
 | STARTUP | RST-D01 | START_PIN | 电路里没有带复位、使能或启动配置脚（RESET、EN、BOOT、strap）的 IC |
 
+## 器件角色
+
+集成电路在 `intent.device_kinds` 声明手册标题给出的角色（`audit_datasheets.py --intent` 用标题词核验原文），角色决定它作核心器件时生成哪些电路候选；泛称 `ic` 只在标题不含任何角色词时可写，计划把每个 `ic` 列成 `DEVICE_KIND_GENERIC` 诊断（不生成电路候选），这张清单是下一批角色的来源。加角色只改 `catalog.DEVICE_ROLES` 一行：标题词、靶的电路类型、走哪些脚。
+
+| 角色 | 名称 | 手册标题词（去空格小写的子串） | 作核心器件生成的电路 | ANALOG 走线从哪些脚出发 |
+|---|---|---|---|---|
+| `pwm_controller` | 开关电源控制器 | pwmcontroller、pfccontroller、flybackcontroller、currentmodecontroller、voltagemodecontroller、switchingcontroller、offlinecontroller、quasiresonantcontroller、boostcontroller、buckcontroller、powerfactorcorrectioncontroller、powerfactorcontroller、resonantcontroller、llccontroller、switchmodecontroller、pwmcontrol | POWER_CONVERTER | — |
+| `gate_driver` | 栅极驱动器 | gatedriver、mosfetdriver、igbtdriver、bridgedriver、fetdriver | POWER_CONVERTER | — |
+| `sr_controller` | 同步整流控制器 | synchronousrectif、srcontroller | POWER_CONVERTER | — |
+| `pd_controller` | USB PD 控制器 | pdcontroller、powerdelivery、usbpd、typeccontroller、usbccontroller | USB、ANALOG | 检测脚 |
+| `regulator` | 稳压器与变换器 | voltageregulator、lowdropout、ldoregulator、dcdcconverter、buckconverter、boostconverter、switchingregulator、stepdownconverter、stepupconverter、powermanagementic、pmic、chargepump | POWER_CONVERTER | — |
+| `supervisor` | 电压监控与复位 | supervisor、supervisory、voltagemonitor、resetcircuit、resetic、watchdog | ANALOG | 检测脚 |
+| `opamp_comparator` | 运放、比较器与放大器 | operationalamplifier、opamp、comparator、erroramplifier、instrumentationamplifier、currentsenseamplifier、currentshuntmonitor、differenceamplifier、audioamplifier | ANALOG | 全部信号脚 |
+| `shunt_reference` | 并联基准 | shuntregulator、voltagereference、shuntreference | ANALOG | 全部信号脚 |
+| `mcu` | 微控制器与处理器 | microcontroller、microprocessor、systemonchip、mcu | ANALOG | 检测脚 |
+| `transceiver` | 总线收发器与 PHY | transceiver、ethernetphy、linedriver、busdriver | ANALOG、CAN、RS485、UART、ETHERNET、HSSERIAL | 检测脚 |
+| `isolator` | 数字隔离器 | digitalisolator、isolatedgatedriver、isolator | 不作核心器件 | — |
+| `load_switch` | 负载开关与热插拔保护 | loadswitch、hotswap、efuse、idealdiode、powerdistributionswitch、currentlimitswitch、highsideswitch | POWER_PROTECTION | — |
+| `charger` | 电池充电器 | batterycharger、chargecontroller、chargemanagement、switchingcharger、linearcharger、chargeric | POWER_CONVERTER | — |
+| `adc_dac` | ADC 与 DAC | analogtodigital、digitaltoanalog、bitadc、bitdac、channeladc、channeldac、audiodac、audioadc、sigmadeltaadc、deltasigmaadc | ANALOG | 全部信号脚 |
+| `oscillator` | 时钟源 | crystaloscillator、clockgenerator、clockbuffer、clocksynthesizer、jittercleaner、oscillator、clockdistribution、realtimeclock、clockmultiplier | CLOCK | — |
+| `memory` | 存储器 | flashmemory、serialflash、spiflash、eeprom、sdram、lpddr、ddr2、ddr3、ddr4、ddr5、nandflash、norflash、sram、emmc | SPI、I2C、DDR、STORAGE | — |
+| `level_shifter` | 电平转换器 | leveltranslat、levelshifter、voltagetranslat、voltageleveltranslat | LEVEL_SHIFT | — |
+| `motor_driver` | 电机驱动器 | motordriver、steppermotor、brushlessdc、bldc、brusheddc、hbridgedriver、fullbridgedriver、halfbridgedriver | POWER_CONVERTER | — |
+| `ic` | 泛称：手册标题没有登记的角色 | — | 不作核心器件 | — |
+
+接口电路（POWER_PROTECTION、CLOCK、I2C、LEVEL_SHIFT、SPI、UART、CAN、RS485、ETHERNET、DDR、STORAGE、RF、HSSERIAL、AV）的走线总是从核心器件的全部信号脚出发走两跳，到达的网上的连接器作成员。
+
+一个角色能靶多种接口电路（上表 transceiver、memory）时，按下表从手册标题挑第一个命中的类型，都不命中记候选缺口 `role-bus`，由审查员写 `circuit_decisions` add。
+
+| 接口电路 | 标题里的词（正则） |
+|---|---|
+| CAN | `\bCAN(?:[ -]?FD)?\b` |
+| RS485 | `RS[- ]?4(?:85\|22)\b\|\bPROFIBUS\b` |
+| UART | `RS[- ]?232\b\|\bUART\b\|\bLIN\b` |
+| ETHERNET | `\bETHERNET\b\|\bPHY\b\|\b(?:RG\|R\|SG)?MII\b` |
+| HSSERIAL | `\bLVDS\b\|\bSERDES\b\|\bPCIE?\b\|PCI EXPRESS\|\bSATA\b\|\bUSB ?3` |
+| I2C | `I[²2]C\|\bSMBUS\b\|TWO[- ]WIRE` |
+| SPI | `\bQ?SPI\b\|QUAD[- ]SPI\|SERIAL (?:NOR )?FLASH\|\bNOR FLASH\b` |
+| DDR | `\bL?P?DDR\d?\b\|\bSDRAM\b` |
+| STORAGE | `\bE?MMC\b\|\bNAND\b` |
+
 ## 需求类别与审查方面
 
 每条需求分解成审查方面，计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。分解的单位是需求里的量：带参数的方面由 `requirements[].parameters` 里有没有这个参数决定，有就问，不管选了哪些类别；不带参数的方面由类别决定。一条需求一个参数都没写时，才按类别问全部方面，计划同时列出原文里没读进参数的带单位数字（`REQUIREMENT_NUMBERS_UNREAD`）。类别拿不准就多选：多出的不带参数的方面判 NA 要写依据，少选是漏查。
