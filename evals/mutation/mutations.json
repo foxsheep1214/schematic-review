@@ -3645,5 +3645,40 @@
   "file": "scripts/pack_review.py",
   "old": "    errors += rendered_errors(out, record, title, detail)",
   "new": "    errors += rendered_errors(out, record)"
+ },
+ {
+  "id": "M526",
+  "name": "the report has no clarification section",
+  "file": "scripts/render_report.py",
+  "old": "    out += render_clarifications(results)\n",
+  "new": ""
+ },
+ {
+  "id": "M527",
+  "name": "the clarification section leaves out the clause to add",
+  "file": "scripts/render_report.py",
+  "old": "('建议写进需求', c.get('proposed_requirement'))",
+  "new": "('建议写进需求', None)"
+ },
+ {
+  "id": "M528",
+  "name": "a clarification work item repeats the section",
+  "file": "scripts/render_report.py",
+  "old": "            if task.get('kind') == 'REQUIREMENT_CLARIFICATION':",
+  "new": "            if False:"
+ },
+ {
+  "id": "M529",
+  "name": "a covered clarification reads as blocking",
+  "file": "scripts/render_report.py",
+  "old": "'不定下来不能定稿' if c.get('freeze_impact') == 'BLOCKING' else",
+  "new": "'不定下来不能定稿' if True else"
+ },
+ {
+  "id": "M530",
+  "name": "closed clarifications are listed as open",
+  "file": "scripts/render_report.py",
+  "old": "if isinstance(c, dict) and c.get('status') == 'OPEN']",
+  "new": "if isinstance(c, dict)]"
  }
 ]

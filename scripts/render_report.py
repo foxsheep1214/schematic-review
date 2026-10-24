@@ -429,6 +429,37 @@ def gap_subclass_counts(results, gaps):
     return ['| 资料不足细分：%s | %s |' % (' / '.join(names.values()), ' / '.join(str(subs.get(k, 0)) for k in names))]
 
 
+CLARIFICATION_SECTION = '需求要说清楚的地方'
+CLARIFICATION_KINDS = {'MISSING': '需求没写', 'AMBIGUOUS': '需求写得含糊', 'CONFLICTING': '需求前后矛盾',
+                       'UNCONFIRMED': '需求还没确认'}
+DECISION_DUE = {'BEFORE_DESIGN': '设计前定', 'BEFORE_FREEZE': '定稿前定', 'FOLLOW_UP': '后续确认'}
+
+
+def render_clarifications(results):
+    """Open requirement clarifications, one block each: what the requirement says, what to decide and add, who
+    decides and by when (SR self-check 2.5, user: 单列一节)."""
+    rows = [c for c in results.get('requirement_clarifications') or [] if isinstance(c, dict) and c.get('status') == 'OPEN']
+    if not rows:
+        return []
+    out = ['## ' + CLARIFICATION_SECTION, '',
+           '下面这些地方需求没有说清楚，审查判断不了，要需求负责方拍板并改进需求文件；不是原理图的错误。', '']
+    for c in rows:
+        blocks = '不定下来不能定稿' if c.get('freeze_impact') == 'BLOCKING' else '不影响定稿（各种可能都已核过）'
+        out += ['### %s　%s' % (c.get('id'), c.get('title') or ''), '',
+                '类型：%s　%s　%s　涉及 %d 条检查' % (CLARIFICATION_KINDS.get(c.get('kind'), c.get('kind') or ''),
+                                              DECISION_DUE.get(c.get('decision_due'), c.get('decision_due') or ''),
+                                              blocks, len(c.get('check_ids') or [])), '']
+        for label, value in (('需求原文', c.get('requirement_text')), ('问题', c.get('question')),
+                             ('要定什么', c.get('decision_needed')), ('建议写进需求', c.get('proposed_requirement')),
+                             ('谁来定', c.get('owner')), ('为什么要紧', c.get('impact_reason')),
+                             ('怎样算定了', c.get('closure_criteria')),
+                             ('涉及的需求', '、'.join(c.get('requirement_ids') or []))):
+            if value:
+                out.append('- **%s**：%s' % (label, value))
+        out.append('')
+    return out
+
+
 def render_bom_constraints(checks):
     """What the BOM must state for commodity parts (commodity-floors.md): not defects, not missing data."""
     rows = bom_constraints.constraints(checks)
@@ -777,6 +808,8 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                 out.append('- **改动**：%s：%s → %s' % (step.get('target', ''), step.get('before', ''), step.get('after', '')))
             out.append('')
 
+    out += render_clarifications(results)
+
     if tasks:
         out += ['## 待办', '']
         if not findings:
@@ -788,6 +821,10 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         reason_count = Counter(t['reason'].strip() for t in tasks if isinstance(t.get('reason'), str))
         shared_reasons = {r for r, n in reason_count.items() if n >= SHARED_REASON_MIN_TASKS}
         for task in sorted(tasks, key=rank):
+            if task.get('kind') == 'REQUIREMENT_CLARIFICATION':
+                out += ['### %s　%s' % (task['id'], task.get('title') or ''), '',
+                        '见上文“%s”，这里不重复。' % CLARIFICATION_SECTION, '']
+                continue
             owners = covered_by_findings(task, checks, findings)
             if owners:
                 out += ['### %s　%s' % (task['id'], task.get('title') or task.get('root_cause') or ''), '',

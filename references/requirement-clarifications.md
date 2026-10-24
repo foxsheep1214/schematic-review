@@ -158,7 +158,8 @@ RESOLVED 关联的 REQ 条目在当前计划中必须为 CONFIRMED；撤回条�
 
 ## 输出与统一协议
 
-报告将“需求澄清项”与“电气设计缺陷”“审查证据缺口”“下游设计与验证”并列。
+报告将“需求澄清项”与“电气设计缺陷”“审查证据缺口”“下游设计与验证”并列：OPEN 项单列在“需求要说清楚的地方”一节，
+逐项写需求原文、要定什么、建议写进需求的条文、谁来定、何时定和挡不挡定稿，待办里只指向这一节。
 `requirement_clarification_summary` 给 total/open/resolved/retracted、affected_checks、
 blocking_open/covered_open；例如“1 项待决需求，影响 10 条检查”，不计入 confirmed_defects。
 `requirement_clarifications` 输出完整唯一记录，`insufficient_by_cause` 只表示检查行数。

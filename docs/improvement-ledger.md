@@ -7,6 +7,20 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Requirement clarifications have their own report section (SR self-check group 2, item 2.5, 2026-10-24)
+
+An open requirement clarification reached the report only as a count under 定稿还差 and as a work item that left out
+what the requirement says, the clause to add, who decides and by when. The report now lists every open clarification
+in “需求要说清楚的地方”, ahead of the work items: its kind, when it must be decided, whether it blocks freezing, the
+checks it holds, the requirement text, the question, what to decide, the clause to add, who decides, why it matters
+and when it counts as decided; its work item points there instead of repeating it. Tests first; 2059 tests pass,
+contract 518, KiCad replay 195/195, typical circuits unchanged, mutations M526-M530 added, all 20 on changed files
+killed.
+
+- Event: user:2026-10-24 (SR self-check group 2, item 2.5: "单列一节")
+- Causes: rule_missing 1
+- Changed: docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/report-and-remediation.md, references/requirement-clarifications.md, scripts/render_report.py, scripts/tests/test_clarification_section.py
+
 ## The pack renders the report again and needs a valid gate (SR self-check group 2, item 2.3, 2026-10-24)
 
 Standing decision 6 and the documents said a hand-edited report fails the pack and a scoped hot review is not packed,
