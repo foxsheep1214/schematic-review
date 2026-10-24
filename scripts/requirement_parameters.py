@@ -41,6 +41,40 @@ def numbers(text):
     return out
 
 
+def _unit_pattern():
+    units = sorted({u for entry in catalog.REQUIREMENT_PARAMETERS.values() for u in entry.units}, key=len, reverse=True)
+    return '|'.join(re.escape(u) for u in units)
+
+
+UNIT_NUMBER_RE = None
+
+
+def unread_numbers(original, parameters):
+    """The unit-bearing numbers of a requirement's text that no parameter states, as written ('264 Vac'); a range
+    '85–264 Vac' gives both ends. Numbers without a unit (ids, counts) are not listed: a parameter needs a unit."""
+    global UNIT_NUMBER_RE
+    if UNIT_NUMBER_RE is None:
+        UNIT_NUMBER_RE = re.compile(r'(±|[-−+])?(\d+(?:\.\d+)?)(?:\s*[-–~～至到/]\s*(±|[-−+])?(\d+(?:\.\d+)?))?\s*(%s)(?![A-Za-z])'
+                                    % _unit_pattern())
+    stated = set()
+    for item in parameters or ():
+        if isinstance(item, dict):
+            for key in ('min', 'max'):
+                if _number(item.get(key)):
+                    stated.add(round(float(item[key]), 9))
+    out = []
+    for match in UNIT_NUMBER_RE.finditer(original or ''):
+        unit = match.group(5)
+        for sign, digits in ((match.group(1), match.group(2)), (match.group(3), match.group(4))):
+            if digits is None:
+                continue
+            value = float(digits)
+            values = {value, -value} if sign == '±' else {-value if sign in ('-', '−') else value}
+            if not any(round(v, 9) in stated for v in values):
+                out.append('%s%s %s' % (sign or '', digits, unit))
+    return out
+
+
 def errors(rid, parameters, original):
     """Errors of one requirement's parameters against its original text (None when the text is not known)."""
     label = 'requirement.%s.parameters' % rid

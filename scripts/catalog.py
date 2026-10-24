@@ -19,8 +19,8 @@ Domain = namedtuple('Domain', 'code name scope handoff')
 Method = namedtuple('Method', 'code name executor inputs output stage')
 Rule = namedtuple('Rule', 'id title criterion source scope')
 CircuitType = namedtuple('CircuitType', 'name title domain pattern subjects materials')
-RequirementCategory = namedtuple('RequirementCategory', 'name aspects targets')
-RequirementAspect = namedtuple('RequirementAspect', 'name template')
+RequirementCategory = namedtuple('RequirementCategory', 'name aspects targets when')
+RequirementAspect = namedtuple('RequirementAspect', 'name template parameters', defaults=((),))
 RequirementParameter = namedtuple('RequirementParameter', 'title unit units')
 
 DOMAINS = (
@@ -1132,31 +1132,52 @@ COVERAGE_RULES = {
     'history': 'REQ-Q04',
 }
 
-# Requirement categories (fixed requirements, step 2). The reviewer places each requirement in one or more categories;
-# a category asks a fixed set of aspects and each aspect's criterion is its template, so two reviewers who place a
-# requirement alike ask the same REQ-D01 rows. Several categories ask the union of their aspects.
+# Requirement categories and aspects (fixed requirements, step 2; decomposition by parameter, 2026-10-24). A
+# requirement is decomposed into aspects, each with a fixed criterion template, so two reviewers ask the same REQ-D01
+# rows. A numeric aspect names the requirement parameters that ask it: it is asked when the requirement states one of
+# them, whatever categories the reviewer chose. A qualitative aspect (no parameters) is asked by its category. A
+# requirement that states no parameters falls back to every aspect of its categories, and the planner lists the
+# unit-bearing numbers of its text that were not read.
 REQUIREMENT_ASPECTS = OrderedDict([
-    ('INPUT_STAGE_RATING', RequirementAspect('输入级器件额定覆盖', '需求输入范围的上下限与瞬态下，输入级器件的电压、电流额定覆盖并有余量')),
-    ('INPUT_THRESHOLDS', RequirementAspect('启动与欠压门限覆盖', '启动、欠压与过压门限落在需求输入范围之外或边界上，范围内不误动作')),
-    ('CONVERTER_INPUT_RANGE', RequirementAspect('变换级工作范围覆盖', '变换级控制器与功率器件的工作输入范围覆盖需求输入范围')),
-    ('OUTPUT_LEVELS', RequirementAspect('各档输出可达', '需求的每个输出电压档或范围由反馈与设定网络算得可达，并留调节余量')),
-    ('OUTPUT_LIMITS', RequirementAspect('电流与功率限制', '需求的电流与功率限值有采样与限制通路，限值按元件值算得落在需求窗口内')),
-    ('OUTPUT_ACCURACY', RequirementAspect('精度与纹波', '输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内')),
+    ('INPUT_STAGE_RATING', RequirementAspect('输入级器件额定覆盖', '需求输入范围的上下限与瞬态下，输入级器件的电压、电流额定覆盖并有余量',
+                                             ('input_voltage', 'surge_voltage'))),
+    ('INPUT_THRESHOLDS', RequirementAspect('启动与欠压门限覆盖', '启动、欠压与过压门限落在需求输入范围之外或边界上，范围内不误动作',
+                                           ('input_voltage',))),
+    ('CONVERTER_INPUT_RANGE', RequirementAspect('变换级工作范围覆盖', '变换级控制器与功率器件的工作输入范围覆盖需求输入范围',
+                                                ('input_voltage', 'input_frequency'))),
+    ('OUTPUT_LEVELS', RequirementAspect('各档输出可达', '需求的每个输出电压档或范围由反馈与设定网络算得可达，并留调节余量', ('output_voltage',))),
+    ('OUTPUT_LIMITS', RequirementAspect('电流与功率限制', '需求的电流与功率限值有采样与限制通路，限值按元件值算得落在需求窗口内',
+                                        ('output_current', 'output_power'))),
+    ('OUTPUT_ACCURACY', RequirementAspect('精度与纹波', '输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内', ('ripple', 'accuracy'))),
+    ('FUNCTION_PRESENT', RequirementAspect('功能与接口存在且数量达标', '需求的每个功能、接口由实际器件与连接落实，路数、端口数与需求一致')),
     ('PROTOCOL_ROLE', RequirementAspect('协议角色与能力', '所选控制器的协议角色与能力覆盖需求，外围连接与配置交付可追溯')),
     ('PORT_DETECTION', RequirementAspect('端口识别通路', '需求依赖的对端、线缆或附件识别有完整信号通路')),
     ('EXTERNAL_PINOUT', RequirementAspect('对外引脚定义', '对外连接器的每个引脚定义与需求一致，未用引脚的处理有依据')),
+    ('POWER_SEQUENCE', RequirementAspect('上电与掉电顺序', '需求的供电建立顺序、掉电顺序与恢复由使能、监控或时序链保证')),
+    ('STARTUP_TIMING', RequirementAspect('启动、复位与保持时间', '启动时间、复位脉宽与掉电保持时间按元件值与器件参数算得在需求窗口内',
+                                         ('startup_time', 'hold_up_time', 'reset_time'))),
     ('FAULT_DETECTION', RequirementAspect('检测通路存在', '需求的每种故障有检测通路接到能动作的器件')),
-    ('FAULT_THRESHOLD', RequirementAspect('动作门限', '检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作')),
+    ('FAULT_THRESHOLD', RequirementAspect('动作门限', '检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作',
+                                          ('trip_current', 'trip_voltage', 'surge_voltage', 'esd_voltage'))),
     ('FAULT_RESPONSE', RequirementAspect('动作后状态与恢复', '故障动作后的输出状态、锁定或自动恢复方式与需求一致')),
-    ('TEMPERATURE_GRADE', RequirementAspect('器件温度等级覆盖', '器件温度等级覆盖需求环境温度加内部温升')),
-    ('TEMPERATURE_DERATING', RequirementAspect('按温度降额', '器件额定按需求温度降额后仍有余量；需求要求随温度降额输出时，有温度检测与降额通路')),
-    ('TEMPERATURE_DRIFT', RequirementAspect('敏感参数温漂', '基准、门限、采样等敏感参数在需求温度范围的漂移计入窗口')),
-    ('ALTITUDE_HUMIDITY', RequirementAspect('海拔与湿度影响额定', '需求的海拔、湿度、气候条件对器件额定与绝缘等级的影响已计入')),
-    ('ISOLATION_PARTS', RequirementAspect('跨隔离器件资格', '跨隔离边界的每个器件绝缘等级与资格满足需求的绝缘类别')),
+    ('MEASUREMENT_CHAIN', RequirementAspect('检测链完整', '需求的每个被测量有取样、返回地与判决链，取样点与被测量一致')),
+    ('MEASUREMENT_ACCURACY', RequirementAspect('测量精度', '测量误差按传感器、偏置、采样链与 ADC 的误差和温漂合计在需求窗口内',
+                                               ('measurement_accuracy',))),
+    ('TEMPERATURE_GRADE', RequirementAspect('器件温度等级覆盖', '器件温度等级覆盖需求环境温度加内部温升', ('ambient_temperature', 'storage_temperature'))),
+    ('TEMPERATURE_DERATING', RequirementAspect('按温度降额', '器件额定按需求温度降额后仍有余量；需求要求随温度降额输出时，有温度检测与降额通路',
+                                               ('ambient_temperature',))),
+    ('TEMPERATURE_DRIFT', RequirementAspect('敏感参数温漂', '基准、门限、采样等敏感参数在需求温度范围的漂移计入窗口', ('ambient_temperature',))),
+    ('ALTITUDE_HUMIDITY', RequirementAspect('海拔与湿度影响额定', '需求的海拔、湿度、气候条件对器件额定与绝缘等级的影响已计入', ('humidity', 'altitude'))),
+    ('ISOLATION_PARTS', RequirementAspect('跨隔离器件资格', '跨隔离边界的每个器件绝缘等级与资格满足需求的绝缘类别', ('isolation_voltage',))),
     ('ISOLATION_PATHS', RequirementAspect('隔离路径唯一', '隔离边界两侧之间只经有资格的跨隔离器件相连，没有别的电气路径')),
     ('DOWNSTREAM_HANDOFF', RequirementAspect('原理图外部分移交', '原理图判不了的部分（爬电与电气间隙、整机试验、认证）列为移交项并写复验条件')),
-    ('LIFETIME_BASIS', RequirementAspect('寿命计算依据', '寿命关键件有按需求工作条件算的寿命依据')),
-    ('MISSION_PROFILE', RequirementAspect('按任务剖面复算', '寿命按需求任务剖面（工作时间、温度、负载）复算，实测温度后复算的条件写明')),
+    ('LIFETIME_BASIS', RequirementAspect('寿命计算依据', '寿命关键件有按需求工作条件算的寿命依据', ('lifetime',))),
+    ('MISSION_PROFILE', RequirementAspect('按任务剖面复算', '寿命按需求任务剖面（工作时间、温度、负载）复算，实测温度后复算的条件写明', ('lifetime',))),
+    ('STANDBY_POWER', RequirementAspect('待机与静态功耗上界', '待机或静态功耗按各轨空载电流与器件静态电流算得上界在需求窗口内',
+                                        ('standby_power', 'quiescent_current'))),
+    ('EFFICIENCY', RequirementAspect('效率', '效率只能样机实测：原理图核拓扑与主要损耗上界是否允许达到需求值，实测列为移交', ('efficiency',))),
+    ('CLOCK_ACCURACY', RequirementAspect('时钟频率精度', '晶体或振荡器的频率精度、负载电容偏差与温漂合计在需求 ppm 窗口内', ('clock_accuracy',))),
+    ('TEST_ACCESS', RequirementAspect('测试点与烧录调试口', '需求的测试点、烧录与调试接口在原理图上电气预留；可触达性与夹具交移交')),
     ('INDICATOR_PRESENT', RequirementAspect('指示功能存在', '需求的每个指示有驱动通路，指示的状态与需求一致')),
     ('INDICATOR_SUPPLY', RequirementAspect('指示供电独立', '指示的供电与被指示对象的关断或故障互不影响，与需求一致')),
     ('NO_SCHEMATIC_CRITERION', RequirementAspect('没有原理图判据', '优化目标或取舍原则在原理图上没有判据：记不适用（NA）并引原文')),
@@ -1165,27 +1186,42 @@ REQUIREMENT_ASPECTS = OrderedDict([
 ])
 REQUIREMENT_CATEGORIES = OrderedDict([
     ('INPUT_RANGE', RequirementCategory('输入电气范围', ('INPUT_STAGE_RATING', 'INPUT_THRESHOLDS', 'CONVERTER_INPUT_RANGE'),
-                                        '系统 SYS-POWER，输入相关电路')),
+                                        '系统 SYS-POWER，输入相关电路', '原文说板子从外面接什么电：输入电压、频率、瞬态、热插拔')),
     ('OUTPUT_SPEC', RequirementCategory('输出电气规格', ('OUTPUT_LEVELS', 'OUTPUT_LIMITS', 'OUTPUT_ACCURACY'),
-                                        '输出相关电路、供电接口')),
-    ('PROTOCOL', RequirementCategory('协议与接口功能', ('PROTOCOL_ROLE', 'PORT_DETECTION', 'EXTERNAL_PINOUT'), '接口、主控电路')),
+                                        '输出相关电路、供电接口', '原文给输出的电压、电流、功率、精度或纹波的数')),
+    ('FUNCTION', RequirementCategory('功能与数量', ('FUNCTION_PRESENT',), '落实该功能的电路、接口',
+                                     '原文要求有某个功能或接口，或给出路数、端口数、通道数（“4 路 RS-485”“2 个 USB”）')),
+    ('PROTOCOL', RequirementCategory('协议与接口功能', ('PROTOCOL_ROLE', 'PORT_DETECTION', 'EXTERNAL_PINOUT'), '接口、主控电路',
+                                     '原文点名协议、角色（主/从、Host/Device、PD 角色）、识别或对外引脚定义')),
+    ('TIMING', RequirementCategory('时序与启动', ('POWER_SEQUENCE', 'STARTUP_TIMING'), '系统 SYS-SEQUENCE、启动与复位电路',
+                                   '原文说上电/掉电顺序、启动时间、复位、保持时间、看门狗')),
     ('PROTECTION', RequirementCategory('保护与故障响应', ('FAULT_DETECTION', 'FAULT_THRESHOLD', 'FAULT_RESPONSE'),
-                                       '保护电路、监控 SYS-MONITOR')),
+                                       '保护电路、监控 SYS-MONITOR', '原文说过流、过压、短路、反接、浪涌、ESD 等故障要怎样检测、在哪动作、动作后怎样')),
+    ('MEASUREMENT', RequirementCategory('测量与监测', ('MEASUREMENT_CHAIN', 'MEASUREMENT_ACCURACY'), '模拟与检测电路',
+                                        '原文要求测量或监测某个量（温度、电流、电压）并给范围或精度')),
     ('ENVIRONMENT', RequirementCategory('环境条件', ('TEMPERATURE_GRADE', 'TEMPERATURE_DERATING', 'TEMPERATURE_DRIFT',
-                                                 'ALTITUDE_HUMIDITY'), '全板器件应力，各电路')),
+                                                 'ALTITUDE_HUMIDITY'), '全板器件应力，各电路', '原文给工作或储存温度、湿度、海拔、气候条件')),
     ('SAFETY_ISOLATION', RequirementCategory('安规与隔离', ('ISOLATION_PARTS', 'ISOLATION_PATHS', 'DOWNSTREAM_HANDOFF'),
-                                             '隔离接口、链路')),
-    ('LIFETIME', RequirementCategory('寿命与可靠性', ('LIFETIME_BASIS', 'MISSION_PROFILE'), '相关电路器件行')),
-    ('INDICATION', RequirementCategory('指示与人机', ('INDICATOR_PRESENT', 'INDICATOR_SUPPLY'), '相关电路')),
-    ('OPTIMIZATION', RequirementCategory('优化目标', ('NO_SCHEMATIC_CRITERION',), '全板')),
-    ('COMPLIANCE', RequirementCategory('合规与认证', ('SCHEMATIC_COMPLIANCE', 'DOWNSTREAM_HANDOFF'), '全板，移交')),
-    ('EXCLUSION', RequirementCategory('明确排除', ('EXCLUDED_FUNCTION',), '被排除功能对应的行')),
+                                             '隔离接口、链路', '原文说隔离、绝缘电压、安规类别、爬电与电气间隙')),
+    ('LIFETIME', RequirementCategory('寿命与可靠性', ('LIFETIME_BASIS', 'MISSION_PROFILE'), '相关电路器件行',
+                                     '原文给设计寿命、MTBF、工作时长或循环次数')),
+    ('POWER_BUDGET', RequirementCategory('功耗与效率', ('STANDBY_POWER', 'EFFICIENCY'), '电源树、变换器电路',
+                                         '原文给待机功耗、静态电流或效率的数')),
+    ('INDICATION', RequirementCategory('指示与人机', ('INDICATOR_PRESENT', 'INDICATOR_SUPPLY'), '相关电路',
+                                       '原文要求指示灯、蜂鸣器、按键等人机部件及其状态')),
+    ('TESTABILITY', RequirementCategory('测试与生产', ('TEST_ACCESS',), '全板', '原文要求测试点、烧录口、调试口或生产测试方式')),
+    ('CLOCK', RequirementCategory('时钟精度', ('CLOCK_ACCURACY',), '时钟电路', '原文给时钟或 RTC 的频率精度（ppm）或走时误差')),
+    ('OPTIMIZATION', RequirementCategory('优化目标', ('NO_SCHEMATIC_CRITERION',), '全板', '原文是成本、体积、取舍优先级这类没有原理图判据的目标')),
+    ('COMPLIANCE', RequirementCategory('合规与认证', ('SCHEMATIC_COMPLIANCE', 'DOWNSTREAM_HANDOFF'), '全板，移交',
+                                       '原文点名标准、认证或 EMC 等级')),
+    ('EXCLUSION', RequirementCategory('明确排除', ('EXCLUDED_FUNCTION',), '被排除功能对应的行', '原文明确不要求某功能、模式或认证')),
 ])
 
 # Requirement parameters (fixed requirements, step 3): the numbers a reviewer reads from a requirement's original text,
 # by name; `units` maps each accepted spelling to its factor into the canonical unit.
 _VOLTS = {'V': 1, 'mV': 1e-3, 'kV': 1e3, 'Vac': 1, 'VAC': 1, 'Vdc': 1, 'VDC': 1}
 _CELSIUS = {'°C': 1, '℃': 1}
+_SECONDS = {'s': 1, 'ms': 1e-3, 'µs': 1e-6, 'us': 1e-6}
 REQUIREMENT_PARAMETERS = OrderedDict([
     ('input_voltage', RequirementParameter('输入电压', 'V', _VOLTS)),
     ('input_frequency', RequirementParameter('输入频率', 'Hz', {'Hz': 1, 'kHz': 1e3})),
@@ -1201,7 +1237,20 @@ REQUIREMENT_PARAMETERS = OrderedDict([
     ('humidity', RequirementParameter('相对湿度', '%RH', {'%RH': 1, '%': 1})),
     ('altitude', RequirementParameter('海拔', 'm', {'m': 1, 'km': 1e3})),
     ('lifetime', RequirementParameter('设计寿命', '年', {'年': 1, 'year': 1, 'h': 1 / 8760})),
+    ('trip_current', RequirementParameter('保护动作电流', 'A', {'A': 1, 'mA': 1e-3})),
+    ('trip_voltage', RequirementParameter('保护动作电压', 'V', _VOLTS)),
+    ('isolation_voltage', RequirementParameter('绝缘电压', 'V', dict(_VOLTS, Vrms=1, kVrms=1e3))),
+    ('startup_time', RequirementParameter('启动时间', 's', _SECONDS)),
+    ('hold_up_time', RequirementParameter('掉电保持时间', 's', _SECONDS)),
+    ('reset_time', RequirementParameter('复位时间', 's', _SECONDS)),
+    ('standby_power', RequirementParameter('待机功耗', 'W', {'W': 1, 'mW': 1e-3})),
+    ('quiescent_current', RequirementParameter('静态电流', 'A', {'A': 1, 'mA': 1e-3, 'µA': 1e-6, 'uA': 1e-6})),
+    ('efficiency', RequirementParameter('效率', '%', {'%': 1})),
+    ('measurement_accuracy', RequirementParameter('测量精度', '%', {'%': 1})),
+    ('clock_accuracy', RequirementParameter('时钟精度', 'ppm', {'ppm': 1})),
 ])
+PARAMETER_ASPECTS = OrderedDict((name, tuple(a for a, aspect in REQUIREMENT_ASPECTS.items() if name in aspect.parameters))
+                                for name in REQUIREMENT_PARAMETERS)
 
 # The tree rules that carry an aspect (fixed requirements, step 4): a requirement row is bound to their rows and
 # takes its result from them. An aspect not listed is judged on the requirement row. A board aspect binds every row
@@ -1226,19 +1275,30 @@ ASPECT_RULES = OrderedDict([
     ('ISOLATION_PATHS', ('PRO-D02',)),
     ('LIFETIME_BASIS', ('DEV-C02', 'DEV-C06')),
     ('MISSION_PROFILE', ('DEV-C02', 'DEV-C06')),
+    ('POWER_SEQUENCE', ('RST-T03',)),
+    ('STARTUP_TIMING', ('RST-C02',)),
+    ('MEASUREMENT_CHAIN', ('ANA-T01',)),
+    ('MEASUREMENT_ACCURACY', ('ANA-C01',)),
+    ('CLOCK_ACCURACY', ('CLK-C01',)),
+    ('TEST_ACCESS', ('DOC-D02',)),
 ])
 BOARD_ASPECTS = ('TEMPERATURE_GRADE', 'TEMPERATURE_DERATING', 'LIFETIME_BASIS', 'MISSION_PROFILE', 'ISOLATION_PARTS',
-                 'ISOLATION_PATHS')
+                 'ISOLATION_PATHS', 'TEST_ACCESS')
 
 
-def requirement_aspects(categories):
-    """The aspects a requirement in these categories asks: their union in table order of first appearance."""
-    out = []
+def requirement_aspects(categories, parameters=None):
+    """The aspects a requirement asks, in table order: the qualitative aspects of its categories plus the numeric
+    aspects its stated parameters ask (whatever the categories); with no parameters stated, every aspect of its
+    categories."""
+    names = {p['name'] if isinstance(p, dict) else p for p in parameters or ()}
+    wanted = set()
     for category in categories:
         for aspect in REQUIREMENT_CATEGORIES[category].aspects:
-            if aspect not in out:
-                out.append(aspect)
-    return out
+            if not names or not REQUIREMENT_ASPECTS[aspect].parameters:
+                wanted.add(aspect)
+    for name in names:
+        wanted.update(PARAMETER_ASPECTS.get(name, ()))
+    return [aspect for aspect in REQUIREMENT_ASPECTS if aspect in wanted]
 
 
 def requirement_criterion(aspect):
@@ -1760,25 +1820,29 @@ def render_markdown():
     for (name, rule), requires in SUBJECT_REQUIRES.items():
         lines.append('| %s | %s | %s | %s |' % (name, rule, requires, SUBJECT_PRECONDITIONS[requires]))
     lines += ['', '## 需求类别与审查方面', '',
-              '每条需求在 `intent.requirements[].categories` 选一个或几个类别；每个类别的审查方面固定，'
-              '计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。几个类别的方面取并集。', '',
-              '| 类别 | 名称 | 审查方面 | 落到 |', '|---|---|---|---|']
+              '每条需求分解成审查方面，计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。分解的单位是需求里的量：'
+              '带参数的方面由 `requirements[].parameters` 里有没有这个参数决定，有就问，不管选了哪些类别；'
+              '不带参数的方面由类别决定。一条需求一个参数都没写时，才按类别问全部方面，计划同时列出原文里没读进参数的带单位数字'
+              '（`REQUIREMENT_NUMBERS_UNREAD`）。类别拿不准就多选：多出的不带参数的方面判 NA 要写依据，少选是漏查。', '',
+              '| 类别 | 名称 | 怎么选 | 审查方面 | 落到 |', '|---|---|---|---|---|']
     for key, category in REQUIREMENT_CATEGORIES.items():
-        lines.append('| %s | %s | %s | %s |' % (key, category.name, '、'.join(
+        lines.append('| %s | %s | %s | %s | %s |' % (key, category.name, category.when, '、'.join(
             '%s %s' % (a, REQUIREMENT_ASPECTS[a].name) for a in category.aspects), category.targets))
     lines += ['', '方面有树上的检查承担时，需求行绑定这些规则的行（需求 `owners` 点名的电路、接口、系统功能拥有的行；'
               '没写 `owners` 时，全板方面绑定全板这些规则的行），结论取绑定行中最差者，需求行不再另判；'
               '没有检查承担的方面由需求行自己判。', '',
-              '| 审查方面 | 判据模板 | 承担的检查 |', '|---|---|---|']
+              '| 审查方面 | 何时问 | 判据模板 | 承担的检查 |', '|---|---|---|---|']
     for key, aspect in REQUIREMENT_ASPECTS.items():
         carried = '、'.join(ASPECT_RULES.get(key, ())) or '需求行自判'
-        lines.append('| %s %s | %s | %s%s |' % (key, aspect.name, _cell(aspect.template), carried,
-                                                '（全板）' if key in BOARD_ASPECTS else ''))
+        asked = '原文有 ' + ' / '.join(aspect.parameters) if aspect.parameters else '类别选中'
+        lines.append('| %s %s | %s | %s | %s%s |' % (key, aspect.name, asked, _cell(aspect.template), carried,
+                                                     '（全板）' if key in BOARD_ASPECTS else ''))
     lines += ['', '需求里的数字读进 `requirements[].parameters`（`name`、`min`/`max`、`unit`、`condition`）；'
               '每个数字须在该条原文里出现，条件须是原文里的一段，数值按下表换算到规范单位。', '',
-              '| 参数 | 名称 | 规范单位 | 可写单位 |', '|---|---|---|---|']
+              '| 参数 | 名称 | 规范单位 | 可写单位 | 问的方面 |', '|---|---|---|---|---|']
     for key, parameter in REQUIREMENT_PARAMETERS.items():
-        lines.append('| %s | %s | %s | %s |' % (key, parameter.title, parameter.unit, '、'.join(parameter.units)))
+        lines.append('| %s | %s | %s | %s | %s |' % (key, parameter.title, parameter.unit, '、'.join(parameter.units),
+                                                   '、'.join(PARAMETER_ASPECTS[key])))
     lines += ['', '## 覆盖维度', '', '| 维度（results.scope_checks 键） | 规则 |', '|---|---|']
     for name, rule in COVERAGE_RULES.items():
         lines.append('| %s | %s %s |' % (name, rule, title(rule)))

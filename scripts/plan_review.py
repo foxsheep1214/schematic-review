@@ -681,7 +681,7 @@ def diagnostic_lines(plan, db, intent):
     """What the plan asks the reviewer to fix before judging, as printed by the planning entry: unread resistor
     values, circuit types that ask almost nothing, rails without a voltage, the ground domains, unbounded nodes."""
     lines = list(passive_stress.unread_lines(plan))
-    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') == 'CIRCUIT_TYPE_MISFIT']
+    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD')]
     gaps = passive_stress.rail_gaps(plan)
     if gaps:
         lines.append('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))

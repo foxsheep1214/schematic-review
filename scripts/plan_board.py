@@ -173,8 +173,16 @@ class BoardPlanning:
             if 'status' in item:
                 obj['requirement_status'] = item['status']
             original = originals[item['id']]
+            parameters = item.get('parameters') or []
+            # The requirement's numbers decide its numeric aspects; the planner lists the unit-bearing numbers of the
+            # text that no parameter states, so a reviewer who read only some of them sees the rest.
+            unread = requirement_parameters.unread_numbers(requirements_extract.text(original), parameters)
+            if unread:
+                self.diagnostics.append({'code': 'REQUIREMENT_NUMBERS_UNREAD', 'requirement': item['id'], 'values': unread,
+                                         'detail': '需求 %s 原文里的数字没读进 parameters：%s；读进去后带参数的方面才会问' % (
+                                             item['id'], '、'.join(unread))})
             # One row per (requirement, aspect); the reviewer's reading rides on the row, outside the check identity.
-            for aspect in catalog.requirement_aspects(item['categories']):
+            for aspect in catalog.requirement_aspects(item['categories'], parameters):
                 row = self.add_check('REQ-D01', dict(obj, aspect=aspect), key=aspect,
                                      criterion=catalog.requirement_criterion(aspect), trigger=[original['locator']])
                 row['interpretation'] = item['interpretation']

@@ -7,6 +7,31 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Requirements decompose by quantity (SR framework review, 2026-10-24)
+
+A requirement was decomposed by the categories the reviewer chose: every aspect of every chosen category became a
+REQ-D01 row, so "输出 12 V，3 A" without a ripple figure still asked "精度与纹波", a requirement in three categories asked
+nine rows, and the only check on the choice was that the category exists; the per-quantity split happened a second time
+at judgement, as `requirement_clauses` the reviewer cut freely with "concatenates to the original" as the only guard.
+Two reviewers who chose categories differently asked different row sets, and the gate could not tell. Now the unit of
+decomposition is the quantity: a numeric aspect names the requirement parameters that ask it (`RequirementAspect.parameters`,
+`catalog.PARAMETER_ASPECTS`) and is asked when the requirement states one of them, whatever the categories; a
+qualitative aspect is asked by its category; a requirement with no parameter falls back to every aspect of its
+categories. The planner lists the unit-bearing numbers of the original text that no parameter states
+(`REQUIREMENT_NUMBERS_UNREAD`, printed by the planning entry with the other prompts; `requirement_parameters.unread_numbers`).
+Six categories a board spec needs and the table lacked are added, with aspects and the tree rules that carry them:
+功能与数量 (FUNCTION_PRESENT), 时序与启动 (POWER_SEQUENCE → RST-T03, STARTUP_TIMING → RST-C02), 测量与监测
+(MEASUREMENT_CHAIN → ANA-T01, MEASUREMENT_ACCURACY → ANA-C01), 功耗与效率 (STANDBY_POWER, EFFICIENCY), 测试与生产
+(TEST_ACCESS → DOC-D02, a board aspect), 时钟精度 (CLOCK_ACCURACY → CLK-C01); FAULT_THRESHOLD gains trip_current and
+trip_voltage; eleven parameters are added (trip current and voltage, isolation voltage, start-up, hold-up and reset
+time, standby power, quiescent current, efficiency, measurement and clock accuracy). Each category carries a "怎么选"
+sentence and the rule that an uncertain category is over-chosen, since an extra qualitative aspect is judged NA with a
+reason while a missing one is a missed check. Intent, plan and result formats are unchanged; who judges is unchanged. 2042 tests pass, contract 515, KiCad replay 195/195, typical circuits unchanged, all 12 mutations on changed files killed (M495 repointed to the changed diagnostic line).
+
+- Event: user:2026-10-24 (SR framework review of requirement decomposition: "直接按照你的建议修改")
+- Causes: rule_missing 1, rule_not_enforced 1
+- Changed: SKILL.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/check-catalog.md, references/plan-and-results.md, scripts/catalog.py, scripts/plan_board.py, scripts/plan_review.py, scripts/requirement_parameters.py, scripts/tests/test_requirement_categories.py
+
 ## One line to walk: the function tree (SR framework review, 2026-10-24)
 
 Five coordinates organised SR: the function tree (owner), the seven review objectives G1–G7, the twelve content

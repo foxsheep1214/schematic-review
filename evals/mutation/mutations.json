@@ -3433,8 +3433,8 @@
   "id": "M495",
   "name": "a misfit circuit type is not printed",
   "file": "scripts/plan_review.py",
-  "old": "    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') == 'CIRCUIT_TYPE_MISFIT']\n",
-  "new": ""
+  "old": "    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD')]\n",
+  "new": "    lines += ['  ' + d['detail'] for d in plan['diagnostics'] if d.get('code') == 'REQUIREMENT_NUMBERS_UNREAD']\n"
  },
  {
   "id": "M496",
@@ -3694,5 +3694,40 @@
   "file": "scripts/derive_rows.py",
   "old": "from function_reading import decides_row, edges, judged, prototype_estimate, unjudged_message",
   "new": "from review_functions import decides_row, edges, judged, prototype_estimate, unjudged_message"
+ },
+ {
+  "id": "M533",
+  "name": "a numeric aspect is asked without its parameter",
+  "file": "scripts/catalog.py",
+  "old": "            if not names or not REQUIREMENT_ASPECTS[aspect].parameters:",
+  "new": "            if True:"
+ },
+ {
+  "id": "M534",
+  "name": "a parameter does not ask its aspect outside the chosen categories",
+  "file": "scripts/catalog.py",
+  "old": "        wanted.update(PARAMETER_ASPECTS.get(name, ()))",
+  "new": "        pass"
+ },
+ {
+  "id": "M535",
+  "name": "the planner expands requirement rows by category only",
+  "file": "scripts/plan_board.py",
+  "old": "            for aspect in catalog.requirement_aspects(item['categories'], parameters):",
+  "new": "            for aspect in catalog.requirement_aspects(item['categories']):"
+ },
+ {
+  "id": "M536",
+  "name": "unread requirement numbers are not reported",
+  "file": "scripts/plan_board.py",
+  "old": "            if unread:\n                self.diagnostics.append({'code': 'REQUIREMENT_NUMBERS_UNREAD'",
+  "new": "            if False:\n                self.diagnostics.append({'code': 'REQUIREMENT_NUMBERS_UNREAD'"
+ },
+ {
+  "id": "M537",
+  "name": "numbers a parameter states are listed as unread",
+  "file": "scripts/requirement_parameters.py",
+  "old": "            if not any(round(v, 9) in stated for v in values):",
+  "new": "            if True:"
  }
 ]

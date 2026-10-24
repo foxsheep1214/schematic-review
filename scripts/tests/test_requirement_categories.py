@@ -34,11 +34,12 @@ def rows(plan, rid=None):
 class CategoryTableTests(unittest.TestCase):
     def test_the_category_table_is_fixed_and_every_aspect_has_a_template(self):
         self.assertEqual(list(catalog.REQUIREMENT_CATEGORIES), [
-            'INPUT_RANGE', 'OUTPUT_SPEC', 'PROTOCOL', 'PROTECTION', 'ENVIRONMENT', 'SAFETY_ISOLATION', 'LIFETIME',
-            'INDICATION', 'OPTIMIZATION', 'COMPLIANCE', 'EXCLUSION'])
+            'INPUT_RANGE', 'OUTPUT_SPEC', 'FUNCTION', 'PROTOCOL', 'TIMING', 'PROTECTION', 'MEASUREMENT', 'ENVIRONMENT',
+            'SAFETY_ISOLATION', 'LIFETIME', 'POWER_BUDGET', 'INDICATION', 'TESTABILITY', 'CLOCK', 'OPTIMIZATION',
+            'COMPLIANCE', 'EXCLUSION'])
         used = set()
         for key, category in catalog.REQUIREMENT_CATEGORIES.items():
-            self.assertTrue(category.name and category.targets and category.aspects, key)
+            self.assertTrue(category.name and category.targets and category.aspects and category.when, key)
             used.update(category.aspects)
         self.assertEqual(used, set(catalog.REQUIREMENT_ASPECTS))
         for key, aspect in catalog.REQUIREMENT_ASPECTS.items():
@@ -58,6 +59,9 @@ class CategoryTableTests(unittest.TestCase):
         text = catalog.render_markdown()
         for category in catalog.REQUIREMENT_CATEGORIES.values():
             self.assertIn(category.name, text)
+            self.assertIn(category.when, text)
+        self.assertIn('| 类别 | 名称 | 怎么选 |', text)
+        self.assertIn('原文有 ripple / accuracy', text)
         for aspect in catalog.REQUIREMENT_ASPECTS.values():
             self.assertIn(aspect.name, text)
 
@@ -111,6 +115,54 @@ class PlanTests(unittest.TestCase):
         b = build_review_plan(DB, intent({'REQ-TEMP-01': ['ENVIRONMENT', 'PROTECTION']}))
         extra = {r['check_key'] for r in rows(b)} - {r['check_key'] for r in rows(a)}
         self.assertEqual(len(extra), len(catalog.REQUIREMENT_CATEGORIES['PROTECTION'].aspects))
+
+
+class ParameterDecompositionTests(unittest.TestCase):
+    """The unit of decomposition is the requirement's quantity (2026-10-24): a numeric aspect is asked by the parameter
+    that states its number, whatever the categories; the categories choose the qualitative aspects, and only a
+    requirement with no parameter at all falls back to every aspect of its categories."""
+
+    def test_every_parameter_asks_an_aspect_and_every_numeric_aspect_names_table_parameters(self):
+        for name, aspects in catalog.PARAMETER_ASPECTS.items():
+            self.assertTrue(aspects, name)
+        for key, aspect in catalog.REQUIREMENT_ASPECTS.items():
+            for name in aspect.parameters:
+                self.assertIn(name, catalog.REQUIREMENT_PARAMETERS, key)
+        for rule in sum(catalog.ASPECT_RULES.values(), ()):
+            self.assertIn(rule, catalog.BY_ID)
+        self.assertIn('TEST_ACCESS', catalog.BOARD_ASPECTS)
+
+    def test_a_numeric_aspect_is_asked_only_by_its_parameter(self):
+        self.assertEqual(catalog.requirement_aspects(['OUTPUT_SPEC'], [{'name': 'ripple'}]), ['OUTPUT_ACCURACY'])
+        self.assertEqual(catalog.requirement_aspects(['OUTPUT_SPEC']), ['OUTPUT_LEVELS', 'OUTPUT_LIMITS', 'OUTPUT_ACCURACY'])
+
+    def test_a_parameter_asks_its_aspect_outside_the_chosen_categories(self):
+        asked = catalog.requirement_aspects(['PROTECTION'], ['trip_current', 'ambient_temperature'])
+        self.assertEqual(asked, ['FAULT_DETECTION', 'FAULT_THRESHOLD', 'FAULT_RESPONSE', 'TEMPERATURE_GRADE',
+                                 'TEMPERATURE_DERATING', 'TEMPERATURE_DRIFT'])
+
+    def test_the_plan_asks_the_rows_the_parameters_decide(self):
+        value = intent()
+        value['requirements'][0]['parameters'] = [{'name': 'input_voltage', 'min': 9, 'max': 36, 'unit': 'V'}]
+        plan = build_review_plan(DB, value)
+        self.assertEqual(sorted(c['object']['aspect'] for c in rows(plan, 'REQ-IN-01')),
+                         ['CONVERTER_INPUT_RANGE', 'INPUT_STAGE_RATING', 'INPUT_THRESHOLDS'])
+        value['requirements'][0]['parameters'].append({'name': 'surge_voltage', 'max': 40, 'unit': 'V'})
+        self.assertIn('FAULT_THRESHOLD', [c['object']['aspect'] for c in rows(build_review_plan(DB, value), 'REQ-IN-01')])
+
+    def test_unread_unit_numbers_are_a_diagnostic_the_planner_prints(self):
+        value = intent()
+        value['requirements'][0]['parameters'] = [{'name': 'input_voltage', 'min': 9, 'max': 36, 'unit': 'V'}]
+        plan = build_review_plan(DB, value)
+        unread = {d['requirement']: d['values'] for d in plan['diagnostics'] if d['code'] == 'REQUIREMENT_NUMBERS_UNREAD'}
+        self.assertEqual(unread['REQ-IN-01'], ['40 V', '100 ms'])
+        self.assertEqual(unread['REQ-TEMP-01'], ['−20 °C', '+60 °C'])
+        self.assertNotIn('REQ-OPEN-01', unread)
+        from plan_review import diagnostic_lines
+        self.assertTrue(any('REQ-IN-01' in line and '40 V' in line for line in diagnostic_lines(plan, DB, value)))
+        value['requirements'][1]['parameters'] = [{'name': 'ambient_temperature', 'min': -20, 'max': 60, 'unit': '°C'}]
+        plan = build_review_plan(DB, value)
+        self.assertNotIn('REQ-TEMP-01', {d.get('requirement') for d in plan['diagnostics']})
 
 
 if __name__ == '__main__':

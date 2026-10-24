@@ -616,71 +616,97 @@
 
 ## 需求类别与审查方面
 
-每条需求在 `intent.requirements[].categories` 选一个或几个类别；每个类别的审查方面固定，计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。几个类别的方面取并集。
+每条需求分解成审查方面，计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。分解的单位是需求里的量：带参数的方面由 `requirements[].parameters` 里有没有这个参数决定，有就问，不管选了哪些类别；不带参数的方面由类别决定。一条需求一个参数都没写时，才按类别问全部方面，计划同时列出原文里没读进参数的带单位数字（`REQUIREMENT_NUMBERS_UNREAD`）。类别拿不准就多选：多出的不带参数的方面判 NA 要写依据，少选是漏查。
 
-| 类别 | 名称 | 审查方面 | 落到 |
-|---|---|---|---|
-| INPUT_RANGE | 输入电气范围 | INPUT_STAGE_RATING 输入级器件额定覆盖、INPUT_THRESHOLDS 启动与欠压门限覆盖、CONVERTER_INPUT_RANGE 变换级工作范围覆盖 | 系统 SYS-POWER，输入相关电路 |
-| OUTPUT_SPEC | 输出电气规格 | OUTPUT_LEVELS 各档输出可达、OUTPUT_LIMITS 电流与功率限制、OUTPUT_ACCURACY 精度与纹波 | 输出相关电路、供电接口 |
-| PROTOCOL | 协议与接口功能 | PROTOCOL_ROLE 协议角色与能力、PORT_DETECTION 端口识别通路、EXTERNAL_PINOUT 对外引脚定义 | 接口、主控电路 |
-| PROTECTION | 保护与故障响应 | FAULT_DETECTION 检测通路存在、FAULT_THRESHOLD 动作门限、FAULT_RESPONSE 动作后状态与恢复 | 保护电路、监控 SYS-MONITOR |
-| ENVIRONMENT | 环境条件 | TEMPERATURE_GRADE 器件温度等级覆盖、TEMPERATURE_DERATING 按温度降额、TEMPERATURE_DRIFT 敏感参数温漂、ALTITUDE_HUMIDITY 海拔与湿度影响额定 | 全板器件应力，各电路 |
-| SAFETY_ISOLATION | 安规与隔离 | ISOLATION_PARTS 跨隔离器件资格、ISOLATION_PATHS 隔离路径唯一、DOWNSTREAM_HANDOFF 原理图外部分移交 | 隔离接口、链路 |
-| LIFETIME | 寿命与可靠性 | LIFETIME_BASIS 寿命计算依据、MISSION_PROFILE 按任务剖面复算 | 相关电路器件行 |
-| INDICATION | 指示与人机 | INDICATOR_PRESENT 指示功能存在、INDICATOR_SUPPLY 指示供电独立 | 相关电路 |
-| OPTIMIZATION | 优化目标 | NO_SCHEMATIC_CRITERION 没有原理图判据 | 全板 |
-| COMPLIANCE | 合规与认证 | SCHEMATIC_COMPLIANCE 原理图可核部分、DOWNSTREAM_HANDOFF 原理图外部分移交 | 全板，移交 |
-| EXCLUSION | 明确排除 | EXCLUDED_FUNCTION 明确排除 | 被排除功能对应的行 |
+| 类别 | 名称 | 怎么选 | 审查方面 | 落到 |
+|---|---|---|---|---|
+| INPUT_RANGE | 输入电气范围 | 原文说板子从外面接什么电：输入电压、频率、瞬态、热插拔 | INPUT_STAGE_RATING 输入级器件额定覆盖、INPUT_THRESHOLDS 启动与欠压门限覆盖、CONVERTER_INPUT_RANGE 变换级工作范围覆盖 | 系统 SYS-POWER，输入相关电路 |
+| OUTPUT_SPEC | 输出电气规格 | 原文给输出的电压、电流、功率、精度或纹波的数 | OUTPUT_LEVELS 各档输出可达、OUTPUT_LIMITS 电流与功率限制、OUTPUT_ACCURACY 精度与纹波 | 输出相关电路、供电接口 |
+| FUNCTION | 功能与数量 | 原文要求有某个功能或接口，或给出路数、端口数、通道数（“4 路 RS-485”“2 个 USB”） | FUNCTION_PRESENT 功能与接口存在且数量达标 | 落实该功能的电路、接口 |
+| PROTOCOL | 协议与接口功能 | 原文点名协议、角色（主/从、Host/Device、PD 角色）、识别或对外引脚定义 | PROTOCOL_ROLE 协议角色与能力、PORT_DETECTION 端口识别通路、EXTERNAL_PINOUT 对外引脚定义 | 接口、主控电路 |
+| TIMING | 时序与启动 | 原文说上电/掉电顺序、启动时间、复位、保持时间、看门狗 | POWER_SEQUENCE 上电与掉电顺序、STARTUP_TIMING 启动、复位与保持时间 | 系统 SYS-SEQUENCE、启动与复位电路 |
+| PROTECTION | 保护与故障响应 | 原文说过流、过压、短路、反接、浪涌、ESD 等故障要怎样检测、在哪动作、动作后怎样 | FAULT_DETECTION 检测通路存在、FAULT_THRESHOLD 动作门限、FAULT_RESPONSE 动作后状态与恢复 | 保护电路、监控 SYS-MONITOR |
+| MEASUREMENT | 测量与监测 | 原文要求测量或监测某个量（温度、电流、电压）并给范围或精度 | MEASUREMENT_CHAIN 检测链完整、MEASUREMENT_ACCURACY 测量精度 | 模拟与检测电路 |
+| ENVIRONMENT | 环境条件 | 原文给工作或储存温度、湿度、海拔、气候条件 | TEMPERATURE_GRADE 器件温度等级覆盖、TEMPERATURE_DERATING 按温度降额、TEMPERATURE_DRIFT 敏感参数温漂、ALTITUDE_HUMIDITY 海拔与湿度影响额定 | 全板器件应力，各电路 |
+| SAFETY_ISOLATION | 安规与隔离 | 原文说隔离、绝缘电压、安规类别、爬电与电气间隙 | ISOLATION_PARTS 跨隔离器件资格、ISOLATION_PATHS 隔离路径唯一、DOWNSTREAM_HANDOFF 原理图外部分移交 | 隔离接口、链路 |
+| LIFETIME | 寿命与可靠性 | 原文给设计寿命、MTBF、工作时长或循环次数 | LIFETIME_BASIS 寿命计算依据、MISSION_PROFILE 按任务剖面复算 | 相关电路器件行 |
+| POWER_BUDGET | 功耗与效率 | 原文给待机功耗、静态电流或效率的数 | STANDBY_POWER 待机与静态功耗上界、EFFICIENCY 效率 | 电源树、变换器电路 |
+| INDICATION | 指示与人机 | 原文要求指示灯、蜂鸣器、按键等人机部件及其状态 | INDICATOR_PRESENT 指示功能存在、INDICATOR_SUPPLY 指示供电独立 | 相关电路 |
+| TESTABILITY | 测试与生产 | 原文要求测试点、烧录口、调试口或生产测试方式 | TEST_ACCESS 测试点与烧录调试口 | 全板 |
+| CLOCK | 时钟精度 | 原文给时钟或 RTC 的频率精度（ppm）或走时误差 | CLOCK_ACCURACY 时钟频率精度 | 时钟电路 |
+| OPTIMIZATION | 优化目标 | 原文是成本、体积、取舍优先级这类没有原理图判据的目标 | NO_SCHEMATIC_CRITERION 没有原理图判据 | 全板 |
+| COMPLIANCE | 合规与认证 | 原文点名标准、认证或 EMC 等级 | SCHEMATIC_COMPLIANCE 原理图可核部分、DOWNSTREAM_HANDOFF 原理图外部分移交 | 全板，移交 |
+| EXCLUSION | 明确排除 | 原文明确不要求某功能、模式或认证 | EXCLUDED_FUNCTION 明确排除 | 被排除功能对应的行 |
 
 方面有树上的检查承担时，需求行绑定这些规则的行（需求 `owners` 点名的电路、接口、系统功能拥有的行；没写 `owners` 时，全板方面绑定全板这些规则的行），结论取绑定行中最差者，需求行不再另判；没有检查承担的方面由需求行自己判。
 
-| 审查方面 | 判据模板 | 承担的检查 |
-|---|---|---|
-| INPUT_STAGE_RATING 输入级器件额定覆盖 | 需求输入范围的上下限与瞬态下，输入级器件的电压、电流额定覆盖并有余量 | DEV-C01、PWR-C02、PWR-C13 |
-| INPUT_THRESHOLDS 启动与欠压门限覆盖 | 启动、欠压与过压门限落在需求输入范围之外或边界上，范围内不误动作 | PWR-C06、PRO-C02 |
-| CONVERTER_INPUT_RANGE 变换级工作范围覆盖 | 变换级控制器与功率器件的工作输入范围覆盖需求输入范围 | PWR-C02、DEV-C05 |
-| OUTPUT_LEVELS 各档输出可达 | 需求的每个输出电压档或范围由反馈与设定网络算得可达，并留调节余量 | PWR-E01、PWR-C15 |
-| OUTPUT_LIMITS 电流与功率限制 | 需求的电流与功率限值有采样与限制通路，限值按元件值算得落在需求窗口内 | PWR-C01、PWR-C03、PWR-C06 |
-| OUTPUT_ACCURACY 精度与纹波 | 输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内 | PWR-C14、DEV-C03、ANA-C01 |
-| PROTOCOL_ROLE 协议角色与能力 | 所选控制器的协议角色与能力覆盖需求，外围连接与配置交付可追溯 | SIG-T04、SIG-D04 |
-| PORT_DETECTION 端口识别通路 | 需求依赖的对端、线缆或附件识别有完整信号通路 | SIG-D04、SIG-C05 |
-| EXTERNAL_PINOUT 对外引脚定义 | 对外连接器的每个引脚定义与需求一致，未用引脚的处理有依据 | DEV-D03 |
-| FAULT_DETECTION 检测通路存在 | 需求的每种故障有检测通路接到能动作的器件 | ANA-T01、ANA-C04、PWR-T04 |
-| FAULT_THRESHOLD 动作门限 | 检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作 | PWR-C06、PRO-C02 |
-| FAULT_RESPONSE 动作后状态与恢复 | 故障动作后的输出状态、锁定或自动恢复方式与需求一致 | PRO-C01、PRO-D03、RST-T03 |
-| TEMPERATURE_GRADE 器件温度等级覆盖 | 器件温度等级覆盖需求环境温度加内部温升 | DEV-C05（全板） |
-| TEMPERATURE_DERATING 按温度降额 | 器件额定按需求温度降额后仍有余量；需求要求随温度降额输出时，有温度检测与降额通路 | DEV-C01（全板） |
-| TEMPERATURE_DRIFT 敏感参数温漂 | 基准、门限、采样等敏感参数在需求温度范围的漂移计入窗口 | ANA-C01、DEV-C03 |
-| ALTITUDE_HUMIDITY 海拔与湿度影响额定 | 需求的海拔、湿度、气候条件对器件额定与绝缘等级的影响已计入 | 需求行自判 |
-| ISOLATION_PARTS 跨隔离器件资格 | 跨隔离边界的每个器件绝缘等级与资格满足需求的绝缘类别 | PRO-C03、PRO-D01（全板） |
-| ISOLATION_PATHS 隔离路径唯一 | 隔离边界两侧之间只经有资格的跨隔离器件相连，没有别的电气路径 | PRO-D02（全板） |
-| DOWNSTREAM_HANDOFF 原理图外部分移交 | 原理图判不了的部分（爬电与电气间隙、整机试验、认证）列为移交项并写复验条件 | 需求行自判 |
-| LIFETIME_BASIS 寿命计算依据 | 寿命关键件有按需求工作条件算的寿命依据 | DEV-C02、DEV-C06（全板） |
-| MISSION_PROFILE 按任务剖面复算 | 寿命按需求任务剖面（工作时间、温度、负载）复算，实测温度后复算的条件写明 | DEV-C02、DEV-C06（全板） |
-| INDICATOR_PRESENT 指示功能存在 | 需求的每个指示有驱动通路，指示的状态与需求一致 | 需求行自判 |
-| INDICATOR_SUPPLY 指示供电独立 | 指示的供电与被指示对象的关断或故障互不影响，与需求一致 | 需求行自判 |
-| NO_SCHEMATIC_CRITERION 没有原理图判据 | 优化目标或取舍原则在原理图上没有判据：记不适用（NA）并引原文 | 需求行自判 |
-| SCHEMATIC_COMPLIANCE 原理图可核部分 | 标准或认证中原理图能核的器件资格与电路要求逐条核 | 需求行自判 |
-| EXCLUDED_FUNCTION 明确排除 | 需求明确排除的功能或认证：记排除原文，相应检查记不适用（NA） | 需求行自判 |
+| 审查方面 | 何时问 | 判据模板 | 承担的检查 |
+|---|---|---|---|
+| INPUT_STAGE_RATING 输入级器件额定覆盖 | 原文有 input_voltage / surge_voltage | 需求输入范围的上下限与瞬态下，输入级器件的电压、电流额定覆盖并有余量 | DEV-C01、PWR-C02、PWR-C13 |
+| INPUT_THRESHOLDS 启动与欠压门限覆盖 | 原文有 input_voltage | 启动、欠压与过压门限落在需求输入范围之外或边界上，范围内不误动作 | PWR-C06、PRO-C02 |
+| CONVERTER_INPUT_RANGE 变换级工作范围覆盖 | 原文有 input_voltage / input_frequency | 变换级控制器与功率器件的工作输入范围覆盖需求输入范围 | PWR-C02、DEV-C05 |
+| OUTPUT_LEVELS 各档输出可达 | 原文有 output_voltage | 需求的每个输出电压档或范围由反馈与设定网络算得可达，并留调节余量 | PWR-E01、PWR-C15 |
+| OUTPUT_LIMITS 电流与功率限制 | 原文有 output_current / output_power | 需求的电流与功率限值有采样与限制通路，限值按元件值算得落在需求窗口内 | PWR-C01、PWR-C03、PWR-C06 |
+| OUTPUT_ACCURACY 精度与纹波 | 原文有 ripple / accuracy | 输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内 | PWR-C14、DEV-C03、ANA-C01 |
+| FUNCTION_PRESENT 功能与接口存在且数量达标 | 类别选中 | 需求的每个功能、接口由实际器件与连接落实，路数、端口数与需求一致 | 需求行自判 |
+| PROTOCOL_ROLE 协议角色与能力 | 类别选中 | 所选控制器的协议角色与能力覆盖需求，外围连接与配置交付可追溯 | SIG-T04、SIG-D04 |
+| PORT_DETECTION 端口识别通路 | 类别选中 | 需求依赖的对端、线缆或附件识别有完整信号通路 | SIG-D04、SIG-C05 |
+| EXTERNAL_PINOUT 对外引脚定义 | 类别选中 | 对外连接器的每个引脚定义与需求一致，未用引脚的处理有依据 | DEV-D03 |
+| POWER_SEQUENCE 上电与掉电顺序 | 类别选中 | 需求的供电建立顺序、掉电顺序与恢复由使能、监控或时序链保证 | RST-T03 |
+| STARTUP_TIMING 启动、复位与保持时间 | 原文有 startup_time / hold_up_time / reset_time | 启动时间、复位脉宽与掉电保持时间按元件值与器件参数算得在需求窗口内 | RST-C02 |
+| FAULT_DETECTION 检测通路存在 | 类别选中 | 需求的每种故障有检测通路接到能动作的器件 | ANA-T01、ANA-C04、PWR-T04 |
+| FAULT_THRESHOLD 动作门限 | 原文有 trip_current / trip_voltage / surge_voltage / esd_voltage | 检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作 | PWR-C06、PRO-C02 |
+| FAULT_RESPONSE 动作后状态与恢复 | 类别选中 | 故障动作后的输出状态、锁定或自动恢复方式与需求一致 | PRO-C01、PRO-D03、RST-T03 |
+| MEASUREMENT_CHAIN 检测链完整 | 类别选中 | 需求的每个被测量有取样、返回地与判决链，取样点与被测量一致 | ANA-T01 |
+| MEASUREMENT_ACCURACY 测量精度 | 原文有 measurement_accuracy | 测量误差按传感器、偏置、采样链与 ADC 的误差和温漂合计在需求窗口内 | ANA-C01 |
+| TEMPERATURE_GRADE 器件温度等级覆盖 | 原文有 ambient_temperature / storage_temperature | 器件温度等级覆盖需求环境温度加内部温升 | DEV-C05（全板） |
+| TEMPERATURE_DERATING 按温度降额 | 原文有 ambient_temperature | 器件额定按需求温度降额后仍有余量；需求要求随温度降额输出时，有温度检测与降额通路 | DEV-C01（全板） |
+| TEMPERATURE_DRIFT 敏感参数温漂 | 原文有 ambient_temperature | 基准、门限、采样等敏感参数在需求温度范围的漂移计入窗口 | ANA-C01、DEV-C03 |
+| ALTITUDE_HUMIDITY 海拔与湿度影响额定 | 原文有 humidity / altitude | 需求的海拔、湿度、气候条件对器件额定与绝缘等级的影响已计入 | 需求行自判 |
+| ISOLATION_PARTS 跨隔离器件资格 | 原文有 isolation_voltage | 跨隔离边界的每个器件绝缘等级与资格满足需求的绝缘类别 | PRO-C03、PRO-D01（全板） |
+| ISOLATION_PATHS 隔离路径唯一 | 类别选中 | 隔离边界两侧之间只经有资格的跨隔离器件相连，没有别的电气路径 | PRO-D02（全板） |
+| DOWNSTREAM_HANDOFF 原理图外部分移交 | 类别选中 | 原理图判不了的部分（爬电与电气间隙、整机试验、认证）列为移交项并写复验条件 | 需求行自判 |
+| LIFETIME_BASIS 寿命计算依据 | 原文有 lifetime | 寿命关键件有按需求工作条件算的寿命依据 | DEV-C02、DEV-C06（全板） |
+| MISSION_PROFILE 按任务剖面复算 | 原文有 lifetime | 寿命按需求任务剖面（工作时间、温度、负载）复算，实测温度后复算的条件写明 | DEV-C02、DEV-C06（全板） |
+| STANDBY_POWER 待机与静态功耗上界 | 原文有 standby_power / quiescent_current | 待机或静态功耗按各轨空载电流与器件静态电流算得上界在需求窗口内 | 需求行自判 |
+| EFFICIENCY 效率 | 原文有 efficiency | 效率只能样机实测：原理图核拓扑与主要损耗上界是否允许达到需求值，实测列为移交 | 需求行自判 |
+| CLOCK_ACCURACY 时钟频率精度 | 原文有 clock_accuracy | 晶体或振荡器的频率精度、负载电容偏差与温漂合计在需求 ppm 窗口内 | CLK-C01 |
+| TEST_ACCESS 测试点与烧录调试口 | 类别选中 | 需求的测试点、烧录与调试接口在原理图上电气预留；可触达性与夹具交移交 | DOC-D02（全板） |
+| INDICATOR_PRESENT 指示功能存在 | 类别选中 | 需求的每个指示有驱动通路，指示的状态与需求一致 | 需求行自判 |
+| INDICATOR_SUPPLY 指示供电独立 | 类别选中 | 指示的供电与被指示对象的关断或故障互不影响，与需求一致 | 需求行自判 |
+| NO_SCHEMATIC_CRITERION 没有原理图判据 | 类别选中 | 优化目标或取舍原则在原理图上没有判据：记不适用（NA）并引原文 | 需求行自判 |
+| SCHEMATIC_COMPLIANCE 原理图可核部分 | 类别选中 | 标准或认证中原理图能核的器件资格与电路要求逐条核 | 需求行自判 |
+| EXCLUDED_FUNCTION 明确排除 | 类别选中 | 需求明确排除的功能或认证：记排除原文，相应检查记不适用（NA） | 需求行自判 |
 
 需求里的数字读进 `requirements[].parameters`（`name`、`min`/`max`、`unit`、`condition`）；每个数字须在该条原文里出现，条件须是原文里的一段，数值按下表换算到规范单位。
 
-| 参数 | 名称 | 规范单位 | 可写单位 |
-|---|---|---|---|
-| input_voltage | 输入电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC |
-| input_frequency | 输入频率 | Hz | Hz、kHz |
-| output_voltage | 输出电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC |
-| output_current | 输出电流 | A | A、mA |
-| output_power | 输出功率 | W | W、mW、kW |
-| ripple | 纹波 | V | V、mV、Vpp、mVpp |
-| accuracy | 精度 | % | % |
-| surge_voltage | 浪涌或瞬态电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC |
-| esd_voltage | 静电放电电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC |
-| ambient_temperature | 工作环境温度 | °C | °C、℃ |
-| storage_temperature | 储存温度 | °C | °C、℃ |
-| humidity | 相对湿度 | %RH | %RH、% |
-| altitude | 海拔 | m | m、km |
-| lifetime | 设计寿命 | 年 | 年、year、h |
+| 参数 | 名称 | 规范单位 | 可写单位 | 问的方面 |
+|---|---|---|---|---|
+| input_voltage | 输入电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC | INPUT_STAGE_RATING、INPUT_THRESHOLDS、CONVERTER_INPUT_RANGE |
+| input_frequency | 输入频率 | Hz | Hz、kHz | CONVERTER_INPUT_RANGE |
+| output_voltage | 输出电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC | OUTPUT_LEVELS |
+| output_current | 输出电流 | A | A、mA | OUTPUT_LIMITS |
+| output_power | 输出功率 | W | W、mW、kW | OUTPUT_LIMITS |
+| ripple | 纹波 | V | V、mV、Vpp、mVpp | OUTPUT_ACCURACY |
+| accuracy | 精度 | % | % | OUTPUT_ACCURACY |
+| surge_voltage | 浪涌或瞬态电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC | INPUT_STAGE_RATING、FAULT_THRESHOLD |
+| esd_voltage | 静电放电电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC | FAULT_THRESHOLD |
+| ambient_temperature | 工作环境温度 | °C | °C、℃ | TEMPERATURE_GRADE、TEMPERATURE_DERATING、TEMPERATURE_DRIFT |
+| storage_temperature | 储存温度 | °C | °C、℃ | TEMPERATURE_GRADE |
+| humidity | 相对湿度 | %RH | %RH、% | ALTITUDE_HUMIDITY |
+| altitude | 海拔 | m | m、km | ALTITUDE_HUMIDITY |
+| lifetime | 设计寿命 | 年 | 年、year、h | LIFETIME_BASIS、MISSION_PROFILE |
+| trip_current | 保护动作电流 | A | A、mA | FAULT_THRESHOLD |
+| trip_voltage | 保护动作电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC | FAULT_THRESHOLD |
+| isolation_voltage | 绝缘电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC、Vrms、kVrms | ISOLATION_PARTS |
+| startup_time | 启动时间 | s | s、ms、µs、us | STARTUP_TIMING |
+| hold_up_time | 掉电保持时间 | s | s、ms、µs、us | STARTUP_TIMING |
+| reset_time | 复位时间 | s | s、ms、µs、us | STARTUP_TIMING |
+| standby_power | 待机功耗 | W | W、mW | STANDBY_POWER |
+| quiescent_current | 静态电流 | A | A、mA、µA、uA | STANDBY_POWER |
+| efficiency | 效率 | % | % | EFFICIENCY |
+| measurement_accuracy | 测量精度 | % | % | MEASUREMENT_ACCURACY |
+| clock_accuracy | 时钟精度 | ppm | ppm | CLOCK_ACCURACY |
 
 ## 覆盖维度
 
