@@ -23,6 +23,13 @@ PASS, INSUFFICIENT against PASS grouped by what the open item's edges go through
 limit, a calculation), a FAIL against anything else. `signals` counts, per side, what makes a review stricter or
 looser than its evidence: edges through a requirement clause, passes that only say "not applicable", decisive
 margins without their corners, fails outside the specified region and passes resting on a measurement.
+
+One datasheet bound used two ways (bounding consistency proposals of 2026-10-23, item 4): each side counts vendor-data
+items whose bounding is boilerplate (why_not copies the not-boundable reason, or several items give one sentence as
+the unfavourable side) and items naming a test-point limit they read as the clause describing the usage;
+`same_source_splits` lists each disagreeing pair where the open item read a datasheet file the other side cited in the
+margin or fail that decided the row. Files, not pages, are matched: locators are written as pages by one reviewer and
+as sections or tables by another.
 """
 import argparse
 import json
@@ -35,8 +42,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json
 from review_stage_scope import outside_stage
 import check_key
+import results_model
 import rule_gaps
-from review_functions import located
+from review_functions import located, margin_verdict
 
 MATCH_FLOOR = 0.25   # least share of parts two circuits of one type must have in common to be the same block
 SIDES = ('A', 'B')
@@ -47,6 +55,7 @@ DECISIVE_BASES = ('GUARANTEED_BOUND', 'REACHABLE_CASE', 'EXACT_ENVELOPE')
 REQUIREMENT_SOURCE_RE = re.compile(r'需求|requirement|\bREQ-', re.I)
 NOT_APPLICABLE_RE = re.compile(r'不适用|not applicable', re.I)
 MEASUREMENT_RE = re.compile(r'实测|测量|measure', re.I)
+SPACE_RE = re.compile(r'\s+')
 
 
 def load(where):
@@ -289,7 +298,89 @@ def signals(side):
         'outside_specified_fails': sum(1 for _, field, item in _items(side) if field == 'fails'
                                        and isinstance(item.get('outside_specified'), dict)),
         'measurement_only_passes': sum(bool(MEASUREMENT_RE.search(r.get('rationale') or '')) for r in passes),
+        **_bounding_signals(side),
     }
+
+
+def _flat(text):
+    return SPACE_RE.sub('', text) if isinstance(text, str) else ''
+
+
+def _bounding_signals(side):
+    """Vendor-data items called unboundable with boilerplate bounding, and with a test-point limit as the usage clause."""
+    items = []
+    for fn, field, item in _items(side):
+        worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
+        if field == 'open' and item.get('kind') == 'VENDOR_DATUM' and _flat(worst.get('not_boundable_reason')):
+            tried = worst.get('monotonic_tried') if isinstance(worst.get('monotonic_tried'), dict) else {}
+            items.append((fn, item, worst, _flat(tried.get('unfavorable_side')), _flat(tried.get('why_not'))))
+    told = Counter(said for _, _, _, said, _ in items if said)
+    usage = 0
+    for fn, item, worst, _, _ in items:
+        named = worst.get('specified_by')
+        if named in (item.get('checked') or []) and (_conditions(fn).get(named) or {}).get('kind') == 'NUMERIC_LIMIT':
+            usage += 1
+    return {'boilerplate_bounding': sum(why == _flat(worst.get('not_boundable_reason')) or told[said] > 1
+                                        for _, _, worst, said, why in items),
+            'test_point_as_usage': usage}
+
+
+def _sources(fn, ids):
+    """The documents (not requirement texts) of the conditions `ids` of a function."""
+    conditions = _conditions(fn)
+    found = (conditions.get(c) for c in ids if isinstance(c, str))
+    return {c['source'].strip() for c in found if isinstance(c, dict) and isinstance(c.get('source'), str)
+            and c['source'].strip() and not REQUIREMENT_SOURCE_RE.search(c['source'])}
+
+
+def _item_at(side, ref):
+    for fn, _, item in _items(side):
+        if '%s/%s' % (fn.get('id'), item.get('key')) == ref:
+            return fn, item
+    return None, None
+
+
+def _deciding_sources(side, row):
+    """Documents cited by what decided a PASS or FAIL row: the function's proving margins on the row's aspect, and the
+    fail item the row names."""
+    fn = next((f for f in side['results'].get('functions') or [] if isinstance(f, dict)
+               and f.get('id') == row.get('function_id')), None)
+    if fn is None:
+        return set()
+    wanted = 'PASS' if row.get('review_result') == 'PASS' else 'FAIL'
+    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    ids = []
+    for m in results_model.margins(calc):
+        aspect = m.get('aspect') or calc.get('aspect')
+        if margin_verdict(m) == wanted and not (aspect and row.get('aspect') and aspect != row['aspect']):
+            basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
+            ids += list(basis.get('conditions') or []) + [basis.get('limit')]
+    if wanted == 'FAIL':
+        _, item = _item_at(side, row.get('fail_ref'))
+        if item:
+            outside = item.get('outside_specified') if isinstance(item.get('outside_specified'), dict) else {}
+            ids += list(item.get('conditions') or []) + [outside.get('condition')]
+    return _sources(fn, ids)
+
+
+def same_source_splits(a, b, found, results):
+    """Disagreeing pairs where one side's open item read a datasheet the other side used to decide the row."""
+    sides, out = {'A': a, 'B': b}, []
+    for entry in found:
+        verdicts = {s: entry[s + '_verdict'] for s in SIDES}
+        opener = next((s for s in SIDES if verdicts[s] == 'INSUFFICIENT'), None)
+        other = 'B' if opener == 'A' else 'A'
+        if opener is None or verdicts[other] not in ('PASS', 'FAIL'):
+            continue
+        ref = (results[opener].get(entry[opener]) or {}).get('open_ref')
+        fn, item = _item_at(sides[opener], ref)
+        if item is None:
+            continue
+        shared = _sources(fn, item.get('checked') or []) & _deciding_sources(sides[other], results[other].get(entry[other]) or {})
+        if shared:
+            out.append({'A': entry['A'], 'B': entry['B'], 'open_side': opener, 'open_ref': ref,
+                        'decided': verdicts[other], 'sources': sorted(shared)})
+    return out
 
 
 def _severe_rows(side):
@@ -345,6 +436,7 @@ def strict(a, b, aliases=(), same_netlist=True):
     cause_counts = Counter((c['cause'], c['via']) for c in found)
     return {
         'causes': found,
+        'same_source_splits': same_source_splits(a, b, found, results),
         'cause_counts': [{'cause': k, 'via': v, 'rows': n} for (k, v), n in sorted(cause_counts.items(),
                                                                                    key=lambda x: (x[0][0], x[0][1] or ''))],
         'contract': {'A': contract_a, 'B': contract_b},
@@ -468,6 +560,17 @@ def markdown(report):
     lines += ['| %s | %s | %d |' % (CAUSE_NAMES.get(c['cause'], c['cause']),
                                     '+'.join(VIA_NAMES.get(v, v) for v in c['via'].split('+')) if c['via'] else '—',
                                     c['rows']) for c in st['cause_counts']]
+    splits = st['same_source_splits']
+    groups = Counter((s['open_side'], s['open_ref'], s['decided']) for s in splits)
+    files = {}
+    for s in splits:
+        files.setdefault((s['open_side'], s['open_ref'], s['decided']), set()).update(s['sources'])
+    lines += ['', '### 同一份资料一边开项、一边定结论', '',
+              '%d 行，涉及 %d 个开项：开项读过的资料，另一边用在了决定这一行的余量或失败项里。' % (len(splits), len(groups))]
+    if groups:
+        lines += ['', '| 开项 | 开项在 | 另一边结论 | 行数 | 资料 |', '|---|---|---|---|---|']
+        lines += ['| %s | %s | %s | %d | %s |' % (ref, opener, decided, n, '、'.join(sorted(files[(opener, ref, decided)])))
+                  for (opener, ref, decided), n in sorted(groups.items(), key=lambda x: (-x[1], x[0]))]
     sig = report['signals']
     lines += ['', '## 过严与过松信号', '', '| 信号 | A | B |', '|---|---|---|']
     lines += ['| %s | %d | %d |' % (name, sig['A'][key], sig['B'][key]) for key, name in SIGNAL_NAMES]
@@ -516,7 +619,9 @@ SIGNAL_NAMES = (('requirement_clause_edges', '经需求条款挡行的边（过�
                 ('decisive_margins', '决定结论的余量'),
                 ('decisive_margins_without_corners', '其中没写角点取法的（过松）'),
                 ('outside_specified_fails', '超出规定区判没通过（过严时要看依据）'),
-                ('measurement_only_passes', '理由靠实测的通过（过松）'))
+                ('measurement_only_passes', '理由靠实测的通过（过松）'),
+                ('boilerplate_bounding', '定界套话：why_not 照抄理由或多条开项同一句不利侧（过严）'),
+                ('test_point_as_usage', '测试点限值当用法依据（缺厂家数据的档位要看依据）'))
 
 
 def _counts(counter):

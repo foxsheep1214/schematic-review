@@ -109,3 +109,5 @@ M398（2026-10-23，R5 验收重审发现）守：手册标题写“Power Factor
 M399–M404（2026-10-23，R5 验收重审 SR-B01–B05）守：门禁按计划存的候选摘要重建 REQ-Q08 行（M399）、add 已归属的器件不再要求 add/reject（M400）、引 BOM 的 Value 列原文算在 BOM 行里（M401）、派生不覆盖审查员判的 NA 行（M402）、重新派生保留 bom_constraint 和需求条款（M403）、没有供电脚的磁件不要求去耦用的完整脚表（M404），由 `test_tree_coverage.py`、`test_circuit_decisions.py`、`test_custom_part_spec.py`、`test_derive_rows.py`、`test_decoupling_local_scope.py` 杀死。
 
 M405–M406（2026-10-23，R5 验收重审 SR-B06）守：全 NA 框架没有功能判定时，派生（M405）和门禁（M406）都不要求它，由 `test_derive_rows.py` 杀死。
+
+M407–M415（2026-10-23，定界一致性方案第 4 条，对比工具计数）守：照抄理由的 why_not 算定界套话（M407）、多条开项同一句不利侧算套话（M408）、空白不挡照抄（M409）、没读过的条件不算测试点当用法依据（M410）、典型曲线当依据不算（M411）、需求文档不算共同资料（M412）、别的方面的余量不决定这一行（M413）、估算不决定这一行（M414）、失败项引的资料也算（M415），由 `test_compare_bounding_signals.py` 杀死。

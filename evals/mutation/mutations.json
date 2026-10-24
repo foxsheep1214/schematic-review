@@ -2812,5 +2812,68 @@
   "file": "scripts/review_functions.py",
   "old": "        if fid is not None and fid not in functions and result != 'NA':   # an all-NA frame needs no verdict",
   "new": "        if fid is not None and fid not in functions:   # an all-NA frame needs no verdict"
+ },
+ {
+  "id": "M407",
+  "name": "a copied why_not is not counted as boilerplate bounding",
+  "file": "scripts/compare_reviews.py",
+  "old": "    return {'boilerplate_bounding': sum(why == _flat(worst.get('not_boundable_reason')) or told[said] > 1",
+  "new": "    return {'boilerplate_bounding': sum(told[said] > 1"
+ },
+ {
+  "id": "M408",
+  "name": "one unfavourable-side sentence on many items is not counted as boilerplate",
+  "file": "scripts/compare_reviews.py",
+  "old": "or told[said] > 1\n",
+  "new": "or told[said] > 99\n"
+ },
+ {
+  "id": "M409",
+  "name": "whitespace hides a copied why_not",
+  "file": "scripts/compare_reviews.py",
+  "old": "    return SPACE_RE.sub('', text) if isinstance(text, str) else ''",
+  "new": "    return text if isinstance(text, str) else ''"
+ },
+ {
+  "id": "M410",
+  "name": "a usage clause the item never read counts as a test point",
+  "file": "scripts/compare_reviews.py",
+  "old": "        if named in (item.get('checked') or []) and (_conditions(fn).get(named) or {}).get('kind') == 'NUMERIC_LIMIT':",
+  "new": "        if (_conditions(fn).get(named) or {}).get('kind') == 'NUMERIC_LIMIT':"
+ },
+ {
+  "id": "M411",
+  "name": "a typical curve named as the usage clause counts as a test point",
+  "file": "scripts/compare_reviews.py",
+  "old": "(_conditions(fn).get(named) or {}).get('kind') == 'NUMERIC_LIMIT':",
+  "new": "(_conditions(fn).get(named) or {}).get('kind') in ('NUMERIC_LIMIT', 'TYPICAL_REFERENCE'):"
+ },
+ {
+  "id": "M412",
+  "name": "a requirement document counts as a shared datasheet",
+  "file": "scripts/compare_reviews.py",
+  "old": "            and c['source'].strip() and not REQUIREMENT_SOURCE_RE.search(c['source'])}",
+  "new": "            and c['source'].strip()}"
+ },
+ {
+  "id": "M413",
+  "name": "a margin on another aspect decides the row",
+  "file": "scripts/compare_reviews.py",
+  "old": "        if margin_verdict(m) == wanted and not (aspect and row.get('aspect') and aspect != row['aspect']):",
+  "new": "        if margin_verdict(m) == wanted:"
+ },
+ {
+  "id": "M414",
+  "name": "an estimate decides the row",
+  "file": "scripts/compare_reviews.py",
+  "old": "        if margin_verdict(m) == wanted and not (aspect",
+  "new": "        if margin_verdict(m) in (wanted, 'OPEN') and not (aspect"
+ },
+ {
+  "id": "M415",
+  "name": "the fail item's sources are not read",
+  "file": "scripts/compare_reviews.py",
+  "old": "            ids += list(item.get('conditions') or []) + [outside.get('condition')]",
+  "new": "            ids += []"
  }
 ]

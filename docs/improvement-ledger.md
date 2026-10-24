@@ -7,6 +7,21 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## The comparison counts one datasheet bound used two ways (2026-10-23)
+
+The R5 acceptance re-review left 92 rows open on one side and passed on the other, mostly where the opening review
+called a quantity unboundable from a datasheet table the other review bounded from. `compare_reviews.py` now counts,
+per side, vendor-data items whose bounding is boilerplate (why_not copies the not-boundable reason, or several items
+give one sentence as the unfavourable side) and items naming a test-point limit they read as the clause describing
+the usage, and lists each disagreeing pair where the open item read a datasheet file the other side cited in the margin
+or fail that decided the row (files, not pages: one reviewer's locators are sections and tables). R5 baseline: A 19 and
+19, B 2 and 0; 37 rows on 12 open items. Tests first; 1945 tests pass, contract 516, mutations M407-M415 added and all
+14 on the changed file killed.
+
+- Event: user:2026-10-23 (bounding consistency proposals, item 4)
+- Causes: rule_missing 1
+- Changed: docs/improvement-ledger.md, docs/2026-10-23-bounding-consistency-proposals.md, evals/mutation/README.md, evals/mutation/mutations.json, scripts/compare_reviews.py, scripts/tests/test_compare_bounding_signals.py
+
 ## A frame whose rows are all NA needs no function verdict (2026-10-23)
 
 After the B01-B05 fixes the Codex acceptance re-review of R5 met one more: a link frame judged NA throughout (an
