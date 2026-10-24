@@ -2875,5 +2875,26 @@
   "file": "scripts/compare_reviews.py",
   "old": "            ids += list(item.get('conditions') or []) + [outside.get('condition')]",
   "new": "            ids += []"
+ },
+ {
+  "id": "M416",
+  "name": "the optocoupler transfer row asks the project CTR decay factor again",
+  "file": "scripts/checkers/optocoupler.py",
+  "old": "                    'datasheet: PRO-E01 VF/CTR/电阻与上拉保证值'])),",
+  "new": "                    'datasheet: PRO-E01 VF/CTR/电阻与上拉保证值', 'intent: CTR 寿命衰减系数的项目规定'])),"
+ },
+ {
+  "id": "M417",
+  "name": "a similar-part or typical estimate is held to P2 again",
+  "file": "scripts/catalog.py",
+  "old": "'借用相似器件保证范围或典型±30%估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；'",
+  "new": "'借用相似器件保证范围或典型±30%估算仅用于后果不超过P2的判据，不能据此放行P1核心反馈、损坏边界或保护保证；'"
+ },
+ {
+  "id": "M418",
+  "name": "a typical-application path is held to P2 again",
+  "file": "scripts/catalog.py",
+  "old": "'仅凭典型应用等效的路径可用于必需功能和性能（P1时另记样机验证移交），不能放行损坏/保护保证；'",
+  "new": "'仅凭典型应用等效的路径限后果不超过P2，不能放行P1核心功能或损坏/保护保证；'"
  }
 ]

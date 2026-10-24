@@ -7,6 +7,23 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Three contradictions in the bounding guidance are settled (2026-10-23)
+
+Moving the scattered bounding guidance into one table (bounding table proposal, section F) found three texts that
+disagree. The end-of-life CTR was still "a project decay factor, INSUFFICIENT without it" in datasheets.md,
+evidence-proportionality.md, automation.md and the optocoupler checker, which still put "intent: CTR 寿命衰减系数的项目规定"
+on every PRO-E01 row, though consistency item 6 moved it to the life row DEV-C06 as a selection constraint; all now say
+so and the row no longer asks it. A similar-part or typical ±30% estimate, and a typical-application path, were held to
+P2 in DEV-C05, DRV-C02 and PWR-C04 but allowed for P1 functions with a prototype hand-off in
+evidence-proportionality.md; the user chose the latter, never for damage, overheating or protection. The zener
+guidance now says a slope between two rdif test points is bounded by the lower point's guaranteed rdif (1-A). Tests
+first; 1946 tests pass, contract 516, KiCad replay 195/195, typical circuits unchanged, mutations M416-M418 added and
+all 9 on changed files killed.
+
+- Event: user:2026-10-23 (bounding table proposal, section F: "按建议")
+- Causes: knowledge_wrong 3
+- Changed: docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/automation.md, references/check-catalog.md, references/datasheets.md, references/evidence-proportionality.md, scripts/catalog.py, scripts/checkers/optocoupler.py, scripts/tests/test_catalog.py, scripts/tests/test_optocoupler.py
+
 ## The comparison counts one datasheet bound used two ways (2026-10-23)
 
 The R5 acceptance re-review left 92 rows open on one side and passed on the other, mostly where the opening review

@@ -3,8 +3,8 @@
 """光耦隔离传输检查器。
 
 识别光耦的 LED 回路（限流电阻与驱动源）与输出侧（上拉电阻与参考），登记逐状态
-清单。电流传输比与寿命衰减后的驱动能力由保证值核对（PRO-E01）按资料保证值判定；寿命衰减系数
-必须来自项目规定，缺规定即 INSUFFICIENT。隔离耐压与爬电距离不在本检查器。
+清单。电流传输比（初始保证值）下的驱动能力由保证值核对（PRO-E01）按资料保证值判定；寿命末所需的
+CTR 保留比例由寿命行 DEV-C06 算出并写成选型约束，SR 不自编衰减系数。隔离耐压与爬电距离不在本检查器。
 """
 import catalog
 from . import hotmath
@@ -183,8 +183,7 @@ class OptocouplerChecker(Checker):
                 'PRO-E01', dict(obj), key=item['id'],
                 readiness='WAITING_EVIDENCE',
                 required_inputs=sorted(set(gaps + [
-                    'datasheet: PRO-E01 VF/CTR/电阻与上拉保证值',
-                    'intent: CTR 寿命衰减系数的项目规定'])),
+                    'datasheet: PRO-E01 VF/CTR/电阻与上拉保证值'])),
                 trigger=['optocoupler:' + item['id']])
             check['inventory_gaps'] = gaps
             check = planner.add_check(

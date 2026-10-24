@@ -139,6 +139,11 @@ class PlanTest(unittest.TestCase):
         rules = {row['rule']: row for row in plan['rule_plan']}
         self.assertEqual(rules['PRO-A03']['instances'], ['OK1'])
 
+    def test_the_transfer_row_asks_no_project_decay_factor(self):
+        # Consistency proposals of 2026-10-23, item 6: the end-of-life CTR is the life row's selection constraint.
+        row = next(x for x in build_review_plan(opto_board())['checks'] if x['rule'] == 'PRO-E01')
+        self.assertFalse([i for i in row['required_inputs'] if '衰减' in i], row['required_inputs'])
+
     def test_stale_object_binding_is_reported(self):
         plan = build_review_plan(opto_board())
         item = next(x for x in plan['checks'] if x['object'].get('optocoupler'))

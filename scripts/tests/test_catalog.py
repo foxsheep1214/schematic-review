@@ -194,9 +194,13 @@ class GeneratedOutputTest(unittest.TestCase):
             self.assertTrue(generated, rule)
             for item in generated:
                 with self.subTest(check=item['id']):
+                    # Bounding table proposal F2 (2026-10-23): an estimate may carry a P1 function with a
+                    # prototype hand-off, never damage, overheating or protection.
                     self.assertIn('典型±30%', item['criterion'])
-                    self.assertIn('后果不超过P2', item['criterion'])
-                    self.assertIn('P1核心反馈', item['criterion'])
+                    self.assertIn('含P1', item['criterion'])
+                    self.assertIn('样机实测记为必需移交', item['criterion'])
+                    self.assertNotIn('后果不超过P2', item['criterion'])
+                    self.assertIn('过热或保护保证', item['criterion'])
                     self.assertIn('受控身份全分支均适用的保证边界', item['criterion'])
         stability = [item for item in checks if item['rule'] == 'PWR-C04']
         self.assertEqual(len(stability), 2)
@@ -204,7 +208,8 @@ class GeneratedOutputTest(unittest.TestCase):
             self.assertIn('原厂明确不要求Cout', item['criterion'])
             self.assertIn('独立电容额定或反向能量', item['criterion'])
             self.assertIn('仅凭典型应用等效', item['criterion'])
-            self.assertIn('后果不超过P2', item['criterion'])
+            self.assertIn('样机验证移交', item['criterion'])
+            self.assertNotIn('后果不超过P2', item['criterion'])
         passive = next(item for item in checks if item['rule'] == 'DEV-C01')
         self.assertIn('活动轨段、滑臂与端点', passive['criterion'])
         self.assertIn('不能把整轨功率额定用于任意局部轨段', passive['criterion'])

@@ -857,9 +857,9 @@ gate/base、继电器线圈、普通 IC 信号脚不当作导通端；未解析�
 
 保证值核对 `PRO-E01`：
 I<sub>F,min</sub> = (V<sub>drive,min</sub> − V<sub>F,max</sub> − V<sub>drop,max</sub>)/R<sub>LED,max</sub>，
-I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>·寿命衰减系数，
+I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>（初始保证值），
 需满足 I<sub>C,可用</sub> ≥ (V<sub>pullup,max</sub> − V<sub>OL,要求</sub>)/R<sub>pullup,min</sub>，
-同时 I<sub>F,max</sub> 不超额定。寿命衰减系数必须来自项目规定，缺规定判资料不足。
+同时 I<sub>F,max</sub> 不超额定。寿命末所需的 CTR 保留比例 = 所需 I<sub>C</sub> / (I<sub>F,min</sub>·CTR<sub>min</sub>)，由寿命行 DEV-C06 写成选型约束，SR 不自编衰减系数。
 PASS 不覆盖开关速度、温度角与隔离耐压。
 
 计划项：传输能力（PRO-E01）、隔离归属与耐压（PRO-D01）。
