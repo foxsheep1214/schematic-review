@@ -527,6 +527,15 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                 self.diagnostics.append({'code': 'DEVICE_KIND_GENERIC', 'ref': ref, 'quote': item.get('quote'),
                                          'detail': '%s 声明为泛称 ic（手册标题“%s”没有登记表里的角色）：不作核心器件、不生成电路候选；'
                                                    '标题确有角色的改写该角色，登记表缺这类器件的记入规则维护' % (ref, item.get('quote'))})
+        for ref, device in sorted((self.intent.get('devices') or {}).items()):
+            roles = {p.get('role') for p in (device.get('pins') or {}).values() if isinstance(p, dict)} if isinstance(device, dict) else set()
+            if (isinstance(device, dict) and device.get('pinout_complete') is True and re.match(r'^[UM]\d', str(ref), re.I)
+                    and not {'power', 'return'} <= roles):
+                # decoupling groups come from power/return pins; a complete IC table without them silently has none
+                self.diagnostics.append({'code': 'DEVICE_PINS_NO_SUPPLY', 'ref': ref, 'roles': sorted(r for r in roles if r),
+                                         'detail': '%s 的脚表声明抄全却没有 %s 脚：去耦组按 power/return 脚推，这颗器件不会有去耦组；'
+                                                   '手册有供电/返回脚的补角色，确无的（分流基准等）不用改' % (
+                                                       ref, '、'.join(sorted({'power', 'return'} - roles)))})
         unread = passive_stress.unread_values(self.db)
         if unread:   # a value the parser cannot read is reported, not dropped in silence
             self.diagnostics.append({'code': 'RESISTOR_VALUE_UNREAD', 'values': unread,
@@ -700,7 +709,7 @@ def diagnostic_lines(plan, db, intent):
     lines = list(passive_stress.unread_lines(plan))
     lines += ['  ' + d['detail'] for d in plan['diagnostics']
               if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',
-                                   'DEVICE_KIND_GENERIC')]
+                                   'DEVICE_KIND_GENERIC', 'DEVICE_PINS_NO_SUPPLY')]
     gaps = passive_stress.rail_gaps(plan)
     if gaps:
         lines.append('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))

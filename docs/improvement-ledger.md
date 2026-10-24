@@ -7,6 +7,31 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Circuit decisions are compared and the pin table gets guards (SR framework review, 2026-10-24)
+
+Two reviewer-typed inputs the pipeline trusted without a check. First, `intent.circuit_decisions`: the decision machinery
+already refuses an undecided candidate, an unlocated citation, an add of a held part and an unsettled tie, so what two
+records still do differently is accept against merge/split and add against leaving a part to REQ-Q08 — and the comparison
+report showed the resulting circuits only as aligned or "only in A/B", never which decision caused it. `compare_reviews.py`
+now reads each record's `intent.json` and `record/circuit-candidates.json` beside the plan and adds a 电路决定与成员差
+section: per candidate both decisions and where they went, per aligned circuit the parts only one side put in it, per
+unassigned part what each side did (add→circuit or Q08); a missing file is said, and the member difference is still shown.
+Rules for when to merge or split are deliberately not added: R6's two records will show which decision kind the differences
+fall on first. Second, `intent.devices.<ref>.pins`, the hand-typed official pin table: `pinout_complete: true` was the
+reviewer's word and `package` was never read, while decoupling groups, DEV-D02's difference and DEV-D05's disposition all
+trusted the table (the documentation example itself declared a QFN-16 complete with two pins). `board_intent.package_pin_count`
+reads the trailing number of counted families (QFN-16, MSOP-8 (RM-8), SOT-23-3 (DBZ), LQFP-48 …; SOT-23 and TO-220 alone
+name a body, not pins), and a table declared complete that lacks any of 1..N is refused naming the missing numbers; extra
+pins (EP, PAD) pass. The proposal's second guard — refuse a U/M table with no power or return pin — met the KiCad replay
+fixture's SOT-23-3 reference (U202: return and other only, correctly) and became the printed diagnostic
+`DEVICE_PINS_NO_SUPPLY` instead of a refusal. The test fixture with a QFN-6 declared complete on four pins gained pins 3 and
+4 and its expected pin difference grew accordingly. 2067 tests pass, contract 525, KiCad replay 195/195, typical circuits
+unchanged, mutations M553–M557 added; all 57 mutations on the changed files killed, M556–M557 killed in their own run.
+
+- Event: user:2026-10-24 (SR framework review: "变异门过后先提交角色登记表，然后按提案默认执行：电路决定只做对比工具一节（A），脚表三条护栏都做，带原厂代号的封装名照读。")
+- Causes: rule_not_enforced 2
+- Changed: docs/2026-10-24-decisions-and-pin-table-proposal.md, docs/improvement-ledger.md, evals/mutation/README.md, evals/mutation/mutations.json, references/plan-and-results.md, SKILL.md, scripts/board_intent.py, scripts/compare_reviews.py, scripts/plan_review.py, scripts/tests/test_compare_reviews.py, scripts/tests/test_pin_table.py, scripts/tests/test_plan_review.py
+
 ## Device roles are one registry and grow by a listed gap (SR framework review, 2026-10-24)
 
 The eleven IC roles a reviewer may declare in `intent.device_kinds` were a fixed list copied into five modules

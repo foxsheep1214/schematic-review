@@ -64,7 +64,12 @@ def load(where):
     record = where if (where / 'review-plan.json').is_file() else where / 'record'
     plan = load_json(record / 'review-plan.json')
     results = load_json(record / 'review-results.json')
-    return {'where': str(where), 'plan': plan, 'results': results}
+    side = {'where': str(where), 'plan': plan, 'results': results}
+    # the circuit decisions live in the intent beside the record and the candidates in the record (both optional here)
+    for key, path in (('intent', record.parent / 'intent.json'), ('candidates', record / 'circuit-candidates.json')):
+        if path.is_file():
+            side[key] = load_json(path)
+    return side
 
 
 def verdict(row):
@@ -486,6 +491,56 @@ def requirement_owners(a, b):
     return {'rows': rows, 'different': sum(1 for r in rows if not r['same'])}
 
 
+def _decision_summary(decision, index):
+    kind = decision.get('decision')
+    if kind == 'accept':
+        return 'accept→%s' % (decision.get('id') or decision.get('candidate'))
+    if kind == 'merge':
+        return 'merge→%s（%s）' % (decision.get('id') or '?', '+'.join(str(t) for t in decision.get('candidate') or []))
+    if kind == 'split':
+        return 'split→%d 块' % len(decision.get('into') or [])
+    if kind == 'reject':
+        return 'reject %s' % (decision.get('reason') or '?') + (' %s' % decision['of'] if decision.get('of') else '')
+    return '%s[%d]' % (kind, index)
+
+
+def circuit_decisions(a, b, pairs):
+    """How each record turned the same candidates into circuits: per candidate the decision and where it went, per
+    aligned circuit the parts only one side put in it, per unassigned part what each side did (add into a circuit or
+    leave it to REQ-Q08). Needs both records' intent.json and circuit-candidates.json; says so when one is missing."""
+    missing = [s for s, rec in (('A', a), ('B', b)) if not (isinstance(rec.get('intent'), dict) and isinstance(rec.get('candidates'), dict))]
+    members = []
+    for fa, fb, _ in pairs:
+        ra, rb = set((fa.get('objects') or {}).get('refs') or []), set((fb.get('objects') or {}).get('refs') or [])
+        if ra != rb:
+            members.append({'A': fa['id'], 'B': fb['id'], 'only_A': sorted(ra - rb), 'only_B': sorted(rb - ra)})
+    if missing:
+        return {'available': False, 'note': '缺 %s 的 intent.json 或 record/circuit-candidates.json，决定不比' % '、'.join(missing),
+                'candidates': [], 'members': members, 'unassigned': [], 'different': len(members)}
+
+    def side(rec):
+        decisions = rec['intent'].get('circuit_decisions') or []
+        by_candidate, added = {}, {}
+        for i, d in enumerate(decisions):
+            if not isinstance(d, dict):
+                continue
+            if d.get('decision') == 'add':
+                for ref in d.get('members') or []:
+                    added[ref] = 'add→%s' % d.get('id')
+                continue
+            targets = d.get('candidate')
+            for t in targets if isinstance(targets, list) else [targets]:
+                by_candidate[t] = _decision_summary(d, i)
+        return by_candidate, added
+    (da, adda), (db, addb) = side(a), side(b)
+    ids = sorted({c['id'] for rec in (a, b) for c in rec['candidates'].get('candidates') or [] if isinstance(c, dict)})
+    candidates = [{'candidate': cid, 'A': da.get(cid, '—'), 'B': db.get(cid, '—'), 'same': da.get(cid) == db.get(cid)} for cid in ids]
+    refs = sorted({u['ref'] for rec in (a, b) for u in rec['candidates'].get('unassigned') or [] if isinstance(u, dict)})
+    unassigned = [{'ref': ref, 'A': adda.get(ref, 'Q08'), 'B': addb.get(ref, 'Q08'), 'same': adda.get(ref) == addb.get(ref)} for ref in refs]
+    different = sum(1 for r in candidates if not r['same']) + sum(1 for r in unassigned if not r['same']) + len(members)
+    return {'available': True, 'candidates': candidates, 'members': members, 'unassigned': unassigned, 'different': different}
+
+
 def compare(a, b, aliases=()):
     same_netlist = a['plan'].get('db_sha256') == b['plan'].get('db_sha256')
     report = {'schema_version': 2, 'inputs': {'A': a['where'], 'B': b['where']},
@@ -493,6 +548,7 @@ def compare(a, b, aliases=()):
                            'db_sha256': {'A': a['plan'].get('db_sha256'), 'B': b['plan'].get('db_sha256')}},
               'strict': strict(a, b, aliases, same_netlist), 'suggested': suggested(a, b),
               'signals': {'A': signals(a), 'B': signals(b)}, 'requirement_owners': requirement_owners(a, b)}
+    report['circuit_decisions'] = circuit_decisions(a, b, match_circuits(frames(a['plan']), frames(b['plan']))[0])
     unmatched_a, unmatched_b = set(report['strict']['unmatched']['A']), set(report['strict']['unmatched']['B'])
     pairs = []
     for key in report['suggested']['rows']['shared_keys']:
@@ -614,6 +670,20 @@ def markdown(report):
             cells.append('没写' if e['owners'] is None else ('[]' if not e['owners'] else '、'.join(e['owners'])))
             cells.append('、'.join('%s %s' % (k, '派生' if v == 'DERIVED' else '自判') for k, v in sorted(e['judged'].items())))
         lines.append('| %s | %s |' % (row['requirement'], ' | '.join(cells)))
+    dec = report.get('circuit_decisions') or {'available': False, 'note': '旧报告没有这一节', 'candidates': [], 'members': [], 'unassigned': [], 'different': 0}
+    lines += ['', '## 电路决定与成员差', '']
+    if not dec['available']:
+        lines.append(dec['note'] + '；只比对齐电路的成员。')
+    lines.append('两边对同一候选的决定、对齐电路的成员、未归属器件的处置，不同的共 %d 处。' % dec['different'])
+    if any(not r['same'] for r in dec['candidates']):
+        lines += ['', '| 候选 | A 的决定 | B 的决定 |', '|---|---|---|']
+        lines += ['| %s | %s | %s |' % (r['candidate'], r['A'], r['B']) for r in dec['candidates'] if not r['same']]
+    if dec['members']:
+        lines += ['', '| A 电路 | B 电路 | 只在 A 的位号 | 只在 B 的位号 |', '|---|---|---|---|']
+        lines += ['| %s | %s | %s | %s |' % (m['A'], m['B'], '、'.join(m['only_A']) or '—', '、'.join(m['only_B']) or '—') for m in dec['members']]
+    if any(not r['same'] for r in dec['unassigned']):
+        lines += ['', '| 未归属器件 | A | B |', '|---|---|---|']
+        lines += ['| %s | %s | %s |' % (r['ref'], r['A'], r['B']) for r in dec['unassigned'] if not r['same']]
     lines += ['', '## 过严与过松信号', '', '| 信号 | A | B |', '|---|---|---|']
     lines += ['| %s | %d | %d |' % (name, sig['A'][key], sig['B'][key]) for key, name in SIGNAL_NAMES]
     rows = sug['rows']

@@ -3834,5 +3834,40 @@
   "file": "scripts/datasheet_kinds.py",
   "old": "    if specific and 'motor_driver' in found:\n        found.discard('gate_driver')",
   "new": "    if False:\n        found.discard('gate_driver')"
+ },
+ {
+  "id": "M553",
+  "name": "a complete table missing package pins passes",
+  "file": "scripts/board_intent.py",
+  "old": "            require(not missing, 'device %s pinout_complete but package %s pins %s are not in the table' % (",
+  "new": "            require(True, 'device %s pinout_complete but package %s pins %s are not in the table' % ("
+ },
+ {
+  "id": "M554",
+  "name": "SOT-23 alone counts 23 pins",
+  "file": "scripts/board_intent.py",
+  "old": "    if SOT_TO_PACKAGES.match(name):\n        return None",
+  "new": "    if False:\n        return None"
+ },
+ {
+  "id": "M555",
+  "name": "an IC table without supply pins is not listed",
+  "file": "scripts/plan_review.py",
+  "old": "                    and not {'power', 'return'} <= roles):",
+  "new": "                    and False):"
+ },
+ {
+  "id": "M556",
+  "name": "differing circuit decisions count as the same",
+  "file": "scripts/compare_reviews.py",
+  "old": "    candidates = [{'candidate': cid, 'A': da.get(cid, '—'), 'B': db.get(cid, '—'), 'same': da.get(cid) == db.get(cid)} for cid in ids]",
+  "new": "    candidates = [{'candidate': cid, 'A': da.get(cid, '—'), 'B': db.get(cid, '—'), 'same': True} for cid in ids]"
+ },
+ {
+  "id": "M557",
+  "name": "member differences of aligned circuits are dropped",
+  "file": "scripts/compare_reviews.py",
+  "old": "        if ra != rb:\n            members.append(",
+  "new": "        if False:\n            members.append("
  }
 ]

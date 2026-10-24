@@ -537,6 +537,7 @@ class ReviewPlanTests(unittest.TestCase):
                 'U1': {'mpn': 'REG-X-1', 'package': 'QFN-6', 'identity_citation': 'BOM row U1',
                        'citation': 'REG-X datasheet Rev.A table 1', 'pinout_complete': True,
                        'pins': {'1': {'name': 'FB', 'role': 'other'}, '2': {'name': 'EN', 'role': 'other'},
+                                '3': {'name': 'GND', 'role': 'return'}, '4': {'name': 'VIN', 'role': 'power'},
                                 '5': {'name': 'VOUT', 'role': 'power'}, '6': {'name': 'NC', 'role': 'nc'}}},
                 'U2': {'mpn': 'SOC-X-1', 'package': 'BGA', 'identity_citation': 'BOM row U2',
                        'citation': 'SOC-X datasheet Rev.B partial table', 'pinout_complete': False,
@@ -552,9 +553,10 @@ class ReviewPlanTests(unittest.TestCase):
                          ['DOC-T01.BASE', 'DOC-T01.NO-USB'])
         complete = next(x for x in plan['checks'] if x['id'] == 'DEV-D02.U1')
         self.assertEqual(complete['readiness'], 'READY')
-        self.assertEqual(complete['pin_difference'], {'official_only': ['U1.6'], 'symbol_only': []})
+        # the QFN-6 table is complete (the guard needs pins 1..6); the symbol draws only 1, 2 and 5
+        self.assertEqual(complete['pin_difference'], {'official_only': ['U1.3', 'U1.4', 'U1.6'], 'symbol_only': []})
         self.assertEqual(next(x for x in plan['checks'] if x['id'] == 'DEV-D05.U1')['pin_disposition'],
-                         {'unconnected': ['U1.6'], 'nc_connected': []})
+                         {'unconnected': ['U1.3', 'U1.4', 'U1.6'], 'nc_connected': []})
         partial = next(x for x in plan['checks'] if x['id'] == 'DEV-D02.U2')
         self.assertEqual(partial['readiness'], 'WAITING_EVIDENCE')
         self.assertEqual(partial['required_inputs'],

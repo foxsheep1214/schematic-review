@@ -31,6 +31,11 @@ DEVICE_KINDS = ('bjt', 'mosfet', 'diode', 'zener', 'tvs', 'opto', 'relay', 'resi
                 'inductor', 'ferrite', 'transformer', 'bridge_rectifier', 'fuse', 'crystal', 'connector', 'switch',
                 'jumper') + IC_KINDS
 PIN_ROLES = ('power', 'return', 'nc', 'other')
+# Package families whose name ends in the pin count (QFN-16, TSSOP-20, SOIC-8, LQFP-48, BGA-256, DIP-8 ...); SOT and TO
+# carry a body code first (SOT-23-3, TO-220-3) so they count only with a second number. Any other name gives no count.
+COUNTED_PACKAGES = re.compile(
+    r'^(?:[A-Z]*(?:QFN|DFN|QFP|BGA|LGA|CSP|SOIC|SOP|SO|SON|DIP|SIP|PLCC|MLF|MLP)|SOT|TO)[- ]?(?:\d+[- ])?(\d+)$', re.I)
+SOT_TO_PACKAGES = re.compile(r'^(?:SOT|TO)[- ]?(\d+)$', re.I)
 SHARED_KEYS = ('input_sha256', 'assemblies', 'devices', 'device_kinds')
 
 
@@ -111,6 +116,24 @@ def device_kind_errors(kinds, db):
         if not _text(item['quote']):
             errors.append(label + ': quote must be the datasheet text that states the device type')
     return errors
+
+
+def package_pin_count(package):
+    """The pin count a package name states, or None when the name does not say (BGA, custom, a module, SOT-23 alone).
+    A manufacturer code in parentheses (SOT-23-3 (DBZ)) is ignored."""
+    name = re.sub(r'\s*\(.*\)\s*$', '', str(package or '')).strip()
+    if SOT_TO_PACKAGES.match(name):
+        return None                       # SOT-23 / TO-220 name the body, not the pins
+    match = COUNTED_PACKAGES.match(name)
+    return int(match.group(1)) if match else None
+
+
+def missing_package_pins(package, pins):
+    """Physical pin numbers 1..N the package name promises that the pin table lacks; extra pins (EP, PAD, N+1) pass."""
+    count = package_pin_count(package)
+    if not count or not isinstance(pins, dict):
+        return []
+    return [str(i) for i in range(1, count + 1) if str(i) not in pins]
 
 
 def requires_assemblies(intent, label):
@@ -222,6 +245,11 @@ def device_errors(devices, db):
             require(not set(spec) - {'name', 'role'}, 'pin has unsupported fields')
             require(_text(spec.get('name')), 'pin name missing')
             require(isinstance(spec.get('role'), str) and spec['role'] in PIN_ROLES, 'unsupported pin role')
+        if device.get('pinout_complete') is True and isinstance(pins, dict):
+            # a table declared complete must hold every pin the package name promises; the reviewer typed it by hand
+            missing = missing_package_pins(device.get('package'), pins)
+            require(not missing, 'device %s pinout_complete but package %s pins %s are not in the table' % (
+                ref, device.get('package'), '/'.join(missing)))
         if 'configurable' in device:
             errors.extend('devices: ' + e for e in configurable_errors(ref, device['configurable']))
     return errors

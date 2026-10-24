@@ -137,3 +137,5 @@ M533–M537（2026-10-24，需求按量分解）守：带参数的方面没有�
 M538–M544（2026-10-24，需求行的 owners）守：有候选没写 owners 被拒（M538）、候选电路按方面的类型过滤（M539）、`owners: []` 要能定位的理由（M540）、OPEN 的需求不要求 owners（M541）、候选外的 owners 出诊断（M542）、校验重算候选（M543）、对比工具报 owners 差异（M544），由 `test_requirement_bindings.py::OwnerCandidateTests` 杀死。
 M545–M546（2026-10-24，可承接的电路按方面白名单过滤）守：系统功能（M545）和接口（M546）不在方面那一格里就不是可承接的电路，M539 改为电路类型不过滤；由 `test_requirement_bindings.py::OwnerCandidateTests` 杀死。
 M547–M552（2026-10-24，器件角色登记表）守：靶多种总线的角色按手册标题挑类型（M547）、标题挑不出总线记 role-bus 缺口（M548）、接口网上的连接器作成员（M549）、泛称 ic 列成 DEVICE_KIND_GENERIC 诊断（M550）、核心器件角色 = 登记表里有电路类型的角色（M551）、电机驱动器标题不再算栅极驱动器（M552），由 `test_ic_kinds.py` 杀死。
+M553–M555（2026-10-24，脚表护栏）守：声明抄全的脚表缺封装脚号被拒（M553）、SOT-23 / TO-220 单独不算脚数（M554）、U/M 位号抄全却没有 power/return 脚列成 DEVICE_PINS_NO_SUPPLY 诊断（M555），由 `test_pin_table.py` 杀死。
+M556–M557（2026-10-24，对比工具的电路决定一节）守：两边决定不同要单列（M556）、对齐电路的成员差要列（M557），由 `test_compare_reviews.py::CircuitDecisionTests` 杀死。

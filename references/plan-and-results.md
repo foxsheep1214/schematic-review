@@ -31,10 +31,10 @@
   }],
   "devices": {
     "U1": {
-      "mpn": "REG-X-ADJ", "package": "QFN-16",
+      "mpn": "REG-X-ADJ", "package": "SOT-23-3",
       "identity_citation": "BOM 订货码与官方订货表对应行",
       "citation": "REG-X datasheet Rev.A 第 3 页完整脚表", "pinout_complete": true,
-      "pins": {"1": {"name": "VIN", "role": "power"}, "2": {"name": "GND", "role": "return"}}
+      "pins": {"1": {"name": "VIN", "role": "power"}, "2": {"name": "GND", "role": "return"}, "3": {"name": "VOUT", "role": "power"}}
     }
   },
   "requirement_source": {"path": "/绝对路径/需求.md", "sha256": "requirements_extract.py 输出的 sha256"},
@@ -95,6 +95,9 @@
   两份记录比较时这些行单独列出、不计入配对率；门禁结果 `rule_gaps` 列出每条缺口与结论，报告在“对 SR 的反馈”里列出，
   每条记进改进台账，变成工具生成的规则。
 - `assemblies`（1–32 个，各带 `id` 与 `citation`）是全部检查器共用的装配状态；`devices` 是按位号的官方脚表。
+  `pinout_complete: true` 的脚表要含封装名说出的每个脚号（QFN-16 → 1..16，SOT-23-3 → 1..3；带原厂代号 `SOT-23-3 (DBZ)` 照读；
+  BGA、模组、SOT-23 这类读不出脚数的不查），缺的脚号列出来拒绝，多出的 EP/PAD 放行；U/M 位号抄全了却没有 power 和 return 脚的，
+  计划打 `DEVICE_PINS_NO_SUPPLY` 诊断（去耦组按这两种脚推，没有就整颗没有去耦组），不拒绝——分流基准等确无供电脚的器件不用改。
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
 - `devices.<位号>.configurable`（intent 格式 4 起，一致性方案第 3 条）：可编程器件的配置组，每组
   `{group, citation, allowed, affects[, title, required, set_points]}`——`group` 是角色的固定组（`catalog.CONFIG_GROUPS`，
@@ -478,7 +481,8 @@ F12 计划带 `clamp_refs` 的连接器行（PRO-D03）必须绑定功能：钳�
 和装配检查的 `assembly` 用这个键进标识，所以两人给同一装配起不同的名字仍是同一项检查；电路行的 `state` 是工作态，不换。
 检查器清单的摘要（`*_digest`）和句柄（`decoupling_group`、`power_switch`、`supervision` 等，见 `check_key.INVENTORY_FIELDS`）只是指回清单，不进标识。
 校验器总是重算这个键，不信记录里存的值；同一项检查在计划里问了两次被拒绝。改电路名不改检查项，换规则模板或判据才改。
-`scripts/compare_reviews.py` 先按这个键严格配对两份记录，再给出按电路的建议配对（见 [自动检查](automation.md#脚本分类)）。
+`scripts/compare_reviews.py` 先按这个键严格配对两份记录，再给出按电路的建议配对（见 [自动检查](automation.md#脚本分类)），
+并读两边的 `intent.circuit_decisions` 与 `record/circuit-candidates.json`，逐候选、逐对齐电路的成员、逐未归属器件列电路决定的差异。
 电路级行的对象带 `circuit_key`（电路来自的候选编号，合并的用 `+` 连接）：有它时成员表、核心器件和网络不进标识，
 两份记录接受了同一批候选，即使画法（成员、网络写法）不同，电路检查项也是同一项。
 

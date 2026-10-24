@@ -92,14 +92,75 @@ class CompareTests(unittest.TestCase):
                 rec.mkdir(parents=True)
                 (rec / 'review-plan.json').write_text(json.dumps(s['plan']), encoding='utf-8')
                 (rec / 'review-results.json').write_text(json.dumps(s['results']), encoding='utf-8')
+                (rec.parent / 'intent.json').write_text(json.dumps({'circuit_decisions': [
+                    {'candidate': 'POWER_CONVERTER-U1', 'decision': 'accept', 'id': 'BIAS' if name == 'a' else 'BIAS2'}]}), encoding='utf-8')
+                (rec / 'circuit-candidates.json').write_text(json.dumps({'candidates': [{'id': 'POWER_CONVERTER-U1', 'members': []}],
+                                                                         'unassigned': []}), encoding='utf-8')
             code = cr.main([str(tmp / 'a'), str(tmp / 'b'), '--json', str(tmp / 'c.json'), '--md', str(tmp / 'c.md')])
             self.assertEqual(code, 0)
             report = json.loads((tmp / 'c.json').read_text(encoding='utf-8'))
             self.assertEqual(report['baseline']['status'], 'SAME_INPUT')
+            self.assertEqual(report['circuit_decisions']['candidates'][0]['B'], 'accept→BIAS2')   # intent and candidates read beside the record
             text = (tmp / 'c.md').read_text(encoding='utf-8')
             self.assertIn('PASS vs INSUFFICIENT（1 行）', text)
             self.assertLess(text.index('## 精确配对'), text.index('## 建议配对'))
 
+
+
+class CircuitDecisionTests(unittest.TestCase):
+    """The decisions that turned the candidates into circuits are compared per candidate, per aligned circuit's members
+    and per unassigned part, so a merge against two accepts or an add against REQ-Q08 is counted, not hidden."""
+
+    def candidates(self):
+        return {'candidates': [{'id': 'POWER_CONVERTER-U1', 'members': []}, {'id': 'POWER_CONVERTER-U2', 'members': []}],
+                'unassigned': [{'ref': 'R9', 'nets': ['VCC']}]}
+
+    def pair(self, b_decisions, a_refs=('Q2', 'D2', 'C3', 'R9')):
+        a = side('BIAS', ['run'], 'PASS')
+        b = side('BIAS-SUPPLY', ['run'], 'PASS')
+        a['plan']['functions'][0]['objects']['refs'] = list(a_refs)
+        a['intent'] = {'circuit_decisions': [
+            {'candidate': 'POWER_CONVERTER-U1', 'decision': 'accept', 'id': 'BIAS'},
+            {'candidate': 'POWER_CONVERTER-U2', 'decision': 'accept'},
+            {'decision': 'add', 'id': 'SENSE', 'type': 'ANALOG', 'members': ['R9'], 'via': {'R9': 'VCC'}, 'citation': 'page 2'}]}
+        b['intent'] = {'circuit_decisions': b_decisions}
+        a['candidates'], b['candidates'] = self.candidates(), self.candidates()
+        return a, b
+
+    def test_merge_against_accepts_and_add_against_q08_are_listed(self):
+        a, b = self.pair([{'candidate': ['POWER_CONVERTER-U1', 'POWER_CONVERTER-U2'], 'decision': 'merge', 'id': 'BIAS-SUPPLY',
+                           'citation': 'requirements 3.1'}])
+        dec = cr.compare(a, b)['circuit_decisions']
+        self.assertTrue(dec['available'])
+        self.assertEqual([(r['candidate'], r['A'], r['B']) for r in dec['candidates']],
+                         [('POWER_CONVERTER-U1', 'accept→BIAS', 'merge→BIAS-SUPPLY（POWER_CONVERTER-U1+POWER_CONVERTER-U2）'),
+                          ('POWER_CONVERTER-U2', 'accept→POWER_CONVERTER-U2', 'merge→BIAS-SUPPLY（POWER_CONVERTER-U1+POWER_CONVERTER-U2）')])
+        self.assertEqual(dec['unassigned'], [{'ref': 'R9', 'A': 'add→SENSE', 'B': 'Q08', 'same': False}])
+        self.assertEqual(dec['members'], [{'A': 'FN-BIAS', 'B': 'FN-BIAS-SUPPLY', 'only_A': ['R9'], 'only_B': []}])
+        self.assertEqual(dec['different'], 4)
+        text = cr.markdown(cr.compare(a, b))
+        self.assertIn('## 电路决定与成员差', text)
+        self.assertIn('| R9 | add→SENSE | Q08 |', text)
+        self.assertIn('| FN-BIAS | FN-BIAS-SUPPLY | R9 | — |', text)
+
+    def test_identical_decisions_count_nothing(self):
+        a, b = self.pair([{'candidate': 'POWER_CONVERTER-U1', 'decision': 'accept', 'id': 'BIAS'},
+                          {'candidate': 'POWER_CONVERTER-U2', 'decision': 'accept'},
+                          {'decision': 'add', 'id': 'SENSE', 'type': 'ANALOG', 'members': ['R9'], 'via': {'R9': 'VCC'}, 'citation': 'page 2'}],
+                         a_refs=('Q2', 'D2', 'C3'))
+        dec = cr.compare(a, b)['circuit_decisions']
+        self.assertEqual(dec['different'], 0)
+        self.assertTrue(all(r['same'] for r in dec['candidates'] + dec['unassigned']))
+
+    def test_a_record_without_intent_or_candidates_compares_members_only(self):
+        a, b = self.pair([])
+        del b['candidates']
+        dec = cr.compare(a, b)['circuit_decisions']
+        self.assertFalse(dec['available'])
+        self.assertIn('B', dec['note'])
+        self.assertEqual(dec['candidates'], [])
+        self.assertEqual([m['only_A'] for m in dec['members']], [['R9']])
+        self.assertIn('决定不比', cr.markdown(cr.compare(a, b)))
 
 
 class StrictIdentityTests(unittest.TestCase):
