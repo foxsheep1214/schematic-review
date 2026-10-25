@@ -3953,5 +3953,75 @@
   "file": "scripts/function_reading.py",
   "old": "        if isinstance(unit, str) and unit.replace('µ', 'u') in units:\n            return True\n    return False",
   "new": "        if isinstance(unit, str) and unit.replace('µ', 'u') in units:\n            return True\n    return True"
+ },
+ {
+  "id": "M570",
+  "name": "a requirement id given by two documents is accepted",
+  "file": "scripts/requirements_extract.py",
+  "old": "        if len(paths) > 1:",
+  "new": "        if len(paths) > 2:"
+ },
+ {
+  "id": "M571",
+  "name": "a datasheet-verified active kind gives no device rows",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if (verified.get(ref) or {}).get('kind') in ACTIVE_VERIFIED_KINDS:",
+  "new": "            if False and (verified.get(ref) or {}).get('kind') in ACTIVE_VERIFIED_KINDS:"
+ },
+ {
+  "id": "M572",
+  "name": "a NOT_APPLICABLE features declaration generates a REQ-Q07 row again",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if applicability == 'NOT_APPLICABLE':",
+  "new": "            if applicability == 'NOT_APPLICABLE' and False:"
+ },
+ {
+  "id": "M573",
+  "name": "the walk never crosses a driven transistor",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        if self.graph.kind(ref) not in (pw.MOSFET, pw.BJT) or ref in owned or ref in self.anchors:",
+  "new": "        if True or self.graph.kind(ref) not in (pw.MOSFET, pw.BJT) or ref in owned or ref in self.anchors:"
+ },
+ {
+  "id": "M574",
+  "name": "an active unassigned part needs no decision",
+  "file": "scripts/circuit_decisions.py",
+  "old": "    return sorted(ref for ref in pending if kinds.get(ref) in ACTIVE_KINDS)",
+  "new": "    return []"
+ },
+ {
+  "id": "M575",
+  "name": "an add naming an existing circuit does not join it",
+  "file": "scripts/circuit_decisions.py",
+  "old": "                existing['refs'] = sorted(set(existing['refs']) | set(refs))",
+  "new": "                existing['refs'] = sorted(existing['refs'])"
+ },
+ {
+  "id": "M576",
+  "name": "a part reject leaves the part on REQ-Q08",
+  "file": "scripts/circuit_decisions.py",
+  "old": "            owned.add(decision['ref'])   # a part left out of the review on purpose, with its reason",
+  "new": "            pass   # a part left out of the review on purpose, with its reason"
+ },
+ {
+  "id": "M577",
+  "name": "a TVS on an internal node is skipped like a zener",
+  "file": "scripts/lint.py",
+  "old": "            if self.graph.kind(ref) == pw.ZENER and self._functional_clamp(rail):",
+  "new": "            if self.graph.kind(ref) in (pw.ZENER, pw.TVS) and self._functional_clamp(rail):"
+ },
+ {
+  "id": "M578",
+  "name": "a connector on the clamped node no longer makes the clamp protective",
+  "file": "scripts/lint.py",
+  "old": "            if kind in (CONNECTOR, pw.TESTPOINT):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M579",
+  "name": "a clamp below the supply does not bound the net",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if top >= window[1]:",
+  "new": "        if True:"
  }
 ]

@@ -7,6 +7,34 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## R6 fix list B: five decisions on intent fields and row generation (2026-10-25)
+
+The R6 acceptance's fix list B (docs/2026-10-24-r6-acceptance.md §六 B) is in; the user decided each item (a, a with the
+"which devices get rows" principle written down, a, a plus the candidate-walk improvement, a and a). `requirement_source`
+accepts a list of documents, each with its own sha256, items merged in document order, one id in one document only
+(B1; R6: three of four reviewers copied one of the two documents the brief named). Device rows follow the
+datasheet-verified kind only — a `devices` declaration carries the pin table and never generates DEV-D01/C05/D05 rows,
+and a verified active kind (`plan_circuits.ACTIVE_VERIFIED_KINDS`: the catalog roles, opto, relay) does whatever the
+refdes is; commodity-floors.md says which parts have rows of their own (B2; R6: 21 rows differed on whether seven plain
+diodes were declared). A NOT_APPLICABLE `features` declaration generates no REQ-Q07 row; REQ-Q08 names the declared
+types, drops `intent.features.<name>` from its inputs for them and carries their citations (B3; 13 rows). Active parts on
+the candidate file's `unassigned` list (mosfet, bjt, opto, ic) must get an add or a part-level reject (`{decision:
+reject, ref, reason, citation}`, excluded from REQ-Q08); an add naming an existing circuit joins it; and the candidate
+walk crosses a small-signal transistor the circuit's own net drives at its gate (`driven_switch`, continuing from the
+drain; a converter's switches and anchors are not crossed) — regenerating the R6 claude1 record puts Q202/Q402 into
+USB-J701 and leaves no active part unassigned (B4; rules_version 2026-10-25.1). PRO-A02 skips a zener whose other end is
+an internal node (IC pin or transistor gate on it, no connector, not a rail), a TVS keeps the line wherever it sits
+(B5-1; rf2's D3 MMSZ5258B on Net-(D3-K), checks 91→90); the DEV-C01 proposal bounds a net a fitted zener/TVS clamps to a
+fixed node by the clamp value when it is below the cluster's supply, `clamped-by:<ref>` in bases, `netgraph.clamp_voltage`
+shared with lint (B5-2). The KiCad replay gets revision active-part-decisions-v1: the frames case's intent copy carries the
+ten decisions its now-mandatory active parts need (U1/U12 add into PRI-FLYBACK, eight rejects), rf2 90 rows, the rest
+unchanged. Observed on the way: lint's CLAMP_RE does not match BZX zeners (no PRO-A02 for them today) and REQ-Q08 still
+lists regulators whose kind reads unknown (Reg1–Reg3 on rf1) without requiring a decision; both left for the step-② pass.
+
+- Event: user:2026-10-25 ("B 组 5 条…请让我来判断抉择"; "选a"; "我选a，但是制定“审哪些器件”的规则…"; "a"; "按照a来。候选的走线这个的改进也做"; "都按照a来"); review: 原理图审查结果/SR-20261024-R6-验收-{codex1,codex2,claude1,claude2}-05c8ae7
+- Causes: rule_missing 3, rule_not_enforced 1, over_strict 2
+- Changed: scripts/requirements_extract.py, scripts/plan_board.py, scripts/plan_circuits.py, scripts/catalog.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/lint.py, scripts/checkers/netgraph.py, scripts/checkers/passive_stress.py, SKILL.md, references/plan-and-results.md, references/commodity-floors.md, references/check-catalog.md, docs/2026-10-24-r6-acceptance.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/active-part-decisions-v1/, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.frames.active-part-decisions-v1.intent.json, evals/mutation/mutations.json, evals/mutation/README.md, scripts/tests/
+
 ## R6 fix list A: ten rule-maintenance items and the cold scan in step ① (2026-10-25)
 
 The R6 acceptance's fix list A (docs/2026-10-24-r6-acceptance.md §六) is in, no intent field or row generation changed:

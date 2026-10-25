@@ -39,7 +39,9 @@ def _material_available(intent, key, datasheet_audit=None):
     if key == 'datasheets' and datasheet_audit is not None:
         return datasheet_audit_all_available(datasheet_audit)
     source = (intent or {}).get('requirement_source')
-    if key == 'requirements' and isinstance(source, dict) and isinstance(source.get('path'), str) and os.path.isfile(source['path']):
+    sources = source if isinstance(source, list) else [source]
+    if key == 'requirements' and sources and all(isinstance(x, dict) and isinstance(x.get('path'), str)
+                                                 and os.path.isfile(x['path']) for x in sources):
         return True
     item = (intent or {}).get('materials', {}).get(key, {})
     return isinstance(item, dict) and isinstance(item.get('path'), str) and os.path.exists(item['path'])

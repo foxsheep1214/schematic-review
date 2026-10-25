@@ -1,0 +1,15 @@
+{
+ "revision": "active-part-decisions-v1",
+ "parents": {
+  "revisions/shared-part-words-v1/expected.json": "43a751e4f0f1513be60fde9c205e07dcac379e3c3b0f2d9fb06d697b8b099a51",
+  "revisions/shared-part-words-v1/cases.json": "3592bcc5ca660fc17fac24f28ef3aadda61b6d20cdf3da5a23d1cfd942c9a062",
+  "revisions/shared-part-words-v1/sources.json": "b647bc58e9be715dc4d16d9a13a22e1bef12c53f53b1af12e45aabaf8f4559a7",
+  "revisions/shared-part-words-v1/manifest.json": "0f3615845319df3c5aa95f0cfffe6109294e9c8ba585a689616b124f75542455"
+ },
+ "derived_files": {
+  "revisions/active-part-decisions-v1/expected.json": "c5df2b805187cd69d6f855ddfe16a9a317689ce08ef520217d8f72f7896750f4",
+  "revisions/active-part-decisions-v1/cases.json": "d16883f12a4137fcf28a6250ab84f3fe30fc6de53ecd0946a9938190acc610be",
+  "revisions/active-part-decisions-v1/sources.json": "1423e15cc2bd09e4f40a42df80a96ccee1e36d3c71e7f869eafa7e324a6a9fa8"
+ },
+ "scope": "R6 验收修法清单 B（2026-10-25）：未归属有源件必须 add 或器件级 reject（rf1-frames 换用补了决定的 intent 副本，答案不变）；内部节点上的功能齐纳不出 PRO-A02（rf2 检查数 91→90）；其余答案不变。shared-part-words-v1 文件保持原字节。"
+}

@@ -85,10 +85,10 @@ def text(item):
     return JOIN.join(c['text'] for c in item['columns'] if c['text'])
 
 
-def load(source):
-    """(extraction, errors) for intent.requirement_source {path, sha256}."""
+def _load_one(source):
     if not isinstance(source, dict) or not isinstance(source.get('path'), str) or not isinstance(source.get('sha256'), str):
-        return None, ['requirement_source must be {path, sha256} naming the requirement document (requirements_extract.py)']
+        return None, ['requirement_source must be {path, sha256} naming the requirement document, or a list of them '
+                      '(requirements_extract.py)']
     try:
         out = extract(source['path'])
     except (OSError, UnicodeDecodeError) as error:
@@ -98,6 +98,35 @@ def load(source):
         errors.append('requirement_source %s: sha256 differs from the file; the document changed, transcribe it again '
                       'and review the changed requirements' % source['path'])
     return out, errors
+
+
+def load(source):
+    """(extraction, errors) for intent.requirement_source: one document {path, sha256} or a list of them (R6 acceptance
+    2026-10-24: a brief that names two requirement documents is transcribed from both, user: 选 a). A list's extraction
+    merges the items in document order, lists the documents, and refuses an id that two documents both give."""
+    if not isinstance(source, list):
+        return _load_one(source)
+    if not source:
+        return None, ['requirement_source lists no document']
+    items, errors, documents, seen = [], [], [], {}
+    for entry in source:
+        out, found = _load_one(entry)
+        errors += found
+        if out is None:
+            continue
+        documents.append({'path': out['path'], 'sha256': out['sha256']})
+        for item in out['items']:
+            seen.setdefault(item['id'], []).append(out['path'])
+        items += out['items']
+    for rid, paths in sorted(seen.items()):
+        if len(paths) > 1:
+            errors.append('requirement id %s is given by %s; one id is one requirement, in one document'
+                          % (rid, ' and '.join(paths)))
+    if not documents:
+        return None, errors
+    joint = hashlib.sha256('\n'.join(d['sha256'] for d in documents).encode('utf-8')).hexdigest()
+    return {'schema_version': SCHEMA_VERSION, 'path': documents[0]['path'], 'sha256': joint, 'documents': documents,
+            'items': items, 'errors': errors}, errors
 
 
 def main():

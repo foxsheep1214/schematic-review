@@ -137,14 +137,14 @@ class ReviewPlanTests(unittest.TestCase):
             'applicability': 'NOT_APPLICABLE',
             'citation': 'synthetic mode map: named pins serve charging detection only'}}}
         plan = build_review_plan(sample_db(), intent)
-        summary = get_feature(plan, 'USB')
-        self.assertEqual(summary['applicability'], 'NOT_APPLICABLE')
-        self.assertEqual(summary['review_result'], 'NA')
-        self.assertTrue(any(t.startswith('netlist:') for t in summary['trigger']))
+        # the declaration is the REQ-Q08 row's basis, not a row of its own (R6 fix list B3)
+        self.assertFalse([x for x in plan['checks'] if x.get('circuit_type') == 'USB'])
         self.assertFalse(any(x['code'] == 'INTENT_NETLIST_CONFLICT'
                              for x in plan['diagnostics']))
-        self.assertFalse([x for x in plan['checks'] if x.get('circuit_type') == 'USB'
-                          and x['rule'] != 'REQ-Q07'])
+        summary = undetected(plan)
+        self.assertIn('已声明不适用（features）的：USB', summary['criterion'])
+        self.assertNotIn('intent.features.USB', summary['required_inputs'])
+        self.assertIn('intent:synthetic mode map: named pins serve charging detection only', summary['trigger'])
 
     def test_explicit_na_requires_intent_and_citation(self):
         intent = {
@@ -158,12 +158,12 @@ class ReviewPlanTests(unittest.TestCase):
         }
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
-        item = get_feature(plan, 'DDR')
-        self.assertEqual(item['applicability'], 'NOT_APPLICABLE')
-        self.assertEqual(item['review_result'], 'NA')
-        self.assertFalse(item['handoff']['required'])
-        self.assertNotIn('DDR', undetected(plan)['object']['circuit_types'])
-        self.assertEqual([x['rule'] for x in plan['checks'] if x.get('circuit_type') == 'DDR'], ['REQ-Q07'])
+        self.assertEqual([x['rule'] for x in plan['checks'] if x.get('circuit_type') == 'DDR'], [])
+        summary = undetected(plan)
+        self.assertIn('DDR', summary['object']['circuit_types'])          # still undetected, now with its declaration
+        self.assertIn('已声明不适用（features）的：DDR', summary['criterion'])
+        self.assertNotIn('intent.features.DDR', summary['required_inputs'])
+        self.assertIn('intent:Requirements v1 section 2', summary['trigger'])
 
     def test_required_but_missing_feature_creates_ready_presence_check(self):
         intent = {

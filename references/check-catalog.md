@@ -567,7 +567,7 @@
 
 ## 功能电路
 
-电路由电路候选与 `intent.circuit_decisions` 推出；名称命中只生成 UNDETERMINED 候选。推出的电路或已确认拓扑使功能电路适用，再生成 REQ-Q07 覆盖项与电路检查项，逐项再核实际用途。未检出的功能电路汇总到一项 REQ-Q08 确认；不必为排除它们在 `features` 中逐个写 NOT_APPLICABLE，逐个声明会为每个类型各生成一行 REQ-Q07。分立 MOSFET 电平转换器没有名称线索，候选没检出时写 add 决定（在 I²C 等总线上则并入该总线电路），转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划与结果台账](plan-and-results.md)。
+电路由电路候选与 `intent.circuit_decisions` 推出；名称命中只生成 UNDETERMINED 候选。推出的电路或已确认拓扑使功能电路适用，再生成 REQ-Q07 覆盖项与电路检查项，逐项再核实际用途。未检出的功能电路汇总到一项 REQ-Q08 确认；`features` 里的 NOT_APPLICABLE 声明不生成行，只作 REQ-Q08 那一行的依据。分立 MOSFET 电平转换器没有名称线索，候选没检出时写 add 决定（在 I²C 等总线上则并入该总线电路），转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划与结果台账](plan-and-results.md)。
 
 | 功能电路 | 名称 | 内容域 | 电路检查项 | 必需资料 | 检出特征（正则） |
 |---|---|---|---|---|---|

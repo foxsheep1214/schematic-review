@@ -331,3 +331,50 @@ class OwnedMemberTests(unittest.TestCase):
         refs = cd.discovery_refs(candidates, accept_all(candidates, **{'STARTUP-X': reject}))
         self.assertIn('R77', refs)
         self.assertNotIn(shared, refs)
+
+
+class ActivePartTests(unittest.TestCase):
+    """R6 fix list B4 (2026-10-25, user: 按照 a): an active part no circuit holds needs an add or a part reject; a
+    two-terminal part may stay on REQ-Q08; an add naming an existing circuit joins it."""
+
+    def board(self):
+        db = fx.board()
+        fx.fixture.add(db, 'Q7', 'MOSFET-N', [('1', 'G', 'LONE_G'), ('2', 'D', 'LONE_D'), ('3', 'S', 'SGND')])
+        fx.fixture.add(db, 'R70', '10K', [('1', '1', 'LONE_G'), ('2', '2', 'SGND')])
+        intent, audit = fx.intent_for(db)
+        return db, intent, audit, cc.build(db, intent, audit)
+
+    def test_an_active_unassigned_part_without_a_decision_is_refused(self):
+        db, intent, audit, candidates = self.board()
+        self.assertIn('Q7', [u['ref'] for u in candidates['unassigned']])
+        intent['circuit_decisions'] = accept_all(candidates)
+        intent = cd.write_circuits(intent, candidates)
+        errors = cd.validate(intent, candidates, db)
+        self.assertTrue(any(e.startswith('Q7: an active part') for e in errors), errors)
+        self.assertFalse(any(e.startswith('R99:') or e.startswith('R70:') for e in errors))   # two-terminal: REQ-Q08
+
+    def test_a_part_reject_with_a_located_reason_settles_it(self):
+        db, intent, audit, candidates = self.board()
+        reject = {'decision': 'reject', 'ref': 'Q7', 'reason': 'OUTSIDE_SCOPE', 'citation': 'schematic p3: Q7 drives the debug LED'}
+        intent['circuit_decisions'] = accept_all(candidates) + [reject]
+        intent = cd.write_circuits(intent, candidates)
+        self.assertEqual(cd.validate(intent, candidates, db), [])
+        self.assertNotIn('Q7', cd.discovery_refs(candidates, intent['circuit_decisions']))
+        bad = dict(reject, citation='not needed')
+        _, errors = cd.derive(candidates, accept_all(candidates) + [bad])
+        self.assertTrue(any('needs a citation' in e for e in errors))
+        _, errors = cd.derive(candidates, accept_all(candidates) + [dict(reject, reason='DUPLICATE_OF')])
+        self.assertTrue(any('OUTSIDE_SCOPE or NOT_A_CIRCUIT' in e for e in errors))
+
+    def test_an_add_naming_an_existing_circuit_joins_it(self):
+        db, intent, audit, candidates = self.board()
+        add = {'decision': 'add', 'id': 'POWER_CONVERTER-U1', 'type': 'POWER_CONVERTER', 'members': ['Q7'],
+               'via': {'Q7': 'LONE_G'}, 'citation': 'schematic p3: Q7 is the converter\'s enable driver'}
+        circuits, errors = cd.derive(candidates, accept_all(candidates) + [add])
+        self.assertEqual(errors, [])
+        self.assertEqual([c['id'] for c in circuits].count('POWER_CONVERTER-U1'), 1)
+        flyback = next(c for c in circuits if c['id'] == 'POWER_CONVERTER-U1')
+        self.assertIn('Q7', flyback['refs'])
+        self.assertIn('Q7', flyback['owned'])
+        _, errors = cd.derive(candidates, accept_all(candidates) + [dict(add, type='ANALOG')])
+        self.assertTrue(any('the circuit is POWER_CONVERTER' in e for e in errors))

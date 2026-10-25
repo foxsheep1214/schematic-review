@@ -59,6 +59,15 @@ def is_rail(net):
     return bool(net) and not is_ground(net) and bool(RAIL_RE.match(str(net)))
 
 
+def clamp_voltage(blob):
+    """A clamp part's VZ/VRWM read off its part or value text: a TVS part-number rule first (SMBJ5.0A → 5.0), then the
+    generic voltage reading of rail_voltage; None when nothing reads. A hint, not a datasheet value."""
+    match = re.search(r'SM[ABCF]J(\d{1,3}(?:\.\d)?)', str(blob).upper())
+    if match:
+        return float(match.group(1))
+    return rail_voltage(blob)
+
+
 def rail_voltage(name):
     """从名字里推电压：3V3->3.3, 24V->24, 5.0V->5.0, V5P0->5.0；推不出返回 None。
 

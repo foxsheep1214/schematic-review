@@ -160,3 +160,42 @@ class PlanRowTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class MultiDocumentTests(unittest.TestCase):
+    """R6 acceptance 2026-10-24 (user: 选 a): a brief that names two requirement documents is transcribed from both;
+    `requirement_source` is then a list, ids are unique across the documents, and every document's digest is checked."""
+
+    SPEC = """# 工程规格
+
+| ID | 要求 | 边界 |
+|---|---|---|
+| REQ-E-01 | 输出纹波 ≤ 100 mVpp | 满载 |
+"""
+
+    def setUp(self):
+        root = Path(tempfile.mkdtemp(prefix='sr-req2-'))
+        self.a = write(root=root)
+        self.b = root / 'spec.md'
+        self.b.write_text(self.SPEC, encoding='utf-8')
+
+    def test_a_list_of_documents_is_read_as_one_requirement_set(self):
+        out, errors = rx.load([source(self.a), source(self.b)])
+        self.assertEqual(errors, [])
+        self.assertEqual([i['id'] for i in out['items']], ['REQ-IN-01', 'REQ-TEMP-01', 'REQ-OPEN-01', 'REQ-E-01'])
+        self.assertEqual([d['path'] for d in out['documents']], [str(self.a), str(self.b)])
+        self.assertTrue(out['items'][-1]['locator'].startswith(str(self.b) + ':'))
+        intent = dict({'schema_version': 4}, **requirement_intent(self.a))
+        intent['requirement_source'] = [source(self.a), source(self.b)]
+        intent['requirements'].append({'id': 'REQ-E-01', 'categories': ['OUTPUT_SPEC'], 'interpretation': 'ripple',
+                                       'status': 'CONFIRMED'})
+        self.assertEqual([e for e in validate_intent(intent) if 'requirement' in e], [])
+
+    def test_a_stale_document_or_an_id_in_two_documents_is_refused(self):
+        stale = dict(source(self.b), sha256='0' * 64)
+        _, errors = rx.load([source(self.a), stale])
+        self.assertTrue(any('sha256' in e and str(self.b) in e for e in errors), errors)
+        self.b.write_text(self.SPEC.replace('REQ-E-01', 'REQ-IN-01'), encoding='utf-8')
+        _, errors = rx.load([source(self.a), source(self.b)])
+        self.assertTrue(any('REQ-IN-01' in e and 'one document' in e for e in errors), errors)
+        self.assertTrue(rx.load([])[1])

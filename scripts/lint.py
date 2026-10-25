@@ -160,12 +160,7 @@ def _pin_class(value):
 
 
 
-def clamp_volt(blob):
-    """钳位器件的 Vz/Vrwm：先试 TVS 型号规则，再退回通用电压推断"""
-    m = re.search(r'SM[ABCF]J(\d{1,3}(?:\.\d)?)', blob.upper())   # SMBJ5.0A
-    if m:
-        return float(m.group(1))
-    return _volt(blob)
+clamp_volt = ng.clamp_voltage   # 钳位器件的 Vz/Vrwm：先试 TVS 型号规则，再退回通用电压推断
 
 
 class Lint:
@@ -286,6 +281,23 @@ class Lint:
         if found['basis'].startswith('off-board'):
             return [found['source']] + found['path']
         return ['via:' + found['source']]
+
+    def _functional_clamp(self, net):
+        """A zener to ground whose other end is an internal signal node — no connector contact, not a rail by name or
+        declaration, and an IC pin or a transistor gate/base on it — is a reference or level clamp, not a protective
+        device (R6 acceptance 2026-10-24: D303 ZCD clamp and D404 gate reference asked for surge data). A node that
+        also reaches a connector is protective and keeps the PRO-A02 line; a TVS part is protective wherever it sits."""
+        if RAIL_RE.match(net) or _volt(net) is not None or net in (self.intent.get('power_rails') or {}):
+            return False
+        inside = False
+        for node in self.graph.nodes_on(net):
+            ref = node.partition('.')[0]
+            kind = self.graph.kind(ref)
+            if kind in (CONNECTOR, pw.TESTPOINT):
+                return False
+            if kind == IC or (kind in (pw.MOSFET, pw.BJT) and self.graph.role(node) == 'gate'):
+                inside = True
+        return inside
 
     def _resistor_fed(self, net):
         """A two-terminal resistor on the net whose other end is driven or fed from off board (R6 acceptance
@@ -668,6 +680,8 @@ class Lint:
             if not rails:
                 continue
             rail = rails[0]
+            if self.graph.kind(ref) == pw.ZENER and self._functional_clamp(rail):
+                continue   # a reference or level clamp inside the circuit: DEV-C05 and the circuit's verdict judge it
             self.add('PRO-A02', '防护器件工作/击穿/钳位窗口待复核',
                      f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_fmt_v(_volt(rail))}，'
                      f'型号提示={_fmt_v(clamp_volt(blob))}。分别查 VRWM、VBR@IT、VC@Ipp、'

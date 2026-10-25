@@ -1,0 +1,2112 @@
+{
+  "frozen": "2026-10-10",
+  "candidate_from": "SR main@5fa6d3b",
+  "method": "候选值由 main@5fa6d3b 生成；每个字段对照原始 XML 独立重算（缺名脚、去耦组电容归属、器件清单）或按方法文档逐行审读（检查数、NA 数、DOC-Q01）后冻结。与 main 现值不同的字段记入 known_deviations。",
+  "cases": {
+    "r01-thingplus-esp32s3": {
+      "verification": "独立读原始 XML：无未命名的非无源功能脚，libpart 齐全，两页均有 sheetpath，严格自检通过成立。15 个候选去耦组的直连电容与独立计算逐组一致；component-kind 缺口来自 SparkFun-Capacitor 库（非 Device:C，不按位号推断种类），属保守合同行为。unverified 器件为 8 个三端及以上的非无源件，两端件（LED、肖特基、按键）未列，符合规则。（testpoint-kind-v1）TP1/TP2 为 SparkFun-Connector:TestPoint_1.0mm 单脚测试焊盘：库条目名是 TestPoint，按测试点而非连接器归类，与 TP 位号无库关键字时的既有归类一致；因此去掉每颗 4 项连接器检查（DEV-D03/DEV-D05/DEV-E01/PRO-D03）共 8 项，其余字段不变。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 14（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）4 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +3；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 4 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。（single-fault-rows-v1）新增 DEV-C05.PIN-LED 一行：U5（MCP73831）pin 1 STAT 经 D4 阴极直接驱动 LED，独立读 XML 核对；其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 0,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": true,
+        "parse.missing_functional_pins": [],
+        "parse.parts": 66,
+        "parse.nets": 72,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 196,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "unverified-device-pinout:D6",
+          "unverified-device-pinout:U1",
+          "unverified-device-pinout:U10",
+          "unverified-device-pinout:U2",
+          "unverified-device-pinout:U3",
+          "unverified-device-pinout:U4",
+          "unverified-device-pinout:U5",
+          "unverified-device-pinout:U6"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:D6:3.3V_P": [
+            "component-kind:C3",
+            "component-kind:C4",
+            "component-kind:C5",
+            "component-kind:C8",
+            "confirm-group-and-return:candidate:D6:3.3V_P",
+            "official-full-pinout:D6",
+            "population:C3",
+            "population:C4",
+            "population:C5",
+            "population:C8",
+            "population:D6"
+          ],
+          "UNSPECIFIED/candidate:J1:VUSB": [
+            "component-kind:C9",
+            "confirm-group-and-return:candidate:J1:VUSB",
+            "official-full-pinout:J1",
+            "population:C9",
+            "population:J1"
+          ],
+          "UNSPECIFIED/candidate:J2:3.3V_P": [
+            "component-kind:C3",
+            "component-kind:C4",
+            "component-kind:C5",
+            "component-kind:C8",
+            "confirm-group-and-return:candidate:J2:3.3V_P",
+            "official-full-pinout:J2",
+            "population:C3",
+            "population:C4",
+            "population:C5",
+            "population:C8",
+            "population:J2"
+          ],
+          "UNSPECIFIED/candidate:U1:3.3V_P": [
+            "component-kind:C3",
+            "component-kind:C4",
+            "component-kind:C5",
+            "component-kind:C8",
+            "confirm-group-and-return:candidate:U1:3.3V_P",
+            "official-full-pinout:U1",
+            "population:C3",
+            "population:C4",
+            "population:C5",
+            "population:C8",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U1:VIN": [
+            "component-kind:C10",
+            "component-kind:C14",
+            "confirm-group-and-return:candidate:U1:VIN",
+            "official-full-pinout:U1",
+            "population:C10",
+            "population:C14",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U10:3.3V": [
+            "component-kind:C1",
+            "component-kind:C11",
+            "component-kind:C13",
+            "component-kind:C7",
+            "confirm-group-and-return:candidate:U10:3.3V",
+            "official-full-pinout:U10",
+            "population:C1",
+            "population:C11",
+            "population:C13",
+            "population:C7",
+            "population:U10"
+          ],
+          "UNSPECIFIED/candidate:U10:VBATT": [
+            "component-kind:C12",
+            "component-kind:C2",
+            "confirm-group-and-return:candidate:U10:VBATT",
+            "official-full-pinout:U10",
+            "population:C12",
+            "population:C2",
+            "population:U10"
+          ],
+          "UNSPECIFIED/candidate:U10:VUSB": [
+            "component-kind:C9",
+            "confirm-group-and-return:candidate:U10:VUSB",
+            "official-full-pinout:U10",
+            "population:C9",
+            "population:U10"
+          ],
+          "UNSPECIFIED/candidate:U2:VUSB": [
+            "component-kind:C9",
+            "confirm-group-and-return:candidate:U2:VUSB",
+            "official-full-pinout:U2",
+            "population:C9",
+            "population:U2"
+          ],
+          "UNSPECIFIED/candidate:U3:3.3V": [
+            "component-kind:C1",
+            "component-kind:C11",
+            "component-kind:C13",
+            "component-kind:C7",
+            "confirm-group-and-return:candidate:U3:3.3V",
+            "official-full-pinout:U3",
+            "population:C1",
+            "population:C11",
+            "population:C13",
+            "population:C7",
+            "population:U3"
+          ],
+          "UNSPECIFIED/candidate:U4:VBATT": [
+            "component-kind:C12",
+            "component-kind:C2",
+            "confirm-group-and-return:candidate:U4:VBATT",
+            "official-full-pinout:U4",
+            "population:C12",
+            "population:C2",
+            "population:U4"
+          ],
+          "UNSPECIFIED/candidate:U5:VBATT": [
+            "component-kind:C12",
+            "component-kind:C2",
+            "confirm-group-and-return:candidate:U5:VBATT",
+            "official-full-pinout:U5",
+            "population:C12",
+            "population:C2",
+            "population:U5"
+          ],
+          "UNSPECIFIED/candidate:U5:VUSB": [
+            "component-kind:C9",
+            "confirm-group-and-return:candidate:U5:VUSB",
+            "official-full-pinout:U5",
+            "population:C9",
+            "population:U5"
+          ],
+          "UNSPECIFIED/candidate:U6:3.3V": [
+            "component-kind:C1",
+            "component-kind:C11",
+            "component-kind:C13",
+            "component-kind:C7",
+            "confirm-group-and-return:candidate:U6:3.3V",
+            "official-full-pinout:U6",
+            "population:C1",
+            "population:C11",
+            "population:C13",
+            "population:C7",
+            "population:U6"
+          ],
+          "UNSPECIFIED/candidate:U6:VIN": [
+            "component-kind:C10",
+            "component-kind:C14",
+            "confirm-group-and-return:candidate:U6:VIN",
+            "official-full-pinout:U6",
+            "population:C10",
+            "population:C14",
+            "population:U6"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-J1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J2",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J3",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J4",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-MONITOR",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 8,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-SEQUENCE",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {}
+    },
+    "r02-dasduino-coreplus": {
+      "verification": "独立扫描未命名功能脚得 X1.2/X1.3/X1.4（晶振库符号 GND 脚为 power_in、输出脚无名）及 JP5/JP6 三焊盘跳线的 6 个 input 脚；跳线触点按编号识别、单列为 unnamed_jumper_contact_pins，不计入缺名，符合 DOC-Q01 口径，故 missing_functional_pins=X1.2/3/4，严格自检失败成立。去耦 10 组电容集合与独立计算一致；自检失败故每组带 netlist-integrity/export；X1:GND 组因 power_in 脚在 GND 上、无回流网而带 need-one-explicit-return-net。K1/K2/K8（K 前缀连接器）被列为 unverified，偏保守但不错。（typical-boards-v1）K2 为 U262-161N-4BVC11 USB-C 母座（16 脚，含 VBUS/CC1/CC2/SBU），不再按 K 位号当继电器：去掉 DRV-C01/DRV-T01 两项未解析感性负载，新增 DEV-D03/DEV-D05/DEV-E01/PRO-D03 四项连接器检查；其余字段不变。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 16（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 4 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 2,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": false,
+        "parse.missing_functional_pins": [
+          "X1.2",
+          "X1.3",
+          "X1.4"
+        ],
+        "parse.parts": 87,
+        "parse.nets": 142,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 229,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "pin-name-unresolved:X1.2",
+          "pin-name-unresolved:X1.3",
+          "pin-name-unresolved:X1.4",
+          "unverified-device-pinout:D4",
+          "unverified-device-pinout:K1",
+          "unverified-device-pinout:K2",
+          "unverified-device-pinout:K8",
+          "unverified-device-pinout:Q1",
+          "unverified-device-pinout:Q2",
+          "unverified-device-pinout:U1",
+          "unverified-device-pinout:U2",
+          "unverified-device-pinout:U3",
+          "unverified-device-pinout:U4",
+          "unverified-device-pinout:U5",
+          "unverified-device-pinout:U6",
+          "unverified-device-pinout:X1"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:D4:Net-(D4-VDD)": [
+            "component-kind:C4",
+            "confirm-group-and-return:candidate:D4:Net-(D4-VDD)",
+            "official-full-pinout:D4",
+            "population:C4",
+            "population:D4"
+          ],
+          "UNSPECIFIED/candidate:K2:Net-(F1-Pad2)": [
+            "confirm-group-and-return:candidate:K2:Net-(F1-Pad2)",
+            "official-full-pinout:K2",
+            "population:K2"
+          ],
+          "UNSPECIFIED/candidate:K8:3V3_MICROSD": [
+            "component-kind:C10",
+            "component-kind:C11",
+            "component-kind:C24",
+            "component-kind:C9",
+            "confirm-group-and-return:candidate:K8:3V3_MICROSD",
+            "official-full-pinout:K8",
+            "population:C10",
+            "population:C11",
+            "population:C24",
+            "population:C9",
+            "population:K8"
+          ],
+          "UNSPECIFIED/candidate:U1:VUSB": [
+            "component-kind:C1",
+            "component-kind:C8",
+            "confirm-group-and-return:candidate:U1:VUSB",
+            "official-full-pinout:U1",
+            "population:C1",
+            "population:C8",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U3:VUSB": [
+            "component-kind:C1",
+            "component-kind:C8",
+            "confirm-group-and-return:candidate:U3:VUSB",
+            "official-full-pinout:U3",
+            "population:C1",
+            "population:C8",
+            "population:U3"
+          ],
+          "UNSPECIFIED/candidate:U4:Net-(U4-AVCC)": [
+            "component-kind:C22",
+            "confirm-group-and-return:candidate:U4:Net-(U4-AVCC)",
+            "official-full-pinout:U4",
+            "population:C22",
+            "population:U4"
+          ],
+          "UNSPECIFIED/candidate:U4:VCC": [
+            "component-kind:C12",
+            "component-kind:C13",
+            "component-kind:C14",
+            "component-kind:C15",
+            "component-kind:C18",
+            "component-kind:C19",
+            "component-kind:C20",
+            "component-kind:C21",
+            "component-kind:C25",
+            "component-kind:C3",
+            "confirm-group-and-return:candidate:U4:VCC",
+            "official-full-pinout:U4",
+            "population:C12",
+            "population:C13",
+            "population:C14",
+            "population:C15",
+            "population:C18",
+            "population:C19",
+            "population:C20",
+            "population:C21",
+            "population:C25",
+            "population:C3",
+            "population:U4"
+          ],
+          "UNSPECIFIED/candidate:U6:3V3_MICROSD": [
+            "component-kind:C10",
+            "component-kind:C11",
+            "component-kind:C24",
+            "component-kind:C9",
+            "confirm-group-and-return:candidate:U6:3V3_MICROSD",
+            "official-full-pinout:U6",
+            "population:C10",
+            "population:C11",
+            "population:C24",
+            "population:C9",
+            "population:U6"
+          ],
+          "UNSPECIFIED/candidate:U6:VCC": [
+            "component-kind:C12",
+            "component-kind:C13",
+            "component-kind:C14",
+            "component-kind:C15",
+            "component-kind:C18",
+            "component-kind:C19",
+            "component-kind:C20",
+            "component-kind:C21",
+            "component-kind:C25",
+            "component-kind:C3",
+            "confirm-group-and-return:candidate:U6:VCC",
+            "official-full-pinout:U6",
+            "population:C12",
+            "population:C13",
+            "population:C14",
+            "population:C15",
+            "population:C18",
+            "population:C19",
+            "population:C20",
+            "population:C21",
+            "population:C25",
+            "population:C3",
+            "population:U6"
+          ],
+          "UNSPECIFIED/candidate:X1:GND": [
+            "confirm-group-and-return:candidate:X1:GND",
+            "need-one-explicit-return-net",
+            "official-full-pinout:X1",
+            "pin-name-unresolved:X1.2",
+            "pin-name-unresolved:X1.3",
+            "pin-name-unresolved:X1.4",
+            "population:X1"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-K2",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-K3",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-K4",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-K5",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-K6",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-MONITOR",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 8,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-SEQUENCE",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {},
+      "name_gap_scope_note": "严格自检仅因缺功能名失败且缺名脚无完整官方脚表：整网缺口 netlist-integrity/export 改为只记在缺名器件自身去耦组与 discovery_gaps 的 pin-name-unresolved:<脚>；缺名只改变该器件自身引脚角色，不改变网络连通，其他器件去耦组的电容/回流/边界不受影响。其余字段与 page-inventory-v1 相同。"
+    },
+    "r03-nrf9151-feather": {
+      "verification": "独立扫描未命名功能脚只有 U8.4（TS5A3166 控制输入 IN，库符号无名），严格自检失败成立。29 组电容集合与独立计算一致；每组带 netlist-integrity/export；U7:GND 组带 supply-return-same-net。unverified 含 H3/H4（单焊盘安装孔，非两端件故列出，偏保守）。DNP 件（U6 等）在冷跑无装配状态时仍按 population:REF 记缺口，符合规则。（passive-stress-v1）原始 XML 独立计数：footprint 为 Resistor_SMD:R_/Capacitor_SMD:C_ 标准封装、两脚、已装配的阻容共 61 颗，计划逐颗生成 DEV-C01 预判行，检查总数 249→310；其他用例为 0 颗，不变。（threshold-window-v1）原始 XML 独立核对：齐纳/TVS 为 0 颗（D1 为 RGB LED、D2 为 BAT54CW）；NTC 仅 TH1（10k，Device:Thermistor_NTC），一端接 U2 的 NTC 脚（Net-(U2-NTC)），故 PRO-C02 不成项、ANA-C04 生成 1 项，检查总数 310→311；其他用例无齐纳/TVS/传感器接 IC 脚，不变。（name-heuristics-v1）VSYS 为充电器系统输出，按统一轨名规则识别为电源轨，新增 PWR-C01.VSYS 与 PWR-T01.VSYS 两项；其余字段不变。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 52（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）4 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +3；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 6 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 2,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": false,
+        "parse.missing_functional_pins": [
+          "U8.4"
+        ],
+        "parse.parts": 113,
+        "parse.nets": 175,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 368,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "pin-name-unresolved:U8.4",
+          "unverified-device-pinout:D1",
+          "unverified-device-pinout:D2",
+          "unverified-device-pinout:H3",
+          "unverified-device-pinout:H4",
+          "unverified-device-pinout:RN2",
+          "unverified-device-pinout:RN3",
+          "unverified-device-pinout:RN4",
+          "unverified-device-pinout:RN5",
+          "unverified-device-pinout:SW1",
+          "unverified-device-pinout:SW2",
+          "unverified-device-pinout:SW3",
+          "unverified-device-pinout:U1",
+          "unverified-device-pinout:U10",
+          "unverified-device-pinout:U11",
+          "unverified-device-pinout:U12",
+          "unverified-device-pinout:U2",
+          "unverified-device-pinout:U3",
+          "unverified-device-pinout:U4",
+          "unverified-device-pinout:U5",
+          "unverified-device-pinout:U6",
+          "unverified-device-pinout:U7",
+          "unverified-device-pinout:U8",
+          "unverified-device-pinout:U9"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:J3:VBUS": [
+            "confirm-group-and-return:candidate:J3:VBUS",
+            "official-full-pinout:J3",
+            "population:C1",
+            "population:J3"
+          ],
+          "UNSPECIFIED/candidate:J5:+3V3": [
+            "confirm-group-and-return:candidate:J5:+3V3",
+            "official-full-pinout:J5",
+            "population:C23",
+            "population:C25",
+            "population:C30",
+            "population:C32",
+            "population:C33",
+            "population:C43",
+            "population:C8",
+            "population:J5"
+          ],
+          "UNSPECIFIED/candidate:U1:/Debugger/RP2040_VDDIO": [
+            "confirm-group-and-return:candidate:U1:/Debugger/RP2040_VDDIO",
+            "official-full-pinout:U1",
+            "population:C12",
+            "population:C15",
+            "population:C16",
+            "population:C19",
+            "population:C20",
+            "population:C21",
+            "population:C47",
+            "population:C5",
+            "population:C6",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U10:+3V3": [
+            "confirm-group-and-return:candidate:U10:+3V3",
+            "official-full-pinout:U10",
+            "population:C23",
+            "population:C25",
+            "population:C30",
+            "population:C32",
+            "population:C33",
+            "population:C43",
+            "population:C8",
+            "population:U10"
+          ],
+          "UNSPECIFIED/candidate:U11:+3V3": [
+            "confirm-group-and-return:candidate:U11:+3V3",
+            "official-full-pinout:U11",
+            "population:C23",
+            "population:C25",
+            "population:C30",
+            "population:C32",
+            "population:C33",
+            "population:C43",
+            "population:C8",
+            "population:U11"
+          ],
+          "UNSPECIFIED/candidate:U11:/Debugger/RP2040_VDDIO": [
+            "confirm-group-and-return:candidate:U11:/Debugger/RP2040_VDDIO",
+            "official-full-pinout:U11",
+            "population:C12",
+            "population:C15",
+            "population:C16",
+            "population:C19",
+            "population:C20",
+            "population:C21",
+            "population:C47",
+            "population:C5",
+            "population:C6",
+            "population:U11"
+          ],
+          "UNSPECIFIED/candidate:U12:+3V3": [
+            "confirm-group-and-return:candidate:U12:+3V3",
+            "official-full-pinout:U12",
+            "population:C23",
+            "population:C25",
+            "population:C30",
+            "population:C32",
+            "population:C33",
+            "population:C43",
+            "population:C8",
+            "population:U12"
+          ],
+          "UNSPECIFIED/candidate:U12:/Processor/SIM_VCC": [
+            "confirm-group-and-return:candidate:U12:/Processor/SIM_VCC",
+            "official-full-pinout:U12",
+            "population:C37",
+            "population:U12"
+          ],
+          "UNSPECIFIED/candidate:U12:Net-(U12-VDD)": [
+            "confirm-group-and-return:candidate:U12:Net-(U12-VDD)",
+            "official-full-pinout:U12",
+            "population:U12"
+          ],
+          "UNSPECIFIED/candidate:U12:unconnected-(U12-VIO-Pad29)": [
+            "confirm-group-and-return:candidate:U12:unconnected-(U12-VIO-Pad29)",
+            "official-full-pinout:U12",
+            "population:U12"
+          ],
+          "UNSPECIFIED/candidate:U2:+3V3": [
+            "confirm-group-and-return:candidate:U2:+3V3",
+            "official-full-pinout:U2",
+            "population:C23",
+            "population:C25",
+            "population:C30",
+            "population:C32",
+            "population:C33",
+            "population:C43",
+            "population:C8",
+            "population:U2"
+          ],
+          "UNSPECIFIED/candidate:U2:Net-(U2-PVDD)": [
+            "confirm-group-and-return:candidate:U2:Net-(U2-PVDD)",
+            "official-full-pinout:U2",
+            "population:C36",
+            "population:C4",
+            "population:C40",
+            "population:C44",
+            "population:U2"
+          ],
+          "UNSPECIFIED/candidate:U2:Net-(U2-VBUSOUT)": [
+            "confirm-group-and-return:candidate:U2:Net-(U2-VBUSOUT)",
+            "official-full-pinout:U2",
+            "population:C3",
+            "population:U2"
+          ],
+          "UNSPECIFIED/candidate:U2:Net-(U2-VOUT1)": [
+            "confirm-group-and-return:candidate:U2:Net-(U2-VOUT1)",
+            "official-full-pinout:U2",
+            "population:C11",
+            "population:C29",
+            "population:C42",
+            "population:U2"
+          ],
+          "UNSPECIFIED/candidate:U2:Net-(U2-VOUT2)": [
+            "confirm-group-and-return:candidate:U2:Net-(U2-VOUT2)",
+            "official-full-pinout:U2",
+            "population:C24",
+            "population:C31",
+            "population:U2"
+          ],
+          "UNSPECIFIED/candidate:U2:VBAT": [
+            "confirm-group-and-return:candidate:U2:VBAT",
+            "official-full-pinout:U2",
+            "population:C2",
+            "population:U2"
+          ],
+          "UNSPECIFIED/candidate:U2:VBUS": [
+            "confirm-group-and-return:candidate:U2:VBUS",
+            "official-full-pinout:U2",
+            "population:C1",
+            "population:U2"
+          ],
+          "UNSPECIFIED/candidate:U2:VSYS": [
+            "confirm-group-and-return:candidate:U2:VSYS",
+            "official-full-pinout:U2",
+            "population:C10",
+            "population:C26",
+            "population:C27",
+            "population:C28",
+            "population:C45",
+            "population:C46",
+            "population:U2"
+          ],
+          "UNSPECIFIED/candidate:U3:/Processor/SIM_VCC": [
+            "confirm-group-and-return:candidate:U3:/Processor/SIM_VCC",
+            "official-full-pinout:U3",
+            "population:C37",
+            "population:U3"
+          ],
+          "UNSPECIFIED/candidate:U3:unconnected-(U3-VPP-PadS5)": [
+            "confirm-group-and-return:candidate:U3:unconnected-(U3-VPP-PadS5)",
+            "official-full-pinout:U3",
+            "population:U3"
+          ],
+          "UNSPECIFIED/candidate:U4:+3V3": [
+            "confirm-group-and-return:candidate:U4:+3V3",
+            "official-full-pinout:U4",
+            "population:C23",
+            "population:C25",
+            "population:C30",
+            "population:C32",
+            "population:C33",
+            "population:C43",
+            "population:C8",
+            "population:U4"
+          ],
+          "UNSPECIFIED/candidate:U5:+1V1": [
+            "confirm-group-and-return:candidate:U5:+1V1",
+            "official-full-pinout:U5",
+            "population:C13",
+            "population:C14",
+            "population:C17",
+            "population:U5"
+          ],
+          "UNSPECIFIED/candidate:U5:/Debugger/RP2040_VDDIO": [
+            "confirm-group-and-return:candidate:U5:/Debugger/RP2040_VDDIO",
+            "official-full-pinout:U5",
+            "population:C12",
+            "population:C15",
+            "population:C16",
+            "population:C19",
+            "population:C20",
+            "population:C21",
+            "population:C47",
+            "population:C5",
+            "population:C6",
+            "population:U5"
+          ],
+          "UNSPECIFIED/candidate:U5:VCC": [
+            "confirm-group-and-return:candidate:U5:VCC",
+            "official-full-pinout:U5",
+            "population:C18",
+            "population:C22",
+            "population:C39",
+            "population:U5"
+          ],
+          "UNSPECIFIED/candidate:U6:/Processor/SIM_VCC": [
+            "confirm-group-and-return:candidate:U6:/Processor/SIM_VCC",
+            "official-full-pinout:U6",
+            "population:C37",
+            "population:U6"
+          ],
+          "UNSPECIFIED/candidate:U7:+3V3": [
+            "confirm-group-and-return:candidate:U7:+3V3",
+            "official-full-pinout:U7",
+            "population:C23",
+            "population:C25",
+            "population:C30",
+            "population:C32",
+            "population:C33",
+            "population:C43",
+            "population:C8",
+            "population:U7"
+          ],
+          "UNSPECIFIED/candidate:U7:GND": [
+            "confirm-group-and-return:candidate:U7:GND",
+            "official-full-pinout:U7",
+            "population:U7",
+            "supply-return-same-net"
+          ],
+          "UNSPECIFIED/candidate:U8:+3V3": [
+            "confirm-group-and-return:candidate:U8:+3V3",
+            "official-full-pinout:U8",
+            "pin-name-unresolved:U8.4",
+            "population:C23",
+            "population:C25",
+            "population:C30",
+            "population:C32",
+            "population:C33",
+            "population:C43",
+            "population:C8",
+            "population:U8"
+          ],
+          "UNSPECIFIED/candidate:U9:/Debugger/RP2040_VDDIO": [
+            "confirm-group-and-return:candidate:U9:/Debugger/RP2040_VDDIO",
+            "official-full-pinout:U9",
+            "population:C12",
+            "population:C15",
+            "population:C16",
+            "population:C19",
+            "population:C20",
+            "population:C21",
+            "population:C47",
+            "population:C5",
+            "population:C6",
+            "population:U9"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-J3",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J4",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J5",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J6",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-MONITOR",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 12,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-SEQUENCE",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {},
+      "name_gap_scope_note": "严格自检仅因缺功能名失败且缺名脚无完整官方脚表：整网缺口 netlist-integrity/export 改为只记在缺名器件自身去耦组与 discovery_gaps 的 pin-name-unresolved:<脚>；缺名只改变该器件自身引脚角色，不改变网络连通，其他器件去耦组的电容/回流/边界不受影响。其余字段与 page-inventory-v1 相同。"
+    },
+    "r04-host-usb-pmod": {
+      "verification": "独立核对：C1 跨 +3V3/GND，C2、C3 跨 +5V/GND；U1(TPS61099) 的 VI/VOUT/SW 三个 power_in/power_out 脚各成候选组，电容归属正确。SW 组是开关节点（库符号把 SW 标为 power_in），候选组带 confirm-group-and-return，须人工排除，属合同内的保守行为。检查数 49 = 板级/逐对象项 + 3 组 × 4 条去耦规则，逐行看过。 页库存增量2026-10-12：独立读取现有冻结XML的design/sheet与全部组件sheetpath，明确页号[1, 2, 3]；空页[1]仅增加逐页DOC-V01，检查数从49改为50，其他冻结电气/完整性字段不变。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 4（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）0 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 -1；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 2 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 0,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": true,
+        "parse.missing_functional_pins": [],
+        "parse.parts": 12,
+        "parse.nets": 9,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 53,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "unverified-device-pinout:D1",
+          "unverified-device-pinout:U1"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:U1:+3V3": [
+            "confirm-group-and-return:candidate:U1:+3V3",
+            "official-full-pinout:U1",
+            "population:C1",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U1:+5V": [
+            "confirm-group-and-return:candidate:U1:+5V",
+            "official-full-pinout:U1",
+            "population:C2",
+            "population:C3",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U1:/02_boost/SW": [
+            "confirm-group-and-return:candidate:U1:/02_boost/SW",
+            "official-full-pinout:U1",
+            "population:U1"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 4,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-SEQUENCE",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {}
+    },
+    "r04-c1-return-moved": {
+      "verification": "与 r04 唯一差别是 C1.2 改接 +3V3（两脚同网）。C1 不再是直连供电/回流电容，因此只从 +3V3 组的 population 缺口中消失，其余字段与 r04 相同。注意：本基准只锁定去耦清单的变化，不断言 SR 会对 C1 自身出发现。 页库存增量2026-10-12：独立读取现有冻结XML的design/sheet与全部组件sheetpath，明确页号[1, 2, 3]；空页[1]仅增加逐页DOC-V01，检查数从49改为50，其他冻结电气/完整性字段不变。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 4（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）0 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 -1；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 2 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 0,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": true,
+        "parse.missing_functional_pins": [],
+        "parse.parts": 12,
+        "parse.nets": 9,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 53,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "unverified-device-pinout:D1",
+          "unverified-device-pinout:U1"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:U1:+3V3": [
+            "confirm-group-and-return:candidate:U1:+3V3",
+            "official-full-pinout:U1",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U1:+5V": [
+            "confirm-group-and-return:candidate:U1:+5V",
+            "official-full-pinout:U1",
+            "population:C2",
+            "population:C3",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U1:/02_boost/SW": [
+            "confirm-group-and-return:candidate:U1:/02_boost/SW",
+            "official-full-pinout:U1",
+            "population:U1"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 4,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-SEQUENCE",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {}
+    },
+    "r05-lipo-charger": {
+      "verification": "独立核对：C1 跨 USB_5V/GND，C2 跨 BAT_POS/GND，C3 跨 PROT_VDD/BAT_NEG（U2 回流在 BAT_NEG），四组电容归属正确；J1:USB_5V 因 USB 插座 VBUS 为 power_out 成候选组，带 confirm 缺口，偏保守。 页库存增量2026-10-12：独立读取现有冻结XML的design/sheet与全部组件sheetpath，明确页号[1, 2, 3]；空页[1]仅增加逐页DOC-V01，检查数从63改为64，其他冻结电气/完整性字段不变。（name-heuristics-v1）U1.3（VBAT）与 J1.1/J1.5 为原生 power_out 脚，BAT_POS、USB_5V 由此认定有来源，监控清单出现给 U1 供电的两条轨，新增 PWR-T04.AS-BUILT.SUPERVISION-RAILS 一项；其余字段不变。（interface-rows-v1）3 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +2；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 0 条：PWR-T06 0 行、RST-T03 0 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 -1；系统功能框架 FN-SYS-MONITOR、FN-SYS-PINMAP，其余字段不变。（single-fault-rows-v1）新增 DEV-C05.PIN-LED 一行：U1（MCP73831）pin 1 STAT 直接驱动 D1 LED，独立读 XML 核对；其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 0,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": true,
+        "parse.missing_functional_pins": [],
+        "parse.parts": 12,
+        "parse.nets": 11,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 67,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "unverified-device-pinout:U1",
+          "unverified-device-pinout:U2"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:J1:USB_5V": [
+            "confirm-group-and-return:candidate:J1:USB_5V",
+            "official-full-pinout:J1",
+            "population:C1",
+            "population:J1"
+          ],
+          "UNSPECIFIED/candidate:U1:BAT_POS": [
+            "confirm-group-and-return:candidate:U1:BAT_POS",
+            "official-full-pinout:U1",
+            "population:C2",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U1:USB_5V": [
+            "confirm-group-and-return:candidate:U1:USB_5V",
+            "official-full-pinout:U1",
+            "population:C1",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U2:/03_protection/PROT_VDD": [
+            "confirm-group-and-return:candidate:U2:/03_protection/PROT_VDD",
+            "official-full-pinout:U2",
+            "population:C3",
+            "population:U2"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-J1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J2",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J3",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-MONITOR",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {}
+    },
+    "rh-ad8495-thermocouple": {
+      "verification": "独立扫描未命名功能脚只有 U201.6（KiCad 库 AD8495 符号 OUT 脚无名），与演练记录一致。冷跑无脚表：U201 的 +VS/-VS 名字不匹配电源/地正则，-VS 所在的 GND 被当成候选供电组，两组都无回流网，C204/C205 被拒（not-direct-supply-return-pair），并带 netlist-integrity/export。这是没有脚表时的保守结果，正确分组见 pinmap 用例。 页库存增量2026-10-12：独立读取现有冻结XML的design/sheet与全部组件sheetpath，明确页号[1, 2]；空页[1]仅增加逐页DOC-V01，检查数从52改为53，其他冻结电气/完整性字段不变。（interface-rows-v1）2 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +1；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 1 条：PWR-T06 0 行、RST-T03 0 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 -1；系统功能框架 FN-SYS-PINMAP、FN-SYS-POWER，其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 2,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": false,
+        "parse.missing_functional_pins": [
+          "U201.6"
+        ],
+        "parse.parts": 13,
+        "parse.nets": 9,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 53,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "pin-name-unresolved:U201.6",
+          "unverified-device-pinout:U201",
+          "unverified-device-pinout:U202"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:U201:GND": [
+            "confirm-group-and-return:candidate:U201:GND",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U201",
+            "pin-name-unresolved:U201.6",
+            "population:U201"
+          ],
+          "UNSPECIFIED/candidate:U201:VCC": [
+            "confirm-group-and-return:candidate:U201:VCC",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U201",
+            "pin-name-unresolved:U201.6",
+            "population:U201"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-J201",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J202",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 2,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {},
+      "name_gap_scope_note": "严格自检仅因缺功能名失败且缺名脚无完整官方脚表：整网缺口 netlist-integrity/export 改为只记在缺名器件自身去耦组与 discovery_gaps 的 pin-name-unresolved:<脚>；缺名只改变该器件自身引脚角色，不改变网络连通，其他器件去耦组的电容/回流/边界不受影响。其余字段与 page-inventory-v1 相同。"
+    },
+    "rh-ad8495-thermocouple-nolog": {
+      "verification": "与 rh-ad8495-thermocouple 相同，唯一差别是不给 --log：DOC-A01/A02 跳过是正确行为（无任何导出证据）。 页库存增量2026-10-12：独立读取现有冻结XML的design/sheet与全部组件sheetpath，明确页号[1, 2]；空页[1]仅增加逐页DOC-V01，检查数从52改为53，其他冻结电气/完整性字段不变。（interface-rows-v1）2 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +1；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 1 条：PWR-T06 0 行、RST-T03 0 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 -1；系统功能框架 FN-SYS-PINMAP、FN-SYS-POWER，其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 2,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": false,
+        "parse.missing_functional_pins": [
+          "U201.6"
+        ],
+        "parse.parts": 13,
+        "parse.nets": 9,
+        "lint.DOC-A01_executed": false,
+        "lint.DOC-A02_executed": false,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 53,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "pin-name-unresolved:U201.6",
+          "unverified-device-pinout:U201",
+          "unverified-device-pinout:U202"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:U201:GND": [
+            "confirm-group-and-return:candidate:U201:GND",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U201",
+            "pin-name-unresolved:U201.6",
+            "population:U201"
+          ],
+          "UNSPECIFIED/candidate:U201:VCC": [
+            "confirm-group-and-return:candidate:U201:VCC",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U201",
+            "pin-name-unresolved:U201.6",
+            "population:U201"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-J201",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J202",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 2,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {},
+      "name_gap_scope_note": "严格自检仅因缺功能名失败且缺名脚无完整官方脚表：整网缺口 netlist-integrity/export 改为只记在缺名器件自身去耦组与 discovery_gaps 的 pin-name-unresolved:<脚>；缺名只改变该器件自身引脚角色，不改变网络连通，其他器件去耦组的电容/回流/边界不受影响。其余字段与 page-inventory-v1 相同。"
+    },
+    "rh-ad8495-thermocouple-pinmap": {
+      "verification": "intent 只含演练 SR 主审写的 U201/U202 官方脚表（ADI Rev.D Table 5、TI SLVS543S Table 5-1，pinout_complete=true）。U201.6 在脚表中声明为 OUT/other，自检唯一问题就是这个缺名，因此按 5fa6d3b 去耦不加整网缺口、列入 pin_names_resolved_by_official_pinout；-VS 由脚表定为 return，只剩 VCC 组，C204/C205（VCC–GND，独立核对）在组内。检查数比冷跑少 4 = 少一组 × 4 条去耦规则。DOC-Q01 与 self_check_passed=false 不变。 页库存增量2026-10-12：独立读取现有冻结XML的design/sheet与全部组件sheetpath，明确页号[1, 2]；空页[1]仅增加逐页DOC-V01，检查数从48改为49，其他冻结电气/完整性字段不变。（interface-rows-v1）2 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +1；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 1 条：PWR-T06 0 行、RST-T03 0 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 -1；系统功能框架 FN-SYS-PINMAP、FN-SYS-POWER，其余字段不变。（decoupling-pin-map-v1）去耦组按官方脚表成组：U201 的 VCC 脚（脚表 power）自成一组，组号 U201:VCC；不再是待确认的候选组，少掉 confirm-group-and-return 一项缺口，其余缺口、电容归属与检查数不变。",
+      "fields": {
+        "parse.strict_exit": 2,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": false,
+        "parse.missing_functional_pins": [
+          "U201.6"
+        ],
+        "parse.parts": 13,
+        "parse.nets": 9,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 49,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [],
+        "decoupling.pin_names_resolved_by_official_pinout": [
+          "U201.6"
+        ],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/U201:VCC": [
+            "population:C204",
+            "population:C205",
+            "population:U201"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-J201",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J202",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 2,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {}
+    },
+    "rf1-c2000-float-flyback": {
+      "verification": "连通性独立核对：在原始 KiCad 文件上按引脚坐标、导线、标签、层次图脚和电源符号（KiCad 8+ 按 Value 连接）自算连通，与导出网表的引脚分组逐网相同。 85 器件/51 网/4 张子图+空根页（DOC-V01 5 项）。独立 XML 扫描：无缺名功能脚；21 个去耦候选组与电容归属逐组一致（ISO7710/AMC03xx 的 GND1/GND2 两个返回网 → need-one-explicit-return-net；Reg1 LM317M 无地脚同理；U12 VS 脚在 VOUT_N 自成候选组）。检查数 286 逐规则核对：DEV-D01/DEV-C05 12 项 = U1/U3/U5/U7/U8/U9/U10/U11/U12 + 按原生电源脚识别的 Reg1–Reg3；电源轨 8 条（3V3_CTRL、HV_BIAS、HV80_IN、RAIL_3V3_PRI/SEC、RAIL_8V25、VIN、VOUT_P；VOUT_N 为回流，VOUT_FBACK/SENSE 为反馈检测线）；PRO-C02 6 项 = D1(SW_PRI–GND)、D3(HV_BIAS–GND)、D4(SW_SEC–VOUT_N) 各两侧；ANA-C04 1 项 = TH1 检测端 TEMP 上的 U8.2(INP)；连接器 5 个（In1/Out1/J1/CpuIn1/CpuOut1）各 DEV-D03/DEV-E01/PRO-D03。冷跑无 intent，NA=0。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 12（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 2 个、电源轨 8 条：PWR-T06 1 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +1；系统功能框架 FN-SYS-GROUND、FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 0,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": true,
+        "parse.missing_functional_pins": [],
+        "parse.parts": 85,
+        "parse.nets": 51,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 330,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "unverified-device-pinout:Q1",
+          "unverified-device-pinout:Q2",
+          "unverified-device-pinout:Q3",
+          "unverified-device-pinout:Q4",
+          "unverified-device-pinout:Q5",
+          "unverified-device-pinout:Reg1",
+          "unverified-device-pinout:Reg2",
+          "unverified-device-pinout:Reg3",
+          "unverified-device-pinout:T1",
+          "unverified-device-pinout:U1",
+          "unverified-device-pinout:U10",
+          "unverified-device-pinout:U11",
+          "unverified-device-pinout:U12",
+          "unverified-device-pinout:U3",
+          "unverified-device-pinout:U5",
+          "unverified-device-pinout:U7",
+          "unverified-device-pinout:U8",
+          "unverified-device-pinout:U9"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:Reg1:RAIL_8V25": [
+            "confirm-group-and-return:candidate:Reg1:RAIL_8V25",
+            "need-one-explicit-return-net",
+            "official-full-pinout:Reg1",
+            "population:Reg1"
+          ],
+          "UNSPECIFIED/candidate:Reg1:VIN": [
+            "confirm-group-and-return:candidate:Reg1:VIN",
+            "need-one-explicit-return-net",
+            "official-full-pinout:Reg1",
+            "population:Reg1"
+          ],
+          "UNSPECIFIED/candidate:Reg2:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:Reg2:RAIL_3V3_PRI",
+            "official-full-pinout:Reg2",
+            "population:C14",
+            "population:C16",
+            "population:C25",
+            "population:C31",
+            "population:C35",
+            "population:C38",
+            "population:Reg2"
+          ],
+          "UNSPECIFIED/candidate:Reg2:RAIL_8V25": [
+            "confirm-group-and-return:candidate:Reg2:RAIL_8V25",
+            "official-full-pinout:Reg2",
+            "population:C10",
+            "population:C13",
+            "population:C19",
+            "population:C21",
+            "population:Reg2"
+          ],
+          "UNSPECIFIED/candidate:Reg3:RAIL_3V3_SEC": [
+            "confirm-group-and-return:candidate:Reg3:RAIL_3V3_SEC",
+            "official-full-pinout:Reg3",
+            "population:C18",
+            "population:C45",
+            "population:Reg3"
+          ],
+          "UNSPECIFIED/candidate:Reg3:VOUT_P": [
+            "confirm-group-and-return:candidate:Reg3:VOUT_P",
+            "official-full-pinout:Reg3",
+            "population:C3",
+            "population:C4",
+            "population:C43",
+            "population:C44",
+            "population:Reg3"
+          ],
+          "UNSPECIFIED/candidate:U1:RAIL_8V25": [
+            "confirm-group-and-return:candidate:U1:RAIL_8V25",
+            "official-full-pinout:U1",
+            "population:C10",
+            "population:C13",
+            "population:C19",
+            "population:C21",
+            "population:U1"
+          ],
+          "UNSPECIFIED/candidate:U10:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U10:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U10",
+            "population:U10"
+          ],
+          "UNSPECIFIED/candidate:U10:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U10",
+            "population:U10"
+          ],
+          "UNSPECIFIED/candidate:U11:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U11:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U11",
+            "population:U11"
+          ],
+          "UNSPECIFIED/candidate:U11:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U11:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U11",
+            "population:U11"
+          ],
+          "UNSPECIFIED/candidate:U12:VOUT_N": [
+            "confirm-group-and-return:candidate:U12:VOUT_N",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U12",
+            "population:U12"
+          ],
+          "UNSPECIFIED/candidate:U12:VOUT_P": [
+            "confirm-group-and-return:candidate:U12:VOUT_P",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U12",
+            "population:U12"
+          ],
+          "UNSPECIFIED/candidate:U3:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U3:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U3",
+            "population:U3"
+          ],
+          "UNSPECIFIED/candidate:U3:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U3",
+            "population:U3"
+          ],
+          "UNSPECIFIED/candidate:U7:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U7:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U7",
+            "population:U7"
+          ],
+          "UNSPECIFIED/candidate:U7:RAIL_3V3_SEC": [
+            "confirm-group-and-return:candidate:U7:RAIL_3V3_SEC",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U7",
+            "population:U7"
+          ],
+          "UNSPECIFIED/candidate:U8:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U8:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U8",
+            "population:U8"
+          ],
+          "UNSPECIFIED/candidate:U8:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U8:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U8",
+            "population:U8"
+          ],
+          "UNSPECIFIED/candidate:U9:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U9:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U9",
+            "population:U9"
+          ],
+          "UNSPECIFIED/candidate:U9:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U9:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U9",
+            "population:U9"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-CPUIN1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-CPUOUT1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-IN1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-OUT1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-GROUND",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-MONITOR",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 17,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-SEQUENCE",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {}
+    },
+    "rf1-c2000-float-flyback-intent": {
+      "verification": "同 rf1 冷跑夹具与 intent（schema 3，input_sha256 绑定本夹具）。intent 只引用上游原理图/生成脚本：T1 绕组 1(点)-3/2(点)-4（作者注明 L2 同名端按对称推定、待实物核对）、Q1 源极经 R19(7m5) 回 GND、Q2 由 U12 UCC24612 同步整流（只给 controller_ref/channel/citation）。检查数仍 286：T1 的 DRV-T01/DRV-C01 由 UNRESOLVED 改为按开关节点 SW_PRI 绑定（行数不变）；去耦组同冷跑，只是状态名为 run 且声明全贴装后去掉 population 缺口；组键与电容归属经独立脚本逐组一致。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 12（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 2 个、电源轨 8 条：PWR-T06 1 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +1；系统功能框架 FN-SYS-GROUND、FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。",
+      "fields": {
+        "parse.strict_exit": 0,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": true,
+        "parse.missing_functional_pins": [],
+        "parse.parts": 85,
+        "parse.nets": 51,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 330,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "unverified-device-pinout:Q1",
+          "unverified-device-pinout:Q2",
+          "unverified-device-pinout:Q3",
+          "unverified-device-pinout:Q4",
+          "unverified-device-pinout:Q5",
+          "unverified-device-pinout:Reg1",
+          "unverified-device-pinout:Reg2",
+          "unverified-device-pinout:Reg3",
+          "unverified-device-pinout:T1",
+          "unverified-device-pinout:U1",
+          "unverified-device-pinout:U10",
+          "unverified-device-pinout:U11",
+          "unverified-device-pinout:U12",
+          "unverified-device-pinout:U3",
+          "unverified-device-pinout:U5",
+          "unverified-device-pinout:U7",
+          "unverified-device-pinout:U8",
+          "unverified-device-pinout:U9"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "run/candidate:Reg1:RAIL_8V25": [
+            "confirm-group-and-return:candidate:Reg1:RAIL_8V25",
+            "need-one-explicit-return-net",
+            "official-full-pinout:Reg1"
+          ],
+          "run/candidate:Reg1:VIN": [
+            "confirm-group-and-return:candidate:Reg1:VIN",
+            "need-one-explicit-return-net",
+            "official-full-pinout:Reg1"
+          ],
+          "run/candidate:Reg2:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:Reg2:RAIL_3V3_PRI",
+            "official-full-pinout:Reg2"
+          ],
+          "run/candidate:Reg2:RAIL_8V25": [
+            "confirm-group-and-return:candidate:Reg2:RAIL_8V25",
+            "official-full-pinout:Reg2"
+          ],
+          "run/candidate:Reg3:RAIL_3V3_SEC": [
+            "confirm-group-and-return:candidate:Reg3:RAIL_3V3_SEC",
+            "official-full-pinout:Reg3"
+          ],
+          "run/candidate:Reg3:VOUT_P": [
+            "confirm-group-and-return:candidate:Reg3:VOUT_P",
+            "official-full-pinout:Reg3"
+          ],
+          "run/candidate:U1:RAIL_8V25": [
+            "confirm-group-and-return:candidate:U1:RAIL_8V25",
+            "official-full-pinout:U1"
+          ],
+          "run/candidate:U10:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U10:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U10"
+          ],
+          "run/candidate:U10:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U10"
+          ],
+          "run/candidate:U11:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U11:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U11"
+          ],
+          "run/candidate:U11:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U11:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U11"
+          ],
+          "run/candidate:U12:VOUT_N": [
+            "confirm-group-and-return:candidate:U12:VOUT_N",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U12"
+          ],
+          "run/candidate:U12:VOUT_P": [
+            "confirm-group-and-return:candidate:U12:VOUT_P",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U12"
+          ],
+          "run/candidate:U3:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U3:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U3"
+          ],
+          "run/candidate:U3:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U3"
+          ],
+          "run/candidate:U7:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U7:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U7"
+          ],
+          "run/candidate:U7:RAIL_3V3_SEC": [
+            "confirm-group-and-return:candidate:U7:RAIL_3V3_SEC",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U7"
+          ],
+          "run/candidate:U8:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U8:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U8"
+          ],
+          "run/candidate:U8:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U8:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U8"
+          ],
+          "run/candidate:U9:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U9:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U9"
+          ],
+          "run/candidate:U9:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U9:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U9"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-CPUIN1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-CPUOUT1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-IN1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-OUT1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-GROUND",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-MONITOR",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 17,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-SEQUENCE",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {}
+    },
+    "rf2-hv-flyback-lt3957a": {
+      "verification": "连通性独立核对：在原始 KiCad 文件上按引脚坐标、导线、标签、层次图脚和电源符号（KiCad 8+ 按 Value 连接）自算连通，与导出网表的引脚分组逐网相同。 修正：KiCad 7 按隐藏电源脚名连接电源符号，降级后按符号 Value 给 power:+48V/+5V/GND 的脚命名（+48V 的 Value 为 HV）。 32 器件/20 网/单页。独立核对：唯一去耦组 U1 VIN(+5V)，电容 C1/C2（100uF）到 GND；LT3957A 库符号全部为 passive，按 VIN 脚名成组。检查数 74 逐规则核对：电源轨 +5V、HV（180 V 输出）各 PWR-T01/PWR-C01；PRO-C02 4 项 = D1(PESD5V0 跨 +5V/GND) 与 D3(MMSZ5258B 齐纳跨 SW 节点)；D2(PESD5V0 在 J1 的 HVEN 针) 归入 PRO-D03.J1 clamp_refs；J1/J2 各连接器规则。冷跑无 intent，NA=0。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 4（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）2 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +1；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 2 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。（active-part-decisions-v1）D3 MMSZ5258B 齐纳跨内部节点 Net-(D3-K)（接 IC 脚、不到连接器、不是轨）是功能钳位，PRO-A02 不再把它当防护件要浪涌参数：检查数 91→90；TVS 件（PESD5V0）照旧。",
+      "fields": {
+        "parse.strict_exit": 0,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": true,
+        "parse.missing_functional_pins": [],
+        "parse.parts": 32,
+        "parse.nets": 20,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 90,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "unverified-device-pinout:SW1",
+          "unverified-device-pinout:TR1",
+          "unverified-device-pinout:U1"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "UNSPECIFIED/candidate:U1:+5V": [
+            "confirm-group-and-return:candidate:U1:+5V",
+            "official-full-pinout:U1",
+            "population:C1",
+            "population:C2",
+            "population:U1"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-J1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J2",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-MONITOR",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 4,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-SEQUENCE",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {}
+    },
+    "rf1-c2000-float-flyback-frames": {
+      "verification": "同 rf1-intent 的夹具与 intent，再声明 3 个电路。检查数 298→326：每个电路按功能包成员规则×状态展开，POWER_CONVERTER 5 条×2 态=10、POWER_PROTECTION 6 条×2 态=12、ANALOG 6 条×1 态=6，合计 28，按 check-catalog.md 的包成员表手算；三个功能包在父用例里已有 REQ-Q07 汇总行，所以汇总行数不变。plan.functions 每电路一个框架，成员数等于上述乘积，状态照 intent。其余字段（解析、冷检、DOC-Q01、去耦）与 rf1-intent 逐字段相同。（function-frames-v1）（state-invariant-v1）PWR-T05 与工作态无关，HV-CLAMP 的 run/surge 两行并成一行 PWR-T05.HV-CLAMP.D1：检查数 326→325，FN-HV-CLAMP 成员 12→11；PRI-FLYBACK、TEMP 的成员规则里没有状态无关项（ANA-D01 在 TEMP 只有一个状态），不变。（circuit-candidates-v1）电路来自候选与决定：生成器在无已核实 IC 类别的夹具上给出 5 个候选，决定合并 Q1/Q2 为 PRI-FLYBACK（27 件，startup/run/fault）、Out1 走线判为其重复、Q3/Q4 判为非电路；HV-CLAMP 与 TEMP 不再手画（D1/D3/D4 的 TVS 行仍由 PRO-C02 覆盖，TH1 由 ANA-C04 覆盖）。检查数 298 + 5×3 = 313，FN-PRI-FLYBACK 成员 15 = 5 条规则 × 3 态；其余字段与 rf1-intent 逐字段相同。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 2 个、电源轨 8 条：PWR-T06 1 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 6 行（DEV-C01@BOARD、DEV-C01@PRI-FLYBACK、DEV-C02@BOARD、DEV-C02@PRI-FLYBACK、DEV-C03@BOARD、DEV-C03@PRI-FLYBACK），检查数 +4；系统功能框架 FN-SYS-GROUND、FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。（active-part-decisions-v1）intent 夹具换为补了 10 条器件决定的副本（U1/U12 add 进 PRI-FLYBACK，8 颗 reject）：未归属有源件必须决定，否则校验拒收；电路成员 27→29 不改任何观测字段（框架成员按规则×状态数），检查数仍 348。",
+      "fields": {
+        "parse.strict_exit": 0,
+        "parse.strict_db_written": true,
+        "parse.self_check_passed": true,
+        "parse.missing_functional_pins": [],
+        "parse.parts": 85,
+        "parse.nets": 51,
+        "lint.DOC-A01_executed": true,
+        "lint.DOC-A02_executed": true,
+        "plan.DOC-Q01": [
+          {
+            "id": "DOC-Q01.INPUT-CONSISTENCY",
+            "applicability": "APPLICABLE",
+            "readiness": "READY"
+          }
+        ],
+        "plan.checks_total": 348,
+        "plan.not_applicable": 0,
+        "decoupling.discovery_gaps": [
+          "unverified-device-pinout:Q1",
+          "unverified-device-pinout:Q2",
+          "unverified-device-pinout:Q3",
+          "unverified-device-pinout:Q4",
+          "unverified-device-pinout:Q5",
+          "unverified-device-pinout:Reg1",
+          "unverified-device-pinout:Reg2",
+          "unverified-device-pinout:Reg3",
+          "unverified-device-pinout:T1",
+          "unverified-device-pinout:U1",
+          "unverified-device-pinout:U10",
+          "unverified-device-pinout:U11",
+          "unverified-device-pinout:U12",
+          "unverified-device-pinout:U3",
+          "unverified-device-pinout:U5",
+          "unverified-device-pinout:U7",
+          "unverified-device-pinout:U8",
+          "unverified-device-pinout:U9"
+        ],
+        "decoupling.pin_names_resolved_by_official_pinout": [],
+        "decoupling.group_gaps": {
+          "run/candidate:Reg1:RAIL_8V25": [
+            "confirm-group-and-return:candidate:Reg1:RAIL_8V25",
+            "need-one-explicit-return-net",
+            "official-full-pinout:Reg1"
+          ],
+          "run/candidate:Reg1:VIN": [
+            "confirm-group-and-return:candidate:Reg1:VIN",
+            "need-one-explicit-return-net",
+            "official-full-pinout:Reg1"
+          ],
+          "run/candidate:Reg2:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:Reg2:RAIL_3V3_PRI",
+            "official-full-pinout:Reg2"
+          ],
+          "run/candidate:Reg2:RAIL_8V25": [
+            "confirm-group-and-return:candidate:Reg2:RAIL_8V25",
+            "official-full-pinout:Reg2"
+          ],
+          "run/candidate:Reg3:RAIL_3V3_SEC": [
+            "confirm-group-and-return:candidate:Reg3:RAIL_3V3_SEC",
+            "official-full-pinout:Reg3"
+          ],
+          "run/candidate:Reg3:VOUT_P": [
+            "confirm-group-and-return:candidate:Reg3:VOUT_P",
+            "official-full-pinout:Reg3"
+          ],
+          "run/candidate:U1:RAIL_8V25": [
+            "confirm-group-and-return:candidate:U1:RAIL_8V25",
+            "official-full-pinout:U1"
+          ],
+          "run/candidate:U10:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U10:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U10"
+          ],
+          "run/candidate:U10:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U10"
+          ],
+          "run/candidate:U11:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U11:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U11"
+          ],
+          "run/candidate:U11:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U11:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U11"
+          ],
+          "run/candidate:U12:VOUT_N": [
+            "confirm-group-and-return:candidate:U12:VOUT_N",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U12"
+          ],
+          "run/candidate:U12:VOUT_P": [
+            "confirm-group-and-return:candidate:U12:VOUT_P",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U12"
+          ],
+          "run/candidate:U3:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U3:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U3"
+          ],
+          "run/candidate:U3:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U3"
+          ],
+          "run/candidate:U7:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U7:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U7"
+          ],
+          "run/candidate:U7:RAIL_3V3_SEC": [
+            "confirm-group-and-return:candidate:U7:RAIL_3V3_SEC",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U7"
+          ],
+          "run/candidate:U8:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U8:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U8"
+          ],
+          "run/candidate:U8:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U8:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U8"
+          ],
+          "run/candidate:U9:3V3_CTRL": [
+            "confirm-group-and-return:candidate:U9:3V3_CTRL",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U9"
+          ],
+          "run/candidate:U9:RAIL_3V3_PRI": [
+            "confirm-group-and-return:candidate:U9:RAIL_3V3_PRI",
+            "need-one-explicit-return-net",
+            "official-full-pinout:U9"
+          ]
+        },
+        "plan.functions": [
+          {
+            "id": "FN-EXT-CPUIN1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-CPUOUT1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-IN1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-J1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-EXT-OUT1",
+            "members": 3,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-PRI-FLYBACK",
+            "members": 15,
+            "states": [
+              "startup",
+              "run",
+              "fault"
+            ]
+          },
+          {
+            "id": "FN-SYS-GROUND",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-MONITOR",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-PINMAP",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-POWER",
+            "members": 17,
+            "states": [
+              "run"
+            ]
+          },
+          {
+            "id": "FN-SYS-SEQUENCE",
+            "members": 1,
+            "states": [
+              "run"
+            ]
+          }
+        ]
+      },
+      "known_deviations": {}
+    }
+  },
+  "revision": "shared-part-words-v1",
+  "parent_sha256": "8132a46523070365977f9e27d598e16bfdbce864a8c3517d653164788135d0a8",
+  "amended": "2026-10-24",
+  "amendment_method": "父版本答案原样保留，只改 r02-dasduino-coreplus 的计划检查数 226→229：器件用词统一到 netgraph 一处后，LED 识别用 board_scans 原有的写法（LED 前面不是字母即可），料号写成 0402LED 的 D1、D2、D5 被认作 LED，各多一行 DEV-C05.PIN-LED（U4.3→D1、U4.2→D2、U3.8→D5，IC 脚直接驱动 LED）；逐行重建计划核对只多这三行。其余 12 个用例答案不变。"
+}

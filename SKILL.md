@@ -155,7 +155,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 
 从资料和对话提取功能/量化指标、接口角色与数量、输入范围/负载、温度、降额依据、保留/删除项，
 写入 `intent.json`（字段见 [计划与结果台账](references/plan-and-results.md)）：需求原文由
-`requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）、从原文读出的数字（`parameters`）、承接它的电路（`owners`，承接电路：落实这条需求的功能电路、系统功能或接口；计划会列出可承接的电路，有就必须写，认定没有承接电路写 `[]` 加能定位的理由）和确认状态，审查方面由参数和类别推出（有参数的方面只在原文读出了那个数时才问，拿不准的类别多选），判据取方面模板，扫描会列出原文里没读进参数的数字；设 `review_phase`（日常设计 `design_iteration`，
+`requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256；任务书给了几份需求文档就登记几项，写成列表，一份都不少），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）、从原文读出的数字（`parameters`）、承接它的电路（`owners`，承接电路：落实这条需求的功能电路、系统功能或接口；计划会列出可承接的电路，有就必须写，认定没有承接电路写 `[]` 加能定位的理由）和确认状态，审查方面由参数和类别推出（有参数的方面只在原文读出了那个数时才问，拿不准的类别多选），判据取方面模板，扫描会列出原文里没读进参数的数字；设 `review_phase`（日常设计 `design_iteration`，
 用户明确要冻结才用 `schematic_freeze`）。其余 intent 字段在有它的输入的那个任务里写：装配配置 1.2，资料路径、脚表、器件类别 1.3，电源轨 2.1。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
 集中提出，先做不受影响的工作，不逐颗器件打断用户，也不自行接受风险。
 录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待定、
@@ -251,8 +251,9 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 接口规则逐接口问（电路对的方向与电平、链路两端电平、供电不同的网络的跨域注入、连接器的对端定义/载流/防护、敏感电路取电轨的噪声）。
 系统功能、电路对、链路和连接器各有一个框架，与电路框架一样下功能判定；报告的功能表按系统功能、功能电路、接口分组，每个发现项写所属。
 校验覆盖两条：每颗贴装器件恰归一块电路或列在 REQ-Q08 待审清单上，每个接口都有它的行和框架。候选漏了器件不手加计划行：
-属于某块电路的写 add 决定（`intent.circuit_decisions`）后重生成；不属于任何电路的留在 REQ-Q08 清单上写原因；候选规则该认出而没认出的，另记改进台账改规则。
-`features` 只给候选没检出的电路类型写不适用依据，不逐类型写。
+属于某块电路的写 add 决定（`intent.circuit_decisions`，`id` 给已有电路即并入）后重生成；有源件（mosfet / bjt / opto / ic）不属于任何电路的写器件级 reject（`ref`、`reason`、`citation`），
+两端件留在 REQ-Q08 清单上写原因；候选规则该认出而没认出的，另记改进台账改规则。
+`features` 的 NOT_APPLICABLE 声明不生成行：候选没检出的类型都在 REQ-Q08 那一行里逐个确认，声明只作它的依据；REQ-Q07 只给检出或声明适用的类型。
 `unassigned` 与 `gaps`（没核验角色的 IC、缺引脚名）先清。
 格式见 [计划与结果](references/plan-and-results.md#一intentjsonschema_version-4)，规则见 [自动检查](references/automation.md#二检查器)。
 

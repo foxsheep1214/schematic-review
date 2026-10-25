@@ -26,7 +26,7 @@ from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
 import part_words as pw
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-10-24.2'   # device-role registry: interface candidates from roles, bus picked by the datasheet title
+RULES_VERSION = '2026-10-25.1'   # walks cross a driven small-signal transistor (gate in, drain out); R6: Q202/Q402
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -160,11 +160,33 @@ class Generator:
                 if ref == owner or ref in blocked or ref in self.anchors or ref in self.barriers:
                     continue
                 if not self.two_terminal(ref):
+                    drain = self.driven_switch(ref, net)
+                    if drain is not None:
+                        # a small-signal transistor the circuit's own net drives at its gate or base belongs to the
+                        # circuit, and the walk goes on from its drain or collector (R6 acceptance 2026-10-24: the
+                        # PFC enable and latch drivers Q202/Q402 were unassigned and one of four reviewers added them)
+                        via = f'{path} -> {net} -> {ref}(gate)'
+                        self.add(cid, ref, 'driven_switch', via, hops + 1)
+                        queue.append((drain, hops + 1, via, drain in stops))
                     continue
                 other = next(n for n in self.graph.nets_of(ref) if n != net)
                 via = f'{path} -> {net} -> {ref}'
                 self.add(cid, ref, self.graph.kind(ref), via, hops + 1)
                 queue.append((other, hops + 1, via, other in stops))
+
+    def driven_switch(self, ref, net):
+        """The drain (collector) net of a fitted small-signal MOSFET or BJT whose gate (base) sits on `net`; None for a
+        converter's power switch, an anchor, a transistor met at another pin, or one without pin roles."""
+        owned = {s['ref'] for switches in self.by_anchor.values() for s in switches}   # a converter's switches
+        if self.graph.kind(ref) not in (pw.MOSFET, pw.BJT) or ref in owned or ref in self.anchors:
+            return None
+        roles = {pin: self.graph.role(ref + '.' + pin) for pin in self.graph.pins_of(ref)}
+        pins = self.graph.pins_of(ref)
+        if not any(pins[pin] == net and role == 'gate' for pin, role in roles.items()):
+            return None
+        drains = [pins[pin] for pin, role in roles.items() if role == 'drain' and pins[pin] != net
+                  and pins[pin] not in self.graph.pseudo]
+        return drains[0] if drains else None
 
     def new(self, cid, ctype, anchor, domain, nets=None, cross_cutting=False):
         """A cross-cutting candidate (the isolation barrier, a startup or protection chain) may share parts with

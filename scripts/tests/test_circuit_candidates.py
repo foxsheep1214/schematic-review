@@ -375,3 +375,32 @@ class OwnershipTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class DrivenSwitchTests(unittest.TestCase):
+    """R6 fix list B4 (2026-10-25): a small-signal transistor the circuit's own net drives at its gate belongs to the
+    circuit, and the walk goes on from its drain; a power switch of the inventory is not crossed this way."""
+
+    def board(self):
+        db = board()
+        add = fixture.add
+        # the PD controller's GPIO drives Q8 directly (as R6's U601 drives Q202); its drain pulls EN_X, pulled up to VCC
+        add(db, 'Q8', 'MOSFET-N', [('1', 'G', 'FLT_DRV'), ('2', 'D', 'EN_X'), ('3', 'S', 'SGND')])
+        add(db, 'R45', '10K', [('1', '1', 'EN_X'), ('2', '2', 'VCC')])
+        for ref in ('Q8', 'R45'):
+            db['ref2page'][ref] = 2
+        return db
+
+    def test_a_driven_transistor_and_its_drain_load_join_the_driving_circuit(self):
+        result = generate(self.board())
+        port = by_id(result)['USB-J2']
+        roles = {m['ref']: m['role'] for m in port['members']}
+        self.assertEqual(roles.get('Q8'), 'driven_switch')
+        self.assertNotIn('Q8', [u['ref'] for u in result['unassigned']])
+        self.assertIn('Q8(gate)', next(m['via'] for m in port['members'] if m['ref'] == 'Q8'))
+
+    def test_the_power_switch_is_still_the_anchor_s_switch_not_a_driven_one(self):
+        result = generate(self.board())
+        flyback = by_id(result)['POWER_CONVERTER-U1']
+        self.assertNotEqual(next(m['role'] for m in flyback['members'] if m['ref'] == 'Q1'), 'driven_switch')
+        self.assertEqual(result['rules_version'], cc.RULES_VERSION)

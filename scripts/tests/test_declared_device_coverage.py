@@ -12,12 +12,21 @@ class DeclaredDeviceCoverageTests(unittest.TestCase):
         return {'parts':parts,'nets':nets,'pin2net':pins,'pinname':names,'declared_pinname':names,'pintype':{},'ref2page':{'D1':1,'JP1':1},'pseudo_nets':[]}
     def intent(self):
         return {'input_sha256':input_fingerprint(self.db()),'devices':{'D1':{'mpn':'LM4040AIM3-2.0/NOPB','package':'DBZ','identity_citation':'Exact source and manufacturer orderable','citation':'Manufacturer full physical pinout','pinout_complete':True,'pins':{str(n):{'name':name,'role':'other'} for n,name in [(1,'+'),(2,'-'),(3,'NC')]}}}}
+    def audit(self):
+        declaration={'kind':'shunt_reference','page':1,'quote':'LM4040 precision micropower shunt voltage reference'}
+        return {'device_kinds':{'D1':dict(declaration,status='VERIFIED',document='lm4040.pdf',document_sha256='a'*64)}}
     def test_declared_non_u_ref_gets_identity_conditions_and_disposition(self):
-        plan=build_review_plan(self.db(),self.intent());ids={c['id'] for c in plan['checks']}
+        # the datasheet-verified kind puts the shunt reference among the reviewed devices (R6 fix list B2: a `devices`
+        # declaration alone generates no row; the kind decides, the declaration carries the pin table)
+        intent=self.intent();intent['device_kinds']={'D1':{'kind':'shunt_reference','page':1,'quote':'LM4040 precision micropower shunt voltage reference'}}
+        plan=build_review_plan(self.db(),intent,datasheet_audit=self.audit());ids={c['id'] for c in plan['checks']}
         self.assertTrue({'DEV-D01.D1','DEV-C05.D1','DEV-D05.D1'}<=ids)
         for cid in ['DEV-D01.D1','DEV-C05.D1','DEV-D05.D1']:
             c=next(c for c in plan['checks'] if c['id']==cid)
             self.assertEqual(c['readiness'],'WAITING_EVIDENCE');self.assertIsNone(c['review_result'])
+    def test_a_devices_declaration_alone_generates_no_device_rows(self):
+        ids={c['id'] for c in build_review_plan(self.db(),self.intent())['checks']}
+        self.assertFalse({'DEV-D01.D1','DEV-C05.D1','DEV-D05.D1'} & ids)
     def test_undeclared_d_ref_not_promoted_by_reference_name(self):
         ids={c['id'] for c in build_review_plan(self.db())['checks']}
         self.assertFalse({'DEV-D01.D1','DEV-C05.D1','DEV-D05.D1','DEV-C05.D2'} & ids)

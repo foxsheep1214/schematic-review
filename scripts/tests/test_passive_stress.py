@@ -344,3 +344,29 @@ class DecouplingRatingProposalTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ClampedWindowTests(unittest.TestCase):
+    """R6 fix list B5-2 (2026-10-25, user: a): a net a fitted zener clamps to ground is bounded by the clamp when it
+    reads below the cluster's supply; an unreadable clamp or one above the supply changes nothing."""
+
+    def clamped(self, zener='BZX84C2V7'):
+        db, intent = board()
+        add(db, 'C2', '100nF', [('1', '1', 'U1_IO'), ('2', '2', 'GND')])
+        db['parts']['C2']['jedec'] = C0402
+        add(db, 'D9', zener, [('1', 'A', 'GND'), ('2', 'K', 'U1_IO')])
+        intent['assemblies'][0]['population'].update({'C2': True, 'D9': True})
+        rebind(db, intent)
+        return proposals(db, intent)
+
+    def test_the_capacitor_on_the_clamped_node_sees_the_clamp_voltage(self):
+        _, rows = self.clamped()
+        calc = rows['C2']['proposal']['calculation']
+        self.assertEqual(calc['v_across_max'], 2.7)
+        self.assertTrue(any(b.startswith('clamped-by:D9') for b in rows['C2']['proposal']['bases']),
+                        rows['C2']['proposal'].get('bases'))
+
+    def test_a_clamp_above_the_supply_or_unreadable_changes_nothing(self):
+        for zener in ('BZX84C5V1', 'ZENER-UNKNOWN'):
+            _, rows = self.clamped(zener)
+            self.assertEqual(rows['C2']['proposal']['calculation']['v_across_max'], 3.465, zener)

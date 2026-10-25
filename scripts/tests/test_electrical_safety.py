@@ -84,3 +84,23 @@ class ElectricalSafetyTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class FunctionalClampTests(unittest.TestCase):
+    """R6 fix list B5-1 (2026-10-25): a zener on an internal IC node is a level clamp and gets no PRO-A02 line; the
+    same zener on a connector node, and a TVS anywhere, keep it."""
+
+    def test_zener_on_an_internal_ic_node_is_not_a_protective_device(self):
+        db = database({'ZCD': ['U1.1', 'D1.1', 'R1.1'], 'GND': ['D1.2', 'U1.2'], 'AUX': ['R1.2']},
+                      {'U1': 'PFC-CTRL', 'D1': 'MMSZ5231B', 'R1': '47K'}, {'U1.1': 'ZCD', 'U1.2': 'GND'})
+        self.assertEqual([x for x in Lint(db).run() if x['rule'] == 'PRO-A02'], [])
+
+    def test_zener_on_a_connector_node_keeps_the_line(self):
+        db = database({'ZCD': ['U1.1', 'D1.1', 'J1.1'], 'GND': ['D1.2', 'U1.2']},
+                      {'U1': 'PFC-CTRL', 'D1': 'MMSZ5231B', 'J1': 'CONN'}, {'U1.1': 'ZCD', 'U1.2': 'GND'})
+        self.assertEqual(len([x for x in Lint(db).run() if x['rule'] == 'PRO-A02']), 1)
+
+    def test_a_tvs_on_the_same_internal_node_keeps_the_line(self):
+        db = database({'ZCD': ['U1.1', 'D1.1'], 'GND': ['D1.2', 'U1.2']},
+                      {'U1': 'PFC-CTRL', 'D1': 'SMAJ5.0A'}, {'U1.1': 'ZCD', 'U1.2': 'GND'})
+        self.assertEqual(len([x for x in Lint(db).run() if x['rule'] == 'PRO-A02']), 1)

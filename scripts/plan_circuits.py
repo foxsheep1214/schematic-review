@@ -117,9 +117,14 @@ WEAROUT_NA_CRITERION = '%s %s（%s）：需求与任务剖面都没给%s，按�
 PTC_RE = re.compile(r'POLY ?FUSE|POLYSWITCH|PPTC|\bPTC\b|RESETTABLE|自恢复|MF-[A-Z]', re.I)
 SWITCHLIKE_RE = re.compile(r'POTENTIOMETER|\bPOT\b|TRIM|ENCODER|电位器|编码器', re.I)
 MEMORY_RE = re.compile(r'EEPROM|FLASH|\bFRAM\b|24(LC|AA|C)\d|25(LC|AA|Q)\d|W25Q|AT2[45]|M24C|M95', re.I)
-# Parts whose identity, pin disposition and operating conditions are checked whether declared or not: transistors,
-# optocouplers, threshold and clamp diodes, bridge rectifiers and custom magnetics. A plain diode or an ordinary inductor
-# is a commodity part (commodity-floors.md) and gets these rows only when intent.devices declares it.
+# Parts whose identity, pin disposition and operating conditions get rows of their own: transistors, optocouplers,
+# threshold and clamp diodes, bridge rectifiers and custom magnetics — the parts whose datasheet specifies an operating
+# region the circuit rows do not cover. A plain diode or an ordinary inductor is a commodity part (commodity-floors.md)
+# and gets no device rows, declared in intent.devices or not: the rows follow the verified device kind, never the
+# declaration (R6 acceptance 2026-10-24, user: 按照 a; 7 declared diodes made 21 rows in two records of four).
+# Verified kinds that make a part an active device with rows of its own whatever its refdes; two-terminal kinds
+# (diode, zener, tvs, resistor, capacitor …) never do — the fixed kinds above cover the zener/TVS rows.
+ACTIVE_VERIFIED_KINDS = tuple(board_intent.IC_KINDS) + ('opto', 'relay')
 FIXED_DEVICE_KINDS = (MOSFET, BJT, OPTO, ZENER, TVS, TRANSFORMER)
 BRIDGE_RE = re.compile(r'^(BR|DB)\d', re.I)
 CUSTOM_PART_RE = re.compile(r'CUSTOM', re.I)
@@ -299,7 +304,7 @@ class CircuitPlanning:
             circuits.setdefault(circuit['type'], []).append(circuit)
         custom = [catalog.CircuitType(name, name, 'REQ', r'(?!x)x', (), ('requirements',))
                   for name in sorted(set(declared) - set(catalog.CIRCUIT_TYPE_BY_NAME))]
-        undetected = []
+        undetected, declared_na = [], {}
         for kind in catalog.CIRCUIT_TYPES + tuple(custom):
             name = kind.name
             hits = _feature_hits(self.db, kind.pattern)
@@ -338,8 +343,12 @@ class CircuitPlanning:
                 continue
 
             if applicability == 'NOT_APPLICABLE':
-                missing = []
-            elif applicability == 'UNDETERMINED':
+                # The declaration is the basis of the REQ-Q08 summary row, not a row of its own (R6 acceptance
+                # 2026-10-24, user: a): two records wrote 13 such declarations, two none, and the rows did not pair.
+                undetected.append(name)
+                declared_na[name] = item.get('citation')
+                continue
+            if applicability == 'UNDETERMINED':
                 missing = [f'intent.features.{name}']
                 if requested == 'NOT_APPLICABLE' and confirmed:
                     missing.append('resolve intent/netlist conflict')
@@ -372,15 +381,18 @@ class CircuitPlanning:
             criterion = catalog.criterion('REQ-Q08')
             if undetected:
                 criterion += '：' + '、'.join(name if title == name else f'{name}（{title}）' for name, title in titles)
+            if declared_na:
+                criterion += '；已声明不适用（features）的：' + '、'.join(sorted(declared_na))
             if unassigned:
                 criterion += '；候选生成没有归属的器件，逐颗确认属于哪个功能或为何不审：' + '、'.join(unassigned)
             self.add_check(
                 'REQ-Q08', {'board': 'BOARD', 'circuit_types': undetected, 'unassigned': unassigned},
                 criterion=criterion,
                 readiness='WAITING_EVIDENCE',
-                required_inputs=[f'intent.features.{name}' for name in undetected]
+                required_inputs=[f'intent.features.{name}' for name in undetected if name not in declared_na]
                 + [f'intent.circuit_decisions: add/reject for {ref}' for ref in unassigned],
-                trigger=['circuit-type-discovery'] + (['circuit-candidates:unassigned'] if unassigned else []))
+                trigger=['circuit-type-discovery'] + (['circuit-candidates:unassigned'] if unassigned else [])
+                + [f'intent:{c}' for c in declared_na.values() if c])
 
     def _rail_window(self, nets):
         """电路网络里 intent.power_rails 给了电压窗口的轨；没有就 None（问题写 catalog.NO_WINDOW）。"""
@@ -598,19 +610,24 @@ class CircuitPlanning:
         native = db.get('native_pintype') or {}
         powered = {node.split('.')[0] for node, kind in native.items() if kind in ('power_in', 'power_out')}
 
+        verified = board_intent.declared_kinds(self.kind_intent)   # datasheet-verified kinds, by ref
+
         def active_by_function(ref):
+            # native power pins on a three-pin-or-more IC, or a datasheet-verified active kind (a shunt reference or
+            # opto with a D refdes): the kind decides which parts have rows, a `devices` declaration alone never does
+            # (R6 fix list B2, user: 按照 a)
+            if (verified.get(ref) or {}).get('kind') in ACTIVE_VERIFIED_KINDS:
+                return True
             return (ref in powered and len(connector_graph.pins_of(ref)) >= 3
                     and connector_graph.kind(ref) in (IC, UNKNOWN))
 
         for ref, part in sorted(db.get('parts', {}).items()):
-            declared = ref in (self.intent.get('devices') or {})
             connector = CONNECTOR_RE.match(ref) or connector_graph.kind(ref) == CONNECTOR
             by_function = not DEVICE_RE.match(ref) and active_by_function(ref)
             kind = connector_graph.kind(ref)
             fixed = (kind in FIXED_DEVICE_KINDS or BRIDGE_RE.match(ref) or (kind == INDUCTOR and CUSTOM_PART_RE.search(
                 ' '.join(str(part.get(k) or '') for k in ('part', 'value')))))
-            if part.get('nc') or not (DEVICE_RE.match(ref) or by_function or (fixed and not connector)
-                                      or (declared and not connector)):
+            if part.get('nc') or not (DEVICE_RE.match(ref) or by_function or (fixed and not connector)):
                 continue
             gaps, audit_trigger = self._datasheet_readiness(ref, part)
             trigger = ([f'refdes:{ref}', f'part:{part.get("part", "")}'] + audit_trigger

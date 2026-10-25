@@ -186,8 +186,33 @@ class _Bounds:
         else:
             result = (None, gap, domains)
         for item in seen:
-            self._cluster[item] = result
-        return result
+            self._cluster[item] = self._clamped(item, result)
+        return self._cluster[net]
+
+    def _clamped(self, net, result):
+        """A net with a zener or TVS straight to a fixed node (ground or a declared rail) is bounded by that clamp
+        when it reads lower than the cluster's supply (R6 acceptance 2026-10-24, user: a); the clamp value is read
+        off the part text, a pin's internal clamp inside an IC is not one, and an unreadable clamp changes nothing."""
+        window, basis, domains = result
+        if window is None:
+            return result
+        clamps = []
+        for node in self.graph.nodes_on(net):
+            ref = node.partition('.')[0]
+            if self.graph.kind(ref) not in (pw.ZENER, pw.TVS) or not self.graph.is_fitted(ref):
+                continue
+            others = [n for n in self.graph.nets_of(ref) if n != net]
+            fixed = self._fixed(others[0]) if len(others) == 1 else None
+            part = self.graph.parts.get(ref) or {}
+            volts = ng.clamp_voltage(' '.join(str(part.get(k) or '') for k in ('part', 'value', 'prim')))
+            if fixed is not None and volts is not None:
+                clamps.append((fixed[1] + volts, ref))
+        if not clamps:
+            return result
+        top, ref = min(clamps)
+        if top >= window[1]:
+            return result
+        return ((max(window[0], -top), top), 'clamped-by:%s (%s)' % (ref, basis), domains)
 
 
 def _signal_series(graph, nets):

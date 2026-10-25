@@ -74,6 +74,8 @@
 }
 ```
 
+任务书给了几份需求文档，`requirement_source` 就写成列表 `[{"path", "sha256"}, …]`（每份文件各自的 sha256，一个 id 只在一份文档里出现）；只有一份时写成上面的单个对象也行。
+
 - `schema_version` 必写（4）；顶层只认本节列出的字段和各检查器的段（`plan_review.INTENT_FIELDS`），拼错或多写的字段被拒收并提示最接近的字段名。
 - `circuit_decisions` 的写法见下文“电路不手画”；`circuits` 和 `circuit_candidates_sha256` 由 `circuit_decisions.py --write` 写入，不手写。
 - `review_mode`：`first` 或 `revision`。`review_phase` 取值见 [结论与准出](verdicts-and-release.md#5-审查阶段)。
@@ -116,7 +118,8 @@
   [寿命与耗损件](commodity-floors.md#寿命与耗损件)。
 - 需求不手抄：`python3 scripts/requirements_extract.py 需求.md --json record/requirements.json` 逐字抄录需求表
   （首列为 ID/编号的表格行，或 `- <编号>：<文字>` 列表项），每条各列分开、带所在章节与 `文件:行号`，并给文件 sha256。
-  `requirement_source` 写文件路径和这个 sha256，`requirements[]` 每项只写 `id`、`categories`、`interpretation`
+  `requirement_source` 写文件路径和这个 sha256（任务书给了几份需求文档就写几项，列表 `[{path, sha256}, …]`，逐文件抄录，
+  REQ ID 跨文件唯一，两份文档给同一个 id 拒绝；`locator` 带各自的文件名），`requirements[]` 每项只写 `id`、`categories`、`interpretation`
   和 `status`，不写 `text`、`citation`、`criterion`。`categories` 从 [规则总表](check-catalog.md#需求类别与审查方面)
   的需求类别表选一个或几个（表有“怎么选”一列；拿不准就多选，少选是漏查）。分解的单位是需求里的量：带参数的方面由
   `parameters` 里有没有这个参数决定，有就问，不管选了哪些类别；不带参数的方面由类别决定；一个参数都没写的需求才按类别问全部方面，
@@ -168,7 +171,11 @@
   - `merge`：`candidate` 列几个候选，`id` 必填，`citation` 引一条把它们描述成一个流程的条款；电路候选不与跨电路候选（ISOLATION、STARTUP、保护链）合并。
   - `split`：`into: [{id, members}]`，每部分成员是该候选成员的子集，所有成员都要有去处，`citation` 可定位。
   - `reject`：`reason` 为 OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF（后者带 `of: <已推出的电路>`，成员须都在它里面），`citation` 可定位；被拒候选的成员进 REQ-Q08 复核，已被接受、合并、拆分或 add 的电路持有的除外。
+    拒绝一颗没有候选的器件写 `{"decision": "reject", "ref", "reason"（OUTSIDE_SCOPE / NOT_A_CIRCUIT）, "citation"}`：它不再进 REQ-Q08 清单，原因随记录。
   - `add`：生成器没找到的功能，`id`、`type`（规则总表的包名）、`members` 只能收 `unassigned` 中的器件、`via` 为每颗写它所在的网，`citation` 可定位。
+    `id` 若是前面决定已推出的电路，器件并入那块电路（`type` 须一致），不另起电路——驱动变换器开关的门极驱动、使能驱动管都这样归位。
+  - 未归属的有源件（候选文件 `unassigned` 里 kind 为 mosfet / bjt / opto / ic 的）必须有 add 或 reject 决定，留在 REQ-Q08 清单上校验不过；两端件照旧留在 REQ-Q08。
+    候选走线从电路自己的网走到小信号三极管的门极/基极时把它收进电路并从漏极/集电极继续（成员 role `driven_switch`），所以多数驱动管不会落到未归属。
   - `own`：`ref`、`candidate`、`citation`（可定位）：同一级认领打平的器件归 `candidate` 所在的电路。只裁定打平，不改已有的归属；每颗至多一条。
   推出的电路带 `id`、`type`、`refs`、`owned`、`nets`、`states`、`citation`、`candidate_ids`、`cross_cutting`、`anchors`。
   `refs` 是电路持有的全部器件，`owned` 是其中归它所有的：每颗被持有的器件恰好在一块电路的 `owned` 里，其余持有它的电路只引用它
@@ -751,7 +758,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   - 开关节点（有 MOS 漏极和变压器或电感）经二极管到一个没有对地大电容的节点，该节点上的电阻和电容另一端接同一网：每颗电阻一行 `DRV-C01.RCD`，钳位电阻功率与耐压；
   - IC 的信号脚和 LED 或光耦 LED 的一端在同一网（不经晶体管、不是地网）：`DEV-C05.PIN-LED`，按第 5 条四档核该脚的电流；
   - 光耦输出接到 IC 的使能或关断脚（EN、SHDN、DIS、INH、STBY、ON/OFF、RUN 等）：`SIG-C09.ENABLE-LINK`，上电先后、使能门限与光耦延时、掉电后能否恢复。
-- 器件行（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）对晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成，不靠 `intent.devices` 声明；普通二极管和普通电感是常规件，声明了才生成。
+- 器件行（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）只跟核验过的器件类别走：集成电路（U/M 位号或原生电源脚识别的有源器件）、晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成；普通二极管、普通电感和阻容是常规件，声明了 `intent.devices` 也不生成器件行（声明只供脚表与配置组用），它们的应力在所属电路的 DEV-C01 预判里按最弱档算，超了才逐颗出 DEV-C01 行；要让一颗二极管进器件行，路径是 `device_kinds` 核验为 zener/tvs/整流桥（[通用件定界](commodity-floors.md#哪些器件有自己的行)）。
 - 脚电流行（`DEV-C01.PIN.*`）的串阻读不出阻值、计划没算出脚电流时，判 PASS 须附 `manual_verification`，在 `method` 里写出自己的脚电流计算。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
   `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。

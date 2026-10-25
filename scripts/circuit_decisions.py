@@ -24,6 +24,10 @@ from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, db_fingerprint
 
 DECISIONS = ('accept', 'merge', 'split', 'reject', 'add', 'own')
 REJECT_REASONS = ('OUTSIDE_SCOPE', 'NOT_A_CIRCUIT', 'DUPLICATE_OF')
+# Unassigned parts that must be decided (add into a circuit, or reject with a located reason) rather than left on
+# REQ-Q08: active parts, whose unreviewed presence is a review gap, not a candidate-rule gap (R6 acceptance
+# 2026-10-24, user: 按照 a; two-terminal parts stay on REQ-Q08 and feed the candidate rules).
+ACTIVE_KINDS = ('mosfet', 'bjt', 'opto', 'ic')
 NET_KEYS_SKIPPED = ('pin', 'sense_pins', 'pd_controllers')
 IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a circuit's identity, not a shared part
 
@@ -91,6 +95,17 @@ def derive(candidates, decisions):
         kind = decision['decision']
         if kind == 'own':
             owns.append(decision)
+            continue
+        if kind == 'reject' and 'ref' in decision and 'candidate' not in decision:
+            # a part no candidate holds, left out of the review on purpose: {decision: reject, ref, reason, citation}
+            ref = decision.get('ref')
+            owner = next((k for k, m in members.items() if ref in m), None)
+            if owner:
+                errors.append(f'reject {ref}: held by candidate {owner}; decide the candidate, not the part')
+            if decision.get('reason') not in REJECT_REASONS[:2]:
+                errors.append(f'reject {ref}: reason must be OUTSIDE_SCOPE or NOT_A_CIRCUIT')
+            if not located(decision.get('citation')):
+                errors.append(f'reject {ref}: needs a citation a reader can open')
             continue
         targets = decision.get('candidate')
         targets = targets if isinstance(targets, list) else ([targets] if targets is not None else [])
@@ -197,6 +212,15 @@ def derive(candidates, decisions):
                     errors.append(f'{cid}: add member {ref} needs a via naming a net it sits on ({", ".join(nets) or "none known"})')
             if not located(decision.get('citation')):
                 errors.append(f'{cid}: add needs a citation a reader can open')
+            existing = next((c for c in circuits if c['id'] == cid), None)
+            if existing is not None:
+                # add into a circuit an earlier decision produced: the part joins it (R6: a PFC enable driver is the
+                # PFC's, not a circuit of its own)
+                if existing['type'] != decision['type']:
+                    errors.append(f'{cid}: add into {cid} names type {decision["type"]}, the circuit is {existing["type"]}')
+                existing['refs'] = sorted(set(existing['refs']) | set(refs))
+                existing['_claims'].update({ref: 1 for ref in refs})
+                continue
             states = decision.get('states') or list(catalog.CANDIDATE_STATES.get(decision['type'], ()))
             circuits.append(_circuit(cid, decision['type'], refs, [], states, decision.get('citation') or '', [], False,
                                      claims={ref: 1 for ref in refs}))
@@ -275,7 +299,9 @@ def discovery_refs(candidates, decisions):
         kind = decision.get('decision')
         targets = decision.get('candidate')
         targets = targets if isinstance(targets, list) else [targets]
-        if kind == 'reject' and decision.get('reason') != 'DUPLICATE_OF':
+        if kind == 'reject' and isinstance(decision.get('ref'), str) and 'candidate' not in decision:
+            owned.add(decision['ref'])   # a part left out of the review on purpose, with its reason
+        elif kind == 'reject' and decision.get('reason') != 'DUPLICATE_OF':
             cand = by_id.get(decision.get('candidate'))
             if cand:
                 refs |= {m['ref'] for m in cand['members']}
@@ -284,6 +310,14 @@ def discovery_refs(candidates, decisions):
         elif kind == 'add' and isinstance(decision.get('members'), list):
             owned |= {r for r in decision['members'] if isinstance(r, str)}
     return sorted(refs - owned)
+
+
+def active_undecided(candidates, decisions):
+    """Active parts (ACTIVE_KINDS) of the candidate file's `unassigned` list still on the REQ-Q08 list; each needs an
+    add or a part reject. A rejected candidate's members are decided by that reject (its reason and citation)."""
+    pending = set(discovery_refs(candidates, decisions))
+    kinds = {u['ref']: u.get('kind') for u in candidates.get('unassigned', []) if isinstance(u, dict)}
+    return sorted(ref for ref in pending if kinds.get(ref) in ACTIVE_KINDS)
 
 
 def validate(intent, candidates, db=None):
@@ -298,6 +332,10 @@ def validate(intent, candidates, db=None):
         return errors + ['intent.circuit_decisions missing: every candidate needs a decision; run circuit_decisions.py']
     circuits, derive_errors = derive(candidates, decisions)
     errors += derive_errors
+    for ref in active_undecided(candidates, decisions):
+        errors.append(f'{ref}: an active part no circuit holds needs a decision — add it into the circuit it serves '
+                      f'(an add naming that circuit\'s id) or reject it ({{decision: reject, ref, reason, citation}}); '
+                      f'leaving it on REQ-Q08 is for two-terminal parts')
     expected = {c['id']: c for c in circuits}
     written = {c['id']: c for c in intent.get('circuits', []) if isinstance(c, dict) and _text(c.get('id'))}
     for cid in sorted(set(expected) - set(written)):
