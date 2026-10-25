@@ -75,6 +75,27 @@ def unread_numbers(original, parameters):
     return out
 
 
+def parameter_homes(values, categories):
+    """{number as written: [parameter names]} — the catalog parameters whose units take the number's unit and whose aspects
+    belong to the requirement's categories; [] when no parameter can take it (the reviewer explains it in the
+    interpretation or registers a rule gap)."""
+    aspects = {a for c in categories for a in (catalog.REQUIREMENT_CATEGORIES.get(c).aspects
+                                                if catalog.REQUIREMENT_CATEGORIES.get(c) else ())}
+    homes = {}
+    for value in values:
+        unit = value.rsplit(' ', 1)[-1]
+        homes[value] = sorted(name for name, param in catalog.REQUIREMENT_PARAMETERS.items()
+                              if unit in param.units and set(catalog.PARAMETER_ASPECTS.get(name, ())) & aspects)
+    return homes
+
+
+def home_text(value, homes):
+    names = homes.get(value) or []
+    if not names:
+        return value + '（没有参数能收这个数：在 interpretation 里说明，或登记 rule_gaps）'
+    return value + '（可写进 ' + ' / '.join('%s %s' % (n, catalog.REQUIREMENT_PARAMETERS[n].title) for n in names) + '）'
+
+
 def errors(rid, parameters, original):
     """Errors of one requirement's parameters against its original text (None when the text is not known)."""
     label = 'requirement.%s.parameters' % rid

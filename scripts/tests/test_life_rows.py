@@ -247,3 +247,20 @@ class PhaseNameTests(unittest.TestCase):
             self.assertIn(piece, a['criterion'])
         self.assertIn('充电', a['mission_profile'])
         self.assertIn('standby-idle', b['mission_profile'])
+
+
+class ProfileNumbersTests(unittest.TestCase):
+    """SR task loop 2026-10-25 (1.1): a requirement the mission profile cites is read by the profile; its hours, loads
+    and ambients are not listed as unread numbers (R6: 31 numbers of REQ-LIFE-001 in every record)."""
+
+    def unread(self, mission):
+        plan = build_review_plan(*life_board(mission=mission))
+        return [d for d in plan['diagnostics'] if d['code'] == 'REQUIREMENT_NUMBERS_UNREAD' and d['requirement'] == 'REQ-LIFE-9']
+
+    def test_the_profiled_requirement_is_not_listed(self):
+        self.assertEqual(self.unread(True), [])
+
+    def test_without_a_profile_its_numbers_are_listed(self):
+        found = self.unread(False)
+        self.assertEqual(len(found), 1)
+        self.assertIn('8 h', found[0]['values'])

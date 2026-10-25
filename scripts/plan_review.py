@@ -295,6 +295,10 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
     return errors
 
 
+# Verified kinds whose parts have no supply/return pins: DEVICE_PINS_NO_SUPPLY does not ask about them.
+NO_SUPPLY_KINDS = ('opto', 'relay', 'transformer', 'bridge_rectifier', 'crystal')
+
+
 class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning, plan_system.SystemPlanning,
                     plan_board.BoardPlanning):
     """计划的主流程：加行、合并上一份计划、挂接扫描发现、汇总成计划；按功能树的各层（电路、接口、系统功能、全板）
@@ -527,8 +531,12 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                 self.diagnostics.append({'code': 'DEVICE_KIND_GENERIC', 'ref': ref, 'quote': item.get('quote'),
                                          'detail': '%s 声明为泛称 ic（手册标题“%s”没有登记表里的角色）：不作核心器件、不生成电路候选；'
                                                    '标题确有角色的改写该角色，登记表缺这类器件的记入规则维护' % (ref, item.get('quote'))})
+        kinds = self.intent.get('device_kinds') if isinstance(self.intent.get('device_kinds'), dict) else {}
         for ref, device in sorted((self.intent.get('devices') or {}).items()):
             roles = {p.get('role') for p in (device.get('pins') or {}).values() if isinstance(p, dict)} if isinstance(device, dict) else set()
+            kind = (kinds.get(ref) or {}).get('kind') if isinstance(kinds.get(ref), dict) else None
+            if kind in NO_SUPPLY_KINDS:
+                continue   # an optocoupler or transformer has no supply pins by nature (R6: U202/U403/U404 in every record)
             if (isinstance(device, dict) and device.get('pinout_complete') is True and re.match(r'^[UM]\d', str(ref), re.I)
                     and not {'power', 'return'} <= roles):
                 # decoupling groups come from power/return pins; a complete IC table without them silently has none

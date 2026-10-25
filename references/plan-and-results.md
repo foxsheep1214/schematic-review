@@ -99,7 +99,7 @@
 - `assemblies`（1–32 个，各带 `id` 与 `citation`）是全部检查器共用的装配状态；`devices` 是按位号的官方脚表。
   `pinout_complete: true` 的脚表要含封装名说出的每个脚号（QFN-16 → 1..16，SOT-23-3 → 1..3；带原厂代号 `SOT-23-3 (DBZ)` 照读；
   BGA、模组、SOT-23 这类读不出脚数的不查），缺的脚号列出来拒绝，多出的 EP/PAD 放行；U/M 位号抄全了却没有 power 和 return 脚的，
-  计划打 `DEVICE_PINS_NO_SUPPLY` 诊断（去耦组按这两种脚推，没有就整颗没有去耦组），不拒绝——分流基准等确无供电脚的器件不用改。
+  计划打 `DEVICE_PINS_NO_SUPPLY` 诊断（去耦组按这两种脚推，没有就整颗没有去耦组），不拒绝——分流基准等确无供电脚的器件不用改；核验类别为光耦、继电器、变压器、整流桥、晶体的不问。
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
 - `devices.<位号>.configurable`（intent 格式 4 起，一致性方案第 3 条）：可编程器件的配置组，每组
   `{group, citation, allowed, affects[, title, required, set_points]}`——`group` 是角色的固定组（`catalog.CONFIG_GROUPS`，
@@ -123,7 +123,7 @@
   和 `status`，不写 `text`、`citation`、`criterion`。`categories` 从 [规则总表](check-catalog.md#需求类别与审查方面)
   的需求类别表选一个或几个（表有“怎么选”一列；拿不准就多选，少选是漏查）。分解的单位是需求里的量：带参数的方面由
   `parameters` 里有没有这个参数决定，有就问，不管选了哪些类别；不带参数的方面由类别决定；一个参数都没写的需求才按类别问全部方面，
-  计划同时列出原文里没读进参数的带单位数字（`REQUIREMENT_NUMBERS_UNREAD`，扫描时打印）。计划按（需求，方面）各生成一行 REQ-D01，判据取方面模板。
+  计划同时列出原文里没读进参数的带单位数字（`REQUIREMENT_NUMBERS_UNREAD`，扫描时打印；每个数后面列出按单位和类别能收它的参数名，没有参数能收的说明写进 interpretation 或登记 rule_gaps；任务剖面引用的需求不列，剖面就是它的读数）。计划按（需求，方面）各生成一行 REQ-D01，判据取方面模板。
   `interpretation` 写这条需求要在原理图上落实什么（不抄原文），挂在每一行上，不进检查标识；
   不适用的方面在结果里判 NA 并给依据，不从类别里删方面。需求文档里每个编号都要有一项（优化目标、明确排除也一样），
   文档里没有的编号被拒收；文档改了 sha256 就变，重新抄录并复看改过的需求。源不是表格时先整理成同格式的需求表并存档。
@@ -133,7 +133,7 @@
   （`±5%` 同时给出 −5 和 5；数字后紧跟的短横是范围，不是负号），`condition` 须是原文里的一段（如“3 A 线缆时”）。
   参数按规范单位换算后挂在该需求的每一行上（`parameters`，不进检查标识）。计划使用这些数字：
   `power_rails.<网>.voltage_v` 可以只写 `{"requirement": "<需求编号>"}`（该需求同时有输入和输出电压时加 `parameter`），
-  窗口取那条需求电压参数的上下限；输入电压、频率写进 SYS-POWER 框架的 `requirement_windows` 和问题；
+  窗口取那条需求电压参数的上下限；输入电压、频率写进 SYS-POWER 框架的 `requirement_windows` 和问题；需求给了待机功耗或静态电流（`standby_power` / `quiescent_current`）时 SYS-POWER 多一行 PWR-C16（待机与空载输入功耗上界），需求行的 STANDBY_POWER 方面绑它；
   工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02/C06）作为 `conditions` 挂在器件应力行上，计划顶层 `conditions` 列出各条来源。
 - `requirements[].owners`，**承接电路**：落实这条需求的功能电路、系统功能或接口的 id。规则总表给每个审查方面列出承担它的检查和可承接的电路类型；
   计划替每个需求行找出**可承接的电路**，写在 `owner_candidates`（拥有承担该方面的行的所属里，电路类型、系统功能、接口种类在该方面那一格里的那些；表外的不算）。

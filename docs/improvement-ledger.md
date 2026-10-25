@@ -7,6 +7,28 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Task loop from 2.1: done marks for ②–⑤, standby power on the tree, screening leaves derived rows alone (2026-10-25)
+
+The user asked for a pass over every task of the five steps (purpose, current state, improvement, executed on my
+recommendation) and then narrowed it to the tasks the earlier framework review had not reached: step ① was tidied on
+10-24, so the pass starts at 2.1 (docs/2026-10-25-task-loop.md holds the per-task record, measured on the four R6
+records). Two ① diagnostics fixed before that message stay: `REQUIREMENT_NUMBERS_UNREAD` skips a requirement the
+mission profile cites and names, per unread number, the parameters that can take it (`requirement_parameters.
+parameter_homes`), and `DEVICE_PINS_NO_SUPPLY` skips kinds without supply pins (`plan_review.NO_SUPPLY_KINDS`). From
+2.1 on: an unassigned part whose kind reads unknown with three or more nets must be decided like a mosfet or ic
+(`circuit_decisions.active_undecided`; KiCad replay revision unknown-kind-decisions-v1 gives rf1-frames the three Reg
+rejects, answers unchanged), lint's CLAMP_RE knows the BZX zener families, the standby/no-load input power is asked
+once on the power tree by the new rule PWR-C16 when a requirement gives `standby_power` or `quiescent_current` and the
+STANDBY_POWER requirement aspect binds to it (two R6 reviewers judged it FAIL by hand, one did not compute it), the
+templated-text screens (TEMPLATED_HANDOFF, TEMPLATED_PASS_RATIONALE, REUSED_RATIONALE_ACROSS_SCOPES) skip derived rows
+(179 of 189 flagged rows in one record were derived), and every task of ②–⑤ ends with 做完的标志 built from tool
+signals, as ①'s tasks do. Proposed and left to the user: pre-binding every device row a circuit owns to that circuit's
+frame, so that which rows derive stops being the reviewer's choice (derived rows 387 / 287 / 185 on the same board).
+
+- Event: user:2026-10-25 ("接下来请建立一个循环式的工作：分析SR技能每一步的每一项任务…"; "之前SR已经进行过几轮按步骤和任务的修改，已经进行到了第二个步骤…从没有审阅的下一个SR任务开始"); review: 原理图审查结果/SR-20261024-R6-验收-{codex2,claude1,claude2}-05c8ae7
+- Causes: rule_missing 2, rule_not_enforced 2, over_strict 3, judgment 1
+- Changed: SKILL.md, docs/2026-10-25-task-loop.md, scripts/plan_board.py, scripts/requirement_parameters.py, scripts/plan_review.py, scripts/circuit_decisions.py, scripts/lint.py, scripts/review_quality.py, scripts/catalog.py, scripts/plan_system.py, references/plan-and-results.md, references/check-catalog.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/unknown-kind-decisions-v1/, evals/kicad_replay_bench/fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.frames.unknown-kind-decisions-v1.intent.json, evals/mutation/mutations.json, evals/mutation/README.md, scripts/tests/
+
 ## R6 fix list B: five decisions on intent fields and row generation (2026-10-25)
 
 The R6 acceptance's fix list B (docs/2026-10-24-r6-acceptance.md §六 B) is in; the user decided each item (a, a with the

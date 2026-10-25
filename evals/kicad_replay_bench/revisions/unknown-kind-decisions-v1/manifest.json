@@ -1,0 +1,15 @@
+{
+ "revision": "unknown-kind-decisions-v1",
+ "parents": {
+  "revisions/active-part-decisions-v1/expected.json": "c5df2b805187cd69d6f855ddfe16a9a317689ce08ef520217d8f72f7896750f4",
+  "revisions/active-part-decisions-v1/cases.json": "d16883f12a4137fcf28a6250ab84f3fe30fc6de53ecd0946a9938190acc610be",
+  "revisions/active-part-decisions-v1/sources.json": "1423e15cc2bd09e4f40a42df80a96ccee1e36d3c71e7f869eafa7e324a6a9fa8",
+  "revisions/active-part-decisions-v1/manifest.json": "9d95c43164e3b7a2cbe27d423a098586f9e4fd0a36a396a646f12b0321ca5376"
+ },
+ "derived_files": {
+  "revisions/unknown-kind-decisions-v1/expected.json": "65141689553559da36895f7b6a998dd3c3472876f5e817280e7d6e41612fcd58",
+  "revisions/unknown-kind-decisions-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/unknown-kind-decisions-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81"
+ },
+ "scope": "五步逐任务巡检第一批（2026-10-25）：类别读不出、三个以上网的未归属器件也须 add 或 reject；rf1-frames 换用补了 Reg1–Reg3 决定的 intent 副本，答案不变。active-part-decisions-v1 文件保持原字节。"
+}

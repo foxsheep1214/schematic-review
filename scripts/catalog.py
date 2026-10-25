@@ -295,6 +295,9 @@ RULES = (
     Rule('PWR-C05', '损耗与反向电流',
          '核对声明工况下的损耗、反向电流、预偏置与放电路径，输出损耗边界与允许温度约束；'
          '实际结温、散热路径及闭壳温升转 HANDOFF，缺下游热数据不推翻已有电气结论', 'subject', 'circuit'),
+    Rule('PWR-C16', '待机与空载输入功耗上界',
+         '需求给了待机功耗或静态电流时，按各级变换器的空载损耗（手册空载/轻载输入功率或开关损耗与偏置电流）、偏置与监控电路的静态电流'
+         '和指示/泄放电阻的损耗算输入功耗上界，与需求窗口比较；没有数据的级按手册典型值×1.3 定界并写明；需求没给这个量时不生成本行', 'system', 'board'),
     Rule('PWR-C15', '反馈模型与补偿资格',
          '按实际拓扑独立核反馈模型、补偿配置及规定角点的稳定性/动态边界；内部补偿也须匹配厂家适用条件，'
          '无反馈环的电路可据实际拓扑判NA；峰值电流、RCD或栅极应力不能代替本项，样机Bode测试不代替原理图补偿条件', 'subject', 'circuit'),
@@ -606,7 +609,7 @@ OBJECTIVE_RULES = {
                  'ANA-T01 ANA-C01 ANA-C02 ANA-D01 PRO-A03 PRO-A04 PRO-E01 DRV-A03 DRV-E01').split()),
     'G4': tuple(('DEV-A01 DEV-A03 DEV-C01 DEV-C02 DEV-C03 DEV-C04 DEV-C05 DEV-C06 '
                  'PWR-A05 PWR-E01 PWR-E02 PWR-E03 PWR-C01 PWR-C02 PWR-C03 PWR-C05 '
-                 'PWR-C09 PWR-C10 PWR-C11 PWR-C14 CLK-C01 DRV-C02').split()),
+                 'PWR-C09 PWR-C10 PWR-C11 PWR-C14 PWR-C16 CLK-C01 DRV-C02').split()),
     'G5': tuple(('PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
                  'PRO-A02 PRO-C01 PRO-C02 PRO-C03 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01').split()),
     'G6': tuple('DOC-D02 DOC-V02 RST-D01 SIG-D06'.split()),
@@ -960,7 +963,7 @@ STATE_INVARIANT = frozenset({'PWR-T05', 'ANA-D01', 'SIG-T04', 'SIG-D07', 'SIG-D0
 # 系统功能（功能树设计 §3.4）：这些规则问的是全板的电源树、地、监控、时序和主控引脚，行归该系统功能。
 # 按电路展开的行仍归电路（RST-T03 到第 5 步才移到 SYS-SEQUENCE）。
 SYSTEM_FUNCTIONS = {
-    'SYS-POWER': ('PWR-T01', 'PWR-C01', 'PWR-A01', 'PWR-A04'),
+    'SYS-POWER': ('PWR-T01', 'PWR-C01', 'PWR-C16', 'PWR-A01', 'PWR-A04'),
     'SYS-GROUND': ('PWR-T06',),
     'SYS-MONITOR': ('PWR-A06', 'PWR-T04'),
     'SYS-SEQUENCE': ('RST-T03',),
@@ -1384,6 +1387,7 @@ ASPECT_RULES = OrderedDict([
     ('ISOLATION_PATHS', ('PRO-D02',)),
     ('LIFETIME_BASIS', ('DEV-C02', 'DEV-C06')),
     ('MISSION_PROFILE', ('DEV-C02', 'DEV-C06')),
+    ('STANDBY_POWER', ('PWR-C16',)),
     ('POWER_SEQUENCE', ('RST-T03',)),
     ('STARTUP_TIMING', ('RST-C02',)),
     ('MEASUREMENT_CHAIN', ('ANA-T01',)),
@@ -1551,6 +1555,7 @@ EXPLANATIONS = {
     'PWR-T05': _x('防反接管方向画对了，体二极管朝向或栅极钳位错仍会失去保护', '正接导通、反接截止的通路和栅极钳位都核实即关闭；损耗归 PWR-C05'),
     'PWR-T06': _x('名称相近的地网不一定相连；也可能把隔离地意外接在一起', '每个地网的连接点和方式符合器件与平台要求即关闭；跨隔离归 PRO-D02'),
     'PWR-C01': _x('逐个负载都在额定内，组合起来仍可能超过电源能力', '按最重工作模式的负载合计不超过来源能力并留裕量即关闭', inputs='PWR-T01 的来源与负载'),
+    'PWR-C16': _x('满载效率达标，空载下固定损耗、偏置与泄放电阻仍可能超过待机功耗要求', '按需求的待机状态算出的输入功耗上界在需求窗口内即关闭', inputs='PWR-T01 的电源树与各变换器手册的空载数据', false_alarms='需求没给待机功耗或静态电流的板子不生成本行'),
     'PWR-C02': _x('反馈设定正确，占空比、压差或拓扑能力不够时输出仍达不到', '要求调节的输入、负载和温度角点下输出都在窗口内即关闭', inputs='PWR-E01/PWR-E02 的窗口'),
     'PWR-C03': _x('平均电流在额定内，峰值仍可能使电感饱和或误触发限流', '峰值、RMS 对 Isat、限流和器件额定都有裕量即关闭', inputs='PWR-C01/PWR-C02 的工况'),
     'PWR-C04': _x('静态工作点都对，最小导通时间或输出电容条件仍可能不适用', '按实际拓扑核完最小导通/关断与输出电容条件；反馈模型与补偿另核PWR-C15', inputs='PWR-C02 的工作点'),

@@ -1179,8 +1179,8 @@
   "id": "M173",
   "name": "requirements are not available from the requirement source",
   "file": "scripts/plan_board.py",
-  "old": "    if key == 'requirements' and isinstance(source, dict)",
-  "new": "    if False and isinstance(source, dict)"
+  "old": "    if key == 'requirements' and sources and all(isinstance(x, dict) and isinstance(x.get('path'), str)",
+  "new": "    if False and sources and all(isinstance(x, dict) and isinstance(x.get('path'), str)"
  },
  {
   "id": "M174",
@@ -2768,7 +2768,7 @@
   "id": "M400",
   "name": "a part an add decision placed is still asked about",
   "file": "scripts/circuit_decisions.py",
-  "old": "    return sorted(refs - added)",
+  "old": "    return sorted(refs - owned)",
   "new": "    return sorted(refs)"
  },
  {
@@ -4023,5 +4023,75 @@
   "file": "scripts/checkers/passive_stress.py",
   "old": "        if top >= window[1]:",
   "new": "        if True:"
+ },
+ {
+  "id": "M580",
+  "name": "a mission-profile requirement has its numbers listed as unread",
+  "file": "scripts/plan_board.py",
+  "old": "        profiled = {profile.get('requirement')} | {ph.get('requirement') for ph in profile.get('phases') or [] if isinstance(ph, dict)}",
+  "new": "        profiled = set()"
+ },
+ {
+  "id": "M581",
+  "name": "the unread-number diagnostic names no parameter",
+  "file": "scripts/plan_board.py",
+  "old": "                homes = requirement_parameters.parameter_homes(unread, item.get('categories') or [])",
+  "new": "                homes = {}"
+ },
+ {
+  "id": "M582",
+  "name": "an optocoupler table is asked for supply pins",
+  "file": "scripts/plan_review.py",
+  "old": "            if kind in NO_SUPPLY_KINDS:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M583",
+  "name": "an unknown-kind three-pin part needs no decision",
+  "file": "scripts/circuit_decisions.py",
+  "old": "        return entry.get('kind') in ACTIVE_KINDS or (entry.get('kind') == 'unknown' and len(entry.get('nets') or []) >= 3)",
+  "new": "        return entry.get('kind') in ACTIVE_KINDS"
+ },
+ {
+  "id": "M584",
+  "name": "BZX zeners are not clamps to the scan",
+  "file": "scripts/lint.py",
+  "old": "CLAMP_RE = re.compile(r'ZENER|TVS|BZT|BZX|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)   # BZX55/BZX84/BZX585 zeners too",
+  "new": "CLAMP_RE = re.compile(r'ZENER|TVS|BZT|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)   # BZX55/BZX84/BZX585 zeners too"
+ },
+ {
+  "id": "M585",
+  "name": "derived rows are grouped as reused rationale",
+  "file": "scripts/review_quality.py",
+  "old": "        if isinstance(rationale, str) and rationale.strip() and not row.get('function_id') and not row.get('derived'):",
+  "new": "        if isinstance(rationale, str) and rationale.strip() and not row.get('function_id'):"
+ },
+ {
+  "id": "M586",
+  "name": "derived PASS rows are grouped as templated rationale",
+  "file": "scripts/review_quality.py",
+  "old": "        if not isinstance(row, dict) or row.get('review_result') != 'PASS' or row.get('derived'):",
+  "new": "        if not isinstance(row, dict) or row.get('review_result') != 'PASS':"
+ },
+ {
+  "id": "M587",
+  "name": "derived handoffs are flagged as templated",
+  "file": "scripts/review_quality.py",
+  "old": "        if not isinstance(handoff, dict) or not handoff.get('required') or row.get('derived'):",
+  "new": "        if not isinstance(handoff, dict) or not handoff.get('required'):"
+ },
+ {
+  "id": "M588",
+  "name": "a standby-power requirement generates no PWR-C16 row",
+  "file": "scripts/plan_system.py",
+  "old": "        if standby:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M589",
+  "name": "the standby aspect binds no rule",
+  "file": "scripts/catalog.py",
+  "old": "    ('STANDBY_POWER', ('PWR-C16',)),",
+  "new": ""
  }
 ]

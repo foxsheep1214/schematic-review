@@ -76,3 +76,20 @@ class SupplyPinDiagnosticTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+
+class NoSupplyKindTests(unittest.TestCase):
+    """SR task loop 2026-10-25 (1.3): a part whose verified kind has no supply pins (optocoupler, transformer) is not
+    asked for power/return pins; R6 listed the optocouplers U202/U403/U404 in every record."""
+
+    def test_an_optocoupler_table_without_supply_pins_is_silent(self):
+        db = SupplyPinDiagnosticTests().board()
+        intent = {'schema_version': 4, 'input_sha256': board_intent.input_fingerprint(db),
+                  'device_kinds': {'U1': {'kind': 'opto', 'page': 1, 'quote': 'synthetic optocoupler'}},
+                  'devices': {'U1': device('SOT-23-3', [(1, 'A', 'other'), (2, 'K', 'other'), (3, 'C', 'other')])}}
+        plan = build_review_plan(db, intent)
+        self.assertEqual([d for d in plan['diagnostics'] if d['code'] == 'DEVICE_PINS_NO_SUPPLY'], [])
+        intent['device_kinds']['U1']['kind'] = 'regulator'
+        plan = build_review_plan(db, intent)
+        self.assertEqual([d['ref'] for d in plan['diagnostics'] if d['code'] == 'DEVICE_PINS_NO_SUPPLY'], ['U1'])

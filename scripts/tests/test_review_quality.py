@@ -590,3 +590,38 @@ class TemplatedPassTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class DerivedRowScreeningTests(unittest.TestCase):
+    """SR task loop 2026-10-25 (④): rows derived from a function verdict carry the tool's sentence and the function's
+    handoff by construction; the templated-text screens look only at reviewer-written rows (R6: 179 of 189 flagged
+    rows in one record were derived)."""
+
+    def setUp(self):
+        from review_quality import screen_quality, templated_pass_rationale, templated_handoffs
+        self.screen, self.templated_pass, self.templated_handoffs = screen_quality, templated_pass_rationale, templated_handoffs
+
+    def test_derived_rows_do_not_count_as_reused_rationale(self):
+        p, r, db = quality_fixture()
+        self.assertIn('REUSED_RATIONALE_ACROSS_SCOPES', [c['code'] for c in self.screen(p, r, db)['candidates']])
+        for row in r['checks']:
+            row['derived'] = True
+        self.assertNotIn('REUSED_RATIONALE_ACROSS_SCOPES', [c['code'] for c in self.screen(p, r, db)['candidates']])
+
+    def test_derived_pass_rows_are_not_a_template(self):
+        expected = {'PWR-C01.X': {'rule': 'PWR-C01'}, 'DEV-C05.Y': {'rule': 'DEV-C05'}}
+        text = '见功能判定 FN-A（rating）：按手册推荐工作条件核对后每个量都在窗口内，最小裕量 20 %，无开放项'
+        report = {'checks': [{'id': cid, 'review_result': 'PASS', 'rationale': text} for cid in expected]}
+        self.assertEqual(len(self.templated_pass(report, expected)), 1)
+        for row in report['checks']:
+            row['derived'] = True
+        self.assertEqual(self.templated_pass(report, expected), [])
+
+    def test_derived_handoffs_are_not_a_template(self):
+        report = {'checks': [{'id': 'PWR-C02.C%d' % i, 'handoff': {'required': True, 'receivers': ['样机验证'],
+                                                                   'constraint': '闭壳 40 °C 测热点', 'verification': '记录数据'}}
+                             for i in range(3)]}
+        self.assertEqual({x['field'] for x in self.templated_handoffs(report)}, {'constraint', 'verification'})
+        for row in report['checks']:
+            row['derived'] = True
+        self.assertEqual(self.templated_handoffs(report), [])

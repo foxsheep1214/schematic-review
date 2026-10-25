@@ -251,7 +251,7 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 接口规则逐接口问（电路对的方向与电平、链路两端电平、供电不同的网络的跨域注入、连接器的对端定义/载流/防护、敏感电路取电轨的噪声）。
 系统功能、电路对、链路和连接器各有一个框架，与电路框架一样下功能判定；报告的功能表按系统功能、功能电路、接口分组，每个发现项写所属。
 校验覆盖两条：每颗贴装器件恰归一块电路或列在 REQ-Q08 待审清单上，每个接口都有它的行和框架。候选漏了器件不手加计划行：
-属于某块电路的写 add 决定（`intent.circuit_decisions`，`id` 给已有电路即并入）后重生成；有源件（mosfet / bjt / opto / ic）不属于任何电路的写器件级 reject（`ref`、`reason`、`citation`），
+属于某块电路的写 add 决定（`intent.circuit_decisions`，`id` 给已有电路即并入）后重生成；有源件（mosfet / bjt / opto / ic，以及类别读不出、三个以上网的器件）不属于任何电路的写器件级 reject（`ref`、`reason`、`citation`），
 两端件留在 REQ-Q08 清单上写原因；候选规则该认出而没认出的，另记改进台账改规则。
 `features` 的 NOT_APPLICABLE 声明不生成行：候选没检出的类型都在 REQ-Q08 那一行里逐个确认，声明只作它的依据；REQ-Q07 只给检出或声明适用的类型。
 `unassigned` 与 `gaps`（没核验角色的 IC、缺引脚名）先清。
@@ -271,15 +271,25 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 扫描提示“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考地分区 `domain`
 （由审查者按需求和稳压器/钳位手册自行定界，逐条写 `citation`），网表上像电源而名字不像轨的网逐条声明成轨或写进 `rail_exclusions`，再合并扫描；空的 `power_rails` 会让全部阻容预判失效。扫描提示“阻值读不出的电阻”时当场告诉用户：列出位号和原值，请设计方改成 `阻值[/公差][/额定功率][/额定电压][/封装]` 的写法或确认阻值，不自行猜阻值；未改之前这些电阻的预判和脚电流不算。值后面多一个说不清的词（如 `47R/1%/2W/pulse`）时阻值照读，诊断 `RESISTOR_VALUE_WORD` 只列这个词：它说的要求（抗脉冲能量、额定电压）是特殊要求，写成 BOM 约束，不开“阻值读不出”的待办。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
 
+做完的标志：候选文件已生成，`circuit_decisions.py --write` 无错误（每个候选恰一条决定、未归属有源件 0、`intent.circuits` 已推出）；
+带候选的冷扫（⑤）不再提示未声明电压的轨、无界节点/跨域、`CIRCUIT_TYPE_MISFIT`、阻值读不出；候选文件的 `gaps` 清零，
+`DEVICE_KIND_GENERIC` 列的 ic 逐颗看过；REQ-Q08 清单上只剩两端件。
+
 #### 2.2 资料请求与重审计
 
 命令是 2.1 清单的 ⑥、⑦。网表扫描后先出资料请求（⑥），按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取：普通阻容（R、C 位号）的专属手册归在这一组的一行里，按
 [通用件定界](references/commodity-floors.md) 的保守档算，不逐颗向设计方要。资料补齐后重审计（⑦）。
 
+做完的标志：`资料请求.md` 已出并一次发给设计方（设计方组每项写了位号与能解开的检查条数）；补齐后 ⑦ 跑过，
+`datasheet-audit.json` 里能取得的材料都 AVAILABLE；取不到的留给 ③ 作证据缺口，不在这里卡住。
+
 #### 2.3 合并扫描
 
 命令是 2.1 清单的 ⑧。`review-plan.json` 是唯一最终计划。保证值核对（E）行由网表定出对象，审查者按两端规格书的保证 Min/Max 判定；
 资料未 AVAILABLE 时判资料不足，例外见 [保证值核对的例外](references/evidence-proportionality.md#保证值核对的例外)。
+
+做完的标志：`review-plan.json` 由 ⑧ 写出；扫描提示为空（或每条处置后重跑过）；`diagnostics` 里只剩信息类（`LINT_INFO`、`PASSIVE_PACKAGE_UNKNOWN`、
+`REQUIREMENT_OWNER_OUTSIDE_CANDIDATES` 这类提示）；计划 `summary` 的行数与功能数看过一遍，与板子规模相称。
 
 ### ③ 判断
 
@@ -320,12 +330,18 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 - **条款核对**：每颗 IC/模组核推荐工作条件（DEV-C05）和逐脚处置（DEV-D05）；连接器核对端定义（DEV-D03）和对外防护（PRO-D03）；
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
 
+做完的标志：`review-results.json` 的 `functions[]` 与计划的 `functions[]` 一一对应，每个功能有 verdict 与 evidence；
+开放项、失败项每条有 `key`、`kind`、`decides`；要算数的功能有计算记录，不用算的写 `no_calculation_reason`；
+框架里每个方面×状态都有判断或开放项（派生时 `derive_rows.py` 不报“未判”）。
+
 #### 3.2 行派生
 
 功能判定写完后先派生已绑定的行（结论、open_ref/fail_ref、rationale 都从功能来；手填的行只对账不覆盖）；
 绑定了功能的行不手填，绑定了树上检查的需求行（`bound_checks`）取绑定行中最差的结论，也不手填：
 
     python3 scripts/derive_rows.py review-plan.json review-results.json -o review-results.json
+
+做完的标志：命令无 ERROR 写出结果；打印的“手填保留”行都是框架外的行，没有一条“手填与功能不一致”。
 
 #### 3.3 手填剩余行与图面目检（V）
 
@@ -334,6 +350,8 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 测试要求只在它的条款上记 NA 并链接单独的阶段 NA 行；成本、体积、取舍优先级这类优化目标或范围说明的需求行记 NOT_APPLICABLE 并引需求原文，不写 PASS。
 所有页面留目检记录（DOC-V01），新页和变更区细读；极性、pin1/视图、选项表、同名端、NC 标记以图形为证据。
 注释、遗留命名和图框版本按 DOC-V02，装配选项互斥与完整性按 DOC-T01。
+
+做完的标志：计划里没有 `function_id` 的 APPLICABLE 行每条有结论与证据；每页有 DOC-V01 目检记录；需求行的条款逐条有判断或链接的阶段 NA 行。
 
 ### ④ 校验
 
@@ -351,6 +369,9 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   只剩 SR 工具自身限制、已手工核完的写 `manual_verification`（什么算工具限制见 [单条检查](references/plan-and-results.md#单条检查)）。
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
 
+做完的标志：`review-gate.json` 的 `valid` 为真、`errors` 为空；`quality_screening` 的每条疑点看过，确有错配的改了记录；
+REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
+
 ### ⑤ 出报告
 
 - 进报告的文字（任务、finding、handoff、notes）用白话，不用 [写法要求](references/report-and-remediation.md) 列出的词；
@@ -366,6 +387,9 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   `pack_review.py` 用打包的计划、结果、门禁和 `notes.json` 重新渲染报告，与 `审查报告.md` 不同（手改过，或台账改了没重出）就拒绝；渲染时用了 `--title`、`--detail` 的，打包时同样传。门禁不 valid、结果声明了 `review_scope` 都不打包。它只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
   顶层有其他文件或引用的证据找不到时打包失败。不另写 README 或说明文档；HTML 只能是脚本生成的那份。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。
+
+做完的标志：`pack_review.py` 打包成功（无拒绝），审查目录顶层只有 `审查报告.md`、`审查报告.html`、`record/`；
+`notes.json` 的 summary、items、sr_feedback 用白话且都进了报告；报告里的相对链接都能打开。
 
 ### 改版复审（H）
 

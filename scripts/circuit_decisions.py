@@ -316,8 +316,13 @@ def active_undecided(candidates, decisions):
     """Active parts (ACTIVE_KINDS) of the candidate file's `unassigned` list still on the REQ-Q08 list; each needs an
     add or a part reject. A rejected candidate's members are decided by that reject (its reason and citation)."""
     pending = set(discovery_refs(candidates, decisions))
-    kinds = {u['ref']: u.get('kind') for u in candidates.get('unassigned', []) if isinstance(u, dict)}
-    return sorted(ref for ref in pending if kinds.get(ref) in ACTIVE_KINDS)
+    entries = {u['ref']: u for u in candidates.get('unassigned', []) if isinstance(u, dict)}
+
+    def active(ref):
+        entry = entries.get(ref) or {}
+        # a part whose kind reads unknown with three or more nets is a device, not a two-terminal part (rf1: Reg1–Reg3)
+        return entry.get('kind') in ACTIVE_KINDS or (entry.get('kind') == 'unknown' and len(entry.get('nets') or []) >= 3)
+    return sorted(ref for ref in pending if active(ref))
 
 
 def validate(intent, candidates, db=None):

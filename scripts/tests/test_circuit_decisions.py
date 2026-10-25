@@ -378,3 +378,24 @@ class ActivePartTests(unittest.TestCase):
         self.assertIn('Q7', flyback['owned'])
         _, errors = cd.derive(candidates, accept_all(candidates) + [dict(add, type='ANALOG')])
         self.assertTrue(any('the circuit is POWER_CONVERTER' in e for e in errors))
+
+
+class UnknownKindTests(unittest.TestCase):
+    """SR task loop 2026-10-25 (2.1): an unassigned part whose kind reads unknown with three or more nets is a device
+    and needs a decision like a mosfet or ic; a two-net unknown part stays on REQ-Q08."""
+
+    def candidates(self, pins):
+        db = fx.board()
+        fx.fixture.add(db, 'Reg9', 'XYZ-REG', pins)
+        db['ref2page']['Reg9'] = 2
+        intent, audit = fx.intent_for(db)
+        return cc.build(db, intent, audit)
+
+    def test_a_three_pin_unknown_part_must_be_decided(self):
+        candidates = self.candidates([('1', 'IN', 'VOUT'), ('2', 'ADJ', 'REG_ADJ'), ('3', 'OUT', 'REG_OUT')])
+        self.assertEqual(next(u['kind'] for u in candidates['unassigned'] if u['ref'] == 'Reg9'), 'unknown')
+        self.assertIn('Reg9', cd.active_undecided(candidates, accept_all(candidates)))
+
+    def test_a_two_pin_unknown_part_stays_on_the_list(self):
+        candidates = self.candidates([('1', 'A', 'VOUT'), ('2', 'B', 'REG_OUT')])
+        self.assertNotIn('Reg9', cd.active_undecided(candidates, accept_all(candidates)))

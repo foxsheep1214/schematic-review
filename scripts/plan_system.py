@@ -9,7 +9,8 @@ from checkers.netgraph import NetGraph
 from part_words import IC
 
 SYSTEM_MATERIALS = {'PWR-T06': ('datasheets', 'platform_checklist'), 'SIG-D13': ('datasheets', 'platform_checklist'),
-                    'RST-T03': ('requirements', 'datasheets')}
+                    'RST-T03': ('requirements', 'datasheets'), 'PWR-C16': ('requirements', 'datasheets')}
+STANDBY_PARAMETERS = ('standby_power', 'quiescent_current')
 
 
 class SystemPlanning:
@@ -27,6 +28,14 @@ class SystemPlanning:
         if len(rails) >= 2:
             self._ready_check('RST-T03', {'system': 'SYS-SEQUENCE', 'rails': rails},
                               self._materials_gap(SYSTEM_MATERIALS['RST-T03']), [f'rails:{len(rails)}'])
+        standby = [w for name in STANDBY_PARAMETERS for w in requirement_parameters.windows(self.intent, name)]
+        if standby:
+            # the standby/no-load input power is a power-tree quantity asked once, when a requirement gives the number
+            # (SR task loop 2026-10-25, ③: two R6 reviewers judged it FAIL by hand on the requirement row, one did not compute it)
+            row = self._ready_check('PWR-C16', {'system': 'SYS-POWER', 'rails': rails},
+                                    self._materials_gap(SYSTEM_MATERIALS['PWR-C16']),
+                                    sorted({f'requirement:{w["requirement"]}' for w in standby}))
+            row['requirement_windows'] = standby
         controllers = sorted(ref for ref in graph.parts if graph.is_fitted(ref) and graph.kind(ref) == IC
                              and graph.role_kind(ref) in (None, 'mcu', 'ic'))
         if controllers:

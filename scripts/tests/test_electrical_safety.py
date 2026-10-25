@@ -104,3 +104,13 @@ class FunctionalClampTests(unittest.TestCase):
         db = database({'ZCD': ['U1.1', 'D1.1'], 'GND': ['D1.2', 'U1.2']},
                       {'U1': 'PFC-CTRL', 'D1': 'SMAJ5.0A'}, {'U1.1': 'ZCD', 'U1.2': 'GND'})
         self.assertEqual(len([x for x in Lint(db).run() if x['rule'] == 'PRO-A02']), 1)
+
+
+class ZenerFamilyTests(unittest.TestCase):
+    """SR task loop 2026-10-25 (2.1): a BZX-family zener across a rail is a clamp the PRO-A02 scan knows."""
+
+    def test_a_bzx_zener_across_a_connector_rail_is_scanned(self):
+        db = database({'VCC_5V1': ['D1.2', 'J1.1'], 'GND': ['D1.1']}, {'D1': 'BZX84C5V1', 'J1': 'CONN'})
+        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-A02']
+        self.assertEqual([x['ref'] for x in items], ['D1'])
+        self.assertIn('型号提示=5.1', items[0]['detail'].replace(' V', ''))

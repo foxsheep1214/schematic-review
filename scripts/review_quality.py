@@ -248,7 +248,7 @@ def screen_quality(plan, report, db=None):
             continue  # automatic/coverage/history boilerplate is intentionally excluded
         rationale = row.get('rationale')
         # Rows bound to one function verdict cite it with one sentence; that is the proof, not a copy.
-        if isinstance(rationale, str) and rationale.strip() and not row.get('function_id'):
+        if isinstance(rationale, str) and rationale.strip() and not row.get('function_id') and not row.get('derived'):
             normalized = re.sub(r'\s+', ' ', rationale).strip()
             scope = json.dumps([check.get('rule'), check.get('object'), check.get('criterion')],
                                sort_keys=True, ensure_ascii=False)
@@ -416,8 +416,8 @@ def templated_pass_rationale(report, expected):
     answers several of them answers none (freeze-blocking)."""
     groups = defaultdict(list)
     for row in report.get('checks') or []:
-        if not isinstance(row, dict) or row.get('review_result') != 'PASS':
-            continue
+        if not isinstance(row, dict) or row.get('review_result') != 'PASS' or row.get('derived'):
+            continue   # a derived row's sentence is the tool's pointer at the function verdict, not a reviewer's paragraph
         core = pass_core(row.get('rationale'))
         if len(core) >= TEMPLATE_MIN_CHARS:
             rule = (expected.get(row.get('id')) or {}).get('rule') or str(row.get('id', '')).split('.')[0]
@@ -564,8 +564,8 @@ def templated_handoffs(report):
         if not isinstance(row, dict) or not isinstance(row.get('id'), str):
             continue
         handoff = row.get('handoff')
-        if not isinstance(handoff, dict) or not handoff.get('required'):
-            continue
+        if not isinstance(handoff, dict) or not handoff.get('required') or row.get('derived'):
+            continue   # derived rows carry their function's handoff by construction (R6: 38 of 46 flagged rows)
         for field in ('constraint', 'verification'):
             text = handoff.get(field)
             if not isinstance(text, str) or not text.strip():

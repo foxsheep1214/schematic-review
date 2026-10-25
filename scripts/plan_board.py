@@ -170,6 +170,8 @@ class BoardPlanning:
             self.add_check(rule, {'feature': name}, trigger=['coverage-protocol'])
         source, _ = requirements_extract.load(self.intent.get('requirement_source')) if self.intent.get('requirements') else (None, [])
         originals = {i['id']: i for i in (source or {}).get('items', [])}
+        profile = self.intent.get('mission_profile') if isinstance(self.intent.get('mission_profile'), dict) else {}
+        profiled = {profile.get('requirement')} | {ph.get('requirement') for ph in profile.get('phases') or [] if isinstance(ph, dict)}
         for item in self.intent.get('requirements', []):
             obj = {'requirement_id': item['id'], 'feature': item['id']}
             if 'status' in item:
@@ -178,11 +180,17 @@ class BoardPlanning:
             parameters = item.get('parameters') or []
             # The requirement's numbers decide its numeric aspects; the planner lists the unit-bearing numbers of the
             # text that no parameter states, so a reviewer who read only some of them sees the rest.
-            unread = requirement_parameters.unread_numbers(requirements_extract.text(original), parameters)
+            # A requirement the mission profile cites is read by the profile (phases, loads, ambients, events); its numbers
+            # are checked by mission_profile_errors, not listed here (SR task loop 2026-10-25, 1.1: 31 profile numbers
+            # were listed in every R6 record).
+            unread = [] if item['id'] in profiled else requirement_parameters.unread_numbers(
+                requirements_extract.text(original), parameters)
             if unread:
+                homes = requirement_parameters.parameter_homes(unread, item.get('categories') or [])
                 self.diagnostics.append({'code': 'REQUIREMENT_NUMBERS_UNREAD', 'requirement': item['id'], 'values': unread,
+                                         'parameters': homes,
                                          'detail': '需求 %s 原文里的数字没读进 parameters：%s；读进去后带参数的方面才会问' % (
-                                             item['id'], '、'.join(unread))})
+                                             item['id'], '、'.join(requirement_parameters.home_text(v, homes) for v in unread))})
             # One row per (requirement, aspect); the reviewer's reading rides on the row, outside the check identity.
             for aspect in catalog.requirement_aspects(item['categories'], parameters):
                 row = self.add_check('REQ-D01', dict(obj, aspect=aspect), key=aspect,

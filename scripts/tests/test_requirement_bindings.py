@@ -338,3 +338,62 @@ class FailCountsTests(unittest.TestCase):
         self.assertIn('DEV-C05.D404', row['rationale'])
         self.assertIn('不继承', row['rationale'])
         self.assertNotIn('finding_id', row)
+
+
+OVP_ROW = '| REQ-OVP-9 | 输出过压保护在 21 V 动作 | 全部输出模式 |\n'
+LED_ROW = '| REQ-LED-9 | 指示灯供电 5 V | - |\n'
+STBY_ROW = '| REQ-STBY-9 | 空载待机输入功耗 ≤ 0.3 W | 230 Vac |\n'
+
+
+def board_with(rows, requirements):
+    """The requirement board plus extra document rows and their intent entries."""
+    from test_requirement_source import DOC, source, write
+    db, intent = board()
+    intent['requirement_source'] = source(write(DOC.replace('| REQ-TEMP-01 |', ''.join(rows) + '| REQ-TEMP-01 |', 1)))
+    intent['requirements'] += requirements
+    rebind(db, intent)
+    return db, intent
+
+
+class UnreadNumberHomesTests(unittest.TestCase):
+    """SR task loop 2026-10-25 (1.1): every unread number names the parameters that can take it (R6: 21 V of
+    REQ-PROTECT-001 stayed unread in three records), or says that none can."""
+
+    def diagnostics(self, rows, requirements):
+        plan = build_review_plan(*board_with(rows, requirements))
+        return {d['requirement']: d for d in plan['diagnostics'] if d['code'] == 'REQUIREMENT_NUMBERS_UNREAD'}
+
+    def test_a_protection_voltage_names_the_trip_parameters(self):
+        found = self.diagnostics([OVP_ROW], [{'id': 'REQ-OVP-9', 'categories': ['PROTECTION'], 'status': 'CONFIRMED',
+                                              'interpretation': '输出过压保护门限', 'owners': ['SYS-MONITOR']}])
+        diag = found['REQ-OVP-9']
+        self.assertEqual(diag['parameters'], {'21 V': ['esd_voltage', 'surge_voltage', 'trip_voltage']})
+        self.assertIn('21 V（可写进 esd_voltage 静电放电电压 / surge_voltage 浪涌或瞬态电压 / trip_voltage 保护动作电压）', diag['detail'])
+
+    def test_a_number_no_parameter_takes_says_so(self):
+        found = self.diagnostics([LED_ROW], [{'id': 'REQ-LED-9', 'categories': ['INDICATION'], 'status': 'CONFIRMED',
+                                              'interpretation': '指示灯有供电'}])
+        diag = found['REQ-LED-9']
+        self.assertEqual(diag['parameters'], {'5 V': []})
+        self.assertIn('5 V（没有参数能收这个数', diag['detail'])
+
+
+class StandbyPowerTests(unittest.TestCase):
+    """SR task loop 2026-10-25 (③): standby power is asked once on the power tree (PWR-C16) when a requirement gives the
+    number, and the requirement row derives from it; without the number the row does not exist."""
+
+    def test_a_standby_requirement_generates_the_row_and_binds_to_it(self):
+        db, intent = board_with([STBY_ROW], [{'id': 'REQ-STBY-9', 'categories': ['POWER_BUDGET'], 'status': 'CONFIRMED',
+                                             'interpretation': '空载输入功耗上界', 'owners': ['SYS-POWER'],
+                                             'parameters': [{'name': 'standby_power', 'unit': 'W', 'max': 0.3}]}])
+        self.assertEqual(validate_intent(intent, db), [])
+        plan = build_review_plan(db, intent)
+        rows = [c for c in plan['checks'] if c['rule'] == 'PWR-C16']
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['function_id'], 'FN-SYS-POWER')
+        self.assertEqual(rows[0]['requirement_windows'][0]['requirement'], 'REQ-STBY-9')
+        self.assertEqual(req_row(plan, 'REQ-STBY-9', 'STANDBY_POWER')['bound_checks'], [rows[0]['id']])
+
+    def test_without_the_number_no_row_is_asked(self):
+        plan = build_review_plan(*board())
+        self.assertEqual([c for c in plan['checks'] if c['rule'] == 'PWR-C16'], [])
