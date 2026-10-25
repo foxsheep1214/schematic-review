@@ -470,19 +470,32 @@ def strict(a, b, aliases=(), same_netlist=True):
     }
 
 
+def _owner_keys(record):
+    """Circuit display name → circuit_key (the candidate ids it came from), read off the plan's circuit rows; a
+    system function or interface owner has no key and is compared by its id."""
+    keys = {}
+    for row in record['plan'].get('checks') or []:
+        obj = row.get('object') if isinstance(row.get('object'), dict) else {}
+        if isinstance(obj.get('circuit'), str) and isinstance(obj.get('circuit_key'), str):
+            keys[obj['circuit']] = obj['circuit_key']
+    return keys
+
+
 def requirement_owners(a, b):
     """Per requirement id, each record's owners and how its rows are judged (bound to tree rows or on the row itself),
-    so an owners difference shows here instead of hiding in the pairing rate."""
+    so an owners difference shows here instead of hiding in the pairing rate. Owners are compared by circuit_key, not
+    by the name the reviewer gave the circuit (R6 acceptance 2026-10-24: renaming made every requirement differ)."""
     def side(record):
-        out = {}
+        out, keys = {}, _owner_keys(record)
         for row in record['plan'].get('checks') or []:
             if row.get('rule') != 'REQ-D01':
                 continue
             obj = row.get('object') if isinstance(row.get('object'), dict) else {}
             rid = obj.get('requirement_id') or row.get('id')
-            entry = out.setdefault(rid, {'owners': None, 'judged': {}})
+            entry = out.setdefault(rid, {'owners': None, 'owner_names': None, 'judged': {}})
             if 'requirement_owners' in row:
-                entry['owners'] = sorted(row['requirement_owners'])
+                entry['owner_names'] = sorted(row['requirement_owners'])
+                entry['owners'] = sorted(keys.get(o, o) for o in row['requirement_owners'])
             entry['judged'][obj.get('aspect') or '—'] = 'DERIVED' if row.get('bound_checks') else 'SELF'
         return out
     sa, sb = side(a), side(b)
@@ -658,8 +671,8 @@ def markdown(report):
     sig = report['signals']
     owners = report.get('requirement_owners') or {'rows': [], 'different': 0}
     lines += ['', '## 需求的承接电路与判法', '',
-              '两边 %d 条需求，承接电路（owners）或判法不同的 %d 条（派生 = 绑到承接电路的行，自判 = 需求行自己判）。' % (
-                  len(owners['rows']), owners['different']), '',
+              '两边 %d 条需求，承接电路（owners，按候选编号比，括号里是审查员起的名）或判法不同的 %d 条'
+              '（派生 = 绑到承接电路的行，自判 = 需求行自己判）。' % (len(owners['rows']), owners['different']), '',
               '| 需求 | A 承接电路 | A 判法 | B 承接电路 | B 判法 |', '|---|---|---|---|---|']
     for row in owners['rows']:
         if row['same']:
@@ -670,7 +683,9 @@ def markdown(report):
             if e is None:
                 cells += ['—', '—']
                 continue
-            cells.append('没写' if e['owners'] is None else ('[]' if not e['owners'] else '、'.join(e['owners'])))
+            names = e.get('owner_names') or e['owners'] or []
+            cells.append('没写' if e['owners'] is None else ('[]' if not e['owners'] else '、'.join(
+                '%s（%s）' % (k, n) if k != n else k for k, n in zip(e['owners'], names))))
             cells.append('、'.join('%s %s' % (k, '派生' if v == 'DERIVED' else '自判') for k, v in sorted(e['judged'].items())))
         lines.append('| %s | %s |' % (row['requirement'], ' | '.join(cells)))
     dec = report.get('circuit_decisions') or {'available': False, 'note': '旧报告没有这一节', 'candidates': [], 'members': [], 'unassigned': [], 'different': 0}

@@ -205,3 +205,18 @@ class StageScopeTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class StageAspectTests(unittest.TestCase):
+    """R6 acceptance 2026-10-24 (codex2 SR-02, claude1): the DOWNSTREAM_HANDOFF aspect's whole question is work after
+    the schematic, so that requirement row may be stage NA as a whole; any other aspect's row still may not."""
+
+    def test_a_downstream_handoff_row_is_stage_na_as_a_whole(self):
+        p, r, db = downstream()
+        p['checks'][0]['object'] = {'requirement_id': 'REQ-ENV-001', 'feature': 'REQ-ENV-001', 'aspect': 'DOWNSTREAM_HANDOFF'}
+        rows = {c['id']: c for c in expand(r)['checks']}
+        errors, _ = validate_stage_scope(rows, {c['id']: c for c in p['checks']})
+        self.assertFalse(any('requirement row' in e for e in errors), errors)
+        p['checks'][0]['object']['aspect'] = 'TEMPERATURE_GRADE'
+        errors, _ = validate_stage_scope(rows, {c['id']: c for c in p['checks']})
+        self.assertTrue(any('a requirement row judges its design obligations' in e for e in errors), errors)

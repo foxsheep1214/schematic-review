@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json, text
 import requirement_bindings
-from function_reading import decides_row, edges, judged, prototype_estimate, unjudged_message
+from function_reading import decides_row, edges, fail_filter, judged, prototype_estimate, unjudged_message
 
 DERIVED_FIELDS = ('review_result', 'open_ref', 'fail_ref', 'finding_id', 'severity')
 
@@ -140,7 +140,7 @@ def derive(plan, results):
         summary['derived'] += 1
         summary[row['review_result']] += 1
     # Requirement rows bound to tree rows follow those rows (fixed requirements, step 4).
-    summary['requirements'], requirement_errors = requirement_bindings.derive(plan, results)
+    summary['requirements'], requirement_errors = requirement_bindings.derive(plan, results, fail_filter(plan, results))
     errors.extend(requirement_errors)
     return results, summary, errors
 

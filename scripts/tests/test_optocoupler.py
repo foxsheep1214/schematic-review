@@ -7,7 +7,7 @@ SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import catalog
 
-from checkers.optocoupler import OptocouplerChecker, build_inventory, validate_optocoupler_intent
+from checkers.optocoupler import OptocouplerChecker, build_inventory, internal_pullup_errors, validate_optocoupler_intent
 from electrical_fixtures import bound_intent
 from lint import Lint
 from plan_review import build_review_plan
@@ -176,3 +176,14 @@ class DeclaredKindIdentityTest(unittest.TestCase):
         db = json_declared_opto_board()
         self.assertIs(ng.NetGraph(db).kind('OK1'), pw.OPTO)
         self.assertIn('OK1', optos_of(build_inventory(db)))
+
+
+class InternalPullupBoundsTest(unittest.TestCase):
+    """R6 acceptance 2026-10-24, codex2 SR-01: a receiver pull-up biased to its own ground has bias_v min 0."""
+
+    def test_bias_v_may_start_at_zero_the_resistance_may_not(self):
+        pull = {'node': 'U2.1', 'resistance_ohm': {'min': 17000, 'max': 23000}, 'bias_v': {'min': 0, 'max': 3.6},
+                'states': ['run'], 'citation': 'receiver table p2'}
+        self.assertEqual(internal_pullup_errors(pull), [])
+        self.assertTrue(internal_pullup_errors(dict(pull, bias_v={'min': -0.3, 'max': 3.6})))
+        self.assertTrue(internal_pullup_errors(dict(pull, resistance_ohm={'min': 0, 'max': 23000})))

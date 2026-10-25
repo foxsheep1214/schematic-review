@@ -6,6 +6,8 @@ keeps applicability APPLICABLE and a downstream handoff, and never blocks throug
 (each prerequisite is a separate check graded on its own).
 """
 
+import catalog
+
 OUTSIDE_STAGE = 'OUTSIDE_SCHEMATIC_STAGE'
 GAP_CAUSES = ('REQUIREMENT_OPEN', 'EXTERNAL_DATA', 'DESIGN_OPEN', 'DELIVERABLE_PENDING', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
 # Only real input/design gaps need a request; requirement gaps use clarification records,
@@ -47,10 +49,12 @@ def validate_stage_scope(checks, expected):
             errors.append(cid + ': OUTSIDE_SCHEMATIC_STAGE requires NA')
         if outside_stage(row):
             planned_object = (expected.get(cid) or {}).get('object') if isinstance(expected.get(cid), dict) else None
-            if isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):
+            if (isinstance(planned_object, dict) and text(planned_object.get('requirement_id'))
+                    and planned_object.get('aspect') not in catalog.STAGE_ASPECTS):
                 errors.append(cid + ': a requirement row judges its design obligations (requirement_clauses); a test '
                               'obligation is one clause marked NA/OUTSIDE_SCHEMATIC_STAGE linked to its own stage-NA '
-                              'check, not the whole row')
+                              'check, not the whole row (only a %s row is stage NA as a whole)'
+                              % '/'.join(catalog.STAGE_ASPECTS))
             if row.get('applicability') != 'APPLICABLE':
                 errors.append(cid + ': stage NA keeps applicability APPLICABLE; the product requirement still applies')
             if row.get('blocking') is not False or any(k in row for k in

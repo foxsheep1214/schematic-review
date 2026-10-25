@@ -3869,5 +3869,89 @@
   "file": "scripts/compare_reviews.py",
   "old": "        if ra != rb:\n            members.append(",
   "new": "        if False:\n            members.append("
+ },
+ {
+  "id": "M558",
+  "name": "phase names come back into the life criterion",
+  "file": "scripts/plan_circuits.py",
+  "old": "        basis = (requirement_parameters.profile_criterion_text(profile) if profile else",
+  "new": "        basis = (requirement_parameters.profile_text(profile) if profile else"
+ },
+ {
+  "id": "M559",
+  "name": "the configuration criterion quotes the allowed range again",
+  "file": "scripts/plan_circuits.py",
+  "old": "                                     criterion=CONFIG_CRITERION % (ref, title),",
+  "new": "                                     criterion=CONFIG_CRITERION % (ref, title) + item['allowed'],"
+ },
+ {
+  "id": "M560",
+  "name": "requirement owners are compared by name again",
+  "file": "scripts/compare_reviews.py",
+  "old": "                entry['owners'] = sorted(keys.get(o, o) for o in row['requirement_owners'])",
+  "new": "                entry['owners'] = sorted(row['requirement_owners'])"
+ },
+ {
+  "id": "M561",
+  "name": "members of accepted candidates stay on the REQ-Q08 list",
+  "file": "scripts/circuit_decisions.py",
+  "old": "        elif kind in ('accept', 'merge', 'split'):\n            owned |=",
+  "new": "        elif kind in ('accept', 'merge', 'split') and False:\n            owned |="
+ },
+ {
+  "id": "M562",
+  "name": "an empty test_points list passes without where the datasheet was searched",
+  "file": "scripts/review_functions.py",
+  "old": "    if no_points and not located({'locator': tried['no_test_points_reason']}):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M563",
+  "name": "a negative bias_v is accepted",
+  "file": "scripts/checkers/optocoupler.py",
+  "old": "        if bounds is None or (floor is not None and bounds[0] <= floor) or bounds[0] < 0:",
+  "new": "        if bounds is None or (floor is not None and bounds[0] <= floor):"
+ },
+ {
+  "id": "M564",
+  "name": "any requirement aspect row may be stage NA as a whole",
+  "file": "scripts/review_stage_scope.py",
+  "old": "                    and planned_object.get('aspect') not in catalog.STAGE_ASPECTS):",
+  "new": "                    and False):"
+ },
+ {
+  "id": "M565",
+  "name": "plain RC datasheets are requested from the designer again",
+  "file": "scripts/gap_inventory.py",
+  "old": "    if head in ('datasheet', 'datasheets', 'datasheet-audit') and commodity(refs_in(key)):\n        return REVIEWER[0]",
+  "new": "    if head in ('datasheet', 'datasheets', 'datasheet-audit') and commodity(refs_in(key)) and False:\n        return REVIEWER[0]"
+ },
+ {
+  "id": "M566",
+  "name": "a transformer winding or bridge output feeds nothing",
+  "file": "scripts/checkers/powertree.py",
+  "old": "                if self.feed and graph.kind(ref) in (pw.TRANSFORMER, pw.BRIDGE_RECTIFIER):",
+  "new": "                if False:"
+ },
+ {
+  "id": "M567",
+  "name": "an HV pin through its start-up resistor is reported undriven",
+  "file": "scripts/lint.py",
+  "old": "                elif not entry and not (STARTUP_PIN_RE.match(pn or '') and self._resistor_fed(n)):",
+  "new": "                elif not entry:"
+ },
+ {
+  "id": "M568",
+  "name": "a GND/EP pin on a return net is reported undriven",
+  "file": "scripts/lint.py",
+  "old": "                if _ground_like(pn) or THERMAL_PAD_PIN_RE.match(pn or ''):\n                    continue   # a return pin",
+  "new": "                if False:\n                    continue   # a return pin"
+ },
+ {
+  "id": "M569",
+  "name": "a failure on another quantity reaches the requirement row",
+  "file": "scripts/function_reading.py",
+  "old": "        if isinstance(unit, str) and unit.replace('µ', 'u') in units:\n            return True\n    return False",
+  "new": "        if isinstance(unit, str) and unit.replace('µ', 'u') in units:\n            return True\n    return True"
  }
 ]

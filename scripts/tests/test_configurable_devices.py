@@ -104,12 +104,13 @@ class FixedGroupTests(unittest.TestCase):
         self.assertIn('intent.devices.U1.configurable', ' '.join(row['required_inputs']))
         self.assertNotIn('state', row['object'])
 
-    def test_a_declared_group_is_ready_and_its_criterion_carries_the_range(self):
+    def test_a_declared_group_is_ready_and_its_row_carries_the_range(self):
         plan = build_review_plan(board(), intent([group()]))
         row = cfg_rows(plan)['CFG-D01.CAPABILITY.U1']
         self.assertEqual(row['readiness'], 'READY')
-        self.assertIn('5 V、9 V、15 V、20 V', row['criterion'])
-        self.assertIn('变换器电压裕量', row['criterion'])
+        self.assertIn('5 V、9 V、15 V、20 V', row['configuration']['allowed'])
+        self.assertIn('变换器电压裕量', row['configuration']['affects'])
+        self.assertIn('U1 的能力发布', row['criterion'])
 
     def test_a_programmable_device_without_fixed_groups_is_asked_to_declare_them(self):
         plan = build_review_plan(board(), intent())
@@ -223,3 +224,22 @@ class ConfigurationGapTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class CriterionTests(unittest.TestCase):
+    """R6 acceptance 2026-10-24: 7 CFG-D01 rows per pair did not pair because the criterion quoted the reviewer's
+    citation and allowed range. The criterion names the device and the group; the declaration rides on the row."""
+
+    def test_the_declaration_is_a_row_field_not_the_criterion(self):
+        rows = {}
+        for allowed in ('5 V、9 V、15 V、20 V 档，每档电流 0.5–3 A', 'PDO 5/9/15/20 V @ 3 A'):
+            plan = build_review_plan(board(), intent=declared([group(allowed=allowed)]))
+            rows[allowed] = next(c for c in plan['checks'] if c['id'] == 'CFG-D01.CAPABILITY.U1')
+        a, b = rows.values()
+        self.assertEqual(a['criterion'], b['criterion'])
+        self.assertEqual(a['check_key'], b['check_key'])
+        self.assertNotIn('§8.2', a['criterion'])
+        self.assertEqual(a['configuration']['citation'], 'evidence/ds/U1.txt §8.2 能力发布寄存器')
+        self.assertEqual(b['configuration']['allowed'], 'PDO 5/9/15/20 V @ 3 A')
+        self.assertEqual(a['configuration']['affects'], ['变换器电压裕量'])
+        self.assertEqual(a['configuration']['required'], '需求：5/9/15/20 V，3 A')

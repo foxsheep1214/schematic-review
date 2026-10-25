@@ -7,6 +7,31 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## R6 fix list A: ten rule-maintenance items and the cold scan in step ① (2026-10-25)
+
+The R6 acceptance's fix list A (docs/2026-10-24-r6-acceptance.md §六) is in, no intent field or row generation changed:
+the life rows' criterion carries the mission profile's numbers in (share, load, ambient) order and the named profile
+rides on the row as `mission_profile` (A1); the CFG-D01 criterion names the device and the group and the declaration's
+citation, allowed range, affects and required ride on the row as `configuration` (A2); the comparison tool compares
+requirement owners by `circuit_key` and prints the reviewer's name in parentheses (A3); REQ-Q08 no longer lists a part a
+rejected candidate shares with an accepted, merged, split or added circuit (A4); `monotonic_tried.test_points` may be
+`[]` with a located `no_test_points_reason`, the whole range then stays open (A5); `internal_pullup.bias_v` accepts min
+0 (A6); a DOWNSTREAM_HANDOFF requirement row may be stage NA as a whole, `catalog.STAGE_ASPECTS` (A7); plain R/C
+datasheets are one reviewer line of the gap inventory, not a request per part (A8); the feed tree counts transformer
+windings and bridge rectifier outputs as sources, an HV start-up pin fed through its start-up resistor is fed, a GND/EP
+pin on a return net is no PWR-A02 finding, and `BR` is a bridge rectifier refdes (A9); a requirement aspect with
+parameters inherits a bound row's FAIL only through a condition that is a clause of the requirement documents or a
+limit in one of its parameters' units, `function_reading.fail_counts`, the failure on another quantity staying on the
+tree row and the derived row saying so (A10; measured on the three valid R6 records: 3 of 4 wrong inheritances go, the
+one in the same unit stays). The requirement-document helpers moved from review_functions to function_reading so ring
+② does not import ③/④. The cold scan that 05c8ae7 left in 2.1 is now also the last command of 1.2 (user:
+按计划的话，这个方向是否应该调整下更合适？如果是的话，请在这批也做完): the signals 1.1–1.3's done marks name are its
+diagnostics, and the files passed between steps do not change since 2.1's ① rewrites review-plan-cold.json.
+
+- Event: user:2026-10-25 ("先做 A 组规则维护 10 条，B 组我稍后逐条定"; "冷扫…按计划的话，这个方向是否应该调整下更合适？如果是的话，请在这批也做完"); review: 原理图审查结果/SR-20261024-R6-验收-{codex1,codex2,claude1,claude2}-05c8ae7
+- Causes: rule_not_enforced 4, rule_missing 3, over_strict 3
+- Changed: scripts/plan_circuits.py, scripts/requirement_parameters.py, scripts/compare_reviews.py, scripts/circuit_decisions.py, scripts/review_functions.py, scripts/function_reading.py, scripts/checkers/optocoupler.py, scripts/catalog.py, scripts/review_stage_scope.py, scripts/gap_inventory.py, scripts/lint.py, scripts/checkers/powertree.py, scripts/part_words.py, scripts/requirement_bindings.py, scripts/derive_rows.py, scripts/validate_review.py, SKILL.md, references/plan-and-results.md, references/automation.md, docs/2026-10-24-r6-acceptance.md, evals/mutation/mutations.json, evals/mutation/README.md, scripts/tests/
+
 ## R6 acceptance: four independent first reviews compared (2026-10-24)
 
 Four reviewers on SR 05c8ae7 (two Codex gpt-6.1-sol high, two Claude opus 5.5 medium) reviewed the R6 board under the

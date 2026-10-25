@@ -67,6 +67,7 @@ def _fmt_v(value):
 
 
 BOOTSTRAP_PIN_RE = re.compile(r'^(BOOT|BST|CBOOT|BTST|CB)\w*$', re.I)
+STARTUP_PIN_RE = re.compile(r'^(HV|HVIN|HV_?IN|HV_?START\w*|VSTART\w*|VSTR|STARTUP)$', re.I)
 THERMAL_PAD_PIN_RE = re.compile(r'^(E?PAD\w*|EP|TAB|EXPOSED\w*|THERMAL\w*)$', re.I)
 NEGATIVE_SUPPLY_PIN_RE = re.compile(r'^(-\w+|\w+-|V-|VEE|VNEG|V_?NEG|VSS\w*|V_?MINUS|\w+[_-](NEG|RTN|RET|MINUS)|COM|0V)$', re.I)
 SUPPLY_PIN_RE = re.compile(r'^(VDD|VCC|AVDD|DVDD|VBAT|VDDA|VDDIO|VCCA|VCCIO)\w*$'
@@ -286,6 +287,19 @@ class Lint:
             return [found['source']] + found['path']
         return ['via:' + found['source']]
 
+    def _resistor_fed(self, net):
+        """A two-terminal resistor on the net whose other end is driven or fed from off board (R6 acceptance
+        2026-10-24: a controller's HV pin fed from the rectified bus through its start-up resistor)."""
+        for node in self.graph.nodes_on(net):
+            ref = node.partition('.')[0]
+            ends = self.graph.nets_of(ref)
+            if self.graph.kind(ref) != pw.RESISTOR or len(ends) != 2 or net not in ends:
+                continue
+            other = ends[0] if ends[1] == net else ends[1]
+            if self.driven(other) or self._external_entry(other):
+                return True
+        return False
+
     def _local_regulator_node(self, node, net):
         """A supply pin whose net holds only its own IC's pins and capacitors (VDDCR, VCAP):
         the IC's internal regulator output, not an undriven rail."""
@@ -502,6 +516,8 @@ class Lint:
                          ref, kind='FINDING' if supply else 'CANDIDATE')
             elif (n not in self.pseudo and not ng.is_ground(n) and not self.driven(n)
                   and not self._local_regulator_node(node, n)):
+                if _ground_like(pn) or THERMAL_PAD_PIN_RE.match(pn or ''):
+                    continue   # a return pin (GND, EP) on a return net that is not named as ground: not a supply
                 entry = self._external_entry(n)
                 jumpers = [r for r in self._feed_tree.source_of(n)['path']
                            if self.graph.kind(r) == pw.JUMPER] if entry else []
@@ -509,7 +525,8 @@ class Lint:
                     self.add('PWR-A02', '电源脚经跳线供电',
                              f'{node} ({pn}) <- {n}：经跳线 {"、".join(jumpers)} 才接到供电，核该装配下跳线是否闭合',
                              ref, kind='CANDIDATE')
-                elif not entry:
+                elif not entry and not (STARTUP_PIN_RE.match(pn or '') and self._resistor_fed(n)):
+                    # a high-voltage start-up pin is fed through its start-up resistor by design, whatever its value
                     self.add('PWR-A02', '电源球所在轨无驱动', f'{node} ({pn}) <- {n}', ref)
 
         # PWR-A03 地脚未入地

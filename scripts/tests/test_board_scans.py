@@ -446,3 +446,27 @@ class SingleNodeNetTest(unittest.TestCase):
         hits = scans(db, 'NET-A01')
         self.assertEqual(sorted((f['detail'].split(' <- ')[0], f['kind']) for f in hits),
                          [('/RST', 'FINDING'), ('/USB/CTS0', 'CANDIDATE')])
+
+
+class FedRailTest(unittest.TestCase):
+    """R6 acceptance 2026-10-24 (claude1 false alarms): rails made by a converter are fed — a winding through its
+    rectifier, the bridge output through a start-up resistor into an HV pin, a return pin on a return net."""
+
+    def test_a_winding_fed_rail_and_a_gnd_pin_on_a_return_net_are_not_undriven(self):
+        db = board({'T1': 'TRANSFORMER', 'D1': 'D_Schottky', 'C1': '47u/35V', 'U1': 'NCP1343', 'U2': 'NCP4306', 'R1': '10m'},
+                   {'AUX': ['T1.5', 'D1.2'], 'VCC': ['D1.1', 'C1.1', 'U1.8'], 'PGND': ['T1.6', 'C1.2', 'U1.3'],
+                    'SEC_RTN': ['U2.7', 'U2.EP', 'R1.1'], 'SGND': ['R1.2']},
+                   pinname={'D1.1': 'K', 'D1.2': 'A', 'U1.8': 'VCC', 'U1.3': 'GND', 'U2.7': 'GND', 'U2.EP': 'EP'},
+                   native_pintype={'U2.7': 'power_in', 'U2.EP': 'power_in', 'U1.8': 'power_in'})
+        self.assertEqual(scans(db, 'PWR-A02'), [])
+
+    def test_an_hv_pin_through_its_startup_resistor_from_the_bridge_is_fed(self):
+        db = board({'BR1': 'GBU4M', 'C1': '470n/450V', 'R1': '4.7k/0.5W', 'U1': 'NCP1343', 'J1': 'Connector:Conn_01x02'},
+                   {'L': ['J1.1', 'BR1.3'], 'N': ['J1.2', 'BR1.4'], 'RECT': ['BR1.1', 'C1.1', 'R1.1'],
+                    'PGND': ['BR1.2', 'C1.2', 'U1.3'], 'HV': ['R1.2', 'U1.10']},
+                   pinname={'BR1.1': '+', 'BR1.2': '-', 'BR1.3': '~', 'BR1.4': '~', 'U1.10': 'HV', 'U1.3': 'GND'},
+                   native_pintype={'U1.10': 'power_in'})
+        self.assertEqual(scans(db, 'PWR-A02'), [])
+        # the same pin with its resistor going nowhere is still undriven
+        db['nets']['RECT'].remove('R1.1'); db['nets']['FLOAT'] = ['R1.1']; db['pin2net']['R1.1'] = 'FLOAT'
+        self.assertEqual([f['detail'] for f in scans(db, 'PWR-A02')], ['U1.10 (HV) <- HV'])

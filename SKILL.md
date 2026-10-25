@@ -181,8 +181,18 @@ NC 汇集伪网、No-connect 属性、DNP 不贴是三件事；不贴的串联�
 审查可读材料；记录具体资料矛盾或保证缺口，不用全板通用阻断代替逐项结论。
 逐页提取 PDF 文本并建页码/页名/网表路径映射；极性、旋转不清时渲染局部放大。
 
+`db.json` 有了就跑一遍冷扫（命令同 2.1 清单的 ①）：
+
+    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan-cold.json --json lint-cold.json
+
+它打印的提示是 ① 各任务做完的标志的来源：阻值读不出的电阻在这里当场告诉用户（写法见 2.1）；没核验类别的器件、
+泛称 ic、脚表没有供电脚（`DEVICE_KIND_GENERIC`、`DEVICE_PINS_NO_SUPPLY`、DEV-D02 的类别缺口）归 1.3；需求原文没读进参数的
+数字（`REQUIREMENT_NUMBERS_UNREAD`）归 1.1；未声明电压的轨和无界节点留给 2.1 的 `power_rails`。intent 每补一批就重跑。
+这里写出的 `review-plan-cold.json` 是中间产物，② 的 ①、⑤ 会重写它；步骤之间传的仍是 `db.json`、`intent.json` 和
+`datasheet-audit.json`。
+
 做完的标志：`db.json` 生成，导出日志没有错误（有则 DOC-A01 阻断，先解决）；装配 BOM 已读入；装配配置已写；
-PDF 与网表核过同版；页码映射建好。阻值读不出、轨没电压这类提示由 2.1 的冷扫给出，在那里处理。
+PDF 与网表核过同版；页码映射建好；冷扫跑过，阻值读不出的电阻已告知用户。
 
 #### 1.3 资料取证与器件身份（DEV-D01、DEV-D02）
 
@@ -208,7 +218,7 @@ PDF 与网表核过同版；页码映射建好。阻值读不出、轨没电压�
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
   PDF 提取的关键数值对照渲染页核单位。
 
-做完的标志：审计跑过，每颗 U/M、Q/D 位号的 `device_kinds` 核验 VERIFIED（DEV-D02 不再列器件类别缺口）；
+做完的标志（看 1.2 那条冷扫重跑后的提示）：审计跑过，每颗 U/M、Q/D 位号的 `device_kinds` 核验 VERIFIED（DEV-D02 不再列器件类别缺口）；
 `DEVICE_KIND_GENERIC` 列出的泛称 ic 逐颗看过标题；关键器件脚表 `pinout_complete`，`DEVICE_PINS_NO_SUPPLY` 逐颗看过；
 资料没拿到的留给 2.2 的资料请求，不在这里卡住。
 
@@ -218,7 +228,7 @@ PDF 与网表核过同版；页码映射建好。阻值读不出、轨没电压�
 
 ② 出计划的命令按这个顺序跑（② 是 1.3 的取证，⑦ 是 2.2 的重审计，穿插在中间）：
 
-    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan-cold.json --json lint-cold.json       # ① 冷扫：还没有电路决定
+    python3 scripts/lint.py db.json --log netlist.log --intent intent.json --plan-json review-plan-cold.json --json lint-cold.json       # ① 冷扫：1.2 的命令，① 做完后带全部 intent 再跑；还没有电路决定
     python3 scripts/audit_datasheets.py db.json --datasheet-dir <资料目录> --intent intent.json --json datasheet-audit.json             # ② 1.3 的取证命令，器件类别补全后再跑一次
     python3 scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json   # ③ 候选
     python3 scripts/circuit_decisions.py intent.json record/circuit-candidates.json --db db.json --write                               # ④ 决定，推出 intent.circuits
@@ -262,7 +272,8 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 #### 2.2 资料请求与重审计
 
-命令是 2.1 清单的 ⑥、⑦。网表扫描后先出资料请求（⑥），按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取。资料补齐后重审计（⑦）。
+命令是 2.1 清单的 ⑥、⑦。网表扫描后先出资料请求（⑥），按装配资料、器件资料、需求、图纸分组，每项写涉及位号和能解开的检查条数。把前几项一次发给设计方补齐再进入逐项审查，不要审完才发现几十条检查缺同一份资料；“审查者自行追踪”一组是自己的工作，不向设计方索取：普通阻容（R、C 位号）的专属手册归在这一组的一行里，按
+[通用件定界](references/commodity-floors.md) 的保守档算，不逐颗向设计方要。资料补齐后重审计（⑦）。
 
 #### 2.3 合并扫描
 

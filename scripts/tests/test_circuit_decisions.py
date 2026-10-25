@@ -314,3 +314,20 @@ class IntentTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class OwnedMemberTests(unittest.TestCase):
+    """R6 acceptance 2026-10-24, codex1 SR-02: a rejected STARTUP chain's controller is owned by its accepted converter
+    and is not asked about again on REQ-Q08."""
+
+    def test_a_rejected_candidate_member_held_by_an_accepted_one_is_not_unassigned(self):
+        _, _, _, candidates = setup()
+        anchor = next(c for c in candidates['candidates'] if c['id'] == 'POWER_CONVERTER-U1')
+        shared = anchor['members'][0]['ref']
+        extra = {'id': 'STARTUP-X', 'type': 'STARTUP', 'members': [{'ref': shared, 'role': 'anchor'}, {'ref': 'R77', 'role': 'sense'}],
+                 'nets': [], 'states': ['run'], 'cross_cutting': False}
+        candidates = dict(candidates, candidates=candidates['candidates'] + [extra])
+        reject = {'candidate': 'STARTUP-X', 'decision': 'reject', 'reason': 'NOT_A_CIRCUIT', 'citation': 'schematic p2: the divider is the converter\'s own'}
+        refs = cd.discovery_refs(candidates, accept_all(candidates, **{'STARTUP-X': reject}))
+        self.assertIn('R77', refs)
+        self.assertNotIn(shared, refs)

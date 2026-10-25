@@ -104,7 +104,8 @@
   pd_controller 为 CAPABILITY 能力发布、CABLE_VCONN 线缆与 VCONN、PROTECTION 保护门限与动作、SENSING 检测通道、GPIO 角色/默认态/
   对外控制时序、COMPENSATION 环路补偿、SEQUENCE 放电与上下电时序）或自定组（须写 `title`），`citation` 是手册寄存器或配置章节，
   `allowed` 是手册允许的范围，`affects` 是这组设置决定的方面，`required` 是需求要求的值，`set_points` 是这组选出的输出档位。
-  计划给已核验角色的每个固定组和每个声明组一行 CFG-D01（`CFG-D01.<组>.<位号>`，不随工况重复；没声明的组 WAITING_EVIDENCE），
+  计划给已核验角色的每个固定组和每个声明组一行 CFG-D01（`CFG-D01.<组>.<位号>`，不随工况重复；没声明的组 WAITING_EVIDENCE；
+  判据只写位号与组名，`citation`、`allowed`、`affects`、`required` 放在行的 `configuration` 字段，不进检查标识），
   mcu 这类没有固定组的可编程角色没声明任何组时给一行 `CFG-D01.DECLARE.<位号>` 要求声明或说明为什么没有；写了 `set_points`
   的组另加一行 `PWR-C02.SET-POINT-<组>.<位号>` 逐档核输出精度。某组对该器件不存在时，该行记 NA 并引手册条款。
 - `mission_profile`（intent 格式 4，一致性方案第 6 条）：所有寿命行共用的一份任务剖面
@@ -141,6 +142,8 @@
   写在需求行的 `bound_checks`（不进检查标识，校验时重算，点名的 id 必须拥有计划里的行）。有绑定行判过（不算 NA）的需求行不再另判：
   `derive_rows.py` 取绑定行中最差的结论写出（`derived_from`；FAIL 带上该发现项并把需求行加进它的 `check_ids`，INSUFFICIENT 带上 `open_ref`），
   手填的需求行只对账不覆盖；校验要求结论等于绑定行中最差者，这种行不要求条款。没有绑定行、或绑定行全是 NA 的方面由需求行自己判，照常拆条款。
+  有参数的方面（如 TEMPERATURE_GRADE 的 °C）只从经需求条款或经该参数单位的限值的失败边继承 FAIL（`requirement_bindings.fail_counts`）：
+  绑定行因别的量失败（齐纳低电流 VZ）时失败留在该行，需求行写明不继承；INSUFFICIENT 照旧继承。
 - `requirements[].status`：已确认（CONFIRMED）、提案（PROPOSED）、未定（OPEN）、暂缓（DEFERRED）。
   保留需求原文和源状态，先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求)
   确定本次判据的实际确认状态，不省略真实未定项。OPEN 的 REQ-D01 必须 INSUFFICIENT + REQUIREMENT_OPEN；
@@ -164,7 +167,7 @@
   - `accept`：原样接受，可给名称 `id`；按手册模式名加工作态写 `states_add` 并给可定位的 `citation`（页、表、节、记录号或位号/网名）。
   - `merge`：`candidate` 列几个候选，`id` 必填，`citation` 引一条把它们描述成一个流程的条款；电路候选不与跨电路候选（ISOLATION、STARTUP、保护链）合并。
   - `split`：`into: [{id, members}]`，每部分成员是该候选成员的子集，所有成员都要有去处，`citation` 可定位。
-  - `reject`：`reason` 为 OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF（后者带 `of: <已推出的电路>`，成员须都在它里面），`citation` 可定位；被拒候选的成员进 REQ-Q08 复核。
+  - `reject`：`reason` 为 OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF（后者带 `of: <已推出的电路>`，成员须都在它里面），`citation` 可定位；被拒候选的成员进 REQ-Q08 复核，已被接受、合并、拆分或 add 的电路持有的除外。
   - `add`：生成器没找到的功能，`id`、`type`（规则总表的包名）、`members` 只能收 `unassigned` 中的器件、`via` 为每颗写它所在的网，`citation` 可定位。
   - `own`：`ref`、`candidate`、`citation`（可定位）：同一级认领打平的器件归 `candidate` 所在的电路。只裁定打平，不改已有的归属；每颗至多一条。
   推出的电路带 `id`、`type`、`refs`、`owned`、`nets`、`states`、`citation`、`candidate_ids`、`cross_cutting`、`anchors`。
@@ -439,7 +442,8 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 - `cell`：[工作点定界表](bounding-table.md)里这个参数的格（表里没有写 `NONE`）。格有开着的一侧时须与 `side` 相同；
   格落到 `BOUNDED`（总能定界）或 `OUTSIDE_SPECIFIED`（记失败项）时拒收；参数单调时，有利一侧给了这一侧限值的测试点就定了界，拒收。
 - `operating_point{min, max, unit}`：本板上测试点所在那个变量的范围（如齐纳电流 0.06–1.3 mA）。
-- `test_points[{condition, at{value, unit}}]`：手册给这个量或它斜率的测试点，条件须在 `checked` 里，单位与工作点相同（u、μ 按 µ 算）。
+- `test_points[{condition, at{value, unit}}]`：手册给这个量或它斜率的测试点，条件须在 `checked` 里，单位与工作点相同（u、μ 按 µ 算）；
+  手册对这个量一个数值点都没有时写 `[]` 并加 `no_test_points_reason`（查过的页码或表），整段范围都开着。
 - `why_not`：这些测试点为什么给不出开着的那个界，不得照抄 `not_boundable_reason`。
 - `other_side`：另一个界 DECIDED（本功能有同一方面的余量）或 NOT_DECISIVE（写 `other_side_reason`）。
 
@@ -735,7 +739,8 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   [BOM 约束怎么定级](commodity-floors.md#bom-约束怎么定级)，等级由类别决定；`status` 为 TO_WRITE（冻结阶段阻断）或
   WRITTEN（`written_at` 指向 BOM 上写明它的那一行）。报告单列“BOM 要写明的额定与规格”一节。
   校验拒收：开放项（DESIGN_VALUE / VENDOR_DATUM）挡住的行全是常规器件的 DEV-C01/DEV-C02 行，或挡住全板 BOM 行（DEV-D04）而文字只点名常规器件时，应改写成 `bom_constraint`。
-  需求有寿命参数（`lifetime`）时，计划按 `mission_profile` 给每颗电解、固态或超级电容一行 `DEV-C02.LIFE.<位号>`（带移交热设计），
+  需求有寿命参数（`lifetime`）时，计划按 `mission_profile` 给每颗电解、固态或超级电容一行 `DEV-C02.LIFE.<位号>`（带移交热设计；
+  判据只写剖面的数字，相位名放在行的 `mission_profile` 字段），
   给每颗耗损件一行 `DEV-C06.<类别>.<位号>`（按次数核而次数没给的直接 NA）；寿命行可凭估算余量（`ESTIMATE`）判 PASS，
   这时须写 `bom_constraint` 且 `requirement` 写明“估算”和所设热点；寿命行不开 VENDOR_DATUM，见
   [寿命与耗损件](commodity-floors.md#寿命与耗损件)。
@@ -750,7 +755,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 - 脚电流行（`DEV-C01.PIN.*`）的串阻读不出阻值、计划没算出脚电流时，判 PASS 须附 `manual_verification`，在 `method` 里写出自己的脚电流计算。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
   `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。
-  复合要求不能整体 NA；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，
+  复合要求不能整体 NA（只有 `catalog.STAGE_ASPECTS` 的方面行——DOWNSTREAM_HANDOFF——整行阶段 NA）；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，
   `check_ids` 链接独立阶段 NA 检查，不得只改条款结果让测试消失。
 - 普通 NA 必须 NOT_APPLICABLE；修改自动计划的适用性需 `applicability_evidence`。计划行带 `requires`（网表上找到了它问的机制）
   时，NA 的 `applicability_evidence` 里至少一条写 `nets` 和/或 `pins`（`REF.PIN`），名字须在网表里，说明是哪条网表事实排除了它；

@@ -4,6 +4,7 @@ judgement settles an aspect, when an estimate passes. The row derivation (③ de
 """
 import re
 
+import requirement_bindings
 from electrical_contract import LOCATOR_WORDS_RE, finite, text
 
 
@@ -170,3 +171,69 @@ def reference_judged(fn, aspect, state=None, check_id=None):
     return any(isinstance(j, dict) and j.get('aspect') == aspect and covers(scope(j), aspect, state, check_id)
                and any(reference_circuit(by_id.get(c)) for c in j.get('conditions') or [])
                for j in fn.get('judgements') or [])
+
+
+def requirement_rows(plan):
+    """(requirement document paths, {requirement id: the rows bound to it}) from the plan's REQ-D01 rows."""
+    documents, rows = set(), {}
+    for c in (plan or {}).get('checks') or []:
+        if not (isinstance(c, dict) and c.get('rule') == 'REQ-D01'):
+            continue
+        locator = ((c.get('source_text') or {}).get('locator') or '') if isinstance(c.get('source_text'), dict) else ''
+        if locator:
+            documents.add(re.sub(r':\d+$', '', locator).replace('\\', '/'))
+        rid = (c.get('object') or {}).get('requirement_id')
+        if text(rid):
+            rows.setdefault(rid, set()).update([c['id']] + list(c.get('bound_checks') or []))
+    return documents, rows
+
+
+def requirement_document(source, documents):
+    """A file of the requirement folder: the requirement source itself or another document beside it (an engineering
+    specification), written with its full path or a path relative to that folder's parent."""
+    source = str(source or '').replace('\\', '/')
+    folder, _, name = source.rpartition('/')
+    for document in documents:
+        home, _, own = document.rpartition('/')
+        if name == own or (folder and home and (home == folder or home.endswith('/' + folder))):
+            return True
+    return False
+
+
+def fail_counts(planned, row, functions, documents):
+    """Whether a bound row's FAIL reaches the requirement row: a requirement aspect with parameters takes a failure
+    only through a condition that is a clause of the requirement documents or a limit in the unit of one of its
+    parameters; a failure on another quantity of the same part stays on the tree row (R6 acceptance 2026-10-24,
+    claude2: a zener's low-current VZ failed TEMPERATURE_GRADE). PASS, INSUFFICIENT, a fail with no function item
+    behind it and an item naming no condition always count."""
+    if row.get('review_result') != 'FAIL' or not functions:
+        return True
+    units = requirement_bindings.units_of((planned.get('object') or {}).get('aspect'))
+    if not units:
+        return True
+    fid, _, key = str(row.get('fail_ref') or '').partition('/')
+    fn = functions.get(fid)
+    item = next((i for i in (fn or {}).get('fails') or [] if isinstance(i, dict) and i.get('key') == key), None)
+    if item is None:
+        return True
+    conditions = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+    named = [(e.get('via') or {}).get('condition') for e in edges(item) if isinstance(e.get('via'), dict)]
+    named += [c for c in item.get('conditions') or [] if isinstance(c, str)]
+    if not named:
+        return True
+    for condition in (conditions.get(n) for n in named):
+        if not condition:
+            continue
+        if requirement_document(condition.get('source'), documents or set()):
+            return True
+        unit = (condition.get('limit') or {}).get('unit') if isinstance(condition.get('limit'), dict) else None
+        if isinstance(unit, str) and unit.replace('µ', 'u') in units:
+            return True
+    return False
+
+
+def fail_filter(plan, results):
+    """The `counts` predicate for requirement_bindings.derive / derived_result, read off a record."""
+    functions = {fn.get('id'): fn for fn in (results or {}).get('functions') or [] if isinstance(fn, dict)}
+    documents, _ = requirement_rows(plan)
+    return lambda planned, row: fail_counts(planned, row, functions, documents)

@@ -47,6 +47,7 @@ PREFIX_KINDS = (
     (r'^K\d', RELAY), (r'^Y\d', CRYSTAL), (r'^X\d', CRYSTAL),
     (r'^T\d', TRANSFORMER), (r'^F\d', FUSE), (r'^SW\d', SWITCH),
     (r'^S\d', SWITCH), (r'^[UM]\d', IC), (r'^(J|P|CN)\d', CONNECTOR), (r'^BT\d', BATTERY),
+    (r'^BR\d', BRIDGE_RECTIFIER),
 )
 
 JST_CONNECTOR_RE = r'(?:^|[\s:])JST[-_]'

@@ -145,3 +145,13 @@ class FormatTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class NoTestPointTests(unittest.TestCase):
+    """R6 acceptance 2026-10-24, codex1 SR-03: a datasheet with no numeric point of the quantity at all could not be
+    recorded; an empty list with where it was looked for leaves the whole range open."""
+
+    def test_an_empty_list_needs_where_the_datasheet_was_searched(self):
+        self.assertTrue(about(errors(unboundable(test_points=[])), 'no_test_points_reason'))
+        self.assertTrue(about(errors(unboundable(test_points=[], no_test_points_reason='手册没给')), 'no_test_points_reason'))
+        self.assertEqual(errors(unboundable(test_points=[], no_test_points_reason='p5 Table 8 与 p9 Fig. 4 都没有 VZ 对 IZ 的数值点')), [])

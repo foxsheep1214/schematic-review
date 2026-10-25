@@ -226,3 +226,24 @@ class EstimateTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class PhaseNameTests(unittest.TestCase):
+    """R6 acceptance 2026-10-24: two reviewers named the same phases differently (0W-25C vs 0W-25C-带线待机) and 17 life
+    rows per pair did not pair. The criterion carries the numbers only; the named profile rides on the row."""
+
+    def test_renamed_phases_plan_the_same_row(self):
+        renamed = profile()
+        renamed['phases'][0]['name'], renamed['phases'][1]['name'] = 'charge@40C', 'standby-idle'
+        renamed['phases'].reverse()
+        parts = [('C2', 'Device:C_Polarized', '47u/35V', None)]
+        a = life_rows(build_review_plan(*life_board(parts=parts)))['C2']
+        b = life_rows(build_review_plan(*life_board(mission=renamed, parts=parts)))['C2']
+        self.assertEqual(a['criterion'], b['criterion'])
+        self.assertEqual(a['check_key'], b['check_key'])
+        for name in ('充电', '待机', 'charge@40C'):
+            self.assertNotIn(name, a['criterion'])
+        for piece in ('33.3%', '29200 h', '40 °C', '66.7%', '25 °C'):
+            self.assertIn(piece, a['criterion'])
+        self.assertIn('充电', a['mission_profile'])
+        self.assertIn('standby-idle', b['mission_profile'])

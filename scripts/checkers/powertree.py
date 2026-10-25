@@ -155,6 +155,11 @@ class PowerTree:
                 if self.feed and graph.kind(ref) in (pw.CONNECTOR, pw.BATTERY):
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'off-board contact (connector or battery)'}
+                if self.feed and graph.kind(ref) in (pw.TRANSFORMER, pw.BRIDGE_RECTIFIER):
+                    # A winding or a rectifier output is fed by the converter or the mains; whether it is a rail,
+                    # and from what, is the circuit review's question (R6 acceptance 2026-10-24: BIAS15/VCC/HV).
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'transformer winding or bridge rectifier; verify the converter and its input'}
                 if self.feed and graph.kind(ref) == pw.MOSFET and graph.role(node) in ('drain', 'source'):
                     other_role = 'source' if graph.role(node) == 'drain' else 'drain'
                     for other_node, other_net in graph.pins_of(ref).items():

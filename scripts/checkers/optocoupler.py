@@ -42,12 +42,14 @@ def internal_pullup_errors(pull, db=None):
     for field in ('node', 'citation'):
         if not isinstance(pull[field], str) or not pull[field].strip():
             errors.append('internal_pullup.' + field + ' must be non-empty text')
-    for field in ('resistance_ohm', 'bias_v'):
+    for field, floor in (('resistance_ohm', 0), ('bias_v', None)):
         if field not in pull:
             continue
         bounds = hotmath.span(pull[field])
-        if bounds is None or bounds[0] <= 0:
-            errors.append('internal_pullup.' + field + ' needs positive min/max')
+        if bounds is None or (floor is not None and bounds[0] <= floor) or bounds[0] < 0:
+            # a pull-up to the receiver's own ground (bias_v min 0) is a bias; the resistance itself must be positive
+            errors.append('internal_pullup.' + field + (' needs positive min/max' if floor is not None
+                                                        else ' needs min/max ≥ 0'))
     states = pull['states']
     if not isinstance(states, list) or not states or not all(isinstance(s, str) and s.strip() for s in states):
         errors.append('internal_pullup.states needs explicit applicable state IDs')

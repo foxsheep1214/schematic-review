@@ -265,17 +265,25 @@ def _unassigned_nets(candidates, ref):
 
 def discovery_refs(candidates, decisions):
     """Parts REQ-Q08 asks about: unassigned parts and the members of rejected candidates (not duplicates), less the
-    parts an add decision placed in a circuit."""
+    parts a circuit holds — placed by an add decision or members of an accepted, merged or split candidate (R6
+    acceptance 2026-10-24, codex1 SR-02: a rejected STARTUP chain's controller is owned by its converter)."""
     by_id = {c['id']: c for c in candidates.get('candidates', [])}
-    refs, added = {u['ref'] for u in candidates.get('unassigned', [])}, set()
+    refs, owned = {u['ref'] for u in candidates.get('unassigned', [])}, set()
     for decision in decisions if isinstance(decisions, list) else []:
-        if isinstance(decision, dict) and decision.get('decision') == 'reject' and decision.get('reason') != 'DUPLICATE_OF':
+        if not isinstance(decision, dict):
+            continue
+        kind = decision.get('decision')
+        targets = decision.get('candidate')
+        targets = targets if isinstance(targets, list) else [targets]
+        if kind == 'reject' and decision.get('reason') != 'DUPLICATE_OF':
             cand = by_id.get(decision.get('candidate'))
             if cand:
                 refs |= {m['ref'] for m in cand['members']}
-        elif isinstance(decision, dict) and decision.get('decision') == 'add' and isinstance(decision.get('members'), list):
-            added |= {r for r in decision['members'] if isinstance(r, str)}
-    return sorted(refs - added)
+        elif kind in ('accept', 'merge', 'split'):
+            owned |= {m['ref'] for t in targets for m in (by_id.get(t) or {}).get('members', [])}
+        elif kind == 'add' and isinstance(decision.get('members'), list):
+            owned |= {r for r in decision['members'] if isinstance(r, str)}
+    return sorted(refs - owned)
 
 
 def validate(intent, candidates, db=None):

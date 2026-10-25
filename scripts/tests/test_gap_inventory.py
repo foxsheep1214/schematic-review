@@ -56,3 +56,21 @@ class GapInventoryTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class CommodityTest(unittest.TestCase):
+    """R6 acceptance 2026-10-24, codex1 SR-01: plain resistors and capacitors are judged on conservative floors; their
+    datasheets are the reviewer's own tracking, one line, never a request per part to the designer."""
+
+    def test_plain_rc_datasheets_are_one_reviewer_line_not_part_requests(self):
+        checks = [{'id': 'DEV-C01.X', 'rule': 'DEV-C01', 'readiness': 'WAITING_EVIDENCE',
+                   'required_inputs': ['datasheet:C603', 'datasheet:R503', 'datasheet:U601', 'datasheet:CX101']}]
+        audit = {'materials': [{'identity': 'R-0603-10K', 'refdes': ['R12', 'R13'], 'status': 'NOT_FOUND'},
+                               {'identity': 'TH-NTC', 'refdes': ['TH101'], 'status': 'NOT_FOUND'}]}
+        inv = gap_inventory.build({'checks': checks}, audit)
+        parts = [r['refs'] for r in inv['by_owner']['part_data']]
+        self.assertEqual(sorted(map(tuple, parts)), [('CX101',), ('TH101',), ('U601',)])
+        reviewer = [r for r in inv['by_owner']['reviewer'] if r['input'] == gap_inventory.COMMODITY_INPUT]
+        self.assertEqual(len(reviewer), 1)
+        self.assertEqual(reviewer[0]['refs'], ['C603', 'R12', 'R13', 'R503'])
+        self.assertNotIn('C603', inv['by_ref'])

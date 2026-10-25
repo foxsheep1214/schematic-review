@@ -144,8 +144,11 @@ RCD_CRITERION = ('RCD 钳位：%s 与 %s、%s 在开关节点上吸收漏感能�
                  '（钳位电压减母线）对其耐压')
 PIN_LED_CRITERION = ('%s 直接驱动 %s 的 LED：按该脚手册的电流限值核；手册没给限值时，厂家参考电路有同样接法且负载不更重可判通过，'
                      '手册写了这种用法但没给数值记缺厂家数据，手册没写这种用法记失败项（超出规定区）')
-CONFIG_CRITERION = ('%s 的%s（%s）：手册允许 %s；这一组的设置决定 %s；%s配置值须落在允许范围内、满足需求，并包含硬件判定写下的'
-                    '设置（setting）；配置表未交付记 DELIVERABLE_PENDING（CONFIGURATION_TABLE）')
+# The criterion names only the device and the group; the declaration's citation, allowed range, affected aspects and
+# requirement ride on the row as `configuration` (R6 acceptance 2026-10-24: 7 CFG-D01 rows per pair unpaired on the
+# reviewer's wording of them).
+CONFIG_CRITERION = ('%s 的%s：配置值须落在手册允许范围内（出处、允许范围与这一组决定的方面见本行 configuration）、满足需求，并包含'
+                    '硬件判定写下的设置（setting）；配置表未交付记 DELIVERABLE_PENDING（CONFIGURATION_TABLE）')
 CONFIG_UNDECLARED_CRITERION = ('%s 的%s：先在 intent.devices.%s.configurable 按手册寄存器或配置章节写出处、允许范围和它决定的方面；'
                                '这一组对该器件不存在时本行记 NA 并引手册条款')
 CONFIG_DECLARE_CRITERION = ('%s 是可编程器件（%s）：在 intent.devices.%s.configurable 按手册寄存器、OTP/NVM 或配置章节声明配置组，'
@@ -768,11 +771,13 @@ class CircuitPlanning:
                                    required_inputs=['intent.devices.%s.configurable.%s' % (ref, group)],
                                    trigger=['role:%s' % role])
                     continue
-                required = ('需求要求 %s；' % item['required']) if item.get('required') else ''
-                self.add_check('CFG-D01', {'ref': ref, 'config_group': group}, key=group,
-                               criterion=CONFIG_CRITERION % (ref, title, item['citation'], item['allowed'],
-                                                             '、'.join(item['affects']), required),
-                               readiness='READY', trigger=['intent.devices.%s.configurable.%s' % (ref, group)])
+                row = self.add_check('CFG-D01', {'ref': ref, 'config_group': group}, key=group,
+                                     criterion=CONFIG_CRITERION % (ref, title),
+                                     readiness='READY', trigger=['intent.devices.%s.configurable.%s' % (ref, group)])
+                row['configuration'] = {'citation': item['citation'], 'allowed': item['allowed'],
+                                        'affects': list(item['affects'])}
+                if item.get('required'):
+                    row['configuration']['required'] = item['required']
                 if item.get('set_points'):   # proposals item 7, sixth trigger
                     self.add_check('PWR-C02', {'ref': ref, 'config_group': group, 'set_points': list(item['set_points'])},
                                    key='SET-POINT-' + group,
@@ -982,14 +987,19 @@ class CircuitPlanning:
         profile = requirement_parameters.mission_profile(self.intent)
         trigger = ['requirement:' + w['requirement'] for w in lives]
         wait = {} if profile else {'readiness': 'WAITING_EVIDENCE', 'required_inputs': ['intent.mission_profile']}
-        basis = (requirement_parameters.profile_text(profile) if profile else
+        # The criterion carries the profile's numbers without the phase names (the names are the reviewer's, the
+        # numbers are the requirement's); the named profile rides on the row as `mission_profile` for reading.
+        basis = (requirement_parameters.profile_criterion_text(profile) if profile else
                  '需求 %s 给了设计寿命，intent.mission_profile 还没写任务剖面' % '、'.join(sorted({w['requirement'] for w in lives})))
+        named = requirement_parameters.profile_text(profile) if profile else None
         for ref in fitted:
             cap = self.electrolytic(graph, ref)
             if cap:
                 extra = '；超级电容另核电压降额' if cap == 'super' else ''
-                self.add_check('DEV-C02', {'ref': ref}, key='LIFE', criterion=LIFE_CRITERION % (basis, extra),
-                               trigger=trigger, handoff=dict(LIFE_HANDOFF), **wait)
+                row = self.add_check('DEV-C02', {'ref': ref}, key='LIFE', criterion=LIFE_CRITERION % (basis, extra),
+                                     trigger=trigger, handoff=dict(LIFE_HANDOFF), **wait)
+                if named:
+                    row['mission_profile'] = named
                 continue
             name = self.wearout_class(graph, ref)
             if name is None:
@@ -997,13 +1007,16 @@ class CircuitPlanning:
             entry = catalog.WEAROUT_CLASSES[name]
             count = requirement_parameters.profile_count(profile, entry.event, ref) if entry.event else None
             if profile and entry.event and count is None:
-                self.add_check('DEV-C06', {'ref': ref, 'wearout': name}, key=name, applicability='NOT_APPLICABLE',
-                               criterion=WEAROUT_NA_CRITERION % (entry.title, ref, basis,
-                                                                 catalog.LIFE_EVENTS[entry.event]),
-                               trigger=trigger)
+                row = self.add_check('DEV-C06', {'ref': ref, 'wearout': name}, key=name, applicability='NOT_APPLICABLE',
+                                     criterion=WEAROUT_NA_CRITERION % (entry.title, ref, basis,
+                                                                       catalog.LIFE_EVENTS[entry.event]),
+                                     trigger=trigger)
+                row['mission_profile'] = named
                 continue
             counted = ('%s %g 次' % (catalog.LIFE_EVENTS[entry.event], count)) if count is not None else ''
-            self.add_check('DEV-C06', {'ref': ref, 'wearout': name}, key=name,
-                           criterion=WEAROUT_CRITERION % (entry.title, ref, basis, entry.checks, entry.basis,
-                                                          counted or '结论写成选型或 bom_constraint'),
-                           trigger=trigger, **wait)
+            row = self.add_check('DEV-C06', {'ref': ref, 'wearout': name}, key=name,
+                                 criterion=WEAROUT_CRITERION % (entry.title, ref, basis, entry.checks, entry.basis,
+                                                                counted or '结论写成选型或 bom_constraint'),
+                                 trigger=trigger, **wait)
+            if named:
+                row['mission_profile'] = named

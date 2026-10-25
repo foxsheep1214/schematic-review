@@ -40,7 +40,8 @@ import catalog
 import function_reading
 import results_model
 from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, finite, squeeze, text
-from function_reading import (ESTIMATE_PASS_CLASSES, covers, decides_row, edges, estimate_handoff,
+from function_reading import (requirement_document as _requirement_document, requirement_rows,
+                              ESTIMATE_PASS_CLASSES, covers, decides_row, edges, estimate_handoff,
     estimate_passes, judged, life_estimate, life_row, margin_proves, margin_verdict, overlaps,
     prototype_estimate, reference_circuit, reference_judged, scope, unjudged_message)
 from results_model import LEVELS, OPEN_KINDS, VERDICTS
@@ -747,10 +748,17 @@ def _monotonic_errors(label, item, worst, calculation, conditions):
                              'are given at')
     points = tried.get('test_points')
     read = item.get('checked') if isinstance(item.get('checked'), list) else []
-    if not (isinstance(points, list) and points):
+    # A datasheet with no numeric point of the quantity at all (R6 acceptance 2026-10-24, codex1 SR-03) records an
+    # empty list and says where it looked; the whole operating range then stays open.
+    no_points = isinstance(points, list) and not points and text(tried.get('no_test_points_reason'))
+    if no_points and not located({'locator': tried['no_test_points_reason']}):
+        errors.append(head + '.no_test_points_reason names the datasheet pages or tables searched for a numeric point of '
+                             'the quantity; none found is the reason, "the datasheet gives none" alone is not')
+    elif not (isinstance(points, list) and points) and not no_points:
         errors.append(head + '.test_points lists the datasheet test points of the quantity or of its slope: '
-                             '{condition (in checked), at{value, unit}}')
-    else:
+                             '{condition (in checked), at{value, unit}}; a datasheet with none gives [] and '
+                             'no_test_points_reason (where it was looked for)')
+    elif points:
         for p in points:
             where = p.get('at') if isinstance(p, dict) and isinstance(p.get('at'), dict) else {}
             if (isinstance(p, dict) and p.get('condition') in read and _finite(where.get('value'))
@@ -785,6 +793,8 @@ def _monotonic_errors(label, item, worst, calculation, conditions):
         found = _cell_errors(head, catalog.BOUNDS[cell], tried, span, conditions)
         if found:
             return found
+    if not at:
+        return []   # no test point anywhere: nothing bounds the range, it is open as a whole
     low, high = min(at), max(at)
     if low <= span[0] and span[1] <= high:
         return [head + ': operating_point %g–%g %s lies within the test points %g–%g; bound it from them '
@@ -1440,33 +1450,6 @@ def frame_errors(plan, checks, functions):
         if answered and frame['id'] not in ids:
             errors.append('functions: frame %s has reviewed member rows but no function verdict' % frame['id'])
     return errors
-
-
-def requirement_rows(plan):
-    """(requirement document paths, {requirement id: the rows bound to it}) from the plan's REQ-D01 rows."""
-    documents, rows = set(), {}
-    for c in (plan or {}).get('checks') or []:
-        if not (isinstance(c, dict) and c.get('rule') == 'REQ-D01'):
-            continue
-        locator = ((c.get('source_text') or {}).get('locator') or '') if isinstance(c.get('source_text'), dict) else ''
-        if locator:
-            documents.add(re.sub(r':\d+$', '', locator).replace('\\', '/'))
-        rid = (c.get('object') or {}).get('requirement_id')
-        if text(rid):
-            rows.setdefault(rid, set()).update([c['id']] + list(c.get('bound_checks') or []))
-    return documents, rows
-
-
-def _requirement_document(source, documents):
-    """A file of the requirement folder: the requirement source itself or another document beside it (an engineering
-    specification), written with its full path or a path relative to that folder's parent."""
-    source = str(source or '').replace('\\', '/')
-    folder, _, name = source.rpartition('/')
-    for document in documents:
-        home, _, own = document.rpartition('/')
-        if name == own or (folder and home and (home == folder or home.endswith('/' + folder))):
-            return True
-    return False
 
 
 def requirement_edge_errors(plan, checks, functions):

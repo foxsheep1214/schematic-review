@@ -1393,6 +1393,10 @@ ASPECT_RULES = OrderedDict([
 ])
 BOARD_ASPECTS = ('TEMPERATURE_GRADE', 'TEMPERATURE_DERATING', 'LIFETIME_BASIS', 'MISSION_PROFILE', 'ISOLATION_PARTS',
                  'ISOLATION_PATHS', 'TEST_ACCESS')
+# Aspects whose whole question is work after the schematic: their requirement row may be stage NA as a whole
+# (NA / OUTSIDE_SCHEMATIC_STAGE with the downstream handoff), the design obligations of the same requirement being
+# the other aspects' rows (R6 acceptance 2026-10-24, codex2 SR-02 / claude1).
+STAGE_ASPECTS = ('DOWNSTREAM_HANDOFF',)
 
 # The circuit types that usually carry an aspect (requirement owners, 2026-10-24; in Chinese 承接电路, the circuits
 # that realise the requirement, and 可承接的电路 for the ones the plan finds). A requirement row's candidate owners are

@@ -307,6 +307,16 @@ def profile_text(profile):
                                            p['ambient_c']) for p in profile['phases']))
 
 
+def profile_criterion_text(profile):
+    """The profile as a life row's criterion reads it: the same numbers as profile_text without the phase names, in
+    (share, load, ambient) order, so two reviewers who named the phases differently plan the same check (R6 acceptance
+    2026-10-24: 17 life rows per pair unpaired on names alone)."""
+    phases = sorted(profile['phases'], key=lambda p: (-p['share'], p['load'], p['ambient_c']))
+    return '任务剖面（%s，%g 年共 %g h）：%s' % (profile['requirement'], profile['years'], profile['hours'], '；'.join(
+        '%.1f%%（%g h，负载 %g%%，%g °C）' % (p['share'] * 100, round(p['hours']), round(p['load'] * 100, 1), p['ambient_c'])
+        for p in phases))
+
+
 def profile_count(profile, event, ref):
     """The count the profile gives `event` for part `ref`, or None."""
     counts = [e['count'] for e in (profile or {}).get('events') or []

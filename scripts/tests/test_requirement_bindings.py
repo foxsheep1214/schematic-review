@@ -21,6 +21,8 @@ import requirement_bindings as rb
 from validate_review import validate_review
 from plan_review import build_review_plan, validate_intent
 from test_decoupling import fixture, ledger, mark_pass, rebind
+import function_reading as fr
+import ledger4
 from ledger4 import defect
 from test_requirement_source import requirement_intent, write
 
@@ -108,7 +110,12 @@ class ResultTests(unittest.TestCase):
         bound = next(r for r in report['checks'] if r['id'] == 'DEV-C05.U1')
         if bound_result == 'FAIL':
             bound['severity'] = 'P2'
-            defect(report, 'DEV-C05.U1', 'F-1', 'F-1', plan=self.plan)
+            # the failure is on the part's temperature range, so the TEMPERATURE_GRADE requirement row inherits it
+            fn = ledger4.function(report, 'FN-F-1', ['DEV-C05.U1'], self.plan)
+            fn.setdefault('conditions', []).append({'id': 't1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt',
+                                                    'locator': 'p2 Table 1', 'says': 'TA −40..85 °C',
+                                                    'limit': {'min': -40, 'max': 85, 'unit': '°C'}, 'regime': 'operating', 'use': '判据'})
+            defect(report, 'DEV-C05.U1', 'F-1', 'F-1', plan=self.plan, conditions=['t1'])
             report.setdefault('findings', []).append({'id': 'F-1', 'severity': 'P2', 'check_ids': ['DEV-C05.U1'],
                                                       'title': 'x', 'evidence': bound['evidence']})
         return report
@@ -285,3 +292,49 @@ class OwnerCandidateTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class FailCountsTests(unittest.TestCase):
+    """R6 acceptance 2026-10-24 (claude2): a zener's low-current VZ failed its DEV-C05 row, and TEMPERATURE_GRADE
+    requirement rows bound to every DEV-C05 row inherited the FAIL. A requirement aspect with parameters takes a
+    failure only through a requirement clause or a limit in one of its parameters' units."""
+
+    def fixture(self, unit, source='evidence/ds/D2.txt'):
+        fn = {'id': 'FN-BIAS', 'conditions': [{'id': 'l1', 'kind': 'NUMERIC_LIMIT', 'source': source, 'locator': 'p5 Table 8',
+                                                 'says': 'VZ 15.7..16.3 V @ 5 mA', 'limit': {'min': 15.7, 'max': 16.3, 'unit': unit}}],
+              'fails': [{'key': 'VZ-LOW', 'finding_id': 'F-1', 'decides': [{'aspect': '器件应力', 'via': {'condition': 'l1'}}]}]}
+        planned = {'id': 'REQ-D01.TEMPERATURE-GRADE.REQ-TEMP', 'object': {'aspect': 'TEMPERATURE_GRADE'},
+                   'bound_checks': ['DEV-C05.D404', 'DEV-C05.U1']}
+        rows = {'DEV-C05.D404': {'review_result': 'FAIL', 'fail_ref': 'FN-BIAS/VZ-LOW', 'finding_id': 'F-1'},
+                'DEV-C05.U1': {'review_result': 'PASS'}}
+        return planned, rows, {'FN-BIAS': fn}
+
+    def test_a_failure_in_another_unit_stays_on_the_tree_row(self):
+        planned, rows, functions = self.fixture('V')
+        self.assertEqual(rb.derived_result(planned, rows, lambda p, r: fr.fail_counts(p, r, functions, set())), 'PASS')
+        self.assertEqual(rb.derived_result(planned, rows), 'FAIL')   # without the verdicts nothing is filtered
+
+    def test_a_failure_in_the_aspects_unit_or_through_a_requirement_clause_is_inherited(self):
+        planned, rows, functions = self.fixture('°C')
+        self.assertEqual(rb.derived_result(planned, rows, lambda p, r: fr.fail_counts(p, r, functions, set())), 'FAIL')
+        planned, rows, functions = self.fixture('V', source='需求/用户需求.md')
+        self.assertEqual(rb.derived_result(planned, rows, lambda p, r: fr.fail_counts(p, r, functions, {'需求/用户需求.md'})), 'FAIL')
+
+    def test_an_aspect_without_parameters_inherits_every_failure(self):
+        planned, rows, functions = self.fixture('V')
+        planned['object']['aspect'] = 'PORT_DETECTION'
+        self.assertEqual(rb.derived_result(planned, rows, lambda p, r: fr.fail_counts(p, r, functions, set())), 'FAIL')
+
+    def test_all_failures_elsewhere_derive_a_pass_that_names_them(self):
+        planned, rows, functions = self.fixture('V')
+        del rows['DEV-C05.U1']
+        plan = {'checks': [dict(planned, rule='REQ-D01')]}
+        results = {'functions': list(functions.values()), 'findings': [{'id': 'F-1'}],
+                   'checks': [dict(r, id=k) for k, r in rows.items()]}
+        count, errors = rb.derive(plan, results, fr.fail_filter(plan, results))
+        self.assertEqual((count, errors), (1, []))
+        row = next(r for r in results['checks'] if r['id'] == planned['id'])
+        self.assertEqual(row['review_result'], 'PASS')
+        self.assertIn('DEV-C05.D404', row['rationale'])
+        self.assertIn('不继承', row['rationale'])
+        self.assertNotIn('finding_id', row)

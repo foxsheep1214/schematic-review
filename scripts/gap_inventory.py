@@ -33,11 +33,22 @@ OWNERS = OrderedDict((
 ))
 REVIEWER = ('reviewer', '审查者自行追踪或计算（不向设计方索取）')
 REF_RE = re.compile(r'^[A-Z]{1,4}\d+$')
+# Plain resistors and capacitors are judged on conservative floors (references/commodity-floors.md), so their
+# datasheets are the reviewer's own tracking, never a request to the designer (R6 acceptance 2026-10-24, codex1
+# SR-01: 93 of them were listed as vendor material gaps). Safety capacitors (CX/CY), varistors and thermistors are not.
+COMMODITY_REF_RE = re.compile(r'^[RC]\d+$')
+COMMODITY_INPUT = '普通阻容的专属手册：按保守档计算（commodity-floors.md），不向设计方索取'
+
+
+def commodity(refs):
+    return bool(refs) and all(COMMODITY_REF_RE.match(ref) for ref in refs)
 
 
 def owner_of(key):
     head = key.split(':', 1)[0].strip()
     stem = head.split('.', 2)
+    if head in ('datasheet', 'datasheets', 'datasheet-audit') and commodity(refs_in(key)):
+        return REVIEWER[0]
     for owner, (_, prefixes) in OWNERS.items():
         for prefix in prefixes:
             if head == prefix or head.startswith(prefix + '.') or '.'.join(stem[:2]) == prefix:
@@ -61,6 +72,8 @@ def group_key(entry):
     head = entry['input'].split(':', 1)[0].strip()
     if entry['owner'] == 'part_data' and len(entry['refs']) == 1:
         return ('part', entry['refs'][0])
+    if entry['owner'] == REVIEWER[0] and head in ('datasheet', 'datasheets', 'datasheet-audit') and commodity(entry['refs']):
+        return ('commodity',)
     if entry['owner'] in ('assembly', REVIEWER[0]) and entry['refs']:
         return ('kind', entry['owner'], head)
     rail = re.match(r'^(power_rails\..+?)\.(?:available_a_min|citation|load_a|refs|state|voltage_v)\b', head)
@@ -83,6 +96,8 @@ def group(entries):
             target['status'] = entry['status']
         if key[0] == 'part':
             target['input'] = '%s 的器件资料' % key[1]
+        elif key[0] == 'commodity':
+            target['input'] = COMMODITY_INPUT
         elif key[0] == 'kind':
             target['input'] = key[2]
         else:
@@ -110,8 +125,9 @@ def build(plan, audit=None):
     for material in (audit or {}).get('materials') or []:
         if isinstance(material, dict) and material.get('status') in ('MISSING', 'NOT_FOUND'):
             key = 'datasheet-audit:%s' % material.get('identity')
-            entry = requests.setdefault(key, {'input': key, 'owner': 'part_data',
-                                              'refs': sorted(material.get('refdes') or []), 'checks': [], 'rules': set()})
+            refs = sorted(material.get('refdes') or [])
+            entry = requests.setdefault(key, {'input': key, 'owner': REVIEWER[0] if commodity(refs) else 'part_data',
+                                              'refs': refs, 'checks': [], 'rules': set()})
             entry['status'] = material.get('status')
     rows = sorted((finish(e) for e in group(requests.values())), key=lambda e: (-e['unblocks'], e['input']))
     by_owner = OrderedDict((owner, []) for owner in list(OWNERS) + [REVIEWER[0]])

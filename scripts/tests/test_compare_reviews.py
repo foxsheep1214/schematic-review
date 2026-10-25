@@ -243,3 +243,26 @@ class StrictIdentityTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class OwnerKeyTests(unittest.TestCase):
+    """R6 acceptance 2026-10-24: owners were compared by the circuit names the reviewers gave, so every requirement
+    differed between records that bound the same circuits. They are compared by circuit_key."""
+
+    def record(self, name, owners):
+        plan = {'checks': [
+            {'id': 'PWR-C02.%s-run.Q2' % name, 'rule': 'PWR-C02',
+             'object': {'circuit': name, 'circuit_key': 'POWER_CONVERTER-U1', 'ref': 'Q2', 'state': 'run'}},
+            {'id': 'REQ-D01.OUTPUT-LIMITS.REQ-OUT', 'rule': 'REQ-D01', 'requirement_owners': owners, 'bound_checks': ['x'],
+             'object': {'requirement_id': 'REQ-OUT', 'aspect': 'OUTPUT_LIMITS'}}]}
+        return {'where': name, 'plan': plan, 'results': {}}
+
+    def test_owners_are_compared_by_circuit_key(self):
+        report = cr.requirement_owners(self.record('BIAS', ['BIAS']), self.record('BIAS-SUPPLY', ['BIAS-SUPPLY']))
+        self.assertEqual(report['different'], 0)
+        self.assertEqual(report['rows'][0]['A']['owners'], ['POWER_CONVERTER-U1'])
+        self.assertEqual(report['rows'][0]['A']['owner_names'], ['BIAS'])
+        report = cr.requirement_owners(self.record('BIAS', ['BIAS']), self.record('BIAS-SUPPLY', ['SYS-POWER']))
+        self.assertEqual(report['different'], 1)
+        text = cr.markdown(dict(cr.compare(self.record('BIAS', ['BIAS']), self.record('X', ['SYS-POWER'])),))
+        self.assertIn('POWER_CONVERTER-U1（BIAS）', text)

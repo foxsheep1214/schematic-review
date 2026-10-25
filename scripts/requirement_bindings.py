@@ -172,10 +172,29 @@ def _judged(planned, rows):
     return [r for r in found if r.get('review_result') in ORDER]
 
 
-def derived_result(planned, rows):
-    """The worst result of the bound rows that are not NA; None when no bound row is judged."""
+def units_of(aspect):
+    """The unit spellings of the aspect's requirement parameters (µ and u alike); empty for an aspect without them."""
+    out = set()
+    for name in catalog.REQUIREMENT_ASPECTS[aspect].parameters if aspect in catalog.REQUIREMENT_ASPECTS else ():
+        parameter = catalog.REQUIREMENT_PARAMETERS[name]
+        out |= {u.replace('µ', 'u') for u in (parameter.unit, *parameter.units)}
+    return out
+
+
+def _counted(planned, rows, counts=None):
+    """The judged bound rows whose result reaches the requirement row: `counts(planned, row)` says whether a FAIL on
+    another quantity of the same part is kept out (function_reading.fail_counts); without it every judged row counts."""
+    return [r for r in _judged(planned, rows) if counts is None or counts(planned, r)]
+
+
+def derived_result(planned, rows, counts=None):
+    """The worst result of the bound rows that are not NA and whose failure concerns this aspect (`counts`, see
+    _counted); PASS when every judged row is a failure on another quantity; None when no bound row is judged."""
     judged = _judged(planned, rows)
-    return max((r['review_result'] for r in judged), key=ORDER.get) if judged else None
+    if not judged:
+        return None
+    counted = _counted(planned, rows, counts)
+    return max((r['review_result'] for r in counted), key=ORDER.get) if counted else 'PASS'
 
 
 def coverage_result(planned, rows):
@@ -200,8 +219,9 @@ def coverage_errors(expected, rows):
     return out
 
 
-def derive(plan, results):
-    """Write or check every bound requirement row; returns (count, errors). `results` is updated in place."""
+def derive(plan, results, counts=None):
+    """Write or check every bound requirement row; returns (count, errors). `results` is updated in place; `counts`
+    is the fail filter (function_reading.fail_filter), None keeps every bound result."""
     rows = {r.get('id'): r for r in results.get('checks') or [] if isinstance(r, dict)}
     findings = {f.get('id'): f for f in results.get('findings') or [] if isinstance(f, dict)}
     count, errors = 0, []
@@ -209,7 +229,7 @@ def derive(plan, results):
         if planned.get('rule') not in BINDERS or (planned.get('object') or {}).get('requirement_status') in ('OPEN', 'DEFERRED'):
             continue
         coverage = planned['rule'] == COVERAGE
-        result = coverage_result(planned, rows) if coverage else derived_result(planned, rows)
+        result = coverage_result(planned, rows) if coverage else derived_result(planned, rows, counts)
         if result is None:
             continue
         row = {'id': planned['id'], 'applicability': 'APPLICABLE', 'derived': True,
@@ -220,9 +240,19 @@ def derive(plan, results):
                                                        % '、'.join(planned['bound_checks']),
                        evidence=[{'source': 'review-results.json', 'locator': 'checks ' + ', '.join(planned['bound_checks'])}])
         else:
-            worst = next(r for r in _judged(planned, rows) if r['review_result'] == result)
-            row['rationale'] = '需求方面由绑定行承担：%s；结论取其中最差者（%s）' % ('、'.join(planned['bound_checks']), worst['id'])
-            row.update({k: worst[k] for k in COPIED if k in worst})
+            counted = _counted(planned, rows, counts)
+            left_out = [r['id'] for r in _judged(planned, rows) if r not in counted]
+            worst = next((r for r in counted if r['review_result'] == result), None)
+            if worst is None:   # every judged row failed on another quantity
+                row.update(review_result=result,
+                           rationale='需求方面由绑定行承担：%s；失败行 %s 的失败边不在本方面的量上（单位 %s），不继承，本方面无失败'
+                                     % ('、'.join(planned['bound_checks']), '、'.join(left_out),
+                                        '/'.join(sorted(units_of(planned['object'].get('aspect'))))))
+            else:
+                row['rationale'] = '需求方面由绑定行承担：%s；结论取其中最差者（%s）' % ('、'.join(planned['bound_checks']), worst['id'])
+                if left_out:
+                    row['rationale'] += '；%s 的失败边不在本方面的量上，不继承' % '、'.join(left_out)
+                row.update({k: worst[k] for k in COPIED if k in worst})
         existing = rows.get(planned['id'])
         if existing is not None and existing.get('review_result') and not existing.get('derived'):
             if existing['review_result'] != result:

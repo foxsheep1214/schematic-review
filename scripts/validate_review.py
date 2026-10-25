@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import sys
 import catalog
+import function_reading
 import results_model
 from review_workflow import workflow, decision
 from review_quality import FREEZE_BLOCKING_CODES, screen_quality
@@ -419,7 +420,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             require(result == "INSUFFICIENT" and item.get("gap_cause") == REQUIREMENT_GAP[req_status],
                     f"{key}: 需求状态为{REQUIREMENT_LABEL[req_status]}，结果须为 INSUFFICIENT 且 gap_cause 为 {REQUIREMENT_GAP[req_status]}")
         elif clauses_required and expected.get(key, {}).get("rule") == "REQ-D01" and result != "NA":
-            derived = requirement_bindings.derived_result(expected[key], checks)
+            derived = requirement_bindings.derived_result(expected[key], checks, function_reading.fail_filter(plan, report))
             if derived is None:
                 errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))
             else:   # the aspect is carried by tree rows; the requirement row is not judged again
