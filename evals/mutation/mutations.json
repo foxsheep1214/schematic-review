@@ -3720,8 +3720,8 @@
   "id": "M536",
   "name": "unread requirement numbers are not reported",
   "file": "scripts/plan_board.py",
-  "old": "            if unread:\n                self.diagnostics.append({'code': 'REQUIREMENT_NUMBERS_UNREAD'",
-  "new": "            if False:\n                self.diagnostics.append({'code': 'REQUIREMENT_NUMBERS_UNREAD'"
+  "old": "            if unread:",
+  "new": "            if False:"
  },
  {
   "id": "M537",
@@ -3986,7 +3986,7 @@
   "id": "M574",
   "name": "an active unassigned part needs no decision",
   "file": "scripts/circuit_decisions.py",
-  "old": "    return sorted(ref for ref in pending if kinds.get(ref) in ACTIVE_KINDS)",
+  "old": "    return sorted(ref for ref in pending if active(ref))",
   "new": "    return []"
  },
  {
@@ -4093,5 +4093,12 @@
   "file": "scripts/catalog.py",
   "old": "    ('STANDBY_POWER', ('PWR-C16',)),",
   "new": ""
+ },
+ {
+  "id": "M590",
+  "name": "owned device rows are not bound to the circuit frame",
+  "file": "scripts/plan_review.py",
+  "old": "            if frame is None or check.get('function_id') or check.get('applicability') == 'NOT_APPLICABLE':",
+  "new": "            if True:"
  }
 ]

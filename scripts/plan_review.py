@@ -402,6 +402,23 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             gaps = [f'datasheet:{identity}']
         return gaps, ['datasheet-audit:' + (entry.get('status') if entry else 'UNLISTED')]
 
+    def bind_owned_rows(self, checks):
+        """A row about parts a circuit owns (device identity, pins, stress, operating conditions, a scan finding on one
+        of its parts) is a member of that circuit's frame, like the circuit rows: the function verdict judges it and
+        derive_rows derives it, so which rows derive is no longer the reviewer's choice (SR task loop 2026-10-25, ③:
+        derived rows 387 / 287 / 185 on one board). Board-owned rows and rows already bound stay as they are."""
+        frames = {f['circuit']: f for f in self.functions if f.get('circuit')}
+        for check in checks:
+            owner = check.get('owner') or {}
+            frame = frames.get(owner.get('id')) if owner.get('kind') == 'CIRCUIT' else None
+            if frame is None or check.get('function_id') or check.get('applicability') == 'NOT_APPLICABLE':
+                continue
+            check['function_id'] = frame['id']
+            check['aspect'] = catalog.title(check['rule'])
+            state = (check.get('object') or {}).get('state')
+            frame['members'].append({'check_id': check['id'], 'rule': check['rule'], 'aspect': check['aspect'], 'state': state})
+            frame['blind_spots'].setdefault(check['rule'], catalog.explanation(check['rule'])['risk_if_omitted'])
+
     def _ready_check(self, rule, obj, gaps, trigger, **extra):
         return self.add_check(rule, obj, readiness='WAITING_EVIDENCE' if gaps else 'READY',
                               required_inputs=gaps, trigger=trigger, **extra)
@@ -660,6 +677,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         for check in plan['checks']:   # merge plan §5: rows are compared by what they ask, not by their ids or names
             check['check_key'] = check_key.key(check, plan['assemblies'])
             check['owner'] = row_owner.owner(check, parts, nets)
+        self.bind_owned_rows(plan['checks'])
         plan['owners'] = row_owner.table(circuits, parts)
         plan['interfaces'] = self.interfaces
         requirement_bindings.attach(plan['checks'], plan['owners'], plan['interfaces'])

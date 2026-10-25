@@ -15,6 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from checkers.planutil import slug
 import circuit_candidates as cc
 import circuit_decisions as cd
 from plan_review import build_review_plan, validate_intent
@@ -399,3 +400,31 @@ class UnknownKindTests(unittest.TestCase):
     def test_a_two_pin_unknown_part_stays_on_the_list(self):
         candidates = self.candidates([('1', 'A', 'VOUT'), ('2', 'B', 'REG_OUT')])
         self.assertNotIn('Reg9', cd.active_undecided(candidates, accept_all(candidates)))
+
+
+class OwnedRowBindingTests(unittest.TestCase):
+    """SR task loop 2026-10-25 (③): the rows about parts a circuit owns are members of that circuit's frame, so they
+    derive from its function verdict like the circuit rows; board-owned rows stay unbound."""
+
+    def setUp(self):
+        self.db, self.intent, self.audit, self.candidates = setup()
+        self.intent['circuit_decisions'] = accept_all(self.candidates)
+        self.intent = cd.write_circuits(self.intent, self.candidates)
+        self.plan = build_review_plan(self.db, self.intent, datasheet_audit=self.audit, candidates=self.candidates)
+
+    def test_device_rows_of_an_owned_part_bind_to_the_owner_frame(self):
+        rows = {c['id']: c for c in self.plan['checks']}
+        frame = next(f for f in self.plan['functions'] if f['id'] == 'FN-POWER-CONVERTER-U1')
+        members = {m['check_id']: m for m in frame['members']}
+        for cid in ('DEV-D01.U1', 'DEV-C05.U1', 'DEV-D05.U1'):
+            self.assertEqual(rows[cid]['function_id'], 'FN-POWER-CONVERTER-U1', cid)
+            self.assertEqual(rows[cid]['aspect'], members[cid]['aspect'])
+            self.assertEqual(members[cid]['state'], None)
+        self.assertIn('DEV-D01', frame['blind_spots'])
+
+    def test_board_owned_rows_stay_unbound(self):
+        for c in self.plan['checks']:
+            if c.get('owner', {}).get('kind') == 'BOARD':
+                self.assertIsNone(c.get('function_id'), c['id'])
+            elif c.get('owner', {}).get('kind') == 'CIRCUIT' and c['applicability'] == 'APPLICABLE':
+                self.assertEqual(c.get('function_id'), 'FN-' + slug(c['owner']['id']), c['id'])

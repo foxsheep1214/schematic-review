@@ -225,7 +225,7 @@
 | `required_inputs` | 当前缺失的输入 |
 | `trigger` | 实例化该项的可复现依据 |
 | `handoff` | 独立下游动作，可与任一结果并存；`constraint`/`verification` 逐条写接收方要做和要测的事，不写“执行 X 原文及其全部工况”这类只换编号的套话（`TEMPLATED_HANDOFF` 提示） |
-| `question` / `function_id` / `aspect` | 电路检查行才有：按规则模板填了电路、位号、状态和需求窗口的问题；所属功能框架；方面（= 规则标题）。问题里不许有禁止句（“不得…”“不把…外推”），校验 `question_errors` 拒绝，审查员补加的行同样受限 |
+| `question` / `function_id` / `aspect` | 电路检查行有：按规则模板填了电路、位号、状态和需求窗口的问题；所属功能框架；方面（= 规则标题）。电路拥有的器件行（器件身份、引脚、应力、工况、它某颗器件上的扫描发现）也预绑到该电路的框架（`function_id`、`aspect` = 规则标题，没有 `question`），在功能里按方面判，`judgements` / `open` 用 `check_ids` 可收窄到某颗器件的行；全板拥有的行不绑。问题里不许有禁止句（“不得…”“不把…外推”），校验 `question_errors` 拒绝，审查员补加的行同样受限 |
 | `requires` | 带前提的电路检查行才有：`{id, found[, unread]}`，前提名（`catalog.SUBJECT_REQUIRES`）、网表上满足前提的器件、网表说不清的器件；行 `object.ref` 取 `found`（没有时取 `unread`）的第一个 |
 
 `rule_plan[]` 回答“这类规则要不要跑”，`checks[]` 回答“具体审哪一项”，`functions[]` 是功能框架：
@@ -385,7 +385,7 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 
 | 字段 | 含义 |
 |---|---|
-| `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头 |
+| `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头。框架的 `members` 列出要在这个功能里答的全部行：电路检查行和电路拥有的器件行 |
 | `conditions[]` | [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`；只在可编程器件某个设置下成立的条件写 `setting{ref, group, value}`，该器件该组的 CFG-D01 结果行 `settings[{value, function}]` 须列出这个值，配置表缺口（DELIVERABLE_PENDING / CONFIGURATION_TABLE）只挡 CFG-D01 行和需求行；`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一 |
 | `calculation` | 同节第 2 步“算出了余量就下结论”：`result`、`margin{value,unit,against,basis[,aspect,states,check_ids]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值）、`claim_ids`、`inputs`（计算的输入量名，影响条目的 `via.input` 从这里取）、`assumptions`；只针对一个方面时写 `aspect`。同一功能里 `value`、`unit`、`against` 都相同的余量只能有一条：一个缺陷落在证明它的那个方面，要落到别的方面须是另一个量、另一条余量。没有数值的功能写 `no_calculation_reason` |
 | `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。厂家参考电路也可以撑起判断：该 TYPICAL_REFERENCE 条件写 `reference_circuit{figure, connection, load}`——参考电路的图号或页、本板与它相同的接法、它的元件值与本板负载的对照（本板不重于它），报告依据写“厂家参考电路 + 图号”。行要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |

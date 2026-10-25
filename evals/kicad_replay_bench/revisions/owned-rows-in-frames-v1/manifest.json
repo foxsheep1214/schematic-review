@@ -1,0 +1,15 @@
+{
+ "revision": "owned-rows-in-frames-v1",
+ "parents": {
+  "revisions/unknown-kind-decisions-v1/expected.json": "65141689553559da36895f7b6a998dd3c3472876f5e817280e7d6e41612fcd58",
+  "revisions/unknown-kind-decisions-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/unknown-kind-decisions-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81",
+  "revisions/unknown-kind-decisions-v1/manifest.json": "52edbc83ab3cebdf0f282dc8af463de70853c4d7ca9a89097c346e59a7479edc"
+ },
+ "derived_files": {
+  "revisions/owned-rows-in-frames-v1/expected.json": "9a6a6b8d919e657f368eadc7ae22c69fa5493dbc5f93043a39865a1f385152fd",
+  "revisions/owned-rows-in-frames-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/owned-rows-in-frames-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81"
+ },
+ "scope": "逐任务巡检 ③（2026-10-25）：电路拥有的器件行预绑到该电路的功能框架，由功能判定派生；只有 rf1-c2000-float-flyback-frames 的 FN-PRI-FLYBACK 成员数变化，其余答案不变。unknown-kind-decisions-v1 文件保持原字节。"
+}

@@ -649,9 +649,14 @@ class FunctionFrameTests(unittest.TestCase):
         rules = catalog.circuit_type('POWER_CONVERTER').subjects
         members = [c for c in plan['checks'] if c['object'].get('circuit') == 'REG-3V3' and c.get('circuit_type')]
         self.assertEqual(len(members), 2 * len(rules))
-        self.assertEqual({m['check_id'] for m in frame['members']}, {c['id'] for c in members})
+        # the frame holds the circuit rows and, since 2026-10-25, every applicable row the circuit owns (device rows of U1/R1)
+        owned = [c for c in plan['checks'] if (c.get('owner') or {}).get('id') == 'REG-3V3'
+                 and c.get('applicability') != 'NOT_APPLICABLE']
+        self.assertTrue({c['id'] for c in members} <= {m['check_id'] for m in frame['members']})
+        self.assertEqual({m['check_id'] for m in frame['members']}, {c['id'] for c in owned})
+        self.assertGreater(len(owned), len(members))
         self.assertIn('VCC_3V3 3.2–3.4 V', frame['question'])
-        self.assertEqual(set(frame['blind_spots']), set(rules))
+        self.assertEqual(set(frame['blind_spots']), {c['rule'] for c in owned})
         self.assertEqual(frame['checklist'], list(catalog.BOUNDING_STEPS))
         self.assertEqual(frame['objects'], {'refs': ['U1', 'R1'], 'nets': ['VCC_3V3']})
         for row in members:

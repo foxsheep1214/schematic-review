@@ -124,7 +124,9 @@ class FeedbackAndSwitchPinTests(unittest.TestCase):
         self.assertEqual(not_asked(plan), {'PWR-C15': 'FEEDBACK_PIN', 'PWR-C04': 'SWITCH_PIN'})
         for rule in ('PWR-C02', 'PWR-C03', 'PWR-C05'):   # asked of every converter
             self.assertEqual(len(asked(plan, rule)), 1, rule)
-        self.assertEqual(set(frame(plan)['blind_spots']), {'PWR-C02', 'PWR-C03', 'PWR-C05'})
+        blind = set(frame(plan)['blind_spots'])   # owned device/driver rows join the frame too (2026-10-25)
+        self.assertTrue({'PWR-C02', 'PWR-C03', 'PWR-C05'} <= blind)
+        self.assertFalse({'PWR-C15', 'PWR-C04'} & blind)
 
     def test_a_controller_with_feedback_and_gate_pins_is_asked_both_on_itself(self):
         db = converter_board([('VCC', 'VCC'), ('FB', 'FB'), ('GATE', 'GATE'), ('GND', 'GND')])

@@ -7,6 +7,25 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Owned device rows are pre-bound to their circuit's frame (2026-10-25)
+
+The one item the task-loop pass left to the user (③ 3.1 待定) is now done: every applicable row a circuit owns
+(`row_owner.owner` kind CIRCUIT, applicability not NOT_APPLICABLE: DEV-C01/C02/C03/C05/C06, DEV-D01/D02/D05, DRV-*,
+PRO-A02 and the like) is bound by the planner to that circuit's function frame (`plan_review.bind_owned_rows`, run
+right after the owner table is built), its `aspect` is the rule title, and the frame's `blind_spots` carry those rules.
+Which device rows derive from a function therefore stops being the reviewer's choice: on the same R6 board the three
+valid records derived 387 / 287 / 185 rows because each reviewer bound a different share of the device rows by hand,
+and that difference in the source of a conclusion fed the INSUFFICIENT-vs-PASS disagreements. Board-owned rows,
+visual checks and requirement rows outside the tree stay hand-filled (SKILL.md 3.3). The rf1 replay board's
+FN-PRI-FLYBACK frame grows from 15 to 98 members, so the KiCad replay bench gets the revision owned-rows-in-frames-v1
+(expected frames only; cases and sources unchanged). SKILL.md 3.1 / 3.3, references/plan-and-results.md (frame member
+and `function_id`/`aspect` rows), references/architecture.md §三 and docs/2026-10-25-task-loop.md record it.
+
+- Event: user:2026-10-25 ("请继续刚才的修改，我不小心按错了"); architecture decision proposed in 1bd770f
+- Causes: judgment 1
+- Changed: scripts/plan_review.py, SKILL.md, references/plan-and-results.md, references/architecture.md, docs/2026-10-25-task-loop.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/owned-rows-in-frames-v1/, evals/mutation/mutations.json, evals/mutation/README.md, scripts/tests/test_circuit_decisions.py, scripts/tests/test_plan_review.py, scripts/tests/test_subject_requires.py
+- Gates: 2109 unit tests, 539 contract tests, KiCad replay 195/195 (owned-rows-in-frames-v1), typical circuits unchanged (117/180/14); M590 killed; the task-loop batch's 120 changed-file mutations: 118 killed, M536 / M574 re-pointed after their anchors moved and killed on rerun
+
 ## Task loop from 2.1: done marks for ②–⑤, standby power on the tree, screening leaves derived rows alone (2026-10-25)
 
 The user asked for a pass over every task of the five steps (purpose, current state, improvement, executed on my
