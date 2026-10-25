@@ -7,6 +7,25 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## R7 acceptance: four independent first reviews on SR 660f790 (2026-10-25)
+
+The user asked, after the pre-binding commit, for a new four-reviewer acceptance on the R6 board (two gpt-6.1-sol
+medium, two opus 5.5 medium) to judge the improved skill. docs/2026-10-25-r7-acceptance.md records it: same-model
+Claude 87.6 % (alignment 91.7 %) is the first pair over the 85 % target; same-model Codex 70.8 % (R6 81.9 % at high),
+cross-model 71.8–83.7 % (R6 75.5–82.6 %). Converged layers: device kinds, candidate decisions, circuit members,
+mission profile, and now the pre-bound rows (derived rows 82–86 % of every record, R6 35–67 %), so the remaining
+disagreement sits in the function judgements themselves. Three sources account for the rest: the requirement
+extractor misses the 工程规格 tables (header 工程ID, slash-joined list ids), so the four reviewers hand-copied
+53 / 80 / 24 / 24 requirements; `states_add` let one reviewer add six states to every circuit on one generic citation
+(+130 rows); the width of an open item's `decides` is the reviewer's (the same T301 drawing gap blocked 62 / 16 / 29 /
+14 rows). Three genuine technical disagreements are named (USB ESD clamp vs U601 absolute maximum, VRAW peak during
+the FAULT latch delay, U501 minimum on-time). Six reported SR defects verified against the code, six feedback items,
+fix lists A (9 rule-maintenance items) and B (4 decisions for the user) written; nothing fixed in this entry.
+
+- Event: user:2026-10-25 ("提交完之后，再重新分法4个agent（两个sol6.1 medium + 两个opus5.5 medium），对R6的100W PD电路版进行审查，判断改进以后SR的能力")
+- Causes: rule_missing 3, rule_not_enforced 2, over_strict 3, false_alarm 3, judgment 3
+- Changed: docs/2026-10-25-r7-acceptance.md
+
 ## Owned device rows are pre-bound to their circuit's frame (2026-10-25)
 
 The one item the task-loop pass left to the user (③ 3.1 待定) is now done: every applicable row a circuit owns
