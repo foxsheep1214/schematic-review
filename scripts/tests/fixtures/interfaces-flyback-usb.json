@@ -1,11 +1,6 @@
 {
  "gaps": [
   {
-   "interface": "EXT-J1",
-   "pin": "RV1.2",
-   "reason": "role"
-  },
-  {
    "interface": "IF-ANALOG-U4~POWER_CONVERTER-U1",
    "pin": "U4.3",
    "reason": "role"
@@ -26,7 +21,7 @@
      "endpoints": [
       {
        "basis": "part-kind",
-       "domain": null,
+       "domain": "PRI",
        "owner": "POWER_PROTECTION-J1",
        "pin": "F1.1",
        "role": "PASSIVE",
@@ -34,7 +29,7 @@
       },
       {
        "basis": "part-kind",
-       "domain": null,
+       "domain": "PRI",
        "owner": "POWER_PROTECTION-J1",
        "pin": "J1.1",
        "role": "PASSIVE",
@@ -63,11 +58,11 @@
        "supply": []
       },
       {
-       "basis": null,
+       "basis": "part-kind",
        "domain": "PRI",
        "owner": "POWER_PROTECTION-J1",
        "pin": "RV1.2",
-       "role": null,
+       "role": "PASSIVE",
        "supply": []
       }
      ],

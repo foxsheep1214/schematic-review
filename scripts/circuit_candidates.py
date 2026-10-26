@@ -458,7 +458,7 @@ class Generator:
                     continue
                 kind = self.graph.kind(ref)
                 blob = _blob(self.graph.parts.get(ref, {}))
-                is_protective = kind in (pw.FUSE, pw.TVS, pw.BRIDGE_RECTIFIER) or bool(PROTECTIVE_RE.search(blob) or pw.NTC_RE.search(blob) or pw.VARISTOR_RE.search(blob))
+                is_protective = kind in (pw.FUSE, pw.TVS, pw.BRIDGE_RECTIFIER, pw.NTC, pw.VARISTOR) or bool(PROTECTIVE_RE.search(blob) or pw.NTC_RE.search(blob) or pw.VARISTOR_RE.search(blob))
                 if self.two_terminal(ref):
                     members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
                     protective |= is_protective

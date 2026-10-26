@@ -44,6 +44,9 @@
 | `OPTO-CTR` | 光耦 CTR 随 IF 和温度 | 25 °C 分档 min 保证；温度、IF 曲线归一化典型；寿命衰减只有应用笔记（**行业不给**全温/寿命保证） | 分档下限 × 典型温度曲线最低点，再 ÷2（含寿命衰减） | 增益不足→反馈环增益低、锁定阈值偏移→功能 | 高低温可测；寿命不可 | 允许估算判 PASS（÷2）。不因它在保护环里改为不估算：后果是阈值偏移，不是器件损坏。开放项写"索取全温 CTR"要提示 | codex1 FAULT-LATCH-DRIVE；codex2 U202/U404/FAULT-CTR；claude1 OPTO-CTR ×3（已算 2–4 倍余量仍开放） |
 | `NTC-SENSE` | 检测用 NTC R(T) | 表与公差保证（BOUNDED） | 不适用 | 温度读数偏差→功能 | 可测 | 按表推法 | |
 | `NTC-INRUSH-HOT` | 浪涌限制 NTC 热态重接 | 热态阻值厂家给 "R at Imax" 典型；上游限流 G6 可定界 | 热态阻值不估算：按厂家 R@Imax 或取零 | 热态重接浪涌→保险/整流桥损坏→损坏/安全 | 型式试验 | 不估算；按最坏（热态阻值取厂家 R@Imax 的 50 % 或零）判 | claude1 INRUSH-I2T（热态 NTC 阻值进 I²t） |
+| `VAR-UC` | 压敏电阻最大持续工作电压 Uc | 全保证（额定温度以上按降额曲线） | 不估算 | 长期超 Uc 热失控→安全 | 可测（母线电压） | 不估算：母线最高持续电压含容差不超过 Uc 保证值 | 扩表 2026-10-26（R7 RV101） |
+| `VAR-VC` | 压敏电阻钳位（残）电压随浪涌电流 | 额定电流处 Vc max 保证，别处靠单调 | 不估算 | 残压超下游耐受→损坏 | 型式试验 | 不估算；缺本板电流处的保证值按额定电流处 Vc max 判 | 扩表 2026-10-26 |
+| `VAR-SURGE` | 压敏电阻最大浪涌电流 / 能量（按次数降额） | 全保证（降额曲线） | 不估算 | 浪涌超额→开裂起火→安全 | 型式试验 | 不估算：需求等级与次数对降额曲线；寿命走 DEV-C06 VARISTOR | 扩表 2026-10-26 |
 | `RES-POWER` | 电阻功率、脉冲、TCR、耐压 | 额定与降额曲线保证；脉冲负载曲线厂家给作许用值（视作保证） | 不估算 | 过热开路、阻值漂移→损坏（高压分压开路→保护失效） | 可测（温升） | 不估算；商品地板见 commodity-floors.md | |
 | `MLCC-EFFECTIVE-C` | MLCC 有效容量（偏压、温度、老化） | 公差保证；偏压曲线**定义即典型**；老化按材料经验 | 典型偏压曲线 × (1 − 公差) × 老化 ×0.9，再 ×0.8 | 容量不足→纹波、补偿、去耦→功能/性能 | 可测 | 允许估算判 PASS（×0.8）；补偿网络用 ×0.7 | |
 | `ECAP-ESR-RIPPLE` | 电解 ESR 与纹波电流系数 | ESR max（120 Hz、20 °C）保证；频率/温度系数表厂家公布（视作保证 G5）；表外频率只有经验 | 表外频率 ESR ×1.3 | 寿命缩短→性能/寿命；长期过热鼓包→损坏 | 可测（温升） | 表内按 G5；表外允许估算（×1.3）；寿命走 DEV-C02 自己的路径。"资料已读只剩折算"不是厂家数据缺口 | |
@@ -62,7 +65,7 @@
 |---|---|
 | 允许估算判 PASS（带倍数） | ZENER-VZ-LOWER、ZENER-VZ-TEMP、TVS-LEAK-HOT、DIODE-VF、DIODE-VF-COLD、MOS-RDS-HOT、MOS-LINEAR、BJT-HFE、OPTO-CTR、MLCC-EFFECTIVE-C、ECAP-ESR-RIPPLE（表外）、IND-ISAT、IC-QUIESCENT、IC-IO-LEVEL（14 格） |
 | 按用途分：功能用途允许、损坏/保护用途要保证值或加条件 | ZENER-VZ-UPPER、DIODE-IR-HOT、MOS-VGS-ON、IC-THRESHOLD、IC-TIMING（5 格） |
-| 不估算 | REF-IKA-MIN、TVS-STANDOFF、TVS-VC、DIODE-SURGE、NTC-INRUSH-HOT、RES-POWER、FUSE-I2T、IC-IO-CURRENT、IC-RECOMMENDED（9 格） |
+| 不估算 | REF-IKA-MIN、TVS-STANDOFF、TVS-VC、DIODE-SURGE、NTC-INRUSH-HOT、RES-POWER、FUSE-I2T、IC-IO-CURRENT、IC-RECOMMENDED（9 格）；扩表加 VAR-UC、VAR-VC、VAR-SURGE（3 格） |
 | 已有保证推法（BOUNDED），不涉及 | MOS-SOA-HOT、BJT-SAT、NTC-SENSE（3 格） |
 
 对 R7 的影响：光耦 CTR 四条（三份记录）和齐纳低电流三条（两份记录）可按本表判 PASS 并移交样机，共收回被挡检查项约 36 + 7 + 7 + 1 + 1 + 1 + 1 + 3 项；
@@ -132,3 +135,10 @@ IC 再按手册声明的角色分（`catalog.DEVICE_ROLES`）；定界表的 31 
 3. 倍数取值：本稿按工程惯例给了每格一个数，没有统计依据；是统一成两档（功能 1.3、损坏 2）还是保留逐格。
 4. 估算判 PASS 的记录等级与准出：C 级 + CONDITIONAL_GO + 报告单列，还是沿用现行 B 级不影响 release。
 5. 定界表现有 31 格之外的量（BULK 电容浪涌电压、Q701 短路放电、Qg 驱动电流）没有格，现在写 `cell: NONE`；是否要为它们补格，还是留在规则级默认。
+
+## 扩表记录
+
+| 日期 | 触发 | 加了什么 |
+|---|---|---|
+| 2026-10-26 | R7 四份记录各报 3 条 NEW_DEVICE_KIND：RV101（TDK SIOV S14K300 压敏）、TH101（浪涌限制 NTC 5R/3A）、TH601（检测 NTC 100k/B4250）；定界表已有 `ntc` 格，词表却没有这个类别 | 词表加 `ntc`、`varistor` 两类（按共用词 NTC_RE / VARISTOR_RE 和 Thermistor 符号；TH/RT/NTC 位号前缀是最弱依据；RV 前缀不作依据，KiCad 的电位器也叫 RV；U/M/IC 位号或多于 3 脚的件不因描述里的词变成热敏/压敏），声明词表（intent.devices.kind）与手册线索（thermistor / inrush current limiter / varistor / SIOV）同加，磨损类 VARISTOR / INRUSH_NTC 和保护件判定读类别；压敏加 VAR-UC、VAR-VC、VAR-SURGE 三格，五列齐，均不估算（安全件）。NTC 的两格原有，五列在步 1 已填 |
+

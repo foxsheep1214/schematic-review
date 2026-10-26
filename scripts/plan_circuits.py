@@ -13,7 +13,7 @@ from checkers import powertree
 from checkers.netgraph import RAIL_RE, NetGraph, is_analog_sense_pair, is_ground
 from part_words import (BATTERY, BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET, OPTO,
                         PASSIVE_LINKS, RELAY, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER,
-                        ELECTROLYTIC_RE, LED_RE, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR_RE, name_matches,
+                        ELECTROLYTIC_RE, LED_RE, NTC, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR, VARISTOR_RE, name_matches,
                         normalize)
 from checkers.netgraph import is_ground as netgraph_ground
 from checkers.planutil import slug as _slug
@@ -1002,11 +1002,11 @@ class CircuitPlanning:
             return 'OPTO'
         if kind == DIODE and (LED_RE.search(text) or re.match(r'^LED\d', ref, re.I)):
             return 'LED'
-        if VARISTOR_RE.search(text):
+        if kind == VARISTOR or VARISTOR_RE.search(text):
             return 'VARISTOR'
         if kind == FUSE:
             return 'PTC' if PTC_RE.search(text) else 'FUSE'
-        if NTC_RE.search(text):
+        if kind == NTC or NTC_RE.search(text):
             ends = graph.terminals(ref)
             on_ends = {graph.kind(r) for n in ends for r in graph.refs_on(n) if r != ref}
             return 'INRUSH_NTC' if ends and not any(is_ground(n) for n in ends) and IC not in on_ends else None

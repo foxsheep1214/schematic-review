@@ -35,9 +35,10 @@ RELAY, OPTO, CRYSTAL, TRANSFORMER = 'relay', 'opto', 'crystal', 'transformer'
 FUSE, JUMPER, TESTPOINT, SWITCH = 'fuse', 'jumper', 'testpoint', 'switch'
 IC, CONNECTOR, UNKNOWN = 'ic', 'connector', 'unknown'
 BATTERY, BRIDGE_RECTIFIER = 'battery', 'bridge_rectifier'
+NTC, VARISTOR = 'ntc', 'varistor'   # 2026-10-26 table extension: the R7 board's TH101/TH601 and RV101 had no kind
 KIND_CONSTANTS = {k: k for k in (RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER, MOSFET, BJT,
                                  RELAY, OPTO, CRYSTAL, TRANSFORMER, FUSE, JUMPER, TESTPOINT, SWITCH,
-                                 IC, CONNECTOR, BATTERY, BRIDGE_RECTIFIER, UNKNOWN)}
+                                 IC, CONNECTOR, BATTERY, BRIDGE_RECTIFIER, NTC, VARISTOR, UNKNOWN)}
 # A datasheet-declared IC role (catalog.DEVICE_ROLES) classifies as IC; the role itself is read with
 # NetGraph.role_kind. ANCHOR_ROLES are the roles a circuit candidate is built around (registry rows with circuits).
 IC_ROLES = frozenset(catalog.DEVICE_ROLES)
@@ -51,6 +52,7 @@ PREFIX_KINDS = (
     (r'^T\d', TRANSFORMER), (r'^F\d', FUSE), (r'^SW\d', SWITCH),
     (r'^S\d', SWITCH), (r'^[UM]\d', IC), (r'^(J|P|CN)\d', CONNECTOR), (r'^BT\d', BATTERY),
     (r'^BR\d', BRIDGE_RECTIFIER),
+    (r'^(TH|RT|NTC)\d', NTC),   # RV is also KiCad's potentiometer prefix: a varistor needs its word
 )
 
 JST_CONNECTOR_RE = r'(?:^|[\s:])JST[-_]'
@@ -67,6 +69,10 @@ CONNECTOR_CONTACT_RE = (
 
 KEYWORD_KINDS = (
     (r'RELAY|继电器', RELAY),
+    # Thermistors and varistors by the shared words (NTC_RE / VARISTOR_RE); an IC refdes or a part with more than
+    # three pins never becomes one by a word in its description ("charger with NTC input").
+    (VARISTOR_RE.pattern, VARISTOR),
+    (NTC_RE.pattern, NTC),
     (r'OPTO|PC81[07]|LTV\d|TLP\d|6N13[57]|HCPL|ACPL|FOD\d|CNY17|VO6\d|SFH6\d{2,3}|EL8\d\d|PS2[5-9]\d\d|TCMT\d|KPC\d|H11[A-Z]\d|光耦', OPTO),
     (r'\bTVS\b|SMAJ|SMBJ|SMCJ|P6KE|1\.5KE|ESD\d|PESD|SM712', TVS),
     (r'ZENER|BZX|BZT5\d|MMSZ|1N47\d|稳压二极管', ZENER),
@@ -103,8 +109,8 @@ KEYWORD_KINDS = (
 )
 
 TWO_TERMINAL = {RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER,
-                FUSE, JUMPER}
-PASSIVE_LINKS = {RESISTOR, INDUCTOR, FERRITE, JUMPER, FUSE}
+                FUSE, JUMPER, NTC, VARISTOR}
+PASSIVE_LINKS = {RESISTOR, INDUCTOR, FERRITE, JUMPER, FUSE, NTC}
 
 GATE_NAMES = {'G', 'GATE', 'GT'}
 # 斯拉夫语库（如 e-radionica/Soldered）写作 ANODA/KATODA/KOLEKTOR/EMITER/BAZA
@@ -242,6 +248,8 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
                                for item in identities)):
                 continue
         if pattern == JST_CONNECTOR_RE and re.match(r'^(U|M|IC)\d', ref, re.I):
+            continue
+        if kind in (NTC, VARISTOR) and (re.match(r'^(U|M|IC)\d', ref, re.I) or (pin_count is not None and pin_count > 3)):
             continue
         if re.search(pattern, keyword_blob, re.I):
             if kind in (MOSFET, BJT) and pin_count is not None and pin_count < 3:

@@ -4520,5 +4520,33 @@
   "file": "scripts/review_functions.py",
   "old": "            cells = [c for c in named if catalog.BOUNDS[c].availability == 'INDUSTRY_NONE']",
   "new": "            cells = list(named)"
+ },
+ {
+  "id": "M651",
+  "name": "a bare RV refdes is a varistor (it is also a potentiometer)",
+  "file": "scripts/part_words.py",
+  "old": "    (r'^(TH|RT|NTC)\\d', NTC),   # RV is also KiCad's potentiometer prefix: a varistor needs its word\n",
+  "new": "    (r'^RV\\d', VARISTOR), (r'^(TH|RT|NTC)\\d', NTC),\n"
+ },
+ {
+  "id": "M652",
+  "name": "an IC becomes an NTC by a word in its description",
+  "file": "scripts/part_words.py",
+  "old": "        if kind in (NTC, VARISTOR) and (re.match(r'^(U|M|IC)\\d', ref, re.I) or (pin_count is not None and pin_count > 3)):\n            continue\n",
+  "new": ""
+ },
+ {
+  "id": "M653",
+  "name": "the inrush-NTC wearout class reads the words only, not the kind",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if kind == NTC or NTC_RE.search(text):",
+  "new": "        if NTC_RE.search(text):"
+ },
+ {
+  "id": "M654",
+  "name": "the varistor working-voltage cell allows an estimate",
+  "file": "scripts/catalog.py",
+  "old": "          'GUARANTEED', (), ('DAMAGE_OR_HAZARD',), _M, '不估算：母线最高持续电压",
+  "new": "          'GUARANTEED', (_e(1.2, ('REQUIRED_FUNCTION',), 'x'),), ('DAMAGE_OR_HAZARD',), _M, '不估算：母线最高持续电压"
  }
 ]

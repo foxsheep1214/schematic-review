@@ -28,6 +28,8 @@ KIND_CUES = (
     ('diode', ('rectifier', 'diode', 'schottky')),
     ('transformer', ('transformer',)),
     ('connector', ('connector', 'receptacle', 'terminalblock')),
+    ('ntc', ('ntcthermistor', 'thermistor', 'inrushcurrentlimiter')),
+    ('varistor', ('varistor', 'siov')),
 )
 IC_ROLE_CUES = {name for name, role in catalog.DEVICE_ROLES.items() if role.cues}
 DISCRETE_CUES = {'mosfet', 'bjt', 'diode', 'zener', 'tvs', 'bridge_rectifier'}

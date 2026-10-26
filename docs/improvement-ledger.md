@@ -7,6 +7,26 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## First table extension: ntc and varistor are device kinds (2026-10-26)
+
+The extension signals landed the same day reported, on each of the four R7 records, three NEW_DEVICE_KIND parts: RV101
+(TDK SIOV S14K300 varistor), TH101 (inrush-limiting NTC 5R/3A) and TH601 (sensing NTC 100k/B4250). The bounding table
+already had two `ntc` cells, but `part_words.classify` had no ntc or varistor kind: those parts were read by the words
+NTC_RE / VARISTOR_RE in a few places and were unknown everywhere else (the interface reader left RV101 without a role).
+The user asked to add both kinds first ("先把 ntc 和压敏电阻两个器件类别补进 part_words 词表和定界表（五列齐），再进 5.1").
+`ntc` and `varistor` are kinds now: by the shared words and the Thermistor/Varistor symbol names, by the TH/RT/NTC refdes
+prefix as the weakest evidence (RV is not evidence: KiCad potentiometers are RV too), never for a U/M/IC refdes or a part
+with more than three pins by a word in its description. They are declarable in intent.devices (board_intent.DEVICE_KINDS),
+the datasheet audit knows their title cues, the wearout classes VARISTOR / INRUSH_NTC and the protective-part reading use
+the kind, an NTC is a two-terminal series link. The varistor gets VAR-UC, VAR-VC and VAR-SURGE with the five boundary
+columns, all never estimating (a safety part). The interfaces golden file changes because RV101's twin on the synthetic
+board now has role PASSIVE in domain PRI instead of a role gap.
+
+- Event: review:SR-20261025-R7-验收-claude1-660f790/sr_improvements.NEW_DEVICE_KIND, user:2026-10-26 (先把 ntc 和压敏电阻两个器件类别补进词表和定界表)
+- Causes: knowledge_missing 2 (two device kinds absent from the vocabulary; no varistor cells in the table)
+- Changed: scripts/part_words.py, scripts/board_intent.py, scripts/datasheet_kinds.py, scripts/plan_circuits.py, scripts/circuit_candidates.py, scripts/catalog.py, references/bounding-table.md, references/automation.md, references/architecture.md, docs/2026-10-26-cell-boundary.md, scripts/tests/test_ntc_varistor_kinds.py, scripts/tests/test_cell_boundary.py, scripts/tests/fixtures/interfaces-flyback-usb.json, evals/mutation/mutations.json, evals/mutation/README.md
+- Gates: 2179 unit tests, rule contracts 69/69, KiCad replay 195/195, typical circuits 117/180/14 unchanged, M651–M654 killed from a snapshot; R7 four records NEW_DEVICE_KIND 3/3/3/3 → 0/0/0/0
+
 ## The estimate-pass boundary is decided per bounding-table cell, not per rule id (2026-10-26)
 
 The user called "SR 不允许用典型值或 25 °C 单点额定判 PASS，没有保证界就只能开放" the biggest current problem and set the

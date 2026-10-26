@@ -144,8 +144,9 @@ class ExtensionSignalTests(unittest.TestCase):
     """Decision 0 (2026-10-26, user: 器件类别是可以增长的): a device kind the vocabulary lacks, or a known kind whose
     parameter has no cell, is reported under 对 SR 的反馈 and blocks nothing."""
 
-    VARISTOR = {'parts': {'RV1': {'part': 'B72214S0301K101', 'value': 'S14K300'}, 'R1': {'value': '10k'},
-                          'RV2': {'part': 'S14K300', 'nc': True}}, 'pin2net': {}, 'nets': {}}
+    # a gas discharge tube: no refdes prefix, keyword or pin-name rule knows it (varistors and NTCs do since 2026-10-26)
+    UNKNOWN_PART = {'parts': {'GDT1': {'part': 'B88069X2320S102', 'value': 'GDT 350V'}, 'R1': {'value': '10k'},
+                              'GDT2': {'part': 'B88069X2320S102', 'nc': True}}, 'pin2net': {}, 'nets': {}}
 
     def gated(self, **extra):
         p, r, db = estimated(**extra)
@@ -156,8 +157,8 @@ class ExtensionSignalTests(unittest.TestCase):
         return out, [s for s in out['sr_improvements'] if s.get('kind')], (p, r, db)
 
     def test_a_part_the_classifier_cannot_place_is_a_new_device_kind(self):
-        [signal] = vr.extension_signals({'functions': []}, self.VARISTOR)       # the unfitted RV2 and the resistor are not
-        self.assertEqual((signal['kind'], signal['refs'], signal['clue']), ('NEW_DEVICE_KIND', ['RV1'], 'B72214S0301K101 / S14K300'))
+        [signal] = vr.extension_signals({'functions': []}, self.UNKNOWN_PART)       # the unfitted GDT2 and the resistor are not
+        self.assertEqual((signal['kind'], signal['refs'], signal['clue']), ('NEW_DEVICE_KIND', ['GDT1'], 'B88069X2320S102 / GDT 350V'))
         self.assertIn('part_words', signal['suggestion'])
 
     def test_a_known_kind_without_a_cell_is_a_new_bound_cell_and_blocks_nothing(self):
@@ -175,16 +176,16 @@ class ExtensionSignalTests(unittest.TestCase):
     def test_an_unboundable_datum_outside_the_table_is_signalled_too(self):
         report = {'functions': [{'id': 'FN-X', 'objects': {'refs': ['R1']}, 'open': [
             {'key': 'K', 'what': 'R1 的脉冲功率', 'worst_case': {'monotonic_tried': {'cell': 'NONE', 'side': 'UPPER'}}}]}]}
-        [signal] = [s for s in vr.extension_signals(report, self.VARISTOR) if s['kind'] == 'NEW_BOUND_CELL']
+        [signal] = [s for s in vr.extension_signals(report, self.UNKNOWN_PART) if s['kind'] == 'NEW_BOUND_CELL']
         self.assertEqual((signal['function_id'], signal['open'], signal['device_kinds']), ('FN-X', 'K', ['resistor']))
 
     def test_the_report_lists_the_signals_under_the_sr_feedback_section(self):
         import render_report
         out, _, (p, r, db) = self.gated()
-        out['sr_improvements'].extend(vr.extension_signals({'functions': []}, self.VARISTOR))
+        out['sr_improvements'].extend(vr.extension_signals({'functions': []}, self.UNKNOWN_PART))
         md = render_report.render(p, r, out, {})
         section = md[md.find('### 器件类别与定界表要扩的'):]
-        self.assertIn('| 词表里没有的器件类别 | RV1 | B72214S0301K101 / S14K300 |', section)
+        self.assertIn('| 词表里没有的器件类别 | GDT1 | B88069X2320S102 / GDT 350V |', section)
         self.assertIn('| 有类别、没有格的参数 | R1 | resistor | FN-OTHER 余量[0]：R1 额定功率 0.25 W', section)
         self.assertLess(md.find('## 对 SR 的反馈'), md.find('### 器件类别与定界表要扩的'))
 

@@ -83,6 +83,9 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `OPTO-CTR` | opto | CTR 随 IF 和温度 | LOWER | 输入电流 IF 与温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“身份冲突与身份分支”（取最低档） |
 | `NTC-SENSE` | ntc | 检测用 NTC 的 R(T) | — | 温度 / DECREASING | G5（`ntc_table_bound`、`ntc_beta_bound`） | `BOUNDED` | 本表“几条口径”检测用 NTC；datasheets.md“公开曲线表先于索取” |
 | `NTC-INRUSH-HOT` | ntc | 浪涌限制 NTC 热态重新接入 | LOWER | 热态 / — | G6（`inrush_peak_current`、`inrush_i2t`） | `BOUNDED` | 本表“几条口径”浪涌限制 NTC |
+| `VAR-UC` | varistor | 最大持续工作电压 Uc | LOWER | 环境温度（额定温度以上降额） / DECREASING | G1；G2 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md 扩表记录 |
+| `VAR-VC` | varistor | 钳位（残）电压上界 | UPPER | 浪涌电流（8/20 µs 同一波形） / INCREASING | G1；G2 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md 扩表记录 |
+| `VAR-SURGE` | varistor | 最大浪涌电流 / 能量（按次数降额） | LOWER | 脉冲次数与波形 / DECREASING | G1；G2 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md 扩表记录 |
 | `RES-POWER` | resistor | 电阻功率、脉冲、TCR 与耐压 | UPPER | 温度与脉宽 / — | G1；G5 | `VENDOR_DATUM` | commodity-floors.md 片式电阻 |
 | `MLCC-EFFECTIVE-C` | capacitor | MLCC 有效容量（偏压、温度、老化） | LOWER | 直流偏压与温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G8 | `VENDOR_DATUM` | commodity-floors.md MLCC；wca-formulas.md |
 | `ECAP-ESR-RIPPLE` | electrolytic | 电解 ESR 与纹波电流（温度、频率系数表） | — | 温度与频率 / NONMONOTONIC | G1；G5（`table_interpolate`）；G9 | `VENDOR_DATUM` | commodity-floors.md 电解 |
@@ -127,6 +130,9 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `OPTO-CTR` | `INDUSTRY_NONE` | ×2 · 功能/性能/寿命：25 °C 分档下限 × 典型温度曲线最低点（G7），再 ÷2（含寿命衰减） | 功能 | 可测、不可 | 允许估算判 PASS（÷2）；在保护环里也是阈值偏移，不是器件损坏。“索取全温 CTR”要提示 |
 | `NTC-SENSE` | `GUARANTEED` | 不估算 | 功能 | 可测 | 按表推法，不估算 |
 | `NTC-INRUSH-HOT` | `TYPICAL_BY_DEFINITION` | 不估算 | 损坏/安全 | 型式试验 | 不估算；热态阻值按 0 Ω（“按 0 Ω 定结论”） |
+| `VAR-UC` | `GUARANTEED` | 不估算 | 安全 | 可测 | 不估算：母线最高持续电压（含容差、过压）不超过 Uc 保证值，超额定温度按降额曲线；长期超 Uc 是热失控的安全后果 |
+| `VAR-VC` | `TEST_POINT` | 不估算 | 损坏 | 型式试验 | 不估算；缺本板浪涌电流对应的保证值时按额定电流处 Vc max 判下游耐受 |
+| `VAR-SURGE` | `GUARANTEED` | 不估算 | 安全 | 型式试验 | 不估算：需求浪涌等级与次数对降额曲线取保证值；寿命走 DEV-C06 VARISTOR |
 | `RES-POWER` | `GUARANTEED` | 不估算 | 损坏 | 可测 | 不估算：额定、降额与脉冲曲线按保证；商品地板见 commodity-floors.md |
 | `MLCC-EFFECTIVE-C` | `TYPICAL_BY_DEFINITION` | ×1.25 · 功能/性能/寿命：典型偏压曲线 × (1 − 公差) × 老化 0.9，再 ÷1.25（≈×0.8）；补偿网络 ÷1.4 | 功能/性能/寿命 | 可测 | 允许估算判 PASS（÷1.25） |
 | `ECAP-ESR-RIPPLE` | `TEST_POINT` | ×1.3 · 功能/性能/寿命：系数表外的频率：ESR ×1.3 | 性能/寿命/损坏 | 可测 | 表内按 G5（保证）；表外允许估算（×1.3）；寿命走 DEV-C02。“资料已读只剩折算”不是厂家数据缺口 |

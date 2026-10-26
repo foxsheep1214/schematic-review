@@ -29,7 +29,7 @@ IC_KINDS = tuple(catalog.DEVICE_ROLES)
 ANCHOR_KINDS = tuple(name for name, role in catalog.DEVICE_ROLES.items() if role.circuits)
 DEVICE_KINDS = ('bjt', 'mosfet', 'diode', 'zener', 'tvs', 'opto', 'relay', 'resistor', 'capacitor',
                 'inductor', 'ferrite', 'transformer', 'bridge_rectifier', 'fuse', 'crystal', 'connector', 'switch',
-                'jumper') + IC_KINDS
+                'jumper', 'ntc', 'varistor') + IC_KINDS
 PIN_ROLES = ('power', 'return', 'nc', 'other', 'absent')   # absent: a pin number the package skips (NCP1343 CASE 751BP: 1–8, 10)
 # Package families whose name ends in the pin count (QFN-16, TSSOP-20, SOIC-8, LQFP-48, BGA-256, DIP-8 ...); SOT and TO
 # carry a body code first (SOT-23-3, TO-220-3) so they count only with a second number. Any other name gives no count.
