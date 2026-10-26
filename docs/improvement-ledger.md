@@ -2228,3 +2228,29 @@ the same deliveries (needs reproducible review runs; tracked in ASG's plan).
 - Event: user:2026-10-19 (accepted ASG improvement plan, stage 5)
 - Causes: rule_missing 1
 - Changed: scripts/review_selection.py, scripts/tests/test_review_selection.py, scripts/check_ledger.py, scripts/tests/test_ledger.py, references/selection-review.md, references/workflow-handoff.md, SKILL.md, README.md
+
+## Deliverables apart from review findings (2026-10-26)
+
+After the strict second pass over SKILL.md ②–⑤ the user asked what still
+needs fixing and approved two architecture changes among seven items
+("第三第四项也做"). Item 3: a deliverable another stage owes (custom-part
+drawing, configuration table, firmware capability) was recorded as
+INSUFFICIENT / DELIVERABLE_PENDING and then treated like any other gap — a
+P0/P1 one blocked the release, and every one became a 待办 entry competing
+with real findings for 最先要解决的 3 件事. R7 claude1: 52 of its 72
+INSUFFICIENT rows waited for drawings or the configuration table and filled
+the work list. Now `validate_review` lists those rows in
+`pending_deliverables`, never as blockers; `release_for` caps the release at
+CONDITIONAL_GO when any are present (the deliverable is a condition of the
+freeze, not a reason against it); the derived work item carries
+`deliverable{kind, owner, deliverable}` and the report lists it under a new
+等交付物 section (id, artifact, owner, kind, consequence, what waits on it,
+the assumption the verdict used with its scope, what counts as delivered,
+rows) for the project manager, with a sentence in 结论 and a line in
+数字一览; it leaves 待办 and the first-three list. R7: blockers 97→45,
+48→12, 273→132, 131→41 across the four records, 52/36/141/90 rows waiting.
+
+- Event: user:2026-10-26 (SR review items after the strict pass: "不用兼容旧记录 … 剩下的优化你可以做。第三第四项也做")
+- Causes: judgment 1
+- Changed: scripts/validate_review.py, scripts/results_model.py, scripts/review_workflow.py, scripts/render_report.py, scripts/tests/test_deliverables_apart.py, scripts/tests/test_review_functions.py, SKILL.md, references/verdicts-and-release.md, references/report-and-remediation.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2218, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M667–M670 killed

@@ -334,6 +334,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     # is capped at CONDITIONAL_GO below, and the report lists these rows apart.
     estimated = estimated_passes(expected, checks, report.get('functions'))
     estimated_ids = {e['check_id'] for e in estimated}
+    pending = []   # INSUFFICIENT rows waiting for a deliverable (filled below)
     for cid in estimated_ids:
         if checks[cid].get('evidence_confidence') != 'C':
             errors.append(f"{cid}: a PASS on an estimate is C-grade evidence (derive writes it); it cannot claim "
@@ -465,7 +466,13 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if result == "INSUFFICIENT" and item.get("gap_cause") == "REVIEW_INCOMPLETE":
             blockers.append(f"{key}: review work not completed; finish the review before release")
         requirement_decision = item.get('gap_cause') == 'REQUIREMENT_OPEN'
-        if result in ("FAIL", "INSUFFICIENT") and not requirement_decision:
+        # A deliverable another stage owes (drawing, configuration table, firmware capability) is a condition of the
+        # freeze, not a reason against it (2026-10-26, item 3): it caps the release at CONDITIONAL_GO and is listed
+        # for the project manager under 等交付物, never a blocker.
+        pending_deliverable = result == "INSUFFICIENT" and item.get("gap_cause") == "DELIVERABLE_PENDING"
+        if pending_deliverable:
+            pending.append(key)
+        if result in ("FAIL", "INSUFFICIENT") and not requirement_decision and not pending_deliverable:
             if item.get("severity") == "P0":
                 blockers.append(f"{key}: P0 requires verified repair")
             elif (critical or item.get("blocking")) and not approval_ok:
@@ -620,7 +627,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 blockers.append(f"{item['code']}: {len(item['check_ids'])} " + (
                     "PASS rows need their own comparison before freeze" if item['code'] == 'TEMPLATED_PASS_RATIONALE'
                     else "evidence gaps need individual grading before freeze"))
-    release = release_for(errors, blockers, accepted, estimated)
+    release = release_for(errors, blockers, accepted, estimated, pending)
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")
     gap_causes = dict(Counter(x.get("gap_cause", "UNSPECIFIED") for x in checks.values()
@@ -631,6 +638,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     sr_improvements.extend(extension_signals(report, db))
     return {"quality_screening": screen_quality(plan, report, db, base_dir),
             "estimated_passes": estimated,
+            "pending_deliverables": sorted(pending),
             "scope": scope_decl,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
@@ -700,12 +708,13 @@ def extension_signals(report, db):
     return out
 
 
-def release_for(errors, blockers, accepted, estimated):
-    """GO needs no error, no blocker, nothing accepted by approval and nothing passing on an estimate; an accepted
-    item or an estimate pass (confirmed only on the prototype) caps the release at CONDITIONAL_GO."""
+def release_for(errors, blockers, accepted, estimated, pending=()):
+    """GO needs no error, no blocker, nothing accepted by approval, nothing passing on an estimate and no deliverable
+    outstanding; an accepted item, an estimate pass (confirmed only on the prototype) or a deliverable another stage
+    owes caps the release at CONDITIONAL_GO."""
     if errors or blockers:
         return "NO_GO"
-    return "CONDITIONAL_GO" if accepted or estimated else "GO"
+    return "CONDITIONAL_GO" if accepted or estimated or pending else "GO"
 
 
 def main():

@@ -4632,5 +4632,33 @@
   "file": "scripts/pack_review.py",
   "old": "        elif inside_skill(path):\n",
   "new": "        elif False:\n"
+ },
+ {
+  "id": "M667",
+  "name": "a pending deliverable blocks the release again",
+  "file": "scripts/validate_review.py",
+  "old": "        pending_deliverable = result == \"INSUFFICIENT\" and item.get(\"gap_cause\") == \"DELIVERABLE_PENDING\"\n",
+  "new": "        pending_deliverable = False\n"
+ },
+ {
+  "id": "M668",
+  "name": "release_for ignores pending deliverables",
+  "file": "scripts/validate_review.py",
+  "old": "    return \"CONDITIONAL_GO\" if accepted or estimated or pending else \"GO\"\n",
+  "new": "    return \"CONDITIONAL_GO\" if accepted or estimated else \"GO\"\n"
+ },
+ {
+  "id": "M669",
+  "name": "deliverables stay in the work list",
+  "file": "scripts/render_report.py",
+  "old": "    deliverables = [t for t in tasks if isinstance(t.get('deliverable'), dict)]\n",
+  "new": "    deliverables = []\n"
+ },
+ {
+  "id": "M670",
+  "name": "deliverable rows count as not in a work item",
+  "file": "scripts/render_report.py",
+  "old": "        owned = {k for t in gap_tasks + deliverables for k in t.get('check_ids') or []}\n",
+  "new": "        owned = {k for t in gap_tasks for k in t.get('check_ids') or []}\n"
  }
 ]

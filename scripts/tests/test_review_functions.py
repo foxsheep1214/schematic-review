@@ -500,7 +500,7 @@ class DeliverablePendingTests(unittest.TestCase):
         self.assertTrue(out['valid'], out['errors'])
         self.assertEqual(out['insufficient_by_cause'], {'DELIVERABLE_PENDING': 2})
         text = render(p, r, out)
-        self.assertIn('因为等交付物，现在还判断不了', text)
+        self.assertIn('另有 1 项交付物还没到（定制件图纸 1），到了再按假定复核，见“等交付物”', text)   # item 3, 2026-10-26
         task = next(t for t in out['workflow']['work_items'] if t['id'] == 'W-T1-DRAWING')
         self.assertEqual(task['next_action'], '由磁件设计交付：T1 磁件规格书：三重线型号、绕组顺序、边距、耐压试验值')
 
@@ -575,10 +575,10 @@ class DeliverablePendingTests(unittest.TestCase):
         fn = bias_function(); fn['open'] = [self.pending()]
         p, r, db = ledger(fn)
         out = vr.validate_review(p, r, db)
-        section = render(p, r, out).split('### W-T1-DRAWING')[1].split('\n## ')[0]
-        self.assertIn('- **按什么假定判的**：按 intent 的 48:6:21 匝比和三重线次级计算', section)
-        self.assertIn('适用范围：加强绝缘、5000 m', section)
-        self.assertIn('- **怎样算通过**：规格书给出上述项且耐压 ≥ 3000 Vac', section)
+        # Item 3 (2026-10-26): the deliverable is a row of 等交付物 for the project manager, not a 待办 entry.
+        row = next(l for l in render(p, r, out).splitlines() if l.startswith('| W-T1-DRAWING |'))
+        self.assertIn('| 按 intent 的 48:6:21 匝比和三重线次级计算（适用范围：加强绝缘、5000 m） |', row)
+        self.assertIn('| 规格书给出上述项且耐压 ≥ 3000 Vac |', row)
 
 
 class RowBindingTests(unittest.TestCase):

@@ -299,7 +299,9 @@ def derived_work_items(report):
         if gap_subclass(item):
             task['subclass'] = gap_subclass(item)
         if item.get('kind') == 'DELIVERABLE_PENDING':   # no input request carries these into the report
-            task.update(assumed=item.get('assumed'), required_scope=item.get('scope'), closure_criterion=item.get('closure'))
+            task.update(assumed=item.get('assumed'), required_scope=item.get('scope'), closure_criterion=item.get('closure'),
+                        deliverable={'kind': item.get('deliverable_kind'), 'owner': item.get('owner'),
+                                     'deliverable': item.get('deliverable')})
         # Every exit from a margin reaches the reader: the worst case under the public bound, and why it did not decide.
         worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
         bound = worst.get('bound') if isinstance(worst.get('bound'), dict) else {}
