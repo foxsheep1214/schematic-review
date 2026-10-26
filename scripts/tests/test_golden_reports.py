@@ -12,7 +12,7 @@ import unittest
 
 from test_review_stage_scope import decisive, downstream
 from test_validate_review import fixture, fail
-from validate_review import validate_review
+from validate_review import fingerprint, validate_review
 from render_report import render
 
 GOLDEN = Path(__file__).resolve().parent / 'fixtures' / 'golden_reports'
@@ -24,11 +24,45 @@ def defect():
     return p, r, db
 
 
+def functions():
+    """A function verdict whose 15 bound rows the tools derive at read time (none written), two of them open."""
+    from test_derive_rows import bias_plan
+    return bias_plan()
+
+
+def estimate():
+    """A PASS on a typical-value estimate: C-grade evidence, the prototype test handed on, release capped."""
+    from test_estimate_pass import estimated
+    return estimated(cell='ZENER-VZ-LOWER', method='G8', estimate_factor=1.2)
+
+
+def deliverable():
+    """A deliverable another stage owes: listed for the project manager, not a finding, release CONDITIONAL_GO."""
+    from test_deliverables_apart import pending_ledger
+    return pending_ledger()
+
+
+def extension():
+    """A fitted part the kind vocabulary does not know: a NEW_DEVICE_KIND signal under 对 SR 的反馈."""
+    from test_derive_rows import bias_plan
+    p, r, db = bias_plan()
+    db['parts']['GDT1'] = {'part': 'B88069X2320S102', 'value': 'GDT 350V'}
+    db['ref2page']['GDT1'] = 1
+    r['coverage']['components']['GDT1'] = [r['checks'][0]['id']]   # covered by the fixture's first row, like R1
+    r['db_digest'] = fingerprint(db)
+    return p, r, db
+
+
 FIXTURES = {
     'clean': fixture,           # every check PASS
     'defect': defect,           # one P1 finding
     'decisive': decisive,       # blocking INSUFFICIENT with an input request and work item
     'downstream': downstream,   # NA outside stage with an open downstream handoff
+    # Item 7 of the 2026-10-26 SR review: the newer architecture end to end on synthetic ledgers
+    'functions': functions,     # derived rows from a function verdict, work item with blocked judgements
+    'estimate': estimate,       # 按典型值估算的结论, grade C, CONDITIONAL_GO
+    'deliverable': deliverable, # 等交付物, out of 待办 and the first three
+    'extension': extension,     # 器件类别与定界表要扩的 under 对 SR 的反馈
 }
 
 

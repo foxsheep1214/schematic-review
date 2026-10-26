@@ -161,7 +161,7 @@ class ExtensionSignalTests(unittest.TestCase):
     def test_a_part_the_classifier_cannot_place_is_a_new_device_kind(self):
         [signal] = vr.extension_signals({'functions': []}, self.UNKNOWN_PART)       # the unfitted GDT2 and the resistor are not
         self.assertEqual((signal['kind'], signal['refs'], signal['clue']), ('NEW_DEVICE_KIND', ['GDT1'], 'B88069X2320S102 / GDT 350V'))
-        self.assertIn('part_words', signal['suggestion'])
+        self.assertIn('device_kinds', signal['suggestion'])
 
     def test_a_known_kind_without_a_cell_is_a_new_bound_cell_and_blocks_nothing(self):
         out, signals, _ = self.gated()                                              # cell NONE on R1's power

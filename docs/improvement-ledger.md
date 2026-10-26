@@ -2353,3 +2353,25 @@ documentation restructuring to decide on separately.
 - Causes: judgment 1
 - Changed: SKILL.md, references/architecture.md, references/automation.md, references/bounding-table.md, references/calculation-preflight.md, references/check-catalog.md, references/commodity-floors.md, references/datasheets.md, references/evidence-proportionality.md, references/execution-consistency.md, references/inputs-and-coverage.md, references/plan-and-results.md, references/report-and-remediation.md, references/requirement-clarifications.md, references/review-charter.md, references/reviewed-declarations.md, references/revision-review.md, references/simulation-evidence.md, references/verdicts-and-release.md, references/wca-formulas.md, references/workflow-handoff.md, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69 (documentation and a test only; replay and typical circuits unaffected)
+
+## End-to-end goldens for the newer architecture (2026-10-26)
+
+Item 7 of the review items the user approved ("剩下的优化你可以做"). The four
+golden reports (clean, defect, decisive, downstream) predate function
+verdicts: nothing rendered a derived row, an estimate pass, a pending
+deliverable or an extension signal end to end, so a wording or layout
+change in those sections had no whole-report snapshot. Four synthetic
+ledgers join `test_golden_reports.py`: `functions` (a function verdict whose
+15 bound rows the tools derive at read time, two open, a work item with
+blocked judgements), `estimate` (a PASS on a typical-value estimate:
+按典型值估算的结论, grade C, the prototype test handed on), `deliverable`
+(等交付物 for the project manager, release CONDITIONAL_GO) and `extension`
+(a fitted part the kind vocabulary does not know: NEW_DEVICE_KIND under
+对 SR 的反馈). The extension suggestion now names the registry
+(`device_kinds.KINDS`) instead of part_words, since item 6 moved the
+vocabulary there. The four old goldens are unchanged.
+
+- Event: user:2026-10-26 (SR review items after the strict pass: "剩下的优化你可以做")
+- Causes: judgment 1
+- Changed: scripts/tests/test_golden_reports.py, scripts/tests/test_cell_boundary.py, scripts/tests/fixtures/golden_reports/functions.md, scripts/tests/fixtures/golden_reports/estimate.md, scripts/tests/fixtures/golden_reports/deliverable.md, scripts/tests/fixtures/golden_reports/extension.md, scripts/validate_review.py, docs/improvement-ledger.md
+- Gates: pytest 2249, rule contracts 69/69 (tests and a message text only)

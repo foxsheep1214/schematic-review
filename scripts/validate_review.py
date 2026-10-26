@@ -681,7 +681,7 @@ def extension_signals(report, db):
         if graph.kind(ref) == 'unknown' and not part.get('nc'):
             out.append({'kind': 'NEW_DEVICE_KIND', 'refs': [ref],
                         'clue': ' / '.join(str(part.get(k)) for k in ('part', 'value') if text(part.get(k))),
-                        'suggestion': '按手册标题给这类器件一个类别名，补进 part_words 的词表和定界表（可得性、允许的估算与倍数、'
+                        'suggestion': '按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明）和定界表（可得性、允许的估算与倍数、'
                                       '失效后果、样机能否验、边界）；本板按已知的判，结论不等它'})
     for fn in report.get('functions') or []:
         if not (isinstance(fn, dict) and text(fn.get('id'))):
