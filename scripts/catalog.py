@@ -495,7 +495,8 @@ RULES = (
     Rule('PRO-A01', 'ESD/TVS 挂残网',
          'ESD/TVS 器件所在网络节点数少于 2，或不含真实信号端点', 'lint', 'device'),
     Rule('PRO-A02', '钳位器件窗口待复核',
-         '跨接轨与地的钳位器件按型号/轨名只给检索提示，逐项查 VRWM、VBR、VC、波形、温度与能量；型号不能证明导通或烧毁',
+         '跨接轨/信号与地的钳位器件：VRWM 不低于该网正常工作电压；钳位电压（VC@Ipp，没有就 VBR max）高于同网 IC 脚的绝对最大额定即 FAIL，'
+         '除非脚与钳位之间有串联阻抗且算出注入电流在芯片给出的允许范围内；型号/轨名只是检索提示，不能证明导通或烧毁',
          'lint', 'device'),
     Rule('PRO-A03', '光耦 LED 回路无限流元件',
          '光耦 LED 两条腿上都没有串联电阻，且未声明恒流驱动', 'optocoupler', 'device'),
@@ -1039,6 +1040,31 @@ CANDIDATE_STATES = {
     'STARTUP': ('power-on', 'restart'),
     'DEBUG': ('run',),       # 调试口的答案不随工作态变化，仍要一个态来展开行
 }
+
+# A state a decision adds (states_add) must be named by a requirement (R7 acceptance 2026-10-25, user: B1 a): the
+# decision maps each added state to a requirement id whose original text uses one of these words (or the state's own
+# name when it is not listed). One generic citation gave every circuit six states on one R7 record (+130 rows).
+STATE_WORDS = {
+    'standby': ('待机', '空载', 'standby', 'no-load', 'no load', 'idle'),
+    'off': ('关机', '关断', 'shutdown', 'switched off', 'power off', 'off state'),
+    'power_down': ('掉电', '断电', '停电', 'power down', 'power-down', 'brown-out', 'loss of mains', 'hold-up'),
+    'power-down': ('掉电', '断电', '停电', 'power down', 'power-down', 'brown-out', 'loss of mains', 'hold-up'),
+    'hotplug': ('热插拔', '插拔', 'hot plug', 'hot-plug', 'hotplug', 'attach', 'detach'),
+    'short_circuit': ('短路', 'short circuit', 'short-circuit', 'shorted'),
+    'short-circuit': ('短路', 'short circuit', 'short-circuit', 'shorted'),
+    'burst': ('突发', '轻载', 'burst', 'light load', 'light-load'),
+    'overload': ('过载', 'overload'),
+    'sleep': ('休眠', '睡眠', 'sleep', 'low power'),
+}
+
+
+def state_named_by(state, original_text):
+    """Whether a requirement's original text names the state: one of STATE_WORDS[state], or the state's own name."""
+    low = str(original_text or '').lower()
+    name = str(state).lower()
+    words = STATE_WORDS.get(name, ()) + (name, name.replace('_', ' ').replace('-', ' '))
+    return any(w.lower() in low for w in words)
+
 
 FRAME_QUESTIONS = {
     'POWER_CONVERTER': '输出是否落在负载要求的窗口内（{window}），电流应力、时序/电容条件、损耗和反馈环路是否都在保证范围内',
@@ -1626,7 +1652,7 @@ EXPLANATIONS = {
     'ANA-C04': _x('传感器开路、短路的读数可能落进正常区间，故障被当成正常', '全温和公差下正常区间与开路、短路读数不重叠并有裕量即关闭', inputs='ANA-T01 的路径、ANA-D01 的传感器参数', false_alarms='传感器接电源轨的一端只是偏置，轨上 IC 的供电脚不是检测脚'),
     'ANA-D01': _x('传感器连接正确，量程、接口或供电条件不符时读数仍无效', '电气连接、量程和接口按准确型号核实即关闭；摆放与热路径交热设计'),
     'PRO-A01': _x('图上有 ESD/TVS，挂在残留网上时外部能量会绕过它', '防护器件所在网含真实信号端点并接到端口即关闭', false_alarms='多路 ESD 阵列的未用通道；板内互连不需要防护的网'),
-    'PRO-A02': _x('钳位器件按型号看似合适，正常工作时可能导通、故障时又来不及钳位', '按实际用途交 PRO-C02 两侧核算即关闭；本项只是检索提示', false_alarms='连接器信号针上的 ESD 已归 PRO-D03；型号与轨名只能作线索'),
+    'PRO-A02': _x('钳位电压高于被保护脚绝限时，ESD 事件先打坏芯片再被钳住', 'VRWM 不低于工作电压、钳位电压不高于同网 IC 脚绝限（或串阻下注入电流在允许范围内）即关闭', inputs='钳位件的 VRWM/VBR/VC；同网 IC 脚绝限与允许注入电流', false_alarms='连接器信号针上的 ESD 已归 PRO-D03；型号与轨名只能作线索'),
     'PRO-A03': _x('光耦 LED 没有限流时，驱动端与 LED 都可能过流，隔离信号仍可能偶尔能传', '回路有串阻或经证实的恒流驱动即关闭；电流归 PRO-E01', false_alarms='恒流驱动或驱动脚自带限流；串阻画在另一条腿上'),
     'PRO-A04': _x('光耦输出没有上拉时，高电平靠漏电建立，输出状态不确定', '接收端有外部上拉或经证实的内部上拉即关闭；能力归 PRO-E01', false_alarms='接收端 MCU 内部上拉已启用；推挽输出的光耦'),
     'PRO-E01': _x('光耦能传信号，CTR 随寿命衰减后输出电流可能不足以拉低负载', '最小正向电流乘保证 CTR 初始值后满足负载，最大电流不超额即关闭', inputs='PRO-D01 的两侧电平'),
@@ -1659,6 +1685,44 @@ EXPLANATIONS = {
     'REQ-H01': _x('只改说明或换位号可能被误当成修复', '历史意见对应的器件字段、换网和网络成员变化都用新版证据核过即关闭', inputs='DOC-Q01 绑定的新旧输入'),
     'REQ-H02': _x('旧检查对象消失可能被误当成问题已关闭', '每个消失项都确认是删除、替代还是遗漏即关闭', inputs='REQ-H01 的差异'),
 }
+
+
+# Which rows an open item may block, by kind (R7 acceptance 2026-10-25, user: B2 a): the same T301 drawing gap blocked
+# 62 / 16 / 29 / 14 rows on four records. A calculation (C) or electrical-window (E) row and the requirement row can wait
+# for a vendor datum or a design value; document and identity rows (D), topology (T), hints (A) and coverage (Q/H/V)
+# cannot. A deliverable blocks by what it is: a custom part's drawing also holds that part's identity and pins; firmware
+# holds the signal/protocol rows and the configuration row; a configuration table holds the configuration row only.
+def _rule_class(rule_id):
+    return rule_id.split('-', 1)[1][0] if '-' in rule_id else ''
+
+
+def _rules_of_class(*classes):
+    return frozenset(r.id for r in RULES if _rule_class(r.id) in classes)
+
+
+COMPUTED_RULES = _rules_of_class('C', 'E') | {'REQ-D01'}
+OPEN_ITEM_RULES = {
+    'VENDOR_DATUM': COMPUTED_RULES,
+    'DESIGN_VALUE': COMPUTED_RULES | {'CFG-D01'},
+    'DELIVERABLE_PENDING': {
+        'CUSTOM_PART_DRAWING': COMPUTED_RULES | {'DEV-D01', 'DEV-D02', 'DEV-D05'},
+        'FIRMWARE_CAPABILITY': COMPUTED_RULES | frozenset(r.id for r in RULES if r.id.startswith('SIG-')) | {'CFG-D01'},
+        'CONFIGURATION_TABLE': frozenset({'CFG-D01', 'REQ-D01'}),
+    },
+}
+
+
+def blockable_rules(kind, deliverable_kind=None):
+    """The rule ids an open item of this kind may block, or None when the table has no row for it."""
+    table = OPEN_ITEM_RULES.get(kind)
+    if isinstance(table, dict):
+        return table.get(deliverable_kind)
+    return table
+
+
+def rules_titled(aspect):
+    """The rule ids whose title is `aspect` (frame members carry the rule title as aspect); empty for other text."""
+    return frozenset(r.id for r in RULES if r.title == aspect)
 
 
 def explanations_for(rule_ids):

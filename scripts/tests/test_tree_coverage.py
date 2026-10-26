@@ -145,6 +145,15 @@ class TreeReportTests(unittest.TestCase):
         checks[0].pop('open_ref')
         self.assertEqual(results_model.effective_verdicts(functions, plan, checks)[frame['id']], ('FAIL', ['W-BAD-X']))
 
+    def test_a_frames_own_row_pointing_at_another_functions_item_counts_as_open(self):
+        # FN-SYS-SEQUENCE read PASS while RST-T03.SYS-SEQUENCE, its own row, was INSUFFICIENT through an open_ref into
+        # another function (R7 acceptance 2026-10-25, codex1 SR-05)
+        plan, frame, functions, checks = self.delegated()
+        checks[0]['function_id'] = frame['id']
+        self.assertEqual(results_model.effective_verdicts(functions, plan, checks)[frame['id']], ('OPEN', ['W-GAP-X']))
+        checks[0]['open_ref'] = frame['id'] + '/GAP-OWN'   # its own item: the function's verdict already says so
+        self.assertEqual(results_model.effective_verdicts(functions, plan, checks)[frame['id']], ('PASS', []))
+
     def test_a_frame_whose_members_all_pass_keeps_its_verdict(self):
         plan, frame, functions, checks = self.delegated()
         checks[0]['review_result'] = 'PASS'

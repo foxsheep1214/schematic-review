@@ -173,22 +173,22 @@
    "expected": [
     {
      "rule": "PRO-A02",
-     "match": "D1 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_p；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D1 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_p；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D2 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC1；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D2 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC1；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D3 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC2；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D3 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC2；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D4 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_n；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D4 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_n；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     }
    ],
@@ -211,22 +211,22 @@
     },
     {
      "rule": "PRO-A02",
-     "match": "D1 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_p；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D1 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_p；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D2 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC1；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D2 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC1；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D3 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC2；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D3 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC2；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D4 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_n；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D4 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_n；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     }
    ]
@@ -796,82 +796,82 @@
    "expected": [
     {
      "rule": "PRO-A02",
-     "match": "D10 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/TX1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D10 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/TX1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D11 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RX1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D11 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RX1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D12 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RTS1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D12 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RTS1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D13 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DTR1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D13 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DTR1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D14 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/CTS1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D14 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/CTS1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D15 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DSR1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D15 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DSR1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D16 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RI1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D16 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RI1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D17 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DCD1_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D17 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DCD1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D18 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/TX2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D18 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/TX2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D19 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RX2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D19 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RX2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D20 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RI2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D20 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RI2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D21 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DCD2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D21 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DCD2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D22 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RTS2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D22 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RTS2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D23 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DTR2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D23 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DTR2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D24 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/CTS2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D24 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/CTS2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
      "rule": "PRO-A02",
-     "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=无，型号提示=无。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     }
    ],
@@ -930,82 +930,82 @@
     },
     {
      "rule": "PRO-A02",
-     "match": "D10 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/TX1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D10 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/TX1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D11 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RX1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D11 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RX1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D12 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RTS1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D12 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RTS1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D13 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DTR1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D13 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DTR1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D14 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/CTS1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D14 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/CTS1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D15 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DSR1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D15 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DSR1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D16 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RI1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D16 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RI1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D17 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DCD1_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D17 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DCD1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D18 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/TX2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D18 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/TX2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D19 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RX2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D19 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RX2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D20 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RI2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D20 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RI2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D21 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DCD2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D21 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DCD2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D22 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RTS2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D22 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RTS2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D23 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DTR2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D23 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DTR2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D24 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/CTS2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D24 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/CTS2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
      "rule": "PRO-A02",
-     "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=NoneV，型号提示=NoneV。分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；型号不能证明导通或烧毁。",
+     "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     }
    ]

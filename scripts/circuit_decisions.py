@@ -80,8 +80,10 @@ def _anchors(members):
     return [ref for ref, m in members.items() if m.get('role') in IDENTITY_ROLES]
 
 
-def derive(candidates, decisions):
-    """(circuits, errors): the circuits the decisions produce, in decision order; errors leave a circuit out."""
+def derive(candidates, decisions, requirement_text=None):
+    """(circuits, errors): the circuits the decisions produce, in decision order; errors leave a circuit out.
+    `requirement_text` ({requirement id: original text}, from requirements_extract) lets states_add be checked against
+    the requirement each added state names; None skips that reading (the mapping is still required)."""
     by_id = {c['id']: c for c in candidates.get('candidates', [])}
     members = {cid: {m['ref']: m for m in c['members']} for cid, c in by_id.items()}
     held = {ref for c in by_id.values() for ref in members[c['id']]}
@@ -125,6 +127,7 @@ def derive(candidates, decisions):
             extra = decision.get('states_add') or []
             if extra and not located(decision.get('citation')):
                 errors.append(f'{cid}: states_add {extra} needs a citation a reader can open (page, table, section, record id)')
+            errors += _state_requirement_errors(cid, extra, decision.get('state_requirements'), requirement_text)
             states += [s for s in extra if s not in states]
             circuits.append(_circuit(cid, cand['type'], members[cand['id']], _nets(cand), states,
                                      decision.get('citation') or f'candidate:{cand["id"]}', [cand['id']], cand['cross_cutting'],
@@ -325,6 +328,41 @@ def active_undecided(candidates, decisions):
     return sorted(ref for ref in pending if active(ref))
 
 
+def _state_requirement_errors(cid, extra, named, requirement_text):
+    """Each state a decision adds is named by one requirement (R7 acceptance 2026-10-25, user: B1 a): the decision maps
+    state → requirement id in state_requirements, and that requirement's original text names the state
+    (catalog.STATE_WORDS). One generic citation may not add a state to every circuit."""
+    if not extra:
+        return []
+    if not isinstance(named, dict) or any(not _text(named.get(s)) for s in extra):
+        return [f'{cid}: states_add {extra} needs state_requirements {{state: requirement id}} naming, for each added state, '
+                'the requirement whose text calls for it (待机/standby, 掉电/power down, 热插拔/hot plug …); the candidate '
+                'states are the type\'s fixed set']
+    errors = []
+    for state in extra:
+        rid = named[state]
+        if requirement_text is None:
+            continue
+        if rid not in requirement_text:
+            errors.append(f'{cid}: state {state} names requirement {rid}, which the requirement documents do not contain')
+        elif not catalog.state_named_by(state, requirement_text[rid]):
+            errors.append(f'{cid}: requirement {rid} does not name the state {state} (none of '
+                          f'{", ".join(catalog.STATE_WORDS.get(state, (state,)))} in its text); add the state only where a '
+                          'requirement asks for it')
+    return errors
+
+
+def requirement_texts(intent):
+    """{requirement id: original text} from intent.requirement_source, or None when the intent names no document."""
+    if not isinstance(intent, dict) or not intent.get('requirement_source'):
+        return None
+    import requirements_extract
+    source, _ = requirements_extract.load(intent['requirement_source'])
+    if not source:
+        return None
+    return {item['id']: requirements_extract.text(item) for item in source.get('items', [])}
+
+
 def validate(intent, candidates, db=None):
     """intent.circuits against the decisions and the candidate file; candidates bound to the netlist."""
     errors = []
@@ -335,7 +373,7 @@ def validate(intent, candidates, db=None):
     decisions = intent.get('circuit_decisions')
     if decisions is None:
         return errors + ['intent.circuit_decisions missing: every candidate needs a decision; run circuit_decisions.py']
-    circuits, derive_errors = derive(candidates, decisions)
+    circuits, derive_errors = derive(candidates, decisions, requirement_texts(intent))
     errors += derive_errors
     for ref in active_undecided(candidates, decisions):
         errors.append(f'{ref}: an active part no circuit holds needs a decision — add it into the circuit it serves '
@@ -367,7 +405,7 @@ def validate(intent, candidates, db=None):
 
 def write_circuits(intent, candidates):
     """The intent with circuits derived from its decisions (a new dict); errors are not written."""
-    circuits, errors = derive(candidates, intent.get('circuit_decisions') or [])
+    circuits, errors = derive(candidates, intent.get('circuit_decisions') or [], requirement_texts(intent))
     out = dict(intent)
     if not errors:
         out['circuits'] = circuits
@@ -385,7 +423,7 @@ def main(argv=None):
     intent = load_json(args.intent)
     candidates = load_json(args.candidates)
     db = load_json(args.db) if args.db else None
-    circuits, errors = derive(candidates, intent.get('circuit_decisions') or [])
+    circuits, errors = derive(candidates, intent.get('circuit_decisions') or [], requirement_texts(intent))
     if errors:
         print('决定无效:\n  - ' + '\n  - '.join(errors))
         return 1

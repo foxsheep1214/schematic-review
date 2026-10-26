@@ -127,6 +127,17 @@ class FixedGroupTests(unittest.TestCase):
         self.assertIn('CFG-D01.BOOT.U2', rows)
         self.assertNotIn('CFG-D01.DECLARE.U2', rows)
 
+    def test_an_undeclared_programmable_device_is_a_plan_diagnostic(self):
+        # R7 acceptance 2026-10-25 (A8): the CFG-D01 criterion follows the declaration, so two reviewers pair only when
+        # both declared; the plan says so and 2.1's done mark asks for zero
+        found = {d['ref']: d for d in build_review_plan(board(), intent())['diagnostics'] if d['code'] == 'CONFIGURABLE_UNDECLARED'}
+        self.assertEqual(sorted(found), ['U1', 'U2'])
+        self.assertEqual(found['U1']['groups'], [g for g, _ in catalog.CONFIG_GROUPS['pd_controller']])
+        self.assertIn('intent.devices.U1.configurable', found['U1']['message'])
+        every = [group(g) for g, _ in catalog.CONFIG_GROUPS['pd_controller']]
+        found = [d for d in build_review_plan(board(), intent(every))['diagnostics'] if d['code'] == 'CONFIGURABLE_UNDECLARED']
+        self.assertEqual([d['ref'] for d in found], ['U2'])
+
     def test_a_device_of_no_programmable_role_gets_no_configuration_row(self):
         plan = build_review_plan(board(), intent(kinds={}))
         self.assertEqual(cfg_rows(plan), {})

@@ -271,9 +271,9 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 扫描提示“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考地分区 `domain`
 （由审查者按需求和稳压器/钳位手册自行定界，逐条写 `citation`），网表上像电源而名字不像轨的网逐条声明成轨或写进 `rail_exclusions`，再合并扫描；空的 `power_rails` 会让全部阻容预判失效。扫描提示“阻值读不出的电阻”时当场告诉用户：列出位号和原值，请设计方改成 `阻值[/公差][/额定功率][/额定电压][/封装]` 的写法或确认阻值，不自行猜阻值；未改之前这些电阻的预判和脚电流不算。值后面多一个说不清的词（如 `47R/1%/2W/pulse`）时阻值照读，诊断 `RESISTOR_VALUE_WORD` 只列这个词：它说的要求（抗脉冲能量、额定电压）是特殊要求，写成 BOM 约束，不开“阻值读不出”的待办。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗行)。
 
-做完的标志：候选文件已生成，`circuit_decisions.py --write` 无错误（每个候选恰一条决定、未归属有源件 0、`intent.circuits` 已推出）；
+做完的标志：候选文件已生成，`circuit_decisions.py --write` 无错误（每个候选恰一条决定、未归属有源件 0、加的工作态都有 `state_requirements` 点名的需求、`intent.circuits` 已推出）；
 带候选的冷扫（⑤）不再提示未声明电压的轨、无界节点/跨域、`CIRCUIT_TYPE_MISFIT`、阻值读不出；候选文件的 `gaps` 清零，
-`DEVICE_KIND_GENERIC` 列的 ic 逐颗看过；REQ-Q08 清单上只剩两端件。
+`DEVICE_KIND_GENERIC` 列的 ic 逐颗看过；`CONFIGURABLE_UNDECLARED` 为 0（可编程器件的配置组都已在 `devices.<位号>.configurable` 声明）；REQ-Q08 清单上只剩两端件。
 
 #### 2.2 资料请求与重审计
 
@@ -332,7 +332,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
 
 做完的标志：`review-results.json` 的 `functions[]` 与计划的 `functions[]` 一一对应，每个功能有 verdict 与 evidence；
-开放项、失败项每条有 `key`、`kind`、`decides`；要算数的功能有计算记录，不用算的写 `no_calculation_reason`；
+开放项、失败项每条有 `key`、`kind`、`decides`，每条边只挡这类开放项能挡的行（[每类开放项能挡哪些行](references/plan-and-results.md#三层台账)）；要算数的功能有计算记录，不用算的写 `no_calculation_reason`；
 框架里每个方面×状态都有判断或开放项（派生时 `derive_rows.py` 不报“未判”）。
 
 #### 3.2 行派生

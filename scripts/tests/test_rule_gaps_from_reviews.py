@@ -111,7 +111,9 @@ class NonIcDeviceKindTest(unittest.TestCase):
                 kind, quote = quotes[ref]
                 intent['device_kinds'] = {ref: {'kind': kind, 'page': 1, 'quote': quote}}
                 rebind(db, intent)
-                self.assertIn('unverified-device-pinout:' + ref, build_decoupling_inventory(db, intent)['discovery_gaps'])
+                # classify already reads BR/T refdes as bridge/transformer: no pin table is asked even before the kind is
+                # verified (R7 acceptance 2026-10-25, A4); the verified kind keeps it closed
+                self.assertNotIn('unverified-device-pinout:' + ref, build_decoupling_inventory(db, intent)['discovery_gaps'])
                 audit = {'device_kinds': {ref: dict(intent['device_kinds'][ref], status='VERIFIED',
                                                     document='synthetic.pdf', document_sha256='a' * 64)}}
                 inv = build_decoupling_inventory(db, board_intent.with_verified_kinds(intent, audit))

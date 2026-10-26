@@ -370,6 +370,16 @@ class DecouplingInventoryTests(unittest.TestCase):
         rebind(db, intent)
         self.assertIn('CUSTOM_IC', build_decoupling_inventory(db, intent)['unverified_device_refs'])
 
+    def test_an_undeclared_transformer_is_not_an_unverified_device(self):
+        # classify reads T301 as a transformer from its refdes/keyword; it has no IC supply to bypass whether or not the
+        # reviewer declared it (R7 acceptance 2026-10-25, codex1 SR-04)
+        db, intent = fixture()
+        add(db, 'T9', 'TRANSFORMER', [('1', 'P1', 'VCC_3V3'), ('2', 'P2', 'SW'), ('3', 'S1', 'OUT'), ('4', 'S2', 'GND')])
+        rebind(db, intent)
+        inv = build_decoupling_inventory(db, intent)
+        self.assertNotIn('T9', inv['unverified_device_refs'])
+        self.assertNotIn('unverified-device-pinout:T9', inv['discovery_gaps'])
+
     def test_two_terminal_part_is_not_an_inventory_gap(self):
         cases = {'native-diode': ('Device:D', [('1', 'K', 'VCC_3V3'), ('2', 'A', 'U1_IO')]),
                  'native-tvs': ('Device:D_TVS', [('1', 'A1', 'U1_IO'), ('2', 'A2', 'GND')]),

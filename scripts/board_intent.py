@@ -30,7 +30,7 @@ ANCHOR_KINDS = tuple(name for name, role in catalog.DEVICE_ROLES.items() if role
 DEVICE_KINDS = ('bjt', 'mosfet', 'diode', 'zener', 'tvs', 'opto', 'relay', 'resistor', 'capacitor',
                 'inductor', 'ferrite', 'transformer', 'bridge_rectifier', 'fuse', 'crystal', 'connector', 'switch',
                 'jumper') + IC_KINDS
-PIN_ROLES = ('power', 'return', 'nc', 'other')
+PIN_ROLES = ('power', 'return', 'nc', 'other', 'absent')   # absent: a pin number the package skips (NCP1343 CASE 751BP: 1–8, 10)
 # Package families whose name ends in the pin count (QFN-16, TSSOP-20, SOIC-8, LQFP-48, BGA-256, DIP-8 ...); SOT and TO
 # carry a body code first (SOT-23-3, TO-220-3) so they count only with a second number. Any other name gives no count.
 COUNTED_PACKAGES = re.compile(
@@ -307,9 +307,13 @@ def context(intent, key, extra=()):
     return out
 
 
+def _role(spec):
+    return spec.get('role') if isinstance(spec, dict) else None
+
+
 def pin_sets(db, ref, device):
     """官方脚表与网表/符号实有脚的双向差集。"""
-    official = {ref + '.' + pin for pin in device['pins']}
+    official = {ref + '.' + pin for pin, spec in device['pins'].items() if _role(spec) != 'absent'}
     observed = set()
     for field in ('pin2net', 'pinname', 'pintype', 'declared_pinname', 'declared_pintype'):
         observed.update(n for n in db.get(field, {}) if n.partition('.')[0] == ref)
@@ -322,6 +326,8 @@ def pin_disposition(db, ref, device):
     pseudo = set(db.get('pseudo_nets', []))
     unconnected, nc_connected = [], []
     for pin, spec in sorted(device['pins'].items()):
+        if _role(spec) == 'absent':
+            continue   # the package has no such pin, so the symbol has nothing to connect
         node = ref + '.' + pin
         net = pin2net.get(node)
         if not net or net in pseudo or len(nets.get(net, [])) < 2:

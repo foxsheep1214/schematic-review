@@ -218,9 +218,15 @@ def effective_verdicts(functions, plan, checks):
         verdict, ids = fn.get('verdict'), []
         for member in (frames.get(fn['id']) or {}).get('members') or []:
             row = rows.get(member.get('check_id')) if isinstance(member, dict) else None
-            if not isinstance(row, dict) or row.get('function_id') in (None, fn['id']):
+            if not isinstance(row, dict) or row.get('function_id') is None:
                 continue
             result = row.get('review_result')
+            if row.get('function_id') == fn['id']:
+                # this function's own row: it inherits only when its ref points at another function's item (a shared
+                # gap named through check_ids, derive_rows.named_elsewhere; R7 acceptance 2026-10-25, codex1 SR-05)
+                ref = row.get('fail_ref') if result == 'FAIL' else row.get('open_ref')
+                if not (text(ref) and '/' in ref and ref.split('/', 1)[0] != fn['id']):
+                    continue
             if result == 'FAIL':
                 verdict, ref = 'FAIL', row.get('fail_ref')
             elif result == 'INSUFFICIENT':

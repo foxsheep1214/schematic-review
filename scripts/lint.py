@@ -67,7 +67,7 @@ def _fmt_v(value):
 
 
 BOOTSTRAP_PIN_RE = re.compile(r'^(BOOT|BST|CBOOT|BTST|CB)\w*$', re.I)
-STARTUP_PIN_RE = re.compile(r'^(HV|HVIN|HV_?IN|HV_?START\w*|VSTART\w*|VSTR|STARTUP)$', re.I)
+STARTUP_PIN_RE = pw.STARTUP_PIN_RE
 THERMAL_PAD_PIN_RE = re.compile(r'^(E?PAD\w*|EP|TAB|EXPOSED\w*|THERMAL\w*)$', re.I)
 NEGATIVE_SUPPLY_PIN_RE = re.compile(r'^(-\w+|\w+-|V-|VEE|VNEG|V_?NEG|VSS\w*|V_?MINUS|\w+[_-](NEG|RTN|RET|MINUS)|COM|0V)$', re.I)
 SUPPLY_PIN_RE = re.compile(r'^(VDD|VCC|AVDD|DVDD|VBAT|VDDA|VDDIO|VCCA|VCCIO)\w*$'
@@ -298,6 +298,25 @@ class Lint:
             if kind == IC or (kind in (pw.MOSFET, pw.BJT) and self.graph.role(node) == 'gate'):
                 inside = True
         return inside
+
+    def _protected_pins_text(self, net):
+        """The IC pins the clamp protects: on the clamp's own net (no series impedance between them) or one resistor away
+        (R7 acceptance 2026-10-25, user: B3 a — the clamp voltage is compared with these pins' absolute maximum)."""
+        direct, behind = [], []
+        for node in self.graph.nodes_on(net):
+            ref = node.partition('.')[0]
+            if self.graph.kind(ref) == IC and self.graph.is_fitted(ref):
+                direct.append(f'{node}({self.graph.pinname.get(node) or "?"})')
+            elif self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2 and net in self.graph.nets_of(ref):
+                other = next(n for n in self.graph.nets_of(ref) if n != net)
+                for far in self.graph.nodes_on(other):
+                    if self.graph.kind(far.partition('.')[0]) == IC and self.graph.is_fitted(far.partition('.')[0]):
+                        behind.append(f'{far}({self.graph.pinname.get(far) or "?"}) 经 {ref}')
+        if direct:
+            return f'同网 IC 脚 {"、".join(sorted(direct))} 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；'
+        if behind:
+            return f'IC 脚 {"、".join(sorted(behind))}（有串联阻抗，可按注入电流核）；'
+        return '同网没有 IC 脚；'
 
     def _resistor_fed(self, net):
         """A two-terminal resistor on the net whose other end is driven or fed from off board (R6 acceptance
@@ -684,8 +703,9 @@ class Lint:
                 continue   # a reference or level clamp inside the circuit: DEV-C05 and the circuit's verdict judge it
             self.add('PRO-A02', '防护器件工作/击穿/钳位窗口待复核',
                      f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_fmt_v(_volt(rail))}，'
-                     f'型号提示={_fmt_v(clamp_volt(blob))}。分别查 VRWM、VBR@IT、VC@Ipp、'
-                     '波形、温度与能量配合；型号不能证明导通或烧毁。',
+                     f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail)}'
+                     '分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；钳位电压高于同网 IC 脚绝限即 FAIL，'
+                     '除非串联阻抗下注入电流在芯片允许范围内；型号不能证明导通或烧毁。',
                      ref, kind='CANDIDATE')
 
         # DOC-A01/DOC-A02 导出日志：错误中止与 No_connect 被忽略 —— 免费证据，别丢。

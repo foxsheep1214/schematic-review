@@ -350,7 +350,8 @@ class Inventory:
                 groups.append(group)
         assigned = {n for g in groups for n in g['supply_nodes']}
         for ref, device in self.devices.items():
-            self.nodes[ref].update(ref + '.' + pin for pin in device['pins'])
+            self.nodes[ref].update(ref + '.' + pin for pin, spec in device['pins'].items()
+                                   if not (isinstance(spec, dict) and spec.get('role') == 'absent'))
         for ref, nodes in sorted(self.nodes.items()):
             if self.kind(ref) != 'unmodeled':
                 continue
@@ -506,6 +507,9 @@ def build_decoupling_inventory(db, intent=None):
     candidates = [ref for ref in inv.parts if ref not in inv.devices and
                   inv.kind(ref) == 'unmodeled' and not PASSIVE_PREFIX.match(ref)
                   and classify(ref, inv.parts[ref])[0] != CONNECTOR   # keyword-identified headers/terminals
+                  # a transformer, inductor or other part classify reads as having no supply pin needs no pin table
+                  # for decoupling even when undeclared (R7 acceptance 2026-10-25, codex1 SR-04: T301)
+                  and classify(ref, inv.parts[ref])[0] not in NO_SUPPLY_PARTS
                   and inv.verified_kinds.get(ref, {}).get('kind') not in NO_SUPPLY_KINDS]
     two_terminal = sorted(ref for ref in candidates if inv.two_terminal(ref))
     unknown = sorted(set(candidates) - set(two_terminal))

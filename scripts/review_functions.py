@@ -520,11 +520,13 @@ def _shortfall_fix_errors(fid, fails, findings):
     return errors
 
 
-def _decision_errors(fid, fn, calculation, conditions, findings):
+def _decision_errors(fid, fn, calculation, conditions, findings, foreign=()):
     """F4 and the evidence-conflict rule. Within one aspect and state scope: a margin that proves PASS leaves no gap
     blocking the same proof; a margin that proves FAIL is a fail item with its change; PASS and FAIL evidence over one
     scope is EVIDENCE_CONFLICT; a margin that proves nothing leaves the open item it cannot close; a fail item rests on a
-    proven shortfall or a violated mandatory clause, never on a typical circuit alone."""
+    proven shortfall or a violated mandatory clause, never on a typical circuit alone. `foreign` holds the scopes of other
+    functions' open items whose edges name rows through check_ids: a gap shared by two circuits is written once and the
+    other circuit's estimate points at it (derive_rows.named_elsewhere; R7 acceptance 2026-10-25, codex1 SR-03)."""
     errors = []
     default = calculation.get('aspect') if isinstance(calculation, dict) else None
     margins = [(m, scope(m, default), margin_verdict(m)) for m in function_reading.margins(calculation or {})
@@ -557,7 +559,7 @@ def _decision_errors(fid, fn, calculation, conditions, findings):
                                   'scope; settle which evidence applies' % (fid, name(m), _evidence_name(other)))
         else:
             deciding = ([sc2 for m2, sc2, v2 in margins if v2 != 'OPEN'] + [jsc for _, jsc in judgements]
-                        + [isc for _, isc in opens] + [isc for _, isc in fails])
+                        + [isc for _, isc in opens] + [isc for _, isc in fails] + list(foreign))
             if (not any(overlaps(sc, other) for other in deciding)
                     and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE' and sc[0] in LIFE_ASPECTS)
                     and not estimate_passes(fn, m)):
@@ -1121,8 +1123,11 @@ def function_errors(report, document_only=(), db=None):
                                            calculation if isinstance(calculation, dict) else None, db))
                 if field == 'open' and item.get('kind') == 'VENDOR_DATUM':
                     errors.extend(_datum_margin_errors(fid, fn, item, conditions_by_id, claim_ids, findings))
+        foreign = [scope(d) for other in functions if isinstance(other, dict) and other is not fn
+                   for item in other.get('open') or [] if isinstance(item, dict)
+                   for d in edges(item) if isinstance(d.get('check_ids'), list) and d['check_ids']]
         errors.extend(_decision_errors(fid, fn, calculation if isinstance(calculation, dict) else {}, conditions_by_id,
-                                       findings))   # F4
+                                       findings, foreign))   # F4
         if isinstance(calculation, dict):   # F8
             errors.extend(_f8_errors(fid, fn, calculation))
         # F6: a verdict change cites a clause or a number.
@@ -1575,6 +1580,42 @@ def configuration_errors(expected, checks, functions):
     return errors
 
 
+def open_item_scope_errors(functions):
+    """An open item blocks only the rows its kind can hold (catalog.OPEN_ITEM_RULES; R7 acceptance 2026-10-25, user: B2 a):
+    each edge's aspect is a rule title; when none of the rules with that title are in the kind's set, the edge is refused.
+    An aspect that is no rule title (a requirement aspect, free text) is left to the other checks."""
+    errors = []
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not text(fn.get('id')):
+            continue
+        for item in fn.get('open') or []:
+            if not isinstance(item, dict) or item.get('kind') not in EDGE_KINDS:
+                continue
+            allowed = catalog.blockable_rules(item['kind'], item.get('deliverable_kind'))
+            if allowed is None:
+                continue
+            label = '%s/%s' % (fn['id'], item.get('key', '?'))
+            what = item['kind'] + (' (%s)' % item['deliverable_kind'] if item.get('deliverable_kind') else '')
+            for d in edges(item):
+                rules = catalog.rules_titled(d.get('aspect'))
+                if rules and not rules & allowed:
+                    errors.append('%s: a %s cannot block %s rows (%s); it may hold %s rows only — judge those rows on what '
+                                  'is known, or name the right kind of gap'
+                                  % (label, what, d.get('aspect'), '/'.join(sorted(rules)),
+                                     _blockable_text(item['kind'], item.get('deliverable_kind'))))
+    return errors
+
+
+def _blockable_text(kind, deliverable_kind):
+    if kind == 'DELIVERABLE_PENDING' and deliverable_kind == 'CONFIGURATION_TABLE':
+        return 'CFG-D01 and requirement'
+    if kind == 'DELIVERABLE_PENDING' and deliverable_kind == 'CUSTOM_PART_DRAWING':
+        return 'calculation (C), window (E), requirement and the part\'s own identity/pin (DEV-D01/D02/D05)'
+    if kind == 'DELIVERABLE_PENDING':
+        return 'calculation (C), window (E), requirement, signal (SIG-*) and CFG-D01'
+    return 'calculation (C), window (E) and requirement' + (' and CFG-D01' if kind == 'DESIGN_VALUE' else '')
+
+
 def validate_functions(plan, report, checks, history_ids=(), db=None):
     """All function-verdict errors for validate_review. `report` is the record as written."""
     expected = {c['id']: c for c in (plan or {}).get('checks') or [] if isinstance(c, dict) and isinstance(c.get('id'), str)}
@@ -1585,7 +1626,7 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
               + frame_errors(plan, checks, report.get('functions'))
               + requirement_edge_errors(plan, checks, report.get('functions'))
               + configuration_errors(expected, checks, functions) + life_errors(checks, functions)
-              + estimate_pass_errors(expected, checks, functions))
+              + estimate_pass_errors(expected, checks, functions) + open_item_scope_errors(functions))
     if isinstance(db, dict):   # a commodity part's rating is a BOM constraint, not an open item
         import bom_constraints
         from checkers.netgraph import NetGraph

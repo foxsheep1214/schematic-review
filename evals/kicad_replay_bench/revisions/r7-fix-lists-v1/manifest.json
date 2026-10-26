@@ -1,0 +1,15 @@
+{
+ "revision": "r7-fix-lists-v1",
+ "parents": {
+  "revisions/owned-rows-in-frames-v1/expected.json": "9a6a6b8d919e657f368eadc7ae22c69fa5493dbc5f93043a39865a1f385152fd",
+  "revisions/owned-rows-in-frames-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/owned-rows-in-frames-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81",
+  "revisions/owned-rows-in-frames-v1/manifest.json": "2f3d3df631d62b5d3bf33ad920d4f025e117315ed4598ab1216780c3536bdcb5"
+ },
+ "derived_files": {
+  "revisions/r7-fix-lists-v1/expected.json": "0d7f052afa3db2fce940f379f39bf6adf9cfcb124a7929c280798e3d7e1e0dd2",
+  "revisions/r7-fix-lists-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/r7-fix-lists-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81"
+ },
+ "scope": "R7 验收修法 A4（2026-10-25）：按关键字/位号识别为变压器、电阻排等无供电脚的未声明器件不再列为未核 IC 供电脚器件，r03 的 RN2–RN5、rf1 三个用例与 rf2 的 TR1 从 decoupling.discovery_gaps 退出；其余答案不变。owned-rows-in-frames-v1 文件保持原字节。"
+}

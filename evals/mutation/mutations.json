@@ -4100,5 +4100,110 @@
   "file": "scripts/plan_review.py",
   "old": "            if frame is None or check.get('function_id') or check.get('applicability') == 'NOT_APPLICABLE':",
   "new": "            if True:"
+ },
+ {
+  "id": "M591",
+  "name": "the 工程ID header is not a requirement table",
+  "file": "scripts/requirements_extract.py",
+  "old": "ID_HEADERS = {'id', '编号', '需求编号', 'req', '需求 id', '需求id', '工程id', '工程 id', '要求编号'}",
+  "new": "ID_HEADERS = {'id', '编号', '需求编号', 'req', '需求 id', '需求id'}"
+ },
+ {
+  "id": "M592",
+  "name": "an id followed by a title is not read as an id",
+  "file": "scripts/requirements_extract.py",
+  "old": "                rid, _, title = first.partition(' ')",
+  "new": "                rid, _, title = first, '', ''"
+ },
+ {
+  "id": "M593",
+  "name": "slash-joined list ids are one id",
+  "file": "scripts/requirements_extract.py",
+  "old": "                for rid in listed.group(1).split('/'):",
+  "new": "                for rid in [listed.group(1)]:"
+ },
+ {
+  "id": "M594",
+  "name": "an absent pin counts as an official pin",
+  "file": "scripts/board_intent.py",
+  "old": "    official = {ref + '.' + pin for pin, spec in device['pins'].items() if _role(spec) != 'absent'}",
+  "new": "    official = {ref + '.' + pin for pin, spec in device['pins'].items()}"
+ },
+ {
+  "id": "M595",
+  "name": "another function's item never decides an estimate",
+  "file": "scripts/review_functions.py",
+  "old": "                        + [isc for _, isc in opens] + [isc for _, isc in fails] + list(foreign))",
+  "new": "                        + [isc for _, isc in opens] + [isc for _, isc in fails])"
+ },
+ {
+  "id": "M596",
+  "name": "an undeclared transformer is an unverified device",
+  "file": "scripts/decoupling.py",
+  "old": "                  and classify(ref, inv.parts[ref])[0] not in NO_SUPPLY_PARTS",
+  "new": "                  and True"
+ },
+ {
+  "id": "M597",
+  "name": "a function's own row pointing elsewhere is never inherited",
+  "file": "scripts/results_model.py",
+  "old": "                if not (text(ref) and '/' in ref and ref.split('/', 1)[0] != fn['id']):",
+  "new": "                if True:"
+ },
+ {
+  "id": "M598",
+  "name": "the HV start-up resistor gets the V²/R bound",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        feed = _startup_feed(graph, entry['nets']) if kind == pw.RESISTOR else None",
+  "new": "        feed = None"
+ },
+ {
+  "id": "M599",
+  "name": "a follower bias zener gets threshold rows",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if kind == ZENER and follower_bias_zener(ref):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M600",
+  "name": "a forward LED clamps nothing",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                volts = pw.LED_VF_MAX_V if pw.LED_RE.search(words) and anode else None",
+  "new": "                volts = None"
+ },
+ {
+  "id": "M601",
+  "name": "a function-bound row's scope ignores the function's objects",
+  "file": "scripts/review_quality.py",
+  "old": "        frame = frames.get(check.get('function_id') or row.get('function_id'))",
+  "new": "        frame = None"
+ },
+ {
+  "id": "M602",
+  "name": "an undeclared programmable device is no diagnostic",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if undeclared or (not groups and role in catalog.PROGRAMMABLE_ROLES):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M603",
+  "name": "an added state needs no requirement",
+  "file": "scripts/circuit_decisions.py",
+  "old": "            errors += _state_requirement_errors(cid, extra, decision.get('state_requirements'), requirement_text)",
+  "new": "            errors += []"
+ },
+ {
+  "id": "M604",
+  "name": "an open item may block any row",
+  "file": "scripts/review_functions.py",
+  "old": "              + estimate_pass_errors(expected, checks, functions) + open_item_scope_errors(functions))",
+  "new": "              + estimate_pass_errors(expected, checks, functions))"
+ },
+ {
+  "id": "M605",
+  "name": "the clamp row does not name the protected pins",
+  "file": "scripts/lint.py",
+  "old": "                     f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail)}'",
+  "new": "                     f'型号提示={_fmt_v(clamp_volt(blob))}。'"
  }
 ]

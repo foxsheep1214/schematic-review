@@ -138,17 +138,26 @@ class DeriveTests(unittest.TestCase):
         _, errors = cd.derive(self.candidates, accept_all(self.candidates) + [{'candidate': 'NOPE-X1', 'decision': 'accept'}])
         self.assertTrue(any('NOPE-X1' in e for e in errors), errors)
 
-    def test_an_extra_state_needs_a_located_citation(self):
-        decisions = accept_all(self.candidates, **{'POWER_CONVERTER-U1': {
-            'candidate': 'POWER_CONVERTER-U1', 'decision': 'accept', 'states_add': ['burst'],
-            'citation': 'U1 datasheet p9 Table 4: burst mode below 10 % load'}})
-        circuits, errors = cd.derive(self.candidates, decisions)
+    def test_an_extra_state_needs_a_located_citation_and_a_requirement_that_names_it(self):
+        # R7 acceptance 2026-10-25 (user: B1 a): one generic citation added six states to every circuit on one record
+        def accept(**extra):
+            return accept_all(self.candidates, **{'POWER_CONVERTER-U1': dict(
+                {'candidate': 'POWER_CONVERTER-U1', 'decision': 'accept', 'states_add': ['burst'],
+                 'citation': 'U1 datasheet p9 Table 4: burst mode below 10 % load'}, **extra)})
+        texts = {'REQ-LOAD': '轻载 ≤10 % 时输出纹波 ≤ 100 mV', 'REQ-TEMP': '工作环境 −10..60 °C'}
+        circuits, errors = cd.derive(self.candidates, accept(state_requirements={'burst': 'REQ-LOAD'}), texts)
         self.assertEqual(errors, [])
         self.assertEqual(next(c for c in circuits if c['id'] == 'POWER_CONVERTER-U1')['states'], ['startup', 'run', 'fault', 'burst'])
-        decisions = accept_all(self.candidates, **{'POWER_CONVERTER-U1': {
-            'candidate': 'POWER_CONVERTER-U1', 'decision': 'accept', 'states_add': ['burst'], 'citation': 'it has burst mode'}})
-        _, errors = cd.derive(self.candidates, decisions)
-        self.assertTrue(any('burst' in e for e in errors), errors)
+        _, errors = cd.derive(self.candidates, accept(), texts)
+        self.assertTrue(any('state_requirements' in e for e in errors), errors)
+        _, errors = cd.derive(self.candidates, accept(state_requirements={'burst': 'REQ-TEMP'}), texts)
+        self.assertTrue(any('does not name the state burst' in e for e in errors), errors)
+        _, errors = cd.derive(self.candidates, accept(state_requirements={'burst': 'REQ-NONE'}), texts)
+        self.assertTrue(any('REQ-NONE' in e for e in errors), errors)
+        _, errors = cd.derive(self.candidates, accept(state_requirements={'burst': 'REQ-LOAD'}))   # no documents: mapping suffices
+        self.assertEqual(errors, [])
+        _, errors = cd.derive(self.candidates, accept(state_requirements={'burst': 'REQ-LOAD'}, citation='it has burst mode'), texts)
+        self.assertTrue(any('citation' in e for e in errors), errors)
 
     def test_a_part_two_circuits_claim_equally_needs_an_owner_and_three_circuits_are_refused(self):
         add = {'decision': 'add', 'id': 'X', 'type': 'ANALOG', 'members': ['R99'], 'via': {'R99': 'V5'}, 'citation': 'p1'}

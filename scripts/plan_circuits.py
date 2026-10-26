@@ -677,6 +677,20 @@ class CircuitPlanning:
                     return other
             return None
 
+        def follower_bias_zener(ref):
+            """A zener from a MOSFET's gate to ground whose source is not ground: the follower's bias reference, conducting by
+            design, not a threshold protection (R7 acceptance 2026-10-25, claude1: D404 on Q401)."""
+            ends = set(graph.pins_of(ref).values())
+            live = [net for net in ends if net and not grounded(net)]
+            if len(ends) != 2 or len(live) != 1:
+                return None
+            for other in parts:
+                gate, source = (graph.node_named(other, role) for role in ('gate', 'source'))
+                if (other != ref and graph.kind(other) == MOSFET and gate and source and pin2net.get(gate) == live[0]
+                        and pin2net.get(source) and not grounded(pin2net[source]) and pin2net[source] != live[0]):
+                    return other
+            return None
+
         rails = powertree.PowerTree(graph)
 
         def connectors_on(net):
@@ -703,6 +717,11 @@ class CircuitPlanning:
             if covering:
                 for check in covering:
                     check['clamp_refs'] = sorted(set(check.get('clamp_refs', [])) | {ref})
+                continue
+            if kind == ZENER and follower_bias_zener(ref):
+                self.diagnostics.append({'code': 'GATE_BIAS_ZENER', 'ref': ref, 'switch': follower_bias_zener(ref),
+                                         'message': '%s 是 %s 源跟随器的栅极偏置基准，正常就导通：不派 PRO-C02 两侧窗口，由器件行和电路判定核它'
+                                                    % (ref, follower_bias_zener(ref))})
                 continue
             if kind in (ZENER, TVS):
                 gaps, audit = self._datasheet_readiness(ref, part)
@@ -773,6 +792,13 @@ class CircuitPlanning:
                         if isinstance(g, dict) and isinstance(g.get('group'), str)}
             fixed = [group for group, _ in catalog.CONFIG_GROUPS.get(role, ())]
             groups = fixed + [g for g in declared if g not in fixed]
+            undeclared = [g for g in groups if g not in declared] if role in catalog.PROGRAMMABLE_ROLES else []
+            if undeclared or (not groups and role in catalog.PROGRAMMABLE_ROLES):
+                # the CFG-D01 criterion and key follow the declaration, so two reviewers pair only when both declared
+                # (R7 acceptance 2026-10-25, list A8): a programmable part without its configurable groups is a 2.1 gap
+                self.diagnostics.append({'code': 'CONFIGURABLE_UNDECLARED', 'ref': ref, 'role': role, 'groups': undeclared,
+                                         'message': '%s 是可编程器件（%s）：在 intent.devices.%s.configurable 按手册写出 %s 组的出处、允许范围与影响的方面，'
+                                                    '再重生成计划；没有声明时 CFG-D01 行只能等资料' % (ref, role, ref, '、'.join(undeclared) or '配置')})
             if not groups:
                 if role in catalog.PROGRAMMABLE_ROLES:
                     self.add_check('CFG-D01', {'ref': ref, 'config_group': 'DECLARE'}, key='DECLARE',

@@ -34,6 +34,16 @@ class CompletenessGuardTests(unittest.TestCase):
         self.assertEqual([e for e in errors if 'pins 3/4 are not in the table' in e],
                          ['devices: device U1 pinout_complete but package QFN-6 pins 3/4 are not in the table'])
 
+    def test_a_pin_the_package_skips_is_listed_as_absent(self):
+        # NCP1343 CASE 751BP: physical pins 1–8 and 10, no pin 9 (R7 acceptance 2026-10-25, codex1 SR-02)
+        pins = [(i, 'P%d' % i, 'other') for i in range(1, 9)] + [(9, 'ABSENT', 'absent'), (10, 'HV', 'other')]
+        self.assertEqual(board_intent.device_errors({'U1': device('SOIC-9', pins)}, None), [])
+        db = {'pin2net': {'U1.%d' % i: 'N%d' % i for i in list(range(1, 9)) + [10]}, 'nets': {'N%d' % i: ['U1.%d' % i, 'R1.1'] for i in list(range(1, 9)) + [10]}}
+        official_only, symbol_only = board_intent.pin_sets(db, 'U1', device('SOIC-9', pins))
+        self.assertEqual((official_only, symbol_only), ([], []))
+        unconnected, _ = board_intent.pin_disposition(db, 'U1', device('SOIC-9', pins))
+        self.assertEqual(unconnected, [])
+
     def test_extra_pins_and_partial_tables_pass(self):
         full = [(i, 'P%d' % i, 'other') for i in range(1, 17)]
         self.assertEqual(board_intent.device_errors({'U1': device('QFN-16', full + [(17, 'EP', 'return')])}, None), [])

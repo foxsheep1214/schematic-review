@@ -199,3 +199,51 @@ class MultiDocumentTests(unittest.TestCase):
         _, errors = rx.load([source(self.a), source(self.b)])
         self.assertTrue(any('REQ-IN-01' in e and 'one document' in e for e in errors), errors)
         self.assertTrue(rx.load([])[1])
+
+
+ENGINEERING_DOC = """# 工程规格
+
+## 2. 电气输入与输出能力
+
+| 工程ID | 用户依据 | 要求 / 确认状态 | 验收条件与证据 |
+|---|---|---|---|
+| E-IN-01 输入范围 | REQ-IN-001 | 必须：额定100–240 Vac | 覆盖输入范围内的启动 |
+| E-IN-02 | REQ-IN-001 | 必须边界：不规定掉电保持时间 | 掉电后的安全关断 |
+
+## 6. 能效测量
+
+- A.2.2.1/A.2.3：最大电压态先、最小电压态后
+- A.2.2.2/表A.1：每点监测输入 ≥ 5 min
+
+## 7. 工程决定与待讨论事项
+
+| 议题 | 状态 | 决定 / 待确定内容 |
+|---|---|---|
+| D-01 输出测量边界 | 已确认 | 在充电器USB-C连接器处验收 |
+"""
+
+
+class EngineeringTableTests(unittest.TestCase):
+    """R7 acceptance 2026-10-25: four reviewers hand-copied the 工程规格 tables because the extractor knew neither the
+    工程ID header, nor an id followed by a title in the first cell, nor slash-joined list ids; the §7 decision table
+    stays out (user: B4 a)."""
+
+    def setUp(self):
+        self.out = rx.extract(write(ENGINEERING_DOC))
+        self.items = {i['id']: i for i in self.out['items']}
+
+    def test_the_engineering_id_header_is_an_id_table_and_the_title_after_the_id_is_a_column(self):
+        self.assertEqual(sorted(self.items), ['A.2.2.1', 'A.2.2.2', 'A.2.3', 'E-IN-01', 'E-IN-02'])
+        e1 = self.items['E-IN-01']
+        self.assertEqual([c['name'] for c in e1['columns']], ['工程ID', '用户依据', '要求 / 确认状态', '验收条件与证据'])
+        self.assertEqual(e1['columns'][0]['text'], '输入范围')
+        self.assertEqual(self.items['E-IN-02']['columns'][0]['name'], '用户依据')
+        self.assertEqual(self.out['errors'], [])
+
+    def test_slash_joined_list_ids_each_become_a_requirement_with_the_same_text(self):
+        self.assertEqual(rx.text(self.items['A.2.2.1']), rx.text(self.items['A.2.3']))
+        self.assertEqual(self.items['A.2.2.1']['locator'], self.items['A.2.3']['locator'])
+        self.assertEqual(rx.text(self.items['A.2.2.2']), '每点监测输入 ≥ 5 min')   # 表A.1 is not an id
+
+    def test_a_decision_table_under_another_header_is_not_a_requirement_table(self):
+        self.assertFalse(any(i.startswith('D-') for i in self.items))

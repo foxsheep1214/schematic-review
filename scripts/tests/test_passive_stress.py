@@ -370,3 +370,47 @@ class ClampedWindowTests(unittest.TestCase):
         for zener in ('BZX84C5V1', 'ZENER-UNKNOWN'):
             _, rows = self.clamped(zener)
             self.assertEqual(rows['C2']['proposal']['calculation']['v_across_max'], 3.465, zener)
+
+
+class StartupFeedTests(unittest.TestCase):
+    """R7 acceptance 2026-10-25 (claude1 feedback): a start-up resistor into a controller's HV pin carries the controller's
+    start-up current, so the pre-judgement does not read the bus voltage squared over the resistance."""
+
+    def test_the_hv_start_up_resistor_gets_no_v_squared_over_r_bound(self):
+        db, intent = board()
+        add(db, 'U9', 'PWM-CTRL', [('1', 'HV', 'HV9'), ('2', 'GND', 'GND')])
+        add(db, 'R9', '4.7k', [('1', '1', 'VCC_3V3'), ('2', '2', 'HV9')])
+        db['parts']['R9']['jedec'] = R0402
+        intent['assemblies'][0]['population'].update({'U9': True, 'R9': True})
+        rebind(db, intent)
+        _, rows = proposals(db, intent)
+        proposal = rows['R9']['proposal']
+        self.assertIsNone(proposal.get('result'))
+        self.assertEqual(proposal['bases'], ['hv-startup-feed:U9.1'])
+        self.assertIn('启动电流', proposal['note'])
+        self.assertNotIn('v_across_max', proposal.get('calculation') or {})
+        self.assertEqual(rows['R1']['proposal']['result'], 'PASS')   # the ordinary pull-up is still bounded
+
+
+class LedClampTests(unittest.TestCase):
+    """R7 acceptance 2026-10-25 (claude2 feedback): a forward-biased LED across a net holds it at its drop."""
+
+    def led(self, pins):
+        db, intent = board({'VCC_3V3': {'voltage_v': {'min': 11.4, 'max': 12.6}}})
+        add(db, 'C2', '100nF', [('1', '1', 'U1_IO'), ('2', '2', 'GND')])
+        db['parts']['C2']['jedec'] = C0402
+        add(db, 'D8', 'LED RED', pins)
+        db['parts']['D8']['prim'] = 'Device:LED'
+        intent['assemblies'][0]['population'].update({'C2': True, 'D8': True})
+        rebind(db, intent)
+        return proposals(db, intent)[1]
+
+    def test_a_forward_led_bounds_the_capacitor_beside_it(self):
+        rows = self.led([('1', 'A', 'U1_IO'), ('2', 'K', 'GND')])
+        calc = rows['C2']['proposal']['calculation']
+        self.assertEqual(calc['v_across_max'], passive_stress.pw.LED_VF_MAX_V)
+        self.assertTrue(any(b.startswith('clamped-by:D8') for b in rows['C2']['proposal']['bases']))
+
+    def test_a_reverse_led_bounds_nothing(self):
+        rows = self.led([('1', 'K', 'U1_IO'), ('2', 'A', 'GND')])
+        self.assertEqual(rows['C2']['proposal']['calculation']['v_across_max'], 12.6)

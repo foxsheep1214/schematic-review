@@ -199,12 +199,20 @@ class _Bounds:
         clamps = []
         for node in self.graph.nodes_on(net):
             ref = node.partition('.')[0]
-            if self.graph.kind(ref) not in (pw.ZENER, pw.TVS) or not self.graph.is_fitted(ref):
+            kind = self.graph.kind(ref)
+            if kind not in (pw.ZENER, pw.TVS, pw.DIODE) or not self.graph.is_fitted(ref):
                 continue
             others = [n for n in self.graph.nets_of(ref) if n != net]
             fixed = self._fixed(others[0]) if len(others) == 1 else None
             part = self.graph.parts.get(ref) or {}
-            volts = ng.clamp_voltage(' '.join(str(part.get(k) or '') for k in ('part', 'value', 'prim')))
+            words = ' '.join(str(part.get(k) or '') for k in ('part', 'value', 'prim'))
+            if kind == pw.DIODE:
+                # a forward-biased LED across the net (anode on it, cathode on the fixed node) holds it at its drop
+                # (R7 acceptance 2026-10-25, claude2: C102 beside LED D101 read the full bus)
+                anode = (self.graph.pinname.get(node) or '').upper() in pw.LED_ANODE_NAMES
+                volts = pw.LED_VF_MAX_V if pw.LED_RE.search(words) and anode else None
+            else:
+                volts = ng.clamp_voltage(words)
             if fixed is not None and volts is not None:
                 clamps.append((fixed[1] + volts, ref))
         if not clamps:
@@ -213,6 +221,16 @@ class _Bounds:
         if top >= window[1]:
             return result
         return ((max(window[0], -top), top), 'clamped-by:%s (%s)' % (ref, basis), domains)
+
+
+def _startup_feed(graph, nets):
+    """The IC start-up pin (HV, HVIN, VSTR …) one of the resistor's nets feeds, or None."""
+    for net in nets:
+        for node in graph.nodes_on(net):
+            ref = node.partition('.')[0]
+            if graph.kind(ref) == pw.IC and graph.is_fitted(ref) and pw.STARTUP_PIN_RE.match(graph.pinname.get(node) or ''):
+                return node
+    return None
 
 
 def _signal_series(graph, nets):
@@ -412,6 +430,14 @@ def _scan(db, intent, state):
             entry['bom_ratings'] = written
         if kind == pw.RESISTOR and not any(_ground_name(net) for net in entry['nets']):
             entry['signal_series'] = _signal_series(graph, entry['nets'])
+        feed = _startup_feed(graph, entry['nets']) if kind == pw.RESISTOR else None
+        if feed:
+            # a start-up resistor into a controller's HV pin carries the controller's start-up current, not V²/R
+            # (R7 acceptance 2026-10-25, claude1: R403 read 30 W from the full rectified bus over 4.7 kΩ)
+            entry['hv_startup_feed'] = feed
+            entry['bases'] = ['hv-startup-feed:' + feed]
+            parts.append(entry)
+            continue
         windows, domains = [], set()
         for net in entry['nets']:
             window, basis, found = bounds.window(net)
@@ -468,6 +494,9 @@ def _proposal(entry):
         if entry.get('signal_series'):
             note += ('。信号串阻：按 wca-formulas.md“信号串联电阻”行定界（直流 I²R 加动态 ½·C·ΔV²·N_tr），'
                      '不用跨轨 V²/R，也不只算稳态电流')
+        if entry.get('hv_startup_feed'):
+            note = ('HV 启动串阻（%s）：功耗按控制器手册的启动电流（Istart/IHV 上界）乘两端电压算，启动后按 HV 脚内部开关的漏电流算；'
+                    '不按整流母线全压的 V²/R' % entry['hv_startup_feed'])
         return None, {}, note
     if entry['kind'] == pw.RESISTOR:
         parsed = parse_resistor_noted(entry['value'], default_tol=DEFAULT_TOL)

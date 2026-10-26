@@ -151,6 +151,45 @@ class FunctionShapeTests(unittest.TestCase):
         errors = function_errors({'functions': [fn]})
         self.assertTrue(any('decides nothing' in e for e in errors), errors)
 
+    def test_f4_an_estimate_is_decided_by_another_functions_item_that_names_its_rows(self):
+        """A gap shared by two circuits is written once; the other circuit's estimate margin points at it through the
+        item's check_ids (derive_rows.named_elsewhere) and is not a dangling calculation (R7 acceptance, codex1 SR-03)."""
+        fn = bias_function('PASS')
+        fn['calculation']['margin']['basis'] = {'kind': 'ESTIMATE', 'comparison': 'GT', 'conditions': ['c1', 'c2'],
+                                                'scope': '按标称辅助电压'}
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('decides nothing' in e for e in errors), errors)
+        other = bias_function('OPEN'); other['id'], other['circuit'] = 'FN-OTHER', 'OTHER'
+        other['open'][0]['decides'][0]['states'] = list(STATES)
+        other['open'][0]['decides'][0]['check_ids'] = ['PWR-C02.BIAS-%s.Q2' % s for s in STATES]
+        errors = function_errors({'functions': [fn, other]})
+        self.assertFalse(any('decides nothing' in e for e in errors), errors)
+        del other['open'][0]['decides'][0]['check_ids']   # without check_ids the other item speaks for its own rows only
+        errors = function_errors({'functions': [fn, other]})
+        self.assertTrue(any('decides nothing' in e for e in errors), errors)
+
+    def test_an_open_item_blocks_only_the_rows_its_kind_can_hold(self):
+        """R7 acceptance 2026-10-25 (user: B2 a): the same transformer-drawing gap blocked 62 / 16 / 29 / 14 rows on four
+        records; catalog.OPEN_ITEM_RULES says which rows each kind of gap may hold."""
+        import catalog
+        from review_functions import open_item_scope_errors
+        fn = bias_function('OPEN')   # a DESIGN_VALUE blocking the converter-voltage rows: allowed
+        self.assertEqual(open_item_scope_errors([fn]), [])
+        fn['open'][0]['decides'].append({'aspect': catalog.title('DEV-D01'), 'states': ['RUN'], 'via': {'condition': 'c3'},
+                                         'rationale': 'identity rows do not wait for a design value'})
+        errors = open_item_scope_errors([fn])
+        self.assertTrue(any('cannot block' in e and 'DEV-D01' in e for e in errors), errors)
+        self.assertTrue(any('cannot block' in e for e in vr.validate_review(*ledger(fn))['errors']))   # the gate enforces it
+        drawing = bias_function('OPEN'); item = drawing['open'][0]
+        item.update(kind='DELIVERABLE_PENDING', deliverable_kind='CUSTOM_PART_DRAWING', deliverable='T1 图纸', owner='磁件',
+                    assumed='按标称', closure='图纸到', missing_parameters=[{'name': '辅助绕组峰值', 'unit': 'V'}])
+        item['decides'].append({'aspect': catalog.title('DEV-D01'), 'states': ['RUN'], 'via': {'condition': 'c3'}, 'rationale': 'x'})
+        self.assertEqual(open_item_scope_errors([drawing]), [])   # the custom part's own identity waits for its drawing
+        item['decides'].append({'aspect': catalog.title('SIG-D04'), 'states': ['RUN'], 'via': {'condition': 'c3'}, 'rationale': 'x'})
+        self.assertTrue(any('SIG-D04' in e for e in open_item_scope_errors([drawing])))
+        fn = bias_function('OPEN'); fn['open'][0]['decides'][0]['aspect'] = 'STANDBY_POWER'   # a requirement aspect: not a rule title
+        self.assertEqual(open_item_scope_errors([fn]), [])
+
     def test_f4_a_proven_shortfall_is_a_fail_item_a_missed_bound_only_fails_to_prove(self):
         """A missed guaranteed bound proves nothing either way (E2); a reachable case that misses proves the fail (E3)."""
         fn = bias_function()

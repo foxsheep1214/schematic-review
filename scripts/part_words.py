@@ -18,6 +18,9 @@ TANTALUM_RE = re.compile(r'TANTAL|钽|\bTPS[A-Z]', re.I)
 NTC_RE = re.compile(r'NTC', re.I)
 VARISTOR_RE = re.compile(r'VARISTOR|\bMOV\b|压敏', re.I)
 LED_RE = re.compile(r'(^|[^A-Z])LED(S|[^A-Z]|$)', re.I)
+# a controller's high-voltage start-up pin, fed from the bus through its start-up resistor by design
+STARTUP_PIN_RE = re.compile(r'^(HV|HVIN|HV_?IN|HV_?START\w*|VSTART\w*|VSTR|STARTUP)$', re.I)
+LED_VF_MAX_V = 4.0   # a forward-biased LED's drop, every colour included; a datasheet value replaces it in the review
 
 
 def is_polarized_capacitor(text):
@@ -66,7 +69,7 @@ KEYWORD_KINDS = (
     (r'RELAY|继电器', RELAY),
     (r'OPTO|PC81[07]|LTV\d|TLP\d|6N13[57]|HCPL|ACPL|FOD\d|CNY17|VO6\d|SFH6\d{2,3}|EL8\d\d|PS2[5-9]\d\d|TCMT\d|KPC\d|H11[A-Z]\d|光耦', OPTO),
     (r'\bTVS\b|SMAJ|SMBJ|SMCJ|P6KE|1\.5KE|ESD\d|PESD|SM712', TVS),
-    (r'ZENER|BZX|MMSZ|1N47\d|稳压二极管', ZENER),
+    (r'ZENER|BZX|BZT5\d|MMSZ|1N47\d|稳压二极管', ZENER),
     # KiCad symbol-library category of the symbol actually placed.
     (r'TRANSISTOR_BJT:', BJT),
     (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:', MOSFET),

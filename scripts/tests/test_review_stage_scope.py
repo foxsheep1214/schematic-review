@@ -1,6 +1,6 @@
 """Stage exclusions retain product obligations; unknown inputs stay actionable."""
 import unittest
-from test_validate_review import fixture, E
+from test_validate_review import fixture, E, planned
 from test_review_quality import staged
 from validate_review import fingerprint, validate_review
 from ledger4 import gap
@@ -92,6 +92,14 @@ class StageScopeTests(unittest.TestCase):
         for level, blocking, expect in (('P3', False, 'GO'), ('P1', True, 'NO_GO')):
             with self.subTest(level=level):
                 p, r, db = downstream()
+                # the prerequisite is a second window row: a vendor datum may block a window row, not a coverage row
+                # (R7 acceptance 2026-10-25, B2: catalog.OPEN_ITEM_RULES)
+                p['checks'].insert(1, dict(planned('RST-E01.C2'), object={'ref': 'R1', 'node': 'R1.2'}, criterion='second window'))
+                r['checks'].insert(1, {'id': 'RST-E01.C2', 'applicability': 'APPLICABLE', 'review_result': 'PASS',
+                                       'evidence_confidence': 'A', 'evidence': E, 'rationale': 'stipulated compliant fixture',
+                                       'handoff': {'required': False}})
+                r['plan_digest'] = fingerprint(p)
+                r['checks'][0]['handoff']['schematic_prerequisites'] = ['RST-E01.C2']
                 row = r['checks'][1]
                 gap(r, row['id'], 'W-GAP', 'VENDOR_DATUM', plan=p, level=level, what=INPUT, title='Synthetic task',
                     why='Synthetic independent input', due_stage='design_iteration', **REQUEST)

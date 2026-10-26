@@ -90,7 +90,7 @@ class ReviewedDeclarationsTests(unittest.TestCase):
             self.draft['declarations']['decoupling']['components'][ref]={'kind':kind,'citation':'synthetic source role table'}
         rebind(self.db,self.intent)
         cold=build_decoupling_inventory(self.db,self.intent)
-        self.assertEqual(cold['unverified_device_refs'],['BR1','T1'])
+        self.assertEqual(cold['unverified_device_refs'],[])   # classify reads BR/T refdes: no IC supply to bypass (R7 A4)
         bound=self.applied();inv=build_decoupling_inventory(self.db,bound)
         self.assertEqual(inv['unverified_device_refs'],[])
         self.assertEqual([g['ref'] for g in inv['states'][0]['groups']],['U1'])

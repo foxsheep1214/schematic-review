@@ -7,6 +7,39 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## R7 fix lists A and B: nine rule-maintenance items and four decisions (2026-10-25)
+
+The user took every item of docs/2026-10-25-r7-acceptance.md §六 ("A 组 9 条都做，B 组 4 项都按 a 执行"). A1
+`requirements_extract` reads the 工程ID header, an id followed by a title in the first cell (the title stays a column)
+and slash-joined list ids (`A.2.2.1/A.2.3`, each an item with one text); a table under any other header (议题 …) is
+no requirement table (B4). A2 the pin table marks a pin number the package skips with role `absent`
+(NCP1343 CASE 751BP: 1–8, 10); pin diff and disposition skip it. A3 `review_functions._decision_errors` counts another
+function's open item that names this function's rows through check_ids as deciding, so a shared gap written once
+no longer makes the pointing estimate a dangling calculation. A4 `decoupling` leaves a part classify reads as a
+transformer, inductor, resistor network or other no-supply part out of the unverified-device candidates even when
+undeclared (replay revision r7-fix-lists-v1: RN2–RN5, T1, TR1 leave discovery_gaps). A5 `results_model.
+effective_verdicts` inherits OPEN/FAIL from a function's own row whose open_ref/fail_ref points into another function.
+A6 three pre-judgement false alarms: a start-up resistor into a controller HV pin carries the start-up current, not
+V²/R (`passive_stress._startup_feed`, `part_words.STARTUP_PIN_RE` shared with lint); a zener from a source follower's
+gate to ground is its bias reference and gets no PRO-C02 rows (`GATE_BIAS_ZENER` diagnostic); a forward-biased LED
+bounds the net beside it (`LED_VF_MAX_V` 4 V, a datasheet value replaces it); `part_words` knows the BZT5x zener
+family. A7 the scope screens take a function-bound row's scope from the function's objects. A8 a verified programmable
+part without its `configurable` groups is the plan diagnostic `CONFIGURABLE_UNDECLARED` and 2.1's done mark asks for
+zero, so CFG-D01 keys pair. A9 plan-and-results.md says how a decoupling clause is written when the datasheet has none
+and why that is not a manual_verification. B1 `states_add` needs `state_requirements` {state: requirement id} and the
+requirement's original text must name the state (`catalog.STATE_WORDS`, checked against requirement_source). B2
+`catalog.OPEN_ITEM_RULES`: an open item blocks only the rows its kind may hold (C/E rows and REQ-D01; DESIGN_VALUE adds
+CFG-D01; a custom-part drawing adds the part's DEV-D01/D02/D05; firmware adds SIG-* and CFG-D01; a configuration table
+holds CFG-D01 and requirement rows), enforced by `review_functions.open_item_scope_errors` in the gate. B3 PRO-A02's
+criterion compares the clamp voltage with the same-net IC pins' absolute maximum (FAIL unless a series impedance and a
+computed injection current within the chip's allowance); lint's row names those pins and whether a resistor separates
+them. The typical-circuit bench's PRO-A02 match strings shrink to the stable prefix.
+
+- Event: user:2026-10-25 ("A 组 9 条都做，B 组 4 项都按 a 执行")
+- Causes: rule_missing 4, rule_not_enforced 3, over_strict 3, false_alarm 3, judgment 3
+- Changed: scripts/requirements_extract.py, scripts/board_intent.py, scripts/decoupling.py, scripts/results_model.py, scripts/review_functions.py, scripts/checkers/passive_stress.py, scripts/part_words.py, scripts/lint.py, scripts/plan_circuits.py, scripts/review_quality.py, scripts/circuit_decisions.py, scripts/catalog.py, references/check-catalog.md, references/plan-and-results.md, references/architecture.md, SKILL.md, docs/2026-10-25-r7-acceptance.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/r7-fix-lists-v1/, evals/typical_circuits/cases.json, evals/mutation/mutations.json, evals/mutation/README.md, scripts/tests/
+- Gates: 2124 unit tests, 542 contract tests, KiCad replay 195/195 (r7-fix-lists-v1), typical circuits unchanged (117/180/14), M591–M605 all killed (M604 after a gate-level test was added)
+
 ## R7 acceptance: four independent first reviews on SR 660f790 (2026-10-25)
 
 The user asked, after the pre-binding commit, for a new four-reviewer acceptance on the R6 board (two gpt-6.1-sol

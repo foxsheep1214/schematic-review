@@ -89,6 +89,7 @@ def screen_quality(plan, report, db=None):
         return output
     if not isinstance(plan.get('checks'), list) or not isinstance(report.get('checks'), list):
         return output
+    frames = {f['id']: f for f in plan.get('functions') or [] if isinstance(f, dict) and isinstance(f.get('id'), str)}
     expected = {x['id']: x for x in plan['checks']
                 if isinstance(x, dict) and isinstance(x.get('id'), str)}
     parts = db.get('parts', {}) if isinstance(db, dict) else {}
@@ -258,6 +259,12 @@ def screen_quality(plan, report, db=None):
         wanted = refs(check.get('criterion')) | refs(obj.get('ref')) | refs(obj.get('node'))
         if isinstance(obj.get('refs'), list):
             for ref in obj['refs']:
+                wanted.update(refs(ref))
+        frame = frames.get(check.get('function_id') or row.get('function_id'))
+        if frame:
+            # a row bound to a function is judged over the function's objects: a device row of the circuit's part may
+            # name the circuit's other parts (R7 acceptance 2026-10-25: 57/66 hits on two records after the pre-binding)
+            for ref in (frame.get('objects') or {}).get('refs') or []:
                 wanted.update(refs(ref))
         observed = refs(rationale)
         if isinstance(row.get('evidence'), list):

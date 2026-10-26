@@ -392,6 +392,23 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertNotIn('允许钳位', checks['PRO-C02.NOTRIP.D1']['criterion'])
         self.assertIn('内部钳位', checks['PRO-C02.NOTRIP.U1-1']['criterion'])
 
+    def test_a_follower_gate_bias_zener_gets_no_threshold_rows(self):
+        # R7 acceptance 2026-10-25 (claude1 feedback): D404 holds Q401's gate for a source follower; it conducts by design.
+        db = threshold_db()
+        for ref, value, rows in (('Q9', 'NMOS', [('1', 'G', 'G9'), ('2', 'D', 'D9N'), ('3', 'S', 'S9')]),
+                                 ('D9', 'BZT52H-B16', [('1', 'K', 'G9'), ('2', 'A', 'GND')]),
+                                 ('R9', '100k', [('1', '1', 'D9N'), ('2', '2', 'G9')])):
+            db['parts'][ref] = {'part': value, 'value': value, 'prim': 'X', 'jedec': '', 'nc': False}
+            db['ref2page'][ref] = 1
+            for pin, name, net in rows:
+                db['nets'].setdefault(net, []).append(ref + '.' + pin)
+                db['pin2net'][ref + '.' + pin] = net
+                db['pinname'][ref + '.' + pin] = name
+        plan = build_review_plan(db)
+        self.assertFalse([x['id'] for x in plan['checks'] if x['rule'] == 'PRO-C02' and x['object'].get('ref') == 'D9'])
+        self.assertIn({'ref': 'D9', 'switch': 'Q9'}, [{'ref': d['ref'], 'switch': d['switch']} for d in plan['diagnostics']
+                                                      if d['code'] == 'GATE_BIAS_ZENER'])
+
     def test_sensor_rail_end_and_ic_supply_pins_are_not_sensing_inputs(self):
         # rf1 公开板：NTC 上端接 3V3 轨，轨上各 IC 的 VDD 脚曾各生成一条 ANA-C04。
         db = threshold_db()

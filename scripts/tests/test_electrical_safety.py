@@ -68,6 +68,19 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.assertEqual(items[0]['kind'], 'CANDIDATE')
         self.assertNotIn('上电即', items[0]['detail'])
 
+    def test_p05_names_the_ic_pins_the_clamp_protects(self):
+        # R7 acceptance 2026-10-25 (user: B3 a): the clamp voltage is compared with the pins on its net
+        db = database({'CC1': ['D1.1', 'J1.1', 'U1.3'], 'GND': ['D1.2']}, {'D1': 'PESD5V0L1UA TVS', 'J1': 'CONN', 'U1': 'IC'},
+                      {'U1.3': 'CC1'})
+        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-A02']
+        self.assertEqual(len(items), 1)
+        self.assertIn('同网 IC 脚 U1.3(CC1) 直接并在钳位上', items[0]['detail'])
+        self.assertIn('高于同网 IC 脚绝限即 FAIL', items[0]['detail'])
+        db = database({'CC1': ['D1.1', 'J1.1', 'R1.1'], 'CC1_IC': ['R1.2', 'U1.3'], 'GND': ['D1.2']},
+                      {'D1': 'PESD5V0L1UA TVS', 'J1': 'CONN', 'U1': 'IC', 'R1': '1k'}, {'U1.3': 'CC1'})
+        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-A02']
+        self.assertIn('U1.3(CC1) 经 R1', items[0]['detail'])
+
     def test_audit_expands_critical_passives_and_rejects_unknown_ref(self):
         db = divider_db()
         audit = build_datasheet_audit(db, required_refs=['R1'])

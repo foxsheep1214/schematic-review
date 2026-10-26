@@ -143,6 +143,16 @@ class QualityScreeningTests(unittest.TestCase):
         r['checks'][0]['rationale'] = 'C2 ripple specification proves this result.'
         self.assertIn('REFERENCED_OBJECT_OUTSIDE_SCOPE', [x['code'] for x in self.screen(p, r, db)['candidates']])
 
+    def test_a_function_bound_row_may_name_the_functions_other_parts(self):
+        # R7 acceptance 2026-10-25: after the pre-binding a device row judged in its circuit's function cites the
+        # circuit's other parts; the function's objects are its scope
+        p, r, db = quality_fixture(); r['checks'] = r['checks'][:1]
+        p['functions'] = [{'id': 'FN-CAPS', 'objects': {'refs': ['C1', 'C2']}}]
+        r['checks'][0].update(function_id='FN-CAPS', rationale='C2 ripple specification proves this result.')
+        self.assertNotIn('REFERENCED_OBJECT_OUTSIDE_SCOPE', [x['code'] for x in self.screen(p, r, db)['candidates']])
+        r['checks'][0]['rationale'] = 'R1 ripple specification proves this result.'
+        self.assertIn('REFERENCED_OBJECT_OUTSIDE_SCOPE', [x['code'] for x in self.screen(p, r, db)['candidates']])
+
     def test_wrong_explicit_ref_in_evidence_locator_is_candidate(self):
         p, r, db = quality_fixture(); r['checks'] = r['checks'][:1]
         r['checks'][0].update(rationale='The component has the required rating.',

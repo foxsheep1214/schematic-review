@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Transcribe a requirement document verbatim (fixed requirements, step 1).
 
-A requirement is a row of a Markdown table whose first header cell is an id column (ID, 编号, 需求编号, REQ), or a
-list item `- <ID>：<text>` whose id has a separator (REQ-01, R.2.1). Each requirement keeps every column apart, as
+A requirement is a row of a Markdown table whose first header cell is an id column (ID, 编号, 需求编号, 工程ID, REQ),
+or a list item `- <ID>：<text>` whose id has a separator (REQ-01, R.2.1). In an id table the first cell may carry a
+title after the id (`E-IN-01 输入范围`): the id is its first word and the title stays a column. A list item may join
+several ids with slashes (`A.2.2.1/A.2.3：…`): each id that reads as one is a requirement with the same text, the
+other parts (表A.1) are not ids. A table under any other header (议题, 版本 …) is not a requirement table whatever
+its cells start with (R7 acceptance 2026-10-25, user: B4 a). Each requirement keeps every column apart, as
 written, with the section heading above it and a file:line locator; the file's sha256 binds the transcription. The
 reviewer never retypes a requirement: the intent names the source (`requirement_source`) and states only what the
 reviewer decides about each id. Nothing here judges a requirement.
@@ -17,9 +21,9 @@ import sys
 from pathlib import Path
 
 SCHEMA_VERSION = 1
-ID_HEADERS = {'id', '编号', '需求编号', 'req', '需求 id', '需求id'}
+ID_HEADERS = {'id', '编号', '需求编号', 'req', '需求 id', '需求id', '工程id', '工程 id', '要求编号'}
 ID_RE = re.compile(r'^[A-Za-z][A-Za-z0-9]*(?:[-_.][A-Za-z0-9]+)+$')
-LIST_RE = re.compile(r'^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*|`)?([A-Za-z][A-Za-z0-9]*(?:[-_.][A-Za-z0-9]+)+)(?:\*\*|`)?\s*[:：]\s*(.+?)\s*$')
+LIST_RE = re.compile(r'^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*|`)?([A-Za-z][A-Za-z0-9]*(?:[-_.][A-Za-z0-9]+)+(?:/[^\s:：*`]+)*)(?:\*\*|`)?\s*[:：]\s*(.+?)\s*$')
 HEADING_RE = re.compile(r'^\s*#{1,6}\s+(.+?)\s*#*\s*$')
 SEPARATOR_RE = re.compile(r'^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$')
 JOIN = '；'
@@ -57,20 +61,25 @@ def extract(path):
                 i += 2
                 continue
             if header:
-                rid = _plain_id(cells[0])
+                first = _plain_id(cells[0])
+                rid, _, title = first.partition(' ')
                 if ID_RE.match(rid):
                     columns = [{'name': name, 'text': cells[k] if k < len(cells) else ''}
                                for k, name in enumerate(header[1:], 1)]
+                    if title.strip():   # `E-IN-01 输入范围`: the title after the id is the id column's own text
+                        columns.insert(0, {'name': header[0], 'text': title.strip()})
                     items.append({'id': rid, 'section': section, 'columns': columns, 'locator': '%s:%d' % (path, i + 1)})
                     seen.setdefault(rid, []).append(i + 1)
         else:
             header = None
             listed = LIST_RE.match(line)
             if listed:
-                rid = listed.group(1)
-                items.append({'id': rid, 'section': section, 'columns': [{'name': 'text', 'text': listed.group(2)}],
-                              'locator': '%s:%d' % (path, i + 1)})
-                seen.setdefault(rid, []).append(i + 1)
+                for rid in listed.group(1).split('/'):   # `A.2.2.1/A.2.3：…` names two requirements with one text
+                    if not ID_RE.match(rid):
+                        continue
+                    items.append({'id': rid, 'section': section, 'columns': [{'name': 'text', 'text': listed.group(2)}],
+                                  'locator': '%s:%d' % (path, i + 1)})
+                    seen.setdefault(rid, []).append(i + 1)
         i += 1
     for rid, at in sorted(seen.items()):
         if len(at) > 1:

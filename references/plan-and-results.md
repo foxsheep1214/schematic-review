@@ -45,7 +45,7 @@
   }],
   "circuit_decisions": [
     {"candidate": "USB-J2", "decision": "accept", "id": "USB-PORT",
-     "states_add": ["external-power-only"], "citation": "Requirements v1.2 section 4.1"},
+     "states_add": ["standby"], "state_requirements": {"standby": "REQ-STANDBY"}, "citation": "Requirements v1.2 section 4.1"},
     {"candidate": "DEBUG-BOARD", "decision": "reject", "reason": "OUTSIDE_SCOPE",
      "citation": "Requirements v1.2 section 2.3：调试口不在本轮范围"},
     {"decision": "add", "id": "V5-SENSE", "type": "ANALOG", "members": ["R99"], "via": {"R99": "V5"},
@@ -98,6 +98,7 @@
   每条记进改进台账，变成工具生成的规则。
 - `assemblies`（1–32 个，各带 `id` 与 `citation`）是全部检查器共用的装配状态；`devices` 是按位号的官方脚表。
   `pinout_complete: true` 的脚表要含封装名说出的每个脚号（QFN-16 → 1..16，SOT-23-3 → 1..3；带原厂代号 `SOT-23-3 (DBZ)` 照读；
+  封装跳过的脚号写进脚表并给角色 `absent`——NCP1343 CASE 751BP 的物理脚是 1–8 和 10，`"9": {"name": "ABSENT", "role": "absent"}`，脚差集和脚处置都不算它；
   BGA、模组、SOT-23 这类读不出脚数的不查），缺的脚号列出来拒绝，多出的 EP/PAD 放行；U/M 位号抄全了却没有 power 和 return 脚的，
   计划打 `DEVICE_PINS_NO_SUPPLY` 诊断（去耦组按这两种脚推，没有就整颗没有去耦组），不拒绝——分流基准等确无供电脚的器件不用改；核验类别为光耦、继电器、变压器、整流桥、晶体的不问。
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
@@ -106,6 +107,9 @@
   pd_controller 为 CAPABILITY 能力发布、CABLE_VCONN 线缆与 VCONN、PROTECTION 保护门限与动作、SENSING 检测通道、GPIO 角色/默认态/
   对外控制时序、COMPENSATION 环路补偿、SEQUENCE 放电与上下电时序）或自定组（须写 `title`），`citation` 是手册寄存器或配置章节，
   `allowed` 是手册允许的范围，`affects` 是这组设置决定的方面，`required` 是需求要求的值，`set_points` 是这组选出的输出档位。
+  核验为可编程角色（pd_controller、mcu）而没声明齐全的，计划打 `CONFIGURABLE_UNDECLARED` 诊断（位号、角色、缺的组），2.1 做完的标志要它为 0：
+  CFG-D01 的判据和键随声明变，两份记录只有都声明了才配得上（R7 验收 2026-10-25）。计划另有 `GATE_BIAS_ZENER` 诊断：
+  接在源跟随器栅极与地之间的齐纳是偏置基准、正常就导通，不派 PRO-C02 两侧窗口，由器件行和电路判定核。
   计划给已核验角色的每个固定组和每个声明组一行 CFG-D01（`CFG-D01.<组>.<位号>`，不随工况重复；没声明的组 WAITING_EVIDENCE；
   判据只写位号与组名，`citation`、`allowed`、`affects`、`required` 放在行的 `configuration` 字段，不进检查标识），
   mcu 这类没有固定组的可编程角色没声明任何组时给一行 `CFG-D01.DECLARE.<位号>` 要求声明或说明为什么没有；写了 `set_points`
@@ -117,7 +121,8 @@
   `count` 是设计寿命内的总次数，`refs` 只给点名的器件；每个 `citation` 须是所引需求原文里的一段。规则见
   [寿命与耗损件](commodity-floors.md#寿命与耗损件)。
 - 需求不手抄：`python3 scripts/requirements_extract.py 需求.md --json record/requirements.json` 逐字抄录需求表
-  （首列为 ID/编号的表格行，或 `- <编号>：<文字>` 列表项），每条各列分开、带所在章节与 `文件:行号`，并给文件 sha256。
+  （首列表头为 ID/编号/需求编号/工程ID 的表格行——首格可以是"编号 标题"，编号取第一个词、标题留作该列的文字——或 `- <编号>：<文字>` 列表项，
+  `A.2.2.1/A.2.3：…` 这样斜杠连的编号各算一条、同一段文字；表头不是编号列的表（议题、版本……）不是需求表），每条各列分开、带所在章节与 `文件:行号`，并给文件 sha256。
   `requirement_source` 写文件路径和这个 sha256（任务书给了几份需求文档就写几项，列表 `[{path, sha256}, …]`，逐文件抄录，
   REQ ID 跨文件唯一，两份文档给同一个 id 拒绝；`locator` 带各自的文件名），`requirements[]` 每项只写 `id`、`categories`、`interpretation`
   和 `status`，不写 `text`、`citation`、`criterion`。`categories` 从 [规则总表](check-catalog.md#需求类别与审查方面)
@@ -167,7 +172,9 @@
   `python3 scripts/circuit_decisions.py intent.json record/circuit-candidates.json --db db.json --write` 写入 `circuits` 和 `circuit_candidates_sha256`；
   lint/计划对声明电路的 intent 必须带 `--candidates`，手写的电路列表与决定推出的不相等即拒绝（类型、成员集合、工作态、候选编号逐个比较）。
   `circuit_decisions[]` 每条对一个候选做一种决定，每个候选恰有一条：
-  - `accept`：原样接受，可给名称 `id`；按手册模式名加工作态写 `states_add` 并给可定位的 `citation`（页、表、节、记录号或位号/网名）。
+  - `accept`：原样接受，可给名称 `id`；加工作态写 `states_add`，并在 `state_requirements` 里给每个加的态点名一条需求（`{state: REQ id}`），
+    那条需求的原文要说到这个态（待机/空载、掉电、热插拔、短路、突发/轻载……，`catalog.STATE_WORDS`），`citation` 仍要可定位；
+    一句泛引文不能给每块电路都加态（R7 验收 2026-10-25：一份记录给十块电路各加六个态，多出 130 行）。候选的态是类型的固定表。
   - `merge`：`candidate` 列几个候选，`id` 必填，`citation` 引一条把它们描述成一个流程的条款；电路候选不与跨电路候选（ISOLATION、STARTUP、保护链）合并。
   - `split`：`into: [{id, members}]`，每部分成员是该候选成员的子集，所有成员都要有去处，`citation` 可定位。
   - `reject`：`reason` 为 OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF（后者带 `of: <已推出的电路>`，成员须都在它里面），`citation` 可定位；被拒候选的成员进 REQ-Q08 复核，已被接受、合并、拆分或 add 的电路持有的除外。
@@ -407,6 +414,12 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 | REQUIREMENT（需求没定） | — | `severity` | 走[需求澄清](requirement-clarifications.md) |
 | REVIEW_INCOMPLETE（审查没做完） | — | — | 本轮自己读算完；有这种开项时不打包 |
 
+**每类开放项能挡哪些行**（`catalog.OPEN_ITEM_RULES`，R7 验收 2026-10-25：同一个变压器图纸缺口四份记录挡了 62 / 16 / 29 / 14 行）：
+`decides` 边的 `aspect` 是规则标题，那个标题的规则不在本类能挡的集合里就拒绝。VENDOR_DATUM 能挡计算行（C）、电气窗口行（E）和需求行 REQ-D01；
+DESIGN_VALUE 另加 CFG-D01；DELIVERABLE_PENDING 按 `deliverable_kind`：CUSTOM_PART_DRAWING 另加该定制件自己的身份与脚行（DEV-D01/D02/D05），
+FIRMWARE_CAPABILITY 另加全部 SIG-* 与 CFG-D01，CONFIGURATION_TABLE 只挡 CFG-D01 与需求行。文档/身份行（D）、拓扑行（T）、提示（A）和覆盖行不等任何开放项：
+按已知的判，或换对的缺口种类。不是规则标题的 aspect（需求方面、自由文字）不在此查。
+
 **条件的五种。** 每条条件先要能定位：`locator` 给页码、表号、图号、章节、手册的节名（电气特性、绝对最大、引脚说明……）、
 需求或记录编号、位号，或点名的网络/引脚（“nets PGND/SGND”）；“相关位号所有物理脚”“## BIAS”不定位任何东西。再按它是什么写 `kind`：
 
@@ -582,6 +595,8 @@ NA 写明本机为什么不暴露于该风险；纯下游项写明本阶段可�
 同一 IC 有多个隔离电源/地域时，组按官方脚表逐供电网推出（`intent.decoupling` schema 4），
 返回脚由官方脚表推出，返回脚跨网时在该组（ref，net）的条目里用 `return_net` 选定本组的返回网；不要仅按芯片位号把两域返回脚池化。声明须有官方脚义与当前
 归网依据，不能为避开候选而改地网、作用域或保证条件。
+手册没有去耦条款（没写外接电容值、也没有"每个供电脚接 xx µF"之类的话）时，条款照样要写：`citation` 引该脚的引脚说明页，`requirements` 写明"手册未给条款"，
+容量按功能判定里的估算余量判——这是审查员从手册读出的事实，不是工具限制，所以不开 `manual_verification`（R7 验收 2026-10-25，claude2 反馈）。
 
 去耦逐组先列“实际供电脚→直接网络→已贴电容→直接返回网络→实际返回脚”，并列出本段电容为空、
 容量不可解析与串联边界的事实。磁珠、0Ω、跳线或开关另一侧的电容只进入独立的供电/滤波分析，
