@@ -395,7 +395,7 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 |---|---|
 | `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头。框架的 `members` 列出要在这个功能里答的全部检查项：电路检查项和电路拥有的器件检查项 |
 | `conditions[]` | [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`；只在可编程器件某个设置下成立的条件写 `setting{ref, group, value}`，该器件该组的 CFG-D01 结果检查项 `settings[{value, function}]` 须列出这个值，配置表缺口（DELIVERABLE_PENDING / CONFIGURATION_TABLE）只挡 CFG-D01 项和需求检查项；`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一 |
-| `calculation` | 同节第 2 步“算出了余量就下结论”：`result`、`margin{value,unit,against,basis[,aspect,states,check_ids]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值）、`claim_ids`、`inputs`（计算的输入量名，影响条目的 `via.input` 从这里取）、`assumptions`；只针对一个方面时写 `aspect`。同一功能里 `value`、`unit`、`against` 都相同的余量只能有一条：一个缺陷落在证明它的那个方面，要落到别的方面须是另一个量、另一条余量。没有数值的功能写 `no_calculation_reason` |
+| `calculation` | 同节第 2 步“算出了余量就下结论”：`result`（一句结论；比较过的量不写在这里，超 300 字或游离数字超 8 个出 RESULT_NARRATIVE）、`margin{value,unit,against,basis[,aspect,states,check_ids]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值；`unit` 按 `scripts/units.py` 的拼法）、`claim_ids`、`inputs`（计算的输入量名，影响条目的 `via.input` 从这里取）、`assumptions`；只针对一个方面时写 `aspect`。同一功能里 `value`、`unit`、`against` 都相同的余量只能有一条：一个缺陷落在证明它的那个方面，要落到别的方面须是另一个量、另一条余量。没有数值的功能写 `no_calculation_reason` |
 | `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。厂家参考电路也可以撑起判断：该 TYPICAL_REFERENCE 条件写 `reference_circuit{figure, connection, load}`——参考电路的图号或页、本板与它相同的接法、它的元件值与本板负载的对照（本板不重于它），报告依据写“厂家参考电路 + 图号”。检查项要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
 | `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[影响条目]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`，`title`/`why` 可选；各种 `kind` 另要的字段见下面“开放项的六种” |
@@ -659,7 +659,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 算出余量的方面是否已下结论；每个开放项的 `kind` 是否对（本设计要定的量不是厂家资料）、`decides` 是否只覆盖它真正决定的方面与状态、
 `severity.consequence` 是否写了这个缺口在什么工况下导致什么后果。然后逐项用实际对象上下文对照手填检查项的 `rationale` 及关联待办：
 
-这一步有四个机器信号（`quality_screening` 的疑点，2026-10-25 ④ 第一项的严格审核）；它们点出的是最常漏的几种，不是复核的全部：
+这一步有七个机器信号（`quality_screening` 的疑点，2026-10-25 ④ 第一项的严格审核，2026-10-26 加三个）；它们点出的是最常漏的几种，不是复核的全部：
 
 - `UNIT_GLYPH_SUSPECT`：条款引的资料文本层丢了符号字体（kΩ 印成 kW、全文没有 µ，1.3 的审计给该资料记 `unit_glyphs: SYMBOL_FALLBACK`），
   这条 NUMERIC_LIMIT 的单位又是 ms、mA、mH、W、kW、MW——它可能是 µs、µA、µH、Ω。对照渲染页，在 `says` 写明核过（含“核过原图”“误码”“实为”或 µ 字样的 says 不再提示），或改单位。
@@ -670,6 +670,12 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 - `BOUNDING_CELL_AVAILABLE`：决定性余量写了 `cell: NONE`，但它的 `against`/`aspect` 或限值条款的 `says`/`use` 里有某个格的参数词（VZ、VF、RDS(on)、CTR、Isat、ESR……，`catalog.CELL_WORDS`）：
   如果这个限值就是那个参数，写格和推法，带公式的推法让门禁复算。
 - `TEMPLATE_REASON`：同一句理由、关闭条件或取得方式出现在几个开放项上（`no_margin_reason`、`why_insufficient`、`closure`、`acquisition`）。
+- `UNIT_UNKNOWN`：余量的 `unit` 或条款 `limit.unit` 不在单位表（`scripts/units.py`：SI 前缀 × 电学基本单位，µ/u、Ω/ohm、²/2 同义，Vac/Arms/°C/%/ratio/x/A²s/mV/K/°C/W 等专名）里。
+  按表的拼法写；真是新单位就加进表。表外单位既换算不了也核不了量级。
+- `QUANTITY_IMPLAUSIBLE`：限值的 `min`/`max`（两端）或余量的 `value`（只看上端：余量可以很小）换算到基本单位后超出该量纲在板级可能的范围
+  （电压 1 µV–1 MV、电流 1 pA–100 kA、电阻 1 µΩ–100 TΩ、电容 1 fF–10 kF、时间 1 ps–1 Gs、温度 −273–3000 °C……，`units.SPANS`）：多半是前缀写错或文本层丢了 µ，对照渲染页改。
+- `RESULT_NARRATIVE`：`calculation.result` 超过 300 字，或带超过 8 个余量 `value`、限值 `min`/`max` 都没承载的“数字 + 单位”。结构化字段是主路径：每个比较过的量写成
+  `margin{value, unit, against, basis}` 或条款的 `limit`，`result` 只留结论句（报告只印第一句）。R7 两份 Codex 记录把 514/561 个量写在 result 里（10/13 个 result 超 300 字），余量只有 111/96 条；两份 Claude 记录 117/107 个量对 151/181 条余量。
 
 4.2 证据不足的分类另有自己的提示：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 除了读检查项的缺口文字，还读 DESIGN_VALUE / VENDOR_DATUM 开放项的
 `closure`、`acquisition`、`why_insufficient`——写了实测、样机、样品、仿真作为关闭路径的（“随后/留给……”分句已分出下游部分，不算），厂家保证值和样机才能测是两档，

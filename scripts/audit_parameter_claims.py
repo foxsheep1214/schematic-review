@@ -11,14 +11,24 @@ import argparse
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import units   # the shared unit table (item 2, 2026-10-26); an unknown unit stays unverified, never a fabricated match
 from electrical_contract import finite
 
-# Deliberately small, explicit unit registry. Unknown units remain unverified.
-UNITS = {'T': ('flux', 1), 'mT': ('flux', 1e-3), 'V': ('voltage', 1),
-         'mV': ('voltage', 1e-3), 'A': ('current', 1), 'mA': ('current', 1e-3),
-         'ohm': ('resistance', 1), 'kohm': ('resistance', 1e3)}
 BASES = {'typical', 'minimum', 'maximum', 'engineering_limit'}
+
+
+def plausibility(row):
+    """What the unit table says about the row's magnitude: a note when no board quantity of that dimension can be
+    `value unit` (a prefix slip, a text layer that lost its µ), None otherwise."""
+    verdict = units.plausible(row['value'], row['unit'])
+    if verdict is False:
+        return '%s %s is beyond what a %s can be: check the unit prefix against the rendered table' % (
+            row['value'], row['unit'], units.parse(row['unit'])[0])
+    return None
 
 
 def _validate(row, reference=False):
@@ -59,7 +69,7 @@ def check(claims):
             if Path(a['source']).resolve() == Path(b['source']).resolve():
                 raise ValueError('claim and independent reference must be different documents')
             context = [k for k in ('identity', 'parameter', 'conditions', 'basis') if a[k] != b[k]]
-            au, bu = UNITS.get(a['unit']), UNITS.get(b['unit'])
+            au, bu = units.parse(a['unit']), units.parse(b['unit'])
             if 'engineering_limit' in (a['basis'], b['basis']):
                 status, reason = 'OUT_OF_SCOPE', 'engineering limit needs a design-margin calculation, not attribution equality'
             elif context or not au or not bu or au[0] != bu[0]:
@@ -68,8 +78,11 @@ def check(claims):
                 match = math.isclose(a['value'] * au[1], b['value'] * bu[1], rel_tol=1e-9, abs_tol=0)
                 status = 'MATCH' if match else 'MISMATCH'
                 reason = 'same parameter, basis and test conditions; attribution only'
+            notes = [side + ': ' + note for side, row in (('claimed', a), ('reference', b))
+                     for note in [plausibility(row)] if note]
             rows.append({'id': key, 'status': status, 'reason': reason, 'claimed': a, 'reference': b,
-                         'inputs_sha256': {a['source']: claim_hash, b['source']: reference_hash}})
+                         'inputs_sha256': {a['source']: claim_hash, b['source']: reference_hash},
+                         **({'plausibility': notes} if notes else {})})
         except (OSError, TypeError, ValueError) as exc:
             rows.append({'id': key, 'status': 'ERROR', 'reason': str(exc)})
     return rows, errors
@@ -91,6 +104,8 @@ def main(argv=None):
         args.json.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n')
     for row in rows:
         print(row['status'], row['id'], row['reason'])
+        for note in row.get('plausibility') or []:
+            print('NOTE', row['id'], note)
     for error in errors:
         print('ERROR', error)
     return 2 if errors else 0 if all(r['status'] == 'MATCH' for r in rows) else 1

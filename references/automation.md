@@ -924,6 +924,8 @@ DOC-Q01 重放计算约定只说明格式与输入可追溯，**约定有效不�
 reference 另给原厂文件 `sha256`；source 是本地文件路径，locator 精确到版本、页码和表行。
 先独立阅读原厂表格并核温度、H/f、典型/最小/最大口径，再录入 reference，不能从设计报告复制引用值作基准。
 `conditions` 为键值对象，字段与单位统一；`basis` 为 `typical/minimum/maximum/engineering_limit`。
+单位按 `scripts/units.py` 的单位表换算比较（SI 前缀、µ/u、Ω/ohm、Vac、A²s 等；2026-10-26），表外单位 NOT_COMPARABLE；
+两侧任一值换算后超出该量纲在板级可能的范围时，该行加 `plausibility` 备注并在输出里印 NOTE（前缀写错或文本层丢 µ，对照渲染表改），不改变比对状态。
 工具验证参考文件哈希，在相同材料/料号、参数、试验条件、口径和可换算单位下比较数值；
 输出 MATCH/MISMATCH，条件或单位不兼容为 NOT_COMPARABLE，工程限值为 OUT_OF_SCOPE，缺字段/哈希错误为 ERROR。
 支持 T/mT、V/mV、A/mA、ohm/kohm，其他单位不猜。工具不自动理解 PDF，也不证明摘录准确或资料是真正原厂。

@@ -42,6 +42,7 @@ import catalog
 import datasheet_kinds
 import function_reading
 import results_model
+import units
 from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, finite, squeeze, text
 from function_reading import (requirement_document as _requirement_document, requirement_rows,
                               ESTIMATE_PASS_CLASSES, covers, decides_row, edges, estimate_handoff,
@@ -1380,6 +1381,69 @@ def template_hints(functions, known_refs=None, base_dir=None):
             hints.append({'code': 'TEMPLATE_REASON', 'field': field, 'items': sorted(set(refs)),
                           'message': 'The same %s on several gaps (%s); if they are one gap keep one item, otherwise say '
                                      'why each is undecided' % (field, sentence[:40])})
+    hints.extend(quantity_hints(functions))
+    return hints
+
+
+RESULT_MAX_CHARS = 300          # a calculation.result longer than this is a narrative: the report shows its first sentence
+RESULT_LOOSE_QUANTITIES = 8     # quantities in the result prose that no margin or limit carries, beyond which it narrates (R7: the good records write 5–9 in 100–200 characters)
+
+
+def quantity_hints(functions):
+    """Item 2 (2026-10-26): the structured fields are the main path. A margin or limit unit the unit table does not know
+    (UNIT_UNKNOWN), a magnitude no board quantity of that dimension can have (QUANTITY_IMPLAUSIBLE: a prefix slip, a
+    text layer that lost its µ), and a calculation.result that narrates — longer than RESULT_MAX_CHARS, or carrying
+    more than RESULT_LOOSE_QUANTITIES number-with-unit tokens that no margin value or limit end carries
+    (RESULT_NARRATIVE): the numbers belong in margin[] and conditions[].limit, the result is the conclusion sentence.
+    R7: the two Codex records wrote 514/561 quantities into result prose against 111/96 margins."""
+    hints = []
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not text(fn.get('id')):
+            continue
+        carried = set()
+        calculation = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+        margins = calculation.get('margin')
+        margins = margins if isinstance(margins, list) else [margins]
+        for k, m in enumerate(m for m in margins if isinstance(m, dict)):
+            where = {'function_id': fn['id'], 'margin': k, 'aspect': m.get('aspect')}
+            if text(m.get('unit')) and units.parse(m['unit']) is None:
+                hints.append({'code': 'UNIT_UNKNOWN', **where, 'unit': m['unit'],
+                              'message': 'margin unit %r is not in units.py: spell it as the table does (µ or u, Ω or ohm, '
+                                         'Vac, A²s …) or add the unit to the table' % m['unit']})
+            if finite(m.get('value')):
+                carried.add(round(float(m['value']), 6))
+                if text(m.get('unit')) and units.plausible(m['value'], m['unit'], lower=False) is False:
+                    hints.append({'code': 'QUANTITY_IMPLAUSIBLE', **where, 'value': m['value'], 'unit': m['unit'],
+                                  'message': 'margin %s %s is beyond what a board quantity of this dimension can be: check '
+                                             'the unit prefix (µ/m/k) or the unit' % (m['value'], m['unit'])})
+        for c in fn.get('conditions') or []:
+            limit = c.get('limit') if isinstance(c, dict) and isinstance(c.get('limit'), dict) else None
+            if limit is None:
+                continue
+            where = {'function_id': fn['id'], 'condition': c.get('id')}
+            if text(limit.get('unit')) and units.parse(limit['unit']) is None:
+                hints.append({'code': 'UNIT_UNKNOWN', **where, 'unit': limit['unit'],
+                              'message': 'limit unit %r of condition %s is not in units.py: spell it as the table does or add '
+                                         'the unit' % (limit['unit'], c.get('id'))})
+            for end in ('min', 'max'):
+                if finite(limit.get(end)):
+                    carried.add(round(float(limit[end]), 6))
+                    if text(limit.get('unit')) and units.plausible(limit[end], limit['unit']) is False:
+                        hints.append({'code': 'QUANTITY_IMPLAUSIBLE', **where, 'value': limit[end], 'unit': limit['unit'],
+                                      'message': 'limit %s = %s %s of condition %s is beyond what a board quantity of this '
+                                                 'dimension can be: check the unit prefix against the rendered page (a text '
+                                                 'layer that lost its µ reads ms for µs)' % (end, limit[end], limit['unit'], c.get('id'))})
+        result = calculation.get('result')
+        if text(result):
+            loose = [(v, u) for v, u in units.quantities(result) if round(v, 6) not in carried]
+            if len(result) > RESULT_MAX_CHARS or len(loose) > RESULT_LOOSE_QUANTITIES:
+                hints.append({'code': 'RESULT_NARRATIVE', 'function_id': fn['id'], 'length': len(result),
+                              'loose_quantities': len(loose),
+                              'message': 'calculation.result has %d characters and %d quantities no margin or limit carries '
+                                         '(limits %d / %d): write each compared quantity as a margin {value, unit, against, '
+                                         'basis} or a condition limit, and keep result to the conclusion sentence; the report '
+                                         'shows the first sentence only' % (len(result), len(loose), RESULT_MAX_CHARS,
+                                                                            RESULT_LOOSE_QUANTITIES)})
     return hints
 
 

@@ -22,7 +22,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 import catalog
 import function_reading
-from review_functions import circuit_functions
+from review_functions import RESULT_MAX_CHARS, circuit_functions
 from task_scope import ownership, task_view
 from report_html import to_html
 
@@ -410,7 +410,6 @@ def _shown(value):
     return value
 
 
-RESULT_MAX_CHARS = 300          # a calculation.result longer than this is a narrative: the table shows its first sentence
 QUESTION_REFS_MAX = 8           # a parenthesised list of more designators than this reads as a count
 TRAILING_NOTE_RE = re.compile(r'（[^（）]*）\s*$')
 

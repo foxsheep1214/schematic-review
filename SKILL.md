@@ -335,7 +335,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
 
 做完的标志：`review-results.json` 的 `functions[]` 与计划的 `functions[]` 一一对应，每个功能有 verdict 与 evidence；
-开放项、失败项每条有 `key`、`kind`、`decides`，每条边只挡这类开放项能挡的检查项（[每类开放项能挡哪些检查项](references/plan-and-results.md#三层台账)）；要算数的功能有计算记录，不用算的写 `no_calculation_reason`；
+开放项、失败项每条有 `key`、`kind`、`decides`，每条边只挡这类开放项能挡的检查项（[每类开放项能挡哪些检查项](references/plan-and-results.md#三层台账)）；要算数的功能有计算记录，不用算的写 `no_calculation_reason`；比较过的每个量在 `margin` 或条款 `limit` 里（`calculation.result` 只是结论句，单位按 `scripts/units.py` 的拼法；4.1 的 RESULT_NARRATIVE / UNIT_UNKNOWN / QUANTITY_IMPLAUSIBLE 零提示）；
 框架里每个方面×状态都有判断或开放项（派生时 `derive_rows.py` 不报“未判”）。
 
 #### 3.2 检查项派生
@@ -369,11 +369,14 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 对账前先按 [功能复核](references/plan-and-results.md#功能复核) 核每个功能的条款、计算、开放项的
 `decides` 范围和手填检查项的对象、路径、因果、需求的分项要求（含多个分项要求的需求只有全部适用分项要求通过才 PASS）；校验的 F1–F12 和质量筛查零提示不能代替这一步。
-复核有四个机器信号（见 [功能复核](references/plan-and-results.md#功能复核)）：`UNIT_GLYPH_SUSPECT`（条款引的文本层丢了 Ω/µ，ms、mA 可能是 µs、µA，对照渲染页后在 `says` 写明核过）、
+复核有七个机器信号（见 [功能复核](references/plan-and-results.md#功能复核)）：`UNIT_GLYPH_SUSPECT`（条款引的文本层丢了 Ω/µ，ms、mA 可能是 µs、µA，对照渲染页后在 `says` 写明核过）、
 `RATING_AT_TEST_TEMP`（功率/电流额定只在 25 °C 单点给出，要走降额曲线或说明不降额）、`BOUNDING_CELL_AVAILABLE`（余量写了 `cell: NONE` 而定界表有这个参数的格）、`TEMPLATE_REASON`；
+以及结构化字段为主路径的三个（2026-10-26）：`UNIT_UNKNOWN`（余量或条款限值的单位不在 `scripts/units.py` 的单位表里：按表的拼法写，µ/u、Ω/ohm、Vac、A²s 都认，表外单位加进表）、
+`QUANTITY_IMPLAUSIBLE`（限值或余量的量级超出该量纲在板级可能的范围：前缀写错，或文本层丢 µ 把 µs 读成 ms）、`RESULT_NARRATIVE`（`calculation.result` 超 300 字，或带超过 8 个余量和限值都没承载的数字：
+每个比较过的量写成 `margin{value, unit, against, basis}` 或条款的 `limit`，result 只留结论句，报告也只印它第一句）；
 每条决定性余量写 `basis.cell`（表里没有的写 NONE），引了带公差输入的余量逐个列角点，门禁拒收缺的。
 
-做完的标志：功能复核的四个信号每条处置过（单位对照原图后写进 `says`，额定走了降额或说明不降额，该写格的写了格并带推法），
+做完的标志：功能复核的七个信号每条处置过（单位对照原图后写进 `says`，额定走了降额或说明不降额，该写格的写了格并带推法，表外单位改拼法或入表，量级核过前缀，叙事的 result 拆成余量和限值），
 决定性余量的 `cell` 为 NONE 的每条确认过表里没有这个参数，表里没有的已由门禁记为待扩项（`sr_improvements` 的 NEW_BOUND_CELL，进报告“对 SR 的反馈”）。
 
 #### 4.2 证据不足的分类

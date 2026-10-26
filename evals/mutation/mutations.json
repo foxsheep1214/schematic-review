@@ -4702,5 +4702,40 @@
   "file": "scripts/derive_rows.py",
   "old": "    if error and not hand_filled:\n",
   "new": "    if error:\n"
+ },
+ {
+  "id": "M677",
+  "name": "a margin unit outside the table is never hinted",
+  "file": "scripts/review_functions.py",
+  "old": "            if text(m.get('unit')) and units.parse(m['unit']) is None:\n                hints.append({'code': 'UNIT_UNKNOWN', **where, 'unit': m['unit'],\n",
+  "new": "            if False:\n                hints.append({'code': 'UNIT_UNKNOWN', **where, 'unit': m['unit'],\n"
+ },
+ {
+  "id": "M678",
+  "name": "a limit's lower end is not checked for plausibility",
+  "file": "scripts/review_functions.py",
+  "old": "                    if text(limit.get('unit')) and units.plausible(limit[end], limit['unit']) is False:\n",
+  "new": "                    if text(limit.get('unit')) and units.plausible(limit[end], limit['unit'], lower=False) is False:\n"
+ },
+ {
+  "id": "M679",
+  "name": "a result narrates only by length",
+  "file": "scripts/review_functions.py",
+  "old": "            if len(result) > RESULT_MAX_CHARS or len(loose) > RESULT_LOOSE_QUANTITIES:\n",
+  "new": "            if len(result) > RESULT_MAX_CHARS:\n"
+ },
+ {
+  "id": "M680",
+  "name": "quantities a margin carries count as loose",
+  "file": "scripts/review_functions.py",
+  "old": "            loose = [(v, u) for v, u in units.quantities(result) if round(v, 6) not in carried]\n",
+  "new": "            loose = list(units.quantities(result))\n"
+ },
+ {
+  "id": "M681",
+  "name": "the claims audit drops the plausibility note",
+  "file": "scripts/audit_parameter_claims.py",
+  "old": "    verdict = units.plausible(row['value'], row['unit'])\n",
+  "new": "    verdict = None\n"
  }
 ]

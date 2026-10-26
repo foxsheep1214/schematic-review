@@ -2278,3 +2278,31 @@ Derive errors reach the gate once (deduplicated against the function checks).
 - Causes: judgment 1
 - Changed: scripts/results_model.py, scripts/validate_review.py, scripts/render_report.py, scripts/pack_review.py, scripts/compare_reviews.py, scripts/derive_rows.py, scripts/requirement_bindings.py, scripts/tests/test_derived_not_persisted.py, scripts/tests/test_derive_rows.py, scripts/tests/test_cell_boundary.py, scripts/tests/test_estimate_pass.py, SKILL.md, references/plan-and-results.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2228, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M671–M676 killed
+
+## Structured fields as the main path: a unit table and three function hints (2026-10-26)
+
+Item 2 of the review items the user approved ("剩下的优化你可以做"). The
+record's numbers had two homes: `margin{value, unit, against, basis}` and
+`conditions[].limit`, which the gate compares, and the `calculation.result`
+prose, which nothing reads. R7: the two Codex records wrote 514/561
+number-with-unit tokens into result prose (10/13 results over 300
+characters) against 111/96 margins; the Claude records 117/107 against
+151/181. Units were spelt 60 ways (kΩ, kohm, A²s, A2s, µs, µS, ratio, x,
+degree, deg, …) and nothing checked a unit or a magnitude. `scripts/units.py`
+is the shared unit table — SI prefixes on the electrical bases, µ or u, Ω or
+ohm, ² or 2, the special spellings the reviews write, and a plausible span
+per dimension — and `review_functions.quantity_hints` adds three function
+hints to the screening: UNIT_UNKNOWN (a margin or limit unit outside the
+table), QUANTITY_IMPLAUSIBLE (a limit end or a margin magnitude no board
+quantity of that dimension can have: a prefix slip, a text layer that lost
+its µ), RESULT_NARRATIVE (a result over RESULT_MAX_CHARS or carrying more
+than 8 quantities no margin or limit carries). The parameter-claims audit
+compares through the same table and notes an implausible row. Not done: a
+per-part parameter sheet in the report — a condition has no structured
+`ref`, so the sheet would need a format change the user has not been asked
+about.
+
+- Event: user:2026-10-26 (SR review items after the strict pass: "剩下的优化你可以做")
+- Causes: rule_missing 1
+- Changed: scripts/units.py, scripts/review_functions.py, scripts/render_report.py, scripts/audit_parameter_claims.py, scripts/tests/test_units.py, scripts/tests/test_structured_quantities.py, SKILL.md, references/plan-and-results.md, references/automation.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2239, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M677–M681 killed
