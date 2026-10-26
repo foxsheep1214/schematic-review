@@ -114,7 +114,7 @@ OPEN 项另须填两项，供报告直接告诉需求方“需求说明哪里不
 `proposed_requirement` 写建议补入需求说明的条文，要具体到可验收的数值、工况或允许/禁止的行为，有多个可选口径时写推荐项并注明其他选项。建议条文只是提案，需求方确认前不作为判据。
 closure_criteria 写确认方式和复验范围。evidence 必须定位已检查的输入和待决依据。
 
-OPEN 项的 check_ids 只关联 `INSUFFICIENT + REQUIREMENT_OPEN` 检查：行的 `open_ref` 指向一个
+OPEN 项的 check_ids 只关联 `INSUFFICIENT + REQUIREMENT_OPEN` 检查：检查项的 `open_ref` 指向一个
 `kind: REQUIREMENT` 的开放项（只写 key/what/decides，不写 severity），功能的 rationale 和证据照常。
 独立电气 FAIL、证据缺口、已完成的窄判据另留检查，不能把它们改成需求问题来改变严重度或放行。
 
@@ -162,7 +162,7 @@ RESOLVED 关联的 REQ 条目在当前计划中必须为 CONFIRMED；撤回条�
 逐项写需求原文、要定什么、建议写进需求的条文、谁来定、何时定和挡不挡定稿，待办里只指向这一节。
 `requirement_clarification_summary` 给 total/open/resolved/retracted、affected_checks、
 blocking_open/covered_open；例如“1 项待决需求，影响 10 条检查”，不计入 confirmed_defects。
-`requirement_clarifications` 输出完整唯一记录，`insufficient_by_cause` 只表示检查行数。
+`requirement_clarifications` 输出完整唯一记录，`insufficient_by_cause` 只表示检查项数。
 
 没有需求澄清时 `requirement_clarifications` 可省略或填 []；有记录时校验器逐项强制检查字段。
 

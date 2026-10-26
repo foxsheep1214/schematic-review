@@ -138,7 +138,7 @@ intent 实际条件或 evidence/audit 内容变化仍保守触发全量复验。
     "inputs_digest": "<本轮review_inputs.digest>",
     "check_digest": "<本项check_digest>",
     "method": "本轮实际核对/计算的方法、状态与接受条件；未完成则具体记录缺口",
-    "evidence": [{"source": "本版计算或核对记录", "locator": "确切章节/行/条件"}]
+    "evidence": [{"source": "本版计算或核对记录", "locator": "确切章节/检查项/条件"}]
   }
 }
 ```

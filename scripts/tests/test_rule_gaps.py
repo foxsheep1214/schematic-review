@@ -127,7 +127,7 @@ class CompareTests(unittest.TestCase):
         self.assertEqual(strict['counts']['N_A'], strict['counts']['N_B'])
         self.assertEqual(strict['metrics']['alignment_coverage'], 1.0)
         self.assertEqual(strict['reviewer_added'], {'A': [added(plan)[0]['id']], 'B': []})
-        self.assertIn('审查员补加（规则缺口，不计入配对）：A 1 行，B 0 行', cr.markdown(cr.compare(side(plan), side(plain))))
+        self.assertIn('审查员补加（规则缺口，不计入配对）：A 1 项，B 0 项', cr.markdown(cr.compare(side(plan), side(plain))))
 
 
 if __name__ == '__main__':

@@ -47,7 +47,7 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
 
 没有 datasheet-audit.json 时，资料是否可用按 `intent.materials.datasheets.path` 是否存在推（intent 不写 `available`，写了被拒）；
 有审计文件时按位号控制 DEV-D01 准备度。状态不是 AVAILABLE 的物料，依赖其 datasheet 的自动准备度仍为 WAITING_EVIDENCE；
-这不直接判定所有审查者检查的电气结果。T/C/D 按具体主张核实补充证据，E 行仍只认本器件保证值。
+这不直接判定所有审查者检查的电气结果。T/C/D 按具体主张核实补充证据，E 检查项仍只认本器件保证值。
 计划与 lint 还会核对审计里的物料/位号是否与当前 db.json 一致。
 
 ### Audit 状态
@@ -163,7 +163,7 @@ BOM 中仅有通用阻容值时先解析实际 MPN，不能把
 保证 Min/Max 核数值窗口，经功能判定写结论。缺保证值、资料未 AVAILABLE 或身份未解决时判资料不足（例外见
 [保证值核对的例外](evidence-proportionality.md#保证值核对的例外)）；不填 1% 电阻公差、零 Vref 误差、零偏置电流，
 不用典型值、经验值、相似型号参数、反算要求或样本实测值冒充本器件保证值；比值/系数类门槛（体电容比）
-必须来自项目规定；光耦寿命末所需的 CTR 保留比例由寿命行 DEV-C06 算出并写成选型约束，SR 不自编衰减系数。每个数值写出处（文档、版本、页码/表号），文档覆盖多个后缀时定位订货表对应行。
+必须来自项目规定；光耦寿命末所需的 CTR 保留比例由寿命检查项 DEV-C06 算出并写成选型约束，SR 不自编衰减系数。每个数值写出处（文档、版本、页码/表号），文档覆盖多个后缀时定位订货表对应行。
 最坏角点按 [wca-formulas.md](wca-formulas.md) 计算，`scripts/calc.py` 可做数值复算。
 
 各规则的判据要点：

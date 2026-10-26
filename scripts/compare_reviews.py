@@ -639,9 +639,9 @@ def markdown(report):
              '| 配对作答完整率 C/M | %s |' % pct(m['answered_completeness']),
              '| 作答配对的一致率 | %s |' % pct(m['agreement']),
              '| 全范围相同结论覆盖率 | %s |' % pct(m['full_agreement']), '',
-             '| A 的结论 | B 的结论 | 行数 |', '|---|---|---|']
+             '| A 的结论 | B 的结论 | 检查项数 |', '|---|---|---|']
     lines += ['| %s | %s | %d |' % (t['A'], t['B'], t['rows']) for t in st['transitions']]
-    for title, items in (('FAIL 对 PASS', st['fail_vs_pass']), ('P0/P1 发现所在行的分歧', st['severe_disagreements'])):
+    for title, items in (('FAIL 对 PASS', st['fail_vs_pass']), ('P0/P1 发现所在检查项的分歧', st['severe_disagreements'])):
         if items:
             lines += ['', '### %s' % title, '']
             lines += ['- A %s %s，B %s %s' % (p['A'], p['A_verdict'], p['B'], p['B_verdict']) for p in items]
@@ -649,11 +649,11 @@ def markdown(report):
         if st['duplicates'][side]:
             lines.append('')
             lines.append('%s 有重复的检查项：%s' % (side, '；'.join('、'.join(d['ids']) for d in st['duplicates'][side])))
-    lines += ['', '只在 A：%d 行；只在 B：%d 行；缺结论的配对：%d；被拒的别名：%d。' % (
+    lines += ['', '只在 A：%d 项；只在 B：%d 项；缺结论的配对：%d；被拒的别名：%d。' % (
         len(st['unmatched']['A']), len(st['unmatched']['B']), len(st['missing_result']), len(st['aliases_refused']))]
-    lines += ['', '审查员补加（规则缺口，不计入配对）：A %d 行，B %d 行。' % (
+    lines += ['', '审查员补加（规则缺口，不计入配对）：A %d 项，B %d 项。' % (
         len(st['reviewer_added']['A']), len(st['reviewer_added']['B']))]
-    lines += ['', '## 差异原因', '', '| 原因 | 开放项的边经过 | 行数 |', '|---|---|---|']
+    lines += ['', '## 差异原因', '', '| 原因 | 开放项的边经过 | 检查项数 |', '|---|---|---|']
     lines += ['| %s | %s | %d |' % (CAUSE_NAMES.get(c['cause'], c['cause']),
                                     '+'.join(VIA_NAMES.get(v, v) for v in c['via'].split('+')) if c['via'] else '—',
                                     c['rows']) for c in st['cause_counts']]
@@ -663,16 +663,16 @@ def markdown(report):
     for s in splits:
         files.setdefault((s['open_side'], s['open_ref'], s['decided']), set()).update(s['sources'])
     lines += ['', '### 同一份资料一边开项、一边定结论', '',
-              '%d 行，涉及 %d 个开项：开项读过的资料，另一边用在了决定这一行的余量或失败项里。' % (len(splits), len(groups))]
+              '%d 项，涉及 %d 个开项：开项读过的资料，另一边用在了决定这一项的余量或失败项里。' % (len(splits), len(groups))]
     if groups:
-        lines += ['', '| 开项 | 开项在 | 另一边结论 | 行数 | 资料 |', '|---|---|---|---|---|']
+        lines += ['', '| 开项 | 开项在 | 另一边结论 | 检查项数 | 资料 |', '|---|---|---|---|---|']
         lines += ['| %s | %s | %s | %d | %s |' % (ref, opener, decided, n, '、'.join(sorted(files[(opener, ref, decided)])))
                   for (opener, ref, decided), n in sorted(groups.items(), key=lambda x: (-x[1], x[0]))]
     sig = report['signals']
     owners = report.get('requirement_owners') or {'rows': [], 'different': 0}
     lines += ['', '## 需求的承接电路与判法', '',
               '两边 %d 条需求，承接电路（owners，按候选编号比，括号里是审查员起的名）或判法不同的 %d 条'
-              '（派生 = 绑到承接电路的行，自判 = 需求行自己判）。' % (len(owners['rows']), owners['different']), '',
+              '（派生 = 绑到承接电路的检查项，自判 = 需求检查项自己判）。' % (len(owners['rows']), owners['different']), '',
               '| 需求 | A 承接电路 | A 判法 | B 承接电路 | B 判法 |', '|---|---|---|---|---|']
     for row in owners['rows']:
         if row['same']:
@@ -708,8 +708,8 @@ def markdown(report):
     lines += ['', '## 建议配对（按电路与位号重合，不进入上面的指标）', '',
               '精确配对之外按重合度建议配对 %d 对，供人工核对是否同一项检查。' % len(st['suggested_pairs']), '',
               '| 项目 | A | B |', '|---|---|---|',
-              '| 按重合度对齐的行 | %d | |' % rows['shared'],
-              '| 只在一边的行 | %d | %d |' % (len(rows['only_A']), len(rows['only_B'])),
+              '| 按重合度对齐的检查项 | %d | |' % rows['shared'],
+              '| 只在一边的检查项 | %d | %d |' % (len(rows['only_A']), len(rows['only_B'])),
               '| 结论分布 | %s | %s |' % (_counts(rows['verdicts']['A']), _counts(rows['verdicts']['B'])),
               '| 待办/失败项（类型/等级） | %s | %s |' % (_counts(sug['open_items']['kinds']['A']), _counts(sug['open_items']['kinds']['B'])),
               '| 只在一边的待办 | %d | %d |' % (len(sug['open_items']['only_A']), len(sug['open_items']['only_B'])),
@@ -724,19 +724,19 @@ def markdown(report):
     if sug['circuits']['only_A'] or sug['circuits']['only_B']:
         lines.append('')
         lines.append('只在 A：%s；只在 B：%s' % ('、'.join(sug['circuits']['only_A']) or '—', '、'.join(sug['circuits']['only_B']) or '—'))
-    lines += ['', '### 按重合度对齐、结论不同的行', '']
+    lines += ['', '### 按重合度对齐、结论不同的检查项', '']
     for kind, items in sug['differences'].items():
-        lines += ['#### %s（%d 行）' % (kind, len(items)), '', '| 行 | A | B |', '|---|---|---|']
+        lines += ['#### %s（%d 项）' % (kind, len(items)), '', '| 检查项 | A | B |', '|---|---|---|']
         lines += ['| %s | %s | %s |' % (d['key'], _cell(d['A']), _cell(d['B'])) for d in items]
         lines.append('')
     lines += ['### 只有一边提出的发现', '']
     for side in SIDES:
         for f in sug['findings']['only_' + side]:
-            lines.append('- 只在 %s：%s %s（%s）行 %s' % (side, f['id'], f.get('title') or '', f.get('severity'), '、'.join(f['rows'])))
+            lines.append('- 只在 %s：%s %s（%s）检查项 %s' % (side, f['id'], f.get('title') or '', f.get('severity'), '、'.join(f['rows'])))
     lines += ['', '### 只有一边提出的待办', '']
     for side in SIDES:
         for i in sug['open_items']['only_' + side]:
-            lines.append('- 只在 %s：%s %s/%s，%d 个方面，%d 行：%s' % (side, i['ref'], i['kind'], i['level'], i['aspects'], len(i['rows']), i.get('what') or ''))
+            lines.append('- 只在 %s：%s %s/%s，%d 个方面，%d 项：%s' % (side, i['ref'], i['kind'], i['level'], i['aspects'], len(i['rows']), i.get('what') or ''))
     return '\n'.join(lines) + '\n'
 
 
@@ -744,7 +744,7 @@ CAUSE_NAMES = {'FAIL_VS_OTHER': '一边没通过', 'INSUFFICIENT_VS_PASS': '资�
                'OTHER': '其他'}
 VIA_NAMES = {'REQUIREMENT_CLAUSE': '需求条款', 'NUMERIC_LIMIT': '数值限值', 'MANDATORY_CLAUSE': '强制条款',
              'CALCULATION': '计算输入', 'NONE': '没写', None: '—'}
-SIGNAL_NAMES = (('requirement_clause_edges', '经需求条款挡行的边（过严）'),
+SIGNAL_NAMES = (('requirement_clause_edges', '经需求条款挡检查项的边（过严）'),
                 ('not_applicable_passes', '理由只写“不适用”的通过（过松）'),
                 ('decisive_margins', '决定结论的余量'),
                 ('decisive_margins_without_corners', '其中没写角点取法的（过松）'),

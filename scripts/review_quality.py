@@ -13,10 +13,10 @@ import re
 # Potential-impact grading: one grade covering nearly every graded gap suggests batch grading.
 UNIFORM_GRADE_MIN_ROWS = 10
 UNIFORM_GRADE_SHARE = 0.9
-# 定级模板：同一句带等级的话出现在多条不同规则的定级理由里，说明等级来自默认句而非本行后果路径。
+# 定级模板：同一句带等级的话出现在多条不同规则的定级理由里，说明等级来自默认句而非本检查项后果路径。
 TEMPLATE_MIN_ROWS, TEMPLATE_MIN_RULES = 10, 3
 GRADE_RE = re.compile(r'P[0-3]')
-# 同规则整批同级：本规则至少这么多行证据不足且全部同级时提示逐行定级。
+# 同规则整批同级：本规则至少这么多行证据不足且全部同级时提示逐项定级。
 RULE_UNIFORM_MIN_ROWS = 10
 # 分出下游工作线索：缺口文字只指向样机/试验结果，或把优化目标记成阻断缺口。关键词只生成提示，不改结论。
 DOWNSTREAM_RE = re.compile(r'实测|样机|样品|仿真|闭壳|温升测试|热测|EMC|传导|辐射|认证|一致性测试|兼容性测试|寿命试验|'

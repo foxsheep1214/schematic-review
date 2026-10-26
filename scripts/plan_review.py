@@ -301,7 +301,7 @@ NO_SUPPLY_KINDS = ('opto', 'relay', 'transformer', 'bridge_rectifier', 'crystal'
 
 class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning, plan_system.SystemPlanning,
                     plan_board.BoardPlanning):
-    """计划的主流程：加行、合并上一份计划、挂接扫描发现、汇总成计划；按功能树的各层（电路、接口、系统功能、全板）
+    """计划的主流程：加检查项、合并上一份计划、挂接扫描发现、汇总成计划；按功能树的各层（电路、接口、系统功能、全板）
     在各自模块里展开。"""
     def __init__(self, db, intent=None, review_mode=None,
                  old_db_available=False, claims_available=False,
@@ -665,7 +665,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                 history['readiness'] = 'WAITING_EVIDENCE'
                 history['required_inputs'] = sorted(set(history['required_inputs']) |
                     set(plan['revision_impact']['blocking_gaps']))
-        # 规则说明每条规则存一份；对象化说明写在结果行。
+        # 规则说明每条规则存一份；对象化说明写在结果检查项。
         for check in plan['checks']:
             check.pop('check_explanation', None)
         plan['check_explanations'] = catalog.explanations_for(c['rule'] for c in plan['checks'])
@@ -738,7 +738,7 @@ def diagnostic_lines(plan, db, intent):
                                    'DEVICE_KIND_GENERIC', 'DEVICE_PINS_NO_SUPPLY')]
     gaps = passive_stress.rail_gaps(plan)
     if gaps:
-        lines.append('  未声明电压的轨（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))
+        lines.append('  未声明电压的轨（阻塞阻容预判的检查项数）：' + '、'.join('%s(%d)' % item for item in gaps.items()))
         lines.append('    能从稳压器手册或需求定出时补 intent.power_rails.<轨>.voltage_v 后重跑')
     grounds = passive_stress.ground_domains(db, intent)
     if grounds:
@@ -747,7 +747,7 @@ def diagnostic_lines(plan, db, intent):
             lines.append('    不同域之间的两端件不出预判；实为同一参考的地在 power_rails.<网> 写相同 domain')
     nodes = passive_stress.node_gaps(plan)
     if nodes:
-        lines.append('  无界节点/跨域（阻塞阻容预判的行数）：' + '、'.join('%s(%d)' % item for item in list(nodes.items())[:12]))
+        lines.append('  无界节点/跨域（阻塞阻容预判的检查项数）：' + '、'.join('%s(%d)' % item for item in list(nodes.items())[:12]))
         lines.append('    栅极/检测/开关节点可按计算给 power_rails.<网>.voltage_v；隔离地给 domain；不能定界的留审查者计算')
     return lines
 

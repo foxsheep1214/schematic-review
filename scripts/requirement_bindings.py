@@ -91,7 +91,7 @@ def missing_owner_errors(checks):
     out = []
     for rid, (aspects, found) in sorted(by_requirement.items()):
         named = '、'.join('%s（%s）' % (c['id'], c.get('type') or c['kind']) for c in found.values())
-        out.append('requirement.%s.owners 缺：方面 %s 可承接的电路是 %s（它们拥有承担该方面的行）；写上承接电路后需求行由这些行派生。'
+        out.append('requirement.%s.owners 缺：方面 %s 可承接的电路是 %s（它们拥有承担该方面的检查项）；写上承接电路后需求检查项由这些检查项派生。'
                    '认定没有承接电路的写 owners: [] 并给能定位的 no_owner_reason' % (rid, '/'.join(aspects), named))
     return out
 
@@ -214,7 +214,7 @@ def coverage_errors(expected, rows):
         derived = coverage_result(planned, rows)
         result = rows[cid].get('review_result')
         if derived is not None and result != derived:
-            out.append('%s: 功能电路覆盖只答同类电路各行（%s）是否都已审，各行都有结论即为 %s，不复制子项结论，不是 %s；'
+            out.append('%s: 功能电路覆盖只答同类电路各检查项（%s）是否都已审，各检查项都有结论即为 %s，不复制子项结论，不是 %s；'
                        '用 derive_rows.py 写出' % (cid, '、'.join(planned.get('bound_checks') or []), derived, result))
     return out
 
@@ -236,7 +236,7 @@ def derive(plan, results, counts=None):
                'binding': {'object': planned.get('object'), 'criterion': planned.get('criterion')},
                'derived_from': [r['id'] for r in _judged(planned, rows)]}
         if coverage:
-            row.update(review_result=result, rationale='功能电路覆盖：同类电路各行（%s）都已审，结论留在各行，不复制'
+            row.update(review_result=result, rationale='功能电路覆盖：同类电路各检查项（%s）都已审，结论留在各检查项，不复制'
                                                        % '、'.join(planned['bound_checks']),
                        evidence=[{'source': 'review-results.json', 'locator': 'checks ' + ', '.join(planned['bound_checks'])}])
         else:
@@ -245,11 +245,11 @@ def derive(plan, results, counts=None):
             worst = next((r for r in counted if r['review_result'] == result), None)
             if worst is None:   # every judged row failed on another quantity
                 row.update(review_result=result,
-                           rationale='需求方面由绑定行承担：%s；失败行 %s 的失败边不在本方面的量上（单位 %s），不继承，本方面无失败'
+                           rationale='需求方面由绑定检查项承担：%s；失败检查项 %s 的失败边不在本方面的量上（单位 %s），不继承，本方面无失败'
                                      % ('、'.join(planned['bound_checks']), '、'.join(left_out),
                                         '/'.join(sorted(units_of(planned['object'].get('aspect'))))))
             else:
-                row['rationale'] = '需求方面由绑定行承担：%s；结论取其中最差者（%s）' % ('、'.join(planned['bound_checks']), worst['id'])
+                row['rationale'] = '需求方面由绑定检查项承担：%s；结论取其中最差者（%s）' % ('、'.join(planned['bound_checks']), worst['id'])
                 if left_out:
                     row['rationale'] += '；%s 的失败边不在本方面的量上，不继承' % '、'.join(left_out)
                 row.update({k: worst[k] for k in COPIED if k in worst})

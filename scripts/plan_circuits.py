@@ -113,7 +113,7 @@ LIFE_CRITERION = ('%s；电解、固态与超级电容按此剖面估算所需�
 LIFE_HANDOFF = {'required': True, 'state': 'OPEN', 'receivers': ['热设计'],
                 'constraint': '电解电容热点温度不超过寿命约束写的 Y °C', 'verification': '样机热点与纹波自热实测后按同一剖面复算'}
 WEAROUT_CRITERION = '%s %s（%s）：核%s；依据%s；%s'
-WEAROUT_NA_CRITERION = '%s %s（%s）：需求与任务剖面都没给%s，按次数核的寿命记 NA（写明这一原因），不开缺口项；单次应力由各自的应力行核'
+WEAROUT_NA_CRITERION = '%s %s（%s）：需求与任务剖面都没给%s，按次数核的寿命记 NA（写明这一原因），不开缺口项；单次应力由各自的应力检查项核'
 PTC_RE = re.compile(r'POLY ?FUSE|POLYSWITCH|PPTC|\bPTC\b|RESETTABLE|自恢复|MF-[A-Z]', re.I)
 SWITCHLIKE_RE = re.compile(r'POTENTIOMETER|\bPOT\b|TRIM|ENCODER|电位器|编码器', re.I)
 MEMORY_RE = re.compile(r'EEPROM|FLASH|\bFRAM\b|24(LC|AA|C)\d|25(LC|AA|Q)\d|W25Q|AT2[45]|M24C|M95', re.I)
@@ -152,12 +152,12 @@ PIN_LED_CRITERION = ('%s 直接驱动 %s 的 LED：按该脚手册的电流限�
 # The criterion names only the device and the group; the declaration's citation, allowed range, affected aspects and
 # requirement ride on the row as `configuration` (R6 acceptance 2026-10-24: 7 CFG-D01 rows per pair unpaired on the
 # reviewer's wording of them).
-CONFIG_CRITERION = ('%s 的%s：配置值须落在手册允许范围内（出处、允许范围与这一组决定的方面见本行 configuration）、满足需求，并包含'
+CONFIG_CRITERION = ('%s 的%s：配置值须落在手册允许范围内（出处、允许范围与这一组决定的方面见本检查项 configuration）、满足需求，并包含'
                     '硬件判定写下的设置（setting）；配置表未交付记 DELIVERABLE_PENDING（CONFIGURATION_TABLE）')
 CONFIG_UNDECLARED_CRITERION = ('%s 的%s：先在 intent.devices.%s.configurable 按手册寄存器或配置章节写出处、允许范围和它决定的方面；'
-                               '这一组对该器件不存在时本行记 NA 并引手册条款')
+                               '这一组对该器件不存在时本检查项记 NA 并引手册条款')
 CONFIG_DECLARE_CRITERION = ('%s 是可编程器件（%s）：在 intent.devices.%s.configurable 按手册寄存器、OTP/NVM 或配置章节声明配置组，'
-                            '或在本行说明它为什么没有可配置项')
+                            '或在本检查项说明它为什么没有可配置项')
 SET_POINT_CRITERION = ('%s 经%s设定输出（设定点 %s）：逐个设定点按基准或 DAC 的保证误差、分压公差与温漂核输出窗口，对照需求；'
                        '中间档不由两端档推出')
 ENABLE_LINK_CRITERION = ('光耦 %s 使能或关断 %s（%s 脚）：核上电时两侧供电建立的先后、使能门限与光耦传输延时，以及掉电后再上电能否'
@@ -405,7 +405,7 @@ class CircuitPlanning:
         return '、'.join(parts) or None
 
     def plan_subjects(self, kind, circuits, missing):
-        """声明了电路则逐电路×工况展开电路检查项并建功能框架（答案不随工作态变化的规则每电路一行），
+        """声明了电路则逐电路×工况展开电路检查项并建功能框架（答案不随工作态变化的规则每电路一项），
         否则按功能电路展开一次；已有 I²C 区域时由检查器逐区域展开。"""
         members, not_asked, requirements = [], {}, {}
         graph = NetGraph(board_intent.graph_db(self.db, self.kind_intent)) if circuits else None
@@ -468,7 +468,7 @@ class CircuitPlanning:
             if 2 * len(asked) < len(kind.subjects):   # proposals item 2b: the type asks almost nothing of this circuit
                 self.diagnostics.append({
                     'code': 'CIRCUIT_TYPE_MISFIT', 'circuit': circuit['id'], 'circuit_type': kind.name, 'asked': asked,
-                    'detail': '%s 按 %s 只问到 %d/%d 条电路规则：换一个类型，或不建这块电路、让器件走器件行' % (
+                    'detail': '%s 按 %s 只问到 %d/%d 条电路规则：换一个类型，或不建这块电路、让器件走器件检查项' % (
                         circuit['id'], kind.name, len(asked), len(kind.subjects))})
         for rule, obj, key, gaps, trigger in members:
             frame = frames.get(obj.get('circuit'))
@@ -720,7 +720,7 @@ class CircuitPlanning:
                 continue
             if kind == ZENER and follower_bias_zener(ref):
                 self.diagnostics.append({'code': 'GATE_BIAS_ZENER', 'ref': ref, 'switch': follower_bias_zener(ref),
-                                         'message': '%s 是 %s 源跟随器的栅极偏置基准，正常就导通：不派 PRO-C02 两侧窗口，由器件行和电路判定核它'
+                                         'message': '%s 是 %s 源跟随器的栅极偏置基准，正常就导通：不派 PRO-C02 两侧窗口，由器件检查项和电路判定核它'
                                                     % (ref, follower_bias_zener(ref))})
                 continue
             if kind in (ZENER, TVS):
@@ -759,7 +759,7 @@ class CircuitPlanning:
             window({'node': node, 'net': net, 'ref': ref}, gaps, [f'pinname:{pin}', f'net:{net}'] + audit)
 
     def plan_owned_parts(self):
-        """DEV-C01/C02/C03 每块电路对它拥有的器件一行（按 OWNED_PART_KINDS 取器件），没有电路拥有的器件全板一行。"""
+        """DEV-C01/C02/C03 每块电路对它拥有的器件一项（按 OWNED_PART_KINDS 取器件），没有电路拥有的器件全板一项。"""
         graph = NetGraph(board_intent.graph_db(self.db, self.kind_intent))
         circuits = self.intent.get('circuits', [])
         owners = row_owner.part_owners(circuits)
@@ -798,7 +798,7 @@ class CircuitPlanning:
                 # (R7 acceptance 2026-10-25, list A8): a programmable part without its configurable groups is a 2.1 gap
                 self.diagnostics.append({'code': 'CONFIGURABLE_UNDECLARED', 'ref': ref, 'role': role, 'groups': undeclared,
                                          'message': '%s 是可编程器件（%s）：在 intent.devices.%s.configurable 按手册写出 %s 组的出处、允许范围与影响的方面，'
-                                                    '再重生成计划；没有声明时 CFG-D01 行只能等资料' % (ref, role, ref, '、'.join(undeclared) or '配置')})
+                                                    '再重生成计划；没有声明时 CFG-D01 项只能等资料' % (ref, role, ref, '、'.join(undeclared) or '配置')})
             if not groups:
                 if role in catalog.PROGRAMMABLE_ROLES:
                     self.add_check('CFG-D01', {'ref': ref, 'config_group': 'DECLARE'}, key='DECLARE',

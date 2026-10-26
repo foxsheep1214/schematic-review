@@ -7,13 +7,13 @@
 台账有三层，只有第一层是审查员写的判断：
 - **功能判定**（`functions[]`）是判断单位。一个功能回答一块电路的一个问题（“偏置路径能否让 VCC 保持在 9.5 V 以上”），
   带手册条款、计算、余量、结论和开放项/失败项。计划按 intent 电路生成框架；框架外的功能审查员自己加。
-- **逐项检查**是审计明细。一行对应一条规则、一个实际对象、一个状态，编号为“规则.对象[.状态]”，跨轮次保持不变，
-  供改版复审、训练裁决和复核引用。绑定了功能的行由 `derive_rows.py` 从功能派生，不手填；
-  事实性检查（目检、脚表、身份、需求条款）手填。一个器件挂很多条规则是正常的，不合并成一行。
+- **逐项检查**是审计明细。一项对应一条规则、一个实际对象、一个状态，编号为“规则.对象[.状态]”，跨轮次保持不变，
+  供改版复审、训练裁决和复核引用。绑定了功能的检查项由 `derive_rows.py` 从功能派生，不手填；
+  事实性检查（目检、脚表、身份、需求条款）手填。一个器件挂很多条规则是正常的，不合并成一项。
 - **待办**是交付单位，由开放项和失败项派生（编号 `W-<key>`，见 [结论与准出](verdicts-and-release.md#待办由开放项派生)），
   不手写。设计者、ASG 和报告都按待办处理；PASS 和 NA 不进待办。
 
-“资料不足”只有一个入口：先有功能判定的开放项，才有 INSUFFICIENT 的行。
+“资料不足”只有一个入口：先有功能判定的开放项，才有 INSUFFICIENT 的检查项。
 
 ## 一、intent.json（schema_version 4）
 
@@ -87,14 +87,14 @@
   也不写 APPLICABLE（候选没检出却要审，就在 `circuit_decisions` 里补电路），只给规则总表有、候选没检出的类别写不适用依据。
 - `materials.<name>` 只写 `path`（文件或目录），文件存在即可用，不写 `available`；路径不存在被拒收。
   需求由 `requirement_source` 推出（不必再写 `materials.requirements`），规格书由逐物料审计（`--datasheet-audit`）推出；
-  没有的资料不写，依赖它的行等资料。
+  没有的资料不写，依赖它的检查项等资料。
 - `rail_exclusions`：网表上像电源（有 IC 从它取电，或 ≥1 µF 电容到地）而名字不像轨的网，每条都要在 `power_rails`
   声明成轨或在这里写它不是轨的依据，否则拒收；只能排除这类网，且不能同时声明。计划的 `rail_candidates` 列出每条这类网
   及其确认方式（`name` 名字像轨、`declared`、`excluded`）。名字像轨的网照旧按名字识别。
-- `rule_gaps`：审查员认为该查、计划里没有的检查。每条写 `id`、`rule`（按总表哪条规则判，不能是 REQ-D01：需求行由需求文档生成）、
-  `object`（非空；位号须在网表里）、`criterion`、`missing`（工具缺什么规则或推导）和 `basis`（依据）。计划工具写成一行
+- `rule_gaps`：审查员认为该查、计划里没有的检查。每条写 `id`、`rule`（按总表哪条规则判，不能是 REQ-D01：需求检查项由需求文档生成）、
+  `object`（非空；位号须在网表里）、`criterion`、`missing`（工具缺什么规则或推导）和 `basis`（依据）。计划工具写成一项
   `origin: REVIEWER_ADDED` 的检查（`rule_gap` 记缺口编号、`missing`、`basis`），照常判；计划 `summary.reviewer_added` 计数，
-  两份记录比较时这些行单独列出、不计入配对率；门禁结果 `rule_gaps` 列出每条缺口与结论，报告在“对 SR 的反馈”里列出，
+  两份记录比较时这些检查项单独列出、不计入配对率；门禁结果 `rule_gaps` 列出每条缺口与结论，报告在“对 SR 的反馈”里列出，
   每条记进改进台账，变成工具生成的规则。
 - `assemblies`（1–32 个，各带 `id` 与 `citation`）是全部检查器共用的装配状态；`devices` 是按位号的官方脚表。
   `pinout_complete: true` 的脚表要含封装名说出的每个脚号（QFN-16 → 1..16，SOT-23-3 → 1..3；带原厂代号 `SOT-23-3 (DBZ)` 照读；
@@ -109,12 +109,12 @@
   `allowed` 是手册允许的范围，`affects` 是这组设置决定的方面，`required` 是需求要求的值，`set_points` 是这组选出的输出档位。
   核验为可编程角色（pd_controller、mcu）而没声明齐全的，计划打 `CONFIGURABLE_UNDECLARED` 诊断（位号、角色、缺的组），2.1 做完的标志要它为 0：
   CFG-D01 的判据和键随声明变，两份记录只有都声明了才配得上（R7 验收 2026-10-25）。计划另有 `GATE_BIAS_ZENER` 诊断：
-  接在源跟随器栅极与地之间的齐纳是偏置基准、正常就导通，不派 PRO-C02 两侧窗口，由器件行和电路判定核。
-  计划给已核验角色的每个固定组和每个声明组一行 CFG-D01（`CFG-D01.<组>.<位号>`，不随工况重复；没声明的组 WAITING_EVIDENCE；
-  判据只写位号与组名，`citation`、`allowed`、`affects`、`required` 放在行的 `configuration` 字段，不进检查标识），
-  mcu 这类没有固定组的可编程角色没声明任何组时给一行 `CFG-D01.DECLARE.<位号>` 要求声明或说明为什么没有；写了 `set_points`
-  的组另加一行 `PWR-C02.SET-POINT-<组>.<位号>` 逐档核输出精度。某组对该器件不存在时，该行记 NA 并引手册条款。
-- `mission_profile`（intent 格式 4，一致性方案第 6 条）：所有寿命行共用的一份任务剖面
+  接在源跟随器栅极与地之间的齐纳是偏置基准、正常就导通，不派 PRO-C02 两侧窗口，由器件检查项和电路判定核。
+  计划给已核验角色的每个固定组和每个声明组一项 CFG-D01（`CFG-D01.<组>.<位号>`，不随工况重复；没声明的组 WAITING_EVIDENCE；
+  判据只写位号与组名，`citation`、`allowed`、`affects`、`required` 放在检查项的 `configuration` 字段，不进检查标识），
+  mcu 这类没有固定组的可编程角色没声明任何组时给一项 `CFG-D01.DECLARE.<位号>` 要求声明或说明为什么没有；写了 `set_points`
+  的组另加一项 `PWR-C02.SET-POINT-<组>.<位号>` 逐档核输出精度。某组对该器件不存在时，该检查项记 NA 并引手册条款。
+- `mission_profile`（intent 格式 4，一致性方案第 6 条）：所有寿命检查项共用的一份任务剖面
   `{requirement, phases[{name, share, load, ambient_c, citation[, requirement]}], events[{event, count, citation[, refs, requirement]}]}`。
   `requirement` 是给出设计寿命（`lifetime` 参数）的需求；`share` 是这一段占设计寿命时间的比例，各段合计为 1；`load` 是负载占额定的
   比例（0–1）；`ambient_c` 是环境温度；`event` 取 `catalog.LIFE_EVENTS`（开关机、浪涌、故障动作、动作、插拔、充放电循环、擦写），
@@ -128,39 +128,39 @@
   和 `status`，不写 `text`、`citation`、`criterion`。`categories` 从 [规则总表](check-catalog.md#需求类别与审查方面)
   的需求类别表选一个或几个（表有“怎么选”一列；拿不准就多选，少选是漏查）。分解的单位是需求里的量：带参数的方面由
   `parameters` 里有没有这个参数决定，有就问，不管选了哪些类别；不带参数的方面由类别决定；一个参数都没写的需求才按类别问全部方面，
-  计划同时列出原文里没读进参数的带单位数字（`REQUIREMENT_NUMBERS_UNREAD`，扫描时打印；每个数后面列出按单位和类别能收它的参数名，没有参数能收的说明写进 interpretation 或登记 rule_gaps；任务剖面引用的需求不列，剖面就是它的读数）。计划按（需求，方面）各生成一行 REQ-D01，判据取方面模板。
-  `interpretation` 写这条需求要在原理图上落实什么（不抄原文），挂在每一行上，不进检查标识；
+  计划同时列出原文里没读进参数的带单位数字（`REQUIREMENT_NUMBERS_UNREAD`，扫描时打印；每个数后面列出按单位和类别能收它的参数名，没有参数能收的说明写进 interpretation 或登记 rule_gaps；任务剖面引用的需求不列，剖面就是它的读数）。计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。
+  `interpretation` 写这条需求要在原理图上落实什么（不抄原文），挂在每一项上，不进检查标识；
   不适用的方面在结果里判 NA 并给依据，不从类别里删方面。需求文档里每个编号都要有一项（优化目标、明确排除也一样），
   文档里没有的编号被拒收；文档改了 sha256 就变，重新抄录并复看改过的需求。源不是表格时先整理成同格式的需求表并存档。
-  计划的 REQ-D01 行带 `source_text`（出处、章节、各列原文），每个方面行结果的 `requirement_clauses` 按顺序拼接都须等于这段原文。
+  计划的 REQ-D01 项带 `source_text`（出处、章节、各列原文），每个方面检查项结果的 `requirement_clauses` 按顺序拼接都须等于这段原文。
 - `requirements[].parameters`：从原文读出的数字，每项 `{name, min, max, unit, condition}`；`name` 与 `unit` 取
   [规则总表](check-catalog.md#需求类别与审查方面)的需求参数表，至少给 `min`、`max` 之一，每个数字须在该条原文里出现
   （`±5%` 同时给出 −5 和 5；数字后紧跟的短横是范围，不是负号），`condition` 须是原文里的一段（如“3 A 线缆时”）。
-  参数按规范单位换算后挂在该需求的每一行上（`parameters`，不进检查标识）。计划使用这些数字：
+  参数按规范单位换算后挂在该需求的每一项上（`parameters`，不进检查标识）。计划使用这些数字：
   `power_rails.<网>.voltage_v` 可以只写 `{"requirement": "<需求编号>"}`（该需求同时有输入和输出电压时加 `parameter`），
-  窗口取那条需求电压参数的上下限；输入电压、频率写进 SYS-POWER 框架的 `requirement_windows` 和问题；需求给了待机功耗或静态电流（`standby_power` / `quiescent_current`）时 SYS-POWER 多一行 PWR-C16（待机与空载输入功耗上界），需求行的 STANDBY_POWER 方面绑它；
-  工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02/C06）作为 `conditions` 挂在器件应力行上，计划顶层 `conditions` 列出各条来源。
+  窗口取那条需求电压参数的上下限；输入电压、频率写进 SYS-POWER 框架的 `requirement_windows` 和问题；需求给了待机功耗或静态电流（`standby_power` / `quiescent_current`）时 SYS-POWER 多一项 PWR-C16（待机与空载输入功耗上界），需求检查项的 STANDBY_POWER 方面绑它；
+  工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02/C06）作为 `conditions` 挂在器件应力检查项上，计划顶层 `conditions` 列出各条来源。
 - `requirements[].owners`，**承接电路**：落实这条需求的功能电路、系统功能或接口的 id。规则总表给每个审查方面列出承担它的检查和可承接的电路类型；
-  计划替每个需求行找出**可承接的电路**，写在 `owner_candidates`（拥有承担该方面的行的所属里，电路类型、系统功能、接口种类在该方面那一格里的那些；表外的不算）。
+  计划替每个需求检查项找出**可承接的电路**，写在 `owner_candidates`（拥有承担该方面的检查项的所属里，电路类型、系统功能、接口种类在该方面那一格里的那些；表外的不算）。
   **有可承接的电路的需求必须写 owners**（OPEN、DEFERRED 的除外），没写的计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []`
-  加能定位的 `no_owner_reason`，需求行自判（行记 `self_judged: DECLARED`，“审查员认定没有承接电路”）；没有可承接的电路的不要求写，需求行自判
+  加能定位的 `no_owner_reason`，需求检查项自判（检查项记 `self_judged: DECLARED`，“审查员认定没有承接电路”）；没有可承接的电路的不要求写，需求检查项自判
   （`self_judged: NO_OWNER_CANDIDATE`，“没有可承接的电路”）。写了可承接之外的 id 允许，计划打诊断 `REQUIREMENT_OWNER_OUTSIDE_CANDIDATES` 供复核。
   只有一个可承接的电路也要手写，不自动填。
-  计划把需求行绑定到这些规则中 `owners` 拥有的行，没写 `owners` 时全板方面（器件温度等级、按温度降额、寿命）绑定全板这些规则的行，
-  写在需求行的 `bound_checks`（不进检查标识，校验时重算，点名的 id 必须拥有计划里的行）。有绑定行判过（不算 NA）的需求行不再另判：
-  `derive_rows.py` 取绑定行中最差的结论写出（`derived_from`；FAIL 带上该发现项并把需求行加进它的 `check_ids`，INSUFFICIENT 带上 `open_ref`），
-  手填的需求行只对账不覆盖；校验要求结论等于绑定行中最差者，这种行不要求条款。没有绑定行、或绑定行全是 NA 的方面由需求行自己判，照常拆条款。
+  计划把需求检查项绑定到这些规则中 `owners` 拥有的检查项，没写 `owners` 时全板方面（器件温度等级、按温度降额、寿命）绑定全板这些规则的检查项，
+  写在需求检查项的 `bound_checks`（不进检查标识，校验时重算，点名的 id 必须拥有计划里的检查项）。有绑定检查项判过（不算 NA）的需求检查项不再另判：
+  `derive_rows.py` 取绑定检查项中最差的结论写出（`derived_from`；FAIL 带上该发现项并把需求检查项加进它的 `check_ids`，INSUFFICIENT 带上 `open_ref`），
+  手填的需求检查项只对账不覆盖；校验要求结论等于绑定检查项中最差者，这种检查项不要求条款。没有绑定检查项、或绑定检查项全是 NA 的方面由需求检查项自己判，照常拆条款。
   有参数的方面（如 TEMPERATURE_GRADE 的 °C）只从经需求条款或经该参数单位的限值的失败边继承 FAIL（`requirement_bindings.fail_counts`）：
-  绑定行因别的量失败（齐纳低电流 VZ）时失败留在该行，需求行写明不继承；INSUFFICIENT 照旧继承。
+  绑定检查项因别的量失败（齐纳低电流 VZ）时失败留在该检查项，需求检查项写明不继承；INSUFFICIENT 照旧继承。
 - `requirements[].status`：已确认（CONFIRMED）、提案（PROPOSED）、未定（OPEN）、暂缓（DEFERRED）。
   保留需求原文和源状态，先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求)
   确定本次判据的实际确认状态，不省略真实未定项。OPEN 的 REQ-D01 必须 INSUFFICIENT + REQUIREMENT_OPEN；
   DEFERRED 必须 INSUFFICIENT + USER_DEFERRED；PROPOSED 可判定，但结论以提案为前提。
 - `power_rails` 支撑 PWR-C01 与 DEV-C05：给电压/最大负载、源端最弱保证可供电流和条件；READY 不等于 PASS。
-  片内稳压输出（如 MCU 的 1.1 V 内核轨）、仅板内使用的中间轨同样要声明电压：阻容预判按同簇器件的全部供电轨定界，缺一条就整簇不出预判。计划命令末尾会列出“未声明电压的轨”及受阻行数，能从稳压器手册或需求定出时补齐后重跑。
+  片内稳压输出（如 MCU 的 1.1 V 内核轨）、仅板内使用的中间轨同样要声明电压：阻容预判按同簇器件的全部供电轨定界，缺一条就整簇不出预判。计划命令末尾会列出“未声明电压的轨”及受阻检查项数，能从稳压器手册或需求定出时补齐后重跑。
   隔离或多地设计给各轨与各地写 `domain`（如 PRI/SEC），地写 `voltage_v: {min: 0, max: 0}`；栅极/检测节点可按计算声明窗口。
   窗口由审查者独立定界：取需求输入范围、稳压器/钳位/保护门限的保证值和故障上限，逐条写 `citation`；不取设计方计算的数值。
-  合并扫描前 `power_rails` 仍为空却有 DEV-C01/PWR-C10 行，属审查准备未完成，先补齐再录结论。
+  合并扫描前 `power_rails` 仍为空却有 DEV-C01/PWR-C10 项，属审查准备未完成，先补齐再录结论。
 - 条件导通另可声明 `power_sources`（某状态的供入节点）与 `power_paths`（某状态可导通的方向，不是理想短路或载流声明），
   不得把未上电的稳压器或端口标成 source 来消除告警。
 - 各检查器的 intent 段（`i2c_topology`、`decoupling`、`device_kinds` 等）见 [自动检查](automation.md)。
@@ -174,7 +174,7 @@
   `circuit_decisions[]` 每条对一个候选做一种决定，每个候选恰有一条：
   - `accept`：原样接受，可给名称 `id`；加工作态写 `states_add`，并在 `state_requirements` 里给每个加的态点名一条需求（`{state: REQ id}`），
     那条需求的原文要说到这个态（待机/空载、掉电、热插拔、短路、突发/轻载……，`catalog.STATE_WORDS`），`citation` 仍要可定位；
-    一句泛引文不能给每块电路都加态（R7 验收 2026-10-25：一份记录给十块电路各加六个态，多出 130 行）。候选的态是类型的固定表。
+    一句泛引文不能给每块电路都加态（R7 验收 2026-10-25：一份记录给十块电路各加六个态，多出 130 项）。候选的态是类型的固定表。
   - `merge`：`candidate` 列几个候选，`id` 必填，`citation` 引一条把它们描述成一个流程的条款；电路候选不与跨电路候选（ISOLATION、STARTUP、保护链）合并。
   - `split`：`into: [{id, members}]`，每部分成员是该候选成员的子集，所有成员都要有去处，`citation` 可定位。
   - `reject`：`reason` 为 OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF（后者带 `of: <已推出的电路>`，成员须都在它里面），`citation` 可定位；被拒候选的成员进 REQ-Q08 复核，已被接受、合并、拆分或 add 的电路持有的除外。
@@ -186,20 +186,20 @@
   - `own`：`ref`、`candidate`、`citation`（可定位）：同一级认领打平的器件归 `candidate` 所在的电路。只裁定打平，不改已有的归属；每颗至多一条。
   推出的电路带 `id`、`type`、`refs`、`owned`、`nets`、`states`、`citation`、`candidate_ids`、`cross_cutting`、`anchors`。
   `refs` 是电路持有的全部器件，`owned` 是其中归它所有的：每颗被持有的器件恰好在一块电路的 `owned` 里，其余持有它的电路只引用它
-  （可在条件与计算里引用，计划不为它生成行）。归属在决定后保留的电路之间按认领强弱判定：电路的核心器件 > 电路成员 >
+  （可在条件与计算里引用，计划不为它生成检查项）。归属在决定后保留的电路之间按认领强弱判定：电路的核心器件 > 电路成员 >
   电路里的端点类角色（端口的 PD 控制器）> 链路成员（启动链、保护链）> 隔离带 > 链路的核心器件与端点；被拒或判为重复的候选让出的器件
   由下一个认领者拥有，打平的要 own 决定。一颗非核心器件最多被两块电路持有。
   审查员认为候选漏了器件，不往电路里手加：那是规则或网表的缺口，记在 REQ-Q08（候选生成没有归属的器件逐颗列出）并改规则。
 
 ## 二、review-plan.json（schema_version 7）
 
-行带 `owner`、`check_key` 和 `requires`，计划带所属表 `owners` 和接口 `interfaces`，功能框架带 `not_asked`；电路检查项只在网表上有它问的机制时生成
+检查项带 `owner`、`check_key` 和 `requires`，计划带所属表 `owners` 和接口 `interfaces`，功能框架带 `not_asked`；电路检查项只在网表上有它问的机制时生成
 （见下文“电路规则的前提”）。更早格式的计划（含据它写的结果）不再读，
 校验、合并（`--merge-plan`）和改版比对（`--old-plan`）都拒收，按当前规则重新生成计划、重新审。
 
 ### 生成与合并
 
-- 网表扫描 `lint.py --plan-json review-plan-cold.json` 保存计划和候选；审查者要补的检查登记到 `intent.rule_gaps` 后重新生成，计划工具没写的行（自动扫描行与改版记录以外）在合并和校验时都被拒。
+- 网表扫描 `lint.py --plan-json review-plan-cold.json` 保存计划和候选；审查者要补的检查登记到 `intent.rule_gaps` 后重新生成，计划工具没写的检查项（自动扫描检查项与改版记录以外）在合并和校验时都被拒。
 - intent 声明电路时两次扫描都带 `--candidates record/circuit-candidates.json`；计划顶层 `circuit_candidates` 记候选文件的 `db_sha256`、`rules_version`、候选编号、决定和未归属器件，
   功能框架的 objects 直接取电路（即候选经决定后的）成员；候选文件随计划一起打包（`pack_review.py --circuit-candidates`）。
 - 合并扫描 `--merge-plan review-plan-cold.json --plan-json review-plan.json` 产生**唯一最终计划**。
@@ -209,14 +209,14 @@
 - 补查项按 `intent.rule_gaps` 生成，`id` 为 `规则编号.GAP-<缺口编号>.锚点`，`rule`/`method`/`domain` 随总表。
 - **拆分实例的命名**：一条规则需要逐对象或逐判据给出不同结果时，逐个登记规则缺口，缺口编号写成
   `<对象>[-<判据>]`，对象用位号、网络或电路 ID，判据用简短大写词。例如全板项 DEV-C01 逐颗判定时登记
-  `C12`、`Q3`，IC 脚经串联电阻接高轨的脚工具已逐脚生成（`DEV-C01.PIN.<位号>-<脚号>`，见 [阻容应力](commodity-floors.md#计划预判dev-c01-逐颗行)），工具没覆盖的（如经齐纳链或多颗电阻）才登记，如 `U2-FAULT`（行 `DEV-C01.GAP-U2-FAULT.U2`）；PWR-C02 拆窗口与调节能力时登记 `U1-WINDOW`、`U1-REGULATION`。
-  自动生成的原计划项（如 `DEV-C01.BOARD`）保持不变（校验会按保存的输入重建它），在结果行写
+  `C12`、`Q3`，IC 脚经串联电阻接高轨的脚工具已逐脚生成（`DEV-C01.PIN.<位号>-<脚号>`，见 [阻容应力](commodity-floors.md#计划预判dev-c01-逐颗检查项)），工具没覆盖的（如经齐纳链或多颗电阻）才登记，如 `U2-FAULT`（检查项 `DEV-C01.GAP-U2-FAULT.U2`）；PWR-C02 拆窗口与调节能力时登记 `U1-WINDOW`、`U1-REGULATION`。
+  自动生成的原计划项（如 `DEV-C01.BOARD`）保持不变（校验会按保存的输入重建它），在结果检查项写
   `split_out: [拆分实例 ID…]`：原项的结论只覆盖拆出实例**以外**的对象，拆出的对象各自给结论。
   这样一颗 C201 缺规格只让 `DEV-C01.GAP-C201.C201` 资料不足，其余已核对象仍可让 `DEV-C01.BOARD` 通过，
   不会被一个对象拖成整板资料不足。拆出实例须同规则、只属于一个原项，且不再嵌套拆分（`validate_review.py` 检查）；
   原项 rationale 写清其余对象核到了哪些、依据是什么。报告在拆出实例下注明所属原项。
   对 DEV-C01/02/03/04 的整板待核项先定位实际器件、额定/寿命/精度判据，保留与原检查的显式映射。
-  不另造同一对象/工况/判据的重复行；启动与运行只有检查内容不同才分开。不同控制器的功率级即使同级风险，
+  不另造同一对象/工况/判据的重复检查项；启动与运行只有检查内容不同才分开。不同控制器的功率级即使同级风险，
   仍按独立关闭条件分任务。筛查 `BROAD_CHECK_NEEDS_LOCALIZATION` 只提示定位，不自动把汇总项变PASS。
 
 ### 检查项字段
@@ -232,12 +232,12 @@
 | `required_inputs` | 当前缺失的输入 |
 | `trigger` | 实例化该项的可复现依据 |
 | `handoff` | 独立下游动作，可与任一结果并存；`constraint`/`verification` 逐条写接收方要做和要测的事，不写“执行 X 原文及其全部工况”这类只换编号的套话（`TEMPLATED_HANDOFF` 提示） |
-| `question` / `function_id` / `aspect` | 电路检查行有：按规则模板填了电路、位号、状态和需求窗口的问题；所属功能框架；方面（= 规则标题）。电路拥有的器件行（器件身份、引脚、应力、工况、它某颗器件上的扫描发现）也预绑到该电路的框架（`function_id`、`aspect` = 规则标题，没有 `question`），在功能里按方面判，`judgements` / `open` 用 `check_ids` 可收窄到某颗器件的行；全板拥有的行不绑。问题里不许有禁止句（“不得…”“不把…外推”），校验 `question_errors` 拒绝，审查员补加的行同样受限 |
-| `requires` | 带前提的电路检查行才有：`{id, found[, unread]}`，前提名（`catalog.SUBJECT_REQUIRES`）、网表上满足前提的器件、网表说不清的器件；行 `object.ref` 取 `found`（没有时取 `unread`）的第一个 |
+| `question` / `function_id` / `aspect` | 电路检查项有：按规则模板填了电路、位号、状态和需求窗口的问题；所属功能框架；方面（= 规则标题）。电路拥有的器件检查项（器件身份、引脚、应力、工况、它某颗器件上的扫描发现）也预绑到该电路的框架（`function_id`、`aspect` = 规则标题，没有 `question`），在功能里按方面判，`judgements` / `open` 用 `check_ids` 可收窄到某颗器件的检查项；全板拥有的检查项不绑。问题里不许有禁止句（“不得…”“不把…外推”），校验 `question_errors` 拒绝，审查员补加的检查项同样受限 |
+| `requires` | 带前提的电路检查项才有：`{id, found[, unread]}`，前提名（`catalog.SUBJECT_REQUIRES`）、网表上满足前提的器件、网表说不清的器件；检查项 `object.ref` 取 `found`（没有时取 `unread`）的第一个 |
 
 `rule_plan[]` 回答“这类规则要不要跑”，`checks[]` 回答“具体审哪一项”，`functions[]` 是功能框架：
 每个 intent 电路一条，含 `id`（`FN-<电路 id>`）、`question`（由成员问题归纳，审查员可改）、`objects`、`states`、
-`members[]`（检查行 id、规则、方面、状态）、`blind_spots`（每条问了的电路检查项的盲区一句）、`not_asked[]`
+`members[]`（检查项 id、规则、方面、状态）、`blind_spots`（每条问了的电路检查项的盲区一句）、`not_asked[]`
 （前提不成立、没有问的规则：`rule`、`aspect`、`requires`、`why`）、`checklist`
 （判“证据不足”之前的五步原文）和 `bounds[]`（框架里器件对应的[工作点定界表](bounding-table.md)的格：`cell`、`refs`、`parameter`、
 `side`、`methods`（按顺序）、`formulas`、`fallback`；NTC 按 NTC、电解按电解、IC 另按核实过的角色取格）。审查员照框架写功能判定，不翻规则书。
@@ -259,18 +259,18 @@
   热敏等传感器每个接到 IC 的检测脚生成 ANA-C04（开短路判别）；传感器接电源轨的一端和轨上 IC 的供电脚不算检测脚。
   声明了 `intent.devices` 的位号，DEV-D02 带官方/符号双向差集，DEV-D05 带待复核引脚清单（不是结论）。
 - **需求与覆盖**：每条需求实例化为 REQ-D01；另有六类覆盖审计项 DOC-Q01、REQ-Q01～Q04、DEV-Q01。
-- **保证值核对（E）**：网表或检查器定出对象，计划行一律 WAITING_EVIDENCE，审查者按两端规格书保证值经功能判定作答。
-- **功能电路**：汇总项 REQ-Q07 只汇总覆盖，由工具写出：计划把它绑定到同类电路的全部适用行（`bound_checks`），各行都有结论且至少一行不是 NA 时 `derive_rows.py` 写它为 PASS（绑定行全为 NA 时脚本不写，由审查员填并写依据），不复制任何子项的结论；手填结论不同被拒绝；功能电路适用后生成电路检查项，声明了电路时逐电路×工况（答案不随工作态变化的电路检查项
-  每电路一行，行的 `object` 不带 `state`，见 `catalog.STATE_INVARIANT`），否则按功能电路一次；各检查项仍须按 [最小充分证据](evidence-proportionality.md) 核适用性。
+- **保证值核对（E）**：网表或检查器定出对象，计划检查项一律 WAITING_EVIDENCE，审查者按两端规格书保证值经功能判定作答。
+- **功能电路**：汇总项 REQ-Q07 只汇总覆盖，由工具写出：计划把它绑定到同类电路的全部适用检查项（`bound_checks`），各检查项都有结论且至少一项不是 NA 时 `derive_rows.py` 写它为 PASS（绑定检查项全为 NA 时脚本不写，由审查员填并写依据），不复制任何子项的结论；手填结论不同被拒绝；功能电路适用后生成电路检查项，声明了电路时逐电路×工况（答案不随工作态变化的电路检查项
+  每电路一项，检查项的 `object` 不带 `state`，见 `catalog.STATE_INVARIANT`），否则按功能电路一次；各检查项仍须按 [最小充分证据](evidence-proportionality.md) 核适用性。
   未检出也未声明的功能电路汇总到一项 REQ-Q08，逐个确认不适用并给依据。
 - **电路规则的前提**（一致性方案第 2 条）：`catalog.SUBJECT_REQUIRES` 给部分“类型 × 规则”一个由网表判断的前提，
   如 DRV-C02 要电路里有 MOSFET/BJT，PWR-C15 要电路或与它相接的 IC（经电路里的电阻接到开关栅极、或脚在电路网上）有
   反馈/补偿脚、电路里的 IC 有稳压输出脚，或有分压/光耦把输出送到 IC，RST-* 要有带复位、使能或启动配置脚的 IC；全表见
-  [规则总表](check-catalog.md#功能电路)。前提不成立就不生成这一行，框架记 `not_asked`，报告在“各功能的判断”下列
+  [规则总表](check-catalog.md#功能电路)。前提不成立就不生成这一项，框架记 `not_asked`，报告在“各功能的判断”下列
   “FN-… 未问：方面（电路里没有…）”。地按网名和各域的参考地（`_RTN` 一类回流）认。网表说不清时照问：器件不在网表、
   类别未知（两脚件不算晶体管或 IC，整流桥和符号名出热敏/压敏的件不算未知）、IC 没有脚名。漏问的经 `intent.rule_gaps` 补回。
   一种类型对某电路问到的规则不到一半时，计划诊断 `CIRCUIT_TYPE_MISFIT` 并在计划命令输出里提示换类型，或不建这块电路、
-  让器件走器件行。
+  让器件走器件检查项。
 - **电平转换（LEVEL_SHIFT）**：用于独立转换模块和通用 GPIO 跨电压域互连。转换器位于已声明的 I²C/SPI/UART 等
   总线上时，把转换器列入该总线电路的 refs，不另声明 LEVEL_SHIFT，避免同一链路重复检查；此时 REQ-Q08 中的
   LEVEL_SHIFT 以“已并入 <电路 ID>”为依据关闭，不写成“不适用”。分立 MOSFET 转换器没有名称线索，须在 `intent.circuits`
@@ -316,7 +316,7 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 - `coverage`：各维度“对象→检查 ID 数组”的完整映射。有 `--db` 时机械检查 components、pins、nets、pages
   及 requirements 是否都关联至少一条检查；仅 PDF 时由页面/手工对象清单另审，不制作伪网表。
 - `requirement_clarifications`（无则可省略）。`work_items` 不再写：待办由开放项派生（见 [结论与准出](verdicts-and-release.md#待办由开放项派生)）。
-- `review_scope`（只在局部热审时写）：`{"functions": [计划框架 id…], "reason": "…"}`。声明后校验只要求这些框架的检查行有结果，
+- `review_scope`（只在局部热审时写）：`{"functions": [计划框架 id…], "reason": "…"}`。声明后校验只要求这些框架的检查项有结果，
   不要求 `scope_checks` 与 `coverage`；gate 的 `valid` 可为真，但带阻断“不是整板结论”，`release` 恒为 NO_GO，`pack_review.py` 不打包。
   用于训练语料的单电路热审与试点，不用于交付。
 - schema 5（2026-10-23，在 4 的基础上给决定结论的余量加推界方式与公差端，给“定不出界”加单调定界尝试）没有分版本号：`binding_version`、`remediation_version`、`workflow_version`、`impact_class_version`、
@@ -329,8 +329,8 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 ### 功能判定（functions）
 
 计划框架的问题可以改得更具体，但改后的问题仍要点名这块电路、它的器件或网络，不能换成“本节保留的已核方面”这类范围说明。
-框架的成员行转给别的功能（`function_id` 指向别的功能）后仍是这块电路的行：成员行里有证据不足或不符合时，报告把这块电路
-计为未定或不符合，并列出那一行所在的待办，不随转出变成“通过”。
+框架的成员检查项转给别的功能（`function_id` 指向别的功能）后仍是这块电路的检查项：成员检查项里有证据不足或不符合时，报告把这块电路
+计为未定或不符合，并列出那一项所在的待办，不随转出变成“通过”。
 
 以一个合成例子说明：反激控制器 U1 的 VCC 由辅助绕组经整流、源跟随管 Q2 供电，数字全部是编的，只为展示字段：
 
@@ -392,14 +392,14 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 
 | 字段 | 含义 |
 |---|---|
-| `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头。框架的 `members` 列出要在这个功能里答的全部行：电路检查行和电路拥有的器件行 |
-| `conditions[]` | [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`；只在可编程器件某个设置下成立的条件写 `setting{ref, group, value}`，该器件该组的 CFG-D01 结果行 `settings[{value, function}]` 须列出这个值，配置表缺口（DELIVERABLE_PENDING / CONFIGURATION_TABLE）只挡 CFG-D01 行和需求行；`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一 |
+| `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头。框架的 `members` 列出要在这个功能里答的全部检查项：电路检查项和电路拥有的器件检查项 |
+| `conditions[]` | [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`；只在可编程器件某个设置下成立的条件写 `setting{ref, group, value}`，该器件该组的 CFG-D01 结果检查项 `settings[{value, function}]` 须列出这个值，配置表缺口（DELIVERABLE_PENDING / CONFIGURATION_TABLE）只挡 CFG-D01 项和需求检查项；`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一 |
 | `calculation` | 同节第 2 步“算出了余量就下结论”：`result`、`margin{value,unit,against,basis[,aspect,states,check_ids]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值）、`claim_ids`、`inputs`（计算的输入量名，影响条目的 `via.input` 从这里取）、`assumptions`；只针对一个方面时写 `aspect`。同一功能里 `value`、`unit`、`against` 都相同的余量只能有一条：一个缺陷落在证明它的那个方面，要落到别的方面须是另一个量、另一条余量。没有数值的功能写 `no_calculation_reason` |
-| `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。厂家参考电路也可以撑起判断：该 TYPICAL_REFERENCE 条件写 `reference_circuit{figure, connection, load}`——参考电路的图号或页、本板与它相同的接法、它的元件值与本板负载的对照（本板不重于它），报告依据写“厂家参考电路 + 图号”。行要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |
+| `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。厂家参考电路也可以撑起判断：该 TYPICAL_REFERENCE 条件写 `reference_circuit{figure, connection, load}`——参考电路的图号或页、本板与它相同的接法、它的元件值与本板负载的对照（本板不重于它），报告依据写“厂家参考电路 + 图号”。检查项要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
 | `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[影响条目]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`，`title`/`why` 可选；各种 `kind` 另要的字段见下面“开放项的六种” |
 | `fails[]` | 失败项：`key`、`finding_id`（指向 findings）、`what`、`decides`，可带 `conditions`（被违反的强制条款）、`title`/`why`/`due_stage`/`design_option`；依据三选一：余量证明不够（REACHABLE_CASE/EXACT_ENVELOPE）、违反强制条款、或 `outside_specified{condition, operating_point, curves_checked}`——器件工作在手册没规定的区域：`condition` 是本功能里给出手册规定区的条款，`operating_point` 写本机工作点，`curves_checked` 列查过的曲线和表，其中须有推荐工作条件或电气特性节，工作点是某个引脚的还须有引脚说明节；不要把“没规定”写成限值 0 去比较 |
-| `handoffs[]` | 功能级移交，派生行时填进计划要求移交的行 |
+| `handoffs[]` | 功能级移交，派生检查项时填进计划要求移交的检查项 |
 | `verdict_history[]` | 改过结论时写 `{from, to, basis: [条件或 claim id], note}`，basis 不能为空 |
 | `evidence` | 可定位的证据 |
 
@@ -407,17 +407,17 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 
 | `kind` | 必写 | 不写 | 说明 |
 |---|---|---|---|
-| DESIGN_VALUE（设计还没定） | `spec`、`owner`；`undecided[{ref, parameter[, unit]}]` 列出没选的器件参数，或 `depends_on: <开项 key>` | 向厂家索取（`spec` 不许写成这样） | `undecided` 所列位号的 BOM 行已有“参数名 + 该单位的数”时拒收：这个量板上已定，按 BOM 行算。缺的量由本审查另一个开项决定时（例如保护阈值等厂家数据）写 `depends_on`，只挂一层，它挡的行在待办和报告里并到那个开项下计。有计算的功能里没有对应方面的余量时写 `no_margin_reason`（还没选定什么） |
+| DESIGN_VALUE（设计还没定） | `spec`、`owner`；`undecided[{ref, parameter[, unit]}]` 列出没选的器件参数，或 `depends_on: <开项 key>` | 向厂家索取（`spec` 不许写成这样） | `undecided` 所列位号的 BOM 行已有“参数名 + 该单位的数”时拒收：这个量板上已定，按 BOM 行算。缺的量由本审查另一个开项决定时（例如保护阈值等厂家数据）写 `depends_on`，只挂一层，它挡的检查项在待办和报告里并到那个开项下计。有计算的功能里没有对应方面的余量时写 `no_margin_reason`（还没选定什么） |
 | VENDOR_DATUM（只有厂家知道） | `checked`（条件 id）、`why_insufficient`、`acquisition`、`worst_case` | — | 先按公开资料界限算：`worst_case{bound{condition, value, basis: GUARANTEED_LIMIT/ADJACENT_TEST_POINT/TYPICAL_CURVE/PUBLISHED_TABLE/APPLICATION_NOTE}, result, margin{value,unit,against,basis}}`，这个余量按它的依据决定结论。确实没有公开界限时写 `worst_case{not_boundable_reason, curves_checked[{source, locator}], operating_point_specified}`：`true` 是手册写了这种用法只缺数值，另写 `specified_by` 指向写了这种用法的条件（不能是 `monotonic_tried.test_points` 里没覆盖工作点的测试点；可以是条款、应用说明或 `regime` 覆盖工作点的典型曲线），引典型曲线（`curve: true`）时另写 `typical_estimate{value, unit, against, basis: ESTIMATE 并引这条曲线}`，估算已经不够就是失败项（余量记 REACHABLE_CASE），资料不足按后果定级；`false` 是设计依赖手册未规定的工作区，记失败项，发现项给出回到规定区的改法，不向厂家要。目录器件的参数是这一种，不是交付物 |
 | DELIVERABLE_PENDING（另一阶段欠的交付物） | `deliverable_kind`（CUSTOM_PART_DRAWING 定制件图纸 / FIRMWARE_CAPABILITY 固件应用能力 / CONFIGURATION_TABLE 配置表）、`scope`、`deliverable`、`owner`、`assumed`（本判定按什么假定算的）、`closure` | `acquisition`、`spec` | CUSTOM_PART_DRAWING 另写 `missing_parameters[{name[, unit]}]`，只列判定需要、BOM 规格没写的参数（饱和电流、Bmax、绝缘结构；资格认可这类没有数值的不写 unit）；写了 unit 的参数若 `deliverable`/`what` 点名位号的 BOM 行已有“参数名 + 该单位的数”则拒收，按 BOM 行引作 NUMERIC_LIMIT（见[常规器件下限](commodity-floors.md)） |
 | USER_DEFERRED（用户暂缓） | `instruction` | — | — |
 | REQUIREMENT（需求没定） | — | `severity` | 走[需求澄清](requirement-clarifications.md) |
 | REVIEW_INCOMPLETE（审查没做完） | — | — | 本轮自己读算完；有这种开项时不打包 |
 
-**每类开放项能挡哪些行**（`catalog.OPEN_ITEM_RULES`，R7 验收 2026-10-25：同一个变压器图纸缺口四份记录挡了 62 / 16 / 29 / 14 行）：
-`decides` 边的 `aspect` 是规则标题，那个标题的规则不在本类能挡的集合里就拒绝。VENDOR_DATUM 能挡计算行（C）、电气窗口行（E）和需求行 REQ-D01；
-DESIGN_VALUE 另加 CFG-D01；DELIVERABLE_PENDING 按 `deliverable_kind`：CUSTOM_PART_DRAWING 另加该定制件自己的身份与脚行（DEV-D01/D02/D05），
-FIRMWARE_CAPABILITY 另加全部 SIG-* 与 CFG-D01，CONFIGURATION_TABLE 只挡 CFG-D01 与需求行。文档/身份行（D）、拓扑行（T）、提示（A）和覆盖行不等任何开放项：
+**每类开放项能挡哪些检查项**（`catalog.OPEN_ITEM_RULES`，R7 验收 2026-10-25：同一个变压器图纸缺口四份记录挡了 62 / 16 / 29 / 14 项）：
+`decides` 边的 `aspect` 是规则标题，那个标题的规则不在本类能挡的集合里就拒绝。VENDOR_DATUM 能挡计算检查项（C）、电气窗口检查项（E）和需求检查项 REQ-D01；
+DESIGN_VALUE 另加 CFG-D01；DELIVERABLE_PENDING 按 `deliverable_kind`：CUSTOM_PART_DRAWING 另加该定制件自己的身份与脚检查项（DEV-D01/D02/D05），
+FIRMWARE_CAPABILITY 另加全部 SIG-* 与 CFG-D01，CONFIGURATION_TABLE 只挡 CFG-D01 与需求检查项。文档/身份检查项（D）、拓扑检查项（T）、提示（A）和覆盖检查项不等任何开放项：
 按已知的判，或换对的缺口种类。不是规则标题的 aspect（需求方面、自由文字）不在此查。
 
 **条件的五种。** 每条条件先要能定位：`locator` 给页码、表号、图号、章节、手册的节名（电气特性、绝对最大、引脚说明……）、
@@ -444,9 +444,9 @@ FIRMWARE_CAPABILITY 另加全部 SIG-* 与 CFG-D01，CONFIGURATION_TABLE 只挡 
 
 估算判通过（SR 自查 2.1）：相似器件保证范围或典型 ±30% 这类估算在整个范围内结论不变时，`basis` 另写 `consequence_class`
 （REQUIRED_FUNCTION 或 PERFORMANCE_OR_LIFE，估算错了的后果）和 `handoff`（本功能 `handoffs` 里样机实测那一条的序号，
-那一条写全 receivers、constraint、verification），满足就判 PASS，派生行带上这条移交（`required: true`，OPEN）。
+那一条写全 receivers、constraint、verification），满足就判 PASS，派生检查项带上这条移交（`required: true`，OPEN）。
 损坏、过热和保护类规则（DEV-C01、DEV-C04、PWR-C03、PWR-C06、PWR-C10、DRV-C01、全部 PRO）不走这条路，仍要保证值。
-寿命行另有自己的估算路径（见 DEV-C02/DEV-C06）。
+寿命检查项另有自己的估算路径（见 DEV-C02/DEV-C06）。
 
 `comparison` 为 GE 时零余量算满足，GT 时不算。除 ESTIMATE 外，`limit` 指向被比较的 NUMERIC_LIMIT，`regime` 写算出量成立的条件；
 与限值的 `regime` 不同时，`conversion` 要指向一条条件或 claim（换算或包络），否则跨条件比较被拒绝。
@@ -477,46 +477,46 @@ FIRMWARE_CAPABILITY 另加全部 SIG-* 与 CFG-D01，CONFIGURATION_TABLE 只挡 
 计算类（规则方法 C）的方面判 PASS 必须有证明它的余量；一句判断只能收掉连接追踪（T）和条款核对（D）类方面，写明 `reference_circuit` 的厂家参考电路例外。
 
 **影响条目（`decides[]`）。** 开放项和失败项的每个 `decides` 条目是一条边：`{aspect, states?, check_ids?, effect, via, rationale}`。
-`effect` 默认 BLOCKS_PROOF（挡住该范围的证明），INFORMATION_ONLY 只登记不挡；`check_ids` 把边收窄到点名的行。
-经需求文档条款的边（条件来自需求目录里的文档，`requirement_source` 及其同目录文件）只能挡绑定到该需求的行：该需求的 REQ-D01 行及其 `bound_checks`；挡别的行要经缺的数进入的那个比较——数值限值、计算输入，或手册、标准里的条款。
+`effect` 默认 BLOCKS_PROOF（挡住该范围的证明），INFORMATION_ONLY 只登记不挡；`check_ids` 把边收窄到点名的检查项。
+经需求文档条款的边（条件来自需求目录里的文档，`requirement_source` 及其同目录文件）只能挡绑定到该需求的检查项：该需求的 REQ-D01 项及其 `bound_checks`；挡别的检查项要经缺的数进入的那个比较——数值限值、计算输入，或手册、标准里的条款。
 DESIGN_VALUE、VENDOR_DATUM、DELIVERABLE_PENDING 的每条边都写 `via`——缺的量进到哪里：`{condition: 本功能的条件 id}` 或
 `{claim: 计算的 claim id[, input: calculation.inputs 里的输入名]}`——和 `rationale`（现有的界为什么决定不了这一项）。
 一个缺口挡几个方面不限数，超过 3 个只出 WIDE_GAP 提示，供复看是否该拆开。
 
-**范围要写明。** 余量、判断和边不写 `states` 时只覆盖不带状态的行（STATELESS），不覆盖所有状态；要覆盖几个状态就把它们列出来。
+**范围要写明。** 余量、判断和边不写 `states` 时只覆盖不带状态的检查项（STATELESS），不覆盖所有状态；要覆盖几个状态就把它们列出来。
 
 **退役字段。** `margin_not_decisive_reason`、`loose_bound`、`decides_reason` 写了会被拒绝：余量决不决定由余量依据说明，挡住什么由影响条目说明。
 
-校验 F1–F12：F1 每个功能有问题、对象、结论，电路功能至少引用一条条款（被判断、余量依据、开放项、失败项或影响条目实际引用；只含 DOC 行的功能不要求）；
+校验 F1–F12：F1 每个功能有问题、对象、结论，电路功能至少引用一条条款（被判断、余量依据、开放项、失败项或影响条目实际引用；只含 DOC 检查项的功能不要求）；
 F2 DESIGN_VALUE 写规格与责任方，不向厂家要；F3 VENDOR_DATUM 写查过什么、为什么不够，以及公开资料界限下的最坏情况（界的条件、取值、依据和带余量依据的余量；没有界就列查过的曲线表），
 公开资料界限下证明通过的余量说明这个量不缺，开放项要撤掉，证明不满足的要记失败项，ESTIMATE 可以保留开放；
 F4 结论跟着余量的依据走：证明通过的余量与挡住同一范围的边并存被拒绝，证明不满足的余量要有失败项，同一范围既有通过又有失败的证据是 EVIDENCE_CONFLICT，
 没被任何东西决定的 OPEN 余量要有开放项；失败项要么落在证明不满足的余量上，要么在 `conditions` 里引被违反的强制条款，指向的发现项带 `remediation`；
-F5 行跟随功能（见下）；F6 改结论要引条款或数字；F7 缺口的每条影响条目写 `via` 和 `rationale`，`via` 指向本功能的条件或计算的 claim 与输入；
+F5 项跟随功能（见下）；F6 改结论要引条款或数字；F7 缺口的每条影响条目写 `via` 和 `rationale`，`via` 指向本功能的条件或计算的 claim 与输入；
 F8 功能已有计算时，DESIGN_VALUE 开放项要有对应方面的余量，或写明设计还没选定什么；
 F9 判 PASS 的每个方面在该状态有证明通过的余量或 `judgements` 条目，每条 judgement 至少引一条 MANDATORY_CLAUSE、NETLIST_FACT 或写明 `reference_circuit` 的厂家参考电路，不引 NUMERIC_LIMIT
 （数字限值在余量里比较，不在判断句里宣布满足），只说“不适用 / 无此问题 / 按拓扑无… / 不涉及”而不引 NETLIST_FACT 的判断被拒绝（改记 NA），
 判断与挡住同一范围的边冲突，没人判过的方面不会默认通过；
 F10 同一条不能定位的条件出现在两个以上功能里被拒绝（能定位的条款可以被几个功能共同引用；同一句 `assumptions` 抄进几个功能的计算同样拒绝，共用工况写进 intent 一次）；
 同一句 `no_margin_reason`/`why_insufficient`/`closure`/`acquisition` 出现在几个开放项上只出 TEMPLATE_REASON 提示（同一方法套几个对象是一件待办、多个位号）；
-F11 框架功能的 `objects` 不超出 intent 电路声明的位号与网络（要扩大先改 intent 再重生成计划，不在判定里放宽），审查员自己绑定的行要是该功能对象上的行
-（位号行的位号、网络行的网络在功能 `objects` 里，网络名不计图纸路径；感性负载行只看电感本身和它的开关节点，续流回路里别的器件只是上下文；需求行、全板行没有对应的器件或网络，不受此限）——一块电路的缺口不借绑定伸进另一块电路；
-F12 计划带 `clamp_refs` 的连接器行（PRO-D03）必须绑定功能：钳位电压对被保护脚绝限是功能判定里的条款和判断，不手填 PASS。
+F11 框架功能的 `objects` 不超出 intent 电路声明的位号与网络（要扩大先改 intent 再重生成计划，不在判定里放宽），审查员自己绑定的检查项要是该功能对象上的检查项
+（位号检查项的位号、网络检查项的网络在功能 `objects` 里，网络名不计图纸路径；感性负载检查项只看电感本身和它的开关节点，续流回路里别的器件只是上下文；需求检查项、全板检查项没有对应的器件或网络，不受此限）——一块电路的缺口不借绑定伸进另一块电路；
+F12 计划带 `clamp_refs` 的连接器检查项（PRO-D03）必须绑定功能：钳位电压对被保护脚绝限是功能判定里的条款和判断，不手填 PASS。
 
-**检查项标识。** `plan_review.py` 给每行写 `check_key`：规则、规则版本（目录条目与问题模板）、去掉 `circuit` 名称后的对象、判据四项的摘要。
-装配状态按内容命名：计划的 `assemblies` 给 intent.assemblies 的每个名字一个由贴装表和跳线算出的键（`ASSEMBLY-…`），检查器行的 `state`/`states`
-和装配检查的 `assembly` 用这个键进标识，所以两人给同一装配起不同的名字仍是同一项检查；电路行的 `state` 是工作态，不换。
+**检查项标识。** `plan_review.py` 给每个检查项写 `check_key`：规则、规则版本（目录条目与问题模板）、去掉 `circuit` 名称后的对象、判据四项的摘要。
+装配状态按内容命名：计划的 `assemblies` 给 intent.assemblies 的每个名字一个由贴装表和跳线算出的键（`ASSEMBLY-…`），检查器检查项的 `state`/`states`
+和装配检查的 `assembly` 用这个键进标识，所以两人给同一装配起不同的名字仍是同一项检查；电路检查项的 `state` 是工作态，不换。
 检查器清单的摘要（`*_digest`）和句柄（`decoupling_group`、`power_switch`、`supervision` 等，见 `check_key.INVENTORY_FIELDS`）只是指回清单，不进标识。
 校验器总是重算这个键，不信记录里存的值；同一项检查在计划里问了两次被拒绝。改电路名不改检查项，换规则模板或判据才改。
 `scripts/compare_reviews.py` 先按这个键严格配对两份记录，再给出按电路的建议配对（见 [自动检查](automation.md#脚本分类)），
 并读两边的 `intent.circuit_decisions` 与 `record/circuit-candidates.json`，逐候选、逐对齐电路的成员、逐未归属器件列电路决定的差异。
-电路级行的对象带 `circuit_key`（电路来自的候选编号，合并的用 `+` 连接）：有它时成员表、核心器件和网络不进标识，
+电路级检查项的对象带 `circuit_key`（电路来自的候选编号，合并的用 `+` 连接）：有它时成员表、核心器件和网络不进标识，
 两份记录接受了同一批候选，即使画法（成员、网络写法）不同，电路检查项也是同一项。
 
-**所属对象。** 计划给每行写 `owner`：电路级行归它的电路（`{"kind": "CIRCUIT", "id": …}`）；
-`catalog.SYSTEM_FUNCTIONS` 里的系统规则行归系统功能（`SYSTEM`，如 SYS-POWER）；关于器件的行归拥有这颗器件的电路
-（多颗器件须同属一块）；其余归全板（`BOARD`）。计划的 `owners` 列出每块电路拥有的器件，`summary.owners` 是按所属的行数。
-校验器按 `owners` 重算每行的所属，拒绝写错的行；审查员后加的拆分行可以不写。
+**所属对象。** 计划给每个检查项写 `owner`：电路级检查项归它的电路（`{"kind": "CIRCUIT", "id": …}`）；
+`catalog.SYSTEM_FUNCTIONS` 里的系统规则检查项归系统功能（`SYSTEM`，如 SYS-POWER）；关于器件的检查项归拥有这颗器件的电路
+（多颗器件须同属一块）；其余归全板（`BOARD`）。计划的 `owners` 列出每块电路拥有的器件，`summary.owners` 是按所属的检查项数。
+校验器按 `owners` 重算每个检查项的所属，拒绝写错的检查项；审查员后加的拆分检查项可以不写。
 
 **接口。** 计划的 `interfaces`（`scripts/interfaces.py`）列出所属对象之间的接口：一条网络连着两个所属对象的器件脚就是它们之间的接口网络，
 同一对之间的网络合成一个接口；地网不是接口网络。四种：电路对 `IF-<A>~<B>`、链路 `LINK-<跨电路候选>`（带它自有的器件 `parts`）、
@@ -524,24 +524,24 @@ F12 计划带 `clamp_refs` 的连接器行（PRO-D03）必须绑定功能：钳�
 每个端点 `{owner, pin, role, basis, domain, supply}`：角色 DRIVER / RECEIVER / BIDIRECTIONAL / PASSIVE 按库引脚类型、器件类别、电源树和引脚名推，
 推不出的进 `gaps`（`reason: role`），轨推不出源的也进 `gaps`（`reason: source`）。
 
-**接口检查项。** 计划按 `catalog.INTERFACE_SUBJECTS` 逐接口生成行，对象带 `interface`：电路对问 SIG-T04 方向语义与 SIG-C07 电平，
+**接口检查项。** 计划按 `catalog.INTERFACE_SUBJECTS` 逐接口生成检查项，对象带 `interface`：电路对问 SIG-T04 方向语义与 SIG-C07 电平，
 链路问 SIG-C07（两端电平），两端 IC 供电轨或参考地分区不同的接口网络（`cross_supply`）另问 SIG-C08；连接器问 DEV-D03 对端定义、
 DEV-C04 载流、PRO-D03 对外防护（对象 `{interface: EXT-<连接器>, ref}`）；供电轨在敏感电路（ANALOG、CLOCK、RF）取电时问 PWR-C14
-（对象带 `loads`）。行的缺口取接口的角色缺口（`interface-role:<脚>`）、轨源缺口（`rail-source:<接口>`）和端点 IC 的资料。
-电路对、链路和连接器各一个接口框架（`functions[]` 里带 `interface`、`interface_kind`，没有 `circuit`），成员是该接口的行；
-供电接口只有行，不建框架。按声明的总线电路展开的同名规则仍问电路内部的链路。
+（对象带 `loads`）。检查项的缺口取接口的角色缺口（`interface-role:<脚>`）、轨源缺口（`rail-source:<接口>`）和端点 IC 的资料。
+电路对、链路和连接器各一个接口框架（`functions[]` 里带 `interface`、`interface_kind`，没有 `circuit`），成员是该接口的检查项；
+供电接口只有检查项，不建框架。按声明的总线电路展开的同名规则仍问电路内部的链路。
 
 **系统功能。** 有对象才生成：两个以上地网问 PWR-T06（`{system: SYS-GROUND, nets}`），两条以上电源轨问 RST-T03
-（`{system: SYS-SEQUENCE, rails}`，全板一行），有可能是主控的 IC 问 SIG-D13（`{system: SYS-PINMAP, refs}`）；电源树与监控的行
-（PWR-T01/C01/A01/A04、PWR-T04/A06）照旧生成。每个有行的系统功能一个框架（`functions[]` 里带 `system`），成员是归它的行。
-**自有器件。** DEV-C01 应力、DEV-C02 电容、DEV-C03 精度每块电路对它拥有的器件一行（`{circuit, circuit_key, refs}`，
-按器件类别取），没有电路拥有的器件全板一行（`{board: BOARD, refs}`）。
+（`{system: SYS-SEQUENCE, rails}`，全板一项），有可能是主控的 IC 问 SIG-D13（`{system: SYS-PINMAP, refs}`）；电源树与监控的检查项
+（PWR-T01/C01/A01/A04、PWR-T04/A06）照旧生成。每个有检查项的系统功能一个框架（`functions[]` 里带 `system`），成员是归它的检查项。
+**自有器件。** DEV-C01 应力、DEV-C02 电容、DEV-C03 精度每块电路对它拥有的器件一项（`{circuit, circuit_key, refs}`，
+按器件类别取），没有电路拥有的器件全板一项（`{board: BOARD, refs}`）。
 **覆盖审计。** 校验器另查两条：电路来自候选时，每颗贴装器件恰归一块电路（`row_owner.coverage_errors`），
-或列在 REQ-Q08 的 `unassigned` 上（计划把没有电路拥有的贴装器件都列进去）；每个接口都有它该问的行（`interfaces.coverage_errors`），电路对、链路（有网络时）和连接器另有框架。
-**报告分组。** 计划有树框架时，报告的功能表分系统功能、功能电路、接口和审查员另建的功能四组；每个发现项多一行“所属”，写它的行归哪个系统功能、电路、接口或全板。
+或列在 REQ-Q08 的 `unassigned` 上（计划把没有电路拥有的贴装器件都列进去）；每个接口都有它该问的检查项（`interfaces.coverage_errors`），电路对、链路（有网络时）和连接器另有框架。
+**报告分组。** 计划有树框架时，报告的功能表分系统功能、功能电路、接口和审查员另建的功能四组；每个发现项多一行“所属”，写它的检查项归哪个系统功能、电路、接口或全板。
 
-**文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 行（输入版本、图纸卫生）不是电路。
-文档错误直接在行上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 行）；这件待办由 finding 生成（`W-<finding id>`，含指向它的全部 DOC FAIL 行），不要改记证据不足。DOC 行证据不足时仍需一个开放项作入口，这种只含 DOC 行的功能不计入
+**文档检查不是功能电路。** 功能回答一块电路的问题；DOC-* 检查项（输入版本、图纸卫生）不是电路。
+文档错误直接在检查项上判 FAIL 并写 finding，不绑定功能（校验拒绝绑定了功能的 DOC FAIL 检查项）；这件待办由 finding 生成（`W-<finding id>`，含指向它的全部 DOC FAIL 检查项），不要改记证据不足。DOC 检查项证据不足时仍需一个开放项作入口，这种只含 DOC 检查项的功能不计入
 “功能判定”计数，也不进报告的功能表。
 
 隔离器件的工作资格（PRO-C03）和反馈稳定（PWR-C15）是功能的方面，不另设约定：
@@ -549,17 +549,17 @@ PRO-C03 在隔离功能里逐个列出变压器、光耦/数字隔离器、跨�
 （短时耐压、目标绝缘类别、无直流跨接都不能独自关闭）；PWR-C15 在变换器功能里写反馈模型、补偿配置和角点稳定性
 （无反馈环按拓扑 NA；内部补偿用厂家适用条件证明；Bode 实测是移交，不是开放项）。
 
-**行跟随功能。** 绑定了功能的行（计划检查行，或审查员写了 `function_id` 的行——这样的行要是该功能对象上的行（F11）；同一组对象声明了两个功能电路时，
-一个框架的检查行可以绑到另一框架的功能，条件是该功能的 `objects` 覆盖这一行的位号与网络，这样共用的检查项只判一次、不复制开放项；
-框架行不能挂到审查员自建的功能上，也不能从自建功能取 `open_ref`/`fail_ref`：计划电路的缺口写成该电路功能（或拥有该器件的计划功能）的开放项或失败项，
-缺口只写一次——跨电路的缺口写在拥有缺失量的框架里，开放项的 `decides` 另加影响条目，用 `check_ids` 点名另一电路受它挡住的行，
-那些行的 `open_ref` 就指向这个开放项（没点名的行不能指向别的功能的开放项；失败项不跨功能，2026-10-24 定）；自建功能只装不属于任何框架的行，如器件、检查器和全板行，
-它的位号若全在某个电路框架里，校验拒收并提示写进那个框架；计划漏了电路时在 `intent.circuit_decisions` 登记 add 决定后重生成计划）：功能 PASS → 行 PASS；
+**检查项跟随功能。** 绑定了功能的检查项（计划检查项，或审查员写了 `function_id` 的检查项——这样的检查项要是该功能对象上的检查项（F11）；同一组对象声明了两个功能电路时，
+一个框架的检查项可以绑到另一框架的功能，条件是该功能的 `objects` 覆盖这一项的位号与网络，这样共用的检查项只判一次、不复制开放项；
+框架检查项不能挂到审查员自建的功能上，也不能从自建功能取 `open_ref`/`fail_ref`：计划电路的缺口写成该电路功能（或拥有该器件的计划功能）的开放项或失败项，
+缺口只写一次——跨电路的缺口写在拥有缺失量的框架里，开放项的 `decides` 另加影响条目，用 `check_ids` 点名另一电路受它挡住的检查项，
+那些检查项的 `open_ref` 就指向这个开放项（没点名的检查项不能指向别的功能的开放项；失败项不跨功能，2026-10-24 定）；自建功能只装不属于任何框架的检查项，如器件、检查器和全板检查项，
+它的位号若全在某个电路框架里，校验拒收并提示写进那个框架；计划漏了电路时在 `intent.circuit_decisions` 登记 add 决定后重生成计划）：功能 PASS → 检查项 PASS；
 功能 FAIL → `fails[].decides` 命中的（方面，状态）FAIL 并带 `fail_ref`/`finding_id`；功能 OPEN →
-`open[].decides` 命中的行 INSUFFICIENT 并带 `open_ref: "FN-ID/KEY"`；其余的行只有本方面本状态有证明通过的余量或 `judgements` 条目才 PASS，
-否则 `derive_rows.py` 报“judges no …”而不生成该行。`rationale` 写“见功能判定 FN-X（方面，状态）：”加本方面自己的结论和余量，或 judgement 的内容和条款。
-`derive_rows.py` 生成这些行；手填的行只对账不覆盖。校验强制：INSUFFICIENT 必有 `open_ref` 且其 `decides` 覆盖本行的方面和状态；
-绑定的行的 `aspect` 等于计划的方面；每个有已审成员的框架都有功能判定。
+`open[].decides` 命中的检查项 INSUFFICIENT 并带 `open_ref: "FN-ID/KEY"`；其余的检查项只有本方面本状态有证明通过的余量或 `judgements` 条目才 PASS，
+否则 `derive_rows.py` 报“judges no …”而不生成该检查项。`rationale` 写“见功能判定 FN-X（方面，状态）：”加本方面自己的结论和余量，或 judgement 的内容和条款。
+`derive_rows.py` 生成这些检查项；手填的检查项只对账不覆盖。校验强制：INSUFFICIENT 必有 `open_ref` 且其 `decides` 覆盖本检查项的方面和状态；
+绑定的检查项的 `aspect` 等于计划的方面；每个有已审成员的框架都有功能判定。
 
 ### 每项检查的盲区与关闭条件
 
@@ -574,7 +574,7 @@ PRO-C03 在隔离功能里逐个列出变压器、光耦/数字隔离器、跨�
 | `false_alarms` | 自动扫描（A）必填 | 哪些合法结构会触发本规则？ |
 
 逐项执行时先读盲区和常见误报，再用真实器件、物理路径、状态和需求确认适用范围；达到关闭条件即停止，
-不因没有实测或全温曲线继续索取参数。通用说明不再准确时（拓扑专用、部分范围、NA 等），在结果行
+不因没有实测或全温曲线继续索取参数。通用说明不再准确时（拓扑专用、部分范围、NA 等），在结果检查项
 `check_explanation` 里只写需要改的字段，例如只改 `closes_when`；不能改绑定的原判据。
 NA 写明本机为什么不暴露于该风险；纯下游项写明本阶段可做什么及后续由谁负责。
 
@@ -613,10 +613,10 @@ NA 写明本机为什么不暴露于该风险；纯下游项写明本阶段可�
 `locator` 绑定原文。节点必须在当前原生输入存在；已有官方映射的冲突角色不能以审查者声明覆盖。
 不能以名称候选代替核验。确认非供电脚的候选
 用 `manual_group_role: "excluded_candidate"` 与实际 `other` 脚角色记录；D/C 判 NA 仍须独立用途依据。不得带任何 `decoupling_*` 生成绑定字段。审查者结论仅证明该独立判据，不恢复自动条款/资格
-缺口，也不能解除输入完整性失败带来的全板 NO_GO。输入资格缺口只影响确实依赖该事实的行：
+缺口，也不能解除输入完整性失败带来的全板 NO_GO。输入资格缺口只影响确实依赖该事实的检查项：
 某器件缺功能名只影响该器件自身引脚角色，不改变网络连通，其他器件去耦组的电容、回流与边界照常审结；
-不能把同一缺口复制成每个去耦行的 INS（见 [执行一致性](execution-consistency.md#2-局部-pass-不扩展为路径或系统-pass)）。
-受影响的行引用原生导出逐端点比对；局部电气结论还须具体用途、原厂条款、状态及参数证明，不能仅从 XML 推断合格。
+不能把同一缺口复制成每个去耦检查项的 INS（见 [执行一致性](execution-consistency.md#2-局部-pass-不扩展为路径或系统-pass)）。
+受影响的检查项引用原生导出逐端点比对；局部电气结论还须具体用途、原厂条款、状态及参数证明，不能仅从 XML 推断合格。
 逐项证据记录取证来源、实际端点、装配及已核范围；工具验证绑定一致性，不代替手册条款核实。
 
 接口按当前协议列实际端点、官方信号角色、各段串联/转换/隔离/保护器件、状态与外接/电缆边界。
@@ -652,7 +652,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 录入与最终校验前，先逐个功能核：问题是不是这块电路真正要回答的；`conditions` 是否列全了手册里有关的条款，
 `use` 的推导是否成立（测试条件不是使用范围，相邻测试点夹出界限要有单调性依据）；`calculation` 的假设是否写明；
 算出余量的方面是否已下结论；每个开放项的 `kind` 是否对（本设计要定的量不是厂家资料）、`decides` 是否只覆盖它真正决定的方面与状态、
-`severity.consequence` 是否写了这个缺口在什么工况下导致什么后果。然后逐行用实际对象上下文对照手填行的 `rationale` 及关联待办：
+`severity.consequence` 是否写了这个缺口在什么工况下导致什么后果。然后逐项用实际对象上下文对照手填检查项的 `rationale` 及关联待办：
 
 这一步有四个机器信号（`quality_screening` 的疑点，2026-10-25 ④ 第一项的严格审核）；它们点出的是最常漏的几种，不是复核的全部：
 
@@ -666,9 +666,9 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   如果这个限值就是那个参数，写格和推法，带公式的推法让门禁复算。
 - `TEMPLATE_REASON`：同一句理由、关闭条件或取得方式出现在几个开放项上（`no_margin_reason`、`why_insufficient`、`closure`、`acquisition`）。
 
-4.2 证据不足的分类另有自己的提示：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 除了读行的缺口文字，还读 DESIGN_VALUE / VENDOR_DATUM 开放项的
+4.2 证据不足的分类另有自己的提示：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 除了读检查项的缺口文字，还读 DESIGN_VALUE / VENDOR_DATUM 开放项的
 `closure`、`acquisition`、`why_insufficient`——写了实测、样机、样品、仿真作为关闭路径的（“随后/留给……”分句已分出下游部分，不算），厂家保证值和样机才能测是两档，
-实测的部分拆成阶段 NA 行加移交，开放项只写真正能关它的数据或规格。R7 的四份记录里这样的开放项有 2 / 0 / 6 / 2 条（三只光耦的 CTR“保证或高低温实测”、端口短路“实测峰流”、BULK 浪涌“实测或仿真上界”）。
+实测的部分拆成阶段 NA 检查项加移交，开放项只写真正能关它的数据或规格。R7 的四份记录里这样的开放项有 2 / 0 / 6 / 2 条（三只光耦的 CTR“保证或高低温实测”、端口短路“实测峰流”、BULK 浪涌“实测或仿真上界”）。
 `FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 与 `CALCULATION_RECORDED_AS_DATA_GAP` 同样读开放项（`what`、`acquisition`、`closure`、`why_insufficient`、`deliverable`、`spec`，“随后/留给……”分句不算）：
 DESIGN_VALUE / VENDOR_DATUM / DELIVERABLE_PENDING 项写了烧录镜像、读回、编程模式、量产校准而 `what`/`acquisition`/`deliverable` 里没有编程口、上拉、GPIO 这类原理图前提的是前者；
 VENDOR_DATUM 项的取得方式写了已读某页、只剩复算，又没有一句说缺哪个数据的是后者。手填检查项仍按检查项的 `missing_inputs` 判，派生检查项不逐项点。
@@ -680,7 +680,7 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
 门禁拒收的两件：决定性余量（GUARANTEED_BOUND、REACHABLE_CASE、EXACT_ENVELOPE）没写 `basis.cell`；`basis.conditions` 里有 min≠max 的 NUMERIC_LIMIT（除 `limit` 本身）却没有对应角点，
 `no_corners_reason` 不能代替。
 
-- 对每条需求，将原文与本行 criterion 中并列的功能、工况前提、交付和范围排除分别列为分项要求，
+- 对每条需求，将原文与本检查项 criterion 中并列的功能、工况前提、交付和范围排除分别列为分项要求，
   在现有 evidence 定位每项实际证据、相关检查 ID 与状态。明确排除认证、实测或某种使用状态，
   只证明该排除分项要求；不能据此让同条需求中的电气实现或保证前提一起 PASS。必要时按上文
   “拆分实例的命名”补查分项要求，保留自动原项及完整覆盖关系。
@@ -691,18 +691,18 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   纯范围排除项可独立 PASS，不能因为全板其他项未闭就自动传染 INSUFFICIENT；相反，复合项不能
   用范围 PASS 掩盖它明确依赖的器件自身的要求。资料缺口不是需求待决，不改成 REQUIREMENT_OPEN。
 
-- 将文字中的每个位号、物理脚、网络与本行对象/状态核对。额外对象只能作为有定位的供电、返回、保护或
-  共同证明路径出现，说明其与本行的关系；从其他行继承而无因果关系的前缀、脚名、数值须删除或重写。
-  旁路、储能等器件清单按本行所核电源脚及实际贴装变体的连接路径列出，避免把全板清单带入局部判据。
-- 用“本行要判断的内容→已核路径/条款→剩余未知→补证或修改→复验判据”核闭环。接口防护的缺口须对应
-  该接口的实际外接边界；另一个接口的浪涌、旁路或源许可不能独自关闭本行。无源触点的候选排除说明须
+- 将文字中的每个位号、物理脚、网络与本检查项对象/状态核对。额外对象只能作为有定位的供电、返回、保护或
+  共同证明路径出现，说明其与本检查项的关系；从其他检查项继承而无因果关系的前缀、脚名、数值须删除或重写。
+  旁路、储能等器件清单按本检查项所核电源脚及实际贴装变体的连接路径列出，避免把全板清单带入局部判据。
+- 用“本检查项要判断的内容→已核路径/条款→剩余未知→补证或修改→复验判据”核闭环。接口防护的缺口须对应
+  该接口的实际外接边界；另一个接口的浪涌、旁路或源许可不能独自关闭本检查项。无源触点的候选排除说明须
   引用其真实角色，不能借相邻 IC 的旁路说明代替。
 - 共享的是可定位的证明，不是整段结论。确实共用同一路径/工况的对象可引用同一证据，分别说明它覆盖的
   范围；状态、对端、故障路径或关闭资料不同的项分别写。不要以禁止共享文字的机械规则制造重复工作。
 - 修改理由或关联关系后重新核父项、澄清项和任务；已完成的板级窄判据与真实外部未知分别留记录。
 - 运行态与掉电态分别核取证。正常运行接口项引用运行供电、输入电平/共模和对端边界；Ioff、掉电泄漏、
   UVLO/关断条件只支持其实际适用的状态与判据。某个字段写错状态时修正该字段及关联任务，仍保留
-  本行真实未闭合的外部共模等缺口，不用掉电补证替代运行态证明，也不把整行自动改为 NA。
+  本检查项真实未闭合的外部共模等缺口，不用掉电补证替代运行态证明，也不把整项自动改为 NA。
   原生绑定只核记录一致性，`quality_screening` 只提示疑点，两者都不能证明文字中的工程主张正确。
 
 ### 预交付的范围与必要性复核
@@ -728,7 +728,7 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
 }
 ```
 
-证据不足的行只指向功能判定里决定它的开放项（缺口文字写在开放项上，行不重复）：
+证据不足的检查项只指向功能判定里决定它的开放项（缺口文字写在开放项上，检查项不重复）：
 
 ```json
 {
@@ -751,16 +751,16 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
 - `blocking`：FAIL/INSUFFICIENT 默认阻塞。只有阶段允许暂留的 P2/P3 才写 `"blocking": false`。
 - `evidence_confidence`：PASS/FAIL 默认 B，INSUFFICIENT 为 C。只有声称 A 级证据时才写 `"A"`。
 - `disposition`：默认 OPEN。只写 FIXED_VERIFIED、ACCEPTED、RETRACTED。
-- 行级潜在等级是 `open_ref` 指向的开放项的 `severity.level`；一行只指向一个开放项。
+- 检查项级潜在等级是 `open_ref` 指向的开放项的 `severity.level`；一项只指向一个开放项。
 
 - `binding.object`/`binding.criterion` 是实际已审范围，与同 ID 计划的 object/criterion 完全一致；
   `evidence` 和 `rationale` 只支持这个对象、配置、工况和判据。复用结论前核对物理脚、网络及要求，
   不能因 ID 相似、同一 IC 或同一功能组就移用。
-- 所有结果含非空 `rationale` 与可定位 `evidence`。INSUFFICIENT 必须有 `open_ref`（REQ-H02 历史处置除外）；非 FAIL 不填 `severity`（行级字段只属于 FAIL）。
+- 所有结果含非空 `rationale` 与可定位 `evidence`。INSUFFICIENT 必须有 `open_ref`（REQ-H02 历史处置除外）；非 FAIL 不填 `severity`（检查项级字段只属于 FAIL）。
 - 每个开放项（REQUIREMENT 除外）给 `scope` 和完整的 `severity`（`level`、`class`、`affects`、`consequence`），校验始终强制；
   内容按 [危险度分类原则](verdicts-and-release.md#证据不足的危险度分类原则) 逐项判定；非空字段不等于危险度可靠。
   `consequence` 同时是定级理由：写清这个缺口在什么工况下导致什么后果，不写跨开放项通用的套话（`TEMPLATED_SEVERITY_REASON`）。
-- **独立审查**：结果顶层写 `history_inputs`（本轮能看到的旧审查目录或文件路径，没有就写空数组）。除 REQ-H02 上一版问题复验行外，任何检查的 evidence 引用这些路径都会被 `validate_review.py` 拒绝；未声明却引用某次审查的结论/校验/报告文件（`review-results.json`、`review-gate.json`、`审查报告.md`）会进质量筛查候选。报告结论里写明本轮可见的旧审查材料（只显示目录名）。首审（`review_mode: first`）可以看到旧材料，但结论按当前资料重新得出、不引用旧结论，也不逐条登记上一版问题的处理结果，报告照此说明；要逐条登记（已修、保留、撤回），用改版复审（REQ-H02）。
+- **独立审查**：结果顶层写 `history_inputs`（本轮能看到的旧审查目录或文件路径，没有就写空数组）。除 REQ-H02 上一版问题复验检查项外，任何检查的 evidence 引用这些路径都会被 `validate_review.py` 拒绝；未声明却引用某次审查的结论/校验/报告文件（`review-results.json`、`review-gate.json`、`审查报告.md`）会进质量筛查候选。报告结论里写明本轮可见的旧审查材料（只显示目录名）。首审（`review_mode: first`）可以看到旧材料，但结论按当前资料重新得出、不引用旧结论，也不逐条登记上一版问题的处理结果，报告照此说明；要逐条登记（已修、保留、撤回），用改版复审（REQ-H02）。
 - `severity.class` 是后果类别，类别决定潜在等级（见[后果类别](verdicts-and-release.md#后果类别severityclass)）；
   P0 类别另给 `severity.hazard_path`，只会坏一个器件而不打开危险路径的写 `COMPONENT_DAMAGE`（P1）；
   P0 类别降为 P1 时给 `severity.exclusion` 写出独立保护。
@@ -770,45 +770,45 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   | 条款形式 | kind | 结论 |
   |---|---|---|
   | 规定本设计应达到的量值、功能或状态（=、≤、≥、±、须、不得、支持、保持、可靠进入） | OBLIGATION | `result` 取 PASS/FAIL/INSUFFICIENT/NA，可附 `check_ids` |
-  | 工况与前提（允许…、输入…范围、给定的器件参数）、审查方法与输入取值（按…审查、公差取…、先读…再登记、移交下游）、范围说明 | PREMISE | 不带结论；作用于所有相关行 |
+  | 工况与前提（允许…、输入…范围、给定的器件参数）、审查方法与输入取值（按…审查、公差取…、先读…再登记、移交下游）、范围说明 | PREMISE | 不带结论；作用于所有相关检查项 |
 
   格式：`[{"text": "原文片段", "kind": "OBLIGATION", "result": "PASS", "check_ids": [...]}, {"text": "原文片段", "kind": "PREMISE"}]`。
-  行结论 = 要求条款中最差的结论（FAIL > INSUFFICIENT > PASS > NA），校验强制。前提条款里的要求由相关器件/电路行执行，
-  其他行发现的缺陷不连带本行；需求原文把该缺陷写成要求（如“各连续受电元件不得超出持续功率额定”）时才在本行判。
+  检查项结论 = 要求条款中最差的结论（FAIL > INSUFFICIENT > PASS > NA），校验强制。前提条款里的要求由相关器件/电路检查项执行，
+  其他检查项发现的缺陷不连带本检查项；需求原文把该缺陷写成要求（如“各连续受电元件不得超出持续功率额定”）时才在本检查项判。
 - 证据不足的原因是开放项的 `kind`：DESIGN_VALUE、VENDOR_DATUM、DELIVERABLE_PENDING、REQUIREMENT、REVIEW_INCOMPLETE、USER_DEFERRED，
   含义见 [复核每条证据不足](evidence-proportionality.md#复核每条证据不足)。纯下游项不是 INSUFFICIENT，用阶段 NA。
   `scope` 写缺口要覆盖的电压/负载/状态/温度范围，不是标题或 `what` 的复述（`REQUEST_SCOPE_ECHOES_TASK` 提示，报告也不显示只复述的范围）；
   `acquisition` 以“已读 X 第 N 页，缺 Y”开头时，报告把“已读”部分单列为“已查过”。
   `closure` 写设计者能核的边界和条件（手册限值、标准条款、工况），不写审查员算例的中间值；
   位号与数值之间留空格或标点（“R12 100°C”，不写“R12100°C”）。
-- 计划行带 `proposal.result = PASS` 而结论为 FAIL/INSUFFICIENT 时，须给 `proposal_override`（code 与 reason），
-  code 的封闭清单见 [通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗行)。
+- 计划检查项带 `proposal.result = PASS` 而结论为 FAIL/INSUFFICIENT 时，须给 `proposal_override`（code 与 reason），
+  code 的封闭清单见 [通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗检查项)。
 - `bom_constraint`：常规器件（电阻、电容、电感、二极管）超出最弱档、或需求的特殊要求（寿命、精度、宽温等）落到这颗器件时，
-  在 PASS 行上写 BOM 必须写明的要求，不建开放项、不记证据不足（规则见 [通用件最弱档基准](commodity-floors.md#常规器件只排查风险)）：
+  在 PASS 检查项上写 BOM 必须写明的要求，不建开放项、不记证据不足（规则见 [通用件最弱档基准](commodity-floors.md#常规器件只排查风险)）：
   `{refs, requirement, basis, consequence_class, level, status, hazard_path?, written_at?}`。`requirement` 写最低值（“额定功率 ≥ 0.09 W”
   “耐久 ≥ 10000 h @105 ℃”）；`basis` 写算出它的计算或需求编号；`consequence_class`/`level` 按
   [BOM 约束怎么定级](commodity-floors.md#bom-约束怎么定级)，等级由类别决定；`status` 为 TO_WRITE（冻结阶段阻断）或
   WRITTEN（`written_at` 指向 BOM 上写明它的那一行）。报告单列“BOM 要写明的额定与规格”一节。
-  校验拒收：开放项（DESIGN_VALUE / VENDOR_DATUM）挡住的行全是常规器件的 DEV-C01/DEV-C02 行，或挡住全板 BOM 行（DEV-D04）而文字只点名常规器件时，应改写成 `bom_constraint`。
-  需求有寿命参数（`lifetime`）时，计划按 `mission_profile` 给每颗电解、固态或超级电容一行 `DEV-C02.LIFE.<位号>`（带移交热设计；
-  判据只写剖面的数字，相位名放在行的 `mission_profile` 字段），
-  给每颗耗损件一行 `DEV-C06.<类别>.<位号>`（按次数核而次数没给的直接 NA）；寿命行可凭估算余量（`ESTIMATE`）判 PASS，
-  这时须写 `bom_constraint` 且 `requirement` 写明“估算”和所设热点；寿命行不开 VENDOR_DATUM，见
+  校验拒收：开放项（DESIGN_VALUE / VENDOR_DATUM）挡住的检查项全是常规器件的 DEV-C01/DEV-C02 项，或挡住全板 BOM 行（DEV-D04）而文字只点名常规器件时，应改写成 `bom_constraint`。
+  需求有寿命参数（`lifetime`）时，计划按 `mission_profile` 给每颗电解、固态或超级电容一项 `DEV-C02.LIFE.<位号>`（带移交热设计；
+  判据只写剖面的数字，相位名放在检查项的 `mission_profile` 字段），
+  给每颗耗损件一项 `DEV-C06.<类别>.<位号>`（按次数核而次数没给的直接 NA）；寿命检查项可凭估算余量（`ESTIMATE`）判 PASS，
+  这时须写 `bom_constraint` 且 `requirement` 写明“估算”和所设热点；寿命检查项不开 VENDOR_DATUM，见
   [寿命与耗损件](commodity-floors.md#寿命与耗损件)。
-- 光耦输出接在控制器的反馈脚（FB/VFB/COMP）上时，计划给这个脚一行 `PRO-C01.FEEDBACK-OPEN.<位号-脚>`：反馈断开（光耦或串阻开路、副边控制失效）后控制器按开环送能，按手册的保护检测延时算到保护动作为止输出侧电压的上界，对照输出侧器件耐压；这一单一故障不看审查员是否想到。
-- 其他常见单一故障也按网表特征派固定行（2026-10-23），行只问问题、不预设结论，没有特征就不派：
+- 光耦输出接在控制器的反馈脚（FB/VFB/COMP）上时，计划给这个脚一项 `PRO-C01.FEEDBACK-OPEN.<位号-脚>`：反馈断开（光耦或串阻开路、副边控制失效）后控制器按开环送能，按手册的保护检测延时算到保护动作为止输出侧电压的上界，对照输出侧器件耐压；这一单一故障不看审查员是否想到。
+- 其他常见单一故障也按网表特征派固定检查项（2026-10-23），检查项只问问题、不预设结论，没有特征就不派：
   - 开关管一端接连接器、该端不给任何 IC 供电，另一端是变换器或稳压器输出（声明的电源轨，或能追到来源且有对地大电容）、本身不接连接器：`DRV-C02.PORT-SHORT`，端口硬短路时储能经开关释放，核 SOA、I²t 与关断尖峰；
   - NTC 两端都不接 IC、旁边有整流桥、二极管、保险或连接器（限浪涌用）：`PWR-C13.NTC-HOT`，热态重接入时整流桥、保险与输入电容承受的浪涌；
-  - 开关节点（有 MOS 漏极和变压器或电感）经二极管到一个没有对地大电容的节点，该节点上的电阻和电容另一端接同一网：每颗电阻一行 `DRV-C01.RCD`，钳位电阻功率与耐压；
+  - 开关节点（有 MOS 漏极和变压器或电感）经二极管到一个没有对地大电容的节点，该节点上的电阻和电容另一端接同一网：每颗电阻一项 `DRV-C01.RCD`，钳位电阻功率与耐压；
   - IC 的信号脚和 LED 或光耦 LED 的一端在同一网（不经晶体管、不是地网）：`DEV-C05.PIN-LED`，按第 5 条四档核该脚的电流；
   - 光耦输出接到 IC 的使能或关断脚（EN、SHDN、DIS、INH、STBY、ON/OFF、RUN 等）：`SIG-C09.ENABLE-LINK`，上电先后、使能门限与光耦延时、掉电后能否恢复。
-- 器件行（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）只跟核验过的器件类别走：集成电路（U/M 位号或原生电源脚识别的有源器件）、晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成；普通二极管、普通电感和阻容是常规件，声明了 `intent.devices` 也不生成器件行（声明只供脚表与配置组用），它们的应力在所属电路的 DEV-C01 预判里按最弱档算，超了才逐颗出 DEV-C01 行；要让一颗二极管进器件行，路径是 `device_kinds` 核验为 zener/tvs/整流桥（[通用件定界](commodity-floors.md#哪些器件有自己的行)）。
+- 器件检查项（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）只跟核验过的器件类别走：集成电路（U/M 位号或原生电源脚识别的有源器件）、晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成；普通二极管、普通电感和阻容是常规件，声明了 `intent.devices` 也不生成器件检查项（声明只供脚表与配置组用），它们的应力在所属电路的 DEV-C01 预判里按最弱档算，超了才逐颗出 DEV-C01 项；要让一颗二极管进器件检查项，路径是 `device_kinds` 核验为 zener/tvs/整流桥（[通用件定界](commodity-floors.md#哪些器件有自己的检查项)）。
 - 脚电流行（`DEV-C01.PIN.*`）的串阻读不出阻值、计划没算出脚电流时，判 PASS 须附 `manual_verification`，在 `method` 里写出自己的脚电流计算。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
   `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。
-  复合要求不能整体 NA（只有 `catalog.STAGE_ASPECTS` 的方面行——DOWNSTREAM_HANDOFF——整行阶段 NA）；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，
+  复合要求不能整体 NA（只有 `catalog.STAGE_ASPECTS` 的方面检查项——DOWNSTREAM_HANDOFF——整项阶段 NA）；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，
   `check_ids` 链接独立阶段 NA 检查，不得只改条款结果让测试消失。
-- 普通 NA 必须 NOT_APPLICABLE；修改自动计划的适用性需 `applicability_evidence`。计划行带 `requires`（网表上找到了它问的机制）
+- 普通 NA 必须 NOT_APPLICABLE；修改自动计划的适用性需 `applicability_evidence`。计划检查项带 `requires`（网表上找到了它问的机制）
   时，NA 的 `applicability_evidence` 里至少一条写 `nets` 和/或 `pins`（`REF.PIN`），名字须在网表里，说明是哪条网表事实排除了它；
   只写一句能定位的话不够。UNDETERMINED 只能落 INSUFFICIENT。
 - `disposition`（默认 OPEN，不写）：FIXED_VERIFIED / RETRACTED 只用于当前 PASS/NA 并须 `closure_evidence`；ACCEPTED 保留
@@ -820,8 +820,8 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   `manual_verification: {tool_limitation, sr_improvement, method, evidence}`：
   SR 为什么做不到（哪个检查器、缺什么映射或模型）、建议怎么改进 SR（具体到规则、别名或模型）、这次怎么核对的。
   这是审查者（通常是 AI）自己的核对，不写成“人工核对”，除非确实有人参与并留有记录。可用 `reviewer_kind: "AI"` 或 `"HUMAN"` 明示实际核对者；未记录时不得推断为人员核对。
-  同一对象（只差状态）的几行可写相同文字，报告会合并显示；不同对象写同一段 `method` 会被拒绝，每行写清核对了哪些位号、节点和数值。只能用在工具确实拦了的行上；
-  这类行不算 REVIEW_INCOMPLETE、不建开放项，gate 把工具限制列入 `sr_improvements`，不影响准出。
+  同一对象（只差状态）的几项可写相同文字，报告会合并显示；不同对象写同一段 `method` 会被拒绝，每个检查项写清核对了哪些位号、节点和数值。只能用在工具确实拦了的检查项上；
+  这类检查项不算 REVIEW_INCOMPLETE、不建开放项，gate 把工具限制列入 `sr_improvements`，不影响准出。
   资料或设计本身没给出的数值不是工具限制，仍按 EXTERNAL_DATA / DESIGN_OPEN 处理。
   工具提示的 `required_inputs` 指向 `intent:` 字段（如 `supervision.rail_requirements` 逐轨 `required=false` / `internal_monitor`，
   `optocouplers[].internal_pullup`）时，是声明缺失不是工具限制：先补 intent、重生成计划再判，不写 `manual_verification`。
@@ -829,10 +829,10 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   `official-full-pinout`、`rail-requirement`、`level-standard` 开头的缺口是审查者可补的输入，`manual_verification` 覆盖不了；
   其余（拓扑或模型识别不了，如 `pin-role-or-model:`）才算工具限制，报告“对 SR 的反馈”按缺口代码列出。
 
-### 示例：一个功能的两个开放项决定两行
+### 示例：一个功能的两个开放项决定两项
 
 合成例子：反激变换器的功能判定缺两样：T1 的磁件参数（本设计要定，DESIGN_VALUE）挡住环路模型（PWR-C15）和最小关断时间（PWR-C04），
-输出电容的低温 ESR（厂家才知道，VENDOR_DATUM）只挡住 PWR-C04。两行都由 `derive_rows.py` 从功能派生。
+输出电容的低温 ESR（厂家才知道，VENDOR_DATUM）只挡住 PWR-C04。两项都由 `derive_rows.py` 从功能派生。
 
 ```json
 {
@@ -900,9 +900,9 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
 }
 ```
 
-- 一行只指向一个开放项：PWR-C04 同时受两个开放项影响时，`derive_rows.py` 取 `open[]` 里先写的那个；
-  两个开放项各派生一件待办（W-T1-SPEC、W-C5-ESR），待办的 `check_ids` 是指向它的行。
-- 共享的是开放项，不是结论：两行各自的方面写在 `decides` 里，等级和 `scope` 写在开放项上。
+- 一项只指向一个开放项：PWR-C04 同时受两个开放项影响时，`derive_rows.py` 取 `open[]` 里先写的那个；
+  两个开放项各派生一件待办（W-T1-SPEC、W-C5-ESR），待办的 `check_ids` 是指向它的检查项。
+- 共享的是开放项，不是结论：两项各自的方面写在 `decides` 里，等级和 `scope` 写在开放项上。
 - 不再有 `obligations`、`request_keys`、`closure_domain`：隔离资格与环路稳定是功能的方面（见上）。
 
 ### 发现项
@@ -924,10 +924,10 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
 - 退出 0 表示台账有效（结论 NO_GO 也可正常交付）；2 表示台账有错。冻结门加 `--require-release`，NO_GO 也退出 2。
 - 校验只证明记录一致，不验证来源文字真实、计算合理或判据穷尽。空计划、遗漏对象、C 写 PASS、NA 冲突、
   无位置/改法、虚假汇总、陈旧规则指纹均被拒绝。
-- **自动扫描发现即计划检查**：冷检每条 FINDING/CANDIDATE 在计划里自成一行（id 形如
+- **自动扫描发现即计划检查**：冷检每条 FINDING/CANDIDATE 在计划里自成一项（id 形如
   `PWR-A01.AUX-DC-b17ec0`，判据为“规则名：发现原文”），像其他检查一样写结论；INFO 进计划
   `diagnostics`（`LINT_INFO`），不计疑点。两次 `--lint` 提供两次扫描的 JSON，
-  校验核对每条发现都有计划行；结果不再写 `lint_reviews`。仅 PDF 模式明确 NA 并留依据。
+  校验核对每条发现都有计划检查项；结果不再写 `lint_reviews`。仅 PDF 模式明确 NA 并留依据。
 - **输出**：`summary`（检查结果计数、唯一缺陷及 P0–P3）、`categorized_summary`（当前/历史检查、唯一缺陷、
   唯一任务、必需移交及其状态）、`insufficient_by_cause`、`requirement_clarification_summary`、`workflow`、
   `release`/`blockers`、`remediation_validation`、`binding_validation`。
@@ -951,6 +951,6 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
 ### 保护时序审查附注
 
 对以关断/响应时间不足为依据的结论，在本项证据或共享记录中给出故障后果、允许窗口、实际响应界、裕量、温度范围及关闭阶段。
-可在结果行用可选`timing_assessment`对象记录上述同名英文字段（见最小充分证据）；或用`timing_assessment.evidence`
+可在结果检查项用可选`timing_assessment`对象记录上述同名英文字段（见最小充分证据）；或用`timing_assessment.evidence`
 列出包含完整分析的共享文档定位。它是审查者工程证据，不替代缺口的 `severity`、HANDOFF或风险接受。
 质量筛查的`TIMING_BLOCK_WITHOUT_WINDOW`只是需复核提示；补充一个字段不会使设计自动通过。

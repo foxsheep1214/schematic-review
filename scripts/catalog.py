@@ -95,7 +95,7 @@ SCOPES = {
     'link': '逐链路/区域',
     'circuit': '逐电路×工况',
     'interface': '逐接口',
-    'owned_parts': '逐电路的自有器件（另一行收未归属器件）',
+    'owned_parts': '逐电路的自有器件（另一项收未归属器件）',
     'circuit_type': '逐功能电路',
     'assembly': '逐装配配置',
     'requirement': '逐需求',
@@ -148,15 +148,15 @@ RULES = (
     Rule('DEV-C01', '器件应力与降额',
          '受应力的电阻、电容、开关与稳压器逐颗核功耗、连续/脉冲电压、电流及适用温度条件下的额定值；'
          '本项核过应力（应力上界对额定）；IC 脚经外接电阻驱动内部开关或检测通路（放电、泄放、驱动、检测脚）时，'
-         '按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 行以 split_out 拆出；'
+         '按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 项以 split_out 拆出；'
          '供电或输入整个窗口确定低于推荐工作范围下限时，与 DEV-C05 同判 FAIL、共用 finding，理由引用 DEV-C05.<位号>；'
-         '下限是否满足取决于未知压降或参数时，本行不因下限判 INSUFFICIENT，归 DEV-C05；'
+         '下限是否满足取决于未知压降或参数时，本检查项不因下限判 INSUFFICIENT，归 DEV-C05；'
          '连接器/排针/按键触点连续（有效值）电流 ≤25 mA 且电压 ≤6 V 时按 commodity-floors 微应力判 PASS(B)，信号边沿瞬态电流不计；'
          '连接器库名/封装名指向具体原厂系列或料号（如 JST_VH、MKDS、XT30UPB）时按该系列原厂触点额定定界，'
          '≤50% 判 PASS(B)，“须采购该原厂系列”归 DEV-D04，不因无 MPN 记 INSUFFICIENT；泛称排针/间距不适用；'
          '先按用途和受控采购范围定界：有适用最弱档时，应力上界不超过其50%可判PASS；'
          '超过且仍可选到满足档位时写最低额定约束，不当作已满足；无适用范围不借用最弱档；'
-         '计划已生成逐颗预判行（proposal）的器件按该行计算判定，改判只用其封闭理由码；'
+         '计划已生成逐颗预判检查项（proposal）的器件按该检查项计算判定，改判只用其封闭理由码；'
          '陶瓷电容与功率电感优先按commodity-floors的独立可订购额定/BOM约束分支判断，'
          '满足该分支全部适用条件时可判局部PASS，采购字段仍由DEV-D04核对，不以普通最弱档路径重复阻断；'
          '降额取项目规则，缺规则时按标明的假设判定，假设取值会改变结论时转需求澄清；'
@@ -194,7 +194,7 @@ RULES = (
          '核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突', 'plan', 'device'),
     Rule('CFG-D01', '配置值满足要求',
          '可编程器件逐配置组核配置值（寄存器、OTP/NVM、引脚设定）：落在手册允许范围内、满足需求要求的值，并包含硬件判定写下的设置'
-         '（setting）；配置表未交付记 DELIVERABLE_PENDING（CONFIGURATION_TABLE），只挡本行与需求行；某组对该器件不存在记 NA 并引手册条款；'
+         '（setting）；配置表未交付记 DELIVERABLE_PENDING（CONFIGURATION_TABLE），只挡本检查项与需求检查项；某组对该器件不存在记 NA 并引手册条款；'
          '订货代码决定的工厂选项是器件身份，归 DEV-D01', 'plan', 'device'),
     Rule('DEV-D02', '官方物理脚差集',
          '官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；'
@@ -297,7 +297,7 @@ RULES = (
          '实际结温、散热路径及闭壳温升转 HANDOFF，缺下游热数据不推翻已有电气结论', 'subject', 'circuit'),
     Rule('PWR-C16', '待机与空载输入功耗上界',
          '需求给了待机功耗或静态电流时，按各级变换器的空载损耗（手册空载/轻载输入功率或开关损耗与偏置电流）、偏置与监控电路的静态电流'
-         '和指示/泄放电阻的损耗算输入功耗上界，与需求窗口比较；没有数据的级按手册典型值×1.3 定界并写明；需求没给这个量时不生成本行', 'system', 'board'),
+         '和指示/泄放电阻的损耗算输入功耗上界，与需求窗口比较；没有数据的级按手册典型值×1.3 定界并写明；需求没给这个量时不生成本检查项', 'system', 'board'),
     Rule('PWR-C15', '反馈模型与补偿资格',
          '按实际拓扑独立核反馈模型、补偿配置及规定角点的稳定性/动态边界；内部补偿也须匹配厂家适用条件，'
          '无反馈环的电路可据实际拓扑判NA；峰值电流、RCD或栅极应力不能代替本项，样机Bode测试不代替原理图补偿条件', 'subject', 'circuit'),
@@ -362,7 +362,7 @@ RULES = (
          'subject', 'circuit'),
     Rule('RST-C01', '采样窗口电平',
          '逐采样窗口计算 strap/EN 保证电压，含内部拉阻、LED、泄漏、电容和门限；'
-         '带 state 的行只判该状态窗口内要求或被采样的电平，其他窗口的采样归对应状态行、RST-D01 或需求行', 'subject', 'circuit'),
+         '带 state 的检查项只判该状态窗口内要求或被采样的电平，其他窗口的采样归对应状态检查项、RST-D01 或需求检查项', 'subject', 'circuit'),
     Rule('RST-C02', '复位时序',
          '按 V(t) 穿越门限时刻核对复位脉宽/释放与采样 setup/hold，不能以 RC 时间常数代替', 'subject', 'circuit'),
     Rule('RST-D01', '救砖通道',
@@ -504,7 +504,7 @@ RULES = (
          '光耦集电极网上未见外部上拉，且无本状态适用、可定位到接收脚的内部上拉依据', 'optocoupler', 'device'),
     Rule('PRO-E01', '光耦传输能力',
          '按最小正向电流与保证 CTR（初始值）核输出可用电流是否满足上拉与负载要求；同时核最大正向电流不超额定；'
-         '寿命末所需的 CTR 保留比例在寿命行 DEV-C06 算出并写成约束，本行不要求项目衰减系数', 'optocoupler', 'device'),
+         '寿命末所需的 CTR 保留比例在寿命检查项 DEV-C06 算出并写成约束，本检查项不要求项目衰减系数', 'optocoupler', 'device'),
     Rule('PRO-C01', '防护器件协调',
          'TVS 的 VRWM/VBR/VC 按实际浪涌波形、电流与温度对照后级绝限；熔断器/PTC 的额定、时间电流与熔断能量按项目'
          '降额核对；熔断器另核额定分断能力不低于安装点预期短路电流（插墙一次侧无项目值时按 IEC 60127 H 档 1500 A，'
@@ -561,7 +561,7 @@ RULES = (
          '需求逐条按类别展开成审查方面，每个方面一项，落到实现电路与检查项；原文由需求文档抄录，判据取方面模板，'
          '审查员对需求的理解写 interpretation、不写判据；'
          '原文拆成要求/前提条款（按顺序拼接等于原文），只有要求条款带结论，'
-         '行结论取要求条款中最差者，前提条款与其他行的缺陷不连带本行', 'plan', 'requirement'),
+         '检查项结论取要求条款中最差者，前提条款与其他检查项的缺陷不连带本检查项', 'plan', 'requirement'),
     Rule('REQ-D02', '需求口径一致',
          '需求/规格书与原理图参数口径统一（电流/电压数字唯一来源）', 'board', 'board'),
     Rule('REQ-Q01', '需求覆盖',
@@ -835,8 +835,8 @@ def device_role_errors():
     return errors
 
 
-# 可编程器件的配置组（一致性方案第 3 条，intent 格式 4）：已知角色的组由 SR 固定，每组一行 CFG-D01；没有固定组的可编程角色
-# 要求审查员在 intent.devices.<位号>.configurable 按手册寄存器或配置章节声明组。某组对该器件不存在时，该行记 NA 并引手册条款。
+# 可编程器件的配置组（一致性方案第 3 条，intent 格式 4）：已知角色的组由 SR 固定，每组一项 CFG-D01；没有固定组的可编程角色
+# 要求审查员在 intent.devices.<位号>.configurable 按手册寄存器或配置章节声明组。某组对该器件不存在时，该检查项记 NA 并引手册条款。
 CONFIG_GROUPS = {
     'pd_controller': (('CAPABILITY', '能力发布'), ('CABLE_VCONN', '线缆与 VCONN'), ('PROTECTION', '保护门限与动作'),
                       ('SENSING', '检测通道'), ('GPIO', 'GPIO 角色、默认态与对外控制时序'),
@@ -851,7 +851,7 @@ LIFE_EVENTS = OrderedDict([
     ('mating_cycles', '插拔次数'), ('charge_cycles', '充放电循环次数'), ('memory_writes', '擦写次数'),
 ])
 # 有寿命需求时派 DEV-C06 的耗损件类别：核什么、依据，以及按哪种次数核（None 按剖面时间核）。
-# 电解、固态与超级电容由 DEV-C02 寿命行核（6a）。
+# 电解、固态与超级电容由 DEV-C02 寿命检查项核（6a）。
 WearoutClass = namedtuple('WearoutClass', 'title checks basis event')
 WEAROUT_CLASSES = OrderedDict([
     ('BATTERY', WearoutClass('电池', '循环次数、容量保持、充电电压和温度', '手册循环寿命和日历寿命', None)),
@@ -860,7 +860,7 @@ WEAROUT_CLASSES = OrderedDict([
     ('LED', WearoutClass('指示或照明 LED', 'LED 光衰对可视要求；需求没有亮度或可视要求时记 NA 并写明', '手册衰减曲线', None)),
     ('VARISTOR', WearoutClass('压敏电阻', '浪涌幅值和次数对脉冲寿命降额曲线，持续工作电压', '需求浪涌等级和次数', 'surges')),
     ('FUSE', WearoutClass('保险丝', '开机浪涌 I²t 和次数对脉冲降额', '剖面里的开关机次数', 'power_cycles')),
-    ('INRUSH_NTC', WearoutClass('浪涌限制 NTC', '负载电容对最大允许值、循环次数（热态重启另由 PWR-C13 热态重接入行核）',
+    ('INRUSH_NTC', WearoutClass('浪涌限制 NTC', '负载电容对最大允许值、循环次数（热态重启另由 PWR-C13 热态重接入检查项核）',
                                 '剖面开关机次数', 'power_cycles')),
     ('PTC', WearoutClass('自恢复保险丝', '动作次数与动作后阻值', '需求故障次数', 'fault_trips')),
     ('RELAY', WearoutClass('继电器', '负载电流和性质对电气寿命，动作次数对机械寿命', '剖面动作次数', 'actuations')),
@@ -870,9 +870,9 @@ WEAROUT_CLASSES = OrderedDict([
 ])
 
 
-# 电路规则的对象前提（一致性方案第 2 条，计划格式 7）：（类型，规则）→ 前提，由 plan_circuits 按网表判断；不成立不派这一行，
-# 功能框架记 not_asked，报告列“未问”；成立时行对象取前提找到的器件。没列的组合对该类型的每块电路都问。
-# 前提只去掉电路里不存在的机制的行；网表说不清（器件类别未知、IC 没有脚名）时照问。
+# 电路规则的对象前提（一致性方案第 2 条，计划格式 7）：（类型，规则）→ 前提，由 plan_circuits 按网表判断；不成立不派这一项，
+# 功能框架记 not_asked，报告列“未问”；成立时检查项对象取前提找到的器件。没列的组合对该类型的每块电路都问。
+# 前提只去掉电路里不存在的机制的检查项；网表说不清（器件类别未知、IC 没有脚名）时照问。
 SUBJECT_PRECONDITIONS = {
     'POWER_SWITCH': '电路里没有 MOSFET 或 BJT',
     'SUPPLY_SWITCH': '电路里没有 D、S 都不接地的 MOSFET',
@@ -905,7 +905,7 @@ SUBJECT_REQUIRES = {
     ('STARTUP', 'RST-D01'): 'START_PIN',
 }
 
-# 电路检查项的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），行的 question 就是审查员要回答的
+# 电路检查项的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），检查项的 question 就是审查员要回答的
 # 问题；通用 criterion 保留为提示。问题只说要算什么、对照什么，禁止句（“不得…”“不把…外推”）由 question_errors 拒绝。
 QUESTIONS = {
     'PWR-C02': '{state} 时 {circuit}（{refs}）在要求的输入、负载和温度范围内，输出是否落在负载要求的窗口内（{window}）；允许关断或保护时，动作与恢复是否安全',
@@ -958,11 +958,11 @@ QUESTIONS = {
 
 # 功能框架的问题：每个 intent 电路一句，由该检查项问题归纳；审查员可改写。
 # 答案不随工作态变化的电路检查项（导通方向、接口语义、USB 物理层与角色、传感器接法）：计划每电路只问一次，
-# 行的 object 不带 state，问题模板也不带“{state} 时”。纹波预算（PWR-C14）和变换器各条随负载/模式变化，仍逐状态。
+# 检查项的 object 不带 state，问题模板也不带“{state} 时”。纹波预算（PWR-C14）和变换器各条随负载/模式变化，仍逐状态。
 STATE_INVARIANT = frozenset({'PWR-T05', 'ANA-D01', 'SIG-T04', 'SIG-D07', 'SIG-D04'})
 
-# 系统功能（功能树设计 §3.4）：这些规则问的是全板的电源树、地、监控、时序和主控引脚，行归该系统功能。
-# 按电路展开的行仍归电路（RST-T03 到第 5 步才移到 SYS-SEQUENCE）。
+# 系统功能（功能树设计 §3.4）：这些规则问的是全板的电源树、地、监控、时序和主控引脚，检查项归该系统功能。
+# 按电路展开的检查项仍归电路（RST-T03 到第 5 步才移到 SYS-SEQUENCE）。
 SYSTEM_FUNCTIONS = {
     'SYS-POWER': ('PWR-T01', 'PWR-C01', 'PWR-C16', 'PWR-A01', 'PWR-A04'),
     'SYS-GROUND': ('PWR-T06',),
@@ -972,9 +972,9 @@ SYSTEM_FUNCTIONS = {
 }
 SYSTEM_OF_RULE = {rule: sid for sid, rules in SYSTEM_FUNCTIONS.items() for rule in rules}
 
-# 接口检查项（功能树设计 §3.3，第 4 步）：计划按 interfaces 逐接口展开，行归接口。电路对问方向语义和电平，
+# 接口检查项（功能树设计 §3.3，第 4 步）：计划按 interfaces 逐接口展开，检查项归接口。电路对问方向语义和电平，
 # 链路问两端电平，连接器问对端定义、载流和对外防护，供电轨在敏感功能电路取电时问纹波与噪声。
-# 两端 IC 的供电轨或参考地分区不同的接口网络另问一行掉电与跨域注入（SIG-C08）。
+# 两端 IC 的供电轨或参考地分区不同的接口网络另问一项掉电与跨域注入（SIG-C08）。
 # 声明的总线电路（I2C、SPI 等）内部的链路仍由电路检查项问，接口只问不同所属对象之间的网络。
 INTERFACE_SUBJECTS = {
     'CIRCUIT_PAIR': ('SIG-T04', 'SIG-C07'),
@@ -984,7 +984,7 @@ INTERFACE_SUBJECTS = {
 }
 INTERFACE_NET_SUBJECTS = {'CIRCUIT_PAIR': ('SIG-C08',), 'LINK': ('SIG-C08',)}
 NOISE_SENSITIVE_TYPES = ('ANALOG', 'CLOCK', 'RF')
-# 归接口的规则（设计稿附录 A）：按电路展开的行仍归电路；其余行的网络都落在同一个接口上时归该接口。
+# 归接口的规则（设计稿附录 A）：按电路展开的检查项仍归电路；其余检查项的网络都落在同一个接口上时归该接口。
 INTERFACE_RULES = frozenset({
     'DEV-C04', 'DEV-D03', 'PRO-D03', 'PWR-C14', 'RST-A04', 'RST-A06', 'RST-T01', 'RST-T02',
     'SIG-A01', 'SIG-A02', 'SIG-E02', 'SIG-T01', 'SIG-T03', 'SIG-T04', 'SIG-C07', 'SIG-C08', 'SIG-C09'})
@@ -1012,7 +1012,7 @@ SYSTEM_FRAME_QUESTIONS = {
     'SYS-SEQUENCE': '各轨（{nets}）在慢爬升、棕断、单域掉电、外部先供电与重试下的上电先后与恢复是否成立',
     'SYS-PINMAP': '主控（{refs}）的引脚复用、功能分配与电平域是否符合平台约束并与固件配置一致',
 }
-# 逐电路自有器件的检查项（第 5 步）：每块电路对它拥有的器件问一行，未归属的器件全板一行；按器件类别取对象。
+# 逐电路自有器件的检查项（第 5 步）：每块电路对它拥有的器件问一项，未归属的器件全板一项；按器件类别取对象。
 OWNED_PART_RULES = ('DEV-C01', 'DEV-C02', 'DEV-C03')
 
 
@@ -1038,7 +1038,7 @@ CANDIDATE_STATES = {
     'ANALOG': ('run', 'fault'),
     'ISOLATION': ('run',),
     'STARTUP': ('power-on', 'restart'),
-    'DEBUG': ('run',),       # 调试口的答案不随工作态变化，仍要一个态来展开行
+    'DEBUG': ('run',),       # 调试口的答案不随工作态变化，仍要一个态来展开检查项
 }
 
 # A state a decision adds (states_add) must be named by a requirement (R7 acceptance 2026-10-25, user: B1 a): the
@@ -1296,7 +1296,7 @@ def frame_question(type_name, circuit, refs, states, window=None):
 
 
 def question_errors(plan):
-    """计划里每个问题（行的 question、功能框架的 question）都不含禁止句；审查员补加的行同样受限。"""
+    """计划里每个问题（检查项的 question、功能框架的 question）都不含禁止句；审查员补加的检查项同样受限。"""
     errors = []
     for item in plan.get('checks') or []:
         if isinstance(item, dict) and isinstance(item.get('question'), str) and QUESTION_BAN_RE.search(item['question']):
@@ -1388,7 +1388,7 @@ REQUIREMENT_CATEGORIES = OrderedDict([
                                                  'ALTITUDE_HUMIDITY'), '全板器件应力，各电路', '原文给工作或储存温度、湿度、海拔、气候条件')),
     ('SAFETY_ISOLATION', RequirementCategory('安规与隔离', ('ISOLATION_PARTS', 'ISOLATION_PATHS', 'DOWNSTREAM_HANDOFF'),
                                              '隔离接口、链路', '原文说隔离、绝缘电压、安规类别、爬电与电气间隙')),
-    ('LIFETIME', RequirementCategory('寿命与可靠性', ('LIFETIME_BASIS', 'MISSION_PROFILE'), '相关电路器件行',
+    ('LIFETIME', RequirementCategory('寿命与可靠性', ('LIFETIME_BASIS', 'MISSION_PROFILE'), '相关电路器件检查项',
                                      '原文给设计寿命、MTBF、工作时长或循环次数')),
     ('POWER_BUDGET', RequirementCategory('功耗与效率', ('STANDBY_POWER', 'EFFICIENCY'), '电源树、变换器电路',
                                          '原文给待机功耗、静态电流或效率的数')),
@@ -1399,7 +1399,7 @@ REQUIREMENT_CATEGORIES = OrderedDict([
     ('OPTIMIZATION', RequirementCategory('优化目标', ('NO_SCHEMATIC_CRITERION',), '全板', '原文是成本、体积、取舍优先级这类没有原理图判据的目标')),
     ('COMPLIANCE', RequirementCategory('合规与认证', ('SCHEMATIC_COMPLIANCE', 'DOWNSTREAM_HANDOFF'), '全板，移交',
                                        '原文点名标准、认证或 EMC 等级')),
-    ('EXCLUSION', RequirementCategory('明确排除', ('EXCLUDED_FUNCTION',), '被排除功能对应的行', '原文明确不要求某功能、模式或认证')),
+    ('EXCLUSION', RequirementCategory('明确排除', ('EXCLUDED_FUNCTION',), '被排除功能对应的检查项', '原文明确不要求某功能、模式或认证')),
 ])
 
 # Requirement parameters (fixed requirements, step 3): the numbers a reviewer reads from a requirement's original text,
@@ -1628,7 +1628,7 @@ EXPLANATIONS = {
     'PWR-T05': _x('防反接管方向画对了，体二极管朝向或栅极钳位错仍会失去保护', '正接导通、反接截止的通路和栅极钳位都核实即关闭；损耗归 PWR-C05'),
     'PWR-T06': _x('名称相近的地网不一定相连；也可能把隔离地意外接在一起', '每个地网的连接点和方式符合器件与平台要求即关闭；跨隔离归 PRO-D02'),
     'PWR-C01': _x('逐个负载都在额定内，组合起来仍可能超过电源能力', '按最重工作模式的负载合计不超过来源能力并留裕量即关闭', inputs='PWR-T01 的来源与负载'),
-    'PWR-C16': _x('满载效率达标，空载下固定损耗、偏置与泄放电阻仍可能超过待机功耗要求', '按需求的待机状态算出的输入功耗上界在需求窗口内即关闭', inputs='PWR-T01 的电源树与各变换器手册的空载数据', false_alarms='需求没给待机功耗或静态电流的板子不生成本行'),
+    'PWR-C16': _x('满载效率达标，空载下固定损耗、偏置与泄放电阻仍可能超过待机功耗要求', '按需求的待机状态算出的输入功耗上界在需求窗口内即关闭', inputs='PWR-T01 的电源树与各变换器手册的空载数据', false_alarms='需求没给待机功耗或静态电流的板子不生成本检查项'),
     'PWR-C02': _x('反馈设定正确，占空比、压差或拓扑能力不够时输出仍达不到', '要求调节的输入、负载和温度角点下输出都在窗口内即关闭', inputs='PWR-E01/PWR-E02 的窗口'),
     'PWR-C03': _x('平均电流在额定内，峰值仍可能使电感饱和或误触发限流', '峰值、RMS 对 Isat、限流和器件额定都有裕量即关闭', inputs='PWR-C01/PWR-C02 的工况'),
     'PWR-C04': _x('静态工作点都对，最小导通时间或输出电容条件仍可能不适用', '按实际拓扑核完最小导通/关断与输出电容条件；反馈模型与补偿另核PWR-C15', inputs='PWR-C02 的工作点'),
@@ -1778,7 +1778,7 @@ def explanations_for(rule_ids):
 
 
 def plan_explanation_errors(plan):
-    """计划级说明须覆盖每个检查的规则，并与现行规则说明逐字一致；旧版本计划不兼容，重新生成。
+    """计划级说明须覆盖每个检查的规则，并与现检查项规则说明逐字一致；旧版本计划不兼容，重新生成。
     没有该字段的计划只出现在手工合成的夹具里：真实计划的说明由校验按保存的输入重建核对。"""
     saved = plan.get('check_explanations')
     if saved is None:
@@ -1793,7 +1793,7 @@ def plan_explanation_errors(plan):
             errors.append('check_explanations 缺少规则 %s' % rule)
         elif saved[rule] != explanation(rule):
             errors.extend(explanation_errors(saved[rule]) or
-                          ['计划 check_explanations.%s 与规则说明不同；对象化说明写入结果行' % rule])
+                          ['计划 check_explanations.%s 与规则说明不同；对象化说明写入结果检查项' % rule])
     return errors
 
 
@@ -1803,7 +1803,7 @@ def explanation(rule_id):
 
 
 def explanation_errors(value, partial=False):
-    """结构检查。partial=True 用于结果行的对象化覆盖：只写需要改的字段。"""
+    """结构检查。partial=True 用于结果检查项的对象化覆盖：只写需要改的字段。"""
     if not isinstance(value, dict):
         return ["check_explanation must be an object"]
     fields, required = EXPLANATION_FIELDS, REQUIRED_EXPLANATION_FIELDS
@@ -1974,7 +1974,7 @@ def spec_errors(item):
         errors.append('method/domain 与规则 %s 不一致' % rule)
     if not str(item.get('id', '')).startswith(rule + '.'):
         errors.append('检查 ID 必须以 %s. 开头' % rule)
-    if 'check_explanation' in item:  # 旧版逐行说明：只核结构
+    if 'check_explanation' in item:  # 旧版逐项说明：只核结构
         errors.extend(explanation_errors(item['check_explanation']))
     return errors
 
@@ -2038,7 +2038,7 @@ def render_markdown():
         lines.append('| %s %s | %s |' % (d.code, d.name, ' | '.join(cells)))
     for d in DOMAINS:
         lines += ['', '## %s %s' % (d.code, d.name), '',
-                  '| 编号 | 审查要点 | 方式 | 输入 | 检查项 | 判据要点 | 粒度 | 来源 | 功能电路 |', '|---|---|---|---|---|---|---|---|---|']
+                  '| 编号 | 审查要点 | 方式 | 输入 | 检查内容 | 判据要点 | 粒度 | 来源 | 功能电路 |', '|---|---|---|---|---|---|---|---|---|']
         for rule in sorted(rules(domain=d.code), key=lambda r: order(r.id)):
             lines.append('| %s | %s | %s | %s | %s | %s | %s | %s | %s |' % (
                 rule.id, OBJECTIVE_BY_RULE[rule.id], METHOD_BY_CODE[rule.id[4]].name,
@@ -2048,7 +2048,7 @@ def render_markdown():
     lines += ['', '## 每项检查的盲区、关闭条件与常见误报', '',
               '“不查会漏掉什么”是检查的理由，不表示本设计已存在这些问题，也不预设 P0–P3。',
               '关闭条件写明证据到什么程度可以结束本项，以及哪些事不归本项；复用的事实只是方向，',
-              '不自动构成项目依赖。实际对象不同的，在结果行只改需要改的那个字段。', '']
+              '不自动构成项目依赖。实际对象不同的，在结果检查项只改需要改的那个字段。', '']
     for domain in DOMAINS:
         lines += ['### ' + domain.code + ' ' + domain.name, '',
                   '| 编号 | 不查会漏掉什么 | 关闭条件 | 复用的事实 | 常见误报/合法结构 |',
@@ -2062,7 +2062,7 @@ def render_markdown():
     lines += ['', '## 功能电路', '',
               '电路由电路候选与 `intent.circuit_decisions` 推出；名称命中只生成 UNDETERMINED 候选。推出的电路或已确认拓扑'
               '使功能电路适用，再生成 REQ-Q07 覆盖项与电路检查项，逐项再核实际用途。未检出的功能电路汇总到一项 REQ-Q08 确认；'
-              '`features` 里的 NOT_APPLICABLE 声明不生成行，只作 REQ-Q08 那一行的依据。'
+              '`features` 里的 NOT_APPLICABLE 声明不生成检查项，只作 REQ-Q08 那一项的依据。'
               '分立 MOSFET 电平转换器没有名称线索，候选没检出时写 add 决定（在 I²C 等总线上则并入该总线电路），'
               '转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划与结果台账](plan-and-results.md)。', '',
               '| 功能电路 | 名称 | 内容域 | 电路检查项 | 必需资料 | 检出特征（正则） |',
@@ -2070,7 +2070,7 @@ def render_markdown():
     for p in CIRCUIT_TYPES:
         lines.append('| %s | %s | %s | %s | %s | `%s` |' % (
             p.name, p.title, p.domain, '、'.join(p.subjects), '、'.join(p.materials), _cell(p.pattern)))
-    lines += ['', '下表的电路检查项只在网表上有它问的机制时生成，行对象取前提找到的器件；前提不成立的规则记在功能框架的 '
+    lines += ['', '下表的电路检查项只在网表上有它问的机制时生成，检查项对象取前提找到的器件；前提不成立的规则记在功能框架的 '
               '`not_asked`，报告在功能下列“未问”。网表说不清（器件类别未知、IC 没有脚名）时照问；漏问的可经 '
               '`intent.rule_gaps` 补回。', '',
               '| 功能电路 | 电路检查项 | 前提 | 不成立时 |', '|---|---|---|---|']
@@ -2101,15 +2101,15 @@ def render_markdown():
     for key, category in REQUIREMENT_CATEGORIES.items():
         lines.append('| %s | %s | %s | %s | %s |' % (key, category.name, category.when, '、'.join(
             '%s %s' % (a, REQUIREMENT_ASPECTS[a].name) for a in category.aspects), category.targets))
-    lines += ['', '方面有树上的检查承担时，需求行绑定这些规则的行（需求 `owners` 点名的电路、接口、系统功能拥有的行；'
-              '没写 `owners` 时，全板方面绑定全板这些规则的行），结论取绑定行中最差者，需求行不再另判；'
-              '没有检查承担的方面由需求行自己判。', '',
+    lines += ['', '方面有树上的检查承担时，需求检查项绑定这些规则的检查项（需求 `owners` 点名的电路、接口、系统功能拥有的检查项；'
+              '没写 `owners` 时，全板方面绑定全板这些规则的检查项），结论取绑定检查项中最差者，需求检查项不再另判；'
+              '没有检查承担的方面由需求检查项自己判。', '',
               '需求的承接电路写在 `owners`（落实这条需求的功能电路；系统功能和接口也可以承接）。计划替每条需求找出可承接的电路：'
-              '下表“可承接的电路”列出的电路类型、系统功能和接口种类里，拥有承担该方面的行的那些；表外的所属不算。'
-              '有可承接的电路而没写 owners 的需求，计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []` 加能定位的 `no_owner_reason`，需求行自判。', '',
+              '下表“可承接的电路”列出的电路类型、系统功能和接口种类里，拥有承担该方面的检查项的那些；表外的所属不算。'
+              '有可承接的电路而没写 owners 的需求，计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []` 加能定位的 `no_owner_reason`，需求检查项自判。', '',
               '| 审查方面 | 何时问 | 判据模板 | 承担的检查 | 可承接的电路 |', '|---|---|---|---|---|']
     for key, aspect in REQUIREMENT_ASPECTS.items():
-        carried = '、'.join(ASPECT_RULES.get(key, ())) or '需求行自判'
+        carried = '、'.join(ASPECT_RULES.get(key, ())) or '需求检查项自判'
         asked = '原文有 ' + ' / '.join(aspect.parameters) if aspect.parameters else '类别选中'
         if key in BOARD_ASPECTS:
             owners = '全板，不要求 owners'

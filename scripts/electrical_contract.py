@@ -90,7 +90,7 @@ def bounded(value, positive=False):
             and (not positive or value['min'] > 0))
 
 
-PLAN_SCHEMA_VERSION = 7  # 7 版起电路行只在网表有其机制时派（catalog.SUBJECT_REQUIRES），行带 requires，框架带 not_asked；行带 owner 与 check_key（电路行按 circuit_key），计划带 owners 所属表与 interfaces 接口（功能树）；5 版起行与框架带 circuit_type、question/function_id/aspect，计划带 functions
+PLAN_SCHEMA_VERSION = 7  # 7 版起电路检查项只在网表有其机制时派（catalog.SUBJECT_REQUIRES），检查项带 requires，框架带 not_asked；检查项带 owner 与 check_key（电路检查项按 circuit_key），计划带 owners 所属表与 interfaces 接口（功能树）；5 版起检查项与框架带 circuit_type、question/function_id/aspect，计划带 functions
 
 
 if __name__ == '__main__':

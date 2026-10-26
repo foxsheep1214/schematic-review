@@ -71,7 +71,7 @@ SCOPES = {'input_consistency': '输入资料一致性核对', 'requirements': '�
 DOCUMENT_RULES = {'DOC-A01', 'DOC-A02', 'DOC-A03', 'DOC-A04', 'DOC-T01', 'DOC-D01',
                   'DOC-V01', 'DOC-V02', 'DOC-Q01', 'DEV-D04'}
 # Words readers found obscure; record text that reaches the report must not use them.
-JARGON = ('冻结', '闸门', '原生', '下游', '移交', '接收方', '闭合', '绑定', '本行', '证据不足', '技能',
+JARGON = ('冻结', '闸门', '原生', '下游', '移交', '接收方', '闭合', '绑定', '本检查项', '证据不足', '技能',
           'remediation', 'handoff', 'fit')
 CHECK_ID_RE = re.compile(r'\b[A-Z]{3}-[A-Z]\d{2}(?:\.[A-Za-z0-9_~-]+)+')
 
@@ -503,7 +503,7 @@ def render_input_notes(plan):
 
 
 def finding_owners(finding, plan):
-    """“所属”一行：问题涉及的检查归哪些系统功能、电路、接口或全板，按树的顺序；计划行没有 owner 时为 None。"""
+    """“所属”一行：问题涉及的检查归哪些系统功能、电路、接口或全板，按树的顺序；计划检查项没有 owner 时为 None。"""
     planned = {c.get('id'): c for c in (plan or {}).get('checks') or [] if isinstance(c, dict)}
     owners = [planned[cid]['owner'] for cid in finding.get('check_ids') or []
               if isinstance(planned.get(cid), dict) and isinstance(planned[cid].get('owner'), dict)]
@@ -915,7 +915,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     history = (summary.get('history') or {}).get('checks', 0)
     history_cell = str(history)
     if not history and any(isinstance(x, str) for x in results.get('history_inputs') or []):
-        history_cell = '0（已声明上一版材料，但没有逐条复验行）' if revision else '0（首审不逐条登记）'
+        history_cell = '0（已声明上一版材料，但没有逐条复验检查项）' if revision else '0（首审不逐条登记）'
     effective = results_model.effective_verdicts(functions, plan, results.get('checks'))
     verdicts = Counter(effective.get(f.get('id'), (f.get('verdict'),))[0] for f in functions)
     counts_block = ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',

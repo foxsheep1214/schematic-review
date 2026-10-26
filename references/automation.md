@@ -15,12 +15,12 @@
 | 运行 | 输入 | 执行 |
 |---|---|---|
 | 网表扫描 | `db.json`，可选 `--intent`、`--log` | 全部 A 规则；REQ-A01 需要意图中的 `expect`；DOC-A01/DOC-A02 需要导出日志，未给 `--log` 时二者列入“本趟未执行”；给了但内容为空（kicad-cli 导出成功时就是空的）按零命中执行，导出是否成功仍以命令退出码为准；日志按中英文分级：导出错误/中止记 FINDING，批注（位号）错误记 CANDIDATE，其他告警记 INFO，退出码 0 不等于没有告警 |
-| 合并扫描 | 网表扫描输入 + `datasheet-audit.json` + `--merge-plan` | 全部 A 规则，并入资料审计，写出唯一最终计划；E 行留待审查者判定 |
+| 合并扫描 | 网表扫描输入 + `datasheet-audit.json` + `--merge-plan` | 全部 A 规则，并入资料审计，写出唯一最终计划；E 检查项留待审查者判定 |
 | 改版比对 | 旧/新 `db.json`、旧计划、历史意见断言 | REQ-H01（`diff_netlists.py`）与改版影响清单 |
 
 **输出分三类**：`FINDING` 是疑似缺陷，逐条排除；`CANDIDATE` 是待资料取证定夺的优先级清单，直接
 决定先读哪几份 datasheet；`INFO` 是提示，不计入疑点，但准出前仍要核实（如 NET-A04 判为工具伪网络的
-NC 网）。FINDING/CANDIDATE 各成审查计划的一行检查，与其他检查一样作答；INFO 进计划 `diagnostics`。同一条规则可同时产出多类，例如 PRO-A02 按型号或轨名推断的电压只作候选。
+NC 网）。FINDING/CANDIDATE 各成审查计划的一项检查，与其他检查一样作答；INFO 进计划 `diagnostics`。同一条规则可同时产出多类，例如 PRO-A02 按型号或轨名推断的电压只作候选。
 
 **未执行不等于通过**：`lint.py` 每次在末尾列出本次没执行的规则及原因（如缺 `--intent`、`--log`）。
 扫出 0 条与根本没扫，输出必须能区分。
@@ -274,18 +274,18 @@ schema 2，带 `rules_version`，绑定 `db_sha256` 与 intent 的 `input_sha256
   隔离带 4、链路的核心器件与端点 5；最强的唯一认领者拥有它，其余候选只引用它。打平的器件谁也不拥有，列入 `shared`，由 own 决定裁定。
   谁都没走到的已贴器件进 `unassigned`（REQ-Q08 逐颗列出），没核验角色的 IC 和缺引脚名的感性件进 `gaps`。
 - 生成对器件顺序和页码变化是确定的；候选文件随记录打包，改了 db 或 intent 的输入指纹就重新生成、重新决定。
-- 计划生成按功能树分模块：`plan_review.py` 只管加行、合并、挂接扫描发现和汇总，电路与器件的行在 `plan_circuits.py`，接口的行与框架在
+- 计划生成按功能树分模块：`plan_review.py` 只管加检查项、合并、挂接扫描发现和汇总，电路与器件的检查项在 `plan_circuits.py`，接口的检查项与框架在
   `interfaces.py`，系统功能在 `plan_system.py`，全板、文档、需求与覆盖在 `plan_board.py`（`ReviewPlanner` 混入这四个模块的方法）。
-- 行归属（`scripts/row_owner.py`）：计划汇总时给每行写 `owner`，按行对象、规则和各电路拥有的器件推出，写入计划的 `owners`；
-  `validate_review.py` 按 `owners` 重算，写错的行被拒绝。
+- 检查项归属（`scripts/row_owner.py`）：计划汇总时给每个检查项写 `owner`，按检查项对象、规则和各电路拥有的器件推出，写入计划的 `owners`；
+  `validate_review.py` 按 `owners` 重算，写错的检查项被拒绝。
 - 接口（`scripts/interfaces.py`）：从各电路拥有的器件和网表推电路对、链路、供电、对外四种接口及端点角色、参考地分区、供电，写入计划 `interfaces`。
   轨 = 电源树找到源的网，或 intent.power_rails 声明且有 IC 取电或大容量储能电容的网；名字像电源轨不算。
   源 = 轨上电源树的源脚（库类型不是输入），否则轨上整流管（二极管阴极、整流桥 + 脚）的唯一所属；都没有记缺口。
-- 接口检查项：`interfaces.py` 的 `plan_interfaces` 按 `catalog.INTERFACE_SUBJECTS` / `INTERFACE_NET_SUBJECTS` 逐接口出行并建接口框架；
-  `catalog.INTERFACE_RULES` 的其余行（检查器、扫描）网络都落在一个接口上时由 `row_owner` 归该接口，连接器的接口优先。
+- 接口检查项：`interfaces.py` 的 `plan_interfaces` 按 `catalog.INTERFACE_SUBJECTS` / `INTERFACE_NET_SUBJECTS` 逐接口出检查项并建接口框架；
+  `catalog.INTERFACE_RULES` 的其余检查项（检查器、扫描）网络都落在一个接口上时由 `row_owner` 归该接口，连接器的接口优先。
 - 系统功能：`plan_system.py` 的 `plan_system` 按触发生成 PWR-T06（地网 ≥ 2）、RST-T03（电源轨 ≥ 2）、SIG-D13（有可能是主控的 IC），
-  `plan_system_frames` 给每个有行的系统功能建框架；`plan_circuits.py` 的 `plan_owned_parts` 按各电路拥有的器件生成 DEV-C01/C02/C03。
-- 覆盖审计：`row_owner.coverage_errors(plan, db)` 查每颗贴装器件恰归一块电路或在 REQ-Q08 清单上，`interfaces.coverage_errors(plan)` 查每个接口有它的行和框架；两条都由 `validate_review.py` 执行，归属审计只在电路来自候选时启用。
+  `plan_system_frames` 给每个有检查项的系统功能建框架；`plan_circuits.py` 的 `plan_owned_parts` 按各电路拥有的器件生成 DEV-C01/C02/C03。
+- 覆盖审计：`row_owner.coverage_errors(plan, db)` 查每颗贴装器件恰归一块电路或在 REQ-Q08 清单上，`interfaces.coverage_errors(plan)` 查每个接口有它的检查项和框架；两条都由 `validate_review.py` 执行，归属审计只在电路来自候选时启用。
 
 **装配状态**：全部检查器共用 `intent.assemblies`，只写一次：1–32 个唯一状态，每项必须有 `id`
 与 `citation`。`population` 只接受 JSON `true/false`，缺项表示未知；`jumpers` 按位号填
@@ -464,7 +464,7 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   不在网表上的 power 脚自成一组并留缺口；核验为连接器、整流桥、变压器的器件不自动成组。审查员不列组、不写 `id`
   和 `supply_nodes`，只对需要说明的组按（`ref`，`net`）写一条：`purpose`、`requirements`，返回脚跨网时的
   `return_net`（其中一个网，出处写在 `citation`）；`net` 必须是该器件某个 power 脚所在的网，同一（ref，net）只写一条。
-  没写条目的组照样问四行，连接与容量行等手册条款。返回脚不写：取官方脚表里该器件全部 return 角色的脚；
+  没写条目的组照样问四项，连接与容量检查项等手册条款。返回脚不写：取官方脚表里该器件全部 return 角色的脚；
   只有一个返回网时写 `return_net` 被拒绝。脚表里没有官方 power 脚表的器件（未声明脚表）仍按脚名列候选组。
   飞跨/bootstrap/补偿以及内部稳压输出端的必需外接电容按专用条款另审；
   组可加 `purpose`：默认 `bypass`；`no_direct_capacitor` 表示按原厂条款该脚不需要直接电容（如高压启动/检测脚 HV），
@@ -477,8 +477,8 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
   C/R/L/FB/JP 前缀仅为候选类型；计入确认容量前需核类型与装配。`other` 是有证据的类别排除，
   不是规避官方电源脚审查的通用开关。
 - `requirements`：手册条款，每类（`connection/capacitance/rating`）至多一条，只写 `kind`、`criterion`、`citation`，不写编号。
-  每组固定问 PWR-T03 和三类各一行（PWR-D02 连接、PWR-C09 容量、PWR-C10 额定），问题用规则总表的判据；
-  条款挂在对应行的 `clause` 上，不进检查项标识，所以两人措辞不同仍是同一项检查。缺连接或容量条款的行等手册
+  每组固定问 PWR-T03 和三类各一项（PWR-D02 连接、PWR-C09 容量、PWR-C10 额定），问题用规则总表的判据；
+  条款挂在对应检查项的 `clause` 上，不进检查项标识，所以两人措辞不同仍是同一项检查。缺连接或容量条款的检查项等手册
   （`datasheet-requirement:<类>`），不默认 NA；额定没有条款时按总表默认判据预判。条款对声明的全部 states 适用，
   状态相关的限值必须在条款中写清条件。
 
@@ -503,7 +503,7 @@ PWR-T03 与连接型 PWR-D02 只审本组供电/返回连接；在完整官方�
 容量更大或同器件另一电源脚的电容不构成替代批准；未有适用替代依据时保留该局部符合性待核，不能据此断言实际功能失效。
 
 计划：清单完整性项（PWR-D01）+ 逐状态逐组连接覆盖项（PWR-T03），随后分开审查接法（PWR-D02）、
-数量/容量（PWR-C09）与额定值（PWR-C10）；`requirements` 的三类 `kind` 依次对应这三条规则。电气行的
+数量/容量（PWR-C09）与额定值（PWR-C10）；`requirements` 的三类 `kind` 依次对应这三条规则。电气检查项的
 `required_material_refs` 列出目标器件与本组已确认贴装的电容，供资料取证时按需
 `audit_datasheets.py --require-ref C1`；按实际判据绑定受控电容规格，依赖具体偏压/ESR/寿命特性时核准确订货码，不能用一般
 全局的 `materials.datasheets` 代替适用参数。容量缺口不自动否定另一个
@@ -866,15 +866,15 @@ gate/base、继电器线圈、普通 IC 信号脚不当作导通端；未解析�
 I<sub>F,min</sub> = (V<sub>drive,min</sub> − V<sub>F,max</sub> − V<sub>drop,max</sub>)/R<sub>LED,max</sub>，
 I<sub>C,可用</sub> = I<sub>F,min</sub>·CTR<sub>min</sub>（初始保证值），
 需满足 I<sub>C,可用</sub> ≥ (V<sub>pullup,max</sub> − V<sub>OL,要求</sub>)/R<sub>pullup,min</sub>，
-同时 I<sub>F,max</sub> 不超额定。寿命末所需的 CTR 保留比例 = 所需 I<sub>C</sub> / (I<sub>F,min</sub>·CTR<sub>min</sub>)，由寿命行 DEV-C06 写成选型约束，SR 不自编衰减系数。
+同时 I<sub>F,max</sub> 不超额定。寿命末所需的 CTR 保留比例 = 所需 I<sub>C</sub> / (I<sub>F,min</sub>·CTR<sub>min</sub>)，由寿命检查项 DEV-C06 写成选型约束，SR 不自编衰减系数。
 PASS 不覆盖开关速度、温度角与隔离耐压。
 
 计划项：传输能力（PRO-E01）、隔离归属与耐压（PRO-D01）。
 
 ### 通用阻容应力预判 `passive_stress`
 
-`scripts/checkers/passive_stress.py` 给 DEV-C01 逐颗行预填电压、功耗与降额的 `proposal`，并给出扫描提示（阻值读不出的电阻、
-未声明电压的轨、按 0 V 处理的地网、无界节点）；判据与预判口径见[通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗行)。
+`scripts/checkers/passive_stress.py` 给 DEV-C01 逐颗检查项预填电压、功耗与降额的 `proposal`，并给出扫描提示（阻值读不出的电阻、
+未声明电压的轨、按 0 V 处理的地网、无界节点）；判据与预判口径见[通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗检查项)。
 
 ## 条件性故障能量工具
 

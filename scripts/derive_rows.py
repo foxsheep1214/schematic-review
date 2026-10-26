@@ -155,7 +155,7 @@ def main(argv=None):
     results, summary, errors = derive(plan, results)
     if args.out and not errors:
         Path(args.out).write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('派生 %d 行（PASS %d、FAIL %d、INSUFFICIENT %d），手填保留 %d 行；需求行由绑定行派生 %d 行' % (
+    print('派生 %d 项（PASS %d、FAIL %d、INSUFFICIENT %d），手填保留 %d 项；需求检查项由绑定检查项派生 %d 项' % (
         summary['derived'], summary['PASS'], summary['FAIL'], summary['INSUFFICIENT'], summary['kept'],
         summary['requirements']))
     for error in errors:

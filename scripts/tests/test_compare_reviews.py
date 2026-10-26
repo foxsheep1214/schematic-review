@@ -102,7 +102,7 @@ class CompareTests(unittest.TestCase):
             self.assertEqual(report['baseline']['status'], 'SAME_INPUT')
             self.assertEqual(report['circuit_decisions']['candidates'][0]['B'], 'accept→BIAS2')   # intent and candidates read beside the record
             text = (tmp / 'c.md').read_text(encoding='utf-8')
-            self.assertIn('PASS vs INSUFFICIENT（1 行）', text)
+            self.assertIn('PASS vs INSUFFICIENT（1 项）', text)
             self.assertLess(text.index('## 精确配对'), text.index('## 建议配对'))
 
 

@@ -253,7 +253,7 @@ class InterfacePlanning:
 
     def plan_interfaces(self):
         """接口检查项（功能树设计第 4 步）：电路对、链路逐接口问 catalog.INTERFACE_SUBJECTS，两端供电或参考地不同的
-        网络问 SIG-C08，敏感电路取电的轨问 PWR-C14；连接器的三行在连接器循环里生成。电路对、链路和连接器各建一个框架。"""
+        网络问 SIG-C08，敏感电路取电的轨问 PWR-C14；连接器的三项在连接器循环里生成。电路对、链路和连接器各建一个框架。"""
         circuit_types = {c['id']: c.get('type') for c in self.intent.get('circuits', [])}
         role_gaps = {}
         for gap in self.interfaces['gaps']:

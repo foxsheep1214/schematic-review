@@ -43,7 +43,7 @@ def errors(intent, db=None):
         if _text(rule) and not catalog.known(rule):
             out.append('%s.rule %s 不在规则总表里：写按哪条规则判' % (label, rule))
         elif rule == 'REQ-D01':
-            out.append('%s.rule REQ-D01 不写：需求行由 requirement_source 的需求与类别生成；缺的方面登记成别的规则' % label)
+            out.append('%s.rule REQ-D01 不写：需求检查项由 requirement_source 的需求与类别生成；缺的方面登记成别的规则' % label)
         obj = item.get('object')
         if not isinstance(obj, dict) or not obj:
             out.append('%s.object 必须为非空 object（位号、网或功能）' % label)
@@ -80,7 +80,7 @@ def _from_candidates(row):
 
 
 def message(cid):
-    return ('%s: 这一行不是计划工具写的；要补的检查登记到 intent.rule_gaps（对象、按哪条规则判、判据、缺什么规则、依据），'
+    return ('%s: 这一项不是计划工具写的；要补的检查登记到 intent.rule_gaps（对象、按哪条规则判、判据、缺什么规则、依据），'
             '重新生成计划' % cid)
 
 

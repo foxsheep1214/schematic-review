@@ -8,7 +8,7 @@
     python3 lint.py db.json --datasheet-audit datasheet-audit.json \
         [--merge-plan review-plan-cold.json] [--plan-json review-plan.json] [--json out.json]
 
-第二趟带资料审计，按核实的器件类型重扫并合并成最终计划。E 规则的行由审查者按手册保证值判定。
+第二趟带资料审计，按核实的器件类型重扫并合并成最终计划。E 规则的检查项由审查者按手册保证值判定。
 **扫描输出是疑似清单，不是判决。** 合法结构（Bob-Smith 终端、补偿网络、
 DNP 选项、被删外设的引出脚、工具伪网络）由执行 agent 逐条排除。
 规则依赖命名和已知图结构；零命中不表示检查完整或电气通过。

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""通用阻容应力预判检查器（DEV-C01 逐颗行）。
+"""通用阻容应力预判检查器（DEV-C01 逐颗检查项）。
 
 对已装配的两端片式电阻与贴片 MLCC，用 intent.power_rails 声明的轨压窗口给两端电压定保守上界，
 按 references/commodity-floors.md 的最弱档表与可订购档表给出建议结论。只在上界能算出且明显满足时
@@ -58,7 +58,7 @@ UNBOUNDED_PIN_RE = re.compile(
 LINK_KINDS = {pw.RESISTOR, pw.CAPACITOR, pw.FERRITE, pw.DIODE, pw.ZENER, pw.TVS,
               pw.JUMPER, pw.FUSE, pw.SWITCH, pw.CRYSTAL, pw.TESTPOINT}
 POWER_PINTYPES = {'power_in', 'power_out'}
-# 分类器未识别、但两脚且不升压的 LED/热敏电阻：只作定界连通件，本身不生成预判行。
+# 分类器未识别、但两脚且不升压的 LED/热敏电阻：只作定界连通件，本身不生成预判检查项。
 TWO_TERMINAL_LINK_RE = re.compile(r'^(LED|TH|NTC|RT)\d', re.I)
 
 
@@ -260,7 +260,7 @@ def _supply_nets(graph, ref, pins):
 
 
 def _pin_feeds(db, intent, state):
-    """经串联电阻接到高于本 IC 最低供电的声明轨的 IC 脚（fixed requirements 补加行的缺口：逐脚核脚电流）。
+    """经串联电阻接到高于本 IC 最低供电的声明轨的 IC 脚（fixed requirements 补加检查项的缺口：逐脚核脚电流）。
 
     脚不是 power/return 脚，所在网只有这一个脚、串联电阻和电容，没有电阻到地（分压另按窗口核），至少一颗电阻的
     另一端是声明了窗口的轨，且该轨上限高于本 IC 各供电网中最低的上限。"""
@@ -629,7 +629,7 @@ def unread_lines(plan):
 
 
 def rail_gaps(plan):
-    """统计因轨电压未声明而没有预判的行：{轨: 行数}，供计划命令提示补 intent。"""
+    """统计因轨电压未声明而没有预判的检查项：{轨: 检查项数}，供计划命令提示补 intent。"""
     counts = {}
     for check in plan.get('checks', []):
         note = (check.get('proposal') or {}).get('note') or ''
@@ -650,7 +650,7 @@ def ground_domains(db, intent):
 
 
 def node_gaps(plan):
-    """统计因多端件/连接器/跨域而无界的行：{缺口: 行数}，供计划命令提示补节点电压窗口或参考地分区。"""
+    """统计因多端件/连接器/跨域而无界的检查项：{缺口: 检查项数}，供计划命令提示补节点电压窗口或参考地分区。"""
     counts = {}
     for check in plan.get('checks', []):
         for basis in (check.get('proposal') or {}).get('bases') or []:

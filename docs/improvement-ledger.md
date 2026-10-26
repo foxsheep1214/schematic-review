@@ -7,6 +7,21 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## "行" for a check is called "检查项" (2026-10-26)
+
+The user asked what the "行" seen all over the SR text is and whether to call it "检查项" ("把它改命叫'检查项'是否合适，
+如果合适的话就直接帮我改"). A "行" is one entry of `checks[]`: one rule on one object with one result. "电路检查项" and
+"检查项标识 (`check_key`)" already used the word in that sense, so the Chinese text of SKILL.md, references/ and the
+scripts' comments and messages now say 检查项 (需求检查项, 派生检查项, 本检查项, N 项, 逐项, 整项). A BOM row, a table row,
+a netlist file line and a report table row stay "行"; the catalog column holding the rule's title is renamed 检查内容 so
+it is not read as a check; docs/ history and JSON field names are unchanged. The criterion text of a few rules changed
+with it, so their `check_key` no longer pairs with records made before this commit.
+
+- Event: user:2026-10-26 (rename 行 → 检查项)
+- Causes: judgment 1 (one word named both a check and a table row)
+- Changed: SKILL.md, references/architecture.md, references/automation.md, references/bounding-table.md, references/check-catalog.md, references/commodity-floors.md, references/datasheets.md, references/evidence-proportionality.md, references/execution-consistency.md, references/inputs-and-coverage.md, references/plan-and-results.md, references/report-and-remediation.md, references/requirement-clarifications.md, references/revision-review.md, references/verdicts-and-release.md, scripts/catalog.py, scripts/checkers/decoupling.py, scripts/checkers/optocoupler.py, scripts/checkers/passive_stress.py, scripts/compare_reviews.py, scripts/derive_rows.py, scripts/electrical_contract.py, scripts/interfaces.py, scripts/lint.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/plan_system.py, scripts/render_report.py, scripts/requirement_bindings.py, scripts/review_quality.py, scripts/rule_gaps.py, scripts/validate_review.py, scripts/tests/test_compare_reviews.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_rule_gaps.py
+- Gates: 2145 unit tests, contract tests all ok, KiCad replay 195/195, typical circuits 117/180/14 unchanged
+
 ## Step 4.3, running the gate and handling the hints, reads derived rows through their open item (2026-10-26)
 
 The user asked for the strict audit of 4.3 ("接着严格审核 4.3 跑校验与处置疑点"). On the four R7 records the screening

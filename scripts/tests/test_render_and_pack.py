@@ -288,7 +288,7 @@ class ReportWordingTests(unittest.TestCase):
             r['history_inputs'] = [tmp]
             text, gate = report(p, r, db)
         self.assertIn('但它记录的 2 个问题（F-OLD-1、F-OLD-2）还没有逐条写明已改、保留还是撤回。', body(text))
-        self.assertIn('| 上一版问题的处理记录（不计入上面各行） | 0（已声明上一版材料，但没有逐条复验行） |', text)
+        self.assertIn('| 上一版问题的处理记录（不计入上面各行） | 0（已声明上一版材料，但没有逐条复验检查项） |', text)
         self.assertNotIn(tmp, text)
 
     def test_first_review_that_saw_history_says_it_does_not_reverify(self):
@@ -543,11 +543,11 @@ class PackReviewTests(unittest.TestCase):
         self.assertTrue(any('review not finished' in e and row['id'] in e for e in errors), errors)
 
     def test_jargon_in_report_body_fails_the_pack(self):
-        write_report(self.out, '# r\n\n## 结论\n\n- 还不能冻结，见本行。\n\n## 对 SR 的反馈（设计者不用处理）\n\n- 原生映射\n')
+        write_report(self.out, '# r\n\n## 结论\n\n- 还不能冻结，见本检查项。\n\n## 对 SR 的反馈（设计者不用处理）\n\n- 原生映射\n')
         errors, _ = self.run_pack()
         hits = [e for e in errors if 'plain words' in e]
         self.assertEqual(len(hits), 1, errors)
-        self.assertIn('冻结/本行', hits[0])
+        self.assertIn('冻结/本检查项', hits[0])
 
     def test_packed_review_can_be_repacked_in_place(self):
         errors, _ = self.run_pack()

@@ -48,7 +48,7 @@ def source_text(planned):
 
 
 def requirement_clause_errors(key, item, criterion):
-    """REQ-D01：需求全文按原文顺序拆成条款，只有要求条款带结论，行结论 = 要求条款中最差的结论。"""
+    """REQ-D01：需求全文按原文顺序拆成条款，只有要求条款带结论，检查项结论 = 要求条款中最差的结论。"""
     clauses = item.get("requirement_clauses")
     if not isinstance(clauses, list) or not clauses or not all(isinstance(c, dict) for c in clauses):
         return [f"{key}: REQ-D01 须给 requirement_clauses（按原文顺序拆分的条款，kind 为 OBLIGATION/PREMISE）"]
@@ -71,7 +71,7 @@ def requirement_clause_errors(key, item, criterion):
     if worst is None and not errors:
         errors.append(f"{key}: 至少一条要求条款；整条都是前提时按适用性改判 NA 并给依据")
     elif worst is not None and item.get("review_result") != worst:
-        errors.append(f"{key}: 行结论须等于要求条款中最差的结论（{worst}）；前提条款与其他行的缺陷不连带本行")
+        errors.append(f"{key}: 检查项结论须等于要求条款中最差的结论（{worst}）；前提条款与其他检查项的缺陷不连带本检查项")
     return errors
 def _under(source, root):
     source, root = source.replace('\\', '/').rstrip('/'), root.replace('\\', '/').rstrip('/')
@@ -79,7 +79,7 @@ def _under(source, root):
 
 
 def history_citation_errors(report, checks, expected):
-    """history_inputs：本轮能看到的旧审查材料；只有上一版问题复验行（REQ-H02）可以引用它们。"""
+    """history_inputs：本轮能看到的旧审查材料；只有上一版问题复验检查项（REQ-H02）可以引用它们。"""
     if 'history_inputs' not in report:
         return []
     roots = report['history_inputs']
@@ -99,7 +99,7 @@ def history_citation_errors(report, checks, expected):
 
 
 def split_out_errors(checks, expected):
-    """split_out：汇总行的结论只覆盖拆出实例以外的对象；拆出实例同规则、各自给结论、只属一个汇总行。"""
+    """split_out：汇总检查项的结论只覆盖拆出实例以外的对象；拆出实例同规则、各自给结论、只属一个汇总检查项。"""
     errors, owner = [], {}
     rule = lambda k: (expected.get(k) or checks.get(k) or {}).get('rule') or k.split('.', 1)[0]
     for key, item in checks.items():
@@ -424,8 +424,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             if derived is None:
                 errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))
             else:   # the aspect is carried by tree rows; the requirement row is not judged again
-                require(result == derived, f"{key}: 需求方面由绑定行承担（{'、'.join(expected[key]['bound_checks'])}），"
-                                           f"结论须等于绑定行中最差的结论（{derived}）；用 derive_rows.py 写出")
+                require(result == derived, f"{key}: 需求方面由绑定检查项承担（{'、'.join(expected[key]['bound_checks'])}），"
+                                           f"结论须等于绑定检查项中最差的结论（{derived}）；用 derive_rows.py 写出")
         if result == "FAIL":
             require(item.get("severity") in tuple(SEVERITIES), f"{key}: invalid severity")
             fid = item.get("finding_id")

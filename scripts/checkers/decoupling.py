@@ -11,7 +11,7 @@ from .base import Checker
 from .passive_stress import OVERRIDE_CODES, proposal_for
 
 # 每个去耦组固定问三类要求，各对应一条规则，问题用规则总表的判据；审查员每类至多写一条手册条款（判据 + 出处），
-# 挂在行的 `clause` 上，不进检查项标识。缺连接或容量条款的行等手册；额定没有条款时按总表默认判据预判。
+# 挂在检查项的 `clause` 上，不进检查项标识。缺连接或容量条款的检查项等手册；额定没有条款时按总表默认判据预判。
 REQUIREMENT_RULES = (('connection', 'PWR-D02'), ('capacitance', 'PWR-C09'), ('rating', 'PWR-C10'))
 PLAN_RULES = frozenset({'PWR-D01', 'PWR-T03'} | {rule for _, rule in REQUIREMENT_RULES})
 
@@ -46,7 +46,7 @@ def local_connection_gaps(group, inventory):
 
 
 def rating_proposal(planner, state_id, refs):
-    """无器件额定条款时，组内全部电容都有 DEV-C01 预判 PASS 才预判本行 PASS；电解等不在预判范围的电容不预判。"""
+    """无器件额定条款时，组内全部电容都有 DEV-C01 预判 PASS 才预判本检查项 PASS；电解等不在预判范围的电容不预判。"""
     results = {ref: proposal_for(planner.inventories.get('passive_stress'), state_id, ref) for ref in refs}
     passed = bool(refs) and all(r and r[0] == 'PASS' for r in results.values())
     return {'result': 'PASS' if passed else None,
