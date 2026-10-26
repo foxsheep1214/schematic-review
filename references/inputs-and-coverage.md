@@ -101,9 +101,13 @@ DOC-V01 同时核原生图面的文字可读性。功能脚名、标签或关键
 
 项目审查目录固定为 `审查报告.md`、`审查报告.html` 加 `record/`，由 `scripts/pack_review.py` 生成：`record/` 含最终计划、结果、
 gate、`db.json`、`intent.json`、两次扫描的 lint、`manifest.json`、声明了电路时的 `circuit-candidates.json`（`--circuit-candidates`；intent 有 `circuits` 或 `circuit_decisions` 而没有它，或决定与候选、db 不符，打包失败，手画电路的旧记录不再打包），以及 `evidence/` 下被检查证据引用的计算、裁图、问题配图（`figures/`）和复审 Diff。
-原理图工程、数据手册、需求和旧审查只按路径与 SHA-256 记入 manifest，不复制；网表扫描计划快照、日志、页面截图、
+原理图工程、数据手册、需求和旧审查只按路径与 SHA-256 记入 manifest，不复制；网表扫描计划快照、日志、
 脚本副本等中间文件留在工作目录（例如 /tmp/codex-work/<任务>/）。最终结论引用的证据必须进 `record/evidence/`，
-不能只留在临时目录：打包时引用找不到就失败。ASG 交付里的选型记录、计算库存与自检结果不复核、不引用。不要把客户原图、BOM、
+不能只留在临时目录：打包时引用找不到就失败。打包的几条口径（5.2 审核 2026-10-26）：引用台账文件（`db.json`、`review-results.json`、
+`record/circuit-candidates.json` 等）的证据指向 `record/` 里那一份，不复制进 `evidence/`；引用 SR 技能目录里的文档（commodity-floors.md、定界表）
+按 `skill_version` 解析，manifest 自动记一条 `skill` 输入，不用也不该用 `--input` 声明；单个证据文件超过 300 KB 打包输出 NOTE 并在 manifest 记 `evidence_bytes`，
+整本手册或标准应作为输入按路径加页码引用、证据只放摘录；引用了手册或标准的文本抽取（`ds/*.txt`、`std/*.txt`）而没有任何输入含 PDF 时打包失败，
+抽取与某个输入 PDF 同名时出 NOTE 提醒改为按页引用。整页渲染作为逐页读图的证据可以打包，优先裁图。ASG 交付里的选型记录、计算库存与自检结果不复核、不引用。不要把客户原图、BOM、
 私有手册、人员姓名或项目路径复制到公开 skill 仓库，用最小脱敏 fixture 做回归。
 
 冻结审查证据时，先完成报告、逐项复核与校验，再生成注明路径基准的 SHA-256 清单并保存原始清单字节，

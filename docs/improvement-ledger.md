@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Step 5.2 packing and delivery: the record holds excerpts, not copies (2026-10-26)
+
+The strict audit of 5.2 (user: "接着严格审核 5.2 打包与交付" → "5.2 的 A–F 全部执行") checked the four R7 deliveries: the
+top level, hashes, HTML identity and links were all right, but record/evidence held copies of the record's own files
+(codex1 7.0 MB: SR's derive cites review-results.json for the rows it summarises and the plan cites db.json 820 times,
+reviewers cite review-plan.json and intent.json; the pack copied anything relative that existed in the work directory),
+whole datasheets and standards as text extracts (claude1 26 datasheets 3.2 MB plus the USB PD specification 1.5 MB,
+claude2 29 plus the Type-C specification 1.3 MB) because the Claude runs declared no datasheet input and cited the
+extracts, SR's own references declared as inputs (claude1 the whole references directory) because citations of
+commodity-floors.md by absolute path had to resolve to a declared input, and page renders packed as reading evidence.
+pack_review now resolves a ledger name (with or without record/) to the packed record and never copies it, resolves a
+citation inside the skill directory by skill_version and writes an automatic `skill` input (an input declared inside the
+skill gets a NOTE, not a fingerprint), notes every evidence file over 300 KB and records evidence_bytes, refuses
+datasheet or standard text extracts (ds/, std/, sources/ …) when no declared input holds a PDF and notes an extract whose
+stem matches an input PDF, and prints the notes after the errors; the archive rules say page renders may be packed as
+reading evidence, crops preferred. Expected on R7: codex1 −7.0 MB, claude1 −3.7 MB, claude2 −3.9 MB of ledger copies;
+the two Claude packs would be refused until the datasheet directory is declared.
+
+- Event: review:SR-20261025-R7-验收-codex1-660f790/record/manifest.json, user:2026-10-26 (5.2 的 A–F 全部执行)
+- Causes: rule_not_enforced 2 (ledger copies, skill documents as inputs), rule_missing 2 (evidence size, datasheet input), judgment 1 (page renders)
+- Changed: SKILL.md, references/inputs-and-coverage.md, references/architecture.md, docs/2026-10-25-task-loop.md, scripts/pack_review.py, scripts/tests/test_pack_audit_52.py, evals/mutation/mutations.json, evals/mutation/README.md
+- Gates: 2211 unit tests, rule contracts 69/69, KiCad replay 195/195, typical circuits 117/180/14 unchanged, M662–M666 killed from a snapshot
+
 ## Step 5.1 rendering the report: the reader's quantities, nothing twice (2026-10-26)
 
 The strict audit of 5.1 (user: "再进 5.1" → "5.1 的 A–G 全部执行") measured the four R7 reports: a 余量或依据 cell of

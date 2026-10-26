@@ -39,6 +39,36 @@ LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.jso
           'lint-cold.json', 'lint-hot.json')
 OPTIONAL_LEDGER = ('circuit-candidates.json',       # required as soon as the intent declares circuits
                    'notes.json')                    # the plain-language notes the report was rendered with
+SKILL_ROOT = Path(__file__).resolve().parents[1]    # SR's own documents are pinned by skill_version, never inputs
+EVIDENCE_NOTE_BYTES = 300 * 1024                    # a cited file this large is a document, not an excerpt (5.2 audit)
+# a text extract of a datasheet or standard (R7: ds/U601.txt, std/USBPD.txt, sources/Kingbright-….txt)
+DATASHEET_TEXT_RE = re.compile(r'(?:^|/)(?:ds|datasheets?|std|standards?|sources|manuals?)/[^/]+\.txt$', re.I)
+
+
+def ledger_name(source):
+    """The ledger file a relative source names (db.json, record/review-results.json), else None: SR's plan and derive
+    cite the netlist and this record, reviewers cite the plan; those resolve to record/, they are never copied."""
+    name = source[len(RECORD) + 1:] if source.startswith(RECORD + '/') else source
+    return name if name in LEDGER + OPTIONAL_LEDGER else None
+
+
+def inside_skill(path):
+    try:
+        return Path(path).resolve().is_relative_to(SKILL_ROOT)
+    except OSError:
+        return False
+
+
+def input_pdfs(declared):
+    """Every PDF under the declared inputs, by lower-case stem."""
+    out = {}
+    for fp in declared:
+        root = Path(fp['path'])
+        files = [root] if root.is_file() else [q for q in root.rglob('*.pdf') if q.is_file()] if root.is_dir() else []
+        for f in files:
+            if f.suffix.lower() == '.pdf':
+                out.setdefault(f.stem.lower(), f)
+    return out
 
 
 def plain_language_errors(report):
@@ -225,10 +255,13 @@ def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
     if extra:
         errors.append('only %s, %s and %s/ belong at the top level; move these to the work directory: %s'
                       % (REPORT, REPORT_HTML, RECORD, ', '.join(extra)))
-    declared = {}
+    declared, notes = {}, []
     for name, path in inputs.items():
         if not Path(path).exists():
             errors.append('input %s does not exist: %s' % (name, path))
+        elif inside_skill(path):
+            notes.append('input %s lies inside the SR skill directory (%s): not needed, skill_version pins it and '
+                         'citations into it resolve by themselves' % (name, path))
         else:
             declared[name] = fingerprint(path)
     if errors:
@@ -263,17 +296,23 @@ def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
     if unfinished:
         errors.append('review not finished, nothing to deliver yet: finish reading/computing these checks, or record '
                       'manual_verification where only the SR tool is limited: ' + ', '.join(unfinished))
-    unresolved = []
+    unresolved, skill_cited, datasheet_texts, pdfs = [], False, [], input_pdfs(declared.values())
     for source in sorted(cited_sources(results)):
         if source.startswith(('http://', 'https://')):
             continue
         # Absolute original inputs are references, never archive member names.
         if Path(source).is_absolute():
-            if not input_member(source, declared.values()):
+            if inside_skill(source) and Path(source).is_file():
+                skill_cited = True                      # SR's own reference, pinned by skill_version (D)
+            elif not input_member(source, declared.values()):
                 unresolved.append(source)
             continue
         if not safe_relative(source):
             errors.append('unsafe evidence path: ' + source)
+            continue
+        if ledger_name(source):                         # the record itself: cited in place, never copied (A)
+            if not (record / ledger_name(source)).is_file():
+                unresolved.append(source)
             continue
         candidate = Path(evidence_root) / source if evidence_root else None
         if candidate and not contained(candidate, evidence_root):
@@ -289,14 +328,35 @@ def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
             if candidate.resolve() != target.resolve():  # re-packing an already packed review
                 shutil.copyfile(candidate, target)
             packed[RECORD + '/evidence/' + source] = sha256(target)
+            size = target.stat().st_size
+            if size > EVIDENCE_NOTE_BYTES:              # B
+                notes.append('evidence %s is %d KB: a whole document is an input (--input, cited by path and page), '
+                             'record/evidence holds excerpts, crops and figures' % (RECORD + '/evidence/' + source, size // 1024))
+            if DATASHEET_TEXT_RE.search(source):
+                datasheet_texts.append(source)
         elif not input_member(source, declared.values()):
             unresolved.append(source)
     if unresolved:
         errors.append('cited evidence is neither in --evidence-root nor a declared input: ' + ', '.join(unresolved))
+    if datasheet_texts:                                 # C
+        if not pdfs:
+            errors.append('%d cited datasheet or standard text extracts (%s) but no declared input holds a PDF: declare '
+                          'the datasheet directory (--input datasheets=<原厂资料目录>) so the manifest records the '
+                          'documents by path and hash; the extract stays an excerpt'
+                          % (len(datasheet_texts), ', '.join(datasheet_texts[:3])))
+        for source in datasheet_texts:
+            pdf = pdfs.get(Path(source).stem.lower())
+            if pdf is not None:
+                notes.append('evidence %s is the text of the declared input %s: cite the input by path and page, the '
+                             'extract need not be packed' % (source, pdf))
     errors += broken_report_links(out)
     errors += packed_errors(out, packed)
+    if skill_cited:
+        declared['skill'] = {'path': str(SKILL_ROOT), 'kind': 'skill', 'commit': skill_version()}
     manifest = {'schema_version': 1, 'skill_version': skill_version(), 'inputs': declared,
-                'packed': dict(sorted(packed.items())), 'report_sha256': sha256(out / REPORT)}
+                'packed': dict(sorted(packed.items())), 'report_sha256': sha256(out / REPORT),
+                'evidence_bytes': sum((out / p).stat().st_size for p in packed if p.startswith(RECORD + '/evidence/')),
+                'notes': notes}
     (record / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     return errors, manifest
 
@@ -318,9 +378,11 @@ def main(argv=None):
     ledger = {name: getattr(args, name.split('.')[0].replace('-', '_')) for name in LEDGER + OPTIONAL_LEDGER
               if getattr(args, name.split('.')[0].replace('-', '_'))}
     inputs = dict(item.split('=', 1) for item in args.input)
-    errors, _ = pack(args.out, ledger, args.evidence_root, inputs, args.title, args.detail)
+    errors, manifest = pack(args.out, ledger, args.evidence_root, inputs, args.title, args.detail)
     for e in errors:
         print('ERROR:', e)
+    for n in (manifest or {}).get('notes') or []:
+        print('NOTE:', n)
     print('FAIL' if errors else 'PASS')
     return 1 if errors else 0
 

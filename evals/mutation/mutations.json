@@ -4597,5 +4597,40 @@
   "file": "scripts/render_report.py",
   "old": "                               r'|\\d+\\s*[项条]\\s*(?:检查|通过|不通过|没通过|资料不|不适用|无关)')   # 数字一览 already has the counts",
   "new": ")"
+ },
+ {
+  "id": "M662",
+  "name": "a cited ledger file is copied into evidence again",
+  "file": "scripts/pack_review.py",
+  "old": "        if ledger_name(source):                         # the record itself: cited in place, never copied (A)\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M663",
+  "name": "a citation into the skill directory needs a declared input",
+  "file": "scripts/pack_review.py",
+  "old": "            if inside_skill(source) and Path(source).is_file():\n                skill_cited = True                      # SR's own reference, pinned by skill_version (D)\n            elif not input_member(source, declared.values()):",
+  "new": "            if not input_member(source, declared.values()):"
+ },
+ {
+  "id": "M664",
+  "name": "a large evidence file gets no note",
+  "file": "scripts/pack_review.py",
+  "old": "            if size > EVIDENCE_NOTE_BYTES:              # B\n",
+  "new": "            if False:\n"
+ },
+ {
+  "id": "M665",
+  "name": "datasheet text extracts pack without any PDF input",
+  "file": "scripts/pack_review.py",
+  "old": "        if not pdfs:\n            errors.append('%d cited datasheet or standard text extracts",
+  "new": "        if False:\n            errors.append('%d cited datasheet or standard text extracts"
+ },
+ {
+  "id": "M666",
+  "name": "an input inside the skill directory is fingerprinted like any other",
+  "file": "scripts/pack_review.py",
+  "old": "        elif inside_skill(path):\n",
+  "new": "        elif False:\n"
  }
 ]
