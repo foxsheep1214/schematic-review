@@ -2270,7 +2270,7 @@
  {
   "id": "M329",
   "name": "only the requirement source file is a requirement document",
-  "file": "scripts/review_functions.py",
+  "file": "scripts/function_reading.py",
   "old": "        if name == own or (folder and home and (home == folder or home.endswith('/' + folder))):",
   "new": "        if name == own:"
  },
@@ -4352,5 +4352,96 @@
   "file": "scripts/review_functions.py",
   "old": "TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient', 'closure', 'acquisition')   # one sentence on several gaps",
   "new": "TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient')   # one sentence on several gaps"
+ },
+ {
+  "id": "M627",
+  "name": "an open item's derived rows are graded as separate gaps",
+  "file": "scripts/review_quality.py",
+  "old": "            gap_key = row['open_ref'] if row.get('derived') and isinstance(row.get('open_ref'), str) else row['id']",
+  "new": "            gap_key = row['id']"
+ },
+ {
+  "id": "M628",
+  "name": "the uniform-grade share counts rows instead of gaps",
+  "file": "scripts/review_quality.py",
+  "old": "        if graded >= UNIFORM_GRADE_MIN_ROWS and len(keys) >= UNIFORM_GRADE_SHARE * graded:",
+  "new": "        if graded >= UNIFORM_GRADE_MIN_ROWS and len(pairs) >= UNIFORM_GRADE_SHARE * graded:"
+ },
+ {
+  "id": "M629",
+  "name": "a rule's uniform grade counts rows instead of gaps",
+  "file": "scripts/review_quality.py",
+  "old": "        if len(keys) >= RULE_UNIFORM_MIN_ROWS and len(levels) == 1:",
+  "new": "        if len(group) >= RULE_UNIFORM_MIN_ROWS and len(levels) == 1:"
+ },
+ {
+  "id": "M630",
+  "name": "the row-level downstream screen reads derived rows",
+  "file": "scripts/review_quality.py",
+  "old": "                    and not DESIGN_GAP_RE.search(gap_text) and not row.get('derived'):   # derived: downstream_closures",
+  "new": "                    and not DESIGN_GAP_RE.search(gap_text):"
+ },
+ {
+  "id": "M631",
+  "name": "a derived row's tool text is screened for out-of-scope refs",
+  "file": "scripts/review_quality.py",
+  "old": "        if wanted and observed and wanted.isdisjoint(observed) and not row.get('derived'):   # tool text names the item's objects",
+  "new": "        if wanted and observed and wanted.isdisjoint(observed):"
+ },
+ {
+  "id": "M632",
+  "name": "a derived row's consequence is screened for out-of-scope refs",
+  "file": "scripts/review_quality.py",
+  "old": "            if wanted and actual and wanted.isdisjoint(actual) and not row.get('derived'):   # the item's consequence",
+  "new": "            if wanted and actual and wanted.isdisjoint(actual):"
+ },
+ {
+  "id": "M633",
+  "name": "a derived row citing this record is a stale-review hint",
+  "file": "scripts/review_quality.py",
+  "old": "        and expected[row['id']].get('rule') != 'REQ-H02' and not row.get('derived')   # aggregate rows cite this record",
+  "new": "        and expected[row['id']].get('rule') != 'REQ-H02'"
+ },
+ {
+  "id": "M634",
+  "name": "a derived timing block is flagged although its item gives the window",
+  "file": "scripts/review_quality.py",
+  "old": "                if blocked and timing and corner and not all(\n                        isinstance(item.get(k), str) and item[k].strip() for k in ITEM_TIMING_FIELDS):",
+  "new": "                if blocked and timing and corner:"
+ },
+ {
+  "id": "M635",
+  "name": "a derived timing block is flagged on the item and again on every row",
+  "file": "scripts/review_quality.py",
+  "old": "                    timing_items[row['open_ref']].append(row['id'])\n                continue",
+  "new": "                    timing_items[row['open_ref']].append(row['id'])"
+ },
+ {
+  "id": "M636",
+  "name": "a firmware word in a schematic prerequisite is a misfiled image",
+  "file": "scripts/review_quality.py",
+  "old": "            if hit and not SCHEMATIC_PREREQ_RE.search(prerequisites):",
+  "new": "            if hit:"
+ },
+ {
+  "id": "M637",
+  "name": "a datum that names the missing data is read as a calculation",
+  "file": "scripts/review_quality.py",
+  "old": "                if (READ_RE.search(acquisition) and CALC_RE.search(acquisition)\n                        and not DATA_MISSING_RE.search(acquisition + ' ' + texts.get('what', ''))):",
+  "new": "                if READ_RE.search(acquisition) and CALC_RE.search(acquisition):"
+ },
+ {
+  "id": "M638",
+  "name": "a deferred clause of an open item is read as its closure",
+  "file": "scripts/review_quality.py",
+  "old": "            texts = {f: _decisive_part(item[f]) for f in ITEM_TEXT_FIELDS if isinstance(item.get(f), str) and item[f]}",
+  "new": "            texts = {f: item[f] for f in ITEM_TEXT_FIELDS if isinstance(item.get(f), str) and item[f]}"
+ },
+ {
+  "id": "M639",
+  "name": "the row-level misfile screen reads derived rows too",
+  "file": "scripts/review_quality.py",
+  "old": "        if row.get('derived'):   # a derived row's gap is its open item's: misfiled_items reads the item once\n            continue\n",
+  "new": ""
  }
 ]

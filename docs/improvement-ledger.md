@@ -7,6 +7,34 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Step 4.3, running the gate and handling the hints, reads derived rows through their open item (2026-10-26)
+
+The user asked for the strict audit of 4.3 ("接着严格审核 4.3 跑校验与处置疑点"). On the four R7 records the screening
+raised 64/31/35/40 candidates pointing at 352/95/63/76 rows, of which 253/50/63/63 were derived: the first pass had let the
+three templated-text screens skip derived rows, but grading, object scope, consequence scope, record citation, the row-level
+downstream screen and the timing window still read every derived row, whose text `expand` writes from the open item. codex1's
+UNIFORM_SEVERITY_WITHIN_RULE pointed at 92 derived rows of 6 open items; the two OUTSIDE_SCOPE codes hit 18/0/15/24 rows, all
+derived except two of codex1's; codex2's 13 TIMING_BLOCK_WITHOUT_WINDOW rows pointed at one open item that does carry
+scenario / allowed_window / response_bound (a row never has a timing_assessment of its own). `screen_quality` now grades per
+gap (an open item and its derived rows count once, the threshold and share follow the gap count, check_ids still list the
+rows), skips derived rows in REFERENCED_OBJECT_OUTSIDE_SCOPE / IMPACT_REFERENCES_OUTSIDE_SCOPE /
+CURRENT_CHECK_CITES_REVIEW_RECORD / the row-level downstream screen / `stage_and_cause_misfiles`, judges a derived timing
+block on its open item once, and — on the request of the peer session reviewing a board — moves
+FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP and CALCULATION_RECORDED_AS_DATA_GAP to the open item (`misfiled_items`: what /
+acquisition / closure / why_insufficient / deliverable / spec after the deferred clause is removed; a schematic prerequisite
+in the item is not an image, a datum that says which data is missing is not a calculation; the row-level versions stay for
+hand-filled rows). R7 after: 38/19/19/14 candidates, rows 268/176/55/34, derived 172/131/55/22, the remaining derived hits
+being item-level codes (WIDE_GAP, SAME_DELIVERABLE, DOWNSTREAM, RATING_AT_TEST_TEMP) and codex2's new, legitimate
+UNIFORM_POTENTIAL_SEVERITY (12 of 13 items P1). The two moved hints hit 0 before and 0 after on all four records. SKILL 4.3
+says where hints land and that a hint on a derived row is handled on its open item; plan-and-results.md gets 筛查的层级,
+verdicts-and-release.md the gap-count wording, architecture.md a row. The previous two batches' 197 changed-file mutations:
+196 killed, M329 re-pointed to function_reading.py (its anchor moved with the 2026-10-24 ring-import cleanup) and killed.
+
+- Event: user:2026-10-26 (4.3 strict audit), peer session request (FIRMWARE / CALCULATION hints read derived row fields), records SR-20261025-R7-验收-*-660f790
+- Causes: rule_not_enforced 2 (six screens read the derived row's copy of the item; the timing window was asked of the row), rule_missing 1 (no statement of which layer a hint lands on), judgment 1 (row-level screens kept for hand-filled rows)
+- Changed: scripts/review_quality.py, scripts/tests/test_review_quality.py, scripts/tests/test_review_functions.py, SKILL.md, references/plan-and-results.md, references/verdicts-and-release.md, references/architecture.md, docs/2026-10-25-task-loop.md, evals/mutation/mutations.json, evals/mutation/README.md
+- Gates: 2145 unit tests, 555 contract tests, KiCad replay 195/195, typical circuits 117/180/14 unchanged, M627–M639 killed, the earlier 197 changed-file mutations 196 killed + M329 re-pointed and killed
+
 ## Step 4.2, sorting insufficient evidence, reads the open item; ④ and ⑤ get numbered sub-tasks (2026-10-25)
 
 The user asked for ④'s second task ("第四个步骤的第二项任务呢？"), why ④'s tasks carry no numbers, and then took the plan

@@ -669,6 +669,13 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 4.2 证据不足的分类另有自己的提示：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 除了读行的缺口文字，还读 DESIGN_VALUE / VENDOR_DATUM 开放项的
 `closure`、`acquisition`、`why_insufficient`——写了实测、样机、样品、仿真作为关闭路径的（“随后/留给……”分句已分出下游部分，不算），厂家保证值和样机才能测是两档，
 实测的部分拆成阶段 NA 行加移交，开放项只写真正能关它的数据或规格。R7 的四份记录里这样的开放项有 2 / 0 / 6 / 2 条（三只光耦的 CTR“保证或高低温实测”、端口短路“实测峰流”、BULK 浪涌“实测或仿真上界”）。
+`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 与 `CALCULATION_RECORDED_AS_DATA_GAP` 同样读开放项（`what`、`acquisition`、`closure`、`why_insufficient`、`deliverable`、`spec`，“随后/留给……”分句不算）：
+DESIGN_VALUE / VENDOR_DATUM / DELIVERABLE_PENDING 项写了烧录镜像、读回、编程模式、量产校准而 `what`/`acquisition`/`deliverable` 里没有编程口、上拉、GPIO 这类原理图前提的是前者；
+VENDOR_DATUM 项的取得方式写了已读某页、只剩复算，又没有一句说缺哪个数据的是后者。手填检查项仍按检查项的 `missing_inputs` 判，派生检查项不逐项点。
+
+筛查的层级：派生检查项（`derived: true`，`open_ref` 指向开放项）的措辞、对象、后果与缺口都是 `expand` 按开放项写的，所以对象越界、后果引外部位号、引用本记录、下游误记、时序窗口、定级整批同级这些疑点在派生检查项上读开放项一次——
+定级按缺口数（一条开放项和它挡住的检查项算一个）、时序窗口看开放项的 `scenario`/`allowed_window`/`response_bound`、`check_ids` 列该项挡住的检查项。
+R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18 项、同规则整批同级 92 项，codex2 时序窗口 13 项——都指向一条已写好窗口的开放项）全部收回；codex2 13 条开放项 12 条同级，仍提示。
 
 门禁拒收的两件：决定性余量（GUARANTEED_BOUND、REACHABLE_CASE、EXACT_ENVELOPE）没写 `basis.cell`；`basis.conditions` 里有 min≠max 的 NUMERIC_LIMIT（除 `limit` 本身）却没有对应角点，
 `no_corners_reason` 不能代替。

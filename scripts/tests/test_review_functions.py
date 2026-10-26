@@ -1195,6 +1195,50 @@ class ReviewRecheckHintTests(unittest.TestCase):
             self.assertNotIn('UNIT_GLYPH_SUSPECT', [c['code'] for c in screen_quality(p, r, db)['candidates']])
 
 
+class MisfiledItemTests(unittest.TestCase):
+    """4.2 on the open item: a burned image in a design value, datum or deliverable is a firmware handoff; a datum whose
+    acquisition says the document was read and only a calculation remains is review work. The row-level screens skip
+    derived rows, so one item gives one candidate."""
+
+    def found(self, code, derived=True, **item):
+        from review_quality import screen_quality
+        fn = bias_function()
+        fn['open'][0].update(item)
+        p, r, db = ledger(fn)
+        for row in r['checks']:
+            if row.get('open_ref') and derived:
+                row['derived'] = True
+        return [c for c in screen_quality(p, r, db)['candidates'] if c['code'] == code]
+
+    def test_a_burned_image_in_a_design_value_or_a_deliverable_is_one_firmware_candidate(self):
+        found = self.found('FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', what='量产固件的烧录镜像与读回 hash')
+        self.assertEqual(len(found), 1, found)
+        self.assertEqual((found[0]['key'], found[0]['field'], found[0]['word']), ('AUX-5V-MIN', 'what', '烧录'))
+        self.assertEqual(found[0]['check_ids'], ['PWR-C02.BIAS-RUN.Q2', 'PWR-C02.BIAS-STARTUP.Q2'])
+        self.assertEqual(self.found('FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP',
+                                    what='TP602 与 PFC_EN_N 共脚的编程接口电平与上拉'), [])   # a schematic prerequisite
+        self.assertTrue(self.found('FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', kind='DELIVERABLE_PENDING',
+                                   deliverable_kind='FIRMWARE_CAPABILITY', deliverable='量产固件镜像与读回核验',
+                                   assumed='按 v1.2 的行为算', closure='镜像写入并读回一致'))
+        self.assertEqual(self.found('FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', closure='匝数定下；随后烧录镜像读回核验'), [])
+
+    def test_read_then_calculate_is_review_work_not_a_datum(self):
+        datum = dict(kind='VENDOR_DATUM', what='C5 在 100 kHz 的纹波电流系数', checked=['c3'],
+                     why_insufficient='表只到 120 Hz', missing_parameters=[{'ref': 'C5', 'parameter': '纹波系数', 'unit': '-'}])
+        found = self.found('CALCULATION_RECORDED_AS_DATA_GAP',
+                           acquisition='已读 BXW p1、p5；按低线跟随模式复算频谱并折算到 120 Hz', **datum)
+        self.assertEqual(len(found), 1, found)
+        self.assertEqual((found[0]['key'], found[0]['request']), ('AUX-5V-MIN', 'FN-BIAS/AUX-5V-MIN'))
+        self.assertEqual(self.found('CALCULATION_RECORDED_AS_DATA_GAP',
+                                    acquisition='已读 BXW p1、p5，只给 120 Hz 系数，缺 100 kHz 折算；向 Rubycon 索取', **datum), [])
+        self.assertEqual(self.found('CALCULATION_RECORDED_AS_DATA_GAP',
+                                    acquisition='向原厂索取 100 kHz 系数；随后已读 p5 复算', **datum), [])
+
+    def test_the_row_level_screen_still_reads_hand_filled_rows(self):
+        found = self.found('FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', derived=False, what='量产固件的烧录镜像与读回 hash')
+        self.assertEqual(sorted(len(c['check_ids']) for c in found), [2, 2])   # the item once, and the two hand rows once
+
+
 class DownstreamClosureTests(unittest.TestCase):
     """4.2: a DESIGN_VALUE or VENDOR_DATUM open item is closed by a datum or a spec; a closing condition that accepts a
     prototype measurement, a sample or a simulation is the downstream tier written into a design gap."""

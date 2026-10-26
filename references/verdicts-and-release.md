@@ -171,7 +171,7 @@ FAIL/INSUFFICIENT 默认阻断；只有阶段允许暂留的 P2/P3 才写 `"bloc
 结构校验只能发现字段漏填及已编码的不一致，不能证明路径、保护独立性或工程定级正确。
 `quality_screening` 另给两类提示（不阻断）：不同判据共用完全相同的 `consequence`
 （`REUSED_IMPACT_ACROSS_SCOPES`；同一任务独占的几条判据共用一句后果是该任务的分析，不提示），
-以及至少 10 项证据不足中九成以上落在同一潜在等级（`UNIFORM_POTENTIAL_SEVERITY`）。
+以及至少 10 个证据缺口中九成以上落在同一潜在等级（`UNIFORM_POTENTIAL_SEVERITY`；一条开放项和它派生的检查项算一个缺口，`UNIFORM_SEVERITY_WITHIN_RULE` 同）。
 收到提示时逐项复核后果路径，确属共用分析的写明它与各判据的关系。
 写法提示（不阻断）：位号与数值粘连（`REF_GLUED_TO_VALUE`，如 R12100°C）、通过条件里带三位以上小数的算例中间值
 （`OVERPRECISE_CLOSURE_VALUE`，如 257.121uA；写手册/标准边界和条件，不写样例结果）。
@@ -315,7 +315,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 缺它或它自相矛盾记 INSUFFICIENT（DELIVERABLE_PENDING，`deliverable_kind: CONFIGURATION_TABLE`），只挡 CFG-D01 行和需求行；
 订货代码决定的工厂选项是器件身份，在 DEV-D01 核；引脚、上拉、GPIO 冲突、编程口与功能脚复用在原理图上判；
 烧录镜像、读回 hash、编程模式/夹具、量产校准结果只能在生产/固件环节产生，记阶段 NA + HANDOFF（接收方“固件/生产”），
-不阻塞原理图冻结（`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 提示）。
+不阻塞原理图冻结（`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 提示：读开放项的 `what`/`closure`/`deliverable`，手填检查项读 `missing_inputs`）。
 复合 REQ-D01、功能电路汇总或 PRO-C01 不能整行改 NA；设计要求照常判，纯测试要求另立检查并关联。
 需求行（计划按 `intent.requirements` 生成的 `REQ-D01.<需求 ID>`）整行写 `OUTSIDE_SCHEMATIC_STAGE` 会被校验拒绝：
 “工作温度 −10..50 °C”里器件温度等级是设计要求，闭壳温升才是试验，各写各的条款。
@@ -342,7 +342,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 | 环路增益、相位裕量这类只有样机能给的结论 | 阶段 NA + HANDOFF，补偿参数进 CFG-D01 的环路补偿组；“靠实测”不能作通过的依据 |
 | 定制磁件图纸、固件/OTP 应用能否实现所需控制策略的确认等另一阶段欠的交付物 | INSUFFICIENT（DELIVERABLE_PENDING）：写欠什么、谁欠、本判定按什么假定算；不记 EXTERNAL_DATA，不向芯片厂家索取 |
 | 烧录镜像、读回、编程夹具、量产校准 | 原理图前提单独判；镜像本身阶段 NA + HANDOFF 给固件/生产 |
-| 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`） |
+| 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`：VENDOR_DATUM 开放项的 `acquisition`/`closure` 写了已读、只剩复算而没说缺哪个数据） |
 | 同一方法套在几个对象上（三只光耦的 CTR、几只电解的寿命） | 一件待办、多个位号，不拆成三件（`DUPLICATE_WORK_ITEMS`） |
 | 成本、体积、效率等明确的优化目标 | 必须要求满足后列 IMPROVEMENT 或 P3，不制造未知项；它的需求行（成本目标、尺寸重量尽量小、取舍优先级、不申请某认证这类优化目标或范围说明）记 `NOT_APPLICABLE` 并在 `applicability_evidence` 引需求原文——没有判据就没有“通过”，也不是下游试验，不写 PASS、不记阶段 NA |
 | 需求同时含设计与“通过某测试” | 设计要求照常判；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE` 并链接阶段 NA 检查 |

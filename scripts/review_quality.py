@@ -147,6 +147,10 @@ def screen_quality(plan, report, db=None, base_dir=None):
     actual_statuses = {r['id']: r.get('review_result') for r in report['checks']
                        if isinstance(r, dict) and isinstance(r.get('id'), str)}
     candidates = output['candidates']
+    open_items = {'%s/%s' % (fn['id'], item.get('key')): item for fn in report.get('functions') or []
+                  if isinstance(fn, dict) and isinstance(fn.get('id'), str)
+                  for item in fn.get('open') or [] if isinstance(item, dict)}
+    timing_items = defaultdict(list)   # a derived row's window lives on the open item it points to: judged once
     # Suggest localization, never split or change a verdict without evidence.
     task_owners = defaultdict(set)
     for task in report.get('work_items') or []:
@@ -174,6 +178,12 @@ def screen_quality(plan, report, db=None, base_dir=None):
             a = row.get('timing_assessment')
             fields = ('scenario', 'consequence', 'allowed_window', 'response_bound',
                       'margin', 'temperature_scope', 'closure_stage')
+            if row.get('derived') and isinstance(row.get('open_ref'), str):
+                item = open_items.get(row['open_ref']) or {}
+                if blocked and timing and corner and not all(
+                        isinstance(item.get(k), str) and item[k].strip() for k in ITEM_TIMING_FIELDS):
+                    timing_items[row['open_ref']].append(row['id'])
+                continue
             direct = isinstance(a, dict) and all(isinstance(a.get(k), str) and a[k].strip() for k in fields)
             links = a.get('evidence') if isinstance(a, dict) else None
             linked = isinstance(links, list) and bool(links) and all(
@@ -258,16 +268,17 @@ def screen_quality(plan, report, db=None, base_dir=None):
                 'message': 'Identify the actual refs and independent criteria; add each to the plan as a same-rule check ' + check['rule'] + '.<ref>[-<criterion>] and list it in this row\'s split_out. Keep the residual result evidence-based; never auto-PASS the board or duplicate equivalent children.'})
         if (check and check.get('rule') != 'REQ-H02' and row.get('review_result') == 'INSUFFICIENT'
                 and row.get('gap_cause') != 'REQUIREMENT_OPEN'):
-            grades[row.get('potential_severity')].append(row['id'])
+            gap_key = row['open_ref'] if row.get('derived') and isinstance(row.get('open_ref'), str) else row['id']
+            grades[row.get('potential_severity')].append((row['id'], gap_key))   # an open item's rows are one graded gap
             cause = row.get('gap_cause')
             gap_text = ' '.join(_decisive_part(x) for x in (row.get('missing_inputs') or []) if isinstance(x, str))
             if cause in ('DESIGN_OPEN', 'EXTERNAL_DATA') and DOWNSTREAM_RE.search(gap_text) \
-                    and not DESIGN_GAP_RE.search(gap_text):
+                    and not DESIGN_GAP_RE.search(gap_text) and not row.get('derived'):   # derived: downstream_closures
                 downstream_ids.append(row['id'])
             if OPTIMIZATION_RE.search(str(check.get('criterion') or '') + ' ' + str(row.get('rationale') or '')) \
                     and row.get('potential_severity') in ('P0', 'P1'):
                 optimization_ids.append(row['id'])
-            rule_grades[check.get('rule')].append((row['id'], row.get('potential_severity')))
+            rule_grades[check.get('rule')].append((row['id'], row.get('potential_severity'), gap_key))
             assessment = row.get('impact_assessment')
             reason = assessment.get('consequence') if isinstance(assessment, dict) else None
             if isinstance(reason, str):
@@ -306,7 +317,7 @@ def screen_quality(plan, report, db=None, base_dir=None):
             for item in row['evidence']:
                 if isinstance(item, dict):
                     observed.update(refs(item.get('locator')))
-        if wanted and observed and wanted.isdisjoint(observed):
+        if wanted and observed and wanted.isdisjoint(observed) and not row.get('derived'):   # tool text names the item's objects
             candidates.append({'code': 'REFERENCED_OBJECT_OUTSIDE_SCOPE',
                 'check_ids': [row['id']], 'expected_refs': sorted(wanted),
                 'observed_refs': sorted(observed),
@@ -317,7 +328,7 @@ def screen_quality(plan, report, db=None, base_dir=None):
         for field in IMPACT_TEXT_FIELDS:
             text = assessment.get(field) if isinstance(assessment, dict) else None
             actual = refs(analysis_text(text, check))
-            if wanted and actual and wanted.isdisjoint(actual):
+            if wanted and actual and wanted.isdisjoint(actual) and not row.get('derived'):   # the item's consequence
                 candidates.append({'code': 'IMPACT_REFERENCES_OUTSIDE_SCOPE',
                     'field': field, 'check_ids': [row['id']],
                     'expected_refs': sorted(wanted), 'observed_refs': sorted(actual),
@@ -360,13 +371,19 @@ def screen_quality(plan, report, db=None, base_dir=None):
                 'check_ids': sorted({cid for cid, _ in group}),
                 'message': 'Different criteria share identical impact text; trace each consequence path '
                            'or state how the shared analysis applies to each criterion.'})
-    graded = sum(len(v) for v in grades.values())
-    for grade, ids in grades.items():
-        if graded >= UNIFORM_GRADE_MIN_ROWS and len(ids) >= UNIFORM_GRADE_SHARE * graded:
+    graded = len({key for pairs in grades.values() for _, key in pairs})
+    for grade, pairs in grades.items():
+        keys = {key for _, key in pairs}
+        if graded >= UNIFORM_GRADE_MIN_ROWS and len(keys) >= UNIFORM_GRADE_SHARE * graded:
             candidates.append({'code': 'UNIFORM_POTENTIAL_SEVERITY', 'grade': grade,
-                'check_ids': sorted(ids),
-                'message': f'{len(ids)} of {graded} graded evidence gaps share one potential grade; '
-                           'confirm each was graded from its own consequence path, not by default.'})
+                'check_ids': sorted(cid for cid, _ in pairs),
+                'message': f'{len(keys)} of {graded} graded evidence gaps (an open item and its rows count once) share '
+                           'one potential grade; confirm each was graded from its own consequence path, not by default.'})
+    for ref, ids in sorted(timing_items.items()):
+        candidates.append({'code': 'TIMING_BLOCK_WITHOUT_WINDOW', 'check_ids': sorted(ids),
+            'function_id': ref.split('/', 1)[0], 'key': ref.split('/', 1)[-1],
+            'message': 'A timing/temperature-max gap blocks these rows; the open item they point to gives no scenario, '
+                       'allowed_window and response_bound. Write them on the item (UNKNOWN with a physical reason is valid).'})
     for sentence, group in templates.items():
         if len(group) >= TEMPLATE_MIN_ROWS and len({rule for _, rule in group}) >= TEMPLATE_MIN_RULES:
             candidates.append({'code': 'TEMPLATED_SEVERITY_REASON', 'field': 'consequence',
@@ -383,16 +400,17 @@ def screen_quality(plan, report, db=None, base_dir=None):
             'message': 'A cost/volume/optimization target is graded P0/P1. If the requirement is a goal rather than a '
                        'mandatory limit, record it as IMPROVEMENT or P3 once mandatory requirements pass.'})
     for rule, group in rule_grades.items():
-        levels = {grade for _, grade in group}
-        if len(group) >= RULE_UNIFORM_MIN_ROWS and len(levels) == 1:
+        levels = {grade for _, grade, _ in group}
+        keys = {key for _, _, key in group}
+        if len(keys) >= RULE_UNIFORM_MIN_ROWS and len(levels) == 1:
             candidates.append({'code': 'UNIFORM_SEVERITY_WITHIN_RULE', 'rule': rule, 'grade': levels.pop(),
-                'check_ids': sorted(cid for cid, _ in group),
-                'message': f'All {len(group)} evidence gaps of {rule} share one potential grade; '
+                'check_ids': sorted(cid for cid, _, _ in group),
+                'message': f'All {len(keys)} evidence gaps of {rule} (an open item and its rows count once) share one potential grade; '
                            'objects of one rule (bypass cap vs. bulk high-voltage resistor) rarely share one consequence.'})
     cited_reviews = sorted(
         row['id'] for row in report['checks'] if isinstance(row, dict) and isinstance(row.get('id'), str)
         and row['id'] in expected
-        and expected[row['id']].get('rule') != 'REQ-H02'
+        and expected[row['id']].get('rule') != 'REQ-H02' and not row.get('derived')   # aggregate rows cite this record
         and any(isinstance(ev, dict) and isinstance(ev.get('source'), str)
                 and ev['source'].replace('\\', '/').rsplit('/', 1)[-1] in REVIEW_ARTIFACTS
                 for ev in row.get('evidence') or []))
@@ -420,6 +438,7 @@ def screen_quality(plan, report, db=None, base_dir=None):
         refs = hint.get('items') or ['%s/%s' % (hint.get('function_id'), hint.get('key'))]
         candidates.append(dict(hint, check_ids=sorted({c for ref in refs for c in owners.get(ref, ()) if c})))
     candidates.extend(downstream_closures(report.get('functions'), owners))
+    candidates.extend(misfiled_items(report.get('functions'), owners))
     for candidate in candidates:  # name fields the way the reviewer writes them (a function's open item)
         if candidate.get('field') in RECORD_FIELD_NAMES:
             candidate['field'] = RECORD_FIELD_NAMES[candidate['field']]
@@ -635,6 +654,48 @@ CALC_RE = re.compile(r'计算|复算|核算|反算|积分|建立.{0,6}模型|建
 DATA_MISSING_RE = re.compile(r'缺|未给|没有|没给|无此|未找到|不覆盖|不保证|只给|只有.{0,6}(?:典型|25\s*°?C)|未公布|不公开|403|待厂家|向.{0,12}(?:取得|索取)')
 
 
+ITEM_TIMING_FIELDS = ('scenario', 'allowed_window', 'response_bound')
+MISFILE_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING')   # an image written as a deliverable is the same misfile
+ITEM_TEXT_FIELDS = ('what', 'acquisition', 'closure', 'why_insufficient', 'deliverable', 'spec')
+
+
+def misfiled_items(functions, owners):
+    """Step 4.2 on the open item (the row's missing_inputs is only the item's what, how_to_close rewrites a design value's
+    acquisition, and the row's gap_cause is a map of the kind): a burned image, readback, programming fixture or production
+    calibration recorded as a design value, a datum or a deliverable is a firmware/production handoff; a datum whose
+    acquisition says the document was read and only a calculation remains is review work, not EXTERNAL_DATA."""
+    found = []
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not isinstance(fn.get('id'), str):
+            continue
+        for item in fn.get('open') or []:
+            if not isinstance(item, dict) or item.get('kind') not in MISFILE_KINDS:
+                continue
+            ref = '%s/%s' % (fn['id'], item.get('key'))
+            texts = {f: _decisive_part(item[f]) for f in ITEM_TEXT_FIELDS if isinstance(item.get(f), str) and item[f]}
+            check_ids = sorted(c for c in owners.get(ref, ()) if c)
+            prerequisites = ' '.join(texts.get(f, '') for f in ('what', 'acquisition', 'deliverable', 'spec'))
+            hit = next(((f, FIRMWARE_RE.search(t)) for f, t in texts.items() if FIRMWARE_RE.search(t)), None)
+            if hit and not SCHEMATIC_PREREQ_RE.search(prerequisites):
+                found.append({'code': 'FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', 'function_id': fn['id'], 'key': item.get('key'),
+                              'field': hit[0], 'word': hit[1].group(0), 'check_ids': check_ids,
+                              'message': 'This %s is closed by a burned image, readback, programming mode or production '
+                                         'calibration. Judge the schematic prerequisites (pins, pulls, GPIO conflicts, a '
+                                         'self-consistent configuration table) in their own checks; the image itself is '
+                                         'verified downstream: stage NA + handoff to firmware, not a freeze-blocking gap'
+                                         % item['kind']})
+            if item.get('kind') == 'VENDOR_DATUM':
+                acquisition = ' '.join(texts.get(f, '') for f in ('acquisition', 'closure', 'why_insufficient'))
+                if (READ_RE.search(acquisition) and CALC_RE.search(acquisition)
+                        and not DATA_MISSING_RE.search(acquisition + ' ' + texts.get('what', ''))):
+                    found.append({'code': 'CALCULATION_RECORDED_AS_DATA_GAP', 'function_id': fn['id'], 'key': item.get('key'),
+                                  'request': ref, 'check_ids': check_ids,
+                                  'message': 'The acquisition says the document was read and what remains is a calculation. '
+                                             'That is review work (REVIEW_INCOMPLETE, finish it this round) or a design task '
+                                             'for ASG, not a VENDOR_DATUM; name the datum that is actually absent if one is.'})
+    return found
+
+
 def stage_and_cause_misfiles(report, expected):
     found = []
     firmware, calc = [], defaultdict(set)
@@ -642,6 +703,8 @@ def stage_and_cause_misfiles(report, expected):
         if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
             continue
         if row.get('review_result') != 'INSUFFICIENT' or row.get('gap_cause') not in ('DESIGN_OPEN', 'EXTERNAL_DATA'):
+            continue
+        if row.get('derived'):   # a derived row's gap is its open item's: misfiled_items reads the item once
             continue
         missing = ' '.join(x for x in (row.get('missing_inputs') or []) if isinstance(x, str))
         requests = row.get('input_requests') if isinstance(row.get('input_requests'), dict) else {}

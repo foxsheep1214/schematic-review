@@ -377,7 +377,8 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 批量脚本不能用一句固定兜底语给全部证据不足定级。分类落在开放项的 `kind` 上（DESIGN_VALUE、VENDOR_DATUM、DELIVERABLE_PENDING），行由它派生：
 关闭条件只写本阶段能拿到的东西——厂家保证值、设计规格、交付物；实测、样机、仿真才能得到的部分不写进关闭条件，拆成阶段 NA 行加移交。
 筛查的四个提示点最常漏的几种：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP`（开放项的 `closure`/`acquisition`/`why_insufficient` 或行的缺口文字接受实测、样机、样品、仿真作为关闭路径；
-“随后/留给……”的分句已把下游部分分出，不算）、`CALCULATION_RECORDED_AS_DATA_GAP`（资料已读、只剩计算却记成厂家数据）、`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP`（烧录镜像、读回、夹具记成设计缺口）、
+“随后/留给……”的分句已把下游部分分出，不算）、`CALCULATION_RECORDED_AS_DATA_GAP`（VENDOR_DATUM 开放项的 `acquisition`/`closure` 写了已读某页、只剩复算，又没说缺哪个数据）、
+`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP`（开放项的 `what`/`closure`/`deliverable` 里是烧录镜像、读回、编程模式、量产校准，而不是编程口电平、上拉这类原理图前提）、
 `DUPLICATE_WORK_ITEMS` 与 `TEMPLATE_REASON`（同一方法套几个对象、同一句关闭条件或取得方式写在几个开放项上：是一件待办、多个位号）。
 
 做完的标志：每个开放项的 `kind` 定过，关闭条件里没有实测、样机、仿真；上述提示每条处置过（改 kind、拆阶段 NA 加移交、合并待办，或确认不是误记）。
@@ -387,6 +388,8 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --json review-gate.json
 
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。
+- 疑点落在手填检查项和功能判定/开放项上。派生检查项的措辞、对象、后果、缺口都是工具按开放项写的，筛查不逐项点它们：
+  定级整批同级、下游/固件/计算误记、时序窗口这些疑点读开放项一次，`check_ids` 列它挡住的检查项（一条开放项和它的派生检查项算一个缺口）；处置时改开放项，派生检查项由 `expand` 重写。
 - 已有资料尚未读算的项记 REVIEW_INCOMPLETE，本轮自己读算完；审查未完成时只交进度，`pack_review.py` 拒绝打包。
   只剩 SR 工具自身限制、已手工核完的写 `manual_verification`（什么算工具限制见 [单条检查](references/plan-and-results.md#单条检查)）。
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。

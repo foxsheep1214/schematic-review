@@ -414,8 +414,11 @@ class StageCauseAndDuplicateTests(unittest.TestCase):
 
 class DownstreamTriageTests(unittest.TestCase):
     def codes(self, p, r):
+        return self.by_code(p, r)
+
+    def by_code(self, p, r, db=None):
         from review_quality import screen_quality
-        return {x['code']: x for x in screen_quality(p, r)['candidates']}
+        return {x['code']: x for x in screen_quality(p, r, db)['candidates']}
 
     def test_test_only_gap_recorded_as_design_open_is_flagged(self):
         p, r = impact_fixture(n=2)
@@ -425,6 +428,58 @@ class DownstreamTriageTests(unittest.TestCase):
         r['checks'][1]['missing_inputs'] = ['U1 偏置电阻未选，需样机前确定']
         found = self.codes(p, r)['DOWNSTREAM_RECORDED_AS_DESIGN_GAP']
         self.assertEqual([r['checks'][0]['id']], found['check_ids'])
+        r['checks'][0].update(derived=True, open_ref='FN-X/GAP')     # its gap is the open item's: downstream_closures reads it
+        self.assertNotIn('DOWNSTREAM_RECORDED_AS_DESIGN_GAP', self.codes(p, r))
+
+    def test_an_open_item_and_its_derived_rows_grade_once(self):
+        # 4.3: derived rows inherit the open item's grade, so twelve rows of one item are one graded gap
+        p, r = impact_fixture(n=12)
+        self.assertIn('UNIFORM_POTENTIAL_SEVERITY', self.codes(p, r))
+        self.assertIn('UNIFORM_SEVERITY_WITHIN_RULE', self.codes(p, r))
+        for row in r['checks']:
+            row.update(derived=True, open_ref='FN-X/GAP')
+        self.assertNotIn('UNIFORM_POTENTIAL_SEVERITY', self.codes(p, r))
+        self.assertNotIn('UNIFORM_SEVERITY_WITHIN_RULE', self.codes(p, r))
+        for i, row in enumerate(r['checks']):
+            row['open_ref'] = 'FN-X/GAP-%d' % i                       # twelve items, one grade each
+        found = self.by_code(p, r)['UNIFORM_POTENTIAL_SEVERITY']
+        self.assertEqual(len(found['check_ids']), 12)
+        self.assertIn('count once', found['message'])
+
+    def test_the_uniform_share_counts_gaps_not_rows(self):
+        p, r = impact_fixture(n=30)
+        for i, row in enumerate(r['checks']):
+            if i < 20:
+                row.update(derived=True, open_ref='FN-X/BIG', potential_severity='P1')   # one gap behind twenty rows
+            else:
+                row.update(derived=True, open_ref='FN-X/GAP-%d' % i, potential_severity='P2' if i < 25 else 'P3')
+        self.assertNotIn('UNIFORM_POTENTIAL_SEVERITY', self.codes(p, r))   # 1 / 5 / 5 of 11 gaps: no grade dominates
+
+    def test_derived_rows_skip_the_row_text_screens(self):
+        p, r = impact_fixture(n=2)
+        p['checks'][0]['object'] = {'ref': 'C1'}
+        row = r['checks'][0]
+        row['evidence'] = [{'source': 'review-results.json', 'locator': 'checks'}]
+        row['rationale'] = 'R1 limits the current'                   # R1 is known but outside C1's scope
+        row['impact_assessment']['consequence'] = 'R1 overheats'
+        db = {'parts': {'R1': {}, 'C1': {}}}
+        codes = self.by_code(p, r, db)
+        for code in ('CURRENT_CHECK_CITES_REVIEW_RECORD', 'REFERENCED_OBJECT_OUTSIDE_SCOPE', 'IMPACT_REFERENCES_OUTSIDE_SCOPE'):
+            self.assertIn(code, codes, code)
+        row.update(derived=True, open_ref='FN-X/GAP')                 # tool text written from the open item
+        codes = self.by_code(p, r, db)
+        for code in ('CURRENT_CHECK_CITES_REVIEW_RECORD', 'REFERENCED_OBJECT_OUTSIDE_SCOPE', 'IMPACT_REFERENCES_OUTSIDE_SCOPE'):
+            self.assertNotIn(code, codes, code)
+
+    def test_a_derived_timing_block_is_judged_on_its_open_item_once(self):
+        p, r = impact_fixture(n=3)
+        for row in r['checks']:
+            row.update(rationale='关断响应在全温下未定', derived=True, open_ref='FN-X/T-OFF', blocking=True)
+        found = self.by_code(p, r)['TIMING_BLOCK_WITHOUT_WINDOW']
+        self.assertEqual((found['function_id'], found['key'], len(found['check_ids'])), ('FN-X', 'T-OFF', 3))
+        r['functions'] = [{'id': 'FN-X', 'open': [{'key': 'T-OFF', 'kind': 'VENDOR_DATUM', 'scenario': '输出短路',
+                                                     'allowed_window': '≤ 10 ms', 'response_bound': '≤ 2 ms'}]}]
+        self.assertNotIn('TIMING_BLOCK_WITHOUT_WINDOW', self.codes(p, r))
 
     def test_optimization_goal_graded_p1_is_flagged(self):
         p, r = impact_fixture(n=2)
