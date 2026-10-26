@@ -7,6 +7,30 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## The estimate-pass boundary is decided per bounding-table cell, not per rule id (2026-10-26)
+
+The user called "SR 不允许用典型值或 25 °C 单点额定判 PASS，没有保证界就只能开放" the biggest current problem and set the
+principle "判决的边界应该按照器件类型来……每一种元器件都应该由自身的特性，来判断规则边界", then added that the device-kind list
+is open-ended: a kind the table does not know must reach the report's 对 SR 的反馈, not be judged silently. On the four R7
+records four opto-CTR items and three low-current zener items stayed open with 2–4× margins computed from typical curves
+because they fell under PRO-E01 / damage-class rules, and the items asked the vendor for data the industry does not
+publish. Every `catalog.BOUNDS` cell now carries availability, the estimates it allows per consequence class (factor,
+margin floor, how), failure consequence, prototype testability and a one-sentence boundary (34 cells: CAP-SURGE-V,
+MOS-DISCHARGE-I2T and IC-GATE-DRIVE-I added for the R7 quantities); `estimate_rule(cell, class)` decides whether an
+ESTIMATE margin passes (`function_reading.estimate_passes`), the rule-id list is the default for `cell: NONE` only, and
+DAMAGE_OR_HAZARD / CORE_LINK_LOSS never pass. The gate requires `basis.cell`, the cell's `estimate_factor` and margin
+floor (MOS-RDS-HOT damage use ≥ 20 °C), refuses a class the cell does not allow, has derive write grade C on such rows (another grade
+is an error), caps `release` at CONDITIONAL_GO and lists them in `estimated_passes`; the report gets 按典型值估算的结论.
+Three extension signals go to `sr_improvements`: NEW_DEVICE_KIND (fitted part the classifier calls unknown),
+NEW_BOUND_CELL (cell NONE on a known kind), and the UNOBTAINABLE_DATUM hint on a VENDOR_DATUM item that asks the vendor
+for an INDUSTRY_NONE datum; `sr_feedback` gains kind `cell_boundary`. Six open points were decided by the user, all on the
+recommended option; the record is docs/2026-10-26-cell-boundary.md.
+
+- Event: user:2026-10-26 (判决的边界按器件类型来; six decisions), review:SR-20261025-R7-验收-claude1-660f790/U403-CTR
+- Causes: judgment 1 (the rule-id cut treated an opto CTR threshold like a fuse I²t), knowledge_missing 1 (no per-cell availability / estimate boundary in the table), rule_missing 1 (nothing reported a device kind or a parameter the table lacks)
+- Changed: SKILL.md, docs/2026-10-26-cell-boundary.md, references/architecture.md, references/bounding-table.md, references/evidence-proportionality.md, references/plan-and-results.md, references/report-and-remediation.md, references/verdicts-and-release.md, scripts/catalog.py, scripts/function_reading.py, scripts/review_functions.py, scripts/validate_review.py, scripts/render_report.py, scripts/tests/test_bounding_table.py, scripts/tests/test_cell_boundary.py, scripts/tests/test_estimate_pass.py, evals/mutation/mutations.json, evals/mutation/README.md
+- Gates: 2171 unit tests, rule contracts 69/69 ok (136 boards; test_rule_contracts 72), KiCad replay 195/195, typical circuits 117/180/14 unchanged, M640–M650 killed from a snapshot; on the four R7 records (made before `cell` was required) the former functional estimate passes (8/9/8/10 function aspects, 33/50/39/43 derived rows) now ask for `cell` and a re-derive for grade C, 3 unknown-kind parts per record (RV101 varistor, TH101/TH601 NTC), UNOBTAINABLE_DATUM 0/1/4/0, VENDOR_DATUM items a cell would let pass on an estimate about 3/4/4/0
+
 ## "行" for a check is called "检查项" (2026-10-26)
 
 The user asked what the "行" seen all over the SR text is and whether to call it "检查项" ("把它改命叫'检查项'是否合适，

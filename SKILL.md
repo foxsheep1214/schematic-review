@@ -306,6 +306,9 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   跨电路的缺口只写一次，影响条目用 `check_ids` 点名另一电路的检查项。自建功能只装不属于任何框架的检查项；文档检查（DOC-*）在检查项上判，不包成功能。
 - 余量按 `margin.basis.kind` 下结论（GUARANTEED_BOUND 满足才 PASS、REACHABLE_CASE 不满足才 FAIL、EXACT_ENVELOPE 两头都判、ESTIMATE 不判，
   例外见该节“估算判通过”）；器件参数按[工作点定界表](references/bounding-table.md)定界，门禁重算。
+  典型值估算能不能判 PASS 由定界表那一格的[判决边界](references/bounding-table.md#判决边界)按后果类定（不按规则 id）：
+  估算判 PASS 的余量写 `cell`、`method`（G7–G9）、`consequence_class`、`estimate_factor`（等于格给该后果类的倍数，余量按打折后的值算）和 `handoff`；
+  格没有这个参数写 `cell: NONE`，按默认（只许功能/性能后果，损坏/过热/保护类规则不估算）。这种 PASS 是 C 级证据，准出最高有条件定稿。
 - 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，再分 DESIGN_VALUE / DELIVERABLE_PENDING / VENDOR_DATUM；
   检查项只在本方面本状态有证明通过的余量或判断时 PASS，没人判过的方面不默认通过。
 
@@ -369,7 +372,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 每条决定性余量写 `basis.cell`（表里没有的写 NONE），引了带公差输入的余量逐个列角点，门禁拒收缺的。
 
 做完的标志：功能复核的四个信号每条处置过（单位对照原图后写进 `says`，额定走了降额或说明不降额，该写格的写了格并带推法），
-决定性余量的 `cell` 为 NONE 的每条确认过表里没有这个参数。
+决定性余量的 `cell` 为 NONE 的每条确认过表里没有这个参数，表里没有的已由门禁记为待扩项（`sr_improvements` 的 NEW_BOUND_CELL，进报告“对 SR 的反馈”）。
 
 #### 4.2 证据不足的分类
 
@@ -379,6 +382,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 筛查的四个提示点最常漏的几种：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP`（开放项的 `closure`/`acquisition`/`why_insufficient` 或检查项的缺口文字接受实测、样机、样品、仿真作为关闭路径；
 “随后/留给……”的分句已把下游部分分出，不算）、`CALCULATION_RECORDED_AS_DATA_GAP`（VENDOR_DATUM 开放项的 `acquisition`/`closure` 写了已读某页、只剩复算，又没说缺哪个数据）、
 `FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP`（开放项的 `what`/`closure`/`deliverable` 里是烧录镜像、读回、编程模式、量产校准，而不是编程口电平、上拉这类原理图前提）、
+`UNOBTAINABLE_DATUM`（VENDOR_DATUM 开放项向厂家索取的参数，定界表那一格的可得性是“行业不给”：索取关不掉，走该格允许的估算加样机移交，或换种类）、
 `DUPLICATE_WORK_ITEMS` 与 `TEMPLATE_REASON`（同一方法套几个对象、同一句关闭条件或取得方式写在几个开放项上：是一件待办、多个位号）。
 
 做完的标志：每个开放项的 `kind` 定过，关闭条件里没有实测、样机、仿真；上述提示每条处置过（改 kind、拆阶段 NA 加移交、合并待办，或确认不是误记）。
@@ -408,6 +412,8 @@ REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
       python3 scripts/render_report.py review-plan.json review-results.json review-gate.json --notes notes.json -o <审查目录>/审查报告.md   # 同时写出 审查报告.html
 
   默认简洁报告保留全部缺陷、任务、通过标准及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
+- 按典型值估算判通过的检查由门禁的 `estimated_passes` 渲染成“按典型值估算的结论”一节（功能、格、怎么估、余量、样机要测、涉及检查），结论段和数字一览各带一句；
+  器件类别词表或定界表没覆盖的（`sr_improvements` 的 NEW_DEVICE_KIND / NEW_BOUND_CELL）渲染在“对 SR 的反馈”下“器件类别与定界表要扩的”，只告诉 SR 维护者要扩表。
 
 做完的标志：`notes.json` 的 summary、items、sr_feedback 用白话且都进了报告；报告里的相对链接都能打开。
 

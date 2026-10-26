@@ -13,6 +13,12 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 - **余量**：每条决定性余量（GUARANTEED_BOUND、REACHABLE_CASE、EXACT_ENVELOPE）必写 `basis.cell`（2026-10-25 用户决定）：表里有格写格并写
   `basis.method`（须是这一格允许的推法），表里没有这个参数写 `NONE`；推法带公式时写 `basis.formula{name, inputs, value}`，门禁用同样的输入重算，
   差超过 0.5% 拒收。写了 `NONE` 而余量的文字对上某格的参数词时，筛查出 `BOUNDING_CELL_AVAILABLE` 提示。
+- **判决边界（2026-10-26，用户：“判决的边界按器件类型来”）**：每格另有五列——可得性（厂家通常保证到哪）、允许的估算与倍数（按后果类，空为不估算）、
+  失效后果、样机能否验、边界一句话。典型值估算能不能判 PASS 由格 × 后果类决定，不按规则 id：余量写 `cell`、估算推法、`consequence_class`、
+  `estimate_factor`（等于格的倍数）、`handoff`，格给了余量下限的还要满足它；DAMAGE_OR_HAZARD、CORE_LINK_LOSS 任何格都不估算；`cell: NONE` 走默认（只许功能/性能后果，
+  损坏/过热/保护类规则不估算）并记 NEW_BOUND_CELL 待扩项。可得性为“行业不给”的格，开放项写向厂家索取出 `UNOBTAINABLE_DATUM` 提示。
+  表是可增长的：审查里遇到词表没有的器件类别（NEW_DEVICE_KIND）或有类别没有格的参数（NEW_BOUND_CELL），门禁记进 `sr_improvements`，报告在“对 SR 的反馈”下列出，
+  扩表时补齐五列并加测试。决定记录见 docs/2026-10-26-cell-boundary.md。
 - **判“定不出界”的缺厂家数据**：`worst_case.monotonic_tried.cell` 写格（表里没有这类参数写 `NONE`）。门禁按格核对：
   - 格的开着一侧（UPPER/LOWER）与 `monotonic_tried.side` 相同；
   - 落到 `BOUNDED` 的格总能定界，不开这种项；落到 `OUTSIDE_SPECIFIED` 的格记失败项（`fails[]` 写 `outside_specified`）；

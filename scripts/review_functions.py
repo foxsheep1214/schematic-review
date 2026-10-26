@@ -1278,6 +1278,10 @@ def _source_path(source, base_dir):
     return path if path and os.path.isfile(path) else None
 
 
+# An open item that asks the vendor for a datum the industry does not publish (cell availability INDUSTRY_NONE)
+UNOBTAINABLE_ASK_RE = re.compile(r'索取|向.{0,12}(?:厂家|原厂|供应商)|request(?:ed)? from|ask(?:ing)? the vendor', re.I)
+
+
 def template_hints(functions, known_refs=None, base_dir=None):
     """Quality hints, never errors: one reason sentence on several gaps (if it is one gap, keep one item and let its edges
     reach every row; rewording does not make two gaps), a gap blocking more than WIDE_GAP aspects, and the three signals
@@ -1312,6 +1316,22 @@ def template_hints(functions, known_refs=None, base_dir=None):
                                   'message': 'This margin says cell NONE, but its words name %s; if the limit is that '
                                              'parameter, write the cell and its method so the gate reruns the bound'
                                              % '/'.join(cells)})
+        for item in fn.get('open') or []:
+            if not (isinstance(item, dict) and item.get('kind') == 'VENDOR_DATUM'):
+                continue
+            words = ' '.join(str(item.get(f) or '') for f in ('what', 'acquisition', 'why_insufficient'))
+            if not UNOBTAINABLE_ASK_RE.search(str(item.get('acquisition') or '')):
+                continue
+            tried = (item.get('worst_case') or {}).get('monotonic_tried') if isinstance(item.get('worst_case'), dict) else None
+            named = [tried['cell']] if isinstance(tried, dict) and tried.get('cell') in catalog.BOUNDS else catalog.cells_named_by(words)
+            cells = [c for c in named if catalog.BOUNDS[c].availability == 'INDUSTRY_NONE']
+            if cells:
+                bound = catalog.BOUNDS[cells[0]]
+                hints.append({'code': 'UNOBTAINABLE_DATUM', 'function_id': fn['id'], 'key': item.get('key'), 'cell': bound.id,
+                              'message': 'This datum (%s) is one vendors do not publish (cell %s: %s); asking the vendor will '
+                                         'not close it. Use the estimate the cell allows (%s) and hand the prototype test on, or '
+                                         'change the item\'s kind' % (bound.parameter, bound.id, catalog.BOUND_AVAILABILITY[bound.availability],
+                                                                      '；'.join(e.how for e in bound.estimates) or 'none')})
         for c in conditions.values():
             unit = (c.get('limit') or {}).get('unit') if isinstance(c.get('limit'), dict) else None
             if c.get('kind') != 'NUMERIC_LIMIT' or unit not in GLYPH_UNITS or GLYPH_CHECKED_RE.search(c.get('says') or ''):

@@ -1,4 +1,4 @@
-# 定界表 31 格的判决边界（草稿，待审，未改代码）
+# 定界表的判决边界（2026-10-26 决定记录）
 
 用户 2026-10-26："判决的边界应该按照器件类型来。SR 技能里面本身应该抽象出来不同种类的器件，每一种元器件都应该由自身的特性，来判断规则边界。"
 现状：定界表（references/bounding-table.md）已按"器件类别 × 参数"分 31 格，每格写了推法与推不出时的归类，但"典型值估算能不能判通过"由规则 id 一刀切
@@ -103,7 +103,7 @@ IC 再按手册声明的角色分（`catalog.DEVICE_ROLES`）；定界表的 31 
 | 4 等级与准出 | 估算判 PASS 记 **C 级**，有它时 `release` 最高 **CONDITIONAL_GO**，报告**单列**"按典型值估算、待样机确认"；现行功能类估算 PASS（B 级）也改成这一套，两类估算一个写法 |
 | 5 表外的量 | **补格**：这次先给 R7 碰到的三个量补格（CAP-SURGE-V、MOS-DISCHARGE-I2T、IC-GATE-DRIVE-I），以后由 NEW_BOUND_CELL 信号逐块板补；表外的量按现行规则级默认 |
 
-## 实施计划（2026-10-26，待用户放行后逐步执行）
+## 实施计划（2026-10-26，用户放行："按这六步动手，步 1–3 完成后先提交一次"）
 
 落点：现行"估算判 PASS"由两处决定——`function_reading.ESTIMATE_PASS_CLASSES`（只许 REQUIRED_FUNCTION / PERFORMANCE_OR_LIFE）和
 `NO_ESTIMATE_PASS_RE`（DEV-C01、DEV-C04、PWR-C03、PWR-C06、PWR-C10、DRV-C01、PRO-* 一律不许）；`review_functions._basis_errors` 同样按这两处拒收。

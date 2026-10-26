@@ -440,12 +440,16 @@ FIRMWARE_CAPABILITY 另加全部 SIG-* 与 CFG-D01，CONFIGURATION_TABLE 只挡 
 | GUARANTEED_BOUND | 在要求范围内余量的下界：满足则 PASS，不满足只说明没证明（OPEN） | 不依赖 TYPICAL_REFERENCE 或 ENGINEERING_ASSUMPTION |
 | REACHABLE_CASE | 一个确会出现的工况：不满足则 FAIL，满足不证明整个范围（OPEN） | `joint` 说明这些参数为什么会同时出现；不依赖 ENGINEERING_ASSUMPTION |
 | EXACT_ENVELOPE | 完整的最坏包络：满足 PASS，不满足 FAIL | `model`、`domain`、`extremum`；同 GUARANTEED_BOUND 不依赖典型值或假设 |
-| ESTIMATE | 什么都不决定；用于必需功能或性能且移交样机实测时，满足判 PASS（见下） | 判 PASS 时写 `consequence_class` 与 `handoff` |
+| ESTIMATE | 什么都不决定；按定界表那一格的判决边界允许的后果类、经倍数打折后仍满足且移交样机实测时，判 PASS（见下） | 判 PASS 时写 `cell`、`method`（G7–G9）、`consequence_class`、`estimate_factor` 与 `handoff` |
 
-估算判通过（SR 自查 2.1）：相似器件保证范围或典型 ±30% 这类估算在整个范围内结论不变时，`basis` 另写 `consequence_class`
-（REQUIRED_FUNCTION 或 PERFORMANCE_OR_LIFE，估算错了的后果）和 `handoff`（本功能 `handoffs` 里样机实测那一条的序号，
-那一条写全 receivers、constraint、verification），满足就判 PASS，派生检查项带上这条移交（`required: true`，OPEN）。
-损坏、过热和保护类规则（DEV-C01、DEV-C04、PWR-C03、PWR-C06、PWR-C10、DRV-C01、全部 PRO）不走这条路，仍要保证值。
+估算判通过（SR 自查 2.1；边界按器件类型 2026-10-26）：估算能不能判 PASS 由 `basis.cell` 那一格的[判决边界](bounding-table.md#判决边界)按
+`consequence_class`（沿用开放项 `severity.class` 的词：REQUIRED_FUNCTION、PERFORMANCE_OR_LIFE、COMPONENT_DAMAGE……）决定，与检查项的规则 id 无关：
+格允许这个后果类时，`basis` 写 `method`（该格的估算推法 G7–G9，保证推法 G1–G6 得到的是 GUARANTEED_BOUND 不是估算）、`consequence_class`、
+`estimate_factor`（等于格给该后果类的倍数，余量按估算值再按不利方向打这个折之后算；格另给余量下限的，余量用那个单位且不低于它，如 MOS-RDS-HOT 判损坏要结温余量 ≥ 20 °C）
+和 `handoff`（本功能 `handoffs` 里样机实测那一条的序号，那一条写全 receivers、constraint、verification），满足就判 PASS，派生检查项带上这条移交（`required: true`，OPEN）。
+DAMAGE_OR_HAZARD、CORE_LINK_LOSS 在任何格都不估算。`cell: NONE`（表里没有这个参数）走默认：只许 REQUIRED_FUNCTION / PERFORMANCE_OR_LIFE，
+损坏、过热和保护类规则（DEV-C01、DEV-C04、PWR-C03、PWR-C06、PWR-C10、DRV-C01、全部 PRO）不走这条路；同时门禁记 NEW_BOUND_CELL 待扩项。
+估算判 PASS 的检查项是 C 级证据（派生时写 `evidence_confidence: C`，门禁拒绝别的等级），`release` 最高 CONDITIONAL_GO，门禁 `estimated_passes` 逐条列出，报告单列“按典型值估算的结论”。
 寿命检查项另有自己的估算路径（见 DEV-C02/DEV-C06）。
 
 `comparison` 为 GE 时零余量算满足，GT 时不算。除 ESTIMATE 外，`limit` 指向被比较的 NUMERIC_LIMIT，`regime` 写算出量成立的条件；

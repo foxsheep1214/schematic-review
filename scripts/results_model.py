@@ -78,7 +78,7 @@ def shape_errors(report, history_ids=()):
         if 'blocking' in row and not (row['blocking'] is False and row.get('review_result') in ('FAIL', 'INSUFFICIENT')):
             errors.append(key + (': on an NA row (stage NA included) omit blocking, it is derived false' if row.get('review_result') == 'NA'
                                  else ': blocking is derived; write it only as false on a FAIL/INSUFFICIENT that does not block'))
-        if row.get('evidence_confidence') in ('B', 'C'):
+        if row.get('evidence_confidence') in ('B', 'C') and not (row.get('evidence_confidence') == 'C' and row.get('derived')):
             errors.append(key + ': evidence_confidence is derived; write it only to claim A')
         if row.get('disposition') == 'OPEN':
             errors.append(key + ': disposition OPEN is the default; omit it')

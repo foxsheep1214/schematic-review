@@ -10,6 +10,7 @@ gate reruns the formula it names.
 import copy
 import sys
 import unittest
+import unittest.mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -100,6 +101,13 @@ class TableTests(unittest.TestCase):
             self.assertIsNone(rule('OPTO-CTR', cls), cls)
         self.assertIsNone(rule('NONE', 'REQUIRED_FUNCTION'))
         self.assertIsNone(rule('NO-SUCH-CELL', 'REQUIRED_FUNCTION'))
+
+    def test_a_hazard_or_core_link_class_is_refused_even_if_a_cell_lists_it(self):
+        # the never-estimate classes are a guarantee of estimate_rule itself, not of the table's authoring
+        lax = catalog.BOUNDS['OPTO-CTR']._replace(estimates=(catalog.Estimate(2, ('DAMAGE_OR_HAZARD', 'CORE_LINK_LOSS'), None, 'x'),))
+        with unittest.mock.patch.dict(catalog.BOUNDS, {'OPTO-CTR': lax}):
+            self.assertIsNone(catalog.estimate_rule('OPTO-CTR', 'DAMAGE_OR_HAZARD'))
+            self.assertIsNone(catalog.estimate_rule('OPTO-CTR', 'CORE_LINK_LOSS'))
 
     def test_the_cells_added_for_the_r7_quantities(self):
         for cell, kinds in (('CAP-SURGE-V', ('capacitor', 'electrolytic')), ('MOS-DISCHARGE-I2T', ('mosfet',)),

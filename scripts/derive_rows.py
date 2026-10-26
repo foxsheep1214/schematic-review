@@ -87,6 +87,7 @@ def derive_row(fn, planned, aspect, findings, functions=None):
         h = estimate[1]
         row['handoff'] = {'required': True, 'state': 'OPEN', 'receivers': list(h['receivers']),
                           'constraint': h['constraint'], 'verification': h['verification']}
+        row['evidence_confidence'] = 'C'   # an estimate pass is C-grade evidence (2026-10-26 decision 4)
     row.update(review_result='PASS', rationale='见功能判定 %s：%s' % (where, basis))
     return row, None
 

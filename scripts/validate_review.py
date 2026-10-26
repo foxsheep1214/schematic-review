@@ -18,7 +18,7 @@ from review_summary import categorized_summary, validate_impact
 from requirement_clarifications import validate_clarifications
 from checkers import REGISTRY, passive_stress, validate_inventories
 from validate_remediation import validate_remediation, validate_figures, changes_topology, READINESS
-from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json, squeeze_words
+from electrical_contract import LOCATOR_IDS_RE, PLAN_SCHEMA_VERSION, db_fingerprint, load_json, squeeze_words
 from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check_id
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
@@ -330,14 +330,14 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     stage = workflow(plan, report, checks, clarifications, require_design_options=actionable)
     errors.extend(stage['errors'])
     accepted = False
-    # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): the grade is derived here, the release
+    # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): derive writes C on the row, the release
     # is capped at CONDITIONAL_GO below, and the report lists these rows apart.
     estimated = estimated_passes(expected, checks, report.get('functions'))
     estimated_ids = {e['check_id'] for e in estimated}
     for cid in estimated_ids:
-        if checks[cid].get('evidence_confidence') == 'A':
-            errors.append(f"{cid}: a PASS on an estimate is C-grade evidence; it cannot claim A")
-        checks[cid]['evidence_confidence'] = 'C'
+        if checks[cid].get('evidence_confidence') != 'C':
+            errors.append(f"{cid}: a PASS on an estimate is C-grade evidence (derive writes it); it cannot claim "
+                          f"{checks[cid].get('evidence_confidence')}")
     sr_improvements = []
     manual_methods = {}
     for key, item in checks.items():
@@ -628,6 +628,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     repair_counts = {state: sum(isinstance(x.get("remediation"), dict) and
                     x["remediation"].get("readiness") == state for x in findings.values())
                     for state in READINESS}
+    sr_improvements.extend(extension_signals(report, db))
     return {"quality_screening": screen_quality(plan, report, db, base_dir),
             "estimated_passes": estimated,
             "scope": scope_decl,
@@ -650,6 +651,53 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 "strategy": revision['strategy'] if revision else None},
             "binding_validation": {"enforced": bool(bindings), "bound_checks": bound_count},
             "remediation_validation": {"enforced": actionable, "by_readiness": repair_counts}}
+
+
+def extension_signals(report, db):
+    """2026-10-26 decision 0 (user: 器件类别是可以增长的): what the review met that the device-kind vocabulary or the
+    bounding table does not cover, reported under 对 SR 的反馈 and never blocking. NEW_DEVICE_KIND: a fitted part the
+    classifier calls unknown. NEW_BOUND_CELL: a margin or an unboundable datum written with cell NONE on a part whose kind
+    is known — the table has no cell for that kind's parameter."""
+    if not (isinstance(db, dict) and isinstance(db.get('parts'), dict) and db['parts']):
+        return []
+    from checkers.netgraph import NetGraph
+    graph = NetGraph(db)
+    out = []
+    for ref in sorted(db['parts']):
+        part = db['parts'][ref]
+        if graph.kind(ref) == 'unknown' and not part.get('nc'):
+            out.append({'kind': 'NEW_DEVICE_KIND', 'refs': [ref],
+                        'clue': ' / '.join(str(part.get(k)) for k in ('part', 'value') if text(part.get(k))),
+                        'suggestion': '按手册标题给这类器件一个类别名，补进 part_words 的词表和定界表（可得性、允许的估算与倍数、'
+                                      '失效后果、样机能否验、边界）；本板按已知的判，结论不等它'})
+    for fn in report.get('functions') or []:
+        if not (isinstance(fn, dict) and text(fn.get('id'))):
+            continue
+        conditions = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+        objects = [r for r in ((fn.get('objects') or {}).get('refs') or []) if text(r)]
+        calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+        margin = calc.get('margin')
+        margins = margin if isinstance(margin, list) else [margin] if margin is not None else []
+        places = [('margin', k, m.get('basis'), ' '.join(str(x) for x in (
+                      m.get('against'), m.get('aspect'), (conditions.get((m.get('basis') or {}).get('limit')) or {}).get('says'))
+                      if text(x)))
+                  for k, m in enumerate(margins) if isinstance(m, dict) and isinstance(m.get('basis'), dict)]
+        for item in fn.get('open') or []:
+            worst = item.get('worst_case') if isinstance(item, dict) else None
+            tried = worst.get('monotonic_tried') if isinstance(worst, dict) else None
+            if isinstance(tried, dict):
+                places.append(('open', item.get('key'), tried, str(item.get('what') or '')))
+        for where, index, basis, words in places:
+            if basis.get('cell') != catalog.NO_CELL:
+                continue
+            refs = [r for r in LOCATOR_IDS_RE.findall(words) if r in db['parts']] or objects
+            kinds = sorted({graph.kind(r) for r in refs if r in db['parts']} - {'unknown'})
+            if kinds:
+                out.append({'kind': 'NEW_BOUND_CELL', 'function_id': fn['id'], where: index, 'device_kinds': kinds,
+                            'refs': sorted(set(refs)), 'parameter': words[:120],
+                            'suggestion': '给 %s 的这个参数补一格：可得性、允许的估算与倍数、失效后果、样机能否验、边界；'
+                                          '补格前本板按 NONE 的默认判' % '/'.join(kinds)})
+    return out
 
 
 def release_for(errors, blockers, accepted, estimated):

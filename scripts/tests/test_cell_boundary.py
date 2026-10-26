@@ -105,6 +105,15 @@ class EstimateGradeAndReleaseTests(unittest.TestCase):
         self.assertEqual(e['verification'], '样机实测 Q9 偏置电压')
         self.assertIn('÷1.2', e['how'])
 
+    def test_derive_writes_grade_c_on_the_row_and_the_gate_refuses_another_grade(self):
+        p, r, db, out = self.passing()
+        self.assertEqual(other_row(r)['evidence_confidence'], 'C')   # written by derive, kept by expand, accepted by the gate
+        self.assertTrue(out['valid'], out['errors'])
+        p, r, db, _ = self.passing()
+        del other_row(r)['evidence_confidence']                        # expand would grade a bare PASS B
+        out = vr.validate_review(p, r, db)
+        self.assertTrue(any('C-grade evidence' in e and 'claim B' in e for e in out['errors']), out['errors'])
+
     def test_an_estimate_pass_cannot_claim_a_grade_evidence(self):
         p, r, db, _ = self.passing()
         other_row(r)['evidence_confidence'] = 'A'
@@ -129,6 +138,89 @@ class EstimateGradeAndReleaseTests(unittest.TestCase):
         for word in ('÷1.2', '×1.2', '样机实测 Q9 偏置电压', 'PWR-C02.OTHER-RUN.Q9'):
             self.assertIn(word, row)
         self.assertEqual(render_report.render_estimated_passes([]), [])   # no estimates: no section, no count line
+
+
+class ExtensionSignalTests(unittest.TestCase):
+    """Decision 0 (2026-10-26, user: 器件类别是可以增长的): a device kind the vocabulary lacks, or a known kind whose
+    parameter has no cell, is reported under 对 SR 的反馈 and blocks nothing."""
+
+    VARISTOR = {'parts': {'RV1': {'part': 'B72214S0301K101', 'value': 'S14K300'}, 'R1': {'value': '10k'},
+                          'RV2': {'part': 'S14K300', 'nc': True}}, 'pin2net': {}, 'nets': {}}
+
+    def gated(self, **extra):
+        p, r, db = estimated(**extra)
+        margin_of(r).update(against='R1 额定功率 0.25 W')                            # R1: a known kind (resistor)
+        r, _, errors = derive_rows.derive(p, r)
+        self.assertEqual(errors, [])
+        out = vr.validate_review(p, r, db)
+        return out, [s for s in out['sr_improvements'] if s.get('kind')], (p, r, db)
+
+    def test_a_part_the_classifier_cannot_place_is_a_new_device_kind(self):
+        [signal] = vr.extension_signals({'functions': []}, self.VARISTOR)       # the unfitted RV2 and the resistor are not
+        self.assertEqual((signal['kind'], signal['refs'], signal['clue']), ('NEW_DEVICE_KIND', ['RV1'], 'B72214S0301K101 / S14K300'))
+        self.assertIn('part_words', signal['suggestion'])
+
+    def test_a_known_kind_without_a_cell_is_a_new_bound_cell_and_blocks_nothing(self):
+        out, signals, _ = self.gated()                                              # cell NONE on R1's power
+        self.assertTrue(out['valid'], out['errors'])
+        [cell] = signals
+        self.assertEqual((cell['kind'], cell['function_id'], cell['margin'], cell['device_kinds'], cell['refs']),
+                         ('NEW_BOUND_CELL', 'FN-OTHER', 0, ['resistor'], ['R1']))
+        self.assertFalse(any('NEW_BOUND_CELL' in b for b in out['blockers']))
+
+    def test_a_margin_with_a_table_cell_is_not_signalled(self):
+        _, signals, _ = self.gated(cell='ZENER-VZ-LOWER', method='G8', estimate_factor=1.2)
+        self.assertEqual(signals, [])
+
+    def test_an_unboundable_datum_outside_the_table_is_signalled_too(self):
+        report = {'functions': [{'id': 'FN-X', 'objects': {'refs': ['R1']}, 'open': [
+            {'key': 'K', 'what': 'R1 的脉冲功率', 'worst_case': {'monotonic_tried': {'cell': 'NONE', 'side': 'UPPER'}}}]}]}
+        [signal] = [s for s in vr.extension_signals(report, self.VARISTOR) if s['kind'] == 'NEW_BOUND_CELL']
+        self.assertEqual((signal['function_id'], signal['open'], signal['device_kinds']), ('FN-X', 'K', ['resistor']))
+
+    def test_the_report_lists_the_signals_under_the_sr_feedback_section(self):
+        import render_report
+        out, _, (p, r, db) = self.gated()
+        out['sr_improvements'].extend(vr.extension_signals({'functions': []}, self.VARISTOR))
+        md = render_report.render(p, r, out, {})
+        section = md[md.find('### 器件类别与定界表要扩的'):]
+        self.assertIn('| 词表里没有的器件类别 | RV1 | B72214S0301K101 / S14K300 |', section)
+        self.assertIn('| 有类别、没有格的参数 | R1 | resistor | FN-OTHER 余量[0]：R1 额定功率 0.25 W', section)
+        self.assertLess(md.find('## 对 SR 的反馈'), md.find('### 器件类别与定界表要扩的'))
+
+    def test_a_cell_boundary_feedback_names_its_cell(self):
+        import render_report
+        item = {'kind': 'cell_boundary', 'rules': ['PRO-E01'], 'instance': 'U403 CTR 按 ÷2 判，手册给了 −40..105 °C 的 min',
+                'suggestion': 'OPTO-CTR 的可得性对这个系列是全保证', 'cell': 'OPTO-CTR'}
+        self.assertEqual(render_report.sr_feedback_errors([item]), [])
+        self.assertIn('（格 OPTO-CTR）', '\n'.join(render_report.render_sr_feedback([item])))
+        for bad in ({**item, 'cell': 'NO-SUCH'}, {k: v for k, v in item.items() if k != 'cell'}):
+            self.assertTrue(render_report.sr_feedback_errors([bad]))
+        plain = {k: v for k, v in item.items() if k != 'cell'} | {'kind': 'over_strict'}
+        self.assertEqual(render_report.sr_feedback_errors([plain]), [])
+
+
+class UnobtainableDatumTests(unittest.TestCase):
+    """A VENDOR_DATUM item asking the vendor for a parameter whose cell says the industry does not publish it (full
+    temperature CTR, low-current VZ) is hinted: use the cell's estimate or change the kind (2026-10-26 general rule)."""
+
+    def hints(self, **item):
+        from review_functions import template_hints
+        fn = {'id': 'FN-X', 'open': [dict({'key': 'K', 'kind': 'VENDOR_DATUM', 'what': 'U403 的 CTR 全温保证下界',
+                                             'acquisition': '向 Vishay 索取全温 CTR 下界'}, **item)]}
+        return [h for h in template_hints([fn]) if h['code'] == 'UNOBTAINABLE_DATUM']
+
+    def test_asking_the_vendor_for_an_industry_none_datum_is_hinted(self):
+        [h] = self.hints()
+        self.assertEqual((h['function_id'], h['key'], h['cell']), ('FN-X', 'K', 'OPTO-CTR'))
+        self.assertIn('÷2', h['message'])
+        [h] = self.hints(worst_case={'monotonic_tried': {'cell': 'ZENER-VZ-LOWER', 'side': 'LOWER'}})   # the named cell wins
+        self.assertEqual(h['cell'], 'ZENER-VZ-LOWER')
+
+    def test_a_published_datum_or_a_closable_acquisition_is_not(self):
+        self.assertEqual(self.hints(what='F101 的 I²t 曲线', acquisition='向 Littelfuse 索取 I²t 曲线'), [])   # FUSE-I2T: guaranteed
+        self.assertEqual(self.hints(acquisition='已读 p5 的 25 °C 分档，按典型曲线估算'), [])
+        self.assertEqual(self.hints(kind='DESIGN_VALUE'), [])
 
 
 if __name__ == '__main__':

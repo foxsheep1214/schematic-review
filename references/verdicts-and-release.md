@@ -258,7 +258,8 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 | `prototype_verification` | 接收实物/布局证据，追踪整改 | 只审原理图与外部证据交接，不签署整机、EMC、寿命或生产准出 |
 
 `review-gate.json` 中的工具字段：`valid/errors` 表示记录是否可对账；`workflow.status/current_work_items`
-（由开放项派生，见下）给出本轮先做什么；`release` 是原理图冻结的 GO / CONDITIONAL_GO / NO_GO。
+（由开放项派生，见下）给出本轮先做什么；`release` 是原理图冻结的 GO / CONDITIONAL_GO / NO_GO：
+有错误或阻断项 NO_GO；有按批准接受的 FAIL/INSUFFICIENT，或有按典型值估算判通过的检查项（`estimated_passes`，样机实测确认后才算定）最高 CONDITIONAL_GO；否则 GO。
 `release` 在非冻结阶段也会计算，但**不是本轮总判定**：非冻结阶段的报告展示实际用途下的电气结论、
 必要疑点及集成约束，不因未接受移交或未给完整制造资料就把整个设计标为失败。冻结 NO_GO 也不妨碍继续设计和补证。
 

@@ -4443,5 +4443,82 @@
   "file": "scripts/review_quality.py",
   "old": "        if row.get('derived'):   # a derived row's gap is its open item's: misfiled_items reads the item once\n            continue\n",
   "new": ""
+ },
+ {
+  "id": "M640",
+  "name": "estimate_rule ignores the never-estimate classes",
+  "file": "scripts/catalog.py",
+  "old": "    if bound is None or consequence_class in ESTIMATE_NEVER:\n        return None\n    for e in bound.estimates:",
+  "new": "    if bound is None:\n        return None\n    for e in bound.estimates:"
+ },
+ {
+  "id": "M641",
+  "name": "estimate_passes ignores the cell and keeps the rule-id default",
+  "file": "scripts/function_reading.py",
+  "old": "    if estimate_in_table(basis):\n        return catalog.estimate_rule(basis['cell'], cls) is not None\n    return cls in ESTIMATE_PASS_CLASSES",
+  "new": "    return cls in ESTIMATE_PASS_CLASSES"
+ },
+ {
+  "id": "M642",
+  "name": "the estimate factor is not compared with the cell’s",
+  "file": "scripts/review_functions.py",
+  "old": "and abs(factor - rule.factor) < 1e-9):",
+  "new": "and factor > 0):"
+ },
+ {
+  "id": "M643",
+  "name": "the cell’s margin floor is not enforced",
+  "file": "scripts/review_functions.py",
+  "old": "        elif not (_finite(m.get('value')) and m['value'] >= value):",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M644",
+  "name": "a hazard or core-link class passes on an estimate inside the table",
+  "file": "scripts/review_functions.py",
+  "old": "    cls = basis['consequence_class']\n    if cls in catalog.ESTIMATE_NEVER:",
+  "new": "    cls = basis['consequence_class']\n    if False:"
+ },
+ {
+  "id": "M645",
+  "name": "an estimate pass may keep grade B",
+  "file": "scripts/validate_review.py",
+  "old": "        if checks[cid].get('evidence_confidence') != 'C':\n",
+  "new": "        if checks[cid].get('evidence_confidence') == 'A':\n"
+ },
+ {
+  "id": "M646",
+  "name": "an estimate pass does not cap the release",
+  "file": "scripts/validate_review.py",
+  "old": "return \"CONDITIONAL_GO\" if accepted or estimated else \"GO\"",
+  "new": "return \"CONDITIONAL_GO\" if accepted else \"GO\""
+ },
+ {
+  "id": "M647",
+  "name": "an unknown device kind is not reported",
+  "file": "scripts/validate_review.py",
+  "old": "        if graph.kind(ref) == 'unknown' and not part.get('nc'):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M648",
+  "name": "every margin is a new-cell signal, cell or not",
+  "file": "scripts/validate_review.py",
+  "old": "            if basis.get('cell') != catalog.NO_CELL:\n                continue\n            refs = [r for r in LOCATOR_IDS_RE",
+  "new": "            refs = [r for r in LOCATOR_IDS_RE"
+ },
+ {
+  "id": "M649",
+  "name": "a cell_boundary feedback item needs no real cell",
+  "file": "scripts/render_report.py",
+  "old": "              and (item.get('kind') != 'cell_boundary' or item.get('cell') in catalog.BOUNDS))",
+  "new": "              and True)"
+ },
+ {
+  "id": "M650",
+  "name": "the unobtainable-datum hint ignores the cell’s availability",
+  "file": "scripts/review_functions.py",
+  "old": "            cells = [c for c in named if catalog.BOUNDS[c].availability == 'INDUSTRY_NONE']",
+  "new": "            cells = list(named)"
  }
 ]

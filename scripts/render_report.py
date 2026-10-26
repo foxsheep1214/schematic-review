@@ -20,6 +20,7 @@ import sys
 from collections import Counter, OrderedDict, defaultdict
 from difflib import SequenceMatcher
 from pathlib import Path
+import catalog
 import function_reading
 from review_functions import circuit_functions
 from task_scope import ownership, task_view
@@ -552,7 +553,9 @@ def covered_by_findings(task, checks, findings):
 
 SR_FEEDBACK_KINDS = (('false_alarm', '误报'), ('over_strict', '规则过严或关闭条件不合理'),
                      ('missed', '漏报'), ('unclear', '说明不清或互相矛盾'),
-                     ('software_bug', '已复现的程序错误'), ('coverage_gap', '自动化覆盖或格式适配不足'))
+                     ('software_bug', '已复现的程序错误'), ('coverage_gap', '自动化覆盖或格式适配不足'),
+                     ('cell_boundary', '定界表某一格的边界与手册实际不符'))
+EXTENSION_SIGNALS = {'NEW_DEVICE_KIND': '词表里没有的器件类别', 'NEW_BOUND_CELL': '有类别、没有格的参数'}
 
 
 SR_TALK_RE = re.compile(r'(?<![A-Za-z])SR(?![A-Za-z])|误报|改进效果|quality_screening|提示仍|技能')
@@ -593,14 +596,37 @@ def sr_feedback_errors(items):
     errors = []
     kinds = dict(SR_FEEDBACK_KINDS)
     for i, item in enumerate(items):
-        ok = (isinstance(item, dict) and set(item) == {'kind', 'rules', 'instance', 'suggestion'}
+        fields = {'kind', 'rules', 'instance', 'suggestion'} | ({'cell'} if isinstance(item, dict) and item.get('kind') == 'cell_boundary' else set())
+        ok = (isinstance(item, dict) and set(item) == fields
               and item.get('kind') in kinds and isinstance(item.get('rules'), list) and item['rules']
               and all(isinstance(r, str) and re.match(r'^[A-Z]{3}-[A-Z]\d{2}$', r) for r in item['rules'])
-              and all(isinstance(item.get(k), str) and item[k].strip() for k in ('instance', 'suggestion')))
+              and all(isinstance(item.get(k), str) and item[k].strip() for k in ('instance', 'suggestion'))
+              and (item.get('kind') != 'cell_boundary' or item.get('cell') in catalog.BOUNDS))
         if not ok:
-            errors.append('sr_feedback[%d] needs kind (%s), rule IDs, instance and suggestion'
-                          % (i, '/'.join(kinds)))
+            errors.append('sr_feedback[%d] needs kind (%s), rule IDs, instance and suggestion; a cell_boundary item also '
+                          'names its bounding-table cell' % (i, '/'.join(kinds)))
     return errors
+
+
+def render_extension_signals(signals):
+    """器件类别与定界表要扩的（2026-10-26 决定 0）：审查里遇到了词表没有的器件类别，或有类别却没有格的参数。只告诉 SR
+    维护者要扩表，不改本板结论。"""
+    out = ['### 器件类别与定界表要扩的', '',
+           '下面 %d 条是这块板上 SR 的器件类别词表或定界表没有覆盖的地方；本板的结论按已知的判了，不等这些。'
+           '每条都要扩 SR 自己的表（新类别进词表，新格补齐可得性、允许的估算与倍数、失效后果、样机能否验、边界）。' % len(signals), '',
+           '| 类型 | 位号 | 器件类别 / 线索 | 参数或出处 | 建议 |', '|---|---|---|---|---|']
+    for s in signals:
+        where = s.get('function_id') or ''
+        if 'margin' in s:
+            where += ' 余量[%s]' % s['margin']
+        elif 'open' in s:
+            where += ' 开放项 %s' % s['open']
+        out.append('| %s | %s | %s | %s | %s |' % (
+            EXTENSION_SIGNALS[s['kind']], cell('、'.join(s.get('refs') or [])),
+            cell('、'.join(s.get('device_kinds') or []) or s.get('clue') or ''),
+            cell((where + '：' if where else '') + (s.get('parameter') or '')), cell(s.get('suggestion') or '')))
+    out.append('')
+    return out
 
 
 def render_sr_feedback(items):
@@ -612,7 +638,8 @@ def render_sr_feedback(items):
         rows = [i for i in items if i['kind'] == kind]
         if rows:
             out += ['### ' + label, '']
-            out += ['%d. **%s**：%s 建议：%s' % (n, '、'.join(r['rules']), cell(r['instance']), cell(r['suggestion']))
+            out += ['%d. **%s**：%s 建议：%s' % (n, '、'.join(r['rules']) + ('（格 %s）' % r['cell'] if r.get('cell') else ''),
+                                               cell(r['instance']), cell(r['suggestion']))
                     for n, r in enumerate(rows, 1)]
             out.append('')
     return out
@@ -902,7 +929,10 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
 
     # Everything about SR itself in one folded section, for its maintainers.
     sr = []
-    tool_gaps = gate.get('sr_improvements') or []
+    signals = [t for t in gate.get('sr_improvements') or [] if isinstance(t, dict) and t.get('kind') in EXTENSION_SIGNALS]
+    tool_gaps = [t for t in gate.get('sr_improvements') or [] if isinstance(t, dict) and t not in signals]
+    if signals:
+        sr += render_extension_signals(signals)
     if tool_gaps:
         sr += ['### 工具判断不了、已逐项手工核对的检查', '',
                '下面 %d 条检查，SR 的自动检查工具判断不了，审查时改为逐项对照网表和原厂资料核对，结论按核对结果算。'
