@@ -115,6 +115,9 @@ def downstream_closures(functions, owners):
     return found
 
 
+TASK_TITLE_MAX = 60   # characters; a title is a line of the report's 最先要解决的 3 件事
+
+
 def screen_quality(plan, report, db=None, base_dir=None):
     if isinstance(report, dict):
         report = results_model.expand(report)
@@ -159,6 +162,12 @@ def screen_quality(plan, report, db=None, base_dir=None):
             for cid in task['check_ids']:
                 if isinstance(cid, str):
                     task_owners[cid].add(task['id'])
+        # 5.1 (2026-10-26): the title names the part or loop; it is also the line of 最先要解决的 3 件事 (R7 claude2: 180 字)
+        if isinstance(task, dict) and isinstance(task.get('title'), str) and len(task['title'].strip()) > TASK_TITLE_MAX:
+            candidates.append({'code': 'TASK_TITLE_LONG', 'task_id': task.get('id'), 'check_ids': [],
+                               'length': len(task['title'].strip()),
+                               'message': 'work item title has %d characters (limit %d): name the part or loop and what it lacks, '
+                                          'the details go to root_cause / the open item\'s what' % (len(task['title'].strip()), TASK_TITLE_MAX)})
     for row in report['checks']:
         if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
             continue

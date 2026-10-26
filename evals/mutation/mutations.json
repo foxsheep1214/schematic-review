@@ -4548,5 +4548,54 @@
   "file": "scripts/catalog.py",
   "old": "          'GUARANTEED', (), ('DAMAGE_OR_HAZARD',), _M, '不估算：母线最高持续电压",
   "new": "          'GUARANTEED', (_e(1.2, ('REQUIRED_FUNCTION',), 'x'),), ('DAMAGE_OR_HAZARD',), _M, '不估算：母线最高持续电压"
+ },
+ {
+  "id": "M655",
+  "name": "handoffs naming several parts merge into 每只 rows",
+  "file": "scripts/render_report.py",
+  "old": "                if any(k.count(REF_SLOT) > 1 for k in key):\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M656",
+  "name": "a margin against the same thing with a trailing note is said again",
+  "file": "scripts/render_report.py",
+  "old": "        against = TRAILING_NOTE_RE.sub('', str(m.get('against') or '')).strip()",
+  "new": "        against = str(m.get('against') or '').strip()"
+ },
+ {
+  "id": "M657",
+  "name": "a long calculation result goes into the table whole",
+  "file": "scripts/render_report.py",
+  "old": "        parts.append(result if len(result) <= RESULT_MAX_CHARS else first_sentence(result) + '（其余见台账）')",
+  "new": "        parts.append(result)"
+ },
+ {
+  "id": "M658",
+  "name": "a caption naming its kind is prefixed with the kind again",
+  "file": "scripts/render_report.py",
+  "old": "        said = caption if re.match(r'%s\\s*[：:。]' % re.escape(word), caption) else '%s。%s' % (word, caption)",
+  "new": "        said = '%s。%s' % (word, caption)"
+ },
+ {
+  "id": "M659",
+  "name": "blocks citing one source repeat it on every entry",
+  "file": "scripts/render_report.py",
+  "old": "    if all(parsed) and len({m.group(2).strip() for m in parsed}) == 1:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M660",
+  "name": "a long work-item title is not hinted",
+  "file": "scripts/review_quality.py",
+  "old": "TASK_TITLE_MAX = 60   # characters; a title is a line of the report's 最先要解决的 3 件事",
+  "new": "TASK_TITLE_MAX = 600"
+ },
+ {
+  "id": "M661",
+  "name": "a summary restating the check counts passes",
+  "file": "scripts/render_report.py",
+  "old": "                               r'|\\d+\\s*[项条]\\s*(?:检查|通过|不通过|没通过|资料不|不适用|无关)')   # 数字一览 already has the counts",
+  "new": ")"
  }
 ]

@@ -322,7 +322,9 @@ class ReportTests(unittest.TestCase):
         fn = {'id': frame(plan)['id'], 'question': 'q', 'verdict': 'PASS'}
         text = '\n'.join(render_functions([fn], plan, []))
         self.assertIn('未问：', text)
-        self.assertIn('%s（%s）' % (catalog.title('DRV-C02'), catalog.SUBJECT_PRECONDITIONS['POWER_SWITCH']), text)
+        self.assertIn(catalog.title('DRV-C02'), text)
+        self.assertNotIn(catalog.SUBJECT_PRECONDITIONS['POWER_SWITCH'], text)   # the template reason stays in the plan (5.1)
+        self.assertIn('理由见计划', text)
 
 
 class NotApplicablePassTests(unittest.TestCase):

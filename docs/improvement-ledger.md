@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Step 5.1 rendering the report: the reader's quantities, nothing twice (2026-10-26)
+
+The strict audit of 5.1 (user: "再进 5.1" → "5.1 的 A–G 全部执行") measured the four R7 reports: a 余量或依据 cell of
+2419 characters (a calculation.result narrative plus every margin), one margin printed three times with the notes
+（应力）/（用途）, a question cell listing 32 designators, merged handoff rows reading 每只、每只、每只/每只 表面温度 (the merge
+replaced every designator slot), 图：现状。现状：… (alt and caption both the caption), 第p5 05_Bias_Control页, a finding
+listing 11 check ids, work-item titles of 92/57/108/180 characters that also make the 最先要解决的 3 件事 lines, a
+这个缺口影响哪些判断 bullet of 1486 characters repeating 经 BOM.csv T301 twelve times, claude2's summary restating "515
+项检查中 438 项通过…", and four 未问 lines of 500+ characters of template reasons. The renderer now writes per aspect the
+smallest margin once (`decisive_margins`), a result over 300 characters as its first sentence pointing at the ledger,
+a parenthesised list of more than 8 designators as a count (`short_question`), merges handoff rows only when each field
+has at most one designator slot, prefixes a caption with its kind only when the caption does not name it, prints a
+named page as written (`page_word`), lists at most six items then a count (`listed`: 涉及的检查, 影响哪些判断), says a
+common source once (`fold_blocks`), and lists the not-asked aspects without their template reasons; `screen_quality`
+hints TASK_TITLE_LONG above 60 characters; notes_errors refuses a summary with check counts. Re-rendered R7: longest
+basis cell 2419 → 707/833/929, 每只 garbles 2/0/2/2 → 0, caption repeats 3 → 0, named pages 5 → 0, 未问 584 → 215
+characters; claude2's notes are refused for the counts; the long titles (8/0/16/10) are now hints for the reviewer.
+
+- Event: review:SR-20261025-R7-验收-claude1-660f790/审查报告.md, user:2026-10-26 (5.1 的 A–G 全部执行)
+- Causes: rule_not_enforced 3 (merge by slot, caption prefix, summary counts), judgment 4 (decisive margins, folded lists, not-asked reasons, title length)
+- Changed: SKILL.md, references/report-and-remediation.md, references/architecture.md, docs/2026-10-25-task-loop.md, scripts/render_report.py, scripts/review_quality.py, scripts/tests/test_report_rendering_51.py, scripts/tests/test_figures.py, scripts/tests/test_review_functions.py, scripts/tests/test_subject_requires.py, scripts/tests/fixtures/golden_reports/decisive.md, evals/mutation/mutations.json, evals/mutation/README.md
+- Gates: 2191 unit tests, rule contracts 69/69, KiCad replay 195/195, typical circuits 117/180/14 unchanged, M655–M661 killed from a snapshot; golden decisive.md re-recorded (blocks line: source once)
+
 ## First table extension: ntc and varistor are device kinds (2026-10-26)
 
 The extension signals landed the same day reported, on each of the four R7 records, three NEW_DEVICE_KIND parts: RV101

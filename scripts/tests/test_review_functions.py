@@ -510,7 +510,8 @@ class DeliverablePendingTests(unittest.TestCase):
         p, r, db = ledger(fn)
         out = vr.validate_review(p, r, db)
         section = render(p, r, out).split('### W-AUX-5V-MIN')[1].split('\n## ')[0]
-        self.assertIn('- **这个缺口影响哪些判断**：%s（STARTUP、RUN），经 U1.txt p7 Table 7：启动和运行态 VCC 由辅助绕组经 Q2 供给' % ASPECT, section)
+        self.assertIn('- **这个缺口影响哪些判断**：%s（STARTUP、RUN）：启动和运行态 VCC 由辅助绕组经 Q2 供给' % ASPECT, section)
+        self.assertIn('（出处 U1.txt p7 Table 7）', section)   # one source for every entry: said once (5.1)
 
     def test_the_kind_of_missing_data_is_named(self):
         # Five vendor-data gaps on the R5 bench all had a negative margin under the public bound and read "missing
@@ -567,7 +568,8 @@ class DeliverablePendingTests(unittest.TestCase):
         self.assertTrue(out['valid'], out['errors'])
         section = render(p, r, out).split('### W-HV-IV')[1].split('\n## ')[0]
         self.assertIn('- **公开资料界限下的最坏情况**：按 120 V 测试点下界，40 V 时按线性外推 0.8 mA（界：IHV ≥ 2.4 mA @120 V，U1.txt p7 Table 7）', section)
-        self.assertIn('经 U1.txt p7 Table 7：启动电流决定 VCC 能否在 HV 供电下升过 UVLO', section)
+        self.assertIn('：启动电流决定 VCC 能否在 HV 供电下升过 UVLO', section)
+        self.assertIn('（出处 U1.txt p7 Table 7）', section)
 
     def test_the_report_shows_what_the_verdict_assumed_and_what_closes_it(self):
         fn = bias_function(); fn['open'] = [self.pending()]

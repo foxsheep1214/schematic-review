@@ -307,7 +307,7 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
               ('为什么要紧', [reason]),
               ('按什么假定判的', [task.get('assumed')]),
               ('公开资料界限下的最坏情况', [task.get('worst_case')]),
-              ('这个缺口影响哪些判断', task.get('blocks') or []),
+              ('这个缺口影响哪些判断', fold_blocks(task.get('blocks') or [])),
               ('已查过', read),
               ('还要做', todo),
               ('怎样算通过', criteria)]
@@ -328,6 +328,36 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
 
 
 FIGURE_WORDS = {'ACTUAL': '现状', 'REFERENCE': '原厂参考', 'AFTER': '改后', 'MECHANISM': '失效过程'}
+LISTED_MAX = 6
+
+
+def listed(items, unit):
+    """Up to LISTED_MAX items in full, the rest as a count (a finding in R7 listed 11 check ids)."""
+    items = [i for i in items if i]
+    if len(items) <= LISTED_MAX:
+        return '、'.join(items)
+    return '、'.join(items[:LISTED_MAX]) + '等 %d %s' % (len(items), unit)
+
+
+def page_word(page):
+    """第5页 for a page number; a page named by the record (p5 05_Bias_Control) is printed as written."""
+    text = str(page).strip()
+    return '第%s页' % text if re.fullmatch(r'\d+', text) else text
+
+
+BLOCK_RE = re.compile(r'^(.*?)，经 ([^：]+)：(.*)$', re.S)
+
+
+def fold_blocks(blocks):
+    """这个缺口影响哪些判断: the source said once when every entry cites the same one, at most LISTED_MAX entries
+    (a R7 work item carried 12 entries of 1155 characters, each repeating 经 BOM.csv T301)."""
+    parsed = [BLOCK_RE.match(b) for b in blocks if isinstance(b, str) and b.strip()]
+    if not blocks:
+        return []
+    if all(parsed) and len({m.group(2).strip() for m in parsed}) == 1:
+        entries = ['%s：%s' % (m.group(1).strip(), m.group(3).strip()) for m in parsed]
+        return [listed(entries, '项') + '（出处 %s）' % parsed[0].group(2).strip()]
+    return [listed([b for b in blocks if isinstance(b, str) and b.strip()], '项')]
 
 
 def render_estimated_passes(items):
@@ -364,8 +394,9 @@ def render_figures(figures):
             continue
         caption = cell(f.get('caption') or '')
         alt = re.sub(r'[\[\]()]', '', caption).strip()   # brackets would end the image's alt text or link early
-        lines += ['', '![%s](%s/evidence/%s)' % (alt, 'record', f['source'].strip()),
-                  '', '图：%s。%s' % (FIGURE_WORDS.get(f.get('kind'), '示意'), caption), '']
+        word = FIGURE_WORDS.get(f.get('kind'), '示意')
+        said = caption if re.match(r'%s\s*[：:。]' % re.escape(word), caption) else '%s。%s' % (word, caption)
+        lines += ['', '![%s](%s/evidence/%s)' % (alt, 'record', f['source'].strip()), '', '图：' + said, '']
     return lines
 
 
@@ -379,13 +410,55 @@ def _shown(value):
     return value
 
 
+RESULT_MAX_CHARS = 300          # a calculation.result longer than this is a narrative: the table shows its first sentence
+QUESTION_REFS_MAX = 8           # a parenthesised list of more designators than this reads as a count
+TRAILING_NOTE_RE = re.compile(r'（[^（）]*）\s*$')
+
+
+def first_sentence(text):
+    m = re.search(r'[。；;]', text)
+    return text[:m.start() + 1] if m and m.start() + 1 < len(text) else text
+
+
+def decisive_margins(calc):
+    """The margins a reader needs: per aspect the smallest one in each unit (the one that decided), and one line per
+    distinct comparison — an against that differs only by a trailing note （应力）/（用途） is the same comparison
+    (R7 claude reports said 余量 136 Vac 对 CY301 Y1 400 Vac three times in one cell)."""
+    smallest = {}
+    for m in function_reading.margins(calc):
+        key = (m.get('aspect'), (m.get('unit') or '').strip())
+        if key not in smallest or (isinstance(m['value'], (int, float)) and isinstance(smallest[key]['value'], (int, float))
+                                   and m['value'] < smallest[key]['value']):
+            smallest[key] = m
+    out, seen = [], set()
+    for m in smallest.values():
+        against = TRAILING_NOTE_RE.sub('', str(m.get('against') or '')).strip()
+        line = '余量 %s 对 %s' % (('%s %s' % (_shown(m['value']), m.get('unit') or '')).strip(), against)
+        if line not in seen:
+            seen.add(line)
+            out.append(line)
+    return out
+
+
+def short_question(text):
+    """The function's question with a long designator list shown as a count (codex1 listed 32 parts in one cell)."""
+    def collapse(m):
+        refs = [x for x in re.split(r'[、,，\s]+', m.group(1)) if x]
+        if len(refs) > QUESTION_REFS_MAX and all(re.fullmatch(r'[A-Za-z]{1,4}\d{1,4}[A-Za-z]?', x) for x in refs):
+            return '（%d 个器件）' % len(refs)
+        return m.group(0)
+    return re.sub(r'（([^（）]+)）', collapse, str(text or ''))
+
+
 def function_basis(fn):
-    """What the verdict rests on: the computed result and its margin, else why nothing was computed."""
+    """What the verdict rests on: the computed result (its first sentence when it runs long) and the decisive
+    margins, else why nothing was computed."""
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
-    parts = [calc.get('result')] if calc.get('result') else []
-    for margin in function_reading.margins(calc):   # one margin written per aspect is stated once
-        parts.append('余量 %s 对 %s' % (('%s %s' % (_shown(margin['value']), margin.get('unit') or '')).strip(),
-                                       margin.get('against') or ''))
+    parts = []
+    if calc.get('result'):
+        result = str(calc['result']).strip()
+        parts.append(result if len(result) <= RESULT_MAX_CHARS else first_sentence(result) + '（其余见台账）')
+    parts += decisive_margins(calc)
     parts = unique(parts)
     if not parts and fn.get('no_calculation_reason'):
         parts.append(fn['no_calculation_reason'])
@@ -404,7 +477,7 @@ def function_row(fn, effective=None):
     verdict, delegated = effective or (fn.get('verdict'), [])
     ids = unique([results_model.work_item_id(i['key']) for i in items if isinstance(i.get('key'), str)] + delegated)
     return '| %s | %s | %s | %s | %s |' % (
-        cell(fn.get('id', '')), cell(fn.get('question') or ''),
+        cell(fn.get('id', '')), cell(short_question(fn.get('question'))),
         VERDICT_WORDS.get(verdict, cell(verdict or '')),
         cell(function_basis(fn)), cell('、'.join(ids)) or '—')
 
@@ -439,11 +512,11 @@ def not_asked_lines(plan):
     for frame in (plan or {}).get('functions') or []:
         items = [i for i in (frame.get('not_asked') or []) if isinstance(i, dict)] if isinstance(frame, dict) else []
         if items:
-            lines.append('- %s 未问：%s' % (frame.get('id'), '；'.join(
-                '%s（%s）' % (i.get('aspect') or i.get('rule'), i.get('why') or '') for i in items)))
+            lines.append('- %s 未问：%s' % (frame.get('id'), '、'.join(unique(str(i.get('aspect') or i.get('rule') or '') for i in items))))
     if not lines:
         return []
-    return ['电路里没有它问的机制、计划没有问的电路规则（漏问的经 intent.rule_gaps 补回）：', ''] + lines + ['']
+    # the reasons are the plan's templates (电路里没有 MOSFET 或 BJT …): they stay in review-plan.json
+    return ['电路里没有它问的机制、计划没有问的电路规则（理由见计划；漏问的经 intent.rule_gaps 补回）：', ''] + lines + ['']
 
 
 def gap_subclass_counts(results, gaps):
@@ -563,7 +636,8 @@ SR_TALK_RE = re.compile(r'(?<![A-Za-z])SR(?![A-Za-z])|误报|改进效果|qualit
 # (a delivered summary: "已逐条复核…条记录质量提示；…条位号与数值粘连已修复…history-handling.json…first").
 # The summary adds what the first line cannot: what changed and what to do first. The verdict and
 # how the review was run are not news (a delivered summary: "本次使用SR…重新导出、逐页读图和复算。当前仍不能定稿…").
-SUMMARY_REPEAT_RE = re.compile(r'不能定稿|可以定稿|能否定稿|重新导出|逐页读图|重新审查|本轮复核')
+SUMMARY_REPEAT_RE = re.compile(r'不能定稿|可以定稿|能否定稿|重新导出|逐页读图|重新审查|本轮复核'
+                               r'|\d+\s*[项条]\s*(?:检查|通过|不通过|没通过|资料不|不适用|无关)')   # 数字一览 already has the counts
 RECORD_TALK_RE = re.compile(r'质量提示|自检提示|粘连|\.json(?![A-Za-z])|REQ-H0\d|(?<![A-Za-z])(?:first|revision)(?![A-Za-z])')
 
 
@@ -581,8 +655,8 @@ def notes_errors(notes):
             errors.append('%s talks about keeping the review record (%s); the designer-facing text stays about the board, '
                           'the record and its screens speak for themselves' % (where, RECORD_TALK_RE.search(text).group(0)))
         elif where == 'summary' and isinstance(text, str) and SUMMARY_REPEAT_RE.search(text):
-            errors.append('summary repeats the verdict or describes how the review was run (%s); the first line already '
-                          'says whether it can be frozen, the summary says what changed and what to do first'
+            errors.append('summary repeats the verdict, the check counts or how the review was run (%s); the first line '
+                          'and 数字一览 already say those, the summary says what changed and what to do first'
                           % SUMMARY_REPEAT_RE.search(text).group(0))
     return errors
 
@@ -840,7 +914,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             if item_notes.get(f.get('id')):
                 out += [item_notes[f['id']], '']
             where = f.get('location') or {}
-            place = '、'.join(('第%s页' % x) for x in where.get('pages') or []) + \
+            place = '、'.join(page_word(x) for x in where.get('pages') or []) + \
                 ('　' + '、'.join(where.get('refs') or []) if where.get('refs') else '')
             if place:
                 out.append('- **位置**：%s' % place)
@@ -856,9 +930,8 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                                  ('怎么改', f.get('recommendation')),
                                  ('改的目的', fix.get('purpose') if not same_text(fix.get('purpose'), f.get('title')) else None),
                                  ('改完怎么验证', f.get('verification')),
-                                 ('涉及的检查', '、'.join(
-                                     '%s（%s）' % (k, RESULT_SHORT.get((checks.get(k) or {}).get('review_result'), '记录中没有'))
-                                     for k in f.get('check_ids') or []))):
+                                 ('涉及的检查', listed(['%s（%s）' % (k, RESULT_SHORT.get((checks.get(k) or {}).get('review_result'), '记录中没有'))
+                                                     for k in f.get('check_ids') or []], '条检查'))):
                 if value:
                     out.append('- **%s**：%s' % (label, value))
             for step in fix.get('steps') or []:
@@ -909,6 +982,10 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                 h = c['handoff']
                 where = unique(anchors((planned.get(c['id']) or {}).get('object')))
                 key = tuple(generic(h.get(f) or '', where) for f in ('constraint', 'verification'))
+                if any(k.count(REF_SLOT) > 1 for k in key):
+                    # a requirement naming several parts cannot be read with every one replaced by 每只
+                    # (R7: "每只、每只、每只/每只 表面温度"): only identical texts share a row
+                    key = tuple(h.get(f) or '' for f in ('constraint', 'verification'))
                 same.setdefault(key, []).append((c, where))
             for (constraint, verification), group in same.items():
                 ids = [c['id'] for c, _ in group]

@@ -114,7 +114,7 @@ class ReportTests(unittest.TestCase):
         text = render(p, r, validate_review(p, r, db, require_actionable=True))
         section = text.split('## 待办')[1]
         self.assertIn('](record/evidence/figures/W-after.png)', section)
-        self.assertIn('图：改后。改后：从稳压轨经肖特基供电', section)
+        self.assertIn('图：改后：从稳压轨经肖特基供电', section)   # the caption names its kind: not prefixed again (5.1)
 
 
 class RootCauseWordingTests(unittest.TestCase):

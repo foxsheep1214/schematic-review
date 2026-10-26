@@ -415,7 +415,11 @@ REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
 - 按典型值估算判通过的检查由门禁的 `estimated_passes` 渲染成“按典型值估算的结论”一节（功能、格、怎么估、余量、样机要测、涉及检查），结论段和数字一览各带一句；
   器件类别词表或定界表没覆盖的（`sr_improvements` 的 NEW_DEVICE_KIND / NEW_BOUND_CELL）渲染在“对 SR 的反馈”下“器件类别与定界表要扩的”，只告诉 SR 维护者要扩表。
 
-做完的标志：`notes.json` 的 summary、items、sr_feedback 用白话且都进了报告；报告里的相对链接都能打开。
+- 渲染只写读者要的量（5.1 审核 2026-10-26）：功能表每个方面只写决定性余量、`calculation.result` 超 300 字只取第一句、问题里超过 8 个位号写个数；
+  交给后续环节的要求只在每个字段至多一个位号槽时合并成"每只"一行；图说不重复 caption 的"现状/改后"；"涉及的检查"和"影响哪些判断"超过 6 条写个数；
+  "未问"段只列方面名。待办标题超过 60 字出 TASK_TITLE_LONG 提示（标题点名器件或环路，细节放缺什么）；summary 复述检查计数与复述"能否定稿"一样被拒。
+做完的标志：`notes.json` 的 summary、items、sr_feedback 用白话且都进了报告（summary 不带检查计数）；报告里的相对链接都能打开；
+TASK_TITLE_LONG 提示每条处置过；报告里没有"每只、每只"串接、图说不重复。
 
 #### 5.2 打包与交付
 
