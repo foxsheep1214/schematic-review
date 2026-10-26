@@ -125,10 +125,10 @@ SHARED_GAP_HEADING = '### 示例：一个缺口被多条检查共享'
 
 
 def shared_gap_example():
-    """The JSON block right after the shared-gap heading in plan-and-results.md."""
+    """The JSON block right after the shared-gap heading in results-format.md."""
     import json
     import re
-    text = (SCRIPTS.parent / 'references' / 'plan-and-results.md').read_text(encoding='utf-8')
+    text = (SCRIPTS.parent / 'references' / 'results-format.md').read_text(encoding='utf-8')
     _, found, rest = text.partition(SHARED_GAP_HEADING)
     match = re.search(r'```json\n(.*?)\n```', rest, re.S) if found else None
     return json.loads(match.group(1)) if match else None

@@ -1,4 +1,4 @@
-"""The JSON examples of references/plan-and-results.md pass the gates they illustrate (SR self-check of 2026-10-24, 1.4).
+"""The JSON examples of the intent, plan and results format references pass the gates they illustrate (SR self-check of 2026-10-24, 1.4).
 
 A reviewer copies the examples; one the gate refuses teaches the wrong format. Placeholder paths and digests are the
 only errors the intent example may raise, and its circuit decisions derive against a candidate file.
@@ -16,13 +16,14 @@ from review_functions import function_errors
 from review_workflow import design_option
 from test_circuit_decisions import accept_all, setup
 
-DOC = Path(__file__).resolve().parents[2] / 'references' / 'plan-and-results.md'
+REFERENCES = Path(__file__).resolve().parents[2] / 'references'
+DOCS = [REFERENCES / name for name in ('intent-format.md', 'plan-format.md', 'results-format.md', 'gate-and-rerun.md')]
 PLACEHOLDERS = ('不存在', 'is not readable', 'input_sha256 is required', 'pass the candidate file')
 
 
 def examples():
     found = []
-    for block in re.findall(r'```json\n(.*?)```', DOC.read_text(encoding='utf-8'), re.S):
+    for block in re.findall(r'```json\n(.*?)```', '\n'.join(d.read_text(encoding='utf-8') for d in DOCS), re.S):
         try:
             found.append(json.loads(block))
         except ValueError:

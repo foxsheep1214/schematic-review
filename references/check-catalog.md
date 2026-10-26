@@ -1,10 +1,10 @@
 # 检查规则总表
 
-> 读者：审查员（规则登记在 scripts/catalog.py，改规则的维护者也读）。
+> 读者：SR 维护者（规则登记在 scripts/catalog.py；审查员要写的名字见 review-vocabulary.md 三张表）。
 
 本文是审查规则的唯一编号表。下半部分表格由 [`scripts/catalog.py`](../scripts/catalog.py) 生成；
 改规则只改 `catalog.py`，再运行 `python3 scripts/catalog.py --write-doc references/check-catalog.md`，
-测试会拒绝两者不一致。规则目的与适用边界先对照 [审查要点](review-charter.md)。
+测试会拒绝两者不一致。审查员在 intent 里要写的功能电路、器件角色、需求类别三张表另由同一命令写到 [审查词表](review-vocabulary.md)。规则目的与适用边界先对照 [审查要点](review-charter.md)。
 
 ## 编号怎么读
 
@@ -12,7 +12,7 @@
   内容域回答“查什么”，方式回答“怎么查”。在用编号不改；新规则接在所在组最大序号之后，组内序号可能有空缺。
 - 计划项 ID 为 `规则编号[.实例键].锚点`，例如 `RST-T02.U3.SYS-RST-N`。审查员要补的检查登记在 `intent.rule_gaps`，
   计划工具写成 `REVIEWER_ADDED` 检查项，ID 为 `规则编号.GAP-<缺口编号>.锚点`，如 `PWR-T05.GAP-Q7-REVERSE.Q7`。每个计划项带 `rule`、`method`、`domain`，合并计划和校验结果时逐项核对。
-- 格式版本（`schema_version`）：intent 4、计划 7、结果 6、电路候选 2；版本不符的文件按当前总表重新生成。
+- 格式版本（`schema_version`）：intent 4、计划 7、结果 7、电路候选 2；版本不符的文件按当前总表重新生成。
 - 内容域和方式只是编号的拼法，不是审查的顺序：审查流程（五个步骤）和审查员沿着走的功能树见 [SKILL.md 架构](../SKILL.md#架构)，
   步骤间文件和脚本归属见 [架构说明](architecture.md)。
 
@@ -571,7 +571,7 @@
 
 ## 功能电路
 
-电路由电路候选与 `intent.circuit_decisions` 推出；名称命中只生成 UNDETERMINED 候选。推出的电路或已确认拓扑使功能电路适用，再生成 REQ-Q07 覆盖项与电路检查项，逐项再核实际用途。未检出的功能电路汇总到一项 REQ-Q08 确认；`features` 里的 NOT_APPLICABLE 声明不生成检查项，只作 REQ-Q08 那一项的依据。分立 MOSFET 电平转换器没有名称线索，候选没检出时写 add 决定（在 I²C 等总线上则并入该总线电路），转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划与结果台账](plan-and-results.md)。
+电路由电路候选与 `intent.circuit_decisions` 推出；名称命中只生成 UNDETERMINED 候选。推出的电路或已确认拓扑使功能电路适用，再生成 REQ-Q07 覆盖项与电路检查项，逐项再核实际用途。未检出的功能电路汇总到一项 REQ-Q08 确认；`features` 里的 NOT_APPLICABLE 声明不生成检查项，只作 REQ-Q08 那一项的依据。分立 MOSFET 电平转换器没有名称线索，候选没检出时写 add 决定（在 I²C 等总线上则并入该总线电路），转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划格式](plan-format.md)。
 
 | 功能电路 | 名称 | 内容域 | 电路检查项 | 必需资料 | 检出特征（正则） |
 |---|---|---|---|---|---|

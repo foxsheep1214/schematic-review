@@ -89,6 +89,15 @@ class CatalogTest(unittest.TestCase):
         self.assertEqual(catalog.render_doc(text), text,
                          'run: python3 scripts/catalog.py --write-doc references/check-catalog.md')
 
+    def test_reviewer_vocabulary_matches_catalog(self):
+        path = ROOT / 'references' / 'review-vocabulary.md'
+        text = path.read_text(encoding='utf-8')
+        self.assertEqual(catalog.render_doc(text), text,
+                         'run: python3 scripts/catalog.py --write-doc references/review-vocabulary.md')
+        for title in ('## 功能电路', '## 器件角色', '## 需求类别与审查方面'):
+            self.assertIn(title, text)
+        self.assertNotIn('## 覆盖维度', text)
+
     def test_summary_and_coverage_rules_are_coverage_audits(self):
         rules = ['REQ-Q07', 'REQ-Q08'] + list(catalog.COVERAGE_RULES.values())
         self.assertEqual({catalog.method_of(rule) for rule in rules}, {'Q'})

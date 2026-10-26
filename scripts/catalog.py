@@ -7,7 +7,7 @@
 删除的编号不再登记。计划、Lint、证据校验、结果校验与文档规则表都从这里取规则，不另写副本。
 
     python3 catalog.py                     打印规则总表（Markdown）
-    python3 catalog.py --write-doc PATH    重写文档标记区间内的规则总表（references/bounding-table.md 写定界表）
+    python3 catalog.py --write-doc PATH    重写文档标记区间内的规则总表（references/bounding-table.md 写定界表，references/review-vocabulary.md 写审查词表）
     python3 catalog.py --check-doc PATH    文档与本表不一致时退出 1
 """
 import argparse
@@ -2131,6 +2131,87 @@ def _cell(text):
     return str(text).replace('|', '\\|').replace('\n', ' ')
 
 
+def _vocabulary_lines():
+    """The three name tables a reviewer writes into intent.json (references/review-vocabulary.md): circuit
+    types, device roles, requirement categories, aspects and parameters. The rule table carries them too."""
+    lines = []
+    lines += ['', '## 功能电路', '',
+              '电路由电路候选与 `intent.circuit_decisions` 推出；名称命中只生成 UNDETERMINED 候选。推出的电路或已确认拓扑'
+              '使功能电路适用，再生成 REQ-Q07 覆盖项与电路检查项，逐项再核实际用途。未检出的功能电路汇总到一项 REQ-Q08 确认；'
+              '`features` 里的 NOT_APPLICABLE 声明不生成检查项，只作 REQ-Q08 那一项的依据。'
+              '分立 MOSFET 电平转换器没有名称线索，候选没检出时写 add 决定（在 I²C 等总线上则并入该总线电路），'
+              '转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划格式](plan-format.md)。', '',
+              '| 功能电路 | 名称 | 内容域 | 电路检查项 | 必需资料 | 检出特征（正则） |',
+              '|---|---|---|---|---|---|']
+    for p in CIRCUIT_TYPES:
+        lines.append('| %s | %s | %s | %s | %s | `%s` |' % (
+            p.name, p.title, p.domain, '、'.join(p.subjects), '、'.join(p.materials), _cell(p.pattern)))
+    lines += ['', '下表的电路检查项只在网表上有它问的机制时生成，检查项对象取前提找到的器件；前提不成立的规则记在功能框架的 '
+              '`not_asked`，报告在功能下列“未问”。网表说不清（器件类别未知、IC 没有脚名）时照问；漏问的可经 '
+              '`intent.rule_gaps` 补回。', '',
+              '| 功能电路 | 电路检查项 | 前提 | 不成立时 |', '|---|---|---|---|']
+    for (name, rule), requires in SUBJECT_REQUIRES.items():
+        lines.append('| %s | %s | %s | %s |' % (name, rule, requires, SUBJECT_PRECONDITIONS[requires]))
+    lines += ['', '## 器件角色', '',
+              '集成电路在 `intent.device_kinds` 声明手册标题给出的角色（`audit_datasheets.py --intent` 用标题词核验原文），'
+              '角色决定它作核心器件时生成哪些电路候选；泛称 `ic` 只在标题不含任何角色词时可写，计划把每个 `ic` 列成 '
+              '`DEVICE_KIND_GENERIC` 诊断（不生成电路候选），这张清单是下一批角色的来源。加角色只改 `catalog.DEVICE_ROLES` 一行：'
+              '标题词、靶的电路类型、走哪些脚。', '',
+              '| 角色 | 名称 | 手册标题词（去空格小写的子串） | 作核心器件生成的电路 | ANALOG 走线从哪些脚出发 |', '|---|---|---|---|---|']
+    for name, role in DEVICE_ROLES.items():
+        lines.append('| `%s` | %s | %s | %s | %s |' % (
+            name, role.title, '、'.join(role.cues) or '—', '、'.join(role.circuits) or '不作核心器件',
+            {'sense': '检测脚', 'all': '全部信号脚'}[role.pins] if 'ANALOG' in role.circuits else '—'))
+    lines += ['', '接口电路（%s）的走线总是从核心器件的全部信号脚出发走两跳，到达的网上的连接器作成员。' % '、'.join(INTERFACE_TYPES)]
+    lines += ['', '一个角色能靶多种接口电路（上表 transceiver、memory）时，按下表从手册标题挑第一个命中的类型，都不命中记候选缺口 '
+              '`role-bus`，由审查员写 `circuit_decisions` add。', '',
+              '| 接口电路 | 标题里的词（正则） |', '|---|---|']
+    for name, pattern in BUS_CUES.items():
+        lines.append('| %s | `%s` |' % (name, _cell(pattern.pattern)))
+    lines += ['', '## 需求类别与审查方面', '',
+              '每条需求分解成审查方面，计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。分解的单位是需求里的量：'
+              '带参数的方面由 `requirements[].parameters` 里有没有这个参数决定，有就问，不管选了哪些类别；'
+              '不带参数的方面由类别决定。一条需求一个参数都没写时，才按类别问全部方面，计划同时列出原文里没读进参数的带单位数字'
+              '（`REQUIREMENT_NUMBERS_UNREAD`）。类别拿不准就多选：多出的不带参数的方面判 NA 要写依据，少选是漏查。', '',
+              '| 类别 | 名称 | 怎么选 | 审查方面 | 落到 |', '|---|---|---|---|---|']
+    for key, category in REQUIREMENT_CATEGORIES.items():
+        lines.append('| %s | %s | %s | %s | %s |' % (key, category.name, category.when, '、'.join(
+            '%s %s' % (a, REQUIREMENT_ASPECTS[a].name) for a in category.aspects), category.targets))
+    lines += ['', '方面有树上的检查承担时，需求检查项绑定这些规则的检查项（需求 `owners` 点名的电路、接口、系统功能拥有的检查项；'
+              '没写 `owners` 时，全板方面绑定全板这些规则的检查项），结论取绑定检查项中最差者，需求检查项不再另判；'
+              '没有检查承担的方面由需求检查项自己判。', '',
+              '需求的承接电路写在 `owners`（落实这条需求的功能电路；系统功能和接口也可以承接）。计划替每条需求找出可承接的电路：'
+              '下表“可承接的电路”列出的电路类型、系统功能和接口种类里，拥有承担该方面的检查项的那些；表外的所属不算。'
+              '有可承接的电路而没写 owners 的需求，计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []` 加能定位的 `no_owner_reason`，需求检查项自判。', '',
+              '| 审查方面 | 何时问 | 判据模板 | 承担的检查 | 可承接的电路 |', '|---|---|---|---|---|']
+    for key, aspect in REQUIREMENT_ASPECTS.items():
+        carried = '、'.join(ASPECT_RULES.get(key, ())) or '需求检查项自判'
+        asked = '原文有 ' + ' / '.join(aspect.parameters) if aspect.parameters else '类别选中'
+        if key in BOARD_ASPECTS:
+            owners = '全板，不要求 owners'
+        elif key in ASPECT_OWNER_TYPES:
+            cell = ASPECT_OWNER_TYPES[key]
+            owners = '；'.join(part for part in (
+                '电路 ' + '、'.join(cell.circuits) if cell.circuits else '',
+                '系统功能 ' + '、'.join(cell.systems) if cell.systems else '',
+                '接口 ' + '、'.join(cell.interfaces) if cell.interfaces else '') if part)
+        else:
+            owners = '—'
+        lines.append('| %s %s | %s | %s | %s%s | %s |' % (key, aspect.name, asked, _cell(aspect.template), carried,
+                                                          '（全板）' if key in BOARD_ASPECTS else '', owners))
+    lines += ['', '需求里的数字读进 `requirements[].parameters`（`name`、`min`/`max`、`unit`、`condition`）；'
+              '每个数字须在该条原文里出现，条件须是原文里的一段，数值按下表换算到规范单位。', '',
+              '| 参数 | 名称 | 规范单位 | 可写单位 | 问的方面 |', '|---|---|---|---|---|']
+    for key, parameter in REQUIREMENT_PARAMETERS.items():
+        lines.append('| %s | %s | %s | %s | %s |' % (key, parameter.title, parameter.unit, '、'.join(parameter.units),
+                                                   '、'.join(PARAMETER_ASPECTS[key])))
+    return lines
+
+
+def render_vocabulary_markdown():
+    return '\n'.join(_vocabulary_lines()).lstrip('\n') + '\n'
+
+
 def render_markdown():
     lines = ['## 审查要点与规则归属', '',
              '目的与取舍见 [审查要点](review-charter.md)。每条在用规则有一个主审查要点，跨域约束仍按判据与 HANDOFF 处理。',
@@ -2199,76 +2280,7 @@ def render_markdown():
                      value.get('inputs') or '—', value.get('false_alarms') or '—')
             lines.append('| ' + ' | '.join(_cell(v) for v in cells) + ' |')
         lines.append('')
-    lines += ['', '## 功能电路', '',
-              '电路由电路候选与 `intent.circuit_decisions` 推出；名称命中只生成 UNDETERMINED 候选。推出的电路或已确认拓扑'
-              '使功能电路适用，再生成 REQ-Q07 覆盖项与电路检查项，逐项再核实际用途。未检出的功能电路汇总到一项 REQ-Q08 确认；'
-              '`features` 里的 NOT_APPLICABLE 声明不生成检查项，只作 REQ-Q08 那一项的依据。'
-              '分立 MOSFET 电平转换器没有名称线索，候选没检出时写 add 决定（在 I²C 等总线上则并入该总线电路），'
-              '转换管在 `intent.power_switches` 中声明为 `role: "level_shifter"`，见 [计划与结果台账](plan-and-results.md)。', '',
-              '| 功能电路 | 名称 | 内容域 | 电路检查项 | 必需资料 | 检出特征（正则） |',
-              '|---|---|---|---|---|---|']
-    for p in CIRCUIT_TYPES:
-        lines.append('| %s | %s | %s | %s | %s | `%s` |' % (
-            p.name, p.title, p.domain, '、'.join(p.subjects), '、'.join(p.materials), _cell(p.pattern)))
-    lines += ['', '下表的电路检查项只在网表上有它问的机制时生成，检查项对象取前提找到的器件；前提不成立的规则记在功能框架的 '
-              '`not_asked`，报告在功能下列“未问”。网表说不清（器件类别未知、IC 没有脚名）时照问；漏问的可经 '
-              '`intent.rule_gaps` 补回。', '',
-              '| 功能电路 | 电路检查项 | 前提 | 不成立时 |', '|---|---|---|---|']
-    for (name, rule), requires in SUBJECT_REQUIRES.items():
-        lines.append('| %s | %s | %s | %s |' % (name, rule, requires, SUBJECT_PRECONDITIONS[requires]))
-    lines += ['', '## 器件角色', '',
-              '集成电路在 `intent.device_kinds` 声明手册标题给出的角色（`audit_datasheets.py --intent` 用标题词核验原文），'
-              '角色决定它作核心器件时生成哪些电路候选；泛称 `ic` 只在标题不含任何角色词时可写，计划把每个 `ic` 列成 '
-              '`DEVICE_KIND_GENERIC` 诊断（不生成电路候选），这张清单是下一批角色的来源。加角色只改 `catalog.DEVICE_ROLES` 一行：'
-              '标题词、靶的电路类型、走哪些脚。', '',
-              '| 角色 | 名称 | 手册标题词（去空格小写的子串） | 作核心器件生成的电路 | ANALOG 走线从哪些脚出发 |', '|---|---|---|---|---|']
-    for name, role in DEVICE_ROLES.items():
-        lines.append('| `%s` | %s | %s | %s | %s |' % (
-            name, role.title, '、'.join(role.cues) or '—', '、'.join(role.circuits) or '不作核心器件',
-            {'sense': '检测脚', 'all': '全部信号脚'}[role.pins] if 'ANALOG' in role.circuits else '—'))
-    lines += ['', '接口电路（%s）的走线总是从核心器件的全部信号脚出发走两跳，到达的网上的连接器作成员。' % '、'.join(INTERFACE_TYPES)]
-    lines += ['', '一个角色能靶多种接口电路（上表 transceiver、memory）时，按下表从手册标题挑第一个命中的类型，都不命中记候选缺口 '
-              '`role-bus`，由审查员写 `circuit_decisions` add。', '',
-              '| 接口电路 | 标题里的词（正则） |', '|---|---|']
-    for name, pattern in BUS_CUES.items():
-        lines.append('| %s | `%s` |' % (name, _cell(pattern.pattern)))
-    lines += ['', '## 需求类别与审查方面', '',
-              '每条需求分解成审查方面，计划按（需求，方面）各生成一项 REQ-D01，判据取方面模板。分解的单位是需求里的量：'
-              '带参数的方面由 `requirements[].parameters` 里有没有这个参数决定，有就问，不管选了哪些类别；'
-              '不带参数的方面由类别决定。一条需求一个参数都没写时，才按类别问全部方面，计划同时列出原文里没读进参数的带单位数字'
-              '（`REQUIREMENT_NUMBERS_UNREAD`）。类别拿不准就多选：多出的不带参数的方面判 NA 要写依据，少选是漏查。', '',
-              '| 类别 | 名称 | 怎么选 | 审查方面 | 落到 |', '|---|---|---|---|---|']
-    for key, category in REQUIREMENT_CATEGORIES.items():
-        lines.append('| %s | %s | %s | %s | %s |' % (key, category.name, category.when, '、'.join(
-            '%s %s' % (a, REQUIREMENT_ASPECTS[a].name) for a in category.aspects), category.targets))
-    lines += ['', '方面有树上的检查承担时，需求检查项绑定这些规则的检查项（需求 `owners` 点名的电路、接口、系统功能拥有的检查项；'
-              '没写 `owners` 时，全板方面绑定全板这些规则的检查项），结论取绑定检查项中最差者，需求检查项不再另判；'
-              '没有检查承担的方面由需求检查项自己判。', '',
-              '需求的承接电路写在 `owners`（落实这条需求的功能电路；系统功能和接口也可以承接）。计划替每条需求找出可承接的电路：'
-              '下表“可承接的电路”列出的电路类型、系统功能和接口种类里，拥有承担该方面的检查项的那些；表外的所属不算。'
-              '有可承接的电路而没写 owners 的需求，计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []` 加能定位的 `no_owner_reason`，需求检查项自判。', '',
-              '| 审查方面 | 何时问 | 判据模板 | 承担的检查 | 可承接的电路 |', '|---|---|---|---|---|']
-    for key, aspect in REQUIREMENT_ASPECTS.items():
-        carried = '、'.join(ASPECT_RULES.get(key, ())) or '需求检查项自判'
-        asked = '原文有 ' + ' / '.join(aspect.parameters) if aspect.parameters else '类别选中'
-        if key in BOARD_ASPECTS:
-            owners = '全板，不要求 owners'
-        elif key in ASPECT_OWNER_TYPES:
-            cell = ASPECT_OWNER_TYPES[key]
-            owners = '；'.join(part for part in (
-                '电路 ' + '、'.join(cell.circuits) if cell.circuits else '',
-                '系统功能 ' + '、'.join(cell.systems) if cell.systems else '',
-                '接口 ' + '、'.join(cell.interfaces) if cell.interfaces else '') if part)
-        else:
-            owners = '—'
-        lines.append('| %s %s | %s | %s | %s%s | %s |' % (key, aspect.name, asked, _cell(aspect.template), carried,
-                                                          '（全板）' if key in BOARD_ASPECTS else '', owners))
-    lines += ['', '需求里的数字读进 `requirements[].parameters`（`name`、`min`/`max`、`unit`、`condition`）；'
-              '每个数字须在该条原文里出现，条件须是原文里的一段，数值按下表换算到规范单位。', '',
-              '| 参数 | 名称 | 规范单位 | 可写单位 | 问的方面 |', '|---|---|---|---|---|']
-    for key, parameter in REQUIREMENT_PARAMETERS.items():
-        lines.append('| %s | %s | %s | %s | %s |' % (key, parameter.title, parameter.unit, '、'.join(parameter.units),
-                                                   '、'.join(PARAMETER_ASPECTS[key])))
+    lines += _vocabulary_lines()
     lines += ['', '## 覆盖维度', '', '| 维度（results.scope_checks 键） | 规则 |', '|---|---|']
     for name, rule in COVERAGE_RULES.items():
         lines.append('| %s | %s %s |' % (name, rule, title(rule)))
@@ -2277,11 +2289,15 @@ def render_markdown():
 
 BOUNDS_BEGIN = '<!-- bounds:begin（由 scripts/catalog.py --write-doc 生成，勿手改） -->'
 BOUNDS_END = '<!-- bounds:end -->'
+VOCAB_BEGIN = '<!-- vocabulary:begin（由 scripts/catalog.py --write-doc 生成，勿手改） -->'
+VOCAB_END = '<!-- vocabulary:end -->'
 
 
 def render_doc(text):
-    """The marked region of a document: the rule table, or the bounding table in references/bounding-table.md."""
+    """The marked region of a document: the rule table, the bounding table (references/bounding-table.md) or the
+    reviewer's vocabulary (references/review-vocabulary.md)."""
     begin, end, body = ((BOUNDS_BEGIN, BOUNDS_END, render_bounds_markdown) if BOUNDS_BEGIN in text
+                        else (VOCAB_BEGIN, VOCAB_END, render_vocabulary_markdown) if VOCAB_BEGIN in text
                         else (DOC_BEGIN, DOC_END, render_markdown))
     if text.count(begin) != 1 or text.count(end) != 1:
         raise ValueError('文档缺少唯一的规则总表标记')

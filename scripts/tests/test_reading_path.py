@@ -1,8 +1,8 @@
 """Item 5 of the 2026-10-26 SR review: the reviewer's reading path. Every reference names its readers on its third line
 (审查员 / SR 维护者 / 审查员与 SR 维护者), SKILL.md's 参考文件 table carries the same reader for every reference, the
-execution flow (①–⑤) links no maintainer-only reference, and the reviewer's path — SKILL.md plus the references a
-reviewer reads — does not grow past the recorded size (a ratchet: lower it when a document shrinks, never raise it
-without saying why in the ledger).
+execution flow (①–⑤) links no maintainer-only reference, and — since the split of 2026-10-26 — each step's linked
+references do not grow past the recorded size (a ratchet per step: lower it when a document shrinks, never raise it
+without saying why in the ledger). The step budget is what a reviewer loads at that step besides SKILL.md itself.
 """
 import re
 import sys
@@ -15,7 +15,10 @@ REFERENCES = sorted((ROOT / 'references').glob('*.md'))
 SKILL = (ROOT / 'SKILL.md').read_text(encoding='utf-8')
 READERS = ('审查员与 SR 维护者', 'SR 维护者', '审查员')
 READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审查员)(?:（[^）\n]*）)?。$', re.M)
-REVIEWER_PATH_MAX_BYTES = 685_100     # SKILL.md + the references a reviewer reads, measured 2026-10-26 (see the ledger: 683 000 → 685 100 for the refs rule)
+# Bytes of the references each step of the execution flow links, measured 2026-10-26 after the split (see the ledger):
+# ① 243 567, ② 184 909, ③ 220 772, ④ 117 597, ⑤ 54 796. Before the split every step carried the whole 117 KB ledger
+# document and the 131 KB rule table (685 KB in all).
+STEP_MAX_BYTES = {'①': 244_000, '②': 185_000, '③': 221_000, '④': 118_000, '⑤': 55_000}
 
 
 def section(text, title):
@@ -42,6 +45,16 @@ def skill_table():
     return out
 
 
+def step_links():
+    """{step mark: sorted references the step's section of the execution flow links}."""
+    out = {}
+    for part in re.split(r'\n(?=### )', section(SKILL, '## 执行流程'))[1:]:
+        mark = part[4:5]
+        if mark in STEP_MAX_BYTES:
+            out[mark] = sorted(set(re.findall(r'references/([a-z0-9-]+\.md)', part)))
+    return out
+
+
 class ReadingPathTests(unittest.TestCase):
     def test_every_reference_names_its_readers(self):
         missing = [p.name for p in REFERENCES if reader_of(p) is None]
@@ -59,12 +72,20 @@ class ReadingPathTests(unittest.TestCase):
         linked = set(re.findall(r'references/([a-z0-9-]+\.md)', section(SKILL, '## 执行流程')))
         self.assertEqual(sorted(linked & maintainer_only), [])
 
-    def test_the_reviewer_path_does_not_grow_past_the_record(self):
-        docs = [p for p in REFERENCES if reader_of(p) != 'SR 维护者']
-        size = len(SKILL.encode('utf-8')) + sum(p.stat().st_size for p in docs)
-        self.assertLessEqual(size, REVIEWER_PATH_MAX_BYTES,
-                             'the reviewer path is %d bytes over %d documents; shrink a document or say in the ledger why '
-                             'the record moves' % (size, len(docs) + 1))
+    def test_every_step_links_something_and_the_links_resolve(self):
+        links = step_links()
+        self.assertEqual(sorted(links), sorted(STEP_MAX_BYTES))
+        names = {p.name for p in REFERENCES}
+        for mark, docs in links.items():
+            self.assertTrue(docs, mark)
+            self.assertEqual(sorted(set(docs) - names), [], mark)
+
+    def test_no_step_grows_past_its_record(self):
+        for mark, docs in step_links().items():
+            size = sum((ROOT / 'references' / d).stat().st_size for d in docs)
+            self.assertLessEqual(size, STEP_MAX_BYTES[mark],
+                                 'step %s links %d bytes over %d documents (%s); shrink a document, link a smaller one, or '
+                                 'say in the ledger why the record moves' % (mark, size, len(docs), ', '.join(docs)))
 
 
 if __name__ == '__main__':

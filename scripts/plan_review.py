@@ -129,7 +129,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
         for key, item in features.items():
             label = f'features.{key}'
             if str(key).upper() not in catalog.CIRCUIT_TYPE_BY_NAME:
-                errors.append(f'{label} 不是功能电路名（取 check-catalog.md 中的功能电路名）')
+                errors.append(f'{label} 不是功能电路名（取 review-vocabulary.md 中的功能电路名）')
                 continue
             if candidate_based and str(key).upper() in circuit_types:
                 errors.append(f'{label} 不写：这类电路由候选与电路决定推出（intent.circuits 已有）')
@@ -210,7 +210,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
             seen_circuits.add(cid)
         kind = circuit.get('type')
         if not isinstance(kind, str) or kind not in catalog.CIRCUIT_TYPE_BY_NAME:
-            errors.append('circuits.type 不支持: %r（取 check-catalog.md 中的功能电路名）' % (kind,))
+            errors.append('circuits.type 不支持: %r（取 review-vocabulary.md 中的功能电路名）' % (kind,))
         for field in ('refs', 'states'):
             values = circuit.get(field)
             if not isinstance(values, list) or not values or not all(_text(x) for x in values):
@@ -242,7 +242,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
                     errors.append(f'requirement.{key} 缺失')
             categories = item.get('categories')
             if not isinstance(categories, list) or not categories:
-                errors.append('requirement.%s.categories 须为非空数组，取 check-catalog.md 需求类别表的类别' % item.get('id'))
+                errors.append('requirement.%s.categories 须为非空数组，取 review-vocabulary.md 需求类别表的类别' % item.get('id'))
             else:
                 for category in categories:
                     if category not in catalog.REQUIREMENT_CATEGORIES:

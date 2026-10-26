@@ -1,155 +1,8 @@
-# 自动检查：扫描、保证值核对与检查器
+# 检查器
 
-> 读者：审查员与 SR 维护者（扫描和保证值核对给审查员，检查器实现细节给维护者）。
+> 读者：审查员与 SR 维护者（共用约定、电路候选和每个检查器查什么给审查员，实现细节给维护者）。
 
-自动扫描（A）只按连接关系产生候选，保证值核对（E）由网表定出待审对象；最终结论由审查者给出，映射见 [结论与准出](verdicts-and-release.md#1-四种检查结果)。
-
-## 一、自动扫描与保证值核对
-
-本文说明方式 A（自动扫描）怎么执行、方式 E（保证值核对）的对象怎么定出、输出怎么读。规则编号、名称和判据要点
-以 [check-catalog.md](check-catalog.md) 为准，本文不再重复规则表。
-
-### 两次运行
-
-一条规则算不算自动规则，看结论是“算出来的”还是“推出来的”：能由输入复现、可穷举的走脚本；
-需要工程判断的交专家审查（方式 T/C/D）。自动规则在哪次运行执行，由输入决定：
-
-| 运行 | 输入 | 执行 |
-|---|---|---|
-| 网表扫描 | `db.json`，可选 `--intent`、`--log` | 全部 A 规则；REQ-A01 需要意图中的 `expect`；DOC-A01/DOC-A02 需要导出日志，未给 `--log` 时二者列入“本趟未执行”；给了但内容为空（kicad-cli 导出成功时就是空的）按零命中执行，导出是否成功仍以命令退出码为准；日志按中英文分级：导出错误/中止记 FINDING，批注（位号）错误记 CANDIDATE，其他告警记 INFO，退出码 0 不等于没有告警 |
-| 合并扫描 | 网表扫描输入 + `datasheet-audit.json` + `--merge-plan` | 全部 A 规则，并入资料审计，写出唯一最终计划；E 检查项留待审查者判定 |
-| 改版比对 | 旧/新 `db.json`、旧计划、历史意见断言 | REQ-H01（`diff_netlists.py`）与改版影响清单 |
-
-**输出分三类**：`FINDING` 是疑似缺陷，逐条排除；`CANDIDATE` 是待资料取证定夺的优先级清单，直接
-决定先读哪几份 datasheet；`INFO` 是提示，不计入疑点，但准出前仍要核实（如 NET-A04 判为工具伪网络的
-NC 网）。FINDING/CANDIDATE 各成审查计划的一项检查，与其他检查一样作答；INFO 进计划 `diagnostics`。同一条规则可同时产出多类，例如 PRO-A02 按型号或轨名推断的电压只作候选。
-
-**未执行不等于通过**：`lint.py` 每次在末尾列出本次没执行的规则及原因（如缺 `--intent`、`--log`）。
-扫出 0 条与根本没扫，输出必须能区分。
-
-**命名检出不等于功能适用**：名称候选先确认实际角色/模式，再展开电路检查项；
-已有资料尚未阅读或计算时列审查待完成，补证尺度见 [最小充分证据](evidence-proportionality.md)。
-
-**未检出特征不等于不适用**：网表检测不到 DDR/RF 等关键字时，对应功能电路列入 REQ-Q08 待确认；
-只有需求或设计结果（原理图、BOM）给出可引用的不适用依据，功能电路才标 `NOT_APPLICABLE` 并最终写 NA；不引用设计方的报告或说明。适用但缺材料写
-`INSUFFICIENT`。
-
-自动扫描的输出是疑似清单，不是判决。合法结构（Bob-Smith 终端、补偿网络、DNP 选项、有意单端
-测试点）由审查者逐条排除，排除依据写入报告附录；不能按规则批量排除。
-
-### 典型案例
-
-| 规则 | 典型案例 |
-|---|---|
-| NET-A01 | `EFUSE2_EN_L` 只挂一颗电阻的一端，24V 输出永远无法开通 |
-| NET-A02 | `VCC_5V0_SYS` 与 `VCC5V0_SYS` 分裂，5V 主轨断开，PMIC 无电 |
-| NET-A04 | 164 个引脚被 “NC” 网络标号短成一张网，含晶振脚、MII 输出脚与 6 个外部连接器 pin1 |
-| NET-A04（提示） | 357 个引脚挂在导出器的 No-Connect 汇集网上，看似隔离栅被跨接，实为工具产物 |
-| NET-A06 | 解析器已有 PINUSE：多个 OUT 直连报疑点，合法开漏/三态仍须排除 |
-| PWR-A01 | 跳线本身不是电源；受控路径仍需 PWR-T01 按状态核实 |
-| PWR-A02 | SoC 357 个电源球全扫，`MIPI_DCPHY_AVDD→NC` 由此暴露（后经平台规范裁定合法） |
-| PWR-A03 | 268 个地球只抓到 1 个例外，且与参考设计一致 |
-| PWR-A03（地名网孤岛） | 充电 IC 地脚与补偿电容接到 `GNDA`，`GNDA` 与 `GND` 之间无任何已装配连接件，芯片失去供电回流与检测基准；电容、不贴的 0 Ω 不算连接；孤岛上有连接器、光耦/变压器/隔离器或 SENSE 遥测线时不报；同一 IC 的 AGND 在孤岛、PGND 在主地这类跨接只给候选，按手册核片内是否连通 |
-| PWR-A04 | 监控芯片 V2 看 SOM 轨、V4 看底板轨，判定前先分清 `VCC_3V3` 与 `VCC_3V3_SOM` |
-| PRO-A01 | ESD 器件挂在废弃的 `USB_DP/DM` 空网上，活线没有防护 |
-| REQ-A01 | TPS16530 应有 2 颗实有 1 颗，输入保护缺失 |
-| RST-E01 | TPS16530 EN 低有效却被上拉至 24V VIN（耐压 5.5V） |
-| RST-E02 | RTL8208 TEST[3:0] 被上拉（要求下拉）；`EN_PWRDWN` 上拉导致上电即掉电 |
-| DEV-E01 | 45 针连接器符号引脚号与实物不符 |
-| DEV-A01 | 24V 输入轨上贴了 16V 耐压电容（耐压写在 BOM 值里，轨压按网名推断） |
-| DEV-A02 | 电解电容 + 脚接地、- 脚接 24V，方向反接 |
-| DEV-A03 | 指示 LED 直接跨在 3V3 与 GND 之间，通路上没有串联电阻 |
-| NET-A07 | 声明为输入的脚没有网络或只在单节点网上，输入悬空 |
-| DOC-A04 | 位号仍是 `R?`，无法定位与对账 |
-| REQ-H01 | 回复“已改 RTL8326BI”后，新版网表仍是 RTL8326B-CG |
-
-### NC 网络判别（NET-A04 执行前必做）
-
-名为 `NC` 的多节点网络有两种截然不同的成因，判反了后果严重：误判为伪网会漏掉真短路。
-
-| | 真短路（NET-A04 疑点） | 工具伪网络（NET-A04 提示，非缺陷） |
-|---|---|---|
-| 成因 | 设计者把 “NC” 当网络标号写在不用的引脚上 | 导出器把带 No-Connect 属性且无连线的引脚统一汇集 |
-| `C_SIGNAL` | 带层次路径 `@<设计>(SCH_1):NC` | 裸字面量 `'NC'` |
-| 实例行 | 带层次路径 | 裸字面量 |
-
-1. 取该网的 `C_SIGNAL` 与实例行，核对已验证的导出格式；没有层次路径本身不能证明是伪网。
-   解析器只对满足 NC 命名约定的平面汇集网给出候选分类，普通平面网络仍参与电气检查。
-2. 辅助核对（不能单独决定）：取导出日志中全部 DOC-A02 告警，逐条比对被连接的网。若这些引脚
-   一律落在真实网络、没有落入该 NC 网，只说明告警不反驳伪网解释；仍需已验证的导出格式或
-   图面/属性证据。
-
-`parse_netlist.py` 把启发式分类放进 `pseudo_nets`，`lint.py` 据此把 NET-A04 降为提示。审查者仍须用
-图面或属性确认分类，不能用该字段自证。
-
-### 驱动源判定（PWR-A01/PWR-A02 的前提）
-
-从负载沿已装配的电感、磁珠、保险丝和 0Ω 向上游追踪；这些元件本身不产生电能。终点是实际电源
-输出脚或 `intent.power_sources` 指定的外部来源。“有没有东西喂这条网”的追踪（PWR-A02 的无驱动判定）另把连接器、
-电池触点、变压器绕组和整流桥输出算作来源，并穿过开关、保护 MOS 沟道和 ≤1 kΩ 的串阻；高压启动脚（HV、HVIN 等）
-经任意阻值的启动电阻接到有源的网也算有源；GND/EP 这类返回脚落在没叫地的返回网上不报无驱动。二极管/MOS 仅按 `intent.power_paths` 中当前
-`active_state` 的有向导通模型跨越；并联 TVS、连接器和未装配器件不能自行成为源。不同地网不自动
-合并。输出脚名称仍只是候选，PWR-T01 还要核对上游供电、导通条件、额定载流及每个工作/故障状态。
-
-### 关键器件计数（REQ-A01）
-
-REQ-A01 的输入不是网表，而是阶段 0 的审查意图清单：只从需求/规格书和 SR 自己的历史审查记录中
-提取（不取设计方的修订记录或说明），写入 `intent.json` 随报告留档。扩展字段见 [plan-and-results.md](plan-and-results.md)。
-
-```json
-{
-  "schema_version": 4,
-  "expect": {
-    "TPS16530": 2,
-    "RTL8326B-CG": 0
-  }
-}
-```
-
-`expect` 的键按子串匹配 `part`/`value`/`prim`（不区分大小写），值为期望数量：该有的写 ≥1，
-该删的写 0。标了不贴的实例不计入。缺 `expect` 时 REQ-A01 不执行，并列入“本趟未执行”。
-这份清单错了会连锁影响功能电路的判定，必须留痕、可复核。
-
-### 符号引脚映射（DEV-E01）
-
-1. 从 pstchip.dat 提取需核验符号的引脚名/号映射（`'<PINNAME>': PIN_NUMBER='(<num>)'`）。
-2. 与该器件官方 datasheet 引脚定义逐脚比对，写成 `expected` 证据。
-3. 先确认实物封装变体，再看对应封装的引脚图；多封装同页时按标题逐张对应，禁止跨图引用
-   （曾把 QFN-20 脚位当 TSSOP-20 判读，产生整页误报后撤回）。
-4. 封装变体间的差异点（NC 位置、功能脚位移）是高频坑，逐脚核对而不是抽样。
-
-DEV-E01 只核证据中列出的引脚；完整物理脚差集由 DEV-D02 负责。
-
-### strap 与配置脚（RST-E02）
-
-1. 从 pstxprt/pstchip 还原每个 strap 的实装状态（实例级不贴标记只在这里）。
-2. 对照 datasheet 引脚表逐脚确认默认态（内部上/下拉）、强制条款（must 类原文）与功能真值表。
-3. 上/下拉对（一贴一不贴）属合法设计；实装了与强制方向相反的电阻才是问题。
-4. strap 节点上同时挂 LED 或其他上拉时，按复位采样窗口计算分压（例：1K 下拉 + 220Ω 串 LED 至
-   3.3V，采样电压超过 VIL(max)，不能保证低电平；不直接断言实物读到哪一位）。
-
-### 物料与引脚扫描（DEV-A01～DEV-A03、SIG-A03、NET-A07、DOC-A04）
-
-`scripts/board_scans.py` 只用网表、BOM 值字段和引脚名/类型做确定性判别，不读 PDF、不猜降额：
-
-| 规则 | 判别依据 | 不判什么 |
-|---|---|---|
-| DEV-A01 | BOM 值里写明的耐压（`10uF/16V`）低于按网名推断的电压 | 降额比例、纹波与温度（DEV-C01/DEV-C02）；值里没写耐压就不报 |
-| DEV-A02 | `+`/`-` 脚名判别的极性电容：+ 接已知地、- 接命名轨 | 无极性脚名的器件（转图面目检 DOC-V01）；二极管方向按所在电路另判 |
-| DEV-A03 | LED 两脚直接跨命名轨与已知地 | 恒流驱动、PWM 驱动与亮度（需资料或声明证据） |
-| SIG-A03 | 网名含 SDA/SCL 记号、≥2 节点且有 IC 脚的网上没有任何接到非地网的电阻（候选） | 主机侧/片内上拉是否存在、阻值与上升时间（SIG-C01）；有串阻即不报 |
-| NET-A07 | 引脚类型为输入且无网络/单节点网（标了 No-Connect 的作候选） | 内部上下拉是否足够（需资料） |
-| DOC-A04 | 位号含 `?` 或缺序号 | 位号编排规范与 BOM 对账结论 |
-
-不贴装（解析器 `nc`）的器件不报；其他装配变体的差异由审查者按 `intent.assemblies` 排除。
-
-### 覆盖补充
-
-- RST-E01/RST-E02 用包含负载与采样时序的保证电压窗口比较门限；缺模型时判资料不足，不能拿
-  上拉电源电压直接当分压后的脚压。
-- DOC-A01 提示导出错误或中止；DOC-A02 的 No-Connect 告警须逐项核，不能与真实导出失败等同。
-- 单独另存某个检查器的清单：`python3 scripts/lint.py db.json --checker-json <检查器id>=out.json`；
-  各检查器的识别依据、intent 字段与缺口语义见 [automation.md](automation.md)。
+自动扫描怎么跑、扫描提示怎么读、计算与厂家参数核对工具见 [自动扫描与计算工具](scans-and-tools.md)。
 
 ## 二、检查器
 
@@ -257,7 +110,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 
 **电路候选**（`scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json`，
 schema 2，带 `rules_version`，绑定 `db_sha256` 与 intent 的 `input_sha256`）：电路不由审查员画，由网表、已核实的器件类别和检查器库存生成，
-审查员只做决定（见[计划与结果](plan-and-results.md#一intentjsonschema_version-4)）。
+审查员只做决定（见[计划与结果](intent-format.md#一intentjsonschema_version-4)）。
 - 候选 = 类型 + 核心器件，编号 `<类型>-<核心器件>`（链为 `<类型>-<核心器件>.<脚>`），工作态按类型固定（`catalog.CANDIDATE_STATES`：
   变换器和输入保护 startup/run/fault，USB unattached/attached/fault，ANALOG run/fault，ISOLATION run，STARTUP power-on/restart，DEBUG run）。
   成员各带 `role`、`via`（走到它的路径，是归属关系，不是导通主张）和 `hops`；页码只作显示，不决定归属。
@@ -624,7 +477,7 @@ intent 段 `power_switches`（`switches[]`: `id/ref/role/gate_net/citation/sourc
 开关驱动窗口，改查实际工作点/驱动/额定；感性节点的钳位候选仍保留，按实际拓扑确认。BJT 不生成 MOS 的 DRV-E01；
 共用图坐标 gate/drain/source 对应 B/C/E，仅用于追踪。角色未知仍保留证据不足，不按浮地位置猜用途。
 `role: "level_shifter"` 用于栅极接低侧轨的双向开漏电平转换管：它不是功率开关，不生成 DRV-E01、DRV-C02、DRV-D01
-及 DRV-A03/A04，改按电平转换电路审查，见 [计划与结果台账](plan-and-results.md) 的“电平转换（LEVEL_SHIFT）”与
+及 DRV-A03/A04，改按电平转换电路审查，见 [计划格式](plan-format.md) 的“电平转换（LEVEL_SHIFT）”与
 [WCA 公式](wca-formulas.md#mosfet-双向开漏电平转换)。
 
 源极经单只采样电阻回地时，可声明 `source_return: {"ref":"R201","ground_net":"PGND","citation":"图纸/采样用途出处"}`。
@@ -877,66 +730,3 @@ PASS 不覆盖开关速度、温度角与隔离耐压。
 
 `scripts/checkers/passive_stress.py` 给 DEV-C01 逐颗检查项预填电压、功耗与降额的 `proposal`，并给出扫描提示（阻值读不出的电阻、
 未声明电压的轨、按 0 V 处理的地网、无界节点）；判据与预判口径见[通用件最弱档基准](commodity-floors.md#计划预判dev-c01-逐颗检查项)。
-
-## 条件性故障能量工具
-
-以下各函数都可在命令行调用：`python3 scripts/calc.py <模块.函数> '<JSON 关键字参数>'`（参数也可写 `@文件` 或 `-`），
-`--list` 列出可用计算。输出原样回显输入并给出结果，便于贴入本项证据；缺参数、量纲越界或阶段用错时退出码 2，不补默认值。
-
-`fault_energy.packet_bound()` 与 `capacitor_energy_window()` 用于已限定起点的反激停能分析，
-输出能量、电压和允许事件数；所有输出标记为 `CONDITIONAL_ON_CALLER_BOUNDS`，不生成电气结论。
-输入的储能单列，时间为零也不自动抹掉已有磁能。使用范围与证据责任见
-[故障停能与器件耐受的同一时间轴](evidence-proportionality.md#故障停能与器件耐受的同一时间轴)。
-
-### 条件 boost 开关损耗
-
-`scripts/boost_switch_loss.py` 提供 `boost_cycle` 与 `conditional_losses`：按输入平均电流、母线、L 和死区联解三角周期的峰流/频率/RMS，再分列导通、线性重叠和残余 Coss 能量。调用者须核实际控制模式、脉宽、限流和输入适用性；工具不生成 SOA、严重度或通过结论。见[实际栅压与关联损耗](evidence-proportionality.md#功率开关实际栅压关联损耗和-soa)。
-
-### 反激停能后的电容电压与整流管阶段
-
-`scripts/flyback_stop.py` 的 `post_stop_capacitor_bound` 按已停能时的电容电压、有效容量和可达输出的全部剩余能量求条件边界；`primary_on_sr_platform` 只接受同一初级导通事件的输入，拒绝用于停能后的状态。未知值不按0处理，两者都不自动生成实际尖峰或审查结论。见[假设与故障证据门槛](evidence-proportionality.md#假设上界与实际故障的证据门槛)。
-
-### 模型角点与适用区间
-
-`scripts/model_bounds.py` 由 SR 自己算容易写反的模型，不判通过：`ntc_resistance_bounds` 对 R25 与 B 的四个公差角逐一计算，
-给出 R(T) 最小/最大值及所用角点（25°C 以上最小阻值是 R25min+Bmax），超出 B 值拟合区间或额定温区只标记、不外推；
-`cc_discharge_with_tail` 把恒流放电在合规交界 I×(串阻+尾段电阻) 处切成恒流段与 RC 尾段，尾段电阻须取自器件 I-V 资料。
-DOC-Q01 重放计算约定只说明格式与输入可追溯，**约定有效不等于模型正确**：温度单调方向、公差角点和分段模型的适用区间要另行复算。
-
-`model_bounds.crm_boost_capacitor_ripple` 核理想 CrM Boost：输入有效值 `input_rms_v`、恒定母线 `bus_v`、
-功率 `power_w`，以及原厂给出的高频相对两倍工频纹波额定系数 `hf_ripple_factor`（默认 1，不给高频增益）。
-输出总电容 RMS、两倍工频/开关分量和折算 RMS。二极管导通比例为瞬时输入/母线，不能用 MOS 导通比例；
-按控制器的 follower/稳压/限流/跳周期实际模式选模型，输入峰值高于母线时拒算。
-该模型不包含母线纹波、损耗、跳周期和负载动态；其 MATCH 不证明这些条件已成立。
-
-功率开关扫描识别低边 Boost 的正向主整流二极管及输出轨/储能回路后，不再报“无吸收/钳位”。
-主整流路径与 RC/RCD 分开记录；DRV-C02/DRV-D01 的寄生尖峰、耐压和安全工作区检查照常保留。
-
-### 常用电路的最坏角点与设计数值复算
-
-`scripts/circuit_bounds.py` 覆盖各类板子都有的计算：`divider_bounds`（普通/反馈分压窗口及上臂功耗）、`rc_crossing_time`
-（RC 节点跨阈值窗口的最短/最长时间）、`linear_regulator_thermal`（线性稳压功耗与结温）、`logic_level_margins`
-（VIH 按电源比例给出时取接收端电源最大值，VIL 取最小值）、`capacitor_ripple_capability`（按手册频率/温度系数表取
-较低的相邻系数、表外不外推）、`resistor_power`、`series_resistor_current`（LED/光耦串阻电流）。每项输出注明取了哪个角点。
-
-### 厂家参数引用核对
-
-`python3 scripts/audit_parameter_claims.py parameter-claims.json --json parameter-audit.json`
-读取 list，每项含 `id`、`claimed`、`reference`。两侧各有 `identity/parameter/conditions/basis/unit/value/source/locator`，
-reference 另给原厂文件 `sha256`；source 是本地文件路径，locator 精确到版本、页码和表行。
-先独立阅读原厂表格并核温度、H/f、典型/最小/最大口径，再录入 reference，不能从设计报告复制引用值作基准。
-`conditions` 为键值对象，字段与单位统一；`basis` 为 `typical/minimum/maximum/engineering_limit`。
-单位按 `scripts/units.py` 的单位表换算比较（SI 前缀、µ/u、Ω/ohm、Vac、A²s 等；2026-10-26），表外单位 NOT_COMPARABLE；
-两侧任一值换算后超出该量纲在板级可能的范围时，该行加 `plausibility` 备注并在输出里印 NOTE（前缀写错或文本层丢 µ，对照渲染表改），不改变比对状态。
-工具验证参考文件哈希，在相同材料/料号、参数、试验条件、口径和可换算单位下比较数值；
-输出 MATCH/MISMATCH，条件或单位不兼容为 NOT_COMPARABLE，工程限值为 OUT_OF_SCOPE，缺字段/哈希错误为 ERROR。
-支持 T/mT、V/mV、A/mA、ohm/kohm，其他单位不猜。工具不自动理解 PDF，也不证明摘录准确或资料是真正原厂。
-设计采用较低磁通限值可以合理，但不能把该设计限值冒充特定温度下的厂家饱和磁通。
-
-### 齐纳门限与锁定保持计算
-
-`scripts/zener_fault.py`只接受调用者已建立适用性的数值界限：`trip_drive`联解内部吸流及充电余量，`no_trip_budget`求正常时可容许的外部注入，`hold_charge`核供电缺口期间的电荷余量。无默认尖峰、温度、延迟或电容公差；负余量不等于实际故障已经发生，须复核输入是否是可达轨迹或仅充分条件。
-
-## 脚本分类
-
-每个脚本属于哪一步、是入口还是工具或库，见 [架构说明](architecture.md#二每个脚本属于哪一步)。

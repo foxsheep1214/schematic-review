@@ -3,7 +3,7 @@
 > 读者：审查员与 SR 维护者（“对 SR 的反馈”一节和索引给维护者）。
 
 报告正文只写结论和需要处理的事项，详细台账与计算放可定位的附录；无内容不设空节。
-结果字段以 [计划与结果台账](plan-and-results.md) 为准，分级与准出以 [结论与准出](verdicts-and-release.md) 为准。
+结果字段以 [结果格式](results-format.md) 为准，分级与准出以 [结论与准出](verdicts-and-release.md) 为准。
 
 **报告由 `scripts/render_report.py` 从台账生成**，节的顺序和每节写什么见下面“每节怎么写”。
 结构和数字只来自台账，不手改报告；要改内容就改台账（任务的 title/root_cause/reason/next_action、检查的 gaps、
