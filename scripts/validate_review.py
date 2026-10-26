@@ -23,7 +23,7 @@ from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
 from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
-from review_functions import netlist_evidence_errors, validate_functions
+from review_functions import estimated_passes, netlist_evidence_errors, validate_functions
 import check_key
 import row_owner
 import interfaces
@@ -330,6 +330,14 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     stage = workflow(plan, report, checks, clarifications, require_design_options=actionable)
     errors.extend(stage['errors'])
     accepted = False
+    # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): the grade is derived here, the release
+    # is capped at CONDITIONAL_GO below, and the report lists these rows apart.
+    estimated = estimated_passes(expected, checks, report.get('functions'))
+    estimated_ids = {e['check_id'] for e in estimated}
+    for cid in estimated_ids:
+        if checks[cid].get('evidence_confidence') == 'A':
+            errors.append(f"{cid}: a PASS on an estimate is C-grade evidence; it cannot claim A")
+        checks[cid]['evidence_confidence'] = 'C'
     sr_improvements = []
     manual_methods = {}
     for key, item in checks.items():
@@ -402,7 +410,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             require(result == "INSUFFICIENT", f"{key}: unresolved applicability")
         confidence = item.get("evidence_confidence")
         if result in ("PASS", "FAIL"):
-            require(confidence in ("A", "B"), f"{key}: PASS/FAIL needs A/B evidence")
+            require(confidence in ("A", "B") or (result == "PASS" and key in estimated_ids),
+                    f"{key}: PASS/FAIL needs A/B evidence")
         if result == "INSUFFICIENT":
             if expected.get(key, {}).get('rule') != 'REQ-H02':
                 errors.extend(validate_impact(item, impact_classes))  # history dispositions are counted apart
@@ -611,7 +620,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 blockers.append(f"{item['code']}: {len(item['check_ids'])} " + (
                     "PASS rows need their own comparison before freeze" if item['code'] == 'TEMPLATED_PASS_RATIONALE'
                     else "evidence gaps need individual grading before freeze"))
-    release = "NO_GO" if errors or blockers else ("CONDITIONAL_GO" if accepted else "GO")
+    release = release_for(errors, blockers, accepted, estimated)
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")
     gap_causes = dict(Counter(x.get("gap_cause", "UNSPECIFIED") for x in checks.values()
@@ -620,6 +629,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     x["remediation"].get("readiness") == state for x in findings.values())
                     for state in READINESS}
     return {"quality_screening": screen_quality(plan, report, db, base_dir),
+            "estimated_passes": estimated,
             "scope": scope_decl,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
@@ -640,6 +650,14 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 "strategy": revision['strategy'] if revision else None},
             "binding_validation": {"enforced": bool(bindings), "bound_checks": bound_count},
             "remediation_validation": {"enforced": actionable, "by_readiness": repair_counts}}
+
+
+def release_for(errors, blockers, accepted, estimated):
+    """GO needs no error, no blocker, nothing accepted by approval and nothing passing on an estimate; an accepted
+    item or an estimate pass (confirmed only on the prototype) caps the release at CONDITIONAL_GO."""
+    if errors or blockers:
+        return "NO_GO"
+    return "CONDITIONAL_GO" if accepted or estimated else "GO"
 
 
 def main():

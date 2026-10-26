@@ -1108,7 +1108,14 @@ BOUNDING_STEPS = (
 # 推法用完仍推不出时落到哪一档。门禁按格核对：判“定不出界”的缺厂家数据写 monotonic_tried.cell，
 # 余量依据写 basis.cell/method/formula 时按公式重算。
 BoundMethod = namedtuple('BoundMethod', 'code name basis')
-Bound = namedtuple('Bound', 'id kinds parameter side varies_with direction methods fallback source')
+# 判决边界（2026-10-26 用户："判决的边界按器件类型来"）：每格另写厂家通常保证到哪（availability）、典型值估算能不能判通过及
+# 倍数（estimates，空表示不估算）、参数超出时的物理后果（consequence）、估算判通过时移交的样机实测能不能做（prototype）、
+# 一句话边界（boundary）。估算判 PASS 由 格 × 后果类 决定，规则 id 清单只在 cell 为 NONE 时作默认。
+Bound = namedtuple('Bound', 'id kinds parameter side varies_with direction methods fallback source '
+                            'availability estimates consequence prototype boundary')
+# 一条允许的估算：factor 是把估算值再按不利方向打的折（电流增益 ÷2、阻值 ×1.2 都写 2 / 1.2），applies 是它适用的后果类，
+# floor 是余量本身的下限（值, 单位；None 不限），how 写估算怎么做。
+Estimate = namedtuple('Estimate', 'factor applies floor how')
 
 BOUND_METHODS = OrderedDict((m.code, m) for m in (
     BoundMethod('G1', '保证限值直接覆盖：工作点在限值的测试条件内', '保证最坏值'),
@@ -1130,82 +1137,183 @@ BOUND_FALLBACKS = OrderedDict((
     ('BOUNDED', '总能定界，不开“定不出界”的项'),
 ))
 BOUND_DIRECTIONS = ('INCREASING', 'DECREASING', 'NONMONOTONIC')
+# 可得性：厂家手册对这个参数通常保证到哪
+BOUND_AVAILABILITY = OrderedDict((
+    ('GUARANTEED', '全保证：工作范围内有 min/max'),
+    ('TEST_POINT', '测试点保证：只在标称测试条件保证，别处靠单调性或斜率推'),
+    ('INDUSTRY_NONE', '行业不给：全温、寿命、低电流等只给典型曲线，索取也拿不到'),
+    ('TYPICAL_BY_DEFINITION', '定义即典型：参数定义本身就是典型值'),
+))
+# 样机能否验证估算
+BOUND_PROTOTYPE = OrderedDict((
+    ('MEASURABLE', '可测（常温或高低温箱）'),
+    ('TYPE_TEST', '型式试验（浪涌、ESD、破坏性，样机阶段不做）'),
+    ('NOT_VERIFIABLE', '不可（寿命衰减）'),
+))
+# 后果类沿用 electrical_contract.IMPACT_CLASSES：功能 / 性能寿命 / 器件损坏 / 安全危害
+FUNCTIONAL = frozenset(('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE', 'LOCAL_OR_DATA', 'OPTIMIZATION'))
+DAMAGE = frozenset(('COMPONENT_DAMAGE',))
+ESTIMATE_NEVER = frozenset(('DAMAGE_OR_HAZARD', 'CORE_LINK_LOSS'))   # 安全危害、核心链路：任何格都不估算
+CONSEQUENCE_WORDS = OrderedDict((('REQUIRED_FUNCTION', '功能'), ('PERFORMANCE_OR_LIFE', '性能/寿命'),
+                                 ('COMPONENT_DAMAGE', '损坏'), ('DAMAGE_OR_HAZARD', '安全')))
 
 _EP = 'evidence-proportionality.md'
+_CB = 'docs/2026-10-26-cell-boundary.md'
 _IC_ROLES = tuple(DEVICE_ROLES)      # 器件角色登记表的全部角色，含泛称 ic
+_M = ('MEASURABLE',)
+_T = ('TYPE_TEST',)
+def _e(factor, applies, how, floor=None):
+    return Estimate(factor, applies, floor, how)
 BOUNDS = OrderedDict((b.id, b) for b in (
     # 3.1 齐纳管、电压基准
-    Bound('ZENER-VZ-UPPER', ('zener',), 'VZ 上界', 'UPPER', '工作电流 IZ', 'INCREASING', (('G1', ()), ('G2', ())),
-          'VENDOR_DATUM', _EP + '“齐纳管低电流”'),
+    Bound('ZENER-VZ-UPPER', ('zener',), 'VZ 上界', 'UPPER', '工作电流 IZ', 'INCREASING', (('G1', ()), ('G2', ()), ('G9', ())),
+          'VENDOR_DATUM', _EP + '“齐纳管低电流”',
+          'TEST_POINT', (_e(1.5, FUNCTIONAL, '只有典型 rdif 时：典型 rdif ×1.5'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
+          '偏置用途允许估算；作钳位保护（下游过压→损坏）时不估算'),
     Bound('ZENER-VZ-LOWER', ('zener',), 'VZ 下界', 'LOWER', '工作电流 IZ', 'INCREASING',
-          (('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界'),
+          (('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界',
+          'INDUSTRY_NONE', (_e(1.2, FUNCTIONAL, '典型曲线 G8 在工作电流取值，再 ÷1.2（≈×0.85）'),), ('REQUIRED_FUNCTION',), _M,
+          '允许估算判 PASS；两测试点之间 G3 是保证值，最低测试点以下行业不给，“向厂家索取低电流保证值”要提示'),
     Bound('ZENER-VZ-TEMP', ('zener', 'shunt_reference'), 'VZ / 基准电压随温度', None, '温度', 'NONMONOTONIC',
-          (('G1', ()), ('G4', ('tempco_bound',))), 'VENDOR_DATUM', _EP + '第 4 步“温度系数的 min/max”'),
+          (('G1', ()), ('G4', ('tempco_bound',)), ('G9', ())), 'VENDOR_DATUM', _EP + '第 4 步“温度系数的 min/max”',
+          'TEST_POINT', (_e(2, FUNCTIONAL, '典型温漂 ×2'),), ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M,
+          '并联基准多给 max 温漂（G4 保证）；普通齐纳只给典型温漂，允许估算（×2）'),
     Bound('REF-IKA-MIN', ('shunt_reference',), '最小阴极电流 Ika', 'LOWER', '工作态', None, (('G1', ()),),
-          'OUTSIDE_SPECIFIED', '定界表决定（architecture.md 2026-10-23）'),
+          'OUTSIDE_SPECIFIED', '定界表决定（architecture.md 2026-10-23）',
+          'GUARANTEED', (), ('REQUIRED_FUNCTION',), _M, '不估算：规格地板，低于 Ika(min) 即超出规定区，记失败'),
     # 3.2 TVS
     Bound('TVS-STANDOFF', ('tvs',), '正常最大值不超过 VRWM', 'UPPER', '工作电压', None, (('G1', ()),),
-          'OUTSIDE_SPECIFIED', 'wca-formulas.md TVS 行'),
+          'OUTSIDE_SPECIFIED', 'wca-formulas.md TVS 行',
+          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算'),
     Bound('TVS-VC', ('tvs',), '钳位电压上界', 'UPPER', '冲击电流 Ipp（同一波形）', 'INCREASING', (('G1', ()), ('G2', ())),
-          'VENDOR_DATUM', 'wca-formulas.md TVS 行'),
+          'VENDOR_DATUM', 'wca-formulas.md TVS 行',
+          'TEST_POINT', (), ('COMPONENT_DAMAGE',), _T, '不估算；缺波形对应的保证值时按最坏（Ipp 处 VC max）判'),
     Bound('TVS-LEAK-HOT', ('tvs',), '高温漏电', 'UPPER', '温度', 'INCREASING', (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))),
-          'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
+          'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
+          'INDUSTRY_NONE', (_e(2, FUNCTIONAL, '典型温度曲线比例外推 G7，再 ×2'),), ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M,
+          '允许估算（×2）：25 °C max 保证，高温只有典型曲线'),
     # 3.3 二极管、整流桥
     Bound('DIODE-VF', ('diode', 'bridge_rectifier'), 'VF 上界随电流', 'UPPER', '正向电流 IF', 'INCREASING',
-          (('G1', ()), ('G2', ())), 'VENDOR_DATUM', _EP + '“单调外推”'),
+          (('G1', ()), ('G2', ()), ('G8', ())), 'VENDOR_DATUM', _EP + '“单调外推”',
+          'TEST_POINT', (_e(1.15, FUNCTIONAL, '超出测试点需要典型曲线时 ×1.15'),
+                         _e(1.15, DAMAGE, '同上；用它判温升损坏时结温余量 ≥ 20 °C', (20, '°C'))), ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
+          '允许估算（×1.15）；判温升损坏时另要结温余量 ≥ 20 °C'),
     Bound('DIODE-VF-COLD', ('diode', 'bridge_rectifier'), 'VF 上界随温度（冷态最差）', 'UPPER', '温度', 'DECREASING',
-          (('G1', ()), ('G2', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“单调外推”'),
+          (('G1', ()), ('G2', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“单调外推”',
+          'INDUSTRY_NONE', (_e(1.15, FUNCTIONAL, '典型温度曲线 ×1.15；物理温漂上界（约 −2 mV/°C）可作 G4 保证推法'),), ('REQUIRED_FUNCTION',), _M,
+          '允许估算（×1.15）'),
     Bound('DIODE-IR-HOT', ('diode', 'bridge_rectifier', 'zener'), '高温反向漏电', 'UPPER', '温度', 'INCREASING',
-          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“二极管反向漏电”'),
+          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“二极管反向漏电”',
+          'TEST_POINT', (_e(2, FUNCTIONAL, '比例外推 G7，再 ×2'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
+          '功能用途允许（×2）；判高压整流反向功耗热失控（损坏）要 hot max，没有则不估算'),
     Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',
-          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'VENDOR_DATUM', _EP + '“脉冲与浪涌”'),
+          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'VENDOR_DATUM', _EP + '“脉冲与浪涌”',
+          'TEST_POINT', (), ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD'), _T, '不估算：I²t（√t）换算已是保守推法；无 IFSM 的器件开放'),
     # 3.4 MOSFET、BJT
     Bound('MOS-VGS-ON', ('mosfet',), '导通所需 VGS', 'UPPER', '漏极电流 ID', 'INCREASING', (('G1', ()), ('G2', ()), ('G7', ())),
-          'VENDOR_DATUM', 'wca-formulas.md VGS 三档'),
+          'VENDOR_DATUM', 'wca-formulas.md VGS 三档',
+          'TEST_POINT', (_e(2, FUNCTIONAL, '小信号 / 电平转换：典型传输曲线的 RDS ×2'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
+          '功率开关（损坏）要测试点覆盖工作 VGS，不估算；小信号开关（功能）允许估算（×2）'),
     Bound('MOS-RDS-HOT', ('mosfet',), '高温 RDS(on)', 'UPPER', '结温', 'INCREASING',
-          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”'),
+          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”',
+          'INDUSTRY_NONE', (_e(1.2, FUNCTIONAL | DAMAGE, '25 °C max × 典型温度比（G7），再 ×1.2；判损坏时结温余量 ≥ 20 °C', (20, '°C')),),
+          ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
+          '允许估算判 PASS（×1.2 且结温余量 ≥ 20 °C）：全行业做法，hot max 行业不给'),
     Bound('MOS-SOA-HOT', ('mosfet',), '高温 SOA', 'UPPER', '开始壳温', 'DECREASING',
           (('SOA', ('soa_allowed_power', 'soa_case_temperature', 'heatsink_requirement', 'zth_junction_temperature')),),
-          'BOUNDED', '本表“几条口径”MOS 高温 SOA'),
+          'BOUNDED', '本表“几条口径”MOS 高温 SOA',
+          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _T, '按 SOA 推法降额后视作保证；不另估算'),
     Bound('MOS-LINEAR', ('mosfet',), '线性工作点的 VGS（源跟随、线性稳压）', None, '漏极电流与温度', 'NONMONOTONIC',
-          (('G1', ()), ('G7', ('ratio_extrapolation',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“按实际用途选模型”'),
+          (('G1', ()), ('G7', ('ratio_extrapolation',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“按实际用途选模型”',
+          'TEST_POINT', (_e(1.4, FUNCTIONAL, '典型传输曲线 gm ÷1.4（≈×0.7）；VGS(th) 的 min/max 是保证值'),), ('REQUIRED_FUNCTION',), _M,
+          '允许估算（÷1.4）；功耗/结温部分走 MOS-SOA-HOT'),
     Bound('BJT-SAT', ('bjt',), '饱和导通所需基极电流', 'LOWER', '集电极电流 IC', None,
-          (('FORCED_BETA', ('forced_beta_base_current',)),), 'BOUNDED', '本表“几条口径”BJT 饱和开关'),
+          (('FORCED_BETA', ('forced_beta_base_current',)),), 'BOUNDED', '本表“几条口径”BJT 饱和开关',
+          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '按 FORCED_BETA，不估算'),
     Bound('BJT-HFE', ('bjt',), '线性区 hFE', 'LOWER', '集电极电流与温度', 'NONMONOTONIC',
-          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
+          'TEST_POINT', (_e(1.5, FUNCTIONAL, '比例外推 G7，再 ÷1.5'),), ('REQUIRED_FUNCTION',), _M,
+          '允许估算（÷1.5）；饱和开关走 BJT-SAT'),
     # 3.5 光耦
     Bound('OPTO-CTR', ('opto',), 'CTR 随 IF 和温度', 'LOWER', '输入电流 IF 与温度', 'NONMONOTONIC',
-          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“身份冲突与身份分支”（取最低档）'),
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“身份冲突与身份分支”（取最低档）',
+          'INDUSTRY_NONE', (_e(2, FUNCTIONAL, '25 °C 分档下限 × 典型温度曲线最低点（G7），再 ÷2（含寿命衰减）'),),
+          ('REQUIRED_FUNCTION',), ('MEASURABLE', 'NOT_VERIFIABLE'),
+          '允许估算判 PASS（÷2）；在保护环里也是阈值偏移，不是器件损坏。“索取全温 CTR”要提示'),
     # 3.6 NTC
     Bound('NTC-SENSE', ('ntc',), '检测用 NTC 的 R(T)', None, '温度', 'DECREASING',
-          (('G5', ('ntc_table_bound', 'ntc_beta_bound')),), 'BOUNDED', '本表“几条口径”检测用 NTC；datasheets.md“公开曲线表先于索取”'),
+          (('G5', ('ntc_table_bound', 'ntc_beta_bound')),), 'BOUNDED', '本表“几条口径”检测用 NTC；datasheets.md“公开曲线表先于索取”',
+          'GUARANTEED', (), ('REQUIRED_FUNCTION',), _M, '按表推法，不估算'),
     Bound('NTC-INRUSH-HOT', ('ntc',), '浪涌限制 NTC 热态重新接入', 'LOWER', '热态', None,
-          (('G6', ('inrush_peak_current', 'inrush_i2t')),), 'BOUNDED', '本表“几条口径”浪涌限制 NTC'),
+          (('G6', ('inrush_peak_current', 'inrush_i2t')),), 'BOUNDED', '本表“几条口径”浪涌限制 NTC',
+          'TYPICAL_BY_DEFINITION', (), ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD'), _T, '不估算；热态阻值按 0 Ω（“按 0 Ω 定结论”）'),
     # 3.7 无源件
     Bound('RES-POWER', ('resistor',), '电阻功率、脉冲、TCR 与耐压', 'UPPER', '温度与脉宽', None, (('G1', ()), ('G5', ())),
-          'VENDOR_DATUM', 'commodity-floors.md 片式电阻'),
+          'VENDOR_DATUM', 'commodity-floors.md 片式电阻',
+          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算：额定、降额与脉冲曲线按保证；商品地板见 commodity-floors.md'),
     Bound('MLCC-EFFECTIVE-C', ('capacitor',), 'MLCC 有效容量（偏压、温度、老化）', 'LOWER', '直流偏压与温度', 'DECREASING',
-          (('G1', ()), ('G2', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md MLCC；wca-formulas.md'),
+          (('G1', ()), ('G2', ()), ('G5', ('table_interpolate',)), ('G8', ())), 'VENDOR_DATUM', 'commodity-floors.md MLCC；wca-formulas.md',
+          'TYPICAL_BY_DEFINITION', (_e(1.25, FUNCTIONAL, '典型偏压曲线 × (1 − 公差) × 老化 0.9，再 ÷1.25（≈×0.8）；补偿网络 ÷1.4'),),
+          ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M, '允许估算判 PASS（÷1.25）'),
     Bound('ECAP-ESR-RIPPLE', ('electrolytic',), '电解 ESR 与纹波电流（温度、频率系数表）', None, '温度与频率', 'NONMONOTONIC',
-          (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md 电解'),
+          (('G1', ()), ('G5', ('table_interpolate',)), ('G9', ())), 'VENDOR_DATUM', 'commodity-floors.md 电解',
+          'TEST_POINT', (_e(1.3, FUNCTIONAL, '系数表外的频率：ESR ×1.3'),), ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
+          '表内按 G5（保证）；表外允许估算（×1.3）；寿命走 DEV-C02。“资料已读只剩折算”不是厂家数据缺口'),
     Bound('IND-ISAT', ('inductor', 'transformer'), '电感 Isat（按资料定义取温度最坏值）', 'LOWER', '温度', 'DECREASING',
-          (('G1', ()), ('G2', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md 电感'),
+          (('G1', ()), ('G2', ()), ('G5', ('table_interpolate',)), ('G9', ('typical_band',))), 'VENDOR_DATUM', 'commodity-floors.md 电感',
+          'TYPICAL_BY_DEFINITION', (_e(1.3, FUNCTIONAL | DAMAGE, '典型 Isat 热态值 ÷1.3（峰流 ≤ Isat/1.3）'),), ('COMPONENT_DAMAGE',), _M,
+          '允许估算判 PASS（÷1.3）：损坏类但行业别无他法；不满足 1.3 倍就开放或失败'),
     Bound('FUSE-I2T', ('fuse',), '保险丝 I²t 与温度降额', None, '脉宽与温度', 'NONMONOTONIC',
-          (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md'),
+          (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md',
+          'GUARANTEED', (), ('DAMAGE_OR_HAZARD', 'REQUIRED_FUNCTION'), _T,
+          '不估算：保护判 max 曲线，误动作判 min 曲线；缺的若是本板冷/热态 NTC 阻值，种类是 DESIGN_VALUE'),
     # 3.8 IC 通用参数
     Bound('IC-THRESHOLD', _IC_ROLES, '门限、基准', None, '温度', 'NONMONOTONIC',
-          (('G1', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
+          (('G1', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
+          'GUARANTEED', (_e(2, FUNCTIONAL, '只给 25 °C 加典型温漂时：典型温漂 ×2'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
+          '功能用途允许（×2）；用门限判保护覆盖（OVP 上限对下游绝限，损坏）时要全温 min/max'),
     Bound('IC-QUIESCENT', _IC_ROLES, '静态电流、按模式的功耗', 'UPPER', '模式与温度', None,
-          (('G1', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _EP + '“只有典型值的参数”'),
+          (('G1', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _EP + '“只有典型值的参数”',
+          'TYPICAL_BY_DEFINITION', (_e(1.3, FUNCTIONAL, '典型 ×1.3（现行 G9）'), _e(1.5, DAMAGE, '用它判偏置电阻功耗损坏时 ×1.5')),
+          ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M, '允许（功能 ×1.3，损坏用途 ×1.5）'),
     Bound('IC-TIMING', _IC_ROLES, '时序参数（最小导通、延时、消隐）', None, '温度', 'NONMONOTONIC',
-          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
-    Bound('IC-IO-LEVEL', _IC_ROLES, 'IO 的 VOH/VOL', None, '负载电流与 VDD', 'INCREASING', (('G1', ()), ('G2', ())),
-          'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）'),
+          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
+          'GUARANTEED', (_e(2, FUNCTIONAL, '只给典型的延时：典型 ×2，取不利方向'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
+          '功能时序允许（×2）；用延时判过冲过压损坏时要 max，没有则不估算'),
+    Bound('IC-IO-LEVEL', _IC_ROLES, 'IO 的 VOH/VOL', None, '负载电流与 VDD', 'INCREASING', (('G1', ()), ('G2', ()), ('G9', ())),
+          'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
+          'TEST_POINT', (_e(1.5, FUNCTIONAL, '超测试电流：输出阻抗典型 ×1.5'),), ('REQUIRED_FUNCTION',), _M, '允许估算（×1.5）'),
     Bound('IC-IO-CURRENT', _IC_ROLES, 'IO 灌/拉电流超出规定', 'UPPER', '负载电流', None, (('G1', ()), ('G10', ())),
-          'VENDOR_DATUM', _EP + '“手册的情况按四档判”'),
+          'VENDOR_DATUM', _EP + '“手册的情况按四档判”',
+          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算'),
     Bound('IC-RECOMMENDED', _IC_ROLES, '推荐工作条件（绝对最大额定只算损坏边界）', None, '工作条件', None, (('G1', ()),),
-          'OUTSIDE_SPECIFIED', 'DEV-C05'),
+          'OUTSIDE_SPECIFIED', 'DEV-C05',
+          'GUARANTEED', (), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M, '不估算：超出即 OUTSIDE_SPECIFIED'),
+    # 3.9 R7 碰到、原来没有格的量（2026-10-26 决定 5）
+    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',
+          (('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,
+          'GUARANTEED', (), ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD'), _T,
+          '不估算：额定电压是保证值，缺的是浪涌源与回路（设计量或标准条款）；电容爆裂是安全后果'),
+    Bound('MOS-DISCHARGE-I2T', ('mosfet',), '短路放电峰流与 I²t 对脉冲能力', 'UPPER', '回路阻抗', 'DECREASING',
+          (('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,
+          'TEST_POINT', (), ('COMPONENT_DAMAGE',), _M,
+          '不估算：脉冲能力按手册单脉冲曲线（保证）判，回路阻抗按最坏（设计量，DESIGN_VALUE）'),
+    Bound('IC-GATE-DRIVE-I', ('mosfet',), '栅极驱动平均电流 Qg·f 对偏置供给', 'UPPER', '开关频率与 VGS', 'INCREASING',
+          (('G1', ()), ('G2', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _CB,
+          'TEST_POINT', (_e(1.3, FUNCTIONAL, 'Qg 只有典型时 ×1.3'),), ('PERFORMANCE_OR_LIFE',), _M,
+          '允许估算（×1.3）：Qg max 多数手册给（G1），只有典型时 ×1.3'),
 ))
+
+
+def estimate_rule(cell_id, consequence_class):
+    """The table's estimate rule for this consequence class in this cell, or None (no estimate passes)."""
+    bound = BOUNDS.get(cell_id)
+    if bound is None or consequence_class in ESTIMATE_NEVER:
+        return None
+    for e in bound.estimates:
+        if consequence_class in e.applies:
+            return e
+    return None
 
 
 NO_CELL = 'NONE'   # a decisive margin whose parameter has no cell in the table says so
@@ -1244,6 +1352,9 @@ CELL_WORDS = OrderedDict((
     ('IC-IO-LEVEL', r'\bV_?O[HL]\b|\bV_?I[HL]\b|输出电平|输入电平'),
     ('IC-IO-CURRENT', r'\bI_?O[HL]\b|灌电流|拉电流|sink current|source current'),
     ('IC-RECOMMENDED', r'推荐工作|recommended operating'),
+    ('CAP-SURGE-V', r'浪涌.{0,8}(?:电压|抬升)|surge voltage|电容.{0,6}瞬态电压|BULK.{0,6}抬升'),
+    ('MOS-DISCHARGE-I2T', r'短路放电|放电峰流|放电.{0,4}I\s?[²2]\s?t|discharge'),
+    ('IC-GATE-DRIVE-I', r'\bQ_?g\b|栅极电荷|驱动电流|gate charge'),
 ))
 _CELL_WORDS_RE = {cell: re.compile(words, re.I) for cell, words in CELL_WORDS.items()}
 
@@ -1276,6 +1387,22 @@ def render_bounds_markdown():
         out.append('| `%s` | %s | %s | %s | %s / %s | %s | `%s` | %s |' % (
             b.id, kinds, _cell(b.parameter), b.side or '—', _cell(b.varies_with), b.direction or '—', methods,
             b.fallback, _cell(b.source)))
+    out += ['', '### 判决边界', '',
+            '可得性：' + '；'.join('`%s` %s' % kv for kv in BOUND_AVAILABILITY.items()) + '。',
+            '样机能否验：' + '；'.join('`%s` %s' % kv for kv in BOUND_PROTOTYPE.items()) + '。',
+            '后果类：' + '、'.join('`%s` %s' % kv for kv in CONSEQUENCE_WORDS.items()) + '；`%s` 任何格都不估算。' % '`、`'.join(sorted(ESTIMATE_NEVER)),
+            '倍数的意思：把估算值再按不利方向打这个折（电流增益 ÷2、阻值 ×1.2 都写 2 / 1.2）之后结论仍成立；“余量下限”是余量本身至少多少。', '',
+            '| 格 | 可得性 | 允许的估算（倍数 · 适用后果 · 余量下限） | 失效后果 | 样机能否验 | 边界 |', '|---|---|---|---|---|---|']
+    for b in BOUNDS.values():
+        if b.estimates:
+            est = '<br>'.join('×%g · %s%s：%s' % (
+                e.factor, '/'.join(CONSEQUENCE_WORDS.get(c, c) for c in CONSEQUENCE_WORDS if c in e.applies) or '/'.join(sorted(e.applies)),
+                (' · 余量 ≥ %g %s' % e.floor) if e.floor else '', _cell(e.how)) for e in b.estimates)
+        else:
+            est = '不估算'
+        out.append('| `%s` | `%s` | %s | %s | %s | %s |' % (
+            b.id, b.availability, est, '/'.join(CONSEQUENCE_WORDS.get(c, c) for c in b.consequence),
+            '、'.join(BOUND_PROTOTYPE[p].split('（')[0] for p in b.prototype), _cell(b.boundary)))
     return '\n'.join(out) + '\n'
 
 QUESTION_BAN_RE = re.compile(r'禁止|严禁|勿|不(得|能|可|准|要|把|以|强加|默认|另|自动|单|统一|套|据此|强制|推翻|代替|归|随|再|必|需)')

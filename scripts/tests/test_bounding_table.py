@@ -67,6 +67,47 @@ class TableTests(unittest.TestCase):
                          ['ZENER-VZ-UPPER', 'ZENER-VZ-LOWER', 'ZENER-VZ-TEMP', 'DIODE-IR-HOT'])
         self.assertEqual(catalog.bounds_for(['connector']), [])
 
+    def test_every_cell_carries_its_decision_boundary(self):
+        # 2026-10-26 (user: 判决的边界按器件类型来): availability, the estimates that may pass and their factor,
+        # the physical consequence, prototype verifiability and a boundary sentence, in the table's vocabulary
+        from electrical_contract import IMPACT_CLASSES
+        for b in catalog.BOUNDS.values():
+            self.assertIn(b.availability, catalog.BOUND_AVAILABILITY, b.id)
+            self.assertTrue(b.consequence and set(b.consequence) <= set(IMPACT_CLASSES), b.id)
+            self.assertTrue(b.prototype and set(b.prototype) <= set(catalog.BOUND_PROTOTYPE), b.id)
+            self.assertTrue(b.boundary, b.id)
+            seen = set()
+            for e in b.estimates:
+                self.assertGreater(e.factor, 1, b.id)
+                self.assertTrue(e.applies and e.applies <= set(IMPACT_CLASSES) - catalog.ESTIMATE_NEVER, b.id)
+                self.assertFalse(seen & e.applies, (b.id, 'two estimate rules for one consequence class'))
+                seen |= e.applies
+                self.assertTrue(e.how, b.id)
+                if e.floor is not None:
+                    self.assertEqual((len(e.floor), type(e.floor[1])), (2, str), b.id)
+
+    def test_the_estimate_rule_is_read_by_cell_and_consequence_class(self):
+        rule = catalog.estimate_rule
+        self.assertEqual(rule('OPTO-CTR', 'REQUIRED_FUNCTION').factor, 2)                 # decision 2026-10-26
+        self.assertIsNone(rule('OPTO-CTR', 'COMPONENT_DAMAGE'))                            # a datum, never a damage path
+        self.assertEqual(rule('MOS-RDS-HOT', 'COMPONENT_DAMAGE').floor, (20, '°C'))        # decision 2
+        self.assertEqual(rule('IND-ISAT', 'COMPONENT_DAMAGE').factor, 1.3)
+        self.assertEqual((rule('MOS-VGS-ON', 'REQUIRED_FUNCTION').factor, rule('MOS-VGS-ON', 'COMPONENT_DAMAGE')), (2, None))   # decision 1
+        self.assertEqual((rule('IC-QUIESCENT', 'REQUIRED_FUNCTION').factor, rule('IC-QUIESCENT', 'COMPONENT_DAMAGE').factor), (1.3, 1.5))
+        for cell in ('FUSE-I2T', 'TVS-VC', 'DIODE-SURGE', 'CAP-SURGE-V', 'MOS-DISCHARGE-I2T', 'REF-IKA-MIN'):
+            self.assertIsNone(rule(cell, 'REQUIRED_FUNCTION'), cell)
+        for cls in catalog.ESTIMATE_NEVER:
+            self.assertIsNone(rule('OPTO-CTR', cls), cls)
+        self.assertIsNone(rule('NONE', 'REQUIRED_FUNCTION'))
+        self.assertIsNone(rule('NO-SUCH-CELL', 'REQUIRED_FUNCTION'))
+
+    def test_the_cells_added_for_the_r7_quantities(self):
+        for cell, kinds in (('CAP-SURGE-V', ('capacitor', 'electrolytic')), ('MOS-DISCHARGE-I2T', ('mosfet',)),
+                            ('IC-GATE-DRIVE-I', ('mosfet',))):
+            self.assertEqual(catalog.BOUNDS[cell].kinds, kinds)
+            self.assertTrue(catalog.cells_named_by({'CAP-SURGE-V': 'BULK 浪涌电压抬升', 'MOS-DISCHARGE-I2T': 'Q701 短路放电峰流',
+                                                    'IC-GATE-DRIVE-I': 'Qg × f 驱动电流'}[cell]).count(cell), cell)
+
     def test_the_reference_document_is_generated_from_the_table(self):
         path = ROOT / 'references' / 'bounding-table.md'
         text = path.read_text(encoding='utf-8')

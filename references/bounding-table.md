@@ -57,14 +57,14 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 
 | 格 | 器件类别 | 参数 | 开着的一侧 | 随什么变 / 方向 | 推法（公式） | 推不出时 | 出处 |
 |---|---|---|---|---|---|---|---|
-| `ZENER-VZ-UPPER` | zener | VZ 上界 | UPPER | 工作电流 IZ / INCREASING | G1；G2 | `VENDOR_DATUM` | evidence-proportionality.md“齐纳管低电流” |
+| `ZENER-VZ-UPPER` | zener | VZ 上界 | UPPER | 工作电流 IZ / INCREASING | G1；G2；G9 | `VENDOR_DATUM` | evidence-proportionality.md“齐纳管低电流” |
 | `ZENER-VZ-LOWER` | zener | VZ 下界 | LOWER | 工作电流 IZ / INCREASING | G1；G2；G3（`slope_bound`）；G8 | `VENDOR_DATUM` | evidence-proportionality.md“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界 |
-| `ZENER-VZ-TEMP` | zener、shunt_reference | VZ / 基准电压随温度 | — | 温度 / NONMONOTONIC | G1；G4（`tempco_bound`） | `VENDOR_DATUM` | evidence-proportionality.md第 4 步“温度系数的 min/max” |
+| `ZENER-VZ-TEMP` | zener、shunt_reference | VZ / 基准电压随温度 | — | 温度 / NONMONOTONIC | G1；G4（`tempco_bound`）；G9 | `VENDOR_DATUM` | evidence-proportionality.md第 4 步“温度系数的 min/max” |
 | `REF-IKA-MIN` | shunt_reference | 最小阴极电流 Ika | LOWER | 工作态 / — | G1 | `OUTSIDE_SPECIFIED` | 定界表决定（architecture.md 2026-10-23） |
 | `TVS-STANDOFF` | tvs | 正常最大值不超过 VRWM | UPPER | 工作电压 / — | G1 | `OUTSIDE_SPECIFIED` | wca-formulas.md TVS 行 |
 | `TVS-VC` | tvs | 钳位电压上界 | UPPER | 冲击电流 Ipp（同一波形） / INCREASING | G1；G2 | `VENDOR_DATUM` | wca-formulas.md TVS 行 |
 | `TVS-LEAK-HOT` | tvs | 高温漏电 | UPPER | 温度 / INCREASING | G1；G2；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
-| `DIODE-VF` | diode、bridge_rectifier | VF 上界随电流 | UPPER | 正向电流 IF / INCREASING | G1；G2 | `VENDOR_DATUM` | evidence-proportionality.md“单调外推” |
+| `DIODE-VF` | diode、bridge_rectifier | VF 上界随电流 | UPPER | 正向电流 IF / INCREASING | G1；G2；G8 | `VENDOR_DATUM` | evidence-proportionality.md“单调外推” |
 | `DIODE-VF-COLD` | diode、bridge_rectifier | VF 上界随温度（冷态最差） | UPPER | 温度 / DECREASING | G1；G2；G4（`tempco_bound`）；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“单调外推” |
 | `DIODE-IR-HOT` | diode、bridge_rectifier、zener | 高温反向漏电 | UPPER | 温度 / INCREASING | G1；G2；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“二极管反向漏电” |
 | `DIODE-SURGE` | diode、bridge_rectifier | 浪涌 IFSM 换算到其他脉宽 | UPPER | 脉宽 / DECREASING | G1；G2；G5（`half_sine_i2t`、`surge_current_at_width`） | `VENDOR_DATUM` | evidence-proportionality.md“脉冲与浪涌” |
@@ -78,15 +78,62 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `NTC-SENSE` | ntc | 检测用 NTC 的 R(T) | — | 温度 / DECREASING | G5（`ntc_table_bound`、`ntc_beta_bound`） | `BOUNDED` | 本表“几条口径”检测用 NTC；datasheets.md“公开曲线表先于索取” |
 | `NTC-INRUSH-HOT` | ntc | 浪涌限制 NTC 热态重新接入 | LOWER | 热态 / — | G6（`inrush_peak_current`、`inrush_i2t`） | `BOUNDED` | 本表“几条口径”浪涌限制 NTC |
 | `RES-POWER` | resistor | 电阻功率、脉冲、TCR 与耐压 | UPPER | 温度与脉宽 / — | G1；G5 | `VENDOR_DATUM` | commodity-floors.md 片式电阻 |
-| `MLCC-EFFECTIVE-C` | capacitor | MLCC 有效容量（偏压、温度、老化） | LOWER | 直流偏压与温度 / DECREASING | G1；G2；G5（`table_interpolate`） | `VENDOR_DATUM` | commodity-floors.md MLCC；wca-formulas.md |
-| `ECAP-ESR-RIPPLE` | electrolytic | 电解 ESR 与纹波电流（温度、频率系数表） | — | 温度与频率 / NONMONOTONIC | G1；G5（`table_interpolate`） | `VENDOR_DATUM` | commodity-floors.md 电解 |
-| `IND-ISAT` | inductor、transformer | 电感 Isat（按资料定义取温度最坏值） | LOWER | 温度 / DECREASING | G1；G2；G5（`table_interpolate`） | `VENDOR_DATUM` | commodity-floors.md 电感 |
+| `MLCC-EFFECTIVE-C` | capacitor | MLCC 有效容量（偏压、温度、老化） | LOWER | 直流偏压与温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G8 | `VENDOR_DATUM` | commodity-floors.md MLCC；wca-formulas.md |
+| `ECAP-ESR-RIPPLE` | electrolytic | 电解 ESR 与纹波电流（温度、频率系数表） | — | 温度与频率 / NONMONOTONIC | G1；G5（`table_interpolate`）；G9 | `VENDOR_DATUM` | commodity-floors.md 电解 |
+| `IND-ISAT` | inductor、transformer | 电感 Isat（按资料定义取温度最坏值） | LOWER | 温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G9（`typical_band`） | `VENDOR_DATUM` | commodity-floors.md 电感 |
 | `FUSE-I2T` | fuse | 保险丝 I²t 与温度降额 | — | 脉宽与温度 / NONMONOTONIC | G1；G5（`table_interpolate`） | `VENDOR_DATUM` | commodity-floors.md |
 | `IC-THRESHOLD` | ic 及各 IC 角色 | 门限、基准 | — | 温度 / NONMONOTONIC | G1；G4（`tempco_bound`）；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
 | `IC-QUIESCENT` | ic 及各 IC 角色 | 静态电流、按模式的功耗 | UPPER | 模式与温度 / — | G1；G9（`typical_band`） | `VENDOR_DATUM` | evidence-proportionality.md“只有典型值的参数” |
 | `IC-TIMING` | ic 及各 IC 角色 | 时序参数（最小导通、延时、消隐） | — | 温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
-| `IC-IO-LEVEL` | ic 及各 IC 角色 | IO 的 VOH/VOL | — | 负载电流与 VDD / INCREASING | G1；G2 | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
+| `IC-IO-LEVEL` | ic 及各 IC 角色 | IO 的 VOH/VOL | — | 负载电流与 VDD / INCREASING | G1；G2；G9 | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
 | `IC-IO-CURRENT` | ic 及各 IC 角色 | IO 灌/拉电流超出规定 | UPPER | 负载电流 / — | G1；G10 | `VENDOR_DATUM` | evidence-proportionality.md“手册的情况按四档判” |
 | `IC-RECOMMENDED` | ic 及各 IC 角色 | 推荐工作条件（绝对最大额定只算损坏边界） | — | 工作条件 / — | G1 | `OUTSIDE_SPECIFIED` | DEV-C05 |
+| `CAP-SURGE-V` | capacitor、electrolytic | 浪涌/瞬态时电容电压对额定电压 | UPPER | 浪涌电荷与回路阻抗 / INCREASING | G2；G5；G6 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md |
+| `MOS-DISCHARGE-I2T` | mosfet | 短路放电峰流与 I²t 对脉冲能力 | UPPER | 回路阻抗 / DECREASING | G2；G5；G6 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md |
+| `IC-GATE-DRIVE-I` | mosfet | 栅极驱动平均电流 Qg·f 对偏置供给 | UPPER | 开关频率与 VGS / INCREASING | G1；G2；G9（`typical_band`） | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md |
+
+### 判决边界
+
+可得性：`GUARANTEED` 全保证：工作范围内有 min/max；`TEST_POINT` 测试点保证：只在标称测试条件保证，别处靠单调性或斜率推；`INDUSTRY_NONE` 行业不给：全温、寿命、低电流等只给典型曲线，索取也拿不到；`TYPICAL_BY_DEFINITION` 定义即典型：参数定义本身就是典型值。
+样机能否验：`MEASURABLE` 可测（常温或高低温箱）；`TYPE_TEST` 型式试验（浪涌、ESD、破坏性，样机阶段不做）；`NOT_VERIFIABLE` 不可（寿命衰减）。
+后果类：`REQUIRED_FUNCTION` 功能、`PERFORMANCE_OR_LIFE` 性能/寿命、`COMPONENT_DAMAGE` 损坏、`DAMAGE_OR_HAZARD` 安全；`CORE_LINK_LOSS`、`DAMAGE_OR_HAZARD` 任何格都不估算。
+倍数的意思：把估算值再按不利方向打这个折（电流增益 ÷2、阻值 ×1.2 都写 2 / 1.2）之后结论仍成立；“余量下限”是余量本身至少多少。
+
+| 格 | 可得性 | 允许的估算（倍数 · 适用后果 · 余量下限） | 失效后果 | 样机能否验 | 边界 |
+|---|---|---|---|---|---|
+| `ZENER-VZ-UPPER` | `TEST_POINT` | ×1.5 · 功能/性能/寿命：只有典型 rdif 时：典型 rdif ×1.5 | 功能/损坏 | 可测 | 偏置用途允许估算；作钳位保护（下游过压→损坏）时不估算 |
+| `ZENER-VZ-LOWER` | `INDUSTRY_NONE` | ×1.2 · 功能/性能/寿命：典型曲线 G8 在工作电流取值，再 ÷1.2（≈×0.85） | 功能 | 可测 | 允许估算判 PASS；两测试点之间 G3 是保证值，最低测试点以下行业不给，“向厂家索取低电流保证值”要提示 |
+| `ZENER-VZ-TEMP` | `TEST_POINT` | ×2 · 功能/性能/寿命：典型温漂 ×2 | 功能/性能/寿命 | 可测 | 并联基准多给 max 温漂（G4 保证）；普通齐纳只给典型温漂，允许估算（×2） |
+| `REF-IKA-MIN` | `GUARANTEED` | 不估算 | 功能 | 可测 | 不估算：规格地板，低于 Ika(min) 即超出规定区，记失败 |
+| `TVS-STANDOFF` | `GUARANTEED` | 不估算 | 损坏 | 可测 | 不估算 |
+| `TVS-VC` | `TEST_POINT` | 不估算 | 损坏 | 型式试验 | 不估算；缺波形对应的保证值时按最坏（Ipp 处 VC max）判 |
+| `TVS-LEAK-HOT` | `INDUSTRY_NONE` | ×2 · 功能/性能/寿命：典型温度曲线比例外推 G7，再 ×2 | 功能/性能/寿命 | 可测 | 允许估算（×2）：25 °C max 保证，高温只有典型曲线 |
+| `DIODE-VF` | `TEST_POINT` | ×1.15 · 功能/性能/寿命：超出测试点需要典型曲线时 ×1.15<br>×1.15 · 损坏 · 余量 ≥ 20 °C：同上；用它判温升损坏时结温余量 ≥ 20 °C | 性能/寿命/损坏 | 可测 | 允许估算（×1.15）；判温升损坏时另要结温余量 ≥ 20 °C |
+| `DIODE-VF-COLD` | `INDUSTRY_NONE` | ×1.15 · 功能/性能/寿命：典型温度曲线 ×1.15；物理温漂上界（约 −2 mV/°C）可作 G4 保证推法 | 功能 | 可测 | 允许估算（×1.15） |
+| `DIODE-IR-HOT` | `TEST_POINT` | ×2 · 功能/性能/寿命：比例外推 G7，再 ×2 | 功能/损坏 | 可测 | 功能用途允许（×2）；判高压整流反向功耗热失控（损坏）要 hot max，没有则不估算 |
+| `DIODE-SURGE` | `TEST_POINT` | 不估算 | 损坏/安全 | 型式试验 | 不估算：I²t（√t）换算已是保守推法；无 IFSM 的器件开放 |
+| `MOS-VGS-ON` | `TEST_POINT` | ×2 · 功能/性能/寿命：小信号 / 电平转换：典型传输曲线的 RDS ×2 | 功能/损坏 | 可测 | 功率开关（损坏）要测试点覆盖工作 VGS，不估算；小信号开关（功能）允许估算（×2） |
+| `MOS-RDS-HOT` | `INDUSTRY_NONE` | ×1.2 · 功能/性能/寿命/损坏 · 余量 ≥ 20 °C：25 °C max × 典型温度比（G7），再 ×1.2；判损坏时结温余量 ≥ 20 °C | 性能/寿命/损坏 | 可测 | 允许估算判 PASS（×1.2 且结温余量 ≥ 20 °C）：全行业做法，hot max 行业不给 |
+| `MOS-SOA-HOT` | `GUARANTEED` | 不估算 | 损坏 | 型式试验 | 按 SOA 推法降额后视作保证；不另估算 |
+| `MOS-LINEAR` | `TEST_POINT` | ×1.4 · 功能/性能/寿命：典型传输曲线 gm ÷1.4（≈×0.7）；VGS(th) 的 min/max 是保证值 | 功能 | 可测 | 允许估算（÷1.4）；功耗/结温部分走 MOS-SOA-HOT |
+| `BJT-SAT` | `GUARANTEED` | 不估算 | 损坏 | 可测 | 按 FORCED_BETA，不估算 |
+| `BJT-HFE` | `TEST_POINT` | ×1.5 · 功能/性能/寿命：比例外推 G7，再 ÷1.5 | 功能 | 可测 | 允许估算（÷1.5）；饱和开关走 BJT-SAT |
+| `OPTO-CTR` | `INDUSTRY_NONE` | ×2 · 功能/性能/寿命：25 °C 分档下限 × 典型温度曲线最低点（G7），再 ÷2（含寿命衰减） | 功能 | 可测、不可 | 允许估算判 PASS（÷2）；在保护环里也是阈值偏移，不是器件损坏。“索取全温 CTR”要提示 |
+| `NTC-SENSE` | `GUARANTEED` | 不估算 | 功能 | 可测 | 按表推法，不估算 |
+| `NTC-INRUSH-HOT` | `TYPICAL_BY_DEFINITION` | 不估算 | 损坏/安全 | 型式试验 | 不估算；热态阻值按 0 Ω（“按 0 Ω 定结论”） |
+| `RES-POWER` | `GUARANTEED` | 不估算 | 损坏 | 可测 | 不估算：额定、降额与脉冲曲线按保证；商品地板见 commodity-floors.md |
+| `MLCC-EFFECTIVE-C` | `TYPICAL_BY_DEFINITION` | ×1.25 · 功能/性能/寿命：典型偏压曲线 × (1 − 公差) × 老化 0.9，再 ÷1.25（≈×0.8）；补偿网络 ÷1.4 | 功能/性能/寿命 | 可测 | 允许估算判 PASS（÷1.25） |
+| `ECAP-ESR-RIPPLE` | `TEST_POINT` | ×1.3 · 功能/性能/寿命：系数表外的频率：ESR ×1.3 | 性能/寿命/损坏 | 可测 | 表内按 G5（保证）；表外允许估算（×1.3）；寿命走 DEV-C02。“资料已读只剩折算”不是厂家数据缺口 |
+| `IND-ISAT` | `TYPICAL_BY_DEFINITION` | ×1.3 · 功能/性能/寿命/损坏：典型 Isat 热态值 ÷1.3（峰流 ≤ Isat/1.3） | 损坏 | 可测 | 允许估算判 PASS（÷1.3）：损坏类但行业别无他法；不满足 1.3 倍就开放或失败 |
+| `FUSE-I2T` | `GUARANTEED` | 不估算 | 安全/功能 | 型式试验 | 不估算：保护判 max 曲线，误动作判 min 曲线；缺的若是本板冷/热态 NTC 阻值，种类是 DESIGN_VALUE |
+| `IC-THRESHOLD` | `GUARANTEED` | ×2 · 功能/性能/寿命：只给 25 °C 加典型温漂时：典型温漂 ×2 | 功能/损坏 | 可测 | 功能用途允许（×2）；用门限判保护覆盖（OVP 上限对下游绝限，损坏）时要全温 min/max |
+| `IC-QUIESCENT` | `TYPICAL_BY_DEFINITION` | ×1.3 · 功能/性能/寿命：典型 ×1.3（现行 G9）<br>×1.5 · 损坏：用它判偏置电阻功耗损坏时 ×1.5 | 功能/性能/寿命 | 可测 | 允许（功能 ×1.3，损坏用途 ×1.5） |
+| `IC-TIMING` | `GUARANTEED` | ×2 · 功能/性能/寿命：只给典型的延时：典型 ×2，取不利方向 | 功能/损坏 | 可测 | 功能时序允许（×2）；用延时判过冲过压损坏时要 max，没有则不估算 |
+| `IC-IO-LEVEL` | `TEST_POINT` | ×1.5 · 功能/性能/寿命：超测试电流：输出阻抗典型 ×1.5 | 功能 | 可测 | 允许估算（×1.5） |
+| `IC-IO-CURRENT` | `GUARANTEED` | 不估算 | 损坏 | 可测 | 不估算 |
+| `IC-RECOMMENDED` | `GUARANTEED` | 不估算 | 功能/损坏 | 可测 | 不估算：超出即 OUTSIDE_SPECIFIED |
+| `CAP-SURGE-V` | `GUARANTEED` | 不估算 | 损坏/安全 | 型式试验 | 不估算：额定电压是保证值，缺的是浪涌源与回路（设计量或标准条款）；电容爆裂是安全后果 |
+| `MOS-DISCHARGE-I2T` | `TEST_POINT` | 不估算 | 损坏 | 可测 | 不估算：脉冲能力按手册单脉冲曲线（保证）判，回路阻抗按最坏（设计量，DESIGN_VALUE） |
+| `IC-GATE-DRIVE-I` | `TEST_POINT` | ×1.3 · 功能/性能/寿命：Qg 只有典型时 ×1.3 | 性能/寿命 | 可测 | 允许估算（×1.3）：Qg max 多数手册给（G1），只有典型时 ×1.3 |
 
 <!-- bounds:end -->

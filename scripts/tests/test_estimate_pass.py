@@ -26,7 +26,7 @@ PROTOTYPE = {'receivers': ['样机试验'], 'constraint': 'Q9 偏置在 −10 °
 
 
 def estimate(**extra):
-    return dict({'kind': 'ESTIMATE', 'comparison': 'GT', 'conditions': ['c1', 'c2'],
+    return dict({'kind': 'ESTIMATE', 'comparison': 'GT', 'conditions': ['c1', 'c2'], 'cell': 'NONE',
                  'scope': '相似器件保证范围，−10..105 °C', 'consequence_class': 'REQUIRED_FUNCTION', 'handoff': 0},
                 **extra)
 
@@ -74,11 +74,12 @@ class EstimatePassTests(unittest.TestCase):
             self.assertTrue(any(OTHER_ROW in e and 'judges no' in e for e in errors), (extra, errors))
 
     def test_damage_or_protection_is_not_a_class_anestimate_passes(self):
+        # outside the table (cell NONE) the default holds; a hazard or core-link class is refused in every cell
         for cls in ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD', 'CORE_LINK_LOSS', 'LOCAL_OR_DATA', 'NONE'):
             p, r, db = estimated(consequence_class=cls)
             out = vr.validate_review(p, r, db)
-            self.assertTrue(any('FN-OTHER/margin' in e and 'REQUIRED_FUNCTION' in e for e in out['errors']),
-                            (cls, out['errors']))
+            word = 'no estimate passes' if cls in ('DAMAGE_OR_HAZARD', 'CORE_LINK_LOSS') else 'REQUIRED_FUNCTION'
+            self.assertTrue(any('FN-OTHER/margin' in e and word in e for e in out['errors']), (cls, out['errors']))
 
     def test_the_handoff_is_one_the_function_lists(self):
         for index in (2, -1, '0', True):   # two handoffs: True would index the second

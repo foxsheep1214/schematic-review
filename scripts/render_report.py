@@ -329,6 +329,32 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
 FIGURE_WORDS = {'ACTUAL': '现状', 'REFERENCE': '原厂参考', 'AFTER': '改后', 'MECHANISM': '失效过程'}
 
 
+def render_estimated_passes(items):
+    """按典型值估算判通过的检查（2026-10-26 决定 4）：每条估算一行，写在哪个功能、按定界表哪一格、怎么估、余量多少、
+    样机要测什么、涉及哪些检查；它们让定稿只能是有条件的。"""
+    if not items:
+        return []
+    out = ['## 按典型值估算的结论', '',
+           '下面 %d 项检查通过的依据不是手册保证值，而是按定界表允许的方法用典型值估算、再按倍数打折后仍满足。'
+           '这些结论在样机实测确认前只算有条件通过，原理图可以有条件定稿，但样机阶段必须测下表“样机要测”这一列。' % len(items), '',
+           '| 功能 | 参数（定界表格） | 怎么估的 | 余量 | 样机要测 | 涉及检查 |', '|---|---|---|---|---|---|']
+    groups = OrderedDict()
+    for e in items:
+        key = (e.get('function_id'), e.get('aspect'), e.get('cell'), e.get('how'), e.get('verification'))
+        groups.setdefault(key, []).append(e)
+    for (fid, aspect, cell_id, how, verification), rows in groups.items():
+        e = rows[0]
+        m = e.get('margin') or {}
+        margin = '%s %s 对 %s' % (_shown(m.get('value')), m.get('unit') or '', m.get('against') or '')
+        factor = e.get('estimate_factor')
+        how_text = (how or '') + ('（已按 ×%g 打折）' % factor if isinstance(factor, (int, float)) and not isinstance(factor, bool) else '')
+        out.append('| %s | %s（%s） | %s | %s | %s | %s |' % (
+            cell(fid or ''), cell(aspect or ''), cell(cell_id or 'NONE'), cell(how_text), cell(margin),
+            cell(verification or ''), cell('、'.join(r['check_id'] for r in rows))))
+    out.append('')
+    return out
+
+
 def render_figures(figures):
     """Each figure as an image packed under record/evidence, with its kind and caption below it."""
     lines = []
@@ -716,6 +742,9 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         why = '或'.join(OPEN_CAUSE_WORDS[c] for c in OPEN_CAUSE_WORDS if causes.get(c)) or '依据不足'
         sentences.append('另有 %d 件事因为%s，现在还判断不了%s' % (
             len(gap_tasks), why, '，其中 %d 件%s（P0）' % (p0, SEVERITY_WORDS['P0']) if p0 else ''))
+    estimated = gate.get('estimated_passes') or []
+    if estimated:
+        sentences.append('有 %d 项结论是按典型值估算的，样机实测确认后才算定，见“按典型值估算的结论”' % len(estimated))
     out += ['**%s。** %s。' % (RELEASE.get(release, release), '。'.join(sentences)), '']
     if notes.get('summary'):
         out += [notes['summary'], '']
@@ -869,6 +898,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         if pending:
             out += ['', '另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending))]
         out.append('')
+    out += render_estimated_passes(gate.get('estimated_passes'))
 
     # Everything about SR itself in one folded section, for its maintainers.
     sr = []
@@ -933,7 +963,8 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             ] + gap_subclass_counts(results, gaps) + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),
                                                   ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
                  if classes else []) + [
-            '| 交给后续环节的要求 | %d |' % len(handoffs),
+            '| 交给后续环节的要求 | %d |' % len(handoffs)] + (
+            ['| 按典型值估算判通过、样机实测后才算定 | %d 项 |' % len(estimated)] if estimated else []) + [
             '| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | %d |' % len(screen),
             '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '']
     out[counts_at:counts_at] = counts_block

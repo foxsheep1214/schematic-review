@@ -45,7 +45,7 @@ import results_model
 from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, finite, squeeze, text
 from function_reading import (requirement_document as _requirement_document, requirement_rows,
                               ESTIMATE_PASS_CLASSES, covers, decides_row, edges, estimate_handoff,
-    estimate_passes, judged, life_estimate, life_row, margin_proves, margin_verdict, overlaps,
+    estimate_in_table, estimate_passes, judged, life_estimate, life_row, margin_proves, margin_verdict, overlaps,
     prototype_estimate, reference_circuit, reference_judged, scope, unjudged_message)
 from results_model import LEVELS, OPEN_KINDS, VERDICTS
 from validate_remediation import READINESS
@@ -334,6 +334,57 @@ def netlist_evidence_errors(label, entries, db):
     return errors
 
 
+def _estimate_method_errors(label, basis):
+    """An estimate that names a table cell uses one of the cell's estimating methods (G7–G9); a guaranteed method
+    gives a GUARANTEED_BOUND, not an estimate."""
+    method = catalog.BOUND_METHODS.get(basis.get('method'))
+    if method is not None and method.basis != '估算' and dict(catalog.BOUNDS[basis['cell']].methods).get(method.code) is not None:
+        return ['%s: %s by %s gives a %s; write the margin as GUARANTEED_BOUND, or name the estimating method the cell '
+                'allows' % (label, basis['cell'], method.code, method.basis)]
+    return []
+
+
+def _estimate_boundary_errors(label, m, basis):
+    """2026-10-26 (user: 判决的边界按器件类型来): an estimate that passes names its cell; the cell's boundary says whether
+    this consequence class may pass on an estimate, with what factor, and what margin floor. Cell NONE keeps the default
+    (a required function or a performance; damage, overheating and protection rules take none)."""
+    cls = basis['consequence_class']
+    if cls in catalog.ESTIMATE_NEVER:
+        return ['%s: consequence_class %s names a hazard or a core link; no estimate passes it in any cell' % (label, cls)]
+    if 'cell' not in basis:
+        return ['%s: an estimate that passes names basis.cell — the bounding-table cell whose boundary allows it '
+                '(references/bounding-table.md 判决边界), or %s for a parameter outside the table' % (label, catalog.NO_CELL)]
+    if not estimate_in_table(basis):
+        if basis.get('cell') != catalog.NO_CELL:
+            return []   # _formula_errors names the unknown cell
+        if cls not in ESTIMATE_PASS_CLASSES:
+            return ['%s: outside the table (cell %s) an estimate passes only a required function or a performance '
+                    '(consequence_class %s); damage, overheating and protection need a guaranteed bound'
+                    % (label, catalog.NO_CELL, '/'.join(ESTIMATE_PASS_CLASSES))]
+        return []
+    errors = _estimate_method_errors(label, basis)
+    bound = catalog.BOUNDS[basis['cell']]
+    rule = catalog.estimate_rule(bound.id, cls)
+    if rule is None:
+        allowed = sorted({c for e in bound.estimates for c in e.applies})
+        return errors + ['%s: cell %s takes no estimate for consequence_class %s (%s); %s' % (
+            label, bound.id, cls, ('it allows ' + '/'.join(allowed)) if allowed else 'the cell never estimates', bound.boundary)]
+    factor = basis.get('estimate_factor')
+    if not (isinstance(factor, (int, float)) and not isinstance(factor, bool) and abs(factor - rule.factor) < 1e-9):
+        errors.append('%s: cell %s passes a %s estimate only after the value is derated by ×%g (%s); write '
+                      'basis.estimate_factor: %g and compute the margin after that derating'
+                      % (label, bound.id, cls, rule.factor, rule.how, rule.factor))
+    if rule.floor is not None:
+        value, unit = rule.floor
+        if (m.get('unit') or '').strip() != unit:
+            errors.append('%s: cell %s asks a %s estimate for a margin of at least %g %s; express this margin in %s'
+                          % (label, bound.id, cls, value, unit, unit))
+        elif not (_finite(m.get('value')) and m['value'] >= value):
+            errors.append('%s: cell %s passes a %s estimate only with a margin of at least %g %s (this one: %s %s)'
+                          % (label, bound.id, cls, value, unit, m.get('value'), unit))
+    return errors
+
+
 def _basis_errors(label, m, conditions, claim_ids):
     """The third layer: what a margin proves. Decisive kinds name the limit compared against, a numeric limit, and the
     regime the computed quantity holds at; a different regime from the limit's needs a conversion."""
@@ -350,12 +401,13 @@ def _basis_errors(label, m, conditions, claim_ids):
     errors.extend(_formula_errors(label, basis))
     kind = basis['kind']
     if kind == 'ESTIMATE':
-        if 'consequence_class' in basis and basis['consequence_class'] not in ESTIMATE_PASS_CLASSES:
-            errors.append('%s: an estimate passes only a required function or a performance (consequence_class %s); '
-                          'damage, overheating and protection need a guaranteed bound' % (label, '/'.join(ESTIMATE_PASS_CLASSES)))
         if ('consequence_class' in basis) != ('handoff' in basis):
             errors.append(label + ': an estimate that passes names both its consequence_class and the prototype handoff '
                                   '(handoff: index into the function\'s handoffs)')
+        if 'consequence_class' in basis:
+            errors.extend(_estimate_boundary_errors(label, m, basis))
+        elif estimate_in_table(basis):
+            errors.extend(_estimate_method_errors(label, basis))
         return errors
     limit = conditions.get(basis.get('limit'))
     if not (limit and limit.get('kind') == 'NUMERIC_LIMIT'):
@@ -1640,6 +1692,31 @@ def estimate_pass_errors(expected, checks, functions):
             errors.append('%s: a row passing on an estimate hands the prototype test on: handoff.required with the '
                           'function\'s handoff (%s)' % (cid, estimate[1]['verification']))
     return errors
+
+
+def estimated_passes(expected, checks, functions):
+    """The rows that pass on an estimate (2.1; boundary per cell 2026-10-26): C-grade evidence, the release is at most
+    CONDITIONAL_GO, and the report lists them as 按典型值估算、待样机确认 — one entry per row with its margin, cell,
+    factor, consequence class and the prototype test that confirms it."""
+    out, by_id = [], {fn.get('id'): fn for fn in functions or [] if isinstance(fn, dict)}
+    for cid, row in sorted(checks.items()):
+        fn = by_id.get(row.get('function_id')) if isinstance(row, dict) else None
+        if not (fn and row.get('review_result') == 'PASS' and text(row.get('aspect'))):
+            continue
+        state = ((expected.get(cid) or {}).get('object') or {}).get('state')
+        estimate = prototype_estimate(fn, row['aspect'], state, cid)
+        if not estimate or judged(fn, row['aspect'], state, cid) != estimate[0]:
+            continue
+        rationale, handoff, m = estimate
+        basis = m.get('basis') or {}
+        cell = basis.get('cell')
+        rule = catalog.estimate_rule(cell, basis.get('consequence_class')) if estimate_in_table(basis) else None
+        out.append({'check_id': cid, 'function_id': fn['id'], 'aspect': row['aspect'], 'state': state,
+                    'cell': cell, 'consequence_class': basis.get('consequence_class'),
+                    'estimate_factor': basis.get('estimate_factor'), 'how': rule.how if rule else basis.get('scope'),
+                    'margin': {'value': m.get('value'), 'unit': m.get('unit'), 'against': m.get('against')},
+                    'verification': handoff.get('verification'), 'receivers': list(handoff.get('receivers') or [])})
+    return out
 
 
 def configuration_errors(expected, checks, functions):

@@ -4,6 +4,7 @@ judgement settles an aspect, when an estimate passes. The row derivation (③ de
 """
 import re
 
+import catalog
 import requirement_bindings
 from electrical_contract import LOCATOR_WORDS_RE, finite, text
 
@@ -13,8 +14,10 @@ STATELESS = 'STATELESS'
 # mission profile, written as a BOM constraint; no vendor-data item is opened for it.
 LIFE_ROW_RE = re.compile(r'^(DEV-C02\.LIFE|DEV-C06)\.')
 # An estimate passes a required function or a performance when a prototype test is handed on (SR self-check 2.1, user:
-# 估算 + 样机移交可判通过); damage, overheating and protection still need a guaranteed bound, so the rules about them
-# (stress and rating, connector current, converter current stress, protection thresholds, clamps, all of PRO) take none.
+# 估算 + 样机移交可判通过). Which estimate may pass which consequence class is decided by the bounding-table cell the
+# margin names (2026-10-26, user: 判决的边界按器件类型来 — `catalog.estimate_rule`); the two constants below are the default
+# for a margin whose cell is NONE: damage, overheating and protection rules (stress and rating, connector current,
+# converter current stress, protection thresholds, clamps, all of PRO) take no estimate outside the table.
 ESTIMATE_PASS_CLASSES = ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE')
 NO_ESTIMATE_PASS_RE = re.compile(r'^(?:(?:DEV-C01|DEV-C04|PWR-C03|PWR-C06|PWR-C10|DRV-C01)\.|PRO-)')
 REFERENCE_FIELDS = ('figure', 'connection', 'load')
@@ -129,26 +132,36 @@ def estimate_handoff(fn, basis):
     return h
 
 
-def estimate_passes(fn, m):
-    """An ESTIMATE margin written to pass a required function or a performance on a prototype handoff (2.1)."""
+def estimate_in_table(basis):
+    """The margin names a cell of the bounding table (not NONE, not absent): the cell decides its estimate."""
+    return isinstance(basis, dict) and basis.get('cell') in catalog.BOUNDS
+
+
+def estimate_passes(fn, m, check_id=None):
+    """An ESTIMATE margin written to pass on a prototype handoff (2.1). With a table cell the cell's boundary decides
+    (`catalog.estimate_rule`: the consequence class it applies to, whatever the row's rule); with cell NONE the default
+    holds: a required function or a performance, not on a damage, overheating or protection rule."""
     basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
-    return (basis.get('kind') == 'ESTIMATE' and basis.get('consequence_class') in ESTIMATE_PASS_CLASSES
-            and estimate_handoff(fn, basis) is not None)
+    if basis.get('kind') != 'ESTIMATE' or estimate_handoff(fn, basis) is None:
+        return False
+    cls = basis.get('consequence_class')
+    if estimate_in_table(basis):
+        return catalog.estimate_rule(basis['cell'], cls) is not None
+    return cls in ESTIMATE_PASS_CLASSES and not (isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id))
 
 
 def prototype_estimate(fn, aspect, state=None, check_id=None):
-    """An ESTIMATE margin that meets its target, used for a required function or a performance and handed to the
-    prototype test it names (2.1): (rationale, handoff) or None. Not on a rule about damage, overheating or protection."""
-    if isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id):
-        return None
+    """An ESTIMATE margin that meets its target and is handed to the prototype test it names (2.1): (rationale, handoff)
+    or None. Its cell's boundary says which consequence class it may pass; with cell NONE, not a rule about damage,
+    overheating or protection."""
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
     for m in margins(calc):
         basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
         met = finite(m.get('value')) and (m['value'] >= 0 if basis.get('comparison') == 'GE' else m['value'] > 0)
-        if met and estimate_passes(fn, m) and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
+        if met and estimate_passes(fn, m, check_id) and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
             handoff = estimate_handoff(fn, basis)
             return ('%s；估算余量 %s%s 对 %s，样机实测移交：%s' % (calc.get('result') or '', m['value'], m.get('unit') or '',
-                                                     m.get('against') or '', handoff['verification']), handoff)
+                                                     m.get('against') or '', handoff['verification']), handoff, m)
     return None
 
 
