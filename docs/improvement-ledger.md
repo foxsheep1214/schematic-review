@@ -7,6 +7,27 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Step 4.2, sorting insufficient evidence, reads the open item; ④ and ⑤ get numbered sub-tasks (2026-10-25)
+
+The user asked for ④'s second task ("第四个步骤的第二项任务呢？"), why ④'s tasks carry no numbers, and then took the plan
+("4.2 的 A–C 执行，④/⑤ 小节编号也做"). On the four R7 records the sorting of insufficient evidence had moved to the open
+item's kind, but the three downstream screens still read only the row's derived missing_inputs (the item's `what`) and hit
+nothing, while 2/0/6/2 DESIGN_VALUE / VENDOR_DATUM items accepted a prototype measurement or a simulation in their closing
+condition (three opto CTRs "保证或高低温实测", a port-short peak "实测峰流", a bulk surge "实测或仿真上界"); the same gap
+took three kinds across records (port short: DESIGN_VALUE blocking 16/19 rows twice, VENDOR_DATUM blocking 1 row twice).
+`review_quality.downstream_closures` flags a DESIGN_VALUE / VENDOR_DATUM item whose closure, acquisition or
+why_insufficient (deferred 随后/留给 clauses removed) names a downstream-only source, with the rows it blocks
+(DOWNSTREAM_RECORDED_AS_DESIGN_GAP; `DOWNSTREAM_RE` learns 仿真); `TEMPLATE_FIELDS` adds closure and acquisition so one
+sentence on several gaps is a TEMPLATE_REASON hint. SKILL ④ is split into 4.1 对账前的功能复核 / 4.2 证据不足的分类 /
+4.3 跑校验与处置疑点 and ⑤ into 5.1 渲染报告与白话说明 / 5.2 打包与交付 (headings only; 4.2 states that the kind decides,
+that a closure names only what this stage can obtain, the four hints and the done mark). plan-and-results.md and
+verdicts-and-release.md carry the new hint.
+
+- Event: user:2026-10-25 (④ task 2 strict audit; A–C and the numbering executed), records SR-20261025-R7-验收-*-660f790
+- Causes: rule_not_enforced 1 (the downstream screen read the wrong layer), rule_missing 1 (closure and acquisition had no template check), knowledge_missing 1 (④/⑤ tasks unnumbered, 4.2 without a done mark)
+- Changed: scripts/review_quality.py, scripts/review_functions.py, scripts/tests/test_review_functions.py, SKILL.md, references/plan-and-results.md, references/verdicts-and-release.md, docs/2026-10-25-task-loop.md, evals/mutation/mutations.json, evals/mutation/README.md
+- Gates: 2138 unit tests, 548 contract tests, KiCad replay 195/195, typical circuits 117/180/14 unchanged; M623–M626 and the two batches' 197 changed-file mutations run from a snapshot, result with the next commit
+
 ## Step ④ task 1, the function re-check before reconciliation, gets signals and a gate (2026-10-25)
 
 The user asked for a strict audit of ④'s first task ("第4个步骤的第一项任务，严格审核判定") and then took every item

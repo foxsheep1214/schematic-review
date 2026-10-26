@@ -89,7 +89,7 @@ NUMBER_RE = re.compile(r'[-+]?\d+(?:\.\d+)?')
 PIN_RE = re.compile(r'^[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_+-]+$')
 # A judgement that only says the aspect does not apply (proposals of 2026-10-23, item 2c).
 NOT_APPLIES_RE = re.compile(r'不适用|无此问题|按拓扑(无|不)|不涉及')
-TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient')
+TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient', 'closure', 'acquisition')   # one sentence on several gaps
 ID_RE = re.compile(r'^FN-[A-Za-z0-9][A-Za-z0-9_.-]*$')
 KEY_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]*$')
 

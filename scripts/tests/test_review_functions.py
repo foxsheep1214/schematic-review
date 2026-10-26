@@ -928,9 +928,14 @@ class ReviewerAgreementTests(unittest.TestCase):
         self.assertTrue(any(h['code'] == 'TEMPLATE_REASON' and h['field'] == 'no_margin_reason'
                             and h['items'] == ['FN-BIAS/AUX-5V-MIN', 'FN-HV/HV-X'] for h in hints), hints)
         self.assertTrue(any(h['code'] == 'TEMPLATE_REASON' and h['field'] == 'rationale' for h in hints), hints)
+        # the copied closure is the same sentence on two gaps (4.2: one method on several objects is one work item)
+        self.assertTrue(any(h['code'] == 'TEMPLATE_REASON' and h['field'] == 'closure' for h in hints), hints)
         other['open'][0]['no_margin_reason'] = 'HV 启动电流还没有定'
         other['open'][0]['decides'][0]['rationale'] = 'HV 启动电流进入 VCC 上升的计算'
+        other['open'][0]['closure'] = 'HV 启动电流写进规格且 ≤ 1 mA'
         self.assertEqual(template_hints([fn, other]), [])
+        fn['open'][0]['acquisition'] = other['open'][0]['acquisition'] = '向原厂索取高低温下的保证值'
+        self.assertEqual([h['field'] for h in template_hints([fn, other]) if h['code'] == 'TEMPLATE_REASON'], ['acquisition'])
 
     def test_several_gaps_awaiting_one_document_of_one_part_are_a_hint(self):
         # Three items awaited the same coupling figure of one transformer, from one magnetics drawing, at P1, P1 and P3.
@@ -1188,6 +1193,35 @@ class ReviewRecheckHintTests(unittest.TestCase):
             codes = [c['code'] for c in screen_quality(p, r, db, temp)['candidates']]
             self.assertIn('UNIT_GLYPH_SUSPECT', codes)
             self.assertNotIn('UNIT_GLYPH_SUSPECT', [c['code'] for c in screen_quality(p, r, db)['candidates']])
+
+
+class DownstreamClosureTests(unittest.TestCase):
+    """4.2: a DESIGN_VALUE or VENDOR_DATUM open item is closed by a datum or a spec; a closing condition that accepts a
+    prototype measurement, a sample or a simulation is the downstream tier written into a design gap."""
+
+    def downstream(self, **item):
+        from review_quality import screen_quality
+        fn = bias_function()
+        fn['open'][0].update(item)
+        p, r, db = ledger(fn)
+        return [c for c in screen_quality(p, r, db)['candidates'] if c['code'] == 'DOWNSTREAM_RECORDED_AS_DESIGN_GAP']
+
+    def test_a_closure_by_measurement_is_flagged_with_the_rows_it_blocks(self):
+        found = self.downstream(closure='辅助绕组峰值 ≥ 13.5 V（规格保证或高低温实测）')
+        self.assertEqual(len(found), 1, found)
+        self.assertEqual((found[0]['function_id'], found[0]['key'], found[0]['field'], found[0]['word']),
+                         ('FN-BIAS', 'AUX-5V-MIN', 'open[].closure', '实测'))   # the screening names the record field
+        self.assertEqual(found[0]['check_ids'], ['PWR-C02.BIAS-RUN.Q2', 'PWR-C02.BIAS-STARTUP.Q2'])
+        self.assertTrue(self.downstream(kind='VENDOR_DATUM', closure='浪涌峰值（实测或仿真上界）不超过额定'))
+        self.assertTrue(self.downstream(why_insufficient='手册只给 25 °C 典型值，样机上测过才知道'))
+
+    def test_a_datum_closure_and_a_deferred_clause_are_not(self):
+        self.assertEqual(self.downstream(), [])                                            # the fixture closes by a spec
+        self.assertEqual(self.downstream(closure='磁件规格写明 5 V 空载最低峰值电压 ≥ 13.5 V；随后样机上核 Bode'), [])
+        self.assertEqual(self.downstream(closure='实测前先选定匝数：辅助绕组未选，峰值未定'), [])   # a design gap named
+        self.assertEqual(self.downstream(kind='DELIVERABLE_PENDING', deliverable_kind='CUSTOM_PART_DRAWING',
+                                         deliverable='T1 图纸', assumed='按 13.5 V 算',
+                                         closure='图纸写明耐压与温升实测值'), [])                 # a deliverable may carry test values
 
 
 if __name__ == '__main__':

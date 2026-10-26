@@ -358,13 +358,31 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 结果独立保存为 `review-results.json`，绑定最终计划；批量脚本只录入已审结论。功能判定是判断单位，逐项检查是审计明细，
 待办由功能判定的开放项派生（编号 W-<key>），见 [台账三层](references/plan-and-results.md)。局部额定/寿命缺口用同规则 `split_out` 定位到实际对象；保留其余对象的已核范围，
-不为降低条数合并独立电源级或补证动作。对账前先按 [功能复核](references/plan-and-results.md#功能复核) 核每个功能的条款、计算、开放项的
+不为降低条数合并独立电源级或补证动作。
+
+#### 4.1 对账前的功能复核
+
+对账前先按 [功能复核](references/plan-and-results.md#功能复核) 核每个功能的条款、计算、开放项的
 `decides` 范围和手填行的对象、路径、因果、需求的分项要求（含多个分项要求的需求只有全部适用分项要求通过才 PASS）；校验的 F1–F12 和质量筛查零提示不能代替这一步。
 复核有四个机器信号（见 [功能复核](references/plan-and-results.md#功能复核)）：`UNIT_GLYPH_SUSPECT`（条款引的文本层丢了 Ω/µ，ms、mA 可能是 µs、µA，对照渲染页后在 `says` 写明核过）、
 `RATING_AT_TEST_TEMP`（功率/电流额定只在 25 °C 单点给出，要走降额曲线或说明不降额）、`BOUNDING_CELL_AVAILABLE`（余量写了 `cell: NONE` 而定界表有这个参数的格）、`TEMPLATE_REASON`；
 每条决定性余量写 `basis.cell`（表里没有的写 NONE），引了带公差输入的余量逐个列角点，门禁拒收缺的。
+
+做完的标志：功能复核的四个信号每条处置过（单位对照原图后写进 `says`，额定走了降额或说明不降额，该写格的写了格并带推法），
+决定性余量的 `cell` 为 NONE 的每条确认过表里没有这个参数。
+
+#### 4.2 证据不足的分类
+
 证据不足先按 [分出下游工作](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
-批量脚本不能用一句固定兜底语给全部证据不足定级。
+批量脚本不能用一句固定兜底语给全部证据不足定级。分类落在开放项的 `kind` 上（DESIGN_VALUE、VENDOR_DATUM、DELIVERABLE_PENDING），行由它派生：
+关闭条件只写本阶段能拿到的东西——厂家保证值、设计规格、交付物；实测、样机、仿真才能得到的部分不写进关闭条件，拆成阶段 NA 行加移交。
+筛查的四个提示点最常漏的几种：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP`（开放项的 `closure`/`acquisition`/`why_insufficient` 或行的缺口文字接受实测、样机、样品、仿真作为关闭路径；
+“随后/留给……”的分句已把下游部分分出，不算）、`CALCULATION_RECORDED_AS_DATA_GAP`（资料已读、只剩计算却记成厂家数据）、`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP`（烧录镜像、读回、夹具记成设计缺口）、
+`DUPLICATE_WORK_ITEMS` 与 `TEMPLATE_REASON`（同一方法套几个对象、同一句关闭条件或取得方式写在几个开放项上：是一件待办、多个位号）。
+
+做完的标志：每个开放项的 `kind` 定过，关闭条件里没有实测、样机、仿真；上述提示每条处置过（改 kind、拆阶段 NA 加移交、合并待办，或确认不是误记）。
+
+#### 4.3 跑校验与处置疑点
 
     python3 scripts/validate_review.py review-plan.json review-results.json --db db.json --lint lint-cold.json --lint lint-hot.json --require-actionable --json review-gate.json
 
@@ -374,27 +392,34 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
 
 做完的标志：`review-gate.json` 的 `valid` 为真、`errors` 为空；`quality_screening` 的每条疑点看过，确有错配的改了记录；
-功能复核的四个信号每条处置过（单位对照原图后写进 `says`，额定走了降额或说明不降额，该写格的写了格并带推法），
-决定性余量的 `cell` 为 NONE 的每条确认过表里没有这个参数；REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
+REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
 
 ### ⑤ 出报告
 
+#### 5.1 渲染报告与白话说明
+
 - 进报告的文字（任务、finding、handoff、notes）用白话，不用 [写法要求](references/report-and-remediation.md) 列出的词；
   `pack_review.py` 会检查。
-- **交付只有三样**：项目审查目录顶层只放 `审查报告.md`、`审查报告.html`（同一内容，图直接显示）和 `record/`，其余中间文件留在工作目录。
-  报告由脚本从台账生成，agent 只在 `notes.json` 里补白话说明（格式见 [报告与修改说明](references/report-and-remediation.md)）：
+- 报告由脚本从台账生成，agent 只在 `notes.json` 里补白话说明（格式见 [报告与修改说明](references/report-and-remediation.md)）：
 
       python3 scripts/render_report.py review-plan.json review-results.json review-gate.json --notes notes.json -o <审查目录>/审查报告.md   # 同时写出 审查报告.html
+
+  默认简洁报告保留全部缺陷、任务、通过标准及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
+
+做完的标志：`notes.json` 的 summary、items、sr_feedback 用白话且都进了报告；报告里的相对链接都能打开。
+
+#### 5.2 打包与交付
+
+- **交付只有三样**：项目审查目录顶层只放 `审查报告.md`、`审查报告.html`（同一内容，图直接显示）和 `record/`，其余中间文件留在工作目录。
+
       python3 scripts/pack_review.py <审查目录> --review-plan … --review-results … --review-gate … --db … --intent … \
         --circuit-candidates record/circuit-candidates.json --notes notes.json --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
 
-  默认简洁报告保留全部缺陷、任务、通过标准及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
   `pack_review.py` 用打包的计划、结果、门禁和 `notes.json` 重新渲染报告，与 `审查报告.md` 不同（手改过，或台账改了没重出）就拒绝；渲染时用了 `--title`、`--detail` 的，打包时同样传。门禁不 valid、结果声明了 `review_scope` 都不打包。它只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
   顶层有其他文件或引用的证据找不到时打包失败。不另写 README 或说明文档；HTML 只能是脚本生成的那份。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。
 
-做完的标志：`pack_review.py` 打包成功（无拒绝），审查目录顶层只有 `审查报告.md`、`审查报告.html`、`record/`；
-`notes.json` 的 summary、items、sr_feedback 用白话且都进了报告；报告里的相对链接都能打开。
+做完的标志：`pack_review.py` 打包成功（无拒绝），审查目录顶层只有 `审查报告.md`、`审查报告.html`、`record/`。
 
 ### 改版复审（H）
 

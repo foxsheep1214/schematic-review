@@ -19,7 +19,7 @@ GRADE_RE = re.compile(r'P[0-3]')
 # 同规则整批同级：本规则至少这么多行证据不足且全部同级时提示逐行定级。
 RULE_UNIFORM_MIN_ROWS = 10
 # 分出下游工作线索：缺口文字只指向样机/试验结果，或把优化目标记成阻断缺口。关键词只生成提示，不改结论。
-DOWNSTREAM_RE = re.compile(r'实测|样机|样品|闭壳|温升测试|热测|EMC|传导|辐射|认证|一致性测试|兼容性测试|寿命试验|'
+DOWNSTREAM_RE = re.compile(r'实测|样机|样品|仿真|闭壳|温升测试|热测|EMC|传导|辐射|认证|一致性测试|兼容性测试|寿命试验|'
                            r'能效测试|整机测试|PCB寄生|实际寄生|实物波形|prototype|bench|compliance|certif', re.I)
 # “插墙”是应用场景不是下游验证（一份台账曾把保险丝分断缺口因此标成下游项，下一轮证实为 P0 缺陷）。
 # 写明随后/留给下游的分句已把下游部分分出，只看其余文字；整条都是这种分句时仍按原文判。
@@ -30,7 +30,7 @@ OPTIMIZATION_RE = re.compile(r'优化目标|成本|体积|报价|尽量|cost|vol
 # Review records whose citation as evidence for a current conclusion suggests reuse of an earlier review.
 REVIEW_ARTIFACTS = {'review-results.json', 'review-gate.json', '审查报告.md', '审查报告.html'}
 RECORD_FIELD_NAMES = {'missing_inputs': 'open[].what', 'required_scope': 'open[].scope',
-                      'acquisition': 'open[].acquisition', 'closure_criterion': 'open[].closure',
+                      'acquisition': 'open[].acquisition', 'closure_criterion': 'open[].closure', 'closure': 'open[].closure',
                       'consequence': 'open[].severity.consequence', 'affected_function': 'open[].severity.affects',
                       'potential_severity': 'open[].severity.level'}
 FREEZE_BLOCKING_CODES = ('TEMPLATED_SEVERITY_REASON', 'UNIFORM_SEVERITY_WITHIN_RULE', 'TEMPLATED_PASS_RATIONALE')
@@ -78,6 +78,41 @@ def _decisive_part(what):
     """A gap text without the side clauses that already defer something downstream."""
     rest = DEFERRED_CLAUSE_RE.sub('', what)
     return rest if rest.strip(' ；;，,。') else what
+
+
+CLOSURE_FIELDS = ('closure', 'acquisition', 'why_insufficient')
+DATUM_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM')   # closed by a guaranteed datum or a design spec, never by a measurement
+
+
+def downstream_closures(functions, owners):
+    """Step 4.2: a DESIGN_VALUE or VENDOR_DATUM open item whose closing condition accepts a prototype measurement, a
+    sample or a simulation. The datum and the measurement are two tiers; the measured part is a stage-NA row with a
+    handoff, and the item names the datum (or spec) that really closes it. A deferred clause (随后/留给…) already splits
+    the downstream part and is not read."""
+    found = []
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not isinstance(fn.get('id'), str):
+            continue
+        for item in fn.get('open') or []:
+            if not isinstance(item, dict) or item.get('kind') not in DATUM_KINDS:
+                continue
+            for field in CLOSURE_FIELDS:
+                value = item.get(field)
+                if not isinstance(value, str) or not value:
+                    continue
+                rest = _decisive_part(value)
+                hit = DOWNSTREAM_RE.search(rest)
+                if hit and not DESIGN_GAP_RE.search(rest):
+                    ref = '%s/%s' % (fn['id'], item.get('key'))
+                    found.append({'code': 'DOWNSTREAM_RECORDED_AS_DESIGN_GAP', 'function_id': fn['id'], 'key': item.get('key'),
+                                  'field': field, 'word': hit.group(0),
+                                  'check_ids': sorted(c for c in owners.get(ref, ()) if c),
+                                  'message': 'The %s of this %s accepts "%s" as the way to close it. A datum or design '
+                                             'spec closes a %s; what only a prototype, sample or simulation can give is a '
+                                             'stage-NA row with a handoff. Name the datum that closes the item, or split '
+                                             'the measured part out' % (field, item['kind'], hit.group(0), item['kind'])})
+                    break
+    return found
 
 
 def screen_quality(plan, report, db=None, base_dir=None):
@@ -384,6 +419,7 @@ def screen_quality(plan, report, db=None, base_dir=None):
     for hint in review_functions.template_hints(report.get('functions'), parts, base_dir):
         refs = hint.get('items') or ['%s/%s' % (hint.get('function_id'), hint.get('key'))]
         candidates.append(dict(hint, check_ids=sorted({c for ref in refs for c in owners.get(ref, ()) if c})))
+    candidates.extend(downstream_closures(report.get('functions'), owners))
     for candidate in candidates:  # name fields the way the reviewer writes them (a function's open item)
         if candidate.get('field') in RECORD_FIELD_NAMES:
             candidate['field'] = RECORD_FIELD_NAMES[candidate['field']]

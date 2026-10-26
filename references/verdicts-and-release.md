@@ -351,6 +351,8 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 统计中阶段 NA 单列为 `NA_OUTSIDE_STAGE`，不计入普通 NA；含阶段 NA 条款的需求行列在
 `stage_scope.requirements_pending_downstream`，报告在“交给后续环节的要求”末尾列为要等样机或测试结果才能最终确认，不得写成“不适用”。
 `quality_screening` 的分出下游工作提示只辅助判断；工具映射失败不是产品不适用，不用阶段 NA 隐藏覆盖缺口。
+分类落在开放项的 `kind` 上：DESIGN_VALUE / VENDOR_DATUM 的 `closure`、`acquisition`、`why_insufficient` 里写了实测、样机、样品、仿真作为关闭路径的，
+`DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 点出来（“随后/留给……”分句除外）——保证值和实测是两档，实测的部分拆成阶段 NA 行加移交。
 
 ## 6. 准出
 

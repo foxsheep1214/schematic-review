@@ -498,7 +498,7 @@ F9 判 PASS 的每个方面在该状态有证明通过的余量或 `judgements` 
 （数字限值在余量里比较，不在判断句里宣布满足），只说“不适用 / 无此问题 / 按拓扑无… / 不涉及”而不引 NETLIST_FACT 的判断被拒绝（改记 NA），
 判断与挡住同一范围的边冲突，没人判过的方面不会默认通过；
 F10 同一条不能定位的条件出现在两个以上功能里被拒绝（能定位的条款可以被几个功能共同引用；同一句 `assumptions` 抄进几个功能的计算同样拒绝，共用工况写进 intent 一次）；
-同一句 `no_margin_reason`/`why_insufficient` 出现在几个开放项上只出 TEMPLATE_REASON 提示；
+同一句 `no_margin_reason`/`why_insufficient`/`closure`/`acquisition` 出现在几个开放项上只出 TEMPLATE_REASON 提示（同一方法套几个对象是一件待办、多个位号）；
 F11 框架功能的 `objects` 不超出 intent 电路声明的位号与网络（要扩大先改 intent 再重生成计划，不在判定里放宽），审查员自己绑定的行要是该功能对象上的行
 （位号行的位号、网络行的网络在功能 `objects` 里，网络名不计图纸路径；感性负载行只看电感本身和它的开关节点，续流回路里别的器件只是上下文；需求行、全板行没有对应的器件或网络，不受此限）——一块电路的缺口不借绑定伸进另一块电路；
 F12 计划带 `clamp_refs` 的连接器行（PRO-D03）必须绑定功能：钳位电压对被保护脚绝限是功能判定里的条款和判断，不手填 PASS。
@@ -664,7 +664,11 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
   额定在这个温度成立，本板环温更高时要经降额曲线或数表（PUBLISHED_TABLE、TYPICAL_CURVE 或 `conversion` 指向的换算条件）带过来，或在 `regime` 写明为什么不降额。
 - `BOUNDING_CELL_AVAILABLE`：决定性余量写了 `cell: NONE`，但它的 `against`/`aspect` 或限值条款的 `says`/`use` 里有某个格的参数词（VZ、VF、RDS(on)、CTR、Isat、ESR……，`catalog.CELL_WORDS`）：
   如果这个限值就是那个参数，写格和推法，带公式的推法让门禁复算。
-- `TEMPLATE_REASON`：同一句理由出现在几个开放项上。
+- `TEMPLATE_REASON`：同一句理由、关闭条件或取得方式出现在几个开放项上（`no_margin_reason`、`why_insufficient`、`closure`、`acquisition`）。
+
+4.2 证据不足的分类另有自己的提示：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 除了读行的缺口文字，还读 DESIGN_VALUE / VENDOR_DATUM 开放项的
+`closure`、`acquisition`、`why_insufficient`——写了实测、样机、样品、仿真作为关闭路径的（“随后/留给……”分句已分出下游部分，不算），厂家保证值和样机才能测是两档，
+实测的部分拆成阶段 NA 行加移交，开放项只写真正能关它的数据或规格。R7 的四份记录里这样的开放项有 2 / 0 / 6 / 2 条（三只光耦的 CTR“保证或高低温实测”、端口短路“实测峰流”、BULK 浪涌“实测或仿真上界”）。
 
 门禁拒收的两件：决定性余量（GUARANTEED_BOUND、REACHABLE_CASE、EXACT_ENVELOPE）没写 `basis.cell`；`basis.conditions` 里有 min≠max 的 NUMERIC_LIMIT（除 `limit` 本身）却没有对应角点，
 `no_corners_reason` 不能代替。

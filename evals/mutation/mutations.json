@@ -4324,5 +4324,33 @@
   "file": "scripts/audit_datasheets.py",
   "old": "            'symbol_fallback': sum(item.get('unit_glyphs') == 'SYMBOL_FALLBACK' for item in materials),",
   "new": "            'symbol_fallback': 0,"
+ },
+ {
+  "id": "M623",
+  "name": "a closure by measurement is flagged",
+  "file": "scripts/review_quality.py",
+  "old": "                if hit and not DESIGN_GAP_RE.search(rest):",
+  "new": "                if False:"
+ },
+ {
+  "id": "M624",
+  "name": "a deferred clause is not read as the closure",
+  "file": "scripts/review_quality.py",
+  "old": "                rest = _decisive_part(value)",
+  "new": "                rest = value"
+ },
+ {
+  "id": "M625",
+  "name": "only datum and design-value items are screened",
+  "file": "scripts/review_quality.py",
+  "old": "            if not isinstance(item, dict) or item.get('kind') not in DATUM_KINDS:",
+  "new": "            if not isinstance(item, dict):"
+ },
+ {
+  "id": "M626",
+  "name": "the same closure or acquisition on several gaps is a hint",
+  "file": "scripts/review_functions.py",
+  "old": "TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient', 'closure', 'acquisition')   # one sentence on several gaps",
+  "new": "TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient')   # one sentence on several gaps"
  }
 ]
