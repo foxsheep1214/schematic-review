@@ -1,5 +1,7 @@
 # 计划与结果台账
 
+> 读者：审查员。
+
 审查数据分三份：`intent.json`（审查意图与输入声明，按需求和设计结果写，不抄设计方的意图文件）、`review-plan.json`（逐项检查计划）、
 `review-results.json`（逐项结果）。计划只决定每项的规则、适用性和准备度，不提前制造 PASS/FAIL；
 结果另存，由 `validate_review.py` 对账。常规命令见 [SKILL.md](../SKILL.md)。

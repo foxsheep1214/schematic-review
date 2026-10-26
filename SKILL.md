@@ -69,7 +69,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 - 改动上面任一条“不变的决定”，或增删执行流程的步骤、入口脚本。
 
 方案写清：现在怎样、要改成怎样、动哪几步和哪些文件、不改的话有什么替代。新增或调整单条规则、检查器的识别逻辑、
-报告措辞和测试不算架构调整，照“规则维护”一节做。架构改完，同步改本节和 [架构说明](references/architecture.md)
+报告措辞和测试不算架构调整，照架构说明的“规则维护”一节做。架构改完，同步改本节和 [架构说明](references/architecture.md)
 的“历次架构决定”，台账条目写明确认的日期和原话。
 
 ## 审查纪律
@@ -107,23 +107,30 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 
 ## 参考文件
 
-| 何时读 | 文件 |
-|---|---|
-| 架构明细：步骤间文件、格式版本、脚本归属、历次架构决定 | [architecture.md](references/architecture.md) |
-| 改规则时：审查目的、七项审查要点、规则取舍 | [review-charter.md](references/review-charter.md) |
-| 规则编号、判据、功能电路 | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
-| 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
-| BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
-| 结果、P0–P3、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
-| 需求缺失/含糊/冲突 | [requirement-clarifications.md](references/requirement-clarifications.md) |
-| intent、计划、结果字段与校验；功能电路展开边界（含电平转换） | [plan-and-results.md](references/plan-and-results.md) |
-| 跨状态计算、局部/整体主张、父项与任务依赖 | [execution-consistency.md](references/execution-consistency.md) |
-| 输入版本、解析、覆盖与留档 | [inputs-and-coverage.md](references/inputs-and-coverage.md) |
-| 自动扫描与各检查器 | [automation.md](references/automation.md) |
-| 资料补取、保证值核对 | [datasheets.md](references/datasheets.md) |
-| 工程计算公式 | [wca-formulas.md](references/wca-formulas.md)；修改建议的计算预检查见 [calculation-preflight.md](references/calculation-preflight.md) |
-| 写报告和修改说明 | [report-and-remediation.md](references/report-and-remediation.md) |
-| 复审、改版影响 | [revision-review.md](references/revision-review.md) |
+每份参考文件的第三行写明读者：审查员读的是执行流程 ①–⑤ 会用到的；SR 维护者读的是改规则、改脚本时才用的；两者都读的，节里再分。
+`scripts/tests/test_reading_path.py` 核对读者标记、本表和执行流程只引审查员文件，并记录审查员阅读路径的字节数（棘轮，只许减）。
+
+| 读者 | 何时读 | 文件 |
+|---|---|---|
+| 审查员 | 规则编号、判据、功能电路 | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
+| 审查员 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
+| 审查员 | 工作点和保证条件对不上时定界；估算判通过的边界 | [bounding-table.md](references/bounding-table.md)（由 `scripts/catalog.py` 生成） |
+| 审查员 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
+| 审查员 | 结果、P0–P3、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
+| 审查员 | 需求缺失/含糊/冲突 | [requirement-clarifications.md](references/requirement-clarifications.md) |
+| 审查员 | intent、计划、结果字段与校验；功能电路展开边界（含电平转换） | [plan-and-results.md](references/plan-and-results.md) |
+| 审查员 | 跨状态计算、局部/整体主张、父项与任务依赖 | [execution-consistency.md](references/execution-consistency.md) |
+| 审查员 | 输入版本、解析、覆盖与留档 | [inputs-and-coverage.md](references/inputs-and-coverage.md) |
+| 审查员 | 资料补取、保证值核对 | [datasheets.md](references/datasheets.md) |
+| 审查员 | 复用上次核对过的器件角色与供电分组 | [reviewed-declarations.md](references/reviewed-declarations.md) |
+| 审查员 | 工程计算公式；修改建议的计算预检查 | [wca-formulas.md](references/wca-formulas.md)、[calculation-preflight.md](references/calculation-preflight.md) |
+| 审查员 | 需要有界 R/C 工作点或瞬态的仿真证据 | [simulation-evidence.md](references/simulation-evidence.md) |
+| 审查员与 SR 维护者 | 写报告和修改说明 | [report-and-remediation.md](references/report-and-remediation.md)（“对 SR 的反馈”一节给维护者） |
+| 审查员 | 复审、改版影响 | [revision-review.md](references/revision-review.md) |
+| 审查员与 SR 维护者 | 自动扫描怎么跑、各检查器查什么 | [automation.md](references/automation.md)（检查器实现细节给维护者） |
+| 审查员与 SR 维护者 | 参与 ASG/SR 薄控制器流程时的交接 | [workflow-handoff.md](references/workflow-handoff.md) |
+| SR 维护者 | 架构明细：步骤间文件、格式版本、脚本归属、历次架构决定、规则维护步骤 | [architecture.md](references/architecture.md) |
+| SR 维护者 | 改规则时：审查目的、七项审查要点、规则取舍 | [review-charter.md](references/review-charter.md) |
 
 ## 与 ASG 的有状态工作流交接
 
@@ -456,17 +463,4 @@ TASK_TITLE_LONG 提示每条处置过；报告里没有"每只、每只"串接�
 
 ## 规则维护
 
-- 加字段、加质量筛查或加结论词之前，先查现有字段、规则或筛查能否表达；能表达就复用，新增时写明现有哪一项覆盖不了。
-- 同一块板由两名审查员（或两次运行）各出一份记录时，用 `python3 scripts/compare_reviews.py <记录A> <记录B> --md compare.md` 对比：
-  精确配对只按检查项标识（`check_key`：规则、规则版本、去掉电路名的对象、判据）配对，报配对率、已答比例和一致率，列出通过对失败和 P0/P1 分歧；
-  按电路对齐的结果只作建议配对，确认后用 `--alias` 带位置引用加入精确配对；"电路决定与成员差"一节逐候选列两边的决定（accept / merge / split / reject 及去向）、
-  对齐电路里只在一边的位号、未归属器件两边的处置（add 进电路还是留给 REQ-Q08），电路划分的差异在这里数，不混进配对率。
-  差异里反复出现的写法先找现有校验为什么放过，再加机器能数的护栏，不加措辞要求。
-- 新脚本先在 [架构说明](references/architecture.md#二每个脚本属于哪一步) 归到一步并分类：入口（执行流程里直接调用）、工具（特定情形手动调用）、库（只被导入）。只有入口写进执行流程；新增入口属于架构调整。
-- 工程规则身份由 `scripts/electrical_contract.py`（`engine_identity`）与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。
-- 规则编号、判据、审查要点归属和功能电路只在 `scripts/catalog.py` 登记，改后运行
-  `python3 scripts/catalog.py --write-doc references/check-catalog.md`。来源为“全板通用”“电路检查项”的新规则
-  登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在计划生成的对应层（电路与器件 `plan_circuits.py`、接口 `interfaces.py`、
-  系统功能 `plan_system.py`、全板与覆盖 `plan_board.py`；`plan_review.py` 只做汇总）、`lint.py` 或对应检查器里实现展开/扫描。新增或调整规则先回答 [审查要点中的三个问题](references/review-charter.md#用审查要点指导进化)。
-- 测试分两层（[分层定义](scripts/tests/conftest.py)）：每次改动先跑约定测试 `python3 -m pytest scripts/tests -m contract -q`（[规则约定](evals/rule_contracts/README.md)、校验器不变量、解析器，几秒）；新增 A/E/T/V/H 规则须同时加触发板与近似板。措辞层 `-m wording` 是每个台账夹具一份 golden 报告，改报告措辞用 `SR_UPDATE_GOLDEN=1` 重写快照并审读 diff。改规则或检查器后跑[变异门](evals/mutation/README.md) `python3 evals/mutation/run.py --changed`（只跑落在改动文件上的变异，几分钟），提交前或发布前跑全量 `python3 evals/mutation/run.py`；每条变异都要被单元测试杀死。
-- 修改脚本后运行 `python3 -m unittest discover -s scripts/tests -q`（全量，含两层）；改导入器时同时跑 [真实来源导入回归](evals/input_bench/README.md)；改 KiCad 解析、自检、日志扫描、去耦清单或计划展开时跑 [KiCad 原生交付回放](evals/kicad_replay_bench/README.md)。改检查器或规则后跑 [典型电路基准](evals/typical_circuits/README.md)（42 块开源板，每条报出都要已归类，新出现的须逐条审读）和 [种子基准](evals/seeded_bench/README.md) 看自动层检出；改定级、汇总、待办或报告逻辑后跑台账回放（schema 3 台账已退役，待一份按功能判定方法冻结的真实审查记录重建）；`python3 evals/bench_coverage.py --seeded <注入基准 results.json>` 列出每条 A 规则在哪个基准有真实板正例、哪些还没有。评测通过不等于任何真实电路审查通过。
+加规则、字段、筛查、脚本、测试和变异的维护步骤在 [架构说明 四、规则维护](references/architecture.md#四规则维护)（SR 维护者读；审查员的流程到 ⑤ 为止）。

@@ -1,5 +1,7 @@
 # SR 架构说明
 
+> 读者：SR 维护者（审查员看 SKILL.md 的“架构”一节即可）。
+
 SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁做、不变的决定、改架构先问人。本页是它的明细：
 步骤之间传哪些文件、每个文件的格式版本、每个脚本属于哪一步，以及历次架构决定。
 本页的数据文件表和脚本表由 `scripts/tests/test_architecture.py` 对照代码检查：新增、删除脚本或改格式版本而不改本页，测试失败。
@@ -68,6 +70,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-10-25 | 电路**拥有**的器件检查项（owner 为该电路、不是 NOT_APPLICABLE 的检查项）在出计划时就预绑到该电路的功能框架（`plan_review.bind_owned_rows`），`aspect` 取规则标题，框架的成员与盲点随之扩大；全板拥有的检查项照旧手填 | R6 同一块板三份记录派生检查项 387 / 287 / 185：哪些器件检查项由功能派生是审查员自己选的，结论来源不同；用户 2026-10-25 "请继续刚才的修改" 定下预绑 |
 | 2026-10-25 | 决定给电路加工作态（`states_add`）必须在 `state_requirements` 里逐态点名一条原文说到该态的需求；开放项按种类只能挡 `catalog.OPEN_ITEM_RULES` 给它的检查项（计算/窗口/需求检查项，交付物按其种类另加身份、信号或配置检查项）；PRO-A02 的判据写死为钳位电压对同网 IC 脚绝限比较 | R7 验收：一句泛引文给十块电路各加六个态（+130 项）、同一图纸缺口四份记录挡 62/16/29/14 项、USB ESD 钳位两份 FAIL 一份 PASS；用户 2026-10-25 "B 组 4 项都按 a 执行" |
 | 2026-10-25 | ④ 第一项（对账前的功能复核）拿到机器信号和门禁：决定性余量（GUARANTEED_BOUND、REACHABLE_CASE、EXACT_ENVELOPE）必写 `basis.cell`（定界表的格或 NONE），格的推法带公式时门禁复算；`basis.conditions` 里 min≠max 的条款都要有角点，`no_corners_reason` 不再放行；筛查新增 `UNIT_GLYPH_SUSPECT`（条款引的文本层 kΩ 成 kW 且无 µ——1.3 审计记 `unit_glyphs: SYMBOL_FALLBACK`、诊断 `DATASHEET_UNIT_GLYPHS`——而单位是 ms/mA/mH/W）、`RATING_AT_TEST_TEMP`（功率/电流额定只在 ≤25 °C 单点给出却按 GUARANTEED_LIMIT 用）、`BOUNDING_CELL_AVAILABLE`（写了 NONE 而文字对上某格的参数词，`catalog.CELL_WORDS`）；门禁按结果文件所在目录解析条款 `source`。由 R7 四份记录定：claude1 的 P1 发现 F-FBOPEN 源于把 OVP 检测延时的 "ms" 当真（实为 µs），claude2 注明误码后结论相反；带公差输入写模板理由绕过角点的 14/6/28 条；25 °C 额定当保证界 3/0/7/9 条；539 条余量只有 1 条写了格。用户决定 A–E 全做（2026-10-25）。 |
+| 2026-10-26 | 审查者阅读路径按读者分层：每份参考文件第三行写读者（审查员 / SR 维护者 / 审查员与 SR 维护者），SKILL.md 的参考文件表加读者列并列全 20 份，执行流程 ①–⑤ 只引审查员读的文件，SKILL.md 的“规则维护”一节移到本页“四、规则维护”；`scripts/tests/test_reading_path.py` 核对标记与表一致、流程不引维护者文件，并记录审查员阅读路径字节数的棘轮（`REVIEWER_PATH_MAX_BYTES`，只许减） | 改前 SKILL 57.9 KB + 20 份参考 662 KB 无读者标记，四份未进参考文件表；改后审查员路径 = SKILL 55.4 KB + 18 份 627 KB = 682.8 KB，维护者专读 architecture.md、review-charter.md 38 KB；大头仍是 check-catalog（131 KB）、plan-and-results（116 KB）、automation（87 KB），按步骤拆分留作后续。用户 2026-10-26：“剩下的优化你可以做” |
 | 2026-10-26 | 器件类别只登记一次：`device_kinds.KINDS`（名称、位号前缀、词、手册线索、两端件、链路件、保护件、由类别单独决定的磨损类、可否声明），`part_words` 的前缀表与关键词表、`board_intent.DEVICE_KINDS`、`datasheet_kinds.KIND_CUES` 的分立部分、`plan_circuits.wearout_class` 的直接项、`circuit_candidates.PROTECTIVE_KINDS` 都是它的视图，`device_kinds.errors()` 自检（前缀锚定、词可编译、线索去空格小写、磨损类存在、链路件必两端、IC 角色不重登）；登记表顺序即关键词优先级，加类别只改一行 | 当天的 ntc/varistor 扩表改了五个模块七处清单；关键词表 21 条、前缀表 22 条、两端/链路/可声明集合与改前逐项相同，回放 195/195、典型电路 117/180/14 不变。用户 2026-10-26：“剩下的优化你可以做” |
 | 2026-10-26 | 结构化字段是主路径：单位表 `scripts/units.py`（SI 前缀 × 电学基本单位，µ/u、Ω/ohm、²/2 同义，Vac/Arms/°C/%/ratio/A²s/mV/K 等专名，每个量纲的板级合理范围 `SPANS`），功能复核加三个提示（`review_functions.quantity_hints`）：UNIT_UNKNOWN（余量或限值单位表外）、QUANTITY_IMPLAUSIBLE（限值两端或余量上端换算后越出量纲范围）、RESULT_NARRATIVE（`calculation.result` 超 300 字或带超 8 个余量和限值都没承载的数字），`RESULT_MAX_CHARS` 由 review_functions 定义、报告引用；`audit_parameter_claims` 改用同一张单位表比较并给越出范围的行 `plausibility` 备注 | R7 四份记录 result 里的“数字 + 单位”117/107/514/561 个对余量 151/181/111/96 条，超 300 字的 result 0/0/10/13 个；新提示 RESULT_NARRATIVE 3/0/10/13，UNIT_UNKNOWN 0，QUANTITY_IMPLAUSIBLE 0（单位拼法 60 种全部入表）。用户 2026-10-26：“剩下的优化你可以做” |
 | 2026-10-26 | 派生检查项不落盘：台账只装功能判定和手填检查项，门禁、报告、打包、对比读取时由计划和功能派生（`results_model.materialize` = derive + expand），`derive_rows.py` 只检查不写（去掉 `-o`），`pack_review` 打包时剥掉 `derived: true` 的检查项（`results_model.strip_derived`，注记和审查员自己的 `function_id` 绑定留残根，manifest NOTE 记条数），没有功能派生的残根门禁点名报错；手填检查项自带移交时不再要求功能列移交 | R7 四份记录 525/515/777/690 条检查里 453/436/634/582 条是派生副本，占记录 43–59 %（1.08→0.47、1.20→0.69、2.76→1.33、3.47→1.41 MB）；三份记录里 1/0/10 条副本的结论只存在于副本（当前规则不再派生它）、4/10/28 条注记残根没有功能派生——这些现在由门禁点名。用户 2026-10-26：“第三第四项也做” |
@@ -77,3 +80,22 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-10-26 | 5.1 渲染报告的严格审核：功能表每方面只写决定性余量、同一比较只写一次、`result` 超 300 字取第一句、问题里 >8 位号写个数（`decisive_margins` / `short_question`）；移交表只在每字段至多一个位号槽时合并（“每只、每只”串接消失）；图说不重复 caption 的“现状/改后”，`pages` 非数字按原文印，“涉及的检查”“影响哪些判断”超 6 条写个数、同一出处只写一次（`listed` / `page_word` / `fold_blocks`）；“未问”段只列方面名；`review_quality` 加 TASK_TITLE_LONG（> 60 字）；summary 复述检查计数被拒 | R7 四份报告量化：依据列最长 2419 字、重复余量句 3/4 行、“每只”错乱 2/0/2/2 行、图说重复 3、标题 > 60 字 8/0/16/10 件、影响句最长 1486 字、claude2 summary 带计数；用户：“5.1 的 A–G 全部执行” |
 | 2026-10-26 | 第一次扩表：词表加 `ntc`、`varistor` 两个器件类别（`part_words.NTC` / `VARISTOR`，按共用词和 Thermistor 符号，TH/RT/NTC 前缀最弱，RV 前缀不作依据），声明词表、手册线索、磨损类、保护件判定随之读类别；定界表加 VAR-UC、VAR-VC、VAR-SURGE 三格（不估算） | R7 四份记录各 3 条 NEW_DEVICE_KIND（RV101、TH101、TH601）；用户：“先把 ntc 和压敏电阻两个器件类别补进 part_words 词表和定界表（五列齐）” |
 | 2026-10-26 | 判决边界按器件类型：定界表每格加可得性、允许的估算与倍数（按后果类）、失效后果、样机能否验、边界五列（`catalog.Bound`，`estimate_rule(cell, class)`），新增 CAP-SURGE-V、MOS-DISCHARGE-I2T、IC-GATE-DRIVE-I；估算判 PASS 由 格 × 后果类 决定（`function_reading.estimate_passes`），规则 id 清单只在 `cell: NONE` 时作默认；余量写 `estimate_factor` 等于格的倍数、格给的余量下限要满足、DAMAGE_OR_HAZARD / CORE_LINK_LOSS 任何格不估算；估算 PASS 是 C 级证据，`release` 最高 CONDITIONAL_GO（`validate_review.release_for`），报告单列“按典型值估算的结论”；表可增长：门禁 `extension_signals` 记 NEW_DEVICE_KIND（分类器认不出的位号）与 NEW_BOUND_CELL（已知类别写了 NONE），`UNOBTAINABLE_DATUM` 提示向厂家索取行业不给的数，`sr_feedback` 加 `cell_boundary` | 用户 2026-10-26：“SR 不允许用典型值或 25 °C 单点额定判 PASS，没有保证界就只能开放，这个我觉得是目前比较大的问题……判决的边界应该按照器件类型来……这个器件类别也是可以增长的”；R7 四份记录光耦 CTR 四条、齐纳低电流三条按典型曲线算出 2–4 倍余量仍只能开放，因为落在 PRO-E01 / 损坏类规则下；六个待定点用户逐点判定取建议项（决定记录 docs/2026-10-26-cell-boundary.md） |
+
+## 四、规则维护
+
+（2026-10-26 从 SKILL.md 移来：这些是维护者的步骤，审查员的流程不读它们。）
+
+- 加字段、加质量筛查或加结论词之前，先查现有字段、规则或筛查能否表达；能表达就复用，新增时写明现有哪一项覆盖不了。
+- 同一块板由两名审查员（或两次运行）各出一份记录时，用 `python3 scripts/compare_reviews.py <记录A> <记录B> --md compare.md` 对比：
+  精确配对只按检查项标识（`check_key`：规则、规则版本、去掉电路名的对象、判据）配对，报配对率、已答比例和一致率，列出通过对失败和 P0/P1 分歧；
+  按电路对齐的结果只作建议配对，确认后用 `--alias` 带位置引用加入精确配对；"电路决定与成员差"一节逐候选列两边的决定（accept / merge / split / reject 及去向）、
+  对齐电路里只在一边的位号、未归属器件两边的处置（add 进电路还是留给 REQ-Q08），电路划分的差异在这里数，不混进配对率。
+  差异里反复出现的写法先找现有校验为什么放过，再加机器能数的护栏，不加措辞要求。
+- 新脚本先在 [架构说明](references/architecture.md#二每个脚本属于哪一步) 归到一步并分类：入口（执行流程里直接调用）、工具（特定情形手动调用）、库（只被导入）。只有入口写进执行流程；新增入口属于架构调整。
+- 工程规则身份由 `scripts/electrical_contract.py`（`engine_identity`）与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。
+- 规则编号、判据、审查要点归属和功能电路只在 `scripts/catalog.py` 登记，改后运行
+  `python3 scripts/catalog.py --write-doc references/check-catalog.md`。来源为“全板通用”“电路检查项”的新规则
+  登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在计划生成的对应层（电路与器件 `plan_circuits.py`、接口 `interfaces.py`、
+  系统功能 `plan_system.py`、全板与覆盖 `plan_board.py`；`plan_review.py` 只做汇总）、`lint.py` 或对应检查器里实现展开/扫描。新增或调整规则先回答 [审查要点中的三个问题](references/review-charter.md#用审查要点指导进化)。
+- 测试分两层（[分层定义](scripts/tests/conftest.py)）：每次改动先跑约定测试 `python3 -m pytest scripts/tests -m contract -q`（[规则约定](evals/rule_contracts/README.md)、校验器不变量、解析器，几秒）；新增 A/E/T/V/H 规则须同时加触发板与近似板。措辞层 `-m wording` 是每个台账夹具一份 golden 报告，改报告措辞用 `SR_UPDATE_GOLDEN=1` 重写快照并审读 diff。改规则或检查器后跑[变异门](evals/mutation/README.md) `python3 evals/mutation/run.py --changed`（只跑落在改动文件上的变异，几分钟），提交前或发布前跑全量 `python3 evals/mutation/run.py`；每条变异都要被单元测试杀死。
+- 修改脚本后运行 `python3 -m unittest discover -s scripts/tests -q`（全量，含两层）；改导入器时同时跑 [真实来源导入回归](evals/input_bench/README.md)；改 KiCad 解析、自检、日志扫描、去耦清单或计划展开时跑 [KiCad 原生交付回放](evals/kicad_replay_bench/README.md)。改检查器或规则后跑 [典型电路基准](evals/typical_circuits/README.md)（42 块开源板，每条报出都要已归类，新出现的须逐条审读）和 [种子基准](evals/seeded_bench/README.md) 看自动层检出；改定级、汇总、待办或报告逻辑后跑台账回放（schema 3 台账已退役，待一份按功能判定方法冻结的真实审查记录重建）；`python3 evals/bench_coverage.py --seeded <注入基准 results.json>` 列出每条 A 规则在哪个基准有真实板正例、哪些还没有。评测通过不等于任何真实电路审查通过。

@@ -2329,3 +2329,27 @@ prefixes, same sets), so the classifier's answers do not change.
 - Causes: judgment 1
 - Changed: scripts/device_kinds.py, scripts/part_words.py, scripts/board_intent.py, scripts/datasheet_kinds.py, scripts/plan_circuits.py, scripts/circuit_candidates.py, scripts/tests/test_device_kinds.py, scripts/tests/test_one_judgment.py, references/architecture.md, references/automation.md, docs/2026-10-26-cell-boundary.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2245, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M682–M686 killed
+
+## The reviewer's reading path, by audience (2026-10-26)
+
+Item 5 of the review items the user approved ("剩下的优化你可以做"). SKILL.md
+(57.9 KB) linked 20 references (662 KB) with no mark of who reads what:
+the maintainer's architecture page and rule charter sat beside the
+reviewer's catalog, and four references were missing from the 参考文件
+table. Now every reference says on its third line whether the reviewer,
+the SR maintainer or both read it; the table lists all 20 with a reader
+column; the execution flow links only reviewer documents; the 规则维护
+section (maintainer steps) moves from SKILL.md into architecture.md §四;
+`scripts/tests/test_reading_path.py` checks the marks against the table
+and the flow and holds a ratchet on the reviewer path's size
+(REVIEWER_PATH_MAX_BYTES = 683 000: SKILL.md 55.4 KB + 18 documents
+627.4 KB = 682.8 KB, down from 720 KB total; lower it when a document
+shrinks, raise it only with a ledger entry). Not done: splitting the big
+reviewer documents by step (check-catalog 131 KB, plan-and-results 116 KB,
+automation 87 KB carry both the per-step rules and their history) — a
+documentation restructuring to decide on separately.
+
+- Event: user:2026-10-26 (SR review items after the strict pass: "剩下的优化你可以做")
+- Causes: judgment 1
+- Changed: SKILL.md, references/architecture.md, references/automation.md, references/bounding-table.md, references/calculation-preflight.md, references/check-catalog.md, references/commodity-floors.md, references/datasheets.md, references/evidence-proportionality.md, references/execution-consistency.md, references/inputs-and-coverage.md, references/plan-and-results.md, references/report-and-remediation.md, references/requirement-clarifications.md, references/review-charter.md, references/reviewed-declarations.md, references/revision-review.md, references/simulation-evidence.md, references/verdicts-and-release.md, references/wca-formulas.md, references/workflow-handoff.md, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69 (documentation and a test only; replay and typical circuits unaffected)

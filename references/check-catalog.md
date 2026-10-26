@@ -1,5 +1,7 @@
 # 检查规则总表
 
+> 读者：审查员（规则登记在 scripts/catalog.py，改规则的维护者也读）。
+
 本文是审查规则的唯一编号表。下半部分表格由 [`scripts/catalog.py`](../scripts/catalog.py) 生成；
 改规则只改 `catalog.py`，再运行 `python3 scripts/catalog.py --write-doc references/check-catalog.md`，
 测试会拒绝两者不一致。规则目的与适用边界先对照 [审查要点](review-charter.md)。

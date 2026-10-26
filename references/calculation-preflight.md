@@ -1,5 +1,7 @@
 # 计算条件约定 v1
 
+> 读者：审查员。
+
 本技能自带 `scripts/design_preflight.py`，独立运行，不依赖其他技能；修改后运行 `test_calculation_preflight.py`。
 在审查里它用于严格核对：保证条件覆盖不到的计算只能是 CONDITIONAL，不能当作通过的证据。
 它验证声明的条件、有限算术及门槛；不自动选择电路模型、证明极值方向或做量纲代数。
