@@ -42,6 +42,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json
 from review_stage_scope import outside_stage
 import check_key
+import results_model
 import rule_gaps
 import function_reading
 from function_reading import margin_verdict
@@ -63,7 +64,7 @@ def load(where):
     where = Path(where)
     record = where if (where / 'review-plan.json').is_file() else where / 'record'
     plan = load_json(record / 'review-plan.json')
-    results = load_json(record / 'review-results.json')
+    results = results_model.materialize(plan, load_json(record / 'review-results.json'))[0]   # the ledger holds no derived rows
     side = {'where': str(where), 'plan': plan, 'results': results}
     # the circuit decisions live in the intent (packed into record/, or beside it while the review runs) and the
     # candidates in the record; both are optional here

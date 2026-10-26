@@ -247,19 +247,22 @@ class DeriveTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertEqual(bias_rows(r)[p['checks'][-1]['id']]['handoff']['state'], 'OPEN')
 
-    def test_cli_writes_only_when_clean(self):
+    def test_cli_checks_and_writes_nothing(self):
+        """Item 4 (2026-10-26): derived rows are not written; the command is the reviewer's check."""
         p, r, db = bias_plan()
         with tempfile.TemporaryDirectory() as tmp:
-            plan, results, out = Path(tmp, 'plan.json'), Path(tmp, 'results.json'), Path(tmp, 'out.json')
+            plan, results = Path(tmp, 'plan.json'), Path(tmp, 'results.json')
             plan.write_text(json.dumps(p), encoding='utf-8')
-            results.write_text(json.dumps(r), encoding='utf-8')
-            self.assertEqual(derive_rows.main([str(plan), str(results), '-o', str(out)]), 0)
-            self.assertEqual(len(bias_rows(json.loads(out.read_text(encoding='utf-8')))), 15)
+            written = json.dumps(r)
+            results.write_text(written, encoding='utf-8')
+            self.assertEqual(derive_rows.main([str(plan), str(results)]), 0)
+            self.assertEqual(results.read_text(encoding='utf-8'), written)
+            self.assertEqual(sorted(Path(tmp).iterdir()), [plan, results])
+            with self.assertRaises(SystemExit):
+                derive_rows.main([str(plan), str(results), '-o', str(Path(tmp, 'out.json'))])
             r['functions'] = []
             results.write_text(json.dumps(r), encoding='utf-8')
-            out.unlink()
-            self.assertEqual(derive_rows.main([str(plan), str(results), '-o', str(out)]), 1)
-            self.assertFalse(out.exists())
+            self.assertEqual(derive_rows.main([str(plan), str(results)]), 1)
 
 
 if __name__ == '__main__':

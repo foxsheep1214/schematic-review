@@ -2254,3 +2254,27 @@ rows) for the project manager, with a sentence in 结论 and a line in
 - Causes: judgment 1
 - Changed: scripts/validate_review.py, scripts/results_model.py, scripts/review_workflow.py, scripts/render_report.py, scripts/tests/test_deliverables_apart.py, scripts/tests/test_review_functions.py, SKILL.md, references/verdicts-and-release.md, references/report-and-remediation.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2218, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M667–M670 killed
+
+## Derived rows are not persisted (2026-10-26)
+
+Item 4 of the review items the user approved ("第三第四项也做"). `derive_rows.py -o`
+wrote the rows a function verdict derives into `review-results.json`; the
+gate then re-read them as if they were the reviewer's, `expand` rewrote their
+prose, and a copy could outlive the verdict it came from. R7: 453/436/634/582
+of 525/515/777/690 rows were derived copies (43–59 % of each record), and in
+three records a few copies carried verdicts the current rules no longer
+derive. Now the ledger holds the function verdicts and the hand-filled rows
+only: `results_model.materialize(plan, report)` derives the bound rows and
+expands on a copy, and the gate, the report, the packer and the comparison
+read through it; `derive_rows.py` is the reviewer's check and writes nothing;
+`pack_review` strips `derived: true` rows from the packed ledger
+(`results_model.strip_derived`), keeping a stub for a row the reviewer
+annotated or bound to a function themselves, and notes the count in the
+manifest; a stub no function derives is a named gate error; a hand-filled
+row that carries its own handoff no longer needs the function to list one.
+Derive errors reach the gate once (deduplicated against the function checks).
+
+- Event: user:2026-10-26 (SR review items after the strict pass: "第三第四项也做")
+- Causes: judgment 1
+- Changed: scripts/results_model.py, scripts/validate_review.py, scripts/render_report.py, scripts/pack_review.py, scripts/compare_reviews.py, scripts/derive_rows.py, scripts/requirement_bindings.py, scripts/tests/test_derived_not_persisted.py, scripts/tests/test_derive_rows.py, scripts/tests/test_cell_boundary.py, scripts/tests/test_estimate_pass.py, SKILL.md, references/plan-and-results.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2228, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M671–M676 killed

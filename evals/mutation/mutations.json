@@ -4660,5 +4660,47 @@
   "file": "scripts/render_report.py",
   "old": "        owned = {k for t in gap_tasks + deliverables for k in t.get('check_ids') or []}\n",
   "new": "        owned = {k for t in gap_tasks for k in t.get('check_ids') or []}\n"
+ },
+ {
+  "id": "M671",
+  "name": "the gate reads only the written rows",
+  "file": "scripts/validate_review.py",
+  "old": "        report, derive_errors = results_model.materialize(plan, report)\n",
+  "new": "        report, derive_errors = results_model.expand(report), []\n"
+ },
+ {
+  "id": "M672",
+  "name": "the packed ledger keeps the derived rows",
+  "file": "scripts/pack_review.py",
+  "old": "            stripped, removed, stubs = results_model.strip_derived(written, json.loads(Path(ledger['review-plan.json']).read_text(encoding='utf-8')))\n",
+  "new": "            stripped, removed, stubs = written, 0, 0\n"
+ },
+ {
+  "id": "M673",
+  "name": "stripping drops the reviewer's annotations",
+  "file": "scripts/results_model.py",
+  "old": "            kept = {k: row[k] for k in DERIVED_ROW_KEPT if k in row}\n",
+  "new": "            kept = {}\n"
+ },
+ {
+  "id": "M674",
+  "name": "the report reads only the written rows",
+  "file": "scripts/render_report.py",
+  "old": "    results = results_model.materialize(plan, results)[0]   # the ledger holds no derived rows; the gate reports derive errors\n",
+  "new": "    results = results_model.expand(results)\n"
+ },
+ {
+  "id": "M675",
+  "name": "stripping drops the reviewer's own binding",
+  "file": "scripts/results_model.py",
+  "old": "            if plan is not None and row.get('function_id') and not (planned.get(row.get('id')) or {}).get('function_id'):\n",
+  "new": "            if False:\n"
+ },
+ {
+  "id": "M676",
+  "name": "a hand-filled row still needs the function's handoff",
+  "file": "scripts/derive_rows.py",
+  "old": "    if error and not hand_filled:\n",
+  "new": "    if error:\n"
  }
 ]

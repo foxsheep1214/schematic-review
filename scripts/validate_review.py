@@ -230,7 +230,11 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         return {"valid": False, "errors": shape, "release": "NO_GO", "blockers": ["results schema"],
                 "quality_screening": screen_quality(plan, report, db, base_dir)}
     errors.extend(shape)
-    written, report = report, results_model.expand(report)
+    written = report
+    if shape:   # a malformed record is reported as written; deriving on it would only add noise
+        report, derive_errors = results_model.expand(report), []
+    else:       # derived rows are not written (2026-10-26, item 4): the gate derives them from the plan and the functions
+        report, derive_errors = results_model.materialize(plan, report)
     errors.extend(validate_engine(plan, require_current_engine))
     clauses_required = True  # REQ-D01 always splits its requirement into clauses
     impact_classes = results_model.IMPACT_CLASS_VERSION
@@ -627,6 +631,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 blockers.append(f"{item['code']}: {len(item['check_ids'])} " + (
                     "PASS rows need their own comparison before freeze" if item['code'] == 'TEMPLATED_PASS_RATIONALE'
                     else "evidence gaps need individual grading before freeze"))
+    errors.extend(e for e in derive_errors if e not in errors)   # the function checks above report most of them already
     release = release_for(errors, blockers, accepted, estimated, pending)
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")

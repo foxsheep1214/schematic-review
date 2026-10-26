@@ -355,8 +355,53 @@ def _worst(gaps):
     return min(graded, key=lambda g: LEVELS.index(g['severity']['level'])) if graded else None
 
 
+DERIVED_ROW_KEPT = ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings',
+                    'bom_constraint', 'requirement_clauses')   # what a reviewer may add on a derived row; derive keeps it
+
+
+def materialize(plan, report):
+    """The tools' view of a record: the rows the function verdicts derive for the plan, then `expand`. Derived rows
+    are not written to the ledger (2026-10-26, item 4): the gate, the report, the packer and the comparison derive them
+    here from the plan and the functions, so no written copy of a verdict can disagree with it. A derived row the
+    record still carries is re-derived; a stub row holding only an annotation (DERIVED_ROW_KEPT) keeps it.
+    Returns (view, derive_errors); call after shape_errors is clean."""
+    import derive_rows   # derive_rows imports function_reading; results_model stays below both
+    out = copy.deepcopy(report)
+    errors = []
+    if isinstance(plan, dict) and isinstance(out, dict):
+        stubs = [r['id'] for r in out.get('checks') or [] if isinstance(r, dict) and text(r.get('id'))
+                 and 'review_result' not in r and 'applicability' not in r]
+        _, _, errors = derive_rows.derive(plan, out)
+        left = {r['id'] for r in out.get('checks') or [] if isinstance(r, dict) and text(r.get('id'))
+                and 'review_result' not in r}
+        errors += ['%s: a stub row (binding or annotation only) that no function derives; judge the row by hand or '
+                   'remove the stub' % rid for rid in stubs if rid in left]
+    return expand(out), errors
+
+
+def strip_derived(report, plan=None):
+    """The record without its derived rows, for the packed ledger: a derived row leaves; one the reviewer annotated
+    (DERIVED_ROW_KEPT) or bound to a function themselves (`function_id` on the row where the plan has none) leaves a
+    stub with its id and that content. Returns (report, removed, stubs); `report` is updated in place."""
+    planned = {c.get('id'): c for c in (plan or {}).get('checks') or [] if isinstance(c, dict)}
+    rows, removed, stubs = [], 0, 0
+    for row in report.get('checks') or []:
+        if isinstance(row, dict) and row.get('derived'):
+            removed += 1
+            kept = {k: row[k] for k in DERIVED_ROW_KEPT if k in row}
+            if plan is not None and row.get('function_id') and not (planned.get(row.get('id')) or {}).get('function_id'):
+                kept.update({k: row[k] for k in ('function_id', 'aspect') if k in row})   # the reviewer's own binding
+            if kept:
+                rows.append({'id': row.get('id'), **kept})
+                stubs += 1
+            continue
+        rows.append(row)
+    report['checks'] = rows
+    return report, removed, stubs
+
+
 def expand(report):
-    """The validators' view of a record (call after shape_errors is clean)."""
+    """The validators' view of a record (call after shape_errors is clean; `materialize` derives the bound rows first)."""
     out = copy.deepcopy(report)
     out.setdefault('requirement_clarifications', [])
     items = open_items(out)

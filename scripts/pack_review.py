@@ -282,10 +282,21 @@ def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
     packed = {}
     for name, src in ledger.items():
         target = record / name
-        if Path(src).resolve() != target.resolve():
+        if name == 'review-results.json':
+            # Derived rows are not delivered (2026-10-26, item 4): the tools derive them from the functions when they
+            # read the ledger, so a packed copy could only disagree with the verdict. An annotated one leaves a stub.
+            written = json.loads(Path(src).read_text(encoding='utf-8'))
+            stripped, removed, stubs = results_model.strip_derived(written, json.loads(Path(ledger['review-plan.json']).read_text(encoding='utf-8')))
+            if removed:
+                notes.append('review-results.json: %d derived rows are not packed (the tools derive them from the function '
+                             'verdicts when they read the ledger)%s' % (removed, '; %d kept a stub with the reviewer\'s '
+                             'annotation' % stubs if stubs else ''))
+            target.write_text(json.dumps(stripped, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        elif Path(src).resolve() != target.resolve():
             shutil.copyfile(src, target)
         packed[RECORD + '/' + name] = sha256(target)
-    results = json.loads((record / 'review-results.json').read_text(encoding='utf-8'))
+    results = results_model.materialize(json.loads((record / 'review-plan.json').read_text(encoding='utf-8')),
+                                        json.loads((record / 'review-results.json').read_text(encoding='utf-8')))[0]
     errors += rendered_errors(out, record, title, detail)
     errors += candidate_errors(record)
     items = results_model.open_items(results)

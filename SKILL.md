@@ -35,7 +35,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 
 ```
 对象（功能树，catalog.py）→ 问题（功能框架，catalog.py）→ 条件与余量（审查员自己算，plan-and-results.md）
-→ 检查项（derive_rows.py 派生）→ 对账（validate_review.py）→ 报告（render_report.py 只读台账）
+→ 检查项（由功能派生，derive_rows.py 只检查；门禁、报告、打包读取时派生，不写进台账）→ 对账（validate_review.py）→ 报告（render_report.py 只读台账）
 ```
 
 规则编号里的内容域和方式字母只是检查项上的标签，说明一条规则查什么、怎么查，不是审查的顺序；
@@ -340,12 +340,14 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 #### 3.2 检查项派生
 
-功能判定写完后先派生已绑定的检查项（结论、open_ref/fail_ref、rationale 都从功能来；手填的检查项只对账不覆盖）；
-绑定了功能的检查项不手填，绑定了树上检查的需求检查项（`bound_checks`）取绑定检查项中最差的结论，也不手填：
+绑定了功能的检查项由功能派生（结论、open_ref/fail_ref、rationale 都从功能来），不手填；绑定了树上检查的需求检查项（`bound_checks`）取绑定检查项中最差的结论，也不手填。
+派生的检查项**不写进台账**（2026-10-26 定）：`review-results.json` 只装功能判定和手填的检查项，门禁、报告、打包、对比读取时从计划和功能派生（`results_model.materialize`），
+所以台账里不可能有一份和功能判定不一致的副本。审查员自己把检查项绑到功能时只写 `{id, function_id, aspect}`；要给派生检查项补注记（`manual_verification`、`notes`、`settings`、`bom_constraint`、`requirement_clauses`）时只写 `{id, 注记}`，结论仍由功能派生。
+功能判定写完后跑一次检查，看功能派生出什么、哪些方面没判、哪条手填检查项和功能不一致（它不写文件）：
 
-    python3 scripts/derive_rows.py review-plan.json review-results.json -o review-results.json
+    python3 scripts/derive_rows.py review-plan.json review-results.json
 
-做完的标志：命令无 ERROR 写出结果；打印的“手填保留”检查项都是框架外的检查项，没有一条“手填与功能不一致”。
+做完的标志：命令无 ERROR；打印的“手填保留”检查项都是框架外的检查项，没有一条“手填与功能不一致”；台账里没有 `derived: true` 的检查项。
 
 #### 3.3 手填剩余检查项与图面目检（V）
 
@@ -393,7 +395,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。
 - 疑点落在手填检查项和功能判定/开放项上。派生检查项的措辞、对象、后果、缺口都是工具按开放项写的，筛查不逐项点它们：
-  定级整批同级、下游/固件/计算误记、时序窗口这些疑点读开放项一次，`check_ids` 列它挡住的检查项（一条开放项和它的派生检查项算一个缺口）；处置时改开放项，派生检查项由 `expand` 重写。
+  定级整批同级、下游/固件/计算误记、时序窗口这些疑点读开放项一次，`check_ids` 列它挡住的检查项（一条开放项和它的派生检查项算一个缺口）；处置时改开放项，派生检查项读取时重新派生。
 - 已有资料尚未读算的项记 REVIEW_INCOMPLETE，本轮自己读算完；审查未完成时只交进度，`pack_review.py` 拒绝打包。
   只剩 SR 工具自身限制、已手工核完的写 `manual_verification`（什么算工具限制见 [单条检查](references/plan-and-results.md#单条检查)）。
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。

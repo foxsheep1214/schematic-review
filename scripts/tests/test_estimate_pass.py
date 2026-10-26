@@ -95,6 +95,7 @@ class EstimatePassTests(unittest.TestCase):
     def test_a_hand_filled_pass_on_an_estimate_carries_the_handoff(self):
         p, r, db = estimated()
         r, _, _ = derive_rows.derive(p, r)
+        other_row(r).pop('derived')                                    # hand-filled: a written derived row is re-derived (item 4)
         other_row(r)['handoff'] = {'required': False}
         out = vr.validate_review(p, r, db)
         self.assertTrue(any(OTHER_ROW in e and 'prototype' in e for e in out['errors']), out['errors'])

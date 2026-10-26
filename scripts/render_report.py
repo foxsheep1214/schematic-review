@@ -819,7 +819,7 @@ def owner_counts(plan):
 
 
 def render(plan, results, gate, notes=None, title=None, detail='compact'):
-    results = results_model.expand(results)
+    results = results_model.materialize(plan, results)[0]   # the ledger holds no derived rows; the gate reports derive errors
     revision = (plan or {}).get('review_mode') == 'revision'
     notes = notes or {}
     item_notes = notes.get('items') or {}

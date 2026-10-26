@@ -110,13 +110,15 @@ class EstimateGradeAndReleaseTests(unittest.TestCase):
         self.assertEqual(other_row(r)['evidence_confidence'], 'C')   # written by derive, kept by expand, accepted by the gate
         self.assertTrue(out['valid'], out['errors'])
         p, r, db, _ = self.passing()
-        del other_row(r)['evidence_confidence']                        # expand would grade a bare PASS B
-        out = vr.validate_review(p, r, db)
+        row = other_row(r); row.pop('derived')                         # a hand-filled copy of the row (item 4: a written
+        del row['evidence_confidence']                                 # derived row is re-derived, so only a hand-filled
+        out = vr.validate_review(p, r, db)                             # row can claim a grade); expand grades a bare PASS B
         self.assertTrue(any('C-grade evidence' in e and 'claim B' in e for e in out['errors']), out['errors'])
 
     def test_an_estimate_pass_cannot_claim_a_grade_evidence(self):
         p, r, db, _ = self.passing()
-        other_row(r)['evidence_confidence'] = 'A'
+        row = other_row(r); row.pop('derived')
+        row['evidence_confidence'] = 'A'
         out = vr.validate_review(p, r, db)
         self.assertTrue(any('C-grade evidence' in e for e in out['errors']), out['errors'])
 

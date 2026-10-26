@@ -8,7 +8,8 @@
 - **功能判定**（`functions[]`）是判断单位。一个功能回答一块电路的一个问题（“偏置路径能否让 VCC 保持在 9.5 V 以上”），
   带手册条款、计算、余量、结论和开放项/失败项。计划按 intent 电路生成框架；框架外的功能审查员自己加。
 - **逐项检查**是审计明细。一项对应一条规则、一个实际对象、一个状态，编号为“规则.对象[.状态]”，跨轮次保持不变，
-  供改版复审、训练裁决和复核引用。绑定了功能的检查项由 `derive_rows.py` 从功能派生，不手填；
+  供改版复审、训练裁决和复核引用。绑定了功能的检查项由功能派生，不手填，也不写进台账：门禁、报告、打包、对比读取时派生（`results_model.materialize`，2026-10-26 定），
+  `derive_rows.py` 只是审查员的检查；审查员自己绑定的检查项写 `{id, function_id, aspect}`，给派生检查项补注记只写 `{id, 注记}`；
   事实性检查（目检、脚表、身份、需求条款）手填。一个器件挂很多条规则是正常的，不合并成一项。
 - **待办**是交付单位，由开放项和失败项派生（编号 `W-<key>`，见 [结论与准出](verdicts-and-release.md#待办由开放项派生)），
   不手写。设计者、ASG 和报告都按待办处理；PASS 和 NA 不进待办。
@@ -148,7 +149,7 @@
   只有一个可承接的电路也要手写，不自动填。
   计划把需求检查项绑定到这些规则中 `owners` 拥有的检查项，没写 `owners` 时全板方面（器件温度等级、按温度降额、寿命）绑定全板这些规则的检查项，
   写在需求检查项的 `bound_checks`（不进检查标识，校验时重算，点名的 id 必须拥有计划里的检查项）。有绑定检查项判过（不算 NA）的需求检查项不再另判：
-  `derive_rows.py` 取绑定检查项中最差的结论写出（`derived_from`；FAIL 带上该发现项并把需求检查项加进它的 `check_ids`，INSUFFICIENT 带上 `open_ref`），
+  读取时取绑定检查项中最差的结论派生（`derived_from`；FAIL 带上该发现项并把需求检查项加进它的 `check_ids`，INSUFFICIENT 带上 `open_ref`），
   手填的需求检查项只对账不覆盖；校验要求结论等于绑定检查项中最差者，这种检查项不要求条款。没有绑定检查项、或绑定检查项全是 NA 的方面由需求检查项自己判，照常拆条款。
   有参数的方面（如 TEMPERATURE_GRADE 的 °C）只从经需求条款或经该参数单位的限值的失败边继承 FAIL（`requirement_bindings.fail_counts`）：
   绑定检查项因别的量失败（齐纳低电流 VZ）时失败留在该检查项，需求检查项写明不继承；INSUFFICIENT 照旧继承。
@@ -561,8 +562,8 @@ PRO-C03 在隔离功能里逐个列出变压器、光耦/数字隔离器、跨�
 它的位号若全在某个电路框架里，校验拒收并提示写进那个框架；计划漏了电路时在 `intent.circuit_decisions` 登记 add 决定后重生成计划）：功能 PASS → 检查项 PASS；
 功能 FAIL → `fails[].decides` 命中的（方面，状态）FAIL 并带 `fail_ref`/`finding_id`；功能 OPEN →
 `open[].decides` 命中的检查项 INSUFFICIENT 并带 `open_ref: "FN-ID/KEY"`；其余的检查项只有本方面本状态有证明通过的余量或 `judgements` 条目才 PASS，
-否则 `derive_rows.py` 报“judges no …”而不生成该检查项。`rationale` 写“见功能判定 FN-X（方面，状态）：”加本方面自己的结论和余量，或 judgement 的内容和条款。
-`derive_rows.py` 生成这些检查项；手填的检查项只对账不覆盖。校验强制：INSUFFICIENT 必有 `open_ref` 且其 `decides` 覆盖本检查项的方面和状态；
+否则派生报“judges no …”而不生成该检查项（门禁同样报）。`rationale` 写“见功能判定 FN-X（方面，状态）：”加本方面自己的结论和余量，或 judgement 的内容和条款。
+读取时派生这些检查项（`results_model.materialize`），台账里不写；手填的检查项只对账不覆盖。校验强制：INSUFFICIENT 必有 `open_ref` 且其 `decides` 覆盖本检查项的方面和状态；
 绑定的检查项的 `aspect` 等于计划的方面；每个有已审成员的框架都有功能判定。
 
 ### 每项检查的盲区与关闭条件
@@ -677,7 +678,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 DESIGN_VALUE / VENDOR_DATUM / DELIVERABLE_PENDING 项写了烧录镜像、读回、编程模式、量产校准而 `what`/`acquisition`/`deliverable` 里没有编程口、上拉、GPIO 这类原理图前提的是前者；
 VENDOR_DATUM 项的取得方式写了已读某页、只剩复算，又没有一句说缺哪个数据的是后者。手填检查项仍按检查项的 `missing_inputs` 判，派生检查项不逐项点。
 
-筛查的层级：派生检查项（`derived: true`，`open_ref` 指向开放项）的措辞、对象、后果与缺口都是 `expand` 按开放项写的，所以对象越界、后果引外部位号、引用本记录、下游误记、时序窗口、定级整批同级这些疑点在派生检查项上读开放项一次——
+筛查的层级：派生检查项（`derived: true`，`open_ref` 指向开放项；读取时派生，台账里没有）的措辞、对象、后果与缺口都是工具按开放项写的，所以对象越界、后果引外部位号、引用本记录、下游误记、时序窗口、定级整批同级这些疑点在派生检查项上读开放项一次——
 定级按缺口数（一条开放项和它挡住的检查项算一个）、时序窗口看开放项的 `scenario`/`allowed_window`/`response_bound`、`check_ids` 列该项挡住的检查项。
 R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18 项、同规则整批同级 92 项，codex2 时序窗口 13 项——都指向一条已写好窗口的开放项）全部收回；codex2 13 条开放项 12 条同级，仍提示。
 

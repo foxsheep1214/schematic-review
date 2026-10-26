@@ -222,8 +222,8 @@ def coverage_errors(expected, rows):
 def derive(plan, results, counts=None):
     """Write or check every bound requirement row; returns (count, errors). `results` is updated in place; `counts`
     is the fail filter (function_reading.fail_filter), None keeps every bound result."""
-    rows = {r.get('id'): r for r in results.get('checks') or [] if isinstance(r, dict)}
-    findings = {f.get('id'): f for f in results.get('findings') or [] if isinstance(f, dict)}
+    rows = {r['id']: r for r in results.get('checks') or [] if isinstance(r, dict) and isinstance(r.get('id'), str)}
+    findings = {f['id']: f for f in results.get('findings') or [] if isinstance(f, dict) and isinstance(f.get('id'), str)}
     count, errors = 0, []
     for planned in plan.get('checks') or []:
         if planned.get('rule') not in BINDERS or (planned.get('object') or {}).get('requirement_status') in ('OPEN', 'DEFERRED'):

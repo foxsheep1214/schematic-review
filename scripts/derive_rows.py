@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """Rows follow their function verdict (docs/2026-10-20-function-verdicts-design.md §5).
 
-    python3 scripts/derive_rows.py review-plan.json review-results.json -o review-results.json
+    python3 scripts/derive_rows.py review-plan.json review-results.json
 
 Every plan row bound to a function (`function_id`, set by the planner for circuit members or by the
 reviewer) gets its result from that function: a fail item whose `decides` covers the row's aspect
 and state makes it FAIL, an open item makes it INSUFFICIENT with `open_ref`, otherwise it is PASS
 with a rationale that points at the verdict. Rows the reviewer filled by hand are left alone and
 only compared; a disagreement is reported, never overwritten. Rows outside any function stay manual.
+
+Derived rows are not written to the ledger (2026-10-26, item 4): the gate, the report and the packer
+derive them when they read it (`results_model.materialize`). This command is the reviewer's check —
+it prints what the functions derive and every aspect nobody judged or hand-filled row that disagrees.
 """
 import argparse
 import json
@@ -48,17 +52,18 @@ def named_elsewhere(functions, fn, planned, aspect):
     return None, None
 
 
-def derive_row(fn, planned, aspect, findings, functions=None):
-    """The row `planned` takes from function `fn` for `aspect`; returns (row, error)."""
+def derive_row(fn, planned, aspect, findings, functions=None, hand_filled=False):
+    """The row `planned` takes from function `fn` for `aspect`; returns (row, error). A hand-filled row carries its own
+    handoff, so the function needs none for it (only the derived fields are compared)."""
     state = (planned.get('object') or {}).get('state')
     where = '%s（%s%s）' % (fn['id'], aspect, ('，' + state) if state else '')
     row = {'id': planned['id'], 'applicability': 'APPLICABLE',
            'binding': {'object': planned.get('object'), 'criterion': planned.get('criterion')},
            'function_id': fn['id'], 'aspect': aspect, 'evidence': fn.get('evidence'), 'derived': True}
     handoff, error = _handoff(fn, planned)
-    if error:
+    if error and not hand_filled:
         return None, error
-    row['handoff'] = handoff
+    row['handoff'] = handoff or {'required': False}
     for item in fn.get('fails') or []:
         if isinstance(item, dict) and decides_row(item, aspect, state, planned['id']):
             finding = findings.get(item.get('finding_id'))
@@ -117,11 +122,12 @@ def derive(plan, results):
         if not text(aspect):
             errors.append('%s: a bound row names the aspect it covers' % planned['id'])
             continue
-        row, error = derive_row(fn, planned, aspect, findings, functions)
+        hand_filled = existing is not None and bool(existing.get('review_result')) and not existing.get('derived')
+        row, error = derive_row(fn, planned, aspect, findings, functions, hand_filled)
         if error:
             errors.append(error)
             continue
-        if existing is not None and existing.get('review_result') and not existing.get('derived'):
+        if hand_filled:
             summary['kept'] += 1
             for field in DERIVED_FIELDS:
                 if existing.get(field) != row.get(field):
@@ -150,19 +156,14 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('plan')
     parser.add_argument('results')
-    parser.add_argument('-o', '--out', help='where to write the results (default: print the summary only)')
     args = parser.parse_args(argv)
     plan, results = load_json(args.plan), load_json(args.results)
     results, summary, errors = derive(plan, results)
-    if args.out and not errors:
-        Path(args.out).write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('派生 %d 项（PASS %d、FAIL %d、INSUFFICIENT %d），手填保留 %d 项；需求检查项由绑定检查项派生 %d 项' % (
+    print('派生 %d 项（PASS %d、FAIL %d、INSUFFICIENT %d），手填保留 %d 项；需求检查项由绑定检查项派生 %d 项；派生检查项不写进台账，门禁、报告、打包读取时派生' % (
         summary['derived'], summary['PASS'], summary['FAIL'], summary['INSUFFICIENT'], summary['kept'],
         summary['requirements']))
     for error in errors:
         print('ERROR ' + error)
-    if errors and args.out:
-        print('有错误，未写出 ' + args.out)
     return 1 if errors else 0
 
 
