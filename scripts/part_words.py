@@ -6,6 +6,8 @@ vocabulary is a reading library; checkers/netgraph.py asks it and keeps only net
 import re
 
 import catalog
+import device_kinds
+from device_kinds import JST_CONNECTOR_RE, USB_CONNECTOR_RE   # noqa: F401  (classify checks these patterns by identity)
 
 
 # Part words read from a part's text (value, symbol, part number), one vocabulary for every module.
@@ -15,8 +17,8 @@ POLARIZED_SYMBOL_RE = re.compile(r'(^|[:\s])(C_Polarized|CP)(_|\b)', re.I)
 ELECTROLYTIC_RE = re.compile(r'电解|固态|铝|ELECTROLYTIC|\bELEC\b|\bALUM|\bE-?CAP\b|POLYMER|OS-?CON|SUPER ?CAP|EDLC|超级电容'
                              r'|\bEE[EU]|\d\s*h\s*@\s*\d+\s*°?C', re.I)
 TANTALUM_RE = re.compile(r'TANTAL|钽|\bTPS[A-Z]', re.I)
-NTC_RE = re.compile(r'NTC', re.I)
-VARISTOR_RE = re.compile(r'VARISTOR|\bMOV\b|压敏', re.I)
+NTC_RE = re.compile(device_kinds.NTC_WORDS, re.I)
+VARISTOR_RE = re.compile(device_kinds.VARISTOR_WORDS, re.I)
 LED_RE = re.compile(r'(^|[^A-Z])LED(S|[^A-Z]|$)', re.I)
 # a controller's high-voltage start-up pin, fed from the bus through its start-up resistor by design
 STARTUP_PIN_RE = re.compile(r'^(HV|HVIN|HV_?IN|HV_?START\w*|VSTART\w*|VSTR|STARTUP)$', re.I)
@@ -36,27 +38,15 @@ FUSE, JUMPER, TESTPOINT, SWITCH = 'fuse', 'jumper', 'testpoint', 'switch'
 IC, CONNECTOR, UNKNOWN = 'ic', 'connector', 'unknown'
 BATTERY, BRIDGE_RECTIFIER = 'battery', 'bridge_rectifier'
 NTC, VARISTOR = 'ntc', 'varistor'   # 2026-10-26 table extension: the R7 board's TH101/TH601 and RV101 had no kind
-KIND_CONSTANTS = {k: k for k in (RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER, MOSFET, BJT,
-                                 RELAY, OPTO, CRYSTAL, TRANSFORMER, FUSE, JUMPER, TESTPOINT, SWITCH,
-                                 IC, CONNECTOR, BATTERY, BRIDGE_RECTIFIER, NTC, VARISTOR, UNKNOWN)}
+# The registry (device_kinds.KINDS) is the one list of kinds; the constants above are its names for identity checks.
+KIND_CONSTANTS = {k: k for k in device_kinds.KINDS}
 # A datasheet-declared IC role (catalog.DEVICE_ROLES) classifies as IC; the role itself is read with
 # NetGraph.role_kind. ANCHOR_ROLES are the roles a circuit candidate is built around (registry rows with circuits).
 IC_ROLES = frozenset(catalog.DEVICE_ROLES)
 ANCHOR_ROLES = frozenset(name for name, role in catalog.DEVICE_ROLES.items() if role.circuits)
 
-PREFIX_KINDS = (
-    (r'^JP\d', JUMPER), (r'^TP\d', TESTPOINT), (r'^FB\d', FERRITE),
-    (r'^R\d', RESISTOR), (r'^RN\d', RESISTOR), (r'^C\d', CAPACITOR), (r'^C[XY]\d', CAPACITOR),
-    (r'^L\d', INDUCTOR), (r'^D\d', DIODE), (r'^Q\d', MOSFET),
-    (r'^K\d', RELAY), (r'^Y\d', CRYSTAL), (r'^X\d', CRYSTAL),
-    (r'^T\d', TRANSFORMER), (r'^F\d', FUSE), (r'^SW\d', SWITCH),
-    (r'^S\d', SWITCH), (r'^[UM]\d', IC), (r'^(J|P|CN)\d', CONNECTOR), (r'^BT\d', BATTERY),
-    (r'^BR\d', BRIDGE_RECTIFIER),
-    (r'^(TH|RT|NTC)\d', NTC),   # RV is also KiCad's potentiometer prefix: a varistor needs its word
-)
+PREFIX_KINDS = device_kinds.prefix_table()   # refdes prefix → kind, the weakest evidence (registry order)
 
-JST_CONNECTOR_RE = r'(?:^|[\s:])JST[-_]'
-USB_CONNECTOR_RE = r'(?:[^\s:]+:)?(?:MICRO|MINI)[-_](?:AB|A|B)[-_]USB'
 # NC suppression needs complete physical-family tokens, not the broad
 # discovery keywords above. Unknown model suffixes retain a review candidate.
 CONNECTOR_CONTACT_RE = (
@@ -67,50 +57,10 @@ CONNECTOR_CONTACT_RE = (
     r'HEADER_(?:MALE|FEMALE)[_-]\d+X\d+|HEADER[-_]\d+X\d+|'
     r'JST[-_](?:SH|GH|ZH|PH|XH))')
 
-KEYWORD_KINDS = (
-    (r'RELAY|继电器', RELAY),
-    # Thermistors and varistors by the shared words (NTC_RE / VARISTOR_RE); an IC refdes or a part with more than
-    # three pins never becomes one by a word in its description ("charger with NTC input").
-    (VARISTOR_RE.pattern, VARISTOR),
-    (NTC_RE.pattern, NTC),
-    (r'OPTO|PC81[07]|LTV\d|TLP\d|6N13[57]|HCPL|ACPL|FOD\d|CNY17|VO6\d|SFH6\d{2,3}|EL8\d\d|PS2[5-9]\d\d|TCMT\d|KPC\d|H11[A-Z]\d|光耦', OPTO),
-    (r'\bTVS\b|SMAJ|SMBJ|SMCJ|P6KE|1\.5KE|ESD\d|PESD|SM712', TVS),
-    (r'ZENER|BZX|BZT5\d|MMSZ|1N47\d|稳压二极管', ZENER),
-    # KiCad symbol-library category of the symbol actually placed.
-    (r'TRANSISTOR_BJT:', BJT),
-    (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:', MOSFET),
-    (r'MOSFET|\bFET\b|NMOS|PMOS|[NP]-MOS|IRF|IRLML|AO\d{4}|SI\d{4}|BSS\d|2N7002|IGBT', MOSFET),
-    (r'\bNPN\b|\bPNP\b|BC[PXW]?\d{2,3}|2N\d{4}|MMBT|PBSS|S8050|S8550|三极管', BJT),
-    (r'SCHOTTKY|DIODE|SS\d{2}|BAT\d|1N4\d{3}|1N58\d|二极管', DIODE),
-    (r'FERRITE|BEAD|BLM\d|MPZ\d|磁珠', FERRITE),
-    (r'INDUCTOR|CHOKE|电感', INDUCTOR),
-    # OSC only as a whole word: footprint names like Bosch_LGA-8 contain the letters.
-    (r'CRYSTAL|XTAL|\bOSC(?:ILLATOR)?\b|晶振|晶体', CRYSTAL),
-    (r'TRANSFORMER|变压器', TRANSFORMER),
-    (r'FUSE|PTC|保险', FUSE),
-    (r'(?:^|[\s:_])BATTERY\b|电池', BATTERY),
-    # Explicit connector symbol/part families can use arbitrary refdes (e.g. K).
-    # Keep stronger device keywords above and do not treat a bare "terminal" or
-    # "header" in an IC description as a connector. This is role evidence only,
-    # never a connector pinout/current-rating guarantee.
-    # KiCad places test pads as Connector:TestPoint*; the library entry, not the
-    # namespace, decides that this is a probe/fixture pad rather than a connector.
-    (r'(?:^|[\s:])TEST_?POINT(?:_|\b)', TESTPOINT),
-    (r'(?:\b|_)CONNECTORS?(?:_[A-Z0-9]+)*:|\bCONN_\d+X\d+\b|'
-     r'\bUSB[-_ ]?(?:2\.0[-_ ]?)?TYPE[-_ ]?C\b|\bTYPE-C-\d+-M\b|\bBARREL[-_ ]?JACK\b|\bPWR[-_ ]?JA[C]?K|'
-     r'\bPINHEADER[_:-]|\bTERMINAL_?BLOCK[_:-]|'
-     r'\bHEADER_(?:MALE|FEMALE)[_:-]|\bHEADER[-_]\d+X\d+(?:\b|[_:-])|'
-     r'\bTERMINAL_KF\d', CONNECTOR),
-    # Legacy physical USB connector symbols can have a U refdes. Match the
-    # complete connector-family token, not USB controller/PHY descriptions.
-    (USB_CONNECTOR_RE, CONNECTOR),
-    # A bare vendor name: never re-identify an IC/module refdes by it.
-    (JST_CONNECTOR_RE, CONNECTOR),
-)
+KEYWORD_KINDS = device_kinds.keyword_table()   # part/value/symbol words → kind, in registry precedence
 
-TWO_TERMINAL = {RESISTOR, CAPACITOR, INDUCTOR, FERRITE, DIODE, TVS, ZENER,
-                FUSE, JUMPER, NTC, VARISTOR}
-PASSIVE_LINKS = {RESISTOR, INDUCTOR, FERRITE, JUMPER, FUSE, NTC}
+TWO_TERMINAL = set(device_kinds.with_flag('two_terminal'))
+PASSIVE_LINKS = set(device_kinds.with_flag('passive_link'))
 
 GATE_NAMES = {'G', 'GATE', 'GT'}
 # 斯拉夫语库（如 e-radionica/Soldered）写作 ANODA/KATODA/KOLEKTOR/EMITER/BAZA

@@ -140,5 +140,6 @@ IC 再按手册声明的角色分（`catalog.DEVICE_ROLES`）；定界表的 31 
 
 | 日期 | 触发 | 加了什么 |
 |---|---|---|
+| 2026-10-26 | 同日第 6 项：上一行的扩表改了五个模块七处清单 | 分立器件类别收进一张登记表 `scripts/device_kinds.py`（`KINDS`：名称、前缀、词、手册线索、两端/链路/保护、单独决定的磨损类、可否声明），词表、声明表、线索表、磨损类、保护件判定都读它；此后加类别 = 登记表一行 + 定界表的格 |
 | 2026-10-26 | R7 四份记录各报 3 条 NEW_DEVICE_KIND：RV101（TDK SIOV S14K300 压敏）、TH101（浪涌限制 NTC 5R/3A）、TH601（检测 NTC 100k/B4250）；定界表已有 `ntc` 格，词表却没有这个类别 | 词表加 `ntc`、`varistor` 两类（按共用词 NTC_RE / VARISTOR_RE 和 Thermistor 符号；TH/RT/NTC 位号前缀是最弱依据；RV 前缀不作依据，KiCad 的电位器也叫 RV；U/M/IC 位号或多于 3 脚的件不因描述里的词变成热敏/压敏），声明词表（intent.devices.kind）与手册线索（thermistor / inrush current limiter / varistor / SIOV）同加，磨损类 VARISTOR / INRUSH_NTC 和保护件判定读类别；压敏加 VAR-UC、VAR-VC、VAR-SURGE 三格，五列齐，均不估算（安全件）。NTC 的两格原有，五列在步 1 已填 |
 

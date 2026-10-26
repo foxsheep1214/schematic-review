@@ -196,7 +196,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 **器件类型以原厂手册为准，由工具核验原文。**
 
 第一步，审查者读手册，在 `intent.device_kinds.<ref>` 写下声明：`kind`、`page`、`quote`。
-- `kind`：bjt/mosfet/diode/zener/tvs/opto/bridge_rectifier/transformer/connector/ntc/varistor 等（`board_intent.DEVICE_KINDS`），与检查器的器件类别一致。
+- `kind`：bjt/mosfet/diode/zener/tvs/opto/bridge_rectifier/transformer/connector/ntc/varistor 等（`board_intent.DEVICE_KINDS`，即器件类别登记表 `device_kinds.KINDS` 里可声明的类别加 IC 角色），与检查器的器件类别一致：分立器件的类别、位号前缀、词、手册线索、两端/链路/保护/磨损属性只登记在 `device_kinds.py` 一行里，各模块读视图。
   集成电路声明它的**角色**，角色登记表是 `catalog.DEVICE_ROLES`（[检查目录·器件角色](check-catalog.md#器件角色)：每个角色的
   手册标题词、它作核心器件时生成的电路类型、ANALOG 走线从哪些脚出发；`board_intent.IC_KINDS`、`part_words.IC_ROLES`、
   `datasheet_kinds.KIND_CUES` 都从这张表读，加角色只改这一行）。手册标题没有任何登记角色的才写泛称 `ic`；计划把每个 `ic`

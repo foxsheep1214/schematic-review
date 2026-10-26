@@ -7,13 +7,14 @@ import re
 import board_intent
 import catalog
 import circuit_decisions
+import device_kinds
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
 from checkers.netgraph import RAIL_RE, NetGraph, is_analog_sense_pair, is_ground
-from part_words import (BATTERY, BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET, OPTO,
-                        PASSIVE_LINKS, RELAY, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER,
-                        ELECTROLYTIC_RE, LED_RE, NTC, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR, VARISTOR_RE, name_matches,
+from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET, OPTO,
+                        PASSIVE_LINKS, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER, ELECTROLYTIC_RE,
+                        LED_RE, NTC, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR, VARISTOR_RE, name_matches,
                         normalize)
 from checkers.netgraph import is_ground as netgraph_ground
 from checkers.planutil import slug as _slug
@@ -996,13 +997,11 @@ class CircuitPlanning:
     def wearout_class(self, graph, ref):
         """The catalog.WEAROUT_CLASSES entry a fitted part falls in, or None (6e)."""
         kind, text = graph.kind(ref), self._part_text(graph, ref)
-        if kind == BATTERY:
-            return 'BATTERY'
-        if kind == OPTO:
-            return 'OPTO'
+        if device_kinds.wearout_of(kind):          # the kind alone decides: battery, opto, varistor, relay, connector, switch
+            return device_kinds.wearout_of(kind)
         if kind == DIODE and (LED_RE.search(text) or re.match(r'^LED\d', ref, re.I)):
             return 'LED'
-        if kind == VARISTOR or VARISTOR_RE.search(text):
+        if VARISTOR_RE.search(text):
             return 'VARISTOR'
         if kind == FUSE:
             return 'PTC' if PTC_RE.search(text) else 'FUSE'
@@ -1010,11 +1009,7 @@ class CircuitPlanning:
             ends = graph.terminals(ref)
             on_ends = {graph.kind(r) for n in ends for r in graph.refs_on(n) if r != ref}
             return 'INRUSH_NTC' if ends and not any(is_ground(n) for n in ends) and IC not in on_ends else None
-        if kind == RELAY:
-            return 'RELAY'
-        if kind == CONNECTOR:
-            return 'CONNECTOR'
-        if kind == SWITCH or SWITCHLIKE_RE.search(text):
+        if SWITCHLIKE_RE.search(text):
             return 'SWITCH'
         if kind == IC and (MEMORY_RE.search(text) or graph.role_kind(ref) == 'mcu'):
             return 'MEMORY'

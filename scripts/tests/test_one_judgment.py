@@ -32,7 +32,7 @@ def own_patterns(words):
     of these words."""
     found = []
     for p in sorted(SCRIPTS.glob('*.py')) + sorted(SCRIPTS.glob('checkers/*.py')):
-        if p.name in ('netgraph.py', 'part_words.py'):
+        if p.name in ('netgraph.py', 'part_words.py', 'device_kinds.py'):
             continue
         for name, pattern in module_regexes(p).items():
             if name.endswith(OTHER_QUESTIONS) or name in OTHER_NAMES:
@@ -67,8 +67,11 @@ class GroundTests(unittest.TestCase):
 
 class PartWordTests(unittest.TestCase):
     def test_one_vocabulary(self):
-        words = {'NTC_RE', 'VARISTOR_RE', 'LED_RE', 'POLARIZED_SYMBOL_RE', 'ELECTROLYTIC_RE', 'TANTALUM_RE'}
+        words = {'LED_RE', 'POLARIZED_SYMBOL_RE', 'ELECTROLYTIC_RE', 'TANTALUM_RE'}
         self.assertTrue(words <= set(module_regexes(SCRIPTS / 'part_words.py')))
+        # Kind words live in the registry (device_kinds.KINDS, item 6 of 2026-10-26); part_words compiles them from there.
+        import device_kinds
+        self.assertEqual((pw.NTC_RE.pattern, pw.VARISTOR_RE.pattern), (device_kinds.NTC_WORDS, device_kinds.VARISTOR_WORDS))
         self.assertEqual(own_patterns(('NTC', 'VARISTOR', 'MOV', 'LED', 'TANT', 'ELECTROLYTIC', 'C_Polarized')), [])
 
     def test_electrolytic_tantalum_and_polarized(self):

@@ -4737,5 +4737,40 @@
   "file": "scripts/audit_parameter_claims.py",
   "old": "    verdict = units.plausible(row['value'], row['unit'])\n",
   "new": "    verdict = None\n"
+ },
+ {
+  "id": "M682",
+  "name": "the declarable kinds forget the registry",
+  "file": "scripts/board_intent.py",
+  "old": "DEVICE_KINDS = device_kinds.declarable() + IC_KINDS   # the registry's declarable kinds, then the IC roles\n",
+  "new": "DEVICE_KINDS = IC_KINDS\n"
+ },
+ {
+  "id": "M683",
+  "name": "no kind is protective",
+  "file": "scripts/circuit_candidates.py",
+  "old": "PROTECTIVE_KINDS = device_kinds.with_flag('protective')             # fuse, tvs, bridge_rectifier, ntc, varistor\n",
+  "new": "PROTECTIVE_KINDS = frozenset()\n"
+ },
+ {
+  "id": "M684",
+  "name": "the wearout class ignores the registry",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if device_kinds.wearout_of(kind):          # the kind alone decides: battery, opto, varistor, relay, connector, switch\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M685",
+  "name": "the datasheet cues forget the discrete kinds",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "KIND_CUES = device_kinds.cue_table() + tuple((name, role.cues) for name, role in catalog.DEVICE_ROLES.items() if role.cues)\n",
+  "new": "KIND_CUES = tuple((name, role.cues) for name, role in catalog.DEVICE_ROLES.items() if role.cues)\n"
+ },
+ {
+  "id": "M686",
+  "name": "no kind is a series link",
+  "file": "scripts/part_words.py",
+  "old": "PASSIVE_LINKS = set(device_kinds.with_flag('passive_link'))\n",
+  "new": "PASSIVE_LINKS = set()\n"
  }
 ]

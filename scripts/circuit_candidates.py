@@ -21,6 +21,7 @@ from collections import deque
 
 import board_intent
 import catalog
+import device_kinds
 from electrical_contract import db_fingerprint, load_json
 from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
 import part_words as pw
@@ -44,6 +45,7 @@ SENSE_PIN_RE = re.compile(r'^(CS|CS[+-]|CS_?[PN]|ISNS|ISENSE|ISEN|VSNS|VSENSE|FB
 USB_PIN_RE = re.compile(r'^(CC[12]|D[+-]|DP|DN|DM|D_P|D_N|SBU[12])$', re.I)
 DEBUG_PIN_RE = re.compile(r'^(SWDIO|SWCLK|SWO|TCK|TMS|TDI|TDO|NTRST|JTAG\w*)$', re.I)
 PROTECTIVE_RE = re.compile(r'THERMISTOR|FUSE|BRIDGE|\bGDT\b|SPARK', re.I)   # with netgraph's NTC and varistor words
+PROTECTIVE_KINDS = device_kinds.with_flag('protective')             # fuse, tvs, bridge_rectifier, ntc, varistor
 PASS_THROUGH = frozenset({pw.BRIDGE_RECTIFIER})      # multi-pin parts the input walk passes
 WALK, STOP = 'walk', 'stop'
 IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a part's identity in a candidate, not its body
@@ -458,7 +460,7 @@ class Generator:
                     continue
                 kind = self.graph.kind(ref)
                 blob = _blob(self.graph.parts.get(ref, {}))
-                is_protective = kind in (pw.FUSE, pw.TVS, pw.BRIDGE_RECTIFIER, pw.NTC, pw.VARISTOR) or bool(PROTECTIVE_RE.search(blob) or pw.NTC_RE.search(blob) or pw.VARISTOR_RE.search(blob))
+                is_protective = kind in PROTECTIVE_KINDS or bool(PROTECTIVE_RE.search(blob) or pw.NTC_RE.search(blob) or pw.VARISTOR_RE.search(blob))
                 if self.two_terminal(ref):
                     members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
                     protective |= is_protective

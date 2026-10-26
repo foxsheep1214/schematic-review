@@ -2306,3 +2306,26 @@ about.
 - Causes: rule_missing 1
 - Changed: scripts/units.py, scripts/review_functions.py, scripts/render_report.py, scripts/audit_parameter_claims.py, scripts/tests/test_units.py, scripts/tests/test_structured_quantities.py, SKILL.md, references/plan-and-results.md, references/automation.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2239, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M677–M681 killed
+
+## One registry of device kinds (2026-10-26)
+
+Item 6 of the review items the user approved ("剩下的优化你可以做"). The
+ntc/varistor extension of the same day had to touch seven lists in five
+modules (part_words constants, prefixes and keywords, board_intent's
+declarable kinds, datasheet_kinds' cues, plan_circuits' wearout classes,
+circuit_candidates' protective parts) — the kind of growth the user asked
+for (器件类别是可以增长的) could not stay consistent that way.
+`scripts/device_kinds.py` is the registry: one `DeviceKind` row per kind
+with its title, refdes prefixes (the weakest evidence), part/value/symbol
+words in classifier precedence (registry order), datasheet-title cues,
+two_terminal / passive_link / protective flags, the wearout class the kind
+alone decides and whether a reviewer may declare it; `prefix_table`,
+`keyword_table`, `cue_table`, `declarable`, `with_flag`, `wearout_of` are
+the views the five modules now read, and `errors()` self-checks a row. The
+derived tables are the former lists entry for entry (21 keywords, 22
+prefixes, same sets), so the classifier's answers do not change.
+
+- Event: user:2026-10-26 (SR review items after the strict pass: "剩下的优化你可以做"; same-day principle 器件类别是可以增长的)
+- Causes: judgment 1
+- Changed: scripts/device_kinds.py, scripts/part_words.py, scripts/board_intent.py, scripts/datasheet_kinds.py, scripts/plan_circuits.py, scripts/circuit_candidates.py, scripts/tests/test_device_kinds.py, scripts/tests/test_one_judgment.py, references/architecture.md, references/automation.md, docs/2026-10-26-cell-boundary.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2245, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M682–M686 killed

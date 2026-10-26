@@ -14,23 +14,12 @@ import shutil
 import subprocess
 
 import catalog
+import device_kinds
 
 # Cue words on ASCII-alphanumeric text with spaces removed (PDF extraction often drops spaces).
 # Integrated-circuit roles come from the role registry (catalog.DEVICE_ROLES): the datasheet title names what the part does.
-KIND_CUES = (
-    ('opto', ('optocoupler', 'photocoupler', 'optoisolator', 'opticallycoupled', 'opticalisolator', 'opticalcoupler')),
-) + tuple((name, role.cues) for name, role in catalog.DEVICE_ROLES.items() if role.cues) + (
-    ('bjt', ('npn', 'pnp', 'bipolar')),
-    ('mosfet', ('mosfet', 'nchannel', 'pchannel', 'superjunction')),
-    ('tvs', ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress')),
-    ('zener', ('zener',)),
-    ('bridge_rectifier', ('bridgerectifier',)),
-    ('diode', ('rectifier', 'diode', 'schottky')),
-    ('transformer', ('transformer',)),
-    ('connector', ('connector', 'receptacle', 'terminalblock')),
-    ('ntc', ('ntcthermistor', 'thermistor', 'inrushcurrentlimiter')),
-    ('varistor', ('varistor', 'siov')),
-)
+# Discrete kinds' cues come from the kind registry (device_kinds.KINDS), the IC roles' from catalog.DEVICE_ROLES.
+KIND_CUES = device_kinds.cue_table() + tuple((name, role.cues) for name, role in catalog.DEVICE_ROLES.items() if role.cues)
 IC_ROLE_CUES = {name for name, role in catalog.DEVICE_ROLES.items() if role.cues}
 DISCRETE_CUES = {'mosfet', 'bjt', 'diode', 'zener', 'tvs', 'bridge_rectifier'}
 SPECIFIC_DIODES = {'tvs', 'zener', 'bridge_rectifier'}      # a quote naming these is not evidence for a plain diode
