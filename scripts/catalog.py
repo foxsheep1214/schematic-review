@@ -1208,6 +1208,53 @@ BOUNDS = OrderedDict((b.id, b) for b in (
 ))
 
 
+NO_CELL = 'NONE'   # a decisive margin whose parameter has no cell in the table says so
+
+# Words that name a cell's parameter in a margin's against / aspect or its limit's says: a decisive margin written with
+# cell NONE while one of these matches is a hint (BOUNDING_CELL_AVAILABLE), never an error.
+CELL_WORDS = OrderedDict((
+    ('ZENER-VZ-UPPER', r'\bV_?Z\b|齐纳电压|击穿电压|稳压值'),
+    ('ZENER-VZ-LOWER', r'\bV_?Z\b|齐纳电压|击穿电压|稳压值'),
+    ('ZENER-VZ-TEMP', r'温度系数|tempco|\bS_?Z\b|温漂'),
+    ('REF-IKA-MIN', r'\bI_?KA\b|最小阴极电流'),
+    ('TVS-STANDOFF', r'\bV_?RWM\b|截止电压|stand-?off'),
+    ('TVS-VC', r'钳位电压|\bV_?C\b(?!C)|clamping voltage'),
+    ('TVS-LEAK-HOT', r'高温漏电|\bI_?R\b.{0,12}(?:85|105|125|150)\s?°?C'),
+    ('DIODE-VF', r'\bV_?F\b|正向(?:压降|电压)|forward voltage'),
+    ('DIODE-VF-COLD', r'冷态|\bV_?F\b.{0,12}[−-]\s?\d+\s?°?C'),
+    ('DIODE-IR-HOT', r'反向漏电|\bI_?R\b|leakage'),
+    ('DIODE-SURGE', r'\bI_?FSM\b|浪涌电流|surge current'),
+    ('MOS-VGS-ON', r'V_?GS\s?\(?(?:th|on)\)?|导通.{0,6}V_?GS|V_?GS.{0,6}导通|plateau'),
+    ('MOS-RDS-HOT', r'R_?DS\s?\(?on\)?'),
+    ('MOS-SOA-HOT', r'\bSOA\b|安全工作区|脉冲功率'),
+    ('MOS-LINEAR', r'源跟随|线性稳压|跨导|\bg_?fs\b'),
+    ('BJT-SAT', r'饱和|\bI_?B\b|强制 ?β|forced beta'),
+    ('BJT-HFE', r'\bh_?FE\b|电流增益'),
+    ('OPTO-CTR', r'\bCTR\b|电流传输比'),
+    ('NTC-SENSE', r'\bR_?25\b|\bB_?25\b|R\(T\)'),
+    ('NTC-INRUSH-HOT', r'浪涌限制|热态.{0,6}(?:NTC|阻值)|inrush'),
+    ('RES-POWER', r'电阻.{0,10}额定功率|\bP_?rated\b|电阻.{0,6}耐压'),
+    ('MLCC-EFFECTIVE-C', r'有效容量|直流偏压|DC ?bias|容量.{0,6}(?:偏压|老化)'),
+    ('ECAP-ESR-RIPPLE', r'\bESR\b|纹波电流|ripple current'),
+    ('IND-ISAT', r'\bI_?sat\b|饱和电流'),
+    ('FUSE-I2T', r'I\s?[²2]\s?t|熔断'),
+    ('IC-THRESHOLD', r'门限|阈值|threshold|\bUVLO\b|\bV_?REF\b|基准电压'),
+    ('IC-QUIESCENT', r'静态电流|\bI_?Q\b|quiescent|待机电流'),
+    ('IC-TIMING', r'最小导通|消隐|延时|blank|delay|\bt_?(?:ON|OFF)(?:_?M(?:IN|AX))?\b|\bt[A-Za-z_]*\('),
+    ('IC-IO-LEVEL', r'\bV_?O[HL]\b|\bV_?I[HL]\b|输出电平|输入电平'),
+    ('IC-IO-CURRENT', r'\bI_?O[HL]\b|灌电流|拉电流|sink current|source current'),
+    ('IC-RECOMMENDED', r'推荐工作|recommended operating'),
+))
+_CELL_WORDS_RE = {cell: re.compile(words, re.I) for cell, words in CELL_WORDS.items()}
+
+
+def cells_named_by(text_):
+    """The table cells whose parameter words appear in this text, in table order."""
+    if not isinstance(text_, str) or not text_:
+        return []
+    return [cell for cell in BOUNDS if cell in _CELL_WORDS_RE and _CELL_WORDS_RE[cell].search(text_)]
+
+
 def bounds_for(kinds):
     """The table cells for these device kinds, in table order."""
     kinds = set(kinds)

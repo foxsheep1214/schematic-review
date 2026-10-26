@@ -10,8 +10,9 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 
 - **表里有的器件类别和参数，必须按表的推法和顺序走**（2026-10-23，用户：“必须按表”）。表里没有的，按推法 G1–G10 写，门禁只核写法。
 - 审查员只负责两件事：从手册抄出测试点的数值（写页码、表号），用电路算出本板工作点的范围。能不能推出界、推不出记哪一档，由表决定。
-- **余量**：`basis.cell` 写格，`basis.method` 写推法编号（须是这一格允许的推法）；推法带公式时写
-  `basis.formula{name, inputs, value}`，门禁用同样的输入重算，差超过 0.5% 拒收。
+- **余量**：每条决定性余量（GUARANTEED_BOUND、REACHABLE_CASE、EXACT_ENVELOPE）必写 `basis.cell`（2026-10-25 用户决定）：表里有格写格并写
+  `basis.method`（须是这一格允许的推法），表里没有这个参数写 `NONE`；推法带公式时写 `basis.formula{name, inputs, value}`，门禁用同样的输入重算，
+  差超过 0.5% 拒收。写了 `NONE` 而余量的文字对上某格的参数词时，筛查出 `BOUNDING_CELL_AVAILABLE` 提示。
 - **判“定不出界”的缺厂家数据**：`worst_case.monotonic_tried.cell` 写格（表里没有这类参数写 `NONE`）。门禁按格核对：
   - 格的开着一侧（UPPER/LOWER）与 `monotonic_tried.side` 相同；
   - 落到 `BOUNDED` 的格总能定界，不开这种项；落到 `OUTSIDE_SPECIFIED` 的格记失败项（`fails[]` 写 `outside_specified`）；

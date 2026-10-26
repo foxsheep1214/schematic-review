@@ -106,5 +106,41 @@ class KindVerificationTests(unittest.TestCase):
             supervision._source_page.cache_clear()
 
 
+FALLBACK_TEXT = ('Fault Input Clamp Series Resistor RFault(clamp) 1.32 1.55 1.78 kW\n'
+                 'Brown-out divider 5.6 MW typical\n'
+                 'OVP Detection Delay tdelay(OVP) 22.5 30 37.5 ms\n')
+
+
+class GlyphFallbackTests(unittest.TestCase):
+    """A text layer that lost its Symbol font prints kΩ as kW and µs as ms; two kW/MW with no µ anywhere is the sign."""
+
+    def test_kw_without_micro_is_the_fallback_signature(self):
+        self.assertTrue(dk.glyph_fallback(FALLBACK_TEXT))
+        self.assertFalse(dk.glyph_fallback(FALLBACK_TEXT + 'IFMAX 9.0 10 11 µA\n'))        # µ survived: units are real
+        self.assertFalse(dk.glyph_fallback('RFault(clamp) 1.32 1.55 1.78 kW\ntdelay 30 ms\n'))   # one hit may be a power
+        self.assertFalse(dk.glyph_fallback('RFault(clamp) 1.32 kΩ, 5.6 MΩ, 30 µs'))
+        self.assertFalse(dk.glyph_fallback(None))
+
+    def test_unit_glyphs_reads_the_file(self):
+        with tempfile.TemporaryDirectory() as temp:
+            fallback, fine, empty = (os.path.join(temp, n) for n in ('u1.txt', 'u2.txt', 'u3.txt'))
+            with open(fallback, 'w', encoding='utf-8') as f:
+                f.write(FALLBACK_TEXT)
+            with open(fine, 'w', encoding='utf-8') as f:
+                f.write('RFault(clamp) 1.32 kΩ; tdelay(OVP) 30 µs')
+            open(empty, 'w').close()
+            self.assertEqual(dk.unit_glyphs(fallback), 'SYMBOL_FALLBACK')
+            self.assertEqual(dk.unit_glyphs(fine), 'OK')
+            self.assertEqual(dk.unit_glyphs(empty), 'UNREAD')
+            self.assertEqual(dk.unit_glyphs(os.path.join(temp, 'missing.txt')), 'UNREAD')
+
+    @unittest.skipUnless(shutil.which('pdftotext'), 'pdftotext not installed')
+    def test_a_pdf_is_judged_from_its_whole_text_layer(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = os.path.join(temp, 'u1.pdf')
+            minimal_pdf(path, ['RFault 1.32 1.55 1.78 kW', 'divider 5.6 MW', 'tdelay 22.5 30 37.5 ms'])
+            self.assertEqual(dk.unit_glyphs(path), 'SYMBOL_FALLBACK')
+
+
 if __name__ == '__main__':
     unittest.main()

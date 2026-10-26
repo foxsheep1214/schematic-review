@@ -360,6 +360,9 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 待办由功能判定的开放项派生（编号 W-<key>），见 [台账三层](references/plan-and-results.md)。局部额定/寿命缺口用同规则 `split_out` 定位到实际对象；保留其余对象的已核范围，
 不为降低条数合并独立电源级或补证动作。对账前先按 [功能复核](references/plan-and-results.md#功能复核) 核每个功能的条款、计算、开放项的
 `decides` 范围和手填行的对象、路径、因果、需求的分项要求（含多个分项要求的需求只有全部适用分项要求通过才 PASS）；校验的 F1–F12 和质量筛查零提示不能代替这一步。
+复核有四个机器信号（见 [功能复核](references/plan-and-results.md#功能复核)）：`UNIT_GLYPH_SUSPECT`（条款引的文本层丢了 Ω/µ，ms、mA 可能是 µs、µA，对照渲染页后在 `says` 写明核过）、
+`RATING_AT_TEST_TEMP`（功率/电流额定只在 25 °C 单点给出，要走降额曲线或说明不降额）、`BOUNDING_CELL_AVAILABLE`（余量写了 `cell: NONE` 而定界表有这个参数的格）、`TEMPLATE_REASON`；
+每条决定性余量写 `basis.cell`（表里没有的写 NONE），引了带公差输入的余量逐个列角点，门禁拒收缺的。
 证据不足先按 [分出下游工作](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
 批量脚本不能用一句固定兜底语给全部证据不足定级。
 
@@ -371,7 +374,8 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
 
 做完的标志：`review-gate.json` 的 `valid` 为真、`errors` 为空；`quality_screening` 的每条疑点看过，确有错配的改了记录；
-REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
+功能复核的四个信号每条处置过（单位对照原图后写进 `says`，额定走了降额或说明不降额，该写格的写了格并带推法），
+决定性余量的 `cell` 为 NONE 的每条确认过表里没有这个参数；REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
 
 ### ⑤ 出报告
 

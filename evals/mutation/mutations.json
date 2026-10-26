@@ -4205,5 +4205,124 @@
   "file": "scripts/lint.py",
   "old": "                     f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail)}'",
   "new": "                     f'型号提示={_fmt_v(clamp_volt(blob))}。'"
+ },
+ {
+  "id": "M606",
+  "name": "one kW alone is a power, not a lost ohm",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    return (isinstance(text, str) and len(GLYPH_OHM_AS_W_RE.findall(text)) >= 2",
+  "new": "    return (isinstance(text, str) and len(GLYPH_OHM_AS_W_RE.findall(text)) >= 1"
+ },
+ {
+  "id": "M607",
+  "name": "a surviving µ clears the fallback signature",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "            and not any(sign in text for sign in MICRO_SIGNS))",
+  "new": "            and True)"
+ },
+ {
+  "id": "M608",
+  "name": "unit_glyphs reports the fallback",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    return 'SYMBOL_FALLBACK' if glyph_fallback(text_) else 'OK'",
+  "new": "    return 'OK'"
+ },
+ {
+  "id": "M609",
+  "name": "the audit diagnoses a fallback text layer",
+  "file": "scripts/audit_datasheets.py",
+  "old": "            if material['unit_glyphs'] == 'SYMBOL_FALLBACK':",
+  "new": "            if False:"
+ },
+ {
+  "id": "M610",
+  "name": "a toleranced input without a corner is refused",
+  "file": "scripts/review_functions.py",
+  "old": "    if toleranced:\n        errors.append('%s: %s give a min and a max",
+  "new": "    if False:\n        errors.append('%s: %s give a min and a max"
+ },
+ {
+  "id": "M611",
+  "name": "an input whose corner is listed is not asked again",
+  "file": "scripts/review_functions.py",
+  "old": "                  if cid != basis.get('limit') and cid not in taken and toleranced_limit(conditions.get(cid))]",
+  "new": "                  if cid != basis.get('limit') and toleranced_limit(conditions.get(cid))]"
+ },
+ {
+  "id": "M612",
+  "name": "a decisive margin names its cell",
+  "file": "scripts/review_functions.py",
+  "old": "    if 'cell' not in basis:\n        errors.append('%s: a %s names basis.cell",
+  "new": "    if False:\n        errors.append('%s: a %s names basis.cell"
+ },
+ {
+  "id": "M613",
+  "name": "cell NONE carries no method",
+  "file": "scripts/review_functions.py",
+  "old": "        if 'method' in basis:\n            return ['%s: basis.cell %s has no methods",
+  "new": "        if False:\n            return ['%s: basis.cell %s has no methods"
+ },
+ {
+  "id": "M614",
+  "name": "a rating above 25 °C is not a test-point rating",
+  "file": "scripts/review_functions.py",
+  "old": "    return len(temperatures) == 1 and int(temperatures[0]) <= TEST_TEMP_C and not TEMPERATURE_RANGE_RE.search(regime)",
+  "new": "    return len(temperatures) == 1 and not TEMPERATURE_RANGE_RE.search(regime)"
+ },
+ {
+  "id": "M615",
+  "name": "a temperature range is not a test point",
+  "file": "scripts/review_functions.py",
+  "old": "    return len(temperatures) == 1 and int(temperatures[0]) <= TEST_TEMP_C and not TEMPERATURE_RANGE_RE.search(regime)",
+  "new": "    return len(temperatures) == 1 and int(temperatures[0]) <= TEST_TEMP_C"
+ },
+ {
+  "id": "M616",
+  "name": "a named conversion carries the rating over",
+  "file": "scripts/review_functions.py",
+  "old": "            if (basis.get('derivation') == 'GUARANTEED_LIMIT' and 'conversion' not in basis",
+  "new": "            if (basis.get('derivation') == 'GUARANTEED_LIMIT'"
+ },
+ {
+  "id": "M617",
+  "name": "cell NONE beside a named parameter is hinted",
+  "file": "scripts/review_functions.py",
+  "old": "                if cells:\n                    hints.append({'code': 'BOUNDING_CELL_AVAILABLE'",
+  "new": "                if False:\n                    hints.append({'code': 'BOUNDING_CELL_AVAILABLE'"
+ },
+ {
+  "id": "M618",
+  "name": "a says that records the rendered-page check is not doubted",
+  "file": "scripts/review_functions.py",
+  "old": "            if c.get('kind') != 'NUMERIC_LIMIT' or unit not in GLYPH_UNITS or GLYPH_CHECKED_RE.search(c.get('says') or ''):",
+  "new": "            if c.get('kind') != 'NUMERIC_LIMIT' or unit not in GLYPH_UNITS:"
+ },
+ {
+  "id": "M619",
+  "name": "only a fallback text layer is doubted",
+  "file": "scripts/review_functions.py",
+  "old": "            if path and datasheet_kinds.unit_glyphs(path) == 'SYMBOL_FALLBACK':",
+  "new": "            if path:"
+ },
+ {
+  "id": "M620",
+  "name": "the screening hands the results directory to the hints",
+  "file": "scripts/review_quality.py",
+  "old": "    for hint in review_functions.template_hints(report.get('functions'), parts, base_dir):",
+  "new": "    for hint in review_functions.template_hints(report.get('functions'), parts):"
+ },
+ {
+  "id": "M621",
+  "name": "cells_named_by finds the parameter words",
+  "file": "scripts/catalog.py",
+  "old": "    return [cell for cell in BOUNDS if cell in _CELL_WORDS_RE and _CELL_WORDS_RE[cell].search(text_)]",
+  "new": "    return []"
+ },
+ {
+  "id": "M622",
+  "name": "the audit summary counts fallback text layers",
+  "file": "scripts/audit_datasheets.py",
+  "old": "            'symbol_fallback': sum(item.get('unit_glyphs') == 'SYMBOL_FALLBACK' for item in materials),",
+  "new": "            'symbol_fallback': 0,"
  }
 ]

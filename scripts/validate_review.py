@@ -201,7 +201,7 @@ def review_scope(plan, report, require):
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
                     require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
-                    require_dependencies=False):
+                    require_dependencies=False, base_dir=None):
     errors, blockers = [], []
     def require(ok, message):
         if not ok:
@@ -223,12 +223,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if not isinstance(plan, dict) or not isinstance(report, dict):
         return {"valid": False, "errors": ["plan/results must be objects"],
                 "release": "NO_GO", "blockers": ["invalid input"],
-                "quality_screening": screen_quality(plan, report, db)}
+                "quality_screening": screen_quality(plan, report, db, base_dir)}
     history_ids = {c.get('id') for c in plan.get('checks') or [] if isinstance(c, dict) and c.get('rule') == 'REQ-H02'}
     shape = results_model.shape_errors(report, history_ids)
     if report.get('schema_version') != results_model.SCHEMA_VERSION:
         return {"valid": False, "errors": shape, "release": "NO_GO", "blockers": ["results schema"],
-                "quality_screening": screen_quality(plan, report, db)}
+                "quality_screening": screen_quality(plan, report, db, base_dir)}
     errors.extend(shape)
     written, report = report, results_model.expand(report)
     errors.extend(validate_engine(plan, require_current_engine))
@@ -606,7 +606,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         require(report["summary"] == computed, "summary does not match unique findings/check results")
     if plan.get("review_phase", "schematic_freeze") == "schematic_freeze":
         blockers.extend(bom_constraints.freeze_blockers(checks))
-        for item in screen_quality(plan, report, db)["candidates"]:
+        for item in screen_quality(plan, report, db, base_dir)["candidates"]:
             if item["code"] in FREEZE_BLOCKING_CODES:
                 blockers.append(f"{item['code']}: {len(item['check_ids'])} " + (
                     "PASS rows need their own comparison before freeze" if item['code'] == 'TEMPLATED_PASS_RATIONALE'
@@ -619,7 +619,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     repair_counts = {state: sum(isinstance(x.get("remediation"), dict) and
                     x["remediation"].get("readiness") == state for x in findings.values())
                     for state in READINESS}
-    return {"quality_screening": screen_quality(plan, report, db),
+    return {"quality_screening": screen_quality(plan, report, db, base_dir),
             "scope": scope_decl,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,
@@ -666,7 +666,8 @@ def main():
                                  old_db=read(args.old_db) if args.old_db else None,
                                  old_plan=read(args.old_plan) if args.old_plan else None,
                                  require_revision=args.require_revision_impact,
-                                 require_current_engine=True)
+                                 require_current_engine=True,
+                                 base_dir=str(Path(args.results).resolve().parent))   # resolves conditions' sources
     except (ValueError, OSError, TypeError) as exc:
         result = {"quality_screening": screen_quality(None, None),
                   "valid": False, "release": "NO_GO", "errors": [str(exc)]}

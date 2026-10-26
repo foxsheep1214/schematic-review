@@ -80,7 +80,7 @@ def _decisive_part(what):
     return rest if rest.strip(' ；;，,。') else what
 
 
-def screen_quality(plan, report, db=None):
+def screen_quality(plan, report, db=None, base_dir=None):
     if isinstance(report, dict):
         report = results_model.expand(report)
     output = {'status': 'NOT_RUN', 'scope': 'ADVISORY_PATTERN_SCREENING_ONLY',
@@ -381,7 +381,7 @@ def screen_quality(plan, report, db=None):
         if isinstance(row, dict) and isinstance(row.get('open_ref'), str):
             owners[row['open_ref']].add(row.get('id'))
     parts = set((db.get('parts') or {}) if isinstance(db, dict) else ()) or None
-    for hint in review_functions.template_hints(report.get('functions'), parts):
+    for hint in review_functions.template_hints(report.get('functions'), parts, base_dir):
         refs = hint.get('items') or ['%s/%s' % (hint.get('function_id'), hint.get('key'))]
         candidates.append(dict(hint, check_ids=sorted({c for ref in refs for c in owners.get(ref, ()) if c})))
     for candidate in candidates:  # name fields the way the reviewer writes them (a function's open item)

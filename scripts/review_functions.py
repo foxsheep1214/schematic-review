@@ -35,8 +35,11 @@ and a connector row with clamp parts is judged in a function (F12). None of this
 """
 import re
 
+import os
+
 import bound_formulas
 import catalog
+import datasheet_kinds
 import function_reading
 import results_model
 from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, finite, squeeze, text
@@ -130,6 +133,14 @@ def clause(condition):
     limit = condition.get('limit') if isinstance(condition.get('limit'), dict) else {}
     values = [limit[k] for k in ('min', 'max') if _finite(limit.get(k))]
     return bool(values) and all(quotes(condition, v) for v in values)
+
+
+def toleranced_limit(condition):
+    """A NUMERIC_LIMIT with both a min and a max that differ: an input that has two ends to take."""
+    if not isinstance(condition, dict) or condition.get('kind') != 'NUMERIC_LIMIT':
+        return False
+    limit = condition.get('limit') if isinstance(condition.get('limit'), dict) else {}
+    return _finite(limit.get('min')) and _finite(limit.get('max')) and limit['min'] != limit['max']
 
 
 def net_name(net):
@@ -349,6 +360,10 @@ def _basis_errors(label, m, conditions, claim_ids):
     limit = conditions.get(basis.get('limit'))
     if not (limit and limit.get('kind') == 'NUMERIC_LIMIT'):
         errors.append('%s: a %s names in basis.limit the NUMERIC_LIMIT it is compared against' % (label, kind))
+    if 'cell' not in basis:
+        errors.append('%s: a %s names basis.cell: the bounding-table cell its limit comes from (references/bounding-table.md; '
+                      'the cell\'s method and, when the method computes, formula{name, inputs, value} for the gate to '
+                      'rerun), or %s when the table has no cell for this parameter' % (label, kind, catalog.NO_CELL))
     used = [conditions[c] for c in ids if c in conditions] + ([limit] if limit else [])
     weak = sorted({c['id'] for c in used if c.get('kind') in WEAK_KINDS
                    and (kind != 'REACHABLE_CASE' or c['kind'] == 'ENGINEERING_ASSUMPTION')})
@@ -399,6 +414,13 @@ def _derivation_errors(label, basis, conditions):
         errors.append(label + ': basis.corners[{input, condition, picked: min|max, why}] lists each toleranced input and '
                               'the end of its condition taken (no_corners_reason when no input has a tolerance)')
         return errors
+    taken = {c.get('condition') for c in corners if isinstance(c, dict)}
+    toleranced = [cid for cid in basis.get('conditions') or []
+                  if cid != basis.get('limit') and cid not in taken and toleranced_limit(conditions.get(cid))]
+    if toleranced:
+        errors.append('%s: %s give a min and a max, so each is a toleranced input: add its corner (input, condition, '
+                      'picked, why), or leave it out of basis.conditions when it does not enter this margin'
+                      % (label, ', '.join(toleranced)))
     for i, corner in enumerate(corners):
         condition = conditions.get(corner.get('condition')) if isinstance(corner, dict) else None
         if not (isinstance(corner, dict) and text(corner.get('input')) and text(corner.get('why'))
@@ -842,10 +864,14 @@ def _formula_errors(label, basis):
     """Decision A: a margin that names its table cell uses one of the cell's methods, and a formula it names is
     rerun on its inputs."""
     formulas = None
-    if 'cell' in basis:
+    if basis.get('cell') == catalog.NO_CELL:
+        if 'method' in basis:
+            return ['%s: basis.cell %s has no methods; name the cell the method belongs to' % (label, catalog.NO_CELL)]
+    elif 'cell' in basis:
         bound = catalog.BOUNDS.get(basis['cell'])
         if bound is None:
-            return ['%s: basis.cell names a cell of the bounding table (references/bounding-table.md)' % label]
+            return ['%s: basis.cell names a cell of the bounding table (references/bounding-table.md), or %s'
+                    % (label, catalog.NO_CELL)]
         methods = dict(bound.methods)
         if basis.get('method') not in methods:
             return ['%s: basis.method is one of the methods of %s (%s)' % (label, bound.id, '/'.join(methods))]
@@ -1168,10 +1194,83 @@ def _template_errors(functions):
 DESIGNATOR_RE = re.compile(r'(?<![A-Za-z0-9])([A-Z]{1,3}\d+[A-Z]?)(?![A-Za-z0-9])')
 
 
-def template_hints(functions, known_refs=None):
+RATING_UNITS = ('W', 'mW', 'A', 'mA')       # a power or current rating is given at a temperature and derates above it
+TEST_TEMP_C = 25
+TEMPERATURE_RE = re.compile(r'(-?\d{1,3})\s*°\s?C')
+TEMPERATURE_RANGE_RE = re.compile(r'\d\s*(?:°\s?C)?\s*(?:–|—|-|~|\.\.|…|to|至|到)\s*[-−]?\d')
+GLYPH_UNITS = ('ms', 'mA', 'mH', 'W', 'kW', 'MW')   # what a lost µ or Ω reads as (mV and mW stay: µV and µW limits are rare)
+GLYPH_CHECKED_RE = re.compile(r'原图|渲染页|误码|实为|核过|µ|μ')
+
+
+def _margin_items(fn):
+    calculation = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    margin = calculation.get('margin')
+    items = margin if isinstance(margin, list) else [margin]
+    return [m for m in items if isinstance(m, dict) and isinstance(m.get('basis'), dict)]
+
+
+def rating_at_test_temperature(limit):
+    """The limit's regime is one temperature at or below 25 °C and the quantity is a power or current rating: the
+    datasheet value holds there, not at the board's ambient, unless a derating curve or table carries it over."""
+    if not isinstance(limit, dict) or (limit.get('limit') or {}).get('unit') not in RATING_UNITS:
+        return False
+    regime = limit.get('regime') or ''
+    temperatures = TEMPERATURE_RE.findall(regime)
+    return len(temperatures) == 1 and int(temperatures[0]) <= TEST_TEMP_C and not TEMPERATURE_RANGE_RE.search(regime)
+
+
+def _source_path(source, base_dir):
+    if not text(source):
+        return None
+    path = source if os.path.isabs(source) else os.path.join(base_dir, source) if base_dir else None
+    return path if path and os.path.isfile(path) else None
+
+
+def template_hints(functions, known_refs=None, base_dir=None):
     """Quality hints, never errors: one reason sentence on several gaps (if it is one gap, keep one item and let its edges
-    reach every row; rewording does not make two gaps), and a gap blocking more than WIDE_GAP aspects."""
+    reach every row; rewording does not make two gaps), a gap blocking more than WIDE_GAP aspects, and the three signals
+    of the function re-check before reconciliation: a rating at its test temperature taken as the bound, a decisive margin
+    written with cell NONE where the bounding table has a cell, and a limit in ms/mA/mV/W quoted from a text layer that
+    lost its Ω and µ glyphs (base_dir resolves the condition's source)."""
     reasons, hints = {}, []
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not text(fn.get('id')):
+            continue
+        conditions = {c['id']: c for c in fn.get('conditions') or [] if isinstance(c, dict) and text(c.get('id'))}
+        for k, m in enumerate(_margin_items(fn)):
+            basis = m['basis']
+            if basis.get('kind') == 'ESTIMATE':
+                continue
+            limit = conditions.get(basis.get('limit'))
+            if (basis.get('derivation') == 'GUARANTEED_LIMIT' and 'conversion' not in basis
+                    and rating_at_test_temperature(limit)):
+                hints.append({'code': 'RATING_AT_TEST_TEMP', 'function_id': fn['id'], 'margin': k, 'aspect': m.get('aspect'),
+                              'condition': limit['id'],
+                              'message': 'The rating %s holds at %s; above that temperature it derates. Carry it to the '
+                                         'board\'s ambient through the derating curve or table (PUBLISHED_TABLE / '
+                                         'TYPICAL_CURVE, or a conversion condition), or say in regime why it does not '
+                                         'derate here' % (limit['id'], limit.get('regime'))})
+            if basis.get('cell') == catalog.NO_CELL:
+                named = ' '.join(str(x) for x in (m.get('against'), m.get('aspect'), (limit or {}).get('says'),
+                                                   (limit or {}).get('use')) if text(x))
+                cells = catalog.cells_named_by(named)
+                if cells:
+                    hints.append({'code': 'BOUNDING_CELL_AVAILABLE', 'function_id': fn['id'], 'margin': k,
+                                  'aspect': m.get('aspect'), 'cells': cells,
+                                  'message': 'This margin says cell NONE, but its words name %s; if the limit is that '
+                                             'parameter, write the cell and its method so the gate reruns the bound'
+                                             % '/'.join(cells)})
+        for c in conditions.values():
+            unit = (c.get('limit') or {}).get('unit') if isinstance(c.get('limit'), dict) else None
+            if c.get('kind') != 'NUMERIC_LIMIT' or unit not in GLYPH_UNITS or GLYPH_CHECKED_RE.search(c.get('says') or ''):
+                continue
+            path = _source_path(c.get('source'), base_dir)
+            if path and datasheet_kinds.unit_glyphs(path) == 'SYMBOL_FALLBACK':
+                hints.append({'code': 'UNIT_GLYPH_SUSPECT', 'function_id': fn['id'], 'condition': c['id'],
+                              'source': c.get('source'), 'unit': unit,
+                              'message': 'The text layer of %s lost its Ω and µ (kΩ reads kW); a %s there may be µ%s. '
+                                         'Check the rendered page and say so in says (核过原图), or correct the unit'
+                                         % (c.get('source'), unit, unit[1:] if unit.startswith('m') else unit)})
     for fn in functions or []:
         if not isinstance(fn, dict) or not text(fn.get('id')):
             continue

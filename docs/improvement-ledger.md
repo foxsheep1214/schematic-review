@@ -7,6 +7,29 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Step ④ task 1, the function re-check before reconciliation, gets signals and a gate (2026-10-25)
+
+The user asked for a strict audit of ④'s first task ("第4个步骤的第一项任务，严格审核判定") and then took every item
+("A–D 执行，E 也做"). The audit on the four R7 records (docs/2026-10-25-task-loop.md, second pass): the re-check had no
+machine signal and no done mark; one P1 it should have caught (claude1 F-FBOPEN, VRAW 38 V after feedback loss) came
+from a datasheet text layer that lost its Symbol font — kΩ printed as kW, µs as ms — while the other reviewer annotated
+the glyph error and passed; 14/6/28 margins skipped their corners behind one templated `no_corners_reason`; 3/0/7/9 took a
+25 °C power or pulse-current rating as the guaranteed bound; 1 of 539 margins named a bounding-table cell, so the gate's
+formula rerun never ran. A `datasheet_kinds.glyph_fallback` / `unit_glyphs` (two kW/MW and no µ in the text) is recorded
+per material by the 1.3 audit (`unit_glyphs`, `DATASHEET_UNIT_GLYPHS`, `summary.symbol_fallback`) and the ④ screening
+doubts a NUMERIC_LIMIT in ms/mA/mH/W/kW/MW quoted from such a file (`UNIT_GLYPH_SUSPECT`; a says that records the
+rendered-page check is not asked again; `validate_review.py` resolves sources from the results directory). B a toleranced
+condition in `basis.conditions` without a corner is a gate error. C `RATING_AT_TEST_TEMP` hints a W/A rating whose regime
+is one temperature ≤ 25 °C used as GUARANTEED_LIMIT without a conversion. E every decisive margin names `basis.cell`
+(a table cell or NONE; NONE carries no method; `catalog.CELL_WORDS` / `cells_named_by` give `BOUNDING_CELL_AVAILABLE`
+when NONE sits beside a cell's parameter words). D SKILL ④ and plan-and-results.md 功能复核 carry the signals and the
+done mark; bounding-table.md, datasheets.md, evidence-proportionality.md updated; architecture.md §三 row.
+
+- Event: user:2026-10-25 (④ task 1 strict audit; A–E all executed), records SR-20261025-R7-验收-*-660f790
+- Causes: rule_not_enforced 3 (glyph units were a prose warning, corners hid behind a reason sentence, cell was optional), rule_missing 1 (a 25 °C rating used as the bound had no rule), knowledge_missing 1 (the re-check had no done mark)
+- Changed: scripts/datasheet_kinds.py, scripts/audit_datasheets.py, scripts/review_functions.py, scripts/review_quality.py, scripts/validate_review.py, scripts/catalog.py, scripts/tests/test_datasheet_kinds.py, scripts/tests/test_audit_datasheets.py, scripts/tests/test_review_functions.py, scripts/tests/test_bounding_table.py, scripts/tests/test_bound_derivation.py, scripts/tests/test_described_usage.py, SKILL.md, references/plan-and-results.md, references/bounding-table.md, references/datasheets.md, references/evidence-proportionality.md, references/architecture.md, docs/2026-10-25-task-loop.md, evals/mutation/mutations.json, evals/mutation/README.md
+- Gates: 2136 unit tests, contract tests, KiCad replay 195/195, typical circuits 117/180/14 unchanged, M606–M622 killed; the changed files' full mutation set runs from a snapshot, result with the next commit
+
 ## R7 fix lists A and B: nine rule-maintenance items and four decisions (2026-10-25)
 
 The user took every item of docs/2026-10-25-r7-acceptance.md §六 ("A 组 9 条都做，B 组 4 项都按 a 执行"). A1

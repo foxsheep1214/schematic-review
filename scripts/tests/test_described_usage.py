@@ -91,7 +91,7 @@ class TypicalCurveTests(unittest.TestCase):
     def test_the_estimate_is_an_estimate_read_off_that_curve(self):
         fn = on_curve(typical_estimate=dict(estimate(), basis=dict(estimate()['basis'], conditions=['z1'])))
         self.assertTrue(about(errors(fn), 'k1'))
-        reachable = dict(estimate()['basis'], kind='REACHABLE_CASE', limit='z1', derivation='TYPICAL_CURVE',
+        reachable = dict(estimate()['basis'], kind='REACHABLE_CASE', limit='z1', derivation='TYPICAL_CURVE', cell='NONE',
                          regime='IZ 5 mA', corners=[], no_corners_reason='典型件只读一个点',
                          joint='典型件在 0.06 mA 时的 VZ 与同一温度下的 VCC(off) 同时出现')
         found = errors(on_curve(typical_estimate=dict(estimate(), basis=reachable)))

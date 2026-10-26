@@ -55,7 +55,7 @@ def bias_function(verdict='OPEN'):
 def guaranteed(**extra):
     return dict({'kind': 'GUARANTEED_BOUND', 'comparison': 'GT', 'limit': 'c3', 'conditions': ['c1', 'c2'],
                  'scope': '−10..105 °C，VF 与 VGS(th) 取保证上界', 'regime': '−10..105 °C',
-                 'derivation': 'GUARANTEED_LIMIT',
+                 'derivation': 'GUARANTEED_LIMIT', 'cell': 'NONE',
                  'corners': [{'input': 'vf_d2', 'condition': 'c1', 'picked': 'max', 'why': 'VF 越大 VCC 越低'},
                              {'input': 'vgs_q2', 'condition': 'c2', 'picked': 'max', 'why': 'VGS(th) 越大 VCC 越低'}]},
                 **extra)
@@ -217,7 +217,7 @@ class FunctionShapeTests(unittest.TestCase):
             {'value': -3, 'unit': '°C', 'against': 'Tj 115 °C（项目降额）', 'aspect': '变换器电流应力', 'states': ['RUN'],
              'basis': {'kind': 'REACHABLE_CASE', 'comparison': 'GE', 'limit': 'c6', 'conditions': [], 'scope': '满载 RUN',
                        'regime': 'Ta 50 °C', 'joint': '满载与 Ta 50 °C 是同一额定工况', 'derivation': 'GUARANTEED_LIMIT',
-                       'corners': [], 'no_corners_reason': '满载电流按需求取定值'}}]
+                       'cell': 'NONE', 'corners': [], 'no_corners_reason': '满载电流按需求取定值'}}]
         errors = function_errors({'functions': [fn]})
         self.assertEqual(len(errors), 1, errors)
         self.assertIn('-3 °C against Tj 115 °C', errors[0])
@@ -1102,6 +1102,92 @@ class EvidenceBasisTests(unittest.TestCase):
         fn = bias_function(); fn['open'][0]['margin_not_decisive_reason'] = '按标称值算'
         self.assertTrue(any("margin_not_decisive_reason is retired; the margin's basis" in e
                             for e in function_errors({'functions': [fn]})))
+
+
+class ReviewRecheckHintTests(unittest.TestCase):
+    """The function re-check before reconciliation (SKILL ④) gets three machine signals: a rating at its 25 °C test
+    point taken as the bound, a decisive margin with cell NONE where the table has a cell, and a limit in ms/mA quoted
+    from a text layer that lost its Ω and µ glyphs."""
+
+    def hints(self, fn, base_dir=None):
+        from review_functions import template_hints
+        return [h for h in template_hints([fn], None, base_dir) if h['code'] not in ('WIDE_GAP',)]
+
+    def rated(self, regime, **basis):
+        fn = bias_function('PASS')
+        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/Q2.txt', 'locator': 'p2 Table 1',
+                                 'says': 'ID,pulse 45 A', 'limit': {'max': 45, 'unit': 'A'}, 'regime': regime, 'use': '脉冲电流额定'})
+        fn['calculation']['margin'] = dict(fn['calculation']['margin'], against='Q2 ID,pulse 45 A',
+                                           basis=dict(guaranteed(), limit='c6', conditions=['c1', 'c2'], **basis))
+        return fn
+
+    def test_a_rating_at_its_test_temperature_is_a_hint_unless_carried_over(self):
+        hints = self.hints(self.rated('TC = 25 °C'))
+        self.assertEqual([h['code'] for h in hints], ['RATING_AT_TEST_TEMP'], hints)
+        self.assertEqual((hints[0]['function_id'], hints[0]['condition'], hints[0]['margin']), ('FN-BIAS', 'c6', 0))
+        self.assertEqual(self.hints(self.rated('TC = 25 °C', conversion='c4')), [])          # a derating step named
+        self.assertEqual(self.hints(self.rated('Tj −40..125 °C')), [])                        # a range, not a point
+        self.assertEqual(self.hints(self.rated('TA −10..25 °C')), [])                          # a range ending at 25 °C
+        self.assertEqual(self.hints(self.rated('TA = 85 °C')), [])                             # rated hot already
+        self.assertEqual(self.hints(self.rated('TC = 25 °C', derivation='PUBLISHED_TABLE')), [])
+        fn = self.rated('TC = 25 °C')
+        fn['conditions'][-1]['limit'] = {'max': 800, 'unit': 'V'}                             # a voltage rating does not derate
+        self.assertEqual(self.hints(fn), [])
+
+    def test_cell_none_beside_a_named_parameter_is_a_hint(self):
+        fn = bias_function('PASS')
+        fn['calculation']['margin']['against'] = 'Q2 VGS(th) 上界 2.0 V'
+        hints = self.hints(fn)
+        self.assertEqual([h['code'] for h in hints], ['BOUNDING_CELL_AVAILABLE'], hints)
+        self.assertIn('MOS-VGS-ON', hints[0]['cells'])
+        fn['calculation']['margin']['basis']['cell'] = 'MOS-VGS-ON'
+        fn['calculation']['margin']['basis']['method'] = 'G1'
+        self.assertEqual(self.hints(fn), [])
+        fn = bias_function('PASS')
+        fn['calculation']['margin']['against'] = 'VCC(off) max 8.8 V'
+        self.assertEqual(self.hints(fn), [])                                                   # no parameter words
+
+    def test_a_limit_in_ms_from_a_fallback_text_layer_is_doubted(self):
+        import os
+        import tempfile
+        fn = bias_function('PASS')
+        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p8 Table 7',
+                                 'says': 'OVP Detection Delay tdelay(OVP) 22.5 / 30 / 37.5 ms', 'limit': {'min': 22.5, 'max': 37.5, 'unit': 'ms'},
+                                 'regime': 'TJ −40..125 °C', 'use': '锁定前的检测延时'})
+        with tempfile.TemporaryDirectory() as temp:
+            os.makedirs(os.path.join(temp, 'evidence', 'ds'))
+            with open(os.path.join(temp, 'evidence', 'ds', 'U1.txt'), 'w', encoding='utf-8') as f:
+                f.write('RFault(clamp) 1.32 1.55 1.78 kW\nBrown-out divider 5.6 MW\ntdelay(OVP) 22.5 30 37.5 ms\n')
+            hints = self.hints(fn, temp)
+            self.assertEqual([(h['code'], h['condition'], h['unit']) for h in hints], [('UNIT_GLYPH_SUSPECT', 'c6', 'ms')], hints)
+            self.assertIn('µs', hints[0]['message'])
+            fn['conditions'][-1]['says'] += '（核过原图：µs）'
+            self.assertEqual(self.hints(fn, temp), [])                                         # the reviewer already looked
+            fn['conditions'][-1]['says'] = 'tdelay(OVP) 22.5 / 30 / 37.5 ms'
+            fn['conditions'][-1]['limit']['unit'] = 'V'
+            self.assertEqual(self.hints(fn, temp), [])                                         # a volt is not a lost glyph
+            with open(os.path.join(temp, 'evidence', 'ds', 'U1.txt'), 'w', encoding='utf-8') as f:
+                f.write('RFault(clamp) 1.32 kΩ\ntdelay(OVP) 22.5 30 37.5 µs\n')
+            fn['conditions'][-1]['limit']['unit'] = 'ms'
+            self.assertEqual(self.hints(fn, temp), [])                                         # the text kept its glyphs
+        self.assertEqual(self.hints(fn), [])                                                   # no base_dir: nothing to read
+
+    def test_the_screening_reads_sources_beside_the_results_file(self):
+        import os
+        import tempfile
+        from review_quality import screen_quality
+        fn = bias_function('PASS')
+        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p8 Table 7',
+                                 'says': 'tdelay(OVP) 22.5 / 30 / 37.5 ms', 'limit': {'min': 22.5, 'max': 37.5, 'unit': 'ms'},
+                                 'regime': 'TJ −40..125 °C', 'use': '锁定前的检测延时'})
+        p, r, db = ledger(fn)
+        with tempfile.TemporaryDirectory() as temp:
+            os.makedirs(os.path.join(temp, 'evidence', 'ds'))
+            with open(os.path.join(temp, 'evidence', 'ds', 'U1.txt'), 'w', encoding='utf-8') as f:
+                f.write('RFault(clamp) 1.32 1.55 1.78 kW\nBrown-out divider 5.6 MW\ntdelay(OVP) 22.5 30 37.5 ms\n')
+            codes = [c['code'] for c in screen_quality(p, r, db, temp)['candidates']]
+            self.assertIn('UNIT_GLYPH_SUSPECT', codes)
+            self.assertNotIn('UNIT_GLYPH_SUSPECT', [c['code'] for c in screen_quality(p, r, db)['candidates']])
 
 
 if __name__ == '__main__':

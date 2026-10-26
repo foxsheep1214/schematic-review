@@ -165,5 +165,34 @@ class FormulaTests(unittest.TestCase):
             self.assertTrue(about(errors(computed(formula=bad)), 'basis.formula'), bad)
 
 
+class CellRequiredTests(unittest.TestCase):
+    """Every decisive margin names its table cell, or NONE: the reviewer looks the parameter up in the table for each
+    bound, and a cell with a computing method brings the formula the gate reruns (user decision 2026-10-25)."""
+
+    def test_a_decisive_margin_without_a_cell_is_refused(self):
+        fn = bias_function('PASS')
+        del fn['calculation']['margin']['basis']['cell']
+        self.assertTrue(about(errors(fn), 'names basis.cell'), errors(fn))
+        for kind in ('REACHABLE_CASE', 'EXACT_ENVELOPE'):
+            fn['calculation']['margin']['basis']['kind'] = kind
+            self.assertTrue(about(errors(fn), 'names basis.cell'), kind)
+
+    def test_none_is_a_cell_and_an_estimate_needs_none(self):
+        self.assertEqual(errors(bias_function('PASS')), [])     # the fixture writes NONE
+        self.assertTrue(about(errors(computed(cell='NONE', method='G1')), 'has no methods'))
+        self.assertEqual(errors(computed(cell='NONE', formula=dict(SLOPE))), [])   # a formula may still be rerun
+        fn = bias_function('PASS')
+        fn['calculation']['margin']['basis'] = {'kind': 'ESTIMATE', 'comparison': 'GE', 'scope': '按典型值估', 'conditions': ['c1']}
+        self.assertFalse(about(errors(fn), 'names basis.cell'))
+
+    def test_cells_named_by_parameter_words(self):
+        self.assertEqual(catalog.cells_named_by('Q2 VGS(th) 上界 2.0 V'), ['MOS-VGS-ON'])
+        self.assertEqual(catalog.cells_named_by('D1 VF 0.45 V @100 mA')[0], 'DIODE-VF')
+        self.assertIn('OPTO-CTR', catalog.cells_named_by('U4 CTR 寿命末 34 %'))
+        self.assertIn('IC-TIMING', catalog.cells_named_by('tON_MIN 最大 1.10 µs'))
+        self.assertEqual(catalog.cells_named_by('VCC(off) max 8.8 V'), [])
+        self.assertEqual(catalog.cells_named_by(None), [])
+
+
 if __name__ == '__main__':
     unittest.main()

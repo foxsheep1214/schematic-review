@@ -359,7 +359,7 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
                   "margin": {"value": 0.8, "unit": "V", "against": "VCC(off) max 8.8 V", "states": ["LATCH"],
                              "basis": {"kind": "GUARANTEED_BOUND", "comparison": "GT", "limit": "c3", "conditions": ["c1", "c2"],
                                        "scope": "−10..105 °C，VF 与 VGS(th) 取保证上界", "regime": "−10..105 °C",
-                                       "derivation": "GUARANTEED_LIMIT",
+                                       "derivation": "GUARANTEED_LIMIT", "cell": "NONE",
                                        "corners": [{"input": "vf_d2", "condition": "c1", "picked": "max", "why": "VF 越大 VCC 越低"},
                                                    {"input": "vgs_q2", "condition": "c2", "picked": "max", "why": "VGS(th) 越大 VCC 越低"}]}},
                   "assumptions": ["辅助绕组 −10%", "Na/Ns = 3"], "aspect": "变换器电压裕量"},
@@ -453,9 +453,12 @@ FIRMWARE_CAPABILITY 另加全部 SIG-* 与 CFG-D01，CONFIGURATION_TABLE 只挡 
 
 除 ESTIMATE 外，`basis` 还写这个界怎么来的：
 - `derivation`：GUARANTEED_LIMIT（手册限值就在本工况成立）、ADJACENT_TEST_POINT 或 MONOTONIC（从测试点推过来，另写 `monotonic{curve: 本功能里说明单调形状的条件 id, side: FAVORABLE}`，实际工况须在有利一侧，不利一侧的测试点什么都定不了）、TEMPCO（经温度系数推，`tempco` 指向给出温度系数 min/max 的 NUMERIC_LIMIT）、PUBLISHED_TABLE（公开数表）；TYPICAL_CURVE 只能用于 REACHABLE_CASE（典型件已经不够）；按典型曲线读出的估算记 ESTIMATE，不写 `derivation`。
-- `cell`、`method`、`formula`（任何种类的余量都可写）：按[工作点定界表](bounding-table.md)定的界写格和推法编号（须是这一格允许的推法）；
-  推法带公式时写 `formula{name: bound_formulas 里的函数, inputs, value}`，门禁用同样的输入重算，差超过 0.5% 拒收。
-- `corners[{input, condition, picked: min|max, why}]`：每个带公差的输入取了哪条 NUMERIC_LIMIT 的哪一端，以及为什么那一端不利；取的那一端必须是该条件给出的数。没有带公差的输入时写空列表加 `no_corners_reason`。
+- `cell`（决定性余量必写，2026-10-25 用户决定）：按[工作点定界表](bounding-table.md)写限值所在的格，表里没有这个参数的写 `NONE`；
+  写了格就写 `method`（须是这一格允许的推法），推法带公式时写 `formula{name: bound_formulas 里的函数, inputs, value}`，门禁用同样的输入重算，差超过 0.5% 拒收；
+  `NONE` 不带 `method`（`formula` 仍可写、仍被复算）。ESTIMATE 可不写。
+- `corners[{input, condition, picked: min|max, why}]`：每个带公差的输入取了哪条 NUMERIC_LIMIT 的哪一端，以及为什么那一端不利；取的那一端必须是该条件给出的数。
+  `basis.conditions` 里（除 `limit` 本身）每条给了 min 和 max 的 NUMERIC_LIMIT 都算带公差的输入，都要有角点，否则拒收；
+  不进这条余量计算的条款不要列进 `basis.conditions`。没有带公差的输入时写空列表加 `no_corners_reason`。
 
 开放项判“定不出界”（`worst_case.not_boundable_reason`）时，先用数写 `monotonic_tried`（结果格式 6）：
 - `side`：开着的是上界还是下界（UPPER 或 LOWER）；`quantity`：哪个量的界。
@@ -650,6 +653,21 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 `use` 的推导是否成立（测试条件不是使用范围，相邻测试点夹出界限要有单调性依据）；`calculation` 的假设是否写明；
 算出余量的方面是否已下结论；每个开放项的 `kind` 是否对（本设计要定的量不是厂家资料）、`decides` 是否只覆盖它真正决定的方面与状态、
 `severity.consequence` 是否写了这个缺口在什么工况下导致什么后果。然后逐行用实际对象上下文对照手填行的 `rationale` 及关联待办：
+
+这一步有四个机器信号（`quality_screening` 的疑点，2026-10-25 ④ 第一项的严格审核）；它们点出的是最常漏的几种，不是复核的全部：
+
+- `UNIT_GLYPH_SUSPECT`：条款引的资料文本层丢了符号字体（kΩ 印成 kW、全文没有 µ，1.3 的审计给该资料记 `unit_glyphs: SYMBOL_FALLBACK`），
+  这条 NUMERIC_LIMIT 的单位又是 ms、mA、mH、W、kW、MW——它可能是 µs、µA、µH、Ω。对照渲染页，在 `says` 写明核过（含“核过原图”“误码”“实为”或 µ 字样的 says 不再提示），或改单位。
+  R7 的一份记录把 22.5–37.5 "ms" 的 OVP 检测延时当真，算出反馈断开后 VRAW 冲到 38 V 判了 P1；同一条款另一份记录注明误码按 µs 算，结论相反。
+  校验器按结果文件所在目录解析条款的 `source`（相对路径或绝对路径，PDF 原件也读文本层）。
+- `RATING_AT_TEST_TEMP`：余量的 `limit` 是功率或电流额定（W、mW、A、mA），`regime` 只给一个 ≤ 25 °C 的温度点，`derivation` 却写 GUARANTEED_LIMIT：
+  额定在这个温度成立，本板环温更高时要经降额曲线或数表（PUBLISHED_TABLE、TYPICAL_CURVE 或 `conversion` 指向的换算条件）带过来，或在 `regime` 写明为什么不降额。
+- `BOUNDING_CELL_AVAILABLE`：决定性余量写了 `cell: NONE`，但它的 `against`/`aspect` 或限值条款的 `says`/`use` 里有某个格的参数词（VZ、VF、RDS(on)、CTR、Isat、ESR……，`catalog.CELL_WORDS`）：
+  如果这个限值就是那个参数，写格和推法，带公式的推法让门禁复算。
+- `TEMPLATE_REASON`：同一句理由出现在几个开放项上。
+
+门禁拒收的两件：决定性余量（GUARANTEED_BOUND、REACHABLE_CASE、EXACT_ENVELOPE）没写 `basis.cell`；`basis.conditions` 里有 min≠max 的 NUMERIC_LIMIT（除 `limit` 本身）却没有对应角点，
+`no_corners_reason` 不能代替。
 
 - 对每条需求，将原文与本行 criterion 中并列的功能、工况前提、交付和范围排除分别列为分项要求，
   在现有 evidence 定位每项实际证据、相关检查 ID 与状态。明确排除认证、实测或某种使用状态，

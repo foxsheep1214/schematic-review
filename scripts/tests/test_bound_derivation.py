@@ -59,8 +59,14 @@ class CornerTests(unittest.TestCase):
     def test_each_toleranced_input_names_the_end_its_condition_gives(self):
         self.assertTrue(any('corners' in e for e in margin_errors(derivation='GUARANTEED_LIMIT', corners=None)))
         self.assertTrue(any('corners' in e for e in margin_errors(derivation='GUARANTEED_LIMIT', corners=[])))
-        self.assertEqual(margin_errors(derivation='GUARANTEED_LIMIT', corners=[],
-                                       no_corners_reason='输入都是网表上的定值，无公差'), [])
+        # c2 gives 1.0–2.0 V: an empty corner list with a reason does not excuse a toleranced input
+        found = margin_errors(derivation='GUARANTEED_LIMIT', corners=[], no_corners_reason='输入都是网表上的定值，无公差')
+        self.assertTrue(any('c2' in e and 'toleranced input' in e for e in found), found)
+        self.assertEqual(margin_errors(derivation='GUARANTEED_LIMIT', corners=[], conditions=['c1'],
+                                       no_corners_reason='VF 只有上界，无公差端可取'), [])
+        # a corner list that skips a toleranced input is the same gap
+        self.assertTrue(any('c2' in e and 'toleranced input' in e
+                            for e in margin_errors(derivation='GUARANTEED_LIMIT', corners=CORNERS[:1])))
         wrong = copy.deepcopy(CORNERS)
         wrong[0]['picked'] = 'min'   # c1 gives only a maximum
         found = margin_errors(derivation='GUARANTEED_LIMIT', corners=wrong)

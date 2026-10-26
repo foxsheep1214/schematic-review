@@ -125,6 +125,62 @@ def page_text(path, page):
     return _page_text(path, int(page), st.st_mtime_ns, st.st_size)
 
 
+GLYPH_OHM_AS_W_RE = re.compile(r'\d\s?[kM]W\b')   # kΩ / MΩ printed as kW / MW: the Symbol font did not survive extraction
+MICRO_SIGNS = ('µ', 'μ')
+UNIT_GLYPHS = ('SYMBOL_FALLBACK', 'OK', 'UNREAD')
+
+
+def glyph_fallback(text):
+    """True when a text layer lost its Symbol-font glyphs: kΩ and MΩ read as kW and MW and no µ survives, so a µs
+    or µA on the same pages reads as ms or mA (one controller datasheet: tdelay(OVP) 22.5–37.5 "ms", IFMAX 9–11 "mA")."""
+    return (isinstance(text, str) and len(GLYPH_OHM_AS_W_RE.findall(text)) >= 2
+            and not any(sign in text for sign in MICRO_SIGNS))
+
+
+@functools.lru_cache(maxsize=256)
+def _document_text(path, mtime_ns, size):
+    if not path.lower().endswith('.pdf'):
+        try:
+            with open(path, encoding='utf-8', errors='replace') as stream:
+                return stream.read()
+        except OSError:
+            return None
+    if shutil.which('pdftotext'):
+        try:
+            out = subprocess.run(['pdftotext', '-q', '-layout', path, '-'], capture_output=True, timeout=120)
+        except (OSError, subprocess.SubprocessError):
+            return None
+        return out.stdout.decode('utf-8', 'replace') if out.returncode == 0 else None
+    try:
+        import fitz  # PyMuPDF
+    except ImportError:
+        return None
+    try:
+        with fitz.open(path) as doc:
+            return '\n'.join(sheet.get_text() for sheet in doc)
+    except Exception:
+        return None
+
+
+def document_text(path):
+    """Whole text of a datasheet file: a text extract as it is, a PDF through its text layer; None when unreadable."""
+    import os
+    try:
+        st = os.stat(path)
+    except (OSError, TypeError):
+        return None
+    return _document_text(path, st.st_mtime_ns, st.st_size)
+
+
+def unit_glyphs(path):
+    """SYMBOL_FALLBACK when the file's text lost Ω and µ (see glyph_fallback), OK when it reads them, UNREAD when the
+    file has no text to judge."""
+    text_ = document_text(path)
+    if not text_ or not text_.strip():
+        return 'UNREAD'
+    return 'SYMBOL_FALLBACK' if glyph_fallback(text_) else 'OK'
+
+
 def verify(declaration, document_path, read_page=None):
     """Check one declaration {kind, page, quote} against the bound datasheet."""
     read_page = read_page or page_text

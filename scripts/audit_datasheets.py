@@ -488,6 +488,17 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
                 if outcome.get(field) is not None
             }
             material['document']['document_format'] = document_format(outcome.get('path'))
+            document_path = outcome.get('path') or ''
+            material['unit_glyphs'] = datasheet_kinds.unit_glyphs(
+                document_path if os.path.isabs(document_path) else os.path.join(base_dir, document_path))
+            if material['unit_glyphs'] == 'SYMBOL_FALLBACK':
+                diagnostics.append({
+                    'code': 'DATASHEET_UNIT_GLYPHS',
+                    'identity': identity,
+                    'path': outcome.get('path'),
+                    'message': (f'{identity} 的文本层丢了符号字体：kΩ 显示为 kW，µ 显示为 m（µs 读成 ms、µA 读成 mA）；'
+                                '引它的时间、电流、电阻数值对照渲染页核单位，条款的 says 注明核过'),
+                })
             if material['document']['document_format'] == 'text_extract':
                 diagnostics.append({
                     'code': 'DATASHEET_TEXT_ONLY',
@@ -555,6 +566,7 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
             'available_text_only': sum(
                 item.get('document', {}).get('document_format') == 'text_extract'
                 for item in materials if item['status'] == 'AVAILABLE'),
+            'symbol_fallback': sum(item.get('unit_glyphs') == 'SYMBOL_FALLBACK' for item in materials),
             'needs_verification': counts['NEEDS_VERIFICATION'],
             'missing': counts['MISSING'],
             'not_found': counts['NOT_FOUND'],

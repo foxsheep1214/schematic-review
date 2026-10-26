@@ -27,7 +27,8 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
      按 [evidence-proportionality.md](evidence-proportionality.md) 的“原定资料取不到时”，
      核对同型号其他证据、受控规格、反算要求与相似器件参考等路径；替代资料不改变
      本物料的 AVAILABLE 判定。
-   - PDF 文本提取可能错字符（µ 显示成 m 等）；决定结论的数值对照渲染页核对。
+   - PDF 文本提取可能错字符（µ 显示成 m 等）；决定结论的数值对照渲染页核对。审计给每份资料记 `unit_glyphs`
+     （文本层 kΩ 印成 kW 且全文没有 µ 的记 SYMBOL_FALLBACK，诊断 `DATASHEET_UNIT_GLYPHS`），④ 对引它的 ms、mA、mH、W 条款出 `UNIT_GLYPH_SUSPECT`。
    - 原厂 PDF 取不到、只能用网页或工具抽取的文本时，`path` 指向该文本文件，审计记
      `document.document_format = text_extract`，摘要计入 `available_text_only`，并给出 `DATASHEET_TEXT_ONLY` 诊断。
      表格列可能被拍平：只有归属及适用条件可有据定界时才取保守值；否则保留具体参数缺口。

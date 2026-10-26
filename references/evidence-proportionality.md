@@ -318,6 +318,7 @@ PWR-C14 的噪声子判据判 NA 前，按状态记录每个已识别敏感物�
 - [ADI Snubber Circuits](https://www.analog.com/en/resources/technical-articles/snubber-circuits-suppress-voltage-transient-spikes.html)：Simple RC、Rate-of-Rise Control RCD 与 RCD Clamp 的不同能量路径和时间常数条件。
 
 PDF 文本提取可能把 µ 显示成 m（如“30 ms”实为 30 µs）。决定结论的时间、电流数值要对照渲染页核单位。
+文本层把 kΩ 印成 kW 且全文没有 µ 的资料，审计记 `unit_glyphs: SYMBOL_FALLBACK`；引它的 ms、mA、mH、W 条款在 ④ 出 `UNIT_GLYPH_SUSPECT`，核过后在 `says` 写明。
 
 ## 身份冲突与身份分支
 

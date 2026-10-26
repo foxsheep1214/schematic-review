@@ -168,5 +168,42 @@ class DatasheetAuditTests(unittest.TestCase):
         self.assertTrue(any('当前 db.json' in item for item in errors))
 
 
+class UnitGlyphTests(unittest.TestCase):
+    """Step 1.3 records per material whether the datasheet's text layer kept Ω and µ, so step ④ can doubt a ms or mA."""
+
+    def resolution(self, path):
+        return {'schema_version': 1, 'entries': [
+            {'identity': 'REG-X', 'status': 'FOUND', 'identity_verified': True, 'source_kind': 'network',
+             'path': str(path), 'source_url': 'https://example.test/reg-x', 'document_model': 'REG-X',
+             'document_version': 'Rev.A', 'retrieved_at': '2026-09-02'}]}
+
+    def test_a_text_layer_without_omega_and_micro_is_marked_and_diagnosed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            found = pathlib.Path(temp) / 'reg-x.txt'
+            found.write_text('RFault(clamp) 1.32 1.55 1.78 kW\nBrown-out divider 5.6 MW\ntdelay(OVP) 22.5 30 37.5 ms\n',
+                             encoding='utf-8')
+            audit = build_datasheet_audit(sample_db(), resolution=self.resolution(found), resolution_base=temp)
+        material = by_identity(audit)['REG-X']
+        self.assertEqual(material['unit_glyphs'], 'SYMBOL_FALLBACK')
+        self.assertEqual(audit['summary']['symbol_fallback'], 1)
+        codes = [d for d in audit['diagnostics'] if d['code'] == 'DATASHEET_UNIT_GLYPHS']
+        self.assertEqual([d['identity'] for d in codes], ['REG-X'])
+        self.assertIn('µ 显示为 m', codes[0]['message'])
+        self.assertEqual(validate_datasheet_audit(audit), [])
+
+    def test_a_readable_text_layer_is_ok_and_an_empty_one_unread(self):
+        with tempfile.TemporaryDirectory() as temp:
+            found = pathlib.Path(temp) / 'reg-x.txt'
+            found.write_text('RFault(clamp) 1.32 kΩ; tdelay(OVP) 30 µs\n', encoding='utf-8')
+            audit = build_datasheet_audit(sample_db(), resolution=self.resolution(found), resolution_base=temp)
+            self.assertEqual(by_identity(audit)['REG-X']['unit_glyphs'], 'OK')
+            self.assertEqual(audit['summary']['symbol_fallback'], 0)
+            self.assertFalse([d for d in audit['diagnostics'] if d['code'] == 'DATASHEET_UNIT_GLYPHS'])
+            pdf = pathlib.Path(temp) / 'reg-x.pdf'
+            pdf.write_bytes(b'%PDF-1.4\n')
+            audit = build_datasheet_audit(sample_db(), resolution=self.resolution(pdf), resolution_base=temp)
+            self.assertEqual(by_identity(audit)['REG-X']['unit_glyphs'], 'UNREAD')
+
+
 if __name__ == '__main__':
     unittest.main()
