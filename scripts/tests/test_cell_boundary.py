@@ -156,7 +156,8 @@ class ExtensionSignalTests(unittest.TestCase):
         r, _, errors = derive_rows.derive(p, r)
         self.assertEqual(errors, [])
         out = vr.validate_review(p, r, db)
-        return out, [s for s in out['sr_improvements'] if s.get('kind')], (p, r, db)
+        # the fixture's other parts (netlist parts since results 7) carry cell NONE margins too; only R1's margin is asked here
+        return out, [s for s in out['sr_improvements'] if s.get('kind') and 'R1' in (s.get('refs') or [])], (p, r, db)
 
     def test_a_part_the_classifier_cannot_place_is_a_new_device_kind(self):
         [signal] = vr.extension_signals({'functions': []}, self.UNKNOWN_PART)       # the unfitted GDT2 and the resistor are not

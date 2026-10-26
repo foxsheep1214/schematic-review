@@ -46,7 +46,7 @@ import results_model
 import rule_gaps
 import function_reading
 from function_reading import margin_verdict
-from review_functions import located
+from review_functions import condition_refs, located, parameter_word
 
 MATCH_FLOOR = 0.25   # least share of parts two circuits of one type must have in common to be the same block
 SIDES = ('A', 'B')
@@ -558,6 +558,39 @@ def circuit_decisions(a, b, pairs):
     return {'available': True, 'candidates': candidates, 'members': members, 'unassigned': unassigned, 'different': different}
 
 
+def _parameter_keys(side):
+    """{(ref, parameter word, unit): [the numeric limits a record quotes for it]} over the conditions with refs."""
+    out = {}
+    for fn in side['results'].get('functions') or []:
+        if not isinstance(fn, dict):
+            continue
+        for c in fn.get('conditions') or []:
+            refs = condition_refs(c)
+            limit = c.get('limit') if isinstance(c, dict) and isinstance(c.get('limit'), dict) else None
+            word = parameter_word(c.get('says')) if isinstance(c, dict) else ''
+            if not (refs and c.get('kind') == 'NUMERIC_LIMIT' and limit and word):
+                continue
+            for ref in refs:
+                out.setdefault((ref, word, str(limit.get('unit') or '').lower()), []).append(
+                    {'function': fn.get('id'), 'condition': c.get('id'), 'limit': {k: limit[k] for k in ('min', 'max') if k in limit},
+                     'source': c.get('source'), 'locator': c.get('locator')})
+    return out
+
+
+def parameter_refs(a, b):
+    """逐器件参数引用 (results 7): the same part, parameter word and unit on both sides agree when they quote the same
+    limit ends; otherwise they differ, or one side never read the parameter."""
+    ka, kb = _parameter_keys(a), _parameter_keys(b)
+    shared = sorted(set(ka) & set(kb))
+    agree, differ = [], []
+    for key in shared:
+        ends = [{json.dumps(x['limit'], sort_keys=True) for x in k[key]} for k in (ka, kb)]
+        (agree if ends[0] == ends[1] else differ).append({'ref': key[0], 'parameter': key[1], 'unit': key[2], 'A': ka[key], 'B': kb[key]})
+    only = lambda ks, other: [{'ref': k[0], 'parameter': k[1], 'unit': k[2], 'quoted': ks[k]} for k in sorted(set(ks) - set(other))]
+    return {'A': len(ka), 'B': len(kb), 'shared': len(shared), 'agree': len(agree), 'differ': differ,
+            'only_A': only(ka, kb), 'only_B': only(kb, ka)}
+
+
 def compare(a, b, aliases=()):
     same_netlist = a['plan'].get('db_sha256') == b['plan'].get('db_sha256')
     report = {'schema_version': 2, 'inputs': {'A': a['where'], 'B': b['where']},
@@ -566,6 +599,7 @@ def compare(a, b, aliases=()):
               'strict': strict(a, b, aliases, same_netlist), 'suggested': suggested(a, b),
               'signals': {'A': signals(a), 'B': signals(b)}, 'requirement_owners': requirement_owners(a, b)}
     report['circuit_decisions'] = circuit_decisions(a, b, match_circuits(frames(a['plan']), frames(b['plan']))[0])
+    report['parameter_refs'] = parameter_refs(a, b)
     unmatched_a, unmatched_b = set(report['strict']['unmatched']['A']), set(report['strict']['unmatched']['B'])
     pairs = []
     for key in report['suggested']['rows']['shared_keys']:
@@ -703,6 +737,18 @@ def markdown(report):
     if any(not r['same'] for r in dec['unassigned']):
         lines += ['', '| 未归属器件 | A | B |', '|---|---|---|']
         lines += ['| %s | %s | %s |' % (r['ref'], r['A'], r['B']) for r in dec['unassigned'] if not r['same']]
+    refs = report.get('parameter_refs') or {'A': 0, 'B': 0, 'shared': 0, 'agree': 0, 'differ': [], 'only_A': [], 'only_B': []}
+    lines += ['', '## 逐器件参数引用', '',
+              '条款 `refs` 点名的器件参数（同一位号、同一参数词、同一单位的数值限值）：A 引 %d 个，B 引 %d 个，两边都引的 %d 个，'
+              '其中限值相同 %d 个、不同 %d 个；只有一边读了的 A %d 个、B %d 个。' % (
+                  refs['A'], refs['B'], refs['shared'], refs['agree'], len(refs['differ']), len(refs['only_A']), len(refs['only_B']))]
+    if refs['differ']:
+        lines += ['', '| 位号 | 参数 | A 的限值 | B 的限值 |', '|---|---|---|---|']
+        lines += ['| %s | %s %s | %s | %s |' % (d['ref'], d['parameter'], d['unit'], _limits(d['A']), _limits(d['B'])) for d in refs['differ']]
+    for side in SIDES:
+        if refs['only_' + side]:
+            lines += ['', '只在 %s 引用：%s' % (side, '；'.join('%s %s %s（%s）' % (o['ref'], o['parameter'], o['unit'], _limits(o['quoted']))
+                                                            for o in refs['only_' + side]))]
     lines += ['', '## 过严与过松信号', '', '| 信号 | A | B |', '|---|---|---|']
     lines += ['| %s | %d | %d |' % (name, sig['A'][key], sig['B'][key]) for key, name in SIGNAL_NAMES]
     rows = sug['rows']
@@ -757,6 +803,12 @@ SIGNAL_NAMES = (('requirement_clause_edges', '经需求条款挡检查项的边�
 
 def _counts(counter):
     return '、'.join('%s %d' % (k, v) for k, v in sorted(counter.items()))
+
+
+def _limits(quoted):
+    """The limit ends one side quotes for a parameter, each with the function that quotes it."""
+    return '、'.join('%s（%s）' % ('..'.join('%s %s' % (k, q['limit'][k]) for k in ('min', 'max') if k in q['limit']), q['function'])
+                    for q in quoted)
 
 
 def _cell(row):

@@ -42,15 +42,17 @@ def fixture(first_key=C1):
     keys = [first_key] + [scope_id(k) for k in sorted(SCOPE)]
     plan = {'schema_version': PLAN_SCHEMA_VERSION, 'checks': [planned(k) for k in keys], 'owners': [],
             'interfaces': {'schema_version': 1, 'interfaces': [], 'gaps': []}, 'assemblies': []}
-    db = {'parts': {'R1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
-          'ref2page': {'R1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
+    # R1 carries the fixture's pins and nets; the bias example's parts (test_review_functions.bias_function) exist so
+    # that its conditions' refs are parts of the netlist (results 7)
+    db = {'parts': {'R1': {}, 'Q2': {}, 'D2': {}, 'D3': {}, 'C3': {}, 'U1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
+          'ref2page': {'R1': 1, 'Q2': 1, 'D2': 1, 'D3': 1, 'C3': 1, 'U1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
     report = {'requirement_clarifications': [], 'functions': [],
         'schema_version': results_model.SCHEMA_VERSION, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
         'checks': [{'id': k, 'applicability': 'APPLICABLE', 'review_result': 'PASS',
                     'evidence_confidence': 'A', 'evidence': E, 'rationale': 'stipulated compliant fixture',
                     'handoff': {'required': False}} for k in keys],
         'findings': [], 'scope_checks': {k: scope_id(k) for k in SCOPE},
-        'coverage': {'components': {'R1': [first_key]}, 'pins': {'R1.1': [first_key], 'R1.2': [first_key]},
+        'coverage': {'components': {ref: [first_key] for ref in db['parts']}, 'pins': {'R1.1': [first_key], 'R1.2': [first_key]},
                      'nets': {'A': [first_key]}, 'pages': {'1': [first_key]}, 'requirements': {}}}
     return plan, report, db
 

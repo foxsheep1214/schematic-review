@@ -27,7 +27,7 @@ def with_edge(s, via, condition=None):
 
 REQUIREMENT_CLAUSE = {'id': 'r1', 'kind': 'MANDATORY_CLAUSE', 'source': 'requirements/需求文档.md', 'locator': 'REQ-PWR-01',
                       'says': '输出必须在 5 V ± 5%', 'applies': '全负载'}
-DATASHEET_LIMIT = {'id': 'c1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p7 Table 7',
+DATASHEET_LIMIT = {'id': 'c1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p7 Table 7', 'refs': ['U1'],
                    'says': 'VCC(off) max 8.8 V', 'limit': {'max': 8.8, 'unit': 'V'}, 'regime': '全温'}
 
 

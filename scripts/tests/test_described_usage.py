@@ -19,10 +19,10 @@ from review_functions import function_errors
 from test_one_sided_bounds import unboundable
 from test_review_functions import bias_function
 
-CURVE = {'id': 'k1', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/D2.txt', 'locator': 'p9 Fig. 4 IZ-VZ',
+CURVE = {'id': 'k1', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/D2.txt', 'locator': 'p9 Fig. 4 IZ-VZ', 'refs': ['D2'],
          'says': 'IZ-VZ 典型曲线画到 10 µA', 'regime': 'IZ 10 µA..10 mA，25 °C', 'use': '低电流的 VZ', 'curve': True}
 # An application note's text describing the usage is a typical reference but not a curve (SR self-check 2.4).
-NOTE = {'id': 'k2', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/D2.txt', 'locator': 'p12 §9 Application',
+NOTE = {'id': 'k2', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/D2.txt', 'locator': 'p12 §9 Application', 'refs': ['D2'],
         'says': '应用说明：齐纳管可作偏置钳位，低电流下工作', 'use': '这种用法写在应用说明里'}
 
 

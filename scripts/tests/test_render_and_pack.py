@@ -472,7 +472,10 @@ class PackReviewTests(unittest.TestCase):
         self.ledger['circuit-candidates.json'] = str(self.work / 'circuit-candidates.json')
         errors, _ = self.run_pack()
         self.assertTrue(any('circuit_decisions missing' in e for e in errors), errors)
-        intent = {'schema_version': 4, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]}
+        # the fixture's active parts outside every candidate (U1 since results 7) are rejected on purpose; passives may stay
+        intent = {'schema_version': 4, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]
+                  + [{'decision': 'reject', 'ref': u['ref'], 'reason': 'OUTSIDE_SCOPE', 'citation': 'p1'}
+                     for u in candidates['unassigned'] if u.get('kind') == 'ic']}
         import circuit_decisions
         path.write_text(json.dumps(circuit_decisions.write_circuits(intent, candidates)))
         errors, _ = self.run_pack()

@@ -71,7 +71,7 @@ class BomConditionTests(unittest.TestCase):
     def condition(self, says, locator='BOM T1 规格列'):
         report = drawing([{'name': 'Isat', 'unit': 'A'}])
         report['functions'][0]['conditions'].append(
-            {'id': 'b1', 'kind': 'NUMERIC_LIMIT', 'source': 'BOM.csv', 'locator': locator, 'says': says,
+            {'id': 'b1', 'kind': 'NUMERIC_LIMIT', 'source': 'BOM.csv', 'locator': locator, 'refs': ['T1'], 'says': says,
              'limit': {'max': 12, 'unit': 'µH'}, 'regime': '按此规格采购', 'use': '漏感上界'})
         return report
 

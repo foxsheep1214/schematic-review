@@ -19,7 +19,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | `intent.json` | 审查员 | ①② 的输入 | 4 | 需求理解、任务剖面、电源轨、器件类别与配置组、电路取舍、装配状态、规则缺口 |
 | `record/circuit-candidates.json` | 工具 | ② 出计划 | 2 | 候选电路及成员 |
 | `review-plan.json` | 工具 | ② 出计划 | 7 | 功能树、每个检查项检查、功能框架、各检查器清单、接口 |
-| `review-results.json` | 审查员 | ③ 判断 | 6 | 功能判定（条件、计算、余量及其推界方式与公差端、开放项及其单侧定界、失败项）和手填的检查项；绑定功能的检查项不落盘，门禁、报告、打包、对比读取时由功能派生（`results_model.materialize`），审查员的绑定或注记只留 `{id, function_id, aspect}` / `{id, 注记}` 残根 |
+| `review-results.json` | 审查员 | ③ 判断 | 7 | 功能判定（条件及其位号 `refs`、计算、余量及其推界方式与公差端、开放项及其单侧定界、失败项）和手填的检查项；绑定功能的检查项不落盘，门禁、报告、打包、对比读取时由功能派生（`results_model.materialize`），审查员的绑定或注记只留 `{id, function_id, aspect}` / `{id, 注记}` 残根 |
 | `review-gate.json` | 工具 | ④ 校验 | — | 对账结果、阻断项、待办 |
 | `审查报告.md` / `审查报告.html`、`record/` | 工具 | ⑤ 出报告 | — | 交付物：报告与留档 |
 
@@ -80,6 +80,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-10-26 | 5.1 渲染报告的严格审核：功能表每方面只写决定性余量、同一比较只写一次、`result` 超 300 字取第一句、问题里 >8 位号写个数（`decisive_margins` / `short_question`）；移交表只在每字段至多一个位号槽时合并（“每只、每只”串接消失）；图说不重复 caption 的“现状/改后”，`pages` 非数字按原文印，“涉及的检查”“影响哪些判断”超 6 条写个数、同一出处只写一次（`listed` / `page_word` / `fold_blocks`）；“未问”段只列方面名；`review_quality` 加 TASK_TITLE_LONG（> 60 字）；summary 复述检查计数被拒 | R7 四份报告量化：依据列最长 2419 字、重复余量句 3/4 行、“每只”错乱 2/0/2/2 行、图说重复 3、标题 > 60 字 8/0/16/10 件、影响句最长 1486 字、claude2 summary 带计数；用户：“5.1 的 A–G 全部执行” |
 | 2026-10-26 | 第一次扩表：词表加 `ntc`、`varistor` 两个器件类别（`part_words.NTC` / `VARISTOR`，按共用词和 Thermistor 符号，TH/RT/NTC 前缀最弱，RV 前缀不作依据），声明词表、手册线索、磨损类、保护件判定随之读类别；定界表加 VAR-UC、VAR-VC、VAR-SURGE 三格（不估算） | R7 四份记录各 3 条 NEW_DEVICE_KIND（RV101、TH101、TH601）；用户：“先把 ntc 和压敏电阻两个器件类别补进 part_words 词表和定界表（五列齐）” |
 | 2026-10-26 | 判决边界按器件类型：定界表每格加可得性、允许的估算与倍数（按后果类）、失效后果、样机能否验、边界五列（`catalog.Bound`，`estimate_rule(cell, class)`），新增 CAP-SURGE-V、MOS-DISCHARGE-I2T、IC-GATE-DRIVE-I；估算判 PASS 由 格 × 后果类 决定（`function_reading.estimate_passes`），规则 id 清单只在 `cell: NONE` 时作默认；余量写 `estimate_factor` 等于格的倍数、格给的余量下限要满足、DAMAGE_OR_HAZARD / CORE_LINK_LOSS 任何格不估算；估算 PASS 是 C 级证据，`release` 最高 CONDITIONAL_GO（`validate_review.release_for`），报告单列“按典型值估算的结论”；表可增长：门禁 `extension_signals` 记 NEW_DEVICE_KIND（分类器认不出的位号）与 NEW_BOUND_CELL（已知类别写了 NONE），`UNOBTAINABLE_DATUM` 提示向厂家索取行业不给的数，`sr_feedback` 加 `cell_boundary` | 用户 2026-10-26：“SR 不允许用典型值或 25 °C 单点额定判 PASS，没有保证界就只能开放，这个我觉得是目前比较大的问题……判决的边界应该按照器件类型来……这个器件类别也是可以增长的”；R7 四份记录光耦 CTR 四条、齐纳低电流三条按典型曲线算出 2–4 倍余量仍只能开放，因为落在 PRO-E01 / 损坏类规则下；六个待定点用户逐点判定取建议项（决定记录 docs/2026-10-26-cell-boundary.md） |
+| 2026-10-26 | 结果格式 7：条款加 `refs`——这条条款说的是板上哪几只器件。手册来源（`ds/`、`datasheets/`、`manuals/` 下的抽取，或资料审计里某位号的那份文件）、BOM 行来源和带 `setting` 的条款必填且至少一个，需求、标准、工程假定选填，NETLIST_FACT 写了要含 `pins` 的位号；门禁核位号在网表或 BOM 里、不重复、`setting.ref` 在其中，并按计划冻结的资料审计核归属：位号的资料是另一份而条款 `source` 不是它即拒收（第一个能机器查的张冠李戴）；位号不在本功能对象里只提示 CONDITION_REF_OUTSIDE_FUNCTION；门禁输出 `parameter_sheet`，报告新节“器件参数表”（简洁版每器件一行，`--detail full` 逐参数），`compare_reviews` 新节“逐器件参数引用”；`margin` 不加位号（经 `basis` 指向条款）；格式 6 的记录不读（用户：“条款 refs 方案按文中四条推荐落地，一次提交”，决定记录 docs/2026-10-26-condition-refs.md） | R7 四份记录 1187 条条款里 68 / 201 / 187 / 112 条从文字认不出是哪只器件、多位号功能分不清；报告出不了逐器件参数表，资料审计知道每个位号的资料却核不了条款归属，两份记录无法逐器件对比参数引用 |
 
 ## 四、规则维护
 
@@ -89,7 +90,8 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 - 同一块板由两名审查员（或两次运行）各出一份记录时，用 `python3 scripts/compare_reviews.py <记录A> <记录B> --md compare.md` 对比：
   精确配对只按检查项标识（`check_key`：规则、规则版本、去掉电路名的对象、判据）配对，报配对率、已答比例和一致率，列出通过对失败和 P0/P1 分歧；
   按电路对齐的结果只作建议配对，确认后用 `--alias` 带位置引用加入精确配对；"电路决定与成员差"一节逐候选列两边的决定（accept / merge / split / reject 及去向）、
-  对齐电路里只在一边的位号、未归属器件两边的处置（add 进电路还是留给 REQ-Q08），电路划分的差异在这里数，不混进配对率。
+  对齐电路里只在一边的位号、未归属器件两边的处置（add 进电路还是留给 REQ-Q08），电路划分的差异在这里数，不混进配对率；
+  “逐器件参数引用”一节按位号、参数词、单位对齐两边带 `refs` 的数值限值条款，列出限值不同的和只有一边读了的。
   差异里反复出现的写法先找现有校验为什么放过，再加机器能数的护栏，不加措辞要求。
 - 新脚本先在 [架构说明](references/architecture.md#二每个脚本属于哪一步) 归到一步并分类：入口（执行流程里直接调用）、工具（特定情形手动调用）、库（只被导入）。只有入口写进执行流程；新增入口属于架构调整。
 - 工程规则身份由 `scripts/electrical_contract.py`（`engine_identity`）与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。

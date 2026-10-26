@@ -1,4 +1,4 @@
-"""review-results.json (schema 6): what the reviewer writes, and the view the validators read.
+"""review-results.json (schema 7): what the reviewer writes, and the view the validators read.
 
 The unit of judgement is a function verdict (`functions[]`): the question one circuit block must
 answer, the datasheet clauses that bear on it, the calculation and its margin, the verdict and the
@@ -19,7 +19,7 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7   # 7 (2026-10-26): conditions[].refs — a datasheet or BOM condition names the parts it is about
 LEVELS = ('P0', 'P1', 'P2', 'P3')
 REQUEST_CAUSES = ('EXTERNAL_DATA', 'DESIGN_OPEN')
 # Fields schema 3 derives; a record that still writes them would carry two answers to one question.

@@ -62,6 +62,7 @@ class RequirementEdgeTests(unittest.TestCase):
     def test_a_clause_of_another_document_is_not_a_requirement_clause(self):
         p, checks, functions = setup({'condition': 'r1'})
         functions[0]['conditions'][-1]['source'] = 'evidence/ds/U1.txt'
+        functions[0]['conditions'][-1]['refs'] = ['U1']
         self.assertEqual(requirement_edge_errors(p, checks, functions), [])
 
     def test_validation_refuses_it(self):

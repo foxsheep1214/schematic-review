@@ -14,7 +14,7 @@ from test_review_functions import ASPECT, HV_TRIED, STATES, bias_function, guara
 from function_reading import judged
 from review_functions import function_errors
 
-REFERENCE = {'id': 'c6', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/U1.txt', 'locator': 'p21 Figure 20 典型应用电路',
+REFERENCE = {'id': 'c6', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/U1.txt', 'locator': 'p21 Figure 20 典型应用电路', 'refs': ['U1'],
              'says': '光耦 LED 经 1 kΩ 接 OPTO 脚', 'use': '同样的接法',
              'reference_circuit': {'figure': 'p21 Figure 20', 'connection': '本板 OPTO 脚同样经电阻接光耦 LED 阴极',
                                    'load': '参考图 1 kΩ，本板 2.2 kΩ，LED 电流更小'}}

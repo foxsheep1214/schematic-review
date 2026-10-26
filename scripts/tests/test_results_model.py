@@ -23,7 +23,7 @@ def open_item(**extra):
 
 def function(*items, **extra):
     fn = {'id': 'FN-CURRENT', 'question': 'Does RS1 sensing meet the CC current window', 'objects': {'refs': ['RS1']},
-          'conditions': [{'id': 'c1', 'source': 'evidence/ds/U2.txt', 'locator': 'p12', 'says': 'ADC ±6 LSB', 'use': 'error budget'}],
+          'conditions': [{'id': 'c1', 'source': 'evidence/ds/U2.txt', 'locator': 'p12', 'refs': ['U2'], 'says': 'ADC ±6 LSB', 'use': 'error budget'}],
           'calculation': {'result': '5.5 A reads 1.572 V'}, 'verdict': 'OPEN' if items else 'PASS',
           'open': list(items), 'evidence': E}
     fn.update(extra)

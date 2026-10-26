@@ -36,6 +36,7 @@ and a connector row with clamp parts is judged in a function (F12). None of this
 import re
 
 import os
+from collections import Counter, OrderedDict
 
 import bound_formulas
 import catalog
@@ -66,6 +67,13 @@ VENDOR_ASK_RE = re.compile(r'向[^，,；;。]{0,16}(?:原厂|厂商|厂家|供�
                            r'|ask(?:ing)? (?:the )?(?:vendor|supplier|manufacturer)|request(?:ed)? from (?:the )?(?:vendor|supplier)', re.I)
 CONDITION_KINDS = ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE', 'NETLIST_FACT', 'TYPICAL_REFERENCE', 'ENGINEERING_ASSUMPTION')
 CLAUSE_KINDS = ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE')       # what a vendor, a standard or a requirement says
+# A condition from a datasheet or the BOM names the parts it is about (results 7, 2026-10-26): a text extract of a
+# datasheet (R7: evidence/ds/U501.txt), a manual, or a document the datasheet audit lists; standards (std/) do not.
+DATASHEET_SOURCE_RE = re.compile(r'(?:^|/)(?:ds|datasheets?|manuals?)/[^/]+\.(?:txt|pdf)$', re.I)
+BOM_SOURCE_RE = re.compile(r'bom', re.I)
+PAGE_RE = re.compile(r'(?:(?<![A-Za-z])p\.?\s*|\bpage\s*|第\s*)(\d{1,4})(?:\s*页)?', re.I)
+# Which part a numeric limit is about, read off the first word of `says` (VF, VGS(th), VCC(off), tdelay(OVP))
+PARAMETER_WORD_RE = re.compile(r'^\s*([A-Za-z][A-Za-z0-9_()./,+-]*)')
 WEAK_KINDS = ('TYPICAL_REFERENCE', 'ENGINEERING_ASSUMPTION')
 BASIS_KINDS = ('GUARANTEED_BOUND', 'REACHABLE_CASE', 'EXACT_ENVELOPE', 'ESTIMATE')
 COMPARISONS = ('GE', 'GT')       # GE: a zero margin passes; GT: it does not
@@ -155,12 +163,12 @@ def _decides(item):
             for d in edges(item)]
 
 
-def _condition_errors(label, c, db=None):
+def _condition_errors(label, c, db=None, audit=None):
     """The second evidence layer: what kind of statement a condition is, and the fields that kind needs."""
     kind = c.get('kind')
     if kind not in CONDITION_KINDS:
         return ['%s: kind is one of %s' % (label, '/'.join(CONDITION_KINDS))]
-    errors = []
+    errors = condition_ref_errors(label, c, db, audit)
     if kind in ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE', 'TYPICAL_REFERENCE') and not located(c):
         errors.append('%s: a %s is located — a page, table or section, a datasheet section title, a requirement id; '
                       '"%s" locates nothing' % (label, kind, c.get('locator')))
@@ -203,6 +211,233 @@ def _condition_errors(label, c, db=None):
         elif isinstance(db, dict):
             errors.extend(_netlist_name_errors(label, nets, pins, db))
     return errors
+
+
+def condition_refs(c):
+    """The parts a condition says it is about (`refs`), or None when it names none / is malformed."""
+    refs = c.get('refs') if isinstance(c, dict) else None
+    return [r for r in refs if text(r)] if isinstance(refs, list) and refs and all(text(r) for r in refs) else None
+
+
+def _source_stem(source):
+    return _squeeze(os.path.splitext(os.path.basename(str(source or '').strip()))[0]).lower()
+
+
+def material_of_source(audit, source):
+    """The datasheet-audit material a condition's source is the document of: the extract is named by a refdes the
+    material covers (evidence/ds/U501.txt), by the material's identity, part model or the document's file name, or
+    the source is the document path itself. None when the audit has no such material (nothing to check against)."""
+    if not (isinstance(audit, dict) and text(source)):
+        return None
+    stem = _source_stem(source)
+    found = []
+    for material in audit.get('materials') or []:
+        if not isinstance(material, dict):
+            continue
+        document = material.get('document') if isinstance(material.get('document'), dict) else {}
+        names = {_squeeze(str(material.get(k) or '')).lower() for k in ('identity', 'material_id')}
+        names.add(_squeeze(str(document.get('document_model') or '')).lower())
+        names.add(_source_stem(document.get('path')))
+        names.discard('')
+        same_path = text(document.get('path')) and os.path.abspath(str(source)) == os.path.abspath(document['path'])
+        if stem in {str(r).lower() for r in material.get('refdes') or []} or stem in names or same_path:
+            found.append(material)
+    return found[0] if len(found) == 1 else None
+
+
+def datasheet_source(source, audit=None):
+    """The condition quotes a device datasheet (or manual): its refs are required."""
+    return bool(text(source)) and (bool(DATASHEET_SOURCE_RE.search(source)) or material_of_source(audit, source) is not None)
+
+
+def _material_name(material):
+    document = material.get('document') if isinstance(material.get('document'), dict) else {}
+    return os.path.basename(str(document.get('path') or material.get('identity') or material.get('material_id') or '?'))
+
+
+def condition_ref_errors(label, c, db=None, audit=None):
+    """Results 7 (2026-10-26): `refs` says which parts a condition is about. Required (at least one) on a condition
+    from a datasheet or the BOM and on one with a `setting`; optional elsewhere. Each ref is a part of the netlist,
+    none twice; `setting.ref` is one of them; a NETLIST_FACT's pins name parts among them. With the datasheet audit,
+    a ref whose audited datasheet is another document than the condition's source is the first machine-checked
+    mis-attribution."""
+    errors = []
+    source = c.get('source') or ''
+    refs = condition_refs(c)
+    if 'refs' in c and refs is None:
+        return [label + ': refs is a non-empty list of designators (which parts this condition is about)']
+    if refs is None:
+        if datasheet_source(source, audit) or BOM_SOURCE_RE.search(source) or 'setting' in c:
+            errors.append('%s: refs names the part(s) this %s clause is about — a datasheet or BOM condition says which '
+                          'device it belongs to (e.g. refs: ["U1"])' % (label, 'BOM' if BOM_SOURCE_RE.search(source) else 'datasheet'))
+        return errors
+    if len(set(refs)) != len(refs):
+        errors.append(label + ': refs lists a designator twice')
+    parts = db.get('parts') if isinstance(db, dict) and isinstance(db.get('parts'), dict) else None
+    if parts:
+        unknown = [r for r in refs if r not in parts and r not in bom_parts(db)]
+        if unknown:
+            errors.append('%s: refs %s are not parts of the netlist or the BOM (db.parts)' % (label, '/'.join(unknown)))
+    setting = c.get('setting') if isinstance(c.get('setting'), dict) else None
+    if setting and text(setting.get('ref')) and setting['ref'] not in refs:
+        errors.append('%s: setting.ref %s is not in refs; the condition holds at a setting of one of its own parts'
+                      % (label, setting['ref']))
+    if c.get('kind') == 'NETLIST_FACT' and isinstance(c.get('pins'), list):
+        pin_refs = {p.partition('.')[0] for p in c['pins'] if text(p) and '.' in p}
+        outside = sorted(pin_refs - set(refs))
+        if outside:
+            errors.append('%s: pins name %s, refs does not; the two agree on which parts the fact is about'
+                          % (label, '/'.join(outside)))
+    material = material_of_source(audit, source)
+    if material is not None:
+        for ref in refs:
+            entry = datasheet_entry_for_ref(audit, ref)
+            if entry is not None and entry is not material:
+                errors.append('%s: the datasheet audit lists %s for %s, not %s; the condition quotes another part\'s '
+                              'datasheet' % (label, _material_name(entry), ref, os.path.basename(str(source))))
+    return errors
+
+
+def datasheet_entry_for_ref(audit, ref):
+    """The audit material whose refdes list carries `ref` (audit_datasheets.datasheet_entry_for_ref, kept here so the
+    checks need no import of the audit tool)."""
+    for material in (audit or {}).get('materials') or []:
+        if isinstance(material, dict) and ref in (material.get('refdes') or []):
+            return material
+    return None
+
+
+def plan_datasheet_audit(plan):
+    """The datasheet audit the plan froze among its review inputs (revision_impact.input_snapshot), or None."""
+    inputs = (plan or {}).get('review_inputs') if isinstance(plan, dict) else None
+    audit = inputs.get('datasheet_audit') if isinstance(inputs, dict) else None
+    return audit if isinstance(audit, dict) else None
+
+
+def frame_refs(plan):
+    """{function id: parts its frame's member rows are about}, from the plan."""
+    planned = {c.get('id'): c for c in (plan or {}).get('checks') or [] if isinstance(c, dict)}
+    out = {}
+    for frame in (plan or {}).get('functions') or []:
+        if not (isinstance(frame, dict) and text(frame.get('id'))):
+            continue
+        refs = set()
+        for member in frame.get('members') or []:
+            if isinstance(member, dict):
+                refs |= row_anchors(planned.get(member.get('check_id')))[0]
+        out[frame['id']] = refs
+    return out
+
+
+def condition_ref_hints(functions, plan=None):
+    """CONDITION_REF_OUTSIDE_FUNCTION (a hint, never an error): a condition names a part that is neither an object of
+    its function nor of a member row — a shared part's clause may live in one function and serve another, but a
+    reader looks once."""
+    hints = []
+    frames = frame_refs(plan)
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not text(fn.get('id')):
+            continue
+        allowed = _objects(fn)[0] | frames.get(fn['id'], set())
+        for c in fn.get('conditions') or []:
+            outside = [r for r in condition_refs(c) or [] if r not in allowed]
+            if outside and allowed:
+                hints.append({'code': 'CONDITION_REF_OUTSIDE_FUNCTION', 'function_id': fn['id'], 'key': c.get('id'),
+                              'refs': outside, 'items': [],
+                              'message': '%s/conditions[%s] is about %s, which %s does not judge (objects.refs and its '
+                                         'member rows); a shared part\'s clause may live here, check that the function '
+                                         'that judges %s cites it' % (fn['id'], c.get('id'), '/'.join(outside), fn['id'],
+                                                                      '/'.join(outside))})
+    return hints
+
+
+def first_sentence(says):
+    """The parameter a condition quotes: its text up to the first sentence end."""
+    return re.split(r'[。；;\n]', str(says or '').strip(), maxsplit=1)[0].strip()
+
+
+def parameter_word(says):
+    """The parameter symbol a numeric limit names first (VF, VGS(th), tdelay(OVP)), lower-cased for matching."""
+    m = PARAMETER_WORD_RE.match(str(says or ''))
+    return m.group(1).lower() if m else ''
+
+
+def pages_of(locator):
+    return sorted({int(p) for p in PAGE_RE.findall(str(locator or ''))})
+
+
+def condition_uses(fn):
+    """{condition id: [what cites it]} — the margins (against), judgements (aspect), fail items and gap edges (key)."""
+    uses = {}
+    def cite(cid, what):
+        if text(cid) and what not in uses.setdefault(cid, []):
+            uses[cid].append(what)
+    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    for m in function_reading.margins(calc):
+        basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
+        what = '余量：%s' % (m.get('against') or m.get('aspect') or '')
+        cite(basis.get('limit'), what)
+        for cid in basis.get('conditions') if isinstance(basis.get('conditions'), list) else []:
+            cite(cid, what)
+    for j in fn.get('judgements') or []:
+        if isinstance(j, dict):
+            for cid in j.get('conditions') if isinstance(j.get('conditions'), list) else []:
+                cite(cid, '判断：%s' % (j.get('aspect') or ''))
+    for field, word in (('fails', '失败项'), ('open', '开放项')):
+        for item in fn.get(field) or []:
+            if not isinstance(item, dict):
+                continue
+            what = '%s：%s' % (word, item.get('key') or '')
+            for cid in item.get('conditions') if isinstance(item.get('conditions'), list) else []:
+                cite(cid, what)
+            for cid in item.get('checked') if isinstance(item.get('checked'), list) else []:
+                cite(cid, what)
+            worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
+            if isinstance(worst.get('bound'), dict):
+                cite(worst['bound'].get('condition'), what)
+            for edge in edges(item):
+                via = edge.get('via') if isinstance(edge.get('via'), dict) else {}
+                cite(via.get('condition'), what)
+    return uses
+
+
+def parameter_sheet(functions):
+    """Results 7: the per-part view of the conditions — one row per part named by a condition's refs, with the
+    documents and pages it was read from, how many parameters of each kind, the functions that use them, and the
+    parameters themselves (for the report's full detail and the two-record comparison). Nothing is judged here."""
+    parts = OrderedDict()
+    for fn in functions or []:
+        if not isinstance(fn, dict) or not text(fn.get('id')):
+            continue
+        uses = condition_uses(fn)
+        for c in fn.get('conditions') or []:
+            refs = condition_refs(c)
+            if not refs:
+                continue
+            kind = c.get('kind')
+            limit = c.get('limit') if kind == 'NUMERIC_LIMIT' and isinstance(c.get('limit'), dict) else None
+            for ref in refs:
+                row = parts.setdefault(ref, {'ref': ref, 'parameters': []})
+                row['parameters'].append({
+                    'function_id': fn['id'], 'condition': c.get('id'), 'kind': kind,
+                    'parameter': first_sentence(c.get('says')), 'word': parameter_word(c.get('says')) if limit else '',
+                    'limit': {k: limit[k] for k in ('min', 'max') if _finite(limit.get(k))} if limit else None,
+                    'unit': limit.get('unit') if limit else None, 'regime': c.get('regime'),
+                    'source': c.get('source'), 'locator': c.get('locator'), 'pages': pages_of(c.get('locator')),
+                    'used_in': uses.get(c.get('id'), [])})
+    sheet = []
+    for ref in sorted(parts, key=lambda r: (re.sub(r'\d+', '', r), int(re.search(r'\d+', r).group()) if re.search(r'\d+', r) else 0, r)):
+        row = parts[ref]
+        kinds = Counter(p['kind'] for p in row['parameters'])
+        sources = OrderedDict()
+        for p in row['parameters']:
+            sources.setdefault(p['source'], set()).update(p['pages'])
+        row['sources'] = [{'source': s, 'pages': sorted(pages)} for s, pages in sources.items()]
+        row['counts'] = {'total': len(row['parameters']), 'guaranteed': kinds['NUMERIC_LIMIT'],
+                         'typical': kinds['TYPICAL_REFERENCE'], 'clauses': kinds['MANDATORY_CLAUSE']}
+        row['functions'] = sorted({p['function_id'] for p in row['parameters']})
+        sheet.append(row)
+    return sheet
 
 
 def bom_parts(db):
@@ -1092,9 +1327,10 @@ def cited_conditions(fn):
     return out
 
 
-def function_errors(report, document_only=(), db=None):
+def function_errors(report, document_only=(), db=None, audit=None):
     """F1–F10 and the shape of every function verdict; no plan needed. `document_only` names the functions that carry
-    document rows only (validate_functions finds them); they need no clause. With `db`, netlist facts name real nets."""
+    document rows only (validate_functions finds them); they need no clause. With `db`, netlist facts name real nets
+    and condition refs are parts; with the datasheet `audit`, a condition's refs own the datasheet it quotes."""
     errors = []
     functions = report.get('functions')
     if not isinstance(functions, list):
@@ -1128,7 +1364,7 @@ def function_errors(report, document_only=(), db=None):
                 if c['id'] in conditions_by_id:
                     errors.append('%s/conditions: duplicate id %s' % (fid, c['id']))
                 conditions_by_id[c['id']] = c
-                errors.extend(_condition_errors('%s/conditions[%s]' % (fid, c['id']), c, db))
+                errors.extend(_condition_errors('%s/conditions[%s]' % (fid, c['id']), c, db, audit))
             cited = cited_conditions(fn)
             if conditions_by_id and fid not in document_only and not any(
                     clause(c) and c['id'] in cited for c in conditions_by_id.values()):
@@ -1882,7 +2118,8 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
     functions = report.get('functions') if isinstance(report.get('functions'), list) else []
     circuits = {fn.get('id') for fn in circuit_functions(functions, list(checks.values()))}
     document_only = {fn.get('id') for fn in functions if isinstance(fn, dict) and fn.get('id') not in circuits}
-    errors = (function_errors(report, document_only, db) + binding_errors(expected, checks, report.get('functions'), history_ids)
+    errors = (function_errors(report, document_only, db, plan_datasheet_audit(plan))
+              + binding_errors(expected, checks, report.get('functions'), history_ids)
               + frame_errors(plan, checks, report.get('functions'))
               + requirement_edge_errors(plan, checks, report.get('functions'))
               + configuration_errors(expected, checks, functions) + life_errors(checks, functions)

@@ -306,7 +306,7 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
 工况，未证路径留具体缺口，不添加需求未承诺的零待机电流门槛。结果、父项、发现项和任务同步核
 实际页码、型号、物理脚/网络与状态，避免把封装/文档错误误写为实体错连。
 
-## 三、review-results.json（schema_version 6）
+## 三、review-results.json（schema_version 7）
 
 ### 顶层字段
 
@@ -344,15 +344,15 @@ OFF 输入安全；反之，纯电池状态不能借不存在的外 5V 传播持
   "objects": {"refs": ["Q2", "D2", "D3", "D4", "C3"], "nets": ["AUX", "BIAS", "VCC"]},
   "states": ["STARTUP", "RUN", "LATCH"],
   "conditions": [
-    {"id": "c1", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/D2.txt", "locator": "p3 Table 7",
+    {"id": "c1", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/D2.txt", "locator": "p3 Table 7", "refs": ["D2"],
      "says": "VF ≤ 0.35 V @10 mA，≤ 0.45 V @100 mA（25 °C）", "limit": {"max": 0.45, "unit": "V"},
      "regime": "25 °C，10–100 mA", "use": "20 mA 在两点之间，VF 单调，取 0.45 V 作上界"},
-    {"id": "c2", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/Q2.txt", "locator": "p4 Table 4",
+    {"id": "c2", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/Q2.txt", "locator": "p4 Table 4", "refs": ["Q2"],
      "says": "VGS(th) 1.0–2.0 V @250 µA", "limit": {"min": 1.0, "max": 2.0, "unit": "V"},
      "regime": "25 °C，250 µA", "use": "20 mA 取 2.0 V + 0.5 V 工程余量"},
-    {"id": "c3", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/U1.txt", "locator": "p7 Table 7",
+    {"id": "c3", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/U1.txt", "locator": "p7 Table 7", "refs": ["U1"],
      "says": "VCC(off) max 8.8 V", "limit": {"max": 8.8, "unit": "V"}, "regime": "−10..105 °C", "use": "判据"},
-    {"id": "c4", "kind": "MANDATORY_CLAUSE", "source": "evidence/ds/U1.txt", "locator": "p9 §7.3",
+    {"id": "c4", "kind": "MANDATORY_CLAUSE", "source": "evidence/ds/U1.txt", "locator": "p9 §7.3", "refs": ["U1"],
      "says": "VCC 引脚必须经外部电容去耦，UVLO 释放前不得由 HV 脚以外的路径反灌",
      "applies": "U1 由外部偏置供电时", "use": "偏置路径的连接要求"},
     {"id": "c5", "kind": "NETLIST_FACT", "source": "db.json", "locator": "net AUX", "nets": ["AUX"],
@@ -396,7 +396,7 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 | 字段 | 含义 |
 |---|---|
 | `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头。框架的 `members` 列出要在这个功能里答的全部检查项：电路检查项和电路拥有的器件检查项 |
-| `conditions[]` | [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`；只在可编程器件某个设置下成立的条件写 `setting{ref, group, value}`，该器件该组的 CFG-D01 结果检查项 `settings[{value, function}]` 须列出这个值，配置表缺口（DELIVERABLE_PENDING / CONFIGURATION_TABLE）只挡 CFG-D01 项和需求检查项；`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一 |
+| `conditions[]` | [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`；只在可编程器件某个设置下成立的条件写 `setting{ref, group, value}`，该器件该组的 CFG-D01 结果检查项 `settings[{value, function}]` 须列出这个值，配置表缺口（DELIVERABLE_PENDING / CONFIGURATION_TABLE）只挡 CFG-D01 项和需求检查项；`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一。`refs` 写这条条款说的是板上哪几只器件（格式 7）：手册来源（`source` 在 `ds/`、`datasheets/`、`manuals/` 下，或是资料审计里某位号的那份文件）和 BOM 行来源的条款必填且至少一个，带 `setting` 的要含 `setting.ref`，NETLIST_FACT 可不写、写了要含 `pins` 所属的位号；需求、标准、`commodity-floors.md`、工程假定选填。每个位号是网表或 BOM 的器件，不重复；位号在资料审计里对应另一份资料而条款的 `source` 不是它时拒收（张冠李戴）；位号不在本功能 `objects.refs` 和成员检查项对象里只提示 CONDITION_REF_OUTSIDE_FUNCTION。余量不写位号，经 `basis.limit` / `basis.conditions` 指向条款 |
 | `calculation` | 同节第 2 步“算出了余量就下结论”：`result`（一句结论；比较过的量不写在这里，超 300 字或游离数字超 8 个出 RESULT_NARRATIVE）、`margin{value,unit,against,basis[,aspect,states,check_ids]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值；`unit` 按 `scripts/units.py` 的拼法）、`claim_ids`、`inputs`（计算的输入量名，影响条目的 `via.input` 从这里取）、`assumptions`；只针对一个方面时写 `aspect`。同一功能里 `value`、`unit`、`against` 都相同的余量只能有一条：一个缺陷落在证明它的那个方面，要落到别的方面须是另一个量、另一条余量。没有数值的功能写 `no_calculation_reason` |
 | `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。厂家参考电路也可以撑起判断：该 TYPICAL_REFERENCE 条件写 `reference_circuit{figure, connection, load}`——参考电路的图号或页、本板与它相同的接法、它的元件值与本板负载的对照（本板不重于它），报告依据写“厂家参考电路 + 图号”。检查项要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
@@ -853,15 +853,15 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
     "id": "FN-QR", "circuit": "QR", "question": "90–264 Vac、5–12 V、空载至 3 A 时反激各输出档是否稳定且关断时间不低于 tOFF(min)",
     "objects": {"refs": ["U1", "Q1", "T1", "C5"], "nets": ["BULK", "VOUT"]}, "states": ["RUN"],
     "conditions": [
-      {"id": "c1", "kind": "MANDATORY_CLAUSE", "source": "evidence/ds/U1.txt", "locator": "p13 Feedback, p21 补偿网络",
+      {"id": "c1", "kind": "MANDATORY_CLAUSE", "source": "evidence/ds/U1.txt", "locator": "p13 Feedback, p21 补偿网络", "refs": ["U1"],
        "says": "使用内部补偿时，功率级增益和输出电容零点须在规定范围内", "applies": "FB 不外接补偿时", "use": "FB 外接与条件一致"},
-      {"id": "c2", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/U1.txt", "locator": "p8 Table 6",
+      {"id": "c2", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/U1.txt", "locator": "p8 Table 6", "refs": ["U1"],
        "says": "tOFF(min) ≤ 1.2 µs（−40..125 °C）", "limit": {"max": 1.2, "unit": "µs"}, "regime": "−40..125 °C",
        "use": "判据：关断时间不小于 1.2 µs"},
-      {"id": "c3", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/C5.txt", "locator": "p1 特性表",
+      {"id": "c3", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/C5.txt", "locator": "p1 特性表", "refs": ["C5"],
        "says": "ESR ≤ 50 mΩ @20 °C、100 kHz", "limit": {"max": 50, "unit": "mΩ"}, "regime": "20 °C，100 kHz",
        "use": "低温 ESR 未给"},
-      {"id": "c4", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/C5.txt", "locator": "p1 规格表",
+      {"id": "c4", "kind": "NUMERIC_LIMIT", "source": "evidence/ds/C5.txt", "locator": "p1 规格表", "refs": ["C5"],
        "says": "使用温度范围 −40..+105 °C", "limit": {"min": -40, "max": 105, "unit": "°C"}, "regime": "全系列",
        "use": "−20 °C 在规定使用范围内"}
     ],
@@ -943,7 +943,8 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   校验核对每条发现都有计划检查项；结果不再写 `lint_reviews`。仅 PDF 模式明确 NA 并留依据。
 - **输出**：`summary`（检查结果计数、唯一缺陷及 P0–P3）、`categorized_summary`（当前/历史检查、唯一缺陷、
   唯一任务、必需移交及其状态）、`insufficient_by_cause`、`requirement_clarification_summary`、`workflow`、
-  `release`/`blockers`、`remediation_validation`、`binding_validation`。
+  `release`/`blockers`、`remediation_validation`、`binding_validation`；`parameter_sheet`（器件参数表：条款 `refs` 点名的每只器件
+  引了哪些参数、出处与页、保证值 / 典型值 / 强制条款各几条、用在哪条余量或判断，报告据此出“器件参数表”一节）。
 - **quality_screening** 提示理由/影响跨范围复用、位号与声明范围不相交，以及补证对象和接口模式错配。
   影响描述逐字段核对，不以正确的理由或证据位置替代因果核验；原样回显绑定对象/判据不能证明分析成立。
   PWR-C10 的 `qualification_refs` 指向实际已贴电容，连接器身份不能替代电容额定证明；USB 方向分析不能只复用 UART/SPI 的角色。

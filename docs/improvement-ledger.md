@@ -2375,3 +2375,46 @@ vocabulary there. The four old goldens are unchanged.
 - Causes: judgment 1
 - Changed: scripts/tests/test_golden_reports.py, scripts/tests/test_cell_boundary.py, scripts/tests/fixtures/golden_reports/functions.md, scripts/tests/fixtures/golden_reports/estimate.md, scripts/tests/fixtures/golden_reports/deliverable.md, scripts/tests/fixtures/golden_reports/extension.md, scripts/validate_review.py, docs/improvement-ledger.md
 - Gates: pytest 2249, rule contracts 69/69 (tests and a message text only)
+
+## Conditions name their parts: `conditions[].refs` (2026-10-26)
+
+The user asked for a proposal first ("给 conditions[] 加位号字段：先写方案…我看了再定"),
+then decided it: "条款 refs 方案按文中四条推荐落地，一次提交" (decision record
+docs/2026-10-26-condition-refs.md; all four recommended options taken). Until now
+a condition said which part it was about only in prose: of the 1187 conditions
+in the four R7 records, 68 / 201 / 187 / 112 named no board designator a
+reader could recognise (`source: evidence/ds/ISC032N12LM6.txt`, `use: 结温上限`),
+so the report could not list a part's parameters, the gate could not check that
+a clause quotes the datasheet of the part it is about although the datasheet
+audit knows every part's document, and two records could not be compared part
+by part. Results format 7: every condition may carry `refs` (the parts it is
+about); a condition from a datasheet (`ds/`, `datasheets/`, `manuals/`
+extracts, or a document the audit lists), from the BOM, or with a `setting`
+must (at least one); requirement, standard, commodity-floor and engineering
+conditions need not; a NETLIST_FACT's pins name parts among them. The gate
+(`review_functions.condition_ref_errors`) refuses a malformed or duplicated
+list, a designator that is no netlist or BOM part, a `setting.ref` outside the
+list, and — reading the datasheet audit the plan froze in `review_inputs` — a
+ref whose audited datasheet is another document than the condition's source
+(`material_of_source` matches the source by refdes, identity, model or file
+name): the first machine-checked mis-attribution. A ref outside the function's
+objects and member rows is a hint, CONDITION_REF_OUTSIDE_FUNCTION, never an
+error (a shared part's clause may live in one function). The gate outputs
+`parameter_sheet` (`review_functions.parameter_sheet`: per part, documents and
+pages, counts of guaranteed values / typical values / clauses, functions, and
+each parameter with what cites it), the report gains 器件参数表 (one row per
+part; `--detail full` one row per parameter), `compare_reviews` gains
+逐器件参数引用 (the same part, parameter word and unit aligned: same limit,
+different limit, read by one side only). `margin` gets no refs (it points at
+conditions through its basis). Format 6 records are refused by the version
+message, as decided ("不用兼容旧记录"). The validator fixture's netlist now
+holds the bias example's parts (Q2, D2, D3, C3, U1) so their conditions' refs
+are parts; its cell-NONE margins therefore show as NEW_BOUND_CELL rows in four
+goldens, which is what a real record with such margins shows. The reviewer's
+reading path grows from 682.8 KB to 685.0 KB with the refs rule in SKILL.md and
+plan-and-results.md, so `REVIEWER_PATH_MAX_BYTES` moves 683 000 → 685 100.
+
+- Event: user:2026-10-26 (条款 refs 方案按文中四条推荐落地，一次提交)
+- Causes: judgment 1
+- Changed: SKILL.md, references/architecture.md, references/plan-and-results.md, references/report-and-remediation.md, scripts/review_functions.py, scripts/validate_review.py, scripts/review_quality.py, scripts/results_model.py, scripts/render_report.py, scripts/compare_reviews.py, scripts/tests/test_condition_refs.py, scripts/tests/test_reading_path.py, scripts/tests/test_validate_review.py, scripts/tests/test_review_functions.py, scripts/tests/test_cell_boundary.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_configurable_devices.py, scripts/tests/test_custom_part_spec.py, scripts/tests/test_bound_derivation.py, scripts/tests/test_one_sided_bounds.py, scripts/tests/test_compare_bounding_signals.py, scripts/tests/test_compare_causes.py, scripts/tests/test_described_usage.py, scripts/tests/test_life_rows.py, scripts/tests/test_operating_point_tiers.py, scripts/tests/test_requirement_bindings.py, scripts/tests/test_requirement_edges.py, scripts/tests/test_results_model.py, scripts/tests/fixtures/golden_reports/functions.md, scripts/tests/fixtures/golden_reports/estimate.md, scripts/tests/fixtures/golden_reports/deliverable.md, scripts/tests/fixtures/golden_reports/extension.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/2026-10-26-condition-refs.md, docs/improvement-ledger.md
+- Gates: pytest 2264, rule contracts 69/69, replay 195/195, typical circuits 117/180/14 unchanged, mutations M687–M692 killed

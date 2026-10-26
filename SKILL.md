@@ -308,6 +308,9 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 都按 [功能判定](references/plan-and-results.md#功能判定functions)。框架自带问题、检查项、每条规则的盲区和五步核对单，审查员读手册、自己算，不翻规则书。要点：
 
 - 条件（`conditions`）先能定位，再写种类；判断（`judgements`）引强制条款或网表事实，数字限值只在余量里比较。
+  手册和 BOM 来源的条款写 `refs`——这条说的是板上哪几只器件（至少一个；带 `setting` 的含 `setting.ref`），需求、标准、工程假定可不写；
+  门禁核位号在网表或 BOM 里、手册是不是该位号在资料审计里的那份资料；位号不在本功能对象里只提示（CONDITION_REF_OUTSIDE_FUNCTION），共享器件的条款看一眼即可。
+  报告按 `refs` 出“器件参数表”。
 - `objects` 就是电路（候选经决定）的成员；要扩大或漏了电路，改 `intent.circuit_decisions` 后重生成。框架的 `members` 既有电路检查项，也有这块电路拥有的器件检查项（身份、引脚、应力、工况、它器件上的扫描发现）：
   都在这个功能里判，同一方面的几颗器件一条 judgement 可以合答，差别用 `check_ids` 分开。一个电路的缺口和失败写在它自己的功能里；
   跨电路的缺口只写一次，影响条目用 `check_ids` 点名另一电路的检查项。自建功能只装不属于任何框架的检查项；文档检查（DOC-*）在检查项上判，不包成功能。
@@ -342,7 +345,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
 
 做完的标志：`review-results.json` 的 `functions[]` 与计划的 `functions[]` 一一对应，每个功能有 verdict 与 evidence；
-开放项、失败项每条有 `key`、`kind`、`decides`，每条边只挡这类开放项能挡的检查项（[每类开放项能挡哪些检查项](references/plan-and-results.md#三层台账)）；要算数的功能有计算记录，不用算的写 `no_calculation_reason`；比较过的每个量在 `margin` 或条款 `limit` 里（`calculation.result` 只是结论句，单位按 `scripts/units.py` 的拼法；4.1 的 RESULT_NARRATIVE / UNIT_UNKNOWN / QUANTITY_IMPLAUSIBLE 零提示）；
+开放项、失败项每条有 `key`、`kind`、`decides`，每条边只挡这类开放项能挡的检查项（[每类开放项能挡哪些检查项](references/plan-and-results.md#三层台账)）；要算数的功能有计算记录，不用算的写 `no_calculation_reason`；比较过的每个量在 `margin` 或条款 `limit` 里（`calculation.result` 只是结论句，单位按 `scripts/units.py` 的拼法；4.1 的 RESULT_NARRATIVE / UNIT_UNKNOWN / QUANTITY_IMPLAUSIBLE 零提示）；手册和 BOM 来源的条款都有 `refs`（门禁无 “refs names the part” 错误）；
 框架里每个方面×状态都有判断或开放项（派生时 `derive_rows.py` 不报“未判”）。
 
 #### 3.2 检查项派生

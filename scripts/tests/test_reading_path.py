@@ -15,7 +15,7 @@ REFERENCES = sorted((ROOT / 'references').glob('*.md'))
 SKILL = (ROOT / 'SKILL.md').read_text(encoding='utf-8')
 READERS = ('审查员与 SR 维护者', 'SR 维护者', '审查员')
 READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审查员)(?:（[^）\n]*）)?。$', re.M)
-REVIEWER_PATH_MAX_BYTES = 683_000     # SKILL.md + the references a reviewer reads, measured 2026-10-26 (see the ledger)
+REVIEWER_PATH_MAX_BYTES = 685_100     # SKILL.md + the references a reviewer reads, measured 2026-10-26 (see the ledger: 683 000 → 685 100 for the refs rule)
 
 
 def section(text, title):

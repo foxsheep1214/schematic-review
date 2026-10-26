@@ -176,6 +176,7 @@ class SettingTests(unittest.TestCase):
     def at_setting(self, setting):
         fn = bias_function('PASS')
         fn['conditions'][3]['setting'] = setting   # the mandatory clause holds at one setting
+        fn['conditions'][3]['refs'] = sorted(set(fn['conditions'][3]['refs']) | {setting['ref']})   # results 7: setting.ref is one of its parts
         return fn
 
     def test_a_setting_is_listed_in_its_configuration_row(self):

@@ -112,7 +112,7 @@ class ResultTests(unittest.TestCase):
             bound['severity'] = 'P2'
             # the failure is on the part's temperature range, so the TEMPERATURE_GRADE requirement row inherits it
             fn = ledger4.function(report, 'FN-F-1', ['DEV-C05.U1'], self.plan)
-            fn.setdefault('conditions', []).append({'id': 't1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt',
+            fn.setdefault('conditions', []).append({'id': 't1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'refs': ['U1'],
                                                     'locator': 'p2 Table 1', 'says': 'TA −40..85 °C',
                                                     'limit': {'min': -40, 'max': 85, 'unit': '°C'}, 'regime': 'operating', 'use': '判据'})
             defect(report, 'DEV-C05.U1', 'F-1', 'F-1', plan=self.plan, conditions=['t1'])
@@ -300,7 +300,7 @@ class FailCountsTests(unittest.TestCase):
     failure only through a requirement clause or a limit in one of its parameters' units."""
 
     def fixture(self, unit, source='evidence/ds/D2.txt'):
-        fn = {'id': 'FN-BIAS', 'conditions': [{'id': 'l1', 'kind': 'NUMERIC_LIMIT', 'source': source, 'locator': 'p5 Table 8',
+        fn = {'id': 'FN-BIAS', 'conditions': [{'id': 'l1', 'kind': 'NUMERIC_LIMIT', 'source': source, 'locator': 'p5 Table 8', 'refs': ['D2'],
                                                  'says': 'VZ 15.7..16.3 V @ 5 mA', 'limit': {'min': 15.7, 'max': 16.3, 'unit': unit}}],
               'fails': [{'key': 'VZ-LOW', 'finding_id': 'F-1', 'decides': [{'aspect': '器件应力', 'via': {'condition': 'l1'}}]}]}
         planned = {'id': 'REQ-D01.TEMPERATURE-GRADE.REQ-TEMP', 'object': {'aspect': 'TEMPERATURE_GRADE'},

@@ -148,7 +148,7 @@ class CapacitorTests(unittest.TestCase):
 def life_function(open_item=None, estimate=True):
     fn = {'id': 'FN-LIFE', 'circuit': 'BULK', 'question': 'R1 在任务剖面下 10 年所需的耐久等级',
           'objects': {'refs': ['R1'], 'nets': ['A']}, 'states': ['RUN'],
-          'conditions': [{'id': 'c1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/R1.txt', 'locator': 'p2 Endurance',
+          'conditions': [{'id': 'c1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/R1.txt', 'locator': 'p2 Endurance', 'refs': ['R1'],
                           'says': '耐久 4000 h @105 °C', 'limit': {'min': 4000, 'unit': 'h'}, 'regime': '105 °C',
                           'use': '额定耐久'}],
           'calculation': {'claim_ids': ['LIFE-R1'], 'inputs': ['mission_profile', 'endurance'],

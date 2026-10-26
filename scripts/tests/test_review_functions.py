@@ -28,15 +28,15 @@ def bias_function(verdict='OPEN'):
         'objects': {'refs': ['Q2', 'D2', 'D3', 'C3'], 'nets': ['AUX', 'BIAS', 'VCC']},
         'states': list(STATES),
         'conditions': [
-            {'id': 'c1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D2.txt', 'locator': 'p3 Table 7',
+            {'id': 'c1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D2.txt', 'locator': 'p3 Table 7', 'refs': ['D2'],
              'says': 'VF ≤ 0.35 V @10 mA, ≤ 0.45 V @100 mA (25 °C)', 'limit': {'max': 0.45, 'unit': 'V'},
              'regime': '25 °C, 10–100 mA', 'use': '20 mA 在两点之间，单调，取 0.45 V 上界'},
-            {'id': 'c2', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/Q2.txt', 'locator': 'p4 Table 4',
+            {'id': 'c2', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/Q2.txt', 'locator': 'p4 Table 4', 'refs': ['Q2'],
              'says': 'VGS(th) 1.0–2.0 V @250 µA', 'limit': {'min': 1.0, 'max': 2.0, 'unit': 'V'},
              'regime': '25 °C, 250 µA', 'use': '20 mA 取 2.0 V + 0.5 V 余量'},
-            {'id': 'c3', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p7 Table 7',
+            {'id': 'c3', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p7 Table 7', 'refs': ['U1'],
              'says': 'VCC(off) max 8.8 V', 'limit': {'max': 8.8, 'unit': 'V'}, 'regime': '−10..105 °C', 'use': '判据'},
-            {'id': 'c4', 'kind': 'MANDATORY_CLAUSE', 'source': 'evidence/ds/U1.txt', 'locator': 'p9 §7.3',
+            {'id': 'c4', 'kind': 'MANDATORY_CLAUSE', 'source': 'evidence/ds/U1.txt', 'locator': 'p9 §7.3', 'refs': ['U1'],
              'says': 'VCC 引脚必须经外部电容去耦，UVLO 释放前不得由 HV 脚以外的路径反灌', 'applies': 'U1 由外部偏置供电时',
              'use': '偏置路径的连接要求'},
             # the validator fixture's netlist has one net, A: the fact names it, so it is checked against a real netlist
@@ -1053,7 +1053,7 @@ class EvidenceBasisTests(unittest.TestCase):
 
     def test_a_guaranteed_bound_does_not_rest_on_typical_values_or_assumptions(self):
         fn = bias_function('PASS')
-        fn['conditions'].append({'id': 'c6', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/Q2.txt', 'locator': 'Fig. 5',
+        fn['conditions'].append({'id': 'c6', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/Q2.txt', 'locator': 'Fig. 5', 'refs': ['Q2'],
                                  'says': 'VGS 典型 1.6 V', 'use': '典型'})
         fn['calculation']['margin']['basis']['conditions'].append('c6')
         errors = function_errors({'functions': [fn]})
@@ -1122,7 +1122,7 @@ class ReviewRecheckHintTests(unittest.TestCase):
 
     def rated(self, regime, **basis):
         fn = bias_function('PASS')
-        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/Q2.txt', 'locator': 'p2 Table 1',
+        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/Q2.txt', 'locator': 'p2 Table 1', 'refs': ['Q2'],
                                  'says': 'ID,pulse 45 A', 'limit': {'max': 45, 'unit': 'A'}, 'regime': regime, 'use': '脉冲电流额定'})
         fn['calculation']['margin'] = dict(fn['calculation']['margin'], against='Q2 ID,pulse 45 A',
                                            basis=dict(guaranteed(), limit='c6', conditions=['c1', 'c2'], **basis))
@@ -1158,7 +1158,7 @@ class ReviewRecheckHintTests(unittest.TestCase):
         import os
         import tempfile
         fn = bias_function('PASS')
-        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p8 Table 7',
+        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p8 Table 7', 'refs': ['U1'],
                                  'says': 'OVP Detection Delay tdelay(OVP) 22.5 / 30 / 37.5 ms', 'limit': {'min': 22.5, 'max': 37.5, 'unit': 'ms'},
                                  'regime': 'TJ −40..125 °C', 'use': '锁定前的检测延时'})
         with tempfile.TemporaryDirectory() as temp:
@@ -1184,7 +1184,7 @@ class ReviewRecheckHintTests(unittest.TestCase):
         import tempfile
         from review_quality import screen_quality
         fn = bias_function('PASS')
-        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p8 Table 7',
+        fn['conditions'].append({'id': 'c6', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/U1.txt', 'locator': 'p8 Table 7', 'refs': ['U1'],
                                  'says': 'tdelay(OVP) 22.5 / 30 / 37.5 ms', 'limit': {'min': 22.5, 'max': 37.5, 'unit': 'ms'},
                                  'regime': 'TJ −40..125 °C', 'use': '锁定前的检测延时'})
         p, r, db = ledger(fn)

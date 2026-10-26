@@ -386,6 +386,52 @@ def render_estimated_passes(items):
     return out
 
 
+CONDITION_KIND_WORDS = {'NUMERIC_LIMIT': '保证值', 'TYPICAL_REFERENCE': '典型值', 'MANDATORY_CLAUSE': '强制条款',
+                        'NETLIST_FACT': '网表事实', 'ENGINEERING_ASSUMPTION': '工程假定'}
+
+
+def _page_span(pages):
+    return '' if not pages else ('p%d' % pages[0] if len(pages) == 1 or pages[0] == pages[-1] else 'p%d–%d' % (pages[0], pages[-1]))
+
+
+def _limit_text(parameter):
+    limit, unit = parameter.get('limit') or {}, parameter.get('unit') or ''
+    if 'min' in limit and 'max' in limit:
+        return '%s–%s %s' % (_shown(limit['min']), _shown(limit['max']), unit)
+    if 'max' in limit:
+        return '≤ %s %s' % (_shown(limit['max']), unit)
+    if 'min' in limit:
+        return '≥ %s %s' % (_shown(limit['min']), unit)
+    return '—'
+
+
+def render_parameter_sheet(rows, detail='compact'):
+    """器件参数表（结果格式 7，2026-10-26）：条款 `refs` 点名的每只器件一行——读了哪份资料哪几页、引了几个参数、其中保证值 /
+    典型值 / 强制条款各几条、用在哪些功能；`--detail full` 再逐参数一行。只汇总条款，不另下结论。"""
+    if not rows:
+        return []
+    out = ['## 器件参数表', '',
+           '下面每只器件一行，汇总功能判定引用它资料的条款：读了哪份资料的哪几页、引了几个参数、其中保证值 / 典型值 / 强制条款各几条、'
+           '用在哪些功能。这张表只汇总条款，不另下结论；参数怎么用、余量多少见各功能的判断。', '',
+           '| 位号 | 资料（页） | 引用的参数 | 保证值 / 典型值 / 强制条款 | 用在哪些功能 |', '|---|---|---|---|---|']
+    for row in rows:
+        docs = '；'.join(('%s（%s）' % (Path(str(s['source'])).name, _page_span(s['pages']))) if s['pages'] else Path(str(s['source'])).name
+                        for s in row['sources'])
+        n = row['counts']
+        out.append('| %s | %s | %d | %d / %d / %d | %s |' % (row['ref'], cell(docs), n['total'], n['guaranteed'], n['typical'],
+                                                             n['clauses'], cell('、'.join(row['functions']))))
+    if detail == 'full':
+        out += ['', '逐参数：', '', '| 位号 | 参数 | 限值 | 工况 | 口径 | 出处 | 用在 |', '|---|---|---|---|---|---|---|']
+        for row in rows:
+            for p in row['parameters']:
+                where = '%s %s' % (Path(str(p.get('source') or '')).name, p.get('locator') or '')
+                out.append('| %s | %s | %s | %s | %s | %s | %s |' % (
+                    row['ref'], cell(p.get('parameter') or ''), cell(_limit_text(p)), cell(p.get('regime') or '—'),
+                    CONDITION_KIND_WORDS.get(p.get('kind'), p.get('kind') or ''), cell(where.strip()),
+                    cell('；'.join(p.get('used_in') or []) or '%s（未被余量或判断引用）' % p.get('function_id'))))
+    return out + ['']
+
+
 def render_figures(figures):
     """Each figure as an image packed under record/evidence, with its kind and caption below it."""
     lines = []
@@ -1040,6 +1086,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             out += ['', '另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending))]
         out.append('')
     out += render_estimated_passes(gate.get('estimated_passes'))
+    out += render_parameter_sheet(gate.get('parameter_sheet'), detail)
 
     # Everything about SR itself in one folded section, for its maintainers.
     sr = []

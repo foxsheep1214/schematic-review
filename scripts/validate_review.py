@@ -23,7 +23,7 @@ from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
 from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
-from review_functions import estimated_passes, netlist_evidence_errors, validate_functions
+from review_functions import estimated_passes, netlist_evidence_errors, parameter_sheet, validate_functions
 import check_key
 import row_owner
 import interfaces
@@ -644,6 +644,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     return {"quality_screening": screen_quality(plan, report, db, base_dir),
             "estimated_passes": estimated,
             "pending_deliverables": sorted(pending),
+            # results 7: the per-part view of the conditions (refs), for the report's 器件参数表 and compare_reviews
+            "parameter_sheet": parameter_sheet(report.get('functions')),
             "scope": scope_decl,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,

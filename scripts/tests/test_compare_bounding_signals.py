@@ -16,11 +16,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import compare_reviews as cr
 from test_compare_reviews import ASPECT, side
 
-LIMIT = {'id': 'z1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D1.txt', 'locator': 'p5 Table 8',
+LIMIT = {'id': 'z1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D1.txt', 'locator': 'p5 Table 8', 'refs': ['D1'],
          'says': 'VZ 15.68..16.32 V @ IZ 5 mA', 'limit': {'min': 15.68, 'max': 16.32, 'unit': 'V'}, 'regime': 'IZ 5 mA'}
-CURVE = {'id': 'k1', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/D1.txt', 'locator': 'p9 Fig. 4',
+CURVE = {'id': 'k1', 'kind': 'TYPICAL_REFERENCE', 'source': 'evidence/ds/D1.txt', 'locator': 'p9 Fig. 4', 'refs': ['D1'],
          'says': 'IZ-VZ 曲线画到 10 µA', 'regime': '10 µA..10 mA'}
-OTHER = dict(LIMIT, id='w1', source='evidence/ds/U9.txt')
+OTHER = dict(LIMIT, id='w1', source='evidence/ds/U9.txt', refs=['U9'])
 REASON = '只在 5 mA 给保证，低电流下界推不出'
 
 

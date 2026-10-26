@@ -446,6 +446,8 @@ def screen_quality(plan, report, db=None, base_dir=None):
     for hint in review_functions.template_hints(report.get('functions'), parts, base_dir):
         refs = hint.get('items') or ['%s/%s' % (hint.get('function_id'), hint.get('key'))]
         candidates.append(dict(hint, check_ids=sorted({c for ref in refs for c in owners.get(ref, ()) if c})))
+    for hint in review_functions.condition_ref_hints(report.get('functions'), plan):   # results 7: a condition's refs
+        candidates.append(dict(hint, check_ids=[]))
     candidates.extend(downstream_closures(report.get('functions'), owners))
     candidates.extend(misfiled_items(report.get('functions'), owners))
     for candidate in candidates:  # name fields the way the reviewer writes them (a function's open item)

@@ -31,9 +31,9 @@ def tried(**extra):
     return {k: v for k, v in out.items() if v is not None}
 
 
-Z1 = {'id': 'z1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D2.txt', 'locator': 'p5 Table 8',
+Z1 = {'id': 'z1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D2.txt', 'locator': 'p5 Table 8', 'refs': ['D2'],
       'says': 'VZ 15.68..16.32 V @ IZ 5 mA', 'limit': {'min': 15.68, 'max': 16.32, 'unit': 'V'}, 'regime': 'IZ 5 mA', 'use': 'VZ 测试点'}
-R1 = {'id': 'r1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D2.txt', 'locator': 'p5 Table 8',
+R1 = {'id': 'r1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D2.txt', 'locator': 'p5 Table 8', 'refs': ['D2'],
       'says': 'rdif ≤ 170 Ω @ IZ 1 mA', 'limit': {'max': 170, 'unit': 'Ω'}, 'regime': 'IZ 1 mA', 'use': 'rdif 测试点'}
 
 
@@ -137,10 +137,10 @@ class SideTests(unittest.TestCase):
 
 
 class FormatTests(unittest.TestCase):
-    def test_the_results_format_is_6_and_format_5_is_not_read(self):
-        self.assertEqual(results_model.SCHEMA_VERSION, 6)
+    def test_the_results_format_is_7_and_format_5_is_not_read(self):
+        self.assertEqual(results_model.SCHEMA_VERSION, 7)
         found = results_model.shape_errors({'schema_version': 5, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be 6' in e for e in found), found)
+        self.assertTrue(any('schema_version must be 7' in e for e in found), found)
 
 
 if __name__ == '__main__':

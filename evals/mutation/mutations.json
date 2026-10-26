@@ -4772,5 +4772,47 @@
   "file": "scripts/part_words.py",
   "old": "PASSIVE_LINKS = set(device_kinds.with_flag('passive_link'))\n",
   "new": "PASSIVE_LINKS = set()\n"
+ },
+ {
+  "id": "M687",
+  "name": "a datasheet condition needs no refs",
+  "file": "scripts/review_functions.py",
+  "old": "        if datasheet_source(source, audit) or BOM_SOURCE_RE.search(source) or 'setting' in c:\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M688",
+  "name": "another part's datasheet is not noticed",
+  "file": "scripts/review_functions.py",
+  "old": "            if entry is not None and entry is not material:\n",
+  "new": "            if False:\n"
+ },
+ {
+  "id": "M689",
+  "name": "setting.ref may be any part",
+  "file": "scripts/review_functions.py",
+  "old": "    if setting and text(setting.get('ref')) and setting['ref'] not in refs:\n",
+  "new": "    if False:\n"
+ },
+ {
+  "id": "M690",
+  "name": "a ref outside the function is not hinted",
+  "file": "scripts/review_functions.py",
+  "old": "            if outside and allowed:\n",
+  "new": "            if False:\n"
+ },
+ {
+  "id": "M691",
+  "name": "the parameter sheet forgets the clauses",
+  "file": "scripts/review_functions.py",
+  "old": "                         'typical': kinds['TYPICAL_REFERENCE'], 'clauses': kinds['MANDATORY_CLAUSE']}\n",
+  "new": "                         'typical': kinds['TYPICAL_REFERENCE'], 'clauses': 0}\n"
+ },
+ {
+  "id": "M692",
+  "name": "compare calls every shared parameter agreed",
+  "file": "scripts/compare_reviews.py",
+  "old": "        (agree if ends[0] == ends[1] else differ).append(",
+  "new": "        agree.append("
  }
 ]
