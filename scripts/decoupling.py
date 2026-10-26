@@ -525,7 +525,7 @@ def build_decoupling_inventory(db, intent=None):
         discovery_gaps.update('official-pin-absent:' + n for n in device['official_only_nodes'] if inv.supply_pin(n))
         discovery_gaps.update('pin-not-in-official-map:' + n for n in device['symbol_only_nodes'] if inv.supply_pin(n))
     # Without declared assemblies every part's population is unknown (netlist nc is not assembly proof, as in
-    # i2c_topology); the other checkers use the as-built state with one gap instead (automation.md 装配状态).
+    # i2c_topology); the other checkers use the as-built state with one gap instead (checker-conventions.md 装配状态).
     states = (intent or {}).get('assemblies') or [{'id': 'UNSPECIFIED', 'population': {}}]
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db), 'input_sha256': input_fingerprint(db),
               # power_rails: the PWR-C10 rating proposal reads the passive-stress pre-judgement, which needs the rails

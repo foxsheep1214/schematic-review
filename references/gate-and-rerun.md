@@ -2,7 +2,7 @@
 
 > 读者：审查员。
 
-审查数据分四份文档：[intent 格式](intent-format.md) 写 `intent.json`（审查意图与输入声明，按需求和设计结果写，不抄设计方的意图文件），[计划格式](plan-format.md) 写 `review-plan.json`（逐项检查计划），[结果格式](results-format.md) 写 `review-results.json`（功能判定与逐项结果），[校验与重新审查](gate-and-rerun.md) 写门禁输出和规则指纹。计划只决定每项的规则、适用性和准备度，不提前制造 PASS/FAIL；结果另存，由 `validate_review.py` 对账。常规命令见 [SKILL.md](../SKILL.md)。
+审查数据分四份文档：[intent 格式](intent-format.md)（`intent.json`，按需求和设计结果写，不抄设计方的意图文件）、[计划格式](plan-format.md)（`review-plan.json`）、[结果格式](results-format.md)（`review-results.json`）、[校验与重新审查](gate-and-rerun.md)（门禁输出与规则指纹）。计划只决定每项的规则、适用性和准备度，不提前制造 PASS/FAIL；结果另存，由 `validate_review.py` 对账。常规命令见 [SKILL.md](../SKILL.md)。
 
 ## 四、校验与门禁输出
 

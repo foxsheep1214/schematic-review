@@ -2455,3 +2455,25 @@ conventions are reviewer material), and the rule table's content.
 - Causes: judgment 1
 - Changed: SKILL.md, references/intent-format.md, references/plan-format.md, references/results-format.md, references/gate-and-rerun.md, references/scans-and-tools.md, references/automation.md, references/review-vocabulary.md, references/check-catalog.md, references/architecture.md, references/commodity-floors.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/review-charter.md, references/revision-review.md, references/verdicts-and-release.md, scripts/catalog.py, scripts/plan_review.py, scripts/tests/test_reading_path.py, scripts/tests/test_catalog.py, scripts/tests/test_doc_examples.py, scripts/tests/test_rule_gaps_from_reviews.py, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195 (document moves, a generated table and three error messages; no rule logic)
+
+## The checkers' shared conventions stand on their own (2026-10-26)
+
+After the split by step, step ① still linked the whole checkers' document
+(70 KB) for two paragraphs of its shared conventions (reference-ground
+domains, circuit candidates). The user asked whether separating the
+conventions was worth it ("如果对 SR 有价值就做"). The conventions are what
+a reviewer reads while writing intent — pin-name normalisation, rail identity,
+the three evidence grades, device kinds verified against the datasheet,
+assemblies, device pin tables, fingerprint binding, inventories, gaps,
+guaranteed-value checks — so they become `checker-conventions.md` (19 KB,
+审查员); `automation.md` keeps each checker's declaration format and
+implementation (审查员与 SR 维护者, still read at ②, since the declaration
+formats are what the reviewer writes). Step ① now links the conventions
+instead: 243567 → 192321 bytes; ② is unchanged within its budget (the four format
+documents' shared intro was shortened to keep it there). STEP_MAX_BYTES ①
+244 000 → 193 000.
+
+- Event: user:2026-10-26 (把共用约定从检查器实现里再分出来：如果对 SR 有价值就做)
+- Causes: judgment 1
+- Changed: SKILL.md, references/checker-conventions.md, references/automation.md, references/scans-and-tools.md, references/intent-format.md, references/plan-format.md, references/results-format.md, references/gate-and-rerun.md, references/architecture.md, scripts/decoupling.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69 (a document move and one comment; no rule logic)

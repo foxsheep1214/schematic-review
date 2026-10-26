@@ -131,7 +131,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员与 SR 维护者 | 写报告和修改说明 | [report-and-remediation.md](references/report-and-remediation.md)（“对 SR 的反馈”一节给维护者） |
 | 审查员 | 复审、改版影响 | [revision-review.md](references/revision-review.md) |
 | 审查员 | 自动扫描怎么跑、扫描提示怎么读、计算与厂家参数核对工具 | [scans-and-tools.md](references/scans-and-tools.md) |
-| 审查员与 SR 维护者 | 检查器的共用约定、电路候选、各检查器查什么 | [automation.md](references/automation.md)（检查器实现细节给维护者） |
+| 审查员 | 检查器共同的识别与声明规则：轨身份、识别依据、器件类型核验、电路候选、装配状态、指纹绑定、缺口 | [checker-conventions.md](references/checker-conventions.md) |
+| 审查员与 SR 维护者 | 各检查器查什么、intent 里怎么声明它 | [automation.md](references/automation.md)（检查器实现细节给维护者） |
 | 审查员与 SR 维护者 | 参与 ASG/SR 薄控制器流程时的交接 | [workflow-handoff.md](references/workflow-handoff.md) |
 | SR 维护者 | 架构明细：步骤间文件、格式版本、脚本归属、历次架构决定、规则维护步骤 | [architecture.md](references/architecture.md) |
 | SR 维护者 | 规则编号总表、判据、每项检查的盲区与常见误报（审查员用的名称表另出） | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
@@ -224,7 +225,7 @@ PDF 与网表核过同版；页码映射建好；冷扫跑过，阻值读不出�
   类型，集成电路写手册标题给出的角色（角色登记表见 [审查词表·器件角色](references/review-vocabulary.md#器件角色)，
   `catalog.DEVICE_ROLES`；标题没有任何登记角色的才写泛称 ic，计划把每个 ic 列成 `DEVICE_KIND_GENERIC` 诊断：这些器件
   不生成电路候选，累计清单是下一批角色的来源）。没核验过的 U/M 位号与 Q/D 位号一样是 DEV-D02 缺口；角色决定电路候选的
-  核心器件和它生成的电路类型，计划顶层 `domains` 据此列出参考地分区、跨域器件与截止网络（[自动检查](references/automation.md)）。
+  核心器件和它生成的电路类型，计划顶层 `domains` 据此列出参考地分区、跨域器件与截止网络（[检查器共用约定](references/checker-conventions.md)）。
 - AI 已逐端核对的器件角色和电源/返回分组按 [可复用声明](references/reviewed-declarations.md) 保存来源与输入指纹；
   下次先验证声明，输入变化则重新核对，不能只刷新摘要。`manual_*` 兼容字段不代表人员确认，核对者身份须如实记录。
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
@@ -279,7 +280,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 电路检查项只在网表上有它问的机制时生成（功能框架的 `not_asked` 列出没问的和原因）；扫描提示某电路类型问不到一半规则（`CIRCUIT_TYPE_MISFIT`）时换电路类型或不建该电路。
 计划检查项带 `requires` 仍记 NA 的，`applicability_evidence` 写排除它的 `nets`/`pins`；只说“不适用”的通过被拒，改记 NA。
 检查器（I²C、去耦、感性负载、功率开关、输入滤波、上电、监控、差分电平、光耦等）每趟都跑；
-名称线索只生成待复核候选，清单绑定输入指纹，不能编辑清单消缺口。见 [自动检查](references/automation.md)。
+名称线索只生成待复核候选，清单绑定输入指纹，不能编辑清单消缺口。见 [检查器共用约定](references/checker-conventions.md)。
 扫描提示“未声明电压的轨”或“无界节点/跨域”时，先在 `intent.power_rails` 补轨压、节点窗口和参考地分区 `domain`
 （由审查者按需求和稳压器/钳位手册自行定界，逐条写 `citation`），网表上像电源而名字不像轨的网逐条声明成轨或写进 `rail_exclusions`，再合并扫描；空的 `power_rails` 会让全部阻容预判失效。扫描提示“阻值读不出的电阻”时当场告诉用户：列出位号和原值，请设计方改成 `阻值[/公差][/额定功率][/额定电压][/封装]` 的写法或确认阻值，不自行猜阻值；未改之前这些电阻的预判和脚电流不算。值后面多一个说不清的词（如 `47R/1%/2W/pulse`）时阻值照读，诊断 `RESISTOR_VALUE_WORD` 只列这个词：它说的要求（抗脉冲能量、额定电压）是特殊要求，写成 BOM 约束，不开“阻值读不出”的待办。见 [通用件定界](references/commodity-floors.md#计划预判dev-c01-逐颗检查项)。
 
