@@ -82,7 +82,7 @@ class IntegratedSwitchFlybackBoardTest(unittest.TestCase):
         self.assertEqual(rows(plan, 'PRO-C02'), ['PRO-C02.NOTRIP.D1', 'PRO-C02.NOTRIP.D3',
                                                  'PRO-C02.TRIP.D1', 'PRO-C02.TRIP.D3'])
         connector = {c['object']['ref']: c.get('clamp_refs') for c in plan['checks'] if c['rule'] == 'PRO-D03'}
-        self.assertEqual(connector, {'J1': ['D2'], 'J2': None})
+        self.assertEqual(connector, {'J1': None, 'J2': None})   # D2's clamp window is its own PRO-E02 row
 
 
 if __name__ == '__main__':

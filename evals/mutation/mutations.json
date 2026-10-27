@@ -315,13 +315,6 @@
   "new": "        if False and refs and not refs <= fn_refs:"
  },
  {
-  "id": "M50",
-  "name": "a connector row with clamp parts passed by hand",
-  "file": "scripts/review_functions.py",
-  "old": "        if clamps and row.get('function_id') is None:",
-  "new": "        if False and clamps and row.get('function_id') is None:"
- },
- {
   "id": "M51",
   "name": "a requirement row made stage NA whole accepted",
   "file": "scripts/review_stage_scope.py",
@@ -4877,5 +4870,19 @@
   "file": "scripts/review_functions.py",
   "old": "(item.get('what'), item.get('why_insufficient'), worst.get('not_boundable_reason'),",
   "new": "(item.get('what'), item.get('why_insufficient'), None,"
+ },
+ {
+  "id": "M715",
+  "name": "a connector signal-line TVS gets two-sided threshold rows again",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if kind == TVS and any(check['rule'] == 'PRO-D03'",
+  "new": "            if False and any(check['rule'] == 'PRO-D03'"
+ },
+ {
+  "id": "M716",
+  "name": "the clamp scan reports under a rule that cannot carry a margin",
+  "file": "scripts/lint.py",
+  "old": "            self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',",
+  "new": "            self.add('PRO-A01', '防护器件工作/击穿/钳位窗口待复核',"
  }
 ]

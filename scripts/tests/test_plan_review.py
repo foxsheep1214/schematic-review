@@ -467,7 +467,9 @@ class ReviewPlanTests(unittest.TestCase):
         # 信号线 ESD 不逐颗双侧核算；电源轨 TVS 与板内钳位仍需要。
         self.assertEqual(refs, ['D1', 'D4', 'D5', 'U1'])
         connector = next(x for x in checks if x['rule'] == 'PRO-D03' and x['object']['ref'] == 'J1')
-        self.assertEqual(connector['clamp_refs'], ['D3'])
+        self.assertNotIn('clamp_refs', connector)   # 2026-10-26: the connector row asks topology only
+        from lint import Lint
+        self.assertIn('D3', [x['ref'] for x in Lint(db).run() if x['rule'] == 'PRO-E02'])   # the clamp window, per part
 
     def test_sensor_discrimination_is_planned_per_controller_pin(self):
         checks = [x for x in build_review_plan(threshold_db())['checks'] if x['rule'] == 'ANA-C04']

@@ -693,7 +693,8 @@ class CircuitPlanning:
 
         def io_clamp_connectors(ref):
             """对外信号线 ESD 钳位：一端接地，其余端都是信号网（非轨、非开关节点）且直达连接器；
-            由 PRO-D03 逐针覆盖。跨开关节点或浮地回流的 TVS 是能量钳位，仍按 PRO-C02 两侧核。"""
+            钳位数值由 PRO-E02 逐器件核，挂线与泄放由 PRO-D03 逐针核，不另出 PRO-C02 两侧窗口。
+            跨开关节点或浮地回流的 TVS 是能量钳位，仍按 PRO-C02 两侧核。"""
             pins = set(graph.pins_of(ref).values())
             live = [net for net in pins
                     if net and not grounded(net) and net not in db.get('pseudo_nets', [])]
@@ -706,11 +707,8 @@ class CircuitPlanning:
             if part.get('nc'):
                 continue
             kind = graph.kind(ref)
-            covering = [check for check in self.checks if check['rule'] == 'PRO-D03'
-                        and check['object'].get('ref') in io_clamp_connectors(ref)] if kind == TVS else []
-            if covering:
-                for check in covering:
-                    check['clamp_refs'] = sorted(set(check.get('clamp_refs', [])) | {ref})
+            if kind == TVS and any(check['rule'] == 'PRO-D03' and check['object'].get('ref') in io_clamp_connectors(ref)
+                                   for check in self.checks):
                 continue
             if kind == ZENER and follower_bias_zener(ref):
                 self.diagnostics.append({'code': 'GATE_BIAS_ZENER', 'ref': ref, 'switch': follower_bias_zener(ref),

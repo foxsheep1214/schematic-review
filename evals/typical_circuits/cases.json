@@ -172,22 +172,22 @@
    "fixture": "fixtures/fusb302-breakout.xml",
    "expected": [
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D1 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_p；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D2 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC1；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D3 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC2；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D4 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_n；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     }
@@ -210,22 +210,22 @@
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D1 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_p；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D2 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC1；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D3 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /CC2；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D4 (D_TVS DESD5V0U1BA-7 Device:D_TVS) 跨 /D_n；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     }
@@ -795,82 +795,82 @@
    "fixture": "fixtures/isolated-serial-adapter.xml",
    "expected": [
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D10 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/TX1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D11 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RX1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D12 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RTS1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D13 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DTR1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D14 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/CTS1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D15 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DSR1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D16 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RI1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D17 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DCD1_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D18 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/TX2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D19 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RX2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D20 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RI2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D21 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DCD2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D22 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RTS2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D23 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DTR2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D24 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/CTS2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
     }
@@ -929,82 +929,82 @@
      "why": "typical-boards 审读判为误报，已修（FINDING）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D10 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/TX1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D11 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RX1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D12 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RTS1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D13 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DTR1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D14 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/CTS1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D15 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DSR1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D16 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/RI1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D17 (D_TVS SMF15CA Device:D_TVS) 跨 /RS232/DCD1_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D18 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/TX2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D19 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RX2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D20 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RI2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D21 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DCD2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D22 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/RTS2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D23 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DTR2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D24 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/CTS2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
     }
@@ -1455,17 +1455,17 @@
      "why": "LM74700 EN 默认经 R803 下拉、由 MCU P4.2 拉高：核上电默认态"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D101 (SMAJ28A SMAJ28A Diode:SMAJ28A) 跨 /TX_Input/VIN_FUSED",
      "why": "TVS 跨电源轨：核 VRWM/VBR/VC 与工作电压"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D605 (SMAJ33A SMCJ33A Diode:SMAJ33A) 跨 VRECT",
      "why": "TVS 跨电源轨：核 VRWM/VBR/VC 与工作电压"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D801 (SMAJ26A SMAJ26A Diode:SMAJ26A) 跨 VSCAP",
      "why": "TVS 跨电源轨：核 VRWM/VBR/VC 与工作电压"
     },
@@ -1615,7 +1615,7 @@
      "why": "网络只有输入脚：与单节点网同根"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D1 (SMBJ48D-M3/I SMBJ48D-M3/I Diode:SM6T39A) 跨 V+",
      "why": "TVS 跨电源轨：核 VRWM/VBR/VC 与工作电压"
     },
@@ -1751,12 +1751,12 @@
      "why": "两颗 CAN 收发器 U1(SN65HVD230)/U2(SN65HVD75) 的 R 输出并联到 CAN_RX，网表中均为已装配：若为二选一贴装需 DNP 标记"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D11 (MMSZ4685T1G 3.6V LibreSolar:D_Zener) 跨 /BQ76952/VC0",
      "why": "齐纳跨 BQ76952 引脚：核钳位电压与引脚额定"
     },
     {
-     "rule": "PRO-A02",
+     "rule": "PRO-E02",
      "match": "D23 (MMSZ5267BT1G 75V LibreSolar:D_Zener) 跨 /BQ76952/PDSG",
      "why": "齐纳跨 BQ76952 引脚：核钳位电压与引脚额定"
     },

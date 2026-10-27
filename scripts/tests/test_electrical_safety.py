@@ -63,7 +63,7 @@ class ElectricalSafetyTests(unittest.TestCase):
     def test_p05_tvs_working_voltage_is_not_breakdown_or_burnout(self):
         db = database({'VCC_5V1': ['D1.1', 'J1.1'], 'GND': ['D1.2']},
                       {'D1': 'SMBJ5.0A', 'J1': 'CONN'})
-        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-A02']
+        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-E02']
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0]['kind'], 'CANDIDATE')
         self.assertNotIn('上电即', items[0]['detail'])
@@ -72,13 +72,13 @@ class ElectricalSafetyTests(unittest.TestCase):
         # R7 acceptance 2026-10-25 (user: B3 a): the clamp voltage is compared with the pins on its net
         db = database({'CC1': ['D1.1', 'J1.1', 'U1.3'], 'GND': ['D1.2']}, {'D1': 'PESD5V0L1UA TVS', 'J1': 'CONN', 'U1': 'IC'},
                       {'U1.3': 'CC1'})
-        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-A02']
+        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-E02']
         self.assertEqual(len(items), 1)
         self.assertIn('同网 IC 脚 U1.3(CC1) 直接并在钳位上', items[0]['detail'])
         self.assertIn('高于同网 IC 脚绝限即 FAIL', items[0]['detail'])
         db = database({'CC1': ['D1.1', 'J1.1', 'R1.1'], 'CC1_IC': ['R1.2', 'U1.3'], 'GND': ['D1.2']},
                       {'D1': 'PESD5V0L1UA TVS', 'J1': 'CONN', 'U1': 'IC', 'R1': '1k'}, {'U1.3': 'CC1'})
-        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-A02']
+        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-E02']
         self.assertIn('U1.3(CC1) 经 R1', items[0]['detail'])
 
     def test_audit_expands_critical_passives_and_rejects_unknown_ref(self):
@@ -95,35 +95,50 @@ class ElectricalSafetyTests(unittest.TestCase):
         self.assertAlmostEqual(parse_resistor('20Kohm/1%')['kohm'], 20)
 
 
+class ClampWindowOwnerTests(unittest.TestCase):
+    """2026-10-26 (user: 按方案 A 改): one row per clamp part asks the clamp voltage against the protected pin, a
+    window rule that may carry margins and gaps; the connector row asks only whether each pin is protected on its live
+    line with a discharge path. R8 judged the same CC/D± clamps FAIL on the part rows and PASS on the connector row."""
+
+    def test_the_clamp_window_is_a_window_rule_and_the_connector_row_is_topology(self):
+        import catalog
+        self.assertEqual(catalog.method_of('PRO-E02'), 'E')
+        self.assertIn('PRO-E02', catalog.blockable_rules('VENDOR_DATUM'))
+        self.assertNotIn('PRO-D03', catalog.blockable_rules('VENDOR_DATUM'))
+        criterion = catalog.get('PRO-D03').criterion
+        self.assertNotIn('clamp_refs', criterion)
+        self.assertIn('PRO-E02', criterion)
+
+
 if __name__ == '__main__':
     unittest.main()
 
 
 class FunctionalClampTests(unittest.TestCase):
-    """R6 fix list B5-1 (2026-10-25): a zener on an internal IC node is a level clamp and gets no PRO-A02 line; the
+    """R6 fix list B5-1 (2026-10-25): a zener on an internal IC node is a level clamp and gets no PRO-E02 line; the
     same zener on a connector node, and a TVS anywhere, keep it."""
 
     def test_zener_on_an_internal_ic_node_is_not_a_protective_device(self):
         db = database({'ZCD': ['U1.1', 'D1.1', 'R1.1'], 'GND': ['D1.2', 'U1.2'], 'AUX': ['R1.2']},
                       {'U1': 'PFC-CTRL', 'D1': 'MMSZ5231B', 'R1': '47K'}, {'U1.1': 'ZCD', 'U1.2': 'GND'})
-        self.assertEqual([x for x in Lint(db).run() if x['rule'] == 'PRO-A02'], [])
+        self.assertEqual([x for x in Lint(db).run() if x['rule'] == 'PRO-E02'], [])
 
     def test_zener_on_a_connector_node_keeps_the_line(self):
         db = database({'ZCD': ['U1.1', 'D1.1', 'J1.1'], 'GND': ['D1.2', 'U1.2']},
                       {'U1': 'PFC-CTRL', 'D1': 'MMSZ5231B', 'J1': 'CONN'}, {'U1.1': 'ZCD', 'U1.2': 'GND'})
-        self.assertEqual(len([x for x in Lint(db).run() if x['rule'] == 'PRO-A02']), 1)
+        self.assertEqual(len([x for x in Lint(db).run() if x['rule'] == 'PRO-E02']), 1)
 
     def test_a_tvs_on_the_same_internal_node_keeps_the_line(self):
         db = database({'ZCD': ['U1.1', 'D1.1'], 'GND': ['D1.2', 'U1.2']},
                       {'U1': 'PFC-CTRL', 'D1': 'SMAJ5.0A'}, {'U1.1': 'ZCD', 'U1.2': 'GND'})
-        self.assertEqual(len([x for x in Lint(db).run() if x['rule'] == 'PRO-A02']), 1)
+        self.assertEqual(len([x for x in Lint(db).run() if x['rule'] == 'PRO-E02']), 1)
 
 
 class ZenerFamilyTests(unittest.TestCase):
-    """SR task loop 2026-10-25 (2.1): a BZX-family zener across a rail is a clamp the PRO-A02 scan knows."""
+    """SR task loop 2026-10-25 (2.1): a BZX-family zener across a rail is a clamp the PRO-E02 scan knows."""
 
     def test_a_bzx_zener_across_a_connector_rail_is_scanned(self):
         db = database({'VCC_5V1': ['D1.2', 'J1.1'], 'GND': ['D1.1']}, {'D1': 'BZX84C5V1', 'J1': 'CONN'})
-        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-A02']
+        items = [x for x in Lint(db).run() if x['rule'] == 'PRO-E02']
         self.assertEqual([x['ref'] for x in items], ['D1'])
         self.assertIn('型号提示=5.1', items[0]['detail'].replace(' V', ''))

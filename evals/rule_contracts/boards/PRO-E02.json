@@ -1,5 +1,5 @@
 {
- "rule": "PRO-A02",
+ "rule": "PRO-E02",
  "runner": "cold",
  "note": "TVS-family clamp across rail and ground vs a plain Schottky",
  "trigger": {

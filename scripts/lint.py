@@ -286,7 +286,7 @@ class Lint:
         """A zener to ground whose other end is an internal signal node — no connector contact, not a rail by name or
         declaration, and an IC pin or a transistor gate/base on it — is a reference or level clamp, not a protective
         device (R6 acceptance 2026-10-24: D303 ZCD clamp and D404 gate reference asked for surge data). A node that
-        also reaches a connector is protective and keeps the PRO-A02 line; a TVS part is protective wherever it sits."""
+        also reaches a connector is protective and keeps the PRO-E02 line; a TVS part is protective wherever it sits."""
         if RAIL_RE.match(net) or _volt(net) is not None or net in (self.intent.get('power_rails') or {}):
             return False
         inside = False
@@ -685,7 +685,7 @@ class Lint:
                          f'{n}: {"; ".join(sorted(set(pulls)))}',
                          kind='CANDIDATE')
 
-        # PRO-A02: model/name-derived voltage is a retrieval hint, not breakdown data.
+        # PRO-E02: model/name-derived voltage is a retrieval hint, not breakdown data.
         for ref, value in parts.items():
             if value.get('nc'):
                 continue
@@ -701,7 +701,7 @@ class Lint:
             rail = rails[0]
             if self.graph.kind(ref) == pw.ZENER and self._functional_clamp(rail):
                 continue   # a reference or level clamp inside the circuit: DEV-C05 and the circuit's verdict judge it
-            self.add('PRO-A02', '防护器件工作/击穿/钳位窗口待复核',
+            self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',
                      f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_fmt_v(_volt(rail))}，'
                      f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail)}'
                      '分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；钳位电压高于同网 IC 脚绝限即 FAIL，'

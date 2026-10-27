@@ -1012,17 +1012,6 @@ class ReviewerAgreementTests(unittest.TestCase):
         p['checks'][-1]['object'] = dict(loop, ref='L9')
         self.assertTrue(any('not about L9' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
 
-    def test_f12_a_connector_row_with_clamp_parts_is_judged_in_a_function(self):
-        p, r, db = ledger(bias_function('PASS'))
-        p['checks'].append(dict(planned('PRO-D03.J1'), object={'ref': 'J1'}, clamp_refs=['D7', 'D8']))
-        row = {'id': 'PRO-D03.J1', 'applicability': 'APPLICABLE', 'review_result': 'PASS', 'evidence': E,
-               'rationale': 'J1 CC/D± 各有一颗 TVS', 'handoff': {'required': False}}
-        r['checks'].append(row)
-        errors = frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])
-        self.assertTrue(any('PRO-D03.J1: the plan lists clamp parts D7, D8' in e for e in errors), errors)
-        row.update(review_result='NA', applicability='NOT_APPLICABLE')   # not reviewed: nothing to judge
-        self.assertFalse(any('clamp parts' in e for e in frame_errors(p, {c['id']: c for c in r['checks']}, r['functions'])))
-
 
 
 class EvidenceBasisTests(unittest.TestCase):

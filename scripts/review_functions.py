@@ -30,8 +30,8 @@ how many rows one gap blocks is a diagnostic, not a limit.
 Two reviewers of the same board diverged most where the record let a judgement rest on nothing a reader can
 open, so a circuit function cites at least one clause (F1), every judgement rests on a mandatory clause or a
 netlist fact (F9), the same unlocated condition in several functions is a template (F10), a frame's function
-judges the frame's objects and a row the reviewer binds to a function names an object of that function (F11),
-and a connector row with clamp parts is judged in a function (F12). None of this proves the electrical judgement.
+judges the frame's objects and a row the reviewer binds to a function names an object of that function (F11).
+None of this proves the electrical judgement.
 """
 import re
 
@@ -1837,8 +1837,7 @@ def _objects(fn):
 def scope_errors(plan, checks, by_id, members):
     """F11: a frame's function judges the frame's objects (the intent circuit; add a part there and regenerate the
     plan, do not widen the verdict), and a row the reviewer binds to a function is about an object of that
-    function — a gap of one block does not reach into another through a binding. F12: a connector row whose plan
-    lists clamp parts (clamp_refs) is judged in a function, where the clamp voltage meets the pin limit as clauses."""
+    function — a gap of one block does not reach into another through a binding."""
     errors = []
     for frame in (plan or {}).get('functions') or []:
         fn = by_id.get(frame.get('id')) if isinstance(frame, dict) else None
@@ -1856,11 +1855,6 @@ def scope_errors(plan, checks, by_id, members):
         if not isinstance(row, dict) or row.get('review_result') not in REVIEWED:
             continue
         planned = planned_rows.get(cid) or {}
-        clamps = planned.get('clamp_refs')
-        if clamps and row.get('function_id') is None:
-            errors.append('%s: the plan lists clamp parts %s on this connector; their clamp voltage against the protected '
-                          'pin limit is a function judgement — bind the row to the port\'s function and quote both as '
-                          'clauses' % (cid, ', '.join(clamps)))
         fn = by_id.get(row.get('function_id'))
         if fn is None or cid in members:
             continue

@@ -43,7 +43,7 @@ M33–M43（2026-10-20，架构收紧）守“没人判过的方面不默认通�
 由 `test_derive_rows.py`、`test_review_functions.py`、`test_render_and_pack.py` 的对应测试杀死。
 M44–M51（2026-10-21，两名审查员同板记录对比）守七条让记录趋同的护栏：功能至少一条能定位、带数字的条款（M44）、
 判断至少引一条能定位的条件（M45）、DESIGN_VALUE/VENDOR_DATUM 写了理由也不许超过 3 个方面（M46）、同一句理由不抄到几个开放项（M47）、
-框架功能的对象不越出 intent 电路（M48）、审查员绑定的行要在功能对象上（M49）、带 clamp_refs 的连接器行不手填（M50）、
+框架功能的对象不越出 intent 电路（M48）、审查员绑定的行要在功能对象上（M49）、
 需求行不整行阶段 NA（M51），由 `test_review_functions.py::ReviewerAgreementTests` 和 `test_review_stage_scope.py` 杀死。
 M52–M55（2026-10-21，电路候选步 1–2）守 IC 角色与参考地分区：没核验角色的 U/M 位号不登记 DEV-D02 缺口（M52，`test_ic_kinds.py::PlannerGapTests`）、
 泛称 ic 的原文写明角色仍通过（M53，`QuoteVerificationTests`）、推导参考地分区时电容导通（M54，`test_domains.py::DomainTests`）、
@@ -161,3 +161,4 @@ M696（2026-10-26，功能编号）守：超过 64 字符的框架名截断时�
 M697–M700（2026-10-26，不审配置表）守：`configurable` 声明被拒收（M697）、条款的设置交给配置表编写方（M698）、功能在需求行上更差的结论不被绑定行覆盖（M699）、输出档位要引手册（M700），由 `test_device_settings.py` 与 `test_requirement_bindings.py` 杀死；M361–M363、M365–M372、M559、M602 守的配置组检查已取消，同日删除，M364 改守新的 `set_points`。
 M701–M703（2026-10-26，三条过严规则）守：齐纳低于最低测试电流记失败项、不开缺厂家资料（M701，`test_bounding_table.py`），热态重接入与端口硬短路的外部阻抗不记设计没定（M702、M703，`test_single_fault_rows.py`）。
 M704–M714（2026-10-26，设计风险不记缺资料）守：四格与新增 IC-PIN-ABSMAX 兜底为超出规定区（M704–M708，`test_bounding_table.py`），厂家数据开放项的格须与文字点到的格一致（M709–M714，`test_gap_cells.py`）。
+M715–M716（2026-10-26，钳位窗口归 PRO-E02）守：连接器信号线 TVS 不再出 PRO-C02 两侧行（M715，`test_plan_review.py`），钳位扫描以窗口类规则出行（M716，`test_electrical_safety.py`）；M50 随 F12 删去。

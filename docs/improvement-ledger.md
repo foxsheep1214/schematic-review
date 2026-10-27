@@ -2614,3 +2614,34 @@ cell and the rule (221 831 → 222 603 bytes): its budget moves 221 000 →
 - Causes: judgment 1, rule_not_enforced 1
 - Changed: scripts/catalog.py, scripts/review_functions.py, scripts/tests/test_gap_cells.py, scripts/tests/test_one_sided_bounds.py, scripts/tests/test_operating_point_tiers.py, scripts/tests/test_review_functions.py, scripts/tests/test_reading_path.py, references/bounding-table.md, references/results-format.md, references/evidence-proportionality.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M704–M714 killed
+
+## One owner for the clamp voltage against the protected pin (2026-10-26)
+
+R8 asked the same question twice for the USB port ESD clamps. The plan folded
+every signal-line TVS on a connector into that connector's PRO-D03 row
+(`clamp_refs`), and the lint scan PRO-A02 made a row per clamp part as well.
+codex3 judged the four CC/D± clamps FAIL on the part rows (clamp 9–12 V against a
+6.5 V pin limit) and left the connector row PASS. codex2 tried to hold the
+connector row open on vendor data and stopped at ③, because PRO-D03 is a clause
+rule that no gap may hold and that carries no margin. Decision 方案 A:
+
+1. The clamp scan becomes the window rule PRO-E02 (class E, so a row carries a
+   margin, a bounding cell and a gap). It covers clamps on connector signal lines
+   too; the lint scan that finds them is unchanged.
+2. PRO-D03 asks topology only: every external pin considered, the protection on
+   the live line, the discharge path to the right ground. `clamp_refs` and the
+   F12 gate that made such a row function-bound are gone.
+3. A connector signal-line TVS still gets no PRO-C02 two-sided rows.
+
+On codex3's inputs the plan keeps 612 rows: five PRO-A02 rows become PRO-E02,
+the two connector rows reword their criterion and question, and PRO-C02 rows
+change key because their criterion names PRO-E02. Typical-circuit expectations
+and the rule contract board follow the new id. Mutation M50 (F12) is dropped
+with the gate. Fourteen older mutations (M42, M51, M159, M276, M339, M358, M391,
+M496, M513, M514, M519, M532, M646, M651) already had no anchor at the previous
+commit; left as they are.
+
+- Event: user:2026-10-26 (按方案 A 改：PRO-A02 逐器件承担钳位数值核算并改为窗口类，PRO-D03 只管逐针防护拓扑，去掉 clamp_refs 和 F12); review:SR-20261026-R8-验收-codex3-deb0c51/审查报告.md
+- Causes: rule_not_enforced 1, judgment 1
+- Changed: SKILL.md, scripts/catalog.py, scripts/lint.py, scripts/plan_board.py, scripts/plan_circuits.py, scripts/review_functions.py, scripts/tests/test_electrical_safety.py, scripts/tests/test_plan_review.py, scripts/tests/test_public_flyback_boards.py, scripts/tests/test_review_functions.py, references/check-catalog.md, references/plan-format.md, references/results-format.md, references/scans-and-tools.md, references/architecture.md, evals/typical_circuits/cases.json, evals/rule_contracts/boards/PRO-E02.json, evals/rule_contracts/README.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M715–M716 killed
