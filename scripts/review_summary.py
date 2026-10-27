@@ -31,7 +31,7 @@ def impact_class_errors(key, assessment, severity, version=1):
 
 def validate_impact(item, classes=False):
     """Check impact documentation, never infer a severity from missing evidence."""
-    if item.get('review_result') != 'INSUFFICIENT' or item.get('gap_cause') == 'REQUIREMENT_OPEN':
+    if item.get('review_result') != 'INSUFFICIENT':
         return []
     key = item.get('id', '?')
     assessment = item.get('impact_assessment')
@@ -57,16 +57,14 @@ def categorized_summary(checks, expected, findings, stage, classes=False):
     history = {k for k in checks if expected.get(k, {}).get('rule') == 'REQ-H02'}
     current = set(checks) - history
     gaps = [checks[k] for k in current if checks[k].get('review_result') == 'INSUFFICIENT']
-    graded = [c for c in gaps if c.get('gap_cause') != 'REQUIREMENT_OPEN']
-    documented = sum(not validate_impact(c, classes) for c in graded)   # as the gate checks it
-    impact = {'by_potential_severity': {p: sum(c.get('potential_severity') == p for c in graded)
+    documented = sum(not validate_impact(c, classes) for c in gaps)   # as the gate checks it
+    impact = {'by_potential_severity': {p: sum(c.get('potential_severity') == p for c in gaps)
                                       for p in ('P0', 'P1', 'P2', 'P3')},
-              'requirement_open': len(gaps) - len(graded),
-              'unrated': sum(c.get('potential_severity') not in ('P0', 'P1', 'P2', 'P3') for c in graded),
-              'documented': documented, 'undocumented': len(graded) - documented,
+              'unrated': sum(c.get('potential_severity') not in ('P0', 'P1', 'P2', 'P3') for c in gaps),
+              'documented': documented, 'undocumented': len(gaps) - documented,
               'blocking': sum(c.get('blocking') is True for c in gaps),
               'by_consequence_class': dict(Counter(
-                  (c.get('impact_assessment') or {}).get('consequence_class') for c in graded
+                  (c.get('impact_assessment') or {}).get('consequence_class') for c in gaps
                   if isinstance(c.get('impact_assessment'), dict)
                   and (c['impact_assessment'].get('consequence_class') in IMPACT_CLASSES))),
               'note': 'Documentation coverage does not prove engineering correctness; potential impact is not a confirmed defect.'}

@@ -1270,14 +1270,15 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
             errors.append(label + ': a fail item names the finding (finding_id) that records the defect')
         return errors
     kind = item.get('kind')
+    if kind == 'REQUIREMENT':
+        errors.append(label + ': an undecided requirement is no open item: ask the user at once, write the question and '
+                      'answer to intent.clarifications, regenerate the plan and judge against the settled requirement')
+        return errors
     if kind not in OPEN_KINDS:
         errors.append(label + ': kind is one of ' + '/'.join(OPEN_KINDS))
         return errors
     severity = item.get('severity')
-    if kind == 'REQUIREMENT':
-        if severity is not None:
-            errors.append(label + ': a requirement the owner has not decided is not graded; omit severity')
-    elif not isinstance(severity, dict):
+    if not isinstance(severity, dict):
         errors.append(label + ': severity {level, class, consequence} required')
     else:
         if severity.get('level') not in LEVELS:

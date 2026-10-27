@@ -2735,3 +2735,32 @@ has no license and vendor reference designs are PDF only. Typical circuits go
 - Causes: rule_not_enforced 3
 - Changed: scripts/checkers/powertree.py, scripts/lint.py, scripts/tests/test_typical_circuits_v3.py, evals/typical_circuits/cases.json, evals/typical_circuits/sources.json, evals/typical_circuits/fixtures, evals/typical_circuits/README.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M722-M725 killed
+
+## An undecided requirement is asked at once, not reported (2026-10-26)
+
+The user wants a verdict to read as pass, fail with a fix, or pass with an
+improvement; "evidence insufficient" mixed six causes, and an undecided
+requirement surfaced only in the report's "需求要说清楚的地方" at the end. Decision
+(user: 需求没定，那就需要及时和用户反馈，请用户澄清以后，马上修改需求清单，而不是放到最后;
+按方案改：a 只允许采纳建议或明确暂缓；b 无人值守时任务书附澄清答复，没覆盖的问题停在第①步):
+
+1. A requirement question lives in `intent.clarifications` (intent format 5)
+   with the requirement wording and SR's proposed clause; the answer is DECIDED,
+   ADOPTED_PROPOSAL (word for word) or DEFERRED, with who, when and a locatable
+   source. A settled answer joins the requirement list under its CL- id; a
+   deferral makes the named requirements DEFERRED.
+2. Requirement status is only CONFIRMED or DEFERRED; OPEN and PROPOSED are refused.
+3. An unanswered question is printed by the cold scan and refused by the
+   candidate generator, the planner with candidates and the gate: the review
+   stops at step ①; an unattended run reads the task book's answers.
+4. The results drop the REQUIREMENT open item and `requirement_clarifications`
+   (results format 8); the report lists "需求澄清记录" from the plan.
+
+The replay bench gets the revision `intent-format-5-v1` (three intent fixtures
+change only their version; answers unchanged). Old mutations M527–M530 go with
+the open-clarification section; M360, M495, M502, M526 and M541 are re-anchored.
+
+- Event: user:2026-10-26 (需求没定，那就需要及时和用户反馈，请用户澄清以后，马上修改需求清单，而不是放到最后; 按方案改：a 只允许采纳建议或明确暂缓；b 无人值守时任务书附澄清答复，没覆盖的问题停在第①步)
+- Causes: judgment 1
+- Changed: scripts/requirement_clarifications.py, scripts/plan_review.py, scripts/plan_board.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/results_model.py, scripts/review_functions.py, scripts/validate_review.py, scripts/review_workflow.py, scripts/review_summary.py, scripts/review_quality.py, scripts/review_stage_scope.py, scripts/requirement_bindings.py, scripts/render_report.py, scripts/tests, SKILL.md, references/requirement-clarifications.md, references/intent-format.md, references/results-format.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/architecture.md, references/check-catalog.md, evals/kicad_replay_bench, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2270, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M360 M495 M502 M526 M541 M726-M735 killed

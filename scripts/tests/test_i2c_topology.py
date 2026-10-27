@@ -69,7 +69,7 @@ def at(output, net='I2C_SDA', state='run'):
 
 def report_for(plan, db):
     # Only used to isolate validator contract errors; not an electrical review.
-    return {'requirement_clarifications': [], 'schema_version': results_model.SCHEMA_VERSION, 'functions': [],
+    return {'schema_version': results_model.SCHEMA_VERSION, 'functions': [],
             'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
             'checks': [], 'findings': [], 'coverage': {}, 'summary': {}}
 
@@ -87,7 +87,7 @@ def pending_report(plan, db):
                'binding': {k: copy.deepcopy(item[k]) for k in ('object', 'criterion')}}
         rows.append(row)
     scope = {k: next(p['id'] for p in plan['checks'] if p['rule'] == catalog.COVERAGE_RULES[k]) for k in SCOPE}
-    report = {'requirement_clarifications': [], 'schema_version': results_model.SCHEMA_VERSION, 'functions': [],
+    report = {'schema_version': results_model.SCHEMA_VERSION, 'functions': [],
               'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
               'checks': rows, 'findings': [], 'scope_checks': scope,
               'coverage': {'components': {r: [scope['chains']] for r in db['parts']},
@@ -494,7 +494,7 @@ class TopologyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             folder = Path(temp)
             (folder / 'db.json').write_text(json.dumps(db))
-            (folder / 'intent.json').write_text(json.dumps(dict(intent, schema_version=4)))
+            (folder / 'intent.json').write_text(json.dumps(dict(intent, schema_version=5)))
             for script, args in [('i2c_topology.py', ['--json', str(folder / 'inventory.json')]),
                 ('lint.py', ['--plan-json', str(folder / 'lint-plan.json'), '--i2c-topology-json', str(folder / 'lint-topology.json')])]:
                 run = subprocess.run([sys.executable, '-B', str(SCRIPTS / script), str(folder / 'db.json'),

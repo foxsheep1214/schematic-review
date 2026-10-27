@@ -4,13 +4,13 @@
 
 审查数据分四份文档：[intent 格式](intent-format.md)（`intent.json`，按需求和设计结果写，不抄设计方的意图文件）、[计划格式](plan-format.md)（`review-plan.json`）、[结果格式](results-format.md)（`review-results.json`）、[校验与重新审查](gate-and-rerun.md)（门禁输出与规则指纹）。计划只决定每项的规则、适用性和准备度，不提前制造 PASS/FAIL；结果另存，由 `validate_review.py` 对账。常规命令见 [SKILL.md](../SKILL.md)。
 
-## 一、intent.json（schema_version 4）
+## 一、intent.json（schema_version 5）
 
 合成示例（数值仅说明结构）：
 
 ```json
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "review_mode": "first",
   "review_phase": "design_iteration",
   "input_sha256": "填写 decoupling.py 候选清单里的 input_sha256",
@@ -65,7 +65,7 @@
 
 任务书给了几份需求文档，`requirement_source` 就写成列表 `[{"path", "sha256"}, …]`（每份文件各自的 sha256，一个 id 只在一份文档里出现）；只有一份时写成上面的单个对象也行。
 
-- `schema_version` 必写（4）；顶层只认本节列出的字段和各检查器的段（`plan_review.INTENT_FIELDS`），拼错或多写的字段被拒收并提示最接近的字段名。
+- `schema_version` 必写（5）；顶层只认本节列出的字段和各检查器的段（`plan_review.INTENT_FIELDS`），拼错或多写的字段被拒收并提示最接近的字段名。
 - `circuit_decisions` 的写法见下文“电路不手画”；`circuits` 和 `circuit_candidates_sha256` 由 `circuit_decisions.py --write` 写入，不手写。
 - `review_mode`：`first` 或 `revision`。`review_phase` 取值见 [结论与准出](verdicts-and-release.md#5-审查阶段)。
 - `features` 的键与 `circuits[].type` 取 [规则总表](check-catalog.md)“功能电路”中的包名，否则拒绝；
@@ -123,7 +123,7 @@
   工作环境温度（DEV-C01/C02/C05）和设计寿命（DEV-C02/C06）作为 `conditions` 挂在器件应力检查项上，计划顶层 `conditions` 列出各条来源。
 - `requirements[].owners`，**承接电路**：落实这条需求的功能电路、系统功能或接口的 id。规则总表给每个审查方面列出承担它的检查和可承接的电路类型；
   计划替每个需求检查项找出**可承接的电路**，写在 `owner_candidates`（拥有承担该方面的检查项的所属里，电路类型、系统功能、接口种类在该方面那一格里的那些；表外的不算）。
-  **有可承接的电路的需求必须写 owners**（OPEN、DEFERRED 的除外），没写的计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []`
+  **有可承接的电路的需求必须写 owners**（DEFERRED 的除外），没写的计划拒绝生成并打印它们；审查员认定没有承接电路时写 `owners: []`
   加能定位的 `no_owner_reason`，需求检查项自判（检查项记 `self_judged: DECLARED`，“审查员认定没有承接电路”）；没有可承接的电路的不要求写，需求检查项自判
   （`self_judged: NO_OWNER_CANDIDATE`，“没有可承接的电路”）。写了可承接之外的 id 允许，计划打诊断 `REQUIREMENT_OWNER_OUTSIDE_CANDIDATES` 供复核。
   只有一个可承接的电路也要手写，不自动填。
@@ -133,10 +133,12 @@
   手填的需求检查项只对账不覆盖；校验要求结论等于绑定检查项中最差者，这种检查项不要求条款。没有绑定检查项、或绑定检查项全是 NA 的方面由需求检查项自己判，照常拆条款。
   有参数的方面（如 TEMPERATURE_GRADE 的 °C）只从经需求条款或经该参数单位的限值的失败边继承 FAIL（`requirement_bindings.fail_counts`）：
   绑定检查项因别的量失败（齐纳低电流 VZ）时失败留在该检查项，需求检查项写明不继承；INSUFFICIENT 照旧继承。
-- `requirements[].status`：已确认（CONFIRMED）、提案（PROPOSED）、未定（OPEN）、暂缓（DEFERRED）。
-  保留需求原文和源状态，先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求)
-  确定本次判据的实际确认状态，不省略真实未定项。OPEN 的 REQ-D01 必须 INSUFFICIENT + REQUIREMENT_OPEN；
-  DEFERRED 必须 INSUFFICIENT + USER_DEFERRED；PROPOSED 可判定，但结论以提案为前提。
+- `requirements[].status`：已确认（CONFIRMED）或暂缓（DEFERRED，用户明确暂缓，检查项 INSUFFICIENT + USER_DEFERRED）。
+  先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求) 分清确实待用户决定的需求；
+  没说清的不留“未定”或“提案”状态，当场问用户，问题和答复写 `clarifications`。
+- `clarifications`：问用户的需求问题和答复（字段与规则见 [需求澄清](requirement-clarifications.md)）。
+  答复 DECIDED / ADOPTED_PROPOSAL 的澄清编号成为一条需求，`requirements` 加同编号的一项、`status: CONFIRMED`，原文就是答复的文字；
+  DEFERRED 把点名的需求改为暂缓。有问题没答复时，候选、带候选的扫描和门禁都拒绝往下做（审查停在第①步）。
 - `power_rails` 支撑 PWR-C01 与 DEV-C05：给电压/最大负载、源端最弱保证可供电流和条件；READY 不等于 PASS。
   片内稳压输出（如 MCU 的 1.1 V 内核轨）、仅板内使用的中间轨同样要声明电压：阻容预判按同簇器件的全部供电轨定界，缺一条就整簇不出预判。计划命令末尾会列出“未声明电压的轨”及受阻检查项数，能从稳压器手册或需求定出时补齐后重跑。
   隔离或多地设计给各轨与各地写 `domain`（如 PRI/SEC），地写 `voltage_v: {min: 0, max: 0}`；栅极/检测节点可按计算声明窗口。

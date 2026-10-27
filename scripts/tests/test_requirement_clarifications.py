@@ -1,270 +1,130 @@
-"""Requirement decision reporting and freeze gates; all evidence is synthetic."""
-import copy
+"""Requirement questions are asked of the user at once and answered into the requirement list (2026-10-26).
+
+User: 需求没定，那就需要及时和用户反馈，请用户澄清以后，马上修改需求清单，而不是放到最后; a 只允许采纳建议或明确暂缓;
+b 无人值守时任务书附澄清答复，没覆盖的问题停在第①步. A question lives in intent.clarifications; a DECIDED or
+ADOPTED_PROPOSAL answer is a requirement of its own, a DEFERRED answer defers the requirements it names, and a question
+without an answer stops the review before the candidates. The results carry no undecided requirement and the report
+lists the questions and their answers. All evidence is synthetic.
+"""
 import json
-import pathlib
-import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import circuit_candidates
+import results_model
+from plan_review import build_review_plan, validate_intent
+from render_report import render
+from test_requirement_source import requirement_intent
+from test_validate_review import fixture
 from validate_review import fingerprint, validate_review
-from ledger4 import defect, gap, whole_clause
-from test_validate_review import fixture, planned, E
 
-REQ = 'REQ-D01.REQ-LOAD'
-POWER = 'PWR-C05.U1'
-PROOF = 'PWR-C01.VOUT'
+PROPOSAL = '输出纹波不超过 50 mVpp（20 MHz 带宽，满载）'
+ANSWERED = {'decision': 'ADOPTED_PROPOSAL', 'text': PROPOSAL, 'by': '需求负责人', 'date': '2026-10-26',
+            'source': {'source': '对话记录', 'locator': '2026-10-26 需求澄清第 1 问'}}
 
 
-def sample(power='REQUIREMENT'):
-    """REQ and POWER both wait on the undecided maximum load (POWER on `power` open item kind)."""
-    p, r, db = fixture(REQ)
-    p['review_phase'] = 'design_iteration'
-    p['checks'][0]['object'] = {'requirement_id': 'REQ-LOAD', 'requirement_status': 'OPEN'}
-    p['checks'].append(planned(POWER))
-    r['checks'].append(copy.deepcopy(r['checks'][0]))
-    r['checks'][-1]['id'] = POWER
-    gap(r, REQ, 'LOAD', 'REQUIREMENT', plan=p, what='maximum load current')
-    gap(r, POWER, 'LOAD-RATING', power, plan=p, what='maximum load current', level='P1')
-    whole_clause(p, r['checks'][0])
-    r['plan_digest'] = fingerprint(p)
-    r['coverage']['requirements'] = {'REQ-LOAD': [REQ]}
-    r.update(requirement_clarifications=[{
-                 'id': 'CL-LOAD', 'title': 'Decide maximum load', 'kind': 'MISSING', 'status': 'OPEN',
-                 'question': 'Controlled requirement leaves maximum load undecided',
-                 'decision_needed': 'Select and confirm the supported load range',
-                 'requirement_text': '需求 Rev A §3.2：“输出能驱动常见负载”，未给最大电流',
-                 'proposed_requirement': '输出最大连续电流 2 A，25 ℃～60 ℃ 环境下持续',
-                 'owner': 'System requirements owner', 'decision_due': 'BEFORE_DESIGN',
-                 'closure_criteria': 'Confirmed requirement revision and re-review of affected checks',
-                 'requirement_ids': ['REQ-LOAD'], 'check_ids': [REQ, POWER], 'evidence': E,
-                 'freeze_impact': 'BLOCKING', 'impact_reason': 'Load determines loss and current rating'}])
-    return p, r, db
+def question(**changes):
+    row = {'id': 'CL-RIPPLE', 'requirement_ids': ['REQ-OPEN-01'], 'question': '输出纹波限值没给，纹波检查没有判据',
+           'requirement_text': 'REQ-OPEN-01：输出纹波限值待系统确定', 'proposed_requirement': PROPOSAL}
+    row.update(changes)
+    return row
 
 
-def covered(p, r):
-    p['checks'].append(planned(PROOF))
-    r['checks'].append(dict(copy.deepcopy(r['checks'][1]), id=PROOF))
-    issue = r['requirement_clarifications'][0]
-    issue.update(freeze_impact='COVERED', decision_due='FOLLOW_UP',
-                 coverage={'candidate_scope': 'Only 1 A or 2 A, stipulated by synthetic requirement owner',
-                           'rationale': 'Separate electrical check covers the whole 1 to 2 A range',
-                           'check_ids': [PROOF], 'evidence': E})
-    for row in r['checks']:
-        if row['id'] in (REQ, POWER):
-            row['blocking'] = False
-    r['plan_digest'] = fingerprint(p)
+def intent(row=None, ripple_status=None):
+    out = dict({'schema_version': 5}, **requirement_intent())
+    if row is not None:
+        out['clarifications'] = [row]
+    if row is not None and row.get('answer', {}).get('decision') in ('DECIDED', 'ADOPTED_PROPOSAL'):
+        out['requirements'].append({'id': 'CL-RIPPLE', 'categories': ['OUTPUT_SPEC'], 'status': 'CONFIRMED',
+                                    'interpretation': '主输出纹波按 50 mVpp 判'})
+    if ripple_status:
+        out['requirements'][2]['status'] = ripple_status
+    return out
 
 
-def passed(p, *rows):
-    for row in rows:
-        row.update(review_result='PASS', evidence_confidence='A')
-        for key in ('blocking', 'function_id', 'open_ref', 'aspect'):
-            row.pop(key, None)
-        if row['id'] == REQ:
-            whole_clause(p, row)
+def empty_db():
+    return {'parts': {}, 'nets': {}, 'pin2net': {}}
 
 
-class RequirementClarificationTests(unittest.TestCase):
-    def test_one_question_two_checks_one_current_task_not_two_defects(self):
-        p, r, db = sample()
-        out = validate_review(p, r, db)
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['release'], 'NO_GO')
-        self.assertEqual(out['summary']['confirmed_defects'], 0)
-        self.assertEqual(out['requirement_clarification_summary']['open'], 1)
-        self.assertEqual(out['requirement_clarification_summary']['affected_checks'], 2)
-        self.assertEqual(out['workflow']['current_work_items'], ['CL-LOAD'])
-        self.assertEqual(out['workflow']['unique_work_items'], 1)
-        self.assertEqual(len(out['blockers']), 1)
+class AnswerTests(unittest.TestCase):
+    def test_an_adopted_proposal_is_a_confirmed_requirement_of_its_own(self):
+        value = intent(question(answer=ANSWERED))
+        self.assertEqual(validate_intent(value), [])
+        plan = build_review_plan(empty_db(), value)
+        rows = [c for c in plan['checks'] if c['object'].get('requirement_id') == 'CL-RIPPLE']
+        self.assertTrue(rows)
+        self.assertEqual(rows[0]['source_text']['columns'], [{'name': 'text', 'text': PROPOSAL}])
+        self.assertEqual(rows[0]['object']['requirement_status'], 'CONFIRMED')
+        self.assertEqual([(c['id'], c['decision']) for c in plan['clarifications']], [('CL-RIPPLE', 'ADOPTED_PROPOSAL')])
 
-    def test_covered_candidates_allow_freeze_but_do_not_confirm_requirement(self):
-        p, r, db = sample(); covered(p, r)
-        out = validate_review(p, r, db)
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['release'], 'GO')
-        self.assertEqual(out['requirement_clarification_summary']['covered_open'], 1)
-        self.assertEqual(r['checks'][0]['review_result'], 'INSUFFICIENT')
-        self.assertEqual(out['workflow']['current_work_items'], ['CL-LOAD'])
+    def test_the_answer_must_be_written_into_the_requirement_list(self):
+        value = intent(question(answer=ANSWERED))
+        value['requirements'].pop()
+        self.assertTrue(any('intent.requirements 加一项 CL-RIPPLE' in e for e in validate_intent(value)))
+        value = intent(question(answer=dict(ANSWERED, text='纹波随便')))
+        self.assertTrue(any('一字不差' in e for e in validate_intent(value)))
 
-    def test_unsubstantiated_nonblocking_decision_is_rejected(self):
-        for field in ('check_ids', 'candidate_scope', 'evidence', 'rationale'):
-            with self.subTest(field=field):
-                p, r, db = sample(); covered(p, r)
-                del r['requirement_clarifications'][0]['coverage'][field]
-                self.assertFalse(validate_review(p, r, db)['valid'])
-        p, r, db = sample(); covered(p, r)
-        r['requirement_clarifications'][0]['coverage']['check_ids'] = [REQ]
-        self.assertFalse(validate_review(p, r, db)['valid'])
+    def test_a_user_decision_needs_who_when_and_where(self):
+        answer = dict(ANSWERED, decision='DECIDED', text='输出纹波不超过 80 mVpp')
+        del answer['source']
+        errors = validate_intent(intent(question(answer=answer)))
+        self.assertTrue(any('answer.source' in e for e in errors), errors)
+        self.assertTrue(any('decision 须为' in e for e in validate_intent(intent(question(answer=dict(ANSWERED, decision='LATER'))))))
 
-    def test_link_coverage_and_duplicate_ids_are_enforced(self):
-        for mutate in (
-            lambda r: r['requirement_clarifications'].clear(),
-            lambda r: r['requirement_clarifications'][0].update(check_ids=[REQ]),
-            lambda r: r['requirement_clarifications'][0].update(check_ids=[REQ, REQ]),
-            lambda r: r['requirement_clarifications'][0].update(check_ids=['UNKNOWN']),
-            lambda r: r['requirement_clarifications'].append(copy.deepcopy(r['requirement_clarifications'][0])),
-        ):
-            p, r, db = sample(); mutate(r)
-            self.assertFalse(validate_review(p, r, db)['valid'])
+    def test_a_deferral_defers_the_requirements_it_names(self):
+        deferral = dict(ANSWERED, decision='DEFERRED', text='纹波等系统方案定了再审')
+        self.assertEqual(validate_intent(intent(question(answer=deferral), ripple_status='DEFERRED')), [])
+        errors = validate_intent(intent(question(answer=deferral), ripple_status='CONFIRMED'))
+        self.assertTrue(any('status 写 DEFERRED' in e for e in errors), errors)
 
-    def test_requirement_is_not_given_a_defect_grade_or_waived_as_risk(self):
-        p, r, db = sample()
-        r['functions'][0]['open'][0]['severity'] = {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'consequence': 'synthetic'}
-        self.assertFalse(validate_review(p, r, db)['valid'])
-        for extra in ({'blocking': False},
-                      {'disposition': 'ACCEPTED', 'acceptance': {k: 'synthetic' for k in ('by', 'date', 'scope', 'reason', 'record')}}):
-            p, r, db = sample(); r['checks'][0].update(extra)
-            self.assertFalse(validate_review(p, r, db)['valid'])
-        p, r, db = sample(); r['requirement_clarifications'][0]['severity'] = 'P3'
-        self.assertFalse(validate_review(p, r, db)['valid'])
+    def test_an_undecided_or_proposed_status_is_refused(self):
+        for status in ('OPEN', 'PROPOSED'):
+            errors = validate_intent(intent(ripple_status=status))
+            self.assertTrue(any('intent.clarifications' in e for e in errors), errors)
 
-    def test_clarification_cannot_absorb_an_electrical_evidence_gap(self):
-        p, r, db = sample(power='VENDOR_DATUM')
-        self.assertFalse(validate_review(p, r, db)['valid'])
 
-    def test_two_decisions_on_one_check_combine_blocking_effect(self):
-        p, r, db = sample(); covered(p, r)
-        second = copy.deepcopy(r['requirement_clarifications'][0])
-        second.update(id='CL-TRANSIENT', title='Confirm transient load duration', check_ids=[POWER],
-                      freeze_impact='BLOCKING', decision_due='BEFORE_DESIGN')
-        second.pop('coverage')
-        r['requirement_clarifications'].append(second)
-        del r['checks'][-2]['blocking']  # POWER precedes appended proof; it blocks again
-        out = validate_review(p, r, db)
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['release'], 'NO_GO')
-        self.assertEqual(out['requirement_clarification_summary']['open'], 2)
-        self.assertEqual(out['requirement_clarification_summary']['affected_checks'], 2)
+class StopAtStepOneTests(unittest.TestCase):
+    def test_an_unanswered_question_is_printed_by_the_cold_scan(self):
+        value = intent(question(), ripple_status='DEFERRED')
+        self.assertEqual(validate_intent(value), [])            # step ① keeps working while the user is asked
+        plan = build_review_plan(empty_db(), value)
+        self.assertEqual([d['code'] for d in plan['diagnostics'] if 'CL-RIPPLE' in d.get('detail', '')],
+                         ['CLARIFICATION_PENDING'])
 
-    def test_a_requirement_question_is_not_turned_into_a_design_item(self):
-        p, r, db = sample()
-        r['functions'][0]['open'][0].update(kind='DESIGN_VALUE', spec='2 A', owner='designer', scope='all loads', closure='decided',
-                                            severity={'level': 'P2', 'class': 'LOCAL_OR_DATA', 'consequence': 'synthetic'})
-        self.assertFalse(validate_review(p, r, db)['valid'])
+    def test_the_candidates_and_the_plan_with_candidates_refuse_it(self):
+        value = intent(question(), ripple_status='DEFERRED')
+        errors = validate_intent(value, candidates={'candidates': []})
+        self.assertTrue(any('CL-RIPPLE 还没答复' in e for e in errors), errors)
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / 'db.json').write_text(json.dumps(empty_db()))
+            (Path(tmp) / 'intent.json').write_text(json.dumps(value))
+            with self.assertRaises(SystemExit) as stop:
+                circuit_candidates.main([str(Path(tmp) / 'db.json'), '--intent', str(Path(tmp) / 'intent.json')])
+        self.assertIn('CL-RIPPLE', str(stop.exception))
 
-    def test_resolution_requires_decision_record_and_current_reverification(self):
-        p, r, db = sample()
-        issue = r['requirement_clarifications'][0]
-        issue['status'] = 'RESOLVED'
-        self.assertFalse(validate_review(p, r, db)['valid'])
-        issue['closure'] = {'by': 'Synthetic owner', 'date': '2026-10-06', 'decision': 'Maximum 2 A',
-                            'requirement_revision': 'Synthetic Rev B', 'evidence': E, 'reverification': E}
-        p['checks'][0]['object']['requirement_status'] = 'CONFIRMED'
-        r['plan_digest'] = fingerprint(p)
-        r['functions'] = []
-        passed(p, r['checks'][0], r['checks'][-1])
-        out = validate_review(p, r, db)
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['release'], 'GO')
-        self.assertEqual(out['requirement_clarification_summary']['resolved'], 1)
-        self.assertEqual(out['workflow']['current_work_items'], [])
-        del issue['closure']['reverification']
-        self.assertFalse(validate_review(p, r, db)['valid'])
 
-    def test_independent_electrical_failure_still_blocks_covered_requirements(self):
-        p, r, db = sample(); covered(p, r)
-        fid, key = 'F1', 'DEV-C01.BOARD'
-        p['checks'].append(planned(key)); r['plan_digest'] = fingerprint(p)
-        row = copy.deepcopy(r['checks'][1])
-        row.update(id=key, severity='P1')
-        r['checks'].append(row)
-        r['findings'] = [{'id': fid, 'kind': 'DEFECT', 'severity': 'P1', 'check_ids': [key],
-                          'location': {'pages': ['1'], 'refs': ['R1'], 'nets': ['A']},
-                          **{k: 'synthetic exceeded rating' for k in ('title','observed','criterion','impact','scenario','root_cause',
-                                                                     'recommendation','verification','severity_reason')}}]
-        defect(r, key, 'W-F1', fid, plan=p, what='undersized part', title='Repair rating', why='exceeded rating',
-               due_stage='design_iteration')
-        out = validate_review(p, r, db)
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['release'], 'NO_GO')
-        self.assertEqual(out['summary']['confirmed_defects'], 1)
+class ResultsAndReportTests(unittest.TestCase):
+    def test_the_results_carry_no_clarification_list(self):
+        found = results_model.shape_errors({'schema_version': results_model.SCHEMA_VERSION, 'functions': [],
+                                            'checks': [], 'requirement_clarifications': []})
+        self.assertTrue(any('intent.clarifications' in e for e in found), found)
 
-    def test_new_report_with_no_questions_has_zero_summary(self):
+    def test_the_report_lists_each_question_and_how_it_was_settled(self):
         p, r, db = fixture()
-        out = validate_review(p, r, db)
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['release'], 'GO')
-        self.assertEqual(out['requirement_clarification_summary']['total'], 0)
-
-    def test_candidate_coverage_cannot_reference_unresolved_or_unknown_check(self):
-        for proof_id in ('UNKNOWN', POWER):
-            p, r, db = sample(); covered(p, r)
-            r['requirement_clarifications'][0]['coverage']['check_ids'] = [proof_id]
-            self.assertFalse(validate_review(p, r, db)['valid'])
-
-    def test_resolved_question_does_not_clear_new_electrical_evidence_gap(self):
-        p, r, db = sample()
-        p['checks'][0]['object']['requirement_status'] = 'CONFIRMED'
+        p['clarifications'] = [{'id': 'CL-RIPPLE', 'requirement_ids': ['REQ-OPEN-01'],
+                                'question': '输出纹波限值没给', 'requirement_text': 'REQ-OPEN-01：输出纹波限值待系统确定',
+                                'decision': 'ADOPTED_PROPOSAL', 'text': PROPOSAL, 'by': '需求负责人', 'date': '2026-10-26',
+                                'source': ANSWERED['source']}]
         r['plan_digest'] = fingerprint(p)
-        r['functions'] = []
-        passed(p, r['checks'][0])
-        gap(r, POWER, 'W-DATA', 'VENDOR_DATUM', plan=p, what='applicable part rating', level='P1', title='Get rating',
-            why='required rating unknown', due_stage='design_iteration', acquisition='read applicable datasheet')
-        issue = r['requirement_clarifications'][0]
-        issue.update(status='RESOLVED', closure={'by': 'Synthetic owner', 'date': '2026-10-06',
-                     'decision': 'Confirmed 2 A', 'requirement_revision': 'Rev B', 'evidence': E, 'reverification': E})
-        out = validate_review(p, r, db)
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['release'], 'NO_GO')
-        self.assertEqual(out['workflow']['current_work_items'], ['W-DATA'])
-
-    def test_retraction_needs_correction_and_current_plan(self):
-        p, r, db = sample()
-        issue = r['requirement_clarifications'][0]
-        issue.update(status='RETRACTED', closure={'by': 'Synthetic reviewer', 'date': '2026-10-06',
-                     'decision': 'Previously overlooked Rev A already states 2 A', 'requirement_revision': 'Rev A',
-                     'evidence': E, 'reverification': E})
-        r['functions'] = []
-        passed(p, r['checks'][0], r['checks'][-1])
-        self.assertFalse(validate_review(p, r, db)['valid'])
-        p['checks'][0]['object']['requirement_status'] = 'CONFIRMED'
-        r['plan_digest'] = fingerprint(p)
-        self.assertTrue(validate_review(p, r, db)['valid'])
-
-    def test_open_question_must_state_requirement_wording_and_proposed_clause(self):
-        for field in ('requirement_text', 'proposed_requirement'):
-            for value in (None, '', '  ', 3):
-                with self.subTest(field=field, value=value):
-                    p, r, db = sample()
-                    r['requirement_clarifications'][0][field] = value
-                    out = validate_review(p, r, db)
-                    self.assertFalse(out['valid'])
-                    self.assertTrue(any(field in e for e in out['errors']), out['errors'])
-
-    def test_summary_counts_gaps_caused_by_unclear_requirements(self):
-        p, r, db = sample()
-        out = validate_review(p, r, db)
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['requirement_clarification_summary']['insufficient_from_requirements'], 2)
-
-    def test_malformed_question_fields_return_validation_errors(self):
-        for field in ('id', 'kind', 'status', 'owner', 'evidence', 'check_ids', 'requirement_ids', 'decision_due', 'freeze_impact'):
-            for value in (None, 3, {}, [None]):
-                with self.subTest(field=field, value=value):
-                    p, r, db = sample()
-                    r['requirement_clarifications'][0][field] = value
-                    self.assertFalse(validate_review(p, r, db)['valid'])
-
-    def test_cli_enforces_new_contract(self):
-        p, r, db = sample()
-        from electrical_contract import engine_identity
-        from validate_review import fingerprint
-        from test_validate_review import bind
-        bind(p, r)   # the command line asks for bindings
-        p['review_engine'] = engine_identity(); r['plan_digest'] = fingerprint(p)
-        script = pathlib.Path(__file__).resolve().parents[1] / 'validate_review.py'
-        with tempfile.TemporaryDirectory() as directory:
-            root = pathlib.Path(directory)
-            for name, data in (('plan', p), ('report', r)):
-                (root/name).write_text(json.dumps(data))
-            args = [sys.executable, '-B', str(script), str(root/'plan'), str(root/'report')]
-            run = subprocess.run(args, capture_output=True, text=True)
-            self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
-            self.assertEqual(json.loads(run.stdout)['requirement_clarification_summary']['open'], 1)
-            run = subprocess.run(args + ['--require-release'], capture_output=True, text=True)
-            self.assertEqual(run.returncode, 2)
+        gate = json.loads(json.dumps(validate_review(p, r, db), default=sorted))
+        self.assertTrue(gate['valid'], gate['errors'])
+        text = render(p, r, gate)
+        body = text.split('## 需求澄清记录', 1)[1].split('\n## ', 1)[0]
+        for words in ('CL-RIPPLE', '输出纹波限值没给', '采纳 SR 建议：' + PROPOSAL, '需求负责人', 'REQ-OPEN-01'):
+            self.assertIn(words, body)
 
 
 if __name__ == '__main__':

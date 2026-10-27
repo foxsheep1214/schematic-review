@@ -19,7 +19,8 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
-SCHEMA_VERSION = 7   # 7 (2026-10-26): conditions[].refs — a datasheet or BOM condition names the parts it is about
+SCHEMA_VERSION = 8   # 8 (2026-10-26): no REQUIREMENT open items; requirement questions are settled in intent.clarifications
+# 7 (2026-10-26): conditions[].refs — a datasheet or BOM condition names the parts it is about
 LEVELS = ('P0', 'P1', 'P2', 'P3')
 REQUEST_CAUSES = ('EXTERNAL_DATA', 'DESIGN_OPEN')
 # Fields schema 3 derives; a record that still writes them would carry two answers to one question.
@@ -36,9 +37,11 @@ RETIRED_TOP_FIELDS = ('binding_version', 'remediation_version', 'workflow_versio
                       'lint_reviews',
                       # schema 4: work items are derived from the functions' open/fail items
                       'work_items')
-OPEN_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING', 'REQUIREMENT', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
+# schema 8: a requirement question is asked of the user at step ① and answered into intent.clarifications
+SETTLED_TOP_FIELDS = ('requirement_clarifications',)
+OPEN_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
 KIND_CAUSE = {'DESIGN_VALUE': 'DESIGN_OPEN', 'VENDOR_DATUM': 'EXTERNAL_DATA', 'DELIVERABLE_PENDING': 'DELIVERABLE_PENDING',
-              'REQUIREMENT': 'REQUIREMENT_OPEN', 'REVIEW_INCOMPLETE': 'REVIEW_INCOMPLETE', 'USER_DEFERRED': 'USER_DEFERRED'}
+              'REVIEW_INCOMPLETE': 'REVIEW_INCOMPLETE', 'USER_DEFERRED': 'USER_DEFERRED'}
 VERDICTS = ('PASS', 'FAIL', 'OPEN')
 # Schema 3 always means the newest contract of each retired switch: consequence classes v2,
 # REQ-D01 clauses, staged work items. Bindings and actionable instructions are required by
@@ -58,6 +61,8 @@ def shape_errors(report, history_ids=()):
                 % SCHEMA_VERSION]
     errors = ['results.%s is retired in schema 4 (the newest meaning always applies)' % k
               for k in RETIRED_TOP_FIELDS if k in report]
+    errors += ['results.%s is not written: a requirement question is asked of the user at step ① and answered into '
+               'intent.clarifications' % k for k in SETTLED_TOP_FIELDS if k in report]
     if not isinstance(report.get('functions'), list):
         errors.append('results.functions must be a list of function verdicts (empty when the review has none)')
     refs = function_refs(report)
@@ -280,8 +285,6 @@ def derived_work_items(report):
                     owners.setdefault(lead_ref(items, row[field]), []).append(row.get('id'))
     out = []
     for ref, (fn, item, field) in items.items():
-        if field == 'open' and item.get('kind') == 'REQUIREMENT':
-            continue  # requirement gaps are managed by clarification records
         if lead_ref(items, ref) != ref:
             continue  # hung on another item, which carries its rows
         severity = item.get('severity') if isinstance(item.get('severity'), dict) else {}
@@ -403,7 +406,6 @@ def strip_derived(report, plan=None):
 def expand(report):
     """The validators' view of a record (call after shape_errors is clean; `materialize` derives the bound rows first)."""
     out = copy.deepcopy(report)
-    out.setdefault('requirement_clarifications', [])
     items = open_items(out)
     if 'functions' in out or 'work_items' not in out:   # written work items are refused; a bare dict keeps its own
         out['work_items'] = derived_work_items(out)

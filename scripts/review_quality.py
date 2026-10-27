@@ -275,8 +275,7 @@ def screen_quality(plan, report, db=None, base_dir=None):
             candidates.append({'code': 'BROAD_CHECK_NEEDS_LOCALIZATION',
                 'check_ids': [row['id']], 'task_ids': sorted(task_owners[row['id']]),
                 'message': 'Identify the actual refs and independent criteria; add each to the plan as a same-rule check ' + check['rule'] + '.<ref>[-<criterion>] and list it in this row\'s split_out. Keep the residual result evidence-based; never auto-PASS the board or duplicate equivalent children.'})
-        if (check and check.get('rule') != 'REQ-H02' and row.get('review_result') == 'INSUFFICIENT'
-                and row.get('gap_cause') != 'REQUIREMENT_OPEN'):
+        if check and check.get('rule') != 'REQ-H02' and row.get('review_result') == 'INSUFFICIENT':
             gap_key = row['open_ref'] if row.get('derived') and isinstance(row.get('open_ref'), str) else row['id']
             grades[row.get('potential_severity')].append((row['id'], gap_key))   # an open item's rows are one graded gap
             cause = row.get('gap_cause')

@@ -25,6 +25,7 @@ import device_kinds
 from electrical_contract import db_fingerprint, load_json
 from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
 import part_words as pw
+import requirement_clarifications
 
 SCHEMA_VERSION = 2
 RULES_VERSION = '2026-10-25.1'   # walks cross a driven small-signal transistor (gate in, drain out); R6: Q202/Q402
@@ -771,6 +772,9 @@ def main(argv=None):
     db = load_json(args.db)
     intent = load_json(args.intent) if args.intent else {}
     audit = load_json(args.datasheet_audit) if args.datasheet_audit else None
+    pending = requirement_clarifications.pending_errors(intent)
+    if pending:   # candidates are step ②: every requirement question is answered first
+        sys.exit('[FATAL] ' + '\n  - '.join(pending))
     result = build(db, intent, audit)
     if args.json:
         with open(args.json, 'w', encoding='utf-8') as stream:

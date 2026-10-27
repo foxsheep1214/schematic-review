@@ -7,6 +7,7 @@ import re
 
 import board_intent
 import catalog
+import requirement_clarifications
 import requirement_parameters
 import requirements_extract
 from audit_datasheets import datasheet_audit_all_available
@@ -168,7 +169,7 @@ class BoardPlanning:
     def plan_coverage(self):
         for name, rule in catalog.COVERAGE_RULES.items():
             self.add_check(rule, {'feature': name}, trigger=['coverage-protocol'])
-        source, _ = requirements_extract.load(self.intent.get('requirement_source')) if self.intent.get('requirements') else (None, [])
+        source, _ = requirement_clarifications.load(self.intent) if self.intent.get('requirements') else (None, [])
         originals = {i['id']: i for i in (source or {}).get('items', [])}
         profile = self.intent.get('mission_profile') if isinstance(self.intent.get('mission_profile'), dict) else {}
         profiled = {profile.get('requirement')} | {ph.get('requirement') for ph in profile.get('phases') or [] if isinstance(ph, dict)}

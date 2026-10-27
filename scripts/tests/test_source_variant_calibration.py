@@ -35,7 +35,7 @@ def fixture(current_bad=False):
           'pinname': names, 'declared_pinname': names.copy(), 'pintype': {},
           'declared_pintype': {}, 'pseudo_nets': [], 'ref2page': {'U1': 1, 'JP1': 1}}
     db['pin2net'] = {n: net for net, nodes in db['nets'].items() for n in nodes}
-    intent = {'schema_version': 4, 'input_sha256': input_fingerprint(db),
+    intent = {'schema_version': 5, 'input_sha256': input_fingerprint(db),
               'assemblies': [{'id': 'base', 'population': {'U1': True, 'JP1': True, 'SJ1': True},
                              'citation': 'synthetic controlled assembly'}],
               'devices': {'U1': {'mpn': 'BRIDGE-T', 'package': 'TEST',

@@ -23,7 +23,7 @@ DB = {'parts': {}, 'nets': {}, 'pin2net': {}}
 
 
 def intent(categories=None, interpretations=None, path=None):
-    return dict({'schema_version': 4}, **requirement_intent(path or write(), categories=categories,
+    return dict({'schema_version': 5}, **requirement_intent(path or write(), categories=categories,
                                                             interpretations=interpretations))
 
 

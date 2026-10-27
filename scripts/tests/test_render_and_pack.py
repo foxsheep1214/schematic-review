@@ -461,7 +461,7 @@ class PackReviewTests(unittest.TestCase):
 
     def test_hand_drawn_circuits_are_not_packed_without_their_candidate_file(self):
         path = self.work / 'intent.json'
-        path.write_text(json.dumps({'schema_version': 4, 'circuits': [
+        path.write_text(json.dumps({'schema_version': 5, 'circuits': [
             {'id': 'BIAS', 'type': 'POWER_CONVERTER', 'refs': ['Q2'], 'states': ['run'], 'citation': 'p1'}]}))
         errors, _ = self.run_pack()
         self.assertTrue(any('circuit-candidates.json' in e for e in errors), errors)
@@ -473,7 +473,7 @@ class PackReviewTests(unittest.TestCase):
         errors, _ = self.run_pack()
         self.assertTrue(any('circuit_decisions missing' in e for e in errors), errors)
         # the fixture's active parts outside every candidate (U1 since results 7) are rejected on purpose; passives may stay
-        intent = {'schema_version': 4, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]
+        intent = {'schema_version': 5, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]
                   + [{'decision': 'reject', 'ref': u['ref'], 'reason': 'OUTSIDE_SCOPE', 'citation': 'p1'}
                      for u in candidates['unassigned'] if u.get('kind') == 'ic']}
         import circuit_decisions

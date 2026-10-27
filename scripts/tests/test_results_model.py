@@ -121,15 +121,12 @@ class ExpandTests(unittest.TestCase):
         self.assertEqual((task['root_cause'], task['due_stage']), ('RS1 calibration error budget', 'design_iteration'))
         self.assertEqual(task['reason'], 'CC current window cannot be guaranteed')
 
-    def test_requirement_items_and_fail_items(self):
-        req = {'key': 'LOAD', 'kind': 'REQUIREMENT', 'what': 'maximum load current', 'decides': [{'aspect': '需求'}]}
+    def test_fail_items(self):
         fail = {'key': 'POL', 'finding_id': 'F-001', 'what': 'D1 reversed', 'decides': [{'aspect': '极性'}]}
-        fns = [function(req, id='FN-REQ'), function(id='FN-POL', verdict='FAIL', open=[], fails=[fail])]
-        out = rm.expand(ledger(row(id='REQ-D01.LOAD', function_id='FN-REQ', aspect='需求', open_ref='FN-REQ/LOAD'),
-                               {'id': 'DOC-V01.D1', 'review_result': 'FAIL', 'severity': 'P1', 'finding_id': 'F-001',
+        fns = [function(id='FN-POL', verdict='FAIL', open=[], fails=[fail])]
+        out = rm.expand(ledger({'id': 'DOC-V01.D1', 'review_result': 'FAIL', 'severity': 'P1', 'finding_id': 'F-001',
                                 'function_id': 'FN-POL', 'aspect': '极性', 'fail_ref': 'FN-POL/POL'}, functions=fns))
-        self.assertEqual(out['checks'][0]['gap_cause'], 'REQUIREMENT_OPEN')
-        self.assertEqual([t['id'] for t in out['work_items']], ['W-POL'])   # requirement questions are clarifications
+        self.assertEqual([t['id'] for t in out['work_items']], ['W-POL'])
         self.assertEqual(out['work_items'][0]['next_action'], '按发现项 F-001 的改法处理')
 
     def test_expand_is_idempotent_and_leaves_the_record_alone(self):

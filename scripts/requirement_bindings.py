@@ -75,14 +75,14 @@ def self_judged(row):
 
 
 def missing_owner_errors(checks):
-    """Requirement rows with candidate owners and no `owners` written (not even `[]`); OPEN and DEFERRED requirements
-    are exempt, their rows are never derived."""
+    """Requirement rows with candidate owners and no `owners` written (not even `[]`); DEFERRED requirements are exempt,
+    their rows are never derived."""
     by_requirement = {}
     for row in checks:
         if row.get('rule') != 'REQ-D01' or 'requirement_owners' in row or not row.get('owner_candidates'):
             continue
-        if row['object'].get('requirement_status') in ('OPEN', 'DEFERRED'):
-            continue   # its rows stay INSUFFICIENT + REQUIREMENT_OPEN and are never derived
+        if row['object'].get('requirement_status') == 'DEFERRED':
+            continue   # its rows stay INSUFFICIENT + USER_DEFERRED and are never derived
         rid = row['object']['requirement_id']
         by_requirement.setdefault(rid, ([], {}))
         by_requirement[rid][0].append(row['object']['aspect'])
@@ -226,7 +226,7 @@ def derive(plan, results, counts=None):
     findings = {f['id']: f for f in results.get('findings') or [] if isinstance(f, dict) and isinstance(f.get('id'), str)}
     count, errors = 0, []
     for planned in plan.get('checks') or []:
-        if planned.get('rule') not in BINDERS or (planned.get('object') or {}).get('requirement_status') in ('OPEN', 'DEFERRED'):
+        if planned.get('rule') not in BINDERS or (planned.get('object') or {}).get('requirement_status') == 'DEFERRED':
             continue
         coverage = planned['rule'] == COVERAGE
         result = coverage_result(planned, rows) if coverage else derived_result(planned, rows, counts)

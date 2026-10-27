@@ -70,7 +70,7 @@ class DesignerDocumentTests(unittest.TestCase):
             self.assertFalse(independence.designer_document(text), text)
 
     def test_an_intent_citing_a_designer_document_is_refused(self):
-        intent = {'schema_version': 4, 'features': {'I2C': {'applicability': 'NOT_APPLICABLE',
+        intent = {'schema_version': 5, 'features': {'I2C': {'applicability': 'NOT_APPLICABLE',
                                                            'citation': '原理图 p7 TP601；设计报告 H-19'}}}
         errors = [e for e in validate_intent(intent) if '设计方文档' in e]
         self.assertEqual(len(errors), 1)

@@ -16,10 +16,10 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | `db.json` | 工具 | ① 读入 | — | 网表、BOM 列、页、符号脚：图上实际是什么 |
 | `requirement_source`（需求原文抄录） | 工具 | ① 读入 | 1 | 需求文档逐字抄录与 sha256 |
 | `datasheet-audit.json` | 工具 | ① 读入 | — | 每颗物料的资料是否找到、是否核实 |
-| `intent.json` | 审查员 | ①② 的输入 | 4 | 需求理解、任务剖面、电源轨、器件类别与配置组、电路取舍、装配状态、规则缺口 |
+| `intent.json` | 审查员 | ①② 的输入 | 5 | 需求理解、需求澄清（问用户的问题与答复）、任务剖面、电源轨、器件类别与配置组、电路取舍、装配状态、规则缺口 |
 | `record/circuit-candidates.json` | 工具 | ② 出计划 | 2 | 候选电路及成员 |
 | `review-plan.json` | 工具 | ② 出计划 | 7 | 功能树、每个检查项检查、功能框架、各检查器清单、接口 |
-| `review-results.json` | 审查员 | ③ 判断 | 7 | 功能判定（条件及其位号 `refs`、计算、余量及其推界方式与公差端、开放项及其单侧定界、失败项）和手填的检查项；绑定功能的检查项不落盘，门禁、报告、打包、对比读取时由功能派生（`results_model.materialize`），审查员的绑定或注记只留 `{id, function_id, aspect}` / `{id, 注记}` 残根 |
+| `review-results.json` | 审查员 | ③ 判断 | 8 | 功能判定（条件及其位号 `refs`、计算、余量及其推界方式与公差端、开放项及其单侧定界、失败项）和手填的检查项；绑定功能的检查项不落盘，门禁、报告、打包、对比读取时由功能派生（`results_model.materialize`），审查员的绑定或注记只留 `{id, function_id, aspect}` / `{id, 注记}` 残根 |
 | `review-gate.json` | 工具 | ④ 校验 | — | 对账结果、阻断项、待办 |
 | `审查报告.md` / `审查报告.html`、`record/` | 工具 | ⑤ 出报告 | — | 交付物：报告与留档 |
 
@@ -30,10 +30,10 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 | 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
-| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`、`solve_dividers.py`（电阻值解析） |
+| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
 | ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`checkers/` |
 | ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
-| ④ 校验 | `validate_review.py` | — | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`requirement_clarifications.py`、`validate_remediation.py`、`review_engine.py` |
+| ④ 校验 | `validate_review.py` | — | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
 | 复审 | `diff_netlists.py` | — | `revision_impact.py` |
 | 维护 SR | `catalog.py --write-doc` | `compare_reviews.py`、`check_ledger.py` | — |
@@ -90,6 +90,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-10-26 | 钳位电压对被保护脚只问一次：钳位扫描改为窗口类 PRO-E02（逐器件，可写余量、定界格与开放项，含对外连接器信号线上的 ESD 钳位）；PRO-D03 只问逐针防护拓扑（有防护、挂在活线上、泄放到对应的地），去掉 `clamp_refs` 和要求它绑定功能的 F12；连接器信号线 TVS 仍不出 PRO-C02 两侧行（用户：“按方案 A 改”） | R8 codex3 对 USB CC/D± 四只钳位件判 FAIL、对同一连接器行判 PASS；codex2 想在 PRO-D03 上挂厂家数据缺口被拒，停在 ③：条款核对类不能写余量也不能被开放项挡 |
 | 2026-10-26 | 一只钳位件只由一条规则判：跨网与地、另一端不是开关节点（SW 类脚或非电源轨上的变压器绕组）且不是内部节点上基准/电平齐纳的防护钳位，只出 PRO-E02，判据按需求的浪涌或 ESD 波形取钳位电流、钳位电压对同网每个器件的最低耐受、脉冲能量对额定；PRO-C02 只留门限脚、门限链与基准/电平齐纳和跨开关节点或绕组的能量钳位，扫描不再为能量钳位出 PRO-E02；两边共用 `protective_clamps.py` 的判定（用户：“按方案 B 改”） | R8 的 D706 与典型电路基准里 4 只钳位件同时有 PRO-C02 两侧行和 PRO-E02 行；R7 审查员在两行上写同一条余量，下游器件各挑各的 |
 | 2026-10-26 | 防护钳位（`protective_clamps.protected_net` 认出的）不出 DEV-C05 工况行，只留身份与引脚行；工作电压与温度等级都在它的 PRO-E02 行上判，脉冲额定按本板环境降额（用户：“按照你的建议来改方案”） | R7/R8 审查员在钳位件的 DEV-C05 上各写各的：三份写工作电压对 VRWM（与 PRO-E02 重复），两份写结温，一份把钳位配合整个写进去 |
+| 2026-10-26 | 需求没定当场问用户：问题和答复写 `intent.clarifications`（intent 格式 5），答复只有用户给定、采纳 SR 建议、明确暂缓三种，定下的需求以澄清编号进需求清单；需求状态只留 CONFIRMED / DEFERRED；有问题没答复时出候选、带候选的扫描和门禁都拒绝，审查停在第①步，无人值守时读任务书附的澄清答复；结果去掉 REQUIREMENT 开放项和 `requirement_clarifications`（结果格式 8），报告“需求要说清楚的地方”改为“需求澄清记录”（用户：“需求没定，那就需要及时和用户反馈，请用户澄清以后，马上修改需求清单，而不是放到最后”；“按方案改：a 只允许采纳建议或明确暂缓；b 无人值守时任务书附澄清答复，没覆盖的问题停在第①步”） | 用户看结论希望只有合格、不合格并给改法、合格但需改进；“证据不足”下的需求没定是等到报告才暴露的待决项，不是对电路的结论 |
 
 ## 四、规则维护
 

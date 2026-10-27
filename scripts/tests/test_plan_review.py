@@ -148,7 +148,7 @@ class ReviewPlanTests(unittest.TestCase):
 
     def test_explicit_na_requires_intent_and_citation(self):
         intent = {
-            'schema_version': 4,
+            'schema_version': 5,
             'features': {
                 'DDR': {
                     'applicability': 'NOT_APPLICABLE',
@@ -167,7 +167,7 @@ class ReviewPlanTests(unittest.TestCase):
 
     def test_required_but_missing_feature_creates_ready_presence_check(self):
         intent = {
-            'schema_version': 4,
+            'schema_version': 5,
             'features': {
                 'BLUETOOTH': {
                     'applicability': 'APPLICABLE',
@@ -188,7 +188,7 @@ class ReviewPlanTests(unittest.TestCase):
 
     def test_intent_netlist_conflict_is_not_na(self):
         intent = {
-            'schema_version': 4,
+            'schema_version': 5,
             'circuits': [{'id': 'PORT', 'type': 'USB', 'refs': ['U2', 'J1'],
                           'states': ['run'], 'citation': 'synthetic confirmed USB port'}],
             'features': {
@@ -220,15 +220,15 @@ class ReviewPlanTests(unittest.TestCase):
         req = {'id': 'REQ-COST-001', 'status': 'CONFIRMED', 'categories': ['OPTIMIZATION'],
                'interpretation': '按1万台估算，整机物料目标60元/台；不含税、线缆、组装和认证'}
         src = doc_for({'REQ-COST-001': text})
-        errors = validate_intent({'schema_version': 4, 'requirement_source': src, 'requirements': [req]})
+        errors = validate_intent({'schema_version': 5, 'requirement_source': src, 'requirements': [req]})
         self.assertTrue(any('REQ-COST-001.interpretation 抄了需求原文' in e for e in errors), errors)
         req['interpretation'] = '成本目标由整机 BOM 报价核算，原理图没有判据'
         self.assertFalse(any('抄了需求原文' in e for e in validate_intent(
-            {'schema_version': 4, 'requirement_source': src, 'requirements': [req]})))
+            {'schema_version': 5, 'requirement_source': src, 'requirements': [req]})))
 
     def test_intent_validation_rejects_unproven_na(self):
         errors = validate_intent({
-            'schema_version': 4,
+            'schema_version': 5,
             'features': {'DDR': {'applicability': 'NOT_APPLICABLE'}},
         })
         self.assertTrue(any('citation' in error for error in errors))
@@ -344,7 +344,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(by_rule['DOC-D01']['readiness'], 'READY')
         self.assertEqual(by_rule['DOC-V02']['required_inputs'], ['schematic_pdf'])
         self.assertEqual(by_rule['DOC-D01']['id'], 'DOC-D01.BOARD')
-        intent = {'schema_version': 4, 'materials': {
+        intent = {'schema_version': 5, 'materials': {
             key: {'path': str(pathlib.Path(__file__).resolve())}
             for key in ('requirements', 'datasheets', 'platform_checklist', 'schematic_pdf')}}
         ready = build_review_plan(sample_db(), intent)
@@ -492,7 +492,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(summary['role'], 'coverage_parent')
         for rule in catalog.circuit_type('USB').subjects:
             self.assertIn(rule, summary['criterion'])
-        intent = {'schema_version': 4, 'circuits': [
+        intent = {'schema_version': 5, 'circuits': [
             {'id': 'PORT', 'type': 'USB', 'refs': ['J1'], 'states': ['host', 'unpowered'],
              'citation': 'synthetic port definition'}]}
         self.assertEqual(validate_intent(intent), [])
@@ -515,7 +515,7 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(get_feature(plan, 'LEVEL_SHIFT')['applicability'], 'UNDETERMINED')
         self.assertFalse([x for x in plan['checks'] if x.get('circuit_type') == 'LEVEL_SHIFT'
                           and x['rule'] != 'REQ-Q07'])
-        intent = {'schema_version': 4, 'circuits': [
+        intent = {'schema_version': 5, 'circuits': [
             {'id': 'GPIO-XLAT', 'type': 'LEVEL_SHIFT', 'refs': ['U2', 'U3'],
              'states': ['both-powered', 'b-side-unpowered'], 'citation': 'synthetic translator link'}]}
         self.assertEqual(validate_intent(intent), [])
@@ -528,9 +528,9 @@ class ReviewPlanTests(unittest.TestCase):
     def test_declared_circuit_makes_package_applicable_and_conflicts_with_na(self):
         circuit = {'id': 'LDO', 'type': 'POWER_PROTECTION', 'refs': ['U1'], 'states': ['run'],
                    'citation': 'synthetic protection'}
-        plan = build_review_plan(sample_db(), {'schema_version': 4, 'circuits': [circuit]})
+        plan = build_review_plan(sample_db(), {'schema_version': 5, 'circuits': [circuit]})
         self.assertEqual(get_feature(plan, 'POWER_PROTECTION')['applicability'], 'APPLICABLE')
-        intent = {'schema_version': 4, 'circuits': [circuit], 'features': {
+        intent = {'schema_version': 5, 'circuits': [circuit], 'features': {
             'POWER_PROTECTION': {'applicability': 'NOT_APPLICABLE', 'citation': 'synthetic'}}}
         plan = build_review_plan(sample_db(), intent)
         self.assertEqual(get_feature(plan, 'POWER_PROTECTION')['applicability'], 'UNDETERMINED')
@@ -539,10 +539,10 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertTrue(any(x['code'] == 'INTENT_NETLIST_CONFLICT' for x in plan['diagnostics']))
 
     def test_unknown_circuit_type_names_are_rejected(self):
-        errors = validate_intent({'schema_version': 4, 'features': {
+        errors = validate_intent({'schema_version': 5, 'features': {
             'RESET': {'applicability': 'APPLICABLE', 'citation': 'not a package'}}})
         self.assertTrue(any('不是功能电路名' in error for error in errors))
-        errors = validate_intent({'schema_version': 4, 'circuits': [
+        errors = validate_intent({'schema_version': 5, 'circuits': [
             {'id': 'C1', 'type': 'USB_C', 'refs': ['J1'], 'states': ['run'], 'citation': 'not a package'}]})
         self.assertTrue(any('circuits.type 不支持' in error for error in errors))
         self.assertTrue(validate_intent({'schema_version': 2}))
@@ -550,7 +550,7 @@ class ReviewPlanTests(unittest.TestCase):
     def test_declared_assemblies_and_pin_tables_feed_board_and_device_checks(self):
         db = sample_db()
         intent = {
-            'schema_version': 4, 'input_sha256': input_fingerprint(db),
+            'schema_version': 5, 'input_sha256': input_fingerprint(db),
             'assemblies': [{'id': 'base', 'citation': 'BOM rev.B option table', 'population': {}},
                            {'id': 'no-usb', 'citation': 'BOM rev.B option table', 'population': {'J1': False}}],
             'devices': {
@@ -597,7 +597,7 @@ class ReviewPlanTests(unittest.TestCase):
                 db['nets'].setdefault(net, []).append(f'{ref}.{pin}')
                 db['pin2net'][f'{ref}.{pin}'] = net
                 db['pinname'][f'{ref}.{pin}'] = name
-            plan = build_review_plan(db, {'schema_version': 4, 'input_sha256': input_fingerprint(db)})
+            plan = build_review_plan(db, {'schema_version': 5, 'input_sha256': input_fingerprint(db)})
             return next(x for x in plan['checks'] if x['id'] == f'DEV-D02.{ref}')
         led = plan_with('D1', 'e-radionica.com footprinti:0402LED', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')])
         self.assertEqual(led['readiness'], 'READY')
@@ -636,7 +636,7 @@ class ReviewPlanTests(unittest.TestCase):
 
     def test_shared_declarations_require_a_current_netlist_binding(self):
         db = sample_db()
-        intent = {'schema_version': 4,
+        intent = {'schema_version': 5,
                   'assemblies': [{'id': 'base', 'citation': 'BOM rev.B', 'population': {}}]}
         self.assertTrue(any('input_sha256 is required' in error
                             for error in validate_intent(intent, db)))
@@ -659,7 +659,7 @@ class FunctionFrameTests(unittest.TestCase):
                 'states': ['cold', 'hot'], 'citation': 'synthetic regulator'}
 
     def test_a_declared_circuit_gets_a_frame_and_bound_member_rows(self):
-        intent = {'schema_version': 4, 'circuits': [self.circuit()],
+        intent = {'schema_version': 5, 'circuits': [self.circuit()],
                   'power_rails': {'VCC_3V3': {'voltage_v': {'min': 3.2, 'max': 3.4}, 'refs': ['U1'],
                                               'citation': 'synthetic rail'}}}
         plan = build_review_plan(sample_db(), intent)
@@ -693,7 +693,7 @@ class FunctionFrameTests(unittest.TestCase):
         # 导通方向、接口语义这类答案不随工作态变化的规则，两个状态只问一次；其余电路检查项仍逐状态。
         circuit = {'id': 'IN-PROT', 'type': 'POWER_PROTECTION', 'refs': ['D1', 'Q1'], 'nets': ['VIN'],
                    'states': ['run', 'surge'], 'citation': 'synthetic input protection'}
-        plan = build_review_plan(sample_db(), {'schema_version': 4, 'circuits': [circuit]})
+        plan = build_review_plan(sample_db(), {'schema_version': 5, 'circuits': [circuit]})
         rules = catalog.circuit_type('POWER_PROTECTION').subjects
         invariant = [r for r in rules if r in catalog.STATE_INVARIANT]
         self.assertEqual(invariant, ['PWR-T05'])
@@ -712,7 +712,7 @@ class FunctionFrameTests(unittest.TestCase):
                 self.assertIn(row['object']['state'] + ' 时 IN-PROT（D1、Q1）', row['question'])
 
     def test_no_rail_window_is_said_so_and_no_circuit_means_no_frame(self):
-        plan = build_review_plan(sample_db(), {'schema_version': 4, 'circuits': [self.circuit(nets=())]})
+        plan = build_review_plan(sample_db(), {'schema_version': 5, 'circuits': [self.circuit(nets=())]})
         row = next(c for c in plan['checks'] if c['rule'] == 'PWR-C02' and c['object'].get('circuit'))
         self.assertIn(catalog.NO_WINDOW, row['question'])
         self.assertIn(catalog.NO_WINDOW, circuit_frames(plan)[0]['question'])

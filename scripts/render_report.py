@@ -37,14 +37,13 @@ RECORD_INDEX = (('review-results.json', '每条检查的结论、依据、缺的
                 ('lint-hot.json', '自动检查输出（加上器件资料）'),
                 ('evidence/', '引用的资料摘录、计算和图片'))
 OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计还没定'),
-                                ('DELIVERABLE_PENDING', '等交付物'),
-                                ('REQUIREMENT_OPEN', '需求还没定'), ('REVIEW_INCOMPLETE', '审查还没做完'),
+                                ('DELIVERABLE_PENDING', '等交付物'), ('REVIEW_INCOMPLETE', '审查还没做完'),
                                 ('USER_DEFERRED', '暂缓处理')])
 RELEASE = {'GO': '可以定稿', 'CONDITIONAL_GO': '可以有条件定稿', 'NO_GO': '还不能定稿'}
 CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计没定'), ('DELIVERABLE_PENDING', '等交付物'),
-                      ('REQUIREMENT_OPEN', '需求没定'), ('REVIEW_INCOMPLETE', '审查没做完'),
+                      ('REVIEW_INCOMPLETE', '审查没做完'),
                       ('USER_DEFERRED', '已暂缓')])
-KINDS = OrderedDict([('FAIL', '电路错误'), ('REQUIREMENT_OPEN', '需求没定'), ('DESIGN_OPEN', '设计没定'),
+KINDS = OrderedDict([('FAIL', '电路错误'), ('DESIGN_OPEN', '设计没定'),
                      ('EXTERNAL_DATA', '缺资料'), ('DELIVERABLE_PENDING', '等交付物'), ('REVIEW_INCOMPLETE', '审查没做完'),
                      ('USER_DEFERRED', '已暂缓')])
 SEVERITIES = ('P0', 'P1', 'P2', 'P3')
@@ -145,14 +144,13 @@ def jargon_in(text):
 
 
 def item_kind(rows):
-    """FAIL and open requirements name the item; otherwise the gap cause most of its checks carry,
+    """FAIL names the item; otherwise the gap cause most of its checks carry,
     with the minority cause shown so one DESIGN_OPEN row cannot relabel thirteen data gaps."""
     kinds = Counter(r.get('review_result') if r.get('review_result') == 'FAIL' else r.get('gap_cause') for r in rows)
-    for key in ('FAIL', 'REQUIREMENT_OPEN'):
-        if kinds.get(key):
-            if key == 'FAIL' and is_document([r.get('id', '') for r in rows if r.get('review_result') == 'FAIL']):
-                return '文档错误'
-            return KINDS[key]
+    if kinds.get('FAIL'):
+        if is_document([r.get('id', '') for r in rows if r.get('review_result') == 'FAIL']):
+            return '文档错误'
+        return KINDS['FAIL']
     causes = [(n, list(KINDS).index(k)) for k, n in kinds.items() if k in KINDS]
     if not causes:
         return '待处理'
@@ -532,7 +530,7 @@ OWNER_WORDS = {'SYSTEM': '系统功能', 'CIRCUIT': '功能电路', 'INTERFACE':
 
 
 def function_row(fn, effective=None):
-    items = [i for i in fn.get('open') or [] if isinstance(i, dict) and i.get('kind') != 'REQUIREMENT']
+    items = [i for i in fn.get('open') or [] if isinstance(i, dict)]
     items += [i for i in fn.get('fails') or [] if isinstance(i, dict)]
     verdict, delegated = effective or (fn.get('verdict'), [])
     ids = unique([results_model.work_item_id(i['key']) for i in items if isinstance(i.get('key'), str)] + delegated)
@@ -590,30 +588,27 @@ def gap_subclass_counts(results, gaps):
     return ['| 资料不足细分：%s | %s |' % (' / '.join(names.values()), ' / '.join(str(subs.get(k, 0)) for k in names))]
 
 
-CLARIFICATION_SECTION = '需求要说清楚的地方'
-CLARIFICATION_KINDS = {'MISSING': '需求没写', 'AMBIGUOUS': '需求写得含糊', 'CONFLICTING': '需求前后矛盾',
-                       'UNCONFIRMED': '需求还没确认'}
-DECISION_DUE = {'BEFORE_DESIGN': '设计前定', 'BEFORE_FREEZE': '定稿前定', 'FOLLOW_UP': '后续确认'}
+CLARIFICATION_SECTION = '需求澄清记录'
+CLARIFICATION_DECISIONS = {'DECIDED': '用户给定', 'ADOPTED_PROPOSAL': '采纳 SR 建议', 'DEFERRED': '用户暂缓'}
 
 
-def render_clarifications(results):
-    """Open requirement clarifications, one block each: what the requirement says, what to decide and add, who
-    decides and by when (SR self-check 2.5, user: 单列一节)."""
-    rows = [c for c in results.get('requirement_clarifications') or [] if isinstance(c, dict) and c.get('status') == 'OPEN']
+def render_clarifications(plan):
+    """The requirement questions asked of the user during the review and how each was settled (2026-10-26, user:
+    需求没定，那就需要及时和用户反馈 …): a settled answer joined the requirement list and was reviewed against."""
+    rows = [c for c in plan.get('clarifications') or [] if isinstance(c, dict)]
     if not rows:
         return []
     out = ['## ' + CLARIFICATION_SECTION, '',
-           '下面这些地方需求没有说清楚，审查判断不了，要需求负责方拍板并改进需求文件；不是原理图的错误。', '']
+           '审查中发现需求没说清的地方，当场问了用户；定下的写进需求清单并按它审，暂缓的这一轮不审。', '']
     for c in rows:
-        blocks = '不定下来不能定稿' if c.get('freeze_impact') == 'BLOCKING' else '不影响定稿（各种可能都已核过）'
-        out += ['### %s　%s' % (c.get('id'), c.get('title') or ''), '',
-                '类型：%s　%s　%s　涉及 %d 条检查' % (CLARIFICATION_KINDS.get(c.get('kind'), c.get('kind') or ''),
-                                              DECISION_DUE.get(c.get('decision_due'), c.get('decision_due') or ''),
-                                              blocks, len(c.get('check_ids') or [])), '']
+        out += ['### %s' % c.get('id'), '']
+        source = c.get('source') or {}
         for label, value in (('需求原文', c.get('requirement_text')), ('问题', c.get('question')),
-                             ('要定什么', c.get('decision_needed')), ('建议写进需求', c.get('proposed_requirement')),
-                             ('谁来定', c.get('owner')), ('为什么要紧', c.get('impact_reason')),
-                             ('怎样算定了', c.get('closure_criteria')),
+                             ('答复', '%s：%s' % (CLARIFICATION_DECISIONS.get(c.get('decision'), c.get('decision') or ''),
+                                                c.get('text') or '')),
+                             ('谁答复的', '　'.join(x for x in (c.get('by'), c.get('date'),
+                                                             ' '.join(x for x in (source.get('source'), source.get('locator')) if x))
+                                                 if x)),
                              ('涉及的需求', '、'.join(c.get('requirement_ids') or []))):
             if value:
                 out.append('- **%s**：%s' % (label, value))
@@ -1035,7 +1030,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                 out.append('- **改动**：%s：%s → %s' % (step.get('target', ''), step.get('before', ''), step.get('after', '')))
             out.append('')
 
-    out += render_clarifications(results)
+    out += render_clarifications(plan)
     out += render_deliverables(deliverables, checks, task_owners, classes)
 
     if tasks:
@@ -1049,10 +1044,6 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         reason_count = Counter(t['reason'].strip() for t in tasks if isinstance(t.get('reason'), str))
         shared_reasons = {r for r, n in reason_count.items() if n >= SHARED_REASON_MIN_TASKS}
         for task in sorted(tasks, key=rank):
-            if task.get('kind') == 'REQUIREMENT_CLARIFICATION':
-                out += ['### %s　%s' % (task['id'], task.get('title') or ''), '',
-                        '见上文“%s”，这里不重复。' % CLARIFICATION_SECTION, '']
-                continue
             owners = covered_by_findings(task, checks, findings)
             if owners:
                 out += ['### %s　%s' % (task['id'], task.get('title') or task.get('root_cause') or ''), '',

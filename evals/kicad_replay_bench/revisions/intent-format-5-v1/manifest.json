@@ -1,0 +1,15 @@
+{
+ "revision": "intent-format-5-v1",
+ "parents": {
+  "revisions/clamp-operating-rows-v1/expected.json": "252aa7d4ea85bf4143fd6dabc5fb4ffe5cd40522a53c206303544509ffb4ecca",
+  "revisions/clamp-operating-rows-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/clamp-operating-rows-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81",
+  "revisions/clamp-operating-rows-v1/manifest.json": "35b67cf1275420d77b629227e8c9ee632961274574a5226905f99ea1c8c30ee6"
+ },
+ "derived_files": {
+  "revisions/intent-format-5-v1/expected.json": "252aa7d4ea85bf4143fd6dabc5fb4ffe5cd40522a53c206303544509ffb4ecca",
+  "revisions/intent-format-5-v1/cases.json": "76573f00f2f35883bf2a07dbda058d356b97649ce42eb2e3adf68007c4103559",
+  "revisions/intent-format-5-v1/sources.json": "c75b45f60e4f89c4d7caeca6acbf684b91b937eeaa195ff6c88cefed3198d2d0"
+ },
+ "scope": "intent 格式升到 5（2026-10-26，用户：需求没定就当场问用户，答复写进需求清单；a 只允许采纳建议或明确暂缓；b 无人值守时任务书附澄清答复，没覆盖的问题停在第①步）：新增 clarifications，需求状态只留 CONFIRMED / DEFERRED。三份 intent 夹具只把 schema_version 改为 5，另存为 *.intent-format-5-v1.intent.json，用例改指新夹具；答案不变。clamp-operating-rows-v1 文件保持原字节。"
+}

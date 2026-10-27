@@ -117,7 +117,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 工作点和保证条件对不上时定界；估算判通过的边界 | [bounding-table.md](references/bounding-table.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
 | 审查员 | 结果、P0–P3、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
-| 审查员 | 需求缺失/含糊/冲突 | [requirement-clarifications.md](references/requirement-clarifications.md) |
+| 审查员 | 需求缺失/含糊/冲突：当场问用户，答复写进需求清单 | [requirement-clarifications.md](references/requirement-clarifications.md) |
 | 审查员 | ① 写 intent.json：字段、输入声明、电路决定、需求参数 | [intent-format.md](references/intent-format.md) |
 | 审查员 | ② 计划字段、展开规则、功能电路依赖与状态核对（含电平转换） | [plan-format.md](references/plan-format.md) |
 | 审查员 | ③④ 结果字段：功能判定、条款、余量依据、开放项、单条检查、功能复核 | [results-format.md](references/results-format.md) |
@@ -154,7 +154,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱动、REQ 需求与闭环。可编程器件不审配置表：手册声明的能力判为可达，硬件按允许的配置范围判，只在某个设置下成立的条款标 `setting`，报告列给配置表编写方。
 方式：A 自动扫描、E 保证值核对、T 连接追踪、C 工程计算、D 条款核对、V 图面目检、Q 覆盖审计、H 版本比对。
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（网表扫描、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
-计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-4)。
+计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-5)。
 
 功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（2.1）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各检查项写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
 
@@ -169,15 +169,18 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 从资料和对话提取功能/量化指标、接口角色与数量、输入范围/负载、温度、降额依据、保留/删除项，
 写入 `intent.json`（字段见 [intent 格式](references/intent-format.md)）：需求原文由
 `requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256；任务书给了几份需求文档就登记几项，写成列表，一份都不少），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）、从原文读出的数字（`parameters`）、承接它的电路（`owners`，承接电路：落实这条需求的功能电路、系统功能或接口；计划会列出可承接的电路，有就必须写，认定没有承接电路写 `[]` 加能定位的理由）和确认状态，审查方面由参数和类别推出（有参数的方面只在原文读出了那个数时才问，拿不准的类别多选），判据取方面模板，扫描会列出原文里没读进参数的数字；设 `review_phase`（日常设计 `design_iteration`，
-用户明确要冻结才用 `schematic_freeze`）。其余 intent 字段在有它的输入的那个任务里写：装配配置 1.2，资料路径、脚表、器件类别 1.3，电源轨 2.1。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
-集中提出，先做不受影响的工作，不逐颗器件打断用户，也不自行接受风险。
-录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待定、
-客观设计要求、明确排除和下游工作；不能把源文件的 OPEN 标题机械变成责任方待决。
+用户明确要冻结才用 `schematic_freeze`）。其余 intent 字段在有它的输入的那个任务里写：装配配置 1.2，资料路径、脚表、器件类别 1.3，电源轨 2.1。需求缺失、含糊或冲突而判断要靠它的，**当场问用户**（[需求澄清](references/requirement-clarifications.md)）：
+录完需求后一次汇总提问，不逐颗器件打断用户，问题写 `intent.clarifications`；用户给定需求、采纳 SR 建议的条文或明确暂缓，
+三选一，不留“先挂着”。定下的需求马上加进 `intent.requirements` 再往下做；无人值守时读任务书附的澄清答复，没覆盖的问题停在这一步，
+把问题清单交给用户。②、③ 中途发现新的需求问题同样当场问。
+录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待用户决定的、
+客观设计要求、明确排除和下游工作；不能把源文件的 OPEN 标题机械变成问题。
 按 [输入与覆盖](references/inputs-and-coverage.md) 记录输入版本/哈希；PDF 与网表须核修订号证明同版。
 仅有 PDF 时逐页读图并声明范围，不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装须另获授权。
 
 做完的标志：`requirements` 每条有类别、理解、参数和承接电路（或 `[]` 加理由）；需求原文里带单位的数字都读进了参数，
-或在理解里说明为什么不读；`requirement_source`、输入文件的版本与哈希已记录；`review_phase` 已设。
+或在理解里说明为什么不读；`intent.clarifications` 每个问题都有答复（冷扫不再打印 `CLARIFICATION_PENDING`）；
+`requirement_source`、输入文件的版本与哈希已记录；`review_phase` 已设。
 
 #### 1.2 解析与完整性
 
@@ -268,7 +271,7 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 两端件留在 REQ-Q08 清单上写原因；候选规则该认出而没认出的，另记改进台账改规则。
 `features` 的 NOT_APPLICABLE 声明不生成检查项：候选没检出的类型都在 REQ-Q08 那一项里逐个确认，声明只作它的依据；REQ-Q07 只给检出或声明适用的类型。
 `unassigned` 与 `gaps`（没核验角色的 IC、缺引脚名）先清。
-格式见 [计划与结果](references/intent-format.md#一intentjsonschema_version-4)，规则见 [自动检查](references/automation.md#二检查器)。
+格式见 [计划与结果](references/intent-format.md#一intentjsonschema_version-5)，规则见 [自动检查](references/automation.md#二检查器)。
 
 SR 独立审查，只用四类输入：需求、设计结果（原理图、网表、BOM、原理图 PDF）、原厂与标准资料、SR 自己的计算。
 设计方的设计报告、设计方案、计算书、选型记录、电气意图、需求追溯、器件约定、开放项、自检与目检记录、交付证据、下游约束

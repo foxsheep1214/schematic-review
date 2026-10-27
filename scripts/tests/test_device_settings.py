@@ -43,7 +43,7 @@ def device(**extra):
 
 
 def intent(**dev):
-    out = {'schema_version': 4, 'device_kinds_verified': {'U1': {'kind': 'pd_controller', 'citation': 'ds p1'}}}
+    out = {'schema_version': 5, 'device_kinds_verified': {'U1': {'kind': 'pd_controller', 'citation': 'ds p1'}}}
     if dev:
         out['devices'] = {'U1': device(**dev)}
         out['input_sha256'] = input_fingerprint(board())

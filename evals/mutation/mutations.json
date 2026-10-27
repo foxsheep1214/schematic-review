@@ -2479,10 +2479,10 @@
  },
  {
   "id": "M360",
-  "name": "a format-3 intent is read as format 4",
+  "name": "a format-4 intent is read as format 5",
   "file": "scripts/plan_review.py",
-  "old": "INTENT_SCHEMA_VERSION = 4",
-  "new": "INTENT_SCHEMA_VERSION = 3"
+  "old": "INTENT_SCHEMA_VERSION = 5   # 5 (2026-10-26): clarifications; requirement status only CONFIRMED / DEFERRED",
+  "new": "INTENT_SCHEMA_VERSION = 4   # 5 (2026-10-26): clarifications; requirement status only CONFIRMED / DEFERRED"
  },
  {
   "id": "M364",
@@ -3349,8 +3349,8 @@
   "id": "M495",
   "name": "a misfit circuit type is not printed",
   "file": "scripts/plan_review.py",
-  "old": "              if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',",
-  "new": "              if d.get('code') in ('REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',"
+  "old": "              if d.get('code') in ('CLARIFICATION_PENDING', 'CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',",
+  "new": "              if d.get('code') in ('CLARIFICATION_PENDING', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',"
  },
  {
   "id": "M496",
@@ -3398,8 +3398,8 @@
   "id": "M502",
   "name": "the summary counts documented without the consequence class",
   "file": "scripts/review_summary.py",
-  "old": "documented = sum(not validate_impact(c, classes) for c in graded)",
-  "new": "documented = sum(not validate_impact(c) for c in graded)"
+  "old": "documented = sum(not validate_impact(c, classes) for c in gaps)",
+  "new": "documented = sum(not validate_impact(c) for c in gaps)"
  },
  {
   "id": "M503",
@@ -3564,38 +3564,10 @@
  },
  {
   "id": "M526",
-  "name": "the report has no clarification section",
+  "name": "the report has no clarification record section",
   "file": "scripts/render_report.py",
-  "old": "    out += render_clarifications(results)\n",
+  "old": "    out += render_clarifications(plan)\n",
   "new": ""
- },
- {
-  "id": "M527",
-  "name": "the clarification section leaves out the clause to add",
-  "file": "scripts/render_report.py",
-  "old": "('建议写进需求', c.get('proposed_requirement'))",
-  "new": "('建议写进需求', None)"
- },
- {
-  "id": "M528",
-  "name": "a clarification work item repeats the section",
-  "file": "scripts/render_report.py",
-  "old": "            if task.get('kind') == 'REQUIREMENT_CLARIFICATION':",
-  "new": "            if False:"
- },
- {
-  "id": "M529",
-  "name": "a covered clarification reads as blocking",
-  "file": "scripts/render_report.py",
-  "old": "'不定下来不能定稿' if c.get('freeze_impact') == 'BLOCKING' else",
-  "new": "'不定下来不能定稿' if True else"
- },
- {
-  "id": "M530",
-  "name": "closed clarifications are listed as open",
-  "file": "scripts/render_report.py",
-  "old": "if isinstance(c, dict) and c.get('status') == 'OPEN']",
-  "new": "if isinstance(c, dict)]"
  },
  {
   "id": "M531",
@@ -3669,9 +3641,9 @@
  },
  {
   "id": "M541",
-  "name": "an OPEN requirement is also refused without owners",
+  "name": "a DEFERRED requirement is also refused without owners",
   "file": "scripts/requirement_bindings.py",
-  "old": "        if row['object'].get('requirement_status') in ('OPEN', 'DEFERRED'):\n            continue   # its rows stay INSUFFICIENT + REQUIREMENT_OPEN and are never derived",
+  "old": "        if row['object'].get('requirement_status') == 'DEFERRED':\n            continue   # its rows stay INSUFFICIENT + USER_DEFERRED and are never derived",
   "new": "        if False:\n            continue"
  },
  {
@@ -4947,5 +4919,75 @@
   "file": "scripts/lint.py",
   "old": "                        self.graph.kind(node.partition('.')[0]) in {CONNECTOR} | PASSIVE_LINKS",
   "new": "                        self.graph.kind(node.partition('.')[0]) in {CONNECTOR}"
+ },
+ {
+  "id": "M726",
+  "name": "an unanswered question passes the plan with candidates",
+  "file": "scripts/plan_review.py",
+  "old": "        errors.extend(requirement_clarifications.pending_errors(intent))   # step ② needs every question answered",
+  "new": "        pass"
+ },
+ {
+  "id": "M727",
+  "name": "the candidate generator runs with an unanswered question",
+  "file": "scripts/circuit_candidates.py",
+  "old": "    pending = requirement_clarifications.pending_errors(intent)\n",
+  "new": "    pending = []\n"
+ },
+ {
+  "id": "M728",
+  "name": "the gate passes with an unanswered question in the planned intent",
+  "file": "scripts/validate_review.py",
+  "old": "    errors.extend(requirement_clarifications.pending_errors((plan.get('review_inputs') or {}).get('intent')))\n",
+  "new": ""
+ },
+ {
+  "id": "M729",
+  "name": "an answered clarification does not join the requirement list",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "    extra = requirement_items(intent)\n",
+  "new": "    extra = []\n"
+ },
+ {
+  "id": "M730",
+  "name": "an adopted proposal may differ from the proposal",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "        if decision == 'ADOPTED_PROPOSAL' and answer.get('text') != row.get('proposed_requirement'):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M731",
+  "name": "a deferral leaves its requirements confirmed",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "                if statuses.get(rid) != 'DEFERRED':",
+  "new": "                if False:"
+ },
+ {
+  "id": "M732",
+  "name": "an undecided requirement status is accepted again",
+  "file": "scripts/plan_review.py",
+  "old": "REQUIREMENT_STATUSES = ('CONFIRMED', 'DEFERRED')",
+  "new": "REQUIREMENT_STATUSES = ('CONFIRMED', 'PROPOSED', 'OPEN', 'DEFERRED')"
+ },
+ {
+  "id": "M733",
+  "name": "an undecided requirement open item is refused without saying where to ask",
+  "file": "scripts/review_functions.py",
+  "old": "    if kind == 'REQUIREMENT':\n        errors.append(label + ': an undecided requirement is no open item:",
+  "new": "    if False:\n        errors.append(label + ': an undecided requirement is no open item:"
+ },
+ {
+  "id": "M734",
+  "name": "the results carry a clarification list again",
+  "file": "scripts/results_model.py",
+  "old": "               'intent.clarifications' % k for k in SETTLED_TOP_FIELDS if k in report]",
+  "new": "               'intent.clarifications' % k for k in () if k in report]"
+ },
+ {
+  "id": "M735",
+  "name": "an unanswered question is not printed by the cold scan",
+  "file": "scripts/plan_review.py",
+  "old": "            self.diagnostics.append({'code': 'CLARIFICATION_PENDING', 'detail': line})",
+  "new": "            pass"
  }
 ]

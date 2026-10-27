@@ -63,7 +63,7 @@ class SupplyPinDiagnosticTests(unittest.TestCase):
 
     def plan(self, pins, ref='U1'):
         db = self.board()
-        intent = {'schema_version': 4, 'input_sha256': board_intent.input_fingerprint(db),
+        intent = {'schema_version': 5, 'input_sha256': board_intent.input_fingerprint(db),
                   'devices': {ref: device('SOT-23-3', pins)}}
         return build_review_plan(db, intent), db, intent
 
@@ -78,7 +78,7 @@ class SupplyPinDiagnosticTests(unittest.TestCase):
         plan, _, _ = self.plan([(1, 'IN', 'power'), (2, 'GND', 'return'), (3, 'OUT', 'power')])
         self.assertEqual([d for d in plan['diagnostics'] if d['code'] == 'DEVICE_PINS_NO_SUPPLY'], [])
         db = self.board()
-        intent = {'schema_version': 4, 'input_sha256': board_intent.input_fingerprint(db),
+        intent = {'schema_version': 5, 'input_sha256': board_intent.input_fingerprint(db),
                   'devices': {'J1': device('SO-2', [(1, 'A', 'other'), (2, 'B', 'other')])}}
         plan = build_review_plan(db, intent)
         self.assertEqual([d for d in plan['diagnostics'] if d['code'] == 'DEVICE_PINS_NO_SUPPLY'], [])
@@ -95,7 +95,7 @@ class NoSupplyKindTests(unittest.TestCase):
 
     def test_an_optocoupler_table_without_supply_pins_is_silent(self):
         db = SupplyPinDiagnosticTests().board()
-        intent = {'schema_version': 4, 'input_sha256': board_intent.input_fingerprint(db),
+        intent = {'schema_version': 5, 'input_sha256': board_intent.input_fingerprint(db),
                   'device_kinds': {'U1': {'kind': 'opto', 'page': 1, 'quote': 'synthetic optocoupler'}},
                   'devices': {'U1': device('SOT-23-3', [(1, 'A', 'other'), (2, 'K', 'other'), (3, 'C', 'other')])}}
         plan = build_review_plan(db, intent)

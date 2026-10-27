@@ -15,7 +15,7 @@ from review_workflow import workflow, decision
 from review_quality import FREEZE_BLOCKING_CODES, screen_quality
 from review_engine import validate_engine
 from review_summary import categorized_summary, validate_impact
-from requirement_clarifications import validate_clarifications
+import requirement_clarifications
 from checkers import REGISTRY, passive_stress, validate_inventories
 from validate_remediation import validate_remediation, validate_figures, changes_topology, READINESS
 from electrical_contract import LOCATOR_IDS_RE, PLAN_SCHEMA_VERSION, db_fingerprint, load_json, squeeze_words
@@ -37,7 +37,7 @@ RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
 APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
 # Optional INSUFFICIENT cause (evidence-proportionality.md); over-strict checks are re-judged, not tagged.
-REQUIREMENT_GAP = {"OPEN": "REQUIREMENT_OPEN", "DEFERRED": "USER_DEFERRED"}
+REQUIREMENT_GAP = {"DEFERRED": "USER_DEFERRED"}
 CLAUSE_KINDS = ("OBLIGATION", "PREMISE")
 CLAUSE_ORDER = {"NA": 0, "PASS": 1, "INSUFFICIENT": 2, "FAIL": 3}
 
@@ -124,8 +124,7 @@ def split_out_errors(checks, expected):
     return errors
 
 
-REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "PROPOSED": "提案（PROPOSED）",
-                     "OPEN": "未定（OPEN）", "DEFERRED": "暂缓（DEFERRED）"}
+REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "DEFERRED": "暂缓（DEFERRED）"}
 SCOPE = set(catalog.COVERAGE_RULES)
 
 
@@ -329,10 +328,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if scope_decl:
         blockers.append("review_scope: the ledger answers only %s; it is not a board verdict"
                         % ", ".join(scope_decl["functions"]))
-    clarifications = validate_clarifications(report, checks, expected)
-    errors.extend(clarifications['errors'])
-    blockers.extend(clarifications['blockers'])
-    stage = workflow(plan, report, checks, clarifications, require_design_options=actionable)
+    # A requirement question the user has not answered stops the review at step ① (2026-10-26).
+    errors.extend(requirement_clarifications.pending_errors((plan.get('review_inputs') or {}).get('intent')))
+    stage = workflow(plan, report, checks, require_design_options=actionable)
     errors.extend(stage['errors'])
     accepted = False
     # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): derive writes C on the row, the release
@@ -423,9 +421,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 errors.extend(validate_impact(item, impact_classes))  # history dispositions are counted apart
             require(confidence == "C", f"{key}: unresolved conclusion must remain C")
             require(ids(item.get("missing_inputs")), f"{key}: missing_inputs required")
-            if item.get('gap_cause') != 'REQUIREMENT_OPEN':
-                require(item.get("potential_severity") in tuple(SEVERITIES),
-                        f"{key}: potential_severity required")
+            require(item.get("potential_severity") in tuple(SEVERITIES),
+                    f"{key}: potential_severity required")
         if "gap_cause" in item:
             require(result == "INSUFFICIENT" and item["gap_cause"] in GAP_CAUSES,
                     f"{key}: gap_cause is one of {'/'.join(GAP_CAUSES)} and only on INSUFFICIENT")
@@ -472,14 +469,13 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             result == "INSUFFICIENT" and item.get("potential_severity") in ("P0", "P1"))
         if result == "INSUFFICIENT" and item.get("gap_cause") == "REVIEW_INCOMPLETE":
             blockers.append(f"{key}: review work not completed; finish the review before release")
-        requirement_decision = item.get('gap_cause') == 'REQUIREMENT_OPEN'
         # A deliverable another stage owes (drawing, configuration table, firmware capability) is a condition of the
         # freeze, not a reason against it (2026-10-26, item 3): it caps the release at CONDITIONAL_GO and is listed
         # for the project manager under 等交付物, never a blocker.
         pending_deliverable = result == "INSUFFICIENT" and item.get("gap_cause") == "DELIVERABLE_PENDING"
         if pending_deliverable:
             pending.append(key)
-        if result in ("FAIL", "INSUFFICIENT") and not requirement_decision and not pending_deliverable:
+        if result in ("FAIL", "INSUFFICIENT") and not pending_deliverable:
             if item.get("severity") == "P0":
                 blockers.append(f"{key}: P0 requires verified repair")
             elif (critical or item.get("blocking")) and not approval_ok:
@@ -658,9 +654,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "stage_scope": stage_scope,
             "sr_improvements": sr_improvements,
             "rule_gaps": rule_gaps.listing(plan, report),
-            "requirement_clarification_summary": clarifications['summary'],
-            "requirement_clarifications": clarifications['items'],
-            # REQ-D01 results per requirement confirmation state: a PASS against PROPOSED is conditional on that proposal.
+            # REQ-D01 results per requirement confirmation state (CONFIRMED judged, DEFERRED not).
             "requirements_by_status": {st: dict(Counter(checks[k].get("review_result") for k, x in expected.items()
                                                         if k in checks and (x.get("object") or {}).get("requirement_status") == st))
                                        for st in sorted({(x.get("object") or {}).get("requirement_status") for x in expected.values()} - {None})},

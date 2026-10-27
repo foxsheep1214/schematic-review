@@ -356,8 +356,9 @@ def requirement_texts(intent):
     """{requirement id: original text} from intent.requirement_source, or None when the intent names no document."""
     if not isinstance(intent, dict) or not intent.get('requirement_source'):
         return None
+    import requirement_clarifications
     import requirements_extract
-    source, _ = requirements_extract.load(intent['requirement_source'])
+    source, _ = requirement_clarifications.load(intent)
     if not source:
         return None
     return {item['id']: requirements_extract.text(item) for item in source.get('items', [])}

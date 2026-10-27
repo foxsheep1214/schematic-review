@@ -148,7 +148,7 @@ class GeneratedOutputTest(unittest.TestCase):
             db['pin2net']['Q8.' + pin] = net
             db['pinname']['Q8.' + pin] = name
         refs = ['U1', 'U2', 'U4', 'Q8', 'D9', 'TH9', 'J9']
-        intent = {'schema_version': 4, 'expect': {'SOC': 1},
+        intent = {'schema_version': 5, 'expect': {'SOC': 1},
                   'device_kinds_verified': {'U4': {'kind': 'mcu', 'citation': 'synthetic'}},   # CFG-D01 asks its groups
                   'features': {'CUSTOM': {'applicability': 'APPLICABLE', 'citation': 'synthetic requirement'}},
                   'requirement_source': doc_for({'REQ-1': 'synthetic', 'REQ-2': '设计寿命 10 年'}),
@@ -193,7 +193,7 @@ class GeneratedOutputTest(unittest.TestCase):
     def test_generated_stress_criteria_expose_estimate_and_scope_limits(self):
         # Reviewers receive actual generated criteria, including each circuit
         # state, rather than discovering decisive limits in a separate reference.
-        intent = {'schema_version': 4, 'circuits': [
+        intent = {'schema_version': 5, 'circuits': [
             {'id': 'C-REG', 'type': 'POWER_CONVERTER', 'refs': ['U1'],
              'states': ['run', 'startup'], 'citation': 'synthetic'},
             {'id': 'C-DRIVE', 'type': 'POWER_PROTECTION', 'refs': ['U1'],

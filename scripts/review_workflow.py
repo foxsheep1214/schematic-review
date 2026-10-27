@@ -54,9 +54,9 @@ def design_option(key, value, unresolved, finding_ids):
     return errors
 
 
-def workflow(plan, report, checks, clarifications=None, require_design_options=False):
+def workflow(plan, report, checks, require_design_options=False):
     errors, tasks, owners = [], [], {}
-    enabled = bool(clarifications and clarifications['tasks']) or 'review_phase' in plan or bool(report.get('functions'))
+    enabled = 'review_phase' in plan or bool(report.get('functions'))
     phase = plan.get('review_phase', 'schematic_freeze')
     if not enabled:
         return {'enabled': False, 'phase': phase, 'errors': [], 'tasks': [],
@@ -65,12 +65,7 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
         errors.append('review_phase must be one of ' + '/'.join(PHASES))
     items = report.get('work_items') or []   # derived from the functions' open/fail items (results_model)
     unresolved = {k for k, c in checks.items() if c.get('review_result') in ('FAIL', 'INSUFFICIENT')}
-    if clarifications:
-        tasks.extend(clarifications['tasks'])
-        for task in tasks:
-            for cid in task['check_ids']:
-                owners.setdefault(cid, []).append(task)
-    seen = {task['id'] for task in tasks}
+    seen = set()
     for item in items:
         if not isinstance(item, dict) or not text(item.get('id')):
             errors.append('work_items require objects with IDs')
@@ -91,9 +86,6 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
         if not (isinstance(linked, list) and linked and all(text(x) for x in linked)
                 and len(linked) == len(set(linked)) and set(linked) <= unresolved):
             errors.append(key + ': check_ids must name unique unresolved checks (stage-NA tests are tracked by their handoff)')
-            continue
-        if any(checks[cid].get('gap_cause') == 'REQUIREMENT_OPEN' for cid in linked):
-            errors.append(key + ': requirement gaps are managed by clarification records, not duplicate work_items')
             continue
         designable = any(checks[cid].get('review_result') == 'INSUFFICIENT'
                          and checks[cid].get('gap_cause') in DESIGNABLE_GAPS for cid in linked)
@@ -124,9 +116,6 @@ def workflow(plan, report, checks, clarifications=None, require_design_options=F
                              or cid in task_view(g, {cid: row}, task_owners, classes)['ambiguous_checks'])
                         for g in groups)):
             errors.append(cid + ': potential P0 needs current investigation')
-        if (row.get('review_result') == 'INSUFFICIENT' and row.get('gap_cause') == 'REQUIREMENT_OPEN'
-                and any(g.get('due_stage') != 'design_iteration' for g in groups)):
-            errors.append(cid + ': undefined requirement goes back to the designer in the current round')
         if (row.get('review_result') == 'INSUFFICIENT' and row.get('gap_cause') == 'REVIEW_INCOMPLETE'
                 and any(g.get('due_stage') != 'design_iteration' for g in groups)):
             errors.append(cid + ': unfinished review must enter the current review queue')

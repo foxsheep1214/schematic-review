@@ -20,12 +20,13 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CONTRACT_REVISION = 'clamp-operating-rows-v1'
+CONTRACT_REVISION = 'intent-format-5-v1'
 REVISIONS = ('legacy', 'page-inventory-v1', 'name-gap-scope-v1', 'passive-stress-v1', 'threshold-window-v1',
              'real-flyback-v1', 'testpoint-kind-v1', 'name-heuristics-v1', 'typical-boards-v1', 'lint-checks-v1',
              'function-frames-v1', 'state-invariant-v1', 'circuit-candidates-v1', 'circuit-owners-v1',
              'interface-rows-v1', 'single-fault-rows-v1', 'intent-format-4-v1', 'shared-part-words-v1', 'active-part-decisions-v1',
-             'unknown-kind-decisions-v1', 'owned-rows-in-frames-v1', 'r7-fix-lists-v1', 'protective-clamps-v1', CONTRACT_REVISION)
+             'unknown-kind-decisions-v1', 'owned-rows-in-frames-v1', 'r7-fix-lists-v1', 'protective-clamps-v1',
+             'clamp-operating-rows-v1', CONTRACT_REVISION)
 
 
 def contract_path(name, revision=CONTRACT_REVISION):

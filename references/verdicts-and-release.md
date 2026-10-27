@@ -184,7 +184,7 @@ FAIL/INSUFFICIENT 默认阻断；只有阶段允许暂留的 P2/P3 才写 `"bloc
 `schematic_freeze` 阶段三者计入放行阻断（`valid` 不变），定级类须逐项按本对象后果路径重新定级，通过理由类须逐项写出比较了什么、对照什么，才能放行。
 批量录入脚本不得用一句固定兜底语给全部证据不足定级。
 审查者按上述步骤核理由与本项判据；补齐证据后重新判断，可能成为 PASS 或任意等级的 FAIL。
-需求未定（REQUIREMENT_OPEN）的检查不填等级，改由 [需求澄清项](requirement-clarifications.md) 记录决策时点和冻结影响。
+需求没说清的不记证据不足：当场问用户，答复写进需求清单后按定下的需求判（[需求澄清](requirement-clarifications.md)）。
 
 ## 4. HANDOFF 与集成约束
 
@@ -255,7 +255,7 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 
 | 值 | 本阶段目标 | 证据不足项处理 |
 |---|---|---|
-| `design_iteration` | 完成当前能做的设计、计算和修正 | 未接受的阻断 FAIL、潜在 P0、REVIEW_INCOMPLETE、开放需求澄清进入本轮；其他缺口按依赖安排在本轮或冻结前 |
+| `design_iteration` | 完成当前能做的设计、计算和修正 | 未接受的阻断 FAIL、潜在 P0、REVIEW_INCOMPLETE 进入本轮；其他缺口按依赖安排在本轮或冻结前 |
 | `schematic_freeze` | 用户明确要求冻结 | 执行全部严重度、覆盖、绑定、资料和 HANDOFF 闸门；校验加 `--require-release` |
 | `prototype_verification` | 接收实物/布局证据，追踪整改 | 只审原理图与外部证据交接，不签署整机、EMC、寿命或生产准出 |
 
@@ -269,7 +269,7 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 
 ### 待办由开放项派生
 
-待办（`work_items`）不手写。`validate_review.py` 从 `functions[]` 的每个开放项（`open[]`，REQUIREMENT 除外）和
+待办（`work_items`）不手写。`validate_review.py` 从 `functions[]` 的每个开放项（`open[]`）和
 失败项（`fails[]`）各派生一件，写进 `review-gate.json` 的 `workflow.work_items`，编号 `W-<key>`（key 已是 W- 开头则原样）：
 
 | 待办字段 | 来自 |
@@ -362,7 +362,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 ## 6. 准出
 
 - **不准出**：已确认的 P0 未修；未接受的阻断 FAIL/INSUFFICIENT；适用项未执行；版本/完整性关键缺口；
-  必需 HANDOFF 未形成可执行约束（接收方/约束/验证方法缺失）；开放的阻断需求澄清。
+  必需 HANDOFF 未形成可执行约束（接收方/约束/验证方法缺失）；有需求问题还没答复（审查停在第①步，门禁不通过）。
 - **有条件准出**：所有检查已形成有效结论；无已确认的 P0；潜在 P0、剩余阻断级 P1/P2 或未知项已由有权责任方按本版
   记录明确接受，约束和责任人已落实。报告保留 FAIL/INSUFFICIENT，不改写为 PASS。
 - **准出**：无开放阻断项；覆盖完整、证据充分，必需 HANDOFF 已写成可执行清单（是否已被接收不影响准出）。
