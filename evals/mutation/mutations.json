@@ -4947,5 +4947,47 @@
   "file": "scripts/lint.py",
   "old": "                        self.graph.kind(node.partition('.')[0]) in {CONNECTOR} | PASSIVE_LINKS",
   "new": "                        self.graph.kind(node.partition('.')[0]) in {CONNECTOR}"
+ },
+ {
+  "id": "M726",
+  "name": "a part-number family matches inside a longer part number again",
+  "file": "scripts/device_kinds.py",
+  "old": "    return r'(?<![A-Z0-9])(?:%s)' % '|'.join(numbers)",
+  "new": "    return r'(?:%s)' % '|'.join(numbers)"
+ },
+ {
+  "id": "M727",
+  "name": "the DESD TVS family is no longer its own entry",
+  "file": "scripts/device_kinds.py",
+  "old": "r'ESD\\d', 'PESD', 'DESD',",
+  "new": "r'ESD\\d', 'PESD',"
+ },
+ {
+  "id": "M728",
+  "name": "LTV-817 with its hyphen is no longer an optocoupler",
+  "file": "scripts/device_kinds.py",
+  "old": "r'LTV-?\\d'",
+  "new": "r'LTV\\d'"
+ },
+ {
+  "id": "M729",
+  "name": "a short datasheet cue matches inside squashed words again",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    if len(word) > SHORT_CUE:",
+  "new": "    if True:"
+ },
+ {
+  "id": "M730",
+  "name": "a lowercase-to-capital join no longer separates a short cue",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    spaced = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', str(text or ''))",
+  "new": "    spaced = str(text or '')"
+ },
+ {
+  "id": "M731",
+  "name": "a plural short cue (MCUs) is no longer read",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "(?i:%s)s?(?![a-z0-9])",
+  "new": "(?i:%s)(?![a-z0-9])"
  }
 ]

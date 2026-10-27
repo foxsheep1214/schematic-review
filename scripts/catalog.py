@@ -2155,7 +2155,7 @@ def _vocabulary_lines():
               '角色决定它作核心器件时生成哪些电路候选；泛称 `ic` 只在标题不含任何角色词时可写，计划把每个 `ic` 列成 '
               '`DEVICE_KIND_GENERIC` 诊断（不生成电路候选），这张清单是下一批角色的来源。加角色只改 `catalog.DEVICE_ROLES` 一行：'
               '标题词、靶的电路类型、走哪些脚。', '',
-              '| 角色 | 名称 | 手册标题词（去空格小写的子串） | 作核心器件生成的电路 | ANALOG 走线从哪些脚出发 |', '|---|---|---|---|---|']
+              '| 角色 | 名称 | 手册标题词（去空格小写的子串，3 个字母以内按整词） | 作核心器件生成的电路 | ANALOG 走线从哪些脚出发 |', '|---|---|---|---|---|']
     for name, role in DEVICE_ROLES.items():
         lines.append('| `%s` | %s | %s | %s | %s |' % (
             name, role.title, '、'.join(role.cues) or '—', '、'.join(role.circuits) or '不作核心器件',

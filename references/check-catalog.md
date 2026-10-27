@@ -608,7 +608,7 @@
 
 集成电路在 `intent.device_kinds` 声明手册标题给出的角色（`audit_datasheets.py --intent` 用标题词核验原文），角色决定它作核心器件时生成哪些电路候选；泛称 `ic` 只在标题不含任何角色词时可写，计划把每个 `ic` 列成 `DEVICE_KIND_GENERIC` 诊断（不生成电路候选），这张清单是下一批角色的来源。加角色只改 `catalog.DEVICE_ROLES` 一行：标题词、靶的电路类型、走哪些脚。
 
-| 角色 | 名称 | 手册标题词（去空格小写的子串） | 作核心器件生成的电路 | ANALOG 走线从哪些脚出发 |
+| 角色 | 名称 | 手册标题词（去空格小写的子串，3 个字母以内按整词） | 作核心器件生成的电路 | ANALOG 走线从哪些脚出发 |
 |---|---|---|---|---|
 | `pwm_controller` | 开关电源控制器 | pwmcontroller、pfccontroller、flybackcontroller、currentmodecontroller、voltagemodecontroller、switchingcontroller、offlinecontroller、quasiresonantcontroller、boostcontroller、buckcontroller、powerfactorcorrectioncontroller、powerfactorcontroller、resonantcontroller、llccontroller、switchmodecontroller、pwmcontrol | POWER_CONVERTER | — |
 | `gate_driver` | 栅极驱动器 | gatedriver、mosfetdriver、igbtdriver、bridgedriver、fetdriver | POWER_CONVERTER | — |

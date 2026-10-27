@@ -72,7 +72,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 只有 VERIFIED 的声明会进入分析（basis `datasheet`），并随清单上下文保存为 `device_kinds_verified`。该字段由工具生成，intent 中手写会被拒绝。未核验、核验失败或抽取不到文本时，一律按缺口处理，不会因为抽取出错得出结论。
 
 型号/符号库关键字和符号引脚名（B/C/E、G/D/S）只作交叉核对，与手册矛盾时记为未知并形成缺口，因为这说明可能选错了符号或填错了型号。没有核验过的声明时，才按以下顺序退回启发式：
-1. 关键字（basis `part-keyword`）；
+1. 关键字（basis `part-keyword`）；型号族（PS2、SS、IRF 等）只在一个型号的开头命中，不在更长型号中间命中（TPS25940 不是光耦）；
 2. 引脚名（basis `pin-names`）；
 3. 位号前缀（basis `refdes-prefix`）。
 

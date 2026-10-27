@@ -32,10 +32,22 @@ def squash(text):
     return re.sub(r'[^a-z0-9]', '', str(text or '').lower())
 
 
+SHORT_CUE = 3   # squashed, "Supply Current vs" holds tvs and "Maximum Current" mcu: a cue this short is read as a word
+
+
+def named_by(word, text, flat=None):
+    """True when text names the cue: a long cue anywhere in the squashed text, a short cue as a word of its own (a
+    lowercase-to-capital join counts as a space, "BidirectionalTVSDiode"; a plural s is allowed)."""
+    if len(word) > SHORT_CUE:
+        return word in (squash(text) if flat is None else flat)
+    spaced = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', str(text or ''))
+    return re.search(r'(?<![A-Za-z0-9])(?i:%s)s?(?![a-z0-9])' % word, spaced) is not None
+
+
 def cues(text, specific=True):
     """Kinds named in text; with specific=True a TVS/Zener word suppresses the generic 'diode'."""
     flat = squash(text)
-    found = {kind for kind, words in KIND_CUES if any(w in flat for w in words)}
+    found = {kind for kind, words in KIND_CUES if any(named_by(w, text, flat) for w in words)}
     if specific and found & SPECIFIC_DIODES:
         found.discard('diode')
     if specific and 'opto' in found:
@@ -207,7 +219,7 @@ def candidates(document_path, pages=(1, 2), read_page=None):
         lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
         for kind in sorted(cues(text)):
             words = dict(KIND_CUES)[kind]
-            line = next((ln for ln in lines if any(w in squash(ln) for w in words)), '')
+            line = next((ln for ln in lines if any(named_by(w, ln) for w in words)), '')
             out.append({'kind': kind, 'page': page, 'snippet': line[:120]})
         if out:
             break

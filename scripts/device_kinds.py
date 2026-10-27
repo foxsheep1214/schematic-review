@@ -23,6 +23,12 @@ JST_CONNECTOR_RE = r'(?:^|[\s:])JST[-_]'
 NTC_WORDS = r'NTC'
 VARISTOR_WORDS = r'VARISTOR|\bMOV\b|压敏'
 
+
+def family(*numbers):
+    """Part-number families that must start a token, never inside a longer part number: TPS25940 (an eFuse) holds
+    PS2594, BSS84 holds SS84, AIRFLOW holds IRF. A library prefix, separator or Chinese word may precede them."""
+    return r'(?<![A-Z0-9])(?:%s)' % '|'.join(numbers)
+
 # Registry order is the classifier's keyword precedence (the first kind whose word matches wins); kinds without words
 # follow. Transistor order between bjt and mosfet does not matter: both matching is UNKNOWN whatever comes first.
 KINDS = OrderedDict([
@@ -33,21 +39,29 @@ KINDS = OrderedDict([
                             wearout='VARISTOR')),
     ('ntc', DeviceKind('热敏电阻', (r'^(TH|RT|NTC)\d',), (NTC_WORDS,), ('ntcthermistor', 'thermistor', 'inrushcurrentlimiter'),
                        two_terminal=True, passive_link=True, protective=True)),   # INRUSH_NTC only in the power path
-    ('opto', DeviceKind('光耦', (), (r'OPTO|PC81[07]|LTV\d|TLP\d|6N13[57]|HCPL|ACPL|FOD\d|CNY17|VO6\d|SFH6\d{2,3}|EL8\d\d|PS2[5-9]\d\d|TCMT\d|KPC\d|H11[A-Z]\d|光耦',),
+    # Part-number families through family(): a vendor prefix on a family is its own entry (DESD, AUIRF).
+    ('opto', DeviceKind('光耦', (), (r'OPTO|光耦|' + family(
+        r'PC81[07]', r'LTV-?\d', r'TLP\d', r'6N13[57]', 'HCPL', 'ACPL', r'FOD\d', 'CNY17', r'VO6\d', r'SFH6\d{2,3}',
+        r'EL8\d\d', r'PS2[5-9]\d\d', r'TCMT\d', r'KPC\d', r'H11[A-Z]\d'),),
                         ('optocoupler', 'photocoupler', 'optoisolator', 'opticallycoupled', 'opticalisolator', 'opticalcoupler'),
                         wearout='OPTO')),
-    ('tvs', DeviceKind('TVS', (), (r'\bTVS\b|SMAJ|SMBJ|SMCJ|P6KE|1\.5KE|ESD\d|PESD|SM712',),
+    ('tvs', DeviceKind('TVS', (), (r'\bTVS\b|' + family('SMAJ', 'SMBJ', 'SMCJ', 'P6KE', r'1\.5KE', r'ESD\d', 'PESD', 'DESD',
+                                                        'SM712'),),
                        ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress'), two_terminal=True, protective=True)),
-    ('zener', DeviceKind('齐纳', (), (r'ZENER|BZX|BZT5\d|MMSZ|1N47\d|稳压二极管',), ('zener',), two_terminal=True)),
+    ('zener', DeviceKind('齐纳', (), (r'ZENER|稳压二极管|' + family('BZX', r'BZT5\d', 'MMSZ', r'1N47\d'),), ('zener',),
+                         two_terminal=True)),
     # KiCad symbol-library category of the symbol actually placed, then the part words.
-    ('bjt', DeviceKind('双极晶体管', (), (r'TRANSISTOR_BJT:', r'\bNPN\b|\bPNP\b|BC[PXW]?\d{2,3}|2N\d{4}|MMBT|PBSS|S8050|S8550|三极管'),
+    ('bjt', DeviceKind('双极晶体管', (), (r'TRANSISTOR_BJT:', r'\bNPN\b|\bPNP\b|三极管|' +
+                                        family(r'BC[PXW]?\d{2,3}', r'2N\d{4}', 'MMBT', 'PBSS', 'S8050', 'S8550')),
                        ('npn', 'pnp', 'bipolar'))),
     ('mosfet', DeviceKind('MOSFET', (r'^Q\d',), (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:',
-                                                 r'MOSFET|\bFET\b|NMOS|PMOS|[NP]-MOS|IRF|IRLML|AO\d{4}|SI\d{4}|BSS\d|2N7002|IGBT'),
+                                                 r'MOSFET|\bFET\b|NMOS|PMOS|[NP]-MOS|IGBT|' +
+                                                 family('IRF', 'AUIRF', 'IRLML', r'AO\d{4}', r'SI\d{4}', r'BSS\d', '2N7002')),
                           ('mosfet', 'nchannel', 'pchannel', 'superjunction'))),
-    ('diode', DeviceKind('二极管', (r'^D\d',), (r'SCHOTTKY|DIODE|SS\d{2}|BAT\d|1N4\d{3}|1N58\d|二极管',), ('rectifier', 'diode', 'schottky'),
-                         two_terminal=True)),
-    ('ferrite', DeviceKind('磁珠', (r'^FB\d',), (r'FERRITE|BEAD|BLM\d|MPZ\d|磁珠',), two_terminal=True, passive_link=True)),
+    ('diode', DeviceKind('二极管', (r'^D\d',), (r'SCHOTTKY|DIODE|二极管|' + family(r'SS\d{2}', r'BAT\d', r'1N4\d{3}', r'1N58\d'),),
+                         ('rectifier', 'diode', 'schottky'), two_terminal=True)),
+    ('ferrite', DeviceKind('磁珠', (r'^FB\d',), (r'FERRITE|BEAD|磁珠|' + family(r'BLM\d', r'MPZ\d'),), two_terminal=True,
+                           passive_link=True)),
     ('inductor', DeviceKind('电感', (r'^L\d',), (r'INDUCTOR|CHOKE|电感',), two_terminal=True, passive_link=True)),
     # OSC only as a whole word: footprint names like Bosch_LGA-8 contain the letters.
     ('crystal', DeviceKind('晶体', (r'^Y\d', r'^X\d'), (r'CRYSTAL|XTAL|\bOSC(?:ILLATOR)?\b|晶振|晶体',))),

@@ -7,6 +7,27 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Part words read as words: families start a part number, short cues are whole words (2026-10-26)
+
+An audit of the part-kind declarations of the schematic-generation skill, which copies this kind vocabulary, found an
+eFuse IC classified as an optocoupler by its part number alone: the opto family `PS2[5-9]\d\d` matched the PS2xxx inside
+a longer TI part number (TPS25940 holds PS2594), and every other part-number family had the same exposure (SS14 inside
+BSS84, IRF inside AIRFLOW, BAT54 or ESD5 after any letter). `device_kinds.family()` now writes each part-number family
+behind `(?<![A-Z0-9])`, so it matches after a library prefix, a separator or a Chinese word but never inside a longer
+alphanumeric run; vendor prefixes that are families of their own get their own entry (DESD, AUIRF) and LTV accepts its
+hyphen (LTV-817). On the 59 netlist fixtures (3196 parts) the only change before the DESD entry was four DESD5V0 TVS
+parts falling to diode, and none after it. Datasheet cues had the same fault: matched as substrings of squashed text,
+"Supply Current vs" names tvs and "Maximum Current" names mcu, so curve titles on a datasheet's first pages proposed
+the wrong kind and a quote holding them read QUOTE_CONFLICT; `datasheet_kinds.named_by` reads a cue of three letters or
+fewer as a word (a lowercase-to-capital join counts as a space, a plural s is allowed), longer cues still squashed. On
+29 datasheet text extracts, first-page candidates change on two (a spurious mcu dropped, which on one MOSFET datasheet
+had also suppressed the mosfet candidate). Kind names and cue sets are unchanged, so the other skill's copy stays aligned.
+
+- Event: user:2026-10-26 (relayed from the part-kind audit session: fix SR's part-number family keywords in their own session)
+- Causes: rule_not_enforced 2 (part-number families matched inside longer part numbers, short cues inside squashed words)
+- Changed: scripts/device_kinds.py, scripts/datasheet_kinds.py, scripts/catalog.py, references/checker-conventions.md, references/check-catalog.md, references/review-vocabulary.md, scripts/tests/test_part_number_families.py, evals/mutation/mutations.json, evals/mutation/README.md
+- Gates: 2290 unit tests, rule contracts 69/69, KiCad replay 195/195, typical circuits 200/185/14 unchanged, M726–M731 killed (mutation gate --changed passes)
+
 ## Step 5.2 packing and delivery: the record holds excerpts, not copies (2026-10-26)
 
 The strict audit of 5.2 (user: "接着严格审核 5.2 打包与交付" → "5.2 的 A–F 全部执行") checked the four R7 deliveries: the
