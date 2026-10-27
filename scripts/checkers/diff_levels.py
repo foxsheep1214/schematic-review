@@ -19,7 +19,7 @@ from .planutil import slug
 
 SUFFIXES = (('_P', '_N'), ('_DP', '_DN'), ('_DP', '_DM'), ('P', 'N'), ('+', '-'))
 STANDARD_RE = re.compile(r'(LVDS|LVPECL|PECL|CML|HCSL|SSTL|HSTL)', re.I)
-DC_PATH_KINDS = {pw.RESISTOR, pw.INDUCTOR, pw.FERRITE}
+DC_PATH_KINDS = {pw.RESISTOR, pw.INDUCTOR, pw.FERRITE} | pw.SERIES_WINDINGS
 OUT_PINTYPES = {'OUT', 'OUTPUT', 'TRISTATE', '3STATE'}
 IN_PINTYPES = {'IN', 'INPUT'}
 MAX_PAIRS = 128

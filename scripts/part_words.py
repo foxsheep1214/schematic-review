@@ -38,6 +38,7 @@ FUSE, JUMPER, TESTPOINT, SWITCH = 'fuse', 'jumper', 'testpoint', 'switch'
 IC, CONNECTOR, UNKNOWN = 'ic', 'connector', 'unknown'
 BATTERY, BRIDGE_RECTIFIER = 'battery', 'bridge_rectifier'
 NTC, VARISTOR = 'ntc', 'varistor'   # 2026-10-26 table extension: the R7 board's TH101/TH601 and RV101 had no kind
+COMMON_MODE_CHOKE, COUPLED_INDUCTOR = 'common_mode_choke', 'coupled_inductor'   # 2026-10-27 A1b: magnetics by function
 # The registry (device_kinds.KINDS) is the one list of kinds; the constants above are its names for identity checks.
 KIND_CONSTANTS = {k: k for k in device_kinds.KINDS}
 # A datasheet-declared IC role (catalog.DEVICE_ROLES) classifies as IC; the role itself is read with
@@ -60,6 +61,10 @@ CONNECTOR_CONTACT_RE = (
 KEYWORD_KINDS = device_kinds.keyword_table()   # part/value/symbol words → kind, in registry precedence
 
 TWO_TERMINAL = set(device_kinds.with_flag('two_terminal'))
+# Magnetics whose windings are coupled but not joined (a winding net is a converter's output, the parts split domains),
+# and the one whose windings each pass the line through (a filter's series element) (2026-10-27 A1b).
+WINDING_PAIRS = frozenset({TRANSFORMER, COUPLED_INDUCTOR})
+SERIES_WINDINGS = frozenset({COMMON_MODE_CHOKE})
 PASSIVE_LINKS = set(device_kinds.with_flag('passive_link'))
 
 GATE_NAMES = {'G', 'GATE', 'GT'}
@@ -128,9 +133,32 @@ def name_matches(pattern, name, pin=None):
 HEURISTIC_BASES = ('pin-names', 'refdes-prefix')   # no datasheet or part-number evidence behind the kind
 
 
+def db_kinds(db):
+    """{ref: {kind, basis, settlement}} for every fitted part as the classifier reads the netlist alone, without any
+    declaration (the reading NetGraph.kind gives a db without device_kinds; step ① tools may not import the checkers).
+    settlement is what settles the kind (device_kinds.settlement, 2026-10-27 A2/A5)."""
+    pins = {}
+    for node, net in (db.get('pin2net') or {}).items():
+        ref, _, pin = node.partition('.')
+        pins.setdefault(ref, {})[pin] = net
+    names = db.get('pinname') or {}
+    out = {}
+    for ref, part in sorted((db.get('parts') or {}).items()):
+        if part.get('nc'):
+            continue
+        own = pins.get(ref, {})
+        kind, basis = classify(ref, part, len(own) or None, [(names.get(ref + '.' + pin), pin) for pin in own])
+        out[ref] = {'kind': kind, 'basis': basis,
+                    'settlement': device_kinds.settlement(kind, len(own), len(set(own.values())))}
+    return out
+
+
 def kind_gap(graph, ref):
-    """Gap text when a transistor/diode kind rests only on pin names or refdes prefix."""
-    if graph.basis(ref) in HEURISTIC_BASES:
+    """Gap text when a transistor/diode kind rests only on pin names or refdes prefix, or on part words for a kind only
+    a datasheet declaration settles (2026-10-27 B1: a keyword is a guess too)."""
+    basis = graph.basis(ref)
+    if basis in HEURISTIC_BASES or (basis == 'part-keyword' and device_kinds.needs_datasheet(
+            graph.kind(ref), len(graph.pins_of(ref)))):
         return 'datasheet-kind:' + ref
     return None
 
@@ -159,7 +187,8 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     """返回 (kind, basis)。basis 说明结论的依据：datasheet / part-keyword / pin-names / refdes-prefix。
 
     declared 是审查者按原厂手册记录的器件类型（intent.devices.kind + kind_citation），为权威依据；
-    型号/符号库关键字与符号引脚名只作交叉核对，与手册矛盾时返回未知（选错符号或填错型号）。
+    符号引脚名与手册矛盾时返回未知（选错符号）；型号/符号库关键字与手册矛盾时以手册为准（2026-10-27 B3，
+    关键词表可能不准，矛盾由资料审计提示）。
     没有手册声明时才退回启发式：关键字 → 引脚名 → 位号前缀。调用方对 pin-names / refdes-prefix
     依据须登记“缺手册器件类型”缺口，不能只凭引脚名或位号前缀下结论。
     pin_names 为 (引脚名, 脚号) 序列。
@@ -170,10 +199,6 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         sig = pin_signature(pin_names)
         if kind in (MOSFET, BJT) and sig and sig != kind:
             return UNKNOWN, f'datasheet says {kind} but symbol pin names say {sig}'
-        blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
-        named = {k for pattern, k in KEYWORD_KINDS if k in (MOSFET, BJT) and re.search(pattern, blob, re.I)}
-        if kind in (MOSFET, BJT) and named and kind not in named:
-            return UNKNOWN, f'datasheet says {kind} but part/library keywords say {"/".join(sorted(named))}'
         return kind, 'datasheet'
     signature = pin_signature(pin_names)
     blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))

@@ -188,7 +188,7 @@ class ExtensionSignalTests(unittest.TestCase):
         out['sr_improvements'].extend(vr.extension_signals({'functions': []}, self.UNKNOWN_PART))
         md = render_report.render(p, r, out, {})
         section = md[md.find('### 器件类别与定界表要扩的'):]
-        self.assertIn('| 词表里没有的器件类别 | GDT1 | B88069X2320S102 / GDT 350V |', section)
+        self.assertIn('| SR 认不出的器件（能力不足，待补） | GDT1 | B88069X2320S102 / GDT 350V |', section)
         self.assertIn('| 有类别、没有格的参数 | R1 | resistor | FN-OTHER 余量[0]：R1 额定功率 0.25 W', section)
         self.assertLess(md.find('## 对 SR 的反馈'), md.find('### 器件类别与定界表要扩的'))
 

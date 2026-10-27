@@ -20,7 +20,7 @@ from .planutil import slug
 
 SWITCH_KINDS = {pw.MOSFET, pw.BJT}
 CLAMP_KINDS = {pw.DIODE, pw.TVS, pw.ZENER}
-LOAD_KINDS = {pw.RELAY, pw.INDUCTOR, pw.TRANSFORMER}
+LOAD_KINDS = {pw.RELAY, pw.INDUCTOR} | pw.WINDING_PAIRS | pw.SERIES_WINDINGS
 DRIVER_PIN_RE = re.compile(r'^(OUT\w*|DRV\w*|O\d+|HO|LO|SOURCE\d*|SINK\d*)$', re.I)
 INTEGRATED_CLAMP_RE = re.compile(r'^(COM|CLAMP\w*|VS|FREEWHEEL\w*)$', re.I)
 LOAD_NAME_RE = re.compile(r'(^|_)(MOTOR|SOLENOID|VALVE|COIL|RELAY|PUMP|BRAKE|FAN|ACTUATOR)\w*(_|$)', re.I)
@@ -61,7 +61,7 @@ def _flyback_winding_errors(item, db):
     actual = graph.pins_of(ref)
     # Unmapped pins are allowed only when they connect to nothing (NC or a single-pin net).
     unmapped = [pin for pin in actual if pin not in pins]
-    if (graph.kind(ref) != pw.TRANSFORMER or not set(pins) <= set(actual)
+    if (graph.kind(ref) not in pw.WINDING_PAIRS or not set(pins) <= set(actual)
             or any(ref + '.' + pin not in db.get('no_connect_nodes', [])
                    and actual[pin] not in graph.pseudo
                    and len(graph.nodes_on(actual[pin])) > 1 for pin in unmapped)):
@@ -111,8 +111,8 @@ def _filter_winding_errors(item, db):
     if db is None:
         return []
     ref = item.get('ref')
-    if ng.NetGraph(db).kind(ref) not in (pw.INDUCTOR, pw.TRANSFORMER):
-        return ['common_mode_input_filter requires an inductor/transformer component']
+    if ng.NetGraph(db).kind(ref) not in {pw.INDUCTOR, pw.TRANSFORMER} | pw.SERIES_WINDINGS:
+        return ['common_mode_input_filter requires a common-mode choke, inductor or transformer component']
     actual = {node.partition('.')[2] for node in db.get('pin2net', {})
               if node.partition('.')[0] == ref}
     if set(pins) != actual:
@@ -167,7 +167,7 @@ class _Scan:
 
     def _flyback(self, ref, kind):
         declaration = self.flybacks.get(ref)
-        if declaration is None or kind != pw.TRANSFORMER:
+        if declaration is None or kind not in pw.WINDING_PAIRS:
             return None
         graph = self.graph
         gaps = _flyback_winding_errors(declaration, self.db)
@@ -248,7 +248,7 @@ class _Scan:
         this never adds winding edges to the shared graph or joins L/N.
         """
         declaration = self.filters.get(ref)
-        if declaration is None or kind not in (pw.INDUCTOR, pw.TRANSFORMER):
+        if declaration is None or kind not in {pw.INDUCTOR, pw.TRANSFORMER} | pw.SERIES_WINDINGS:
             return None
         gaps = _filter_winding_errors(declaration, self.db)
         nets = self.graph.nets_of(ref)

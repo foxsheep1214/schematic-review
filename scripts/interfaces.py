@@ -44,8 +44,8 @@ PINTYPE_ROLES = {'OUT': DRIVER, 'OCL': DRIVER, 'OEM': DRIVER, 'TRI': DRIVER, 'IN
 PART_ROLES = {'gate': RECEIVER, 'drain': DRIVER, 'source': PASSIVE, 'anode': PASSIVE, 'cathode': PASSIVE,
               'led_anode': RECEIVER, 'led_cathode': RECEIVER, 'out_collector': DRIVER, 'out_emitter': PASSIVE,
               'coil': RECEIVER, 'contact': PASSIVE}
-PASSIVE_KINDS = pw.TWO_TERMINAL | {pw.CONNECTOR, pw.TESTPOINT, pw.TRANSFORMER, pw.CRYSTAL, pw.BRIDGE_RECTIFIER,
-                                   pw.FUSE, pw.JUMPER, pw.SWITCH, pw.BATTERY}
+PASSIVE_KINDS = pw.TWO_TERMINAL | {pw.CONNECTOR, pw.TESTPOINT, pw.CRYSTAL, pw.BRIDGE_RECTIFIER,
+                                   pw.FUSE, pw.JUMPER, pw.SWITCH, pw.BATTERY} | pw.WINDING_PAIRS | pw.SERIES_WINDINGS
 # IC pin names whose direction is conventional; anything else needs the library type or the datasheet.
 NAME_ROLES = (
     (re.compile(r'^(V?OUT\d*|VO|DRV\w*|GATE\w*|G?DRV|PWM\w*|TX\w*|DO|SDO|MOSI|INT\w*|PG|PGOOD|FLT_?OUT)$', re.I), DRIVER),
@@ -53,7 +53,7 @@ NAME_ROLES = (
     (re.compile(r'^(CC\d*|SDA|SCL|D[+-]|DP|DN|GPIO\w*|IO\d*|P\d+_?\d*)$', re.I), BIDIRECTIONAL),
 )
 # A net on one of these parts is a power path (a winding, a rectifier bridge), not a logic signal.
-POWER_NODE_KINDS = {pw.TRANSFORMER: 'winding', pw.BRIDGE_RECTIFIER: 'bridge'}
+POWER_NODE_KINDS = {pw.TRANSFORMER: 'winding', pw.COUPLED_INDUCTOR: 'winding', pw.BRIDGE_RECTIFIER: 'bridge'}
 
 
 class Deriver:

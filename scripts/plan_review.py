@@ -296,7 +296,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
 
 
 # Verified kinds whose parts have no supply/return pins: DEVICE_PINS_NO_SUPPLY does not ask about them.
-NO_SUPPLY_KINDS = ('opto', 'relay', 'transformer', 'bridge_rectifier', 'crystal')
+NO_SUPPLY_KINDS = ('opto', 'relay', 'transformer', 'bridge_rectifier', 'crystal', 'coupled_inductor', 'common_mode_choke')
 
 
 class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning, plan_system.SystemPlanning,

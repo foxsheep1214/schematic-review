@@ -11,6 +11,7 @@ import requirement_parameters
 import requirements_extract
 from audit_datasheets import datasheet_audit_all_available
 from checkers import registry_cold_rules, registry_e_rules
+import part_words
 from part_words import ANODE_NAMES, CATHODE_NAMES, normalize
 from interfaces import CONNECTOR_RE
 
@@ -203,23 +204,32 @@ class BoardPlanning:
                                       'columns': [dict(c) for c in original['columns']]}
         # The declared inventory includes symbol pins omitted from connected nets.
         devices = self.intent.get('devices') or {}
+        # What settles each part's kind follows the kind the classifier reads off the netlist alone, not the refdes
+        # (2026-10-27 A2/A3/A5): a datasheet declaration, or the reviewer placing a part the classifier cannot read.
+        guess = part_words.db_kinds({k: v for k, v in self.db.items() if k != 'device_kinds'})
+        verified = board_intent.declared_kinds(self.kind_intent)
+        classified = board_intent.classified_kinds(self.intent)
         for ref, part in sorted(self.db.get('parts', {}).items()):
+            settle = (guess.get(ref) or {}).get('settlement')
             if (not re.match(r'^(U|M|Q|D|J|P|CN)\d', ref, re.I)
-                    and ref not in devices) or part.get('nc'):
+                    and ref not in devices and not settle) or part.get('nc'):
                 continue
+            kind_gaps = []
+            if settle == 'datasheet' and ref not in verified:
+                # The type, the IC role and the multi-winding magnetics' function come from the datasheet, never from
+                # words, pin names or the refdes; the role decides which ICs anchor circuit candidates.
+                kind_gaps.append(self._kind_gap(ref))
+            elif settle == 'classify' and ref not in verified and ref not in classified:
+                kind_gaps.append(self._classify_gap(ref))
             device = devices.get(ref)
             package = None if device else (self._two_terminal_package(ref) or self._single_row_connector(ref))
             if package:
                 footprint, basis = package
-                item = self._ready_check('DEV-D02', {'ref': ref}, [], [f'refdes:{ref}', f'two-terminal-package:{footprint}'])
+                item = self._ready_check('DEV-D02', {'ref': ref}, kind_gaps, [f'refdes:{ref}', f'two-terminal-package:{footprint}'])
                 item['pin_difference'] = {'official_only': [], 'symbol_only': [], 'basis': basis}
                 continue
-            gaps = [] if device and device['pinout_complete'] else [
-                f'intent.devices.{ref}: official full pinout + exact MPN/package']
-            if re.match(r'^(Q|D|ZD|TVS|U|M)\d', ref, re.I) and ref not in board_intent.declared_kinds(self.kind_intent):
-                # Discrete semiconductor type and integrated-circuit role come from the datasheet, not pin names
-                # or the refdes prefix; the role decides which ICs anchor circuit candidates.
-                gaps.append(self._kind_gap(ref))
+            gaps = ([] if device and device['pinout_complete'] else [
+                f'intent.devices.{ref}: official full pinout + exact MPN/package']) + kind_gaps
             trigger = [f'refdes:{ref}'] + ([f'intent.devices:{device["citation"]}'] if device else [])
             item = self._ready_check('DEV-D02', {'ref': ref}, gaps, trigger)
             if device:
@@ -274,5 +284,14 @@ class BoardPlanning:
         entry = ((self.datasheet_audit or {}).get('device_kinds') or {}).get(ref) or {}
         status = entry.get('status', 'NOT_AUDITED')
         hint = '; '.join(f"{c['kind']} p{c['page']} \"{c['snippet']}\"" for c in entry.get('candidates', [])[:3])
+        conflict = entry.get('kind_conflict') or ((self.datasheet_audit or {}).get('kind_conflicts') or {}).get(ref)
+        clash = (f"; KIND_CONFLICT: classifier {conflict['classifier_kind']}, datasheet title "
+                 f"{'/'.join(conflict['title_kinds'])} \"{conflict['title'][:80]}\"") if conflict else ''
         return (f'intent.device_kinds.{ref}: datasheet page + verbatim quote stating the device type '
-                f'(audit {status}' + (f'; candidates: {hint}' if hint else '') + (f'; {entry["detail"]}' if entry.get('detail') else '') + ')')
+                f'(audit {status}' + (f'; candidates: {hint}' if hint else '') + clash
+                + (f'; {entry["detail"]}' if entry.get('detail') else '') + ')')
+
+    def _classify_gap(self, ref):
+        """A part the classifier cannot read (an SR capability gap, 2026-10-27 A5): the reviewer places it."""
+        return (f'intent.device_kinds.{ref}: the classifier cannot read this part; declare a datasheet kind with page + '
+                f'quote, or a kind that needs no datasheet with a reason')

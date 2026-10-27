@@ -718,7 +718,8 @@ SR_FEEDBACK_KINDS = (('false_alarm', '误报'), ('over_strict', '规则过严或
                      ('missed', '漏报'), ('unclear', '说明不清或互相矛盾'),
                      ('software_bug', '已复现的程序错误'), ('coverage_gap', '自动化覆盖或格式适配不足'),
                      ('cell_boundary', '定界表某一格的边界与手册实际不符'))
-EXTENSION_SIGNALS = {'NEW_DEVICE_KIND': '词表里没有的器件类别', 'NEW_BOUND_CELL': '有类别、没有格的参数'}
+EXTENSION_SIGNALS = {'NEW_DEVICE_KIND': 'SR 认不出的器件（能力不足，待补）', 'NEW_BOUND_CELL': '有类别、没有格的参数',
+                     'KEYWORD_KIND_CONFLICT': '型号栏或库名与手册类型不一致（词表待修）'}
 
 
 SR_TALK_RE = re.compile(r'(?<![A-Za-z])SR(?![A-Za-z])|误报|改进效果|quality_screening|提示仍|技能')

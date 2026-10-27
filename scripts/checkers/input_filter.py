@@ -20,7 +20,7 @@ from .base import Checker
 from .planutil import slug
 
 VIN_PIN_RE = re.compile(r'^(VIN|PVIN|VINA|VCC_IN|VDD_IN|VBUS_IN)\d*$', re.I)
-SERIES_KINDS = {pw.INDUCTOR, pw.FERRITE}
+SERIES_KINDS = {pw.INDUCTOR, pw.FERRITE} | pw.SERIES_WINDINGS
 MAX_INPUTS = 128
 
 

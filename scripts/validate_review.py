@@ -643,7 +643,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     repair_counts = {state: sum(isinstance(x.get("remediation"), dict) and
                     x["remediation"].get("readiness") == state for x in findings.values())
                     for state in READINESS}
-    sr_improvements.extend(extension_signals(report, db))
+    sr_improvements.extend(extension_signals(report, db, (plan.get('review_inputs') or {}).get('datasheet_audit')))
     return {"quality_screening": screen_quality(plan, report, db, base_dir),
             "estimated_passes": estimated,
             "pending_deliverables": sorted(pending),
@@ -672,11 +672,13 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "remediation_validation": {"enforced": actionable, "by_readiness": repair_counts}}
 
 
-def extension_signals(report, db):
+def extension_signals(report, db, datasheet_audit=None):
     """2026-10-26 decision 0 (user: 器件类别是可以增长的): what the review met that the device-kind vocabulary or the
     bounding table does not cover, reported under 对 SR 的反馈 and never blocking. NEW_DEVICE_KIND: a fitted part the
-    classifier calls unknown. NEW_BOUND_CELL: a margin or an unboundable datum written with cell NONE on a part whose kind
-    is known — the table has no cell for that kind's parameter."""
+    classifier calls unknown, first of all an SR capability gap (2026-10-27 A5; the reviewer still places it).
+    KEYWORD_KIND_CONFLICT: a verified declaration the part words contradicted (B3: the datasheet won, the words need
+    fixing). NEW_BOUND_CELL: a margin or an unboundable datum written with cell NONE on a part whose kind is known — the
+    table has no cell for that kind's parameter."""
     if not (isinstance(db, dict) and isinstance(db.get('parts'), dict) and db['parts']):
         return []
     from checkers.netgraph import NetGraph
@@ -687,8 +689,14 @@ def extension_signals(report, db):
         if graph.kind(ref) == 'unknown' and not part.get('nc'):
             out.append({'kind': 'NEW_DEVICE_KIND', 'refs': [ref],
                         'clue': ' / '.join(str(part.get(k)) for k in ('part', 'value') if text(part.get(k))),
-                        'suggestion': '按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明）和定界表（可得性、允许的估算与倍数、'
-                                      '失效后果、样机能否验、边界）；本板按已知的判，结论不等它'})
+                        'suggestion': 'SR 能力不足：按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明、要不要手册）和定界表（可得性、允许的估算与倍数、'
+                                      '失效后果、样机能否验、边界）；接了两个以上网络的，本板由审查员在 intent.device_kinds 里归类'})
+    for ref, entry in sorted(((datasheet_audit or {}).get('device_kinds') or {}).items()):
+        conflict = entry.get('keyword_conflict') if isinstance(entry, dict) else None
+        if conflict:
+            out.append({'kind': 'KEYWORD_KIND_CONFLICT', 'refs': [ref], 'device_kinds': [entry.get('kind')],
+                        'clue': '型号/库名关键词读成 %s' % conflict.get('keyword_kind'),
+                        'suggestion': '以手册为准（已按手册判）；关键词表把这个型号读错了，修 device_kinds.KINDS 的词'})
     for fn in report.get('functions') or []:
         if not (isinstance(fn, dict) and text(fn.get('id'))):
             continue

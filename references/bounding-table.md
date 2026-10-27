@@ -91,7 +91,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `RES-POWER` | resistor | 电阻功率、脉冲、TCR 与耐压 | UPPER | 温度与脉宽 / — | G1；G5 | `VENDOR_DATUM` | commodity-floors.md 片式电阻 |
 | `MLCC-EFFECTIVE-C` | capacitor | MLCC 有效容量（偏压、温度、老化） | LOWER | 直流偏压与温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G8 | `VENDOR_DATUM` | commodity-floors.md MLCC；wca-formulas.md |
 | `ECAP-ESR-RIPPLE` | electrolytic | 电解 ESR 与纹波电流（温度、频率系数表） | — | 温度与频率 / NONMONOTONIC | G1；G5（`table_interpolate`）；G9 | `VENDOR_DATUM` | commodity-floors.md 电解 |
-| `IND-ISAT` | inductor、transformer | 电感 Isat（按资料定义取温度最坏值） | LOWER | 温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G9（`typical_band`） | `VENDOR_DATUM` | commodity-floors.md 电感 |
+| `IND-ISAT` | inductor、transformer、coupled_inductor、common_mode_choke | 电感 Isat（按资料定义取温度最坏值） | LOWER | 温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G9（`typical_band`） | `VENDOR_DATUM` | commodity-floors.md 电感 |
 | `FUSE-I2T` | fuse | 保险丝 I²t 与温度降额 | — | 脉宽与温度 / NONMONOTONIC | G1；G5（`table_interpolate`） | `VENDOR_DATUM` | commodity-floors.md |
 | `IC-THRESHOLD` | ic 及各 IC 角色 | 门限、基准 | — | 温度 / NONMONOTONIC | G1；G4（`tempco_bound`）；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
 | `IC-QUIESCENT` | ic 及各 IC 角色 | 静态电流、按模式的功耗 | UPPER | 模式与温度 / — | G1；G9（`typical_band`） | `VENDOR_DATUM` | evidence-proportionality.md“只有典型值的参数” |

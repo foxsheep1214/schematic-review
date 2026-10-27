@@ -9,9 +9,11 @@
 import hashlib
 import json
 import re
+from collections import Counter
 
 import catalog
 import device_kinds
+import part_words
 from electrical_contract import db_fingerprint
 
 ASSEMBLY_FIELDS = ('id', 'citation', 'population', 'jumpers')
@@ -30,6 +32,9 @@ SET_POINT_ID_RE = re.compile(r'^[A-Z][A-Z0-9_]*$')
 IC_KINDS = tuple(catalog.DEVICE_ROLES)
 ANCHOR_KINDS = tuple(name for name, role in catalog.DEVICE_ROLES.items() if role.circuits)
 DEVICE_KINDS = device_kinds.declarable() + IC_KINDS   # the registry's declarable kinds, then the IC roles
+# A part the classifier cannot read is placed by the reviewer (2026-10-27 A5): a kind that needs no datasheet, or `other`
+# for one the registry has no row for (a buzzer); a kind only a datasheet settles takes page + quote instead.
+CLASSIFY_KINDS = tuple(k for k in device_kinds.declarable() if not device_kinds.KINDS[k].datasheet) + ('other',)
 PIN_ROLES = ('power', 'return', 'nc', 'other', 'absent')   # absent: a pin number the package skips (NCP1343 CASE 751BP: 1–8, 10)
 # Package families whose name ends in the pin count (QFN-16, TSSOP-20, SOIC-8, LQFP-48, BGA-256, DIP-8 ...); SOT and TO
 # carry a body code first (SOT-23-3, TO-220-3) so they count only with a second number. Any other name gives no count.
@@ -98,16 +103,37 @@ def validate(intent, db=None):
 
 
 def device_kind_errors(kinds, db):
-    """intent.device_kinds: {ref: {kind, page, quote}}; quote is verbatim from that datasheet page."""
+    """intent.device_kinds: {ref: {kind, page, quote[, kind_reason]}}, the quote verbatim from that datasheet page and
+    kind_reason why the declaration stands although the datasheet title names another kind (2026-10-27 C3); or, for a
+    part the classifier cannot read and whose kind needs no datasheet, {ref: {kind, reason}} (A5)."""
     errors = []
     if not isinstance(kinds, dict):
         return ['device_kinds: must be an object keyed by refdes']
+    graph = None
     for ref, item in kinds.items():
         label = 'device_kinds.' + str(ref)
         if not (_text(ref) and (db is None or ref in db.get('parts', {}))):
             errors.append(label + ': unknown ref')
-        if not isinstance(item, dict) or set(item) != {'kind', 'page', 'quote'}:
-            errors.append(label + ': needs exactly kind, page and quote')
+        if isinstance(item, dict) and set(item) == {'kind', 'reason'}:
+            if item['kind'] not in CLASSIFY_KINDS:
+                errors.append(label + ': a kind given with a reason must be one that needs no datasheet: '
+                              + '/'.join(CLASSIFY_KINDS) + '; any other kind takes page + quote')
+            if not _text(item['reason']):
+                errors.append(label + ': reason must say what the part is and what shows it')
+            if db is not None and ref in db.get('parts', {}):
+                if graph is None:
+                    graph = part_words.db_kinds({k: v for k, v in db.items() if k != 'device_kinds'})
+                    pins = Counter(node.partition('.')[0] for node in db.get('pin2net') or {})
+                seen = graph.get(ref) or {}
+                if seen.get('settlement') != 'classify':
+                    errors.append(label + ': only a part the classifier cannot read is placed with a reason; this one '
+                                  'reads as %s and takes page + quote when its kind needs a datasheet' % seen.get('kind'))
+                elif device_kinds.needs_datasheet(item['kind'], pins[ref]):
+                    errors.append(label + ': a multi-winding %s needs page + quote (only its datasheet tells a common-mode '
+                                  'choke, a coupled inductor and a transformer apart)' % item['kind'])
+            continue
+        if not isinstance(item, dict) or not ({'kind', 'page', 'quote'} <= set(item) <= {'kind', 'page', 'quote', 'kind_reason'}):
+            errors.append(label + ': needs kind, page and quote (and optionally kind_reason), or kind and reason')
             continue
         if item['kind'] not in DEVICE_KINDS:
             errors.append(label + ': kind must be one of ' + '/'.join(DEVICE_KINDS))
@@ -115,6 +141,8 @@ def device_kind_errors(kinds, db):
             errors.append(label + ': page must be a 1-based integer')
         if not _text(item['quote']):
             errors.append(label + ': quote must be the datasheet text that states the device type')
+        if 'kind_reason' in item and not _text(item['kind_reason']):
+            errors.append(label + ': kind_reason must say why the declaration stands against the datasheet title')
     return errors
 
 
@@ -200,6 +228,13 @@ def with_verified_kinds(intent, datasheet_audit):
         return source
     kinds = verified_kinds(source, datasheet_audit)
     return dict(source, **{VERIFIED_KEY: kinds}) if kinds else source
+
+
+def classified_kinds(intent):
+    """{ref: kind} the reviewer placed with a reason (A5): closes the classify gap, never changes the analysis."""
+    kinds = intent.get('device_kinds') if isinstance(intent, dict) else None
+    return {ref: item['kind'] for ref, item in (kinds or {}).items()
+            if isinstance(item, dict) and set(item) == {'kind', 'reason'}}
 
 
 def declared_kinds(intent):

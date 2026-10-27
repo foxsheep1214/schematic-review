@@ -15,6 +15,7 @@ Typical flow::
         --resolution datasheet-resolution.json --json datasheet-audit.json
 """
 import datasheet_kinds
+import part_words
 import argparse
 import hashlib
 import io
@@ -26,8 +27,6 @@ from collections import Counter
 from electrical_contract import load_json, squeeze
 
 
-# Active parts and every discrete semiconductor prefix (ZD/TVS were silently skipped before).
-REQUIRED_REF_RE = re.compile(r'^(U|M|Q|D|ZD|TVS)\d', re.I)
 AUDIT_STATUSES = ('AVAILABLE', 'NEEDS_VERIFICATION', 'MISSING', 'NOT_FOUND')
 RESOLUTION_STATUSES = ('FOUND', 'NOT_FOUND')
 SOURCE_KINDS = ('package', 'network')
@@ -347,7 +346,7 @@ def validate_datasheet_audit(audit, db=None):
         errors.append('datasheet audit device_kinds 必须为 object')
     else:
         for ref, entry in kinds.items():
-            if not isinstance(entry, dict) or entry.get('status') not in datasheet_kinds.STATUSES + ('UNDECLARED',):
+            if not isinstance(entry, dict) or entry.get('status') not in datasheet_kinds.STATUSES + datasheet_kinds.OPEN_STATUSES:
                 errors.append(f'datasheet audit device_kinds.{ref} 状态无效')
             elif entry['status'] == 'VERIFIED' and not re.fullmatch('[0-9a-f]{64}', str(entry.get('document_sha256'))):
                 errors.append(f'datasheet audit device_kinds.{ref} 核验通过但缺少手册哈希')
@@ -410,11 +409,19 @@ def _resolution_index(resolution, base_dir):
     return result
 
 
-def _material_groups(db, required_refs=None):
+def heuristic_kinds(db):
+    """What decides which parts need a datasheet (2026-10-27 A2/A3: the kind the classifier reads, not the refdes) and
+    what the datasheet title is compared with: part_words.db_kinds."""
+    return part_words.db_kinds({k: v for k, v in db.items() if k != 'device_kinds'})
+
+
+def _material_groups(db, required_refs=None, heuristic=None):
     groups = {}
     diagnostics = []
+    heuristic = heuristic_kinds(db) if heuristic is None else heuristic
     for ref, part in sorted((db.get('parts') or {}).items()):
-        if (not REQUIRED_REF_RE.match(ref) and ref not in (required_refs or [])) or part.get('nc'):
+        needed = (heuristic.get(ref) or {}).get('settlement') == 'datasheet'
+        if (not needed and ref not in (required_refs or [])) or part.get('nc'):
             continue
         identity, source = _identity_for(ref, part)
         key = normalize_identity(identity) or f'REF{ref.upper()}'
@@ -456,7 +463,8 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
     unknown = [ref for ref in required_refs if ref not in db.get('parts', {})]
     if unknown:
         raise ValueError(f'额外资料依赖位号不存在: {unknown}')
-    groups, diagnostics = _material_groups(db, required_refs)
+    heuristic = heuristic_kinds(db)
+    groups, diagnostics = _material_groups(db, required_refs, heuristic)
     base_dir = os.path.abspath(resolution_base or os.curdir)
     resolution_errors = validate_resolution(resolution, base_dir)
     if resolution_errors:
@@ -552,10 +560,11 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
 
     counts = Counter(item['status'] for item in materials)
     unresolved = len(materials) - counts['AVAILABLE']
-    kinds = datasheet_kinds.audit_kinds(materials, device_kinds or {})
+    kinds = datasheet_kinds.audit_kinds(materials, device_kinds or {}, heuristic)
     return {
         'device_kinds': kinds,
         'device_kind_summary': dict(Counter(item['status'] for item in kinds.values())),
+        'kind_conflicts': datasheet_kinds.kind_conflicts(materials, heuristic),
         'schema_version': 1,
         'generated_by': 'scripts/audit_datasheets.py',
         'network_access': 'agent-only',
@@ -590,7 +599,7 @@ def main():
     parser.add_argument(
         '--resolution', help='agent 写回的 datasheet-resolution.json')
     parser.add_argument('--require-ref', action='append', default=[],
-                        help='需要额定值/曲线/引脚定义的 L/F/Y/J/C/R 等关键物料；可重复')
+                        help='类型不需手册定、但要额定值/曲线/引脚定义的物料（电感、晶振、连接器、电阻电容等）；可重复')
     parser.add_argument('--intent', help='intent.json：按 device_kinds 声明逐条核验手册页原文')
     parser.add_argument('--json', required=True, help='写出 datasheet-audit.json')
     parser.add_argument(
@@ -640,8 +649,10 @@ def main():
     if audit['device_kinds']:
         print('  器件类型核验: ' + ', '.join(f'{k}={v}' for k, v in sorted(audit['device_kind_summary'].items())))
         for ref, entry in audit['device_kinds'].items():
-            if entry['status'] not in ('VERIFIED', 'UNDECLARED'):
+            if entry['status'] not in ('VERIFIED', 'CLASSIFIED') + datasheet_kinds.OPEN_STATUSES:
                 print(f"  [{entry['status']}] {ref}: {entry.get('detail', '')}")
+    for ref, conflict in sorted((audit.get('kind_conflicts') or {}).items()):
+        print(f"  [KIND_CONFLICT] {ref}: 分类器 {conflict['classifier_kind']}，手册标题 {'/'.join(conflict['title_kinds'])}")
     print(f'  -> {args.json}')
     return 2 if args.fail_on_unresolved and summary['unresolved'] else 0
 

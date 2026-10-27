@@ -7,6 +7,40 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## A part's kind: what it does, settled by its datasheet, not by its refdes (2026-10-27)
+
+The set of parts that needed a verified datasheet declaration was the refdes set Q/D/ZD/TVS/U/M, and part words counted
+as evidence in four places. On the R7 board all four records left two NTCs, a fuse, a varistor and a transformer
+undeclared; an eFuse was once read as an optocoupler by the old word table and nothing compared the bound datasheet with
+it. The decisions A1–C4 of `docs/2026-10-26-part-kind-evidence.md`, taken point by point, are implemented:
+
+1. A1/A1b/A2/A3: `device_kinds.needs_datasheet` (registry field `datasheet`) names the twelve kinds, every IC role and
+   multi-winding magnetics; the new kinds `common_mode_choke` and `coupled_inductor` sit beside inductor and
+   transformer. The classifier's final kind decides (`part_words.db_kinds`, `device_kinds.settlement`); the refdes set
+   is gone from `plan_board` and `audit_datasheets`, and a two-terminal package keeps its kind gap.
+2. A4: cues relay, fuse (as a word), pptc and the magnetics'; an IC role suppresses fuse/relay, ntc/varistor suppress
+   fuse, "relay driver" names no relay.
+3. A5: a part the classifier cannot read on two or more nets is first an SR capability gap (NEW_DEVICE_KIND), and the
+   reviewer places it: a datasheet kind with page + quote, or a kind needing no datasheet as `{kind, reason}` (audit
+   CLASSIFIED); DEV-D02 carries the classify gap until then.
+4. B1/B2a/B3: part words are a guess for datasheet kinds in the power-switch and supervision checkers; a relay NC
+   contact read from words alone is a NET-A04 candidate; a declaration beats part words (KEYWORD_KIND_CONFLICT fed
+   back), pin names still veto it.
+5. C1–C3: the datasheet title area (six lines of page 1, then page 1) is compared with the classifier's guess
+   (KIND_CONFLICT hint, written into the DEV-D02 gap) and with a verified declaration (TITLE_MISMATCH unless
+   `kind_reason`, which may not rest on the part's internal make-up).
+
+Consumers read the new kinds (flyback and filter windings, ground islands, domains, interfaces, candidates). The KiCad
+replay gets the revision `part-kind-evidence-v1` (r02 229 → 232: F1 and the K-numbered easyC and microSD connectors read
+as relays by their prefix; r03 368 → 370; rf1 326 → 331 with frames 344 → 349, FN-PRI-FLYBACK 94 → 95; rf2 86 → 87; each
+row checked against a plan rebuilt at the previous commit). Typical circuits: soldered-relay-1ch's NC contact is now
+the expected NET-A04 candidate.
+
+- Event: user:2026-10-27 (逐个点来和我讨论，我给你答案; Start implementing the recorded decisions on this branch, with tests, mutations, replay revision, ledger and architecture decision row; don't push.)
+- Causes: rule_not_enforced 3 (refdes set for declarations, part words as evidence in checkers, no title cross-check), knowledge_missing 2 (magnetics by function, relay/fuse cues)
+- Changed: scripts/device_kinds.py, scripts/part_words.py, scripts/datasheet_kinds.py, scripts/audit_datasheets.py, scripts/plan_board.py, scripts/board_intent.py, scripts/lint.py, scripts/validate_review.py, scripts/render_report.py, scripts/catalog.py, scripts/checkers/inductive_load.py, scripts/checkers/power_switch.py, scripts/checkers/powertree.py, scripts/checkers/domains.py, scripts/checkers/input_filter.py, scripts/checkers/diff_levels.py, scripts/interfaces.py, scripts/circuit_candidates.py, scripts/protective_clamps.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/tests/test_part_kind_evidence.py, scripts/tests/test_supervision_external_paths.py, scripts/tests/test_relay_nc_contact.py, scripts/tests/test_board_scans.py, scripts/tests/test_checkers_framework.py, scripts/tests/test_plan_review.py, scripts/tests/test_datasheet_kinds.py, scripts/tests/test_ic_kinds.py, scripts/tests/test_cell_boundary.py, scripts/tests/fixtures/golden_reports/extension.md, references/checker-conventions.md, references/intent-format.md, references/architecture.md, references/check-catalog.md, references/bounding-table.md, SKILL.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/part-kind-evidence-v1, evals/typical_circuits/cases.json, evals/typical_circuits/README.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: 2315 unit tests, rule contracts 69/69, KiCad replay 195/195 on part-kind-evidence-v1, typical circuits 200/185/14 → 201/185/14 (the relay NC candidate), M737–M760 killed; M52, M54, M566, M693, M729 re-pointed at the moved code and killed; the --changed gate leaves M35, M299, M351, M488, M506, M715 alive and M42, M391, M496, M577, M578, M584, M605, M646, M651, M652 without their pattern, exactly as at 9e7dc56
+
 ## Part words, three leftovers: 2N7002, Si#### on an IC, a capital short cue (2026-10-26)
 
 The anchoring entry below left three faults it had found. 2N7002 was named by both the bjt family `2N\d{4}` and the

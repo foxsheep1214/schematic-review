@@ -13,7 +13,8 @@ import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
 from checkers.netgraph import RAIL_RE, NetGraph, is_analog_sense_pair, is_ground
-from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE, IC, INDUCTOR, MOSFET, OPTO,
+from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, COMMON_MODE_CHOKE, CONNECTOR, COUPLED_INDUCTOR, DIODE, FUSE, IC,
+                        INDUCTOR, MOSFET, OPTO,
                         PASSIVE_LINKS, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER, ELECTROLYTIC_RE,
                         LED_RE, NTC, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR, VARISTOR_RE, name_matches,
                         normalize)
@@ -127,7 +128,7 @@ MEMORY_RE = re.compile(r'EEPROM|FLASH|\bFRAM\b|24(LC|AA|C)\d|25(LC|AA|Q)\d|W25Q|
 # Verified kinds that make a part an active device with rows of its own whatever its refdes; two-terminal kinds
 # (diode, zener, tvs, resistor, capacitor …) never do — the fixed kinds above cover the zener/TVS rows.
 ACTIVE_VERIFIED_KINDS = tuple(board_intent.IC_KINDS) + ('opto', 'relay')
-FIXED_DEVICE_KINDS = (MOSFET, BJT, OPTO, ZENER, TVS, TRANSFORMER)
+FIXED_DEVICE_KINDS = (MOSFET, BJT, OPTO, ZENER, TVS, TRANSFORMER, COUPLED_INDUCTOR, COMMON_MODE_CHOKE)
 BRIDGE_RE = re.compile(r'^(BR|DB)\d', re.I)
 CUSTOM_PART_RE = re.compile(r'CUSTOM', re.I)
 FEEDBACK_PIN_RE = re.compile(r'(V?FB|COMP|FEEDBACK)([/_-](V?FB|COMP))?', re.I)

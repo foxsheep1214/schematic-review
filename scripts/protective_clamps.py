@@ -66,6 +66,6 @@ def switch_node(graph, net, intent=None):
     other end on the input rail is DC, so a clamp there protects the rail)."""
     winding = not is_rail(net, intent)
     return any(pw.name_matches(SWITCH_NODE_PIN_RE, graph.pinname.get(node), node.partition('.')[2])
-               or (winding and graph.kind(node.partition('.')[0]) == pw.TRANSFORMER
+               or (winding and graph.kind(node.partition('.')[0]) in pw.WINDING_PAIRS
                    and graph.is_fitted(node.partition('.')[0]))
                for node in graph.nodes_on(net))

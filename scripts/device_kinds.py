@@ -2,7 +2,8 @@
 """One registry of device kinds (item 6 of the 2026-10-26 SR review): what a kind is called, how a part's text names
 it (refdes prefix — the weakest evidence —, part/value/symbol words in classifier precedence, datasheet-title cues
 with spaces removed), and what the reviewers' tools read off the kind (two terminals, a series link in the power path,
-a protective part, the wearout class the kind alone decides, whether the reviewer may declare it in intent.devices).
+a protective part, the wearout class the kind alone decides, whether the reviewer may declare it in intent.devices,
+whether only a verified datasheet declaration may settle it).
 
 `part_words` builds its prefix and keyword tables from this registry, `board_intent` its declarable kinds,
 `datasheet_kinds` its cues, `plan_circuits` its wearout classes and `circuit_candidates` its protective parts — so a
@@ -14,8 +15,8 @@ from collections import OrderedDict, namedtuple
 
 import catalog
 
-DeviceKind = namedtuple('DeviceKind', 'title prefixes words cues two_terminal passive_link protective wearout declarable',
-                        defaults=((), (), (), False, False, False, None, True))
+DeviceKind = namedtuple('DeviceKind', 'title prefixes words cues two_terminal passive_link protective wearout declarable '
+                                     'datasheet', defaults=((), (), (), False, False, False, None, True, False))
 
 # Connector families: whole physical-family tokens the classifier checks with extra care (part_words.classify).
 USB_CONNECTOR_RE = r'(?:[^\s:]+:)?(?:MICRO|MINI)[-_](?:AB|A|B)[-_]USB'
@@ -37,41 +38,49 @@ SI_FET_WORDS = family(r'SI\d{4}')
 # Registry order is the classifier's keyword precedence (the first kind whose word matches wins); kinds without words
 # follow. Transistor order between bjt and mosfet does not matter: both matching is UNKNOWN whatever comes first.
 KINDS = OrderedDict([
-    ('relay', DeviceKind('继电器', (r'^K\d',), (r'RELAY|继电器',), wearout='RELAY')),
+    ('relay', DeviceKind('继电器', (r'^K\d',), (r'RELAY|继电器',), ('relay',), wearout='RELAY', datasheet=True)),
     # Thermistors and varistors by the shared words; an IC refdes or a part with more than three pins never becomes one
     # by a word in its description ("charger with NTC input"). RV is also KiCad's potentiometer prefix: no prefix rule.
     ('varistor', DeviceKind('压敏电阻', (), (VARISTOR_WORDS,), ('varistor', 'siov'), two_terminal=True, protective=True,
-                            wearout='VARISTOR')),
+                            wearout='VARISTOR', datasheet=True)),
     ('ntc', DeviceKind('热敏电阻', (r'^(TH|RT|NTC)\d',), (NTC_WORDS,), ('ntcthermistor', 'thermistor', 'inrushcurrentlimiter'),
-                       two_terminal=True, passive_link=True, protective=True)),   # INRUSH_NTC only in the power path
+                       two_terminal=True, passive_link=True, protective=True, datasheet=True)),   # INRUSH_NTC only in the power path
     # Part-number families through family(): a vendor prefix on a family is its own entry (DESD, AUIRF).
     ('opto', DeviceKind('光耦', (), (r'OPTO|光耦|' + family(
         r'PC81[07]', r'LTV-?\d', r'TLP\d', r'6N13[57]', 'HCPL', 'ACPL', r'FOD\d', 'CNY17', r'VO6\d', r'SFH6\d{2,3}',
         r'EL8\d\d', r'PS2[5-9]\d\d', r'TCMT\d', r'KPC\d', r'H11[A-Z]\d'),),
                         ('optocoupler', 'photocoupler', 'optoisolator', 'opticallycoupled', 'opticalisolator', 'opticalcoupler'),
-                        wearout='OPTO')),
+                        wearout='OPTO', datasheet=True)),
     ('tvs', DeviceKind('TVS', (), (r'\bTVS\b|' + family('SMAJ', 'SMBJ', 'SMCJ', 'P6KE', r'1\.5KE', r'ESD\d', 'PESD', 'DESD',
                                                         'SM712'),),
-                       ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress'), two_terminal=True, protective=True)),
+                       ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress'), two_terminal=True, protective=True,
+                       datasheet=True)),
     ('zener', DeviceKind('齐纳', (), (r'ZENER|稳压二极管|' + family('BZX', r'BZT5\d', 'MMSZ', r'1N47\d'),), ('zener',),
-                         two_terminal=True)),
+                         two_terminal=True, datasheet=True)),
     # KiCad symbol-library category of the symbol actually placed, then the part words; 2N7000/2N7002 are MOSFETs.
     ('bjt', DeviceKind('双极晶体管', (), (r'TRANSISTOR_BJT:', r'\bNPN\b|\bPNP\b|三极管|' +
                                         family(r'BC[PXW]?\d{2,3}', r'2N(?!700[02])\d{4}', 'MMBT', 'PBSS', 'S8050', 'S8550')),
-                       ('npn', 'pnp', 'bipolar'))),
+                       ('npn', 'pnp', 'bipolar'), datasheet=True)),
     ('mosfet', DeviceKind('MOSFET', (r'^Q\d',), (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:',
                                                  r'MOSFET|\bFET\b|NMOS|PMOS|[NP]-MOS|IGBT|' +
                                                  family('IRF', 'AUIRF', 'IRLML', r'AO\d{4}', r'BSS\d', '2N700[02]'), SI_FET_WORDS),
-                          ('mosfet', 'nchannel', 'pchannel', 'superjunction'))),
+                          ('mosfet', 'nchannel', 'pchannel', 'superjunction'), datasheet=True)),
     ('diode', DeviceKind('二极管', (r'^D\d',), (r'SCHOTTKY|DIODE|二极管|' + family(r'SS\d{2}', r'BAT\d', r'1N4\d{3}', r'1N58\d'),),
-                         ('rectifier', 'diode', 'schottky'), two_terminal=True)),
+                         ('rectifier', 'diode', 'schottky'), two_terminal=True, datasheet=True)),
+    # Multi-winding magnetics by what they do (A1b, 2026-10-27): only the datasheet tells a common-mode choke, a coupled
+    # inductor and a transformer apart, so both are datasheet kinds; above the CHOKE and ferrite words.
+    ('common_mode_choke', DeviceKind('共模扼流圈', (), (r'COMMON[-_ ]?MODE|共模',),
+                                     ('commonmodechoke', 'commonmodefilter', 'commonmodeinductor', 'commonmodecoil'),
+                                     datasheet=True)),
+    ('coupled_inductor', DeviceKind('耦合电感', (), (r'COUPLED[-_ ]?INDUCTOR|耦合电感',), ('coupledinductor',), datasheet=True)),
     ('ferrite', DeviceKind('磁珠', (r'^FB\d',), (r'FERRITE|BEAD|磁珠|' + family(r'BLM\d', r'MPZ\d'),), two_terminal=True,
                            passive_link=True)),
     ('inductor', DeviceKind('电感', (r'^L\d',), (r'INDUCTOR|CHOKE|电感',), two_terminal=True, passive_link=True)),
     # OSC only as a whole word: footprint names like Bosch_LGA-8 contain the letters.
     ('crystal', DeviceKind('晶体', (r'^Y\d', r'^X\d'), (r'CRYSTAL|XTAL|\bOSC(?:ILLATOR)?\b|晶振|晶体',))),
-    ('transformer', DeviceKind('变压器', (r'^T\d',), (r'TRANSFORMER|变压器',), ('transformer',))),
-    ('fuse', DeviceKind('保险', (r'^F\d',), (r'FUSE|PTC|保险',), two_terminal=True, passive_link=True, protective=True)),  # PTC or FUSE by its words
+    ('transformer', DeviceKind('变压器', (r'^T\d',), (r'TRANSFORMER|变压器',), ('transformer',), datasheet=True)),
+    ('fuse', DeviceKind('保险', (r'^F\d',), (r'FUSE|PTC|保险',), ('fuse', 'pptc'), two_terminal=True, passive_link=True,
+                        protective=True, datasheet=True)),  # PTC or FUSE by its words
     ('battery', DeviceKind('电池', (r'^BT\d',), (r'(?:^|[\s:_])BATTERY\b|电池',), wearout='BATTERY', declarable=False)),
     # KiCad places test pads as Connector:TestPoint*; the library entry, not the namespace, decides that this is a
     # probe/fixture pad rather than a connector.
@@ -91,8 +100,8 @@ KINDS = OrderedDict([
     ('capacitor', DeviceKind('电容', (r'^C\d', r'^C[XY]\d'), two_terminal=True)),
     ('jumper', DeviceKind('跳线', (r'^JP\d',), two_terminal=True, passive_link=True)),
     ('switch', DeviceKind('开关', (r'^SW\d', r'^S\d'), wearout='SWITCH')),
-    ('bridge_rectifier', DeviceKind('整流桥', (r'^BR\d',), cues=('bridgerectifier',), protective=True)),
-    ('ic', DeviceKind('集成电路', (r'^[UM]\d',), declarable=False)),   # declared by role (catalog.DEVICE_ROLES)
+    ('bridge_rectifier', DeviceKind('整流桥', (r'^BR\d',), cues=('bridgerectifier',), protective=True, datasheet=True)),
+    ('ic', DeviceKind('集成电路', (r'^[UM]\d',), declarable=False, datasheet=True)),   # declared by role (catalog.DEVICE_ROLES)
     ('unknown', DeviceKind('未知', declarable=False)),
 ])
 
@@ -128,9 +137,35 @@ def wearout_of(name, kinds=KINDS):
     return kind.wearout if kind is not None else None
 
 
+# Kinds the classifier may read off a single winding; with three or more pins only the datasheet tells what they are.
+SINGLE_WINDING = ('inductor', 'ferrite')
+
+
+def needs_datasheet(name, pin_count=None, kinds=KINDS):
+    """Whether only a verified datasheet declaration may settle a part of this kind (2026-10-27 A1): the semiconductors,
+    optocouplers, relays, transformers, protective parts, multi-winding magnetics and every IC role."""
+    if name in catalog.DEVICE_ROLES:
+        return True
+    if name in SINGLE_WINDING:
+        return pin_count is not None and pin_count >= 3
+    kind = kinds.get(name)
+    return bool(kind and kind.datasheet)
+
+
+def settlement(name, pin_count=None, net_count=None, kinds=KINDS):
+    """What settles a part's kind (2026-10-27 A2/A5): 'datasheet' when only a verified datasheet declaration may, 'classify'
+    for a part the classifier cannot read that sits on two or more nets (the reviewer places it; first of all an SR
+    capability gap), None otherwise. The refdes plays no part beyond the classifier's own reading."""
+    if needs_datasheet(name, pin_count, kinds):
+        return 'datasheet'
+    if name == 'unknown' and net_count is not None and net_count >= 2:
+        return 'classify'
+    return None
+
+
 def errors(kinds=KINDS):
     """Self-check of the registry: anchored prefixes, compiling words, squashed cues, known wearout classes, a series
-    link is two-terminal, the IC roles are not also discrete kinds."""
+    link is two-terminal, a datasheet kind has cues, the IC roles are not also discrete kinds."""
     out = []
     for name, kind in kinds.items():
         for pattern in kind.prefixes:
@@ -148,6 +183,8 @@ def errors(kinds=KINDS):
             out.append('%s: wearout %r is not a catalog.WEAROUT_CLASSES entry' % (name, kind.wearout))
         if kind.passive_link and not kind.two_terminal:
             out.append('%s: a passive link must be two-terminal' % name)
+        if kind.datasheet and not kind.cues and name != 'ic':   # an IC declares its role, whose cues the roles carry
+            out.append('%s: a datasheet kind needs cues, or no declaration of it can be verified' % name)
         if name in catalog.DEVICE_ROLES and name != 'ic':   # the registry's `ic` is the roles' generic entry
             out.append('%s: an IC role is not a discrete kind' % name)
     return out

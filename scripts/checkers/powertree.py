@@ -155,7 +155,7 @@ class PowerTree:
                 if self.feed and graph.kind(ref) in (pw.CONNECTOR, pw.BATTERY):
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'off-board contact (connector or battery)'}
-                if self.feed and graph.kind(ref) in (pw.TRANSFORMER, pw.BRIDGE_RECTIFIER):
+                if self.feed and graph.kind(ref) in pw.WINDING_PAIRS | {pw.BRIDGE_RECTIFIER}:
                     # A winding or a rectifier output is fed by the converter or the mains; whether it is a rail,
                     # and from what, is the circuit review's question (R6 acceptance 2026-10-24: BIAS15/VCC/HV).
                     return {'source': node, 'path': list(reversed(path)),
@@ -207,7 +207,7 @@ class PowerTree:
                 resistor = parse_resistor(part.get('value')) if re.match(r'^R\d', ref) else None
                 if SERIES_REF_RE.match(ref) or (resistor and resistor['kohm'] == 0):
                     queue.append((other, path + [ref]))
-                elif self.feed and (graph.kind(ref) in (pw.SWITCH, pw.FUSE, pw.FERRITE, pw.INDUCTOR, pw.JUMPER)
+                elif self.feed and (graph.kind(ref) in {pw.SWITCH, pw.FUSE, pw.FERRITE, pw.INDUCTOR, pw.JUMPER} | pw.SERIES_WINDINGS
                                     or (resistor and resistor['kohm'] <= FEED_RESISTOR_KOHM)):
                     queue.append((other, path + [ref]))
             # 多脚 MOS 模型按端点精确匹配验证

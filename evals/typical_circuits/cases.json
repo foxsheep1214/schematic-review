@@ -693,7 +693,13 @@
    "id": "soldered-relay-1ch",
    "category": "Relay + opto + flyback diode",
    "fixture": "fixtures/soldered-relay-1ch.xml",
-   "expected": [],
+   "expected": [
+    {
+     "rule": "NET-A04",
+     "match": "NC: COM/NC/NO 三脚齐全，但继电器类型只凭型号/库名关键词，待手册声明核验；核验后不再提示",
+     "why": "继电器常闭触点：冷跑没有手册声明，继电器类型只凭关键词，按 2026-10-27 B2a 报候选而不是放过"
+    }
+   ],
    "known_false_alarms": [],
    "fixed_false_alarms": [
     {

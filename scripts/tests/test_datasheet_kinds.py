@@ -67,7 +67,9 @@ class KindVerificationTests(unittest.TestCase):
         orig = dk.page_text
         dk.page_text = lambda path, page: 'General Purpose Transistor NPN Silicon' if page == 1 else None
         try:
-            section = dk.audit_kinds(materials, {})
+            heuristic = {'Q7': {'kind': 'bjt', 'basis': 'refdes-prefix', 'settlement': 'datasheet'},
+                         'R1': {'kind': 'resistor', 'basis': 'refdes-prefix', 'settlement': None}}
+            section = dk.audit_kinds(materials, {}, heuristic)
         finally:
             dk.page_text = orig
         self.assertEqual(list(section), ['Q7'])

@@ -260,7 +260,8 @@ class TypicalBoardClassificationTest(unittest.TestCase):
         db = board({'K1': 'SRD_RELAY_5V', 'K3': 'TERMINAL_KF235-5.0-3P'},
                    {'NC': ['K1.5', 'K3.1'], 'NO': ['K1.3', 'K3.3'], 'COM': ['K1.4', 'K3.2'],
                     'COIL_A': ['K1.1'], 'COIL_B': ['K1.2']})
-        self.assertEqual(scans(db, 'NET-A04'), [])
+        # a relay read from its words alone: a candidate until its datasheet declaration is verified (2026-10-27 B2a)
+        self.assertEqual([f['kind'] for f in scans(db, 'NET-A04')], ['CANDIDATE'])
 
     def test_vendor_refdes_formats_are_annotated(self):
         db = board({'USB-C1': 'Connector:USB_C', 'PS2_KBD1': 'Connector:MiniDIN', 'PGM/DBG1': 'Connector:Conn',

@@ -599,15 +599,15 @@ class ReviewPlanTests(unittest.TestCase):
                 db['pinname'][f'{ref}.{pin}'] = name
             plan = build_review_plan(db, {'schema_version': 4, 'input_sha256': input_fingerprint(db)})
             return next(x for x in plan['checks'] if x['id'] == f'DEV-D02.{ref}')
+        # The package settles the pin set; a diode's type still needs its datasheet declaration (2026-10-27 A1).
         led = plan_with('D1', 'e-radionica.com footprinti:0402LED', [('1', 'A', 'VCC_3V3'), ('2', 'K', 'GND')])
-        self.assertEqual(led['readiness'], 'READY')
-        self.assertEqual(led['required_inputs'], [])
+        self.assertEqual([g.split(':')[0] for g in led['required_inputs']], ['intent.device_kinds.D1'])
+        self.assertEqual(led['pin_difference']['official_only'], [])
         self.assertIn('PCB-stage HANDOFF', led['pin_difference']['basis'])
         dotted = plan_with('D8', 'Diode_SMD:D_SMA', [('1.1', 'A', 'VCC_3V3'), ('1.2', 'K', 'GND')])
-        self.assertEqual(dotted['readiness'], 'READY')
-        self.assertEqual(dotted['required_inputs'], [])
+        self.assertEqual([g.split(':')[0] for g in dotted['required_inputs']], ['intent.device_kinds.D8'])
         bidirectional = plan_with('D3', 'Diode_SMD:D_SMA', [('1', 'A1', 'VCC_3V3'), ('2', 'A2', 'GND')])
-        self.assertEqual(bidirectional['readiness'], 'READY')
+        self.assertEqual([g.split(':')[0] for g in bidirectional['required_inputs']], ['intent.device_kinds.D3'])
         self.assertIn('non-polar', bidirectional['pin_difference']['basis'])
         for ref, jedec, pins in (
                 ('J7', 'TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2_1x02_P5.00mm_Horizontal',

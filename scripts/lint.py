@@ -350,8 +350,10 @@ class Lint:
 
     # -- rules -----------------------------------------------------------
     def _relay_nc_contact(self, net, nodes):
-        """NC can name a normally-closed contact, without proving its ratings."""
-        relay_seen = False
+        """NC can name a normally-closed contact, without proving its ratings: 'datasheet' when every relay on the net is
+        a verified declaration, 'keyword' when one rests on part words only (2026-10-27 B2a: a hint, not a pass), else
+        False."""
+        relay_seen, basis = False, 'datasheet'
         for node in nodes:
             ref = node.partition('.')[0]
             if not self.graph.is_fitted(ref):
@@ -384,7 +386,9 @@ class Lint:
                     or any(not n or n in self.pseudo for n in contact_nets)):
                 return False
             relay_seen = True
-        return relay_seen
+            if self.graph.basis(ref) != 'datasheet':
+                basis = 'keyword'
+        return basis if relay_seen else False
 
     def _ground_islands(self):
         """PWR-A03 地名网孤岛：IC 地脚所在的地名网经已装配的直流连接件到不了主地（节点最多的地名网组）。
@@ -426,7 +430,8 @@ class Lint:
         for ref in sorted(self.parts):
             if not g.is_fitted(ref):
                 continue
-            if NET_TIE_RE.search(blob(ref)) or (g.kind(ref) in (INDUCTOR, FERRITE) and len(g.nets_of(ref)) > 2):
+            if (NET_TIE_RE.search(blob(ref)) or g.kind(ref) in pw.SERIES_WINDINGS
+                    or (g.kind(ref) in (INDUCTOR, FERRITE) and len(g.nets_of(ref)) > 2)):
                 tied = [n for n in g.nets_of(ref) if n in parent]
                 for other in tied[1:]:
                     join(tied[0], other)
@@ -636,8 +641,12 @@ class Lint:
                 self.add('NET-A04', '"NC" 为工具伪网络（提示，非缺陷）',
                          f'{n}: {len(nds)} 个引脚。C_SIGNAL 为裸字面量、无层次路径 '
                          '-> PSTWRITER 的 No-Connect 汇集网，不构成电气短路', kind='INFO')
-            elif self._relay_nc_contact(n, nds):
+            elif self._relay_nc_contact(n, nds) == 'datasheet':
                 continue
+            elif self._relay_nc_contact(n, nds) == 'keyword':
+                self.add('NET-A04', '"NC" 网络看起来是继电器常闭触点（候选）',
+                         f'{n}: COM/NC/NO 三脚齐全，但继电器类型只凭型号/库名关键词，待手册声明核验；'
+                         '核验后不再提示', kind='CANDIDATE')
             else:
                 self.add('NET-A04', '"NC" 被当作网络名导致短接',
                          f'{n}: {len(nds)} 个引脚被电气短接（该网带层次路径，'

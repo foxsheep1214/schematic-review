@@ -27,7 +27,13 @@ def nc_findings(db):
 
 class RelayNcContactTest(unittest.TestCase):
     def test_form_c_contact_net_is_not_no_connect_short(self):
-        self.assertEqual(nc_findings(relay_board()), [])
+        d = relay_board()
+        d['device_kinds'] = {'K1': {'kind': 'relay', 'citation': 'synthetic datasheet p1'}}
+        self.assertEqual(nc_findings(d), [])
+
+    def test_a_relay_read_from_its_words_alone_leaves_a_candidate(self):
+        # 2026-10-27 B2a: neither a short nor a silent pass until the relay's datasheet declaration is verified
+        self.assertEqual([f['kind'] for f in nc_findings(relay_board())], ['CANDIDATE'])
 
     def test_mixed_semiconductor_nc_still_reports(self):
         d = relay_board()

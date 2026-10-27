@@ -19,8 +19,8 @@ SCHEMA_VERSION = 1
 GROUND = 'ground'
 DRIVER = 'driver'
 # Parts that do not conduct DC between their pins for the purpose of ground reference.
-NON_CONDUCTING = frozenset({pw.CAPACITOR, pw.TRANSFORMER, pw.OPTO, pw.RELAY, pw.CRYSTAL, pw.CONNECTOR,
-                            pw.TESTPOINT, pw.BATTERY, pw.UNKNOWN})   # an unclassified part merges nothing
+NON_CONDUCTING = frozenset({pw.CAPACITOR, pw.OPTO, pw.RELAY, pw.CRYSTAL, pw.CONNECTOR,
+                            pw.TESTPOINT, pw.BATTERY, pw.UNKNOWN}) | pw.WINDING_PAIRS   # an unclassified part merges nothing
 ISOLATOR = 'isolator'
 
 

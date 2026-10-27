@@ -44,14 +44,23 @@ def source_board():
     return db
 
 
-def source_intent(db):
+def source_intent(db, declarations=None, verified=True):
+    """The analysis intent: D8's kind is a verified datasheet declaration, since a diode read from its words alone
+    leaves the path open (2026-10-27 B1); the production audit -> analysis-intent route with synthetic citations."""
     intent = bound_intent(db, state='A')
     intent['assemblies'].append(dict(copy.deepcopy(intent['assemblies'][0]), id='B'))
     intent['supervision'] = {'schema_version': 2, 'supervisors': [], 'rail_requirements': [
         requirement(db, net, state, node, role=role) for state in ('A', 'B')
         for net, node, role in [('VCC_A', 'P1.1', 'upstream_external_supply'),
                                 ('VCC_B', 'P2.1', 'external_supply')]]}
-    return intent
+    if not verified:
+        return intent
+    declarations = dict({'D8': {'kind': pw.DIODE, 'page': 1, 'quote': 'Synthetic manufacturer classification: diode'}},
+                        **(declarations or {}))
+    intent['device_kinds'] = declarations
+    audit = {'device_kinds': {ref: dict(d, status='VERIFIED', document='synthetic-kind.pdf', document_sha256='a' * 64)
+                              for ref, d in declarations.items()}}
+    return board_intent.with_verified_kinds(intent, audit)
 
 
 class ExternalSupplyPathTests(unittest.TestCase):
@@ -119,6 +128,10 @@ class ExternalSupplyPathTests(unittest.TestCase):
             else:
                 db['nets']['GND'].remove('P1.2')
             self.assertBlocked(db, intent_for(db))
+
+    def test_a_diode_read_from_its_words_alone_leaves_the_path_open(self):
+        db = source_board()
+        self.assertBlocked(db, source_intent(db, verified=False))
 
     def test_positive_external_source_forward_diode_zero_ohm_path(self):
         db, intent = source_board(), None
@@ -246,12 +259,8 @@ def verified_series_fixture(ref, value, kind):
             db['nets'][net] = [ref + n[len(old):] if n.startswith(old + '.') else n for n in nodes]
     identity = 'Device:R' if kind == pw.RESISTOR else kind
     db['parts'][ref].update(part=identity, prim=identity, value=value)
-    intent = source_intent(db)
     declaration = {'kind': kind, 'page': 1, 'quote': 'Synthetic manufacturer classification: ' + kind}
-    intent['device_kinds'] = {ref: declaration}
-    audit = {'device_kinds': {ref: dict(declaration, status='VERIFIED', document='synthetic-kind.pdf',
-                                      document_sha256='a' * 64)}}
-    return db, board_intent.with_verified_kinds(intent, audit)
+    return db, source_intent(db, {ref: declaration})
 
 
 class VerifiedSeriesPathTests(unittest.TestCase):

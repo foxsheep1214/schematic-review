@@ -465,7 +465,8 @@ class Generator:
                     members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
                     protective |= is_protective
                     queue.append((next(n for n in self.graph.nets_of(ref) if n != net), hops + 1, f'{path} -> {net} -> {ref}'))
-                elif kind in PASS_THROUGH or (kind == pw.INDUCTOR and len(self.graph.pins_of(ref)) == 4):
+                elif (kind in PASS_THROUGH or kind in pw.SERIES_WINDINGS
+                      or (kind == pw.INDUCTOR and len(self.graph.pins_of(ref)) == 4)):
                     members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
                     protective |= is_protective
                     for other in self.graph.nets_of(ref):

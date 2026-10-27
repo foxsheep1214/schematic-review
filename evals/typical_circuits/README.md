@@ -116,7 +116,7 @@ python3 -B evals/typical_circuits/run.py [--case <id>] [--show] [--sut <另一�
 | soldered-txb0104-level-shifter | Level shifter (TXB0104) | 0 | 0 | 1 |
 | makerverse-motor-driver-2ch | Motor driver H-bridge (TC78H660) | 0 | 0 | 2 |
 | piicodev-servo-driver | Servo/PWM driver (PCA9685) | 2 | 0 | 3 |
-| soldered-relay-1ch | Relay + opto + flyback diode | 0 | 0 | 4 |
+| soldered-relay-1ch | Relay + opto + flyback diode | 1 | 0 | 4 |
 | esp32-4ch-relays | 4 relays + ESP32 + USB-C | 10 | 2 | 0 |
 | isolated-serial-adapter | Isolated RS-485/RS-232 (ADM2483) | 23 | 0 | 19 |
 | han-to-rs485 | RS-485 transceiver | 2 | 0 | 3 |

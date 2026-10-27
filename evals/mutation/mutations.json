@@ -325,8 +325,8 @@
   "id": "M52",
   "name": "an integrated circuit without a verified role kind planned without a gap",
   "file": "scripts/plan_board.py",
-  "old": "            if re.match(r'^(Q|D|ZD|TVS|U|M)\\d', ref, re.I) and ref not in board_intent.declared_kinds(self.kind_intent):",
-  "new": "            if re.match(r'^(Q|D|ZD|TVS)\\d', ref, re.I) and ref not in board_intent.declared_kinds(self.kind_intent):"
+  "old": "            if settle == 'datasheet' and ref not in verified:",
+  "new": "            if settle == 'datasheet' and ref not in verified and guess[ref]['kind'] != 'ic':"
  },
  {
   "id": "M53",
@@ -339,8 +339,8 @@
   "id": "M54",
   "name": "capacitors conduct when deriving ground domains",
   "file": "scripts/checkers/domains.py",
-  "old": "NON_CONDUCTING = frozenset({pw.CAPACITOR, pw.TRANSFORMER, pw.OPTO, pw.RELAY, pw.CRYSTAL, pw.CONNECTOR,",
-  "new": "NON_CONDUCTING = frozenset({pw.TRANSFORMER, pw.OPTO, pw.RELAY, pw.CRYSTAL, pw.CONNECTOR,"
+  "old": "NON_CONDUCTING = frozenset({pw.CAPACITOR, pw.OPTO, pw.RELAY, pw.CRYSTAL, pw.CONNECTOR,",
+  "new": "NON_CONDUCTING = frozenset({pw.OPTO, pw.RELAY, pw.CRYSTAL, pw.CONNECTOR,"
  },
  {
   "id": "M55",
@@ -3839,7 +3839,7 @@
   "id": "M566",
   "name": "a transformer winding or bridge output feeds nothing",
   "file": "scripts/checkers/powertree.py",
-  "old": "                if self.feed and graph.kind(ref) in (pw.TRANSFORMER, pw.BRIDGE_RECTIFIER):",
+  "old": "                if self.feed and graph.kind(ref) in pw.WINDING_PAIRS | {pw.BRIDGE_RECTIFIER}:",
   "new": "                if False:"
  },
  {
@@ -4721,8 +4721,8 @@
   "id": "M693",
   "name": "a transformer winding is no power node",
   "file": "scripts/interfaces.py",
-  "old": "POWER_NODE_KINDS = {pw.TRANSFORMER: 'winding', pw.BRIDGE_RECTIFIER: 'bridge'}",
-  "new": "POWER_NODE_KINDS = {pw.BRIDGE_RECTIFIER: 'bridge'}"
+  "old": "POWER_NODE_KINDS = {pw.TRANSFORMER: 'winding', pw.COUPLED_INDUCTOR: 'winding', pw.BRIDGE_RECTIFIER: 'bridge'}",
+  "new": "POWER_NODE_KINDS = {pw.COUPLED_INDUCTOR: 'winding', pw.BRIDGE_RECTIFIER: 'bridge'}"
  },
  {
   "id": "M694",
@@ -4973,8 +4973,8 @@
   "id": "M729",
   "name": "a short datasheet cue matches inside squashed words again",
   "file": "scripts/datasheet_kinds.py",
-  "old": "    if len(word) > SHORT_CUE:",
-  "new": "    if True:"
+  "old": "    if len(word) > SHORT_CUE and word not in WORD_CUES:",
+  "new": "    if word not in WORD_CUES:"
  },
  {
   "id": "M730",
@@ -5024,5 +5024,173 @@
   "file": "scripts/datasheet_kinds.py",
   "old": "(?:%s(?![0-9])|(?i:%s)s?(?![a-z0-9]))' % (word.upper(), word)",
   "new": "(?i:%s)s?(?![a-z0-9])' % word"
+ },
+ {
+  "id": "M737",
+  "name": "a winding with three or more pins no longer needs its datasheet",
+  "file": "scripts/device_kinds.py",
+  "old": "return pin_count is not None and pin_count >= 3",
+  "new": "return False"
+ },
+ {
+  "id": "M738",
+  "name": "an unreadable part on two nets is no longer placed by the reviewer",
+  "file": "scripts/device_kinds.py",
+  "old": "if name == 'unknown' and net_count is not None and net_count >= 2:",
+  "new": "if False:"
+ },
+ {
+  "id": "M739",
+  "name": "a datasheet kind without cues passes the registry check",
+  "file": "scripts/device_kinds.py",
+  "old": "if kind.datasheet and not kind.cues and name != 'ic':",
+  "new": "if False:"
+ },
+ {
+  "id": "M740",
+  "name": "fuse is read inside a maker's name again",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "if len(word) > SHORT_CUE and word not in WORD_CUES:",
+  "new": "if len(word) > SHORT_CUE:"
+ },
+ {
+  "id": "M741",
+  "name": "an IC role no longer suppresses fuse and relay",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "found -= ROLE_LOADS",
+  "new": "found -= DISCRETE_CUES"
+ },
+ {
+  "id": "M742",
+  "name": "a thermistor datasheet's ThermoFuse names a fuse again",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "found.discard('fuse')",
+  "new": "pass"
+ },
+ {
+  "id": "M743",
+  "name": "a relay driver names a relay again",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "found.discard('relay')",
+  "new": "pass"
+ },
+ {
+  "id": "M744",
+  "name": "the title area never falls back to page 1",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "return title if cues(title) else text",
+  "new": "return title"
+ },
+ {
+  "id": "M745",
+  "name": "a reason resting on the part's make-up keeps a declaration the title contradicts",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "if COMPOSITION_REASON_RE.search(reason):",
+  "new": "if False:"
+ },
+ {
+  "id": "M746",
+  "name": "a verified declaration is no longer compared with the title",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "if not titled or agrees(declaration.get('kind'), titled):",
+  "new": "if True:"
+ },
+ {
+  "id": "M747",
+  "name": "an undeclared part loses its KIND_CONFLICT hint",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "                entry['kind_conflict'] = conflict",
+  "new": "                pass"
+ },
+ {
+  "id": "M748",
+  "name": "a declaration the part words contradicted is no longer flagged",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "if seen.get('basis') == 'part-keyword' and not agrees(",
+  "new": "if False and not agrees("
+ },
+ {
+  "id": "M749",
+  "name": "a placed part is verified as a datasheet declaration",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "if isinstance(item, dict) and 'reason' in item:",
+  "new": "if False:"
+ },
+ {
+  "id": "M750",
+  "name": "part words settle a datasheet kind in the checkers again",
+  "file": "scripts/part_words.py",
+  "old": "or (basis == 'part-keyword' and device_kinds.needs_datasheet(",
+  "new": "or (False and device_kinds.needs_datasheet("
+ },
+ {
+  "id": "M751",
+  "name": "a relay read from its words passes its NC contact silently",
+  "file": "scripts/lint.py",
+  "old": "                basis = 'keyword'",
+  "new": "                pass"
+ },
+ {
+  "id": "M752",
+  "name": "a placed part keeps its classify gap",
+  "file": "scripts/plan_board.py",
+  "old": "elif settle == 'classify' and ref not in verified and ref not in classified:",
+  "new": "elif settle == 'classify' and ref not in verified:"
+ },
+ {
+  "id": "M753",
+  "name": "a part outside U/M/Q/D/J/P/CN gets no DEV-D02 row for its kind",
+  "file": "scripts/plan_board.py",
+  "old": "and ref not in devices and not settle) or part.get('nc'):",
+  "new": "and ref not in devices) or part.get('nc'):"
+ },
+ {
+  "id": "M754",
+  "name": "a two-terminal package drops its kind gap",
+  "file": "scripts/plan_board.py",
+  "old": "item = self._ready_check('DEV-D02', {'ref': ref}, kind_gaps, [",
+  "new": "item = self._ready_check('DEV-D02', {'ref': ref}, [], ["
+ },
+ {
+  "id": "M755",
+  "name": "the DEV-D02 kind gap loses the KIND_CONFLICT text",
+  "file": "scripts/plan_board.py",
+  "old": "(f'; candidates: {hint}' if hint else '') + clash",
+  "new": "(f'; candidates: {hint}' if hint else '')"
+ },
+ {
+  "id": "M756",
+  "name": "a multi-winding magnetic is placed with a reason",
+  "file": "scripts/board_intent.py",
+  "old": "elif device_kinds.needs_datasheet(item['kind'], pins[ref]):",
+  "new": "elif False:"
+ },
+ {
+  "id": "M757",
+  "name": "a part the classifier reads is placed with a reason",
+  "file": "scripts/board_intent.py",
+  "old": "if seen.get('settlement') != 'classify':",
+  "new": "if False:"
+ },
+ {
+  "id": "M758",
+  "name": "the datasheet beating part words is no longer fed back to SR",
+  "file": "scripts/validate_review.py",
+  "old": "conflict = entry.get('keyword_conflict') if isinstance(entry, dict) else None",
+  "new": "conflict = None"
+ },
+ {
+  "id": "M759",
+  "name": "a common-mode choke reads as an inductor again",
+  "file": "scripts/device_kinds.py",
+  "old": "(r'COMMON[-_ ]?MODE|共模',)",
+  "new": "()"
+ },
+ {
+  "id": "M760",
+  "name": "a coupled inductor reads as an inductor again",
+  "file": "scripts/device_kinds.py",
+  "old": "(r'COUPLED[-_ ]?INDUCTOR|耦合电感',)",
+  "new": "()"
  }
 ]

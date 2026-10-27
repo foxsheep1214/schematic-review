@@ -235,8 +235,8 @@ class NetGraphTest(unittest.TestCase):
         kind, basis = pw.classify('Q7', part, 3, bce, declared=pw.MOSFET)      # wrong symbol for the part
         self.assertEqual(kind, pw.UNKNOWN)
         self.assertIn('datasheet', basis)
-        named = dict(part, part='MMBT3904')
-        self.assertEqual(pw.classify('Q7', named, 3, (), declared=pw.MOSFET)[0], pw.UNKNOWN)
+        named = dict(part, part='MMBT3904')       # part words disagree: the datasheet wins (2026-10-27 B3)
+        self.assertEqual(pw.classify('Q7', named, 3, (), declared=pw.MOSFET), (pw.MOSFET, 'datasheet'))
 
     def test_kind_gap_only_for_heuristic_basis(self):
         db = {'parts': {'Q7': {'part': 'XYZ123', 'value': 'XYZ123', 'prim': '', 'jedec': ''}},

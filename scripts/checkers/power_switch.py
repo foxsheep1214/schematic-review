@@ -21,7 +21,7 @@ from .planutil import slug
 
 SWITCH_KINDS = {pw.MOSFET, pw.BJT}
 CLAMP_KINDS = {pw.DIODE, pw.TVS, pw.ZENER}
-INDUCTIVE_KINDS = {pw.INDUCTOR, pw.TRANSFORMER, pw.RELAY}
+INDUCTIVE_KINDS = {pw.INDUCTOR, pw.RELAY} | pw.WINDING_PAIRS
 DRIVER_PIN_RE = re.compile(r'^(HO|LO|HB|OUT\w*|DRV\w*|GATE\w*|SRC|SINK|O\d+)$', re.I)
 OUT_PINTYPES = {'OUT', 'OUTPUT', 'BI', 'BIDI', 'BIDIR', 'BIDIRECTIONAL', 'IO', 'I/O',
                 'TRISTATE', '3STATE'}
@@ -256,7 +256,7 @@ class _Scan:
         # or is a rail is the primary supply the RCD clamp returns to. Other terminals
         # (secondary, auxiliary) are not supply candidates without a winding declaration.
         for ref in self.graph.refs_on(drain_net):
-            if self.graph.kind(ref) == pw.TRANSFORMER and self.graph.is_fitted(ref):
+            if self.graph.kind(ref) in pw.WINDING_PAIRS and self.graph.is_fitted(ref):
                 nets.update(n for n in self.graph.nets_of(ref)
                             if n != drain_net and n not in self.grounds
                             and (self.tree.is_rail(n) or self._has_storage(n)))

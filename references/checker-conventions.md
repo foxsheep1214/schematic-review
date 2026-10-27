@@ -39,47 +39,47 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 容量额定或贴装；显式类别声明优先，自定义/未知符号仍需确认。无法分类的器件记为未知并形成
 缺口，不按名称推定不适用。
 
-**器件类型以原厂手册为准，由工具核验原文。**
+**器件类型以原厂手册为准，由工具核验原文。** 类型按器件对外的功能定，内部构成不是类型（eFuse 是 load_switch）。须有核验声明的器件按分类器读出的类型取、不看位号（`device_kinds.needs_datasheet`）：mosfet/bjt/diode/zener/tvs/bridge_rectifier/opto/relay/transformer/fuse/ntc/varistor、common_mode_choke、coupled_inductor、三脚及以上的电感/磁珠和全部 IC 角色。
 
-第一步，审查者读手册，在 `intent.device_kinds.<ref>` 写下声明：`kind`、`page`、`quote`。
-- `kind`：bjt/mosfet/diode/zener/tvs/opto/bridge_rectifier/transformer/connector/ntc/varistor 等（`board_intent.DEVICE_KINDS`，即器件类别登记表 `device_kinds.KINDS` 里可声明的类别加 IC 角色），与检查器的器件类别一致：分立器件的类别、位号前缀、词、手册线索、两端/链路/保护/磨损属性只登记在 `device_kinds.py` 一行里，各模块读视图。
+第一步，审查者读手册，在 `intent.device_kinds.<ref>` 写下声明：`kind`、`page`、`quote`（可加 `kind_reason`）。
+- `kind`：上述类别或 connector 等（`board_intent.DEVICE_KINDS`，即器件类别登记表 `device_kinds.KINDS` 里可声明的类别加 IC 角色），与检查器的器件类别一致：分立器件的类别、位号前缀、词、手册线索、两端/链路/保护/磨损属性只登记在 `device_kinds.py` 一行里，各模块读视图。
   集成电路声明它的**角色**，角色登记表是 `catalog.DEVICE_ROLES`（[审查词表·器件角色](review-vocabulary.md#器件角色)：每个角色的
   手册标题词、它作核心器件时生成的电路类型、ANALOG 走线从哪些脚出发；`board_intent.IC_KINDS`、`part_words.IC_ROLES`、
   `datasheet_kinds.KIND_CUES` 都从这张表读，加角色只改这一行）。手册标题没有任何登记角色的才写泛称 `ic`；计划把每个 `ic`
   列成 `DEVICE_KIND_GENERIC` 诊断，这些器件不生成电路候选。角色决定哪些 IC 是电路候选的核心器件（`ANCHOR_KINDS`：登记表里有
-  电路类型的角色，isolator 与 ic 除外），所以 U/M 位号与 Q/D 位号一样，没有核验过的类别就在 DEV-D02 登记 `intent.device_kinds.<ref>` 缺口。
+  电路类型的角色，isolator 与 ic 除外），所以 IC 没有核验过的类别同样在 DEV-D02 登记 `intent.device_kinds.<ref>` 缺口。
   核验通过的 bridge_rectifier/transformer/connector 没有需要 IC 旁路的供电脚，不再留 PWR-D01 的 `unverified-device-pinout` 缺口；
   极性、绕组、额定、绝缘与针表仍由各自检查核对。
 - `page`：手册页码，从 1 开始。
 - `quote`：该页上写明器件类型的原文，例如 BCX56-16TX 写 `{"kind":"bjt","page":1,"quote":"80 V, 1 A NPN power bipolar transistors"}`。
 
-第二步，`audit_datasheets.py --intent intent.json` 读取 datasheet 解析表绑定给该位号的那份 PDF，用 pdftotext 抽取该页文本（没装 poppler 时用 PyMuPDF，两者都没有才记 NO_TEXT）。比较时只保留字母和数字（PDF 常丢空格），逐条核验三点：
+第二步，`audit_datasheets.py --intent intent.json` 读取 datasheet 解析表绑定给该位号的那份 PDF，用 pdftotext 抽取该页文本（没装 poppler 时用 PyMuPDF，两者都没有才记 NO_TEXT）。比较时只保留字母和数字（PDF 常丢空格），逐条核验：
 - 原文确实在该页上；
-- 原文本身写明了所声明的类型，例如 NPN/bipolar、MOSFET/N-channel、Zener、TVS/ESD protection、rectifier/diode/Schottky、bridge rectifier、transformer、connector/receptacle/terminal block；
-- 原文没有同时指向别的类型，例如把 “ESD Protection Diode” 声明为普通二极管，判为 QUOTE_CONFLICT。
-  IC 角色由标题词判定（PWM/PFC/flyback/current-mode controller、gate driver、synchronous rectifier controller、
-  USB PD / Type-C controller、voltage regulator / LDO / DC-DC converter、supervisor / voltage monitor / watchdog、
-  operational amplifier / comparator、shunt regulator / voltage reference、microcontroller、transceiver / PHY、
-  digital isolator）；角色词同句里的 MOSFET、rectifier 是它驱动的负载，不算冲突；“microprocessor supervisor”
+- 原文本身写明了所声明的类型，例如 NPN/bipolar、MOSFET/N-channel、TVS/ESD protection（各类线索是 `device_kinds.KINDS` 的 cues）；
+- 原文没有同时指向别的类型，例如把 “ESD Protection Diode” 声明为普通二极管，判为 QUOTE_CONFLICT；
+- 手册标题区（第 1 页前 6 个非空行，无类型词再读第 1 页）不指向别的类型，否则 TITLE_MISMATCH：改引标题原文，或写 `kind_reason`（如合订本标题是同系列另一型号），以内部构成为由不算。
+  IC 角色由标题词判定（[审查词表·器件角色](review-vocabulary.md#器件角色)的标题词列）；角色词同句里的 MOSFET、rectifier、
+  fuse、relay 是它的负载或功能（Industrial eFuse），不算冲突；ThermoFuse 不算保险；“microprocessor supervisor”
   不是 MCU，“optoisolator” 是光耦不是隔离器。声明为泛称 `ic` 的原文若写明了某个角色，判 QUOTE_CONFLICT，
   要求改声明为该角色。
 
 核验结果写入审计的 `device_kinds` 段：
-- 状态为 VERIFIED / QUOTE_NOT_FOUND / QUOTE_LACKS_TYPE / QUOTE_CONFLICT / NO_DOCUMENT / NO_TEXT。
+- 状态为 VERIFIED / QUOTE_NOT_FOUND / QUOTE_LACKS_TYPE / QUOTE_CONFLICT / TITLE_MISMATCH / NO_DOCUMENT / NO_TEXT。
 - 通过时附手册 SHA-256。
-- 未声明的分立半导体和集成电路标 UNDECLARED，附首页候选类型和所在行，只作提示。
+- 未声明的需定类器件标 UNDECLARED，附首页候选类型，只作提示；分类器的类型与已绑定手册的标题矛盾时附 KIND_CONFLICT，写进 DEV-D02 缺口文字，不改分类。
+- 分类器认不出、接两个及以上网的器件先是 SR 能力不足（反馈 NEW_DEVICE_KIND），标 UNCLASSIFIED，由审查员归类：需定类的类别照上文引手册，不需手册的（跳线、开关等，表外写 `other`）写 `{kind, reason}`，标 CLASSIFIED。
 
 只有 VERIFIED 的声明会进入分析（basis `datasheet`），并随清单上下文保存为 `device_kinds_verified`。该字段由工具生成，intent 中手写会被拒绝。未核验、核验失败或抽取不到文本时，一律按缺口处理，不会因为抽取出错得出结论。
 
-型号/符号库关键字和符号引脚名（B/C/E、G/D/S）只作交叉核对，与手册矛盾时记为未知并形成缺口，因为这说明可能选错了符号或填错了型号。没有核验过的声明时，才按以下顺序退回启发式：
+符号引脚名（B/C/E、G/D/S）与手册矛盾时记为未知并形成缺口（可能选错了符号）；型号/库名关键字与手册矛盾时以手册为准，反馈 KEYWORD_KIND_CONFLICT（词表待修）。没有核验过的声明时，才按以下顺序退回启发式：
 1. 关键字（basis `part-keyword`）；型号族（PS2、SS、IRF 等）只在一个型号的开头命中，不在更长型号中间命中（TPS25940 不是光耦）；Si 加四位数字在 U/M/IC 位号上不作依据（与 Silicon Labs 芯片同号段）；
 2. 引脚名（basis `pin-names`）；
 3. 位号前缀（basis `refdes-prefix`）。
 
-依据为后两种时不能作为结论：
-- 功率开关登记 `datasheet-kind:<ref>` 缺口，在补上并重生成计划之前不得判 PASS；
-- Q/D/ZD/TVS/U/M 位号的 DEV-D02 登记缺口，缺口文字带审计状态和候选类型。
-  例外：D/ZD/TVS/LED 位号的符号恰有一阳一阴两脚、封装名是两端封装（0402/0603…、SOD、SMA/SMB/SMC、DO、MELF、两引脚 LED_D3/D5mm）时，脚集合由封装决定，DEV-D02 直接就绪，不要求原厂全脚表、确切料号或类型声明；焊盘与阴/阳极标记的对应移交 PCB 阶段。双向两脚（A1/A2 或 1/2）同样按两端封装就绪，实际是单向还是双向由类型/功能检查判定，不属于脚集差。1/2 位单排连接器（封装名含 1x01/1x02，符号脚号恰为 1..N，封装无安装/屏蔽焊盘）同理就绪，脚义由 DEV-D03/DEV-E01 核对。三脚及以上、多焊盘 LED 封装（PLCC、RGB、散热焊盘、带脚数后缀）、带安装或屏蔽焊盘的连接器，或封装名看不出两端时仍登记缺口。
+依据为后两种（需定类的类别连同关键字）时不能作为结论：
+- 功率开关、监控检查器登记 `datasheet-kind:<ref>` 缺口，补上并重生成计划前不得判 PASS；继电器常闭触点网（NET-A04）列候选；
+- 需定类器件的 DEV-D02 登记缺口，缺口文字带审计状态和候选类型。
+  例外：D/ZD/TVS/LED 位号的符号恰有一阳一阴两脚、封装名是两端封装（0402/0603…、SOD、SMA/SMB/SMC、DO、MELF、两引脚 LED_D3/D5mm）时，脚集合由封装决定，DEV-D02 不要求原厂全脚表或确切料号（类型声明照旧）；焊盘与阴/阳极标记的对应移交 PCB 阶段。双向两脚（A1/A2 或 1/2）同样按两端封装就绪，实际是单向还是双向由类型/功能检查判定，不属于脚集差。1/2 位单排连接器（封装名含 1x01/1x02，符号脚号恰为 1..N，封装无安装/屏蔽焊盘）同理就绪，脚义由 DEV-D03/DEV-E01 核对。三脚及以上、多焊盘 LED 封装（PLCC、RGB、散热焊盘、带脚数后缀）、带安装或屏蔽焊盘的连接器，或封装名看不出两端时仍登记缺口。
 
 工具不从 PDF 抽数值参数，数值仍按 datasheet-facts 的审查者核对流程处理。
 

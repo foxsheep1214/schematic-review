@@ -223,8 +223,8 @@ RULES = (
     Rule('NET-A04', 'NC 网络判别',
          '名为 NC/NC_* 的多节点网络先按判别式区分：带层次路径的是设计者画出的真实短接（疑点）；'
          '导出器的 No-Connect 汇集网不构成短接（提示）；已确认继电器 NC/COM/NO 常闭触点角色、'
-         '各触点网络独立且仅接连接器或同类触点时，不将 NC 名称视为未连接脚短接；'
-         '准出前仍需图面或属性证据，触点额定值另审', 'lint', 'net'),
+         '各触点网络独立且仅接连接器或同类触点时，不将 NC 名称视为未连接脚短接（继电器类型只凭型号/库名关键词、'
+         '未经手册声明核验时列候选）；准出前仍需图面或属性证据，触点额定值另审', 'lint', 'net'),
     Rule('NET-A07', '声明输入脚悬空',
          '引脚类型为输入的脚没有网络或只在单节点网上；标了 No-Connect 的输入脚作候选。'
          '明确器件角色为无源连接器且已标 No-Connect 的未用接触针不要求片内偏置；'
@@ -1259,7 +1259,7 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           (('G1', ()), ('G5', ('table_interpolate',)), ('G9', ())), 'VENDOR_DATUM', 'commodity-floors.md 电解',
           'TEST_POINT', (_e(1.3, FUNCTIONAL, '系数表外的频率：ESR ×1.3'),), ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
           '表内按 G5（保证）；表外允许估算（×1.3）；寿命走 DEV-C02。“资料已读只剩折算”不是厂家数据缺口'),
-    Bound('IND-ISAT', ('inductor', 'transformer'), '电感 Isat（按资料定义取温度最坏值）', 'LOWER', '温度', 'DECREASING',
+    Bound('IND-ISAT', ('inductor', 'transformer', 'coupled_inductor', 'common_mode_choke'), '电感 Isat（按资料定义取温度最坏值）', 'LOWER', '温度', 'DECREASING',
           (('G1', ()), ('G2', ()), ('G5', ('table_interpolate',)), ('G9', ('typical_band',))), 'VENDOR_DATUM', 'commodity-floors.md 电感',
           'TYPICAL_BY_DEFINITION', (_e(1.3, FUNCTIONAL | DAMAGE, '典型 Isat 热态值 ÷1.3（峰流 ≤ Isat/1.3）'),), ('COMPONENT_DAMAGE',), _M,
           '允许估算判 PASS（÷1.3）：损坏类但行业别无他法；不满足 1.3 倍就开放或失败'),

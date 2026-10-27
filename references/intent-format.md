@@ -145,7 +145,7 @@
 - 条件导通另可声明 `power_sources`（某状态的供入节点）与 `power_paths`（某状态可导通的方向，不是理想短路或载流声明），
   不得把未上电的稳压器或端口标成 source 来消除告警。
 - 各检查器的 intent 段（`i2c_topology`、`decoupling`、`device_kinds` 等）见 [自动检查](automation.md)。
-  `device_kinds` 也覆盖集成电路：每颗 U/M 位号声明手册标题给出的角色（角色登记表 `catalog.DEVICE_ROLES`，见
+  `device_kinds` 也覆盖集成电路：每颗 IC 声明手册标题给出的角色（角色登记表 `catalog.DEVICE_ROLES`，见
   [检查目录·器件角色](check-catalog.md#器件角色)；标题没有任何登记角色的写泛称 ic，计划列成 `DEVICE_KIND_GENERIC` 诊断），
   没有核验过的角色是 DEV-D02 的缺口；角色决定电路候选的核心器件和它生成的电路类型。
 - 计划顶层 `domains`（参考地分区、跨域器件、核心器件、截止网络，由 `checkers/domains.py` 按地的直流连通推导）见同文。
