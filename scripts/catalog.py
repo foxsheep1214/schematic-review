@@ -1266,7 +1266,7 @@ BOUNDS = OrderedDict((b.id, b) for b in (
     Bound('FUSE-I2T', ('fuse',), '保险丝 I²t 与温度降额', None, '脉宽与温度', 'NONMONOTONIC',
           (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md',
           'GUARANTEED', (), ('DAMAGE_OR_HAZARD', 'REQUIRED_FUNCTION'), _T,
-          '不估算：保护判 max 曲线，误动作判 min 曲线；缺的若是本板冷/热态 NTC 阻值，种类是 DESIGN_VALUE'),
+          '不估算：保护判 max 曲线，误动作判 min 曲线；缺的若是本板冷/热态 NTC 阻值，是原理图该写没写的值（失败项，改法写算出的阻值）'),
     # 3.8 IC 通用参数
     Bound('IC-THRESHOLD', _IC_ROLES, '门限、基准', None, '温度', 'NONMONOTONIC',
           (('G1', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
@@ -1930,7 +1930,6 @@ def _rules_of_class(*classes):
 COMPUTED_RULES = _rules_of_class('C', 'E') | {'REQ-D01'}
 OPEN_ITEM_RULES = {
     'VENDOR_DATUM': COMPUTED_RULES,
-    'DESIGN_VALUE': COMPUTED_RULES,
     'DELIVERABLE_PENDING': {
         'CUSTOM_PART_DRAWING': COMPUTED_RULES | {'DEV-D01', 'DEV-D02', 'DEV-D05'},
         'FIRMWARE_CAPABILITY': COMPUTED_RULES | frozenset(r.id for r in RULES if r.id.startswith('SIG-')),

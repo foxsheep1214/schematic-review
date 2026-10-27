@@ -44,7 +44,7 @@ def fixture(first_key=C1):
             'interfaces': {'schema_version': 1, 'interfaces': [], 'gaps': []}, 'assemblies': []}
     # R1 carries the fixture's pins and nets; the bias example's parts (test_review_functions.bias_function) exist so
     # that its conditions' refs are parts of the netlist (results 7)
-    db = {'parts': {'R1': {}, 'Q2': {}, 'D2': {}, 'D3': {}, 'C3': {}, 'U1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
+    db = {'parts': {'R1': {}, 'Q2': {}, 'D2': {}, 'D3': {}, 'C3': {}, 'U1': {}, 'T1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
           'ref2page': {'R1': 1, 'Q2': 1, 'D2': 1, 'D3': 1, 'C3': 1, 'U1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
     report = {'functions': [],
         'schema_version': results_model.SCHEMA_VERSION, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),

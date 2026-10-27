@@ -165,6 +165,22 @@ def prototype_estimate(fn, aspect, state=None, check_id=None):
     return None
 
 
+def design_constraint(fn, aspect, state=None, check_id=None):
+    """乙 (2026-10-26, user: 乙判合格并附设计约束): the handoff of the DESIGN_CONSTRAINT a proving margin of this aspect
+    takes as input or limit — the row passes on it and hands it to the design file that owns the value. None otherwise."""
+    calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    by_id = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+    for m in margins(calc):
+        basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
+        if margin_verdict(m) != 'PASS' or not covers(scope(m, calc.get('aspect')), aspect, state, check_id):
+            continue
+        for cid in list(basis.get('conditions') or []) + [basis.get('limit')]:
+            c = by_id.get(cid) if isinstance(cid, str) else None
+            if c and c.get('kind') == 'DESIGN_CONSTRAINT' and estimate_handoff(fn, c):
+                return estimate_handoff(fn, c), c
+    return None
+
+
 def unjudged_message(cid, fid, aspect, state):
     return ('%s: function %s judges no %s%s — give that aspect its margin in calculation.margin or a judgements '
             'entry {aspect, conditions, says}; a row does not pass on another aspect\'s result'

@@ -72,8 +72,8 @@ def two_frames():
     other['calculation']['result'] = 'VCC_min(OTHER) = 9.7 V'
     r['functions'].append(other)
     r['functions'][0]['open'][0]['decides'].append(
-        {'aspect': ASPECT, 'states': ['RUN'], 'check_ids': [OTHER_ROW], 'via': {'condition': 'c3'},
-         'rationale': 'OTHER 的 Q9 也由同一辅助绕组供电，最低峰值未定'})
+        {'aspect': ASPECT, 'states': ['RUN'], 'check_ids': [OTHER_ROW], 'via': {'condition': 'c3'}, 'side': 'LOWER',
+         'rationale': 'OTHER 的 Q9 也由同一辅助绕组供电，空载最低峰值手册没给'})
     r['plan_digest'] = fingerprint(p)
     return p, r, db
 

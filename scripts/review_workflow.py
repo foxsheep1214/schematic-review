@@ -8,7 +8,7 @@ from electrical_contract import PHASES
 import results_model
 from task_scope import ownership, task_view, validate_scopes
 # Gaps a schematic change can often remove: the reviewer must propose that change or say why none exists.
-DESIGNABLE_GAPS = ('EXTERNAL_DATA', 'DESIGN_OPEN')
+DESIGNABLE_GAPS = ('EXTERNAL_DATA',)
 PREFERENCES = ('DESIGN_FIRST', 'EVIDENCE_FIRST', 'EITHER')
 
 

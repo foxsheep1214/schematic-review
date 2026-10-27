@@ -36,14 +36,14 @@ RECORD_INDEX = (('review-results.json', '每条检查的结论、依据、缺的
                 ('lint-cold.json', '自动检查输出（只用网表）'),
                 ('lint-hot.json', '自动检查输出（加上器件资料）'),
                 ('evidence/', '引用的资料摘录、计算和图片'))
-OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计还没定'),
+OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'),
                                 ('DELIVERABLE_PENDING', '等交付物'), ('REVIEW_INCOMPLETE', '审查还没做完'),
                                 ('USER_DEFERRED', '暂缓处理')])
 RELEASE = {'GO': '可以定稿', 'CONDITIONAL_GO': '可以有条件定稿', 'NO_GO': '还不能定稿'}
-CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DESIGN_OPEN', '设计没定'), ('DELIVERABLE_PENDING', '等交付物'),
+CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DELIVERABLE_PENDING', '等交付物'),
                       ('REVIEW_INCOMPLETE', '审查没做完'),
                       ('USER_DEFERRED', '已暂缓')])
-KINDS = OrderedDict([('FAIL', '电路错误'), ('DESIGN_OPEN', '设计没定'),
+KINDS = OrderedDict([('FAIL', '电路错误'),
                      ('EXTERNAL_DATA', '缺资料'), ('DELIVERABLE_PENDING', '等交付物'), ('REVIEW_INCOMPLETE', '审查没做完'),
                      ('USER_DEFERRED', '已暂缓')])
 SEVERITIES = ('P0', 'P1', 'P2', 'P3')
@@ -145,7 +145,7 @@ def jargon_in(text):
 
 def item_kind(rows):
     """FAIL names the item; otherwise the gap cause most of its checks carry,
-    with the minority cause shown so one DESIGN_OPEN row cannot relabel thirteen data gaps."""
+    with the minority cause shown so one deliverable row cannot relabel thirteen data gaps."""
     kinds = Counter(r.get('review_result') if r.get('review_result') == 'FAIL' else r.get('gap_cause') for r in rows)
     if kinds.get('FAIL'):
         if is_document([r.get('id', '') for r in rows if r.get('review_result') == 'FAIL']):
@@ -400,7 +400,7 @@ def render_risks(items):
 
 
 CONDITION_KIND_WORDS = {'NUMERIC_LIMIT': '保证值', 'TYPICAL_REFERENCE': '典型值', 'MANDATORY_CLAUSE': '强制条款',
-                        'NETLIST_FACT': '网表事实', 'ENGINEERING_ASSUMPTION': '工程假定'}
+                        'NETLIST_FACT': '网表事实', 'ENGINEERING_ASSUMPTION': '工程假定', 'DESIGN_CONSTRAINT': '设计约束'}
 
 
 def _page_span(pages):
@@ -950,6 +950,10 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         kinds = Counter((t['deliverable'].get('kind')) for t in deliverables)
         sentences.append('另有 %d 项交付物还没到（%s），到了再按假定复核，见“等交付物”' % (
             len(deliverables), '、'.join('%s %d' % (DELIVERABLE_WORDS.get(k, k or '其他'), n) for k, n in kinds.most_common())))
+    constraints = gate.get('design_constraints') or []
+    if constraints:
+        sentences.append('有 %d 条设计约束由 SR 算出、交给%s，按约束判合格，见“交给后续环节的要求”' % (
+            len(constraints), '、'.join(OrderedDict((c.get('owner') or '后续设计', None) for c in constraints))))
     risky = gate.get('risks') or []
     if risky:
         kinds = Counter(t for e in risky for t in e.get('types') or ())

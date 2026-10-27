@@ -46,14 +46,14 @@ import results_model
 import units
 from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, finite, squeeze, text
 from function_reading import (requirement_document as _requirement_document, requirement_rows,
-                              ESTIMATE_PASS_CLASSES, covers, decides_row, edges, estimate_handoff,
+                              ESTIMATE_PASS_CLASSES, covers, decides_row, design_constraint, edges, estimate_handoff,
     estimate_in_table, estimate_passes, judged, life_estimate, life_row, margin_proves, margin_verdict, overlaps,
     prototype_estimate, reference_circuit, reference_judged, scope, unjudged_message)
 from results_model import LEVELS, OPEN_KINDS, VERDICTS
 from validate_remediation import READINESS
 
 CONDITION_FIELDS = ('id', 'source', 'locator', 'says', 'use')
-REQUEST_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM')
+REQUEST_KINDS = ('VENDOR_DATUM',)
 # How a public number bounds the quantity at the design's operating point (F3).
 BOUND_BASES = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'TYPICAL_CURVE', 'PUBLISHED_TABLE', 'APPLICATION_NOTE')
 # An unboundable quantity leaves one bound open (results format 6) and says how the other one is settled.
@@ -65,7 +65,11 @@ DELIVERABLE_FIELDS = ('deliverable', 'owner', 'assumed', 'closure')
 DELIVERABLE_KINDS = ('CUSTOM_PART_DRAWING', 'FIRMWARE_CAPABILITY')
 VENDOR_ASK_RE = re.compile(r'向[^，,；;。]{0,16}(?:原厂|厂商|厂家|供应商|[A-Z][A-Za-z]{2,})[^，,；;。]{0,8}(?:索取|取得|索要|要)'
                            r'|ask(?:ing)? (?:the )?(?:vendor|supplier|manufacturer)|request(?:ed)? from (?:the )?(?:vendor|supplier)', re.I)
-CONDITION_KINDS = ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE', 'NETLIST_FACT', 'TYPICAL_REFERENCE', 'ENGINEERING_ASSUMPTION')
+CONDITION_KINDS = ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE', 'NETLIST_FACT', 'TYPICAL_REFERENCE', 'ENGINEERING_ASSUMPTION',
+                   'DESIGN_CONSTRAINT')
+# 2026-10-26 (user: 乙判合格并附设计约束): a value another design file owns (magnetics, firmware, PCB) enters a margin as the
+# constraint SR back-calculated, handed on to that file's owner; a value the schematic or BOM should state is a fail.
+SCHEMATIC_OWNER_RE = re.compile(r'原理图|BOM|物料清单|schematic', re.I)
 CLAUSE_KINDS = ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE')       # what a vendor, a standard or a requirement says
 # A condition from a datasheet or the BOM names the parts it is about (results 7, 2026-10-26): a text extract of a
 # datasheet (R7: evidence/ds/U501.txt), a manual, or a document the datasheet audit lists; standards (std/) do not.
@@ -82,7 +86,7 @@ COMPARISONS = ('GE', 'GT')       # GE: a zero margin passes; GT: it does not
 DERIVATIONS = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'MONOTONIC', 'TEMPCO', 'PUBLISHED_TABLE', 'TYPICAL_CURVE')
 CORNER_ENDS = ('min', 'max')
 EDGE_EFFECTS = ('BLOCKS_PROOF', 'INFORMATION_ONLY')
-EDGE_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING')   # gaps in a quantity: each edge says what it enters
+EDGE_KINDS = ('VENDOR_DATUM', 'DELIVERABLE_PENDING')   # gaps in a quantity: each edge says what it enters
 WIDE_GAP = 3                     # more blocked aspects than this is reported for a second look, never refused
 LIFE_ASPECTS = ('电容有效容量与寿命', '耗损件寿命')   # catalog titles of DEV-C02 and DEV-C06
 RETIRED_ITEM_FIELDS = {
@@ -98,7 +102,7 @@ NUMBER_RE = re.compile(r'[-+]?\d+(?:\.\d+)?')
 PIN_RE = re.compile(r'^[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_+-]+$')
 # A judgement that only says the aspect does not apply (proposals of 2026-10-23, item 2c).
 NOT_APPLIES_RE = re.compile(r'不适用|无此问题|按拓扑(无|不)|不涉及')
-TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient', 'closure', 'acquisition')   # one sentence on several gaps
+TEMPLATE_FIELDS = ('why_insufficient', 'closure', 'acquisition')   # one sentence on several gaps
 ID_RE = re.compile(r'^FN-[A-Za-z0-9][A-Za-z0-9_.-]*$')
 KEY_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]*$')
 
@@ -146,7 +150,7 @@ def clause(condition):
 
 def toleranced_limit(condition):
     """A NUMERIC_LIMIT with both a min and a max that differ: an input that has two ends to take."""
-    if not isinstance(condition, dict) or condition.get('kind') != 'NUMERIC_LIMIT':
+    if not isinstance(condition, dict) or condition.get('kind') not in LIMIT_KINDS:
         return False
     limit = condition.get('limit') if isinstance(condition.get('limit'), dict) else {}
     return _finite(limit.get('min')) and _finite(limit.get('max')) and limit['min'] != limit['max']
@@ -163,6 +167,28 @@ def _decides(item):
             for d in edges(item)]
 
 
+LIMIT_KINDS = ('NUMERIC_LIMIT', 'DESIGN_CONSTRAINT')   # conditions that give a number a margin compares or takes as input
+
+
+def _constraint_errors(label, c):
+    """乙: the bound SR back-calculated for a value another design file owns — limit, regime, owner, handoff."""
+    errors = []
+    limit = c.get('limit') if isinstance(c.get('limit'), dict) else {}
+    values = [limit[k] for k in ('min', 'max') if k in limit]
+    if not (values and all(_finite(v) for v in values) and text(limit.get('unit'))):
+        errors.append(label + ': a DESIGN_CONSTRAINT gives the back-calculated limit {min and/or max, unit}')
+    if not text(c.get('regime')):
+        errors.append(label + ': regime says the conditions the constraint must hold over')
+    if not text(c.get('owner')):
+        errors.append(label + ': owner names the design file or team that sets this value (magnetics spec, firmware, PCB)')
+    elif SCHEMATIC_OWNER_RE.search(c['owner']):
+        errors.append('%s: %s is the schematic or BOM; a value the schematic should state and does not is a fail item '
+                      'whose finding gives this limit as the fix, not a constraint handed on' % (label, c['owner']))
+    if type(c.get('handoff')) is not int:
+        errors.append(label + ': handoff is the index of the function handoff that hands the constraint on')
+    return errors
+
+
 def _condition_errors(label, c, db=None, audit=None):
     """The second evidence layer: what kind of statement a condition is, and the fields that kind needs."""
     kind = c.get('kind')
@@ -172,6 +198,8 @@ def _condition_errors(label, c, db=None, audit=None):
     if kind in ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE', 'TYPICAL_REFERENCE') and not located(c):
         errors.append('%s: a %s is located — a page, table or section, a datasheet section title, a requirement id; '
                       '"%s" locates nothing' % (label, kind, c.get('locator')))
+    if kind == 'DESIGN_CONSTRAINT':
+        return errors + _constraint_errors(label, c)
     if kind == 'NUMERIC_LIMIT':
         limit = c.get('limit') if isinstance(c.get('limit'), dict) else {}
         values = [limit[k] for k in ('min', 'max') if k in limit]
@@ -498,44 +526,6 @@ def _missing_parameter_errors(label, item, db):
     return errors
 
 
-def _undecided_errors(label, item, db):
-    """Consistency item 3: a design value lists the part parameters the design has not chosen, or hangs on the open
-    item that decides it (depends_on, checked across the review). A parameter its part's BOM row states is set by the
-    board."""
-    if 'depends_on' in item:
-        if not text(item['depends_on']):
-            return [label + ': depends_on is the key of the open item of this review that decides this quantity']
-        return []
-    undecided = item.get('undecided')
-    if not (isinstance(undecided, list) and undecided and all(
-            isinstance(u, dict) and text(u.get('parameter')) and ('ref' not in u or text(u['ref'])) for u in undecided)):
-        return ['%s: a design value lists undecided [{ref, parameter[, unit]}] — the part parameters the design has not '
-                'chosen — or names in depends_on the open item of this review that decides it' % label]
-    parts = bom_parts(db)
-    return ['%s: this quantity is set by %s on the board — its BOM row states %s; compute it from the BOM row (a '
-            'NUMERIC_LIMIT), or hang the item on the open item that decides it (depends_on)'
-            % (label, u['ref'], u['parameter']) for u in undecided
-            if u.get('ref') in parts and text(u.get('unit'))
-            and _stated_in_bom(_bom_text(parts, u['ref']), u['parameter'], u['unit'])]
-
-
-def _dependency_errors(functions):
-    """A design value hangs on an open item of this review, not on itself, one level deep."""
-    items = results_model.open_items({'functions': [fn for fn in functions if isinstance(fn, dict)]})
-    leads = {item['key']: item for item, field in ((v[1], v[2]) for v in items.values()) if field == 'open'}
-    errors = []
-    for ref, (_, item, field) in items.items():
-        target = item.get('depends_on')
-        if field != 'open' or not text(target):
-            continue
-        if target not in leads:
-            errors.append('%s: depends_on names %s, which is not another open item of this review' % (ref, target))
-        elif 'depends_on' in leads[target]:
-            errors.append('%s: depends_on names %s, which itself hangs on %s; hang it on the item that decides it'
-                          % (ref, target, leads[target]['depends_on']))
-    return errors
-
-
 def _netlist_name_errors(label, nets, pins, db):
     errors = []
     known = db.get('nets') if isinstance(db.get('nets'), dict) else {}
@@ -736,7 +726,7 @@ def _derivation_errors(label, basis, conditions):
     for i, corner in enumerate(corners):
         condition = conditions.get(corner.get('condition')) if isinstance(corner, dict) else None
         if not (isinstance(corner, dict) and text(corner.get('input')) and text(corner.get('why'))
-                and corner.get('picked') in CORNER_ENDS and condition and condition.get('kind') == 'NUMERIC_LIMIT'):
+                and corner.get('picked') in CORNER_ENDS and condition and condition.get('kind') in LIMIT_KINDS):
             errors.append('%s: basis.corners[%d] is {input, condition (a NUMERIC_LIMIT of this function), picked min|max, '
                           'why}' % (label, i))
         elif not _finite((condition.get('limit') or {}).get(corner['picked'])):
@@ -793,11 +783,11 @@ def _judgement_errors(fid, fn, conditions_by_id):
                           % (fid, i))
             continue
         kinds = {conditions_by_id[c].get('kind') for c in conditions}
-        if 'NUMERIC_LIMIT' in kinds:
+        if kinds & set(LIMIT_KINDS):
             errors.append('%s/judgements[%d] (%s): cites a numeric limit (%s); a number is compared in calculation.margin '
                           'with its basis, not settled in a sentence' % (
                               fid, i, j['aspect'], ', '.join(c for c in conditions
-                                                             if conditions_by_id[c].get('kind') == 'NUMERIC_LIMIT')))
+                                                             if conditions_by_id[c].get('kind') in LIMIT_KINDS)))
         elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}
                   or any(reference_circuit(conditions_by_id[c]) for c in conditions)):   # F9
             errors.append('%s/judgements[%d] (%s): rests on no mandatory clause or netlist fact (%s); a typical value, an '
@@ -957,22 +947,6 @@ def _evidence_name(entry):
     if 'value' in entry:
         return 'margin %s %s' % (entry['value'], entry.get('unit') or '')
     return 'judgement on %s' % entry.get('aspect')
-
-
-def _f8_errors(fid, fn, calculation):
-    """F8: a design value left open beside a calculation states its margin."""
-    errors = []
-    found = [m.get('aspect') or calculation.get('aspect') for m in function_reading.margins(calculation)]
-    if calculation.get('claim_ids'):
-        for item in fn.get('open') or []:
-            if not isinstance(item, dict) or item.get('kind') != 'DESIGN_VALUE' or text(item.get('no_margin_reason')):
-                continue
-            if not any(_covers(item, aspect) for aspect in found):
-                errors.append('%s/%s: the function computed %s but gives no margin on the aspects this design value '
-                              'leaves open; write calculation.margin for them (worst case against the limit, project '
-                              'derating included), or say in no_margin_reason what the design has not chosen yet'
-                              % (fid, item.get('key', '?'), '/'.join(calculation['claim_ids'])))
-    return errors
 
 
 def _gap_cell_errors(label, item, worst):
@@ -1298,6 +1272,12 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
         errors.append(label + ': an undecided requirement is no open item: ask the user at once, write the question and '
                       'answer to intent.clarifications, regenerate the plan and judge against the settled requirement')
         return errors
+    if kind == 'DESIGN_VALUE':   # 2026-10-26 (user: 按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束)
+        errors.append(label + ': an undecided design value is no open item. A value the schematic or BOM should state '
+                      '(a part value, rating, part number) is a fail item whose finding gives the back-calculated '
+                      'value as the fix; a value another design file owns (a magnetics spec, a firmware setting, the '
+                      'PCB) is a DESIGN_CONSTRAINT condition the margin uses, handed on to its owner')
+        return errors
     if kind not in OPEN_KINDS:
         errors.append(label + ': kind is one of ' + '/'.join(OPEN_KINDS))
         return errors
@@ -1313,7 +1293,7 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
     if kind == 'DELIVERABLE_PENDING':
         stray = [f for f in ('spec', 'acquisition', 'checked', 'worst_case') if f in item]
         if stray:
-            errors.append('%s: %s only belong to DESIGN_VALUE/VENDOR_DATUM' % (label, '/'.join(stray)))
+            errors.append('%s: %s only belong to VENDOR_DATUM' % (label, '/'.join(stray)))
         for field in DELIVERABLE_FIELDS:
             if not text(item.get(field)):
                 errors.append('%s: a pending deliverable names %s (what another stage owes, who owes it, what this '
@@ -1329,22 +1309,11 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
     elif kind not in REQUEST_KINDS:
         stray = [f for f in ('spec', 'owner', 'acquisition', 'closure', 'checked', 'worst_case') if f in item]
         if stray:
-            errors.append('%s: %s only belong to DESIGN_VALUE/VENDOR_DATUM' % (label, '/'.join(stray)))
+            errors.append('%s: %s only belong to VENDOR_DATUM' % (label, '/'.join(stray)))
     if kind in REQUEST_KINDS:
         for field in ('scope', 'closure'):
             if not text(item.get(field)):
                 errors.append(label + ': ' + field + ' required (the conditions it must cover; what counts as closed)')
-    if kind != 'DESIGN_VALUE' and ('undecided' in item or 'depends_on' in item):
-        errors.append(label + ': undecided/depends_on only belong to DESIGN_VALUE')
-    if kind == 'DESIGN_VALUE':   # F2
-        errors.extend(_undecided_errors(label, item, db))
-        for field in ('spec', 'owner'):
-            if not text(item.get(field)):
-                errors.append(label + ': a design value is back-calculated into spec and given an owner, not requested')
-        asked = ' '.join(str(item.get(f) or '') for f in ('what', 'why', 'spec', 'owner', 'closure'))
-        if VENDOR_ASK_RE.search(asked):
-            errors.append(label + ': a design value is not asked of a vendor (%s); write the allowed range as spec'
-                          % VENDOR_ASK_RE.search(asked).group(0))
     if kind == 'VENDOR_DATUM':   # F3
         checked = item.get('checked')
         if not (isinstance(checked, list) and checked and all(isinstance(c, str) and c in condition_ids for c in checked)):
@@ -1425,6 +1394,10 @@ def function_errors(report, document_only=(), db=None, audit=None):
                     errors.append('%s/conditions: duplicate id %s' % (fid, c['id']))
                 conditions_by_id[c['id']] = c
                 errors.extend(_condition_errors('%s/conditions[%s]' % (fid, c['id']), c, db, audit))
+                if c.get('kind') == 'DESIGN_CONSTRAINT' and estimate_handoff(fn, c) is None:
+                    errors.append('%s/conditions[%s]: a design constraint is handed on to %s: handoff is the index of '
+                                  'the function handoff (receivers, constraint, verification) that carries it'
+                                  % (fid, c['id'], c.get('owner') or 'its owner'))
             cited = cited_conditions(fn)
             if conditions_by_id and fid not in document_only and not any(
                     clause(c) and c['id'] in cited for c in conditions_by_id.values()):
@@ -1503,8 +1476,6 @@ def function_errors(report, document_only=(), db=None, audit=None):
                    for d in edges(item) if isinstance(d.get('check_ids'), list) and d['check_ids']]
         errors.extend(_decision_errors(fid, fn, calculation if isinstance(calculation, dict) else {}, conditions_by_id,
                                        findings, foreign))   # F4
-        if isinstance(calculation, dict):   # F8
-            errors.extend(_f8_errors(fid, fn, calculation))
         # F6: a verdict change cites a clause or a number.
         history = fn.get('verdict_history')
         if history is not None:
@@ -1519,7 +1490,6 @@ def function_errors(report, document_only=(), db=None, audit=None):
                     if not ok:
                         errors.append('%s/verdict_history[%d]: a changed verdict cites condition or claim ids in basis'
                                       % (fid, i))
-    errors.extend(_dependency_errors(functions))
     errors.extend(_shared_assumption_errors(functions))
     errors.extend(_shared_result_errors(functions))
     errors.extend(_template_errors(functions))
@@ -2020,36 +1990,6 @@ def requirement_edge_errors(plan, checks, functions):
     return errors
 
 
-def external_impedance(planned):
-    """'source' for a hot-plug inrush row (PWR-C13), 'loop' for a port hard-short row (DRV-C02 PORT-SHORT): rows whose
-    answer hangs on an impedance outside the schematic (the mains, the PCB and the cable), else None."""
-    if planned.get('rule') == 'PWR-C13':
-        return 'source'
-    if planned.get('rule') == 'DRV-C02' and str(planned.get('id', '')).startswith('DRV-C02.PORT-SHORT.'):
-        return 'loop'
-    return None
-
-
-def external_impedance_errors(expected, checks, functions):
-    """2026-10-26 (user: 按标准参考阻抗算; 判原理图部分，电感交后续): the mains source impedance and the short-circuit loop
-    impedance are not design values; a row that hangs on one is judged at a stated impedance (the IEC 60725 reference
-    for the mains, a minimum loop impedance handed on to the PCB) and is not held open as DESIGN_VALUE."""
-    kinds = {'%s/%s' % (fn.get('id'), item.get('key')): item.get('kind')
-             for fn in functions or [] if isinstance(fn, dict) for item in fn.get('open') or [] if isinstance(item, dict)}
-    errors = []
-    for cid, row in sorted(checks.items()):
-        which = external_impedance(expected.get(cid) or {})
-        if not (which and isinstance(row, dict) and row.get('review_result') == 'INSUFFICIENT'
-                and kinds.get(row.get('open_ref')) == 'DESIGN_VALUE'):
-            continue
-        errors.append('%s: held open by %s as a design value, but the %s is no design value; judge the row at a stated '
-                      'impedance (%s) and hand that impedance on' % (
-                          cid, row['open_ref'], 'mains source impedance' if which == 'source' else 'short-circuit loop impedance',
-                          'the IEC 60725 reference 0.4 + j0.25 Ω' if which == 'source'
-                          else 'a minimum loop impedance the PCB and cable must give'))
-    return errors
-
-
 def life_errors(checks, functions):
     """Item 6a: a life row passing on an estimate states its BOM constraint as an estimate, and no life row is blocked
     by a vendor-data item."""
@@ -2092,7 +2032,33 @@ def estimate_pass_errors(expected, checks, functions):
                 and not (isinstance(row.get('handoff'), dict) and row['handoff'].get('required')):
             errors.append('%s: a row passing on an estimate hands the prototype test on: handoff.required with the '
                           'function\'s handoff (%s)' % (cid, estimate[1]['verification']))
+        constraint = design_constraint(fn, row['aspect'], state, cid)
+        if constraint and not (isinstance(row.get('handoff'), dict) and row['handoff'].get('required')):
+            errors.append('%s: a row passing on the design constraint %s hands it on to %s: handoff.required with the '
+                          'function\'s handoff (%s)' % (cid, constraint[1].get('id'), constraint[1].get('owner'),
+                                                       constraint[0]['verification']))
     return errors
+
+
+def design_constraints(expected, checks, functions):
+    """乙 (2026-10-26): the constraints the PASS rows rest on, one entry per condition with its owner, the limit SR
+    back-calculated, the verification handed on and the rows that pass on it."""
+    out, by_id = OrderedDict(), {fn.get('id'): fn for fn in functions or [] if isinstance(fn, dict)}
+    for cid, row in sorted(checks.items()):
+        fn = by_id.get(row.get('function_id')) if isinstance(row, dict) else None
+        if not (fn and row.get('review_result') == 'PASS' and text(row.get('aspect'))):
+            continue
+        state = ((expected.get(cid) or {}).get('object') or {}).get('state')
+        found = design_constraint(fn, row['aspect'], state, cid)
+        if not found:
+            continue
+        handoff, c = found
+        entry = out.setdefault((fn['id'], c['id']), {
+            'function_id': fn['id'], 'condition': c['id'], 'owner': c.get('owner'), 'says': c.get('says'),
+            'limit': c.get('limit'), 'regime': c.get('regime'), 'verification': handoff.get('verification'),
+            'check_ids': []})
+        entry['check_ids'].append(cid)
+    return list(out.values())
 
 
 def _risk_entry(cid, fn, row, state, m, types, source, **extra):
@@ -2211,7 +2177,7 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
               + binding_errors(expected, checks, report.get('functions'), history_ids)
               + frame_errors(plan, checks, report.get('functions'))
               + requirement_edge_errors(plan, checks, report.get('functions'))
-              + life_errors(checks, functions) + external_impedance_errors(expected, checks, functions)
+              + life_errors(checks, functions)
               + estimate_pass_errors(expected, checks, functions) + open_item_scope_errors(functions))
     if isinstance(db, dict):   # a commodity part's rating is a BOM constraint, not an open item
         import bom_constraints

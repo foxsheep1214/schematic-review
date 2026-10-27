@@ -19,11 +19,13 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
-SCHEMA_VERSION = 9   # 9 (2026-10-26): a margin passing on an estimate names basis.risk{types, corner, improvement}
+SCHEMA_VERSION = 10   # 10 (2026-10-26): no DESIGN_VALUE open items; a value missing from the schematic is a fail, one
+# another design file owns is a DESIGN_CONSTRAINT condition handed on
+# 9 (2026-10-26): a margin passing on an estimate names basis.risk{types, corner, improvement}
 # 8 (2026-10-26): no REQUIREMENT open items; requirement questions are settled in intent.clarifications
 # 7 (2026-10-26): conditions[].refs — a datasheet or BOM condition names the parts it is about
 LEVELS = ('P0', 'P1', 'P2', 'P3')
-REQUEST_CAUSES = ('EXTERNAL_DATA', 'DESIGN_OPEN')
+REQUEST_CAUSES = ('EXTERNAL_DATA',)
 # Fields schema 3 derives; a record that still writes them would carry two answers to one question.
 RETIRED_ROW_FIELDS = {
     'missing_inputs': 'functions[].open[].what', 'input_requests': 'functions[].open', 'potential_severity': 'functions[].open[].severity.level',
@@ -40,8 +42,8 @@ RETIRED_TOP_FIELDS = ('binding_version', 'remediation_version', 'workflow_versio
                       'work_items')
 # schema 8: a requirement question is asked of the user at step ① and answered into intent.clarifications
 SETTLED_TOP_FIELDS = ('requirement_clarifications',)
-OPEN_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
-KIND_CAUSE = {'DESIGN_VALUE': 'DESIGN_OPEN', 'VENDOR_DATUM': 'EXTERNAL_DATA', 'DELIVERABLE_PENDING': 'DELIVERABLE_PENDING',
+OPEN_KINDS = ('VENDOR_DATUM', 'DELIVERABLE_PENDING', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
+KIND_CAUSE = {'VENDOR_DATUM': 'EXTERNAL_DATA', 'DELIVERABLE_PENDING': 'DELIVERABLE_PENDING',
               'REVIEW_INCOMPLETE': 'REVIEW_INCOMPLETE', 'USER_DEFERRED': 'USER_DEFERRED'}
 VERDICTS = ('PASS', 'FAIL', 'OPEN')
 # Schema 3 always means the newest contract of each retired switch: consequence classes v2,
@@ -142,15 +144,13 @@ def work_item_id(key):
 
 # What kind of gap an open item is, for the reader (commodity-floors / P10): who closes it, and for a vendor datum
 # which way the public bound leans. Requirement, review-incomplete and deferred items keep their cause words.
-GAP_SUBCLASSES = {'DESIGN_DECISION': '设计还要定', 'FIRMWARE': '等固件能力', 'PART_DRAWING': '等定制件图纸',
+GAP_SUBCLASSES = {'FIRMWARE': '等固件能力', 'PART_DRAWING': '等定制件图纸',
                   'PUBLIC_BOUND_SHORT': '按公开资料界限算不够', 'PUBLIC_BOUND_UNGUARANTEED': '按公开资料界限算够，但不是保证值',
                   'NOT_BOUNDABLE': '公开资料定不出界限'}
 
 
 def gap_subclass(item):
     kind = item.get('kind')
-    if kind == 'DESIGN_VALUE':
-        return 'DESIGN_DECISION'
     if kind == 'DELIVERABLE_PENDING':
         return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'FIRMWARE'
     if kind == 'VENDOR_DATUM':
@@ -246,8 +246,6 @@ def effective_verdicts(functions, plan, checks):
 
 
 def how_to_close(item):
-    if item.get('kind') == 'DESIGN_VALUE':
-        return '由%s确定：%s' % (item.get('owner') or '设计', item.get('spec') or '')
     if item.get('kind') == 'DELIVERABLE_PENDING':
         return '由%s交付：%s' % (item.get('owner') or '设计', item.get('deliverable') or '')
     return item.get('acquisition')
@@ -256,7 +254,7 @@ def how_to_close(item):
 def gap_of(item):
     """The row-level gap an open item stands for (the row shape the validators and the report read)."""
     gap = {'what': item.get('what'), 'scope': item.get('scope')}
-    if item.get('kind') in ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING'):
+    if item.get('kind') in ('VENDOR_DATUM', 'DELIVERABLE_PENDING'):
         gap['how_to_close'] = how_to_close(item)
         gap['closure_criterion'] = item.get('closure')
     if isinstance(item.get('severity'), dict):
@@ -265,13 +263,7 @@ def gap_of(item):
 
 
 def lead_ref(items, ref):
-    """The open item whose rows these are: a design value that hangs on another open item (depends_on) is counted
-    there (bounding consistency proposals, item 3)."""
-    found = items.get(ref)
-    target = found[1].get('depends_on') if found and found[2] == 'open' else None
-    for other, (_, item, field) in items.items():
-        if target and field == 'open' and item.get('key') == target:
-            return other
+    """The open item whose rows these are (a design value used to hang on another item; there are none since format 10)."""
     return ref
 
 

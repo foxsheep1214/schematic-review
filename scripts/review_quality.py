@@ -81,11 +81,11 @@ def _decisive_part(what):
 
 
 CLOSURE_FIELDS = ('closure', 'acquisition', 'why_insufficient')
-DATUM_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM')   # closed by a guaranteed datum or a design spec, never by a measurement
+DATUM_KINDS = ('VENDOR_DATUM',)   # closed by a guaranteed datum, never by a measurement
 
 
 def downstream_closures(functions, owners):
-    """Step 4.2: a DESIGN_VALUE or VENDOR_DATUM open item whose closing condition accepts a prototype measurement, a
+    """Step 4.2: a VENDOR_DATUM open item whose closing condition accepts a prototype measurement, a
     sample or a simulation. The datum and the measurement are two tiers; the measured part is a stage-NA row with a
     handoff, and the item names the datum (or spec) that really closes it. A deferred clause (随后/留给…) already splits
     the downstream part and is not read."""
@@ -280,7 +280,7 @@ def screen_quality(plan, report, db=None, base_dir=None):
             grades[row.get('potential_severity')].append((row['id'], gap_key))   # an open item's rows are one graded gap
             cause = row.get('gap_cause')
             gap_text = ' '.join(_decisive_part(x) for x in (row.get('missing_inputs') or []) if isinstance(x, str))
-            if cause in ('DESIGN_OPEN', 'EXTERNAL_DATA') and DOWNSTREAM_RE.search(gap_text) \
+            if cause == 'EXTERNAL_DATA' and DOWNSTREAM_RE.search(gap_text) \
                     and not DESIGN_GAP_RE.search(gap_text) and not row.get('derived'):   # derived: downstream_closures
                 downstream_ids.append(row['id'])
             if OPTIMIZATION_RE.search(str(check.get('criterion') or '') + ' ' + str(row.get('rationale') or '')) \
@@ -665,7 +665,7 @@ DATA_MISSING_RE = re.compile(r'缺|未给|没有|没给|无此|未找到|不覆�
 
 
 ITEM_TIMING_FIELDS = ('scenario', 'allowed_window', 'response_bound')
-MISFILE_KINDS = ('DESIGN_VALUE', 'VENDOR_DATUM', 'DELIVERABLE_PENDING')   # an image written as a deliverable is the same misfile
+MISFILE_KINDS = ('VENDOR_DATUM', 'DELIVERABLE_PENDING')   # an image written as a deliverable is the same misfile
 ITEM_TEXT_FIELDS = ('what', 'acquisition', 'closure', 'why_insufficient', 'deliverable', 'spec')
 
 
@@ -712,7 +712,7 @@ def stage_and_cause_misfiles(report, expected):
     for row in report.get('checks') or []:
         if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
             continue
-        if row.get('review_result') != 'INSUFFICIENT' or row.get('gap_cause') not in ('DESIGN_OPEN', 'EXTERNAL_DATA'):
+        if row.get('review_result') != 'INSUFFICIENT' or row.get('gap_cause') != 'EXTERNAL_DATA':
             continue
         if row.get('derived'):   # a derived row's gap is its open item's: misfiled_items reads the item once
             continue

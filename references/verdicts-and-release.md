@@ -277,7 +277,7 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 |---|---|
 | `title` / `root_cause` | 开放项的 `title`（无则 `what`）/ `what` |
 | `reason` | `why`，无则 `severity.consequence` |
-| `next_action` | DESIGN_VALUE：“由 {owner} 确定：{spec}”；VENDOR_DATUM：`acquisition`；DELIVERABLE_PENDING：“由 {owner} 交付：{deliverable}”；失败项：“按发现项 {finding_id} 的改法处理” |
+| `next_action` | VENDOR_DATUM：`acquisition`；DELIVERABLE_PENDING：“由 {owner} 交付：{deliverable}”；失败项：“按发现项 {finding_id} 的改法处理” |
 | `due_stage` / `design_option` | 开放项同名字段（`due_stage` 默认 `design_iteration`） |
 | `deliverable{kind, owner, deliverable}` / `assumed` / `required_scope` / `closure_criterion` | 只有 DELIVERABLE_PENDING 的待办带；报告把带 `deliverable` 的待办列进“等交付物”，不进待办和最先要解决的 3 件事 |
 | `check_ids` | 用 `open_ref`/`fail_ref` 指向这一项的检查项（即 `decides` 命中的方面×状态） |
@@ -285,7 +285,7 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 
 - 共享的只是补证或修改动作，不是电气结论；每条检查项仍保留自己的判据和证据。一件待办只有一个开放项，
   所以不再有“一项被几件待办分缺口”的归属字段；两个功能缺同一份资料时各写各的开放项（key 不同），报告按文字合并显示。
-- 关联 DESIGN_VALUE / VENDOR_DATUM 开放项的待办须有 `design_option`（写在开放项上）：
+- 关联 VENDOR_DATUM 开放项的待办须有 `design_option`（写在开放项上）：
   能改图消除缺口时写 `PROPOSED` 的电路改进建议及其规避的问题，不能时写 `NONE` 和原因。
   字段见 [证据不足项的电路改进建议](report-and-remediation.md#证据不足项的电路改进建议)；`--require-actionable` 时强制校验。
   改法不得以缺口的不利结果为前提（“改为更高分断方案”先假定了保险不够）；缺口能靠查标准条款或手册关闭的，
@@ -357,7 +357,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 统计中阶段 NA 单列为 `NA_OUTSIDE_STAGE`，不计入普通 NA；含阶段 NA 条款的需求行列在
 `stage_scope.requirements_pending_downstream`，报告在“交给后续环节的要求”末尾列为要等样机或测试结果才能最终确认，不得写成“不适用”。
 `quality_screening` 的分出下游工作提示只辅助判断；工具映射失败不是产品不适用，不用阶段 NA 隐藏覆盖缺口。
-分类落在开放项的 `kind` 上：DESIGN_VALUE / VENDOR_DATUM 的 `closure`、`acquisition`、`why_insufficient` 里写了实测、样机、样品、仿真作为关闭路径的，
+分类落在开放项的 `kind` 上：VENDOR_DATUM 的 `closure`、`acquisition`、`why_insufficient` 里写了实测、样机、样品、仿真作为关闭路径的，
 `DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 点出来（“随后/留给……”分句除外）——保证值和实测是两档，实测的部分拆成阶段 NA 检查项加移交。
 
 ## 6. 准出

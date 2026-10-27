@@ -21,7 +21,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from electrical_contract import load_json, text
 import requirement_bindings
-from function_reading import decides_row, edges, fail_filter, judged, prototype_estimate, unjudged_message
+from function_reading import (decides_row, design_constraint, edges, fail_filter, judged, prototype_estimate,
+                              unjudged_message)
 
 DERIVED_FIELDS = ('review_result', 'open_ref', 'fail_ref', 'finding_id', 'severity')
 
@@ -93,6 +94,11 @@ def derive_row(fn, planned, aspect, findings, functions=None, hand_filled=False)
         row['handoff'] = {'required': True, 'state': 'OPEN', 'receivers': list(h['receivers']),
                           'constraint': h['constraint'], 'verification': h['verification']}
         row['evidence_confidence'] = 'C'   # an estimate pass is C-grade evidence (2026-10-26 decision 4)
+    constraint = None if row['handoff'].get('required') else design_constraint(fn, aspect, state, planned['id'])
+    if constraint:   # passing on a constraint another design file must meet hands it on (乙, 2026-10-26)
+        h = constraint[0]
+        row['handoff'] = {'required': True, 'state': 'OPEN', 'receivers': list(h['receivers']),
+                          'constraint': h['constraint'], 'verification': h['verification']}
     row.update(review_result='PASS', rationale='见功能判定 %s：%s' % (where, basis))
     return row, None
 

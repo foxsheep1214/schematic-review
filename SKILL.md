@@ -333,7 +333,9 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   余量另写 `risk{types, corner, improvement}`——风险类型取那一格的“估算对应的风险”（环境适应性 / 寿命 / 一致性，`NONE` 三者任选），
   `corner` 写只靠估算的那个角点，`improvement` 写消除风险的改法（换型号、换档、样机抽测）。保证值在额定内、只是没满足审查员假定的降额时，
   决定性余量也可写 `risk{types: [STRESS]}`。风险不限制定稿，报告单列“风险清单”。
-- 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，再分 DESIGN_VALUE / DELIVERABLE_PENDING / VENDOR_DATUM；
+- 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，再分 DELIVERABLE_PENDING / VENDOR_DATUM；
+  设计没定不开项（2026-10-26，用户：按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束）：原理图或 BOM 该写明而没写的值记失败项，改法写反推出的值；
+  归另一份设计文件（磁件、固件、PCB）的值写 DESIGN_CONSTRAINT 条件，按约束判 PASS 并移交给定它的一方；
   检查项只在本方面本状态有证明通过的余量或判断时 PASS，没人判过的方面不默认通过。
 
 按计划 `functions[]` 的顺序推进：系统功能 → 功能电路 → 接口 → 全板；每个功能逐对象、逐状态给结果，全板项逐条给适用性和结果。
@@ -406,8 +408,8 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 #### 4.2 证据不足的分类
 
 证据不足先按 [分出下游工作](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
-批量脚本不能用一句固定兜底语给全部证据不足定级。分类落在开放项的 `kind` 上（DESIGN_VALUE、VENDOR_DATUM、DELIVERABLE_PENDING），检查项由它派生：
-关闭条件只写本阶段能拿到的东西——厂家保证值、设计规格、交付物；实测、样机、仿真才能得到的部分不写进关闭条件，拆成阶段 NA 检查项加移交。
+批量脚本不能用一句固定兜底语给全部证据不足定级。分类落在开放项的 `kind` 上（VENDOR_DATUM、DELIVERABLE_PENDING），检查项由它派生：
+关闭条件只写本阶段能拿到的东西——厂家保证值、交付物；实测、样机、仿真才能得到的部分不写进关闭条件，拆成阶段 NA 检查项加移交。
 筛查的四个提示点最常漏的几种：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP`（开放项的 `closure`/`acquisition`/`why_insufficient` 或检查项的缺口文字接受实测、样机、样品、仿真作为关闭路径；
 “随后/留给……”的分句已把下游部分分出，不算）、`CALCULATION_RECORDED_AS_DATA_GAP`（VENDOR_DATUM 开放项的 `acquisition`/`closure` 写了已读某页、只剩复算，又没说缺哪个数据）、
 `FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP`（开放项的 `what`/`closure`/`deliverable` 里是烧录镜像、读回、编程模式、量产校准，而不是编程口电平、上拉这类原理图前提）、

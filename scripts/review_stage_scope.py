@@ -9,10 +9,10 @@ keeps applicability APPLICABLE and a downstream handoff, and never blocks throug
 import catalog
 
 OUTSIDE_STAGE = 'OUTSIDE_SCHEMATIC_STAGE'
-GAP_CAUSES = ('EXTERNAL_DATA', 'DESIGN_OPEN', 'DELIVERABLE_PENDING', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
+GAP_CAUSES = ('EXTERNAL_DATA', 'DELIVERABLE_PENDING', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
 # Only real input/design gaps need a request; requirement gaps use clarification records,
 # unfinished review is done in this round, user deferral cites the user's instruction.
-REQUEST_CAUSES = ('EXTERNAL_DATA', 'DESIGN_OPEN')
+REQUEST_CAUSES = ('EXTERNAL_DATA',)
 REQUEST_FIELDS = ('why_decisive', 'required_scope', 'acquisition', 'closure_criterion')
 
 

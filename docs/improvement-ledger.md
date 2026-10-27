@@ -2796,3 +2796,30 @@ replay bench needs no revision.
 - Causes: judgment 1
 - Changed: scripts/catalog.py, scripts/review_functions.py, scripts/validate_review.py, scripts/render_report.py, scripts/results_model.py, scripts/tests, SKILL.md, references/bounding-table.md, references/results-format.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/requirement-clarifications.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2275, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M668 M736-M742 killed (M646 dropped; M35 M37 M42 M299 M339 M358 M496 M519 survive or miss on HEAD too)
+
+## An undecided design value is judged, not held open (2026-10-26)
+
+Item 3 of the "evidence insufficient" causes: a value the design had not set
+was a DESIGN_VALUE open item, so the rows read "insufficient" although SR had
+already back-calculated what the value must meet. The user split it by who
+owns the value (user: 按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束):
+
+1. 甲 — a value the schematic or BOM should state (a part value, rating, part
+   number) is a fail item; its finding gives the back-calculated value as the fix.
+2. 乙 — a value another design file owns (magnetics spec, firmware setting,
+   PCB) is a new condition kind DESIGN_CONSTRAINT with the back-calculated
+   limit, regime, owner and a function handoff; a margin takes it at its
+   unfavourable end, the rows pass and carry the handoff; an owner naming the
+   schematic or BOM is refused. The gate lists `design_constraints`, the report
+   conclusion names them.
+3. DESIGN_VALUE, the DESIGN_OPEN cause, `undecided`/`depends_on`, F8 and the
+   external-impedance guard go (results format 10).
+
+The shared bias fixture's open item becomes a vendor datum of a catalog
+transformer; the results-format example is rewritten as 乙 and the FN-QR
+example's T1 item as a pending magnetics drawing. Plans are unchanged.
+
+- Event: user:2026-10-26 (按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束)
+- Causes: judgment 1
+- Changed: scripts/review_functions.py, scripts/function_reading.py, scripts/derive_rows.py, scripts/validate_review.py, scripts/results_model.py, scripts/render_report.py, scripts/catalog.py, scripts/bom_constraints.py, scripts/review_quality.py, scripts/review_stage_scope.py, scripts/review_workflow.py, scripts/tests, SKILL.md, references/results-format.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, references/requirement-clarifications.md, references/bounding-table.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2266, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M47 M626 M743-M749 killed (M13 M21 M443-M455 M702 M703 dropped; M35 M37 M42 M51 M276 M299 M339 M358 M496 M513 M514 M519 M532 survive or miss on HEAD too)

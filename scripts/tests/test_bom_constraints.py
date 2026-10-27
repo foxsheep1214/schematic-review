@@ -67,7 +67,7 @@ class ConstraintTests(unittest.TestCase):
 
 
 class RatingGapTests(unittest.TestCase):
-    def refused(self, rule='DEV-C01', ref='R1', kind='DESIGN_VALUE'):
+    def refused(self, rule='DEV-C01', ref='R1', kind='VENDOR_DATUM'):
         db, _ = board()
         expected = {rule + '.' + ref: {'rule': rule, 'object': {'ref': ref}}}
         checks = {rule + '.' + ref: {'review_result': 'INSUFFICIENT', 'open_ref': 'FN-X/RATING'}}
@@ -75,15 +75,14 @@ class RatingGapTests(unittest.TestCase):
         return bom_constraints.rating_gap_errors(expected, checks, functions, NetGraph(db), row_anchors)
 
     def test_a_commodity_part_rating_left_open_is_refused(self):
-        for kind in ('DESIGN_VALUE', 'VENDOR_DATUM'):
-            self.assertTrue(self.refused(kind=kind), kind)
+        self.assertTrue(self.refused())
 
     def test_a_requirement_row_following_the_part_row_does_not_keep_it_open(self):
         db, _ = board()
         expected = {'DEV-C01.R1': {'rule': 'DEV-C01', 'object': {'ref': 'R1'}},
                     'REQ-D01.DERATING.REQ-1': {'rule': 'REQ-D01', 'object': {'requirement_id': 'REQ-1'}}}
         checks = {cid: {'review_result': 'INSUFFICIENT', 'open_ref': 'FN-X/RATING'} for cid in expected}
-        functions = [{'id': 'FN-X', 'open': [{'key': 'RATING', 'kind': 'DESIGN_VALUE'}]}]
+        functions = [{'id': 'FN-X', 'open': [{'key': 'RATING', 'kind': 'VENDOR_DATUM'}]}]
         self.assertTrue(bom_constraints.rating_gap_errors(expected, checks, functions, NetGraph(db), row_anchors))
         del expected['DEV-C01.R1'], checks['DEV-C01.R1']
         self.assertEqual(bom_constraints.rating_gap_errors(expected, checks, functions, NetGraph(db), row_anchors), [])
@@ -105,7 +104,7 @@ class RatingGapTests(unittest.TestCase):
         report = ledger(plan, db)
         row = next(c for c in report['checks'] if c['id'] == rows['R1']['id'])
         row.update(review_result='INSUFFICIENT', open_ref='FN-X/RATING')
-        report['functions'] = [{'id': 'FN-X', 'open': [{'key': 'RATING', 'kind': 'DESIGN_VALUE'}]}]
+        report['functions'] = [{'id': 'FN-X', 'open': [{'key': 'RATING', 'kind': 'VENDOR_DATUM'}]}]
         checks = {c['id']: c for c in report['checks']}
         errors = review_functions.validate_functions(plan, report, checks, db=db)
         self.assertTrue(any('commodity parts' in e for e in errors), errors)
@@ -118,7 +117,7 @@ class RatingGapTests(unittest.TestCase):
         expected = {'DEV-D04.BOARD': {'rule': 'DEV-D04', 'object': {}}}
         checks = {'DEV-D04.BOARD': {'review_result': 'INSUFFICIENT', 'open_ref': 'FN-X/RATINGS'}}
         for what, refused in (('R1、C1 没有额定电压/功率（X7R）', True), ('U1 与 R1 没写订货码', False), ('BOM 没写额定', False)):
-            functions = [{'id': 'FN-X', 'open': [{'key': 'RATINGS', 'kind': 'DESIGN_VALUE', 'what': what}]}]
+            functions = [{'id': 'FN-X', 'open': [{'key': 'RATINGS', 'kind': 'VENDOR_DATUM', 'what': what}]}]
             with self.subTest(what=what):
                 errors = bom_constraints.rating_gap_errors(expected, checks, functions, NetGraph(db), row_anchors)
                 self.assertEqual(bool(errors), refused, errors)
