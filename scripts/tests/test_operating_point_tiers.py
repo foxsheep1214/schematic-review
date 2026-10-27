@@ -68,9 +68,11 @@ class DescribedUsageTests(unittest.TestCase):
     """Tier 3: a usage the datasheet describes without the number is a vendor datum; say where it is described."""
 
     def unboundable(self, **worst):
-        return with_datum(not_boundable_reason='手册写了这种用法，没给灌电流', operating_point_specified=True,
-                          monotonic_tried=HV_TRIED,
-                          curves_checked=[{'source': 'evidence/ds/U1.txt', 'locator': 'p11 电气特性'}], **worst)
+        fn = with_datum(not_boundable_reason='手册写了这种用法，没给灌电流', operating_point_specified=True,
+                        monotonic_tried=HV_TRIED,
+                        curves_checked=[{'source': 'evidence/ds/U1.txt', 'locator': 'p11 电气特性'}], **worst)
+        fn['open'][0]['cell_reason'] = '夹具只测第三档的 specified_by；HV 启动电流不是逻辑脚灌电流'
+        return fn
 
     def test_specified_names_the_clause_that_describes_the_usage(self):
         found = errors(self.unboundable())

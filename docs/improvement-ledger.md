@@ -2581,3 +2581,36 @@ openable cell now use NONE or ZENER-VZ-UPPER.
 - Causes: judgment 3
 - Changed: scripts/catalog.py, scripts/plan_circuits.py, scripts/review_functions.py, scripts/tests/test_bounding_table.py, scripts/tests/test_one_sided_bounds.py, scripts/tests/test_single_fault_rows.py, references/bounding-table.md, references/results-format.md, references/evidence-proportionality.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M701–M703 killed
+
+## Design risk held as missing vendor data (2026-10-26)
+
+After the zener decision the user asked whether other gaps turn a design risk
+into missing data. Of the 22 vendor-datum gaps in R7/R8, six were: a pin driven
+past its absolute maximum with no injection rating (J701-ESD-COORD,
+CS-SHORT-INJECTION, USB-ESD-COORDINATION, U601-ESD-TRANSIENT), a switch past
+its SOA chart (PORT-SHORT) and a capacitor past its rated voltage with no surge
+rating (BULK-SURGE). Six of the 22 wrote cell NONE and thirteen none, which
+skipped every cell rule. Decision 按你说的口径改:
+
+1. The cells DIODE-SURGE, IC-IO-CURRENT, CAP-SURGE-V and MOS-DISCHARGE-I2T
+   fall back to OUTSIDE_SPECIFIED, and a new cell IC-PIN-ABSMAX (pin transient
+   voltage or injection against the absolute maximum, no estimate) does too.
+2. `review_functions._gap_cell_errors`: a vendor-datum gap whose cell
+   (`monotonic_tried.cell` or `margin.basis.cell`) falls back to
+   OUTSIDE_SPECIFIED is refused as a fail item; a gap with cell NONE or none
+   whose words (what, why_insufficient, not_boundable_reason, quantity,
+   against) name a cell, or one naming another cell while its words name an
+   OUTSIDE_SPECIFIED cell, names that cell or says why not in `cell_reason`.
+
+On the records the guard refuses 6 gaps in R7 claude1, 2 in claude2, 6 in
+codex1, 0 in codex2, and one each in R8 codex1, codex2 and codex3, all six
+design-risk gaps among them. The rest need a cell or a one-line reason (a
+controller's transconductance reads as MOS-LINEAR, for instance). Test
+fixtures that test other mechanics write `cell_reason`. Step ③ grows by the new
+cell and the rule (221 831 → 222 603 bytes): its budget moves 221 000 →
+223 000; ④ stays within 118 000.
+
+- Event: user:2026-10-26 (能不能举一反三……将设计风险转化为资料不足的问题; 按你说的口径改：四类格子兜底改为超出规定区（新建引脚超绝限一格），并堵住选 NONE 绕过格子的口子，各带测试); review:SR-20261025-R7-验收-codex1-660f790/审查报告.md
+- Causes: judgment 1, rule_not_enforced 1
+- Changed: scripts/catalog.py, scripts/review_functions.py, scripts/tests/test_gap_cells.py, scripts/tests/test_one_sided_bounds.py, scripts/tests/test_operating_point_tiers.py, scripts/tests/test_review_functions.py, scripts/tests/test_reading_path.py, references/bounding-table.md, references/results-format.md, references/evidence-proportionality.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M704–M714 killed

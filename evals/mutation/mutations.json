@@ -4800,5 +4800,82 @@
   "file": "scripts/review_functions.py",
   "old": "    if planned.get('rule') == 'DRV-C02' and str(planned.get('id', '')).startswith('DRV-C02.PORT-SHORT.'):",
   "new": "    if False:"
+ },
+ {
+  "id": "M704",
+  "name": "a pin past its absolute maximum may wait for vendor data",
+  "file": "scripts/catalog.py",
+  "old": "    Bound('IC-PIN-ABSMAX', _IC_ROLES, '引脚瞬态电压/注入电流对绝对最大额定', 'UPPER', '瞬态源与串联阻抗', None, (('G1', ()),),\n          'OUTSIDE_SPECIFIED', '钳位规则（architecture.md 2026-10-25，B3 a）',",
+  "new": "    Bound('IC-PIN-ABSMAX', _IC_ROLES, '引脚瞬态电压/注入电流对绝对最大额定', 'UPPER', '瞬态源与串联阻抗', None, (('G1', ()),),\n          'VENDOR_DATUM', '钳位规则（architecture.md 2026-10-25，B3 a）',"
+ },
+ {
+  "id": "M705",
+  "name": "a diode surge with no IFSM may wait for vendor data",
+  "file": "scripts/catalog.py",
+  "old": "    Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',\n          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'OUTSIDE_SPECIFIED', _EP + '“脉冲与浪涌”',",
+  "new": "    Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',\n          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'VENDOR_DATUM', _EP + '“脉冲与浪涌”',"
+ },
+ {
+  "id": "M706",
+  "name": "pin current past the datasheet sink/source may wait for vendor data",
+  "file": "scripts/catalog.py",
+  "old": "    Bound('IC-IO-CURRENT', _IC_ROLES, 'IO 灌/拉电流超出规定', 'UPPER', '负载电流', None, (('G1', ()), ('G10', ())),\n          'OUTSIDE_SPECIFIED', _EP + '“手册的情况按四档判”',",
+  "new": "    Bound('IC-IO-CURRENT', _IC_ROLES, 'IO 灌/拉电流超出规定', 'UPPER', '负载电流', None, (('G1', ()), ('G10', ())),\n          'VENDOR_DATUM', _EP + '“手册的情况按四档判”',"
+ },
+ {
+  "id": "M707",
+  "name": "a capacitor past its rated voltage with no surge rating may wait for vendor data",
+  "file": "scripts/catalog.py",
+  "old": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G2', ()), ('G5', ()), ('G6', ())), 'OUTSIDE_SPECIFIED', _CB,",
+  "new": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,"
+ },
+ {
+  "id": "M708",
+  "name": "a switch past its SOA chart may wait for vendor data",
+  "file": "scripts/catalog.py",
+  "old": "    Bound('MOS-DISCHARGE-I2T', ('mosfet',), '短路放电峰流与 I²t 对脉冲能力', 'UPPER', '回路阻抗', 'DECREASING',\n          (('G2', ()), ('G5', ()), ('G6', ())), 'OUTSIDE_SPECIFIED', _CB,",
+  "new": "    Bound('MOS-DISCHARGE-I2T', ('mosfet',), '短路放电峰流与 I²t 对脉冲能力', 'UPPER', '回路阻抗', 'DECREASING',\n          (('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,"
+ },
+ {
+  "id": "M709",
+  "name": "a public bound on an outside-specified cell stands as a vendor gap",
+  "file": "scripts/review_functions.py",
+  "old": "    if bound is not None and bound.fallback == 'OUTSIDE_SPECIFIED' and not unboundable:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M710",
+  "name": "cell NONE may skip a cell its words name",
+  "file": "scripts/review_functions.py",
+  "old": "    if cell in (None, catalog.NO_CELL) and named:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M711",
+  "name": "a gap may name another cell than the outside-specified parameter its words name",
+  "file": "scripts/review_functions.py",
+  "old": "    if outside and cell not in outside and (bound is None or bound.fallback != 'OUTSIDE_SPECIFIED'):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M712",
+  "name": "every gap is excused from naming its cell",
+  "file": "scripts/review_functions.py",
+  "old": "    if text(item.get('cell_reason')):",
+  "new": "    if True:"
+ },
+ {
+  "id": "M713",
+  "name": "pin absolute-maximum words name no cell",
+  "file": "scripts/catalog.py",
+  "old": "r'绝对最大|绝限|abs(?:olute)?[ .-]?max|注入|injection'",
+  "new": "r'(?!x)x'"
+ },
+ {
+  "id": "M714",
+  "name": "the unboundable reason is not read for cell words",
+  "file": "scripts/review_functions.py",
+  "old": "(item.get('what'), item.get('why_insufficient'), worst.get('not_boundable_reason'),",
+  "new": "(item.get('what'), item.get('why_insufficient'), None,"
  }
 ]

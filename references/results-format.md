@@ -191,6 +191,9 @@ DAMAGE_OR_HAZARD、CORE_LINK_LOSS 在任何格都不估算。`cell: NONE`（表�
 `open_range{min, max}` 写开着的那段（在工作点之内、不跨进测试点之间），测试点之间那段写成本功能同一方面的余量。
 开放项的每条边写 `side`，与 `monotonic_tried.side` 相同。
 
+厂家数据开放项的格（`monotonic_tried.cell` 或 `margin.basis.cell`）兜底为 `OUTSIDE_SPECIFIED`（脚超绝限、超 SOA、无浪涌额定、超灌拉电流、无 IFSM）时拒收，记失败项；
+格为 `NONE` 或没写而 `what`/`why_insufficient`/`not_boundable_reason`/`quantity`/`against` 点到某格参数词，或点到 `OUTSIDE_SPECIFIED` 格却写别格，也拒收：写那一格，或写 `cell_reason` 说明。
+
 计算类（规则方法 C）的方面判 PASS 必须有证明它的余量；一句判断只能收掉连接追踪（T）和条款核对（D）类方面，写明 `reference_circuit` 的厂家参考电路例外。
 
 **影响条目（`decides[]`）。** 开放项和失败项的每个 `decides` 条目是一条边：`{aspect, states?, check_ids?, effect, via, rationale}`。

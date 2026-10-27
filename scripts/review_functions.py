@@ -951,12 +951,47 @@ def _f8_errors(fid, fn, calculation):
     return errors
 
 
+def _gap_cell_errors(label, item, worst):
+    """2026-10-26 (user: 堵住选 NONE 绕过格子的口子): a vendor-datum gap's cell decides whether it may wait for the vendor.
+    The cell is monotonic_tried.cell (unboundable) or margin.basis.cell (public bound short). A cell whose fallback is
+    OUTSIDE_SPECIFIED has no vendor gap. When the gap's words name cells of the bounding table (catalog.CELL_WORDS),
+    a gap written with cell NONE or none, or one naming another cell while its words name an OUTSIDE_SPECIFIED cell,
+    names that cell or says in cell_reason why it does not apply."""
+    unboundable = text(worst.get('not_boundable_reason'))
+    tried = worst.get('monotonic_tried') if isinstance(worst.get('monotonic_tried'), dict) else {}
+    margin = worst.get('margin') if isinstance(worst.get('margin'), dict) else {}
+    basis = margin.get('basis') if isinstance(margin.get('basis'), dict) else {}
+    cell = tried.get('cell') if unboundable else basis.get('cell')
+    where = 'worst_case.monotonic_tried.cell' if unboundable else 'worst_case.margin.basis.cell'
+    bound = catalog.BOUNDS.get(cell)
+    if bound is not None and bound.fallback == 'OUTSIDE_SPECIFIED' and not unboundable:
+        return ['%s: %s %s has no vendor gap: past %s the part is outside its specified region; record a fail item '
+                '(fails[] with outside_specified) whose fix moves the design back inside' % (label, where, cell, bound.parameter)]
+    if text(item.get('cell_reason')):
+        return []
+    words = ' '.join(str(x) for x in (item.get('what'), item.get('why_insufficient'), worst.get('not_boundable_reason'),
+                                      tried.get('quantity'), margin.get('against')) if text(x))
+    named = catalog.cells_named_by(words)
+    outside = [c for c in named if catalog.BOUNDS[c].fallback == 'OUTSIDE_SPECIFIED']
+    if cell in (None, catalog.NO_CELL) and named:
+        return ['%s: %s is %s, but the gap\'s words name %s; write the cell of this parameter, or say in cell_reason why '
+                'none of them applies' % (label, where, cell or 'missing', '/'.join(named))]
+    if outside and cell not in outside and (bound is None or bound.fallback != 'OUTSIDE_SPECIFIED'):
+        return ['%s: the gap\'s words name %s, a parameter with no vendor gap (outside its specified region is a fail '
+                'item); name that cell, or say in cell_reason why the operating point is inside the specified region'
+                % (label, '/'.join(outside))]
+    return []
+
+
 def _worst_case_errors(label, item, conditions, calculation=None):
     """F3: the worst case under the public bound (which clause, what value, how it bounds) and its margin,
     or the curves and tables searched before calling the quantity unboundable."""
     worst = item.get('worst_case')
     if not isinstance(worst, dict):
         return [label + ': worst_case gives the result under the public bound, or why it cannot be bounded']
+    found = _gap_cell_errors(label, item, worst)
+    if found:
+        return found
     if text(worst.get('not_boundable_reason')):
         if not evidence(worst.get('curves_checked')):
             return [label + ': worst_case.curves_checked lists the datasheet figures, published tables and application '

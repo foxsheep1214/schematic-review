@@ -44,6 +44,8 @@ def unboundable(**monotonic):
     fn['conditions'] += [copy.deepcopy(Z1), copy.deepcopy(R1)]
     item = fn['open'][0]
     item['checked'] = ['c3', 'z1', 'r1']
+    # the one-sided mechanics, not the cell choice: the gap says why the cell its words name is not the point here
+    item['cell_reason'] = '夹具只测单侧定界的机制；格子由各测试点名'
     for edge in item['decides']:
         edge['side'] = 'LOWER'
     return fn

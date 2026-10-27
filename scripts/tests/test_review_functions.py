@@ -629,6 +629,7 @@ class DerivedLevelsTests(unittest.TestCase):
         short = {'key': 'SHORT-SOA', 'kind': 'VENDOR_DATUM', 'what': 'Q5 短路关断轨迹', 'scope': '22.1 V 热态短路',
                  'closure': 'Q5 重复短路 SOA 内', 'acquisition': '原厂应用支持', 'checked': ['c3'],
                  'why_insufficient': '手册无 VBUS 关断轨迹',
+                 'cell_reason': '夹具只测 P0/P1 分开计数，不测格子',
                  'worst_case': {'not_boundable_reason': '无驱动电流上限', 'operating_point_specified': True,
                                 'monotonic_tried': dict(HV_TRIED, quantity='Q5 关断轨迹电流', why_not='手册无短路轨迹曲线'),
                                 'specified_by': 'c4',

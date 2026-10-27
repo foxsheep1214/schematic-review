@@ -1193,8 +1193,9 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'TEST_POINT', (_e(2, FUNCTIONAL, '比例外推 G7，再 ×2'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
           '功能用途允许（×2）；判高压整流反向功耗热失控（损坏）要 hot max，没有则不估算'),
     Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',
-          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'VENDOR_DATUM', _EP + '“脉冲与浪涌”',
-          'TEST_POINT', (), ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD'), _T, '不估算：I²t（√t）换算已是保守推法；无 IFSM 的器件开放'),
+          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'OUTSIDE_SPECIFIED', _EP + '“脉冲与浪涌”',
+          'TEST_POINT', (), ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD'), _T,
+          '不估算：I²t（√t）换算已是保守推法；手册没给 IFSM 的器件承受浪涌是用在规定区之外，记失败项（2026-10-26 定）'),
     # 3.4 MOSFET、BJT
     Bound('MOS-VGS-ON', ('mosfet',), '导通所需 VGS', 'UPPER', '漏极电流 ID', 'INCREASING', (('G1', ()), ('G2', ()), ('G7', ())),
           'VENDOR_DATUM', 'wca-formulas.md VGS 三档',
@@ -1280,20 +1281,27 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
           'TEST_POINT', (_e(1.5, FUNCTIONAL, '超测试电流：输出阻抗典型 ×1.5'),), ('REQUIRED_FUNCTION',), _M, '允许估算（×1.5）'),
     Bound('IC-IO-CURRENT', _IC_ROLES, 'IO 灌/拉电流超出规定', 'UPPER', '负载电流', None, (('G1', ()), ('G10', ())),
-          'VENDOR_DATUM', _EP + '“手册的情况按四档判”',
-          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算'),
+          'OUTSIDE_SPECIFIED', _EP + '“手册的情况按四档判”',
+          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算：超出手册给的灌/拉电流即超出规定区，记失败项（2026-10-26 定）'),
+    Bound('IC-PIN-ABSMAX', _IC_ROLES, '引脚瞬态电压/注入电流对绝对最大额定', 'UPPER', '瞬态源与串联阻抗', None, (('G1', ()),),
+          'OUTSIDE_SPECIFIED', '钳位规则（architecture.md 2026-10-25，B3 a）',
+          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M,
+          '不估算：脚上电压超绝对最大额定、手册又没给允许注入电流即超出规定区，记失败项；有串联阻抗时按算出的注入电流对手册允许值判'
+          '（2026-10-26 定）'),
     Bound('IC-RECOMMENDED', _IC_ROLES, '推荐工作条件（绝对最大额定只算损坏边界）', None, '工作条件', None, (('G1', ()),),
           'OUTSIDE_SPECIFIED', 'DEV-C05',
           'GUARANTEED', (), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M, '不估算：超出即 OUTSIDE_SPECIFIED'),
     # 3.9 R7 碰到、原来没有格的量（2026-10-26 决定 5）
     Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',
-          (('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,
+          (('G2', ()), ('G5', ()), ('G6', ())), 'OUTSIDE_SPECIFIED', _CB,
           'GUARANTEED', (), ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD'), _T,
-          '不估算：额定电压是保证值，缺的是浪涌源与回路（设计量或标准条款）；电容爆裂是安全后果'),
+          '不估算：额定电压是保证值，缺的是浪涌源与回路（设计量或标准条款）；超过额定电压、手册又没给浪涌电压额定即超出规定区，'
+          '记失败项（2026-10-26 定）；电容爆裂是安全后果'),
     Bound('MOS-DISCHARGE-I2T', ('mosfet',), '短路放电峰流与 I²t 对脉冲能力', 'UPPER', '回路阻抗', 'DECREASING',
-          (('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,
+          (('G2', ()), ('G5', ()), ('G6', ())), 'OUTSIDE_SPECIFIED', _CB,
           'TEST_POINT', (), ('COMPONENT_DAMAGE',), _M,
-          '不估算：脉冲能力按手册单脉冲曲线（保证）判，回路阻抗按最坏（设计量，DESIGN_VALUE）'),
+          '不估算：脉冲能力按手册单脉冲曲线（保证）判，工作点超出曲线范围或 IDM 即超出规定区，记失败项（2026-10-26 定）；'
+          '回路阻抗按写明的最小值，交给后续环节'),
     Bound('IC-GATE-DRIVE-I', ('mosfet',), '栅极驱动平均电流 Qg·f 对偏置供给', 'UPPER', '开关频率与 VGS', 'INCREASING',
           (('G1', ()), ('G2', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _CB,
           'TEST_POINT', (_e(1.3, FUNCTIONAL, 'Qg 只有典型时 ×1.3'),), ('PERFORMANCE_OR_LIFE',), _M,
@@ -1315,7 +1323,8 @@ def estimate_rule(cell_id, consequence_class):
 NO_CELL = 'NONE'   # a decisive margin whose parameter has no cell in the table says so
 
 # Words that name a cell's parameter in a margin's against / aspect or its limit's says: a decisive margin written with
-# cell NONE while one of these matches is a hint (BOUNDING_CELL_AVAILABLE), never an error.
+# cell NONE while one of these matches is a hint (BOUNDING_CELL_AVAILABLE). On a vendor-datum gap they are a check
+# (review_functions._gap_cell_errors, 2026-10-26): a gap whose words name a cell names that cell or says why not.
 CELL_WORDS = OrderedDict((
     ('ZENER-VZ-UPPER', r'\bV_?Z\b|齐纳电压|击穿电压|稳压值'),
     ('ZENER-VZ-LOWER', r'\bV_?Z\b|齐纳电压|击穿电压|稳压值'),
@@ -1350,6 +1359,7 @@ CELL_WORDS = OrderedDict((
     ('IC-TIMING', r'最小导通|消隐|延时|blank|delay|\bt_?(?:ON|OFF)(?:_?M(?:IN|AX))?\b|\bt[A-Za-z_]*\('),
     ('IC-IO-LEVEL', r'\bV_?O[HL]\b|\bV_?I[HL]\b|输出电平|输入电平'),
     ('IC-IO-CURRENT', r'\bI_?O[HL]\b|灌电流|拉电流|sink current|source current'),
+    ('IC-PIN-ABSMAX', r'绝对最大|绝限|abs(?:olute)?[ .-]?max|注入|injection'),
     ('IC-RECOMMENDED', r'推荐工作|recommended operating'),
     ('CAP-SURGE-V', r'浪涌.{0,8}(?:电压|抬升)|surge voltage|电容.{0,6}瞬态电压|BULK.{0,6}抬升'),
     ('MOS-DISCHARGE-I2T', r'短路放电|放电峰流|放电.{0,4}I\s?[²2]\s?t|discharge'),

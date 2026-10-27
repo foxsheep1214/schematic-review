@@ -75,7 +75,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `DIODE-VF` | diode、bridge_rectifier | VF 上界随电流 | UPPER | 正向电流 IF / INCREASING | G1；G2；G8 | `VENDOR_DATUM` | evidence-proportionality.md“单调外推” |
 | `DIODE-VF-COLD` | diode、bridge_rectifier | VF 上界随温度（冷态最差） | UPPER | 温度 / DECREASING | G1；G2；G4（`tempco_bound`）；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“单调外推” |
 | `DIODE-IR-HOT` | diode、bridge_rectifier、zener | 高温反向漏电 | UPPER | 温度 / INCREASING | G1；G2；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“二极管反向漏电” |
-| `DIODE-SURGE` | diode、bridge_rectifier | 浪涌 IFSM 换算到其他脉宽 | UPPER | 脉宽 / DECREASING | G1；G2；G5（`half_sine_i2t`、`surge_current_at_width`） | `VENDOR_DATUM` | evidence-proportionality.md“脉冲与浪涌” |
+| `DIODE-SURGE` | diode、bridge_rectifier | 浪涌 IFSM 换算到其他脉宽 | UPPER | 脉宽 / DECREASING | G1；G2；G5（`half_sine_i2t`、`surge_current_at_width`） | `OUTSIDE_SPECIFIED` | evidence-proportionality.md“脉冲与浪涌” |
 | `MOS-VGS-ON` | mosfet | 导通所需 VGS | UPPER | 漏极电流 ID / INCREASING | G1；G2；G7 | `VENDOR_DATUM` | wca-formulas.md VGS 三档 |
 | `MOS-RDS-HOT` | mosfet | 高温 RDS(on) | UPPER | 结温 / INCREASING | G1；G2；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“MOS 热态 RDS” |
 | `MOS-SOA-HOT` | mosfet | 高温 SOA | UPPER | 开始壳温 / DECREASING | SOA（`soa_allowed_power`、`soa_case_temperature`、`heatsink_requirement`、`zth_junction_temperature`） | `BOUNDED` | 本表“几条口径”MOS 高温 SOA |
@@ -97,10 +97,11 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `IC-QUIESCENT` | ic 及各 IC 角色 | 静态电流、按模式的功耗 | UPPER | 模式与温度 / — | G1；G9（`typical_band`） | `VENDOR_DATUM` | evidence-proportionality.md“只有典型值的参数” |
 | `IC-TIMING` | ic 及各 IC 角色 | 时序参数（最小导通、延时、消隐） | — | 温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
 | `IC-IO-LEVEL` | ic 及各 IC 角色 | IO 的 VOH/VOL | — | 负载电流与 VDD / INCREASING | G1；G2；G9 | `VENDOR_DATUM` | 定界表决定（architecture.md 2026-10-23） |
-| `IC-IO-CURRENT` | ic 及各 IC 角色 | IO 灌/拉电流超出规定 | UPPER | 负载电流 / — | G1；G10 | `VENDOR_DATUM` | evidence-proportionality.md“手册的情况按四档判” |
+| `IC-IO-CURRENT` | ic 及各 IC 角色 | IO 灌/拉电流超出规定 | UPPER | 负载电流 / — | G1；G10 | `OUTSIDE_SPECIFIED` | evidence-proportionality.md“手册的情况按四档判” |
+| `IC-PIN-ABSMAX` | ic 及各 IC 角色 | 引脚瞬态电压/注入电流对绝对最大额定 | UPPER | 瞬态源与串联阻抗 / — | G1 | `OUTSIDE_SPECIFIED` | 钳位规则（architecture.md 2026-10-25，B3 a） |
 | `IC-RECOMMENDED` | ic 及各 IC 角色 | 推荐工作条件（绝对最大额定只算损坏边界） | — | 工作条件 / — | G1 | `OUTSIDE_SPECIFIED` | DEV-C05 |
-| `CAP-SURGE-V` | capacitor、electrolytic | 浪涌/瞬态时电容电压对额定电压 | UPPER | 浪涌电荷与回路阻抗 / INCREASING | G2；G5；G6 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md |
-| `MOS-DISCHARGE-I2T` | mosfet | 短路放电峰流与 I²t 对脉冲能力 | UPPER | 回路阻抗 / DECREASING | G2；G5；G6 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md |
+| `CAP-SURGE-V` | capacitor、electrolytic | 浪涌/瞬态时电容电压对额定电压 | UPPER | 浪涌电荷与回路阻抗 / INCREASING | G2；G5；G6 | `OUTSIDE_SPECIFIED` | docs/2026-10-26-cell-boundary.md |
+| `MOS-DISCHARGE-I2T` | mosfet | 短路放电峰流与 I²t 对脉冲能力 | UPPER | 回路阻抗 / DECREASING | G2；G5；G6 | `OUTSIDE_SPECIFIED` | docs/2026-10-26-cell-boundary.md |
 | `IC-GATE-DRIVE-I` | mosfet | 栅极驱动平均电流 Qg·f 对偏置供给 | UPPER | 开关频率与 VGS / INCREASING | G1；G2；G9（`typical_band`） | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md |
 
 ### 判决边界
@@ -122,7 +123,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `DIODE-VF` | `TEST_POINT` | ×1.15 · 功能/性能/寿命：超出测试点需要典型曲线时 ×1.15<br>×1.15 · 损坏 · 余量 ≥ 20 °C：同上；用它判温升损坏时结温余量 ≥ 20 °C | 性能/寿命/损坏 | 可测 | 允许估算（×1.15）；判温升损坏时另要结温余量 ≥ 20 °C |
 | `DIODE-VF-COLD` | `INDUSTRY_NONE` | ×1.15 · 功能/性能/寿命：典型温度曲线 ×1.15；物理温漂上界（约 −2 mV/°C）可作 G4 保证推法 | 功能 | 可测 | 允许估算（×1.15） |
 | `DIODE-IR-HOT` | `TEST_POINT` | ×2 · 功能/性能/寿命：比例外推 G7，再 ×2 | 功能/损坏 | 可测 | 功能用途允许（×2）；判高压整流反向功耗热失控（损坏）要 hot max，没有则不估算 |
-| `DIODE-SURGE` | `TEST_POINT` | 不估算 | 损坏/安全 | 型式试验 | 不估算：I²t（√t）换算已是保守推法；无 IFSM 的器件开放 |
+| `DIODE-SURGE` | `TEST_POINT` | 不估算 | 损坏/安全 | 型式试验 | 不估算：I²t（√t）换算已是保守推法；手册没给 IFSM 的器件承受浪涌是用在规定区之外，记失败项（2026-10-26 定） |
 | `MOS-VGS-ON` | `TEST_POINT` | ×2 · 功能/性能/寿命：小信号 / 电平转换：典型传输曲线的 RDS ×2 | 功能/损坏 | 可测 | 功率开关（损坏）要测试点覆盖工作 VGS，不估算；小信号开关（功能）允许估算（×2） |
 | `MOS-RDS-HOT` | `INDUSTRY_NONE` | ×1.2 · 功能/性能/寿命/损坏 · 余量 ≥ 20 °C：25 °C max × 典型温度比（G7），再 ×1.2；判损坏时结温余量 ≥ 20 °C | 性能/寿命/损坏 | 可测 | 允许估算判 PASS（×1.2 且结温余量 ≥ 20 °C）：全行业做法，hot max 行业不给 |
 | `MOS-SOA-HOT` | `GUARANTEED` | 不估算 | 损坏 | 型式试验 | 按 SOA 推法降额后视作保证；不另估算 |
@@ -144,10 +145,11 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `IC-QUIESCENT` | `TYPICAL_BY_DEFINITION` | ×1.3 · 功能/性能/寿命：典型 ×1.3（现行 G9）<br>×1.5 · 损坏：用它判偏置电阻功耗损坏时 ×1.5 | 功能/性能/寿命 | 可测 | 允许（功能 ×1.3，损坏用途 ×1.5） |
 | `IC-TIMING` | `GUARANTEED` | ×2 · 功能/性能/寿命：只给典型的延时：典型 ×2，取不利方向 | 功能/损坏 | 可测 | 功能时序允许（×2）；用延时判过冲过压损坏时要 max，没有则不估算 |
 | `IC-IO-LEVEL` | `TEST_POINT` | ×1.5 · 功能/性能/寿命：超测试电流：输出阻抗典型 ×1.5 | 功能 | 可测 | 允许估算（×1.5） |
-| `IC-IO-CURRENT` | `GUARANTEED` | 不估算 | 损坏 | 可测 | 不估算 |
+| `IC-IO-CURRENT` | `GUARANTEED` | 不估算 | 损坏 | 可测 | 不估算：超出手册给的灌/拉电流即超出规定区，记失败项（2026-10-26 定） |
+| `IC-PIN-ABSMAX` | `GUARANTEED` | 不估算 | 损坏 | 可测 | 不估算：脚上电压超绝对最大额定、手册又没给允许注入电流即超出规定区，记失败项；有串联阻抗时按算出的注入电流对手册允许值判（2026-10-26 定） |
 | `IC-RECOMMENDED` | `GUARANTEED` | 不估算 | 功能/损坏 | 可测 | 不估算：超出即 OUTSIDE_SPECIFIED |
-| `CAP-SURGE-V` | `GUARANTEED` | 不估算 | 损坏/安全 | 型式试验 | 不估算：额定电压是保证值，缺的是浪涌源与回路（设计量或标准条款）；电容爆裂是安全后果 |
-| `MOS-DISCHARGE-I2T` | `TEST_POINT` | 不估算 | 损坏 | 可测 | 不估算：脉冲能力按手册单脉冲曲线（保证）判，回路阻抗按最坏（设计量，DESIGN_VALUE） |
+| `CAP-SURGE-V` | `GUARANTEED` | 不估算 | 损坏/安全 | 型式试验 | 不估算：额定电压是保证值，缺的是浪涌源与回路（设计量或标准条款）；超过额定电压、手册又没给浪涌电压额定即超出规定区，记失败项（2026-10-26 定）；电容爆裂是安全后果 |
+| `MOS-DISCHARGE-I2T` | `TEST_POINT` | 不估算 | 损坏 | 可测 | 不估算：脉冲能力按手册单脉冲曲线（保证）判，工作点超出曲线范围或 IDM 即超出规定区，记失败项（2026-10-26 定）；回路阻抗按写明的最小值，交给后续环节 |
 | `IC-GATE-DRIVE-I` | `TEST_POINT` | ×1.3 · 功能/性能/寿命：Qg 只有典型时 ×1.3 | 性能/寿命 | 可测 | 允许估算（×1.3）：Qg max 多数手册给（G1），只有典型时 ×1.3 |
 
 <!-- bounds:end -->

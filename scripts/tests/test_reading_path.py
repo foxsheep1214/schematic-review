@@ -18,7 +18,7 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # Bytes of the references each step of the execution flow links, measured 2026-10-26 after the split (see the ledger):
 # ① 192321, ② 184974, ③ 220670, ④ 117517, ⑤ 54796. Before the split every step carried the whole 117 KB ledger
 # document and the 131 KB rule table (685 KB in all); ① also carried the 70 KB checkers' document for its conventions.
-STEP_MAX_BYTES = {'①': 193_000, '②': 185_000, '③': 221_000, '④': 118_000, '⑤': 55_000}
+STEP_MAX_BYTES = {'①': 193_000, '②': 185_000, '③': 223_000, '④': 118_000, '⑤': 55_000}
 
 
 def section(text, title):
