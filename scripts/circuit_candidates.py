@@ -48,7 +48,7 @@ DEBUG_PIN_RE = re.compile(r'^(SWDIO|SWCLK|SWO|TCK|TMS|TDI|TDO|NTRST|JTAG\w*)$', 
 PROTECTIVE_RE = re.compile(r'THERMISTOR|FUSE|BRIDGE|\bGDT\b|SPARK', re.I)   # with netgraph's NTC and varistor words
 PROTECTIVE_KINDS = device_kinds.with_flag('protective')             # fuse, tvs, bridge_rectifier, ntc, varistor
 PASS_THROUGH = frozenset({pw.BRIDGE_RECTIFIER})      # multi-pin parts the input walk passes
-WALK, STOP = 'walk', 'stop'
+WALK = 'walk'
 IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a part's identity in a candidate, not its body
 
 
@@ -91,7 +91,6 @@ class Generator:
         checkers = {c.plan_key: c for c in REGISTRY}
         self.switches = self._first_state(checkers['power_switch'].build(analysis_db, self.kind_intent), 'switches')
         self.loads = self._first_state(checkers['inductive_load'].build(analysis_db, self.kind_intent), 'loads')
-        self.optos = self._first_state(checkers['optocoupler'].build(analysis_db, self.kind_intent), 'optocouplers')
         self.winding_nets = {net for load in self.loads for net in self.graph.nets_of(load['ref'])}
         self.anchors = dict(self.domains['anchors'])
         self.barriers = {b['ref'] for b in self.domains['barriers']}

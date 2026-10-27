@@ -1428,12 +1428,6 @@ def cells_named_by(text_):
     return [cell for cell in BOUNDS if cell in _CELL_WORDS_RE and _CELL_WORDS_RE[cell].search(text_)]
 
 
-def bounds_for(kinds):
-    """The table cells for these device kinds, in table order."""
-    kinds = set(kinds)
-    return [b for b in BOUNDS.values() if kinds & set(b.kinds)]
-
-
 def render_bounds_markdown():
     """references/bounding-table.md 的标记区间：推法、档位和逐格表。"""
     out = ['### 推法', '', '| 编号 | 推法 | 得到的依据 |', '|---|---|---|']
@@ -1750,7 +1744,6 @@ INPUT_OVERRIDES = {
     'DOC-A02': ('netlist', 'export_log'),
     'REQ-A01': ('netlist', 'intent'),
 }
-COLD_INPUTS = {'netlist', 'export_log', 'intent'}
 STAGES = OrderedDict([('cold', '网表扫描'), ('review', '审查员'), ('revision', '复审')])
 
 # 每条规则的检查说明（第 2 版）。风险描述是检查理由，不是本次缺陷或自动严重度；

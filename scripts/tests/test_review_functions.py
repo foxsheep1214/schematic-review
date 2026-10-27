@@ -1025,7 +1025,7 @@ class ReviewRecheckHintTests(unittest.TestCase):
 
     def hints(self, fn, base_dir=None):
         from review_functions import template_hints
-        return [h for h in template_hints([fn], None, base_dir) if h['code'] not in ('WIDE_GAP',)]
+        return [h for h in template_hints([fn], base_dir) if h['code'] not in ('WIDE_GAP',)]
 
     def rated(self, regime, **basis):
         fn = bias_function('PASS')

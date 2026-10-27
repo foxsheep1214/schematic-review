@@ -64,9 +64,9 @@ class TableTests(unittest.TestCase):
         self.assertEqual(cell['NTC-INRUSH-HOT'].fallback, 'BOUNDED')   # E
 
     def test_the_cells_of_a_device_class(self):
-        self.assertEqual([b.id for b in catalog.bounds_for(['zener'])],
+        self.assertEqual([b.id for b in catalog.BOUNDS.values() if 'zener' in b.kinds],
                          ['ZENER-VZ-UPPER', 'ZENER-VZ-LOWER', 'ZENER-VZ-TEMP', 'DIODE-IR-HOT'])
-        self.assertEqual(catalog.bounds_for(['connector']), [])
+        self.assertEqual([b for b in catalog.BOUNDS.values() if 'connector' in b.kinds], [])
 
     def test_every_cell_carries_its_decision_boundary(self):
         # 2026-10-26 (user: 判决的边界按器件类型来): availability, the estimates that may pass and their factor,

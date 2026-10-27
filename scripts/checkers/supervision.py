@@ -290,14 +290,12 @@ def _receiver_source_errors(source, graph, node):
             return ['internal shunt receiver source hash mismatch']
         role_page = _source_page(raw, source['format'], source['role_page'])
         pin_page = _source_page(raw, source['format'], source['pin_page'])
-        role_text, pin_text = _quote_key(role_page), _quote_key(pin_page)
     except (OSError, UnicodeError, subprocess.SubprocessError):
         return ['internal shunt receiver source unreadable']
     ref, _, pin = node.partition('.')
     mpn = pw.normalize(graph.parts[ref].get('part', '')).rsplit(':', 1)[-1]
     name = graph.pinname.get(node, '')
-    identity_quote, role_quote, pin_quote = (
-        _quote_key(source[k]) for k in ('identity_quote', 'role_quote', 'pin_quote'))
+    role_quote = _quote_key(source['role_quote'])
     if (not _identifier_in(mpn, source['identity_quote'])
             or not _literal_identifier_bound(mpn, source['identity_quote'], role_page)):
         errors.append('internal shunt receiver identity quote does not match source/actual MPN')

@@ -30,7 +30,7 @@ def cells(found):
 class FrameBoundsTests(unittest.TestCase):
     def test_each_part_brings_the_cells_of_its_class(self):
         found = frame()
-        ic = [b.id for b in catalog.bounds_for(['ic'])]
+        ic = [b.id for b in catalog.BOUNDS.values() if 'ic' in b.kinds]
         self.assertEqual([b['cell'] for b in found['bounds']], ['RES-POWER'] + ic)   # in table order
         self.assertEqual(cells(found)['RES-POWER'], ['R1'])
         self.assertTrue(all(refs == ['U1'] for cell, refs in cells(found).items() if cell != 'RES-POWER'))

@@ -27,10 +27,8 @@ SET_POINT_ID_RE = re.compile(r'^[A-Z][A-Z0-9_]*$')
 # Device type as stated by the manufacturer's datasheet (same strings as checkers.netgraph kinds).
 # intent.device_kinds declares it; only declarations the datasheet audit VERIFIED reach the analysis.
 # An integrated circuit declares the role its datasheet title gives it (catalog.DEVICE_ROLES, the role registry);
-# the generic `ic` is for a part whose quote names none of those roles. ANCHOR_KINDS are the roles a circuit
-# candidate is built around: those the registry gives circuit types.
+# the generic `ic` is for a part whose quote names none of those roles.
 IC_KINDS = tuple(catalog.DEVICE_ROLES)
-ANCHOR_KINDS = tuple(name for name, role in catalog.DEVICE_ROLES.items() if role.circuits)
 DEVICE_KINDS = device_kinds.declarable() + IC_KINDS   # the registry's declarable kinds, then the IC roles
 # A part the classifier cannot read is placed by the reviewer (2026-10-27 A5): a kind that needs no datasheet, or `other`
 # for one the registry has no row for (a buzzer); a kind only a datasheet settles takes page + quote instead.

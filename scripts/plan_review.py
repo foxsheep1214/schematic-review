@@ -325,7 +325,6 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.domains = domains_lib.build_section(analysis_db, self.kind_intent)
         self.interfaces = interfaces.derive(db, intent or {}, datasheet_audit)
         self.i2c_topology = self.inventories['i2c_topology']
-        self.decoupling = self.inventories['decoupling']
         self.db_sha256 = db_fingerprint(db)
         self.intent = requirement_parameters.resolve(intent or {})
         self.datasheet_audit = datasheet_audit

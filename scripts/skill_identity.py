@@ -127,12 +127,3 @@ def engineering_identity(root):
     files = {p.relative_to(root).as_posix(): _normalized_hash(p.read_bytes(), p.suffix, p.name == "SKILL.md") for p in sorted(paths)}
     return {"schema_version": 2, "digest": _digest(files), "files": files}
 
-
-def compatibility_identity(root):
-    root = Path(root)
-    paths = [root / "SKILL.md"]
-    for name in ("README.md", "references/workflow-handoff.md", "agents/openai.yaml"):
-        p = root / name
-        if p.is_file():
-            paths.append(p)
-    return _digest({p.relative_to(root).as_posix(): _hash(p.read_bytes()) for p in sorted(paths)})

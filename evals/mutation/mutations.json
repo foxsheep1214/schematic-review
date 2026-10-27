@@ -3073,13 +3073,6 @@
   "new": "/ _n(r_other_ohm, 'r_other_ohm', True)"
  },
  {
-  "id": "M483",
-  "name": "every cell belongs to every device class",
-  "file": "scripts/catalog.py",
-  "old": "    return [b for b in BOUNDS.values() if kinds & set(b.kinds)]",
-  "new": "    return list(BOUNDS.values())"
- },
- {
   "id": "M484",
   "name": "a sensing NTC without a table is opened as a vendor datum",
   "file": "scripts/catalog.py",
@@ -3498,13 +3491,6 @@
   "file": "scripts/plan_review.py",
   "old": "            if isinstance(item, dict) and item.get('kind') == catalog.GENERIC_IC_ROLE:",
   "new": "            if False:"
- },
- {
-  "id": "M551",
-  "name": "anchor kinds ignore the registry circuits",
-  "file": "scripts/board_intent.py",
-  "old": "ANCHOR_KINDS = tuple(name for name, role in catalog.DEVICE_ROLES.items() if role.circuits)",
-  "new": "ANCHOR_KINDS = tuple(name for name, role in catalog.DEVICE_ROLES.items() if name != 'ic')"
  },
  {
   "id": "M552",
@@ -3972,8 +3958,8 @@
   "id": "M620",
   "name": "the screening hands the results directory to the hints",
   "file": "scripts/review_quality.py",
-  "old": "    for hint in review_functions.template_hints(report.get('functions'), parts, base_dir):",
-  "new": "    for hint in review_functions.template_hints(report.get('functions'), parts):"
+  "old": "    for hint in review_functions.template_hints(report.get('functions'), base_dir):",
+  "new": "    for hint in review_functions.template_hints(report.get('functions')):"
  },
  {
   "id": "M621",

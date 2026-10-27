@@ -74,7 +74,6 @@ NEGATIVE_SUPPLY_PIN_RE = re.compile(r'^(-\w+|\w+-|V-|VEE|VNEG|V_?NEG|VSS\w*|V_?M
 SUPPLY_PIN_RE = re.compile(r'^(VDD|VCC|AVDD|DVDD|VBAT|VDDA|VDDIO|VCCA|VCCIO)\w*$'
                            r'(?<![_-]DET)(?<![_-]SENSE)(?<![_-]SNS)(?<![_-]EN)(?<![_-]PG)(?<![_-]MON)', re.I)
 RAIL_RE = ng.RAIL_RE   # one rail-name test: excludes _FB/_SENSE lines and _N/_RTN returns
-OUTPIN_RE = re.compile(r'^(VOUT|SW|OUT|VO|LX|\+VO)', re.I)
 EN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN)(_|\d|$)', re.I)
 # EN 脚耐压绝大多数 <=6V；超过此值的上拉优先查 Abs Max（提示，非判定）
 EN_PULL_ALERT_V = 6.0
@@ -155,13 +154,6 @@ def _ground_like(net):
 
 
 BRIDGED_JUMPER_RE = re.compile(r'SolderJumper_(\d)_Bridged(\d*)')
-
-
-def pin_name_tokens(name):
-    """Names a symbol pin answers to: the whole name and each '/'-separated alternate function,
-    with KiCad's active-low overbar ~{...} removed. 'IO2/GPIO2/ADC1_CH2' answers to IO2."""
-    text = re.sub(r'~\{([^}]*)\}', r'\1', str(name)).strip().upper()
-    return {text} | {part.strip() for part in text.split('/') if part.strip()}
 
 
 def _pin_class(value):

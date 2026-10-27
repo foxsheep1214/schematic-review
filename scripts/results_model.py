@@ -53,8 +53,6 @@ VERDICTS = ('PASS', 'FAIL', 'OPEN')
 # REQ-D01 clauses, staged work items. Bindings and actionable instructions are required by
 # validate_review's bindings (always on the command line) and --require-actionable.
 IMPACT_CLASS_VERSION = 2
-GAP_TEXT = ('what', 'scope', 'how_to_close', 'closure_criterion')
-SEVERITY_TEXT = ('affects', 'consequence')
 
 
 def shape_errors(report, history_ids=()):

@@ -51,11 +51,6 @@ def _text(value):
     return isinstance(value, str) and bool(value.strip())
 
 
-def _strings(value):
-    return (isinstance(value, list) and bool(value) and all(_text(x) for x in value)
-            and len(set(value)) == len(value))
-
-
 def parse_capacitance(value):
     """Parse a leading explicit capacitance token; never infer a unit/code.
 

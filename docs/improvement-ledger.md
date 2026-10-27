@@ -3105,3 +3105,35 @@ Decision (user: 现在在后台跑一次全量变异检查，存活的补测试�
 - Causes: judgment 1
 - Changed: evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, scripts/tests/test_bound_derivation.py, scripts/tests/test_ntc_varistor_kinds.py, scripts/tests/test_plan_review.py, docs/improvement-ledger.md
 - Gates: pytest 2300, mutation: the 18 re-anchored or re-tested entries all killed; RESULTS.md 753/753 killed (unit tier)
+
+## Dead code removed (2026-10-27)
+
+A static scan (vulture over `scripts/`, tests excluded) and one pytest run under
+coverage listed what no code reaches. Decision (user: 审查所有SR得死代码，都清除掉):
+
+1. Removed, no reader anywhere: `catalog.COLD_INPUTS`,
+   `circuit_candidates.STOP` and `Generator.optos`,
+   `datasheet_kinds.UNIT_GLYPHS`, `lint.OUTPIN_RE` and `pin_name_tokens`,
+   `ReviewPlanner.decoupling`, `results_model.GAP_TEXT` and `SEVERITY_TEXT`,
+   `review_functions.VENDOR_ASK_RE`, `skill_identity.compatibility_identity`,
+   `decoupling._strings`, `render_report.worst`, the unused normalized quotes
+   in `supervision`'s shunt-receiver check, and `template_hints`' unused
+   `known_refs` parameter (its caller in `review_quality` drops the part set it
+   built for it).
+2. Removed, read only by tests: `board_intent.ANCHOR_KINDS` (a copy of
+   `part_words.ANCHOR_ROLES`; the tests read that) and `catalog.bounds_for`
+   (the tests filter `catalog.BOUNDS` themselves).
+3. Kept: `catalog.device_role_errors` and `BOUND_DIRECTIONS` (the registry and
+   table self-checks the tests run); the CLI `main` functions and the checker
+   base-class hooks coverage does not see; the cache-key and `locals()`
+   parameters vulture misreads. The three sites the full mutation run
+   questioned are still reachable: the gate's unjudged-aspect error (its copy is
+   merged with derive's, and it keeps the method-C message off that row), the
+   unknown-kind thermistor words in `subject_precondition` (a many-pin part),
+   and the NTC/varistor words in the candidate input walk (a declared kind that
+   contradicts the words, or a U-prefixed two-pin part).
+
+- Event: user:2026-10-27 (审查所有SR得死代码，都清除掉)
+- Causes: judgment 1
+- Changed: scripts/board_intent.py, scripts/catalog.py, scripts/checkers/supervision.py, scripts/circuit_candidates.py, scripts/datasheet_kinds.py, scripts/decoupling.py, scripts/lint.py, scripts/plan_review.py, scripts/render_report.py, scripts/results_model.py, scripts/review_functions.py, scripts/review_quality.py, scripts/skill_identity.py, scripts/tests/test_bounding_table.py, scripts/tests/test_frame_bounds.py, scripts/tests/test_ic_kinds.py, scripts/tests/test_review_functions.py, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2300, mutation --changed: M483 and M551 dropped with the code they guarded (`bounds_for`, `ANCHOR_KINDS`), M620 re-anchored to the new `template_hints` call and killed; the rest killed

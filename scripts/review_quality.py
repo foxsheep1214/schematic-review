@@ -441,8 +441,7 @@ def screen_quality(plan, report, db=None, base_dir=None):
     for row in report['checks']:
         if isinstance(row, dict) and isinstance(row.get('open_ref'), str):
             owners[row['open_ref']].add(row.get('id'))
-    parts = set((db.get('parts') or {}) if isinstance(db, dict) else ()) or None
-    for hint in review_functions.template_hints(report.get('functions'), parts, base_dir):
+    for hint in review_functions.template_hints(report.get('functions'), base_dir):
         refs = hint.get('items') or ['%s/%s' % (hint.get('function_id'), hint.get('key'))]
         candidates.append(dict(hint, check_ids=sorted({c for ref in refs for c in owners.get(ref, ()) if c})))
     for hint in review_functions.condition_ref_hints(report.get('functions'), plan):   # results 7: a condition's refs

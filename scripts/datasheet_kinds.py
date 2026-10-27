@@ -147,7 +147,6 @@ def page_text(path, page):
 
 GLYPH_OHM_AS_W_RE = re.compile(r'\d\s?[kM]W\b')   # kΩ / MΩ printed as kW / MW: the Symbol font did not survive extraction
 MICRO_SIGNS = ('µ', 'μ')
-UNIT_GLYPHS = ('SYMBOL_FALLBACK', 'OK', 'UNREAD')
 
 
 def glyph_fallback(text):

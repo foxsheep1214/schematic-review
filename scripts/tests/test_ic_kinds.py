@@ -73,18 +73,16 @@ class VocabularyTests(unittest.TestCase):
                             board_intent.device_kind_errors({'U1': {'kind': 'controller', 'page': 1, 'quote': 'x'}}, None)))
 
     def test_anchor_kinds_are_the_registry_roles_with_circuit_types(self):
-        self.assertEqual(set(board_intent.ANCHOR_KINDS),
-                         {name for name, role in catalog.DEVICE_ROLES.items() if role.circuits})
-        self.assertEqual(set(board_intent.ANCHOR_KINDS) & {'ic', 'isolator'}, set())
+        self.assertEqual(pw.ANCHOR_ROLES, {name for name, role in catalog.DEVICE_ROLES.items() if role.circuits})
+        self.assertEqual(pw.ANCHOR_ROLES & {'ic', 'isolator'}, set())
         for role in ('pwm_controller', 'regulator', 'mcu', 'transceiver', 'load_switch', 'memory', 'oscillator'):
-            self.assertIn(role, board_intent.ANCHOR_KINDS)
+            self.assertIn(role, pw.ANCHOR_ROLES)
 
     def test_every_role_list_reads_the_registry(self):
         """The five former copies of the role list are views of catalog.DEVICE_ROLES."""
         roles = tuple(catalog.DEVICE_ROLES)
         self.assertEqual(board_intent.IC_KINDS, roles)
         self.assertEqual(pw.IC_ROLES, frozenset(roles))
-        self.assertEqual(pw.ANCHOR_ROLES, frozenset(board_intent.ANCHOR_KINDS))
         self.assertEqual(dk.IC_ROLE_CUES, set(roles) - {'ic'})
         self.assertEqual(dict(dk.KIND_CUES)['load_switch'], catalog.DEVICE_ROLES['load_switch'].cues)
         self.assertEqual(catalog.device_role_errors(), [])

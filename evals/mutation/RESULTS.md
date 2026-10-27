@@ -443,7 +443,6 @@
 | M480 | a surge rating stretches to a longer pulse | `scripts/bound_formulas.py` | KILLED | FAILED scripts/tests/test_bound_formulas.py::SwitchAndSurgeTests::test_a_surge_rating_moves_to_a_shorter_pulse_at_constant_i2t |
 | M481 | a table is extrapolated | `scripts/bound_formulas.py` | KILLED | FAILED scripts/tests/test_bound_formulas.py::GenericMethodTests::test_g5_interpolates_the_published_table_and_stays_inside_it |
 | M482 | a hot-inrush I²t drops the factor of two | `scripts/bound_formulas.py` | KILLED | FAILED scripts/tests/test_bound_formulas.py::NtcTests::test_e_a_hot_inrush_limiter_is_zero_ohm |
-| M483 | every cell belongs to every device class | `scripts/catalog.py` | KILLED | FAILED scripts/tests/test_bounding_table.py::TableTests::test_the_cells_of_a_device_class |
 | M484 | a sensing NTC without a table is opened as a vendor datum | `scripts/catalog.py` | KILLED | FAILED scripts/tests/test_bounding_table.py::TableTests::test_a_monotonic_cell_the_gate_bounds_by_g2_allows_g2 |
 | M485 | the bounding table document is written as the rule table | `scripts/catalog.py` | KILLED | FAILED scripts/tests/test_bounding_table.py::TableTests::test_the_reference_document_is_generated_from_the_table |
 | M486 | the bounding formulas are not calculations of the library | `scripts/calc.py` | KILLED | FAILED scripts/tests/test_bound_formulas.py::RegistryTests::test_every_formula_is_a_calculation_of_the_library |
@@ -504,7 +503,6 @@
 | M548 | a title without a bus is silently skipped | `scripts/circuit_candidates.py` | KILLED | FAILED scripts/tests/test_ic_kinds.py::InterfaceCandidateTests::test_memory_title_picks_spi_and_a_title_without_a_bus_is_a_gap |
 | M549 | connectors on the interface nets are not members | `scripts/circuit_candidates.py` | KILLED | FAILED scripts/tests/test_ic_kinds.py::InterfaceCandidateTests::test_transceiver_title_picks_the_bus_and_the_connector_joins |
 | M550 | generic ic is not listed | `scripts/plan_review.py` | KILLED | FAILED scripts/tests/test_ic_kinds.py::InterfaceCandidateTests::test_generic_ic_is_listed_as_a_planning_diagnostic |
-| M551 | anchor kinds ignore the registry circuits | `scripts/board_intent.py` | KILLED | FAILED scripts/tests/test_ic_kinds.py::VocabularyTests::test_anchor_kinds_are_the_registry_roles_with_circuit_types |
 | M552 | motor driver titles stay gate drivers too | `scripts/datasheet_kinds.py` | KILLED | FAILED scripts/tests/test_ic_kinds.py::QuoteVerificationTests::test_registry_disambiguation_keeps_the_named_role |
 | M553 | a complete table missing package pins passes | `scripts/board_intent.py` | KILLED | FAILED scripts/tests/test_pin_table.py::CompletenessGuardTests::test_missing_package_pins_are_refused_and_named |
 | M554 | SOT-23 alone counts 23 pins | `scripts/board_intent.py` | KILLED | FAILED scripts/tests/test_pin_table.py::PackagePinCountTests::test_names_without_a_count_give_none |

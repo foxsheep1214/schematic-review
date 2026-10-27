@@ -76,11 +76,6 @@ def cell(text):
     return str(text).replace('|', '\\|').replace('\n', ' ').strip()
 
 
-def worst(levels):
-    found = [s for s in SEVERITIES if s in levels]
-    return found[0] if found else None
-
-
 def rule_of(key):
     return key.split('.', 1)[0]
 

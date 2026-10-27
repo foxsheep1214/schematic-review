@@ -59,9 +59,6 @@ BOUND_BASES = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'TYPICAL_CURVE', 'PUBL
 OPEN_SIDES = ('UPPER', 'LOWER')
 OTHER_SIDES = ('DECIDED', 'NOT_DECISIVE')
 FORMULA_TOLERANCE = 0.005   # a rerun bounding formula may differ from the written value by rounding only
-# What another stage owes; a parameter of a catalog part is none of these (it is a VENDOR_DATUM with its public bound).
-VENDOR_ASK_RE = re.compile(r'向[^，,；;。]{0,16}(?:原厂|厂商|厂家|供应商|[A-Z][A-Za-z]{2,})[^，,；;。]{0,8}(?:索取|取得|索要|要)'
-                           r'|ask(?:ing)? (?:the )?(?:vendor|supplier|manufacturer)|request(?:ed)? from (?:the )?(?:vendor|supplier)', re.I)
 CONDITION_KINDS = ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE', 'NETLIST_FACT', 'TYPICAL_REFERENCE', 'ENGINEERING_ASSUMPTION',
                    'DESIGN_CONSTRAINT')
 # 2026-10-26 (user: 乙判合格并附设计约束): a value another design file owns (magnetics, firmware, PCB) enters a margin as the
@@ -864,7 +861,7 @@ def _decision_errors(fid, fn, calculation, conditions, findings, foreign=()):
                     errors.append('%s: EVIDENCE_CONFLICT — margin %s proves FAIL where %s proves PASS over the same '
                                   'scope; settle which evidence applies' % (fid, name(m), _evidence_name(other)))
         else:
-            deciding = ([sc2 for m2, sc2, v2 in margins if v2 != 'OPEN'] + [jsc for _, jsc in judgements]
+            deciding = ([sc2 for _, sc2, v2 in margins if v2 != 'OPEN'] + [jsc for _, jsc in judgements]
                         + [isc for _, isc in opens] + [isc for _, isc in fails] + list(foreign))
             if (not any(overlaps(sc, other) for other in deciding)
                     and not ((m.get('basis') or {}).get('kind') == 'ESTIMATE' and sc[0] in LIFE_ASPECTS)
@@ -1523,7 +1520,7 @@ def _source_path(source, base_dir):
 UNOBTAINABLE_ASK_RE = re.compile(r'索取|向.{0,12}(?:厂家|原厂|供应商)|request(?:ed)? from|ask(?:ing)? the vendor', re.I)
 
 
-def template_hints(functions, known_refs=None, base_dir=None):
+def template_hints(functions, base_dir=None):
     """Quality hints, never errors: one reason sentence on several gaps (if it is one gap, keep one item and let its edges
     reach every row; rewording does not make two gaps), a gap blocking more than WIDE_GAP aspects, and the three signals
     of the function re-check before reconciliation: a rating at its test temperature taken as the bound, a decisive margin
