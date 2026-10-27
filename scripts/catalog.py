@@ -1156,9 +1156,10 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'TEST_POINT', (_e(1.5, FUNCTIONAL, '只有典型 rdif 时：典型 rdif ×1.5'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
           '偏置用途允许估算；作钳位保护（下游过压→损坏）时不估算'),
     Bound('ZENER-VZ-LOWER', ('zener',), 'VZ 下界', 'LOWER', '工作电流 IZ', 'INCREASING',
-          (('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界',
+          (('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'OUTSIDE_SPECIFIED', _EP + '“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界',
           'INDUSTRY_NONE', (_e(1.2, FUNCTIONAL, '典型曲线 G8 在工作电流取值，再 ÷1.2（≈×0.85）'),), ('REQUIRED_FUNCTION',), _M,
-          '允许估算判 PASS；两测试点之间 G3 是保证值，最低测试点以下行业不给，“向厂家索取低电流保证值”要提示'),
+          '典型曲线覆盖工作点时允许估算判 PASS；两测试点之间 G3 是保证值；最低测试点以下又没有覆盖它的曲线，是用在手册未规定的区间，'
+          '记失败项（改法：把工作电流提到最低测试点以上），不向厂家索取（2026-10-26 定）'),
     Bound('ZENER-VZ-TEMP', ('zener', 'shunt_reference'), 'VZ / 基准电压随温度', None, '温度', 'NONMONOTONIC',
           (('G1', ()), ('G4', ('tempco_bound',)), ('G9', ())), 'VENDOR_DATUM', _EP + '第 4 步“温度系数的 min/max”',
           'TEST_POINT', (_e(2, FUNCTIONAL, '典型温漂 ×2'),), ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M,

@@ -2547,3 +2547,37 @@ rows reword their criterion, nothing else.
 - Causes: judgment 1, rule_not_enforced 1
 - Changed: SKILL.md, scripts/catalog.py, scripts/plan_circuits.py, scripts/board_intent.py, scripts/review_functions.py, scripts/results_model.py, scripts/render_report.py, scripts/validate_review.py, scripts/requirement_bindings.py, scripts/tests/test_device_settings.py, scripts/tests/test_requirement_bindings.py, scripts/tests/test_review_functions.py, scripts/tests/fixtures/golden_reports, references/check-catalog.md, references/review-vocabulary.md, references/intent-format.md, references/results-format.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/commodity-floors.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M158/M275/M364 (updated) and M697–M700 killed
+
+## Three rules that could never close at the schematic stage (2026-10-26)
+
+After the configuration change the user asked for the three most suspicious
+over-strict rules left, and decided each. All three came from R8 codex3, where
+they held 71 rows (requirement rows inheriting the same gaps included) on a
+quantity the schematic stage can never get:
+
+1. A zener below its lowest test current with no curve covering the point
+   (D403/D405 in a fault sense chain at ~0.26 mA, D404 biasing a follower at
+   ~20 µA): the cell ZENER-VZ-LOWER fell back to VENDOR_DATUM, a number no
+   vendor gives. Decision 记设计问题: the cell's fallback is OUTSIDE_SPECIFIED,
+   so the existing cell check refuses the opening and asks for a fail item
+   (raise the current above the test point); the G8 typical-curve estimate and
+   the G3 bound between test points are unchanged.
+2. Hot re-plug through an inrush NTC (PWR-C13): held open as a design value on
+   the mains source impedance. Decision 按标准参考阻抗算: the criterion states the
+   IEC 60725 reference impedance (0.4 + j0.25 Ω, phase plus neutral) as the
+   assumption and hands the real mains on to the prototype test.
+3. Port hard short (DRV-C02 PORT-SHORT): held open on the loop inductance
+   (L = 0 gave 2227 A). Decision 判原理图部分，电感交后续: the criterion judges
+   the detection and turn-off path and the switch's SOA at a stated minimum loop
+   impedance, which is handed on to the PCB and cable.
+
+`review_functions.external_impedance_errors` refuses a PWR-C13 or port-short
+row held INSUFFICIENT by a DESIGN_VALUE item (a vendor datum, such as a missing
+IFSM, still may). On codex3's record the new rules refuse exactly its two zener
+gaps and three impedance rows. Tests that used ZENER-VZ-LOWER as the generic
+openable cell now use NONE or ZENER-VZ-UPPER.
+
+- Event: user:2026-10-26 (再看看还有没有类似的，可能存在过严规则的地方……逐项给我来判定; 记设计问题 / 按标准参考阻抗算 / 判原理图部分，电感交后续); review:SR-20261026-R8-验收-codex3-deb0c51/审查报告.md
+- Causes: judgment 3
+- Changed: scripts/catalog.py, scripts/plan_circuits.py, scripts/review_functions.py, scripts/tests/test_bounding_table.py, scripts/tests/test_one_sided_bounds.py, scripts/tests/test_single_fault_rows.py, references/bounding-table.md, references/results-format.md, references/evidence-proportionality.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M701–M703 killed

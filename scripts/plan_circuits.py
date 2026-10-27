@@ -142,10 +142,12 @@ BULK_FARAD = 1e-6
 # Pins that start or stop a controller: enable and its disable, inhibit and standby forms.
 ENABLE_LINK_PIN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN|PWR_EN|DIS|DISABLE|INH|INHIBIT|STBY|STANDBY'
                                 r'|ON_?OFF|RUN)(_|\d|$)', re.I)
-PORT_SHORT_CRITERION = ('端口硬短路：%s 把 %s 接到连接器 %s；端口对地短路时，输出电容储能和变换器电流经它释放，按短路检测与关断'
-                        '时间核它的 SOA 与 I²t，并核关断时的电压尖峰')
-NTC_HOT_CRITERION = ('热态重接入：%s 限制输入浪涌；断电后 NTC 还没冷却就重新上电时，浪涌只受线路与器件阻抗限制，核整流桥 '
-                     'IFSM/I²t、保险 I²t 与输入电容承受的浪涌')
+PORT_SHORT_CRITERION = ('端口硬短路：%s 把 %s 接到连接器 %s；端口对地短路时，输出电容储能和变换器电流经它释放。原理图判有没有短路'
+                        '检测与关断路径，并按手册的检测与关断时间、写明的最小回路阻抗核它的 SOA、I²t 与关断尖峰；回路阻抗属于 PCB 与'
+                        '线缆，作为交给后续环节的要求写出，不记设计没定')
+NTC_HOT_CRITERION = ('热态重接入：%s 限制输入浪涌；断电后 NTC 还没冷却就重新上电（含短时中断后恢复）时，浪涌只受源、线路与器件阻抗'
+                     '限制。源阻抗按电网参考阻抗写明假定（IEC 60725：相线加中线 0.4 + j0.25 Ω），核整流桥 IFSM/I²t、保险 I²t 与'
+                     '输入电容承受的浪涌；实际电网交给样机测试，不记设计没定')
 RCD_CRITERION = ('RCD 钳位：%s 与 %s、%s 在开关节点上吸收漏感能量；电阻功率按 ½·Llk·Ipk²·fsw·Vc/(Vc−Vor) 核降额，电阻两端电压'
                  '（钳位电压减母线）对其耐压')
 PIN_LED_CRITERION = ('%s 直接驱动 %s 的 LED：按该脚手册的电流限值核；手册没给限值时，厂家参考电路有同样接法且负载不更重可判通过，'

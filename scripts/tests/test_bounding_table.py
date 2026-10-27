@@ -132,7 +132,6 @@ def open_with(cell, **monotonic):
 
 class UnboundableTests(unittest.TestCase):
     def test_an_unboundable_datum_names_its_cell(self):
-        self.assertEqual(errors(open_with('ZENER-VZ-LOWER')), [])
         self.assertEqual(errors(open_with('NONE')), [])
         self.assertTrue(about(errors(open_with(None)), 'cell'))
         self.assertTrue(about(errors(open_with('ZENER-VZ-LOW')), 'bounding table'))
@@ -149,21 +148,27 @@ class UnboundableTests(unittest.TestCase):
         found = errors(open_with('REF-IKA-MIN'))
         self.assertTrue(about(found, 'outside_specified'), found)
 
+    def test_a_zener_below_its_lowest_test_current_is_a_fail_not_a_vendor_request(self):
+        # 2026-10-26 (user: 记设计问题): with no curve covering the point, the part is used where the datasheet says
+        # nothing; the fix is to raise the current, not to ask the vendor
+        found = errors(open_with('ZENER-VZ-LOWER'))
+        self.assertTrue(about(found, 'outside_specified') and about(found, 'ZENER-VZ-LOWER'), found)
+
     def test_a_test_point_on_the_favourable_side_bounds_a_monotonic_parameter(self):
         # VZ grows with IZ: the 5 mA maximum bounds VZ from above at every lower current
         found = errors(open_with('ZENER-VZ-UPPER', side='UPPER'))
         self.assertTrue(about(found, 'G2'), found)
         below = [{'condition': 'z1', 'at': {'value': 1, 'unit': 'mA'}}]
         self.assertEqual(errors(open_with('ZENER-VZ-UPPER', side='UPPER', test_points=below)), [])
-        # the 5 mA minimum does not bound VZ from below at lower currents; a point below the range would
-        self.assertEqual(errors(open_with('ZENER-VZ-LOWER')), [])
-        under = [{'condition': 'z1', 'at': {'value': 0.05, 'unit': 'mA'}}]
-        self.assertTrue(about(errors(open_with('ZENER-VZ-LOWER', test_points=under)), 'G2'))
 
     def test_the_favourable_side_needs_the_limit_on_that_side(self):
-        # r1 gives rdif only as a maximum: no minimum to bound from below
-        under = [{'condition': 'r1', 'at': {'value': 0.05, 'unit': 'mA'}}]
-        self.assertEqual(errors(open_with('ZENER-VZ-LOWER', test_points=under)), [])
+        # a test point above the range bounds VZ from above only with a maximum there; one with a minimum only does not
+        fn = open_with('ZENER-VZ-UPPER', side='UPPER', test_points=[{'condition': 'm1', 'at': {'value': 5, 'unit': 'mA'}}])
+        fn['conditions'].append({'id': 'm1', 'kind': 'NUMERIC_LIMIT', 'source': 'evidence/ds/D2.txt', 'refs': ['D2'],
+                                 'locator': 'p5 Table 8', 'says': 'VZ ≥ 15.68 V @ IZ 5 mA', 'limit': {'min': 15.68, 'unit': 'V'},
+                                 'regime': 'IZ 5 mA', 'use': 'VZ 测试点'})
+        fn['open'][0]['checked'].append('m1')
+        self.assertFalse(about(errors(fn), 'G2'), errors(fn))
 
     def test_a_decreasing_parameter_is_bounded_from_the_other_end(self):
         hot = {'operating_point': {'min': 25, 'max': 105, 'unit': '°C'}}

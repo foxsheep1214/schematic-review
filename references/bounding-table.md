@@ -66,7 +66,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | 格 | 器件类别 | 参数 | 开着的一侧 | 随什么变 / 方向 | 推法（公式） | 推不出时 | 出处 |
 |---|---|---|---|---|---|---|---|
 | `ZENER-VZ-UPPER` | zener | VZ 上界 | UPPER | 工作电流 IZ / INCREASING | G1；G2；G9 | `VENDOR_DATUM` | evidence-proportionality.md“齐纳管低电流” |
-| `ZENER-VZ-LOWER` | zener | VZ 下界 | LOWER | 工作电流 IZ / INCREASING | G1；G2；G3（`slope_bound`）；G8 | `VENDOR_DATUM` | evidence-proportionality.md“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界 |
+| `ZENER-VZ-LOWER` | zener | VZ 下界 | LOWER | 工作电流 IZ / INCREASING | G1；G2；G3（`slope_bound`）；G8 | `OUTSIDE_SPECIFIED` | evidence-proportionality.md“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界 |
 | `ZENER-VZ-TEMP` | zener、shunt_reference | VZ / 基准电压随温度 | — | 温度 / NONMONOTONIC | G1；G4（`tempco_bound`）；G9 | `VENDOR_DATUM` | evidence-proportionality.md第 4 步“温度系数的 min/max” |
 | `REF-IKA-MIN` | shunt_reference | 最小阴极电流 Ika | LOWER | 工作态 / — | G1 | `OUTSIDE_SPECIFIED` | 定界表决定（architecture.md 2026-10-23） |
 | `TVS-STANDOFF` | tvs | 正常最大值不超过 VRWM | UPPER | 工作电压 / — | G1 | `OUTSIDE_SPECIFIED` | wca-formulas.md TVS 行 |
@@ -113,7 +113,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | 格 | 可得性 | 允许的估算（倍数 · 适用后果 · 余量下限） | 失效后果 | 样机能否验 | 边界 |
 |---|---|---|---|---|---|
 | `ZENER-VZ-UPPER` | `TEST_POINT` | ×1.5 · 功能/性能/寿命：只有典型 rdif 时：典型 rdif ×1.5 | 功能/损坏 | 可测 | 偏置用途允许估算；作钳位保护（下游过压→损坏）时不估算 |
-| `ZENER-VZ-LOWER` | `INDUSTRY_NONE` | ×1.2 · 功能/性能/寿命：典型曲线 G8 在工作电流取值，再 ÷1.2（≈×0.85） | 功能 | 可测 | 允许估算判 PASS；两测试点之间 G3 是保证值，最低测试点以下行业不给，“向厂家索取低电流保证值”要提示 |
+| `ZENER-VZ-LOWER` | `INDUSTRY_NONE` | ×1.2 · 功能/性能/寿命：典型曲线 G8 在工作电流取值，再 ÷1.2（≈×0.85） | 功能 | 可测 | 典型曲线覆盖工作点时允许估算判 PASS；两测试点之间 G3 是保证值；最低测试点以下又没有覆盖它的曲线，是用在手册未规定的区间，记失败项（改法：把工作电流提到最低测试点以上），不向厂家索取（2026-10-26 定） |
 | `ZENER-VZ-TEMP` | `TEST_POINT` | ×2 · 功能/性能/寿命：典型温漂 ×2 | 功能/性能/寿命 | 可测 | 并联基准多给 max 温漂（G4 保证）；普通齐纳只给典型温漂，允许估算（×2） |
 | `REF-IKA-MIN` | `GUARANTEED` | 不估算 | 功能 | 可测 | 不估算：规格地板，低于 Ika(min) 即超出规定区，记失败 |
 | `TVS-STANDOFF` | `GUARANTEED` | 不估算 | 损坏 | 可测 | 不估算 |

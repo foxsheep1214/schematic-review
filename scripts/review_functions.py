@@ -1966,6 +1966,36 @@ def requirement_edge_errors(plan, checks, functions):
     return errors
 
 
+def external_impedance(planned):
+    """'source' for a hot-plug inrush row (PWR-C13), 'loop' for a port hard-short row (DRV-C02 PORT-SHORT): rows whose
+    answer hangs on an impedance outside the schematic (the mains, the PCB and the cable), else None."""
+    if planned.get('rule') == 'PWR-C13':
+        return 'source'
+    if planned.get('rule') == 'DRV-C02' and str(planned.get('id', '')).startswith('DRV-C02.PORT-SHORT.'):
+        return 'loop'
+    return None
+
+
+def external_impedance_errors(expected, checks, functions):
+    """2026-10-26 (user: 按标准参考阻抗算; 判原理图部分，电感交后续): the mains source impedance and the short-circuit loop
+    impedance are not design values; a row that hangs on one is judged at a stated impedance (the IEC 60725 reference
+    for the mains, a minimum loop impedance handed on to the PCB) and is not held open as DESIGN_VALUE."""
+    kinds = {'%s/%s' % (fn.get('id'), item.get('key')): item.get('kind')
+             for fn in functions or [] if isinstance(fn, dict) for item in fn.get('open') or [] if isinstance(item, dict)}
+    errors = []
+    for cid, row in sorted(checks.items()):
+        which = external_impedance(expected.get(cid) or {})
+        if not (which and isinstance(row, dict) and row.get('review_result') == 'INSUFFICIENT'
+                and kinds.get(row.get('open_ref')) == 'DESIGN_VALUE'):
+            continue
+        errors.append('%s: held open by %s as a design value, but the %s is no design value; judge the row at a stated '
+                      'impedance (%s) and hand that impedance on' % (
+                          cid, row['open_ref'], 'mains source impedance' if which == 'source' else 'short-circuit loop impedance',
+                          'the IEC 60725 reference 0.4 + j0.25 Ω' if which == 'source'
+                          else 'a minimum loop impedance the PCB and cable must give'))
+    return errors
+
+
 def life_errors(checks, functions):
     """Item 6a: a life row passing on an estimate states its BOM constraint as an estimate, and no life row is blocked
     by a vendor-data item."""
@@ -2099,7 +2129,7 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
               + binding_errors(expected, checks, report.get('functions'), history_ids)
               + frame_errors(plan, checks, report.get('functions'))
               + requirement_edge_errors(plan, checks, report.get('functions'))
-              + life_errors(checks, functions)
+              + life_errors(checks, functions) + external_impedance_errors(expected, checks, functions)
               + estimate_pass_errors(expected, checks, functions) + open_item_scope_errors(functions))
     if isinstance(db, dict):   # a commodity part's rating is a BOM constraint, not an open item
         import bom_constraints
