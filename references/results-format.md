@@ -242,7 +242,7 @@ F12 计划带 `clamp_refs` 的连接器检查项（PRO-D03）必须绑定功能�
 推不出的进 `gaps`（`reason: role`），轨推不出源的也进 `gaps`（`reason: source`）。
 
 **接口检查项。** 计划按 `catalog.INTERFACE_SUBJECTS` 逐接口生成检查项，对象带 `interface`：电路对问 SIG-T04 方向语义与 SIG-C07 电平，
-链路问 SIG-C07（两端电平），两端 IC 供电轨或参考地分区不同的接口网络（`cross_supply`）另问 SIG-C08；连接器问 DEV-D03 对端定义、
+链路问 SIG-C07（两端电平），轨、开关节点、变压器绕组和整流桥上的网络（`power_node`）不问这两项，只剩这种网络的电路对不出检查项、不建框架；两端 IC 供电轨或参考地分区不同的接口网络（`cross_supply`）另问 SIG-C08；连接器问 DEV-D03 对端定义、
 DEV-C04 载流、PRO-D03 对外防护（对象 `{interface: EXT-<连接器>, ref}`）；供电轨在敏感电路（ANALOG、CLOCK、RF）取电时问 PWR-C14
 （对象带 `loads`）。检查项的缺口取接口的角色缺口（`interface-role:<脚>`）、轨源缺口（`rail-source:<接口>`）和端点 IC 的资料。
 电路对、链路和连接器各一个接口框架（`functions[]` 里带 `interface`、`interface_kind`，没有 `circuit`），成员是该接口的检查项；

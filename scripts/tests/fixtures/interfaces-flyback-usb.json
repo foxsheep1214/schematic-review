@@ -36,7 +36,8 @@
        "supply": []
       }
      ],
-     "net": "AC_L"
+     "net": "AC_L",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -66,7 +67,8 @@
        "supply": []
       }
      ],
-     "net": "AC_N"
+     "net": "AC_N",
+     "power_node": "bridge"
     }
    ],
    "owners": [
@@ -97,7 +99,8 @@
        "supply": []
       }
      ],
-     "net": "CC1"
+     "net": "CC1",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -119,7 +122,8 @@
        "supply": []
       }
      ],
-     "net": "DN"
+     "net": "DN",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -141,7 +145,8 @@
        "supply": []
       }
      ],
-     "net": "DP"
+     "net": "DP",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -155,7 +160,8 @@
        "supply": []
       }
      ],
-     "net": "SGND"
+     "net": "SGND",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -193,7 +199,8 @@
        "supply": []
       }
      ],
-     "net": "VBUS"
+     "net": "VBUS",
+     "power_node": null
     }
    ],
    "owners": [
@@ -233,7 +240,8 @@
        "supply": []
       }
      ],
-     "net": "FB_LED"
+     "net": "FB_LED",
+     "power_node": null
     }
    ],
    "owners": [
@@ -265,7 +273,8 @@
        "supply": []
       }
      ],
-     "net": "CC1"
+     "net": "CC1",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -287,7 +296,8 @@
        "supply": []
       }
      ],
-     "net": "FLT_DRV"
+     "net": "FLT_DRV",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -309,7 +319,8 @@
        "supply": []
       }
      ],
-     "net": "PORT_G"
+     "net": "PORT_G",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -347,7 +358,8 @@
        "supply": []
       }
      ],
-     "net": "VBUS"
+     "net": "VBUS",
+     "power_node": null
     }
    ],
    "owners": [
@@ -400,7 +412,8 @@
        ]
       }
      ],
-     "net": "FLT"
+     "net": "FLT",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -422,7 +435,8 @@
        "supply": []
       }
      ],
-     "net": "FLT_A"
+     "net": "FLT_A",
+     "power_node": null
     }
    ],
    "owners": [
@@ -462,7 +476,8 @@
        ]
       }
      ],
-     "net": "HV_IN"
+     "net": "HV_IN",
+     "power_node": null
     },
     {
      "cross_supply": false,
@@ -500,7 +515,8 @@
        "supply": []
       }
      ],
-     "net": "RECT"
+     "net": "RECT",
+     "power_node": "rail"
     }
    ],
    "owners": [
@@ -557,7 +573,8 @@
        "supply": []
       }
      ],
-     "net": "RECT"
+     "net": "RECT",
+     "power_node": "rail"
     }
    ],
    "owners": [
@@ -612,7 +629,8 @@
        "supply": []
       }
      ],
-     "net": "V5"
+     "net": "V5",
+     "power_node": "rail"
     }
    ],
    "owners": [
@@ -695,7 +713,8 @@
        ]
       }
      ],
-     "net": "VOUT"
+     "net": "VOUT",
+     "power_node": "rail"
     }
    ],
    "owners": [

@@ -14,7 +14,10 @@ them. Four kinds:
 - EXTERNAL `EXT-<connector>`: every pin of a fitted connector (a J/P/CN designator or a part classified as one).
 
 A supply interface lists its `loads` (the owners other than the source). An interface net is `cross_supply` when its
-IC endpoints draw from different rails or sit on different reference domains; SIG-C08 is asked only there.
+IC endpoints draw from different rails or sit on different reference domains; SIG-C08 is asked only there. A net
+carries power rather than a logic signal (`power_node`, its reason) when it is a rail (the power tree or
+intent.power_rails), a switch node, or reaches a transformer winding or a bridge rectifier; direction (SIG-T04) and
+logic levels (SIG-C07) are not asked on it.
 
 Circuits are named in ids by their candidate ids (`circuit_key`), so renaming a circuit keeps its interfaces; the
 display names are in `owners`. Every endpoint is `{owner, pin, role, basis, domain, supply}`: the role comes from the
@@ -49,6 +52,8 @@ NAME_ROLES = (
     (re.compile(r'^(FB\w*|CS[+-]?|ISNS\w*|EN\w*|IN\d*|\w+_IN|VBUS\w*|RX\w*|DI|SDI|MISO|HV|VSENSE|SENSE\w*|COMP|SS|RT|ADC\w*)$', re.I), RECEIVER),
     (re.compile(r'^(CC\d*|SDA|SCL|D[+-]|DP|DN|GPIO\w*|IO\d*|P\d+_?\d*)$', re.I), BIDIRECTIONAL),
 )
+# A net on one of these parts is a power path (a winding, a rectifier bridge), not a logic signal.
+POWER_NODE_KINDS = {pw.TRANSFORMER: 'winding', pw.BRIDGE_RECTIFIER: 'bridge'}
 
 
 class Deriver:
@@ -141,6 +146,20 @@ class Deriver:
         return (len({tuple(e['supply']) for e in ics if e['supply']}) > 1
                 or len({e['domain'] for e in ics if e['domain']}) > 1)
 
+    def power_node(self, net):
+        """Why a net carries power rather than a logic signal ('rail', 'switch-node', 'winding', 'bridge'), else None."""
+        if self.tree.rail_basis(net) in (powertree.DECLARED, powertree.DRIVER) or net in self.declared_rails:
+            return 'rail'
+        if self.tree.is_switch_node(net):
+            return 'switch-node'
+        for ref in sorted(self.graph.refs_on(net)):
+            if self.graph.is_fitted(ref) and self.graph.kind(ref) in POWER_NODE_KINDS:
+                return POWER_NODE_KINDS[self.graph.kind(ref)]
+        return None
+
+    def net_entry(self, net, ends):
+        return {'net': net, 'endpoints': ends, 'cross_supply': self.cross_supply(ends), 'power_node': self.power_node(net)}
+
     def owners_on(self, net):
         return {self.owner_of[ref] for ref in self.graph.refs_on(net) if ref in self.owner_of}
 
@@ -154,8 +173,7 @@ class Deriver:
             item = found.setdefault(iid, dict({'id': iid, 'kind': kind, 'owners': [], 'nets': []}, **extra))
             item['owners'] = sorted(set(item['owners']) | set(owners))
             if net is not None and net not in {n['net'] for n in item['nets']}:
-                ends = self.endpoints(net, iid)
-                item['nets'].append({'net': net, 'endpoints': ends, 'cross_supply': self.cross_supply(ends)})
+                item['nets'].append(self.net_entry(net, self.endpoints(net, iid)))
 
         links = {cid for cid, c in self.circuits.items() if c.get('cross_cutting')}
         for cid in sorted(links):
@@ -194,17 +212,21 @@ class Deriver:
                     continue
                 if net in self.grounds:   # the pinout names the return, the ground net itself is the system's
                     found[iid]['nets'].append({'net': net, 'endpoints': self.endpoints(net, iid, only=ref),
-                                               'cross_supply': False})
+                                               'cross_supply': False, 'power_node': None})
                 else:
                     found[iid]['owners'] = sorted(set(found[iid]['owners']) | self.owners_on(net))
-                    ends = self.endpoints(net, iid)
-                    found[iid]['nets'].append({'net': net, 'endpoints': ends, 'cross_supply': self.cross_supply(ends)})
+                    found[iid]['nets'].append(self.net_entry(net, self.endpoints(net, iid)))
         items = sorted(found.values(), key=lambda i: i['id'])
         for item in items:
             item['nets'].sort(key=lambda n: n['net'])
         gaps = sorted({(g['interface'], g['pin'] or '', g['reason']) for g in self.gaps})
         return {'schema_version': SCHEMA_VERSION, 'interfaces': items,
                 'gaps': [{'interface': i, 'pin': p or None, 'reason': r} for i, p, r in gaps]}
+
+
+def asked_nets(item):
+    """The nets of a circuit-pair or link interface its rows ask about: the logic nets and the cross-supply ones."""
+    return [n for n in item.get('nets') or [] if not n.get('power_node') or n.get('cross_supply')]
 
 
 def coverage_errors(plan):
@@ -229,9 +251,12 @@ def coverage_errors(plan):
                     and (iid, 'PWR-C14') not in asked_any:
                 out.append(f'{iid}: PWR-C14 row missing (a noise-sensitive circuit draws from this rail)')
             continue
-        if kind != 'EXTERNAL' and not nets:
-            continue
-        for rule in catalog.INTERFACE_SUBJECTS.get(kind, ()):
+        if kind != 'EXTERNAL':
+            nets = asked_nets(item)
+            if not nets:
+                continue
+        logic = kind == 'EXTERNAL' or any(not n.get('power_node') for n in nets)
+        for rule in catalog.INTERFACE_SUBJECTS.get(kind, ()) if logic else ():
             if (iid, rule) not in asked_any:
                 out.append(f'{iid}: {rule} row missing')
         for rule in catalog.INTERFACE_NET_SUBJECTS.get(kind, ()):
@@ -253,7 +278,9 @@ class InterfacePlanning:
 
     def plan_interfaces(self):
         """接口检查项（功能树设计第 4 步）：电路对、链路逐接口问 catalog.INTERFACE_SUBJECTS，两端供电或参考地不同的
-        网络问 SIG-C08，敏感电路取电的轨问 PWR-C14；连接器的三项在连接器循环里生成。电路对、链路和连接器各建一个框架。"""
+        网络问 SIG-C08，敏感电路取电的轨问 PWR-C14；连接器的三项在连接器循环里生成。电路对、链路和连接器各建一个框架。
+        功率网络（power_node：轨、开关节点、变压器绕组、整流桥）不问方向与逻辑电平；电路对、链路只剩功率网络且无跨域网络时
+        不出检查项也不建框架。"""
         circuit_types = {c['id']: c.get('type') for c in self.intent.get('circuits', [])}
         role_gaps = {}
         for gap in self.interfaces['gaps']:
@@ -261,8 +288,10 @@ class InterfacePlanning:
                 f'interface-role:{gap["pin"]}' if gap['reason'] == 'role' else f'rail-source:{gap["interface"]}')
         for item in self.interfaces['interfaces']:
             iid, kind = item['id'], item['kind']
-            nets = [n['net'] for n in item['nets']]
-            parts = sorted({e['pin'].partition('.')[0] for n in item['nets'] for e in n['endpoints'] if e['owner']})
+            entries = item['nets'] if kind in ('SUPPLY', 'EXTERNAL') else asked_nets(item)
+            nets = [n['net'] for n in entries]
+            logic = [n['net'] for n in entries if not n.get('power_node')]
+            parts = sorted({e['pin'].partition('.')[0] for n in entries for e in n['endpoints'] if e['owner']})
             gaps = role_gaps.get(iid, []) + [
                 f'datasheet:{ref}' for ref in parts if self.db.get('parts', {}).get(ref) and powertree.IC_REF_RE.match(ref)
                 and not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
@@ -275,11 +304,11 @@ class InterfacePlanning:
                 continue
             if kind != 'EXTERNAL' and not nets:
                 continue
-            for rule in catalog.INTERFACE_SUBJECTS.get(kind, ()) if kind != 'EXTERNAL' else ():
-                row = self._ready_check(rule, {'interface': iid, 'nets': nets}, gaps, trigger)
-                row['question'] = catalog.interface_question(rule, iid, nets, parts)
+            for rule in catalog.INTERFACE_SUBJECTS.get(kind, ()) if kind != 'EXTERNAL' and logic else ():
+                row = self._ready_check(rule, {'interface': iid, 'nets': logic}, gaps, trigger)
+                row['question'] = catalog.interface_question(rule, iid, logic, parts)
             for rule in catalog.INTERFACE_NET_SUBJECTS.get(kind, ()):
-                for entry in item['nets']:
+                for entry in entries:
                     if entry['cross_supply']:
                         row = self._ready_check(rule, {'interface': iid, 'net': entry['net']}, gaps, trigger, key=iid)
                         row['question'] = catalog.interface_question(rule, iid, [entry['net']])

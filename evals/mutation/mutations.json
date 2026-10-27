@@ -4814,5 +4814,26 @@
   "file": "scripts/compare_reviews.py",
   "old": "        (agree if ends[0] == ends[1] else differ).append(",
   "new": "        agree.append("
+ },
+ {
+  "id": "M693",
+  "name": "a transformer winding is no power node",
+  "file": "scripts/interfaces.py",
+  "old": "POWER_NODE_KINDS = {pw.TRANSFORMER: 'winding', pw.BRIDGE_RECTIFIER: 'bridge'}",
+  "new": "POWER_NODE_KINDS = {pw.BRIDGE_RECTIFIER: 'bridge'}"
+ },
+ {
+  "id": "M694",
+  "name": "direction and levels asked on power nets too",
+  "file": "scripts/interfaces.py",
+  "old": "            logic = [n['net'] for n in entries if not n.get('power_node')]",
+  "new": "            logic = nets"
+ },
+ {
+  "id": "M695",
+  "name": "coverage still asks direction on a power-only pair",
+  "file": "scripts/interfaces.py",
+  "old": "        logic = kind == 'EXTERNAL' or any(not n.get('power_node') for n in nets)",
+  "new": "        logic = True"
  }
 ]

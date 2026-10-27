@@ -5,7 +5,9 @@ ends, and each net whose endpoints draw from different supplies or sit on differ
 power-down (SIG-C08). A connector is asked for its mating pinout (DEV-D03), its current (DEV-C04) and its outward
 protection (PRO-D03). A rail is asked for its ripple and noise (PWR-C14) when a noise-sensitive circuit draws from
 it. These rows belong to their interface; the circuit-pair, chain and connector interfaces get a frame each, a rail
-does not. A scan or checker row of an interface rule on an interface net belongs to that interface too.
+does not. A scan or checker row of an interface rule on an interface net belongs to that interface too. A net that
+carries power (a rail, a switch node, a transformer winding, a bridge rectifier) is not asked direction or logic
+levels; a pair or chain left with power nets only (and none across supplies) gets no rows and no frame.
 """
 import copy
 import sys
@@ -15,10 +17,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import catalog
+import interfaces
 import circuit_candidates as cc
 import circuit_decisions as cd
 import row_owner
 from plan_review import build_review_plan
+from unittest import mock
 import test_circuit_candidates as fx
 import test_circuit_decisions as dfx
 
@@ -111,3 +115,45 @@ class CrossDomainNetTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class PowerNetTests(unittest.TestCase):
+    def test_a_winding_a_bridge_a_switch_node_and_a_rail_carry_power(self):
+        db = fx.board()
+        intent, audit = fx.intent_for(db)
+        deriver = interfaces.Deriver(db, intent, audit)
+        found = {n: deriver.power_node(n) for n in ('AUX', 'SEC_SW', 'AC_N', 'BUCK_SW', 'V5', 'FB_LED', 'CC1')}
+        self.assertEqual(found, {'AUX': 'winding', 'SEC_SW': 'winding', 'AC_N': 'bridge', 'BUCK_SW': 'switch-node',
+                                 'V5': 'rail', 'FB_LED': None, 'CC1': None})
+
+    def test_a_chain_is_asked_levels_on_its_logic_nets_only(self):
+        plan = plan_for()
+        levels = [c['object']['nets'] for c in rows(plan, 'SIG-C07') if c['object'].get('interface') == 'LINK-STARTUP-U1.HV']
+        self.assertEqual(levels, [['HV_IN']])   # RECT is a rail on the same chain
+
+    def test_a_pair_over_power_nets_only_is_asked_nothing_and_has_no_frame(self):
+        real = interfaces.Deriver.power_node
+        with mock.patch.object(interfaces.Deriver, 'power_node',
+                               lambda self, net: 'winding' if net == 'FB_LED' else real(self, net)):
+            plan = plan_for()
+        iid = 'IF-ANALOG-U4~POWER_CONVERTER-U1'
+        self.assertIn(iid, {i['id'] for i in plan['interfaces']['interfaces']})   # the interface is still listed
+        self.assertEqual([c['id'] for c in plan['checks'] if c['object'].get('interface') == iid], [])
+        self.assertNotIn(iid, {f.get('interface') for f in plan['functions']})
+        self.assertEqual(interfaces.coverage_errors(plan), [])
+        self.assertTrue(rows(plan, 'SIG-T04'))   # the other pair is still asked
+
+    def test_a_power_net_across_supplies_is_still_asked_injection_and_only_that(self):
+        real = interfaces.Deriver.net_entry
+
+        def entry(self, net, ends):
+            out = real(self, net, ends)
+            if net == 'FB_LED':
+                out.update(power_node='winding', cross_supply=True)
+            return out
+        with mock.patch.object(interfaces.Deriver, 'net_entry', entry):
+            plan = plan_for()
+        iid = 'IF-ANALOG-U4~POWER_CONVERTER-U1'
+        self.assertEqual(sorted(c['rule'] for c in plan['checks'] if c['object'].get('interface') == iid), ['SIG-C08'])
+        self.assertIn(iid, {f.get('interface') for f in plan['functions']})
+        self.assertEqual(interfaces.coverage_errors(plan), [])

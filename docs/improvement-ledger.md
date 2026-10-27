@@ -2477,3 +2477,27 @@ documents' shared intro was shortened to keep it there). STEP_MAX_BYTES ①
 - Causes: judgment 1
 - Changed: SKILL.md, references/checker-conventions.md, references/automation.md, references/scans-and-tools.md, references/intent-format.md, references/plan-format.md, references/results-format.md, references/gate-and-rerun.md, references/architecture.md, scripts/decoupling.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69 (a document move and one comment; no rule logic)
+
+## Interfaces ask logic questions on logic nets only (2026-10-26)
+
+In the R8 run (three Codex reviewers on the R6 board) every record carried an
+interface frame and two digital-signal rows — direction semantics (SIG-T04)
+and logic levels (SIG-C07) — for AUX_AC (an auxiliary winding), SR_D (the
+synchronous rectifier's drain) and RECT (the rectified bus). A net shared by
+two circuits was asked these regardless of what it carries, so the reviewers
+could only write "no digital threshold here" and pass them; two of these
+frames in codex1's plan also collided on a truncated id. Each interface net
+now carries `power_node` — a rail (power tree or intent.power_rails), a switch
+node, or a net on a transformer winding or a bridge rectifier, all read from
+the netlist — and the pair and link interfaces ask SIG-T04/SIG-C07 on the other
+nets only; a pair left with power nets only (none across supplies) gets no rows
+and no frame, and the coverage audit asks the same. SIG-C08 on a cross-supply
+net is unchanged. An analog current channel (an opto LED fed through a
+resistor) looks like a GPIO driving an LED in the netlist and stays asked.
+Rebuilt from codex3's inputs the plan goes 625 → 619 rows and loses those three
+frames, nothing else.
+
+- Event: user:2026-10-26 (我同意这么做，请修改); review:SR-20261026-R8-验收-codex3-deb0c51/审查报告.md
+- Causes: rule_missing 1
+- Changed: scripts/interfaces.py, scripts/tests/test_interface_rows.py, scripts/tests/fixtures/interfaces-flyback-usb.json, references/results-format.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M693–M695 killed
