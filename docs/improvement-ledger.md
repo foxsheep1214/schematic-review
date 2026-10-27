@@ -3033,3 +3033,25 @@ Decision (user: 按你的建议改：A1、A3、B4、C5 和“一次只取一个�
 - Causes: judgment 1
 - Changed: scripts/catalog.py, scripts/lint.py, scripts/protective_clamps.py, scripts/plan_circuits.py, scripts/tests/test_electrical_safety.py, SKILL.md, references/evidence-proportionality.md, references/check-catalog.md, references/bounding-table.md, references/review-vocabulary.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2267, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M707 M770-M774 killed (M707 re-anchored)
+
+## A part that heats itself may pass a damage class on an estimate (2026-10-27)
+
+After the risk tags, a margin estimated from a typical curve still could not
+pass a COMPONENT_DAMAGE class in DIODE-IR-HOT, MOS-VGS-ON and ECAP-ESR-RIPPLE,
+so a self-heating corner the prototype can measure stayed a vendor-datum gap.
+Decision (user: 放开第一组（器件自身发热）三格：DIODE-IR-HOT、MOS-VGS-ON、ECAP-ESR-RIPPLE，损坏类估算判“合格但有应力风险”；保护类三格不动):
+
+1. The three cells allow a damage-class estimate at their functional factor,
+   with a margin floor: junction ≥ 20 °C for the diode and the power MOSFET,
+   core temperature ≥ 10 °C for the electrolytic.
+2. An estimate passing COMPONENT_DAMAGE names STRESS among its risk types (the
+   cells already allowing it, DIODE-VF, MOS-RDS-HOT and IND-ISAT, too).
+3. ZENER-VZ-UPPER, IC-THRESHOLD and IC-TIMING keep refusing damage estimates.
+
+The step ③ reading record moves from 224 050 to 224 500 bytes for the new cell
+words and the STRESS sentence in results-format.md.
+
+- Event: user:2026-10-27 (放开第一组（器件自身发热）三格)
+- Causes: judgment 1
+- Changed: scripts/catalog.py, scripts/review_functions.py, scripts/tests/test_bounding_table.py, scripts/tests/test_cell_boundary.py, scripts/tests/test_reading_path.py, references/bounding-table.md, references/results-format.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2299, rule contracts 69/69, replay 195/195, typical circuits 201/185/14, mutations M738 M810-M813 killed (M738 re-anchored)

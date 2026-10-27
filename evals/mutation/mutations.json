@@ -4784,8 +4784,8 @@
   "id": "M738",
   "name": "a decisive margin carries any risk",
   "file": "scripts/review_functions.py",
-  "old": "    allowed = catalog.cell_risks(basis.get('cell')) if estimate else ('STRESS',)",
-  "new": "    allowed = catalog.cell_risks(basis.get('cell')) if estimate else tuple(catalog.RISK_TYPES)"
+  "old": "    allowed = (catalog.cell_risks(basis.get('cell')) + (('STRESS',) if damage else ())) if estimate else ('STRESS',)",
+  "new": "    allowed = (catalog.cell_risks(basis.get('cell')) + (('STRESS',) if damage else ())) if estimate else tuple(catalog.RISK_TYPES)"
  },
  {
   "id": "M739",
@@ -5276,5 +5276,33 @@
   "file": "scripts/device_kinds.py",
   "old": "(r'COUPLED[-_ ]?INDUCTOR|耦合电感',)",
   "new": "()"
+ },
+ {
+  "id": "M810",
+  "name": "a damage estimate needs no stress risk",
+  "file": "scripts/review_functions.py",
+  "old": "    if damage and 'STRESS' not in types:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M811",
+  "name": "a damage estimate may not name a stress risk",
+  "file": "scripts/review_functions.py",
+  "old": "catalog.cell_risks(basis.get('cell')) + (('STRESS',) if damage else ())",
+  "new": "catalog.cell_risks(basis.get('cell')) + ()"
+ },
+ {
+  "id": "M812",
+  "name": "a power MOSFET's gate drive takes no damage estimate",
+  "file": "scripts/catalog.py",
+  "old": "_e(2, DAMAGE, '功率开关：",
+  "new": "_e(2, frozenset(), '功率开关："
+ },
+ {
+  "id": "M813",
+  "name": "an electrolytic's ripple heating estimate has no floor",
+  "file": "scripts/catalog.py",
+  "old": "'同上，芯温余量 ≥ 10 °C', (10, '°C'))",
+  "new": "'同上，芯温余量 ≥ 10 °C', None)"
  }
 ]

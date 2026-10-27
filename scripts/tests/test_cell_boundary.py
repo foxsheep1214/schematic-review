@@ -19,6 +19,10 @@ from test_estimate_pass import estimated, other_row
 from test_review_functions import ASPECT
 
 
+STRESS_RISK = {'types': ['STRESS', 'CONSISTENCY'], 'corner': '满载高温，导通压降只有典型曲线',
+               'improvement': '换给出热态保证值的型号，或样机测结温'}
+
+
 def margin_of(r):
     return next(m for m in r['functions'][1]['calculation']['margin'] if m.get('aspect') == ASPECT)
 
@@ -46,9 +50,10 @@ class CellBoundaryTests(unittest.TestCase):
             self.assertTrue(any('FUSE-I2T takes no estimate' in e and 'never estimates' in e for e in errors), (cls, errors))
 
     def test_a_cell_split_by_use_passes_one_class_and_refuses_the_other(self):
-        errors, _ = gate(cell='MOS-VGS-ON', method='G7', consequence_class='REQUIRED_FUNCTION', estimate_factor=2)
+        # a zener's VZ upper bound: a bias use passes on an estimate, a clamp protecting a pin (damage) does not
+        errors, _ = gate(cell='ZENER-VZ-UPPER', method='G9', consequence_class='REQUIRED_FUNCTION', estimate_factor=1.5)
         self.assertEqual(errors, [])
-        errors, _ = gate(cell='MOS-VGS-ON', method='G7', consequence_class='COMPONENT_DAMAGE', estimate_factor=2)
+        errors, _ = gate(cell='ZENER-VZ-UPPER', method='G9', consequence_class='COMPONENT_DAMAGE', estimate_factor=1.5)
         self.assertTrue(any('takes no estimate for consequence_class COMPONENT_DAMAGE' in e and 'it allows' in e
                             for e in errors), errors)
 
@@ -59,12 +64,26 @@ class CellBoundaryTests(unittest.TestCase):
 
     def test_the_margin_floor_is_the_cells(self):
         # a diode's VF used for a heating (damage) judgement: ×1.15 and a junction margin of at least 20 °C
-        errors, (p, r, db) = gate(cell='DIODE-VF', method='G8', consequence_class='COMPONENT_DAMAGE', estimate_factor=1.15)
+        errors, (p, r, db) = gate(cell='DIODE-VF', method='G8', consequence_class='COMPONENT_DAMAGE', estimate_factor=1.15,
+                                  risk=dict(STRESS_RISK))
         self.assertTrue(any('express this margin in °C' in e for e in errors), errors)
         m = margin_of(r); m.update(unit='°C', value=25)
         self.assertEqual([e for e in vr.validate_review(p, r, db)['errors'] if 'FN-OTHER/margin' in e], [])
         m['value'] = 10
         self.assertTrue(any('at least 20 °C' in e for e in vr.validate_review(p, r, db)['errors']))
+
+    def test_a_damage_estimate_is_a_stress_risk(self):
+        # 2026-10-27 (user: 损坏类估算判“合格但有应力风险”)
+        kw = dict(cell='MOS-VGS-ON', method='G7', consequence_class='COMPONENT_DAMAGE', estimate_factor=2)
+        errors, (p, r, db) = gate(**kw)
+        self.assertTrue(any('is a stress risk' in e for e in errors), errors)
+        errors, (p, r, db) = gate(risk=dict(STRESS_RISK), **kw)
+        margin_of(r).update(unit='°C', value=25)
+        self.assertEqual([e for e in vr.validate_review(p, r, db)['errors'] if 'FN-OTHER/margin' in e], [])
+        risks = vr.validate_review(p, r, db)['risks']
+        self.assertTrue(any('STRESS' in x['types'] and x['source'] == 'ESTIMATE' for x in risks), risks)
+        errors, _ = gate(cell='ZENER-VZ-LOWER', method='G8', estimate_factor=1.2, risk=dict(STRESS_RISK))
+        self.assertTrue(any('STRESS' in e and 'is not a risk' in e for e in errors), errors)
 
     def test_a_hazard_or_core_link_class_never_passes(self):
         for cls in ('DAMAGE_OR_HAZARD', 'CORE_LINK_LOSS'):

@@ -102,7 +102,12 @@ class TableTests(unittest.TestCase):
         self.assertIsNone(rule('OPTO-CTR', 'COMPONENT_DAMAGE'))                            # a datum, never a damage path
         self.assertEqual(rule('MOS-RDS-HOT', 'COMPONENT_DAMAGE').floor, (20, '°C'))        # decision 2
         self.assertEqual(rule('IND-ISAT', 'COMPONENT_DAMAGE').factor, 1.3)
-        self.assertEqual((rule('MOS-VGS-ON', 'REQUIRED_FUNCTION').factor, rule('MOS-VGS-ON', 'COMPONENT_DAMAGE')), (2, None))   # decision 1
+        self.assertEqual((rule('ZENER-VZ-UPPER', 'REQUIRED_FUNCTION').factor, rule('ZENER-VZ-UPPER', 'COMPONENT_DAMAGE')), (1.5, None))
+        # 2026-10-27 (user: 放开第一组（器件自身发热）三格): a part that heats itself passes a damage class on an estimate
+        for cell, factor, floor in (('MOS-VGS-ON', 2, (20, '°C')), ('DIODE-IR-HOT', 2, (20, '°C')), ('ECAP-ESR-RIPPLE', 1.3, (10, '°C'))):
+            self.assertEqual((rule(cell, 'COMPONENT_DAMAGE').factor, rule(cell, 'COMPONENT_DAMAGE').floor), (factor, floor), cell)
+        for cell in ('ZENER-VZ-UPPER', 'IC-THRESHOLD', 'IC-TIMING'):   # protection: unchanged
+            self.assertIsNone(rule(cell, 'COMPONENT_DAMAGE'), cell)
         self.assertEqual((rule('IC-QUIESCENT', 'REQUIRED_FUNCTION').factor, rule('IC-QUIESCENT', 'COMPONENT_DAMAGE').factor), (1.3, 1.5))
         for cell in ('FUSE-I2T', 'TVS-VC', 'DIODE-SURGE', 'CAP-SURGE-V', 'MOS-DISCHARGE-I2T', 'REF-IKA-MIN'):
             self.assertIsNone(rule(cell, 'REQUIRED_FUNCTION'), cell)

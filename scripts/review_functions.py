@@ -598,11 +598,16 @@ def _risk_errors(label, basis):
     if risk is None:
         return [label + ': a pass on an estimate names its risk: basis.risk{types, corner (the corner only the estimate '
                         'covers), improvement (what removes the risk: a part, a grade, a test)}'] if estimate else []
-    allowed = catalog.cell_risks(basis.get('cell')) if estimate else ('STRESS',)
+    # 2026-10-27 (user: 损坏类估算判“合格但有应力风险”): an estimate passing a damage class is a stress risk
+    damage = estimate and basis.get('consequence_class') in catalog.DAMAGE
+    allowed = (catalog.cell_risks(basis.get('cell')) + (('STRESS',) if damage else ())) if estimate else ('STRESS',)
     types = risk.get('types') if isinstance(risk, dict) else None
     if not (isinstance(types, list) and types and all(t in catalog.RISK_TYPES for t in types)
             and text(risk.get('corner')) and text(risk.get('improvement'))):
         return ['%s: basis.risk is {types (%s), corner, improvement}' % (label, '/'.join(catalog.RISK_TYPES))]
+    if damage and 'STRESS' not in types:
+        return ['%s: an estimate passing %s is a stress risk: basis.risk.types names STRESS'
+                % (label, basis.get('consequence_class'))]
     extra = [t for t in types if t not in allowed]
     if extra:
         return ['%s: basis.risk.types %s %s; %s' % (
