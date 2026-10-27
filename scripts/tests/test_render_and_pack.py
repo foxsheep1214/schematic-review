@@ -252,8 +252,8 @@ class ReportWordingTests(unittest.TestCase):
         self.assertFalse(is_document(['DOC-T01.AS-DRAWN', 'PWR-C01.U1']))
         self.assertEqual(item_kind([{'id': 'DEV-D04.BOARD', 'review_result': 'FAIL'}]), '文档错误')
         rows = [{'id': 'A.%d' % i, 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA'} for i in range(13)]
-        rows.append({'id': 'A.13', 'review_result': 'INSUFFICIENT', 'gap_cause': 'REVIEW_INCOMPLETE'})
-        self.assertEqual(item_kind(rows), '缺资料（另 审查没做完 1 条）')
+        rows.append({'id': 'A.13', 'review_result': 'INSUFFICIENT', 'gap_cause': 'USER_DEFERRED'})
+        self.assertEqual(item_kind(rows), '缺资料（另 已暂缓 1 条）')
         self.assertEqual(item_kind(rows[:13]), '缺资料')
         p, r, db = fixture()
         fail(r)
@@ -544,6 +544,24 @@ class PackReviewTests(unittest.TestCase):
         (self.work / 'review-results.json').write_text(json.dumps(results))
         errors, _ = self.run_pack()
         self.assertTrue(any('review not finished' in e and row['id'] in e for e in errors), errors)
+
+    def test_unfinished_review_has_no_report(self):
+        import render_report
+        results = json.loads((self.work / 'review-results.json').read_text())
+        row = results['checks'][0]
+        item = results['functions'][0]['open'][0]
+        item['kind'] = 'REVIEW_INCOMPLETE'
+        for field in ('acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
+            item.pop(field)
+        (self.work / 'review-results.json').write_text(json.dumps(results))
+        plan = json.loads((self.work / 'review-plan.json').read_text())
+        with self.assertRaises(render_report.UnfinishedReview) as raised:
+            render_report.render(plan, results, {'valid': True})
+        self.assertIn(row['id'], str(raised.exception))
+        out = self.work / 'unfinished.md'
+        self.assertEqual(render_report.main([str(self.work / 'review-plan.json'), str(self.work / 'review-results.json'),
+                                            str(self.work / 'review-gate.json'), '-o', str(out)]), 2)
+        self.assertFalse(out.exists())
 
     def test_jargon_in_report_body_fails_the_pack(self):
         write_report(self.out, '# r\n\n## 结论\n\n- 还不能冻结，见本检查项。\n\n## 对 SR 的反馈（设计者不用处理）\n\n- 原生映射\n')

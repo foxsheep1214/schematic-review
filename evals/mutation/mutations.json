@@ -1934,9 +1934,9 @@
  {
   "id": "M291",
   "name": "an unfinished review is packed",
-  "file": "scripts/pack_review.py",
-  "old": "                        and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'REVIEW_INCOMPLETE'",
-  "new": "                        and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'NEVER'"
+  "file": "scripts/results_model.py",
+  "old": "                  and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'REVIEW_INCOMPLETE'",
+  "new": "                  and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'NEVER'"
  },
  {
   "id": "M292",
@@ -4933,5 +4933,26 @@
   "file": "scripts/requirement_clarifications.py",
   "old": "FILE_DECISIONS = ('UPDATED', 'KEPT')",
   "new": "FILE_DECISIONS = ('UPDATED',)"
+ },
+ {
+  "id": "M759",
+  "name": "an unfinished review still gets a report",
+  "file": "scripts/render_report.py",
+  "old": "    if unfinished:\n        raise UnfinishedReview(",
+  "new": "    if False:\n        raise UnfinishedReview("
+ },
+ {
+  "id": "M760",
+  "name": "the pack swallows an unfinished review",
+  "file": "scripts/pack_review.py",
+  "old": "        return errors + [str(e).replace('no report yet', 'nothing to deliver yet')]",
+  "new": "        return errors"
+ },
+ {
+  "id": "M761",
+  "name": "render_report exits 0 on an unfinished review",
+  "file": "scripts/render_report.py",
+  "old": "        print(e, file=sys.stderr)\n        return 2",
+  "new": "        print(e, file=sys.stderr)\n        return 0"
  }
 ]

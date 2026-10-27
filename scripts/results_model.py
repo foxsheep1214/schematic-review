@@ -140,6 +140,15 @@ def open_items(report):
     return out
 
 
+def unfinished_checks(report, skip_rule='REQ-H02'):
+    """Rows still open as REVIEW_INCOMPLETE: the reviewer's own work, never a conclusion a report may show."""
+    items = open_items(report)
+    return sorted(c.get('id', '?') for c in report.get('checks') or [] if isinstance(c, dict)
+                  and c.get('review_result') == 'INSUFFICIENT'
+                  and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'REVIEW_INCOMPLETE'
+                  and not str(c.get('id', '')).startswith(skip_rule + '.'))
+
+
 def work_item_id(key):
     return key if key.startswith('W-') else 'W-' + key
 

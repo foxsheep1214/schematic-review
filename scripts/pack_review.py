@@ -29,12 +29,11 @@ REPORT_HTML = '审查报告.html'
 RECORD = 'record'
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from render_report import SR_SECTION, jargon_in, notes_errors, render, sr_feedback_errors  # noqa: E402
+from render_report import SR_SECTION, UnfinishedReview, jargon_in, notes_errors, render, sr_feedback_errors  # noqa: E402
 from report_html import to_html
 import circuit_decisions
 import results_model
 
-HISTORY_RULE = 'REQ-H02'
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
           'lint-cold.json', 'lint-hot.json')
 OPTIONAL_LEDGER = ('circuit-candidates.json',       # required as soon as the intent declares circuits
@@ -230,7 +229,11 @@ def rendered_errors(out, record, title=None, detail='compact'):
     problems = sr_feedback_errors((notes or {}).get('sr_feedback')) + notes_errors(notes)
     if problems:
         return errors + ['notes.json: ' + '; '.join(problems)]
-    if (out / REPORT).read_text(encoding='utf-8') != render(plan, results, gate, notes, title, detail):
+    try:
+        text = render(plan, results, gate, notes, title, detail)
+    except UnfinishedReview as e:
+        return errors + [str(e).replace('no report yet', 'nothing to deliver yet')]
+    if (out / REPORT).read_text(encoding='utf-8') != text:
         errors.append('%s is not what render_report.py writes from the packed ledger%s; re-render it from the current '
                       'plan, results, gate and notes (pass --notes, --title and --detail as rendered) instead of '
                       'editing it' % (REPORT, ' and notes.json' if notes is not None else ''))
@@ -299,14 +302,6 @@ def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
                                         json.loads((record / 'review-results.json').read_text(encoding='utf-8')))[0]
     errors += rendered_errors(out, record, title, detail)
     errors += candidate_errors(record)
-    items = results_model.open_items(results)
-    unfinished = sorted(c.get('id', '?') for c in results.get('checks') or [] if isinstance(c, dict)
-                        and c.get('review_result') == 'INSUFFICIENT'
-                        and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'REVIEW_INCOMPLETE'
-                        and not str(c.get('id', '')).startswith(HISTORY_RULE + '.'))
-    if unfinished:
-        errors.append('review not finished, nothing to deliver yet: finish reading/computing these checks, or record '
-                      'manual_verification where only the SR tool is limited: ' + ', '.join(unfinished))
     unresolved, skill_cited, datasheet_texts, pdfs = [], False, [], input_pdfs(declared.values())
     for source in sorted(cited_sources(results)):
         if source.startswith(('http://', 'https://')):

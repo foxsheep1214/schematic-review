@@ -154,6 +154,16 @@ def gap(report, cids, key, kind='REVIEW_INCOMPLETE', fid=None, plan=None, what=N
     return fn['open'][-1]
 
 
+
+def deferred(report):
+    """Turn every REVIEW_INCOMPLETE placeholder into USER_DEFERRED: render_report refuses unfinished review work, so a
+    test that reads one report section from a pending ledger defers the rest instead."""
+    for fn in report.get('functions') or []:
+        for item in fn.get('open') or []:
+            if item.get('kind') == 'REVIEW_INCOMPLETE':
+                item.update(kind='USER_DEFERRED', instruction=SYNTHETIC)
+    return report
+
 def defect(report, cids, key, finding_id=None, fid=None, plan=None, what='Synthetic defect', **item):
     """Rows `cids` FAIL on fail item `key` of function `fid` (default FN-<key>), on the stipulated clause c2."""
     cids = [cids] if isinstance(cids, str) else list(cids)

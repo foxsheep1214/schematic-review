@@ -294,7 +294,7 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 - 能按物理对象/判据拆开时优先拆开放项，而不是让一个开放项铺满整块电路。`decides` 的每条影响条目写 `via`（缺的量进到哪条条件或哪个计算输入）
   和 `rationale`；一个缺口挡几个方面不限数，超过 3 个只出 WIDE_GAP 提示。
 - 阻断表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
-- REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过。
+- REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过；它不是报告结论，有它时不出报告。
   只剩 SR 工具自身限制、已手工核完的不记 REVIEW_INCOMPLETE，写 `manual_verification`（见 [单条检查](results-format.md#单条检查)），
   工具限制列入 `sr_improvements`，不进设计者待办。
 

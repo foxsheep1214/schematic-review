@@ -15,6 +15,7 @@ import bom_constraints
 import render_report
 from checkers.netgraph import NetGraph
 from validate_review import validate_review
+from ledger4 import deferred
 from render_report import render
 import review_functions
 from review_functions import row_anchors
@@ -62,7 +63,7 @@ class ConstraintTests(unittest.TestCase):
 
     def test_the_report_lists_what_the_bom_must_state(self):
         plan, report, gate = self.gate()
-        section = render(plan, report, gate).split('## BOM 要写明的额定与规格')[1].split('\n## ')[0]
+        section = render(plan, deferred(report), gate).split('## BOM 要写明的额定与规格')[1].split('\n## ')[0]
         self.assertIn('| R1 | 额定功率 ≥ 0.09 W | DEV-C01.R1 计算：44 mW | 误选件仍在额定内，只缺降额余量（P3） | 待写入 |', section)
 
 

@@ -2879,3 +2879,23 @@ no revision. The step ① reading path grows by the new paragraphs.
 - Causes: rule_missing 1
 - Changed: scripts/requirement_clarifications.py, scripts/tests/test_requirement_clarifications.py, SKILL.md, references/requirement-clarifications.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2259, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M729-M731 M754-M758 killed
+## Unfinished review work is not a report verdict (2026-10-27)
+
+Item 5 of the "evidence insufficient" causes: REVIEW_INCOMPLETE is the
+reviewer's own unread or uncomputed work, yet the report counted it as a cause
+(审查没做完), as a work-item type and as a release blocker, a fourth kind of
+conclusion beside 合格 / 不合格 / 合格但有风险. Decision (user: 第五项按照你的建议来):
+
+1. REVIEW_INCOMPLETE stays as an open item while the review runs; the gate
+   still lists it as a blocker and review_workflow still puts it in the current
+   queue.
+2. `render_report.py` writes no report while one exists (exit 2, the
+   unfinished checks named); `results_model.unfinished_checks` is the one test,
+   and `pack_review.py` refuses through the same render.
+3. The report's cause counts, work-item types and release blockers drop
+   审查没做完; progress is told in the conversation, not in a report.
+
+- Event: user:2026-10-27 (第五项按照你的建议来)
+- Causes: judgment 1
+- Changed: scripts/render_report.py, scripts/pack_review.py, scripts/results_model.py, scripts/tests, SKILL.md, references/results-format.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2261, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M291 M759-M761 killed (M291 re-anchored)

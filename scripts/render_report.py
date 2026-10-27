@@ -36,14 +36,13 @@ RECORD_INDEX = (('review-results.json', '每条检查的结论、依据、缺的
                 ('lint-cold.json', '自动检查输出（只用网表）'),
                 ('lint-hot.json', '自动检查输出（加上器件资料）'),
                 ('evidence/', '引用的资料摘录、计算和图片'))
-OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('REVIEW_INCOMPLETE', '审查还没做完'),
-                                ('USER_DEFERRED', '暂缓处理')])
+# REVIEW_INCOMPLETE is the reviewer's own unfinished work: render() refuses it, so no reader word exists for it.
+OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('USER_DEFERRED', '暂缓处理')])
 RELEASE = {'GO': '可以定稿', 'CONDITIONAL_GO': '可以有条件定稿', 'NO_GO': '还不能定稿'}
 CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'),
-                      ('REVIEW_INCOMPLETE', '审查没做完'),
                       ('USER_DEFERRED', '已暂缓')])
 KINDS = OrderedDict([('FAIL', '电路错误'),
-                     ('EXTERNAL_DATA', '缺资料'), ('REVIEW_INCOMPLETE', '审查没做完'),
+                     ('EXTERNAL_DATA', '缺资料'),
                      ('USER_DEFERRED', '已暂缓')])
 SEVERITIES = ('P0', 'P1', 'P2', 'P3')
 SEVERITY_WORDS = {'P0': '可能损坏器件或危及安全', 'P1': '必需功能可能不达标',
@@ -57,7 +56,6 @@ BLOCKERS = (('fail', '%d 条检查发现的错误还没改'),
             ('gap', '%d 条检查缺资料或设计依据，对应下面列出的待办'),
             ('gap_tasks', '%d 件待办阻塞定稿（同一原因合并，涉及 %d 条缺资料或设计依据的阻塞检查；不阻塞的待办不计在内）'),
             ('requirement', '%d 条需求还要用户拍板'),
-            ('review', '%d 条检查审查还没做完'),
             ('grading', '%d 组资料不足的检查还没逐条判断后果'),
             ('netlist', '原理图导出的网表不完整或导出失败'))
 IMPACT_CLASS_WORDS = OrderedDict((('DAMAGE_OR_HAZARD', '损坏或危险'), ('CORE_LINK_LOSS', '核心链路断开'),
@@ -99,9 +97,7 @@ def blocker_reasons(blockers, results, tasks=None, skip=()):
     scope_checks = results.get('scope_checks') or {}
     checks = {c.get('id'): c for c in results.get('checks') or [] if isinstance(c, dict)}
     for b in blockers:
-        if 'review work not completed' in b:
-            kinds['review'] += 1
-        elif 'P0 requires verified repair' in b or 'unresolved blocking FAIL' in b:
+        if 'P0 requires verified repair' in b or 'unresolved blocking FAIL' in b:
             kinds['fail'] += 1
         elif 'unresolved blocking INSUFFICIENT' in b:
             kinds['gap'] += 1
@@ -856,8 +852,16 @@ def owner_counts(plan):
         rows['SYSTEM'], rows['CIRCUIT'], circuits, rows['BOARD'])]
 
 
+class UnfinishedReview(ValueError):
+    """The review is not done: there is no report yet, only the work list in the gate."""
+
+
 def render(plan, results, gate, notes=None, title=None, detail='compact'):
     results = results_model.materialize(plan, results)[0]   # the ledger holds no derived rows; the gate reports derive errors
+    unfinished = results_model.unfinished_checks(results, HISTORY_RULE)
+    if unfinished:
+        raise UnfinishedReview('review not finished, no report yet: finish reading/computing these checks, or record '
+                               'manual_verification where only the SR tool is limited: ' + ', '.join(unfinished))
     revision = (plan or {}).get('review_mode') == 'revision'
     notes = notes or {}
     item_notes = notes.get('items') or {}
@@ -1175,7 +1179,11 @@ def main(argv=None):
     if problems:
         print('notes.json: ' + '; '.join(problems), file=sys.stderr)
         return 2
-    text = render(load(args.plan), load(args.results), load(args.gate), notes, args.title, args.detail)
+    try:
+        text = render(load(args.plan), load(args.results), load(args.gate), notes, args.title, args.detail)
+    except UnfinishedReview as e:
+        print(e, file=sys.stderr)
+        return 2
     Path(args.out).write_text(text, encoding='utf-8')
     html_out = Path(args.out).with_suffix('.html')
     html_out.write_text(to_html(text), encoding='utf-8')
