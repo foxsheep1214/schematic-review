@@ -1956,6 +1956,493 @@
    "expected": [],
    "known_false_alarms": [],
    "fixed_false_alarms": []
+  },
+  {
+   "id": "kxkm-bmu-v2",
+   "category": "Isolated push-pull DC-DC (VPS8505) + isolated I2C + battery monitor (INA237)",
+   "fixture": "fixtures/kxkm-bmu-v2.xml",
+   "expected": [
+    {
+     "rule": "NET-A07",
+     "match": "U9.4 -> unconnected-(U9-EN-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "MCP16331 EN 标 NC 悬空：按手册确认内部上拉或允许悬空"
+    },
+    {
+     "rule": "RST-A02",
+     "match": "U4（状态 as-built）：U4.5 与本器件供电轨同为 VCC，使能/复位随电源同时建立；需确认器件允许该时序或另加延时",
+     "why": "TCA9517 / VPS8505 使能与供电同网：核器件允许的上电时序"
+    },
+    {
+     "rule": "RST-A02",
+     "match": "U8（状态 as-built）：U8.5 与本器件供电轨同为 VCC，使能/复位随电源同时建立；需确认器件允许该时序或另加延时",
+     "why": "TCA9517 / VPS8505 使能与供电同网：核器件允许的上电时序"
+    },
+    {
+     "rule": "RST-A04",
+     "match": "U9（状态 as-built）：使能脚 U9.4 所在网 unconnected-(U9-EN-Pad4) 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+     "why": "MCP16331 EN 悬空：按手册确认内部上拉"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": []
+  },
+  {
+   "id": "zenn-main-controller",
+   "category": "Motor controller main board (SN6501 isolated supply + AMC1311 isolated amp)",
+   "fixture": "fixtures/zenn-main-controller.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "/HV_IN_+ <- R4.1 (390k)",
+     "why": "真实断开：高压测压分压上臂 R4 所在 HV_IN_+ 只有本节点；PowerConnections 页的层次标签 HV_IN_+ 没有连到 J5 的本地标签 HV_+"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/OUTN <- U2.6 ()",
+     "why": "真实断开：AMC1311 隔离放大器输出只连本脚；MCU 页的层次标签 OUTN/OUTP 在根图没有接到 U2"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/OUTP <- U2.7 ()",
+     "why": "真实断开：AMC1311 隔离放大器输出只连本脚；MCU 页的层次标签 OUTN/OUTP 在根图没有接到 U2"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/Pedal/A_PEDAL <- J1.2 (Conn_01x05_Pin)",
+     "why": "真实断开：踏板座 J1 各脚只连本脚；Pedal 页的标签 A_PEDAL/SWITCH_*/PEDAL_VCC 与连接器所在网不相连"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/Pedal/SWITCH_1 <- J1.4 (Conn_01x05_Pin)",
+     "why": "真实断开：踏板座 J1 各脚只连本脚；Pedal 页的标签 A_PEDAL/SWITCH_*/PEDAL_VCC 与连接器所在网不相连"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/Pedal/SWITCH_2 <- J1.5 (Conn_01x05_Pin)",
+     "why": "真实断开：踏板座 J1 各脚只连本脚；Pedal 页的标签 A_PEDAL/SWITCH_*/PEDAL_VCC 与连接器所在网不相连"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/PowerConnections/HV_+ <- J5.2 (Conn_01x02_Pin)",
+     "why": "真实断开：高压输入座 J5 两脚的本地标签 HV_+/HV_GND 没有接到同页层次标签 HV_IN_+/HV_IN_-，高压输入孤立"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/PowerConnections/HV_GND <- J5.1 (Conn_01x02_Pin)",
+     "why": "真实断开：高压输入座 J5 两脚的本地标签 HV_+/HV_GND 没有接到同页层次标签 HV_IN_+/HV_IN_-，高压输入孤立"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "VCC <- J1.1 (Conn_01x05_Pin)",
+     "why": "真实断开：踏板座 J1 各脚只连本脚；Pedal 页的标签 A_PEDAL/SWITCH_*/PEDAL_VCC 与连接器所在网不相连"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(J2-Pin_1-Pad1) <- J2.1 (Conn_01x04_Pin，脚名 Pin_1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "连接器备用脚未连接且未标 NC：核有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(J2-Pin_2-Pad2) <- J2.2 (Conn_01x04_Pin，脚名 Pin_2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "连接器备用脚未连接且未标 NC：核有意悬空"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "unconnected-(J2-Pin_3-Pad3) <- J2.3 (Conn_01x04_Pin，脚名 Pin_3) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+     "why": "连接器备用脚未连接且未标 NC：核有意悬空"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": []
+  },
+  {
+   "id": "usb-pd-power-manager",
+   "category": "USB-C PD sink + buck-boost charger (HUSB238 + BQ25672 + TPS63070)",
+   "fixture": "fixtures/usb-pd-power-manager.xml",
+   "expected": [
+    {
+     "rule": "RST-A01",
+     "match": "/VSW_PS_EN: R65 下拉->GND(0.0V)",
+     "why": "使能默认经 R65 下拉：核上电默认关断是否符合意图"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q10（mosfet，状态 as-built）：栅极网 /BC_SDRV 由 U2.24 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
+     "why": "栅极由方向未知的 BQ25672 脚驱动（SDRV、ACDRV1/2）：核该脚为输出及上电状态"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q2（mosfet，状态 as-built）：栅极网 /VIN_VBUS_G 由 U2.10 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
+     "why": "栅极由方向未知的 BQ25672 脚驱动（SDRV、ACDRV1/2）：核该脚为输出及上电状态"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "Q3（mosfet，状态 as-built）：栅极网 /VIN_VEXT_G 由 U2.11 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
+     "why": "栅极由方向未知的 BQ25672 脚驱动（SDRV、ACDRV1/2）：核该脚为输出及上电状态"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A02",
+     "match": "/VLDO_VIN2_EN_G(6节点) <-> /VLDO_VIN2_EN_S(4节点)",
+     "why": "同一只开关管的栅极网与源极网（_G/_S 后缀），不是网络分裂；已修（typical-circuits-v3 误报修正）"
+    }
+   ]
+  },
+  {
+   "id": "rt-ihu",
+   "category": "Dual-MCU flight computer with external watchdog (STWD100) and arbiter",
+   "fixture": "fixtures/rt-ihu.xml",
+   "expected": [
+    {
+     "rule": "PWR-A01",
+     "match": "+1V2_SEC (18节点): ['C54', 'C56', 'C57', 'C60', 'C61', 'U21']",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U11.14 (VCC) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U12.14 (VCC) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U13.20 (VCC) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U14.20 (VCC) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U15.20 (VCC) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U16.20 (VCC) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U19.20 (VCC) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U20.20 (VCC) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.101 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.114 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.123 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.137 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.143 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.17 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.29 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.45 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.48 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.49 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.57 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U21.87 (VCC) <- +1V2_SEC",
+     "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U39.5 (VIN) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U41.1 (VDDA) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U42.1 (VDDA) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U43.1 (VDDA) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U44.1 (VDDA) <- ARB_BATT",
+     "why": "ARB_BATT 是作者自建电源符号，板上和板间连接器都没有来源：仲裁逻辑 U11–U20、隔离器 VDDA 与 U39 无供电，核是否应接 VSYS 或连接器"
+    },
+    {
+     "rule": "RST-A01",
+     "match": "HW_POWER_OFF_N: R57 上拉->ARB_REG_3V3(3.3V)",
+     "why": "使能/复位网只有上拉或下拉：核上电默认态与驱动来源"
+    },
+    {
+     "rule": "RST-A01",
+     "match": "Net-(U8-SHDN): R13 下拉->GND(0.0V)",
+     "why": "使能/复位网只有上拉或下拉：核上电默认态与驱动来源"
+    },
+    {
+     "rule": "RST-A01",
+     "match": "Net-(U22-SHDN): R28 下拉->GND(0.0V)",
+     "why": "使能/复位网只有上拉或下拉：核上电默认态与驱动来源"
+    },
+    {
+     "rule": "RST-A01",
+     "match": "Net-(U33-EN_N): R44 下拉->GND(0.0V)",
+     "why": "使能/复位网只有上拉或下拉：核上电默认态与驱动来源"
+    },
+    {
+     "rule": "RST-A01",
+     "match": "Net-(U36-EN_N): R52 下拉->GND(0.0V)",
+     "why": "使能/复位网只有上拉或下拉：核上电默认态与驱动来源"
+    },
+    {
+     "rule": "RST-A01",
+     "match": "PRI_3V3_POK: R73 上拉->PRI_REG_3V3(3.3V)",
+     "why": "使能/复位网只有上拉或下拉：核上电默认态与驱动来源"
+    },
+    {
+     "rule": "RST-A01",
+     "match": "X_10GHZ_EN: R112 下拉->GND(0.0V)",
+     "why": "使能/复位网只有上拉或下拉：核上电默认态与驱动来源"
+    },
+    {
+     "rule": "RST-A01",
+     "match": "X_EXP_EN_1: R81 下拉->GND(0.0V)",
+     "why": "使能/复位网只有上拉或下拉：核上电默认态与驱动来源"
+    },
+    {
+     "rule": "RST-A01",
+     "match": "X_PB_ENABLE: R128 下拉->GND(0.0V)",
+     "why": "使能/复位网只有上拉或下拉：核上电默认态与驱动来源"
+    },
+    {
+     "rule": "SIG-A03",
+     "match": "I2C_SCL1（含经串阻相连的 ['X_I2C_SCL1']）: ['C134', 'J1', 'J2', 'R86', 'R95', 'U13', 'U14'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+     "why": "I²C 经总线开关接到板间连接器，板上无上拉：确认上拉在主机侧"
+    },
+    {
+     "rule": "SIG-A03",
+     "match": "I2C_SCL2（含经串阻相连的 ['X_I2C_SCL2']）: ['C139', 'J1', 'J2', 'R100', 'R107', 'U13', 'U14'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+     "why": "I²C 经总线开关接到板间连接器，板上无上拉：确认上拉在主机侧"
+    },
+    {
+     "rule": "SIG-A03",
+     "match": "I2C_SDA1（含经串阻相连的 ['X_I2C_SDA1']）: ['C135', 'J1', 'J2', 'R103', 'R96', 'U13', 'U14'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+     "why": "I²C 经总线开关接到板间连接器，板上无上拉：确认上拉在主机侧"
+    },
+    {
+     "rule": "SIG-A03",
+     "match": "I2C_SDA2（含经串阻相连的 ['X_I2C_SDA2']）: ['C140', 'J1', 'J2', 'R101', 'R108', 'U13', 'U14'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+     "why": "I²C 经总线开关接到板间连接器，板上无上拉：确认上拉在主机侧"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U1.119 -> unconnected-(U1-ECLK-Pad119): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U1.12 -> unconnected-(U1-CAN3RX-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U21.119 -> unconnected-(U21-ECLK-Pad119): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U21.12 -> unconnected-(U21-CAN3RX-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U23.3 -> unconnected-(U23-OS-Pad3): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U26.11 -> unconnected-(U26-DATA-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U26.12 -> unconnected-(U26-DCLK-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U3.11 -> unconnected-(U3-DATA-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U3.12 -> unconnected-(U3-DCLK-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U37.4 -> unconnected-(U37-ON-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U39.4 -> unconnected-(U39-ON-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U9.3 -> unconnected-(U9-OS-Pad3): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "输入脚标为 NC：确认内部上下拉或允许悬空（FPF2004 的 ON 脚悬空尤须核）"
+    },
+    {
+     "rule": "RST-A02",
+     "match": "U17（状态 as-built）：U17.7 与本器件供电轨同为 +3V3_SEC，使能/复位随电源同时建立；需确认器件允许该时序或另加延时",
+     "why": "MAX14932 使能与供电同网：核器件允许的上电时序"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A02",
+     "match": "PRI_DCAN1RX(2节点) <-> PRI_DCAN1TX(2节点)",
+     "why": "收发对写在一个词里（DCAN1RX/DCAN1TX），不是网络分裂；已修（typical-circuits-v3 误报修正）"
+    },
+    {
+     "rule": "NET-A02",
+     "match": "SEC_DCAN1RX(2节点) <-> SEC_DCAN1TX(2节点)",
+     "why": "收发对写在一个词里（DCAN1RX/DCAN1TX），不是网络分裂；已修（typical-circuits-v3 误报修正）"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "Net-(U2-VCC1): ['L6.1', 'U2.11']",
+     "why": "射频扼流电感 L6 从 PRI_SSPA_VCC 给功放 VCC1 供电，库里电感脚标成 input；串联无源件不算输入脚；已修（typical-circuits-v3 误报修正）"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "Net-(U25-VCC1): ['L24.1', 'U25.11']",
+     "why": "射频扼流电感 L24 从 SEC_SSPA_VCC 给功放 VCC1 供电，库里电感脚标成 input；串联无源件不算输入脚；已修（typical-circuits-v3 误报修正）"
+    }
+   ]
+  },
+  {
+   "id": "suntastic",
+   "category": "Low-power management board with watchdog timer (TPL5010) and load switches",
+   "fixture": "fixtures/suntastic.xml",
+   "expected": [
+    {
+     "rule": "NET-A01",
+     "match": "GPIO_DONE <- U9.3 (TPS22917DBV)",
+     "why": "真实线索：全局标签 GPIO_DONE 全图只出现一次，负载开关 U9 的 ON 脚没有驱动"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U1.5 (VCC) <- Net-(JP1-A)：经跳线 JP1 才接到供电，核该装配下跳线是否闭合",
+     "why": "电源脚经焊盘跳线供电（JP16 为三脚选择跳线）：核装配状态"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U2.4 (VIN) <- Net-(JP10-B)：经跳线 JP10 才接到供电，核该装配下跳线是否闭合",
+     "why": "电源脚经焊盘跳线供电（JP16 为三脚选择跳线）：核装配状态"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U3.4 (VIN) <- Net-(JP13-B)：经跳线 JP13 才接到供电，核该装配下跳线是否闭合",
+     "why": "电源脚经焊盘跳线供电（JP16 为三脚选择跳线）：核装配状态"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U4.5 (VCC) <- Net-(JP2-A)：经跳线 JP2 才接到供电，核该装配下跳线是否闭合",
+     "why": "电源脚经焊盘跳线供电（JP16 为三脚选择跳线）：核装配状态"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U6.1 (VIN) <- Net-(JP16-C)：经跳线 JP16 才接到供电，核该装配下跳线是否闭合",
+     "why": "电源脚经焊盘跳线供电（JP16 为三脚选择跳线）：核装配状态"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U7.1 (VDD) <- Net-(JP22-B)：经跳线 JP22 才接到供电，核该装配下跳线是否闭合",
+     "why": "电源脚经焊盘跳线供电（JP16 为三脚选择跳线）：核装配状态"
+    },
+    {
+     "rule": "PWR-A02",
+     "match": "U8.1 (VIN) <- Net-(U8-CE)：经跳线 JP24 才接到供电，核该装配下跳线是否闭合",
+     "why": "电源脚经焊盘跳线供电（JP16 为三脚选择跳线）：核装配状态"
+    },
+    {
+     "rule": "NET-A06",
+     "match": "GPIO_DONE: ['U9.3']",
+     "why": "与同网 NET-A01 同根：GPIO_DONE 只有 U9.3"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U9.3 -> GPIO_DONE: 输入脚所在网只有该节点",
+     "why": "与同网 NET-A01 同根：GPIO_DONE 只有 U9.3"
+    },
+    {
+     "rule": "RST-A06",
+     "match": "U7（状态 as-built）：复位/看门狗输出 U7.6 所在网 RST_SIGNAL 未接到任何复位输入（仅接到 U10.6），需确认由该路径完成复位",
+     "why": "TPL5010 复位输出只接到与门 U10：核由该路径完成复位"
+    }
+   ],
+   "known_false_alarms": [],
+   "fixed_false_alarms": []
   }
  ]
 }

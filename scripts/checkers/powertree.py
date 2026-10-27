@@ -190,6 +190,10 @@ class PowerTree:
                             'basis': 'switch node via storage inductor; verify converter '
                                      'topology, FB target and upstream power'}
                 ends = graph.nets_of(ref)
+                if self.feed and graph.kind(ref) == pw.JUMPER and len(ends) == 3 and current in ends:
+                    # a three-way solder jumper (common C, choices A/B) selects one of two supplies: both are upstream
+                    queue.extend((other, path + [ref]) for other in ends if other != current)
+                    continue
                 if len(ends) != 2 or current not in ends:
                     continue
                 other = ends[0] if ends[1] == current else ends[1]

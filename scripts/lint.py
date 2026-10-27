@@ -89,7 +89,9 @@ ISOLATOR_RE = re.compile(r'ISOLAT|\bISO\d|ISOW|ADUM|SI8[46]\d|NSI\d|CA-IS|隔离
 # NET-A02：命名惯例里成对/成组出现的网名不是拼写分裂。
 NET_PAIR_TOKENS = [frozenset(p) for p in (
     ('RX', 'TX'), ('RXD', 'TXD'), ('RXP', 'TXP'), ('RXN', 'TXN'), ('MISO', 'MOSI'),
-    ('SDI', 'SDO'), ('DIN', 'DOUT'), ('SCL', 'SDA'), ('SCLK', 'SDATA'), ('CANH', 'CANL'))]
+    ('SDI', 'SDO'), ('DIN', 'DOUT'), ('SCL', 'SDA'), ('SCLK', 'SDATA'), ('CANH', 'CANL'),
+    # one transistor's terminals (VLDO_EN_G / VLDO_EN_S on a load switch, typical circuits 2026-10-26)
+    ('G', 'S'), ('G', 'D'), ('D', 'S'), ('B', 'E'), ('B', 'C'), ('C', 'E'))]
 NET_VOLTAGE_TOKEN_RE = re.compile(r'^(\d+V\d*|V\d+|\d+\.\d+V)$', re.I)
 
 
@@ -106,8 +108,8 @@ def net_name_split(a, b):
     """相邻排序的两张网是否疑似同一名字的拼写分裂。
 
     只比较叶名（层次路径是同页所有网共享的，不构成相似证据）；豁免末位序号、_N/_P 与 +/- 差分对、
-    只差一个字母且字母相邻的兄弟（GHA/GHB、AUX1_A/AUX1_B）、收发对（RX/TX、MISO/MOSI、SCL/SDA）
-    和同名双路（FB_12V/FB_5V）。
+    只差一个字母且字母相邻的兄弟（GHA/GHB、AUX1_A/AUX1_B）、收发对（RX/TX、MISO/MOSI、SCL/SDA）、
+    同一只晶体管的端子（EN_G/EN_S、Q1_B/Q1_E）和同名双路（FB_12V/FB_5V）。
     """
     la, lb = a.rsplit('/', 1)[-1], b.rsplit('/', 1)[-1]
     if la == lb or difflib.SequenceMatcher(None, la, lb).ratio() <= 0.90:
@@ -126,7 +128,25 @@ def net_name_split(a, b):
     if pair and (frozenset(t.upper() for t in pair) in NET_PAIR_TOKENS
                  or all(NET_VOLTAGE_TOKEN_RE.match(t) for t in pair)):
         return False          # 收发对 / 同名双路
+    if _embedded_pair(la, lb):
+        return False          # 收发对写在一个词里（PRI_DCAN1RX / PRI_DCAN1TX）
     return True
+
+
+def _embedded_pair(a, b):
+    """One name becomes the other by swapping a multi-letter pair token inside a word (DCAN1RX -> DCAN1TX)."""
+    ua, ub = a.upper(), b.upper()
+    for pair in NET_PAIR_TOKENS:
+        for x in pair:
+            y = next(iter(pair - {x}))
+            if len(x) < 2 or len(y) < 2:
+                continue
+            start = ua.find(x)
+            while start != -1:
+                if ua[:start] + y + ua[start + len(x):] == ub:
+                    return True
+                start = ua.find(x, start + 1)
+    return False
 
 
 def _ground_like(net):
@@ -582,9 +602,10 @@ class Lint:
                         f'{net}: {outputs}；开漏/三态等合法结构须逐条排除')
                 if nodes and len(typed) == len(nodes) and typed and all(
                         kind == 'IN' for _, kind in typed) and not any(
-                        self.graph.kind(node.partition('.')[0]) == CONNECTOR
+                        self.graph.kind(node.partition('.')[0]) in {CONNECTOR} | PASSIVE_LINKS
                         or DATASHEET_NC_PIN_RE.match(self.pinname.get(node, '')) for node in nodes):
-                    # A connector contact typed input (some header libraries) is driven off-board.
+                    # A connector contact typed input (some header libraries) is driven off-board; a series
+                    # resistor, inductor or ferrite typed input (an RF choke feeding a PA's VCC) passes the other net.
                     self.add(
                         'NET-A06', '网络仅含输入引脚（确认外部源/漏驱动）',
                         f'{net}: {[node for node, _ in typed]}',

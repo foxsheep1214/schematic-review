@@ -1,11 +1,11 @@
 # Typical Circuits：真实单模块开源板上的发现级基准
 
 SR 要覆盖各种单模块原理图，而 `kicad_replay_bench` 只冻结计划结构（检查数、NA 数），不看 SR 实际报了什么。
-本基准取 42 块 GitHub 上的开源 KiCad 6–10 板：33 块单功能小板（MCU 最小系统、USB-C 受电、
+本基准取 47 块 GitHub 上的开源 KiCad 6–10 板：33 块单功能小板（MCU 最小系统、USB-C 受电、
 buck/buck-boost、LDO、锂电充电与保护、I²C 传感器、电平转换、电机/舵机驱动、继电器与光耦、RS-485/CAN、
 运放前端、负载 ADC、音频功放、LED 恒流、以太网 PHY/控制器、USB-UART、定时电源开关），加 2026-10-19 补的
 9 块功率/隔离/多页板（230 VAC 反激 ×2、LCC 谐振无线充电、DRV8323 三相桥、16S BMS、隔离 I²C、理想二极管、
-PD 输入升压充电、I²S DAC），冷跑 SR，
+PD 输入升压充电、I²S DAC），再加 2026-10-26 补的 5 块（推挽隔离电源 ×2、PD 受电 + 升降压充电、外部看门狗 ×2），冷跑 SR，
 **逐条人工审读每个 FINDING 与 CANDIDATE**，按下面三类冻结在 `cases.json`：
 
 | 类别 | 含义 | 运行时状态 |
@@ -60,6 +60,36 @@ python3 -B evals/typical_circuits/run.py [--case <id>] [--show] [--sut <另一�
 - 仍缺：带 PFC/QR 控制器 + 同步整流控制器的离线电源（公开 KiCad 里没有）、独立看门狗板、SN6501 隔离 DC-DC；
   ULX3S、LibreSolar MPPT、etherkit Si5351 等好板是 KiCad 5 `.sch`，kicad-cli 10 仍打不开，需 GUI 转换后再收。
 
+## 扩充（typical-circuits-v3，2026-10-26）
+
+补 v2 记下的缺口。检索范围：GitHub 仓库与代码搜索（KiCad 文件 + 器件型号），以及 GitHub 之外的厂商参考设计与
+技术文章（Power Integrations DER 报告、ST SRK1001 评估板、SN6501 应用文章、MAX6369 看门狗应用笔记），只收许可证
+明确且不含 NC 条款、能用 kicad-cli 10 导出网表的板。按固定 commit 收 5 块，SR @5fa41d3 冷跑后逐条审读，
+新报出 83 条全部归 `expected`，另有 5 条误报修正后记为 `fixed`（suntastic 的跳线供电 3 条改报 CANDIDATE 后仍归 `expected`）：
+
+- **kxkm-bmu-v2**（GPL-3.0）：VPS8505 推挽隔离电源 + 隔离 I²C + INA237 电池监测。
+- **zenn-main-controller**（MIT）：SN6501 推挽隔离电源 + AMC1311 隔离放大器。真实断线 12 条：子页的层次标签
+  `HV_IN_+`、`OUTN/OUTP` 和踏板信号在根页没有接上。
+- **usb-pd-power-manager**（CERN-OHL-P-2.0）：HUSB238 PD 受电 + BQ25672 升降压充电 + TPS63070。
+- **rt-ihu**（BSD-2-Clause）：双 MCU 飞控，STWD100 外部看门狗 + 仲裁。`+1V2_SEC` 只由 U38 FPF2001 供电而 U38 值为 DNI；
+  `ARB_BATT` 是自定义电源符号，板上和连接器都没有来源，U11–U20、MAX14930 的 VDDA 脚和 U39 因此无供电。
+- **suntastic**（Apache-2.0）：TPL5010 看门狗定时器 + 负载开关的低功耗电源管理板。`GPIO_DONE` 全局标签只出现一次，
+  U9 ON 脚无驱动。
+
+修正的扫描误报（单元测试 `test_typical_circuits_v3.py`，变异 M722–M725）：
+
+- 三脚选择焊盘跳线（公共端 C，选 A/B）：馈电追溯只穿两端件，供电脚被报“所在轨无驱动”（FINDING）；
+  现在两路都算上游，改报“经跳线供电”的 CANDIDATE，核装配状态（suntastic JP16）。
+- NET-A02 网络名分裂：同一晶体管的端子名对（G/S、G/D、D/S、B/E、B/C、C/E，usb-pd `VLDO_VIN2_EN_G/_S`）和嵌在
+  一个词里的收发对（rt-ihu `PRI_DCAN1RX/TX`）不再算拼写分裂；`MOTOR_ENABLE/ENABEL` 这类真分裂仍报。
+- NET-A06 网络只有输入：RF 扼流圈等无源连接件（磁珠、保险丝、电感、跳线、NTC、电阻）的库脚类型为 input 时，
+  同样视作该网的馈入（rt-ihu PA 的 VCC1 经 L6/L24 供电）。
+
+未收：
+- 带 PFC/QR 控制器 + 同步整流控制器的离线电源仍没有许可证明确的 KiCad 源文件：TSAC-DCDC（UCC28740 + UCC24610）
+  仓库无许可证；DER 报告、SRK1001 评估板等厂商参考设计只有 PDF，且不授予再分发许可。
+- ULX3S、LibreSolar mppt-2420-hc 等 KiCad 5 `.sch` 板仍需 GUI 转换后再收。
+
 ## 覆盖与局限
 
 - 只测自动冷跑层的发现，不测计划、保证值核对、专家审查或报告。
@@ -111,3 +141,8 @@ python3 -B evals/typical_circuits/run.py [--case <id>] [--show] [--sut <另一�
 | ideal-diode | Ideal diode / reverse protection (4 ch) | 0 | 0 | 4 |
 | pd-liion-charger | USB-C PD input + boost + Li-ion charger (LTC3769 + LTC4000) | 5 | 0 | 1 |
 | pcm5102a-dac | I2S DAC (PCM5102A) | 0 | 0 | 0 |
+| kxkm-bmu-v2 | Isolated push-pull DC-DC (VPS8505) + isolated I2C + battery monitor (INA237) | 4 | 0 | 0 |
+| zenn-main-controller | Motor controller main board (SN6501 isolated supply + AMC1311) | 12 | 0 | 0 |
+| usb-pd-power-manager | USB-C PD sink + buck-boost charger (HUSB238 + BQ25672 + TPS63070) | 4 | 0 | 1 |
+| rt-ihu | Dual-MCU flight computer with external watchdog (STWD100) | 52 | 0 | 4 |
+| suntastic | Low-power board with watchdog timer (TPL5010) and load switches | 11 | 0 | 0 |

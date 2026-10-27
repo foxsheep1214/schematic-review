@@ -293,6 +293,41 @@
    "commit": "84c4329d53da9d030c35c1a20c9a45cb9a47afd2",
    "schematic": "GY-PCM5102A.kicad_sch",
    "license": "CERN-OHL-S-2.0"
+  },
+  {
+   "id": "kxkm-bmu-v2",
+   "repo": "https://github.com/KomplexKapharnaum/KXKM_Batterie_Parallelator",
+   "commit": "42cd56f0aa9ca66d7d77f07ebc21b65b8c23d188",
+   "schematic": "hardware/pcb-bmu-v2/BMU v2.kicad_sch",
+   "license": "GPL-3.0"
+  },
+  {
+   "id": "zenn-main-controller",
+   "repo": "https://github.com/rolfluc/Zenn",
+   "commit": "51ac27103c6ad18f9be3941e187a7ad498b75fc7",
+   "schematic": "MainController/MainController.kicad_sch",
+   "license": "MIT"
+  },
+  {
+   "id": "usb-pd-power-manager",
+   "repo": "https://github.com/flisboac/kicad-usb-pd-power-manager",
+   "commit": "d9a3df8f7c786e2cf9ca4c8c12eb74aa3b1ab28f",
+   "schematic": "toy-usb-pd-power-manager.kicad_sch",
+   "license": "CERN-OHL-P-2.0"
+  },
+  {
+   "id": "rt-ihu",
+   "repo": "https://github.com/zmetzing/rt-ihu",
+   "commit": "8a29f87793f9dd4466650ac40f71b6cf033a9f19",
+   "schematic": "pcb/rtihu.kicad_sch",
+   "license": "BSD-2-Clause"
+  },
+  {
+   "id": "suntastic",
+   "repo": "https://github.com/snorkman88/suntastic",
+   "commit": "8baa9c197a57f29aca4a1e1196b84ba201a9f9b5",
+   "schematic": "pcb/suntastic/suntastic.kicad_sch",
+   "license": "Apache-2.0"
   }
  ]
 }

@@ -164,3 +164,4 @@ M704–M714（2026-10-26，设计风险不记缺资料）守：四格与新增 I
 M715–M716（2026-10-26，钳位窗口归 PRO-E02）守：连接器信号线 TVS 不再出 PRO-C02 两侧行（M715，`test_plan_review.py`），钳位扫描以窗口类规则出行（M716，`test_electrical_safety.py`）；M50 随 F12 删去。
 M717–M720（2026-10-26，防护钳位只出 PRO-E02）守：跨开关节点或绕组的能量钳位不算防护钳位（M717，`test_public_flyback_boards.py`），输入轨上的绕组端不算开关节点（M718），防护钳位不出 PRO-C02（M719，`test_plan_review.py`），钳位行列出同网其他器件（M720，`test_electrical_safety.py`）。
 M721（2026-10-26，防护钳位不出 DEV-C05）守：防护钳位的工作电压与温度等级只在 PRO-E02 行上判（`test_fixed_device_rows.py`）。
+M722–M725（2026-10-26，典型电路扩充 v3）守：三脚选择跳线把馈电追溯接到两路电源（M722），同一晶体管的端子名对和词内嵌的收发对不算网络名拼写分裂（M723、M724），RF 扼流圈等无源连接件的 input 脚不让网络被读成只有输入（M725）（`test_typical_circuits_v3.py`）。

@@ -1,0 +1,4300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>/private/tmp/claude-501/-Users-skyfend--agents-skills-schematic-review/0312141f-b3ed-4a8b-b568-c3925f01b93e/scratchpad/boards/snorkman88_suntastic/pcb/suntastic/suntastic.kicad_sch</source>
+    <date>2026-10-26T21:38:22</date>
+    <tool>Eeschema 10.0.6</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>Suntastic board</title>
+        <company/>
+        <rev>1</rev>
+        <date>2024-02-07</date>
+        <source>suntastic.kicad_sch</source>
+        <comment number="1" value="An ultra low-power management board for meshtastic solar repeater devices.  "/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="2" name="/5W Solar panel input/" tstamps="/d7e9a640-ff81-456c-bdbb-c4d60fbd13c6/">
+      <title_block>
+        <title>5V/5W Max Solar panel input</title>
+        <company/>
+        <rev>1</rev>
+        <date>2024-02-07</date>
+        <source>solar_panel_input.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="3" name="/MPPT charger/" tstamps="/0be65f9d-b3fc-407f-86f4-ba5a551916f5/">
+      <title_block>
+        <title>5W Max - MPPT Charger</title>
+        <company/>
+        <rev>1</rev>
+        <date>2024-02-07</date>
+        <source>mppt_charger.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="4" name="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/">
+      <title_block>
+        <title>Supercapacitor bank input</title>
+        <company/>
+        <rev>1</rev>
+        <date>2024-02-07</date>
+        <source>supercapacitor_input.kicad_sch</source>
+        <comment number="1" value="However, the larger the capacitor, the longer it will take to reach 5.2V."/>
+        <comment number="2" value="There is no limit in the total capacitance of the bank. "/>
+        <comment number="3" value="The MPPT charger based on the SPV1040 can output up to 5.2V and 5W max. "/>
+        <comment number="4" value="The voltage tolerated by the supercapacitor bank should be AT LEAST 5.4V."/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="5" name="/Boost for UVLO circuit/" tstamps="/1f5aeedd-e761-4ddb-bd29-3783b4ba764d/">
+      <title_block>
+        <title>[DC-DC] boost converter for UVLO</title>
+        <company/>
+        <rev>1</rev>
+        <date>2024-02-07</date>
+        <source>boost_for_uvlo.kicad_sch</source>
+        <comment number="1" value="The start-up voltage of the IC should not be higher than 0.7V"/>
+        <comment number="2" value="converting it into a 5V. "/>
+        <comment number="3" value="This stage is in charge of taking the variable voltage on the supercapacitor and"/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="6" name="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/">
+      <title_block>
+        <title>UVLO circuit </title>
+        <company/>
+        <rev>1</rev>
+        <date>2024-02-07</date>
+        <source>uvlo_and_latch.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="7" name="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/">
+      <title_block>
+        <title>Load switch and output</title>
+        <company/>
+        <rev>1</rev>
+        <date>2024-02-07</date>
+        <source>load_switch_output.kicad_sch</source>
+        <comment number="1" value="This block is in charge of powering ON or OFF the load based on the status of the UVLO"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="8" name="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>wisblock_core_module.kicad_sch</source>
+        <comment number="1" value="Manufacturer Part-No: FBB04004-F40S1003K6M (female/socket)"/>
+        <comment number="2" value="There are two suppliers for the connectors, Panasonic and TXGA."/>
+        <comment number="3" value="The available GPIOs are routed to a pin header for future use"/>
+        <comment number="4" value="The WisBlock RAK4631 fits on this board via the WisConnector 40 pin female/header&#x9;"/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="9" name="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/">
+      <title_block>
+        <title>[DC-DC] Buck-boost converter for the main load</title>
+        <company/>
+        <rev/>
+        <date/>
+        <source>buck_boost_load.kicad_sch</source>
+        <comment number="1" value="has been found. It is for this reason that it's been decided to use a TPS63020"/>
+        <comment number="2" value="As of Feb, 2024; no buck-boost converter that features a start-up voltage less than 1.8V "/>
+        <comment number="3" value="output of the load switch."/>
+        <comment number="4" value="This part of the board contains the buck-boost converter that will be connected at the"/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="10" name="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>watch_dog_timer.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="FID1">
+      <value>Fiducial</value>
+      <footprint>Fiducial:Fiducial_1mm_Mask3mm</footprint>
+      <fields>
+        <field name="Footprint">Fiducial:Fiducial_1mm_Mask3mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Mechanical" part="Fiducial" description="Fiducial Marker"/>
+      <property name="Sheetname" value="suntastic"/>
+      <property name="Sheetfile" value="suntastic.kicad_sch"/>
+      <property name="ki_keywords" value="fiducial marker"/>
+      <property name="ki_fp_filters" value="Fiducial*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>70bf72bf-5b46-4813-8aee-bd93c6563f92</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FID2">
+      <value>Fiducial</value>
+      <footprint>Fiducial:Fiducial_1mm_Mask3mm</footprint>
+      <fields>
+        <field name="Footprint">Fiducial:Fiducial_1mm_Mask3mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Mechanical" part="Fiducial" description="Fiducial Marker"/>
+      <property name="Sheetname" value="suntastic"/>
+      <property name="Sheetfile" value="suntastic.kicad_sch"/>
+      <property name="ki_keywords" value="fiducial marker"/>
+      <property name="ki_fp_filters" value="Fiducial*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d3c79123-baec-4163-b73b-e10425237fa8</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FID3">
+      <value>Fiducial</value>
+      <footprint>Fiducial:Fiducial_1mm_Mask3mm</footprint>
+      <fields>
+        <field name="Footprint">Fiducial:Fiducial_1mm_Mask3mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Mechanical" part="Fiducial" description="Fiducial Marker"/>
+      <property name="Sheetname" value="suntastic"/>
+      <property name="Sheetfile" value="suntastic.kicad_sch"/>
+      <property name="ki_keywords" value="fiducial marker"/>
+      <property name="ki_fp_filters" value="Fiducial*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>06519ae8-c060-41b4-ab28-c42ba644c35f</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="H1">
+      <value>MountingHole</value>
+      <footprint>MountingHole:MountingHole_3mm_Pad</footprint>
+      <fields>
+        <field name="Footprint">MountingHole:MountingHole_3mm_Pad</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <property name="Sheetname" value="suntastic"/>
+      <property name="Sheetfile" value="suntastic.kicad_sch"/>
+      <property name="ki_keywords" value="mounting hole"/>
+      <property name="ki_fp_filters" value="MountingHole*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>caac09ec-0901-4228-b50b-b14500410da5</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="H2">
+      <value>MountingHole</value>
+      <footprint>MountingHole:MountingHole_3mm_Pad</footprint>
+      <fields>
+        <field name="Footprint">MountingHole:MountingHole_3mm_Pad</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <property name="Sheetname" value="suntastic"/>
+      <property name="Sheetfile" value="suntastic.kicad_sch"/>
+      <property name="ki_keywords" value="mounting hole"/>
+      <property name="ki_fp_filters" value="MountingHole*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a35b947e-c7e5-4486-9d03-cc38b0caa003</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="H3">
+      <value>MountingHole</value>
+      <footprint>MountingHole:MountingHole_3mm_Pad</footprint>
+      <fields>
+        <field name="Footprint">MountingHole:MountingHole_3mm_Pad</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <property name="Sheetname" value="suntastic"/>
+      <property name="Sheetfile" value="suntastic.kicad_sch"/>
+      <property name="ki_keywords" value="mounting hole"/>
+      <property name="ki_fp_filters" value="MountingHole*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>55bdffc1-9fbc-43a6-819e-d90b4a96330f</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="H4">
+      <value>MountingHole</value>
+      <footprint>MountingHole:MountingHole_3mm_Pad</footprint>
+      <fields>
+        <field name="Footprint">MountingHole:MountingHole_3mm_Pad</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <property name="Sheetname" value="suntastic"/>
+      <property name="Sheetfile" value="suntastic.kicad_sch"/>
+      <property name="ki_keywords" value="mounting hole"/>
+      <property name="ki_fp_filters" value="MountingHole*"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>96cf1c88-26a7-4082-9792-9e9278cf7526</tstamps>
+      <units>
+        <unit name="A">
+          <pins/>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J12">
+      <value>PV IN</value>
+      <footprint>TerminalBlock:TerminalBlock_bornier-2_P5.08mm</footprint>
+      <fields>
+        <field name="Footprint">TerminalBlock:TerminalBlock_bornier-2_P5.08mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="5W Solar panel input"/>
+      <property name="Sheetfile" value="solar_panel_input.kicad_sch"/>
+      <property name="ki_keywords" value="screw terminal"/>
+      <property name="ki_fp_filters" value="TerminalBlock*:*"/>
+      <sheetpath names="/5W Solar panel input/" tstamps="/d7e9a640-ff81-456c-bdbb-c4d60fbd13c6/"/>
+      <tstamps>32d2deb4-e040-4c52-8a63-509ae3766737</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP31">
+      <value>Jumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="Jumper_2_Open" description="Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="5W Solar panel input"/>
+      <property name="Sheetfile" value="solar_panel_input.kicad_sch"/>
+      <property name="ki_keywords" value="Jumper SPST"/>
+      <property name="ki_fp_filters" value="Jumper* TestPoint*2Pads* TestPoint*Bridge*"/>
+      <sheetpath names="/5W Solar panel input/" tstamps="/d7e9a640-ff81-456c-bdbb-c4d60fbd13c6/"/>
+      <tstamps>8ec7ec65-ada8-4ec9-a2e6-83fdd65bab1a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP10">
+      <value>PV_VIN</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="5W Solar panel input"/>
+      <property name="Sheetfile" value="solar_panel_input.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/5W Solar panel input/" tstamps="/d7e9a640-ff81-456c-bdbb-c4d60fbd13c6/"/>
+      <tstamps>b05ca5f4-99cb-4e70-a52b-61c3d230fabe</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP11">
+      <value>PV_GND</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="5W Solar panel input"/>
+      <property name="Sheetfile" value="solar_panel_input.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/5W Solar panel input/" tstamps="/d7e9a640-ff81-456c-bdbb-c4d60fbd13c6/"/>
+      <tstamps>b487311d-06e3-4212-97b3-794f4228607b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J10">
+      <value>OUT TO EXT MPPT</value>
+      <footprint>TerminalBlock:TerminalBlock_bornier-2_P5.08mm</footprint>
+      <fields>
+        <field name="Footprint">TerminalBlock:TerminalBlock_bornier-2_P5.08mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="MPPT charger"/>
+      <property name="Sheetfile" value="mppt_charger.kicad_sch"/>
+      <property name="ki_keywords" value="screw terminal"/>
+      <property name="ki_fp_filters" value="TerminalBlock*:*"/>
+      <sheetpath names="/MPPT charger/" tstamps="/0be65f9d-b3fc-407f-86f4-ba5a551916f5/"/>
+      <tstamps>de261d83-1b35-4a62-ab66-86b9883c7fd7</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J11">
+      <value>INPUT FROM EXT MPPT</value>
+      <footprint>TerminalBlock:TerminalBlock_bornier-2_P5.08mm</footprint>
+      <fields>
+        <field name="Footprint">TerminalBlock:TerminalBlock_bornier-2_P5.08mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="MPPT charger"/>
+      <property name="Sheetfile" value="mppt_charger.kicad_sch"/>
+      <property name="ki_keywords" value="screw terminal"/>
+      <property name="ki_fp_filters" value="TerminalBlock*:*"/>
+      <sheetpath names="/MPPT charger/" tstamps="/0be65f9d-b3fc-407f-86f4-ba5a551916f5/"/>
+      <tstamps>002314c9-fbd5-48f7-b94d-b9259403751e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP29">
+      <value>Jumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="Jumper_2_Open" description="Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="MPPT charger"/>
+      <property name="Sheetfile" value="mppt_charger.kicad_sch"/>
+      <property name="ki_keywords" value="Jumper SPST"/>
+      <property name="ki_fp_filters" value="Jumper* TestPoint*2Pads* TestPoint*Bridge*"/>
+      <sheetpath names="/MPPT charger/" tstamps="/0be65f9d-b3fc-407f-86f4-ba5a551916f5/"/>
+      <tstamps>23f142cd-255f-4f7c-ba4a-fe897a75093d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP30">
+      <value>Jumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="Jumper_2_Open" description="Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="MPPT charger"/>
+      <property name="Sheetfile" value="mppt_charger.kicad_sch"/>
+      <property name="ki_keywords" value="Jumper SPST"/>
+      <property name="ki_fp_filters" value="Jumper* TestPoint*2Pads* TestPoint*Bridge*"/>
+      <sheetpath names="/MPPT charger/" tstamps="/0be65f9d-b3fc-407f-86f4-ba5a551916f5/"/>
+      <tstamps>93fa1efc-9ac7-4861-98d0-ae4a7f2a9a95</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP6">
+      <value>PV_TO_MPPT</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="MPPT charger"/>
+      <property name="Sheetfile" value="mppt_charger.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/MPPT charger/" tstamps="/0be65f9d-b3fc-407f-86f4-ba5a551916f5/"/>
+      <tstamps>e4c03049-3978-4d79-818e-d0bfd6e725d4</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP7">
+      <value>GND_TO_MPPT</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="MPPT charger"/>
+      <property name="Sheetfile" value="mppt_charger.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/MPPT charger/" tstamps="/0be65f9d-b3fc-407f-86f4-ba5a551916f5/"/>
+      <tstamps>4563ea19-1e82-48f4-8044-a798e8508bb9</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP8">
+      <value>OUT_FROM_MPPT</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="MPPT charger"/>
+      <property name="Sheetfile" value="mppt_charger.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/MPPT charger/" tstamps="/0be65f9d-b3fc-407f-86f4-ba5a551916f5/"/>
+      <tstamps>2408177a-53c0-410f-aa4b-2925093accb7</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP9">
+      <value>GND_FROM_MPPT</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="MPPT charger"/>
+      <property name="Sheetfile" value="mppt_charger.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/MPPT charger/" tstamps="/0be65f9d-b3fc-407f-86f4-ba5a551916f5/"/>
+      <tstamps>bef8e5fd-1803-46b5-8538-6a6657f8c041</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D1">
+      <value>PMEG10020ELR</value>
+      <footprint>Diode_SMD:D_SOD-123F</footprint>
+      <datasheet>https://assets.nexperia.com/documents/data-sheet/PMEG10020ELR.pdf</datasheet>
+      <fields>
+        <field name="Footprint">Diode_SMD:D_SOD-123F</field>
+        <field name="Datasheet">https://assets.nexperia.com/documents/data-sheet/PMEG10020ELR.pdf</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="D_Schottky" description="Schottky diode"/>
+      <property name="Sheetname" value="Supercapacitor input"/>
+      <property name="Sheetfile" value="supercapacitor_input.kicad_sch"/>
+      <property name="ki_keywords" value="diode Schottky"/>
+      <property name="ki_fp_filters" value="TO-???* *_Diode_* *SingleDiode* D_*"/>
+      <sheetpath names="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/"/>
+      <tstamps>64e7e79d-8669-4332-95d7-a96821120256</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J3">
+      <value>Supercap IN</value>
+      <footprint>TerminalBlock:TerminalBlock_bornier-2_P5.08mm</footprint>
+      <fields>
+        <field name="Footprint">TerminalBlock:TerminalBlock_bornier-2_P5.08mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="Supercapacitor input"/>
+      <property name="Sheetfile" value="supercapacitor_input.kicad_sch"/>
+      <property name="ki_keywords" value="screw terminal"/>
+      <property name="ki_fp_filters" value="TerminalBlock*:*"/>
+      <sheetpath names="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/"/>
+      <tstamps>ae09d3df-62ab-4a5e-a273-463e65395ad5</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP18">
+      <value>Jumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="Jumper_2_Open" description="Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="Supercapacitor input"/>
+      <property name="Sheetfile" value="supercapacitor_input.kicad_sch"/>
+      <property name="ki_keywords" value="Jumper SPST"/>
+      <property name="ki_fp_filters" value="Jumper* TestPoint*2Pads* TestPoint*Bridge*"/>
+      <sheetpath names="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/"/>
+      <tstamps>1f516216-83d6-4b4c-9e3f-16507889a8db</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP19">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value="Supercapacitor input"/>
+      <property name="Sheetfile" value="supercapacitor_input.kicad_sch"/>
+      <property name="ki_keywords" value="Solder Jumper SPDT"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/"/>
+      <tstamps>ee4b6bf7-b233-4ce4-9183-40f493614e52</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TH1">
+      <value>Thermistor_PTC</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="Thermistor_PTC" description="Temperature dependent resistor, positive temperature coefficient"/>
+      <property name="Sheetname" value="Supercapacitor input"/>
+      <property name="Sheetfile" value="supercapacitor_input.kicad_sch"/>
+      <property name="ki_keywords" value="resistor PTC thermistor sensor RTD"/>
+      <property name="ki_fp_filters" value="*PTC* *Thermistor* PIN?ARRAY* bornier* *Terminal?Block* R_*"/>
+      <sheetpath names="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/"/>
+      <tstamps>aef63ab2-af05-4f8f-b7ee-c13b3d1d1caf</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP19">
+      <value>SC_VIN</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Supercapacitor input"/>
+      <property name="Sheetfile" value="supercapacitor_input.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/"/>
+      <tstamps>e6e45307-a0ad-4784-9c0b-16f16ec9f5e0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP20">
+      <value>SC_GND</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Supercapacitor input"/>
+      <property name="Sheetfile" value="supercapacitor_input.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/"/>
+      <tstamps>4f245ff9-fb22-4a37-92c0-edc1d5eea727</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP21">
+      <value>TestPoint</value>
+      <footprint>TestPoint:TestPoint_Bridge_Pitch5.08mm_Drill1.3mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_Bridge_Pitch5.08mm_Drill1.3mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Supercapacitor input"/>
+      <property name="Sheetfile" value="supercapacitor_input.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/"/>
+      <tstamps>31f792d5-baf1-41a5-899d-20805db2bcf0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP22">
+      <value>TestPoint</value>
+      <footprint>TestPoint:TestPoint_Bridge_Pitch5.08mm_Drill1.3mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_Bridge_Pitch5.08mm_Drill1.3mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Supercapacitor input"/>
+      <property name="Sheetfile" value="supercapacitor_input.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Supercapacitor input/" tstamps="/70576ca8-d50a-4f6d-b4d0-36474c2d5281/"/>
+      <tstamps>331c84f9-c2ba-4374-b88f-327a4511fed1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J2">
+      <value>Pololu U1V10F5</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical</footprint>
+      <datasheet>https://www.pololu.com/product/2564/resources</datasheet>
+      <fields>
+        <field name="Footprint">Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical</field>
+        <field name="Datasheet">https://www.pololu.com/product/2564/resources</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector_Generic" part="Conn_01x03" description="Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="Boost for UVLO circuit"/>
+      <property name="Sheetfile" value="boost_for_uvlo.kicad_sch"/>
+      <property name="ki_keywords" value="connector"/>
+      <property name="ki_fp_filters" value="Connector*:*_1x??_*"/>
+      <sheetpath names="/Boost for UVLO circuit/" tstamps="/1f5aeedd-e761-4ddb-bd29-3783b4ba764d/"/>
+      <tstamps>5f12d9cd-f453-4b40-a072-81d0f2fdf546</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C1">
+      <value>2.2uF</value>
+      <footprint>Capacitor_SMD:CP_Elec_4x5.4</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:CP_Elec_4x5.4</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>63f3a120-ca50-49bc-97dc-27d786edd59f</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C2">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>833e59cd-2e2c-4c34-a787-ac72a98cc604</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C4">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>f1bbab95-9c1f-4827-acbf-1df6c8d9d3fc</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C5">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>e2eb3910-c51c-4383-817f-fe957def3d23</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C6">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>074a0326-0aec-439b-aa6c-53564bc26889</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C7">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>4b30e3f5-3ac2-4188-84a3-1303a07dee19</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C8">
+      <value>4.7uF</value>
+      <footprint>Capacitor_SMD:CP_Elec_4x5.4</footprint>
+      <datasheet>https://industrial.panasonic.com/cdbs/www-data/pdf/AAB8000/AAB8000C193.pdf</datasheet>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:CP_Elec_4x5.4</field>
+        <field name="Datasheet">https://industrial.panasonic.com/cdbs/www-data/pdf/AAB8000/AAB8000C193.pdf</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>225fc077-5009-4794-828f-7cc9b767deb0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C9">
+      <value>2.2uF</value>
+      <footprint>Capacitor_SMD:CP_Elec_4x5.4</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:CP_Elec_4x5.4</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>27c5ebf3-3183-466c-b728-6089b0564466</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C10">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>04fb19e5-aadd-49ca-8b8e-88f24b433273</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C11">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:CP_Elec_4x4.5</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:CP_Elec_4x4.5</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>604e3632-7f68-4788-859c-265eddcde3b1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C12">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>51ed1cbb-2681-4856-9ff2-f5cdd2c7744b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C13">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <datasheet>https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</datasheet>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet">https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>a7117c07-84b0-466f-80a9-07ba58e140b8</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C14">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>ad8df487-fe8e-47bd-9f26-209de41264bb</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C15">
+      <value>4.7uF</value>
+      <footprint>Capacitor_SMD:CP_Elec_4x5.4</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:CP_Elec_4x5.4</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>7d347022-a59a-40c9-9733-42089cd34e20</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C16">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>33cf6c26-9343-4abf-9ffe-be472602577a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C23">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <datasheet>https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</datasheet>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet">https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>8b3ec0fa-9268-43f3-8024-6b6099930d22</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP1">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>d31961a7-b5c5-475b-a511-3bd8802261d2</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP2">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>b0852a6a-d6b0-4632-8922-fdcc950a8752</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP3">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>475e4943-1162-4eaa-84b6-cf9e2f0f86bf</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP4">
+      <value>SolderJumper_2_Bridged</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Bridged" description="Solder Jumper, 2-pole, closed/bridged"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Bridged*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>384e8e7c-970a-4550-a7a5-9baceaff74cb</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP5">
+      <value>SolderJumper_2_Bridged</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Bridged" description="Solder Jumper, 2-pole, closed/bridged"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Bridged*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>f9908bb7-4553-453a-85e2-526b741a0dae</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP6">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>058835eb-b7aa-468c-82f7-cdf0fc722835</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP7">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>2e86e7be-320c-42f9-9a4b-b9c61f94e1d9</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP8">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>a3d98c4b-7fd2-42c6-ac58-2c2da96feb0d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP9">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="Solder Jumper SPDT"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>68df34c4-7119-47e1-bfd8-13d1dda4c2db</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP10">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>4af63d7e-f72a-4635-a916-b8b287c13722</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP11">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>d449dfb2-0940-4e6a-8d3f-5ffe11c2564c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP12">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="Solder Jumper SPDT"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>5d7c99fa-d497-42e6-ad8e-f0198d79d9a3</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP13">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>b2f81325-d251-481a-b4c6-e921cc6ac13b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP14">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="Solder Jumper SPDT"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>b8ff586e-50c3-4f45-a701-cb3a5474fbc0</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R1">
+      <value>3.3M</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>cf4cc261-cdeb-4ce2-87a2-472e95f13063</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R2">
+      <value>9.3M</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>5cfffbcc-036c-4c7a-b479-241b3a63da3e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R3">
+      <value>3.9M</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>9bc50975-bb12-4b04-b5b9-8ea1cf9b1baa</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP1">
+      <value>Vref_high</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_Pad_D1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>c222216a-c9ad-4d4d-b731-138e8f83485d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP2">
+      <value>Vref_low</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_Pad_D1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>431eab9d-101a-432c-8347-82bd21837f1d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U1">
+      <value>TLV3691IDCKR</value>
+      <footprint>Package_TO_SOT_SMD:SOT-353_SC-70-5_Handsoldering</footprint>
+      <datasheet>https://www.ti.com/lit/ds/symlink/tlv3691.pdf?ts=1706791844150&amp;ref_url=https%253A%252F%252Fwww.google.com%252F</datasheet>
+      <description>Nanopower, small-size, single comparator</description>
+      <fields>
+        <field name="MF">Texas Instruments</field>
+        <field name="Package">SC70-5 Texas Instruments</field>
+        <field name="Price">None</field>
+        <field name="SnapEDA_Link">https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=snap</field>
+        <field name="MP">TLV3691IDCKR</field>
+        <field name="Availability">In Stock</field>
+        <field name="Check_prices">https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=eda</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-353_SC-70-5_Handsoldering</field>
+        <field name="Datasheet">https://www.ti.com/lit/ds/symlink/tlv3691.pdf?ts=1706791844150&amp;ref_url=https%253A%252F%252Fwww.google.com%252F</field>
+        <field name="Description">Nanopower, small-size, single comparator</field>
+      </fields>
+      <libsource lib="TLV3691IDCKR" part="TLV3691IDCKR" description="Nanopower, small-size, single comparator"/>
+      <property name="MF" value="Texas Instruments"/>
+      <property name="Package" value="SC70-5 Texas Instruments"/>
+      <property name="Price" value="None"/>
+      <property name="SnapEDA_Link" value="https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=snap"/>
+      <property name="MP" value="TLV3691IDCKR"/>
+      <property name="Availability" value="In Stock"/>
+      <property name="Check_prices" value="https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=eda"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>67262557-b0fa-4b1b-9bb7-fe7610cb59be</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="5"/>
+            <pin num="4"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U2">
+      <value>REF35102QDBVR</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6_Handsoldering</footprint>
+      <datasheet>https://www.ti.com/lit/ds/symlink/ref35.pdf?ts=1707296755462&amp;ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FREF35%252Fpart-details%252FREF35180QDBVR%253Futm_source%253Dgoogle%2526utm_medium%253Dcpc%2526utm_campaign%253Docb-tistore-null-app_opn_en-cpc-storeic-google-eu_pur%2526utm_content%253DDevice%2526ds_k%253DREF35180QDBVR%2526DCM%253Dyes%2526gad_source%253D1%2526gclid%253DCjwKCAiA8YyuBhBSEiwA5R3-E6wJNGPWvUkPrkGbjkQybax3fhjjFDEVrHfRR9ZkQBEHkRxoK8YN3BoCvHYQAvD_BwE%2526gclsrc%253Daw.ds</datasheet>
+      <fields>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-6_Handsoldering</field>
+        <field name="Datasheet">https://www.ti.com/lit/ds/symlink/ref35.pdf?ts=1707296755462&amp;ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FREF35%252Fpart-details%252FREF35180QDBVR%253Futm_source%253Dgoogle%2526utm_medium%253Dcpc%2526utm_campaign%253Docb-tistore-null-app_opn_en-cpc-storeic-google-eu_pur%2526utm_content%253DDevice%2526ds_k%253DREF35180QDBVR%2526DCM%253Dyes%2526gad_source%253D1%2526gclid%253DCjwKCAiA8YyuBhBSEiwA5R3-E6wJNGPWvUkPrkGbjkQybax3fhjjFDEVrHfRR9ZkQBEHkRxoK8YN3BoCvHYQAvD_BwE%2526gclsrc%253Daw.ds</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="ref35" part="PREF35125QDBVR" description=""/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="PREF35125QDBVR"/>
+      <property name="ki_fp_filters" value="SOT23_DBV_TEX SOT23_DBV_TEX-M SOT23_DBV_TEX-L"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>21546506-6b3f-4b75-8852-3446f660cb4f</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+            <pin num="6"/>
+            <pin num="5"/>
+            <pin num="4"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U3">
+      <value>REF35409QDBVR</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6_Handsoldering</footprint>
+      <datasheet>https://www.ti.com/lit/ds/symlink/ref35.pdf?ts=1707296755462&amp;ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FREF35%252Fpart-details%252FREF35180QDBVR%253Futm_source%253Dgoogle%2526utm_medium%253Dcpc%2526utm_campaign%253Docb-tistore-null-app_opn_en-cpc-storeic-google-eu_pur%2526utm_content%253DDevice%2526ds_k%253DREF35180QDBVR%2526DCM%253Dyes%2526gad_source%253D1%2526gclid%253DCjwKCAiA8YyuBhBSEiwA5R3-E6wJNGPWvUkPrkGbjkQybax3fhjjFDEVrHfRR9ZkQBEHkRxoK8YN3BoCvHYQAvD_BwE%2526gclsrc%253Daw.ds</datasheet>
+      <fields>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-6_Handsoldering</field>
+        <field name="Datasheet">https://www.ti.com/lit/ds/symlink/ref35.pdf?ts=1707296755462&amp;ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FREF35%252Fpart-details%252FREF35180QDBVR%253Futm_source%253Dgoogle%2526utm_medium%253Dcpc%2526utm_campaign%253Docb-tistore-null-app_opn_en-cpc-storeic-google-eu_pur%2526utm_content%253DDevice%2526ds_k%253DREF35180QDBVR%2526DCM%253Dyes%2526gad_source%253D1%2526gclid%253DCjwKCAiA8YyuBhBSEiwA5R3-E6wJNGPWvUkPrkGbjkQybax3fhjjFDEVrHfRR9ZkQBEHkRxoK8YN3BoCvHYQAvD_BwE%2526gclsrc%253Daw.ds</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="ref35" part="PREF35125QDBVR" description=""/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="PREF35125QDBVR"/>
+      <property name="ki_fp_filters" value="SOT23_DBV_TEX SOT23_DBV_TEX-M SOT23_DBV_TEX-L"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>8c8355df-6019-404a-a906-2154612ebb1f</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+            <pin num="6"/>
+            <pin num="5"/>
+            <pin num="4"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U4">
+      <value>TLV3691IDCKR</value>
+      <footprint>Package_TO_SOT_SMD:SOT-353_SC-70-5_Handsoldering</footprint>
+      <datasheet>https://www.ti.com/lit/ds/symlink/tlv3691.pdf?ts=1706791844150&amp;ref_url=https%253A%252F%252Fwww.google.com%252F</datasheet>
+      <description>Nanopower, small-size, single comparator</description>
+      <fields>
+        <field name="MF">Texas Instruments</field>
+        <field name="Package">SC70-5 Texas Instruments</field>
+        <field name="Price">None</field>
+        <field name="SnapEDA_Link">https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=snap</field>
+        <field name="MP">TLV3691IDCKR</field>
+        <field name="Availability">In Stock</field>
+        <field name="Check_prices">https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=eda</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-353_SC-70-5_Handsoldering</field>
+        <field name="Datasheet">https://www.ti.com/lit/ds/symlink/tlv3691.pdf?ts=1706791844150&amp;ref_url=https%253A%252F%252Fwww.google.com%252F</field>
+        <field name="Description">Nanopower, small-size, single comparator</field>
+      </fields>
+      <libsource lib="TLV3691IDCKR" part="TLV3691IDCKR" description="Nanopower, small-size, single comparator"/>
+      <property name="MF" value="Texas Instruments"/>
+      <property name="Package" value="SC70-5 Texas Instruments"/>
+      <property name="Price" value="None"/>
+      <property name="SnapEDA_Link" value="https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=snap"/>
+      <property name="MP" value="TLV3691IDCKR"/>
+      <property name="Availability" value="In Stock"/>
+      <property name="Check_prices" value="https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=eda"/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>6cd4190f-376d-4c10-b327-88c0e0121af2</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="5"/>
+            <pin num="4"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U5">
+      <value>TC7WH02FU_LJCT</value>
+      <footprint>Package_SO:TSSOP-8_3x3mm_P0.65mm</footprint>
+      <datasheet>https://toshiba.semicon-storage.com/info/TC7WH02FU_datasheet_en_20200205.pdf?did=20119&amp;prodName=TC7WH02FU</datasheet>
+      <description>Dual 2-Input NOR Gate</description>
+      <fields>
+        <field name="Footprint">Package_SO:TSSOP-8_3x3mm_P0.65mm</field>
+        <field name="Datasheet">https://toshiba.semicon-storage.com/info/TC7WH02FU_datasheet_en_20200205.pdf?did=20119&amp;prodName=TC7WH02FU</field>
+        <field name="Description">Dual 2-Input NOR Gate</field>
+      </fields>
+      <libsource lib="TC7WH02FU" part="TC7WH02FU_LJCT" description=""/>
+      <property name="Sheetname" value="UVLO with latched output"/>
+      <property name="Sheetfile" value="uvlo_and_latch.kicad_sch"/>
+      <property name="ki_keywords" value="TC7WH02FU,LJ(CT"/>
+      <property name="ki_fp_filters" value="SM8_TOS SM8_TOS-M SM8_TOS-L"/>
+      <sheetpath names="/UVLO with latched output/" tstamps="/49b74624-bdf8-42ea-a5aa-f04e40ea326b/"/>
+      <tstamps>a0712b94-9925-4175-922d-92e2e81ffa0f</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="5"/>
+            <pin num="6"/>
+            <pin num="8"/>
+            <pin num="7"/>
+            <pin num="3"/>
+            <pin num="4"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C24">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="Load switch and output"/>
+      <property name="Sheetfile" value="load_switch_output.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/"/>
+      <tstamps>c03390c1-6e45-42d9-b4ed-72cd4e1641d9</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C25">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:CP_Elec_4x4.5</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:CP_Elec_4x4.5</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="Load switch and output"/>
+      <property name="Sheetfile" value="load_switch_output.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/"/>
+      <tstamps>4708a59d-148c-49de-b623-c9b3ec263d3a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP15">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="Load switch and output"/>
+      <property name="Sheetfile" value="load_switch_output.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/"/>
+      <tstamps>d2e756f5-3934-46bb-8915-7d6c42b53bb1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP16">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value="Load switch and output"/>
+      <property name="Sheetfile" value="load_switch_output.kicad_sch"/>
+      <property name="ki_keywords" value="Solder Jumper SPDT"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/"/>
+      <tstamps>eedd59fc-1c9c-4501-8b2c-fac85e65dc11</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP21">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="Load switch and output"/>
+      <property name="Sheetfile" value="load_switch_output.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/"/>
+      <tstamps>c102bf22-c0fa-43fb-9fbe-d46a17597d8f</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP27">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="Load switch and output"/>
+      <property name="Sheetfile" value="load_switch_output.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/"/>
+      <tstamps>fc9b23b1-04ff-4d34-9665-10a1cb1a7b54</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP3">
+      <value>Vout_switch</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_Pad_D1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Load switch and output"/>
+      <property name="Sheetfile" value="load_switch_output.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/"/>
+      <tstamps>0403e51c-9fdc-4ffa-bb34-d511591b36e7</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U6">
+      <value>TPS22917DBV</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6</footprint>
+      <datasheet>http://www.ti.com/lit/ds/symlink/tps22917.pdf</datasheet>
+      <fields>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-6</field>
+        <field name="Datasheet">http://www.ti.com/lit/ds/symlink/tps22917.pdf</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Power_Management" part="TPS22917DBV" description="1V to 5.5V, 2A, 80mΩ Ultra-Low Leakage Load Switch, SOT23-6"/>
+      <property name="Sheetname" value="Load switch and output"/>
+      <property name="Sheetfile" value="load_switch_output.kicad_sch"/>
+      <property name="ki_keywords" value="high-side power distribution switch"/>
+      <property name="ki_fp_filters" value="SOT?23*"/>
+      <sheetpath names="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/"/>
+      <tstamps>027c8af6-a453-4d95-9384-f8e83ccf1b17</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="4"/>
+            <pin num="3"/>
+            <pin num="2"/>
+            <pin num="6"/>
+            <pin num="5"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U10">
+      <value>TC7WH08FK_LJCT</value>
+      <footprint>Package_SO:TSSOP-8_3x3mm_P0.65mm</footprint>
+      <datasheet>TC7WH08FK_LJCT</datasheet>
+      <fields>
+        <field name="Footprint">Package_SO:TSSOP-8_3x3mm_P0.65mm</field>
+        <field name="Datasheet">TC7WH08FK_LJCT</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="TC7WH08FK" part="TC7WH08FK_LJCT" description=""/>
+      <property name="Sheetname" value="Load switch and output"/>
+      <property name="Sheetfile" value="load_switch_output.kicad_sch"/>
+      <property name="ki_keywords" value="TC7WH08FK,LJ(CT"/>
+      <property name="ki_fp_filters" value="US8_TOS US8_TOS-M US8_TOS-L"/>
+      <sheetpath names="/Load switch and output/" tstamps="/18707a27-b221-4259-b1c0-1b578b6ae71d/"/>
+      <tstamps>3731566a-4366-4bcb-8b05-49a602aa3417</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="5"/>
+            <pin num="6"/>
+            <pin num="8"/>
+            <pin num="7"/>
+            <pin num="3"/>
+            <pin num="4"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C17">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>f42f8ff7-1623-4bf2-a4ec-37dbe241f5d6</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C18">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>66608527-68c0-41c4-bd28-3994ba24cb0a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FB1">
+      <value>FerriteBead</value>
+      <footprint>Inductor_SMD:L_0603_1608Metric_Pad1.05x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Inductor_SMD:L_0603_1608Metric_Pad1.05x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="FerriteBead" description="Ferrite bead"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="L ferrite bead inductor filter"/>
+      <property name="ki_fp_filters" value="Inductor_* L_* *Ferrite*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>cb846302-12d7-444d-9490-81ca18e7da8b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FB2">
+      <value>FerriteBead</value>
+      <footprint>Inductor_SMD:L_0603_1608Metric_Pad1.05x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Inductor_SMD:L_0603_1608Metric_Pad1.05x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="FerriteBead" description="Ferrite bead"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="L ferrite bead inductor filter"/>
+      <property name="ki_fp_filters" value="Inductor_* L_* *Ferrite*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>6a922784-2a77-4b53-9921-fdc7a547013b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J4">
+      <value>FBB04004-F40S1003K6M</value>
+      <footprint>FBB04004F40S1003K6M</footprint>
+      <datasheet>https://tupian.txga.com/serials-attach/FBB04004-F/Drawing-FBB04004-F.pdf</datasheet>
+      <fields>
+        <field name="Height">0.95</field>
+        <field name="Manufacturer_Name">TXGA</field>
+        <field name="Manufacturer_Part_Number">FBB04004-F40S1003K6M</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+        <field name="Footprint">FBB04004F40S1003K6M</field>
+        <field name="Datasheet">https://tupian.txga.com/serials-attach/FBB04004-F/Drawing-FBB04004-F.pdf</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="FBB04004-F40S1003K6M" part="FBB04004-F40S1003K6M" description="Mezzanine Connectors (Board to Board) SMD RoHS 40 pos"/>
+      <property name="Height" value="0.95"/>
+      <property name="Manufacturer_Name" value="TXGA"/>
+      <property name="Manufacturer_Part_Number" value="FBB04004-F40S1003K6M"/>
+      <property name="Mouser Part Number" value=""/>
+      <property name="Mouser Price/Stock" value=""/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>fcf7fecc-4b5d-43c4-9ad7-ff2e3e35fec8</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="MP2"/>
+            <pin num="MP1"/>
+            <pin num="2"/>
+            <pin num="1"/>
+            <pin num="4"/>
+            <pin num="3"/>
+            <pin num="6"/>
+            <pin num="5"/>
+            <pin num="8"/>
+            <pin num="7"/>
+            <pin num="10"/>
+            <pin num="9"/>
+            <pin num="12"/>
+            <pin num="11"/>
+            <pin num="14"/>
+            <pin num="13"/>
+            <pin num="16"/>
+            <pin num="15"/>
+            <pin num="18"/>
+            <pin num="17"/>
+            <pin num="20"/>
+            <pin num="19"/>
+            <pin num="22"/>
+            <pin num="21"/>
+            <pin num="24"/>
+            <pin num="23"/>
+            <pin num="26"/>
+            <pin num="25"/>
+            <pin num="28"/>
+            <pin num="27"/>
+            <pin num="30"/>
+            <pin num="29"/>
+            <pin num="32"/>
+            <pin num="31"/>
+            <pin num="34"/>
+            <pin num="33"/>
+            <pin num="36"/>
+            <pin num="35"/>
+            <pin num="38"/>
+            <pin num="37"/>
+            <pin num="40"/>
+            <pin num="39"/>
+            <pin num="MP4"/>
+            <pin num="MP3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J7">
+      <value>Conn_01x04_Pin</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical</footprint>
+      <fields>
+        <field name="Footprint">Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x04_Pin" description="Generic connector, single row, 01x04, script generated"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="connector"/>
+      <property name="ki_fp_filters" value="Connector*:*_1x??_*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>fb30d8d9-cc11-4f64-b0f2-e7f45087f2d4</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+            <pin num="4"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J8">
+      <value>Conn_01x04_Pin</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical</footprint>
+      <fields>
+        <field name="Footprint">Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x04_Pin" description="Generic connector, single row, 01x04, script generated"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="connector"/>
+      <property name="ki_fp_filters" value="Connector*:*_1x??_*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>b6a939fc-f5fb-40a1-8797-428f18e71f47</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+            <pin num="4"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J9">
+      <value>Conn_01x08_Pin</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical</footprint>
+      <fields>
+        <field name="Footprint">Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x08_Pin" description="Generic connector, single row, 01x08, script generated"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="connector"/>
+      <property name="ki_fp_filters" value="Connector*:*_1x??_*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>e768b956-627f-4d53-a464-80a245b49d30</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+            <pin num="4"/>
+            <pin num="5"/>
+            <pin num="6"/>
+            <pin num="7"/>
+            <pin num="8"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP17">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>682e2141-17e7-4ffb-a500-4bc73bde88e1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP20">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="Solder Jumper SPDT"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>8d46a7c9-3f17-4b3a-855d-e6ee823e205f</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP25">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="Solder Jumper SPDT"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>c8923306-214d-4435-a761-b7165d70ce5e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP26">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>2028c885-10b2-4f59-99db-685de3933b28</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R5">
+      <value>5.6M</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>2d4f575d-399f-4e3e-a3ec-73233137687c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R6">
+      <value>9.3M</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>08b014cf-95a1-4939-9a90-e86f9effe7bc</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP4">
+      <value>LED2</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_Pad_D1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>5368045a-a7e2-4a1d-a142-dc0e08d64124</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP5">
+      <value>LED1</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_Pad_D1.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="WisBlock Core Module - RAK4631"/>
+      <property name="Sheetfile" value="wisblock_core_module.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/WisBlock Core Module - RAK4631/" tstamps="/6649cb35-9eb9-427a-adc1-370521538cf9/"/>
+      <tstamps>fd0fddef-01ce-404a-80b2-ffe90bac7b33</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C3">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <datasheet>https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</datasheet>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet">https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>b2cf259f-693e-4145-ade6-9b3343b3d605</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C19">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <datasheet>https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</datasheet>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet">https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>a653b7e2-de88-4ba9-a423-d88a5d2c4f41</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C20">
+      <value>10u</value>
+      <footprint>Capacitor_SMD:CP_Elec_4x4.5</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:CP_Elec_4x4.5</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>0b870c96-b1ed-49fc-b1a6-7273fb9b6dc5</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C22">
+      <value>10u</value>
+      <footprint>Capacitor_SMD:CP_Elec_4x4.5</footprint>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:CP_Elec_4x4.5</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="CP_*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>28ad399e-328b-4484-89d9-a0d6a7b199ed</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FB4">
+      <value>FerriteBead</value>
+      <footprint>Inductor_SMD:L_0603_1608Metric_Pad1.05x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Inductor_SMD:L_0603_1608Metric_Pad1.05x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="FerriteBead" description="Ferrite bead"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="L ferrite bead inductor filter"/>
+      <property name="ki_fp_filters" value="Inductor_* L_* *Ferrite*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>c01a58e9-2654-40dd-84f3-efc1f1885606</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="FB5">
+      <value>FerriteBead</value>
+      <footprint>Inductor_SMD:L_0603_1608Metric_Pad1.05x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Inductor_SMD:L_0603_1608Metric_Pad1.05x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="FerriteBead" description="Ferrite bead"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="L ferrite bead inductor filter"/>
+      <property name="ki_fp_filters" value="Inductor_* L_* *Ferrite*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>091f920f-8cff-439e-9044-5abc664880fe</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J5">
+      <value>Vin_TO_buck_boost</value>
+      <footprint>TerminalBlock:TerminalBlock_bornier-2_P5.08mm</footprint>
+      <fields>
+        <field name="Footprint">TerminalBlock:TerminalBlock_bornier-2_P5.08mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="screw terminal"/>
+      <property name="ki_fp_filters" value="TerminalBlock*:*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>b513bbe2-7932-4064-8401-7945a4126c88</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J6">
+      <value>Vout_FROM_buck_boost</value>
+      <footprint>TerminalBlock:TerminalBlock_bornier-2_P5.08mm</footprint>
+      <fields>
+        <field name="Footprint">TerminalBlock:TerminalBlock_bornier-2_P5.08mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="screw terminal"/>
+      <property name="ki_fp_filters" value="TerminalBlock*:*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>1f53f44b-8900-4a06-b007-c6efcbaa4fdf</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP23">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="Solder Jumper SPDT"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>a4cf164a-741b-4dc3-bd1a-2630ffe6140e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP24">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>99c8e05a-5073-42ad-bfd2-20922f854b4b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP15">
+      <value>TestPoint</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>f30e1e5a-7b2f-4192-8b19-841ddcf3826d</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP16">
+      <value>TestPoint</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>4d196ace-d03c-44bb-8dff-ccf50d1880b5</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP17">
+      <value>TestPoint</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>6a3913d7-8483-48c4-9ca0-c6eb73e372eb</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP18">
+      <value>TestPoint</value>
+      <footprint>TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>5cb86abb-6a94-4268-b76b-b7f50378d853</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="TP23">
+      <value>3.3V</value>
+      <footprint>TestPoint:TestPoint_Bridge_Pitch5.08mm_Drill1.3mm</footprint>
+      <fields>
+        <field name="Footprint">TestPoint:TestPoint_Bridge_Pitch5.08mm_Drill1.3mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="test point tp"/>
+      <property name="ki_fp_filters" value="Pin* Test*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>1e055748-a65c-4156-8eb2-9ffdeb165650</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U8">
+      <value>XC6220B331MR</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-5_HandSoldering</footprint>
+      <datasheet>https://www.torexsemi.com/file/xc6220/XC6220.pdf</datasheet>
+      <fields>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-5_HandSoldering</field>
+        <field name="Datasheet">https://www.torexsemi.com/file/xc6220/XC6220.pdf</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Regulator_Linear" part="XC6220B331MR" description="1A, Low Drop-out Voltage Regulator, Fixed Output 3.3V, SOT-23-5"/>
+      <property name="Sheetname" value="Buck-Boost for main load"/>
+      <property name="Sheetfile" value="buck_boost_load.kicad_sch"/>
+      <property name="ki_keywords" value="LDO Voltage Regulator 1A"/>
+      <property name="ki_fp_filters" value="SOT?23*"/>
+      <sheetpath names="/Buck-Boost for main load/" tstamps="/fadcfaa3-5ba9-44dc-a564-21a258e74f25/"/>
+      <tstamps>e1c26a41-0a51-4422-a86f-8a276acd9edf</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+            <pin num="4"/>
+            <pin num="5"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C21">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</footprint>
+      <datasheet>https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</datasheet>
+      <fields>
+        <field name="Footprint">Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</field>
+        <field name="Datasheet">https://www.niccomp.com/quickbuilder/qbpn.php?pNumber=NMC0603X7R105K16TRPF</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <property name="ki_fp_filters" value="C_*"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>ef440117-d003-4937-bea6-3a3eb0bf0141</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP22">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>347d9acc-7299-4f37-99c0-14f545f34e4e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP28">
+      <value>SolderJumper_2_Open</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</footprint>
+      <fields>
+        <field name="Footprint">Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <property name="ki_fp_filters" value="SolderJumper*Open*"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>9fd2f376-0cf3-4938-88a0-d80fd8e1e14a</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R4">
+      <value>1.8M</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>de155aeb-4af2-452d-af9b-c8204d1e055e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R7">
+      <value>3.3M</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>77b9da79-ce8a-404e-8fb7-578103a267df</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R8">
+      <value>R</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</footprint>
+      <fields>
+        <field name="Footprint">Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <property name="ki_fp_filters" value="R_*"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>36294bf1-098a-41fc-a3dd-70af9c24f89b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="RV1">
+      <value>120k</value>
+      <footprint>Potentiometer_THT:Potentiometer_Bourns_3296W_Vertical</footprint>
+      <fields>
+        <field name="Footprint">Potentiometer_THT:Potentiometer_Bourns_3296W_Vertical</field>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Device" part="R_Potentiometer" description="Potentiometer"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="resistor variable"/>
+      <property name="ki_fp_filters" value="Potentiometer*"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>5b79e3d4-30da-4d4b-952c-eb2a455d53f5</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="SW1">
+      <value>EVP-BF6C1A000</value>
+      <footprint>Button_Switch_SMD:SW_SPST_EVPBF</footprint>
+      <datasheet>https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/308/EVP-BF_Series_DS.pdf</datasheet>
+      <fields>
+        <field name="Footprint">Button_Switch_SMD:SW_SPST_EVPBF</field>
+        <field name="Datasheet">https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/308/EVP-BF_Series_DS.pdf</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Switch" part="SW_Push" description="Push button switch, generic, two pins"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>3a5a4904-bd93-465a-9127-52c1829100be</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U7">
+      <value>TPL5010</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6</footprint>
+      <datasheet>http://www.ti.com/lit/ds/symlink/tpl5010.pdf</datasheet>
+      <fields>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-6</field>
+        <field name="Datasheet">http://www.ti.com/lit/ds/symlink/tpl5010.pdf</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Timer" part="TPL5010" description="Timer, Nano Power, Watchdog, 35 nA, 100 ms to 7200 s, VDD 1.8V to 5.5V, Iout max 1mA"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="timer watchdog nano wake done"/>
+      <property name="ki_fp_filters" value="SOT?23*"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>6be10b20-7e1c-433b-acb0-33e3b02f5d81</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="3"/>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="6"/>
+            <pin num="4"/>
+            <pin num="5"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U9">
+      <value>TPS22917DBV</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6</footprint>
+      <datasheet>http://www.ti.com/lit/ds/symlink/tps22917.pdf</datasheet>
+      <fields>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-6</field>
+        <field name="Datasheet">http://www.ti.com/lit/ds/symlink/tps22917.pdf</field>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="Power_Management" part="TPS22917DBV" description="1V to 5.5V, 2A, 80mΩ Ultra-Low Leakage Load Switch, SOT23-6"/>
+      <property name="Sheetname" value="Watchdog timer"/>
+      <property name="Sheetfile" value="watch_dog_timer.kicad_sch"/>
+      <property name="ki_keywords" value="high-side power distribution switch"/>
+      <property name="ki_fp_filters" value="SOT?23*"/>
+      <sheetpath names="/Watchdog timer/" tstamps="/a38aadbc-1307-4a96-a364-cee9c7cfea8a/"/>
+      <tstamps>a74aa1d1-865c-404f-a89e-f4c4e3bda2b2</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="4"/>
+            <pin num="3"/>
+            <pin num="2"/>
+            <pin num="6"/>
+            <pin num="5"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="Connector" part="Conn_01x04_Pin">
+      <description>Generic connector, single row, 01x04, script generated</description>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x04_Pin</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Generic connector, single row, 01x04, script generated</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x08_Pin">
+      <description>Generic connector, single row, 01x08, script generated</description>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x08_Pin</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Generic connector, single row, 01x08, script generated</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+        <pin num="5" name="Pin_5" type="passive"/>
+        <pin num="6" name="Pin_6" type="passive"/>
+        <pin num="7" name="Pin_7" type="passive"/>
+        <pin num="8" name="Pin_8" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Screw_Terminal_01x02">
+      <description>Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <footprints>
+        <fp>TerminalBlock*:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Screw_Terminal_01x02</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="TestPoint">
+      <description>test point</description>
+      <footprints>
+        <fp>Pin*</fp>
+        <fp>Test*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">TP</field>
+        <field name="Value">TestPoint</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">test point</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector_Generic" part="Conn_01x03">
+      <description>Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x03</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C">
+      <description>Unpolarized capacitor</description>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Unpolarized capacitor</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C_Polarized">
+      <description>Polarized capacitor</description>
+      <footprints>
+        <fp>CP_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_Polarized</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Polarized capacitor</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="D_Schottky">
+      <description>Schottky diode</description>
+      <footprints>
+        <fp>TO-???*</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>D_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D_Schottky</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Schottky diode</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="FerriteBead">
+      <description>Ferrite bead</description>
+      <footprints>
+        <fp>Inductor_*</fp>
+        <fp>L_*</fp>
+        <fp>*Ferrite*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">FB</field>
+        <field name="Value">FerriteBead</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Ferrite bead</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R">
+      <description>Resistor</description>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Resistor</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R_Potentiometer">
+      <description>Potentiometer</description>
+      <footprints>
+        <fp>Potentiometer*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">RV</field>
+        <field name="Value">R_Potentiometer</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Potentiometer</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="3" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="Thermistor_PTC">
+      <description>Temperature dependent resistor, positive temperature coefficient</description>
+      <footprints>
+        <fp>*PTC*</fp>
+        <fp>*Thermistor*</fp>
+        <fp>PIN?ARRAY*</fp>
+        <fp>bornier*</fp>
+        <fp>*Terminal?Block*</fp>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">TH</field>
+        <field name="Value">Thermistor_PTC</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Temperature dependent resistor, positive temperature coefficient</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="FBB04004-F40S1003K6M" part="FBB04004-F40S1003K6M">
+      <description>Mezzanine Connectors (Board to Board) SMD RoHS 40 pos</description>
+      <docs>https://tupian.txga.com/serials-attach/FBB04004-F/Drawing-FBB04004-F.pdf</docs>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">FBB04004-F40S1003K6M</field>
+        <field name="Footprint">FBB04004F40S1003K6M</field>
+        <field name="Datasheet">https://tupian.txga.com/serials-attach/FBB04004-F/Drawing-FBB04004-F.pdf</field>
+        <field name="Description">Mezzanine Connectors (Board to Board) SMD RoHS 40 pos</field>
+        <field name="Height">0.95</field>
+        <field name="Manufacturer_Name">TXGA</field>
+        <field name="Manufacturer_Part_Number">FBB04004-F40S1003K6M</field>
+        <field name="Mouser Part Number"/>
+        <field name="Mouser Price/Stock"/>
+        <field name="Arrow Part Number"/>
+        <field name="Arrow Price/Stock"/>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="3" type="passive"/>
+        <pin num="4" name="4" type="passive"/>
+        <pin num="5" name="5" type="passive"/>
+        <pin num="6" name="6" type="passive"/>
+        <pin num="7" name="7" type="passive"/>
+        <pin num="8" name="8" type="passive"/>
+        <pin num="9" name="9" type="passive"/>
+        <pin num="10" name="10" type="passive"/>
+        <pin num="11" name="11" type="passive"/>
+        <pin num="12" name="12" type="passive"/>
+        <pin num="13" name="13" type="passive"/>
+        <pin num="14" name="14" type="passive"/>
+        <pin num="15" name="15" type="passive"/>
+        <pin num="16" name="16" type="passive"/>
+        <pin num="17" name="17" type="passive"/>
+        <pin num="18" name="18" type="passive"/>
+        <pin num="19" name="19" type="passive"/>
+        <pin num="20" name="20" type="passive"/>
+        <pin num="21" name="21" type="passive"/>
+        <pin num="22" name="22" type="passive"/>
+        <pin num="23" name="23" type="passive"/>
+        <pin num="24" name="24" type="passive"/>
+        <pin num="25" name="25" type="passive"/>
+        <pin num="26" name="26" type="passive"/>
+        <pin num="27" name="27" type="passive"/>
+        <pin num="28" name="28" type="passive"/>
+        <pin num="29" name="29" type="passive"/>
+        <pin num="30" name="30" type="passive"/>
+        <pin num="31" name="31" type="passive"/>
+        <pin num="32" name="32" type="passive"/>
+        <pin num="33" name="33" type="passive"/>
+        <pin num="34" name="34" type="passive"/>
+        <pin num="35" name="35" type="passive"/>
+        <pin num="36" name="36" type="passive"/>
+        <pin num="37" name="37" type="passive"/>
+        <pin num="38" name="38" type="passive"/>
+        <pin num="39" name="39" type="passive"/>
+        <pin num="40" name="40" type="passive"/>
+        <pin num="MP1" name="MP1" type="passive"/>
+        <pin num="MP2" name="MP2" type="passive"/>
+        <pin num="MP3" name="MP3" type="passive"/>
+        <pin num="MP4" name="MP4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Jumper" part="Jumper_2_Open">
+      <description>Jumper, 2-pole, open</description>
+      <footprints>
+        <fp>Jumper*</fp>
+        <fp>TestPoint*2Pads*</fp>
+        <fp>TestPoint*Bridge*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">Jumper_2_Open</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Jumper, 2-pole, open</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="B" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Jumper" part="SolderJumper_2_Bridged">
+      <description>Solder Jumper, 2-pole, closed/bridged</description>
+      <footprints>
+        <fp>SolderJumper*Bridged*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SolderJumper_2_Bridged</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Solder Jumper, 2-pole, closed/bridged</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="B" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Jumper" part="SolderJumper_2_Open">
+      <description>Solder Jumper, 2-pole, open</description>
+      <footprints>
+        <fp>SolderJumper*Open*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SolderJumper_2_Open</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Solder Jumper, 2-pole, open</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="B" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Jumper" part="SolderJumper_3_Open">
+      <description>Solder Jumper, 3-pole, open</description>
+      <footprints>
+        <fp>SolderJumper*Open*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SolderJumper_3_Open</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Solder Jumper, 3-pole, open</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="C" type="passive"/>
+        <pin num="3" name="B" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Mechanical" part="Fiducial">
+      <description>Fiducial Marker</description>
+      <footprints>
+        <fp>Fiducial*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">FID</field>
+        <field name="Value">Fiducial</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Fiducial Marker</field>
+      </fields>
+    </libpart>
+    <libpart lib="Mechanical" part="MountingHole">
+      <description>Mounting Hole without connection</description>
+      <footprints>
+        <fp>MountingHole*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">MountingHole</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Mounting Hole without connection</field>
+      </fields>
+    </libpart>
+    <libpart lib="Power_Management" part="TPS22917DBV">
+      <description>1V to 5.5V, 2A, 80mΩ Ultra-Low Leakage Load Switch, SOT23-6</description>
+      <docs>http://www.ti.com/lit/ds/symlink/tps22917.pdf</docs>
+      <footprints>
+        <fp>SOT?23*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TPS22917DBV</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-6</field>
+        <field name="Datasheet">http://www.ti.com/lit/ds/symlink/tps22917.pdf</field>
+        <field name="Description">1V to 5.5V, 2A, 80mΩ Ultra-Low Leakage Load Switch, SOT23-6</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VIN" type="power_in"/>
+        <pin num="2" name="GND" type="power_in"/>
+        <pin num="3" name="ON" type="input"/>
+        <pin num="4" name="CT" type="output"/>
+        <pin num="5" name="QOD" type="open_collector"/>
+        <pin num="6" name="VOUT" type="power_out"/>
+      </pins>
+    </libpart>
+    <libpart lib="Regulator_Linear" part="XC6220B331MR">
+      <description>1A, Low Drop-out Voltage Regulator, Fixed Output 3.3V, SOT-23-5</description>
+      <docs>https://www.torexsemi.com/file/xc6220/XC6220.pdf</docs>
+      <footprints>
+        <fp>SOT?23*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">XC6220B331MR</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-5</field>
+        <field name="Datasheet">https://www.torexsemi.com/file/xc6220/XC6220.pdf</field>
+        <field name="Description">1A, Low Drop-out Voltage Regulator, Fixed Output 3.3V, SOT-23-5</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VIN" type="power_in"/>
+        <pin num="2" name="GND" type="power_in"/>
+        <pin num="3" name="CE" type="input"/>
+        <pin num="4" name="NC" type="no_connect"/>
+        <pin num="5" name="VOUT" type="power_out"/>
+      </pins>
+    </libpart>
+    <libpart lib="Switch" part="SW_Push">
+      <description>Push button switch, generic, two pins</description>
+      <fields>
+        <field name="Reference">SW</field>
+        <field name="Value">SW_Push</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description">Push button switch, generic, two pins</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="TC7WH02FU" part="TC7WH02FU_LJCT">
+      <docs>TC7WH02FU_LJCT</docs>
+      <footprints>
+        <fp>SM8_TOS</fp>
+        <fp>SM8_TOS-M</fp>
+        <fp>SM8_TOS-L</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TC7WH02FU_LJCT</field>
+        <field name="Footprint">SM8_TOS</field>
+        <field name="Datasheet">TC7WH02FU_LJCT</field>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="unspecified"/>
+        <pin num="2" name="2" type="unspecified"/>
+        <pin num="3" name="3" type="unspecified"/>
+        <pin num="4" name="4" type="unspecified"/>
+        <pin num="5" name="5" type="unspecified"/>
+        <pin num="6" name="6" type="unspecified"/>
+        <pin num="7" name="7" type="unspecified"/>
+        <pin num="8" name="8" type="unspecified"/>
+      </pins>
+    </libpart>
+    <libpart lib="TC7WH08FK" part="TC7WH08FK_LJCT">
+      <docs>TC7WH08FK_LJCT</docs>
+      <footprints>
+        <fp>US8_TOS</fp>
+        <fp>US8_TOS-M</fp>
+        <fp>US8_TOS-L</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U10</field>
+        <field name="Value">TC7WH08FK_LJCT</field>
+        <field name="Footprint">US8_TOS</field>
+        <field name="Datasheet">TC7WH08FK_LJCT</field>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="1A" type="input"/>
+        <pin num="2" name="1B" type="input"/>
+        <pin num="3" name="OUT_2" type="output"/>
+        <pin num="4" name="GND" type="power_in"/>
+        <pin num="5" name="2A" type="input"/>
+        <pin num="6" name="2B" type="input"/>
+        <pin num="7" name="OUT_1" type="output"/>
+        <pin num="8" name="VDD" type="power_in"/>
+      </pins>
+    </libpart>
+    <libpart lib="TLV3691IDCKR" part="TLV3691IDCKR">
+      <description>Nanopower, small-size, single comparator</description>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TLV3691IDCKR</field>
+        <field name="Footprint">TLV3691IDCKR:SOT65P210X110-5N</field>
+        <field name="Datasheet"/>
+        <field name="Description">Nanopower, small-size, single comparator</field>
+        <field name="MF">Texas Instruments</field>
+        <field name="Package">SC70-5 Texas Instruments</field>
+        <field name="Price">None</field>
+        <field name="SnapEDA_Link">https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=snap</field>
+        <field name="MP">TLV3691IDCKR</field>
+        <field name="Availability">In Stock</field>
+        <field name="Check_prices">https://www.snapeda.com/parts/TLV3691IDCKR/Texas+Instruments/view-part/?ref=eda</field>
+      </fields>
+      <pins>
+        <pin num="1" name="IN+" type="input"/>
+        <pin num="2" name="GND" type="power_in"/>
+        <pin num="3" name="IN-" type="input"/>
+        <pin num="4" name="OUT" type="output"/>
+        <pin num="5" name="VCC" type="power_in"/>
+      </pins>
+    </libpart>
+    <libpart lib="Timer" part="TPL5010">
+      <description>Timer, Nano Power, Watchdog, 35 nA, 100 ms to 7200 s, VDD 1.8V to 5.5V, Iout max 1mA</description>
+      <docs>http://www.ti.com/lit/ds/symlink/tpl5010.pdf</docs>
+      <footprints>
+        <fp>SOT?23*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">TPL5010</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-6</field>
+        <field name="Datasheet">http://www.ti.com/lit/ds/symlink/tpl5010.pdf</field>
+        <field name="Description">Timer, Nano Power, Watchdog, 35 nA, 100 ms to 7200 s, VDD 1.8V to 5.5V, Iout max 1mA</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VDD" type="power_in"/>
+        <pin num="2" name="GND" type="power_in"/>
+        <pin num="3" name="DELAY/M_RST" type="input"/>
+        <pin num="4" name="DONE" type="input"/>
+        <pin num="5" name="WAKE" type="output"/>
+        <pin num="6" name="~{RST}" type="open_collector"/>
+      </pins>
+    </libpart>
+    <libpart lib="ref35" part="PREF35125QDBVR">
+      <docs>PREF35125QDBVR</docs>
+      <footprints>
+        <fp>SOT23_DBV_TEX</fp>
+        <fp>SOT23_DBV_TEX-M</fp>
+        <fp>SOT23_DBV_TEX-L</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">PREF35125QDBVR</field>
+        <field name="Footprint">SOT23_DBV_TEX</field>
+        <field name="Datasheet">PREF35125QDBVR</field>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="power_out"/>
+        <pin num="2" name="GND" type="power_out"/>
+        <pin num="3" name="EN" type="input"/>
+        <pin num="4" name="VIN" type="power_in"/>
+        <pin num="5" name="NR" type="output"/>
+        <pin num="6" name="VREF" type="output"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Connector">
+      <uri>${KICAD10_SYMBOL_DIR}/Connector.kicad_sym</uri>
+    </library>
+    <library logical="Connector_Generic">
+      <uri>${KICAD10_SYMBOL_DIR}/Connector_Generic.kicad_sym</uri>
+    </library>
+    <library logical="Device">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols/Device.kicad_sym</uri>
+    </library>
+    <library logical="FBB04004-F40S1003K6M">
+      <uri>${KIPRJMOD}/suntastic_symbols/FBB04004-F40S1003K6M.kicad_sym</uri>
+    </library>
+    <library logical="Jumper">
+      <uri>${KICAD10_SYMBOL_DIR}/Jumper.kicad_sym</uri>
+    </library>
+    <library logical="Mechanical">
+      <uri>${KICAD10_SYMBOL_DIR}/Mechanical.kicad_sym</uri>
+    </library>
+    <library logical="Power_Management">
+      <uri>${KICAD10_SYMBOL_DIR}/Power_Management.kicad_sym</uri>
+    </library>
+    <library logical="Regulator_Linear">
+      <uri>${KICAD10_SYMBOL_DIR}/Regulator_Linear.kicad_sym</uri>
+    </library>
+    <library logical="Switch">
+      <uri>${KICAD10_SYMBOL_DIR}/Switch.kicad_sym</uri>
+    </library>
+    <library logical="TC7WH02FU">
+      <uri>${KIPRJMOD}/suntastic_symbols/TC7WH02FU.kicad_sym</uri>
+    </library>
+    <library logical="TC7WH08FK">
+      <uri>${KIPRJMOD}/suntastic_symbols/TC7WH08FK.kicad_sym</uri>
+    </library>
+    <library logical="TLV3691IDCKR">
+      <uri>${KIPRJMOD}/suntastic_symbols/TLV3691IDCKR.kicad_sym</uri>
+    </library>
+    <library logical="Timer">
+      <uri>${KICAD10_SYMBOL_DIR}/Timer.kicad_sym</uri>
+    </library>
+    <library logical="ref35">
+      <uri>${KIPRJMOD}/suntastic_symbols/ref35.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="/UVLO with latched output/NOR_1_OUT" class="Default">
+      <node ref="JP14" pin="3" pinfunction="B_3" pintype="passive"/>
+      <node ref="U5" pin="5" pinfunction="5_5" pintype="unspecified"/>
+      <node ref="U5" pin="7" pinfunction="7_7" pintype="unspecified"/>
+    </net>
+    <net code="2" name="/UVLO with latched output/NOR_2_OUT" class="Default">
+      <node ref="JP14" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="U5" pin="2" pinfunction="2_2" pintype="unspecified"/>
+      <node ref="U5" pin="3" pinfunction="3_3" pintype="unspecified"/>
+    </net>
+    <net code="3" name="/UVLO with latched output/RESET" class="Default">
+      <node ref="JP7" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="U5" pin="1" pinfunction="1_1" pintype="unspecified"/>
+    </net>
+    <net code="4" name="/UVLO with latched output/SET" class="Default">
+      <node ref="JP8" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="U5" pin="6" pinfunction="6_6" pintype="unspecified"/>
+    </net>
+    <net code="5" name="/WisBlock Core Module - RAK4631/3V3" class="Default">
+      <node ref="FB2" pin="2" pintype="passive"/>
+      <node ref="J4" pin="5" pinfunction="5_5" pintype="passive"/>
+      <node ref="J4" pin="6" pinfunction="6_6" pintype="passive"/>
+      <node ref="JP26" pin="2" pinfunction="B_2" pintype="passive"/>
+    </net>
+    <net code="6" name="/WisBlock Core Module - RAK4631/AIN0" class="Default">
+      <node ref="C18" pin="1" pintype="passive"/>
+      <node ref="J4" pin="21" pinfunction="21_21" pintype="passive"/>
+      <node ref="JP20" pin="3" pinfunction="B_3" pintype="passive"/>
+    </net>
+    <net code="7" name="/WisBlock Core Module - RAK4631/AIN1" class="Default">
+      <node ref="J4" pin="22" pinfunction="22_22" pintype="passive"/>
+      <node ref="JP20" pin="1" pinfunction="A_1" pintype="passive"/>
+    </net>
+    <net code="8" name="/WisBlock Core Module - RAK4631/BOOT0" class="Default">
+      <node ref="J4" pin="23" pinfunction="23_23" pintype="passive"/>
+      <node ref="J7" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+    </net>
+    <net code="9" name="/WisBlock Core Module - RAK4631/IO1" class="Default">
+      <node ref="J4" pin="29" pinfunction="29_29" pintype="passive"/>
+      <node ref="J9" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+    </net>
+    <net code="10" name="/WisBlock Core Module - RAK4631/IO2" class="Default">
+      <node ref="J4" pin="30" pinfunction="30_30" pintype="passive"/>
+      <node ref="J9" pin="6" pinfunction="Pin_6_6" pintype="passive"/>
+    </net>
+    <net code="11" name="/WisBlock Core Module - RAK4631/IO3" class="Default">
+      <node ref="J4" pin="31" pinfunction="31_31" pintype="passive"/>
+      <node ref="J9" pin="3" pinfunction="Pin_3_3" pintype="passive"/>
+    </net>
+    <net code="12" name="/WisBlock Core Module - RAK4631/IO4" class="Default">
+      <node ref="J4" pin="32" pinfunction="32_32" pintype="passive"/>
+      <node ref="J9" pin="5" pinfunction="Pin_5_5" pintype="passive"/>
+    </net>
+    <net code="13" name="/WisBlock Core Module - RAK4631/IO5" class="Default">
+      <node ref="J4" pin="37" pinfunction="37_37" pintype="passive"/>
+      <node ref="J9" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+    </net>
+    <net code="14" name="/WisBlock Core Module - RAK4631/IO6" class="Default">
+      <node ref="J4" pin="38" pinfunction="38_38" pintype="passive"/>
+      <node ref="J9" pin="4" pinfunction="Pin_4_4" pintype="passive"/>
+    </net>
+    <net code="15" name="/WisBlock Core Module - RAK4631/IO7" class="Default">
+      <node ref="J4" pin="24" pinfunction="24_24" pintype="passive"/>
+      <node ref="J9" pin="7" pinfunction="Pin_7_7" pintype="passive"/>
+    </net>
+    <net code="16" name="/WisBlock Core Module - RAK4631/IO8" class="Default">
+      <node ref="J4" pin="16" pinfunction="16_16" pintype="passive"/>
+      <node ref="J9" pin="8" pinfunction="Pin_8_8" pintype="passive"/>
+    </net>
+    <net code="17" name="/WisBlock Core Module - RAK4631/RXD0" class="Default">
+      <node ref="J4" pin="12" pinfunction="12_12" pintype="passive"/>
+      <node ref="J8" pin="4" pinfunction="Pin_4_4" pintype="passive"/>
+    </net>
+    <net code="18" name="/WisBlock Core Module - RAK4631/RXD1" class="Default">
+      <node ref="J4" pin="34" pinfunction="34_34" pintype="passive"/>
+      <node ref="J7" pin="4" pinfunction="Pin_4_4" pintype="passive"/>
+    </net>
+    <net code="19" name="/WisBlock Core Module - RAK4631/TXD0" class="Default">
+      <node ref="J4" pin="11" pinfunction="11_11" pintype="passive"/>
+      <node ref="J8" pin="3" pinfunction="Pin_3_3" pintype="passive"/>
+    </net>
+    <net code="20" name="/WisBlock Core Module - RAK4631/TXD1" class="Default">
+      <node ref="J4" pin="33" pinfunction="33_33" pintype="passive"/>
+      <node ref="J7" pin="3" pinfunction="Pin_3_3" pintype="passive"/>
+    </net>
+    <net code="21" name="/WisBlock Core Module - RAK4631/VBAT_nRF" class="Default">
+      <node ref="FB1" pin="2" pintype="passive"/>
+      <node ref="J4" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="J4" pin="2" pinfunction="2_2" pintype="passive"/>
+    </net>
+    <net code="22" name="/WisBlock Core Module - RAK4631/VDD_nRF" class="Default">
+      <node ref="J4" pin="17" pinfunction="17_17" pintype="passive"/>
+      <node ref="J4" pin="18" pinfunction="18_18" pintype="passive"/>
+      <node ref="JP26" pin="1" pinfunction="A_1" pintype="passive"/>
+    </net>
+    <net code="23" name="/WisBlock Core Module - RAK4631/Vsupercap" class="Default">
+      <node ref="JP20" pin="2" pinfunction="C_2" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+    </net>
+    <net code="24" name="3.3V" class="Default">
+      <node ref="FB2" pin="1" pintype="passive"/>
+      <node ref="JP23" pin="2" pinfunction="C_2" pintype="passive"/>
+      <node ref="JP25" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="TP23" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="25" name="GND" class="Default">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="C10" pin="2" pintype="passive"/>
+      <node ref="C11" pin="2" pintype="passive"/>
+      <node ref="C12" pin="2" pintype="passive"/>
+      <node ref="C13" pin="2" pintype="passive"/>
+      <node ref="C14" pin="2" pintype="passive"/>
+      <node ref="C15" pin="2" pintype="passive"/>
+      <node ref="C16" pin="2" pintype="passive"/>
+      <node ref="C17" pin="2" pintype="passive"/>
+      <node ref="C18" pin="2" pintype="passive"/>
+      <node ref="C19" pin="2" pintype="passive"/>
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="C20" pin="2" pintype="passive"/>
+      <node ref="C21" pin="2" pintype="passive"/>
+      <node ref="C22" pin="2" pintype="passive"/>
+      <node ref="C23" pin="2" pintype="passive"/>
+      <node ref="C24" pin="2" pintype="passive"/>
+      <node ref="C25" pin="2" pintype="passive"/>
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="C5" pin="2" pintype="passive"/>
+      <node ref="C6" pin="2" pintype="passive"/>
+      <node ref="C7" pin="2" pintype="passive"/>
+      <node ref="C8" pin="2" pintype="passive"/>
+      <node ref="C9" pin="2" pintype="passive"/>
+      <node ref="J2" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="J3" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="J4" pin="3" pinfunction="3_3" pintype="passive"/>
+      <node ref="J4" pin="39" pinfunction="39_39" pintype="passive"/>
+      <node ref="J4" pin="4" pinfunction="4_4" pintype="passive"/>
+      <node ref="J4" pin="40" pinfunction="40_40" pintype="passive"/>
+      <node ref="J4" pin="MP1" pinfunction="MP1_MP1" pintype="passive"/>
+      <node ref="J4" pin="MP2" pinfunction="MP2_MP2" pintype="passive"/>
+      <node ref="J4" pin="MP3" pinfunction="MP3_MP3" pintype="passive"/>
+      <node ref="J4" pin="MP4" pinfunction="MP4_MP4" pintype="passive"/>
+      <node ref="J5" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="J6" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="J7" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="J8" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="JP29" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="JP30" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="JP31" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+      <node ref="RV1" pin="2" pinfunction="2_2" pintype="passive"/>
+      <node ref="RV1" pin="3" pinfunction="3_3" pintype="passive"/>
+      <node ref="TP16" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="TP17" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="TP20" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="GND_2" pintype="power_in"/>
+      <node ref="U10" pin="1" pinfunction="1A_1" pintype="input"/>
+      <node ref="U10" pin="2" pinfunction="1B_2" pintype="input"/>
+      <node ref="U10" pin="4" pinfunction="GND_4" pintype="power_in"/>
+      <node ref="U2" pin="1" pinfunction="GND_1" pintype="power_out"/>
+      <node ref="U2" pin="2" pinfunction="GND_2" pintype="power_out"/>
+      <node ref="U3" pin="1" pinfunction="GND_1" pintype="power_out"/>
+      <node ref="U3" pin="2" pinfunction="GND_2" pintype="power_out"/>
+      <node ref="U4" pin="2" pinfunction="GND_2" pintype="power_in"/>
+      <node ref="U5" pin="4" pinfunction="4_4" pintype="unspecified"/>
+      <node ref="U6" pin="2" pinfunction="GND_2" pintype="power_in"/>
+      <node ref="U7" pin="2" pinfunction="GND_2" pintype="power_in"/>
+      <node ref="U8" pin="2" pinfunction="GND_2" pintype="power_in"/>
+      <node ref="U9" pin="2" pinfunction="GND_2" pintype="power_in"/>
+    </net>
+    <net code="26" name="GPIO_DONE" class="Default">
+      <node ref="U9" pin="3" pinfunction="ON_3" pintype="input"/>
+    </net>
+    <net code="27" name="GPIO_WAKE" class="Default">
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+    </net>
+    <net code="28" name="LOAD_SWITCH_CTRL" class="Default">
+      <node ref="JP14" pin="2" pinfunction="C_2" pintype="passive"/>
+      <node ref="JP15" pin="1" pinfunction="A_1" pintype="passive"/>
+    </net>
+    <net code="29" name="MPPT_OUT" class="Default">
+      <node ref="J11" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="JP19" pin="3" pinfunction="B_3" pintype="passive"/>
+      <node ref="TP8" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="30" name="Net-(D1-K)" class="Default">
+      <node ref="D1" pin="1" pinfunction="K_1" pintype="passive"/>
+      <node ref="JP19" pin="1" pinfunction="A_1" pintype="passive"/>
+    </net>
+    <net code="31" name="Net-(J3-Pin_2)" class="Default">
+      <node ref="J3" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="JP18" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="TP19" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="TP22" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="32" name="Net-(J4-Pad14)" class="Default">
+      <node ref="J4" pin="14" pinfunction="14_14" pintype="passive"/>
+      <node ref="TP5" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="33" name="Net-(J4-Pad15)" class="Default">
+      <node ref="J4" pin="15" pinfunction="15_15" pintype="passive"/>
+      <node ref="TP4" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="34" name="Net-(J6-Pin_2)" class="Default">
+      <node ref="J6" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="JP23" pin="3" pinfunction="B_3" pintype="passive"/>
+      <node ref="TP18" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="35" name="Net-(J10-Pin_2)" class="Default">
+      <node ref="J10" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="JP29" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="TP7" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="36" name="Net-(J11-Pin_1)" class="Default">
+      <node ref="J11" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="JP30" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="TP9" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="37" name="Net-(J12-Pin_1)" class="Default">
+      <node ref="J12" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="JP31" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="TP11" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="38" name="Net-(JP1-A)" class="Default">
+      <node ref="C7" pin="1" pintype="passive"/>
+      <node ref="C8" pin="1" pintype="passive"/>
+      <node ref="JP1" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="U1" pin="5" pinfunction="VCC_5" pintype="power_in"/>
+    </net>
+    <net code="39" name="Net-(JP2-A)" class="Default">
+      <node ref="C15" pin="1" pintype="passive"/>
+      <node ref="C16" pin="1" pintype="passive"/>
+      <node ref="JP2" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="U4" pin="5" pinfunction="VCC_5" pintype="power_in"/>
+    </net>
+    <net code="40" name="Net-(JP3-B)" class="Default">
+      <node ref="JP3" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="TP1" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="IN-_3" pintype="input"/>
+    </net>
+    <net code="41" name="Net-(JP4-B)" class="Default">
+      <node ref="JP4" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="IN+_1" pintype="input"/>
+    </net>
+    <net code="42" name="Net-(JP5-B)" class="Default">
+      <node ref="JP5" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="U4" pin="3" pinfunction="IN-_3" pintype="input"/>
+    </net>
+    <net code="43" name="Net-(JP6-B)" class="Default">
+      <node ref="JP6" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="TP2" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="U4" pin="1" pinfunction="IN+_1" pintype="input"/>
+    </net>
+    <net code="44" name="Net-(JP7-A)" class="Default">
+      <node ref="JP7" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="OUT_4" pintype="output"/>
+    </net>
+    <net code="45" name="Net-(JP8-A)" class="Default">
+      <node ref="JP8" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="U4" pin="4" pinfunction="OUT_4" pintype="output"/>
+    </net>
+    <net code="46" name="Net-(JP9-A)" class="Default">
+      <node ref="C13" pin="1" pintype="passive"/>
+      <node ref="C5" pin="1" pintype="passive"/>
+      <node ref="JP9" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="U2" pin="6" pinfunction="VREF_6" pintype="output"/>
+    </net>
+    <net code="47" name="Net-(JP9-B)" class="Default">
+      <node ref="JP9" pin="3" pinfunction="B_3" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+    </net>
+    <net code="48" name="Net-(JP10-B)" class="Default">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="JP10" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="U2" pin="3" pinfunction="EN_3" pintype="input"/>
+      <node ref="U2" pin="4" pinfunction="VIN_4" pintype="power_in"/>
+    </net>
+    <net code="49" name="Net-(JP11-B)" class="Default">
+      <node ref="JP11" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+    </net>
+    <net code="50" name="Net-(JP12-A)" class="Default">
+      <node ref="C14" pin="1" pintype="passive"/>
+      <node ref="C23" pin="1" pintype="passive"/>
+      <node ref="JP12" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="U3" pin="6" pinfunction="VREF_6" pintype="output"/>
+    </net>
+    <net code="51" name="Net-(JP12-B)" class="Default">
+      <node ref="JP12" pin="3" pinfunction="B_3" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+    </net>
+    <net code="52" name="Net-(JP13-B)" class="Default">
+      <node ref="C10" pin="1" pintype="passive"/>
+      <node ref="C9" pin="1" pintype="passive"/>
+      <node ref="JP13" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="U3" pin="3" pinfunction="EN_3" pintype="input"/>
+      <node ref="U3" pin="4" pinfunction="VIN_4" pintype="power_in"/>
+    </net>
+    <net code="53" name="Net-(JP15-B)" class="Default">
+      <node ref="JP15" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="U10" pin="5" pinfunction="2A_5" pintype="input"/>
+    </net>
+    <net code="54" name="Net-(JP16-C)" class="Default">
+      <node ref="JP16" pin="2" pinfunction="C_2" pintype="passive"/>
+      <node ref="U6" pin="1" pinfunction="VIN_1" pintype="power_in"/>
+    </net>
+    <net code="55" name="Net-(JP17-B)" class="Default">
+      <node ref="JP17" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+    </net>
+    <net code="56" name="Net-(JP18-B)" class="Default">
+      <node ref="JP18" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="JP19" pin="2" pinfunction="C_2" pintype="passive"/>
+      <node ref="TH1" pin="2" pintype="passive"/>
+      <node ref="TP21" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="57" name="Net-(JP21-A)" class="Default">
+      <node ref="JP21" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="JP27" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="TP3" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="U6" pin="6" pinfunction="VOUT_6" pintype="power_out"/>
+    </net>
+    <net code="58" name="Net-(JP22-B)" class="Default">
+      <node ref="JP22" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="U7" pin="1" pinfunction="VDD_1" pintype="power_in"/>
+    </net>
+    <net code="59" name="Net-(JP23-A)" class="Default">
+      <node ref="C19" pin="1" pintype="passive"/>
+      <node ref="C22" pin="1" pintype="passive"/>
+      <node ref="FB5" pin="2" pintype="passive"/>
+      <node ref="JP23" pin="1" pinfunction="A_1" pintype="passive"/>
+    </net>
+    <net code="60" name="Net-(JP24-B)" class="Default">
+      <node ref="FB4" pin="1" pintype="passive"/>
+      <node ref="JP24" pin="2" pinfunction="B_2" pintype="passive"/>
+    </net>
+    <net code="61" name="Net-(JP25-C)" class="Default">
+      <node ref="FB1" pin="1" pintype="passive"/>
+      <node ref="JP25" pin="2" pinfunction="C_2" pintype="passive"/>
+    </net>
+    <net code="62" name="Net-(JP27-A)" class="Default">
+      <node ref="JP27" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="U6" pin="5" pinfunction="QOD_5" pintype="open_collector"/>
+    </net>
+    <net code="63" name="Net-(JP28-A)" class="Default">
+      <node ref="C21" pin="1" pintype="passive"/>
+      <node ref="JP28" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="U7" pin="4" pinfunction="DONE_4" pintype="input"/>
+      <node ref="U9" pin="6" pinfunction="VOUT_6" pintype="power_out"/>
+    </net>
+    <net code="64" name="Net-(JP28-B)" class="Default">
+      <node ref="JP28" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="U9" pin="5" pinfunction="QOD_5" pintype="open_collector"/>
+    </net>
+    <net code="65" name="Net-(U2-NR)" class="Default">
+      <node ref="C6" pin="1" pintype="passive"/>
+      <node ref="U2" pin="5" pinfunction="NR_5" pintype="output"/>
+    </net>
+    <net code="66" name="Net-(U3-NR)" class="Default">
+      <node ref="C12" pin="1" pintype="passive"/>
+      <node ref="U3" pin="5" pinfunction="NR_5" pintype="output"/>
+    </net>
+    <net code="67" name="Net-(U7-DELAY/M_RST)" class="Default">
+      <node ref="RV1" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="SW1" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="U7" pin="3" pinfunction="DELAY/M_RST_3" pintype="input"/>
+    </net>
+    <net code="68" name="Net-(U7-WAKE)" class="Default">
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="U7" pin="5" pinfunction="WAKE_5" pintype="output"/>
+    </net>
+    <net code="69" name="Net-(U8-CE)" class="Default">
+      <node ref="C20" pin="1" pintype="passive"/>
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="FB4" pin="2" pintype="passive"/>
+      <node ref="U8" pin="1" pinfunction="VIN_1" pintype="power_in"/>
+      <node ref="U8" pin="3" pinfunction="CE_3" pintype="input"/>
+    </net>
+    <net code="70" name="Net-(U8-VOUT)" class="Default">
+      <node ref="FB5" pin="1" pintype="passive"/>
+      <node ref="U8" pin="5" pinfunction="VOUT_5" pintype="power_out"/>
+    </net>
+    <net code="71" name="Net-(U10-OUT_2)" class="Default">
+      <node ref="U10" pin="3" pinfunction="OUT_2_3" pintype="output"/>
+      <node ref="U6" pin="3" pinfunction="ON_3" pintype="input"/>
+    </net>
+    <net code="72" name="PV_+" class="Default">
+      <node ref="D1" pin="2" pinfunction="A_2" pintype="passive"/>
+      <node ref="J10" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="J12" pin="2" pinfunction="Pin_2_2" pintype="passive"/>
+      <node ref="TP10" pin="1" pinfunction="1_1" pintype="passive"/>
+      <node ref="TP6" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="73" name="RST_SIGNAL" class="Default">
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="U10" pin="6" pinfunction="2B_6" pintype="input"/>
+      <node ref="U7" pin="6" pinfunction="~{RST}_6" pintype="open_collector"/>
+    </net>
+    <net code="74" name="V_boost_uvlo" class="Default">
+      <node ref="C11" pin="1" pintype="passive"/>
+      <node ref="C24" pin="1" pintype="passive"/>
+      <node ref="C25" pin="1" pintype="passive"/>
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="J2" pin="3" pinfunction="Pin_3_3" pintype="passive"/>
+      <node ref="JP1" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="JP10" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="JP11" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="JP13" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="JP16" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="JP2" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="JP22" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="JP25" pin="3" pinfunction="B_3" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+      <node ref="SW1" pin="2" pinfunction="2_2" pintype="passive"/>
+      <node ref="U10" pin="8" pinfunction="VDD_8" pintype="power_in"/>
+      <node ref="U5" pin="8" pinfunction="8_8" pintype="unspecified"/>
+      <node ref="U9" pin="1" pinfunction="VIN_1" pintype="power_in"/>
+    </net>
+    <net code="75" name="V_supercap" class="Default">
+      <node ref="J2" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="JP16" pin="3" pinfunction="B_3" pintype="passive"/>
+      <node ref="JP17" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="JP4" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="JP5" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="TH1" pin="1" pintype="passive"/>
+    </net>
+    <net code="76" name="Vin_buck_boost" class="Default">
+      <node ref="J5" pin="1" pinfunction="Pin_1_1" pintype="passive"/>
+      <node ref="JP21" pin="2" pinfunction="B_2" pintype="passive"/>
+      <node ref="JP24" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="TP15" pin="1" pinfunction="1_1" pintype="passive"/>
+    </net>
+    <net code="77" name="Vref_high" class="Default">
+      <node ref="JP12" pin="2" pinfunction="C_2" pintype="passive"/>
+      <node ref="JP3" pin="1" pinfunction="A_1" pintype="passive"/>
+    </net>
+    <net code="78" name="Vref_low" class="Default">
+      <node ref="JP6" pin="1" pinfunction="A_1" pintype="passive"/>
+      <node ref="JP9" pin="2" pinfunction="C_2" pintype="passive"/>
+    </net>
+    <net code="79" name="nRF_RESET" class="Default">
+      <node ref="C17" pin="1" pintype="passive"/>
+      <node ref="J4" pin="13" pinfunction="13_13" pintype="passive"/>
+    </net>
+    <net code="80" name="unconnected-(J4-Pad7)" class="Default">
+      <node ref="J4" pin="7" pinfunction="7_7" pintype="passive+no_connect"/>
+    </net>
+    <net code="81" name="unconnected-(J4-Pad8)" class="Default">
+      <node ref="J4" pin="8" pinfunction="8_8" pintype="passive+no_connect"/>
+    </net>
+    <net code="82" name="unconnected-(J4-Pad9)" class="Default">
+      <node ref="J4" pin="9" pinfunction="9_9" pintype="passive+no_connect"/>
+    </net>
+    <net code="83" name="unconnected-(J4-Pad10)" class="Default">
+      <node ref="J4" pin="10" pinfunction="10_10" pintype="passive+no_connect"/>
+    </net>
+    <net code="84" name="unconnected-(J4-Pad19)" class="Default">
+      <node ref="J4" pin="19" pinfunction="19_19" pintype="passive+no_connect"/>
+    </net>
+    <net code="85" name="unconnected-(J4-Pad20)" class="Default">
+      <node ref="J4" pin="20" pinfunction="20_20" pintype="passive+no_connect"/>
+    </net>
+    <net code="86" name="unconnected-(J4-Pad25)" class="Default">
+      <node ref="J4" pin="25" pinfunction="25_25" pintype="passive+no_connect"/>
+    </net>
+    <net code="87" name="unconnected-(J4-Pad26)" class="Default">
+      <node ref="J4" pin="26" pinfunction="26_26" pintype="passive+no_connect"/>
+    </net>
+    <net code="88" name="unconnected-(J4-Pad27)" class="Default">
+      <node ref="J4" pin="27" pinfunction="27_27" pintype="passive+no_connect"/>
+    </net>
+    <net code="89" name="unconnected-(J4-Pad28)" class="Default">
+      <node ref="J4" pin="28" pinfunction="28_28" pintype="passive+no_connect"/>
+    </net>
+    <net code="90" name="unconnected-(J4-Pad35)" class="Default">
+      <node ref="J4" pin="35" pinfunction="35_35" pintype="passive+no_connect"/>
+    </net>
+    <net code="91" name="unconnected-(J4-Pad36)" class="Default">
+      <node ref="J4" pin="36" pinfunction="36_36" pintype="passive+no_connect"/>
+    </net>
+    <net code="92" name="unconnected-(J8-Pin_1-Pad1)" class="Default">
+      <node ref="J8" pin="1" pinfunction="Pin_1_1" pintype="passive+no_connect"/>
+    </net>
+    <net code="93" name="unconnected-(U6-CT-Pad4)" class="Default">
+      <node ref="U6" pin="4" pinfunction="CT_4" pintype="output+no_connect"/>
+    </net>
+    <net code="94" name="unconnected-(U8-NC-Pad4)" class="Default">
+      <node ref="U8" pin="4" pinfunction="NC_4" pintype="no_connect"/>
+    </net>
+    <net code="95" name="unconnected-(U9-CT-Pad4)" class="Default">
+      <node ref="U9" pin="4" pinfunction="CT_4" pintype="output+no_connect"/>
+    </net>
+    <net code="96" name="unconnected-(U10-OUT_1-Pad7)" class="Default">
+      <node ref="U10" pin="7" pinfunction="OUT_1_7" pintype="output+no_connect"/>
+    </net>
+  </nets>
+</export>

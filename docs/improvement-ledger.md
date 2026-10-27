@@ -2707,3 +2707,31 @@ against a plan rebuilt at the previous commit). Typical circuits keep
 - Causes: rule_not_enforced 1
 - Changed: scripts/plan_circuits.py, scripts/catalog.py, scripts/lint.py, scripts/tests/test_fixed_device_rows.py, references/check-catalog.md, references/plan-format.md, references/results-format.md, references/architecture.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/clamp-operating-rows-v1, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutation M721 killed
+
+## Five boards fill the typical-circuit gaps (2026-10-26)
+
+The typical-circuit bench lacked push-pull isolated supplies, external watchdogs
+and a PD sink with a buck-boost charger. Searching GitHub and, outside it, vendor
+reference designs and application articles, five boards with clear non-NC
+licenses were taken at fixed commits (kxkm-bmu-v2 VPS8505, zenn-main-controller
+SN6501, usb-pd-power-manager HUSB238 + BQ25672, rt-ihu STWD100, suntastic
+TPL5010). A cold run at 5fa41d3 reported 88 lines; each was read: 83 are
+expected (zenn's unconnected hierarchical labels, rt-ihu's DNI-only +1V2_SEC and
+sourceless ARB_BATT, suntastic's single GPIO_DONE label among them), five were
+false alarms and are fixed:
+
+1. A three-way solder jumper (common C, choices A/B) passes the feed trace to
+   both supplies, so a supply pin behind it is a "fed through a jumper"
+   CANDIDATE instead of an unfed FINDING (suntastic JP16).
+2. NET-A02 no longer reads one transistor's terminal pairs (G/S, G/D, D/S, B/E,
+   B/C, C/E) or a pair token inside one word (DCAN1RX/DCAN1TX) as a split net.
+3. NET-A06 treats an input-typed pin of a passive link (an RF choke) as a feed.
+
+The offline PFC + QR + synchronous-rectifier board is still missing: TSAC-DCDC
+has no license and vendor reference designs are PDF only. Typical circuits go
+117/180/14 → 200/185/14.
+
+- Event: user:2026-10-26 (覆盖面再拓宽一点，可以找这些缺失的板型，在SR里面再丰富起来; 不一定在github上面找，也可以在其他网上找相关的电路资料)
+- Causes: rule_not_enforced 3
+- Changed: scripts/checkers/powertree.py, scripts/lint.py, scripts/tests/test_typical_circuits_v3.py, evals/typical_circuits/cases.json, evals/typical_circuits/sources.json, evals/typical_circuits/fixtures, evals/typical_circuits/README.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M722-M725 killed

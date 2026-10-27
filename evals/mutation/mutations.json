@@ -4919,5 +4919,33 @@
   "file": "scripts/plan_circuits.py",
   "old": "            if not protective_clamps.protected_net(ref, part, db.get('pin2net', {}), connector_graph, self.intent):",
   "new": "            if True or not protective_clamps.protected_net(ref, part, db.get('pin2net', {}), connector_graph, self.intent):"
+ },
+ {
+  "id": "M722",
+  "name": "a three-way jumper no longer passes the feed trace to both supplies",
+  "file": "scripts/checkers/powertree.py",
+  "old": "            if self.feed and graph.kind(ref) == pw.JUMPER and len(ends) == 3 and current in ends:",
+  "new": "            if False and self.feed and graph.kind(ref) == pw.JUMPER and len(ends) == 3 and current in ends:"
+ },
+ {
+  "id": "M723",
+  "name": "transistor terminal pairs read as a split net name again",
+  "file": "scripts/lint.py",
+  "old": "    ('G', 'S'), ('G', 'D'), ('D', 'S'), ('B', 'E'), ('B', 'C'), ('C', 'E'))]",
+  "new": "    )]"
+ },
+ {
+  "id": "M724",
+  "name": "a pair token inside one word reads as a split net name again",
+  "file": "scripts/lint.py",
+  "old": "    if _embedded_pair(la, lb):",
+  "new": "    if False and _embedded_pair(la, lb):"
+ },
+ {
+  "id": "M725",
+  "name": "a choke typed input no longer feeds an input-only net",
+  "file": "scripts/lint.py",
+  "old": "                        self.graph.kind(node.partition('.')[0]) in {CONNECTOR} | PASSIVE_LINKS",
+  "new": "                        self.graph.kind(node.partition('.')[0]) in {CONNECTOR}"
  }
 ]
