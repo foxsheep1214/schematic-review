@@ -106,7 +106,7 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 | 字段 | 含义 |
 |---|---|
 | `id` / `circuit` / `question` / `objects` / `states` | 计划框架给出；框架外的功能自己写，`id` 以 `FN-` 开头。框架的 `members` 列出要在这个功能里答的全部检查项：电路检查项和电路拥有的器件检查项 |
-| `conditions[]` | [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`；只在可编程器件某个设置下成立的条件写 `setting{ref, group, value}`，该器件该组的 CFG-D01 结果检查项 `settings[{value, function}]` 须列出这个值，配置表缺口（DELIVERABLE_PENDING / CONFIGURATION_TABLE）只挡 CFG-D01 项和需求检查项；`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一。`refs` 写这条条款说的是板上哪几只器件：手册来源（`source` 在 `ds/`、`datasheets/`、`manuals/` 下，或是资料审计里某位号的那份文件）和 BOM 行来源的条款必填且至少一个，带 `setting` 的要含 `setting.ref`，NETLIST_FACT 可不写、写了要含 `pins` 所属的位号；需求、标准、`commodity-floors.md`、工程假定选填。每个位号是网表或 BOM 的器件，不重复；位号在资料审计里对应另一份资料而条款的 `source` 不是它时拒收（张冠李戴）；位号不在本功能 `objects.refs` 和成员检查项对象里只提示 CONDITION_REF_OUTSIDE_FUNCTION。余量不写位号，经 `basis.limit` / `basis.conditions` 指向条款 |
+| `conditions[]` | [判“证据不足”之前先定界](evidence-proportionality.md#判证据不足之前先定界)第 1 步“先用手册里已有的界限”：每条 `id`/`kind`/`source`/`locator`/`says`/`use`；只在可编程器件某个设置下成立的条件写 `setting{ref, group, value}`（配置项、设置值），门禁汇总成 `configuration_settings` 交给配置表编写方，配置表本身不审；`use` 写怎么用（相邻测试点夹出界限、门限上限、温度系数）。`kind` 是下表五种之一。`refs` 写这条条款说的是板上哪几只器件：手册来源（`source` 在 `ds/`、`datasheets/`、`manuals/` 下，或是资料审计里某位号的那份文件）和 BOM 行来源的条款必填且至少一个，带 `setting` 的要含 `setting.ref`，NETLIST_FACT 可不写、写了要含 `pins` 所属的位号；需求、标准、`commodity-floors.md`、工程假定选填。每个位号是网表或 BOM 的器件，不重复；位号在资料审计里对应另一份资料而条款的 `source` 不是它时拒收（张冠李戴）；位号不在本功能 `objects.refs` 和成员检查项对象里只提示 CONDITION_REF_OUTSIDE_FUNCTION。余量不写位号，经 `basis.limit` / `basis.conditions` 指向条款 |
 | `calculation` | 同节第 2 步“算出了余量就下结论”：`result`（一句结论；比较过的量不写在这里，超 300 字或游离数字超 8 个出 RESULT_NARRATIVE）、`margin{value,unit,against,basis[,aspect,states,check_ids]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值；`unit` 按 `scripts/units.py` 的拼法）、`claim_ids`、`inputs`（计算的输入量名，影响条目的 `via.input` 从这里取）、`assumptions`；只针对一个方面时写 `aspect`。同一功能里 `value`、`unit`、`against` 都相同的余量只能有一条：一个缺陷落在证明它的那个方面，要落到别的方面须是另一个量、另一条余量。没有数值的功能写 `no_calculation_reason` |
 | `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。厂家参考电路也可以撑起判断：该 TYPICAL_REFERENCE 条件写 `reference_circuit{figure, connection, load}`——参考电路的图号或页、本板与它相同的接法、它的元件值与本板负载的对照（本板不重于它），报告依据写“厂家参考电路 + 图号”。检查项要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
@@ -122,15 +122,15 @@ LATCH 态由 0.8 V 的保证最坏值余量判 PASS；STARTUP 和 RUN 由开放�
 |---|---|---|---|
 | DESIGN_VALUE（设计还没定） | `spec`、`owner`；`undecided[{ref, parameter[, unit]}]` 列出没选的器件参数，或 `depends_on: <开项 key>` | 向厂家索取（`spec` 不许写成这样） | `undecided` 所列位号的 BOM 行已有“参数名 + 该单位的数”时拒收：这个量板上已定，按 BOM 行算。缺的量由本审查另一个开项决定时（例如保护阈值等厂家数据）写 `depends_on`，只挂一层，它挡的检查项在待办和报告里并到那个开项下计。有计算的功能里没有对应方面的余量时写 `no_margin_reason`（还没选定什么） |
 | VENDOR_DATUM（只有厂家知道） | `checked`（条件 id）、`why_insufficient`、`acquisition`、`worst_case` | — | 先按公开资料界限算：`worst_case{bound{condition, value, basis: GUARANTEED_LIMIT/ADJACENT_TEST_POINT/TYPICAL_CURVE/PUBLISHED_TABLE/APPLICATION_NOTE}, result, margin{value,unit,against,basis}}`，这个余量按它的依据决定结论。确实没有公开界限时写 `worst_case{not_boundable_reason, curves_checked[{source, locator}], operating_point_specified}`：`true` 是手册写了这种用法只缺数值，另写 `specified_by` 指向写了这种用法的条件（不能是 `monotonic_tried.test_points` 里没覆盖工作点的测试点；可以是条款、应用说明或 `regime` 覆盖工作点的典型曲线），引典型曲线（`curve: true`）时另写 `typical_estimate{value, unit, against, basis: ESTIMATE 并引这条曲线}`，估算已经不够就是失败项（余量记 REACHABLE_CASE），资料不足按后果定级；`false` 是设计依赖手册未规定的工作区，记失败项，发现项给出回到规定区的改法，不向厂家要。目录器件的参数是这一种，不是交付物 |
-| DELIVERABLE_PENDING（另一阶段欠的交付物） | `deliverable_kind`（CUSTOM_PART_DRAWING 定制件图纸 / FIRMWARE_CAPABILITY 固件应用能力 / CONFIGURATION_TABLE 配置表）、`scope`、`deliverable`、`owner`、`assumed`（本判定按什么假定算的）、`closure` | `acquisition`、`spec` | CUSTOM_PART_DRAWING 另写 `missing_parameters[{name[, unit]}]`，只列判定需要、BOM 规格没写的参数（饱和电流、Bmax、绝缘结构；资格认可这类没有数值的不写 unit）；写了 unit 的参数若 `deliverable`/`what` 点名位号的 BOM 行已有“参数名 + 该单位的数”则拒收，按 BOM 行引作 NUMERIC_LIMIT（见[常规器件下限](commodity-floors.md)） |
+| DELIVERABLE_PENDING（另一阶段欠的交付物） | `deliverable_kind`（CUSTOM_PART_DRAWING 定制件图纸 / FIRMWARE_CAPABILITY 固件应用能力）、`scope`、`deliverable`、`owner`、`assumed`（本判定按什么假定算的）、`closure` | `acquisition`、`spec` | CUSTOM_PART_DRAWING 另写 `missing_parameters[{name[, unit]}]`，只列判定需要、BOM 规格没写的参数（饱和电流、Bmax、绝缘结构；资格认可这类没有数值的不写 unit）；写了 unit 的参数若 `deliverable`/`what` 点名位号的 BOM 行已有“参数名 + 该单位的数”则拒收，按 BOM 行引作 NUMERIC_LIMIT（见[常规器件下限](commodity-floors.md)） |
 | USER_DEFERRED（用户暂缓） | `instruction` | — | — |
 | REQUIREMENT（需求没定） | — | `severity` | 走[需求澄清](requirement-clarifications.md) |
 | REVIEW_INCOMPLETE（审查没做完） | — | — | 本轮自己读算完；有这种开项时不打包 |
 
 **每类开放项能挡哪些检查项**（`catalog.OPEN_ITEM_RULES`）：
 `decides` 边的 `aspect` 是规则标题，那个标题的规则不在本类能挡的集合里就拒绝。VENDOR_DATUM 能挡计算检查项（C）、电气窗口检查项（E）和需求检查项 REQ-D01；
-DESIGN_VALUE 另加 CFG-D01；DELIVERABLE_PENDING 按 `deliverable_kind`：CUSTOM_PART_DRAWING 另加该定制件自己的身份与脚检查项（DEV-D01/D02/D05），
-FIRMWARE_CAPABILITY 另加全部 SIG-* 与 CFG-D01，CONFIGURATION_TABLE 只挡 CFG-D01 与需求检查项。文档/身份检查项（D）、拓扑检查项（T）、提示（A）和覆盖检查项不等任何开放项：
+DESIGN_VALUE 同；DELIVERABLE_PENDING 按 `deliverable_kind`：CUSTOM_PART_DRAWING 另加该定制件自己的身份与脚检查项（DEV-D01/D02/D05），
+FIRMWARE_CAPABILITY 另加全部 SIG-*。配置表不是缺口。文档/身份检查项（D）、拓扑检查项（T）、提示（A）和覆盖检查项不等任何开放项：
 按已知的判，或换对的缺口种类。不是规则标题的 aspect（需求方面、自由文字）不在此查。
 
 **条件的五种。** 每条条件先要能定位：`locator` 给页码、表号、图号、章节、手册的节名（电气特性、绝对最大、引脚说明……）、
@@ -525,7 +525,7 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   - 开关节点（有 MOS 漏极和变压器或电感）经二极管到一个没有对地大电容的节点，该节点上的电阻和电容另一端接同一网：每颗电阻一项 `DRV-C01.RCD`，钳位电阻功率与耐压；
   - IC 的信号脚和 LED 或光耦 LED 的一端在同一网（不经晶体管、不是地网）：`DEV-C05.PIN-LED`，按第 5 条四档核该脚的电流；
   - 光耦输出接到 IC 的使能或关断脚（EN、SHDN、DIS、INH、STBY、ON/OFF、RUN 等）：`SIG-C09.ENABLE-LINK`，上电先后、使能门限与光耦延时、掉电后能否恢复。
-- 器件检查项（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）只跟核验过的器件类别走：集成电路（U/M 位号或原生电源脚识别的有源器件）、晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成；普通二极管、普通电感和阻容是常规件，声明了 `intent.devices` 也不生成器件检查项（声明只供脚表与配置组用），它们的应力在所属电路的 DEV-C01 预判里按最弱档算，超了才逐颗出 DEV-C01 项；要让一颗二极管进器件检查项，路径是 `device_kinds` 核验为 zener/tvs/整流桥（[通用件定界](commodity-floors.md#哪些器件有自己的检查项)）。
+- 器件检查项（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）只跟核验过的器件类别走：集成电路（U/M 位号或原生电源脚识别的有源器件）、晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成；普通二极管、普通电感和阻容是常规件，声明了 `intent.devices` 也不生成器件检查项（声明只供脚表与输出档位用），它们的应力在所属电路的 DEV-C01 预判里按最弱档算，超了才逐颗出 DEV-C01 项；要让一颗二极管进器件检查项，路径是 `device_kinds` 核验为 zener/tvs/整流桥（[通用件定界](commodity-floors.md#哪些器件有自己的检查项)）。
 - 脚电流行（`DEV-C01.PIN.*`）的串阻读不出阻值、计划没算出脚电流时，判 PASS 须附 `manual_verification`，在 `method` 里写出自己的脚电流计算。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
   `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。

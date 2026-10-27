@@ -405,6 +405,21 @@ def _limit_text(parameter):
     return '—'
 
 
+def render_configuration_settings(settings):
+    """The settings the hardware verdicts rely on, for whoever writes the configuration table (the configuration is
+    not reviewed: a capability the datasheet declares is reachable)."""
+    if not settings:
+        return []
+    out = ['### 配置表要写的设置', '',
+           '本审查按手册声明的能力判功能可达，不审配置表。下面这些硬件结论只在所列设置下成立，配置表照写即可；'
+           '改了设置，对应的结论要重判。', '',
+           '| 位号 | 配置项 | 设置 | 出处 | 依赖它的结论 |', '|---|---|---|---|---|']
+    for s in settings:
+        out.append('| %s | %s | %s | %s | %s |' % (cell(s['ref']), cell(s['group']), cell(s['value']),
+                   cell(' '.join(x for x in (s.get('source'), s.get('locator')) if x)), cell('、'.join(s['used_in']))))
+    return out + ['']
+
+
 def render_parameter_sheet(rows, detail='compact'):
     """器件参数表（结果格式 7，2026-10-26）：条款 `refs` 点名的每只器件一行——读了哪份资料哪几页、引了几个参数、其中保证值 /
     典型值 / 强制条款各几条、用在哪些功能；`--detail full` 再逐参数一行。只汇总条款，不另下结论。"""
@@ -606,7 +621,7 @@ def render_clarifications(results):
     return out
 
 
-DELIVERABLE_WORDS = {'CUSTOM_PART_DRAWING': '定制件图纸', 'CONFIGURATION_TABLE': '配置表', 'FIRMWARE_CAPABILITY': '固件能力'}
+DELIVERABLE_WORDS = {'CUSTOM_PART_DRAWING': '定制件图纸', 'FIRMWARE_CAPABILITY': '固件能力'}
 
 
 def render_deliverables(items, checks, owners=None, classes=False):
@@ -1048,8 +1063,11 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     out += render_bom_constraints(checks)
     out += render_input_notes(plan)
 
+    settings = gate.get('configuration_settings') or []
+    if handoffs or settings:
+        out += ['## 交给后续环节的要求', '']
     if handoffs:
-        out += ['## 交给后续环节的要求', '',
+        out += [
                 '下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，'
                 '也不影响原理图定稿。原理图交出时把这张表一起交给对应负责方即可。', '',
                 '| 负责方 | 检查 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |', '|---|---|---|---|---|']
@@ -1085,6 +1103,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         if pending:
             out += ['', '另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending))]
         out.append('')
+    out += render_configuration_settings(settings)
     out += render_estimated_passes(gate.get('estimated_passes'))
     out += render_parameter_sheet(gate.get('parameter_sheet'), detail)
 
@@ -1155,7 +1174,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             ] + gap_subclass_counts(results, gaps) + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),
                                                   ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
                  if classes else []) + [
-            '| 交给后续环节的要求 | %d |' % len(handoffs)] + (
+            '| 交给后续环节的要求 | %d |' % (len(handoffs) + len(settings))] + (
             ['| 按典型值估算判通过、样机实测后才算定 | %d 项 |' % len(estimated)] if estimated else []) + [
             '| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | %d |' % len(screen),
             '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '']

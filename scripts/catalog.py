@@ -28,7 +28,6 @@ DOMAINS = (
            '测试点可触达性、邻近地、夹具与 ICT 覆盖'),
     Domain('DEV', '器件与引脚', '料号/封装/符号身份、物理脚与引脚处置、工作条件、应力与降额、连接器定义与载流',
            '特殊封装/摆放要求；PCB 走线载流'),
-    Domain('CFG', '配置', '可编程器件逐配置组的配置值：允许范围、需求要求与硬件判定依赖的设置', '配置表与固件的交付'),
     Domain('NET', '网络连接', '悬空网、网名分裂、无源孤岛、NC 网络、引脚类型冲突', ''),
     Domain('PWR', '电源', '电源树、电源脚与地脚、地网、变换器/LDO、输入保护与滤波、去耦、纹波、监控覆盖',
            '去耦/储能位置与回路、大电流铜皮、PCB 压降与载流、散热与实测温升'),
@@ -192,10 +191,6 @@ RULES = (
          'plan', 'device'),
     Rule('DEV-D01', '器件身份与封装',
          '核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突', 'plan', 'device'),
-    Rule('CFG-D01', '配置值满足要求',
-         '可编程器件逐配置组核配置值（寄存器、OTP/NVM、引脚设定）：落在手册允许范围内、满足需求要求的值，并包含硬件判定写下的设置'
-         '（setting）；配置表未交付记 DELIVERABLE_PENDING（CONFIGURATION_TABLE），只挡本检查项与需求检查项；某组对该器件不存在记 NA 并引手册条款；'
-         '订货代码决定的工厂选项是器件身份，归 DEV-D01', 'plan', 'device'),
     Rule('DEV-D02', '官方物理脚差集',
          '官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；'
          '已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；'
@@ -596,7 +591,7 @@ OBJECTIVES = {
     'G7': ('证据覆盖、改进建议与复验闭环', '是否查全且结论有据，不通过项是否明确如何改进、如何复验？'),
 }
 OBJECTIVE_RULES = {
-    'G1': tuple('REQ-A01 REQ-A02 REQ-D01 REQ-D02 CFG-D01'.split()),
+    'G1': tuple('REQ-A01 REQ-A02 REQ-D01 REQ-D02'.split()),
     'G2': tuple(('DOC-A02 DOC-T01 DOC-D01 DOC-V01 '
                  'DEV-A02 DEV-E01 DEV-D01 DEV-D02 DEV-D03 DEV-D04 DEV-D05 '
                  'NET-A01 NET-A02 NET-A03 NET-A04 NET-A06 NET-A07 '
@@ -834,16 +829,6 @@ def device_role_errors():
             errors.append('角色 %s 的 pins 只能是 sense/all' % name)
     return errors
 
-
-# 可编程器件的配置组（一致性方案第 3 条，intent 格式 4）：已知角色的组由 SR 固定，每组一项 CFG-D01；没有固定组的可编程角色
-# 要求审查员在 intent.devices.<位号>.configurable 按手册寄存器或配置章节声明组。某组对该器件不存在时，该检查项记 NA 并引手册条款。
-CONFIG_GROUPS = {
-    'pd_controller': (('CAPABILITY', '能力发布'), ('CABLE_VCONN', '线缆与 VCONN'), ('PROTECTION', '保护门限与动作'),
-                      ('SENSING', '检测通道'), ('GPIO', 'GPIO 角色、默认态与对外控制时序'),
-                      ('COMPENSATION', '环路补偿（片内可编程时）'), ('SEQUENCE', '放电与上下电时序')),
-}
-PROGRAMMABLE_ROLES = ('pd_controller', 'mcu')
-CONFIG_GROUP_TITLES = {group: title for groups in CONFIG_GROUPS.values() for group, title in groups}
 
 # 寿命（一致性方案第 6 条）：intent.mission_profile.events 可写的次数，按设计寿命总计。
 LIFE_EVENTS = OrderedDict([
@@ -1475,7 +1460,7 @@ REQUIREMENT_ASPECTS = OrderedDict([
                                         ('output_current', 'output_power'))),
     ('OUTPUT_ACCURACY', RequirementAspect('精度与纹波', '输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内', ('ripple', 'accuracy'))),
     ('FUNCTION_PRESENT', RequirementAspect('功能与接口存在且数量达标', '需求的每个功能、接口由实际器件与连接落实，路数、端口数与需求一致')),
-    ('PROTOCOL_ROLE', RequirementAspect('协议角色与能力', '所选控制器的协议角色与能力覆盖需求，外围连接与配置交付可追溯')),
+    ('PROTOCOL_ROLE', RequirementAspect('协议角色与能力', '所选控制器手册声明的协议角色与能力覆盖需求，外围连接与之相符；本机配置表不在原理图审查之内')),
     ('PORT_DETECTION', RequirementAspect('端口识别通路', '需求依赖的对端、线缆或附件识别有完整信号通路')),
     ('EXTERNAL_PINOUT', RequirementAspect('对外引脚定义', '对外连接器的每个引脚定义与需求一致，未用引脚的处理有依据')),
     ('POWER_SEQUENCE', RequirementAspect('上电与掉电顺序', '需求的供电建立顺序、掉电顺序与恢复由使能、监控或时序链保证')),
@@ -1740,7 +1725,6 @@ EXPLANATIONS = {
     'DEV-C04': _x('单针额定乘针数会高估并联载流，接触电阻不均会让个别针过载', '按实际采购系列的并针降额和故障电流核完即关闭；走线载流交 PCB', inputs='PWR-C01 的电流预算'),
     'DEV-C06': _x('电解电容之外，光耦、保险丝、继电器、连接器等也会随时间或次数耗损', '按任务剖面算出的寿命或次数在器件能力内，或需求与剖面都没给次数时记 NA 即关闭', inputs='intent.mission_profile'),
     'DEV-C05': _x('在绝对最大额定内，仍可能不满足推荐条件而功能不受保证', '供电、输入、负载、频率和温度等级逐项落在保证条件内即关闭', inputs='DEV-D01 的身份、PWR-T01 的电源路径'),
-    'CFG-D01': _x('硬件按某个设置判了通过，配置表却写了别的值或超出手册允许范围，通过不成立', '每个配置组的值在手册允许范围内、满足需求并包含硬件判定写下的设置即关闭', inputs='intent.devices.<位号>.configurable 与配置表'),
     'DEV-D01': _x('同系列不同后缀的门限、封装或额定不同，可能拿错手册证明本器件', '实例 MPN、后缀和封装与所引用手册的订货信息一致即关闭'),
     'DEV-D02': _x('漏画的 EP、隐藏电源脚或错脚号会让后续计算建立在错的脚上', '官方脚与符号脚双向差集为空，或每处差异都有依据即关闭', inputs='DEV-D01 确认的器件身份'),
     'DEV-D03': _x('板内自洽的针序到了对端，电源、地或收发方向仍可能冲突', '每针本端定义与对端定义逐针相容即关闭；防护归 PRO-D03', inputs='DEV-E01 的触点映射'),
@@ -1878,7 +1862,8 @@ EXPLANATIONS = {
 # 62 / 16 / 29 / 14 rows on four records. A calculation (C) or electrical-window (E) row and the requirement row can wait
 # for a vendor datum or a design value; document and identity rows (D), topology (T), hints (A) and coverage (Q/H/V)
 # cannot. A deliverable blocks by what it is: a custom part's drawing also holds that part's identity and pins; firmware
-# holds the signal/protocol rows and the configuration row; a configuration table holds the configuration row only.
+# holds the signal/protocol rows. A configuration table is no gap (2026-10-26, user: 手册已有声明、配置表没有……判断为功能可达):
+# a capability the datasheet declares is reachable, and the settings the hardware relies on are handed on.
 def _rule_class(rule_id):
     return rule_id.split('-', 1)[1][0] if '-' in rule_id else ''
 
@@ -1890,11 +1875,10 @@ def _rules_of_class(*classes):
 COMPUTED_RULES = _rules_of_class('C', 'E') | {'REQ-D01'}
 OPEN_ITEM_RULES = {
     'VENDOR_DATUM': COMPUTED_RULES,
-    'DESIGN_VALUE': COMPUTED_RULES | {'CFG-D01'},
+    'DESIGN_VALUE': COMPUTED_RULES,
     'DELIVERABLE_PENDING': {
         'CUSTOM_PART_DRAWING': COMPUTED_RULES | {'DEV-D01', 'DEV-D02', 'DEV-D05'},
-        'FIRMWARE_CAPABILITY': COMPUTED_RULES | frozenset(r.id for r in RULES if r.id.startswith('SIG-')) | {'CFG-D01'},
-        'CONFIGURATION_TABLE': frozenset({'CFG-D01', 'REQ-D01'}),
+        'FIRMWARE_CAPABILITY': COMPUTED_RULES | frozenset(r.id for r in RULES if r.id.startswith('SIG-')),
     },
 }
 

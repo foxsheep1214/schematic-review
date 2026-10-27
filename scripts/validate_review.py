@@ -23,7 +23,8 @@ from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
 from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
-from review_functions import estimated_passes, netlist_evidence_errors, parameter_sheet, validate_functions
+from review_functions import (configuration_settings, estimated_passes, netlist_evidence_errors, parameter_sheet,
+                              validate_functions)
 import check_key
 import row_owner
 import interfaces
@@ -438,7 +439,9 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             if derived is None:
                 errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))
             else:   # the aspect is carried by tree rows; the requirement row is not judged again
-                require(result == derived, f"{key}: 需求方面由绑定检查项承担（{'、'.join(expected[key]['bound_checks'])}），"
+                worse = (item.get('derived') and item.get('function_id')
+                         and requirement_bindings.ORDER.get(result, 0) > requirement_bindings.ORDER[derived])
+                require(result == derived or worse, f"{key}: 需求方面由绑定检查项承担（{'、'.join(expected[key]['bound_checks'])}），"
                                            f"结论须等于绑定检查项中最差的结论（{derived}）；用 derive_rows.py 写出")
         if result == "FAIL":
             require(item.get("severity") in tuple(SEVERITIES), f"{key}: invalid severity")
@@ -646,6 +649,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "pending_deliverables": sorted(pending),
             # results 7: the per-part view of the conditions (refs), for the report's 器件参数表 and compare_reviews
             "parameter_sheet": parameter_sheet(report.get('functions')),
+            "configuration_settings": configuration_settings(report.get('functions')),
             "scope": scope_decl,
             "valid": not errors, "errors": errors, "blockers": blockers,
             "release": "NO_GO" if errors else release, "summary": computed,

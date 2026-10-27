@@ -134,7 +134,7 @@
 | OUTPUT_LIMITS 电流与功率限制 | 原文有 output_current / output_power | 需求的电流与功率限值有采样与限制通路，限值按元件值算得落在需求窗口内 | PWR-C01、PWR-C03、PWR-C06 | 电路 POWER_CONVERTER；接口 SUPPLY |
 | OUTPUT_ACCURACY 精度与纹波 | 原文有 ripple / accuracy | 输出精度与纹波按基准、分压公差与输出滤波算得在需求窗口内 | PWR-C14、DEV-C03、ANA-C01 | 电路 POWER_CONVERTER；接口 SUPPLY |
 | FUNCTION_PRESENT 功能与接口存在且数量达标 | 类别选中 | 需求的每个功能、接口由实际器件与连接落实，路数、端口数与需求一致 | 需求检查项自判 | — |
-| PROTOCOL_ROLE 协议角色与能力 | 类别选中 | 所选控制器的协议角色与能力覆盖需求，外围连接与配置交付可追溯 | SIG-T04、SIG-D04 | 电路 USB、CAN、RS485、UART、SPI、I2C、ETHERNET、HSSERIAL、AV、STORAGE、DDR；接口 CIRCUIT_PAIR、LINK |
+| PROTOCOL_ROLE 协议角色与能力 | 类别选中 | 所选控制器手册声明的协议角色与能力覆盖需求，外围连接与之相符；本机配置表不在原理图审查之内 | SIG-T04、SIG-D04 | 电路 USB、CAN、RS485、UART、SPI、I2C、ETHERNET、HSSERIAL、AV、STORAGE、DDR；接口 CIRCUIT_PAIR、LINK |
 | PORT_DETECTION 端口识别通路 | 类别选中 | 需求依赖的对端、线缆或附件识别有完整信号通路 | SIG-D04、SIG-C05 | 电路 USB、CAN、RS485、UART、SPI、I2C、ETHERNET、HSSERIAL、AV、STORAGE、DDR；接口 CIRCUIT_PAIR、LINK |
 | EXTERNAL_PINOUT 对外引脚定义 | 类别选中 | 对外连接器的每个引脚定义与需求一致，未用引脚的处理有依据 | DEV-D03 | 接口 EXTERNAL |
 | POWER_SEQUENCE 上电与掉电顺序 | 类别选中 | 需求的供电建立顺序、掉电顺序与恢复由使能、监控或时序链保证 | RST-T03 | 电路 STARTUP；系统功能 SYS-SEQUENCE |

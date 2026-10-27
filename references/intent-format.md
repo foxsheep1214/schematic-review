@@ -91,18 +91,10 @@
   BGA、模组、SOT-23 这类读不出脚数的不查），缺的脚号列出来拒绝，多出的 EP/PAD 放行；U/M 位号抄全了却没有 power 和 return 脚的，
   计划打 `DEVICE_PINS_NO_SUPPLY` 诊断（去耦组按这两种脚推，没有就整颗没有去耦组），不拒绝——分流基准等确无供电脚的器件不用改；核验类别为光耦、继电器、变压器、整流桥、晶体的不问。
   声明二者或任一检查器段时须带顶层 `input_sha256`，过期即拒绝。
-- `devices.<位号>.configurable`（intent 格式 4 起，一致性方案第 3 条）：可编程器件的配置组，每组
-  `{group, citation, allowed, affects[, title, required, set_points]}`——`group` 是角色的固定组（`catalog.CONFIG_GROUPS`，
-  pd_controller 为 CAPABILITY 能力发布、CABLE_VCONN 线缆与 VCONN、PROTECTION 保护门限与动作、SENSING 检测通道、GPIO 角色/默认态/
-  对外控制时序、COMPENSATION 环路补偿、SEQUENCE 放电与上下电时序）或自定组（须写 `title`），`citation` 是手册寄存器或配置章节，
-  `allowed` 是手册允许的范围，`affects` 是这组设置决定的方面，`required` 是需求要求的值，`set_points` 是这组选出的输出档位。
-  核验为可编程角色（pd_controller、mcu）而没声明齐全的，计划打 `CONFIGURABLE_UNDECLARED` 诊断（位号、角色、缺的组），2.1 做完的标志要它为 0：
-  CFG-D01 的判据和键随声明变，两份记录只有都声明了才配得上。计划另有 `GATE_BIAS_ZENER` 诊断：
+- `devices.<位号>.set_points`：器件选出的输出档位，每组 `{id, citation, points[]}`（`id` 大写，`citation` 是列出档位的手册章节）；
+  计划每组给一项 `PWR-C02.SET-POINT-<id>.<位号>` 逐档核输出精度。可编程器件的配置不审（2026-10-26 起）：手册声明的能力判为可达，
+  `configurable` 已取消，写了即拒收。计划另有 `GATE_BIAS_ZENER` 诊断：
   接在源跟随器栅极与地之间的齐纳是偏置基准、正常就导通，不派 PRO-C02 两侧窗口，由器件检查项和电路判定核。
-  计划给已核验角色的每个固定组和每个声明组一项 CFG-D01（`CFG-D01.<组>.<位号>`，不随工况重复；没声明的组 WAITING_EVIDENCE；
-  判据只写位号与组名，`citation`、`allowed`、`affects`、`required` 放在检查项的 `configuration` 字段，不进检查标识），
-  mcu 这类没有固定组的可编程角色没声明任何组时给一项 `CFG-D01.DECLARE.<位号>` 要求声明或说明为什么没有；写了 `set_points`
-  的组另加一项 `PWR-C02.SET-POINT-<组>.<位号>` 逐档核输出精度。某组对该器件不存在时，该检查项记 NA 并引手册条款。
 - `mission_profile`：所有寿命检查项共用的一份任务剖面
   `{requirement, phases[{name, share, load, ambient_c, citation[, requirement]}], events[{event, count, citation[, refs, requirement]}]}`。
   `requirement` 是给出设计寿命（`lifetime` 参数）的需求；`share` 是这一段占设计寿命时间的比例，各段合计为 1；`load` 是负载占额定的

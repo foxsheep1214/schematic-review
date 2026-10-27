@@ -136,7 +136,7 @@ def work_item_id(key):
 
 # What kind of gap an open item is, for the reader (commodity-floors / P10): who closes it, and for a vendor datum
 # which way the public bound leans. Requirement, review-incomplete and deferred items keep their cause words.
-GAP_SUBCLASSES = {'DESIGN_DECISION': '设计还要定', 'CONFIGURATION': '等配置表', 'PART_DRAWING': '等定制件图纸',
+GAP_SUBCLASSES = {'DESIGN_DECISION': '设计还要定', 'FIRMWARE': '等固件能力', 'PART_DRAWING': '等定制件图纸',
                   'PUBLIC_BOUND_SHORT': '按公开资料界限算不够', 'PUBLIC_BOUND_UNGUARANTEED': '按公开资料界限算够，但不是保证值',
                   'NOT_BOUNDABLE': '公开资料定不出界限'}
 
@@ -146,7 +146,7 @@ def gap_subclass(item):
     if kind == 'DESIGN_VALUE':
         return 'DESIGN_DECISION'
     if kind == 'DELIVERABLE_PENDING':
-        return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'CONFIGURATION'
+        return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'FIRMWARE'
     if kind == 'VENDOR_DATUM':
         worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
         if text(worst.get('not_boundable_reason')):

@@ -150,16 +150,7 @@ RCD_CRITERION = ('RCD 钳位：%s 与 %s、%s 在开关节点上吸收漏感能�
                  '（钳位电压减母线）对其耐压')
 PIN_LED_CRITERION = ('%s 直接驱动 %s 的 LED：按该脚手册的电流限值核；手册没给限值时，厂家参考电路有同样接法且负载不更重可判通过，'
                      '手册写了这种用法但没给数值记缺厂家数据，手册没写这种用法记失败项（超出规定区）')
-# The criterion names only the device and the group; the declaration's citation, allowed range, affected aspects and
-# requirement ride on the row as `configuration` (R6 acceptance 2026-10-24: 7 CFG-D01 rows per pair unpaired on the
-# reviewer's wording of them).
-CONFIG_CRITERION = ('%s 的%s：配置值须落在手册允许范围内（出处、允许范围与这一组决定的方面见本检查项 configuration）、满足需求，并包含'
-                    '硬件判定写下的设置（setting）；配置表未交付记 DELIVERABLE_PENDING（CONFIGURATION_TABLE）')
-CONFIG_UNDECLARED_CRITERION = ('%s 的%s：先在 intent.devices.%s.configurable 按手册寄存器或配置章节写出处、允许范围和它决定的方面；'
-                               '这一组对该器件不存在时本检查项记 NA 并引手册条款')
-CONFIG_DECLARE_CRITERION = ('%s 是可编程器件（%s）：在 intent.devices.%s.configurable 按手册寄存器、OTP/NVM 或配置章节声明配置组，'
-                            '或在本检查项说明它为什么没有可配置项')
-SET_POINT_CRITERION = ('%s 经%s设定输出（设定点 %s）：逐个设定点按基准或 DAC 的保证误差、分压公差与温漂核输出窗口，对照需求；'
+SET_POINT_CRITERION = ('%s 设定输出档位（%s：%s；出处 %s）：逐个设定点按基准或 DAC 的保证误差、分压公差与温漂核输出窗口，对照需求；'
                        '中间档不由两端档推出')
 ENABLE_LINK_CRITERION = ('光耦 %s 使能或关断 %s（%s 脚）：核上电时两侧供电建立的先后、使能门限与光耦传输延时，以及掉电后再上电能否'
                          '恢复工作')
@@ -780,53 +771,21 @@ class CircuitPlanning:
         self.plan_life_rows(graph, fitted)
         self.plan_feedback_open_rows(graph)
         self.plan_single_fault_rows(graph, fitted)
-        self.plan_configuration_rows(graph, fitted)
+        self.plan_set_point_rows(fitted)
 
-    def plan_configuration_rows(self, graph, fitted):
-        """CFG-D01 per programmable device and configuration group (consistency proposals of 2026-10-23, item 3): the
-        fixed groups of its role and the groups intent.devices.<ref>.configurable declares; a programmable role with
-        neither gets a row asking for them. A group that selects output levels also asks each set point's accuracy."""
+    def plan_set_point_rows(self, fitted):
+        """PWR-C02 per output set point list a device declares (intent.devices.<ref>.set_points; proposals of
+        2026-10-23, item 7, sixth trigger): each level's accuracy from the reference or DAC tolerance and the divider.
+        The configuration itself is not checked (2026-10-26): a capability the datasheet declares is reachable."""
         devices = self.intent.get('devices') or {}
         for ref in fitted:
-            role = graph.role_kind(ref)
-            declared = {g['group']: g for g in (devices.get(ref) or {}).get('configurable') or []
-                        if isinstance(g, dict) and isinstance(g.get('group'), str)}
-            fixed = [group for group, _ in catalog.CONFIG_GROUPS.get(role, ())]
-            groups = fixed + [g for g in declared if g not in fixed]
-            undeclared = [g for g in groups if g not in declared] if role in catalog.PROGRAMMABLE_ROLES else []
-            if undeclared or (not groups and role in catalog.PROGRAMMABLE_ROLES):
-                # the CFG-D01 criterion and key follow the declaration, so two reviewers pair only when both declared
-                # (R7 acceptance 2026-10-25, list A8): a programmable part without its configurable groups is a 2.1 gap
-                self.diagnostics.append({'code': 'CONFIGURABLE_UNDECLARED', 'ref': ref, 'role': role, 'groups': undeclared,
-                                         'message': '%s 是可编程器件（%s）：在 intent.devices.%s.configurable 按手册写出 %s 组的出处、允许范围与影响的方面，'
-                                                    '再重生成计划；没有声明时 CFG-D01 项只能等资料' % (ref, role, ref, '、'.join(undeclared) or '配置')})
-            if not groups:
-                if role in catalog.PROGRAMMABLE_ROLES:
-                    self.add_check('CFG-D01', {'ref': ref, 'config_group': 'DECLARE'}, key='DECLARE',
-                                   criterion=CONFIG_DECLARE_CRITERION % (ref, role, ref), readiness='WAITING_EVIDENCE',
-                                   required_inputs=['intent.devices.%s.configurable' % ref], trigger=['role:%s' % role])
-                continue
-            for group in groups:
-                item = declared.get(group)
-                title = catalog.CONFIG_GROUP_TITLES.get(group) or (item or {}).get('title') or group
-                if item is None:
-                    self.add_check('CFG-D01', {'ref': ref, 'config_group': group}, key=group,
-                                   criterion=CONFIG_UNDECLARED_CRITERION % (ref, title, ref), readiness='WAITING_EVIDENCE',
-                                   required_inputs=['intent.devices.%s.configurable.%s' % (ref, group)],
-                                   trigger=['role:%s' % role])
+            for item in (devices.get(ref) or {}).get('set_points') or []:
+                if not (isinstance(item, dict) and isinstance(item.get('id'), str) and item.get('points')):
                     continue
-                row = self.add_check('CFG-D01', {'ref': ref, 'config_group': group}, key=group,
-                                     criterion=CONFIG_CRITERION % (ref, title),
-                                     readiness='READY', trigger=['intent.devices.%s.configurable.%s' % (ref, group)])
-                row['configuration'] = {'citation': item['citation'], 'allowed': item['allowed'],
-                                        'affects': list(item['affects'])}
-                if item.get('required'):
-                    row['configuration']['required'] = item['required']
-                if item.get('set_points'):   # proposals item 7, sixth trigger
-                    self.add_check('PWR-C02', {'ref': ref, 'config_group': group, 'set_points': list(item['set_points'])},
-                                   key='SET-POINT-' + group,
-                                   criterion=SET_POINT_CRITERION % (ref, title, '、'.join(item['set_points'])),
-                                   readiness='READY', trigger=['intent.devices.%s.configurable.%s.set_points' % (ref, group)])
+                self.add_check('PWR-C02', {'ref': ref, 'set_point_group': item['id'], 'set_points': list(item['points'])},
+                               key='SET-POINT-' + item['id'],
+                               criterion=SET_POINT_CRITERION % (ref, item['id'], '、'.join(item['points']), item['citation']),
+                               readiness='READY', trigger=['intent.devices.%s.set_points.%s' % (ref, item['id'])])
 
     def plan_single_fault_rows(self, graph, fitted):
         """The single faults one reviewer asks and another does not, asked wherever their feature is on the netlist."""

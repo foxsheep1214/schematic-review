@@ -1074,7 +1074,7 @@
   "id": "M158",
   "name": "a bound requirement row that disagrees with its bound rows is accepted",
   "file": "scripts/validate_review.py",
-  "old": "                require(result == derived,",
+  "old": "                require(result == derived or worse,",
   "new": "                require(True,"
  },
  {
@@ -1891,10 +1891,10 @@
  },
  {
   "id": "M275",
-  "name": "P10: a custom-part drawing classed as configuration",
+  "name": "P10: a custom-part drawing classed as firmware",
   "file": "scripts/results_model.py",
-  "old": "return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'CONFIGURATION'",
-  "new": "return 'CONFIGURATION'"
+  "old": "return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'FIRMWARE'",
+  "new": "return 'FIRMWARE'"
  },
  {
   "id": "M276",
@@ -2492,88 +2492,11 @@
   "new": "INTENT_SCHEMA_VERSION = 3"
  },
  {
-  "id": "M361",
-  "name": "a pd_controller gets no fixed configuration groups",
-  "file": "scripts/plan_circuits.py",
-  "old": "fixed = [group for group, _ in catalog.CONFIG_GROUPS.get(role, ())]",
-  "new": "fixed = []"
- },
- {
-  "id": "M362",
-  "name": "a programmable device without groups is not asked to declare them",
-  "file": "scripts/plan_circuits.py",
-  "old": "                if role in catalog.PROGRAMMABLE_ROLES:",
-  "new": "                if False:"
- },
- {
-  "id": "M363",
-  "name": "an undeclared group is ready",
-  "file": "scripts/plan_circuits.py",
-  "old": "criterion=CONFIG_UNDECLARED_CRITERION % (ref, title, ref), readiness='WAITING_EVIDENCE',",
-  "new": "criterion=CONFIG_UNDECLARED_CRITERION % (ref, title, ref), readiness='READY',"
- },
- {
   "id": "M364",
   "name": "declared set points ask no accuracy row",
   "file": "scripts/plan_circuits.py",
-  "old": "                if item.get('set_points'):   # proposals item 7, sixth trigger",
-  "new": "                if False:"
- },
- {
-  "id": "M365",
-  "name": "a group may omit its datasheet section or range",
-  "file": "scripts/board_intent.py",
-  "old": "        for field in ('citation', 'allowed'):\n            if not _text(item.get(field)):",
-  "new": "        for field in ():\n            if not _text(item.get(field)):"
- },
- {
-  "id": "M366",
-  "name": "a group need not say what it affects",
-  "file": "scripts/board_intent.py",
-  "old": "        if not (isinstance(affects, list) and affects and all(_text(a) for a in affects)):",
-  "new": "        if False:"
- },
- {
-  "id": "M367",
-  "name": "a group of one's own needs no title",
-  "file": "scripts/board_intent.py",
-  "old": "            if group not in catalog.CONFIG_GROUP_TITLES and not _text(item.get('title')):",
-  "new": "            if False:"
- },
- {
-  "id": "M368",
-  "name": "a group may be declared twice",
-  "file": "scripts/board_intent.py",
-  "old": "        elif group in seen:\n            errors.append('%s.group %s is declared twice' % (at, group))",
-  "new": "        elif False:\n            errors.append('%s.group %s is declared twice' % (at, group))"
- },
- {
-  "id": "M369",
-  "name": "a setting need not appear in its configuration row",
-  "file": "scripts/review_functions.py",
-  "old": "            if not any(isinstance(x, dict) and x.get('value') == setting['value'] for x in listed or []):",
-  "new": "            if False:"
- },
- {
-  "id": "M370",
-  "name": "a setting of a group the plan does not have is accepted",
-  "file": "scripts/review_functions.py",
-  "old": "            if cid not in expected:\n                errors.append('%s/%s: holds at a setting of",
-  "new": "            if False:\n                errors.append('%s/%s: holds at a setting of"
- },
- {
-  "id": "M371",
-  "name": "a configuration table blocks hardware rows",
-  "file": "scripts/review_functions.py",
-  "old": "                             and (expected.get(cid) or {}).get('rule') not in CONFIG_ROWS)",
-  "new": "                             and False)"
- },
- {
-  "id": "M372",
-  "name": "a setting row is looked up by id only",
-  "file": "scripts/review_functions.py",
-  "old": "            cid = rows.get((setting['ref'], setting['group']), 'CFG-D01.%s.%s' % (setting['group'], setting['ref']))",
-  "new": "            cid = 'CFG-D01.%s.%s' % (setting['group'], setting['ref'])"
+  "old": "                if not (isinstance(item, dict) and isinstance(item.get('id'), str) and item.get('points')):\n                    continue",
+  "new": "                continue"
  },
  {
   "id": "M373",
@@ -3878,13 +3801,6 @@
   "new": "        basis = (requirement_parameters.profile_text(profile) if profile else"
  },
  {
-  "id": "M559",
-  "name": "the configuration criterion quotes the allowed range again",
-  "file": "scripts/plan_circuits.py",
-  "old": "                                     criterion=CONFIG_CRITERION % (ref, title),",
-  "new": "                                     criterion=CONFIG_CRITERION % (ref, title) + item['allowed'],"
- },
- {
   "id": "M560",
   "name": "requirement owners are compared by name again",
   "file": "scripts/compare_reviews.py",
@@ -4177,13 +4093,6 @@
   "file": "scripts/review_quality.py",
   "old": "        frame = frames.get(check.get('function_id') or row.get('function_id'))",
   "new": "        frame = None"
- },
- {
-  "id": "M602",
-  "name": "an undeclared programmable device is no diagnostic",
-  "file": "scripts/plan_circuits.py",
-  "old": "            if undeclared or (not groups and role in catalog.PROGRAMMABLE_ROLES):",
-  "new": "            if False:"
  },
  {
   "id": "M603",
@@ -4842,5 +4751,33 @@
   "file": "scripts/checkers/planutil.py",
   "old": "    if len(full) <= 64:\n        return slug(value)",
   "new": "    if True:\n        return slug(value)"
+ },
+ {
+  "id": "M697",
+  "name": "a configurable declaration is accepted again",
+  "file": "scripts/board_intent.py",
+  "old": "        if 'configurable' in device:\n            require(False,",
+  "new": "        if False:\n            require(False,"
+ },
+ {
+  "id": "M698",
+  "name": "the settings the hardware relies on are not handed on",
+  "file": "scripts/review_functions.py",
+  "old": "            entry['used_in'].append('%s/%s' % (fn['id'], c.get('id')))\n    return sorted(out.values(), key=lambda e: (e['ref'], e['group'], e['value']))",
+  "new": "            entry['used_in'].append('%s/%s' % (fn['id'], c.get('id')))\n    return []"
+ },
+ {
+  "id": "M699",
+  "name": "bound rows overwrite a function's worse verdict on the requirement row",
+  "file": "scripts/requirement_bindings.py",
+  "old": "                and ORDER.get(existing.get('review_result'), 0) > ORDER[result]):",
+  "new": "                and False):"
+ },
+ {
+  "id": "M700",
+  "name": "a set-point list needs no citation",
+  "file": "scripts/board_intent.py",
+  "old": "        if not _text(item.get('citation')):\n            errors.append(at + '.citation is missing (the datasheet section that lists the levels)')",
+  "new": "        if False:\n            errors.append(at + '.citation is missing (the datasheet section that lists the levels)')"
  }
 ]

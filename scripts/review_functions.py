@@ -62,7 +62,7 @@ OTHER_SIDES = ('DECIDED', 'NOT_DECISIVE')
 FORMULA_TOLERANCE = 0.005   # a rerun bounding formula may differ from the written value by rounding only
 DELIVERABLE_FIELDS = ('deliverable', 'owner', 'assumed', 'closure')
 # What another stage owes; a parameter of a catalog part is none of these (it is a VENDOR_DATUM with its public bound).
-DELIVERABLE_KINDS = ('CUSTOM_PART_DRAWING', 'FIRMWARE_CAPABILITY', 'CONFIGURATION_TABLE')
+DELIVERABLE_KINDS = ('CUSTOM_PART_DRAWING', 'FIRMWARE_CAPABILITY')
 VENDOR_ASK_RE = re.compile(r'向[^，,；;。]{0,16}(?:原厂|厂商|厂家|供应商|[A-Z][A-Za-z]{2,})[^，,；;。]{0,8}(?:索取|取得|索要|要)'
                            r'|ask(?:ing)? (?:the )?(?:vendor|supplier|manufacturer)|request(?:ed)? from (?:the )?(?:vendor|supplier)', re.I)
 CONDITION_KINDS = ('NUMERIC_LIMIT', 'MANDATORY_CLAUSE', 'NETLIST_FACT', 'TYPICAL_REFERENCE', 'ENGINEERING_ASSUMPTION')
@@ -201,7 +201,7 @@ def _condition_errors(label, c, db=None, audit=None):
                               'absent for application text')
     if 'setting' in c and not (isinstance(c['setting'], dict) and set(c['setting']) == {'ref', 'group', 'value'}
                                and all(text(v) for v in c['setting'].values())):
-        errors.append(label + ': setting is {ref, group, value}: the device, its configuration group and the value the '
+        errors.append(label + ': setting is {ref, group, value}: the device, the configuration item and the value the '
                               'condition holds at')
     if kind == 'NETLIST_FACT':
         nets = [n for n in c.get('nets') or [] if text(n)] if isinstance(c.get('nets'), list) else []
@@ -1966,9 +1966,6 @@ def requirement_edge_errors(plan, checks, functions):
     return errors
 
 
-CONFIG_ROWS = ('CFG-D01', 'REQ-D01')
-
-
 def life_errors(checks, functions):
     """Item 6a: a life row passing on an estimate states its BOM constraint as an estimate, and no life row is blocked
     by a vendor-data item."""
@@ -2039,13 +2036,11 @@ def estimated_passes(expected, checks, functions):
     return out
 
 
-def configuration_errors(expected, checks, functions):
-    """Consistency proposals of 2026-10-23, item 3: a condition that holds only at one setting of a programmable device
-    names it (setting{ref, group, value}) and the configuration row CFG-D01.<group>.<ref> lists it (3c); a missing
-    configuration table blocks only the configuration rows and the requirement rows (3d)."""
-    errors = []
-    rows = {((c.get('object') or {}).get('ref'), (c.get('object') or {}).get('config_group')): cid
-            for cid, c in expected.items() if c.get('rule') == 'CFG-D01'}
+def configuration_settings(functions):
+    """The settings the hardware verdicts rely on (conditions[].setting), for whoever writes the configuration table: the
+    configuration itself is not reviewed (2026-10-26, user: 手册已有声明、配置表没有……判断为功能可达), so a condition that
+    holds at one setting hands that setting on. One entry per (ref, group, value) with the functions and conditions."""
+    out = OrderedDict()
     for fn in functions or []:
         if not isinstance(fn, dict) or not text(fn.get('id')):
             continue
@@ -2053,27 +2048,11 @@ def configuration_errors(expected, checks, functions):
             setting = c.get('setting') if isinstance(c, dict) else None
             if not (isinstance(setting, dict) and all(text(setting.get(k)) for k in ('ref', 'group', 'value'))):
                 continue
-            cid = rows.get((setting['ref'], setting['group']), 'CFG-D01.%s.%s' % (setting['group'], setting['ref']))
-            if cid not in expected:
-                errors.append('%s/%s: holds at a setting of %s group %s, which the plan has no row %s for; declare the '
-                              'group in intent.devices.%s.configurable' % (fn['id'], c.get('id'), setting['ref'],
-                                                                           setting['group'], cid, setting['ref']))
-                continue
-            listed = (checks.get(cid) or {}).get('settings')
-            if not any(isinstance(x, dict) and x.get('value') == setting['value'] for x in listed or []):
-                errors.append('%s/%s: holds at setting %r of %s; list it in %s settings[{value, function}] so the '
-                              'configuration row checks it' % (fn['id'], c.get('id'), setting['value'], setting['ref'], cid))
-        for item in fn.get('open') or []:
-            if not (isinstance(item, dict) and item.get('deliverable_kind') == 'CONFIGURATION_TABLE'):
-                continue
-            ref = '%s/%s' % (fn['id'], item.get('key'))
-            blocked = sorted(cid for cid, row in checks.items() if isinstance(row, dict) and row.get('open_ref') == ref
-                             and (expected.get(cid) or {}).get('rule') not in CONFIG_ROWS)
-            if blocked:
-                errors.append('%s: a configuration table blocks only its configuration rows (CFG-D01) and the requirement '
-                              'rows, not %s; judge those over the configuration range the datasheet allows, and mark a '
-                              'condition that holds at one setting with setting{ref, group, value}' % (ref, '、'.join(blocked)))
-    return errors
+            entry = out.setdefault((setting['ref'], setting['group'], setting['value']),
+                                   {'ref': setting['ref'], 'group': setting['group'], 'value': setting['value'],
+                                    'source': c.get('source'), 'locator': c.get('locator'), 'used_in': []})
+            entry['used_in'].append('%s/%s' % (fn['id'], c.get('id')))
+    return sorted(out.values(), key=lambda e: (e['ref'], e['group'], e['value']))
 
 
 def open_item_scope_errors(functions):
@@ -2103,13 +2082,11 @@ def open_item_scope_errors(functions):
 
 
 def _blockable_text(kind, deliverable_kind):
-    if kind == 'DELIVERABLE_PENDING' and deliverable_kind == 'CONFIGURATION_TABLE':
-        return 'CFG-D01 and requirement'
     if kind == 'DELIVERABLE_PENDING' and deliverable_kind == 'CUSTOM_PART_DRAWING':
         return 'calculation (C), window (E), requirement and the part\'s own identity/pin (DEV-D01/D02/D05)'
     if kind == 'DELIVERABLE_PENDING':
-        return 'calculation (C), window (E), requirement, signal (SIG-*) and CFG-D01'
-    return 'calculation (C), window (E) and requirement' + (' and CFG-D01' if kind == 'DESIGN_VALUE' else '')
+        return 'calculation (C), window (E), requirement and signal (SIG-*)'
+    return 'calculation (C), window (E) and requirement'
 
 
 def validate_functions(plan, report, checks, history_ids=(), db=None):
@@ -2122,7 +2099,7 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
               + binding_errors(expected, checks, report.get('functions'), history_ids)
               + frame_errors(plan, checks, report.get('functions'))
               + requirement_edge_errors(plan, checks, report.get('functions'))
-              + configuration_errors(expected, checks, functions) + life_errors(checks, functions)
+              + life_errors(checks, functions)
               + estimate_pass_errors(expected, checks, functions) + open_item_scope_errors(functions))
     if isinstance(db, dict):   # a commodity part's rating is a BOM constraint, not an open item
         import bom_constraints

@@ -2516,3 +2516,34 @@ an 8-digit hash of the whole name, so ids stay stable, bounded and distinct.
 - Causes: rule_not_enforced 1
 - Changed: scripts/checkers/planutil.py, scripts/interfaces.py, scripts/plan_circuits.py, scripts/tests/test_interface_rows.py, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutation M696 killed
+
+## The configuration table is not reviewed (2026-10-26)
+
+R8 showed what the configuration rule (format 4, 2026-10-23) did on a USB PD
+board: both records held U601's seven configuration groups INSUFFICIENT for a
+missing configuration table, codex3 let that gap hold 8 rows and capped its
+release at a conditional freeze, and codex1 aimed it at the PD protocol
+requirement, where the two passing bound hardware rows overwrote it and no
+lawful record was left. The user decided: a capability the datasheet declares
+is reachable, and the configuration rules need no separate check. So the rule
+(and the CFG domain), the CONFIGURATION_TABLE deliverable kind and
+`intent.devices.<ref>.configurable` are gone — an intent that still writes it
+is refused with what to write instead. Hardware is judged over the range the
+datasheet allows; a condition that holds at one setting keeps
+`setting{ref, group, value}`, and the gate lists these as
+`configuration_settings`, shown under 交给后续环节的要求 as 配置表要写的设置.
+Output levels move to `devices.<ref>.set_points[{id, citation, points}]` and
+are still asked for accuracy (PWR-C02). The protocol-role aspect now asks
+whether the datasheet's declared capability covers the requirement. Separately,
+`requirement_bindings.derive` no longer overwrites a function's worse verdict on
+a requirement row with the bound rows' result, and the validator accepts that
+row (codex1's reproduction now gives INSUFFICIENT with its open_ref). The
+intent format number is unchanged: refusing the field already stops old
+intents. Rebuilt from codex3's inputs without `configurable` the plan goes
+619 → 612 rows (the seven configuration rows), 13 protocol-role requirement
+rows reword their criterion, nothing else.
+
+- Event: user:2026-10-26 (这种器件手册已经有声明，但是配置表没有的情况，这种可以判断为功能可达，不需要再单独查验配置规则; 选 A 取消配置检查); review:SR-20261026-R8-验收-codex3-deb0c51/审查报告.md
+- Causes: judgment 1, rule_not_enforced 1
+- Changed: SKILL.md, scripts/catalog.py, scripts/plan_circuits.py, scripts/board_intent.py, scripts/review_functions.py, scripts/results_model.py, scripts/render_report.py, scripts/validate_review.py, scripts/requirement_bindings.py, scripts/tests/test_device_settings.py, scripts/tests/test_requirement_bindings.py, scripts/tests/test_review_functions.py, scripts/tests/fixtures/golden_reports, references/check-catalog.md, references/review-vocabulary.md, references/intent-format.md, references/results-format.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/commodity-floors.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M158/M275/M364 (updated) and M697–M700 killed

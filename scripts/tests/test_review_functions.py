@@ -521,14 +521,14 @@ class DeliverablePendingTests(unittest.TestCase):
         out = vr.validate_review(p, r, db)
         section = render(p, r, out).split('### W-HV-IV')[1].split('\n## ')[0]
         self.assertIn('类型：缺资料（按公开资料界限算不够）', section)
-        self.assertIn('| 资料不足细分：设计还要定 / 等配置表 / 等定制件图纸 / 按公开资料界限算不够 / '
+        self.assertIn('| 资料不足细分：设计还要定 / 等固件能力 / 等定制件图纸 / 按公开资料界限算不够 / '
                       '按公开资料界限算够，但不是保证值 / 公开资料定不出界限 | 0 / 0 / 0 / 3 / 0 / 0 |', render(p, r, out))
         sub = results_model.gap_subclass
         self.assertEqual(sub({'kind': 'VENDOR_DATUM', 'worst_case': {'margin': {'value': 0.3}}}), 'PUBLIC_BOUND_UNGUARANTEED')
         self.assertEqual(sub({'kind': 'VENDOR_DATUM', 'worst_case': {'not_boundable_reason': 'x'}}), 'NOT_BOUNDABLE')
         self.assertEqual(sub({'kind': 'DESIGN_VALUE'}), 'DESIGN_DECISION')
         self.assertEqual(sub({'kind': 'DELIVERABLE_PENDING', 'deliverable_kind': 'CUSTOM_PART_DRAWING'}), 'PART_DRAWING')
-        self.assertEqual(sub({'kind': 'DELIVERABLE_PENDING', 'deliverable_kind': 'CONFIGURATION_TABLE'}), 'CONFIGURATION')
+        self.assertEqual(sub({'kind': 'DELIVERABLE_PENDING', 'deliverable_kind': 'FIRMWARE_CAPABILITY'}), 'FIRMWARE')
         self.assertIsNone(sub({'kind': 'REQUIREMENT'}))
 
     def test_aspects_one_gap_blocks_for_the_same_reason_share_one_line(self):

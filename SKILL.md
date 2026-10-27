@@ -151,7 +151,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 
 检查编号为 `内容域-方式序号`，如 `PWR-E01`（电源域的保证值核对）。
 内容域：DOC 图纸与数据、DEV 器件与引脚、NET 网络连接、PWR 电源、RST 启动与复位、CLK 时钟、
-SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱动、REQ 需求与闭环、CFG 配置（可编程器件逐配置组，组写在 `intent.devices.<位号>.configurable`；硬件按允许的配置范围判，配置表缺口只挡 CFG-D01 项和需求检查项）。
+SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱动、REQ 需求与闭环。可编程器件不审配置表：手册声明的能力判为可达，硬件按允许的配置范围判，只在某个设置下成立的条款标 `setting`，报告列给配置表编写方。
 方式：A 自动扫描、E 保证值核对、T 连接追踪、C 工程计算、D 条款核对、V 图面目检、Q 覆盖审计、H 版本比对。
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（网表扫描、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
 计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-4)。
@@ -286,7 +286,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 做完的标志：候选文件已生成，`circuit_decisions.py --write` 无错误（每个候选恰一条决定、未归属有源件 0、加的工作态都有 `state_requirements` 点名的需求、`intent.circuits` 已推出）；
 带候选的冷扫（⑤）不再提示未声明电压的轨、无界节点/跨域、`CIRCUIT_TYPE_MISFIT`、阻值读不出；候选文件的 `gaps` 清零，
-`DEVICE_KIND_GENERIC` 列的 ic 逐颗看过；`CONFIGURABLE_UNDECLARED` 为 0（可编程器件的配置组都已在 `devices.<位号>.configurable` 声明）；REQ-Q08 清单上只剩两端件。
+`DEVICE_KIND_GENERIC` 列的 ic 逐颗看过；REQ-Q08 清单上只剩两端件。
 
 #### 2.2 资料请求与重审计
 

@@ -17,10 +17,11 @@ from electrical_contract import db_fingerprint
 ASSEMBLY_FIELDS = ('id', 'citation', 'population', 'jumpers')
 JUMPER_POSITIONS = ('closed', 'open', 'unknown')
 MAX_ASSEMBLIES = 32
-DEVICE_FIELDS = ('mpn', 'package', 'identity_citation', 'citation', 'pinout_complete', 'pins', 'configurable')
-# A configuration group the reviewer declares from the datasheet (consistency proposals of 2026-10-23, item 3).
-CONFIG_FIELDS = ('group', 'title', 'citation', 'allowed', 'affects', 'required', 'set_points')
-CONFIG_GROUP_RE = re.compile(r'^[A-Z][A-Z0-9_]*$')
+DEVICE_FIELDS = ('mpn', 'package', 'identity_citation', 'citation', 'pinout_complete', 'pins', 'set_points')
+# The output levels a device selects, each list asked for accuracy (PWR-C02); the configuration itself is not
+# checked (2026-10-26): a capability the datasheet declares is reachable.
+SET_POINT_FIELDS = ('id', 'citation', 'points')
+SET_POINT_ID_RE = re.compile(r'^[A-Z][A-Z0-9_]*$')
 # Device type as stated by the manufacturer's datasheet (same strings as checkers.netgraph kinds).
 # intent.device_kinds declares it; only declarations the datasheet audit VERIFIED reach the analysis.
 # An integrated circuit declares the role its datasheet title gives it (catalog.DEVICE_ROLES, the role registry);
@@ -229,7 +230,12 @@ def device_errors(devices, db):
         if not isinstance(device, dict):
             require(False, 'device must be an object')
             continue
-        require(not set(device) - set(DEVICE_FIELDS), 'device has unsupported fields')
+        if 'configurable' in device:
+            require(False, 'device %s configurable is gone (2026-10-26): a capability its datasheet declares is reachable '
+                           'and the configuration table is not reviewed; write the settings the hardware relies on as '
+                           'condition setting{ref, group, value} and the output levels as set_points[{id, citation, points}]'
+                    % ref)
+        require(not set(device) - set(DEVICE_FIELDS) - {'configurable'}, 'device has unsupported fields')
         for key in ('mpn', 'package', 'identity_citation', 'citation'):
             require(_text(device.get(key)), 'device ' + str(ref) + ' needs ' + key)
         require(type(device.get('pinout_complete')) is bool, 'pinout_complete must be boolean')
@@ -249,47 +255,37 @@ def device_errors(devices, db):
             missing = missing_package_pins(device.get('package'), pins)
             require(not missing, 'device %s pinout_complete but package %s pins %s are not in the table' % (
                 ref, device.get('package'), '/'.join(missing)))
-        if 'configurable' in device:
-            errors.extend('devices: ' + e for e in configurable_errors(ref, device['configurable']))
+        if 'set_points' in device:
+            errors.extend('devices: ' + e for e in set_point_errors(ref, device['set_points']))
     return errors
 
 
-def configurable_errors(ref, groups):
-    """devices.<ref>.configurable: one entry per configuration group, a fixed group of the device's role
-    (catalog.CONFIG_GROUPS) or one the reviewer names with a title, each with the datasheet section, the allowed range
-    and the aspects it affects; optionally the value a requirement asks and the output set points it selects."""
-    import catalog
-    label = 'device %s configurable' % ref
-    if not isinstance(groups, list) or not groups:
-        return [label + ' is a non-empty list of groups {group, citation, allowed, affects[, title, required, set_points]}']
+def set_point_errors(ref, lists):
+    """devices.<ref>.set_points: one entry per set of output levels the device selects, each with the datasheet
+    section that lists them."""
+    label = 'device %s set_points' % ref
+    if not isinstance(lists, list) or not lists:
+        return [label + ' is a non-empty list of {id, citation, points}']
     errors, seen = [], set()
-    for i, item in enumerate(groups):
+    for i, item in enumerate(lists):
         at = '%s[%d]' % (label, i)
         if not isinstance(item, dict):
             errors.append(at + ' must be an object')
             continue
-        errors += ['%s.%s is not a field: write %s' % (at, f, '/'.join(CONFIG_FIELDS)) for f in sorted(set(item) - set(CONFIG_FIELDS))]
-        group = item.get('group')
-        if not (isinstance(group, str) and CONFIG_GROUP_RE.match(group)):
-            errors.append(at + '.group is an upper-case id (a fixed group such as CAPABILITY, or one of your own)')
-        elif group in seen:
-            errors.append('%s.group %s is declared twice' % (at, group))
+        errors += ['%s.%s is not a field: write %s' % (at, f, '/'.join(SET_POINT_FIELDS))
+                   for f in sorted(set(item) - set(SET_POINT_FIELDS))]
+        sid = item.get('id')
+        if not (isinstance(sid, str) and SET_POINT_ID_RE.match(sid)):
+            errors.append(at + '.id is an upper-case id (OUTPUT, VBUS_LEVELS)')
+        elif sid in seen:
+            errors.append('%s.id %s is declared twice' % (at, sid))
         else:
-            seen.add(group)
-            if group not in catalog.CONFIG_GROUP_TITLES and not _text(item.get('title')):
-                errors.append('%s: group %s is not a fixed group; give it a title' % (at, group))
-        for field in ('citation', 'allowed'):
-            if not _text(item.get(field)):
-                errors.append('%s.%s is missing (%s)' % (at, field, 'the datasheet register or configuration section'
-                                                         if field == 'citation' else 'the range the datasheet allows'))
-        affects = item.get('affects')
-        if not (isinstance(affects, list) and affects and all(_text(a) for a in affects)):
-            errors.append(at + '.affects lists the aspects the setting decides')
-        if 'required' in item and not _text(item['required']):
-            errors.append(at + '.required is the value or range a requirement asks, as text')
-        points = item.get('set_points')
-        if 'set_points' in item and not (isinstance(points, list) and points and all(_text(p) for p in points)):
-            errors.append(at + '.set_points lists the output levels the group selects')
+            seen.add(sid)
+        if not _text(item.get('citation')):
+            errors.append(at + '.citation is missing (the datasheet section that lists the levels)')
+        points = item.get('points')
+        if not (isinstance(points, list) and points and all(_text(p) for p in points)):
+            errors.append(at + '.points lists the output levels')
     return errors
 
 

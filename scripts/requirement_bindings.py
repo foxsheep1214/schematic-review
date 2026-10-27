@@ -254,6 +254,11 @@ def derive(plan, results, counts=None):
                     row['rationale'] += '；%s 的失败边不在本方面的量上，不继承' % '、'.join(left_out)
                 row.update({k: worst[k] for k in COPIED if k in worst})
         existing = rows.get(planned['id'])
+        if (existing is not None and existing.get('derived') and existing.get('function_id')
+                and ORDER.get(existing.get('review_result'), 0) > ORDER[result]):
+            # a function's gap or failure on the requirement row itself is worse than the bound rows: it stands
+            # (R8 codex1: a function's open item on the requirement row was overwritten by two passing bound rows)
+            continue
         if existing is not None and existing.get('review_result') and not existing.get('derived'):
             if existing['review_result'] != result:
                 errors.append('%s: hand-filled review_result %r disagrees with its bound rows (%r)'

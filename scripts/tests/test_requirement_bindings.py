@@ -146,6 +146,23 @@ class ResultTests(unittest.TestCase):
         self.assertEqual(self.errors(out), [])
         self.assertGreaterEqual(summary['requirements'], 1)
 
+    def test_a_functions_worse_verdict_on_the_requirement_row_stands(self):
+        # R8 codex1: a function's open item on the requirement row was overwritten by two passing bound rows
+        report = self.report('PASS')
+        report['checks'] = [r for r in report['checks'] if r['id'] != self.key] + [
+            {'id': self.key, 'applicability': 'APPLICABLE', 'derived': True, 'function_id': 'FN-X',
+             'review_result': 'INSUFFICIENT', 'open_ref': 'FN-X/GAP'}]
+        rb.derive(self.plan, report)
+        row = next(r for r in report['checks'] if r['id'] == self.key)
+        self.assertEqual((row['review_result'], row.get('open_ref')), ('INSUFFICIENT', 'FN-X/GAP'))
+
+    def test_bound_rows_worse_than_the_functions_verdict_win(self):
+        report = self.report('FAIL')
+        report['checks'] = [r for r in report['checks'] if r['id'] != self.key] + [
+            {'id': self.key, 'applicability': 'APPLICABLE', 'derived': True, 'function_id': 'FN-X', 'review_result': 'PASS'}]
+        rb.derive(self.plan, report)
+        self.assertEqual(next(r for r in report['checks'] if r['id'] == self.key)['review_result'], 'FAIL')
+
     def test_a_hand_filled_requirement_row_is_kept_and_compared(self):
         report = self.report('FAIL')
         out, _, errors = derive_rows.derive(self.plan, copy.deepcopy(report))
