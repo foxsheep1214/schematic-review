@@ -9,6 +9,27 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Derating spec: I/II/III levels, one file shared with ASG (2026-10-27)
+
+DEV-C01 says derating follows the project rule, and the commodity floors fall back on a 50% rule of thumb; there was
+no derating spec with levels. The user put T/CPSS 1013—2021, T/CPSS 1006—2024 and GJB/Z 35—93 into the library
+(`raw/Standard/`; IPC-9592B is only its table of contents) and asked for one spec, used by both ASG and SR, that gives
+I/II/III values so each picks the column of the project's derating level, not only for consumer products. Decisions
+taken with the user: sources in the order 1013 → GJB → 1006; 1006 has one level, so its values are the same for all
+three; a GJB range takes its conservative end; GJB table 29's working-current factor is not stacked on 1013's winding
+temperature and saturation limits; a single factor holds for the worst combination of steady and transient stress,
+while a separately rated surge or pulse is compared with that rating by the table's ratio.
+`references/derating-rules.json` (223 rules: device type, parameter, condition, measure, the three values, PDF page)
+and `references/derating-rules.md` (where the level comes from, the rules, one table per kind) are byte-identical to
+ASG's. The tests check kinds against `device_kinds.KINDS`, defined measures and conditions, cited pages within the
+source, values easing from I to III, one value for an ungraded source, every rule listed in the document, and the
+same bytes in both repositories. Wiring the level into DEV-C01, the commodity floors and rule A1 is a later step.
+
+- Event: user:2026-10-27 (Confirm the three-grade derating spec with your recommendations on all six pending points ... write the spec into ASG and SR with alignment tests and a ledger entry, and run all tests. Don't commit yet.)
+- Causes: knowledge_missing 1 (no derating levels to take the project's rule from)
+- Changed: references/derating-rules.json, references/derating-rules.md, SKILL.md, scripts/tests/test_derating_rules.py, docs/improvement-ledger.md
+- Gates: pytest 2307, mutation --changed: 0 mutations on 4 changed files
+
 ## A part's kind: what it does, settled by its datasheet, not by its refdes (2026-10-27)
 
 The set of parts that needed a verified datasheet declaration was the refdes set Q/D/ZD/TVS/U/M, and part words counted
