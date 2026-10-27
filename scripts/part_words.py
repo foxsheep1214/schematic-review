@@ -7,7 +7,7 @@ import re
 
 import catalog
 import device_kinds
-from device_kinds import JST_CONNECTOR_RE, USB_CONNECTOR_RE   # noqa: F401  (classify checks these patterns by identity)
+from device_kinds import JST_CONNECTOR_RE, SI_FET_WORDS, USB_CONNECTOR_RE   # noqa: F401  (classify checks these patterns by identity)
 
 
 # Part words read from a part's text (value, symbol, part number), one vocabulary for every module.
@@ -177,8 +177,9 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         return kind, 'datasheet'
     signature = pin_signature(pin_names)
     blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
-    transistor = {kind for pattern, kind in KEYWORD_KINDS
-                  if kind in (MOSFET, BJT) and re.search(pattern, blob, re.I)}
+    ic_ref = re.match(r'^(U|M|IC)\d', ref, re.I)
+    transistor = {kind for pattern, kind in KEYWORD_KINDS if kind in (MOSFET, BJT)
+                  and not (pattern == SI_FET_WORDS and ic_ref) and re.search(pattern, blob, re.I)}
     # Optical libraries also contain emitters and integrated RGB controllers.
     # Only the OPTO heuristic uses the symbol identity without its namespace;
     # other explicit library categories (e.g. Transistor_BJT:) stay intact.
@@ -197,9 +198,9 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
                     or not all(re.fullmatch(USB_CONNECTOR_RE, item, re.I)
                                for item in identities)):
                 continue
-        if pattern == JST_CONNECTOR_RE and re.match(r'^(U|M|IC)\d', ref, re.I):
+        if pattern in (JST_CONNECTOR_RE, SI_FET_WORDS) and ic_ref:
             continue
-        if kind in (NTC, VARISTOR) and (re.match(r'^(U|M|IC)\d', ref, re.I) or (pin_count is not None and pin_count > 3)):
+        if kind in (NTC, VARISTOR) and (ic_ref or (pin_count is not None and pin_count > 3)):
             continue
         if re.search(pattern, keyword_blob, re.I):
             if kind in (MOSFET, BJT) and pin_count is not None and pin_count < 3:

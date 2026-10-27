@@ -4989,5 +4989,40 @@
   "file": "scripts/datasheet_kinds.py",
   "old": "(?i:%s)s?(?![a-z0-9])",
   "new": "(?i:%s)(?![a-z0-9])"
+ },
+ {
+  "id": "M732",
+  "name": "2N7000/2N7002 are read as BJTs too again",
+  "file": "scripts/device_kinds.py",
+  "old": "r'2N(?!700[02])\\d{4}'",
+  "new": "r'2N\\d{4}'"
+ },
+ {
+  "id": "M733",
+  "name": "2N7000 is no longer a MOSFET family",
+  "file": "scripts/device_kinds.py",
+  "old": "'2N700[02]'), SI_FET_WORDS),",
+  "new": "'2N7002'), SI_FET_WORDS),"
+ },
+ {
+  "id": "M734",
+  "name": "Si#### names a MOSFET on an IC refdes again",
+  "file": "scripts/part_words.py",
+  "old": "        if pattern in (JST_CONNECTOR_RE, SI_FET_WORDS) and ic_ref:",
+  "new": "        if pattern == JST_CONNECTOR_RE and ic_ref:"
+ },
+ {
+  "id": "M735",
+  "name": "Si#### on an IC refdes contradicts another transistor word again",
+  "file": "scripts/part_words.py",
+  "old": "                  and not (pattern == SI_FET_WORDS and ic_ref) and re.search(pattern, blob, re.I)}",
+  "new": "                  and re.search(pattern, blob, re.I)}"
+ },
+ {
+  "id": "M736",
+  "name": "a capital short cue no longer runs into a lowercase word",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "(?:%s(?![0-9])|(?i:%s)s?(?![a-z0-9]))' % (word.upper(), word)",
+  "new": "(?i:%s)s?(?![a-z0-9])' % word"
  }
 ]

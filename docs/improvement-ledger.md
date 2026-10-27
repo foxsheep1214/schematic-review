@@ -7,6 +7,23 @@ fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
 file existed are in `docs/audits/`.
 
+## Part words, three leftovers: 2N7002, Si#### on an IC, a capital short cue (2026-10-26)
+
+The anchoring entry below left three faults it had found. 2N7002 was named by both the bjt family `2N\d{4}` and the
+mosfet word, so the most common small-signal MOSFET classified UNKNOWN; the bjt family now skips 2N7000/2N7002 and the
+mosfet family names both. Vishay's Si#### MOSFETs share prefix and number range with Silicon Labs ICs (Si7021 sensor,
+Si8261 isolated driver, Si3402 PoE controller, Si5351 clock), and pin counts overlap too, so a U-refdes Si7021 read as a
+MOSFET; like the JST word, `device_kinds.SI_FET_WORDS` names no part with a U/M/IC refdes, nor contradicts another
+transistor word there (a Vishay dual MOSFET placed as U falls to its refdes and gets a kind gap). A short datasheet cue
+in capitals may now run into a lowercase word ("TVSdiode", "MCUwith"); in any other case it stays a word of its own.
+Vendor-prefixed second sources (L2N7002, LBSS84) are left to their refdes or pin names: none occurs in the fixtures. On
+the 59 netlist fixtures (3196 parts; the five Si#### parts all Q) and 29 datasheet extracts nothing changes.
+
+- Event: user:2026-10-26 (Implement fixes 1, 2 and 4 on this branch as proposed, with tests, mutations, ledger and gates; leave Leshan alone.)
+- Causes: knowledge_wrong 2 (2N7002 named as a BJT, Si#### as a MOSFET on ICs), rule_not_enforced 1 (capital short cue joined to a word)
+- Changed: scripts/device_kinds.py, scripts/part_words.py, scripts/datasheet_kinds.py, references/checker-conventions.md, scripts/tests/test_part_number_families.py, evals/mutation/mutations.json, evals/mutation/README.md
+- Gates: 2293 unit tests, rule contracts 69/69, KiCad replay 195/195, typical circuits 200/185/14 unchanged, M732–M736 killed; the --changed gate first left M731 (plural cue) alive, since a capital MCUs now reads without the plural s: a lowercase "mcus" case kills it
+
 ## Part words read as words: families start a part number, short cues are whole words (2026-10-26)
 
 An audit of the part-kind declarations of the schematic-generation skill, which copies this kind vocabulary, found an

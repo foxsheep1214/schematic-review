@@ -21,12 +21,11 @@ FAMILY_EXAMPLES = {
             'SM712'),
     'zener': ('BZX84C5V1', 'BZT52C3V3', 'MMSZ5231B', '1N4733A'),
     'bjt': ('BC847B', 'BCX56', '2N3904', 'MMBT3904', 'PBSS4041PX', 'S8050'),
-    'mosfet': ('IRF540N', 'AUIRF7341', 'IRLML6402', 'AO3400A', 'SI2302', 'BSS84', '2N7002'),
+    'mosfet': ('IRF540N', 'AUIRF7341', 'IRLML6402', 'AO3400A', 'SI2302', 'BSS84', '2N7002', '2N7000'),
     'diode': ('SS14', 'BAT54', '1N4148', '1N5819'),
     'ferrite': ('BLM18PG221', 'MPZ1608S221A'),
 }
 PINS = {'bjt': 3, 'mosfet': 3, 'opto': 4}
-BOTH_TRANSISTORS = {'2N7002'}   # 2N\d{4} names it too: UNKNOWN, as before the anchoring
 
 
 def kind_hit(kind, text):
@@ -50,8 +49,7 @@ class PartNumberFamilyTests(unittest.TestCase):
         for kind, examples in FAMILY_EXAMPLES.items():
             for example in examples:
                 with self.subTest(kind=kind, example=example):
-                    if example not in BOTH_TRANSISTORS:
-                        self.assertEqual(pw.classify('X1', {'value': example}, PINS.get(kind, 2))[0], kind)
+                    self.assertEqual(pw.classify('X1', {'value': example}, PINS.get(kind, 2))[0], kind)
                     for lead in ('Lib:', 'Q_', '光耦 ', 'x '):
                         self.assertTrue(kind_hit(kind, lead + example), lead)
                     self.assertFalse(kind_hit(kind, 'T' + example))
@@ -61,6 +59,23 @@ class PartNumberFamilyTests(unittest.TestCase):
         self.assertEqual(pw.classify('U5', {'value': 'AIRFLOW'}, 6), (pw.IC, 'refdes-prefix'))
         self.assertEqual(pw.classify('D9', {'value': 'XSS14'}, 2), (pw.DIODE, 'refdes-prefix'))
 
+    def test_2n7000_and_2n7002_are_mosfets_not_bjts(self):
+        for value in ('2N7002', '2N7002K', '2N7000'):
+            with self.subTest(value=value):
+                self.assertFalse(kind_hit('bjt', value))
+                self.assertEqual(pw.classify('Q1', {'value': value}, 3), (pw.MOSFET, 'part-keyword'))
+        self.assertEqual(pw.classify('Q2', {'value': '2N3904'}, 3), (pw.BJT, 'part-keyword'))
+
+    def test_si_and_four_digits_names_no_part_with_an_ic_refdes(self):
+        # Silicon Labs ICs share Vishay's Si#### MOSFET prefix and number range
+        for value, pins in (('Si7021-A20', 6), ('Si8261BAC', 6), ('Si3402-B', 20), ('SI5351A-B-GT', 10)):
+            with self.subTest(value=value):
+                self.assertEqual(pw.classify('U3', {'value': value}, pins), (pw.IC, 'refdes-prefix'))
+        self.assertEqual(pw.classify('Q3', {'value': 'Si7223DN'}, 8), (pw.MOSFET, 'part-keyword'))
+        self.assertEqual(pw.classify('U7', {'value': 'SI4800BDY'}, 8), (pw.IC, 'refdes-prefix'))   # a gap, not a guess
+        # nor does it contradict another transistor word on the same part
+        self.assertEqual(pw.classify('U2', {'value': 'SI2302', 'prim': 'Transistor_BJT:Q_NPN_BEC'}, 3), (pw.BJT, 'part-keyword'))
+
 
 class ShortCueTests(unittest.TestCase):
     def test_a_short_cue_is_read_as_a_word(self):
@@ -68,8 +83,15 @@ class ShortCueTests(unittest.TestCase):
         self.assertEqual(dk.cues('ABSOLUTE MAXIMUM CURRENT'), set())
         self.assertEqual(dk.cues('BidirectionalTVSDiode'), {'tvs'})
         self.assertEqual(dk.cues('32-bit MCUs with flash'), {'mcu'})
+        self.assertEqual(dk.cues('two mcus on one board'), {'mcu'})
         self.assertEqual(dk.cues('NPNTransistor'), {'bjt'})
         self.assertEqual(dk.cues('N-ChannelMOSFET'), {'mosfet'})      # a long cue still reads squashed text
+
+    def test_a_capital_short_cue_may_run_into_a_lowercase_word(self):
+        self.assertEqual(dk.cues('TVSdiode array'), {'tvs'})
+        self.assertEqual(dk.cues('MCUwith 64 KB flash'), {'mcu'})
+        self.assertEqual(dk.cues('TVS3 pin'), set())
+        self.assertEqual(dk.cues('maximumcurrent'), set())
 
     def test_a_curve_title_no_longer_conflicts_with_the_declared_kind(self):
         read = lambda path, page: 'N-Channel MOSFET\nMaximum Current 10 A'

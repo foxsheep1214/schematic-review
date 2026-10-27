@@ -29,6 +29,11 @@ def family(*numbers):
     PS2594, BSS84 holds SS84, AIRFLOW holds IRF. A library prefix, separator or Chinese word may precede them."""
     return r'(?<![A-Z0-9])(?:%s)' % '|'.join(numbers)
 
+
+# Vishay's Si#### MOSFETs share prefix and number range with Silicon Labs ICs (Si7021, Si8261, Si5351): like JST, the
+# word never names a part with an IC refdes (part_words.classify).
+SI_FET_WORDS = family(r'SI\d{4}')
+
 # Registry order is the classifier's keyword precedence (the first kind whose word matches wins); kinds without words
 # follow. Transistor order between bjt and mosfet does not matter: both matching is UNKNOWN whatever comes first.
 KINDS = OrderedDict([
@@ -50,13 +55,13 @@ KINDS = OrderedDict([
                        ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress'), two_terminal=True, protective=True)),
     ('zener', DeviceKind('齐纳', (), (r'ZENER|稳压二极管|' + family('BZX', r'BZT5\d', 'MMSZ', r'1N47\d'),), ('zener',),
                          two_terminal=True)),
-    # KiCad symbol-library category of the symbol actually placed, then the part words.
+    # KiCad symbol-library category of the symbol actually placed, then the part words; 2N7000/2N7002 are MOSFETs.
     ('bjt', DeviceKind('双极晶体管', (), (r'TRANSISTOR_BJT:', r'\bNPN\b|\bPNP\b|三极管|' +
-                                        family(r'BC[PXW]?\d{2,3}', r'2N\d{4}', 'MMBT', 'PBSS', 'S8050', 'S8550')),
+                                        family(r'BC[PXW]?\d{2,3}', r'2N(?!700[02])\d{4}', 'MMBT', 'PBSS', 'S8050', 'S8550')),
                        ('npn', 'pnp', 'bipolar'))),
     ('mosfet', DeviceKind('MOSFET', (r'^Q\d',), (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:',
                                                  r'MOSFET|\bFET\b|NMOS|PMOS|[NP]-MOS|IGBT|' +
-                                                 family('IRF', 'AUIRF', 'IRLML', r'AO\d{4}', r'SI\d{4}', r'BSS\d', '2N7002')),
+                                                 family('IRF', 'AUIRF', 'IRLML', r'AO\d{4}', r'BSS\d', '2N700[02]'), SI_FET_WORDS),
                           ('mosfet', 'nchannel', 'pchannel', 'superjunction'))),
     ('diode', DeviceKind('二极管', (r'^D\d',), (r'SCHOTTKY|DIODE|二极管|' + family(r'SS\d{2}', r'BAT\d', r'1N4\d{3}', r'1N58\d'),),
                          ('rectifier', 'diode', 'schottky'), two_terminal=True)),

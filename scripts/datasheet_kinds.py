@@ -37,11 +37,12 @@ SHORT_CUE = 3   # squashed, "Supply Current vs" holds tvs and "Maximum Current" 
 
 def named_by(word, text, flat=None):
     """True when text names the cue: a long cue anywhere in the squashed text, a short cue as a word of its own (a
-    lowercase-to-capital join counts as a space, "BidirectionalTVSDiode"; a plural s is allowed)."""
+    lowercase-to-capital join counts as a space, "BidirectionalTVSDiode"; a plural s is allowed; the cue in capitals may
+    run into a lowercase word, "TVSdiode")."""
     if len(word) > SHORT_CUE:
         return word in (squash(text) if flat is None else flat)
     spaced = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', str(text or ''))
-    return re.search(r'(?<![A-Za-z0-9])(?i:%s)s?(?![a-z0-9])' % word, spaced) is not None
+    return re.search(r'(?<![A-Za-z0-9])(?:%s(?![0-9])|(?i:%s)s?(?![a-z0-9]))' % (word.upper(), word), spaced) is not None
 
 
 def cues(text, specific=True):
