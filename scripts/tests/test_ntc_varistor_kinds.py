@@ -70,6 +70,22 @@ class KindTests(unittest.TestCase):
         self.assertEqual((graph.kind('RV1'), graph.kind('TH1')), (pw.VARISTOR, pw.NTC))
         self.assertEqual((Planner().wearout_class(graph, 'RV1'), Planner().wearout_class(graph, 'TH1')), ('VARISTOR', 'INRUSH_NTC'))
 
+    def test_a_resistor_whose_bom_says_ntc_takes_the_ntc_cells(self):
+        import plan_circuits
+
+        class Planner(plan_circuits.CircuitPlanning):
+            def __init__(self, bom):
+                self.db = {'bom': {'parts': bom}}
+
+        # the symbol reads as a plain resistor; only the BOM line names the thermistor
+        db = {'parts': {'R5': {'prim': 'Device:R', 'value': '5D-9'}},
+              'pin2net': {'R5.1': 'L', 'R5.2': 'L_NTC'}, 'nets': {'L': ['R5.1'], 'L_NTC': ['R5.2']},
+              'declared_pinname': {'R5.1': '1', 'R5.2': '2'}}
+        graph = NetGraph(db)
+        self.assertEqual(graph.kind('R5'), pw.RESISTOR)
+        self.assertEqual(Planner({'R5': {'Electrical specification': 'NTC 5Ω 3A'}}).bound_kinds(graph, 'R5'), {'ntc'})
+        self.assertEqual(Planner({}).bound_kinds(graph, 'R5'), {pw.RESISTOR})
+
 class VaristorCellTests(unittest.TestCase):
     def test_the_three_cells_with_the_five_boundary_columns(self):
         cells = [b for b in catalog.BOUNDS.values() if 'varistor' in b.kinds]

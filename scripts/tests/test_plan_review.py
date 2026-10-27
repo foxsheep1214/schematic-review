@@ -448,13 +448,14 @@ class ReviewPlanTests(unittest.TestCase):
 
     def test_connector_signal_esd_folds_into_connector_protection(self):
         db = threshold_db()
-        extra = {'J1': [('1', '1', 'USB_DP'), ('2', '2', 'VBUS'), ('3', '3', 'PGND')],
+        extra = {'J1': [('1', '1', 'USB_DP'), ('2', '2', 'VBUS'), ('3', '3', 'PGND'), ('4', '4', 'USB_DN')],
                  'D3': [('1', 'K', 'USB_DP'), ('2', 'A', 'PGND')],
+                 'D6': [('1', 'IO1', 'USB_DP'), ('2', 'IO2', 'USB_DN'), ('3', 'GND', 'PGND')],
                  'D4': [('1', 'K', 'VBUS'), ('2', 'A', 'PGND')],
                  'D5': [('1', 'K', 'INT_SIG'), ('2', 'A', 'PGND')],
                  'U3': [('1', 'IO', 'INT_SIG'), ('2', 'GND', 'PGND')]}
         for ref, value in (('J1', 'USB_C'), ('D3', 'PESD5V0'), ('D4', 'SMAJ5.0A'),
-                           ('D5', 'PESD5V0'), ('U3', 'MCU')):
+                           ('D5', 'PESD5V0'), ('D6', 'PESD2USB'), ('U3', 'MCU')):
             db['parts'][ref] = {'part': value, 'value': value, 'prim': 'X', 'jedec': '', 'nc': False}
             db['ref2page'][ref] = 1
         for ref, rows in extra.items():
@@ -465,7 +466,8 @@ class ReviewPlanTests(unittest.TestCase):
         checks = build_review_plan(db)['checks']
         refs = sorted({x['object']['ref'] for x in checks if x['rule'] == 'PRO-C02'})
         # 2026-10-26（方案 B）：跨网与地的防护钳位（信号线 D3、电源轨 D4、板内 IO 的 D5）只出 PRO-E02；
-        # 串在门限链里的齐纳 D1 与门限脚 U1 仍是 PRO-C02 两侧窗口。
+        # 串在门限链里的齐纳 D1 与门限脚 U1 仍是 PRO-C02 两侧窗口。两路 ESD 阵列 D6 有三个网，不是两端钳位，
+        # 由连接器的 PRO-D03 带走，也不出两侧窗口。
         self.assertEqual(refs, ['D1', 'U1'])
         connector = next(x for x in checks if x['rule'] == 'PRO-D03' and x['object']['ref'] == 'J1')
         self.assertNotIn('clamp_refs', connector)   # 2026-10-26: the connector row asks topology only

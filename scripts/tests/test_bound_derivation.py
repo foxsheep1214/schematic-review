@@ -95,6 +95,8 @@ class FormatTests(unittest.TestCase):
         self.assertEqual(results_model.SCHEMA_VERSION, 12)
         errors = results_model.shape_errors({'schema_version': 4, 'functions': [], 'checks': []})
         self.assertTrue(any('schema_version must be 12' in e for e in errors), errors)
+        previous = results_model.shape_errors({'schema_version': results_model.SCHEMA_VERSION - 1, 'functions': [], 'checks': []})
+        self.assertTrue(any('schema_version must be' in e for e in previous), previous)   # the format just retired too
 
 
 if __name__ == '__main__':

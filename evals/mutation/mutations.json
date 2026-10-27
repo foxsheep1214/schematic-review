@@ -182,13 +182,6 @@
   "new": "    if False:\n        return None, unjudged_message("
  },
  {
-  "id": "M37",
-  "name": "a PASS row whose aspect the function never judged accepted",
-  "file": "scripts/review_functions.py",
-  "old": "                and judged(functions[fid], row['aspect'], state, cid) is None):",
-  "new": "                and judged(functions[fid], row['aspect'], state, cid) is None and False):"
- },
- {
   "id": "M38",
   "name": "judgement accepted without the clauses it rests on",
   "file": "scripts/review_functions.py",
@@ -220,7 +213,7 @@
   "id": "M42",
   "name": "report hides which judgements a gap holds open",
   "file": "scripts/render_report.py",
-  "old": "              ('这个缺口影响哪些判断', task.get('blocks') or []),",
+  "old": "              ('这个缺口影响哪些判断', fold_blocks(task.get('blocks') or [])),",
   "new": "              ('这个缺口影响哪些判断', []),"
  },
  {
@@ -276,8 +269,8 @@
   "id": "M51",
   "name": "a requirement row made stage NA whole accepted",
   "file": "scripts/review_stage_scope.py",
-  "old": "            if isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):",
-  "new": "            if False and isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):"
+  "old": "            if (isinstance(planned_object, dict) and text(planned_object.get('requirement_id'))",
+  "new": "            if (False and isinstance(planned_object, dict) and text(planned_object.get('requirement_id'))"
  },
  {
   "id": "M52",
@@ -1032,8 +1025,8 @@
   "id": "M159",
   "name": "a bound requirement row takes the best bound result",
   "file": "scripts/requirement_bindings.py",
-  "old": "    return max((r['review_result'] for r in judged), key=ORDER.get) if judged else None",
-  "new": "    return min((r['review_result'] for r in judged), key=ORDER.get) if judged else None"
+  "old": "    return max((r['review_result'] for r in counted), key=ORDER.get) if counted else 'PASS'",
+  "new": "    return min((r['review_result'] for r in counted), key=ORDER.get) if counted else 'PASS'"
  },
  {
   "id": "M160",
@@ -1988,13 +1981,6 @@
   "new": ""
  },
  {
-  "id": "M299",
-  "name": "a margin written per aspect is printed once per aspect",
-  "file": "scripts/render_report.py",
-  "old": "    parts = unique(parts)\n",
-  "new": ""
- },
- {
   "id": "M300",
   "name": "a margin is printed with every digit the float carries",
   "file": "scripts/render_report.py",
@@ -2257,8 +2243,8 @@
   "id": "M339",
   "name": "a format-5 record is read as format 6",
   "file": "scripts/results_model.py",
-  "old": "SCHEMA_VERSION = 6",
-  "new": "SCHEMA_VERSION = 5"
+  "old": "    if report.get('schema_version') != SCHEMA_VERSION:\n        return ['results.schema_version must be",
+  "new": "    if report.get('schema_version') not in (SCHEMA_VERSION, SCHEMA_VERSION - 1):\n        return ['results.schema_version must be"
  },
  {
   "id": "M340",
@@ -2338,13 +2324,6 @@
   "new": "                        )"
  },
  {
-  "id": "M351",
-  "name": "a thermistor symbol of unknown kind keeps every rule",
-  "file": "scripts/plan_circuits.py",
-  "old": "not BRIDGE_RE.match(ref) and not identified(ref)",
-  "new": "not BRIDGE_RE.match(ref)"
- },
- {
   "id": "M352",
   "name": "the row object stays the circuit's first part",
   "file": "scripts/plan_circuits.py",
@@ -2390,8 +2369,8 @@
   "id": "M358",
   "name": "an NA netlist fact is not checked against the netlist",
   "file": "scripts/review_functions.py",
-  "old": "            errors.extend(_netlist_name_errors(label, nets, pins, db))\n    return errors\n\n\ndef _basis_errors",
-  "new": "            pass\n    return errors\n\n\ndef _basis_errors"
+  "old": "            errors.extend(_netlist_name_errors(label, nets, pins, db))\n    return errors\n\n\ndef _estimate_method_errors",
+  "new": "            pass\n    return errors\n\n\ndef _estimate_method_errors"
  },
  {
   "id": "M359",
@@ -2544,8 +2523,8 @@
   "id": "M391",
   "name": "a potentiometer is no switch",
   "file": "scripts/plan_circuits.py",
-  "old": "        if kind == SWITCH or SWITCHLIKE_RE.search(text):",
-  "new": "        if kind == SWITCH:"
+  "old": "        if SWITCHLIKE_RE.search(text):\n            return 'SWITCH'",
+  "new": "        if False:\n            return 'SWITCH'"
  },
  {
   "id": "M392",
@@ -3188,8 +3167,8 @@
   "id": "M496",
   "name": "a hot MOSFET RDS cannot be bounded from a favourable test point",
   "file": "scripts/catalog.py",
-  "old": "          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”'),",
-  "new": "          (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”'),"
+  "old": "(('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”',",
+  "new": "(('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”',"
  },
  {
   "id": "M497",
@@ -3255,13 +3234,6 @@
   "new": "return bool(PROTECTION_TEXT_RE.search(text) or NTC_RE.search(text))"
  },
  {
-  "id": "M506",
-  "name": "an NTC by its words is not a protective input part",
-  "file": "scripts/circuit_candidates.py",
-  "old": "or bool(PROTECTIVE_RE.search(blob) or pw.NTC_RE.search(blob) or pw.VARISTOR_RE.search(blob))",
-  "new": "or bool(PROTECTIVE_RE.search(blob) or pw.VARISTOR_RE.search(blob))"
- },
- {
   "id": "M507",
   "name": "application text needs a typical estimate again",
   "file": "scripts/review_functions.py",
@@ -3307,15 +3279,15 @@
   "id": "M513",
   "name": "an estimate passes a damage or protection rule",
   "file": "scripts/function_reading.py",
-  "old": "    if isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id):\n        return None\n    calc",
-  "new": "    if False:\n        return None\n    calc"
+  "old": "    return cls in ESTIMATE_PASS_CLASSES and not (isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id))",
+  "new": "    return cls in ESTIMATE_PASS_CLASSES"
  },
  {
   "id": "M514",
   "name": "an estimate passes whatever its consequence class",
   "file": "scripts/function_reading.py",
-  "old": "    return (basis.get('kind') == 'ESTIMATE' and basis.get('consequence_class') in ESTIMATE_PASS_CLASSES\n",
-  "new": "    return (basis.get('kind') == 'ESTIMATE'\n"
+  "old": "    return cls in ESTIMATE_PASS_CLASSES and not (isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id))",
+  "new": "    return not (isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id))"
  },
  {
   "id": "M515",
@@ -3349,8 +3321,8 @@
   "id": "M519",
   "name": "an estimate may name a damage class",
   "file": "scripts/review_functions.py",
-  "old": "        if 'consequence_class' in basis and basis['consequence_class'] not in ESTIMATE_PASS_CLASSES:",
-  "new": "        if False:"
+  "old": "        if cls not in ESTIMATE_PASS_CLASSES:\n            return ['%s: outside the table",
+  "new": "        if False:\n            return ['%s: outside the table"
  },
  {
   "id": "M520",
@@ -3407,13 +3379,6 @@
   "file": "scripts/parse_netlist.py",
   "old": "from part_words import CONNECTOR, classify",
   "new": "from checkers.netgraph import CONNECTOR, classify"
- },
- {
-  "id": "M532",
-  "name": "row derivation reads function verdicts from the gate again",
-  "file": "scripts/derive_rows.py",
-  "old": "from function_reading import decides_row, edges, judged, prototype_estimate, unjudged_message",
-  "new": "from review_functions import decides_row, edges, judged, prototype_estimate, unjudged_message"
  },
  {
   "id": "M533",
@@ -3712,16 +3677,16 @@
  {
   "id": "M577",
   "name": "a TVS on an internal node is skipped like a zener",
-  "file": "scripts/lint.py",
-  "old": "            if self.graph.kind(ref) == pw.ZENER and self._functional_clamp(rail):",
-  "new": "            if self.graph.kind(ref) in (pw.ZENER, pw.TVS) and self._functional_clamp(rail):"
+  "file": "scripts/protective_clamps.py",
+  "old": "    if graph.kind(ref) == pw.ZENER and functional_clamp(graph, rails[0], intent):",
+  "new": "    if graph.kind(ref) in (pw.ZENER, pw.TVS) and functional_clamp(graph, rails[0], intent):"
  },
  {
   "id": "M578",
   "name": "a connector on the clamped node no longer makes the clamp protective",
-  "file": "scripts/lint.py",
-  "old": "            if kind in (CONNECTOR, pw.TESTPOINT):",
-  "new": "            if False:"
+  "file": "scripts/protective_clamps.py",
+  "old": "        if kind in (pw.CONNECTOR, pw.TESTPOINT):\n            return False",
+  "new": "        if False:\n            return False"
  },
  {
   "id": "M579",
@@ -3761,9 +3726,9 @@
  {
   "id": "M584",
   "name": "BZX zeners are not clamps to the scan",
-  "file": "scripts/lint.py",
-  "old": "CLAMP_RE = re.compile(r'ZENER|TVS|BZT|BZX|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)   # BZX55/BZX84/BZX585 zeners too",
-  "new": "CLAMP_RE = re.compile(r'ZENER|TVS|BZT|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)   # BZX55/BZX84/BZX585 zeners too"
+  "file": "scripts/protective_clamps.py",
+  "old": "CLAMP_RE = re.compile(r'ZENER|TVS|BZT|BZX|SMBJ|",
+  "new": "CLAMP_RE = re.compile(r'ZENER|TVS|BZT|SMBJ|"
  },
  {
   "id": "M585",
@@ -3902,8 +3867,8 @@
   "id": "M605",
   "name": "the clamp row does not name the protected pins",
   "file": "scripts/lint.py",
-  "old": "                     f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail)}'",
-  "new": "                     f'型号提示={_fmt_v(clamp_volt(blob))}。'"
+  "old": "f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail, ref)}'",
+  "new": "f'型号提示={_fmt_v(clamp_volt(blob))}。'"
  },
  {
   "id": "M606",
@@ -4216,15 +4181,15 @@
  {
   "id": "M651",
   "name": "a bare RV refdes is a varistor (it is also a potentiometer)",
-  "file": "scripts/part_words.py",
-  "old": "    (r'^(TH|RT|NTC)\\d', NTC),   # RV is also KiCad's potentiometer prefix: a varistor needs its word\n",
-  "new": "    (r'^RV\\d', VARISTOR), (r'^(TH|RT|NTC)\\d', NTC),\n"
+  "file": "scripts/device_kinds.py",
+  "old": "    ('varistor', DeviceKind('压敏电阻', (), (VARISTOR_WORDS,),",
+  "new": "    ('varistor', DeviceKind('压敏电阻', (r'^RV\\d',), (VARISTOR_WORDS,),"
  },
  {
   "id": "M652",
   "name": "an IC becomes an NTC by a word in its description",
   "file": "scripts/part_words.py",
-  "old": "        if kind in (NTC, VARISTOR) and (re.match(r'^(U|M|IC)\\d', ref, re.I) or (pin_count is not None and pin_count > 3)):\n            continue\n",
+  "old": "        if kind in (NTC, VARISTOR) and (ic_ref or (pin_count is not None and pin_count > 3)):\n            continue\n",
   "new": ""
  },
  {

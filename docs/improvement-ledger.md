@@ -3081,3 +3081,27 @@ Decision (user: 按你的建议简化：门禁合成一条 pytest；变异检查
 - Causes: judgment 1
 - Changed: references/architecture.md, evals/mutation/README.md, README.md, docs/improvement-ledger.md
 - Gates: pytest 2299, mutation --changed: 0 mutations on the changed files
+
+## First periodic full mutation run (2026-10-27)
+
+The first full run under the new maintenance rule (unit tier, 758 entries):
+735 killed, 17 stale anchors, 6 survivors.
+Decision (user: 现在在后台跑一次全量变异检查，存活的补测试，失效的重锚或删去，记台账):
+
+1. Stale anchors: 16 re-anchored to the current code (M577, M578, M584 follow
+   the clamp scan into `protective_clamps.py`); M532 could only cause an import
+   error and is dropped. M339 survived after re-anchoring and gets a test: the
+   format just retired is refused too.
+2. Survivors with a missing test: M488 (a resistor symbol whose BOM line names
+   an NTC takes the NTC cells) and M715 (a three-pin two-channel ESD array on
+   connector lines gets no PRO-C02 two-sided rows).
+3. Survivors dropped: M37 duplicates the derive step's error (a hand-filled row
+   bound to a function is derived first and `derive_rows` reports the unjudged
+   aspect); M299 is equivalent (the per-aspect margin lines are already unique);
+   M351 and M506 guard NTC and varistor words that the device kinds now cover on
+   two-terminal parts. 753 entries remain.
+
+- Event: user:2026-10-27 (现在在后台跑一次全量变异检查，存活的补测试，失效的重锚或删去，记台账)
+- Causes: judgment 1
+- Changed: evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, scripts/tests/test_bound_derivation.py, scripts/tests/test_ntc_varistor_kinds.py, scripts/tests/test_plan_review.py, docs/improvement-ledger.md
+- Gates: pytest 2300, mutation: the 18 re-anchored or re-tested entries all killed; RESULTS.md 753/753 killed (unit tier)
