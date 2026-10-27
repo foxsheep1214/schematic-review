@@ -1312,6 +1312,45 @@ BOUNDS = OrderedDict((b.id, b) for b in (
 ))
 
 
+# 风险类型（2026-10-26，用户：按方案改：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在
+# 定界表上扩）：一个角点只能靠估算过关时，结论是“合格，但有风险”，风险按这个角点随什么变来分；降额不足但仍在额定内是应力风险。
+RISK_TYPES = OrderedDict((
+    ('ENVIRONMENT', '环境适应性'),   # 温度、海拔、湿度的极限角点只能按典型曲线估算
+    ('LIFETIME', '寿命'),            # 设计寿命末期、累计次数后的参数（衰减、老化）只能估算
+    ('CONSISTENCY', '一致性'),       # 批次、分档、超出测试点的工作点只有典型值
+    ('STRESS', '应力'),              # 保证值下仍在额定内，但没满足降额规则
+))
+ESTIMATE_RISKS = ('ENVIRONMENT', 'LIFETIME', 'CONSISTENCY')   # cell NONE: an estimate may stand for any of these
+# 每格估算代表的风险：格的“随什么变”是温度的落环境适应性，是工作点、分档的落一致性，含寿命衰减或老化的落寿命。
+CELL_RISKS = OrderedDict((
+    ('ZENER-VZ-UPPER', ('CONSISTENCY',)),
+    ('ZENER-VZ-LOWER', ('CONSISTENCY',)),
+    ('ZENER-VZ-TEMP', ('ENVIRONMENT',)),
+    ('TVS-LEAK-HOT', ('ENVIRONMENT',)),
+    ('DIODE-VF', ('CONSISTENCY',)),
+    ('DIODE-VF-COLD', ('ENVIRONMENT',)),
+    ('DIODE-IR-HOT', ('ENVIRONMENT',)),
+    ('MOS-VGS-ON', ('CONSISTENCY',)),
+    ('MOS-RDS-HOT', ('ENVIRONMENT',)),
+    ('MOS-LINEAR', ('CONSISTENCY', 'ENVIRONMENT')),
+    ('BJT-HFE', ('CONSISTENCY', 'ENVIRONMENT')),
+    ('OPTO-CTR', ('ENVIRONMENT', 'LIFETIME', 'CONSISTENCY')),
+    ('MLCC-EFFECTIVE-C', ('CONSISTENCY', 'ENVIRONMENT', 'LIFETIME')),
+    ('ECAP-ESR-RIPPLE', ('ENVIRONMENT', 'CONSISTENCY')),
+    ('IND-ISAT', ('ENVIRONMENT',)),
+    ('IC-THRESHOLD', ('ENVIRONMENT',)),
+    ('IC-QUIESCENT', ('CONSISTENCY', 'ENVIRONMENT')),
+    ('IC-TIMING', ('ENVIRONMENT', 'CONSISTENCY')),
+    ('IC-IO-LEVEL', ('CONSISTENCY',)),
+    ('IC-GATE-DRIVE-I', ('CONSISTENCY',)),
+))
+
+
+def cell_risks(cell_id):
+    """The risk types an estimate in this cell stands for (cell NONE: any estimate risk)."""
+    return CELL_RISKS.get(cell_id, ESTIMATE_RISKS if cell_id == NO_CELL else ())
+
+
 def estimate_rule(cell_id, consequence_class):
     """The table's estimate rule for this consequence class in this cell, or None (no estimate passes)."""
     bound = BOUNDS.get(cell_id)
@@ -1404,7 +1443,8 @@ def render_bounds_markdown():
             '样机能否验：' + '；'.join('`%s` %s' % kv for kv in BOUND_PROTOTYPE.items()) + '。',
             '后果类：' + '、'.join('`%s` %s' % kv for kv in CONSEQUENCE_WORDS.items()) + '；`%s` 任何格都不估算。' % '`、`'.join(sorted(ESTIMATE_NEVER)),
             '倍数的意思：把估算值再按不利方向打这个折（电流增益 ÷2、阻值 ×1.2 都写 2 / 1.2）之后结论仍成立；“余量下限”是余量本身至少多少。', '',
-            '| 格 | 可得性 | 允许的估算（倍数 · 适用后果 · 余量下限） | 失效后果 | 样机能否验 | 边界 |', '|---|---|---|---|---|---|']
+            '“估算对应的风险”见上文“风险标签”。', '',
+            '| 格 | 可得性 | 允许的估算（倍数 · 适用后果 · 余量下限） | 估算对应的风险 | 失效后果 | 样机能否验 | 边界 |', '|---|---|---|---|---|---|---|']
     for b in BOUNDS.values():
         if b.estimates:
             est = '<br>'.join('×%g · %s%s：%s' % (
@@ -1412,8 +1452,9 @@ def render_bounds_markdown():
                 (' · 余量 ≥ %g %s' % e.floor) if e.floor else '', _cell(e.how)) for e in b.estimates)
         else:
             est = '不估算'
-        out.append('| `%s` | `%s` | %s | %s | %s | %s |' % (
-            b.id, b.availability, est, '/'.join(CONSEQUENCE_WORDS.get(c, c) for c in b.consequence),
+        out.append('| `%s` | `%s` | %s | %s | %s | %s | %s |' % (
+            b.id, b.availability, est, '、'.join(RISK_TYPES[r] for r in CELL_RISKS.get(b.id, ())) or '—',
+            '/'.join(CONSEQUENCE_WORDS.get(c, c) for c in b.consequence),
             '、'.join(BOUND_PROTOTYPE[p].split('（')[0] for p in b.prototype), _cell(b.boundary)))
     return '\n'.join(out) + '\n'
 

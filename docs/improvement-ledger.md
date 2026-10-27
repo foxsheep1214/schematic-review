@@ -2764,3 +2764,35 @@ the open-clarification section; M360, M495, M502, M526 and M541 are re-anchored.
 - Causes: judgment 1
 - Changed: scripts/requirement_clarifications.py, scripts/plan_review.py, scripts/plan_board.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/results_model.py, scripts/review_functions.py, scripts/validate_review.py, scripts/review_workflow.py, scripts/review_summary.py, scripts/review_quality.py, scripts/review_stage_scope.py, scripts/requirement_bindings.py, scripts/render_report.py, scripts/tests, SKILL.md, references/requirement-clarifications.md, references/intent-format.md, references/results-format.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/architecture.md, references/check-catalog.md, evals/kicad_replay_bench, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2270, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M360 M495 M502 M526 M541 M726-M735 killed
+
+## Three verdicts with risk tags (2026-10-26)
+
+Walking the "evidence insufficient" causes, item 2 (missing vendor data) came
+down to the optocoupler example: the CTR margin was 4.2× at 70 °C and still
+2.1× after 50 % ageing, yet the review held it open for vendor data. The user
+wants SR to judge such a part as passing with a risk, starting from each
+device's key parameters (user: 其实SR可以判定风险，比如，合格但有环境适应性风险、合格但有寿命风险……SR技能应当首先根据器件的关键参数作出判断;
+按方案改：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在定界表上扩):
+
+1. Four risk types in `catalog.RISK_TYPES` (environment, lifetime,
+   consistency, stress); every bounding-table cell that takes an estimate names
+   the risks its estimate stands for (`CELL_RISKS`, a new column of the table,
+   which doubles as the per-kind key-parameter table); cell NONE allows any of
+   the three estimate risks.
+2. A margin passing on an estimate writes `basis.risk{types, corner,
+   improvement}` with types from its cell (results format 9); a decisive margin
+   within the rating but short of an assumed derating may carry STRESS.
+3. The gate's `estimated_passes` becomes `risks` (sources ESTIMATE, LIFE —
+   life rows passing on an estimate, improved by their BOM constraint — and
+   STRESS); risks no longer cap the release at CONDITIONAL_GO.
+4. The report lists "风险清单" grouped by risk type and words results as 合格 /
+   不合格; step ③ judges each device's key parameters first.
+
+The step ③ and ④ reading paths grow by the risk column and wording (records
+223 000 → 224 000 and 118 000 → 119 000 bytes). Plans are unchanged, so the
+replay bench needs no revision.
+
+- Event: user:2026-10-26 (按方案改：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在定界表上扩)
+- Causes: judgment 1
+- Changed: scripts/catalog.py, scripts/review_functions.py, scripts/validate_review.py, scripts/render_report.py, scripts/results_model.py, scripts/tests, SKILL.md, references/bounding-table.md, references/results-format.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/requirement-clarifications.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2275, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M668 M736-M742 killed (M646 dropped; M35 M37 M42 M299 M339 M358 M496 M519 survive or miss on HEAD too)

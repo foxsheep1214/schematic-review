@@ -152,7 +152,7 @@ FIRMWARE_CAPABILITY 另加全部 SIG-*。配置表不是缺口。文档/身份�
 | GUARANTEED_BOUND | 在要求范围内余量的下界：满足则 PASS，不满足只说明没证明（OPEN） | 不依赖 TYPICAL_REFERENCE 或 ENGINEERING_ASSUMPTION |
 | REACHABLE_CASE | 一个确会出现的工况：不满足则 FAIL，满足不证明整个范围（OPEN） | `joint` 说明这些参数为什么会同时出现；不依赖 ENGINEERING_ASSUMPTION |
 | EXACT_ENVELOPE | 完整的最坏包络：满足 PASS，不满足 FAIL | `model`、`domain`、`extremum`；同 GUARANTEED_BOUND 不依赖典型值或假设 |
-| ESTIMATE | 什么都不决定；按定界表那一格的判决边界允许的后果类、经倍数打折后仍满足且移交样机实测时，判 PASS（见下） | 判 PASS 时写 `cell`、`method`（G7–G9）、`consequence_class`、`estimate_factor` 与 `handoff` |
+| ESTIMATE | 什么都不决定；按定界表那一格的判决边界允许的后果类、经倍数打折后仍满足且移交样机实测时，判 PASS（见下） | 判 PASS 时写 `cell`、`method`（G7–G9）、`consequence_class`、`estimate_factor`、`handoff` 与 `risk` |
 
 估算判通过：估算能不能判 PASS 由 `basis.cell` 那一格的[判决边界](bounding-table.md#判决边界)按
 `consequence_class`（沿用开放项 `severity.class` 的词：REQUIRED_FUNCTION、PERFORMANCE_OR_LIFE、COMPONENT_DAMAGE……）决定，与检查项的规则 id 无关：
@@ -161,8 +161,11 @@ FIRMWARE_CAPABILITY 另加全部 SIG-*。配置表不是缺口。文档/身份�
 和 `handoff`（本功能 `handoffs` 里样机实测那一条的序号，那一条写全 receivers、constraint、verification），满足就判 PASS，派生检查项带上这条移交（`required: true`，OPEN）。
 DAMAGE_OR_HAZARD、CORE_LINK_LOSS 在任何格都不估算。`cell: NONE`（表里没有这个参数）走默认：只许 REQUIRED_FUNCTION / PERFORMANCE_OR_LIFE，
 损坏、过热和保护类规则（DEV-C01、DEV-C04、PWR-C03、PWR-C06、PWR-C10、DRV-C01、全部 PRO）不走这条路；同时门禁记 NEW_BOUND_CELL 待扩项。
-估算判 PASS 的检查项是 C 级证据（派生时写 `evidence_confidence: C`，门禁拒绝别的等级），`release` 最高 CONDITIONAL_GO，门禁 `estimated_passes` 逐条列出，报告单列“按典型值估算的结论”。
-寿命检查项另有自己的估算路径（见 DEV-C02/DEV-C06）。
+估算判 PASS 的检查项是 C 级证据（派生时写 `evidence_confidence: C`，门禁拒绝别的等级），结论是“合格，但有风险”（2026-10-26 定）：
+`basis.risk{types, corner, improvement}` 必写，`types` 取那一格“估算对应的风险”（ENVIRONMENT / LIFETIME / CONSISTENCY；`NONE` 任选），
+`corner` 写只靠估算的角点，`improvement` 写消除风险的改法。决定性余量在额定内但没满足假定降额时可写 `risk{types: [STRESS], …}`，仍判 PASS。
+门禁 `risks` 逐条列出（`source` ESTIMATE / LIFE / STRESS），不限制 `release`，报告按类型单列“风险清单”。
+寿命检查项另有自己的估算路径（见 DEV-C02/DEV-C06），凭估算判通过时门禁自动列为寿命风险，改法取它的 `bom_constraint`。
 
 `comparison` 为 GE 时零余量算满足，GT 时不算。除 ESTIMATE 外，`limit` 指向被比较的 NUMERIC_LIMIT，`regime` 写算出量成立的条件；
 与限值的 `regime` 不同时，`conversion` 要指向一条条件或 claim（换算或包络），否则跨条件比较被拒绝。

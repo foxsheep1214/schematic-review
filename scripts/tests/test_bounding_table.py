@@ -87,6 +87,15 @@ class TableTests(unittest.TestCase):
                 if e.floor is not None:
                     self.assertEqual((len(e.floor), type(e.floor[1])), (2, str), b.id)
 
+    def test_every_cell_that_estimates_names_the_risks_an_estimate_stands_for(self):
+        # 2026-10-26 (user: 关键参数表在定界表上扩): a corner passed on an estimate is a pass with a risk of these types
+        for bound in catalog.BOUNDS.values():
+            risks = catalog.cell_risks(bound.id)
+            self.assertEqual(bool(risks), bool(bound.estimates), bound.id)
+            self.assertTrue(set(risks) <= set(catalog.ESTIMATE_RISKS), bound.id)
+        self.assertEqual(catalog.cell_risks(catalog.NO_CELL), catalog.ESTIMATE_RISKS)
+        self.assertEqual(catalog.cell_risks('OPTO-CTR'), ('ENVIRONMENT', 'LIFETIME', 'CONSISTENCY'))
+
     def test_the_estimate_rule_is_read_by_cell_and_consequence_class(self):
         rule = catalog.estimate_rule
         self.assertEqual(rule('OPTO-CTR', 'REQUIRED_FUNCTION').factor, 2)                 # decision 2026-10-26

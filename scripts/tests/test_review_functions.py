@@ -673,7 +673,7 @@ class ReportTests(unittest.TestCase):
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
         text = render(p, r, out)
-        self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 0 / 0 / 1 |\n| 检查总数 |', text)
+        self.assertIn('| 功能判定 合格 / 不合格 / 未定 | 0 / 0 / 1 |\n| 检查总数 |', text)
         table = text.split('## 各功能的判断')[1].split('## 待办')[0]
         self.assertIn('| FN-BIAS | %s | 未定 | VCC_min = 9.6 V；余量 0.8 V 对 VCC(off) max 8.8 V | W-AUX-5V-MIN |'
                       % bias_function()['question'], table)
@@ -685,10 +685,10 @@ class ReportTests(unittest.TestCase):
             if row['id'].startswith('PWR-C02'):
                 row.update(review_result='PASS'); row.pop('open_ref', None)
         text = render(p, r, vr.validate_review(p, r, db))
-        self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 1 / 0 / 0 |', text)
-        self.assertIn('| 通过 | VCC_min = 9.6 V；余量 0.8 V 对 VCC(off) max 8.8 V | — |', text)
+        self.assertIn('| 功能判定 合格 / 不合格 / 未定 | 1 / 0 / 0 |', text)
+        self.assertIn('| 合格 | VCC_min = 9.6 V；余量 0.8 V 对 VCC(off) max 8.8 V | — |', text)
         fn = r['functions'][0]; fn.pop('calculation'); fn['no_calculation_reason'] = '连接性检查，无数值'
-        self.assertIn('| 通过 | 连接性检查，无数值 | — |', render(p, r, vr.validate_review(p, r, db)))
+        self.assertIn('| 合格 | 连接性检查，无数值 | — |', render(p, r, vr.validate_review(p, r, db)))
 
     def test_a_function_of_document_rows_is_not_counted(self):
         p, r, db = ledger(bias_function('PASS'))
@@ -696,7 +696,7 @@ class ReportTests(unittest.TestCase):
         r['functions'].append(doc)
         r['checks'].append({'id': 'DOC-Q01.SUMMARY', 'review_result': 'PASS', 'function_id': 'FN-SUMMARIES'})
         text = render(p, r, vr.validate_review(p, r, db))
-        self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 1 / 0 / 0 |', text)
+        self.assertIn('| 功能判定 合格 / 不合格 / 未定 | 1 / 0 / 0 |', text)
         self.assertNotIn('FN-SUMMARIES', text.split('## 各功能的判断')[1].split('\n## ')[0])
 
 

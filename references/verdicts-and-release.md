@@ -261,8 +261,9 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 
 `review-gate.json` 中的工具字段：`valid/errors` 表示记录是否可对账；`workflow.status/current_work_items`
 （由开放项派生，见下）给出本轮先做什么；`release` 是原理图冻结的 GO / CONDITIONAL_GO / NO_GO：
-有错误或阻断项 NO_GO；有按批准接受的 FAIL/INSUFFICIENT，有按典型值估算判通过的检查项（`estimated_passes`，样机实测确认后才算定），
+有错误或阻断项 NO_GO；有按批准接受的 FAIL/INSUFFICIENT，
 或有等交付物的检查项（`pending_deliverables`：DELIVERABLE_PENDING 开放项挡住的 INSUFFICIENT，不论等级都不是阻断项，交付物到了按 `assumed` 复核）最高 CONDITIONAL_GO；否则 GO。
+合格但有风险的检查项（门禁 `risks`：只靠估算过关的角点、寿命估算、降额不足）不限制 `release`，报告单列“风险清单”（2026-10-26 定）。
 等交付物是冻结的条件，不是反对冻结的理由（2026-10-26 定）：R7 一份记录 72 条资料不足里 52 条在等图纸和配置表，它们曾占满待办和“最先要解决的 3 件事”。
 `release` 在非冻结阶段也会计算，但**不是本轮总判定**：非冻结阶段的报告展示实际用途下的电气结论、
 必要疑点及集成约束，不因未接受移交或未给完整制造资料就把整个设计标为失败。冻结 NO_GO 也不妨碍继续设计和补证。

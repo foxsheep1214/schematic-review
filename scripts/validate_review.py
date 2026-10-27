@@ -23,7 +23,7 @@ from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
 from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
-from review_functions import (configuration_settings, estimated_passes, netlist_evidence_errors, parameter_sheet,
+from review_functions import (configuration_settings, risks, netlist_evidence_errors, parameter_sheet,
                               validate_functions)
 import check_key
 import row_owner
@@ -333,10 +333,10 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     stage = workflow(plan, report, checks, require_design_options=actionable)
     errors.extend(stage['errors'])
     accepted = False
-    # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): derive writes C on the row, the release
-    # is capped at CONDITIONAL_GO below, and the report lists these rows apart.
-    estimated = estimated_passes(expected, checks, report.get('functions'))
-    estimated_ids = {e['check_id'] for e in estimated}
+    # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): derive writes C on the row. It is a
+    # pass with a risk: the report lists the risks apart and they do not cap the release (2026-10-26, user: 风险不限制定稿只单列).
+    risk_rows = risks(expected, checks, report.get('functions'))
+    estimated_ids = {e['check_id'] for e in risk_rows if e['source'] == 'ESTIMATE'}
     pending = []   # INSUFFICIENT rows waiting for a deliverable (filled below)
     for cid in estimated_ids:
         if checks[cid].get('evidence_confidence') != 'C':
@@ -631,7 +631,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     "PASS rows need their own comparison before freeze" if item['code'] == 'TEMPLATED_PASS_RATIONALE'
                     else "evidence gaps need individual grading before freeze"))
     errors.extend(e for e in derive_errors if e not in errors)   # the function checks above report most of them already
-    release = release_for(errors, blockers, accepted, estimated, pending)
+    release = release_for(errors, blockers, accepted, pending)
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")
     gap_causes = dict(Counter(x.get("gap_cause", "UNSPECIFIED") for x in checks.values()
@@ -641,7 +641,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     for state in READINESS}
     sr_improvements.extend(extension_signals(report, db))
     return {"quality_screening": screen_quality(plan, report, db, base_dir),
-            "estimated_passes": estimated,
+            "risks": risk_rows,
             "pending_deliverables": sorted(pending),
             # results 7: the per-part view of the conditions (refs), for the report's 器件参数表 and compare_reviews
             "parameter_sheet": parameter_sheet(report.get('functions')),
@@ -713,13 +713,13 @@ def extension_signals(report, db):
     return out
 
 
-def release_for(errors, blockers, accepted, estimated, pending=()):
-    """GO needs no error, no blocker, nothing accepted by approval, nothing passing on an estimate and no deliverable
-    outstanding; an accepted item, an estimate pass (confirmed only on the prototype) or a deliverable another stage
-    owes caps the release at CONDITIONAL_GO."""
+def release_for(errors, blockers, accepted, pending=()):
+    """GO needs no error, no blocker, nothing accepted by approval and no deliverable outstanding; an accepted item or a
+    deliverable another stage owes caps the release at CONDITIONAL_GO. A pass with a risk (an estimate, a life estimate,
+    a derating short of the assumption) does not: it is listed apart (2026-10-26, user: 风险不限制定稿只单列)."""
     if errors or blockers:
         return "NO_GO"
-    return "CONDITIONAL_GO" if accepted or estimated or pending else "GO"
+    return "CONDITIONAL_GO" if accepted or pending else "GO"
 
 
 def main():

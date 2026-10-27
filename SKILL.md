@@ -323,11 +323,16 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 - `objects` 就是电路（候选经决定）的成员；要扩大或漏了电路，改 `intent.circuit_decisions` 后重生成。框架的 `members` 既有电路检查项，也有这块电路拥有的器件检查项（身份、引脚、应力、工况、它器件上的扫描发现）：
   都在这个功能里判，同一方面的几颗器件一条 judgement 可以合答，差别用 `check_ids` 分开。一个电路的缺口和失败写在它自己的功能里；
   跨电路的缺口只写一次，影响条目用 `check_ids` 点名另一电路的检查项。自建功能只装不属于任何框架的检查项；文档检查（DOC-*）在检查项上判，不包成功能。
+- 先从器件关键参数判断：每颗器件在本板用到的关键参数就是[工作点定界表](references/bounding-table.md)里它那一类的格，逐个参数比本板工作点和保证值，
+  比完再下功能结论；结论只有三档——合格、不合格（给改法）、合格但有风险（2026-10-26，用户：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在定界表上扩）。
 - 余量按 `margin.basis.kind` 下结论（GUARANTEED_BOUND 满足才 PASS、REACHABLE_CASE 不满足才 FAIL、EXACT_ENVELOPE 两头都判、ESTIMATE 不判，
   例外见该节“估算判通过”）；器件参数按[工作点定界表](references/bounding-table.md)定界，门禁重算。
   典型值估算能不能判 PASS 由定界表那一格的[判决边界](references/bounding-table.md#判决边界)按后果类定（不按规则 id）：
   估算判 PASS 的余量写 `cell`、`method`（G7–G9）、`consequence_class`、`estimate_factor`（等于格给该后果类的倍数，余量按打折后的值算）和 `handoff`；
-  格没有这个参数写 `cell: NONE`，按默认（只许功能/性能后果，损坏/过热/保护类规则不估算）。这种 PASS 是 C 级证据，准出最高有条件定稿。
+  格没有这个参数写 `cell: NONE`，按默认（只许功能/性能后果，损坏/过热/保护类规则不估算）。这种 PASS 是 C 级证据，结论是“合格，但有风险”：
+  余量另写 `risk{types, corner, improvement}`——风险类型取那一格的“估算对应的风险”（环境适应性 / 寿命 / 一致性，`NONE` 三者任选），
+  `corner` 写只靠估算的那个角点，`improvement` 写消除风险的改法（换型号、换档、样机抽测）。保证值在额定内、只是没满足审查员假定的降额时，
+  决定性余量也可写 `risk{types: [STRESS]}`。风险不限制定稿，报告单列“风险清单”。
 - 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，再分 DESIGN_VALUE / DELIVERABLE_PENDING / VENDOR_DATUM；
   检查项只在本方面本状态有证明通过的余量或判断时 PASS，没人判过的方面不默认通过。
 
@@ -436,7 +441,8 @@ REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
       python3 scripts/render_report.py review-plan.json review-results.json review-gate.json --notes notes.json -o <审查目录>/审查报告.md   # 同时写出 审查报告.html
 
   默认简洁报告保留全部缺陷、任务、通过标准及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
-- 按典型值估算判通过的检查由门禁的 `estimated_passes` 渲染成“按典型值估算的结论”一节（功能、格、怎么估、余量、样机要测、涉及检查），结论段和数字一览各带一句；
+- 合格但有风险的检查由门禁的 `risks` 渲染成“风险清单”一节，按风险类型分组（功能、格、只靠估算的角点、怎么估、余量、怎么改进、样机要测、涉及检查），
+  结论段和数字一览各带一句；风险不限制定稿。寿命检查项凭估算判通过的自动列为寿命风险，改法取它的 BOM 约束；
   器件类别词表或定界表没覆盖的（`sr_improvements` 的 NEW_DEVICE_KIND / NEW_BOUND_CELL）渲染在“对 SR 的反馈”下“器件类别与定界表要扩的”，只告诉 SR 维护者要扩表。
 - 等交付物（DELIVERABLE_PENDING 开放项挡住的检查项，门禁 `pending_deliverables`）不是审查发现：不是阻断项，不进待办和“最先要解决的 3 件事”，
   渲染成“等交付物”一节（交付物、负责方、类别、可能后果、等它的判断、按什么假定判的、怎样算交付）给项目经理催办，准出最高有条件定稿（2026-10-26 定）。

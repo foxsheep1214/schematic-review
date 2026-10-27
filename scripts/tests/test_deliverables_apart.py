@@ -46,9 +46,9 @@ class DeliverableReleaseTests(unittest.TestCase):
         self.assertTrue(any('unresolved blocking INSUFFICIENT' in b for b in out['blockers']), out['blockers'])
 
     def test_release_for_counts_pending_deliverables(self):
-        self.assertEqual(vr.release_for([], [], False, [], ['A.1']), 'CONDITIONAL_GO')
+        self.assertEqual(vr.release_for([], [], False, ['A.1']), 'CONDITIONAL_GO')
         self.assertEqual(vr.release_for([], [], False, []), 'GO')
-        self.assertEqual(vr.release_for([], ['b'], False, [], ['A.1']), 'NO_GO')
+        self.assertEqual(vr.release_for([], ['b'], False, ['A.1']), 'NO_GO')
 
 
 class DeliverableReportTests(unittest.TestCase):

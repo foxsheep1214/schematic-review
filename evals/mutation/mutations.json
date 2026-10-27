@@ -4361,13 +4361,6 @@
   "new": "        if checks[cid].get('evidence_confidence') == 'A':\n"
  },
  {
-  "id": "M646",
-  "name": "an estimate pass does not cap the release",
-  "file": "scripts/validate_review.py",
-  "old": "return \"CONDITIONAL_GO\" if accepted or estimated else \"GO\"",
-  "new": "return \"CONDITIONAL_GO\" if accepted else \"GO\""
- },
- {
   "id": "M647",
   "name": "an unknown device kind is not reported",
   "file": "scripts/validate_review.py",
@@ -4518,8 +4511,8 @@
   "id": "M668",
   "name": "release_for ignores pending deliverables",
   "file": "scripts/validate_review.py",
-  "old": "    return \"CONDITIONAL_GO\" if accepted or estimated or pending else \"GO\"\n",
-  "new": "    return \"CONDITIONAL_GO\" if accepted or estimated else \"GO\"\n"
+  "old": "    return \"CONDITIONAL_GO\" if accepted or pending else \"GO\"\n",
+  "new": "    return \"CONDITIONAL_GO\" if accepted else \"GO\"\n"
  },
  {
   "id": "M669",
@@ -4989,5 +4982,54 @@
   "file": "scripts/plan_review.py",
   "old": "            self.diagnostics.append({'code': 'CLARIFICATION_PENDING', 'detail': line})",
   "new": "            pass"
+ },
+ {
+  "id": "M736",
+  "name": "an estimate pass need not name its risk",
+  "file": "scripts/review_functions.py",
+  "old": "    if risk is None:\n        return [label + ': a pass on an estimate names its risk:",
+  "new": "    if risk is None:\n        return [] if True else [label + ': a pass on an estimate names its risk:"
+ },
+ {
+  "id": "M737",
+  "name": "any risk type goes with any cell",
+  "file": "scripts/review_functions.py",
+  "old": "    extra = [t for t in types if t not in allowed]",
+  "new": "    extra = []"
+ },
+ {
+  "id": "M738",
+  "name": "a decisive margin carries any risk",
+  "file": "scripts/review_functions.py",
+  "old": "    allowed = catalog.cell_risks(basis.get('cell')) if estimate else ('STRESS',)",
+  "new": "    allowed = catalog.cell_risks(basis.get('cell')) if estimate else tuple(catalog.RISK_TYPES)"
+ },
+ {
+  "id": "M739",
+  "name": "a risk caps the release again",
+  "file": "scripts/validate_review.py",
+  "old": "    release = release_for(errors, blockers, accepted, pending)",
+  "new": "    release = release_for(errors, blockers, accepted or bool(risk_rows), pending)"
+ },
+ {
+  "id": "M740",
+  "name": "a life estimate is not listed as a risk",
+  "file": "scripts/review_functions.py",
+  "old": "        if life_row(cid) and not margin_proves(fn, row['aspect'], state, cid) \\",
+  "new": "        if False and life_row(cid) and not margin_proves(fn, row['aspect'], state, cid) \\"
+ },
+ {
+  "id": "M741",
+  "name": "a stress risk is not listed",
+  "file": "scripts/review_functions.py",
+  "old": "                out.append(_risk_entry(cid, fn, row, state, m, (), 'STRESS'))",
+  "new": "                pass"
+ },
+ {
+  "id": "M742",
+  "name": "the bounding table has no risk column for a cell",
+  "file": "scripts/catalog.py",
+  "old": "    ('OPTO-CTR', ('ENVIRONMENT', 'LIFETIME', 'CONSISTENCY')),\n",
+  "new": ""
  }
 ]

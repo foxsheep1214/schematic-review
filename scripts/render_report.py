@@ -51,7 +51,7 @@ SEVERITY_WORDS = {'P0': '可能损坏器件或危及安全', 'P1': '必需功能
                   'P2': '局部或次要问题', 'P3': '可选优化'}
 SEVERITY_LEGEND = '严重程度：P0 可能损坏器件或危及安全；P1 必需功能可能不达标；P2 局部或次要问题；P3 可选优化。'
 HISTORY_RULE = 'REQ-H02'
-RESULT_SHORT = {'PASS': '通过', 'FAIL': '没通过', 'INSUFFICIENT': '资料不足', 'NA': '无关',
+RESULT_SHORT = {'PASS': '合格', 'FAIL': '不合格', 'INSUFFICIENT': '资料不足', 'NA': '无关',
                 'NA_OUTSIDE_STAGE': '交给后续环节'}
 # Why the schematic cannot be finalised yet, in the order a reader should act on them.
 BLOCKERS = (('fail', '%d 条检查发现的错误还没改'),
@@ -358,29 +358,44 @@ def fold_blocks(blocks):
     return [listed([b for b in blocks if isinstance(b, str) and b.strip()], '项')]
 
 
-def render_estimated_passes(items):
-    """按典型值估算判通过的检查（2026-10-26 决定 4）：每条估算一行，写在哪个功能、按定界表哪一格、怎么估、余量多少、
-    样机要测什么、涉及哪些检查；它们让定稿只能是有条件的。"""
+RISK_SOURCE_WORDS = {'ESTIMATE': '按典型值估算', 'LIFE': '寿命按任务剖面估算', 'STRESS': '保证值在额定内、降额不足'}
+
+
+def render_risks(items):
+    """风险清单（2026-10-26，用户：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列）：结论是
+    “合格，但有风险”的检查，按风险类型分组，每行写哪个角点只靠估算、怎么估的、余量、怎么改进、样机要测什么。"""
     if not items:
         return []
-    out = ['## 按典型值估算的结论', '',
-           '下面 %d 项检查通过的依据不是手册保证值，而是按定界表允许的方法用典型值估算、再按倍数打折后仍满足。'
-           '这些结论在样机实测确认前只算有条件通过，原理图可以有条件定稿，但样机阶段必须测下表“样机要测”这一列。' % len(items), '',
-           '| 功能 | 参数（定界表格） | 怎么估的 | 余量 | 样机要测 | 涉及检查 |', '|---|---|---|---|---|---|']
-    groups = OrderedDict()
+    out = ['## 风险清单', '',
+           '下面 %d 项检查的结论是“合格，但有风险”：在额定和需求范围内过关，但有一个角点只能按典型值估算（或降额不足），'
+           '实际批次、环境或寿命末期可能达不到。风险不影响定稿，按“怎么改进”一列处理即可消除。' % len(items), '']
+    by_type = OrderedDict((t, []) for t in catalog.RISK_TYPES)
     for e in items:
-        key = (e.get('function_id'), e.get('aspect'), e.get('cell'), e.get('how'), e.get('verification'))
-        groups.setdefault(key, []).append(e)
-    for (fid, aspect, cell_id, how, verification), rows in groups.items():
-        e = rows[0]
-        m = e.get('margin') or {}
-        margin = '%s %s 对 %s' % (_shown(m.get('value')), m.get('unit') or '', m.get('against') or '')
-        factor = e.get('estimate_factor')
-        how_text = (how or '') + ('（已按 ×%g 打折）' % factor if isinstance(factor, (int, float)) and not isinstance(factor, bool) else '')
-        out.append('| %s | %s（%s） | %s | %s | %s | %s |' % (
-            cell(fid or ''), cell(aspect or ''), cell(cell_id or 'NONE'), cell(how_text), cell(margin),
-            cell(verification or ''), cell('、'.join(r['check_id'] for r in rows))))
-    out.append('')
+        for t in e.get('types') or ():
+            by_type.setdefault(t, []).append(e)
+    for t, entries in by_type.items():
+        if not entries:
+            continue
+        out += ['### %s风险（%d 项）' % (catalog.RISK_TYPES.get(t, t), len(entries)), '',
+                '| 功能 | 参数（定界表格） | 只靠估算的角点 | 怎么估的 | 余量 | 怎么改进 | 样机要测 | 涉及检查 |',
+                '|---|---|---|---|---|---|---|---|']
+        groups = OrderedDict()
+        for e in entries:
+            key = (e.get('function_id'), e.get('aspect'), e.get('cell'), e.get('corner'), e.get('how'),
+                   e.get('improvement'), e.get('verification'))
+            groups.setdefault(key, []).append(e)
+        for (fid, aspect, cell_id, corner, how, improvement, verification), rows in groups.items():
+            e = rows[0]
+            m = e.get('margin') or {}
+            margin = '%s %s 对 %s' % (_shown(m.get('value')), m.get('unit') or '', m.get('against') or '')
+            factor = e.get('estimate_factor')
+            how_text = (how or RISK_SOURCE_WORDS.get(e.get('source'), '')) + (
+                '（已按 ×%g 打折）' % factor if isinstance(factor, (int, float)) and not isinstance(factor, bool) else '')
+            out.append('| %s | %s%s | %s | %s | %s | %s | %s | %s |' % (
+                cell(fid or ''), cell(aspect or ''), '（%s）' % cell(cell_id) if cell_id else '', cell(corner or ''),
+                cell(how_text), cell(margin), cell(improvement or ''), cell(verification or '—'),
+                cell('、'.join(r['check_id'] for r in rows))))
+        out.append('')
     return out
 
 
@@ -459,7 +474,7 @@ def render_figures(figures):
     return lines
 
 
-VERDICT_WORDS = {'PASS': '通过', 'FAIL': '没通过', 'OPEN': '未定'}
+VERDICT_WORDS = {'PASS': '合格', 'FAIL': '不合格', 'OPEN': '未定'}
 
 
 def _shown(value):
@@ -935,9 +950,11 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         kinds = Counter((t['deliverable'].get('kind')) for t in deliverables)
         sentences.append('另有 %d 项交付物还没到（%s），到了再按假定复核，见“等交付物”' % (
             len(deliverables), '、'.join('%s %d' % (DELIVERABLE_WORDS.get(k, k or '其他'), n) for k, n in kinds.most_common())))
-    estimated = gate.get('estimated_passes') or []
-    if estimated:
-        sentences.append('有 %d 项结论是按典型值估算的，样机实测确认后才算定，见“按典型值估算的结论”' % len(estimated))
+    risky = gate.get('risks') or []
+    if risky:
+        kinds = Counter(t for e in risky for t in e.get('types') or ())
+        sentences.append('有 %d 项合格但有风险（%s），不影响定稿，见“风险清单”' % (
+            len(risky), '、'.join('%s %d' % (catalog.RISK_TYPES.get(k, k), kinds[k]) for k in catalog.RISK_TYPES if kinds.get(k))))
     out += ['**%s。** %s。' % (RELEASE.get(release, release), '。'.join(sentences)), '']
     if notes.get('summary'):
         out += [notes['summary'], '']
@@ -1095,7 +1112,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             out += ['', '另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending))]
         out.append('')
     out += render_configuration_settings(settings)
-    out += render_estimated_passes(gate.get('estimated_passes'))
+    out += render_risks(gate.get('risks'))
     out += render_parameter_sheet(gate.get('parameter_sheet'), detail)
 
     # Everything about SR itself in one folded section, for its maintainers.
@@ -1150,10 +1167,10 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     effective = results_model.effective_verdicts(functions, plan, results.get('checks'))
     verdicts = Counter(effective.get(f.get('id'), (f.get('verdict'),))[0] for f in functions)
     counts_block = ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
-            '| 功能判定 通过 / 没通过 / 未定 | %d / %d / %d |' % (verdicts.get('PASS', 0), verdicts.get('FAIL', 0), verdicts.get('OPEN', 0)),
+            '| 功能判定 合格 / 不合格 / 未定 | %d / %d / %d |' % (verdicts.get('PASS', 0), verdicts.get('FAIL', 0), verdicts.get('OPEN', 0)),
             '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
             ] + owner_counts(plan) + [
-            '| 通过 / 没通过 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
+            '| 合格 / 不合格 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
             '| 与本产品无关（NA） | %d |' % counts.get('NA', 0),
             '| 原理图阶段不判、交给后续环节 | %d |' % counts.get('NA_OUTSIDE_STAGE', 0),
             '| 发现的错误，按严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(by_sev.get(s, 0)) for s in SEVERITIES),
@@ -1166,7 +1183,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                                                   ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
                  if classes else []) + [
             '| 交给后续环节的要求 | %d |' % (len(handoffs) + len(settings))] + (
-            ['| 按典型值估算判通过、样机实测后才算定 | %d 项 |' % len(estimated)] if estimated else []) + [
+            ['| 合格但有风险（不影响定稿，见“风险清单”） | %d 项 |' % len(risky)] if risky else []) + [
             '| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | %d |' % len(screen),
             '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '']
     out[counts_at:counts_at] = counts_block

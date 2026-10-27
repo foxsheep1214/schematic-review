@@ -137,7 +137,7 @@ class TreeReportTests(unittest.TestCase):
         self.assertIn('未定', row)
         self.assertIn('W-GAP-X', row)
         text = render_report.render(plan, {'functions': functions, 'checks': checks}, {})
-        self.assertIn('| 功能判定 通过 / 没通过 / 未定 | 0 / 0 / 2 |', text)
+        self.assertIn('| 功能判定 合格 / 不合格 / 未定 | 0 / 0 / 2 |', text)
 
     def test_a_frame_with_a_member_failed_elsewhere_counts_as_failed(self):
         plan, frame, functions, checks = self.delegated()

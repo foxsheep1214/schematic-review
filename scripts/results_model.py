@@ -19,7 +19,8 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
-SCHEMA_VERSION = 8   # 8 (2026-10-26): no REQUIREMENT open items; requirement questions are settled in intent.clarifications
+SCHEMA_VERSION = 9   # 9 (2026-10-26): a margin passing on an estimate names basis.risk{types, corner, improvement}
+# 8 (2026-10-26): no REQUIREMENT open items; requirement questions are settled in intent.clarifications
 # 7 (2026-10-26): conditions[].refs — a datasheet or BOM condition names the parts it is about
 LEVELS = ('P0', 'P1', 'P2', 'P3')
 REQUEST_CAUSES = ('EXTERNAL_DATA', 'DESIGN_OPEN')

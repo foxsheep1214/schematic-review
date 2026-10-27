@@ -621,6 +621,28 @@ def _estimate_boundary_errors(label, m, basis):
     return errors
 
 
+def _risk_errors(label, basis):
+    """2026-10-26 (user: 三档结论加四类风险标签，只靠估算过关的角点标风险): a corner passed only on an estimate is a pass
+    with a risk — basis.risk{types, corner, improvement}, its types those the cell's estimate stands for; a decisive margin
+    may carry only STRESS (within the rating, short of the derating the reviewer assumed)."""
+    risk = basis.get('risk')
+    estimate = basis.get('kind') == 'ESTIMATE'
+    if risk is None:
+        return [label + ': a pass on an estimate names its risk: basis.risk{types, corner (the corner only the estimate '
+                        'covers), improvement (what removes the risk: a part, a grade, a test)}'] if estimate else []
+    allowed = catalog.cell_risks(basis.get('cell')) if estimate else ('STRESS',)
+    types = risk.get('types') if isinstance(risk, dict) else None
+    if not (isinstance(types, list) and types and all(t in catalog.RISK_TYPES for t in types)
+            and text(risk.get('corner')) and text(risk.get('improvement'))):
+        return ['%s: basis.risk is {types (%s), corner, improvement}' % (label, '/'.join(catalog.RISK_TYPES))]
+    extra = [t for t in types if t not in allowed]
+    if extra:
+        return ['%s: basis.risk.types %s %s; %s' % (
+            label, '/'.join(extra), 'is not a risk an estimate in cell %s stands for' % basis.get('cell') if estimate
+            else 'goes with an estimate, not a decisive margin', 'it allows ' + '/'.join(allowed))]
+    return []
+
+
 def _basis_errors(label, m, conditions, claim_ids):
     """The third layer: what a margin proves. Decisive kinds name the limit compared against, a numeric limit, and the
     regime the computed quantity holds at; a different regime from the limit's needs a conversion."""
@@ -642,9 +664,11 @@ def _basis_errors(label, m, conditions, claim_ids):
                                   '(handoff: index into the function\'s handoffs)')
         if 'consequence_class' in basis:
             errors.extend(_estimate_boundary_errors(label, m, basis))
+            errors.extend(_risk_errors(label, basis))
         elif estimate_in_table(basis):
             errors.extend(_estimate_method_errors(label, basis))
         return errors
+    errors.extend(_risk_errors(label, basis))
     limit = conditions.get(basis.get('limit'))
     if not (limit and limit.get('kind') == 'NUMERIC_LIMIT'):
         errors.append('%s: a %s names in basis.limit the NUMERIC_LIMIT it is compared against' % (label, kind))
@@ -2071,28 +2095,56 @@ def estimate_pass_errors(expected, checks, functions):
     return errors
 
 
-def estimated_passes(expected, checks, functions):
-    """The rows that pass on an estimate (2.1; boundary per cell 2026-10-26): C-grade evidence, the release is at most
-    CONDITIONAL_GO, and the report lists them as 按典型值估算、待样机确认 — one entry per row with its margin, cell,
-    factor, consequence class and the prototype test that confirms it."""
+def _risk_entry(cid, fn, row, state, m, types, source, **extra):
+    risk = (m.get('basis') or {}).get('risk') or {}
+    out = {'check_id': cid, 'function_id': fn['id'], 'aspect': row['aspect'], 'state': state, 'source': source,
+           'types': list(risk.get('types') or types), 'corner': risk.get('corner') or m.get('against'),
+           'improvement': risk.get('improvement'),
+           'margin': {'value': m.get('value'), 'unit': m.get('unit'), 'against': m.get('against')}}
+    out.update(extra)
+    return out
+
+
+def risks(expected, checks, functions):
+    """2026-10-26 (user: 三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列): the PASS rows that carry a
+    risk — a corner passed only on an estimate (its cell, factor, consequence class and the prototype test that confirms
+    it; C-grade evidence), a life row passed on an estimate (LIFETIME, the BOM constraint is the improvement), and a
+    decisive margin within the rating but short of the assumed derating (STRESS). The release is not capped by them; the
+    report lists them apart, by risk type."""
     out, by_id = [], {fn.get('id'): fn for fn in functions or [] if isinstance(fn, dict)}
     for cid, row in sorted(checks.items()):
         fn = by_id.get(row.get('function_id')) if isinstance(row, dict) else None
         if not (fn and row.get('review_result') == 'PASS' and text(row.get('aspect'))):
             continue
         state = ((expected.get(cid) or {}).get('object') or {}).get('state')
+        calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
         estimate = prototype_estimate(fn, row['aspect'], state, cid)
-        if not estimate or judged(fn, row['aspect'], state, cid) != estimate[0]:
+        if estimate and judged(fn, row['aspect'], state, cid) == estimate[0]:
+            rationale, handoff, m = estimate
+            basis = m.get('basis') or {}
+            rule = catalog.estimate_rule(basis.get('cell'), basis.get('consequence_class')) if estimate_in_table(basis) else None
+            out.append(_risk_entry(cid, fn, row, state, m, (), 'ESTIMATE', cell=basis.get('cell'),
+                                   consequence_class=basis.get('consequence_class'),
+                                   estimate_factor=basis.get('estimate_factor'),
+                                   how=rule.how if rule else basis.get('scope'),
+                                   verification=handoff.get('verification'),
+                                   receivers=list(handoff.get('receivers') or [])))
             continue
-        rationale, handoff, m = estimate
-        basis = m.get('basis') or {}
-        cell = basis.get('cell')
-        rule = catalog.estimate_rule(cell, basis.get('consequence_class')) if estimate_in_table(basis) else None
-        out.append({'check_id': cid, 'function_id': fn['id'], 'aspect': row['aspect'], 'state': state,
-                    'cell': cell, 'consequence_class': basis.get('consequence_class'),
-                    'estimate_factor': basis.get('estimate_factor'), 'how': rule.how if rule else basis.get('scope'),
-                    'margin': {'value': m.get('value'), 'unit': m.get('unit'), 'against': m.get('against')},
-                    'verification': handoff.get('verification'), 'receivers': list(handoff.get('receivers') or [])})
+        if life_row(cid) and not margin_proves(fn, row['aspect'], state, cid) \
+                and life_estimate(fn, row['aspect'], state, cid):
+            m = next(m for m in function_reading.margins(calc) if (m.get('basis') or {}).get('kind') == 'ESTIMATE'
+                     and covers(scope(m, calc.get('aspect')), row['aspect'], state, cid))
+            constraint = row.get('bom_constraint') if isinstance(row.get('bom_constraint'), dict) else {}
+            entry = _risk_entry(cid, fn, row, state, m, ('LIFETIME',), 'LIFE')
+            entry['improvement'] = entry['improvement'] or constraint.get('requirement')
+            out.append(entry)
+            continue
+        for m in function_reading.margins(calc):
+            if (margin_verdict(m) == 'PASS' and (m.get('basis') or {}).get('kind') != 'ESTIMATE'
+                    and (m.get('basis') or {}).get('risk')
+                    and covers(scope(m, calc.get('aspect')), row['aspect'], state, cid)):
+                out.append(_risk_entry(cid, fn, row, state, m, (), 'STRESS'))
+                break
     return out
 
 

@@ -92,9 +92,9 @@ class MonotonicTriedTests(unittest.TestCase):
 
 class FormatTests(unittest.TestCase):
     def test_an_older_results_format_is_not_read(self):
-        self.assertEqual(results_model.SCHEMA_VERSION, 8)
+        self.assertEqual(results_model.SCHEMA_VERSION, 9)
         errors = results_model.shape_errors({'schema_version': 4, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be 8' in e for e in errors), errors)
+        self.assertTrue(any('schema_version must be 9' in e for e in errors), errors)
 
 
 if __name__ == '__main__':
