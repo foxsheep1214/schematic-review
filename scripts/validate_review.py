@@ -160,6 +160,17 @@ def fingerprint(data):
     return hashlib.sha256(encoded).hexdigest()
 
 
+def validated_files(plan, results, db=None, lint=()):
+    """The fingerprints of the files the gate read (2026-10-27): pack_review.py refuses a ledger whose plan, results, db
+    or lint runs changed after the gate was written, so "re-run the gate after editing" is checked, not only asked. The
+    results count as the packed ledger holds them (derived rows stripped), so a packed record can be packed again."""
+    plan_data = load_json(plan)
+    return {"plan": fingerprint(plan_data),
+            "results": fingerprint(results_model.strip_derived(load_json(results), plan_data)[0]),
+            "db": fingerprint(load_json(db)) if db else None,
+            "lint": sorted(fingerprint(load_json(path)) for path in lint or ())}
+
+
 def primary_anchors(obj, db=None):
     """Declared primary targets, not every contextual ref/net in a circuit group."""
     refs, nets = set(), set()
@@ -742,6 +753,7 @@ def main():
                                  require_revision=args.require_revision_impact,
                                  require_current_engine=True,
                                  base_dir=str(Path(args.results).resolve().parent))   # resolves conditions' sources
+        result["validated_files"] = validated_files(args.plan, args.results, args.db, args.lint)
     except (ValueError, OSError, TypeError) as exc:
         result = {"quality_screening": screen_quality(None, None),
                   "valid": False, "release": "NO_GO", "errors": [str(exc)]}

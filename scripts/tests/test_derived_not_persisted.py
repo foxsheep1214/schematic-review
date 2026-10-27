@@ -20,7 +20,7 @@ import pack_review
 import results_model
 import validate_review as vr
 from render_report import render
-from test_render_and_pack import write_report
+from test_render_and_pack import stamp_gate, write_report
 from test_derive_rows import bias_plan, bias_rows
 
 
@@ -131,6 +131,7 @@ class PackAndCompareTests(unittest.TestCase):
         for name, value in data.items():
             (self.work / name).write_text(json.dumps(value))
             self.ledger[name] = str(self.work / name)
+        stamp_gate(self.ledger)
         write_report(self.out, render(p, r, gate))
 
     def test_the_packed_ledger_holds_no_derived_rows_and_the_report_still_matches(self):

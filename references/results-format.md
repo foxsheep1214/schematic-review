@@ -16,7 +16,7 @@
 
 “资料不足”只有一个入口：先有功能判定的开放项，才有 INSUFFICIENT 的检查项。
 
-## 三、review-results.json（schema_version 8）
+## 三、review-results.json（schema_version 12）
 
 ### 顶层字段
 

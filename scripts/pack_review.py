@@ -33,6 +33,7 @@ from render_report import SR_SECTION, UnfinishedReview, jargon_in, notes_errors,
 from report_html import to_html
 import circuit_decisions
 import results_model
+from validate_review import validated_files
 
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
           'lint-cold.json', 'lint-hot.json')
@@ -240,6 +241,18 @@ def rendered_errors(out, record, title=None, detail='compact'):
     return errors
 
 
+def stale_gate_errors(ledger):
+    """The gate must have read these very plan, results, db and lint files (validated_files, 2026-10-27)."""
+    seen = json.loads(Path(ledger['review-gate.json']).read_text(encoding='utf-8')).get('validated_files')
+    if not isinstance(seen, dict):
+        return ['review-gate.json names no validated_files; write it with validate_review.py --json']
+    now = validated_files(ledger['review-plan.json'], ledger['review-results.json'], ledger['db.json'],
+                          [ledger['lint-cold.json'], ledger['lint-hot.json']])
+    changed = [key for key in ('plan', 'results', 'db', 'lint') if seen.get(key) != now[key]]
+    return ['review-gate.json was written for other files than these (%s); run validate_review.py again on the files '
+            'being packed' % ', '.join(changed)] if changed else []
+
+
 def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
     out = Path(out)
     errors = []
@@ -279,6 +292,9 @@ def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
             errors.append('missing ledger: ' + str(src))
     if not contained(record / 'manifest.json', out):
         errors.append('manifest escapes review directory')
+    if errors:
+        return errors, None
+    errors += stale_gate_errors(ledger)
     if errors:
         return errors, None
     (record / 'evidence').mkdir(parents=True, exist_ok=True)

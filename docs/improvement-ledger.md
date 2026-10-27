@@ -3137,3 +3137,27 @@ coverage listed what no code reaches. Decision (user: 审查所有SR得死代码
 - Causes: judgment 1
 - Changed: scripts/board_intent.py, scripts/catalog.py, scripts/checkers/supervision.py, scripts/circuit_candidates.py, scripts/datasheet_kinds.py, scripts/decoupling.py, scripts/lint.py, scripts/plan_review.py, scripts/render_report.py, scripts/results_model.py, scripts/review_functions.py, scripts/review_quality.py, scripts/skill_identity.py, scripts/tests/test_bounding_table.py, scripts/tests/test_frame_bounds.py, scripts/tests/test_ic_kinds.py, scripts/tests/test_review_functions.py, evals/mutation/mutations.json, evals/mutation/RESULTS.md, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2300, mutation --changed: M483 and M551 dropped with the code they guarded (`bounds_for`, `ANCHOR_KINDS`), M620 re-anchored to the new `template_hints` call and killed; the rest killed
+
+## The pack checks the gate read these files (2026-10-27)
+
+A Codex review of SR reproduced a gap: after the gate was written, changing the
+results' `plan_digest` made a fresh gate run fail, but the pack still succeeded on
+the old gate, because it read only the old gate's `valid`. Two reference lines
+had also fallen behind the code: the results-format heading said format 8 (the
+code is 12), and the evidence grades said C never supports PASS, while an
+estimate pass on a cell that allows it is C-grade by design (2026-10-26).
+Decision (user: 按你的建议改：门禁写入所校验文件的指纹、打包核对；两处文档改正):
+
+1. `validate_review.py --json` writes `validated_files`: canonical-JSON SHA-256 of
+   the plan, the results as the packed ledger holds them (derived rows
+   stripped, so a packed record packs again), the db and each lint run.
+2. `pack_review.py` compares them with the files it is about to pack and refuses
+   a mismatch or a gate without the field; it does not re-run the gate (that
+   needs the previous plan and netlist and the evidence directory).
+3. results-format heading → format 12; the C grade names the estimate-pass
+   exception; SKILL.md 5.2 and the gate fields say what the pack checks.
+
+- Event: user:2026-10-27 (按你的建议改：门禁写入所校验文件的指纹、打包核对；两处文档改正)
+- Causes: judgment 1
+- Changed: scripts/validate_review.py, scripts/pack_review.py, scripts/tests/test_pack_rerender.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_derived_not_persisted.py, SKILL.md, references/results-format.md, references/verdicts-and-release.md, references/architecture.md, docs/improvement-ledger.md
+- Gates: pytest 2303, mutation --changed: 36 mutations on the changed files, all killed

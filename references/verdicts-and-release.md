@@ -64,7 +64,8 @@
 
 - **A**：结论能由已验证输入直接重现（网表集合、官方限值与可复算区间等）。
 - **B**：有可定位依据和适用条件的工程推导，推导链公开。
-- **C**：关键身份、拓扑、要求或工况缺失；对应 INSUFFICIENT。PASS/FAIL 不得以 C 为依据。
+- **C**：关键身份、拓扑、要求或工况缺失；对应 INSUFFICIENT。PASS/FAIL 不得以 C 为依据，唯一例外是定界表允许估算的格上按估算判的
+  PASS：C 级、“合格，但有风险”，必写 `risk`（见[功能判定](results-format.md#功能判定functions)）。
 
 证据来源（netlist / schematic / BOM / datasheet / requirement / calculation / test）另记，A/B 不是来源类型。
 例：确认一颗电阻标 DNP 为 A；装配 BOM 与图面冲突时，“实物必定不贴”是 C——可分别记录
@@ -259,7 +260,8 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 | `schematic_freeze` | 用户明确要求冻结 | 执行全部严重度、覆盖、绑定、资料和 HANDOFF 闸门；校验加 `--require-release` |
 | `prototype_verification` | 接收实物/布局证据，追踪整改 | 只审原理图与外部证据交接，不签署整机、EMC、寿命或生产准出 |
 
-`review-gate.json` 中的工具字段：`valid/errors` 表示记录是否可对账；`workflow.status/current_work_items`
+`review-gate.json` 中的工具字段：`valid/errors` 表示记录是否可对账；`validated_files` 是门禁读过的计划、结果、db 与 lint 的指纹，
+结果改过而没重跑门禁时打包拒绝；`workflow.status/current_work_items`
 （由开放项派生，见下）给出本轮先做什么；`release` 是原理图冻结的 GO / CONDITIONAL_GO / NO_GO：
 有错误或阻断项 NO_GO；有按批准接受的 FAIL/INSUFFICIENT 最高 CONDITIONAL_GO；否则 GO。
 按设计约束判合格的检查项（门禁 `design_constraints`：交给磁件、固件、PCB 等负责方的约束）不限制 `release`（2026-10-26 定）。

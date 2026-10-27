@@ -47,6 +47,7 @@ class RerenderTests(unittest.TestCase):
         results = self.load('review-results.json')
         results['functions'][0]['question'] = '启动时稳压器限流会不会挡住上电'   # the function table shows it
         (self.work / 'review-results.json').write_text(json.dumps(results))
+        packing.stamp_gate(self.ledger)
         errors, _ = self.run_pack()
         self.assertEqual(len(self.rerender_errors(errors)), 1, errors)
 
@@ -70,10 +71,41 @@ class RerenderTests(unittest.TestCase):
         errors, _ = self.run_pack()
         self.assertTrue(any('valid' in e and 'validate_review' in e for e in errors), errors)
 
+    def test_results_edited_after_the_gate_are_not_packed(self):
+        # 2026-10-27 (Codex review of SR): the pack read the old gate's valid and never ran the gate again
+        results = self.load('review-results.json')
+        results['plan_digest'] = '0' * 64
+        (self.work / 'review-results.json').write_text(json.dumps(results))
+        self.render_current()
+        errors, _ = self.run_pack()
+        self.assertEqual(errors, ['review-gate.json was written for other files than these (results); run '
+                                  'validate_review.py again on the files being packed'])
+
+    def test_a_gate_without_its_file_fingerprints_is_not_packed(self):
+        gate = self.load('review-gate.json')
+        del gate['validated_files']
+        (self.work / 'review-gate.json').write_text(json.dumps(gate))
+        self.render_current()
+        errors, _ = self.run_pack()
+        self.assertEqual(errors, ['review-gate.json names no validated_files; write it with validate_review.py --json'])
+
+    def test_the_gate_command_writes_the_fingerprints_the_pack_reads(self):
+        import subprocess
+        gate_path = self.work / 'review-gate.json'
+        subprocess.run([sys.executable, str(Path(__file__).resolve().parents[1] / 'validate_review.py'),
+                        self.ledger['review-plan.json'], self.ledger['review-results.json'], '--db', self.ledger['db.json'],
+                        '--lint', self.ledger['lint-cold.json'], '--lint', self.ledger['lint-hot.json'],
+                        '--json', str(gate_path)], capture_output=True)
+        written = json.loads(gate_path.read_text())['validated_files']
+        self.assertEqual(set(written), {'plan', 'results', 'db', 'lint'})
+        packing.stamp_gate(self.ledger)
+        self.assertEqual(written, json.loads(gate_path.read_text())['validated_files'])
+
     def test_a_scoped_review_is_not_packed(self):
         results = self.load('review-results.json')
         results['review_scope'] = {'functions': ['FN-X'], 'reason': '单电路热审'}
         (self.work / 'review-results.json').write_text(json.dumps(results))
+        packing.stamp_gate(self.ledger)
         self.render_current()
         errors, _ = self.run_pack()
         self.assertTrue(any('review_scope' in e for e in errors), errors)

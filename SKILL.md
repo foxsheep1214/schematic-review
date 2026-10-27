@@ -462,7 +462,7 @@ TASK_TITLE_LONG 提示每条处置过；报告里没有"每只、每只"串接�
       python3 scripts/pack_review.py <审查目录> --review-plan … --review-results … --review-gate … --db … --intent … \
         --circuit-candidates record/circuit-candidates.json --notes notes.json --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
 
-  `pack_review.py` 用打包的计划、结果、门禁和 `notes.json` 重新渲染报告，与 `审查报告.md` 不同（手改过，或台账改了没重出）就拒绝；渲染时用了 `--title`、`--detail` 的，打包时同样传。门禁不 valid、结果声明了 `review_scope` 都不打包。它只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
+  `pack_review.py` 用打包的计划、结果、门禁和 `notes.json` 重新渲染报告，与 `审查报告.md` 不同（手改过，或台账改了没重出）就拒绝；渲染时用了 `--title`、`--detail` 的，打包时同样传。门禁不 valid、门禁之后计划/结果/db/lint 又改过（与门禁的 `validated_files` 指纹不符）、结果声明了 `review_scope` 都不打包。它只复制结论引用的证据；原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`。绝对引用只核声明输入，不拼入归档路径；本轮证据用 `--evidence-root` 内的安全相对路径（优先于输入里同名的旧文件），不允许 `..` 或符号链接越界。打包成功前逐个重读 packed 路径和 SHA-256；报告相对链接须都能打开。
   顶层有其他文件或引用的证据找不到时打包失败。不另写 README 或说明文档；HTML 只能是脚本生成的那份。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。
 - 证据只放摘录（5.2 审核 2026-10-26）：引用台账文件的证据指向 `record/`，不复制；引用 SR 自己的 references 按 `skill_version` 解析，不声明为输入；

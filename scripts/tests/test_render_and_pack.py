@@ -11,7 +11,7 @@ from unittest import mock
 from test_review_stage_scope import decisive, downstream
 from test_validate_review import fixture, fail
 import validate_review as vr
-from validate_review import validate_review
+from validate_review import validate_review, validated_files
 from render_report import render
 from pack_review import pack, REPORT, REPORT_HTML, RECORD, LEDGER
 from report_html import to_html
@@ -23,6 +23,14 @@ INTERNAL_CODES = ('EXTERNAL_DATA', 'DESIGN_OPEN', 'DELIVERABLE_PENDING', 'REQUIR
 def report(p, r, db, notes=None):
     gate = json.loads(json.dumps(validate_review(p, r, db), default=sorted))
     return render(p, r, gate, notes), gate
+
+
+def stamp_gate(ledger):
+    """What validate_review.py --json writes beside the verdict: the fingerprints of the files it read."""
+    gate = json.loads(Path(ledger['review-gate.json']).read_text())
+    gate['validated_files'] = validated_files(ledger['review-plan.json'], ledger['review-results.json'], ledger['db.json'],
+                                              [ledger['lint-cold.json'], ledger['lint-hot.json']])
+    Path(ledger['review-gate.json']).write_text(json.dumps(gate))
 
 
 def write_report(out, text):
@@ -459,6 +467,7 @@ class PackReviewTests(unittest.TestCase):
         for name, value in data.items():
             (self.work / name).write_text(json.dumps(value))
             self.ledger[name] = str(self.work / name)
+        stamp_gate(self.ledger)
         self.render_current()
 
     def render_current(self, notes=None, title=None, detail='compact'):
@@ -475,6 +484,7 @@ class PackReviewTests(unittest.TestCase):
         data = json.loads(path.read_text())
         data['checks'][0]['evidence'].append({'source': str(source), 'locator': 'test'})
         path.write_text(json.dumps(data))
+        stamp_gate(self.ledger)   # the reviewer runs the gate again after editing the results
         self.render_current()
 
     def test_hand_drawn_circuits_are_not_packed_without_their_candidate_file(self):
@@ -560,6 +570,7 @@ class PackReviewTests(unittest.TestCase):
         for field in ('acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
             item.pop(field)
         (self.work / 'review-results.json').write_text(json.dumps(results))
+        stamp_gate(self.ledger)
         errors, _ = self.run_pack()
         self.assertTrue(any('review not finished' in e and row['id'] in e for e in errors), errors)
 
@@ -572,6 +583,7 @@ class PackReviewTests(unittest.TestCase):
         for field in ('acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
             item.pop(field)
         (self.work / 'review-results.json').write_text(json.dumps(results))
+        stamp_gate(self.ledger)
         plan = json.loads((self.work / 'review-plan.json').read_text())
         with self.assertRaises(render_report.UnfinishedReview) as raised:
             render_report.render(plan, results, {'valid': True})
@@ -603,6 +615,7 @@ class PackReviewTests(unittest.TestCase):
         results['checks'][0]['evidence'].append({'source': 'page-1.png', 'locator': 'U1'})
         results['checks'][0]['evidence'].append({'source': 'shots/page-2.png', 'locator': 'Q2'})
         (self.work / 'review-results.json').write_text(json.dumps(results))
+        stamp_gate(self.ledger)
         (self.work / 'page-1.png').write_bytes(b'new')
         (self.inputs / 'page-1.png').write_bytes(b'old')
         (self.inputs / 'page-2.png').write_bytes(b'old')
