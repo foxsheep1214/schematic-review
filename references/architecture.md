@@ -99,6 +99,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-10-27 | 一次只取一个瞬态或故障事件，叠在持续最坏工况上，两个独立的稀有事件不同时取，物理上同时发生的照叠；瞬态比瞬态额定、不另要降额余量，持续比持续额定：PRO-E02 的 VRWM 只比持续最高工作电压（不含瞬态），瞬态只取能到达该节点的那一个（接连接器的网取需求波形，内部节点取前级钳位后的残压或本地源，扫描行写明是哪种）；需求方面 INPUT_STAGE_RATING 只对持续上下限要求降额余量；PRO-C02 不误动作侧两边按同一温度角点配对、已按最坏取值时零余量即满足；CAP-SURGE-V 格 MLCC 的耐电压试验作非重复瞬态的保证额定（用户：“按你的建议改：A1、A3、B4、C5 和‘一次只取一个瞬态事件’的总原则照改；A2（MLCC 耐压试验当瞬态额定）也改”） | 保护器件过严的根子是把瞬态叠在持续工况上、拿瞬态比持续额定、把端口浪涌套到内部节点，再在最坏组合上加裕量 |
 | 2026-10-27 | 器件类型的依据（`docs/2026-10-26-part-kind-evidence.md`，A–C 逐项确认，用户：“逐个点来和我讨论，我给你答案”）：须有核验手册声明的器件按分类器读出的最终类型取，不再按 Q/D/ZD/TVS/U/M 位号——12 类分立件、全部 IC 角色和两个及以上绕组的磁件，电感按功能分出 `common_mode_choke`、`coupled_inductor`（“12 类加 IC，但是电感你应该将其功能识别得更细，能分清到底是共模扼流圈，耦合电感还是变压器”）；分类器认不出、接两个及以上网的器件先是 SR 能力不足，由审查员归类，不需手册的类别写一句理由（“分类器认不出的器件，首先要归类为SR的能力不足，在后续要不足这个能力。然后我建议按照2的方式来”）；功率开关、监控检查器把型号关键词也当启发式，继电器常闭触点只凭关键词时列候选（B1 “同意”）；声明与关键词矛盾以手册为准，与引脚名矛盾仍判未知；资料审计用手册标题区反查启发式（KIND_CONFLICT，只作提示）和已核验声明（TITLE_MISMATCH，理由不得是内部构成，“同意，按照2加”）；类型按器件对外的功能定（eFuse 是负载开关） | 必须声明的集合按位号定，R7 四份记录都没声明 2 只 NTC、保险、压敏、变压器；型号关键词在四处等同手册；手册绑定了却不反查，eFuse 曾被旧词表读成光耦；认不出的器件只出反馈、不挡结论 |
 | 2026-10-27 | 器件自身发热的三格放开损坏类估算：DIODE-IR-HOT（×2，结温余量 ≥ 20 °C）、MOS-VGS-ON 功率开关（×2，结温余量 ≥ 20 °C）、ECAP-ESR-RIPPLE（×1.3，芯温余量 ≥ 10 °C）；凭估算判 COMPONENT_DAMAGE 通过的余量 `risk.types` 必含 STRESS，即“合格但有应力风险”（已允许损坏类估算的 DIODE-VF、MOS-RDS-HOT、IND-ISAT 同样适用）；保护类 ZENER-VZ-UPPER、IC-THRESHOLD、IC-TIMING 不变（用户：“放开第一组（器件自身发热）三格……损坏类估算判‘合格但有应力风险’；保护类三格不动”） | 这三格坏的是器件自己、持续工况、样机能测，卡在缺厂家资料是过严；保护器件只在故障或瞬态时起作用，样机平时测不到 |
+| 2026-10-27 | 门禁合成一条 `pytest`（已含规则合同、KiCad 回放、典型电路），台账 Gates 只写测试条数与 `--changed` 结果；变异检查不再每次必加，提交前跑 `--changed`，一批改动后或每周全量跑并清理失效的（用户：“按你的建议简化：门禁合成一条 pytest；变异检查不再每次必加，提交前跑 --changed，定期全量跑并清理失效的；台账照记”） | 后三项已在 pytest 里，单独再跑是重复；变异清单 758 条、17 条锚点失效，每次改动的重锚、改号和并行编号冲突占了大量时间 |
 
 ## 四、规则维护
 
@@ -117,5 +118,14 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
   `python3 scripts/catalog.py --write-doc references/check-catalog.md` 和 `--write-doc references/review-vocabulary.md`（审查员的三张名称表）。来源为“全板通用”“电路检查项”的新规则
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在计划生成的对应层（电路与器件 `plan_circuits.py`、接口 `interfaces.py`、
   系统功能 `plan_system.py`、全板与覆盖 `plan_board.py`；`plan_review.py` 只做汇总）、`lint.py` 或对应检查器里实现展开/扫描。新增或调整规则先回答 [审查要点中的三个问题](references/review-charter.md#用审查要点指导进化)。
-- 测试分两层（[分层定义](scripts/tests/conftest.py)）：每次改动先跑约定测试 `python3 -m pytest scripts/tests -m contract -q`（[规则约定](evals/rule_contracts/README.md)、校验器不变量、解析器，几秒）；新增 A/E/T/V/H 规则须同时加触发板与近似板。措辞层 `-m wording` 是每个台账夹具一份 golden 报告，改报告措辞用 `SR_UPDATE_GOLDEN=1` 重写快照并审读 diff。改规则或检查器后跑[变异门](evals/mutation/README.md) `python3 evals/mutation/run.py --changed`（只跑落在改动文件上的变异，几分钟），提交前或发布前跑全量 `python3 evals/mutation/run.py`；每条变异都要被单元测试杀死。
-- 修改脚本后运行 `python3 -m unittest discover -s scripts/tests -q`（全量，含两层）；改导入器时同时跑 [真实来源导入回归](evals/input_bench/README.md)；改 KiCad 解析、自检、日志扫描、去耦清单或计划展开时跑 [KiCad 原生交付回放](evals/kicad_replay_bench/README.md)。改检查器或规则后跑 [典型电路基准](evals/typical_circuits/README.md)（42 块开源板，每条报出都要已归类，新出现的须逐条审读）和 [种子基准](evals/seeded_bench/README.md) 看自动层检出；改定级、汇总、待办或报告逻辑后跑台账回放（schema 3 台账已退役，待一份按功能判定方法冻结的真实审查记录重建）；`python3 evals/bench_coverage.py --seeded <注入基准 results.json>` 列出每条 A 规则在哪个基准有真实板正例、哪些还没有。评测通过不等于任何真实电路审查通过。
+- **门禁只有一条**（2026-10-27，用户：门禁合成一条 pytest）：每次改动跑 `python3 -m pytest scripts/tests -q`。它已经包含
+  [规则合同](evals/rule_contracts/README.md)（每条自动规则一块触发板、一块近似板）、[KiCad 原生交付回放](evals/kicad_replay_bench/README.md)
+  和 [典型电路基准](evals/typical_circuits/README.md)（每条报出都要已归类，新出现的须逐条审读），不再单独跑、不再分行记。
+  开发中可先跑几秒的约定层 `-m contract`；措辞层 `-m wording` 是 golden 报告，改报告措辞用 `SR_UPDATE_GOLDEN=1` 重写快照并审读 diff。
+  新增 A/E/T/V/H 规则须同时加触发板与近似板；规则改变回放的冻结答案时另存一版约定（见回放 README）。
+- **变异检查按需**（同日，用户：变异检查不再每次必加，提交前跑 --changed，定期全量跑并清理失效的）：提交前跑
+  `python3 evals/mutation/run.py --changed`，确认改动文件上的现有变异仍被杀死、锚点仍命中；锚点因本次改动失效的就地重锚或删去。
+  只有新加的判断逻辑没有直接测试守着时才补变异，不再每次必加。一批改动后或每周跑一次全量 `python3 evals/mutation/run.py`，
+  把存活的补测试、失效的重锚或删去，记一条台账。
+- 按需另跑：改导入器时跑 [真实来源导入回归](evals/input_bench/README.md)；看自动层检出率跑 [种子基准](evals/seeded_bench/README.md)；
+  `python3 evals/bench_coverage.py --seeded <注入基准 results.json>` 列出每条 A 规则在哪个基准有真实板正例。评测通过不等于任何真实电路审查通过。

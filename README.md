@@ -35,7 +35,7 @@
 
 ## 工具回归评测
 
-回放台架、规则合同与变异门的用法见 [SKILL.md](SKILL.md) 的“规则维护”一节。
+门禁（一条 pytest，含规则合同、回放与典型电路）和变异检查的用法见 [架构说明 四、规则维护](references/architecture.md#四规则维护)。
 评测只测声明范围内的工具能力，不代替真实项目审查或电路准出。
 
 MIT License，见 [LICENSE](LICENSE)。

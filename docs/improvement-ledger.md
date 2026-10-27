@@ -5,7 +5,9 @@ Every entry ends with three lines the test suite checks
 record or user correction that caused the change; `Causes:` how many items
 fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
-file existed are in `docs/audits/`.
+file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
+count (it includes the rule contracts, the KiCad replay and the typical
+circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 ## A part's kind: what it does, settled by its datasheet, not by its refdes (2026-10-27)
 
@@ -3055,3 +3057,27 @@ words and the STRESS sentence in results-format.md.
 - Causes: judgment 1
 - Changed: scripts/catalog.py, scripts/review_functions.py, scripts/tests/test_bounding_table.py, scripts/tests/test_cell_boundary.py, scripts/tests/test_reading_path.py, references/bounding-table.md, references/results-format.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2299, rule contracts 69/69, replay 195/195, typical circuits 201/185/14, mutations M738 M810-M813 killed (M738 re-anchored)
+
+## One gate: pytest; mutations on demand (2026-10-27)
+
+The maintenance steps asked five gates per change (unit tests, rule contracts,
+KiCad replay, typical circuits, mutations) and new mutations with every change.
+The first three after the unit tests already run inside pytest
+(`test_rule_contracts.py`, `test_kicad_replay_bench.py`,
+`test_typical_circuits.py`), so they were run and reported twice; the mutation
+list had grown to 758 entries with 17 stale anchors, and re-anchoring,
+renumbering and id clashes between parallel sessions took much of each change.
+Decision (user: 按你的建议简化：门禁合成一条 pytest；变异检查不再每次必加，提交前跑 --changed，定期全量跑并清理失效的；台账照记):
+
+1. The gate is `python3 -m pytest scripts/tests -q`; the ledger's Gates line
+   gives its count and the `mutation/run.py --changed` result.
+2. A mutation is added only when new judgment logic has no direct test; before
+   a commit `--changed` confirms the mutations on changed files; a full run
+   after a batch or weekly adds tests for survivors and re-anchors or drops
+   stale entries, with a ledger entry.
+3. Ledger entries and architecture decision rows continue.
+
+- Event: user:2026-10-27 (按你的建议简化：门禁合成一条 pytest；变异检查不再每次必加，提交前跑 --changed，定期全量跑并清理失效的；台账照记)
+- Causes: judgment 1
+- Changed: references/architecture.md, evals/mutation/README.md, README.md, docs/improvement-ledger.md
+- Gates: pytest 2299, mutation --changed: 0 mutations on the changed files
