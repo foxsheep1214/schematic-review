@@ -2924,3 +2924,38 @@ this round reviews. Decision (user: A):
 - Causes: judgment 1
 - Changed: scripts/plan_board.py, scripts/plan_review.py, scripts/review_stage_scope.py, scripts/validate_review.py, scripts/review_functions.py, scripts/results_model.py, scripts/review_summary.py, scripts/requirement_bindings.py, scripts/render_report.py, scripts/tests, references/results-format.md, references/evidence-proportionality.md, references/requirement-clarifications.md, references/intent-format.md, references/report-and-remediation.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2263, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M521 M762 M763 M765-M769 killed (M521 re-anchored; M541 dropped; M764 dropped, its check duplicated the gate's NA applicability check)
+
+## One transient at a time (2026-10-27)
+
+The user asked whether the review is over-strict because extreme, transient
+conditions are stacked on top of normal operation. An audit of the rules found
+five places: PRO-E02 compared VRWM with the net's maximum "including
+transients"; CAP-SURGE-V failed every MLCC whose transient exceeded the rated
+voltage, MLCC datasheets giving no surge rating; the INPUT_STAGE_RATING aspect
+asked a derating margin under transients; PRO-C02's no-trip side took every
+worst corner, each side at its own temperature, and then asked a margin; and
+PRO-E02 put the port's surge or ESD waveform on clamps of internal nodes.
+Physically simultaneous stacks (a surge on the line peak, pulse ratings derated
+from the starting temperature, a turn-off clamp plus the supply maximum) stay.
+Decision (user: 按你的建议改：A1、A3、B4、C5 和“一次只取一个瞬态事件”的总原则照改；A2 也改):
+
+1. One transient or fault event at a time, on the continuous worst case; two
+   independent rare events are not combined; a transient is compared with
+   transient ratings and takes no derating margin, the continuous case with
+   continuous ratings (evidence-proportionality, SKILL.md step ③).
+2. PRO-E02: VRWM against the continuous maximum working voltage; the transient
+   is the one that reaches the node: the scan line says whether the net
+   reaches a fitted connector (directly or through one resistor, ferrite or
+   inductor) and takes the required waveform, or is internal and takes the
+   residual after the upstream clamp or a local source.
+3. INPUT_STAGE_RATING: derating margin on the continuous limits only.
+4. PRO-C02 no-trip side: both sides at the same temperature corner, zero margin
+   suffices when every term is at its worst.
+5. CAP-SURGE-V: an MLCC's dielectric withstanding test is the guaranteed
+   rating for a non-repetitive transient (method G1 added); a spike every
+   switching cycle still meets the rated voltage.
+
+- Event: user:2026-10-27 (按你的建议改：A1、A3、B4、C5 和“一次只取一个瞬态事件”的总原则照改；A2 也改)
+- Causes: judgment 1
+- Changed: scripts/catalog.py, scripts/lint.py, scripts/protective_clamps.py, scripts/plan_circuits.py, scripts/tests/test_electrical_safety.py, SKILL.md, references/evidence-proportionality.md, references/check-catalog.md, references/bounding-table.md, references/review-vocabulary.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2267, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M707 M770-M774 killed (M707 re-anchored)

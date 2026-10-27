@@ -707,8 +707,9 @@ class Lint:
             self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',
                      f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_fmt_v(_volt(rail))}，'
                      f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail, ref)}'
-                     'VRWM（齐纳取 VZ 下限）对该网正常最高电压（含瞬态与公差）；按需求的浪涌或 ESD 波形取钳位电流，'
-                     '该电流下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；'
+                     'VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；'
+                     f'{protective_clamps.transient_source_text(self.graph, rail)}'
+                     '该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；'
                      '该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。',
                      ref, kind='CANDIDATE')
 

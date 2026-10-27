@@ -127,7 +127,7 @@
 
 | 审查方面 | 何时问 | 判据模板 | 承担的检查 | 可承接的电路 |
 |---|---|---|---|---|
-| INPUT_STAGE_RATING 输入级器件额定覆盖 | 原文有 input_voltage / surge_voltage | 需求输入范围的上下限与瞬态下，输入级器件的电压、电流额定覆盖并有余量 | DEV-C01、PWR-C02、PWR-C13 | 电路 POWER_PROTECTION、POWER_CONVERTER；系统功能 SYS-POWER |
+| INPUT_STAGE_RATING 输入级器件额定覆盖 | 原文有 input_voltage / surge_voltage | 需求输入范围的持续上下限下，输入级器件的持续电压、电流额定覆盖并有降额余量；需求的瞬态（一次一个）对瞬态额定或绝对最大额定，不另要降额余量 | DEV-C01、PWR-C02、PWR-C13 | 电路 POWER_PROTECTION、POWER_CONVERTER；系统功能 SYS-POWER |
 | INPUT_THRESHOLDS 启动与欠压门限覆盖 | 原文有 input_voltage | 启动、欠压与过压门限落在需求输入范围之外或边界上，范围内不误动作 | PWR-C06、PRO-C02 | 电路 POWER_PROTECTION、POWER_CONVERTER；系统功能 SYS-POWER |
 | CONVERTER_INPUT_RANGE 变换级工作范围覆盖 | 原文有 input_voltage / input_frequency | 变换级控制器与功率器件的工作输入范围覆盖需求输入范围 | PWR-C02、DEV-C05 | 电路 POWER_PROTECTION、POWER_CONVERTER；系统功能 SYS-POWER |
 | OUTPUT_LEVELS 各档输出可达 | 原文有 output_voltage | 需求的每个输出电压档或范围由反馈与设定网络算得可达，并留调节余量 | PWR-E01、PWR-C15 | 电路 POWER_CONVERTER；接口 SUPPLY |

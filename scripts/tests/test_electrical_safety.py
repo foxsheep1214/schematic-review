@@ -155,3 +155,44 @@ class ZenerFamilyTests(unittest.TestCase):
         items = [x for x in Lint(db).run() if x['rule'] == 'PRO-E02']
         self.assertEqual([x['ref'] for x in items], ['D1'])
         self.assertIn('型号提示=5.1', items[0]['detail'].replace(' V', ''))
+
+
+class SingleTransientTests(unittest.TestCase):
+    """2026-10-27 (user: 按你的建议改 A1、A3、B4、C5，A2 也改): one transient or fault at a time on the continuous worst
+    case; a transient against transient ratings, the continuous case against continuous ratings."""
+
+    def clamp_detail(self, nets, values):
+        return next(x['detail'] for x in Lint(database(nets, values)).run() if x['rule'] == 'PRO-E02')
+
+    def test_the_working_voltage_is_the_continuous_maximum(self):
+        detail = self.clamp_detail({'VBUS': ['D1.1', 'J1.1'], 'GND': ['D1.2', 'J1.2']}, {'D1': 'SMBJ24A', 'J1': 'CONN'})
+        self.assertIn('持续最高工作电压（含公差与纹波，不含瞬态）', detail)
+        self.assertNotIn('含瞬态与公差', detail)
+
+    def test_a_port_clamp_takes_the_required_waveform(self):
+        detail = self.clamp_detail({'VBUS': ['D1.1', 'J1.1'], 'GND': ['D1.2', 'J1.2']}, {'D1': 'SMBJ24A', 'J1': 'CONN'})
+        self.assertIn('该网接连接器 J1：对外端口按需求的浪涌或 ESD 波形取钳位电流', detail)
+        behind = self.clamp_detail({'VIN': ['D1.1', 'FB1.2'], 'PORT': ['FB1.1', 'J1.1'], 'GND': ['D1.2', 'J1.2']},
+                                   {'D1': 'SMBJ24A', 'FB1': 'Ferrite bead 600R', 'J1': 'CONN'})
+        self.assertIn('该网接连接器 J1', behind)
+
+    def test_an_internal_clamp_takes_only_what_reaches_it(self):
+        detail = self.clamp_detail({'+5V': ['D1.1', 'U1.1'], 'GND': ['D1.2', 'U1.2']}, {'D1': 'SMAJ5.0A', 'U1': 'IC'})
+        self.assertIn('该网不接连接器（内部节点）', detail)
+        self.assertNotIn('需求的浪涌', detail)
+        db = database({'+5V': ['D1.1', 'U1.1', 'J1.1'], 'GND': ['D1.2', 'U1.2']}, {'D1': 'SMAJ5.0A', 'U1': 'IC', 'J1': 'CONN'})
+        db['parts']['J1']['nc'] = True
+        self.assertIn('内部节点', next(x['detail'] for x in Lint(db).run() if x['rule'] == 'PRO-E02'))
+
+    def test_criteria_compare_a_transient_with_transient_ratings(self):
+        import catalog
+        from plan_circuits import WINDOW_SIDES
+        notrip = dict(WINDOW_SIDES)['NOTRIP']
+        self.assertIn('同一温度角点', notrip)
+        self.assertIn('零余量即满足，不另留裕量', notrip)
+        self.assertIn('同一温度角点', catalog.get('PRO-C02').criterion)
+        self.assertIn('不含瞬态', catalog.get('PRO-E02').criterion)
+        self.assertIn('不另要降额余量', catalog.REQUIREMENT_ASPECTS['INPUT_STAGE_RATING'].template)
+        cell = catalog.BOUNDS['CAP-SURGE-V']
+        self.assertIn('耐电压试验', cell.boundary)
+        self.assertIn('G1', [code for code, _ in cell.methods])

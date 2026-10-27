@@ -4567,8 +4567,8 @@
   "id": "M707",
   "name": "a capacitor past its rated voltage with no surge rating may wait for vendor data",
   "file": "scripts/catalog.py",
-  "old": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G2', ()), ('G5', ()), ('G6', ())), 'OUTSIDE_SPECIFIED', _CB,",
-  "new": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,"
+  "old": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G1', ()), ('G2', ()), ('G5', ()), ('G6', ())), 'OUTSIDE_SPECIFIED', _CB,",
+  "new": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G1', ()), ('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,"
  },
  {
   "id": "M708",
@@ -4996,5 +4996,40 @@
   "file": "scripts/render_report.py",
   "old": "    if not requirements and not rows:\n        return []",
   "new": "    if True:\n        return []"
+ },
+ {
+  "id": "M770",
+  "name": "a connector on the clamp's net is no port",
+  "file": "scripts/protective_clamps.py",
+  "old": "        if kind == pw.CONNECTOR:\n            found.add(ref)",
+  "new": "        if kind == pw.CONNECTOR:\n            pass"
+ },
+ {
+  "id": "M771",
+  "name": "a port one ferrite away is not found",
+  "file": "scripts/protective_clamps.py",
+  "old": "        elif kind in (pw.RESISTOR, pw.FERRITE, pw.INDUCTOR) and len(graph.nets_of(ref)) == 2:",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M772",
+  "name": "an unfitted connector makes a port",
+  "file": "scripts/protective_clamps.py",
+  "old": "        if not graph.is_fitted(ref):\n            continue\n        if kind == pw.CONNECTOR:",
+  "new": "        if False:\n            continue\n        if kind == pw.CONNECTOR:"
+ },
+ {
+  "id": "M773",
+  "name": "an internal clamp takes the port waveform",
+  "file": "scripts/protective_clamps.py",
+  "old": "    if ports:\n        return ('该网接连接器",
+  "new": "    if True:\n        return ('该网接连接器"
+ },
+ {
+  "id": "M774",
+  "name": "the clamp working voltage includes transients again",
+  "file": "scripts/lint.py",
+  "old": "'VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；'",
+  "new": "'VRWM（齐纳取 VZ 下限）对该网正常最高电压（含瞬态与公差）；'"
  }
 ]

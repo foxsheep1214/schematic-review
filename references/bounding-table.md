@@ -103,7 +103,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `IC-IO-CURRENT` | ic 及各 IC 角色 | IO 灌/拉电流超出规定 | UPPER | 负载电流 / — | G1；G10 | `OUTSIDE_SPECIFIED` | evidence-proportionality.md“手册的情况按四档判” |
 | `IC-PIN-ABSMAX` | ic 及各 IC 角色 | 引脚瞬态电压/注入电流对绝对最大额定 | UPPER | 瞬态源与串联阻抗 / — | G1 | `OUTSIDE_SPECIFIED` | 钳位规则（architecture.md 2026-10-25，B3 a） |
 | `IC-RECOMMENDED` | ic 及各 IC 角色 | 推荐工作条件（绝对最大额定只算损坏边界） | — | 工作条件 / — | G1 | `OUTSIDE_SPECIFIED` | DEV-C05 |
-| `CAP-SURGE-V` | capacitor、electrolytic | 浪涌/瞬态时电容电压对额定电压 | UPPER | 浪涌电荷与回路阻抗 / INCREASING | G2；G5；G6 | `OUTSIDE_SPECIFIED` | docs/2026-10-26-cell-boundary.md |
+| `CAP-SURGE-V` | capacitor、electrolytic | 浪涌/瞬态时电容电压对额定电压 | UPPER | 浪涌电荷与回路阻抗 / INCREASING | G1；G2；G5；G6 | `OUTSIDE_SPECIFIED` | docs/2026-10-26-cell-boundary.md |
 | `MOS-DISCHARGE-I2T` | mosfet | 短路放电峰流与 I²t 对脉冲能力 | UPPER | 回路阻抗 / DECREASING | G2；G5；G6 | `OUTSIDE_SPECIFIED` | docs/2026-10-26-cell-boundary.md |
 | `IC-GATE-DRIVE-I` | mosfet | 栅极驱动平均电流 Qg·f 对偏置供给 | UPPER | 开关频率与 VGS / INCREASING | G1；G2；G9（`typical_band`） | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md |
 
@@ -153,7 +153,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `IC-IO-CURRENT` | `GUARANTEED` | 不估算 | — | 损坏 | 可测 | 不估算：超出手册给的灌/拉电流即超出规定区，记失败项（2026-10-26 定） |
 | `IC-PIN-ABSMAX` | `GUARANTEED` | 不估算 | — | 损坏 | 可测 | 不估算：脚上电压超绝对最大额定、手册又没给允许注入电流即超出规定区，记失败项；有串联阻抗时按算出的注入电流对手册允许值判（2026-10-26 定） |
 | `IC-RECOMMENDED` | `GUARANTEED` | 不估算 | — | 功能/损坏 | 可测 | 不估算：超出即 OUTSIDE_SPECIFIED |
-| `CAP-SURGE-V` | `GUARANTEED` | 不估算 | — | 损坏/安全 | 型式试验 | 不估算：额定电压是保证值，缺的是浪涌源与回路（设计量或标准条款）；超过额定电压、手册又没给浪涌电压额定即超出规定区，记失败项（2026-10-26 定）；电容爆裂是安全后果 |
+| `CAP-SURGE-V` | `GUARANTEED` | 不估算 | — | 损坏/安全 | 型式试验 | 不估算：瞬态比瞬态额定——电解按手册浪涌电压额定；MLCC 手册没给浪涌额定时，可靠性试验表的耐电压试验（如额定 ×1.5–2.5、规定秒数）作非重复瞬态的保证额定，瞬态不超过试验电压、持续不长于试验时间即可（2026-10-27，用户：A2 也改）；每个开关周期都出现的重复尖峰仍对额定电压；缺的是浪涌源与回路（设计量或标准条款）；两种额定都没给而超过额定电压即超出规定区，记失败项（2026-10-26 定）；电容爆裂是安全后果 |
 | `MOS-DISCHARGE-I2T` | `TEST_POINT` | 不估算 | — | 损坏 | 可测 | 不估算：脉冲能力按手册单脉冲曲线（保证）判，工作点超出曲线范围或 IDM 即超出规定区，记失败项（2026-10-26 定）；回路阻抗按写明的最小值，交给后续环节 |
 | `IC-GATE-DRIVE-I` | `TEST_POINT` | ×1.3 · 功能/性能/寿命：Qg 只有典型时 ×1.3 | 一致性 | 性能/寿命 | 可测 | 允许估算（×1.3）：Qg max 多数手册给（G1），只有典型时 ×1.3 |
 

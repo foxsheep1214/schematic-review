@@ -56,6 +56,34 @@ def protected_net(ref, part, pin2net, graph, intent):
     return rails[0]
 
 
+def port_connectors(graph, net):
+    """Connectors on the clamp's net or one series resistor, ferrite or inductor away: where a port surge or ESD
+    arrives (2026-10-27, user: 按你的建议改 C5 — an internal node sees only what reaches it)."""
+    found = set()
+    for node in graph.nodes_on(net):
+        ref = node.partition('.')[0]
+        kind = graph.kind(ref)
+        if not graph.is_fitted(ref):
+            continue
+        if kind == pw.CONNECTOR:
+            found.add(ref)
+        elif kind in (pw.RESISTOR, pw.FERRITE, pw.INDUCTOR) and len(graph.nets_of(ref)) == 2:
+            far = next(n for n in graph.nets_of(ref) if n != net)
+            found.update(r for r in (x.partition('.')[0] for x in graph.nodes_on(far))
+                         if graph.kind(r) == pw.CONNECTOR and graph.is_fitted(r))
+    return sorted(found)
+
+
+def transient_source_text(graph, net):
+    """Which transient the clamp is judged against: one event, the one that reaches this node."""
+    ports = port_connectors(graph, net)
+    if ports:
+        return ('该网接连接器 %s：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；'
+                % '、'.join(ports))
+    return ('该网不接连接器（内部节点）：瞬态按前级钳位后的残压或本地源（热插拔、感性关断）取，'
+            '没有瞬态源时只核工作电压与稳态功耗；')
+
+
 def is_rail(net, intent):
     return bool(ng.RAIL_RE.match(net) or rail_voltage(net) is not None or net in ((intent or {}).get('power_rails') or {}))
 
