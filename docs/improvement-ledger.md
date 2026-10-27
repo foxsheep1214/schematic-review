@@ -2679,3 +2679,31 @@ checked against a plan rebuilt at the previous commit). Typical circuits keep
 - Causes: rule_not_enforced 1, judgment 1
 - Changed: SKILL.md, scripts/protective_clamps.py, scripts/lint.py, scripts/plan_circuits.py, scripts/catalog.py, scripts/tests/test_electrical_safety.py, scripts/tests/test_plan_review.py, scripts/tests/test_public_flyback_boards.py, references/check-catalog.md, references/plan-format.md, references/architecture.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/protective-clamps-v1, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M717–M720 killed
+
+## A protective clamp has no separate operating row (2026-10-26)
+
+Every zener and TVS got the fixed device row DEV-C05 (recommended operating
+conditions). On a protective clamp it can only mean the working voltage against
+VRWM, now PRO-E02's first item, or the temperature grade. The R7/R8 records split:
+claude1, claude2 and codex3 wrote the working voltage against VRWM (codex3 also
+wrote the whole clamp comparison into D706's row), codex1 in R7 and in R8 wrote
+the junction temperature or temperature range, codex2 wrote nothing specific.
+Zeners in threshold chains and gate clamps (D701, D303) carried real operating
+conditions (Ptot, gate-source voltage) and are unchanged. Decision 方案 B (user:
+按照你的建议来改方案):
+
+1. A part `protective_clamps.protected_net` accepts gets identity and pin rows
+   but no DEV-C05.
+2. PRO-E02 states the temperature grade against the board's ambient and the pulse
+   rating derated at that ambient.
+
+On codex3's inputs the plan goes 610 → 605 (DEV-C05.D702–D706). The replay bench
+gets the revision `clamp-operating-rows-v1` (rf1 327 → 326 with its frames case
+345 → 344 and FN-PRI-FLYBACK 95 → 94 members, rf2 88 → 86, each row checked
+against a plan rebuilt at the previous commit). Typical circuits keep
+117/180/14.
+
+- Event: user:2026-10-26 (接着看 TVS 上 DEV-C05 与 PRO-E02 重复问工作电压的问题; 按照你的建议来改方案); review:SR-20261025-R7-验收-codex1-660f790/审查报告.md
+- Causes: rule_not_enforced 1
+- Changed: scripts/plan_circuits.py, scripts/catalog.py, scripts/lint.py, scripts/tests/test_fixed_device_rows.py, references/check-catalog.md, references/plan-format.md, references/results-format.md, references/architecture.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/clamp-operating-rows-v1, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutation M721 killed

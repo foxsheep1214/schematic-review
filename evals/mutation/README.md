@@ -163,3 +163,4 @@ M701–M703（2026-10-26，三条过严规则）守：齐纳低于最低测试�
 M704–M714（2026-10-26，设计风险不记缺资料）守：四格与新增 IC-PIN-ABSMAX 兜底为超出规定区（M704–M708，`test_bounding_table.py`），厂家数据开放项的格须与文字点到的格一致（M709–M714，`test_gap_cells.py`）。
 M715–M716（2026-10-26，钳位窗口归 PRO-E02）守：连接器信号线 TVS 不再出 PRO-C02 两侧行（M715，`test_plan_review.py`），钳位扫描以窗口类规则出行（M716，`test_electrical_safety.py`）；M50 随 F12 删去。
 M717–M720（2026-10-26，防护钳位只出 PRO-E02）守：跨开关节点或绕组的能量钳位不算防护钳位（M717，`test_public_flyback_boards.py`），输入轨上的绕组端不算开关节点（M718），防护钳位不出 PRO-C02（M719，`test_plan_review.py`），钳位行列出同网其他器件（M720，`test_electrical_safety.py`）。
+M721（2026-10-26，防护钳位不出 DEV-C05）守：防护钳位的工作电压与温度等级只在 PRO-E02 行上判（`test_fixed_device_rows.py`）。

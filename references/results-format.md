@@ -527,7 +527,7 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   - 开关节点（有 MOS 漏极和变压器或电感）经二极管到一个没有对地大电容的节点，该节点上的电阻和电容另一端接同一网：每颗电阻一项 `DRV-C01.RCD`，钳位电阻功率与耐压；
   - IC 的信号脚和 LED 或光耦 LED 的一端在同一网（不经晶体管、不是地网）：`DEV-C05.PIN-LED`，按第 5 条四档核该脚的电流；
   - 光耦输出接到 IC 的使能或关断脚（EN、SHDN、DIS、INH、STBY、ON/OFF、RUN 等）：`SIG-C09.ENABLE-LINK`，上电先后、使能门限与光耦延时、掉电后能否恢复。
-- 器件检查项（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）只跟核验过的器件类别走：集成电路（U/M 位号或原生电源脚识别的有源器件）、晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成；普通二极管、普通电感和阻容是常规件，声明了 `intent.devices` 也不生成器件检查项（声明只供脚表与输出档位用），它们的应力在所属电路的 DEV-C01 预判里按最弱档算，超了才逐颗出 DEV-C01 项；要让一颗二极管进器件检查项，路径是 `device_kinds` 核验为 zener/tvs/整流桥（[通用件定界](commodity-floors.md#哪些器件有自己的检查项)）。
+- 器件检查项（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）只跟核验过的器件类别走：集成电路（U/M 位号或原生电源脚识别的有源器件）、晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成（跨网与地的防护钳位不出 DEV-C05，归 PRO-E02）；普通二极管、普通电感和阻容是常规件，声明了 `intent.devices` 也不生成器件检查项（声明只供脚表与输出档位用），它们的应力在所属电路的 DEV-C01 预判里按最弱档算，超了才逐颗出 DEV-C01 项；要让一颗二极管进器件检查项，路径是 `device_kinds` 核验为 zener/tvs/整流桥（[通用件定界](commodity-floors.md#哪些器件有自己的检查项)）。
 - 脚电流行（`DEV-C01.PIN.*`）的串阻读不出阻值、计划没算出脚电流时，判 PASS 须附 `manual_verification`，在 `method` 里写出自己的脚电流计算。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
   `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。

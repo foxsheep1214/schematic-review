@@ -631,7 +631,9 @@ class CircuitPlanning:
             if self._bom_fields(ref):
                 item['bom_fields'] = self._bom_fields(ref)
             self._disposition_check(ref, gaps, trigger)
-            self._ready_check('DEV-C05', {'ref': ref}, gaps + self._materials_gap(['requirements']), trigger)
+            if not protective_clamps.protected_net(ref, part, db.get('pin2net', {}), connector_graph, self.intent):
+                # a protective clamp's working voltage and temperature grade are its PRO-E02 row (2026-10-26)
+                self._ready_check('DEV-C05', {'ref': ref}, gaps + self._materials_gap(['requirements']), trigger)
 
         self.plan_threshold_checks(connector_graph)
 

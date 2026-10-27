@@ -1,0 +1,15 @@
+{
+ "revision": "clamp-operating-rows-v1",
+ "parents": {
+  "revisions/protective-clamps-v1/expected.json": "e04b21a169a8b23f2e7ca88adad216b791ddec5e4802d9d8b73afac2905c728d",
+  "revisions/protective-clamps-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/protective-clamps-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81",
+  "revisions/protective-clamps-v1/manifest.json": "b3dfebec8fd3b7da99fe4b45bd19abe2d4eadf28ef1448b1cd4e1f58bdc07c04"
+ },
+ "derived_files": {
+  "revisions/clamp-operating-rows-v1/expected.json": "252aa7d4ea85bf4143fd6dabc5fb4ffe5cd40522a53c206303544509ffb4ecca",
+  "revisions/clamp-operating-rows-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/clamp-operating-rows-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81"
+ },
+ "scope": "防护钳位不出 DEV-C05（2026-10-26，用户：按照你的建议来改方案）：工作电压与温度等级归 PRO-E02；rf1 三例检查数 −1（FN-PRI-FLYBACK 成员 95→94）、rf2 −2；其余答案不变。protective-clamps-v1 文件保持原字节。"
+}

@@ -35,8 +35,13 @@ class FixedDeviceRowTests(unittest.TestCase):
         for rule in ('DEV-D01', 'DEV-D05', 'DEV-C05'):
             with self.subTest(rule=rule):
                 refs = device_rows(board(), rule)
-                self.assertTrue({'Q1', 'D1', 'D2', 'T1', 'BR1', 'L1', 'OK1'} <= refs, refs)
+                # D1 and D2 clamp a net to ground: their working voltage and temperature grade are the PRO-E02 row
+                # (2026-10-26, user: 按照你的建议来改方案), so they get identity and pin rows but no DEV-C05
+                clamps = {'D1', 'D2'} if rule != 'DEV-C05' else set()
+                self.assertTrue({'Q1', 'T1', 'BR1', 'L1', 'OK1'} | clamps <= refs, refs)
                 self.assertFalse({'D3', 'L2'} & refs, refs)
+                if rule == 'DEV-C05':
+                    self.assertFalse({'D1', 'D2'} & refs, refs)
 
 
 if __name__ == '__main__':

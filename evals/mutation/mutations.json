@@ -4912,5 +4912,12 @@
   "file": "scripts/lint.py",
   "old": "                    and kind not in (IC, pw.RESISTOR, CONNECTOR, pw.TESTPOINT, pw.ZENER, TVS)):",
   "new": "                    and False):"
+ },
+ {
+  "id": "M721",
+  "name": "a protective clamp gets a DEV-C05 operating row again",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if not protective_clamps.protected_net(ref, part, db.get('pin2net', {}), connector_graph, self.intent):",
+  "new": "            if True or not protective_clamps.protected_net(ref, part, db.get('pin2net', {}), connector_graph, self.intent):"
  }
 ]
