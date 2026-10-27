@@ -1,0 +1,15 @@
+{
+ "revision": "protective-clamps-v1",
+ "parents": {
+  "revisions/r7-fix-lists-v1/expected.json": "0d7f052afa3db2fce940f379f39bf6adf9cfcb124a7929c280798e3d7e1e0dd2",
+  "revisions/r7-fix-lists-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/r7-fix-lists-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81",
+  "revisions/r7-fix-lists-v1/manifest.json": "bbfb5829fd90261ce60595f8408fc50f479095f472a8b16fe5490a81c880e625"
+ },
+ "derived_files": {
+  "revisions/protective-clamps-v1/expected.json": "e04b21a169a8b23f2e7ca88adad216b791ddec5e4802d9d8b73afac2905c728d",
+  "revisions/protective-clamps-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
+  "revisions/protective-clamps-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81"
+ },
+ "scope": "钳位器件只问一次（2026-10-26，用户：按方案 B 改）：跨网与地的防护钳位只出 PRO-E02，跨开关节点或绕组的能量钳位只出 PRO-C02；rf1 三例检查数 −3、rf2 −2，rf1 frames 的 FN-PRI-FLYBACK 成员 98→95；其余答案不变。r7-fix-lists-v1 文件保持原字节。"
+}

@@ -31,7 +31,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
 | ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`、`solve_dividers.py`（电阻值解析） |
-| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`checkers/` |
+| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`checkers/` |
 | ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
 | ④ 校验 | `validate_review.py` | — | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`requirement_clarifications.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
@@ -88,6 +88,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-10-26 | 三条过严规则（用户逐项判定）：齐纳管 VZ 下界一格兜底改为超出规定区，最低测试电流以下又没有覆盖曲线时记失败项，不开缺厂家资料；PWR-C13 行的电网源阻抗按 IEC 60725 参考阻抗（0.4 + j0.25 Ω）写明假定来算；端口硬短路（DRV-C02.PORT-SHORT）原理图判检测与关断路径和 SOA，最小回路阻抗交给后续环节；这两种外部阻抗挡行记 DESIGN_VALUE 即拒收（`review_functions.external_impedance_errors`） | R8 codex3 的齐纳窗口两个缺口、端口短路与热态重接入共挡 71 行（含继承的需求行），都卡在厂家不给或原理图之外的量上，原理图阶段永远关不掉 |
 | 2026-10-26 | 设计风险不记缺厂家资料：DIODE-SURGE、IC-IO-CURRENT、CAP-SURGE-V、MOS-DISCHARGE-I2T 四格兜底改为超出规定区，新增 IC-PIN-ABSMAX（脚上瞬态电压/注入电流对绝对最大额定，不估算）一格同样兜底；厂家数据开放项的格兜底为超出规定区即拒收、记失败项，格写 NONE 或没写而文字点到某格参数词，或点到超出规定区的格却写别格，须写那一格或写 `cell_reason`（`review_functions._gap_cell_errors`）（用户：“按你说的口径改……并堵住选 NONE 绕过格子的口子”） | R7/R8 22 条厂家数据缺口里 6 条是脚超绝限、超 SOA、超额定电压无浪涌额定的设计风险；19 条格写 NONE 或没写，绕过了全部格子规则 |
 | 2026-10-26 | 钳位电压对被保护脚只问一次：钳位扫描改为窗口类 PRO-E02（逐器件，可写余量、定界格与开放项，含对外连接器信号线上的 ESD 钳位）；PRO-D03 只问逐针防护拓扑（有防护、挂在活线上、泄放到对应的地），去掉 `clamp_refs` 和要求它绑定功能的 F12；连接器信号线 TVS 仍不出 PRO-C02 两侧行（用户：“按方案 A 改”） | R8 codex3 对 USB CC/D± 四只钳位件判 FAIL、对同一连接器行判 PASS；codex2 想在 PRO-D03 上挂厂家数据缺口被拒，停在 ③：条款核对类不能写余量也不能被开放项挡 |
+| 2026-10-26 | 一只钳位件只由一条规则判：跨网与地、另一端不是开关节点（SW 类脚或非电源轨上的变压器绕组）且不是内部节点上基准/电平齐纳的防护钳位，只出 PRO-E02，判据按需求的浪涌或 ESD 波形取钳位电流、钳位电压对同网每个器件的最低耐受、脉冲能量对额定；PRO-C02 只留门限脚、门限链与基准/电平齐纳和跨开关节点或绕组的能量钳位，扫描不再为能量钳位出 PRO-E02；两边共用 `protective_clamps.py` 的判定（用户：“按方案 B 改”） | R8 的 D706 与典型电路基准里 4 只钳位件同时有 PRO-C02 两侧行和 PRO-E02 行；R7 审查员在两行上写同一条余量，下游器件各挑各的 |
 
 ## 四、规则维护
 

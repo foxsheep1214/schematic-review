@@ -4884,5 +4884,33 @@
   "file": "scripts/lint.py",
   "old": "            self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',",
   "new": "            self.add('PRO-A01', '防护器件工作/击穿/钳位窗口待复核',"
+ },
+ {
+  "id": "M717",
+  "name": "an energy clamp across a switch node is taken for a protective clamp",
+  "file": "scripts/protective_clamps.py",
+  "old": "    if switch_node(graph, rails[0], intent):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M718",
+  "name": "a transformer winding on the input rail counts as a switch node",
+  "file": "scripts/protective_clamps.py",
+  "old": "    winding = not is_rail(net, intent)",
+  "new": "    winding = True"
+ },
+ {
+  "id": "M719",
+  "name": "a protective clamp gets PRO-C02 two-sided rows again",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if kind in (ZENER, TVS) and protective_clamps.protected_net(",
+  "new": "            if kind in (ZENER, TVS) and False and protective_clamps.protected_net("
+ },
+ {
+  "id": "M720",
+  "name": "the clamp row lists no other part on its net",
+  "file": "scripts/lint.py",
+  "old": "                    and kind not in (IC, pw.RESISTOR, CONNECTOR, pw.TESTPOINT, pw.ZENER, TVS)):",
+  "new": "                    and False):"
  }
 ]

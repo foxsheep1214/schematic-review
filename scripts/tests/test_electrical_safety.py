@@ -75,7 +75,7 @@ class ElectricalSafetyTests(unittest.TestCase):
         items = [x for x in Lint(db).run() if x['rule'] == 'PRO-E02']
         self.assertEqual(len(items), 1)
         self.assertIn('同网 IC 脚 U1.3(CC1) 直接并在钳位上', items[0]['detail'])
-        self.assertIn('高于同网 IC 脚绝限即 FAIL', items[0]['detail'])
+        self.assertIn('高于 IC 脚绝限即 FAIL', items[0]['detail'])
         db = database({'CC1': ['D1.1', 'J1.1', 'R1.1'], 'CC1_IC': ['R1.2', 'U1.3'], 'GND': ['D1.2']},
                       {'D1': 'PESD5V0L1UA TVS', 'J1': 'CONN', 'U1': 'IC', 'R1': '1k'}, {'U1.3': 'CC1'})
         items = [x for x in Lint(db).run() if x['rule'] == 'PRO-E02']
@@ -108,6 +108,19 @@ class ClampWindowOwnerTests(unittest.TestCase):
         criterion = catalog.get('PRO-D03').criterion
         self.assertNotIn('clamp_refs', criterion)
         self.assertIn('PRO-E02', criterion)
+
+    def test_a_rail_clamp_is_judged_against_every_part_on_its_net(self):
+        # 2026-10-26 (user: 按方案 B 改): R7 reviewers compared D706 with C701, with U601's sense pin or with Q701 —
+        # each picked one; the row names all of them, at the required surge waveform, with the pulse energy
+        db = database({'VBUS': ['D1.1', 'C1.1', 'Q1.3', 'U1.5', 'J1.1', 'D2.2'], 'GND': ['D1.2', 'C1.2', 'U1.2', 'J1.2'],
+                       'G': ['D2.1', 'Q1.1']},
+                      {'D1': 'SMBJ24A TVS', 'C1': '10u 50V', 'Q1': 'MOSFET', 'U1': 'IC', 'J1': 'CONN', 'D2': 'BZT52C10 Zener'},
+                      {'U1.5': 'VBUS'})
+        detail = next(x['detail'] for x in Lint(db).run() if x['rule'] == 'PRO-E02')
+        self.assertIn('同网其他器件 C1、Q1 各按自身耐压比较', detail)
+        self.assertIn('按需求的浪涌或 ESD 波形取钳位电流', detail)
+        self.assertIn('脉冲能量', detail)
+        self.assertNotIn('D1', detail.split('同网其他器件')[1].split('各按')[0])
 
 
 if __name__ == '__main__':

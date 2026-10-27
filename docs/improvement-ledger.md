@@ -2645,3 +2645,37 @@ commit; left as they are.
 - Causes: rule_not_enforced 1, judgment 1
 - Changed: SKILL.md, scripts/catalog.py, scripts/lint.py, scripts/plan_board.py, scripts/plan_circuits.py, scripts/review_functions.py, scripts/tests/test_electrical_safety.py, scripts/tests/test_plan_review.py, scripts/tests/test_public_flyback_boards.py, scripts/tests/test_review_functions.py, references/check-catalog.md, references/plan-format.md, references/results-format.md, references/scans-and-tools.md, references/architecture.md, evals/typical_circuits/cases.json, evals/rule_contracts/boards/PRO-E02.json, evals/rule_contracts/README.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M715–M716 killed
+
+## A clamp part is judged by one rule (2026-10-26)
+
+After the connector change PRO-C02 and PRO-E02 still both asked about the same
+part when a clamp sat across a rail or an IC pin and ground: the plan gave every
+zener and rail TVS two-sided PRO-C02 rows and the clamp scan gave it a PRO-E02
+row. R8's D706 (VBUS TVS) had both; the typical circuits had four more (two rail
+TVS on resonare-lcc, two pin-to-ground zeners on bms-c1). R7 reviewers wrote the
+same margin on the TRIP row and the clamp row and picked different downstream
+parts (C701, U601's VBUS sense pin, Q701). Decision 方案 B:
+
+1. `protective_clamps.py` holds the one test both sides use: a clamp part with
+   two nets, one of them ground, the other no switch node (an SW/LX/PH/BOOT pin,
+   or a fitted transformer winding on a net that is no rail) and not a
+   reference or level zener on an internal node.
+2. Such a part gets only PRO-E02. Its criterion now takes the clamp current from
+   the required surge or ESD waveform, compares the clamp voltage there with the
+   lowest limit of every part on the net (the scan lists the IC pins and the other
+   parts, clamps excluded), and checks the pulse energy against the rating.
+3. PRO-C02 keeps threshold pins, zeners in threshold chains, reference or level
+   zeners, and energy clamps across switch nodes or windings; the clamp scan no
+   longer reports those energy clamps.
+
+On codex3's inputs the plan goes 612 → 610 (D706 loses its two PRO-C02 rows);
+the D706 row names C701, C702 and Q701 and U601.25 behind R605. The replay
+bench gets the revision `protective-clamps-v1` (rf1 330 → 327 with its frames
+case 348 → 345 and FN-PRI-FLYBACK 98 → 95 members, rf2 90 → 88, each row
+checked against a plan rebuilt at the previous commit). Typical circuits keep
+117/180/14.
+
+- Event: user:2026-10-26 (按方案 B 改：跨轨或芯片脚接地的防护钳位只出 PRO-E02，判据补上故障浪涌波形、能量和同网最低耐受；PRO-C02 只留门限脚窗口和功能齐纳、能量钳位); review:SR-20261025-R7-验收-claude1-660f790/审查报告.md
+- Causes: rule_not_enforced 1, judgment 1
+- Changed: SKILL.md, scripts/protective_clamps.py, scripts/lint.py, scripts/plan_circuits.py, scripts/catalog.py, scripts/tests/test_electrical_safety.py, scripts/tests/test_plan_review.py, scripts/tests/test_public_flyback_boards.py, references/check-catalog.md, references/plan-format.md, references/architecture.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/protective-clamps-v1, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M717–M720 killed

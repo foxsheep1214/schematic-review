@@ -64,8 +64,10 @@ class SynchronousFlybackBoardTest(unittest.TestCase):
         self.assertIn('not verified', sr['dynamic_status'])
 
     def test_threshold_rows_cover_switch_node_clamps_and_only_the_ntc_sense_pin(self):
-        self.assertEqual(rows(self.plan, 'PRO-C02'), ['PRO-C02.NOTRIP.D1', 'PRO-C02.NOTRIP.D3', 'PRO-C02.NOTRIP.D4',
-                                                      'PRO-C02.TRIP.D1', 'PRO-C02.TRIP.D3', 'PRO-C02.TRIP.D4'])
+        # D1 跨 SW_PRI（Q1 漏极与 T1 绕组）、D4 跨 SW_SEC 到 VOUT_N：能量钳位，两侧核；
+        # D3 跨 HV_BIAS 对地是防护钳位，由 PRO-E02 逐器件核（2026-10-26，方案 B）。
+        self.assertEqual(rows(self.plan, 'PRO-C02'), ['PRO-C02.NOTRIP.D1', 'PRO-C02.NOTRIP.D4',
+                                                      'PRO-C02.TRIP.D1', 'PRO-C02.TRIP.D4'])
         # TH1 上端在 RAIL_3V3_PRI，只有 TEMP 上的 U8.2(INP) 是检测脚。
         self.assertEqual(rows(self.plan, 'ANA-C04'), ['ANA-C04.TH1.U8-2'])
 
@@ -78,9 +80,8 @@ class SynchronousFlybackBoardTest(unittest.TestCase):
 class IntegratedSwitchFlybackBoardTest(unittest.TestCase):
     def test_connector_esd_folds_and_rail_clamps_keep_two_sided_rows(self):
         plan = build_review_plan(board('rf2-hv-flyback-lt3957a'))
-        # D2 在 J1 的 HVEN 信号针上；D1 跨 +5V 轨，D3 齐纳跨开关节点。
-        self.assertEqual(rows(plan, 'PRO-C02'), ['PRO-C02.NOTRIP.D1', 'PRO-C02.NOTRIP.D3',
-                                                 'PRO-C02.TRIP.D1', 'PRO-C02.TRIP.D3'])
+        # D2 在 J1 的 HVEN 信号针上、D1 跨 +5V 轨：防护钳位，只出 PRO-E02；D3 齐纳跨开关节点，两侧核。
+        self.assertEqual(rows(plan, 'PRO-C02'), ['PRO-C02.NOTRIP.D3', 'PRO-C02.TRIP.D3'])
         connector = {c['object']['ref']: c.get('clamp_refs') for c in plan['checks'] if c['rule'] == 'PRO-D03'}
         self.assertEqual(connector, {'J1': None, 'J2': None})   # D2's clamp window is its own PRO-E02 row
 

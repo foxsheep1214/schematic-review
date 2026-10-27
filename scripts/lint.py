@@ -34,6 +34,7 @@ from checkers import PowerTree, REGISTRY, REGISTRY_BY_ID
 from checkers.powertree import declared_supply_nets
 from checkers import netgraph as ng, passive_stress
 import part_words as pw
+import protective_clamps
 from checkers.netgraph import NetGraph, rail_voltage as _volt
 from part_words import CONNECTOR, FERRITE, IC, INDUCTOR, OPTO, PASSIVE_LINKS, TRANSFORMER, TVS, TWO_TERMINAL
 from electrical_contract import db_fingerprint, load_json
@@ -75,7 +76,6 @@ SUPPLY_PIN_RE = re.compile(r'^(VDD|VCC|AVDD|DVDD|VBAT|VDDA|VDDIO|VCCA|VCCIO)\w*$
 RAIL_RE = ng.RAIL_RE   # one rail-name test: excludes _FB/_SENSE lines and _N/_RTN returns
 OUTPIN_RE = re.compile(r'^(VOUT|SW|OUT|VO|LX|\+VO)', re.I)
 EN_RE = re.compile(r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN)(_|\d|$)', re.I)
-CLAMP_RE = re.compile(r'ZENER|TVS|BZT|BZX|SMBJ|SMAJ|SMCJ|MMSZ|1SMB|ESDA|PESD', re.I)   # BZX55/BZX84/BZX585 zeners too
 # EN 脚耐压绝大多数 <=6V；超过此值的上拉优先查 Abs Max（提示，非判定）
 EN_PULL_ALERT_V = 6.0
 KICAD_UNCONNECTED_RE = re.compile(r'^unconnected-\(', re.I)
@@ -282,29 +282,18 @@ class Lint:
             return [found['source']] + found['path']
         return ['via:' + found['source']]
 
-    def _functional_clamp(self, net):
-        """A zener to ground whose other end is an internal signal node — no connector contact, not a rail by name or
-        declaration, and an IC pin or a transistor gate/base on it — is a reference or level clamp, not a protective
-        device (R6 acceptance 2026-10-24: D303 ZCD clamp and D404 gate reference asked for surge data). A node that
-        also reaches a connector is protective and keeps the PRO-E02 line; a TVS part is protective wherever it sits."""
-        if RAIL_RE.match(net) or _volt(net) is not None or net in (self.intent.get('power_rails') or {}):
-            return False
-        inside = False
+    def _protected_pins_text(self, net, clamp=None):
+        """The IC pins the clamp protects: on the clamp's own net (no series impedance between them) or one resistor away
+        (R7 acceptance 2026-10-25, user: B3 a — the clamp voltage is compared with these pins' absolute maximum); and
+        the other parts on the net, each against its own rating (2026-10-26, user: 按方案 B 改 — the lowest limit on the
+        net decides, so no reviewer picks one capacitor or switch and leaves the rest)."""
+        direct, behind, others = [], [], set()
         for node in self.graph.nodes_on(net):
             ref = node.partition('.')[0]
             kind = self.graph.kind(ref)
-            if kind in (CONNECTOR, pw.TESTPOINT):
-                return False
-            if kind == IC or (kind in (pw.MOSFET, pw.BJT) and self.graph.role(node) == 'gate'):
-                inside = True
-        return inside
-
-    def _protected_pins_text(self, net):
-        """The IC pins the clamp protects: on the clamp's own net (no series impedance between them) or one resistor away
-        (R7 acceptance 2026-10-25, user: B3 a — the clamp voltage is compared with these pins' absolute maximum)."""
-        direct, behind = [], []
-        for node in self.graph.nodes_on(net):
-            ref = node.partition('.')[0]
+            if (ref != clamp and self.graph.is_fitted(ref)
+                    and kind not in (IC, pw.RESISTOR, CONNECTOR, pw.TESTPOINT, pw.ZENER, TVS)):   # clamps protect, not protected
+                others.add(ref)
             if self.graph.kind(ref) == IC and self.graph.is_fitted(ref):
                 direct.append(f'{node}({self.graph.pinname.get(node) or "?"})')
             elif self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2 and net in self.graph.nets_of(ref):
@@ -312,11 +301,12 @@ class Lint:
                 for far in self.graph.nodes_on(other):
                     if self.graph.kind(far.partition('.')[0]) == IC and self.graph.is_fitted(far.partition('.')[0]):
                         behind.append(f'{far}({self.graph.pinname.get(far) or "?"}) 经 {ref}')
+        rest = f'同网其他器件 {"、".join(sorted(others))} 各按自身耐压比较；' if others else ''
         if direct:
-            return f'同网 IC 脚 {"、".join(sorted(direct))} 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；'
+            return f'同网 IC 脚 {"、".join(sorted(direct))} 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；' + rest
         if behind:
-            return f'IC 脚 {"、".join(sorted(behind))}（有串联阻抗，可按注入电流核）；'
-        return '同网没有 IC 脚；'
+            return f'IC 脚 {"、".join(sorted(behind))}（有串联阻抗，可按注入电流核）；' + rest
+        return '同网没有 IC 脚；' + rest
 
     def _resistor_fed(self, net):
         """A two-terminal resistor on the net whose other end is driven or fed from off board (R6 acceptance
@@ -689,23 +679,16 @@ class Lint:
         for ref, value in parts.items():
             if value.get('nc'):
                 continue
-            blob = ' '.join(str(value.get(k, '')) for k in ('part', 'value', 'prim'))
-            if not CLAMP_RE.search(blob):
-                continue
-            ends = self.ends(ref)
-            if len(ends) != 2 or not any(ng.is_ground(e) for e in ends):
-                continue
-            rails = [e for e in ends if not ng.is_ground(e)]
-            if not rails:
-                continue
-            rail = rails[0]
-            if self.graph.kind(ref) == pw.ZENER and self._functional_clamp(rail):
-                continue   # a reference or level clamp inside the circuit: DEV-C05 and the circuit's verdict judge it
+            blob = protective_clamps.part_text(value)
+            rail = protective_clamps.protected_net(ref, value, self.pin2net, self.graph, self.intent)
+            if rail is None:
+                continue   # not a clamp, not across a net and ground, or a reference/level zener (DEV-C05 and the verdict)
             self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',
                      f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_fmt_v(_volt(rail))}，'
-                     f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail)}'
-                     '分别查 VRWM、VBR@IT、VC@Ipp、波形、温度与能量配合；钳位电压高于同网 IC 脚绝限即 FAIL，'
-                     '除非串联阻抗下注入电流在芯片允许范围内；型号不能证明导通或烧毁。',
+                     f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail, ref)}'
+                     'VRWM（齐纳取 VZ 下限）对该网正常最高电压（含瞬态与公差）；按需求的浪涌或 ESD 波形取钳位电流，'
+                     '该电流下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；'
+                     '该波形的脉冲能量对器件额定（含温度降额）；型号不能证明导通或烧毁。',
                      ref, kind='CANDIDATE')
 
         # DOC-A01/DOC-A02 导出日志：错误中止与 No_connect 被忽略 —— 免费证据，别丢。

@@ -8,6 +8,7 @@ import board_intent
 import catalog
 import circuit_decisions
 import device_kinds
+import protective_clamps
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
@@ -645,7 +646,8 @@ class CircuitPlanning:
         return dict(frame, bom_specs=specs) if specs else frame
 
     def plan_threshold_checks(self, graph):
-        """阈值型保护器件/门限脚两侧窗口（PRO-C02）与传感器开短路判别（ANA-C04），逐对象一项。"""
+        """阈值型保护器件/门限脚两侧窗口（PRO-C02）与传感器开短路判别（ANA-C04），逐对象一项。
+        跨网与地的防护钳位不出 PRO-C02，由钳位扫描的 PRO-E02 逐器件核（protective_clamps，2026-10-26）。"""
         db = self.db
         nets, pin2net = db.get('nets', {}), db.get('pin2net', {})
         names = dict(db.get('declared_pinname') or {}, **(db.get('pinname') or {}))
@@ -715,6 +717,8 @@ class CircuitPlanning:
                                          'message': '%s 是 %s 源跟随器的栅极偏置基准，正常就导通：不派 PRO-C02 两侧窗口，由器件检查项和电路判定核它'
                                                     % (ref, follower_bias_zener(ref))})
                 continue
+            if kind in (ZENER, TVS) and protective_clamps.protected_net(ref, part, pin2net, graph, self.intent):
+                continue   # a protective clamp across a net and ground: one PRO-E02 row from the clamp scan judges it
             if kind in (ZENER, TVS):
                 gaps, audit = self._datasheet_readiness(ref, part)
                 switch = gate_source_clamp(ref)
