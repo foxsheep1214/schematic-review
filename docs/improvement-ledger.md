@@ -2823,3 +2823,29 @@ example's T1 item as a pending magnetics drawing. Plans are unchanged.
 - Causes: judgment 1
 - Changed: scripts/review_functions.py, scripts/function_reading.py, scripts/derive_rows.py, scripts/validate_review.py, scripts/results_model.py, scripts/render_report.py, scripts/catalog.py, scripts/bom_constraints.py, scripts/review_quality.py, scripts/review_stage_scope.py, scripts/review_workflow.py, scripts/tests, SKILL.md, references/results-format.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, references/requirement-clarifications.md, references/bounding-table.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2266, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M47 M626 M743-M749 killed (M13 M21 M443-M455 M702 M703 dropped; M35 M37 M42 M51 M276 M299 M339 M358 M496 M513 M514 M519 M532 survive or miss on HEAD too)
+
+## What another stage owes is a design constraint (2026-10-26)
+
+Item 4 of the "evidence insufficient" causes: a deliverable another stage owes
+(a custom part's drawing, a firmware capability) was a DELIVERABLE_PENDING open
+item judged on an `assumed` value, listed under 等交付物 and capping the release
+at CONDITIONAL_GO. That is the same thing as 乙 of item 3: the value belongs to
+another file, and SR states what it must meet. Decision (user: 并入乙):
+
+1. DELIVERABLE_PENDING goes; what the deliverable must meet is a
+   DESIGN_CONSTRAINT handed to its owner. A constraint without a single number
+   (an insulation structure, a firmware recovery behaviour) is a clause: no
+   `limit`, `says` states what must hold, and a judgement may rest on it; a
+   constraint with a limit is still compared in a margin.
+2. A deliverable that arrived and misses the constraint is a fail (documented).
+3. `deliverable_kind`, `missing_parameters`, `assumed`, the SAME_DELIVERABLE
+   hint, the gate's `pending_deliverables` and its release cap, and the report's
+   等交付物 section go (results format 11).
+
+The golden "deliverable" report becomes "constraint"; the FN-QR doc example
+judges its feedback model on a clause constraint for the custom transformer.
+
+- Event: user:2026-10-26 (并入乙)
+- Causes: judgment 1
+- Changed: scripts/review_functions.py, scripts/function_reading.py, scripts/validate_review.py, scripts/results_model.py, scripts/render_report.py, scripts/catalog.py, scripts/review_quality.py, scripts/review_stage_scope.py, scripts/review_workflow.py, scripts/tests, SKILL.md, references/results-format.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, references/commodity-floors.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2255, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M45 M47 M739 M749 M750-M753 killed (M30 M33-M35 M238 M239 M275 M311 M312 M667-M670 dropped; M37 M42 M51 M299 M339 M358 M496 M513 M514 M519 survive or miss on HEAD too)

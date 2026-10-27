@@ -13,6 +13,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import catalog
+import results_model
 import review_functions as rf
 from board_intent import input_fingerprint
 from plan_review import build_review_plan, validate_intent
@@ -56,7 +57,7 @@ LEVELS = [{'id': 'VBUS_LEVELS', 'citation': 'evidence/ds/U1.txt §8.2', 'points'
 class NoConfigurationReviewTests(unittest.TestCase):
     def test_no_configuration_rule_or_gap_kind_is_left(self):
         self.assertNotIn('CFG-D01', catalog.BY_ID)
-        self.assertNotIn('CONFIGURATION_TABLE', rf.DELIVERABLE_KINDS)
+        self.assertNotIn('DELIVERABLE_PENDING', results_model.OPEN_KINDS)
 
     def test_a_pd_controller_gets_no_configuration_row(self):
         plan = build_review_plan(board(), intent())
@@ -73,7 +74,7 @@ class NoConfigurationReviewTests(unittest.TestCase):
         fn['open'][0].update(kind='DELIVERABLE_PENDING', deliverable_kind='CONFIGURATION_TABLE', deliverable='U1 配置表',
                              owner='固件', assumed='按手册默认值', scope='配置值')
         errors = rf.function_errors({'functions': [fn]})
-        self.assertTrue(any('deliverable_kind' in e for e in errors), errors)
+        self.assertTrue(any('no open item' in e for e in errors), errors)
 
 
 class SetPointTests(unittest.TestCase):

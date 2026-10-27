@@ -36,15 +36,14 @@ RECORD_INDEX = (('review-results.json', '每条检查的结论、依据、缺的
                 ('lint-cold.json', '自动检查输出（只用网表）'),
                 ('lint-hot.json', '自动检查输出（加上器件资料）'),
                 ('evidence/', '引用的资料摘录、计算和图片'))
-OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'),
-                                ('DELIVERABLE_PENDING', '等交付物'), ('REVIEW_INCOMPLETE', '审查还没做完'),
+OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('REVIEW_INCOMPLETE', '审查还没做完'),
                                 ('USER_DEFERRED', '暂缓处理')])
 RELEASE = {'GO': '可以定稿', 'CONDITIONAL_GO': '可以有条件定稿', 'NO_GO': '还不能定稿'}
-CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('DELIVERABLE_PENDING', '等交付物'),
+CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'),
                       ('REVIEW_INCOMPLETE', '审查没做完'),
                       ('USER_DEFERRED', '已暂缓')])
 KINDS = OrderedDict([('FAIL', '电路错误'),
-                     ('EXTERNAL_DATA', '缺资料'), ('DELIVERABLE_PENDING', '等交付物'), ('REVIEW_INCOMPLETE', '审查没做完'),
+                     ('EXTERNAL_DATA', '缺资料'), ('REVIEW_INCOMPLETE', '审查没做完'),
                      ('USER_DEFERRED', '已暂缓')])
 SEVERITIES = ('P0', 'P1', 'P2', 'P3')
 SEVERITY_WORDS = {'P0': '可能损坏器件或危及安全', 'P1': '必需功能可能不达标',
@@ -145,7 +144,7 @@ def jargon_in(text):
 
 def item_kind(rows):
     """FAIL names the item; otherwise the gap cause most of its checks carry,
-    with the minority cause shown so one deliverable row cannot relabel thirteen data gaps."""
+    with the minority cause shown so one review-incomplete row cannot relabel thirteen data gaps."""
     kinds = Counter(r.get('review_result') if r.get('review_result') == 'FAIL' else r.get('gap_cause') for r in rows)
     if kinds.get('FAIL'):
         if is_document([r.get('id', '') for r in rows if r.get('review_result') == 'FAIL']):
@@ -303,7 +302,6 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
     read, todo = split_read([action] + acquisitions)
     fields = [('缺什么', missing),
               ('为什么要紧', [reason]),
-              ('按什么假定判的', [task.get('assumed')]),
               ('公开资料界限下的最坏情况', [task.get('worst_case')]),
               ('这个缺口影响哪些判断', fold_blocks(task.get('blocks') or [])),
               ('已查过', read),
@@ -631,36 +629,6 @@ def render_clarifications(plan):
     return out
 
 
-DELIVERABLE_WORDS = {'CUSTOM_PART_DRAWING': '定制件图纸', 'FIRMWARE_CAPABILITY': '固件能力'}
-
-
-def render_deliverables(items, checks, owners=None, classes=False):
-    """等交付物: what another stage owes, for the project manager — owner, artifact, what the verdict assumed meanwhile,
-    what counts as delivered (2026-10-26, item 3). These are conditions of the freeze, not review findings: they leave
-    待办 and the first-three list, and cap the release at CONDITIONAL_GO."""
-    if not items:
-        return []
-    out = ['## 等交付物', '',
-           '下面是别的环节欠的交付物。审查按写明的假定先判了，交付物到了按“怎样算交付”复核假定；它们不算电路错误，'
-           '也不算缺资料，只让定稿成为有条件的。给项目经理催办，按可能后果排序。', '',
-           '| 编号 | 交付物 | 负责方 | 类别 | 可能后果 | 等它的判断 | 按什么假定判的 | 怎样算交付 | 涉及检查 |',
-           '|---|---|---|---|---|---|---|---|---|']
-    def level(t):
-        lv = task_level(t, checks, owners, classes)
-        return SEVERITIES.index(lv) if lv in SEVERITIES else len(SEVERITIES)
-    for t in sorted(items, key=lambda t: (level(t), -len(t.get('check_ids') or []))):
-        d = t['deliverable']
-        lv = task_level(t, checks, owners, classes)
-        out.append('| %s | %s | %s | %s | %s | %s | %s | %s | %d 条 |' % (
-            cell(t['id']), cell(d.get('deliverable') or t.get('title') or ''), cell(d.get('owner') or ''),
-            DELIVERABLE_WORDS.get(d.get('kind'), cell(d.get('kind') or '')),
-            ('%s（%s）' % (SEVERITY_WORDS[lv], lv)) if lv in SEVERITY_WORDS else '未定级',
-            cell('；'.join(fold_blocks(t.get('blocks') or [])) or t.get('root_cause') or ''),
-            cell((t.get('assumed') or '') + ('（适用范围：%s）' % t['required_scope'] if t.get('required_scope') else '')),
-            cell(t.get('closure_criterion') or ''), len(t.get('check_ids') or [])))
-    return out + ['']
-
-
 def render_bom_constraints(checks):
     """What the BOM must state for commodity parts (commodity-floors.md): not defects, not missing data."""
     rows = bom_constraints.constraints(checks)
@@ -916,10 +884,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                 '；'.join(cell(e) for e in (gate.get('errors') or [])[:5]), '']
     counts_at = len(out)   # 数字一览 goes here, ahead of the conclusion, once its numbers are known
     out += ['## 结论', '']
-    # Deliverables another stage owes are listed for the project manager (等交付物), apart from the review's own work
     gap_ids = {k for k, c in current_rows.items() if c.get('review_result') == 'INSUFFICIENT'}
-    deliverables = [t for t in tasks if isinstance(t.get('deliverable'), dict)]
-    tasks = [t for t in tasks if not isinstance(t.get('deliverable'), dict)]
     gap_tasks = [t for t in tasks if gap_ids.intersection(t.get('check_ids') or [])]
     level_of = lambda t: task_level(t, checks, task_owners, classes)
     p0 = sum(level_of(t) == 'P0' for t in gap_tasks)
@@ -946,10 +911,6 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         why = '或'.join(OPEN_CAUSE_WORDS[c] for c in OPEN_CAUSE_WORDS if causes.get(c)) or '依据不足'
         sentences.append('另有 %d 件事因为%s，现在还判断不了%s' % (
             len(gap_tasks), why, '，其中 %d 件%s（P0）' % (p0, SEVERITY_WORDS['P0']) if p0 else ''))
-    if deliverables:
-        kinds = Counter((t['deliverable'].get('kind')) for t in deliverables)
-        sentences.append('另有 %d 项交付物还没到（%s），到了再按假定复核，见“等交付物”' % (
-            len(deliverables), '、'.join('%s %d' % (DELIVERABLE_WORDS.get(k, k or '其他'), n) for k, n in kinds.most_common())))
     constraints = gate.get('design_constraints') or []
     if constraints:
         sentences.append('有 %d 条设计约束由 SR 算出、交给%s，按约束判合格，见“交给后续环节的要求”' % (
@@ -982,7 +943,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                if release != 'GO' else [])
     if gap_ids:
         ambiguous = [t for t in gap_tasks if task_view(t, checks, task_owners, classes)['ambiguous_checks']]
-        owned = {k for t in gap_tasks + deliverables for k in t.get('check_ids') or []}
+        owned = {k for t in gap_tasks for k in t.get('check_ids') or []}
         if ambiguous:
             reasons.append('%d 件待办尚不能独立定级：关联检查的高风险没有消除，暂不计入已明确的根因数' % len(ambiguous))
         if gap_ids - owned:
@@ -1052,7 +1013,6 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             out.append('')
 
     out += render_clarifications(plan)
-    out += render_deliverables(deliverables, checks, task_owners, classes)
 
     if tasks:
         out += ['## 待办', '']
@@ -1179,8 +1139,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             '| 原理图阶段不判、交给后续环节 | %d |' % counts.get('NA_OUTSIDE_STAGE', 0),
             '| 发现的错误，按严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(by_sev.get(s, 0)) for s in SEVERITIES),
             '| 其中文档错误 | %d |' % len(doc_defects),
-            '| 待办（同一原因合并） | %d 件 |' % len(tasks)] + (
-            ['| 等交付物（不算审查发现，准出最高有条件定稿） | %d 项 |' % len(deliverables)] if deliverables else []) + [
+            '| 待办（同一原因合并） | %d 件 |' % len(tasks),
             '| 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(pot.get(s, 0)) for s in SEVERITIES),
             '| 资料不足的原因：%s | %s |' % (' / '.join(CAUSES.values()), ' / '.join(str(cause.get(k, 0)) for k in CAUSES)),
             ] + gap_subclass_counts(results, gaps) + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),

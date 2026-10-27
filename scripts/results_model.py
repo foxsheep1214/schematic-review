@@ -19,7 +19,9 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
-SCHEMA_VERSION = 10   # 10 (2026-10-26): no DESIGN_VALUE open items; a value missing from the schematic is a fail, one
+SCHEMA_VERSION = 11   # 11 (2026-10-26): no DELIVERABLE_PENDING open items; what another stage owes is a DESIGN_CONSTRAINT
+# (numeric or a clause) handed on
+# 10 (2026-10-26): no DESIGN_VALUE open items; a value missing from the schematic is a fail, one
 # another design file owns is a DESIGN_CONSTRAINT condition handed on
 # 9 (2026-10-26): a margin passing on an estimate names basis.risk{types, corner, improvement}
 # 8 (2026-10-26): no REQUIREMENT open items; requirement questions are settled in intent.clarifications
@@ -42,8 +44,8 @@ RETIRED_TOP_FIELDS = ('binding_version', 'remediation_version', 'workflow_versio
                       'work_items')
 # schema 8: a requirement question is asked of the user at step ① and answered into intent.clarifications
 SETTLED_TOP_FIELDS = ('requirement_clarifications',)
-OPEN_KINDS = ('VENDOR_DATUM', 'DELIVERABLE_PENDING', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
-KIND_CAUSE = {'VENDOR_DATUM': 'EXTERNAL_DATA', 'DELIVERABLE_PENDING': 'DELIVERABLE_PENDING',
+OPEN_KINDS = ('VENDOR_DATUM', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
+KIND_CAUSE = {'VENDOR_DATUM': 'EXTERNAL_DATA',
               'REVIEW_INCOMPLETE': 'REVIEW_INCOMPLETE', 'USER_DEFERRED': 'USER_DEFERRED'}
 VERDICTS = ('PASS', 'FAIL', 'OPEN')
 # Schema 3 always means the newest contract of each retired switch: consequence classes v2,
@@ -144,15 +146,13 @@ def work_item_id(key):
 
 # What kind of gap an open item is, for the reader (commodity-floors / P10): who closes it, and for a vendor datum
 # which way the public bound leans. Requirement, review-incomplete and deferred items keep their cause words.
-GAP_SUBCLASSES = {'FIRMWARE': '等固件能力', 'PART_DRAWING': '等定制件图纸',
+GAP_SUBCLASSES = {
                   'PUBLIC_BOUND_SHORT': '按公开资料界限算不够', 'PUBLIC_BOUND_UNGUARANTEED': '按公开资料界限算够，但不是保证值',
                   'NOT_BOUNDABLE': '公开资料定不出界限'}
 
 
 def gap_subclass(item):
     kind = item.get('kind')
-    if kind == 'DELIVERABLE_PENDING':
-        return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'FIRMWARE'
     if kind == 'VENDOR_DATUM':
         worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
         if text(worst.get('not_boundable_reason')):
@@ -246,15 +246,13 @@ def effective_verdicts(functions, plan, checks):
 
 
 def how_to_close(item):
-    if item.get('kind') == 'DELIVERABLE_PENDING':
-        return '由%s交付：%s' % (item.get('owner') or '设计', item.get('deliverable') or '')
     return item.get('acquisition')
 
 
 def gap_of(item):
     """The row-level gap an open item stands for (the row shape the validators and the report read)."""
     gap = {'what': item.get('what'), 'scope': item.get('scope')}
-    if item.get('kind') in ('VENDOR_DATUM', 'DELIVERABLE_PENDING'):
+    if item.get('kind') == 'VENDOR_DATUM':
         gap['how_to_close'] = how_to_close(item)
         gap['closure_criterion'] = item.get('closure')
     if isinstance(item.get('severity'), dict):
@@ -294,10 +292,6 @@ def derived_work_items(report):
             task['design_option'] = item['design_option']
         if gap_subclass(item):
             task['subclass'] = gap_subclass(item)
-        if item.get('kind') == 'DELIVERABLE_PENDING':   # no input request carries these into the report
-            task.update(assumed=item.get('assumed'), required_scope=item.get('scope'), closure_criterion=item.get('closure'),
-                        deliverable={'kind': item.get('deliverable_kind'), 'owner': item.get('owner'),
-                                     'deliverable': item.get('deliverable')})
         # Every exit from a margin reaches the reader: the worst case under the public bound, and why it did not decide.
         worst = item.get('worst_case') if isinstance(item.get('worst_case'), dict) else {}
         bound = worst.get('bound') if isinstance(worst.get('bound'), dict) else {}

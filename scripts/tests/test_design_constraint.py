@@ -64,10 +64,12 @@ class ConstraintTests(unittest.TestCase):
                          ('PASS', dict(HANDOFF, required=True, state='OPEN')))
 
     def test_the_constraint_names_its_limit_owner_and_handoff(self):
-        for field in ('limit', 'regime', 'owner', 'handoff'):
+        for field in ('regime', 'owner', 'handoff'):
             fn = constrained()
             del fn['conditions'][-1][field]
             self.assertTrue(any('conditions[aux-min]' in e for e in function_errors({'functions': [fn]})), field)
+        fn = constrained(); fn['conditions'][-1]['limit'] = {'min': 13.5}
+        self.assertTrue(any('back-calculated limit' in e for e in function_errors({'functions': [fn]})))
         fn = constrained(); fn['handoffs'] = []
         self.assertTrue(any('handoff is the index' in e for e in function_errors({'functions': [fn]})))
 
@@ -80,6 +82,58 @@ class ConstraintTests(unittest.TestCase):
         p, r, db = ledger(constrained())
         out = vr.validate_review(p, r, db)   # ledger() writes the rows by hand with handoff.required false
         self.assertTrue(any('design constraint aux-min' in e and '磁件设计' in e for e in out['errors']), out['errors'])
+
+
+INSULATION = {'id': 't1-insulation', 'kind': 'DESIGN_CONSTRAINT', 'source': 'evidence/engineering.md',
+              'locator': 'IEC 62368-1 §5.4 计算', 'says': 'T1 初次级加强绝缘：三重绝缘线次级，爬电 ≥ 6.4 mm，耐压 3000 Vac/60 s',
+              'regime': '300 Vrms 工作电压、污染等级 2、海拔 ≤ 2000 m', 'owner': '磁件设计', 'handoff': 0,
+              'use': '定制变压器图纸要满足的绝缘结构'}
+CLAUSE_HANDOFF = {'receivers': ['磁件设计'], 'constraint': INSULATION['says'],
+                  'verification': '磁件规格书写明绝缘结构、爬电距离和耐压试验值且满足约束'}
+
+
+def clause_constrained():
+    """并入乙: what the custom transformer's drawing must meet, as a clause the judgement rests on."""
+    fn = bias_function('PASS')
+    fn['conditions'].append(dict(INSULATION))
+    fn['handoffs'] = [dict(CLAUSE_HANDOFF)]
+    fn['judgements'] = [{'aspect': '偏置路径连接', 'conditions': ['c5', 't1-insulation'],
+                         'says': 'AUX 绕组在初级侧，按约束的加强绝缘与次级隔开'}]
+    return fn
+
+
+class ClauseConstraintTests(unittest.TestCase):
+    """2026-10-26 (user: 并入乙): what another stage owes (a custom part drawing, a firmware capability) is a design
+    constraint — a clause when it has no single number — and the row passes on it, handed on."""
+
+    def test_a_clause_constraint_settles_a_judgement_and_is_handed_on(self):
+        fn = clause_constrained()
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+        planned = {'id': 'DEV-D01.T1', 'object': {'ref': 'T1'}}
+        row, error = derive_rows.derive_row(fn, planned, '偏置路径连接', {})
+        self.assertIsNone(error)
+        self.assertEqual((row['review_result'], row['handoff']), ('PASS', dict(CLAUSE_HANDOFF, required=True, state='OPEN')))
+
+    def test_the_clause_alone_settles_the_custom_parts_own_row(self):
+        fn = clause_constrained()
+        fn['judgements'] = [{'aspect': '器件身份', 'conditions': ['t1-insulation'],
+                             'says': 'T1 是定制变压器，身份与绝缘结构按约束由磁件规格书给出'}]
+        self.assertEqual(function_errors({'functions': [fn]}), [])
+
+    def test_a_numeric_constraint_is_still_compared_in_a_margin(self):
+        fn = clause_constrained()
+        fn['conditions'][-1]['limit'] = {'min': 6.4, 'unit': 'mm'}
+        self.assertTrue(any('cites a numeric limit' in e for e in function_errors({'functions': [fn]})))
+
+    def test_a_pending_deliverable_is_refused_and_points_at_the_constraint(self):
+        fn = bias_function()
+        fn['open'][0] = dict(aux_open(), kind='DELIVERABLE_PENDING', deliverable_kind='CUSTOM_PART_DRAWING',
+                             deliverable='T1 磁件规格书', owner='磁件设计', assumed='按加强绝缘')
+        errors = function_errors({'functions': [fn]})
+        self.assertTrue(any('no open item' in e and 'DESIGN_CONSTRAINT' in e and 'clause' in e for e in errors), errors)
+
+    def test_a_constraint_does_not_cap_the_release(self):
+        self.assertEqual(vr.release_for([], [], False), 'GO')
 
 
 class NoDesignValueTests(unittest.TestCase):

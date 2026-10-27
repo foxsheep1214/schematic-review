@@ -38,7 +38,7 @@
 定制件（定制磁件等）的 BOM 规格列写出的参数是设计值：按此规格采购，就可以直接作为界。
 引用时写 NUMERIC_LIMIT 条件，`source` 写 BOM 文件，`locator` 写出位号，`says` 照 BOM 原文抄（空格不计）；
 工具只核对这段文字确实在该位号的 BOM 行里。BOM 里写的计算过程是设计方的，不用，只用规格值。
-定制件图纸的开放项（CUSTOM_PART_DRAWING）只列 BOM 没写的参数，见[结果格式](results-format.md)的 `missing_parameters`。
+BOM 没写、要等定制件图纸的参数，写成交给磁件设计的设计约束（见[结果格式](results-format.md)“设计没定不是开放项”）。
 
 ## 定界
 

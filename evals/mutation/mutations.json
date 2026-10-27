@@ -161,13 +161,6 @@
   "new": "    if False:\n        aspects = {a for a, _ in _decides(item)}"
  },
  {
-  "id": "M30",
-  "name": "pending deliverable accepted without deliverable/owner/assumed",
-  "file": "scripts/review_functions.py",
-  "old": "        for field in DELIVERABLE_FIELDS:\n            if not text(item.get(field)):",
-  "new": "        for field in ():\n            if not text(item.get(field)):"
- },
- {
   "id": "M31",
   "name": "shortfall fail item accepted without remediation",
   "file": "scripts/review_functions.py",
@@ -180,27 +173,6 @@
   "file": "scripts/review_functions.py",
   "old": "        if not evidence(worst.get('curves_checked')):",
   "new": "        if False:"
- },
- {
-  "id": "M33",
-  "name": "pending deliverable accepted without a deliverable kind",
-  "file": "scripts/review_functions.py",
-  "old": "        if item.get('deliverable_kind') not in DELIVERABLE_KINDS:",
-  "new": "        if False:"
- },
- {
-  "id": "M34",
-  "name": "pending deliverable accepted without scope",
-  "file": "scripts/review_functions.py",
-  "old": "            errors.append(label + ': scope required (the conditions the deliverable must cover)')",
-  "new": "            pass"
- },
- {
-  "id": "M35",
-  "name": "report drops what a pending deliverable assumed",
-  "file": "scripts/render_report.py",
-  "old": "              ('按什么假定判的', [task.get('assumed')]),",
-  "new": "              ('按什么假定判的', []),"
  },
  {
   "id": "M36",
@@ -269,8 +241,8 @@
   "id": "M45",
   "name": "a judgement resting only on typical values or notes accepted",
   "file": "scripts/review_functions.py",
-  "old": "        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}\n",
-  "new": "        elif False and not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}\n"
+  "old": "        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT', 'DESIGN_CONSTRAINT'}\n",
+  "new": "        elif False and not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT', 'DESIGN_CONSTRAINT'}\n"
  },
  {
   "id": "M46",
@@ -283,8 +255,8 @@
   "id": "M47",
   "name": "a numeric limit settled in a judgement sentence accepted",
   "file": "scripts/review_functions.py",
-  "old": "        if kinds & set(LIMIT_KINDS):",
-  "new": "        if False:"
+  "old": "        if numeric:\n",
+  "new": "        if False:\n"
  },
  {
   "id": "M48",
@@ -1610,20 +1582,6 @@
   "new": "        worded = {}"
  },
  {
-  "id": "M238",
-  "name": "C7: gaps awaiting one document of one part give no hint",
-  "file": "scripts/review_functions.py",
-  "old": "    for (kind, part), refs in sorted(awaited.items()):\n        if len(set(refs)) > 1:",
-  "new": "    for (kind, part), refs in sorted(awaited.items()):\n        if False:"
- },
- {
-  "id": "M239",
-  "name": "C7: a part number counted as a part",
-  "file": "scripts/review_functions.py",
-  "old": "set(DESIGNATOR_RE.findall(item['deliverable'])) & (known_refs or set(DESIGNATOR_RE.findall(item['deliverable'])))",
-  "new": "set(DESIGNATOR_RE.findall(item['deliverable']))"
- },
- {
   "id": "M240",
   "name": "C2: no feedback-open row",
   "file": "scripts/plan_circuits.py",
@@ -1869,13 +1827,6 @@
   "new": "return 'PUBLIC_BOUND_SHORT' if value > 0 else"
  },
  {
-  "id": "M275",
-  "name": "P10: a custom-part drawing classed as firmware",
-  "file": "scripts/results_model.py",
-  "old": "return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'FIRMWARE'",
-  "new": "return 'FIRMWARE'"
- },
- {
   "id": "M276",
   "name": "P10: the gap subclass does not reach the work list",
   "file": "scripts/review_workflow.py",
@@ -2119,20 +2070,6 @@
   "file": "scripts/review_functions.py",
   "old": "        holders = [f['id'] for f in circuits if refs and refs <= _objects(f)[0]]",
   "new": "        holders = []"
- },
- {
-  "id": "M311",
-  "name": "a custom part drawing need not list the parameters the BOM leaves out",
-  "file": "scripts/review_functions.py",
-  "old": "        elif item['deliverable_kind'] == 'CUSTOM_PART_DRAWING':\n",
-  "new": "        elif False:\n"
- },
- {
-  "id": "M312",
-  "name": "a parameter the BOM states may be called missing",
-  "file": "scripts/review_functions.py",
-  "old": "            if _stated_in_bom(_bom_text(parts, ref), m['name'], m['unit']):",
-  "new": "            if False:"
  },
  {
   "id": "M313",
@@ -4396,34 +4333,6 @@
   "new": "        elif False:\n"
  },
  {
-  "id": "M667",
-  "name": "a pending deliverable blocks the release again",
-  "file": "scripts/validate_review.py",
-  "old": "        pending_deliverable = result == \"INSUFFICIENT\" and item.get(\"gap_cause\") == \"DELIVERABLE_PENDING\"\n",
-  "new": "        pending_deliverable = False\n"
- },
- {
-  "id": "M668",
-  "name": "release_for ignores pending deliverables",
-  "file": "scripts/validate_review.py",
-  "old": "    return \"CONDITIONAL_GO\" if accepted or pending else \"GO\"\n",
-  "new": "    return \"CONDITIONAL_GO\" if accepted else \"GO\"\n"
- },
- {
-  "id": "M669",
-  "name": "deliverables stay in the work list",
-  "file": "scripts/render_report.py",
-  "old": "    deliverables = [t for t in tasks if isinstance(t.get('deliverable'), dict)]\n",
-  "new": "    deliverables = []\n"
- },
- {
-  "id": "M670",
-  "name": "deliverable rows count as not in a work item",
-  "file": "scripts/render_report.py",
-  "old": "        owned = {k for t in gap_tasks + deliverables for k in t.get('check_ids') or []}\n",
-  "new": "        owned = {k for t in gap_tasks for k in t.get('check_ids') or []}\n"
- },
- {
   "id": "M671",
   "name": "the gate reads only the written rows",
   "file": "scripts/validate_review.py",
@@ -4889,8 +4798,8 @@
   "id": "M739",
   "name": "a risk caps the release again",
   "file": "scripts/validate_review.py",
-  "old": "    release = release_for(errors, blockers, accepted, pending)",
-  "new": "    release = release_for(errors, blockers, accepted or bool(risk_rows), pending)"
+  "old": "    release = release_for(errors, blockers, accepted)",
+  "new": "    release = release_for(errors, blockers, accepted or bool(risk_rows))"
  },
  {
   "id": "M740",
@@ -4959,7 +4868,35 @@
   "id": "M749",
   "name": "a constraint need not give its limit",
   "file": "scripts/review_functions.py",
-  "old": "    if not (values and all(_finite(v) for v in values) and text(limit.get('unit'))):\n        errors.append(label + ': a DESIGN_CONSTRAINT",
-  "new": "    if False:\n        errors.append(label + ': a DESIGN_CONSTRAINT"
+  "old": "    if 'limit' in c and not (values and all(_finite(v) for v in values) and text(limit.get('unit'))):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M750",
+  "name": "a clause constraint does not settle a judgement",
+  "file": "scripts/review_functions.py",
+  "old": "        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT', 'DESIGN_CONSTRAINT'}",
+  "new": "        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}"
+ },
+ {
+  "id": "M751",
+  "name": "a constraint a judgement rests on is not handed on",
+  "file": "scripts/function_reading.py",
+  "old": "            cited += list(j.get('conditions') or [])",
+  "new": "            pass"
+ },
+ {
+  "id": "M752",
+  "name": "a numeric constraint may be settled in a judgement sentence",
+  "file": "scripts/review_functions.py",
+  "old": "                                    or (c.get('kind') == 'DESIGN_CONSTRAINT' and 'limit' in c))",
+  "new": "                                    or False)"
+ },
+ {
+  "id": "M753",
+  "name": "a pending deliverable is an open item again",
+  "file": "scripts/review_functions.py",
+  "old": "    if kind == 'DELIVERABLE_PENDING':   # 2026-10-26 (user: 并入乙)",
+  "new": "    if False:   # 2026-10-26 (user: 并入乙)"
  }
 ]

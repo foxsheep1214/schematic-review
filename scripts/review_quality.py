@@ -665,8 +665,8 @@ DATA_MISSING_RE = re.compile(r'缺|未给|没有|没给|无此|未找到|不覆�
 
 
 ITEM_TIMING_FIELDS = ('scenario', 'allowed_window', 'response_bound')
-MISFILE_KINDS = ('VENDOR_DATUM', 'DELIVERABLE_PENDING')   # an image written as a deliverable is the same misfile
-ITEM_TEXT_FIELDS = ('what', 'acquisition', 'closure', 'why_insufficient', 'deliverable', 'spec')
+MISFILE_KINDS = ('VENDOR_DATUM',)
+ITEM_TEXT_FIELDS = ('what', 'acquisition', 'closure', 'why_insufficient')
 
 
 def misfiled_items(functions, owners):
@@ -684,7 +684,7 @@ def misfiled_items(functions, owners):
             ref = '%s/%s' % (fn['id'], item.get('key'))
             texts = {f: _decisive_part(item[f]) for f in ITEM_TEXT_FIELDS if isinstance(item.get(f), str) and item[f]}
             check_ids = sorted(c for c in owners.get(ref, ()) if c)
-            prerequisites = ' '.join(texts.get(f, '') for f in ('what', 'acquisition', 'deliverable', 'spec'))
+            prerequisites = ' '.join(texts.get(f, '') for f in ('what', 'acquisition'))
             hit = next(((f, FIRMWARE_RE.search(t)) for f, t in texts.items() if FIRMWARE_RE.search(t)), None)
             if hit and not SCHEMATIC_PREREQ_RE.search(prerequisites):
                 found.append({'code': 'FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', 'function_id': fn['id'], 'key': item.get('key'),

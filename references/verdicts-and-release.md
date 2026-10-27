@@ -261,10 +261,9 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 
 `review-gate.json` 中的工具字段：`valid/errors` 表示记录是否可对账；`workflow.status/current_work_items`
 （由开放项派生，见下）给出本轮先做什么；`release` 是原理图冻结的 GO / CONDITIONAL_GO / NO_GO：
-有错误或阻断项 NO_GO；有按批准接受的 FAIL/INSUFFICIENT，
-或有等交付物的检查项（`pending_deliverables`：DELIVERABLE_PENDING 开放项挡住的 INSUFFICIENT，不论等级都不是阻断项，交付物到了按 `assumed` 复核）最高 CONDITIONAL_GO；否则 GO。
+有错误或阻断项 NO_GO；有按批准接受的 FAIL/INSUFFICIENT 最高 CONDITIONAL_GO；否则 GO。
+按设计约束判合格的检查项（门禁 `design_constraints`：交给磁件、固件、PCB 等负责方的约束）不限制 `release`（2026-10-26 定）。
 合格但有风险的检查项（门禁 `risks`：只靠估算过关的角点、寿命估算、降额不足）不限制 `release`，报告单列“风险清单”（2026-10-26 定）。
-等交付物是冻结的条件，不是反对冻结的理由（2026-10-26 定）：R7 一份记录 72 条资料不足里 52 条在等图纸和配置表，它们曾占满待办和“最先要解决的 3 件事”。
 `release` 在非冻结阶段也会计算，但**不是本轮总判定**：非冻结阶段的报告展示实际用途下的电气结论、
 必要疑点及集成约束，不因未接受移交或未给完整制造资料就把整个设计标为失败。冻结 NO_GO 也不妨碍继续设计和补证。
 
@@ -277,9 +276,8 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 |---|---|
 | `title` / `root_cause` | 开放项的 `title`（无则 `what`）/ `what` |
 | `reason` | `why`，无则 `severity.consequence` |
-| `next_action` | VENDOR_DATUM：`acquisition`；DELIVERABLE_PENDING：“由 {owner} 交付：{deliverable}”；失败项：“按发现项 {finding_id} 的改法处理” |
+| `next_action` | VENDOR_DATUM：`acquisition`；失败项：“按发现项 {finding_id} 的改法处理” |
 | `due_stage` / `design_option` | 开放项同名字段（`due_stage` 默认 `design_iteration`） |
-| `deliverable{kind, owner, deliverable}` / `assumed` / `required_scope` / `closure_criterion` | 只有 DELIVERABLE_PENDING 的待办带；报告把带 `deliverable` 的待办列进“等交付物”，不进待办和最先要解决的 3 件事 |
 | `check_ids` | 用 `open_ref`/`fail_ref` 指向这一项的检查项（即 `decides` 命中的方面×状态） |
 | 等级 | 开放项的 `severity.level`；失败项取发现项 |
 
@@ -344,9 +342,9 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 | 只能靠样机取得的能效、EMC、闭壳热、寿命/环境、协议一致性及结构试验结果 | 纯测试行阶段 NA + HANDOFF，产品验收仍待完成 |
 | 实际漏感/PCB 寄生尖峰，已有适用的保守参数和吸收/钳位设计依据 | 设计子判据单独判定，实际波形测试阶段 NA；保守界限不足或算不过不能移交消失 |
 | 实际负载不明、保护配置未知、保证边界足以改变选型结论 | INSUFFICIENT + 具体缺口（gaps）；已证实违反则 FAIL |
-| 固件配置表缺失 | 不审，手册声明的能力判可达；硬件检查项按允许的配置范围判，依赖的设置标 `setting`；FIRMWARE_CAPABILITY 只用于“固件能不能实现某个行为” |
+| 固件配置表缺失 | 不审，手册声明的能力判可达；硬件检查项按允许的配置范围判，依赖的设置标 `setting`；固件能不能实现某个行为写成设计约束交给固件 |
 | 环路增益、相位裕量这类只有样机能给的结论 | 阶段 NA + HANDOFF，片内可编程的补偿参数标 `setting`；“靠实测”不能作通过的依据 |
-| 定制磁件图纸、固件/OTP 应用能否实现所需控制策略的确认等另一阶段欠的交付物 | INSUFFICIENT（DELIVERABLE_PENDING）：写欠什么、谁欠、本判定按什么假定算；不记 EXTERNAL_DATA，不向芯片厂家索取；不是阻断项，准出最高有条件，报告列在“等交付物”给项目经理 |
+| 定制磁件图纸、固件/OTP 应用能否实现所需控制策略的确认等另一阶段欠的交付物 | PASS + 设计约束（DESIGN_CONSTRAINT，没有单一数值的写条款）：写交付物要满足什么、交给谁、怎么验；不记 EXTERNAL_DATA，不向芯片厂家索取；交付物已到而不满足约束的记 FAIL |
 | 烧录镜像、读回、编程夹具、量产校准 | 原理图前提单独判；镜像本身阶段 NA + HANDOFF 给固件/生产 |
 | 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`：VENDOR_DATUM 开放项的 `acquisition`/`closure` 写了已读、只剩复算而没说缺哪个数据） |
 | 同一方法套在几个对象上（三只光耦的 CTR、几只电解的寿命） | 一件待办、多个位号，不拆成三件（`DUPLICATE_WORK_ITEMS`） |

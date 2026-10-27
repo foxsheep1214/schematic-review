@@ -183,20 +183,13 @@ class FunctionShapeTests(unittest.TestCase):
         records; catalog.OPEN_ITEM_RULES says which rows each kind of gap may hold."""
         import catalog
         from review_functions import open_item_scope_errors
-        fn = bias_function('OPEN')   # a DESIGN_VALUE blocking the converter-voltage rows: allowed
+        fn = bias_function('OPEN')   # a VENDOR_DATUM blocking the converter-voltage rows: allowed
         self.assertEqual(open_item_scope_errors([fn]), [])
         fn['open'][0]['decides'].append({'aspect': catalog.title('DEV-D01'), 'states': ['RUN'], 'via': {'condition': 'c3'},
-                                         'rationale': 'identity rows do not wait for a design value'})
+                                         'rationale': 'identity rows do not wait for a vendor datum'})
         errors = open_item_scope_errors([fn])
         self.assertTrue(any('cannot block' in e and 'DEV-D01' in e for e in errors), errors)
         self.assertTrue(any('cannot block' in e for e in vr.validate_review(*ledger(fn))['errors']))   # the gate enforces it
-        drawing = bias_function('OPEN'); item = drawing['open'][0]
-        item.update(kind='DELIVERABLE_PENDING', deliverable_kind='CUSTOM_PART_DRAWING', deliverable='T1 图纸', owner='磁件',
-                    assumed='按标称', closure='图纸到', missing_parameters=[{'name': '辅助绕组峰值', 'unit': 'V'}])
-        item['decides'].append({'aspect': catalog.title('DEV-D01'), 'states': ['RUN'], 'via': {'condition': 'c3'}, 'rationale': 'x'})
-        self.assertEqual(open_item_scope_errors([drawing]), [])   # the custom part's own identity waits for its drawing
-        item['decides'].append({'aspect': catalog.title('SIG-D04'), 'states': ['RUN'], 'via': {'condition': 'c3'}, 'rationale': 'x'})
-        self.assertTrue(any('SIG-D04' in e for e in open_item_scope_errors([drawing])))
         fn = bias_function('OPEN'); fn['open'][0]['decides'][0]['aspect'] = 'STANDBY_POWER'   # a requirement aspect: not a rule title
         self.assertEqual(open_item_scope_errors([fn]), [])
 
@@ -454,54 +447,8 @@ class AspectJudgementTests(unittest.TestCase):
         self.assertEqual(len([e for e in errors if 'judges no' in e]), 3, errors)
 
 
-class DeliverablePendingTests(unittest.TestCase):
-    """A deliverable another stage owes (magnetics drawing, firmware application capability) is neither a
-    vendor datum nor an undecided design value: the item names it, its owner and what the verdict assumed."""
-
-    def pending(self):
-        return {'key': 'T1-DRAWING', 'kind': 'DELIVERABLE_PENDING', 'what': 'T1 带绝缘体系的磁件图纸还没有交付',
-                'scope': '加强绝缘、5000 m', 'deliverable': 'T1 磁件规格书：三重线型号、绕组顺序、边距、耐压试验值',
-                'owner': '磁件设计', 'assumed': '按 intent 的 48:6:21 匝比和三重线次级计算',
-                'deliverable_kind': 'CUSTOM_PART_DRAWING',
-                'missing_parameters': [{'name': '绕组顺序'}, {'name': '耐压试验值', 'unit': 'Vac'}],
-                'closure': '规格书给出上述项且耐压 ≥ 3000 Vac',
-                'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN'], 'via': {'claim': 'BIAS-VCCMIN', 'input': 'v_aux_min'},
-                             'rationale': '辅助电压按假定的匝比算，匝比在待交付的图纸上'}],
-                'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'affects': 'T1', 'consequence': '图纸与假定不符时偏置电压不足'}}
-
-    def test_the_item_names_the_deliverable_its_owner_and_the_assumption(self):
-        fn = bias_function(); fn['open'] = [self.pending()]
-        self.assertEqual(function_errors({'functions': [fn]}), [])
-        for field in ('deliverable', 'owner', 'assumed', 'closure'):
-            broken = copy.deepcopy(fn); del broken['open'][0][field]
-            self.assertTrue(function_errors({'functions': [broken]}), field)
-        broken = copy.deepcopy(fn); broken['open'][0]['acquisition'] = '向厂家索取'
-        self.assertTrue(any('only belong' in e for e in function_errors({'functions': [broken]})))
-        broken = copy.deepcopy(fn); del broken['open'][0]['scope']
-        self.assertTrue(any('scope' in e for e in function_errors({'functions': [broken]})))
-
-    def test_a_deliverable_says_what_kind_of_artifact_is_owed(self):
-        """Kind is decided by what is owed, not by who owes it: a firmware capability statement from the chip vendor is a
-        deliverable; a parameter of a catalog part is a VENDOR_DATUM with its public bound, and no deliverable kind fits it."""
-        fn = bias_function(); fn['open'] = [self.pending()]
-        del fn['open'][0]['deliverable_kind']
-        self.assertTrue(any('deliverable_kind' in e for e in function_errors({'functions': [fn]})))
-        fn['open'][0]['deliverable_kind'] = 'PART_PARAMETER'
-        self.assertTrue(any('deliverable_kind' in e for e in function_errors({'functions': [fn]})))
-        fn['open'][0].update(deliverable_kind='FIRMWARE_CAPABILITY', owner='芯片原厂应用支持',
-                             deliverable='向原厂取得所用 OTP 应用支持的控制接口与状态机说明')
-        self.assertEqual(function_errors({'functions': [fn]}), [])
-
-    def test_rows_count_the_deliverable_apart_from_data_and_design_gaps(self):
-        fn = bias_function(); fn['open'] = [self.pending()]
-        p, r, db = ledger(fn)
-        out = vr.validate_review(p, r, db)
-        self.assertTrue(out['valid'], out['errors'])
-        self.assertEqual(out['insufficient_by_cause'], {'DELIVERABLE_PENDING': 2})
-        text = render(p, r, out)
-        self.assertIn('另有 1 项交付物还没到（定制件图纸 1），到了再按假定复核，见“等交付物”', text)   # item 3, 2026-10-26
-        task = next(t for t in out['workflow']['work_items'] if t['id'] == 'W-T1-DRAWING')
-        self.assertEqual(task['next_action'], '由磁件设计交付：T1 磁件规格书：三重线型号、绕组顺序、边距、耐压试验值')
+class OpenItemReportTests(unittest.TestCase):
+    """What a gap holds open and what kind of gap it is reach the reader."""
 
     def test_the_report_shows_which_judgements_the_gap_holds_open(self):
         """Every row a gap blocks reaches the reader, with what the missing quantity enters and why."""
@@ -520,13 +467,11 @@ class DeliverablePendingTests(unittest.TestCase):
         out = vr.validate_review(p, r, db)
         section = render(p, r, out).split('### W-HV-IV')[1].split('\n## ')[0]
         self.assertIn('类型：缺资料（按公开资料界限算不够）', section)
-        self.assertIn('| 资料不足细分：等固件能力 / 等定制件图纸 / 按公开资料界限算不够 / '
-                      '按公开资料界限算够，但不是保证值 / 公开资料定不出界限 | 0 / 0 / 3 / 0 / 0 |', render(p, r, out))
+        self.assertIn('| 资料不足细分：按公开资料界限算不够 / '
+                      '按公开资料界限算够，但不是保证值 / 公开资料定不出界限 | 3 / 0 / 0 |', render(p, r, out))
         sub = results_model.gap_subclass
         self.assertEqual(sub({'kind': 'VENDOR_DATUM', 'worst_case': {'margin': {'value': 0.3}}}), 'PUBLIC_BOUND_UNGUARANTEED')
         self.assertEqual(sub({'kind': 'VENDOR_DATUM', 'worst_case': {'not_boundable_reason': 'x'}}), 'NOT_BOUNDABLE')
-        self.assertEqual(sub({'kind': 'DELIVERABLE_PENDING', 'deliverable_kind': 'CUSTOM_PART_DRAWING'}), 'PART_DRAWING')
-        self.assertEqual(sub({'kind': 'DELIVERABLE_PENDING', 'deliverable_kind': 'FIRMWARE_CAPABILITY'}), 'FIRMWARE')
         self.assertIsNone(sub({'kind': 'REQUIREMENT'}))
 
     def test_aspects_one_gap_blocks_for_the_same_reason_share_one_line(self):
@@ -569,14 +514,6 @@ class DeliverablePendingTests(unittest.TestCase):
         self.assertIn('：启动电流决定 VCC 能否在 HV 供电下升过 UVLO', section)
         self.assertIn('（出处 U1.txt p7 Table 7）', section)
 
-    def test_the_report_shows_what_the_verdict_assumed_and_what_closes_it(self):
-        fn = bias_function(); fn['open'] = [self.pending()]
-        p, r, db = ledger(fn)
-        out = vr.validate_review(p, r, db)
-        # Item 3 (2026-10-26): the deliverable is a row of 等交付物 for the project manager, not a 待办 entry.
-        row = next(l for l in render(p, r, out).splitlines() if l.startswith('| W-T1-DRAWING |'))
-        self.assertIn('| 按 intent 的 48:6:21 匝比和三重线次级计算（适用范围：加强绝缘、5000 m） |', row)
-        self.assertIn('| 规格书给出上述项且耐压 ≥ 3000 Vac |', row)
 
 
 class RowBindingTests(unittest.TestCase):
@@ -938,24 +875,6 @@ class ReviewerAgreementTests(unittest.TestCase):
         fn['open'][0]['acquisition'] = other['open'][0]['acquisition'] = '向原厂索取高低温下的保证值'
         self.assertEqual([h['field'] for h in template_hints([fn, other]) if h['code'] == 'TEMPLATE_REASON'], ['acquisition'])
 
-    def test_several_gaps_awaiting_one_document_of_one_part_are_a_hint(self):
-        # Three items awaited the same coupling figure of one transformer, from one magnetics drawing, at P1, P1 and P3.
-        from review_functions import template_hints
-
-        def pending(fid, key, deliverable):
-            fn = bias_function(); fn['id'] = fid
-            fn['open'][0] = {'key': key, 'kind': 'DELIVERABLE_PENDING', 'deliverable_kind': 'CUSTOM_PART_DRAWING',
-                             'deliverable': deliverable, 'decides': [{'aspect': ASPECT}]}
-            return fn
-        fns = [pending('FN-BIAS', 'T1-AUX', 'T1 辅助绕组对副边的漏感'), pending('FN-OVP', 'AUX-COUPLING', 'T1 辅助绕组耦合实测曲线')]
-        hints = [h for h in template_hints(fns) if h['code'] == 'SAME_DELIVERABLE']
-        self.assertEqual([(h['refs'], h['items']) for h in hints], [(['T1'], ['FN-BIAS/T1-AUX', 'FN-OVP/AUX-COUPLING'])])
-        fns[1]['open'][0]['deliverable'] = 'L2 饱和电流'
-        self.assertFalse([h for h in template_hints(fns) if h['code'] == 'SAME_DELIVERABLE'])
-        fns[1]['open'][0]['deliverable'] = 'T1 辅助绕组耦合实测曲线'
-        fns[0]['open'][0]['deliverable'] = fns[1]['open'][0]['deliverable'] = 'RT7209 配置表'   # a part number, not a part
-        self.assertFalse([h for h in template_hints(fns, {'T1', 'U1'}) if h['code'] == 'SAME_DELIVERABLE'])
-
     def test_f10_one_unlocated_condition_in_several_functions_is_a_template(self):
         note = {'id': 'ENG', 'source': 'evidence/engineering.md', 'locator': '## X', 'says': '本轮原厂条款摘录', 'use': '依据'}
         fn = bias_function('PASS'); fn['conditions'].append(dict(note))
@@ -1200,16 +1119,13 @@ class MisfiledItemTests(unittest.TestCase):
                 row['derived'] = True
         return [c for c in screen_quality(p, r, db)['candidates'] if c['code'] == code]
 
-    def test_a_burned_image_in_a_design_value_or_a_deliverable_is_one_firmware_candidate(self):
+    def test_a_burned_image_in_a_datum_is_one_firmware_candidate(self):
         found = self.found('FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', what='量产固件的烧录镜像与读回 hash')
         self.assertEqual(len(found), 1, found)
         self.assertEqual((found[0]['key'], found[0]['field'], found[0]['word']), ('AUX-5V-MIN', 'what', '烧录'))
         self.assertEqual(found[0]['check_ids'], ['PWR-C02.BIAS-RUN.Q2', 'PWR-C02.BIAS-STARTUP.Q2'])
         self.assertEqual(self.found('FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP',
                                     what='TP602 与 PFC_EN_N 共脚的编程接口电平与上拉'), [])   # a schematic prerequisite
-        self.assertTrue(self.found('FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', kind='DELIVERABLE_PENDING',
-                                   deliverable_kind='FIRMWARE_CAPABILITY', deliverable='量产固件镜像与读回核验',
-                                   assumed='按 v1.2 的行为算', closure='镜像写入并读回一致'))
         self.assertEqual(self.found('FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP', closure='匝数定下；随后烧录镜像读回核验'), [])
 
     def test_read_then_calculate_is_review_work_not_a_datum(self):

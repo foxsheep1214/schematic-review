@@ -1916,8 +1916,8 @@ EXPLANATIONS = {
 # Which rows an open item may block, by kind (R7 acceptance 2026-10-25, user: B2 a): the same T301 drawing gap blocked
 # 62 / 16 / 29 / 14 rows on four records. A calculation (C) or electrical-window (E) row and the requirement row can wait
 # for a vendor datum or a design value; document and identity rows (D), topology (T), hints (A) and coverage (Q/H/V)
-# cannot. A deliverable blocks by what it is: a custom part's drawing also holds that part's identity and pins; firmware
-# holds the signal/protocol rows. A configuration table is no gap (2026-10-26, user: 手册已有声明、配置表没有……判断为功能可达):
+# cannot. What another stage owes (a custom part's drawing, a firmware capability) is no gap since 2026-10-26 (user: 并入乙):
+# it is a design constraint handed on. A configuration table is no gap (2026-10-26, user: 手册已有声明、配置表没有……判断为功能可达):
 # a capability the datasheet declares is reachable, and the settings the hardware relies on are handed on.
 def _rule_class(rule_id):
     return rule_id.split('-', 1)[1][0] if '-' in rule_id else ''
@@ -1930,19 +1930,12 @@ def _rules_of_class(*classes):
 COMPUTED_RULES = _rules_of_class('C', 'E') | {'REQ-D01'}
 OPEN_ITEM_RULES = {
     'VENDOR_DATUM': COMPUTED_RULES,
-    'DELIVERABLE_PENDING': {
-        'CUSTOM_PART_DRAWING': COMPUTED_RULES | {'DEV-D01', 'DEV-D02', 'DEV-D05'},
-        'FIRMWARE_CAPABILITY': COMPUTED_RULES | frozenset(r.id for r in RULES if r.id.startswith('SIG-')),
-    },
 }
 
 
-def blockable_rules(kind, deliverable_kind=None):
+def blockable_rules(kind):
     """The rule ids an open item of this kind may block, or None when the table has no row for it."""
-    table = OPEN_ITEM_RULES.get(kind)
-    if isinstance(table, dict):
-        return table.get(deliverable_kind)
-    return table
+    return OPEN_ITEM_RULES.get(kind)
 
 
 def rules_titled(aspect):

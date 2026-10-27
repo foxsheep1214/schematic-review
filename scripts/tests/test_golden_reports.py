@@ -36,10 +36,15 @@ def estimate():
     return estimated(cell='ZENER-VZ-LOWER', method='G8', estimate_factor=1.2)
 
 
-def deliverable():
-    """A deliverable another stage owes: listed for the project manager, not a finding, release CONDITIONAL_GO."""
-    from test_deliverables_apart import pending_ledger
-    return pending_ledger()
+def constraint():
+    """乙 (2026-10-26): a value the magnetics design owns, passed on the constraint SR back-calculated and handed on."""
+    from test_design_constraint import HANDOFF, constrained
+    from test_review_functions import ledger
+    p, r, db = ledger(constrained())
+    for row in r['checks']:
+        if row['id'].startswith('PWR-C02'):
+            row['handoff'] = dict(HANDOFF, required=True, state='OPEN')
+    return p, r, db
 
 
 def extension():
@@ -61,7 +66,7 @@ FIXTURES = {
     # Item 7 of the 2026-10-26 SR review: the newer architecture end to end on synthetic ledgers
     'functions': functions,     # derived rows from a function verdict, work item with blocked judgements
     'estimate': estimate,       # 按典型值估算的结论, grade C, CONDITIONAL_GO
-    'deliverable': deliverable, # 等交付物, out of 待办 and the first three
+    'constraint': constraint,   # 设计约束 handed to the magnetics design, rows PASS
     'extension': extension,     # 器件类别与定界表要扩的 under 对 SR 的反馈
 }
 

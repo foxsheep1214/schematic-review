@@ -252,8 +252,8 @@ class ReportWordingTests(unittest.TestCase):
         self.assertFalse(is_document(['DOC-T01.AS-DRAWN', 'PWR-C01.U1']))
         self.assertEqual(item_kind([{'id': 'DEV-D04.BOARD', 'review_result': 'FAIL'}]), '文档错误')
         rows = [{'id': 'A.%d' % i, 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA'} for i in range(13)]
-        rows.append({'id': 'A.13', 'review_result': 'INSUFFICIENT', 'gap_cause': 'DELIVERABLE_PENDING'})
-        self.assertEqual(item_kind(rows), '缺资料（另 等交付物 1 条）')
+        rows.append({'id': 'A.13', 'review_result': 'INSUFFICIENT', 'gap_cause': 'REVIEW_INCOMPLETE'})
+        self.assertEqual(item_kind(rows), '缺资料（另 审查没做完 1 条）')
         self.assertEqual(item_kind(rows[:13]), '缺资料')
         p, r, db = fixture()
         fail(r)

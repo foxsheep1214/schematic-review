@@ -95,7 +95,7 @@ def workflow(plan, report, checks, require_design_options=False):
         for cid in linked:
             owners.setdefault(cid, []).append(item)
         tasks.append({k: item[k] for k in ('id', 'title', 'root_cause', 'check_ids', 'due_stage', 'reason', 'next_action', 'evidence', 'design_option', 'request_keys',
-                                     'assumed', 'required_scope', 'closure_criterion', 'worst_case', 'blocks', 'subclass', 'deliverable')
+                                     'closure_criterion', 'worst_case', 'blocks', 'subclass')
                       if k in item})
     classes = results_model.IMPACT_CLASS_VERSION
     errors.extend(validate_scopes(tasks, checks, strict=True, classes=classes))

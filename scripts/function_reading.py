@@ -170,14 +170,18 @@ def design_constraint(fn, aspect, state=None, check_id=None):
     takes as input or limit — the row passes on it and hands it to the design file that owns the value. None otherwise."""
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
     by_id = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+    cited = []
     for m in margins(calc):
         basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
-        if margin_verdict(m) != 'PASS' or not covers(scope(m, calc.get('aspect')), aspect, state, check_id):
-            continue
-        for cid in list(basis.get('conditions') or []) + [basis.get('limit')]:
-            c = by_id.get(cid) if isinstance(cid, str) else None
-            if c and c.get('kind') == 'DESIGN_CONSTRAINT' and estimate_handoff(fn, c):
-                return estimate_handoff(fn, c), c
+        if margin_verdict(m) == 'PASS' and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
+            cited += list(basis.get('conditions') or []) + [basis.get('limit')]
+    for j in fn.get('judgements') or []:   # a clause constraint settles a row in a judgement (user: 并入乙)
+        if isinstance(j, dict) and j.get('aspect') == aspect and covers(scope(j), aspect, state, check_id):
+            cited += list(j.get('conditions') or [])
+    for cid in cited:
+        c = by_id.get(cid) if isinstance(cid, str) else None
+        if c and c.get('kind') == 'DESIGN_CONSTRAINT' and estimate_handoff(fn, c):
+            return estimate_handoff(fn, c), c
     return None
 
 
