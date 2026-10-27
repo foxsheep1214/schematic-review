@@ -2849,3 +2849,33 @@ judges its feedback model on a clause constraint for the custom transformer.
 - Causes: judgment 1
 - Changed: scripts/review_functions.py, scripts/function_reading.py, scripts/validate_review.py, scripts/results_model.py, scripts/render_report.py, scripts/catalog.py, scripts/review_quality.py, scripts/review_stage_scope.py, scripts/review_workflow.py, scripts/tests, SKILL.md, references/results-format.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, references/commodity-floors.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2255, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M45 M47 M739 M749 M750-M753 killed (M30 M33-M35 M238 M239 M275 M311 M312 M667-M670 dropped; M37 M42 M51 M299 M339 M358 M496 M513 M514 M519 survive or miss on HEAD too)
+
+## A settled requirement may be written into the original requirement files (2026-10-27)
+
+A clarification answer changed `intent.requirements` only; the user's own
+requirement documents kept the old wording, so the next design or review
+reading them did not see the settled requirement. Decision (user: ASG和SR都需要
+提示用户，是否直接更改原始的需求文件。用户确认后，直接改):
+
+1. After a DECIDED or ADOPTED_PROPOSAL answer the reviewer asks whether to
+   write the settled requirement into the original requirement files, naming
+   the file, the place and the words; on a yes the files are changed, on a no
+   only the intent. A deferral is not asked.
+2. The answer records it as `answer.requirement_files` {decision: UPDATED with
+   the files changed, or KEPT}, the same field as ASG's. A settled answer
+   without it, or with another decision, is refused when the intent is read
+   (`requirement_files_not_asked`); UPDATED without files is refused
+   (`requirement_files_without_files`).
+3. The settled clause goes into the text of the requirement the question names
+   (or where the user says), never as a new `CL-` item in the file, which would
+   duplicate the clarification id; the document is transcribed again and
+   `requirement_source` takes the new sha256.
+
+The field sits inside the format-5 answer, so the intent format is unchanged;
+no fixture or replay intent carries a clarification, so the replay bench needs
+no revision. The step ① reading path grows by the new paragraphs.
+
+- Event: user:2026-10-27 (ASG和SR都需要提示用户，是否直接更改原始的需求文件。用户确认后，直接改)
+- Causes: rule_missing 1
+- Changed: scripts/requirement_clarifications.py, scripts/tests/test_requirement_clarifications.py, SKILL.md, references/requirement-clarifications.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2259, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M729-M731 M754-M758 killed

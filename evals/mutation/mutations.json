@@ -4898,5 +4898,40 @@
   "file": "scripts/review_functions.py",
   "old": "    if kind == 'DELIVERABLE_PENDING':   # 2026-10-26 (user: 并入乙)",
   "new": "    if False:   # 2026-10-26 (user: 并入乙)"
+ },
+ {
+  "id": "M754",
+  "name": "a settled answer is not asked about the requirement files",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "        if decision != 'DEFERRED':\n            out.extend(requirement_files_errors(",
+  "new": "        if False:\n            out.extend(requirement_files_errors("
+ },
+ {
+  "id": "M755",
+  "name": "any requirement_files decision is accepted",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "    if not isinstance(value, dict) or value.get('decision') not in FILE_DECISIONS:",
+  "new": "    if not isinstance(value, dict) or 'decision' not in value:"
+ },
+ {
+  "id": "M756",
+  "name": "UPDATED without files passes",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "    if value['decision'] == 'UPDATED' and (",
+  "new": "    if False and ("
+ },
+ {
+  "id": "M757",
+  "name": "a deferral is asked about the requirement files",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "        if decision != 'DEFERRED':\n            out.extend(requirement_files_errors(",
+  "new": "        if True:\n            out.extend(requirement_files_errors("
+ },
+ {
+  "id": "M758",
+  "name": "KEPT is not an answer",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "FILE_DECISIONS = ('UPDATED', 'KEPT')",
+  "new": "FILE_DECISIONS = ('UPDATED',)"
  }
 ]

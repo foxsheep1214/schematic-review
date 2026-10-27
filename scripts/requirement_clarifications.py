@@ -13,6 +13,11 @@ A DECIDED or ADOPTED_PROPOSAL answer is a requirement in its own right: its id j
 answer's words as its original text, and the intent states what the reviewer reads from it like any other. A question
 without an answer stops the review at step ①: the candidate generator, the planner with candidates, the gate and
 the packer refuse it (user: b 无人值守时任务书附澄清答复，没覆盖的问题停在第①步).
+
+Once a DECIDED or ADOPTED_PROPOSAL answer is in, the user is asked whether to write the settled requirement into the
+original requirement files; on a yes the files are changed (user 2026-10-27: ASG和SR都需要提示用户，是否直接更改原始的
+需求文件。用户确认后，直接改). The answer records it as `requirement_files` {decision: UPDATED with the files changed,
+or KEPT}, the same field as ASG's.
 """
 import re
 
@@ -20,6 +25,7 @@ import requirements_extract
 
 ID_RE = re.compile(r'^CL-[A-Za-z0-9]+(?:[-_.][A-Za-z0-9]+)*$')
 DECISIONS = ('DECIDED', 'ADOPTED_PROPOSAL', 'DEFERRED')
+FILE_DECISIONS = ('UPDATED', 'KEPT')
 SECTION = '需求澄清'
 
 
@@ -129,6 +135,8 @@ def errors(intent, document_ids):
             out.append(label + '.answer.source 须为 {source, locator}：对话记录或任务书澄清答复里能定位的一处')
         if decision == 'ADOPTED_PROPOSAL' and answer.get('text') != row.get('proposed_requirement'):
             out.append(label + '.answer.text 采纳建议时与 proposed_requirement 一字不差')
+        if decision != 'DEFERRED':
+            out.extend(requirement_files_errors(label, answer.get('requirement_files')))
         if decision == 'DEFERRED':
             if not refs:
                 out.append(label + ': 暂缓要点名暂缓的需求（requirement_ids）')
@@ -142,6 +150,17 @@ def errors(intent, document_ids):
         elif statuses[cid] != 'CONFIRMED':
             out.append(label + ': 答复定下的需求 %s 已确认，status 写 CONFIRMED' % cid)
     return out
+
+
+def requirement_files_errors(label, value):
+    """A settled answer says whether the user let the original requirement files be changed, and which were."""
+    if not isinstance(value, dict) or value.get('decision') not in FILE_DECISIONS:
+        return [label + '.answer.requirement_files: requirement_files_not_asked — 需求定下后问用户是否把它直接写进原始需求文件，'
+                        '写 {"decision": "UPDATED", "files": [改过的文件]} 或 {"decision": "KEPT"}（用户不让改）']
+    files = value.get('files')
+    if value['decision'] == 'UPDATED' and (not isinstance(files, list) or not files or not all(text(f) for f in files)):
+        return [label + '.answer.requirement_files: requirement_files_without_files — UPDATED 要列出改过的原始需求文件路径']
+    return []
 
 
 def records(intent):

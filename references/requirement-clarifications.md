@@ -61,6 +61,12 @@
 - **① 读入的 1.1**：录完需求后盘点一遍会改变判定的需求问题，**一次汇总问用户**，不逐颗器件打断。
 - **②、③ 中途**：出计划或判断时又发现新的需求依赖，同样当场停下来问，答复写进需求清单、重新生成计划后再继续。
 - 一个独立决定只问一次；同一最大负载决定影响多条检查时只建一项。不同参数即使来自同一本需求书，也不合并。
+- **答复定下需求后接着问改不改原始需求文件**（`DECIDED`、`ADOPTED_PROPOSAL`；`DEFERRED` 不问）：问的时候点名改哪个文件的
+  哪一处（文件路径和章节或需求编号），给出要写入的文字；用户确认后直接改那些文件，不同意就只改 intent
+  （2026-10-27，用户：ASG和SR都需要提示用户，是否直接更改原始的需求文件。用户确认后，直接改）。
+  写法：把定下的条文写进 `requirement_ids` 点名的那条需求的原文，需求文档没提到时写在用户指定的位置；不在原始文件里另起一条
+  `CL-` 编号的需求（澄清编号已是需求清单里的一条，同号会被拒为重复）。改完重跑 `requirements_extract.py`，
+  把新的 sha256 写回 `requirement_source`，改过的那几条按新原文更新参数和理解。
 
 **问题没答复，审查停在第①步**：网表冷扫照常打印“需求澄清 … 还没答复”（诊断 `CLARIFICATION_PENDING`），
 但出电路候选（`circuit_candidates.py`）、带候选的扫描（`lint.py --candidates`）、门禁（`validate_review.py`）都拒绝往下做。
@@ -78,6 +84,16 @@
 
 需求状态只有已确认（CONFIRMED）和暂缓（DEFERRED）两种；不写“未定”“提案”，提案就是还没定，同样当场问。
 
+`DECIDED`、`ADOPTED_PROPOSAL` 的答复还要写 `answer.requirement_files`，记用户让不让改原始需求文件：
+
+| `requirement_files.decision` | 含义 | `files` |
+|---|---|---|
+| `UPDATED` | 用户确认，已把定下的需求写进原始需求文件 | 改过的文件路径，至少一项 |
+| `KEPT` | 用户不让改，只改 intent | 省略或 `[]` |
+
+缺这个字段或 `decision` 不是这两个值，读入 intent 时报 `requirement_files_not_asked` 并拒绝往下做；`UPDATED` 没列文件报
+`requirement_files_without_files`。`DEFERRED` 不写。无人值守时任务书的澄清答复要写明改不改；没写同样拒绝。
+
 ## 字段
 
 ```json
@@ -93,7 +109,8 @@
       "text": "5 V 输出最大连续电流 2 A（25～60 ℃ 环境），峰值 3 A 持续不超过 100 ms",
       "by": "系统需求负责人",
       "date": "2026-10-26",
-      "source": {"source": "对话记录", "locator": "2026-10-26 需求澄清第 1 问"}
+      "source": {"source": "对话记录", "locator": "2026-10-26 需求澄清第 1 问"},
+      "requirement_files": {"decision": "UPDATED", "files": ["/绝对路径/需求规格.md"]}
     }
   }]
 }
@@ -105,6 +122,8 @@
   `proposed_requirement` 写建议补进需求的条文，要具体到可验收的数值、工况或允许/禁止的行为，有多个口径时写推荐项并注明其他选项。
 - 还没答复时不写 `answer`。答复写 `decision`、`text`（定下的需求，或暂缓的原话）、`by`、`date` 和能定位的 `source`
   （对话记录或任务书澄清答复里的一处）。`by` 写真实答复人或角色，不虚构。
+- 给定或采纳的答复写 `requirement_files`（见上节）：`decision` 写 `UPDATED`（`files` 列改过的原始需求文件）或 `KEPT`；
+  字段与 ASG 的需求澄清一致。
 
 ## 报告
 

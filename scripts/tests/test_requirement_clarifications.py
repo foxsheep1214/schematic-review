@@ -4,7 +4,9 @@ User: 需求没定，那就需要及时和用户反馈，请用户澄清以后�
 b 无人值守时任务书附澄清答复，没覆盖的问题停在第①步. A question lives in intent.clarifications; a DECIDED or
 ADOPTED_PROPOSAL answer is a requirement of its own, a DEFERRED answer defers the requirements it names, and a question
 without an answer stops the review before the candidates. The results carry no undecided requirement and the report
-lists the questions and their answers. All evidence is synthetic.
+lists the questions and their answers. A settled answer records whether the user let the original requirement files
+be changed (user 2026-10-27: ASG和SR都需要提示用户，是否直接更改原始的需求文件。用户确认后，直接改). All evidence is
+synthetic.
 """
 import json
 import sys
@@ -23,7 +25,8 @@ from validate_review import fingerprint, validate_review
 
 PROPOSAL = '输出纹波不超过 50 mVpp（20 MHz 带宽，满载）'
 ANSWERED = {'decision': 'ADOPTED_PROPOSAL', 'text': PROPOSAL, 'by': '需求负责人', 'date': '2026-10-26',
-            'source': {'source': '对话记录', 'locator': '2026-10-26 需求澄清第 1 问'}}
+            'source': {'source': '对话记录', 'locator': '2026-10-26 需求澄清第 1 问'},
+            'requirement_files': {'decision': 'UPDATED', 'files': ['/项目/需求规格.md']}}
 
 
 def question(**changes):
@@ -84,6 +87,33 @@ class AnswerTests(unittest.TestCase):
         for status in ('OPEN', 'PROPOSED'):
             errors = validate_intent(intent(ripple_status=status))
             self.assertTrue(any('intent.clarifications' in e for e in errors), errors)
+
+
+class RequirementFilesTests(unittest.TestCase):
+    def test_a_settled_answer_without_the_file_question_is_refused(self):
+        for decision, words in (('ADOPTED_PROPOSAL', PROPOSAL), ('DECIDED', '输出纹波不超过 80 mVpp')):
+            answer = dict(ANSWERED, decision=decision, text=words)
+            del answer['requirement_files']
+            errors = validate_intent(intent(question(answer=answer)))
+            self.assertTrue(any('requirement_files_not_asked' in e for e in errors), errors)
+        answer = dict(ANSWERED, requirement_files={'decision': 'LATER'})
+        errors = validate_intent(intent(question(answer=answer)))
+        self.assertTrue(any('requirement_files_not_asked' in e for e in errors), errors)
+
+    def test_updated_files_must_be_named(self):
+        for files in (None, [], ['']):
+            value = {'decision': 'UPDATED'} if files is None else {'decision': 'UPDATED', 'files': files}
+            errors = validate_intent(intent(question(answer=dict(ANSWERED, requirement_files=value))))
+            self.assertTrue(any('requirement_files_without_files' in e for e in errors), (files, errors))
+
+    def test_files_the_user_kept_pass(self):
+        for value in ({'decision': 'KEPT'}, {'decision': 'KEPT', 'files': []}):
+            self.assertEqual(validate_intent(intent(question(answer=dict(ANSWERED, requirement_files=value)))), [])
+
+    def test_a_deferral_is_not_asked_about_the_files(self):
+        deferral = dict(ANSWERED, decision='DEFERRED', text='纹波等系统方案定了再审')
+        del deferral['requirement_files']
+        self.assertEqual(validate_intent(intent(question(answer=deferral), ripple_status='DEFERRED')), [])
 
 
 class StopAtStepOneTests(unittest.TestCase):
