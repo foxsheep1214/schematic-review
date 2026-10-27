@@ -2501,3 +2501,18 @@ frames, nothing else.
 - Causes: rule_missing 1
 - Changed: scripts/interfaces.py, scripts/tests/test_interface_rows.py, scripts/tests/fixtures/interfaces-flyback-usb.json, references/results-format.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutations M693–M695 killed
+
+## Long function names keep distinct ids (2026-10-26)
+
+R8 codex1 wrote in SR缺陷.md that its plan held one function id twice: two
+interfaces named after a three-candidate flyback circuit and its two
+neighbours share their first 64 characters, and `planutil.slug` cuts there,
+so `FN-<slug>` was the same for both (check ids had a `-2` suffix, function
+ids nothing). Interface and circuit frames now take `planutil.frame_slug`: a
+name that fits keeps its slug, a longer one keeps its first 55 characters and
+an 8-digit hash of the whole name, so ids stay stable, bounded and distinct.
+
+- Event: user:2026-10-26 (先修第一项); review:SR-20261026-R8-验收-codex1-deb0c51/SR缺陷.md
+- Causes: rule_not_enforced 1
+- Changed: scripts/checkers/planutil.py, scripts/interfaces.py, scripts/plan_circuits.py, scripts/tests/test_interface_rows.py, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 117/180/14, mutation M696 killed

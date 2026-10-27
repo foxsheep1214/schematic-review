@@ -17,7 +17,7 @@ from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, CONNECTOR, DIODE, FUSE
                         LED_RE, NTC, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR, VARISTOR_RE, name_matches,
                         normalize)
 from checkers.netgraph import is_ground as netgraph_ground
-from checkers.planutil import slug as _slug
+from checkers.planutil import frame_slug
 from electrical_contract import bounded, finite
 from interfaces import CONNECTOR_RE
 from page_inventory import LIMITED
@@ -452,7 +452,7 @@ class CircuitPlanning:
         for circuit in circuits:
             window = self._rail_window(circuit.get('nets', []))
             frames[circuit['id']] = {
-                'id': 'FN-' + _slug(circuit['id']),
+                'id': 'FN-' + frame_slug(circuit['id']),
                 'circuit': circuit['id'],
                 'circuit_type': kind.name,
                 'question': catalog.frame_question(kind.name, circuit['id'], circuit['refs'], circuit['states'], window),

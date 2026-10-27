@@ -4835,5 +4835,12 @@
   "file": "scripts/interfaces.py",
   "old": "        logic = kind == 'EXTERNAL' or any(not n.get('power_node') for n in nets)",
   "new": "        logic = True"
+ },
+ {
+  "id": "M696",
+  "name": "a long frame name is cut without its hash",
+  "file": "scripts/checkers/planutil.py",
+  "old": "    if len(full) <= 64:\n        return slug(value)",
+  "new": "    if True:\n        return slug(value)"
  }
 ]

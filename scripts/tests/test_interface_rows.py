@@ -157,3 +157,25 @@ class PowerNetTests(unittest.TestCase):
         self.assertEqual(sorted(c['rule'] for c in plan['checks'] if c['object'].get('interface') == iid), ['SIG-C08'])
         self.assertIn(iid, {f.get('interface') for f in plan['functions']})
         self.assertEqual(interfaces.coverage_errors(plan), [])
+
+
+class FrameIdTests(unittest.TestCase):
+    """R8 codex1: two interfaces whose names share their first 64 characters got one function id."""
+    A = 'IF-POWER_CONVERTER-Q302+POWER_CONVERTER-Q402+POWER_CONVERTER-U402~POWER_CONVERTER-Q401'
+    B = 'IF-POWER_CONVERTER-Q302+POWER_CONVERTER-Q402+POWER_CONVERTER-U402~POWER_CONVERTER-U501'
+
+    def test_two_long_names_sharing_a_prefix_get_two_ids_of_bounded_length(self):
+        from checkers.planutil import frame_slug, slug
+        self.assertEqual(slug(self.A), slug(self.B))   # what used to collide
+        a, b = frame_slug(self.A), frame_slug(self.B)
+        self.assertNotEqual(a, b)
+        self.assertLessEqual(max(len(a), len(b)), 64)
+        self.assertEqual(a, frame_slug(self.A))   # stable
+
+    def test_a_name_that_fits_keeps_its_id(self):
+        from checkers.planutil import frame_slug, slug
+        self.assertEqual(frame_slug('IF-ANALOG-U4~POWER_CONVERTER-U1'), slug('IF-ANALOG-U4~POWER_CONVERTER-U1'))
+
+    def test_the_plan_has_no_two_functions_with_one_id(self):
+        ids = [f['id'] for f in plan_for()['functions']]
+        self.assertEqual(len(ids), len(set(ids)))

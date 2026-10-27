@@ -33,7 +33,7 @@ import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import domains as domains_lib, netgraph as ng, powertree
 import part_words as pw
-from checkers.planutil import slug as _slug
+from checkers.planutil import frame_slug
 
 SCHEMA_VERSION = 1
 CONNECTOR_RE = re.compile(r'^(J|P|CN)\d', re.I)
@@ -315,7 +315,7 @@ class InterfacePlanning:
             members = [c for c in self.checks if (c.get('object') or {}).get('interface') == iid]
             if not members:
                 continue
-            frame = {'id': 'FN-' + _slug(iid), 'interface': iid, 'interface_kind': kind,
+            frame = {'id': 'FN-' + frame_slug(iid), 'interface': iid, 'interface_kind': kind,
                      'question': catalog.interface_frame_question(kind, iid, item['owners'], nets, parts),
                      'objects': {'refs': parts, 'nets': nets}, 'states': ['run'], 'members': [],
                      'blind_spots': {}, 'checklist': list(catalog.BOUNDING_STEPS)}
