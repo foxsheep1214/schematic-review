@@ -31,6 +31,7 @@ def board(owners=None, categories=None):
     db, value = fixture(('100nF',))
     value.update(dict({'schema_version': 5}, **requirement_intent(write(), categories=categories)))
     for item in value['requirements']:
+        item['status'] = 'CONFIRMED'   # a deferred requirement has no rows to bind
         if owners and item['id'] in owners:
             item['owners'] = owners[item['id']]
     rebind(db, value)
@@ -229,12 +230,13 @@ class OwnerCandidateTests(unittest.TestCase):
         self.assertEqual(row['owner_candidates'], [])
         self.assertEqual(rb.errors(plan), [])
 
-    def test_the_plan_writes_candidates_and_a_deferred_requirement_needs_no_owners(self):
-        plan = build_review_plan(*self.pinout(status='DEFERRED'))
+    def test_the_plan_writes_candidates_and_a_deferred_requirement_has_no_rows(self):
+        plan = build_review_plan(*self.pinout(owners=['EXT-J1']))
         row = req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT')
         self.assertEqual(row['owner_candidates'], [{'id': 'EXT-J1', 'kind': 'INTERFACE', 'type': 'EXTERNAL'}])
-        self.assertNotIn('requirement_owners', row)
         self.assertNotIn('self_judged', row)
+        plan = build_review_plan(*self.pinout(status='DEFERRED'))
+        self.assertFalse([c for c in plan['checks'] if c['object'].get('requirement_id') == 'REQ-PIN'])
         self.assertEqual(rb.errors(plan), [])
 
     def test_a_requirement_with_a_candidate_and_no_owners_is_refused_naming_the_candidate(self):
@@ -280,14 +282,14 @@ class OwnerCandidateTests(unittest.TestCase):
         self.assertEqual(req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT')['bound_checks'], ['DEV-D03.J1'])
 
     def test_the_validator_recomputes_candidates_and_self_judged(self):
-        plan = build_review_plan(*self.pinout(status='DEFERRED'))
+        plan = build_review_plan(*self.pinout(owners=['EXT-J1']))
         req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT')['owner_candidates'] = []
         self.assertTrue(any('owner_candidates' in e for e in rb.errors(plan)))
         plan = build_review_plan(*board())
         req_row(plan, 'REQ-IN-01', 'INPUT_THRESHOLDS').pop('self_judged')
         self.assertTrue(any('self_judged' in e for e in rb.errors(plan)))
-        plan = build_review_plan(*self.pinout(status='DEFERRED'))
-        req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT')['object']['requirement_status'] = 'CONFIRMED'
+        plan = build_review_plan(*self.pinout(owners=['EXT-J1']))
+        req_row(plan, 'REQ-PIN', 'EXTERNAL_PINOUT').pop('requirement_owners')
         self.assertTrue(any('owners 缺' in e for e in rb.errors(plan)))
 
     def test_compare_reports_owners_and_judging_differences_per_requirement(self):

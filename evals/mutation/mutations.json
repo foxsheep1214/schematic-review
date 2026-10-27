@@ -3363,7 +3363,7 @@
   "id": "M521",
   "name": "the pack takes any report text",
   "file": "scripts/pack_review.py",
-  "old": "    if (out / REPORT).read_text(encoding='utf-8') != render(plan, results, gate, notes, title, detail):",
+  "old": "    if (out / REPORT).read_text(encoding='utf-8') != text:",
   "new": "    if False:"
  },
  {
@@ -3470,13 +3470,6 @@
   "file": "scripts/plan_review.py",
   "old": "                if not _text(reason) or not (LOCATOR_WORDS_RE.search(reason) or LOCATOR_IDS_RE.search(reason)):",
   "new": "                if False:"
- },
- {
-  "id": "M541",
-  "name": "a DEFERRED requirement is also refused without owners",
-  "file": "scripts/requirement_bindings.py",
-  "old": "        if row['object'].get('requirement_status') == 'DEFERRED':\n            continue   # its rows stay INSUFFICIENT + USER_DEFERRED and are never derived",
-  "new": "        if False:\n            continue"
  },
  {
   "id": "M542",
@@ -4954,5 +4947,54 @@
   "file": "scripts/render_report.py",
   "old": "        print(e, file=sys.stderr)\n        return 2",
   "new": "        print(e, file=sys.stderr)\n        return 0"
+ },
+ {
+  "id": "M762",
+  "name": "the planner plans rows for a deferred requirement",
+  "file": "scripts/plan_board.py",
+  "old": "            if item.get('status') == 'DEFERRED':\n                continue   # the user took it out",
+  "new": "            if False:\n                continue   # the user took it out"
+ },
+ {
+  "id": "M763",
+  "name": "a deferred check needs no instruction",
+  "file": "scripts/review_stage_scope.py",
+  "old": "    if not evidence(row.get('instruction')):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M765",
+  "name": "a requirement row is deferred one by one",
+  "file": "scripts/review_stage_scope.py",
+  "old": "    if isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):\n        errors.append(cid + ': a deferred requirement",
+  "new": "    if False:\n        errors.append(cid + ': a deferred requirement"
+ },
+ {
+  "id": "M766",
+  "name": "a deferred check must be NOT_APPLICABLE like plain NA",
+  "file": "scripts/validate_review.py",
+  "old": "if result == \"NA\" and not outside_stage(item) and not user_deferred(item):",
+  "new": "if result == \"NA\" and not outside_stage(item):"
+ },
+ {
+  "id": "M767",
+  "name": "a USER_DEFERRED open item is read as an unknown kind",
+  "file": "scripts/review_functions.py",
+  "old": "    if kind == 'USER_DEFERRED':   # 2026-10-27 (user: A)",
+  "new": "    if False:   # 2026-10-27 (user: A)"
+ },
+ {
+  "id": "M768",
+  "name": "a deferred check is counted as plain NA",
+  "file": "scripts/review_summary.py",
+  "old": "'NA_DEFERRED' if user_deferred(checks[k])",
+  "new": "'NA' if user_deferred(checks[k])"
+ },
+ {
+  "id": "M769",
+  "name": "the report leaves out what the user deferred",
+  "file": "scripts/render_report.py",
+  "old": "    if not requirements and not rows:\n        return []",
+  "new": "    if True:\n        return []"
  }
 ]

@@ -1260,6 +1260,11 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
                       '(a limit, or a clause such as an insulation grade or a firmware recovery behaviour) owned by that '
                       'stage, judge on it and hand it on; a deliverable that arrived and misses the constraint is a fail')
         return errors
+    if kind == 'USER_DEFERRED':   # 2026-10-27 (user: A)
+        errors.append(label + ': a deferral is no open item: a check the user deferred is NA with na_reason '
+                      'USER_DEFERRED and the instruction, outside this review\'s scope; a deferred requirement is '
+                      'answered DEFERRED in intent.clarifications and gets no checks')
+        return errors
     if kind not in OPEN_KINDS:
         errors.append(label + ': kind is one of ' + '/'.join(OPEN_KINDS))
         return errors
@@ -1289,8 +1294,6 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
         if not text(item.get('acquisition')):
             errors.append(label + ': acquisition says who provides the datum')
         errors.extend(_worst_case_errors(label, item, conditions, calculation))
-    if kind == 'USER_DEFERRED' and not evidence(item.get('instruction')):
-        errors.append(label + ': a deferral cites the user instruction (instruction evidence)')
     return errors
 
 

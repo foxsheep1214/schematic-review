@@ -174,6 +174,8 @@ class BoardPlanning:
         profile = self.intent.get('mission_profile') if isinstance(self.intent.get('mission_profile'), dict) else {}
         profiled = {profile.get('requirement')} | {ph.get('requirement') for ph in profile.get('phases') or [] if isinstance(ph, dict)}
         for item in self.intent.get('requirements', []):
+            if item.get('status') == 'DEFERRED':
+                continue   # the user took it out of this review (2026-10-27, user: A): no rows, the report lists it
             obj = {'requirement_id': item['id'], 'feature': item['id']}
             if 'status' in item:
                 obj['requirement_status'] = item['status']

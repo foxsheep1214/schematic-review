@@ -95,14 +95,14 @@ class V2Regressions(unittest.TestCase):
         self.assertTrue(any(x['rule'] == 'DEV-D02' and x['object']['ref'] == 'U1'
                             for x in plan['checks']))
 
-    def test_requirement_status_reaches_the_planned_check(self):
+    def test_a_deferred_requirement_gets_no_checks(self):
         intent = {'schema_version': 5,'requirement_source': doc_for({'REQ-T': 'derate by temperature'}),
                   'requirements': [{'id': 'REQ-T', 'status': 'DEFERRED', 'categories': ['ENVIRONMENT'],
                                     'interpretation': 'derating points'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
-        row = next(x for x in plan['checks'] if x['object'].get('requirement_id') == 'REQ-T')
-        self.assertEqual(row['object']['requirement_status'], 'DEFERRED')
+        self.assertFalse([x for x in plan['checks'] if x['object'].get('requirement_id') == 'REQ-T'])
+        self.assertEqual(plan['deferred_requirements'], ['REQ-T'])
         intent['requirements'][0]['status'] = 'MAYBE'
         self.assertTrue(validate_intent(intent))
 

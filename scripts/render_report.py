@@ -23,6 +23,7 @@ from pathlib import Path
 import catalog
 import function_reading
 from review_functions import RESULT_MAX_CHARS, circuit_functions
+from review_stage_scope import user_deferred
 from task_scope import ownership, task_view
 from report_html import to_html
 
@@ -36,21 +37,19 @@ RECORD_INDEX = (('review-results.json', '每条检查的结论、依据、缺的
                 ('lint-cold.json', '自动检查输出（只用网表）'),
                 ('lint-hot.json', '自动检查输出（加上器件资料）'),
                 ('evidence/', '引用的资料摘录、计算和图片'))
-# REVIEW_INCOMPLETE is the reviewer's own unfinished work: render() refuses it, so no reader word exists for it.
-OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料'), ('USER_DEFERRED', '暂缓处理')])
+# REVIEW_INCOMPLETE is the reviewer's own unfinished work: render() refuses it, so no reader word exists for it;
+# a check the user deferred is outside the review's scope (NA), not a gap (2026-10-27, user: A).
+OPEN_CAUSE_WORDS = OrderedDict([('EXTERNAL_DATA', '缺资料')])
 RELEASE = {'GO': '可以定稿', 'CONDITIONAL_GO': '可以有条件定稿', 'NO_GO': '还不能定稿'}
-CAUSES = OrderedDict([('EXTERNAL_DATA', '缺资料'),
-                      ('USER_DEFERRED', '已暂缓')])
 KINDS = OrderedDict([('FAIL', '电路错误'),
-                     ('EXTERNAL_DATA', '缺资料'),
-                     ('USER_DEFERRED', '已暂缓')])
+                     ('EXTERNAL_DATA', '缺资料')])
 SEVERITIES = ('P0', 'P1', 'P2', 'P3')
 SEVERITY_WORDS = {'P0': '可能损坏器件或危及安全', 'P1': '必需功能可能不达标',
                   'P2': '局部或次要问题', 'P3': '可选优化'}
 SEVERITY_LEGEND = '严重程度：P0 可能损坏器件或危及安全；P1 必需功能可能不达标；P2 局部或次要问题；P3 可选优化。'
 HISTORY_RULE = 'REQ-H02'
 RESULT_SHORT = {'PASS': '合格', 'FAIL': '不合格', 'INSUFFICIENT': '资料不足', 'NA': '无关',
-                'NA_OUTSIDE_STAGE': '交给后续环节'}
+                'NA_OUTSIDE_STAGE': '交给后续环节', 'NA_DEFERRED': '用户暂缓，本次不审'}
 # Why the schematic cannot be finalised yet, in the order a reader should act on them.
 BLOCKERS = (('fail', '%d 条检查发现的错误还没改'),
             ('gap', '%d 条检查缺资料或设计依据，对应下面列出的待办'),
@@ -139,21 +138,11 @@ def jargon_in(text):
 
 
 def item_kind(rows):
-    """FAIL names the item; otherwise the gap cause most of its checks carry,
-    with the minority cause shown so one review-incomplete row cannot relabel thirteen data gaps."""
-    kinds = Counter(r.get('review_result') if r.get('review_result') == 'FAIL' else r.get('gap_cause') for r in rows)
-    if kinds.get('FAIL'):
-        if is_document([r.get('id', '') for r in rows if r.get('review_result') == 'FAIL']):
-            return '文档错误'
-        return KINDS['FAIL']
-    causes = [(n, list(KINDS).index(k)) for k, n in kinds.items() if k in KINDS]
-    if not causes:
-        return '待处理'
-    ranked = sorted(((k, n) for k, n in kinds.items() if k in KINDS), key=lambda kn: (-kn[1], list(KINDS).index(kn[0])))
-    label = KINDS[ranked[0][0]]
-    if len(ranked) > 1:
-        label += '（另 %s）' % '、'.join('%s %d 条' % (KINDS[k], n) for k, n in ranked[1:])
-    return label
+    """FAIL names the item; otherwise the gap cause its checks carry (only missing data reaches a report)."""
+    fails = [r.get('id', '') for r in rows if r.get('review_result') == 'FAIL']
+    if fails:
+        return '文档错误' if is_document(fails) else KINDS['FAIL']
+    return KINDS['EXTERNAL_DATA'] if any(r.get('gap_cause') == 'EXTERNAL_DATA' for r in rows) else '待处理'
 
 
 def anchors(obj):
@@ -597,6 +586,33 @@ def gap_subclass_counts(results, gaps):
     return ['| 资料不足细分：%s | %s |' % (' / '.join(names.values()), ' / '.join(str(subs.get(k, 0)) for k in names))]
 
 
+DEFERRED_SECTION = '本次不审的范围'
+
+
+def render_deferred(plan, checks):
+    """What the user took out of this review (2026-10-27, user: A): deferred requirements have no checks, deferred
+    checks are NA with the user's instruction. Neither is a verdict on the circuit; a later review takes them up."""
+    requirements = plan.get('deferred_requirements') or []
+    rows = [c for c in checks.values() if user_deferred(c)]
+    if not requirements and not rows:
+        return []
+    out = ['## ' + DEFERRED_SECTION, '',
+           '用户明确暂缓、这次没有审的内容。它们不是合格也不是不合格，下次审查时补上。', '']
+    asked = {r: c for c in plan.get('clarifications') or [] if isinstance(c, dict) and c.get('decision') == 'DEFERRED'
+             for r in c.get('requirement_ids') or []}
+    for rid in requirements:
+        c = asked.get(rid) or {}
+        said = '　'.join(x for x in (c.get('text'), c.get('by'), c.get('date')) if x)
+        out.append('- 需求 %s：没有生成检查项%s' % (rid, '（%s，见“需求澄清记录” %s）' % (said, c['id']) if c.get('id') else ''))
+    by_instruction = OrderedDict()
+    for c in sorted(rows, key=lambda c: c.get('id', '')):
+        said = '；'.join(' '.join(x for x in (e.get('source'), e.get('locator')) if x) for e in c.get('instruction') or [])
+        by_instruction.setdefault(said, []).append(c.get('id', '?'))
+    for said, keys in by_instruction.items():
+        out.append('- 用户暂缓（%s）：%d 条检查——%s' % (said, len(keys), '、'.join(keys)))
+    return out + ['']
+
+
 CLARIFICATION_SECTION = '需求澄清记录'
 CLARIFICATION_DECISIONS = {'DECIDED': '用户给定', 'ADOPTED_PROPOSAL': '采纳 SR 建议', 'DEFERRED': '用户暂缓'}
 
@@ -919,6 +935,11 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     if constraints:
         sentences.append('有 %d 条设计约束由 SR 算出、交给%s，按约束判合格，见“交给后续环节的要求”' % (
             len(constraints), '、'.join(OrderedDict((c.get('owner') or '后续设计', None) for c in constraints))))
+    deferred_rows = sum(user_deferred(c) for c in current_rows.values())
+    if plan.get('deferred_requirements') or deferred_rows:
+        sentences.append('用户暂缓的 %s 这次没有审，不算结论，见“%s”' % ('、'.join(x for x in (
+            '%d 条需求' % len(plan['deferred_requirements']) if plan.get('deferred_requirements') else '',
+            '%d 条检查' % deferred_rows if deferred_rows else '') if x), DEFERRED_SECTION))
     risky = gate.get('risks') or []
     if risky:
         kinds = Counter(t for e in risky for t in e.get('types') or ())
@@ -1016,6 +1037,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                 out.append('- **改动**：%s：%s → %s' % (step.get('target', ''), step.get('before', ''), step.get('after', '')))
             out.append('')
 
+    out += render_deferred(plan, current_rows)
     out += render_clarifications(plan)
 
     if tasks:
@@ -1124,7 +1146,6 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
 
     gaps = [c for c in current_rows.values() if c.get('review_result') == 'INSUFFICIENT']
     pot = Counter(c.get('potential_severity') for c in gaps)
-    cause = Counter(c.get('gap_cause') for c in gaps)
     classes = Counter((c.get('impact_assessment') or {}).get('consequence_class') for c in gaps
                       if isinstance(c.get('impact_assessment'), dict)
                       and c['impact_assessment'].get('consequence_class') in IMPACT_CLASS_WORDS)
@@ -1141,11 +1162,13 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             '| 合格 / 不合格 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
             '| 与本产品无关（NA） | %d |' % counts.get('NA', 0),
             '| 原理图阶段不判、交给后续环节 | %d |' % counts.get('NA_OUTSIDE_STAGE', 0),
+            ] + (['| 用户暂缓、本次不审（见“本次不审的范围”） | %d 条需求，%d 条检查 |' % (
+                len(plan.get('deferred_requirements') or []), counts.get('NA_DEFERRED', 0))]
+                 if plan.get('deferred_requirements') or counts.get('NA_DEFERRED') else []) + [
             '| 发现的错误，按严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(by_sev.get(s, 0)) for s in SEVERITIES),
             '| 其中文档错误 | %d |' % len(doc_defects),
             '| 待办（同一原因合并） | %d 件 |' % len(tasks),
             '| 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(pot.get(s, 0)) for s in SEVERITIES),
-            '| 资料不足的原因：%s | %s |' % (' / '.join(CAUSES.values()), ' / '.join(str(cause.get(k, 0)) for k in CAUSES)),
             ] + gap_subclass_counts(results, gaps) + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),
                                                   ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
                  if classes else []) + [

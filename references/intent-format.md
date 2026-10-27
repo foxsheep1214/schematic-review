@@ -133,7 +133,7 @@
   手填的需求检查项只对账不覆盖；校验要求结论等于绑定检查项中最差者，这种检查项不要求条款。没有绑定检查项、或绑定检查项全是 NA 的方面由需求检查项自己判，照常拆条款。
   有参数的方面（如 TEMPERATURE_GRADE 的 °C）只从经需求条款或经该参数单位的限值的失败边继承 FAIL（`requirement_bindings.fail_counts`）：
   绑定检查项因别的量失败（齐纳低电流 VZ）时失败留在该检查项，需求检查项写明不继承；INSUFFICIENT 照旧继承。
-- `requirements[].status`：已确认（CONFIRMED）或暂缓（DEFERRED，用户明确暂缓，检查项 INSUFFICIENT + USER_DEFERRED）。
+- `requirements[].status`：已确认（CONFIRMED）或暂缓（DEFERRED，用户明确暂缓，不生成检查项，报告列在“本次不审的范围”）。
   先按 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求) 分清确实待用户决定的需求；
   没说清的不留“未定”或“提案”状态，当场问用户，问题和答复写 `clarifications`。
 - `clarifications`：问用户的需求问题和答复（字段与规则见 [需求澄清](requirement-clarifications.md)）。

@@ -2899,3 +2899,28 @@ conclusion beside 合格 / 不合格 / 合格但有风险. Decision (user: 第�
 - Causes: judgment 1
 - Changed: scripts/render_report.py, scripts/pack_review.py, scripts/results_model.py, scripts/tests, SKILL.md, references/results-format.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest 2261, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M291 M759-M761 killed (M291 re-anchored)
+
+## A deferral narrows the review, it is not a verdict (2026-10-27)
+
+Item 6 of the "evidence insufficient" causes: what the user deferred was an
+INSUFFICIENT row with gap cause USER_DEFERRED, counted as 已暂缓 among the
+evidence gaps and blocking the release, though the user had only narrowed what
+this round reviews. Decision (user: A):
+
+1. A deferred requirement (answered DEFERRED in intent.clarifications) gets no
+   checks; the plan lists it in `deferred_requirements`.
+2. A check the user takes out of this round is NA with na_reason
+   USER_DEFERRED and the user's `instruction`; it keeps applicability
+   APPLICABLE, carries no gap fields or handoff, does not block, and a
+   requirement row cannot be deferred one by one. A check crossing into the
+   deferred part is judged as usual, the boundary the user gives handed on as a
+   DESIGN_CONSTRAINT.
+3. The USER_DEFERRED open item goes (results format 12). The report gains
+   本次不审的范围, a conclusion sentence and a counts row; the 资料不足的原因
+   row goes (only missing data is left) and item_kind drops its minority-cause
+   label.
+
+- Event: user:2026-10-27 (A)
+- Causes: judgment 1
+- Changed: scripts/plan_board.py, scripts/plan_review.py, scripts/review_stage_scope.py, scripts/validate_review.py, scripts/review_functions.py, scripts/results_model.py, scripts/review_summary.py, scripts/requirement_bindings.py, scripts/render_report.py, scripts/tests, references/results-format.md, references/evidence-proportionality.md, references/requirement-clarifications.md, references/intent-format.md, references/report-and-remediation.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2263, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M521 M762 M763 M765-M769 killed (M521 re-anchored; M541 dropped; M764 dropped, its check duplicated the gate's NA applicability check)

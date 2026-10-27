@@ -252,9 +252,7 @@ class ReportWordingTests(unittest.TestCase):
         self.assertFalse(is_document(['DOC-T01.AS-DRAWN', 'PWR-C01.U1']))
         self.assertEqual(item_kind([{'id': 'DEV-D04.BOARD', 'review_result': 'FAIL'}]), '文档错误')
         rows = [{'id': 'A.%d' % i, 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA'} for i in range(13)]
-        rows.append({'id': 'A.13', 'review_result': 'INSUFFICIENT', 'gap_cause': 'USER_DEFERRED'})
-        self.assertEqual(item_kind(rows), '缺资料（另 已暂缓 1 条）')
-        self.assertEqual(item_kind(rows[:13]), '缺资料')
+        self.assertEqual(item_kind(rows), '缺资料')
         p, r, db = fixture()
         fail(r)
         r['findings'][0]['check_ids'] = [r['checks'][0]['id']]
@@ -262,6 +260,26 @@ class ReportWordingTests(unittest.TestCase):
             text, _ = report(p, r, db)
         self.assertIn('电路没有发现错误，文档有 1 处错误（P1，必需功能可能不达标）', text)
         self.assertIn('类型：文档错误', text)
+
+    def test_what_the_user_deferred_is_listed_as_outside_the_review(self):
+        # 2026-10-27 (user: A): a deferral narrows the review; it is neither a verdict nor missing data
+        from ledger4 import SYNTHETIC
+        p, r, db = fixture()
+        row = r['checks'][0]
+        row.update(review_result='NA', na_reason='USER_DEFERRED', instruction=SYNTHETIC)
+        row.pop('evidence_confidence')
+        p['deferred_requirements'] = ['REQ-LOW-TEMP']
+        p['clarifications'] = [{'id': 'CL-COLD', 'requirement_ids': ['REQ-LOW-TEMP'], 'decision': 'DEFERRED',
+                                'text': '低温这版先不管', 'by': '需求负责人', 'date': '2026-10-27'}]
+        r['plan_digest'] = vr.fingerprint(p)
+        text, gate = report(p, r, db)
+        self.assertEqual(gate['release'], 'GO')
+        self.assertIn('用户暂缓的 1 条需求、1 条检查 这次没有审，不算结论，见“本次不审的范围”', text)
+        section = text.split('## 本次不审的范围')[1].split('\n## ')[0]
+        self.assertIn('需求 REQ-LOW-TEMP：没有生成检查项（低温这版先不管　需求负责人　2026-10-27，见“需求澄清记录” CL-COLD）', section)
+        self.assertIn('1 条检查——%s' % row['id'], section)
+        self.assertIn('| 用户暂缓、本次不审（见“本次不审的范围”） | 1 条需求，1 条检查 |', text)
+        self.assertNotIn('资料不足', section)
 
     def test_scope_blocker_names_the_check_and_finding(self):
         from render_report import blocker_reasons

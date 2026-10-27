@@ -19,7 +19,9 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
-SCHEMA_VERSION = 11   # 11 (2026-10-26): no DELIVERABLE_PENDING open items; what another stage owes is a DESIGN_CONSTRAINT
+SCHEMA_VERSION = 12   # 12 (2026-10-27): no USER_DEFERRED open items; a check the user deferred is NA with na_reason
+# USER_DEFERRED and the instruction, listed as outside this review's scope
+# 11 (2026-10-26): no DELIVERABLE_PENDING open items; what another stage owes is a DESIGN_CONSTRAINT
 # (numeric or a clause) handed on
 # 10 (2026-10-26): no DESIGN_VALUE open items; a value missing from the schematic is a fail, one
 # another design file owns is a DESIGN_CONSTRAINT condition handed on
@@ -44,9 +46,8 @@ RETIRED_TOP_FIELDS = ('binding_version', 'remediation_version', 'workflow_versio
                       'work_items')
 # schema 8: a requirement question is asked of the user at step ① and answered into intent.clarifications
 SETTLED_TOP_FIELDS = ('requirement_clarifications',)
-OPEN_KINDS = ('VENDOR_DATUM', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
-KIND_CAUSE = {'VENDOR_DATUM': 'EXTERNAL_DATA',
-              'REVIEW_INCOMPLETE': 'REVIEW_INCOMPLETE', 'USER_DEFERRED': 'USER_DEFERRED'}
+OPEN_KINDS = ('VENDOR_DATUM', 'REVIEW_INCOMPLETE')
+KIND_CAUSE = {'VENDOR_DATUM': 'EXTERNAL_DATA', 'REVIEW_INCOMPLETE': 'REVIEW_INCOMPLETE'}
 VERDICTS = ('PASS', 'FAIL', 'OPEN')
 # Schema 3 always means the newest contract of each retired switch: consequence classes v2,
 # REQ-D01 clauses, staged work items. Bindings and actionable instructions are required by

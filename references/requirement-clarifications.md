@@ -80,7 +80,7 @@
 |---|---|---|
 | `DECIDED` | 用户给定需求 | 澄清编号成为一条需求：`intent.requirements` 加一项（编号同澄清，`status: CONFIRMED`，写类别、理解、参数、承接电路），原文就是 `answer.text` |
 | `ADOPTED_PROPOSAL` | 采纳 SR 的建议条文 | 同上；`answer.text` 与 `proposed_requirement` 一字不差 |
-| `DEFERRED` | 用户明确暂缓 | `requirement_ids` 点名的需求 `status: DEFERRED`，它们的检查项记 INSUFFICIENT + USER_DEFERRED，本轮不判；澄清编号不成为需求 |
+| `DEFERRED` | 用户明确暂缓 | `requirement_ids` 点名的需求 `status: DEFERRED`，计划不给它们生成检查项，报告列在“本次不审的范围”，不算结论也不挡定稿；澄清编号不成为需求 |
 
 需求状态只有已确认（CONFIRMED）和暂缓（DEFERRED）两种；不写“未定”“提案”，提案就是还没定，同样当场问。
 
@@ -128,5 +128,5 @@
 ## 报告
 
 报告单列“需求澄清记录”一节，逐项写需求原文、问题、答复（用户给定/采纳 SR 建议/用户暂缓及其文字）、谁答复的、涉及的需求。
-这一节只是记录：定下的需求已经按它审过，结论在各检查项里；暂缓的需求按 USER_DEFERRED 列在证据不足里。
+这一节只是记录：定下的需求已经按它审过，结论在各检查项里；暂缓的需求没有检查项，列在“本次不审的范围”。
 报告里不再有“待决需求”。

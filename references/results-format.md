@@ -122,12 +122,11 @@
   由 `judgements` 引用，定制件自己的身份与脚检查项、SIG-* 检查项也这样判。交付物已经到了而不满足约束的，记失败项。
   `kind: DELIVERABLE_PENDING` 写了会被拒绝，不再有“等交付物”，也不再把准出压到有条件定稿（结果格式 11）。
 
-**开放项的三种。** 归类看欠的是什么，不看向谁要：
+**开放项的两种。** 归类看欠的是什么，不看向谁要（用户暂缓不是开放项，见下面“用户暂缓”）：
 
 | `kind` | 必写 | 不写 | 说明 |
 |---|---|---|---|
 | VENDOR_DATUM（只有厂家知道） | `checked`（条件 id）、`why_insufficient`、`acquisition`、`worst_case` | — | 先按公开资料界限算：`worst_case{bound{condition, value, basis: GUARANTEED_LIMIT/ADJACENT_TEST_POINT/TYPICAL_CURVE/PUBLISHED_TABLE/APPLICATION_NOTE}, result, margin{value,unit,against,basis}}`，这个余量按它的依据决定结论。确实没有公开界限时写 `worst_case{not_boundable_reason, curves_checked[{source, locator}], operating_point_specified}`：`true` 是手册写了这种用法只缺数值，另写 `specified_by` 指向写了这种用法的条件（不能是 `monotonic_tried.test_points` 里没覆盖工作点的测试点；可以是条款、应用说明或 `regime` 覆盖工作点的典型曲线），引典型曲线（`curve: true`）时另写 `typical_estimate{value, unit, against, basis: ESTIMATE 并引这条曲线}`，估算已经不够就是失败项（余量记 REACHABLE_CASE），资料不足按后果定级；`false` 是设计依赖手册未规定的工作区，记失败项，发现项给出回到规定区的改法，不向厂家要。目录器件的参数是这一种，不是交付物 |
-| USER_DEFERRED（用户暂缓） | `instruction` | — | — |
 | REVIEW_INCOMPLETE（审查没做完） | — | — | 本轮自己读算完；只在审查过程中存在，有这种开项时不出报告、不打包 |
 
 **每类开放项能挡哪些检查项**（`catalog.OPEN_ITEM_RULES`）：
@@ -494,7 +493,7 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
 - `severity.class` 是后果类别，类别决定潜在等级（见[后果类别](verdicts-and-release.md#后果类别severityclass)）；
   P0 类别另给 `severity.hazard_path`，只会坏一个器件而不打开危险路径的写 `COMPONENT_DAMAGE`（P1）；
   P0 类别降为 P1 时给 `severity.exclusion` 写出独立保护。
-- 每个 REQ-D01（需求状态 DEFERRED 与 NA 除外）给 `requirement_clauses`，
+- 每个 REQ-D01（NA 除外；暂缓的需求不生成检查项）给 `requirement_clauses`，
   把需求原文按顺序完整拆成条款（拼接后等于原文），逐条标类别：
 
   | 条款形式 | kind | 结论 |
@@ -505,7 +504,7 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   格式：`[{"text": "原文片段", "kind": "OBLIGATION", "result": "PASS", "check_ids": [...]}, {"text": "原文片段", "kind": "PREMISE"}]`。
   检查项结论 = 要求条款中最差的结论（FAIL > INSUFFICIENT > PASS > NA），校验强制。前提条款里的要求由相关器件/电路检查项执行，
   其他检查项发现的缺陷不连带本检查项；需求原文把该缺陷写成要求（如“各连续受电元件不得超出持续功率额定”）时才在本检查项判。
-- 证据不足的原因是开放项的 `kind`：VENDOR_DATUM、REVIEW_INCOMPLETE、USER_DEFERRED，
+- 证据不足的原因是开放项的 `kind`：VENDOR_DATUM、REVIEW_INCOMPLETE，
   含义见 [复核每条证据不足](evidence-proportionality.md#复核每条证据不足)。纯下游项不是 INSUFFICIENT，用阶段 NA。
   `scope` 写缺口要覆盖的电压/负载/状态/温度范围，不是标题或 `what` 的复述（`REQUEST_SCOPE_ECHOES_TASK` 提示，报告也不显示只复述的范围）；
   `acquisition` 以“已读 X 第 N 页，缺 Y”开头时，报告把“已读”部分单列为“已查过”。
@@ -538,6 +537,11 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。
   复合要求不能整体 NA（只有 `catalog.STAGE_ASPECTS` 的方面检查项——DOWNSTREAM_HANDOFF——整项阶段 NA）；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE`，
   `check_ids` 链接独立阶段 NA 检查，不得只改条款结果让测试消失。
+- 用户暂缓（2026-10-27，用户：A）：用户明确说这一轮不审的检查项写 `review_result: NA` + `na_reason: USER_DEFERRED`
+  + `instruction`（用户原话的 `[{source, locator}]`），`applicability` 保持 APPLICABLE，不写缺口字段、不带移交；
+  它是审查范围的说明，不是结论，不挡定稿，报告列在“本次不审的范围”。暂缓的需求不逐行暂缓：在 `intent.clarifications`
+  答 DEFERRED，计划不给它生成检查项（`deferred_requirements`）。跨到暂缓部分的检查项照常判，用户给的边界
+  （如“母线 380–400 V”）写成 DESIGN_CONSTRAINT 交给暂缓部分的负责方。`kind: USER_DEFERRED` 的开放项会被拒绝（结果格式 12）。
 - 普通 NA 必须 NOT_APPLICABLE；修改自动计划的适用性需 `applicability_evidence`。计划检查项带 `requires`（网表上找到了它问的机制）
   时，NA 的 `applicability_evidence` 里至少一条写 `nets` 和/或 `pins`（`REF.PIN`），名字须在网表里，说明是哪条网表事实排除了它；
   只写一句能定位的话不够。UNDETERMINED 只能落 INSUFFICIENT。

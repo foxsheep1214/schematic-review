@@ -9,7 +9,7 @@ from electrical_contract import PLAN_SCHEMA_VERSION
 from plan_review import lint_check
 from validate_review import fingerprint, SCOPE, validate_review
 import results_model
-from ledger4 import gap, severity
+from ledger4 import SYNTHETIC, gap, severity
 
 E = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
 C1, C2 = 'RST-E01.C1', 'RST-E01.C2'
@@ -139,20 +139,34 @@ class ReviewGateTests(unittest.TestCase):
         self.assertFalse(out['valid'])  # the open item that decides the row is mandatory; the count still shows what is missing
         self.assertEqual(out['insufficient_by_cause'], {'UNSPECIFIED': 1})
 
-    def test_a_deferred_requirement_cannot_be_judged(self):
-        def run(status, kind=None):
+    def test_a_deferred_check_is_na_with_the_instruction(self):
+        # 2026-10-27 (user: A): what the user took out of this review is outside its scope, not an evidence gap
+        def run(drop=(), **row):
             p, r, db = fixture()
-            p['checks'][0]['object'] = dict(p['checks'][0].get('object') or {}, requirement_status=status)
-            r['plan_digest'] = fingerprint(p)
-            if kind:
-                gap(r, C1, 'DERATING', kind, plan=p, what='derating temperature points')
+            r['checks'][0].update(dict(review_result='NA', na_reason='USER_DEFERRED', instruction=SYNTHETIC), **row)
+            for k in ('evidence_confidence',) + tuple(drop):
+                r['checks'][0].pop(k, None)
             return validate_review(p, r, db)
-        self.assertFalse(run('DEFERRED')['valid'])                       # PASS on a deferred requirement
-        self.assertFalse(run('DEFERRED', 'VENDOR_DATUM')['valid'])       # filed as missing data
-        self.assertTrue(run('DEFERRED', 'USER_DEFERRED')['valid'])
-        out = run('CONFIRMED')
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['requirements_by_status'], {'CONFIRMED': {'PASS': 1}})
+        out = run()
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual(out['categorized_summary']['current']['results'].get('NA_DEFERRED'), 1)
+        self.assertEqual(out['release'], 'GO')
+        self.assertFalse(run(drop=('instruction',))['valid'])
+        self.assertFalse(run(applicability='NOT_APPLICABLE')['valid'])
+        self.assertFalse(run(gap_cause='EXTERNAL_DATA')['valid'])
+        self.assertFalse(run(review_result='PASS', evidence_confidence='A')['valid'])
+        p, r, db = fixture()
+        p['checks'][0]['object'] = dict(p['checks'][0].get('object') or {}, requirement_id='REQ-1')
+        r['plan_digest'] = fingerprint(p)
+        r['checks'][0].update(review_result='NA', na_reason='USER_DEFERRED', instruction=SYNTHETIC)
+        r['checks'][0].pop('evidence_confidence')
+        self.assertTrue(any('intent.clarifications' in e for e in validate_review(p, r, db)['errors']))
+
+    def test_a_deferral_is_no_open_item(self):
+        p, r, db = fixture()
+        gap(r, C1, 'DERATING', 'USER_DEFERRED', plan=p, what='derating temperature points')
+        out = validate_review(p, r, db)
+        self.assertTrue(any('a deferral is no open item' in e for e in out['errors']), out['errors'])
 
     def test_an_undecided_requirement_is_no_open_item(self):
         p, r, db = fixture()
@@ -516,7 +530,7 @@ class DesignOptionTests(unittest.TestCase):
             self.assertFalse(validate_review(p, r, db, require_actionable=True)['valid'], option)
 
     def test_other_gap_kinds_and_a_ledger_not_held_actionable_need_no_option(self):
-        p, r, db = gap_with_task(kind='USER_DEFERRED')
+        p, r, db = gap_with_task(kind='REVIEW_INCOMPLETE')
         self.assertTrue(validate_review(p, r, db, require_actionable=True)['valid'])
         p, r, db = gap_with_task()
         self.assertTrue(validate_review(p, r, db)['valid'])

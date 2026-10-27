@@ -1,10 +1,11 @@
 """Keep present checks, historical dispositions and handoffs separately visible."""
 from collections import Counter
 from electrical_contract import HAZARD_PATHS, IMPACT_CLASSES
-from review_stage_scope import outside_stage
+from review_stage_scope import outside_stage, user_deferred
 
 RESULT_LABELS = {'PASS': '通过（PASS）', 'FAIL': '不符合（FAIL）', 'INSUFFICIENT': '证据不足（INSUFFICIENT）',
-                 'NA': '不适用（NA）', 'NA_OUTSIDE_STAGE': '本阶段不判，移交下游（NA）'}
+                 'NA': '不适用（NA）', 'NA_OUTSIDE_STAGE': '本阶段不判，移交下游（NA）',
+                 'NA_DEFERRED': '用户暂缓，本次不审（NA）'}
 IMPACT_FIELDS = ('affected_function', 'operating_condition', 'consequence',
                  'severity_reason', 'blocking_reason')
 
@@ -50,9 +51,11 @@ def validate_impact(item, classes=False):
 
 def categorized_summary(checks, expected, findings, stage, classes=False):
     def count(keys):
-        # Stage NA is counted apart: the product requirement still applies and awaits downstream verification.
+        # Stage NA is counted apart: the product requirement still applies and awaits downstream verification;
+        # so is a check the user deferred: it still applies, this review left it out.
         return {'checks': len(keys), 'results': dict(Counter(
-            'NA_OUTSIDE_STAGE' if outside_stage(checks[k]) else checks[k].get('review_result')
+            'NA_OUTSIDE_STAGE' if outside_stage(checks[k]) else 'NA_DEFERRED' if user_deferred(checks[k])
+            else checks[k].get('review_result')
             for k in keys if isinstance(checks[k].get('review_result'), str)))}
     history = {k for k in checks if expected.get(k, {}).get('rule') == 'REQ-H02'}
     current = set(checks) - history

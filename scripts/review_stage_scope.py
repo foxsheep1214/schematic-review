@@ -9,9 +9,11 @@ keeps applicability APPLICABLE and a downstream handoff, and never blocks throug
 import catalog
 
 OUTSIDE_STAGE = 'OUTSIDE_SCHEMATIC_STAGE'
-GAP_CAUSES = ('EXTERNAL_DATA', 'REVIEW_INCOMPLETE', 'USER_DEFERRED')
-# Only real input/design gaps need a request; requirement gaps use clarification records,
-# unfinished review is done in this round, user deferral cites the user's instruction.
+# A check the user took out of this review (2026-10-27, user: A): NA with the instruction, outside the review's scope,
+# not an evidence gap; a deferred requirement is answered in intent.clarifications and gets no checks at all.
+DEFERRED = 'USER_DEFERRED'
+GAP_CAUSES = ('EXTERNAL_DATA', 'REVIEW_INCOMPLETE')
+# Only real input/design gaps need a request; unfinished review is done in this round.
 REQUEST_CAUSES = ('EXTERNAL_DATA',)
 REQUEST_FIELDS = ('why_decisive', 'required_scope', 'acquisition', 'closure_criterion')
 
@@ -24,9 +26,34 @@ def outside_stage(row):
     return row.get('review_result') == 'NA' and row.get('na_reason') == OUTSIDE_STAGE
 
 
+def user_deferred(row):
+    return row.get('review_result') == 'NA' and row.get('na_reason') == DEFERRED
+
+
+def evidence(value):
+    return isinstance(value, list) and bool(value) and all(
+        isinstance(x, dict) and text(x.get('source')) and text(x.get('locator')) for x in value)
+
+
+def deferral_errors(cid, row, expected):
+    if row.get('review_result') != 'NA':
+        return [cid + ': USER_DEFERRED requires NA']
+    errors = []
+    planned_object = (expected.get(cid) or {}).get('object') if isinstance(expected.get(cid), dict) else None
+    if isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):
+        errors.append(cid + ': a deferred requirement is answered DEFERRED in intent.clarifications and gets no checks; '
+                      'its rows are not deferred one by one')
+    if not evidence(row.get('instruction')):
+        errors.append(cid + ': a deferred check cites the user\'s instruction (instruction [{source, locator}])')
+    if (any(k in row for k in ('missing_inputs', 'input_requests', 'gap_cause', 'potential_severity'))
+            or (row.get('handoff') or {}).get('required')):
+        errors.append(cid + ': a deferred check is outside this review\'s scope, not an evidence gap or a handoff')
+    return errors
+
+
 def validate_stage_scope(checks, expected):
     errors = []
-    summary = {'outside_schematic_stage': [], 'not_applicable': [],
+    summary = {'outside_schematic_stage': [], 'user_deferred': [], 'not_applicable': [],
                'requirements_pending_downstream': [], 'input_request_count': 0}
     for cid, row in checks.items():
         result = row.get('review_result')
@@ -44,7 +71,10 @@ def validate_stage_scope(checks, expected):
         if staged_clause:
             summary['requirements_pending_downstream'].append(cid)
         if result == 'NA':
-            summary['outside_schematic_stage' if outside_stage(row) else 'not_applicable'].append(cid)
+            summary['outside_schematic_stage' if outside_stage(row) else 'user_deferred' if user_deferred(row)
+                    else 'not_applicable'].append(cid)
+        if row.get('na_reason') == DEFERRED:
+            errors.extend(deferral_errors(cid, row, expected))
         if row.get('na_reason') == OUTSIDE_STAGE and not outside_stage(row):
             errors.append(cid + ': OUTSIDE_SCHEMATIC_STAGE requires NA')
         if outside_stage(row):

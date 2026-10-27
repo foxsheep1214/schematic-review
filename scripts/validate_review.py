@@ -22,7 +22,7 @@ from electrical_contract import LOCATOR_IDS_RE, PLAN_SCHEMA_VERSION, db_fingerpr
 from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check_id
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
-from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
+from review_stage_scope import validate_stage_scope, outside_stage, user_deferred, GAP_CAUSES
 from review_functions import (configuration_settings, design_constraints, risks, netlist_evidence_errors, parameter_sheet,
                               validate_functions)
 import check_key
@@ -37,7 +37,6 @@ RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
 APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
 # Optional INSUFFICIENT cause (evidence-proportionality.md); over-strict checks are re-judged, not tagged.
-REQUIREMENT_GAP = {"DEFERRED": "USER_DEFERRED"}
 CLAUSE_KINDS = ("OBLIGATION", "PREMISE")
 CLAUSE_ORDER = {"NA": 0, "PASS": 1, "INSUFFICIENT": 2, "FAIL": 3}
 
@@ -124,7 +123,6 @@ def split_out_errors(checks, expected):
     return errors
 
 
-REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "DEFERRED": "暂缓（DEFERRED）"}
 SCOPE = set(catalog.COVERAGE_RULES)
 
 
@@ -403,7 +401,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if key in expected and app != expected[key].get("applicability"):
             require(evidence(item.get("applicability_evidence")),
                     f"{key}: applicability changed without evidence")
-        if result == "NA" and not outside_stage(item):  # stage NA keeps APPLICABLE (review_stage_scope)
+        if result == "NA" and not outside_stage(item) and not user_deferred(item):  # both keep APPLICABLE (review_stage_scope)
             require(app == "NOT_APPLICABLE", f"{key}: NA requires NOT_APPLICABLE")
             if (expected.get(key) or {}).get('requires'):
                 errors.extend(netlist_evidence_errors(key, item.get('applicability_evidence'), db))
@@ -425,12 +423,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if "gap_cause" in item:
             require(result == "INSUFFICIENT" and item["gap_cause"] in GAP_CAUSES,
                     f"{key}: gap_cause is one of {'/'.join(GAP_CAUSES)} and only on INSUFFICIENT")
-        # A requirement the owner has not decided (OPEN) or has postponed (DEFERRED) cannot be judged.
-        req_status = (expected.get(key, {}).get("object") or {}).get("requirement_status")
-        if req_status in REQUIREMENT_GAP:
-            require(result == "INSUFFICIENT" and item.get("gap_cause") == REQUIREMENT_GAP[req_status],
-                    f"{key}: 需求状态为{REQUIREMENT_LABEL[req_status]}，结果须为 INSUFFICIENT 且 gap_cause 为 {REQUIREMENT_GAP[req_status]}")
-        elif clauses_required and expected.get(key, {}).get("rule") == "REQ-D01" and result != "NA":
+        if clauses_required and expected.get(key, {}).get("rule") == "REQ-D01" and result != "NA":
             derived = requirement_bindings.derived_result(expected[key], checks, function_reading.fail_filter(plan, report))
             if derived is None:
                 errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))
@@ -647,7 +640,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "stage_scope": stage_scope,
             "sr_improvements": sr_improvements,
             "rule_gaps": rule_gaps.listing(plan, report),
-            # REQ-D01 results per requirement confirmation state (CONFIRMED judged, DEFERRED not).
+            # REQ-D01 results per requirement confirmation state (a DEFERRED requirement has no rows).
             "requirements_by_status": {st: dict(Counter(checks[k].get("review_result") for k, x in expected.items()
                                                         if k in checks and (x.get("object") or {}).get("requirement_status") == st))
                                        for st in sorted({(x.get("object") or {}).get("requirement_status") for x in expected.values()} - {None})},

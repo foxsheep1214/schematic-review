@@ -655,6 +655,9 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         records = requirement_clarifications.records(self.intent)
         if records:   # what was asked of the user and how it was settled; the report lists it (需求澄清记录)
             plan['clarifications'] = records
+        deferred = [r['id'] for r in self.intent.get('requirements') or [] if r.get('status') == 'DEFERRED']
+        if deferred:   # no checks; the report lists them under 本次不审的范围
+            plan['deferred_requirements'] = deferred
         for checker in REGISTRY:
             inventory = self.inventories.get(checker.id)
             if inventory is None or checker.plan_key is None:
