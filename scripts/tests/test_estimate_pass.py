@@ -25,9 +25,14 @@ PROTOTYPE = {'receivers': ['样机试验'], 'constraint': 'Q9 偏置在 −10 °
              'verification': '样机实测 Q9 偏置电压'}
 
 
+RISK = {'types': ['CONSISTENCY'], 'corner': '低电流分档下限，手册只给典型值',
+        'improvement': '换在该电流下给保证值的型号，或样机按批次抽测'}
+
+
 def estimate(**extra):
     return dict({'kind': 'ESTIMATE', 'comparison': 'GT', 'conditions': ['c1', 'c2'], 'cell': 'NONE',
-                 'scope': '相似器件保证范围，−10..105 °C', 'consequence_class': 'REQUIRED_FUNCTION', 'handoff': 0},
+                 'scope': '相似器件保证范围，−10..105 °C', 'consequence_class': 'REQUIRED_FUNCTION', 'handoff': 0,
+                 'risk': dict(RISK)},
                 **extra)
 
 

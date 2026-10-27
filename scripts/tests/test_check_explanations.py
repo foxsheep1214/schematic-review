@@ -143,7 +143,7 @@ class RenderExplanationTests(unittest.TestCase):
         plan, result = synthetic(['PASS', 'INSUFFICIENT'])
         result['checks'][0]['split_out'] = ['DRV-C01.INSUFFICIENT']
         text = '\n'.join(render_check_explanations(plan, result))
-        self.assertIn('所属汇总项**：DRV-C01.PASS（其余对象通过）', text)
+        self.assertIn('所属汇总项**：DRV-C01.PASS（其余对象合格）', text)
 
     def test_a_first_version_explanation_is_refused(self):
         # SR keeps no compatibility with earlier records: the first version's purpose/connections fields are refused.

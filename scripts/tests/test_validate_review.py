@@ -9,7 +9,7 @@ from electrical_contract import PLAN_SCHEMA_VERSION
 from plan_review import lint_check
 from validate_review import fingerprint, SCOPE, validate_review
 import results_model
-from ledger4 import gap, severity
+from ledger4 import SYNTHETIC, gap, severity
 
 E = [{'source': 'synthetic-fixture.json', 'locator': 'all values stipulated for tests'}]
 C1, C2 = 'RST-E01.C1', 'RST-E01.C2'
@@ -44,9 +44,9 @@ def fixture(first_key=C1):
             'interfaces': {'schema_version': 1, 'interfaces': [], 'gaps': []}, 'assemblies': []}
     # R1 carries the fixture's pins and nets; the bias example's parts (test_review_functions.bias_function) exist so
     # that its conditions' refs are parts of the netlist (results 7)
-    db = {'parts': {'R1': {}, 'Q2': {}, 'D2': {}, 'D3': {}, 'C3': {}, 'U1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
+    db = {'parts': {'R1': {}, 'Q2': {}, 'D2': {}, 'D3': {}, 'C3': {}, 'U1': {}, 'T1': {}}, 'pin2net': {'R1.1': 'A'}, 'nets': {'A': ['R1.1']},
           'ref2page': {'R1': 1, 'Q2': 1, 'D2': 1, 'D3': 1, 'C3': 1, 'U1': 1}, 'declared_pinname': {'R1.1': '1', 'R1.2': '2'}}
-    report = {'requirement_clarifications': [], 'functions': [],
+    report = {'functions': [],
         'schema_version': results_model.SCHEMA_VERSION, 'plan_digest': fingerprint(plan), 'db_digest': fingerprint(db),
         'checks': [{'id': k, 'applicability': 'APPLICABLE', 'review_result': 'PASS',
                     'evidence_confidence': 'A', 'evidence': E, 'rationale': 'stipulated compliant fixture',
@@ -57,15 +57,11 @@ def fixture(first_key=C1):
     return plan, report, db
 
 
-def clarification(check_ids=None):
-    return {'id': 'CL-INPUT', 'title': 'Define input range', 'kind': 'MISSING', 'status': 'OPEN',
-            'question': 'Synthetic input range is not decided', 'decision_needed': 'Confirm operating input range',
+def clarification():
+    """An unanswered requirement question as intent.clarifications writes it."""
+    return {'id': 'CL-INPUT', 'requirement_ids': [], 'question': 'Synthetic input range is not decided',
             'requirement_text': '未提及：已查 synthetic requirement Rev A 全文',
-            'proposed_requirement': 'Operating input 9–36 V DC continuous, 40 V for 100 ms',
-            'owner': 'Synthetic requirement owner', 'decision_due': 'BEFORE_DESIGN',
-            'closure_criteria': 'Controlled requirement and affected check re-review', 'evidence': E,
-            'freeze_impact': 'BLOCKING', 'impact_reason': 'Input range affects electrical rating',
-            'check_ids': check_ids or [C1]}
+            'proposed_requirement': 'Operating input 9–36 V DC continuous, 40 V for 100 ms'}
 
 
 def fail(report, severity='P1'):
@@ -143,34 +139,49 @@ class ReviewGateTests(unittest.TestCase):
         self.assertFalse(out['valid'])  # the open item that decides the row is mandatory; the count still shows what is missing
         self.assertEqual(out['insufficient_by_cause'], {'UNSPECIFIED': 1})
 
-    def test_open_or_deferred_requirement_cannot_be_judged(self):
-        def run(status, kind=None):
+    def test_a_deferred_check_is_na_with_the_instruction(self):
+        # 2026-10-27 (user: A): what the user took out of this review is outside its scope, not an evidence gap
+        def run(drop=(), **row):
             p, r, db = fixture()
-            p['checks'][0]['object'] = dict(p['checks'][0].get('object') or {}, requirement_status=status)
-            r['plan_digest'] = fingerprint(p)
-            if kind:
-                gap(r, C1, 'DERATING', kind, plan=p, what='derating temperature points')
-            if kind == 'REQUIREMENT':
-                r['requirement_clarifications'] = [clarification()]
+            r['checks'][0].update(dict(review_result='NA', na_reason='USER_DEFERRED', instruction=SYNTHETIC), **row)
+            for k in ('evidence_confidence',) + tuple(drop):
+                r['checks'][0].pop(k, None)
             return validate_review(p, r, db)
-        self.assertFalse(run('OPEN')['valid'])                       # PASS on an undecided requirement
-        self.assertFalse(run('OPEN', 'VENDOR_DATUM')['valid'])       # filed as missing data
-        self.assertTrue(run('OPEN', 'REQUIREMENT')['valid'])
-        self.assertTrue(run('DEFERRED', 'USER_DEFERRED')['valid'])
-        out = run('PROPOSED')
-        self.assertTrue(out['valid'], out)
-        self.assertEqual(out['requirements_by_status'], {'PROPOSED': {'PASS': 1}})
-
-    def test_requirement_open_is_listed_as_unique_current_decision(self):
+        out = run()
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual(out['categorized_summary']['current']['results'].get('NA_DEFERRED'), 1)
+        self.assertEqual(out['release'], 'GO')
+        self.assertFalse(run(drop=('instruction',))['valid'])
+        self.assertFalse(run(applicability='NOT_APPLICABLE')['valid'])
+        self.assertFalse(run(gap_cause='EXTERNAL_DATA')['valid'])
+        self.assertFalse(run(review_result='PASS', evidence_confidence='A')['valid'])
         p, r, db = fixture()
-        p['review_phase'] = 'design_iteration'; r['plan_digest'] = fingerprint(p)
+        p['checks'][0]['object'] = dict(p['checks'][0].get('object') or {}, requirement_id='REQ-1')
+        r['plan_digest'] = fingerprint(p)
+        r['checks'][0].update(review_result='NA', na_reason='USER_DEFERRED', instruction=SYNTHETIC)
+        r['checks'][0].pop('evidence_confidence')
+        self.assertTrue(any('intent.clarifications' in e for e in validate_review(p, r, db)['errors']))
+
+    def test_a_deferral_is_no_open_item(self):
+        p, r, db = fixture()
+        gap(r, C1, 'DERATING', 'USER_DEFERRED', plan=p, what='derating temperature points')
+        out = validate_review(p, r, db)
+        self.assertTrue(any('a deferral is no open item' in e for e in out['errors']), out['errors'])
+
+    def test_an_undecided_requirement_is_no_open_item(self):
+        p, r, db = fixture()
         gap(r, C1, 'INPUT-RANGE', 'REQUIREMENT', plan=p, what='operating input voltage range')
-        r['requirement_clarifications'] = [clarification()]
-        current = validate_review(p, r, db)
-        self.assertTrue(current['valid'], current)
-        self.assertEqual(current['requirement_clarification_summary']['open'], 1)
-        self.assertEqual(current['workflow']['current_work_items'], ['CL-INPUT'])
-        self.assertNotIn('requirement_questions', current)
+        out = validate_review(p, r, db)
+        self.assertFalse(out['valid'])
+        self.assertTrue(any('intent.clarifications' in e for e in out['errors']), out['errors'])
+
+    def test_an_unanswered_question_in_the_planned_intent_stops_the_gate(self):
+        p, r, db = fixture()
+        p['review_inputs'] = {'intent': {'clarifications': [clarification()]}}
+        r['plan_digest'] = fingerprint(p)
+        out = validate_review(p, r, db)
+        self.assertFalse(out['valid'])
+        self.assertTrue(any('CL-INPUT 还没答复' in e for e in out['errors']), out['errors'])
 
     def test_p1_blocks_even_if_agent_sets_nonblocking(self):
         p, r, db = fixture(); fail(r)
@@ -519,7 +530,7 @@ class DesignOptionTests(unittest.TestCase):
             self.assertFalse(validate_review(p, r, db, require_actionable=True)['valid'], option)
 
     def test_other_gap_kinds_and_a_ledger_not_held_actionable_need_no_option(self):
-        p, r, db = gap_with_task(kind='USER_DEFERRED')
+        p, r, db = gap_with_task(kind='REVIEW_INCOMPLETE')
         self.assertTrue(validate_review(p, r, db, require_actionable=True)['valid'])
         p, r, db = gap_with_task()
         self.assertTrue(validate_review(p, r, db)['valid'])

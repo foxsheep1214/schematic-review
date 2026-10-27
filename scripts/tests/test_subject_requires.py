@@ -34,7 +34,7 @@ def empty():
 
 def plan_of(db, kind, refs, states=('RUN',)):
     circuit = {'id': 'CKT', 'type': kind, 'refs': list(refs), 'states': list(states), 'citation': 'synthetic circuit'}
-    return build_review_plan(db, {'schema_version': 4, 'circuits': [circuit]})
+    return build_review_plan(db, {'schema_version': 5, 'circuits': [circuit]})
 
 
 def asked(plan, rule):

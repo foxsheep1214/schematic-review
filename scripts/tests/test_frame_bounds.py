@@ -16,7 +16,7 @@ from test_plan_review import sample_db
 
 
 def frame(db=None, refs=('U1', 'R1')):
-    intent = {'schema_version': 4,
+    intent = {'schema_version': 5,
               'circuits': [{'id': 'REG-3V3', 'type': 'POWER_CONVERTER', 'refs': list(refs), 'nets': ['VCC_3V3'],
                             'states': ['cold', 'hot'], 'citation': 'synthetic regulator'}]}
     plan = build_review_plan(db or sample_db(), intent)

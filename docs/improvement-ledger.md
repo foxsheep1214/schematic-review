@@ -35,11 +35,13 @@ replay gets the revision `part-kind-evidence-v1` (r02 229 → 232: F1 and the K-
 as relays by their prefix; r03 368 → 370; rf1 326 → 331 with frames 344 → 349, FN-PRI-FLYBACK 94 → 95; rf2 86 → 87; each
 row checked against a plan rebuilt at the previous commit). Typical circuits: soldered-relay-1ch's NC contact is now
 the expected NET-A04 candidate.
+The generated bounding table names the two new magnetics under IND-ISAT (39 bytes), so the step ③ reading-path
+record moves 224 000 → 224 050.
 
 - Event: user:2026-10-27 (逐个点来和我讨论，我给你答案; Start implementing the recorded decisions on this branch, with tests, mutations, replay revision, ledger and architecture decision row; don't push.)
 - Causes: rule_not_enforced 3 (refdes set for declarations, part words as evidence in checkers, no title cross-check), knowledge_missing 2 (magnetics by function, relay/fuse cues)
-- Changed: scripts/device_kinds.py, scripts/part_words.py, scripts/datasheet_kinds.py, scripts/audit_datasheets.py, scripts/plan_board.py, scripts/board_intent.py, scripts/lint.py, scripts/validate_review.py, scripts/render_report.py, scripts/catalog.py, scripts/checkers/inductive_load.py, scripts/checkers/power_switch.py, scripts/checkers/powertree.py, scripts/checkers/domains.py, scripts/checkers/input_filter.py, scripts/checkers/diff_levels.py, scripts/interfaces.py, scripts/circuit_candidates.py, scripts/protective_clamps.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/tests/test_part_kind_evidence.py, scripts/tests/test_supervision_external_paths.py, scripts/tests/test_relay_nc_contact.py, scripts/tests/test_board_scans.py, scripts/tests/test_checkers_framework.py, scripts/tests/test_plan_review.py, scripts/tests/test_datasheet_kinds.py, scripts/tests/test_ic_kinds.py, scripts/tests/test_cell_boundary.py, scripts/tests/fixtures/golden_reports/extension.md, references/checker-conventions.md, references/intent-format.md, references/architecture.md, references/check-catalog.md, references/bounding-table.md, SKILL.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/part-kind-evidence-v1, evals/typical_circuits/cases.json, evals/typical_circuits/README.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
-- Gates: 2315 unit tests, rule contracts 69/69, KiCad replay 195/195 on part-kind-evidence-v1, typical circuits 200/185/14 → 201/185/14 (the relay NC candidate), M737–M760 killed; M52, M54, M566, M693, M729 re-pointed at the moved code and killed; the --changed gate leaves M35, M299, M351, M488, M506, M715 alive and M42, M391, M496, M577, M578, M584, M605, M646, M651, M652 without their pattern, exactly as at 9e7dc56
+- Changed: scripts/device_kinds.py, scripts/part_words.py, scripts/datasheet_kinds.py, scripts/audit_datasheets.py, scripts/plan_board.py, scripts/board_intent.py, scripts/lint.py, scripts/validate_review.py, scripts/render_report.py, scripts/catalog.py, scripts/checkers/inductive_load.py, scripts/checkers/power_switch.py, scripts/checkers/powertree.py, scripts/checkers/domains.py, scripts/checkers/input_filter.py, scripts/checkers/diff_levels.py, scripts/interfaces.py, scripts/circuit_candidates.py, scripts/protective_clamps.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/tests/test_part_kind_evidence.py, scripts/tests/test_supervision_external_paths.py, scripts/tests/test_relay_nc_contact.py, scripts/tests/test_board_scans.py, scripts/tests/test_checkers_framework.py, scripts/tests/test_plan_review.py, scripts/tests/test_datasheet_kinds.py, scripts/tests/test_ic_kinds.py, scripts/tests/test_cell_boundary.py, scripts/tests/fixtures/golden_reports/extension.md, references/checker-conventions.md, references/intent-format.md, references/architecture.md, references/check-catalog.md, references/bounding-table.md, SKILL.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/part-kind-evidence-v1, evals/typical_circuits/cases.json, evals/typical_circuits/README.md, evals/mutation/mutations.json, evals/mutation/README.md, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: after merging main (through 35cb1d7): 2298 unit tests, rule contracts 69/69, KiCad replay 195/195 on part-kind-evidence-v1 (parent intent-format-5-v1, same answers as clamp-operating-rows-v1), typical circuits 200/185/14 → 201/185/14 (the relay NC candidate); this branch's mutations renumbered M775–M809 after main's M726–M774, M786–M809 killed, M52, M54, M566, M693, M778 re-pointed at the moved code and killed; the gate over files changed against main leaves M299, M351, M488, M506, M715 alive and M42, M391, M496, M577, M578, M584, M605, M651, M652 without their pattern, exactly as on main before this branch (gate run on the merge with 35cb1d7)
 
 ## Part words, three leftovers: 2N7002, Si#### on an IC, a capital short cue (2026-10-26)
 
@@ -56,7 +58,7 @@ the 59 netlist fixtures (3196 parts; the five Si#### parts all Q) and 29 datashe
 - Event: user:2026-10-26 (Implement fixes 1, 2 and 4 on this branch as proposed, with tests, mutations, ledger and gates; leave Leshan alone.)
 - Causes: knowledge_wrong 2 (2N7002 named as a BJT, Si#### as a MOSFET on ICs), rule_not_enforced 1 (capital short cue joined to a word)
 - Changed: scripts/device_kinds.py, scripts/part_words.py, scripts/datasheet_kinds.py, references/checker-conventions.md, scripts/tests/test_part_number_families.py, evals/mutation/mutations.json, evals/mutation/README.md
-- Gates: 2293 unit tests, rule contracts 69/69, KiCad replay 195/195, typical circuits 200/185/14 unchanged, M732–M736 killed; the --changed gate first left M731 (plural cue) alive, since a capital MCUs now reads without the plural s: a lowercase "mcus" case kills it
+- Gates: 2293 unit tests, rule contracts 69/69, KiCad replay 195/195, typical circuits 200/185/14 unchanged, M781–M785 killed; the --changed gate first left M780 (plural cue) alive, since a capital MCUs now reads without the plural s: a lowercase "mcus" case kills it
 
 ## Part words read as words: families start a part number, short cues are whole words (2026-10-26)
 
@@ -77,7 +79,7 @@ had also suppressed the mosfet candidate). Kind names and cue sets are unchanged
 - Event: user:2026-10-26 (relayed from the part-kind audit session: fix SR's part-number family keywords in their own session)
 - Causes: rule_not_enforced 2 (part-number families matched inside longer part numbers, short cues inside squashed words)
 - Changed: scripts/device_kinds.py, scripts/datasheet_kinds.py, scripts/catalog.py, references/checker-conventions.md, references/check-catalog.md, references/review-vocabulary.md, scripts/tests/test_part_number_families.py, evals/mutation/mutations.json, evals/mutation/README.md
-- Gates: 2290 unit tests, rule contracts 69/69, KiCad replay 195/195, typical circuits 200/185/14 unchanged, M726–M731 killed (mutation gate --changed passes)
+- Gates: 2290 unit tests, rule contracts 69/69, KiCad replay 195/195, typical circuits 200/185/14 unchanged, M775–M780 killed (mutation gate --changed passes)
 
 ## Step 5.2 packing and delivery: the record holds excerpts, not copies (2026-10-26)
 
@@ -2807,3 +2809,227 @@ has no license and vendor reference designs are PDF only. Typical circuits go
 - Causes: rule_not_enforced 3
 - Changed: scripts/checkers/powertree.py, scripts/lint.py, scripts/tests/test_typical_circuits_v3.py, evals/typical_circuits/cases.json, evals/typical_circuits/sources.json, evals/typical_circuits/fixtures, evals/typical_circuits/README.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
 - Gates: pytest, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M722-M725 killed
+
+## An undecided requirement is asked at once, not reported (2026-10-26)
+
+The user wants a verdict to read as pass, fail with a fix, or pass with an
+improvement; "evidence insufficient" mixed six causes, and an undecided
+requirement surfaced only in the report's "需求要说清楚的地方" at the end. Decision
+(user: 需求没定，那就需要及时和用户反馈，请用户澄清以后，马上修改需求清单，而不是放到最后;
+按方案改：a 只允许采纳建议或明确暂缓；b 无人值守时任务书附澄清答复，没覆盖的问题停在第①步):
+
+1. A requirement question lives in `intent.clarifications` (intent format 5)
+   with the requirement wording and SR's proposed clause; the answer is DECIDED,
+   ADOPTED_PROPOSAL (word for word) or DEFERRED, with who, when and a locatable
+   source. A settled answer joins the requirement list under its CL- id; a
+   deferral makes the named requirements DEFERRED.
+2. Requirement status is only CONFIRMED or DEFERRED; OPEN and PROPOSED are refused.
+3. An unanswered question is printed by the cold scan and refused by the
+   candidate generator, the planner with candidates and the gate: the review
+   stops at step ①; an unattended run reads the task book's answers.
+4. The results drop the REQUIREMENT open item and `requirement_clarifications`
+   (results format 8); the report lists "需求澄清记录" from the plan.
+
+The replay bench gets the revision `intent-format-5-v1` (three intent fixtures
+change only their version; answers unchanged). Old mutations M527–M530 go with
+the open-clarification section; M360, M495, M502, M526 and M541 are re-anchored.
+
+- Event: user:2026-10-26 (需求没定，那就需要及时和用户反馈，请用户澄清以后，马上修改需求清单，而不是放到最后; 按方案改：a 只允许采纳建议或明确暂缓；b 无人值守时任务书附澄清答复，没覆盖的问题停在第①步)
+- Causes: judgment 1
+- Changed: scripts/requirement_clarifications.py, scripts/plan_review.py, scripts/plan_board.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/results_model.py, scripts/review_functions.py, scripts/validate_review.py, scripts/review_workflow.py, scripts/review_summary.py, scripts/review_quality.py, scripts/review_stage_scope.py, scripts/requirement_bindings.py, scripts/render_report.py, scripts/tests, SKILL.md, references/requirement-clarifications.md, references/intent-format.md, references/results-format.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/architecture.md, references/check-catalog.md, evals/kicad_replay_bench, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2270, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M360 M495 M502 M526 M541 M726-M735 killed
+
+## Three verdicts with risk tags (2026-10-26)
+
+Walking the "evidence insufficient" causes, item 2 (missing vendor data) came
+down to the optocoupler example: the CTR margin was 4.2× at 70 °C and still
+2.1× after 50 % ageing, yet the review held it open for vendor data. The user
+wants SR to judge such a part as passing with a risk, starting from each
+device's key parameters (user: 其实SR可以判定风险，比如，合格但有环境适应性风险、合格但有寿命风险……SR技能应当首先根据器件的关键参数作出判断;
+按方案改：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在定界表上扩):
+
+1. Four risk types in `catalog.RISK_TYPES` (environment, lifetime,
+   consistency, stress); every bounding-table cell that takes an estimate names
+   the risks its estimate stands for (`CELL_RISKS`, a new column of the table,
+   which doubles as the per-kind key-parameter table); cell NONE allows any of
+   the three estimate risks.
+2. A margin passing on an estimate writes `basis.risk{types, corner,
+   improvement}` with types from its cell (results format 9); a decisive margin
+   within the rating but short of an assumed derating may carry STRESS.
+3. The gate's `estimated_passes` becomes `risks` (sources ESTIMATE, LIFE —
+   life rows passing on an estimate, improved by their BOM constraint — and
+   STRESS); risks no longer cap the release at CONDITIONAL_GO.
+4. The report lists "风险清单" grouped by risk type and words results as 合格 /
+   不合格; step ③ judges each device's key parameters first.
+
+The step ③ and ④ reading paths grow by the risk column and wording (records
+223 000 → 224 000 and 118 000 → 119 000 bytes). Plans are unchanged, so the
+replay bench needs no revision.
+
+- Event: user:2026-10-26 (按方案改：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在定界表上扩)
+- Causes: judgment 1
+- Changed: scripts/catalog.py, scripts/review_functions.py, scripts/validate_review.py, scripts/render_report.py, scripts/results_model.py, scripts/tests, SKILL.md, references/bounding-table.md, references/results-format.md, references/verdicts-and-release.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/requirement-clarifications.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2275, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M668 M736-M742 killed (M646 dropped; M35 M37 M42 M299 M339 M358 M496 M519 survive or miss on HEAD too)
+
+## An undecided design value is judged, not held open (2026-10-26)
+
+Item 3 of the "evidence insufficient" causes: a value the design had not set
+was a DESIGN_VALUE open item, so the rows read "insufficient" although SR had
+already back-calculated what the value must meet. The user split it by who
+owns the value (user: 按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束):
+
+1. 甲 — a value the schematic or BOM should state (a part value, rating, part
+   number) is a fail item; its finding gives the back-calculated value as the fix.
+2. 乙 — a value another design file owns (magnetics spec, firmware setting,
+   PCB) is a new condition kind DESIGN_CONSTRAINT with the back-calculated
+   limit, regime, owner and a function handoff; a margin takes it at its
+   unfavourable end, the rows pass and carry the handoff; an owner naming the
+   schematic or BOM is refused. The gate lists `design_constraints`, the report
+   conclusion names them.
+3. DESIGN_VALUE, the DESIGN_OPEN cause, `undecided`/`depends_on`, F8 and the
+   external-impedance guard go (results format 10).
+
+The shared bias fixture's open item becomes a vendor datum of a catalog
+transformer; the results-format example is rewritten as 乙 and the FN-QR
+example's T1 item as a pending magnetics drawing. Plans are unchanged.
+
+- Event: user:2026-10-26 (按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束)
+- Causes: judgment 1
+- Changed: scripts/review_functions.py, scripts/function_reading.py, scripts/derive_rows.py, scripts/validate_review.py, scripts/results_model.py, scripts/render_report.py, scripts/catalog.py, scripts/bom_constraints.py, scripts/review_quality.py, scripts/review_stage_scope.py, scripts/review_workflow.py, scripts/tests, SKILL.md, references/results-format.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, references/requirement-clarifications.md, references/bounding-table.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2266, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M47 M626 M743-M749 killed (M13 M21 M443-M455 M702 M703 dropped; M35 M37 M42 M51 M276 M299 M339 M358 M496 M513 M514 M519 M532 survive or miss on HEAD too)
+
+## What another stage owes is a design constraint (2026-10-26)
+
+Item 4 of the "evidence insufficient" causes: a deliverable another stage owes
+(a custom part's drawing, a firmware capability) was a DELIVERABLE_PENDING open
+item judged on an `assumed` value, listed under 等交付物 and capping the release
+at CONDITIONAL_GO. That is the same thing as 乙 of item 3: the value belongs to
+another file, and SR states what it must meet. Decision (user: 并入乙):
+
+1. DELIVERABLE_PENDING goes; what the deliverable must meet is a
+   DESIGN_CONSTRAINT handed to its owner. A constraint without a single number
+   (an insulation structure, a firmware recovery behaviour) is a clause: no
+   `limit`, `says` states what must hold, and a judgement may rest on it; a
+   constraint with a limit is still compared in a margin.
+2. A deliverable that arrived and misses the constraint is a fail (documented).
+3. `deliverable_kind`, `missing_parameters`, `assumed`, the SAME_DELIVERABLE
+   hint, the gate's `pending_deliverables` and its release cap, and the report's
+   等交付物 section go (results format 11).
+
+The golden "deliverable" report becomes "constraint"; the FN-QR doc example
+judges its feedback model on a clause constraint for the custom transformer.
+
+- Event: user:2026-10-26 (并入乙)
+- Causes: judgment 1
+- Changed: scripts/review_functions.py, scripts/function_reading.py, scripts/validate_review.py, scripts/results_model.py, scripts/render_report.py, scripts/catalog.py, scripts/review_quality.py, scripts/review_stage_scope.py, scripts/review_workflow.py, scripts/tests, SKILL.md, references/results-format.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, references/commodity-floors.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2255, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M45 M47 M739 M749 M750-M753 killed (M30 M33-M35 M238 M239 M275 M311 M312 M667-M670 dropped; M37 M42 M51 M299 M339 M358 M496 M513 M514 M519 survive or miss on HEAD too)
+
+## A settled requirement may be written into the original requirement files (2026-10-27)
+
+A clarification answer changed `intent.requirements` only; the user's own
+requirement documents kept the old wording, so the next design or review
+reading them did not see the settled requirement. Decision (user: ASG和SR都需要
+提示用户，是否直接更改原始的需求文件。用户确认后，直接改):
+
+1. After a DECIDED or ADOPTED_PROPOSAL answer the reviewer asks whether to
+   write the settled requirement into the original requirement files, naming
+   the file, the place and the words; on a yes the files are changed, on a no
+   only the intent. A deferral is not asked.
+2. The answer records it as `answer.requirement_files` {decision: UPDATED with
+   the files changed, or KEPT}, the same field as ASG's. A settled answer
+   without it, or with another decision, is refused when the intent is read
+   (`requirement_files_not_asked`); UPDATED without files is refused
+   (`requirement_files_without_files`).
+3. The settled clause goes into the text of the requirement the question names
+   (or where the user says), never as a new `CL-` item in the file, which would
+   duplicate the clarification id; the document is transcribed again and
+   `requirement_source` takes the new sha256.
+
+The field sits inside the format-5 answer, so the intent format is unchanged;
+no fixture or replay intent carries a clarification, so the replay bench needs
+no revision. The step ① reading path grows by the new paragraphs.
+
+- Event: user:2026-10-27 (ASG和SR都需要提示用户，是否直接更改原始的需求文件。用户确认后，直接改)
+- Causes: rule_missing 1
+- Changed: scripts/requirement_clarifications.py, scripts/tests/test_requirement_clarifications.py, SKILL.md, references/requirement-clarifications.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2259, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M729-M731 M754-M758 killed
+## Unfinished review work is not a report verdict (2026-10-27)
+
+Item 5 of the "evidence insufficient" causes: REVIEW_INCOMPLETE is the
+reviewer's own unread or uncomputed work, yet the report counted it as a cause
+(审查没做完), as a work-item type and as a release blocker, a fourth kind of
+conclusion beside 合格 / 不合格 / 合格但有风险. Decision (user: 第五项按照你的建议来):
+
+1. REVIEW_INCOMPLETE stays as an open item while the review runs; the gate
+   still lists it as a blocker and review_workflow still puts it in the current
+   queue.
+2. `render_report.py` writes no report while one exists (exit 2, the
+   unfinished checks named); `results_model.unfinished_checks` is the one test,
+   and `pack_review.py` refuses through the same render.
+3. The report's cause counts, work-item types and release blockers drop
+   审查没做完; progress is told in the conversation, not in a report.
+
+- Event: user:2026-10-27 (第五项按照你的建议来)
+- Causes: judgment 1
+- Changed: scripts/render_report.py, scripts/pack_review.py, scripts/results_model.py, scripts/tests, SKILL.md, references/results-format.md, references/evidence-proportionality.md, references/report-and-remediation.md, references/verdicts-and-release.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2261, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M291 M759-M761 killed (M291 re-anchored)
+
+## A deferral narrows the review, it is not a verdict (2026-10-27)
+
+Item 6 of the "evidence insufficient" causes: what the user deferred was an
+INSUFFICIENT row with gap cause USER_DEFERRED, counted as 已暂缓 among the
+evidence gaps and blocking the release, though the user had only narrowed what
+this round reviews. Decision (user: A):
+
+1. A deferred requirement (answered DEFERRED in intent.clarifications) gets no
+   checks; the plan lists it in `deferred_requirements`.
+2. A check the user takes out of this round is NA with na_reason
+   USER_DEFERRED and the user's `instruction`; it keeps applicability
+   APPLICABLE, carries no gap fields or handoff, does not block, and a
+   requirement row cannot be deferred one by one. A check crossing into the
+   deferred part is judged as usual, the boundary the user gives handed on as a
+   DESIGN_CONSTRAINT.
+3. The USER_DEFERRED open item goes (results format 12). The report gains
+   本次不审的范围, a conclusion sentence and a counts row; the 资料不足的原因
+   row goes (only missing data is left) and item_kind drops its minority-cause
+   label.
+
+- Event: user:2026-10-27 (A)
+- Causes: judgment 1
+- Changed: scripts/plan_board.py, scripts/plan_review.py, scripts/review_stage_scope.py, scripts/validate_review.py, scripts/review_functions.py, scripts/results_model.py, scripts/review_summary.py, scripts/requirement_bindings.py, scripts/render_report.py, scripts/tests, references/results-format.md, references/evidence-proportionality.md, references/requirement-clarifications.md, references/intent-format.md, references/report-and-remediation.md, references/architecture.md, references/check-catalog.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2263, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M521 M762 M763 M765-M769 killed (M521 re-anchored; M541 dropped; M764 dropped, its check duplicated the gate's NA applicability check)
+
+## One transient at a time (2026-10-27)
+
+The user asked whether the review is over-strict because extreme, transient
+conditions are stacked on top of normal operation. An audit of the rules found
+five places: PRO-E02 compared VRWM with the net's maximum "including
+transients"; CAP-SURGE-V failed every MLCC whose transient exceeded the rated
+voltage, MLCC datasheets giving no surge rating; the INPUT_STAGE_RATING aspect
+asked a derating margin under transients; PRO-C02's no-trip side took every
+worst corner, each side at its own temperature, and then asked a margin; and
+PRO-E02 put the port's surge or ESD waveform on clamps of internal nodes.
+Physically simultaneous stacks (a surge on the line peak, pulse ratings derated
+from the starting temperature, a turn-off clamp plus the supply maximum) stay.
+Decision (user: 按你的建议改：A1、A3、B4、C5 和“一次只取一个瞬态事件”的总原则照改；A2 也改):
+
+1. One transient or fault event at a time, on the continuous worst case; two
+   independent rare events are not combined; a transient is compared with
+   transient ratings and takes no derating margin, the continuous case with
+   continuous ratings (evidence-proportionality, SKILL.md step ③).
+2. PRO-E02: VRWM against the continuous maximum working voltage; the transient
+   is the one that reaches the node: the scan line says whether the net
+   reaches a fitted connector (directly or through one resistor, ferrite or
+   inductor) and takes the required waveform, or is internal and takes the
+   residual after the upstream clamp or a local source.
+3. INPUT_STAGE_RATING: derating margin on the continuous limits only.
+4. PRO-C02 no-trip side: both sides at the same temperature corner, zero margin
+   suffices when every term is at its worst.
+5. CAP-SURGE-V: an MLCC's dielectric withstanding test is the guaranteed
+   rating for a non-repetitive transient (method G1 added); a spike every
+   switching cycle still meets the rated voltage.
+
+- Event: user:2026-10-27 (按你的建议改：A1、A3、B4、C5 和“一次只取一个瞬态事件”的总原则照改；A2 也改)
+- Causes: judgment 1
+- Changed: scripts/catalog.py, scripts/lint.py, scripts/protective_clamps.py, scripts/plan_circuits.py, scripts/tests/test_electrical_safety.py, SKILL.md, references/evidence-proportionality.md, references/check-catalog.md, references/bounding-table.md, references/review-vocabulary.md, references/architecture.md, evals/mutation/mutations.json, evals/mutation/README.md, docs/improvement-ledger.md
+- Gates: pytest 2267, rule contracts 69/69, replay 195/195, typical circuits 200/185/14, mutations M707 M770-M774 killed (M707 re-anchored)

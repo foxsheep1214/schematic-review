@@ -101,7 +101,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 
 **电路候选**（`scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json`，
 schema 2，带 `rules_version`，绑定 `db_sha256` 与 intent 的 `input_sha256`）：电路不由审查员画，由网表、已核实的器件类别和检查器库存生成，
-审查员只做决定（见[计划与结果](intent-format.md#一intentjsonschema_version-4)）。
+审查员只做决定（见[计划与结果](intent-format.md#一intentjsonschema_version-5)）。
 - 候选 = 类型 + 核心器件，编号 `<类型>-<核心器件>`（链为 `<类型>-<核心器件>.<脚>`），工作态按类型固定（`catalog.CANDIDATE_STATES`：
   变换器和输入保护 startup/run/fault，USB unattached/attached/fault，ANALOG run/fault，ISOLATION run，STARTUP power-on/restart，DEBUG run）。
   成员各带 `role`、`via`（走到它的路径，是归属关系，不是导通主张）和 `hops`；页码只作显示，不决定归属。

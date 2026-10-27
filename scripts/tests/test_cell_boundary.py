@@ -5,8 +5,10 @@ after the value is derated by the cell's factor, with the cell's margin floor; t
 decides. Cell NONE keeps the former default (a required function or a performance, not on a damage, overheating or
 protection rule). A hazard or core-link class never passes on an estimate.
 """
+import copy
 import sys
 import unittest
+from unittest import mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -87,8 +89,9 @@ class CellBoundaryTests(unittest.TestCase):
 
 
 class EstimateGradeAndReleaseTests(unittest.TestCase):
-    """Decision 4 (2026-10-26): an estimate pass is C-grade evidence, caps the release at CONDITIONAL_GO and is listed
-    apart in the report."""
+    """Decision 4 (2026-10-26): an estimate pass is C-grade evidence. Since the risk tags (2026-10-26, user: 三档结论加
+    四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列) it is a pass with a risk: the gate lists it under risks
+    with the risk types its cell stands for, the release is not capped, the report lists it by risk type."""
 
     def passing(self, **extra):
         p, r, db = estimated(cell='ZENER-VZ-LOWER', method='G8', estimate_factor=1.2, **extra)
@@ -96,14 +99,32 @@ class EstimateGradeAndReleaseTests(unittest.TestCase):
         self.assertEqual(errors, [])
         return p, r, db, vr.validate_review(p, r, db)
 
-    def test_the_gate_lists_the_estimate_pass_with_its_cell_factor_and_prototype_test(self):
+    def test_the_gate_lists_the_risk_with_its_cell_factor_and_prototype_test(self):
         p, r, db, out = self.passing()
         self.assertTrue(out['valid'], out['errors'])
-        [e] = out['estimated_passes']
-        self.assertEqual((e['check_id'], e['cell'], e['estimate_factor'], e['consequence_class']),
-                         ('PWR-C02.OTHER-RUN.Q9', 'ZENER-VZ-LOWER', 1.2, 'REQUIRED_FUNCTION'))
+        [e] = out['risks']
+        self.assertEqual((e['check_id'], e['source'], e['types'], e['cell'], e['estimate_factor'], e['consequence_class']),
+                         ('PWR-C02.OTHER-RUN.Q9', 'ESTIMATE', ['CONSISTENCY'], 'ZENER-VZ-LOWER', 1.2, 'REQUIRED_FUNCTION'))
         self.assertEqual(e['verification'], '样机实测 Q9 偏置电压')
         self.assertIn('÷1.2', e['how'])
+        self.assertTrue(e['corner'] and e['improvement'])
+
+    def test_an_estimate_pass_names_its_risk_within_the_cells_types(self):
+        p, r, db = estimated(cell='ZENER-VZ-LOWER', method='G8', estimate_factor=1.2)
+        del margin_of(r)['basis']['risk']
+        self.assertTrue(any('names its risk' in e for e in vr.validate_review(p, r, db)['errors']))
+        margin_of(r)['basis']['risk'] = {'types': ['LIFETIME'], 'corner': 'x', 'improvement': 'y'}
+        errors = vr.validate_review(p, r, db)['errors']
+        self.assertTrue(any('LIFETIME is not a risk an estimate in cell ZENER-VZ-LOWER stands for' in e and 'CONSISTENCY' in e
+                            for e in errors), errors)
+        margin_of(r)['basis']['risk'] = {'types': ['CONSISTENCY'], 'corner': '', 'improvement': 'y'}
+        self.assertTrue(any('basis.risk is {types' in e for e in vr.validate_review(p, r, db)['errors']))
+
+    def test_cell_none_allows_any_estimate_risk_but_not_stress(self):
+        for types, ok in ((['ENVIRONMENT', 'LIFETIME'], True), (['STRESS'], False)):
+            p, r, db = estimated(risk={'types': types, 'corner': '−40 °C', 'improvement': '选宽温型号'})
+            errors = [e for e in vr.validate_review(p, r, db)['errors'] if 'FN-OTHER/margin' in e]
+            self.assertEqual(errors == [], ok, (types, errors))
 
     def test_derive_writes_grade_c_on_the_row_and_the_gate_refuses_another_grade(self):
         p, r, db, out = self.passing()
@@ -122,24 +143,46 @@ class EstimateGradeAndReleaseTests(unittest.TestCase):
         out = vr.validate_review(p, r, db)
         self.assertTrue(any('C-grade evidence' in e for e in out['errors']), out['errors'])
 
-    def test_the_release_is_capped_at_conditional_go(self):
-        self.assertEqual(vr.release_for([], [], False, []), 'GO')
-        self.assertEqual(vr.release_for([], [], False, [{'check_id': 'X'}]), 'CONDITIONAL_GO')
-        self.assertEqual(vr.release_for([], [], True, []), 'CONDITIONAL_GO')
-        self.assertEqual(vr.release_for([], ['b'], False, [{'check_id': 'X'}]), 'NO_GO')
-        self.assertEqual(vr.release_for(['e'], [], False, []), 'NO_GO')
+    def test_a_risk_does_not_cap_the_release(self):
+        self.assertEqual(vr.release_for([], [], False), 'GO')
+        self.assertEqual(vr.release_for([], [], True), 'CONDITIONAL_GO')
+        self.assertEqual(vr.release_for([], ['b'], False), 'NO_GO')
+        self.assertEqual(vr.release_for(['e'], [], False), 'NO_GO')
+        _, _, _, out = self.passing()
+        self.assertTrue(out['risks'])
+        self.assertFalse(any('estimate' in b for b in out['blockers']), out['blockers'])
+        p, r, db, _ = self.passing()
+        with mock.patch.object(vr, 'release_for', wraps=vr.release_for) as release:
+            vr.validate_review(p, r, db)
+        self.assertIs(release.call_args[0][2], False)   # nothing accepted: the risk is not an acceptance
 
-    def test_the_report_lists_estimate_passes_apart_and_counts_them(self):
+    def test_a_decisive_margin_may_carry_only_a_stress_risk(self):
+        from test_estimate_pass import other_row as row_of
+        p, r, db = estimated()
+        m = margin_of(r)
+        m['basis'] = copy.deepcopy(next(x for x in r['functions'][0]['calculation']['margin']
+                                        if x.get('aspect') == ASPECT)['basis'])
+        m['basis']['risk'] = {'types': ['STRESS'], 'corner': '105 °C 时 80 % 降额', 'improvement': '换高一档耐压'}
+        r, _, errors = derive_rows.derive(p, r)
+        self.assertEqual((errors, row_of(r)['review_result']), ([], 'PASS'))
+        out = vr.validate_review(p, r, db)
+        self.assertEqual([(e['check_id'], e['source'], e['types']) for e in out['risks']],
+                         [('PWR-C02.OTHER-RUN.Q9', 'STRESS', ['STRESS'])])
+        margin_of(r)['basis']['risk']['types'] = ['ENVIRONMENT']
+        self.assertTrue(any('goes with an estimate' in e for e in vr.validate_review(p, r, db)['errors']))
+
+    def test_the_report_lists_risks_by_type_and_counts_them(self):
         import render_report
         p, r, db, out = self.passing()
         md = render_report.render(p, r, out, {})
-        self.assertIn('## 按典型值估算的结论', md)
-        self.assertIn('| 按典型值估算判通过、样机实测后才算定 | 1 项 |', md)
-        self.assertIn('有 1 项结论是按典型值估算的', md)
+        self.assertIn('## 风险清单', md)
+        self.assertIn('### 一致性风险（1 项）', md)
+        self.assertIn('| 合格但有风险（不影响定稿，见“风险清单”） | 1 项 |', md)
+        self.assertIn('有 1 项合格但有风险（一致性 1）', md)
         row = next(l for l in md.split('\n') if l.startswith('| FN-OTHER |') and 'ZENER-VZ-LOWER' in l)
-        for word in ('÷1.2', '×1.2', '样机实测 Q9 偏置电压', 'PWR-C02.OTHER-RUN.Q9'):
+        for word in ('÷1.2', '×1.2', '样机实测 Q9 偏置电压', 'PWR-C02.OTHER-RUN.Q9', '低电流分档下限', '换在该电流下给保证值'):
             self.assertIn(word, row)
-        self.assertEqual(render_report.render_estimated_passes([]), [])   # no estimates: no section, no count line
+        self.assertEqual(render_report.render_risks([]), [])   # no risk: no section, no count line
 
 
 class ExtensionSignalTests(unittest.TestCase):

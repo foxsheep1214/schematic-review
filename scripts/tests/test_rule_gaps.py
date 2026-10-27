@@ -37,7 +37,7 @@ def added(plan):
 
 class IntentTests(unittest.TestCase):
     def errors(self, gaps, db=None):
-        return [e for e in validate_intent({'schema_version': 4, 'rule_gaps': gaps}, db) if 'rule_gaps' in e]
+        return [e for e in validate_intent({'schema_version': 5, 'rule_gaps': gaps}, db) if 'rule_gaps' in e]
 
     def test_a_gap_names_object_rule_criterion_what_is_missing_and_the_basis(self):
         self.assertEqual(self.errors([gap()], database()), [])

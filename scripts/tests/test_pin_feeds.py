@@ -19,6 +19,7 @@ import check_key
 from checkers import passive_stress
 from checkers.passive_stress import PIN_CRITERION
 from validate_review import validate_review
+from ledger4 import deferred
 import render_report
 from render_report import render
 from plan_review import REGISTRY, ReviewPlanner, build_review_plan
@@ -127,7 +128,7 @@ class PinFeedTests(unittest.TestCase):
         # The plan listed the unreadable values, but nothing put them in front of the designer, who writes them.
         db, intent = fed(value='47R/2W/5%/1%')
         plan = build_review_plan(db, intent)
-        report = ledger(plan, db)
+        report = deferred(ledger(plan, db))
         text = render(plan, report, validate_review(plan, report, db))
         section = text.split('## 设计输入要改的写法')[1].split('\n## ')[0]
         self.assertIn('R1：`47R/2W/5%/1%`', section)

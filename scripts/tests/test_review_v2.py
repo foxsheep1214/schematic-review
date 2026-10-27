@@ -67,7 +67,7 @@ class V2Regressions(unittest.TestCase):
         self.assertEqual(len([x for x in findings if x['rule'] == 'DOC-A01']), 2)
 
     def test_requirement_validation_and_state_expansion_coexist(self):
-        intent = {'schema_version': 4,
+        intent = {'schema_version': 5,
             'requirement_source': doc_for({'REQ-01': 'Startup guaranteed'}),
             'requirements': [{'id': 'REQ-01', 'categories': ['PROTOCOL'], 'interpretation': 'Defined state throughout sampling',
                               'owners': ['EXT-J1']}],
@@ -86,7 +86,7 @@ class V2Regressions(unittest.TestCase):
         self.assertFalse(Lint(db).driven('VDD_A'))
 
     def test_requirement_and_full_pin_audits_are_planned(self):
-        intent = {'schema_version': 4,'requirement_source': doc_for({'REQ-USB': 'USB port required'}),
+        intent = {'schema_version': 5,'requirement_source': doc_for({'REQ-USB': 'USB port required'}),
                   'requirements': [{'id': 'REQ-USB', 'categories': ['PROTOCOL'], 'interpretation': 'end-to-end connectivity',
                                     'owners': ['EXT-J1']}]}
         self.assertEqual(validate_intent(intent), [])
@@ -95,14 +95,14 @@ class V2Regressions(unittest.TestCase):
         self.assertTrue(any(x['rule'] == 'DEV-D02' and x['object']['ref'] == 'U1'
                             for x in plan['checks']))
 
-    def test_requirement_status_reaches_the_planned_check(self):
-        intent = {'schema_version': 4,'requirement_source': doc_for({'REQ-T': 'derate by temperature'}),
-                  'requirements': [{'id': 'REQ-T', 'status': 'OPEN', 'categories': ['ENVIRONMENT'],
+    def test_a_deferred_requirement_gets_no_checks(self):
+        intent = {'schema_version': 5,'requirement_source': doc_for({'REQ-T': 'derate by temperature'}),
+                  'requirements': [{'id': 'REQ-T', 'status': 'DEFERRED', 'categories': ['ENVIRONMENT'],
                                     'interpretation': 'derating points'}]}
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(sample_db(), intent)
-        row = next(x for x in plan['checks'] if x['object'].get('requirement_id') == 'REQ-T')
-        self.assertEqual(row['object']['requirement_status'], 'OPEN')
+        self.assertFalse([x for x in plan['checks'] if x['object'].get('requirement_id') == 'REQ-T'])
+        self.assertEqual(plan['deferred_requirements'], ['REQ-T'])
         intent['requirements'][0]['status'] = 'MAYBE'
         self.assertTrue(validate_intent(intent))
 

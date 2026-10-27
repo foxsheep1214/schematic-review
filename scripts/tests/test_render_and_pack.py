@@ -252,9 +252,7 @@ class ReportWordingTests(unittest.TestCase):
         self.assertFalse(is_document(['DOC-T01.AS-DRAWN', 'PWR-C01.U1']))
         self.assertEqual(item_kind([{'id': 'DEV-D04.BOARD', 'review_result': 'FAIL'}]), '文档错误')
         rows = [{'id': 'A.%d' % i, 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA'} for i in range(13)]
-        rows.append({'id': 'A.13', 'review_result': 'INSUFFICIENT', 'gap_cause': 'DESIGN_OPEN'})
-        self.assertEqual(item_kind(rows), '缺资料（另 设计没定 1 条）')
-        self.assertEqual(item_kind(rows[:13]), '缺资料')
+        self.assertEqual(item_kind(rows), '缺资料')
         p, r, db = fixture()
         fail(r)
         r['findings'][0]['check_ids'] = [r['checks'][0]['id']]
@@ -262,6 +260,26 @@ class ReportWordingTests(unittest.TestCase):
             text, _ = report(p, r, db)
         self.assertIn('电路没有发现错误，文档有 1 处错误（P1，必需功能可能不达标）', text)
         self.assertIn('类型：文档错误', text)
+
+    def test_what_the_user_deferred_is_listed_as_outside_the_review(self):
+        # 2026-10-27 (user: A): a deferral narrows the review; it is neither a verdict nor missing data
+        from ledger4 import SYNTHETIC
+        p, r, db = fixture()
+        row = r['checks'][0]
+        row.update(review_result='NA', na_reason='USER_DEFERRED', instruction=SYNTHETIC)
+        row.pop('evidence_confidence')
+        p['deferred_requirements'] = ['REQ-LOW-TEMP']
+        p['clarifications'] = [{'id': 'CL-COLD', 'requirement_ids': ['REQ-LOW-TEMP'], 'decision': 'DEFERRED',
+                                'text': '低温这版先不管', 'by': '需求负责人', 'date': '2026-10-27'}]
+        r['plan_digest'] = vr.fingerprint(p)
+        text, gate = report(p, r, db)
+        self.assertEqual(gate['release'], 'GO')
+        self.assertIn('用户暂缓的 1 条需求、1 条检查 这次没有审，不算结论，见“本次不审的范围”', text)
+        section = text.split('## 本次不审的范围')[1].split('\n## ')[0]
+        self.assertIn('需求 REQ-LOW-TEMP：没有生成检查项（低温这版先不管　需求负责人　2026-10-27，见“需求澄清记录” CL-COLD）', section)
+        self.assertIn('1 条检查——%s' % row['id'], section)
+        self.assertIn('| 用户暂缓、本次不审（见“本次不审的范围”） | 1 条需求，1 条检查 |', text)
+        self.assertNotIn('资料不足', section)
 
     def test_scope_blocker_names_the_check_and_finding(self):
         from render_report import blocker_reasons
@@ -461,7 +479,7 @@ class PackReviewTests(unittest.TestCase):
 
     def test_hand_drawn_circuits_are_not_packed_without_their_candidate_file(self):
         path = self.work / 'intent.json'
-        path.write_text(json.dumps({'schema_version': 4, 'circuits': [
+        path.write_text(json.dumps({'schema_version': 5, 'circuits': [
             {'id': 'BIAS', 'type': 'POWER_CONVERTER', 'refs': ['Q2'], 'states': ['run'], 'citation': 'p1'}]}))
         errors, _ = self.run_pack()
         self.assertTrue(any('circuit-candidates.json' in e for e in errors), errors)
@@ -473,7 +491,7 @@ class PackReviewTests(unittest.TestCase):
         errors, _ = self.run_pack()
         self.assertTrue(any('circuit_decisions missing' in e for e in errors), errors)
         # the fixture's active parts outside every candidate (U1 since results 7) are rejected on purpose; passives may stay
-        intent = {'schema_version': 4, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]
+        intent = {'schema_version': 5, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]
                   + [{'decision': 'reject', 'ref': u['ref'], 'reason': 'OUTSIDE_SCOPE', 'citation': 'p1'}
                      for u in candidates['unassigned'] if u.get('kind') == 'ic']}
         import circuit_decisions
@@ -544,6 +562,24 @@ class PackReviewTests(unittest.TestCase):
         (self.work / 'review-results.json').write_text(json.dumps(results))
         errors, _ = self.run_pack()
         self.assertTrue(any('review not finished' in e and row['id'] in e for e in errors), errors)
+
+    def test_unfinished_review_has_no_report(self):
+        import render_report
+        results = json.loads((self.work / 'review-results.json').read_text())
+        row = results['checks'][0]
+        item = results['functions'][0]['open'][0]
+        item['kind'] = 'REVIEW_INCOMPLETE'
+        for field in ('acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
+            item.pop(field)
+        (self.work / 'review-results.json').write_text(json.dumps(results))
+        plan = json.loads((self.work / 'review-plan.json').read_text())
+        with self.assertRaises(render_report.UnfinishedReview) as raised:
+            render_report.render(plan, results, {'valid': True})
+        self.assertIn(row['id'], str(raised.exception))
+        out = self.work / 'unfinished.md'
+        self.assertEqual(render_report.main([str(self.work / 'review-plan.json'), str(self.work / 'review-results.json'),
+                                            str(self.work / 'review-gate.json'), '-o', str(out)]), 2)
+        self.assertFalse(out.exists())
 
     def test_jargon_in_report_body_fails_the_pack(self):
         write_report(self.out, '# r\n\n## 结论\n\n- 还不能冻结，见本检查项。\n\n## 对 SR 的反馈（设计者不用处理）\n\n- 原生映射\n')

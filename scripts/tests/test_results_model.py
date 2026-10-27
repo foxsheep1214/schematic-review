@@ -12,8 +12,8 @@ E = [{'source': 'evidence/engineering.md', 'locator': '## CURRENT'}]
 
 
 def open_item(**extra):
-    out = {'key': 'ADC-CAL', 'kind': 'DESIGN_VALUE', 'what': 'RS1 calibration error budget',
-           'scope': '0 to 5 A, full temperature range', 'spec': 'zero 15 mA, gain 1%, drift 0.5%', 'owner': 'firmware',
+    out = {'key': 'ADC-CAL', 'kind': 'VENDOR_DATUM', 'what': 'RS1 calibration error budget',
+           'scope': '0 to 5 A, full temperature range', 'acquisition': 'RS1 vendor: drift over temperature',
            'closure': 'CC current window holds at every corner', 'decides': [{'aspect': '电流检测'}],
            'severity': {'level': 'P1', 'class': 'PERFORMANCE_OR_LIFE', 'affects': 'RS1 current measurement',
                         'consequence': 'CC current window cannot be guaranteed'}}
@@ -48,7 +48,7 @@ class ShapeTests(unittest.TestCase):
             self.assertEqual(len(rm.shape_errors({'schema_version': version, 'checks': [], 'functions': []})), 1)
 
     def test_retired_fields_are_named_with_their_replacement(self):
-        report = ledger(row(gaps=[{'what': 'x'}], gap_cause='DESIGN_OPEN', missing_inputs=['x']))
+        report = ledger(row(gaps=[{'what': 'x'}], gap_cause='EXTERNAL_DATA', missing_inputs=['x']))
         report['work_items'] = []
         errors = rm.shape_errors(report)
         self.assertTrue(any('gaps' in e and 'open_ref' in e for e in errors), errors)
@@ -89,18 +89,17 @@ class ExpandTests(unittest.TestCase):
         out = rm.expand(ledger(row()))['checks'][0]
         self.assertIs(out['blocking'], True)
         self.assertEqual((out['evidence_confidence'], out['disposition']), ('C', 'OPEN'))
-        self.assertEqual(out['gap_cause'], 'DESIGN_OPEN')
+        self.assertEqual(out['gap_cause'], 'EXTERNAL_DATA')
         self.assertEqual(out['missing_inputs'], ['RS1 calibration error budget'])
         request = out['input_requests']['RS1 calibration error budget']
         self.assertEqual(request['why_decisive'], out['rationale'])
-        self.assertEqual(request['acquisition'], '由firmware确定：zero 15 mA, gain 1%, drift 0.5%')
+        self.assertEqual(request['acquisition'], 'RS1 vendor: drift over temperature')
         self.assertEqual(request['impact_assessment']['blocking_reason'], 'CC current window holds at every corner')
         self.assertEqual(out['potential_severity'], 'P1')
 
     def test_vendor_datum_derives_external_data_and_its_acquisition(self):
         item = open_item(kind='VENDOR_DATUM', acquisition='the vendor: CC DAC code table', checked=['c1'],
                          why_insufficient='p12 gives the ADC, not the DAC code', worst_case={'result': '±0.3 A'})
-        del item['spec'], item['owner']
         out = rm.expand(ledger(row(), functions=[function(item)]))['checks'][0]
         self.assertEqual(out['gap_cause'], 'EXTERNAL_DATA')
         self.assertEqual(out['input_requests']['RS1 calibration error budget']['acquisition'], 'the vendor: CC DAC code table')
@@ -121,15 +120,12 @@ class ExpandTests(unittest.TestCase):
         self.assertEqual((task['root_cause'], task['due_stage']), ('RS1 calibration error budget', 'design_iteration'))
         self.assertEqual(task['reason'], 'CC current window cannot be guaranteed')
 
-    def test_requirement_items_and_fail_items(self):
-        req = {'key': 'LOAD', 'kind': 'REQUIREMENT', 'what': 'maximum load current', 'decides': [{'aspect': '需求'}]}
+    def test_fail_items(self):
         fail = {'key': 'POL', 'finding_id': 'F-001', 'what': 'D1 reversed', 'decides': [{'aspect': '极性'}]}
-        fns = [function(req, id='FN-REQ'), function(id='FN-POL', verdict='FAIL', open=[], fails=[fail])]
-        out = rm.expand(ledger(row(id='REQ-D01.LOAD', function_id='FN-REQ', aspect='需求', open_ref='FN-REQ/LOAD'),
-                               {'id': 'DOC-V01.D1', 'review_result': 'FAIL', 'severity': 'P1', 'finding_id': 'F-001',
+        fns = [function(id='FN-POL', verdict='FAIL', open=[], fails=[fail])]
+        out = rm.expand(ledger({'id': 'DOC-V01.D1', 'review_result': 'FAIL', 'severity': 'P1', 'finding_id': 'F-001',
                                 'function_id': 'FN-POL', 'aspect': '极性', 'fail_ref': 'FN-POL/POL'}, functions=fns))
-        self.assertEqual(out['checks'][0]['gap_cause'], 'REQUIREMENT_OPEN')
-        self.assertEqual([t['id'] for t in out['work_items']], ['W-POL'])   # requirement questions are clarifications
+        self.assertEqual([t['id'] for t in out['work_items']], ['W-POL'])
         self.assertEqual(out['work_items'][0]['next_action'], '按发现项 F-001 的改法处理')
 
     def test_expand_is_idempotent_and_leaves_the_record_alone(self):

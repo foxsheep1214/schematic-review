@@ -383,7 +383,7 @@ class StageCauseAndDuplicateTests(unittest.TestCase):
     def test_burned_image_gap_is_a_firmware_handoff_lead(self):
         p, r = self.rows()
         row = r['checks'][0]
-        row.update(gap_cause='DESIGN_OPEN', missing_inputs=['准确应用版本的烧录镜像与读回 hash'])
+        row.update(gap_cause='EXTERNAL_DATA', missing_inputs=['准确应用版本的烧录镜像与读回 hash'])
         self.assertEqual([row['id']], self.found(p, r, 'FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP')[0]['check_ids'])
         row['missing_inputs'] = ['TP602 与 PFC_EN_N 共脚的编程接口电平与上拉']
         self.assertEqual([], self.found(p, r, 'FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP'))
@@ -420,12 +420,12 @@ class DownstreamTriageTests(unittest.TestCase):
         from review_quality import screen_quality
         return {x['code']: x for x in screen_quality(p, r, db)['candidates']}
 
-    def test_test_only_gap_recorded_as_design_open_is_flagged(self):
+    def test_test_only_gap_recorded_as_a_data_gap_is_flagged(self):
         p, r = impact_fixture(n=2)
-        r['checks'][0]['gap_cause'] = 'DESIGN_OPEN'
+        r['checks'][0]['gap_cause'] = 'EXTERNAL_DATA'
         r['checks'][0]['missing_inputs'] = ['闭壳温升与EMC传导实测结果']
-        r['checks'][1]['gap_cause'] = 'DESIGN_OPEN'
-        r['checks'][1]['missing_inputs'] = ['U1 偏置电阻未选，需样机前确定']
+        r['checks'][1]['gap_cause'] = 'EXTERNAL_DATA'
+        r['checks'][1]['missing_inputs'] = ['U1 厂家给出偏置电流的保证值']
         found = self.codes(p, r)['DOWNSTREAM_RECORDED_AS_DESIGN_GAP']
         self.assertEqual([r['checks'][0]['id']], found['check_ids'])
         r['checks'][0].update(derived=True, open_ref='FN-X/GAP')     # its gap is the open item's: downstream_closures reads it

@@ -45,14 +45,6 @@ class ImpactTests(unittest.TestCase):
         out = categorized_summary({'G1': row}, {}, {}, {}, classes=2)['insufficient_impact']
         self.assertEqual(out['documented'], 1)
 
-    def test_requirement_open_is_unrated(self):
-        row = gap(); row['gap_cause'] = 'REQUIREMENT_OPEN'
-        del row['potential_severity']; del row['impact_assessment']
-        self.assertEqual(validate_impact(row), [])
-        out = categorized_summary({'G1': row}, {}, {}, {})['insufficient_impact']
-        self.assertEqual(out['requirement_open'], 1)
-        self.assertEqual(out['undocumented'], 0)
-
     def test_impact_is_always_enforced_without_changing_evidence_or_release(self):
         p, r, db = fixture()
         r['checks'][0]['rationale'] = 'Timing decides whether the diagnostic is valid at cold startup'

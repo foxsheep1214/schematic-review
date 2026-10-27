@@ -286,6 +286,27 @@
    "origin": "由 fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.frames.active-part-decisions-v1.intent.json 派生：circuit_decisions 加 Reg1、Reg2、Reg3 三条器件级 reject（OUTSIDE_SCOPE），其余不变",
    "license": "MIT（本仓库）；引用 Nicolboy/KICAD-C2000-float-flyback（CERN-OHL-S-2.0）的器件位号与引脚",
    "parent_sha256": "acd108e820d687c220120ab9ab5a34f254505dc9b0a122663af47526a0907332"
+  },
+  {
+   "path": "fixtures/rh-ad8495-thermocouple.page-inventory-v1.intent-format-5-v1.intent.json",
+   "sha256": "c585985e2ccfed31875d21564a5d91aff2060a68e62cf48cdca81686a3aff987",
+   "origin": "由 fixtures/rh-ad8495-thermocouple.page-inventory-v1.intent-format-4-v1.intent.json 派生：intent 格式升到 5，只把 schema_version 从 4 改为 5，其余不变",
+   "license": "MIT（本仓库）；脚表内容引用 ADI AD8494/5/6/7 Rev.D 与 TI SLVS543S 的引脚定义",
+   "parent_sha256": "ee15be72ef58c23695cfca367a80e44148bb535b541c046a7daa57df66b18940"
+  },
+  {
+   "path": "fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.intent-format-5-v1.intent.json",
+   "sha256": "a220fef2a8ab151bab3bb6a6933c23595590e87647fc66c5faf50edf66c42e3f",
+   "origin": "由 fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.intent-format-4-v1.intent.json 派生：intent 格式升到 5，只把 schema_version 从 4 改为 5，其余不变",
+   "license": "MIT（本仓库）；引用 Nicolboy/KICAD-C2000-float-flyback（CERN-OHL-S-2.0）的器件位号与引脚",
+   "parent_sha256": "f71516fd3a23887472377ca1bf99a6c58fa3e99aae374e785478b83931a30f77"
+  },
+  {
+   "path": "fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.frames.unknown-kind-decisions-v1.intent-format-5-v1.intent.json",
+   "sha256": "31070ba8e556171feb1a365d856bb99217418f17e42ddcda3ae7145205a31953",
+   "origin": "由 fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.frames.unknown-kind-decisions-v1.intent.json 派生：intent 格式升到 5，只把 schema_version 从 4 改为 5，其余不变",
+   "license": "MIT（本仓库）；引用 Nicolboy/KICAD-C2000-float-flyback（CERN-OHL-S-2.0）的器件位号与引脚",
+   "parent_sha256": "c1dfbfb511df9e4bea4a4082e0e489b12584d8f43e9b73d0a3fad5c86e550c53"
   }
  ]
 }

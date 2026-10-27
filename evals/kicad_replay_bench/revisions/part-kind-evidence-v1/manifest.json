@@ -1,15 +1,15 @@
 {
  "revision": "part-kind-evidence-v1",
  "parents": {
-  "revisions/clamp-operating-rows-v1/expected.json": "252aa7d4ea85bf4143fd6dabc5fb4ffe5cd40522a53c206303544509ffb4ecca",
-  "revisions/clamp-operating-rows-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
-  "revisions/clamp-operating-rows-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81",
-  "revisions/clamp-operating-rows-v1/manifest.json": "35b67cf1275420d77b629227e8c9ee632961274574a5226905f99ea1c8c30ee6"
+  "revisions/intent-format-5-v1/expected.json": "252aa7d4ea85bf4143fd6dabc5fb4ffe5cd40522a53c206303544509ffb4ecca",
+  "revisions/intent-format-5-v1/cases.json": "76573f00f2f35883bf2a07dbda058d356b97649ce42eb2e3adf68007c4103559",
+  "revisions/intent-format-5-v1/sources.json": "c75b45f60e4f89c4d7caeca6acbf684b91b937eeaa195ff6c88cefed3198d2d0",
+  "revisions/intent-format-5-v1/manifest.json": "569f14296420b344210ec35327ad9a76a322c919169dc4a41a452a6b380299e7"
  },
  "derived_files": {
   "revisions/part-kind-evidence-v1/expected.json": "846d519b3dd13f5a90e0a015a0acca7da2663a57b9ac52eaa62e51f93f739e28",
-  "revisions/part-kind-evidence-v1/cases.json": "71ba79e38c19433023d0961c565efae1de8054dc396ced948626fab58e4299ed",
-  "revisions/part-kind-evidence-v1/sources.json": "83fa2218ee2d081bfbbb612e1bf32fb8fc1c0bfb4447a0a8cadc0230a72c0b81"
+  "revisions/part-kind-evidence-v1/cases.json": "76573f00f2f35883bf2a07dbda058d356b97649ce42eb2e3adf68007c4103559",
+  "revisions/part-kind-evidence-v1/sources.json": "c75b45f60e4f89c4d7caeca6acbf684b91b937eeaa195ff6c88cefed3198d2d0"
  },
- "scope": "器件类型的依据（2026-10-27，用户：Start implementing the recorded decisions）：必须有手册声明的器件按最终类型取、认不出且接 ≥2 网的器件须归类；r02 +3、r03 +2、rf1 三例 +5（FN-PRI-FLYBACK 成员 94→95）、rf2 +1；其余答案不变。clamp-operating-rows-v1 文件保持原字节。"
+ "scope": "器件类型的依据（2026-10-27，用户：Start implementing the recorded decisions）：必须有手册声明的器件按最终类型取、认不出且接 ≥2 网的器件须归类；r02 +3、r03 +2、rf1 三例 +5（FN-PRI-FLYBACK 成员 94→95）、rf2 +1；其余答案不变。用例与夹具沿用 intent-format-5-v1；intent-format-5-v1 文件保持原字节。"
 }

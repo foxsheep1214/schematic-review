@@ -70,7 +70,7 @@
    "source": "rh-ad8495-thermocouple",
    "fixture": "fixtures/rh-ad8495-thermocouple.xml",
    "log": "empty",
-   "intent": "fixtures/rh-ad8495-thermocouple.page-inventory-v1.intent-format-4-v1.intent.json",
+   "intent": "fixtures/rh-ad8495-thermocouple.page-inventory-v1.intent-format-5-v1.intent.json",
    "purpose": "演练板 + 只含官方脚表的 intent：缺名脚由官方脚表解决（5fa6d3b）"
   },
   {
@@ -86,7 +86,7 @@
    "source": "rf1-c2000-float-flyback",
    "fixture": "fixtures/rf1-c2000-float-flyback.xml",
    "log": "empty",
-   "intent": "fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.intent-format-4-v1.intent.json",
+   "intent": "fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.intent-format-5-v1.intent.json",
    "purpose": "同板带出处 intent：反激绕组映射、R19 源极采样回地、UCC24612 同步整流最小声明"
   },
   {
@@ -102,7 +102,7 @@
    "source": "rf1-c2000-float-flyback",
    "fixture": "fixtures/rf1-c2000-float-flyback.xml",
    "log": "empty",
-   "intent": "fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.frames.unknown-kind-decisions-v1.intent.json",
+   "intent": "fixtures/rf1-c2000-float-flyback.rail-confirmation-v1.frames.unknown-kind-decisions-v1.intent-format-5-v1.intent.json",
    "purpose": "同板 intent 不再手画电路：circuit_candidates.py 生成 5 个候选（Q1/Q2 自锚定的变换器、Out1 输入走线、Q3/Q4 无人驱动的开关），4 条决定（Q1+Q2 合并为 PRI-FLYBACK，Out1 为其重复，Q3/Q4 不是电路）推出 1 个电路；每个电路一个功能框架；候选文件 schema 2：每个成员写明是否归该候选所有（owned），每颗器件恰好一个所属电路；（active-part-decisions-v1）候选 unassigned 里的有源件（Q5、U1、U3、U5、U7–U12）各有决定：U1 门极驱动与 U12 同步整流控制器 add 进 PRI-FLYBACK（29 件），其余 8 颗器件级 reject（OUTSIDE_SCOPE）；（unknown-kind-decisions-v1）类别读不出、三个以上网的 Reg1–Reg3 也要决定：三条器件级 reject",
    "candidates": "fixtures/rf1-c2000-float-flyback.circuit-owners-v1.candidates.json"
   }

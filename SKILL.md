@@ -117,7 +117,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 工作点和保证条件对不上时定界；估算判通过的边界 | [bounding-table.md](references/bounding-table.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
 | 审查员 | 结果、P0–P3、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
-| 审查员 | 需求缺失/含糊/冲突 | [requirement-clarifications.md](references/requirement-clarifications.md) |
+| 审查员 | 需求缺失/含糊/冲突：当场问用户，答复写进需求清单 | [requirement-clarifications.md](references/requirement-clarifications.md) |
 | 审查员 | ① 写 intent.json：字段、输入声明、电路决定、需求参数 | [intent-format.md](references/intent-format.md) |
 | 审查员 | ② 计划字段、展开规则、功能电路依赖与状态核对（含电平转换） | [plan-format.md](references/plan-format.md) |
 | 审查员 | ③④ 结果字段：功能判定、条款、余量依据、开放项、单条检查、功能复核 | [results-format.md](references/results-format.md) |
@@ -154,7 +154,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱动、REQ 需求与闭环。可编程器件不审配置表：手册声明的能力判为可达，硬件按允许的配置范围判，只在某个设置下成立的条款标 `setting`，报告列给配置表编写方。
 方式：A 自动扫描、E 保证值核对、T 连接追踪、C 工程计算、D 条款核对、V 图面目检、Q 覆盖审计、H 版本比对。
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（网表扫描、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
-计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-4)。
+计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-5)。
 
 功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（2.1）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各检查项写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
 
@@ -169,15 +169,19 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 从资料和对话提取功能/量化指标、接口角色与数量、输入范围/负载、温度、降额依据、保留/删除项，
 写入 `intent.json`（字段见 [intent 格式](references/intent-format.md)）：需求原文由
 `requirements_extract.py` 从需求文档逐字抄录（`requirement_source` 写文件与 sha256；任务书给了几份需求文档就登记几项，写成列表，一份都不少），每条要求只写 REQ ID、类别（规则总表的需求类别表）、对需求的理解（`interpretation`）、从原文读出的数字（`parameters`）、承接它的电路（`owners`，承接电路：落实这条需求的功能电路、系统功能或接口；计划会列出可承接的电路，有就必须写，认定没有承接电路写 `[]` 加能定位的理由）和确认状态，审查方面由参数和类别推出（有参数的方面只在原文读出了那个数时才问，拿不准的类别多选），判据取方面模板，扫描会列出原文里没读进参数的数字；设 `review_phase`（日常设计 `design_iteration`，
-用户明确要冻结才用 `schematic_freeze`）。其余 intent 字段在有它的输入的那个任务里写：装配配置 1.2，资料路径、脚表、器件类别 1.3，电源轨 2.1。需求缺失或冲突按 [需求澄清项](references/requirement-clarifications.md)
-集中提出，先做不受影响的工作，不逐颗器件打断用户，也不自行接受风险。
-录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待定、
-客观设计要求、明确排除和下游工作；不能把源文件的 OPEN 标题机械变成责任方待决。
+用户明确要冻结才用 `schematic_freeze`）。其余 intent 字段在有它的输入的那个任务里写：装配配置 1.2，资料路径、脚表、器件类别 1.3，电源轨 2.1。需求缺失、含糊或冲突而判断要靠它的，**当场问用户**（[需求澄清](references/requirement-clarifications.md)）：
+录完需求后一次汇总提问，不逐颗器件打断用户，问题写 `intent.clarifications`；用户给定需求、采纳 SR 建议的条文或明确暂缓，
+三选一，不留“先挂着”。定下的需求马上加进 `intent.requirements` 再往下做，并问用户是否直接改原始需求文件（点名哪个文件哪一处、写什么），
+确认后直接改，记 `answer.requirement_files`；无人值守时读任务书附的澄清答复，没覆盖的问题停在这一步，
+把问题清单交给用户。②、③ 中途发现新的需求问题同样当场问。
+录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待用户决定的、
+客观设计要求、明确排除和下游工作；不能把源文件的 OPEN 标题机械变成问题。
 按 [输入与覆盖](references/inputs-and-coverage.md) 记录输入版本/哈希；PDF 与网表须核修订号证明同版。
 仅有 PDF 时逐页读图并声明范围，不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装须另获授权。
 
 做完的标志：`requirements` 每条有类别、理解、参数和承接电路（或 `[]` 加理由）；需求原文里带单位的数字都读进了参数，
-或在理解里说明为什么不读；`requirement_source`、输入文件的版本与哈希已记录；`review_phase` 已设。
+或在理解里说明为什么不读；`intent.clarifications` 每个问题都有答复（冷扫不再打印 `CLARIFICATION_PENDING`）；
+`requirement_source`、输入文件的版本与哈希已记录；`review_phase` 已设。
 
 #### 1.2 解析与完整性
 
@@ -268,7 +272,7 @@ merge、split、reject、add 和加工作态都要能定位的引用。每颗被
 两端件留在 REQ-Q08 清单上写原因；候选规则该认出而没认出的，另记改进台账改规则。
 `features` 的 NOT_APPLICABLE 声明不生成检查项：候选没检出的类型都在 REQ-Q08 那一项里逐个确认，声明只作它的依据；REQ-Q07 只给检出或声明适用的类型。
 `unassigned` 与 `gaps`（没核验角色的 IC、缺引脚名）先清。
-格式见 [计划与结果](references/intent-format.md#一intentjsonschema_version-4)，规则见 [自动检查](references/automation.md#二检查器)。
+格式见 [计划与结果](references/intent-format.md#一intentjsonschema_version-5)，规则见 [自动检查](references/automation.md#二检查器)。
 
 SR 独立审查，只用四类输入：需求、设计结果（原理图、网表、BOM、原理图 PDF）、原厂与标准资料、SR 自己的计算。
 设计方的设计报告、设计方案、计算书、选型记录、电气意图、需求追溯、器件约定、开放项、自检与目检记录、交付证据、下游约束
@@ -320,12 +324,19 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 - `objects` 就是电路（候选经决定）的成员；要扩大或漏了电路，改 `intent.circuit_decisions` 后重生成。框架的 `members` 既有电路检查项，也有这块电路拥有的器件检查项（身份、引脚、应力、工况、它器件上的扫描发现）：
   都在这个功能里判，同一方面的几颗器件一条 judgement 可以合答，差别用 `check_ids` 分开。一个电路的缺口和失败写在它自己的功能里；
   跨电路的缺口只写一次，影响条目用 `check_ids` 点名另一电路的检查项。自建功能只装不属于任何框架的检查项；文档检查（DOC-*）在检查项上判，不包成功能。
+- 先从器件关键参数判断：每颗器件在本板用到的关键参数就是[工作点定界表](references/bounding-table.md)里它那一类的格，逐个参数比本板工作点和保证值，
+  比完再下功能结论；结论只有三档——合格、不合格（给改法）、合格但有风险（2026-10-26，用户：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在定界表上扩）。
 - 余量按 `margin.basis.kind` 下结论（GUARANTEED_BOUND 满足才 PASS、REACHABLE_CASE 不满足才 FAIL、EXACT_ENVELOPE 两头都判、ESTIMATE 不判，
   例外见该节“估算判通过”）；器件参数按[工作点定界表](references/bounding-table.md)定界，门禁重算。
   典型值估算能不能判 PASS 由定界表那一格的[判决边界](references/bounding-table.md#判决边界)按后果类定（不按规则 id）：
   估算判 PASS 的余量写 `cell`、`method`（G7–G9）、`consequence_class`、`estimate_factor`（等于格给该后果类的倍数，余量按打折后的值算）和 `handoff`；
-  格没有这个参数写 `cell: NONE`，按默认（只许功能/性能后果，损坏/过热/保护类规则不估算）。这种 PASS 是 C 级证据，准出最高有条件定稿。
-- 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，再分 DESIGN_VALUE / DELIVERABLE_PENDING / VENDOR_DATUM；
+  格没有这个参数写 `cell: NONE`，按默认（只许功能/性能后果，损坏/过热/保护类规则不估算）。这种 PASS 是 C 级证据，结论是“合格，但有风险”：
+  余量另写 `risk{types, corner, improvement}`——风险类型取那一格的“估算对应的风险”（环境适应性 / 寿命 / 一致性，`NONE` 三者任选），
+  `corner` 写只靠估算的那个角点，`improvement` 写消除风险的改法（换型号、换档、样机抽测）。保证值在额定内、只是没满足审查员假定的降额时，
+  决定性余量也可写 `risk{types: [STRESS]}`。风险不限制定稿，报告单列“风险清单”。
+- 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，真缺厂家数据的记 VENDOR_DATUM；
+  设计没定不开项（2026-10-26，用户：按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束）：原理图或 BOM 该写明而没写的值记失败项，改法写反推出的值；
+  归另一份设计文件（磁件、固件、PCB）的值，以及另一环节欠的交付物（定制件图纸、固件能力），写 DESIGN_CONSTRAINT 条件（没有单一数值的写条款），按约束判 PASS 并移交给负责方；
   检查项只在本方面本状态有证明通过的余量或判断时 PASS，没人判过的方面不默认通过。
 
 按计划 `functions[]` 的顺序推进：系统功能 → 功能电路 → 接口 → 全板；每个功能逐对象、逐状态给结果，全板项逐条给适用性和结果。
@@ -343,7 +354,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   编程救援、反馈/检测、使能/故障上报都要追。TX/RX、P/N、Host/Device 按两端官方语义复述并查对端针序（SIG-T04）。
 - **工程计算**：按 [WCA 公式](references/wca-formulas.md) 先确认模型，再代入实际串并联、输入/温度/负载和公差角点；
   原厂已覆盖工况的 Min/Max 直接使用。区分设定目标与物理可达输出（FB 公式不代表升压能力、RC 不等于复位脉宽、
-  有 TVS 不等于防护通过）。阈值型保护（门限脚、门限链与基准齐纳、跨开关节点的能量钳位）两侧都算（PRO-C02）；跨网与地的防护钳位（电源轨 TVS、芯片脚对地齐纳、连接器信号线 ESD）逐器件按规定浪涌波形核工作电压、钳位电压对同网最低耐受和脉冲能量（PRO-E02），连接器只核挂线与泄放（PRO-D03）；传感器开短路按控制器实际偏置档与环境全范围判别（ANA-C04）。连续可调输出在全范围扫描应力。判“缺保护”前计入 IC 自带保护（寄存器设定的门限归固件任务）；改频率/阻值/保护管时连带复算。
+  有 TVS 不等于防护通过）。阈值型保护（门限脚、门限链与基准齐纳、跨开关节点的能量钳位）两侧都算（PRO-C02）；跨网与地的防护钳位（电源轨 TVS、芯片脚对地齐纳、连接器信号线 ESD）逐器件核工作电压（只比持续最高电压）、能到达本节点的瞬态下钳位电压对同网最低耐受和脉冲能量（PRO-E02）。一次只取一个瞬态或故障事件，叠加在持续最坏工况上；瞬态比瞬态额定，持续比持续额定（[单一瞬态](references/evidence-proportionality.md#假设上界与实际故障的证据门槛)），连接器只核挂线与泄放（PRO-D03）；传感器开短路按控制器实际偏置档与环境全范围判别（ANA-C04）。连续可调输出在全范围扫描应力。判“缺保护”前计入 IC 自带保护（寄存器设定的门限归固件任务）；改频率/阻值/保护管时连带复算。
 - **自己算关键数值**：决定结论的数值由 SR 按原理图、需求和原厂资料自己算，`circuit_bounds.*`（分压、RC 跨阈、线性稳压热、逻辑电平裕量、电容纹波折算、电阻功耗、串阻电流）与 `model_bounds.*` 自行枚举公差角点。不复算设计文档所称的数值，也不拿它当判据。
 - **核对模型和原表**：CrM Boost 输出电容用 `model_bounds.crm_boost_capacitor_ripple` 独立核二极管导通相位，并按控制器实际母线模式分别算；不沿用设计脚本的公式证明自身。厂家参数引用用 `audit_parameter_claims.py` 对比独立摘录的原表，给料号/材料、文档哈希、页码、温度/激励条件、典型或保证值口径；工程设计限值另核裕量，不能当厂家额定值引用。工具不代替原表摘录核实，详见 [自动扫描与计算工具](references/scans-and-tools.md#厂家参数引用核对)。
 - **动态数值证据**：需要有界 R/C 工作点或瞬态时按 [仿真证据](references/simulation-evidence.md)；样本在窗口内不直接等于规则 PASS。
@@ -398,8 +409,8 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 #### 4.2 证据不足的分类
 
 证据不足先按 [分出下游工作](references/verdicts-and-release.md#纯下游验证项) 分开样机/试验结果、优化目标和真实设计缺口；
-批量脚本不能用一句固定兜底语给全部证据不足定级。分类落在开放项的 `kind` 上（DESIGN_VALUE、VENDOR_DATUM、DELIVERABLE_PENDING），检查项由它派生：
-关闭条件只写本阶段能拿到的东西——厂家保证值、设计规格、交付物；实测、样机、仿真才能得到的部分不写进关闭条件，拆成阶段 NA 检查项加移交。
+批量脚本不能用一句固定兜底语给全部证据不足定级。分类落在开放项的 `kind` 上（VENDOR_DATUM），检查项由它派生：
+关闭条件只写本阶段能拿到的东西——厂家保证值；实测、样机、仿真才能得到的部分不写进关闭条件，拆成阶段 NA 检查项加移交。
 筛查的四个提示点最常漏的几种：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP`（开放项的 `closure`/`acquisition`/`why_insufficient` 或检查项的缺口文字接受实测、样机、样品、仿真作为关闭路径；
 “随后/留给……”的分句已把下游部分分出，不算）、`CALCULATION_RECORDED_AS_DATA_GAP`（VENDOR_DATUM 开放项的 `acquisition`/`closure` 写了已读某页、只剩复算，又没说缺哪个数据）、
 `FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP`（开放项的 `what`/`closure`/`deliverable` 里是烧录镜像、读回、编程模式、量产校准，而不是编程口电平、上拉这类原理图前提）、
@@ -415,7 +426,7 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 - `valid` 只表示记录可对账；`quality_screening` 是疑点提示，确有错配才改结论。零提示不证明审完。
 - 疑点落在手填检查项和功能判定/开放项上。派生检查项的措辞、对象、后果、缺口都是工具按开放项写的，筛查不逐项点它们：
   定级整批同级、下游/固件/计算误记、时序窗口这些疑点读开放项一次，`check_ids` 列它挡住的检查项（一条开放项和它的派生检查项算一个缺口）；处置时改开放项，派生检查项读取时重新派生。
-- 已有资料尚未读算的项记 REVIEW_INCOMPLETE，本轮自己读算完；审查未完成时只交进度，`pack_review.py` 拒绝打包。
+- 已有资料尚未读算的项记 REVIEW_INCOMPLETE，本轮自己读算完；这是审查者自己的活，不是报告结论：有这种项时 `render_report.py` 不出报告、`pack_review.py` 拒绝打包，只在对话里交进度。
   只剩 SR 工具自身限制、已手工核完的写 `manual_verification`（什么算工具限制见 [单条检查](references/results-format.md#单条检查)）。
 - 冻结时加 `--require-release`；非冻结阶段 `release` 不是总判定。
 
@@ -433,10 +444,10 @@ REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
       python3 scripts/render_report.py review-plan.json review-results.json review-gate.json --notes notes.json -o <审查目录>/审查报告.md   # 同时写出 审查报告.html
 
   默认简洁报告保留全部缺陷、任务、通过标准及计数，逐项依据链接到台账；需逐条展开时加 `--detail full`，不手改报告或删检查来缩短输出。
-- 按典型值估算判通过的检查由门禁的 `estimated_passes` 渲染成“按典型值估算的结论”一节（功能、格、怎么估、余量、样机要测、涉及检查），结论段和数字一览各带一句；
+- 合格但有风险的检查由门禁的 `risks` 渲染成“风险清单”一节，按风险类型分组（功能、格、只靠估算的角点、怎么估、余量、怎么改进、样机要测、涉及检查），
+  结论段和数字一览各带一句；风险不限制定稿。寿命检查项凭估算判通过的自动列为寿命风险，改法取它的 BOM 约束；
   器件类别词表或定界表没覆盖的（`sr_improvements` 的 NEW_DEVICE_KIND / NEW_BOUND_CELL）渲染在“对 SR 的反馈”下“器件类别与定界表要扩的”，只告诉 SR 维护者要扩表。
-- 等交付物（DELIVERABLE_PENDING 开放项挡住的检查项，门禁 `pending_deliverables`）不是审查发现：不是阻断项，不进待办和“最先要解决的 3 件事”，
-  渲染成“等交付物”一节（交付物、负责方、类别、可能后果、等它的判断、按什么假定判的、怎样算交付）给项目经理催办，准出最高有条件定稿（2026-10-26 定）。
+- 按设计约束判合格的检查项由门禁 `design_constraints` 汇总，结论段带一句，约束本身列在“交给后续环节的要求”；不限制定稿（2026-10-26，用户：并入乙）。
 
 - 渲染只写读者要的量（5.1 审核 2026-10-26）：功能表每个方面只写决定性余量、`calculation.result` 超 300 字只取第一句、问题里超过 8 个位号写个数；
   交给后续环节的要求只在每个字段至多一个位号槽时合并成"每只"一行；图说不重复 caption 的"现状/改后"；"涉及的检查"和"影响哪些判断"超过 6 条写个数；

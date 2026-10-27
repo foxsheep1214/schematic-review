@@ -62,7 +62,7 @@ def entries(categories=None, interpretations=None):
     categories, interpretations = dict(CATEGORIES, **(categories or {})), interpretations or {}
     return [{'id': rid, 'categories': categories[rid],
              'interpretation': interpretations.get(rid, 'synthetic reading of ' + rid), 'status': status}
-            for rid, status in (('REQ-IN-01', 'CONFIRMED'), ('REQ-TEMP-01', 'CONFIRMED'), ('REQ-OPEN-01', 'OPEN'))]
+            for rid, status in (('REQ-IN-01', 'CONFIRMED'), ('REQ-TEMP-01', 'CONFIRMED'), ('REQ-OPEN-01', 'DEFERRED'))]
 
 
 def doc_for(texts):
@@ -110,7 +110,7 @@ class ExtractTests(unittest.TestCase):
 class IntentTests(unittest.TestCase):
     def setUp(self):
         self.path = write()
-        self.intent = dict({'schema_version': 4}, **requirement_intent(self.path))
+        self.intent = dict({'schema_version': 5}, **requirement_intent(self.path))
 
     def errors(self, intent):
         return [e for e in validate_intent(intent) if 'requirement' in e]
@@ -144,7 +144,7 @@ class IntentTests(unittest.TestCase):
 class PlanRowTests(unittest.TestCase):
     def test_a_requirement_row_carries_its_source_text_and_locator(self):
         path = write()
-        plan = build_review_plan({'parts': {}, 'nets': {}, 'pin2net': {}}, dict({'schema_version': 4}, **requirement_intent(path)))
+        plan = build_review_plan({'parts': {}, 'nets': {}, 'pin2net': {}}, dict({'schema_version': 5}, **requirement_intent(path)))
         row = next(c for c in plan['checks'] if c['rule'] == 'REQ-D01' and c['object']['requirement_id'] == 'REQ-IN-01')
         self.assertEqual(row['source_text']['locator'], str(path) + ':9')
         self.assertEqual([c['text'] for c in row['source_text']['columns']], ['工作输入 9–36 V DC', '40 V 持续 100 ms 不损坏'])
@@ -185,7 +185,7 @@ class MultiDocumentTests(unittest.TestCase):
         self.assertEqual([i['id'] for i in out['items']], ['REQ-IN-01', 'REQ-TEMP-01', 'REQ-OPEN-01', 'REQ-E-01'])
         self.assertEqual([d['path'] for d in out['documents']], [str(self.a), str(self.b)])
         self.assertTrue(out['items'][-1]['locator'].startswith(str(self.b) + ':'))
-        intent = dict({'schema_version': 4}, **requirement_intent(self.a))
+        intent = dict({'schema_version': 5}, **requirement_intent(self.a))
         intent['requirement_source'] = [source(self.a), source(self.b)]
         intent['requirements'].append({'id': 'REQ-E-01', 'categories': ['OUTPUT_SPEC'], 'interpretation': 'ripple',
                                        'status': 'CONFIRMED'})

@@ -158,23 +158,3 @@ if __name__ == '__main__':
     unittest.main()
 
 
-class ExternalImpedanceTests(unittest.TestCase):
-    """2026-10-26 (user: 按标准参考阻抗算; 判原理图部分，电感交后续): the mains and the short-circuit loop are no design
-    values, so a hot-plug inrush row or a port hard-short row is not held open as DESIGN_VALUE."""
-
-    def errors(self, rule, cid, kind):
-        from review_functions import external_impedance_errors
-        expected = {cid: {'id': cid, 'rule': rule}}
-        checks = {cid: {'review_result': 'INSUFFICIENT', 'open_ref': 'FN-X/GAP'}}
-        functions = [{'id': 'FN-X', 'open': [{'key': 'GAP', 'kind': kind}]}]
-        return external_impedance_errors(expected, checks, functions)
-
-    def test_a_hot_plug_row_held_as_a_design_value_is_refused_naming_the_reference_impedance(self):
-        found = self.errors('PWR-C13', 'PWR-C13.NTC-HOT.TH1', 'DESIGN_VALUE')
-        self.assertTrue(found and 'IEC 60725' in found[0], found)
-        self.assertEqual(self.errors('PWR-C13', 'PWR-C13.NTC-HOT.TH1', 'VENDOR_DATUM'), [])   # a missing IFSM may wait
-
-    def test_a_port_short_row_held_as_a_design_value_is_refused(self):
-        found = self.errors('DRV-C02', 'DRV-C02.PORT-SHORT.Q1', 'DESIGN_VALUE')
-        self.assertTrue(found and 'loop impedance' in found[0], found)
-        self.assertEqual(self.errors('DRV-C02', 'DRV-C02.Q1', 'DESIGN_VALUE'), [])   # another SOA row may wait

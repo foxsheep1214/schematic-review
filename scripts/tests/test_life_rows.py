@@ -192,6 +192,12 @@ class EstimateTests(unittest.TestCase):
         errors = self.errors(life_function())
         self.assertFalse([e for e in errors if 'DEV-C02.LIFE.R1' in e], errors)
 
+    def test_a_life_estimate_is_a_lifetime_risk_improved_by_its_bom_constraint(self):
+        out = vr.validate_review(*life_ledger(life_function()))
+        [e] = [x for x in out['risks'] if x['check_id'] == 'DEV-C02.LIFE.R1']
+        self.assertEqual((e['source'], e['types']), ('LIFE', ['LIFETIME']))
+        self.assertIn('估算', e['improvement'])
+
     def test_an_estimate_short_of_its_target_does_not_pass(self):
         fn = life_function()
         fn['calculation']['margin']['value'] = -100

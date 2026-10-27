@@ -15,15 +15,15 @@ from review_workflow import workflow, decision
 from review_quality import FREEZE_BLOCKING_CODES, screen_quality
 from review_engine import validate_engine
 from review_summary import categorized_summary, validate_impact
-from requirement_clarifications import validate_clarifications
+import requirement_clarifications
 from checkers import REGISTRY, passive_stress, validate_inventories
 from validate_remediation import validate_remediation, validate_figures, changes_topology, READINESS
 from electrical_contract import LOCATOR_IDS_RE, PLAN_SCHEMA_VERSION, db_fingerprint, load_json, squeeze_words
 from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check_id
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
-from review_stage_scope import validate_stage_scope, outside_stage, GAP_CAUSES
-from review_functions import (configuration_settings, estimated_passes, netlist_evidence_errors, parameter_sheet,
+from review_stage_scope import validate_stage_scope, outside_stage, user_deferred, GAP_CAUSES
+from review_functions import (configuration_settings, design_constraints, risks, netlist_evidence_errors, parameter_sheet,
                               validate_functions)
 import check_key
 import row_owner
@@ -37,7 +37,6 @@ RESULTS = {"PASS", "FAIL", "INSUFFICIENT", "NA"}
 SEVERITIES = {"P0", "P1", "P2", "P3"}
 APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
 # Optional INSUFFICIENT cause (evidence-proportionality.md); over-strict checks are re-judged, not tagged.
-REQUIREMENT_GAP = {"OPEN": "REQUIREMENT_OPEN", "DEFERRED": "USER_DEFERRED"}
 CLAUSE_KINDS = ("OBLIGATION", "PREMISE")
 CLAUSE_ORDER = {"NA": 0, "PASS": 1, "INSUFFICIENT": 2, "FAIL": 3}
 
@@ -124,8 +123,6 @@ def split_out_errors(checks, expected):
     return errors
 
 
-REQUIREMENT_LABEL = {"CONFIRMED": "已确认（CONFIRMED）", "PROPOSED": "提案（PROPOSED）",
-                     "OPEN": "未定（OPEN）", "DEFERRED": "暂缓（DEFERRED）"}
 SCOPE = set(catalog.COVERAGE_RULES)
 
 
@@ -329,17 +326,15 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if scope_decl:
         blockers.append("review_scope: the ledger answers only %s; it is not a board verdict"
                         % ", ".join(scope_decl["functions"]))
-    clarifications = validate_clarifications(report, checks, expected)
-    errors.extend(clarifications['errors'])
-    blockers.extend(clarifications['blockers'])
-    stage = workflow(plan, report, checks, clarifications, require_design_options=actionable)
+    # A requirement question the user has not answered stops the review at step ① (2026-10-26).
+    errors.extend(requirement_clarifications.pending_errors((plan.get('review_inputs') or {}).get('intent')))
+    stage = workflow(plan, report, checks, require_design_options=actionable)
     errors.extend(stage['errors'])
     accepted = False
-    # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): derive writes C on the row, the release
-    # is capped at CONDITIONAL_GO below, and the report lists these rows apart.
-    estimated = estimated_passes(expected, checks, report.get('functions'))
-    estimated_ids = {e['check_id'] for e in estimated}
-    pending = []   # INSUFFICIENT rows waiting for a deliverable (filled below)
+    # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): derive writes C on the row. It is a
+    # pass with a risk: the report lists the risks apart and they do not cap the release (2026-10-26, user: 风险不限制定稿只单列).
+    risk_rows = risks(expected, checks, report.get('functions'))
+    estimated_ids = {e['check_id'] for e in risk_rows if e['source'] == 'ESTIMATE'}
     for cid in estimated_ids:
         if checks[cid].get('evidence_confidence') != 'C':
             errors.append(f"{cid}: a PASS on an estimate is C-grade evidence (derive writes it); it cannot claim "
@@ -406,7 +401,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         if key in expected and app != expected[key].get("applicability"):
             require(evidence(item.get("applicability_evidence")),
                     f"{key}: applicability changed without evidence")
-        if result == "NA" and not outside_stage(item):  # stage NA keeps APPLICABLE (review_stage_scope)
+        if result == "NA" and not outside_stage(item) and not user_deferred(item):  # both keep APPLICABLE (review_stage_scope)
             require(app == "NOT_APPLICABLE", f"{key}: NA requires NOT_APPLICABLE")
             if (expected.get(key) or {}).get('requires'):
                 errors.extend(netlist_evidence_errors(key, item.get('applicability_evidence'), db))
@@ -423,18 +418,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 errors.extend(validate_impact(item, impact_classes))  # history dispositions are counted apart
             require(confidence == "C", f"{key}: unresolved conclusion must remain C")
             require(ids(item.get("missing_inputs")), f"{key}: missing_inputs required")
-            if item.get('gap_cause') != 'REQUIREMENT_OPEN':
-                require(item.get("potential_severity") in tuple(SEVERITIES),
-                        f"{key}: potential_severity required")
+            require(item.get("potential_severity") in tuple(SEVERITIES),
+                    f"{key}: potential_severity required")
         if "gap_cause" in item:
             require(result == "INSUFFICIENT" and item["gap_cause"] in GAP_CAUSES,
                     f"{key}: gap_cause is one of {'/'.join(GAP_CAUSES)} and only on INSUFFICIENT")
-        # A requirement the owner has not decided (OPEN) or has postponed (DEFERRED) cannot be judged.
-        req_status = (expected.get(key, {}).get("object") or {}).get("requirement_status")
-        if req_status in REQUIREMENT_GAP:
-            require(result == "INSUFFICIENT" and item.get("gap_cause") == REQUIREMENT_GAP[req_status],
-                    f"{key}: 需求状态为{REQUIREMENT_LABEL[req_status]}，结果须为 INSUFFICIENT 且 gap_cause 为 {REQUIREMENT_GAP[req_status]}")
-        elif clauses_required and expected.get(key, {}).get("rule") == "REQ-D01" and result != "NA":
+        if clauses_required and expected.get(key, {}).get("rule") == "REQ-D01" and result != "NA":
             derived = requirement_bindings.derived_result(expected[key], checks, function_reading.fail_filter(plan, report))
             if derived is None:
                 errors.extend(requirement_clause_errors(key, item, source_text(expected[key])))
@@ -472,14 +461,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             result == "INSUFFICIENT" and item.get("potential_severity") in ("P0", "P1"))
         if result == "INSUFFICIENT" and item.get("gap_cause") == "REVIEW_INCOMPLETE":
             blockers.append(f"{key}: review work not completed; finish the review before release")
-        requirement_decision = item.get('gap_cause') == 'REQUIREMENT_OPEN'
-        # A deliverable another stage owes (drawing, configuration table, firmware capability) is a condition of the
-        # freeze, not a reason against it (2026-10-26, item 3): it caps the release at CONDITIONAL_GO and is listed
-        # for the project manager under 等交付物, never a blocker.
-        pending_deliverable = result == "INSUFFICIENT" and item.get("gap_cause") == "DELIVERABLE_PENDING"
-        if pending_deliverable:
-            pending.append(key)
-        if result in ("FAIL", "INSUFFICIENT") and not requirement_decision and not pending_deliverable:
+        if result in ("FAIL", "INSUFFICIENT"):
             if item.get("severity") == "P0":
                 blockers.append(f"{key}: P0 requires verified repair")
             elif (critical or item.get("blocking")) and not approval_ok:
@@ -635,7 +617,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     "PASS rows need their own comparison before freeze" if item['code'] == 'TEMPLATED_PASS_RATIONALE'
                     else "evidence gaps need individual grading before freeze"))
     errors.extend(e for e in derive_errors if e not in errors)   # the function checks above report most of them already
-    release = release_for(errors, blockers, accepted, estimated, pending)
+    release = release_for(errors, blockers, accepted)
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")
     gap_causes = dict(Counter(x.get("gap_cause", "UNSPECIFIED") for x in checks.values()
@@ -645,8 +627,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     for state in READINESS}
     sr_improvements.extend(extension_signals(report, db, (plan.get('review_inputs') or {}).get('datasheet_audit')))
     return {"quality_screening": screen_quality(plan, report, db, base_dir),
-            "estimated_passes": estimated,
-            "pending_deliverables": sorted(pending),
+            "risks": risk_rows,
+            "design_constraints": design_constraints(expected, checks, report.get('functions')),
             # results 7: the per-part view of the conditions (refs), for the report's 器件参数表 and compare_reviews
             "parameter_sheet": parameter_sheet(report.get('functions')),
             "configuration_settings": configuration_settings(report.get('functions')),
@@ -658,9 +640,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "stage_scope": stage_scope,
             "sr_improvements": sr_improvements,
             "rule_gaps": rule_gaps.listing(plan, report),
-            "requirement_clarification_summary": clarifications['summary'],
-            "requirement_clarifications": clarifications['items'],
-            # REQ-D01 results per requirement confirmation state: a PASS against PROPOSED is conditional on that proposal.
+            # REQ-D01 results per requirement confirmation state (a DEFERRED requirement has no rows).
             "requirements_by_status": {st: dict(Counter(checks[k].get("review_result") for k, x in expected.items()
                                                         if k in checks and (x.get("object") or {}).get("requirement_status") == st))
                                        for st in sorted({(x.get("object") or {}).get("requirement_status") for x in expected.values()} - {None})},
@@ -727,13 +707,13 @@ def extension_signals(report, db, datasheet_audit=None):
     return out
 
 
-def release_for(errors, blockers, accepted, estimated, pending=()):
-    """GO needs no error, no blocker, nothing accepted by approval, nothing passing on an estimate and no deliverable
-    outstanding; an accepted item, an estimate pass (confirmed only on the prototype) or a deliverable another stage
-    owes caps the release at CONDITIONAL_GO."""
+def release_for(errors, blockers, accepted):
+    """GO needs no error, no blocker and nothing accepted by approval; an accepted item caps the release at
+    CONDITIONAL_GO. A pass with a risk (2026-10-26, user: 风险不限制定稿只单列) or on a design constraint handed to another
+    design file (user: 并入乙) does not: both are listed apart."""
     if errors or blockers:
         return "NO_GO"
-    return "CONDITIONAL_GO" if accepted or estimated or pending else "GO"
+    return "CONDITIONAL_GO" if accepted else "GO"
 
 
 def main():

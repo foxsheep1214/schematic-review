@@ -75,7 +75,7 @@ class OldRecordTests(unittest.TestCase):
         old = copy.deepcopy(self.plan)
         old['schema_version'] = 6
         with self.assertRaisesRegex(ValueError, 'schema_version must be 7'):
-            planner = plan_review.ReviewPlanner({'parts': {}, 'nets': {}}, {'schema_version': 4})
+            planner = plan_review.ReviewPlanner({'parts': {}, 'nets': {}}, {'schema_version': 5})
             planner.previous_plan = old
             planner.merge_previous_checks()
         with self.assertRaisesRegex(ValueError, 'schema_version != 7'):

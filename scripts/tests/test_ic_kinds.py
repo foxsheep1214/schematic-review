@@ -53,7 +53,7 @@ def board():
 
 
 def verified(db, kinds):
-    intent = {'schema_version': 4, 'input_sha256': board_intent.input_fingerprint(db), 'device_kinds': {}}
+    intent = {'schema_version': 5, 'input_sha256': board_intent.input_fingerprint(db), 'device_kinds': {}}
     audit = {'device_kinds': {}}
     for ref, kind in kinds.items():
         declaration = {'kind': kind, 'page': 1, 'quote': ROLE_QUOTES.get(kind, 'synthetic ' + kind)}

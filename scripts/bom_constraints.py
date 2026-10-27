@@ -86,14 +86,14 @@ def named_parts(item, graph):
 
 
 def rating_gap_errors(expected, checks, functions, graph, anchors):
-    """A DESIGN_VALUE or VENDOR_DATUM whose rows are all part-stress rows of commodity parts, or the BOM row with a text
+    """A VENDOR_DATUM whose rows are all part-stress rows of commodity parts, or the BOM row with a text
     naming only commodity parts, is a BOM constraint."""
     errors = []
     for fn in functions or []:
         if not isinstance(fn, dict):
             continue
         for item in fn.get('open') or []:
-            if not isinstance(item, dict) or item.get('kind') not in ('DESIGN_VALUE', 'VENDOR_DATUM'):
+            if not isinstance(item, dict) or item.get('kind') != 'VENDOR_DATUM':
                 continue
             ref = '%s/%s' % (fn.get('id'), item.get('key'))
             rows = [cid for cid, row in checks.items() if isinstance(row, dict) and row.get('open_ref') == ref]

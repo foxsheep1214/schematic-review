@@ -37,7 +37,7 @@ class PlanHandoffTests(unittest.TestCase):
         # These fixtures deliberately model only a signal input, not IC supply pins.
         # Declare that limited synthetic model instead of automatically passing a
         # new unresolved physical-device inventory. Frozen circuit data is untouched.
-        return {'schema_version': 4, 'input_sha256': input_fingerprint(self.db),
+        return {'schema_version': 5, 'input_sha256': input_fingerprint(self.db),
                 'assemblies': [{'id': 'synthetic-signal-only', 'citation': 'Stipulated input-only test model',
                                 'population': {r: True for r in self.db['parts']}}],
                 'decoupling': {'schema_version': 4, 'components': {'U1': {'kind': 'other',
@@ -83,7 +83,7 @@ class PlanHandoffTests(unittest.TestCase):
             if item['handoff']['required']:
                 item['handoff'].update(state='ACCEPTED', evidence=E)
             checks.append(item)
-        report = {'requirement_clarifications': [], 'schema_version': results_model.SCHEMA_VERSION, 'functions': [],
+        report = {'schema_version': results_model.SCHEMA_VERSION, 'functions': [],
             'plan_digest': fingerprint(plan), 'db_digest': fingerprint(self.db),
             'checks': checks, 'findings': [],
             'scope_checks': {d: next(p['id'] for p in plan['checks'] if p['rule'] == catalog.COVERAGE_RULES[d]) for d in SCOPE},

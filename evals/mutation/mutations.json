@@ -56,13 +56,6 @@
   "new": "                if False:"
  },
  {
-  "id": "M13",
-  "name": "F2 design value asked of a vendor accepted",
-  "file": "scripts/review_functions.py",
-  "old": "        if VENDOR_ASK_RE.search(asked):",
-  "new": "        if False:"
- },
- {
   "id": "M14",
   "name": "a margin that proves PASS never decides",
   "file": "scripts/function_reading.py",
@@ -110,13 +103,6 @@
   "file": "scripts/review_functions.py",
   "old": "            else:\n                errors.append('%s: margin %s (%s) proves the worst case misses the limit; record a fail item with its '",
   "new": "            elif False:\n                errors.append('%s: margin %s (%s) proves the worst case misses the limit; record a fail item with its '"
- },
- {
-  "id": "M21",
-  "name": "F8 design value without margin accepted",
-  "file": "scripts/review_functions.py",
-  "old": "    if calculation.get('claim_ids'):\n        for item in fn.get('open') or []:",
-  "new": "    if False:\n        for item in fn.get('open') or []:"
  },
  {
   "id": "M22",
@@ -175,13 +161,6 @@
   "new": "    if False:\n        aspects = {a for a, _ in _decides(item)}"
  },
  {
-  "id": "M30",
-  "name": "pending deliverable accepted without deliverable/owner/assumed",
-  "file": "scripts/review_functions.py",
-  "old": "        for field in DELIVERABLE_FIELDS:\n            if not text(item.get(field)):",
-  "new": "        for field in ():\n            if not text(item.get(field)):"
- },
- {
   "id": "M31",
   "name": "shortfall fail item accepted without remediation",
   "file": "scripts/review_functions.py",
@@ -194,27 +173,6 @@
   "file": "scripts/review_functions.py",
   "old": "        if not evidence(worst.get('curves_checked')):",
   "new": "        if False:"
- },
- {
-  "id": "M33",
-  "name": "pending deliverable accepted without a deliverable kind",
-  "file": "scripts/review_functions.py",
-  "old": "        if item.get('deliverable_kind') not in DELIVERABLE_KINDS:",
-  "new": "        if False:"
- },
- {
-  "id": "M34",
-  "name": "pending deliverable accepted without scope",
-  "file": "scripts/review_functions.py",
-  "old": "            errors.append(label + ': scope required (the conditions the deliverable must cover)')",
-  "new": "            pass"
- },
- {
-  "id": "M35",
-  "name": "report drops what a pending deliverable assumed",
-  "file": "scripts/render_report.py",
-  "old": "              ('按什么假定判的', [task.get('assumed')]),",
-  "new": "              ('按什么假定判的', []),"
  },
  {
   "id": "M36",
@@ -283,8 +241,8 @@
   "id": "M45",
   "name": "a judgement resting only on typical values or notes accepted",
   "file": "scripts/review_functions.py",
-  "old": "        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}\n",
-  "new": "        elif False and not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}\n"
+  "old": "        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT', 'DESIGN_CONSTRAINT'}\n",
+  "new": "        elif False and not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT', 'DESIGN_CONSTRAINT'}\n"
  },
  {
   "id": "M46",
@@ -297,8 +255,8 @@
   "id": "M47",
   "name": "a numeric limit settled in a judgement sentence accepted",
   "file": "scripts/review_functions.py",
-  "old": "        if 'NUMERIC_LIMIT' in kinds:",
-  "new": "        if False:"
+  "old": "        if numeric:\n",
+  "new": "        if False:\n"
  },
  {
   "id": "M48",
@@ -1624,20 +1582,6 @@
   "new": "        worded = {}"
  },
  {
-  "id": "M238",
-  "name": "C7: gaps awaiting one document of one part give no hint",
-  "file": "scripts/review_functions.py",
-  "old": "    for (kind, part), refs in sorted(awaited.items()):\n        if len(set(refs)) > 1:",
-  "new": "    for (kind, part), refs in sorted(awaited.items()):\n        if False:"
- },
- {
-  "id": "M239",
-  "name": "C7: a part number counted as a part",
-  "file": "scripts/review_functions.py",
-  "old": "set(DESIGNATOR_RE.findall(item['deliverable'])) & (known_refs or set(DESIGNATOR_RE.findall(item['deliverable'])))",
-  "new": "set(DESIGNATOR_RE.findall(item['deliverable']))"
- },
- {
   "id": "M240",
   "name": "C2: no feedback-open row",
   "file": "scripts/plan_circuits.py",
@@ -1883,13 +1827,6 @@
   "new": "return 'PUBLIC_BOUND_SHORT' if value > 0 else"
  },
  {
-  "id": "M275",
-  "name": "P10: a custom-part drawing classed as firmware",
-  "file": "scripts/results_model.py",
-  "old": "return 'PART_DRAWING' if item.get('deliverable_kind') == 'CUSTOM_PART_DRAWING' else 'FIRMWARE'",
-  "new": "return 'FIRMWARE'"
- },
- {
   "id": "M276",
   "name": "P10: the gap subclass does not reach the work list",
   "file": "scripts/review_workflow.py",
@@ -1997,9 +1934,9 @@
  {
   "id": "M291",
   "name": "an unfinished review is packed",
-  "file": "scripts/pack_review.py",
-  "old": "                        and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'REVIEW_INCOMPLETE'",
-  "new": "                        and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'NEVER'"
+  "file": "scripts/results_model.py",
+  "old": "                  and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'REVIEW_INCOMPLETE'",
+  "new": "                  and (items.get(c.get('open_ref')) or ({}, {}))[1].get('kind') == 'NEVER'"
  },
  {
   "id": "M292",
@@ -2133,20 +2070,6 @@
   "file": "scripts/review_functions.py",
   "old": "        holders = [f['id'] for f in circuits if refs and refs <= _objects(f)[0]]",
   "new": "        holders = []"
- },
- {
-  "id": "M311",
-  "name": "a custom part drawing need not list the parameters the BOM leaves out",
-  "file": "scripts/review_functions.py",
-  "old": "        elif item['deliverable_kind'] == 'CUSTOM_PART_DRAWING':\n",
-  "new": "        elif False:\n"
- },
- {
-  "id": "M312",
-  "name": "a parameter the BOM states may be called missing",
-  "file": "scripts/review_functions.py",
-  "old": "            if _stated_in_bom(_bom_text(parts, ref), m['name'], m['unit']):",
-  "new": "            if False:"
  },
  {
   "id": "M313",
@@ -2479,10 +2402,10 @@
  },
  {
   "id": "M360",
-  "name": "a format-3 intent is read as format 4",
+  "name": "a format-4 intent is read as format 5",
   "file": "scripts/plan_review.py",
-  "old": "INTENT_SCHEMA_VERSION = 4",
-  "new": "INTENT_SCHEMA_VERSION = 3"
+  "old": "INTENT_SCHEMA_VERSION = 5   # 5 (2026-10-26): clarifications; requirement status only CONFIRMED / DEFERRED",
+  "new": "INTENT_SCHEMA_VERSION = 4   # 5 (2026-10-26): clarifications; requirement status only CONFIRMED / DEFERRED"
  },
  {
   "id": "M364",
@@ -2982,97 +2905,6 @@
   "new": "    if derivation == 'TYPICAL_CURVE' and False:"
  },
  {
-  "id": "M443",
-  "name": "a design value need not name what is undecided",
-  "file": "scripts/review_functions.py",
-  "old": "        errors.extend(_undecided_errors(label, item, db))",
-  "new": "        pass"
- },
- {
-  "id": "M444",
-  "name": "an undecided entry need not name a parameter",
-  "file": "scripts/review_functions.py",
-  "old": "isinstance(u, dict) and text(u.get('parameter')) and ('ref' not in u or text(u['ref'])) for u in undecided)",
-  "new": "isinstance(u, dict) for u in undecided)"
- },
- {
-  "id": "M445",
-  "name": "a parameter the BOM row states stays undecided",
-  "file": "scripts/review_functions.py",
-  "old": "            if u.get('ref') in parts and text(u.get('unit'))",
-  "new": "            if False"
- },
- {
-  "id": "M446",
-  "name": "a parameter without a unit is matched against the BOM",
-  "file": "scripts/review_functions.py",
-  "old": "            if u.get('ref') in parts and text(u.get('unit'))",
-  "new": "            if u.get('ref') in parts"
- },
- {
-  "id": "M447",
-  "name": "an empty depends_on accepted",
-  "file": "scripts/review_functions.py",
-  "old": "        if not text(item['depends_on']):",
-  "new": "        if False:"
- },
- {
-  "id": "M448",
-  "name": "any open item may name undecided parameters or hang on another",
-  "file": "scripts/review_functions.py",
-  "old": "    if kind != 'DESIGN_VALUE' and ('undecided' in item or 'depends_on' in item):",
-  "new": "    if False:"
- },
- {
-  "id": "M449",
-  "name": "a design value may hang on an item that does not exist",
-  "file": "scripts/review_functions.py",
-  "old": "        if target not in leads:",
-  "new": "        if False:"
- },
- {
-  "id": "M450",
-  "name": "a design value may hang on an item that hangs on another",
-  "file": "scripts/review_functions.py",
-  "old": "        elif 'depends_on' in leads[target]:",
-  "new": "        elif False:"
- },
- {
-  "id": "M451",
-  "name": "a hung design value is its own item",
-  "file": "scripts/results_model.py",
-  "old": "    target = found[1].get('depends_on') if found and found[2] == 'open' else None",
-  "new": "    target = None"
- },
- {
-  "id": "M452",
-  "name": "a hung design value still makes a work item",
-  "file": "scripts/results_model.py",
-  "old": "        if lead_ref(items, ref) != ref:\n            continue",
-  "new": "        if False:\n            continue"
- },
- {
-  "id": "M453",
-  "name": "a hung design value keeps its rows",
-  "file": "scripts/results_model.py",
-  "old": "owners.setdefault(lead_ref(items, row[field]), [])",
-  "new": "owners.setdefault(row[field], [])"
- },
- {
-  "id": "M454",
-  "name": "a row of a hung design value keeps its own cause",
-  "file": "scripts/results_model.py",
-  "old": "items.get(lead_ref(items, row['open_ref']))",
-  "new": "items.get(row['open_ref'])"
- },
- {
-  "id": "M455",
-  "name": "the report counts a hung design value as a design decision",
-  "file": "scripts/render_report.py",
-  "old": "items[results_model.lead_ref(items, c['open_ref'])][1]",
-  "new": "items[c['open_ref']][1]"
- },
- {
   "id": "M456",
   "name": "an unboundable datum need not name its table cell",
   "file": "scripts/review_functions.py",
@@ -3349,8 +3181,8 @@
   "id": "M495",
   "name": "a misfit circuit type is not printed",
   "file": "scripts/plan_review.py",
-  "old": "              if d.get('code') in ('CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',",
-  "new": "              if d.get('code') in ('REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',"
+  "old": "              if d.get('code') in ('CLARIFICATION_PENDING', 'CIRCUIT_TYPE_MISFIT', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',",
+  "new": "              if d.get('code') in ('CLARIFICATION_PENDING', 'REQUIREMENT_NUMBERS_UNREAD', 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES',"
  },
  {
   "id": "M496",
@@ -3398,8 +3230,8 @@
   "id": "M502",
   "name": "the summary counts documented without the consequence class",
   "file": "scripts/review_summary.py",
-  "old": "documented = sum(not validate_impact(c, classes) for c in graded)",
-  "new": "documented = sum(not validate_impact(c) for c in graded)"
+  "old": "documented = sum(not validate_impact(c, classes) for c in gaps)",
+  "new": "documented = sum(not validate_impact(c) for c in gaps)"
  },
  {
   "id": "M503",
@@ -3531,7 +3363,7 @@
   "id": "M521",
   "name": "the pack takes any report text",
   "file": "scripts/pack_review.py",
-  "old": "    if (out / REPORT).read_text(encoding='utf-8') != render(plan, results, gate, notes, title, detail):",
+  "old": "    if (out / REPORT).read_text(encoding='utf-8') != text:",
   "new": "    if False:"
  },
  {
@@ -3564,38 +3396,10 @@
  },
  {
   "id": "M526",
-  "name": "the report has no clarification section",
+  "name": "the report has no clarification record section",
   "file": "scripts/render_report.py",
-  "old": "    out += render_clarifications(results)\n",
+  "old": "    out += render_clarifications(plan)\n",
   "new": ""
- },
- {
-  "id": "M527",
-  "name": "the clarification section leaves out the clause to add",
-  "file": "scripts/render_report.py",
-  "old": "('建议写进需求', c.get('proposed_requirement'))",
-  "new": "('建议写进需求', None)"
- },
- {
-  "id": "M528",
-  "name": "a clarification work item repeats the section",
-  "file": "scripts/render_report.py",
-  "old": "            if task.get('kind') == 'REQUIREMENT_CLARIFICATION':",
-  "new": "            if False:"
- },
- {
-  "id": "M529",
-  "name": "a covered clarification reads as blocking",
-  "file": "scripts/render_report.py",
-  "old": "'不定下来不能定稿' if c.get('freeze_impact') == 'BLOCKING' else",
-  "new": "'不定下来不能定稿' if True else"
- },
- {
-  "id": "M530",
-  "name": "closed clarifications are listed as open",
-  "file": "scripts/render_report.py",
-  "old": "if isinstance(c, dict) and c.get('status') == 'OPEN']",
-  "new": "if isinstance(c, dict)]"
  },
  {
   "id": "M531",
@@ -3666,13 +3470,6 @@
   "file": "scripts/plan_review.py",
   "old": "                if not _text(reason) or not (LOCATOR_WORDS_RE.search(reason) or LOCATOR_IDS_RE.search(reason)):",
   "new": "                if False:"
- },
- {
-  "id": "M541",
-  "name": "an OPEN requirement is also refused without owners",
-  "file": "scripts/requirement_bindings.py",
-  "old": "        if row['object'].get('requirement_status') in ('OPEN', 'DEFERRED'):\n            continue   # its rows stay INSUFFICIENT + REQUIREMENT_OPEN and are never derived",
-  "new": "        if False:\n            continue"
  },
  {
   "id": "M542",
@@ -4252,8 +4049,8 @@
   "id": "M626",
   "name": "the same closure or acquisition on several gaps is a hint",
   "file": "scripts/review_functions.py",
-  "old": "TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient', 'closure', 'acquisition')   # one sentence on several gaps",
-  "new": "TEMPLATE_FIELDS = ('no_margin_reason', 'why_insufficient')   # one sentence on several gaps"
+  "old": "TEMPLATE_FIELDS = ('why_insufficient', 'closure', 'acquisition')   # one sentence on several gaps",
+  "new": "TEMPLATE_FIELDS = ('why_insufficient',)   # one sentence on several gaps"
  },
  {
   "id": "M627",
@@ -4387,13 +4184,6 @@
   "file": "scripts/validate_review.py",
   "old": "        if checks[cid].get('evidence_confidence') != 'C':\n",
   "new": "        if checks[cid].get('evidence_confidence') == 'A':\n"
- },
- {
-  "id": "M646",
-  "name": "an estimate pass does not cap the release",
-  "file": "scripts/validate_review.py",
-  "old": "return \"CONDITIONAL_GO\" if accepted or estimated else \"GO\"",
-  "new": "return \"CONDITIONAL_GO\" if accepted else \"GO\""
  },
  {
   "id": "M647",
@@ -4534,34 +4324,6 @@
   "file": "scripts/pack_review.py",
   "old": "        elif inside_skill(path):\n",
   "new": "        elif False:\n"
- },
- {
-  "id": "M667",
-  "name": "a pending deliverable blocks the release again",
-  "file": "scripts/validate_review.py",
-  "old": "        pending_deliverable = result == \"INSUFFICIENT\" and item.get(\"gap_cause\") == \"DELIVERABLE_PENDING\"\n",
-  "new": "        pending_deliverable = False\n"
- },
- {
-  "id": "M668",
-  "name": "release_for ignores pending deliverables",
-  "file": "scripts/validate_review.py",
-  "old": "    return \"CONDITIONAL_GO\" if accepted or estimated or pending else \"GO\"\n",
-  "new": "    return \"CONDITIONAL_GO\" if accepted or estimated else \"GO\"\n"
- },
- {
-  "id": "M669",
-  "name": "deliverables stay in the work list",
-  "file": "scripts/render_report.py",
-  "old": "    deliverables = [t for t in tasks if isinstance(t.get('deliverable'), dict)]\n",
-  "new": "    deliverables = []\n"
- },
- {
-  "id": "M670",
-  "name": "deliverable rows count as not in a work item",
-  "file": "scripts/render_report.py",
-  "old": "        owned = {k for t in gap_tasks + deliverables for k in t.get('check_ids') or []}\n",
-  "new": "        owned = {k for t in gap_tasks for k in t.get('check_ids') or []}\n"
  },
  {
   "id": "M671",
@@ -4781,20 +4543,6 @@
   "new": "(('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“齐纳管低电流”"
  },
  {
-  "id": "M702",
-  "name": "an external impedance may be held open as a design value",
-  "file": "scripts/review_functions.py",
-  "old": "                and kinds.get(row.get('open_ref')) == 'DESIGN_VALUE'):",
-  "new": "                and False):"
- },
- {
-  "id": "M703",
-  "name": "the port hard-short row is not recognised",
-  "file": "scripts/review_functions.py",
-  "old": "    if planned.get('rule') == 'DRV-C02' and str(planned.get('id', '')).startswith('DRV-C02.PORT-SHORT.'):",
-  "new": "    if False:"
- },
- {
   "id": "M704",
   "name": "a pin past its absolute maximum may wait for vendor data",
   "file": "scripts/catalog.py",
@@ -4819,8 +4567,8 @@
   "id": "M707",
   "name": "a capacitor past its rated voltage with no surge rating may wait for vendor data",
   "file": "scripts/catalog.py",
-  "old": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G2', ()), ('G5', ()), ('G6', ())), 'OUTSIDE_SPECIFIED', _CB,",
-  "new": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,"
+  "old": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G1', ()), ('G2', ()), ('G5', ()), ('G6', ())), 'OUTSIDE_SPECIFIED', _CB,",
+  "new": "    Bound('CAP-SURGE-V', ('capacitor', 'electrolytic'), '浪涌/瞬态时电容电压对额定电压', 'UPPER', '浪涌电荷与回路阻抗', 'INCREASING',\n          (('G1', ()), ('G2', ()), ('G5', ()), ('G6', ())), 'VENDOR_DATUM', _CB,"
  },
  {
   "id": "M708",
@@ -4950,244 +4698,580 @@
  },
  {
   "id": "M726",
+  "name": "an unanswered question passes the plan with candidates",
+  "file": "scripts/plan_review.py",
+  "old": "        errors.extend(requirement_clarifications.pending_errors(intent))   # step ② needs every question answered",
+  "new": "        pass"
+ },
+ {
+  "id": "M727",
+  "name": "the candidate generator runs with an unanswered question",
+  "file": "scripts/circuit_candidates.py",
+  "old": "    pending = requirement_clarifications.pending_errors(intent)\n",
+  "new": "    pending = []\n"
+ },
+ {
+  "id": "M728",
+  "name": "the gate passes with an unanswered question in the planned intent",
+  "file": "scripts/validate_review.py",
+  "old": "    errors.extend(requirement_clarifications.pending_errors((plan.get('review_inputs') or {}).get('intent')))\n",
+  "new": ""
+ },
+ {
+  "id": "M729",
+  "name": "an answered clarification does not join the requirement list",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "    extra = requirement_items(intent)\n",
+  "new": "    extra = []\n"
+ },
+ {
+  "id": "M730",
+  "name": "an adopted proposal may differ from the proposal",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "        if decision == 'ADOPTED_PROPOSAL' and answer.get('text') != row.get('proposed_requirement'):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M731",
+  "name": "a deferral leaves its requirements confirmed",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "                if statuses.get(rid) != 'DEFERRED':",
+  "new": "                if False:"
+ },
+ {
+  "id": "M732",
+  "name": "an undecided requirement status is accepted again",
+  "file": "scripts/plan_review.py",
+  "old": "REQUIREMENT_STATUSES = ('CONFIRMED', 'DEFERRED')",
+  "new": "REQUIREMENT_STATUSES = ('CONFIRMED', 'PROPOSED', 'OPEN', 'DEFERRED')"
+ },
+ {
+  "id": "M733",
+  "name": "an undecided requirement open item is refused without saying where to ask",
+  "file": "scripts/review_functions.py",
+  "old": "    if kind == 'REQUIREMENT':\n        errors.append(label + ': an undecided requirement is no open item:",
+  "new": "    if False:\n        errors.append(label + ': an undecided requirement is no open item:"
+ },
+ {
+  "id": "M734",
+  "name": "the results carry a clarification list again",
+  "file": "scripts/results_model.py",
+  "old": "               'intent.clarifications' % k for k in SETTLED_TOP_FIELDS if k in report]",
+  "new": "               'intent.clarifications' % k for k in () if k in report]"
+ },
+ {
+  "id": "M735",
+  "name": "an unanswered question is not printed by the cold scan",
+  "file": "scripts/plan_review.py",
+  "old": "            self.diagnostics.append({'code': 'CLARIFICATION_PENDING', 'detail': line})",
+  "new": "            pass"
+ },
+ {
+  "id": "M736",
+  "name": "an estimate pass need not name its risk",
+  "file": "scripts/review_functions.py",
+  "old": "    if risk is None:\n        return [label + ': a pass on an estimate names its risk:",
+  "new": "    if risk is None:\n        return [] if True else [label + ': a pass on an estimate names its risk:"
+ },
+ {
+  "id": "M737",
+  "name": "any risk type goes with any cell",
+  "file": "scripts/review_functions.py",
+  "old": "    extra = [t for t in types if t not in allowed]",
+  "new": "    extra = []"
+ },
+ {
+  "id": "M738",
+  "name": "a decisive margin carries any risk",
+  "file": "scripts/review_functions.py",
+  "old": "    allowed = catalog.cell_risks(basis.get('cell')) if estimate else ('STRESS',)",
+  "new": "    allowed = catalog.cell_risks(basis.get('cell')) if estimate else tuple(catalog.RISK_TYPES)"
+ },
+ {
+  "id": "M739",
+  "name": "a risk caps the release again",
+  "file": "scripts/validate_review.py",
+  "old": "    release = release_for(errors, blockers, accepted)",
+  "new": "    release = release_for(errors, blockers, accepted or bool(risk_rows))"
+ },
+ {
+  "id": "M740",
+  "name": "a life estimate is not listed as a risk",
+  "file": "scripts/review_functions.py",
+  "old": "        if life_row(cid) and not margin_proves(fn, row['aspect'], state, cid) \\",
+  "new": "        if False and life_row(cid) and not margin_proves(fn, row['aspect'], state, cid) \\"
+ },
+ {
+  "id": "M741",
+  "name": "a stress risk is not listed",
+  "file": "scripts/review_functions.py",
+  "old": "                out.append(_risk_entry(cid, fn, row, state, m, (), 'STRESS'))",
+  "new": "                pass"
+ },
+ {
+  "id": "M742",
+  "name": "the bounding table has no risk column for a cell",
+  "file": "scripts/catalog.py",
+  "old": "    ('OPTO-CTR', ('ENVIRONMENT', 'LIFETIME', 'CONSISTENCY')),\n",
+  "new": ""
+ },
+ {
+  "id": "M743",
+  "name": "a design value is an open item again",
+  "file": "scripts/review_functions.py",
+  "old": "    if kind == 'DESIGN_VALUE':   # 2026-10-26",
+  "new": "    if False:   # 2026-10-26"
+ },
+ {
+  "id": "M744",
+  "name": "a constraint owned by the schematic is accepted",
+  "file": "scripts/review_functions.py",
+  "old": "    elif SCHEMATIC_OWNER_RE.search(c['owner']):",
+  "new": "    elif False:"
+ },
+ {
+  "id": "M745",
+  "name": "a constraint need not name a handoff of its function",
+  "file": "scripts/review_functions.py",
+  "old": "                if c.get('kind') == 'DESIGN_CONSTRAINT' and estimate_handoff(fn, c) is None:",
+  "new": "                if False:"
+ },
+ {
+  "id": "M746",
+  "name": "derive does not hand a constraint on",
+  "file": "scripts/derive_rows.py",
+  "old": "    if constraint:   # passing on a constraint",
+  "new": "    if False:   # passing on a constraint"
+ },
+ {
+  "id": "M747",
+  "name": "a hand-filled pass on a constraint needs no handoff",
+  "file": "scripts/review_functions.py",
+  "old": "        if constraint and not (isinstance(row.get('handoff'), dict) and row['handoff'].get('required')):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M748",
+  "name": "the gate lists no rows under a constraint",
+  "file": "scripts/review_functions.py",
+  "old": "        entry['check_ids'].append(cid)",
+  "new": "        pass"
+ },
+ {
+  "id": "M749",
+  "name": "a constraint need not give its limit",
+  "file": "scripts/review_functions.py",
+  "old": "    if 'limit' in c and not (values and all(_finite(v) for v in values) and text(limit.get('unit'))):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M750",
+  "name": "a clause constraint does not settle a judgement",
+  "file": "scripts/review_functions.py",
+  "old": "        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT', 'DESIGN_CONSTRAINT'}",
+  "new": "        elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT'}"
+ },
+ {
+  "id": "M751",
+  "name": "a constraint a judgement rests on is not handed on",
+  "file": "scripts/function_reading.py",
+  "old": "            cited += list(j.get('conditions') or [])",
+  "new": "            pass"
+ },
+ {
+  "id": "M752",
+  "name": "a numeric constraint may be settled in a judgement sentence",
+  "file": "scripts/review_functions.py",
+  "old": "                                    or (c.get('kind') == 'DESIGN_CONSTRAINT' and 'limit' in c))",
+  "new": "                                    or False)"
+ },
+ {
+  "id": "M753",
+  "name": "a pending deliverable is an open item again",
+  "file": "scripts/review_functions.py",
+  "old": "    if kind == 'DELIVERABLE_PENDING':   # 2026-10-26 (user: 并入乙)",
+  "new": "    if False:   # 2026-10-26 (user: 并入乙)"
+ },
+ {
+  "id": "M754",
+  "name": "a settled answer is not asked about the requirement files",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "        if decision != 'DEFERRED':\n            out.extend(requirement_files_errors(",
+  "new": "        if False:\n            out.extend(requirement_files_errors("
+ },
+ {
+  "id": "M755",
+  "name": "any requirement_files decision is accepted",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "    if not isinstance(value, dict) or value.get('decision') not in FILE_DECISIONS:",
+  "new": "    if not isinstance(value, dict) or 'decision' not in value:"
+ },
+ {
+  "id": "M756",
+  "name": "UPDATED without files passes",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "    if value['decision'] == 'UPDATED' and (",
+  "new": "    if False and ("
+ },
+ {
+  "id": "M757",
+  "name": "a deferral is asked about the requirement files",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "        if decision != 'DEFERRED':\n            out.extend(requirement_files_errors(",
+  "new": "        if True:\n            out.extend(requirement_files_errors("
+ },
+ {
+  "id": "M758",
+  "name": "KEPT is not an answer",
+  "file": "scripts/requirement_clarifications.py",
+  "old": "FILE_DECISIONS = ('UPDATED', 'KEPT')",
+  "new": "FILE_DECISIONS = ('UPDATED',)"
+ },
+ {
+  "id": "M759",
+  "name": "an unfinished review still gets a report",
+  "file": "scripts/render_report.py",
+  "old": "    if unfinished:\n        raise UnfinishedReview(",
+  "new": "    if False:\n        raise UnfinishedReview("
+ },
+ {
+  "id": "M760",
+  "name": "the pack swallows an unfinished review",
+  "file": "scripts/pack_review.py",
+  "old": "        return errors + [str(e).replace('no report yet', 'nothing to deliver yet')]",
+  "new": "        return errors"
+ },
+ {
+  "id": "M761",
+  "name": "render_report exits 0 on an unfinished review",
+  "file": "scripts/render_report.py",
+  "old": "        print(e, file=sys.stderr)\n        return 2",
+  "new": "        print(e, file=sys.stderr)\n        return 0"
+ },
+ {
+  "id": "M762",
+  "name": "the planner plans rows for a deferred requirement",
+  "file": "scripts/plan_board.py",
+  "old": "            if item.get('status') == 'DEFERRED':\n                continue   # the user took it out",
+  "new": "            if False:\n                continue   # the user took it out"
+ },
+ {
+  "id": "M763",
+  "name": "a deferred check needs no instruction",
+  "file": "scripts/review_stage_scope.py",
+  "old": "    if not evidence(row.get('instruction')):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M765",
+  "name": "a requirement row is deferred one by one",
+  "file": "scripts/review_stage_scope.py",
+  "old": "    if isinstance(planned_object, dict) and text(planned_object.get('requirement_id')):\n        errors.append(cid + ': a deferred requirement",
+  "new": "    if False:\n        errors.append(cid + ': a deferred requirement"
+ },
+ {
+  "id": "M766",
+  "name": "a deferred check must be NOT_APPLICABLE like plain NA",
+  "file": "scripts/validate_review.py",
+  "old": "if result == \"NA\" and not outside_stage(item) and not user_deferred(item):",
+  "new": "if result == \"NA\" and not outside_stage(item):"
+ },
+ {
+  "id": "M767",
+  "name": "a USER_DEFERRED open item is read as an unknown kind",
+  "file": "scripts/review_functions.py",
+  "old": "    if kind == 'USER_DEFERRED':   # 2026-10-27 (user: A)",
+  "new": "    if False:   # 2026-10-27 (user: A)"
+ },
+ {
+  "id": "M768",
+  "name": "a deferred check is counted as plain NA",
+  "file": "scripts/review_summary.py",
+  "old": "'NA_DEFERRED' if user_deferred(checks[k])",
+  "new": "'NA' if user_deferred(checks[k])"
+ },
+ {
+  "id": "M769",
+  "name": "the report leaves out what the user deferred",
+  "file": "scripts/render_report.py",
+  "old": "    if not requirements and not rows:\n        return []",
+  "new": "    if True:\n        return []"
+ },
+ {
+  "id": "M770",
+  "name": "a connector on the clamp's net is no port",
+  "file": "scripts/protective_clamps.py",
+  "old": "        if kind == pw.CONNECTOR:\n            found.add(ref)",
+  "new": "        if kind == pw.CONNECTOR:\n            pass"
+ },
+ {
+  "id": "M771",
+  "name": "a port one ferrite away is not found",
+  "file": "scripts/protective_clamps.py",
+  "old": "        elif kind in (pw.RESISTOR, pw.FERRITE, pw.INDUCTOR) and len(graph.nets_of(ref)) == 2:",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M772",
+  "name": "an unfitted connector makes a port",
+  "file": "scripts/protective_clamps.py",
+  "old": "        if not graph.is_fitted(ref):\n            continue\n        if kind == pw.CONNECTOR:",
+  "new": "        if False:\n            continue\n        if kind == pw.CONNECTOR:"
+ },
+ {
+  "id": "M773",
+  "name": "an internal clamp takes the port waveform",
+  "file": "scripts/protective_clamps.py",
+  "old": "    if ports:\n        return ('该网接连接器",
+  "new": "    if True:\n        return ('该网接连接器"
+ },
+ {
+  "id": "M774",
+  "name": "the clamp working voltage includes transients again",
+  "file": "scripts/lint.py",
+  "old": "'VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；'",
+  "new": "'VRWM（齐纳取 VZ 下限）对该网正常最高电压（含瞬态与公差）；'"
+ },
+ {
+  "id": "M775",
   "name": "a part-number family matches inside a longer part number again",
   "file": "scripts/device_kinds.py",
   "old": "    return r'(?<![A-Z0-9])(?:%s)' % '|'.join(numbers)",
   "new": "    return r'(?:%s)' % '|'.join(numbers)"
  },
  {
-  "id": "M727",
+  "id": "M776",
   "name": "the DESD TVS family is no longer its own entry",
   "file": "scripts/device_kinds.py",
   "old": "r'ESD\\d', 'PESD', 'DESD',",
   "new": "r'ESD\\d', 'PESD',"
  },
  {
-  "id": "M728",
+  "id": "M777",
   "name": "LTV-817 with its hyphen is no longer an optocoupler",
   "file": "scripts/device_kinds.py",
   "old": "r'LTV-?\\d'",
   "new": "r'LTV\\d'"
  },
  {
-  "id": "M729",
+  "id": "M778",
   "name": "a short datasheet cue matches inside squashed words again",
   "file": "scripts/datasheet_kinds.py",
   "old": "    if len(word) > SHORT_CUE and word not in WORD_CUES:",
   "new": "    if word not in WORD_CUES:"
  },
  {
-  "id": "M730",
+  "id": "M779",
   "name": "a lowercase-to-capital join no longer separates a short cue",
   "file": "scripts/datasheet_kinds.py",
   "old": "    spaced = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', str(text or ''))",
   "new": "    spaced = str(text or '')"
  },
  {
-  "id": "M731",
+  "id": "M780",
   "name": "a plural short cue (MCUs) is no longer read",
   "file": "scripts/datasheet_kinds.py",
   "old": "(?i:%s)s?(?![a-z0-9])",
   "new": "(?i:%s)(?![a-z0-9])"
  },
  {
-  "id": "M732",
+  "id": "M781",
   "name": "2N7000/2N7002 are read as BJTs too again",
   "file": "scripts/device_kinds.py",
   "old": "r'2N(?!700[02])\\d{4}'",
   "new": "r'2N\\d{4}'"
  },
  {
-  "id": "M733",
+  "id": "M782",
   "name": "2N7000 is no longer a MOSFET family",
   "file": "scripts/device_kinds.py",
   "old": "'2N700[02]'), SI_FET_WORDS),",
   "new": "'2N7002'), SI_FET_WORDS),"
  },
  {
-  "id": "M734",
+  "id": "M783",
   "name": "Si#### names a MOSFET on an IC refdes again",
   "file": "scripts/part_words.py",
   "old": "        if pattern in (JST_CONNECTOR_RE, SI_FET_WORDS) and ic_ref:",
   "new": "        if pattern == JST_CONNECTOR_RE and ic_ref:"
  },
  {
-  "id": "M735",
+  "id": "M784",
   "name": "Si#### on an IC refdes contradicts another transistor word again",
   "file": "scripts/part_words.py",
   "old": "                  and not (pattern == SI_FET_WORDS and ic_ref) and re.search(pattern, blob, re.I)}",
   "new": "                  and re.search(pattern, blob, re.I)}"
  },
  {
-  "id": "M736",
+  "id": "M785",
   "name": "a capital short cue no longer runs into a lowercase word",
   "file": "scripts/datasheet_kinds.py",
   "old": "(?:%s(?![0-9])|(?i:%s)s?(?![a-z0-9]))' % (word.upper(), word)",
   "new": "(?i:%s)s?(?![a-z0-9])' % word"
  },
  {
-  "id": "M737",
+  "id": "M786",
   "name": "a winding with three or more pins no longer needs its datasheet",
   "file": "scripts/device_kinds.py",
   "old": "return pin_count is not None and pin_count >= 3",
   "new": "return False"
  },
  {
-  "id": "M738",
+  "id": "M787",
   "name": "an unreadable part on two nets is no longer placed by the reviewer",
   "file": "scripts/device_kinds.py",
   "old": "if name == 'unknown' and net_count is not None and net_count >= 2:",
   "new": "if False:"
  },
  {
-  "id": "M739",
+  "id": "M788",
   "name": "a datasheet kind without cues passes the registry check",
   "file": "scripts/device_kinds.py",
   "old": "if kind.datasheet and not kind.cues and name != 'ic':",
   "new": "if False:"
  },
  {
-  "id": "M740",
+  "id": "M789",
   "name": "fuse is read inside a maker's name again",
   "file": "scripts/datasheet_kinds.py",
   "old": "if len(word) > SHORT_CUE and word not in WORD_CUES:",
   "new": "if len(word) > SHORT_CUE:"
  },
  {
-  "id": "M741",
+  "id": "M790",
   "name": "an IC role no longer suppresses fuse and relay",
   "file": "scripts/datasheet_kinds.py",
   "old": "found -= ROLE_LOADS",
   "new": "found -= DISCRETE_CUES"
  },
  {
-  "id": "M742",
+  "id": "M791",
   "name": "a thermistor datasheet's ThermoFuse names a fuse again",
   "file": "scripts/datasheet_kinds.py",
   "old": "found.discard('fuse')",
   "new": "pass"
  },
  {
-  "id": "M743",
+  "id": "M792",
   "name": "a relay driver names a relay again",
   "file": "scripts/datasheet_kinds.py",
   "old": "found.discard('relay')",
   "new": "pass"
  },
  {
-  "id": "M744",
+  "id": "M793",
   "name": "the title area never falls back to page 1",
   "file": "scripts/datasheet_kinds.py",
   "old": "return title if cues(title) else text",
   "new": "return title"
  },
  {
-  "id": "M745",
+  "id": "M794",
   "name": "a reason resting on the part's make-up keeps a declaration the title contradicts",
   "file": "scripts/datasheet_kinds.py",
   "old": "if COMPOSITION_REASON_RE.search(reason):",
   "new": "if False:"
  },
  {
-  "id": "M746",
+  "id": "M795",
   "name": "a verified declaration is no longer compared with the title",
   "file": "scripts/datasheet_kinds.py",
   "old": "if not titled or agrees(declaration.get('kind'), titled):",
   "new": "if True:"
  },
  {
-  "id": "M747",
+  "id": "M796",
   "name": "an undeclared part loses its KIND_CONFLICT hint",
   "file": "scripts/datasheet_kinds.py",
   "old": "                entry['kind_conflict'] = conflict",
   "new": "                pass"
  },
  {
-  "id": "M748",
+  "id": "M797",
   "name": "a declaration the part words contradicted is no longer flagged",
   "file": "scripts/datasheet_kinds.py",
   "old": "if seen.get('basis') == 'part-keyword' and not agrees(",
   "new": "if False and not agrees("
  },
  {
-  "id": "M749",
+  "id": "M798",
   "name": "a placed part is verified as a datasheet declaration",
   "file": "scripts/datasheet_kinds.py",
   "old": "if isinstance(item, dict) and 'reason' in item:",
   "new": "if False:"
  },
  {
-  "id": "M750",
+  "id": "M799",
   "name": "part words settle a datasheet kind in the checkers again",
   "file": "scripts/part_words.py",
   "old": "or (basis == 'part-keyword' and device_kinds.needs_datasheet(",
   "new": "or (False and device_kinds.needs_datasheet("
  },
  {
-  "id": "M751",
+  "id": "M800",
   "name": "a relay read from its words passes its NC contact silently",
   "file": "scripts/lint.py",
   "old": "                basis = 'keyword'",
   "new": "                pass"
  },
  {
-  "id": "M752",
+  "id": "M801",
   "name": "a placed part keeps its classify gap",
   "file": "scripts/plan_board.py",
   "old": "elif settle == 'classify' and ref not in verified and ref not in classified:",
   "new": "elif settle == 'classify' and ref not in verified:"
  },
  {
-  "id": "M753",
+  "id": "M802",
   "name": "a part outside U/M/Q/D/J/P/CN gets no DEV-D02 row for its kind",
   "file": "scripts/plan_board.py",
   "old": "and ref not in devices and not settle) or part.get('nc'):",
   "new": "and ref not in devices) or part.get('nc'):"
  },
  {
-  "id": "M754",
+  "id": "M803",
   "name": "a two-terminal package drops its kind gap",
   "file": "scripts/plan_board.py",
   "old": "item = self._ready_check('DEV-D02', {'ref': ref}, kind_gaps, [",
   "new": "item = self._ready_check('DEV-D02', {'ref': ref}, [], ["
  },
  {
-  "id": "M755",
+  "id": "M804",
   "name": "the DEV-D02 kind gap loses the KIND_CONFLICT text",
   "file": "scripts/plan_board.py",
   "old": "(f'; candidates: {hint}' if hint else '') + clash",
   "new": "(f'; candidates: {hint}' if hint else '')"
  },
  {
-  "id": "M756",
+  "id": "M805",
   "name": "a multi-winding magnetic is placed with a reason",
   "file": "scripts/board_intent.py",
   "old": "elif device_kinds.needs_datasheet(item['kind'], pins[ref]):",
   "new": "elif False:"
  },
  {
-  "id": "M757",
+  "id": "M806",
   "name": "a part the classifier reads is placed with a reason",
   "file": "scripts/board_intent.py",
   "old": "if seen.get('settlement') != 'classify':",
   "new": "if False:"
  },
  {
-  "id": "M758",
+  "id": "M807",
   "name": "the datasheet beating part words is no longer fed back to SR",
   "file": "scripts/validate_review.py",
   "old": "conflict = entry.get('keyword_conflict') if isinstance(entry, dict) else None",
   "new": "conflict = None"
  },
  {
-  "id": "M759",
+  "id": "M808",
   "name": "a common-mode choke reads as an inductor again",
   "file": "scripts/device_kinds.py",
   "old": "(r'COMMON[-_ ]?MODE|共模',)",
   "new": "()"
  },
  {
-  "id": "M760",
+  "id": "M809",
   "name": "a coupled inductor reads as an inductor again",
   "file": "scripts/device_kinds.py",
   "old": "(r'COUPLED[-_ ]?INDUCTOR|耦合电感',)",

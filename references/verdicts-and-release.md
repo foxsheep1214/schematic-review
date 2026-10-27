@@ -184,7 +184,7 @@ FAIL/INSUFFICIENT 默认阻断；只有阶段允许暂留的 P2/P3 才写 `"bloc
 `schematic_freeze` 阶段三者计入放行阻断（`valid` 不变），定级类须逐项按本对象后果路径重新定级，通过理由类须逐项写出比较了什么、对照什么，才能放行。
 批量录入脚本不得用一句固定兜底语给全部证据不足定级。
 审查者按上述步骤核理由与本项判据；补齐证据后重新判断，可能成为 PASS 或任意等级的 FAIL。
-需求未定（REQUIREMENT_OPEN）的检查不填等级，改由 [需求澄清项](requirement-clarifications.md) 记录决策时点和冻结影响。
+需求没说清的不记证据不足：当场问用户，答复写进需求清单后按定下的需求判（[需求澄清](requirement-clarifications.md)）。
 
 ## 4. HANDOFF 与集成约束
 
@@ -255,36 +255,35 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 
 | 值 | 本阶段目标 | 证据不足项处理 |
 |---|---|---|
-| `design_iteration` | 完成当前能做的设计、计算和修正 | 未接受的阻断 FAIL、潜在 P0、REVIEW_INCOMPLETE、开放需求澄清进入本轮；其他缺口按依赖安排在本轮或冻结前 |
+| `design_iteration` | 完成当前能做的设计、计算和修正 | 未接受的阻断 FAIL、潜在 P0、REVIEW_INCOMPLETE 进入本轮；其他缺口按依赖安排在本轮或冻结前 |
 | `schematic_freeze` | 用户明确要求冻结 | 执行全部严重度、覆盖、绑定、资料和 HANDOFF 闸门；校验加 `--require-release` |
 | `prototype_verification` | 接收实物/布局证据，追踪整改 | 只审原理图与外部证据交接，不签署整机、EMC、寿命或生产准出 |
 
 `review-gate.json` 中的工具字段：`valid/errors` 表示记录是否可对账；`workflow.status/current_work_items`
 （由开放项派生，见下）给出本轮先做什么；`release` 是原理图冻结的 GO / CONDITIONAL_GO / NO_GO：
-有错误或阻断项 NO_GO；有按批准接受的 FAIL/INSUFFICIENT，有按典型值估算判通过的检查项（`estimated_passes`，样机实测确认后才算定），
-或有等交付物的检查项（`pending_deliverables`：DELIVERABLE_PENDING 开放项挡住的 INSUFFICIENT，不论等级都不是阻断项，交付物到了按 `assumed` 复核）最高 CONDITIONAL_GO；否则 GO。
-等交付物是冻结的条件，不是反对冻结的理由（2026-10-26 定）：R7 一份记录 72 条资料不足里 52 条在等图纸和配置表，它们曾占满待办和“最先要解决的 3 件事”。
+有错误或阻断项 NO_GO；有按批准接受的 FAIL/INSUFFICIENT 最高 CONDITIONAL_GO；否则 GO。
+按设计约束判合格的检查项（门禁 `design_constraints`：交给磁件、固件、PCB 等负责方的约束）不限制 `release`（2026-10-26 定）。
+合格但有风险的检查项（门禁 `risks`：只靠估算过关的角点、寿命估算、降额不足）不限制 `release`，报告单列“风险清单”（2026-10-26 定）。
 `release` 在非冻结阶段也会计算，但**不是本轮总判定**：非冻结阶段的报告展示实际用途下的电气结论、
 必要疑点及集成约束，不因未接受移交或未给完整制造资料就把整个设计标为失败。冻结 NO_GO 也不妨碍继续设计和补证。
 
 ### 待办由开放项派生
 
-待办（`work_items`）不手写。`validate_review.py` 从 `functions[]` 的每个开放项（`open[]`，REQUIREMENT 除外）和
+待办（`work_items`）不手写。`validate_review.py` 从 `functions[]` 的每个开放项（`open[]`）和
 失败项（`fails[]`）各派生一件，写进 `review-gate.json` 的 `workflow.work_items`，编号 `W-<key>`（key 已是 W- 开头则原样）：
 
 | 待办字段 | 来自 |
 |---|---|
 | `title` / `root_cause` | 开放项的 `title`（无则 `what`）/ `what` |
 | `reason` | `why`，无则 `severity.consequence` |
-| `next_action` | DESIGN_VALUE：“由 {owner} 确定：{spec}”；VENDOR_DATUM：`acquisition`；DELIVERABLE_PENDING：“由 {owner} 交付：{deliverable}”；失败项：“按发现项 {finding_id} 的改法处理” |
+| `next_action` | VENDOR_DATUM：`acquisition`；失败项：“按发现项 {finding_id} 的改法处理” |
 | `due_stage` / `design_option` | 开放项同名字段（`due_stage` 默认 `design_iteration`） |
-| `deliverable{kind, owner, deliverable}` / `assumed` / `required_scope` / `closure_criterion` | 只有 DELIVERABLE_PENDING 的待办带；报告把带 `deliverable` 的待办列进“等交付物”，不进待办和最先要解决的 3 件事 |
 | `check_ids` | 用 `open_ref`/`fail_ref` 指向这一项的检查项（即 `decides` 命中的方面×状态） |
 | 等级 | 开放项的 `severity.level`；失败项取发现项 |
 
 - 共享的只是补证或修改动作，不是电气结论；每条检查项仍保留自己的判据和证据。一件待办只有一个开放项，
   所以不再有“一项被几件待办分缺口”的归属字段；两个功能缺同一份资料时各写各的开放项（key 不同），报告按文字合并显示。
-- 关联 DESIGN_VALUE / VENDOR_DATUM 开放项的待办须有 `design_option`（写在开放项上）：
+- 关联 VENDOR_DATUM 开放项的待办须有 `design_option`（写在开放项上）：
   能改图消除缺口时写 `PROPOSED` 的电路改进建议及其规避的问题，不能时写 `NONE` 和原因。
   字段见 [证据不足项的电路改进建议](report-and-remediation.md#证据不足项的电路改进建议)；`--require-actionable` 时强制校验。
   改法不得以缺口的不利结果为前提（“改为更高分断方案”先假定了保险不够）；缺口能靠查标准条款或手册关闭的，
@@ -295,7 +294,7 @@ OPEN 不进 blockers；填 ACCEPTED/VERIFIED 时须附真实记录，Agent 不�
 - 能按物理对象/判据拆开时优先拆开放项，而不是让一个开放项铺满整块电路。`decides` 的每条影响条目写 `via`（缺的量进到哪条条件或哪个计算输入）
   和 `rationale`；一个缺口挡几个方面不限数，超过 3 个只出 WIDE_GAP 提示。
 - 阻断表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
-- REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过。
+- REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过；它不是报告结论，有它时不出报告。
   只剩 SR 工具自身限制、已手工核完的不记 REVIEW_INCOMPLETE，写 `manual_verification`（见 [单条检查](results-format.md#单条检查)），
   工具限制列入 `sr_improvements`，不进设计者待办。
 
@@ -343,9 +342,9 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 | 只能靠样机取得的能效、EMC、闭壳热、寿命/环境、协议一致性及结构试验结果 | 纯测试行阶段 NA + HANDOFF，产品验收仍待完成 |
 | 实际漏感/PCB 寄生尖峰，已有适用的保守参数和吸收/钳位设计依据 | 设计子判据单独判定，实际波形测试阶段 NA；保守界限不足或算不过不能移交消失 |
 | 实际负载不明、保护配置未知、保证边界足以改变选型结论 | INSUFFICIENT + 具体缺口（gaps）；已证实违反则 FAIL |
-| 固件配置表缺失 | 不审，手册声明的能力判可达；硬件检查项按允许的配置范围判，依赖的设置标 `setting`；FIRMWARE_CAPABILITY 只用于“固件能不能实现某个行为” |
+| 固件配置表缺失 | 不审，手册声明的能力判可达；硬件检查项按允许的配置范围判，依赖的设置标 `setting`；固件能不能实现某个行为写成设计约束交给固件 |
 | 环路增益、相位裕量这类只有样机能给的结论 | 阶段 NA + HANDOFF，片内可编程的补偿参数标 `setting`；“靠实测”不能作通过的依据 |
-| 定制磁件图纸、固件/OTP 应用能否实现所需控制策略的确认等另一阶段欠的交付物 | INSUFFICIENT（DELIVERABLE_PENDING）：写欠什么、谁欠、本判定按什么假定算；不记 EXTERNAL_DATA，不向芯片厂家索取；不是阻断项，准出最高有条件，报告列在“等交付物”给项目经理 |
+| 定制磁件图纸、固件/OTP 应用能否实现所需控制策略的确认等另一阶段欠的交付物 | PASS + 设计约束（DESIGN_CONSTRAINT，没有单一数值的写条款）：写交付物要满足什么、交给谁、怎么验；不记 EXTERNAL_DATA，不向芯片厂家索取；交付物已到而不满足约束的记 FAIL |
 | 烧录镜像、读回、编程夹具、量产校准 | 原理图前提单独判；镜像本身阶段 NA + HANDOFF 给固件/生产 |
 | 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`：VENDOR_DATUM 开放项的 `acquisition`/`closure` 写了已读、只剩复算而没说缺哪个数据） |
 | 同一方法套在几个对象上（三只光耦的 CTR、几只电解的寿命） | 一件待办、多个位号，不拆成三件（`DUPLICATE_WORK_ITEMS`） |
@@ -356,13 +355,13 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 统计中阶段 NA 单列为 `NA_OUTSIDE_STAGE`，不计入普通 NA；含阶段 NA 条款的需求行列在
 `stage_scope.requirements_pending_downstream`，报告在“交给后续环节的要求”末尾列为要等样机或测试结果才能最终确认，不得写成“不适用”。
 `quality_screening` 的分出下游工作提示只辅助判断；工具映射失败不是产品不适用，不用阶段 NA 隐藏覆盖缺口。
-分类落在开放项的 `kind` 上：DESIGN_VALUE / VENDOR_DATUM 的 `closure`、`acquisition`、`why_insufficient` 里写了实测、样机、样品、仿真作为关闭路径的，
+分类落在开放项的 `kind` 上：VENDOR_DATUM 的 `closure`、`acquisition`、`why_insufficient` 里写了实测、样机、样品、仿真作为关闭路径的，
 `DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 点出来（“随后/留给……”分句除外）——保证值和实测是两档，实测的部分拆成阶段 NA 检查项加移交。
 
 ## 6. 准出
 
 - **不准出**：已确认的 P0 未修；未接受的阻断 FAIL/INSUFFICIENT；适用项未执行；版本/完整性关键缺口；
-  必需 HANDOFF 未形成可执行约束（接收方/约束/验证方法缺失）；开放的阻断需求澄清。
+  必需 HANDOFF 未形成可执行约束（接收方/约束/验证方法缺失）；有需求问题还没答复（审查停在第①步，门禁不通过）。
 - **有条件准出**：所有检查已形成有效结论；无已确认的 P0；潜在 P0、剩余阻断级 P1/P2 或未知项已由有权责任方按本版
   记录明确接受，约束和责任人已落实。报告保留 FAIL/INSUFFICIENT，不改写为 PASS。
 - **准出**：无开放阻断项；覆盖完整、证据充分，必需 HANDOFF 已写成可执行清单（是否已被接收不影响准出）。

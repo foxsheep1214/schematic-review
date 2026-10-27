@@ -28,7 +28,7 @@ PARAMETERS = {'REQ-IN-01': [{'name': 'input_voltage', 'min': 9, 'max': 36, 'unit
 
 
 def intent(parameters=PARAMETERS):
-    value = dict({'schema_version': 4}, **requirement_intent(write()))
+    value = dict({'schema_version': 5}, **requirement_intent(write()))
     for item in value['requirements']:
         if item['id'] in parameters:
             item['parameters'] = copy.deepcopy(parameters[item['id']])
@@ -63,7 +63,7 @@ class IntentTests(unittest.TestCase):
         self.assertTrue(any('20' in e and '原文' in e for e in errors(intent(changed))))
 
     def test_a_plus_minus_number_gives_both_signs(self):
-        value = {'schema_version': 4, 'requirement_source': doc_for({'REQ-ACC': '+3V3 输出精度 ±5%'}),
+        value = {'schema_version': 5, 'requirement_source': doc_for({'REQ-ACC': '+3V3 输出精度 ±5%'}),
                  'requirements': [{'id': 'REQ-ACC', 'categories': ['OUTPUT_SPEC'], 'interpretation': 'x',
                                    'parameters': [{'name': 'accuracy', 'min': -5, 'max': 5, 'unit': '%'}]}]}
         self.assertEqual(errors(value), [])

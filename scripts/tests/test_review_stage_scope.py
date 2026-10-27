@@ -161,17 +161,13 @@ class StageScopeTests(unittest.TestCase):
         self.assertFalse(gate(p, r, db)['valid'])
 
     def test_requests_only_for_real_input_or_design_gaps(self):
-        for kind in ('REVIEW_INCOMPLETE', 'USER_DEFERRED'):
-            with self.subTest(kind=kind):
-                p, r, db = decisive()
-                item = r['functions'][0]['open'][0]
-                item['kind'] = kind
-                if kind == 'USER_DEFERRED':
-                    item['instruction'] = E
-                self.assertFalse(gate(p, r, db)['valid'])
-                for field in ('acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
-                    item.pop(field, None)
-                self.assertTrue(gate(p, r, db)['valid'], gate(p, r, db)['errors'])
+        p, r, db = decisive()
+        item = r['functions'][0]['open'][0]
+        item['kind'] = 'REVIEW_INCOMPLETE'
+        self.assertFalse(gate(p, r, db)['valid'])
+        for field in ('acquisition', 'closure', 'checked', 'why_insufficient', 'worst_case'):
+            item.pop(field, None)
+        self.assertTrue(gate(p, r, db)['valid'], gate(p, r, db)['errors'])
 
     def test_kind_is_mandatory_and_downstream_kind_is_retired(self):
         p, r, db = decisive(); del r['functions'][0]['open'][0]['kind']
