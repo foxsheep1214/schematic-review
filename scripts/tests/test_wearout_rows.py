@@ -3,11 +3,12 @@ items 6b and 6e).
 
 Two reviews of one board asked life only of electrolytic capacitors, and only one of them asked the optocouplers, one
 as a vendor-data item for "the project's CTR decay factor". With a lifetime requirement each part of a wear-out class
-on the netlist now gets DEV-C06.<class>.<ref>, asked by the table of the proposals: battery, optocoupler and LED on
-the mission profile's time; varistor, fuse, inrush NTC, resettable fuse, relay, connector, switch and memory on a
+on the netlist now gets DEV-C06.<class>.<ref>, asked by the table of the proposals: battery and optocoupler on the
+mission profile's time (an LED left the table on 2026-10-28: an indicator's light decay only costs visibility); varistor, fuse, inrush NTC, resettable fuse, relay, connector, switch and memory on a
 count (surges, power cycles, trips, actuations, matings, writes) that the mission profile states. A count neither the
 requirement nor the profile gives leaves the row NA with that reason, not a gap. The optocoupler row writes the CTR
-fraction the chain needs at end of life as a selection constraint; SR invents no decay factor.
+fraction the chain needs at end of life as a selection constraint; SR invents no decay factor, and the transfer and
+level rows no longer count life (OPTO-CTR's ÷2 is the typical-curve factor).
 """
 from pathlib import Path
 import sys
@@ -35,7 +36,7 @@ PARTS = [
     ('BT1', 'Device:Battery_Cell', 'CR2032', None),
     ('U3', 'Memory_EEPROM:24LC02', '24LC02', None, [('1', 'VCC', 'VCC_3V3'), ('2', 'GND', 'GND'), ('3', 'SDA', 'SDA')]),
 ]
-CLASSES = {'U2': 'OPTO', 'D2': 'LED', 'RV1': 'VARISTOR', 'F1': 'FUSE', 'F2': 'PTC', 'TH1': 'INRUSH_NTC', 'K1': 'RELAY',
+CLASSES = {'U2': 'OPTO', 'RV1': 'VARISTOR', 'F1': 'FUSE', 'F2': 'PTC', 'TH1': 'INRUSH_NTC', 'K1': 'RELAY',
            'J2': 'CONNECTOR', 'RV2': 'SWITCH', 'SW1': 'SWITCH', 'BT1': 'BATTERY', 'U3': 'MEMORY'}
 
 
@@ -63,6 +64,10 @@ class CatalogTests(unittest.TestCase):
         self.assertNotIn('寿命衰减系数', criterion)
         self.assertIn('DEV-C06', criterion)
 
+    def test_an_opto_ctr_estimate_stands_for_no_lifetime_risk(self):
+        # 2026-10-28: end-of-life CTR is asked once, on DEV-C06; the ÷2 is the typical-curve factor
+        self.assertNotIn('LIFETIME', catalog.cell_risks('OPTO-CTR'))
+
 
 class ClassTests(unittest.TestCase):
     def test_each_wearout_part_gets_one_row_of_its_class(self):
@@ -70,9 +75,9 @@ class ClassTests(unittest.TestCase):
         self.assertEqual({ref: r['object']['wearout'] for ref, r in rows.items()}, CLASSES)
         self.assertEqual(rows['TH1']['id'], 'DEV-C06.INRUSH-NTC.TH1')
 
-    def test_a_sensing_ntc_an_ordinary_ic_and_a_ceramic_capacitor_get_none(self):
+    def test_a_sensing_ntc_an_ordinary_ic_a_ceramic_capacitor_and_an_led_get_none(self):
         rows = wearout(plan())
-        for ref in ('TH2', 'U1', 'U4', 'C1'):
+        for ref in ('TH2', 'U1', 'U4', 'C1', 'D2'):
             self.assertNotIn(ref, rows)
 
     def test_no_lifetime_requirement_no_row(self):
@@ -90,7 +95,7 @@ class CountTests(unittest.TestCase):
 
     def test_time_classes_are_asked_and_count_classes_wait_for_their_count(self):
         rows = wearout(plan())
-        for ref in ('U2', 'D2', 'BT1'):
+        for ref in ('U2', 'BT1'):
             self.assertEqual(rows[ref]['applicability'], 'APPLICABLE', ref)
         for ref in ('RV1', 'F1', 'F2', 'TH1', 'K1', 'J2', 'RV2', 'SW1', 'U3'):
             self.assertEqual(rows[ref]['applicability'], 'NOT_APPLICABLE', ref)

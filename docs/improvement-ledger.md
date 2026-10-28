@@ -9,6 +9,30 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Lifetime: one place per question, no lifetime risks (2026-10-28)
+
+The R8 review of the 100 W board (61166f3) listed 10 of its 17 risks as lifetime risks. The scope (every electrolytic,
+every wear-out part) was not the cause; three rules were:
+1. The optocoupler's end-of-life CTR was counted twice: OPTO-CTR's ÷2 said "含寿命衰减" and tagged LIFETIME, so
+   PRO-E01/SIG-C07 rows repeated the DEV-C06 row's number. The ÷2 is now the typical-curve factor only, the cell
+   stands for ENVIRONMENT and CONSISTENCY, and the retention ratio is asked on DEV-C06 alone.
+2. An indicator LED got a DEV-C06 row although its light decay only costs visibility and the netlist cannot tell an
+   indicator from a light source. LED left `WEAROUT_CLASSES`; light decay joins the stage-NA list.
+3. A life row passed on an estimate was listed as a lifetime risk, although its BOM constraint and thermal handoff
+   already carry it. The report lists them under the BOM constraints only.
+   (`judged` reads a life row's estimate as its BOM constraint, so the estimate branch never takes it; the LIFE branch
+   is gone and a test pins it.)
+4. The same nine life estimates asked "给 capacitor 的这个参数补一格" under 对 SR 的反馈. A life row's estimate has its
+   own path (life formula or 10 °C doubling), not a table cell: a margin serving only life rows records no
+   NEW_BOUND_CELL; one also serving another row still does.
+U403/U404 ("74.37 µA 对 87.6 µA") were checked: the value is the margin, not the available current, so PASS stands.
+The shared derating spec (R10 says the SR ÷2 counts aging) is left for ASG to change in step with SR.
+
+- Event: user:2026-10-28 (按三条建议改；给SR的改进建议里，有很多“给 capacitor 的这个参数补一格”)
+- Causes: judgment 4
+- Changed: scripts/catalog.py, scripts/plan_circuits.py, scripts/review_functions.py, scripts/render_report.py, scripts/validate_review.py, scripts/tests/test_bounding_table.py, scripts/tests/test_wearout_rows.py, scripts/tests/test_life_rows.py, scripts/tests/test_cell_boundary.py, evals/mutation/mutations.json, SKILL.md, references/bounding-table.md, references/check-catalog.md, references/commodity-floors.md, references/margin-verdicts.md, references/results-format.md, references/verdicts-and-release.md, docs/improvement-ledger.md
+- Gates: pytest 2359; mutation --changed 298 on the changed files, all killed (M740 dropped with the LIFE branch, M742 re-anchored, new M823 killed)
+
 ## Codex review: the two decided items (2026-10-28)
 
 The user chose the recommended option for the two items of the Codex review that needed a decision.

@@ -710,6 +710,10 @@ def extension_signals(report, db, datasheet_audit=None):
         for k, m in enumerate(margins):
             if not (isinstance(m, dict) and isinstance(m.get('basis'), dict)) or m['basis'].get('method') == 'G1':
                 continue
+            # a life row's estimate has its own path (life formula or 10 °C doubling), not a table cell (R8: nine
+            # electrolytics asked for a capacitor cell; 2026-10-28)
+            if m.get('check_ids') and all(function_reading.life_row(c) for c in m['check_ids']):
+                continue
             named = ' '.join(str(x) for x in (m.get('against'), (conditions.get(m['basis'].get('limit')) or {}).get('says'))
                              if text(x))
             places.append(('margin', k, m['basis'], ' '.join(x for x in (named, str(m.get('aspect') or '')) if x), named,

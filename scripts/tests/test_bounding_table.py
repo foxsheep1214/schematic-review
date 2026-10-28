@@ -94,7 +94,7 @@ class TableTests(unittest.TestCase):
             self.assertEqual(bool(risks), bool(bound.estimates), bound.id)
             self.assertTrue(set(risks) <= set(catalog.ESTIMATE_RISKS), bound.id)
         self.assertEqual(catalog.cell_risks(catalog.NO_CELL), catalog.ESTIMATE_RISKS)
-        self.assertEqual(catalog.cell_risks('OPTO-CTR'), ('ENVIRONMENT', 'LIFETIME', 'CONSISTENCY'))
+        self.assertEqual(catalog.cell_risks('OPTO-CTR'), ('ENVIRONMENT', 'CONSISTENCY'))
 
     def test_the_estimate_rule_is_read_by_cell_and_consequence_class(self):
         rule = catalog.estimate_rule

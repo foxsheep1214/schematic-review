@@ -185,7 +185,7 @@ RULES = (
          '供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围',
          'plan', 'device'),
     Rule('DEV-C06', '耗损件寿命',
-         '有寿命需求时，按 intent.mission_profile 逐颗核耗损件（WEAROUT_CLASSES：电池、光耦、LED、压敏电阻、保险丝、浪涌限制 NTC、'
+         '有寿命需求时，按 intent.mission_profile 逐颗核耗损件（WEAROUT_CLASSES：电池、光耦、压敏电阻、保险丝、浪涌限制 NTC、'
          '自恢复保险丝、继电器、连接器与开关、Flash/EEPROM）的寿命；按次数核的类别，需求与剖面都没给次数时记 NA 并写明，不开缺口项；'
          '结论写成选型或 bom_constraint；参数漂移并入精度预算，绝缘老化归隔离检查，热循环、焊点疲劳和衰减实测记阶段 NA 并移交',
          'plan', 'device'),
@@ -849,7 +849,6 @@ WEAROUT_CLASSES = OrderedDict([
     ('BATTERY', WearoutClass('电池', '循环次数、容量保持、充电电压和温度', '手册循环寿命和日历寿命', None)),
     ('OPTO', WearoutClass('光耦', '按最小正向电流和保证 CTR 算出这条链寿命末所需的 CTR 保留比例，写成选型或 bom_constraint；'
                                   '厂家给了 CTR 随时间的曲线才用曲线核对，SR 不自编衰减系数', '手册衰减曲线', None)),
-    ('LED', WearoutClass('指示或照明 LED', 'LED 光衰对可视要求；需求没有亮度或可视要求时记 NA 并写明', '手册衰减曲线', None)),
     ('VARISTOR', WearoutClass('压敏电阻', '浪涌幅值和次数对脉冲寿命降额曲线，持续工作电压', '需求浪涌等级和次数', 'surges')),
     ('FUSE', WearoutClass('保险丝', '开机浪涌 I²t 和次数对脉冲降额', '剖面里的开关机次数', 'power_cycles')),
     ('INRUSH_NTC', WearoutClass('浪涌限制 NTC', '负载电容对最大允许值、循环次数（热态重启另由 PWR-C13 热态重接入检查项核）',
@@ -1242,7 +1241,7 @@ BOUNDS = OrderedDict((b.id, b) for b in (
     # 3.5 光耦
     Bound('OPTO-CTR', ('opto',), 'CTR 随 IF 和温度', 'LOWER', '输入电流 IF 与温度', 'NONMONOTONIC',
           (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“身份冲突与身份分支”（取最低档）',
-          'INDUSTRY_NONE', (_e(2, FUNCTIONAL, '25 °C 分档下限 × 典型温度曲线最低点（G7），再 ÷2（含寿命衰减）'),),
+          'INDUSTRY_NONE', (_e(2, FUNCTIONAL, '25 °C 分档下限 × 典型温度曲线最低点（G7），再 ÷2（寿命末只在 DEV-C06 算）'),),
           ('REQUIRED_FUNCTION',), ('MEASURABLE', 'NOT_VERIFIABLE'),
           '允许估算判 PASS（÷2）；在保护环里也是阈值偏移，不是器件损坏。“索取全温 CTR”要提示'),
     # 3.6 NTC
@@ -1354,7 +1353,7 @@ CELL_RISKS = OrderedDict((
     ('MOS-RDS-HOT', ('ENVIRONMENT',)),
     ('MOS-LINEAR', ('CONSISTENCY', 'ENVIRONMENT')),
     ('BJT-HFE', ('CONSISTENCY', 'ENVIRONMENT')),
-    ('OPTO-CTR', ('ENVIRONMENT', 'LIFETIME', 'CONSISTENCY')),
+    ('OPTO-CTR', ('ENVIRONMENT', 'CONSISTENCY')),
     ('MLCC-EFFECTIVE-C', ('CONSISTENCY', 'ENVIRONMENT', 'LIFETIME')),
     ('ECAP-ESR-RIPPLE', ('ENVIRONMENT', 'CONSISTENCY')),
     ('IND-ISAT', ('ENVIRONMENT',)),

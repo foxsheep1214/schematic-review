@@ -322,12 +322,12 @@ def fold_blocks(blocks):
     return [listed(heads, '项')] if heads else []
 
 
-RISK_SOURCE_WORDS = {'ESTIMATE': '按典型值估算', 'LIFE': '寿命按任务剖面估算', 'STRESS': '保证值在额定内、降额不足'}
+RISK_SOURCE_WORDS = {'ESTIMATE': '按典型值估算', 'STRESS': '保证值在额定内、降额不足'}
 
 
 def risk_rows(items):
-    """One row per (function, margin): a margin reached by an estimate row and by a life row of the same function was two
-    rows (R8: three electrolytics listed twice, once under cell NONE). The row keeps every check and risk type; the entry
+    """One row per (function, margin): a margin reached by two rows of the same function was two rows (R8: three
+    electrolytics listed twice, once under cell NONE; life rows left the list on 2026-10-28, two estimate rows remain). The row keeps every check and risk type; the entry
     it shows is the one with a table cell, else the one written without NONE."""
     rows = OrderedDict()
     for e in items or []:

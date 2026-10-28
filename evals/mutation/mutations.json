@@ -4739,13 +4739,6 @@
   "new": "    release = release_for(errors, blockers, accepted or bool(risk_rows))"
  },
  {
-  "id": "M740",
-  "name": "a life estimate is not listed as a risk",
-  "file": "scripts/review_functions.py",
-  "old": "        if life_row(cid) and not margin_proves(fn, row['aspect'], state, cid) \\",
-  "new": "        if False and life_row(cid) and not margin_proves(fn, row['aspect'], state, cid) \\"
- },
- {
   "id": "M741",
   "name": "a stress risk is not listed",
   "file": "scripts/review_functions.py",
@@ -4756,7 +4749,7 @@
   "id": "M742",
   "name": "the bounding table has no risk column for a cell",
   "file": "scripts/catalog.py",
-  "old": "    ('OPTO-CTR', ('ENVIRONMENT', 'LIFETIME', 'CONSISTENCY')),\n",
+  "old": "    ('OPTO-CTR', ('ENVIRONMENT', 'CONSISTENCY')),\n",
   "new": ""
  },
  {
@@ -5311,5 +5304,12 @@
   "file": "scripts/derating.py",
   "old": "    if technology and stated and technology not in stated:",
   "new": "    if False:"
+ },
+ {
+  "id": "M823",
+  "name": "a life row estimate asks for a bounding-table cell",
+  "file": "scripts/validate_review.py",
+  "old": "            if m.get('check_ids') and all(function_reading.life_row(c) for c in m['check_ids']):\n",
+  "new": "            if False:\n"
  }
 ]

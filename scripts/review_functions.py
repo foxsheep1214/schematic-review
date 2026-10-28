@@ -2074,9 +2074,9 @@ def _risk_entry(cid, fn, row, state, m, types, source, **extra):
 def risks(expected, checks, functions):
     """2026-10-26 (user: 三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列): the PASS rows that carry a
     risk — a corner passed only on an estimate (its cell, factor, consequence class and the prototype test that confirms
-    it; C-grade evidence), a life row passed on an estimate (LIFETIME, the BOM constraint is the improvement), and a
-    decisive margin within the rating but short of the assumed derating (STRESS). The release is not capped by them; the
-    report lists them apart, by risk type."""
+    it; C-grade evidence) and a decisive margin within the rating but short of the assumed derating (STRESS). The release
+    is not capped by them; the report lists them apart, by risk type. A life row is neither (2026-10-28, user: 按三条建议
+    改): `judged` reads its estimate as the BOM constraint (life_estimate), listed with the constraints, not here."""
     out, by_id = [], {fn.get('id'): fn for fn in functions or [] if isinstance(fn, dict)}
     for cid, row in sorted(checks.items()):
         fn = by_id.get(row.get('function_id')) if isinstance(row, dict) else None
@@ -2098,16 +2098,6 @@ def risks(expected, checks, functions):
                                        how=rule.how if rule else basis.get('scope'),
                                        verification=handoff.get('verification'),
                                        receivers=list(handoff.get('receivers') or [])))
-            continue
-        if life_row(cid) and not margin_proves(fn, row['aspect'], state, cid) \
-                and life_estimate(fn, row['aspect'], state, cid):
-            constraint = row.get('bom_constraint') if isinstance(row.get('bom_constraint'), dict) else {}
-            for m in function_reading.margins(calc):
-                if (m.get('basis') or {}).get('kind') == 'ESTIMATE' \
-                        and covers(scope(m, calc.get('aspect')), row['aspect'], state, cid):
-                    entry = _risk_entry(cid, fn, row, state, m, ('LIFETIME',), 'LIFE')
-                    entry['improvement'] = entry['improvement'] or constraint.get('requirement')
-                    out.append(entry)
             continue
         for m in function_reading.margins(calc):
             if (margin_verdict(m) == 'PASS' and (m.get('basis') or {}).get('kind') != 'ESTIMATE'

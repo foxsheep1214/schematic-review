@@ -247,19 +247,32 @@ class EstimateGradeAndReleaseTests(unittest.TestCase):
             self.assertIn(word, row)
         self.assertEqual(render_report.render_risks([]), [])   # no risk: no section, no count line
 
-    def test_one_margin_reached_by_an_estimate_row_and_a_life_row_is_one_risk(self):
+    def test_a_life_row_passed_on_a_cell_estimate_is_no_risk(self):
+        # 2026-10-28 (user: 按三条建议改): R8 listed DEV-C06.OPTO rows passed on an OPTO-CTR estimate as risks; a life
+        # row's estimate is its BOM constraint, the same margin on another row stays a risk
+        import review_functions
+        p, r, _ = estimated(cell='ZENER-VZ-LOWER', method='G8', estimate_factor=1.2)
+        r, _, _ = derive_rows.derive(p, r)
+        expected, checks = {c['id']: c for c in p['checks']}, {c['id']: c for c in r['checks']}
+        listed = lambda: [e['check_id'] for e in review_functions.risks(expected, checks, r['functions'])]
+        self.assertEqual(listed(), ['PWR-C02.OTHER-RUN.Q9'])
+        checks['DEV-C06.OPTO.Q9'], expected['DEV-C06.OPTO.Q9'] = (checks.pop('PWR-C02.OTHER-RUN.Q9'),
+                                                                  expected.pop('PWR-C02.OTHER-RUN.Q9'))
+        self.assertEqual(listed(), [])
+
+    def test_one_margin_reached_by_two_estimate_rows_is_one_risk(self):
         import render_report
-        margin = {'value': 400, 'unit': 'h', 'against': 'C206 估算 88000 h 减 87600 h'}
-        estimate = {'check_id': 'DEV-C02.FN-B', 'function_id': 'FN-B', 'aspect': '电容有效容量与寿命', 'source': 'ESTIMATE',
-                    'cell': 'NONE', 'types': ['LIFETIME'], 'margin': margin, 'estimate_factor': 1}
-        life = {'check_id': 'DEV-C02.LIFE.C206', 'function_id': 'FN-B', 'aspect': '电容有效容量与寿命', 'source': 'LIFE',
-                'types': ['LIFETIME'], 'margin': dict(margin)}
-        other = dict(life, check_id='DEV-C02.LIFE.C1', margin=dict(margin, value=10, against='C1 另一个余量'))
-        [shown, second] = render_report.risk_rows([estimate, life, other])
-        self.assertEqual((shown['source'], shown['check_ids'], second['check_ids']),
-                         ('LIFE', ['DEV-C02.FN-B', 'DEV-C02.LIFE.C206'], ['DEV-C02.LIFE.C1']))
-        md = '\n'.join(render_report.render_risks([estimate, life, other]))
-        self.assertIn('### 寿命风险（2 项）', md)
+        margin = {'value': 74.4, 'unit': 'µA', 'against': 'U3 所需最小集电极电流 87.6 µA'}
+        loose = {'check_id': 'PRO-E01.FN-B', 'function_id': 'FN-B', 'aspect': '光耦传输能力', 'source': 'ESTIMATE',
+                 'cell': 'NONE', 'types': ['CONSISTENCY'], 'margin': margin, 'estimate_factor': 1}
+        celled = dict(loose, check_id='SIG-C07.FN-B', cell='OPTO-CTR', types=['ENVIRONMENT'], margin=dict(margin),
+                      estimate_factor=2)
+        other = dict(celled, check_id='SIG-C07.FN-C', margin=dict(margin, value=10, against='U4 另一个余量'))
+        [shown, second] = render_report.risk_rows([loose, celled, other])
+        self.assertEqual((shown['cell'], shown['check_ids'], shown['types'], second['check_ids']),
+                         ('OPTO-CTR', ['PRO-E01.FN-B', 'SIG-C07.FN-B'], ['CONSISTENCY', 'ENVIRONMENT'], ['SIG-C07.FN-C']))
+        md = '\n'.join(render_report.render_risks([loose, celled, other]))
+        self.assertIn('### 环境适应性风险（2 项）', md)
         self.assertNotIn('（NONE）', md)
 
 
@@ -312,12 +325,24 @@ class ExtensionSignalTests(unittest.TestCase):
         db = {'parts': {'Q20': {}, 'Q201': {'value': 'IRF'}, 'C206': {'value': '4u7'}, 'R1': {'value': '10k'}},
               'pin2net': {}, 'nets': {}}
         self.assertEqual(vr.refs_named('Q201650V额定对550V，对C206', set(db['parts'])), {'Q201', 'C206'})
-        margin = {'value': 1, 'unit': 'h', 'against': 'C206寿命减需求', 'check_ids': ['DEV-C02.LIFE.C206'],
+        margin = {'value': 1, 'unit': 'V', 'against': 'C206耐压减需求', 'check_ids': ['DEV-D04.BOM.C206'],
                   'basis': {'kind': 'ESTIMATE', 'cell': 'NONE'}}
         report = {'functions': [{'id': 'FN-X', 'objects': {'refs': ['Q201', 'C206', 'R1']}, 'calculation': {'margin': [
             margin, dict(margin, against='偏置窗口减需求', check_ids=['DEV-C02.FN-X'])]}}]}
         [signal] = [s for s in vr.extension_signals(report, db) if s['kind'] == 'NEW_BOUND_CELL']
         self.assertEqual((signal['refs'], signal['margin']), (['C206'], 0))   # the second names no part: not spread
+
+    def test_a_life_row_estimate_asks_for_no_cell(self):
+        # R8 (2026-10-28): nine electrolytic life estimates asked for a capacitor cell; life has its own path
+        db = {'parts': {'C206': {'value': '47u/450V'}, 'U3': {'value': 'SFH6186'}}, 'pin2net': {}, 'nets': {}}
+        life = {'value': 400, 'unit': 'h', 'against': 'C206 估算寿命减 87600 h', 'check_ids': ['DEV-C02.LIFE.C206'],
+                'basis': {'kind': 'ESTIMATE', 'cell': 'NONE'}}
+        shared = dict(life, check_ids=['DEV-C02.LIFE.C206', 'DEV-C02.FN-X'])
+        signals = lambda m: [s for s in vr.extension_signals({'functions': [
+            {'id': 'FN-X', 'objects': {'refs': ['C206']}, 'calculation': {'margin': [m]}}]}, db) if s['kind'] == 'NEW_BOUND_CELL']
+        self.assertEqual(signals(life), [])
+        self.assertEqual(signals(dict(life, check_ids=['DEV-C06.OPTO.U3'], against='U3 寿命末 CTR')), [])
+        self.assertEqual(signals(shared)[0]['refs'], ['C206'])   # also another row's margin: that row still asks
 
     def test_a_cell_word_for_another_kind_does_not_hide_the_gap(self):
         db = {'parts': {'Q1': {'value': 'MOS'}, 'R1': {'value': '10k'}}, 'pin2net': {}, 'nets': {}}

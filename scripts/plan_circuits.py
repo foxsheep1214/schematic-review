@@ -973,8 +973,6 @@ class CircuitPlanning:
         kind, text = graph.kind(ref), self._part_text(graph, ref)
         if device_kinds.wearout_of(kind):          # the kind alone decides: battery, opto, varistor, relay, connector, switch
             return device_kinds.wearout_of(kind)
-        if kind == DIODE and (LED_RE.search(text) or re.match(r'^LED\d', ref, re.I)):
-            return 'LED'
         if VARISTOR_RE.search(text):
             return 'VARISTOR'
         if kind == FUSE:
