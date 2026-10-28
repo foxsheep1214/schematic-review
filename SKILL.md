@@ -117,6 +117,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 工作点和保证条件对不上时定界；估算判通过的边界 | [bounding-table.md](references/bounding-table.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
 | 审查员 | 器件应力降额：I/II/III 级降额值、等级从哪来、取值规则（与 ASG 共用，`references/derating-rules.json` 同内容） | [derating-rules.md](references/derating-rules.md) |
+| 审查员 | 器件应力怎么判：超额定不成立、超降额未超额定是应力风险、只审写出的应力余量（与 ASG 共用） | [stress-spec.md](references/stress-spec.md) |
 | 审查员 | 结果、P0–P3、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
 | 审查员 | 需求缺失/含糊/冲突：当场问用户，答复写进需求清单 | [requirement-clarifications.md](references/requirement-clarifications.md) |
 | 审查员 | ① 写 intent.json：字段、输入声明、电路决定、需求参数 | [intent-format.md](references/intent-format.md) |

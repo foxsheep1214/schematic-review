@@ -5,8 +5,10 @@ not defects. Shared proofs and indirect dependencies can be legitimate.
 """
 from collections import defaultdict
 from pathlib import Path
+import derating
 import results_model
 import review_functions
+from checkers.netgraph import NetGraph
 import json
 import re
 
@@ -180,6 +182,22 @@ def screen_quality(plan, report, db=None, base_dir=None):
             candidates.append({'code': 'FAILING_RESULT_SAYS_HOLDS', 'function_ids': [fn.get('id')], 'check_ids': [],
                                'message': 'This function has failures but its result says what holds and not what fails; the '
                                           'function table prints the result beside 不合格, so say what failed first'})
+    graph = NetGraph(db) if isinstance(db, dict) and db.get('parts') else None
+    kinds_of = lambda refs: sorted({graph.kind(r) for r in refs if r in graph.parts} - {'unknown'}) if graph else []
+    for fn in report.get('functions') or []:
+        # stress spec (user 2026-10-27: 统一到余量审核规则上来): a part-stress margin of a kind the derating spec covers
+        # names its rule, so the gate checks it at the project's level; one that names none is a lead, not a refusal
+        if not isinstance(fn, dict):
+            continue
+        conditions = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+        for k, m in enumerate(review_functions._margin_items(fn)):
+            kinds = derating.rule_hint(m, conditions, kinds_of)
+            if kinds:
+                candidates.append({'code': 'DERATING_RULE_AVAILABLE', 'function_ids': [fn.get('id')], 'check_ids': [],
+                                   'margin': k, 'kinds': kinds,
+                                   'message': 'This stress margin is on a %s; the derating spec has rules for it: name the '
+                                              'one that fits in basis.derating_rule so the gate checks it at the '
+                                              'project level' % '/'.join(kinds)})
     for row in report['checks']:
         if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
             continue

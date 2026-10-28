@@ -49,7 +49,7 @@ class DeratingSpecTests(unittest.TestCase):
 
     @unittest.skipUnless((ASG / 'derating-rules.json').is_file(), 'autonomous-schematic-generation not installed')
     def test_asg_holds_the_same_files(self):
-        for name in ('derating-rules.json', 'derating-rules.md'):
+        for name in ('derating-rules.json', 'derating-rules.md', 'stress-spec.md'):
             self.assertEqual((ASG / name).read_bytes(), (REFS / name).read_bytes(), name)
 
 

@@ -31,7 +31,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
 | ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
-| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`checkers/` |
+| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`checkers/` |
 | ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
 | ④ 校验 | `validate_review.py` | — | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
@@ -102,6 +102,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-10-27 | 门禁合成一条 `pytest`（已含规则合同、KiCad 回放、典型电路），台账 Gates 只写测试条数与 `--changed` 结果；变异检查不再每次必加，提交前跑 `--changed`，一批改动后或每周全量跑并清理失效的（用户：“按你的建议简化：门禁合成一条 pytest；变异检查不再每次必加，提交前跑 --changed，定期全量跑并清理失效的；台账照记”） | 后三项已在 pytest 里，单独再跑是重复；变异清单 758 条、17 条锚点失效，每次改动的重锚、改号和并行编号冲突占了大量时间 |
 | 2026-10-27 | 门禁写入所读文件的指纹 `validated_files`（计划、结果按打包形态剥掉派生检查项、db、lint，规范化 JSON 的 SHA-256），`pack_review.py` 用将要打包的文件逐个核对，不符或缺这个字段就拒绝；不在打包里重跑门禁（重跑要上一版计划与网表、证据目录，打包时不一定有） | Codex 审查 SR 复现：改了结果的 `plan_digest`，重新校验报错，沿用旧门禁打包却成功，“结果更新后必须重跑门禁”只靠流程保证（用户：按你的建议改） |
 | 2026-10-27 | 结果格式 13：余量为 0、应力只来自交出去的 DESIGN_CONSTRAINT 的被拒，这种“约束等于额定”的通过写成 `judgements` 引约束与额定；交接约束只走 `handoffs` 和“交给后续环节的要求”，不再印成零余量 | R8 报告 11 条“余量 0 V 对 光耦 890 V 按隔离设计约束核对”，读者当成零余量合格；用户 2026-10-27 确认改单第 6 条：“做第一级，以及第二级的6、7” |
+| 2026-10-27 | 降额接进审查，判法单列[器件应力规范](stress-spec.md)（与 ASG 共用，取代降额规范 R6）：等级写 `intent.derating{level, source: req:/clarification:}`，计划带 `derating`；应力余量点名 `basis.derating_rule`，门禁按等级核规则、器件类型，`ratio`/`pulse_ratio` 重算降额值；超降额未超额定是应力风险（STRESS，不挡定稿），不另挂待办；不要求逐器件全覆盖，没点名而规范有规则的出 DERATING_RULE_AVAILABLE 提示 | 用户 2026-10-27：等级“照 ASG”；“将共用规范R6和ASG统一到现在的‘应力’规范下来，制定单独的应力规范”；“ASG里面现在每颗器件都有降额规则，这个过于严苛了。请将其统一到余量审核规则上来”；R8 J701 5 A 对 5 A 零余量照样判合格 |
 
 ## 四、规则维护
 

@@ -11,6 +11,7 @@ import difflib
 from copy import deepcopy
 import board_intent
 import catalog
+import derating
 from electrical_contract import (LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, engine_identity, finite,
                                  squeeze_words)
 from page_inventory import inventory as document_inventory
@@ -48,7 +49,7 @@ INTENT_SCHEMA_VERSION = 5   # 5 (2026-10-26): clarifications; requirement status
 INTENT_FIELDS = {'schema_version', 'review_mode', 'review_phase', 'input_sha256', 'assemblies', 'devices', 'device_kinds',
                  'requirement_source', 'requirements', 'clarifications', 'circuit_decisions', 'circuits', 'circuit_candidates_sha256',
                  'expect', 'features', 'materials', 'rail_exclusions', 'rule_gaps', 'power_rails', 'power_sources',
-                 'power_paths', 'active_state', 'mission_profile', 'review_sources', 'review_dependencies'} | {
+                 'power_paths', 'active_state', 'mission_profile', 'review_sources', 'review_dependencies', 'derating'} | {
     checker.intent_key for checker in REGISTRY if checker.intent_key}
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
@@ -108,6 +109,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
     for key in sorted(set(intent) - INTENT_FIELDS, key=str):
         near = difflib.get_close_matches(str(key), sorted(INTENT_FIELDS), n=1)
         errors.append('intent.%s 不是 intent 的字段%s' % (key, '（是不是 %s？）' % near[0] if near else ''))
+    errors.extend(derating.intent_errors(intent))
     if intent.get('review_mode') not in (None, 'first', 'revision'):
         errors.append('review_mode 必须为 first/revision')
     if 'review_phase' in intent and intent['review_phase'] not in PHASES:
@@ -654,6 +656,8 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         records = requirement_clarifications.records(self.intent)
         if records:   # what was asked of the user and how it was settled; the report lists it (需求澄清记录)
             plan['clarifications'] = records
+        if isinstance(self.intent.get('derating'), dict):   # the level the stress margins are checked at (stress spec)
+            plan['derating'] = dict(self.intent['derating'])
         deferred = [r['id'] for r in self.intent.get('requirements') or [] if r.get('status') == 'DEFERRED']
         if deferred:   # no checks; the report lists them under 本次不审的范围
             plan['deferred_requirements'] = deferred

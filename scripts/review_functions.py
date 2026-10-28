@@ -39,6 +39,7 @@ from collections import Counter, OrderedDict
 
 import bound_formulas
 import catalog
+import derating
 import datasheet_kinds
 import function_reading
 import results_model
@@ -2142,4 +2143,21 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
         import bom_constraints
         from checkers.netgraph import NetGraph
         errors += bom_constraints.rating_gap_errors(expected, checks, functions, NetGraph(db), row_anchors)
+    errors += derating_errors(plan, functions, db)
+    return errors
+
+
+def derating_errors(plan, functions, db=None):
+    """Each margin naming a derating rule, checked at the plan's level (derating.margin_errors, stress spec)."""
+    from checkers.netgraph import NetGraph
+    graph = NetGraph(db) if isinstance(db, dict) and db.get('parts') else None
+    kinds_of = lambda refs: sorted({graph.kind(r) for r in refs if r in graph.parts} - {'unknown'}) if graph else []
+    level = ((plan or {}).get('derating') or {}).get('level')
+    errors = []
+    for fn in functions or []:
+        if not (isinstance(fn, dict) and text(fn.get('id'))):
+            continue
+        conditions = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+        for k, m in enumerate(_margin_items(fn)):
+            errors += derating.margin_errors('%s/margin[%d]' % (fn['id'], k), m, conditions, level, kinds_of)
     return errors

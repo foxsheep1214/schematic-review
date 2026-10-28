@@ -9,6 +9,31 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Derating wired in; the stress spec replaces the derating spec's R6 (2026-10-27)
+
+Item 7 of the R8 change list. R8 judged J701's 5 A contact against a 5 A demand as a pass with zero margin: the
+derating spec of 0db0cc4 was not read anywhere. The user decided the three open points: the level comes from the
+requirements as in ASG; within the rating but over the derated value is the existing stress risk, written in a separate
+stress spec shared with ASG (no conditional verdict, no work item, no user sign-off); coverage follows the margins the
+reviewer writes, not every part and parameter.
+
+- `references/stress-spec.md` (new, shared with ASG byte for byte) and R6 of `derating-rules.md` pointing to it.
+- `intent.derating{level, source: req:<id> | clarification:<answered id>}`, checked by `derating.intent_errors`; the
+  planner copies it into `plan.derating`.
+- A margin may name `basis.derating_rule`; the gate (`review_functions.derating_errors`) checks the rule exists and fits
+  the limit's parts, that a level is set, and for `ratio`/`pulse_ratio` rules recomputes stress = rating − margin against
+  rating × the level's value: over it needs the STRESS risk, within it may not carry one.
+- Hint DERATING_RULE_AVAILABLE: a DEV-C01 stress margin on a guaranteed rating of a kind the spec covers names no rule.
+- DEV-C01's criterion and the commodity floors read the level; the 50 % stays the pre-judgement threshold.
+
+Reading-path records: ② 185 000 → 185 200, ③ 224 800 → 225 100, ④ 119 000 → 119 300 (the derating sentences in
+intent-format.md and results-format.md).
+
+- Event: user:2026-10-27 (第 7 项：等级“照 ASG”；“将共用规范R6和ASG统一到现在的‘应力’规范下来，制定单独的应力规范”；“ASG里面现在每颗器件都有降额规则，这个过于严苛了。请将其统一到余量审核规则上来”)
+- Causes: rule_not_enforced 1 (the derating spec was not read by any check), knowledge_missing 1 (no project level in the intent)
+- Changed: scripts/derating.py, scripts/plan_review.py, scripts/review_functions.py, scripts/review_quality.py, scripts/catalog.py, scripts/tests/test_stress_spec.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, references/stress-spec.md, references/derating-rules.md, references/commodity-floors.md, references/results-format.md, references/intent-format.md, references/check-catalog.md, references/architecture.md, SKILL.md, docs/improvement-ledger.md
+- Gates: pytest 2329 with ASG at e553158 holding the same derating-rules.md and stress-spec.md (ASG dc874c8 judges stress by the same spec); mutation --changed 251 run, 251 killed
+
 ## R8 report's SR shortcomings: change list items 1–3, 6, 8–12 (2026-10-27)
 
 The R8 report (SR-20261027-R8-全新审查-e8c3845) showed what SR itself got wrong; the change list built from it was
