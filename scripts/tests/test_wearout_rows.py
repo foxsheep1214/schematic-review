@@ -85,7 +85,7 @@ class ClassTests(unittest.TestCase):
 
     def test_the_optocoupler_row_writes_the_end_of_life_ctr_as_a_constraint(self):
         row = wearout(plan())['U2']
-        for piece in ('CTR', '保留比例', 'bom_constraint', '87600 h'):
+        for piece in ('CTR', '保留比例', '85%', 'R10', 'bom_constraint', '87600 h'):
             self.assertIn(piece, row['criterion'])
         self.assertIn('不自编', row['criterion'])
 

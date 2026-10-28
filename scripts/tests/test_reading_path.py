@@ -26,7 +26,8 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ② +0.4 KB, ③ +0.3 KB 2026-10-27: a resistor whose power matters must have its power rating written in the BOM.
 # ③ +0.4 KB, ④ +0.3 KB 2026-10-28: Codex review SR-FIX-07 (zener and typical-value wording, risk vs BOM-constraint freeze).
 # ③ +0.6 KB, ④ +0.3 KB 2026-10-28: SR-FIX-02 constraint-vs-rating judgement and SR-FIX-05 rule-fit checks written down.
-STEP_MAX_BYTES = {'①': 168_200, '②': 157_500, '③': 224_500, '④': 123_500, '⑤': 37_800}
+# ② +0.1 KB 2026-10-28: the optocoupler life row passes at a retention ratio ≤ 85 % (derating R10).
+STEP_MAX_BYTES = {'①': 168_200, '②': 157_600, '③': 224_500, '④': 123_500, '⑤': 37_800}
 
 
 def section(text, title):

@@ -847,7 +847,7 @@ LIFE_EVENTS = OrderedDict([
 WearoutClass = namedtuple('WearoutClass', 'title checks basis event')
 WEAROUT_CLASSES = OrderedDict([
     ('BATTERY', WearoutClass('电池', '循环次数、容量保持、充电电压和温度', '手册循环寿命和日历寿命', None)),
-    ('OPTO', WearoutClass('光耦', '按最小正向电流和保证 CTR 算出这条链寿命末所需的 CTR 保留比例，写成选型或 bom_constraint；'
+    ('OPTO', WearoutClass('光耦', '按最小正向电流和保证 CTR 算出这条链寿命末所需的 CTR 保留比例，不高于 85% 即通过（降额规范 R10），写成选型或 bom_constraint；'
                                   '厂家给了 CTR 随时间的曲线才用曲线核对，SR 不自编衰减系数', '手册衰减曲线', None)),
     ('VARISTOR', WearoutClass('压敏电阻', '浪涌幅值和次数对脉冲寿命降额曲线，持续工作电压', '需求浪涌等级和次数', 'surges')),
     ('FUSE', WearoutClass('保险丝', '开机浪涌 I²t 和次数对脉冲降额', '剖面里的开关机次数', 'power_cycles')),

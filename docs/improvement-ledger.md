@@ -9,6 +9,25 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## One margin per quantity; R10 rewritten (2026-10-28)
+
+The shared derating spec's R10 called SR's OPTO-CTR ÷2 an aging allowance, which 31a68f2 had made untrue. The user
+set the principle (user: 你理解是对的，按照你的建议来定。ASG和SR的都改):
+1. R12 (new, shared): one quantity takes one man-made margin (derating factor, estimate factor or design tolerance);
+   conditions that hold at the same time stack (end of life with the highest working temperature, a surge on the line
+   peak); independent rare events do not (a surge and an output short).
+2. R10: the 15 % `ctr_drop` is the aging tolerance on the design CTR, taken at the coldest/hottest point of the working
+   range; a typical-curve estimate factor such as SR's ÷2 is the curve's uncertainty, not aging. Either the design CTR
+   × 0.85 is checked, or the end-of-life retention ratio the chain needs is ≤ 85 %.
+3. DEV-C06's optocoupler row passes at a retention ratio ≤ 85 % (R10). R8's U202/U403/U404 need 2.9/13.6/17.3 %.
+ASG's copy of derating-rules.md was synced byte for byte; ASG's isolated-feedback pattern (CTR min × temperature ×
+aging) already fits R10/R12 and was not changed.
+
+- Event: user:2026-10-28 (你理解是对的，按照你的建议来定。ASG和SR的都改)
+- Causes: judgment 1
+- Changed: references/derating-rules.md, scripts/catalog.py, references/commodity-floors.md, scripts/tests/test_wearout_rows.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2359 (SR), ASG derating tests 25 passed (13 ASG geometry failures predate the change); mutation --changed 31 on 5 files, all killed
+
 ## Lifetime: one place per question, no lifetime risks (2026-10-28)
 
 The R8 review of the 100 W board (61166f3) listed 10 of its 17 risks as lifetime risks. The scope (every electrolytic,
