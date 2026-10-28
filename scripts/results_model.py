@@ -19,6 +19,8 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
+# The number counts changes of structure, one per batch of rule changes; a change that only renames words does not raise
+# it and goes into scripts/migrate_results.py as a rename (2026-10-27, user: 按照你推荐的三种方式进行修改).
 SCHEMA_VERSION = 15   # 15 (2026-10-27): how a bound was obtained is the bounding table's method (G1–G11, SOA,
 # FORCED_BETA) on every decisive margin and public bound; basis.derivation and worst_case.bound.basis are retired
 # (user: 第二阶段按建议做)
@@ -69,8 +71,8 @@ def shape_errors(report, history_ids=()):
     if not isinstance(report, dict):
         return ['results must be an object']
     if report.get('schema_version') != SCHEMA_VERSION:
-        return ['results.schema_version must be %d; an older ledger is not read, review again with this SR'
-                % SCHEMA_VERSION]
+        return ['results.schema_version must be %d; an older ledger is not read: python3 scripts/migrate_results.py '
+                'carries it over where the change was a renaming, otherwise review again with this SR' % SCHEMA_VERSION]
     errors = ['results.%s is retired in schema 4 (the newest meaning always applies)' % k
               for k in RETIRED_TOP_FIELDS if k in report]
     errors += ['results.%s is not written: a requirement question is asked of the user at step ① and answered into '

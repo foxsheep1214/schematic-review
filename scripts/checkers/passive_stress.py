@@ -24,11 +24,14 @@ RESISTOR_FLOORS = {
     '0201': (0.05, 15.0), '0402': (1 / 16, 25.0), '0603': (1 / 16, 50.0), '0805': (0.1, 100.0),
     '1206': (0.125, 150.0), '1210': (0.25, 200.0), '2010': (0.5, 200.0), '2512': (1.0, 200.0),
 }
-# 采购范围未受控时的边界：功率 ≤ 最弱档 50%、电压 ≤ 50% 判 PASS。功率超过 25%（RG1005 0.032 W 反例的 50%）时，
-# 封装最弱档不足以覆盖全部可采购档，PASS 附带采购约束“额定 ≥ 应力 ÷ 项目降额等级的贴片电阻功率取值”（RES-SMD-P；
-# 等级未定时取 2 倍应力；2026-10-27，用户：BOM 最低额定按项目降额等级取值），由 DEV-D04 汇总，不记证据不足。
-POWER_LIMIT, VOLTAGE_LIMIT, CATEGORY_SAFE_POWER = 0.5, 0.5, 0.25
+# 采购范围未受控时的边界：功率 ≤ 最弱档 50%、电压 ≤ 50% 判 PASS。
+# 功耗要考虑时 BOM 必须写明额定功率（2026-10-27，用户：设计时考虑功耗，除阻值和精度外还要写上功率等级，作为给以后的约束；
+# ASG 照此设计，SR 审核）：BOM 没写功率、最坏功耗又超过按已写字段能买到的最弱件（封装最弱档的一半，RG1005 0.032 W 反例）
+# 的降额值时，预判给 procurement_min_power_w = 应力 ÷ 项目降额等级的贴片电阻功率取值（RES-SMD-P；等级未定取 2 倍应力；
+# 用户：BOM 最低额定按项目降额等级取值），门禁要求这一行写 bom_constraint 或判 FAIL（power_rating_errors）。
+POWER_LIMIT, VOLTAGE_LIMIT, WEAKEST_SHARE = 0.5, 0.5, 0.5
 SMD_POWER_RULE, UNSET_POWER_SHARE = 'RES-SMD-P', 0.5
+WATTS_RE = re.compile(r'(\d+(?:\.\d+)?)\s*(m?)W(?![A-Za-z])')
 DEFAULT_TOL = 0.05
 # commodity-floors「陶瓷电容」可订购档：(封装, 最大容值 F, 耐压 V, 依据料号)。
 # 同封装同耐压下更小容值视为同样可订购。
@@ -520,17 +523,17 @@ def _proposal(entry):
         if basis:
             calc['floor_basis'] = basis
         ok = calc['power_ratio'] <= POWER_LIMIT and calc['voltage_ratio'] <= VOLTAGE_LIMIT
-        if not ok:
-            return None, calc, '超出未受控采购范围的预判边界，按 commodity-floors 判定表由审查者判定'
-        note = '功率 ≤ 最弱档 %d%%、电压 ≤ %d%%' % (POWER_LIMIT * 100, VOLTAGE_LIMIT * 100)
-        if calc['power_ratio'] > CATEGORY_SAFE_POWER:
-            level = entry.get('derating_level')
-            share = derating.rules()[SMD_POWER_RULE]['values'][level] if level else UNSET_POWER_SHARE
+        need = ''
+        level = entry.get('derating_level')
+        share = derating.rules()[SMD_POWER_RULE]['values'][level] if level else UNSET_POWER_SHARE
+        if not power_w and calc['p_max_w'] > p_floor * WEAKEST_SHARE * share:
             calc['procurement_min_power_w'] = round(calc['p_max_w'] / share, 9)
-            note += '；采购约束：额定功率 ≥ %.4g W（%s），记 DEV-D04' % (
+            need = '；功耗要考虑而 BOM 没写额定功率：BOM 须写明额定功率 ≥ %.4g W（%s），记 bom_constraint（DEV-D04 汇总）' % (
                 calc['procurement_min_power_w'],
                 '应力 ÷ %s 级降额 %g%%，%s' % (level, share * 100, SMD_POWER_RULE) if level else '降额等级未定，取应力 2 倍')
-        return 'PASS', calc, note
+        if not ok:
+            return None, calc, '超出未受控采购范围的预判边界，按 commodity-floors 判定表由审查者判定' + need
+        return 'PASS', calc, '功率 ≤ 最弱档 %d%%、电压 ≤ %d%%' % (POWER_LIMIT * 100, VOLTAGE_LIMIT * 100) + need
     farads = parse_capacitance(entry['value'])
     if farads is None:
         return None, {'v_across_max': v}, '容值不可解析'
@@ -667,6 +670,25 @@ def node_gaps(plan):
             if basis.startswith(('unbounded-', 'cross-domain:')):
                 counts[basis] = counts.get(basis, 0) + 1
     return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
+
+
+def power_rating_errors(key, item, proposal):
+    """功耗要考虑而 BOM 没写额定功率的电阻（预判带 procurement_min_power_w）：判 PASS 时须写 bom_constraint，
+    requirement 写额定功率下限、不低于预判值，状态 TO_WRITE（BOM 没写，不能记 WRITTEN）；判 FAIL 不受此限。"""
+    need = ((proposal or {}).get('calculation') or {}).get('procurement_min_power_w')
+    if need is None or item.get('review_result') != 'PASS':
+        return []
+    constraint = item.get('bom_constraint')
+    if not isinstance(constraint, dict):
+        return [f'{key}: 最坏功耗超过按 BOM 已写字段能买到的最弱件的降额值，BOM 须写明额定功率：'
+                f'写 bom_constraint{{requirement: "额定功率 ≥ {need:.4g} W", status: TO_WRITE, …}}，或判 FAIL']
+    m = WATTS_RE.search(str(constraint.get('requirement') or ''))
+    errors = []
+    if not m or float(m.group(1)) / (1000 if m.group(2) else 1) < need * (1 - 1e-6):
+        errors.append(f'{key}: bom_constraint.requirement 写额定功率下限，不低于预判算出的 {need:.4g} W')
+    if constraint.get('status') == 'WRITTEN':
+        errors.append(f'{key}: 计划读到的阻值字段和 BOM 列都没有额定功率，不能记 WRITTEN；写进 BOM 后重出计划')
+    return errors
 
 
 def override_errors(key, item):

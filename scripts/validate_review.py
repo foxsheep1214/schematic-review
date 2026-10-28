@@ -403,6 +403,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         proposal = expected.get(key, {}).get('proposal')
         if isinstance(proposal, dict) and proposal.get('result') == 'PASS' and result in ('FAIL', 'INSUFFICIENT'):
             errors.extend(passive_stress.override_errors(key, item))
+        errors.extend(passive_stress.power_rating_errors(key, item, proposal))
         require(isinstance(result, str) and result in RESULTS, f"{key}: invalid result")
         require(isinstance(app, str) and app in APPLICABILITY, f"{key}: invalid applicability")
         if 'check_explanation' in item:

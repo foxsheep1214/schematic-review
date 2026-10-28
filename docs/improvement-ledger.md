@@ -9,6 +9,38 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## A resistor whose power matters must have its power rating in the BOM (2026-10-27)
+
+The user: when power has to be considered, the design writes the power rating next to the value and tolerance, as a
+constraint for later; ASG designs this way and SR reviews it. SR used to attach a procurement minimum to a passing
+pre-judgement and leave writing the constraint to the reviewer, so a reviewer could pass the row without it, and a
+resistor beyond the pre-judgement carried no minimum at all. Now "power matters" is level-aware: the BOM writes no
+power and the worst-case power exceeds the derated value of the weakest part its fields allow (half the package floor,
+the RG1005 counterexample), which at no level is the former 25 %. Such a row, inside or beyond the pre-judgement, has
+`procurement_min_power_w`, and the gate asks a PASS to carry a bom_constraint stating at least that power with status
+TO_WRITE (the BOM states none, so WRITTEN is refused), or a FAIL. A power the BOM already states needs no constraint.
+The ASG side goes to an ASG session.
+
+- Event: user:2026-10-27 (“照道理来说，在设计的时候，如果要考虑功耗，不仅要考虑阻值和精度，还需要写上功率等级，作为给以后的约束。ASG里面就要这样来做，SR同样要审核这一点”)
+- Causes: rule_not_enforced 1 (a procurement minimum could pass without a constraint); rule_missing 1 (no minimum beyond the pre-judgement)
+- Changed: scripts/checkers/passive_stress.py, scripts/validate_review.py, scripts/tests/test_passive_stress.py, references/commodity-floors.md, references/margin-verdicts.md, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2344; mutation --changed 223 on 12 files, all killed at the unit tier
+
+## Results format versions count structure; renames migrate (2026-10-27)
+
+Asked what the frequent "results format N, older results refused" meant: formats 7–15 came in two days, several only
+renamed words (15 renamed derivation to method), and with no compatibility every bump made all earlier results
+unreadable. Three changes, as recommended: the format number counts changes of structure only, and a change that only
+renames goes into scripts/migrate_results.py as a rename the gate points to; one batch of rule changes raises the
+number at most once; the migration script lists every format step, rewrites the renames (format 14's derivation and
+bound.basis to methods) and names the steps that need the reviewer instead of migrating them. The policy is written in
+architecture.md (格式版本怎么升) and next to SCHEMA_VERSION.
+
+- Event: user:2026-10-27 (“按照你推荐的三种方式进行修改，现在就做。”)
+- Causes: judgment 1 (vocabulary renames raised the structure version and discarded every earlier result)
+- Changed: scripts/migrate_results.py, scripts/results_model.py, scripts/review_functions.py, scripts/tests/test_migrate_results.py, references/architecture.md, docs/improvement-ledger.md
+- Gates: pytest 2344; mutation --changed 223 on 12 files, all killed at the unit tier
+
 ## Netlist and PDF parsing split from coverage; the six-question regrouping is complete (2026-10-27)
 
 Stage 6 of regrouping the rules by six questions: coverage and revision. inputs-and-coverage.md held both the coverage

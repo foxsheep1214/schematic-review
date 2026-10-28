@@ -23,6 +23,14 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | `review-gate.json` | 工具 | ④ 校验 | — | 对账结果、阻断项、待办 |
 | `审查报告.md` / `审查报告.html`、`record/` | 工具 | ⑤ 出报告 | — | 交付物：报告与留档 |
 
+### 格式版本怎么升
+
+2026-10-27 定（用户：按照你推荐的三种方式进行修改）：
+- **版本号只记结构变化**：字段增删、字段含义拆并、开放项种类增删才升。只是换叫法（词表搬进 catalog、同义改名）不升版，
+  在 `scripts/migrate_results.py` 加一条改名，门禁拒收旧词并点名这个脚本。改名按旧词本身识别，任何版本的文件都能跑，跑两次不再变。
+- **一批改动最多升一次**：一张改单（一条台账条目）里涉及格式的改动合成一版，不逐项升。
+- **结构变化写进迁移脚本的步骤表**：`STEPS` 记每一版改了什么；需要审查员重做的步骤脚本不迁移，只说明哪一步、要重做什么。
+
 ## 二、每个脚本属于哪一步
 
 “入口”是执行流程里直接调用的命令，只有入口写进 SKILL.md 的执行流程；“工具”是特定情形手动调用的命令；
@@ -33,7 +41,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
 | ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`checkers/` |
 | ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
-| ④ 校验 | `validate_review.py` | — | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
+| ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
 | 复审 | `diff_netlists.py` | — | `revision_impact.py` |
 | 维护 SR | `catalog.py --write-doc` | `compare_reviews.py`、`check_ledger.py` | — |

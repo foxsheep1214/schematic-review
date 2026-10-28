@@ -675,7 +675,7 @@ def _basis_errors(label, m, conditions, claim_ids):
 def _method_errors(label, basis, conditions):
     """1a–1b: the method that gave a decisive bound, and which end of each toleranced input it took."""
     if 'derivation' in basis:
-        return ['%s: basis.derivation is retired (results 15); write %s' % (label, RETIRED_METHOD_WORDS)]
+        return ['%s: basis.derivation is retired (results 15); write %s, or run scripts/migrate_results.py' % (label, RETIRED_METHOD_WORDS)]
     method = basis.get('method')
     if method not in catalog.BOUND_METHODS:
         return ['%s: basis.method says how the bound was obtained, one of %s (references/bounding-table.md 推法)'
@@ -1006,7 +1006,7 @@ def _worst_case_errors(label, item, conditions, calculation=None):
     if not (isinstance(bound, dict) and bound.get('condition') in conditions and text(bound.get('value'))
             and bound.get('method') in catalog.BOUND_METHODS and 'basis' not in bound):
         errors.append('%s: worst_case.bound names the public bound used before asking the vendor: condition (a clause '
-                      'id), value, method one of %s (bound.basis is retired, results 15)'
+                      'id), value, method one of %s (bound.basis is retired, results 15: scripts/migrate_results.py renames it)'
                       % (label, '/'.join(catalog.BOUND_METHODS)))
     if not text(worst.get('result')):
         errors.append(label + ': worst_case.result states the outcome under the public bound')
