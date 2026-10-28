@@ -23,6 +23,36 @@ class FunctionTableTests(unittest.TestCase):
             {'aspect': 'C', 'value': 446, 'unit': 'V', 'against': 'U202 VIORM 890 Vpeak'}]}
         self.assertEqual(rr.function_basis({'calculation': calc}), '余量 136 Vac 对 CY301 Y1 400 Vac；余量 57.3 V 对 U202 VIORM')
 
+    def test_small_quantities_take_their_prefix_and_a_trailing_clause_is_the_same_comparison(self):
+        # R8: 2e-07 s, 2.1e-06 F in the table; Q501 120 V printed twice, once with "；非线性热SOA另见…"
+        self.assertEqual([rr._quantity(v, u) for v, u in ((2e-07, 's'), (2.1e-06, 'F'), (0.001212, 'A'), (0.05, 'A'),
+                                                           (0, 'V'), (21.06, 'V'), (0.0005, 'mA'), (400, 'h'))],
+                         ['200 ns', '2.1 µF', '1.212 mA', '0.05 A', '0 V', '21.06 V', '0.0005 mA', '400 h'])
+        calc = {'margin': [
+            {'aspect': 'A', 'value': 20, 'unit': 'V', 'against': 'Q501 120 V 额定对 PCB 峰值 ≤100 V'},
+            {'aspect': 'B', 'value': 20, 'unit': 'V', 'against': 'Q501 120 V 额定对 PCB 峰值 ≤100 V；非线性热 SOA 另见后续要求'},
+            {'aspect': 'C', 'value': 2e-07, 'unit': 's', 'against': '偏置切换等待 2 ms 减 5τ'}]}
+        self.assertEqual(rr.function_basis({'calculation': calc}),
+                         '余量 20 V 对 Q501 120 V 额定对 PCB 峰值 ≤100 V；余量 200 ns 对 偏置切换等待 2 ms 减 5τ')
+
+    def test_a_range_two_requirements_state_is_one_entry(self):
+        import requirement_parameters as rp
+        windows = [{'min': 90, 'max': 264, 'unit': 'V', 'requirement': 'E-IN-01'},
+                   {'min': 100, 'max': 240, 'unit': 'V', 'requirement': 'E-IN-01'},
+                   {'min': 90, 'max': 264, 'unit': 'V', 'requirement': 'REQ-IN-001'},
+                   {'min': 100, 'max': 240, 'unit': 'V', 'requirement': 'REQ-IN-001'}]
+        self.assertEqual(rp.texts(windows), ['90–264 V（E-IN-01、REQ-IN-001）', '100–240 V（E-IN-01、REQ-IN-001）'])
+
+    def test_a_failing_function_whose_result_says_it_holds_is_hinted(self):
+        plan = {'checks': [{'id': 'A.1', 'rule': 'A'}]}
+        def hints(result):
+            report = {'checks': [{'id': 'A.1', 'review_result': 'PASS', 'rationale': 'ok'}],
+                      'functions': [{'id': 'FN-J101', 'fails': [{'key': 'BOM-RV101'}], 'calculation': {'result': result}}]}
+            return [c for c in screen_quality(plan, report)['candidates'] if c['code'] == 'FAILING_RESULT_SAYS_HOLDS']
+        self.assertEqual(len(hints('数值比较按已知器件额定、实际网络成立。')), 1)
+        self.assertEqual(hints('RV101 的 BOM 规格与订货码矛盾；其余额定比较成立。'), [])
+        self.assertEqual(hints('漏极取样分压不能保证高线模式。'), [])
+
     def test_a_long_result_shows_its_first_sentence_and_points_at_the_ledger(self):
         long = '正常同步整流关断反压为 Vbulk/8 + VRAW，最高 78 V。' + '然后' * 200
         basis = rr.function_basis({'calculation': {'result': long}})

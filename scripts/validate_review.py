@@ -12,13 +12,13 @@ import catalog
 import function_reading
 import results_model
 from review_workflow import workflow, decision
-from review_quality import FREEZE_BLOCKING_CODES, screen_quality
+from review_quality import FREEZE_BLOCKING_CODES, refs_named, screen_quality
 from review_engine import validate_engine
 from review_summary import categorized_summary, validate_impact
 import requirement_clarifications
 from checkers import REGISTRY, passive_stress, validate_inventories
 from validate_remediation import validate_remediation, validate_figures, changes_topology, READINESS
-from electrical_contract import LOCATOR_IDS_RE, PLAN_SCHEMA_VERSION, db_fingerprint, load_json, squeeze_words
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, load_json, squeeze_words
 from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check_id
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
@@ -696,20 +696,32 @@ def extension_signals(report, db, datasheet_audit=None):
         calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
         margin = calc.get('margin')
         margins = margin if isinstance(margin, list) else [margin] if margin is not None else []
-        places = [('margin', k, m.get('basis'), ' '.join(str(x) for x in (
-                      m.get('against'), m.get('aspect'), (conditions.get((m.get('basis') or {}).get('limit')) or {}).get('says'))
-                      if text(x)))
-                  for k, m in enumerate(margins) if isinstance(m, dict) and isinstance(m.get('basis'), dict)]
+        # a handbook limit that holds at this working point (GUARANTEED_LIMIT) needs no bounding, so no cell is missing.
+        # words: what the report prints; named: the parameter itself (the aspect is a catalog title, "电容有效容量与寿命"
+        # would name the MLCC cell for an electrolytic's life); a margin's check id ending in a part names it too
+        places = []
+        for k, m in enumerate(margins):
+            if not (isinstance(m, dict) and isinstance(m.get('basis'), dict)) or m['basis'].get('derivation') == 'GUARANTEED_LIMIT':
+                continue
+            named = ' '.join(str(x) for x in (m.get('against'), (conditions.get(m['basis'].get('limit')) or {}).get('says'))
+                             if text(x))
+            places.append(('margin', k, m['basis'], ' '.join(x for x in (named, str(m.get('aspect') or '')) if x), named,
+                           {str(c).rsplit('.', 1)[-1] for c in m.get('check_ids') or []}))
         for item in fn.get('open') or []:
             worst = item.get('worst_case') if isinstance(item, dict) else None
             tried = worst.get('monotonic_tried') if isinstance(worst, dict) else None
             if isinstance(tried, dict):
-                places.append(('open', item.get('key'), tried, str(item.get('what') or '')))
-        for where, index, basis, words in places:
+                what = str(item.get('what') or '')
+                places.append(('open', item.get('key'), tried, what, what, set()))
+        for where, index, basis, words, named, check_ids in places:
             if basis.get('cell') != catalog.NO_CELL:
                 continue
-            refs = [r for r in LOCATOR_IDS_RE.findall(words) if r in db['parts']] or objects
+            # the part the words name, glued to its value or not; a margin naming none is not spread over the function
+            refs = (sorted(refs_named(named, db['parts']) or check_ids & set(db['parts']))
+                    or (objects if len(objects) == 1 else []))
             kinds = sorted({graph.kind(r) for r in refs if r in db['parts']} - {'unknown'})
+            if any(set(catalog.BOUNDS[c].kinds) & set(kinds) for c in catalog.cells_named_by(named)):
+                continue   # the table has this kind's cell: BOUNDING_CELL_AVAILABLE, not a missing cell
             if kinds:
                 out.append({'kind': 'NEW_BOUND_CELL', 'function_id': fn['id'], where: index, 'device_kinds': kinds,
                             'refs': sorted(set(refs)), 'parameter': words[:120],

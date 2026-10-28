@@ -339,17 +339,37 @@ def fold_blocks(blocks):
 RISK_SOURCE_WORDS = {'ESTIMATE': '按典型值估算', 'LIFE': '寿命按任务剖面估算', 'STRESS': '保证值在额定内、降额不足'}
 
 
+def risk_rows(items):
+    """One row per (function, margin): a margin reached by an estimate row and by a life row of the same function was two
+    rows (R8: three electrolytics listed twice, once under cell NONE). The row keeps every check and risk type; the entry
+    it shows is the one with a table cell, else the one written without NONE."""
+    rows = OrderedDict()
+    for e in items or []:
+        m = e.get('margin') or {}
+        rows.setdefault((e.get('function_id'), m.get('value'), m.get('unit'), m.get('against')), []).append(e)
+    out = []
+    for entries in rows.values():
+        rank = lambda e: 0 if e.get('cell') in catalog.BOUNDS else 2 if e.get('cell') == catalog.NO_CELL else 1
+        shown = dict(min(entries, key=rank))
+        shown['types'] = unique([t for e in entries for t in e.get('types') or ()])
+        shown['check_ids'] = unique([e['check_id'] for e in entries if e.get('check_id')])
+        out.append(shown)
+    return out
+
+
 def render_risks(items):
     """风险清单（2026-10-26，用户：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列）：结论是
-    “合格，但有风险”的检查，按风险类型分组，每行写哪个角点只靠估算、怎么估的、余量、怎么改进、样机要测什么。"""
-    if not items:
+    “合格，但有风险”的余量，按风险类型分组，每行写哪个角点只靠估算、怎么估的、余量、怎么改进、样机要测什么。"""
+    rows = risk_rows(items)
+    if not rows:
         return []
     out = ['## 风险清单', '',
-           '下面 %d 项检查的结论是“合格，但有风险”：在额定和需求范围内过关，但有一个角点只能按典型值估算（或降额不足），'
-           '实际批次、环境或寿命末期可能达不到。风险不影响定稿，按“怎么改进”一列处理即可消除。' % len(items), '']
+           '下面 %d 项结论是“合格，但有风险”（涉及 %d 条检查）：在额定和需求范围内过关，但有一个角点只能按典型值估算'
+           '（或降额不足），实际批次、环境或寿命末期可能达不到。风险不影响定稿，按“怎么改进”一列处理即可消除。'
+           % (len(rows), sum(len(e['check_ids']) for e in rows)), '']
     by_type = OrderedDict((t, []) for t in catalog.RISK_TYPES)
-    for e in items:
-        for t in e.get('types') or ():
+    for e in rows:
+        for t in e['types']:
             by_type.setdefault(t, []).append(e)
     for t, entries in by_type.items():
         if not entries:
@@ -357,22 +377,17 @@ def render_risks(items):
         out += ['### %s风险（%d 项）' % (catalog.RISK_TYPES.get(t, t), len(entries)), '',
                 '| 功能 | 参数（定界表格） | 只靠估算的角点 | 怎么估的 | 余量 | 怎么改进 | 样机要测 | 涉及检查 |',
                 '|---|---|---|---|---|---|---|---|']
-        groups = OrderedDict()
         for e in entries:
-            key = (e.get('function_id'), e.get('aspect'), e.get('cell'), e.get('corner'), e.get('how'),
-                   e.get('improvement'), e.get('verification'))
-            groups.setdefault(key, []).append(e)
-        for (fid, aspect, cell_id, corner, how, improvement, verification), rows in groups.items():
-            e = rows[0]
             m = e.get('margin') or {}
-            margin = '%s %s 对 %s' % (_shown(m.get('value')), m.get('unit') or '', m.get('against') or '')
+            margin = '%s 对 %s' % (_quantity(m.get('value'), m.get('unit')), m.get('against') or '')
             factor = e.get('estimate_factor')
-            how_text = (how or RISK_SOURCE_WORDS.get(e.get('source'), '')) + (
+            how_text = (e.get('how') or RISK_SOURCE_WORDS.get(e.get('source'), '')) + (
                 '（已按 ×%g 打折）' % factor if isinstance(factor, (int, float)) and not isinstance(factor, bool) else '')
             out.append('| %s | %s%s | %s | %s | %s | %s | %s | %s |' % (
-                cell(fid or ''), cell(aspect or ''), '（%s）' % cell(cell_id) if cell_id else '', cell(corner or ''),
-                cell(how_text), cell(margin), cell(improvement or ''), cell(verification or '—'),
-                cell('、'.join(r['check_id'] for r in rows))))
+                cell(e.get('function_id') or ''), cell(e.get('aspect') or ''),
+                '（%s）' % cell(e['cell']) if e.get('cell') else '', cell(e.get('corner') or ''), cell(how_text),
+                cell(margin), cell(e.get('improvement') or ''), cell(e.get('verification') or '—'),
+                cell('、'.join(e['check_ids']))))
         out.append('')
     return out
 
@@ -462,6 +477,20 @@ def _shown(value):
     return value
 
 
+BASE_UNITS = ('s', 'F', 'A', 'V', 'W', 'H', 'Ω', 'ohm', 'J', 'C')
+PREFIXES = ((1e-3, 'm'), (1e-6, 'µ'), (1e-9, 'n'), (1e-12, 'p'))
+
+
+def _quantity(value, unit):
+    """A margin with its unit, a value under 0.01 in a base unit carried to its prefix (R8 printed 2e-07 s, 2.1e-06 F)."""
+    unit = (unit or '').strip()
+    if isinstance(value, (int, float)) and not isinstance(value, bool) and unit in BASE_UNITS and 0 < abs(value) < 0.01:
+        scale, prefix = next(((f, p) for f, p in PREFIXES if abs(value) >= f), PREFIXES[-1])
+        scaled = round(value / scale, 9)
+        return '%s %s%s' % (_shown(int(scaled) if scaled == int(scaled) else scaled), prefix, unit)
+    return ('%s %s' % (_shown(value), unit)).strip()
+
+
 QUESTION_REFS_MAX = 8           # a parenthesised list of more designators than this reads as a count
 TRAILING_NOTE_RE = re.compile(r'（[^（）]*）\s*$')
 
@@ -484,10 +513,12 @@ def decisive_margins(calc):
     out, seen = [], set()
     for m in smallest.values():
         against = TRAILING_NOTE_RE.sub('', str(m.get('against') or '')).strip()
-        line = '余量 %s 对 %s' % (('%s %s' % (_shown(m['value']), m.get('unit') or '')).strip(), against)
-        if line not in seen:
-            seen.add(line)
-            out.append(line)
+        quantity = _quantity(m['value'], m.get('unit'))
+        # a comparison that only adds a trailing clause after ；is the same one (R8: Q501 120 V printed twice)
+        key = (quantity, re.split(r'[；;]', against)[0].strip())
+        if key not in seen:
+            seen.add(key)
+            out.append('余量 %s 对 %s' % (quantity, against))
     return out
 
 
@@ -688,6 +719,14 @@ def finding_owners(finding, plan):
     keys = sorted({(o.get('kind'), o.get('id') or '') for o in owners if o.get('kind') in OWNER_WORDS},
                   key=lambda k: (order.index(k[0]), k[1]))
     return '、'.join((OWNER_WORDS[kind] + ' ' + oid).strip() for kind, oid in keys)
+
+
+def task_title(task, checks, findings):
+    """A work item that only corrects one listed error carries that error's title: R8 called one divider
+    "CS/ZCD分压过小" as the error and "漏极取样分压过小" as its work item."""
+    owners = covered_by_findings(task, checks, findings)
+    finding = next((f for f in findings if len(owners) == 1 and f.get('id') == owners[0] and f.get('title')), None)
+    return finding['title'] if finding else task.get('title') or task.get('root_cause') or task['id']
 
 
 def covered_by_findings(task, checks, findings):
@@ -936,7 +975,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         sentences.append('用户暂缓的 %s 这次没有审，不算结论，见“%s”' % ('、'.join(x for x in (
             '%d 条需求' % len(plan['deferred_requirements']) if plan.get('deferred_requirements') else '',
             '%d 条检查' % deferred_rows if deferred_rows else '') if x), DEFERRED_SECTION))
-    risky = gate.get('risks') or []
+    risky = risk_rows(gate.get('risks'))
     if risky:
         kinds = Counter(t for e in risky for t in e.get('types') or ())
         sentences.append('有 %d 项合格但有风险（%s），不影响定稿，见“风险清单”' % (
@@ -945,14 +984,18 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     if notes.get('summary'):
         out += [notes['summary'], '']
     if tasks:
+        # within a severity a confirmed error comes before a gap: R8 put three data requests (20, 14, 12 checks)
+        # ahead of its four P1 circuit errors while the summary said to fix the PFC divider first
         ordered = sorted(tasks, key=lambda t: (SEVERITIES.index(level_of(t)) if level_of(t) else len(SEVERITIES),
+                                               not any((checks.get(k) or {}).get('review_result') == 'FAIL'
+                                                       for k in t.get('check_ids') or []),
                                                -len(t.get('check_ids') or [])))
         top = ordered[:TOP_TASKS]
         out.append('**最先要解决的%s：**' % (' %d 件事' % len(top) if len(top) > 1 else '一件事'))
         for i, t in enumerate(top, 1):
             level = level_of(t)
             kind = item_kind([checks[k] for k in t.get('check_ids') or [] if k in checks]).split('（')[0]
-            out.append('%d. %s（%s%s；待办 %s）' % (i, t.get('title') or t.get('root_cause') or t['id'],
+            out.append('%d. %s（%s%s；待办 %s）' % (i, task_title(t, checks, findings),
                                                   level + '，' if level else '', kind, t['id']))
         fixes = sum(bool(covered_by_findings(t, checks, findings)) for t in tasks)
         out.append('')
@@ -1049,7 +1092,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
         for task in sorted(tasks, key=rank):
             owners = covered_by_findings(task, checks, findings)
             if owners:
-                out += ['### %s　%s' % (task['id'], task.get('title') or task.get('root_cause') or ''), '',
+                out += ['### %s　%s' % (task['id'], task_title(task, checks, findings)), '',
                         '按上文“发现的错误”中问题 %s 的改法处理，这里不重复。' % '、'.join(owners), '']
                 continue
             out += render_item(task, checks, item_notes, task_owners, classes, shared_reasons)

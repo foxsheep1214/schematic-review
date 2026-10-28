@@ -9,6 +9,46 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## R8 report's SR shortcomings: change list items 1–3, 6, 8–12 (2026-10-27)
+
+The R8 report (SR-20261027-R8-全新审查-e8c3845) showed what SR itself got wrong; the change list built from it was
+confirmed item by item, and these landed (item 7, wiring the derating spec, is its own entry):
+
+1. 定界表要扩的 listed 115 rows, 113 of them guaranteed ratings compared with computed stress, and a ref glued to its
+   value (Q201650V) fell back to every member of the function (23 refs on one row). `extension_signals` now skips
+   `derivation: GUARANTEED_LIMIT`, names the part from the margin's words or a check id ending in a part
+   (`review_quality.refs_named`, glued refs read too), never spreads a part-less margin over the function, and leaves a
+   margin whose words name a cell of that part's own kind to BOUNDING_CELL_AVAILABLE; the aspect title no longer
+   matches cells ("电容有效容量与寿命" named the MLCC cell for an electrolytic). R8 replays 115 → 5 rows, all real
+   (electrolytic life has no cell).
+2. 风险清单 listed one margin twice when an estimate row and a life row of the same function reached it; rows are now
+   one per (function, margin) with every check and type (`render_report.risk_rows`); counts follow. R8 19 → 10 rows.
+3. 最先要解决的 3 件事 put three data requests ahead of four P1 circuit errors; within a severity a task with a FAIL
+   check now comes first.
+6. Results format 13: a zero margin whose stress is only a handed-on DESIGN_CONSTRAINT is refused (R8 printed eleven
+   "余量 0 V 对 … 按约束核对"); such a pass is a `judgements` entry citing the constraint and the rating.
+8. A split part shared its parent's `circuit_key` (the gate counted 18 duplicates) and nets (the LDO inherited BULK);
+   each split part now carries `key` = `<candidate>/<part>`, read through `check_key.circuit_key`, and only the
+   candidate nets its members' walks name (all of them for the part holding the anchor).
+9. False alarms: PRO-A04 no longer fires on an optocoupler collector driving a transistor base (directly or through one
+   resistor; PRO-E01 still asks CTR); SIG-E01 is not planned on an I²C-named net with one device and test pads (the
+   fixture-only rule SIG-T02 already used).
+10. DEV-D04 per part: `read_bom.bom_conflicts` finds a BOM line that states a tolerance twice differently or files the
+    part under another family's category, and the plan adds `DEV-D04.BOM.<ref>` for it; on R8's 150 lines it finds
+    exactly R604 and RV101, which the reviewer had added by hand as rule gaps.
+11. `linearregulator` joins the regulator title words; SYS-PINMAP asks MCUs, unverified ICs and any IC with GPIO pins,
+    not a GPIO-less generic IC (R8 asked the LDO U502 and missed the PD controller U601 driving PFC_EN from GPIO3).
+12. Text: margins under 0.01 in a base unit take a prefix (2e-07 s → 200 ns); a comparison that only adds a trailing
+    clause prints once; a requirement range stated by two requirements prints once with both ids; a work item that
+    only corrects one listed error carries that error's title; new hint FAILING_RESULT_SAYS_HOLDS (R8: J101).
+
+The format-13 sentence moves the step ③ reading-path record 224 500 → 224 800.
+
+- Event: user:2026-10-27 (做第一级，以及第二级的6、7，第三级和第四级的所有。做完之后commit push)
+- Causes: rule_not_enforced 6 (signal filter, risk merge, task order, split key, constraint margins, BOM conflicts), judgment 2 (two false alarms), knowledge_missing 2 (linear regulator word, GPIO controllers), rule_missing 1 (text hint)
+- Changed: scripts/validate_review.py, scripts/review_quality.py, scripts/render_report.py, scripts/circuit_decisions.py, scripts/check_key.py, scripts/plan_circuits.py, scripts/interfaces.py, scripts/checkers/optocoupler.py, scripts/plan_board.py, scripts/read_bom.py, scripts/catalog.py, scripts/plan_system.py, scripts/requirement_parameters.py, scripts/review_functions.py, scripts/results_model.py, scripts/tests/test_cell_boundary.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_optocoupler.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_bom_conflicts.py, scripts/tests/test_system_functions.py, scripts/tests/test_report_rendering_51.py, scripts/tests/test_design_constraint.py, scripts/tests/test_bound_derivation.py, scripts/tests/test_condition_refs.py, scripts/tests/test_one_sided_bounds.py, scripts/tests/test_reading_path.py, scripts/tests/fixtures/golden_reports/constraint.md, scripts/tests/fixtures/golden_reports/estimate.md, scripts/tests/fixtures/golden_reports/extension.md, scripts/tests/fixtures/golden_reports/functions.md, references/bounding-table.md, references/intent-format.md, references/check-catalog.md, references/review-vocabulary.md, references/checker-conventions.md, references/results-format.md, references/architecture.md, SKILL.md, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Gates: pytest 2324; mutation --changed: M84, M89, M100, M648 re-anchored at the moved code and killed, no survivors
+
 ## Derating spec: I/II/III levels, one file shared with ASG (2026-10-27)
 
 DEV-C01 says derating follows the project rule, and the commodity floors fall back on a 50% rule of thumb; there was

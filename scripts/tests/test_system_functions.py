@@ -3,7 +3,7 @@
 The board's system functions are made only when their object exists: the power tree (SYS-POWER) when there are
 rails, grounds (SYS-GROUND, PWR-T06) when there are two or more ground nets, power-on order and recovery
 (SYS-SEQUENCE, RST-T03, once for the board) when two or more rails exist, monitoring (SYS-MONITOR) when the monitoring
-checker asks for per-domain coverage, and the controller's pin map (SYS-PINMAP, SIG-D13) unless every IC is verified as a kind that is no controller.
+checker asks for per-domain coverage, and the controller's pin map (SYS-PINMAP, SIG-D13) for an MCU, an unverified IC or an IC with GPIO pins.
 Each has a frame over its rows. Stress, capacitance and precision (DEV-C01/C02/C03) are asked once per circuit over the
 parts it owns, and once for the board over the parts no circuit owns.
 """
@@ -32,7 +32,7 @@ class SystemFunctionTests(unittest.TestCase):
         self.assertNotIn('RST-T03', catalog.CIRCUIT_TYPE_BY_NAME['STARTUP'].subjects)
 
     def test_each_system_function_with_rows_has_a_frame_over_them(self):
-        self.assertEqual(set(self.frames), {'SYS-POWER', 'SYS-GROUND', 'SYS-MONITOR', 'SYS-SEQUENCE'})
+        self.assertEqual(set(self.frames), {'SYS-POWER', 'SYS-GROUND', 'SYS-MONITOR', 'SYS-SEQUENCE', 'SYS-PINMAP'})
         for sid, frame in self.frames.items():
             owned = {c['id'] for c in self.plan['checks'] if c['owner'] == {'kind': 'SYSTEM', 'id': sid}}
             self.assertEqual({m['check_id'] for m in frame['members']}, owned, sid)
@@ -54,11 +54,27 @@ class SystemFunctionTests(unittest.TestCase):
         self.assertNotIn('SYS-GROUND', {f.get('system') for f in plan['functions']})
 
     def test_the_pin_map_is_asked_while_an_ic_could_be_a_controller(self):
-        self.assertEqual(rows(self.plan, 'SIG-D13'), [])   # every IC on the synthetic board is a verified non-controller
+        # the synthetic board's PD controller U5 has a GPIO1 pin; every other IC is a verified non-controller
+        self.assertEqual([c['object']['refs'] for c in rows(self.plan, 'SIG-D13')], [['U5']])
         db = fx.board()
         fx.fixture.add(db, 'U8', 'IC:LOGIC', [('1', 'IO', 'FLT_DRV'), ('2', 'VDD', 'V3V3'), ('3', 'GND', 'SGND')])
         plan = plan_for(db)
         self.assertEqual([c['owner'] for c in rows(plan, 'SIG-D13')], [{'kind': 'SYSTEM', 'id': 'SYS-PINMAP'}])
+
+
+    def test_the_pin_map_follows_programmable_pins_not_a_generic_title(self):
+        # R8: the PD controller U601 drives PFC_EN from GPIO3 and was not asked; the LDO U502 was, as a generic ic
+        from plan_review import build_review_plan
+        db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {}, 'pseudo_nets': [], 'ref2page': {}}
+        fx.fixture.add(db, 'U1', 'IC:PD', [('1', 'VDD', 'V5'), ('2', 'GND', 'GND'), ('3', 'GPIO3', 'PFC_EN')])
+        fx.fixture.add(db, 'U2', 'IC:LDO', [('1', 'IN', 'V5'), ('2', 'GND', 'GND'), ('3', 'OUT', 'V3V3')])
+        intent, audit = fx.intent_for(db, kinds={'U1': 'pd_controller', 'U2': 'ic'}, rails={})
+        [row] = rows(build_review_plan(db, intent, datasheet_audit=audit), 'SIG-D13')
+        self.assertEqual(row['object']['refs'], ['U1'])
+
+    def test_a_linear_regulator_title_reads_as_a_regulator(self):
+        import datasheet_kinds
+        self.assertEqual(datasheet_kinds.cues('TPS7A40 60-V, Single Output Linear Regulator'), {'regulator'})
 
 
 class OwnedPartRowTests(unittest.TestCase):

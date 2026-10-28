@@ -129,7 +129,7 @@ schema 2，带 `rules_version`，绑定 `db_sha256` 与 intent 的 `input_sha256
   源 = 轨上电源树的源脚（库类型不是输入），否则轨上整流管（二极管阴极、整流桥 + 脚）的唯一所属；都没有记缺口。
 - 接口检查项：`interfaces.py` 的 `plan_interfaces` 按 `catalog.INTERFACE_SUBJECTS` / `INTERFACE_NET_SUBJECTS` 逐接口出检查项并建接口框架；
   `catalog.INTERFACE_RULES` 的其余检查项（检查器、扫描）网络都落在一个接口上时由 `row_owner` 归该接口，连接器的接口优先。
-- 系统功能：`plan_system.py` 的 `plan_system` 按触发生成 PWR-T06（地网 ≥ 2）、RST-T03（电源轨 ≥ 2）、SIG-D13（有可能是主控的 IC），
+- 系统功能：`plan_system.py` 的 `plan_system` 按触发生成 PWR-T06（地网 ≥ 2）、RST-T03（电源轨 ≥ 2）、SIG-D13（MCU、未核验的 IC，或带 GPIO 脚的任何 IC；2026-10-27 起不再问没有 GPIO 脚的泛称 IC），
   `plan_system_frames` 给每个有检查项的系统功能建框架；`plan_circuits.py` 的 `plan_owned_parts` 按各电路拥有的器件生成 DEV-C01/C02/C03。
 - 覆盖审计：`row_owner.coverage_errors(plan, db)` 查每颗贴装器件恰归一块电路或在 REQ-Q08 清单上，`interfaces.coverage_errors(plan)` 查每个接口有它的检查项和框架；两条都由 `validate_review.py` 执行，归属审计只在电路来自候选时启用。
 

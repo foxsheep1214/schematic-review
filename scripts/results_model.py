@@ -19,7 +19,9 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
-SCHEMA_VERSION = 12   # 12 (2026-10-27): no USER_DEFERRED open items; a check the user deferred is NA with na_reason
+SCHEMA_VERSION = 13   # 13 (2026-10-27): no zero margin whose stress is only a handed-on DESIGN_CONSTRAINT; the pass
+# on a constraint is a judgements entry citing it and the rating
+# 12 (2026-10-27): no USER_DEFERRED open items; a check the user deferred is NA with na_reason
 # USER_DEFERRED and the instruction, listed as outside this review's scope
 # 11 (2026-10-26): no DELIVERABLE_PENDING open items; what another stage owes is a DESIGN_CONSTRAINT
 # (numeric or a clause) handed on

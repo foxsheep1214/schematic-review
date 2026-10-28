@@ -202,7 +202,8 @@ RULES = (
          '实际实例采购字段、BOM 参数与原厂 MPN 订货组合一致，包含关键无源件；'
          '已证实的物料/参数/资料冲突判本项FAIL，典型值或测试条件不得改称额定保证；'
          '需选料的最低额定汇总为BOM约束，并按误选的最严重可信后果定级；'
-         '候选身份不得冒充已核准；沿用库按实际 MPN/封装/符号版本验证兼容映射，缓存来源名不单独视为采购冲突', 'board', 'board'),
+         '候选身份不得冒充已核准；沿用库按实际 MPN/封装/符号版本验证兼容映射，缓存来源名不单独视为采购冲突；'
+         'BOM 同一行自相矛盾的器件（容差写了两个值、类别与器件类型不符）计划逐颗另出 DEV-D04.BOM.<位号>，全板项只答其余器件', 'board', 'board'),
     Rule('DEV-D05', '引脚处置',
          '按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范'
          '悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；'
@@ -748,7 +749,7 @@ DEVICE_ROLES = OrderedDict([
     ('pd_controller', DeviceRole('USB PD 控制器', ('pdcontroller', 'powerdelivery', 'usbpd', 'typeccontroller', 'usbccontroller'),
                                  ('USB', 'ANALOG'))),
     ('regulator', DeviceRole('稳压器与变换器', (
-        'voltageregulator', 'lowdropout', 'ldoregulator', 'dcdcconverter', 'buckconverter', 'boostconverter',
+        'voltageregulator', 'linearregulator', 'lowdropout', 'ldoregulator', 'dcdcconverter', 'buckconverter', 'boostconverter',
         'switchingregulator', 'stepdownconverter', 'stepupconverter', 'powermanagementic', 'pmic', 'chargepump'),
         ('POWER_CONVERTER',))),
     ('supervisor', DeviceRole('电压监控与复位', ('supervisor', 'supervisory', 'voltagemonitor', 'resetcircuit', 'resetic', 'watchdog'),

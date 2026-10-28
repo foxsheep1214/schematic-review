@@ -1401,6 +1401,15 @@ def function_errors(report, document_only=(), db=None, audit=None):
                         errors.append('%s/margin[%d]: basis.handoff is the index of a complete entry of the function\'s '
                                       'handoffs {receivers, constraint, verification}: the prototype test that confirms '
                                       'the estimate' % (fid, k))
+                    inputs = [conditions_by_id.get(c) for c in basis.get('conditions') or []]
+                    if (m['value'] == 0 and inputs and all(isinstance(c, dict) and c.get('kind') == 'DESIGN_CONSTRAINT'
+                                                           for c in inputs)):
+                        # results 13 (2026-10-27): R8 wrote 11 margins "0 V 对 光耦 890 V 按隔离设计约束核对" — a stress
+                        # the constraint sets equal to the rating is no margin, and the report printed it as a zero one
+                        errors.append('%s/margin[%d]: a margin of 0 whose stress is only a handed-on design constraint '
+                                      'says the constraint, not a margin; write the pass as a judgements entry '
+                                      '{aspect, conditions: [the constraint, the rating], says} and keep the constraint '
+                                      'in conditions with its handoff (results 13)' % (fid, k))
                     same = (m['value'], m['unit'].strip(), m['against'].strip())
                     if same in stated:
                         errors.append('%s/margin[%d]: the same margin as margin[%d] (%s %s against %s); a defect lands on '

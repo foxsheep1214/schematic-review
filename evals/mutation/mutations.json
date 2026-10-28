@@ -500,7 +500,7 @@
   "id": "M84",
   "name": "a circuit row is keyed by its display name, not its candidate ids",
   "file": "scripts/plan_circuits.py",
-  "old": "'circuit_key': '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']])),",
+  "old": "'circuit_key': check_key.circuit_key(circuit),",
   "new": "'circuit_key': circuit['id'],"
  },
  {
@@ -535,7 +535,7 @@
   "id": "M89",
   "name": "interface ids use the circuits' display names",
   "file": "scripts/interfaces.py",
-  "old": "        self.key = {cid: '+'.join(sorted(c.get('candidate_ids') or [cid])) for cid, c in self.circuits.items()}",
+  "old": "        self.key = {cid: check_key.circuit_key(c) for cid, c in self.circuits.items()}",
   "new": "        self.key = {cid: cid for cid, c in self.circuits.items()}"
  },
  {
@@ -612,7 +612,7 @@
   "id": "M100",
   "name": "pin map asked although every IC is verified as no controller",
   "file": "scripts/plan_system.py",
-  "old": "                             and graph.role_kind(ref) in (None, 'mcu', 'ic'))",
+  "old": "                             and (graph.role_kind(ref) in (None, 'mcu') or graph.named_pins(ref, GPIO_RE)))",
   "new": "                             )"
  },
  {
@@ -4147,8 +4147,8 @@
   "id": "M648",
   "name": "every margin is a new-cell signal, cell or not",
   "file": "scripts/validate_review.py",
-  "old": "            if basis.get('cell') != catalog.NO_CELL:\n                continue\n            refs = [r for r in LOCATOR_IDS_RE",
-  "new": "            refs = [r for r in LOCATOR_IDS_RE"
+  "old": "            if basis.get('cell') != catalog.NO_CELL:\n                continue\n            # the part the words name",
+  "new": "            # the part the words name"
  },
  {
   "id": "M649",

@@ -28,6 +28,12 @@ def _digest(value, n):
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False).encode('utf-8')).hexdigest()[:n]
 
 
+def circuit_key(circuit):
+    """The candidate ids a circuit came from; a split part has its own key, as its candidate ids are its parent's (R8: two
+    parts of one split shared a key and the gate counted 18 duplicate checks)."""
+    return circuit.get('key') or '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']]))
+
+
 def rule_revision(rule):
     """Digest of the catalog entry and question template; 'unknown' for a rule the catalog does not have."""
     entry = catalog.BY_ID.get(rule)

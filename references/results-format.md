@@ -117,6 +117,7 @@
 - **乙：归另一份设计文件**（磁件规格、固件配置、PCB）：反推出的界写成 DESIGN_CONSTRAINT 条件（`limit`、`regime`、`owner`、`handoff`），
   余量按约束的不利端算，满足就判 PASS，派生检查项带上 `handoffs[handoff]` 交给 `owner`；`owner` 写原理图或 BOM 的拒收（那是甲）。
   门禁 `design_constraints` 汇总，报告结论段带一句。`kind: DESIGN_VALUE` 写了会被拒绝（结果格式 10）。
+  约束本身就是“应力不超过额定”时没有余量可算：写 `judgements{aspect, conditions: [约束, 额定], says}`，余量为 0 且应力只来自约束的被拒（结果格式 13）。
 - **另一环节欠的交付物同样并入乙**（2026-10-26，用户：并入乙）：定制件图纸（绝缘结构、三重线、爬电、耐压）、固件或 OTP
   能否实现所需的控制与恢复策略，都写成 DESIGN_CONSTRAINT 交给负责方；没有单一数值的写成条款（不写 `limit`，`says` 写必须满足什么），
   由 `judgements` 引用，定制件自己的身份与脚检查项、SIG-* 检查项也这样判。交付物已经到了而不满足约束的，记失败项。
@@ -255,7 +256,7 @@ DEV-C04 载流、PRO-D03 对外防护（对象 `{interface: EXT-<连接器>, ref
 供电接口只有检查项，不建框架。按声明的总线电路展开的同名规则仍问电路内部的链路。
 
 **系统功能。** 有对象才生成：两个以上地网问 PWR-T06（`{system: SYS-GROUND, nets}`），两条以上电源轨问 RST-T03
-（`{system: SYS-SEQUENCE, rails}`，全板一项），有可能是主控的 IC 问 SIG-D13（`{system: SYS-PINMAP, refs}`）；电源树与监控的检查项
+（`{system: SYS-SEQUENCE, rails}`，全板一项），MCU、未核验或带 GPIO 脚的 IC 问 SIG-D13（`{system: SYS-PINMAP, refs}`）；电源树与监控的检查项
 （PWR-T01/C01/A01/A04、PWR-T04/A06）照旧生成。每个有检查项的系统功能一个框架（`functions[]` 里带 `system`），成员是归它的检查项。
 **自有器件。** DEV-C01 应力、DEV-C02 电容、DEV-C03 精度每块电路对它拥有的器件一项（`{circuit, circuit_key, refs}`，
 按器件类别取），没有电路拥有的器件全板一项（`{board: BOARD, refs}`）。

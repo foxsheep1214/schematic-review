@@ -65,7 +65,7 @@
 | `gate_driver` | 栅极驱动器 | gatedriver、mosfetdriver、igbtdriver、bridgedriver、fetdriver | POWER_CONVERTER | — |
 | `sr_controller` | 同步整流控制器 | synchronousrectif、srcontroller | POWER_CONVERTER | — |
 | `pd_controller` | USB PD 控制器 | pdcontroller、powerdelivery、usbpd、typeccontroller、usbccontroller | USB、ANALOG | 检测脚 |
-| `regulator` | 稳压器与变换器 | voltageregulator、lowdropout、ldoregulator、dcdcconverter、buckconverter、boostconverter、switchingregulator、stepdownconverter、stepupconverter、powermanagementic、pmic、chargepump | POWER_CONVERTER | — |
+| `regulator` | 稳压器与变换器 | voltageregulator、linearregulator、lowdropout、ldoregulator、dcdcconverter、buckconverter、boostconverter、switchingregulator、stepdownconverter、stepupconverter、powermanagementic、pmic、chargepump | POWER_CONVERTER | — |
 | `supervisor` | 电压监控与复位 | supervisor、supervisory、voltagemonitor、resetcircuit、resetic、watchdog | ANALOG | 检测脚 |
 | `opamp_comparator` | 运放、比较器与放大器 | operationalamplifier、opamp、comparator、erroramplifier、instrumentationamplifier、currentsenseamplifier、currentshuntmonitor、differenceamplifier、audioamplifier | ANALOG | 全部信号脚 |
 | `shunt_reference` | 并联基准 | shuntregulator、voltagereference、shuntreference | ANALOG | 全部信号脚 |

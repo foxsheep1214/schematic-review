@@ -98,6 +98,26 @@ class DeriveTests(unittest.TestCase):
         _, errors = cd.derive(self.candidates, accept_all(self.candidates, **{'POWER_CONVERTER-U1': foreign}))
         self.assertTrue(any('R99' in e for e in errors), errors)
 
+    def test_split_parts_get_their_own_key_and_only_the_nets_they_reach(self):
+        # R8: an LDO split off the flyback candidate shared its key (the gate counted 18 duplicate checks) and its BULK
+        split = {'candidate': 'POWER_CONVERTER-U1', 'decision': 'split', 'citation': 'schematic p4 04_Flyback: aux rectifier drawn as its own block',
+                 'into': [{'id': 'FLYBACK', 'members': ['U1', 'Q1', 'R1', 'R2', 'R3', 'T1', 'D2', 'C3', 'U3', 'R7']},
+                          {'id': 'AUX', 'members': ['D3', 'C4']}]}
+        intent = cd.write_circuits(dict(self.intent, circuit_decisions=accept_all(self.candidates, **{'POWER_CONVERTER-U1': split})),
+                                   self.candidates)
+        parts = {c['id']: c for c in intent['circuits'] if c['id'] in ('FLYBACK', 'AUX')}
+        self.assertEqual((parts['FLYBACK']['key'], parts['AUX']['key']), ('POWER_CONVERTER-U1/FLYBACK', 'POWER_CONVERTER-U1/AUX'))
+        self.assertEqual((parts['FLYBACK']['nets'], parts['AUX']['nets']), (['SW', 'VCC'], ['VCC']))
+        self.assertEqual(cd.validate(intent, self.candidates, self.db), [])
+        plan = build_review_plan(self.db, intent=intent, datasheet_audit=self.audit, candidates=self.candidates)
+        keys = [c['check_key'] for c in plan['checks'] if c.get('check_key')]
+        self.assertEqual(len(keys), len(set(keys)))
+        self.assertTrue({'POWER_CONVERTER-U1/FLYBACK', 'POWER_CONVERTER-U1/AUX'} <= {
+            c['object'].get('circuit_key') for c in plan['checks']})
+        stale = copy.deepcopy(intent)
+        del next(c for c in stale['circuits'] if c['id'] == 'AUX')['key']
+        self.assertTrue(any('AUX: key' in e for e in cd.validate(stale, self.candidates, self.db)))
+
     def test_reject_needs_a_reason_and_sends_the_members_to_discovery(self):
         reject = {'candidate': 'DEBUG-BOARD', 'decision': 'reject', 'reason': 'OUTSIDE_SCOPE',
                   'citation': 'requirement REQ-SCOPE-01: test points are not delivered'}

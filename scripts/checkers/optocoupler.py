@@ -90,6 +90,14 @@ class _Scan:
         return sorted({ref for ref, other in self.graph.neighbors(net, {pw.RESISTOR})
                        if self.tree.is_rail(other)})
 
+    def _bjt_bases(self, net):
+        """Transistor bases the collector drives, directly or through one series resistor (R8: U403 pulls Q406's PNP base
+        through R406/R418; the base-emitter bias is the load, not a missing pull-up)."""
+        nets = {net} | {other for _, other in self.graph.neighbors(net, {pw.RESISTOR})}
+        return sorted(node for n in nets for node in self.graph.nodes_on(n)
+                      if self.graph.kind(node.partition('.')[0]) == pw.BJT and self.graph.is_fitted(node.partition('.')[0])
+                      and self.graph.role(node) == 'gate')
+
     def _internal_pullup(self, ref, collector):
         pull = self.declared.get(ref, {}).get('internal_pullup')
         if pull is None or internal_pullup_errors(pull, self.graph.db):
@@ -129,6 +137,7 @@ class _Scan:
                 'emitter_net': nets['out_emitter'],
                 'output_pullups': self._pullups(collector) if collector else [],
                 'internal_pullup': self._internal_pullup(ref, collector) if collector else None,
+                'bjt_base_loads': self._bjt_bases(collector) if collector else [],
                 'gaps': sorted(set(gaps)),
             })
         return sorted(found, key=lambda item: item['id'])[:MAX_OPTOS]
@@ -204,7 +213,8 @@ class OptocouplerChecker(Checker):
                          head + '：LED 回路 ' + '、'.join(item['led_nets'])
                          + ' 上未见限流电阻；若为恒流驱动需在 intent 中声明并给出出处',
                          item['ref'])
-            if item['collector_net'] and not item['output_pullups'] and not item.get('internal_pullup'):
+            if (item['collector_net'] and not item['output_pullups'] and not item.get('internal_pullup')
+                    and not item.get('bjt_base_loads')):   # a biased transistor base is the load; PRO-E01 still asks CTR
                 lint.add('PRO-A04', self.cold_rules['PRO-A04'],
                          head + '：输出集电极网 ' + item['collector_net']
                          + ' 上未见到电源轨的上拉电阻；若由接收端内部上拉或有源负载（控制器 FB/COMP/DIS 一类脚常见），'

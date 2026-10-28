@@ -16,6 +16,7 @@ intent.circuits 若手写，必须与决定推出的电路逐个相等（类型�
 """
 import argparse
 import json
+import re
 import sys
 
 import catalog
@@ -44,11 +45,25 @@ def _nets(candidate):
     return sorted({v for k, v in (candidate.get('nets') or {}).items() if k not in NET_KEYS_SKIPPED and _text(v)})
 
 
-def _circuit(cid, ctype, refs, nets, states, citation, candidate_ids, cross_cutting, anchors=(), claims=None):
-    """A derived circuit; `claims` {ref: rank} decides ownership once every decision is read (`owned` is filled then)."""
-    return {'id': cid, 'type': ctype, 'refs': sorted(set(refs)), 'nets': sorted(set(nets)), 'states': list(states),
-            'citation': citation, 'candidate_ids': list(candidate_ids), 'cross_cutting': bool(cross_cutting),
-            'anchors': sorted(set(anchors) & set(refs)), '_claims': dict(claims or {})}
+def _circuit(cid, ctype, refs, nets, states, citation, candidate_ids, cross_cutting, anchors=(), claims=None, key=None):
+    """A derived circuit; `claims` {ref: rank} decides ownership once every decision is read (`owned` is filled then).
+    `key` is given only to a split part, whose candidate ids are its parent's (check_key.circuit_key)."""
+    out = {'id': cid, 'type': ctype, 'refs': sorted(set(refs)), 'nets': sorted(set(nets)), 'states': list(states),
+           'citation': citation, 'candidate_ids': list(candidate_ids), 'cross_cutting': bool(cross_cutting),
+           'anchors': sorted(set(anchors) & set(refs)), '_claims': dict(claims or {})}
+    if key:
+        out['key'] = key
+    return out
+
+
+def _split_nets(candidate, kept):
+    """The candidate's nets a split part reaches: all of them for the part holding the anchor, else those its members'
+    walks name (R8: an LDO split off a flyback's U401 candidate inherited BULK and FLY_D)."""
+    nets = _nets(candidate)
+    if candidate.get('anchor') in kept:
+        return nets
+    walks = ' '.join(str(m.get('via') or '') for m in candidate['members'] if m['ref'] in kept)
+    return [n for n in nets if re.search(r'(?<![\w/])%s(?![\w])' % re.escape(n), walks)]
 
 
 def _claims(candidate, refs=None):
@@ -175,9 +190,9 @@ def derive(candidates, decisions, requirement_text=None):
                     errors.append(f'{pid}: split members {again} placed twice')
                 placed += refs
                 kept = [r for r in refs if r in members[cand['id']]]
-                circuits.append(_circuit(pid, cand['type'], kept, _nets(cand),
+                circuits.append(_circuit(pid, cand['type'], kept, _split_nets(cand, kept),
                                          cand['states'], decision.get('citation') or '', [cand['id']], cand['cross_cutting'],
-                                         _anchors(members[cand['id']]), _claims(cand, kept)))
+                                         _anchors(members[cand['id']]), _claims(cand, kept), key=f'{cand["id"]}/{pid}'))
             left = sorted(set(members[cand['id']]) - set(placed))
             if left:
                 errors.append(f'{cand["id"]}: split leaves members {left} unplaced; every member goes to a part')
@@ -398,6 +413,8 @@ def validate(intent, candidates, db=None):
             errors.append(f'{cid}: states {have.get("states")} differ from the decision ({want["states"]})')
         if list(have.get('candidate_ids') or []) != want['candidate_ids']:
             errors.append(f'{cid}: candidate_ids must be {want["candidate_ids"]}')
+        if have.get('key') != want.get('key'):
+            errors.append(f'{cid}: key must be {want.get("key")} (a split part\'s own key; run circuit_decisions.py --write)')
         if sorted(have.get('owned') or []) != want['owned']:
             errors.append(f'{cid}: owned {sorted(have.get("owned") or [])} differs from the decisions ({want["owned"]}); '
                           'ownership comes from the claim rule and own decisions')

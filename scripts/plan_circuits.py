@@ -6,6 +6,7 @@ import re
 
 import board_intent
 import catalog
+import check_key
 import circuit_decisions
 import device_kinds
 import protective_clamps
@@ -434,7 +435,7 @@ class CircuitPlanning:
                     invariant = rule in catalog.STATE_INVARIANT
                     if rule not in asked or (invariant and index):
                         continue   # an invariant rule is asked once per circuit, with the first state's rows
-                    obj = {'circuit': circuit['id'], 'circuit_key': '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']])),
+                    obj = {'circuit': circuit['id'], 'circuit_key': check_key.circuit_key(circuit),
                            'ref': asked[rule][0], 'refs': refs, 'nets': circuit.get('nets', [])}
                     if not invariant:
                         obj['state'] = state
@@ -523,7 +524,13 @@ class CircuitPlanning:
             if I2C_RE.search(net) or any(
                     I2C_RE.search(str(pinname.get(node, ''))) for node in nodes):
                 i2c_nets.add(net)
+        # one device and its test pads is a fixture access, not a bus (R8: U601 GPIO to TP601): no on-board pull-up is asked,
+        # SIG-T02's fixture-only criterion covers it; a second device or a pull-up keeps the check, as in i2c_topology
+        i2c_graph = NetGraph(board_intent.graph_db(db, self.kind_intent))
         for net in sorted(i2c_nets - pseudo):
+            ends = {node.partition('.')[0] for node in nets.get(net, [])}
+            if len({ref for ref in ends if i2c_graph.kind(ref) != TESTPOINT}) < 2:
+                continue
             obj = {'net': net}
             self.add_check(
                 'SIG-E01', obj, readiness='WAITING_EVIDENCE',
@@ -770,7 +777,7 @@ class CircuitPlanning:
             for circuit in circuits:
                 refs = [ref for ref in wanted if owners.get(ref) == circuit['id']]
                 if refs:
-                    key = '+'.join(sorted(circuit.get('candidate_ids') or [circuit['id']]))
+                    key = check_key.circuit_key(circuit)
                     self._ready_check(rule, {'circuit': circuit['id'], 'circuit_key': key, 'refs': refs}, gaps,
                                       [f'intent.circuits:{circuit["id"]}'])
             residual = [ref for ref in wanted if ref not in owners]

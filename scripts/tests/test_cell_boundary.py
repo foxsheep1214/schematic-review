@@ -203,6 +203,21 @@ class EstimateGradeAndReleaseTests(unittest.TestCase):
             self.assertIn(word, row)
         self.assertEqual(render_report.render_risks([]), [])   # no risk: no section, no count line
 
+    def test_one_margin_reached_by_an_estimate_row_and_a_life_row_is_one_risk(self):
+        import render_report
+        margin = {'value': 400, 'unit': 'h', 'against': 'C206 估算 88000 h 减 87600 h'}
+        estimate = {'check_id': 'DEV-C02.FN-B', 'function_id': 'FN-B', 'aspect': '电容有效容量与寿命', 'source': 'ESTIMATE',
+                    'cell': 'NONE', 'types': ['LIFETIME'], 'margin': margin, 'estimate_factor': 1}
+        life = {'check_id': 'DEV-C02.LIFE.C206', 'function_id': 'FN-B', 'aspect': '电容有效容量与寿命', 'source': 'LIFE',
+                'types': ['LIFETIME'], 'margin': dict(margin)}
+        other = dict(life, check_id='DEV-C02.LIFE.C1', margin=dict(margin, value=10, against='C1 另一个余量'))
+        [shown, second] = render_report.risk_rows([estimate, life, other])
+        self.assertEqual((shown['source'], shown['check_ids'], second['check_ids']),
+                         ('LIFE', ['DEV-C02.FN-B', 'DEV-C02.LIFE.C206'], ['DEV-C02.LIFE.C1']))
+        md = '\n'.join(render_report.render_risks([estimate, life, other]))
+        self.assertIn('### 寿命风险（2 项）', md)
+        self.assertNotIn('（NONE）', md)
+
 
 class ExtensionSignalTests(unittest.TestCase):
     """Decision 0 (2026-10-26, user: 器件类别是可以增长的): a device kind the vocabulary lacks, or a known kind whose
@@ -243,6 +258,30 @@ class ExtensionSignalTests(unittest.TestCase):
             {'key': 'K', 'what': 'R1 的脉冲功率', 'worst_case': {'monotonic_tried': {'cell': 'NONE', 'side': 'UPPER'}}}]}]}
         [signal] = [s for s in vr.extension_signals(report, self.UNKNOWN_PART) if s['kind'] == 'NEW_BOUND_CELL']
         self.assertEqual((signal['function_id'], signal['open'], signal['device_kinds']), ('FN-X', 'K', ['resistor']))
+
+    def test_a_handbook_limit_holding_at_the_working_point_needs_no_cell(self):
+        # R8: 113 of 115 rows were guaranteed ratings against computed stress (Q201 650 V against 550 V)
+        _, signals, _ = self.gated(derivation='GUARANTEED_LIMIT')
+        self.assertEqual(signals, [])
+
+    def test_a_ref_glued_to_its_value_names_that_part_not_the_whole_function(self):
+        db = {'parts': {'Q20': {}, 'Q201': {'value': 'IRF'}, 'C206': {'value': '4u7'}, 'R1': {'value': '10k'}},
+              'pin2net': {}, 'nets': {}}
+        self.assertEqual(vr.refs_named('Q201650V额定对550V，对C206', set(db['parts'])), {'Q201', 'C206'})
+        margin = {'value': 1, 'unit': 'h', 'against': 'C206寿命减需求', 'check_ids': ['DEV-C02.LIFE.C206'],
+                  'basis': {'kind': 'ESTIMATE', 'cell': 'NONE'}}
+        report = {'functions': [{'id': 'FN-X', 'objects': {'refs': ['Q201', 'C206', 'R1']}, 'calculation': {'margin': [
+            margin, dict(margin, against='偏置窗口减需求', check_ids=['DEV-C02.FN-X'])]}}]}
+        [signal] = [s for s in vr.extension_signals(report, db) if s['kind'] == 'NEW_BOUND_CELL']
+        self.assertEqual((signal['refs'], signal['margin']), (['C206'], 0))   # the second names no part: not spread
+
+    def test_a_cell_word_for_another_kind_does_not_hide_the_gap(self):
+        db = {'parts': {'Q1': {'value': 'MOS'}, 'R1': {'value': '10k'}}, 'pin2net': {}, 'nets': {}}
+        fn = lambda against: {'id': 'FN-X', 'objects': {'refs': ['Q1', 'R1']}, 'calculation': {'margin': [
+            {'value': 1, 'unit': 'W', 'against': against, 'basis': {'kind': 'ESTIMATE', 'cell': 'NONE'}}]}}
+        gaps = lambda against: [s for s in vr.extension_signals({'functions': [fn(against)]}, db) if s['kind'] == 'NEW_BOUND_CELL']
+        self.assertEqual(gaps('Q1 的 SOA 脉冲功率'), [])                  # mosfet: MOS-SOA-HOT is there
+        self.assertEqual(gaps('R1 的脉冲功率')[0]['refs'], ['R1'])         # resistor: no cell for it
 
     def test_the_report_lists_the_signals_under_the_sr_feedback_section(self):
         import render_report

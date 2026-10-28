@@ -95,6 +95,29 @@ class RenderReportTests(unittest.TestCase):
         self.assertLess(section.index('W-1'), section.index('W-2'))
         self.assertLess(section.index('W-2'), section.index('W-0'))
 
+    def test_a_confirmed_error_comes_before_a_gap_of_the_same_level(self):
+        # R8: three P1 data requests with more checks pushed all four P1 circuit errors out of the first three
+        rows = [{'id': 'F1', 'review_result': 'FAIL', 'severity': 'P1', 'defect_class': 'CIRCUIT'}]
+        rows += [{'id': 'G%d' % i, 'review_result': 'INSUFFICIENT', 'gap_cause': 'EXTERNAL_DATA',
+                  'potential_severity': 'P1'} for i in range(3)]
+        tasks = [{'id': 'W-GAP', 'title': 'gap', 'check_ids': ['G0', 'G1', 'G2']},
+                 {'id': 'W-FIX', 'title': 'fix', 'check_ids': ['F1']}]
+        gate = {'valid': True, 'release': 'NO_GO', 'blockers': [],
+                'workflow': {'work_items': tasks, 'current_work_items': ['W-GAP']}}
+        top = render({}, {'checks': rows}, gate).split('**最先要解决的')[1].split('## 待办')[0]
+        self.assertLess(top.index('W-FIX'), top.index('W-GAP'))
+
+    def test_a_work_item_that_only_fixes_an_error_carries_its_title(self):
+        # R8: "CS/ZCD分压过小" as the error, "漏极取样分压过小" as its work item
+        rows = [{'id': 'F1', 'review_result': 'FAIL', 'severity': 'P1', 'defect_class': 'CIRCUIT'}]
+        tasks = [{'id': 'W-FIX', 'title': '漏极取样分压过小', 'check_ids': ['F1']}]
+        findings = [{'id': 'F-DIV', 'kind': 'DEFECT', 'title': 'CS/ZCD分压过小', 'check_ids': ['F1'], 'severity': 'P1'}]
+        gate = {'valid': True, 'release': 'NO_GO', 'blockers': [],
+                'workflow': {'work_items': tasks, 'current_work_items': ['W-FIX']}}
+        text = render({}, {'checks': rows, 'findings': findings}, gate)
+        self.assertNotIn('漏极取样分压过小', text)
+        self.assertIn('1. CS/ZCD分压过小（', text)
+
     def test_notes_add_plain_text_but_not_numbers(self):
         p, r, db = decisive()
         notes = {'summary': '先确认启动电流。', 'items': {'W-1': '电源启动时可能被限流卡住。'}}

@@ -397,11 +397,12 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
 
 对账前先按 [功能复核](references/results-format.md#功能复核) 核每个功能的条款、计算、开放项的
 `decides` 范围和手填检查项的对象、路径、因果、需求的分项要求（含多个分项要求的需求只有全部适用分项要求通过才 PASS）；校验的 F1–F11 和质量筛查零提示不能代替这一步。
-复核有七个机器信号（见 [功能复核](references/results-format.md#功能复核)）：`UNIT_GLYPH_SUSPECT`（条款引的文本层丢了 Ω/µ，ms、mA 可能是 µs、µA，对照渲染页后在 `says` 写明核过）、
+复核有八个机器信号（见 [功能复核](references/results-format.md#功能复核)）：`UNIT_GLYPH_SUSPECT`（条款引的文本层丢了 Ω/µ，ms、mA 可能是 µs、µA，对照渲染页后在 `says` 写明核过）、
 `RATING_AT_TEST_TEMP`（功率/电流额定只在 25 °C 单点给出，要走降额曲线或说明不降额）、`BOUNDING_CELL_AVAILABLE`（余量写了 `cell: NONE` 而定界表有这个参数的格）、`TEMPLATE_REASON`；
 以及结构化字段为主路径的三个（2026-10-26）：`UNIT_UNKNOWN`（余量或条款限值的单位不在 `scripts/units.py` 的单位表里：按表的拼法写，µ/u、Ω/ohm、Vac、A²s 都认，表外单位加进表）、
 `QUANTITY_IMPLAUSIBLE`（限值或余量的量级超出该量纲在板级可能的范围：前缀写错，或文本层丢 µ 把 µs 读成 ms）、`RESULT_NARRATIVE`（`calculation.result` 超 300 字，或带超过 8 个余量和限值都没承载的数字：
 每个比较过的量写成 `margin{value, unit, against, basis}` 或条款的 `limit`，result 只留结论句，报告也只印它第一句）；
+`FAILING_RESULT_SAYS_HOLDS`（2026-10-27：功能有失败项，`result` 却只说哪些成立；功能表把它印在“不合格”旁边，先写失败了什么）；
 每条决定性余量写 `basis.cell`（表里没有的写 NONE），引了带公差输入的余量逐个列角点，门禁拒收缺的。
 
 做完的标志：功能复核的七个信号每条处置过（单位对照原图后写进 `says`，额定走了降额或说明不降额，该写格的写了格并带推法，表外单位改拼法或入表，量级核过前缀，叙事的 result 拆成余量和限值），

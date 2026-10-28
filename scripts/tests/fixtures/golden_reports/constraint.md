@@ -50,14 +50,6 @@
 <details>
 <summary>展开（给 SR 维护者）</summary>
 
-### 器件类别与定界表要扩的
-
-下面 1 条是这块板上 SR 的器件类别词表或定界表没有覆盖的地方；本板的结论按已知的判了，不等这些。每条都要扩 SR 自己的表（新类别进词表，新格补齐可得性、允许的估算与倍数、失效后果、样机能否验、边界）。
-
-| 类型 | 位号 | 器件类别 / 线索 | 参数或出处 | 建议 |
-|---|---|---|---|---|
-| 有类别、没有格的参数 | C3、D2、D3、Q2 | capacitor、diode、mosfet | FN-BIAS 余量[0]：VCC(off) max 8.8 V VCC(off) max 8.8 V | 给 capacitor/diode/mosfet 的这个参数补一格：可得性、允许的估算与倍数、失效后果、样机能否验、边界；补格前本板按 NONE 的默认判 |
-
 ### 审查记录自检提示
 
 4 条，只要求复核写法和依据，不改变结论：CONDITION_REF_OUTSIDE_FUNCTION 2、TEMPLATED_HANDOFF 2。明细在 record/review-gate.json 的 quality_screening。

@@ -118,6 +118,10 @@ def downstream_closures(functions, owners):
 TASK_TITLE_MAX = 60   # characters; a title is a line of the report's 最先要解决的 3 件事
 
 
+HOLDS_RE = re.compile(r'(?<![不未])(?:成立|合格|满足|通过)')
+FAILS_RE = re.compile(r'不(?:成立|合格|满足|能)|未(?:满足|通过)|缺少|失败|超过|不足|违反|矛盾|错误|误')
+
+
 def screen_quality(plan, report, db=None, base_dir=None):
     if isinstance(report, dict):
         report = results_model.expand(report)
@@ -168,6 +172,14 @@ def screen_quality(plan, report, db=None, base_dir=None):
                                'length': len(task['title'].strip()),
                                'message': 'work item title has %d characters (limit %d): name the part or loop and what it lacks, '
                                           'the details go to root_cause / the open item\'s what' % (len(task['title'].strip()), TASK_TITLE_MAX)})
+    for fn in report.get('functions') or []:
+        # the function table prints this result beside the verdict: a failing function whose result says it holds reads
+        # as a contradiction (R8: FN-POWER-PROTECTION-J101 不合格, result “数值比较……成立”, the failure was RV101's BOM line)
+        result = str(((fn.get('calculation') or {}) if isinstance(fn, dict) else {}).get('result') or '')
+        if (isinstance(fn, dict) and fn.get('fails') and HOLDS_RE.search(result) and not FAILS_RE.search(result)):
+            candidates.append({'code': 'FAILING_RESULT_SAYS_HOLDS', 'function_ids': [fn.get('id')], 'check_ids': [],
+                               'message': 'This function has failures but its result says what holds and not what fails; the '
+                                          'function table prints the result beside 不合格, so say what failed first'})
     for row in report['checks']:
         if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
             continue
@@ -859,6 +871,18 @@ def glued_refs(text, known):
                 hits.add(letters + digits[:n])
                 break
     return hits
+
+
+def refs_named(text, known):
+    """Known designators a text names, glued or not: a token that is not itself a known ref names the longest known ref
+    of the same letters that is a proper prefix of it (Q201650V names Q201)."""
+    found = set()
+    for letters, digits in TOKEN_RE.findall(text or ''):
+        for n in range(len(digits), 0, -1):
+            if letters + digits[:n] in known:
+                found.add(letters + digits[:n])
+                break
+    return found
 
 
 def text_hygiene(report, expected, known):

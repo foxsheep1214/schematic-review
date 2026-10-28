@@ -115,6 +115,18 @@ class RecognitionTest(unittest.TestCase):
         self.assertEqual([f['rule'] for f in hits], ['PRO-A04'])
         self.assertEqual(hits[0]['kind'], 'CANDIDATE')
 
+    def test_a_collector_driving_a_transistor_base_is_not_a_missing_pullup(self):
+        # R8 false alarm: U403's collector pulls Q406's PNP base through R406; the base bias is the load
+        db = opto_board(pullup=False)
+        add(db, 'R6', '10K', [('1', '1', 'OPTO_OUT'), ('2', '2', 'Q_BASE')])
+        add(db, 'Q6', 'MMBT3906', [('1', 'B', 'Q_BASE'), ('2', 'E', 'VCC_3V3'), ('3', 'C', 'FAULT')])
+        db['parts']['Q6']['prim'] = 'Device:Q_PNP_BEC'
+        item = optos_of(build_inventory(db))['OK1']
+        self.assertEqual(item['bjt_base_loads'], ['Q6.1'])
+        self.assertEqual(findings(db), [])
+        plan = build_review_plan(db)
+        self.assertTrue(any(c['rule'] == 'PRO-E01' for c in plan['checks']))   # CTR is still asked
+
     def test_unknown_pin_roles_keep_a_gap(self):
         db = opto_board()
         for pin in ('1', '2', '3', '4'):

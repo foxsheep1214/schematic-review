@@ -8,6 +8,7 @@ window `power_rails.<net>.voltage_v: {"requirement": <id>}` takes that requireme
 reaches the power-tree frame and the ambient temperature reaches the part stress rows.
 """
 import copy
+from collections import OrderedDict
 import re
 
 import catalog
@@ -218,13 +219,28 @@ def resolve(intent):
     return out
 
 
-def text(window):
-    """'9–36 V（REQ-IN-01）' for a frame question."""
+def _span(window):
     fmt = lambda v: '%g' % v
     lo, hi = window['min'], window['max']
     span = ('%s–%s' % (fmt(lo), fmt(hi)) if lo is not None and hi is not None
             else ('≥' + fmt(lo)) if lo is not None else ('≤' + fmt(hi)))
-    return '%s %s（%s）' % (span, window['unit'], window['requirement'])
+    return '%s %s' % (span, window['unit'])
+
+
+def text(window):
+    """'9–36 V（REQ-IN-01）' for a frame question."""
+    return '%s（%s）' % (_span(window), window['requirement'])
+
+
+def texts(windows):
+    """One entry per range, its requirements together: '90–264 V（E-IN-01、REQ-IN-001）' (R8 printed each range once per
+    requirement that states it, six entries for three ranges)."""
+    spans = OrderedDict()
+    for w in windows:
+        spans.setdefault(_span(w), [])
+        if w['requirement'] not in spans[_span(w)]:
+            spans[_span(w)].append(w['requirement'])
+    return ['%s（%s）' % (span, '、'.join(reqs)) for span, reqs in spans.items()]
 
 
 # The mission profile (consistency proposals of 2026-10-23, item 6d): one profile in the intent that every life row is

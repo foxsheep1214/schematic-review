@@ -6,12 +6,14 @@ import os
 import re
 
 import board_intent
+import read_bom
 import catalog
 import requirement_clarifications
 import requirement_parameters
 import requirements_extract
 from audit_datasheets import datasheet_audit_all_available
 from checkers import registry_cold_rules, registry_e_rules
+from checkers.netgraph import NetGraph
 import part_words
 from part_words import ANODE_NAMES, CATHODE_NAMES, normalize
 from interfaces import CONNECTOR_RE
@@ -79,6 +81,7 @@ class BoardPlanning:
         for rule in catalog.rules(source='board'):
             self._ready_check(rule.id, {'board': 'BOARD'},
                               self._materials_gap(BOARD_MATERIALS.get(rule.id, ())), ['board'])
+        self.plan_bom_conflicts()
         assemblies = self.intent.get('assemblies') or []
         for state in assemblies:
             self.add_check('DOC-T01', {'assembly': state['id']},
@@ -86,6 +89,19 @@ class BoardPlanning:
         if not assemblies:
             self.add_check('DOC-T01', {'board': 'BOARD'}, readiness='WAITING_EVIDENCE',
                            required_inputs=['intent.assemblies'], trigger=['assembly-options'])
+
+    def plan_bom_conflicts(self):
+        """DEV-D04 per part where its BOM line says one thing twice and differently (read_bom.bom_conflicts); the
+        board row answers for the other parts (R8: R604 and RV101 were found by hand and added as rule gaps)."""
+        graph = NetGraph(board_intent.graph_db(self.db, self.kind_intent))
+        for ref, columns in sorted(((self.db.get('bom') or {}).get('parts') or {}).items()):
+            conflicts = read_bom.bom_conflicts(columns, graph.kind(ref) if ref in graph.parts else None)
+            if not conflicts:
+                continue
+            said = '；'.join('%s（%s）' % ('、'.join(c['says']), c['against']) for c in conflicts)
+            self.add_check('DEV-D04', {'ref': ref, 'bom_conflicts': conflicts}, key='BOM', readiness='WAITING_EVIDENCE',
+                           criterion='BOM 本行自相矛盾：%s。按原厂订货码和手册定哪一处对，改正 BOM；矛盾未消除判 FAIL' % said,
+                           required_inputs=['datasheet:%s 订货码与规格' % ref], trigger=['bom:%s' % ref])
 
     def plan_rules(self):
         """规则级台账：自动扫描、保证值核对、版本比对及按实例汇总的检测点规则。"""

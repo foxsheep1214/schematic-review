@@ -17,9 +17,66 @@ from pathlib import Path
 import re
 import sys
 
+import part_words as pw
+
 REFERENCE_HEADERS = ('reference', 'references', 'ref', 'refdes', 'designator', 'designators', '位号')
 VALUE_HEADERS = ('value', 'values', '值', '型号规格')
 REF_SPLIT = re.compile(r'[,，;；\s]+')
+
+
+# BOM self-consistency (R8: R604's tolerance column 1% against its specification 5%; RV101, a varistor, filed under a
+# thick-film resistor category with a resistor's specification). A conflict the BOM states twice is a DEV-D04 row of
+# its own part, planned by the tool; which field is right is the reviewer's, from the datasheet's ordering code.
+TOLERANCE_KEYS = ('容差', '精度', 'tolerance', 'tol')
+CATEGORY_KEYS = ('category', '类别', '分类', '品类')
+TOLERANCE_RE = re.compile(r'(?:容差|精度|tolerance)\s*[:：]?\s*±?\s*(\d+(?:\.\d+)?)\s*%'
+                          r'|±\s*(\d+(?:\.\d+)?)\s*%'
+                          r'|\d(?:ohm|Ω|R|[kKM]|[munp]?F)\s+(\d+(?:\.\d+)?)\s*%', re.I)
+CATEGORY_FAMILIES = ((re.compile(r'压敏|varistor|MOV', re.I), {pw.VARISTOR}),
+                     (re.compile(r'热敏|thermistor|NTC', re.I), {pw.NTC}),
+                     (re.compile(r'电阻|resistor', re.I), {pw.RESISTOR}),
+                     (re.compile(r'电容|capacitor', re.I), {pw.CAPACITOR}),
+                     (re.compile(r'电感|磁珠|inductor|ferrite', re.I),
+                      {pw.INDUCTOR, pw.FERRITE, pw.COMMON_MODE_CHOKE, pw.COUPLED_INDUCTOR, pw.TRANSFORMER}))
+
+
+def bom_fields(columns):
+    """A part's BOM columns with any JSON object column opened into its keys (a 规格与约束 column holding JSON)."""
+    out = {}
+    for column, value in (columns or {}).items():
+        try:
+            inner = json.loads(value) if isinstance(value, str) and value.lstrip().startswith('{') else None
+        except ValueError:
+            inner = None
+        if isinstance(inner, dict):
+            out.update({k: str(v) for k, v in inner.items() if v not in (None, '')})
+        elif value not in (None, ''):
+            out[column] = str(value)
+    return out
+
+
+def bom_conflicts(columns, kind):
+    """What one part's BOM line says twice and differently: [{field, says, against}]."""
+    fields = bom_fields(columns)
+    out, tolerances = [], {}
+    for key, value in fields.items():
+        if key.strip().lower() in TOLERANCE_KEYS:
+            found = re.findall(r'(\d+(?:\.\d+)?)\s*%', value)
+        else:
+            found = [next(g for g in m if g) for m in TOLERANCE_RE.findall(value)]
+        for number in found:
+            tolerances.setdefault(float(number), []).append(key)
+    if len(tolerances) > 1:
+        out.append({'field': 'tolerance', 'says': ['%s：%g%%' % ('/'.join(keys), t) for t, keys in sorted(tolerances.items())],
+                    'against': '同一行写了不同的容差'})
+    for key, value in fields.items():
+        if key.strip().lower() not in CATEGORY_KEYS or kind in (None, pw.UNKNOWN):
+            continue
+        family = next((kinds for pattern, kinds in CATEGORY_FAMILIES if pattern.search(value)), None)
+        if family and kind not in family:
+            out.append({'field': 'category', 'says': ['%s：%s' % (key, value)],
+                        'against': '器件类型是 %s（分类器按手册与型号读出）' % kind})
+    return out
 
 
 def _column(headers, names):

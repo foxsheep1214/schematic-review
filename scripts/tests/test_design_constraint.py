@@ -73,6 +73,19 @@ class ConstraintTests(unittest.TestCase):
         fn = constrained(); fn['handoffs'] = []
         self.assertTrue(any('handoff is the index' in e for e in function_errors({'functions': [fn]})))
 
+    def test_a_zero_margin_on_a_constraint_alone_is_refused(self):
+        # results 13: R8 wrote "余量 0 V 对 光耦 890 V 按隔离设计约束核对" eleven times; the constraint is no margin
+        fn = constrained()
+        fn['calculation']['margin'].update(value=0, against='光耦 890 V 按隔离设计约束核对')
+        fn['calculation']['margin']['basis']['conditions'] = ['aux-min']
+        self.assertTrue(any('margin[0]: a margin of 0 whose stress is only a handed-on design constraint' in e
+                            for e in function_errors({'functions': [fn]})))
+        fn['calculation']['margin']['value'] = 0.8      # a computed margin on the constraint stays
+        self.assertFalse(any('handed-on design constraint' in e for e in function_errors({'functions': [fn]})))
+        fn = constrained()
+        fn['calculation']['margin']['value'] = 0        # zero on a guaranteed input as well is a real zero margin
+        self.assertFalse(any('handed-on design constraint' in e for e in function_errors({'functions': [fn]})))
+
     def test_a_value_the_schematic_should_state_is_no_constraint(self):
         for owner in ('原理图设计', 'BOM 选型'):
             fn = constrained(); fn['conditions'][-1]['owner'] = owner

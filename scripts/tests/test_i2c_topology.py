@@ -533,12 +533,15 @@ class FixtureAccessTest(unittest.TestCase):
         rows = [c for c in build_review_plan(db)['checks'] if c.get('object', {}).get('i2c_region') == region['id']]
         self.assertEqual([c['rule'] for c in rows], ['SIG-T02'])
         self.assertIn('夹具', rows[0]['criterion'])
+        self.assertFalse(any(c['rule'] == 'SIG-E01' for c in build_review_plan(db)['checks']))   # R8 false alarm
 
     def test_second_device_or_pull_up_keeps_the_bus_checks(self):
         for extra in ([('U2', 'EEPROM', [('5', 'SDA', 'CFG_SDA')])],
                       [('R1', '4.7K', [('1', '1', 'CFG_SDA'), ('2', '2', 'VCC_3V3')])]):
-            region = self.region(self.board(extra))
+            db = self.board(extra)
+            region = self.region(db)
             self.assertNotIn('access', region)
+            self.assertTrue(any(c['rule'] == 'SIG-E01' for c in build_review_plan(db)['checks']))
             self.assertIn('confirm-bus-pins-and-pairing', region['gaps'])
 
 

@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 """系统功能（功能树设计 §3.4、§3.8）：电源树、地、监控、上电时序、主控引脚有对象才生成的检查项与每个系统功能的框架。
 ReviewPlanner 混入这里的方法。"""
+import re
+
 import board_intent
 import catalog
 import requirement_parameters
 from checkers.netgraph import NetGraph
 from part_words import IC
+
+GPIO_RE = re.compile(r'^(?:GPIO|GPI|GPO|PIO)_?\d+$|^P[A-K]\d{1,2}$|^P\d\.\d{1,2}$', re.I)   # programmable pins
 
 SYSTEM_MATERIALS = {'PWR-T06': ('datasheets', 'platform_checklist'), 'SIG-D13': ('datasheets', 'platform_checklist'),
                     'RST-T03': ('requirements', 'datasheets'), 'PWR-C16': ('requirements', 'datasheets')}
@@ -36,8 +40,10 @@ class SystemPlanning:
                                     self._materials_gap(SYSTEM_MATERIALS['PWR-C16']),
                                     sorted({f'requirement:{w["requirement"]}' for w in standby}))
             row['requirement_windows'] = standby
+        # a controller: an MCU, an unverified IC, or any IC with programmable GPIO pins (R8: the PD controller U601 drives
+        # PFC_EN from GPIO3 and was left out, while the LDO U502, read as a generic ic for want of its title word, was asked)
         controllers = sorted(ref for ref in graph.parts if graph.is_fitted(ref) and graph.kind(ref) == IC
-                             and graph.role_kind(ref) in (None, 'mcu', 'ic'))
+                             and (graph.role_kind(ref) in (None, 'mcu') or graph.named_pins(ref, GPIO_RE)))
         if controllers:
             self._ready_check('SIG-D13', {'system': 'SYS-PINMAP', 'refs': controllers},
                               self._materials_gap(SYSTEM_MATERIALS['SIG-D13']), [f'controller-candidates:{len(controllers)}'])
@@ -69,7 +75,7 @@ class SystemPlanning:
                          for w in requirement_parameters.windows(self.intent, name)]
                 frame['requirement_windows'] = found
                 if found:
-                    frame['question'] += '；需求输入 ' + '、'.join(requirement_parameters.text(w) for w in found)
+                    frame['question'] += '；需求输入 ' + '、'.join(requirement_parameters.texts(found))
             for row in sorted(members, key=lambda c: c['id']):
                 row['function_id'] = frame['id']
                 row['aspect'] = catalog.title(row['rule'])

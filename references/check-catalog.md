@@ -170,7 +170,7 @@
 | DEV-D01 | G2 | 条款核对 | 网表、规格书数值、需求 | 器件身份与封装 | 核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突 | 逐器件 | 计划逐对象生成 | — |
 | DEV-D02 | G2 | 条款核对 | 网表、规格书数值、需求 | 官方物理脚差集 | 官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图 | 逐器件 | 计划逐对象生成 | — |
 | DEV-D03 | G2 | 条款核对 | 网表、规格书数值、需求 | 连接器对端定义 | pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则 | 逐接口 | 接口逐个生成 | — |
-| DEV-D04 | G2 | 条款核对 | 网表、规格书数值、需求 | 库与物料卫生 | 实际实例采购字段、BOM 参数与原厂 MPN 订货组合一致，包含关键无源件；已证实的物料/参数/资料冲突判本项FAIL，典型值或测试条件不得改称额定保证；需选料的最低额定汇总为BOM约束，并按误选的最严重可信后果定级；候选身份不得冒充已核准；沿用库按实际 MPN/封装/符号版本验证兼容映射，缓存来源名不单独视为采购冲突 | 全板一次 | 全板通用 | — |
+| DEV-D04 | G2 | 条款核对 | 网表、规格书数值、需求 | 库与物料卫生 | 实际实例采购字段、BOM 参数与原厂 MPN 订货组合一致，包含关键无源件；已证实的物料/参数/资料冲突判本项FAIL，典型值或测试条件不得改称额定保证；需选料的最低额定汇总为BOM约束，并按误选的最严重可信后果定级；候选身份不得冒充已核准；沿用库按实际 MPN/封装/符号版本验证兼容映射，缓存来源名不单独视为采购冲突；BOM 同一行自相矛盾的器件（容差写了两个值、类别与器件类型不符）计划逐颗另出 DEV-D04.BOM.<位号>，全板项只答其余器件 | 全板一次 | 全板通用 | — |
 | DEV-D05 | G2 | 条款核对 | 网表、规格书数值、需求 | 引脚处置 | 按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空 | 逐器件 | 计划逐对象生成 | — |
 | DEV-Q01 | G7 | 覆盖审计 | 计划与结果台账 | 资料覆盖 | 全部关键器件适用章节/errata及官方物理脚双向差集已审 | 全板一次 | 计划逐对象生成 | — |
 
@@ -614,7 +614,7 @@
 | `gate_driver` | 栅极驱动器 | gatedriver、mosfetdriver、igbtdriver、bridgedriver、fetdriver | POWER_CONVERTER | — |
 | `sr_controller` | 同步整流控制器 | synchronousrectif、srcontroller | POWER_CONVERTER | — |
 | `pd_controller` | USB PD 控制器 | pdcontroller、powerdelivery、usbpd、typeccontroller、usbccontroller | USB、ANALOG | 检测脚 |
-| `regulator` | 稳压器与变换器 | voltageregulator、lowdropout、ldoregulator、dcdcconverter、buckconverter、boostconverter、switchingregulator、stepdownconverter、stepupconverter、powermanagementic、pmic、chargepump | POWER_CONVERTER | — |
+| `regulator` | 稳压器与变换器 | voltageregulator、linearregulator、lowdropout、ldoregulator、dcdcconverter、buckconverter、boostconverter、switchingregulator、stepdownconverter、stepupconverter、powermanagementic、pmic、chargepump | POWER_CONVERTER | — |
 | `supervisor` | 电压监控与复位 | supervisor、supervisory、voltagemonitor、resetcircuit、resetic、watchdog | ANALOG | 检测脚 |
 | `opamp_comparator` | 运放、比较器与放大器 | operationalamplifier、opamp、comparator、erroramplifier、instrumentationamplifier、currentsenseamplifier、currentshuntmonitor、differenceamplifier、audioamplifier | ANALOG | 全部信号脚 |
 | `shunt_reference` | 并联基准 | shuntregulator、voltagereference、shuntreference | ANALOG | 全部信号脚 |

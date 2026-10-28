@@ -29,6 +29,7 @@ import re
 
 import board_intent
 import catalog
+import check_key
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import domains as domains_lib, netgraph as ng, powertree
@@ -64,7 +65,7 @@ class Deriver:
         self.tree = powertree.PowerTree(self.graph, kind_intent)
         self.native = db.get('native_pintype') or {}
         self.circuits = {c['id']: c for c in (intent or {}).get('circuits', [])}
-        self.key = {cid: '+'.join(sorted(c.get('candidate_ids') or [cid])) for cid, c in self.circuits.items()}
+        self.key = {cid: check_key.circuit_key(c) for cid, c in self.circuits.items()}
         self.owner_of = row_owner.part_owners(list(self.circuits.values()))
         self.grounds = set(self.domains['grounds']) | {n for n in self.graph.nets if ng.is_ground(n)}
         self.declared_rails = powertree.declared_supply_nets(self.graph, kind_intent)
