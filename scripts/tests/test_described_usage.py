@@ -91,7 +91,7 @@ class TypicalCurveTests(unittest.TestCase):
     def test_the_estimate_is_an_estimate_read_off_that_curve(self):
         fn = on_curve(typical_estimate=dict(estimate(), basis=dict(estimate()['basis'], conditions=['z1'])))
         self.assertTrue(about(errors(fn), 'k1'))
-        reachable = dict(estimate()['basis'], kind='REACHABLE_CASE', limit='z1', derivation='TYPICAL_CURVE', cell='NONE',
+        reachable = dict(estimate()['basis'], kind='REACHABLE_CASE', limit='z1', method='G8', cell='NONE',
                          regime='IZ 5 mA', corners=[], no_corners_reason='典型件只读一个点',
                          joint='典型件在 0.06 mA 时的 VZ 与同一温度下的 VCC(off) 同时出现')
         found = errors(on_curve(typical_estimate=dict(estimate(), basis=reachable)))
@@ -111,10 +111,10 @@ class ReachableTypicalTests(unittest.TestCase):
     def margin(self, kind):
         fn = bias_function('FAIL')
         fn['conditions'].append(dict(copy.deepcopy(CURVE), id='c6'))
-        basis = dict(fn['calculation']['margin']['basis'], kind=kind, derivation='TYPICAL_CURVE', conditions=['c6'],
+        basis = dict(fn['calculation']['margin']['basis'], kind=kind, method='G8', conditions=['c6'],
                      joint='典型件在 0.06 mA 时的 VZ 与同一温度下的 VCC(off) 同时出现')
         fn['calculation']['margin'].update(value=-0.4, basis=basis)
-        return [e for e in errors(fn) if 'TYPICAL_CURVE' in e]
+        return [e for e in errors(fn) if 'G8 gives an estimate' in e]
 
     def test_a_reachable_case_may_rest_on_a_typical_curve(self):
         self.assertEqual(self.margin('REACHABLE_CASE'), [])

@@ -261,7 +261,7 @@ class ExtensionSignalTests(unittest.TestCase):
 
     def test_a_handbook_limit_holding_at_the_working_point_needs_no_cell(self):
         # R8: 113 of 115 rows were guaranteed ratings against computed stress (Q201 650 V against 550 V)
-        _, signals, _ = self.gated(derivation='GUARANTEED_LIMIT')
+        _, signals, _ = self.gated(method='G1')
         self.assertEqual(signals, [])
 
     def test_a_ref_glued_to_its_value_names_that_part_not_the_whole_function(self):

@@ -54,8 +54,6 @@ from validate_remediation import READINESS
 
 CONDITION_FIELDS = ('id', 'source', 'locator', 'says', 'use')
 REQUEST_KINDS = ('VENDOR_DATUM',)
-# How a public number bounds the quantity at the design's operating point (F3).
-BOUND_BASES = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'TYPICAL_CURVE', 'PUBLISHED_TABLE', 'APPLICATION_NOTE')
 # An unboundable quantity leaves one bound open (results format 6) and says how the other one is settled.
 OPEN_SIDES = ('UPPER', 'LOWER')
 OTHER_SIDES = ('DECIDED', 'NOT_DECISIVE')
@@ -76,9 +74,11 @@ PARAMETER_WORD_RE = re.compile(r'^\s*([A-Za-z][A-Za-z0-9_()./,+-]*)')
 WEAK_KINDS = ('TYPICAL_REFERENCE', 'ENGINEERING_ASSUMPTION')
 BASIS_KINDS = ('GUARANTEED_BOUND', 'REACHABLE_CASE', 'EXACT_ENVELOPE', 'ESTIMATE')
 COMPARISONS = ('GE', 'GT')       # GE: a zero margin passes; GT: it does not
-# How a decisive bound was obtained (results 5, consistency proposals 2026-10-23 1a): a limit holding at this point, a
-# test point carried over a monotonic curve, a temperature coefficient, a published table; a typical curve only estimates.
-DERIVATIONS = ('GUARANTEED_LIMIT', 'ADJACENT_TEST_POINT', 'MONOTONIC', 'TEMPCO', 'PUBLISHED_TABLE', 'TYPICAL_CURVE')
+# How a bound was obtained is the bounding table's method (G1–G11, SOA, FORCED_BETA) for margins and public bounds alike;
+# results 15 retires the two older words for it (2026-10-27, user: 第二阶段按建议做).
+RETIRED_METHOD_WORDS = ("basis.method (G1 a guaranteed limit, G2 a test point on the favourable side, G4 a temperature "
+                        "coefficient, G5 a published table, G7–G9 a typical curve, G11 an application note; "
+                        "references/bounding-table.md 推法)")
 CORNER_ENDS = ('min', 'max')
 EDGE_EFFECTS = ('BLOCKS_PROOF', 'INFORMATION_ONLY')
 EDGE_KINDS = ('VENDOR_DATUM',)   # gaps in a quantity: each edge says what it enters
@@ -654,7 +654,7 @@ def _basis_errors(label, m, conditions, claim_ids):
         errors.append('%s: a %s does not rest on %s (%s); a bound built on them is an ESTIMATE'
                       % (label, kind, 'an assumption' if kind == 'REACHABLE_CASE' else 'typical values or assumptions',
                          ', '.join(weak)))
-    errors.extend(_derivation_errors(label, basis, conditions))
+    errors.extend(_method_errors(label, basis, conditions))
     if kind == 'EXACT_ENVELOPE' and not all(text(basis.get(f)) for f in ('model', 'domain', 'extremum')):
         errors.append(label + ': an EXACT_ENVELOPE names the model, the domain it covers and why the extremum is in it '
                               '(model, domain, extremum)')
@@ -672,16 +672,19 @@ def _basis_errors(label, m, conditions, claim_ids):
     return errors
 
 
-def _derivation_errors(label, basis, conditions):
-    """1a–1b: how a decisive bound was derived, and which end of each toleranced input it took."""
-    derivation = basis.get('derivation')
-    if derivation not in DERIVATIONS:
-        return ['%s: basis.derivation says how the bound was obtained, one of %s' % (label, '/'.join(DERIVATIONS))]
+def _method_errors(label, basis, conditions):
+    """1a–1b: the method that gave a decisive bound, and which end of each toleranced input it took."""
+    if 'derivation' in basis:
+        return ['%s: basis.derivation is retired (results 15); write %s' % (label, RETIRED_METHOD_WORDS)]
+    method = basis.get('method')
+    if method not in catalog.BOUND_METHODS:
+        return ['%s: basis.method says how the bound was obtained, one of %s (references/bounding-table.md 推法)'
+                % (label, '/'.join(catalog.BOUND_METHODS))]
     errors = []
-    if derivation == 'TYPICAL_CURVE' and basis.get('kind') != 'REACHABLE_CASE':   # a typical part is reachable (2-A)
-        errors.append(label + ': a bound read off a TYPICAL_CURVE proves nothing for every part; mark the margin ESTIMATE, '
-                              'or REACHABLE_CASE when the typical part already falls short')
-    if derivation in ('ADJACENT_TEST_POINT', 'MONOTONIC'):
+    if method in catalog.ESTIMATE_METHODS and basis.get('kind') != 'REACHABLE_CASE':   # a typical part is reachable (2-A)
+        errors.append('%s: %s gives an estimate, which proves nothing for every part; mark the margin ESTIMATE, '
+                      'or REACHABLE_CASE when the typical part already falls short' % (label, method))
+    if method == 'G2':
         mono = basis.get('monotonic')
         if not (isinstance(mono, dict) and mono.get('curve') in conditions):
             errors.append('%s: a bound carried from a test point gives basis.monotonic{curve: the condition of this '
@@ -689,7 +692,7 @@ def _derivation_errors(label, basis, conditions):
         elif mono.get('side') != 'FAVORABLE':
             errors.append('%s: the operating point lies on the unfavourable side of the test point, which bounds nothing '
                           'there; only side FAVORABLE carries the bound over' % label)
-    if derivation == 'TEMPCO' and (conditions.get(basis.get('tempco')) or {}).get('kind') != 'NUMERIC_LIMIT':
+    if method == 'G4' and (conditions.get(basis.get('tempco')) or {}).get('kind') != 'NUMERIC_LIMIT':
         errors.append(label + ': a bound through a temperature coefficient names in basis.tempco the NUMERIC_LIMIT giving '
                               'its min/max')
     corners = basis.get('corners')
@@ -1001,15 +1004,21 @@ def _worst_case_errors(label, item, conditions, calculation=None):
     errors = []
     bound = worst.get('bound')
     if not (isinstance(bound, dict) and bound.get('condition') in conditions and text(bound.get('value'))
-            and bound.get('basis') in BOUND_BASES):
+            and bound.get('method') in catalog.BOUND_METHODS and 'basis' not in bound):
         errors.append('%s: worst_case.bound names the public bound used before asking the vendor: condition (a clause '
-                      'id), value, basis one of %s' % (label, '/'.join(BOUND_BASES)))
+                      'id), value, method one of %s (bound.basis is retired, results 15)'
+                      % (label, '/'.join(catalog.BOUND_METHODS)))
     if not text(worst.get('result')):
         errors.append(label + ': worst_case.result states the outcome under the public bound')
     margin = worst.get('margin')
     if not (isinstance(margin, dict) and type(margin.get('value')) in (int, float) and text(margin.get('unit'))
             and text(margin.get('against'))):
         errors.append(label + ': worst_case.margin {value: number, unit, against} under the public bound')
+    elif isinstance(bound, dict) and bound.get('method') in catalog.ESTIMATE_METHODS and \
+            (margin.get('basis') or {}).get('kind') not in ('ESTIMATE', 'REACHABLE_CASE'):
+        errors.append('%s: a public bound by %s is an estimate; its margin is an ESTIMATE (a pass only within the cell\'s '
+                      'estimate boundary, as a pass with a risk), or a REACHABLE_CASE when it already falls short'
+                      % (label, bound['method']))
     return errors
 
 
@@ -1034,8 +1043,8 @@ def _typical_estimate_errors(label, worst, conditions):
         return [head + ': the basis is an ESTIMATE whose conditions include the curve %s' % curve['id']]
     if not (estimate['value'] >= 0 if basis.get('comparison') == 'GE' else estimate['value'] > 0):
         return [head + ': the typical estimate already falls short (%s %s against %s); a typical part is a reachable '
-                       'case, so this is a fail item whose margin is that estimate as a REACHABLE_CASE (derivation '
-                       'TYPICAL_CURVE), not a vendor request' % (estimate['value'], estimate['unit'], estimate['against'])]
+                       'case, so this is a fail item whose margin is that estimate as a REACHABLE_CASE (method '
+                       'G8), not a vendor request' % (estimate['value'], estimate['unit'], estimate['against'])]
     return []
 
 
@@ -1123,7 +1132,7 @@ def _monotonic_errors(label, item, worst, calculation, conditions):
     low, high = min(at), max(at)
     if low <= span[0] and span[1] <= high:
         return [head + ': operating_point %g–%g %s lies within the test points %g–%g; bound it from them '
-                       '(ADJACENT_TEST_POINT) instead of opening it' % (span[0], span[1], point['unit'], low, high)]
+                       '(method G2) instead of opening it' % (span[0], span[1], point['unit'], low, high)]
     if min(span[1], high) - max(span[0], low) > 0:
         opened = _span(tried.get('open_range'))
         if not (opened and span[0] <= opened[0] and opened[1] <= span[1] and (opened[1] <= low or opened[0] >= high)):
@@ -1166,8 +1175,9 @@ def _formula_errors(label, basis):
     rerun on its inputs."""
     formulas = None
     if basis.get('cell') == catalog.NO_CELL:
-        if 'method' in basis:
-            return ['%s: basis.cell %s has no methods; name the cell the method belongs to' % (label, catalog.NO_CELL)]
+        if basis.get('method') in catalog.CELL_ONLY_METHODS:
+            return ['%s: %s belongs to its cells; name the cell, or use one of %s outside the table'
+                    % (label, basis['method'], '/'.join(catalog.METHOD_ORDER))]
     elif 'cell' in basis:
         bound = catalog.BOUNDS.get(basis['cell'])
         if bound is None:
@@ -1546,13 +1556,13 @@ def template_hints(functions, base_dir=None):
             if basis.get('kind') == 'ESTIMATE':
                 continue
             limit = conditions.get(basis.get('limit'))
-            if (basis.get('derivation') == 'GUARANTEED_LIMIT' and 'conversion' not in basis
+            if (basis.get('method') == 'G1' and 'conversion' not in basis
                     and rating_at_test_temperature(limit)):
                 hints.append({'code': 'RATING_AT_TEST_TEMP', 'function_id': fn['id'], 'margin': k, 'aspect': m.get('aspect'),
                               'condition': limit['id'],
                               'message': 'The rating %s holds at %s; above that temperature it derates. Carry it to the '
-                                         'board\'s ambient through the derating curve or table (PUBLISHED_TABLE / '
-                                         'TYPICAL_CURVE, or a conversion condition), or say in regime why it does not '
+                                         'board\'s ambient through the derating curve or table (G5 / G7–G9, '
+                                         'or a conversion condition), or say in regime why it does not '
                                          'derate here' % (limit['id'], limit.get('regime'))})
             if basis.get('cell') == catalog.NO_CELL:
                 named = ' '.join(str(x) for x in (m.get('against'), m.get('aspect'), (limit or {}).get('says'),

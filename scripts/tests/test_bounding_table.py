@@ -247,7 +247,8 @@ class CellRequiredTests(unittest.TestCase):
 
     def test_none_is_a_cell_and_an_estimate_needs_none(self):
         self.assertEqual(errors(bias_function('PASS')), [])     # the fixture writes NONE
-        self.assertTrue(about(errors(computed(cell='NONE', method='G1')), 'has no methods'))
+        self.assertFalse(about(errors(computed(cell='NONE', method='G1')), 'method'))   # results 15: any general method
+        self.assertTrue(about(errors(computed(cell='NONE', method='SOA')), 'belongs to its cells'))
         self.assertEqual(errors(computed(cell='NONE', formula=dict(SLOPE))), [])   # a formula may still be rerun
         fn = bias_function('PASS')
         fn['calculation']['margin']['basis'] = {'kind': 'ESTIMATE', 'comparison': 'GE', 'scope': '按典型值估', 'conditions': ['c1']}

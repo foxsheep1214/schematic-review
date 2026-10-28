@@ -105,7 +105,7 @@ def rule_hint(margin, conditions, kinds_of):
     """A part-stress margin on a guaranteed rating of a kind the spec has rules for, naming none: the kinds, else None."""
     basis = margin.get('basis') if isinstance(margin.get('basis'), dict) else {}
     if basis.get('derating_rule') or margin.get('aspect') not in STRESS_ASPECTS \
-            or basis.get('derivation') != 'GUARANTEED_LIMIT':
+            or basis.get('method') != 'G1':
         return None
     kinds = set(kinds_of((conditions.get(basis.get('limit')) or {}).get('refs') or [])) & kinds_with_rules()
     return sorted(kinds) or None

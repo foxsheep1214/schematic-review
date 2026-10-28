@@ -707,7 +707,7 @@ def extension_signals(report, db, datasheet_audit=None):
         # would name the MLCC cell for an electrolytic's life); a margin's check id ending in a part names it too
         places = []
         for k, m in enumerate(margins):
-            if not (isinstance(m, dict) and isinstance(m.get('basis'), dict)) or m['basis'].get('derivation') == 'GUARANTEED_LIMIT':
+            if not (isinstance(m, dict) and isinstance(m.get('basis'), dict)) or m['basis'].get('method') == 'G1':
                 continue
             named = ' '.join(str(x) for x in (m.get('against'), (conditions.get(m['basis'].get('limit')) or {}).get('says'))
                              if text(x))

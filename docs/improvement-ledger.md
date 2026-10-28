@@ -9,6 +9,25 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## One vocabulary for where a limit comes from: results format 15 (2026-10-27)
+
+Stage 2 of regrouping the rules by six questions. How a bound was obtained had three vocabularies: the bounding
+table's methods (G1–G10, SOA, FORCED_BETA, `basis.method`, only inside a cell), the margin's `basis.derivation`
+(GUARANTEED_LIMIT, ADJACENT_TEST_POINT, MONOTONIC, TEMPCO, PUBLISHED_TABLE, TYPICAL_CURVE) and the public bound's
+`worst_case.bound.basis` (with APPLICATION_NOTE), plus evidence-proportionality step 4's order of them. They said the
+same thing and did not line up: G3, G6 and G10 had no derivation, APPLICATION_NOTE had no method, and a margin outside
+the table could not name a method. Now every decisive margin writes `basis.method` (outside the table any general
+method, in the order the bounding table gives; SOA and FORCED_BETA only with their cells) and every public bound
+writes `bound.method`; `derivation` and `bound.basis` are refused. G11 (an application note's formula) is an estimate,
+so an open item whose public bound comes from an application note now passes only as an estimate, with a risk, where
+it passed at B before. G2 carries `monotonic`, G4 `tempco`, and an estimating method gives only an ESTIMATE or a
+REACHABLE_CASE, for margins and public bounds alike.
+
+- Event: user:2026-10-27 (“按建议做”, on the stage-2 change list: merge the three limit vocabularies; G11 for application notes as an estimate; G6/G10 allowed outside the table; results format 15 in one go)
+- Causes: judgment 1 (three vocabularies for one concept); rule_not_enforced 1 (an application-note bound passed at B though it is not a guarantee)
+- Changed: scripts/catalog.py, scripts/review_functions.py, scripts/results_model.py, scripts/derating.py, scripts/validate_review.py, references/bounding-table.md, references/results-format.md, references/evidence-proportionality.md, references/architecture.md, scripts/tests/test_bound_derivation.py, scripts/tests/test_bounding_table.py, scripts/tests/test_cell_boundary.py, scripts/tests/test_described_usage.py, scripts/tests/test_review_functions.py, scripts/tests/test_stress_spec.py, scripts/tests/test_condition_refs.py, scripts/tests/test_one_sided_bounds.py, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Gates: pytest 2335; mutation --changed 227 on 19 files: all killed at the unit tier after M613 (cell NONE carries no method, a rule this change removes) was deleted and a test for M819 (an estimating public bound passing as guaranteed) was added; M817–M819 new
+
 ## Margin verdicts in one document (2026-10-27)
 
 Stage 1 of regrouping the rules by six questions: how a written margin is judged. The rule was spread over the bounding

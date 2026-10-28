@@ -143,7 +143,7 @@
   "id": "M27",
   "name": "F3 public bound never required on a vendor datum",
   "file": "scripts/review_functions.py",
-  "old": "    if not (isinstance(bound, dict) and bound.get('condition') in conditions and text(bound.get('value'))\n            and bound.get('basis') in BOUND_BASES):",
+  "old": "    if not (isinstance(bound, dict) and bound.get('condition') in conditions and text(bound.get('value'))\n            and bound.get('method') in catalog.BOUND_METHODS and 'basis' not in bound):",
   "new": "    if False:"
  },
  {
@@ -2201,14 +2201,14 @@
   "id": "M333",
   "name": "a decisive margin need not say how its bound was derived",
   "file": "scripts/review_functions.py",
-  "old": "    if derivation not in DERIVATIONS:\n        return [",
+  "old": "    if method not in catalog.BOUND_METHODS:\n        return [",
   "new": "    if False:\n        return ["
  },
  {
   "id": "M334",
   "name": "a bound read off a typical curve decides",
   "file": "scripts/review_functions.py",
-  "old": "    if derivation == 'TYPICAL_CURVE' and basis.get('kind') != 'REACHABLE_CASE':",
+  "old": "    if method in catalog.ESTIMATE_METHODS and basis.get('kind') != 'REACHABLE_CASE':",
   "new": "    if False:"
  },
  {
@@ -2236,7 +2236,7 @@
   "id": "M338",
   "name": "a bound through a temperature coefficient need not cite it",
   "file": "scripts/review_functions.py",
-  "old": "    if derivation == 'TEMPCO' and (conditions.get(basis.get('tempco')) or {}).get('kind') != 'NUMERIC_LIMIT':",
+  "old": "    if method == 'G4' and (conditions.get(basis.get('tempco')) or {}).get('kind') != 'NUMERIC_LIMIT':",
   "new": "    if False:"
  },
  {
@@ -2873,15 +2873,15 @@
   "id": "M441",
   "name": "a reachable case may not rest on a typical curve",
   "file": "scripts/review_functions.py",
-  "old": "    if derivation == 'TYPICAL_CURVE' and basis.get('kind') != 'REACHABLE_CASE':",
-  "new": "    if derivation == 'TYPICAL_CURVE':"
+  "old": "    if method in catalog.ESTIMATE_METHODS and basis.get('kind') != 'REACHABLE_CASE':",
+  "new": "    if method in catalog.ESTIMATE_METHODS:"
  },
  {
   "id": "M442",
   "name": "any decisive margin may rest on a typical curve",
   "file": "scripts/review_functions.py",
-  "old": "    if derivation == 'TYPICAL_CURVE' and basis.get('kind') != 'REACHABLE_CASE':",
-  "new": "    if derivation == 'TYPICAL_CURVE' and False:"
+  "old": "    if method in catalog.ESTIMATE_METHODS and basis.get('kind') != 'REACHABLE_CASE':",
+  "new": "    if method in catalog.ESTIMATE_METHODS and False:"
  },
  {
   "id": "M456",
@@ -3906,13 +3906,6 @@
   "new": "    if False:\n        errors.append('%s: a %s names basis.cell"
  },
  {
-  "id": "M613",
-  "name": "cell NONE carries no method",
-  "file": "scripts/review_functions.py",
-  "old": "        if 'method' in basis:\n            return ['%s: basis.cell %s has no methods",
-  "new": "        if False:\n            return ['%s: basis.cell %s has no methods"
- },
- {
   "id": "M614",
   "name": "a rating above 25 °C is not a test-point rating",
   "file": "scripts/review_functions.py",
@@ -3930,8 +3923,8 @@
   "id": "M616",
   "name": "a named conversion carries the rating over",
   "file": "scripts/review_functions.py",
-  "old": "            if (basis.get('derivation') == 'GUARANTEED_LIMIT' and 'conversion' not in basis",
-  "new": "            if (basis.get('derivation') == 'GUARANTEED_LIMIT'"
+  "old": "            if (basis.get('method') == 'G1' and 'conversion' not in basis",
+  "new": "            if (basis.get('method') == 'G1'"
  },
  {
   "id": "M617",
@@ -5276,5 +5269,26 @@
   "file": "scripts/derating.py",
   "old": "        rating = -bound['min']",
   "new": "        rating = bound['min']"
+ },
+ {
+  "id": "M817",
+  "name": "the retired basis.derivation is read without a word",
+  "file": "scripts/review_functions.py",
+  "old": "    if 'derivation' in basis:\n        return ['%s: basis.derivation is retired",
+  "new": "    if False:\n        return ['%s: basis.derivation is retired"
+ },
+ {
+  "id": "M818",
+  "name": "a cell-only method serves outside the table",
+  "file": "scripts/review_functions.py",
+  "old": "        if basis.get('method') in catalog.CELL_ONLY_METHODS:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M819",
+  "name": "a public bound by an estimating method passes as a guaranteed margin",
+  "file": "scripts/review_functions.py",
+  "old": "    elif isinstance(bound, dict) and bound.get('method') in catalog.ESTIMATE_METHODS and \\",
+  "new": "    elif False and \\"
  }
 ]

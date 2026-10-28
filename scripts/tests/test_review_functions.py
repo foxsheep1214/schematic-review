@@ -62,7 +62,7 @@ def bias_function(verdict='OPEN'):
 def guaranteed(**extra):
     return dict({'kind': 'GUARANTEED_BOUND', 'comparison': 'GT', 'limit': 'c3', 'conditions': ['c1', 'c2'],
                  'scope': '−10..105 °C，VF 与 VGS(th) 取保证上界', 'regime': '−10..105 °C',
-                 'derivation': 'GUARANTEED_LIMIT', 'cell': 'NONE',
+                 'method': 'G1', 'cell': 'NONE',
                  'corners': [{'input': 'vf_d2', 'condition': 'c1', 'picked': 'max', 'why': 'VF 越大 VCC 越低'},
                              {'input': 'vgs_q2', 'condition': 'c2', 'picked': 'max', 'why': 'VGS(th) 越大 VCC 越低'}]},
                 **extra)
@@ -219,7 +219,7 @@ class FunctionShapeTests(unittest.TestCase):
             dict(fn['calculation']['margin'], aspect=ASPECT),
             {'value': -3, 'unit': '°C', 'against': 'Tj 115 °C（项目降额）', 'aspect': '变换器电流应力', 'states': ['RUN'],
              'basis': {'kind': 'REACHABLE_CASE', 'comparison': 'GE', 'limit': 'c6', 'conditions': [], 'scope': '满载 RUN',
-                       'regime': 'Ta 50 °C', 'joint': '满载与 Ta 50 °C 是同一额定工况', 'derivation': 'GUARANTEED_LIMIT',
+                       'regime': 'Ta 50 °C', 'joint': '满载与 Ta 50 °C 是同一额定工况', 'method': 'G1',
                        'cell': 'NONE', 'corners': [], 'no_corners_reason': '满载电流按需求取定值'}}]
         errors = function_errors({'functions': [fn]})
         self.assertEqual(len(errors), 1, errors)
@@ -279,7 +279,7 @@ def hv_datum(**worst):
                          'rationale': '启动电流决定 VCC 能否在 HV 供电下升过 UVLO，40 V 处没有保证值'}],
             'severity': {'level': 'P1', 'class': 'REQUIRED_FUNCTION', 'affects': 'U1 启动', 'consequence': '低线不能启动'}}
     item['worst_case'] = worst or {
-        'bound': {'condition': 'c3', 'value': 'IHV ≥ 2.4 mA @120 V', 'basis': 'ADJACENT_TEST_POINT'},
+        'bound': {'condition': 'c3', 'value': 'IHV ≥ 2.4 mA @120 V', 'method': 'G2'},
         'result': '按 120 V 测试点下界，40 V 时按线性外推 0.8 mA',
         'margin': {'value': -1.2, 'unit': 'mA', 'against': '启动需求 2 mA',
                    'basis': {'kind': 'ESTIMATE', 'comparison': 'GE', 'conditions': ['c3'], 'scope': '40 V，线性外推'}}}
@@ -301,12 +301,17 @@ class PublicBoundTests(unittest.TestCase):
         self.assertTrue(any('public bound' in e for e in errors), errors)
         fn = with_datum()
         self.assertEqual(function_errors({'functions': [fn]}), [])
-        for bad in ({'condition': 'c9', 'value': 'x', 'basis': 'ADJACENT_TEST_POINT'},
-                    {'condition': 'c3', 'value': 'x', 'basis': 'GUESS'}, {'condition': 'c3', 'basis': 'TYPICAL_CURVE'}):
+        for bad in ({'condition': 'c9', 'value': 'x', 'method': 'G2'},
+                    {'condition': 'c3', 'value': 'x', 'method': 'GUESS'}, {'condition': 'c3', 'method': 'G8'}):
             broken = copy.deepcopy(fn); broken['open'][0]['worst_case']['bound'] = bad
             self.assertTrue(any('public bound' in e for e in function_errors({'functions': [broken]})), bad)
         broken = copy.deepcopy(fn); del broken['open'][0]['worst_case']['margin']['basis']
         self.assertTrue(any('worst_case.margin: margin basis' in e for e in function_errors({'functions': [broken]})))
+        # results 15: a bound by an estimating method (G11 an application note) is not a guarantee
+        estimated = copy.deepcopy(fn); estimated['open'][0]['worst_case']['bound']['method'] = 'G11'
+        self.assertEqual(function_errors({'functions': [estimated]}), [])
+        estimated['open'][0]['worst_case']['margin']['basis']['kind'] = 'GUARANTEED_BOUND'
+        self.assertTrue(any('by G11 is an estimate' in e for e in function_errors({'functions': [estimated]})))
 
     def test_a_proving_margin_under_the_public_bound_decides(self):
         fn = with_datum()
@@ -1040,7 +1045,7 @@ class ReviewRecheckHintTests(unittest.TestCase):
         self.assertEqual(self.hints(self.rated('Tj −40..125 °C')), [])                        # a range, not a point
         self.assertEqual(self.hints(self.rated('TA −10..25 °C')), [])                          # a range ending at 25 °C
         self.assertEqual(self.hints(self.rated('TA = 85 °C')), [])                             # rated hot already
-        self.assertEqual(self.hints(self.rated('TC = 25 °C', derivation='PUBLISHED_TABLE')), [])
+        self.assertEqual(self.hints(self.rated('TC = 25 °C', method='G5')), [])
         fn = self.rated('TC = 25 °C')
         fn['conditions'][-1]['limit'] = {'max': 800, 'unit': 'V'}                             # a voltage rating does not derate
         self.assertEqual(self.hints(fn), [])

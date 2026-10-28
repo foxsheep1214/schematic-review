@@ -1120,9 +1120,16 @@ BOUND_METHODS = OrderedDict((m.code, m) for m in (
     BoundMethod('G8', '典型曲线覆盖工作点：按曲线取值；典型值已不够判失败（可达的反例）', '估算'),
     BoundMethod('G9', '只有典型值：同类参数 min/max 比例、同系列保证范围或典型 ±30%', '估算'),
     BoundMethod('G10', '厂家参考电路同接法：接法相同、本板负载不重于参考电路，引图号', '可判通过'),
+    BoundMethod('G11', '厂家应用笔记的公式：按笔记给的公式和系数算，引笔记号与页', '估算'),
     BoundMethod('SOA', '按持续时间选 25 °C 曲线，按开始壳温降额，恒功率段留 100%、热不稳定段留 80%', '保证最坏值'),
     BoundMethod('FORCED_BETA', '饱和开关按强制 β：IB ≥ IC /（hFE_min / 2）', '保证最坏值'),
 ))
+# 2026-10-27（用户：第二阶段按建议做）：推法是余量和开放项公开界限共用的唯一叫法（结果格式 15 停用 basis.derivation、
+# worst_case.bound.basis）。依据不是“估算”的推法给决定性余量；估算推法只给 ESTIMATE，或典型件已不够时的 REACHABLE_CASE。
+ESTIMATE_METHODS = tuple(m.code for m in BOUND_METHODS.values() if m.basis == '估算')
+# 没有格时取界的先后（原 evidence-proportionality 第 4 步）
+CELL_ONLY_METHODS = ('SOA', 'FORCED_BETA')
+METHOD_ORDER = ('G1', 'G2', 'G3', 'G5', 'G4', 'G6', 'G10', 'G7', 'G8', 'G9', 'G11')
 BOUND_FALLBACKS = OrderedDict((
     ('VENDOR_DATUM', '缺厂家数据（第三档），按后果定级'),
     ('OUTSIDE_SPECIFIED', '超出规定区（第四档），记失败项'),
@@ -1433,6 +1440,9 @@ def render_bounds_markdown():
     """references/bounding-table.md 的标记区间：推法、档位和逐格表。"""
     out = ['### 推法', '', '| 编号 | 推法 | 得到的依据 |', '|---|---|---|']
     out += ['| %s | %s | %s |' % (m.code, _cell(m.name), m.basis) for m in BOUND_METHODS.values()]
+    out += ['', '决定性余量和开放项的公开界限都写推法（`basis.method`、`worst_case.bound.method`）。表里有格的按格的推法；'
+            '没有格（`cell: NONE`）时按这个先后取，前一种拿得到就不用后一种：%s。依据为“估算”的推法只给 ESTIMATE，'
+            '典型件已不够时给 REACHABLE_CASE。SOA、FORCED_BETA 只随格用。' % ' → '.join(METHOD_ORDER)]
     out += ['', '### 推不出时', '', '| 写法 | 意思 |', '|---|---|']
     out += ['| `%s` | %s |' % item for item in BOUND_FALLBACKS.items()]
     out += ['', '### 逐格', '', '| 格 | 器件类别 | 参数 | 开着的一侧 | 随什么变 / 方向 | 推法（公式） | 推不出时 | 出处 |',

@@ -23,7 +23,7 @@ RATING = {'id': 'c-rated', 'kind': 'NUMERIC_LIMIT', 'refs': ['C1'], 'limit': {'m
 
 
 def margin(value, rule='CAP-MLCC-CHIP-V', **risk):
-    basis = {'kind': 'GUARANTEED_BOUND', 'limit': 'c-rated', 'derivation': 'GUARANTEED_LIMIT'}
+    basis = {'kind': 'GUARANTEED_BOUND', 'limit': 'c-rated', 'method': 'G1'}
     if rule:
         basis['derating_rule'] = rule
     if risk:

@@ -96,7 +96,7 @@ class BetweenTestPointsTests(unittest.TestCase):
 
     def test_a_range_inside_two_test_points_is_bounded_not_opened(self):
         found = errors(unboundable(operating_point={'min': 1, 'max': 1.56, 'unit': 'mA'}, test_points=self.POINTS))
-        self.assertTrue(about(found, 'ADJACENT_TEST_POINT'), found)
+        self.assertTrue(about(found, 'method G2'), found)
 
     def test_one_test_point_bounds_nothing_on_its_own(self):
         self.assertEqual(errors(unboundable(operating_point={'min': 1, 'max': 1.56, 'unit': 'mA'},
@@ -139,10 +139,10 @@ class SideTests(unittest.TestCase):
 
 
 class FormatTests(unittest.TestCase):
-    def test_the_results_format_is_14_and_format_5_is_not_read(self):
-        self.assertEqual(results_model.SCHEMA_VERSION, 14)
+    def test_the_results_format_is_15_and_format_5_is_not_read(self):
+        self.assertEqual(results_model.SCHEMA_VERSION, 15)
         found = results_model.shape_errors({'schema_version': 5, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be 14' in e for e in found), found)
+        self.assertTrue(any('schema_version must be 15' in e for e in found), found)
 
 
 if __name__ == '__main__':

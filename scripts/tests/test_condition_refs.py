@@ -166,10 +166,10 @@ class ParameterSheetTests(unittest.TestCase):
         without['parameter_sheet'] = []
         self.assertNotIn('器件参数表', render(p, r, without, detail='full'))
 
-    def test_the_results_format_is_14_and_a_format_6_record_is_refused(self):
-        self.assertEqual(results_model.SCHEMA_VERSION, 14)
+    def test_the_results_format_is_15_and_a_format_6_record_is_refused(self):
+        self.assertEqual(results_model.SCHEMA_VERSION, 15)
         found = results_model.shape_errors({'schema_version': 6, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be 14' in e for e in found), found)
+        self.assertTrue(any('schema_version must be 15' in e for e in found), found)
 
 
 class CompareTests(unittest.TestCase):

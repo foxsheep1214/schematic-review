@@ -4,7 +4,7 @@ quantity says why the adjacent test point does not bound it (consistency proposa
 On R5 one review left an over-voltage chain open although below the zener's test current VZ only falls, so the trip's
 upper bound followed from the test point; the other marked a trip lower bound on the unfavourable side as guaranteed,
 and took an NTC's nominal 5 Ω for a cold inrush that the 4 Ω tolerance end decides. The basis now carries
-`derivation` (how the bound was obtained) and `corners` (each toleranced input, the condition it came from and the end
+`derivation` (how the bound was obtained; since results 15 the bounding table's `method`) and `corners` (each toleranced input, the condition it came from and the end
 taken), and an unboundable quantity carries `monotonic_tried`.
 """
 import copy
@@ -20,7 +20,7 @@ CORNERS = [{'input': 'vf_d2', 'condition': 'c1', 'picked': 'max', 'why': 'VF 越
 
 def margin_errors(**basis):
     fn = bias_function('PASS')
-    base = {k: v for k, v in guaranteed().items() if k not in ('derivation', 'corners', 'no_corners_reason')}
+    base = {k: v for k, v in guaranteed().items() if k not in ('method', 'corners', 'no_corners_reason')}
     fn['calculation']['margin']['basis'] = dict(base, **basis)
     for k in [k for k, v in basis.items() if v is None]:
         del fn['calculation']['margin']['basis'][k]
@@ -28,53 +28,63 @@ def margin_errors(**basis):
 
 
 class DerivationTests(unittest.TestCase):
-    def test_a_decisive_margin_names_its_derivation(self):
-        self.assertEqual(margin_errors(derivation='GUARANTEED_LIMIT', corners=CORNERS), [])
-        self.assertTrue(any('derivation' in e for e in margin_errors(derivation=None, corners=CORNERS)))
-        self.assertTrue(any('derivation' in e for e in margin_errors(derivation='GUESS', corners=CORNERS)))
+    def test_a_decisive_margin_names_its_method(self):
+        self.assertEqual(margin_errors(method='G1', corners=CORNERS), [])
+        self.assertTrue(any('basis.method' in e for e in margin_errors(method=None, corners=CORNERS)))
+        self.assertTrue(any('basis.method' in e for e in margin_errors(method='GUESS', corners=CORNERS)))
+
+    def test_the_retired_derivation_is_refused(self):
+        found = margin_errors(method='G1', corners=CORNERS, derivation='GUARANTEED_LIMIT')
+        self.assertTrue(any('derivation is retired' in e and 'G1' in e for e in found), found)
+
+    def test_outside_the_table_any_general_method_serves_but_not_a_cell_only_one(self):
+        self.assertEqual(margin_errors(method='G6', corners=CORNERS), [])
+        self.assertTrue(any('SOA belongs to its cells' in e for e in margin_errors(method='SOA', corners=CORNERS)))
+        found = margin_errors(method='G11', corners=CORNERS)
+        self.assertTrue(any('G11 gives an estimate' in e for e in found), found)
 
     def test_a_bound_from_a_typical_curve_is_an_estimate(self):
-        found = margin_errors(derivation='TYPICAL_CURVE', corners=CORNERS)
-        self.assertTrue(any('TYPICAL_CURVE' in e and 'ESTIMATE' in e for e in found), found)
-        found = margin_errors(kind='ESTIMATE', derivation='TYPICAL_CURVE', corners=None)
-        self.assertFalse([e for e in found if 'TYPICAL_CURVE' in e or 'derivation' in e or 'corners' in e], found)
+        found = margin_errors(method='G8', corners=CORNERS)
+        self.assertTrue(any('G8 gives an estimate' in e and 'ESTIMATE' in e for e in found), found)
+        found = margin_errors(kind='ESTIMATE', method='G8', corners=None)
+        self.assertFalse([e for e in found if 'gives an estimate' in e or 'basis.method' in e or 'corners' in e], found)
 
     def test_a_bound_from_a_test_point_says_the_point_is_on_the_favourable_side(self):
-        for derivation in ('ADJACENT_TEST_POINT', 'MONOTONIC'):
-            self.assertTrue(any('monotonic' in e for e in margin_errors(derivation=derivation, corners=CORNERS)))
-            ok = margin_errors(derivation=derivation, corners=CORNERS, monotonic={'curve': 'c1', 'side': 'FAVORABLE'})
+        for derivation in ('G2',):
+            self.assertTrue(any('monotonic' in e for e in margin_errors(method=derivation, corners=CORNERS)))
+            ok = margin_errors(method=derivation, corners=CORNERS, monotonic={'curve': 'c1', 'side': 'FAVORABLE'})
             self.assertEqual(ok, [], derivation)
-            bad = margin_errors(derivation=derivation, corners=CORNERS, monotonic={'curve': 'c1', 'side': 'UNFAVORABLE'})
+            bad = margin_errors(method=derivation, corners=CORNERS, monotonic={'curve': 'c1', 'side': 'UNFAVORABLE'})
             self.assertTrue(any('FAVORABLE' in e for e in bad), derivation)
-            bad = margin_errors(derivation=derivation, corners=CORNERS, monotonic={'curve': 'c9', 'side': 'FAVORABLE'})
+            bad = margin_errors(method=derivation, corners=CORNERS, monotonic={'curve': 'c9', 'side': 'FAVORABLE'})
             self.assertTrue(any('monotonic' in e for e in bad), derivation)
 
     def test_a_bound_through_a_temperature_coefficient_cites_it(self):
-        self.assertTrue(any('tempco' in e for e in margin_errors(derivation='TEMPCO', corners=CORNERS)))
-        self.assertEqual(margin_errors(derivation='TEMPCO', corners=CORNERS, tempco='c2'), [])
-        self.assertTrue(any('tempco' in e for e in margin_errors(derivation='TEMPCO', corners=CORNERS, tempco='c5')))
+        self.assertTrue(any('tempco' in e for e in margin_errors(method='G4', corners=CORNERS)))
+        self.assertEqual(margin_errors(method='G4', corners=CORNERS, tempco='c2'), [])
+        self.assertTrue(any('tempco' in e for e in margin_errors(method='G4', corners=CORNERS, tempco='c5')))
 
 
 class CornerTests(unittest.TestCase):
     def test_each_toleranced_input_names_the_end_its_condition_gives(self):
-        self.assertTrue(any('corners' in e for e in margin_errors(derivation='GUARANTEED_LIMIT', corners=None)))
-        self.assertTrue(any('corners' in e for e in margin_errors(derivation='GUARANTEED_LIMIT', corners=[])))
+        self.assertTrue(any('corners' in e for e in margin_errors(method='G1', corners=None)))
+        self.assertTrue(any('corners' in e for e in margin_errors(method='G1', corners=[])))
         # c2 gives 1.0–2.0 V: an empty corner list with a reason does not excuse a toleranced input
-        found = margin_errors(derivation='GUARANTEED_LIMIT', corners=[], no_corners_reason='输入都是网表上的定值，无公差')
+        found = margin_errors(method='G1', corners=[], no_corners_reason='输入都是网表上的定值，无公差')
         self.assertTrue(any('c2' in e and 'toleranced input' in e for e in found), found)
-        self.assertEqual(margin_errors(derivation='GUARANTEED_LIMIT', corners=[], conditions=['c1'],
+        self.assertEqual(margin_errors(method='G1', corners=[], conditions=['c1'],
                                        no_corners_reason='VF 只有上界，无公差端可取'), [])
         # a corner list that skips a toleranced input is the same gap
         self.assertTrue(any('c2' in e and 'toleranced input' in e
-                            for e in margin_errors(derivation='GUARANTEED_LIMIT', corners=CORNERS[:1])))
+                            for e in margin_errors(method='G1', corners=CORNERS[:1])))
         wrong = copy.deepcopy(CORNERS)
         wrong[0]['picked'] = 'min'   # c1 gives only a maximum
-        found = margin_errors(derivation='GUARANTEED_LIMIT', corners=wrong)
+        found = margin_errors(method='G1', corners=wrong)
         self.assertTrue(any('c1' in e and 'min' in e for e in found), found)
         for broken in ({'condition': 'c9'}, {'condition': 'c5'}, {'picked': 'typ'}, {'why': ''}, {'input': ''}):
             bad = copy.deepcopy(CORNERS)
             bad[0].update(broken)
-            self.assertTrue(any('corners' in e for e in margin_errors(derivation='GUARANTEED_LIMIT', corners=bad)), broken)
+            self.assertTrue(any('corners' in e for e in margin_errors(method='G1', corners=bad)), broken)
 
 
 class MonotonicTriedTests(unittest.TestCase):
@@ -92,9 +102,9 @@ class MonotonicTriedTests(unittest.TestCase):
 
 class FormatTests(unittest.TestCase):
     def test_an_older_results_format_is_not_read(self):
-        self.assertEqual(results_model.SCHEMA_VERSION, 14)
+        self.assertEqual(results_model.SCHEMA_VERSION, 15)
         errors = results_model.shape_errors({'schema_version': 4, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be 14' in e for e in errors), errors)
+        self.assertTrue(any('schema_version must be 15' in e for e in errors), errors)
         previous = results_model.shape_errors({'schema_version': results_model.SCHEMA_VERSION - 1, 'functions': [], 'checks': []})
         self.assertTrue(any('schema_version must be' in e for e in previous), previous)   # the format just retired too
 

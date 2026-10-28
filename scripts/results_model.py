@@ -19,7 +19,10 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
-SCHEMA_VERSION = 14   # 14 (2026-10-27): a finding says root_cause (cause, mechanism, the value against its limit),
+SCHEMA_VERSION = 15   # 15 (2026-10-27): how a bound was obtained is the bounding table's method (G1–G11, SOA,
+# FORCED_BETA) on every decisive margin and public bound; basis.derivation and worst_case.bound.basis are retired
+# (user: 第二阶段按建议做)
+# 14 (2026-10-27): a finding says root_cause (cause, mechanism, the value against its limit),
 # consequence and fix once; observed/criterion/impact/scenario/recommendation/verification are retired, the checks
 # after the fix are remediation.verification[] (the report was too long: user 2026-10-27, 卡片字段合并也改格式)
 # 13 (2026-10-27): no zero margin whose stress is only a handed-on DESIGN_CONSTRAINT; the pass
