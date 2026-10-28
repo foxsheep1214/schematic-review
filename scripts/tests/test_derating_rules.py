@@ -32,6 +32,16 @@ class DeratingSpecTests(unittest.TestCase):
             self.assertTrue(1 <= rule['page'] <= SPEC['sources'][rule['source']]['pages'], rule['id'])
             self.assertEqual(tuple(rule['values']), LEVELS, rule['id'])
 
+    def test_a_kind_holding_several_technologies_names_each_rules_subtype(self):
+        # R7 (Codex review 2026-10-27): silicon MOS, IGBT, GaN and SiC share the mosfet kind, a crystal and an
+        # oscillator the crystal kind; the subtype keeps a GaN gate rule off a silicon MOSFET
+        for rule in SPEC['rules']:
+            mixed = [k for k in rule['kinds'] if k in SPEC['subtypes']]
+            if mixed:
+                self.assertIn(rule.get('subtype'), SPEC['subtypes'][mixed[0]], rule['id'])
+            else:
+                self.assertNotIn('subtype', rule, rule['id'])
+
     def test_levels_run_from_most_to_least_derating(self):
         for rule in SPEC['rules']:
             v = [rule['values'][k] for k in LEVELS]

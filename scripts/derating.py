@@ -80,11 +80,14 @@ def margin_errors(label, margin, conditions, level, kinds_of):
                          '{level, source} from a requirement or an answered clarification' % (label, rid)]
     if rule['measure'] not in RECOMPUTED:
         return errors
-    rating = (limit.get('limit') or {}).get('max')
+    bound = limit.get('limit') or {}
+    rating = bound.get('max')
+    if not isinstance(rating, (int, float)) and isinstance(bound.get('min'), (int, float)) and bound['min'] < 0:
+        rating = -bound['min']   # a negative rating (turn-off gate voltage) is compared by magnitude (R8)
     if not isinstance(rating, (int, float)) or not text(margin.get('unit')) or \
-            str((limit.get('limit') or {}).get('unit') or '').strip() != margin['unit'].strip():
-        return errors + ['%s: a %s derating rule compares the stress with the limit\'s max; the limit gives limit.max '
-                         'in the margin\'s unit' % (label, rule['measure'])]
+            str(bound.get('unit') or '').strip() != margin['unit'].strip():
+        return errors + ['%s: a %s derating rule compares the stress with the limit\'s max (or a negative min, by '
+                         'magnitude); the limit gives it in the margin\'s unit' % (label, rule['measure'])]
     stress = rating - margin['value']
     derated = rating * rule['values'][level]
     stressed = 'STRESS' in ((basis.get('risk') or {}).get('types') or [])

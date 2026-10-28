@@ -5269,5 +5269,12 @@
   "file": "scripts/render_report.py",
   "old": "    gap_cards = sorted((t for t in tasks if not covered_by_findings(t, checks, findings)), key=rank)",
   "new": "    gap_cards = sorted(tasks, key=rank)"
+ },
+ {
+  "id": "M816",
+  "name": "a negative rating is compared with its sign",
+  "file": "scripts/derating.py",
+  "old": "        rating = -bound['min']",
+  "new": "        rating = bound['min']"
  }
 ]

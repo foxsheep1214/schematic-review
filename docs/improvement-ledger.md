@@ -9,6 +9,30 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Derating spec: subtypes, negative ratings, relays, oscillators, surge and life wording, NB/T (2026-10-27)
+
+A Codex review of the shared derating spec proposed six additions; each was checked against the standards (GJB/Z 35
+p24 5.10.2.1, 5.10.2.5 and table 30; T/CPSS 1006 p11 table 8 and p15–16 6.5.3; NB/T 10297 p7 table 1) and holds.
+
+- R7 picks a rule by kind, then `subtype` (mosfet: si / igbt / gan / sic; crystal: crystal / oscillator), parameter,
+  condition and rating basis; JSON `subtypes` and the rules' `subtype`, a test that every rule of a mixed kind names one.
+- R8 compares a negative rating by magnitude (−10 V at 50 %: −8 V is short); `derating.margin_errors` takes a negative
+  `limit.min` as the rating's magnitude, with a test.
+- Relays: holding and pick-up voltage (5.10.2.5), maximum drive voltage and contact power for ordinary relays (1006),
+  level-I cycle life 0.5 (table 30, missing before), and no parallel contacts to raise current for relays and switches.
+- Active oscillators: current 70 %, voltage per supplier, temperature 30 °C (1006 table 8).
+- R9 surge and pulse: same waveform, width, cold/hot and single/repetitive; I²t by integration or 1006's five waveform
+  formulas; a datasheet correction curve replaces the generic temperature factor.
+- R10 the 15 % CTR drop is a design tolerance; an estimate already counting aging (÷2) meets it without another 0.85.
+- R11 SOA, potentiometer track, capacitor and cycle life come from their own methods before the table applies.
+- NB/T 10297 is a reference outside the default order, with a difference table (five resistor rows).
+- ASG holds the same bytes at ff3fcb7, where negative ratings are now compared by magnitude too.
+
+- Event: user:2026-10-27 (Codex 对降额规则的六条建议，“请看一下这些建议是否合理，如果合理的就进行改进”)
+- Causes: knowledge_missing 4 (relay drive and parallel contacts, oscillator rows, surge waveform method, NB/T differences), rule_not_enforced 1 (rule subtype), knowledge_wrong 1 (negative ratings)
+- Changed: references/derating-rules.json, references/derating-rules.md, scripts/derating.py, scripts/tests/test_derating_rules.py, scripts/tests/test_stress_spec.py, docs/improvement-ledger.md
+- Gates: pytest 2332 with ASG at ff3fcb7; mutation --changed 107 run, 107 killed
+
 ## Report in three layers; results format 14 says each finding text once (2026-10-27)
 
 The user found the report too long and without levels, and asked to keep the figures. On R8 the part a reader sees

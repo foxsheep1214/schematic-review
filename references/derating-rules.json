@@ -31,10 +31,17 @@
    "pages": 17,
    "graded": false,
    "title": "T/CPSS 1006—2024 通信用开关电源的元器件降额准则（2026-08-20 改号 T/CPSS 69-2024，技术内容未变；只有一级）"
+  },
+  "nbt10297": {
+   "path": "raw/Standard/NB T 10297 交流-直流开关电源电子组件降额技术规范 - 2019.pdf",
+   "sha256": "7c499efdf26cfd12d7e1909d984ef3d0388990e8389b2f4636e4de7512df2cf8",
+   "pages": 18,
+   "graded": true,
+   "title": "NB/T 10297—2019 交流-直流开关电源电子组件降额技术规范（只作对照，不进默认取值；见“NB/T 10297 的差异”）"
   }
  },
  "measures": {
-  "ratio": "最坏应力 / 同条件下的额定值 ≤ 取值",
+  "ratio": "最坏应力 / 同条件下的额定值 ≤ 取值；负向额定（如关断负栅压）按幅值比较（R8）",
   "pulse_ratio": "冲击或脉冲应力 / 手册单列的冲击或脉冲额定值 ≤ 取值",
   "min_ratio": "实际值 / 额定值 ≥ 取值",
   "margin_c": "额定最高温度 − 最坏工作温度 ≥ 取值（°C）",
@@ -1710,6 +1717,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "si",
    "type": "硅 MOSFET",
    "parameter": "漏-源极电压",
    "condition": "steady",
@@ -1728,6 +1736,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "si",
    "type": "硅 MOSFET",
    "parameter": "漏-源极电压",
    "condition": "transient",
@@ -1746,6 +1755,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "si",
    "type": "硅 MOSFET",
    "parameter": "栅-源极电压",
    "condition": "steady",
@@ -1764,6 +1774,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "si",
    "type": "硅 MOSFET",
    "parameter": "栅-源极电压",
    "condition": "transient",
@@ -1782,6 +1793,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "si",
    "type": "硅 MOSFET",
    "parameter": "漏极电流",
    "condition": "steady",
@@ -1800,6 +1812,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "si",
    "type": "硅 MOSFET",
    "parameter": "漏极电流脉冲",
    "condition": "pulse",
@@ -1818,6 +1831,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "si",
    "type": "硅 MOSFET",
    "parameter": "最高结温",
    "condition": "temperature",
@@ -1836,6 +1850,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "si",
    "type": "硅 MOSFET",
    "parameter": "功率",
    "condition": "worst",
@@ -1854,6 +1869,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "si",
    "type": "硅 MOSFET",
    "parameter": "漏-源极电压上升率（体二极管反向恢复）",
    "condition": "transient",
@@ -1872,6 +1888,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "igbt",
    "type": "IGBT（额定 <200 V）",
    "parameter": "集电极-发射极电压",
    "condition": "worst",
@@ -1890,6 +1907,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "igbt",
    "type": "IGBT（额定 ≥200 V）",
    "parameter": "集电极-发射极电压（平台及重复尖峰）",
    "condition": "steady",
@@ -1908,6 +1926,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "igbt",
    "type": "IGBT（额定 ≥200 V）",
    "parameter": "集电极-发射极电压（单次尖峰）",
    "condition": "transient",
@@ -1926,6 +1945,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "igbt",
    "type": "IGBT",
    "parameter": "栅-发射极电压",
    "condition": "worst",
@@ -1944,6 +1964,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "igbt",
    "type": "IGBT",
    "parameter": "集电极电流",
    "condition": "worst",
@@ -1962,6 +1983,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "igbt",
    "type": "IGBT",
    "parameter": "功耗",
    "condition": "worst",
@@ -1980,6 +2002,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "igbt",
    "type": "IGBT",
    "parameter": "结温",
    "condition": "temperature",
@@ -1998,6 +2021,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "gan",
    "type": "GaN HFET（增强型）",
    "parameter": "漏-源极电压",
    "condition": "worst",
@@ -2016,6 +2040,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "gan",
    "type": "GaN HFET（增强型）",
    "parameter": "栅-源极电压（开通正压）",
    "condition": "worst",
@@ -2034,6 +2059,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "gan",
    "type": "GaN HFET（增强型）",
    "parameter": "栅-源极电压（关断负压）",
    "condition": "worst",
@@ -2052,6 +2078,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "gan",
    "type": "GaN HFET（增强型）",
    "parameter": "漏极电流",
    "condition": "worst",
@@ -2070,6 +2097,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "gan",
    "type": "GaN HFET（增强型）",
    "parameter": "功耗",
    "condition": "worst",
@@ -2088,6 +2116,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "gan",
    "type": "GaN HFET（增强型）",
    "parameter": "结温",
    "condition": "temperature",
@@ -2106,6 +2135,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "sic",
    "type": "SiC MOSFET（增强型）",
    "parameter": "漏-源极电压",
    "condition": "worst",
@@ -2124,6 +2154,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "sic",
    "type": "SiC MOSFET（增强型）",
    "parameter": "栅-源极电压（开通正压）",
    "condition": "worst",
@@ -2142,6 +2173,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "sic",
    "type": "SiC MOSFET（增强型）",
    "parameter": "栅-源极电压（关断负压）",
    "condition": "worst",
@@ -2160,6 +2192,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "sic",
    "type": "SiC MOSFET（增强型）",
    "parameter": "漏极电流",
    "condition": "worst",
@@ -2178,6 +2211,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "sic",
    "type": "SiC MOSFET（增强型）",
    "parameter": "功耗",
    "condition": "worst",
@@ -2196,6 +2230,7 @@
    "kinds": [
     "mosfet"
    ],
+   "subtype": "sic",
    "type": "SiC MOSFET（增强型）",
    "parameter": "结温",
    "condition": "temperature",
@@ -3815,6 +3850,25 @@
    "table": "表30"
   },
   {
+   "id": "RLY-PWR-GEN",
+   "kinds": [
+    "relay"
+   ],
+   "type": "继电器（舌簧、水银以外）",
+   "parameter": "触点功率",
+   "condition": "worst",
+   "measure": "ratio",
+   "values": {
+    "I": 0.85,
+    "II": 0.85,
+    "III": 0.85
+   },
+   "source": "cpss1006",
+   "page": 11,
+   "table": "表8",
+   "note": "原文 <85%"
+  },
+  {
    "id": "SW-R",
    "kinds": [
     "switch"
@@ -3997,6 +4051,24 @@
    "table": "表31"
   },
   {
+   "id": "SW-PARALLEL",
+   "kinds": [
+    "switch"
+   ],
+   "type": "开关",
+   "parameter": "触点并联",
+   "condition": "worst",
+   "measure": "text",
+   "values": {
+    "I": "触点可并联使用，但不得用并联增加触点电流",
+    "II": "触点可并联使用，但不得用并联增加触点电流",
+    "III": "触点可并联使用，但不得用并联增加触点电流"
+   },
+   "source": "gjbz35",
+   "page": 24,
+   "table": "5.11.2.1"
+  },
+  {
    "id": "RLY-COIL-MAX",
    "kinds": [
     "relay"
@@ -4033,6 +4105,63 @@
    "table": "表30"
   },
   {
+   "id": "RLY-HOLD",
+   "kinds": [
+    "relay"
+   ],
+   "type": "继电器",
+   "parameter": "线圈维持电压（触点吸合后）",
+   "condition": "worst",
+   "measure": "min_ratio",
+   "values": {
+    "I": 0.9,
+    "II": 0.9,
+    "III": 0.9
+   },
+   "source": "gjbz35",
+   "page": 24,
+   "table": "5.10.2.5",
+   "note": "最低维持电压 / 额定线圈电压；直流或交流有效值"
+  },
+  {
+   "id": "RLY-PICKUP",
+   "kinds": [
+    "relay"
+   ],
+   "type": "继电器",
+   "parameter": "最小线圈电压（有启动特性要求时）",
+   "condition": "worst",
+   "measure": "min_ratio",
+   "values": {
+    "I": 1.1,
+    "II": 1.1,
+    "III": 1.1
+   },
+   "source": "gjbz35",
+   "page": 24,
+   "table": "5.10.2.5",
+   "note": "最小线圈电压 / 额定短时启动（吸合）电压"
+  },
+  {
+   "id": "RLY-DRIVE-MAX",
+   "kinds": [
+    "relay"
+   ],
+   "type": "继电器",
+   "parameter": "线圈驱动电压最大值",
+   "condition": "worst",
+   "measure": "ratio",
+   "values": {
+    "I": 1.0,
+    "II": 1.0,
+    "III": 1.0
+   },
+   "source": "cpss1006",
+   "page": 11,
+   "table": "表8",
+   "note": "对额定线圈电压最大值；驱动电压最小值 ≥110% 额定最小值同 RLY-PICKUP，按 R1 取 GJB"
+  },
+  {
    "id": "RLY-T",
    "kinds": [
     "relay"
@@ -4067,6 +4196,25 @@
    "source": "gjbz35",
    "page": 24,
    "table": "表30"
+  },
+  {
+   "id": "RLY-LIFE",
+   "kinds": [
+    "relay"
+   ],
+   "type": "继电器",
+   "parameter": "工作寿命（循环次数）",
+   "condition": "life",
+   "measure": "ratio",
+   "values": {
+    "I": 0.5,
+    "II": 1.0,
+    "III": 1.0
+   },
+   "source": "gjbz35",
+   "page": 24,
+   "table": "表30",
+   "note": "II、III 级原文为“—”（不降额），取 1：所需次数不超过额定次数"
   },
   {
    "id": "RLY-CONTACT-V",
@@ -4106,10 +4254,29 @@
    "table": "表8"
   },
   {
+   "id": "RLY-PARALLEL",
+   "kinds": [
+    "relay"
+   ],
+   "type": "继电器",
+   "parameter": "触点并联",
+   "condition": "worst",
+   "measure": "text",
+   "values": {
+    "I": "不得用触点并联增加电流：吸合、释放瞬间各触点不同时通断，全部负载电流可能流过一个触点",
+    "II": "不得用触点并联增加电流：吸合、释放瞬间各触点不同时通断，全部负载电流可能流过一个触点",
+    "III": "不得用触点并联增加电流：吸合、释放瞬间各触点不同时通断，全部负载电流可能流过一个触点"
+   },
+   "source": "gjbz35",
+   "page": 24,
+   "table": "5.10.2.1"
+  },
+  {
    "id": "XTAL-DRIVE",
    "kinds": [
     "crystal"
    ],
+   "subtype": "crystal",
    "type": "晶体",
    "parameter": "驱动功率",
    "condition": "worst",
@@ -4128,6 +4295,7 @@
    "kinds": [
     "crystal"
    ],
+   "subtype": "crystal",
    "type": "晶体",
    "parameter": "工作温度",
    "condition": "temperature",
@@ -4140,11 +4308,81 @@
    "source": "gjbz35",
    "page": 29,
    "table": "5.18.3"
+  },
+  {
+   "id": "OSC-I",
+   "kinds": [
+    "crystal"
+   ],
+   "subtype": "oscillator",
+   "type": "有源晶振",
+   "parameter": "工作电流",
+   "condition": "worst",
+   "measure": "ratio",
+   "values": {
+    "I": 0.7,
+    "II": 0.7,
+    "III": 0.7
+   },
+   "source": "cpss1006",
+   "page": 11,
+   "table": "表8"
+  },
+  {
+   "id": "OSC-V",
+   "kinds": [
+    "crystal"
+   ],
+   "subtype": "oscillator",
+   "type": "有源晶振",
+   "parameter": "工作电压",
+   "condition": "worst",
+   "measure": "text",
+   "values": {
+    "I": "符合供应商规范",
+    "II": "符合供应商规范",
+    "III": "符合供应商规范"
+   },
+   "source": "cpss1006",
+   "page": 11,
+   "table": "表8"
+  },
+  {
+   "id": "OSC-T",
+   "kinds": [
+    "crystal"
+   ],
+   "subtype": "oscillator",
+   "type": "有源晶振",
+   "parameter": "工作温度",
+   "condition": "temperature",
+   "measure": "margin_c",
+   "values": {
+    "I": 30,
+    "II": 30,
+    "III": 30
+   },
+   "source": "cpss1006",
+   "page": 11,
+   "table": "表8",
+   "note": "1006 表8 的“晶振 驱动功率 ≤33%”是无源晶体的激励功率，按 R1 取 GJB 的 XTAL-DRIVE"
   }
  ],
  "uncovered": [
   "压敏电阻“工作电压/最大限制电压 ≤30%”（T/CPSS 1006 表1）含义不明，未收录；压敏电阻的连续工作电压按手册额定校核",
   "Y 电容漏电流、NTC 浪涌限流器的冲击能力：三份标准都没有降额值，只校核手册额定",
   "断路器、风扇、电机、灯泡、电真空、声表面波、激光与光纤器件：本规范不收录，用到时按 GJB/Z 35 原文补"
- ]
+ ],
+ "subtypes": {
+  "mosfet": {
+   "si": "硅 MOSFET",
+   "igbt": "IGBT",
+   "gan": "GaN HFET（增强型）",
+   "sic": "SiC MOSFET（增强型）"
+  },
+  "crystal": {
+   "crystal": "无源晶体（谐振器）",
+   "oscillator": "有源晶振（振荡器模块）"
+  }
+ }
 }

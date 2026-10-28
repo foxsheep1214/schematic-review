@@ -70,6 +70,19 @@ class MarginTests(unittest.TestCase):
         self.assertIn('no stress risk', e)
         self.assertEqual(gate('I', margin(-2)), [])                               # over the rating: an ordinary failing margin
 
+    def test_a_negative_rating_is_compared_by_magnitude(self):
+        # R8 (Codex review 2026-10-27): GaN turn-off gate −10 V at 50 % allows −5 V; −8 V is short of the derating,
+        # although −8 ≤ −5 read with its sign. The margin is the distance to the −10 V limit: 2 V.
+        gate_min = {'id': 'c-rated', 'kind': 'NUMERIC_LIMIT', 'refs': ['Q1'], 'limit': {'min': -10, 'unit': 'V'}}
+        kinds = lambda refs: ['mosfet']
+        m = dict(margin(2, rule='GAN-VGS-OFF'), against='Q1 −10 V 关断负压额定')
+        [e] = derating.margin_errors('FN-X', m, {'c-rated': gate_min}, 'II', kinds)
+        self.assertIn('stress 8 V is within the rating 10 but over the level II derated value 5', e)
+        m['basis']['risk'] = {'types': ['STRESS'], 'corner': 'c', 'improvement': 'i'}
+        self.assertEqual(derating.margin_errors('FN-X', m, {'c-rated': gate_min}, 'II', kinds), [])
+        m = dict(margin(6, rule='GAN-VGS-OFF'))   # −4 V: within the 5 V allowed magnitude
+        self.assertEqual(derating.margin_errors('FN-X', m, {'c-rated': gate_min}, 'II', kinds), [])
+
     def test_the_rule_exists_fits_the_part_and_needs_a_level(self):
         self.assertIn('not in references/derating-rules.json', gate('II', margin(10, rule='NO-SUCH'))[0])
         self.assertIn('is for mosfet', gate('II', margin(10, rule='MOS-VDS-S'))[0])
