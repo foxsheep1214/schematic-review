@@ -10,6 +10,7 @@
 """
 import re
 
+import derating
 from decoupling import parse_capacitance
 from solve_dividers import parse_resistor, parse_resistor_noted
 
@@ -24,8 +25,10 @@ RESISTOR_FLOORS = {
     '1206': (0.125, 150.0), '1210': (0.25, 200.0), '2010': (0.5, 200.0), '2512': (1.0, 200.0),
 }
 # 采购范围未受控时的边界：功率 ≤ 最弱档 50%、电压 ≤ 50% 判 PASS。功率超过 25%（RG1005 0.032 W 反例的 50%）时，
-# 封装最弱档不足以覆盖全部可采购档，PASS 附带“额定 ≥ 2×应力”的采购约束，由 DEV-D04 汇总，不记证据不足。
+# 封装最弱档不足以覆盖全部可采购档，PASS 附带采购约束“额定 ≥ 应力 ÷ 项目降额等级的贴片电阻功率取值”（RES-SMD-P；
+# 等级未定时取 2 倍应力；2026-10-27，用户：BOM 最低额定按项目降额等级取值），由 DEV-D04 汇总，不记证据不足。
 POWER_LIMIT, VOLTAGE_LIMIT, CATEGORY_SAFE_POWER = 0.5, 0.5, 0.25
+SMD_POWER_RULE, UNSET_POWER_SHARE = 'RES-SMD-P', 0.5
 DEFAULT_TOL = 0.05
 # commodity-floors「陶瓷电容」可订购档：(封装, 最大容值 F, 耐压 V, 依据料号)。
 # 同封装同耐压下更小容值视为同样可订购。
@@ -406,6 +409,7 @@ def _series_chains(graph, bounds):
 
 
 def _scan(db, intent, state):
+    level = ((intent or {}).get('derating') or {}).get('level')
     graph = ng.NetGraph(db, fitted=set(state['fitted']))
     bounds = _Bounds(graph, _declared_rails(intent))
     chains, taps = _series_chains(graph, bounds)
@@ -428,6 +432,8 @@ def _scan(db, intent, state):
         written = bom_ratings(((db.get('bom') or {}).get('parts') or {}).get(ref))
         if written:
             entry['bom_ratings'] = written
+        if kind == pw.RESISTOR and level in derating.LEVELS:
+            entry['derating_level'] = level
         if kind == pw.RESISTOR and not any(_ground_name(net) for net in entry['nets']):
             entry['signal_series'] = _signal_series(graph, entry['nets'])
         feed = _startup_feed(graph, entry['nets']) if kind == pw.RESISTOR else None
@@ -518,8 +524,12 @@ def _proposal(entry):
             return None, calc, '超出未受控采购范围的预判边界，按 commodity-floors 判定表由审查者判定'
         note = '功率 ≤ 最弱档 %d%%、电压 ≤ %d%%' % (POWER_LIMIT * 100, VOLTAGE_LIMIT * 100)
         if calc['power_ratio'] > CATEGORY_SAFE_POWER:
-            calc['procurement_min_power_w'] = round(2 * calc['p_max_w'], 9)
-            note += '；采购约束：额定功率 ≥ %.4g W（应力 2 倍），记 DEV-D04' % calc['procurement_min_power_w']
+            level = entry.get('derating_level')
+            share = derating.rules()[SMD_POWER_RULE]['values'][level] if level else UNSET_POWER_SHARE
+            calc['procurement_min_power_w'] = round(calc['p_max_w'] / share, 9)
+            note += '；采购约束：额定功率 ≥ %.4g W（%s），记 DEV-D04' % (
+                calc['procurement_min_power_w'],
+                '应力 ÷ %s 级降额 %g%%，%s' % (level, share * 100, SMD_POWER_RULE) if level else '降额等级未定，取应力 2 倍')
         return 'PASS', calc, note
     farads = parse_capacitance(entry['value'])
     if farads is None:

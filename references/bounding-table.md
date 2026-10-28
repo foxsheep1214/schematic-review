@@ -23,7 +23,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
   扩表时补齐五列并加测试。决定记录见 docs/2026-10-26-cell-boundary.md。
 - **风险标签（2026-10-26，用户：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在定界表上扩）**：
   本表兼作各类器件的关键参数表，先逐颗器件按格比参数再下功能结论。靠估算过关的角点是“合格，但有风险”，余量写 `risk{types, corner, improvement}`，
-  `types` 取“估算对应的风险”列（`NONE` 任选环境适应性、寿命、一致性）；额定内但降额不足的决定性余量可写应力（STRESS）。见结果格式。
+  `types` 取“估算对应的风险”列（`NONE` 任选环境适应性、寿命、一致性）。哪种余量判风险见[余量判定规则](margin-verdicts.md)，字段见结果格式。
 - **判“定不出界”的缺厂家数据**：`worst_case.monotonic_tried.cell` 写格（表里没有这类参数写 `NONE`）。门禁按格核对：
   - 格的开着一侧（UPPER/LOWER）与 `monotonic_tried.side` 相同；
   - 落到 `BOUNDED` 的格总能定界，不开这种项；落到 `OUTSIDE_SPECIFIED` 的格记失败项（`fails[]` 写 `outside_specified`）；

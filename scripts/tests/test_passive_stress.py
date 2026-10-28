@@ -75,6 +75,20 @@ class ProposalTests(unittest.TestCase):
                     self.assertAlmostEqual(calc['procurement_min_power_w'], 2 * calc['p_max_w'], places=9)
                     self.assertIn('DEV-D04', proposal['note'])
 
+    def test_the_procurement_minimum_follows_the_project_derating_level(self):
+        # 2026-10-27 (user: BOM 最低额定按项目降额等级取值): RES-SMD-P is 70 / 75 / 80 % for levels I / II / III;
+        # without a level the minimum stays twice the stress
+        for level, share in (('I', 0.7), ('II', 0.75), ('III', 0.8)):
+            with self.subTest(level=level):
+                db, intent = board()
+                db['parts']['R1']['value'] = '620'
+                rebind(db, intent)
+                intent['derating'] = {'level': level, 'source': 'req:REQ-REL'}
+                proposal = proposals(db, intent)[1]['R1']['proposal']
+                calc = proposal['calculation']
+                self.assertAlmostEqual(calc['procurement_min_power_w'], calc['p_max_w'] / share, places=9)
+                self.assertIn('%s 级降额' % level, proposal['note'])
+
     def unpackaged(self, r1='10k', c1='100nF'):
         """The board with no footprints at all, as a schematic drawn before the PCB has none."""
         db, intent = board()

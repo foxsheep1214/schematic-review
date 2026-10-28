@@ -115,6 +115,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | intent 里要写的名字：功能电路类型、器件角色、需求类别与参数名 | [review-vocabulary.md](references/review-vocabulary.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
 | 审查员 | 工作点和保证条件对不上时定界；估算判通过的边界 | [bounding-table.md](references/bounding-table.md)（由 `scripts/catalog.py` 生成） |
+| 审查员 | 一条余量怎么判：合格、合格但有风险、不合格；无料号常规件的判定表 | [margin-verdicts.md](references/margin-verdicts.md) |
 | 审查员 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
 | 审查员 | 器件应力降额：I/II/III 级降额值、等级从哪来、取值规则（与 ASG 共用，`references/derating-rules.json` 同内容） | [derating-rules.md](references/derating-rules.md) |
 | 审查员 | 器件应力怎么判：超额定不成立、超降额未超额定是应力风险、只审写出的应力余量（与 ASG 共用） | [stress-spec.md](references/stress-spec.md) |
@@ -334,8 +335,8 @@ SR 独立审查，只用四类输入：需求、设计结果（原理图、网�
   估算判 PASS 的余量写 `cell`、`method`（G7–G9）、`consequence_class`、`estimate_factor`（等于格给该后果类的倍数，余量按打折后的值算）和 `handoff`；
   格没有这个参数写 `cell: NONE`，按默认（只许功能/性能后果，损坏/过热/保护类规则不估算）。这种 PASS 是 C 级证据，结论是“合格，但有风险”：
   余量另写 `risk{types, corner, improvement}`——风险类型取那一格的“估算对应的风险”（环境适应性 / 寿命 / 一致性，`NONE` 三者任选），
-  `corner` 写只靠估算的那个角点，`improvement` 写消除风险的改法（换型号、换档、样机抽测）。保证值在额定内、只是没满足审查员假定的降额时，
-  决定性余量也可写 `risk{types: [STRESS]}`。风险不限制定稿，报告单列“风险清单”。
+  `corner` 写只靠估算的那个角点，`improvement` 写消除风险的改法（换型号、换档、样机抽测）。一条余量判合格、风险还是不合格
+  （含额定内超降额的应力风险）按[余量判定规则](references/margin-verdicts.md)。风险不限制定稿，报告单列“风险清单”。
 - 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，真缺厂家数据的记 VENDOR_DATUM；
   设计没定不开项（2026-10-26，用户：按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束）：原理图或 BOM 该写明而没写的值记失败项，改法写反推出的值；
   归另一份设计文件（磁件、固件、PCB）的值，以及另一环节欠的交付物（定制件图纸、固件能力），写 DESIGN_CONSTRAINT 条件（没有单一数值的写条款），按约束判 PASS 并移交给负责方；

@@ -9,6 +9,23 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Margin verdicts in one document (2026-10-27)
+
+Stage 1 of regrouping the rules by six questions: how a written margin is judged. The rule was spread over the bounding
+table's "how to use", evidence-proportionality step 2, the results format, verdicts-and-release and the commodity
+floors' verdict table, worded differently in each. references/margin-verdicts.md (SR only; the shared stress spec is
+unchanged) now holds it: compare with the rating at the worst temperature without subtracting derating, over the rating
+fails, over the derated value is a stress risk, estimate and life-estimate passes are risks, 50 % is only the plan's
+pre-judgement, and the no-MPN verdict table; the other documents point to it. The procurement minimum the passive
+stress checker proposes is now the stress over the project level's RES-SMD-P value (2x when no level is set), and a BOM
+constraint whose wrong part would still be within its rating stays P3, written as the BOM-side stress risk. Step ③'s
+reading budget rises 4.3 KB for the new document; stages 3 and 4 move model text out of evidence-proportionality.
+
+- Event: user:2026-10-27 (“第一阶段按改单做，两处待定按你的建议：BOM 最低额定按项目降额等级取值，“买错仍在额定内”保留 P3 并写明它对应应力风险。做完提交推送，再给第二阶段改单。”)
+- Causes: judgment 1 (one verdict rule kept in five documents); knowledge_wrong 1 (the BOM minimum took 2x stress regardless of the project derating level)
+- Changed: references/margin-verdicts.md, references/commodity-floors.md, references/evidence-proportionality.md, references/bounding-table.md, references/results-format.md, references/verdicts-and-release.md, references/architecture.md, SKILL.md, scripts/checkers/passive_stress.py, scripts/tests/test_passive_stress.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2333; mutation --changed 29 on passive_stress.py, all killed at the unit tier
+
 ## Rule texts that contradicted the stress spec (2026-10-27)
 
 Reviewing the rule groups for overlap and conflict, four sentences still judged the derated value as a fail after the

@@ -65,7 +65,7 @@
 - **A**：结论能由已验证输入直接重现（网表集合、官方限值与可复算区间等）。
 - **B**：有可定位依据和适用条件的工程推导，推导链公开。
 - **C**：关键身份、拓扑、要求或工况缺失；对应 INSUFFICIENT。PASS/FAIL 不得以 C 为依据，唯一例外是定界表允许估算的格上按估算判的
-  PASS：C 级、“合格，但有风险”，必写 `risk`（见[功能判定](results-format.md#功能判定functions)）。
+  PASS：C 级、“合格，但有风险”，必写 `risk`（何时判风险见[余量判定规则](margin-verdicts.md)，字段见[功能判定](results-format.md#功能判定functions)）。
 
 证据来源（netlist / schematic / BOM / datasheet / requirement / calculation / test）另记，A/B 不是来源类型。
 例：确认一颗电阻标 DNP 为 A；装配 BOM 与图面冲突时，“实物必定不贴”是 C——可分别记录

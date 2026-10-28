@@ -169,7 +169,7 @@ DAMAGE_OR_HAZARD、CORE_LINK_LOSS 在任何格都不估算。`cell: NONE`（表�
 损坏、过热和保护类规则（DEV-C01、DEV-C04、PWR-C03、PWR-C06、PWR-C10、DRV-C01、全部 PRO）不走这条路；同时门禁记 NEW_BOUND_CELL 待扩项。
 估算判 PASS 的检查项是 C 级证据（派生时写 `evidence_confidence: C`，门禁拒绝别的等级），结论是“合格，但有风险”（2026-10-26 定）：
 `basis.risk{types, corner, improvement}` 必写，`types` 取那一格“估算对应的风险”（ENVIRONMENT / LIFETIME / CONSISTENCY；`NONE` 任选），
-`corner` 写只靠估算的角点，`improvement` 写消除风险的改法。决定性余量在额定内但没满足假定降额时可写 `risk{types: [STRESS], …}`，仍判 PASS。估算判 COMPONENT_DAMAGE 通过（器件自身发热的格，2026-10-27）时 `types` 必含 STRESS，即“合格但有应力风险”。
+`corner` 写只靠估算的角点，`improvement` 写消除风险的改法。何时写风险（含应力 STRESS）见[余量判定规则](margin-verdicts.md)。估算判 COMPONENT_DAMAGE 通过（器件自身发热的格，2026-10-27）时 `types` 必含 STRESS，即“合格但有应力风险”。
 门禁 `risks` 逐条列出（`source` ESTIMATE / LIFE / STRESS），不限制 `release`，报告按类型单列“风险清单”。
 寿命检查项另有自己的估算路径（见 DEV-C02/DEV-C06），凭估算判通过时门禁自动列为寿命风险，改法取它的 `bom_constraint`。
 
