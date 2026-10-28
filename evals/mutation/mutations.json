@@ -248,8 +248,8 @@
   "id": "M47",
   "name": "a numeric limit settled in a judgement sentence accepted",
   "file": "scripts/review_functions.py",
-  "old": "        if numeric:\n",
-  "new": "        if False:\n"
+  "old": "        elif numeric:\n",
+  "new": "        elif False:\n"
  },
  {
   "id": "M48",
@@ -5290,5 +5290,26 @@
   "file": "scripts/review_functions.py",
   "old": "    elif isinstance(bound, dict) and bound.get('method') in catalog.ESTIMATE_METHODS and \\",
   "new": "    elif False and \\"
+ },
+ {
+  "id": "M820",
+  "name": "a constraint past the rating counts as held",
+  "file": "scripts/function_reading.py",
+  "old": "        return constraint, rating, cl['max'] <= rl['max']",
+  "new": "        return constraint, rating, True"
+ },
+ {
+  "id": "M821",
+  "name": "a rule for another terminal pair is accepted",
+  "file": "scripts/derating.py",
+  "old": "    if expected and named and expected not in named:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M822",
+  "name": "a rule for another technology is accepted",
+  "file": "scripts/derating.py",
+  "old": "    if technology and stated and technology not in stated:",
+  "new": "    if False:"
  }
 ]

@@ -9,6 +9,25 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Codex review: the two decided items (2026-10-28)
+
+The user chose the recommended option for the two items of the Codex review that needed a decision.
+- SR-FIX-02 (option a): the zero-margin refusal of results 13 prescribed a judgement citing the constraint and the
+  rating, which the "no numeric limit in a sentence" rule then refused. A judgement may now cite exactly one numeric
+  DESIGN_CONSTRAINT and one NUMERIC_LIMIT rating on the same side and unit; the gate checks constraint max ≤ rating max
+  (or min ≥ min) itself, refuses a constraint past the rating as a shortfall, and lets such a judgement settle a
+  method-C row. A third numeric condition is a calculation again.
+- SR-FIX-05 (option a): a margin naming a derating rule was checked only against the part kind. SR now refuses a rule
+  whose quantity does not match the margin's unit, whose terminal pair (VDS/VGS/VCE/VGE/VEB) differs from the one the
+  limit names, or whose technology (Si/GaN/SiC/IGBT) differs from one the part's identity names; a steady rule on a
+  transient wording (or the reverse) and a technology rule on a silent identity are hints (DERATING_RULE_FIT). No new
+  field, the shared stress spec and ASG unchanged; the extra checks are written in margin-verdicts.md.
+
+- Event: user:2026-10-28 (“剩下的让我决定的两处，也按照你的推荐来修改”)
+- Causes: rule_not_enforced 1 (SR-FIX-05); judgment 1 (SR-FIX-02, two rules contradicting each other)
+- Changed: scripts/function_reading.py, scripts/review_functions.py, scripts/derating.py, scripts/review_quality.py, scripts/tests/test_design_constraint.py, scripts/tests/test_stress_spec.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, references/results-format.md, references/margin-verdicts.md, docs/improvement-ledger.md
+- Gates: pytest 2356; mutation --changed 199 on 10 files, all killed at the unit tier after re-anchoring M47; new M820–M822 killed (M820 needed an upper-side test)
+
 ## Codex review of the regrouping: five fixes (2026-10-28)
 
 A Codex review of ef01ddc (SR技能待整改文件清单_2026-10-27.md) listed seven items; its six scenarios were rerun on ef01ddc

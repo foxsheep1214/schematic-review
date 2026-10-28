@@ -184,6 +184,8 @@ def screen_quality(plan, report, db=None, base_dir=None):
                                           'function table prints the result beside 不合格, so say what failed first'})
     graph = NetGraph(db) if isinstance(db, dict) and db.get('parts') else None
     kinds_of = lambda refs: sorted({graph.kind(r) for r in refs if r in graph.parts} - {'unknown'}) if graph else []
+    identity_of = lambda refs: ' '.join(str((db['parts'].get(r) or {}).get(k) or '') for r in refs
+                                        for k in ('part', 'value', 'prim')) if graph else ''
     for fn in report.get('functions') or []:
         # stress spec (user 2026-10-27: 统一到余量审核规则上来): a part-stress margin of a kind the derating spec covers
         # names its rule, so the gate checks it at the project's level; one that names none is a lead, not a refusal
@@ -191,6 +193,9 @@ def screen_quality(plan, report, db=None, base_dir=None):
             continue
         conditions = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
         for k, m in enumerate(review_functions._margin_items(fn)):
+            for message in derating.fit_hints(m, conditions, identity_of):
+                candidates.append({'code': 'DERATING_RULE_FIT', 'function_ids': [fn.get('id')], 'check_ids': [],
+                                   'margin': k, 'message': message})
             kinds = derating.rule_hint(m, conditions, kinds_of)
             if kinds:
                 candidates.append({'code': 'DERATING_RULE_AVAILABLE', 'function_ids': [fn.get('id')], 'check_ids': [],

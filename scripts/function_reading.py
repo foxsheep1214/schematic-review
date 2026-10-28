@@ -103,6 +103,39 @@ def judged(fn, aspect, state=None, check_id=None):
     return estimate[0] if estimate else None
 
 
+def constraint_rating(j, by_id):
+    """SR-FIX-02 (2026-10-28, user: 按推荐修改): a judgement citing exactly one numeric DESIGN_CONSTRAINT and one
+    NUMERIC_LIMIT — the stress is whatever the handed-on constraint lets it be, held against the part's rating. Returns
+    (constraint, rating, holds): holds is True when the constraint keeps the quantity inside the rating on the same side
+    and unit (constraint max ≤ rating max, or constraint min ≥ rating min), False when it does not, None when they share
+    no side or unit. None when the judgement is not this pair."""
+    ids = j.get('conditions') if isinstance(j, dict) else None
+    pair = [by_id.get(c) for c in ids] if isinstance(ids, list) and len(ids) == 2 else []
+    kinds = sorted(c.get('kind') for c in pair if isinstance(c, dict))
+    if kinds != ['DESIGN_CONSTRAINT', 'NUMERIC_LIMIT']:
+        return None
+    constraint, rating = sorted(pair, key=lambda c: c['kind'] != 'DESIGN_CONSTRAINT')
+    cl, rl = constraint.get('limit') or {}, rating.get('limit') or {}
+    if not isinstance(cl, dict) or str(cl.get('unit') or '').strip() != str((rl or {}).get('unit') or '').strip():
+        return constraint, rating, None
+    if finite(cl.get('max')) and finite(rl.get('max')):
+        return constraint, rating, cl['max'] <= rl['max']
+    if finite(cl.get('min')) and finite(rl.get('min')):
+        return constraint, rating, cl['min'] >= rl['min']
+    return constraint, rating, None
+
+
+def constraint_judged(fn, aspect, state=None, check_id=None):
+    """A judgement of `aspect` that holds a handed-on constraint against the rating, and the relation holds."""
+    by_id = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+    for j in fn.get('judgements') or []:
+        if isinstance(j, dict) and j.get('aspect') == aspect and covers(scope(j), aspect, state, check_id):
+            pair = constraint_rating(j, by_id)
+            if pair and pair[2]:
+                return True
+    return False
+
+
 def life_row(check_id):
     return isinstance(check_id, str) and bool(LIFE_ROW_RE.match(check_id))
 

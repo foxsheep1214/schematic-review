@@ -768,7 +768,18 @@ def _judgement_errors(fid, fn, conditions_by_id):
             continue
         kinds = {conditions_by_id[c].get('kind') for c in conditions}
         numeric = [c for c in conditions if numeric_condition(conditions_by_id[c])]
-        if numeric:
+        pair = function_reading.constraint_rating(j, conditions_by_id)
+        if pair and pair[2] is False:
+            errors.append('%s/judgements[%d] (%s): the constraint %s lets the quantity past the rating %s; that is a '
+                          'shortfall — record a fail item, or tighten the constraint' % (fid, i, j['aspect'], pair[0]['id'],
+                                                                                        pair[1]['id']))
+        elif pair and pair[2] is None:
+            errors.append('%s/judgements[%d] (%s): the constraint %s and the rating %s bound different sides or units; '
+                          'write both on the same side (max/max or min/min) in one unit, or compare them in a margin'
+                          % (fid, i, j['aspect'], pair[0]['id'], pair[1]['id']))
+        elif pair:
+            pass   # SR-FIX-02: a handed-on constraint held against the rating, checked by the numbers above
+        elif numeric:
             errors.append('%s/judgements[%d] (%s): cites a numeric limit (%s); a number is compared in calculation.margin '
                           'with its basis, not settled in a sentence' % (fid, i, j['aspect'], ', '.join(numeric)))
         elif not (kinds & {'MANDATORY_CLAUSE', 'NETLIST_FACT', 'DESIGN_CONSTRAINT'}
@@ -1762,7 +1773,8 @@ def binding_errors(expected, checks, functions, history_ids=()):
               and not margin_proves(functions[fid], row['aspect'], state, cid)
               and not reference_judged(functions[fid], row['aspect'], state, cid)
               and not life_estimate(functions[fid], row['aspect'], state, cid)
-              and not prototype_estimate(functions[fid], row['aspect'], state, cid)):   # 1e
+              and not prototype_estimate(functions[fid], row['aspect'], state, cid)
+              and not function_reading.constraint_judged(functions[fid], row['aspect'], state, cid)):   # 1e
             errors.append('%s: aspect %s is an engineering calculation (method C); it passes on a margin of %s that '
                           'proves it, not on a sentence (a vendor reference circuit with reference_circuit also settles '
                           'it); a sentence closes connection tracing and clause checks' % (cid, row['aspect'], fid))
@@ -2175,6 +2187,8 @@ def derating_errors(plan, functions, db=None):
     from checkers.netgraph import NetGraph
     graph = NetGraph(db) if isinstance(db, dict) and db.get('parts') else None
     kinds_of = lambda refs: sorted({graph.kind(r) for r in refs if r in graph.parts} - {'unknown'}) if graph else []
+    identity_of = lambda refs: ' '.join(str((db['parts'].get(r) or {}).get(k) or '') for r in refs
+                                        for k in ('part', 'value', 'prim')) if graph else ''
     level = ((plan or {}).get('derating') or {}).get('level')
     errors = []
     for fn in functions or []:
@@ -2182,5 +2196,5 @@ def derating_errors(plan, functions, db=None):
             continue
         conditions = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
         for k, m in enumerate(_margin_items(fn)):
-            errors += derating.margin_errors('%s/margin[%d]' % (fn['id'], k), m, conditions, level, kinds_of)
+            errors += derating.margin_errors('%s/margin[%d]' % (fn['id'], k), m, conditions, level, kinds_of, identity_of)
     return errors

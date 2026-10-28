@@ -98,5 +98,43 @@ class MarginTests(unittest.TestCase):
         self.assertFalse([c for c in screen_quality(plan, report, DB)['candidates'] if c['code'] == 'DERATING_RULE_AVAILABLE'])
 
 
+
+class RuleFitTests(unittest.TestCase):
+    """SR-FIX-05 (Codex review 2026-10-27): a VGS rule on a VDS margin, or a GaN rule on a silicon part, was accepted."""
+
+    def q1(self, rule, says='Q1 VDS max 100 V', value='Si MOSFET', unit='V'):
+        db = {'parts': {'Q1': {'part': 'IRF540N', 'value': value, 'prim': 'Device:Q_NMOS_GDS'}}, 'pin2net': {}, 'nets': {}}
+        rated = {'id': 'c-rated', 'kind': 'NUMERIC_LIMIT', 'refs': ['Q1'], 'says': says, 'limit': {'max': 100, 'unit': unit}}
+        m = {'value': 50, 'unit': unit, 'against': 'Q1 额定', 'aspect': '器件应力与降额',
+             'basis': {'kind': 'GUARANTEED_BOUND', 'limit': 'c-rated', 'method': 'G1', 'derating_rule': rule}}
+        f = {'id': 'FN-Q1', 'conditions': [rated], 'calculation': {'result': 'r', 'margin': [m]}}
+        return derating_errors({'derating': {'level': 'II', 'source': 'req:REQ-REL-01'}}, [f], db), f, db
+
+    def test_the_right_rule_still_takes_the_stress_risk_only(self):
+        self.assertEqual(self.q1('MOS-VDS-S')[0], [])
+
+    def test_a_rule_for_another_terminal_pair_is_refused(self):
+        self.assertTrue(any('is for VGS' in e for e in self.q1('MOS-VGS-T')[0]))
+
+    def test_a_rule_for_another_quantity_is_refused(self):
+        self.assertTrue(any('rates 漏极电流' in e for e in self.q1('MOS-IDM')[0]))
+
+    def test_a_rule_for_another_technology_is_refused_when_the_identity_names_one(self):
+        found = self.q1('GAN-VGS-ON', says='Q1 VGS max 100 V')[0]
+        self.assertTrue(any('is for gan parts' in e for e in found), found)
+        self.assertEqual(self.q1('GAN-VGS-ON', says='Q1 VGS max 100 V', value='GaN HEMT')[0], [])
+
+    def test_a_silent_identity_and_a_transient_wording_are_hints(self):
+        _, f, db = self.q1('GAN-VGS-ON', says='Q1 VGS max 100 V', value='MOS')
+        identity = lambda refs: ' '.join(str(db['parts'][r].get(k) or '') for r in refs for k in ('part', 'value'))
+        conditions = {c['id']: c for c in f['conditions']}
+        self.assertEqual(self.q1('GAN-VGS-ON', says='Q1 VGS max 100 V', value='MOS')[0], [])
+        hints = derating.fit_hints(f['calculation']['margin'][0], conditions, identity)
+        self.assertTrue(any('does not say which technology' in h for h in hints), hints)
+        _, f, _ = self.q1('MOS-VDS-S', says='Q1 VDS 关断尖峰 max 100 V')
+        hints = derating.fit_hints(f['calculation']['margin'][0], {c['id']: c for c in f['conditions']}, identity)
+        self.assertTrue(any('reads as a transient' in h for h in hints), hints)
+
+
 if __name__ == '__main__':
     unittest.main()

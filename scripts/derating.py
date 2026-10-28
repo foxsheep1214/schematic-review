@@ -21,6 +21,18 @@ SOURCE_RE = re.compile(r'^(req|clarification):(\S+)$')
 RECOMPUTED = ('ratio', 'pulse_ratio')   # stress / rating ≤ value: the gate redoes these from the margin and its limit
 STRESS_ASPECTS = ('器件应力与降额',)      # the aspect a part's stress margin is written under (DEV-C01)
 _RULES = None
+# Whether a named rule fits the margin (SR-FIX-05, 2026-10-28, user: 按推荐修改): only what the record states is checked —
+# the quantity's dimension (the margin's unit), the terminal pair the limit names, and the technology the part's identity
+# names. Steady against transient, and a part whose identity names no technology, are hints, never refusals.
+DIMENSIONS = (('I²t', re.compile(r'^A²?s$|^A\^?2\s?s$')), ('能量', re.compile(r'^[mµu]?J$')),
+              ('功率', re.compile(r'^[mµuk]?W$')), ('功耗', re.compile(r'^[mµuk]?W$')),
+              ('电流', re.compile(r'^[mµukn]?A$')), ('电压', re.compile(r'^[mµuk]?V$')), ('频率', re.compile(r'^[kMG]?Hz$')))
+TERMINALS = (('漏-源', 'VDS'), ('栅-源', 'VGS'), ('集电极-发射极', 'VCE'), ('栅-发射极', 'VGE'), ('发射极-基极', 'VEB'))
+TERMINAL_RE = re.compile(r'\bV_?\(?(DS|GS|CE|GE|EB|BE)\)?(?:\(?(?:max|MAX|off|on|th|S|T)\)?)?', re.I)
+TECHNOLOGIES = {'gan': re.compile(r'\bGaN\b|氮化镓', re.I), 'sic': re.compile(r'\bSiC\b|碳化硅', re.I),
+                'igbt': re.compile(r'\bIGBT\b', re.I), 'si': re.compile(r'\bSi\b(?!C)|硅(?!胶)')}
+TRANSIENT_RE = re.compile(r'尖峰|瞬态|脉冲|浪涌|单次|spike|transient|pulse|surge|peak', re.I)
+STEADY_RE = re.compile(r'稳态|连续|持续|直流|steady|continuous|\bDC\b', re.I)
 
 
 def rules():
@@ -59,7 +71,7 @@ def intent_errors(intent):
     return errors
 
 
-def margin_errors(label, margin, conditions, level, kinds_of):
+def margin_errors(label, margin, conditions, level, kinds_of, identity_of=None):
     """A margin naming basis.derating_rule: the rule exists and fits the parts, the level is set, and for a ratio rule the
     stress risk is written exactly when the stress is over the derated value. `kinds_of(refs)` gives the parts' kinds."""
     basis = margin.get('basis') if isinstance(margin.get('basis'), dict) else {}
@@ -75,6 +87,7 @@ def margin_errors(label, margin, conditions, level, kinds_of):
     if kinds and not set(kinds) & set(rule['kinds']):
         errors.append('%s: derating rule %s is for %s, the limit\'s parts are %s'
                       % (label, rid, '/'.join(rule['kinds']), '/'.join(sorted(kinds))))
+    errors += fit_errors(label, rule, margin, limit, identity_of(limit.get('refs') or []) if identity_of else '')
     if level not in LEVELS:
         return errors + ['%s: names derating rule %s but the project has no derating level; write intent.derating '
                          '{level, source} from a requirement or an answered clarification' % (label, rid)]
@@ -99,6 +112,58 @@ def margin_errors(label, margin, conditions, level, kinds_of):
         errors.append('%s: stress %g %s is within the level %s derated value %g (%s); no stress risk'
                       % (label, stress, margin['unit'], level, derated, rid))
     return errors
+
+
+def _terminal(rule):
+    return next((sym for word, sym in TERMINALS if word in rule['parameter']), None)
+
+
+def _named_technologies(identity):
+    return {t for t, pattern in TECHNOLOGIES.items() if pattern.search(identity or '')}
+
+
+def fit_errors(label, rule, margin, limit, identity):
+    """The rule's parameter is the quantity compared, and its technology is not one the part's identity rules out."""
+    errors = []
+    unit = str(margin.get('unit') or '').strip()
+    dimension = next(((word, pattern) for word, pattern in DIMENSIONS if word in rule['parameter']), None)
+    if rule['measure'] in RECOMPUTED and dimension and unit and not dimension[1].match(unit):
+        errors.append('%s: derating rule %s rates %s, but the margin is in %s; name the rule for the quantity compared'
+                      % (label, rule['id'], rule['parameter'], unit))
+    expected = _terminal(rule)
+    named = {('V' + m.group(1)).upper() for m in TERMINAL_RE.finditer(' '.join(
+        str(x or '') for x in (limit.get('says'), margin.get('against'))))}
+    if expected and named and expected not in named:
+        errors.append('%s: derating rule %s is for %s (%s); the limit and margin name %s'
+                      % (label, rule['id'], expected, rule['parameter'], '/'.join(sorted(named))))
+    technology = rule.get('subtype')
+    stated = _named_technologies(identity)
+    if technology and stated and technology not in stated:
+        errors.append('%s: derating rule %s is for %s parts (%s); the part\'s identity names %s'
+                      % (label, rule['id'], technology, rule['type'], '/'.join(sorted(stated))))
+    return errors
+
+
+def fit_hints(margin, conditions, identity_of):
+    """What the record does not state: a steady rule on a limit worded as a transient (or the reverse), and a
+    technology-specific rule on a part whose identity names no technology. Messages, never refusals."""
+    basis = margin.get('basis') if isinstance(margin.get('basis'), dict) else {}
+    rule = rules().get(basis.get('derating_rule'))
+    if rule is None:
+        return []
+    limit = conditions.get(basis.get('limit')) or {}
+    words = ' '.join(str(limit.get(k) or '') for k in ('says', 'regime')) + ' ' + str(margin.get('against') or '')
+    hints = []
+    if rule.get('condition') == 'steady' and TRANSIENT_RE.search(words) and not STEADY_RE.search(words):
+        hints.append('derating rule %s is for steady operation, the limit reads as a transient; a transient compares '
+                     'with the transient rule (…-T) or the pulse rating' % rule['id'])
+    if rule.get('condition') in ('transient', 'pulse') and STEADY_RE.search(words) and not TRANSIENT_RE.search(words):
+        hints.append('derating rule %s is for %s stress, the limit reads as steady; a steady stress takes the steady '
+                     'rule (…-S)' % (rule['id'], rule['condition']))
+    if rule.get('subtype') and not _named_technologies(identity_of((limit.get('refs') or [])) if identity_of else ''):
+        hints.append('derating rule %s is for %s parts and the part\'s identity does not say which technology it is; '
+                     'check the datasheet' % (rule['id'], rule['type']))
+    return hints
 
 
 def rule_hint(margin, conditions, kinds_of):

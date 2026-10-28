@@ -87,6 +87,37 @@ class ConstraintTests(unittest.TestCase):
         fn['calculation']['margin']['value'] = 0        # zero on a guaranteed input as well is a real zero margin
         self.assertFalse(any('handed-on design constraint' in e for e in function_errors({'functions': [fn]})))
 
+    def held_to_rating(self, rating_limit):
+        # SR-FIX-02 (Codex review 2026-10-27): the judgement the zero-margin refusal prescribes was itself refused
+        fn = constrained()
+        fn['calculation'].pop('margin')
+        rating = dict(copy.deepcopy(fn['conditions'][2]), id='c-min', says='VCC 工作下限 ≥ 12 V', limit=rating_limit)
+        fn['conditions'].append(rating)
+        fn['judgements'] = [{'aspect': ASPECT, 'states': list(STATES), 'conditions': ['aux-min', 'c-min'],
+                             'says': '辅助绕组最低峰值按约束不低于工作下限'}]
+        return fn
+
+    def test_a_constraint_held_to_the_rating_passes_in_a_judgement(self):
+        p, r, out = gated(self.held_to_rating({'min': 12, 'unit': 'V'}))
+        self.assertTrue(out['valid'], out['errors'])
+        self.assertEqual([e['condition'] for e in out['design_constraints']], ['aux-min'])
+
+    def test_the_gate_checks_the_constraint_against_the_rating(self):
+        found = function_errors({'functions': [self.held_to_rating({'min': 14, 'unit': 'V'})]})
+        self.assertTrue(any('lets the quantity past the rating' in e for e in found), found)
+        found = function_errors({'functions': [self.held_to_rating({'max': 8.8, 'unit': 'V'})]})
+        self.assertTrue(any('different sides or units' in e for e in found), found)
+        found = function_errors({'functions': [self.held_to_rating({'min': 12, 'unit': 'mV'})]})
+        self.assertTrue(any('different sides or units' in e for e in found), found)
+        for constraint, ok in (({'max': 890, 'unit': 'V'}, True), ({'max': 900, 'unit': 'V'}, False)):   # upper side
+            fn = self.held_to_rating({'max': 890, 'unit': 'V'})
+            fn['conditions'][-2]['limit'] = constraint
+            past = any('lets the quantity past the rating' in e for e in function_errors({'functions': [fn]}))
+            self.assertEqual(past, not ok, constraint)
+        fn = self.held_to_rating({'min': 12, 'unit': 'V'})   # a third numeric condition is a calculation again
+        fn['judgements'][0]['conditions'].append('c3')
+        self.assertTrue(any('cites a numeric limit' in e for e in function_errors({'functions': [fn]})))
+
     def test_a_value_the_schematic_should_state_is_no_constraint(self):
         for owner in ('原理图设计', 'BOM 选型'):
             fn = constrained(); fn['conditions'][-1]['owner'] = owner
