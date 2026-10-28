@@ -21,7 +21,8 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ③ +4.3 KB 2026-10-27: margin-verdicts.md gathers the verdict rules five documents held (ledger: margin verdicts).
 # ① −23 KB, ② −20 KB 2026-10-27: the calculation models moved from evidence-proportionality to wca-formulas.
 # ④ +1.6 KB 2026-10-27: the pre-delivery necessity check moved to verdicts-and-release (①–③ lost 2–6 KB with it).
-STEP_MAX_BYTES = {'①': 167_800, '②': 158_900, '③': 223_100, '④': 120_900, '⑤': 55_000}
+# ④ +1.9 KB 2026-10-27: the BOM-constraint grading moved from commodity-floors to verdicts-and-release (② −1.8 KB).
+STEP_MAX_BYTES = {'①': 167_800, '②': 157_100, '③': 223_100, '④': 122_900, '⑤': 55_000}
 
 
 def section(text, title):

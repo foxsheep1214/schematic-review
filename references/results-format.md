@@ -520,7 +520,7 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   在 PASS 检查项上写 BOM 必须写明的要求，不建开放项、不记证据不足（规则见 [通用件最弱档基准](commodity-floors.md#常规器件只排查风险)）：
   `{refs, requirement, basis, consequence_class, level, status, hazard_path?, written_at?}`。`requirement` 写最低值（“额定功率 ≥ 0.09 W”
   “耐久 ≥ 10000 h @105 ℃”）；`basis` 写算出它的计算或需求编号；`consequence_class`/`level` 按
-  [BOM 约束怎么定级](commodity-floors.md#bom-约束怎么定级)，等级由类别决定；`status` 为 TO_WRITE（冻结阶段阻断）或
+  [BOM 约束怎么定级](verdicts-and-release.md#bom-约束怎么定级)，等级由类别决定；`status` 为 TO_WRITE（冻结阶段阻断）或
   WRITTEN（`written_at` 指向 BOM 上写明它的那一行）。报告单列“BOM 要写明的额定与规格”一节。
   校验拒收：VENDOR_DATUM 开放项挡住的检查项全是常规器件的 DEV-C01/DEV-C02 项，或挡住全板 BOM 行（DEV-D04）而文字只点名常规器件时，应改写成 `bom_constraint`。
   需求有寿命参数（`lifetime`）时，计划按 `mission_profile` 给每颗电解、固态或超级电容一项 `DEV-C02.LIFE.<位号>`（带移交热设计；

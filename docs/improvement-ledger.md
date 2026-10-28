@@ -9,6 +9,21 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## BOM-constraint grading with the other grading rules (2026-10-27)
+
+Stage 5 of regrouping the rules by six questions: what grade a finding gets and whether the design may be released.
+The grading of a BOM constraint (what a plausible wrong part would do: within its rating is P3, the BOM-side stress
+risk; over its rating is graded by the consequence class; a special requirement by that requirement) lived in
+commodity-floors.md and linked back to the consequence classes in verdicts-and-release.md. It now sits in
+verdicts-and-release §2 next to P0–P3 and the consequence classes; commodity-floors keeps the weakest grades and the
+plan pre-judgement and points there. The example no longer says "50 % derating" (the minimum follows the project
+level since stage 1). Step ② reads 1.8 KB less, step ④ 1.9 KB more.
+
+- Event: user:2026-10-27 (“接下来几个阶段，你都自己分析，选取适当的方式进行修改，一直到6个阶段修改都结束。”)
+- Causes: judgment 1 (grading rules split over two documents)
+- Changed: references/commodity-floors.md, references/verdicts-and-release.md, references/margin-verdicts.md, references/results-format.md, references/evidence-proportionality.md, references/architecture.md, SKILL.md, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2335; mutation --changed none (text only)
+
 ## Evidence-proportionality keeps applicability only (2026-10-27)
 
 Stage 4 of regrouping the rules by six questions: whether a rule applies and what evidence is enough. After stage 3
