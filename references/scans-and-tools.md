@@ -160,15 +160,15 @@ DEV-E01 只核证据中列出的引脚；完整物理脚差集由 DEV-D02 负责
 `fault_energy.packet_bound()` 与 `capacitor_energy_window()` 用于已限定起点的反激停能分析，
 输出能量、电压和允许事件数；所有输出标记为 `CONDITIONAL_ON_CALLER_BOUNDS`，不生成电气结论。
 输入的储能单列，时间为零也不自动抹掉已有磁能。使用范围与证据责任见
-[故障停能与器件耐受的同一时间轴](evidence-proportionality.md#故障停能与器件耐受的同一时间轴)。
+[故障停能与器件耐受的同一时间轴](wca-formulas.md#故障停能与器件耐受的同一时间轴)。
 
 ### 条件 boost 开关损耗
 
-`scripts/boost_switch_loss.py` 提供 `boost_cycle` 与 `conditional_losses`：按输入平均电流、母线、L 和死区联解三角周期的峰流/频率/RMS，再分列导通、线性重叠和残余 Coss 能量。调用者须核实际控制模式、脉宽、限流和输入适用性；工具不生成 SOA、严重度或通过结论。见[实际栅压与关联损耗](evidence-proportionality.md#功率开关实际栅压关联损耗和-soa)。
+`scripts/boost_switch_loss.py` 提供 `boost_cycle` 与 `conditional_losses`：按输入平均电流、母线、L 和死区联解三角周期的峰流/频率/RMS，再分列导通、线性重叠和残余 Coss 能量。调用者须核实际控制模式、脉宽、限流和输入适用性；工具不生成 SOA、严重度或通过结论。见[实际栅压与关联损耗](wca-formulas.md#功率开关实际栅压关联损耗和-soa)。
 
 ### 反激停能后的电容电压与整流管阶段
 
-`scripts/flyback_stop.py` 的 `post_stop_capacitor_bound` 按已停能时的电容电压、有效容量和可达输出的全部剩余能量求条件边界；`primary_on_sr_platform` 只接受同一初级导通事件的输入，拒绝用于停能后的状态。未知值不按0处理，两者都不自动生成实际尖峰或审查结论。见[假设与故障证据门槛](evidence-proportionality.md#假设上界与实际故障的证据门槛)。
+`scripts/flyback_stop.py` 的 `post_stop_capacitor_bound` 按已停能时的电容电压、有效容量和可达输出的全部剩余能量求条件边界；`primary_on_sr_platform` 只接受同一初级导通事件的输入，拒绝用于停能后的状态。未知值不按0处理，两者都不自动生成实际尖峰或审查结论。见[假设与故障证据门槛](wca-formulas.md#假设上界与实际故障的证据门槛)。
 
 ### 模型角点与适用区间
 

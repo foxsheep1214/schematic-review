@@ -9,6 +9,24 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Calculation models in the WCA document (2026-10-27)
+
+Stage 3 of regrouping the rules by six questions: how a quantity is calculated. evidence-proportionality, the
+applicability document, still held the calculation models: the protection action window and the fault time line,
+the zener detection, the per-part bounding notes (zener at low current, MOS VGS at the real current, snubber power,
+diode leakage, input overshoot, monotonic extrapolation, typical-only parameters, typical-application equivalence,
+pulses, sense resistors, physical limits, known envelopes), the power-switch gate/loss/SOA notes and the evidence
+threshold for assumptions and bounds. They move unchanged to wca-formulas.md with their vendor references; the few
+sentences on how a bound is judged (a guarantee requirement not met, a wide bound is not a violation) join
+margin-verdicts.md. Links in SKILL.md, verdicts-and-release, scans-and-tools, automation and the bounding table's source
+column follow (two stale source names now point at methods G4 and G7). Steps ① and ② read 23 and 20 KB less; ③ is
+unchanged, and the budgets drop to the new sizes.
+
+- Event: user:2026-10-27 (“接下来几个阶段，你都自己分析，选取适当的方式进行修改，一直到6个阶段修改都结束。”)
+- Causes: judgment 1 (calculation models kept in the applicability document)
+- Changed: references/evidence-proportionality.md, references/wca-formulas.md, references/margin-verdicts.md, references/verdicts-and-release.md, references/scans-and-tools.md, references/automation.md, references/bounding-table.md, references/architecture.md, SKILL.md, scripts/catalog.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2335; mutation --changed none (text, and source strings in catalog.py only)
+
 ## One vocabulary for where a limit comes from: results format 15 (2026-10-27)
 
 Stage 2 of regrouping the rules by six questions. How a bound was obtained had three vocabularies: the bounding

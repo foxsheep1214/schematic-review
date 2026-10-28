@@ -19,7 +19,8 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ① 192321, ② 184974, ③ 220670, ④ 117517, ⑤ 54796. Before the split every step carried the whole 117 KB ledger
 # document and the 131 KB rule table (685 KB in all); ① also carried the 70 KB checkers' document for its conventions.
 # ③ +4.3 KB 2026-10-27: margin-verdicts.md gathers the verdict rules five documents held (ledger: margin verdicts).
-STEP_MAX_BYTES = {'①': 193_000, '②': 185_200, '③': 229_400, '④': 119_300, '⑤': 55_000}
+# ① −23 KB, ② −20 KB 2026-10-27: the calculation models moved from evidence-proportionality to wca-formulas.
+STEP_MAX_BYTES = {'①': 170_000, '②': 165_200, '③': 229_400, '④': 119_300, '⑤': 55_000}
 
 
 def section(text, title):

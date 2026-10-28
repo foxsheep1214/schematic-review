@@ -1157,6 +1157,7 @@ CONSEQUENCE_WORDS = OrderedDict((('REQUIRED_FUNCTION', '功能'), ('PERFORMANCE_
                                  ('COMPONENT_DAMAGE', '损坏'), ('DAMAGE_OR_HAZARD', '安全')))
 
 _EP = 'evidence-proportionality.md'
+_WCA = 'wca-formulas.md'   # 器件参数定界口径（2026-10-27 从 evidence-proportionality 移来）
 _CB = 'docs/2026-10-26-cell-boundary.md'
 _IC_ROLES = tuple(DEVICE_ROLES)      # 器件角色登记表的全部角色，含泛称 ic
 _M = ('MEASURABLE',)
@@ -1166,16 +1167,16 @@ def _e(factor, applies, how, floor=None):
 BOUNDS = OrderedDict((b.id, b) for b in (
     # 3.1 齐纳管、电压基准
     Bound('ZENER-VZ-UPPER', ('zener',), 'VZ 上界', 'UPPER', '工作电流 IZ', 'INCREASING', (('G1', ()), ('G2', ()), ('G9', ())),
-          'VENDOR_DATUM', _EP + '“齐纳管低电流”',
+          'VENDOR_DATUM', _WCA + '“齐纳管低电流”',
           'TEST_POINT', (_e(1.5, FUNCTIONAL, '只有典型 rdif 时：典型 rdif ×1.5'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
           '偏置用途允许估算；作钳位保护（下游过压→损坏）时不估算'),
     Bound('ZENER-VZ-LOWER', ('zener',), 'VZ 下界', 'LOWER', '工作电流 IZ', 'INCREASING',
-          (('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'OUTSIDE_SPECIFIED', _EP + '“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界',
+          (('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'OUTSIDE_SPECIFIED', _WCA + '“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界',
           'INDUSTRY_NONE', (_e(1.2, FUNCTIONAL, '典型曲线 G8 在工作电流取值，再 ÷1.2（≈×0.85）'),), ('REQUIRED_FUNCTION',), _M,
           '典型曲线覆盖工作点时允许估算判 PASS；两测试点之间 G3 是保证值；最低测试点以下又没有覆盖它的曲线，是用在手册未规定的区间，'
           '记失败项（改法：把工作电流提到最低测试点以上），不向厂家索取（2026-10-26 定）'),
     Bound('ZENER-VZ-TEMP', ('zener', 'shunt_reference'), 'VZ / 基准电压随温度', None, '温度', 'NONMONOTONIC',
-          (('G1', ()), ('G4', ('tempco_bound',)), ('G9', ())), 'VENDOR_DATUM', _EP + '第 4 步“温度系数的 min/max”',
+          (('G1', ()), ('G4', ('tempco_bound',)), ('G9', ())), 'VENDOR_DATUM', '本表推法 G4',
           'TEST_POINT', (_e(2, FUNCTIONAL, '典型温漂 ×2'),), ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M,
           '并联基准多给 max 温漂（G4 保证）；普通齐纳只给典型温漂，允许估算（×2）'),
     Bound('REF-IKA-MIN', ('shunt_reference',), '最小阴极电流 Ika', 'LOWER', '工作态', None, (('G1', ()),),
@@ -1194,21 +1195,21 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           '允许估算（×2）：25 °C max 保证，高温只有典型曲线'),
     # 3.3 二极管、整流桥
     Bound('DIODE-VF', ('diode', 'bridge_rectifier'), 'VF 上界随电流', 'UPPER', '正向电流 IF', 'INCREASING',
-          (('G1', ()), ('G2', ()), ('G8', ())), 'VENDOR_DATUM', _EP + '“单调外推”',
+          (('G1', ()), ('G2', ()), ('G8', ())), 'VENDOR_DATUM', _WCA + '“单调外推”',
           'TEST_POINT', (_e(1.15, FUNCTIONAL, '超出测试点需要典型曲线时 ×1.15'),
                          _e(1.15, DAMAGE, '同上；用它判温升损坏时结温余量 ≥ 20 °C', (20, '°C'))), ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
           '允许估算（×1.15）；判温升损坏时另要结温余量 ≥ 20 °C'),
     Bound('DIODE-VF-COLD', ('diode', 'bridge_rectifier'), 'VF 上界随温度（冷态最差）', 'UPPER', '温度', 'DECREASING',
-          (('G1', ()), ('G2', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“单调外推”',
+          (('G1', ()), ('G2', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _WCA + '“单调外推”',
           'INDUSTRY_NONE', (_e(1.15, FUNCTIONAL, '典型温度曲线 ×1.15；物理温漂上界（约 −2 mV/°C）可作 G4 保证推法'),), ('REQUIRED_FUNCTION',), _M,
           '允许估算（×1.15）'),
     Bound('DIODE-IR-HOT', ('diode', 'bridge_rectifier', 'zener'), '高温反向漏电', 'UPPER', '温度', 'INCREASING',
-          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“二极管反向漏电”',
+          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _WCA + '“二极管反向漏电”',
           'TEST_POINT', (_e(2, FUNCTIONAL, '比例外推 G7，再 ×2'),
                          _e(2, DAMAGE, '同上，结温余量 ≥ 20 °C', (20, '°C'))), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
           '允许估算（×2）；判反向功耗热失控（损坏）另要结温余量 ≥ 20 °C，记应力风险'),
     Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',
-          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'OUTSIDE_SPECIFIED', _EP + '“脉冲与浪涌”',
+          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'OUTSIDE_SPECIFIED', _WCA + '“脉冲与浪涌”',
           'TEST_POINT', (), ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD'), _T,
           '不估算：I²t（√t）换算已是保守推法；手册没给 IFSM 的器件承受浪涌是用在规定区之外，记失败项（2026-10-26 定）'),
     # 3.4 MOSFET、BJT
@@ -1219,7 +1220,7 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
           '允许估算（×2）；功率开关（损坏）另要结温余量 ≥ 20 °C，记应力风险'),
     Bound('MOS-RDS-HOT', ('mosfet',), '高温 RDS(on)', 'UPPER', '结温', 'INCREASING',
-          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”',
+          (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '本表推法 G7',
           'INDUSTRY_NONE', (_e(1.2, FUNCTIONAL | DAMAGE, '25 °C max × 典型温度比（G7），再 ×1.2；判损坏时结温余量 ≥ 20 °C', (20, '°C')),),
           ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
           '允许估算判 PASS（×1.2 且结温余量 ≥ 20 °C）：全行业做法，hot max 行业不给'),
@@ -1290,7 +1291,7 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'GUARANTEED', (_e(2, FUNCTIONAL, '只给 25 °C 加典型温漂时：典型温漂 ×2'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
           '功能用途允许（×2）；用门限判保护覆盖（OVP 上限对下游绝限，损坏）时要全温 min/max'),
     Bound('IC-QUIESCENT', _IC_ROLES, '静态电流、按模式的功耗', 'UPPER', '模式与温度', None,
-          (('G1', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _EP + '“只有典型值的参数”',
+          (('G1', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _WCA + '“只有典型值的参数”',
           'TYPICAL_BY_DEFINITION', (_e(1.3, FUNCTIONAL, '典型 ×1.3（现行 G9）'), _e(1.5, DAMAGE, '用它判偏置电阻功耗损坏时 ×1.5')),
           ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M, '允许（功能 ×1.3，损坏用途 ×1.5）'),
     Bound('IC-TIMING', _IC_ROLES, '时序参数（最小导通、延时、消隐）', None, '温度', 'NONMONOTONIC',
