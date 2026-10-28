@@ -39,6 +39,9 @@ APPLICABILITY = {"APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED"}
 # Optional INSUFFICIENT cause (evidence-proportionality.md); over-strict checks are re-judged, not tagged.
 CLAUSE_KINDS = ("OBLIGATION", "PREMISE")
 CLAUSE_ORDER = {"NA": 0, "PASS": 1, "INSUFFICIENT": 2, "FAIL": 3}
+# Results format 14: each finding text said once (references/results-format.md, 发现项).
+FINDING_TEXTS = ("title", "root_cause", "consequence", "fix", "severity_reason")
+RETIRED_FINDING_FIELDS = {"observed", "criterion", "impact", "scenario", "recommendation", "verification"}
 
 
 def source_text(planned):
@@ -510,9 +513,12 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         require(ids(item.get("check_ids")), f"{fid}: check_ids required")
         linked = item.get("check_ids") if ids(item.get("check_ids")) else []
         require(all(x in checks for x in linked), f"{fid}: unknown check link")
-        for field in ("title", "observed", "criterion", "impact", "scenario", "root_cause",
-                      "recommendation", "verification", "severity_reason"):
+        for field in FINDING_TEXTS:
             require(text(item.get(field)), f"{fid}: missing {field}")
+        retired = sorted(RETIRED_FINDING_FIELDS.intersection(item))
+        require(not retired, f"{fid}: {', '.join(retired)} retired in results format 14; say the cause and the value "
+                             "against its limit in root_cause, the harm in consequence, the change in fix, and the "
+                             "checks after it in remediation.verification")
         location = item.get("location", {})
         require(isinstance(location, dict) and all(ids(location.get(k)) for k in ("pages", "refs", "nets")),
                 f"{fid}: location needs pages/refs/nets (use explicit unresolved locator for missing data)")

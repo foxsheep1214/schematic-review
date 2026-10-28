@@ -86,20 +86,24 @@ class DesignOptionFigureTests(unittest.TestCase):
 
 
 class ReportTests(unittest.TestCase):
-    def test_a_defect_reads_figure_root_cause_harm_then_fix(self):
+    def test_a_defect_reads_problem_consequence_figures_then_fix(self):
         p, r, db = actionable()
         f = r['findings'][0]
-        f.update(root_cause='单级 TVS 的钳位电压高于 U1 引脚耐受，中间没有限流', observed='J1 到 U1 每条线一颗 TVS',
-                 impact='放电时 U1 引脚过压损坏，端口失效', recommendation='改成两级防护',
+        f.update(root_cause='单级 TVS 的钳位电压高于 U1 引脚耐受，中间没有限流',
+                 consequence='放电时 U1 引脚过压损坏，端口失效', fix='改成两级防护',
                  figures=[figure(), figure('REFERENCE', 'figures/F1-ref.png', '原厂典型应用：两级 TVS 加串阻')])
         text = render(p, r, validate_review(p, r, db, require_actionable=True))
         section = text.split('## 发现的错误')[1]
         self.assertIn('![每条线只有一颗 TVS，直接接到 U1](record/evidence/figures/F1-actual.png)', section)
         self.assertIn('图：现状。每条线只有一颗 TVS，直接接到 U1', section)
         self.assertIn('图：原厂参考。原厂典型应用：两级 TVS 加串阻', section)
-        order = [section.index(x) for x in ('F1-actual.png', '- **根因**：单级 TVS', '- **问题**：J1 到 U1',
-                                            '- **可能的损害**：放电时', '- **怎么改**：改成两级')]
+        order = [section.index(x) for x in ('- **问题**：单级 TVS', '- **后果**：放电时', 'F1-actual.png',
+                                            '- **怎么改**：改成两级')]
         self.assertEqual(order, sorted(order))
+        html = to_html(text)   # the pictures of one card stand side by side, each captioned
+        self.assertIn('<div class="figs">', html)
+        self.assertIn('<figcaption>现状。每条线只有一颗 TVS，直接接到 U1</figcaption>', html)
+        self.assertIn('<section class="card">', html)
 
     def test_a_caption_with_brackets_still_renders_as_an_image(self):
         p, r, db = actionable()
@@ -124,7 +128,7 @@ class RootCauseWordingTests(unittest.TestCase):
             with self.subTest(cause=cause):
                 f = dict(r['findings'][0], root_cause=cause)
                 self.assertEqual(['ROOT_CAUSE_IS_REMEDY'], [c['code'] for c in finding_wording([f])])
-        f = dict(r['findings'][0], root_cause='加串阻', recommendation='加串阻')
+        f = dict(r['findings'][0], root_cause='加串阻', fix='加串阻')
         self.assertEqual(['ROOT_CAUSE_IS_REMEDY'], [c['code'] for c in finding_wording([f])])
         f = dict(r['findings'][0], root_cause='单级 TVS 的钳位电压高于引脚耐受，中间没有限流')
         self.assertEqual([], finding_wording([f]))

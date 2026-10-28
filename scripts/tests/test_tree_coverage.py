@@ -111,8 +111,8 @@ class TreeReportTests(unittest.TestCase):
         functions = [{'id': f['id'], 'question': f['question'], 'verdict': 'PASS', 'no_calculation_reason': 'synthetic'}
                      for f in sorted(plan['functions'], key=lambda f: f['id'], reverse=True)]
         lines = render_report.render_functions(functions, plan)
-        heads = [l for l in lines if l.startswith('### ')]
-        self.assertEqual(heads, ['### 系统功能', '### 功能电路', '### 接口'])
+        heads = [l for l in lines if l.startswith('#### ')]   # all pass: the table is folded, one level down
+        self.assertEqual(heads, ['#### 系统功能', '#### 功能电路', '#### 接口'])
         text = '\n'.join(lines)
         converter = next(f['id'] for f in plan['functions'] if f.get('circuit') == 'POWER_CONVERTER-U1')
         self.assertLess(text.index('FN-SYS-POWER'), text.index(converter))
@@ -184,7 +184,7 @@ class TreeReportTests(unittest.TestCase):
         r['findings'][0]['check_ids'] = [key]
         next(c for c in p['checks'] if c['id'] == key)['owner'] = {'kind': 'CIRCUIT', 'id': 'BUCK'}
         text, _ = report(p, r, db)
-        self.assertIn('- **所属**：功能电路 BUCK', body(text).split('## 发现的错误')[1])
+        self.assertIn('　功能电路 BUCK\n', body(text).split('## 发现的错误')[1])   # on the card's first line
 
 
 if __name__ == '__main__':

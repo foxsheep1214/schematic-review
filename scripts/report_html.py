@@ -1,5 +1,6 @@
 """The HTML copy of 审查报告.md: same text, pictures shown inline. Converts only what render_report writes
-(headings, paragraphs, lists, tables, images, links, bold, code, <details>); no third-party package."""
+(headings, paragraphs, lists, tables, images, links, bold, code, <details>); no third-party package. Each error and
+gap is a card, and its pictures (现状 / 改后) stand side by side (user 2026-10-27: 问题用图的形式来说明，这个要保留)."""
 
 import html
 import re
@@ -13,12 +14,17 @@ h1{font-size:26px}h2{font-size:21px;margin-top:2em;border-bottom:1px solid var(-
 table{border-collapse:collapse;display:block;overflow-x:auto;margin:12px 0}
 th,td{border:1px solid var(--line);padding:4px 10px;text-align:left;vertical-align:top}th{background:var(--card)}
 code{background:var(--card);padding:0 4px;border-radius:4px}a{color:var(--link)}
-figure{margin:12px 0}figure img{max-width:100%;border:1px solid var(--line);border-radius:6px;background:#fff}
+figure{margin:0}figure img{max-width:100%;border:1px solid var(--line);border-radius:6px;background:#fff}
+figcaption{color:var(--muted);font-size:14px}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:12px 0}
+.card{border:1px solid var(--line);border-radius:10px;padding:2px 16px 8px;margin:16px 0}.card h3{margin-top:.8em}
 details{background:var(--card);border-radius:8px;padding:8px 14px;margin:12px 0}summary{cursor:pointer;color:var(--muted)}
 """
 
 PASSTHROUGH = re.compile(r'^\s*</?(details|summary)\b.*$')
 IMAGE = re.compile(r'^!\[([^\]]*)\]\(([^)]+)\)\s*$')
+CAPTION = re.compile(r'^图：(.*)$')
+CARD_SECTIONS = ('发现的错误', '待办')   # render_report's sections of error and gap cards
 INLINE = re.compile(r'\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)')
 
 
@@ -44,7 +50,13 @@ def cells(line):
 def to_html(markdown):
     lines = markdown.splitlines()
     title = next((l[2:].strip() for l in lines if l.startswith('# ')), '审查报告')
-    body, i = [], 0
+    body, i, section, card = [], 0, '', False
+
+    def next_line(k):
+        while k < len(lines) and not lines[k].strip():
+            k += 1
+        return k
+
     while i < len(lines):
         line = lines[i]
         if not line.strip():
@@ -53,10 +65,27 @@ def to_html(markdown):
             body.append(line.strip()); i += 1
         elif re.match(r'^#{1,4} ', line):
             level = len(line) - len(line.lstrip('#'))
-            body.append('<h%d>%s</h%d>' % (level, inline(line[level:].strip()), level)); i += 1
+            name = line[level:].strip()
+            if card and level <= 3:
+                body.append('</section>'); card = False
+            if level == 2:
+                section = name
+            elif level == 3 and section in CARD_SECTIONS:
+                body.append('<section class="card">'); card = True
+            body.append('<h%d>%s</h%d>' % (level, inline(name), level)); i += 1
         elif IMAGE.match(line):
-            alt, src = IMAGE.match(line).groups()
-            body.append('<figure><img src="%s" alt="%s"></figure>' % (html.escape(src), html.escape(alt))); i += 1
+            # Pictures in a row (only blank lines between) share one grid; a 图： line under one is its caption.
+            figures = []
+            while i < len(lines) and IMAGE.match(lines[i]):
+                alt, src = IMAGE.match(lines[i]).groups()
+                k = next_line(i + 1)
+                caption = CAPTION.match(lines[k]) if k < len(lines) else None
+                # a schematic crop side by side is small: the picture opens full size
+                figures.append('<figure><a href="%s"><img src="%s" alt="%s"></a>%s</figure>' % (
+                    html.escape(src), html.escape(src), html.escape(alt),
+                    '<figcaption>%s</figcaption>' % inline(caption.group(1)) if caption else ''))
+                i = next_line(k + 1) if caption else k
+            body.append(figures[0] if len(figures) == 1 else '<div class="figs">\n%s\n</div>' % '\n'.join(figures))
         elif line.startswith('|') and i + 1 < len(lines) and re.match(r'^\|[\s:|-]+\|\s*$', lines[i + 1]):
             rows = ['<tr>%s</tr>' % ''.join('<th>%s</th>' % inline(c) for c in cells(line))]
             i += 2
@@ -82,6 +111,8 @@ def to_html(markdown):
                 para.append(inline(lines[i].strip()))
                 i += 1
             body.append('<p>%s</p>' % '<br>\n'.join(para))
+    if card:
+        body.append('</section>')
     return ('<!doctype html>\n<html lang="zh-CN">\n<head>\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
             '<title>%s</title>\n<style>%s</style>\n</head>\n<body>\n<main>\n%s\n</main>\n</body>\n</html>\n'

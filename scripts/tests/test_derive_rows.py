@@ -221,8 +221,8 @@ class DeriveTests(unittest.TestCase):
         fn['calculation']['margin'][0]['states'] = ['STARTUP', 'RUN']   # LATCH is the reversed-diode fail, not a pass
         r['findings'] = [{'id': 'F1', 'kind': 'DEFECT', 'severity': 'P1', 'check_ids': ['PWR-C02.BIAS-LATCH.Q2'],
                           'location': {'pages': ['1'], 'refs': ['Q2'], 'nets': ['A']},
-                          **{k: 'synthetic evidence' for k in ('title', 'observed', 'criterion', 'impact', 'scenario',
-                                                               'fix', 'verification')}, 'evidence': E}]
+                          **{k: 'synthetic evidence' for k in ('title', 'root_cause', 'consequence', 'fix')},
+                          'evidence': E}]
         _, summary, errors = derive_rows.derive(p, r)
         self.assertEqual((errors, summary['FAIL'], summary['PASS']), ([], 1, 14))
         row = bias_rows(r)['PWR-C02.BIAS-LATCH.Q2']

@@ -53,7 +53,8 @@ class ConstraintTests(unittest.TestCase):
         self.assertEqual([(e['condition'], e['owner'], len(e['check_ids'])) for e in out['design_constraints']],
                          [('aux-min', '磁件设计', 3)])
         text = render(p, r, out)
-        self.assertIn('有 1 条设计约束由 SR 算出、交给磁件设计，按约束判合格', text)
+        self.assertIn('有 1 条设计约束由 SR 算出、交给后续设计，按约束判合格', text)
+        self.assertIn('#### 磁件设计（1 条）', text)   # the appendix groups what is handed on by owner
         self.assertIn('T1 辅助绕组 5 V 空载最低峰值 ≥ 13.5 V', text)
 
     def test_derive_passes_the_row_and_writes_the_handoff(self):

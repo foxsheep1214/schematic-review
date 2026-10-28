@@ -71,7 +71,10 @@ def validate_remediation(fid, value, finding_ids, require_preflight=False):
         return [f"{fid}.remediation: detailed instructions required"]
     readiness = value.get("readiness")
     require(readiness in READINESS, "invalid readiness")
-    fields(value, ("purpose", "impact_review"), "repair")
+    fields(value, ("impact_review",), "repair")
+    # results format 14: what the change is for is the finding's fix, said once
+    require("purpose" not in value, "purpose retired in results format 14; the finding's fix (a design option's "
+                                    "summary) says the change")
     prerequisites = rows("prerequisites")
     for item in prerequisites:
         fields(item, ("input", "reason", "how_to_obtain", "acceptance"), "prerequisite")

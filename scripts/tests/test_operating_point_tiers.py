@@ -95,7 +95,7 @@ class OutsideSpecifiedTests(unittest.TestCase):
                                                                  for l in searched]}}]
         return fn
 
-    FINDING = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': '加缓冲管'}}
+    FINDING = {'id': 'F1', 'remediation': {'readiness': 'READY'}}
 
     def test_the_operating_condition_sections_are_searched(self):
         found = errors(self.failing('D2 正向电流 20 µA', ['Fig. 2 IF-VF']), [self.FINDING])

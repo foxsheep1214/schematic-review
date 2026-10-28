@@ -15,7 +15,7 @@ from validate_review import fingerprint, validate_review
 
 def ready():
     return {
-        'readiness': 'READY', 'purpose': 'Restore the specified fitted pull-up.',
+        'readiness': 'READY',
         'prerequisites': [],
         'steps': [{'kind': 'ASSEMBLY', 'target': 'p1 R1', 'before': 'DNP',
                    'after': 'fitted, quantity 1', 'instruction': 'Enable R1 in configuration A and its BOM.'}],

@@ -21,7 +21,9 @@ class FunctionTableTests(unittest.TestCase):
             {'aspect': 'B', 'value': 136, 'unit': 'Vac', 'against': 'CY301 Y1 400 Vac（用途）'},
             {'aspect': 'C', 'value': 57.3, 'unit': 'V', 'against': 'U202 VIORM'},
             {'aspect': 'C', 'value': 446, 'unit': 'V', 'against': 'U202 VIORM 890 Vpeak'}]}
-        self.assertEqual(rr.function_basis({'calculation': calc}), '余量 136 Vac 对 CY301 Y1 400 Vac；余量 57.3 V 对 U202 VIORM')
+        self.assertEqual(rr.decisive_margins(calc), ['余量 136 Vac 对 CY301 Y1 400 Vac', '余量 57.3 V 对 U202 VIORM'])
+        # the function table shows the first and counts the rest (user 2026-10-27: 报告太冗长)
+        self.assertEqual(rr.function_basis({'calculation': calc}), '余量 136 Vac 对 CY301 Y1 400 Vac（另 1 项见台账）')
 
     def test_small_quantities_take_their_prefix_and_a_trailing_clause_is_the_same_comparison(self):
         # R8: 2e-07 s, 2.1e-06 F in the table; Q501 120 V printed twice, once with "；非线性热SOA另见…"
@@ -32,8 +34,8 @@ class FunctionTableTests(unittest.TestCase):
             {'aspect': 'A', 'value': 20, 'unit': 'V', 'against': 'Q501 120 V 额定对 PCB 峰值 ≤100 V'},
             {'aspect': 'B', 'value': 20, 'unit': 'V', 'against': 'Q501 120 V 额定对 PCB 峰值 ≤100 V；非线性热 SOA 另见后续要求'},
             {'aspect': 'C', 'value': 2e-07, 'unit': 's', 'against': '偏置切换等待 2 ms 减 5τ'}]}
-        self.assertEqual(rr.function_basis({'calculation': calc}),
-                         '余量 20 V 对 Q501 120 V 额定对 PCB 峰值 ≤100 V；余量 200 ns 对 偏置切换等待 2 ms 减 5τ')
+        self.assertEqual(rr.decisive_margins(calc),
+                         ['余量 20 V 对 Q501 120 V 额定对 PCB 峰值 ≤100 V', '余量 200 ns 对 偏置切换等待 2 ms 减 5τ'])
 
     def test_a_range_two_requirements_state_is_one_entry(self):
         import requirement_parameters as rp
@@ -87,12 +89,13 @@ class HandoffTableTests(unittest.TestCase):
     def render(self, rows):
         checks, planned = zip(*rows)
         return rr.render({'checks': list(planned)}, {'checks': list(checks)},
-                         {'valid': True, 'release': 'GO', 'blockers': []}).split('## 交给后续环节的要求')[1]
+                         {'valid': True, 'release': 'GO', 'blockers': []}).split('<summary>交给后续环节的要求</summary>')[1]
 
     def test_requirements_differing_only_by_one_part_merge_into_a_每只_row(self):
         text = self.render([handoff_row('PWR-C05.X.C1', 'C1', 'C1 热点 ≤ 75 °C', '闭壳热测 C1 壳温'),
                             handoff_row('PWR-C05.X.C2', 'C2', 'C2 热点 ≤ 75 °C', '闭壳热测 C2 壳温')])
-        self.assertIn('| 热设计 | PWR-C05.X.C1、PWR-C05.X.C2 | C1、C2 | 每只 热点 ≤ 75 °C | 闭壳热测 每只 壳温 |', text)
+        self.assertIn('#### 热设计（1 条）', text)
+        self.assertIn('| C1、C2 | 每只 热点 ≤ 75 °C | 闭壳热测 每只 壳温 |', text)
 
     def test_a_requirement_naming_several_parts_keeps_its_own_row(self):
         text = self.render([handoff_row('PWR-C05.X.C1', 'C1', 'C1、Q1、R1 在 90 Vac 100 W 时温度在降额内；C1/Q1 热点 ≤ 75 °C', '闭壳满载热测'),
@@ -122,14 +125,13 @@ class FindingTests(unittest.TestCase):
 
 
 class WorkItemTests(unittest.TestCase):
-    def test_blocks_citing_one_source_say_it_once_and_fold_past_six(self):
+    def test_blocks_name_each_conclusion_once_and_fold_past_six(self):
+        # R8: three blocked conclusions explained in 900 characters; the card names them, the ledger explains
         blocks = ['方面%d（run），经 BOM.csv T301：缺 %d' % (i, i) for i in range(8)]
-        [line] = rr.fold_blocks(blocks)
-        self.assertEqual(line.count('BOM.csv T301'), 1)
-        self.assertTrue(line.endswith('等 8 项（出处 BOM.csv T301）'))
-        self.assertIn('方面0（run）：缺 0', line)
-        mixed = ['方面A，经 X p1：缺 a', '方面B，经 Y p2：缺 b']
-        self.assertEqual(rr.fold_blocks(mixed), ['方面A，经 X p1：缺 a；方面B，经 Y p2：缺 b'.replace('；', '、')])
+        self.assertEqual(rr.fold_blocks(blocks), ['方面0（run）、方面1（run）、方面2（run）、方面3（run）、方面4（run）、'
+                                                  '方面5（run）等 8 项'])
+        self.assertEqual(rr.fold_blocks(['变换器电压裕量（run）：缺 a', '变换器电压裕量（run）：缺 b', '时序（fault）']),
+                         ['变换器电压裕量（run）、时序（fault）'])
         self.assertEqual(rr.fold_blocks([]), [])
 
     def test_a_long_title_is_hinted_and_a_short_one_is_not(self):

@@ -139,10 +139,10 @@ class SideTests(unittest.TestCase):
 
 
 class FormatTests(unittest.TestCase):
-    def test_the_results_format_is_13_and_format_5_is_not_read(self):
-        self.assertEqual(results_model.SCHEMA_VERSION, 13)
+    def test_the_results_format_is_14_and_format_5_is_not_read(self):
+        self.assertEqual(results_model.SCHEMA_VERSION, 14)
         found = results_model.shape_errors({'schema_version': 5, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be 13' in e for e in found), found)
+        self.assertTrue(any('schema_version must be 14' in e for e in found), found)
 
 
 if __name__ == '__main__':

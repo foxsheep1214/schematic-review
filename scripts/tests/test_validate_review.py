@@ -69,8 +69,7 @@ def fail(report, severity='P1'):
     c.update(review_result='FAIL', severity=severity, finding_id='F1')
     report['findings'] = [{'id': 'F1', 'kind': 'DEFECT', 'severity': severity, 'check_ids': [C1],
         'location': {'pages': ['1'], 'refs': ['R1'], 'nets': ['A']},
-        **{key: 'synthetic evidence' for key in ('title', 'observed', 'criterion', 'impact', 'scenario',
-              'root_cause', 'recommendation', 'verification', 'severity_reason')}}]
+        **{key: 'synthetic evidence' for key in ('title', 'root_cause', 'consequence', 'fix', 'severity_reason')}}]
     return c
 
 
@@ -248,6 +247,21 @@ class ReviewGateTests(unittest.TestCase):
         result = validate_review(p, r, db)
         self.assertTrue(result['valid'], result)
         self.assertEqual(result['release'], 'NO_GO')
+
+    def test_a_finding_says_each_text_once_in_format_14(self):
+        # 2026-10-27 (user: 卡片字段合并也改格式): root_cause, consequence and fix; the old texts are refused
+        p, r, db = fixture(); fail(r)
+        self.assertTrue(validate_review(p, r, db)['valid'])
+        r['findings'][0]['observed'] = 'R1 is DNP'
+        errors = validate_review(p, r, db)['errors']
+        self.assertTrue(any('observed retired in results format 14' in e for e in errors), errors)
+        del r['findings'][0]['observed']; del r['findings'][0]['consequence']
+        self.assertIn('F1: missing consequence', validate_review(p, r, db)['errors'])
+        from validate_remediation import validate_remediation
+        from test_remediation import ready
+        self.assertEqual(validate_remediation('F1', ready(), {'F1'}), [])
+        errors = validate_remediation('F1', dict(ready(), purpose='restore R1'), {'F1'})
+        self.assertTrue(any('purpose retired' in e for e in errors), errors)
 
     def test_same_defect_multiple_checks_counted_once(self):
         p, r, db = fixture(); fail(r)
@@ -478,7 +492,7 @@ def proposed_option(**overrides):
         'preference': 'DESIGN_FIRST',
         'preference_reason': 'Vendors do not characterise the zener below its test current, so the evidence path is unlikely to close.',
         'remediation': {
-            'readiness': 'CONDITIONAL', 'purpose': 'Supply stays above UVLO with guaranteed parameters only.',
+            'readiness': 'CONDITIONAL',
             'prerequisites': [{'input': 'Diode VF at the load current', 'reason': 'Sets the minimum supply',
                                'how_to_obtain': 'Vendor table at 10 mA', 'acceptance': 'VF max listed'}],
             'steps': [{'kind': 'COMPONENT', 'target': 'R1', 'before': 'zener bias network',

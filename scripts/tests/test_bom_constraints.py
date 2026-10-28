@@ -63,7 +63,7 @@ class ConstraintTests(unittest.TestCase):
 
     def test_the_report_lists_what_the_bom_must_state(self):
         plan, report, gate = self.gate()
-        section = render(plan, deferred(report), gate).split('## BOM 要写明的额定与规格')[1].split('\n## ')[0]
+        section = render(plan, deferred(report), gate).split('<summary>BOM 要写明的额定与规格</summary>')[1].split('</details>')[0]
         self.assertIn('| R1 | 额定功率 ≥ 0.09 W | DEV-C01.R1 计算：44 mW | 误选件仍在额定内，只缺降额余量（P3） | 待写入 |', section)
 
 

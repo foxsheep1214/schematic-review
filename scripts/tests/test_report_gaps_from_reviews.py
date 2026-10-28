@@ -14,13 +14,13 @@ class HowToCloseShownOnceTest(unittest.TestCase):
         p, r, db = decisive()
         acquisition = r['functions'][0]['open'][0]['acquisition']
         text = body(report(p, r, db)[0])
-        line = next(l for l in text.splitlines() if l.startswith('- **还要做**'))
-        self.assertEqual(line, '- **还要做**：' + acquisition)
+        line = next(l for l in text.splitlines() if l.startswith('- **怎么补**'))
+        self.assertEqual(line, '- **怎么补**：' + acquisition)
 
     def test_a_different_next_action_stays(self):
         p, r, db = decisive()
         r['functions'][0]['open'][0]['acquisition'] = 'Ask the PSU vendor for the hiccup timing table'
-        line = next(l for l in body(report(p, r, db)[0]).splitlines() if l.startswith('- **还要做**'))
+        line = next(l for l in body(report(p, r, db)[0]).splitlines() if l.startswith('- **怎么补**'))
         self.assertIn('Ask the PSU vendor for the hiccup timing table', line)
 
 
@@ -40,11 +40,9 @@ class SharedReasonTest(unittest.TestCase):
         self.assertFalse([c for c in templated_task_text({'work_items': self.tasks()[:2], 'checks': []}, {})
                           if c['code'] == 'TEMPLATED_WORK_ITEM_REASON'])
 
-    def test_report_leaves_a_shared_reason_out(self):
-        task = self.tasks()[0]
-        lines = render_item(task, {}, {}, shared_reasons={self.REASON})
-        self.assertFalse(any(self.REASON in l for l in lines))
-        self.assertTrue(any(self.REASON in l for l in render_item(task, {}, {})))
+    def test_report_leaves_the_reason_out(self):
+        # 2026-10-27 (user: 报告太冗长): why a gap matters is its level and worst case; the reason stays in the record
+        self.assertFalse(any(self.REASON in l for l in render_item(self.tasks()[0], {}, {})))
 
 
 class GluedTextOutsideRequestsTest(unittest.TestCase):
@@ -73,7 +71,7 @@ class RecordTalkInSummaryTest(unittest.TestCase):
 
 class FixedTodoLinesTest(unittest.TestCase):
     """真实反例：“怎么补”里两句都以“已读Q2的MOSFET手册 p3–7、D2手册 p2–5…”开头；“缺什么”第二句复述第一句。
-    待办固定分行：缺什么 / 为什么要紧 / 已查过 / 还要做 / 怎样算通过，读过的资料只写一次。"""
+    待办固定分行：缺什么 / 最坏情况 / 影响哪些结论 / 已查过 / 怎么补 / 怎样算通过 / 拿不到时的改法，读过的资料只写一次。"""
 
     def lines(self, task, acquisition):
         checks = {'C': {'input_requests': {'x': {'acquisition': acquisition}}}}
@@ -85,15 +83,12 @@ class FixedTodoLinesTest(unittest.TestCase):
                           'next_action': '已读Q2的MOSFET手册 p3–7与磁件单；先取得Q2低电流界限'},
                          '已读Q2的MOSFET手册 p3–7和磁件设计单：现有曲线未给20mA下的VGS界限；取得该工作点曲线包络')
         self.assertEqual(got['已查过'], 'Q2的MOSFET手册 p3–7和磁件设计单：现有曲线未给20mA下的VGS界限')
-        self.assertEqual(got['还要做'], '先取得Q2低电流界限；取得该工作点曲线包络')
+        self.assertEqual(got['怎么补'], '先取得Q2低电流界限；取得该工作点曲线包络')
 
-    def test_why_it_matters_that_restates_the_gap_is_dropped(self):
-        got = self.lines({'id': 'W', 'title': 'TH1', 'root_cause': 'TH1全温阻值范围未知',
-                          'reason': 'TH1的全温阻值范围未知。', 'next_action': '向厂家取得R(T)'}, '')
-        self.assertNotIn('为什么要紧', got)
+    def test_why_it_matters_is_not_a_line(self):
         got = self.lines({'id': 'W', 'title': 'TH1', 'root_cause': 'TH1全温阻值范围未知',
                           'reason': '开短路判别要靠它定阈值。', 'next_action': '向厂家取得R(T)'}, '')
-        self.assertEqual(got['为什么要紧'], '开短路判别要靠它定阈值。')
+        self.assertEqual(sorted(got), ['怎么补', '缺什么'])
 
 
 class SummaryAddsWhatTheFirstLineCannotTest(unittest.TestCase):
@@ -118,11 +113,10 @@ class SameHandoffOneRowTest(unittest.TestCase):
                      'handoff': {'required': True, 'receivers': ['热设计'], 'constraint': 'C9热点≤75°C',
                                  'verification': '测量C9本体热点'}})
         text = render(plan, {'checks': rows}, {'valid': True, 'release': 'NO_GO', 'blockers': []})
-        table = [l for l in text.split('## 交给后续环节的要求')[1].splitlines() if l.startswith('| 热设计')]
-        self.assertEqual(len(table), 2)
-        self.assertIn('| 热设计 | DEV-C04.C5、DEV-C04.C6、DEV-C04.C7 | C5、C6、C7 | C5–C7热点≤105°C | '
-                      '测量每只本体热点 |', table)
-        self.assertIn('| 热设计 | DEV-C04.C9 | C9 | C9热点≤75°C | 测量C9本体热点 |', table)
+        section = text.split('#### 热设计（2 条）')[1].split('</details>')[0]
+        table = [l for l in section.splitlines() if l.startswith('| C')]
+        self.assertEqual(table, ['| C5、C6、C7 | C5–C7热点≤105°C | 测量每只本体热点 |',
+                                 '| C9 | C9热点≤75°C | 测量C9本体热点 |'])
 
 
 if __name__ == '__main__':

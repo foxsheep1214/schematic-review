@@ -9,6 +9,37 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Report in three layers; results format 14 says each finding text once (2026-10-27)
+
+The user found the report too long and without levels, and asked to keep the figures. On R8 the part a reader sees
+without opening anything was 63 400 characters: the handoff table alone 24 000, the function table 12 800, and each
+error said its cause, what was seen, the fix and the check two or three times (root_cause / observed / steps.before,
+recommendation / steps.after / verification). The user kept the SR feedback in the report, added no new length limits,
+asked for the card fields to be merged in the format, and kept the deliverables to the two reports and `record/`.
+
+- Conclusion: the verdict sentence, then one line per error under 必须改 (level, page, up to three parts, title, id),
+  one line per data gap under 要补的资料, and one line of key numbers. The top-three list, the owner list of design
+  constraints and the leading count table are gone (the table is folded in the appendix).
+- Cards: an error card reads 问题 → 后果 → figures → 怎么改 (one sentence and a 改哪里/现在/改成 table) → 怎么验证, with
+  level, kind, place and owner on its first line and no check ids. A gap card keeps 缺什么, 最坏情况, 影响哪些结论 (names
+  only), 已查过, 怎么补, 怎样算通过, 拿不到时的改法; 为什么要紧 is dropped. A work item that only fixes a listed error
+  gets no card. The HTML draws each card in a frame and puts its figures side by side, each opening full size.
+- Function table: failing and open functions shown with one basis item (first fail, first open question, or the
+  decisive margin, with the rest counted); passing ones folded.
+- Appendix, each part folded: BOM ratings, handoffs grouped by owner without check ids, configuration settings, risks,
+  input notes, counts; the parameter sheet only with `--detail full`. SR feedback stays folded at the end.
+- Results format 14: a finding has `root_cause` (the quantity, its value and the limit), `consequence` and `fix`;
+  observed, criterion, impact, scenario, recommendation, verification and `remediation.purpose` are refused.
+- `pack_review.py` skips the folded count table in its plain-language scan.
+
+R8 re-rendered from its record converted to format 14: 101 600 → 82 300 characters in all, the unfolded part
+63 400 → 14 000.
+
+- Event: user:2026-10-27 (“SR技能的输出报告，语言写得实在是太冗长了，体现的信息没有层次感……问题用图的形式来说明，这个要保留”；“对SR的反馈不要移出去。还要加的约束先不加。卡片字段合并也改格式，格式根据需要来重新制定。交付物还是两份报告，不要加SR反馈record。”)
+- Causes: judgment 1 (the report showed every section in full and repeated each finding text)
+- Changed: scripts/render_report.py, scripts/report_html.py, scripts/pack_review.py, scripts/validate_review.py, scripts/validate_remediation.py, scripts/review_quality.py, scripts/results_model.py, scripts/tests/fixtures/golden_reports, scripts/tests/test_render_and_pack.py, scripts/tests/test_report_gaps_from_reviews.py, scripts/tests/test_report_rendering_51.py, scripts/tests/test_review_functions.py, scripts/tests/test_figures.py, scripts/tests/test_validate_review.py, references/report-and-remediation.md, references/results-format.md, references/architecture.md, references/gate-and-rerun.md, references/commodity-floors.md, SKILL.md, docs/improvement-ledger.md
+- Gates: pytest 2332; mutation --changed 107 run, 107 killed (run over this change and the derating additions together)
+
 ## Derating wired in; the stress spec replaces the derating spec's R6 (2026-10-27)
 
 Item 7 of the R8 change list. R8 judged J701's 5 A contact against a 5 A demand as a pass with zero margin: the

@@ -41,9 +41,9 @@ def write_report(out, text):
 def body(text):
     """Report text the designer reads: without the count table, and stopping at the SR section."""
     text = text.split('\n## 对 SR 的反馈')[0].split('\n## 索引')[0]
-    if '## 数字一览' in text:
-        head, rest = text.split('## 数字一览', 1)
-        text = head + ('## ' + rest.split('\n## ', 1)[1] if '\n## ' in rest else '')
+    if '<summary>数字一览</summary>' in text:
+        head, rest = text.split('<summary>数字一览</summary>', 1)
+        text = head + rest.split('</details>', 1)[-1]
     return text
 
 
@@ -54,15 +54,16 @@ class RenderReportTests(unittest.TestCase):
         text, gate = report(p, r, db)
         self.assertTrue(gate['valid'], gate['errors'])
         lines = [l for l in text.splitlines() if l.strip()]
-        self.assertEqual(lines[1], '## 数字一览')   # the numbers first, then the conclusion
+        self.assertEqual(lines[1], '## 结论')   # the conclusion first; the numbers are in the appendix
         conclusion = text.split('## 结论')[1].split('\n## ')[0]
         self.assertIn('W-1', conclusion)
         self.assertIn('W-1', text.split('## 待办')[1])
 
-    def test_counts_come_first_with_plain_labels(self):
+    def test_counts_are_folded_in_the_appendix_with_plain_labels(self):
         p, r, db = decisive()
         text, _ = report(p, r, db)
-        self.assertLess(text.index('## 数字一览'), text.index('## 结论'))
+        self.assertLess(text.index('## 附录'), text.index('<summary>数字一览</summary>'))
+        self.assertIn('功能 1 个：', text.split('## 结论')[1].split('\n## ')[0])   # four numbers in the conclusion
         self.assertTrue(text.rstrip().split('\n## ')[-1].startswith('索引'))   # the file index closes the report
         for jargon in ('冻结', '闸门', '移交', '接收方', '证据不足'):
             self.assertNotIn(jargon, text)
@@ -88,8 +89,7 @@ class RenderReportTests(unittest.TestCase):
         text = render({}, {'checks': rows}, gate)
         self.assertNotIn('现在先做', text)
         self.assertNotIn('定稿前还要做', text)
-        self.assertNotIn('全部 3 件待办', text)   # all three are already in the first-things list
-        top = text.split('**最先要解决的')[1].split('## 待办')[0]
+        top = text.split('**要补的资料：**')[1].split('## 待办')[0]
         self.assertLess(top.index('W-1'), top.index('W-2'))
         section = text.split('## 待办')[1]
         self.assertLess(section.index('W-1'), section.index('W-2'))
@@ -104,8 +104,13 @@ class RenderReportTests(unittest.TestCase):
                  {'id': 'W-FIX', 'title': 'fix', 'check_ids': ['F1']}]
         gate = {'valid': True, 'release': 'NO_GO', 'blockers': [],
                 'workflow': {'work_items': tasks, 'current_work_items': ['W-GAP']}}
-        top = render({}, {'checks': rows}, gate).split('**最先要解决的')[1].split('## 待办')[0]
-        self.assertLess(top.index('W-FIX'), top.index('W-GAP'))
+        # the error leads the conclusion under 必须改; its work item gets no card of its own
+        text = render({}, {'checks': rows, 'findings': [{'id': 'F-1', 'kind': 'DEFECT', 'severity': 'P1', 'title': 'fix',
+                                                         'check_ids': ['F1']}]}, gate)
+        conclusion = text.split('## 结论')[1].split('\n## ')[0]
+        self.assertLess(conclusion.index('**必须改：**'), conclusion.index('**要补的资料：**'))
+        self.assertLess(conclusion.index('F-1'), conclusion.index('W-GAP'))
+        self.assertNotIn('W-FIX', text)
 
     def test_a_work_item_that_only_fixes_an_error_carries_its_title(self):
         # R8: "CS/ZCD分压过小" as the error, "漏极取样分压过小" as its work item
@@ -116,7 +121,8 @@ class RenderReportTests(unittest.TestCase):
                 'workflow': {'work_items': tasks, 'current_work_items': ['W-FIX']}}
         text = render({}, {'checks': rows, 'findings': findings}, gate)
         self.assertNotIn('漏极取样分压过小', text)
-        self.assertIn('1. CS/ZCD分压过小（', text)
+        self.assertIn('- **P1**　CS/ZCD分压过小（F-DIV）', text)
+        self.assertNotIn('## 待办', text)   # a work item that only fixes a listed error has no card
 
     def test_notes_add_plain_text_but_not_numbers(self):
         p, r, db = decisive()
@@ -126,7 +132,7 @@ class RenderReportTests(unittest.TestCase):
         self.assertIn('先确认启动电流。', text)
         self.assertIn('电源启动时可能被限流卡住。', text)
         self.assertNotIn('已核对的重点', text)
-        counts = lambda t: t.split('## 数字一览')[1].split('\n## ')[0]
+        counts = lambda t: t.split('<summary>数字一览</summary>')[1].split('</details>')[0]
         self.assertEqual(counts(text), counts(plain))
 
     def test_mixed_level_item_shows_its_breakdown_and_note_is_a_bullet(self):
@@ -175,7 +181,8 @@ class RenderReportTests(unittest.TestCase):
         p, r, db = downstream()
         text, gate = report(p, r, db)
         self.assertEqual((gate['release'], gate['blockers']), ('GO', []))
-        self.assertIn('RST-E01.C1', text.split('## 交给后续环节的要求')[1])
+        self.assertIn('<summary>交给后续环节的要求</summary>', text)
+        self.assertNotIn('RST-E01.C1', text.split('## 对 SR 的反馈')[0])   # check ids stay in the ledger
         self.assertNotIn('## 待办', text)
 
     def tool_gate(self, row_update, codes=(), rows=1, objects=None):
@@ -290,7 +297,7 @@ class ReportWordingTests(unittest.TestCase):
         with mock.patch('render_report.is_document', return_value=True):
             text, _ = report(p, r, db)
         self.assertIn('电路没有发现错误，文档有 1 处错误（P1，必需功能可能不达标）', text)
-        self.assertIn('类型：文档错误', text)
+        self.assertIn('**P1 必需功能可能不达标**　文档错误', text)
 
     def test_what_the_user_deferred_is_listed_as_outside_the_review(self):
         # 2026-10-27 (user: A): a deferral narrows the review; it is neither a verdict nor missing data
@@ -373,8 +380,8 @@ class ReportWordingTests(unittest.TestCase):
         key = r['checks'][0]['id']
         next(c for c in p['checks'] if c['id'] == key)['object']['ref'] = 'U7'
         text, _ = report(p, r, db)
-        self.assertIn('| 负责方 | 检查 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |', text)
-        self.assertIn('| U7 |', text.split('## 交给后续环节的要求')[1])
+        self.assertIn('| 涉及位号/网络 | 要落实的要求 | 怎么验证 |', text)
+        self.assertIn('| U7 |', text.split('<summary>交给后续环节的要求</summary>')[1])
         from render_report import render
         gate = {'valid': True, 'release': 'GO', 'blockers': [], 'sr_improvements': [
             {'check_id': 'A.1', 'tool_limitation': 'x', 'sr_improvement': 'y', 'method': 'z'},
@@ -408,8 +415,8 @@ class ReportWordingTests(unittest.TestCase):
         self.assertEqual(text.count('range'), 1)
         self.assertEqual(text.count('limit'), 1)
         self.assertIn('calculate', text)
-        task['reason'] = 'range includes hazardous restart'
-        self.assertIn(task['reason'], '\n'.join(render_item(task, checks, {})))
+        task['reason'] = 'range includes hazardous restart'   # why it matters is the level; the reason stays in the record
+        self.assertNotIn(task['reason'], '\n'.join(render_item(task, checks, {})))
 
     def test_todo_that_only_fixes_a_listed_problem_points_to_it(self):
         from render_report import covered_by_findings, same_text

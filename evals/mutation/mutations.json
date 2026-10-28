@@ -211,10 +211,10 @@
  },
  {
   "id": "M42",
-  "name": "report hides which judgements a gap holds open",
+  "name": "report hides which conclusions a gap holds open",
   "file": "scripts/render_report.py",
-  "old": "              ('这个缺口影响哪些判断', fold_blocks(task.get('blocks') or [])),",
-  "new": "              ('这个缺口影响哪些判断', []),"
+  "old": "              ('影响哪些结论', fold_blocks(task.get('blocks') or [])),",
+  "new": "              ('影响哪些结论', []),"
  },
  {
   "id": "M43",
@@ -675,15 +675,15 @@
   "id": "M109",
   "name": "the report function table is not grouped by the tree",
   "file": "scripts/render_report.py",
-  "old": "    if not any(group(fn) != OTHER_GROUP for fn in rows):",
-  "new": "    if True:"
+  "old": "        grouped = any(group(fn) != OTHER_GROUP for fn in members)",
+  "new": "        grouped = False"
  },
  {
   "id": "M110",
   "name": "a finding does not name the owners of its checks",
   "file": "scripts/render_report.py",
-  "old": "                out.append('- **所属**：%s' % owners)",
-  "new": "                pass"
+  "old": "finding_place(f), owners) if x)",
+  "new": "finding_place(f), None) if x)"
  },
  {
   "id": "M111",
@@ -1809,8 +1809,8 @@
   "id": "M273",
   "name": "P9: plan diagnostics on the input wording not in the report",
   "file": "scripts/render_report.py",
-  "old": "    out += render_input_notes(plan)\n",
-  "new": ""
+  "old": "render_configuration_settings(settings), render_risks(gate.get('risks')),\n                    render_input_notes(plan), ",
+  "new": "render_configuration_settings(settings), render_risks(gate.get('risks')),\n                    "
  },
  {
   "id": "M274",
@@ -1837,8 +1837,8 @@
   "id": "M278",
   "name": "P10: BOM constraints not in the report",
   "file": "scripts/render_report.py",
-  "old": "    out += render_bom_constraints(checks)\n",
-  "new": ""
+  "old": "    for section in (render_bom_constraints(checks), render_handoffs(",
+  "new": "    for section in (render_handoffs("
  },
  {
   "id": "M279",
@@ -4196,8 +4196,8 @@
   "id": "M655",
   "name": "handoffs naming several parts merge into 每只 rows",
   "file": "scripts/render_report.py",
-  "old": "                if any(k.count(REF_SLOT) > 1 for k in key):\n",
-  "new": "                if False:\n"
+  "old": "            if any(k.count(REF_SLOT) > 1 for k in key):\n",
+  "new": "            if False:\n"
  },
  {
   "id": "M656",
@@ -4210,8 +4210,8 @@
   "id": "M657",
   "name": "a long calculation result goes into the table whole",
   "file": "scripts/render_report.py",
-  "old": "        parts.append(result if len(result) <= RESULT_MAX_CHARS else first_sentence(result) + '（其余见台账）')",
-  "new": "        parts.append(result)"
+  "old": "        return result if len(result) <= RESULT_MAX_CHARS else first_sentence(result) + '（其余见台账）'",
+  "new": "        return result"
  },
  {
   "id": "M658",
@@ -4222,10 +4222,10 @@
  },
  {
   "id": "M659",
-  "name": "blocks citing one source repeat it on every entry",
+  "name": "a gap card explains each blocked conclusion instead of naming it",
   "file": "scripts/render_report.py",
-  "old": "    if all(parsed) and len({m.group(2).strip() for m in parsed}) == 1:",
-  "new": "    if False:"
+  "old": "b.strip(), maxsplit=1)[0].strip()",
+  "new": "b.strip(), maxsplit=1)[-1].strip()"
  },
  {
   "id": "M660",
@@ -5255,5 +5255,19 @@
   "file": "scripts/catalog.py",
   "old": "'同上，芯温余量 ≥ 10 °C', (10, '°C'))",
   "new": "'同上，芯温余量 ≥ 10 °C', None)"
+ },
+ {
+  "id": "M814",
+  "name": "a finding may still carry the retired format-13 texts",
+  "file": "scripts/validate_review.py",
+  "old": "        require(not retired, ",
+  "new": "        require(True, "
+ },
+ {
+  "id": "M815",
+  "name": "a work item that only fixes a listed error gets its own card again",
+  "file": "scripts/render_report.py",
+  "old": "    gap_cards = sorted((t for t in tasks if not covered_by_findings(t, checks, findings)), key=rank)",
+  "new": "    gap_cards = sorted(tasks, key=rank)"
  }
 ]

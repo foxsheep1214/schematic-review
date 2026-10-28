@@ -621,7 +621,7 @@ def finding_wording(findings):
         if not isinstance(f, dict) or not isinstance(f.get('root_cause'), str):
             continue
         cause = f['root_cause'].strip()
-        fix = (f.get('recommendation') or '').strip() if isinstance(f.get('recommendation'), str) else ''
+        fix = (f.get('fix') or '').strip() if isinstance(f.get('fix'), str) else ''
         if REMEDY_OPENING.match(cause) or (cause and cause == fix):
             found.append({'code': 'ROOT_CAUSE_IS_REMEDY', 'finding_ids': [f.get('id')], 'check_ids': list(f.get('check_ids') or []),
                           'message': 'The root cause names the missing part or repeats the fix; say why the circuit fails '

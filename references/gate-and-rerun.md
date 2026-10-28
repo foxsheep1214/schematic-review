@@ -18,7 +18,7 @@
 - **输出**：`summary`（检查结果计数、唯一缺陷及 P0–P3）、`categorized_summary`（当前/历史检查、唯一缺陷、
   唯一任务、必需移交及其状态）、`insufficient_by_cause`、`requirement_clarification_summary`、`workflow`、
   `release`/`blockers`、`remediation_validation`、`binding_validation`；`parameter_sheet`（器件参数表：条款 `refs` 点名的每只器件
-  引了哪些参数、出处与页、保证值 / 典型值 / 强制条款各几条、用在哪条余量或判断，报告据此出“器件参数表”一节）。
+  引了哪些参数、出处与页、保证值 / 典型值 / 强制条款各几条、用在哪条余量或判断；`--detail full` 的报告据此出“器件参数表”）。
 - **quality_screening** 提示理由/影响跨范围复用、位号与声明范围不相交，以及补证对象和接口模式错配。
   影响描述逐字段核对，不以正确的理由或证据位置替代因果核验；原样回显绑定对象/判据不能证明分析成立。
   PWR-C10 的 `qualification_refs` 指向实际已贴电容，连接器身份不能替代电容额定证明；USB 方向分析不能只复用 UART/SPI 的角色。

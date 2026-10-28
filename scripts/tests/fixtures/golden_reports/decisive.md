@@ -1,6 +1,39 @@
 # 原理图审查报告
 
-## 数字一览
+## 结论
+
+**还不能定稿。** 电路和文档都没有发现错误。另有 1 件事因为缺资料，现在还判断不了。
+
+**要补的资料：**
+- **P1**　Synthetic task（W-1）
+
+功能 1 个：合格 0，不合格 0，未定 1；检查 7 条，资料不足 1 条；交给后续环节 0 条。
+
+这是设计中途的检查，“还不能定稿”说的是离定稿还差上面这些，不是否定设计。
+
+## 待办
+
+严重程度：P0 可能损坏器件或危及安全；P1 必需功能可能不达标；P2 局部或次要问题；P3 可选优化。
+
+### W-1　Synthetic task
+
+**P1 必需功能可能不达标**　缺资料（公开资料定不出界限）　涉及 1 条检查
+
+- **缺什么**：startup load current envelope；适用范围：Peak amperes, pulse seconds and repetition at the specified supply limits
+- **影响哪些结论**：使能极性与耐压
+- **怎么补**：System engineer derives controlled bound from installed loads and their startup data
+- **怎样算通过**：Recompute current-limit margin and startup voltage; compare with required rails
+
+## 各功能的判断
+
+| 功能 | 问题 | 结论 | 余量或依据 | 待办编号 |
+|---|---|---|---|---|
+| FN-W-1 | Synthetic task | 未定 | startup load current envelope | W-1 |
+
+## 附录
+
+<details>
+<summary>数字一览</summary>
 
 | 项目 | 数量 |
 |---|---|
@@ -19,34 +52,7 @@
 | 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | 0 |
 | 上一版问题的处理记录（不计入上面各行） | 0 |
 
-## 结论
-
-**还不能定稿。** 电路和文档都没有发现错误。另有 1 件事因为缺资料，现在还判断不了。
-
-**最先要解决的一件事：**
-1. Synthetic task（P1，缺资料；待办 W-1）
-
-这是设计中途的检查，“还不能定稿”说的是离定稿还差上面这些，不是否定设计。
-
-## 各功能的判断
-
-| 功能 | 问题 | 结论 | 余量或依据 | 待办编号 |
-|---|---|---|---|---|
-| FN-W-1 | Synthetic task | 未定 | synthetic fixture | W-1 |
-
-## 待办
-
-严重程度：P0 可能损坏器件或危及安全；P1 必需功能可能不达标；P2 局部或次要问题；P3 可选优化。
-
-### W-1　Synthetic task
-
-类型：缺资料（公开资料定不出界限）　可能后果：必需功能可能不达标（P1）　涉及 1 条检查
-
-- **缺什么**：startup load current envelope；适用范围：Peak amperes, pulse seconds and repetition at the specified supply limits
-- **为什么要紧**：Synthetic independent input
-- **这个缺口影响哪些判断**：使能极性与耐压：Synthetic: W-1 leaves 使能极性与耐压 undecided（出处 synthetic-fixture.json p1 Table 1 (stipulated clause)）
-- **还要做**：System engineer derives controlled bound from installed loads and their startup data
-- **怎样算通过**：Recompute current-limit margin and startup voltage; compare with required rails
+</details>
 
 ## 索引
 

@@ -22,13 +22,14 @@ from difflib import SequenceMatcher
 from pathlib import Path
 import catalog
 import function_reading
+from electrical_contract import text
 from review_functions import RESULT_MAX_CHARS, circuit_functions
 from review_stage_scope import user_deferred
 from task_scope import ownership, task_view
 from report_html import to_html
 
-TOP_TASKS = 3
 SR_SECTION = '## 对 SR 的反馈（设计者不用处理）'
+COUNTS_TITLE = '数字一览'   # the count table, folded in the appendix; its labels are fixed here
 RECORD_INDEX = (('review-results.json', '每条检查的结论、依据、缺的资料和修改条件'),
                 ('review-plan.json', '检查计划：全部检查项和覆盖范围'),
                 ('review-gate.json', '校验结果：各项计数、定稿条件和自检提示明细'),
@@ -195,7 +196,6 @@ def restates(short, long):
     return matched >= 0.9 * len(a)
 
 
-SHARED_REASON_MIN_TASKS = 3
 READ_RE = re.compile(r'^已读([^；;]*)[；;]?\s*(.*)$', re.S)
 
 
@@ -220,7 +220,10 @@ def drop_restated(values):
             if not any(j != i and restates(v, o) and (len(o) > len(v) or j < i) for j, o in enumerate(values))]
 
 
-def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=()):
+def render_item(task, checks, notes, owners=None, classes=False):
+    """A gap card (user 2026-10-27: 报告太冗长、没有层次): what is missing, what it blocks, how to close it and the
+    circuit change if it cannot be had. Why it matters is the level and the worst case; the reason stays in the
+    record."""
     rows = [checks[c] for c in task.get('check_ids') or [] if c in checks]
     view = task_view(task, checks, owners, classes)
     level = view['level']
@@ -240,9 +243,9 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
         breakdown = '（%s）' % '、'.join('%s %d' % (k, branch_levels[k]) for k in SEVERITIES if branch_levels.get(k))
     sub = results_model.GAP_SUBCLASSES.get(task.get('subclass'))
     kind = item_kind(rows)
-    meta = '类型：%s　可能后果：%s　涉及 %d 条检查%s' % (
-        '%s（%s）' % (kind, sub) if sub and kind != KINDS['FAIL'] and sub != kind else kind,
-        ('%s（%s）' % (SEVERITY_WORDS[level], level)) if level else '未定级', len(rows), breakdown)
+    meta = '**%s**　%s　涉及 %d 条检查%s' % (
+        ('%s %s' % (level, SEVERITY_WORDS[level])) if level else '未定级',
+        '%s（%s）' % (kind, sub) if sub and kind != KINDS['FAIL'] and sub != kind else kind, len(rows), breakdown)
     lines = [head, '', meta, '']
     if view['ambiguous_checks']:
         lines += ['风险和资料需求尚未按任务分清：' + '、'.join(view['ambiguous_checks']) +
@@ -258,15 +261,7 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
         if re.sub(r'[\s，、；;：:。.()（）/]+', '', rest):
             scopes.append(scope)
     criteria = unique([q.get('closure_criterion') for q in requests] + [task.get('closure_criterion')])
-    reason = (task.get('reason') or '').strip()
-    # Old records sometimes put the scope in the impact field verbatim.
-    # Remove only that exact duplicate, never infer equivalence from similarity.
-    if reason in scopes or reason in ['本任务只关闭：' + scope for scope in scopes] or reason in shared_reasons:
-        reason = ''
-    root = (task.get('root_cause') or '').strip()
-    if reason and root and (restates(reason, root) or restates(root, reason)):
-        reason = ''   # "why it matters" that only re-says the gap
-    missing = unique([root])
+    missing = unique([(task.get('root_cause') or '').strip()])
     if scopes:
         missing.append('适用范围：' + join_statements(scopes))
     action = (task.get('next_action') or '').strip()
@@ -280,16 +275,15 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
     if action and any(action in a or restates(action, a) for a in acquisitions):
         action = ''   # the request text already carries the action (verbatim or reworded with page numbers)
     read, todo = split_read([action] + acquisitions)
-    fields = [('缺什么', missing),
-              ('为什么要紧', [reason]),
-              ('公开资料界限下的最坏情况', [task.get('worst_case')]),
-              ('这个缺口影响哪些判断', fold_blocks(task.get('blocks') or [])),
-              ('已查过', read),
-              ('还要做', todo),
-              ('怎样算通过', criteria)]
     option = task.get('design_option') or {}
-    if option.get('status') == 'PROPOSED':
-        fields.append(('建议的电路改法', [option.get('summary')]))
+    proposed = option.get('status') == 'PROPOSED'
+    fields = [('缺什么', missing),
+              ('最坏情况', [task.get('worst_case')]),
+              ('影响哪些结论', fold_blocks(task.get('blocks') or [])),
+              ('已查过', read),
+              ('怎么补', todo),
+              ('怎样算通过', criteria),
+              ('拿不到时的改法', [option.get('summary')] if proposed else [])]
     for label, values in fields:
         values = unique(values)
         if values:
@@ -297,7 +291,7 @@ def render_item(task, checks, notes, owners=None, classes=False, shared_reasons=
             lines.append('- **%s**：%s' % (label, join_statements(values)))
     if notes.get(task['id']):
         lines.append('- **审查员补充**：%s' % notes[task['id']])
-    if option.get('status') == 'PROPOSED':
+    if proposed:
         lines += render_figures(option.get('figures'))
     lines.append('')
     return lines
@@ -321,19 +315,11 @@ def page_word(page):
     return '第%s页' % text if re.fullmatch(r'\d+', text) else text
 
 
-BLOCK_RE = re.compile(r'^(.*?)，经 ([^：]+)：(.*)$', re.S)
-
-
 def fold_blocks(blocks):
-    """这个缺口影响哪些判断: the source said once when every entry cites the same one, at most LISTED_MAX entries
-    (a R7 work item carried 12 entries of 1155 characters, each repeating 经 BOM.csv T301)."""
-    parsed = [BLOCK_RE.match(b) for b in blocks if isinstance(b, str) and b.strip()]
-    if not blocks:
-        return []
-    if all(parsed) and len({m.group(2).strip() for m in parsed}) == 1:
-        entries = ['%s：%s' % (m.group(1).strip(), m.group(3).strip()) for m in parsed]
-        return [listed(entries, '项') + '（出处 %s）' % parsed[0].group(2).strip()]
-    return [listed([b for b in blocks if isinstance(b, str) and b.strip()], '项')]
+    """影响哪些结论: each blocked conclusion by its name only (a R8 work item explained three of them in 900
+    characters; the explanation stays in the ledger), at most LISTED_MAX."""
+    heads = unique(re.split(r'[：:，]', b.strip(), maxsplit=1)[0].strip() for b in blocks or [] if isinstance(b, str) and b.strip())
+    return [listed(heads, '项')] if heads else []
 
 
 RISK_SOURCE_WORDS = {'ESTIMATE': '按典型值估算', 'LIFE': '寿命按任务剖面估算', 'STRESS': '保证值在额定内、降额不足'}
@@ -532,19 +518,20 @@ def short_question(text):
     return re.sub(r'（([^（）]+)）', collapse, str(text or ''))
 
 
-def function_basis(fn):
-    """What the verdict rests on: the computed result (its first sentence when it runs long) and the decisive
-    margins, else why nothing was computed."""
+def function_basis(fn, verdict=None):
+    """What the verdict rests on, in one item (user 2026-10-27: 报告太冗长): a failing function its first failure,
+    an open one its first open question, a passing one its decisive margin, else the computed result's first
+    sentence or why nothing was computed; the rest is in the ledger."""
+    items = [i for i in fn.get({'FAIL': 'fails', 'OPEN': 'open'}.get(verdict or fn.get('verdict'), '')) or []
+             if isinstance(i, dict) and text(i.get('what'))]
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
-    parts = []
+    said = [i['what'].strip() for i in items] or sorted(decisive_margins(calc), key=lambda m: '余量 -' not in m)
+    if said:
+        return said[0] + ('（另 %d 项见台账）' % (len(said) - 1) if len(said) > 1 else '')
     if calc.get('result'):
         result = str(calc['result']).strip()
-        parts.append(result if len(result) <= RESULT_MAX_CHARS else first_sentence(result) + '（其余见台账）')
-    parts += decisive_margins(calc)
-    parts = unique(parts)
-    if not parts and fn.get('no_calculation_reason'):
-        parts.append(fn['no_calculation_reason'])
-    return '；'.join(parts)
+        return result if len(result) <= RESULT_MAX_CHARS else first_sentence(result) + '（其余见台账）'
+    return fn.get('no_calculation_reason') or ''
 
 
 # 报告按功能树的顺序（功能树设计 §3.7）：系统功能，功能电路，接口；计划里没有框架的功能（审查员另建）排最后。
@@ -561,31 +548,51 @@ def function_row(fn, effective=None):
     return '| %s | %s | %s | %s | %s |' % (
         cell(fn.get('id', '')), cell(short_question(fn.get('question'))),
         VERDICT_WORDS.get(verdict, cell(verdict or '')),
-        cell(function_basis(fn)), cell('、'.join(ids)) or '—')
+        cell(function_basis(fn, verdict)), cell('、'.join(ids)) or '—')
 
 
 def render_functions(functions, plan=None, checks=None):
-    """各功能的判断：一行一个功能，读者要的是“偏置：能，余量 0.8 V”；计划有功能树的框架时按系统功能、电路、接口分节。"""
+    """各功能的判断：一行一个功能，读者要的是“偏置：能，余量 0.8 V”；不合格和未定的列出，合格的折叠
+    （2026-10-27，用户：报告太冗长、没有层次）；计划有功能树的框架时按系统功能、电路、接口分组。"""
     rows = [fn for fn in functions or [] if isinstance(fn, dict)]
     if not rows:
         return []
     head = ['| 功能 | 问题 | 结论 | 余量或依据 | 待办编号 |', '|---|---|---|---|---|']
     frames = {f['id']: f for f in (plan or {}).get('functions') or [] if isinstance(f, dict) and f.get('id')}
     effective = results_model.effective_verdicts(rows, plan, checks)
+    verdict = lambda fn: (effective.get(fn.get('id')) or (fn.get('verdict'),))[0]
 
     def group(fn):
         frame = frames.get(fn.get('id')) or {}
         return next((label for key, label in TREE_GROUPS if frame.get(key)), OTHER_GROUP)
 
-    if not any(group(fn) != OTHER_GROUP for fn in rows):
-        return (['## 各功能的判断', ''] + head + [function_row(fn, effective.get(fn.get('id'))) for fn in rows] + ['']
-                + not_asked_lines(plan))
+    def table(members, level='###'):
+        grouped = any(group(fn) != OTHER_GROUP for fn in members)
+        out = []
+        for label in [label for _, label in TREE_GROUPS] + [OTHER_GROUP]:
+            part = sorted((fn for fn in members if group(fn) == label), key=lambda fn: str(fn.get('id', '')))
+            if part:
+                out += ([level + ' ' + label, ''] if grouped else []) + head + \
+                       [function_row(fn, effective.get(fn.get('id'))) for fn in part] + ['']
+        return out
+
+    shown = [fn for fn in rows if verdict(fn) != 'PASS']
+    passed = [fn for fn in rows if verdict(fn) == 'PASS']
     out = ['## 各功能的判断', '']
-    for label in [label for _, label in TREE_GROUPS] + [OTHER_GROUP]:
-        members = sorted((fn for fn in rows if group(fn) == label), key=lambda fn: str(fn.get('id', '')))
-        if members:
-            out += ['### ' + label, ''] + head + [function_row(fn, effective.get(fn.get('id'))) for fn in members] + ['']
+    out += table(shown) if shown else ['所有功能都合格。', '']
+    if passed:
+        out += fold('合格的 %d 个功能' % len(passed), table(passed, '####'))
     return out + not_asked_lines(plan)
+
+
+def fold(summary, lines):
+    """A part the reader opens when needed: <details> in both copies of the report."""
+    return ['<details>', '<summary>%s</summary>' % summary, ''] + lines + ['</details>', '']
+
+
+def demote(lines):
+    """A section's headings one level down, for a section shown inside the appendix."""
+    return ['#' + l if re.match(r'^#{2,3} ', l) else l for l in lines]
 
 
 def not_asked_lines(plan):
@@ -719,6 +726,84 @@ def finding_owners(finding, plan):
     keys = sorted({(o.get('kind'), o.get('id') or '') for o in owners if o.get('kind') in OWNER_WORDS},
                   key=lambda k: (order.index(k[0]), k[1]))
     return '、'.join((OWNER_WORDS[kind] + ' ' + oid).strip() for kind, oid in keys)
+
+
+def render_handoffs(plan, handoffs, gate):
+    """交给后续环节的要求，按负责方分组、同一要求一行（2026-10-27，用户：报告太冗长）：检查编号在台账里。"""
+    if not handoffs:
+        return []
+    out = ['## 交给后续环节的要求', '',
+           '下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，'
+           '也不影响原理图定稿。原理图交出时把对应的表交给负责方即可。', '']
+    planned = {c.get('id'): c for c in plan.get('checks') or [] if isinstance(c, dict)}
+    groups = OrderedDict()
+    for c in handoffs:
+        groups.setdefault('、'.join(c['handoff'].get('receivers') or ['未指定']), []).append(c)
+    for who, rows in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+        # One row per requirement: checks that ask the same thing of different parts share a row
+        # (a delivered report gave three output capacitors three rows differing only in the refdes).
+        same = OrderedDict()
+        for c in sorted(rows, key=lambda c: c['id']):
+            h = c['handoff']
+            where = unique(anchors((planned.get(c['id']) or {}).get('object')))
+            key = tuple(generic(h.get(f) or '', where) for f in ('constraint', 'verification'))
+            if any(k.count(REF_SLOT) > 1 for k in key):
+                # a requirement naming several parts cannot be read with every one replaced by 每只
+                # (R7: "每只、每只、每只/每只 表面温度"): only identical texts share a row
+                key = tuple(h.get(f) or '' for f in ('constraint', 'verification'))
+            same.setdefault(key, []).append((c, where))
+        out += ['### %s（%d 条）' % (who, len(same)), '',
+                '| 涉及位号/网络 | 要落实的要求 | 怎么验证 |', '|---|---|---|']
+        for (constraint, verification), group in same.items():
+            where = unique(w for _, ws in group for w in ws)
+            shown = '、'.join(where[:6]) + ('等 %d 处' % len(where) if len(where) > 6 else '')
+            if len(group) == 1:
+                h = group[0][0]['handoff']
+                constraint, verification = h.get('constraint') or '', h.get('verification') or ''
+            else:
+                constraint, verification = (t.replace(REF_SLOT, '每只') for t in (constraint, verification))
+            out.append('| %s | %s | %s |' % (cell(shown or '整板'), cell(constraint), cell(verification)))
+        out.append('')
+    pending = (gate.get('stage_scope') or {}).get('requirements_pending_downstream') or []
+    if pending:
+        out += ['另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending)), '']
+    return out
+
+
+def finding_place(f, refs_max=None):
+    """Pages and parts of a finding; the conclusion's one line shows the first refs_max parts."""
+    where = f.get('location') or {}
+    refs = where.get('refs') or []
+    shown = '、'.join(refs[:refs_max]) + ('等 %d 个' % len(refs) if refs_max and len(refs) > refs_max else '')
+    return '、'.join(page_word(x) for x in where.get('pages') or []) + ('　' + shown if refs else '')
+
+
+def render_finding(f, plan, item_notes, doc_defects):
+    """An error card (user 2026-10-27: 报告太冗长、没有层次；问题用图说明要保留): the problem (cause, mechanism and
+    the value against its limit), the consequence, the figures, the fix with its changes, and how to check it."""
+    fix = f.get('remediation') or {}
+    level = f.get('severity')
+    owners = finding_owners(f, plan)
+    meta = '　'.join(x for x in ('**%s %s**' % (level, SEVERITY_WORDS.get(level, '')),
+                                 '文档错误' if f in doc_defects else '电路错误' if f.get('kind') == 'DEFECT' else '改进建议',
+                                 finding_place(f), owners) if x)
+    out = ['### %s　%s' % (f.get('id'), f.get('title') or ''), '', meta, '']
+    if item_notes.get(f.get('id')):
+        out += [item_notes[f['id']], '']
+    out += ['- **问题**：%s' % f.get('root_cause', ''), '- **后果**：%s' % f.get('consequence', '')]
+    out += render_figures(f.get('figures'))
+    out.append('- **怎么改**：%s' % f.get('fix', ''))
+    steps = [x for x in fix.get('steps') or [] if isinstance(x, dict)]
+    if steps:
+        out += ['', '| 改哪里 | 现在 | 改成 |', '|---|---|---|'] + [
+            '| %s | %s | %s |' % (cell(x.get('target', '')), cell(x.get('before', '')), cell(x.get('after', '')))
+            for x in steps] + ['']
+    checks_after = ['%s（应：%s）' % (v.get('method'), v.get('expected')) if v.get('expected')
+                    and not same_text(v.get('expected'), f.get('fix')) else v.get('method')
+                    for v in fix.get('verification') or [] if isinstance(v, dict) and v.get('method')]
+    if checks_after:
+        out.append('- **怎么验证**：%s' % '；'.join(checks_after))
+    return out + ['']
 
 
 def task_title(task, checks, findings):
@@ -937,7 +1022,6 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     if not gate.get('valid'):
         out += ['> **审查记录本身有错，这份报告的结论不可用。** 先改正记录再重新出报告：' +
                 '；'.join(cell(e) for e in (gate.get('errors') or [])[:5]), '']
-    counts_at = len(out)   # 数字一览 goes here, ahead of the conclusion, once its numbers are known
     out += ['## 结论', '']
     gap_ids = {k for k, c in current_rows.items() if c.get('review_result') == 'INSUFFICIENT'}
     gap_tasks = [t for t in tasks if gap_ids.intersection(t.get('check_ids') or [])]
@@ -968,8 +1052,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             len(gap_tasks), why, '，其中 %d 件%s（P0）' % (p0, SEVERITY_WORDS['P0']) if p0 else ''))
     constraints = gate.get('design_constraints') or []
     if constraints:
-        sentences.append('有 %d 条设计约束由 SR 算出、交给%s，按约束判合格，见“交给后续环节的要求”' % (
-            len(constraints), '、'.join(OrderedDict((c.get('owner') or '后续设计', None) for c in constraints))))
+        sentences.append('有 %d 条设计约束由 SR 算出、交给后续设计，按约束判合格，见附录“交给后续环节的要求”' % len(constraints))
     deferred_rows = sum(user_deferred(c) for c in current_rows.values())
     if plan.get('deferred_requirements') or deferred_rows:
         sentences.append('用户暂缓的 %s 这次没有审，不算结论，见“%s”' % ('、'.join(x for x in (
@@ -978,30 +1061,38 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     risky = risk_rows(gate.get('risks'))
     if risky:
         kinds = Counter(t for e in risky for t in e.get('types') or ())
-        sentences.append('有 %d 项合格但有风险（%s），不影响定稿，见“风险清单”' % (
+        sentences.append('有 %d 项合格但有风险（%s），不影响定稿，见附录“风险清单”' % (
             len(risky), '、'.join('%s %d' % (catalog.RISK_TYPES.get(k, k), kinds[k]) for k in catalog.RISK_TYPES if kinds.get(k))))
     out += ['**%s。** %s。' % (RELEASE.get(release, release), '。'.join(sentences)), '']
     if notes.get('summary'):
         out += [notes['summary'], '']
-    if tasks:
-        # within a severity a confirmed error comes before a gap: R8 put three data requests (20, 14, 12 checks)
-        # ahead of its four P1 circuit errors while the summary said to fix the PFC divider first
-        ordered = sorted(tasks, key=lambda t: (SEVERITIES.index(level_of(t)) if level_of(t) else len(SEVERITIES),
-                                               not any((checks.get(k) or {}).get('review_result') == 'FAIL'
-                                                       for k in t.get('check_ids') or []),
-                                               -len(t.get('check_ids') or [])))
-        top = ordered[:TOP_TASKS]
-        out.append('**最先要解决的%s：**' % (' %d 件事' % len(top) if len(top) > 1 else '一件事'))
-        for i, t in enumerate(top, 1):
-            level = level_of(t)
-            kind = item_kind([checks[k] for k in t.get('check_ids') or [] if k in checks]).split('（')[0]
-            out.append('%d. %s（%s%s；待办 %s）' % (i, task_title(t, checks, findings),
-                                                  level + '，' if level else '', kind, t['id']))
-        fixes = sum(bool(covered_by_findings(t, checks, findings)) for t in tasks)
+    by_level = lambda f: SEVERITIES.index(f['severity']) if f.get('severity') in SEVERITIES else len(SEVERITIES)
+    # Within a level a gap the public bound already shows short comes first: it is the one likeliest to need a change.
+    rank = lambda t: (SEVERITIES.index(level_of(t)) if level_of(t) else len(SEVERITIES),
+                      t.get('subclass') != 'PUBLIC_BOUND_SHORT', -len(t.get('check_ids') or []))
+    # A work item that only corrects a listed error gets no card of its own (user 2026-10-27: 报告太冗长).
+    gap_cards = sorted((t for t in tasks if not covered_by_findings(t, checks, findings)), key=rank)
+    if defect_list:
+        out.append('**必须改：**')
+        out += ['- **%s**　%s%s（%s）' % (f.get('severity'), finding_place(f, 3) + '　' if finding_place(f) else '',
+                                        f.get('title') or '', f.get('id')) for f in sorted(defect_list, key=by_level)]
         out.append('')
-        if len(tasks) > TOP_TASKS:
-            out += ['全部 %d 件待办见“待办”一节%s。' % (
-                len(tasks), '，其中 %d 件是改正上面列出的错误' % fixes if fixes else ''), '']
+    if gap_cards:
+        out.append('**要补的资料：**')
+        out += ['- **%s**　%s（%s）' % (level_of(t) or '未定级', task_title(t, checks, findings), t['id'])
+                for t in gap_cards]
+        out.append('')
+    functions = circuit_functions(results.get('functions'), results.get('checks'))
+    effective = results_model.effective_verdicts(functions, plan, results.get('checks'))
+    verdicts = Counter(effective.get(f.get('id'), (f.get('verdict'),))[0] for f in functions)
+    settings = gate.get('configuration_settings') or []
+    numbers = '检查 %d 条，资料不足 %d 条；交给后续环节 %d 条。' % (
+        (summary.get('current') or {}).get('checks', len(current_rows)), counts.get('INSUFFICIENT', 0),
+        len(handoffs) + len(settings))
+    if functions:
+        numbers = '功能 %d 个：合格 %d，不合格 %d，未定 %d；' % (
+            len(functions), verdicts.get('PASS', 0), verdicts.get('FAIL', 0), verdicts.get('OPEN', 0)) + numbers
+    out += [numbers, '']
     # Errors and open items are in the first paragraph; list only the other conditions.
     reasons = (blocker_reasons(gate.get('blockers') or [], results, tasks, skip=('fail', 'gap', 'gap_tasks'))
                if release != 'GO' else [])
@@ -1037,114 +1128,63 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     if remarks:
         out += [''.join(remarks), '']
 
-    functions = circuit_functions(results.get('functions'), results.get('checks'))
-    out += render_functions(functions, plan, results.get('checks'))
-
     if findings:
         out += ['## 发现的错误', '', SEVERITY_LEGEND, '']
-        for f in sorted(findings, key=lambda f: SEVERITIES.index(f['severity']) if f.get('severity') in SEVERITIES else 9):
-            fix = f.get('remediation') or {}
-            level = f.get('severity')
-            out.append('### %s　%s（%s：%s）' % (f.get('id'), f.get('title') or '', level, SEVERITY_WORDS.get(level, '')))
-            out.append('')
-            out.append('类型：%s' % ('文档错误' if f in doc_defects else '电路错误'))
-            out.append('')
-            if item_notes.get(f.get('id')):
-                out += [item_notes[f['id']], '']
-            where = f.get('location') or {}
-            place = '、'.join(page_word(x) for x in where.get('pages') or []) + \
-                ('　' + '、'.join(where.get('refs') or []) if where.get('refs') else '')
-            if place:
-                out.append('- **位置**：%s' % place)
-            owners = finding_owners(f, plan)
-            if owners:
-                out.append('- **所属**：%s' % owners)
-            out += render_figures(f.get('figures'))
-            harm = f.get('impact')
-            if f.get('scenario') and not restates(f['scenario'], harm or '') and not restates(harm or '', f['scenario']):
-                harm = join_statements([harm, f['scenario']])
-            for label, value in (('根因', f.get('root_cause')),
-                                 ('问题', f.get('observed')), ('可能的损害', harm),
-                                 ('怎么改', f.get('recommendation')),
-                                 ('改的目的', fix.get('purpose') if not same_text(fix.get('purpose'), f.get('title')) else None),
-                                 ('改完怎么验证', f.get('verification')),
-                                 ('涉及的检查', listed(['%s（%s）' % (k, RESULT_SHORT.get((checks.get(k) or {}).get('review_result'), '记录中没有'))
-                                                     for k in f.get('check_ids') or []], '条检查'))):
-                if value:
-                    out.append('- **%s**：%s' % (label, value))
-            for step in fix.get('steps') or []:
-                out.append('- **改动**：%s：%s → %s' % (step.get('target', ''), step.get('before', ''), step.get('after', '')))
-            out.append('')
+        for f in sorted(findings, key=by_level):
+            out += render_finding(f, plan, item_notes, doc_defects)
 
-    out += render_deferred(plan, current_rows)
-    out += render_clarifications(plan)
-
-    if tasks:
+    if gap_cards:
         out += ['## 待办', '']
         if not findings:
             out += [SEVERITY_LEGEND, '']
-        # Within a level a gap the public bound already shows short comes first: it is the one likeliest to need a change.
-        rank = lambda t: (SEVERITIES.index(task_level(t, checks, task_owners, classes)) if task_level(t, checks, task_owners, classes) else len(SEVERITIES),
-                          t.get('subclass') != 'PUBLIC_BOUND_SHORT', -len(t.get('check_ids') or []))
-        # One reason sentence on many work items says nothing about any of them (a delivered report: 15 of 18).
-        reason_count = Counter(t['reason'].strip() for t in tasks if isinstance(t.get('reason'), str))
-        shared_reasons = {r for r, n in reason_count.items() if n >= SHARED_REASON_MIN_TASKS}
-        for task in sorted(tasks, key=rank):
-            owners = covered_by_findings(task, checks, findings)
-            if owners:
-                out += ['### %s　%s' % (task['id'], task_title(task, checks, findings)), '',
-                        '按上文“发现的错误”中问题 %s 的改法处理，这里不重复。' % '、'.join(owners), '']
-                continue
-            out += render_item(task, checks, item_notes, task_owners, classes, shared_reasons)
+        for task in gap_cards:
+            out += render_item(task, checks, item_notes, task_owners, classes)
 
-    out += render_bom_constraints(checks)
-    out += render_input_notes(plan)
+    out += render_deferred(plan, current_rows)
+    out += render_clarifications(plan)
+    out += render_functions(functions, plan, results.get('checks'))
 
-    settings = gate.get('configuration_settings') or []
-    if handoffs or settings:
-        out += ['## 交给后续环节的要求', '']
-    if handoffs:
-        out += [
-                '下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，'
-                '也不影响原理图定稿。原理图交出时把这张表一起交给对应负责方即可。', '',
-                '| 负责方 | 检查 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |', '|---|---|---|---|---|']
-        planned = {c.get('id'): c for c in plan.get('checks') or [] if isinstance(c, dict)}
-        groups = OrderedDict()
-        for c in handoffs:
-            groups.setdefault('、'.join(c['handoff'].get('receivers') or ['未指定']), []).append(c)
-        # One row per requirement: checks that ask the same thing of different parts share a row
-        # (a delivered report gave three output capacitors three rows differing only in the refdes).
-        for who, rows in sorted(groups.items(), key=lambda kv: -len(kv[1])):
-            same = OrderedDict()
-            for c in sorted(rows, key=lambda c: c['id']):
-                h = c['handoff']
-                where = unique(anchors((planned.get(c['id']) or {}).get('object')))
-                key = tuple(generic(h.get(f) or '', where) for f in ('constraint', 'verification'))
-                if any(k.count(REF_SLOT) > 1 for k in key):
-                    # a requirement naming several parts cannot be read with every one replaced by 每只
-                    # (R7: "每只、每只、每只/每只 表面温度"): only identical texts share a row
-                    key = tuple(h.get(f) or '' for f in ('constraint', 'verification'))
-                same.setdefault(key, []).append((c, where))
-            for (constraint, verification), group in same.items():
-                ids = [c['id'] for c, _ in group]
-                where = unique(w for _, ws in group for w in ws)
-                shown = '、'.join(where[:6]) + ('等 %d 处' % len(where) if len(where) > 6 else '')
-                if len(group) == 1:
-                    h = group[0][0]['handoff']
-                    constraint, verification = h.get('constraint') or '', h.get('verification') or ''
-                else:
-                    constraint, verification = (t.replace(REF_SLOT, '每只') for t in (constraint, verification))
-                out.append('| %s | %s | %s | %s | %s |' % (cell(who), cell('、'.join(ids)), cell(shown or '整板'),
-                           cell(constraint), cell(verification)))
-        pending = (gate.get('stage_scope') or {}).get('requirements_pending_downstream') or []
-        if pending:
-            out += ['', '另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending))]
-        out.append('')
-    out += render_configuration_settings(settings)
-    out += render_risks(gate.get('risks'))
-    out += render_parameter_sheet(gate.get('parameter_sheet'), detail)
-
-    # Everything about SR itself in one folded section, for its maintainers.
+    # 附录：设计者要用、但不必先读的部分，各自折叠（2026-10-27，用户：报告太冗长、没有层次）
+    appendix = []
+    for section in (render_bom_constraints(checks), render_handoffs(plan, handoffs, gate),
+                    render_configuration_settings(settings), render_risks(gate.get('risks')),
+                    render_input_notes(plan), render_parameter_sheet(gate.get('parameter_sheet'), detail) if detail == 'full' else []):
+        if section:
+            appendix += fold(section[0].lstrip('# '), demote(section[2:]))
+    gaps = [c for c in current_rows.values() if c.get('review_result') == 'INSUFFICIENT']
+    pot = Counter(c.get('potential_severity') for c in gaps)
+    classes = Counter((c.get('impact_assessment') or {}).get('consequence_class') for c in gaps
+                      if isinstance(c.get('impact_assessment'), dict)
+                      and c['impact_assessment'].get('consequence_class') in IMPACT_CLASS_WORDS)
+    history = (summary.get('history') or {}).get('checks', 0)
+    history_cell = str(history)
+    if not history and any(isinstance(x, str) for x in results.get('history_inputs') or []):
+        history_cell = '0（已声明上一版材料，但没有逐条复验检查项）' if revision else '0（首审不逐条登记）'
+    counts_block = ['| 项目 | 数量 |', '|---|---|',
+            '| 功能判定 合格 / 不合格 / 未定 | %d / %d / %d |' % (verdicts.get('PASS', 0), verdicts.get('FAIL', 0), verdicts.get('OPEN', 0)),
+            '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
+            ] + owner_counts(plan) + [
+            '| 合格 / 不合格 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
+            '| 与本产品无关（NA） | %d |' % counts.get('NA', 0),
+            '| 原理图阶段不判、交给后续环节 | %d |' % counts.get('NA_OUTSIDE_STAGE', 0),
+            ] + (['| 用户暂缓、本次不审（见“本次不审的范围”） | %d 条需求，%d 条检查 |' % (
+                len(plan.get('deferred_requirements') or []), counts.get('NA_DEFERRED', 0))]
+                 if plan.get('deferred_requirements') or counts.get('NA_DEFERRED') else []) + [
+            '| 发现的错误，按严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(by_sev.get(s, 0)) for s in SEVERITIES),
+            '| 其中文档错误 | %d |' % len(doc_defects),
+            '| 待办（同一原因合并） | %d 件 |' % len(tasks),
+            '| 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(pot.get(s, 0)) for s in SEVERITIES),
+            ] + gap_subclass_counts(results, gaps) + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),
+                                                  ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
+                 if classes else []) + [
+            '| 交给后续环节的要求 | %d |' % (len(handoffs) + len(settings))] + (
+            ['| 合格但有风险（不影响定稿，见“风险清单”） | %d 项 |' % len(risky)] if risky else []) + [
+            '| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | %d |' % len(screen),
+            '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '']
+    appendix += fold(COUNTS_TITLE, counts_block)
+    if appendix:
+        out += ['## 附录', ''] + appendix
+    # Everything about SR itself in one folded section, for its maintainers, at the end.
     sr = []
     signals = [t for t in gate.get('sr_improvements') or [] if isinstance(t, dict) and t.get('kind') in EXTENSION_SIGNALS]
     tool_gaps = [t for t in gate.get('sr_improvements') or [] if isinstance(t, dict) and t not in signals]
@@ -1183,39 +1223,6 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     if sr:
         out += [SR_SECTION, '', '<details>', '<summary>展开（给 SR 维护者）</summary>', ''] + sr + ['</details>', '']
 
-    gaps = [c for c in current_rows.values() if c.get('review_result') == 'INSUFFICIENT']
-    pot = Counter(c.get('potential_severity') for c in gaps)
-    classes = Counter((c.get('impact_assessment') or {}).get('consequence_class') for c in gaps
-                      if isinstance(c.get('impact_assessment'), dict)
-                      and c['impact_assessment'].get('consequence_class') in IMPACT_CLASS_WORDS)
-    history = (summary.get('history') or {}).get('checks', 0)
-    history_cell = str(history)
-    if not history and any(isinstance(x, str) for x in results.get('history_inputs') or []):
-        history_cell = '0（已声明上一版材料，但没有逐条复验检查项）' if revision else '0（首审不逐条登记）'
-    effective = results_model.effective_verdicts(functions, plan, results.get('checks'))
-    verdicts = Counter(effective.get(f.get('id'), (f.get('verdict'),))[0] for f in functions)
-    counts_block = ['## 数字一览', '', '| 项目 | 数量 |', '|---|---|',
-            '| 功能判定 合格 / 不合格 / 未定 | %d / %d / %d |' % (verdicts.get('PASS', 0), verdicts.get('FAIL', 0), verdicts.get('OPEN', 0)),
-            '| 检查总数 | %d |' % (summary.get('current') or {}).get('checks', len(current_rows)),
-            ] + owner_counts(plan) + [
-            '| 合格 / 不合格 / 资料不足无法判断 | %d / %d / %d |' % (counts.get('PASS', 0), counts.get('FAIL', 0), counts.get('INSUFFICIENT', 0)),
-            '| 与本产品无关（NA） | %d |' % counts.get('NA', 0),
-            '| 原理图阶段不判、交给后续环节 | %d |' % counts.get('NA_OUTSIDE_STAGE', 0),
-            ] + (['| 用户暂缓、本次不审（见“本次不审的范围”） | %d 条需求，%d 条检查 |' % (
-                len(plan.get('deferred_requirements') or []), counts.get('NA_DEFERRED', 0))]
-                 if plan.get('deferred_requirements') or counts.get('NA_DEFERRED') else []) + [
-            '| 发现的错误，按严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(by_sev.get(s, 0)) for s in SEVERITIES),
-            '| 其中文档错误 | %d |' % len(doc_defects),
-            '| 待办（同一原因合并） | %d 件 |' % len(tasks),
-            '| 资料不足的检查，可能的严重程度 P0 / P1 / P2 / P3 | %s |' % ' / '.join(str(pot.get(s, 0)) for s in SEVERITIES),
-            ] + gap_subclass_counts(results, gaps) + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),
-                                                  ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
-                 if classes else []) + [
-            '| 交给后续环节的要求 | %d |' % (len(handoffs) + len(settings))] + (
-            ['| 合格但有风险（不影响定稿，见“风险清单”） | %d 项 |' % len(risky)] if risky else []) + [
-            '| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | %d |' % len(screen),
-            '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '']
-    out[counts_at:counts_at] = counts_block
     explanations = render_check_explanations(plan, results) if detail == 'full' else []
     if explanations:
         out += ['<details>', '<summary>展开逐项依据与通过标准（完整保留）</summary>', ''] + explanations + ['</details>', '']

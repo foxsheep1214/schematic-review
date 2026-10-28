@@ -1,6 +1,30 @@
 # 原理图审查报告
 
-## 数字一览
+## 结论
+
+**可以定稿。** 电路和文档都没有发现错误。
+
+检查 7 条，资料不足 0 条；交给后续环节 1 条。
+
+这是设计中途的检查。
+
+## 附录
+
+<details>
+<summary>交给后续环节的要求</summary>
+
+下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，也不影响原理图定稿。原理图交出时把对应的表交给负责方即可。
+
+#### Synthetic test engineer（1 条）
+
+| 涉及位号/网络 | 要落实的要求 | 怎么验证 |
+|---|---|---|
+| 整板 | Retain controlled product test criterion | Measure prototype under controlled test configuration |
+
+</details>
+
+<details>
+<summary>数字一览</summary>
 
 | 项目 | 数量 |
 |---|---|
@@ -17,19 +41,7 @@
 | 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | 0 |
 | 上一版问题的处理记录（不计入上面各行） | 0 |
 
-## 结论
-
-**可以定稿。** 电路和文档都没有发现错误。
-
-这是设计中途的检查。
-
-## 交给后续环节的要求
-
-下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，也不影响原理图定稿。原理图交出时把这张表一起交给对应负责方即可。
-
-| 负责方 | 检查 | 涉及位号/网络 | 要落实的要求 | 怎么验证 |
-|---|---|---|---|---|
-| Synthetic test engineer | RST-E01.C1 | 整板 | Retain controlled product test criterion | Measure prototype under controlled test configuration |
+</details>
 
 ## 索引
 

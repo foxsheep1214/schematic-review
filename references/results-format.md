@@ -16,7 +16,7 @@
 
 “资料不足”只有一个入口：先有功能判定的开放项，才有 INSUFFICIENT 的检查项。
 
-## 三、review-results.json（schema_version 12）
+## 三、review-results.json（schema_version 14）
 
 ### 顶层字段
 
@@ -637,8 +637,8 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
 
 ### 发现项
 
-每个 `findings[]` 含 id、kind（DEFECT / IMPROVEMENT）、severity、check_ids 及非空的 `title`、`observed`、
-`criterion`、`impact`、`scenario`、`root_cause`、`recommendation`、`verification`、`severity_reason`、`remediation`；
+每个 `findings[]` 含 id、kind（DEFECT / IMPROVEMENT）、severity、check_ids 及非空的 `title`、`root_cause`、
+`consequence`、`fix`、`severity_reason`、`remediation`（结果格式 14，旧字段拒收）；
 `location` 含 pages/refs/nets 字符串数组，缺图面时写“未定位：缺某版本 PDF”，不编造页码。
 `--require-actionable` 下 P0/P1 的 DEFECT 另带 `figures`（kind/source/locator/caption），至少一张 ACTUAL；修改方案含 CONNECT/COMPONENT/DESIGN 步骤时再加 AFTER 或 REFERENCE，见 [用图说话](report-and-remediation.md#用图说话)。`root_cause` 写电路为什么失效（哪个量越过哪个限值），不写缺哪个器件。
 

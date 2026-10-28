@@ -42,7 +42,8 @@ class ToHtmlTests(unittest.TestCase):
         self.assertIn('<ol>\n<li>先改 F1</li>\n<li>再复审</li>\n</ol>', h)
 
     def test_figures_show_inline_and_details_stay_foldable(self):
-        self.assertIn('<figure><img src="record/evidence/figures/F1-actual.png" alt="现状电路"></figure>', self.html)
+        self.assertIn('<figure><a href="record/evidence/figures/F1-actual.png"><img src="record/evidence/figures/F1-actual.png" '
+                      'alt="现状电路"></a><figcaption>现状。现状电路</figcaption></figure>', self.html)
         self.assertIn('<details>\n<summary>展开</summary>', self.html)
         self.assertIn('<li>细节</li>', self.html)
 

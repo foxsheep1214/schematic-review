@@ -130,7 +130,7 @@ class PinFeedTests(unittest.TestCase):
         plan = build_review_plan(db, intent)
         report = deferred(ledger(plan, db))
         text = render(plan, report, validate_review(plan, report, db))
-        section = text.split('## 设计输入要改的写法')[1].split('\n## ')[0]
+        section = text.split('<summary>设计输入要改的写法</summary>')[1].split('</details>')[0]
         self.assertIn('R1：`47R/2W/5%/1%`', section)
         self.assertEqual(render_report.render_input_notes({'diagnostics': []}), [])
 

@@ -154,22 +154,22 @@ class ParameterSheetTests(unittest.TestCase):
         p, r, db = ledger(bias_function('PASS'))
         gate = vr.validate_review(p, r, db)
         self.assertEqual([row['ref'] for row in gate['parameter_sheet']], ['D2', 'Q2', 'U1'])
-        compact = render(p, r, gate)
-        self.assertIn('## 器件参数表', compact)
-        self.assertIn('| U1 | U1.txt（p7–9） | 2 | 1 / 0 / 1 | FN-BIAS |', compact)
-        self.assertNotIn('逐参数', compact)
+        compact = render(p, r, gate)   # the sheet is in review-gate.json; only the full report shows it
+        self.assertNotIn('器件参数表', compact)
         full = render(p, r, gate, detail='full')
+        self.assertIn('<summary>器件参数表</summary>', full)
+        self.assertIn('| U1 | U1.txt（p7–9） | 2 | 1 / 0 / 1 | FN-BIAS |', full)
         self.assertIn('| U1 | VCC(off) max 8.8 V | ≤ 8.8 V | −10..105 °C | 保证值 | U1.txt p7 Table 7 | 余量：VCC(off) max 8.8 V |', full)
         self.assertIn('| Q2 | VGS(th) 1.0–2.0 V @250 µA | 1.0–2.0 V |', full)
         self.assertIn('| 强制条款 |', full)
         without = copy.deepcopy(gate)
         without['parameter_sheet'] = []
-        self.assertNotIn('器件参数表', render(p, r, without))
+        self.assertNotIn('器件参数表', render(p, r, without, detail='full'))
 
-    def test_the_results_format_is_13_and_a_format_6_record_is_refused(self):
-        self.assertEqual(results_model.SCHEMA_VERSION, 13)
+    def test_the_results_format_is_14_and_a_format_6_record_is_refused(self):
+        self.assertEqual(results_model.SCHEMA_VERSION, 14)
         found = results_model.shape_errors({'schema_version': 6, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be 13' in e for e in found), found)
+        self.assertTrue(any('schema_version must be 14' in e for e in found), found)
 
 
 class CompareTests(unittest.TestCase):

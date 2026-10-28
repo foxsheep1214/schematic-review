@@ -194,8 +194,8 @@ class EstimateGradeAndReleaseTests(unittest.TestCase):
         import render_report
         p, r, db, out = self.passing()
         md = render_report.render(p, r, out, {})
-        self.assertIn('## 风险清单', md)
-        self.assertIn('### 一致性风险（1 项）', md)
+        self.assertIn('<summary>风险清单</summary>', md)   # in the appendix, folded
+        self.assertIn('#### 一致性风险（1 项）', md)
         self.assertIn('| 合格但有风险（不影响定稿，见“风险清单”） | 1 项 |', md)
         self.assertIn('有 1 项合格但有风险（一致性 1）', md)
         row = next(l for l in md.split('\n') if l.startswith('| FN-OTHER |') and 'ZENER-VZ-LOWER' in l)

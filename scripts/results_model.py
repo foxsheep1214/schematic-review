@@ -19,7 +19,10 @@ import copy
 from collections import Counter
 from electrical_contract import text
 
-SCHEMA_VERSION = 13   # 13 (2026-10-27): no zero margin whose stress is only a handed-on DESIGN_CONSTRAINT; the pass
+SCHEMA_VERSION = 14   # 14 (2026-10-27): a finding says root_cause (cause, mechanism, the value against its limit),
+# consequence and fix once; observed/criterion/impact/scenario/recommendation/verification are retired, the checks
+# after the fix are remediation.verification[] (the report was too long: user 2026-10-27, 卡片字段合并也改格式)
+# 13 (2026-10-27): no zero margin whose stress is only a handed-on DESIGN_CONSTRAINT; the pass
 # on a constraint is a judgements entry citing it and the rating
 # 12 (2026-10-27): no USER_DEFERRED open items; a check the user deferred is NA with na_reason
 # USER_DEFERRED and the instruction, listed as outside this review's scope

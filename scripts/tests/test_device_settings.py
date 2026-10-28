@@ -114,8 +114,7 @@ class SettingTests(unittest.TestCase):
         self.assertEqual([(s['ref'], s['group'], s['value'], s['used_in']) for s in out['configuration_settings']],
                          [('R1', 'CAPABILITY', '20 V 档', ['FN-BIAS/' + r['functions'][0]['conditions'][3]['id']])])
         text = render(p, r, out)
-        section = text.split('## 交给后续环节的要求')[1].split('\n## ')[0]
-        self.assertIn('### 配置表要写的设置', section)
+        section = text.split('<summary>配置表要写的设置</summary>')[1].split('</details>')[0]
         self.assertIn('| R1 | CAPABILITY | 20 V 档 |', section)
 
 

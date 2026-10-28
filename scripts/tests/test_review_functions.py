@@ -204,7 +204,7 @@ class FunctionShapeTests(unittest.TestCase):
         self.assertTrue(any('proves the worst case misses the limit' in e for e in errors), errors)
         fn.update(verdict='FAIL', open=[], fails=[{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC 无余量',
                                                    'decides': [{'aspect': ASPECT, 'states': ['STARTUP', 'RUN']}]}])
-        finding = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': 'R3 改 100 Ω'}}
+        finding = {'id': 'F1', 'remediation': {'readiness': 'READY'}}
         self.assertEqual(function_errors({'functions': [fn], 'findings': [finding]}), [])
         fn['calculation']['margin']['basis'] = guaranteed()   # the same fail over a merely missed bound rests on nothing
         errors = function_errors({'functions': [fn], 'findings': [finding]})
@@ -333,7 +333,7 @@ class PublicBoundTests(unittest.TestCase):
                         'decides': [{'aspect': ASPECT, 'states': ['LATCH']}]}]
         errors = function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]})
         self.assertTrue(any('remediation' in e for e in errors), errors)
-        fixed = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': 'R3 改 100 Ω，VF 降 0.3 V'}}
+        fixed = {'id': 'F1', 'remediation': {'readiness': 'READY'}}
         self.assertEqual(function_errors({'functions': [fn], 'findings': [fixed]}), [])
         fn['calculation']['margin']['value'] = 0.5   # the reachable case meets the limit: it proves nothing about the fail
         errors = function_errors({'functions': [fn], 'findings': [{'id': 'F1'}]})
@@ -371,7 +371,7 @@ class PublicBoundTests(unittest.TestCase):
                         'outside_specified': {'condition': 'c1', 'operating_point': 'D2 正向电流 20 µA',
                                               'curves_checked': [{'source': 'evidence/ds/D2.txt', 'locator': 'Fig. 2 IF-VF'},
                                                                  {'source': 'evidence/ds/D2.txt', 'locator': 'p3 电气特性'}]}}]
-        finding = {'id': 'F1', 'remediation': {'readiness': 'READY', 'purpose': 'R3 改 1 kΩ，使 D2 回到 10 mA 以上'}}
+        finding = {'id': 'F1', 'remediation': {'readiness': 'READY'}}
         self.assertEqual(function_errors({'functions': [fn], 'findings': [finding]}), [])
         del fn['fails'][0]['outside_specified']['curves_checked']
         errors = function_errors({'functions': [fn], 'findings': [finding]})
@@ -456,8 +456,8 @@ class OpenItemReportTests(unittest.TestCase):
         p, r, db = ledger(fn)
         out = vr.validate_review(p, r, db)
         section = render(p, r, out).split('### W-AUX-5V-MIN')[1].split('\n## ')[0]
-        self.assertIn('- **这个缺口影响哪些判断**：%s（STARTUP、RUN）：启动和运行态 VCC 由辅助绕组经 Q2 供给' % ASPECT, section)
-        self.assertIn('（出处 U1.txt p7 Table 7）', section)   # one source for every entry: said once (5.1)
+        # the card names the blocked conclusion; why the quantity enters it stays in the ledger (2026-10-27)
+        self.assertIn('- **影响哪些结论**：%s（STARTUP、RUN）\n' % ASPECT, section)
 
     def test_the_kind_of_missing_data_is_named(self):
         # Five vendor-data gaps on the R5 bench all had a negative margin under the public bound and read "missing
@@ -466,7 +466,7 @@ class OpenItemReportTests(unittest.TestCase):
         p, r, db = ledger(fn)
         out = vr.validate_review(p, r, db)
         section = render(p, r, out).split('### W-HV-IV')[1].split('\n## ')[0]
-        self.assertIn('类型：缺资料（按公开资料界限算不够）', section)
+        self.assertIn('　缺资料（按公开资料界限算不够）　', section)
         self.assertIn('| 资料不足细分：按公开资料界限算不够 / '
                       '按公开资料界限算够，但不是保证值 / 公开资料定不出界限 | 3 / 0 / 0 |', render(p, r, out))
         sub = results_model.gap_subclass
@@ -510,9 +510,7 @@ class OpenItemReportTests(unittest.TestCase):
         out = vr.validate_review(p, r, db)
         self.assertTrue(out['valid'], out['errors'])
         section = render(p, r, out).split('### W-HV-IV')[1].split('\n## ')[0]
-        self.assertIn('- **公开资料界限下的最坏情况**：按 120 V 测试点下界，40 V 时按线性外推 0.8 mA（界：IHV ≥ 2.4 mA @120 V，U1.txt p7 Table 7）', section)
-        self.assertIn('：启动电流决定 VCC 能否在 HV 供电下升过 UVLO', section)
-        self.assertIn('（出处 U1.txt p7 Table 7）', section)
+        self.assertIn('- **最坏情况**：按 120 V 测试点下界，40 V 时按线性外推 0.8 mA（界：IHV ≥ 2.4 mA @120 V，U1.txt p7 Table 7）', section)
 
 
 
@@ -530,8 +528,7 @@ class RowBindingTests(unittest.TestCase):
         run.update(review_result='FAIL', severity='P1', finding_id='F1')
         r['findings'] = [{'id': 'F1', 'kind': 'DEFECT', 'severity': 'P1', 'check_ids': [run['id']],
                           'location': {'pages': ['1'], 'refs': ['Q2'], 'nets': ['VCC']},
-                          **{k: 'synthetic' for k in ('title', 'observed', 'criterion', 'impact', 'scenario',
-                                                      'root_cause', 'recommendation', 'verification', 'severity_reason')}}]
+                          **{k: 'synthetic' for k in ('title', 'root_cause', 'consequence', 'fix', 'severity_reason')}}]
         self.assertTrue(any('fail_ref' in e for e in vr.validate_review(p, r, db)['errors']))
         fn = r['functions'][0]
         fn.update(verdict='FAIL', fails=[{'key': 'VCC-LOW', 'finding_id': 'F1', 'what': 'VCC below 8.8 V',
@@ -583,7 +580,7 @@ class DerivedLevelsTests(unittest.TestCase):
         text = render(p, r, out)
         self.assertIn('另有 2 件事因为缺资料，现在还判断不了，其中 1 件可能损坏器件或危及安全（P0）', text)
         section = text.split('### W-AUX-5V-MIN')[1].split('### ', 1)[0]
-        self.assertIn('（P1）', section)
+        self.assertIn('**P1 ', section)
         self.assertNotIn('原厂应用支持', section)
 
 
@@ -595,13 +592,13 @@ class ReportTests(unittest.TestCase):
         from render_report import function_basis
         margin = {'value': -0.0612103174603175, 'unit': 'us', 'against': 'demag ≥ min on-time'}
         fn = {'calculation': {'result': 'demag 0.839 us', 'margin': [dict(margin, aspect=a) for a in ('t', 'loss', 'drive')]}}
-        self.assertEqual(function_basis(fn), 'demag 0.839 us；余量 -0.06121 us 对 demag ≥ min on-time')
-        fn['calculation']['margin'][1]['value'] = 12.3456789
-        self.assertEqual(function_basis(fn).count('余量'), 2)
-        self.assertIn('余量 12.35 us', function_basis(fn))
+        self.assertEqual(function_basis(fn), '余量 -0.06121 us 对 demag ≥ min on-time')
+        fn['calculation']['margin'][0]['value'] = 12.3456789   # a shortfall is shown first, the rest counted
+        self.assertEqual(function_basis(fn), '余量 -0.06121 us 对 demag ≥ min on-time（另 1 项见台账）')
         fn['calculation']['margin'] = [{'value': 0.8, 'unit': 'V', 'against': 'x'}, {'value': 150000, 'unit': 'Hz', 'against': 'y'}]
         self.assertIn('余量 0.8 V', function_basis(fn))
-        self.assertIn('余量 150000 Hz', function_basis(fn))
+        fn['calculation']['margin'] = []   # nothing compared: the computed result
+        self.assertEqual(function_basis(fn), 'demag 0.839 us')
 
     def test_function_table_and_counts(self):
         p, r, db = ledger(bias_function())
@@ -610,8 +607,8 @@ class ReportTests(unittest.TestCase):
         text = render(p, r, out)
         self.assertIn('| 功能判定 合格 / 不合格 / 未定 | 0 / 0 / 1 |\n| 检查总数 |', text)
         table = text.split('## 各功能的判断')[1].split('## 待办')[0]
-        self.assertIn('| FN-BIAS | %s | 未定 | VCC_min = 9.6 V；余量 0.8 V 对 VCC(off) max 8.8 V | W-AUX-5V-MIN |'
-                      % bias_function()['question'], table)
+        self.assertIn('| FN-BIAS | %s | 未定 | %s | W-AUX-5V-MIN |'   # an open function shows its open question
+                      % (bias_function()['question'], bias_function()['open'][0]['what']), table)
         self.assertLess(text.index('## 结论'), text.index('## 各功能的判断'))
         codes = [c.get('code') for c in (out.get('quality_screening') or {}).get('candidates') or []]
         self.assertNotIn('REUSED_RATIONALE_ACROSS_SCOPES', codes)   # three rows citing one verdict is the proof
@@ -621,7 +618,7 @@ class ReportTests(unittest.TestCase):
                 row.update(review_result='PASS'); row.pop('open_ref', None)
         text = render(p, r, vr.validate_review(p, r, db))
         self.assertIn('| 功能判定 合格 / 不合格 / 未定 | 1 / 0 / 0 |', text)
-        self.assertIn('| 合格 | VCC_min = 9.6 V；余量 0.8 V 对 VCC(off) max 8.8 V | — |', text)
+        self.assertIn('| 合格 | 余量 0.8 V 对 VCC(off) max 8.8 V | — |', text)
         fn = r['functions'][0]; fn.pop('calculation'); fn['no_calculation_reason'] = '连接性检查，无数值'
         self.assertIn('| 合格 | 连接性检查，无数值 | — |', render(p, r, vr.validate_review(p, r, db)))
 
