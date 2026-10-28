@@ -9,6 +9,22 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Netlist and PDF parsing split from coverage; the six-question regrouping is complete (2026-10-27)
+
+Stage 6 of regrouping the rules by six questions: coverage and revision. inputs-and-coverage.md held both the coverage
+rules (input baseline, three coverage lines, states, reading and end conditions, records, re-review after a redraw) and
+the parser manual (Cadence and KiCad export files, field mapping, self-check, unnamed pins, other EDA adapters, PDF
+extraction and rotated pages). The parser half moves unchanged to input-parsing.md, linked from step ①'s parsing task;
+step ⑤, which reads inputs-and-coverage for the records, now reads 17 KB less. With this stage each of the six questions
+has one home: how a margin is judged (margin-verdicts), where a limit comes from (bounding-table), how it is
+calculated (wca-formulas), whether a rule applies and what evidence is enough (evidence-proportionality), what grade
+and whether to release (verdicts-and-release), and coverage and revision (inputs-and-coverage).
+
+- Event: user:2026-10-27 (“接下来几个阶段，你都自己分析，选取适当的方式进行修改，一直到6个阶段修改都结束。”)
+- Causes: judgment 1 (parser manual kept in the coverage document)
+- Changed: references/input-parsing.md, references/inputs-and-coverage.md, references/architecture.md, SKILL.md, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2335; mutation --changed none (text only)
+
 ## BOM-constraint grading with the other grading rules (2026-10-27)
 
 Stage 5 of regrouping the rules by six questions: what grade a finding gets and whether the design may be released.

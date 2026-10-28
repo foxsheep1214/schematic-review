@@ -22,7 +22,8 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ① −23 KB, ② −20 KB 2026-10-27: the calculation models moved from evidence-proportionality to wca-formulas.
 # ④ +1.6 KB 2026-10-27: the pre-delivery necessity check moved to verdicts-and-release (①–③ lost 2–6 KB with it).
 # ④ +1.9 KB 2026-10-27: the BOM-constraint grading moved from commodity-floors to verdicts-and-release (② −1.8 KB).
-STEP_MAX_BYTES = {'①': 167_800, '②': 157_100, '③': 223_100, '④': 122_900, '⑤': 55_000}
+# ① +0.4 KB, ⑤ −17 KB 2026-10-27: netlist and PDF parsing split from inputs-and-coverage into input-parsing.md.
+STEP_MAX_BYTES = {'①': 168_200, '②': 157_100, '③': 223_100, '④': 122_900, '⑤': 37_800}
 
 
 def section(text, title):

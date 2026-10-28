@@ -126,7 +126,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | ③④ 结果字段：功能判定、条款、余量依据、开放项、单条检查、功能复核 | [results-format.md](references/results-format.md) |
 | 审查员 | ④ 门禁输出怎么读；规则指纹变化后怎样重审 | [gate-and-rerun.md](references/gate-and-rerun.md) |
 | 审查员 | 跨状态计算、局部/整体主张、父项与任务依赖 | [execution-consistency.md](references/execution-consistency.md) |
-| 审查员 | 输入版本、解析、覆盖与留档 | [inputs-and-coverage.md](references/inputs-and-coverage.md) |
+| 审查员 | 输入版本、覆盖与留档 | [inputs-and-coverage.md](references/inputs-and-coverage.md) |
+| 审查员 | 跑解析器、各 EDA 字段映射、解析自检、PDF 提取与读图 | [input-parsing.md](references/input-parsing.md) |
 | 审查员 | 资料补取、保证值核对 | [datasheets.md](references/datasheets.md) |
 | 审查员 | 复用上次核对过的器件角色与供电分组 | [reviewed-declarations.md](references/reviewed-declarations.md) |
 | 审查员 | 工程计算公式；修改建议的计算预检查 | [wca-formulas.md](references/wca-formulas.md)、[calculation-preflight.md](references/calculation-preflight.md) |
@@ -187,6 +188,8 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 `requirement_source`、输入文件的版本与哈希已记录；`review_phase` 已设。
 
 #### 1.2 解析与完整性
+
+解析器、字段映射与自检失败怎么读见[输入解析](references/input-parsing.md)。
 
     python3 scripts/parse_netlist.py <allegro目录> -o db.json
     python3 scripts/parse_kicad.py <文件.kicad_sch|kicadxml> -o db.json
