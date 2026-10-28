@@ -1129,7 +1129,7 @@ BOUND_METHODS = OrderedDict((m.code, m) for m in (
 ESTIMATE_METHODS = tuple(m.code for m in BOUND_METHODS.values() if m.basis == '估算')
 # 没有格时取界的先后（原 evidence-proportionality 第 4 步）
 CELL_ONLY_METHODS = ('SOA', 'FORCED_BETA')
-METHOD_ORDER = ('G1', 'G2', 'G3', 'G5', 'G4', 'G6', 'G10', 'G7', 'G8', 'G9', 'G11')
+BOUND_METHOD_ORDER = ('G1', 'G2', 'G3', 'G5', 'G4', 'G6', 'G10', 'G7', 'G8', 'G9', 'G11')
 BOUND_FALLBACKS = OrderedDict((
     ('VENDOR_DATUM', '缺厂家数据（第三档），按后果定级'),
     ('OUTSIDE_SPECIFIED', '超出规定区（第四档），记失败项'),
@@ -1443,7 +1443,7 @@ def render_bounds_markdown():
     out += ['| %s | %s | %s |' % (m.code, _cell(m.name), m.basis) for m in BOUND_METHODS.values()]
     out += ['', '决定性余量和开放项的公开界限都写推法（`basis.method`、`worst_case.bound.method`）。表里有格的按格的推法；'
             '没有格（`cell: NONE`）时按这个先后取，前一种拿得到就不用后一种：%s。依据为“估算”的推法只给 ESTIMATE，'
-            '典型件已不够时给 REACHABLE_CASE。SOA、FORCED_BETA 只随格用。' % ' → '.join(METHOD_ORDER)]
+            '典型件已不够时给 REACHABLE_CASE。SOA、FORCED_BETA 只随格用。' % ' → '.join(BOUND_METHOD_ORDER)]
     out += ['', '### 推不出时', '', '| 写法 | 意思 |', '|---|---|']
     out += ['| `%s` | %s |' % item for item in BOUND_FALLBACKS.items()]
     out += ['', '### 逐格', '', '| 格 | 器件类别 | 参数 | 开着的一侧 | 随什么变 / 方向 | 推法（公式） | 推不出时 | 出处 |',

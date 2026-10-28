@@ -9,6 +9,32 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Codex review of the regrouping: five fixes (2026-10-28)
+
+A Codex review of ef01ddc (SR技能待整改文件清单_2026-10-27.md) listed seven items; its six scenarios were rerun on ef01ddc
+and all reproduced. The five the user called undisputed are fixed; SR-FIX-02 (how a numeric design constraint equal to
+the rating is written) and SR-FIX-05 (how far derating-rule applicability is checked) wait for the user's choice.
+- SR-FIX-01: a margin with no aspect covered every aspect of its frame (one voltage margin passed fifteen rows over five
+  aspects). A margin now names its aspect (its own or calculation.aspect), and an entry without an aspect matches no
+  aspect, so the row derivation no longer passes rows from it either.
+- SR-FIX-03: the risk list took the first estimate or STRESS margin of a row, so a second corner depended on record
+  order. prototype_estimates lists them all; life and STRESS margins likewise; the report keeps one row per margin.
+- SR-FIX-04: catalog's bounding-method order (stage 2) was overwritten by the check-method order AETCDVQH of the same
+  name, so the bounding table and an error hint recommended A → E → T…. Renamed BOUND_METHOD_ORDER, table regenerated,
+  a test checks every entry is a bounding method.
+- SR-FIX-06: the duplicate-margin key was value, unit and text, refusing the same number in STARTUP and RUN. The key now
+  includes states, check_ids and the limit; a copy onto another aspect is still refused.
+- SR-FIX-07: check-catalog said results format 12 (now points to the architecture table) and that a missing guarantee is
+  INSUFFICIENT (now: bound by the table first); wca-formulas called a typical-value pass B (it is C, a pass with a risk)
+  and pointed at a step-4 wording that no longer exists; the bounding table's zener note still said a vendor gap below
+  the lowest test point; verdicts-and-release now says why a TO_WRITE BOM constraint, even P3, blocks the freeze while a
+  risk does not.
+
+- Event: user:2026-10-28 (“先修无争议的五项”)
+- Causes: rule_not_enforced 2 (SR-FIX-01, SR-FIX-03); judgment 1 (SR-FIX-06); knowledge_wrong 2 (SR-FIX-04 introduced in stage 2, SR-FIX-07 wording)
+- Changed: scripts/catalog.py, scripts/review_functions.py, scripts/function_reading.py, scripts/tests/test_bounding_table.py, scripts/tests/test_derive_rows.py, scripts/tests/test_cell_boundary.py, scripts/tests/test_operating_point_tiers.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, references/bounding-table.md, references/wca-formulas.md, references/check-catalog.md, references/verdicts-and-release.md, docs/improvement-ledger.md
+- Gates: pytest 2349; mutation --changed 200 on 13 files, all killed at the unit tier after re-anchoring M63, M496, M701, M705 (lines changed in stage 3 and here); Codex scenarios rerun: SR-FIX-01, 03, 04, 06 no longer reproduce
+
 ## A resistor whose power matters must have its power rating in the BOM (2026-10-27)
 
 The user: when power has to be considered, the design writes the power rating next to the value and tolerance, as a

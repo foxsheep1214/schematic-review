@@ -249,6 +249,10 @@ class CellRequiredTests(unittest.TestCase):
         self.assertEqual(errors(bias_function('PASS')), [])     # the fixture writes NONE
         self.assertFalse(about(errors(computed(cell='NONE', method='G1')), 'method'))   # results 15: any general method
         self.assertTrue(about(errors(computed(cell='NONE', method='SOA')), 'belongs to its cells'))
+        # the order outside the table names bounding methods only, not the check methods A/E/T… (SR-FIX-04)
+        self.assertTrue(set(catalog.BOUND_METHOD_ORDER) <= set(catalog.BOUND_METHODS) - set(catalog.CELL_ONLY_METHODS))
+        self.assertEqual(catalog.METHOD_ORDER, 'AETCDVQH')
+        self.assertTrue(about(errors(computed(cell='NONE', method='SOA')), 'G1/G2'))
         self.assertEqual(errors(computed(cell='NONE', formula=dict(SLOPE))), [])   # a formula may still be rerun
         fn = bias_function('PASS')
         fn['calculation']['margin']['basis'] = {'kind': 'ESTIMATE', 'comparison': 'GE', 'scope': '按典型值估', 'conditions': ['c1']}

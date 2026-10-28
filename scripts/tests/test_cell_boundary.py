@@ -14,6 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import derive_rows
 import function_reading
+import render_report
 import validate_review as vr
 from test_estimate_pass import estimated, other_row
 from test_review_functions import ASPECT
@@ -105,6 +106,49 @@ class CellBoundaryTests(unittest.TestCase):
         fn = r['functions'][1]
         self.assertIsNotNone(function_reading.prototype_estimate(fn, ASPECT, 'RUN', 'PWR-C02.OTHER-RUN.Q9'))
         self.assertIsNone(function_reading.prototype_estimate(fn, ASPECT, 'RUN', 'PRO-C02.NOTRIP.D403'))
+
+
+class EveryRiskCornerTests(unittest.TestCase):
+    """SR-FIX-03 (Codex review 2026-10-27): two estimated corners of one aspect listed only the one written first."""
+
+    def corners(self, swap=False):
+        p, r, db = estimated(cell='ZENER-VZ-LOWER', method='G8', estimate_factor=1.2)
+        a = margin_of(r)
+        a['basis']['risk']['corner'] = 'corner A'
+        b = copy.deepcopy(a)
+        b['value'] += 0.2
+        b['against'] = 'second required voltage window'
+        b['basis']['risk']['corner'] = 'corner B'
+        ms = r['functions'][1]['calculation']['margin']
+        ms.append(b)
+        if swap:
+            i, j = ms.index(a), ms.index(b)
+            ms[i], ms[j] = ms[j], ms[i]
+        rows, _, _ = derive_rows.derive(p, r)
+        g = vr.validate_review(p, rows, db)
+        self.assertTrue(g['valid'], g['errors'])
+        return g
+
+    def test_both_corners_are_listed_in_either_order(self):
+        for swap in (False, True):
+            g = self.corners(swap)
+            self.assertEqual(sorted(x['corner'] for x in g['risks'] if x['function_id'] == 'FN-OTHER'),
+                             ['corner A', 'corner B'])
+            shown = render_report.risk_rows(g['risks'])
+            self.assertEqual(sorted(x['corner'] for x in shown if x['function_id'] == 'FN-OTHER'),
+                             ['corner A', 'corner B'])
+
+
+    def test_every_stress_margin_is_listed(self):
+        import review_functions
+        def stressed(value, corner):
+            return {'aspect': ASPECT, 'value': value, 'unit': 'V', 'against': corner,
+                    'basis': {'kind': 'GUARANTEED_BOUND', 'comparison': 'GE',
+                              'risk': {'types': ['STRESS'], 'corner': corner, 'improvement': '换额定更高的件'}}}
+        fn = {'id': 'FN-Q', 'calculation': {'margin': [stressed(5, 'VDS 稳态'), stressed(3, 'VDS 关断尖峰')]}}
+        found = review_functions.risks({}, {'DEV-C01.Q1': {'function_id': 'FN-Q', 'review_result': 'PASS',
+                                                            'aspect': ASPECT}}, [fn])
+        self.assertEqual(sorted(x['corner'] for x in found), ['VDS 关断尖峰', 'VDS 稳态'])
 
 
 class EstimateGradeAndReleaseTests(unittest.TestCase):

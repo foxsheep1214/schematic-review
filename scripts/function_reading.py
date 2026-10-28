@@ -48,7 +48,8 @@ def scope(entry, default_aspect=None):
 
 
 def overlaps(a, b):
-    return ((a[0] is None or b[0] is None or a[0] == b[0]) and bool(a[1] & b[1])
+    # an entry without an aspect speaks for none, not for every aspect (SR-FIX-01, 2026-10-28)
+    return (a[0] is not None and a[0] == b[0] and bool(a[1] & b[1])
             and (a[2] is None or b[2] is None or bool(a[2] & b[2])))
 
 
@@ -150,19 +151,27 @@ def estimate_passes(fn, m, check_id=None):
     return cls in ESTIMATE_PASS_CLASSES and not (isinstance(check_id, str) and NO_ESTIMATE_PASS_RE.match(check_id))
 
 
-def prototype_estimate(fn, aspect, state=None, check_id=None):
-    """An ESTIMATE margin that meets its target and is handed to the prototype test it names (2.1): (rationale, handoff)
-    or None. Its cell's boundary says which consequence class it may pass; with cell NONE, not a rule about damage,
-    overheating or protection."""
+def prototype_estimates(fn, aspect, state=None, check_id=None):
+    """Every ESTIMATE margin that meets its target and is handed to the prototype test it names (2.1): [(rationale,
+    handoff, margin)], in record order. Its cell's boundary says which consequence class it may pass; with cell NONE,
+    not a rule about damage, overheating or protection. The risk list takes them all (SR-FIX-03, 2026-10-28)."""
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+    out = []
     for m in margins(calc):
         basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
         met = finite(m.get('value')) and (m['value'] >= 0 if basis.get('comparison') == 'GE' else m['value'] > 0)
         if met and estimate_passes(fn, m, check_id) and covers(scope(m, calc.get('aspect')), aspect, state, check_id):
             handoff = estimate_handoff(fn, basis)
-            return ('%s；估算余量 %s%s 对 %s，样机实测移交：%s' % (calc.get('result') or '', m['value'], m.get('unit') or '',
-                                                     m.get('against') or '', handoff['verification']), handoff, m)
-    return None
+            out.append(('%s；估算余量 %s%s 对 %s，样机实测移交：%s' % (calc.get('result') or '', m['value'],
+                                                         m.get('unit') or '', m.get('against') or '',
+                                                         handoff['verification']), handoff, m))
+    return out
+
+
+def prototype_estimate(fn, aspect, state=None, check_id=None):
+    """The first of prototype_estimates — what a row passed on an estimate says — or None."""
+    found = prototype_estimates(fn, aspect, state, check_id)
+    return found[0] if found else None
 
 
 def design_constraint(fn, aspect, state=None, check_id=None):

@@ -1177,7 +1177,7 @@ def _formula_errors(label, basis):
     if basis.get('cell') == catalog.NO_CELL:
         if basis.get('method') in catalog.CELL_ONLY_METHODS:
             return ['%s: %s belongs to its cells; name the cell, or use one of %s outside the table'
-                    % (label, basis['method'], '/'.join(catalog.METHOD_ORDER))]
+                    % (label, basis['method'], '/'.join(catalog.BOUND_METHOD_ORDER))]
     elif 'cell' in basis:
         bound = catalog.BOUNDS.get(basis['cell'])
         if bound is None:
@@ -1406,6 +1406,12 @@ def function_errors(report, document_only=(), db=None, audit=None):
             elif margin is not None:
                 stated = {}
                 for k, m in enumerate(items):
+                    if not text(m.get('aspect') or calculation.get('aspect')):
+                        # SR-FIX-01 (2026-10-28): a margin without an aspect covered every aspect of the frame, so one
+                        # voltage margin passed fifteen rows over five aspects; it now names the aspect it proves
+                        errors.append('%s/margin[%d]: name the aspect this margin proves (margin.aspect, or '
+                                      'calculation.aspect for all its margins); a margin without one proves no aspect'
+                                      % (fid, k))
                     errors.extend(_basis_errors('%s/margin[%d]' % (fid, k), m, conditions_by_id, claim_ids))
                     basis = m.get('basis') if isinstance(m.get('basis'), dict) else {}
                     if basis.get('kind') == 'ESTIMATE' and 'handoff' in basis and not estimate_handoff(fn, basis):
@@ -1421,7 +1427,11 @@ def function_errors(report, document_only=(), db=None, audit=None):
                                       'says the constraint, not a margin; write the pass as a judgements entry '
                                       '{aspect, conditions: [the constraint, the rating], says} and keep the constraint '
                                       'in conditions with its handoff (results 13)' % (fid, k))
-                    same = (m['value'], m['unit'].strip(), m['against'].strip())
+                    # the same number in another state, for other checks or against another limit is another margin;
+                    # only a copy (differing at most in aspect) is refused (SR-FIX-06, 2026-10-28)
+                    same = (m['value'], m['unit'].strip(), m['against'].strip(),
+                            tuple(sorted(map(str, m.get('states') or ()))), tuple(sorted(map(str, m.get('check_ids') or ()))),
+                            str(basis.get('limit')))
                     if same in stated:
                         errors.append('%s/margin[%d]: the same margin as margin[%d] (%s %s against %s); a defect lands on '
                                       'the aspect its margin proves — another aspect needs another quantity'
@@ -2062,33 +2072,36 @@ def risks(expected, checks, functions):
             continue
         state = ((expected.get(cid) or {}).get('object') or {}).get('state')
         calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
-        estimate = prototype_estimate(fn, row['aspect'], state, cid)
-        if estimate and judged(fn, row['aspect'], state, cid) == estimate[0]:
-            rationale, handoff, m = estimate
-            basis = m.get('basis') or {}
-            rule = catalog.estimate_rule(basis.get('cell'), basis.get('consequence_class')) if estimate_in_table(basis) else None
-            out.append(_risk_entry(cid, fn, row, state, m, (), 'ESTIMATE', cell=basis.get('cell'),
-                                   consequence_class=basis.get('consequence_class'),
-                                   estimate_factor=basis.get('estimate_factor'),
-                                   how=rule.how if rule else basis.get('scope'),
-                                   verification=handoff.get('verification'),
-                                   receivers=list(handoff.get('receivers') or [])))
+        # every margin that carries the risk is listed, not the first one (SR-FIX-03, 2026-10-28: two estimated corners
+        # of one aspect listed only the one written first)
+        estimates = function_reading.prototype_estimates(fn, row['aspect'], state, cid)
+        if estimates and judged(fn, row['aspect'], state, cid) == estimates[0][0]:
+            for _, handoff, m in estimates:
+                basis = m.get('basis') or {}
+                rule = (catalog.estimate_rule(basis.get('cell'), basis.get('consequence_class'))
+                        if estimate_in_table(basis) else None)
+                out.append(_risk_entry(cid, fn, row, state, m, (), 'ESTIMATE', cell=basis.get('cell'),
+                                       consequence_class=basis.get('consequence_class'),
+                                       estimate_factor=basis.get('estimate_factor'),
+                                       how=rule.how if rule else basis.get('scope'),
+                                       verification=handoff.get('verification'),
+                                       receivers=list(handoff.get('receivers') or [])))
             continue
         if life_row(cid) and not margin_proves(fn, row['aspect'], state, cid) \
                 and life_estimate(fn, row['aspect'], state, cid):
-            m = next(m for m in function_reading.margins(calc) if (m.get('basis') or {}).get('kind') == 'ESTIMATE'
-                     and covers(scope(m, calc.get('aspect')), row['aspect'], state, cid))
             constraint = row.get('bom_constraint') if isinstance(row.get('bom_constraint'), dict) else {}
-            entry = _risk_entry(cid, fn, row, state, m, ('LIFETIME',), 'LIFE')
-            entry['improvement'] = entry['improvement'] or constraint.get('requirement')
-            out.append(entry)
+            for m in function_reading.margins(calc):
+                if (m.get('basis') or {}).get('kind') == 'ESTIMATE' \
+                        and covers(scope(m, calc.get('aspect')), row['aspect'], state, cid):
+                    entry = _risk_entry(cid, fn, row, state, m, ('LIFETIME',), 'LIFE')
+                    entry['improvement'] = entry['improvement'] or constraint.get('requirement')
+                    out.append(entry)
             continue
         for m in function_reading.margins(calc):
             if (margin_verdict(m) == 'PASS' and (m.get('basis') or {}).get('kind') != 'ESTIMATE'
                     and (m.get('basis') or {}).get('risk')
                     and covers(scope(m, calc.get('aspect')), row['aspect'], state, cid)):
                 out.append(_risk_entry(cid, fn, row, state, m, (), 'STRESS'))
-                break
     return out
 
 

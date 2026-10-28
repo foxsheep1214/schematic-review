@@ -353,8 +353,8 @@
   "id": "M63",
   "name": "evidence over one state covers every state",
   "file": "scripts/function_reading.py",
-  "old": "    return ((a[0] is None or b[0] is None or a[0] == b[0]) and bool(a[1] & b[1])",
-  "new": "    return ((a[0] is None or b[0] is None or a[0] == b[0]) and True"
+  "old": "    return (a[0] is not None and a[0] == b[0] and bool(a[1] & b[1])",
+  "new": "    return (a[0] is not None and a[0] == b[0] and True"
  },
  {
   "id": "M64",
@@ -3160,8 +3160,8 @@
   "id": "M496",
   "name": "a hot MOSFET RDS cannot be bounded from a favourable test point",
   "file": "scripts/catalog.py",
-  "old": "(('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”',",
-  "new": "(('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“MOS 热态 RDS”',"
+  "old": "(('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '本表推法 G7',",
+  "new": "(('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '本表推法 G7',"
  },
  {
   "id": "M497",
@@ -4483,8 +4483,8 @@
   "id": "M701",
   "name": "a zener below its lowest test current may wait for vendor data again",
   "file": "scripts/catalog.py",
-  "old": "(('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'OUTSIDE_SPECIFIED', _EP + '“齐纳管低电流”",
-  "new": "(('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“齐纳管低电流”"
+  "old": "(('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'OUTSIDE_SPECIFIED', _WCA + '“齐纳管低电流”",
+  "new": "(('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'VENDOR_DATUM', _WCA + '“齐纳管低电流”"
  },
  {
   "id": "M704",
@@ -4497,8 +4497,8 @@
   "id": "M705",
   "name": "a diode surge with no IFSM may wait for vendor data",
   "file": "scripts/catalog.py",
-  "old": "    Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',\n          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'OUTSIDE_SPECIFIED', _EP + '“脉冲与浪涌”',",
-  "new": "    Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',\n          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'VENDOR_DATUM', _EP + '“脉冲与浪涌”',"
+  "old": "    Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',\n          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'OUTSIDE_SPECIFIED', _WCA + '“脉冲与浪涌”',",
+  "new": "    Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',\n          (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'VENDOR_DATUM', _WCA + '“脉冲与浪涌”',"
  },
  {
   "id": "M706",

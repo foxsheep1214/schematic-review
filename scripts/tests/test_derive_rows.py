@@ -106,6 +106,37 @@ class CrossFunctionTests(unittest.TestCase):
         self.assertTrue(any(OTHER_ROW in e and 'check_ids' in e for e in out['errors']), out['errors'])
 
 
+class MarginAspectTests(unittest.TestCase):
+    """SR-FIX-01 (Codex review 2026-10-27): one voltage margin with no aspect passed all five aspects of the frame."""
+
+    def single_margin(self, aspect=None):
+        p, r, db = bias_plan()
+        f = r['functions'][0]
+        f['open'], f['verdict'] = [], 'PASS'
+        m = f['calculation']['margin'][0]
+        m['states'] = ['STARTUP', 'RUN', 'LATCH']
+        m.pop('aspect', None)
+        f['calculation'].pop('aspect', None)
+        if aspect:
+            m['aspect'] = aspect
+        f['calculation']['margin'] = [m]
+        rows, _, _ = derive_rows.derive(p, r)
+        return vr.validate_review(p, rows, db), rows
+
+    def test_a_margin_without_an_aspect_proves_nothing(self):
+        gate, rows = self.single_margin()
+        self.assertEqual([c for c in rows['checks'] if '.BIAS-' in c['id'] and c.get('review_result') == 'PASS'], [])
+        self.assertFalse(gate['valid'])
+        self.assertTrue(any('name the aspect this margin proves' in e for e in gate['errors']), gate['errors'])
+
+    def test_the_named_aspect_passes_and_the_others_still_need_their_own(self):
+        gate, rows = self.single_margin(ASPECT)
+        results = {c.get('aspect'): c['review_result'] for c in rows['checks'] if '.BIAS-' in c['id']}
+        self.assertEqual(results.get(ASPECT), 'PASS')
+        self.assertEqual([a for a, v in results.items() if a != ASPECT and v == 'PASS'], [], results)
+        self.assertFalse(gate['valid'])   # the other four aspects still wait for their own judgement
+
+
 class DeriveTests(unittest.TestCase):
     def test_the_bias_example_derives_two_open_rows_and_thirteen_pass(self):
         p, r, db = bias_plan()

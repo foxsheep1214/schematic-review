@@ -39,6 +39,28 @@ class DuplicateMarginTests(unittest.TestCase):
         self.assertFalse([e for e in errors(fn) if 'same margin' in e])
 
 
+    def test_the_same_number_in_another_state_check_or_limit_is_another_margin(self):
+        # SR-FIX-06 (Codex review 2026-10-27): STARTUP and RUN gave the same 0.8 V and the second was refused
+        for field, a, b in (('states', ['STARTUP'], ['RUN']), ('check_ids', ['PWR-C01.U1'], ['PWR-C01.U2'])):
+            with self.subTest(field=field):
+                fn = bias_function('PASS')
+                margin = fn['calculation']['margin']
+                fn['calculation']['margin'] = [dict(copy.deepcopy(margin), **{field: a}),
+                                               dict(copy.deepcopy(margin), **{field: b})]
+                self.assertFalse([e for e in errors(fn) if 'same margin' in e])
+        fn = bias_function('PASS')
+        margin = fn['calculation']['margin']
+        other = copy.deepcopy(margin)
+        other['basis']['limit'] = 'c-other'
+        fn['calculation']['margin'] = [margin, other]
+        self.assertFalse([e for e in errors(fn) if 'same margin' in e])
+        # the copy onto another aspect with the same states is still refused
+        fn = bias_function('PASS')
+        margin = dict(fn['calculation']['margin'], states=['RUN'])
+        fn['calculation']['margin'] = [margin, dict(copy.deepcopy(margin), aspect='启动与关断时序')]
+        self.assertTrue([e for e in errors(fn) if 'same margin' in e])
+
+
 class ReferenceCircuitTests(unittest.TestCase):
     """Tier 2: a judgement may rest on the vendor's reference circuit when it states the same connection and the load."""
 
