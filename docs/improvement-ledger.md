@@ -9,6 +9,21 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Rule texts that contradicted the stress spec (2026-10-27)
+
+Reviewing the rule groups for overlap and conflict, four sentences still judged the derated value as a fail after the
+stress spec made it a stress risk: the margin's limit "includes the project derating" and a stress lower bound over
+"the rating or the project derating" is a FAIL (evidence-proportionality.md), a junction temperature over "the limit
+including project derating" is a FAIL (verdicts-and-release.md), and "a transient against its transient rating, no
+further derating" read as if transient derating rules did not apply. The pulse shortcut now compares a pulse beyond
+the continuous rating with the rating for the same waveform, width and repetition. The architecture regrouping by six
+questions follows in stages, each confirmed first.
+
+- Event: user:2026-10-27 (“先修那四处与应力规范冲突的写法；架构按你建议的六个问题分阶段重理，每阶段先给我改单确认。”)
+- Causes: knowledge_wrong 4 (texts written before the stress spec judged the derated value as a fail)
+- Changed: references/evidence-proportionality.md, references/verdicts-and-release.md, docs/improvement-ledger.md
+- Gates: pytest 2332; mutation --changed none (text only)
+
 ## Derating spec: subtypes, negative ratings, relays, oscillators, surge and life wording, NB/T (2026-10-27)
 
 A Codex review of the shared derating spec proposed six additions; each was checked against the standards (GJB/Z 35
