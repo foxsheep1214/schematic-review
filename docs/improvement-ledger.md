@@ -9,6 +9,20 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Evidence-proportionality keeps applicability only (2026-10-27)
+
+Stage 4 of regrouping the rules by six questions: whether a rule applies and what evidence is enough. After stage 3
+the document still carried two things that belong elsewhere: getting a datasheet that cannot be had (per-parameter
+substitutes, the PDF unit glyphs), which is the datasheet audit's work and moves to datasheets.md, and the necessity
+review before delivery (with adjustable fields and fixed drive guarantees), which is a release step and moves to
+verdicts-and-release.md. The empty stub left by stage 3 is gone. Steps ①–③ read 2–6 KB less; step ④ reads 1.6 KB more
+for the release check, so its budget rises by that and the others drop to their new sizes.
+
+- Event: user:2026-10-27 (“接下来几个阶段，你都自己分析，选取适当的方式进行修改，一直到6个阶段修改都结束。”)
+- Causes: judgment 1 (acquisition and release steps kept in the applicability document)
+- Changed: references/evidence-proportionality.md, references/datasheets.md, references/verdicts-and-release.md, references/results-format.md, references/architecture.md, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2335; mutation --changed none (text only)
+
 ## Calculation models in the WCA document (2026-10-27)
 
 Stage 3 of regrouping the rules by six questions: how a quantity is calculated. evidence-proportionality, the
