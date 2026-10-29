@@ -9,6 +9,27 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## R8 report: one row per requirement, each risk once (2026-10-28)
+
+The presentation problems read off the same R8 report (user: 这两件事也都推进做).
+- Handoff table: a function's handoff rides on every row it derives, and rows were grouped by receiver then by text with
+  each row's own part blanked. The same handoff on R503's rows and TH601's rows split into two rows, one reading
+  每只回流取样; on U202's rows it read 经Q202和每只控制DIS; a requirement handed to two receivers was listed in both
+  groups. Rows with the same text are now one row whoever receives it; only differing texts merge into a 每只 row. A
+  verification that only repeats its constraint shows 按左列逐条核. The summary counts table rows (R8: 293 checks, 65 rows).
+- Two hints: TEMPLATED_HANDOFF now also reads function handoffs (one verification sentence with only an id swapped in
+  3+ functions; the row screen skipped derived rows), and HANDOFF_RESTATES_REQUIREMENT flags a handoff whose
+  verification is its constraint again (48 requirement rows).
+- Risk list: a risk of two types was listed under both (17 risks, 29 rows); it is listed once under its first type and
+  names the other. 已按 ×1 打折 and the NONE cell are no longer shown.
+- Function table: a failing function listed its item key W-F-001-cause, an id no section shows; it lists the finding
+  number. The column reads 错误或待办编号.
+- Not changed: F-003 is missing because the reviewer numbered F-001…F-006 without it; the gate does not renumber.
+- Event: user:2026-10-28 (这两件事也都推进做)
+- Causes: judgment 3 (handoff merge, risk grouping, item key shown); rule_not_enforced 2 (templated function handoffs, restated requirements)
+- Changed: scripts/render_report.py, scripts/review_quality.py, scripts/tests/test_report_rendering_51.py, scripts/tests/test_review_quality.py, scripts/tests/fixtures/golden_reports/constraint.md, scripts/tests/fixtures/golden_reports/decisive.md, scripts/tests/fixtures/golden_reports/estimate.md, scripts/tests/fixtures/golden_reports/extension.md, scripts/tests/fixtures/golden_reports/functions.md, references/verdicts-and-release.md, references/report-and-remediation.md, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Gates: pytest 2376; mutation --changed 67 on 12 files, all killed after re-anchoring M655; new M833–M842 killed
+
 ## R8 report: what the verdicts rest on (2026-10-28)
 
 Reading the R8 report (100 W board, 61166f3) for SR problems beyond lifetime turned up four that weaken a verdict

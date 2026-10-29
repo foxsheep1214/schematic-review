@@ -4189,8 +4189,8 @@
   "id": "M655",
   "name": "handoffs naming several parts merge into 每只 rows",
   "file": "scripts/render_report.py",
-  "old": "            if any(k.count(REF_SLOT) > 1 for k in key):\n",
-  "new": "            if False:\n"
+  "old": "        key = next(iter(keys)) if len(keys) == 1 and not any(k.count(REF_SLOT) > 1 for k in next(iter(keys))) \\\n",
+  "new": "        key = next(iter(keys)) if len(keys) == 1 \\\n"
  },
  {
   "id": "M656",
@@ -5374,5 +5374,75 @@
   "file": "scripts/review_quality.py",
   "old": "            if read_as_limit:\n",
   "new": "            if False:\n"
+ },
+ {
+  "id": "M833",
+  "name": "a text shared by several rows has its own part read as 每只",
+  "file": "scripts/render_report.py",
+  "old": "        constraint, verification = (next(iter(texts)) if len(texts) == 1\n",
+  "new": "        constraint, verification = (next(iter(texts)) if False\n"
+ },
+ {
+  "id": "M834",
+  "name": "a handoff restating its requirement is shown twice",
+  "file": "scripts/render_report.py",
+  "old": "        if len(verification) >= RESTATED_MIN_CHARS and same_text(verification, constraint):\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M835",
+  "name": "a risk of two types is listed under both",
+  "file": "scripts/render_report.py",
+  "old": "        by_type.setdefault((e['types'] or [''])[0], []).append(e)\n",
+  "new": "        [by_type.setdefault(t, []).append(e) for t in e['types']]\n"
+ },
+ {
+  "id": "M836",
+  "name": "a risk says it was discounted by ×1",
+  "file": "scripts/render_report.py",
+  "old": "                and factor != 1 else '')\n",
+  "new": "                else '')\n"
+ },
+ {
+  "id": "M837",
+  "name": "a risk shows the NONE cell",
+  "file": "scripts/render_report.py",
+  "old": "if e.get('cell') and e['cell'] != 'NONE' else '',\n",
+  "new": "if e.get('cell') else '',\n"
+ },
+ {
+  "id": "M838",
+  "name": "a failing function shows its item key, not its finding",
+  "file": "scripts/render_report.py",
+  "old": "    ids = unique(fails + [",
+  "new": "    ids = unique([] + ["
+ },
+ {
+  "id": "M839",
+  "name": "function handoffs differing by an id are not hinted",
+  "file": "scripts/review_quality.py",
+  "old": "        + templated_function_handoffs(report) + restated_handoffs(report)\n",
+  "new": "        + restated_handoffs(report)\n"
+ },
+ {
+  "id": "M840",
+  "name": "a handoff restating its requirement is not hinted",
+  "file": "scripts/review_quality.py",
+  "old": "        + templated_function_handoffs(report) + restated_handoffs(report)\n",
+  "new": "        + templated_function_handoffs(report)\n"
+ },
+ {
+  "id": "M841",
+  "name": "a requirement for two receivers is listed under one",
+  "file": "scripts/render_report.py",
+  "old": "        entry[1].extend(h.get('receivers') or ['未指定'])\n",
+  "new": "        entry[1][:] = h.get('receivers') or ['未指定']\n"
+ },
+ {
+  "id": "M842",
+  "name": "the summary counts handoff checks, not handoff rows",
+  "file": "scripts/render_report.py",
+  "old": "sum(len(r) for r in handoff_groups(plan, handoffs).values())",
+  "new": "len(handoffs)"
  }
 ]

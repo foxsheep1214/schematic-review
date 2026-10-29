@@ -354,10 +354,12 @@ def render_risks(items):
            '下面 %d 项结论是“合格，但有风险”（涉及 %d 条检查）：在额定和需求范围内过关，但有一个角点只能按典型值估算'
            '（或降额不足），实际批次、环境或寿命末期可能达不到。风险不影响定稿，按“怎么改进”一列处理即可消除。'
            % (len(rows), sum(len(e['check_ids']) for e in rows)), '']
+    # each risk once, under its first type, the others named in its row (R8: 17 risks shown as 29 rows)
     by_type = OrderedDict((t, []) for t in catalog.RISK_TYPES)
+    order = list(catalog.RISK_TYPES)
     for e in rows:
-        for t in e['types']:
-            by_type.setdefault(t, []).append(e)
+        e['types'] = sorted(e['types'], key=lambda t: order.index(t) if t in order else len(order))
+        by_type.setdefault((e['types'] or [''])[0], []).append(e)
     for t, entries in by_type.items():
         if not entries:
             continue
@@ -369,10 +371,13 @@ def render_risks(items):
             margin = '%s 对 %s' % (_quantity(m.get('value'), m.get('unit')), m.get('against') or '')
             factor = e.get('estimate_factor')
             how_text = (e.get('how') or RISK_SOURCE_WORDS.get(e.get('source'), '')) + (
-                '（已按 ×%g 打折）' % factor if isinstance(factor, (int, float)) and not isinstance(factor, bool) else '')
-            out.append('| %s | %s%s | %s | %s | %s | %s | %s | %s |' % (
+                '（已按 ×%g 打折）' % factor if isinstance(factor, (int, float)) and not isinstance(factor, bool)
+                and factor != 1 else '')
+            also = '、'.join(catalog.RISK_TYPES.get(x, x) for x in e['types'][1:])
+            out.append('| %s | %s%s%s | %s | %s | %s | %s | %s | %s |' % (
                 cell(e.get('function_id') or ''), cell(e.get('aspect') or ''),
-                '（%s）' % cell(e['cell']) if e.get('cell') else '', cell(e.get('corner') or ''), cell(how_text),
+                '（%s）' % cell(e['cell']) if e.get('cell') and e['cell'] != 'NONE' else '',
+                '；另属%s风险' % also if also else '', cell(e.get('corner') or ''), cell(how_text),
                 cell(margin), cell(e.get('improvement') or ''), cell(e.get('verification') or '—'),
                 cell('、'.join(e['check_ids']))))
         out.append('')
@@ -563,9 +568,11 @@ OWNER_WORDS = {'SYSTEM': '系统功能', 'CIRCUIT': '功能电路', 'INTERFACE':
 
 def function_row(fn, effective=None):
     items = [i for i in fn.get('open') or [] if isinstance(i, dict)]
-    items += [i for i in fn.get('fails') or [] if isinstance(i, dict)]
+    # a fail is read under its finding's number, not its item key (R8: W-F-001-cause, an id no section shows)
+    fails = [i.get('finding_id') for i in fn.get('fails') or [] if isinstance(i, dict)]
     verdict, delegated = effective or (fn.get('verdict'), [])
-    ids = unique([results_model.work_item_id(i['key']) for i in items if isinstance(i.get('key'), str)] + delegated)
+    ids = unique(fails + [results_model.work_item_id(i['key']) for i in items if isinstance(i.get('key'), str)]
+                 + delegated)
     return '| %s | %s | %s | %s | %s |' % (
         cell(fn.get('id', '')), cell(short_question(fn.get('question'))),
         VERDICT_WORDS.get(verdict, cell(verdict or '')),
@@ -578,7 +585,7 @@ def render_functions(functions, plan=None, checks=None):
     rows = [fn for fn in functions or [] if isinstance(fn, dict)]
     if not rows:
         return []
-    head = ['| 功能 | 问题 | 结论 | 余量或依据 | 待办编号 |', '|---|---|---|---|---|']
+    head = ['| 功能 | 问题 | 结论 | 余量或依据 | 错误或待办编号 |', '|---|---|---|---|---|']
     frames = {f['id']: f for f in (plan or {}).get('functions') or [] if isinstance(f, dict) and f.get('id')}
     effective = results_model.effective_verdicts(rows, plan, checks)
     verdict = lambda fn: (effective.get(fn.get('id')) or (fn.get('verdict'),))[0]
@@ -749,6 +756,43 @@ def finding_owners(finding, plan):
     return '、'.join((OWNER_WORDS[kind] + ' ' + oid).strip() for kind, oid in keys)
 
 
+def handoff_groups(plan, handoffs):
+    """{receivers: table rows}, one row per requirement."""
+    planned = {c.get('id'): c for c in plan.get('checks') or [] if isinstance(c, dict)}
+    # One row per requirement (R8, 2026-10-28): rows with the same text are one requirement whoever receives it (a
+    # requirement handed to two receivers was listed in both groups), and a function's handoff carried by its 60 rows
+    # is one row; only texts that differ by their own part merge further, with that part read as 每只.
+    same = OrderedDict()
+    for c in sorted(handoffs, key=lambda c: c['id']):
+        h = c['handoff']
+        where = unique(anchors((planned.get(c['id']) or {}).get('object')))
+        entry = same.setdefault(tuple(h.get(f) or '' for f in ('constraint', 'verification')), [[], [], set()])
+        entry[0].extend(where)
+        entry[1].extend(h.get('receivers') or ['未指定'])
+        entry[2].add(tuple(generic(h.get(f) or '', where) for f in ('constraint', 'verification')))
+    merged = OrderedDict()
+    for texts, (where, receivers, keys) in same.items():
+        key = next(iter(keys)) if len(keys) == 1 and not any(k.count(REF_SLOT) > 1 for k in next(iter(keys))) \
+            else texts   # a requirement naming several parts cannot be read with every one replaced by 每只 (R7)
+        row = merged.setdefault(('、'.join(unique(receivers)), key), [[], set()])
+        row[0].extend(where)
+        row[1].add(texts)
+    groups = OrderedDict()
+    for (who, key), (where, texts) in merged.items():
+        constraint, verification = (next(iter(texts)) if len(texts) == 1
+                                    else (t.replace(REF_SLOT, '每只') for t in key))
+        if len(verification) >= RESTATED_MIN_CHARS and same_text(verification, constraint):
+            verification = '按左列逐条核'   # R8: 48 requirement rows repeated their requirement as the check
+        where = unique(where)
+        shown = '、'.join(where[:6]) + ('等 %d 处' % len(where) if len(where) > 6 else '')
+        groups.setdefault(who, []).append('| %s | %s | %s |' % (cell(shown or '整板'), cell(constraint),
+                                                                cell(verification)))
+    return groups
+
+
+RESTATED_MIN_CHARS = 20   # a short check (热测) may well appear inside its requirement
+
+
 def render_handoffs(plan, handoffs, gate):
     """交给后续环节的要求，按负责方分组、同一要求一行（2026-10-27，用户：报告太冗长）：检查编号在台账里。"""
     if not handoffs:
@@ -756,35 +800,9 @@ def render_handoffs(plan, handoffs, gate):
     out = ['## 交给后续环节的要求', '',
            '下面这些要求在原理图上做不了，要在 PCB、热设计、测试等后续环节落实，不算原理图的错误，'
            '也不影响原理图定稿。原理图交出时把对应的表交给负责方即可。', '']
-    planned = {c.get('id'): c for c in plan.get('checks') or [] if isinstance(c, dict)}
-    groups = OrderedDict()
-    for c in handoffs:
-        groups.setdefault('、'.join(c['handoff'].get('receivers') or ['未指定']), []).append(c)
-    for who, rows in sorted(groups.items(), key=lambda kv: -len(kv[1])):
-        # One row per requirement: checks that ask the same thing of different parts share a row
-        # (a delivered report gave three output capacitors three rows differing only in the refdes).
-        same = OrderedDict()
-        for c in sorted(rows, key=lambda c: c['id']):
-            h = c['handoff']
-            where = unique(anchors((planned.get(c['id']) or {}).get('object')))
-            key = tuple(generic(h.get(f) or '', where) for f in ('constraint', 'verification'))
-            if any(k.count(REF_SLOT) > 1 for k in key):
-                # a requirement naming several parts cannot be read with every one replaced by 每只
-                # (R7: "每只、每只、每只/每只 表面温度"): only identical texts share a row
-                key = tuple(h.get(f) or '' for f in ('constraint', 'verification'))
-            same.setdefault(key, []).append((c, where))
-        out += ['### %s（%d 条）' % (who, len(same)), '',
-                '| 涉及位号/网络 | 要落实的要求 | 怎么验证 |', '|---|---|---|']
-        for (constraint, verification), group in same.items():
-            where = unique(w for _, ws in group for w in ws)
-            shown = '、'.join(where[:6]) + ('等 %d 处' % len(where) if len(where) > 6 else '')
-            if len(group) == 1:
-                h = group[0][0]['handoff']
-                constraint, verification = h.get('constraint') or '', h.get('verification') or ''
-            else:
-                constraint, verification = (t.replace(REF_SLOT, '每只') for t in (constraint, verification))
-            out.append('| %s | %s | %s |' % (cell(shown or '整板'), cell(constraint), cell(verification)))
-        out.append('')
+    for who, rows in sorted(handoff_groups(plan, handoffs).items(), key=lambda kv: -len(kv[1])):
+        out += ['### %s（%d 条）' % (who, len(rows)), '',
+                '| 涉及位号/网络 | 要落实的要求 | 怎么验证 |', '|---|---|---|'] + rows + ['']
     pending = (gate.get('stage_scope') or {}).get('requirements_pending_downstream') or []
     if pending:
         out += ['另有 %d 条需求要等样机或测试结果才能最终确认：%s。' % (len(pending), '、'.join(pending)), '']
@@ -1198,7 +1216,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
             ] + gap_subclass_counts(results, gaps) + (['| 资料不足的可能后果：%s | %s |' % (' / '.join(IMPACT_CLASS_WORDS.values()),
                                                   ' / '.join(str(classes.get(k, 0)) for k in IMPACT_CLASS_WORDS))]
                  if classes else []) + [
-            '| 交给后续环节的要求 | %d |' % (len(handoffs) + len(settings))] + (
+            '| 交给后续环节的要求 | %d |' % (sum(len(r) for r in handoff_groups(plan, handoffs).values()) + len(settings))] + (
             ['| 合格但有风险（不影响定稿，见“风险清单”） | %d 项 |' % len(risky)] if risky else []) + [
             '| 审查记录自检提示（不计入结论，分类见“对 SR 的反馈”） | %d |' % len(screen),
             '| 上一版问题的处理记录（不计入上面各行） | %s |' % history_cell, '']

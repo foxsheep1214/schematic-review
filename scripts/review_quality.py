@@ -703,7 +703,45 @@ def templated_handoffs(report):
     return [{'code': 'TEMPLATED_HANDOFF', 'field': field, 'template': template[:120], 'check_ids': sorted(ids),
              'message': f'{len(ids)} handoff rows share one {field} sentence with only the check id swapped; '
                         'write what each receiver must actually do and measure.'}
-            for (field, template), ids in sorted(groups.items()) if len(ids) >= HANDOFF_MIN_ROWS]
+            for (field, template), ids in sorted(groups.items()) if len(ids) >= HANDOFF_MIN_ROWS] \
+        + templated_function_handoffs(report) + restated_handoffs(report)
+
+
+ID_TOKEN_RE = re.compile(r'[A-Z][A-Z0-9_]*(?:-[A-Z0-9_]+)*\d*|每只')
+
+
+def templated_function_handoffs(report):
+    """Function handoffs whose sentence differs only by a part or function id (R8, 2026-10-28: 按本功能实际位号…落实
+    block-review.md中U601的定值… in dozens of functions): the derived rows carry it, so the row screen never sees it."""
+    groups = defaultdict(set)
+    for fn in report.get('functions') or []:
+        if not isinstance(fn, dict) or not isinstance(fn.get('id'), str):
+            continue
+        for h in fn.get('handoffs') or []:
+            text = h.get('verification') if isinstance(h, dict) else None
+            if isinstance(text, str) and text.strip():
+                groups[re.sub(r'\s+', ' ', ID_TOKEN_RE.sub('<id>', text)).strip()].add(fn['id'])
+    return [{'code': 'TEMPLATED_HANDOFF', 'field': 'verification', 'template': template[:120], 'function_ids': sorted(ids),
+             'check_ids': [], 'message': f'{len(ids)} functions hand on one verification sentence with only an id '
+                                         'swapped; write what each receiver must measure and against what.'}
+            for template, ids in sorted(groups.items()) if len(ids) >= HANDOFF_MIN_ROWS]
+
+
+def restated_handoffs(report):
+    """Handoffs whose verification is their constraint again (R8: 48 requirement rows handed on the requirement text
+    twice): the handoff is what the schematic review worked out for this design, not the requirement restated."""
+    norm = lambda s: re.sub(r'[\s，。；、,.;:：]', '', s)
+    ids = sorted(row['id'] for row in report.get('checks') or [] if isinstance(row, dict) and isinstance(row.get('id'), str)
+                 and isinstance(row.get('handoff'), dict) and row['handoff'].get('required')
+                 and all(isinstance(row['handoff'].get(f), str) for f in ('constraint', 'verification'))
+                 and len(norm(row['handoff']['verification'])) >= RESTATED_MIN_CHARS
+                 and norm(row['handoff']['verification']) in norm(row['handoff']['constraint']))
+    return [{'code': 'HANDOFF_RESTATES_REQUIREMENT', 'check_ids': ids,
+             'message': f'{len(ids)} handoffs give their constraint again as the verification; hand on only what this '
+                        'design needs and how the receiver closes it, not the requirement text.'}] if ids else []
+
+
+RESTATED_MIN_CHARS = 20
 
 
 # 固件镜像/烧录/读回/量产校准是固件与生产环节的产物；原理图阶段只判它们的前提（引脚、上拉、GPIO 冲突、配置表自洽）。

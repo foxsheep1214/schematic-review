@@ -126,6 +126,43 @@ class HandoffTableTests(unittest.TestCase):
         self.assertIn('C1、Q1、R1 在 90 Vac 100 W', text)
         self.assertIn('C2、Q1、R1 在 90 Vac 100 W', text)
 
+    def test_one_text_is_one_row_and_keeps_its_parts(self):
+        # R8 (2026-10-28): a function's handoff naming U202 on U202's rows became 经Q202和每只控制DIS, and the same
+        # handoff on R503's rows split from the rest under 每只回流取样
+        text = self.render([handoff_row('A.U202', 'U202', '经 Q202 和 U202 控制 DIS', '样机测 DIS 电平'),
+                            handoff_row('B.U202', 'U202', '经 Q202 和 U202 控制 DIS', '样机测 DIS 电平'),
+                            handoff_row('C.R503', 'R503', 'R503 回流取样极性正确', '样机测 CS 极性'),
+                            handoff_row('D.TH601', 'TH601', 'R503 回流取样极性正确', '样机测 CS 极性')])
+        self.assertNotIn('每只', text)
+        self.assertIn('| U202 | 经 Q202 和 U202 控制 DIS |', text)
+        self.assertIn('| R503、TH601 | R503 回流取样极性正确 |', text)
+
+    def test_a_requirement_for_two_receivers_is_listed_once(self):
+        a, b = handoff_row('X.A', 'U1', 'A.1.1：23±5°C 环境，空气流速≤0.5 m/s，样品置于非导热材料上',
+                           '23±5°C 环境，空气流速≤0.5 m/s，样品置于非导热材料上'), handoff_row('Y.A', 'U1', '', '')
+        b[0]['handoff'] = dict(a[0]['handoff'], receivers=['整机验证'])
+        text = self.render([a, b])
+        self.assertIn('#### 热设计、整机验证（1 条）', text)
+        self.assertEqual(1, text.count('A.1.1'))
+        self.assertIn('| 按左列逐条核 |', text)
+
+
+class RiskAndIdTests(unittest.TestCase):
+    def test_each_risk_is_listed_once(self):
+        entry = {'function_id': 'FN-A', 'aspect': '温漂', 'cell': 'NONE', 'estimate_factor': 1, 'how': '典型曲线',
+                 'types': ['CONSISTENCY', 'ENVIRONMENT'], 'check_ids': ['X.1'], 'margin': {'value': 1, 'unit': 'V'}}
+        md = '\n'.join(rr.render_risks([dict(entry, check_id='X.1')]))
+        self.assertEqual(1, md.count('| FN-A |'))
+        self.assertIn('；另属一致性风险', md)
+        self.assertNotIn('×1', md)
+        self.assertNotIn('NONE', md)
+
+    def test_a_failing_function_shows_its_finding_number(self):
+        fn = {'id': 'FN-A', 'verdict': 'FAIL', 'fails': [{'key': 'F-001-cause', 'finding_id': 'F-001', 'what': 'x'}]}
+        row = rr.function_row(fn)
+        self.assertIn('| F-001 |', row)
+        self.assertNotIn('W-F-001', row)
+
 
 class FindingTests(unittest.TestCase):
     def test_a_caption_that_names_its_kind_is_not_prefixed_again(self):

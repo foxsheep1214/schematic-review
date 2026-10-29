@@ -682,6 +682,25 @@ class DerivedRowScreeningTests(unittest.TestCase):
             row['derived'] = True
         self.assertEqual(self.templated_pass(report, expected), [])
 
+    def test_function_handoffs_differing_by_an_id_are_a_template(self):
+        # R8 (2026-10-28): 按本功能实际位号…落实block-review.md中U601的定值… in dozens of functions
+        say = '按本功能实际位号、网络和状态落实block-review.md中%s的定值、动作及后续环节验证条件'
+        report = {'functions': [{'id': 'FN-%d' % i, 'handoffs': [{'verification': say % ref}]}
+                                for i, ref in enumerate(('U601', 'SYS-POWER', '每只'))]}
+        [hit] = self.templated_handoffs(report)
+        self.assertEqual(hit['function_ids'], ['FN-0', 'FN-1', 'FN-2'])
+        report['functions'][2]['handoffs'][0]['verification'] = '闭壳 50 °C 测 U601 结温 ≤ 105 °C'
+        self.assertEqual(self.templated_handoffs(report), [])
+
+    def test_a_handoff_restating_its_requirement_is_flagged(self):
+        req = '23±5°C 环境，空气流速≤0.5 m/s，样品置于非导热材料上'
+        report = {'checks': [{'id': 'REQ-D01.X.A-1-1', 'handoff': {'required': True, 'receivers': ['整机验证'],
+                                                                    'constraint': 'A.1.1：' + req, 'verification': req}}]}
+        [hit] = [x for x in self.templated_handoffs(report) if x['code'] == 'HANDOFF_RESTATES_REQUIREMENT']
+        self.assertEqual(hit['check_ids'], ['REQ-D01.X.A-1-1'])
+        report['checks'][0]['handoff']['verification'] = '按 A.1.1 条件闭壳测热点并记录'
+        self.assertEqual(self.templated_handoffs(report), [])
+
     def test_derived_handoffs_are_not_a_template(self):
         report = {'checks': [{'id': 'PWR-C02.C%d' % i, 'handoff': {'required': True, 'receivers': ['样机验证'],
                                                                    'constraint': '闭壳 40 °C 测热点', 'verification': '记录数据'}}
