@@ -3589,3 +3589,27 @@ Decision (user: 按你的建议改：门禁写入所校验文件的指纹、打�
 - Causes: judgment 1
 - Changed: scripts/validate_review.py, scripts/pack_review.py, scripts/tests/test_pack_rerender.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_derived_not_persisted.py, SKILL.md, references/results-format.md, references/verdicts-and-release.md, references/architecture.md, docs/improvement-ledger.md
 - Gates: pytest 2303, mutation --changed: 36 mutations on the changed files, all killed
+
+## SOA 段系数并入降额规范；常规件 50% 预判门限删除 (2026-10-29)
+
+梳理“只认共用降额规范的阈值”时，SR 里有两处降额相关数字不在共用降额规范里：
+MOS 高温 SOA 的段系数（恒功率段 100%、热不稳定段 80%，2026-10-23 决定 B）写在 `bound_formulas.py`；
+常规件预判门限（功率、电压 ≤ 最弱档 50% 建议 PASS，等级未定取 2 倍应力）写在 `passive_stress.py` 与两份参考文件。
+核对原文：四份降额标准都没有 MOSFET 安全工作区的降额值（GJB/Z 35 表9 只给功率双极晶体管的 VCE、IC），
+所以 SOA 段系数并入规范而不是改用标准值；50% 的依据是知识库《电阻降额设计》的经验说法，比 RES-SMD-P/V 三级都严，
+电压 50% 没有出处，功率那一半的作用已由 `WEAKEST_SHARE`（可买到的最弱件是封装最弱档的一半）承担。
+用户决定（“SOA段系数和常规件预判门限，需要并入到这个降额规范里面去…如果不合理的话就删掉”；“按方案改”）：
+
+1. 共用 `derating-rules.md/json` 新增“工程取值”`engineering_values`：`soa_segment_share`（user:2026-10-23）与
+   `unset_level`（等级未定时常规件预判与 BOM 最低额定按 I 级，user:2026-10-29）；R11 改为不在本表和工程取值之外另乘系数。
+2. `bound_formulas.SOA_SEGMENTS` 从规范读取；定界表 SOA 行改为指向规范。
+3. 删除 `POWER_LIMIT`、`VOLTAGE_LIMIT`、`UNSET_POWER_SHARE`：电阻预判按本级 RES-SMD-P/RES-SMD-V，等级未定按 `unset_level`；
+   余量判定表、通用件最弱档与 DEV-C01 说明里的 50% 同步改为本级降额值，系列连接器按本级 CONN-I。
+4. 微应力触点（≤ 25 mA、≤ 6 V）保留，注明电流即 SW-R I 级值、电压高于 SW-V I 级 40%（未改判据，交用户定）。
+
+说明改写使阅读量记录上移：步骤 ② 从 157 600 到 157 800 字节，步骤 ③ 从 224 500 到 224 800 字节（条文已压缩，仍多出规则名与等级说明）。ASG 同步改 `audit_design_closure.py` 的等级未定取值。
+
+- Event: user:2026-10-29 (SOA段系数和常规件预判门限，需要并入到这个降额规范里面去。常规件预判门限是否合理？如果不合理的话就删掉；按方案改)
+- Causes: knowledge_wrong 1, rule_not_enforced 1
+- Changed: references/derating-rules.md, references/derating-rules.json, references/bounding-table.md, references/check-catalog.md, references/commodity-floors.md, references/margin-verdicts.md, scripts/derating.py, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/passive_stress.py, scripts/tests/test_passive_stress.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Gates: pytest 2378, mutation --changed: 79 mutations on 15 changed files, all killed (M475 re-anchored from `bound_formulas.py` to the JSON value)

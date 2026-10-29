@@ -3019,9 +3019,9 @@
  {
   "id": "M475",
   "name": "the thermal-instability segment keeps the full derated curve",
-  "file": "scripts/bound_formulas.py",
-  "old": "'THERMAL_INSTABILITY': 0.8}",
-  "new": "'THERMAL_INSTABILITY': 1.0}"
+  "file": "references/derating-rules.json",
+  "old": "\"THERMAL_INSTABILITY\": 0.8",
+  "new": "\"THERMAL_INSTABILITY\": 1.0"
  },
  {
   "id": "M476",

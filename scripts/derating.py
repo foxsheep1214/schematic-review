@@ -43,6 +43,11 @@ def rules():
     return _RULES
 
 
+def engineering_value(name):
+    """A value the spec's 工程取值 table holds where the standards give none (unset_level, soa_segment_share)."""
+    return json.loads(RULES_PATH.read_text(encoding='utf-8'))['engineering_values'][name]['value']
+
+
 def kinds_with_rules():
     return {k for r in rules().values() for k in r['kinds']}
 

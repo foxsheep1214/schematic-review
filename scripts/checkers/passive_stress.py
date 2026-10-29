@@ -24,13 +24,14 @@ RESISTOR_FLOORS = {
     '0201': (0.05, 15.0), '0402': (1 / 16, 25.0), '0603': (1 / 16, 50.0), '0805': (0.1, 100.0),
     '1206': (0.125, 150.0), '1210': (0.25, 200.0), '2010': (0.5, 200.0), '2512': (1.0, 200.0),
 }
-# 采购范围未受控时的边界：功率 ≤ 最弱档 50%、电压 ≤ 50% 判 PASS。
+# 预判边界取降额规范的本级贴片电阻取值：功率 ≤ 最弱档 × RES-SMD-P、电压 ≤ 最弱档 × RES-SMD-V 判 PASS
+# （2026-10-29，用户：常规件 50% 预判门限不在降额规范里，删掉，按项目降额等级取；等级未定按规范工程取值 unset_level）。
 # 功耗要考虑时 BOM 必须写明额定功率（2026-10-27，用户：设计时考虑功耗，除阻值和精度外还要写上功率等级，作为给以后的约束；
 # ASG 照此设计，SR 审核）：BOM 没写功率、最坏功耗又超过按已写字段能买到的最弱件（封装最弱档的一半，RG1005 0.032 W 反例）
-# 的降额值时，预判给 procurement_min_power_w = 应力 ÷ 项目降额等级的贴片电阻功率取值（RES-SMD-P；等级未定取 2 倍应力；
-# 用户：BOM 最低额定按项目降额等级取值），门禁要求这一行写 bom_constraint 或判 FAIL（power_rating_errors）。
-POWER_LIMIT, VOLTAGE_LIMIT, WEAKEST_SHARE = 0.5, 0.5, 0.5
-SMD_POWER_RULE, UNSET_POWER_SHARE = 'RES-SMD-P', 0.5
+# 的降额值时，预判给 procurement_min_power_w = 应力 ÷ 本级 RES-SMD-P 取值（用户：BOM 最低额定按项目降额等级取值），
+# 门禁要求这一行写 bom_constraint 或判 FAIL（power_rating_errors）。
+WEAKEST_SHARE = 0.5
+SMD_POWER_RULE, SMD_VOLTAGE_RULE = 'RES-SMD-P', 'RES-SMD-V'
 WATTS_RE = re.compile(r'(\d+(?:\.\d+)?)\s*(m?)W(?![A-Za-z])')
 DEFAULT_TOL = 0.05
 # commodity-floors「陶瓷电容」可订购档：(封装, 最大容值 F, 耐压 V, 依据料号)。
@@ -522,18 +523,21 @@ def _proposal(entry):
         basis = _floor_basis(entry, power_w, voltage_v)
         if basis:
             calc['floor_basis'] = basis
-        ok = calc['power_ratio'] <= POWER_LIMIT and calc['voltage_ratio'] <= VOLTAGE_LIMIT
+        level = entry.get('derating_level') or derating.engineering_value('unset_level')
+        unset = '' if entry.get('derating_level') else '（降额等级未定，按 %s 级）' % level
+        share = derating.rules()[SMD_POWER_RULE]['values'][level]
+        v_share = derating.rules()[SMD_VOLTAGE_RULE]['values'][level]
+        ok = calc['power_ratio'] <= share and calc['voltage_ratio'] <= v_share
         need = ''
-        level = entry.get('derating_level')
-        share = derating.rules()[SMD_POWER_RULE]['values'][level] if level else UNSET_POWER_SHARE
         if not power_w and calc['p_max_w'] > p_floor * WEAKEST_SHARE * share:
             calc['procurement_min_power_w'] = round(calc['p_max_w'] / share, 9)
-            need = '；功耗要考虑而 BOM 没写额定功率：BOM 须写明额定功率 ≥ %.4g W（%s），记 bom_constraint（DEV-D04 汇总）' % (
-                calc['procurement_min_power_w'],
-                '应力 ÷ %s 级降额 %g%%，%s' % (level, share * 100, SMD_POWER_RULE) if level else '降额等级未定，取应力 2 倍')
+            need = '；功耗要考虑而 BOM 没写额定功率：BOM 须写明额定功率 ≥ %.4g W（应力 ÷ %s 级降额 %g%%，%s%s），记 bom_constraint（DEV-D04 汇总）' % (
+                calc['procurement_min_power_w'], level, share * 100, SMD_POWER_RULE, unset)
         if not ok:
-            return None, calc, '超出未受控采购范围的预判边界，按 commodity-floors 判定表由审查者判定' + need
-        return 'PASS', calc, '功率 ≤ 最弱档 %d%%、电压 ≤ %d%%' % (POWER_LIMIT * 100, VOLTAGE_LIMIT * 100) + need
+            return None, calc, '超出预判边界（最弱档 × %s 级 %s/%s%s），按 commodity-floors 判定表由审查者判定' % (
+                level, SMD_POWER_RULE, SMD_VOLTAGE_RULE, unset) + need
+        return 'PASS', calc, '功率 ≤ 最弱档 × %s 级 %s %g%%、电压 ≤ 最弱档 × %s %g%%%s' % (
+            level, SMD_POWER_RULE, share * 100, SMD_VOLTAGE_RULE, v_share * 100, unset) + need
     farads = parse_capacitance(entry['value'])
     if farads is None:
         return None, {'v_across_max': v}, '容值不可解析'

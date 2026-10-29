@@ -57,6 +57,15 @@ class DeratingSpecTests(unittest.TestCase):
         listed = re.findall(r'^\| ([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+) \|', text, flags=re.M)
         self.assertEqual(sorted(listed), sorted(r['id'] for r in SPEC['rules']))
 
+    def test_the_soa_segments_and_the_unset_level_come_from_the_spec(self):
+        # 2026-10-29 (user: SOA 段系数并入降额规范；常规件 50% 预判门限删掉): the scripts hold no copy of these values
+        import bound_formulas
+        values = SPEC['engineering_values']
+        self.assertEqual(bound_formulas.SOA_SEGMENTS, values['soa_segment_share']['value'])
+        self.assertEqual(values['unset_level']['value'], 'I')
+        source = (ROOT / 'scripts' / 'checkers' / 'passive_stress.py').read_text(encoding='utf-8')
+        self.assertNotRegex(source, r'POWER_LIMIT|VOLTAGE_LIMIT|UNSET_POWER_SHARE')
+
     @unittest.skipUnless((ASG / 'derating-rules.json').is_file(), 'autonomous-schematic-generation not installed')
     def test_asg_holds_the_same_files(self):
         for name in ('derating-rules.json', 'derating-rules.md', 'stress-spec.md'):

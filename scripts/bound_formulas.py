@@ -6,11 +6,12 @@ conditional on the inputs the reviewer copied from the datasheet; it is not a ve
 """
 import math
 
+import derating
 import model_bounds
 from electrical_contract import finite
 
 SIDES = ('UPPER', 'LOWER')
-SOA_SEGMENTS = {'CONSTANT_POWER': 1.0, 'THERMAL_INSTABILITY': 0.8}   # decision B: 100 % / 80 % after derating
+SOA_SEGMENTS = derating.engineering_value('soa_segment_share')   # decision B, held in the shared derating spec
 FORCED_BETA_K = 2   # decision D
 TYPICAL_BAND = 0.3   # G9 ③
 KELVIN = 273.15

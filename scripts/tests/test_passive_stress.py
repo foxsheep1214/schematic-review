@@ -60,10 +60,12 @@ class ProposalTests(unittest.TestCase):
         self.assertIsNone(rows['R1']['proposal']['result'])
         self.assertGreater(rows['R1']['proposal']['calculation']['power_ratio'], 1)
 
-    def test_untracked_resistor_up_to_half_floor_passes_with_procurement_constraint(self):
-        # 3.465 V across: 10k is under 25% of the 0402 floor, 620R is 33%, 330R is 61% (beyond the pre-judgement, the BOM
-        # must still state the power: 2026-10-27, user: 设计时考虑功耗，还需要写上功率等级)
-        for value, result, constraint in (('10k', 'PASS', False), ('620', 'PASS', True), ('330', None, True)):
+    def test_untracked_resistor_within_the_derated_floor_passes_with_procurement_constraint(self):
+        # 3.465 V across, no level (unset_level I: RES-SMD-P 70 %): 10k is 2 % of the 0402 floor, 620R 33 %, 330R 61 %,
+        # 270R 75 % (beyond the pre-judgement). Past the derated weakest part (35 %) the BOM must state the power
+        # (2026-10-27, user: 设计时考虑功耗，还需要写上功率等级); the old 50 % threshold is gone (2026-10-29, user: 删掉)
+        for value, result, constraint in (('10k', 'PASS', False), ('620', 'PASS', False), ('330', 'PASS', True),
+                                          ('270', None, True)):
             with self.subTest(value=value):
                 db, intent = board()
                 db['parts']['R1']['value'] = value
@@ -73,22 +75,33 @@ class ProposalTests(unittest.TestCase):
                 calc = proposal['calculation']
                 self.assertEqual('procurement_min_power_w' in calc, constraint)
                 if constraint:
-                    self.assertAlmostEqual(calc['procurement_min_power_w'], 2 * calc['p_max_w'], places=9)
+                    self.assertAlmostEqual(calc['procurement_min_power_w'], calc['p_max_w'] / 0.7, places=9)
                     self.assertIn('DEV-D04', proposal['note'])
 
     def test_the_procurement_minimum_follows_the_project_derating_level(self):
         # 2026-10-27 (user: BOM 最低额定按项目降额等级取值): RES-SMD-P is 70 / 75 / 80 % for levels I / II / III;
-        # without a level the minimum stays twice the stress
-        for level, share in (('I', 0.7), ('II', 0.75), ('III', 0.8)):
+        # without a level the spec's unset_level (I) applies, not twice the stress (2026-10-29)
+        for level, share in ((None, 0.7), ('I', 0.7), ('II', 0.75), ('III', 0.8)):
             with self.subTest(level=level):
                 db, intent = board()
                 db['parts']['R1']['value'] = '430'
                 rebind(db, intent)
-                intent['derating'] = {'level': level, 'source': 'req:REQ-REL'}
+                if level:
+                    intent['derating'] = {'level': level, 'source': 'req:REQ-REL'}
                 proposal = proposals(db, intent)[1]['R1']['proposal']
                 calc = proposal['calculation']
                 self.assertAlmostEqual(calc['procurement_min_power_w'], calc['p_max_w'] / share, places=9)
-                self.assertIn('%s 级降额' % level, proposal['note'])
+                self.assertIn('%s 级降额' % (level or 'I'), proposal['note'])
+                self.assertEqual('降额等级未定' in proposal['note'], level is None)
+
+    def test_the_voltage_follows_the_level_res_smd_v(self):
+        # 20 V across a 0402 (25 V floor) is 80 %: over RES-SMD-V at level I (75 %), within it at level III (90 %)
+        db, intent = board(rails={'VCC_3V3': {'voltage_v': {'min': 19, 'max': 20}}})
+        db['parts']['R1']['value'] = '1M'
+        rebind(db, intent)
+        self.assertIsNone(proposals(db, intent)[1]['R1']['proposal']['result'])
+        intent['derating'] = {'level': 'III', 'source': 'req:REQ-REL'}
+        self.assertEqual(proposals(db, intent)[1]['R1']['proposal']['result'], 'PASS')
 
     def r1(self, value, level=None):
         db, intent = board()
@@ -101,16 +114,16 @@ class ProposalTests(unittest.TestCase):
     def test_power_matters_beyond_the_derated_weakest_part(self):
         # 2026-10-27 (user: 设计时考虑功耗，还需要写上功率等级): the weakest part the BOM fields allow is half the package
         # floor; the BOM must state the power once the stress passes that part's derated value
-        self.assertIn('procurement_min_power_w', self.r1('620')['calculation'])          # 33 % > 25 % (no level)
-        self.assertNotIn('procurement_min_power_w', self.r1('620', 'I')['calculation'])  # 33 % ≤ 35 % (level I)
-        self.assertIn('procurement_min_power_w', self.r1('390')['calculation'])          # beyond the pre-judgement too
-        self.assertIn('BOM 须写明额定功率', self.r1('390')['note'])
+        self.assertIn('procurement_min_power_w', self.r1('560')['calculation'])           # 36 % > 35 % (unset: I)
+        self.assertNotIn('procurement_min_power_w', self.r1('560', 'III')['calculation'])  # 36 % ≤ 40 % (level III)
+        self.assertIn('procurement_min_power_w', self.r1('270')['calculation'])           # beyond the pre-judgement too
+        self.assertIn('BOM 须写明额定功率', self.r1('270')['note'])
 
     def test_a_power_the_bom_already_states_needs_no_constraint(self):
         self.assertNotIn('procurement_min_power_w', self.r1('620/5%/0.1W')['calculation'])
 
     def test_the_gate_asks_a_pass_to_carry_the_power_rating(self):
-        proposal = self.r1('620')
+        proposal = self.r1('470')
         need = proposal['calculation']['procurement_min_power_w']
         row = {'review_result': 'PASS'}
         self.assertTrue(passive_stress.power_rating_errors('DEV-C01.R1', row, proposal))
