@@ -753,7 +753,7 @@ DEVICE_ROLES = OrderedDict([
         'switchingregulator', 'stepdownconverter', 'stepupconverter', 'powermanagementic', 'pmic', 'chargepump'),
         ('POWER_CONVERTER',))),
     ('supervisor', DeviceRole('电压监控与复位', ('supervisor', 'supervisory', 'voltagemonitor', 'resetcircuit', 'resetic', 'watchdog'),
-                              ('ANALOG',))),
+                              ('ANALOG',), 'all')),   # every input is a monitored voltage (R8: TPS3700 INA+/INB−)
     ('opamp_comparator', DeviceRole('运放、比较器与放大器', (
         'operationalamplifier', 'opamp', 'comparator', 'erroramplifier', 'instrumentationamplifier',
         'currentsenseamplifier', 'currentshuntmonitor', 'differenceamplifier', 'audioamplifier'), ('ANALOG',), 'all')),
@@ -874,7 +874,8 @@ SUBJECT_PRECONDITIONS = {
     'PROTECTION_PART': '电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC',
     'SENSE_ELEMENT': '电路里没有采样电阻（<1 Ω）、NTC 或接到 IC 检测脚的分压',
     'ANALOG_PIN': '电路里没有放大器、ADC 或温度传感器的脚',
-    'START_PIN': '电路里没有带复位、使能或启动配置脚（RESET、EN、BOOT、strap）的 IC',
+    'START_PIN': '电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC',
+    'RESCUE_PIN': '电路里没有 MCU，也没有带启动配置脚（BOOT、strap、MODE）的 IC：没有可烧录、可救援的器件',
 }
 SUBJECT_REQUIRES = {
     ('POWER_CONVERTER', 'PWR-C04'): 'SWITCH_PIN',
@@ -893,7 +894,7 @@ SUBJECT_REQUIRES = {
     ('STARTUP', 'RST-C01'): 'START_PIN',
     ('STARTUP', 'RST-C02'): 'START_PIN',
     ('STARTUP', 'RST-T04'): 'START_PIN',
-    ('STARTUP', 'RST-D01'): 'START_PIN',
+    ('STARTUP', 'RST-D01'): 'RESCUE_PIN',
 }
 
 # 电路检查项的问题模板：计划按电路填空（{state}/{circuit}/{refs}/{window}），检查项的 question 就是审查员要回答的
@@ -1944,8 +1945,11 @@ def _rules_of_class(*classes):
 
 
 COMPUTED_RULES = _rules_of_class('C', 'E') | {'REQ-D01'}
+# a whole-product measured quantity (standby and no-load input power) is not asked of a vendor: a public bound short of
+# the requirement goes to the product test as a stage NA with its handoff (R8 W-STANDBY-CAP-LEAKAGE, 2026-10-28)
+PRODUCT_MEASURED_RULES = frozenset({'PWR-C16'})
 OPEN_ITEM_RULES = {
-    'VENDOR_DATUM': COMPUTED_RULES,
+    'VENDOR_DATUM': COMPUTED_RULES - PRODUCT_MEASURED_RULES,
 }
 
 

@@ -9,6 +9,38 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## R8 report: what the verdicts rest on (2026-10-28)
+
+Reading the R8 report (100 W board, 61166f3) for SR problems beyond lifetime turned up four that weaken a verdict
+and one program error; the user took every recommendation (user: 按推荐都做).
+- Program error: passive_stress saved only `devices` in its inventory context, so the rebuild lost the derating level
+  and III-level plans failed revalidation. The context now keeps `derating`.
+- A1: any IC driving a power switch became a converter; TPS3700 driving PNP Q406 into FAULT was POWER_CONVERTER-U406
+  and asked buck questions. A switch owned by a non-converter role needs an inductor or winding on its drain; a
+  supervisor's pins are all sense pins, so it gets its own ANALOG candidate holding the transistor.
+- A2: R107/R108 (rectified bus to PGND) were typed protection and never asked the discharge. A resistor string from a
+  bridge-rectifier net through nets nothing else touches to ground or another input net gets PWR-C13.DISCHARGE
+  (discharge path vs the X capacitor, time constant vs the standard's time limit, resistor voltage and power). An
+  INDICATOR circuit type was tried and dropped: every circuit type needs a question of its own and an indicator has none.
+- A3: STARTUP's start-pin precondition missed DIS/UVLO/INH/SHDN that the candidate walk already used, so
+  STARTUP-U201.DIS was asked none of its four questions. The names are added; the rescue channel (RST-D01) has its own
+  precondition (an MCU, a BOOT/strap/MODE pin, or an IC of unverified role with a start pin).
+- B: the function table showed the first per-aspect minimum (R602 0.125 W of 0.125 W) instead of the tightest margin
+  over its limit (a 6 % sensor threshold); margins are now ranked by margin over limit. A pass with no margin shows
+  its first judgement instead of the no-calculation sentence.
+- C: VBUS 5 A on a 5 A connector passed with zero margin and no stress risk. A margin on a guaranteed rating naming no
+  rule, where exactly one ratio rule fits the part and the dimension (USB receptacle / appliance coupler / other told
+  apart by identity), is recomputed by the gate and listed as a stress risk. Shared stress-spec updated; ASG synced.
+- D: all 78 gaps read "no public bound" although one computed 396 mW from Rubycon's I ≤ 3√(CV) written as typical.
+  A new hint BOUND_RECORDED_AS_UNBOUNDABLE flags it (a hint, not a refusal: the prose test is a regex). Standby
+  input power (PWR-C16) is measured on the product: a VENDOR_DATUM may no longer block it; it goes to the product
+  test as a stage NA with its handoff.
+
+- Event: user:2026-10-28 (按推荐都做)
+- Causes: rule_not_enforced 3 (A1, A3, C); judgment 3 (A2, B, D); program_error 1 (passive_stress context)
+- Changed: scripts/checkers/passive_stress.py, scripts/circuit_candidates.py, scripts/catalog.py, scripts/plan_circuits.py, scripts/render_report.py, scripts/derating.py, scripts/review_functions.py, scripts/validate_review.py, scripts/review_quality.py, scripts/tests/test_inventory_context_revalidation.py, scripts/tests/test_circuit_candidates.py, scripts/tests/test_single_fault_rows.py, scripts/tests/test_subject_requires.py, scripts/tests/test_report_rendering_51.py, scripts/tests/test_stress_spec.py, scripts/tests/test_review_functions.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, references/check-catalog.md, references/review-vocabulary.md, references/stress-spec.md, references/verdicts-and-release.md, docs/improvement-ledger.md
+- Gates: pytest 2370; mutation --changed 369 on 21 files, all killed after re-anchoring M251 (its line gained `derating`); new M824–M832 killed
+
 ## One margin per quantity; R10 rewritten (2026-10-28)
 
 The shared derating spec's R10 called SR's OPTO-CTR ÷2 an aging allowance, which 31a68f2 had made untrue. The user

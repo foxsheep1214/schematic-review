@@ -50,10 +50,10 @@
 | ANALOG | ANA-C03 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | ANALOG | ANA-T01 | SENSE_ELEMENT | 电路里没有采样电阻（<1 Ω）、NTC 或接到 IC 检测脚的分压 |
 | ANALOG | ANA-D01 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
-| STARTUP | RST-C01 | START_PIN | 电路里没有带复位、使能或启动配置脚（RESET、EN、BOOT、strap）的 IC |
-| STARTUP | RST-C02 | START_PIN | 电路里没有带复位、使能或启动配置脚（RESET、EN、BOOT、strap）的 IC |
-| STARTUP | RST-T04 | START_PIN | 电路里没有带复位、使能或启动配置脚（RESET、EN、BOOT、strap）的 IC |
-| STARTUP | RST-D01 | START_PIN | 电路里没有带复位、使能或启动配置脚（RESET、EN、BOOT、strap）的 IC |
+| STARTUP | RST-C01 | START_PIN | 电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC |
+| STARTUP | RST-C02 | START_PIN | 电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC |
+| STARTUP | RST-T04 | START_PIN | 电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC |
+| STARTUP | RST-D01 | RESCUE_PIN | 电路里没有 MCU，也没有带启动配置脚（BOOT、strap、MODE）的 IC：没有可烧录、可救援的器件 |
 
 ## 器件角色
 
@@ -66,7 +66,7 @@
 | `sr_controller` | 同步整流控制器 | synchronousrectif、srcontroller | POWER_CONVERTER | — |
 | `pd_controller` | USB PD 控制器 | pdcontroller、powerdelivery、usbpd、typeccontroller、usbccontroller | USB、ANALOG | 检测脚 |
 | `regulator` | 稳压器与变换器 | voltageregulator、linearregulator、lowdropout、ldoregulator、dcdcconverter、buckconverter、boostconverter、switchingregulator、stepdownconverter、stepupconverter、powermanagementic、pmic、chargepump | POWER_CONVERTER | — |
-| `supervisor` | 电压监控与复位 | supervisor、supervisory、voltagemonitor、resetcircuit、resetic、watchdog | ANALOG | 检测脚 |
+| `supervisor` | 电压监控与复位 | supervisor、supervisory、voltagemonitor、resetcircuit、resetic、watchdog | ANALOG | 全部信号脚 |
 | `opamp_comparator` | 运放、比较器与放大器 | operationalamplifier、opamp、comparator、erroramplifier、instrumentationamplifier、currentsenseamplifier、currentshuntmonitor、differenceamplifier、audioamplifier | ANALOG | 全部信号脚 |
 | `shunt_reference` | 并联基准 | shuntregulator、voltagereference、shuntreference | ANALOG | 全部信号脚 |
 | `mcu` | 微控制器与处理器 | microcontroller、microprocessor、systemonchip、mcu | ANALOG | 检测脚 |

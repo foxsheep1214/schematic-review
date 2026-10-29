@@ -23,7 +23,7 @@ from plan_review import LINT_REVIEW_KINDS, ReviewPlanner, lint_check, lint_check
 from revision_impact import validate_metadata, validate_reverification, check_spec, digest as revision_digest
 from page_inventory import validate_document_pages
 from review_stage_scope import validate_stage_scope, outside_stage, user_deferred, GAP_CAUSES
-from review_functions import (configuration_settings, design_constraints, risks, netlist_evidence_errors, parameter_sheet,
+from review_functions import (configuration_settings, design_constraints, risks, implied_stress_risks, netlist_evidence_errors, parameter_sheet,
                               validate_functions)
 import check_key
 import row_owner
@@ -347,7 +347,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     accepted = False
     # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): derive writes C on the row. It is a
     # pass with a risk: the report lists the risks apart and they do not cap the release (2026-10-26, user: 风险不限制定稿只单列).
-    risk_rows = risks(expected, checks, report.get('functions'))
+    risk_rows = risks(expected, checks, report.get('functions')) \
+        + implied_stress_risks(expected, checks, report.get('functions'), plan, db)
     estimated_ids = {e['check_id'] for e in risk_rows if e['source'] == 'ESTIMATE'}
     for cid in estimated_ids:
         if checks[cid].get('evidence_confidence') != 'C':

@@ -192,6 +192,9 @@ class FunctionShapeTests(unittest.TestCase):
         self.assertTrue(any('cannot block' in e for e in vr.validate_review(*ledger(fn))['errors']))   # the gate enforces it
         fn = bias_function('OPEN'); fn['open'][0]['decides'][0]['aspect'] = 'STANDBY_POWER'   # a requirement aspect: not a rule title
         self.assertEqual(open_item_scope_errors([fn]), [])
+        # R8 (2026-10-28): standby input power is measured on the product, not asked of a capacitor vendor
+        fn = bias_function('OPEN'); fn['open'][0]['decides'][0]['aspect'] = catalog.title('PWR-C16')
+        self.assertTrue(any('cannot block' in e and 'PWR-C16' in e for e in open_item_scope_errors([fn])))
 
     def test_f4_a_proven_shortfall_is_a_fail_item_a_missed_bound_only_fails_to_prove(self):
         """A missed guaranteed bound proves nothing either way (E2); a reachable case that misses proves the fail (E3)."""

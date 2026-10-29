@@ -1655,8 +1655,8 @@
   "id": "M251",
   "name": "P1: the passive-stress inventory does not save the devices section",
   "file": "scripts/checkers/passive_stress.py",
-  "old": "extra=lambda state: {'pins': _pin_feeds(db, intent, state)}, context_keys=('devices',))",
-  "new": "extra=lambda state: {'pins': _pin_feeds(db, intent, state)})"
+  "old": "                         context_keys=('devices', 'derating'))   # R8: the level sets RES-SMD-P",
+  "new": "                         context_keys=('derating',))   # R8: the level sets RES-SMD-P"
  },
  {
   "id": "M252",
@@ -5310,6 +5310,69 @@
   "name": "a life row estimate asks for a bounding-table cell",
   "file": "scripts/validate_review.py",
   "old": "            if m.get('check_ids') and all(function_reading.life_row(c) for c in m['check_ids']):\n",
+  "new": "            if False:\n"
+ },
+ {
+  "id": "M824",
+  "name": "the passive-stress inventory does not save the derating level",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                         context_keys=('devices', 'derating'))   # R8: the level sets RES-SMD-P",
+  "new": "                         context_keys=('devices',))   # R8: the level sets RES-SMD-P"
+ },
+ {
+  "id": "M825",
+  "name": "a supervisor driving a signal transistor becomes a converter",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            if owner and self.anchors[owner] not in CONVERTER_ROLES and not self.inductive_drain(switch):\n",
+  "new": "            if False:\n"
+ },
+ {
+  "id": "M826",
+  "name": "a resistor string from an input net gets no discharge row",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if found:\n                chain, end = found\n",
+  "new": "            if False:\n                chain, end = found\n"
+ },
+ {
+  "id": "M827",
+  "name": "a controller disable pin is no start pin",
+  "file": "scripts/plan_circuits.py",
+  "old": "                           r'|ENABLE|EN_?UVLO|UVLO|INH|INHIBIT|DIS|DISABLE|SHDN|N?SD)$', re.I)",
+  "new": "                           r')$', re.I)"
+ },
+ {
+  "id": "M828",
+  "name": "the function table shows margins unranked",
+  "file": "scripts/render_report.py",
+  "old": "    ranked = sorted(smallest.values(), key=lambda m: (relative_margin(fn, m) is None, relative_margin(fn, m) or 0))\n",
+  "new": "    ranked = list(smallest.values())\n"
+ },
+ {
+  "id": "M829",
+  "name": "a pass without a margin hides its judgement",
+  "file": "scripts/render_report.py",
+  "old": "    said = said or [str(j['says']).strip().split('。')[0] for j in fn.get('judgements') or []\n",
+  "new": "    said = said or [x for x in [] for j in fn.get('judgements') or []\n"
+ },
+ {
+  "id": "M830",
+  "name": "a zero margin on a rating naming no rule is no stress risk",
+  "file": "scripts/derating.py",
+  "old": "    return (fits[0], stress, derated) if stress > derated else None\n",
+  "new": "    return None\n"
+ },
+ {
+  "id": "M831",
+  "name": "a standby-power gap may be asked of a vendor",
+  "file": "scripts/catalog.py",
+  "old": "    'VENDOR_DATUM': COMPUTED_RULES - PRODUCT_MEASURED_RULES,\n",
+  "new": "    'VENDOR_DATUM': COMPUTED_RULES,\n"
+ },
+ {
+  "id": "M832",
+  "name": "a limit written as typical behind an unboundable item is not flagged",
+  "file": "scripts/review_quality.py",
+  "old": "            if read_as_limit:\n",
   "new": "            if False:\n"
  }
 ]

@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from plan_review import build_review_plan
 from test_checkers_framework import run_validation
 from test_optocoupler import opto_board
-from test_passive_stress import board
+from test_passive_stress import board, rebind
 
 
 class InventoryContextRevalidationTests(unittest.TestCase):
@@ -31,6 +31,16 @@ class InventoryContextRevalidationTests(unittest.TestCase):
         plan = build_review_plan(db, intent)
         row = next(c for c in plan['checks'] if c['rule'] == 'PWR-C10')
         self.assertEqual(row['proposal']['result'], 'PASS')
+        self.assertEqual(run_validation(plan, db)[0], [])
+
+    def test_the_passive_stress_inventory_is_rebuilt_with_the_derating_level(self):
+        # R8 (2026-10-28): the saved context kept only `devices`, so the rebuild lost level III and refused the plan
+        db, intent = board()
+        db['parts']['R1']['value'] = '430'
+        rebind(db, intent)
+        intent['derating'] = {'level': 'III', 'source': 'req:REQ-REL'}
+        plan = build_review_plan(db, intent)
+        self.assertEqual(plan['passive_stress']['context']['derating']['level'], 'III')
         self.assertEqual(run_validation(plan, db)[0], [])
 
     def test_a_changed_rail_makes_the_decoupling_inventory_stale(self):

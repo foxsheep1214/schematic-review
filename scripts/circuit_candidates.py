@@ -28,7 +28,7 @@ import part_words as pw
 import requirement_clarifications
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-10-25.1'   # walks cross a driven small-signal transistor (gate in, drain out); R6: Q202/Q402
+RULES_VERSION = '2026-10-28.1'   # a non-converter IC's switch without an inductive drain is no converter; R8: U406
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -241,6 +241,12 @@ class Generator:
         return not any(d.get('source') in ('driver-pin', 'opto-output') for d in drivers) or (
             all(str(d.get('node', '')).partition('.')[0] == switch['ref'] for d in drivers))
 
+    def inductive_drain(self, switch):
+        """Whether an inductor or a winding sits on the switch's drain (collector) net: what makes it a power switch."""
+        net = switch.get('drain_net')
+        return bool(net) and (net in self.winding_nets or any(
+            self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net)))
+
     def prepare(self):
         """Which anchor owns which switch, which switches anchor themselves, and the nets every walk treats as
         circuit boundaries besides the rail stops (switch nodes, converter inputs, winding nets)."""
@@ -251,6 +257,8 @@ class Generator:
             owner = self.switch_anchor(switch)
             if owner and self.anchors[owner] == 'pd_controller':
                 continue          # a port's VBUS switch belongs to the port
+            if owner and self.anchors[owner] not in CONVERTER_ROLES and not self.inductive_drain(switch):
+                continue          # a supervisor's signal transistor (R8: TPS3700 → PNP Q406 → FAULT) is no converter
             if owner is None and self.self_anchored(switch):
                 owner = switch['ref']
             if owner:

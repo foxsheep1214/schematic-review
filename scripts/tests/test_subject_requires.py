@@ -18,6 +18,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import catalog
 from electrical_contract import PLAN_SCHEMA_VERSION
+import board_intent
 from plan_review import build_review_plan
 from render_report import render_functions
 from review_functions import function_errors
@@ -32,9 +33,15 @@ def empty():
     return {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': {}, 'pseudo_nets': [], 'ref2page': {}}
 
 
-def plan_of(db, kind, refs, states=('RUN',)):
+def plan_of(db, kind, refs, states=('RUN',), roles=None):
     circuit = {'id': 'CKT', 'type': kind, 'refs': list(refs), 'states': list(states), 'citation': 'synthetic circuit'}
-    return build_review_plan(db, {'schema_version': 5, 'circuits': [circuit]})
+    intent, audit = {'schema_version': 5, 'circuits': [circuit]}, None
+    if roles:   # verified device kinds, as a datasheet audit gives them
+        intent['input_sha256'] = board_intent.input_fingerprint(db)
+        intent['device_kinds'] = {ref: {'kind': k, 'page': 1, 'quote': 'synthetic ' + k} for ref, k in roles.items()}
+        audit = {'device_kinds': {ref: dict(d, status='VERIFIED', document='synthetic.pdf', document_sha256='a' * 64)
+                                  for ref, d in intent['device_kinds'].items()}}
+    return build_review_plan(db, intent, datasheet_audit=audit)
 
 
 def asked(plan, rule):
@@ -290,6 +297,16 @@ class StartupPinTests(unittest.TestCase):
         plan = plan_of(db, 'STARTUP', ['C1', 'U1'])
         for rule in catalog.circuit_type('STARTUP').subjects:
             self.assertEqual([r['object']['ref'] for r in asked(plan, rule)], ['U1'], rule)
+
+    def test_a_controller_disable_pin_is_asked_its_levels_but_no_rescue_channel(self):
+        # R8 (2026-10-28): PFC U201.DIS formed STARTUP-U201.DIS and was asked none of the four questions
+        db = empty()
+        add(db, 'U1', 'PFC', [('1', 'DIS', 'DIS'), ('2', 'VCC', 'VCC'), ('3', 'GND', 'GND')])
+        add(db, 'C1', '1nF', [('1', '1', 'DIS'), ('2', '2', 'GND')])
+        plan = plan_of(db, 'STARTUP', ['C1', 'U1'], roles={'U1': 'pwm_controller'})
+        for rule in ('RST-C01', 'RST-C02', 'RST-T04'):
+            self.assertEqual([r['object']['ref'] for r in asked(plan, rule)], ['U1'], rule)
+        self.assertEqual(list(not_asked(plan)), ['RST-D01'])
 
 
 class UnreadNetlistTests(unittest.TestCase):

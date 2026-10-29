@@ -152,6 +152,9 @@ PORT_SHORT_CRITERION = ('端口硬短路：%s 把 %s 接到连接器 %s；端口
 NTC_HOT_CRITERION = ('热态重接入：%s 限制输入浪涌；断电后 NTC 还没冷却就重新上电（含短时中断后恢复）时，浪涌只受源、线路与器件阻抗'
                      '限制。源阻抗按电网参考阻抗写明假定（IEC 60725：相线加中线 0.4 + j0.25 Ω），核整流桥 IFSM/I²t、保险 I²t 与'
                      '输入电容承受的浪涌；实际电网交给样机测试，不记设计没定')
+DISCHARGE_CRITERION = ('输入放电：%s 从 %s 放电到 %s；断开交流后插脚之间（X 电容）和母线电容上的电荷靠它放掉。按产品安规标准'
+                       '的断开放电条款（引原文的时限与残压）核：放电路径是否接在插脚之间的电容上（整流桥后的电阻放不掉桥前的 X '
+                       '电容）、最大电容×最大电阻的时间常数对时限、电阻在最高峰值电压下的耐压与功耗')
 RCD_CRITERION = ('RCD 钳位：%s 与 %s、%s 在开关节点上吸收漏感能量；电阻功率按 ½·Llk·Ipk²·fsw·Vc/(Vc−Vor) 核降额，电阻两端电压'
                  '（钳位电压减母线）对其耐压')
 PIN_LED_CRITERION = ('%s 直接驱动 %s 的 LED：按该脚手册的电流限值核；手册没给限值时，厂家参考电路有同样接法且负载不更重可判通过，'
@@ -171,8 +174,10 @@ REGULATOR_OUT_RE = re.compile(r'(V?OUT\d*|VO|VREG\w*)$', re.I)
 PROTECT_NAME_RE = re.compile(r'(UV\w*|OV\w*|ILIM\w*|OCP\w*|OTP\w*|FAULT\w*|EN|ENABLE|SHDN|SHUTDOWN)$', re.I)
 ANALOG_NAME_RE = re.compile(r'(AIN\w*|ADC\w*|VREF\w*|REF(IN|OUT)?|[+-]IN\w*|IN[+-PN]\w*|V?IN[AB]?[+-]|OPA\w*|CS[PN+-]\w*'
                             r'|ISENSE\w*|ISNS\w*|NTC\w*|THERM\w*|TEMP\w*|VTEMP|TS)$', re.I)
-START_NAME_RE = re.compile(r'(N?RST\w*|N?RESET\w*|MR|POR\w*|BOOT\w*|STRAP\w*|EN|CHIP_EN|CHIP_PU|PWRON\w*|MODE\d*|CFG\w*)$',
-                           re.I)
+# a controller's enable/disable/UVLO pin is a start pin too (R8: PFC U201.DIS formed STARTUP-U201.DIS and was asked nothing)
+START_NAME_RE = re.compile(r'(N?RST\w*|N?RESET\w*|MR|POR\w*|BOOT\w*|STRAP\w*|EN|CHIP_EN|CHIP_PU|PWRON\w*|MODE\d*|CFG\w*'
+                           r'|ENABLE|EN_?UVLO|UVLO|INH|INHIBIT|DIS|DISABLE|SHDN|N?SD)$', re.I)
+RESCUE_NAME_RE = re.compile(r'(BOOT\w*|STRAP\w*|MODE\d*|CFG\w*)$', re.I)
 SENSE_NAME_RE = re.compile(r'(CS\w*|CS[+-]|ISENSE\w*|ISNS\w*|I?SENSE[+-PN]?|VSENSE\w*|IMON\w*|ISET)$', re.I)
 IC_OR_SWITCH = ('POWER_SWITCH', 'SUPPLY_SWITCH', 'FEEDBACK_PIN', 'SWITCH_PIN', 'ANALOG_PIN', 'START_PIN')
 PROTECTION_TEXT_RE = re.compile(r'PTC|SMBJ|SMAJ|SMCJ|TVS', re.I)
@@ -286,6 +291,10 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
                        | {ref for ref in ics if graph.role_kind(ref) == 'opamp_comparator'})
     elif requires == 'START_PIN':
         found = sorted(set(with_pin((START_NAME_RE,))) | {ref for ref in ics if graph.role_kind(ref) == 'mcu'})
+    elif requires == 'RESCUE_PIN':
+        # an IC whose role nobody verified keeps the question when it has a start pin (the netlist cannot say)
+        found = sorted(set(with_pin((RESCUE_NAME_RE,))) | {ref for ref in ics if graph.role_kind(ref) == 'mcu'}
+                       | {ref for ref in with_pin((START_NAME_RE,)) if graph.role_kind(ref) in (None, catalog.GENERIC_IC_ROLE)})
     else:
         raise ValueError('unknown precondition ' + requires)
     return found, [ref for ref in unread if ref not in found]
@@ -836,6 +845,37 @@ class CircuitPlanning:
                         and not powertree.SUPPLY_IN_PIN_RE.match(name)):
                     yield ref, node
 
+        # input nets: the pins of a bridge rectifier, AC side and rectified bus (R8: R107/R108 RECT → PGND were asked
+        # protection questions and never the discharge)
+        input_nets = {n for r in fitted if graph.kind(r) == BRIDGE_RECTIFIER for n in graph.nets_of(r) if not is_ground(n)}
+
+        def discharge_chain(ref):
+            """[resistors], far end: a string of resistors from an input net through nets nothing else touches to a
+            ground or another input net; None when the string feeds anything else (a divider into an IC pin)."""
+            chain, start = [ref], next((n for n in graph.terminals(ref) if n in input_nets), None)
+            net = next((n for n in graph.terminals(ref) if n != start), None)
+            while net is not None:
+                if is_ground(net) or net in input_nets:
+                    return chain, net
+                others = [r for r in graph.refs_on(net) if r not in chain]
+                if len(others) != 1 or graph.kind(others[0]) != RESISTOR or len(graph.terminals(others[0])) != 2:
+                    return None
+                chain.append(others[0])
+                net = next(n for n in graph.terminals(others[0]) if n != net)
+            return None
+
+        discharged = set()
+        for ref in fitted:
+            if graph.kind(ref) != RESISTOR or ref in discharged or not set(graph.terminals(ref)) & input_nets:
+                continue
+            found = discharge_chain(ref)
+            if found:
+                chain, end = found
+                discharged |= set(chain)
+                start = next(n for n in graph.terminals(ref) if n in input_nets)
+                self.add_check('PWR-C13', {'ref': ref, 'chain': chain, 'net': start}, key='DISCHARGE',
+                               criterion=DISCHARGE_CRITERION % ('、'.join(chain), start, end),
+                               trigger=['input-net:%s' % start, 'resistor-chain:%s' % '-'.join(chain)])
         for ref in fitted:
             kind = graph.kind(ref)
             if kind == MOSFET:

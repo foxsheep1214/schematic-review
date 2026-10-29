@@ -314,7 +314,8 @@ BOM 约束不同：状态 TO_WRITE 的约束即使是 P3 也挡原理图冻结�
   `decides` 各自限定方面与状态，P1 的方面不并进 P0 的开放项。
 - 只有文字相似、同一器件或同一本手册不构成同一开放项。根因相同的 FAIL 检查项引用同一个失败项，改法在发现项里。
 - 能按物理对象/判据拆开时优先拆开放项，而不是让一个开放项铺满整块电路。`decides` 的每条影响条目写 `via`（缺的量进到哪条条件或哪个计算输入）
-  和 `rationale`；一个缺口挡几个方面不限数，超过 3 个只出 WIDE_GAP 提示。
+  和 `rationale`；一个缺口挡几个方面不限数，超过 3 个只出 WIDE_GAP 提示。开放项标了定不出界限、所引条款却写着 ≤/max/上限的，
+  出 BOUND_RECORDED_AS_UNBOUNDABLE 提示：保证的限值是 NUMERIC_LIMIT，写 `worst_case.bound` 归“按公开资料界限算不够”。
 - 阻断表示冻结影响，`due_stage` 表示工作安排，二者不能互相替代。已确认阻断 FAIL 和潜在 P0 不可推迟。
 - REVIEW_INCOMPLETE 必须在本轮处理；不论潜在等级均阻断 release，不能用风险接受、下游移交或后移 due_stage 绕过；它不是报告结论，有它时不出报告。
   只剩 SR 工具自身限制、已手工核完的不记 REVIEW_INCOMPLETE，写 `manual_verification`（见 [单条检查](results-format.md#单条检查)），
@@ -371,6 +372,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 | 资料已读、只剩计算或建模 | 本轮算完（REVIEW_INCOMPLETE）或交 ASG 的设计任务，不记 EXTERNAL_DATA（`CALCULATION_RECORDED_AS_DATA_GAP`：VENDOR_DATUM 开放项的 `acquisition`/`closure` 写了已读、只剩复算而没说缺哪个数据） |
 | 同一方法套在几个对象上（三只光耦的 CTR、几只电解的寿命） | 一件待办、多个位号，不拆成三件（`DUPLICATE_WORK_ITEMS`） |
 | 成本、体积、效率等明确的优化目标 | 必须要求满足后列 IMPROVEMENT 或 P3，不制造未知项；它的需求检查项（成本目标、尺寸重量尽量小、取舍优先级、不申请某认证这类优化目标或范围说明）记 `NOT_APPLICABLE` 并在 `applicability_evidence` 引需求原文——没有判据就没有“通过”，也不是下游试验，不写 PASS、不记阶段 NA |
+| 整机测量的量（待机与空载输入功耗 PWR-C16）按公开资料界限算不够 | 阶段 NA + HANDOFF 给整机测试，算出的上界写进移交；不向厂家索取，不记 VENDOR_DATUM（门禁拒收挡 PWR-C16 的厂家数据缺口） |
 | 需求同时含设计与“通过某测试” | 设计要求照常判；测试要求条款写 `result: NA`、`na_reason: OUTSIDE_SCHEMATIC_STAGE` 并链接阶段 NA 检查 |
 
 `gap_cause` 由开放项的 `kind` 推出，审查员不写；纯下游项只能走阶段 NA。

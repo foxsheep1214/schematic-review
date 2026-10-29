@@ -22,6 +22,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 import catalog
 import function_reading
+import units
 from electrical_contract import text
 from review_functions import RESULT_MAX_CHARS, circuit_functions
 from review_stage_scope import user_deferred
@@ -486,10 +487,25 @@ def first_sentence(text):
     return text[:m.start() + 1] if m and m.start() + 1 < len(text) else text
 
 
-def decisive_margins(calc):
+def relative_margin(fn, m):
+    """A margin over the limit it is compared with (both in base units), or None when the limit is not a number the
+    margin's dimension shares. R8 showed 余量 0.125 W 对 R602 (101 pW against 0.125 W) as the basis of a passing
+    function whose tightest margin was 6 % of a sensor threshold (2026-10-28)."""
+    conditions = {c.get('id'): c for c in (fn or {}).get('conditions') or [] if isinstance(c, dict)}
+    limit = (conditions.get((m.get('basis') or {}).get('limit')) or {}).get('limit') or {}
+    bound = limit.get('max') if isinstance(limit.get('max'), (int, float)) else limit.get('min')
+    mine, theirs = units.parse(m.get('unit')), units.parse(limit.get('unit'))
+    if not (isinstance(m.get('value'), (int, float)) and isinstance(bound, (int, float)) and bound
+            and mine and theirs and mine[0] == theirs[0]):
+        return None
+    return m['value'] * mine[1] / abs(bound * theirs[1])
+
+
+def decisive_margins(calc, fn=None):
     """The margins a reader needs: per aspect the smallest one in each unit (the one that decided), and one line per
     distinct comparison — an against that differs only by a trailing note （应力）/（用途） is the same comparison
-    (R7 claude reports said 余量 136 Vac 对 CY301 Y1 400 Vac three times in one cell)."""
+    (R7 claude reports said 余量 136 Vac 对 CY301 Y1 400 Vac three times in one cell). Ordered tightest first by
+    the margin over its limit; one without a numeric limit comes after."""
     smallest = {}
     for m in function_reading.margins(calc):
         key = (m.get('aspect'), (m.get('unit') or '').strip())
@@ -497,7 +513,8 @@ def decisive_margins(calc):
                                    and m['value'] < smallest[key]['value']):
             smallest[key] = m
     out, seen = [], set()
-    for m in smallest.values():
+    ranked = sorted(smallest.values(), key=lambda m: (relative_margin(fn, m) is None, relative_margin(fn, m) or 0))
+    for m in ranked:
         against = TRAILING_NOTE_RE.sub('', str(m.get('against') or '')).strip()
         quantity = _quantity(m['value'], m.get('unit'))
         # a comparison that only adds a trailing clause after ；is the same one (R8: Q501 120 V printed twice)
@@ -525,7 +542,11 @@ def function_basis(fn, verdict=None):
     items = [i for i in fn.get({'FAIL': 'fails', 'OPEN': 'open'}.get(verdict or fn.get('verdict'), '')) or []
              if isinstance(i, dict) and text(i.get('what'))]
     calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
-    said = [i['what'].strip() for i in items] or sorted(decisive_margins(calc), key=lambda m: '余量 -' not in m)
+    said = [i['what'].strip() for i in items] or sorted(decisive_margins(calc, fn), key=lambda m: '余量 -' not in m)
+    # a pass with no margin rests on its judgements: show what they say, not why nothing was computed (R8: four
+    # system functions read 本功能的数值推导已在独立计算…不另造一份数值副本, 2026-10-28)
+    said = said or [str(j['says']).strip().split('。')[0] for j in fn.get('judgements') or []
+                    if isinstance(j, dict) and text(j.get('says'))]
     if said:
         return said[0] + ('（另 %d 项见台账）' % (len(said) - 1) if len(said) > 1 else '')
     if calc.get('result'):

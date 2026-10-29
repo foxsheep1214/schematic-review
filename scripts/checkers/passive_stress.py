@@ -714,7 +714,8 @@ class PassiveStressChecker(Checker):
 
     def build(self, db, intent):
         return inv.build(db, intent, 'power_rails', 'parts', lambda state: _scan(db, intent, state),
-                         extra=lambda state: {'pins': _pin_feeds(db, intent, state)}, context_keys=('devices',))
+                         extra=lambda state: {'pins': _pin_feeds(db, intent, state)},
+                         context_keys=('devices', 'derating'))   # R8: the level sets RES-SMD-P
 
     def plan(self, planner, inventory):
         for state, entry, state_ids in inv.walk_distinct(inventory, 'parts'):

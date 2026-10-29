@@ -18,6 +18,7 @@ UNIFORM_GRADE_SHARE = 0.9
 # 定级模板：同一句带等级的话出现在多条不同规则的定级理由里，说明等级来自默认句而非本检查项后果路径。
 TEMPLATE_MIN_ROWS, TEMPLATE_MIN_RULES = 10, 3
 GRADE_RE = re.compile(r'P[0-3]')
+LIMIT_WORDS_RE = re.compile(r'≤|<=|上界|上限|最大值|不超过|\bmax\b', re.I)
 # 同规则整批同级：本规则至少这么多行证据不足且全部同级时提示逐项定级。
 RULE_UNIFORM_MIN_ROWS = 10
 # 分出下游工作线索：缺口文字只指向样机/试验结果，或把优化目标记成阻断缺口。关键词只生成提示，不改结论。
@@ -203,6 +204,23 @@ def screen_quality(plan, report, db=None, base_dir=None):
                                    'message': 'This stress margin is on a %s; the derating spec has rules for it: name the '
                                               'one that fits in basis.derating_rule so the gate checks it at the '
                                               'project level' % '/'.join(kinds)})
+        # R8 (2026-10-28): Rubycon's leakage I ≤ 3√(CV) µA was written TYPICAL_REFERENCE, then the item said no public
+        # bound existed although it computed 396 mW from it; every gap of the record fell in 公开资料定不出界限
+        for item in fn.get('open') or []:
+            worst = item.get('worst_case') if isinstance(item, dict) else None
+            if not (isinstance(worst, dict) and worst.get('not_boundable_reason')):
+                continue
+            checked = item.get('checked') if isinstance(item.get('checked'), list) else []
+            cited = [conditions[c] for c in checked if isinstance(c, str) and isinstance(conditions.get(c), dict)]
+            read_as_limit = [c['id'] for c in cited if c.get('kind') == 'TYPICAL_REFERENCE' and not c.get('curve')
+                             and LIMIT_WORDS_RE.search(str(c.get('says') or ''))]
+            if read_as_limit:
+                candidates.append({'code': 'BOUND_RECORDED_AS_UNBOUNDABLE', 'function_ids': [fn.get('id')],
+                                   'check_ids': [], 'open': item.get('key'),
+                                   'message': 'Open item %s says no public bound exists, but %s reads as a datasheet '
+                                              'limit (≤, max, 上限); a guaranteed limit is a NUMERIC_LIMIT: write '
+                                              'worst_case.bound and its margin (按公开资料界限算不够), not '
+                                              'not_boundable_reason' % (item.get('key'), '、'.join(read_as_limit))})
     for row in report['checks']:
         if not isinstance(row, dict) or not isinstance(row.get('id'), str) or row['id'] not in expected:
             continue

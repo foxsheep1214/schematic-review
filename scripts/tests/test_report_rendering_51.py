@@ -25,6 +25,27 @@ class FunctionTableTests(unittest.TestCase):
         # the function table shows the first and counts the rest (user 2026-10-27: 报告太冗长)
         self.assertEqual(rr.function_basis({'calculation': calc}), '余量 136 Vac 对 CY301 Y1 400 Vac（另 1 项见台账）')
 
+    def test_a_passing_function_shows_its_tightest_margin_over_its_limit(self):
+        # R8 (2026-10-28): 余量 0.125 W 对 R602 (101 pW of 0.125 W) stood for a function whose sensor threshold had 6 %
+        fn = {'conditions': [{'id': 'c-p', 'limit': {'max': 0.125, 'unit': 'W'}},
+                             {'id': 'c-v', 'limit': {'max': 1.47, 'unit': 'V'}},
+                             {'id': 'c-i', 'limit': {'min': 48.9, 'unit': 'µA'}}],
+              'calculation': {'margin': [
+                  {'aspect': 'A', 'value': 0.125, 'unit': 'W', 'against': 'R602 0.125 W', 'basis': {'limit': 'c-p'}},
+                  {'aspect': 'B', 'value': 0.0886, 'unit': 'V', 'against': 'NTC 开短路判别', 'basis': {'limit': 'c-v'}},
+                  {'aspect': 'C', 'value': 0.000378, 'unit': 'A', 'against': 'U202 所需电流', 'basis': {'limit': 'c-i'}},
+                  {'aspect': 'D', 'value': 3, 'unit': 'h', 'against': '没有数值限值'}]}}
+        self.assertEqual(rr.decisive_margins(fn['calculation'], fn),
+                         ['余量 0.0886 V 对 NTC 开短路判别', '余量 0.125 W 对 R602 0.125 W', '余量 378 µA 对 U202 所需电流',
+                          '余量 3 h 对 没有数值限值'])
+        self.assertEqual(rr.function_basis(fn, 'PASS'), '余量 0.0886 V 对 NTC 开短路判别（另 3 项见台账）')
+
+    def test_a_pass_without_a_margin_shows_its_judgement_not_why_nothing_was_computed(self):
+        fn = {'no_calculation_reason': '本功能的数值推导已在独立计算记录逐条给出，不另造一份数值副本。',
+              'judgements': [{'aspect': '地网', 'says': 'PGND 是一次参考；SEC_RTN 经 R503 接 SGND。本方面的实际对象为…'},
+                             {'aspect': '回流', 'says': 'Y1 不是直流共地'}]}
+        self.assertEqual(rr.function_basis(fn, 'PASS'), 'PGND 是一次参考；SEC_RTN 经 R503 接 SGND（另 1 项见台账）')
+
     def test_small_quantities_take_their_prefix_and_a_trailing_clause_is_the_same_comparison(self):
         # R8: 2e-07 s, 2.1e-06 F in the table; Q501 120 V printed twice, once with "；非线性热SOA另见…"
         self.assertEqual([rr._quantity(v, u) for v, u in ((2e-07, 's'), (2.1e-06, 'F'), (0.001212, 'A'), (0.05, 'A'),

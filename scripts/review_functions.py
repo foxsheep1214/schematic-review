@@ -2107,6 +2107,44 @@ def risks(expected, checks, functions):
     return out
 
 
+def implied_stress_risks(expected, checks, functions, plan, db):
+    """The stress risks the gate finds itself (2026-10-28, user: 按推荐都做): a passing margin on a guaranteed rating that
+    names no derating rule, where exactly one ratio rule fits the part and the stress is over its derated value at the
+    project's level (derating.implied_ratio) — listed as a STRESS risk like a written one. R8: VBUS 5 A on a 5 A
+    connector passed with zero margin, CONN-I allowing 4.25 A at level III."""
+    level = ((plan or {}).get('derating') or {}).get('level')
+    if level not in derating.LEVELS or not (isinstance(db, dict) and db.get('parts')):
+        return []
+    from checkers.netgraph import NetGraph
+    graph = NetGraph(db)
+    kinds_of = lambda refs: sorted({graph.kind(r) for r in refs if r in graph.parts} - {'unknown'})
+    identity_of = lambda refs: ' '.join(str((db['parts'].get(r) or {}).get(k) or '') for r in refs
+                                        for k in ('part', 'value', 'prim'))
+    out, by_id = [], {fn.get('id'): fn for fn in functions or [] if isinstance(fn, dict)}
+    for cid, row in sorted(checks.items()):
+        fn = by_id.get(row.get('function_id')) if isinstance(row, dict) else None
+        if not (fn and row.get('review_result') == 'PASS' and text(row.get('aspect'))):
+            continue
+        state = ((expected.get(cid) or {}).get('object') or {}).get('state')
+        calc = fn.get('calculation') if isinstance(fn.get('calculation'), dict) else {}
+        conditions = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+        for m in function_reading.margins(calc):
+            basis = m.get('basis') or {}
+            if margin_verdict(m) != 'PASS' or basis.get('risk') \
+                    or not covers(scope(m, calc.get('aspect')), row['aspect'], state, cid):
+                continue
+            found = derating.implied_ratio(m, conditions, level, kinds_of, (units.parse(m.get('unit')) or (None,))[0],
+                                           identity_of)
+            if found:
+                rule, stress, derated = found
+                entry = _risk_entry(cid, fn, row, state, m, ('STRESS',), 'STRESS', derating_rule=rule['id'])
+                entry['corner'] = '应力 %g %s 在额定内，超过 %s 级降额值 %g %s（%s %s）' % (
+                    stress, m.get('unit'), level, derated, m.get('unit'), rule['id'], rule['parameter'])
+                entry['improvement'] = '换额定更高的器件或降低应力，使应力不超过降额值'
+                out.append(entry)
+    return out
+
+
 def configuration_settings(functions):
     """The settings the hardware verdicts rely on (conditions[].setting), for whoever writes the configuration table: the
     configuration itself is not reviewed (2026-10-26, user: 手册已有声明、配置表没有……判断为功能可达), so a condition that

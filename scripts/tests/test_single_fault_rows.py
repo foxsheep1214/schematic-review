@@ -99,6 +99,31 @@ class InrushThermistorTests(unittest.TestCase):
         self.assertEqual(rows(inrush_board(sensor=True), 'PWR-C13.NTC-HOT'), [])
 
 
+def discharge_board(divider=False):
+    db = inrush_board()
+    add(db, 'C1', '100uF/450V', [('1', '1', 'HV'), ('2', '2', 'GND')])
+    add(db, 'R1', '1M6', [('1', '1', 'HV'), ('2', '2', 'MID')])
+    add(db, 'R2', '1M6', [('1', '1', 'MID'), ('2', '2', 'GND')])
+    add(db, 'R3', '470k', [('1', '1', 'L_NTC'), ('2', '2', 'X_MID')])    # across the bridge's AC pins
+    add(db, 'R4', '470k', [('1', '1', 'X_MID'), ('2', '2', 'AC_N')])
+    if divider:
+        add(db, 'U1', 'CTRL', [('1', 'VSNS', 'MID'), ('2', 'VCC', 'V12'), ('3', 'GND', 'GND')])
+    return db
+
+
+class InputDischargeTests(unittest.TestCase):
+    """R8 (2026-10-28): R107/R108 from the rectified bus to ground were asked protection questions, never the discharge."""
+
+    def test_a_resistor_string_from_an_input_net_to_ground_or_the_other_line_gets_the_row(self):
+        found = rows(discharge_board(), 'PWR-C13.DISCHARGE')
+        self.assertEqual(sorted(tuple(r['object']['chain']) for r in found), [('R1', 'R2'), ('R3', 'R4')])
+        self.assertIn('X 电容', found[0]['criterion'])
+
+    def test_a_divider_into_an_ic_pin_is_no_discharge_string(self):
+        found = rows(discharge_board(divider=True), 'PWR-C13.DISCHARGE')
+        self.assertEqual([tuple(r['object']['chain']) for r in found], [('R3', 'R4')])
+
+
 class ClampResistorTests(unittest.TestCase):
     def test_an_rcd_clamp_on_a_switch_node_gets_a_row_for_its_resistor(self):
         found = rows(clamp_board(), 'DRV-C01.RCD')

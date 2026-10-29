@@ -166,6 +166,41 @@ def fit_hints(margin, conditions, identity_of):
     return hints
 
 
+DIMENSION_WORDS = {'current': ('电流',), 'voltage': ('电压',), 'power': ('功率', '功耗')}
+# rules of one kind told apart by the part's identity; the "其他…" rule takes a part none of them names
+TYPE_WORDS = {'USB 母座': re.compile(r'USB', re.I),
+              '器具耦合器': re.compile(r'耦合器|IEC ?60320|appliance coupler|\bC(?:5|6|7|8|13|14|15|16)\b', re.I)}
+
+
+def implied_ratio(margin, conditions, level, kinds_of, dimension, identity_of=None):
+    """(rule, stress, derated) for a margin on a guaranteed rating that names no rule, when exactly one steady or
+    worst-case ratio rule fits the limit's part kinds and the margin's dimension and the stress is over the derated
+    value; else None. R8 (2026-10-28): VBUS 5 A against the connector's 5 A rating passed with zero margin and no
+    stress risk, CONN-I allowing 85 % at level III. `dimension` is the margin unit's (units.parse, current/voltage/…)."""
+    basis = margin.get('basis') if isinstance(margin.get('basis'), dict) else {}
+    if level not in LEVELS or basis.get('derating_rule') or basis.get('method') != 'G1':
+        return None
+    limit = conditions.get(basis.get('limit')) or {}
+    bound = limit.get('limit') or {}
+    rating, unit = bound.get('max'), str(margin.get('unit') or '').strip()
+    if not (isinstance(rating, (int, float)) and rating > 0 and isinstance(margin.get('value'), (int, float))
+            and margin['value'] >= 0 and dimension and str(bound.get('unit') or '').strip() == unit):
+        return None
+    kinds = set(kinds_of(limit.get('refs') or []))
+    words = DIMENSION_WORDS.get(dimension, ())
+    fits = [r for r in rules().values() if r['measure'] == 'ratio' and r['condition'] in ('worst', 'steady')
+            and kinds & set(r['kinds']) and any(w in r['parameter'] for w in words)]
+    if len(fits) > 1:
+        identity = identity_of(limit.get('refs') or []) if identity_of else ''
+        named = [r for r in fits if TYPE_WORDS.get(r['type']) and TYPE_WORDS[r['type']].search(identity)]
+        fits = named or [r for r in fits if r['type'].startswith('其他') and not any(
+            TYPE_WORDS.get(o['type']) and TYPE_WORDS[o['type']].search(identity) for o in fits)]
+    if len(fits) != 1:
+        return None
+    stress, derated = rating - margin['value'], rating * fits[0]['values'][level]
+    return (fits[0], stress, derated) if stress > derated else None
+
+
 def rule_hint(margin, conditions, kinds_of):
     """A part-stress margin on a guaranteed rating of a kind the spec has rules for, naming none: the kinds, else None."""
     basis = margin.get('basis') if isinstance(margin.get('basis'), dict) else {}

@@ -138,3 +138,53 @@ class RuleFitTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ImpliedRuleTests(unittest.TestCase):
+    """2026-10-28 (user: 按推荐都做): a margin on a guaranteed rating naming no rule is checked by the gate itself when
+    exactly one ratio rule fits the part and the margin's dimension. R8: VBUS 5 A on a 5 A connector, zero margin."""
+
+    DB = {'parts': {'J1': {'value': 'USB-C', 'prim': 'Connector:USB_C_Receptacle'}}, 'pin2net': {}, 'nets': {}}
+    LIMIT = {'id': 'c-rated', 'kind': 'NUMERIC_LIMIT', 'refs': ['J1'], 'limit': {'max': 5, 'unit': 'A'}}
+
+    def risks(self, value, level='III', **basis):
+        import review_functions
+        m = {'value': value, 'unit': 'A', 'against': 'VBUS 接点额定 5 A', 'aspect': '连接器载流',
+             'basis': dict({'kind': 'GUARANTEED_BOUND', 'comparison': 'GE', 'limit': 'c-rated', 'method': 'G1'}, **basis)}
+        function = {'id': 'FN-J', 'conditions': [dict(self.LIMIT)], 'calculation': {'result': 'r', 'margin': [m]}}
+        checks = {'X.J1': {'function_id': 'FN-J', 'aspect': '连接器载流', 'review_result': 'PASS'}}
+        plan = {'derating': {'level': level, 'source': 'req:R'}} if level else {}
+        return review_functions.implied_stress_risks({}, checks, [function], plan, self.DB)
+
+    def test_a_zero_margin_on_the_rating_is_a_stress_risk_at_the_level(self):
+        [entry] = self.risks(0)
+        self.assertEqual((entry['source'], entry['types'], entry['derating_rule']), ('STRESS', ['STRESS'], 'USB-I'))
+        self.assertIn('4.5', entry['corner'])                            # a USB receptacle: 90 % at level III
+
+    def test_a_connector_its_identity_does_not_name_takes_the_other_connectors_rule(self):
+        self.DB = {'parts': {'J1': {'value': 'TERMINAL 2P', 'prim': 'Connector:Conn_01x02'}}, 'pin2net': {}, 'nets': {}}
+        [entry] = self.risks(0.5)                                        # 4.5 A > 4.25 A
+        self.assertEqual(entry['derating_rule'], 'CONN-I')
+
+    def test_within_the_derated_value_or_without_a_level_or_naming_a_rule_it_is_not(self):
+        self.assertEqual(self.risks(0.5), [])                            # 4.5 A ≤ 4.5 A
+        self.assertEqual(self.risks(0, level=None), [])
+        self.assertEqual(self.risks(0, derating_rule='CONN-I'), [])      # a named rule is checked by margin_errors
+        self.assertEqual(self.risks(0, method='G7'), [])                 # only a guaranteed rating comparison
+
+
+class BoundRecordedAsUnboundableTests(unittest.TestCase):
+    """R8 (2026-10-28): a datasheet leakage limit written as typical, then the gap marked 公开资料定不出界限."""
+
+    def hints(self, says):
+        cond = {'id': 'c-leak', 'kind': 'TYPICAL_REFERENCE', 'refs': ['C1'], 'says': says}
+        item = {'key': 'LEAK', 'kind': 'VENDOR_DATUM', 'checked': ['c-leak'],
+                'worst_case': {'not_boundable_reason': '按该上界约 396 mW，证明不了 150 mW'}}
+        report = {'checks': [{'id': 'A.1', 'review_result': 'INSUFFICIENT', 'rationale': 'x'}],
+                  'functions': [{'id': 'FN-X', 'conditions': [cond], 'open': [item]}]}
+        return [c for c in screen_quality({'checks': [{'id': 'A.1', 'rule': 'A'}]}, report, DB)['candidates']
+                if c['code'] == 'BOUND_RECORDED_AS_UNBOUNDABLE']
+
+    def test_a_limit_written_as_typical_behind_an_unboundable_item_is_flagged(self):
+        self.assertEqual([h['open'] for h in self.hints('泄漏上界 I ≤ 3√(CV) µA')], ['LEAK'])
+        self.assertEqual(self.hints('漏电典型 20 µA'), [])

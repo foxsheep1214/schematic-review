@@ -399,6 +399,24 @@ class DrivenSwitchTests(unittest.TestCase):
         self.assertNotIn('Q8', [u['ref'] for u in result['unassigned']])
         self.assertIn('Q8(gate)', next(m['via'] for m in port['members'] if m['ref'] == 'Q8'))
 
+    def test_a_supervisor_driving_a_signal_transistor_is_no_converter(self):
+        # R8 (2026-10-28): TPS3700 drove PNP Q406 into the flyback's FAULT pin and became POWER_CONVERTER-U406
+        db = self.board()
+        add = fixture.add
+        add(db, 'U8', 'TPS3700', [('1', 'VDD', 'VCC'), ('2', 'GND', 'PGND'), ('3', 'INA+', 'MON'), ('4', 'OUTB', 'OVP_B')])
+        add(db, 'R46', '10K', [('1', '1', 'VCC'), ('2', '2', 'OVP_B')])
+        add(db, 'Q9', 'PNP', [('1', 'B', 'OVP_B'), ('2', 'E', 'VCC'), ('3', 'C', 'OVP_COL')])
+        add(db, 'R47', '1K8', [('1', '1', 'OVP_COL'), ('2', '2', 'FLT')])
+        add(db, 'R48', '100K', [('1', '1', 'AUX'), ('2', '2', 'MON')])
+        add(db, 'R49', '10K', [('1', '1', 'MON'), ('2', '2', 'PGND')])
+        db['pintype']['U8.4'] = 'OUT'
+        for ref in ('U8', 'R46', 'Q9', 'R47', 'R48', 'R49'):
+            db['ref2page'][ref] = 2
+        result = generate(db, kinds=dict(KINDS, U8='supervisor', Q9='bjt'))
+        self.assertNotIn('POWER_CONVERTER-U8', by_id(result))
+        monitor = by_id(result)['ANALOG-U8']                 # the supervisor's own circuit holds the transistor
+        self.assertTrue({'Q9', 'R46', 'R49'} <= set(members(monitor)), members(monitor))
+
     def test_the_power_switch_is_still_the_anchor_s_switch_not_a_driven_one(self):
         result = generate(self.board())
         flyback = by_id(result)['POWER_CONVERTER-U1']
