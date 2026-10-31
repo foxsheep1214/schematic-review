@@ -62,9 +62,22 @@ class DeratingSpecTests(unittest.TestCase):
         import bound_formulas
         values = SPEC['engineering_values']
         self.assertEqual(bound_formulas.SOA_SEGMENTS, values['soa_segment_share']['value'])
+        # 2026-10-29 (user: 这些也都处理): the G9 typical band and the forced-β k live in the spec too
+        self.assertEqual((bound_formulas.TYPICAL_BAND, bound_formulas.FORCED_BETA_K),
+                         (values['typical_band']['value'], values['forced_beta_k']['value']))
         self.assertEqual(values['unset_level']['value'], 'I')
         source = (ROOT / 'scripts' / 'checkers' / 'passive_stress.py').read_text(encoding='utf-8')
         self.assertNotRegex(source, r'POWER_LIMIT|VOLTAGE_LIMIT|UNSET_POWER_SHARE')
+
+    def test_the_micro_stress_contact_thresholds_are_the_spec_values(self):
+        # 2026-10-29 (user: 类似这种单一的规则，都先不要，全都并入到降额规范里面去): the weakest contact rating
+        # (Omron B3U 50 mA / 12 VDC) times the smaller of CONN and SW at each level
+        rules = {r['id']: r['values'] for r in SPEC['rules']}
+        text = (REFS / 'commodity-floors.md').read_text(encoding='utf-8')
+        for level in LEVELS:
+            amps = 50 * min(rules['CONN-I'][level], rules['SW-R'][level])
+            volts = 12 * min(rules['CONN-V'][level], rules['SW-V'][level])
+            self.assertIn('%s 级 %g mA、%g V' % (level, round(amps, 3), round(volts, 3)), text)
 
     @unittest.skipUnless((ASG / 'derating-rules.json').is_file(), 'autonomous-schematic-generation not installed')
     def test_asg_holds_the_same_files(self):

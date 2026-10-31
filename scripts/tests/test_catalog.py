@@ -206,7 +206,7 @@ class GeneratedOutputTest(unittest.TestCase):
                 with self.subTest(check=item['id']):
                     # Bounding table proposal F2 (2026-10-23): an estimate may carry a P1 function with a
                     # prototype hand-off, never damage, overheating or protection.
-                    self.assertIn('典型±30%', item['criterion'])
+                    self.assertIn('典型±typical_band', item['criterion'])
                     self.assertIn('含P1', item['criterion'])
                     self.assertIn('样机实测记为必需移交', item['criterion'])
                     self.assertNotIn('后果不超过P2', item['criterion'])

@@ -3040,16 +3040,16 @@
  {
   "id": "M478",
   "name": "a saturated BJT is driven at hFE min",
-  "file": "scripts/bound_formulas.py",
-  "old": "FORCED_BETA_K = 2",
-  "new": "FORCED_BETA_K = 1"
+  "file": "references/derating-rules.json",
+  "old": "\"forced_beta_k\": {\n   \"value\": 2,",
+  "new": "\"forced_beta_k\": {\n   \"value\": 1,"
  },
  {
   "id": "M479",
   "name": "a typical value is taken ±20 %",
-  "file": "scripts/bound_formulas.py",
-  "old": "TYPICAL_BAND = 0.3",
-  "new": "TYPICAL_BAND = 0.2"
+  "file": "references/derating-rules.json",
+  "old": "\"typical_band\": {\n   \"value\": 0.3,",
+  "new": "\"typical_band\": {\n   \"value\": 0.2,"
  },
  {
   "id": "M480",

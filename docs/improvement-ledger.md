@@ -3613,3 +3613,30 @@ MOS 高温 SOA 的段系数（恒功率段 100%、热不稳定段 80%，2026-10-
 - Causes: knowledge_wrong 1, rule_not_enforced 1
 - Changed: references/derating-rules.md, references/derating-rules.json, references/bounding-table.md, references/check-catalog.md, references/commodity-floors.md, references/margin-verdicts.md, scripts/derating.py, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/passive_stress.py, scripts/tests/test_passive_stress.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, docs/improvement-ledger.md
 - Gates: pytest 2378, mutation --changed: 79 mutations on 15 changed files, all killed (M475 re-anchored from `bound_formulas.py` to the JSON value)
+
+## 微应力触点门限并入降额规范 (2026-10-29)
+
+微应力触点（连接器、排针、测试点、按键）原为固定阈值 25 mA、6 V（最低触点额定 Omron B3U 50 mA / 12 VDC 的 50%）。
+电流比例等于 CONN-I、SW-R 的 I 级值，但电压比例 50% 高于 SW-V 的 I 级 40%，I 级项目比规范宽松。
+用户要求“类似这种单一的规则，都先不要，全都并入到降额规范里面去”：阈值改为最低触点额定 × 本级 CONN-I 与 SW-R 的较小者、
+CONN-V 与 SW-V 的较小者（等级未定按 `unset_level`）：I 级 25 mA、4.8 V，II 级 35 mA、6 V，III 级 42.5 mA、8.4 V。
+同批扫过 SR 其余参考与脚本：CAP-SURGE-V 的“额定 ×1.5–2.5”是厂家耐电压试验的举例，判据仍是手册试验电压；
+典型曲线 ÷2、典型值 ±30%、强制 β k = 2 是估算不确定度和设计取值，不是降额，都未改。ASG 同日条目记 ASG 侧两处。
+
+- Event: user:2026-10-29 (类似这种单一的规则，都先不要，全都并入到降额规范里面去)
+- Causes: knowledge_wrong 1
+- Changed: references/commodity-floors.md, references/check-catalog.md, scripts/catalog.py, scripts/tests/test_derating_rules.py, docs/improvement-ledger.md
+- Gates: pytest 2379, mutation --changed: 32 mutations on 5 changed files, all killed
+
+## 典型值估算带、强制 β 并入降额规范工程取值；电容浪涌倍数举例删除 (2026-10-29)
+
+用户要求“这些也都处理”：`bound_formulas.TYPICAL_BAND`（G9 ③ 典型 ±30%）与 `FORCED_BETA_K`（决定 D，k = 2）改为从共用降额规范
+“工程取值”的 `typical_band`、`forced_beta_k` 读取，定界表、DEV-C05/DRV-C02 判据、`wca-formulas.md` 改为引用名称；
+CAP-SURGE-V 格删去“如额定 ×1.5–2.5”的举例，只写试验电压与规定秒数。变异 M478、M479 随数值重锚到 JSON。
+数值未改。定界表其余各格的估算倍数（×1.2、×1.5、×2 等约二十处）仍在 `catalog.BOUNDS`，待用户决定是否同样并入。
+步骤 ③ 的阅读量记录从 224 800 增到 224 900 字节（引用名称比数字长）。
+
+- Event: user:2026-10-29 (这些也都处理)
+- Causes: rule_not_enforced 1
+- Changed: references/derating-rules.md, references/derating-rules.json, references/bounding-table.md, references/check-catalog.md, references/wca-formulas.md, scripts/bound_formulas.py, scripts/catalog.py, scripts/tests/test_catalog.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Gates: pytest 2379, mutation --changed: 45 mutations on 13 changed files, all killed (unit tier)

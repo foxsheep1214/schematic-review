@@ -12,8 +12,8 @@ from electrical_contract import finite
 
 SIDES = ('UPPER', 'LOWER')
 SOA_SEGMENTS = derating.engineering_value('soa_segment_share')   # decision B, held in the shared derating spec
-FORCED_BETA_K = 2   # decision D
-TYPICAL_BAND = 0.3   # G9 ③
+FORCED_BETA_K = derating.engineering_value('forced_beta_k')   # decision D
+TYPICAL_BAND = derating.engineering_value('typical_band')   # G9 ③
 KELVIN = 273.15
 
 
@@ -78,7 +78,7 @@ def ratio_extrapolation(*, typ_at_x, max_at_x0, typ_at_x0):
 
 
 def typical_band(*, typ, side):
-    """G9 ③: a typical value ±30 % (an estimate; never for damage, overheating or protection)."""
+    """G9 ③: a typical value ± the spec's typical_band (an estimate; never for damage, overheating or protection)."""
     return _n(typ, 'typ') * (1 + TYPICAL_BAND if _side(side) == 'UPPER' else 1 - TYPICAL_BAND)
 
 
@@ -117,7 +117,7 @@ def zth_junction_temperature(*, tc_c, p_pk_w, zth_k_per_w):
 
 
 def forced_beta_base_current(*, ic_a, hfe_min):
-    """Decision D: a saturated switch is driven with IB ≥ IC / (hFE_min / 2)."""
+    """Decision D: a saturated switch is driven with IB ≥ IC / (hFE_min / k), k the spec's forced_beta_k."""
     return _n(ic_a, 'ic_a') / (_n(hfe_min, 'hfe_min', True) / FORCED_BETA_K)
 
 
