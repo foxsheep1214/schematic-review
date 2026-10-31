@@ -141,6 +141,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | SR 维护者 | 架构明细：步骤间文件、格式版本、脚本归属、历次架构决定、规则维护步骤 | [architecture.md](references/architecture.md) |
 | SR 维护者 | 规则编号总表、判据、每项检查的盲区与常见误报（审查员用的名称表另出） | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | SR 维护者 | 改规则时：审查目的、七项审查要点、规则取舍 | [review-charter.md](references/review-charter.md) |
+| SR 维护者 | 共用规范规则库（G01–G09）：规则卡、适用条件、覆盖、`catalog.BASIS`、更新步骤（与 ASG 共用，同字节） | [guideline-rules.md](references/guideline-rules.md) |
 
 ## 与 ASG 的有状态工作流交接
 
@@ -159,6 +160,9 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 方式：A 自动扫描、E 保证值核对、T 连接追踪、C 工程计算、D 条款核对、V 图面目检、Q 覆盖审计、H 版本比对。
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（网表扫描、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
 计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-5)。
+共用规范规则（与 ASG 同一版，编号 `G0x-nnn`，如 `G03-005`）是判据层，规则总表是执行层：`catalog.BASIS` 把 SR 规则映射到它核对的规范规则，
+计划的 `guidelines` 段列出本板适用的规范规则、由哪些检查覆盖、哪些还没有检查（SR 待补，不是设计缺陷），见 [共用规范规则库](references/guideline-rules.md)。
+规范编号与审查要点 G1–G7、定界推法 G1–G6 是三套东西，格式不同，不要混写。
 
 功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（2.1）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各检查项写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
 

@@ -22,6 +22,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 import catalog
 import function_reading
+import guideline_rules
 import units
 from electrical_contract import text
 from review_functions import RESULT_MAX_CHARS, circuit_functions
@@ -729,6 +730,33 @@ INPUT_NOTES = {'RESISTOR_VALUE_UNREAD': '下面这些电阻的值读不出阻值
                                           '值里写了额定的按所写（有料号或原厂资料的按资料判，不在此列）；'
                                           '定了封装或在值里写明额定后重跑：'}
 
+STAGE_WORDS = {'schematic': '原理图', 'pcb': 'PCB', 'simulation': '仿真', 'prototype': '样机', 'production': '生产'}
+
+
+def guideline_cards(plan):
+    """The applicable shared guideline rules of the plan, read from the installed library (the gate checked that the
+    plan was built on it); empty when the plan has none."""
+    section = plan.get('guidelines') if isinstance(plan.get('guidelines'), dict) else {}
+    cards = {r['id']: r for r in guideline_rules.load()['rules']}
+    return section, [cards[i] for i in section.get('applicable') or [] if i in cards]
+
+
+def render_guidelines(plan):
+    """共用规范规则覆盖（references/guideline-rules.md）：本板适用的规范规则、出处、由哪些检查核对、在哪个阶段关闭。"""
+    section, applicable = guideline_cards(plan)
+    if not applicable:
+        return []
+    out = ['## 共用规范规则覆盖', '',
+           '规则库 %s，产品基线 %s。适用的规范规则 %d 条；没有检查核对的 %d 条列在“对 SR 的反馈”，是 SR 待补的规则，不是设计缺陷。'
+           % (section['library_version'], section['baseline'], len(applicable), len(section.get('uncovered') or [])), '',
+           '| 规范规则 | 内容 | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
+    for card in applicable:
+        source = '；'.join('%s %s %s 第%s页' % (s['document'], s['edition'], s['clause'], s['page']) for s in card['source'])
+        checks = '、'.join((section.get('covered') or {}).get(card['id']) or []) or '未覆盖'
+        out.append('| %s | %s | %s | %s | %s |' % (card['id'], cell(card['title']), cell(source), checks,
+                                                    STAGE_WORDS[card['closing_stage']]))
+    return out + ['']
+
 
 def render_input_notes(plan):
     out = []
@@ -1187,7 +1215,8 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     appendix = []
     for section in (render_bom_constraints(checks), render_handoffs(plan, handoffs, gate),
                     render_configuration_settings(settings), render_risks(gate.get('risks')),
-                    render_input_notes(plan), render_parameter_sheet(gate.get('parameter_sheet'), detail) if detail == 'full' else []):
+                    render_input_notes(plan), render_guidelines(plan),
+                    render_parameter_sheet(gate.get('parameter_sheet'), detail) if detail == 'full' else []):
         if section:
             appendix += fold(section[0].lstrip('# '), demote(section[2:]))
     gaps = [c for c in current_rows.values() if c.get('review_result') == 'INSUFFICIENT']
@@ -1252,6 +1281,14 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                % len(gaps), '', '| 检查 | 缺什么规则 | 依据 | 结论 |', '|---|---|---|---|']
         sr += ['| %s | %s | %s | %s |' % (cell(g.get('check_id') or ''), cell(g.get('missing') or ''),
                                           cell(g.get('basis') or ''), cell(g.get('result') or '未判')) for g in gaps]
+        sr.append('')
+    section, applicable = guideline_cards(plan)
+    uncovered = [c for c in applicable if c['id'] in (section.get('uncovered') or [])]
+    if uncovered:   # an applicable guideline rule no planned SR rule maps to (catalog.BASIS): SR's to add
+        sr += ['### 适用但还没有检查的共用规范规则', '',
+               '下面 %d 条规范规则本板适用，SR 规则总表里还没有检查映射到它们（catalog.BASIS），本次审查没有核对；'
+               '逐条补规则后记进改进台账。' % len(uncovered), '', '| 规范规则 | 内容 | 规则卡里的检查方法 |', '|---|---|---|']
+        sr += ['| %s | %s | %s |' % (c['id'], cell(c['title']), cell(c['sr_check'])) for c in uncovered]
         sr.append('')
     sr += render_sr_feedback(notes.get('sr_feedback'))
     if screen:

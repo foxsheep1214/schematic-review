@@ -9,6 +9,29 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Shared guideline rule library G01–G09 joins the plan, the gate and the report (2026-10-31)
+
+The user had the ASG/SR integration plan carried out (“请开始执行这个方案，慢慢来，一步一步来修改。遇到问题的时候先按照你的建议来执行。”).
+- The nine shared hardware guidelines compile into `references/guideline-rules.json`, described in `references/guideline-rules.md` and
+  checked, built and selected by `scripts/guideline_rules.py`. The three files are byte-identical in ASG (as the derating spec is), and
+  each repository's tests compare them with the other's. The library is empty until the guidelines are written (version 0.0.0).
+- Two layers: a guideline rule (`G0x-nnn`) is the criterion with its source; `catalog.BASIS` maps SR rules to the guideline rules they
+  check. SR rule ids do not change. The guideline ids differ in form from the objectives G1–G7 and the bounding methods G1–G6;
+  renaming the objectives was dropped because the bounding methods are written into results and would stay G anyway.
+- Plan: when the library has rules, `guidelines` lists the applicable rules (by planned circuit types, fitted device kinds and the
+  optional `intent.guideline_baseline`), which planned rules cover them, the uncovered and the downstream ones. Gate: the plan must be
+  built on the installed library; `guideline_coverage` carries the section. Report: an appendix table of the applicable rules with
+  sources, covering checks and closing stage; uncovered rules go to 对 SR 的反馈 as SR's to add, not as design defects. An empty
+  library changes nothing. Optional intent and plan fields follow the `derating` precedent and bump no schema version.
+- The library is in the engineering identity (references/ and scripts/), so a new version reopens designs and reviews.
+- Reading path: the intent-format line on `guideline_baseline` raises steps ① and ② by about 110 bytes (168 300→168 420, 157 800→157 910).
+- Joint run with a pilot library (temporary, not shipped) on replay boards r05 and r03: the plan lists and covers as expected; a cold
+  plan only has the circuit types named by candidates, so ASG (which declared POWER_CONVERTER for the charger) found one more rule.
+- Event: user:2026-10-31 (请开始执行这个方案)
+- Causes: rule_missing 1
+- Changed: SKILL.md, references/guideline-rules.md, references/guideline-rules.json, references/architecture.md, references/intent-format.md, references/review-charter.md, scripts/guideline_rules.py, scripts/catalog.py, scripts/plan_review.py, scripts/validate_review.py, scripts/render_report.py, scripts/tests/test_guideline_rules.py, scripts/tests/test_guideline_plan.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2395 passed, 1 skipped (the ASG byte comparison, until ASG installs the library); mutation --changed 130 on 14 files, 129 killed, M417 errors on an anchor already stale on main (left as found)
+
 ## R8 report: one row per requirement, each risk once (2026-10-28)
 
 The presentation problems read off the same R8 report (user: 这两件事也都推进做).

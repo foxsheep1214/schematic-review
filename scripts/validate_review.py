@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 import catalog
 import function_reading
+import guideline_rules
 import results_model
 from review_workflow import workflow, decision
 from review_quality import FREEZE_BLOCKING_CODES, refs_named, screen_quality
@@ -636,6 +637,11 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     "PASS rows need their own comparison before freeze" if item['code'] == 'TEMPLATED_PASS_RATIONALE'
                     else "evidence gaps need individual grading before freeze"))
     errors.extend(e for e in derive_errors if e not in errors)   # the function checks above report most of them already
+    guidelines = plan.get("guidelines")
+    library = guideline_rules.load()
+    if library["rules"] or guidelines is not None:   # the plan was built on the installed shared rule library
+        require(isinstance(guidelines, dict) and guidelines.get("content_sha256") == library["content_sha256"],
+                "plan guidelines were built on another shared rule library (or none): regenerate the plan")
     release = release_for(errors, blockers, accepted)
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")
@@ -659,6 +665,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
             "stage_scope": stage_scope,
             "sr_improvements": sr_improvements,
             "rule_gaps": rule_gaps.listing(plan, report),
+            # the shared guideline rules the plan found applicable; uncovered ones are SR's to add, not the design's
+            "guideline_coverage": guidelines if isinstance(guidelines, dict) else None,
             # REQ-D01 results per requirement confirmation state (a DEFERRED requirement has no rows).
             "requirements_by_status": {st: dict(Counter(checks[k].get("review_result") for k, x in expected.items()
                                                         if k in checks and (x.get("object") or {}).get("requirement_status") == st))

@@ -29,7 +29,7 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ② +0.1 KB 2026-10-28: the optocoupler life row passes at a retention ratio ≤ 85 % (derating R10).
 # ① +0.1 KB 2026-10-28: the start-pin precondition names DIS/UVLO and the rescue-channel precondition is its own.
 # ④ +0.5 KB 2026-10-28: standby power goes to the product test, and the bound-recorded-as-unboundable hint.
-STEP_MAX_BYTES = {'①': 168_300, '②': 157_800, '③': 224_900, '④': 124_000, '⑤': 37_800}
+STEP_MAX_BYTES = {'①': 168_420, '②': 157_910, '③': 224_900, '④': 124_000, '⑤': 37_800}
 
 
 def section(text, title):

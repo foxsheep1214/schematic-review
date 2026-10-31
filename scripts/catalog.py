@@ -621,6 +621,22 @@ OBJECTIVE_RULES = {
 }
 
 
+# 共用规范依据（2026-10-31，用户：请开始执行这个方案）：SR 规则 → 它核对的共用规范规则（G0x-nnn，references/guideline-rules.md）。
+# 计划里出现一条 SR 规则，就覆盖了它映射的规范规则；规范规则写成前这里为空。规范编号 G03-005 与上面的审查要点 G1–G7、
+# 定界推法 G1–G6 格式不同，不要混写。
+BASIS = {}
+
+
+def basis_errors(guideline_ids, basis=None, rule_ids=None):
+    """A BASIS key is a registered SR rule and every guideline it names is in the installed rule library."""
+    basis = BASIS if basis is None else basis
+    rule_ids = {r.id for r in RULES} if rule_ids is None else rule_ids
+    errors = ['BASIS 的键不是已登记的规则: ' + rule for rule in sorted(set(basis) - set(rule_ids))]
+    for rule, targets in sorted(basis.items()):
+        errors.extend('BASIS %s 指向规则库里没有的规范规则 %s' % (rule, t) for t in targets if t not in guideline_ids)
+    return errors
+
+
 def build_objective_index(rule_ids, groups, objectives=OBJECTIVES):
     """Reject unaligned, duplicated or stale maintenance mappings, without judging circuits."""
     if set(groups) != set(objectives):

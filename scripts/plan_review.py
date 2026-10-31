@@ -12,6 +12,7 @@ from copy import deepcopy
 import board_intent
 import catalog
 import derating
+import guideline_rules
 from electrical_contract import (LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, engine_identity, finite,
                                  squeeze_words)
 from page_inventory import inventory as document_inventory
@@ -49,7 +50,8 @@ INTENT_SCHEMA_VERSION = 5   # 5 (2026-10-26): clarifications; requirement status
 INTENT_FIELDS = {'schema_version', 'review_mode', 'review_phase', 'input_sha256', 'assemblies', 'devices', 'device_kinds',
                  'requirement_source', 'requirements', 'clarifications', 'circuit_decisions', 'circuits', 'circuit_candidates_sha256',
                  'expect', 'features', 'materials', 'rail_exclusions', 'rule_gaps', 'power_rails', 'power_sources',
-                 'power_paths', 'active_state', 'mission_profile', 'review_sources', 'review_dependencies', 'derating'} | {
+                 'power_paths', 'active_state', 'mission_profile', 'review_sources', 'review_dependencies', 'derating',
+                 'guideline_baseline'} | {
     checker.intent_key for checker in REGISTRY if checker.intent_key}
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
@@ -110,6 +112,9 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
         near = difflib.get_close_matches(str(key), sorted(INTENT_FIELDS), n=1)
         errors.append('intent.%s 不是 intent 的字段%s' % (key, '（是不是 %s？）' % near[0] if near else ''))
     errors.extend(derating.intent_errors(intent))
+    baselines = guideline_rules.load()['vocabulary']['baselines']
+    if 'guideline_baseline' in intent and intent['guideline_baseline'] not in baselines:
+        errors.append('guideline_baseline 必须为 ' + '/'.join(baselines))
     if intent.get('review_mode') not in (None, 'first', 'revision'):
         errors.append('review_mode 必须为 first/revision')
     if 'review_phase' in intent and intent['review_phase'] not in PHASES:
@@ -301,6 +306,25 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
     if candidates is not None:
         errors.extend(requirement_clarifications.pending_errors(intent))   # step ② needs every question answered
     return errors
+
+
+def guideline_section(checks, db, kind_intent, intent, library):
+    """共用规范规则的适用与覆盖（references/guideline-rules.md）：电路类型取计划检查项上的，器件类别取网表已贴器件的，
+    基线取 intent.guideline_baseline（不写取默认）；计划里出现的 SR 规则按 catalog.BASIS 覆盖它映射的规范规则。"""
+    graph = NetGraph(board_intent.graph_db(db, kind_intent))
+    kinds = sorted({graph.kind(ref) for ref in db.get('parts', {}) if graph.is_fitted(ref)}
+                   & set(library['vocabulary']['device_kinds']))
+    circuits = sorted({c['circuit_type'] for c in checks if c.get('circuit_type')})
+    baseline = intent.get('guideline_baseline') or library['default_baseline']
+    cited = {}
+    for rule in sorted({c['rule'] for c in checks}):
+        for target in catalog.BASIS.get(rule, ()):
+            cited.setdefault(target, []).append(rule)
+    found = guideline_rules.coverage(library, guideline_rules.select(library, baseline, circuits, kinds), cited)
+    return {'library_version': found['library_version'], 'content_sha256': found['content_sha256'],
+            'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
+            'applicable': found['applicable'], 'covered': found['covered'], 'uncovered': found['uncovered'],
+            'downstream': found['downstream']}
 
 
 # Verified kinds whose parts have no supply/return pins: DEVICE_PINS_NO_SUPPLY does not ask about them.
@@ -658,6 +682,9 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             plan['clarifications'] = records
         if isinstance(self.intent.get('derating'), dict):   # the level the stress margins are checked at (stress spec)
             plan['derating'] = dict(self.intent['derating'])
+        library = guideline_rules.load()
+        if library['rules']:   # the shared guideline rules this board triggers and which planned rules cover them
+            plan['guidelines'] = guideline_section(self.checks, self.db, self.kind_intent, self.intent, library)
         deferred = [r['id'] for r in self.intent.get('requirements') or [] if r.get('status') == 'DEFERRED']
         if deferred:   # no checks; the report lists them under 本次不审的范围
             plan['deferred_requirements'] = deferred

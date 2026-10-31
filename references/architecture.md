@@ -16,9 +16,9 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | `db.json` | 工具 | ① 读入 | — | 网表、BOM 列、页、符号脚：图上实际是什么 |
 | `requirement_source`（需求原文抄录） | 工具 | ① 读入 | 1 | 需求文档逐字抄录与 sha256 |
 | `datasheet-audit.json` | 工具 | ① 读入 | — | 每颗物料的资料是否找到、是否核实 |
-| `intent.json` | 审查员 | ①② 的输入 | 5 | 需求理解、需求澄清（问用户的问题与答复）、任务剖面、电源轨、器件类别与配置组、电路取舍、装配状态、规则缺口 |
+| `intent.json` | 审查员 | ①② 的输入 | 5 | 需求理解、需求澄清（问用户的问题与答复）、任务剖面、电源轨、器件类别与配置组、电路取舍、装配状态、规则缺口、产品基线（`guideline_baseline`） |
 | `record/circuit-candidates.json` | 工具 | ② 出计划 | 2 | 候选电路及成员 |
-| `review-plan.json` | 工具 | ② 出计划 | 7 | 功能树、每个检查项检查、功能框架、各检查器清单、接口 |
+| `review-plan.json` | 工具 | ② 出计划 | 7 | 功能树、每个检查项检查、功能框架、各检查器清单、接口；规则库有规则时另有 `guidelines`（适用的共用规范规则与覆盖） |
 | `review-results.json` | 审查员 | ③ 判断 | 15 | 功能判定（条件及其位号 `refs`、计算、余量及其推法与公差端、开放项及其单侧定界、失败项）和手填的检查项；绑定功能的检查项不落盘，门禁、报告、打包、对比读取时由功能派生（`results_model.materialize`），审查员的绑定或注记只留 `{id, function_id, aspect}` / `{id, 注记}` 残根 |
 | `review-gate.json` | 工具 | ④ 校验 | — | 对账结果、阻断项、待办 |
 | `审查报告.md` / `审查报告.html`、`record/` | 工具 | ⑤ 出报告 | — | 交付物：报告与留档 |
@@ -39,7 +39,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
 | ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
-| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`checkers/` |
+| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`guideline_rules.py`（共用规范规则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
 | ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
 | ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
@@ -118,6 +118,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-10-27 | 第四阶段“适不适用”：evidence-proportionality 只留适用性与最小充分证据（三个问题、受控范围、按用途选模型、本体与系统、转接板、证据够用、定界五步、身份分支、E 的例外、证据不足的写法与改图消缺）；原定资料取不到时的逐参数补证和 PDF 单位字形移到 [资料](datasheets.md)，交付前的必要性复核移到[结论与准出](verdicts-and-release.md) | 补资料是资料审计的事、交付前复核是准出的事，放在适用性文件里每步都要读（用户：接下来几个阶段，你都自己分析） |
 | 2026-10-27 | 第五阶段“定几级、能不能放行”：BOM 约束怎么定级从 commodity-floors 移进[结论与准出](verdicts-and-release.md#bom-约束怎么定级)，与后果类别、P0–P3 同处；commodity-floors 只给最弱档与它的计划预判 | 定级规则分在两个文件，BOM 约束的等级和后果类别隔着文件互相引用（用户：接下来几个阶段，你都自己分析） |
 | 2026-10-27 | 第六阶段“覆盖与改版”：inputs-and-coverage 只留输入基线、覆盖线、状态组合、阅读与结束条件、留档；网表与 PDF 解析（导出文件、字段映射、自检、无名称引脚、PDF 提取与旋转页）拆成[输入解析](input-parsing.md)，在 ① 读。六个问题各有一处：余量判定规则、定界表、WCA、evidence-proportionality、结论与准出、输入与覆盖 | 解析器手册和覆盖规则在同一文件，⑤ 交付时还要读 17 KB 解析细节（用户：接下来几个阶段，你都自己分析，选取适当的方式进行修改，一直到6个阶段修改都结束） |
+| 2026-10-31 | 接入共用规范规则库（G01–G09）：规则库与脚本 `guideline_rules.py` 与 ASG 同字节；`catalog.BASIS` 把 SR 规则映射到规范规则（判据层与执行层分开，SR 编号不变）；出计划时按电路类型、已贴器件类别和 `intent.guideline_baseline` 选出适用规范规则，写进计划 `guidelines` 段；门禁核对计划用的是已装规则库，未覆盖的规范规则在报告“对 SR 的反馈”列为 SR 待补，不挡定稿；报告附录列适用规则、出处、核对检查与关闭阶段。规则库为空时计划、门禁、报告都不变。intent 与计划只加可选字段，按 `derating` 的先例不升格式版本 | 九份共用规范要让 ASG 与 SR 调用同一版规则（用户：“请开始执行这个方案，慢慢来，一步一步来修改。遇到问题的时候先按照你的建议来执行。”） |
 
 ## 四、规则维护
 
@@ -136,6 +137,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
   `python3 scripts/catalog.py --write-doc references/check-catalog.md` 和 `--write-doc references/review-vocabulary.md`（审查员的三张名称表）。来源为“全板通用”“电路检查项”的新规则
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在计划生成的对应层（电路与器件 `plan_circuits.py`、接口 `interfaces.py`、
   系统功能 `plan_system.py`、全板与覆盖 `plan_board.py`；`plan_review.py` 只做汇总）、`lint.py` 或对应检查器里实现展开/扫描。新增或调整规则先回答 [审查要点中的三个问题](references/review-charter.md#用审查要点指导进化)。
+- 共用规范规则库（`guideline-rules.json/.md`、`scripts/guideline_rules.py`）与 ASG 同字节，改一边要复制到另一边；更新步骤见[共用规范规则库](guideline-rules.md#六更新规则库)。新增或调整 SR 规则时，若它核对某条规范规则，在 `catalog.BASIS` 登记映射；报告里“适用但还没有检查的共用规范规则”就是这里的待办。`test_guideline_rules.py` 核对规则库词表与 `CIRCUIT_TYPES`、`device_kinds.KINDS` 一致，加电路类型或器件类别后同步改规则库词表。
 - **门禁只有一条**（2026-10-27，用户：门禁合成一条 pytest）：每次改动跑 `python3 -m pytest scripts/tests -q`。它已经包含
   [规则合同](evals/rule_contracts/README.md)（每条自动规则一块触发板、一块近似板）、[KiCad 原生交付回放](evals/kicad_replay_bench/README.md)
   和 [典型电路基准](evals/typical_circuits/README.md)（每条报出都要已归类，新出现的须逐条审读），不再单独跑、不再分行记。
