@@ -24,9 +24,10 @@ def model(graph, ref, intent=None):
     """A two-sided object (possibly unresolved), or None. Pin membership always refers to physical pins."""
     part = graph.parts.get(ref, {})
     actual = graph.pins_of(ref)
-    official = ((intent or {}).get('devices') or {}).get(ref, {})
-    names = {p: (official.get('pins', {}).get(p, {}).get('name') or graph.pinname.get(ref + '.' + p, ''))
+    official = ((intent or {}).get('devices') or graph.db.get('devices') or {}).get(ref, {})
+    names = {p: (graph.pinname.get(ref + '.' + p, '') or official.get('pins', {}).get(p, {}).get('name'))
              for p in actual}
+    names = {p: str(n or '') for p, n in names.items()}
     mpn = str(official.get('mpn') or part.get('part') or part.get('value') or '').upper()
     kind = graph.kind(ref)
     groups, mechanism, citation, basis = None, None, '', 'pin-names'

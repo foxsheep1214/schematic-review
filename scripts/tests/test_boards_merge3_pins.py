@@ -47,3 +47,10 @@ def test_native_names_win_conflict_is_visible_and_uncited_table_is_unused():
     intent['devices']['Q1']['citation'] = 'p1'
     intent['devices']['Q1']['pinout_complete'] = False
     assert NetGraph(board_intent.graph_db(db, intent)).role('Q1.2') is None
+
+
+def test_exposed_pad_synonyms_are_not_pin_conflicts():
+    db, intent = fixture()
+    db['pinname']['U3.3'] = 'PAD'
+    intent['devices']['U3']['pins']['3']['name'] = 'EP'
+    assert not NetGraph(board_intent.graph_db(db, intent)).pin_conflicts

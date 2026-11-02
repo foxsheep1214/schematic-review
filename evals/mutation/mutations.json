@@ -6487,5 +6487,40 @@
   "file": "scripts/part_words.py",
   "old": "    if copper_tie(ref, part):\n        return JUMPER, 'part-keyword'",
   "new": "    if False:\n        return JUMPER, 'part-keyword'"
+ },
+ {
+  "id": "M1017",
+  "name": "U-designated Trafo becomes an IC short",
+  "file": "scripts/part_words.py",
+  "old": "    if any(re.search(r'(?:^|:)TRAFO(?:_\\d+)?$', normalize(part.get(k))) for k in ('part', 'value', 'prim')):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M1018",
+  "name": "graph-only side model loses official source table",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "((intent or {}).get('devices') or graph.db.get('devices') or {}).get(ref, {})",
+  "new": "((intent or {}).get('devices') or {}).get(ref, {})"
+ },
+ {
+  "id": "M1019",
+  "name": "connector makes passive transformer a digital isolator",
+  "file": "scripts/plan_circuits.py",
+  "old": "or graph.kind(ref) in (CAPACITOR, RESISTOR, CONNECTOR, TESTPOINT)",
+  "new": "or graph.kind(ref) in (CAPACITOR, RESISTOR)"
+ },
+ {
+  "id": "M1020",
+  "name": "isolation side silently overrides a named native pin",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "graph.pinname.get(ref + '.' + p, '') or official.get('pins', {}).get(p, {}).get('name')",
+  "new": "official.get('pins', {}).get(p, {}).get('name') or graph.pinname.get(ref + '.' + p, '')"
+ },
+ {
+  "id": "M1021",
+  "name": "exposed-pad aliases become false pin conflicts",
+  "file": "scripts/board_intent.py",
+  "old": "{'PAD', 'EP', 'EPAD', 'EXPOSED_PAD', 'EXPOSEDPAD'}",
+  "new": "set()"
  }
 ]

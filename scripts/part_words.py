@@ -223,6 +223,8 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     primitive = normalize(part.get('prim'))
     if copper_tie(ref, part):
         return JUMPER, 'part-keyword'
+    if any(re.search(r'(?:^|:)TRAFO(?:_\d+)?$', normalize(part.get(k))) for k in ('part', 'value', 'prim')):
+        return TRANSFORMER, 'part-keyword'
     if normalize(part.get('part')) == 'HY931147C':
         return CONNECTOR, 'part-keyword'  # HanRun integrated magnetics RJ45, Rev.A/1 p1; not an active IC
     if pin_count == 2 and re.match(r'^(?:L|FB)\d', ref, re.I) and normalize(part.get('value')) == 'FB':

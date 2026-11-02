@@ -448,7 +448,7 @@ class CircuitPlanning:
             side_models = [isolation_sides.model(graph, ref, self.kind_intent) for ref in refs] if kind.name == 'ISOLATION' else []
             non_digital = {'transformer', 'ethernet_magnetics', 'isolated_dcdc', 'isolated_amplifier', 'relay'}
             passive_barrier = bool(side_models) and any(m for m in side_models) and all(
-                (m is not None and m['mechanism'] in non_digital) or graph.kind(ref) in (CAPACITOR, RESISTOR)
+                (m is not None and m['mechanism'] in non_digital) or graph.kind(ref) in (CAPACITOR, RESISTOR, CONNECTOR, TESTPOINT)
                 for ref, m in zip(refs, side_models))
             for rule in kind.subjects:
                 if passive_barrier and rule in ('RST-T04', 'SIG-C09', 'SIG-C13', 'SIG-C17', 'PRO-C01'):

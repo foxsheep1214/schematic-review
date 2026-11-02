@@ -64,3 +64,12 @@ def test_floating_rail_tvs_is_differential_but_switch_energy_clamp_stays_thresho
     assert len(pc.channels('D1',db['parts']['D1'],NetGraph(db)))==1
     add(db,'U1','CONTROLLER',[('1','SW','LOCAL_PLUS'),('2','GND','LOCAL_MINUS')])
     assert not pc.channels('D1',db['parts']['D1'],NetGraph(db))
+
+
+def test_unknown_array_pinout_keeps_port_review_without_inventing_trip_thresholds():
+    db=board('TVS array unknown',['A','B','C','D','GND'])
+    assert not pc.channels('D1',db['parts']['D1'],NetGraph(db))
+    plan=build_review_plan(db)
+    assert any(r['rule']=='PRO-D03' for r in plan['checks'])
+    assert any(r['rule']=='DEV-D02' and r['object'].get('ref')=='D1' for r in plan['checks'])
+    assert not [r for r in plan['checks'] if r['rule']=='PRO-C02' and r['object'].get('ref')=='D1']

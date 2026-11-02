@@ -271,7 +271,8 @@ def graph_db(db, intent):
             if native and native != '~':
                 left, right = (set(part_words.pin_aliases(n, pin)) for n in (native, official))
                 synonyms = (part_words.GATE_NAMES, part_words.DRAIN_NAMES, part_words.SOURCE_NAMES,
-                            part_words.ANODE_NAMES, part_words.CATHODE_NAMES)
+                            part_words.ANODE_NAMES, part_words.CATHODE_NAMES,
+                            {'PAD', 'EP', 'EPAD', 'EXPOSED_PAD', 'EXPOSEDPAD'})
                 equivalent = bool(left & right) or any(left & group and right & group for group in synonyms)
                 if official and not equivalent:
                     conflicts.append({'code': 'PIN_NAME_CONFLICT', 'node': node, 'native': native,
