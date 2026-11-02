@@ -1,0 +1,1902 @@
+{
+  "board": "theushen--eegfrontier",
+  "source": {
+    "repo": "TheusHen/EEGFrontier",
+    "commit": "ecf3a485ac7b59d91e7c68da0952940b3e610e00",
+    "schematic": "SCH/EEGFrontier.kicad_sch",
+    "license": "MIT"
+  },
+  "types": [
+    "ANALOG",
+    "SPI"
+  ],
+  "review_types": [
+    "ANALOG",
+    "CLOCK",
+    "I2C",
+    "SPI",
+    "STARTUP",
+    "USB"
+  ],
+  "run": {
+    "db_sha256": "3d56f6b3633249c2cfac1b3f64f396554f3d655546e25a8a60133dedb109fd2e",
+    "plan_items": 148,
+    "findings_total": 27,
+    "results_judged": 82,
+    "results_recorded": 148,
+    "results_pending": 66,
+    "gate": "FAIL",
+    "gate_errors": 177,
+    "sr_commit": "06767073d7f864dc827874017600fa5efe709692",
+    "strict_export": true,
+    "kicad_version": "10.0.7",
+    "work_dir": "/Users/skyfend/.cache/sr-boards/theushen--eegfrontier/review",
+    "native_summary": {
+      "checks": 148,
+      "results": {
+        "NA": 12,
+        "INSUFFICIENT": 66,
+        "PASS": 54,
+        "FAIL": 16
+      },
+      "confirmed_defects": 8,
+      "by_severity": {
+        "P0": 0,
+        "P1": 5,
+        "P2": 3,
+        "P3": 0
+      },
+      "improvements": 0
+    },
+    "counting": "findings计报告独立根因+SR误报反馈；16条FAIL合并为8个确认缺陷，13个独立开放问题承接66项未定；6类误报反馈独立计。3个misses为目标规则覆盖缺口，不是3个已证实的新增电气缺陷。",
+    "record_limitations": "原生schema15不接受NEEDS_HUMAN/KNOWLEDGE_GAP；另有纯连接功能缺强制条款承载、常规件采购约束/局部数值判断尚未满足原生margin结构、manual_verification注记等门禁错误。如实FAIL，不假装符合原生交付合同。54 PASS是所列局部已核判断，并非有效整板准出。",
+    "baseline_plan_before_manual": "record/review-plan-before-manual.json"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "DEV-C01",
+      "sr_rules": [
+        "DEV-C01",
+        "DEV-C05"
+      ],
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "3V3_D",
+        "GND"
+      ],
+      "sr_text": "U2.19/21/22/54/56/59的AVDD/AVDD1均接3V3_D，AVSS=GND；3.3 V比TI规定的4.75 V下限低1.45 V。DVDD允许1.8–3.6 V不能用于替代AVDD条件。",
+      "verdict": "true_defect",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p8 §7.3 Analog power supply 4.75–5.25 V；/tmp/codex-work/eegfrontier-lane3/ds/xiao-rp2040-v1.3.pdf p1 U4 VOUT=3V3；J4；record/evidence-facts.json calculations.AVDD_nominal；U2.19/21/22/54/56/59的AVDD/AVDD1均接3V3_D，AVSS=GND；3.3 V比TI规定的4.75 V下限低1.45 V。DVDD允许1.8–3.6 V不能用于替代AVDD条件。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-ADC-AVDD-LOW",
+        "mutation": "将ADS1299的AVDD和AVDD1电源脚从5V改接3V3，保留DVDD3V3和AVSS0V，并绑定准确器件工作窗。",
+        "target_rule": "DEV-C05"
+      },
+      "check_ids": [
+        "DEV-C01.ANALOG-U2",
+        "DEV-C05.U2"
+      ],
+      "report_items": [
+        "W-D01-FN-ANALOG-U2",
+        "D01"
+      ],
+      "review_issue": "D01"
+    },
+    {
+      "id": "F02",
+      "sr_rule": "NET-A07",
+      "sr_rules": [
+        "NET-A07",
+        "SIG-D09",
+        "SIG-T04"
+      ],
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "SPI_SCK",
+        "unconnected-(U2-SCLK-Pad40)"
+      ],
+      "sr_text": "U1.9的SPI_SCK接U2.31 RESV1；U2.40 SCLK标NC。TI规定31脚直接接DGND，40脚才是串行时钟。",
+      "verdict": "true_defect",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p6 Pin Functions RESV1/SCLK；record/evidence-facts.json objects.U1.pins.U1.9; objects.U2.pins.U2.31 and U2.40；U1.9的SPI_SCK接U2.31 RESV1；U2.40 SCLK标NC。TI规定31脚直接接DGND，40脚才是串行时钟。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-SPI-SCLK-RESERVED",
+        "mutation": "断开ADC的SCLK，把主控SCK改接要求接地的RESV1，SCLK标NC。",
+        "target_rule": "SIG-T04"
+      },
+      "check_ids": [
+        "NET-A07.U2-40-a652c2",
+        "SIG-D09.SPI-U1-ACTIVE.D2",
+        "SIG-D09.SPI-U1-IDLE.D2",
+        "SIG-T04.IF-ANALOG-U2-SPI-U1"
+      ],
+      "report_items": [
+        "W-D02-FN-ANALOG-U2",
+        "W-D02-FN-IF-ANALOG-U2-SPI-U1",
+        "W-D02-FN-SPI-U1",
+        "D02"
+      ],
+      "review_issue": "D02"
+    },
+    {
+      "id": "F03",
+      "sr_rule": "CLK-D01",
+      "sr_rules": [
+        "CLK-D01",
+        "NET-A07"
+      ],
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "GND",
+        "unconnected-(U2-CLK-Pad37)"
+      ],
+      "sr_text": "U2.52 CLKSEL直接接GND，选择外部主时钟；U2.37 CLK为NC。SPI时钟不是ADC主时钟，也不能通过寄存器把CLKSEL低电平改成内部时钟。",
+      "verdict": "true_defect",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p6 footnote1; p8 clock input; p27 §9.3.2.2 Table6；record/evidence-facts.json objects.U2.pins.U2.37/U2.52；U2.52 CLKSEL直接接GND，选择外部主时钟；U2.37 CLK为NC。SPI时钟不是ADC主时钟，也不能通过寄存器把CLKSEL低电平改成内部时钟。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-ADC-CLOCK-MODE",
+        "mutation": "将CLKSEL从内部时钟选择的DVDD改接DGND，删除CLK外部源并标NC。",
+        "target_rule": "CLK-D01"
+      },
+      "check_ids": [
+        "CLK-D01.GAP-ADC-MASTER-CLOCK.U2",
+        "NET-A07.U2-37-deb3ca"
+      ],
+      "report_items": [
+        "W-D03-FN-ANALOG-U2",
+        "D03"
+      ],
+      "review_issue": "D03"
+    },
+    {
+      "id": "F04",
+      "sr_rule": "DEV-D05",
+      "sr_rules": [
+        "DEV-D05"
+      ],
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U2",
+        "C10"
+      ],
+      "nets": [
+        "Net-(U2-VCAP1)",
+        "GND"
+      ],
+      "sr_text": "C10为10µF，连接U2.28 VCAP1到GND；TI脚表要求VCAP1接100µF到AVSS。它是片内模拟旁路节点，不能用3V3_D上其他电容抵数。",
+      "verdict": "true_defect",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p7 VCAP1 row；p70 §11.1 VCAP1 charge/startup；record/evidence-facts.json calculations.VCAP1_bypass；C10为10µF，连接U2.28 VCAP1到GND；TI脚表要求VCAP1接100µF到AVSS。它是片内模拟旁路节点，不能用3V3_D上其他电容抵数。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-ADC-VCAP1-CAP",
+        "mutation": "把ADS1299 VCAP1唯一旁路电容100µF改成10µF，保持端点不变。",
+        "target_rule": "DEV-D05"
+      },
+      "check_ids": [
+        "DEV-D05.GAP-VCAP1-BYPASS.NET-U2-VCAP1",
+        "DEV-D05.U2"
+      ],
+      "report_items": [
+        "W-D04-FN-ANALOG-U2",
+        "D04"
+      ],
+      "review_issue": "D04"
+    },
+    {
+      "id": "F05",
+      "sr_rule": "ANA-C03",
+      "sr_rules": [
+        "ANA-C03"
+      ],
+      "criteria": [
+        "G04-054"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U2",
+        "C7",
+        "C8"
+      ],
+      "nets": [
+        "Net-(U2-VREFP)",
+        "GND"
+      ],
+      "sr_text": "U2.24到U2.25/GND仅C7=100nF和C8=1µF并联，名义1.1µF，低于TI最小10µF；名义值已差8.9µF，不能靠公差或直流偏压修复。",
+      "verdict": "true_defect",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p7 VREFP row minimum 10µF；record/evidence-facts.json calculations.VREF_bypass；U2.24到U2.25/GND仅C7=100nF和C8=1µF并联，名义1.1µF，低于TI最小10µF；名义值已差8.9µF，不能靠公差或直流偏压修复。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-ADC-VREF-CAP",
+        "mutation": "把VREFP到VREFN的10µF旁路减为1µF，保留100nF并联。",
+        "target_rule": "ANA-C03"
+      },
+      "check_ids": [
+        "ANA-C03.ANALOG-U2-FAULT.U2",
+        "ANA-C03.ANALOG-U2-RUN.U2",
+        "ANA-C03.GAP-VREF-BYPASS.NET-U2-VREFP"
+      ],
+      "report_items": [
+        "W-D05-FN-ANALOG-U2",
+        "D05"
+      ],
+      "review_issue": "D05"
+    },
+    {
+      "id": "F06",
+      "sr_rule": "DEV-D05",
+      "sr_rules": [
+        "DEV-D05"
+      ],
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-GPIO1-Pad42)",
+        "unconnected-(U2-GPIO2-Pad44)",
+        "unconnected-(U2-GPIO3-Pad45)",
+        "unconnected-(U2-GPIO4-Pad46)"
+      ],
+      "sr_text": "U2.42/44/45/46 GPIO1–4全部NC；手册p6要求未用时各经≥10kΩ到DGND，p27明确上电/复位默认输入，不允许悬空。",
+      "verdict": "true_defect",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p6 GPIO1–4 rows; p27 §9.3.2.3；U2.42/44/45/46 GPIO1–4全部NC；手册p6要求未用时各经≥10kΩ到DGND，p27明确上电/复位默认输入，不允许悬空。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-ADC-GPIO-FLOAT",
+        "mutation": "删除未用GPIO到DGND的≥10kΩ电阻，将GPIO脚NC，保留默认输入条件。",
+        "target_rule": "DEV-D05"
+      },
+      "check_ids": [
+        "DEV-D05.GAP-UNUSED-GPIO.U2"
+      ],
+      "report_items": [
+        "W-D06-FN-ANALOG-U2",
+        "D06"
+      ],
+      "review_issue": "D06"
+    },
+    {
+      "id": "F07",
+      "sr_rule": "NET-A07",
+      "sr_rules": [
+        "NET-A07"
+      ],
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-DAISY_IN-Pad41)"
+      ],
+      "sr_text": "本板仅一颗ADS1299，U2.41 DAISY_IN为NC；TI明确单片非菊链时将DAISYIN接DGND，并要求未用数字输入不悬空。",
+      "verdict": "true_defect",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p61 §10.1.1 Unused Inputs and Outputs；record/evidence-facts.json objects.U2.pins.U2.41；本板仅一颗ADS1299，U2.41 DAISY_IN为NC；TI明确单片非菊链时将DAISYIN接DGND，并要求未用数字输入不悬空。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-ADC-DAISY-FLOAT",
+        "mutation": "删除单片ADC的DAISY_IN到DGND的连接并标NC。",
+        "target_rule": "NET-A07"
+      },
+      "check_ids": [
+        "NET-A07.U2-41-834d4a"
+      ],
+      "report_items": [
+        "W-D07-FN-ANALOG-U2",
+        "D07"
+      ],
+      "review_issue": "D07"
+    },
+    {
+      "id": "F08",
+      "sr_rule": "DOC-V01",
+      "sr_rules": [
+        "DOC-V01"
+      ],
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11"
+      ],
+      "nets": [
+        "SPI_MOSI"
+      ],
+      "sr_text": "p1 U2左侧R4–R11上下相邻的位号/100k值以及SPI_MOSI附近文字重叠，放大原生导出图仍不能清晰区分；网表数值可读不能关闭图面可读性。",
+      "verdict": "true_defect",
+      "evidence": "/tmp/codex-work/eegfrontier-lane3/schematic.pdf p1 left of U2.9–16 and U2.34；/tmp/codex-work/eegfrontier-lane3/input-labels.png whole crop；p1 U2左侧R4–R11上下相邻的位号/100k值以及SPI_MOSI附近文字重叠，放大原生导出图仍不能清晰区分；网表数值可读不能关闭图面可读性。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DOC-V01.1"
+      ],
+      "report_items": [
+        "D08"
+      ],
+      "review_issue": "D08"
+    },
+    {
+      "id": "F09",
+      "sr_rule": "NET-A07",
+      "sr_rules": [
+        "NET-A07"
+      ],
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-IN8N-Pad1)",
+        "unconnected-(U2-IN8P-Pad2)",
+        "unconnected-(U2-IN7N-Pad3)",
+        "unconnected-(U2-IN7P-Pad4)",
+        "unconnected-(U2-IN6N-Pad5)",
+        "unconnected-(U2-IN6P-Pad6)",
+        "unconnected-(U2-IN5N-Pad7)",
+        "unconnected-(U2-IN5P-Pad8)"
+      ],
+      "sr_text": "U2为ADS1299-4PAGR，1–8脚在通用符号中仍叫IN5–IN8。p6把这些功能限定为ADS1299-6/ADS1299，另有“unused analog inputs接AVDD”的通用脚注；现有资料未明确四通道未实现脚的终接，不能据通用符号判8个真实模拟悬空，也不能把脚注擅自豁免。",
+      "verdict": "knowledge_gap",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p5 Device Comparison; p6 IN5–8 only variants and footnote2；U2为ADS1299-4PAGR，1–8脚在通用符号中仍叫IN5–IN8。p6把这些功能限定为ADS1299-6/ADS1299，另有“unused analog inputs接AVDD”的通用脚注；现有资料未明确四通道未实现脚的终接，不能据通用符号判8个真实模拟悬空，也不能把脚注擅自豁免。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U2-1-eec6dc",
+        "NET-A07.U2-2-77cf3d",
+        "NET-A07.U2-3-69eca4",
+        "NET-A07.U2-4-25f364",
+        "NET-A07.U2-5-633cca",
+        "NET-A07.U2-6-4e3d87",
+        "NET-A07.U2-7-13b4f1",
+        "NET-A07.U2-8-b33b9d"
+      ],
+      "report_items": [
+        "W-O-K01"
+      ],
+      "review_issue": "K01"
+    },
+    {
+      "id": "F10",
+      "sr_rule": "DEV-C02",
+      "sr_rules": [
+        "DEV-C02"
+      ],
+      "criteria": [
+        "G03-010",
+        "G03-039"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U2",
+        "C9",
+        "C11",
+        "C12"
+      ],
+      "nets": [
+        "Net-(U2-VCAP2)",
+        "Net-(U2-VCAP3)",
+        "Net-(U2-VCAP4)"
+      ],
+      "sr_text": "C9/C11/C12各10µF；手册p7分别给VCAP2=1µF、VCAP3=1µF并0.1µF、VCAP4=1µF。较大的单电容不自动证明片内环路或旁路特性等效，手册未给此替代组合窗口；只把实际偏离登记，不声称必然不稳定。",
+      "verdict": "knowledge_gap",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p7 VCAP2–4 rows; p70 supply recommendations；C9/C11/C12各10µF；手册p7分别给VCAP2=1µF、VCAP3=1µF并0.1µF、VCAP4=1µF。较大的单电容不自动证明片内环路或旁路特性等效，手册未给此替代组合窗口；只把实际偏离登记，不声称必然不稳定。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C02.ANALOG-U2"
+      ],
+      "report_items": [
+        "W-O-K02"
+      ],
+      "review_issue": "K02"
+    },
+    {
+      "id": "F11",
+      "sr_rule": "PWR-C04",
+      "sr_rules": [
+        "PWR-C04"
+      ],
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6"
+      ],
+      "nets": [
+        "3V3_D"
+      ],
+      "sr_text": "Seeed v1.3原理图U4为RS3236-3.3YUTDN4，模块自身输出10µF；载板3V3_D再并C1–C6=20.4µF，总名义30.4µF。RUNIC REV C.7 p1只说明按1µF陶瓷输入/输出设计，p11电气测试及p14–15曲线Cout=1µF，未给30.4µF和真实有效值/ESR的稳定性窗口。",
+      "verdict": "knowledge_gap",
+      "evidence": "/tmp/codex-work/eegfrontier-lane3/ds/xiao-rp2040-v1.3.pdf p1 U4/C6；/tmp/codex-work/eegfrontier-lane3/ds/rs3236.pdf p1 description; p11–12 electrical conditions; p14–15 typical curves；record/evidence-facts.json calculations.carrier_Cout；Seeed v1.3原理图U4为RS3236-3.3YUTDN4，模块自身输出10µF；载板3V3_D再并C1–C6=20.4µF，总名义30.4µF。RUNIC REV C.7 p1只说明按1µF陶瓷输入/输出设计，p11电气测试及p14–15曲线Cout=1µF，未给30.4µF和真实有效值/ESR的稳定性窗口。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-C04.GAP-MODULE-LDO-COUT.3V3-D"
+      ],
+      "report_items": [
+        "W-O-K03"
+      ],
+      "review_issue": "K03"
+    },
+    {
+      "id": "F12",
+      "sr_rule": "ANA-C01",
+      "sr_rules": [
+        "ANA-C01",
+        "ANA-C02",
+        "DEV-C01",
+        "DEV-C03"
+      ],
+      "criteria": [
+        "G02-007",
+        "G02-017",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G04-041",
+        "G04-042",
+        "G04-044",
+        "G04-045",
+        "G04-046",
+        "G04-055",
+        "G04-056",
+        "G04-057",
+        "G05-022"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U2",
+        "J1",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11"
+      ],
+      "nets": [
+        "EEG_CH1",
+        "EEG_CH2",
+        "EEG_CH3",
+        "EEG_CH4",
+        "EEG_REF"
+      ],
+      "sr_text": "J1.1–4经各100k到IN1P–4P，J1.5 EEG_REF经另四个100k到IN1N–4N；只串阻没有设定ADC输入共模/满量程。p8满量程±VREF/gain，p22–23 PGA共模范围依赖增益和差分幅值。电极偏置、源阻抗、增益/带宽及故障电压未指定，不能判饱和、误差或输入串阻故障功耗。",
+      "verdict": "needs_human",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p7 analog absolute maximum; p8 input ranges; p22–23 PGA input range；record/evidence-facts.json objects.J1; calculations.R4_R11；J1.1–4经各100k到IN1P–4P，J1.5 EEG_REF经另四个100k到IN1N–4N；只串阻没有设定ADC输入共模/满量程。p8满量程±VREF/gain，p22–23 PGA共模范围依赖增益和差分幅值。电极偏置、源阻抗、增益/带宽及故障电压未指定，不能判饱和、误差或输入串阻故障功耗。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "ANA-C01.ANALOG-U2-FAULT.U2",
+        "ANA-C01.ANALOG-U2-RUN.U2",
+        "ANA-C02.ANALOG-U2-FAULT.U2",
+        "ANA-C02.ANALOG-U2-RUN.U2",
+        "DEV-C01.R10",
+        "DEV-C01.R11",
+        "DEV-C01.R4",
+        "DEV-C01.R5",
+        "DEV-C01.R6",
+        "DEV-C01.R7",
+        "DEV-C01.R8",
+        "DEV-C01.R9",
+        "DEV-C03.ANALOG-U2"
+      ],
+      "report_items": [
+        "W-O-H01"
+      ],
+      "review_issue": "H01"
+    },
+    {
+      "id": "F13",
+      "sr_rule": "ANA-C05",
+      "sr_rules": [
+        "ANA-C05",
+        "NET-A07"
+      ],
+      "criteria": [
+        "G04-043",
+        "G04-047",
+        "G04-048",
+        "G04-049"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U2",
+        "J1"
+      ],
+      "nets": [
+        "EEG_BIAS",
+        "EEG_REF",
+        "unconnected-(U2-BIASREF-Pad60)"
+      ],
+      "sr_text": "J1.6直接接U2.63 BIASOUT并接U2.62 BIASIN；J1.5直接接U2.61 BIASINV；BIASREF60脚NC，板上未见63到61的外置RC。内部BIASREF可由CONFIG3选择，但选用状态、经人体电极形成的闭环阻抗/稳定补偿和输出负载未指定，不能假定BIASREF悬空必错或该回路稳定。",
+      "verdict": "needs_human",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p28–29 bias amplifier; p49 CONFIG3 BIASREF_INT; p61 unused BIASREF; p68–69 bias examples；J1.6直接接U2.63 BIASOUT并接U2.62 BIASIN；J1.5直接接U2.61 BIASINV；BIASREF60脚NC，板上未见63到61的外置RC。内部BIASREF可由CONFIG3选择，但选用状态、经人体电极形成的闭环阻抗/稳定补偿和输出负载未指定，不能假定BIASREF悬空必错或该回路稳定。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "ANA-C05.ANALOG-U2.U2",
+        "NET-A07.U2-60-86b659"
+      ],
+      "report_items": [
+        "W-O-H02"
+      ],
+      "review_issue": "H02"
+    },
+    {
+      "id": "F14",
+      "sr_rule": "PRO-D03",
+      "sr_rules": [
+        "PRO-D03",
+        "PRO-D04",
+        "PRO-D05",
+        "PRO-D06",
+        "REQ-D05"
+      ],
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-001",
+        "G05-002",
+        "G05-003",
+        "G05-004",
+        "G05-005",
+        "G05-006",
+        "G05-007",
+        "G05-008",
+        "G05-009",
+        "G05-010",
+        "G05-011",
+        "G05-012",
+        "G05-013",
+        "G05-014",
+        "G05-015",
+        "G05-016",
+        "G05-017",
+        "G05-028",
+        "G05-029",
+        "G05-035",
+        "G05-054",
+        "G05-061",
+        "G05-065"
+      ],
+      "severity": "P0",
+      "refs": [
+        "J1",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "GND",
+        "EEG_BIAS",
+        "EEG_REF"
+      ],
+      "sr_text": "J1.7 GND直连U1.13模组地及USB地；J1.6 BIASOUT到人体电极没有板上串联限流件。README提醒使用电池供电电脑或外部USB隔离器，本板没有隔离器；实际外部隔离类别、供电接地、线缆和允许故障电流尚未指定，不能从industrial_telecom基线推出人体安全合格或医疗隔离缺陷。",
+      "verdict": "needs_human",
+      "evidence": "record/evidence-facts.json objects.J1.pins.J1.6/J1.7; states.HOTPLUG_EXTERNAL_ONLY；/tmp/codex-work/eegfrontier-lane3/ds/xiao-rp2040-v1.3.pdf p1 USB1 GND/U6 ground；J1.7 GND直连U1.13模组地及USB地；J1.6 BIASOUT到人体电极没有板上串联限流件。README提醒使用电池供电电脑或外部USB隔离器，本板没有隔离器；实际外部隔离类别、供电接地、线缆和允许故障电流尚未指定，不能从industrial_telecom基线推出人体安全合格或医疗隔离缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-D03.J1",
+        "PRO-D04.J1",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD",
+        "REQ-D05.BOARD"
+      ],
+      "report_items": [
+        "W-O-H03"
+      ],
+      "review_issue": "H03"
+    },
+    {
+      "id": "F15",
+      "sr_rule": "SIG-C07",
+      "sr_rules": [
+        "SIG-C07",
+        "SIG-C09",
+        "SIG-C13"
+      ],
+      "criteria": [
+        "G02-022",
+        "G02-023",
+        "G04-001",
+        "G04-002",
+        "G04-003",
+        "G04-004",
+        "G04-011",
+        "G04-016",
+        "G04-038"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "SPI_CS",
+        "SPI_MISO",
+        "SPI_MOSI",
+        "SPI_SCK",
+        "EEG_DRDY"
+      ],
+      "sr_text": "U1与U2 DVDD共3V3_D，正常静态电平域一致；但U2模拟供电已违规，SPI有效时序/采样率/CPOL-CPHA/负载和实际引脚配置没有受控约束。不能用同为3.3V就证明逻辑门限、驱动或吞吐全角点通过。",
+      "verdict": "needs_human",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p10 digital I/O electrical characteristics; p12–13 SPI timing; p38–41 SPI protocol；/tmp/codex-work/eegfrontier-lane3/ds/xiao-rp2040-v1.3.pdf p1 RP2040 SPI GPIO2/3/4；U1与U2 DVDD共3V3_D，正常静态电平域一致；但U2模拟供电已违规，SPI有效时序/采样率/CPOL-CPHA/负载和实际引脚配置没有受控约束。不能用同为3.3V就证明逻辑门限、驱动或吞吐全角点通过。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-C07.IF-ANALOG-U2-SPI-U1",
+        "SIG-C07.SPI-U1-ACTIVE.D2",
+        "SIG-C07.SPI-U1-IDLE.D2",
+        "SIG-C09.SPI-U1-ACTIVE.D2",
+        "SIG-C09.SPI-U1-IDLE.D2",
+        "SIG-C13.SPI-U1.D2"
+      ],
+      "report_items": [
+        "W-O-H04"
+      ],
+      "review_issue": "H04"
+    },
+    {
+      "id": "F16",
+      "sr_rule": "DEV-D05",
+      "sr_rules": [
+        "DEV-D05",
+        "RST-T03",
+        "RST-T04",
+        "SIG-C08"
+      ],
+      "criteria": [
+        "G01-014",
+        "G03-024",
+        "G03-030",
+        "G03-047",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-010",
+        "G04-021",
+        "G05-062",
+        "G05-091"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "U2",
+        "R1"
+      ],
+      "nets": [
+        "EEG_RESET",
+        "EEG_START",
+        "SPI_CS",
+        "3V3_D",
+        "VBUS"
+      ],
+      "sr_text": "U1.1/2/8直连U2.RESET/START/CS，无板上外部偏置；U2 PWDN由R1上拉10k。RP2040上电GPIO默认下拉可令RESET/START低，但不覆盖电源未建立时段。TI p70 §11.1要求供电稳定后等待tPOR且VCAP1>1.1V再复位。慢爬升、棕断、热插拔/外部电极先带电的系统边界未定；不等于必须购买外置复位IC。",
+      "verdict": "needs_human",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p70 §11.1 Figure76/Table30；/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/01_微控制器与处理器/32位ARM_Cortex-M_MCU/Raspberry Pi - RP2040.pdf p303 GPIO pad PUE/PDE reset；record/evidence-facts.json states.STARTUP_RESET/BROWNOUT_POWER_DOWN；U1.1/2/8直连U2.RESET/START/CS，无板上外部偏置；U2 PWDN由R1上拉10k。RP2040上电GPIO默认下拉可令RESET/START低，但不覆盖电源未建立时段。TI p70 §11.1要求供电稳定后等待tPOR且VCAP1>1.1V再复位。慢爬升、棕断、热插拔/外部电极先带电的系统边界未定；不等于必须购买外置复位IC。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D05.U1",
+        "RST-T03.SYS-SEQUENCE",
+        "RST-T04.GAP-RESET-DEFAULT.GLOBAL",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-DRDY",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-RESET",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-START",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-CS",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MISO",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MOSI",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-SCK"
+      ],
+      "report_items": [
+        "W-O-H05"
+      ],
+      "review_issue": "H05"
+    },
+    {
+      "id": "F17",
+      "sr_rule": "DEV-C01",
+      "sr_rules": [
+        "DEV-C01",
+        "DEV-C05",
+        "PWR-C01",
+        "PWR-C19",
+        "PWR-D04",
+        "SIG-C05"
+      ],
+      "criteria": [
+        "G01-010",
+        "G01-017",
+        "G01-022",
+        "G01-026",
+        "G01-027",
+        "G01-028",
+        "G01-029",
+        "G01-031",
+        "G01-051",
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-001",
+        "G03-002",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G03-042",
+        "G03-043",
+        "G05-022"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "U2",
+        "D1",
+        "D2"
+      ],
+      "nets": [
+        "VBUS",
+        "3V3_D"
+      ],
+      "sr_text": "模块USB是5V标称输入，3V3_D由模组U4输出；真实VBUS容差/线缆压降、USB可用电流、RP2040工作负载、指示LED条件和环境温度没有受控输入，不能把RUNIC 500mA标签或ADC典型电流当整板可用功率/热保证。",
+      "verdict": "needs_human",
+      "evidence": "/tmp/codex-work/eegfrontier-lane3/ds/xiao-rp2040-v1.3.pdf p1 USB1/D2/U4 supplies；/tmp/codex-work/eegfrontier-lane3/ds/rs3236.pdf p10–12 recommended/electrical conditions；/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p11 power dissipation；模块USB是5V标称输入，3V3_D由模组U4输出；真实VBUS容差/线缆压降、USB可用电流、RP2040工作负载、指示LED条件和环境温度没有受控输入，不能把RUNIC 500mA标签或ADC典型电流当整板可用功率/热保证。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C01.SPI-U1",
+        "DEV-C05.U1",
+        "PWR-C01.3V3-D",
+        "PWR-C01.VBUS",
+        "PWR-C19.BOARD",
+        "PWR-D04.BOARD",
+        "SIG-C05.GAP-MODULE-USB-SINK.VBUS"
+      ],
+      "report_items": [
+        "W-O-H06"
+      ],
+      "review_issue": "H06"
+    },
+    {
+      "id": "F18",
+      "sr_rule": "DEV-C04",
+      "sr_rules": [
+        "DEV-C04",
+        "DEV-D02",
+        "DEV-D03",
+        "DEV-E01"
+      ],
+      "criteria": [
+        "G01-013",
+        "G05-022"
+      ],
+      "severity": "P2",
+      "refs": [
+        "J1"
+      ],
+      "nets": [
+        "EEG_CH1",
+        "EEG_CH2",
+        "EEG_CH3",
+        "EEG_CH4",
+        "EEG_REF",
+        "EEG_BIAS",
+        "GND"
+      ],
+      "sr_text": "J1只有通用Conn_01x08_Pin与2.54mm卧式排针封装。板内1–4为通道、5为REF、6为BIAS、7为GND、8为NC，但实际线束/防误插/接触额定与对端脚视图未给。网表可核板内顺序，不能由通用符号替代物料和对端定义。",
+      "verdict": "needs_human",
+      "evidence": "record/evidence-facts.json objects.J1；J1只有通用Conn_01x08_Pin与2.54mm卧式排针封装。板内1–4为通道、5为REF、6为BIAS、7为GND、8为NC，但实际线束/防误插/接触额定与对端脚视图未给。网表可核板内顺序，不能由通用符号替代物料和对端定义。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C04.J1",
+        "DEV-D02.J1",
+        "DEV-D03.J1",
+        "DEV-E01.J1"
+      ],
+      "report_items": [
+        "W-O-H07"
+      ],
+      "review_issue": "H07"
+    },
+    {
+      "id": "F19",
+      "sr_rule": "ANA-C06",
+      "sr_rules": [
+        "ANA-C06",
+        "DOC-D02",
+        "PWR-T04",
+        "REQ-D02",
+        "REQ-D03",
+        "REQ-D04"
+      ],
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-006",
+        "G01-007",
+        "G01-008",
+        "G01-011",
+        "G01-012",
+        "G02-018",
+        "G02-030",
+        "G03-025",
+        "G03-041",
+        "G04-014",
+        "G04-015",
+        "G04-050",
+        "G04-052",
+        "G04-053",
+        "G04-063",
+        "G04-065",
+        "G04-072",
+        "G04-077",
+        "G04-100",
+        "G05-018",
+        "G05-023",
+        "G05-097"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "U2",
+        "J1"
+      ],
+      "nets": [],
+      "sr_text": "本轮仅REQ-USE用途推断，尚无量化噪声/CMRR/精度、温度寿命、EMC/ESD等级及故障范围。未将这些空白编造成设计缺陷，也未把硬件有通道等同采集性能已实现。",
+      "verdict": "needs_human",
+      "evidence": "requirements/inferred-scope.md REQ-USE and boundary paragraph；本轮仅REQ-USE用途推断，尚无量化噪声/CMRR/精度、温度寿命、EMC/ESD等级及故障范围。未将这些空白编造成设计缺陷，也未把硬件有通道等同采集性能已实现。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "ANA-C06.ANALOG-U2.U2",
+        "DOC-D02.BOARD",
+        "PWR-T04.AS-DRAWN.SUPERVISION-RAILS",
+        "REQ-D02.BOARD",
+        "REQ-D03.BOARD",
+        "REQ-D04.BOARD"
+      ],
+      "report_items": [
+        "W-O-H08"
+      ],
+      "review_issue": "H08"
+    },
+    {
+      "id": "F20",
+      "sr_rule": "PWR-C14",
+      "sr_rules": [
+        "PWR-C14"
+      ],
+      "criteria": [
+        "G04-051"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "U2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6"
+      ],
+      "nets": [
+        "3V3_D",
+        "GND"
+      ],
+      "sr_text": "3V3_D同供U1数字模组和U2全部模拟供电；ADC手册p70要求尽量安静并分配回流。没有目标带宽/噪声、模组数字负载谱、PSRR保证条件和供电噪声预算，不能从并联20.4µF宣称噪声合格；当前AVDD欠压另已独立判缺陷。",
+      "verdict": "needs_human",
+      "evidence": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/06_数据转换器/精密ADC/TI - ADS1299.pdf p70 Power Supply Recommendations；record/evidence-facts.json calculations.carrier_Cout；3V3_D同供U1数字模组和U2全部模拟供电；ADC手册p70要求尽量安静并分配回流。没有目标带宽/噪声、模组数字负载谱、PSRR保证条件和供电噪声预算，不能从并联20.4µF宣称噪声合格；当前AVDD欠压另已独立判缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-C14.3V3-D"
+      ],
+      "report_items": [
+        "W-O-H09"
+      ],
+      "review_issue": "H09"
+    },
+    {
+      "id": "F21",
+      "sr_rule": "DEV-D02",
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D1",
+        "D2",
+        "U1"
+      ],
+      "nets": [
+        "Net-(D1-A)",
+        "Net-(D2-A)"
+      ],
+      "sr_text": "D1/D2只有LED通用值和0805封装，符号为1=K、2=A且R2/R3串联限流，逻辑连接已核；未指定实物LED封装视图/色别和模组装配版本，不能把通用符号当作实际购料焊盘极性保证。",
+      "verdict": "needs_human",
+      "evidence": "record/evidence-facts.json objects.D1/objects.D2; calculations.R2_R3；D1/D2只有LED通用值和0805封装，符号为1=K、2=A且R2/R3串联限流，逻辑连接已核；未指定实物LED封装视图/色别和模组装配版本，不能把通用符号当作实际购料焊盘极性保证。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.D1",
+        "DEV-D02.D2"
+      ],
+      "report_items": [
+        "W-O-H10"
+      ],
+      "review_issue": "H10"
+    },
+    {
+      "id": "F22",
+      "sr_rule": "NET-A01",
+      "sr_rules": [
+        "NET-A01"
+      ],
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "VBUS"
+      ],
+      "sr_text": "VBUS <- U1.14 (102010428) 被列为单节点悬空；官方模组图显示该焊盘接模组内部USB VBUS，载板单节点不是物理断线。",
+      "verdict": "false_alarm",
+      "evidence": "SCH p1 U1.14=VBUS；Seeed XIAO RP2040 v1.3 p1 USB1 VBUS/J4；intent.power_sources在run状态有明确出处。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 single-node branch; scripts/checkers/powertree.py:PowerTree.source_of",
+        "what": "对有出处的模组端点/内部连接保留模块边界；已声明实际USB供入节点且能追到官方模组连接的单节点输出/供入脚不当悬空缺陷。未核身份的单节点仍保留候选，不能按U前缀全免。 判据出处：SCH p1 U1.14=VBUS；Seeed XIAO RP2040 v1.3 p1 USB1 VBUS/J4；intent.power_sources在run状态有明确出处。"
+      },
+      "seed": null,
+      "report_items": [
+        "SR反馈：FA01"
+      ]
+    },
+    {
+      "id": "F23",
+      "sr_rule": "SIG-C01",
+      "sr_rules": [
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-T02"
+      ],
+      "criteria": [
+        "G01-014",
+        "G02-023",
+        "G04-001",
+        "G04-002",
+        "G04-003",
+        "G04-004",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-016",
+        "G04-017",
+        "G04-018",
+        "G04-019",
+        "G04-020",
+        "G04-021",
+        "G04-022",
+        "G04-023",
+        "G04-024"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "SW1"
+      ],
+      "nets": [
+        "BTN_START"
+      ],
+      "sr_text": "BTN_START仅接U1.6(P7/SCL/D5)与SW1到GND，却展开I²C上拉、时序和注入检查；这是GPIO按钮。",
+      "verdict": "false_alarm",
+      "evidence": "db BTN_START=[SW1.1,U1.6]；SW1.2=GND；U1.5 SDA为NC；Seeed v1.3 p1 GPIO7/SCL可复用。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/i2c_topology.py:build_i2c_topology; scripts/checkers/i2c.py",
+        "what": "引脚复用名SCL/SDA只作弱线索；在没有已确认I²C端点/协议声明的单GPIO+按键到地拓扑上输出复用候选，不展开I²C规则。保留真实I²C开漏线及总线器件。 判据出处：db BTN_START=[SW1.1,U1.6]；SW1.2=GND；U1.5 SDA为NC；Seeed v1.3 p1 GPIO7/SCL可复用。"
+      },
+      "seed": null,
+      "report_items": [
+        "SR反馈：FA02"
+      ]
+    },
+    {
+      "id": "F24",
+      "sr_rule": "PWR-C09",
+      "sr_rules": [
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03"
+      ],
+      "criteria": [
+        "G03-036"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "补脚表前的去耦库存把U2 AVSS@1/@2放入GND供电组，生成supply-return-same-net；官方这些脚是模拟返回。",
+      "verdict": "false_alarm",
+      "evidence": "初始计划record/review-plan-before-manual.json DECAP-25046C5FDBD85CAA5343.GND；U2.20/23/32/57/58是AVSS。TI SBAS499C p6；补完整官方return脚表后最终库存不再有GND供电组。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:RETURN_PIN_RE; Inventory candidate grouping",
+        "what": "对KiCad堆叠脚别名AVSS@1/@2先保留物理脚并规范化用于角色匹配；@单元后缀不应使AVSS落出return匹配。官方脚表优先，不能把所有接地电源脚静默跳过。 判据出处：初始计划record/review-plan-before-manual.json DECAP-25046C5FDBD85CAA5343.GND；U2.20/23/32/57/58是AVSS。TI SBAS499C p6；补完整官方return脚表后最终库存不再有GND供电组。"
+      },
+      "seed": null,
+      "report_items": [
+        "SR反馈：FA03"
+      ]
+    },
+    {
+      "id": "F25",
+      "sr_rule": "DEV-C01",
+      "sr_rules": [
+        "DEV-C01",
+        "DOC-D01"
+      ],
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "P2",
+      "refs": [
+        "R2",
+        "R3"
+      ],
+      "nets": [
+        "LED_STREAM",
+        "3V3_D",
+        "Net-(D1-A)",
+        "Net-(D2-A)"
+      ],
+      "sr_text": "R2/R3的原值1kΩ被报“阻值读不出”；SI单位清楚，独立读为1000Ω，不是缺设计输入。",
+      "verdict": "false_alarm",
+      "evidence": "原始db R2/R3.value=1kΩ，value_provenance.ohm=null；parse_resistor先把Ω换R，再解析1K后残留R导致拒读；按1k±5%下限950Ω，保守5V功耗25/950=0.0263158W。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/solve_dividers.py:parse_resistor / parse_resistor_noted",
+        "what": "数值与SI前缀解析后允许尾随Ω/Ω/ohm单位，保留大小写m/M和原文；补1kΩ、1kΩ、1kohm、1MΩ、1mΩ的差异测试，拒绝未知尾词仍保留。 判据出处：原始db R2/R3.value=1kΩ，value_provenance.ohm=null；parse_resistor先把Ω换R，再解析1K后残留R导致拒读；按1k±5%下限950Ω，保守5V功耗25/950=0.0263158W。"
+      },
+      "seed": null,
+      "report_items": [
+        "SR反馈：FA04"
+      ]
+    },
+    {
+      "id": "F26",
+      "sr_rule": "DEV-D02",
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "3V3_D",
+        "VBUS"
+      ],
+      "sr_text": "官方XIAO整张模组原理图被标题识别器读成diode，产生U1类别冲突；命中的DF2S6.8FS等是模组内部器件。",
+      "verdict": "false_alarm",
+      "evidence": "Seeed官方v1.3 PDF p1同时含两张拼页，图框TITLE=Seeed Studio XIAO RP2040 v1.3；审计保留KIND_CONFLICT diode，intent.kind_reason明确反证；库U1 MP=102010428、Description_1=XIAO RP2040。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:title_text / title_check / kind_conflict",
+        "what": "区分器件手册与模块原理图，按明确图框标题/资源类型定位身份；整张多器件图不能把元件清单首个类型当本物料标题，且接受有出处的kind_reason后不重复保留同一冲突。 判据出处：Seeed官方v1.3 PDF p1同时含两张拼页，图框TITLE=Seeed Studio XIAO RP2040 v1.3；审计保留KIND_CONFLICT diode，intent.kind_reason明确反证；库U1 MP=102010428、Description_1=XIAO RP2040。"
+      },
+      "seed": null,
+      "report_items": [
+        "SR反馈：FA05"
+      ]
+    },
+    {
+      "id": "F27",
+      "sr_rule": "SIG-D13",
+      "sr_rules": [
+        "SIG-D13"
+      ],
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "SPI_SCK",
+        "SPI_MOSI",
+        "SPI_MISO",
+        "EEG_RESET",
+        "EEG_START"
+      ],
+      "sr_text": "SYS-PINMAP只列带GPIO1–4脚名的ADC U2，未列真正主控XIAO RP2040模组U1；泛称ic在候选控制器条件中被排除。；SPI-U1把首个字母序成员LED D2选成主对象，生成SIG-D09…D2标识，但实际SPI端点是U1/U2。",
+      "verdict": "false_alarm",
+      "evidence": "最终SIG-D13.SYS-PINMAP.object.refs=[U2]；U1的11个GPIO及SPI信号物理脚见db和Seeed v1.3 p1；代码role_kind(ref) in(None,mcu)排除ic，GPIO_RE又不匹配D8/SCK/P2。；SIG-D09.SPI-U1-ACTIVE.D2和IDLE.D2的object.ref=D2、refs包含U1；未将D2伪列为电路缺陷位置，保留相应原生定位错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_system.py:SystemPlanning.plan_system controllers; scripts/catalog.py:DEVICE_ROLES; scripts/plan_circuits.py primary object selection",
+        "what": "将已核实的可编程模组纳入主控角色，或至少让显式generic ic与未定角色同样进入待核控制器；模组复用别名D8/SCK/P2不能因不匹配纯GPIO正则被漏掉。保留ADC GPIO的局部配置审查，不把ADC误认唯一主控。 判据出处：最终SIG-D13.SYS-PINMAP.object.refs=[U2]；U1的11个GPIO及SPI信号物理脚见db和Seeed v1.3 p1；代码role_kind(ref) in(None,mcu)排除ic，GPIO_RE又不匹配D8/SCK/P2。 SPI手工补电路应允许明确核心锚点；协议检查不得取LED为首对象。"
+      },
+      "seed": null,
+      "report_items": [
+        "SR反馈：FA06"
+      ]
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G03-003",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "sr_rule": "PWR-C04",
+      "refs": [
+        "U1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6"
+      ],
+      "nets": [
+        "3V3_D"
+      ],
+      "why_expected": "模组内部LDO的输出直接承受载板新并联的电容，模块边界不能取消对有效Cout/ESR窗口的核对。补项前计划没有PWR-C04，仅有去耦容量项。",
+      "evidence": "Seeed v1.3 p1 U4=RS3236-3.3YUTDN4、模块Cout10µF；载板C1–C6=20.4µF，合计名义30.4µF；RUNIC REV C.7未给此组合稳定窗，现归K03，不声称电路已不稳定。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py; scripts/plan_circuits.py; scripts/catalog.py:DEVICE_ROLES",
+        "what": "增加有来源的模组供电输出/内部regulator角色映射；对该输出新增外接电容仍派PWR-C04，未知窗口明确留资料缺口，不能拿PWR-C09代替。"
+      },
+      "seed": {
+        "kind": "D-MODULE-LDO-COUT",
+        "mutation": "在明确提供内部LDO工作窗的合成模块fixture上保留输出针，删除唯一输出电容或把有效Cout改到规定最小值以下；原始本板不凭未知稳定窗标缺陷。",
+        "target_rule": "PWR-C04"
+      },
+      "coverage_gap": true,
+      "confirmed_board_defect": false,
+      "manual_plan_check": "PWR-C04.GAP-MODULE-LDO-COUT.3V3-D"
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "U1",
+        "U2",
+        "R1"
+      ],
+      "nets": [
+        "EEG_RESET",
+        "EEG_START",
+        "SPI_CS"
+      ],
+      "why_expected": "真实MCU到ADC的RESET/START/CS在复位和供电未建立时也需默认态审查；ANALOG/SPI所有权没有触发RST-T04，SYS-SEQUENCE不是逐GPIO默认态。",
+      "evidence": "U1.1/2/8直连U2.36/38/39，无板上外置偏置；PWDN35由R1=10k上拉；RP2040 p303 pad默认下拉可覆盖已上电复位态，不能自动延伸为未供电保证。故仅覆盖缺口，当前是否需外部偏置归H05。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:RST-T04 qualification; scripts/plan_system.py; scripts/plan_circuits.py",
+        "what": "按真实复位/START/CS控制链逐脚触发RST-T04，别仅按STARTUP电路所有权；输出官方默认态、外部偏置、未供电约束和所需安全态。"
+      },
+      "seed": {
+        "kind": "D-MCU-ADC-DEFAULT",
+        "mutation": "在声明MCU复位高阻且无内部偏置、ADC要求确定安全态的合成fixture删除唯一RESET/START/CS偏置；保留ANALOG/SPI分组，要求RST-T04仍覆盖。",
+        "target_rule": "RST-T04"
+      },
+      "coverage_gap": true,
+      "confirmed_board_defect": false,
+      "manual_plan_check": "RST-T04.GAP-RESET-DEFAULT.GLOBAL"
+    },
+    {
+      "id": "M03",
+      "criterion": "G01-029",
+      "criteria": [
+        "G01-026",
+        "G01-027",
+        "G01-029",
+        "G01-030"
+      ],
+      "sr_rule": "SIG-C05",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "VBUS",
+        "3V3_D"
+      ],
+      "why_expected": "模块内部USB是整板实际受电入口，需按Sink核输入窗、协商电流、入端电容/限流和断开检测；只有REQ-Q07.USB汇总与全板PWR-C19不覆盖这些具体机制。",
+      "evidence": "Seeed v1.3 p1 USB1 CC各5.1k下拉，VBUS经D2到LDO；载板VBUS只有U1.14、20.4µF载板电容在3V3输出侧，不能直接当VBUS体电容。没有确认原板>100µF或断开时限违规，补项归H06。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py; scripts/catalog.py:DEVICE_ROLES; scripts/plan_circuits.py",
+        "what": "允许用官方来源声明模块内部USB角色及供电边界，并按真实受电链派SIG-C05；分开VBUS直挂电容与经LDO反映的负载，不按载板单节点裁空。"
+      },
+      "seed": {
+        "kind": "D-MODULE-USB-BULK",
+        "mutation": "在明确USB Sink和无浪涌限流的合成模块fixture的VBUS输出焊盘新增1000µF到GND，保持根图只见模块的边界结构；期望SIG-C05核端口有效体电容。",
+        "target_rule": "SIG-C05"
+      },
+      "coverage_gap": true,
+      "confirmed_board_defect": false,
+      "manual_plan_check": "SIG-C05.GAP-MODULE-USB-SINK.VBUS"
+    }
+  ],
+  "summary": {
+    "true_defect": 8,
+    "false_alarm": 6,
+    "criterion_issue": 0,
+    "knowledge_gap": 3,
+    "needs_human": 10,
+    "misses": 3
+  },
+  "top50_audit": [
+    {
+      "number": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "status": "not_applicable",
+      "evidence": "U1内部USB5V受电；载板无−48V或交流市电接口、整流器和对应回线/暂降机制。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "status": "not_applicable",
+      "evidence": "U1内部USB5V受电；载板无−48V或交流市电接口、整流器和对应回线/暂降机制。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "status": "not_applicable",
+      "evidence": "U1内部USB5V受电；载板无−48V或交流市电接口、整流器和对应回线/暂降机制。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "status": "not_applicable",
+      "evidence": "U1内部USB5V受电；载板无−48V或交流市电接口、整流器和对应回线/暂降机制。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "status": "not_applicable",
+      "evidence": "U1内部USB5V受电；载板无−48V或交流市电接口、整流器和对应回线/暂降机制。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "status": "not_applicable",
+      "evidence": "U1内部USB5V受电；载板无−48V或交流市电接口、整流器和对应回线/暂降机制。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "status": "not_applicable",
+      "evidence": "U1内部USB5V受电；载板无−48V或交流市电接口、整流器和对应回线/暂降机制。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "status": "not_applicable",
+      "evidence": "U1内部USB5V受电；载板无−48V或交流市电接口、整流器和对应回线/暂降机制。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "status": "coverage_gap",
+      "evidence": "Seeed v1.3 p1 USB1 CC各5.1k下拉，VBUS经D2到LDO；载板VBUS只有U1.14、20.4µF载板电容在3V3输出侧，不能直接当VBUS体电容。没有确认原板>100µF或断开时限违规，补项归H06。",
+      "check_ids": [
+        "PWR-C19.BOARD",
+        "SIG-C05.GAP-MODULE-USB-SINK.VBUS"
+      ],
+      "miss": "M03"
+    },
+    {
+      "number": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "status": "coverage_gap",
+      "evidence": "Seeed v1.3 p1 USB1 CC各5.1k下拉，VBUS经D2到LDO；载板VBUS只有U1.14、20.4µF载板电容在3V3输出侧，不能直接当VBUS体电容。没有确认原板>100µF或断开时限违规，补项归H06。",
+      "check_ids": [
+        "PWR-C19.BOARD",
+        "SIG-C05.GAP-MODULE-USB-SINK.VBUS"
+      ],
+      "miss": "M03"
+    },
+    {
+      "number": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "status": "coverage_gap",
+      "evidence": "Seeed v1.3 p1 USB1 CC各5.1k下拉，VBUS经D2到LDO；载板VBUS只有U1.14、20.4µF载板电容在3V3输出侧，不能直接当VBUS体电容。没有确认原板>100µF或断开时限违规，补项归H06。",
+      "check_ids": [
+        "PWR-C19.BOARD",
+        "SIG-C05.GAP-MODULE-USB-SINK.VBUS"
+      ],
+      "miss": "M03"
+    },
+    {
+      "number": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "status": "coverage_gap",
+      "evidence": "Seeed v1.3 p1 USB1 CC各5.1k下拉，VBUS经D2到LDO；载板VBUS只有U1.14、20.4µF载板电容在3V3输出侧，不能直接当VBUS体电容。没有确认原板>100µF或断开时限违规，补项归H06。",
+      "check_ids": [
+        "PWR-C19.BOARD",
+        "SIG-C05.GAP-MODULE-USB-SINK.VBUS"
+      ],
+      "miss": "M03"
+    },
+    {
+      "number": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "status": "not_applicable",
+      "evidence": "模组官方图USB CC各5.1k Rd，按该供电链为受电端，未见声明USB Source供电开关；VBUS焊盘可带出USB5V不等于端口Source角色。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "status": "coverage_gap",
+      "evidence": "Seeed v1.3 p1 U4=RS3236-3.3YUTDN4、模块Cout10µF；载板C1–C6=20.4µF，合计名义30.4µF；RUNIC REV C.7未给此组合稳定窗，现归K03，不声称电路已不稳定。",
+      "check_ids": [
+        "PWR-C04.GAP-MODULE-LDO-COUT.3V3-D"
+      ],
+      "miss": "M01"
+    },
+    {
+      "number": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "status": "coverage_gap",
+      "evidence": "Seeed v1.3 p1 U4=RS3236-3.3YUTDN4、模块Cout10µF；载板C1–C6=20.4µF，合计名义30.4µF；RUNIC REV C.7未给此组合稳定窗，现归K03，不声称电路已不稳定。",
+      "check_ids": [
+        "PWR-C04.GAP-MODULE-LDO-COUT.3V3-D"
+      ],
+      "miss": "M01"
+    },
+    {
+      "number": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "not_applicable",
+      "evidence": "载板没有独立通路MOSFET或热插拔限流开关；不把模块LDO功率管假装成可逐管做SOA的离散MOS。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "status": "needs_human",
+      "evidence": "模组内部RS3236、输出外并20.4µF及USB源阻抗/启动负载需界定；无载板UVLO/软启动设置链；当前PWR-C01/PWR-D04及H06已保留实际输入边界，不从无UVLO电阻推出系统通过。",
+      "check_ids": [
+        "PWR-C01.3V3-D",
+        "PWR-D04.BOARD"
+      ],
+      "miss": null
+    },
+    {
+      "number": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "status": "needs_human",
+      "evidence": "模组内部RS3236、输出外并20.4µF及USB源阻抗/启动负载需界定；无载板UVLO/软启动设置链；当前PWR-C01/PWR-D04及H06已保留实际输入边界，不从无UVLO电阻推出系统通过。",
+      "check_ids": [
+        "PWR-C01.3V3-D",
+        "PWR-D04.BOARD"
+      ],
+      "miss": null
+    },
+    {
+      "number": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "status": "needs_human",
+      "evidence": "模组内部RS3236、输出外并20.4µF及USB源阻抗/启动负载需界定；无载板UVLO/软启动设置链；当前PWR-C01/PWR-D04及H06已保留实际输入边界，不从无UVLO电阻推出系统通过。",
+      "check_ids": [
+        "PWR-C01.3V3-D",
+        "PWR-D04.BOARD"
+      ],
+      "miss": null
+    },
+    {
+      "number": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "status": "needs_human",
+      "evidence": "U1 POR/RESET与U2 RESET/START互连；3V3同轨而ADC AVDD要求4.75V；TI p70上电复位/VCAP1条件需满足。PWR-T04/RST-T03已询问监控/恢复，本轮没有受控爬升/掉电窗。",
+      "check_ids": [
+        "PWR-T04.AS-DRAWN.SUPERVISION-RAILS",
+        "RST-T03.SYS-SEQUENCE"
+      ],
+      "miss": null
+    },
+    {
+      "number": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "status": "needs_human",
+      "evidence": "U1 POR/RESET与U2 RESET/START互连；3V3同轨而ADC AVDD要求4.75V；TI p70上电复位/VCAP1条件需满足。PWR-T04/RST-T03已询问监控/恢复，本轮没有受控爬升/掉电窗。",
+      "check_ids": [
+        "PWR-T04.AS-DRAWN.SUPERVISION-RAILS",
+        "RST-T03.SYS-SEQUENCE"
+      ],
+      "miss": null
+    },
+    {
+      "number": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "status": "needs_human",
+      "evidence": "未见板上独立备用源，U1内部D2在VBUS至LDO输入方向；电极外部带电的回灌状态未定。不能仅用无第二电源网声明全状态反灌NA；H05/H03已记录该路径。",
+      "check_ids": [
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-DRDY",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-RESET",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-START",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-CS",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MISO",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MOSI",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-SCK"
+      ],
+      "miss": null
+    },
+    {
+      "number": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "status": "not_applicable",
+      "evidence": "C1–C12全部Device:C无极性MLCC符号及SMD封装，未见电解/钽、电容串联或均压链；不把本条极性电容规则强套普通MLCC。VCAP/VREF选值问题已另报。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "status": "not_applicable",
+      "evidence": "C1–C12全部Device:C无极性MLCC符号及SMD封装，未见电解/钽、电容串联或均压链；不把本条极性电容规则强套普通MLCC。VCAP/VREF选值问题已另报。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "status": "not_applicable",
+      "evidence": "C1–C12全部Device:C无极性MLCC符号及SMD封装，未见电解/钽、电容串联或均压链；不把本条极性电容规则强套普通MLCC。VCAP/VREF选值问题已另报。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "status": "needs_human",
+      "evidence": "J1电极源共模/差分/故障及独立带电包络未知，R4–R11各100k；U1/U2数字端共DVDD3.3V仍需核时序与掉电瞬态。既有ANA-C03/PRO-D04/SIG-C08覆盖输入和回灌主题，不把未知标真缺陷或重复漏报。",
+      "check_ids": [
+        "ANA-C03.ANALOG-U2-FAULT.U2",
+        "ANA-C03.ANALOG-U2-RUN.U2",
+        "ANA-C03.GAP-VREF-BYPASS.NET-U2-VREFP",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-DRDY",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-RESET",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-START",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-CS",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MISO",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MOSI",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-SCK"
+      ],
+      "miss": null
+    },
+    {
+      "number": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "status": "needs_human",
+      "evidence": "J1电极源共模/差分/故障及独立带电包络未知，R4–R11各100k；U1/U2数字端共DVDD3.3V仍需核时序与掉电瞬态。既有ANA-C03/PRO-D04/SIG-C08覆盖输入和回灌主题，不把未知标真缺陷或重复漏报。",
+      "check_ids": [
+        "ANA-C03.ANALOG-U2-FAULT.U2",
+        "ANA-C03.ANALOG-U2-RUN.U2",
+        "ANA-C03.GAP-VREF-BYPASS.NET-U2-VREFP",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-DRDY",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-RESET",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-START",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-CS",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MISO",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MOSI",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-SCK"
+      ],
+      "miss": null
+    },
+    {
+      "number": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "status": "needs_human",
+      "evidence": "J1电极源共模/差分/故障及独立带电包络未知，R4–R11各100k；U1/U2数字端共DVDD3.3V仍需核时序与掉电瞬态。既有ANA-C03/PRO-D04/SIG-C08覆盖输入和回灌主题，不把未知标真缺陷或重复漏报。",
+      "check_ids": [
+        "ANA-C03.ANALOG-U2-FAULT.U2",
+        "ANA-C03.ANALOG-U2-RUN.U2",
+        "ANA-C03.GAP-VREF-BYPASS.NET-U2-VREFP",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-DRDY",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-RESET",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.EEG-START",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-CS",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MISO",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-MOSI",
+        "SIG-C08.IF-ANALOG-U2-SPI-U1.SPI-SCK"
+      ],
+      "miss": null
+    },
+    {
+      "number": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "status": "coverage_gap",
+      "evidence": "U1.1/2/8直连U2.36/38/39，无板上外置偏置；PWDN35由R1=10k上拉；RP2040 p303 pad默认下拉可覆盖已上电复位态，不能自动延伸为未供电保证。故仅覆盖缺口，当前是否需外部偏置归H05。",
+      "check_ids": [
+        "RST-T04.GAP-RESET-DEFAULT.GLOBAL"
+      ],
+      "miss": "M02"
+    },
+    {
+      "number": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "status": "not_applicable",
+      "evidence": "BTN_START是U1.GPIO7到SW1/GND的单线按键；SDA脚U1.5 NC，没有I²C从机/双线总线。8条I²C检查为误识别，不能把不存在上拉当缺陷。",
+      "check_ids": [
+        "SIG-C01.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-C07.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-C08.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-C13.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-C15.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-D01.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-T02.I2C-575654CCBAF8D384D970.BTN-START"
+      ],
+      "miss": null
+    },
+    {
+      "number": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "status": "not_applicable",
+      "evidence": "BTN_START是U1.GPIO7到SW1/GND的单线按键；SDA脚U1.5 NC，没有I²C从机/双线总线。8条I²C检查为误识别，不能把不存在上拉当缺陷。",
+      "check_ids": [
+        "SIG-C01.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-C07.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-C08.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-C13.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-C15.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-D01.I2C-575654CCBAF8D384D970.BTN-START",
+        "SIG-T02.I2C-575654CCBAF8D384D970.BTN-START"
+      ],
+      "miss": null
+    },
+    {
+      "number": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "status": "not_applicable",
+      "evidence": "29件中没有CAN收发器或CANH/CANL网络/端接电阻；SPI_MISO/MOSI不是差分CAN。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "status": "needs_human",
+      "evidence": "板上确无隔离器和分隔地，J1.7/GND直通USB模组；不能把一个不存在的隔离屏障判“无意短接”。外部USB隔离是否属于完整系统前提和人体风险归H03，未报成已确认医疗缺陷。",
+      "check_ids": [
+        "PRO-D03.J1",
+        "PRO-D04.J1"
+      ],
+      "miss": null
+    },
+    {
+      "number": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "status": "needs_human",
+      "evidence": "U2片内PGA及BIAS放大器输入共模依赖增益/电极偏置；100k串阻不设定共模，输入包络未给。ANA-C01已覆盖，故不重复计漏报。",
+      "check_ids": [
+        "ANA-C01.ANALOG-U2-FAULT.U2",
+        "ANA-C01.ANALOG-U2-RUN.U2"
+      ],
+      "miss": null
+    },
+    {
+      "number": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "status": "reviewed_defect_and_open",
+      "evidence": "ANA-C03有真实VREFP容量缺陷D05；ADC满量程±VREF/gain与绝限/注入必须分开，J1四输入和REF包络归H01，不能从100k串阻证明绝限合格。",
+      "check_ids": [
+        "ANA-C03.ANALOG-U2-FAULT.U2",
+        "ANA-C03.ANALOG-U2-RUN.U2",
+        "ANA-C03.GAP-VREF-BYPASS.NET-U2-VREFP"
+      ],
+      "miss": null
+    },
+    {
+      "number": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "status": "not_applicable",
+      "evidence": "载板无晶体，U2内振荡器由CLKSEL选择但52脚接GND、37脚NC构成主时钟缺陷D03；不是晶体CL/增益/双振荡器共用问题。U1内部仅官方单RP2040的X3回路，载板未改其晶体负载或并到第二芯片。",
+      "check_ids": [
+        "CLK-D01.GAP-ADC-MASTER-CLOCK.U2"
+      ],
+      "miss": null
+    },
+    {
+      "number": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "status": "not_applicable",
+      "evidence": "载板无晶体，U2内振荡器由CLKSEL选择但52脚接GND、37脚NC构成主时钟缺陷D03；不是晶体CL/增益/双振荡器共用问题。U1内部仅官方单RP2040的X3回路，载板未改其晶体负载或并到第二芯片。",
+      "check_ids": [
+        "CLK-D01.GAP-ADC-MASTER-CLOCK.U2"
+      ],
+      "miss": null
+    },
+    {
+      "number": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "status": "not_applicable",
+      "evidence": "载板无晶体，U2内振荡器由CLKSEL选择但52脚接GND、37脚NC构成主时钟缺陷D03；不是晶体CL/增益/双振荡器共用问题。U1内部仅官方单RP2040的X3回路，载板未改其晶体负载或并到第二芯片。",
+      "check_ids": [
+        "CLK-D01.GAP-ADC-MASTER-CLOCK.U2"
+      ],
+      "miss": null
+    },
+    {
+      "number": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "status": "needs_human",
+      "evidence": "载板没有保险丝/独立限流开关/离散MOS；唯一人体BIAS/REF接口的故障能量、上游保护与系统安全边界未定，已归H03。没有故障源和动作包络不能报不存在保护链的阈值/SOA/分断违规。",
+      "check_ids": [
+        "PRO-D04.J1",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD"
+      ],
+      "miss": null
+    },
+    {
+      "number": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "status": "needs_human",
+      "evidence": "载板没有保险丝/独立限流开关/离散MOS；唯一人体BIAS/REF接口的故障能量、上游保护与系统安全边界未定，已归H03。没有故障源和动作包络不能报不存在保护链的阈值/SOA/分断违规。",
+      "check_ids": [
+        "PRO-D04.J1",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD"
+      ],
+      "miss": null
+    },
+    {
+      "number": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "status": "needs_human",
+      "evidence": "载板没有保险丝/独立限流开关/离散MOS；唯一人体BIAS/REF接口的故障能量、上游保护与系统安全边界未定，已归H03。没有故障源和动作包络不能报不存在保护链的阈值/SOA/分断违规。",
+      "check_ids": [
+        "PRO-D04.J1",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD"
+      ],
+      "miss": null
+    },
+    {
+      "number": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "status": "not_applicable",
+      "evidence": "载板没有TVS/齐纳，D1/D2均状态LED；模块官方DF2S6.8FS是USB信号ESD器件而非载板电源TVS。整体USB ESD/人体故障要求未定由H03承接，未用LED型号套钳位数值。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "status": "not_applicable",
+      "evidence": "载板没有TVS/齐纳，D1/D2均状态LED；模块官方DF2S6.8FS是USB信号ESD器件而非载板电源TVS。整体USB ESD/人体故障要求未定由H03承接，未用LED型号套钳位数值。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "status": "not_applicable",
+      "evidence": "载板没有TVS/齐纳，D1/D2均状态LED；模块官方DF2S6.8FS是USB信号ESD器件而非载板电源TVS。整体USB ESD/人体故障要求未定由H03承接，未用LED型号套钳位数值。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "needs_human",
+      "evidence": "载板没有保险丝/独立限流开关/离散MOS；唯一人体BIAS/REF接口的故障能量、上游保护与系统安全边界未定，已归H03。没有故障源和动作包络不能报不存在保护链的阈值/SOA/分断违规。",
+      "check_ids": [
+        "PRO-D04.J1",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD"
+      ],
+      "miss": null
+    },
+    {
+      "number": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "status": "needs_human",
+      "evidence": "载板没有保险丝/独立限流开关/离散MOS；唯一人体BIAS/REF接口的故障能量、上游保护与系统安全边界未定，已归H03。没有故障源和动作包络不能报不存在保护链的阈值/SOA/分断违规。",
+      "check_ids": [
+        "PRO-D04.J1",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD"
+      ],
+      "miss": null
+    },
+    {
+      "number": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "status": "needs_human",
+      "evidence": "载板没有保险丝/独立限流开关/离散MOS；唯一人体BIAS/REF接口的故障能量、上游保护与系统安全边界未定，已归H03。没有故障源和动作包络不能报不存在保护链的阈值/SOA/分断违规。",
+      "check_ids": [
+        "PRO-D04.J1",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD"
+      ],
+      "miss": null
+    },
+    {
+      "number": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "status": "needs_human",
+      "evidence": "唯一供电经模组USB，模块D2方向VBUS→VIN可见；载板J1是电极接口并非正负电源插头，物理误接边界需ICD/系统要求。板上无防反MOS或单向TVS位于其前的拓扑。",
+      "check_ids": [
+        "PRO-D04.J1"
+      ],
+      "miss": null
+    },
+    {
+      "number": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "status": "not_applicable",
+      "evidence": "唯一供电经模组USB，模块D2方向VBUS→VIN可见；载板J1是电极接口并非正负电源插头，物理误接边界需ICD/系统要求。板上无防反MOS或单向TVS位于其前的拓扑。",
+      "check_ids": [],
+      "miss": null
+    },
+    {
+      "number": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "status": "not_applicable",
+      "evidence": "唯一供电经模组USB，模块D2方向VBUS→VIN可见；载板J1是电极接口并非正负电源插头，物理误接边界需ICD/系统要求。板上无防反MOS或单向TVS位于其前的拓扑。",
+      "check_ids": [],
+      "miss": null
+    }
+  ],
+  "artifacts": {
+    "review_report": "/Users/skyfend/.cache/sr-boards/theushen--eegfrontier/review/审查报告.md",
+    "review_results": "/Users/skyfend/.cache/sr-boards/theushen--eegfrontier/review/review-results.json",
+    "review_gate": "/Users/skyfend/.cache/sr-boards/theushen--eegfrontier/review/review-gate.json",
+    "ledger": "/Users/skyfend/.cache/sr-boards/theushen--eegfrontier/review/record/judgement-ledger.json",
+    "facts": "/Users/skyfend/.cache/sr-boards/theushen--eegfrontier/review/record/evidence-facts.json",
+    "top50": "/Users/skyfend/.cache/sr-boards/theushen--eegfrontier/review/record/top50-audit.json"
+  }
+}

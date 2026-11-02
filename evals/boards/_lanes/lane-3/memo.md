@@ -29,3 +29,9 @@
 - USB3343 pin23 VDD18为片内输出；CLKOUT绑VDDIO选60MHz输入合法，13/14逻辑交换须核SwapDP/DM。HyperRAM B5/C5为RFU，别套缓存PSC输入；G/S稳压管合法双侧窗口仍须保留。
 - XML字段可无损转CSV读BOM；本板13项自定义DNP，U15不贴、R54=0Ω供VCCRAM。TCR2EF115=1.15V而ECP5上限1.155V，±18mV测试VIN不同，先锁实际输出窗，勿直接报实物超压。
 - PAC1954 ANALOG 0/7、Q9/Q12目标PWR-T05、FPGA配置期RST-T04是本轮覆盖缺口；CLOCK/SPI空states要有出处补run。schema15不能承载评估分类及部分声明/预判问题时如实FAIL，不编厂家参数或override。
+
+- 2026-11-02 theushen--eegfrontier：148项／27归因（8真、6误、0准则、3知识、10待确认）／3覆盖漏报；strict成功，门禁FAIL，16个FAIL检查不是16个独立缺陷。
+- XIAO模组内部USB/LDO供电须查官方整图，VBUS载板单节点不是断线；图框标题不能被内部二极管料号取代，泛称ic与复用别名会漏真正主控并把SPI锚到LED。
+- ADS1299分清AVDD4.75–5.25V与DVDD1.8–3.6V，SCLK40/RESV1 31、CLKSEL52/CLK37逐物理脚核；VCAP1指定100µF、VREFP最小10µF，不能用其他网电容抵数。
+- AVSS@1/@2需官方return映射；1kΩ字面明确但解析器拒读；单一地网不填decoupling.return_net，推断需求与事实文件分目录防误认。
+- Top50补模块LDO有效Cout/ESR、USB Sink供电链和复位IO默认态；未实现通道终接、BIAS人体回路不确定时保留依赖。schema15不承载五类评估与部分局部约束，不能编厂家数据/条款换PASS。
