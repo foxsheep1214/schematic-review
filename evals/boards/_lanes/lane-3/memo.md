@@ -23,3 +23,9 @@
 - K4/K5 easyC不能因K前缀成继电器；U2双MOS信号翻译不是功率管。错误POWER_CONVERTER候选reject后add改归仍被占用挡住；I2C区域已有SIG-C08，不能重复计掉电主题漏报，不编辑候选过关。
 - fuel_gauge缺角色会使BAT/SRP/SRN的ADC量程被ANALOG_PIN资格漏掉；10mΩ对应±2.5A只是名义量程，BOM 1%与实际电流范围另核。
 - 分号BOM无损转CSV；普通C4/JP4不是控制器手册依赖。保留schema15对needs_human/知识缺口及纯拓扑条款的FAIL，报告原样副本不等于可打包交付。
+
+- 2026-11-02 greatscottgadgets--cynthion-hardware：1193项／319归因（0真、15误、0准则、33知识、271待判）／3目标规则覆盖漏报；144PASS+77NA、972未定，门禁FAIL。
+- PMOS泛称把SIA483与YJL3401A混组；按准确MPN分组后再绑定手册。Diodes厂商名和SIA首页应用栏不能作器件标题角色，已留原件复现。
+- USB3343 pin23 VDD18为片内输出；CLKOUT绑VDDIO选60MHz输入合法，13/14逻辑交换须核SwapDP/DM。HyperRAM B5/C5为RFU，别套缓存PSC输入；G/S稳压管合法双侧窗口仍须保留。
+- XML字段可无损转CSV读BOM；本板13项自定义DNP，U15不贴、R54=0Ω供VCCRAM。TCR2EF115=1.15V而ECP5上限1.155V，±18mV测试VIN不同，先锁实际输出窗，勿直接报实物超压。
+- PAC1954 ANALOG 0/7、Q9/Q12目标PWR-T05、FPGA配置期RST-T04是本轮覆盖缺口；CLOCK/SPI空states要有出处补run。schema15不能承载评估分类及部分声明/预判问题时如实FAIL，不编厂家参数或override。
