@@ -51,3 +51,9 @@
 - Q3防反和MCU→继电器被self_anchored误建变换器；reject后20件仍held，入口保护/ADC/继电器边界须独立补查，不接受假类型消归属。
 - ADC2.45V是校准有效区，2.5/3V不直接判损坏；RO经2/3的3.5V保证下界仅2.333V，缺轻载保证先留待核。TVS A值/A1A2符号极性与采购分支须锁定。
 - 非U位号Buck1/5-3V3需audit --require-ref；input指纹用board_intent；去耦库存改后先重冷扫。完整原厂PDF下载失败不可AVAILABLE，门禁错误与未闭项如实保留。
+
+- copperpilot--jetson-ai-cam-copperpilot：1488项/1353未闭，58观察=4真/28误/1准则/4知识/21待确认，2覆盖漏报；FAIL/NO_GO，renderer退出2，交执行记录。
+- U2 BPP固定3.3V必须FB直连（TI p2/p33），不可套APP的1V；IC7 ID断开与FTDI D17/L3反灌须按附着/主机失电态查，通用RESET可NC条款有条件。
+- SiC477官方29/30由自定义封装同号7/9大焊盘覆盖；21=NC、15=GL输出、16=VDRV输出，别凭库名/输入型反复报缺陷。只核别名，不替PCB验收。
+- IC前缀audit显式require-ref；read_bom不改nc。I2C单独声明rails后HDMI_PWR不再合并SCL/SDA；拒绝假MOS变换器/USB候选后held回收仍是坑。
+- PRO-E02漏12个信号ESD、PRO-C04漏4外供支路，分别补rule_gaps并留种子；TVS保护域应追FB后IC，不用同网/封面功率替代事件协调。
