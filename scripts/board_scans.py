@@ -25,6 +25,9 @@ I2C_DEFAULT_PULLUP_V = 1.8   # 网名读不出电压时取常用的最低总线�
 # 只认端口本身的 VBUS；限流器之后的网（VBUS_SW 等）不累加。
 USB_VBUS_NET_RE = re.compile(r'(^|[/_.:-])(VBUS|VUSB)\d*$', re.I)
 USB_SINK_BULK_MAX_F = 100e-6
+# 只认名字明确的隔离器；光耦的两侧没有地脚名，归 PRO-D01。
+ISOLATOR_IDENTITY_RE = re.compile(r'ISOLATOR|ADUM\d|ADM2\d{3}|ADM3\d{3}|CA-?IS\d|\bISOW?\d{3}|\bSI8[4-9]\d|\bNSI\d', re.I)
+ISOLATOR_GROUND_PIN_RE = re.compile(r'^(?:GND|VSS)_?([12AB])$', re.I)
 CAN_PIN_RE = re.compile(r'^CAN_?([HL])$', re.I)
 CAN_SHORT_KOHM = 0.001
 USB_PIN_RE = re.compile(r'^(VBUS|CC[12]|D[+-])$', re.I)
@@ -295,6 +298,37 @@ def can_bus_short(lint):
                  '端接应为约 120 Ω，总负载按 SIG-C03 算', ref)
 
 
+def isolator_ground_bridge(lint):
+    """PRO-A05：数字隔离器两侧地同网，或两地间有 ≤1 Ω 电阻、磁珠、电感（G04-040）。"""
+    from solve_dividers import parse_resistor
+    for ref, part in sorted(lint.parts.items()):
+        identity = ' '.join(str(part.get(key, '')) for key in ('part', 'value', 'prim'))
+        if (part.get('nc') or lint.graph.kind(ref) != IC
+                or not (lint.graph.role_kind(ref) == 'isolator' or ISOLATOR_IDENTITY_RE.search(identity))):
+            continue
+        sides = {}
+        for node in _nodes(lint, ref):
+            match = ISOLATOR_GROUND_PIN_RE.match(str(lint.pinname.get(node, '')).strip())
+            if match:
+                sides.setdefault(match.group(1).upper(), set()).add(lint.pin2net.get(node))
+        if len(sides) != 2:
+            continue
+        one, other = (sorted(nets) for _, nets in sorted(sides.items()))
+        if set(one) & set(other):
+            bridged = f'同在网 {sorted(set(one) & set(other))[0]}'
+        else:
+            links = [link for a in one for b in other
+                     for link in lint.graph.between(a, b, {RESISTOR, FERRITE, INDUCTOR})
+                     if lint.graph.kind(link) != RESISTOR
+                     or (parse_resistor(lint.parts[link].get('value')) or {'kohm': 1})['kohm'] <= CAN_SHORT_KOHM]
+            if not links:
+                continue
+            bridged = f'{one[0]}/{other[0]} 之间被 {",".join(sorted(links))} 连通'
+        lint.add('PRO-A05', '隔离器两侧地被合并',
+                 f'{ref}: 两侧地脚{bridged}，隔离被直流旁路（G04-040；TI SLLA284G §1）；'
+                 '确无隔离需求时写明用途后关闭，工作资格归 PRO-C03', ref, kind='CANDIDATE')
+
+
 def ldo_output_capacitor(lint):
     """PWR-A07：线性稳压器的输出网上没有接地电容，经磁珠或电感也到不了（G03-003）。"""
     for ref, part in sorted(lint.parts.items()):
@@ -363,4 +397,5 @@ def run(lint):
     usb_vbus_bulk(lint)
     ldo_output_capacitor(lint)
     can_bus_short(lint)
+    isolator_ground_bridge(lint)
     floating_inputs(lint)

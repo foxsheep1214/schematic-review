@@ -5612,5 +5612,47 @@
   "file": "scripts/board_scans.py",
   "old": "        if part.get('nc') or lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE",
   "new": "        if lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE"
+ },
+ {
+  "id": "M867",
+  "name": "PRO-A05 same-net grounds not seen",
+  "file": "scripts/board_scans.py",
+  "old": "        if set(one) & set(other):\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M868",
+  "name": "PRO-A05 conductive bridge not seen",
+  "file": "scripts/board_scans.py",
+  "old": "            if not links:\n                continue\n            bridged",
+  "new": "            if True:\n                continue\n            bridged"
+ },
+ {
+  "id": "M869",
+  "name": "PRO-A05 counts a bleed resistor as a bridge",
+  "file": "scripts/board_scans.py",
+  "old": "or (parse_resistor(lint.parts[link].get('value')) or {'kohm': 1})['kohm'] <= CAN_SHORT_KOHM]\n            if not links:\n                continue\n            bridged",
+  "new": "or True]\n            if not links:\n                continue\n            bridged"
+ },
+ {
+  "id": "M870",
+  "name": "PRO-A05 judges any multi-ground IC",
+  "file": "scripts/board_scans.py",
+  "old": "                or not (lint.graph.role_kind(ref) == 'isolator' or ISOLATOR_IDENTITY_RE.search(identity))):",
+  "new": "                ):"
+ },
+ {
+  "id": "M871",
+  "name": "PRO-A05 ignores a datasheet-verified isolator role",
+  "file": "scripts/board_scans.py",
+  "old": "not (lint.graph.role_kind(ref) == 'isolator' or ISOLATOR_IDENTITY_RE.search(identity))",
+  "new": "not ISOLATOR_IDENTITY_RE.search(identity)"
+ },
+ {
+  "id": "M872",
+  "name": "PRO-A05 ferrite is not a bridge",
+  "file": "scripts/board_scans.py",
+  "old": "lint.graph.between(a, b, {RESISTOR, FERRITE, INDUCTOR})",
+  "new": "lint.graph.between(a, b, {RESISTOR})"
  }
 ]

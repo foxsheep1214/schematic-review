@@ -576,6 +576,8 @@ RULES = (
          '光耦 LED 两条腿上都没有串联电阻，且未声明恒流驱动', 'optocoupler', 'device'),
     Rule('PRO-A04', '光耦输出集电极无上拉',
          '光耦集电极网上未见外部上拉，且无本状态适用、可定位到接收脚的内部上拉依据', 'optocoupler', 'device'),
+    Rule('PRO-A05', '隔离器两侧地被合并',
+         '型号、库名或已核验角色为数字隔离器的已装配 IC，两侧地脚（GND1/GND2、GNDA/GNDB 等）落在同一网，或所在两网之间有 ≤1 Ω 电阻、磁珠或电感：隔离被直流旁路（G04-040，TI SLLA284G §1）；光耦按 PRO-D01 核，经电容或高阻的跨接与工作资格按 PRO-D02/PRO-C03 核', 'lint', 'net'),
     Rule('PRO-E01', '光耦传输能力',
          '按最小正向电流与保证 CTR（初始值）核输出可用电流是否满足上拉与负载要求；同时核最大正向电流不超额定；'
          '寿命末所需的 CTR 保留比例在寿命检查项 DEV-C06 算出并写成约束，本检查项不要求项目衰减系数', 'optocoupler', 'device'),
@@ -727,7 +729,7 @@ OBJECTIVE_RULES = {
                  'PWR-C09 PWR-C10 PWR-C11 PWR-C14 PWR-C16 CLK-C01 DRV-C02 '
                  'REQ-C01 REQ-C02 PWR-C17 PWR-C18 PWR-C19 PWR-C21 PWR-C22 SIG-C11 ANA-C06').split()),
     'G5': tuple(('PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-A05 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
-                 'PRO-E02 PRO-C01 PRO-C02 PRO-C03 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01 '
+                 'PRO-E02 PRO-C01 PRO-C02 PRO-C03 PRO-A05 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01 '
                  'PRO-D04 PWR-C23 PWR-C25 PWR-C26 SIG-C18 REQ-D05 PRO-D05 PRO-D06 PRO-C04 PRO-C05 PRO-C06 PRO-C07 PRO-C08 PRO-C09 '
                  'PRO-C10 PRO-C11 PRO-C12 PRO-C13').split()),
     'G6': tuple('DOC-D02 DOC-V02 RST-D01 SIG-D06'.split()),
@@ -759,6 +761,7 @@ BASIS = {
     'DEV-D03': ('G01-013',),
     'DOC-Q01': ('G02-026',),
     'DRV-C02': ('G03-016', 'G05-040', 'G05-041', 'G05-042', 'G05-043'),
+    'PRO-A05': ('G04-040',),
     'PRO-C01': ('G01-021', 'G01-036', 'G01-037', 'G01-041', 'G05-026', 'G05-048'),
     'PRO-C02': ('G05-036', 'G05-037'),
     'PRO-C03': ('G01-050',),
@@ -2224,6 +2227,7 @@ EXPLANATIONS = {
     'PRO-E02': _x('钳位电压高于被保护脚绝限时，ESD 事件先打坏芯片再被钳住', 'VRWM 不低于持续最高电压，到达本节点的瞬态下钳位电压不高于同网最低耐受，脉冲能量在额定内即关闭', inputs='钳位件 VRWM/VBR/VC 与脉冲额定；需求波形；同网器件耐受', false_alarms='防护是否挂在活线上、泄放路径归 PRO-D03；型号与轨名只能作线索'),
     'PRO-A03': _x('光耦 LED 没有限流时，驱动端与 LED 都可能过流，隔离信号仍可能偶尔能传', '回路有串阻或经证实的恒流驱动即关闭；电流归 PRO-E01', false_alarms='恒流驱动或驱动脚自带限流；串阻画在另一条腿上'),
     'PRO-A04': _x('光耦输出没有上拉时，高电平靠漏电建立，输出状态不确定', '接收端有外部上拉或经证实的内部上拉即关闭；能力归 PRO-E01', false_alarms='接收端 MCU 内部上拉已启用；推挽输出的光耦'),
+    'PRO-A05': _x('隔离器保留了但两地连通，隔离失效，地环路和高压都能穿过', '分开两地即关闭；确实不需要隔离时写明用途也可关闭', false_alarms='把隔离器只当电平转换使用的共地电路：无隔离需求时按用途关闭'),
     'PRO-E01': _x('光耦能传信号，CTR 随寿命衰减后输出电流可能不足以拉低负载', '最小正向电流乘保证 CTR 初始值后满足负载，最大电流不超额即关闭', inputs='PRO-D01 的两侧电平'),
     'PRO-C01': _x('单个保护器件合格，整条链的动作电压、时序和能量仍可能配合不上', '按实际保护链逐段核动作电压、时序与能量配合即关闭；缺工况不定判', inputs='PRO-C02 的门限、DRV-C01/C02 的耐受'),
     'PRO-C02': _x('只核一侧窗口：可能正常工作时误触发，或故障时触发不了', '两侧保证值或有据上界按同一温度角点与门限比较不越限即关闭，最坏取值时零余量即可', inputs='ANA-T01 的检测路径', false_alarms='跨网与地的防护钳位归 PRO-E02；栅源稳压管正常限幅属允许用途；跨开关 TVS 是能量钳位'),

@@ -333,7 +333,7 @@ def isolation_bridge(db):
         for node, net in list(out['pin2net'].items()):
             if net == grounds[1]:
                 out['pin2net'][node] = grounds[0]
-        yield Mutation('D-ISO-BRIDGE', ('PRO-D02',), (ref,), tuple(grounds),
+        yield Mutation('D-ISO-BRIDGE', ('PRO-A05', 'PRO-D02'), (ref,), tuple(grounds),
                        'short ' + ' / '.join(grounds), rebuild(out))
 
 

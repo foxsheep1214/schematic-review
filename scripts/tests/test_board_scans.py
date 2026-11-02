@@ -224,6 +224,51 @@ class CanBusShortTest(unittest.TestCase):
         self.assertEqual(scans(db, 'SIG-A06'), [])
 
 
+class IsolatorGroundBridgeTest(unittest.TestCase):
+    NAMES = {'U1.2': 'GND1', 'U1.7': 'GND2'}
+
+    def isolator(self, value='ADuM1201', parts=None, nets=None):
+        all_nets = {'GND': ['U1.2'], 'GND_ISO': ['U1.7']}
+        all_nets.update(nets or {})
+        return board(dict({'U1': value}, **(parts or {})), all_nets, dict(self.NAMES))
+
+    def test_grounds_on_one_net_is_a_candidate(self):
+        db = board({'U1': 'ADuM1201'}, {'GND': ['U1.2', 'U1.7']}, dict(self.NAMES))
+        hits = scans(db, 'PRO-A05')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('U1', hits[0]['detail'])
+
+    def test_separate_grounds_pass(self):
+        self.assertEqual(scans(self.isolator(), 'PRO-A05'), [])
+
+    def bridge(self, value):
+        return self.isolator(parts={'R1': value}, nets={'GND': ['U1.2', 'R1.1'], 'GND_ISO': ['U1.7', 'R1.2']})
+
+    def test_a_zero_ohm_link_or_ferrite_bridges(self):
+        self.assertEqual(len(scans(self.bridge('0R'), 'PRO-A05')), 1)
+        db = self.isolator(parts={'FB1': 'BLM18'}, nets={'GND': ['U1.2', 'FB1.1'], 'GND_ISO': ['U1.7', 'FB1.2']})
+        self.assertEqual(len(scans(db, 'PRO-A05')), 1)
+
+    def test_a_bleed_resistor_or_y_capacitor_is_left_to_the_barrier_rules(self):
+        self.assertEqual(scans(self.bridge('1M'), 'PRO-A05'), [])
+        self.assertEqual(scans(self.bridge('fixme'), 'PRO-A05'), [])
+        db = self.isolator(parts={'CY1': '1nF'}, nets={'GND': ['U1.2', 'CY1.1'], 'GND_ISO': ['U1.7', 'CY1.2']})
+        self.assertEqual(scans(db, 'PRO-A05'), [])
+
+    def test_a_multi_ground_ic_that_is_not_an_isolator_is_not_judged(self):
+        db = board({'U1': 'STM32F4'}, {'GND': ['U1.2', 'U1.7']}, dict(self.NAMES))
+        self.assertEqual(scans(db, 'PRO-A05'), [])
+
+    def test_a_verified_isolator_role_is_enough(self):
+        db = board({'U1': 'XYZ123'}, {'GND': ['U1.2', 'U1.7']}, dict(self.NAMES),
+                   device_kinds={'U1': {'kind': 'isolator', 'basis': 'datasheet'}})
+        self.assertEqual(len(scans(db, 'PRO-A05')), 1)
+
+    def test_an_isolator_with_one_ground_name_is_not_judged(self):
+        db = board({'U1': 'ADuM1201'}, {'GND': ['U1.2', 'U1.7']}, {'U1.2': 'GND', 'U1.7': 'GND'})
+        self.assertEqual(scans(db, 'PRO-A05'), [])
+
+
 class UsbVbusBulkTest(unittest.TestCase):
     def vbus(self, net='VBUS', **caps):
         return board(dict({'J1': 'USB_C'}, **caps),
