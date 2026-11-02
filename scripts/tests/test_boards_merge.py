@@ -247,3 +247,51 @@ def test_output_sense_feedback_does_not_make_a_buck_inductor_an_input_choke(swit
     assert PowerTree(NetGraph(db)).source_of('VDDQ')['source']=='U1.1'
     db['pinname']['U1.2']='VIN'
     assert PowerTree(NetGraph(db)).source_of('VDDQ') is None  # genuine boost input choke remains excluded
+
+
+@pytest.mark.parametrize('raw,expected',[('P_{GOOD}','PGOOD'),('V_{IN}','VIN'),('~{P_{GOOD}}','PGOOD')])
+def test_native_subscript_styling_does_not_change_pin_function(raw,expected):
+    from part_words import pin_aliases
+    aliases=pin_aliases(raw)
+    assert aliases[0]==raw.upper() and expected in aliases
+
+@pytest.mark.parametrize('model,pin',[('TPS2372-3RGWR','~{AUTCLS}'),('TXU0204BQAR','A1'),('TXU0204BQAR','B4')])
+def test_native_unused_input_permissions_survive_styling(model,pin):
+    db=parse(netlist(comp('U1','Device','IC',model,fields='<field name="MPN">'+model+'</field>'),
+                    net('unconnected-(U1-Pad1)',('U1','1',pin,'input+no_connect'))))
+    assert not [f for f in Lint(db).run() if f['rule']=='NET-A07' and f['kind']!='INFO']
+
+def test_eeprom_org_exemption_is_only_for_the_fixed_b_variant():
+    db=parse(netlist(comp('U1','Device','IC','93LC66BT-I/MC',fields='<field name="MPN">93LC66BT-I/MC</field>'),
+                    net('unconnected-(U1-Pad6)',('U1','6','ORG','input+no_connect'))))
+    assert not [f for f in Lint(db).run() if f['rule']=='NET-A07' and f['kind']!='INFO']
+    db['parts']['U1']['part']='93LC66CT-I/MC'
+    assert [f for f in Lint(db).run() if f['rule']=='NET-A07' and f['kind']=='CANDIDATE']
+
+def test_phy_ldo_output_needs_an_actual_external_low_voltage_source():
+    db=parse(netlist(comp('U1','Device','IC','KSZ9031RNXIC',fields='<field name="MPN">KSZ9031RNXIC</field>')
+                    +comp('U2','Device','IC','REG'),
+                    net('unconnected-(U1-Pad43)',('U1','43','LDO_O','input+no_connect'))
+                    +net('LOW_SUPPLY',('U1','7','DVDDL','power_in'),('U2','1','VOUT','power_out'))))
+    assert not [f for f in Lint(db).run() if f['rule']=='NET-A07' and f['kind']!='INFO']
+    db['parts']['U2']['nc']=True
+    assert [f for f in Lint(db).run() if f['rule']=='NET-A07' and f['kind']=='CANDIDATE']
+
+def test_fixed_push_pull_mpsse_segment_is_not_declared_an_open_drain_bus_by_its_name():
+    db=parse(netlist(comp('U26','Device','IC','FT4232HL-REEL',fields='<field name="MPN">FT4232HL-REEL</field>')
+                    +comp('U30','Device','IC','TXU0304APWR',fields='<field name="MPN">TXU0304APWR</field>'),
+                    net('/Debug/I2C_SDA_OUT',('U26','1','ADBUS1','bidirectional'),('U30','2','A1','input'))))
+    assert not [f for f in Lint(db).run() if f['rule']=='SIG-A03' and f['kind']!='INFO']
+    db['parts']['U30']['part']='UNKNOWN_BUFFER'
+    assert [f for f in Lint(db).run() if f['rule']=='SIG-A03' and f['kind']=='CANDIDATE']
+
+def test_poe_vss_rtn_are_separate_return_domains_not_an_instruction_to_short_them():
+    db=parse(netlist(comp('IC1','Device','IC','TPS2378DDAR',fields='<field name="MPN">TPS2378DDAR</field>')
+                    +comp('J1','Connector','Conn_01x03','CONN'),
+                    net('VSS_POE_IN',('IC1','4','VSS','power_in'))
+                    +net('GNDD',('IC1','5','RTN','power_out'))
+                    +net('GND',('J1','1','','passive'),('J1','2','','passive'),('J1','3','','passive'))))
+    findings=[f for f in Lint(db).run() if f['rule']=='PWR-A03']
+    assert not [f for f in findings if 'VSS 球未入地'==f['name']]
+    assert findings and all(f['kind']=='CANDIDATE' for f in findings)
+    assert 'VSS_POE_IN' in db['nets'] and 'GNDD' in db['nets']

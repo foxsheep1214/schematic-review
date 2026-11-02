@@ -5533,7 +5533,7 @@
   "id": "M855",
   "name": "internal input bias policy is ignored",
   "file": "scripts/board_scans.py",
-  "old": "if declared_nc and allowed:",
+  "old": "if declared_nc and permission:",
   "new": "if False:"
  },
  {
@@ -5619,5 +5619,33 @@
   "file": "evals/seeded_bench/run.py",
   "old": "return 1 if any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0",
   "new": "return 0"
+ },
+ {
+  "id": "M880",
+  "name": "KiCad inline subscripts hide functional pin names",
+  "file": "scripts/part_words.py",
+  "old": "add(re.sub(r'_\\{([A-Za-z0-9]+)\\}', r'\\1', candidate))",
+  "new": "pass"
+ },
+ {
+  "id": "M881",
+  "name": "unused input policies use styled raw names again",
+  "file": "scripts/board_scans.py",
+  "old": "pin_names = pin_aliases(lint.pinname.get(node), node.partition('.')[2])",
+  "new": "pin_names = (str(lint.pinname.get(node, '')).upper(),)"
+ },
+ {
+  "id": "M882",
+  "name": "fixed MPSSE buffering becomes an open drain bus by name",
+  "file": "scripts/board_scans.py",
+  "old": "if not resistors and ftdi and buffer and set(ics) == set(ftdi + buffer) and not declared_bus:",
+  "new": "if False:"
+ },
+ {
+  "id": "M883",
+  "name": "PoE VSS must be shorted to the main return again",
+  "file": "scripts/lint.py",
+  "old": "if not ng.is_ground(n) and not pd_return:",
+  "new": "if not ng.is_ground(n):"
  }
 ]

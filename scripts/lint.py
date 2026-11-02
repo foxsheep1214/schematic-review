@@ -498,7 +498,9 @@ class Lint:
             detail = (f'{"/".join(sorted(island))} {nodes[:8]} 经已装配直流连接件到不了主地 '
                       f'{"/".join(sorted(main))}；孤岛上 IC 地脚 {pins[:6]}，无连接器、无已知隔离器件')
             conditional = sorted({ref for ref in refs if g.kind(ref) in (pw.DIODE, pw.BRIDGE_RECTIFIER)
-                                  and len(g.nets_of(ref)) >= 2})
+                                  and len(g.nets_of(ref)) >= 2}
+                                 | {ref for ref in refs if g.kind(ref) not in TWO_TERMINAL
+                                    and any(net in parent and net not in island for net in g.nets_of(ref))})
             if cross or conditional:
                 self.add('PWR-A03', '地名网孤岛（经多端器件跨接，待核片内连通）',
                          detail + f'；跨域器件 {cross}、条件返回器件 {conditional}：按引脚表和导通条件核回流，不要求跨隔离短接',
@@ -631,7 +633,11 @@ class Lint:
         for node, pn in pinname.items():
             if re.match(r'^(VSS|AVSS|DVSS)', pn, re.I):
                 n = pin2net.get(node)
-                if not ng.is_ground(n):
+                ref = node.partition('.')[0]
+                model = str(self.parts.get(ref, {}).get('part', ''))
+                pd_return = (re.fullmatch(r'TPS237[28][A-Z0-9/-]*', model, re.I) and _ground_like(n)
+                             and bool(self.graph.named_pins(ref, re.compile(r'^RTN$', re.I))))
+                if not ng.is_ground(n) and not pd_return:
                     self.add('PWR-A03', 'VSS 球未入地',
                              f'{node} ({pn}) <- {n}', node.split('.')[0])
         self._ground_islands()

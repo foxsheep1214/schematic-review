@@ -105,6 +105,8 @@ def pin_aliases(name, pin=None):
 
     add(raw)
     for candidate in list(found):
+        add(re.sub(r'_\{([A-Za-z0-9]+)\}', r'\1', candidate))  # KiCad inline subscripts: P_{GOOD} -> PGOOD
+    for candidate in list(found):
         # 上划线与等价的低有效写法前缀只影响写法，不影响功能名本身
         match = OVERBAR_RE.match(candidate)
         if match:
