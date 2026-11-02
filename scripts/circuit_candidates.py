@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """电路候选：从网表、核验过的器件类别和检查器库存生成，审查员不画电路。
 
-候选 = 类型 + 核心器件（核验角色的 IC，或没人驱动的分立开关，或板级对象）。成员带 `via`：走到它的路径
+候选 = 类型 + 核心器件（核验角色的 IC，或有拓扑证据的分立变换级，或板级对象）。成员带 `via`：走到它的路径
 或库存来源。路径是**归属关系**，不是导通断言——走线经过两端器件不分方向，参考地分区另由 checkers/domains
-推导。走线停在截止网络（地、IC 输出脚驱动的网、两个以上核心器件到达的声明轨、该变换器电感负载的输入/输出网）、
+推导。走线停在截止网络（地、IC 输出脚驱动的网、两个以上核心器件到达的声明轨或实际供电轨、该变换器电感负载的输入/输出网）、
 别的核心器件、跨域器件（变压器、光耦、Y 电容、隔离器：隔离候选的成员，别的候选不穿过）。
 
 页面与名字只作展示，不决定归属。两个候选在同一距离走到的器件两边都列；走线更短的候选赢得器件。
@@ -45,7 +45,7 @@ STARTUP_PIN_RE = re.compile(r'^(HV|VSTART|HVS|EN|ENABLE|INH|INHIBIT|UVLO|SS|SOFT
 SENSE_PIN_RE = re.compile(r'^(CS|CS[+-]|CS_?[PN]|ISNS|ISENSE|ISEN|VSNS|VSENSE|FB|NTC|TEMP|RT|ZCD|ZCD/OPP|CS/ZCD|AIN\d*|VIN_?SNS)$', re.I)
 USB_PIN_RE = re.compile(r'^(CC[12]|D[+-]|DP|DN|DM|D_P|D_N|SBU[12])$', re.I)
 DEBUG_PIN_RE = re.compile(r'^(SWDIO|SWCLK|SWO|TCK|TMS|TDI|TDO|NTRST|JTAG\w*)$', re.I)
-PROTECTIVE_RE = re.compile(r'THERMISTOR|FUSE|BRIDGE|\bGDT\b|SPARK', re.I)   # with netgraph's NTC and varistor words
+PROTECTIVE_RE = re.compile(r'THERMISTOR|FUSE|\bGDT\b|SPARK', re.I)   # with netgraph's NTC and varistor words
 PROTECTIVE_KINDS = device_kinds.with_flag('protective')             # fuse, tvs, bridge_rectifier, ntc, varistor
 PASS_THROUGH = frozenset({pw.BRIDGE_RECTIFIER})      # multi-pin parts the input walk passes
 WALK = 'walk'
@@ -102,6 +102,7 @@ class Generator:
         self.graph = ng.NetGraph(analysis_db)
         self.domains = domains_lib.derive(self.graph, self.kind_intent)
         self.tree = powertree.PowerTree(self.graph, self.kind_intent)
+        self.supplies = powertree.supply_candidates(self.graph, self.kind_intent)
         checkers = {c.plan_key: c for c in REGISTRY}
         self.switches = self._first_state(checkers['power_switch'].build(analysis_db, self.kind_intent), 'switches')
         self.loads = self._first_state(checkers['inductive_load'].build(analysis_db, self.kind_intent), 'loads')
@@ -151,6 +152,9 @@ class Generator:
         members = self.candidates[cid]['members']
         if ref in members and members[ref]['hops'] <= hops:
             return
+        if role == pw.CAPACITOR and any(n in self.grounds for n in self.graph.nets_of(ref)) and any(
+                n in self.supplies for n in self.graph.nets_of(ref)):
+            role = 'decoupling'   # a ground bypass on an actual supply, regardless of which walk reached it
         members[ref] = {'ref': ref, 'role': role, 'via': via, 'hops': hops}
 
     def walk(self, cid, seeds, stops, max_hops, blocked=(), expand_seeds=False):
@@ -247,8 +251,8 @@ class Generator:
 
     def self_anchored(self, switch):
         """A switch nobody with a verified role drives anchors itself when nothing drives it, when only its own
-        pins do, or when the reviewer declared its role (power_switches, cited): the converter then exists on the
-        declaration and the unverified driver stays a device-kind gap outside it."""
+        pins do, or when the reviewer declared its role (power_switches, cited). This only permits anchoring;
+        converter_topology must also hold. An unverified driver remains a device-kind gap."""
         if switch.get('basis') == 'declared' and switch.get('role'):
             return True
         drivers = switch.get('drivers', [])
@@ -258,23 +262,28 @@ class Generator:
     def inductive_drain(self, switch):
         """Whether an inductor or a winding sits on the switch's drain (collector) net: what makes it a power switch."""
         net = switch.get('drain_net')
-        return bool(net) and (net in self.winding_nets or any(
-            self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net)))
+        return bool(net) and any(
+            self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net))
 
     def converter_topology(self, switch):
         """An energy-storage switch with a controller/feedback, or a discrete zener-referenced linear regulator.
         A declared role alone, relay coil or transistor feeding a load is insufficient."""
         if self.inductive_drain(switch):
             drivers = switch.get('drivers', [])
-            controller = any(self.graph.kind(str(d.get('node', '')).partition('.')[0]) == pw.IC for d in drivers)
+            controller = any(self.graph.kind(str(d.get('node', '')).partition('.')[0]) == pw.IC and (
+                self.graph.role_kind(str(d.get('node', '')).partition('.')[0]) in CONVERTER_ROLES
+                or pw.name_matches(re.compile(r'^(DRV\w*|GATE\w*|HO|LO|OUT\w*)$', re.I),
+                    self.graph.pinname.get(str(d.get('node', ''))), str(d.get('node', '')).partition('.')[2]))
+                for d in drivers)
             feedback = any(self.matches(FEEDBACK_PIN_RE, node) for net in self.graph.nets_of(switch['ref'])
                            for node in self.graph.nodes_on(net))
             return controller or feedback
         gate = switch.get('gate_net')
         # A zener reference plus bias resistor is the feedback element of the source/emitter follower.
-        return bool(gate and self.graph.refs_on(gate) and any(
-            self.graph.kind(r) == pw.ZENER for r in self.graph.refs_on(gate)) and any(
-            self.graph.kind(r) == pw.RESISTOR for r in self.graph.refs_on(gate)))
+        source, drain = switch.get('source_net'), switch.get('drain_net')
+        return bool(gate and source and source not in self.grounds and self.ground_caps(source) and any(
+            self.graph.kind(r) == pw.ZENER and any(n in self.grounds for n in self.graph.nets_of(r) if n != gate)
+            for r in self.graph.refs_on(gate)) and self.graph.between(gate, drain, {pw.RESISTOR}))
 
     def prepare(self):
         """Which anchor owns which switch, which switches anchor themselves, and the nets every walk treats as

@@ -46,7 +46,7 @@ class _Scan:
         self.feed = powertree.PowerTree(self.graph, feed=True)   # supply nets entering through connectors
         self._regulators = None
 
-    def _enable_source(self, enable_net, input_nets):
+    def _enable_source(self, enable_net, input_nets, own_ref=None):
         """使能来源形态；名字不构成结论，只按连接关系归类。"""
         graph = self.graph
         peers = graph.low_resistance_peers(enable_net)
@@ -61,7 +61,8 @@ class _Scan:
         caps = [ref for ground in sorted(self.grounds)
                 for near in peers for ref in graph.between(near, ground, {pw.CAPACITOR})]
         drivers = []
-        for node in sorted({node for near in peers for node in graph.nodes_on(near)}):
+        source_peers = graph.signal_source_peers(enable_net)
+        for node in sorted({node for near in source_peers for node in graph.nodes_on(near)}):
             ref = node.partition('.')[0]
             if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != pw.IC:
                 continue
@@ -73,9 +74,21 @@ class _Scan:
                 drivers.append({'node': node, 'source': 'controller-output'})
         refs = sorted({ref for ref, _ in to_rail + to_ground} | {x for x in caps}
                       | {ref for path in peers.values() for ref in path})
+        for driver in drivers:
+            path = source_peers.get(graph.pin2net.get(driver['node']), [])
+            if path:
+                driver['via'] = path
         if drivers:
             return ('sequenced' if any(x['source'] == 'power-good' for x in drivers)
                     else 'controlled'), drivers
+        supplied = []
+        for near, path in peers.items():
+            source = self.tree.source_of(near)
+            if source and source['source'].partition('.')[0] != own_ref:
+                supplied.append({'node': source['source'], 'source': 'supply-output',
+                                 'via': source['path'] + path})
+        if supplied:
+            return 'supplied', supplied  # source identity, even when this device calls its supply SUP or V+
         if to_rail and to_ground:
             return 'uvlo-divider', refs
         if to_rail and caps:
@@ -112,12 +125,12 @@ class _Scan:
                 continue
             inputs = self._supply_inputs(ref)
             for node, enable_net in enables.items():
-                source, evidence = self._enable_source(enable_net, set(inputs.values()))
+                source, evidence = self._enable_source(enable_net, set(inputs.values()), ref)
                 found.append({
                     'id': slug(ref + '-' + enable_net),
                     'ref': ref,
                     'basis': 'declared' if ref in self.declared else 'topology',
-                    'kind': 'switching' if switches else 'linear',
+                    'kind': 'load_switch' if graph.role_kind(ref) == 'load_switch' else ('switching' if switches else 'linear'),
                     'enable_node': node,
                     'enable_net': enable_net,
                     'enable_source': source,
@@ -226,7 +239,7 @@ class PowerUpChecker(Checker):
                         'datasheet: PWR-E02 输入下限、最坏压差与负载要求下限'])),
                     trigger=['power-up:' + item['id']])
                 check['inventory_gaps'] = gaps
-            else:
+            elif item['kind'] == 'switching':
                 check = planner.add_check(
                     'PWR-D03', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                     required_inputs=sorted(set(gaps + [

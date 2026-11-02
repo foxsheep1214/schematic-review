@@ -298,6 +298,29 @@ class NetGraph:
                     queue.append(other)
         return found
 
+    def signal_source_peers(self, net, max_ohm=10000.0, max_hops=3):
+        """Source identity through <=10 kohm total series resistance, distinct from <=1 ohm rail equivalence.
+        10 kohm is a discovery envelope including board-proven 4k7 with tolerance, not a drive-strength,
+        logic-level or timing guarantee. Never cross grounds/rails to collect unrelated output pins.
+        """
+        from solve_dividers import parse_resistor
+        found, costs, queue = {net: []}, {net: 0.0}, [(net, 0)]
+        while queue:
+            current, hops = queue.pop(0)
+            if hops >= max_hops or (current != net and (is_ground(current) or is_rail(current))):
+                continue
+            for ref, other in self.neighbors(current, {'resistor'}):
+                value = parse_resistor(self.parts.get(ref, {}).get('value'))
+                if value is None or value['kohm'] < 0 or is_ground(other) or is_rail(other):
+                    continue
+                cost = costs[current] + value['kohm'] * 1000
+                if cost > max_ohm or cost >= costs.get(other, float('inf')):
+                    continue
+                costs[other] = cost
+                found[other] = found[current] + [ref]
+                queue.append((other, hops + 1))
+        return found
+
     def series_path(self, net, kinds=PASSIVE_LINKS, max_hops=3, fitted_only=True):
         """沿串联无源件扩展出的等电位候选网络集合（含起点）。"""
         seen, frontier = {net}, [(net, 0)]

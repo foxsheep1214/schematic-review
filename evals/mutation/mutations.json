@@ -1347,15 +1347,15 @@
   "id": "M205",
   "name": "a rated power is not read",
   "file": "scripts/solve_dividers.py",
-  "old": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
-  "new": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(V)\\s*', remainder)"
+  "old": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
+  "new": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(V)\\s*', remainder)"
  },
  {
   "id": "M206",
   "name": "a rated voltage is not read",
   "file": "scripts/solve_dividers.py",
-  "old": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
-  "new": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W)\\s*', remainder)"
+  "old": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
+  "new": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W)\\s*', remainder)"
  },
  {
   "id": "M207",
@@ -1368,8 +1368,8 @@
   "id": "M208",
   "name": "milliwatts are read as watts",
   "file": "scripts/solve_dividers.py",
-  "old": "        amount = float(rating.group(2)) / (1000.0 if rating.group(3) == 'MW' else 1.0)",
-  "new": "        amount = float(rating.group(2))"
+  "old": "        amount = float(rating.group(2)) / denominator / (1000.0 if unit_rating == 'MW' else 1.0)",
+  "new": "        amount = float(rating.group(2)) / denominator"
  },
  {
   "id": "M209",
@@ -5937,10 +5937,10 @@
  },
  {
   "id": "M914",
-  "name": "shared input capacitor has no supply role",
+  "name": "input capacitor loses its unlimited reference allowance",
   "file": "scripts/circuit_candidates.py",
-  "old": "self.add(cid, cap, 'input_capacitor', f'input_capacitor: on {net} feeding {node}', 0)",
-  "new": "self.add(cid, cap, 'capacitor', f'input_capacitor: on {net} feeding {node}', 0)"
+  "old": "SUPPLY_CAP_ROLES = frozenset({'input_capacitor', 'output_capacitor', 'decoupling', 'storage_capacitor'})",
+  "new": "SUPPLY_CAP_ROLES = frozenset({'output_capacitor', 'decoupling', 'storage_capacitor'})"
  },
  {
   "id": "M915",
@@ -5988,8 +5988,8 @@
   "id": "M921",
   "name": "AMC3311 loses its independent side model",
   "file": "scripts/checkers/isolation_sides.py",
-  "old": "r'AMC3311[A-Z0-9/-]*'",
-  "new": "r'NEVER3311[A-Z0-9/-]*'"
+  "old": "(r'AMC3311[A-Z0-9/-]*', 'isolated_amplifier',",
+  "new": "(r'NEVER3311[A-Z0-9/-]*', 'isolated_amplifier',"
  },
  {
   "id": "M922",
@@ -6011,5 +6011,103 @@
   "file": "scripts/circuit_candidates.py",
   "old": "if all(nets & set(s['nets']) for s in sides):",
   "new": "if False:"
+ },
+ {
+  "id": "M925",
+  "name": "4k7 enable source is cut by a low-impedance threshold",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "def signal_source_peers(self, net, max_ohm=10000.0, max_hops=3):",
+  "new": "def signal_source_peers(self, net, max_ohm=1000.0, max_hops=3):"
+ },
+ {
+  "id": "M926",
+  "name": "gate source discovery borrows drivers from ground or shared rail",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "if value is None or value['kohm'] < 0 or is_ground(other) or is_rail(other):",
+  "new": "if value is None or value['kohm'] < 0:"
+ },
+ {
+  "id": "M927",
+  "name": "upstream buck storage inductor is treated as an input filter",
+  "file": "scripts/checkers/input_filter.py",
+  "old": "if storage_source:",
+  "new": "if False:"
+ },
+ {
+  "id": "M928",
+  "name": "input filter rows exist without a filter",
+  "file": "scripts/checkers/input_filter.py",
+  "old": "if not item['series_elements'] and not any(g.startswith('series-element-topology:') for g in item['gaps']):",
+  "new": "if False:"
+ },
+ {
+  "id": "M929",
+  "name": "verified load switch gets LDO dropout model",
+  "file": "scripts/checkers/power_up.py",
+  "old": "'kind': 'load_switch' if graph.role_kind(ref) == 'load_switch'",
+  "new": "'kind': 'linear' if graph.role_kind(ref) == 'load_switch'"
+ },
+ {
+  "id": "M930",
+  "name": "passive balun without switching energy becomes a coil load",
+  "file": "scripts/checkers/inductive_load.py",
+  "old": "if kind != pw.RELAY and ref not in self.declared and not energy_driver:",
+  "new": "if False:"
+ },
+ {
+  "id": "M931",
+  "name": "Bridged jumper again matches a protective rectifier",
+  "file": "scripts/circuit_candidates.py",
+  "old": "r'THERMISTOR|FUSE|\\bGDT\\b|SPARK'",
+  "new": "r'THERMISTOR|FUSE|BRIDGE|\\bGDT\\b|SPARK'"
+ },
+ {
+  "id": "M932",
+  "name": "AMC output pin no longer supplies its own isolated-side LDO input",
+  "file": "scripts/checkers/powertree.py",
+  "old": "if side and pin in side.get('power_outputs', []):",
+  "new": "if False and side and pin in side.get('power_outputs', []):"
+ },
+ {
+  "id": "M933",
+  "name": "gate protection zener becomes a linear regulator reference",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        return bool(gate and source and source not in self.grounds and self.ground_caps(source) and any(\n            self.graph.kind(r) == pw.ZENER and any(n in self.grounds for n in self.graph.nets_of(r) if n != gate)\n            for r in self.graph.refs_on(gate)) and self.graph.between(gate, drain, {pw.RESISTOR}))",
+  "new": "        return bool(gate and any(self.graph.kind(r) == pw.ZENER for r in self.graph.refs_on(gate)))"
+ },
+ {
+  "id": "M934",
+  "name": "walk bypass caps lose their unlimited supply-reference role",
+  "file": "scripts/circuit_candidates.py",
+  "old": "role = 'decoupling'   # a ground bypass",
+  "new": "role = 'capacitor'   # a ground bypass"
+ },
+ {
+  "id": "M935",
+  "name": "relay coil evidence counts as converter magnetics",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        return bool(net) and any(\n            self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net))",
+  "new": "        return bool(net) and (net in self.winding_nets or any(\n            self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net)))"
+ },
+ {
+  "id": "M936",
+  "name": "integrated SW no longer preserves transformer winding review",
+  "file": "scripts/checkers/inductive_load.py",
+  "old": "self._is_converter_node(n) for n in graph.nets_of(ref)",
+  "new": "False for n in graph.nets_of(ref)"
+ },
+ {
+  "id": "M937",
+  "name": "fractional watt rating cuts the real MCU driver path",
+  "file": "scripts/solve_dividers.py",
+  "old": "rating = fraction or re.fullmatch",
+  "new": "rating = None or re.fullmatch"
+ },
+ {
+  "id": "M938",
+  "name": "EN on a real supplied rail becomes floating when its supply pin alias is SUP",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if supplied:\n            return 'supplied', supplied",
+  "new": "if False:\n            return 'supplied', supplied"
  }
 ]

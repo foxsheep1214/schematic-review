@@ -84,6 +84,8 @@ def model(graph, ref, intent=None):
     return {'ref': ref, 'mechanism': mechanism, 'basis': basis, 'citation': citation,
             'sides': [{'id': str(i + 1), 'pins': pins,
                        'nets': sorted({actual[p] for p in pins} - graph.pseudo)} for i, pins in enumerate(groups)],
+            'power_outputs': sorted({p for g in groups for p in g} & ({'1', '5', '13'} if mechanism == 'isolated_amplifier' and re.fullmatch(r'AMC3311[A-Z0-9/-]*', mpn)
+                                                   else {'6'} if mechanism == 'isolated_dcdc' else set())),
             'unmapped_pins': sorted(set(actual) - {p for g in groups for p in g}),
             'resolved': all(bool(g) for g in groups)}
 
