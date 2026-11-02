@@ -69,3 +69,9 @@
 - TPS5430 BOOT是C2跨PH的自举脚，不是strap；ENA绝限7V，直连VBATT只在源窗确认后按7V边界判，不套常见可直连VIN的EN。C2需≥10V；C4=220µF/1206不证明Poscap ESR或有效容量。
 - STARTUP经VBATT分压吸入A1/R14/R15会漏独立ANA-C03；模组内USB与无保护核心的源侧PRO-C04也要展开。CAN120Ω经外接帽，三节点40Ω仅是闭帽条件例；D2反偏使USB不能直接充C4，别误加220µF到VBUS。
 - schema15无needs_human/未定工况表达时留逐ID pending及逐功能旁账，不制造完整功能PASS；本轮原生functions为空，门禁FAIL且报告无效，资料不足0不等于244项已审结。
+
+- mlab-modules--qfhmix01：235件/152网/3页，11电路/23框架/480项；94局部判、386逐ID待核，36归因=1资料真+23误+1知识+11人工，2计划漏问，门禁FAIL/NO_GO。
+- 47uF/6,3V被rated_voltage读成3V；AD8343输出270nH+820nH是偏置扼流，不套DRV续流，LO内部50Ω/偏置见p22，RF输入经56nH+68Ω已给直流偏置。
+- Si53322是外部输入fanout，不套晶体CL/起振；LT6604-5的2/4/10/12已给官方脚表仍被ANALOG前提漏掉。J1 DC输出经49R9到外部需细分掉电注入，不能拿PRO-D04泛问当SIG-C08全覆盖。
+- 源旧CSV205件与当前235件有129值冲突，read_bom不保留Value须独立CSV对读；原生全235件显式dnp no可据此声明图面装配，不能把旧BOM当采购保证。source/db572节点零差异、孔M1–8不是IC。
+- LTC3601等官方web文字可留text_extract，pdftotext有时错误把txt当PDF导致NO_TEXT；保留摘录原文及清洗映射、不改名PDF。schema15未判项写pending与逐功能范围，不用资料不足0/局部PASS表示审完。
