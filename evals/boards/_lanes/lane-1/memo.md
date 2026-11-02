@@ -105,3 +105,9 @@
 - AN3319 p18明确0Ω把XSHUT并MPP-SET合法、外控应移除；XSHUT默认态和MPP-SET UVLO可能漏RST-T04/PWR-C06。J3 SIG-C08、J1/J4 PRO-C04本版已有，先查实际计划。
 - R2=-不可自动DNP；SMBJ5.0A指定D_SMA是数据错。D2最小击穿6.4V>5.5V，但无电池轻载接入适用性须锁；FERROCORE DE表IDC4A不等于有定义的全温Isat。
 - HOLE污染strict/手册/pinmux；add丢nets/anchors。源BOM截Individual再read_bom并独立核Value；schema15保留pending和完整功能分母，原生资料不足0不代表审完，未有效打包的报告索引须回缓存读。
+
+- antmicro--hdmi-mipi-bridge：123件/4页strict；797项/34框架，108局部判+689逐ID人工；37归因=3真+22误+3知识+9人工，2计划漏问，FAIL/NO_GO。
+- J6的16个标签单节点已有原生NC，NET-A01漏看no_connect_nodes；HPD/HPDI分别经两只0Ω到同一POWER，NET-A02须核多跳，不能只按名字判断网。
+- PCA9517ATP HWSON8脚1/2/3/4/5/6/7/8=SDAA/GND/EN/SDAB/SCLB/VCCB/VCCA/SCLA，别套SO8；Toshiba未用APLL须PFIL接100n、DAOUT开路；7C有源XO规定15pF，直接47pF超规定区。
+- IC前缀TLV733和Y前缀7C须--require-ref才能恢复准确手册审计；TLV733无需Cout稳定。含VCC的多通道TVS仍要PRO-E02，不能出TRIP/NOTRIP；桥RESETN接收端还需PWR-C24。
+- schema15未定主机合同留needs_human旁账，不造完整功能PASS；本轮6失败框架已写，其余28未完成明确保留；报告valid=false只诊断，标准record索引未打包。
