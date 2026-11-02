@@ -1,0 +1,876 @@
+{
+  "board": "angelnu--lorawansensor",
+  "baseline": "industrial_telecom",
+  "types": [
+    "RF",
+    "SPI",
+    "CLOCK"
+  ],
+  "source": "docs/proposals/criteria-top50-examples-2026-11-02.md",
+  "scope": "50条逐条核对；NA按本图对象/应用范围判断，不把缺BOM或缺资料当不适用。两miss均为计划覆盖缺口，不计为实板缺陷。",
+  "counts": {
+    "NA": 34,
+    "needs_human": 10,
+    "miss_coverage_needs_human": 2,
+    "needs_human_conditional": 3,
+    "PASS_topology_only": 1
+  },
+  "items": [
+    {
+      "number": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "status": "NA",
+      "refs": [
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "唯一板内源为Battery_Cell BT1直连+3V3；无−48V端口/ETSI输入合同；不能因industrial_telecom自动套−48V试验。",
+      "attribution": ""
+    },
+    {
+      "number": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "status": "NA",
+      "refs": [
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "唯一板内源为Battery_Cell BT1直连+3V3；无−48V端口/ETSI输入合同；不能因industrial_telecom自动套−48V试验。",
+      "attribution": ""
+    },
+    {
+      "number": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "status": "NA",
+      "refs": [
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "唯一板内源为Battery_Cell BT1直连+3V3；无−48V端口/ETSI输入合同；不能因industrial_telecom自动套−48V试验。",
+      "attribution": ""
+    },
+    {
+      "number": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "status": "NA",
+      "refs": [
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "唯一板内源为Battery_Cell BT1直连+3V3；无−48V端口/ETSI输入合同；不能因industrial_telecom自动套−48V试验。",
+      "attribution": ""
+    },
+    {
+      "number": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "status": "NA",
+      "refs": [
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "唯一板内源为Battery_Cell BT1直连+3V3；无−48V端口/ETSI输入合同；不能因industrial_telecom自动套−48V试验。",
+      "attribution": ""
+    },
+    {
+      "number": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "status": "NA",
+      "refs": [
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "唯一板内源为Battery_Cell BT1直连+3V3；无−48V端口/ETSI输入合同；不能因industrial_telecom自动套−48V试验。",
+      "attribution": ""
+    },
+    {
+      "number": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "status": "NA",
+      "refs": [
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "无交流市电输入/整流级；单节电池供电，不触发交流跌落周期条件。",
+      "attribution": ""
+    },
+    {
+      "number": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "status": "NA",
+      "refs": [
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "无交流市电输入/整流级；单节电池供电，不触发交流跌落周期条件。",
+      "attribution": ""
+    },
+    {
+      "number": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "status": "NA",
+      "refs": [
+        "J1",
+        "J2",
+        "J3"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "三组均为普通排针；无USB连接器、VBUS、CC、D+/D−，没有USB供电/协商声明。",
+      "attribution": ""
+    },
+    {
+      "number": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "status": "NA",
+      "refs": [
+        "J1",
+        "J2",
+        "J3"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "三组均为普通排针；无USB连接器、VBUS、CC、D+/D−，没有USB供电/协商声明。",
+      "attribution": ""
+    },
+    {
+      "number": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "status": "NA",
+      "refs": [
+        "J1",
+        "J2",
+        "J3"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "三组均为普通排针；无USB连接器、VBUS、CC、D+/D−，没有USB供电/协商声明。",
+      "attribution": ""
+    },
+    {
+      "number": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "status": "NA",
+      "refs": [
+        "J1",
+        "J2",
+        "J3"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "三组均为普通排针；无USB连接器、VBUS、CC、D+/D−，没有USB供电/协商声明。",
+      "attribution": ""
+    },
+    {
+      "number": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "status": "NA",
+      "refs": [
+        "J1",
+        "J2",
+        "J3"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "三组均为普通排针；无USB连接器、VBUS、CC、D+/D−，没有USB供电/协商声明。",
+      "attribution": ""
+    },
+    {
+      "number": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "status": "NA",
+      "refs": [
+        "BT1",
+        "FB1"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA"
+      ],
+      "evidence": "BT1直供；FB1只是串联磁珠，无LDO或DC/DC控制器，不套稳定性/输出ESR窗口。",
+      "attribution": ""
+    },
+    {
+      "number": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "status": "NA",
+      "refs": [
+        "BT1",
+        "FB1"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA"
+      ],
+      "evidence": "BT1直供；FB1只是串联磁珠，无LDO或DC/DC控制器，不套稳定性/输出ESR窗口。",
+      "attribution": ""
+    },
+    {
+      "number": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "NA",
+      "refs": [
+        "BT1"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "evidence": "无通路MOSFET/热插拔器件，不存在MOSFET启动SOA计算对象。",
+      "attribution": ""
+    },
+    {
+      "number": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "status": "NA",
+      "refs": [
+        "BT1",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA"
+      ],
+      "evidence": "没有变换器UVLO/限流/软启动级；电池跌落和MCU复位属于第20条，不能以不存在的UVLO参数计算。",
+      "attribution": ""
+    },
+    {
+      "number": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "status": "NA",
+      "refs": [
+        "BT1",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA"
+      ],
+      "evidence": "没有变换器UVLO/限流/软启动级；电池跌落和MCU复位属于第20条，不能以不存在的UVLO参数计算。",
+      "attribution": ""
+    },
+    {
+      "number": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "status": "NA",
+      "refs": [
+        "BT1",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA"
+      ],
+      "evidence": "没有变换器UVLO/限流/软启动级；电池跌落和MCU复位属于第20条，不能以不存在的UVLO参数计算。",
+      "attribution": ""
+    },
+    {
+      "number": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "status": "needs_human",
+      "refs": [
+        "U1",
+        "U2",
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA",
+        "RESET"
+      ],
+      "evidence": "已生成PWR-T04.SCHEMATIC-DEFAULT.SUPERVISION-RAILS和RST-T03；电池电压爬升/跌落、U1 BOR配置及保证门限、U2复位条件未闭合。电源符号+3V3不是保证窗口。",
+      "attribution": "F27/F28/F35"
+    },
+    {
+      "number": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "status": "needs_human",
+      "refs": [
+        "U1",
+        "U2",
+        "FB1"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA",
+        "RESET"
+      ],
+      "evidence": "共源+3V3经FB1到VDDA；无独立时序控制器，但RESET与VDDA滤波在慢爬升的关系须按器件约束核。已有RST-T03，不另报相同漏项。",
+      "attribution": "F35"
+    },
+    {
+      "number": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "status": "NA",
+      "refs": [
+        "BT1",
+        "FB1"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA"
+      ],
+      "evidence": "无稳压器输出→输入反向通路；J1/J2外接电源并接风险仍由PRO-D04承接，不以本条NA关闭。",
+      "attribution": ""
+    },
+    {
+      "number": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "status": "NA",
+      "refs": [
+        "C1",
+        "C2",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "C9",
+        "C10"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA",
+        "GND"
+      ],
+      "evidence": "原生均Device:C非极性电容，未出现电解/钽/串联极性电容组；普通电容耐压/有效容量已有DEV-C01/PWR-C09，并未由本NA豁免。",
+      "attribution": ""
+    },
+    {
+      "number": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "status": "NA",
+      "refs": [
+        "C1",
+        "C2",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "C9",
+        "C10"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA",
+        "GND"
+      ],
+      "evidence": "原生均Device:C非极性电容，未出现电解/钽/串联极性电容组；普通电容耐压/有效容量已有DEV-C01/PWR-C09，并未由本NA豁免。",
+      "attribution": ""
+    },
+    {
+      "number": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "status": "NA",
+      "refs": [
+        "C1",
+        "C2",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "C9",
+        "C10"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA",
+        "GND"
+      ],
+      "evidence": "原生均Device:C非极性电容，未出现电解/钽/串联极性电容组；普通电容耐压/有效容量已有DEV-C01/PWR-C09，并未由本NA豁免。",
+      "attribution": ""
+    },
+    {
+      "number": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "status": "needs_human",
+      "refs": [
+        "J1",
+        "J2",
+        "J3",
+        "U1"
+      ],
+      "nets": [
+        "RX",
+        "TX",
+        "SWDIO",
+        "SWCLK",
+        "A0",
+        "A1",
+        "A8",
+        "A9",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "A15"
+      ],
+      "evidence": "PRO-D04逐J1/J2/J3已有；外部源角色/电压窗/外部先供电及故障域未知，不能确认输入绝限或反灌违反。内部U1/U2同一+3V3误生的SIG-C08已逐项撤回，但外部风险仍开放。",
+      "attribution": "F18–26/F31–33"
+    },
+    {
+      "number": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "status": "needs_human",
+      "refs": [
+        "J1",
+        "J2",
+        "J3",
+        "U1"
+      ],
+      "nets": [
+        "RX",
+        "TX",
+        "SWDIO",
+        "SWCLK",
+        "A0",
+        "A1",
+        "A8",
+        "A9",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "A15"
+      ],
+      "evidence": "PRO-D04逐J1/J2/J3已有；外部源角色/电压窗/外部先供电及故障域未知，不能确认输入绝限或反灌违反。内部U1/U2同一+3V3误生的SIG-C08已逐项撤回，但外部风险仍开放。",
+      "attribution": "F18–26/F31–33"
+    },
+    {
+      "number": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "status": "needs_human",
+      "refs": [
+        "J1",
+        "J2",
+        "J3",
+        "U1"
+      ],
+      "nets": [
+        "RX",
+        "TX",
+        "SWDIO",
+        "SWCLK",
+        "A0",
+        "A1",
+        "A8",
+        "A9",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "A15"
+      ],
+      "evidence": "PRO-D04逐J1/J2/J3已有；外部源角色/电压窗/外部先供电及故障域未知，不能确认输入绝限或反灌违反。内部U1/U2同一+3V3误生的SIG-C08已逐项撤回，但外部风险仍开放。",
+      "attribution": "F18–26/F31–33"
+    },
+    {
+      "number": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "status": "miss_coverage_needs_human",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "NSS",
+        "RESET"
+      ],
+      "evidence": "U1.10→U2.5 NSS、U1.14→U2.6 RESET，均无外偏置；RST-T04未展开。缺默认态/内部偏置保证不等于已证实故障。",
+      "attribution": "M02"
+    },
+    {
+      "number": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "status": "needs_human_conditional",
+      "refs": [
+        "U1",
+        "J2",
+        "RB6",
+        "RB7"
+      ],
+      "nets": [
+        "B6",
+        "B7",
+        "+3V3"
+      ],
+      "evidence": "README有外部距离传感器变体线索，但固定网表只表达GPIO与PU阻值。若实际装配把B6/B7作I2C，才核总线电容、速率、Rp上下限；六PU的具体装配未定。当前不将GPIO或可能0R/10M都强认I2C，已有REQ-Q08及DOC-D01缺口。",
+      "attribution": "F30/F39"
+    },
+    {
+      "number": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "status": "needs_human_conditional",
+      "refs": [
+        "U1",
+        "J2",
+        "RB6",
+        "RB7"
+      ],
+      "nets": [
+        "B6",
+        "B7",
+        "+3V3"
+      ],
+      "evidence": "README有外部距离传感器变体线索，但固定网表只表达GPIO与PU阻值。若实际装配把B6/B7作I2C，才核总线电容、速率、Rp上下限；六PU的具体装配未定。当前不将GPIO或可能0R/10M都强认I2C，已有REQ-Q08及DOC-D01缺口。",
+      "attribution": "F30/F39"
+    },
+    {
+      "number": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "status": "NA",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "MOSI",
+        "MISO",
+        "SCK",
+        "NSS"
+      ],
+      "evidence": "无CAN收发器/CANH/CANL，不能用60Ω端接判SPI。",
+      "attribution": ""
+    },
+    {
+      "number": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "status": "NA",
+      "refs": [
+        "BT1",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "evidence": "没有隔离器/独立隔离电源/隔离地，GND共地符合本板非隔离结构。",
+      "attribution": ""
+    },
+    {
+      "number": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "status": "NA",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "evidence": "无运放及其输入共模预算对象。",
+      "attribution": ""
+    },
+    {
+      "number": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "status": "needs_human_conditional",
+      "refs": [
+        "U1",
+        "J3"
+      ],
+      "nets": [
+        "A0",
+        "A1"
+      ],
+      "evidence": "J3引出PA0/PA1等GPIO，其中有ADC复用能力不等于本版声明ADC测量链。若接模拟传感器，须先给量程/源阻抗/采样模式；端口输入范围已有PRO-D04/SIG-D13承接，不虚构ADC漏报。",
+      "attribution": "F33/F36"
+    },
+    {
+      "number": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "status": "needs_human",
+      "refs": [
+        "Y1",
+        "C1",
+        "C2"
+      ],
+      "nets": [
+        "Net-(U1-PC14)",
+        "Net-(U1-PC15)"
+      ],
+      "evidence": "10pF与10pF串联等效5pF，CL=5pF+Cstray。NDK p1可选6/9/12.5pF；缺准确规格号与寄生，不能断言电容取值错误。已由CLK-C01覆盖。",
+      "attribution": "F29"
+    },
+    {
+      "number": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "status": "needs_human",
+      "refs": [
+        "Y1",
+        "U1",
+        "C1",
+        "C2"
+      ],
+      "nets": [
+        "Net-(U1-PC14)",
+        "Net-(U1-PC15)"
+      ],
+      "evidence": "NDK p1 ESR按系列为70kΩ或80kΩ上界，drive最大0.5µW；准确后缀/MCU LSE增益及配置温度未知。CLK-C01已有，不能由“有晶体”判起振。",
+      "attribution": "F29/F28"
+    },
+    {
+      "number": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "status": "PASS_topology_only",
+      "refs": [
+        "Y1",
+        "U1",
+        "C1",
+        "C2"
+      ],
+      "nets": [
+        "Net-(U1-PC14)",
+        "Net-(U1-PC15)"
+      ],
+      "evidence": "逐节点Y1.1→U1.3 PC15+C1.1、Y1.2→U1.2 PC14+C2.1；两网只含一颗IC U1，无并接第二振荡器。只判一晶体一器件的拓扑，不代表CL/增益合格。",
+      "attribution": ""
+    },
+    {
+      "number": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "status": "miss_coverage_needs_human",
+      "refs": [
+        "BT1",
+        "J1",
+        "J2"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "BT1.1直达J1.1/J2.1，无源侧保护；原计划无PRO-C04。外接针角色和上游保护合同未给，记录检查覆盖漏项，不直接判电池板必须加保险丝。",
+      "attribution": "M01"
+    },
+    {
+      "number": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "status": "needs_human",
+      "refs": [
+        "BT1",
+        "J1",
+        "J2"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "无板内OCP动作点；电池/系统可供故障电流、触点额定及外部线缆未知，不能计算保护协调或判超额定。M01应展开；现有DEV-C04/PRO-D04保持缺口。",
+      "attribution": "M01/F27/F31/F32"
+    },
+    {
+      "number": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "status": "needs_human",
+      "refs": [
+        "BT1",
+        "J1",
+        "J2"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "无板内保护器件动作保证或系统上游保护合同；故障源、线缆耐受、保护边界未给。不能用“未画保险丝”代替动作时间违反的证明。",
+      "attribution": "M01/F27/F31/F32"
+    },
+    {
+      "number": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "status": "NA",
+      "refs": [],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "全35器件无TVS/齐纳/钳位器件；不生成某TVS的VRWM/VC/浪涌/位置失败。接口是否需保护另由PRO-D04、M01定界。",
+      "attribution": ""
+    },
+    {
+      "number": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "status": "NA",
+      "refs": [],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "全35器件无TVS/齐纳/钳位器件；不生成某TVS的VRWM/VC/浪涌/位置失败。接口是否需保护另由PRO-D04、M01定界。",
+      "attribution": ""
+    },
+    {
+      "number": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "status": "NA",
+      "refs": [],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "全35器件无TVS/齐纳/钳位器件；不生成某TVS的VRWM/VC/浪涌/位置失败。接口是否需保护另由PRO-D04、M01定界。",
+      "attribution": ""
+    },
+    {
+      "number": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "status": "NA",
+      "refs": [],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "全35器件无TVS/齐纳/钳位器件；不生成某TVS的VRWM/VC/浪涌/位置失败。接口是否需保护另由PRO-D04、M01定界。",
+      "attribution": ""
+    },
+    {
+      "number": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "NA",
+      "refs": [],
+      "nets": [
+        "+3V3"
+      ],
+      "evidence": "全35器件无通路/防反MOSFET，不生成MOSFET短路SOA或体二极管方向错误。",
+      "attribution": ""
+    },
+    {
+      "number": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "status": "NA",
+      "refs": [],
+      "nets": [
+        "+3V3"
+      ],
+      "evidence": "全35器件无通路/防反MOSFET，不生成MOSFET短路SOA或体二极管方向错误。",
+      "attribution": ""
+    },
+    {
+      "number": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "status": "NA",
+      "refs": [],
+      "nets": [
+        "+3V3"
+      ],
+      "evidence": "全35器件无通路/防反MOSFET，不生成MOSFET短路SOA或体二极管方向错误。",
+      "attribution": ""
+    },
+    {
+      "number": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "status": "NA",
+      "refs": [],
+      "nets": [
+        "+3V3"
+      ],
+      "evidence": "无熔断器，不能核某只F的分断能力；是否需要保护由M01承接。",
+      "attribution": ""
+    },
+    {
+      "number": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "status": "needs_human",
+      "refs": [
+        "BT1",
+        "J1",
+        "J2"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "evidence": "BT1电池接入及J1/J2外接电源的可达性、机械防反/对端极性/外部供电角色未给；没有板内防反器件本身不是已证实违反。PRO-D04已有覆盖。",
+      "attribution": "F27/F31/F32"
+    }
+  ]
+}

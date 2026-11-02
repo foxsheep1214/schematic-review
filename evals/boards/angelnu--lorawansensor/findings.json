@@ -1,0 +1,2048 @@
+{
+  "board": "angelnu--lorawansensor",
+  "source": {
+    "repo": "angelnu/LorawanSensor",
+    "commit": "333d283c6be5dca27425b8ab5e4768c4795e1b8f",
+    "schematic": "devices/GenericSensor/KiCad/GenericSensor_v2.kicad_sch",
+    "license": "MIT"
+  },
+  "types": [
+    "RF",
+    "SPI",
+    "CLOCK"
+  ],
+  "run": {
+    "db_sha256": "9ed2c4bf0542f238137191546cf0c805bd225245d40ac9a9433a99c2fe1a8a18",
+    "plan_items": 134,
+    "findings_total": 39,
+    "results_judged": 36,
+    "gate": "FAIL",
+    "sr_commit": "7d1c11c4fd118524108a7389eccf470b583de36e",
+    "native_results": {
+      "NA": 15,
+      "INSUFFICIENT": 98,
+      "PASS": 21
+    },
+    "native_confirmed_defects": 0,
+    "review_incomplete": 98,
+    "renderer_exit": 2,
+    "formal_report_generated": false,
+    "counting_note": "39条为本轮逐对象/根因归因记录，含2个被拒候选；冷扫NET-A01原生候选仅3条。36项已判含3条REQ-Q07覆盖记录，不代表3类电路电气合格。"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "REQ-Q08",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "J1",
+        "JPC0",
+        "JPC3"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "sr_text": "POWER_PROTECTION-J1：输入保护候选",
+      "verdict": "false_alarm",
+      "evidence": "源图p1：J1.1与BT1.1、U1.1/.17、U2.13同属+3V3。JPC0/JPC3原生符号Jumper:SolderJumper_2_Bridged是偏置选择铜桥；JPO0/JPO3是开路铜桥。图上没有整流桥/保险丝/TVS。PROTECTIVE_RE的BRIDGE子串误中Bridged，拒绝候选不表示支路已受保护。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:PROTECTIVE_RE,input_walk",
+        "what": "保护件词匹配必须有器件类型/词边界，排除SolderJumper/Bridged；按实际kind识别整流桥。此板两候选应不生成，真正无保护支路另由PRO-C04审查。"
+      },
+      "seed": null,
+      "check_ids": [],
+      "sr_texts": [],
+      "sr_rules": [
+        "REQ-Q08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F02",
+      "sr_rule": "REQ-Q08",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "J2",
+        "JPC0",
+        "JPC3"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "sr_text": "POWER_PROTECTION-J2：输入保护候选",
+      "verdict": "false_alarm",
+      "evidence": "源图p1：J2.1与BT1.1、U1.1/.17、U2.13同属+3V3。JPC0/JPC3原生符号Jumper:SolderJumper_2_Bridged是偏置选择铜桥；JPO0/JPO3是开路铜桥。图上没有整流桥/保险丝/TVS。PROTECTIVE_RE的BRIDGE子串误中Bridged，拒绝候选不表示支路已受保护。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:PROTECTIVE_RE,input_walk",
+        "what": "保护件词匹配必须有器件类型/词边界，排除SolderJumper/Bridged；按实际kind识别整流桥。此板两候选应不生成，真正无保护支路另由PRO-C04审查。"
+      },
+      "seed": null,
+      "check_ids": [],
+      "sr_texts": [],
+      "sr_rules": [
+        "REQ-Q08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F03",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-DIO4-Pad12)"
+      ],
+      "sr_text": "unconnected-(U2-DIO4-Pad12) <- U2.12 (RFM95W-868S2，脚名 DIO4) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "U2.12=DIO4，本网络仅此节点，原生no_connect_nodes为空，图面p1也没有NC叉。HopeRF V2.0 p11 Table2将其定义为软件可配置DIO；p42 Table17及p65 Tables28/29给出事件/时钟映射，输出未使用时开路在电气上可行。缺实际用途/允许模式，不能把无NC直接升级为浮空输入电气缺陷，也不能撤回真实的图纸意图确认。确认未用后按输出模式约束并补NC；需要事件则补连线。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.UNCONNECTED-3677ce"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "NET-A01.UNCONNECTED-3677ce",
+          "text": "单节点悬空网：unconnected-(U2-DIO4-Pad12) <- U2.12 (RFM95W-868S2，脚名 DIO4) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核"
+        }
+      ],
+      "sr_rules": [
+        "NET-A01"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F04",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-DIO5-Pad7)"
+      ],
+      "sr_text": "unconnected-(U2-DIO5-Pad7) <- U2.7 (RFM95W-868S2，脚名 DIO5) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "U2.7=DIO5，本网络仅此节点，原生no_connect_nodes为空，图面p1也没有NC叉。HopeRF V2.0 p11 Table2将其定义为软件可配置DIO；p42 Table17及p65 Tables28/29给出事件/时钟映射，输出未使用时开路在电气上可行。缺实际用途/允许模式，不能把无NC直接升级为浮空输入电气缺陷，也不能撤回真实的图纸意图确认。确认未用后按输出模式约束并补NC；需要事件则补连线。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.UNCONNECTED-b159c3"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "NET-A01.UNCONNECTED-b159c3",
+          "text": "单节点悬空网：unconnected-(U2-DIO5-Pad7) <- U2.7 (RFM95W-868S2，脚名 DIO5) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核"
+        }
+      ],
+      "sr_rules": [
+        "NET-A01"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F05",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-DIO3-Pad11)"
+      ],
+      "sr_text": "unconnected-(U2-DIO3-Pad11) <- U2.11 (RFM95W-868S2，脚名 DIO3) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "U2.11=DIO3，本网络仅此节点，原生no_connect_nodes为空，图面p1也没有NC叉。HopeRF V2.0 p11 Table2将其定义为软件可配置DIO；p42 Table17及p65 Tables28/29给出事件/时钟映射，输出未使用时开路在电气上可行。缺实际用途/允许模式，不能把无NC直接升级为浮空输入电气缺陷，也不能撤回真实的图纸意图确认。确认未用后按输出模式约束并补NC；需要事件则补连线。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.UNCONNECTED-ce878c"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "NET-A01.UNCONNECTED-ce878c",
+          "text": "单节点悬空网：unconnected-(U2-DIO3-Pad11) <- U2.11 (RFM95W-868S2，脚名 DIO3) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核"
+        }
+      ],
+      "sr_rules": [
+        "NET-A01"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F06",
+      "sr_rule": "CLK-D01",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "C1"
+      ],
+      "nets": [],
+      "sr_text": "CLK-D01.LSE-RUN.C1：有源时钟输出幅度/电源域、使能态和上电有效时间",
+      "verdict": "false_alarm",
+      "evidence": "Y1为Device:Crystal二端无源晶体，C1/C2各10pF对GND，Y1两端只到U1.2/.3。没有有源振荡器VDD/OE/CMOS输出。应只保留CLK-C01/CLK-D03；不能要求无源晶体的有源时钟输出和使能条件。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:plan_subjects",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：Y1为Device:Crystal二端无源晶体，C1/C2各10pF对GND，Y1两端只到U1.2/.3。没有有源振荡器VDD/OE/CMOS输出。应只保留CLK-C01/CLK-D03；不能要求无源晶体的有源时钟输出和使能条件。"
+      },
+      "seed": null,
+      "check_ids": [
+        "CLK-D01.LSE-RUN.C1"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "CLK-D01.LSE-RUN.C1",
+          "text": "有源时钟输出幅度/电源域、使能态和上电有效时间"
+        }
+      ],
+      "sr_rules": [
+        "CLK-D01"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F07",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "JPC0"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.JPC0：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "JPC0为PCB铜桥，原生Jumper:SolderJumper_2_Bridged；两端为JPC0.1/.2，铜桥开合已由intent.assemblies声明。没有需要采购的器件MPN或原厂脚表，应核铜桥几何/装配状态而非official full pinout + exact MPN/package。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：JPC0为PCB铜桥，原生Jumper:SolderJumper_2_Bridged；两端为JPC0.1/.2，铜桥开合已由intent.assemblies声明。没有需要采购的器件MPN或原厂脚表，应核铜桥几何/装配状态而非official full pinout + exact MPN/package。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.JPC0"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.JPC0",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F08",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "JPC3"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.JPC3：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "JPC3为PCB铜桥，原生Jumper:SolderJumper_2_Bridged；两端为JPC3.1/.2，铜桥开合已由intent.assemblies声明。没有需要采购的器件MPN或原厂脚表，应核铜桥几何/装配状态而非official full pinout + exact MPN/package。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：JPC3为PCB铜桥，原生Jumper:SolderJumper_2_Bridged；两端为JPC3.1/.2，铜桥开合已由intent.assemblies声明。没有需要采购的器件MPN或原厂脚表，应核铜桥几何/装配状态而非official full pinout + exact MPN/package。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.JPC3"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.JPC3",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F09",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "JPO0"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.JPO0：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "JPO0为PCB铜桥，原生Jumper:SolderJumper_2_Open；两端为JPO0.1/.2，铜桥开合已由intent.assemblies声明。没有需要采购的器件MPN或原厂脚表，应核铜桥几何/装配状态而非official full pinout + exact MPN/package。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：JPO0为PCB铜桥，原生Jumper:SolderJumper_2_Open；两端为JPO0.1/.2，铜桥开合已由intent.assemblies声明。没有需要采购的器件MPN或原厂脚表，应核铜桥几何/装配状态而非official full pinout + exact MPN/package。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.JPO0"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.JPO0",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F10",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "JPO3"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.JPO3：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "JPO3为PCB铜桥，原生Jumper:SolderJumper_2_Open；两端为JPO3.1/.2，铜桥开合已由intent.assemblies声明。没有需要采购的器件MPN或原厂脚表，应核铜桥几何/装配状态而非official full pinout + exact MPN/package。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：JPO3为PCB铜桥，原生Jumper:SolderJumper_2_Open；两端为JPO3.1/.2，铜桥开合已由intent.assemblies声明。没有需要采购的器件MPN或原厂脚表，应核铜桥几何/装配状态而非official full pinout + exact MPN/package。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.JPO3"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.JPO3",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F11",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "RA15"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.RA15：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "RA15原生prim=Device:R，两个物理端RA15.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package; scripts/board_intent.py:classified_kinds",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：RA15原生prim=Device:R，两个物理端RA15.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.RA15"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.RA15",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F12",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "RB3"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.RB3：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "RB3原生prim=Device:R，两个物理端RB3.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package; scripts/board_intent.py:classified_kinds",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：RB3原生prim=Device:R，两个物理端RB3.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.RB3"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.RB3",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F13",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "RB4"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.RB4：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "RB4原生prim=Device:R，两个物理端RB4.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package; scripts/board_intent.py:classified_kinds",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：RB4原生prim=Device:R，两个物理端RB4.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.RB4"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.RB4",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F14",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "RB5"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.RB5：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "RB5原生prim=Device:R，两个物理端RB5.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package; scripts/board_intent.py:classified_kinds",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：RB5原生prim=Device:R，两个物理端RB5.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.RB5"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.RB5",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F15",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "RB6"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.RB6：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "RB6原生prim=Device:R，两个物理端RB6.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package; scripts/board_intent.py:classified_kinds",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：RB6原生prim=Device:R，两个物理端RB6.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.RB6"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.RB6",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F16",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "非电气缺陷",
+      "refs": [
+        "RB7"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D02.RB7：官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图",
+      "verdict": "false_alarm",
+      "evidence": "RB7原生prim=Device:R，两个物理端RB7.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage,_two_terminal_package; scripts/board_intent.py:classified_kinds",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：RB7原生prim=Device:R，两个物理端RB7.1/.2；值PU未定义，必须补的是装配阻值，而不是向原厂索取两端电阻完整脚表。intent已按原生符号归为resistor，board_intent.classified_kinds明确不改变分析，计划仍把它当unknown。类别/阻值/脚表应分开：撤回专用脚表依赖，保留PU装配值待确认。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.RB7"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.RB7",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F17",
+      "sr_rule": "SIG-C07",
+      "criteria": [
+        "G02-023",
+        "G04-003",
+        "G04-004",
+        "G04-016"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "Y1",
+        "C1",
+        "C2",
+        "U1"
+      ],
+      "nets": [
+        "Net-(U1-PC14)",
+        "Net-(U1-PC15)"
+      ],
+      "sr_text": "SIG-C07.IF-LSE-SPI-MCU：先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U1-PC14)/Net-(U1-PC15)为U1.2/.3的无源晶体振荡模拟回路，各仅连接C2/Y1或C1/Y1；不是两个数字收发端的VOH/VIL接口。CL、ESR及起振由CLK-C01核，SIG-C07不得套数字逻辑电平保证。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:derive,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：Net-(U1-PC14)/Net-(U1-PC15)为U1.2/.3的无源晶体振荡模拟回路，各仅连接C2/Y1或C1/Y1；不是两个数字收发端的VOH/VIL接口。CL、ESR及起振由CLK-C01核，SIG-C07不得套数字逻辑电平保证。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C07.IF-LSE-SPI-MCU"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C07.IF-LSE-SPI-MCU",
+          "text": "先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C07"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F18",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "sr_text": "SIG-C08.IF-RADIO-SPI-MCU.3V3：逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍",
+      "verdict": "false_alarm",
+      "evidence": "+3V3所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:power_node,cross_supply,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：+3V3所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.IF-RADIO-SPI-MCU.3V3"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C08.IF-RADIO-SPI-MCU.3V3",
+          "text": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F19",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "DIO0"
+      ],
+      "sr_text": "SIG-C08.IF-RADIO-SPI-MCU.DIO0：逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍",
+      "verdict": "false_alarm",
+      "evidence": "DIO0所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:power_node,cross_supply,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：DIO0所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.IF-RADIO-SPI-MCU.DIO0"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C08.IF-RADIO-SPI-MCU.DIO0",
+          "text": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F20",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "DIO1"
+      ],
+      "sr_text": "SIG-C08.IF-RADIO-SPI-MCU.DIO1：逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍",
+      "verdict": "false_alarm",
+      "evidence": "DIO1所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:power_node,cross_supply,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：DIO1所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.IF-RADIO-SPI-MCU.DIO1"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C08.IF-RADIO-SPI-MCU.DIO1",
+          "text": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F21",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "DIO2"
+      ],
+      "sr_text": "SIG-C08.IF-RADIO-SPI-MCU.DIO2：逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍",
+      "verdict": "false_alarm",
+      "evidence": "DIO2所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:power_node,cross_supply,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：DIO2所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.IF-RADIO-SPI-MCU.DIO2"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C08.IF-RADIO-SPI-MCU.DIO2",
+          "text": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F22",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "MISO"
+      ],
+      "sr_text": "SIG-C08.IF-RADIO-SPI-MCU.MISO：逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍",
+      "verdict": "false_alarm",
+      "evidence": "MISO所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:power_node,cross_supply,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：MISO所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.IF-RADIO-SPI-MCU.MISO"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C08.IF-RADIO-SPI-MCU.MISO",
+          "text": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F23",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "MOSI"
+      ],
+      "sr_text": "SIG-C08.IF-RADIO-SPI-MCU.MOSI：逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍",
+      "verdict": "false_alarm",
+      "evidence": "MOSI所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:power_node,cross_supply,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：MOSI所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.IF-RADIO-SPI-MCU.MOSI"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C08.IF-RADIO-SPI-MCU.MOSI",
+          "text": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F24",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "NSS"
+      ],
+      "sr_text": "SIG-C08.IF-RADIO-SPI-MCU.NSS：逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍",
+      "verdict": "false_alarm",
+      "evidence": "NSS所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:power_node,cross_supply,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：NSS所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.IF-RADIO-SPI-MCU.NSS"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C08.IF-RADIO-SPI-MCU.NSS",
+          "text": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F25",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "RESET"
+      ],
+      "sr_text": "SIG-C08.IF-RADIO-SPI-MCU.RESET：逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍",
+      "verdict": "false_alarm",
+      "evidence": "RESET所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:power_node,cross_supply,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：RESET所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.IF-RADIO-SPI-MCU.RESET"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C08.IF-RADIO-SPI-MCU.RESET",
+          "text": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F26",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "非电气缺陷",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "SCK"
+      ],
+      "sr_text": "SIG-C08.IF-RADIO-SPI-MCU.SCK：逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍",
+      "verdict": "false_alarm",
+      "evidence": "SCK所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:power_node,cross_supply,plan_interfaces",
+        "what": "按原生器件身份、真实电气路径及适用机制生成对象；不把未知身份当成肯定的跨域/有源时钟证据。依据：SCK所在U1/U2接口的U1.1/.17与U2.13均直接接同一+3V3，BT1.1为共同源，U1.16/.32与U2.1/.8/.10共GND，没有独立供电开关。+3V3本身是供电网而非信号，其他DIO/SPI/RESET线也未连接外部端口。此内部接口不构成逐域独立掉电候选；U1官方脚表未绑定时应列供电身份缺口，不能把unknown当已证实cross_supply。外部J1/J2/J3的带电/反灌风险仍在PRO-D04审查，不一概撤回。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.IF-RADIO-SPI-MCU.SCK"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C08.IF-RADIO-SPI-MCU.SCK",
+          "text": "逐域掉电和外部设备先上电时核 Ioff、输入耐压与注入电流限值，找出经上拉、ESD 结构或保护二极管的反灌路径；跨轨上拉先列候选，再核掉电容忍"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F27",
+      "sr_rule": "PWR-D04",
+      "criteria": [
+        "G01-017"
+      ],
+      "severity": "未定",
+      "refs": [
+        "BT1",
+        "U1",
+        "U2",
+        "FB1"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA",
+        "GND"
+      ],
+      "sr_text": "BT1直供电源的工作窗口、源阻抗、负载与外部供电关系未定义",
+      "verdict": "needs_human",
+      "evidence": "BT1.1直接供+3V3；+3V3→FB1.2/.1→VDDA→U1.5。没有稳压器，+3V3网名不证明3.3V稳压。README只给CR123用途线索，原图BT1仅Battery_Cell，无准确电池型号/全寿命电压/源阻抗/并接充电器策略。U2手册V2.0 p12工作1.8–3.7V，p79–80的+20dBm条件另有范围；缺发射功率/负载/温度合同。1.3uF主轨和1.1uF VDDA仅为标称连接统计。不能据此确认低电池发射跌落或损坏。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C05.U1",
+        "DEV-C05.U2",
+        "PWR-C01.3V3",
+        "PWR-C01.VDDA",
+        "PWR-C19.BOARD",
+        "PWR-D04.BOARD"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-C05.U1",
+          "text": "逐颗核供电电压、输入电压、负载、频率及温度等级/参数保证条件覆盖声明工况；区分环境温度、壳温与结温，形成允许温度约束，实际结温实现转 HANDOFF；借用相似器件保证范围或典型±typical_band（G02 工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围"
+        },
+        {
+          "check_id": "DEV-C05.U2",
+          "text": "逐颗核供电电压、输入电压、负载、频率及温度等级/参数保证条件覆盖声明工况；区分环境温度、壳温与结温，形成允许温度约束，实际结温实现转 HANDOFF；借用相似器件保证范围或典型±typical_band（G02 工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围"
+        },
+        {
+          "check_id": "PWR-C01.3V3",
+          "text": "按最大负载、电压范围与器件能力验证功率预算和裕量；负载手册按工作模式列电流时取所列最重模式的最大值（只有典型值取典型×1.3）定界，需求声明超出所列模式的负载才另算，不向设计方索取逐模式或最高时钟预算；最坏峰值直接与手册保证额定比较，不另加余量（g03_budget_margin）；航天项目另覆盖全部任务阶段并留不少于 5% 的系统余量"
+        },
+        {
+          "check_id": "PWR-C01.VDDA",
+          "text": "按最大负载、电压范围与器件能力验证功率预算和裕量；负载手册按工作模式列电流时取所列最重模式的最大值（只有典型值取典型×1.3）定界，需求声明超出所列模式的负载才另算，不向设计方索取逐模式或最高时钟预算；最坏峰值直接与手册保证额定比较，不另加余量（g03_budget_margin）；航天项目另覆盖全部任务阶段并留不少于 5% 的系统余量"
+        },
+        {
+          "check_id": "PWR-C19.BOARD",
+          "text": "按最低输入电压、最大功耗与最低效率求每个对外电源输入的输入电流，不超过接口限值（如 −48 V 在 −40.5 V 下不大于 1.5 Im、USB 协商电流、PoE 分级功率）"
+        },
+        {
+          "check_id": "PWR-D04.BOARD",
+          "text": "每个电源输入接口的工况清单齐全：输入电压窗、瞬态（跌落、中断、浪涌）、源阻抗、上游保护与测量点；缺项记输入缺口"
+        }
+      ],
+      "sr_rules": [
+        "DEV-C05",
+        "PWR-C01",
+        "PWR-C19",
+        "PWR-D04"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F28",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA"
+      ],
+      "sr_text": "STM32L041K6Tx原厂资料尚未完成本地绑定",
+      "verdict": "knowledge_gap",
+      "evidence": "固定图U1=STM32L041K6Tx、LQFP32。HardwareWiki精确检索无STM32L041；有L010/L031资料但没有替代使用。ST官网DS10780 Rev6可经网页读取，p34 Fig5为LQFP32，p49–50为绝限；CLI三次官方入口下载超时/HTTP2错误，未取得可审计本地PDF。资料审计U1仍MISSING、角色未核验。不得假装已完成完整逐脚、温度/门限/电气保证条件审查。来源https://www.st.com/resource/en/datasheet/stm32l041k6.pdf。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D01.U1",
+        "DEV-D02.U1",
+        "DEV-D05.U1",
+        "PWR-C09.DECAP-78819B24D2B3017BF7AC.VDDA",
+        "PWR-C09.DECAP-E31DB6860A2E6C2A3903.3V3",
+        "PWR-C10.DECAP-78819B24D2B3017BF7AC.VDDA",
+        "PWR-C10.DECAP-E31DB6860A2E6C2A3903.3V3",
+        "PWR-D01.DECOUPLING-INVENTORY",
+        "PWR-D02.DECAP-78819B24D2B3017BF7AC.VDDA",
+        "PWR-D02.DECAP-E31DB6860A2E6C2A3903.3V3",
+        "PWR-T03.DECAP-78819B24D2B3017BF7AC.VDDA",
+        "PWR-T03.DECAP-E31DB6860A2E6C2A3903.3V3"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D01.U1",
+          "text": "核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突"
+        },
+        {
+          "check_id": "DEV-D02.U1",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        },
+        {
+          "check_id": "DEV-D05.U1",
+          "text": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+        },
+        {
+          "check_id": "PWR-C09.DECAP-78819B24D2B3017BF7AC.VDDA",
+          "text": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量"
+        },
+        {
+          "check_id": "PWR-C09.DECAP-E31DB6860A2E6C2A3903.3V3",
+          "text": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量"
+        },
+        {
+          "check_id": "PWR-C10.DECAP-78819B24D2B3017BF7AC.VDDA",
+          "text": "按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核"
+        },
+        {
+          "check_id": "PWR-C10.DECAP-E31DB6860A2E6C2A3903.3V3",
+          "text": "按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核"
+        },
+        {
+          "check_id": "PWR-D01.DECOUPLING-INVENTORY",
+          "text": "结合完整器件/官方物理脚清单核对供电脚与去耦分组覆盖；无名称命中不代表不适用"
+        },
+        {
+          "check_id": "PWR-D02.DECAP-78819B24D2B3017BF7AC.VDDA",
+          "text": "按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分"
+        },
+        {
+          "check_id": "PWR-D02.DECAP-E31DB6860A2E6C2A3903.3V3",
+          "text": "按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分"
+        },
+        {
+          "check_id": "PWR-T03.DECAP-78819B24D2B3017BF7AC.VDDA",
+          "text": "逐物理脚核对本状态分组、返回节点、直接连接电容和装配；保留零电容/不贴/未知项，不跨串联边界，不判断电气合格"
+        },
+        {
+          "check_id": "PWR-T03.DECAP-E31DB6860A2E6C2A3903.3V3",
+          "text": "逐物理脚核对本状态分组、返回节点、直接连接电容和装配；保留零电容/不贴/未知项，不跨串联边界，不判断电气合格"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D01",
+        "PWR-D02",
+        "PWR-T03"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F29",
+      "sr_rule": "CLK-C01",
+      "criteria": [
+        "G04-078",
+        "G04-079",
+        "G04-080",
+        "G04-081",
+        "G04-082",
+        "G04-083",
+        "G04-084",
+        "G04-085"
+      ],
+      "severity": "未定",
+      "refs": [
+        "Y1",
+        "C1",
+        "C2"
+      ],
+      "nets": [
+        "Net-(U1-PC14)",
+        "Net-(U1-PC15)"
+      ],
+      "sr_text": "Y1仅标32KHz/NX3215SA，准确CL/ESR后缀及起振工况未指定",
+      "verdict": "needs_human",
+      "evidence": "C1=C2=10pF，CL_ext=10*10/(10+10)=5pF，完整CL=5pF+Cstray。NDK原厂c_NX3215SA_e.pdf p1 Specifications/Ordering表列STD-MUA-14/-9/-8和STD-MUS-4/-3/-2，分别CL=6/9/12.5pF；ESR还随系列档位不同。网表只有datasheet字符串NX3215SA而非订货号，不能从系列名断言CL=12.5pF，也不把32KHz简写判成32.000kHz错误。全网确认只驱动U1一颗，未见共享晶体反例；CL和起振预算未闭合。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "CLK-C01.LSE-RUN.C1",
+        "CLK-D03.LSE-RUN.C1",
+        "DEV-C01.LSE",
+        "DEV-C02.LSE",
+        "SIG-C13.LSE.C1"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "CLK-C01.LSE-RUN.C1",
+          "text": "按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件，反馈电阻、串联电阻按 datasheet/参考设计取值；一颗晶振只驱动一个器件；计时用途的频率预算含负载电容牵引；上电时序留够起振时间；寄生及实测裕量转 HANDOFF"
+        },
+        {
+          "check_id": "CLK-D03.LSE-RUN.C1",
+          "text": "按实际 RTC 的时钟源、频率/负载要求及模式核晶体或外部时钟，不默认固定频率；备份电池/超级电容的充电电压/电流不超器件上限，反向电流符合器件要求"
+        },
+        {
+          "check_id": "DEV-C01.LSE",
+          "text": "受应力的电阻、电容、开关与稳压器逐颗核功耗、连续/脉冲电压、电流及适用温度条件下的额定值；本项核过应力（应力上界对额定）；IC 脚经外接电阻驱动内部开关或检测通路（放电、泄放、驱动、检测脚）时，按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 项以 split_out 拆出；供电或输入整个窗口确定低于推荐工作范围下限时，与 DEV-C05 同判 FAIL、共用 finding，理由引用 DEV-C05.<位号>；下限是否满足取决于未知压降或参数时，本检查项不因下限判 INSUFFICIENT，归 DEV-C05；连接器/排针/按键触点连续（有效值）电流与电压不超过 commodity-floors 微应力阈值（最低触点额定 × 本级降额值）时判 PASS(B)，信号边沿瞬态电流不计；连接器库名/封装名指向具体原厂系列或料号（如 JST_VH、MKDS、XT30UPB）时按该系列原厂触点额定定界，不超过该额定 × 本级 CONN-I 取值判 PASS(B)，“须采购该原厂系列”归 DEV-D04，不因无 MPN 记 INSUFFICIENT；泛称排针/间距不适用；先按用途和受控采购范围定界：有适用最弱档时，应力上界不超过最弱档 × 本级降额规范取值（等级未定按工程取值 unset_level）可判PASS；超过且仍可选到满足档位时写最低额定约束，不当作已满足；无适用范围不借用最弱档；计划已生成逐颗预判检查项（proposal）的器件按该检查项计算判定，改判只用其封闭理由码；陶瓷电容与功率电感优先按commodity-floors的独立可订购额定/BOM约束分支判断，满足该分支全部适用条件时可判局部PASS，采购字段仍由DEV-D04核对，不以普通最弱档路径重复阻断；降额按项目等级（intent.derating）取降额规范的值、按应力规范判：超额定 FAIL，超降额未超额定是应力风险（basis.derating_rule 点名规则，门禁按等级重算），等级没定时转需求澄清；电位器按实际分压/rheostat接法核活动轨段、滑臂与端点，不能把整轨功率额定用于任意局部轨段；按wca-formulas的适用模型全范围核轨电流、局部功耗及滑臂/脉冲限制，未选实际器件不借候选或通用最弱档放行；实际温升与散热实现转 HANDOFF，不以缺热测试判电气缺陷"
+        },
+        {
+          "check_id": "DEV-C02.LSE",
+          "text": "按电容实际用途核耐压与容量；仅当该用途的原厂条款或受控需求依赖有效容量/ESR时索取对应边界，不能给所有旁路、BOOT或SS电容统一加联合Ceff/ESR证明；电解、固态与超级电容的寿命按 intent.mission_profile 估算所需耐久等级（厂家寿命公式，没有就 10 °C 翻倍，都标估算），写成 bom_constraint“耐久 ≥ X h @T（估算，热点 ≤ Y °C）”，不开厂家数据缺口；热点温度与纹波自热移交热设计实测后复算"
+        },
+        {
+          "check_id": "SIG-C13.LSE.C1",
+          "text": "每个接口写明依据的规范版本与工作模式（决定上拉、电容和时序判据），接口预算表字段齐全、取两端保证值；缺对端资料记资料不足，不按常见器件假定"
+        }
+      ],
+      "sr_rules": [
+        "CLK-C01",
+        "CLK-D03",
+        "DEV-C01",
+        "DEV-C02",
+        "SIG-C13"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F30",
+      "sr_rule": "DOC-D01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "RA15",
+        "RB3",
+        "RB4",
+        "RB5",
+        "RB6",
+        "RB7",
+        "JPC0",
+        "JPC3",
+        "JPO0",
+        "JPO3"
+      ],
+      "nets": [
+        "Net-(JPC0-A)",
+        "Net-(JPC3-B)",
+        "A15",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7"
+      ],
+      "sr_text": "六只PU电阻及装配变体的具体值待确认",
+      "verdict": "needs_human",
+      "evidence": "六只原生Value都为PU，不是可解析阻值。默认JPC0闭合、JPO3断开：RA15/RB3公共端到GND；JPC3闭合、JPO0断开：RB4–RB7公共端到+3V3。README门磁例将前两只设0R、后四只10M，但其他传感用途不同，不将该例当全板BOM。未取得独立BOM，固定git树无独立BOM；battery_calculations.xlsx是电池寿命计算工作簿，未当作本版装配BOM。不能计算等效上拉、GPIO电流及低功耗；补特定装配表才可关。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D04.BOARD",
+        "DOC-D01.BOARD"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D04.BOARD",
+          "text": "实际实例采购字段、BOM 参数与原厂 MPN 订货组合一致，包含关键无源件；已证实的物料/参数/资料冲突判本项FAIL，典型值或测试条件不得改称额定保证；需选料的最低额定汇总为BOM约束，并按误选的最严重可信后果定级；候选身份不得冒充已核准；沿用库按实际 MPN/封装/符号版本验证兼容映射，缓存来源名不单独视为采购冲突；BOM 同一行自相矛盾的器件（容差写了两个值、类别与器件类型不符）计划逐颗另出 DEV-D04.BOM.<位号>，全板项只答其余器件"
+        },
+        {
+          "check_id": "DOC-D01.BOARD",
+          "text": "BOM 值字段无异常字符串（如 4.7F），数值、单位与器件类型一致"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D04",
+        "DOC-D01"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F31",
+      "sr_rule": "PRO-D04",
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "未定",
+      "refs": [
+        "J1",
+        "U1",
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "GND",
+        "RX",
+        "SWCLK",
+        "SWDIO",
+        "TX"
+      ],
+      "sr_text": "J1对端、电气角色及故障边界未定义",
+      "verdict": "needs_human",
+      "evidence": "源图p1，J1逐针：J1.1=+3V3, J1.6=GND, J1.2=RX, J1.4=SWCLK, J1.5=SWDIO, J1.3=TX。J1为UART/SWD加电源，J2为GPIO及电源地，J3为四路GPIO且自身不含GND针。没有对端/线缆/输入输出源角色/插拔与反接条件，不能仅因未放TVS判缺陷，也不能保证针序/载流/掉电带电安全。J3返回可经J2或共同地，未说明前不直接定“无地”。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C04.J1",
+        "DEV-D02.J1",
+        "DEV-D03.J1",
+        "DEV-D05.J1",
+        "DEV-E01.J1",
+        "PRO-D03.J1",
+        "PRO-D04.J1"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-C04.J1",
+          "text": "按实际并针降额、接触电阻/均流、线缆与故障电流核连接器载流，不能按单针额定乘针数放行；额定取实际采购系列的资料，只有间距或泛称时不借用他厂系列额定或“通常”值放行，按范围未定处理；PCB 走线载流另交 HANDOFF"
+        },
+        {
+          "check_id": "DEV-D02.J1",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        },
+        {
+          "check_id": "DEV-D03.J1",
+          "text": "pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则"
+        },
+        {
+          "check_id": "DEV-D05.J1",
+          "text": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+        },
+        {
+          "check_id": "DEV-E01.J1",
+          "text": "逐脚核对连接器符号与官方/对端 pinout；多排排针/跳线座的配对与档位按封装焊盘坐标或符号图形读取，不按编号习惯推测"
+        },
+        {
+          "check_id": "PRO-D03.J1",
+          "text": "对外连接器逐针考虑防护，ESD 器件挂在活线上，泄放路径接到对应的地；钳位器件的工作与钳位电压对被保护脚的数值核算归 PRO-E02；板内互连器件可按依据判不适用"
+        },
+        {
+          "check_id": "PRO-D04.J1",
+          "text": "逐对外接口核：未供电、热插拔、误接等非正常行为有定义；接口承受规定的故障（短路到电源或地、过压）不损坏；本板故障不向外发射超出规定的电压电流"
+        }
+      ],
+      "sr_rules": [
+        "DEV-C04",
+        "DEV-D02",
+        "DEV-D03",
+        "DEV-D05",
+        "DEV-E01",
+        "PRO-D03",
+        "PRO-D04"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F32",
+      "sr_rule": "PRO-D04",
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "未定",
+      "refs": [
+        "J2",
+        "U1",
+        "BT1"
+      ],
+      "nets": [
+        "+3V3",
+        "A15",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "GND"
+      ],
+      "sr_text": "J2对端、电气角色及故障边界未定义",
+      "verdict": "needs_human",
+      "evidence": "源图p1，J2逐针：J2.1=+3V3, J2.7=A15, J2.6=B3, J2.5=B4, J2.4=B5, J2.3=B6, J2.2=B7, J2.8=GND, J2.9=GND。J1为UART/SWD加电源，J2为GPIO及电源地，J3为四路GPIO且自身不含GND针。没有对端/线缆/输入输出源角色/插拔与反接条件，不能仅因未放TVS判缺陷，也不能保证针序/载流/掉电带电安全。J3返回可经J2或共同地，未说明前不直接定“无地”。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C04.J2",
+        "DEV-D02.J2",
+        "DEV-D03.J2",
+        "DEV-D05.J2",
+        "DEV-E01.J2",
+        "PRO-D03.J2",
+        "PRO-D04.J2"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-C04.J2",
+          "text": "按实际并针降额、接触电阻/均流、线缆与故障电流核连接器载流，不能按单针额定乘针数放行；额定取实际采购系列的资料，只有间距或泛称时不借用他厂系列额定或“通常”值放行，按范围未定处理；PCB 走线载流另交 HANDOFF"
+        },
+        {
+          "check_id": "DEV-D02.J2",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        },
+        {
+          "check_id": "DEV-D03.J2",
+          "text": "pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则"
+        },
+        {
+          "check_id": "DEV-D05.J2",
+          "text": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+        },
+        {
+          "check_id": "DEV-E01.J2",
+          "text": "逐脚核对连接器符号与官方/对端 pinout；多排排针/跳线座的配对与档位按封装焊盘坐标或符号图形读取，不按编号习惯推测"
+        },
+        {
+          "check_id": "PRO-D03.J2",
+          "text": "对外连接器逐针考虑防护，ESD 器件挂在活线上，泄放路径接到对应的地；钳位器件的工作与钳位电压对被保护脚的数值核算归 PRO-E02；板内互连器件可按依据判不适用"
+        },
+        {
+          "check_id": "PRO-D04.J2",
+          "text": "逐对外接口核：未供电、热插拔、误接等非正常行为有定义；接口承受规定的故障（短路到电源或地、过压）不损坏；本板故障不向外发射超出规定的电压电流"
+        }
+      ],
+      "sr_rules": [
+        "DEV-C04",
+        "DEV-D02",
+        "DEV-D03",
+        "DEV-D05",
+        "DEV-E01",
+        "PRO-D03",
+        "PRO-D04"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F33",
+      "sr_rule": "PRO-D04",
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "未定",
+      "refs": [
+        "J3",
+        "U1"
+      ],
+      "nets": [
+        "A0",
+        "A1",
+        "A8",
+        "A9"
+      ],
+      "sr_text": "J3对端、电气角色及故障边界未定义",
+      "verdict": "needs_human",
+      "evidence": "源图p1，J3逐针：J3.1=A0, J3.3=A1, J3.4=A8, J3.2=A9。J1为UART/SWD加电源，J2为GPIO及电源地，J3为四路GPIO且自身不含GND针。没有对端/线缆/输入输出源角色/插拔与反接条件，不能仅因未放TVS判缺陷，也不能保证针序/载流/掉电带电安全。J3返回可经J2或共同地，未说明前不直接定“无地”。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C04.J3",
+        "DEV-D02.J3",
+        "DEV-D03.J3",
+        "DEV-D05.J3",
+        "DEV-E01.J3",
+        "PRO-D03.J3",
+        "PRO-D04.J3"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-C04.J3",
+          "text": "按实际并针降额、接触电阻/均流、线缆与故障电流核连接器载流，不能按单针额定乘针数放行；额定取实际采购系列的资料，只有间距或泛称时不借用他厂系列额定或“通常”值放行，按范围未定处理；PCB 走线载流另交 HANDOFF"
+        },
+        {
+          "check_id": "DEV-D02.J3",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        },
+        {
+          "check_id": "DEV-D03.J3",
+          "text": "pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则"
+        },
+        {
+          "check_id": "DEV-D05.J3",
+          "text": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+        },
+        {
+          "check_id": "DEV-E01.J3",
+          "text": "逐脚核对连接器符号与官方/对端 pinout；多排排针/跳线座的配对与档位按封装焊盘坐标或符号图形读取，不按编号习惯推测"
+        },
+        {
+          "check_id": "PRO-D03.J3",
+          "text": "对外连接器逐针考虑防护，ESD 器件挂在活线上，泄放路径接到对应的地；钳位器件的工作与钳位电压对被保护脚的数值核算归 PRO-E02；板内互连器件可按依据判不适用"
+        },
+        {
+          "check_id": "PRO-D04.J3",
+          "text": "逐对外接口核：未供电、热插拔、误接等非正常行为有定义；接口承受规定的故障（短路到电源或地、过压）不损坏；本板故障不向外发射超出规定的电压电流"
+        }
+      ],
+      "sr_rules": [
+        "DEV-C04",
+        "DEV-D02",
+        "DEV-D03",
+        "DEV-D05",
+        "DEV-E01",
+        "PRO-D03",
+        "PRO-D04"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F34",
+      "sr_rule": "SIG-D12",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "U2",
+        "AE1"
+      ],
+      "nets": [
+        "Net-(AE1-A)",
+        "+3V3"
+      ],
+      "sr_text": "射频模块的天线、发射配置与整机条件待确认",
+      "verdict": "needs_human",
+      "evidence": "U2.9 ANT直连AE1.1；AE1 Value=Antenna_Chip，但footprint=RF_Antenna:Texas_SWRA416_868MHz_915MHz（印制天线）。无法确认采购芯片天线还是沿用印制图形、调谐与参考地；不能凭符号名判缺匹配。模块内已含射频匹配/晶体，不向板外强加裸SX1276外围。频段、输出功率、天线负载和允许噪声未给；布局/天线效率与射频认证交下游，不在此签署。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D01.U2",
+        "DEV-D05.U2",
+        "SIG-D12.RADIO-RUN.AE1"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D01.U2",
+          "text": "核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突"
+        },
+        {
+          "check_id": "DEV-D05.U2",
+          "text": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+        },
+        {
+          "check_id": "SIG-D12.RADIO-RUN.AE1",
+          "text": "按实际模组要求核天线路径默认通断、供电电容、开关机/复位及适用的 SIM 接口保护；参考设计作依据线索，偏离须按本设计条件验证，不以照抄为通过条件"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D01",
+        "DEV-D05",
+        "SIG-D12"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F35",
+      "sr_rule": "RST-T03",
+      "criteria": [
+        "G03-024",
+        "G03-030",
+        "G03-047",
+        "G05-062",
+        "G05-091"
+      ],
+      "severity": "未定",
+      "refs": [
+        "U1",
+        "U2",
+        "RESET1",
+        "BOOT1",
+        "R7",
+        "C4"
+      ],
+      "nets": [
+        "RESET",
+        "Net-(U1-NRST)",
+        "Net-(U1-BOOT0)",
+        "NSS"
+      ],
+      "sr_text": "RFM95W原厂复位叙述存在模块脚号冲突，复位/启动保证尚未闭合",
+      "verdict": "knowledge_gap",
+      "evidence": "HopeRF V2.0 p11 Table2及p110 §7.2首段将模块RESET指向6脚，与本图U2.6←U1.14 PB0相符；p110 §7.2.1及p111 §7.2.2却写Pin7/NRESET，疑似沿用裸芯片编号，模块p11的7脚实际为DIO5。不据后段认定本图接错RESET。需原厂澄清模块引脚及复位保持/释放保证。U1 NRST另由C4=100nF、RESET1下拉；BOOT0经R7=12k下拉、BOOT1上拉，RC本身不是保证复位宽度。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-T04.SCHEMATIC-DEFAULT.SUPERVISION-RAILS",
+        "RST-E02.U1-31",
+        "RST-T03.SYS-SEQUENCE"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "PWR-T04.SCHEMATIC-DEFAULT.SUPERVISION-RAILS",
+          "text": "按需求确定哪些电源域必须监测，逐轨核监测点、阈值与动作；未监测的轨需给出书面依据，不能因为有一颗监控器就判全板覆盖"
+        },
+        {
+          "check_id": "RST-E02.U1-31",
+          "text": "核对 BOOT/strap/test 引脚的强制态与采样窗口"
+        },
+        {
+          "check_id": "RST-T03.SYS-SEQUENCE",
+          "text": "检查慢爬升、棕断、短暂掉电、单域掉电、外部先供电、重试及恢复模式"
+        }
+      ],
+      "sr_rules": [
+        "PWR-T04",
+        "RST-E02",
+        "RST-T03"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F36",
+      "sr_rule": "SIG-D09",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "NSS",
+        "SCK",
+        "MOSI",
+        "MISO",
+        "DIO0",
+        "DIO1",
+        "DIO2"
+      ],
+      "sr_text": "SPI及主控功能分配的电气模式和时序预算未确认",
+      "verdict": "needs_human",
+      "evidence": "实际U1.10 PA4→U2.5 NSS，U1.11 PA5→U2.4 SCK，U1.13 PA7→U2.3 MOSI，U2.2 MISO→U1.12 PA6。U2 V2.0 p11/p20/p76给方向、时序和Mode0边沿；硬件连通一致。但SCK频率/负载、主控复用/允许配置和保证电平预算未定义，U1原厂本地绑定未完成，不将原理图网络名等同已核配置。固件镜像和实际波形为下游交付，不能用固件待开发当厂家参数缺失。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-C07.IF-RADIO-SPI-MCU",
+        "SIG-C07.SPI-MCU-RUN.D1",
+        "SIG-C09.SPI-MCU-RUN.D1",
+        "SIG-C13.SPI-MCU.D1",
+        "SIG-D09.SPI-MCU-RUN.D1",
+        "SIG-D13.SYS-PINMAP"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "SIG-C07.IF-RADIO-SPI-MCU",
+          "text": "先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确"
+        },
+        {
+          "check_id": "SIG-C07.SPI-MCU-RUN.D1",
+          "text": "先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确"
+        },
+        {
+          "check_id": "SIG-C09.SPI-MCU-RUN.D1",
+          "text": "按两端保证值核传播延迟、建立/保持、时钟偏斜、电平转换器延迟及上拉/开漏信号的上升时间，给出最坏角点裕量；主控厂商设计指南明确指定该器件型号、接法与时钟配置且本设计未偏离时，按厂商合格配对判 PASS(B)，时钟上限等配置作为固件约束移交，不因主控手册缺接口时序记 INSUFFICIENT；换型号/改接法/提高时钟时仍按两端保证值计算；经隔离器的 SPI 读路径算往返并计入隔离器延迟与通道偏差；布线延迟另交 SI HANDOFF"
+        },
+        {
+          "check_id": "SIG-C13.SPI-MCU.D1",
+          "text": "每个接口写明依据的规范版本与工作模式（决定上拉、电容和时序判据），接口预算表字段齐全、取两端保证值；缺对端资料记资料不足，不按常见器件假定"
+        },
+        {
+          "check_id": "SIG-D09.SPI-MCU-RUN.D1",
+          "text": "SPI 片选/时钟极性与串阻；SPI Flash 供电域、上拉与写保护"
+        },
+        {
+          "check_id": "SIG-D13.SYS-PINMAP",
+          "text": "主控/SoC 引脚复用、功能分配与电平域符合平台约束（专用功能脚、启动相关脚、仅输入脚、5V 容忍），与固件配置表一致，无冲突与重复占用"
+        }
+      ],
+      "sr_rules": [
+        "SIG-C07",
+        "SIG-C09",
+        "SIG-C13",
+        "SIG-D09",
+        "SIG-D13"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F37",
+      "sr_rule": "REQ-D03",
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-006",
+        "G01-007",
+        "G01-008"
+      ],
+      "severity": "未定",
+      "refs": [
+        "U1",
+        "U2",
+        "BT1"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "sr_text": "没有受控输入、任务剖面、端口与关键功能合同",
+      "verdict": "needs_human",
+      "evidence": "README用于推断通用电池LoRaWAN用途，列多个MCU和多种传感变体，不是这张STM32L041原理图的唯一受控需求。没有确定温度/负载/寿命/可接受故障/关键项/FMEA范围；industrial_telecom仅为准则基线，不自动生成工业温度、浪涌或二十年寿命验收。规则存在可审对象，但这些边界必须由设计者确认。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.BOOT1",
+        "DEV-D02.D1",
+        "DEV-D02.RESET1",
+        "DOC-D02.BOARD",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD",
+        "REQ-C01.BOARD",
+        "REQ-D02.BOARD",
+        "REQ-D03.BOARD",
+        "REQ-D04.BOARD",
+        "REQ-D05.BOARD",
+        "REQ-Q01.REQUIREMENTS",
+        "REQ-Q02.CHAINS",
+        "REQ-Q03.STATES"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-D02.BOOT1",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        },
+        {
+          "check_id": "DEV-D02.D1",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        },
+        {
+          "check_id": "DEV-D02.RESET1",
+          "text": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+        },
+        {
+          "check_id": "DOC-D02.BOARD",
+          "text": "关键电源轨、strap 点与调试信号按需要电气预留测试节点；可触达性、邻近地与夹具另交 HANDOFF"
+        },
+        {
+          "check_id": "PRO-D05.BOARD",
+          "text": "按网表核故障向接口和相邻电路的传播路径；同一检测手段覆盖多种模式时能区分或动作一致；检测加恢复时间短于不可逆后果时间；潜伏故障和共因失效已登记；软件参与的列软件响应；限流件、通路开关和钳位器件失效的后果已判定"
+        },
+        {
+          "check_id": "PRO-D06.BOARD",
+          "text": "单点失效的关键项进入清单并有措施或接受理由；关键功能恢复不依赖切断外部供电；关键功能的保护不与其共用器件、基准或辅助电源"
+        },
+        {
+          "check_id": "REQ-C01.BOARD",
+          "text": "本审查的工程计算按共用规范 G02：参数取准确料号保证值且条件匹配（超条件按定界表），计入全部变化因素与寿命末老化（无数据按类别估算并标注），温度端点取自工况，先用极值法，方向与内部极值正确，无不可能组合；统计法满足项数、覆盖率与适用后果类；每项给 min/典型/max、判据与裕量，不符合项单列，仿真有模型验证，复用电路按新工况复算，记录可独立复核"
+        },
+        {
+          "check_id": "REQ-D02.BOARD",
+          "text": "需求/规格书与原理图参数口径统一（电流/电压数字唯一来源）"
+        },
+        {
+          "check_id": "REQ-D03.BOARD",
+          "text": "逐条核设计输入：给范围或容差，写明测量点与线路压降，有唯一编号，单一自含，无不可验证用词，未知项按 TBR 登记，设计假设不冒充用户要求；缺的记输入缺口（资料不足），不当电路缺陷"
+        },
+        {
+          "check_id": "REQ-D04.BOARD",
+          "text": "每条需求有验证方法与阶段；只靠分析或评审关闭的主要需求、校准或选配位号、只能靠计算或仿真预测的分析项、电源动态实测项都进入下游转交清单"
+        },
+        {
+          "check_id": "REQ-D05.BOARD",
+          "text": "FMEA 范围与判据在分析前写定，覆盖电源入口、对外接口、保护链与声明的关键功能；条目字段和故障模式齐全；严重度按不计补偿措施的最坏后果；不凭 RPN 关闭；需处置的都有结论；版本与待审原理图一致；项目要求 FTA 时顶事件明确、共因标出"
+        },
+        {
+          "check_id": "REQ-Q01.REQUIREMENTS",
+          "text": "需求逐条拆解并与电路检查双向追溯，缺口不得隐藏"
+        },
+        {
+          "check_id": "REQ-Q02.CHAINS",
+          "text": "全部接口/电源/检测/使能/复位/时钟逐路终点与返回路径覆盖"
+        },
+        {
+          "check_id": "REQ-Q03.STATES",
+          "text": "逐关键电路覆盖启动、复位、运行、掉电、外部带电及需求内故障状态"
+        }
+      ],
+      "sr_rules": [
+        "DEV-D02",
+        "DOC-D02",
+        "PRO-D05",
+        "PRO-D06",
+        "REQ-C01",
+        "REQ-D02",
+        "REQ-D03",
+        "REQ-D04",
+        "REQ-D05",
+        "REQ-Q01",
+        "REQ-Q02",
+        "REQ-Q03"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F38",
+      "sr_rule": "DEV-C01",
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "未定",
+      "refs": [
+        "BT1",
+        "FB1",
+        "R3",
+        "R7",
+        "C1",
+        "C2",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "C9",
+        "C10"
+      ],
+      "nets": [
+        "+3V3",
+        "VDDA"
+      ],
+      "sr_text": "常规器件应力与有效去耦缺少源/负载工况",
+      "verdict": "needs_human",
+      "evidence": "C5/C6/C9/C10主轨并联标称1.3uF；C7/C8 VDDA并联1.1uF。R3/R7均12k；若以3.6V作条件演示，I≤0.3mA、P≤1.08mW，但3.6V不是已确认电池上限。本轮未从网名编造窗口。缺口是实际源/状态/负载，而非每只普通0805阻容缺专属厂家手册；不向厂家逐只索取。额定可按commodity-floors定界，确定工作点后复算。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C01.BOARD",
+        "DEV-C01.C1",
+        "DEV-C01.C10",
+        "DEV-C01.C2",
+        "DEV-C01.C4",
+        "DEV-C01.C5",
+        "DEV-C01.C6",
+        "DEV-C01.C7",
+        "DEV-C01.C8",
+        "DEV-C01.C9",
+        "DEV-C01.R3",
+        "DEV-C01.R7",
+        "DEV-C01.RADIO",
+        "DEV-C01.SPI-MCU",
+        "DEV-C02.BOARD",
+        "DEV-C03.BOARD",
+        "DEV-C03.SPI-MCU",
+        "PWR-C09.DECAP-0AD3CAF925A6A379D224.3V3",
+        "PWR-C10.DECAP-0AD3CAF925A6A379D224.3V3",
+        "PWR-D02.DECAP-0AD3CAF925A6A379D224.3V3"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "DEV-C01.BOARD",
+          "text": "受应力的电阻、电容、开关与稳压器逐颗核功耗、连续/脉冲电压、电流及适用温度条件下的额定值；本项核过应力（应力上界对额定）；IC 脚经外接电阻驱动内部开关或检测通路（放电、泄放、驱动、检测脚）时，按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 项以 split_out 拆出；供电或输入整个窗口确定低于推荐工作范围下限时，与 DEV-C05 同判 FAIL、共用 finding，理由引用 DEV-C05.<位号>；下限是否满足取决于未知压降或参数时，本检查项不因下限判 INSUFFICIENT，归 DEV-C05；连接器/排针/按键触点连续（有效值）电流与电压不超过 commodity-floors 微应力阈值（最低触点额定 × 本级降额值）时判 PASS(B)，信号边沿瞬态电流不计；连接器库名/封装名指向具体原厂系列或料号（如 JST_VH、MKDS、XT30UPB）时按该系列原厂触点额定定界，不超过该额定 × 本级 CONN-I 取值判 PASS(B)，“须采购该原厂系列”归 DEV-D04，不因无 MPN 记 INSUFFICIENT；泛称排针/间距不适用；先按用途和受控采购范围定界：有适用最弱档时，应力上界不超过最弱档 × 本级降额规范取值（等级未定按工程取值 unset_level）可判PASS；超过且仍可选到满足档位时写最低额定约束，不当作已满足；无适用范围不借用最弱档；计划已生成逐颗预判检查项（proposal）的器件按该检查项计算判定，改判只用其封闭理由码；陶瓷电容与功率电感优先按commodity-floors的独立可订购额定/BOM约束分支判断，满足该分支全部适用条件时可判局部PASS，采购字段仍由DEV-D04核对，不以普通最弱档路径重复阻断；降额按项目等级（intent.derating）取降额规范的值、按应力规范判：超额定 FAIL，超降额未超额定是应力风险（basis.derating_rule 点名规则，门禁按等级重算），等级没定时转需求澄清；电位器按实际分压/rheostat接法核活动轨段、滑臂与端点，不能把整轨功率额定用于任意局部轨段；按wca-formulas的适用模型全范围核轨电流、局部功耗及滑臂/脉冲限制，未选实际器件不借候选或通用最弱档放行；实际温升与散热实现转 HANDOFF，不以缺热测试判电气缺陷"
+        },
+        {
+          "check_id": "DEV-C01.C1",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.C10",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.C2",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.C4",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.C5",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.C6",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.C7",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.C8",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.C9",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.R3",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.R7",
+          "text": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+        },
+        {
+          "check_id": "DEV-C01.RADIO",
+          "text": "受应力的电阻、电容、开关与稳压器逐颗核功耗、连续/脉冲电压、电流及适用温度条件下的额定值；本项核过应力（应力上界对额定）；IC 脚经外接电阻驱动内部开关或检测通路（放电、泄放、驱动、检测脚）时，按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 项以 split_out 拆出；供电或输入整个窗口确定低于推荐工作范围下限时，与 DEV-C05 同判 FAIL、共用 finding，理由引用 DEV-C05.<位号>；下限是否满足取决于未知压降或参数时，本检查项不因下限判 INSUFFICIENT，归 DEV-C05；连接器/排针/按键触点连续（有效值）电流与电压不超过 commodity-floors 微应力阈值（最低触点额定 × 本级降额值）时判 PASS(B)，信号边沿瞬态电流不计；连接器库名/封装名指向具体原厂系列或料号（如 JST_VH、MKDS、XT30UPB）时按该系列原厂触点额定定界，不超过该额定 × 本级 CONN-I 取值判 PASS(B)，“须采购该原厂系列”归 DEV-D04，不因无 MPN 记 INSUFFICIENT；泛称排针/间距不适用；先按用途和受控采购范围定界：有适用最弱档时，应力上界不超过最弱档 × 本级降额规范取值（等级未定按工程取值 unset_level）可判PASS；超过且仍可选到满足档位时写最低额定约束，不当作已满足；无适用范围不借用最弱档；计划已生成逐颗预判检查项（proposal）的器件按该检查项计算判定，改判只用其封闭理由码；陶瓷电容与功率电感优先按commodity-floors的独立可订购额定/BOM约束分支判断，满足该分支全部适用条件时可判局部PASS，采购字段仍由DEV-D04核对，不以普通最弱档路径重复阻断；降额按项目等级（intent.derating）取降额规范的值、按应力规范判：超额定 FAIL，超降额未超额定是应力风险（basis.derating_rule 点名规则，门禁按等级重算），等级没定时转需求澄清；电位器按实际分压/rheostat接法核活动轨段、滑臂与端点，不能把整轨功率额定用于任意局部轨段；按wca-formulas的适用模型全范围核轨电流、局部功耗及滑臂/脉冲限制，未选实际器件不借候选或通用最弱档放行；实际温升与散热实现转 HANDOFF，不以缺热测试判电气缺陷"
+        },
+        {
+          "check_id": "DEV-C01.SPI-MCU",
+          "text": "受应力的电阻、电容、开关与稳压器逐颗核功耗、连续/脉冲电压、电流及适用温度条件下的额定值；本项核过应力（应力上界对额定）；IC 脚经外接电阻驱动内部开关或检测通路（放电、泄放、驱动、检测脚）时，按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 项以 split_out 拆出；供电或输入整个窗口确定低于推荐工作范围下限时，与 DEV-C05 同判 FAIL、共用 finding，理由引用 DEV-C05.<位号>；下限是否满足取决于未知压降或参数时，本检查项不因下限判 INSUFFICIENT，归 DEV-C05；连接器/排针/按键触点连续（有效值）电流与电压不超过 commodity-floors 微应力阈值（最低触点额定 × 本级降额值）时判 PASS(B)，信号边沿瞬态电流不计；连接器库名/封装名指向具体原厂系列或料号（如 JST_VH、MKDS、XT30UPB）时按该系列原厂触点额定定界，不超过该额定 × 本级 CONN-I 取值判 PASS(B)，“须采购该原厂系列”归 DEV-D04，不因无 MPN 记 INSUFFICIENT；泛称排针/间距不适用；先按用途和受控采购范围定界：有适用最弱档时，应力上界不超过最弱档 × 本级降额规范取值（等级未定按工程取值 unset_level）可判PASS；超过且仍可选到满足档位时写最低额定约束，不当作已满足；无适用范围不借用最弱档；计划已生成逐颗预判检查项（proposal）的器件按该检查项计算判定，改判只用其封闭理由码；陶瓷电容与功率电感优先按commodity-floors的独立可订购额定/BOM约束分支判断，满足该分支全部适用条件时可判局部PASS，采购字段仍由DEV-D04核对，不以普通最弱档路径重复阻断；降额按项目等级（intent.derating）取降额规范的值、按应力规范判：超额定 FAIL，超降额未超额定是应力风险（basis.derating_rule 点名规则，门禁按等级重算），等级没定时转需求澄清；电位器按实际分压/rheostat接法核活动轨段、滑臂与端点，不能把整轨功率额定用于任意局部轨段；按wca-formulas的适用模型全范围核轨电流、局部功耗及滑臂/脉冲限制，未选实际器件不借候选或通用最弱档放行；实际温升与散热实现转 HANDOFF，不以缺热测试判电气缺陷"
+        },
+        {
+          "check_id": "DEV-C02.BOARD",
+          "text": "按电容实际用途核耐压与容量；仅当该用途的原厂条款或受控需求依赖有效容量/ESR时索取对应边界，不能给所有旁路、BOOT或SS电容统一加联合Ceff/ESR证明；电解、固态与超级电容的寿命按 intent.mission_profile 估算所需耐久等级（厂家寿命公式，没有就 10 °C 翻倍，都标估算），写成 bom_constraint“耐久 ≥ X h @T（估算，热点 ≤ Y °C）”，不开厂家数据缺口；热点温度与纹波自热移交热设计实测后复算"
+        },
+        {
+          "check_id": "DEV-C03.BOARD",
+          "text": "分压、采样、ZQ 等精度要求由允许误差窗口与器件要求决定，不能默认 1% 即合格；按实际误差传递及适用角点核本项，不用无关热、载流或接口接受任务替代精度判据；这些条件只有真实改变该误差窗口时才成为本项关闭依赖，其余另按适用准则核对"
+        },
+        {
+          "check_id": "DEV-C03.SPI-MCU",
+          "text": "分压、采样、ZQ 等精度要求由允许误差窗口与器件要求决定，不能默认 1% 即合格；按实际误差传递及适用角点核本项，不用无关热、载流或接口接受任务替代精度判据；这些条件只有真实改变该误差窗口时才成为本项关闭依赖，其余另按适用准则核对"
+        },
+        {
+          "check_id": "PWR-C09.DECAP-0AD3CAF925A6A379D224.3V3",
+          "text": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量"
+        },
+        {
+          "check_id": "PWR-C10.DECAP-0AD3CAF925A6A379D224.3V3",
+          "text": "按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核"
+        },
+        {
+          "check_id": "PWR-D02.DECAP-0AD3CAF925A6A379D224.3V3",
+          "text": "按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分"
+        }
+      ],
+      "sr_rules": [
+        "DEV-C01",
+        "DEV-C02",
+        "DEV-C03",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    },
+    {
+      "id": "F39",
+      "sr_rule": "REQ-Q08",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "U1",
+        "U2",
+        "RESET1",
+        "J1",
+        "J2"
+      ],
+      "nets": [
+        "+3V3",
+        "Net-(U1-NRST)",
+        "SWDIO",
+        "SWCLK"
+      ],
+      "sr_text": "电路候选和全状态覆盖不完整",
+      "verdict": "needs_human",
+      "evidence": "原生候选仅错误电源保护两项，未自动检出RF/SPI/CLOCK；分别通过add声明RADIO(U2/AE1)、SPI-MCU(U1/J3/D1/R3)、LSE(Y1/C1/C2)。add显式states=[run]为现有语法允许，运行态系审查分析状态，不冒充需求。DEBUG/STARTUP仍UNDETERMINED；用RESET1/C4补STARTUP的试探仅展开救砖规则并提示CIRCUIT_TYPE_MISFIT，故撤回该错误分组，保留需求/状态覆盖缺口。没有把未识别电路视为不适用。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "REQ-Q07.CLOCK",
+        "REQ-Q07.DEBUG",
+        "REQ-Q07.RF",
+        "REQ-Q07.SPI",
+        "REQ-Q07.STARTUP",
+        "REQ-Q08.BOARD"
+      ],
+      "sr_texts": [
+        {
+          "check_id": "REQ-Q07.CLOCK",
+          "text": "执行时钟功能电路：CLK-C01 晶体负载与起振、CLK-D01 有源时钟输出与使能、CLK-D03 RTC 晶体与备份电源、SIG-C13 接口预算与规范模式、SIG-C18 航天：标准接口与命令线；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+        },
+        {
+          "check_id": "REQ-Q07.DEBUG",
+          "text": "执行调试与烧录功能电路：SIG-D06 调试接口、SIG-C13 接口预算与规范模式、SIG-C18 航天：标准接口与命令线；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+        },
+        {
+          "check_id": "REQ-Q07.RF",
+          "text": "执行射频与模组功能电路：SIG-D12 射频与模组；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+        },
+        {
+          "check_id": "REQ-Q07.SPI",
+          "text": "执行SPI功能电路：SIG-D09 SPI 与 SPI Flash、SIG-C07 逻辑电平与驱动匹配、SIG-C09 时序裕量、SIG-C13 接口预算与规范模式、SIG-C18 航天：标准接口与命令线；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+        },
+        {
+          "check_id": "REQ-Q07.STARTUP",
+          "text": "执行上电、复位与启动功能电路：RST-C01 采样窗口电平、RST-C02 复位时序、RST-T04 复位期间 IO 默认态、RST-D01 救砖通道；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+        },
+        {
+          "check_id": "REQ-Q08.BOARD",
+          "text": "网表未检出的功能电路逐个确认不适用并给出依据；候选没有归属的器件和被拒候选的成员逐颗确认去处（写 add 决定，或留在清单上写原因）；未检出特征不等于不适用：POWER_CONVERTER（变换器与稳压器）、POWER_PROTECTION（电源输入保护）、ANALOG（模拟前端与监测）、I2C（I²C）、LEVEL_SHIFT（电平转换与跨电压域互连）、UART（UART/RS232）、CAN、RS485、USB（USB/Type-C）、ETHERNET（以太网）、DDR、STORAGE（eMMC/SD）、HSSERIAL（高速串行）、AV（音视频接口）、ISOLATION（隔离）、DC_48V（−48 V 直流输入）、AC_MAINS（交流市电输入）、INDUSTRIAL_DI（工业 24 V 数字输入）、POE_PD（PoE 受电端）、VEHICLE_28V（军车 28 V 输入）、SHIP_AC（舰船交流输入）；候选生成没有归属的器件，逐颗确认属于哪个功能或为何不审：BOOT1、BT1、C10、C4、C5、C6、C7、C8、C9、FB1、H1、H2、J1、J2、JPC0、JPC3、JPO0、JPO3、R7、RA15、RB3、RB4、RB5、RB6、RB7、RESET1"
+        }
+      ],
+      "sr_rules": [
+        "REQ-Q07",
+        "REQ-Q08"
+      ],
+      "counting_unit": "逐对象误报或合并后的独立根因；原生检查项由check_ids保留，不以此冒充39个原生电气FAIL"
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G05-019",
+      "sr_rule": "PRO-C04",
+      "refs": [
+        "BT1",
+        "J1",
+        "J2",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "classification": "coverage_gap_needs_human",
+      "severity": "未定",
+      "why_expected": "industrial_telecom基线G05-019；check-catalog PRO-C04要求按网表找未经保护的配电支路，含连接器引出，上游系统保护须明确。当前134个检查项无PRO-C04，拒绝两个伪POWER_PROTECTION候选后也未生成对真实电源引出支路的检查。REQ-Q08和端口泛项不是逐支路的保护覆盖判断。",
+      "evidence": "源图p1/db：BT1.1=J1.1=J2.1=U1.1=U1.17=U2.13=+3V3；BT1.2和各负载返回GND。该路径没有保险丝、限流器或串联保护。J1/J2电源针可能是输出、输入或检修用途，源故障能力/上游保护及线缆边界未给，故只确认计划覆盖缺口，不确认“必须加保险丝”的实板缺陷。Top50第39条及references/check-catalog.md PRO-C04。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:input_walk; scripts/plan_circuits.py:plan_concrete_checks",
+        "what": "在已有电源源节点/连接器图上枚举对外供电分支；即使没有保护件，也应生成PRO-C04适用性/覆盖检查。区分有板内保护、系统保护已明确、保护边界待确认三种结果；不得因无保护器件而不生成检查，更不得从无F器件直接FAIL。判据：G05-019和PRO-C04。"
+      },
+      "seed": {
+        "kind": "D-UNPROTECTED-POWER-BRANCH-CANDIDATE",
+        "mutation": "在合成db中保留BT1.+到BUS、J_OUT.1到BUS、返回GND；删除源侧串联F1并合并其两网，移除任何保护类型关键词。首阶段预期PRO-C04检查候选仍存在；只有另给已知源故障能力和支路保护合同，才断言电气FAIL。不得给本真实板伪造这些条件。",
+        "target_rule": "PRO-C04",
+        "expected": "检查覆盖候选；本板真实电气判定needs_human"
+      }
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "NSS",
+        "RESET",
+        "+3V3",
+        "GND"
+      ],
+      "classification": "coverage_gap_needs_human",
+      "severity": "未定",
+      "why_expected": "G04-010的applies_when含SPI；本板存在主控控制无线模块的NSS和RESET，但最终计划只见RST-T03/RST-E02及REQ-Q07.STARTUP未定，未实际展开RST-T04。按已声明SPI实际控制脚应提出复位/接管前默认态检查，而不依赖另一个STARTUP候选是否分组成功。",
+      "evidence": "源图p1/db：U1.10 PA4→NSS→U2.5 NSS，U1.14 PB0→RESET→U2.6 RESET；这两网均仅2端，无外置上/下拉。HopeRF V2.0 p11 Table2定义模块脚，p76 §4.3说明NSS低选中、NSS高时MISO为高阻。没有已绑定的U1复位默认态保证、U2内部偏置保证、系统安全/允许启动态，不能把“无外置拉阻”直接判缺陷；应展开核默认态、内部偏置与接管时序。Top50第29条、G04-010及check-catalog RST-T04。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:plan_subjects,plan_concrete_checks",
+        "what": "SPI及主控系统的NSS/RESET/EN等关键控制脚生成RST-T04检查，追到真正主控与外设；状态从复位/掉电/接管合同取得，缺合同留适用性待确认。判据G04-010按内部或外部保证偏置均可关闭，不强制每条信号都加电阻。"
+      },
+      "seed": {
+        "kind": "D-SPI-RESET-DEFAULT-STATE-CANDIDATE",
+        "mutation": "合成SPI主控GPIO→从机NSS，GPIO→RESET；删除NSS偏置电阻，保留清晰物理脚/网络；不声明STARTUP电路。应仍生成RST-T04。若附加独立资料明确GPIO复位高阻、从机无内部拉阻且要求NSS高，才期望该方面FAIL；仅网表变异只期望核查候选。",
+        "target_rule": "RST-T04",
+        "expected": "检查覆盖候选；本板真实电气判定needs_human"
+      }
+    }
+  ],
+  "summary": {
+    "true_defect": 0,
+    "false_alarm": 23,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 14,
+    "misses": 2
+  }
+}

@@ -3,3 +3,8 @@
 - ETHERNET/LEVEL_SHIFT候选states=[]可由决定器接受、却被lint拒绝；无受控需求不要编状态，记录回退范围。
 - results-format文档schema14、运行时15；用migrate_results再校验。needs_human不硬塞VENDOR_DATUM，REVIEW_INCOMPLETE阻止正式报告。
 - 未用CMOS输入NC查准确手册：U36.13有p3注4反证；SCK已有SIG-C01、晶体CL缺证据，不制造漏报。
+- angelnu--lorawansensor：SolderJumper_2_Bridged 的 BRIDGE 子串会生成假 POWER_PROTECTION 候选；拒绝后仍须另查 BT1→外接电源针的 PRO-C04 覆盖，不能把无保护件等同无支路。
+- PU 值的 Device:R 可独立核两端脚差集，阻值仍待特定装配；battery_calculations.xlsx 不是完整 BOM，README 门磁例的 0R/10M 不代表所有变体。
+- 无源 Y1 的 C1=C2=10pF 只得 CL=5pF+Cstray；NX3215SA 有6/9/12.5pF档，不套家族单一CL。RFM95W手册模块RESET=6与后文Pin7冲突，不据后文误改U2。
+- 同源 U1/U2 的未知器件身份会扩成9条跨域检查；外部J1/J2/J3先供电风险另保留。SPI的NSS/RESET还须核RST-T04默认态，不因STARTUP未分组而漏掉。
+- 本板134项台账均有结果，98项仍未完成；F1条款引用未齐时保留FAIL，render实际退出2。交付文件须明标执行记录，不冒充原生正式报告；add.states空数组仍是决定器/lint衔接坑。
