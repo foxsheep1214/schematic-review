@@ -33,3 +33,9 @@
 - 声明Q的低侧继电器角色会被self_anchored误建POWER_CONVERTER并沿VCC收共享件；reject后仍held，不能再add这些件。保留DRV逐件检查并登记重归属缺口，不接受假变换器。
 - 分号BOM先转换后read_bom，保留字段及原始摘要；PC357_OPTO家族角色可核，完整CTR档不可猜；100R在假设5V/VF1.2V时0.1444W，只是条件线索，不是实贴超额定证据。
 - 光耦共GND与继电器触点隔离分开；PRO-C04仅输入LED小组不覆盖四个10R线圈支路。源保护、默认态和外部故障条件未定就留needs_human，不造VENDOR_DATUM；本板schema15且F1六项未闭。
+
+- greatscottgadgets--urti-mainboard：1394项已登记、1277未闭；519条归因=0真/75误/0准则/41知识/403待人工，2覆盖漏报；FAIL，renderer拒绝，交执行记录。
+- Q2双PNP门限/OVP被self_anchored建成变换器并带入177件；Q3/Q5仅负载开关。reject后187个held成员仍不能add回收，别靠接受假类型消缺口。
+- Diodes Incorporated是厂商名；用准确标题kind_reason反证，不能改diode角色。U4固定33的ADJ/NC、MAX2120 ADDR允许悬空、HyperRAM B5/C5=RFU须核准确型号。
+- EP/OGND/运放负端GND不应独立要求GND去耦；U9.17 VBUS经20k是检测脚。J4/J6支路缺PRO-C04、U15缺ANA-C01定位，已给覆盖种子。
+- ECP5核心包络1.118579..1.178034V不保证1.155V推荐上限，图有意约1.15V超频；预算越界≠已证实物过压。LCSC错误PDF不记AVAILABLE，full-pinout/装配缺口不能用manual_verification绕过。
