@@ -93,3 +93,9 @@
 - U1图OPA4991IDR对BOM OPA1664AIDR须先定身份；四路典型Iq2.24mA对6mA，不能只看同SOIC14。C1/C2正端相向是交流耦合，C9/C10正端朝幻象源，未定波形勿直接判反接/损坏。
 - R20/R21各7.15k生成VGND中点，domains/passive_stress却按0V地让R21零功耗PASS；有限电阻不等势，且派生器丢proposal_override。D3并联稳压、相邻音频反馈、模拟XLR、24V齐纳分别易误派防护/补偿/数字电平/24V入口。
 - 混合BOM先留原CSV再抽电气段；采购字段里的MPN要独立核，D_Zener泛名会合并24V/5.6V资料。strict缺输出名只手核SOIC14脚，不改原db；schema15分类/局部条款承载FAIL与电气缺陷分别记，报告副本含无效警告。
+
+- 2026-11-02 antmicro--scalenode-cm4-baseboard：900项（893+7）／154归因（2真、124误、1准则、14知识、13人判）／6目标规则漏项；155PASS+128NA+2FAIL、615待判，native FAIL/NO_GO。
+- PDQE30 regulator不等于非隔离：输入2/3与输出4/6须分侧；domains又把R33/LED有限支路当等势，抑制R34=15k/0603在48V的0.1536W>0.1W。先修侧别/等势图再调预判。
+- M1是零脚机械外形，CM4接口为J7/J8；U3/U4 DNP，TP1/8/9孤点合法。CM4 SCL0/SDA0片内1.8k；TPD4S012的1/2/3等效，D+/D−互换及ID留空不报错，但D2/D3逐通道PRO-E02仍漏。
+- AP62301 EN可浮；33.2k/10k输出名义3.456V、全温CCM/1%阻值3.335–3.580V，须核SSD实限。J8.93/.95应标DSI1_D2_N/P；未用标签错不等于接线反。G01-029的100u须绑定PD协商后，别泛套Micro-B。
+- FT234XD官网403可取RS原厂v1.1镜像并明示历史版；PTC1206L450SL为6V/50A、4.5A@20C而85C仅1.9A。schema15及旁路/纯拓扑承载FAIL保留；扫描关闭、逐项列完、格式有效、准出四者分开。
