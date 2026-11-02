@@ -117,3 +117,9 @@
 - USBLC6六网馈通阵列漏PRO-E02，先修protective_clamps的型号正则+恰两网条件；J5直接50.5uF在非Attached超10uF已证，别拿Attached100uF豁免。
 - 120uF原厂有每Hub口径，不盲判每口22.1uF；G01-031须保留传统Type-A默认VBUS例外。Wiki的ST - USBLC6-2SC6.pdf实际SC6Y，准确SC6在ST - USBLC62.pdf。
 - R8括号1%会令2K7读失败；J6原生DNP不可装回构造反灌。schema15未知合同留逐ID pending及45框架分母，资料不足0不是587项审结，原生无效报告不打包。
+
+- spirit532--studio_mic：58件/38网/1页，strict仅14功能脚缺名，XML/db131节点一致；154项=152自动+2gap，40局部判/114逐ID待核，25归因=1数据真+14误+1知识+9人工，2路径漏问，FAIL/NO_GO。
+- 幻象J1双线各47Ω+2.2kΩ→D1、再200Ω→U1是有阻供电，四条无驱动误报；GNDA=47k/47k中点不是0V，不能把虚地当隔离域或理想地。
+- 40106逻辑反相器无角色需add泵电路，不能套LDO稳定窗；12V理想全摆幅时飞跨C11–C16差压12至72V。两级100M/100nF慢极点52.36s，HT经C19耦到掉电U1输入应专问SIG-C08；源侧PRO-C04也要逐馈入支路。
+- XLS范围位号先展开，read_bom丢Value需独立对读；BOM五只电解47uF/63V，J1 Qty0=外壳自带非DNP。HEF40106BT与74HC14符号针序兼容，错误在SN74HC14资料链接；SpiritsKiCADLib不是SPI，H1/H2孔不是测试点。
+- 官方HEF完整PDF403但在线文字可核；text_extract仍被当PDF出NO_TEXT。schema15保留pending及功能分母，不伪造VENDOR_DATUM/PASS，原生资料不足0不代表全154项完成，报告valid=false仅诊断。
