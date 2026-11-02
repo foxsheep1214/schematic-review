@@ -364,7 +364,7 @@ def _worst(gaps):
 
 
 DERIVED_ROW_KEPT = ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings',
-                    'bom_constraint', 'requirement_clauses')   # what a reviewer may add on a derived row; derive keeps it
+                    'bom_constraint', 'requirement_clauses', 'proposal_override')   # what a reviewer may add on a derived row; derive keeps it
 
 
 def materialize(plan, report):

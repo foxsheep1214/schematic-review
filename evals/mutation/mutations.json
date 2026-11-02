@@ -1652,13 +1652,6 @@
   "new": "'UNIFORM_SEVERITY_WITHIN_RULE')"
  },
  {
-  "id": "M251",
-  "name": "P1: the passive-stress inventory does not save the devices section",
-  "file": "scripts/checkers/passive_stress.py",
-  "old": "                         context_keys=('devices', 'derating'))   # R8: the level sets RES-SMD-P",
-  "new": "                         context_keys=('derating',))   # R8: the level sets RES-SMD-P"
- },
- {
   "id": "M252",
   "name": "P1: inventory context drops the extra intent sections a scan reads",
   "file": "scripts/checkers/inventory.py",
@@ -2607,7 +2600,7 @@
   "id": "M403",
   "name": "deriving again drops the bom constraint and requirement clauses",
   "file": "scripts/derive_rows.py",
-  "old": "            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings',\n                          'bom_constraint', 'requirement_clauses'):",
+  "old": "            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings',\n                          'bom_constraint', 'requirement_clauses', 'proposal_override'):",
   "new": "            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings'):"
  },
  {
@@ -6424,5 +6417,33 @@
   "file": "scripts/protective_clamps.py",
   "old": "protective = graph.kind(ref) == pw.TVS or rule is not None",
   "new": "protective = False"
+ },
+ {
+  "id": "M1007",
+  "name": "unknown supply falls back to zero volts",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                    top = 'power_rails.%s.voltage_v' % net",
+  "new": "                    top = 0.0"
+ },
+ {
+  "id": "M1008",
+  "name": "ground alone bounds a passive island",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                            if fixed != (0.0, 0.0):",
+  "new": "                            if True:"
+ },
+ {
+  "id": "M1009",
+  "name": "derive drops proposal override",
+  "file": "scripts/derive_rows.py",
+  "old": "'bom_constraint', 'requirement_clauses', 'proposal_override'):",
+  "new": "'bom_constraint', 'requirement_clauses'):"
+ },
+ {
+  "id": "M1010",
+  "name": "strip/materialize drops proposal override stub",
+  "file": "scripts/results_model.py",
+  "old": "'bom_constraint', 'requirement_clauses', 'proposal_override')",
+  "new": "'bom_constraint', 'requirement_clauses')"
  }
 ]

@@ -121,11 +121,23 @@ class _Bounds:
     def ic_supply(self, ref):
         if ref not in self._ic:
             graph, top = self.graph, None
+            official = (graph.db.get('devices') or {}).get(ref, {}).get('pins', {})
+            native = graph.db.get('native_pintype') or {}
             for pin, net in graph.pins_of(ref).items():
+                node = ref + '.' + pin
+                name = graph.pinname.get(node, '')
+                role = official.get(pin, {}).get('role')
+                if role == 'return' or _ground_name(net) or ng.is_ground(name):
+                    continue   # a known return is not a source voltage bound
+                supply = (role == 'power' or native.get(node) in POWER_PINTYPES
+                          or pw.name_matches(re.compile(r'^(?:VIN\w*|VCC\w*|VDD\w*|AVDD\w*|DVDD\w*)$', re.I), name, pin)
+                          or ng.is_rail(net))
+                if not supply:
+                    continue
                 fixed = self._fixed(net)
                 if fixed is not None:
                     top = fixed[1] if top is None else max(top, fixed[1])
-                elif graph.pintype.get(ref + '.' + pin) in POWER_PINTYPES or ng.is_rail(net):
+                else:
                     top = 'power_rails.%s.voltage_v' % net
                     break
             self._ic[ref] = top
@@ -170,7 +182,8 @@ class _Bounds:
                             continue
                         fixed = self._fixed(other)
                         if fixed is not None:
-                            tops.append(fixed[1])
+                            if fixed != (0.0, 0.0):
+                                tops.append(fixed[1])
                             domains |= {self.domain(other)} - {None}
                             continue
                         ac = ac or kind == pw.CAPACITOR
