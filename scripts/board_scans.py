@@ -291,7 +291,7 @@ def can_bus_short(lint):
     """SIG-A06：收发器 CANH/CANL 同网，或两网间跨接 ≤1 Ω 电阻（G04-032）；120 Ω 端接不算。"""
     from solve_dividers import parse_resistor
     for ref, part in sorted(lint.parts.items()):
-        if part.get('nc') or lint.graph.kind(ref) != IC:
+        if lint.graph.kind(ref) != IC:
             continue
         nodes = {CAN_PIN_RE.match(str(lint.pinname.get(node, '')).strip()).group(1).upper(): node
                  for node in _nodes(lint, ref) if CAN_PIN_RE.match(str(lint.pinname.get(node, '')).strip())}
@@ -374,7 +374,7 @@ def crystal_shared(lint):
     for ref, nets in _passive_crystals(lint):
         on_both = []
         for ic in sorted(lint.parts):
-            if lint.parts[ic].get('nc') or lint.graph.kind(ic) != IC:
+            if lint.graph.kind(ic) != IC:
                 continue
             reached = {lint.pin2net.get(node) for node in _nodes(lint, ic)
                        if OSCILLATOR_PIN_RE.search(str(lint.pinname.get(node, '')).strip())}

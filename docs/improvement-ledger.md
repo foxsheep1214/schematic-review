@@ -9,6 +9,18 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 合并步 1 并入 main，流水线每板前自动并入 boards-program (2026-11-02)
+
+把 main（设计准则库 1.6.1、8 类种子的 A 规则）并进 `boards-program`：分支新增的 29 条变异与 main 撞号，重编为 M883–M911；检出表按合并后重生成。
+合并后 `lint.py` 建 pin2net/pinname 时已滤掉未贴装器件，`board_scans.py` 里 SIG-A06、CLK-A02 的 `nc` 判断成了死代码，
+守它们的 M866、M882 变成等价变异而存活：删掉这两处死判断，M866 重锚到 `lint.py` 的 pin2net/pinname 过滤（由 `test_an_unfitted_transceiver_is_not_reported` 杀死），M882 删去。
+`run_lane.sh` 加 `--merge-from`（默认 `boards-program`）：每块板开始前先并入，起始行记下所用 SR 提交，后面的板子都跑在修好的 SR 上。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: judgment 1
+- Changed: scripts/board_scans.py, evals/mutation/mutations.json, evals/detection/RESULTS.md, evals/boards/_tools/run_lane.sh, docs/improvement-ledger.md
+- Gates: pytest 2579 passed; mutation --changed 全杀（M866 重锚后杀死）; check_ledger PASS
+
 ## 四块实际板合并步1：字段、装配、供电与计划误报源 (2026-11-02)
 
 保留KiCad字段/Val解码出处，低阻供电追溯留位号证据，排除DNP电气参与并报告数量，补未经需求确认的默认态及跨所有权逐晶体项；限定纠正重复的网名、偏置、脚名、驱动、型号许可与条件回流误报。四板冷扫638→314，已归因错误内容442→18；新行未裁决不当真缺陷。题列真缺陷全部保留或可定位，新增5类型7真实位点（3目标提示，其余保留自动层缺口），原247位点177目标提示逐位点无退化。详细数表、误报内容复核、计划回放调整及残留模式见提案。共用层与SKILL未改。
