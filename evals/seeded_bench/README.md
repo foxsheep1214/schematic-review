@@ -123,3 +123,22 @@ TVS 的目标命中是原有 PRO-E02 **窗口复核提示**，不是自动完成
 MLCC 额定、分流电阻 MPN、地址冲突与晶体负载仍有自动层缺口；其位点/合同已保存，不能把其他规则指向当目标检出。
 现有 247 个位点逐位点比较无退化，仍为 177 个目标提示；新增 7 个位点有 3 个目标提示、0 个运行错误。
 受控结果见 `boards-merge1-results.json`，包含逐位点自动提示、其他提示和计划指向。
+
+## 合并 2B：外部端点、ADC 与 PMIC 输出覆盖种子（2026-11-02）
+
+`boards-merge2b.json` 登记4块已归因板的来源，第三方网表仍只读缓存。`--boards-cache` 同时加载 merge1 与 merge2b。
+新4类各1个位点，均使用显式配对基线：
+
+| 类型 | 真实物理位点 | 网表变换 / 目标规则 |
+|---|---|---|
+| D-EXTERNAL-INJECTION-BYPASS | Amalthea J1.28/U1.43 `/PICO` | 去掉合成10kΩ串阻，恢复原直连；SIG-C08 |
+| D-POWER-BRANCH-BYPASS | connect-programmer K1 VBUS/F1 | 0Ω跨接真实保险丝；PRO-C04/C01/C05 |
+| D-ADC-SHUNT-RANGE | bq27441 U1.SRP/SRN、R6 | 10mΩ改1Ω；ANA-C03 |
+| D-PMIC-OUTPUT-COUT | kimchi U4.55 MUXSW、C113/C54 | 合成22.22µF名义基线换原1.22µF；PWR-C04/C09 |
+
+这些C规则仍由审查员计算判定，**计划指向不算自动检出**。运行器新增 `planned_targets`，只列点名位点的目标规则；
+原 `auto` 仍只计算新扫描发现，`pointed` 仍为任意规则指向。注入源5V/关机钳位0.3V/1mA、ADC的1A/20mV
+均明确是合成测试合同，不冒充AT86RF215或BQ27441的保证值；保险丝动作能量和22.22µF全环境有效值仍需独立核验。
+PMIC的11–33µF窗口来自ROHM BD71847AMWV Rev003 p110 Table5-36，原1.22µF名义点已低于下限。
+
+2B 最终固定版实测：既有 254 位点逐点保留、目标自动 225→225，新增 4 类/4 位点均有目标 C 计划（自动 0），合计 258 位点/225 自动/0 错误。数据见 `boards-merge2b-results.json`；不把计划覆盖算自动检出。首轮曾暴露自定义 `Oscillator_SMD` 的无源晶体误识别与 PMIC `-E2` 种子漏选，修正后全量重跑，未改原种子来隐藏丢失位点。

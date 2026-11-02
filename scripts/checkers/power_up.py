@@ -113,11 +113,17 @@ class _Scan:
             inputs = self._supply_inputs(ref)
             for node, enable_net in enables.items():
                 source, evidence = self._enable_source(enable_net, set(inputs.values()))
+                permission = pw.unused_input_permission(graph.db, node)
+                if source == 'unknown' and permission:
+                    source, evidence = 'internal-bias', [permission]
+                identity = str(graph.parts[ref].get('part') or '')
+                load_switch = (graph.role_kind(ref) == 'load_switch' or
+                               re.fullmatch(r'MIC94164[A-Z0-9/-]*|TPS27S100[A-Z0-9/-]*', identity, re.I))
                 found.append({
                     'id': slug(ref + '-' + enable_net),
                     'ref': ref,
                     'basis': 'declared' if ref in self.declared else 'topology',
-                    'kind': 'switching' if switches else 'linear',
+                    'kind': 'load-switch' if load_switch else ('switching' if switches else 'linear'),
                     'enable_node': node,
                     'enable_net': enable_net,
                     'enable_source': source,
@@ -228,7 +234,7 @@ class PowerUpChecker(Checker):
                 check['inventory_gaps'] = gaps
             else:
                 check = planner.add_check(
-                    'PWR-D03', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
+                    'PWR-C13' if item['kind'] == 'load-switch' else 'PWR-D03', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                     required_inputs=sorted(set(gaps + [
                         'datasheet:预偏置启动与软启动条款', 'intent:输出并联/保持电路'])),
                     trigger=['power-up:' + item['id']])

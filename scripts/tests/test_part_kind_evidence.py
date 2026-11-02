@@ -107,7 +107,7 @@ class TitleTests(unittest.TestCase):
     def test_the_title_area_first_then_page_one(self):
         self.assertTrue(dk.title_text('x.pdf', reader(EFUSE)).startswith('XEF-1 2.7 V to 19 V Industrial eFuse'))
         late = {1: 'XQ-2\nRev B\nPage 1\nOrdering\nPackage\nMarking\nLater: Dual N-channel MOSFET'}
-        self.assertIn('MOSFET', dk.title_text('x.pdf', reader(late)))
+        self.assertNotIn('MOSFET', dk.title_text('x.pdf', reader(late)))
         self.assertEqual(dk.title_text('x.pdf', reader({2: 'Optocoupler'})), '')
 
     def test_the_classifier_against_the_title_is_a_hint(self):
