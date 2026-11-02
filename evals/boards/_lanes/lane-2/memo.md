@@ -17,3 +17,9 @@
 - XML Val/DNP比Value封装串可靠：R3贴/R4不贴；R919=0Ω、FB902/FB903供源别漏。AP62600.9是内部VCC，TXB未用A/B匹配对同接地合法。
 - I2C_ADR0/1不是SDA；未知IC扩散可带进RESET/FB/LED、电源和93AA66 Microwire，先核真实SDA/SCL端点再套框架。
 - PWR-C26已问D301防反前TVS，CLK-C01已问晶体负载；源/寄生/手册不齐时保留未决，不把候选或教学参数计作缺陷/漏报。NEEDS_HUMAN原生仍拒收，FAIL报告不能交冻结。
+
+## leonardoward--dpp-architecture-pcb（2026-11-02）
+- KiCad6 BOM先去元数据前导、Reference(s)改Reference并留转换记录；裸2200要按准确228CKS050MQW原表读成2200uF，不能猜单位。
+- Q1清单把R2→GND上的J2/J3当地驱动却漏U1.4 OUT*→R1；同时D1+C1误叫RCD，须先锁真实供入轨与栅极输出脚义。
+- 被动T1不能套数字隔离器默认态/码率/CMTI；5+6、7+8本就须并接，R3/R4=0ohm不构成短错绕组。M01是实际U1/Q1默认态对象/状态漏问，非已证烧毁。
+- T1只取到原厂p1网页文字、完整PDF403，AVAILABLE不等于全针图齐；needs_human原生仍不支持，保留FAIL（本板109项），不编工况/安全态过门禁。
