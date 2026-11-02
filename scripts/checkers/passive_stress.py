@@ -586,7 +586,8 @@ SEGMENT_SPLIT_RE = re.compile(r'[/，,；;、\s]+')
 def rated_voltage(value):
     """The rated voltage a value writes as a segment of its own (100n/10V, 47u/35V/X7R, 4.7uF 10V); None without one,
     or when two different voltages are written (10uF/16V/25V is not read). Every module reads a rating here."""
-    found = {float(m.group(1)) for m in (WRITTEN_V_RE.match(seg) for seg in SEGMENT_SPLIT_RE.split(str(value or ''))) if m}
+    text = re.sub(r'(?<=\d),(?=\d)', '.', str(value or ''))
+    found = {float(m.group(1)) for m in (WRITTEN_V_RE.match(seg) for seg in SEGMENT_SPLIT_RE.split(text)) if m}
     return found.pop() if len(found) == 1 else None
 
 
@@ -595,7 +596,8 @@ def bom_ratings(fields):
     inside a sentence, is not read."""
     found = {'voltage_v': set(), 'power_w': set()}
     for text in (fields or {}).values():
-        for segment in SEGMENT_SPLIT_RE.split(str(text or '')):
+        text = re.sub(r'(?<=\d),(?=\d)', '.', str(text or ''))
+        for segment in SEGMENT_SPLIT_RE.split(text):
             v, w = WRITTEN_V_RE.match(segment), WRITTEN_W_RE.match(segment)
             if v:
                 found['voltage_v'].add(float(v.group(1)))

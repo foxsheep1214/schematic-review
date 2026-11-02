@@ -6522,5 +6522,47 @@
   "file": "scripts/board_intent.py",
   "old": "{'PAD', 'EP', 'EPAD', 'EXPOSED_PAD', 'EXPOSEDPAD'}",
   "new": "set()"
+ },
+ {
+  "id": "M1022",
+  "name": "explicit-unit resistor component prefixes are not decoded",
+  "file": "scripts/solve_dividers.py",
+  "old": "    if prefix:\n        parsed = parse_resistor",
+  "new": "    if False:\n        parsed = parse_resistor"
+ },
+ {
+  "id": "M1023",
+  "name": "capacitance component prefix is not decoded",
+  "file": "scripts/decoupling.py",
+  "old": "    token = re.sub(r'^C_?(?=\\d)', '', token)",
+  "new": "    token = token"
+ },
+ {
+  "id": "M1024",
+  "name": "comma decimal voltage truncates to last digit",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "    text = re.sub(r'(?<=\\d),(?=\\d)', '.', str(value or ''))",
+  "new": "    text = str(value or '')"
+ },
+ {
+  "id": "M1025",
+  "name": "BOM comma decimal voltage truncates",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        text = re.sub(r'(?<=\\d),(?=\\d)', '.', str(text or ''))",
+  "new": "        text = str(text or '')"
+ },
+ {
+  "id": "M1026",
+  "name": "consistent component-prefix board never reports R330 ambiguity",
+  "file": "scripts/parse_kicad.py",
+  "old": "    if len(prefixed) < 3 or len(prefixed) * 2 <= len(resistors):",
+  "new": "    if True:"
+ },
+ {
+  "id": "M1027",
+  "name": "ambiguous effective resistance still parses numerically",
+  "file": "scripts/parse_kicad.py",
+  "old": "        part['value'] = raw + ' [ambiguous RKM/component-prefix]'",
+  "new": "        part['value'] = raw"
  }
 ]

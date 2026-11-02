@@ -12,6 +12,7 @@ from fractions import Fraction
 def parse_resistor(value, default_tol=None, exact=False):
     """解析 R/K/M、显式毫欧单位与公差；exact=True 保留十进制分数。"""
     raw = str(value or '').strip()
+    raw = re.sub(r'(?<=\d),(?=\d)', '.', raw)   # explicit European decimal comma
     # Bounded library name, never a part-number substring. Keep the decode method.
     packaged = re.fullmatch(r'R_([0-9]+(?:\.[0-9]+)?[RrKkMm](?:[0-9]+)?)(?:_[0-9]+(?:\.[0-9]+)?A)?_(01005|0201|0402|0603|0805|1206|1210|1812|2010|2512)', raw)
     if packaged:
@@ -19,6 +20,12 @@ def parse_resistor(value, default_tol=None, exact=False):
         if result is not None:
             result['method'] = 'packaged-RKM'
         return result
+    prefix = re.match(r'^R_?(?=\d+(?:\.\d+)?\s*(?:[RrKkMm]|(?i:ohms?)))', raw)
+    if prefix:
+        parsed = parse_resistor(raw[prefix.end():], default_tol=default_tol, exact=exact)
+        if parsed is not None:
+            parsed['method'] = 'component-prefix'
+        return parsed
     upper = raw.upper().replace('Ω', 'R')
     # Preserve the SI prefix's case before uppercasing: lowercase m is milli
     # (10mR, 10mohm, bare 10m, RKM 7m5 = 7.5 mOhm); uppercase M is mega (4M7).

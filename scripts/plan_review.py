@@ -609,6 +609,11 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                                                    '手册有供电/返回脚的补角色，确无的（分流基准等）不用改' % (
                                                        ref, '、'.join(sorted({'power', 'return'} - roles)))})
         unread = passive_stress.unread_values(self.db)
+        ambiguous = {ref: part['value_provenance'] for ref, part in self.db.get('parts', {}).items()
+                     if (part.get('value_provenance') or {}).get('method') == 'ambiguous-component-prefix'}
+        if ambiguous:
+            self.diagnostics.append({'code': 'RESISTOR_VALUE_AMBIGUOUS', 'values': ambiguous,
+                                     'message': 'RKM 与本板元件前缀写法冲突，阻值未知；按已绑定采购型号/原厂订货表或明确值合同消歧后重跑'})
         if unread:   # a value the parser cannot read is reported, not dropped in silence
             self.diagnostics.append({'code': 'RESISTOR_VALUE_UNREAD', 'values': unread,
                                      'message': '阻值读不出；改成 阻值[/公差][/额定功率][/额定电压][/封装] 的写法或确认阻值后重跑'})

@@ -59,7 +59,9 @@ def parse_capacitance(value):
     """
     if not isinstance(value, str):
         return None
-    match = CAP_TOKEN.match(value.strip())
+    token = re.sub(r'(?<=\d),(?=\d)', '.', value.strip())
+    token = re.sub(r'^C_?(?=\d)', '', token)   # CAP_TOKEN still requires an explicit unit
+    match = CAP_TOKEN.match(token)
     if not match:
         return None
     a, exponent, unit, b, unit_b, c, unit_c, fraction = match.groups()

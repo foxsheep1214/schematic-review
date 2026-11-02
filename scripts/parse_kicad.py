@@ -174,12 +174,41 @@ def _component(comp, libparts, pages):
         part['population_provenance'] = population
     # Ordinary literal-only symbols retain their existing db representation.
     # New native facts participate in the fingerprint only when actually present.
-    if fields or (parsed and parsed.get('method') == 'packaged-RKM'):
+    if fields or (parsed and parsed.get('method') in ('packaged-RKM', 'component-prefix')):
         part.update(original_value=original_value, fields=fields,
                     value_provenance={'field': value_source, 'raw': value,
                                       'method': parsed.get('method', 'literal-RKM') if parsed else 'unknown',
                                       'ohm': parsed['kohm'] * 1000 if parsed else None})
     return part, pages.get(path), lib, normalization
+
+
+def _resolve_resistor_style(parts):
+    """A board's R10k convention makes bare R330 ambiguous, never automatically 330 ohms.
+
+    Only the netlist's explicit procurement identity may resolve an ordering
+    code; an unbound stock code is not a manufacturer value declaration.
+    Preserve source text and both readings, and give numeric consumers an
+    unreadable effective value rather than an accidental 0.33-ohm short.
+    """
+    resistors = {r: p for r, p in parts.items() if re.match(r'^R\d', r, re.I)}
+    prefixed = [r for r, p in resistors.items()
+                if (parse_resistor(p.get('value')) or {}).get('method') == 'component-prefix']
+    if len(prefixed) < 3 or len(prefixed) * 2 <= len(resistors):
+        return
+    for ref, part in resistors.items():
+        raw = str(part.get('value') or '')
+        if not re.fullmatch(r'R\d{2,}', raw):
+            continue
+        rkm, component = parse_resistor(raw), parse_resistor(raw[1:])
+        if not rkm or not component or rkm['kohm'] == component['kohm']:
+            continue
+        part.setdefault('original_value', raw)
+        provenance = dict(part.get('value_provenance') or {'field': 'value', 'raw': raw})
+        provenance.update(method='ambiguous-component-prefix', ohm=None,
+                          candidates_ohm=[rkm['kohm'] * 1000, component['kohm'] * 1000],
+                          style_refs=sorted(prefixed))
+        part['value_provenance'] = provenance
+        part['value'] = raw + ' [ambiguous RKM/component-prefix]'
 
 
 SEXPR_TOKEN = re.compile(r'\s*(?:(\()|(\))|"((?:[^"\\]|\\.)*)"|([^\s()"]+))')
@@ -288,6 +317,8 @@ def parse(xml_text, export_errors=()):
 
     if not parts:
         raise ValueError('空网表：没有导出器件；不能作为审查输入')
+
+    _resolve_resistor_style(parts)
 
     nets, pin2net, pinname, pintype = {}, {}, {}, {}
     native_pintype = {}
