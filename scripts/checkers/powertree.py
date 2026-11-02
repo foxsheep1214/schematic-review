@@ -24,7 +24,7 @@ SERIES_REF_RE = re.compile(r'^(L|FB|F)\d', re.I)
 SWITCH_NODE_PIN_RE = re.compile(r'^(SW\d*|LX\d*|PH\d*|VSW|SWITCH|HS|LS|BOOT\w*|BST\w*)$', re.I)
 IC_REF_RE = re.compile(r'^[UM]\d', re.I)
 # 经储能电感输出的开关脚；自举脚不输出电流，不算
-SWITCH_OUTPUT_PIN_RE = re.compile(r'^(SW\d*|LX\d*|PH\d*|VSW|SWITCH)$', re.I)
+SWITCH_OUTPUT_PIN_RE = re.compile(r'^(SW(?:\d*|_(?!SNS$|SENSE$|FB$|MON$|DET$)[A-Z0-9]+)|LX\d*|PH\d*|VSW|SWITCH)$', re.I)
 # 同一器件上这些脚落在电感远端网时，电感是输入侧（升压类），不作来源
 SUPPLY_IN_PIN_RE = re.compile(r'^(P?VIN\w*|VCC\w*|VDD\w*|VBAT\w*|VSUP\w*)$', re.I)
 
@@ -139,6 +139,7 @@ class PowerTree:
     def _search(self, net):
         graph = self.graph
         queue, seen = [(net, [])], set()
+        off_board = None
         while queue:
             current, path = queue.pop(0)
             if current in seen or ng.is_ground(current) or current in graph.pseudo:
@@ -149,12 +150,14 @@ class PowerTree:
                 part = graph.parts.get(ref, {})
                 if not part or not graph.is_fitted(ref):
                     continue
+                if self.feed and off_board and any(graph.kind(r) == pw.JUMPER for r in path):
+                    continue  # do not replace a nearer port with a detour through unverified selector positions
                 if node in self.sources:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'declared source', 'state': self.state}
                 if self.feed and graph.kind(ref) in (pw.CONNECTOR, pw.BATTERY):
-                    return {'source': node, 'path': list(reversed(path)),
-                            'basis': 'off-board contact (connector or battery)'}
+                    off_board = off_board or {'source': node, 'path': list(reversed(path)),
+                                              'basis': 'off-board contact (connector or battery)'}
                 if self.feed and graph.kind(ref) in pw.WINDING_PAIRS | {pw.BRIDGE_RECTIFIER}:
                     # A winding or a rectifier output is fed by the converter or the mains; whether it is a rail,
                     # and from what, is the circuit review's question (R6 acceptance 2026-10-24: BIAS15/VCC/HV).
@@ -166,7 +169,9 @@ class PowerTree:
                         if graph.role(ref + '.' + other_node) == other_role and other_net != current:
                             queue.append((other_net, path + [ref]))
                 pin = node.partition('.')[2]
-                output_name = pw.name_matches(SOURCE_PIN_RE, graph.pinname.get(node), pin)
+                sense_only = (re.fullmatch(r'SIC437[A-Z0-9/-]*', str(part.get('part', '')), re.I)
+                              and pin == '18')  # SiC437 pin18 VOUT senses the output; SW delivers energy
+                output_name = pw.name_matches(SOURCE_PIN_RE, graph.pinname.get(node), pin) and not sense_only
                 if IC_REF_RE.match(ref) and output_name:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'pin-name candidate; verify function and upstream power'}
@@ -176,7 +181,7 @@ class PowerTree:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'OUT pin beside IN pin (regulator/load-switch shape); '
                                      'verify function and upstream power'}
-                if (graph.db.get('native_pintype') or {}).get(node) == 'power_out':
+                if not sense_only and (graph.db.get('native_pintype') or {}).get(node) == 'power_out':
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'native power_out pin (library electrical type); '
                                      'verify function and upstream power'}
@@ -205,7 +210,9 @@ class PowerTree:
                         queue.append((other, path + [ref]))
                     continue
                 resistor = parse_resistor(part.get('value')) if re.match(r'^R\d', ref) else None
-                if SERIES_REF_RE.match(ref) or (resistor and resistor['kohm'] == 0):
+                if (SERIES_REF_RE.match(ref) or graph.kind(ref) in {pw.INDUCTOR, pw.FERRITE, pw.FUSE}
+                        or re.search(r'(?:^|:)Net[-_ ]?Tie(?:_|$)', str(part.get('prim', '')), re.I)
+                        or (resistor and 0 <= resistor['kohm'] <= 0.001)):
                     queue.append((other, path + [ref]))
                 elif self.feed and (graph.kind(ref) in {pw.SWITCH, pw.FUSE, pw.FERRITE, pw.INDUCTOR, pw.JUMPER} | pw.SERIES_WINDINGS
                                     or (resistor and resistor['kohm'] <= FEED_RESISTOR_KOHM)):
@@ -218,7 +225,7 @@ class PowerTree:
                 if (part and graph.is_fitted(ref) and edge.get('to') == current
                         and edge.get('from') in ends and current in ends):
                     queue.append((edge['from'], path + [ref]))
-        return None
+        return off_board
 
     def _via_storage_inductor(self, ref, path):
         """最后一跳是电感，且该器件的供电输入脚不在电感远端网（排除升压输入侧）。"""
@@ -229,5 +236,6 @@ class PowerTree:
         far = set(graph.nets_of(inductor))
         own = set(graph.named_pins(ref, SWITCH_OUTPUT_PIN_RE).values())
         far -= own
-        supply = set(graph.named_pins(ref, SUPPLY_IN_PIN_RE).values())
+        supply = {net for node, net in graph.named_pins(ref, SUPPLY_IN_PIN_RE).items()
+                  if not re.search(r'(?:SNS|SENSE)(?:$|[_0-9])', str(graph.pinname.get(node, '')), re.I)}
         return bool(far) and not (far & supply)
