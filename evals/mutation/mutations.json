@@ -5584,5 +5584,33 @@
   "file": "scripts/solve_dividers.py",
   "old": "    if unit == 'M':\n        remainder = re.sub(r'^EG', '', remainder)   # SPICE-style 10Meg\n",
   "new": ""
+ },
+ {
+  "id": "M863",
+  "name": "SIG-A06 same-net CAN short not seen",
+  "file": "scripts/board_scans.py",
+  "old": "        if high == low:\n            shorted",
+  "new": "        if False:\n            shorted"
+ },
+ {
+  "id": "M864",
+  "name": "SIG-A06 zero-ohm link across the bus not seen",
+  "file": "scripts/board_scans.py",
+  "old": "            if not links:\n                continue\n            shorted",
+  "new": "            if True:\n                continue\n            shorted"
+ },
+ {
+  "id": "M865",
+  "name": "SIG-A06 treats a 120R termination as a short",
+  "file": "scripts/board_scans.py",
+  "old": "CAN_SHORT_KOHM = 0.001",
+  "new": "CAN_SHORT_KOHM = 1.0"
+ },
+ {
+  "id": "M866",
+  "name": "SIG-A06 reports an unfitted transceiver",
+  "file": "scripts/board_scans.py",
+  "old": "        if part.get('nc') or lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE",
+  "new": "        if lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE"
  }
 ]

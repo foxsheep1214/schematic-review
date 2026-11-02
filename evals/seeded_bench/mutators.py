@@ -413,7 +413,7 @@ def can_termination(db):
         for node, net in list(out['pin2net'].items()):
             if net == low:
                 out['pin2net'][node] = high
-        yield Mutation('D-CAN-TERM-SHORT', ('SIG-C03',), (ref,), (high, low),
+        yield Mutation('D-CAN-TERM-SHORT', ('SIG-A06', 'SIG-C03'), (ref,), (high, low),
                        'wire short CAN H/L, bypass termination', rebuild(out))
 
 

@@ -25,6 +25,8 @@ I2C_DEFAULT_PULLUP_V = 1.8   # 网名读不出电压时取常用的最低总线�
 # 只认端口本身的 VBUS；限流器之后的网（VBUS_SW 等）不累加。
 USB_VBUS_NET_RE = re.compile(r'(^|[/_.:-])(VBUS|VUSB)\d*$', re.I)
 USB_SINK_BULK_MAX_F = 100e-6
+CAN_PIN_RE = re.compile(r'^CAN_?([HL])$', re.I)
+CAN_SHORT_KOHM = 0.001
 USB_PIN_RE = re.compile(r'^(VBUS|CC[12]|D[+-])$', re.I)
 # 身份只作线索，判据是“输出网上没有电容”；无需 Cout 的型号由审查者按手册关闭。
 LDO_IDENTITY_RE = re.compile(r'REGULATOR_LINEAR|\bLDO|LOW.?DROPOUT|LINEAR.?REG|AMS1117|L[MD]1117|AP2112|AP2210|'
@@ -269,6 +271,30 @@ def usb_vbus_bulk(lint):
                      '端口作 Source 按表 4-2，有限浪涌电路可关闭，角色与限流按 SIG-C05/PWR-C13 核', refs[0], kind='CANDIDATE')
 
 
+def can_bus_short(lint):
+    """SIG-A06：收发器 CANH/CANL 同网，或两网间跨接 ≤1 Ω 电阻（G04-032）；120 Ω 端接不算。"""
+    from solve_dividers import parse_resistor
+    for ref, part in sorted(lint.parts.items()):
+        if part.get('nc') or lint.graph.kind(ref) != IC:
+            continue
+        nodes = {CAN_PIN_RE.match(str(lint.pinname.get(node, '')).strip()).group(1).upper(): node
+                 for node in _nodes(lint, ref) if CAN_PIN_RE.match(str(lint.pinname.get(node, '')).strip())}
+        if len(nodes) != 2:
+            continue
+        high, low = lint.pin2net.get(nodes['H']), lint.pin2net.get(nodes['L'])
+        if high == low:
+            shorted = f'同在网 {high}'
+        else:
+            links = [other for other in lint.graph.between(high, low, {RESISTOR})
+                     if (parse_resistor(lint.parts[other].get('value')) or {'kohm': 1})['kohm'] <= CAN_SHORT_KOHM]
+            if not links:
+                continue
+            shorted = f'在 {high}/{low} 之间被 {",".join(links)} 跨接'
+        lint.add('SIG-A06', 'CAN 总线 H/L 被短接',
+                 f'{ref}: {nodes["H"]} 与 {nodes["L"]} {shorted}，无法建立显性差分电平（G04-032；TI TCAN1042 §10.2.2.1）；'
+                 '端接应为约 120 Ω，总负载按 SIG-C03 算', ref)
+
+
 def ldo_output_capacitor(lint):
     """PWR-A07：线性稳压器的输出网上没有接地电容，经磁珠或电感也到不了（G03-003）。"""
     for ref, part in sorted(lint.parts.items()):
@@ -336,4 +362,5 @@ def run(lint):
     i2c_pullup_window(lint)
     usb_vbus_bulk(lint)
     ldo_output_capacitor(lint)
+    can_bus_short(lint)
     floating_inputs(lint)

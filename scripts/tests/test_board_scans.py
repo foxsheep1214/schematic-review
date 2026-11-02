@@ -184,9 +184,44 @@ class I2cPullupWindowTest(unittest.TestCase):
     def test_an_unreadable_value_stops_the_judgement(self):
         self.assertEqual(scans(self.bus(R1='10Meg', R2='fixme'), 'SIG-A04'), [])
 
-    def test_low_value_pullup_to_a_plus_rail_is_a_pullup_for_sig_a03(self):
-        db = self.bus(rail='+3V3', R1='1k')
-        self.assertEqual([hit for hit in scans(db, 'SIG-A03') if 'SDA' in hit['detail'].split(':')[0]], [])
+    def test_low_value_pullup_behind_a_jumper_is_a_pullup_for_sig_a03(self):
+        db = board({'U1': 'MCU', 'U2': 'S', 'R1': '1k', 'JP1': 'SolderJumper'},
+                   {'SDA': ['U1.3', 'U2.3', 'R1.1'], 'PU': ['R1.2', 'JP1.1'], 'VCC_3V3': ['JP1.2', 'U1.1', 'U2.1'],
+                    'GND': ['U1.2', 'U2.2']})
+        self.assertEqual(scans(db, 'SIG-A03'), [])
+
+
+class CanBusShortTest(unittest.TestCase):
+    NAMES = {'U1.3': 'CANH', 'U1.4': 'CANL'}
+
+    def test_h_and_l_on_one_net_is_a_finding(self):
+        db = board({'U1': 'TCAN1042'}, {'CANH': ['U1.3', 'U1.4']}, self.NAMES)
+        hits = scans(db, 'SIG-A06')
+        self.assertEqual([hit['kind'] for hit in hits], ['FINDING'])
+        self.assertIn('U1', hits[0]['detail'])
+
+    def test_separate_nets_pass(self):
+        self.assertEqual(scans(board({'U1': 'TCAN1042'}, {'CANH': ['U1.3'], 'CANL': ['U1.4']}, self.NAMES), 'SIG-A06'), [])
+
+    def across(self, value):
+        return board({'U1': 'TCAN1042', 'R1': value}, {'CANH': ['U1.3', 'R1.1'], 'CANL': ['U1.4', 'R1.2']}, self.NAMES)
+
+    def test_zero_ohm_across_the_bus_is_a_short(self):
+        self.assertEqual(len(scans(self.across('0R'), 'SIG-A06')), 1)
+        self.assertEqual(len(scans(self.across('1R'), 'SIG-A06')), 1)
+
+    def test_a_termination_resistor_is_not_a_short(self):
+        self.assertEqual(scans(self.across('120R'), 'SIG-A06'), [])
+        self.assertEqual(scans(self.across('fixme'), 'SIG-A06'), [])
+
+    def test_alternate_pin_spelling(self):
+        db = board({'U1': 'X'}, {'BUS': ['U1.3', 'U1.4']}, {'U1.3': 'CAN_H', 'U1.4': 'CAN_L'})
+        self.assertEqual(len(scans(db, 'SIG-A06')), 1)
+
+    def test_an_unfitted_transceiver_is_not_reported(self):
+        db = board({'U1': 'TCAN1042'}, {'CANH': ['U1.3', 'U1.4']}, self.NAMES)
+        db['parts']['U1']['nc'] = True
+        self.assertEqual(scans(db, 'SIG-A06'), [])
 
 
 class UsbVbusBulkTest(unittest.TestCase):

@@ -431,6 +431,8 @@ RULES = (
          '逐电气段合并接到电源轨（可经跳线/开关）的已装配上拉：并联值 > 118 kΩ（标准模式 tr 1 µs、Cb 只取 10 pF，UM10204 §7.1 式 (1)、表 11，G04-017），或 < (Vpullup−0.4 V)/20 mA（增强快速模式 IOL，§7.1 式 (2)、表 10，G04-018）；这是最宽松的外包络，实际模式、总线电容与最弱器件 IOL 仍按 SIG-C01 算', 'lint', 'net'),
     Rule('SIG-A05', 'VBUS 直挂体电容超过 Sink 上限',
          '板上有 USB 器件或 USB 脚名时，网名为 VBUS/VUSB 的网上直接对地的已装配电容按 BOM 值合计超过 100 µF（USB PD 表 4.7 注 1、Type-C 表 4-3，G01-029）；不跨限流器累加；端口作 Sink 还是 Source（表 4-2）、前级是否限浪涌，以及非附着态 10 µF 上限由审查者按 SIG-C05/PWR-C13 核', 'lint', 'net'),
+    Rule('SIG-A06', 'CAN 总线 H/L 被短接',
+         '已装配 IC 的 CANH、CANL 脚在同一网上，或两网之间跨接 ≤1 Ω 的已装配电阻：差分总线被短接，无法建立显性电平（G04-032，TI TCAN1042 §10.2.2.1、SLLA270 §4）；端接阻值、节点位置与总等效负载按 SIG-C03 算', 'lint', 'net'),
     Rule('SIG-E01', '必需上拉与串阻',
          '核对指定两网间电阻装配与等效阻值；电平/上升时间另行检查', 'plan', 'net'),
     Rule('SIG-E02', '差分电平兼容',
@@ -716,7 +718,7 @@ OBJECTIVE_RULES = {
     'G3': tuple(('PWR-A07 PWR-C04 PWR-C15 PWR-D03 '
                  'RST-A01 RST-A02 RST-A03 RST-A04 RST-A05 RST-A06 RST-E01 RST-E02 RST-E03 '
                  'RST-T01 RST-T02 RST-T03 RST-T04 RST-C01 RST-C02 '
-                 'CLK-D01 CLK-D03 SIG-A01 SIG-A02 SIG-A03 SIG-A04 SIG-E02 SIG-C01 SIG-C03 SIG-C04 SIG-C07 SIG-C09 '
+                 'CLK-D01 CLK-D03 SIG-A01 SIG-A02 SIG-A03 SIG-A04 SIG-A06 SIG-E02 SIG-C01 SIG-C03 SIG-C04 SIG-C07 SIG-C09 '
                  'SIG-D01 SIG-D02 SIG-D03 SIG-D04 SIG-D07 SIG-D08 SIG-D09 SIG-D10 SIG-D11 SIG-D12 SIG-D14 SIG-D15 '
                  'ANA-T01 ANA-C01 ANA-C02 ANA-D01 PRO-A03 PRO-A04 PRO-E01 DRV-A03 DRV-E01 '
                  'PWR-C24 SIG-C10 SIG-C12 SIG-C13 SIG-C14 SIG-C15 SIG-C16 SIG-C17 SIG-C19 ANA-C05').split()),
@@ -832,6 +834,7 @@ BASIS = {
     'RST-T04': ('G04-010',),
     'SIG-A04': ('G04-017', 'G04-018'),
     'SIG-A05': ('G01-029',),
+    'SIG-A06': ('G04-032',),
     'SIG-C01': ('G04-017', 'G04-018', 'G04-022'),
     'SIG-C03': ('G04-026', 'G04-027', 'G04-028', 'G04-032', 'G04-061', 'G04-064', 'G04-076'),
     'SIG-C04': ('G04-025', 'G04-031', 'G04-035', 'G04-067', 'G04-069'),
@@ -2183,6 +2186,7 @@ EXPLANATIONS = {
     'SIG-A03': _x('同一段 SDA/SCL 没有上拉，在其他段或片内可能有，也可能真的没有', '在主机侧、片内或其他段找到有资料的上拉即关闭；阻值归 SIG-C01', false_alarms='主控或电平转换器片内上拉；上拉在另一块板或另一段；只接测试点的配置口由夹具上拉'),
     'SIG-A04': _x('上拉极大时高电平建立不起来，极小时器件拉不低', '阻值落回窗口或资料说明另有上拉即关闭；按实际模式的计算归 SIG-C01', false_alarms='值字段未写实际阻值的占位电阻；总线另有未画出的上拉或有源上拉时偏大一侧不成立'),
     'SIG-A05': _x('每颗电容单看合理，合计却可能超限，插入瞬间拉垮对端 VBUS', '端口不作 Sink 或有资料可证的限浪涌即关闭；角色与限流归 SIG-C05', false_alarms='作 Source 的端口按表 4-2 判，不适用 100 µF；限流器后的电容网名不同，本规则不累加'),
+    'SIG-A06': _x('H/L 短接后收发器发不出显性电平，整条总线不通', '去掉短接、改成 120 Ω 端接后即关闭；总线端接计算归 SIG-C03', false_alarms='两颗收发器位号或脚名写错时可能是图面错误，不是真短接；按图面确认'),
     'SIG-E01': _x('接口要求的上拉或串阻缺失时，静态连通检查发现不了', '指定两网间有已装配电阻且等效阻值在要求范围即关闭', inputs='SIG-T04 的方向'),
     'SIG-E02': _x('差分对连通了，共模或摆幅不在接收范围时仍收不到或损伤输入', '两端保证范围下共模、摆幅和阈值都兼容即关闭；时序归 SIG-C09', inputs='SIG-T01/T03 的连接与端接'),
     'SIG-T01': _x('差分对两根都连通，P/N 互换或配错对时仍无法工作', '每对 P/N 两端语义一致、全链路连通即关闭；电平归 SIG-E02', inputs='DEV-D02 的脚义', false_alarms='CS_P/CS_N 等电流电压采样对是模拟测量，按 ANA 检查'),
