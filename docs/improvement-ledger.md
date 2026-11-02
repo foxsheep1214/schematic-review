@@ -9,6 +9,19 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+
+## 按设计准则统计 SR 检出力：命中、漏报、误报与未知 (2026-11-02)
+
+增加独立评测汇总，按现行 catalog.BASIS 关联种子缺陷、典型电路正负例和有审查来源的历史清单。
+53 条历史事件区分电气真缺陷、过程缺陷与规则审计，不把 unknown 或正确线索当电气真值；
+未映射事件和 14 条自动规则误报单列。原生回放字段一致性及导入历史只作辅助，不与代码变异门混计。
+生成完整准则表与零样本表，并提出针对具体准则的加深、删模板与补样本建议。未改 SKILL、共用层和电气判据。
+
+- Event: user:2026-11-02 (请安排这样的工作，并调用codex…)
+- Causes: judgment 1
+- Changed: evals/detection/run.py, evals/detection/README.md, evals/detection/known_defects.json, evals/detection/RESULTS.md, docs/proposals/detection-power-2026-11-02.md, scripts/tests/test_detection_bench.py, docs/improvement-ledger.md
+- Gates: pytest 2415 passed, 2 skipped; mutation --changed: 0 mutations on 7 changed files
+
 ## 正式电路用语：共用规范规则改称设计准则（文件名、模块名、字段一起改） (2026-11-02)
 
 用户要求把“规则、模式、覆盖”改成正式电路名词，并选择连文件名和字段一起改。本技能涉及的是第一个：共用规范的单条可核对要求改称**设计准则**（原“规范规则/规则卡”），
