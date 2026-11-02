@@ -88,3 +88,8 @@
 - TVS角色VERIFIED仍会被protected_net关键词与两网条件漏掉；按通道补7条PRO-E02。模块AnalogIP、A/Y唤醒控制及Hub片内滤波别被泛称ic/资格裁空；已有CAN/I2C/晶体规则别重复算漏。
 - U14/U15原图明确互斥；J9/J11是3针选择帽，别按两10k同时分压。USB2514旧版PLLFILT/CRFILT≥1uF，B版up to0.1uF不能交叉套。BT1/J2/未用CM4输出可制造假去耦，CM4本地手册还会被材料筛选排除。
 - I2C rails同步到schema2避免stale；strict缺U7/U8/U10六脚名不能静默修db。schema15五类评估承载、纯拓扑/整改结构失败如实留，报告原样副本不是有效打包；Type-C准则不泛套USB-A。
+
+- 2026-11-02 loudifier--openrefmic：137项／18归因（1真、6误、0准则、4知识、7待定），Top50核对50条、未证实新增漏报；27PASS+2FAIL同1根因+15NA、93待定；原生FAIL/NO_GO。
+- U1图OPA4991IDR对BOM OPA1664AIDR须先定身份；四路典型Iq2.24mA对6mA，不能只看同SOIC14。C1/C2正端相向是交流耦合，C9/C10正端朝幻象源，未定波形勿直接判反接/损坏。
+- R20/R21各7.15k生成VGND中点，domains/passive_stress却按0V地让R21零功耗PASS；有限电阻不等势，且派生器丢proposal_override。D3并联稳压、相邻音频反馈、模拟XLR、24V齐纳分别易误派防护/补偿/数字电平/24V入口。
+- 混合BOM先留原CSV再抽电气段；采购字段里的MPN要独立核，D_Zener泛名会合并24V/5.6V资料。strict缺输出名只手核SOIC14脚，不改原db；schema15分类/局部条款承载FAIL与电气缺陷分别记，报告副本含无效警告。
