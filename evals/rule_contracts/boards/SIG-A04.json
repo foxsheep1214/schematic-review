@@ -1,0 +1,213 @@
+{
+ "rule": "SIG-A04",
+ "runner": "cold",
+ "note": "SDA pull-up 1M above the widest window vs 4k7",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "SDA",
+      "SDA"
+     ],
+     [
+      "4",
+      "SCL",
+      "SCL"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "SENSOR",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "SDA",
+      "SDA"
+     ],
+     [
+      "4",
+      "SCL",
+      "SCL"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "4k7",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "SCL"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "1M",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "SDA"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "SDA",
+      "SDA"
+     ],
+     [
+      "4",
+      "SCL",
+      "SCL"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "SENSOR",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "SDA",
+      "SDA"
+     ],
+     [
+      "4",
+      "SCL",
+      "SCL"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "4k7",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "SCL"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "4k7",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "SDA"
+     ]
+    ]
+   }
+  ]
+ }
+}

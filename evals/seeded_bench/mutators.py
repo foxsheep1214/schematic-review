@@ -294,7 +294,7 @@ def i2c_value(db):
             out = copy.deepcopy(db)
             for ref in m.refs:
                 out['parts'][ref]['value'] = value
-            yield Mutation(defect, ('SIG-C01',), m.refs, m.nets,
+            yield Mutation(defect, ('SIG-A04', 'SIG-C01'), m.refs, m.nets,
                            ','.join(m.refs) + ' -> ' + value, out)
 
 
@@ -313,7 +313,7 @@ def usb_bulk(db):
                 and any(ng.is_ground(n) for _, n in pins)):
             out = copy.deepcopy(db)
             out['parts'][ref]['value'] = '1000uF 50V'
-            yield Mutation('D-USB-BULK', ('SIG-C05',), (ref,), (), ref + ' -> 1000uF', out)
+            yield Mutation('D-USB-BULK', ('SIG-A05', 'SIG-C05'), (ref,), (), ref + ' -> 1000uF', out)
 
 
 def isolation_bridge(db):
@@ -336,7 +336,7 @@ def isolation_bridge(db):
         for node, net in list(out['pin2net'].items()):
             if net == grounds[1]:
                 out['pin2net'][node] = grounds[0]
-        yield Mutation('D-ISO-BRIDGE', ('PRO-D02',), (ref,), tuple(grounds),
+        yield Mutation('D-ISO-BRIDGE', ('PRO-A05', 'PRO-D02'), (ref,), tuple(grounds),
                        'short ' + ' / '.join(grounds), rebuild(out))
 
 
@@ -362,7 +362,7 @@ def crystal_load(db):
             out = copy.deepcopy(db)
             for cref in caps:
                 out['parts'][cref]['value'] = '1uF'
-            yield Mutation('D-XTAL-LOAD', ('CLK-C01',), (ref, *caps), (),
+            yield Mutation('D-XTAL-LOAD', ('CLK-A01', 'CLK-C01'), (ref, *caps), (),
                            ','.join(caps) + ' -> 1uF', out)
 
 
@@ -391,7 +391,7 @@ def regulator_cout(db):
                 out = db
                 for cref in caps:
                     out = removed(out, cref)
-                yield Mutation('D-LDO-COUT', ('PWR-C04',), (ref, *caps), (net,),
+                yield Mutation('D-LDO-COUT', ('PWR-A07', 'PWR-C04'), (ref, *caps), (net,),
                                'remove output capacitors ' + ','.join(caps), out)
 
 
@@ -416,7 +416,7 @@ def can_termination(db):
         for node, net in list(out['pin2net'].items()):
             if net == low:
                 out['pin2net'][node] = high
-        yield Mutation('D-CAN-TERM-SHORT', ('SIG-C03',), (ref,), (high, low),
+        yield Mutation('D-CAN-TERM-SHORT', ('SIG-A06', 'SIG-C03'), (ref,), (high, low),
                        'wire short CAN H/L, bypass termination', rebuild(out))
 
 
@@ -455,7 +455,7 @@ def crystal_shared(db):
             out['no_connect_nodes'] = list(out.get('no_connect_nodes', [])) + [
                 new + '.' + node.split('.', 1)[1] for node in db.get('no_connect_nodes', [])
                 if node.split('.', 1)[0] == ic]
-            yield Mutation('D-XTAL-SHARED', ('CLK-C01',), (ref, ic, new), tuple(sorted(oscillator_nets)),
+            yield Mutation('D-XTAL-SHARED', ('CLK-A02', 'CLK-C01'), (ref, ic, new), tuple(sorted(oscillator_nets)),
                            'clone ' + ic + ' as ' + new + ' on the same crystal', rebuild(out))
             break
 

@@ -125,6 +125,300 @@ class I2cPullupTest(unittest.TestCase):
         self.assertEqual(subjects(scans(db, 'SIG-A03')), ['SCL', 'SDA'])
 
 
+class I2cPullupWindowTest(unittest.TestCase):
+    def bus(self, rail='VCC_3V3', **pulls):
+        nets = {'SDA': ['U1.3', 'U2.3'], 'SCL': ['U1.4', 'U2.4'], rail: ['U1.1', 'U2.1'], 'GND': ['U1.2', 'U2.2']}
+        for ref in pulls:
+            nets['SDA'].append(ref + '.1')
+            nets[rail].append(ref + '.2')
+        return board(dict({'U1': 'MCU', 'U2': 'SENSOR'}, **pulls), nets,
+                     {'U1.3': 'SDA', 'U2.3': 'SDA', 'U1.4': 'SCL', 'U2.4': 'SCL'})
+
+    def test_a_typical_pullup_passes(self):
+        self.assertEqual(scans(self.bus(R1='4k7'), 'SIG-A04'), [])
+
+    def test_ten_megaohm_is_too_weak_for_any_mode(self):
+        hits = scans(self.bus(R1='10Meg'), 'SIG-A04')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('G04-017', hits[0]['detail'])
+
+    def test_upper_bound_is_the_widest_window(self):
+        self.assertEqual(scans(self.bus(R1='100k'), 'SIG-A04'), [])
+        self.assertEqual(len(scans(self.bus(R1='120k'), 'SIG-A04')), 1)
+
+    def test_one_ohm_cannot_be_pulled_low(self):
+        hits = scans(self.bus(R1='1R'), 'SIG-A04')
+        self.assertEqual(len(hits), 1)
+        self.assertIn('G04-018', hits[0]['detail'])
+
+    def test_lower_bound_scales_with_the_rail(self):
+        self.assertEqual(scans(self.bus(R1='150'), 'SIG-A04'), [])              # (3.3-0.4)/20mA = 145
+        self.assertEqual(len(scans(self.bus(R1='140'), 'SIG-A04')), 1)
+        self.assertEqual(len(scans(self.bus(rail='VCC_5V', R1='220'), 'SIG-A04')), 1)   # 230
+
+    def test_parallel_pullups_are_combined(self):
+        self.assertEqual(scans(self.bus(R1='10Meg', R2='4k7'), 'SIG-A04'), [])  # strong one sets the bus
+        self.assertEqual(len(scans(self.bus(R1='270', R2='270'), 'SIG-A04')), 1)  # 135 < 145
+
+    def test_unknown_rail_voltage_uses_the_lowest_common_bus(self):
+        self.assertEqual(scans(self.bus(rail='VCC', R1='100'), 'SIG-A04'), [])  # (1.8-0.4)/20mA = 70
+        self.assertEqual(len(scans(self.bus(rail='VCC', R1='47'), 'SIG-A04')), 1)
+
+    def test_a_series_resistor_is_not_a_pullup(self):
+        db = board({'U1': 'MCU', 'U2': 'S', 'R1': '1R', 'R2': '4k7'},
+                   {'SDA': ['U1.3', 'R1.1', 'R2.1'], 'SDA_S': ['U2.3', 'R1.2'], 'VCC_3V3': ['R2.2', 'U1.1', 'U2.1'],
+                    'GND': ['U1.2', 'U2.2']})
+        self.assertEqual(scans(db, 'SIG-A04'), [])
+
+    def test_pullup_reached_through_a_jumper_counts(self):
+        db = board({'U1': 'MCU', 'U2': 'S', 'R1': '10Meg', 'JP1': 'SolderJumper'},
+                   {'SDA': ['U1.3', 'U2.3', 'R1.1'], 'PU': ['R1.2', 'JP1.1'], 'VCC_3V3': ['JP1.2', 'U1.1', 'U2.1'],
+                    'GND': ['U1.2', 'U2.2']})
+        self.assertEqual(len(scans(db, 'SIG-A04')), 1)
+
+    def test_a_resistor_to_a_plain_signal_is_not_judged(self):
+        db = board({'U1': 'MCU', 'U2': 'S', 'R1': '10Meg'},
+                   {'SDA': ['U1.3', 'U2.3', 'R1.1'], 'SENSE': ['R1.2', 'U2.5'], 'GND': ['U1.2', 'U2.2']})
+        self.assertEqual(scans(db, 'SIG-A04'), [])
+
+    def test_an_unreadable_value_stops_the_judgement(self):
+        self.assertEqual(scans(self.bus(R1='10Meg', R2='fixme'), 'SIG-A04'), [])
+
+    def test_low_value_pullup_behind_a_jumper_is_a_pullup_for_sig_a03(self):
+        db = board({'U1': 'MCU', 'U2': 'S', 'R1': '1k', 'JP1': 'SolderJumper'},
+                   {'SDA': ['U1.3', 'U2.3', 'R1.1'], 'PU': ['R1.2', 'JP1.1'], 'VCC_3V3': ['JP1.2', 'U1.1', 'U2.1'],
+                    'GND': ['U1.2', 'U2.2']})
+        self.assertEqual(scans(db, 'SIG-A03'), [])
+
+
+class CanBusShortTest(unittest.TestCase):
+    NAMES = {'U1.3': 'CANH', 'U1.4': 'CANL'}
+
+    def test_h_and_l_on_one_net_is_a_finding(self):
+        db = board({'U1': 'TCAN1042'}, {'CANH': ['U1.3', 'U1.4']}, self.NAMES)
+        hits = scans(db, 'SIG-A06')
+        self.assertEqual([hit['kind'] for hit in hits], ['FINDING'])
+        self.assertIn('U1', hits[0]['detail'])
+
+    def test_separate_nets_pass(self):
+        self.assertEqual(scans(board({'U1': 'TCAN1042'}, {'CANH': ['U1.3'], 'CANL': ['U1.4']}, self.NAMES), 'SIG-A06'), [])
+
+    def across(self, value):
+        return board({'U1': 'TCAN1042', 'R1': value}, {'CANH': ['U1.3', 'R1.1'], 'CANL': ['U1.4', 'R1.2']}, self.NAMES)
+
+    def test_zero_ohm_across_the_bus_is_a_short(self):
+        self.assertEqual(len(scans(self.across('0R'), 'SIG-A06')), 1)
+        self.assertEqual(len(scans(self.across('1R'), 'SIG-A06')), 1)
+
+    def test_a_termination_resistor_is_not_a_short(self):
+        self.assertEqual(scans(self.across('120R'), 'SIG-A06'), [])
+        self.assertEqual(scans(self.across('fixme'), 'SIG-A06'), [])
+
+    def test_alternate_pin_spelling(self):
+        db = board({'U1': 'X'}, {'BUS': ['U1.3', 'U1.4']}, {'U1.3': 'CAN_H', 'U1.4': 'CAN_L'})
+        self.assertEqual(len(scans(db, 'SIG-A06')), 1)
+
+    def test_an_unfitted_transceiver_is_not_reported(self):
+        db = board({'U1': 'TCAN1042'}, {'CANH': ['U1.3', 'U1.4']}, self.NAMES)
+        db['parts']['U1']['nc'] = True
+        self.assertEqual(scans(db, 'SIG-A06'), [])
+
+
+class IsolatorGroundBridgeTest(unittest.TestCase):
+    NAMES = {'U1.2': 'GND1', 'U1.7': 'GND2'}
+
+    def isolator(self, value='ADuM1201', parts=None, nets=None):
+        all_nets = {'GND': ['U1.2'], 'GND_ISO': ['U1.7']}
+        all_nets.update(nets or {})
+        return board(dict({'U1': value}, **(parts or {})), all_nets, dict(self.NAMES))
+
+    def test_grounds_on_one_net_is_a_candidate(self):
+        db = board({'U1': 'ADuM1201'}, {'GND': ['U1.2', 'U1.7']}, dict(self.NAMES))
+        hits = scans(db, 'PRO-A05')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('U1', hits[0]['detail'])
+
+    def test_separate_grounds_pass(self):
+        self.assertEqual(scans(self.isolator(), 'PRO-A05'), [])
+
+    def bridge(self, value):
+        return self.isolator(parts={'R1': value}, nets={'GND': ['U1.2', 'R1.1'], 'GND_ISO': ['U1.7', 'R1.2']})
+
+    def test_a_zero_ohm_link_or_ferrite_bridges(self):
+        self.assertEqual(len(scans(self.bridge('0R'), 'PRO-A05')), 1)
+        db = self.isolator(parts={'FB1': 'BLM18'}, nets={'GND': ['U1.2', 'FB1.1'], 'GND_ISO': ['U1.7', 'FB1.2']})
+        self.assertEqual(len(scans(db, 'PRO-A05')), 1)
+
+    def test_a_bleed_resistor_or_y_capacitor_is_left_to_the_barrier_rules(self):
+        self.assertEqual(scans(self.bridge('1M'), 'PRO-A05'), [])
+        self.assertEqual(scans(self.bridge('fixme'), 'PRO-A05'), [])
+        db = self.isolator(parts={'CY1': '1nF'}, nets={'GND': ['U1.2', 'CY1.1'], 'GND_ISO': ['U1.7', 'CY1.2']})
+        self.assertEqual(scans(db, 'PRO-A05'), [])
+
+    def test_a_multi_ground_ic_that_is_not_an_isolator_is_not_judged(self):
+        db = board({'U1': 'STM32F4'}, {'GND': ['U1.2', 'U1.7']}, dict(self.NAMES))
+        self.assertEqual(scans(db, 'PRO-A05'), [])
+
+    def test_a_verified_isolator_role_is_enough(self):
+        db = board({'U1': 'XYZ123'}, {'GND': ['U1.2', 'U1.7']}, dict(self.NAMES),
+                   device_kinds={'U1': {'kind': 'isolator', 'basis': 'datasheet'}})
+        self.assertEqual(len(scans(db, 'PRO-A05')), 1)
+
+    def test_an_isolator_with_one_ground_name_is_not_judged(self):
+        db = board({'U1': 'ADuM1201'}, {'GND': ['U1.2', 'U1.7']}, {'U1.2': 'GND', 'U1.7': 'GND'})
+        self.assertEqual(scans(db, 'PRO-A05'), [])
+
+
+class CrystalLoadTest(unittest.TestCase):
+    def crystal(self, c1='18pF', c2='18pF', ref='Y1'):
+        return board({ref: '16MHz', 'C1': c1, 'C2': c2, 'U1': 'MCU'},
+                     {'XI': [ref + '.1', 'C1.1', 'U1.3'], 'XO': [ref + '.2', 'C2.1', 'U1.4'], 'GND': ['C1.2', 'C2.2', 'U1.2']},
+                     {'U1.3': 'XIN', 'U1.4': 'XOUT'})
+
+    def test_typical_load_passes(self):
+        self.assertEqual(scans(self.crystal(), 'CLK-A01'), [])
+
+    def test_one_microfarad_is_a_candidate(self):
+        hits = scans(self.crystal('1uF', '1uF'), 'CLK-A01')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('Y1', hits[0]['detail'])
+
+    def test_the_bound_is_on_the_series_equivalent(self):
+        self.assertEqual(scans(self.crystal('180pF', '180pF'), 'CLK-A01'), [])   # 90 pF
+        self.assertEqual(len(scans(self.crystal('220pF', '220pF'), 'CLK-A01')), 1)   # 110 pF
+        self.assertEqual(scans(self.crystal('1uF', '18pF'), 'CLK-A01'), [])      # about 18 pF
+
+    def test_load_on_one_side_only_or_unreadable_is_not_judged(self):
+        db = self.crystal('1uF', '1uF')
+        db['parts']['C2']['nc'] = True
+        self.assertEqual(scans(db, 'CLK-A01'), [])
+        self.assertEqual(scans(self.crystal('1uF', '105'), 'CLK-A01'), [])
+
+    def test_an_active_oscillator_decoupling_capacitor_is_not_a_load(self):
+        db = board({'Y1': 'Oscillator', 'C1': '1uF', 'C2': '1uF'},
+                   {'VCC_3V3': ['Y1.1', 'C1.1'], 'CLK': ['Y1.2', 'C2.1'], 'GND': ['C1.2', 'C2.2']})
+        self.assertEqual(scans(db, 'CLK-A01'), [])
+
+
+class CrystalSharedTest(unittest.TestCase):
+    def shared(self, u2=('XIN', 'XOUT'), u2_value='MCU'):
+        return board({'Y1': '16MHz', 'U1': 'MCU', 'U2': u2_value},
+                     {'XI': ['Y1.1', 'U1.3', 'U2.3'], 'XO': ['Y1.2', 'U1.4', 'U2.4'], 'GND': ['U1.2', 'U2.2']},
+                     {'U1.3': 'XIN', 'U1.4': 'XOUT', 'U2.3': u2[0], 'U2.4': u2[1]})
+
+    def test_two_oscillators_on_one_crystal_is_a_finding(self):
+        hits = scans(self.shared(), 'CLK-A02')
+        self.assertEqual([hit['kind'] for hit in hits], ['FINDING'])
+        self.assertIn('U1,U2', hits[0]['detail'])
+
+    def test_one_oscillator_passes(self):
+        db = board({'Y1': '16MHz', 'U1': 'MCU'}, {'XI': ['Y1.1', 'U1.3'], 'XO': ['Y1.2', 'U1.4']},
+                   {'U1.3': 'XIN', 'U1.4': 'XOUT'})
+        self.assertEqual(scans(db, 'CLK-A02'), [])
+
+    def test_a_clock_input_on_one_end_is_not_a_second_oscillator(self):
+        db = board({'Y1': '16MHz', 'U1': 'MCU', 'U2': 'MCU'},
+                   {'XI': ['Y1.1', 'U1.3'], 'XO': ['Y1.2', 'U1.4', 'U2.3']},
+                   {'U1.3': 'XIN', 'U1.4': 'XOUT', 'U2.3': 'XIN'})
+        self.assertEqual(scans(db, 'CLK-A02'), [])
+
+    def test_ordinary_pins_on_the_crystal_nets_are_not_oscillator_pins(self):
+        self.assertEqual(scans(self.shared(u2=('PA0', 'PA1')), 'CLK-A02'), [])
+
+    def test_pin_name_spellings(self):
+        for names in (('XTAL1', 'XTAL2'), ('XI', 'XO'), ('OSC_IN', 'OSC_OUT'), ('PF0-OSC_IN', 'PF1-OSC_OUT'), ('OSC1', 'OSC2')):
+            self.assertEqual(len(scans(self.shared(u2=names), 'CLK-A02')), 1, names)
+
+    def test_an_unfitted_second_ic_does_not_count(self):
+        db = self.shared()
+        db['parts']['U2']['nc'] = True
+        self.assertEqual(scans(db, 'CLK-A02'), [])
+
+
+class UsbVbusBulkTest(unittest.TestCase):
+    def vbus(self, net='VBUS', **caps):
+        return board(dict({'J1': 'USB_C'}, **caps),
+                     {net: ['J1.1'] + [ref + '.1' for ref in caps], 'GND': ['J1.2'] + [ref + '.2' for ref in caps]},
+                     {'J1.1': 'VBUS', 'J1.2': 'GND'})
+
+    def test_direct_bulk_over_100uf_is_a_candidate_with_the_sum(self):
+        hits = scans(self.vbus(C1='220uF'), 'SIG-A05')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('220', hits[0]['detail'])
+
+    def test_capacitors_add_up_on_the_net(self):
+        self.assertEqual(len(scans(self.vbus(C1='47uF', C2='47uF', C3='10uF'), 'SIG-A05')), 1)
+        self.assertEqual(scans(self.vbus(C1='47uF', C2='47uF'), 'SIG-A05'), [])
+
+    def test_exactly_100uf_passes(self):
+        self.assertEqual(scans(self.vbus(C1='100uF'), 'SIG-A05'), [])
+
+    def test_a_net_behind_a_limiter_is_not_summed(self):
+        self.assertEqual(scans(self.vbus('VBUS_SW', C1='220uF'), 'SIG-A05'), [])
+
+    def test_prefixed_port_net_counts(self):
+        self.assertEqual(len(scans(self.vbus('/USB/VUSB', C1='220uF'), 'SIG-A05')), 1)
+
+    def test_a_dc_bus_called_vbus_on_a_board_without_usb_is_not_usb(self):
+        db = board({'Q1': 'IRF540', 'C1': '220uF'}, {'VBUS': ['Q1.1', 'C1.1'], 'GND': ['Q1.2', 'C1.2']})
+        self.assertEqual(scans(db, 'SIG-A05'), [])
+
+    def test_usb_part_identity_is_enough_without_usb_pin_names(self):
+        db = board({'J1': 'USB_B', 'C1': '220uF'}, {'VBUS': ['J1.1', 'C1.1'], 'GND': ['J1.2', 'C1.2']})
+        self.assertEqual(len(scans(db, 'SIG-A05')), 1)
+
+    def test_unfitted_and_unreadable_capacitors_do_not_count(self):
+        db = self.vbus(C1='220uF', C2='fixme')
+        db['parts']['C1']['nc'] = True
+        self.assertEqual(scans(db, 'SIG-A05'), [])
+
+
+class LdoOutputCapacitorTest(unittest.TestCase):
+    def ldo(self, parts=None, nets=None, value='AP2112K-3.3'):
+        all_nets = {'VIN': ['U1.1'], 'VCC_3V3': ['U1.5', 'U2.1'], 'GND': ['U1.2', 'U2.2']}
+        for net, nodes in (nets or {}).items():
+            all_nets[net] = all_nets.get(net, []) + nodes
+        return board(dict({'U1': value, 'U2': 'MCU'}, **(parts or {})), all_nets,
+                     {'U1.1': 'VIN', 'U1.2': 'GND', 'U1.5': 'VOUT', 'U2.1': 'VDD', 'U2.2': 'GND'})
+
+    def test_no_output_capacitor_is_a_candidate(self):
+        hits = scans(self.ldo(), 'PWR-A07')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('U1.5', hits[0]['detail'])
+
+    def test_an_output_capacitor_closes_it(self):
+        db = self.ldo({'C1': '1uF'}, {'VCC_3V3': ['C1.1'], 'GND': ['C1.2']})
+        self.assertEqual(scans(db, 'PWR-A07'), [])
+
+    def test_a_capacitor_behind_a_ferrite_counts(self):
+        db = self.ldo({'FB1': 'BLM18', 'C1': '1uF'},
+                      {'VCC_3V3': ['FB1.1'], 'VDD_F': ['FB1.2', 'C1.1'], 'GND': ['C1.2']})
+        self.assertEqual(scans(db, 'PWR-A07'), [])
+
+    def test_a_capacitor_to_another_signal_does_not_count(self):
+        db = self.ldo({'C1': '1uF'}, {'VCC_3V3': ['C1.1'], 'FB': ['C1.2']})
+        self.assertEqual(len(scans(db, 'PWR-A07')), 1)
+
+    def test_an_unfitted_capacitor_does_not_count(self):
+        db = self.ldo({'C1': '1uF'}, {'VCC_3V3': ['C1.1'], 'GND': ['C1.2']})
+        db['parts']['C1']['nc'] = True
+        self.assertEqual(len(scans(db, 'PWR-A07')), 1)
+
+    def test_an_ic_without_a_linear_regulator_identity_is_not_judged(self):
+        for value in ('TPS22918', 'TLV7031', 'STM32F7802'):
+            self.assertEqual(scans(self.ldo(value=value), 'PWR-A07'), [], value)
+
+    def test_common_linear_regulator_families_are_recognised(self):
+        for value in ('AMS1117-3.3', 'LD1117S33', 'MCP1700T-3302', 'TLV75533', 'TPS7A4700', '7805', 'L7805', 'my LDO'):
+            self.assertEqual(len(scans(self.ldo(value=value), 'PWR-A07')), 1, value)
+
+    def test_an_unused_output_pin_is_left_to_the_floating_net_rules(self):
+        db = self.ldo()
+        db['pin2net']['U1.5'] = 'LONE'
+        db['nets'] = {'VIN': ['U1.1'], 'LONE': ['U1.5'], 'VCC_3V3': ['U2.1'], 'GND': ['U1.2', 'U2.2']}
+        self.assertEqual(scans(db, 'PWR-A07'), [])
+
+
 class FloatingInputTest(unittest.TestCase):
     def test_declared_input_pins_without_a_real_net(self):
         db = board({'U1': 'SOC'}, {'GND': ['U1.4'], 'LONE': ['U1.2'], 'BUS': ['U1.3', 'U1.5']},

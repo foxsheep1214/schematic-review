@@ -27,6 +27,58 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 - Changed: evals/boards/README.md, evals/boards/catalog.json, evals/boards/discovery.json, evals/boards/verification.json, evals/boards/_tools/fetch_board.py, evals/boards/_tools/run_lane.sh, evals/boards/_tools/board-prompt.md, evals/boards/_lanes/lane-1.json, evals/boards/_lanes/lane-2.json, evals/boards/_lanes/lane-3.json, evals/boards/_lanes/lane-4.json, scripts/tests/test_boards_tools.py, docs/improvement-ledger.md
 - Gates: pytest 2429 passed, 1 failed, 2 skipped; boards tools 15 passed; catalog replay 100/100; check_ledger PASS. Baseline external ASG shared-layer mismatch (ASG 1.5.0 vs this SR 1.4.1) is outside the authorized references scope and is not suppressed.
 
+## ASG 共用层比对只看已提交内容；SNLA290 出处已核 (2026-11-02)
+
+`test_asg_holds_the_same_shared_layer` 读 ASG 工作副本，另一会话在那里改共用层还没提交时，这条会失败；变异门的基线也跟着失败，整轮都跑不了（当天出现两次）。改为比 ASG HEAD 的文件与本仓库的共用层，同步漂移仍然拦得住；去掉 `shared_digest` 比较，字节相同时它只是重复。
+CLK-A01 引用的 TI SNLA290 §7 已读原文：“8 pF ≤CLOAD ≤20 pF”，对象是 TI 以太网 PHY 的 25 MHz 晶体，规则文字准确，未改。
+
+- Event: user:2026-11-02 (先commit push到main，再把两个遗留项做了)
+- Causes: judgment 1
+- Changed: scripts/tests/test_guideline_criteria.py, docs/improvement-ledger.md
+- Gates: pytest 2478 passed; mutation --changed: 0 mutations on 2 changed files
+
+## 8 类新种子的漏报补上自动扫描：种子命中 177→221 (2026-11-02)
+
+2026-11-02 新增的 8 类种子 44 个位点全部漏报：目标规则都是审查员判定的 C 规则，冷扫描没有对应判别。C/D 规则不由工具下结论，所以按 SIG-A03 的既有做法新增 7 条 A 规则，映射到同一批准则：SIG-A05（VBUS 体电容）、PWR-A07（LDO 无输出电容）、SIG-A04（I²C 上拉外包络）、SIG-A06（CAN H/L 短接）、PRO-A05（隔离器两地合并）、CLK-A01（晶体负载）、CLK-A02（晶体共用）；种子目标改为“新 A 规则或原 C 规则”。判据都是外包络，出处写在规则与 seeded_bench README，具体数值仍由审查员按 C 规则算。
+
+顺带修两处：I²C 分段把经跳线接轨的 ≤1 kΩ 上拉当串阻（SIG-A03 误报无上拉）；阻值解析不认 10Meg。过程中 SIG-A05 曾误报 resonare-lcc 的逆变器直流母线 VBUS，改为要求板上有 USB 证据。
+
+前后（并入 1.6.1 后数字不变，准则 340→344 条）：种子命中/漏报 177/70→221/26；按准则归属漏报 192→14；G01-029 4→0、G03-003 1→0、G04-017 30→4、G04-018 30→4、G04-032 2→0、G04-040 4→0、G04-078 7→0、G04-082 7→0（G04-017/018 余下 4 个是既有 D-I2C-PU 位点）。既有 203 个位点逐条不变，32 块种子板未植入时的发现数不变，典型电路 201/185/14 不变、无未分类。共用层与 SKILL.md 未改。
+
+- Event: user:2026-11-02 (把这个漏报在子会话中用opus5.5 medium完成)
+- Causes: rule_not_enforced 8
+- Changed: scripts/board_scans.py, scripts/catalog.py, scripts/plan_board.py, scripts/solve_dividers.py, scripts/tests/test_board_scans.py, references/check-catalog.md, evals/seeded_bench/mutators.py, evals/seeded_bench/README.md, evals/mutation/mutations.json, evals/rule_contracts/boards/SIG-A04.json, evals/rule_contracts/boards/SIG-A05.json, evals/rule_contracts/boards/SIG-A06.json, evals/rule_contracts/boards/PWR-A07.json, evals/rule_contracts/boards/PRO-A05.json, evals/rule_contracts/boards/CLK-A01.json, evals/rule_contracts/boards/CLK-A02.json, evals/rule_contracts/README.md, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: after merging main (criteria library 1.6.1): pytest 2477 passed; mutation --changed 34/34 killed on the merge, 87 on the last class before it; 40 new (M843–M882); M860 survived the I²C commit and was killed by a test added in the next commit
+
+## 准则库 1.6.1：PWR-C18 补 24 V 中断核对 (2026-11-02)
+
+同步共用层 1.6.1，G01-053 按 GB/T 17626.29-2006 修订。`PWR-C18` 增加 24 V 按项目选定的暂降与中断组合核，低阻抗中断的反灌和恢复时的瞬变过压要有处置。重生成 check-catalog。
+
+- Event: user:2026-11-02 (入库并修订)
+- Causes: knowledge_missing 1
+- Changed: references/shared/guideline-criteria.json, scripts/catalog.py, references/check-catalog.md, references/architecture.md, docs/improvement-ledger.md
+- Gates: pytest 2418 passed; mutation --changed: 34/34 killed at unit tier (contract tier 11 killed, 23 survived)
+
+## 准则库 1.6.0：DC_24V 检查项 PWR-C27 与映射 (2026-11-02)
+
+同步共用层 1.6.0（344 条）。新增检查项 `PWR-C27`，核器件范围覆盖已声明的 24 V 输入窗，因为现有 `PWR-C17`、`PWR-C21` 写死了 −48 V 和军车 28 V 的数值。`BASIS` 映射 G01-051～054，加一条测试守住 `DC_24V` 不带 `PWR-C17`。
+第一步阅读量上限 +10 字节（170 800 → 170 810）：词表的 `DC_24V` 一行多了 `PWR-C27`。
+
+- Event: user:2026-11-02 (按建议全部入库)
+- Causes: rule_missing 1
+- Changed: references/shared/guideline-criteria.json, references/shared/shared-layer.md, scripts/catalog.py, references/check-catalog.md, references/review-vocabulary.md, references/architecture.md, scripts/tests/test_guideline_criteria.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2418 passed; mutation --changed: 34/34 killed at unit tier (contract tier 11 killed, 23 survived)
+
+## 准则库 1.5.0：DC_24V 对外接口类型与 9 条准则放宽 (2026-11-02)
+
+同步共用层 1.5.0。`catalog.CIRCUIT_TYPES` 加 `DC_24V`，检查项取 `PWR-C18`、`PWR-C13`、`PRO-C01`、`PWR-T05`，不取只针对 −48 V 的 `PWR-C17`；进 `EXTERNAL_INTERFACE_TYPES`，有功能框架问句。重生成 check-catalog 与 review-vocabulary，bounding-table 无变化。
+第一步阅读量上限 +50 字节（170 750 → 170 800）：重生成的词表多了 `DC_24V` 一行。
+
+- Event: user:2026-11-02 (可以现在就做的，放到另一个子对话里面)
+- Causes: rule_missing 1
+- Changed: references/shared/vocabulary.json, references/shared/guideline-criteria.json, references/shared/guideline-criteria.md, scripts/catalog.py, references/check-catalog.md, references/review-vocabulary.md, references/architecture.md, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2417 passed; mutation --changed: 34/34 killed at unit tier (contract tier 11 killed, 23 survived)
+
 ## 工业/通信板卡设计准则 Top 50：正反例与种子实测 (2026-11-02)
 
 从 340 条准则中选全部 13 条 shall 和 37 条高后果 method/should，逐条给出具体电路、违反方式、BASIS 中的 SR 规则与证据定位；历史审计与真实审查机制只作优先级线索。新增 8 类种子，连同既有极性/耐压种子覆盖 10 条所选准则；自动漏报与计划指向分列，不把人工计算规则宣称为自动检查。本轮确认的准则均可构造电路或记录层面的反例，没有仅因抽象而建议退回 draft 的条目。Causes 按8类新增自动层未执行的准则机制与1项集中正反例知识缺口计数，不表示已修复8条检查器。共用层、SKILL.md、catalog.py 与 BASIS 未改。
