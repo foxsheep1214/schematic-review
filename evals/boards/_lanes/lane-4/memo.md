@@ -81,3 +81,9 @@
 - MPR121 REXT的R2=200k偏离Rev4 PDFp2的75kΩ 1%；U5资料字段AP2112与采购ME6211不同。TPS62827非A需20µF有效Cout，22µF负容差不够，但磁珠后贡献先定界。
 - 电极ELE0/1/2只接铜焊盘不等于漏数字源；DNP TestPoint_Pad仍是铜。XU316旧手册PDFp8明确TCK PD、TDI/TMS PU；QSPI D/HD别当分裂网。
 - TPD1E10B06因CLAMP_RE/part_text漏PRO-E02；*SHUTDOWN的U6→U14控制线不应只靠稳压器EN/PG的RST-T04覆盖。40扫描外另5观察+1软件误报，未审完项不当缺陷计数。
+
+- protocentral--protocentral_ads1293：216项，33 PASS/22 NA/3 FAIL/158未闭；70观察=3真/8误/0准则/5知识/54待人工，Top50新增覆盖漏项0；valid=true、NO_GO，renderer退出2，交执行记录。
+- ADS1293 ALARMB是开漏，不能经仅推挽的TXB0108；R20=1M满足>50k并不消除模式冲突。TCR2EF33与AP2112缓存此处脚序兼容，只证Datasheet/Description错，不证实贴1.8V。
+- V1=J3.S→U4.IN5电极，不能作电源；MountingHole封装DIN965不是工业DI；AFE模拟脚不是温度接口，单有源晶体接口不作双端CMOS比较。
+- 三端JP2的1-2/2-3不能用closed表达；unknown会污染无关电源/阻容检查。features不能重复声明已有circuits；显式NA后merge旧REQ-Q07会拒收，保留原计划用NA证据处置。
+- C13/C14各10p仅串联5p，CL18需要寄生13p，未锁寄生不判不起振；ADS正文20p与图22p保留差异。REQ-Q07 PASS只答覆盖，外部主机/电极/温度合同不伪装VENDOR_DATUM。
