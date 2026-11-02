@@ -55,9 +55,17 @@ class _Scan:
     def _series(self, net):
         """输入网上游的串联滤波元件；多于两端的共模扼流需另行声明。"""
         found, gaps = [], []
+        self.upstream_conversion = []
+        tree = powertree.PowerTree(self.graph)
         for ref, other in self.graph.neighbors(net, SERIES_KINDS):
-            if powertree.PowerTree(self.graph).is_switch_node(other):
-                continue  # upstream buck storage inductor, not an input EMI filter
+            storage_source = [node for node in self.graph.nodes_on(other)
+                if self.graph.kind(ref) == pw.INDUCTOR
+                and pw.name_matches(powertree.SWITCH_OUTPUT_PIN_RE, self.graph.pinname.get(node), node.partition('.')[2])
+                and tree._via_storage_inductor(node.partition('.')[0], [ref])]
+            if storage_source:
+                self.upstream_conversion.append({'ref': ref, 'source': storage_source,
+                    'basis': 'upstream SW via storage inductor; cascade impedance still needs review'})
+                continue
             found.append({'ref': ref, 'kind': self.graph.kind(ref), 'upstream_net': other})
         for ref in self.graph.refs_on(net):
             if self.graph.kind(ref) in SERIES_KINDS and not self.graph.terminals(ref):
@@ -94,6 +102,7 @@ class _Scan:
                     'basis': 'declared' if ref in self.declared else 'topology',
                     'input_net': net,
                     'series_elements': series,
+                    'upstream_conversion': self.upstream_conversion,
                     'upstream_caps': sorted(
                         (cap for other in sorted(upstream) for cap in self._caps_to_ground(other)),
                         key=lambda item: item['ref']),
@@ -145,6 +154,12 @@ class InputFilterChecker(Checker):
 
     def plan(self, planner, inventory):
         for state, item in inv.walk(inventory, 'converters'):
+            if item.get('upstream_conversion'):
+                planner.diagnostics.append({'code': 'CASCADED_CONVERTER', 'ref': item['ref'], 'net': item['input_net'],
+                    'evidence': item['upstream_conversion'],
+                    'detail': '上游输出电感不作额外输入滤波器；逐轨PWR-T01/C01保留，级联源/负载阻抗仍待复核'})
+            if not item['series_elements'] and not any(g.startswith('series-element-topology:') for g in item['gaps']):
+                continue
             obj = {'ref': item['ref'], 'net': item['input_net'], 'state': state['id'],
                    'input_filter': item['id'], 'input_filter_digest': inventory['digest']}
             gaps = item['gaps']
@@ -176,7 +191,8 @@ class InputFilterChecker(Checker):
                      item['ref'], kind='CANDIDATE')
 
     def rule_instances(self, rule, inventory):
-        return sorted({item['id'] for _, item in inv.walk(inventory, 'converters')})
+        return sorted({item['id'] for _, item in inv.walk(inventory, 'converters')
+                       if item['series_elements'] or any(g.startswith('series-element-topology:') for g in item['gaps'])})
 
     def binds(self, item):
         obj = item.get('object')

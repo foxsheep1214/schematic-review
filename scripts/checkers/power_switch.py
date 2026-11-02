@@ -118,10 +118,9 @@ class _Scan:
         supply = self.tree.source_of(gate_net)
         if supply:
             found.append({'node': supply['source'], 'via': 'supply:' + ','.join(supply['path']), 'source': 'supply-bias'})
-        for ref, other in self.graph.neighbors(gate_net, pw.PASSIVE_LINKS):
-            if other in self.grounds:
-                continue  # a gate-to-ground pull-down is not an external gate source
-            found.extend(self._driver_pins(other, 'series:' + ref))
+        for other, path in self.graph.signal_source_peers(gate_net).items():
+            if path:
+                found.extend(self._driver_pins(other, 'series:' + ','.join(path)))
         unique = {item['node'] + '|' + item['via']: item for item in found}
         return [unique[key] for key in sorted(unique)]
 
@@ -137,13 +136,16 @@ class _Scan:
         return found
 
     def chained_drivers(self, gate_net, hops=CHAIN_HOPS):
-        """驱动脚经最多 hops 级电阻（不限阻值）可达：电平移位/分压驱动网络。不进入地与电源轨，
+        """驱动脚经最多 hops 级电阻（每段小于1MΩ）可达：电平移位/分压驱动网络。不进入地与电源轨，
         不算作 drivers；只让 DRV-A03 冷判从 FINDING 降为 CANDIDATE（2026-10-20 第 1 轮裁决 relax:DRV-A03）。"""
         seen, frontier, found = {gate_net}, [gate_net], []
         for _ in range(hops):
             nxt = []
             for net in frontier:
                 for ref, other in self.graph.neighbors(net, {pw.RESISTOR}):
+                    value = parse_resistor(self.graph.parts.get(ref, {}).get('value'))
+                    if value is None or not 0 <= value['kohm'] < 1000:
+                        continue
                     if other in seen or other in self.grounds or self.tree.is_rail(other):
                         continue
                     seen.add(other)

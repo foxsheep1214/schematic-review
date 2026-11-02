@@ -1,0 +1,19 @@
+{
+ "revision": "boards-merge2-v1",
+ "parents": {
+  "revisions/boards-merge2a-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge2a-v1/expected.json": "71cefa7b7e33c4467afa6841101e1fd502f1f74981dffa6a4e6f994386b63450",
+  "revisions/boards-merge2a-v1/manifest.json": "cfbdb9cf4c42b9276f23256ce9d4eb1fc827b8b1e6ac5b2559cd4726e09687f0",
+  "revisions/boards-merge2a-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge2b-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge2b-v1/expected.json": "94e76d12f7f82bfd7c0e5714bf376f2ad105d9a1663bfa0e6508c6a0c427909a",
+  "revisions/boards-merge2b-v1/manifest.json": "68f49af4018bff128cc304873c439d67e710d2cf1afc6ce09e8867a1bc529042",
+  "revisions/boards-merge2b-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480"
+ },
+ "derived_files": {
+  "revisions/boards-merge2-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge2-v1/expected.json": "01cb6d29116eb165956ff65ec69459bbf3c9659a6236e3f68d1b256bc1bd9267",
+  "revisions/boards-merge2-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480"
+ },
+ "scope": "合并步2A与2B合并：以2B的冻结答案为基，只套用2A对rf2的变化（PWR-E03/C11在没有输入滤波器时不生成，101→99）；原XML、输入、脚表与两个父约定均不改。"
+}

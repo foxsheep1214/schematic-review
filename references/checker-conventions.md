@@ -83,42 +83,29 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 
 工具不从 PDF 抽数值参数，数值仍按 datasheet-facts 的审查者核对流程处理。
 
-**参考地分区、跨域器件与截止网络**（`checkers/domains.py`，写入 `review-plan.json` 顶层 `domains`，schema 1）：
-电路候选的边界不由审查员画，按连接关系推导。
-- 地 = 名字是地或回流（GND 族、`_RTN`/`_RETURN`、`GND_<域>`）或 `power_rails` 窗口 min = max = 0 的网；
-  域标签取 `power_rails.<地>.domain`，未声明的地按网名各成一域，两个地写同一标签就是一个域。
-- 域 = 经直流导通的器件能到达同一个地的网络集合。电容、变压器、光耦、继电器、晶振、连接器、测试点、
-  电池、未分类器件和核验为 isolator 的 IC 不导通；其余器件在它的全部引脚之间导通。
-  只经电容相连、到不了任何地的网列在 `unreferenced`。
-- 跨域器件（`barriers`）= 引脚跨两个域的已贴器件，带类别和两侧域名：变压器、光耦、Y 电容、数字隔离器。
-- 核心器件（`anchors`）= 角色在 `ANCHOR_KINDS` 的已贴 IC；没有核验角色的 IC 列在 `undeclared_ics`。
-- 截止网络（`rail_stops`）= 候选从核心器件向外走时停下的网：地（`ground`）、IC 输出脚驱动的网
-  （`driver`，沿用 powertree 的来源推导）、声明轨中被两个以上核心器件直接或经一颗两端件到达的网
-  （`anchors:<位号,...>`，经地或伪网的那一跳不算）。只被一个核心器件用的声明轨是那个电路的内部节点，
-  不是截止网络；开关节点永远不是。
-- 冲突只记录，不改声明：导通器件把两个不同标签的地连到一起记 `DOMAIN_MERGED`（带那颗器件），
-  `power_rails.<网>.domain` 与推导不一致记 `DOMAIN_CONFLICT`；两者都进计划的 `diagnostics`。
+**参考地分区、跨域器件与截止网络**（`checkers/domains.py`，计划顶层 `domains`，schema 1）：
+- 域是参考关系，不是把全部端口当等势短接。地取 GND/回流名或声明的零电压窗；标签取其 `domain`，否则取网名。同叶名的不同层次地保留全名；域声明可点名实际地网。
+- 隔离器件由 `checkers/isolation_sides.py` 独立于单一器件角色建两侧：隔离放大器、DC/DC、数字隔离器、光耦、变压器、以太网磁件、继电器。侧别取厂家型号脚表规则、官方针表名称或有出处的绕组/线圈声明；记录 `mechanism/sides/pins/nets/domains/basis/citation/unmapped_pins`。未知侧别不连通，不能据此声称有绝缘资格；未声明绕组不猜线对，继电器触点不猜闭合。
+- 并查集不跨隔离边界；≥1 MΩ 和未知电阻不建立参考连接，地网等势追踪只过 ≤1 Ω。电容不导直流。光耦共地、干触点浮置仍列隔离对象；同时接两侧网的连接器列隔离端点。纯非数字隔离对象不套数字默认态、速率和 CMTI；连接、工作资格仍查。
+- `barriers` 保存跨域器件和物理隔离对象；`anchors` 为已核角色核心，未核 IC 列 `undeclared_ics`。`DOMAIN_MERGED/DOMAIN_CONFLICT` 只作域核对诊断，不自动改声明或认定绝缘失效。
+- 截止网为地、可信输出轨、被多个核心器件一跳到达的声明轨/实际供电轨；经地/伪网的一跳不算。未完成供电声明也不穿共享 VIN；开关节点不作直流轨。候选从截止网起步同样停止，直接供电电容单独引用。
+- 驱动源和等势分开：`signal_source_peers` 沿总阻值 ≤10 kΩ、最多三段的信号串阻保存路径，包含实板 4.7 kΩ（含容差）；不跨电源/地收集别的输出。此阈值只发现来源，电平、漏电、默认态、时序仍核；每段 <1 MΩ 的更高阻栅极链只提示候选。低阻供电追溯仍用原 ≤1 Ω 规则。
 
-**电路候选**（`scripts/circuit_candidates.py db.json --intent intent.json --datasheet-audit datasheet-audit.json --json record/circuit-candidates.json`，
-schema 2，带 `rules_version`，绑定 `db_sha256` 与 intent 的 `input_sha256`）：电路不由审查员画，由网表、已核实的器件类别和检查器库存生成，
-审查员只做决定（见[计划与结果](intent-format.md#一intentjsonschema_version-5)）。
-- 候选 = 类型 + 核心器件，编号 `<类型>-<核心器件>`（链为 `<类型>-<核心器件>.<脚>`），工作态按类型固定（`catalog.CANDIDATE_STATES`：
-  变换器和输入保护 startup/run/fault，USB unattached/attached/fault，ANALOG run/fault，ISOLATION run，STARTUP power-on/restart，DEBUG run）。
+**电路候选**（`circuit_candidates.py`，调用见 SKILL.md ②，schema 2）：绑定 `db_sha256/input_sha256`，带 `rules_version`，由网表、已核角色和库存生成；审查员只决定取舍（[决定格式](intent-format.md#一intentjsonschema_version-5)）。
+- 候选 = 类型 + 核心器件，编号 `<类型>-<核心器件>`（链为 `<类型>-<核心器件>.<脚>`），工作态取 `catalog.CANDIDATE_STATES` 固定表，默认态未经需求确认。
   成员各带 `role`、`via`（走到它的路径，是归属关系，不是导通主张）和 `hops`；页码只作显示，不决定归属。
 - 走线只经两端件（电阻、电容、电感、二极管、保险、压敏、NTC），最多 4 跳（ANALOG 2 跳、输入走线 6 跳），
   到截止网络、地、其他核心器件、跨域器件即停；截止网络 = `domains.rail_stops` ∪ 地 ∪ 感性负载库存的轨/输出/回流网 ∪ 输入走线的首个储能网，无人驱动的开关算作核心器件重算截止网络。
 - 规则按确定性从高到低：输入保护 `POWER_PROTECTION-<连接器>`（从电源连接器走到首个储能电容或变换器输入轨，桥和四脚共模扼流圈直通，至少含一件保护件）；
   链 `POWER_PROTECTION-<核心器件>.<脚>` / `STARTUP-<核心器件>.<脚>`（保护脚、启动脚沿两端件和光耦走到截止网络或开关节点，另一核心器件作终点，跨电路）；
-  变换器 `POWER_CONVERTER-<核心器件>`（核心器件 = 登记表里靶 POWER_CONVERTER 的角色（pwm_controller / sr_controller / regulator / gate_driver / charger / motor_driver）的 IC，或无人驱动、或 `power_switches` 声明了角色而驱动 IC 没有核验角色的开关：
+  变换器 `POWER_CONVERTER-<核心器件>`（核心器件 = 角色登记表靶 POWER_CONVERTER 的 IC，或具磁性储能与控制/反馈证据的分立级（也可为有对地基准、偏置和输出电容的线性跟随器）；开关声明、继电器/负载开关本身不足：
   所属开关、栅极下拉、吸收网络、感性件与它的其他绕组、绕组上的整流和输出电容、反馈光耦；辅助绕组的整流归它供电的变换器；sr_controller 与声明的同步整流管不收感性件）；
-  隔离 `ISOLATION-<域A>/<域B>`（该域对的全部跨域器件，跨电路）；`ANALOG-<核心器件>`（pd_controller / supervisor / mcu / transceiver 的检测脚，运放、基准的全部信号脚；
-  两地之间的分流电阻）；`USB-<连接器>`（CC/D± 脚一跳、PD 控制器及其 VBUS 开关与钳位）；接口 `<类型>-<核心器件>`（登记表里靶接口电路的角色：
-  transceiver、memory、oscillator、level_shifter、load_switch 等，全部信号脚走两跳，到达的网上的连接器作成员；一个角色靶多种总线的按手册标题
+  隔离 `ISOLATION-<域A>/<域B>`（同域/未知域按位号；物理两侧和跨侧端点，跨电路）；`ANALOG-<核心器件>`（pd_controller / supervisor / mcu / transceiver 的检测脚，运放、基准的全部信号脚；
+  两地之间的分流电阻）；`USB-<连接器>`（CC/D± 脚一跳、PD 控制器及其 VBUS 开关与钳位）；接口 `<类型>-<核心器件>`（角色登记表靶接口的核心，信号脚走两跳并收连接器；一个角色靶多种总线的按手册标题
   `catalog.BUS_CUES` 挑一种，挑不出记 `role-bus` 缺口，由审查员写 `circuit_decisions` add）；`DEBUG-BOARD`（测试点、调试连接器，不走线）。
 - 裁决：一件器件两个电路候选都走到，路径短的得；同距离留在两者里；核心器件不共享；跨电路候选不参与。
-- 归属（schema 2）：每个成员带 `owned`。认领强弱 `claim_rank`：电路的核心器件 0、电路成员 1、电路里的端点类角色 2、链路成员 3、
-  隔离带 4、链路的核心器件与端点 5；最强的唯一认领者拥有它，其余候选只引用它。打平的器件谁也不拥有，列入 `shared`，由 own 决定裁定。
-  谁都没走到的已贴器件进 `unassigned`（REQ-Q08 逐颗列出），没核验角色的 IC 和缺引脚名的感性件进 `gaps`。
+- 归属（schema 2）：每个成员带 `owned`。`claim_rank` 越小越强：核心0、成员1、端点2、链成员3、隔离4、链核心/端点5；唯一最强者拥有，其余只引用。共享供电电容引用不限且按稳定次序取一个记账所有者；开关/电感只归一个独立功能，控制器核心唯一，链/隔离引用不抢所属。其余打平列入 `shared`，由 own 裁定。
+  有效 reject 立即释放该候选；后续 add 可按成员原网络重归，仍被未拒绝候选持有的不能取走。谁都没走到的已贴器件进 `unassigned`（REQ-Q08 逐颗列出），没核验角色的 IC 和缺引脚名的感性件进 `gaps`。
 - 生成对器件顺序和页码变化是确定的；候选文件随记录打包，改了 db 或 intent 的输入指纹就重新生成、重新决定。
 - 计划生成按功能树分模块：`plan_review.py` 只管加检查项、合并、挂接扫描发现和汇总，电路与器件的检查项在 `plan_circuits.py`，接口的检查项与框架在
   `interfaces.py`，系统功能在 `plan_system.py`，全板、文档、需求与覆盖在 `plan_board.py`（`ReviewPlanner` 混入这四个模块的方法）。
