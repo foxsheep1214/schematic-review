@@ -81,3 +81,9 @@
 - AP3441 p9 Cff给10–470pF，本板C9=4.7nF越应用窗但不证明实测振荡；Cout40.1uF不因典型2x22uF就判缺容。J8 UART三针误标JTAG；R13下拉与CM5留空指南不同仍需例外依据。
 - CM5 pin56/58内置1.8k与板2.2k并联约990Ω，3.465V/0.4V低态约3.11mA仍须外设IOL；U4/J5/J4 DNP不可自动装回。JLC匹配工作表保留Unconfirmed语义，别当批准替代料。
 - 3V3轨须重复写入schema2 i2c_topology.rails以免重建漂移；原生schema15对部分功能/未定合同无needs_human，保留逐ID旁账和FAIL，资料不足0不等于审完；零脚Logo/INH绑电源不承担LED电流。
+
+- badgineer--mp2-esc：216件/123网/550端点一致；621项=618原生+3补问，118局部判/503逐ID待核；27归因=3资料真+9误+5资料缺口+10人工，3计划漏问，FAIL/NO_GO。
+- 官方G/D/S已写intent.devices仍未进入NetGraph，18只MOS全pin-roles未解；先修官方映射贯通，测QA1唯一栅阻R43 DNP后真悬空，别把L6498内部58–125k下拉漏算。
+- 0.5mR解析器本身正确，parse_kicad._component仅^R数字位号调度导致SHA不取值；NetTie_2/Device:R也不能因特殊位号认未知IC。R100/R150需与采购100/150Ω分支留冲突，勿替设计改值。
+- 同提交PDF仍可过时（6R8对当前4R7）；U4 NCS20034/COS724采购身份矛盾要先锁。U6共GND不自动是隔离缺陷；隔离DC/DC仍需PWR-C04，源侧保护不能只问J3.6。
+- BOOT-OUT/VCC-GND须显式返回分组；schema15未知合同保留逐ID pending和29功能未完成旁账，原生资料不足0/电路无已证错误不等于审完，门禁FAIL如实交。
