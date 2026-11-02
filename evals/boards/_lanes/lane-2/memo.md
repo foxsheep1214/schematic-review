@@ -89,3 +89,10 @@
 - U10.EN沿200k追到10k上拉/FTDI输出；U5 V_OUT/nRF内部DEC不是缺源。FTDI/nRF跨域经串阻时，逐网直接IC端点法会漏SIG-C08。
 - DNP R45/R46决定Coral AON3.3V时49/50处置；MM8130是RF测试座，非配电支路；无独立BOM时按XML Val/MPN/DNP，不用可视化CSV冒充。
 - 586项/108条归因（5/41/0/30/32）/6覆盖漏项；原生不接NEEDS_HUMAN，剩1786拒收均由此派生，FAIL未打包，完整台账在缓存。
+
+## moelashmawi--flyback-ac-dc-converter（2026-11-02）
+- 原生PWR_FLAG不创造电源；C5/R4、C8/R6两条12V网与D5/L1/J2输出实际失接，须看交点结点及XML，不能按同名电压合并。
+- VIPer VDD接SOURCE=0V、C10开路及TL431 K/A同网均可独立判；EL817 C接VDD/E接FB是电流注入接法，别误判C/E方向。
+- intent.devices的EL817共同脚表未进入NetGraph，输出清单null使FEEDBACK-OPEN漏问；先修脚义数据流，再加输出电容故障包络种子，不编16V超压。
+- EE25骨架名不够证明绕组脚义；图示两次级各自同网先列需确认。1kV不等于Y、275VAC不等于X，0.5A保险与0.3A扼流圈不能直接判过载。
+- ST官网可读不等于本地完整PDF到位；Mouser可返1页Access Denied PDF须验标题。改devices后先重冷扫再merge；needs_human/schema15冲突及其余记录错误如实FAIL。
