@@ -1,0 +1,187 @@
+{
+  "board": "antmicro--stm32h7-hdmi-board",
+  "source": {
+    "repo": "antmicro/stm32h7-hdmi-board",
+    "commit": "bc07c51c77eebd053504ec112637fbef24138bd6",
+    "schematic": "stm32h7-hdmi-board.kicad_sch",
+    "license": "Apache-2.0"
+  },
+  "sr_commit": "0c4b52a6173cf2b92739268ab0744acfac772e10",
+  "kicad_version": "10.0.7",
+  "cache": "/Users/skyfend/.cache/sr-boards/antmicro--stm32h7-hdmi-board",
+  "native_completed": false,
+  "candidate_workflow_completed": false,
+  "candidate_errors": [
+    "J13 is claimed equally by CAN-U19, ETHERNET-U14, LEVEL_SHIFT-U27, LEVEL_SHIFT-U29, LEVEL_SHIFT-U30, LEVEL_SHIFT-U34, LEVEL_SHIFT-U35, STORAGE-U9; write an own decision {decision: own, ref, candidate, citation} naming the circuit that owns it",
+    "J2 is claimed equally by CAN-U19, ETHERNET-U14, LEVEL_SHIFT-U27, LEVEL_SHIFT-U29, LEVEL_SHIFT-U30, LEVEL_SHIFT-U34, LEVEL_SHIFT-U35, STORAGE-U9; write an own decision {decision: own, ref, candidate, citation} naming the circuit that owns it"
+  ],
+  "run": {
+    "db_sha256": "db0c97ce7d2874bd83d164dc8f5692b2085e368f24b1ab2f490fef3af898cd49",
+    "plan_items": 1413,
+    "findings_total": 91,
+    "results_judged": 1413,
+    "gate": "FAIL",
+    "sr_commit": "0c4b52a6173cf2b92739268ab0744acfac772e10",
+    "scanner_observations": 90,
+    "manual_additions": 1,
+    "candidate_workflow_completed": false,
+    "strict_parse": false,
+    "meaning": "逐项处置包含needs_human，不等于逐项电气通过；五类统计包含INFO/CANDIDATE撤销与人工补获，M01/F91为同一根因不重复加到发现总数。",
+    "results_by_status": {
+      "INSUFFICIENT": 1306,
+      "FAIL": 3,
+      "PASS": 104
+    }
+  },
+  "summary": {
+    "true_defect": 2,
+    "false_alarm": 66,
+    "criterion_issue": 0,
+    "knowledge_gap": 5,
+    "needs_human": 18,
+    "misses": 1
+  },
+  "native_validation": {
+    "exit_code": 2,
+    "valid": false,
+    "release": "NO_GO",
+    "error_count": 10169,
+    "error_sample": [
+      "DEV-C01.BOARD: unresolved check has no root-cause work item",
+      "DEV-C02.BOARD: unresolved check has no root-cause work item",
+      "PRO-E02.D22-e57953: unresolved check has no root-cause work item",
+      "ANA-T01.POWER-PROTECTION: impact_assessment.affected_function required",
+      "ANA-T01.POWER-PROTECTION: impact_assessment.consequence required",
+      "ANA-T01.POWER-PROTECTION: impact_assessment.severity_reason required"
+    ],
+    "log": "/tmp/codex-work/antmicro-stm32h7-lane2/gate-native-final.log"
+  },
+  "native_render": {
+    "validation_exit_code": 2,
+    "validation_log": "/tmp/codex-work/antmicro-stm32h7-lane2/gate-native-final.log",
+    "render_exit_code": 2,
+    "render_log": "/tmp/codex-work/antmicro-stm32h7-lane2/render-native-final.log",
+    "native_report_produced": false,
+    "evaluation_report": "审查报告.md",
+    "report_kind": "LIMITED_BOARD_EVALUATION_NOT_NATIVE_SR_COMPLETION",
+    "pending_kind": "REVIEW_INCOMPLETE",
+    "pending_count": 1306
+  },
+  "checksums": {
+    "/Users/skyfend/.cache/sr-boards/antmicro--stm32h7-hdmi-board/db.json": "db0c97ce7d2874bd83d164dc8f5692b2085e368f24b1ab2f490fef3af898cd49",
+    "/Users/skyfend/.cache/sr-boards/antmicro--stm32h7-hdmi-board/netlist.xml": "94a54a5b2e78fd049ec89d2af4bf5fc055f6a442a29f3c7f215aec206e7ac756",
+    "/Users/skyfend/.cache/sr-boards/antmicro--stm32h7-hdmi-board/src/stm32h7-hdmi-board.kicad_sch": "085f9c193e92b7bb19bd96a009f749b35703f7bcb3751a44fe1bf69c1031bc9e",
+    "/Users/skyfend/.cache/sr-boards/antmicro--stm32h7-hdmi-board/review/intent.json": "7ca0f80fddc2b8a25c7938179627902f0fda440caf182aa5f84ac438a9146e79",
+    "/Users/skyfend/.cache/sr-boards/antmicro--stm32h7-hdmi-board/review/review-plan.json": "85bd81f76c94de138aed1644eb61c6349faac2c5536e30c49fed497f917ee7c2",
+    "/Users/skyfend/.cache/sr-boards/antmicro--stm32h7-hdmi-board/review/review-results.json": "8ed7968f8b418840e319ef83d2e1e19f4a70c39ee1c7c40c05d93b386a3239cb",
+    "/Users/skyfend/.cache/sr-boards/antmicro--stm32h7-hdmi-board/review/review-gate.json": "191429afb3a387c6d7fb141492a92bf6b799757a14ae43ca022f840c8b428135",
+    "/Users/skyfend/.cache/sr-boards/antmicro--stm32h7-hdmi-board/review/workflow.json": "79a89f96eb8911fd79b022e59ad8e7887269979d3274e4c53da9e4a5b2306b04",
+    "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/antmicro--stm32h7-hdmi-board/findings.json": "e508fc208a934bd56576a0ccd081157967976f782425a2149d46bcbf080bec38",
+    "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/antmicro--stm32h7-hdmi-board/审查报告.md": "56166e626d3ebbbb3a313994f88e2e9f0e5720096a693c2069afe711300fd7ca",
+    "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/antmicro--stm32h7-hdmi-board/round-report.md": "bef3e7afd0026efb11f03f53281f6669821b761e7a9cccbc7bed9d52b6780301",
+    "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/antmicro--stm32h7-hdmi-board/top50-crosscheck.json": "f83fefd6777340b644f843622e14c11bc7124d17e7ae56501fb7df1b9ffbea5d",
+    "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/antmicro--stm32h7-hdmi-board/top50-crosscheck.md": "2b6a4836a01d50a604055d672dee5309df8759c5646aee501939eb62cef7aefe"
+  },
+  "artifact_note": "Only our reports/metadata are in repository; source circuits and vendor manuals remain in cache.",
+  "source_integrity": {
+    "files": [
+      {
+        "path": "audio.kicad_sch",
+        "git_object": "c8e8677c4bcf66d87ae592ea4f877ce3872aa6cb",
+        "match": true
+      },
+      {
+        "path": "canbus_gpio.kicad_sch",
+        "git_object": "84efa4c13bd7248e88213d91a3228e39bcf6c502",
+        "match": true
+      },
+      {
+        "path": "debug.kicad_sch",
+        "git_object": "6712d91d198463afc2471aba9e2298e0db30f0bd",
+        "match": true
+      },
+      {
+        "path": "debug_pd.kicad_sch",
+        "git_object": "59d2c7428db96aade885bacccd6a84a427a8990b",
+        "match": true
+      },
+      {
+        "path": "ethernet.kicad_sch",
+        "git_object": "9e656bd38f2604e5834421b1dc66be2adc26d264",
+        "match": true
+      },
+      {
+        "path": "flash.kicad_sch",
+        "git_object": "74bd56f60f86cce6dd3c349a73641819e4490b0c",
+        "match": true
+      },
+      {
+        "path": "gpio.kicad_sch",
+        "git_object": "97881e87924a77e865bec96d6502b9c36d461a28",
+        "match": true
+      },
+      {
+        "path": "industrial-input.kicad_sch",
+        "git_object": "bf6719950aedc2645810b8ace79c6988e0e32779",
+        "match": true
+      },
+      {
+        "path": "industrial-output.kicad_sch",
+        "git_object": "927d7beea65501a7b8d182cd3254835dda95dec8",
+        "match": true
+      },
+      {
+        "path": "mcu-power.kicad_sch",
+        "git_object": "91bf03239190c2461810abb3282c20bc4fdd3aaa",
+        "match": true
+      },
+      {
+        "path": "pmod.kicad_sch",
+        "git_object": "6540cd63cddc32957546f8f768f225a4043a4fae",
+        "match": true
+      },
+      {
+        "path": "power.kicad_sch",
+        "git_object": "b0abda29447ef2e24bb7cc99980f37e7215d7742",
+        "match": true
+      },
+      {
+        "path": "sd_emmc.kicad_sch",
+        "git_object": "95a313788c93fc533357bd827e6537d378f8cdd5",
+        "match": true
+      },
+      {
+        "path": "sdram.kicad_sch",
+        "git_object": "9db465307c9b863dac66b5344bbf2fe94de534c6",
+        "match": true
+      },
+      {
+        "path": "stm32h7-hdmi-board.kicad_pro",
+        "git_object": "06da1e58580ec49a3c7aa5c9c1e9c1440512bd09",
+        "match": true
+      },
+      {
+        "path": "stm32h7-hdmi-board.kicad_sch",
+        "git_object": "835533d480bfad84f29e1876f3be65408eef2f37",
+        "match": true
+      },
+      {
+        "path": "usb.kicad_sch",
+        "git_object": "5efb561ae5fe093c33383eb4ed2d32488df311bc",
+        "match": true
+      },
+      {
+        "path": "user-peripherals.kicad_sch",
+        "git_object": "0b6133970216cbad54a0723a9467723888cb13ee",
+        "match": true
+      },
+      {
+        "path": "video.kicad_sch",
+        "git_object": "17582f17a76631c5db80fd55d029e9c60e0765f9",
+        "match": true
+      }
+    ],
+    "method": "ls-files --stage and local hash-object; no promisor lazy fetch",
+    "source_status_limit": "git status attempted to retrieve a missing promisor blob and failed DNS; no claim that complete sparse source status was verified."
+  }
+}
