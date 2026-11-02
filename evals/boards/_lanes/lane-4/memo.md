@@ -45,3 +45,9 @@
 - HX711 BASE→PNP→AVDD/VFB属于复合稳压；C1/C2隔R5=10Ω不能当直接Cout，p6参考10u直AVDD。4.298780V仅标称；VBG保证窗缺失，未据3.3V假设指控原板。
 - XI=GND时p2允许XO NC，三条输入悬空候选可排除；PWR-A01把桥激励K1.5反认外供源是INFO错误。PD_SCK高>60µs关桥激励，须另查外部主机默认态。
 - 去耦components须显式确认C5/C6；分号BOM的Designation映射Value并保留原摘要；未知对端/受控输入不伪装厂家数据，普通阻容采购约束与真正稳定性资料缺口分开。
+
+- satya777777--esp32-industrial-io-controller：376项、116条归因（3真/20误/0准则/4知识/89待定），4覆盖漏项；267未闭，FAIL，renderer退出2，交执行记录。
+- 通用BCE/DGS符号与MMBT3904 BEC、TSM2309/BSS138 GSD不符；数字脚集合相同仍须核功能。1N5820=20V不适用于24V buck；USB22.1k检测节点勿作功率源。
+- Q3防反和MCU→继电器被self_anchored误建变换器；reject后20件仍held，入口保护/ADC/继电器边界须独立补查，不接受假类型消归属。
+- ADC2.45V是校准有效区，2.5/3V不直接判损坏；RO经2/3的3.5V保证下界仅2.333V，缺轻载保证先留待核。TVS A值/A1A2符号极性与采购分支须锁定。
+- 非U位号Buck1/5-3V3需audit --require-ref；input指纹用board_intent；去耦库存改后先重冷扫。完整原厂PDF下载失败不可AVAILABLE，门禁错误与未闭项如实保留。
