@@ -69,3 +69,9 @@
 - R8=TC33X-2-103E须按原厂code103=10k±25%核滑臂加载；R1被R5+R6+R7并联，C1的tau约0.13570s；约870kHz的555低频简式已越模型边界。
 - 外源K1.2声明状态/出处后供电网逻辑链会消失；U2.5仍是power，去耦设regulator_output；LDO无SS脚也须问启动充电+负载/限流（M01）。
 - 网表未列电极元件不证明传感断路：固定PCB有无net的F.Cu宽线；仅V2.0.0 BOM不能混入V1.2.2。20组共享依赖已合并，原生不接needs_human/未定级，保留FAIL；26条归因非26个硬件故障。
+
+## antmicro--jetson-nano-baseboard（2026-11-02）
+- XML的Val/DNP优先；SiC477原链接75786是另一族，准确77113的NC21/GL输出/VDRV内部电源不能套浮空或断供；FT232RQ与HD3SS3220也须按模式和内部偏置判。
+- LED1 A/K同网在固定PCB亦成立；R43=470Ω直接加载NCP380 FLAG，不能扣LED压降。33V TVS对36V正常输入只判持续窗口，不拿VBR或脉冲DC绝限硬比。
+- TPD4/TPD8/PESD多通道不能要求整颗仅两网；TPD4直通NC非保护通道。LDO启动、外引供电、SoM MDI专项另查；reject错误屏蔽隔离候选仍不释放J3，保留覆盖遗漏。
+- 无独立BOM；strict的3个缺名地脚保留原状。1468项逐项记判，446条归因非446个故障；needs_human/schema15及其它记录限制保持FAIL，完整证据在缓存，未打包。
