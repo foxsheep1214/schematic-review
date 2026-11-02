@@ -8,7 +8,7 @@
  },
  "derived_files": {
   "revisions/boards-merge2b-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
-  "revisions/boards-merge2b-v1/expected.json": "43c5f0c378dc796bc66ce77a4ae70f34f03be844bb2283add0582c57cf63757e",
+  "revisions/boards-merge2b-v1/expected.json": "4b0955e9569cede27c1e74e321f12108cc5eaad65d8f754074dc29a69da3ec66",
   "revisions/boards-merge2b-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3"
  },
  "scope": "合并2B：有身份的机械/无源连接器去耦排除、逐外部信号/电源支路计划资格；只调整可解释计划计数与对象缺口，历史电气答案和夹具保持原字节。"

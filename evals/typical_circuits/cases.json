@@ -736,31 +736,6 @@
     },
     {
      "rule": "NET-A07",
-     "match": "U2.10 -> unconnected-(U2-~{DSR}-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
-     "match": "U2.11 -> unconnected-(U2-~{RI}-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
-     "match": "U2.12 -> unconnected-(U2-~{DCD}-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
-     "match": "U2.15 -> unconnected-(U2-R232-Pad15): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
-     "match": "U2.9 -> unconnected-(U2-~{CTS}-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
      "match": "U4.4 -> unconnected-(U4-SENSOR_VP-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
      "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
     },
@@ -792,7 +767,33 @@
      "why": "USB-C 母座 SBU 未用并已标 NC；NC 豁免要求连接器库身份可核（HRO 自建库不在受控名单），保守保留"
     }
    ],
-   "fixed_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A07",
+     "match": "U2.10 -> unconnected-(U2-~{DSR}-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.11 -> unconnected-(U2-~{RI}-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.12 -> unconnected-(U2-~{DCD}-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.15 -> unconnected-(U2-R232-Pad15): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.9 -> unconnected-(U2-~{CTS}-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    }
+   ],
    "note": "修复前 SR 无法解析本板（多单元运放共享电源脚被判重复归网）"
   },
   {

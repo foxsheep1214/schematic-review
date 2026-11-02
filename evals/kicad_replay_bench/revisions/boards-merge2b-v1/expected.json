@@ -229,7 +229,7 @@
    "known_deviations": {}
   },
   "r02-dasduino-coreplus": {
-   "verification": "独立扫描未命名功能脚得 X1.2/X1.3/X1.4（晶振库符号 GND 脚为 power_in、输出脚无名）及 JP5/JP6 三焊盘跳线的 6 个 input 脚；跳线触点按编号识别、单列为 unnamed_jumper_contact_pins，不计入缺名，符合 DOC-Q01 口径，故 missing_functional_pins=X1.2/3/4，严格自检失败成立。去耦 10 组电容集合与独立计算一致；自检失败故每组带 netlist-integrity/export；X1:GND 组因 power_in 脚在 GND 上、无回流网而带 need-one-explicit-return-net。K1/K2/K8（K 前缀连接器）被列为 unverified，偏保守但不错。（typical-boards-v1）K2 为 U262-161N-4BVC11 USB-C 母座（16 脚，含 VBUS/CC1/CC2/SBU），不再按 K 位号当继电器：去掉 DRV-C01/DRV-T01 两项未解析感性负载，新增 DEV-D03/DEV-D05/DEV-E01/PRO-D03 四项连接器检查；其余字段不变。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 16（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 4 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。 规则库 1.2.0 增量（2026-11-01）：共加 19 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。",
+   "verification": "独立扫描未命名功能脚得 X1.2/X1.3/X1.4（晶振库符号 GND 脚为 power_in、输出脚无名）及 JP5/JP6 三焊盘跳线的 6 个 input 脚；跳线触点按编号识别、单列为 unnamed_jumper_contact_pins，不计入缺名，符合 DOC-Q01 口径，故 missing_functional_pins=X1.2/3/4，严格自检失败成立。去耦 10 组电容集合与独立计算一致；自检失败故每组带 netlist-integrity/export；X1:GND 组因 power_in 脚在 GND 上、无回流网而带 need-one-explicit-return-net。K1/K2/K8（K 前缀连接器）被列为 unverified，偏保守但不错。（typical-boards-v1）K2 为 U262-161N-4BVC11 USB-C 母座（16 脚，含 VBUS/CC1/CC2/SBU），不再按 K 位号当继电器：去掉 DRV-C01/DRV-T01 两项未解析感性负载，新增 DEV-D03/DEV-D05/DEV-E01/PRO-D03 四项连接器检查；其余字段不变。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 16（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 4 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。 规则库 1.2.0 增量（2026-11-01）：共加 19 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints",
    "fields": {
     "parse.strict_exit": 2,
     "parse.strict_db_written": true,
@@ -250,7 +250,7 @@
       "readiness": "READY"
      }
     ],
-    "plan.checks_total": 261,
+    "plan.checks_total": 256,
     "plan.not_applicable": 0,
     "decoupling.discovery_gaps": [
      "pin-name-unresolved:X1.2",
@@ -465,7 +465,7 @@
    "name_gap_scope_note": "严格自检仅因缺功能名失败且缺名脚无完整官方脚表：整网缺口 netlist-integrity/export 改为只记在缺名器件自身去耦组与 discovery_gaps 的 pin-name-unresolved:<脚>；缺名只改变该器件自身引脚角色，不改变网络连通，其他器件去耦组的电容/回流/边界不受影响。其余字段与 page-inventory-v1 相同。"
   },
   "r03-nrf9151-feather": {
-   "verification": "独立扫描未命名功能脚只有 U8.4（TS5A3166 控制输入 IN，库符号无名），严格自检失败成立。29 组电容集合与独立计算一致；每组带 netlist-integrity/export；U7:GND 组带 supply-return-same-net。unverified 含 H3/H4（单焊盘安装孔，非两端件故列出，偏保守）。DNP 件（U6 等）在冷跑无装配状态时仍按 population:REF 记缺口，符合规则。（passive-stress-v1）原始 XML 独立计数：footprint 为 Resistor_SMD:R_/Capacitor_SMD:C_ 标准封装、两脚、已装配的阻容共 61 颗，计划逐颗生成 DEV-C01 预判行，检查总数 249→310；其他用例为 0 颗，不变。（threshold-window-v1）原始 XML 独立核对：齐纳/TVS 为 0 颗（D1 为 RGB LED、D2 为 BAT54CW）；NTC 仅 TH1（10k，Device:Thermistor_NTC），一端接 U2 的 NTC 脚（Net-(U2-NTC)），故 PRO-C02 不成项、ANA-C04 生成 1 项，检查总数 310→311；其他用例无齐纳/TVS/传感器接 IC 脚，不变。（name-heuristics-v1）VSYS 为充电器系统输出，按统一轨名规则识别为电源轨，新增 PWR-C01.VSYS 与 PWR-T01.VSYS 两项；其余字段不变。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 52（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）4 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +3；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 6 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。 规则库 1.2.0 增量（2026-11-01）：共加 7 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。 boards-merge1：DNP 节点排除后23条真实单节点网及其输入脚候选进入计划，另有旧项消失；净增加26项，已逐节点对照装配表和当前/旧扫描差集。 无源晶体独立选对象后另加1条 CLK-C01，不改变其他冻结字段。 供电来源驱动的上拉识别补获 R3 从 Net-(U12-ENABLE) 到 Net-(U12-VDD) 的真实偏置候选，另加1条 RST-A01；已对照前后扫描差集。; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints",
+   "verification": "独立扫描未命名功能脚只有 U8.4（TS5A3166 控制输入 IN，库符号无名），严格自检失败成立。29 组电容集合与独立计算一致；每组带 netlist-integrity/export；U7:GND 组带 supply-return-same-net。unverified 含 H3/H4（单焊盘安装孔，非两端件故列出，偏保守）。DNP 件（U6 等）在冷跑无装配状态时仍按 population:REF 记缺口，符合规则。（passive-stress-v1）原始 XML 独立计数：footprint 为 Resistor_SMD:R_/Capacitor_SMD:C_ 标准封装、两脚、已装配的阻容共 61 颗，计划逐颗生成 DEV-C01 预判行，检查总数 249→310；其他用例为 0 颗，不变。（threshold-window-v1）原始 XML 独立核对：齐纳/TVS 为 0 颗（D1 为 RGB LED、D2 为 BAT54CW）；NTC 仅 TH1（10k，Device:Thermistor_NTC），一端接 U2 的 NTC 脚（Net-(U2-NTC)），故 PRO-C02 不成项、ANA-C04 生成 1 项，检查总数 310→311；其他用例无齐纳/TVS/传感器接 IC 脚，不变。（name-heuristics-v1）VSYS 为充电器系统输出，按统一轨名规则识别为电源轨，新增 PWR-C01.VSYS 与 PWR-T01.VSYS 两项；其余字段不变。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 52（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）4 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +3；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 1 个、电源轨 6 条：PWR-T06 0 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +0；系统功能框架 FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。 规则库 1.2.0 增量（2026-11-01）：共加 7 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。 boards-merge1：DNP 节点排除后23条真实单节点网及其输入脚候选进入计划，另有旧项消失；净增加26项，已逐节点对照装配表和当前/旧扫描差集。 无源晶体独立选对象后另加1条 CLK-C01，不改变其他冻结字段。 供电来源驱动的上拉识别补获 R3 从 Net-(U12-ENABLE) 到 Net-(U12-VDD) 的真实偏置候选，另加1条 RST-A01；已对照前后扫描差集。; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints",
    "fields": {
     "parse.strict_exit": 2,
     "parse.strict_db_written": true,
@@ -484,7 +484,7 @@
       "readiness": "READY"
      }
     ],
-    "plan.checks_total": 410,
+    "plan.checks_total": 414,
     "plan.not_applicable": 0,
     "decoupling.discovery_gaps": [
      "pin-name-unresolved:U8.4",
@@ -510,6 +510,18 @@
       "official-full-pinout:J3",
       "population:C1",
       "population:J3"
+     ],
+     "UNSPECIFIED/candidate:J5:+3V3": [
+      "confirm-group-and-return:candidate:J5:+3V3",
+      "official-full-pinout:J5",
+      "population:C23",
+      "population:C25",
+      "population:C30",
+      "population:C32",
+      "population:C33",
+      "population:C43",
+      "population:C8",
+      "population:J5"
      ],
      "UNSPECIFIED/candidate:U1:/Debugger/RP2040_VDDIO": [
       "confirm-group-and-return:candidate:U1:/Debugger/RP2040_VDDIO",

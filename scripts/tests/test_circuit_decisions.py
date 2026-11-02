@@ -372,6 +372,9 @@ class ActivePartTests(unittest.TestCase):
         fx.fixture.add(db, 'Q7', 'MOSFET-N', [('1', 'G', 'LONE_G'), ('2', 'D', 'LONE_D'), ('3', 'S', 'SGND')])
         fx.fixture.add(db, 'R70', '10K', [('1', '1', 'LONE_G'), ('2', '2', 'SGND')])
         intent, audit = fx.intent_for(db)
+        # Isolate the active-unassigned validator from converter discovery. Ground contacts are no gate driver.
+        intent['power_switches'] = {'schema_version': 2, 'exclusions': [
+            {'ref': 'Q7', 'citation': 'synthetic fixture p3: a signal transistor outside converter discovery'}]}
         return db, intent, audit, cc.build(db, intent, audit)
 
     def test_an_active_unassigned_part_without_a_decision_is_refused(self):

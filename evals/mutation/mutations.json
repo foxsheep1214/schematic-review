@@ -5969,5 +5969,96 @@
   "file": "scripts/decoupling.py",
   "old": "return kind if basis == 'part-keyword' and kind in NO_SUPPLY_PARTS else 'unmodeled'",
   "new": "return 'unmodeled'"
+ },
+ {
+  "id": "M967",
+  "name": "relay contact suffixes cease to form one channel triple",
+  "file": "scripts/lint.py",
+  "old": "re.fullmatch(r'(NC|COM|NO)(\\d*)', contact(node, net))",
+  "new": "re.fullmatch(r'(NC|COM|NO)()', contact(node, net))"
+ },
+ {
+  "id": "M968",
+  "name": "CH340 own unused-input clause is ignored",
+  "file": "scripts/part_words.py",
+  "old": "if re.fullmatch(r'CH340[CG]', model, re.I):",
+  "new": "if False:"
+ },
+ {
+  "id": "M969",
+  "name": "unused-input permission propagates onto a loaded net",
+  "file": "scripts/part_words.py",
+  "old": "if net is not None and len((db.get('nets') or {}).get(net, [])) > 1:",
+  "new": "if False:"
+ },
+ {
+  "id": "M970",
+  "name": "TPS709 permitted open enable loses its internal-bias source",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if source == 'unknown' and permission:",
+  "new": "if False:"
+ },
+ {
+  "id": "M971",
+  "name": "high-side load switches revert to LDO dropout",
+  "file": "scripts/checkers/power_up.py",
+  "old": "'kind': 'load-switch' if load_switch else ('switching' if switches else 'linear'),",
+  "new": "'kind': 'switching' if switches else 'linear',"
+ },
+ {
+  "id": "M972",
+  "name": "gate pulldown reaches grounded test contacts as drivers",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "if other in self.grounds:\n                continue  # a gate-to-ground pull-down",
+  "new": "if False:\n                continue  # a gate-to-ground pull-down"
+ },
+ {
+  "id": "M973",
+  "name": "a differential shunt capacitor becomes a series coupling capacitor",
+  "file": "scripts/checkers/diff_levels.py",
+  "old": "if other not in self.grounds and other != other_leg]",
+  "new": "if other not in self.grounds]"
+ },
+ {
+  "id": "M974",
+  "name": "rectifier supply pins become a differential data link",
+  "file": "scripts/checkers/diff_levels.py",
+  "old": "if ((re.fullmatch(r'(?:.*/)?V[+-]', net, re.I)",
+  "new": "if ((False and re.fullmatch(r'(?:.*/)?V[+-]', net, re.I)"
+ },
+ {
+  "id": "M975",
+  "name": "FB-valued inductive symbols cease to be ferrite beads",
+  "file": "scripts/part_words.py",
+  "old": "and normalize(part.get('value')) == 'FB':",
+  "new": "and False:"
+ },
+ {
+  "id": "M976",
+  "name": "a maker name in the package becomes device type evidence",
+  "file": "scripts/part_words.py",
+  "old": "blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim'))",
+  "new": "blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))"
+ },
+ {
+  "id": "M977",
+  "name": "upstream buck storage inductor becomes the downstream EMI filter",
+  "file": "scripts/checkers/input_filter.py",
+  "old": "if powertree.PowerTree(self.graph).is_switch_node(other):",
+  "new": "if False:"
+ },
+ {
+  "id": "M978",
+  "name": "PDF content order overrides actual title geometry",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "        geometric = pdf_title_text(document_path)",
+  "new": "        geometric = None"
+ },
+ {
+  "id": "M979",
+  "name": "RF baluns again require switched-coil clamps",
+  "file": "scripts/checkers/inductive_load.py",
+  "old": "if re.search(r'BALUN', identity, re.I) and kind in pw.WINDING_PAIRS:",
+  "new": "if False:"
  }
 ]

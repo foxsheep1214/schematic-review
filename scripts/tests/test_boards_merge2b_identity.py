@@ -59,3 +59,20 @@ def test_brand_and_application_words_never_become_title_kinds():
     assert dk.kind_conflict('ic', 'x', read_page=read) is None
     text = 'XYZ\nFeatures\nPWM operation\n3 Description\nMOSFET gate driver\n4 Applications\nLoad Switch'
     assert dk.candidates('x', read_page=read)[0]['kind'] == 'gate_driver'
+
+
+def test_pdf_title_geometry_ignores_footer_first_and_description_application_mechanisms(tmp_path):
+    import pytest
+    fitz=pytest.importorskip('fitz')
+    import datasheet_kinds as dk
+    p=tmp_path/'driver.pdf';doc=fitz.open();page=doc.new_page(width=612,height=792)
+    # Content stream order deliberately starts with a footer, then the description, then the actual title.
+    page.insert_text((40,755),'www.diodes.com DIODES Incorporated')
+    page.insert_text((315,145),'Designed for PWM control and synchronous rectification.')
+    page.insert_text((400,90),'DC Motor Driver',fontsize=18)
+    page.insert_text((315,128),'DESCRIPTION',fontsize=12)
+    page.insert_text((54,128),'FEATURES',fontsize=12)
+    page.insert_text((54,180),'Load Switch application')
+    doc.save(p);doc.close()
+    assert dk.cues(dk.title_text(str(p)))=={'motor_driver'}
+    assert dk.candidates(str(p))[0]['kind']=='motor_driver'

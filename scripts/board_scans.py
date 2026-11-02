@@ -422,6 +422,14 @@ def floating_inputs(lint):
         # unknown parts, IC inputs and unmarked dangling nets still get checked.
         if declared_nc and lint.graph.qualified_connector_contact(ref):
             continue
+        if lint.graph.kind(ref) == TESTPOINT and re.search(r'(?:^|:)MOUNTINGHOLE(?:_PAD)?$',
+                str(lint.parts.get(ref, {}).get('prim', '')), re.I):
+            continue
+        from part_words import unused_input_permission
+        permission = unused_input_permission(lint.db, node)
+        if permission:
+            lint.add('NET-A07', '手册允许未用输入开路', f'{node}: {permission}', ref, kind='INFO')
+            continue
         # A datasheet NC pin typed input has no input to bias.
         from lint import DATASHEET_NC_PIN_RE
         if DATASHEET_NC_PIN_RE.match(lint.pinname.get(node, '')):

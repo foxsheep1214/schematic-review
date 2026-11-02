@@ -256,7 +256,8 @@ def semantic_identity_text(text):
     lines = [ln.strip() for ln in str(text or '').splitlines() if ln.strip()]
     title = []
     for line in lines[:TITLE_LINES]:
-        if SECTION_HEADING_RE.match(line) or DESCRIPTION_RE.match(line):
+        if (SECTION_HEADING_RE.match(line) or DESCRIPTION_RE.match(line)
+                or re.match(r'^(?:Designed for|The |This )', line, re.I)):
             break
         title.append(line)
     # A numbered Description heading may occur after Features/Applications in PDF reading order.
@@ -271,8 +272,56 @@ def semantic_identity_text(text):
     return ' '.join(line for line in title + description if not re.fullmatch(r'(?i)diodes(?: incorporated| inc\.?)?', line))
 
 
+def pdf_title_text(document_path):
+    """Recover the first page's actual title above semantic section headings in PDF coordinates.
+
+    Some text streams emit footers or the Description column before the title. Geometry is only used to
+    select text; it does not establish a verified role or infer numerical device parameters.
+    """
+    if not str(document_path).lower().endswith('.pdf'):
+        return None
+    try:
+        import fitz
+        with fitz.open(document_path) as doc:
+            page = doc[0]
+            height = page.rect.height
+            lines = []
+            for block in page.get_text('dict')['blocks']:
+                for line in block.get('lines', []):
+                    value = ' '.join(span['text'].strip() for span in line['spans'] if span['text'].strip())
+                    if value:
+                        lines.append((line['bbox'][1], line['bbox'][0], value))
+            lines.sort()
+            boundaries = [y for y, x, value in lines if y < height * .4 and
+                          (SECTION_HEADING_RE.match(value) or DESCRIPTION_RE.match(value))]
+            boundary = min(boundaries, default=height * .25)
+            title = '\n'.join(value for y, x, value in lines if y < boundary and y < height * .30
+                              and not re.search(r'www\.|https?://|copyright|all rights reserved', value, re.I))
+            if cues(title):
+                return title
+            # A Description block can supply identity when the title contains only the model number.
+            heading = next(((y, x) for y, x, value in lines if DESCRIPTION_RE.match(value)), None)
+            if heading:
+                y0, x0 = heading
+                desc = []
+                for y, x, value in lines:
+                    if y <= y0 or x < x0 - 8 or y > min(height * .55, y0 + height * .22):
+                        continue
+                    if SECTION_HEADING_RE.match(value) or DESCRIPTION_RE.match(value):
+                        break
+                    desc.append(value)
+                title += '\n' + '\n'.join(desc)
+            return title
+    except (ImportError, OSError, ValueError, RuntimeError, IndexError):
+        return None
+
+
 def title_text(document_path, read_page=None):
     """Only semantic title/description areas of page 1 provide identity cues."""
+    if (read_page is None or read_page is page_text) and document_path:
+        geometric = pdf_title_text(document_path)
+        if geometric is not None:
+            return geometric
     read_page = read_page or page_text
     text = read_page(document_path, 1) if document_path else None
     return semantic_identity_text(text)

@@ -104,6 +104,8 @@ def pin_aliases(name, pin=None):
             found.append(value)
 
     add(raw)
+    if raw == '+VO':
+        add('VO')  # positive DC/DC module output; the original signed pin name is preserved
     for candidate in list(found):
         add(re.sub(r'_\{([A-Za-z0-9]+)\}', r'\1', candidate))  # KiCad inline subscripts: P_{GOOD} -> PGOOD
     for candidate in list(found):
@@ -208,6 +210,10 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         return kind, 'datasheet'
     signature = pin_signature(pin_names)
     primitive = normalize(part.get('prim'))
+    if pin_count == 2 and re.match(r'^(?:L|FB)\d', ref, re.I) and normalize(part.get('value')) == 'FB':
+        return FERRITE, 'part-keyword'
+    if re.fullmatch(r'SM\d+B-GHS-TB(?:\(LF\))?(?:\(SN\))?', normalize(part.get('part'))):
+        return CONNECTOR, 'part-keyword'  # JST GH physical header MPN; no package-brand inference
     # Placed functional symbols outrank a port label (a terminal named "Relay") or a package category.
     if re.search(r'(?:^|:)MOUNTINGHOLE(?:_PAD)?$|(?:^|:)FIDUCIAL(?:_|$)', primitive):
         return TESTPOINT, 'part-keyword'
@@ -217,7 +223,7 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         return SWITCH, 'part-keyword'
     if re.search(r'(?:^|:)CONN_\d+(?:X\d+)?(?:_|$)|(?:^|:)EASYC(?:_|$)', primitive):
         return CONNECTOR, 'part-keyword'
-    blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
+    blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim'))
     ic_ref = re.match(r'^(U|M|IC)\d', ref, re.I)
     controller_pins = {a for name, pin in pin_names for a in pin_aliases(name, pin)}
     if ic_ref and pin_count is not None and pin_count >= 4 and {'GATE', 'SENSE', 'IN'} <= controller_pins:
@@ -227,7 +233,7 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     # Optical libraries also contain emitters and integrated RGB controllers.
     # Only the OPTO heuristic uses the symbol identity without its namespace;
     # other explicit library categories (e.g. Transistor_BJT:) stay intact.
-    opto_identity = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'jedec'))
+    opto_identity = ' '.join(normalize(part.get(key)) for key in ('part', 'value'))
     prim_identity = normalize(part.get('prim'))
     opto_identity += ' ' + prim_identity.split(':', 1)[-1]
     for pattern, kind in KEYWORD_KINDS:
@@ -274,3 +280,27 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
                 return UNKNOWN, 'refdes-prefix conflicts with pin count'
             return kind, 'refdes-prefix'
     return UNKNOWN, 'no classification evidence'
+
+
+def unused_input_permission(db, node):
+    """A physically unused pin explicitly permitted open by an exact model's own pin table.
+
+    No permission propagates to connected nets, related families or unknown packages.
+    These citations are manufacturer clauses from the adjudicated board evidence.
+    """
+    ref, _, pin = node.partition('.')
+    part = (db.get('parts') or {}).get(ref, {})
+    model = str(part.get('part') or part.get('value') or '')
+    aliases = {a.rstrip('#') for a in pin_aliases((db.get('pinname') or {}).get(node), pin)}
+    net = (db.get('pin2net') or {}).get(node)
+    if net is not None and len((db.get('nets') or {}).get(net, [])) > 1:
+        return None
+    if re.fullmatch(r'CH340[CG]', model, re.I):
+        pins = {'3': 'RXD', '9': 'CTS', '10': 'DSR', '11': 'RI', '12': 'DCD', '15': 'R232'}
+        if pin in pins and pins[pin] in aliases:
+            return 'WCH CH340DS1 V3C pp3–4 pin table / p4 unused I/O note (CH340C/G)'
+    if re.fullmatch(r'TPS709(?:\d{2})?(?:DBV[RT])?', model, re.I) and pin == '3' and 'EN' in aliases:
+        return 'TI TPS709 SBVS186H p3 Table5-1 / p13 §7.4: EN may float, internal 300nA pull-up'
+    if re.fullmatch(r'TPS5430(?:DDA[RT]?)?', model, re.I) and pin == '5' and 'ENA' in aliases:
+        return 'TI TPS5430 SLVS632L p3 Table4-1 / p9 §6.3.3: ENA may float, internal 1.5Mohm pull-up'
+    return None
