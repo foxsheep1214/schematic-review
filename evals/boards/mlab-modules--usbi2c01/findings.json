@@ -1,0 +1,5018 @@
+{
+  "board": "mlab-modules--usbi2c01",
+  "source": {
+    "repo": "mlab-modules/USBI2C01",
+    "commit": "8fc108913f407128495c47fdca671d2adf68268c",
+    "schematic": "hw/sch_pcb/USBI2C01.kicad_sch",
+    "license": "GPL-3.0"
+  },
+  "types": [
+    "USB",
+    "I2C",
+    "POWER_PROTECTION",
+    "POWER_CONVERTER",
+    "STARTUP"
+  ],
+  "types_note": "前两项catalog；P1/D4实际保护补POWER_PROTECTION并由add审；CP2112内置LDO/复位机制补POWER_CONVERTER/STARTUP，当前角色/归属机制未能自动生成对应框架，漏报列M01/M02/M04/M05。原生CLOCK是X前缀误触发，不算真实电路类型。",
+  "run": {
+    "db_sha256": "542244c47eae87de1a7798e1500fc76abd0a65443a13fbb5c8c1ebb06d48646c",
+    "db_before_bom_sha256": "b8dc6719b98e340ac517f3fac77cde1d724792ef56c37f3840f404e5f0192b35",
+    "plan_items": 184,
+    "findings_total": 58,
+    "report_roots": 42,
+    "resolved_false_object_items": 14,
+    "wrong_numeric_precheck": 1,
+    "criterion_scope_issues": 1,
+    "results_judged": 75,
+    "results_recorded": 184,
+    "results_needs_human": 109,
+    "result_counts": {
+      "NA": 20,
+      "INSUFFICIENT": 109,
+      "PASS": 55
+    },
+    "gate": "FAIL",
+    "gate_errors": 520,
+    "quality_screening_candidates": 11,
+    "sr_commit": "6ede1e4b0bea49acb3281d89501c109d898f19cb",
+    "source_commit_verified": "8fc108913f407128495c47fdca671d2adf68268c",
+    "strict_fetch": true,
+    "kicad_version": "10.0.7",
+    "native_record_root": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review",
+    "derive_errors": [],
+    "counting": "42个报告未决任务+14个已排除错对象计划项+1个C4错误数值预判+1个准则适用问题=58条归因；不是58个物理故障。报告全部42个任务逐一关联109个未决检查；55个PASS为限定范围的事实/采购可达性记录，20个NA。七条miss是独立覆盖漏项，不追加已证缺陷。",
+    "gate_limitations": [
+      "NEEDS_HUMAN和UNRATED是本boards任务明确要求保留的未决，原生schema15不接受；不伪造受控需求/厂家保证值或改作REVIEW_INCOMPLETE来换通过。",
+      "30个功能仍只有网表事实/未定工况而没有适用的强制/保证数值条款；无局部数值窗口时不能补无关条款过F1。",
+      "若干常规件预判/名义旁路PASS未满足原生功能余量/库存资格绑定；已在台账限定范围，不能作为完整电气保证；C4预判覆盖注记未被derive保留。",
+      "add电路推导nets=[]，I2C逐网分析已完成但绑定对象网络无法诚实回写到由工具派生的电路；保留该记录错误。",
+      "门禁FAIL，未pack_review；原生报告record相对链接未打包，不创建指向第三方db的仓库副本，所有缓存台账按evidence_index绝对路径与哈希可定位。"
+    ],
+    "gate_error_groups": [
+      {
+        "count": 109,
+        "message": "<object>: INSUFFICIENT requires gap_cause EXTERNAL_DATA/REVIEW_INCOMPLETE"
+      },
+      {
+        "count": 109,
+        "message": "<object>: impact_assessment required for 证据不足"
+      },
+      {
+        "count": 109,
+        "message": "<object>: potential_severity required"
+      },
+      {
+        "count": 109,
+        "message": "<object>: gap_cause is one of EXTERNAL_DATA/REVIEW_INCOMPLETE and only on INSUFFICIENT"
+      },
+      {
+        "count": 42,
+        "message": "<object>: kind is one of VENDOR_DATUM/REVIEW_INCOMPLETE"
+      },
+      {
+        "count": 30,
+        "message": "<object>: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing"
+      },
+      {
+        "count": 3,
+        "message": "<object>: decoupling gaps must be resolved in a regenerated plan before PASS (or record manual_verification with an independent evidenced review)"
+      },
+      {
+        "count": 3,
+        "message": "<object>: aspect 器件应力与降额 is an engineering calculation (method C); it passes on a margin of FN-USB-BRIDGE that proves it, not on a sentence (a vendor reference circuit with reference_circuit also settles it); a sentence closes connection tracing and clause checks"
+      },
+      {
+        "count": 2,
+        "message": "<object>: aspect 去耦容量 is an engineering calculation (method C); it passes on a margin of FN-I2C-EXTERNAL that proves it, not on a sentence (a vendor reference circuit with reference_circuit also settles it); a sentence closes connection tracing and clause checks"
+      },
+      {
+        "count": 2,
+        "message": "<object>: aspect 去耦电容额定 is an engineering calculation (method C); it passes on a margin of FN-I2C-EXTERNAL that proves it, not on a sentence (a vendor reference circuit with reference_circuit also settles it); a sentence closes connection tracing and clause checks"
+      },
+      {
+        "count": 1,
+        "message": "<object>: 预判 PASS 被改判，proposal_override.code 须为 NON_COMMODITY_USE/STRESS_ABOVE_BOUND/SELECTED_PART_RATING/TEMPERATURE_ABOVE_ASSUMPTION 之一（采购范围/料号未定不是改判理由，记 DEV-D04）"
+      },
+      {
+        "count": 1,
+        "message": "<object>: objects name Net-(X1-SCL), Net-(X1-SDA), which intent circuit I2C-EXTERNAL does not list; declare them in intent.circuits and regenerate the plan, or judge them in their own function"
+      }
+    ],
+    "quality_screening_disposition": "11条提示已读：两条位号与数值粘连为排版；四条同物理路径跨框架复用、一个同对针/路径PASS理由；一个模板原因、一个统一未定级来自保留的NEEDS_HUMAN，未编P1；两个广范围缺口为共享系统输入/保险资料。逐对象证据仍保留；筛查不证明正确，原始提示不删。"
+  },
+  "evidence_index": {
+    "source_lock": {
+      "repo": "mlab-modules/USBI2C01",
+      "commit": "8fc108913f407128495c47fdca671d2adf68268c",
+      "license": "GPL-3.0",
+      "source_root_sha256": "43c92b2e3cfb79aea8a55388f4e3b24451147548525a1cd1bb3cfbf99b2d3012"
+    },
+    "files": [
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/db.json",
+        "sha256": "542244c47eae87de1a7798e1500fc76abd0a65443a13fbb5c8c1ebb06d48646c"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/netlist.xml",
+        "sha256": "ae6516ba309a35125bf6906c2c5f75cc9ddd2e3925dd4df9bb6c729bb87cf76f"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/verification.json",
+        "sha256": "849bcc0325125bebd0da57d55b3cf060ec9e04efa87d841077dd0c5a924f1937"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/src/README.md",
+        "sha256": "7e9d762b01a2e839b51af65831d546d1f5270459930b43e14a2813e33fcaf291"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/src/LICENSE",
+        "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/src/hw/sch_pcb/USBI2C01.kicad_sch",
+        "sha256": "43c92b2e3cfb79aea8a55388f4e3b24451147548525a1cd1bb3cfbf99b2d3012"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/evidence/CP2112.pdf",
+        "sha256": "674078bf07ef50fa36a5beab6a440ef99d5467a7d64a0ee552a84c6349ccef03"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/evidence/BOM.csv",
+        "sha256": "f0ab4c03a93a4b5bee1cc6e5ec5f7446c18011c1818458ade43b8fcd1fdf79dd"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/evidence/source-schematic.pdf",
+        "sha256": "fa1b3a6f6b9b27df5cff9f90baec00377d7d3509a77aad60c4db7436a779ad48"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/evidence/source-board.kicad_pcb",
+        "sha256": "c4d1c0448f7c5dc9f5bd30d58f1578179691cbd607e33bc5c0eb0e428ba4fc87"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/evidence/CP2112.txt",
+        "sha256": "6994b647226f5880d169a7367452278595bfb491b4e7a4289eacbb77572f7195"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/evidence/BOM-original.csv",
+        "sha256": "401e93234ebc215650ff07e8ea4218c75dbcc9c9ad861f61eb6dcbe2148083cf"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/evidence/SP1001-extract.txt",
+        "sha256": "7285677e8b54d547da5a00ab324f85193e31626bd7e0e10696b3e075ac4660f5"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/intent.json",
+        "sha256": "be1be359281d6af5d753b2335b006add4fee45694c9f1c96a97b6401eed825b0"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/datasheet-audit.json",
+        "sha256": "c6d816a84da08e6314baf5cbec98005fe3e322e2861f1d13a97eda1f61c3019c"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/datasheet-resolution.json",
+        "sha256": "9914e0a66f8f12ed1b4b5f18d7acee0f888002ff4a7ebe51f39d3b7696b44318"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/record/circuit-candidates.json",
+        "sha256": "f3bad9b49e38cfd01bf81ab8ed61d8761c32b787380142559a4c0088251beab5"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/review-plan-cold.json",
+        "sha256": "a194ac53540a7a2eeb8e3ae87753f6970020012fb5503f8f03ed493bf243b746"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/review-plan.json",
+        "sha256": "3868930d517c7f4529a69c3feb27f7e215a35174e16c626d99e3195ff5da6fb4"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/lint-cold.json",
+        "sha256": "28a78f86cded3f180311566b7034704c87968be8ef5eede0a45adc7c9d764bb4"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/lint-hot.json",
+        "sha256": "ae632447dd6f674afc009f3c65aeaa0df95bce73198976b656c3b237feee3428"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/review-results.json",
+        "sha256": "dc9ef3337f55d6feb13a621600fa8f5f8d7590f0b1f57dde57eac89163a15f22"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/review-gate.json",
+        "sha256": "1be14b0f1bf17dc3fde719b832dcef3163104a26540e7d56f5b2493369786624"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+        "sha256": "300d3daf42d0e9c9aacffbf3f6739bc5057f9acf81138d8a34281a901cacaa16"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/judgements.json",
+        "sha256": "fe235ea12156357ad6de1b0090b8a4af91cecdd70444cd9ef85a1e30ec0c6ea9"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+        "sha256": "9a40a8e8c8be7e29ac831ce76d959e835b11671ad6fe13f6c260ff35ffeacc86"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/notes.json",
+        "sha256": "6ae59b27b7c5d89406153eb971f10f28eac15f662e311850bcb10d2fd347f16b"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/run-commands.json",
+        "sha256": "a227a42b34edbb5c002f05bb3f5d6b2a80b51a2f205331a2bcbdac69456128ff"
+      },
+      {
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/审查报告.md",
+        "sha256": "dc7814b07b78aa1ad371da456e2e1f81aa274646ec3cee5e562839c4851a3622"
+      }
+    ],
+    "manufacturer_sources": [
+      {
+        "part": "CP2112",
+        "document_version": "Rev1.3",
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/evidence/CP2112.pdf",
+        "complete_pdf_obtained": true,
+        "printed_to_pdf_page_offset": 1,
+        "acquisition": "fixed commit doc/pdf/CP2112/CP2112.pdf; current website curl403",
+        "url": "https://www.silabs.com/documents/public/data-sheets/cp2112-datasheet.pdf"
+      },
+      {
+        "part": "SP1001-04XTG",
+        "document_version": "GD.07/10/24",
+        "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/evidence/SP1001-extract.txt",
+        "complete_pdf_obtained": false,
+        "online_full_pdf_readable": true,
+        "acquisition": "web full7-page text readable; direct curl403; local brief extract only; graphical pin mapping not closed",
+        "url": "https://www.littelfuse.com/assetdocs/littelfuse-tvs-diode-array-sp1001-datasheet?assetguid=c793b6b1-660c-4ef5-90f0-f9e86b28aed9"
+      }
+    ],
+    "hardwarewiki": "只读文件名检索无CP2112/SP1001条目；给定根下无scripts/find_parts.py；未写入wiki。",
+    "bom_normalization": "只把串接位号拆为逗号列表，原BOM与规范化BOM均锁hash；其余列逐字保留，read_bom26/26。"
+  },
+  "findings": [
+    {
+      "sr_rule": "DEV-D03",
+      "sr_rules": [
+        "DEV-D03"
+      ],
+      "criteria": [
+        "G01-013"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "SV1",
+        "SV2",
+        "SV3",
+        "SV4",
+        "SV5",
+        "SV6",
+        "SV7"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)"
+      ],
+      "pins": [
+        "SV1.1",
+        "SV1.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "SV3.1",
+        "SV3.2",
+        "SV3.3",
+        "SV4.1",
+        "SV4.2",
+        "SV4.3",
+        "SV4.4",
+        "SV4.5",
+        "SV4.6",
+        "SV5.1",
+        "SV5.10",
+        "SV5.2",
+        "SV5.3",
+        "SV5.4",
+        "SV5.5",
+        "SV5.6",
+        "SV5.7",
+        "SV5.8",
+        "SV5.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.3",
+        "SV6.4",
+        "SV6.5",
+        "SV6.6",
+        "SV7.1"
+      ],
+      "sr_text": "各排针针网已从原图/PCB读回；SV1为VIO配置、SV3为输出电压选择，SV2为SDA/SCL/电源/GND，SV4/5为GPIO，SV6电源，SV7反SUSPEND。未给受控对端针表/插接及允许接法；不能把内部选择座全部称独立对外端口，也不推定必然误接。",
+      "verdict": "needs_human",
+      "evidence": "各排针针网已从原图/PCB读回；SV1为VIO配置、SV3为输出电压选择，SV2为SDA/SCL/电源/GND，SV4/5为GPIO，SV6电源，SV7反SUSPEND。未给受控对端针表/插接及允许接法；不能把内部选择座全部称独立对外端口，也不推定必然误接。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-4a0b63ff8f",
+      "check_ids": [
+        "DEV-D03.SV1",
+        "DEV-D03.SV2",
+        "DEV-D03.SV3",
+        "DEV-D03.SV4",
+        "DEV-D03.SV5",
+        "DEV-D03.SV6",
+        "DEV-D03.SV7"
+      ],
+      "native_open_ref": "FN-EXT-SV1/K-4a0b63ff8f",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D03.SV1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D03.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D03.SV3"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D03.SV4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D03.SV5"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D03.SV6"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D03.SV7"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F001"
+    },
+    {
+      "sr_rule": "DEV-C04",
+      "sr_rules": [
+        "DEV-C04"
+      ],
+      "criteria": [
+        "G05-022"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "SV1",
+        "SV2",
+        "SV3",
+        "SV4",
+        "SV5",
+        "SV6",
+        "SV7"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)"
+      ],
+      "pins": [
+        "SV1.1",
+        "SV1.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "SV3.1",
+        "SV3.2",
+        "SV3.3",
+        "SV4.1",
+        "SV4.2",
+        "SV4.3",
+        "SV4.4",
+        "SV4.5",
+        "SV4.6",
+        "SV5.1",
+        "SV5.10",
+        "SV5.2",
+        "SV5.3",
+        "SV5.4",
+        "SV5.5",
+        "SV5.6",
+        "SV5.7",
+        "SV5.8",
+        "SV5.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.3",
+        "SV6.4",
+        "SV6.5",
+        "SV6.6",
+        "SV7.1"
+      ],
+      "sr_text": "各排针原图/BOM给MA系列排针封装，无受控生产厂牌/触点额定；SV2/SV6供电输出电流与故障上限未知。相邻针并联不能直接把单针额定乘2；需对端负载和连接件采购范围，不以保险750mA当动作上限。",
+      "verdict": "needs_human",
+      "evidence": "各排针原图/BOM给MA系列排针封装，无受控生产厂牌/触点额定；SV2/SV6供电输出电流与故障上限未知。相邻针并联不能直接把单针额定乘2；需对端负载和连接件采购范围，不以保险750mA当动作上限。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-2fc2fa7f67",
+      "check_ids": [
+        "DEV-C04.SV1",
+        "DEV-C04.SV2",
+        "DEV-C04.SV3",
+        "DEV-C04.SV4",
+        "DEV-C04.SV5",
+        "DEV-C04.SV6",
+        "DEV-C04.SV7"
+      ],
+      "native_open_ref": "FN-EXT-SV1/K-2fc2fa7f67",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C04.SV1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C04.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C04.SV3"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C04.SV4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C04.SV5"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C04.SV6"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C04.SV7"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F002"
+    },
+    {
+      "sr_rule": "PRO-D03",
+      "sr_rules": [
+        "PRO-D03"
+      ],
+      "criteria": [
+        "G04-098"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "SV1",
+        "SV2",
+        "SV3",
+        "SV4",
+        "SV5",
+        "SV6",
+        "SV7"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)"
+      ],
+      "pins": [
+        "SV1.1",
+        "SV1.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "SV3.1",
+        "SV3.2",
+        "SV3.3",
+        "SV4.1",
+        "SV4.2",
+        "SV4.3",
+        "SV4.4",
+        "SV4.5",
+        "SV4.6",
+        "SV5.1",
+        "SV5.10",
+        "SV5.2",
+        "SV5.3",
+        "SV5.4",
+        "SV5.5",
+        "SV5.6",
+        "SV5.7",
+        "SV5.8",
+        "SV5.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.3",
+        "SV6.4",
+        "SV6.5",
+        "SV6.6",
+        "SV7.1"
+      ],
+      "sr_text": "各排针的活线/返回已列入端口追踪：SV2 SDA/SCL、SV4/5 GPIO、SV6电源、SV7反SUSPEND，SV1/3为配置排针。USB D+/D-/5V有D4，其他排针未见独立ESD阵列；这些是否外露带线、要求什么ESD等级未知，不能直接判缺ESD。",
+      "verdict": "needs_human",
+      "evidence": "各排针的活线/返回已列入端口追踪：SV2 SDA/SCL、SV4/5 GPIO、SV6电源、SV7反SUSPEND，SV1/3为配置排针。USB D+/D-/5V有D4，其他排针未见独立ESD阵列；这些是否外露带线、要求什么ESD等级未知，不能直接判缺ESD。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-e2cc54f72c",
+      "check_ids": [
+        "PRO-D03.SV1",
+        "PRO-D03.SV2",
+        "PRO-D03.SV3",
+        "PRO-D03.SV4",
+        "PRO-D03.SV5",
+        "PRO-D03.SV6",
+        "PRO-D03.SV7"
+      ],
+      "native_open_ref": "FN-EXT-SV1/K-e2cc54f72c",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D03.SV1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D03.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D03.SV3"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D03.SV4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D03.SV5"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D03.SV6"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D03.SV7"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F003"
+    },
+    {
+      "sr_rule": "PRO-D04",
+      "sr_rules": [
+        "PRO-D04"
+      ],
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "SV1",
+        "SV2",
+        "SV3",
+        "SV4",
+        "SV5",
+        "SV6",
+        "SV7"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)"
+      ],
+      "pins": [
+        "SV1.1",
+        "SV1.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "SV3.1",
+        "SV3.2",
+        "SV3.3",
+        "SV4.1",
+        "SV4.2",
+        "SV4.3",
+        "SV4.4",
+        "SV4.5",
+        "SV4.6",
+        "SV5.1",
+        "SV5.10",
+        "SV5.2",
+        "SV5.3",
+        "SV5.4",
+        "SV5.5",
+        "SV5.6",
+        "SV5.7",
+        "SV5.8",
+        "SV5.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.3",
+        "SV6.4",
+        "SV6.5",
+        "SV6.6",
+        "SV7.1"
+      ],
+      "sr_text": "各排针连接行为未受控：需确认外部带电插拔、USB断电而从机仍带上拉、SV6反送5V、SV3双档误桥接等是否允许。CP p7 IO绝限VIO≥2.2时5.8V，VIO=0时3.6V；外部5V上拉可能越界但实际外部源/限流未知，故不报已证损坏。",
+      "verdict": "needs_human",
+      "evidence": "各排针连接行为未受控：需确认外部带电插拔、USB断电而从机仍带上拉、SV6反送5V、SV3双档误桥接等是否允许。CP p7 IO绝限VIO≥2.2时5.8V，VIO=0时3.6V；外部5V上拉可能越界但实际外部源/限流未知，故不报已证损坏。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-f1324fc744",
+      "check_ids": [
+        "PRO-D04.SV1",
+        "PRO-D04.SV2",
+        "PRO-D04.SV3",
+        "PRO-D04.SV4",
+        "PRO-D04.SV5",
+        "PRO-D04.SV6",
+        "PRO-D04.SV7"
+      ],
+      "native_open_ref": "FN-EXT-SV1/K-f1324fc744",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D04.SV1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D04.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D04.SV3"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D04.SV4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D04.SV5"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D04.SV6"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D04.SV7"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F004"
+    },
+    {
+      "sr_rule": "SIG-C01",
+      "sr_rules": [
+        "SIG-C01"
+      ],
+      "criteria": [
+        "G04-017",
+        "G04-018",
+        "G04-022"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "SV2",
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "SDA/SCL本板Rp为空，外部Rp/Cb/速率未定。独立边界：tr=0.8473 Rp Cb；如仅作条件例Cb100pF、tr300ns则Rp≤3.5407k；CP p4 IOL8.5mA/VOL0.4V，若上拉最高3.6V则Rp≥376.47ohm（需再取最弱从机）。这些为反推条件，不是已确认本板通过或缺陷。",
+      "verdict": "needs_human",
+      "evidence": "SDA/SCL本板Rp为空，外部Rp/Cb/速率未定。独立边界：tr=0.8473 Rp Cb；如仅作条件例Cb100pF、tr300ns则Rp≤3.5407k；CP p4 IOL8.5mA/VOL0.4V，若上拉最高3.6V则Rp≥376.47ohm（需再取最弱从机）。这些为反推条件，不是已确认本板通过或缺陷。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-76e8e4e859",
+      "check_ids": [
+        "SIG-C01.I2C-EXTERNAL-IDLE.SV2",
+        "SIG-C01.I2C-EXTERNAL-ACTIVE.SV2",
+        "SIG-C01.I2C-C186113803BADE8F3692.NET-X1-SCL",
+        "SIG-C01.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-76e8e4e859",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C01.I2C-EXTERNAL-IDLE.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C01.I2C-EXTERNAL-ACTIVE.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C01.I2C-C186113803BADE8F3692.NET-X1-SCL"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C01.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F005"
+    },
+    {
+      "sr_rule": "SIG-C07",
+      "sr_rules": [
+        "SIG-C07"
+      ],
+      "criteria": [
+        "G02-023",
+        "G04-003",
+        "G04-004",
+        "G04-016"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "C4",
+        "D2",
+        "D3",
+        "D4",
+        "P1",
+        "R5",
+        "SV1",
+        "SV2",
+        "SV3",
+        "SV4",
+        "SV5",
+        "SV7",
+        "X1",
+        "X2"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D2-PadA)",
+        "Net-(D3-C)",
+        "Net-(D3-PadA)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "C4.1",
+        "C4.2",
+        "D2.A",
+        "D2.K",
+        "D3.A",
+        "D3.K",
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "P1.2",
+        "R5.1",
+        "R5.2",
+        "SV1.1",
+        "SV1.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "SV3.1",
+        "SV3.2",
+        "SV3.3",
+        "SV4.1",
+        "SV4.2",
+        "SV4.3",
+        "SV4.4",
+        "SV4.5",
+        "SV4.6",
+        "SV5.1",
+        "SV5.10",
+        "SV5.2",
+        "SV5.3",
+        "SV5.4",
+        "SV5.5",
+        "SV5.6",
+        "SV5.7",
+        "SV5.8",
+        "SV5.9",
+        "SV7.1",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9",
+        "X2.1",
+        "X2.2",
+        "X2.3",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2"
+      ],
+      "sr_text": "CP p4 VIH≥0.7VIO、VIL≤0.6V、VOL≤0.4V@8.5mA，GPIO也可开漏。外接从机/输入端接收保证、电压和配置未定；电路对接口里还含无源D4/排针/LED，不能把同网无源钳位当第二个有源驱动器，局部电平可列而全链未定。",
+      "verdict": "needs_human",
+      "evidence": "CP p4 VIH≥0.7VIO、VIL≤0.6V、VOL≤0.4V@8.5mA，GPIO也可开漏。外接从机/输入端接收保证、电压和配置未定；电路对接口里还含无源D4/排针/LED，不能把同网无源钳位当第二个有源驱动器，局部电平可列而全链未定。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-77edee0957",
+      "check_ids": [
+        "SIG-C07.I2C-EXTERNAL-IDLE.SV2",
+        "SIG-C07.I2C-EXTERNAL-ACTIVE.SV2",
+        "SIG-C07.I2C-C186113803BADE8F3692.NET-X1-SCL",
+        "SIG-C07.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA",
+        "SIG-C07.IF-I2C-EXTERNAL-USB-BRIDGE",
+        "SIG-C07.IF-I2C-EXTERNAL-USB-PROTECTION",
+        "SIG-C07.IF-USB-BRIDGE-USB-PROTECTION"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-77edee0957",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C07.I2C-EXTERNAL-IDLE.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C07.I2C-EXTERNAL-ACTIVE.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C07.I2C-C186113803BADE8F3692.NET-X1-SCL"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C07.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C07.IF-I2C-EXTERNAL-USB-BRIDGE"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C07.IF-I2C-EXTERNAL-USB-PROTECTION"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C07.IF-USB-BRIDGE-USB-PROTECTION"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F006"
+    },
+    {
+      "sr_rule": "SIG-C08",
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "SV2",
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "SDA/SCL经SV2直连CP，无串联限流/隔离。CP p7保证绝限在VIO≥2.2V时上限5.8V、VIO<2.2V时VIO+3.6V；外设独立5V而VIO=0会超3.6V，但外部上拉电压、阻值、允许带电和返回未定，尚不能确认违规或计算注入残压。",
+      "verdict": "needs_human",
+      "evidence": "SDA/SCL经SV2直连CP，无串联限流/隔离。CP p7保证绝限在VIO≥2.2V时上限5.8V、VIO<2.2V时VIO+3.6V；外设独立5V而VIO=0会超3.6V，但外部上拉电压、阻值、允许带电和返回未定，尚不能确认违规或计算注入残压。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-a456cb829f",
+      "check_ids": [
+        "SIG-C08.I2C-EXTERNAL-IDLE.SV2",
+        "SIG-C08.I2C-EXTERNAL-ACTIVE.SV2",
+        "SIG-C08.I2C-C186113803BADE8F3692.NET-X1-SCL",
+        "SIG-C08.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-a456cb829f",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C08.I2C-EXTERNAL-IDLE.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C08.I2C-EXTERNAL-ACTIVE.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C08.I2C-C186113803BADE8F3692.NET-X1-SCL"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C08.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F007"
+    },
+    {
+      "sr_rule": "SIG-D01",
+      "sr_rules": [
+        "SIG-D01"
+      ],
+      "criteria": [
+        "G04-023"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "SV2",
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "CP2112是主机，SV2为外部SMBus接口；各pin和GND已逐跳确认，未知外部接法、速率/地址范围与从机伸钟行为，不能用手册配置可达性代替系统端到端协议前提。",
+      "verdict": "needs_human",
+      "evidence": "CP2112是主机，SV2为外部SMBus接口；各pin和GND已逐跳确认，未知外部接法、速率/地址范围与从机伸钟行为，不能用手册配置可达性代替系统端到端协议前提。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-8555a3f081",
+      "check_ids": [
+        "SIG-D01.I2C-EXTERNAL-IDLE.SV2",
+        "SIG-D01.I2C-EXTERNAL-ACTIVE.SV2",
+        "SIG-D01.I2C-C186113803BADE8F3692.NET-X1-SCL",
+        "SIG-D01.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-8555a3f081",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-D01.I2C-EXTERNAL-IDLE.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-D01.I2C-EXTERNAL-ACTIVE.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-D01.I2C-C186113803BADE8F3692.NET-X1-SCL"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-D01.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F008"
+    },
+    {
+      "sr_rule": "SIG-C13",
+      "sr_rules": [
+        "SIG-C13"
+      ],
+      "criteria": [
+        "G04-001",
+        "G04-002"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "D1",
+        "D2",
+        "D3",
+        "R1",
+        "R3",
+        "R4",
+        "R5",
+        "SV1",
+        "SV2",
+        "SV3",
+        "SV4",
+        "SV5",
+        "SV6",
+        "SV7",
+        "X1",
+        "X2"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D1-PadA)",
+        "Net-(D2-C)",
+        "Net-(D2-PadA)",
+        "Net-(D3-C)",
+        "Net-(D3-PadA)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "C1.1",
+        "C1.2",
+        "C2.1",
+        "C2.2",
+        "C3.1",
+        "C3.2",
+        "C4.1",
+        "C4.2",
+        "D1.A",
+        "D1.K",
+        "D2.A",
+        "D2.K",
+        "D3.A",
+        "D3.K",
+        "R1.1",
+        "R1.2",
+        "R3.1",
+        "R3.2",
+        "R4.1",
+        "R4.2",
+        "R5.1",
+        "R5.2",
+        "SV1.1",
+        "SV1.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "SV3.1",
+        "SV3.2",
+        "SV3.3",
+        "SV4.1",
+        "SV4.2",
+        "SV4.3",
+        "SV4.4",
+        "SV4.5",
+        "SV4.6",
+        "SV5.1",
+        "SV5.10",
+        "SV5.2",
+        "SV5.3",
+        "SV5.4",
+        "SV5.5",
+        "SV5.6",
+        "SV5.7",
+        "SV5.8",
+        "SV5.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.3",
+        "SV6.4",
+        "SV6.5",
+        "SV6.6",
+        "SV7.1",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9",
+        "X2.1",
+        "X2.2",
+        "X2.3",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2"
+      ],
+      "sr_text": "X1为USB HID到SMBus主桥，外接SV2为I2C/SMBus；必须确定实际模式/速率、对端、Rp及Cb，不把CP手册模式表或Top50例子的400kHz当实际设置。USB-B端12Mbps为芯片能力，实际系统预算尚无。",
+      "verdict": "needs_human",
+      "evidence": "X1为USB HID到SMBus主桥，外接SV2为I2C/SMBus；必须确定实际模式/速率、对端、Rp及Cb，不把CP手册模式表或Top50例子的400kHz当实际设置。USB-B端12Mbps为芯片能力，实际系统预算尚无。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-917ea061a7",
+      "check_ids": [
+        "SIG-C13.I2C-EXTERNAL.SV2",
+        "SIG-C13.I2C-C186113803BADE8F3692.NET-X1-SCL",
+        "SIG-C13.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA",
+        "SIG-C13.USB-BRIDGE.C1"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-917ea061a7",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C13.I2C-EXTERNAL.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C13.I2C-C186113803BADE8F3692.NET-X1-SCL"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C13.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C13.USB-BRIDGE.C1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F009"
+    },
+    {
+      "sr_rule": "SIG-C15",
+      "sr_rules": [
+        "SIG-C15"
+      ],
+      "criteria": [
+        "G04-019",
+        "G04-020",
+        "G04-024"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "SV2",
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "CP p6表3.6含标准/快速模式时序及检测SCL低超时，不能据芯片能力推定所有从机支持同速率；外部Cb/线长、从机速率及总线卡死恢复要求未给。板内无外置总线缓冲或独立SCL/SDA隔离。",
+      "verdict": "needs_human",
+      "evidence": "CP p6表3.6含标准/快速模式时序及检测SCL低超时，不能据芯片能力推定所有从机支持同速率；外部Cb/线长、从机速率及总线卡死恢复要求未给。板内无外置总线缓冲或独立SCL/SDA隔离。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-242ac799f0",
+      "check_ids": [
+        "SIG-C15.I2C-EXTERNAL.SV2",
+        "SIG-C15.I2C-C186113803BADE8F3692.NET-X1-SCL",
+        "SIG-C15.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-242ac799f0",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C15.I2C-EXTERNAL.SV2"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C15.I2C-C186113803BADE8F3692.NET-X1-SCL"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C15.I2C-EE07A40E1A02C86FA89E.NET-X1-SDA"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F010"
+    },
+    {
+      "sr_rule": "DEV-C01",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "X1 CP2112：VDD手册3.3..3.6V、VIO1.8..VDD，REGIN≤5.25V；SV1状态、外部GPIO/总线信号和环境温度未定，完整应力包络不可闭合。CP p7 GPIO绝限随VIO分支变化，不能固定3.3V。",
+      "verdict": "needs_human",
+      "evidence": "X1 CP2112：VDD手册3.3..3.6V、VIO1.8..VDD，REGIN≤5.25V；SV1状态、外部GPIO/总线信号和环境温度未定，完整应力包络不可闭合。CP p7 GPIO绝限随VIO分支变化，不能固定3.3V。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-7d8593877c",
+      "check_ids": [
+        "DEV-C01.I2C-EXTERNAL"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-7d8593877c",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C01.I2C-EXTERNAL"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F011"
+    },
+    {
+      "sr_rule": "DEV-C05",
+      "sr_rules": [
+        "DEV-C05"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "D2.K",
+        "D3.K",
+        "SV4.1",
+        "SV4.2",
+        "SV4.3",
+        "SV4.4",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "D2/R4接GPIO0 X1.P$23、D3/R3接GPIO1 X1.P$22，LED阳极经470R到VDD。即取VDD3.6V、R -5%、LED压降0，I≤8.063mA，小于CP p4表3.2 VOL≤0.4V@8.5mA的灌流保证。此计算仅为R公差≤5%时的充分条件；BOM未写公差，需保证Rmin≥423.53ohm或结合真实LED最低压降重算，不能把试算当已保证通过。",
+      "verdict": "needs_human",
+      "evidence": "D2/R4接GPIO0 X1.P$23、D3/R3接GPIO1 X1.P$22，LED阳极经470R到VDD。即取VDD3.6V、R -5%、LED压降0，I≤8.063mA，小于CP p4表3.2 VOL≤0.4V@8.5mA的灌流保证。此计算仅为R公差≤5%时的充分条件；BOM未写公差，需保证Rmin≥423.53ohm或结合真实LED最低压降重算，不能把试算当已保证通过。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-84add661d0",
+      "check_ids": [
+        "DEV-C05.PIN-LED.X1-P-22",
+        "DEV-C05.PIN-LED.X1-P-23"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-84add661d0",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C05.PIN-LED.X1-P-22"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C05.PIN-LED.X1-P-23"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F012"
+    },
+    {
+      "sr_rule": "DEV-C05",
+      "sr_rules": [
+        "DEV-C05"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "X1 CP p3–4规定VDD3.0..3.6、VIO1.8..VDD、TA -40..85℃；D4工作窗5.5V。板内运行名义窗口可列，外部供电/信号、SV1和环境/热条件未确认，不能把手册最大使用范围当已声明任务剖面。",
+      "verdict": "needs_human",
+      "evidence": "X1 CP p3–4规定VDD3.0..3.6、VIO1.8..VDD、TA -40..85℃；D4工作窗5.5V。板内运行名义窗口可列，外部供电/信号、SV1和环境/热条件未确认，不能把手册最大使用范围当已声明任务剖面。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-9c078a7d5e",
+      "check_ids": [
+        "DEV-C05.X1"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-9c078a7d5e",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C05.X1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F013"
+    },
+    {
+      "sr_rule": "PWR-C09",
+      "sr_rules": [
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03"
+      ],
+      "criteria": [
+        "G03-036"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "R5.2",
+        "SV1.2",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "X1.P$5 VIO直接网只有SV1.2与R5.2，未见本地电容；SV1闭合可共享VDD的C2/C3，开路外供时需外部旁路。短路帽和外供状态不明，不能把未声明跳线当开路硬缺陷，也不能当闭合通过。",
+      "verdict": "needs_human",
+      "evidence": "X1.P$5 VIO直接网只有SV1.2与R5.2，未见本地电容；SV1闭合可共享VDD的C2/C3，开路外供时需外部旁路。短路帽和外供状态不明，不能把未声明跳线当开路硬缺陷，也不能当闭合通过。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-eb68ed19cf",
+      "check_ids": [
+        "PWR-C09.DECAP-8903DE1FD98EB09B54A2.NET-X1-VIO",
+        "PWR-C10.DECAP-8903DE1FD98EB09B54A2.NET-X1-VIO",
+        "PWR-D02.DECAP-8903DE1FD98EB09B54A2.NET-X1-VIO",
+        "PWR-T03.DECAP-8903DE1FD98EB09B54A2.NET-X1-VIO"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-eb68ed19cf",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C09.DECAP-8903DE1FD98EB09B54A2.NET-X1-VIO"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C10.DECAP-8903DE1FD98EB09B54A2.NET-X1-VIO"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-D02.DECAP-8903DE1FD98EB09B54A2.NET-X1-VIO"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-T03.DECAP-8903DE1FD98EB09B54A2.NET-X1-VIO"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F014"
+    },
+    {
+      "sr_rule": "SIG-A03",
+      "sr_rules": [
+        "SIG-A03"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [
+        "SV2"
+      ],
+      "nets": [
+        "GND",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)"
+      ],
+      "pins": [
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9"
+      ],
+      "sr_text": "X1.P$1 SDA→SV2.3/4、P$24 SCL→SV2.7/8，两网没有上拉电阻；CP p2/p16明确需要外部上拉。外部从机板是否提供Rp、Rp接哪条轨未知，因此候选属实但尚不能定本板缺陷，不能拿片内GPIO弱上拉代替SMBus上拉。",
+      "verdict": "needs_human",
+      "evidence": "X1.P$1 SDA→SV2.3/4、P$24 SCL→SV2.7/8，两网没有上拉电阻；CP p2/p16明确需要外部上拉。外部从机板是否提供Rp、Rp接哪条轨未知，因此候选属实但尚不能定本板缺陷，不能拿片内GPIO弱上拉代替SMBus上拉。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-fed220f9c5",
+      "check_ids": [
+        "SIG-A03.NET-4815aa",
+        "SIG-A03.NET-fcb2dc"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-fed220f9c5",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-A03.NET-4815aa"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-A03.NET-fcb2dc"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F015"
+    },
+    {
+      "sr_rule": "SIG-E01",
+      "sr_rules": [
+        "SIG-E01"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [
+        "SV2",
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D2-C)",
+        "Net-(D3-C)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.3",
+        "SV2.4",
+        "SV2.5",
+        "SV2.6",
+        "SV2.7",
+        "SV2.8",
+        "SV2.9",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "两线本板只有CP与SV2，没有上拉；外部器件MPN、上拉端电压和保证IOL/VIH未知，单端CP数据完整仍不能构成两端保证窗口。",
+      "verdict": "needs_human",
+      "evidence": "两线本板只有CP与SV2，没有上拉；外部器件MPN、上拉端电压和保证IOL/VIH未知，单端CP数据完整仍不能构成两端保证窗口。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-fc9ada70af",
+      "check_ids": [
+        "SIG-E01.NET-X1-SCL",
+        "SIG-E01.NET-X1-SDA"
+      ],
+      "native_open_ref": "FN-I2C-EXTERNAL/K-fc9ada70af",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-E01.NET-X1-SCL"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-E01.NET-X1-SDA"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F016"
+    },
+    {
+      "sr_rule": "PWR-T04",
+      "sr_rules": [
+        "PWR-T04"
+      ],
+      "criteria": [
+        "G03-025"
+      ],
+      "severity": "UNRATED",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "X1.P$9 /RST接内部POR/VDD监控输出，R5上拉到VIO；CP p4给复位低脉宽15us和VDD上升≤1ms，未给覆盖整板外供VIO/外设掉电安全的全部阈值/时间。哪些域需监控、外设最低工作值/掉电斜率未定；不凭没外置监控器报错。",
+      "verdict": "needs_human",
+      "evidence": "X1.P$9 /RST接内部POR/VDD监控输出，R5上拉到VIO；CP p4给复位低脉宽15us和VDD上升≤1ms，未给覆盖整板外供VIO/外设掉电安全的全部阈值/时间。哪些域需监控、外设最低工作值/掉电斜率未定；不凭没外置监控器报错。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-f342c1d538",
+      "check_ids": [
+        "PWR-T04.BOM-POPULATED.SUPERVISION-RAILS"
+      ],
+      "native_open_ref": "FN-SYS-MONITOR/K-f342c1d538",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-T04.BOM-POPULATED.SUPERVISION-RAILS"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F017"
+    },
+    {
+      "sr_rule": "PWR-C01",
+      "sr_rules": [
+        "PWR-C01"
+      ],
+      "criteria": [
+        "G01-010",
+        "G03-001",
+        "G03-042",
+        "G03-043"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "D4",
+        "P1",
+        "R1",
+        "R3",
+        "R4",
+        "SV1",
+        "SV3",
+        "SV6",
+        "X1"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D1-PadA)",
+        "Net-(D2-C)",
+        "Net-(D2-PadA)",
+        "Net-(D3-C)",
+        "Net-(D3-PadA)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-SCL)",
+        "Net-(X1-SDA)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "C1.1",
+        "C1.2",
+        "C2.1",
+        "C2.2",
+        "C3.1",
+        "C3.2",
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "P1.2",
+        "R1.1",
+        "R1.2",
+        "R3.1",
+        "R3.2",
+        "R4.1",
+        "R4.2",
+        "SV1.1",
+        "SV1.2",
+        "SV3.1",
+        "SV3.2",
+        "SV3.3",
+        "SV6.1",
+        "SV6.2",
+        "SV6.3",
+        "SV6.4",
+        "SV6.5",
+        "SV6.6",
+        "X1.P$1",
+        "X1.P$11",
+        "X1.P$12",
+        "X1.P$13",
+        "X1.P$14",
+        "X1.P$15",
+        "X1.P$16",
+        "X1.P$17",
+        "X1.P$2",
+        "X1.P$20",
+        "X1.P$21",
+        "X1.P$22",
+        "X1.P$23",
+        "X1.P$24",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X1.P$5",
+        "X1.P$6",
+        "X1.P$7",
+        "X1.P$8",
+        "X1.P$9"
+      ],
+      "sr_text": "CP p4内部LDO总电流上限100mA包含芯片；p3 CP最大16mA加USB上拉228uA。以VDD3.6V、470R -5%、LED压降0保守估两灯≤16.126mA，外部可用≤67.646mA（未计其他GPIO负载）；5V电源还承担R1≤11.758mA与稳压器偏流。外接负载/USB电流授权未给，750mA保险不代表USB许可，不能判预算足够。",
+      "verdict": "needs_human",
+      "evidence": "CP p4内部LDO总电流上限100mA包含芯片；p3 CP最大16mA加USB上拉228uA。以VDD3.6V、470R -5%、LED压降0保守估两灯≤16.126mA，外部可用≤67.646mA（未计其他GPIO负载）；5V电源还承担R1≤11.758mA与稳压器偏流。外接负载/USB电流授权未给，750mA保险不代表USB许可，不能判预算足够。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-bd0ab9471c",
+      "check_ids": [
+        "PWR-C01.3-3V",
+        "PWR-C01.5V"
+      ],
+      "native_open_ref": "FN-SYS-POWER/K-bd0ab9471c",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C01.3-3V"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C01.5V"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F018"
+    },
+    {
+      "sr_rule": "RST-T03",
+      "sr_rules": [
+        "RST-T03"
+      ],
+      "criteria": [
+        "G03-024",
+        "G03-030",
+        "G03-047",
+        "G05-062",
+        "G05-091"
+      ],
+      "severity": "UNRATED",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "X1 REGIN/VBUS同接受P1后的5V，内部LDO生成VDD；SV1可使VIO随VDD或外部独立供电，SV3选择外设供出轨。实际跳线、VIO先后/断电轨迹和外部IO保持状态未定；表3.3要求VDD上升≤1ms，不能从静态网表保证。",
+      "verdict": "needs_human",
+      "evidence": "X1 REGIN/VBUS同接受P1后的5V，内部LDO生成VDD；SV1可使VIO随VDD或外部独立供电，SV3选择外设供出轨。实际跳线、VIO先后/断电轨迹和外部IO保持状态未定；表3.3要求VDD上升≤1ms，不能从静态网表保证。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-c880456d39",
+      "check_ids": [
+        "RST-T03.SYS-SEQUENCE"
+      ],
+      "native_open_ref": "FN-SYS-SEQUENCE/K-c880456d39",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "RST-T03.SYS-SEQUENCE"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F019"
+    },
+    {
+      "sr_rule": "SIG-D04",
+      "sr_rules": [
+        "SIG-D04"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "D1",
+        "D2",
+        "D3",
+        "R1",
+        "R3",
+        "R4",
+        "R5",
+        "SV1",
+        "SV3",
+        "SV4",
+        "SV5",
+        "SV6",
+        "SV7",
+        "X2"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D1-PadA)",
+        "Net-(D2-C)",
+        "Net-(D2-PadA)",
+        "Net-(D3-C)",
+        "Net-(D3-PadA)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "C1.1",
+        "C1.2",
+        "C2.1",
+        "C2.2",
+        "C3.1",
+        "C3.2",
+        "C4.1",
+        "C4.2",
+        "D1.A",
+        "D1.K",
+        "D2.A",
+        "D2.K",
+        "D3.A",
+        "D3.K",
+        "R1.1",
+        "R1.2",
+        "R3.1",
+        "R3.2",
+        "R4.1",
+        "R4.2",
+        "R5.1",
+        "R5.2",
+        "SV1.1",
+        "SV1.2",
+        "SV3.1",
+        "SV3.2",
+        "SV3.3",
+        "SV4.1",
+        "SV4.2",
+        "SV4.3",
+        "SV4.4",
+        "SV4.5",
+        "SV4.6",
+        "SV5.1",
+        "SV5.10",
+        "SV5.2",
+        "SV5.3",
+        "SV5.4",
+        "SV5.5",
+        "SV5.6",
+        "SV5.7",
+        "SV5.8",
+        "SV5.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.3",
+        "SV6.4",
+        "SV6.5",
+        "SV6.6",
+        "SV7.1",
+        "X2.1",
+        "X2.2",
+        "X2.3",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2"
+      ],
+      "sr_text": "USB-B至CP的全速D+/D-及公共GND已核，D4挂活线而非空脚。原厂CP p20建议全速兼容TVS；SP1001在线电容为典型值，缺选定对端线缆、PCB阻抗/回流与真实残压证据，原理图限定外部防护/后续布局要求待明确；SI/ESD整机验证属下游。",
+      "verdict": "needs_human",
+      "evidence": "USB-B至CP的全速D+/D-及公共GND已核，D4挂活线而非空脚。原厂CP p20建议全速兼容TVS；SP1001在线电容为典型值，缺选定对端线缆、PCB阻抗/回流与真实残压证据，原理图限定外部防护/后续布局要求待明确；SI/ESD整机验证属下游。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-65b349c3f8",
+      "check_ids": [
+        "SIG-D04.USB-BRIDGE.C1"
+      ],
+      "native_open_ref": "FN-USB-BRIDGE/K-65b349c3f8",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-D04.USB-BRIDGE.C1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F020"
+    },
+    {
+      "sr_rule": "SIG-C05",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "criteria": [
+        "G01-026",
+        "G01-027",
+        "G01-028",
+        "G01-029",
+        "G01-031"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "D1",
+        "D2",
+        "D3",
+        "R1",
+        "R3",
+        "R4",
+        "R5",
+        "SV1",
+        "SV3",
+        "SV4",
+        "SV5",
+        "SV6",
+        "SV7",
+        "X2"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D1-PadA)",
+        "Net-(D2-C)",
+        "Net-(D2-PadA)",
+        "Net-(D3-C)",
+        "Net-(D3-PadA)",
+        "Net-(SV2-Pad5)",
+        "Net-(X1-/RST)",
+        "Net-(X1-/SUSPEND)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "C1.1",
+        "C1.2",
+        "C2.1",
+        "C2.2",
+        "C3.1",
+        "C3.2",
+        "C4.1",
+        "C4.2",
+        "D1.A",
+        "D1.K",
+        "D2.A",
+        "D2.K",
+        "D3.A",
+        "D3.K",
+        "R1.1",
+        "R1.2",
+        "R3.1",
+        "R3.2",
+        "R4.1",
+        "R4.2",
+        "R5.1",
+        "R5.2",
+        "SV1.1",
+        "SV1.2",
+        "SV3.1",
+        "SV3.2",
+        "SV3.3",
+        "SV4.1",
+        "SV4.2",
+        "SV4.3",
+        "SV4.4",
+        "SV4.5",
+        "SV4.6",
+        "SV5.1",
+        "SV5.10",
+        "SV5.2",
+        "SV5.3",
+        "SV5.4",
+        "SV5.5",
+        "SV5.6",
+        "SV5.7",
+        "SV5.8",
+        "SV5.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.3",
+        "SV6.4",
+        "SV6.5",
+        "SV6.6",
+        "SV7.1",
+        "X2.1",
+        "X2.2",
+        "X2.3",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2"
+      ],
+      "sr_text": "本体USB-B设备/总线供电，无CC/PD器件。CP p1/4范围4.0..5.25V，C1直接5V为1uF，C2/C3在内部LDO之后，C4在VPP，不能全并当VBUS电容。P1不是受控浪涌开关；外口电容和负载未知。G01-026/029/030源自Type-C/PD，适用词表只写USB过宽，不能据5.5V教例给CP判超压。",
+      "verdict": "needs_human",
+      "evidence": "本体USB-B设备/总线供电，无CC/PD器件。CP p1/4范围4.0..5.25V，C1直接5V为1uF，C2/C3在内部LDO之后，C4在VPP，不能全并当VBUS电容。P1不是受控浪涌开关；外口电容和负载未知。G01-026/029/030源自Type-C/PD，适用词表只写USB过宽，不能据5.5V教例给CP判超压。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-9aeb8223f8",
+      "check_ids": [
+        "SIG-C05.USB-BRIDGE-UNATTACHED.C1",
+        "SIG-C05.USB-BRIDGE-ATTACHED.C1",
+        "SIG-C05.USB-BRIDGE-FAULT.C1"
+      ],
+      "native_open_ref": "FN-USB-BRIDGE/K-9aeb8223f8",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C05.USB-BRIDGE-UNATTACHED.C1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C05.USB-BRIDGE-ATTACHED.C1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "SIG-C05.USB-BRIDGE-FAULT.C1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F021"
+    },
+    {
+      "sr_rule": "DEV-C01",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "C4"
+      ],
+      "nets": [
+        "GND",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "C4.1",
+        "C4.2"
+      ],
+      "sr_text": "C4=4u7跨X1.P$16 VPP/GND。计划预判按公共供电簇误取5.25V；CP2112 p3表3.1/p19 OTP给VPP编程5.75..VIO+3.6，VIO≤3.6时可到7.2V，不能按5.25V判。建议C4≥10V并按项目降额选档；普通采购额定尚未受控，不索取不存在的厂家专有参数。",
+      "verdict": "needs_human",
+      "evidence": "C4=4u7跨X1.P$16 VPP/GND。计划预判按公共供电簇误取5.25V；CP2112 p3表3.1/p19 OTP给VPP编程5.75..VIO+3.6，VIO≤3.6时可到7.2V，不能按5.25V判。建议C4≥10V并按项目降额选档；普通采购额定尚未受控，不索取不存在的厂家专有参数。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-867169900c",
+      "check_ids": [
+        "DEV-C01.C4"
+      ],
+      "native_open_ref": "FN-USB-BRIDGE/K-867169900c",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C01.C4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F022"
+    },
+    {
+      "sr_rule": "DEV-C01",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "D1",
+        "D2",
+        "D3",
+        "R1",
+        "R3",
+        "R4",
+        "R5",
+        "X2"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(D1-PadA)",
+        "Net-(D2-C)",
+        "Net-(D2-PadA)",
+        "Net-(D3-C)",
+        "Net-(D3-PadA)",
+        "Net-(X1-/RST)",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X1-VIO)",
+        "Net-(X1-VPP)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "C1.1",
+        "C1.2",
+        "C2.1",
+        "C2.2",
+        "C3.1",
+        "C3.2",
+        "C4.1",
+        "C4.2",
+        "D1.A",
+        "D1.K",
+        "D2.A",
+        "D2.K",
+        "D3.A",
+        "D3.K",
+        "R1.1",
+        "R1.2",
+        "R3.1",
+        "R3.2",
+        "R4.1",
+        "R4.2",
+        "R5.1",
+        "R5.2",
+        "X2.1",
+        "X2.2",
+        "X2.3",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2"
+      ],
+      "sr_text": "USB-BRIDGE拥有C1–C4、D1–D3、R1/R3/R4/R5及X2。R1在5.25V、470R -5%且LED压降按0的保守功耗0.06173W；R3/R4在3.6V同界0.02903W，R5全3.6V约0.00290W。仅建议0805≥0.1W/≤70℃，不是已受控公差/温区。C4 VPP需按7.2V而非5.25V核；外口载流与环境未定。",
+      "verdict": "needs_human",
+      "evidence": "USB-BRIDGE拥有C1–C4、D1–D3、R1/R3/R4/R5及X2。R1在5.25V、470R -5%且LED压降按0的保守功耗0.06173W；R3/R4在3.6V同界0.02903W，R5全3.6V约0.00290W。仅建议0805≥0.1W/≤70℃，不是已受控公差/温区。C4 VPP需按7.2V而非5.25V核；外口载流与环境未定。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-f3734ab8d6",
+      "check_ids": [
+        "DEV-C01.USB-BRIDGE"
+      ],
+      "native_open_ref": "FN-USB-BRIDGE/K-f3734ab8d6",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C01.USB-BRIDGE"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F023"
+    },
+    {
+      "sr_rule": "DEV-C02",
+      "sr_rules": [
+        "DEV-C02"
+      ],
+      "criteria": [
+        "G03-010",
+        "G03-039"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "GND",
+        "Net-(X1-VPP)"
+      ],
+      "pins": [
+        "C1.1",
+        "C1.2",
+        "C2.1",
+        "C2.2",
+        "C3.1",
+        "C3.2",
+        "C4.1",
+        "C4.2"
+      ],
+      "sr_text": "C1=1uF REGIN旁路、C2=10uF和C3=100nF VDD旁路、C4=4.7uF VPP编程储能，均0805非极性。CP p20 Fig10.1只给VDD典型1–5uF+0.1uF，本板10uF偏离；不能把典型5uF当保证上限。需确认该偏离的稳定性适用范围，普通旁路不统一索取Ceff/ESR；无电解寿命项。",
+      "verdict": "knowledge_gap",
+      "evidence": "C1=1uF REGIN旁路、C2=10uF和C3=100nF VDD旁路、C4=4.7uF VPP编程储能，均0805非极性。CP p20 Fig10.1只给VDD典型1–5uF+0.1uF，本板10uF偏离；不能把典型5uF当保证上限。需确认该偏离的稳定性适用范围，普通旁路不统一索取Ceff/ESR；无电解寿命项。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-13266e2326",
+      "check_ids": [
+        "DEV-C02.USB-BRIDGE"
+      ],
+      "native_open_ref": "FN-USB-BRIDGE/K-13266e2326",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C02.USB-BRIDGE"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F024"
+    },
+    {
+      "sr_rule": "PWR-C06",
+      "sr_rules": [
+        "PWR-C06"
+      ],
+      "criteria": [
+        "G03-014",
+        "G03-018",
+        "G03-019",
+        "G03-050",
+        "G05-021"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "D4",
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "P1串在X2.1 VBUS→+5V，是标750mA的1812保险类器件，但BOM没有准确系列/熔断或PPTC类别。未知Ihold/Itrip、动作时间/I²t、DC分断/耐压、温度和源故障电流；不能从750mA推限流或认定过流无保护。没有独立UVLO/OVLO/EN门限，实际被动保护协调是本规则适用部分。",
+      "verdict": "knowledge_gap",
+      "evidence": "P1串在X2.1 VBUS→+5V，是标750mA的1812保险类器件，但BOM没有准确系列/熔断或PPTC类别。未知Ihold/Itrip、动作时间/I²t、DC分断/耐压、温度和源故障电流；不能从750mA推限流或认定过流无保护。没有独立UVLO/OVLO/EN门限，实际被动保护协调是本规则适用部分。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-d516d943a0",
+      "check_ids": [
+        "PWR-C06.USB-PROTECTION-STARTUP.D4",
+        "PWR-C06.USB-PROTECTION-RUN.D4",
+        "PWR-C06.USB-PROTECTION-FAULT.D4"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-d516d943a0",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C06.USB-PROTECTION-STARTUP.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C06.USB-PROTECTION-RUN.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C06.USB-PROTECTION-FAULT.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F025"
+    },
+    {
+      "sr_rule": "PRO-C01",
+      "sr_rules": [
+        "PRO-C01",
+        "PRO-C05",
+        "PRO-C08"
+      ],
+      "criteria": [
+        "G01-021",
+        "G01-036",
+        "G01-037",
+        "G01-041",
+        "G01-054",
+        "G05-024",
+        "G05-025",
+        "G05-026",
+        "G05-027",
+        "G05-045",
+        "G05-046",
+        "G05-047",
+        "G05-048",
+        "G05-049",
+        "G05-050",
+        "G05-051",
+        "G05-052",
+        "G05-053",
+        "G05-094",
+        "G05-095",
+        "G05-096"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "D4",
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "P1串在X2.1 VBUS→+5V，是标750mA的1812保险类器件，但BOM没有准确系列/熔断或PPTC类别。未知Ihold/Itrip、动作时间/I²t、DC分断/耐压、温度和源故障电流；不能从750mA推限流或认定过流无保护。",
+      "verdict": "knowledge_gap",
+      "evidence": "P1串在X2.1 VBUS→+5V，是标750mA的1812保险类器件，但BOM没有准确系列/熔断或PPTC类别。未知Ihold/Itrip、动作时间/I²t、DC分断/耐压、温度和源故障电流；不能从750mA推限流或认定过流无保护。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-3875b8e55c",
+      "check_ids": [
+        "PRO-C01.USB-PROTECTION-STARTUP.D4",
+        "PRO-C01.USB-PROTECTION-RUN.D4",
+        "PRO-C01.USB-PROTECTION-FAULT.D4",
+        "PRO-C05.USB-PROTECTION.D4",
+        "PRO-C08.USB-PROTECTION.D4"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-3875b8e55c",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-C01.USB-PROTECTION-STARTUP.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-C01.USB-PROTECTION-RUN.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-C01.USB-PROTECTION-FAULT.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-C05.USB-PROTECTION.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-C08.USB-PROTECTION.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F026"
+    },
+    {
+      "sr_rule": "PWR-C13",
+      "sr_rules": [
+        "PWR-C13"
+      ],
+      "criteria": [
+        "G01-023",
+        "G01-029",
+        "G01-045",
+        "G03-013",
+        "G03-015",
+        "G03-017"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "D4",
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "USB入口X2.1经P1到C1=1uF与CP REGIN，P1无明确主动浪涌限制；C2/C3位于LDO后、C4是VPP储能，不可将全部容值直接相加当VBUS。SV6/SV3对外接电容与源阻抗未知，P1的冷态电阻/动作与CP启动负载也未知。需按真实USB-B挂接和外口配置界定总浪涌；不套PD协商后100uF阈值。",
+      "verdict": "needs_human",
+      "evidence": "USB入口X2.1经P1到C1=1uF与CP REGIN，P1无明确主动浪涌限制；C2/C3位于LDO后、C4是VPP储能，不可将全部容值直接相加当VBUS。SV6/SV3对外接电容与源阻抗未知，P1的冷态电阻/动作与CP启动负载也未知。需按真实USB-B挂接和外口配置界定总浪涌；不套PD协商后100uF阈值。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-61caf49b92",
+      "check_ids": [
+        "PWR-C13.USB-PROTECTION-STARTUP.P1",
+        "PWR-C13.USB-PROTECTION-RUN.P1",
+        "PWR-C13.USB-PROTECTION-FAULT.P1"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-61caf49b92",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C13.USB-PROTECTION-STARTUP.P1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C13.USB-PROTECTION-RUN.P1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C13.USB-PROTECTION-FAULT.P1"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F027"
+    },
+    {
+      "sr_rule": "PWR-C26",
+      "sr_rules": [
+        "PWR-C26"
+      ],
+      "criteria": [
+        "G05-056",
+        "G05-057",
+        "G05-058",
+        "G05-086",
+        "G05-088"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "D4",
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "D4.1=+5V、D4.2=GND，P1串在USB_B VBUS之前；没有串联防反器。正常USB-B有机械防误插，但SV6电源排针可能外送/误接，是否容许反接及源模型未知。若负电源能到+5V，单向TVS正向旁路需和P1协调；当前不据无防反MOS直接判错。",
+      "verdict": "needs_human",
+      "evidence": "D4.1=+5V、D4.2=GND，P1串在USB_B VBUS之前；没有串联防反器。正常USB-B有机械防误插，但SV6电源排针可能外送/误接，是否容许反接及源模型未知。若负电源能到+5V，单向TVS正向旁路需和P1协调；当前不据无防反MOS直接判错。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-cfdc5d9b5f",
+      "check_ids": [
+        "PWR-C26.USB-PROTECTION.D4"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-cfdc5d9b5f",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C26.USB-PROTECTION.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F028"
+    },
+    {
+      "sr_rule": "PRO-C04",
+      "sr_rules": [
+        "PRO-C04"
+      ],
+      "criteria": [
+        "G05-019",
+        "G05-020"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "D4",
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "支路逐网追：USB源X2.1→P1→5V同时给X1 REGIN/VBUS、D1/R1、SV6和SV3 5V档；3.3V支路由X1内部LDO给SV3/VIO/LED。P1在5V支路源侧，位置可确认；但LDO过载响应与外部线束/负载承受、SV6反送边界未定，不能仅见P1判全部支路配合通过。",
+      "verdict": "needs_human",
+      "evidence": "支路逐网追：USB源X2.1→P1→5V同时给X1 REGIN/VBUS、D1/R1、SV6和SV3 5V档；3.3V支路由X1内部LDO给SV3/VIO/LED。P1在5V支路源侧，位置可确认；但LDO过载响应与外部线束/负载承受、SV6反送边界未定，不能仅见P1判全部支路配合通过。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-3220bcdb63",
+      "check_ids": [
+        "PRO-C04.USB-PROTECTION.D4"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-3220bcdb63",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-C04.USB-PROTECTION.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F029"
+    },
+    {
+      "sr_rule": "PRO-C07",
+      "sr_rules": [
+        "PRO-C07"
+      ],
+      "criteria": [
+        "G05-044",
+        "G05-092",
+        "G05-093"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "D4",
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "没有外置eFuse或负载MOS；P1串联、D4对地钳位。要判断外接输出短路/持续过压的终态，需要P1准确故障特性、CP2112内部LDO过载响应和允许损坏/恢复要求；不要求凭空加输出放电。",
+      "verdict": "knowledge_gap",
+      "evidence": "没有外置eFuse或负载MOS；P1串联、D4对地钳位。要判断外接输出短路/持续过压的终态，需要P1准确故障特性、CP2112内部LDO过载响应和允许损坏/恢复要求；不要求凭空加输出放电。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-721e2398ec",
+      "check_ids": [
+        "PRO-C07.USB-PROTECTION.D4"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-721e2398ec",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-C07.USB-PROTECTION.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F030"
+    },
+    {
+      "sr_rule": "PRO-C09",
+      "sr_rules": [
+        "PRO-C09"
+      ],
+      "criteria": [
+        "G05-059",
+        "G05-060",
+        "G05-063",
+        "G05-064"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "D4",
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "P1仅750mA无法区分熔断需更换与PPTC冷却恢复；未见其他锁存控制器。实际故障后的恢复方式、USB再枚举/外设重启终态未规定，无法从标签判自动恢复。",
+      "verdict": "needs_human",
+      "evidence": "P1仅750mA无法区分熔断需更换与PPTC冷却恢复；未见其他锁存控制器。实际故障后的恢复方式、USB再枚举/外设重启终态未规定，无法从标签判自动恢复。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-191b6fae3d",
+      "check_ids": [
+        "PRO-C09.USB-PROTECTION.D4"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-191b6fae3d",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-C09.USB-PROTECTION.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F031"
+    },
+    {
+      "sr_rule": "DEV-C01",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "D4"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5"
+      ],
+      "sr_text": "D4 SP1001持续反向工作额定5.5V，图p1钳位+5V/D+/D-；板内检查窗最高5.25V有0.25V静态余量，实际线缆事件、瞬态残压及温度未定。8/20us钳位与CP2112直流绝限不同性质，不能据11V>5.8V直接证明ESD损坏。",
+      "verdict": "knowledge_gap",
+      "evidence": "D4 SP1001持续反向工作额定5.5V，图p1钳位+5V/D+/D-；板内检查窗最高5.25V有0.25V静态余量，实际线缆事件、瞬态残压及温度未定。8/20us钳位与CP2112直流绝限不同性质，不能据11V>5.8V直接证明ESD损坏。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-af39909e8e",
+      "check_ids": [
+        "DEV-C01.USB-PROTECTION"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-af39909e8e",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C01.USB-PROTECTION"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F032"
+    },
+    {
+      "sr_rule": "DEV-C05",
+      "sr_rules": [
+        "DEV-C05"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [
+        "D4"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5"
+      ],
+      "sr_text": "D4实装型号SP1001-04XTG；原厂在线p2有5.5V反向工作窗及1/2A、8/20us残压，实际端口激励与温度不明。当地仅文字摘录，未证明完整图形/瞬态配合。",
+      "verdict": "knowledge_gap",
+      "evidence": "D4实装型号SP1001-04XTG；原厂在线p2有5.5V反向工作窗及1/2A、8/20us残压，实际端口激励与温度不明。当地仅文字摘录，未证明完整图形/瞬态配合。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-caf9bb261e",
+      "check_ids": [
+        "DEV-C05.D4"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-caf9bb261e",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-C05.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F033"
+    },
+    {
+      "sr_rule": "DEV-D02",
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [
+        "D4"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5"
+      ],
+      "sr_text": "D4在原图/PCB为SOT553，脚1接+5V、2接GND、3未接、4接D-、5接D+。完整原厂PDF仅在线，自动审计文字摘录NO_TEXT，不足核定每个内置二极管与公共极性的图形映射；不猜配对。",
+      "verdict": "knowledge_gap",
+      "evidence": "D4在原图/PCB为SOT553，脚1接+5V、2接GND、3未接、4接D-、5接D+。完整原厂PDF仅在线，自动审计文字摘录NO_TEXT，不足核定每个内置二极管与公共极性的图形映射；不猜配对。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-905d71ebfb",
+      "check_ids": [
+        "DEV-D02.D4"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-905d71ebfb",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D02.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F034"
+    },
+    {
+      "sr_rule": "DEV-D05",
+      "sr_rules": [
+        "DEV-D05"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [
+        "D4"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5"
+      ],
+      "sr_text": "D4.3为未用第四通道，TVS常见可悬空但本项必须核准确公共极性/通道针图；保留本地完整PDF缺口而不判NC错误。",
+      "verdict": "knowledge_gap",
+      "evidence": "D4.3为未用第四通道，TVS常见可悬空但本项必须核准确公共极性/通道针图；保留本地完整PDF缺口而不判NC错误。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-e2769b4ef7",
+      "check_ids": [
+        "DEV-D05.D4"
+      ],
+      "native_open_ref": "FN-USB-PROTECTION/K-e2769b4ef7",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D05.D4"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F035"
+    },
+    {
+      "sr_rule": "DEV-D04",
+      "sr_rules": [
+        "DEV-D04"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "BOM 26/26可匹配，值与网表无冲突；阻容无特殊品牌不构成电气缺陷。待受控采购约束：C1耐压覆盖5.25V、C2/C3覆盖3.6V、C4覆盖VPP最高7.2V（建议≥10V），R1/R3/R4/R5按已算功耗和温度选档；P1须定真实保险/PPTC系列，LED亮度非当前量化要求。",
+      "verdict": "needs_human",
+      "evidence": "BOM 26/26可匹配，值与网表无冲突；阻容无特殊品牌不构成电气缺陷。待受控采购约束：C1耐压覆盖5.25V、C2/C3覆盖3.6V、C4覆盖VPP最高7.2V（建议≥10V），R1/R3/R4/R5按已算功耗和温度选档；P1须定真实保险/PPTC系列，LED亮度非当前量化要求。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-fe56f1364a",
+      "check_ids": [
+        "DEV-D04.BOARD"
+      ],
+      "native_open_ref": "FN-REVIEW-DEV-D04-BOARD/K-fe56f1364a",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-D04.BOARD"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F036"
+    },
+    {
+      "sr_rule": "DEV-Q01",
+      "sr_rules": [
+        "DEV-Q01"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "CP2112完整Rev1.3 PDF已取得；SP1001仅原厂在线完整PDF和本地短摘录，自动类型NO_TEXT；P1仅750mA/1812/UST_ID，无法绑定准确动作/分断资料。D1–D3普通LED无需一概索取专属厂家手册，不能因Red/Green缺PDF定电气缺陷。",
+      "verdict": "knowledge_gap",
+      "evidence": "CP2112完整Rev1.3 PDF已取得；SP1001仅原厂在线完整PDF和本地短摘录，自动类型NO_TEXT；P1仅750mA/1812/UST_ID，无法绑定准确动作/分断资料。D1–D3普通LED无需一概索取专属厂家手册，不能因Red/Green缺PDF定电气缺陷。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-ce9dc00033",
+      "check_ids": [
+        "DEV-Q01.DATASHEETS"
+      ],
+      "native_open_ref": "FN-REVIEW-DEV-Q01-DATASHEETS/K-ce9dc00033",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DEV-Q01.DATASHEETS"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F037"
+    },
+    {
+      "sr_rule": "DOC-T01",
+      "sr_rules": [
+        "DOC-T01"
+      ],
+      "criteria": [],
+      "severity": "UNRATED",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "BOM给SV1/SV3排针本体，未给短路帽装配和允许组合；SV1闭合把VIO接VDD，开路则需外供VIO；SV3 1–2=VDD或2–3=5V，若1–2和2–3同时跨接将短接两轨。未获授权将所有跳线假定closed，实际配置/防误接须确认。",
+      "verdict": "needs_human",
+      "evidence": "BOM给SV1/SV3排针本体，未给短路帽装配和允许组合；SV1闭合把VIO接VDD，开路则需外供VIO；SV3 1–2=VDD或2–3=5V，若1–2和2–3同时跨接将短接两轨。未获授权将所有跳线假定closed，实际配置/防误接须确认。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-c802c1a0b4",
+      "check_ids": [
+        "DOC-T01.BOM-POPULATED"
+      ],
+      "native_open_ref": "FN-REVIEW-DOC-T01-BOM-POPULATED/K-c802c1a0b4",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "DOC-T01.BOM-POPULATED"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F038"
+    },
+    {
+      "sr_rule": "PRO-D05",
+      "sr_rules": [
+        "PRO-D05",
+        "PRO-D06",
+        "REQ-D05"
+      ],
+      "criteria": [
+        "G05-001",
+        "G05-002",
+        "G05-003",
+        "G05-004",
+        "G05-005",
+        "G05-006",
+        "G05-007",
+        "G05-008",
+        "G05-009",
+        "G05-010",
+        "G05-011",
+        "G05-012",
+        "G05-013",
+        "G05-014",
+        "G05-015",
+        "G05-016",
+        "G05-017",
+        "G05-028",
+        "G05-029",
+        "G05-035",
+        "G05-061",
+        "G05-065"
+      ],
+      "severity": "UNRATED",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "图p1可列故障链：P1开路/短路、D4短/开、SV3双档误桥、SV1失配及外部SDA/SCL被拉低；没有受控关键功能/安全终态、FMEA范围/容错指标或允许恢复时间。不得自造安全目标，也不以无FMEA文件判本板电气硬错。",
+      "verdict": "needs_human",
+      "evidence": "图p1可列故障链：P1开路/短路、D4短/开、SV3双档误桥、SV1失配及外部SDA/SCL被拉低；没有受控关键功能/安全终态、FMEA范围/容错指标或允许恢复时间。不得自造安全目标，也不以无FMEA文件判本板电气硬错。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-5dfedd199a",
+      "check_ids": [
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD",
+        "REQ-D05.BOARD"
+      ],
+      "native_open_ref": "FN-REVIEW-PRO-D05-BOARD/K-5dfedd199a",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D05.BOARD"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PRO-D06.BOARD"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "REQ-D05.BOARD"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F039"
+    },
+    {
+      "sr_rule": "PWR-C19",
+      "sr_rules": [
+        "PWR-C19"
+      ],
+      "criteria": [
+        "G01-022",
+        "G03-002"
+      ],
+      "severity": "UNRATED",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "USB-B总线供电；CP p19默认MaxPower为100mA，可编程改变但本轮没有受控请求/实际枚举档。X2.1→P1→SV6/SV3可带外部负载，100mA与750mA标称均不能当实际可用预算；需各外口负载与源/线缆边界。",
+      "verdict": "needs_human",
+      "evidence": "USB-B总线供电；CP p19默认MaxPower为100mA，可编程改变但本轮没有受控请求/实际枚举档。X2.1→P1→SV6/SV3可带外部负载，100mA与750mA标称均不能当实际可用预算；需各外口负载与源/线缆边界。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-a60fb56a40",
+      "check_ids": [
+        "PWR-C19.BOARD"
+      ],
+      "native_open_ref": "FN-REVIEW-PWR-C19-BOARD/K-a60fb56a40",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-C19.BOARD"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F040"
+    },
+    {
+      "sr_rule": "PWR-D04",
+      "sr_rules": [
+        "PWR-D04"
+      ],
+      "criteria": [
+        "G01-017",
+        "G01-051"
+      ],
+      "severity": "UNRATED",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "唯一正常供入是USB-B VBUS；尚无受控设备端电压/线缆压降、源阻抗、上游限流、外设负载及热插拔/掉电范围。CP手册bus-powered4.0..5.25V仅为器件工作窗，不是用户源规格；USB Type-C/PD的5.5V窗不能直接套USB-B。",
+      "verdict": "needs_human",
+      "evidence": "唯一正常供入是USB-B VBUS；尚无受控设备端电压/线缆压降、源阻抗、上游限流、外设负载及热插拔/掉电范围。CP手册bus-powered4.0..5.25V仅为器件工作窗，不是用户源规格；USB Type-C/PD的5.5V窗不能直接套USB-B。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-7958983ca2",
+      "check_ids": [
+        "PWR-D04.BOARD"
+      ],
+      "native_open_ref": "FN-REVIEW-PWR-D04-BOARD/K-7958983ca2",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "PWR-D04.BOARD"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F041"
+    },
+    {
+      "sr_rule": "REQ-D02",
+      "sr_rules": [
+        "REQ-D02",
+        "REQ-D03",
+        "REQ-D04",
+        "REQ-Q01",
+        "REQ-Q03"
+      ],
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-005",
+        "G01-006",
+        "G01-007",
+        "G01-008",
+        "G01-009",
+        "G01-011",
+        "G01-012",
+        "G02-001",
+        "G02-018",
+        "G02-021",
+        "G02-030",
+        "G03-041",
+        "G04-014",
+        "G04-015",
+        "G04-050",
+        "G04-063",
+        "G04-065",
+        "G04-072",
+        "G04-077",
+        "G04-100",
+        "G05-018",
+        "G05-023",
+        "G05-097"
+      ],
+      "severity": "UNRATED",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "用户只授权用途推断并指定industrial_telecom，未提供受控整机需求。待确定外接负载/上拉/速率/线缆、SV1/SV3装配组合、USB请求电流、环境/降额与允许故障终态。README用途可作推断，100mA/750mA描述不能代替受控预算和配置要求。",
+      "verdict": "needs_human",
+      "evidence": "用户只授权用途推断并指定industrial_telecom，未提供受控整机需求。待确定外接负载/上拉/速率/线缆、SV1/SV3装配组合、USB请求电流、环境/降额与允许故障终态。README用途可作推断，100mA/750mA描述不能代替受控预算和配置要求。 证据位置：同固定提交原理图p1与BOM各位号；CP2112 Rev1.3印刷p3–4/7–9/18–20（PDF页码+1）；具体端点、值、未知边界逐检查保存object-snapshots.json及reviewer-evidence.md。此未决项没有被认定为实物必然失效。",
+      "report_task": "W-K-929a5fb56b",
+      "check_ids": [
+        "REQ-D02.BOARD",
+        "REQ-D03.BOARD",
+        "REQ-D04.BOARD",
+        "REQ-Q01.REQUIREMENTS",
+        "REQ-Q03.STATES"
+      ],
+      "native_open_ref": "FN-REVIEW-REQ-D02-BOARD/K-929a5fb56b",
+      "evidence_locators": [
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "REQ-D02.BOARD"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "REQ-D03.BOARD"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "REQ-D04.BOARD"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "REQ-Q01.REQUIREMENTS"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/object-snapshots.json",
+          "locator": "REQ-Q03.STATES"
+        },
+        {
+          "path": "/Users/skyfend/.cache/sr-boards/mlab-modules--usbi2c01/review/reviewer-evidence.md",
+          "locator": "claim BOARD-FACTS / POWER-PATH / I2C / BUDGET / PROTECTION"
+        }
+      ],
+      "proposed_fix": null,
+      "seed": null,
+      "id": "F042"
+    },
+    {
+      "sr_rule": "CLK-C01",
+      "criteria": [
+        "G04-078",
+        "G04-079",
+        "G04-080",
+        "G04-081",
+        "G04-082",
+        "G04-083",
+        "G04-084",
+        "G04-085"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "X2"
+      ],
+      "nets": [
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "C1.2",
+        "C2.2",
+        "C3.2",
+        "C4.2",
+        "D1.K",
+        "D4.2",
+        "D4.4",
+        "D4.5",
+        "P1.1",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.5",
+        "SV6.6",
+        "X1.P$2",
+        "X1.P$25",
+        "X1.P$3",
+        "X1.P$4",
+        "X2.1",
+        "X2.2",
+        "X2.3",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2",
+        "X3.P$1",
+        "X4.P$1",
+        "X5.P$1",
+        "X6.P$1"
+      ],
+      "sr_text": "- CLK-C01.X2：X2不是晶体：BOM X2=USB_B，图p1 X2.1 VBUS/.2 D-/.3 D+/.4 GND；CP2112 p1内置振荡器，不需要外部晶体。",
+      "original_sr_text": "按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件，反馈电阻、串联电阻按 datasheet/参考设计取值；一颗晶振只驱动一个器件；计时用途的频率预算含负载电容牵引；上电时序留够起振时间；寄生及实测裕量转 HANDOFF",
+      "verdict": "false_alarm",
+      "evidence": "X2不是晶体：BOM X2=USB_B，图p1 X2.1 VBUS/.2 D-/.3 D+/.4 GND；CP2112 p1内置振荡器，不需要外部晶体。",
+      "check_ids": [
+        "CLK-C01.X2"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/audit_datasheets.py:_material_groups; scripts/plan_circuits.py:plan_concrete_checks",
+        "what": "完整身份优先弱前缀：USB_B的4数据/电源脚及屏蔽脚应为connector；SROUB3M单脚GND应为机械安装孔，不能按X生成晶体/CLK-C01/CLOCK覆盖。显式声明的CP2112应自动进入资料依赖，即使X前缀曾误类。正向晶体种子仍必须保留；依据BOM/原图p1、CP2112 p1内置振荡器。"
+      },
+      "seed": null,
+      "id": "F043"
+    },
+    {
+      "sr_rule": "CLK-C01",
+      "criteria": [
+        "G04-078",
+        "G04-079",
+        "G04-080",
+        "G04-081",
+        "G04-082",
+        "G04-083",
+        "G04-084",
+        "G04-085"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "X3"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "pins": [
+        "C1.2",
+        "C2.2",
+        "C3.2",
+        "C4.2",
+        "D1.K",
+        "D4.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.5",
+        "SV6.6",
+        "X1.P$2",
+        "X1.P$25",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2",
+        "X3.P$1",
+        "X4.P$1",
+        "X5.P$1",
+        "X6.P$1"
+      ],
+      "sr_text": "- CLK-C01.X3：X3不是晶体：BOM X3=SROUB3M，图p1与PCB为单触点M3接地安装孔；唯一节点X3.P$1=GND，无振荡器端点。",
+      "original_sr_text": "按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件，反馈电阻、串联电阻按 datasheet/参考设计取值；一颗晶振只驱动一个器件；计时用途的频率预算含负载电容牵引；上电时序留够起振时间；寄生及实测裕量转 HANDOFF",
+      "verdict": "false_alarm",
+      "evidence": "X3不是晶体：BOM X3=SROUB3M，图p1与PCB为单触点M3接地安装孔；唯一节点X3.P$1=GND，无振荡器端点。",
+      "check_ids": [
+        "CLK-C01.X3"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/audit_datasheets.py:_material_groups; scripts/plan_circuits.py:plan_concrete_checks",
+        "what": "完整身份优先弱前缀：USB_B的4数据/电源脚及屏蔽脚应为connector；SROUB3M单脚GND应为机械安装孔，不能按X生成晶体/CLK-C01/CLOCK覆盖。显式声明的CP2112应自动进入资料依赖，即使X前缀曾误类。正向晶体种子仍必须保留；依据BOM/原图p1、CP2112 p1内置振荡器。"
+      },
+      "seed": null,
+      "id": "F044"
+    },
+    {
+      "sr_rule": "CLK-C01",
+      "criteria": [
+        "G04-078",
+        "G04-079",
+        "G04-080",
+        "G04-081",
+        "G04-082",
+        "G04-083",
+        "G04-084",
+        "G04-085"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "X4"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "pins": [
+        "C1.2",
+        "C2.2",
+        "C3.2",
+        "C4.2",
+        "D1.K",
+        "D4.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.5",
+        "SV6.6",
+        "X1.P$2",
+        "X1.P$25",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2",
+        "X3.P$1",
+        "X4.P$1",
+        "X5.P$1",
+        "X6.P$1"
+      ],
+      "sr_text": "- CLK-C01.X4：X4不是晶体：BOM X4=SROUB3M，图p1与PCB为单触点M3接地安装孔；唯一节点X4.P$1=GND，无振荡器端点。",
+      "original_sr_text": "按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件，反馈电阻、串联电阻按 datasheet/参考设计取值；一颗晶振只驱动一个器件；计时用途的频率预算含负载电容牵引；上电时序留够起振时间；寄生及实测裕量转 HANDOFF",
+      "verdict": "false_alarm",
+      "evidence": "X4不是晶体：BOM X4=SROUB3M，图p1与PCB为单触点M3接地安装孔；唯一节点X4.P$1=GND，无振荡器端点。",
+      "check_ids": [
+        "CLK-C01.X4"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/audit_datasheets.py:_material_groups; scripts/plan_circuits.py:plan_concrete_checks",
+        "what": "完整身份优先弱前缀：USB_B的4数据/电源脚及屏蔽脚应为connector；SROUB3M单脚GND应为机械安装孔，不能按X生成晶体/CLK-C01/CLOCK覆盖。显式声明的CP2112应自动进入资料依赖，即使X前缀曾误类。正向晶体种子仍必须保留；依据BOM/原图p1、CP2112 p1内置振荡器。"
+      },
+      "seed": null,
+      "id": "F045"
+    },
+    {
+      "sr_rule": "CLK-C01",
+      "criteria": [
+        "G04-078",
+        "G04-079",
+        "G04-080",
+        "G04-081",
+        "G04-082",
+        "G04-083",
+        "G04-084",
+        "G04-085"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "X5"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "pins": [
+        "C1.2",
+        "C2.2",
+        "C3.2",
+        "C4.2",
+        "D1.K",
+        "D4.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.5",
+        "SV6.6",
+        "X1.P$2",
+        "X1.P$25",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2",
+        "X3.P$1",
+        "X4.P$1",
+        "X5.P$1",
+        "X6.P$1"
+      ],
+      "sr_text": "- CLK-C01.X5：X5不是晶体：BOM X5=SROUB3M，图p1与PCB为单触点M3接地安装孔；唯一节点X5.P$1=GND，无振荡器端点。",
+      "original_sr_text": "按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件，反馈电阻、串联电阻按 datasheet/参考设计取值；一颗晶振只驱动一个器件；计时用途的频率预算含负载电容牵引；上电时序留够起振时间；寄生及实测裕量转 HANDOFF",
+      "verdict": "false_alarm",
+      "evidence": "X5不是晶体：BOM X5=SROUB3M，图p1与PCB为单触点M3接地安装孔；唯一节点X5.P$1=GND，无振荡器端点。",
+      "check_ids": [
+        "CLK-C01.X5"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/audit_datasheets.py:_material_groups; scripts/plan_circuits.py:plan_concrete_checks",
+        "what": "完整身份优先弱前缀：USB_B的4数据/电源脚及屏蔽脚应为connector；SROUB3M单脚GND应为机械安装孔，不能按X生成晶体/CLK-C01/CLOCK覆盖。显式声明的CP2112应自动进入资料依赖，即使X前缀曾误类。正向晶体种子仍必须保留；依据BOM/原图p1、CP2112 p1内置振荡器。"
+      },
+      "seed": null,
+      "id": "F046"
+    },
+    {
+      "sr_rule": "CLK-C01",
+      "criteria": [
+        "G04-078",
+        "G04-079",
+        "G04-080",
+        "G04-081",
+        "G04-082",
+        "G04-083",
+        "G04-084",
+        "G04-085"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "X6"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "pins": [
+        "C1.2",
+        "C2.2",
+        "C3.2",
+        "C4.2",
+        "D1.K",
+        "D4.2",
+        "SV2.1",
+        "SV2.10",
+        "SV2.2",
+        "SV2.9",
+        "SV6.1",
+        "SV6.2",
+        "SV6.5",
+        "SV6.6",
+        "X1.P$2",
+        "X1.P$25",
+        "X2.4",
+        "X2.GND",
+        "X2.GND2",
+        "X3.P$1",
+        "X4.P$1",
+        "X5.P$1",
+        "X6.P$1"
+      ],
+      "sr_text": "- CLK-C01.X6：X6不是晶体：BOM X6=SROUB3M，图p1与PCB为单触点M3接地安装孔；唯一节点X6.P$1=GND，无振荡器端点。",
+      "original_sr_text": "按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件，反馈电阻、串联电阻按 datasheet/参考设计取值；一颗晶振只驱动一个器件；计时用途的频率预算含负载电容牵引；上电时序留够起振时间；寄生及实测裕量转 HANDOFF",
+      "verdict": "false_alarm",
+      "evidence": "X6不是晶体：BOM X6=SROUB3M，图p1与PCB为单触点M3接地安装孔；唯一节点X6.P$1=GND，无振荡器端点。",
+      "check_ids": [
+        "CLK-C01.X6"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/audit_datasheets.py:_material_groups; scripts/plan_circuits.py:plan_concrete_checks",
+        "what": "完整身份优先弱前缀：USB_B的4数据/电源脚及屏蔽脚应为connector；SROUB3M单脚GND应为机械安装孔，不能按X生成晶体/CLK-C01/CLOCK覆盖。显式声明的CP2112应自动进入资料依赖，即使X前缀曾误类。正向晶体种子仍必须保留；依据BOM/原图p1、CP2112 p1内置振荡器。"
+      },
+      "seed": null,
+      "id": "F047"
+    },
+    {
+      "sr_rule": "DEV-C04",
+      "criteria": [
+        "G05-022"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "- DEV-C04.P1：P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "original_sr_text": "按实际并针降额、接触电阻/均流、线缆与故障电流核连接器载流，不能按单针额定乘针数放行；额定取实际采购系列的资料，只有间距或泛称时不借用他厂系列额定或“通常”值放行，按范围未定处理；PCB 走线载流另交 HANDOFF",
+      "verdict": "false_alarm",
+      "evidence": "P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "check_ids": [
+        "DEV-C04.P1"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/interfaces.py:InterfacePlanning.plan_interfaces",
+        "what": "POJISTKA_1812+750mA+两端1812串在USB供电通路，不能按P当连接器；先由身份/符号及两端拓扑生成保险类待核而非EXT-P1，再查PRO-C01/C05/C08。准确熔断/PPTC变体未给仍需留知识缺口，不凭标签假定额定。"
+      },
+      "seed": null,
+      "id": "F048"
+    },
+    {
+      "sr_rule": "DEV-D03",
+      "criteria": [
+        "G01-013"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "- DEV-D03.P1：P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "original_sr_text": "pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则",
+      "verdict": "false_alarm",
+      "evidence": "P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "check_ids": [
+        "DEV-D03.P1"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/interfaces.py:InterfacePlanning.plan_interfaces",
+        "what": "POJISTKA_1812+750mA+两端1812串在USB供电通路，不能按P当连接器；先由身份/符号及两端拓扑生成保险类待核而非EXT-P1，再查PRO-C01/C05/C08。准确熔断/PPTC变体未给仍需留知识缺口，不凭标签假定额定。"
+      },
+      "seed": null,
+      "id": "F049"
+    },
+    {
+      "sr_rule": "DEV-D05",
+      "criteria": [],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "- DEV-D05.P1：P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "original_sr_text": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空",
+      "verdict": "false_alarm",
+      "evidence": "P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "check_ids": [
+        "DEV-D05.P1"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/interfaces.py:InterfacePlanning.plan_interfaces",
+        "what": "POJISTKA_1812+750mA+两端1812串在USB供电通路，不能按P当连接器；先由身份/符号及两端拓扑生成保险类待核而非EXT-P1，再查PRO-C01/C05/C08。准确熔断/PPTC变体未给仍需留知识缺口，不凭标签假定额定。"
+      },
+      "seed": null,
+      "id": "F050"
+    },
+    {
+      "sr_rule": "DEV-E01",
+      "criteria": [],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "- DEV-E01.P1：P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "original_sr_text": "逐脚核对连接器符号与官方/对端 pinout；多排排针/跳线座的配对与档位按封装焊盘坐标或符号图形读取，不按编号习惯推测",
+      "verdict": "false_alarm",
+      "evidence": "P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "check_ids": [
+        "DEV-E01.P1"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/interfaces.py:InterfacePlanning.plan_interfaces",
+        "what": "POJISTKA_1812+750mA+两端1812串在USB供电通路，不能按P当连接器；先由身份/符号及两端拓扑生成保险类待核而非EXT-P1，再查PRO-C01/C05/C08。准确熔断/PPTC变体未给仍需留知识缺口，不凭标签假定额定。"
+      },
+      "seed": null,
+      "id": "F051"
+    },
+    {
+      "sr_rule": "PRO-C02",
+      "criteria": [
+        "G05-036",
+        "G05-037"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "D4"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5"
+      ],
+      "sr_text": "- PRO-C02.NOTRIP.D4：D4=SP1001-04XTG，是跨+5V及D+/D-到GND的无源TVS阵列；没有检测脚、比较器、关断执行器或可配置动作终态。不能把TVS击穿当主动检测门限链；按PRO-E02核持续工作窗、残压和波形，缺该检查列M03。",
+      "original_sr_text": "不误动作侧：正常工况被测量最大值（全部输出档位、瞬态与上电/掉电、公差、温度、漏电，含峰值整流或滤波捕获的尖峰；一次取一个瞬态）不高于门限最小值，两边按同一温度角点配对；各项已按最坏取值时零余量即满足，不另留裕量；门限脚计入接收端内部钳位/上下拉的吸流；也可用有据的滤波/消隐及波形证明不形成有效触发",
+      "verdict": "false_alarm",
+      "evidence": "D4=SP1001-04XTG，是跨+5V及D+/D-到GND的无源TVS阵列；没有检测脚、比较器、关断执行器或可配置动作终态。不能把TVS击穿当主动检测门限链；按PRO-E02核持续工作窗、残压和波形，缺该检查列M03。",
+      "check_ids": [
+        "PRO-C02.NOTRIP.D4"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/protective_clamps.py:protected_net; scripts/plan_circuits.py:CircuitPlanning.plan_threshold_checks",
+        "what": "D4多通道对地TVS须按公共返回与活线通道识别，忽略未用伪网；不能因整颗超过两网就退回PRO-C02门限执行链。对3个活线分别核PRO-E02，只有真正跨开关节点/浮地能量钳位才保留相应PRO-C02；依据原图D4与SP1001原厂针图/电气表。"
+      },
+      "seed": null,
+      "id": "F052"
+    },
+    {
+      "sr_rule": "PRO-C02",
+      "criteria": [
+        "G05-036",
+        "G05-037"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "D4"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)"
+      ],
+      "pins": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5"
+      ],
+      "sr_text": "- PRO-C02.TRIP.D4：D4=SP1001-04XTG，是跨+5V及D+/D-到GND的无源TVS阵列；没有检测脚、比较器、关断执行器或可配置动作终态。不能把TVS击穿当主动检测门限链；按PRO-E02核持续工作窗、残压和波形，缺该检查列M03。",
+      "original_sr_text": "动作有效侧：按受控故障及可接受终态核检测、执行、剩余能量和适用的保持/复位；正常及要求无损恢复的工况满足额定，允许破坏性安全失效的工况按其安全判据关闭",
+      "verdict": "false_alarm",
+      "evidence": "D4=SP1001-04XTG，是跨+5V及D+/D-到GND的无源TVS阵列；没有检测脚、比较器、关断执行器或可配置动作终态。不能把TVS击穿当主动检测门限链；按PRO-E02核持续工作窗、残压和波形，缺该检查列M03。",
+      "check_ids": [
+        "PRO-C02.TRIP.D4"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/protective_clamps.py:protected_net; scripts/plan_circuits.py:CircuitPlanning.plan_threshold_checks",
+        "what": "D4多通道对地TVS须按公共返回与活线通道识别，忽略未用伪网；不能因整颗超过两网就退回PRO-C02门限执行链。对3个活线分别核PRO-E02，只有真正跨开关节点/浮地能量钳位才保留相应PRO-C02；依据原图D4与SP1001原厂针图/电气表。"
+      },
+      "seed": null,
+      "id": "F053"
+    },
+    {
+      "sr_rule": "PRO-D03",
+      "criteria": [
+        "G04-098"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "- PRO-D03.P1：P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "original_sr_text": "对外连接器逐针考虑防护，ESD 器件挂在活线上，泄放路径接到对应的地；钳位器件的工作与钳位电压对被保护脚的数值核算归 PRO-E02；板内互连器件可按依据判不适用",
+      "verdict": "false_alarm",
+      "evidence": "P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "check_ids": [
+        "PRO-D03.P1"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/interfaces.py:InterfacePlanning.plan_interfaces",
+        "what": "POJISTKA_1812+750mA+两端1812串在USB供电通路，不能按P当连接器；先由身份/符号及两端拓扑生成保险类待核而非EXT-P1，再查PRO-C01/C05/C08。准确熔断/PPTC变体未给仍需留知识缺口，不凭标签假定额定。"
+      },
+      "seed": null,
+      "id": "F054"
+    },
+    {
+      "sr_rule": "PRO-D04",
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [
+        "P1"
+      ],
+      "nets": [
+        "+5V",
+        "Net-(X2-+5V)"
+      ],
+      "pins": [
+        "P1.1",
+        "P1.2"
+      ],
+      "sr_text": "- PRO-D04.P1：P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "original_sr_text": "逐对外接口核：未供电、热插拔、误接等非正常行为有定义；接口承受规定的故障（短路到电源或地、过压）不损坏；本板故障不向外发射超出规定的电压电流",
+      "verdict": "false_alarm",
+      "evidence": "P1=POJISTKA_1812、750mA、1812保险丝；P1.1接X2.1，P1.2接+5V，无外部触点定义。不能按P前缀要求对端针序/连接器载流/外部端口防护；真实保险额定与动作配合另在PRO-C01/C05/C08保留。",
+      "check_ids": [
+        "PRO-D04.P1"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/interfaces.py:InterfacePlanning.plan_interfaces",
+        "what": "POJISTKA_1812+750mA+两端1812串在USB供电通路，不能按P当连接器；先由身份/符号及两端拓扑生成保险类待核而非EXT-P1，再查PRO-C01/C05/C08。准确熔断/PPTC变体未给仍需留知识缺口，不凭标签假定额定。"
+      },
+      "seed": null,
+      "id": "F055"
+    },
+    {
+      "sr_rule": "REQ-Q07",
+      "criteria": [
+        "G02-002"
+      ],
+      "severity": "NOT_APPLICABLE",
+      "refs": [],
+      "nets": [],
+      "pins": [],
+      "sr_text": "- REQ-Q07.CLOCK：自动CLOCK由X2 USB_B和X3–X6接地安装孔的X前缀误触发；CP内部振荡器，无独立外部晶体对象。",
+      "original_sr_text": "执行时钟功能电路：CLK-C01 晶体负载与起振、CLK-D01 有源时钟输出与使能、CLK-D03 RTC 晶体与备份电源、SIG-C13 接口预算与规范模式、SIG-C18 航天：标准接口与命令线；电路检查项全部完成后汇总，禁止整类电路一次性 PASS",
+      "verdict": "false_alarm",
+      "evidence": "自动CLOCK由X2 USB_B和X3–X6接地安装孔的X前缀误触发；CP内部振荡器，无独立外部晶体对象。",
+      "check_ids": [
+        "REQ-Q07.CLOCK"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/audit_datasheets.py:_material_groups; scripts/plan_circuits.py:plan_concrete_checks",
+        "what": "完整身份优先弱前缀：USB_B的4数据/电源脚及屏蔽脚应为connector；SROUB3M单脚GND应为机械安装孔，不能按X生成晶体/CLK-C01/CLOCK覆盖。显式声明的CP2112应自动进入资料依赖，即使X前缀曾误类。正向晶体种子仍必须保留；依据BOM/原图p1、CP2112 p1内置振荡器。"
+      },
+      "seed": null,
+      "id": "F056"
+    },
+    {
+      "sr_rule": "DEV-C01",
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "C4",
+        "X1"
+      ],
+      "nets": [
+        "Net-(X1-VPP)",
+        "GND"
+      ],
+      "sr_text": "C4 VPP的计划预判错误使用供电簇5.25V；CP2112 p3/19允许VPP到VIO+3.6V，即本板条件上限7.2V。",
+      "original_sr_text": "所需耐压 ≥5.25V 在该封装/容值可订购档内（Murata GRM21BR61E226ME44 25V）；耐压约束记 DEV-D04",
+      "verdict": "false_alarm",
+      "evidence": "C4=4u7在X1.P$16 VPP与GND间。计划proposal v_across_max=5.25V、result=PASS，理由为cluster-of-declared-supplies；CP Rev1.3 p3表3.1：ROM编程时VPP=5.75..VIO+3.6V且VIO≥3.3V；VIO≤3.6V时上限7.2V。C4实际耐压未写，故仅确认预判数值不正确，不能认定C4实物失效。",
+      "check_ids": [
+        "DEV-C01.C4"
+      ],
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/passive_stress.py:_Bounds.window; scripts/derive_rows.py:derive",
+        "what": "VPP/VCP/BOOT等已核泵/自举节点不得用IC最高普通供电轨封顶；读取官方脚用途及编程条件或保留无界。输出NON_COMMODITY_USE覆盖且derive读取stub时保留proposal_override；这里应按VPP编程窗口复核并提出C4采购耐压要求，不把可订购25V档当实物已选25V。依据CP2112 p3/19。"
+      },
+      "seed": null,
+      "id": "F057"
+    },
+    {
+      "sr_rule": "SIG-C05",
+      "sr_rules": [
+        "SIG-C05",
+        "SIG-D07"
+      ],
+      "criteria": [
+        "G01-026",
+        "G01-029",
+        "G01-030"
+      ],
+      "severity": "UNRATED",
+      "refs": [
+        "X2",
+        "X1",
+        "P1",
+        "C1"
+      ],
+      "nets": [
+        "Net-(X2-+5V)",
+        "+5V"
+      ],
+      "sr_text": "G01-026/029/030来源是USB Type-C/PD，applies_when只有USB；本板USB-B无CC/PD，不能把5.5V/100uF/40ms一并强套。",
+      "verdict": "criterion_issue",
+      "evidence": "固定原图X2为USB_B、CP2112 p1为USB2全速设备，无CC/PD控制。准则库1.6.1三条applies_when只写USB，出处却为PD R3.2/Type-C R2.5；G01-026的5.5V例窗与本料REGIN≤5.25V不是同一口径。缺对应传统USB源/线缆要求时应先裁剪适用范围，不能由此给本板定超压；本轮没有独立取得这些标准全文，不声称已核全部标准限值。",
+      "check_ids": [
+        "SIG-C05.USB-BRIDGE-ATTACHED.C1",
+        "SIG-C05.USB-BRIDGE-FAULT.C1",
+        "SIG-C05.USB-BRIDGE-UNATTACHED.C1"
+      ],
+      "proposed_fix": {
+        "owner": "criterion",
+        "where": "G01-026/G01-029/G01-030；规范源登记处（合并步同步编译references/shared/guideline-criteria.json）",
+        "what": "明确USB代际/连接器/PD协商/附着态的适用前提；为USB-B传统总线供电保留独立适用判据及源/线损输入。不要将Type-C的vSafe5V/电容/断开时间无条件用于所有USB。"
+      },
+      "seed": null,
+      "id": "F058"
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G03-003",
+      "sr_rule": "PWR-C04",
+      "refs": [
+        "X1",
+        "C2",
+        "C3"
+      ],
+      "nets": [
+        "+3.3V",
+        "GND"
+      ],
+      "why_expected": "CP2112有内置LDO，输出电容容量/ESR稳定条件须独立审查；本计划无PWR-C04。",
+      "evidence": "X1.P$7=REGIN、P$6=VDD；C2=10uF,C3=100nF到GND；CP p4表3.4、p20图10.1给LDO及典型1–5uF+0.1uF，本板偏离典型大电容。DEV-C02只保留该疑问，不构成PWR-C04稳定条件已覆盖。10uF未被证明不稳定，缺适用窗口留knowledge_gap。",
+      "status": "missing_review_coverage_not_confirmed_hardware_defect",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:DEVICE_ROLES; scripts/circuit_candidates.py:Generator.converters; scripts/plan_circuits.py:CircuitPlanning.plan_subjects",
+        "what": "为USB/SMBus桥建立正确角色及内置REGIN/VDD稳压机制，在同一IC有接口角色时仍实例化PWR-C04；允许手册未给保证窗口时明确开项。相关准则G03-004也随此对象核ESR。"
+      },
+      "seed": {
+        "kind": "D-INTEGRATED-LDO-COUT-DISCOVERY",
+        "mutation": "保留CP2112真实REGIN/VDD/GND脚表与C2/C3网络，把C2改成100nF或DNP；即使X1仍属于USB/I2C电路也必须生成PWR-C04并请求真实稳定窗口，不能凭参考图直接认定失败。",
+        "target_rule": "PWR-C04",
+        "assertion_level": "coverage/question generation; no fabricated electrical FAIL"
+      }
+    },
+    {
+      "id": "M02",
+      "criterion": "G03-032",
+      "sr_rule": "PWR-C05",
+      "refs": [
+        "X1",
+        "SV1",
+        "SV3",
+        "SV6"
+      ],
+      "nets": [
+        "+3.3V",
+        "+5V",
+        "Net-(X1-VIO)"
+      ],
+      "why_expected": "外供/反送可到内部LDO输出，需枚举掉电反向电流状态；本计划无PWR-C05。",
+      "evidence": "VDD=X1.P$6直连SV1.1/SV3.1；SV3输出接SV2.5/6，5V还引到SV6。USB断开而外部保持VDD或VIO的允许性未定。PRO-D04保留外部故障，不替代内部稳压器反向耐受的独立问项。CP p20–21自供/总线供电接法亦要求区分REGIN/VBUS。",
+      "status": "missing_review_coverage_not_confirmed_hardware_defect",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Generator.converters; scripts/plan_circuits.py:CircuitPlanning.plan_subjects",
+        "what": "对已核内置LDO及可外供输出口列输出保持/输入断电状态；真实系统不允许反供时记录排除证据，未知时提问，不从有USB口直接判多源故障。"
+      },
+      "seed": {
+        "kind": "D-INTEGRATED-LDO-REVERSE-DISCOVERY",
+        "mutation": "在SV3的VDD档添加外部保持电源端口并声明USB断电状态；保持CP2112内置LDO及两端路径，要求生成PWR-C05而非只给PRO-D04泛项。",
+        "target_rule": "PWR-C05",
+        "assertion_level": "coverage/question generation; no fabricated electrical FAIL"
+      }
+    },
+    {
+      "id": "M03",
+      "criterion": "G05-031",
+      "sr_rule": "PRO-E02",
+      "refs": [
+        "D4",
+        "X1",
+        "X2"
+      ],
+      "nets": [
+        "+5V",
+        "GND",
+        "Net-(X1-D+)",
+        "Net-(X1-D-)"
+      ],
+      "why_expected": "多通道TVS的持续工作窗/实际波形残压/能量应有PRO-E02；计划只有PRO-C02两侧。",
+      "evidence": "D4 SP1001-04XTG五脚：1=5V,2=GND,3=NC,4=D-,5=D+。protected_net整颗要求恰好两网，多活线阵列及NC令识别失败；核验为TVS也不解决。SP原厂在线p2 VRWM5.5V及1/2A 8/20us钳位11/13V；当前实际源波形/CP瞬态耐受未知，不能以直流5.8V绝限推必坏。G05-030/032同属应核方面。",
+      "status": "missing_review_coverage_not_confirmed_hardware_defect",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/protective_clamps.py:protected_net; scripts/plan_circuits.py:CircuitPlanning.plan_threshold_checks",
+        "what": "依据已核公共极性/通道映射拆出各活线，忽略未用pseudo net，逐节点绑定PRO-E02；给多通道阵列与跨开关节点钳位分开测试，不能仅改kind。"
+      },
+      "seed": {
+        "kind": "D-TVS-ARRAY-MULTINET-COVERAGE",
+        "mutation": "构造5脚SP1001等价阵列：common GND、VBUS/D+/D-三个活线及一未用NC，提供准确通道映射。保持多网时要求PRO-E02枚举全部活线，不产生无主动执行器的PRO-C02门限链。",
+        "target_rule": "PRO-E02",
+        "assertion_level": "coverage/question generation; no fabricated electrical FAIL"
+      }
+    },
+    {
+      "id": "M04",
+      "criterion": "G03-021",
+      "sr_rule": "PWR-D03",
+      "refs": [
+        "X1",
+        "C2",
+        "C3",
+        "SV3"
+      ],
+      "nets": [
+        "+5V",
+        "+3.3V"
+      ],
+      "why_expected": "内部LDO启动充电电流加外设负载也须核；计划无PWR-D03，只有P1入口PWR-C13。",
+      "evidence": "X1.REGIn内部LDO→VDD，C2/C3名义10.1uF，SV3可向外供该轨；CP p4 100mA总电流含芯片。启动负载/Ceff及芯片上升/限流保证未知，应记录该缺口；不能拿P1 750mA替代LDO能力。",
+      "status": "missing_review_coverage_not_confirmed_hardware_defect",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Generator.converters; scripts/plan_circuits.py:subject_precondition / CircuitPlanning.plan_subjects",
+        "what": "启动机制不应只靠外露SS/EN脚发现；已核内置稳压器按输出储能与实际负载展开PWR-D03，明示未知软启动/限流资料，不编造启动时间。"
+      },
+      "seed": {
+        "kind": "D-INTEGRATED-LDO-STARTUP-COVERAGE",
+        "mutation": "把VDD输出C2增至1000uF并在SV3接明确外部启动负载；保留内部LDO，要求生成PWR-D03；未给芯片启动限流保证时预期为具体未决，不伪造过流故障。",
+        "target_rule": "PWR-D03",
+        "assertion_level": "coverage/question generation; no fabricated electrical FAIL"
+      }
+    },
+    {
+      "id": "M05",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "X1",
+        "SV4",
+        "SV5",
+        "SV7"
+      ],
+      "nets": [
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-/SUSPEND)"
+      ],
+      "why_expected": "GPIO输出复位前后默认态须独立核；计划有SIG-D13及RST-T03，但无RST-T04。",
+      "evidence": "CP2112 p18 §8明确每次复位后所有GPIO默认为输入并须重新配置；SV4/5引出GPIO0..7、SV7反SUSPEND。外接安全态/负载未知不能报误动作，但检查不应被遗漏或由时序项替代。",
+      "status": "missing_review_coverage_not_confirmed_hardware_defect",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:DEVICE_ROLES; scripts/circuit_candidates.py:Generator.chains; scripts/plan_circuits.py:subject_precondition",
+        "what": "对桥接器的GPIO/复位状态生成RST-T04，区分有无外部使能负载及系统所需状态；输入默认合法与外部安全要求分开判。"
+      },
+      "seed": {
+        "kind": "D-BRIDGE-GPIO-RESET-DEFAULT",
+        "mutation": "将SV5某GPIO接明确的负载使能或MOS栅极，并给复位期间安全关闭的需求/输入默认态资料；删除外部定态电阻，要求RST-T04追问高阻期路径，不能仅以SIG-D13配置可达性关闭。",
+        "target_rule": "RST-T04",
+        "assertion_level": "coverage/question generation; no fabricated electrical FAIL"
+      }
+    },
+    {
+      "id": "M06",
+      "criterion": "G04-007",
+      "sr_rule": "SIG-C08",
+      "refs": [
+        "X1",
+        "SV4",
+        "SV5",
+        "SV7"
+      ],
+      "nets": [
+        "Net-(X1-GPIO2)",
+        "Net-(X1-GPIO3)",
+        "Net-(X1-GPIO4)",
+        "Net-(X1-GPIO5)",
+        "Net-(X1-GPIO6)",
+        "Net-(X1-GPIO7-CLK)",
+        "Net-(X1-/SUSPEND)"
+      ],
+      "why_expected": "SIG-C08当前仅有I2C两线对象，外接GPIO/状态线独立带电时的注入与绝限未展开。",
+      "evidence": "SV4.5/6→X1.P$21 GPIO2；SV5各对→P$20/15/14/13/12；SV7→P$17。CP p7 IO容限随VIO分支变化，VIO0上限3.6V；外设独立5V是需核允许性的候选状态，非已证实际违规。PRO-D04只泛问故障，未给GPIO逐网SIG-C08计算。",
+      "status": "missing_review_coverage_not_confirmed_hardware_defect",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Deriver.cross_supply / InterfacePlanning.plan_interfaces; scripts/plan_system.py",
+        "what": "向连接器直达的IC IO也须在缺对端供电时生成待定跨域/断电状态对象，不要求先存在第二颗本板IC。每网保留source/return、注入路径和Ioff条件。"
+      },
+      "seed": {
+        "kind": "D-GPIO-EXTERNAL-POWERED-OFF",
+        "mutation": "在SV5 GPIO3外接受控5V推挽源，声明VIO=0与注入限流边界；要求该GPIO生成SIG-C08而非仅SDA/SCL。若无保证参数则明确未决，不使用教学钳位曲线断言实物损坏。",
+        "target_rule": "SIG-C08",
+        "assertion_level": "coverage/question generation; no fabricated electrical FAIL"
+      }
+    },
+    {
+      "id": "M07",
+      "criterion": "G05-022",
+      "sr_rule": "DEV-C04",
+      "refs": [
+        "X2",
+        "P1"
+      ],
+      "nets": [
+        "Net-(X2-+5V)",
+        "GND"
+      ],
+      "why_expected": "真实USB-B电源连接器X2没有EXT-X2/DEV-C04，反而保险P1有外口框架。",
+      "evidence": "BOM X2=USB_B，PCB四触点及双壳体，X2.1→P1.1→5V。原计划没有DEV-C04.X2，P1标750mA不能作为USB_B触点额定或故障动作上限。SIG-C05的协议取电预算不能替代连接件自身载流。",
+      "status": "missing_review_coverage_not_confirmed_hardware_defect",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/interfaces.py:Deriver.is_connector / InterfacePlanning.plan_interfaces",
+        "what": "以USB_B身份及数据/电源/屏蔽脚识别真实外口，恢复EXT-X2针序、载流、防护框架；未知准确连接件系列时保留采购/工况边界，勿按X前缀套CLK-C01。"
+      },
+      "seed": {
+        "kind": "D-USB-X-PREFIX-PORT-CURRENT-COVERAGE",
+        "mutation": "保留USB_B的VBUS/D+/D-/GND/壳脚，把连接器位号设为X2、串联保险设P1；应生成DEV-C04.X2并禁止EXT-P1，不预设保险标签等于接口能力。",
+        "target_rule": "DEV-C04",
+        "assertion_level": "coverage/question generation; no fabricated electrical FAIL"
+      }
+    }
+  ],
+  "top50_crosscheck": {
+    "source": "docs/proposals/criteria-top50-examples-2026-11-02.md",
+    "source_sha256": "0b743d8a6e80d4a31db7862474578934c103b9e1b28a445b038d8ab45504a60e",
+    "examples_library_version": "1.4.1 stated by examples",
+    "actual_library_version": "1.6.1",
+    "boundary": "逐条对照实际26器件；不把教学假定作为实板保证，不把method/should改作shall；有检查但缺输入的不计漏报；无MOS/极性储能/高压输入等明确NA。",
+    "items": [
+      {
+        "example": 1,
+        "criterion": "G01-018",
+        "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+        "status": "not_applicable",
+        "evidence": "本板仅USB-B低压受电，无NEG48/RTN或−48V输入；不能套通信负48V输入例。",
+        "miss_ids": []
+      },
+      {
+        "example": 2,
+        "criterion": "G01-019",
+        "title": "−48 V 输入的工作电压范围与耐受范围",
+        "status": "not_applicable",
+        "evidence": "本板仅USB-B低压受电，无NEG48/RTN或−48V输入；不能套通信负48V输入例。",
+        "miss_ids": []
+      },
+      {
+        "example": 3,
+        "criterion": "G01-020",
+        "title": "−48 V 输入 0.1 s 中断后自恢复",
+        "status": "not_applicable",
+        "evidence": "本板仅USB-B低压受电，无NEG48/RTN或−48V输入；不能套通信负48V输入例。",
+        "miss_ids": []
+      },
+      {
+        "example": 4,
+        "criterion": "G01-021",
+        "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+        "status": "not_applicable",
+        "evidence": "本板仅USB-B低压受电，无NEG48/RTN或−48V输入；不能套通信负48V输入例。",
+        "miss_ids": []
+      },
+      {
+        "example": 5,
+        "criterion": "G01-022",
+        "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+        "status": "not_applicable",
+        "evidence": "本板仅USB-B低压受电，无NEG48/RTN或−48V输入；不能套通信负48V输入例。",
+        "miss_ids": []
+      },
+      {
+        "example": 6,
+        "criterion": "G01-023",
+        "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+        "status": "not_applicable",
+        "evidence": "本板仅USB-B低压受电，无NEG48/RTN或−48V输入；不能套通信负48V输入例。",
+        "miss_ids": []
+      },
+      {
+        "example": 7,
+        "criterion": "G01-024",
+        "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+        "status": "not_applicable",
+        "evidence": "网表无交流输入、整流桥或市电变换器，仅USB-B低压源。",
+        "miss_ids": []
+      },
+      {
+        "example": 8,
+        "criterion": "G01-025",
+        "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+        "status": "not_applicable",
+        "evidence": "网表无交流输入、整流桥或市电变换器，仅USB-B低压源。",
+        "miss_ids": []
+      },
+      {
+        "example": 9,
+        "criterion": "G01-026",
+        "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+        "status": "tailoring_required",
+        "evidence": "X2 USB-B/CP USB2总线供电；SIG-C05已问源/线损，Type-C vSafe5V需裁剪；另记准则适用过宽F项。",
+        "miss_ids": []
+      },
+      {
+        "example": 10,
+        "criterion": "G01-027",
+        "title": "USB 可用电流按实际协商档取",
+        "status": "covered_unresolved",
+        "evidence": "PWR-C19/SIG-C05已问USB请求电流与外设负载；P1 750mA非许可。",
+        "miss_ids": []
+      },
+      {
+        "example": 11,
+        "criterion": "G01-029",
+        "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+        "status": "covered_with_tailoring",
+        "evidence": "C1直接VBUS后1uF，C2/C3为LDO后、C4为VPP，外口电容未知；PWR-C13/SIG-C05已问，100uF非USB-B普适阈值。",
+        "miss_ids": []
+      },
+      {
+        "example": 12,
+        "criterion": "G01-030",
+        "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+        "status": "not_applicable",
+        "evidence": "X2为USB-B且无Type-C/CC，不能以Type-C Sink 40ms/3.67V约束CP普通VBUS检测；窄SIG-D07连接已核。",
+        "miss_ids": []
+      },
+      {
+        "example": 13,
+        "criterion": "G01-031",
+        "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+        "status": "not_applicable",
+        "evidence": "X2是USB-B受电设备端，无USB Source/CC未附着供电端口。",
+        "miss_ids": []
+      },
+      {
+        "example": 14,
+        "criterion": "G03-003",
+        "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+        "status": "miss",
+        "evidence": "CP内部LDO VDD有C2/C3，稳定有效容量未专门展开；10uF偏离典型不等于不稳定。",
+        "miss_ids": [
+          "M01"
+        ]
+      },
+      {
+        "example": 15,
+        "criterion": "G03-004",
+        "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+        "status": "miss",
+        "evidence": "同内置LDO，缺准确ESR稳定窗口的适用核对，不将普通旁路一概索取Ceff/ESR。",
+        "miss_ids": [
+          "M01"
+        ]
+      },
+      {
+        "example": 16,
+        "criterion": "G03-016",
+        "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+        "status": "not_applicable",
+        "evidence": "26器件中无外置MOSFET或通路控制栅极，P1为无源保险；不能套外管SOA/体二极管例。",
+        "miss_ids": []
+      },
+      {
+        "example": 17,
+        "criterion": "G03-018",
+        "title": "变换器 UVLO 开启点低于输入窗下限",
+        "status": "partially_covered_unresolved",
+        "evidence": "没有外露UVLO分压；CP REGIN工作窗由SIG-C05/PWR-D04核，内部POR由PWR-T04核；保护电路PWR-C06仅查被动P1协调，不能给内置门限自造数值。",
+        "miss_ids": []
+      },
+      {
+        "example": 18,
+        "criterion": "G03-019",
+        "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+        "status": "partially_covered_unresolved",
+        "evidence": "无外置UVLO迟滞设置；USB源阻抗/负载未给，SIG-C05/PWR-D04/PWR-C01已留边界；未断言反复打嗝。",
+        "miss_ids": []
+      },
+      {
+        "example": 19,
+        "criterion": "G03-021",
+        "title": "软启动充电电流加启动期负载低于器件限流下限",
+        "status": "miss",
+        "evidence": "内置LDO给10.1uF和SV3外部负载；缺PWR-D03，不以入口P1浪涌题代替。",
+        "miss_ids": [
+          "M04"
+        ]
+      },
+      {
+        "example": 20,
+        "criterion": "G03-025",
+        "title": "复位门限高于各负载最低工作电压，掉电先复位",
+        "status": "covered_unresolved",
+        "evidence": "CP内部POR/VDD监控/R5上拉路径有PWR-T04；外供VIO与系统监控目标未定。",
+        "miss_ids": []
+      },
+      {
+        "example": 21,
+        "criterion": "G03-028",
+        "title": "上电时序在极值时间下满足约束",
+        "status": "covered_unresolved",
+        "evidence": "RST-T03已问5V→内部LDO→VDD及SV1 VIO先后；真实跳线与动态未定，不能编极值时间。",
+        "miss_ids": []
+      },
+      {
+        "example": 22,
+        "criterion": "G03-032",
+        "title": "稳压器反向电流在手册允许内或已阻断",
+        "status": "miss",
+        "evidence": "VDD引出SV1/SV3，可外保电状态缺PWR-C05。",
+        "miss_ids": [
+          "M02"
+        ]
+      },
+      {
+        "example": 23,
+        "criterion": "G03-037",
+        "title": "电解与钽电容不承受反压",
+        "status": "not_applicable",
+        "evidence": "C1–C4均C0805非极性MLCC，无电解/钽/串联储能组；VPP的C4超轨误预判另外归因，不冒充G03-038极性电容反例。",
+        "miss_ids": []
+      },
+      {
+        "example": 24,
+        "criterion": "G03-038",
+        "title": "电解与钽电容的直流加纹波峰值在降额内",
+        "status": "not_applicable",
+        "evidence": "C1–C4均C0805非极性MLCC，无电解/钽/串联储能组；VPP的C4超轨误预判另外归因，不冒充G03-038极性电容反例。",
+        "miss_ids": []
+      },
+      {
+        "example": 25,
+        "criterion": "G03-040",
+        "title": "串联使用的电解电容有均压措施",
+        "status": "not_applicable",
+        "evidence": "C1–C4均C0805非极性MLCC，无电解/钽/串联储能组；VPP的C4超轨误预判另外归因，不冒充G03-038极性电容反例。",
+        "miss_ids": []
+      },
+      {
+        "example": 26,
+        "criterion": "G04-005",
+        "title": "输入信号不超接收端绝对最大值",
+        "status": "partially_covered_miss",
+        "evidence": "SDA/SCL已有SIG-C08；外接GPIO缺逐网窗口，CP在VIO0时IO上限3.6V。",
+        "miss_ids": [
+          "M06"
+        ]
+      },
+      {
+        "example": 27,
+        "criterion": "G04-007",
+        "title": "未上电接口承受正常或故障信号不损坏",
+        "status": "partially_covered_miss",
+        "evidence": "PRO-D04泛问带电误接，SIG-C08只展开I2C，GPIO掉电仍漏对象。",
+        "miss_ids": [
+          "M06"
+        ]
+      },
+      {
+        "example": 28,
+        "criterion": "G04-009",
+        "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+        "status": "partially_covered_miss",
+        "evidence": "SDA/SCL已有反灌未决，GPIO未生成注入到未上电轨的逐网分析。",
+        "miss_ids": [
+          "M06"
+        ]
+      },
+      {
+        "example": 29,
+        "criterion": "G04-010",
+        "title": "上电和复位期间关键输出有确定状态",
+        "status": "miss",
+        "evidence": "CP p18每次复位GPIO为输入；SV4/SV5外引仍无RST-T04。",
+        "miss_ids": [
+          "M05"
+        ]
+      },
+      {
+        "example": 30,
+        "criterion": "G04-017",
+        "title": "I²C 上拉电阻不超上升时间决定的上限",
+        "status": "covered_unresolved",
+        "evidence": "SIG-A03确认板内Rp空，SIG-C01保留外部Rp/Cb/模式；外部可能提供上拉，非确定缺件。",
+        "miss_ids": []
+      },
+      {
+        "example": 31,
+        "criterion": "G04-018",
+        "title": "I²C 上拉电阻不低于灌电流决定的下限",
+        "status": "covered_unresolved",
+        "evidence": "SIG-C01已有最弱端灌流问题；CP自身8.5mA@0.4V可反推下限，外设未知。",
+        "miss_ids": []
+      },
+      {
+        "example": 32,
+        "criterion": "G04-032",
+        "title": "CAN 总线两端端接，总阻约 60 Ω",
+        "status": "not_applicable",
+        "evidence": "无CAN控制器/收发器及CAN_H/L端点；SDA/SCL不能当CAN。",
+        "miss_ids": []
+      },
+      {
+        "example": 33,
+        "criterion": "G04-040",
+        "title": "隔离接口两侧的供电和地不被无意短接",
+        "status": "not_applicable",
+        "evidence": "无隔离器、变压器或隔离电源，两端共GND为非隔离USB桥的真实结构。",
+        "miss_ids": []
+      },
+      {
+        "example": 34,
+        "criterion": "G04-041",
+        "title": "运放两个输入在最坏工况下不超共模范围",
+        "status": "not_applicable",
+        "evidence": "无运放或差分模拟输入，CP2112 GPIO不是模拟共模输入。",
+        "miss_ids": []
+      },
+      {
+        "example": 35,
+        "criterion": "G04-054",
+        "title": "ADC 输入不超满量程和绝对最大值",
+        "status": "not_applicable",
+        "evidence": "无外部ADC/参考/模拟采样脚；CP2112 GPIO接口不等于ADC。",
+        "miss_ids": []
+      },
+      {
+        "example": 36,
+        "criterion": "G04-078",
+        "title": "晶振负载电容与晶振规定 CL 相符",
+        "status": "not_applicable_false_object",
+        "evidence": "CP p1内置时钟、无需外部晶体；X2 USB_B及X3–X6安装孔不是晶体，CLK-C01已排除。",
+        "miss_ids": []
+      },
+      {
+        "example": 37,
+        "criterion": "G04-079",
+        "title": "振荡器增益裕量足够起振",
+        "status": "not_applicable_false_object",
+        "evidence": "CP p1内置时钟、无需外部晶体；X2 USB_B及X3–X6安装孔不是晶体，CLK-C01已排除。",
+        "miss_ids": []
+      },
+      {
+        "example": 38,
+        "criterion": "G04-082",
+        "title": "一颗晶振只驱动一个器件",
+        "status": "not_applicable_false_object",
+        "evidence": "CP p1内置时钟、无需外部晶体；X2 USB_B及X3–X6安装孔不是晶体，CLK-C01已排除。",
+        "miss_ids": []
+      },
+      {
+        "example": 39,
+        "criterion": "G05-019",
+        "title": "每条配电支路在源侧有保护",
+        "status": "covered_unresolved",
+        "evidence": "PRO-C04已逐支路问P1源侧及内置LDO/外部线束保护配合；位置可核、动态未知。",
+        "miss_ids": []
+      },
+      {
+        "example": 40,
+        "criterion": "G05-022",
+        "title": "过流动作点上限下通路器件与连接器不超额定",
+        "status": "partially_covered_miss",
+        "evidence": "SV排针DEV-C04和器件应力已问；真正USB_B X2载流被X晶体误类漏掉。",
+        "miss_ids": [
+          "M07"
+        ]
+      },
+      {
+        "example": 41,
+        "criterion": "G05-025",
+        "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+        "status": "covered_unresolved",
+        "evidence": "PRO-C05已问P1时间电流/I²t与通路耐受；准确系列/源故障电流未知。",
+        "miss_ids": []
+      },
+      {
+        "example": 42,
+        "criterion": "G05-030",
+        "title": "TVS 工作电压不低于被钳节点最高工作电压",
+        "status": "miss",
+        "evidence": "D4多个活线/公共返回被整颗恰两网模型吞；未生成PRO-E02工作窗，只有错误PRO-C02。",
+        "miss_ids": [
+          "M03"
+        ]
+      },
+      {
+        "example": 43,
+        "criterion": "G05-031",
+        "title": "TVS 钳位电压不超被保护器件绝对最大值",
+        "status": "miss",
+        "evidence": "D4原厂在线1/2A 8/20us残压可列，实际脉冲和CP瞬态耐受未定；缺PRO-E02。",
+        "miss_ids": [
+          "M03"
+        ]
+      },
+      {
+        "example": 44,
+        "criterion": "G05-032",
+        "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+        "status": "miss",
+        "evidence": "同阵列需要波形/温度/能量核对；不能从全系列标题或典型曲线直接保证系统。",
+        "miss_ids": [
+          "M03"
+        ]
+      },
+      {
+        "example": 45,
+        "criterion": "G05-040",
+        "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+        "status": "not_applicable",
+        "evidence": "26器件中无外置MOSFET或通路控制栅极，P1为无源保险；不能套外管SOA/体二极管例。",
+        "miss_ids": []
+      },
+      {
+        "example": 46,
+        "criterion": "G05-041",
+        "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+        "status": "not_applicable",
+        "evidence": "26器件中无外置MOSFET或通路控制栅极，P1为无源保险；不能套外管SOA/体二极管例。",
+        "miss_ids": []
+      },
+      {
+        "example": 47,
+        "criterion": "G05-048",
+        "title": "熔断器分断能力不小于预期短路电流",
+        "status": "covered_unresolved",
+        "evidence": "PRO-C01虽以D4为锚，refs含P1且已独立判保险分断/故障源边界；不重复算漏报。",
+        "miss_ids": []
+      },
+      {
+        "example": 48,
+        "criterion": "G05-054",
+        "title": "每个对外电源接口的反接有明确处置",
+        "status": "covered_unresolved",
+        "evidence": "PRO-D04已问SV6外接电源及SV3误接；USB-B机械限定与可能外送电状态分开，不自动定缺防反。",
+        "miss_ids": []
+      },
+      {
+        "example": 49,
+        "criterion": "G05-057",
+        "title": "反接阻断之前没有单向 TVS 造成源短路",
+        "status": "covered_unresolved",
+        "evidence": "PWR-C26已问D4在5V对地且P1前无反接阻断时的协调；外部反接范围/源未知。",
+        "miss_ids": []
+      },
+      {
+        "example": 50,
+        "criterion": "G05-087",
+        "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+        "status": "not_applicable",
+        "evidence": "26器件中无外置MOSFET或通路控制栅极，P1为无源保险；不能套外管SOA/体二极管例。",
+        "miss_ids": []
+      }
+    ]
+  },
+  "summary": {
+    "true_defect": 0,
+    "false_alarm": 15,
+    "criterion_issue": 1,
+    "knowledge_gap": 9,
+    "needs_human": 33,
+    "misses": 7
+  }
+}

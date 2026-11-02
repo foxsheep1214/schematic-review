@@ -49,3 +49,10 @@
 - U1采购码是Amphenol座，ADC3真实功能在自定义模组脚；R25/R26需逐通道ANA-C03。+24V外引/可供入触点也要从轨枚举PRO-C04，别仅围已见保护IC查。
 - U8 DNP、H孔、VBUS NC、PT1000桥和MDI磁性先分清；TMP100框图Diode/逻辑门ESD段不是标题。PT1000双臂加载须联立节点，不能直接串联分压。
 - 同版BOM244件，两副本hash相同；PDF按图框Id非物理次序。原生不接NEEDS_HUMAN/未定级，FAIL如实保留；175条归因不是175个硬故障。
+
+## mlab-modules--usbi2c01（2026-11-02）
+- X前缀可把CP2112/USB_B/单脚M3安装孔全当晶体，P1 POJISTKA_1812保险被当外口；audit需显式--require-ref X1，否则现有手册也漏收。
+- D4多通道SP1001有3活线+公共地+NC；protected_net要求整颗两网会错出PRO-C02且漏PRO-E02，改kind本身不能解；脉冲残压与直流绝限不能硬比。
+- C4 VPP是编程泵节点，5.25V供电簇封顶错误，手册窗口可到7.2V；VDD网名3.3V实际3.3–3.6V，LDO100mA含芯片与LED，外部预算另算。
+- SV1/SV3帽状态别猜；SDA/SCL无板内Rp也可能由外板供，GPIO复位默认输入须重配。BOM串接位号仅补分隔符后26/26；USB-B别套Type-C/PD限值。
+- add/add同持有的own不能指向无candidate_ids电路且nets为空；NEEDS_HUMAN/schema15等记录限制保留FAIL。58是归因数、7是覆盖漏项、已证硬故障0；完整台账在缓存，报告未打包。
