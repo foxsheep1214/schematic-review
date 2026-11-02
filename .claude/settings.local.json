@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -v '<date>\\\\|<source>' ../exam/netlist.xml)",
+      "Bash(grep -v '<date>\\\\|<source>' work/reexport.xml)"
+    ]
+  }
+}

@@ -1,0 +1,113 @@
+{
+ "rule": "SIG-A06",
+ "runner": "cold",
+ "note": "CANH and CANL on one net vs a 120R termination between them",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TCAN1042",
+    "pins": [
+     [
+      "1",
+      "VCC",
+      "VCC_5V"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "CANH",
+      "CANH"
+     ],
+     [
+      "4",
+      "CANL",
+      "CANH"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TCAN1042",
+    "pins": [
+     [
+      "1",
+      "VCC",
+      "VCC_5V"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "CANH",
+      "CANH"
+     ],
+     [
+      "4",
+      "CANL",
+      "CANL"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "120R",
+    "pins": [
+     [
+      "1",
+      "1",
+      "CANH"
+     ],
+     [
+      "2",
+      "2",
+      "CANL"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

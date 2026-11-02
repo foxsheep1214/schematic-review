@@ -10,6 +10,19 @@ count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
+## 8 类新种子的漏报补上自动扫描：种子命中 177→221 (2026-11-02)
+
+2026-11-02 新增的 8 类种子 44 个位点全部漏报：目标规则都是审查员判定的 C 规则，冷扫描没有对应判别。C/D 规则不由工具下结论，所以按 SIG-A03 的既有做法新增 7 条 A 规则，映射到同一批准则：SIG-A05（VBUS 体电容）、PWR-A07（LDO 无输出电容）、SIG-A04（I²C 上拉外包络）、SIG-A06（CAN H/L 短接）、PRO-A05（隔离器两地合并）、CLK-A01（晶体负载）、CLK-A02（晶体共用）；种子目标改为“新 A 规则或原 C 规则”。判据都是外包络，出处写在规则与 seeded_bench README，具体数值仍由审查员按 C 规则算。
+
+顺带修两处：I²C 分段把经跳线接轨的 ≤1 kΩ 上拉当串阻（SIG-A03 误报无上拉）；阻值解析不认 10Meg。过程中 SIG-A05 曾误报 resonare-lcc 的逆变器直流母线 VBUS，改为要求板上有 USB 证据。
+
+前后（并入 1.6.1 后数字不变，准则 340→344 条）：种子命中/漏报 177/70→221/26；按准则归属漏报 192→14；G01-029 4→0、G03-003 1→0、G04-017 30→4、G04-018 30→4、G04-032 2→0、G04-040 4→0、G04-078 7→0、G04-082 7→0（G04-017/018 余下 4 个是既有 D-I2C-PU 位点）。既有 203 个位点逐条不变，32 块种子板未植入时的发现数不变，典型电路 201/185/14 不变、无未分类。共用层与 SKILL.md 未改。
+
+- Event: user:2026-11-02 (把这个漏报在子会话中用opus5.5 medium完成)
+- Causes: rule_not_enforced 8
+- Changed: scripts/board_scans.py, scripts/catalog.py, scripts/plan_board.py, scripts/solve_dividers.py, scripts/tests/test_board_scans.py, references/check-catalog.md, evals/seeded_bench/mutators.py, evals/seeded_bench/README.md, evals/mutation/mutations.json, evals/rule_contracts/boards/SIG-A04.json, evals/rule_contracts/boards/SIG-A05.json, evals/rule_contracts/boards/SIG-A06.json, evals/rule_contracts/boards/PWR-A07.json, evals/rule_contracts/boards/PRO-A05.json, evals/rule_contracts/boards/CLK-A01.json, evals/rule_contracts/boards/CLK-A02.json, evals/rule_contracts/README.md, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: after merging main (criteria library 1.6.1): pytest 2477 passed; mutation --changed 34/34 killed on the merge, 87 on the last class before it; 40 new (M843–M882); M860 survived the I²C commit and was killed by a test added in the next commit
+
 ## 准则库 1.6.1：PWR-C18 补 24 V 中断核对 (2026-11-02)
 
 同步共用层 1.6.1，G01-053 按 GB/T 17626.29-2006 修订。`PWR-C18` 增加 24 V 按项目选定的暂降与中断组合核，低阻抗中断的反灌和恢复时的瞬变过压要有处置。重生成 check-catalog。
