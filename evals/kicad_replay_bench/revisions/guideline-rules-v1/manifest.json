@@ -1,0 +1,15 @@
+{
+ "revision": "guideline-rules-v1",
+ "parents": {
+  "revisions/part-kind-evidence-v1/expected.json": "846d519b3dd13f5a90e0a015a0acca7da2663a57b9ac52eaa62e51f93f739e28",
+  "revisions/part-kind-evidence-v1/cases.json": "76573f00f2f35883bf2a07dbda058d356b97649ce42eb2e3adf68007c4103559",
+  "revisions/part-kind-evidence-v1/sources.json": "c75b45f60e4f89c4d7caeca6acbf684b91b937eeaa195ff6c88cefed3198d2d0",
+  "revisions/part-kind-evidence-v1/manifest.json": "10dbafb073d806359147d3ffb9ceb35416639106247472398b6362d23f6381f2"
+ },
+ "derived_files": {
+  "revisions/guideline-rules-v1/expected.json": "9d7972fef6718f2e99f36da392fcc129f6a567e39b5b500c004e961c1b59fe9b",
+  "revisions/guideline-rules-v1/cases.json": "76573f00f2f35883bf2a07dbda058d356b97649ce42eb2e3adf68007c4103559",
+  "revisions/guideline-rules-v1/sources.json": "c75b45f60e4f89c4d7caeca6acbf684b91b937eeaa195ff6c88cefed3198d2d0"
+ },
+ "scope": "共用规范规则库 1.0.0 接入（2026-11-01，用户：按表写）：全板加 REQ-D03、REQ-D04、REQ-C01、PWR-D04、PWR-C19 五项；每个对外接口加 PRO-D04；声明的变换器电路加 PWR-C06（有保护件时）、PWR-C18、PWR-C24。只有 plan.checks_total 与 plan.functions 变化，其他电气与完整性字段不变。"
+}

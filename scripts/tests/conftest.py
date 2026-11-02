@@ -7,6 +7,10 @@
 A test is `wording` when at least half of its assert calls are assertIn/assertNotIn on a literal containing
 Chinese text, or it lives in WORDING_FILES. A test is `contract` when its file is in CONTRACT_FILES and it is
 not `wording`.
+
+Every test except test_guideline_rules.py (which checks the installed bundle itself) sees the shared guideline library
+without its rules, engineering values kept, so the rules G01–G09 do not change what the other tests expect; a test
+that needs rules patches guideline_rules.load with its own library or reads guideline_rules.BUNDLE_PATH.
 """
 import ast
 import re
@@ -47,6 +51,23 @@ def _wording_tests(path):
                 names.add(node.name)
         _WORDING_CACHE[path] = names
     return _WORDING_CACHE[path]
+
+
+@pytest.fixture(scope='session')
+def _ruleless_guideline_file(tmp_path_factory):
+    import guideline_rules   # scripts/ is on sys.path once the test modules are collected
+    library = guideline_rules.load(guideline_rules.BUNDLE_PATH)
+    library.update(library_version='0.0.0', specs={}, rules=[],
+                   content_sha256=guideline_rules.content_sha256([], library.get('engineering_values')))
+    path = tmp_path_factory.mktemp('guidelines') / 'guideline-rules.json'
+    path.write_text(guideline_rules.dump(library), encoding='utf-8')
+    return str(path)
+
+
+@pytest.fixture(autouse=True)
+def _ruleless_guideline_library(request, monkeypatch, _ruleless_guideline_file):
+    if Path(str(request.node.fspath)).name != 'test_guideline_rules.py':   # CLI subprocesses inherit the setting
+        monkeypatch.setenv('GUIDELINE_RULES', _ruleless_guideline_file)
 
 
 def pytest_configure(config):

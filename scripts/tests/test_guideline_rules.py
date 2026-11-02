@@ -107,6 +107,55 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertEqual([r['id'] for r in built['rules']], ['G04-001', 'G04-002'])
         self.assertEqual(built['specs'], {'G04': '0.1'})
 
+    def test_engineering_values_are_gathered_checked_and_read(self):
+        value = {'value': 0.3, 'applies': '只有典型值时的估算范围', 'basis': '工程判断', 'confirmed': '2026-11-01'}
+        cites = rule('G02-001', asg_action='按 `typical_band` 估算，裕量取 g03_budget_margin')
+        with tempfile.TemporaryDirectory() as tmp:
+            for spec, values, rules in (('G02', {'typical_band': value}, [cites]),
+                                        ('G03', {'g03_budget_margin': dict(value, value=0)}, [])):
+                (Path(tmp) / ('%s_规则登记.json' % spec)).write_text(json.dumps(
+                    {'spec': spec, 'version': '1.1', 'rules': rules, 'engineering_values': values}), encoding='utf-8')
+            built = g.build(tmp, g.load(), '1.0.0')
+            self.assertEqual(g.bundle_errors(built), [])
+            self.assertEqual(built['engineering_values']['typical_band']['spec'], 'G02')
+            self.assertEqual(g.engineering_value('g03_budget_margin', built), 0)
+            # the hash covers the values: changing one without rebuilding is caught
+            stale = copy.deepcopy(built)
+            stale['engineering_values']['typical_band']['value'] = 0.5
+            self.assertTrue(any('content_sha256' in e for e in g.bundle_errors(stale)))
+            # a cited name the bundle does not hold, and one name defined by two specs
+            missing = copy.deepcopy(built)
+            del missing['engineering_values']['g03_budget_margin']
+            missing['content_sha256'] = g.content_sha256(missing['rules'], missing['engineering_values'])
+            self.assertTrue(any('g03_budget_margin' in e for e in g.bundle_errors(missing)))
+            (Path(tmp) / 'G03_规则登记.json').write_text(json.dumps(
+                {'spec': 'G03', 'version': '1.1', 'rules': [], 'engineering_values': {'typical_band': value}}),
+                encoding='utf-8')
+            with self.assertRaises(ValueError):
+                g.build(tmp, g.load(), '1.0.0')
+
+    def test_every_active_rule_has_an_sr_check_that_can_reach_it(self):
+        # user 2026-11-01: 一次做全 — no rule waits for a check. A rule triggered by circuit types is held by a check of
+        # one of those types, or by a check that is not tied to a circuit type.
+        library = g.load()
+        self.assertEqual(catalog.basis_errors({r['id'] for r in library['rules']}), [])
+        held = {}
+        for check, targets in catalog.BASIS.items():
+            for target in targets:
+                held.setdefault(target, []).append(check)
+        for card in library['rules']:
+            if card['status'] != 'active':
+                continue
+            with self.subTest(card['id']):
+                checks = held.get(card['id'], [])
+                self.assertTrue(checks)
+                types = set(card['applies_when'].get('circuit_types', ()))
+                if types:
+                    self.assertTrue(any(catalog.BY_ID[c].source != 'subject' or types & set(catalog.circuit_types_of(c))
+                                        for c in checks), checks)
+                elif card['applies_when'].get('board'):
+                    self.assertTrue(any(catalog.BY_ID[c].source != 'subject' for c in checks), checks)
+
     def test_the_library_is_part_of_the_engineering_identity(self):
         # a new library version reopens designs and reviews like any rule change (workflow-handoff.md)
         import skill_identity

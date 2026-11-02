@@ -161,7 +161,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（网表扫描、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
 计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-5)。
 共用规范规则（与 ASG 同一版，编号 `G0x-nnn`，如 `G03-005`）是判据层，规则总表是执行层：`catalog.BASIS` 把 SR 规则映射到它核对的规范规则，
-计划的 `guidelines` 段列出本板适用的规范规则、由哪些检查覆盖、哪些还没有检查（SR 待补，不是设计缺陷），见 [共用规范规则库](references/guideline-rules.md)。
+计划的 `guidelines` 段列出本板适用的规范规则、由哪些检查覆盖、哪些检查这次没展开（本板没有对象或电路未声明）、哪些还没有检查（SR 待补，不是设计缺陷），见 [共用规范规则库](references/guideline-rules.md)。
 规范编号与审查要点 G1–G7、定界推法 G1–G6 是三套东西，格式不同，不要混写。
 
 功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（2.1）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各检查项写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。

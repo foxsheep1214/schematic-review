@@ -79,6 +79,8 @@ class BoardPlanning:
     def plan_board(self):
         """全板通用规则每块板一项；装配选项逐个声明的装配状态核对。"""
         for rule in catalog.rules(source='board'):
+            if not catalog.baseline_asks(rule.id, self.intent):
+                continue
             self._ready_check(rule.id, {'board': 'BOARD'},
                               self._materials_gap(BOARD_MATERIALS.get(rule.id, ())), ['board'])
         self.plan_bom_conflicts()

@@ -14,7 +14,7 @@ from test_review_functions import bias_function, aux_open, guaranteed, ASPECT
 from test_validate_review import fixture, planned, E
 from validate_review import fingerprint
 
-RULES = catalog.circuit_type('POWER_CONVERTER').subjects   # PWR-C02/C03/C04/C05/C15
+RULES = ('PWR-C02', 'PWR-C03', 'PWR-C04', 'PWR-C05', 'PWR-C15')   # the bias frame's members
 STATES = ('STARTUP', 'RUN', 'LATCH')
 
 

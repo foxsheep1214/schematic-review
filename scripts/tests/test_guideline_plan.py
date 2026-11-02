@@ -47,6 +47,15 @@ class GuidelinePlanTests(unittest.TestCase):
         self.assertEqual(section['downstream'], ['G02-001'])
         self.assertEqual(section['content_sha256'], self.library()['content_sha256'])
 
+    def test_a_mapped_check_with_no_row_is_not_triggered_rather_than_uncovered(self):
+        section = self.plan({'DOC-Q01': ('G01-001',), 'REQ-Q05': ('G02-001',)})['guidelines']
+        self.assertEqual(section['not_triggered'], {'G02-001': ['REQ-Q05']})
+        self.assertNotIn('G02-001', section['uncovered'])
+
+    def test_the_plan_names_the_external_interfaces_it_found(self):
+        section = self.plan()['guidelines']   # the fixture board has a VAC net
+        self.assertEqual(section['external_interfaces'], ['AC_MAINS'])
+
     def test_an_empty_library_adds_nothing(self):
         self.assertNotIn('guidelines', plan_for())
 
@@ -57,7 +66,7 @@ class GuidelinePlanTests(unittest.TestCase):
         self.assertFalse(any('guideline_baseline' in e for e in plan_review.validate_intent(intent)))
 
     def test_basis_names_registered_rules_and_library_rules(self):
-        library = guideline_rules.load()
+        library = guideline_rules.load(guideline_rules.BUNDLE_PATH)
         self.assertEqual(catalog.basis_errors({r['id'] for r in library['rules']}), [])
         self.assertEqual(len(catalog.basis_errors({'G01-001'}, {'NO-X01': ('G01-001',), 'DOC-Q01': ('G09-001',)})), 2)
 
@@ -97,6 +106,15 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         self.assertIn('| G01-001 | RS-485 共模范围 | TI SLLA272 C §2 第3页 | DOC-Q01 | 原理图 |', text)
         self.assertIn('| G02-001 | RS-485 共模范围 | TI SLLA272 C §2 第3页 | 未覆盖 | 样机 |', text)
         self.assertEqual(render_report.render_guidelines({}), [])
+
+    def test_an_undeclared_external_interface_is_said_once_any_is_declared_it_is_not(self):
+        with mock.patch.object(guideline_rules, 'load', lambda *args: self.library):
+            bare = '\n'.join(render_report.render_guidelines({'guidelines': self.section}))
+            named = '\n'.join(render_report.render_guidelines(
+                {'guidelines': dict(self.section, external_interfaces=['POE_PD'])}))
+        self.assertIn('未声明对外接口', bare)
+        self.assertIn('intent.circuits', bare)
+        self.assertNotIn('未声明对外接口', named)
 
     def test_the_whole_report_carries_both_sections(self):
         plan, report, db = fixture()

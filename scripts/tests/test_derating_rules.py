@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 
 import device_kinds
+import guideline_rules
 
 REFS = ROOT / 'references'
 SPEC = json.loads((REFS / 'derating-rules.json').read_text(encoding='utf-8'))
@@ -62,9 +63,11 @@ class DeratingSpecTests(unittest.TestCase):
         import bound_formulas
         values = SPEC['engineering_values']
         self.assertEqual(bound_formulas.SOA_SEGMENTS, values['soa_segment_share']['value'])
-        # 2026-10-29 (user: 这些也都处理): the G9 typical band and the forced-β k live in the spec too
+        # 2026-11-01 (user: 进规则库，本轮迁移): the G9 typical band and the forced-β k moved to G02 in the rule library
         self.assertEqual((bound_formulas.TYPICAL_BAND, bound_formulas.FORCED_BETA_K),
-                         (values['typical_band']['value'], values['forced_beta_k']['value']))
+                         (guideline_rules.engineering_value('typical_band'), guideline_rules.engineering_value('forced_beta_k')))
+        self.assertNotIn('typical_band', values)
+        self.assertNotIn('forced_beta_k', values)
         self.assertEqual(values['unset_level']['value'], 'I')
         source = (ROOT / 'scripts' / 'checkers' / 'passive_stress.py').read_text(encoding='utf-8')
         self.assertNotRegex(source, r'POWER_LIMIT|VOLTAGE_LIMIT|UNSET_POWER_SHARE')

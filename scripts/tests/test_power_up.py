@@ -7,7 +7,7 @@ SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import catalog
 
-from checkers.power_up import PowerUpChecker, build_inventory, validate_power_up_intent
+from checkers.power_up import PowerUpChecker, SWITCH_PIN_RE, build_inventory, validate_power_up_intent
 from electrical_fixtures import bound_intent
 from lint import Lint
 from plan_review import build_review_plan
@@ -115,6 +115,11 @@ class RecognitionTest(unittest.TestCase):
     def test_switching_regulator_is_classified(self):
         item = regulators_of(build_inventory(rail_board(kind='switching')))['U1']
         self.assertEqual(item['kind'], 'switching')
+
+    def test_ti_names_its_switch_node_ll_and_its_bootstrap_vbst(self):
+        # 2026-11-01 joint test: TPS53355 was planned as a linear regulator, so PWR-E02 instead of PWR-D03
+        for name in ('LL', 'VBST'):
+            self.assertRegex(name, SWITCH_PIN_RE)
 
     def test_unpopulated_regulator_is_skipped(self):
         db = rail_board()

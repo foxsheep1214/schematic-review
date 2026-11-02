@@ -15,6 +15,8 @@ import re
 import sys
 from collections import OrderedDict, namedtuple
 
+import guideline_rules
+
 Domain = namedtuple('Domain', 'code name scope handoff')
 Method = namedtuple('Method', 'code name executor inputs output stage')
 Rule = namedtuple('Rule', 'id title criterion source scope')
@@ -101,6 +103,14 @@ SCOPES = {
     'history': '改版基线',
 }
 
+_GUIDELINES = guideline_rules.load()
+
+
+def _value(name):
+    """An engineering value from the shared rule library, the one place it is written (guideline-rules.md §7)."""
+    return guideline_rules.engineering_value(name, _GUIDELINES)
+
+
 RULES = (
     # DOC 图纸与数据
     Rule('DOC-A01', '网表导出错误或中止',
@@ -180,7 +190,7 @@ RULES = (
     Rule('DEV-C05', '推荐工作条件覆盖',
          '逐颗核供电电压、输入电压、负载、频率及温度等级/参数保证条件覆盖声明工况；'
          '区分环境温度、壳温与结温，形成允许温度约束，实际结温实现转 HANDOFF；'
-         '借用相似器件保证范围或典型±typical_band（降额规范工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；'
+         '借用相似器件保证范围或典型±typical_band（G02 工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；'
          '本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；'
          '供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围',
          'plan', 'device'),
@@ -259,8 +269,10 @@ RULES = (
     Rule('PWR-E02', '线性稳压最坏压差',
          '按最低输入电压与声明温度/负载范围内的保证最大压差核输出下限；最坏温度取器件保证条件，不预设为最低温度', 'power_up', 'device'),
     Rule('PWR-E03', '输入滤波阻尼',
-         '按最低输入电压与最大输入功率求负输入阻抗，核体电容 ESR 与滤波电感的一阶阻尼'
-         '判据及体电容/输入电容比值（比值须由项目规定，不得默认）', 'input_filter', 'device'),
+         '按最低输入电压与最大输入功率求负输入阻抗，核变换器输入阻抗最小模值 ÷ 滤波器输出阻抗峰值在全频段（含谐振峰处）'
+         '不低于 %g 倍（g03_filter_z_ratio）；满足时不单独判阻尼比；余量不足、算不清或缺资料时，滤波网络主谐振极点对的阻尼比'
+         '须 ≥ %g（g03_filter_zeta_min，计入全部阻尼支路与电容 ESR）；航天项目按基线另查源—负载阻抗判据，阻尼比飞行不低于 0.4、地面不低于 0.3'
+         % (_value('g03_filter_z_ratio'), _value('g03_filter_zeta_min')), 'input_filter', 'device'),
     Rule('PWR-T01', '电源轨拓扑',
          '确认电源轨驱动源、负载、域电压、时序与反灌路径', 'plan', 'rail'),
     Rule('PWR-T03', '去耦连接覆盖',
@@ -276,8 +288,9 @@ RULES = (
          '符合器件与平台要求；不同地网不因名称相近而视为同一网', 'system', 'board'),
     Rule('PWR-C01', '电源轨功率预算',
          '按最大负载、电压范围与器件能力验证功率预算和裕量；'
-         '负载手册按工作模式列电流时取所列最重模式的最大值（只有典型值取典型×1.3）定界，需求声明超出所列模式的负载才另算，'
-         '不向设计方索取逐模式或最高时钟预算', 'plan', 'rail'),
+         '负载手册按工作模式列电流时取所列最重模式的最大值（只有典型值取典型×%s）定界，需求声明超出所列模式的负载才另算，'
+         '不向设计方索取逐模式或最高时钟预算；最坏峰值直接与手册保证额定比较，不另加余量（g03_budget_margin）；'
+         '航天项目另覆盖全部任务阶段并留不少于 5%% 的系统余量' % _value('est_load_mode_typ'), 'plan', 'rail'),
     Rule('PWR-C02', '变换器电压裕量',
          '在要求调节的 Vin/负载/温度状态核对输出窗口与负载范围；线性稳压器最坏压差由 PWR-E02 查，允许关断/保护时另核安全与恢复',
          'subject', 'circuit'),
@@ -293,13 +306,17 @@ RULES = (
          '实际结温、散热路径及闭壳温升转 HANDOFF，缺下游热数据不推翻已有电气结论', 'subject', 'circuit'),
     Rule('PWR-C16', '待机与空载输入功耗上界',
          '需求给了待机功耗或静态电流时，按各级变换器的空载损耗（手册空载/轻载输入功率或开关损耗与偏置电流）、偏置与监控电路的静态电流'
-         '和指示/泄放电阻的损耗算输入功耗上界，与需求窗口比较；没有数据的级按手册典型值×1.3 定界并写明；需求没给这个量时不生成本检查项', 'system', 'board'),
+         '和指示/泄放电阻的损耗算输入功耗上界，与需求窗口比较；没有数据的级按手册典型值×%s 定界并写明；需求没给这个量时不生成本检查项' % _value('est_standby_typ'), 'system', 'board'),
     Rule('PWR-C15', '反馈模型与补偿资格',
          '按实际拓扑独立核反馈模型、补偿配置及规定角点的稳定性/动态边界；内部补偿也须匹配厂家适用条件，'
-         '无反馈环的电路可据实际拓扑判NA；峰值电流、RCD或栅极应力不能代替本项，样机Bode测试不代替原理图补偿条件', 'subject', 'circuit'),
+         '无反馈环的电路可据实际拓扑判NA；峰值电流、RCD或栅极应力不能代替本项，样机Bode测试不代替原理图补偿条件；'
+         '外补偿环路在最坏组合下相位裕量 ≥ %g°（g03_loop_pm_min）、增益裕量 ≥ %g dB（g03_loop_gm_min），负载跃变偏差在负载允许窗内；'
+         '航天项目按寿命末最坏相位裕量 ≥ 50°、增益裕量 ≥ 6 dB，电源分系统变换器任一单故障后仍满足'
+         % (_value('g03_loop_pm_min'), _value('g03_loop_gm_min')), 'subject', 'circuit'),
     Rule('PWR-C06', '保护门限',
          '存在主动门限时核 UVLO/OVLO/限流容差、检测目的与采样侧；被动输入按保险丝/MOV/NTC 等实际保护协调查，'
-         '不强加检测使能链；连续电流、限流、快断与热保护不能互代', 'subject', 'circuit'),
+         '不强加检测使能链；连续电流、限流、快断与热保护不能互代；变换器 UVLO 开启点低于输入窗下限，满载电流在源阻抗上的压降小于 UVLO 滞回，'
+         '功率限工作点的检测电压不低于手册推荐值；航天项目限流器按实际负载核稳定并经最坏工况分析与试验', 'subject', 'circuit'),
     Rule('PWR-C09', '去耦容量',
          '按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量',
          'decoupling', 'device'),
@@ -311,7 +328,29 @@ RULES = (
          '额定温升电流不证明板上实际温升，实际温升转 HANDOFF；'
          '截止频率与开关频率的关系按 EMC 需求确认，不以有磁珠即判合格', 'input_filter', 'device'),
     Rule('PWR-C13', '热插拔浪涌与输入电容',
-         '按实际接口/输入方式核浪涌与源端能力；有明确平台电容限制时对照该限制，不默认热插拔或模板电容上限', 'subject', 'circuit'),
+         '按实际接口/输入方式核浪涌与源端能力；有明确平台电容限制时对照该限制，不默认热插拔或模板电容上限；'
+         '启动、限流与浪涌模型字段齐全，启动时间（最不利端）≤ %g × 最短故障定时（g03_startup_timer_share），启动浪涌不超过接口限值且不使上游保护动作'
+         % _value('g03_startup_timer_share'), 'subject', 'circuit'),
+    Rule('PWR-D04', '电源输入工况清单',
+         '每个电源输入接口的工况清单齐全：输入电压窗、瞬态（跌落、中断、浪涌）、源阻抗、上游保护与测量点；缺项记输入缺口', 'board', 'board'),
+    Rule('PWR-C17', '−48 V 输入极性、回线接地与电压范围',
+         '核 −48 V 输入的极性与回线接地方式；工作电压范围内正常工作，耐受范围内不损坏', 'subject', 'circuit'),
+    Rule('PWR-C18', '中断保持与恢复',
+         '须保持的轨在规定中断时间内由保持电容维持（电容取有效值与寿命末下限）；中断与恢复期间无器件过应力，恢复后自动回到正常；'
+         '−48 V 0.1 s 中断后自恢复，交流 1 周期 0% 跌落不复位（判据 B），较长暂降与中断后自恢复（判据 C）；需求没有保持要求且无这类接口时判NA', 'subject', 'circuit'),
+    Rule('PWR-C19', '对外电源输入在最低电压下的输入电流',
+         '按最低输入电压、最大功耗与最低效率求每个对外电源输入的输入电流，不超过接口限值（如 −48 V 在 −40.5 V 下不大于 1.5 Im、USB 协商电流、PoE 分级功率）', 'board', 'board'),
+    Rule('PWR-C21', '军车 28 V 输入稳态与起动跌落',
+         '稳态 20–33 V 含 ±2 V 纹波时正常工作；起动跌落 12 V/1 s、16 V/30 s 不降级', 'subject', 'circuit'),
+    Rule('PWR-C22', '舰船交流输入稳态、瞬态与应急偏离',
+         '稳态偏离按 MIL-STD-1399 表 II 工作；瞬态 ±16%、最坏 ±20% 不损坏；应急条件 −100%～+35% 不损坏', 'subject', 'circuit'),
+    Rule('PWR-C23', '双源供电切换',
+         'PoE 与适配器等双源供电时，切换过程不超出当前电源能力，无反灌；适配器并联方式与所需隔离一致', 'subject', 'circuit'),
+    Rule('PWR-C24', '上电与掉电时序极值',
+         '多电源器件的上电、受控掉电时序在极值时间（软启动、PG 延迟、门限、RC 与直流偏置容差）下满足约束，只用标称延时不算；所有负载都是单电源器件时判NA', 'subject', 'circuit'),
+    Rule('PWR-C25', '航天：LCL 负载接口',
+         '航天基线下按 ECSS-E-ST-20-20C 核 LCL 负载：开机期间除输入滤波充电外不超过等级电流，充电时间不超过最短跳闸时间的 80%，不向母线回灌，'
+         '含线束与滤波的电感不超过 300 µH（HLCL 50 µH），输入电容符合原文表，提供负载阻抗包络，源—负载相位差大于 150°、增益差大于 5 dB，内部限流不超过等级电流', 'subject', 'circuit'),
     Rule('PWR-C14', '纹波与噪声预算',
          '逐供电接口生成：轨的负载里有敏感功能电路（ANALOG、CLOCK、RF）时每条轨一项，不随变换器生成；按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；'
          '实测另交 HANDOFF', 'interface', 'interface'),
@@ -432,6 +471,12 @@ RULES = (
          '时钟上限等配置作为固件约束移交，不因主控手册缺接口时序记 INSUFFICIENT；换型号/改接法/提高时钟时仍按两端保证值计算；'
          '布线延迟另交 SI HANDOFF',
          'subject', 'link'),
+    Rule('SIG-C10', '工业 24 V 数字输入类型与传感器匹配',
+         '写明 IEC 61131-2 输入类型与电流方向，所接传感器（两线/三线、PNP/NPN）与输入类型相符', 'subject', 'circuit'),
+    Rule('SIG-C11', 'PoE PD 输入电压窗与分级',
+         '输入电压窗按 Type 与功率等级取并计线缆压降；分级按负载最大平均功率声明', 'subject', 'circuit'),
+    Rule('SIG-C12', 'PoE PD 取电时序与维持功率',
+         '欠压时取电不超过 60 mA/5 mA；获准功率前不超过已分配功率；轻载时保持维持功率特征（MPS）', 'subject', 'circuit'),
     Rule('SIG-D01', 'I²C 地址与装配组合',
          '核对地址/复用/复位态和板载及外部可选上拉的装配组合', 'subject', 'link'),
     Rule('SIG-D02', 'DDR 校准端接',
@@ -523,6 +568,8 @@ RULES = (
     Rule('PRO-C03', '隔离器件工作条件与资格',
          '逐个跨隔离器件核实际工作电压、重复峰值/频率、绝缘类别和厂家资格适用条件；耐压试验数值或无直流跨接'
          '不能代替工作资格。缺少元件选型前提保留原理图缺口，实际PCB/机构距离与实物耐压另验', 'subject', 'circuit'),
+    Rule('PRO-D04', '对外接口非正常行为、故障耐受与故障发射',
+         '逐对外接口核：未供电、热插拔、误接等非正常行为有定义；接口承受规定的故障（短路到电源或地、过压）不损坏；本板故障不向外发射超出规定的电压电流', 'interface', 'interface'),
     Rule('PRO-D03', '对外连接器防护',
          '对外连接器逐针考虑防护，ESD 器件挂在活线上，泄放路径接到对应的地；钳位器件的工作与钳位电压对被保护脚的数值核算归 PRO-E02；板内互连器件可按依据判不适用', 'interface', 'interface'),
 
@@ -547,7 +594,7 @@ RULES = (
     Rule('DRV-C02', '功率管 SOA 与降额',
          '按器件与工作方式核驱动、应力及适用 SOA：BJT 查基极能力与 VBE/VCE，线性管查工作点，MOS 开关查电流/电压/脉宽/栅偏；保护管另核故障计时、热态降额与'
          '重复重试能量；不能只用 I²·RDS(on) 代替 SOA，重复脉冲与单次脉冲分别核；'
-         '借用相似器件保证范围或典型±typical_band（降额规范工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行绝限、过热或保护保证；'
+         '借用相似器件保证范围或典型±typical_band（G02 工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行绝限、过热或保护保证；'
          '本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；'
          '明确 SOA 的起始温度/壳温条件并形成约束，实际热路径与温度验证转 HANDOFF，不能把室温曲线当全温保证', 'power_switch', 'device'),
     Rule('DRV-D01', '开关节点吸收与驱动条款',
@@ -566,6 +613,16 @@ RULES = (
          '检查项结论取要求条款中最差者，前提条款与其他检查项的缺陷不连带本检查项', 'plan', 'requirement'),
     Rule('REQ-D02', '需求口径一致',
          '需求/规格书与原理图参数口径统一（电流/电压数字唯一来源）', 'board', 'board'),
+    Rule('REQ-D03', '设计输入可量化与可验证',
+         '逐条核设计输入：给范围或容差，写明测量点与线路压降，有唯一编号，单一自含，无不可验证用词，未知项按 TBR 登记，设计假设不冒充用户要求；'
+         '缺的记输入缺口（资料不足），不当电路缺陷', 'board', 'board'),
+    Rule('REQ-D04', '验证方法与下游转交',
+         '每条需求有验证方法与阶段；只靠分析或评审关闭的主要需求、校准或选配位号、只能靠计算或仿真预测的分析项、电源动态实测项都进入下游转交清单', 'board', 'board'),
+    Rule('REQ-C01', '最坏工况计算口径',
+         '本审查的工程计算按共用规范 G02：参数取准确料号保证值且条件匹配（超条件按定界表），计入全部变化因素与寿命末老化（无数据按类别估算并标注），温度端点取自工况，'
+         '先用极值法，方向与内部极值正确，无不可能组合；统计法满足项数、覆盖率与适用后果类；每项给 min/典型/max、判据与裕量，不符合项单列，仿真有模型验证，复用电路按新工况复算，记录可独立复核', 'board', 'board'),
+    Rule('REQ-C02', '航天：辐照漂移与单粒子防护',
+         '航天基线下有源器件计入总剂量与剂量率漂移，数据裕量按批次关系取，不外推超出试验剂量；单粒子防护电路纳入正常工作的最坏工况分析', 'board', 'board'),
     Rule('REQ-Q01', '需求覆盖',
          '需求逐条拆解并与电路检查双向追溯，缺口不得隐藏', 'plan', 'board'),
     Rule('REQ-Q02', '链路覆盖',
@@ -598,7 +655,7 @@ OBJECTIVES = {
     'G7': ('证据覆盖、改进建议与复验闭环', '是否查全且结论有据，不通过项是否明确如何改进、如何复验？'),
 }
 OBJECTIVE_RULES = {
-    'G1': tuple('REQ-A01 REQ-A02 REQ-D01 REQ-D02'.split()),
+    'G1': tuple('REQ-A01 REQ-A02 REQ-D01 REQ-D02 REQ-D03 REQ-D04 PWR-D04'.split()),
     'G2': tuple(('DOC-A02 DOC-T01 DOC-D01 DOC-V01 '
                  'DEV-A02 DEV-E01 DEV-D01 DEV-D02 DEV-D03 DEV-D04 DEV-D05 '
                  'NET-A01 NET-A02 NET-A03 NET-A04 NET-A06 NET-A07 '
@@ -609,12 +666,15 @@ OBJECTIVE_RULES = {
                  'RST-T01 RST-T02 RST-T03 RST-T04 RST-C01 RST-C02 '
                  'CLK-D01 CLK-D03 SIG-A01 SIG-A02 SIG-A03 SIG-E02 SIG-C01 SIG-C03 SIG-C04 SIG-C07 SIG-C09 '
                  'SIG-D01 SIG-D02 SIG-D03 SIG-D04 SIG-D07 SIG-D08 SIG-D09 SIG-D10 SIG-D11 SIG-D12 SIG-D14 SIG-D15 '
-                 'ANA-T01 ANA-C01 ANA-C02 ANA-D01 PRO-A03 PRO-A04 PRO-E01 DRV-A03 DRV-E01').split()),
+                 'ANA-T01 ANA-C01 ANA-C02 ANA-D01 PRO-A03 PRO-A04 PRO-E01 DRV-A03 DRV-E01 '
+                 'PWR-C24 SIG-C10 SIG-C12').split()),
     'G4': tuple(('DEV-A01 DEV-A03 DEV-C01 DEV-C02 DEV-C03 DEV-C04 DEV-C05 DEV-C06 '
                  'PWR-A05 PWR-E01 PWR-E02 PWR-E03 PWR-C01 PWR-C02 PWR-C03 PWR-C05 '
-                 'PWR-C09 PWR-C10 PWR-C11 PWR-C14 PWR-C16 CLK-C01 DRV-C02').split()),
+                 'PWR-C09 PWR-C10 PWR-C11 PWR-C14 PWR-C16 CLK-C01 DRV-C02 '
+                 'REQ-C01 REQ-C02 PWR-C17 PWR-C18 PWR-C19 PWR-C21 PWR-C22 SIG-C11').split()),
     'G5': tuple(('PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
-                 'PRO-E02 PRO-C01 PRO-C02 PRO-C03 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01').split()),
+                 'PRO-E02 PRO-C01 PRO-C02 PRO-C03 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01 '
+                 'PRO-D04 PWR-C23 PWR-C25').split()),
     'G6': tuple('DOC-D02 DOC-V02 RST-D01 SIG-D06'.split()),
     'G7': tuple(('DOC-A01 DOC-A03 DOC-A04 DOC-Q01 DEV-Q01 PWR-D01 '
                  'REQ-Q01 REQ-Q02 REQ-Q03 REQ-Q04 REQ-Q05 REQ-Q07 REQ-Q08 REQ-H01 REQ-H02').split()),
@@ -622,9 +682,72 @@ OBJECTIVE_RULES = {
 
 
 # 共用规范依据（2026-10-31，用户：请开始执行这个方案）：SR 规则 → 它核对的共用规范规则（G0x-nnn，references/guideline-rules.md）。
-# 计划里出现一条 SR 规则，就覆盖了它映射的规范规则；规范规则写成前这里为空。规范编号 G03-005 与上面的审查要点 G1–G7、
+# 计划里出现一条 SR 规则，就覆盖了它映射的规范规则。规范编号 G03-005 与上面的审查要点 G1–G7、
 # 定界推法 G1–G6 格式不同，不要混写。
-BASIS = {}
+def baseline_asks(rule_id, intent):
+    """False for a rule that only one product baseline asks (BASELINE_RULES) on a board of another baseline."""
+    wanted = BASELINE_RULES.get(rule_id)
+    return wanted is None or (intent.get('guideline_baseline') or _GUIDELINES['default_baseline']) == wanted
+
+
+BASIS = {
+    'DEV-C01': ('G02-007', 'G02-027', 'G02-028', 'G03-037', 'G03-038', 'G03-040'),
+    'DEV-C02': ('G03-010', 'G03-039'),
+    'DEV-C03': ('G02-017',),
+    'DEV-D03': ('G01-013',),
+    'DOC-Q01': ('G02-026',),
+    'DRV-C02': ('G03-016',),
+    'PRO-C01': ('G01-021', 'G01-036', 'G01-037', 'G01-041'),
+    'PRO-C03': ('G01-050',),
+    'PRO-D04': ('G01-014', 'G01-015', 'G01-016'),
+    'PWR-C01': ('G01-010', 'G03-001', 'G03-042', 'G03-043'),
+    'PWR-C03': ('G03-020',),
+    'PWR-C04': ('G03-003', 'G03-004'),
+    'PWR-C05': ('G03-032',),
+    'PWR-C06': ('G03-014', 'G03-018', 'G03-019', 'G03-050'),
+    'PWR-C09': ('G03-036',),
+    'PWR-C13': ('G01-023', 'G01-029', 'G01-045', 'G03-013', 'G03-015', 'G03-017'),
+    'PWR-C15': ('G03-005', 'G03-006', 'G03-007', 'G03-008', 'G03-009', 'G03-026', 'G03-044', 'G03-045', 'G03-046'),
+    'PWR-C17': ('G01-018', 'G01-019'),
+    'PWR-C18': ('G01-020', 'G01-024', 'G01-025', 'G03-023', 'G03-024'),
+    'PWR-C19': ('G01-022', 'G03-002'),
+    'PWR-C21': ('G01-034', 'G01-035'),
+    'PWR-C22': ('G01-039', 'G01-040', 'G01-042'),
+    'PWR-C23': ('G01-049',),
+    'PWR-C24': ('G03-028', 'G03-029'),
+    'PWR-C25': ('G03-051', 'G03-052', 'G03-053', 'G03-054', 'G03-055', 'G03-056', 'G03-057', 'G03-058'),
+    'PWR-D01': ('G03-035',),
+    'PWR-D03': ('G03-021', 'G03-033'),
+    'PWR-E02': ('G03-034',),
+    'PWR-E03': ('G03-011', 'G03-012', 'G03-048', 'G03-049'),
+    'PWR-T01': ('G03-027', 'G03-031'),
+    'PWR-T04': ('G03-025',),
+    'PWR-T05': ('G01-038',),
+    'PWR-D04': ('G01-017',),
+    'REQ-C01': (
+        'G02-001', 'G02-003', 'G02-004', 'G02-005', 'G02-006', 'G02-008', 'G02-009', 'G02-010', 'G02-011',
+        'G02-012', 'G02-013', 'G02-014', 'G02-015', 'G02-016', 'G02-019', 'G02-020', 'G02-021', 'G02-022',
+        'G02-023', 'G02-024', 'G02-025', 'G02-029', 'G02-032', 'G02-033',
+    ),
+    'REQ-C02': ('G02-034', 'G02-035'),
+    'REQ-D03': ('G01-001', 'G01-002', 'G01-003', 'G01-004', 'G01-006', 'G01-007', 'G01-008'),
+    'REQ-D04': ('G01-011', 'G01-012', 'G02-018', 'G02-030', 'G03-041'),
+    'REQ-Q01': ('G01-005', 'G02-001'),
+    'REQ-Q03': ('G01-009', 'G02-021'),
+    'REQ-Q05': ('G02-031',),
+    'REQ-Q07': ('G02-002',),
+    'RST-C02': ('G02-022',),
+    'RST-T01': ('G03-022',),
+    'RST-T03': ('G03-024', 'G03-030', 'G03-047'),
+    'SIG-C05': ('G01-026', 'G01-027', 'G01-028', 'G01-029', 'G01-031'),
+    'SIG-C07': ('G02-023',),
+    'SIG-C08': ('G01-014',),
+    'SIG-C09': ('G02-022',),
+    'SIG-C10': ('G01-032', 'G01-033'),
+    'SIG-C11': ('G01-043', 'G01-044'),
+    'SIG-C12': ('G01-046', 'G01-047', 'G01-048'),
+    'SIG-D07': ('G01-030',),
+}
 
 
 def basis_errors(guideline_ids, basis=None, rule_ids=None):
@@ -661,11 +784,11 @@ def build_objective_index(rule_ids, groups, objectives=OBJECTIVES):
 CIRCUIT_TYPES = (
     CircuitType('POWER_CONVERTER', '变换器与稳压器', 'PWR',
             r'(^|[:_-])(FB|VFB|LX\d*|PGOOD|PWRGD|VOUT\d*)([:_-]|$)|LDO|BUCK|BOOST|DC-?DC|PMIC',
-            ('PWR-C02', 'PWR-C03', 'PWR-C04', 'PWR-C05', 'PWR-C15'),
+            ('PWR-C02', 'PWR-C03', 'PWR-C04', 'PWR-C05', 'PWR-C15', 'PWR-C06', 'PWR-C18', 'PWR-C24'),
             ('requirements', 'datasheets')),
     CircuitType('POWER_PROTECTION', '电源输入保护', 'PWR',
             r'FUSE|HOT-?SWAP|SURGE|PART:F\d+:|(^|[:_-])(OVP|UVP|OCP|ILIM)([:_-]|$)|SMBJ|SMAJ|SMCJ',
-            ('PWR-C06', 'DRV-C02', 'PRO-C01', 'PWR-C13', 'PWR-T05', 'ANA-T01'),
+            ('PWR-C06', 'DRV-C02', 'PRO-C01', 'PWR-C13', 'PWR-T05', 'ANA-T01', 'PWR-C23', 'PWR-C25'),
             ('requirements', 'datasheets')),
     CircuitType('ANALOG', '模拟前端与监测', 'ANA',
             r'(^|[:_-])(AIN\d*|ADC\w*|VREF\w*|REFIN|REFOUT|OPA\w*|INA\d*|ISENSE\w*|CSP|CSN|NTC\w*|THERM\w*)([:_-]|$)',
@@ -741,6 +864,31 @@ CIRCUIT_TYPES = (
             r'JTAG|SWDIO|SWCLK|(^|[:_-])(SWD|TCK|TMS|TDI|TDO|TRST\w*)([:_-]|$)|(^|[:_-])(DEBUG|DBG)',
             ('SIG-D06',),
             ('datasheets',)),
+    # 对外电源与现场输入接口（共用规范 G01 的接口规则按这些类型触发，2026-11-01 用户定）：网名只给候选，以 intent 声明的电路为准。
+    CircuitType('DC_48V', '−48 V 直流输入', 'PWR',
+            r'(^|[:_-])-?48V(_?RTN|_?IN)?([:_-]|$)|VBAT_?48',
+            ('PWR-C17', 'PWR-C18', 'PWR-C13', 'PRO-C01'),
+            ('requirements', 'datasheets')),
+    CircuitType('AC_MAINS', '交流市电输入', 'PWR',
+            r'(^|[:_-])(AC_?[LN]|VAC|MAINS)([:_-]|$)',
+            ('PWR-C18',),
+            ('requirements', 'datasheets')),
+    CircuitType('INDUSTRIAL_DI', '工业 24 V 数字输入', 'SIG',
+            r'(^|[:_-])(DIN?\d+|PLC_IN\d*)([:_-]|$)',
+            ('SIG-C10',),
+            ('requirements', 'datasheets')),
+    CircuitType('POE_PD', 'PoE 受电端', 'PWR',
+            r'POE|(^|[:_-])VPORT([:_-]|$)',
+            ('SIG-C11', 'SIG-C12', 'PWR-C13', 'PWR-C23', 'PRO-C03'),
+            ('requirements', 'datasheets')),
+    CircuitType('VEHICLE_28V', '军车 28 V 输入', 'PWR',
+            r'(^|[:_-])(28V|VEH_?28)([:_-]|$)',
+            ('PWR-C21', 'PRO-C01', 'PWR-T05'),
+            ('requirements', 'datasheets')),
+    CircuitType('SHIP_AC', '舰船交流输入', 'PWR',
+            r'(^|[:_-])SHIP_?AC([:_-]|$)',
+            ('PWR-C22', 'PRO-C01'),
+            ('requirements', 'datasheets')),
 )
 
 # 器件角色登记表：集成电路在 intent.device_kinds 声明的角色，一行一个。board_intent.IC_KINDS、part_words.IC_ROLES、
@@ -893,9 +1041,13 @@ SUBJECT_PRECONDITIONS = {
     'START_PIN': '电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC',
     'RESCUE_PIN': '电路里没有 MCU，也没有带启动配置脚（BOOT、strap、MODE）的 IC：没有可烧录、可救援的器件',
 }
+# 只在某个产品基线才问的规则（共用规范的航天专用规则）：基线不符时不派、不算未问。
+BASELINE_RULES = {'REQ-C02': 'aerospace', 'PWR-C25': 'aerospace'}
+EXTERNAL_INTERFACE_TYPES = ('DC_48V', 'AC_MAINS', 'INDUSTRIAL_DI', 'POE_PD', 'VEHICLE_28V', 'SHIP_AC')
 SUBJECT_REQUIRES = {
     ('POWER_CONVERTER', 'PWR-C04'): 'SWITCH_PIN',
     ('POWER_CONVERTER', 'PWR-C15'): 'FEEDBACK_PIN',
+    ('POWER_CONVERTER', 'PWR-C06'): 'PROTECTION_PART',
     ('POWER_PROTECTION', 'PWR-C06'): 'PROTECTION_PART',
     ('POWER_PROTECTION', 'DRV-C02'): 'POWER_SWITCH',
     ('POWER_PROTECTION', 'PRO-C01'): 'PROTECTION_PART',
@@ -924,6 +1076,16 @@ QUESTIONS = {
     'PWR-C06': '{state} 时 {circuit}（{refs}）的 UVLO/OVLO/限流门限含容差是否在要求范围内，检测目的与采样侧是否正确；被动输入的保险丝/MOV/NTC 是否协调',
     'DRV-C02': '{state} 时 {circuit}（{refs}）的功率管在实际驱动、电流、电压、脉宽和温度下是否处于适用的 SOA 与降额范围内（重复脉冲与单次脉冲分别核）',
     'PRO-C01': '{state} 时 {circuit}（{refs}）的防护链逐段的动作电压、时序与能量是否协调：TVS 的 VRWM/VBR/VC 对照后级绝限，熔断器/PTC 的额定、时间电流、熔断能量和分断能力是否满足',
+    'PWR-C17': '{circuit}（{refs}）−48 V 输入的极性与回线接地方式是否按规定，工作电压范围与耐受范围是否满足',
+    'PWR-C18': '{state} 时 {circuit}（{refs}）须保持的轨在规定中断内是否由保持电容维持，中断与恢复期间是否无过应力、恢复后是否自动回到正常',
+    'PWR-C21': '{state} 时 {circuit}（{refs}）在稳态 20–33 V 含 ±2 V 纹波与起动跌落 12 V/1 s、16 V/30 s 下是否正常不降级',
+    'PWR-C22': '{state} 时 {circuit}（{refs}）在 MIL-STD-1399 稳态偏离、瞬态 ±16%/最坏 ±20% 与应急条件下是否工作或不损坏',
+    'PWR-C23': '{state} 时 {circuit}（{refs}）双源切换是否不超出当前电源能力、无反灌，适配器并联方式与所需隔离是否一致',
+    'PWR-C24': '{circuit}（{refs}）的上电与受控掉电时序按极值时间（软启动、PG 延迟、门限、RC 容差）是否满足多电源器件的约束',
+    'PWR-C25': '{circuit}（{refs}）作 LCL 负载时开机电流、充电时间占比、回灌、电感与输入电容、阻抗包络和内部限流是否满足 ECSS-E-ST-20-20C',
+    'SIG-C10': '{circuit}（{refs}）的输入类型与电流方向是否写明，所接传感器（两线/三线、PNP/NPN）是否与输入类型相符',
+    'SIG-C11': '{circuit}（{refs}）的输入电压窗（按 Type 与功率等级，含线缆压降）与分级声明是否覆盖负载最大平均功率',
+    'SIG-C12': '{state} 时 {circuit}（{refs}）欠压取电、获准功率前取电是否不超限，轻载时是否保持维持功率特征（MPS）',
     'PWR-C13': '{state} 时 {circuit}（{refs}）按实际接口/输入方式，浪涌电流与输入电容是否在源端能力和平台限制内',
     'PWR-T05': '{circuit}（{refs}）防反接电路的导通方向、体二极管朝向与栅极钳位是否正确',
     'ANA-T01': '{state} 时 {circuit}（{refs}）的检测/监测链的被测量与保护目的是否明确，取样侧、返回地、判决与控制是否闭合，首次使能是否能启动',
@@ -967,7 +1129,7 @@ QUESTIONS = {
 # 功能框架的问题：每个 intent 电路一句，由该检查项问题归纳；审查员可改写。
 # 答案不随工作态变化的电路检查项（导通方向、接口语义、USB 物理层与角色、传感器接法）：计划每电路只问一次，
 # 检查项的 object 不带 state，问题模板也不带“{state} 时”。纹波预算（PWR-C14）和变换器各条随负载/模式变化，仍逐状态。
-STATE_INVARIANT = frozenset({'PWR-T05', 'ANA-D01', 'SIG-T04', 'SIG-D07', 'SIG-D04'})
+STATE_INVARIANT = frozenset({'PWR-T05', 'ANA-D01', 'SIG-T04', 'SIG-D07', 'SIG-D04', 'PWR-C17', 'PWR-C24', 'PWR-C25', 'SIG-C10', 'SIG-C11'})
 
 # 系统功能（功能树设计 §3.4）：这些规则问的是全板的电源树、地、监控、时序和主控引脚，检查项归该系统功能。
 # 按电路展开的检查项仍归电路（RST-T03 到第 5 步才移到 SYS-SEQUENCE）。
@@ -987,14 +1149,14 @@ SYSTEM_OF_RULE = {rule: sid for sid, rules in SYSTEM_FUNCTIONS.items() for rule 
 INTERFACE_SUBJECTS = {
     'CIRCUIT_PAIR': ('SIG-T04', 'SIG-C07'),
     'LINK': ('SIG-C07',),
-    'EXTERNAL': ('DEV-D03', 'DEV-C04', 'PRO-D03'),
+    'EXTERNAL': ('DEV-D03', 'DEV-C04', 'PRO-D03', 'PRO-D04'),
     'SUPPLY': ('PWR-C14',),
 }
 INTERFACE_NET_SUBJECTS = {'CIRCUIT_PAIR': ('SIG-C08',), 'LINK': ('SIG-C08',)}
 NOISE_SENSITIVE_TYPES = ('ANALOG', 'CLOCK', 'RF')
 # 归接口的规则（设计稿附录 A）：按电路展开的检查项仍归电路；其余检查项的网络都落在同一个接口上时归该接口。
 INTERFACE_RULES = frozenset({
-    'DEV-C04', 'DEV-D03', 'PRO-D03', 'PWR-C14', 'RST-A04', 'RST-A06', 'RST-T01', 'RST-T02',
+    'DEV-C04', 'DEV-D03', 'PRO-D03', 'PRO-D04', 'PWR-C14', 'RST-A04', 'RST-A06', 'RST-T01', 'RST-T02',
     'SIG-A01', 'SIG-A02', 'SIG-E02', 'SIG-T01', 'SIG-T03', 'SIG-T04', 'SIG-C07', 'SIG-C08', 'SIG-C09'})
 INTERFACE_QUESTIONS = {
     'SIG-T04': '{interface}（{nets}）两端的 TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义是否对应',
@@ -1002,6 +1164,7 @@ INTERFACE_QUESTIONS = {
     'SIG-C08': '{interface} 的 {nets} 两端供电或参考地分区不同：一端掉电或外设先上电时，Ioff、输入耐压与注入电流是否在限值内',
     'DEV-D03': '{interface}（{refs}）每针本端定义与对端定义是否逐针相容',
     'DEV-C04': '{interface}（{refs}）按实际系列的并针降额、接触电阻和故障电流核算的载流是否够',
+    'PRO-D04': '{interface}（{refs}）未供电、热插拔、误接等非正常行为是否有定义，规定的故障是否耐受，本板故障向外发射是否在规定内',
     'PRO-D03': '{interface}（{refs}）每个对外针是否有防护、防护器件是否挂在活线上、泄放路径是否接到对应的地',
     'PWR-C14': '{interface} 供给敏感电路 {loads} 的纹波与噪声（含开关频率、后级滤波与去耦）是否满足其噪声/PSRR 要求',
 }
@@ -1095,6 +1258,12 @@ FRAME_QUESTIONS = {
     'AV': '音视频接口的通道映射、电平与时钟来源、电平匹配是否成立',
     'ISOLATION': '隔离带跨接归属、防护协调与隔离器件工作资格是否成立',
     'DEBUG': '调试接口电气引出、串阻与 ESD 是否满足烧录/调试要求',
+    'DC_48V': '−48 V 输入的极性、电压范围、中断恢复、浪涌耐受与合闸浪涌是否满足接口要求',
+    'AC_MAINS': '交流输入的暂降与中断下，保持与恢复是否满足判据',
+    'INDUSTRIAL_DI': '工业数字输入的类型、电流方向与所接传感器是否相符',
+    'POE_PD': 'PoE 受电端的电压窗、分级、取电时序、维持功率、浪涌、双源切换与绝缘是否满足要求',
+    'VEHICLE_28V': '军车 28 V 输入的稳态、起动跌落、浪涌、尖峰与反接是否满足要求',
+    'SHIP_AC': '舰船交流输入的稳态、瞬态、尖峰与应急条件是否满足要求',
 }
 FRAME_PREFIX = '{circuit}（{refs}）在 {states} 各状态下，'
 # The rails named come from the circuit's connecting nets, input and output alike: the reviewer says which is the output.
@@ -1134,11 +1303,11 @@ BOUND_METHODS = OrderedDict((m.code, m) for m in (
     BoundMethod('G6', '物理约束：节点电压不超过供电轨或钳位保证值，电流不超过上游限流', '保证最坏值'),
     BoundMethod('G7', '同一测试点比例外推：典型曲线 × 保证值 / 同点典型值', '估算'),
     BoundMethod('G8', '典型曲线覆盖工作点：按曲线取值；典型值已不够判失败（可达的反例）', '估算'),
-    BoundMethod('G9', '只有典型值：同类参数 min/max 比例、同系列保证范围或典型 ± typical_band（降额规范）', '估算'),
+    BoundMethod('G9', '只有典型值：同类参数 min/max 比例、同系列保证范围或典型 ± typical_band（G02 工程取值）', '估算'),
     BoundMethod('G10', '厂家参考电路同接法：接法相同、本板负载不重于参考电路，引图号', '可判通过'),
     BoundMethod('G11', '厂家应用笔记的公式：按笔记给的公式和系数算，引笔记号与页', '估算'),
     BoundMethod('SOA', '按持续时间选 25 °C 曲线，按开始壳温降额，按降额规范工程取值 soa_segment_share 分段留余量', '保证最坏值'),
-    BoundMethod('FORCED_BETA', '饱和开关按强制 β：IB ≥ IC /（hFE_min / forced_beta_k）（降额规范）', '保证最坏值'),
+    BoundMethod('FORCED_BETA', '饱和开关按强制 β：IB ≥ IC /（hFE_min / forced_beta_k）（G02 工程取值）', '保证最坏值'),
 ))
 # 2026-10-27（用户：第二阶段按建议做）：推法是余量和开放项公开界限共用的唯一叫法（结果格式 15 停用 basis.derivation、
 # worst_case.bound.basis）。依据不是“估算”的推法给决定性余量；估算推法只给 ESTIMATE，或典型件已不够时的 REACHABLE_CASE。
@@ -1178,23 +1347,26 @@ _CB = 'docs/2026-10-26-cell-boundary.md'
 _IC_ROLES = tuple(DEVICE_ROLES)      # 器件角色登记表的全部角色，含泛称 ic
 _M = ('MEASURABLE',)
 _T = ('TYPE_TEST',)
+def _t(text):
+    """Fill {value_name} from the rule library: the estimate factors and margins have no second copy here."""
+    return re.sub(r'\{(\w+)\}', lambda m: str(_value(m.group(1))), text)
 def _e(factor, applies, how, floor=None):
-    return Estimate(factor, applies, floor, how)
+    return Estimate(_value(factor), applies, (_value(floor), '°C') if floor else None, _t(how))
 BOUNDS = OrderedDict((b.id, b) for b in (
     # 3.1 齐纳管、电压基准
     Bound('ZENER-VZ-UPPER', ('zener',), 'VZ 上界', 'UPPER', '工作电流 IZ', 'INCREASING', (('G1', ()), ('G2', ()), ('G9', ())),
           'VENDOR_DATUM', _WCA + '“齐纳管低电流”',
-          'TEST_POINT', (_e(1.5, FUNCTIONAL, '只有典型 rdif 时：典型 rdif ×1.5'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
+          'TEST_POINT', (_e('est_zener_vz_upper', FUNCTIONAL, '只有典型 rdif 时：典型 rdif ×{est_zener_vz_upper}'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
           '偏置用途允许估算；作钳位保护（下游过压→损坏）时不估算'),
     Bound('ZENER-VZ-LOWER', ('zener',), 'VZ 下界', 'LOWER', '工作电流 IZ', 'INCREASING',
           (('G1', ()), ('G2', ()), ('G3', ('slope_bound',)), ('G8', ())), 'OUTSIDE_SPECIFIED', _WCA + '“齐纳管低电流”；本表“几条口径”齐纳管 VZ 下界',
-          'INDUSTRY_NONE', (_e(1.2, FUNCTIONAL, '典型曲线 G8 在工作电流取值，再 ÷1.2（≈×0.85）'),), ('REQUIRED_FUNCTION',), _M,
+          'INDUSTRY_NONE', (_e('est_zener_vz_lower', FUNCTIONAL, '典型曲线 G8 在工作电流取值，再 ÷{est_zener_vz_lower}'),), ('REQUIRED_FUNCTION',), _M,
           '典型曲线覆盖工作点时允许估算判 PASS；两测试点之间 G3 是保证值；最低测试点以下又没有覆盖它的曲线，是用在手册未规定的区间，'
           '记失败项（改法：把工作电流提到最低测试点以上），不向厂家索取（2026-10-26 定）'),
     Bound('ZENER-VZ-TEMP', ('zener', 'shunt_reference'), 'VZ / 基准电压随温度', None, '温度', 'NONMONOTONIC',
           (('G1', ()), ('G4', ('tempco_bound',)), ('G9', ())), 'VENDOR_DATUM', '本表推法 G4',
-          'TEST_POINT', (_e(2, FUNCTIONAL, '典型温漂 ×2'),), ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M,
-          '并联基准多给 max 温漂（G4 保证）；普通齐纳只给典型温漂，允许估算（×2）'),
+          'TEST_POINT', (_e('est_zener_vz_temp', FUNCTIONAL, '典型温漂 ×{est_zener_vz_temp}'),), ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M,
+          _t('并联基准多给 max 温漂（G4 保证）；普通齐纳只给典型温漂，允许估算（×{est_zener_vz_temp}）')),
     Bound('REF-IKA-MIN', ('shunt_reference',), '最小阴极电流 Ika', 'LOWER', '工作态', None, (('G1', ()),),
           'OUTSIDE_SPECIFIED', '定界表决定（architecture.md 2026-10-23）',
           'GUARANTEED', (), ('REQUIRED_FUNCTION',), _M, '不估算：规格地板，低于 Ika(min) 即超出规定区，记失败'),
@@ -1207,23 +1379,23 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'TEST_POINT', (), ('COMPONENT_DAMAGE',), _T, '不估算；缺波形对应的保证值时按最坏（Ipp 处 VC max）判'),
     Bound('TVS-LEAK-HOT', ('tvs',), '高温漏电', 'UPPER', '温度', 'INCREASING', (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))),
           'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
-          'INDUSTRY_NONE', (_e(2, FUNCTIONAL, '典型温度曲线比例外推 G7，再 ×2'),), ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M,
-          '允许估算（×2）：25 °C max 保证，高温只有典型曲线'),
+          'INDUSTRY_NONE', (_e('est_tvs_leak_hot', FUNCTIONAL, '典型温度曲线比例外推 G7，再 ×{est_tvs_leak_hot}'),), ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M,
+          _t('允许估算（×{est_tvs_leak_hot}）：25 °C max 保证，高温只有典型曲线')),
     # 3.3 二极管、整流桥
     Bound('DIODE-VF', ('diode', 'bridge_rectifier'), 'VF 上界随电流', 'UPPER', '正向电流 IF', 'INCREASING',
           (('G1', ()), ('G2', ()), ('G8', ())), 'VENDOR_DATUM', _WCA + '“单调外推”',
-          'TEST_POINT', (_e(1.15, FUNCTIONAL, '超出测试点需要典型曲线时 ×1.15'),
-                         _e(1.15, DAMAGE, '同上；用它判温升损坏时结温余量 ≥ 20 °C', (20, '°C'))), ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
-          '允许估算（×1.15）；判温升损坏时另要结温余量 ≥ 20 °C'),
+          'TEST_POINT', (_e('est_diode_vf', FUNCTIONAL, '超出测试点需要典型曲线时 ×{est_diode_vf}'),
+                         _e('est_diode_vf', DAMAGE, '同上；用它判温升损坏时结温余量 ≥ {est_junction_margin} °C', 'est_junction_margin')), ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
+          _t('允许估算（×{est_diode_vf}）；判温升损坏时另要结温余量 ≥ {est_junction_margin} °C')),
     Bound('DIODE-VF-COLD', ('diode', 'bridge_rectifier'), 'VF 上界随温度（冷态最差）', 'UPPER', '温度', 'DECREASING',
           (('G1', ()), ('G2', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _WCA + '“单调外推”',
-          'INDUSTRY_NONE', (_e(1.15, FUNCTIONAL, '典型温度曲线 ×1.15；物理温漂上界（约 −2 mV/°C）可作 G4 保证推法'),), ('REQUIRED_FUNCTION',), _M,
-          '允许估算（×1.15）'),
+          'INDUSTRY_NONE', (_e('est_diode_vf_cold', FUNCTIONAL, '典型温度曲线 ×{est_diode_vf_cold}；物理温漂上界（约 −2 mV/°C）可作 G4 保证推法'),), ('REQUIRED_FUNCTION',), _M,
+          _t('允许估算（×{est_diode_vf_cold}）')),
     Bound('DIODE-IR-HOT', ('diode', 'bridge_rectifier', 'zener'), '高温反向漏电', 'UPPER', '温度', 'INCREASING',
           (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _WCA + '“二极管反向漏电”',
-          'TEST_POINT', (_e(2, FUNCTIONAL, '比例外推 G7，再 ×2'),
-                         _e(2, DAMAGE, '同上，结温余量 ≥ 20 °C', (20, '°C'))), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
-          '允许估算（×2）；判反向功耗热失控（损坏）另要结温余量 ≥ 20 °C，记应力风险'),
+          'TEST_POINT', (_e('est_diode_ir_hot', FUNCTIONAL, '比例外推 G7，再 ×{est_diode_ir_hot}'),
+                         _e('est_diode_ir_hot', DAMAGE, '同上，结温余量 ≥ {est_junction_margin} °C', 'est_junction_margin')), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
+          _t('允许估算（×{est_diode_ir_hot}）；判反向功耗热失控（损坏）另要结温余量 ≥ {est_junction_margin} °C，记应力风险')),
     Bound('DIODE-SURGE', ('diode', 'bridge_rectifier'), '浪涌 IFSM 换算到其他脉宽', 'UPPER', '脉宽', 'DECREASING',
           (('G1', ()), ('G2', ()), ('G5', ('half_sine_i2t', 'surge_current_at_width'))), 'OUTSIDE_SPECIFIED', _WCA + '“脉冲与浪涌”',
           'TEST_POINT', (), ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD'), _T,
@@ -1231,36 +1403,36 @@ BOUNDS = OrderedDict((b.id, b) for b in (
     # 3.4 MOSFET、BJT
     Bound('MOS-VGS-ON', ('mosfet',), '导通所需 VGS', 'UPPER', '漏极电流 ID', 'INCREASING', (('G1', ()), ('G2', ()), ('G7', ())),
           'VENDOR_DATUM', 'wca-formulas.md VGS 三档',
-          'TEST_POINT', (_e(2, FUNCTIONAL, '小信号 / 电平转换：典型传输曲线的 RDS ×2'),
-                         _e(2, DAMAGE, '功率开关：典型曲线 RDS ×2 算导通损耗，结温余量 ≥ 20 °C', (20, '°C'))),
+          'TEST_POINT', (_e('est_mos_vgs_on', FUNCTIONAL, '小信号 / 电平转换：典型传输曲线的 RDS ×{est_mos_vgs_on}'),
+                         _e('est_mos_vgs_on', DAMAGE, '功率开关：典型曲线 RDS ×{est_mos_vgs_on} 算导通损耗，结温余量 ≥ {est_junction_margin} °C', 'est_junction_margin')),
           ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
-          '允许估算（×2）；功率开关（损坏）另要结温余量 ≥ 20 °C，记应力风险'),
+          _t('允许估算（×{est_mos_vgs_on}）；功率开关（损坏）另要结温余量 ≥ {est_junction_margin} °C，记应力风险')),
     Bound('MOS-RDS-HOT', ('mosfet',), '高温 RDS(on)', 'UPPER', '结温', 'INCREASING',
           (('G1', ()), ('G2', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '本表推法 G7',
-          'INDUSTRY_NONE', (_e(1.2, FUNCTIONAL | DAMAGE, '25 °C max × 典型温度比（G7），再 ×1.2；判损坏时结温余量 ≥ 20 °C', (20, '°C')),),
+          'INDUSTRY_NONE', (_e('est_mos_rds_hot', FUNCTIONAL | DAMAGE, '25 °C max × 典型温度比（G7），再 ×{est_mos_rds_hot}；判损坏时结温余量 ≥ {est_junction_margin} °C', 'est_junction_margin'),),
           ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
-          '允许估算判 PASS（×1.2 且结温余量 ≥ 20 °C）：全行业做法，hot max 行业不给'),
+          _t('允许估算判 PASS（×{est_mos_rds_hot} 且结温余量 ≥ {est_junction_margin} °C）：全行业做法，hot max 行业不给')),
     Bound('MOS-SOA-HOT', ('mosfet',), '高温 SOA', 'UPPER', '开始壳温', 'DECREASING',
           (('SOA', ('soa_allowed_power', 'soa_case_temperature', 'heatsink_requirement', 'zth_junction_temperature')),),
           'BOUNDED', '本表“几条口径”MOS 高温 SOA',
           'GUARANTEED', (), ('COMPONENT_DAMAGE',), _T, '按 SOA 推法降额后视作保证；不另估算'),
     Bound('MOS-LINEAR', ('mosfet',), '线性工作点的 VGS（源跟随、线性稳压）', None, '漏极电流与温度', 'NONMONOTONIC',
           (('G1', ()), ('G7', ('ratio_extrapolation',)), ('G8', ())), 'VENDOR_DATUM', _EP + '“按实际用途选模型”',
-          'TEST_POINT', (_e(1.4, FUNCTIONAL, '典型传输曲线 gm ÷1.4（≈×0.7）；VGS(th) 的 min/max 是保证值'),), ('REQUIRED_FUNCTION',), _M,
-          '允许估算（÷1.4）；功耗/结温部分走 MOS-SOA-HOT'),
+          'TEST_POINT', (_e('est_mos_linear', FUNCTIONAL, '典型传输曲线 gm ÷{est_mos_linear}；VGS(th) 的 min/max 是保证值'),), ('REQUIRED_FUNCTION',), _M,
+          _t('允许估算（÷{est_mos_linear}）；功耗/结温部分走 MOS-SOA-HOT')),
     Bound('BJT-SAT', ('bjt',), '饱和导通所需基极电流', 'LOWER', '集电极电流 IC', None,
           (('FORCED_BETA', ('forced_beta_base_current',)),), 'BOUNDED', '本表“几条口径”BJT 饱和开关',
           'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '按 FORCED_BETA，不估算'),
     Bound('BJT-HFE', ('bjt',), '线性区 hFE', 'LOWER', '集电极电流与温度', 'NONMONOTONIC',
           (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
-          'TEST_POINT', (_e(1.5, FUNCTIONAL, '比例外推 G7，再 ÷1.5'),), ('REQUIRED_FUNCTION',), _M,
-          '允许估算（÷1.5）；饱和开关走 BJT-SAT'),
+          'TEST_POINT', (_e('est_bjt_hfe', FUNCTIONAL, '比例外推 G7，再 ÷{est_bjt_hfe}'),), ('REQUIRED_FUNCTION',), _M,
+          _t('允许估算（÷{est_bjt_hfe}）；饱和开关走 BJT-SAT')),
     # 3.5 光耦
     Bound('OPTO-CTR', ('opto',), 'CTR 随 IF 和温度', 'LOWER', '输入电流 IF 与温度', 'NONMONOTONIC',
           (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', _EP + '“身份冲突与身份分支”（取最低档）',
-          'INDUSTRY_NONE', (_e(2, FUNCTIONAL, '25 °C 分档下限 × 典型温度曲线最低点（G7），再 ÷2（寿命末只在 DEV-C06 算）'),),
+          'INDUSTRY_NONE', (_e('est_opto_ctr', FUNCTIONAL, '25 °C 分档下限 × 典型温度曲线最低点（G7），再 ÷{est_opto_ctr}（寿命末只在 DEV-C06 算）'),),
           ('REQUIRED_FUNCTION',), ('MEASURABLE', 'NOT_VERIFIABLE'),
-          '允许估算判 PASS（÷2）；在保护环里也是阈值偏移，不是器件损坏。“索取全温 CTR”要提示'),
+          _t('允许估算判 PASS（÷{est_opto_ctr}）；在保护环里也是阈值偏移，不是器件损坏。“索取全温 CTR”要提示')),
     # 3.6 NTC
     Bound('NTC-SENSE', ('ntc',), '检测用 NTC 的 R(T)', None, '温度', 'DECREASING',
           (('G5', ('ntc_table_bound', 'ntc_beta_bound')),), 'BOUNDED', '本表“几条口径”检测用 NTC；datasheets.md“公开曲线表先于索取”',
@@ -1284,19 +1456,19 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算：额定、降额与脉冲曲线按保证；商品地板见 commodity-floors.md'),
     Bound('MLCC-EFFECTIVE-C', ('capacitor',), 'MLCC 有效容量（偏压、温度、老化）', 'LOWER', '直流偏压与温度', 'DECREASING',
           (('G1', ()), ('G2', ()), ('G5', ('table_interpolate',)), ('G8', ())), 'VENDOR_DATUM', 'commodity-floors.md MLCC；wca-formulas.md',
-          'TYPICAL_BY_DEFINITION', (_e(1.25, FUNCTIONAL, '典型偏压曲线 × (1 − 公差) × 老化 0.9，再 ÷1.25（≈×0.8）；补偿网络 ÷1.4'),),
-          ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M, '允许估算判 PASS（÷1.25）'),
+          'TYPICAL_BY_DEFINITION', (_e('est_mlcc_effective_c', FUNCTIONAL, '典型偏压曲线 × (1 − 公差) × 老化 {est_mlcc_aging}，再 ÷{est_mlcc_effective_c}；补偿网络 ÷{est_mlcc_effective_c_comp}'),),
+          ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M, _t('允许估算判 PASS（÷{est_mlcc_effective_c}）')),
     Bound('ECAP-ESR-RIPPLE', ('electrolytic',), '电解 ESR 与纹波电流（温度、频率系数表）', None, '温度与频率', 'NONMONOTONIC',
           (('G1', ()), ('G5', ('table_interpolate',)), ('G9', ())), 'VENDOR_DATUM', 'commodity-floors.md 电解',
-          'TEST_POINT', (_e(1.3, FUNCTIONAL, '系数表外的频率：ESR ×1.3'),
-                         _e(1.3, DAMAGE, '同上，芯温余量 ≥ 10 °C', (10, '°C'))),
+          'TEST_POINT', (_e('est_ecap_esr_ripple', FUNCTIONAL, '系数表外的频率：ESR ×{est_ecap_esr_ripple}'),
+                         _e('est_ecap_esr_ripple', DAMAGE, '同上，芯温余量 ≥ {est_core_margin} °C', 'est_core_margin')),
           ('PERFORMANCE_OR_LIFE', 'COMPONENT_DAMAGE'), _M,
-          '表内按 G5（保证）；表外允许估算（×1.3），判纹波发热（损坏）另要芯温余量 ≥ 10 °C，记应力风险；寿命走 DEV-C02。'
-          '“资料已读只剩折算”不是厂家数据缺口'),
+          _t('表内按 G5（保证）；表外允许估算（×{est_ecap_esr_ripple}），判纹波发热（损坏）另要芯温余量 ≥ {est_core_margin} °C，记应力风险；寿命走 DEV-C02。'
+             '“资料已读只剩折算”不是厂家数据缺口')),
     Bound('IND-ISAT', ('inductor', 'transformer', 'coupled_inductor', 'common_mode_choke'), '电感 Isat（按资料定义取温度最坏值）', 'LOWER', '温度', 'DECREASING',
           (('G1', ()), ('G2', ()), ('G5', ('table_interpolate',)), ('G9', ('typical_band',))), 'VENDOR_DATUM', 'commodity-floors.md 电感',
-          'TYPICAL_BY_DEFINITION', (_e(1.3, FUNCTIONAL | DAMAGE, '典型 Isat 热态值 ÷1.3（峰流 ≤ Isat/1.3）'),), ('COMPONENT_DAMAGE',), _M,
-          '允许估算判 PASS（÷1.3）：损坏类但行业别无他法；不满足 1.3 倍就开放或失败'),
+          'TYPICAL_BY_DEFINITION', (_e('est_ind_isat', FUNCTIONAL | DAMAGE, '典型 Isat 热态值 ÷{est_ind_isat}（峰流 ≤ Isat/{est_ind_isat}）'),), ('COMPONENT_DAMAGE',), _M,
+          _t('允许估算判 PASS（÷{est_ind_isat}）：损坏类但行业别无他法；不满足 {est_ind_isat} 倍就开放或失败')),
     Bound('FUSE-I2T', ('fuse',), '保险丝 I²t 与温度降额', None, '脉宽与温度', 'NONMONOTONIC',
           (('G1', ()), ('G5', ('table_interpolate',))), 'VENDOR_DATUM', 'commodity-floors.md',
           'GUARANTEED', (), ('DAMAGE_OR_HAZARD', 'REQUIRED_FUNCTION'), _T,
@@ -1304,19 +1476,19 @@ BOUNDS = OrderedDict((b.id, b) for b in (
     # 3.8 IC 通用参数
     Bound('IC-THRESHOLD', _IC_ROLES, '门限、基准', None, '温度', 'NONMONOTONIC',
           (('G1', ()), ('G4', ('tempco_bound',)), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
-          'GUARANTEED', (_e(2, FUNCTIONAL, '只给 25 °C 加典型温漂时：典型温漂 ×2'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
-          '功能用途允许（×2）；用门限判保护覆盖（OVP 上限对下游绝限，损坏）时要全温 min/max'),
+          'GUARANTEED', (_e('est_ic_threshold', FUNCTIONAL, '只给 25 °C 加典型温漂时：典型温漂 ×{est_ic_threshold}'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
+          _t('功能用途允许（×{est_ic_threshold}）；用门限判保护覆盖（OVP 上限对下游绝限，损坏）时要全温 min/max')),
     Bound('IC-QUIESCENT', _IC_ROLES, '静态电流、按模式的功耗', 'UPPER', '模式与温度', None,
           (('G1', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _WCA + '“只有典型值的参数”',
-          'TYPICAL_BY_DEFINITION', (_e(1.3, FUNCTIONAL, '典型 ×1.3（现行 G9）'), _e(1.5, DAMAGE, '用它判偏置电阻功耗损坏时 ×1.5')),
-          ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M, '允许（功能 ×1.3，损坏用途 ×1.5）'),
+          'TYPICAL_BY_DEFINITION', (_e('est_ic_quiescent', FUNCTIONAL, '典型 ×{est_ic_quiescent}（现行 G9）'), _e('est_ic_quiescent_damage', DAMAGE, '用它判偏置电阻功耗损坏时 ×{est_ic_quiescent_damage}')),
+          ('REQUIRED_FUNCTION', 'PERFORMANCE_OR_LIFE'), _M, _t('允许（功能 ×{est_ic_quiescent}，损坏用途 ×{est_ic_quiescent_damage}）')),
     Bound('IC-TIMING', _IC_ROLES, '时序参数（最小导通、延时、消隐）', None, '温度', 'NONMONOTONIC',
           (('G1', ()), ('G7', ('ratio_extrapolation',))), 'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
-          'GUARANTEED', (_e(2, FUNCTIONAL, '只给典型的延时：典型 ×2，取不利方向'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
-          '功能时序允许（×2）；用延时判过冲过压损坏时要 max，没有则不估算'),
+          'GUARANTEED', (_e('est_ic_timing', FUNCTIONAL, '只给典型的延时：典型 ×{est_ic_timing}，取不利方向'),), ('REQUIRED_FUNCTION', 'COMPONENT_DAMAGE'), _M,
+          _t('功能时序允许（×{est_ic_timing}）；用延时判过冲过压损坏时要 max，没有则不估算')),
     Bound('IC-IO-LEVEL', _IC_ROLES, 'IO 的 VOH/VOL', None, '负载电流与 VDD', 'INCREASING', (('G1', ()), ('G2', ()), ('G9', ())),
           'VENDOR_DATUM', '定界表决定（architecture.md 2026-10-23）',
-          'TEST_POINT', (_e(1.5, FUNCTIONAL, '超测试电流：输出阻抗典型 ×1.5'),), ('REQUIRED_FUNCTION',), _M, '允许估算（×1.5）'),
+          'TEST_POINT', (_e('est_ic_io_level', FUNCTIONAL, '超测试电流：输出阻抗典型 ×{est_ic_io_level}'),), ('REQUIRED_FUNCTION',), _M, _t('允许估算（×{est_ic_io_level}）')),
     Bound('IC-IO-CURRENT', _IC_ROLES, 'IO 灌/拉电流超出规定', 'UPPER', '负载电流', None, (('G1', ()), ('G10', ())),
           'OUTSIDE_SPECIFIED', _EP + '“手册的情况按四档判”',
           'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算：超出手册给的灌/拉电流即超出规定区，记失败项（2026-10-26 定）'),
@@ -1343,8 +1515,8 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           '回路阻抗按写明的最小值，交给后续环节'),
     Bound('IC-GATE-DRIVE-I', ('mosfet',), '栅极驱动平均电流 Qg·f 对偏置供给', 'UPPER', '开关频率与 VGS', 'INCREASING',
           (('G1', ()), ('G2', ()), ('G9', ('typical_band',))), 'VENDOR_DATUM', _CB,
-          'TEST_POINT', (_e(1.3, FUNCTIONAL, 'Qg 只有典型时 ×1.3'),), ('PERFORMANCE_OR_LIFE',), _M,
-          '允许估算（×1.3）：Qg max 多数手册给（G1），只有典型时 ×1.3'),
+          'TEST_POINT', (_e('est_ic_gate_drive_i', FUNCTIONAL, 'Qg 只有典型时 ×{est_ic_gate_drive_i}'),), ('PERFORMANCE_OR_LIFE',), _M,
+          _t('允许估算（×{est_ic_gate_drive_i}）：Qg max 多数手册给（G1），只有典型时 ×{est_ic_gate_drive_i}')),
 ))
 
 
@@ -1933,6 +2105,23 @@ EXPLANATIONS = {
     'REQ-A01': _x('数量对了不等于功能实现；该有的器件也可能被换成别的料号', '按意图清单数量一致即关闭；功能实现归 REQ-D01', false_alarms='意图清单把同一功能的替代料分开计数'),
     'REQ-A02': _x('名称没命中不等于功能缺失；命中了也不等于真实现', '按真实连接确认功能存在或缺失即关闭', false_alarms='功能由非典型命名或片内模块实现'),
     'REQ-D01': _x('局部电路都能工作，产品仍可能漏掉需求要求的功能或边界', '每条需求的要求条款都落到电路与检查并有结论即关闭'),
+    'REQ-D03': _x('输入只有标称值或含糊用词时，审查无从判断边界，假设也会混成要求', '每条输入可量化、可验证；缺的已记输入缺口'),
+    'REQ-D04': _x('原理图阶段无法验证的项没人接手，到样机才发现漏测', '验证方法齐全，下游转交清单列全且工况点对应'),
+    'REQ-C01': _x('典型值、漏温漂或不可能组合算出的通过看着可信，实际没有裕量', '全部工程计算符合口径；不符的已按保证值和最坏组合重算'),
+    'REQ-C02': _x('地面数据外推到辐照后，基准和门限漂移会被漏算', '辐照漂移有数据和裕量，防护电路已纳入分析'),
+    'PWR-D04': _x('输入工况缺项时，后面的电压、浪涌和中断计算都没有依据', '每个电源输入的工况清单齐全；缺项已记输入缺口'),
+    'PWR-C17': _x('板内自洽的 48 V 电路也可能极性或回线接地不符配电系统', '极性、回线接地与工作、耐受电压范围都满足'),
+    'PWR-C18': _x('稳态正常的电源在短暂中断时可能复位或恢复不了', '规定中断内保持或按判据恢复，恢复时无过应力'),
+    'PWR-C19': _x('按额定电压算的电流达标，最低电压下输入电流可能超接口限值', '最低输入电压下的最坏输入电流不超过接口限值'),
+    'PWR-C21': _x('常温稳态合格，起动跌落和高纹波下可能降级或复位', '稳态与起动跌落工况下功能不降级'),
+    'PWR-C22': _x('按商用交流范围设计，舰船瞬态和应急条件下可能损坏', '稳态、瞬态与应急条件都满足'),
+    'PWR-C23': _x('两个电源各自合格，切换瞬间仍可能超能力或反灌', '切换过程不超能力、无反灌，隔离方式相符'),
+    'PWR-C24': _x('标称延时满足时序，极值下先后可能颠倒而损坏器件', '上电与受控掉电时序在极值时间下满足约束'),
+    'PWR-C25': _x('负载自身正常，接到 LCL 上仍可能跳闸或振荡', 'LCL 负载各项限值都满足'),
+    'SIG-C10': _x('输入类型与传感器不配时，电平对却读不到信号', '输入类型写明，所接传感器与之相符'),
+    'SIG-C11': _x('分级声明不足或漏算线缆压降，供电端可能拒绝上电', '电压窗含线缆压降，分级覆盖负载最大平均功率'),
+    'SIG-C12': _x('上电时序或维持功率不符时，供电端会断电或反复重启', '取电限值满足，轻载时维持功率特征保持'),
+    'PRO-D04': _x('正常工况合格的接口，误接或短路时可能损坏或波及对端', '非正常行为有定义，规定故障下不损坏、不外发超限'),
     'REQ-D02': _x('各模块各自正确，可能按不同的电流、电压口径设计', '同一参数在需求、计算和图面中只有一个数字来源即关闭', inputs='DOC-Q01 的版本一致性'),
     'REQ-Q01': _x('需求可能只在说明里提到，没有任何检查去验证', '每条需求都有检查去向，检查也能追回需求即关闭'),
     'REQ-Q02': _x('只查到局部引脚时，会漏掉链路另一端或中间转换', '每条接口、电源、检测、使能、复位和时钟链路都追到终点和返回即关闭'),

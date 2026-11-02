@@ -747,12 +747,19 @@ def render_guidelines(plan):
     if not applicable:
         return []
     out = ['## 共用规范规则覆盖', '',
-           '规则库 %s，产品基线 %s。适用的规范规则 %d 条；没有检查核对的 %d 条列在“对 SR 的反馈”，是 SR 待补的规则，不是设计缺陷。'
-           % (section['library_version'], section['baseline'], len(applicable), len(section.get('uncovered') or [])), '',
+           '规则库 %s，产品基线 %s。适用的规范规则 %d 条；检查项这次没有展开的 %d 条是本板没有它的对象或电路还没声明；'
+           '没有对应检查项的 %d 条列在“对 SR 的反馈”，是 SR 待补的规则，不是设计缺陷。'
+           % (section['library_version'], section['baseline'], len(applicable), len(section.get('not_triggered') or {}),
+              len(section.get('uncovered') or [])), '',
            '| 规范规则 | 内容 | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
+    if not section.get('external_interfaces'):   # 2026-11-01 (user decision 1): the interface rules never rest on a net name alone
+        out[2:2] = ['未声明对外接口：网名没有识别到、intent 也没有声明 %s，这些接口的规范规则没有选中。板上有的话写进 `intent.circuits` 后重新生成计划。'
+                    % '、'.join(t.title for t in catalog.CIRCUIT_TYPES if t.name in catalog.EXTERNAL_INTERFACE_TYPES), '']
     for card in applicable:
         source = '；'.join('%s %s %s 第%s页' % (s['document'], s['edition'], s['clause'], s['page']) for s in card['source'])
-        checks = '、'.join((section.get('covered') or {}).get(card['id']) or []) or '未覆盖'
+        waiting = (section.get('not_triggered') or {}).get(card['id'])
+        checks = ('、'.join((section.get('covered') or {}).get(card['id']) or [])
+                  or ('未展开：' + '、'.join(waiting) if waiting else '未覆盖'))
         out.append('| %s | %s | %s | %s | %s |' % (card['id'], cell(card['title']), cell(source), checks,
                                                     STAGE_WORDS[card['closing_stage']]))
     return out + ['']

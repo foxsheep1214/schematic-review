@@ -338,7 +338,8 @@ class ReviewPlanTests(unittest.TestCase):
         plan = build_review_plan(sample_db())
         board = [x for x in plan['checks'] if x['object'].get('board') == 'BOARD']
         # with no circuit every part is unowned: stress and precision are asked once for the board (no capacitor here)
-        expected = {r.id for r in catalog.rules(source='board')} | {'DOC-T01', 'REQ-Q08', 'DEV-C01', 'DEV-C03'}
+        expected = {r.id for r in catalog.rules(source='board') if catalog.baseline_asks(r.id, {})} \
+            | {'DOC-T01', 'REQ-Q08', 'DEV-C01', 'DEV-C03'}
         self.assertEqual(sorted(x['rule'] for x in board), sorted(expected))
         by_rule = {x['rule']: x for x in board}
         self.assertEqual(by_rule['DOC-D01']['readiness'], 'READY')
@@ -670,7 +671,8 @@ class FunctionFrameTests(unittest.TestCase):
         frame = circuit_frames(plan)[0]
         rules = catalog.circuit_type('POWER_CONVERTER').subjects
         members = [c for c in plan['checks'] if c['object'].get('circuit') == 'REG-3V3' and c.get('circuit_type')]
-        self.assertEqual(len(members), 2 * len(rules))
+        invariant = [r for r in rules if r in catalog.STATE_INVARIANT]
+        self.assertEqual(len(members), 2 * (len(rules) - len(invariant)) + len(invariant))
         # the frame holds the circuit rows and, since 2026-10-25, every applicable row the circuit owns (device rows of U1/R1)
         owned = [c for c in plan['checks'] if (c.get('owner') or {}).get('id') == 'REG-3V3'
                  and c.get('applicability') != 'NOT_APPLICABLE']
@@ -685,7 +687,8 @@ class FunctionFrameTests(unittest.TestCase):
             with self.subTest(row['id']):
                 self.assertEqual(row['function_id'], 'FN-REG-3V3')
                 self.assertEqual(row['aspect'], catalog.title(row['rule']))
-                self.assertIn(row['object']['state'] + ' 时 REG-3V3（U1、R1）', row['question'])
+                state = row['object'].get('state')   # a state-invariant rule is asked once, without a state
+                self.assertIn((state + ' 时 ' if state else '') + 'REG-3V3（U1、R1）', row['question'])
                 self.assertNotIn('closure_contract', row)
         window = next(c for c in members if c['rule'] == 'PWR-C02')
         self.assertIn('VCC_3V3 3.2–3.4 V', window['question'])
@@ -696,7 +699,7 @@ class FunctionFrameTests(unittest.TestCase):
         circuit = {'id': 'IN-PROT', 'type': 'POWER_PROTECTION', 'refs': ['D1', 'Q1'], 'nets': ['VIN'],
                    'states': ['run', 'surge'], 'citation': 'synthetic input protection'}
         plan = build_review_plan(sample_db(), {'schema_version': 5, 'circuits': [circuit]})
-        rules = catalog.circuit_type('POWER_PROTECTION').subjects
+        rules = [r for r in catalog.circuit_type('POWER_PROTECTION').subjects if catalog.baseline_asks(r, {})]
         invariant = [r for r in rules if r in catalog.STATE_INVARIANT]
         self.assertEqual(invariant, ['PWR-T05'])
         members = [c for c in plan['checks'] if c['object'].get('circuit') == 'IN-PROT' and c.get('circuit_type')]

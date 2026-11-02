@@ -426,6 +426,8 @@ class CircuitPlanning:
             asked = {}   # rule -> (object ref, requires) for the rules whose precondition holds
             not_asked[circuit['id']] = []
             for rule in kind.subjects:
+                if not catalog.baseline_asks(rule, self.intent):
+                    continue
                 requires = catalog.SUBJECT_REQUIRES.get((kind.name, rule))
                 if requires is None:
                     asked[rule] = (refs[0], None)
@@ -453,7 +455,8 @@ class CircuitPlanning:
         regions = any(state['regions'] for state in self.i2c_topology['states'])
         if not circuits and not (kind.name == 'I2C' and regions):
             for rule in kind.subjects:
-                members.append((rule, {'circuit_type': kind.name}, None, missing, f'circuit-type:{kind.name}'))
+                if catalog.baseline_asks(rule, self.intent):
+                    members.append((rule, {'circuit_type': kind.name}, None, missing, f'circuit-type:{kind.name}'))
         frames = {}
         for circuit in circuits:
             window = self._rail_window(circuit.get('nets', []))
@@ -564,6 +567,7 @@ class CircuitPlanning:
             self._ready_check('DEV-C04', dict(port), self._materials_gap(INTERFACE_MATERIALS['DEV-C04']), connector_trigger)
             self._disposition_check(ref, gaps, connector_trigger + audit_trigger)
             self.add_check('PRO-D03', dict(port), trigger=connector_trigger)
+            self.add_check('PRO-D04', dict(port), trigger=connector_trigger)
 
         # 每条电源轨分别检查拓扑（连接追踪）和功耗预算（工程计算）。
         # 轨名不像电源（BULK、HVDC、PRI_AUX）但 intent.power_rails 已声明且确实供电的网同样是轨。

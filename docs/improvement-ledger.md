@@ -9,6 +9,21 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Rule library 1.0.0 (G01–G03) installed: interface circuit types, 17 new checks, full BASIS, estimate factors moved to G02 (2026-11-01)
+
+The user decided the four integration questions (“按照修改后，在运行过程中，审查点相对独立、规则明确的方式。不需要考虑修改任务有多繁杂。”, “一次做全”, “进规则库，本轮迁移”, “我不再会考虑已有的设计和审查”), said “开工” and approved the check design table (“按表写”).
+- Six external interface circuit types, 17 new checks, `BASELINE_RULES` for the aerospace-only checks, `catalog.BASIS` covering all 143 rules; the plan and report name undeclared external interfaces.
+- `engineering_values` joined the library. Every estimate factor and margin in `catalog.BOUNDS`, the two load multipliers in PWR-C01/PWR-C16, `typical_band` and `forced_beta_k` now read G02; `derating-rules` lost the last two. A dump of `BOUNDS` against main is identical except three loose notes (≈×0.85, ≈×0.7, ≈×0.8) dropped as second copies; ÷1.2 is really ×0.83.
+- Joint test on ASG's `tps53355_compact` found two things: rules selected on a coarse circuit type whose check has no object here read as “SR 待补”, so the plan now separates `not_triggered` from `uncovered`; and `SWITCH_PIN_RE` missed TI's LL/VBST, planning a buck as linear (PWR-E02 instead of PWR-D03). Fixed both. Results: normal 91 applicable, 0 uncovered; aerospace 102, 0; declared −48 V 97, 0; declared PoE 99, 0; ASG selects the same set for the same scope in every case; three replay boards cold, 0 uncovered.
+- The reading-path record for step ① moves to 169,450 bytes because `catalog.py` holds the 17 new checks and six circuit types the user approved.
+- The bench gets a new frozen revision `guideline-rules-v1`: only `plan.checks_total` and `plan.functions` changed, by the expected increments.
+- Not fixed here: G05's draft registry sits in the same folder, so the library was built from a folder holding G01–G03 only; ASG's example `build_compact.py` still passes the removed `grid=` to `check_scene` (found running it, predates this work).
+
+- Event: user:2026-11-01 (开工；按表写)
+- Causes: rule_missing 1, rule_not_enforced 2
+- Changed: SKILL.md, docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/guideline-rules-v1, evals/kicad_replay_bench/run.py, references/architecture.md, references/bounding-table.md, references/check-catalog.md, references/derating-rules.json, references/derating-rules.md, references/guideline-rules.json, references/guideline-rules.md, references/review-vocabulary.md, references/wca-formulas.md, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/power_up.py, scripts/guideline_rules.py, scripts/plan_board.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/render_report.py, scripts/tests/conftest.py, scripts/tests/fixtures/golden_reports/estimate.md, scripts/tests/test_catalog.py, scripts/tests/test_derating_rules.py, scripts/tests/test_derive_rows.py, scripts/tests/test_guideline_plan.py, scripts/tests/test_guideline_rules.py, scripts/tests/test_plan_review.py, scripts/tests/test_power_up.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json
+- Gates: pytest 2402 passed with both skills pointed at the worktrees (on the installed ASG the 2 cross-skill byte checks fail until merge); KiCad replay 195/195; `mutation/run.py --changed` 199/199 killed, after repointing M478, M479, M812, M813 to the moved values and M417, stale since the typical band became a name
+
 ## Shared guideline rule library G01–G09 joins the plan, the gate and the report (2026-10-31)
 
 The user had the ASG/SR integration plan carried out (“请开始执行这个方案，慢慢来，一步一步来修改。遇到问题的时候先按照你的建议来执行。”).

@@ -148,7 +148,7 @@ class GeneratedOutputTest(unittest.TestCase):
             db['pin2net']['Q8.' + pin] = net
             db['pinname']['Q8.' + pin] = name
         refs = ['U1', 'U2', 'U4', 'Q8', 'D9', 'TH9', 'J9']
-        intent = {'schema_version': 5, 'expect': {'SOC': 1},
+        intent = {'schema_version': 5, 'expect': {'SOC': 1}, 'guideline_baseline': 'aerospace',   # asks every baseline rule
                   'device_kinds_verified': {'U4': {'kind': 'mcu', 'citation': 'synthetic'}},   # CFG-D01 asks its groups
                   'features': {'CUSTOM': {'applicability': 'APPLICABLE', 'citation': 'synthetic requirement'}},
                   'requirement_source': doc_for({'REQ-1': 'synthetic', 'REQ-2': '设计寿命 10 年'}),

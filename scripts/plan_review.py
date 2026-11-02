@@ -310,7 +310,8 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
 
 def guideline_section(checks, db, kind_intent, intent, library):
     """共用规范规则的适用与覆盖（references/guideline-rules.md）：电路类型取计划检查项上的，器件类别取网表已贴器件的，
-    基线取 intent.guideline_baseline（不写取默认）；计划里出现的 SR 规则按 catalog.BASIS 覆盖它映射的规范规则。"""
+    基线取 intent.guideline_baseline（不写取默认）；计划里出现的 SR 规则按 catalog.BASIS 覆盖它映射的规范规则；
+    映射的 SR 规则这次没有展开的记 not_triggered（本板没有它的对象，或电路还没声明），根本没有映射的才是 uncovered。"""
     graph = NetGraph(board_intent.graph_db(db, kind_intent))
     kinds = sorted({graph.kind(ref) for ref in db.get('parts', {}) if graph.is_fitted(ref)}
                    & set(library['vocabulary']['device_kinds']))
@@ -321,9 +322,18 @@ def guideline_section(checks, db, kind_intent, intent, library):
         for target in catalog.BASIS.get(rule, ()):
             cited.setdefault(target, []).append(rule)
     found = guideline_rules.coverage(library, guideline_rules.select(library, baseline, circuits, kinds), cited)
+    # 2026-11-01 joint test: a rule selected on the coarse circuit type whose check has no object here (no input filter,
+    # a first review) is not SR's to add: only a rule no SR rule maps to is
+    mapped = {}
+    for rule, targets in catalog.BASIS.items():
+        for target in targets:
+            mapped.setdefault(target, []).append(rule)
     return {'library_version': found['library_version'], 'content_sha256': found['content_sha256'],
             'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
-            'applicable': found['applicable'], 'covered': found['covered'], 'uncovered': found['uncovered'],
+            'external_interfaces': sorted(set(circuits) & set(catalog.EXTERNAL_INTERFACE_TYPES)),
+            'applicable': found['applicable'], 'covered': found['covered'],
+            'not_triggered': {gid: sorted(mapped[gid]) for gid in found['uncovered'] if gid in mapped},
+            'uncovered': [gid for gid in found['uncovered'] if gid not in mapped],
             'downstream': found['downstream']}
 
 
