@@ -15,3 +15,9 @@
 - RF PA/LNA的输出偏置/匹配电感不套续流线圈；MAX941 SHDN接V+合法，TPS25962x物理8脚是可开路OVCSEL，别套63x OVLO。
 - I2C_HINT不能吞整页层次名：本板多5个LED/电源/栅控伪段；title_text全首页把普通缓冲器ESD Protection误识为TVS。严格解析实际因21个功能脚无名，非全引脚名称比例。
 - U1/U9 PART与VALUE的容量/温度档冲突是数据缺陷，不证明实物错误；radio域SPI掉电注入漏问需状态/Ioff合同，未给条件不把原板当种子正例。
+
+- greatscottgadgets--amalthea-hardware：41器件/10 DNP、strict成功；catalog误标调试板，实为RF/SPI/LVDS夹层；162项，51局部判/111待人工，门禁FAIL，18根因=9误报+5知识缺口+4人工，3计划漏问非硬件漏检。
+- RF Balun不套DRV续流、RF RFP/RFN不套数字共模/100Ω端接；AT86RF215 p23已有内部100Ω，TX两线各47Ω要按源阻抗/模式预算，不能见缺外置端接即FAIL。
+- TCXO经0Ω入TCXO且XTAL2经0Ω接地符合AT86RF215 p68；C3/R1 DNP别算负载。U2被Crystal封装误归无源晶体，器件审计还漏掉其准确手册。
+- 片内AVDD0/AVDD1/DVDD各1µF，p188允0.1–10µF，名义合窗不证明Ceff；输出稳定性、主机高阻默认态和外部信号掉电注入仍要专问。手册首页“3 female SMA connectors”描述评估板，别据全页识别成connector。
+- schema15仍不能表达needs_human/未定需求：逐项pending与逐功能范围单独保留，原生报告统计仅已判，勿把“资料不足0”作审完；不为有效门禁编开项或功能PASS。
