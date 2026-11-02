@@ -10,6 +10,16 @@ count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
+## 准则库 1.5.0：DC_24V 对外接口类型与 9 条准则放宽 (2026-11-02)
+
+同步共用层 1.5.0。`catalog.CIRCUIT_TYPES` 加 `DC_24V`，检查项取 `PWR-C18`、`PWR-C13`、`PRO-C01`、`PWR-T05`，不取只针对 −48 V 的 `PWR-C17`；进 `EXTERNAL_INTERFACE_TYPES`，有功能框架问句。重生成 check-catalog 与 review-vocabulary，bounding-table 无变化。
+第一步阅读量上限 +50 字节（170 750 → 170 800）：重生成的词表多了 `DC_24V` 一行。
+
+- Event: user:2026-11-02 (可以现在就做的，放到另一个子对话里面)
+- Causes: rule_missing 1
+- Changed: references/shared/vocabulary.json, references/shared/guideline-criteria.json, references/shared/guideline-criteria.md, scripts/catalog.py, references/check-catalog.md, references/review-vocabulary.md, references/architecture.md, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2417 passed; mutation --changed: 34/34 killed at unit tier (contract tier 11 killed, 23 survived)
+
 ## 工业/通信板卡设计准则 Top 50：正反例与种子实测 (2026-11-02)
 
 从 340 条准则中选全部 13 条 shall 和 37 条高后果 method/should，逐条给出具体电路、违反方式、BASIS 中的 SR 规则与证据定位；历史审计与真实审查机制只作优先级线索。新增 8 类种子，连同既有极性/耐压种子覆盖 10 条所选准则；自动漏报与计划指向分列，不把人工计算规则宣称为自动检查。本轮确认的准则均可构造电路或记录层面的反例，没有仅因抽象而建议退回 draft 的条目。Causes 按8类新增自动层未执行的准则机制与1项集中正反例知识缺口计数，不表示已修复8条检查器。共用层、SKILL.md、catalog.py 与 BASIS 未改。

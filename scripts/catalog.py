@@ -966,6 +966,10 @@ CIRCUIT_TYPES = (
             r'(^|[:_-])-?48V(_?RTN|_?IN)?([:_-]|$)|VBAT_?48',
             ('PWR-C17', 'PWR-C18', 'PWR-C13', 'PRO-C01'),
             ('requirements', 'datasheets')),
+    CircuitType('DC_24V', '24 V 工业直流输入', 'PWR',
+            r'(^|[:_-])\+?24V(_?RTN|_?IN)?([:_-]|$)|VIN_?24',
+            ('PWR-C18', 'PWR-C13', 'PRO-C01', 'PWR-T05'),
+            ('requirements', 'datasheets')),
     CircuitType('AC_MAINS', '交流市电输入', 'PWR',
             r'(^|[:_-])(AC_?[LN]|VAC|MAINS)([:_-]|$)',
             ('PWR-C18',),
@@ -1141,7 +1145,7 @@ SUBJECT_PRECONDITIONS = {
 # 只在某个产品基线才问的规则（共用规范的航天专用规则）：基线不符时不派、不算未问。
 BASELINE_RULES = {'REQ-C02': 'aerospace', 'PWR-C25': 'aerospace', 'SIG-C18': 'aerospace', 'PRO-C10': 'aerospace',
                   'PRO-C11': 'aerospace', 'PRO-C12': 'aerospace', 'PRO-C13': 'aerospace'}
-EXTERNAL_INTERFACE_TYPES = ('DC_48V', 'AC_MAINS', 'INDUSTRIAL_DI', 'POE_PD', 'VEHICLE_28V', 'SHIP_AC')
+EXTERNAL_INTERFACE_TYPES = ('DC_48V', 'DC_24V', 'AC_MAINS', 'INDUSTRIAL_DI', 'POE_PD', 'VEHICLE_28V', 'SHIP_AC')
 SUBJECT_REQUIRES = {
     ('POWER_CONVERTER', 'PWR-C04'): 'SWITCH_PIN',
     ('POWER_CONVERTER', 'PWR-C15'): 'FEEDBACK_PIN',
@@ -1381,6 +1385,7 @@ FRAME_QUESTIONS = {
     'ISOLATION': '隔离带跨接归属、防护协调与隔离器件工作资格是否成立',
     'DEBUG': '调试接口电气引出、串阻与 ESD 是否满足烧录/调试要求',
     'DC_48V': '−48 V 输入的极性、电压范围、中断恢复、浪涌耐受与合闸浪涌是否满足接口要求',
+    'DC_24V': '24 V 输入的极性、电压范围、中断恢复、浪涌耐受与合闸浪涌是否满足接口要求',
     'AC_MAINS': '交流输入的暂降与中断下，保持与恢复是否满足判据',
     'INDUSTRIAL_DI': '工业数字输入的类型、电流方向与所接传感器是否相符',
     'POE_PD': 'PoE 受电端的电压窗、分级、取电时序、维持功率、浪涌、双源切换与绝缘是否满足要求',
