@@ -35,3 +35,9 @@
 - ADS1299分清AVDD4.75–5.25V与DVDD1.8–3.6V，SCLK40/RESV1 31、CLKSEL52/CLK37逐物理脚核；VCAP1指定100µF、VREFP最小10µF，不能用其他网电容抵数。
 - AVSS@1/@2需官方return映射；1kΩ字面明确但解析器拒读；单一地网不填decoupling.return_net，推断需求与事实文件分目录防误认。
 - Top50补模块LDO有效Cout/ESR、USB Sink供电链和复位IO默认态；未实现通道终接、BIAS人体回路不确定时保留依赖。schema15不承载五类评估与部分局部约束，不能编厂家数据/条款换PASS。
+
+- 2026-11-02 ben5049--switch-v4-hardware：1932项／200归因（3真、31误、0准则、17知识、149待定）／2类漏报；106PASS含10覆盖汇总，11FAIL归3根因，1810待判，门禁FAIL。
+- SJA1105 RMII仅全双工对LAN8671仅半双工须核冲突契约；旧v4.0.0 errata的RMII接反/88Q strap在v4.1已标修复，不能继承成现版缺陷。00/01及3V3/3V9冲突须落XML实例Manufacturer_Part_Number/采购码，勿只读libsource。
+- L401=U402.SW后的Buck输出电感，非5颗下游Buck的输入EMI滤波；4k7逻辑串阻不该裁断EN源。R101/R102各1MΩ经SHIELD仅2MΩ泄漏，不等于等势地，跨端口候选易过度持有；保留独立稳压级，不为过校验合并。
+- MCU PF13/PF14及PA/PB的ADC复用需显式资格；TVS3301/Z前缀要逐件PRO-E02。三颗晶体已有CLK-C01；合法MODE/SHDN/BOOT/JTAG候选核原厂后关闭，不算误报。PoDL PSE≠PoE PD，VDDUSB≠USB口。
+- schema15仅容VENDOR_DATUM/REVIEW_INCOMPLETE，评估needs_human/knowledge_gap及纯拓扑条款承载仍FAIL；空框图页不填虚构器件。全量派生对账成功与电气审结、格式有效、打包准出分别记。
