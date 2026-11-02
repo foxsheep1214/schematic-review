@@ -1,0 +1,188 @@
+{
+  "board": "antmicro--jetson-agx-thor-baseboard",
+  "source_lock": {
+    "source": {
+      "id": "antmicro--jetson-agx-thor-baseboard",
+      "repo": "antmicro/jetson-agx-thor-baseboard",
+      "commit": "d966e9ca4049ae58b77bbc25bd75b074588b6484",
+      "schematic": "jetson-agx-thor-baseboard.kicad_sch",
+      "schema_version": 20250114,
+      "parts": 1170,
+      "strict": false,
+      "strict_failure": "parse strict: exit 2 (see fetch.log)",
+      "db_sha256": "98277a51009058fb55ceed0905728a4d5eed764203bb16e6d2f0170d5dd2dc48"
+    },
+    "sr_commit": "0c4b52a6173cf2b92739268ab0744acfac772e10",
+    "kicad_tool": {
+      "source": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/src/jetson-agx-thor-baseboard.kicad_sch",
+      "tool": "Eeschema 10.0.7",
+      "date": "2026-11-02T04:57:14",
+      "format": "kicadxml",
+      "libsource_normalizations": {}
+    },
+    "purpose": "推断：Jetson AGX Thor T5000 高速计算载板，依据源 README.md Overview/Key features；不把 README 宣传参数当保证边界",
+    "bom": "git ls-tree 全清单无装配 BOM；保留原始符号 Value/part/footprint",
+    "license": "src/LICENSE Apache License Version 2.0"
+  },
+  "schema_note": "原生results schema15；未完成计划项以pending_checks扩展字段逐项登记needs_human，不冒充原生INSUFFICIENT原因或PASS。",
+  "complete_candidate_plan": false,
+  "candidate_attempt": {
+    "candidates": 67,
+    "decisions": 89,
+    "circuits": 49,
+    "empty_state_circuits": [
+      {
+        "id": "ADDED-U14",
+        "type": "I2C",
+        "states": []
+      },
+      {
+        "id": "ADDED-U1",
+        "type": "LEVEL_SHIFT",
+        "states": []
+      },
+      {
+        "id": "ADDED-U29",
+        "type": "SPI",
+        "states": []
+      },
+      {
+        "id": "ADDED-U31",
+        "type": "LEVEL_SHIFT",
+        "states": []
+      },
+      {
+        "id": "ADDED-U33",
+        "type": "HSSERIAL",
+        "states": []
+      },
+      {
+        "id": "ADDED-U34",
+        "type": "UART",
+        "states": []
+      },
+      {
+        "id": "ADDED-U43",
+        "type": "I2C",
+        "states": []
+      },
+      {
+        "id": "ADDED-U48",
+        "type": "LEVEL_SHIFT",
+        "states": []
+      },
+      {
+        "id": "ADDED-U49",
+        "type": "LEVEL_SHIFT",
+        "states": []
+      },
+      {
+        "id": "ADDED-U51",
+        "type": "LEVEL_SHIFT",
+        "states": []
+      },
+      {
+        "id": "ADDED-U71",
+        "type": "I2C",
+        "states": []
+      },
+      {
+        "id": "ADDED-U80",
+        "type": "LEVEL_SHIFT",
+        "states": []
+      },
+      {
+        "id": "GPIO-TRANSLATORS",
+        "type": "LEVEL_SHIFT",
+        "states": []
+      }
+    ],
+    "failure_log": "record/cold-with-candidates.log",
+    "prior_failure": "共用输入电容被六路电源归属违反最多2电路限制；已按共用输入组装为有上下文的模块，未关闭空状态问题。"
+  },
+  "diagnostic_fallback": "回退到无circuits/decisions的intent，明确不传--candidates；cold/hot两次合并只提供受阻诊断计划，不能替代完整电路计划。",
+  "stages": [
+    {
+      "stage": "initial",
+      "plan_items": 2640,
+      "file": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/review-plan-initial.json",
+      "sha256": "52b1639b11363d8201fb21135708cb5c27aea747c165853afcab5c2a584d5fd8"
+    },
+    {
+      "stage": "cold",
+      "plan_items": 2714,
+      "file": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/review-plan-cold.json",
+      "sha256": "865408f3a1e1e77fabca8cde8f17ad59dc96314fca2148e6dedfb5ace0a27839"
+    },
+    {
+      "stage": "merged",
+      "plan_items": 2714,
+      "file": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/review-plan.json",
+      "sha256": "865408f3a1e1e77fabca8cde8f17ad59dc96314fca2148e6dedfb5ace0a27839"
+    }
+  ],
+  "native_gate": {
+    "valid": false,
+    "release": "NO_GO",
+    "errors": 128,
+    "blockers": [
+      "input netlist failed integrity/export checks",
+      "PRO-E02.D54-1bdddf: unresolved blocking FAIL"
+    ],
+    "summary": {
+      "checks": 124,
+      "results": {
+        "PASS": 120,
+        "FAIL": 1,
+        "NA": 3
+      },
+      "confirmed_defects": 1,
+      "by_severity": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 1,
+        "P3": 0
+      },
+      "improvements": 0
+    }
+  },
+  "top50": {
+    "not_applicable": 18,
+    "unresolved": 31,
+    "reported_true_defect": 1
+  },
+  "files": {
+    "intent.json": {
+      "sha256": "502dee46ac16019c031c18afd78e0583bb2da0b0929569b18f0f6950cc41d98e",
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/intent.json"
+    },
+    "intent-decisions-blocked.json": {
+      "sha256": "de1a47ed36c06e0130d356b1039cdbd0d4a73aad4f77c3f942cbdd1f3a2cfa30",
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/intent-decisions-blocked.json"
+    },
+    "review-plan.json": {
+      "sha256": "865408f3a1e1e77fabca8cde8f17ad59dc96314fca2148e6dedfb5ace0a27839",
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/review-plan.json"
+    },
+    "review-results.json": {
+      "sha256": "5f3c2c0046e6316d568e71550cb4f9cf9f711871777529851fb6cddd21d7ed59",
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/review-results.json"
+    },
+    "review-gate.json": {
+      "sha256": "3a45c9f7eb1e745739db3eb6bcc1160b3be126b7da4dea4d4b055e53c57b0acf",
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/review-gate.json"
+    },
+    "record/web-evidence.json": {
+      "sha256": "e0b0d43b00afbcd563a673d5ac80aa627b76ec04fb66eb14ca70dd2fd61a505b",
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/record/web-evidence.json"
+    },
+    "record/pin-audits.json": {
+      "sha256": "3c6e2680a8e95620806073abb4865c4144b97654cc86808c3236e3399f9914a1",
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/record/pin-audits.json"
+    },
+    "datasheet-audit.json": {
+      "sha256": "9cfe0be66ef2a6c2b17041fec105f3fbe485713d6384b20b81102429326a9bef",
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--jetson-agx-thor-baseboard/review/datasheet-audit.json"
+    }
+  }
+}
