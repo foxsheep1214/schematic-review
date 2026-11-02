@@ -57,3 +57,9 @@
 - SiC477官方29/30由自定义封装同号7/9大焊盘覆盖；21=NC、15=GL输出、16=VDRV输出，别凭库名/输入型反复报缺陷。只核别名，不替PCB验收。
 - IC前缀audit显式require-ref；read_bom不改nc。I2C单独声明rails后HDMI_PWR不再合并SCL/SDA；拒绝假MOS变换器/USB候选后held回收仍是坑。
 - PRO-E02漏12个信号ESD、PRO-C04漏4外供支路，分别补rule_gaps并留种子；TVS保护域应追FB后IC，不用同网/封面功率替代事件协调。
+
+- solderedelectronics--stepper-motor-driver-drv8825-board-hardware-design：95项（91+4补查），20 PASS/11 NA/64未闭；75观察=0真/11误/0准则/1知识/63待确认，4覆盖漏项；valid=true、NO_GO，renderer退出2，交执行记录。
+- motor_driver不能只套固定DC输出模板：C1是VMM输入bulk；VMA/VMB内部UVLO、RESET/SLEEP/EN桥默认态、VMM→LED旁路源保护分别补PWR-C06/RST-T04/PRO-C04，正常外部控制另补SIG-C07。
+- TI明确DECAY open=mixed、V3P3OUT为输出、MODE为运行微步选择、VCP→VM的1MΩ为原厂泄放；无脚FD1不是DEBUG、H1-H4不受电气应力。每个反证按物理脚，不泛化相邻器件。
+- CTS 73L2R20G是0.2Ω±2%/0.1W，不能借0603通用额定；约0.700A RMS只是额定边界，满端设定超过3A不是实际相电流。未知板输入不可拿芯片45V指控LED必超功耗。
+- Top50 G04-005绝限已由SIG-C08覆盖；SIG-C07漏项属G04-003/004扩展核对，勿错挂准则。C6普通采购约束通过不等于候选料已贴装；分号BOM保真转换，未闭条件不伪造厂家保证。
