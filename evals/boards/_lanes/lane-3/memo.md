@@ -70,3 +70,9 @@
 - U1.12对11/14只有C6=100n，10u的C8在两磁珠外，按Rev.H p17至少两颗并联旁路核；FB2在同一隔离侧合法。四只120为两串两并=120Ω，J2为本地终端帽，不是现场端口。
 - 自定义Pmod焊盘奇偶两列须读取footprint；J3/Tx与J4/Rx可能取对端视角，未给配对定义不硬判反接。旧Rev.0手册VCC8返回7的文字不能继承，当前Rev.H p8/p17为返回9；新版网页摘录不等于全文本地原件。
 - 两端LED空脚差集仍会被类型资料卡；名义3.3V不要冒充真实电源窗。schema15不容NEEDS_HUMAN/KNOWLEDGE_GAP及纯拓扑F1承载时如实FAIL，记录完整不等于电气审结或准出。
+
+- 2026-11-02 mlab-modules--batdatunit01：1060项／78归因（5真、6误报根因=26检查、0准则、4知识、63人判）／3覆盖缺口；950项仍待准确边界，native FAIL/NO_GO。
+- C2=100n接MAX14502.CLDO而原厂1u；BQ25628E.VBUS C5=1n低于1u，PMID侧10u不能跨内部RBFET借用；两路EN的91k下拉DNP且GPIO复位高阻需报。
+- U18.ON应派RST-T04，但PC3/TMS需查JTAGEN覆盖上拉（AVR p85），不能仅用通用复位三态断言悬空；充电器AI/TS、多脚ESD也别被主电路所有权吞掉。
+- 两份BOM都为拼接位号，按完整REF+Quantity逐行无损展开；R71在图上已贴而BOM漏列，别将所有未列件当DNP。U10.CLK是输出；SHT31.nRESET与MS5611内部双CSB是可消解候选。
+- I2C顶层power_rails须原样映到intent.i2c_topology.rails（schema2）保持context重建；EN/I2C_SEL不作总线，ADDR不作DDR，共轨LED不作任意脚负载。SC6Y手册不冒充SC6；人判与知识缺口不硬塞VENDOR_DATUM。
