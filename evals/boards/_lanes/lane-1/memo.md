@@ -27,3 +27,9 @@
 - U4 RMII未用TXD2/3（26/27）须接地，NC是已证接法偏离；AP7361C保证输出1A，1.5A是限流typ，图面Imax不得混用。输出LC不套DRV续流，PCA9306的200k VREF2/EN偏置不是缺供电。
 - USB主VBUS二极管/PTC支路名义107.8µF绕过OCXO软启动；PCA9306双侧2.2k低态条件合计3.409mA，最弱IOL仍要保证。三脚JP和pass-FET未入I2C模型是自动模型缺口，通用人工条款已存在，别夸成整轮漏检。
 - 隔离DC/DC不能把全部脚并查集合域；PoE返回与DC_IN回线分开。OCXO手册400Hz保持原文；LTC4418只有官方文本摘录时别声称完整PDF。schema15的pending要显式说明，资料不足0不代表741项审完。
+
+- vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project：容降全桥7805，18件/9网；100项、31局部判/69待人工，10归因=1数据真缺陷+3误报+1资料+5人工，1源侧保护计划漏问，门禁FAIL。
+- 无FUSE/MOV/NTC词且全件归POWER_CONVERTER，会漏PRO-C04逐源支路；add不能跨类型借已有owned，勿手改circuits或把缺上游合同直接判硬件FAIL，先修计划覆盖。
+- Vishay 1N4001首页应用脚注bridge rectifier不是器件类型；DIN0207是电阻封装不是工业DI；Device:C/矩形封装不能直接推出MLCC或已确认薄膜技术。
+- 稀疏检出可漏BOM，按固定commit另取到缓存；read_bom没保留Value时独立CSV对读。7805无需Cout稳定不等于大Cout反灌/输入短路已闭合，市电峰值也不能直接充当桥单管常态反压。
+- schema15未支持needs_human时留逐ID pending并保留FAIL；资料不足0仅统计已判。D5/D6未给VZ/MPN是关键设计值缺失；家族手册AVAILABLE不能冒充采购温度/后缀资格。
