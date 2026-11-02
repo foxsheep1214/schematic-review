@@ -82,3 +82,9 @@
 - U1自定义磁件作IC会假短接隔离地/派pinmux；官方Q2 G/D/S未进共享图，Z2应启用现有GATE_CLAMP_NOTRIP，不能把缺PRO-E02再算漏报。PRO-A04在COMP内部电流源证据下合法关闭。
 - R33跨整流母线而非RCD，320V条件2.179W且超300V；D15跨主绕组、300k低线启动0.342mA有量化疑点，但实际磁件/稳态包络未定仍needs_human。C26接母线正端不直接判接错。
 - 补分类先重审计再冷/合并；阻值+功率空格不要改原值过关。不能把REVIEW_INCOMPLETE换成虚构厂家缺参绕过渲染，原生拒绝与评估快照必须分清；50条核对嵌findings.json。
+
+- 2026-11-02 pionixpublic--reference-hardware：1320项（13补项）／378归因（5真、7误、1准则、90知识、275待定）／4类漏报；164PASS+179NA+8FAIL、969待判，native FAIL/NO_GO。
+- U8 5V供电的VIH=0.7VCC不能保证识别CM4 RUN_PG 3.3V；U7 510k/100nF直接进非施密特输入远超5ns/V。Hub CFG_SEL110逐口供电却三口共用PWR1；Y3 16MHz/采购24MHz只确认契约矛盾，不声称24MHz超MCP2515的25MHz。
+- TVS角色VERIFIED仍会被protected_net关键词与两网条件漏掉；按通道补7条PRO-E02。模块AnalogIP、A/Y唤醒控制及Hub片内滤波别被泛称ic/资格裁空；已有CAN/I2C/晶体规则别重复算漏。
+- U14/U15原图明确互斥；J9/J11是3针选择帽，别按两10k同时分压。USB2514旧版PLLFILT/CRFILT≥1uF，B版up to0.1uF不能交叉套。BT1/J2/未用CM4输出可制造假去耦，CM4本地手册还会被材料筛选排除。
+- I2C rails同步到schema2避免stale；strict缺U7/U8/U10六脚名不能静默修db。schema15五类评估承载、纯拓扑/整改结构失败如实留，报告原样副本不是有效打包；Type-C准则不泛套USB-A。
