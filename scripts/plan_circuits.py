@@ -419,6 +419,10 @@ class CircuitPlanning:
         names = dict(self.db.get('declared_pinname') or {}, **(self.db.get('pinname') or {}))
         for circuit in circuits:
             refs = circuit['refs']
+            if tuple(catalog.CANDIDATE_STATES.get(kind.name, ())) == ('idle', 'active'):
+                self.diagnostics.append({'code': 'DEFAULT_CIRCUIT_STATES', 'circuit': circuit['id'],
+                                         'states': ['idle', 'active'],
+                                         'detail': '默认状态，未经需求确认；按需求核对状态覆盖，不作需求依据'})
             gaps = [f'datasheet:{ref}' for ref in refs
                     if not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
             gaps += [f'unknown ref:{ref}' for ref in refs if ref not in self.db.get('parts', {})]

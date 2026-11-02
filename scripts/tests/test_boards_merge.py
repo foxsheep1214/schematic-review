@@ -77,3 +77,20 @@ def test_dnp_series_resistor_not_a_clamp_path_or_input_node():
     assert not [f for f in lint.run() if f.get('ref')=='R1' and f['rule'].startswith(('NET-','PWR-'))]
     plan=build_review_plan(db)
     assert '未贴装器件 1 个，已排除。' in render_input_notes(plan)
+
+import catalog
+import circuit_candidates
+import circuit_decisions
+
+@pytest.mark.parametrize('kind',['I2C','SPI','UART','HSSERIAL','LEVEL_SHIFT','ETHERNET','CLOCK','CAN','RS485','DDR','STORAGE','RF','AV'])
+def test_interface_candidate_states_are_nonempty(kind):
+    assert catalog.CANDIDATE_STATES[kind] == ('idle','active')
+
+def test_default_states_are_marked_unconfirmed_in_plan():
+    from plan_review import ReviewPlanner
+    planner=ReviewPlanner(supply_chain())
+    circuit={'id':'UART1','type':'UART','refs':['U1'],'nets':[],
+             'states':list(catalog.CANDIDATE_STATES['UART']), 'citation':'synthetic netlist.xml p1'}
+    planner.plan_subjects(catalog.CIRCUIT_TYPE_BY_NAME['UART'],[circuit],[])
+    notes=[d for d in planner.diagnostics if d['code']=='DEFAULT_CIRCUIT_STATES']
+    assert notes and all('未经需求确认' in d['detail'] for d in notes)

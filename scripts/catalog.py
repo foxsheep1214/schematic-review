@@ -1331,6 +1331,9 @@ CANDIDATE_STATES = {
     'ANALOG': ('run', 'fault'),
     'ISOLATION': ('run',),
     'STARTUP': ('power-on', 'restart'),
+    **{name: ('idle', 'active') for name in ('I2C', 'SPI', 'UART', 'HSSERIAL', 'LEVEL_SHIFT', 'ETHERNET',
+                                            'CLOCK', 'CAN', 'RS485', 'DDR', 'STORAGE', 'RF', 'AV',
+                                            'INDUSTRIAL_DI', 'AC_MAINS', 'POE_PD', 'DC_48V', 'VEHICLE_28V', 'SHIP_AC')},
     'DEBUG': ('run',),       # 调试口的答案不随工作态变化，仍要一个态来展开检查项
 }
 

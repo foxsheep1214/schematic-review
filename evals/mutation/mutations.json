@@ -5486,5 +5486,12 @@
   "file": "scripts/lint.py",
   "old": "elif self.graph.is_fitted(ref) and self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2",
   "new": "elif self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2"
+ },
+ {
+  "id": "M849",
+  "name": "interface default states are empty again",
+  "file": "scripts/catalog.py",
+  "old": "**{name: ('idle', 'active') for name in",
+  "new": "**{name: () for name in"
  }
 ]
