@@ -8,3 +8,9 @@
 - 无源 Y1 的 C1=C2=10pF 只得 CL=5pF+Cstray；NX3215SA 有6/9/12.5pF档，不套家族单一CL。RFM95W手册模块RESET=6与后文Pin7冲突，不据后文误改U2。
 - 同源 U1/U2 的未知器件身份会扩成9条跨域检查；外部J1/J2/J3先供电风险另保留。SPI的NSS/RESET还须核RST-T04默认态，不因STARTUP未分组而漏掉。
 - 本板134项台账均有结果，98项仍未完成；F1条款引用未齐时保留FAIL，render实际退出2。交付文件须明标执行记录，不冒充原生正式报告；add.states空数组仍是决定器/lint衔接坑。
+
+- cellkeeper-bms--cellkeeper-hardware：1103项，357条归因，1真缺陷/50误报/15知识缺口/291待人工，3覆盖漏报；FAIL/NO_GO，802项未闭，原生renderer拒绝。
+- 准确RP2354B手册PDFp17明确USB每脚27Ω；R70/R71/R127/R128=22Ω是已证条款偏离，不宣称实物必坏；主5V/非稳压隔离5V对ISO1050窗口另留待核。
+- PH→L3应算真实电源；ENA别名/内部UVLO导致U3漏PWR-C06。跨类型隔离U5/U4/TR1与J9外供电支路分别补PRO-D02/PRO-C04对象，不能把漏对象当已证缺保护。
+- C62是模拟差分并联滤波；AM26LV32E开路fail-safe；R6 25296nΩ=25.296µΩ，且位于系统示意。原图夹带系统/BMB示例，不当本PCB贴装。
+- CAN/RS485 states=[]仍与lint冲突，分析run不等于产品合同；多地去耦return_net须group citation，U26输入C55在FB3之前不能算后段直接旁路；保留223条F1与277提示。
