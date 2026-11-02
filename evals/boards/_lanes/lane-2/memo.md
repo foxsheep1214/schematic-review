@@ -103,3 +103,9 @@
 - PESD3V3L2BT公共脚是3，SM712亦需逐通道；整颗三网不能跳过PRO-E02。无EN LDO仍需PWR-D03启动充电+负载检查。
 - Ω串阻/RTS-DTR交叉发射极、boost储能L2、共享J3归属需人工追端；SS不是数字strap/救砖，VBUS检测不可取多源OR之后。
 - 893项/100根因归因（7/11/0/18/64）、漏项2；schema15扩展及其它记录错误如实FAIL/未打包，原生报告警示保留，完整证据只在缓存。
+
+## hasanberkdasar--bms-can-bus（2026-11-02）
+- Q_NMOS_DGS的1=D/2=G；本板功率端接G、CHG/DSG接D；REGIN串100Ω不等于预稳压，BREG不用而REGIN用时须按BQ p75接REGIN。
+- BQ低串数仍必须让VC1、VC2、VC16量实际电芯；未用TS3可浮空，CAN Vref亦可浮空，别把正确NC绘图提示都计误报。
+- 两脚无源晶体不问有源OE、片内ADC不问运放输出；22pF没有CL/ESR不能判匹配，一个本地120Ω也不能判整网端接缺陷。
+- J_PACK+1/J_PACK-1导致FN-EXT-J-PACK-1碰撞；原文4.7k ohm未解析及NEEDS_HUMAN/schema15冲突须保留。381项、30归因(5/4/1/1/19)、漏报0，FAIL未打包，完整证据仅在缓存。
