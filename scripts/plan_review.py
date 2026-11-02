@@ -576,7 +576,8 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.merge_previous_checks()
         self.attach_lint_findings()
         self.plan_system_frames()
-        unfitted = sorted(ref for ref, part in self.db.get('parts', {}).items() if part.get('nc'))
+        from part_words import board_copper
+        unfitted = sorted(ref for ref, part in self.db.get('parts', {}).items() if part.get('nc') and not board_copper(ref, part))
         if unfitted:
             self.diagnostics.append({'code': 'UNFITTED_PARTS', 'refs': unfitted,
                                      'detail': '未贴装器件 %d 个，已排除' % len(unfitted)})

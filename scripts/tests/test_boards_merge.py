@@ -236,7 +236,7 @@ def test_hyphenated_native_net_tie_carries_supply_and_enable_connectivity():
     assert PowerTree(graph).source_of('VDD')['path']==['R1','NT1','L1','F1']
     assert 'MID' in graph.low_resistance_peers('SHUNT')
     db['parts']['NT1']['nc']=True
-    assert PowerTree(NetGraph(db)).source_of('VDD') is None
+    assert PowerTree(NetGraph(db)).source_of('VDD')['path']==['R1','NT1','L1','F1']
 
 
 @pytest.mark.parametrize('switch_name',['SW','SW_VPP'])

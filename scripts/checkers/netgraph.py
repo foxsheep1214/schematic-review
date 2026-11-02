@@ -10,7 +10,7 @@ import re
 from part_words import (ANCHOR_ROLES, ANODE_NAMES, BJT, CATHODE_NAMES, COIL_NAMES, CONNECTOR, CONNECTOR_CONTACT_RE,
                         DIODE, DRAIN_NAMES, GATE_NAMES, IC, IC_ROLES, LED_ANODE_NAMES, LED_CATHODE_NAMES, MOSFET, OPTO,
                         PASSIVE_LINKS, RELAY, SOURCE_NAMES, TVS, ZENER, classify, name_matches, normalize, pin_aliases,
-                        pin_signature)
+                        pin_signature, board_copper, copper_tie)
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
 # 可带 RAIL_ 前缀（RAIL_3V3_PRI）；VSYS/VMOT/VLED/VM、P5V/P3V3 也是轨名；HV/HV80_IN/HV_BIAS 是高压轨（HVEN、HV_EN 是使能）；
@@ -109,7 +109,7 @@ class NetGraph:
             ref, _, pin = node.partition('.')
             self._pins.setdefault(ref, {})[pin] = net
         if fitted is None:
-            fitted = {ref for ref, part in self.parts.items() if not part.get('nc')}
+            fitted = {ref for ref, part in self.parts.items() if not part.get('nc') or board_copper(ref, part)}
         self.fitted = set(fitted)
         self._kinds = {}
 
@@ -292,7 +292,7 @@ class NetGraph:
             for ref, other in self.neighbors(current):
                 part = self.parts.get(ref, {})
                 value = parse_resistor(part.get('value')) if self.kind(ref) == 'resistor' else None
-                tie = re.search(r'(?:^|:)Net[-_ ]?Tie(?:_|$)', str(part.get('prim', '')), re.I)
+                tie = copper_tie(ref, part)
                 if other in found or not (tie or (value and 0 <= value['kohm'] <= .001)):
                     continue
                 found[other] = found[current] + [ref]

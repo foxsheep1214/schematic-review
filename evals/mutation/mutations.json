@@ -6445,5 +6445,47 @@
   "file": "scripts/results_model.py",
   "old": "'bom_constraint', 'requirement_clauses', 'proposal_override')",
   "new": "'bom_constraint', 'requirement_clauses')"
+ },
+ {
+  "id": "M1011",
+  "name": "DNP removes fabricated copper from default graph",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "if not part.get('nc') or board_copper(ref, part)}",
+  "new": "if not part.get('nc')}"
+ },
+ {
+  "id": "M1012",
+  "name": "population flag removes fabricated copper",
+  "file": "scripts/checkers/states.py",
+  "old": "            if board_copper(ref, parts[ref]):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M1013",
+  "name": "I2C treats DNP net tie as removable component",
+  "file": "scripts/i2c_topology.py",
+  "old": "            if board_copper(ref, self.parts.get(ref, {})):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M1014",
+  "name": "test pads disappear with procurement marks",
+  "file": "scripts/part_words.py",
+  "old": "    return copper_tie(ref, part) or bool(re.search(r'(?:^|:)TestPoint_Pad(?:_|$)', str(part.get('jedec') or ''), re.I))",
+  "new": "    return copper_tie(ref, part)"
+ },
+ {
+  "id": "M1015",
+  "name": "I2C replay loses declared power rail stops",
+  "file": "scripts/i2c_topology.py",
+  "old": "board_intent.context(intent, 'i2c_topology', extra=('power_rails',))",
+  "new": "board_intent.context(intent, 'i2c_topology')"
+ },
+ {
+  "id": "M1016",
+  "name": "net tie classified as arbitrary active/unknown part",
+  "file": "scripts/part_words.py",
+  "old": "    if copper_tie(ref, part):\n        return JUMPER, 'part-keyword'",
+  "new": "    if False:\n        return JUMPER, 'part-keyword'"
  }
 ]

@@ -82,6 +82,17 @@ def normalize(value):
     return str(value).strip().upper() if value is not None else ''
 
 
+def copper_tie(ref, part):
+    """A fabricated net tie, distinct from a removable zero-ohm resistor."""
+    text = ' '.join(str(part.get(k) or '') for k in ('prim', 'jedec', 'part'))
+    return bool(re.match(r'^NT\d', ref, re.I) or re.search(r'(?:^|[:\s])NET[-_ ]?TIE(?:[-_\s]|$)', text, re.I))
+
+
+def board_copper(ref, part):
+    """Copper remains when excluded from procurement; a component test pin does not."""
+    return copper_tie(ref, part) or bool(re.search(r'(?:^|:)TestPoint_Pad(?:_|$)', str(part.get('jedec') or ''), re.I))
+
+
 OVERBAR_RE = re.compile(r'^~\{(.+)\}$')
 INDEX_SUFFIX_RE = re.compile(r'^(.*?[A-Z])[_-]?(\d+)$')
 
@@ -210,6 +221,8 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         return kind, 'datasheet'
     signature = pin_signature(pin_names)
     primitive = normalize(part.get('prim'))
+    if copper_tie(ref, part):
+        return JUMPER, 'part-keyword'
     if normalize(part.get('part')) == 'HY931147C':
         return CONNECTOR, 'part-keyword'  # HanRun integrated magnetics RJ45, Rev.A/1 p1; not an active IC
     if pin_count == 2 and re.match(r'^(?:L|FB)\d', ref, re.I) and normalize(part.get('value')) == 'FB':
