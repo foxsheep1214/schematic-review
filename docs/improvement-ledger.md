@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Rule library 1.3.0: the last four draft rules turn active (2026-11-02)
+
+The user asked for G04-003, G04-011, G04-079 and G05-026 to go active. G02 keeps the method for interface levels and synchronous timing and G04 judges them; G04-079 keeps its two tiers, with a datasheet criterion first and the 5× of ST AN2867 as the engineering default; G05-026 compares eFuse and upstream fuse from their datasheets and records missing data, because no vendor method exists. No check changes. G04-011 stays unexpanded on a board with only CLOCK or HSSERIAL circuits.
+
+- Event: user:2026-11-02 (请推进到active)
+- Causes: rule_missing 1
+- Changed: docs/improvement-ledger.md, references/architecture.md, references/guideline-rules.json
+- Gates: pytest 2402 passed; ASG 1023 passed; KiCad replay on contract `guideline-rules-v2` with no mismatch; `mutation/run.py --changed` 2/2 killed
+
 ## Rule library 1.2.0 (G04, G05 active): 23 new checks, full BASIS, I²C rows follow the baseline (2026-11-01)
 
 The user approved the mapping table (“按表实施”) for the 197 rules of G04 and G05; 193 turn active, and G04-003, G04-011, G04-079 and G05-026 stay draft until their open points are decided.
