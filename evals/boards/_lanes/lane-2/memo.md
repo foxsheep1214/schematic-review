@@ -29,3 +29,9 @@
 - BSS138应用段MOSFET gate drivers会触发标题冲突；Q1.3漏极也被ESP32_EN网名当输入。先读G/D/S和四种RTS/DTR状态，3.3V不等于低于4.5V就失败。
 - Conn_02x08配SW_DIP_SPSTx08是内部拨码，不能当4个独立外口；ETH1–8无PHY，不是以太网；仍须留触点配对/允许拨码表缺口。
 - CH340 v3C p4允许未用I/O悬空；CC开路不能只补NC。10k/120ohm偏置19.68mV需结合外部偏置，不作全现场必错；needs_human/schema15冲突保留FAIL。
+
+## nabucasa--yellow（2026-11-02）
+- KiCad10 XML可把PCB独立+3V3/+3.3VP、GND/GNDS并网；先比固定PCB pad net，不把图板/版本语义矛盾判为原板短接；版本根因未锁。
+- FE1.1 VS_PLL/VS_A是地，BAT54C要展开双二极管，M.2触点不是第二驱动器；CM4 SCL0/SDA0和HDMI DDC已有1.8k上拉。
+- U25为DNP替代RTC且图面明确只装一颗；Y1/Y2仍应有CLK-C01，不能因被USB/I2C电路持有而吞掉时钟问题；Type-A不能套Type-C Source未附着断电。
+- add可显式填有依据的run（勿伪造需求），默认空状态会被lint拒；needs_human/schema15、DEV-D05.M1重复及输入依赖保留FAIL，164为提示+任务归因，非硬件故障数。
