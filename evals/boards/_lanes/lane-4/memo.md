@@ -27,3 +27,9 @@
 - LF347物理5/12为+、6/13为-，本图标签反写但6-7实际反馈正确；总图J503电压表反写，网表1-2默认为5V、2-3为3.3V，勿指控默认板欠压。
 - ShoppingList无位号，iBOM同版metadata核后还原611行可read_bom（缺RX1）；CLKVCC/负压/+VID/+AUD须定界，X1/X2和RTC互斥要列分支。
 - AgnusCLK内SCLK和DIN5机械名会误触发SPI/工业DI；并行SRAM别套eMMC。DS1813无独立sense会漏对象；无保护件的风扇直供支路仍须PRO-C04枚举。
+
+- solderedelectronics--4-channel-relay-board-hardware-design：199项，27条归因=0真/8误/0准则/2知识/17待确认，2覆盖漏报；40 PASS/22 NA/137未闭，FAIL，renderer退出2；交付为执行记录。
+- NC1/COM1/NO1等同后缀干触点不是NC汇集；lint._relay_nc_contact仅认精确NC/COM/NO。继电器数字空脚名也影响隔离对象枚举，别凭浮接点无地名漏审。
+- 声明Q的低侧继电器角色会被self_anchored误建POWER_CONVERTER并沿VCC收共享件；reject后仍held，不能再add这些件。保留DRV逐件检查并登记重归属缺口，不接受假变换器。
+- 分号BOM先转换后read_bom，保留字段及原始摘要；PC357_OPTO家族角色可核，完整CTR档不可猜；100R在假设5V/VF1.2V时0.1444W，只是条件线索，不是实贴超额定证据。
+- 光耦共GND与继电器触点隔离分开；PRO-C04仅输入LED小组不覆盖四个10R线圈支路。源保护、默认态和外部故障条件未定就留needs_human，不造VENDOR_DATUM；本板schema15且F1六项未闭。
