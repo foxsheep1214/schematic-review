@@ -21,3 +21,9 @@
 - CH340 V3C p4未用I/O可悬空、R232内下拉；NET-A06/A07可排除但NET-A01未标NC处置仍留。HY931147C的V+/V−是整流电源，磁件RJ45不是有源PHY IC，图片手册NO_TEXT不等于缺资料。
 - WCH官方CH32V30xSCH.pdf p9两CT共3V3+C14=0.1uF；G04-091不能无视千兆/集成磁件裁剪。Micro-B不能套PD/Type-C表4-2/4-3。TI LM1117输出电容/ESR在PDFp15，保护二极管在p13，勿记错页码。
 - U4泛称ic候选漏UART须显式加，主控/跳线另归STARTUP再重扫；244项保留191未闭，纯晶体接口F1仍机械要求数值条款，不引用无关HSE频率凑通过。
+
+- jasonsbeer--amiga-2000-eatx：2144项已登记、2050未完；82条归因=14真/12误/1准则/2知识/53待确认，2覆盖漏报；FAIL/NO_GO，renderer拒绝正式报告。
+- 穿心EMI200/229有1-2直流通路，BAT54C为双阳极共阴极OR；勿把9条无来源提示当真实断电。HCT74/08/14 p4未用输入条款确认12脚悬空（4封装）。
+- LF347物理5/12为+、6/13为-，本图标签反写但6-7实际反馈正确；总图J503电压表反写，网表1-2默认为5V、2-3为3.3V，勿指控默认板欠压。
+- ShoppingList无位号，iBOM同版metadata核后还原611行可read_bom（缺RX1）；CLKVCC/负压/+VID/+AUD须定界，X1/X2和RTC互斥要列分支。
+- AgnusCLK内SCLK和DIN5机械名会误触发SPI/工业DI；并行SRAM别套eMMC。DS1813无独立sense会漏对象；无保护件的风扇直供支路仍须PRO-C04枚举。
