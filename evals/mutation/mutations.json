@@ -5444,5 +5444,40 @@
   "file": "scripts/render_report.py",
   "old": "sum(len(r) for r in handoff_groups(plan, handoffs).values())",
   "new": "len(handoffs)"
+ },
+ {
+  "id": "M843",
+  "name": "SIG-A05 VBUS bulk never reported",
+  "file": "scripts/board_scans.py",
+  "old": "if total > USB_SINK_BULK_MAX_F:",
+  "new": "if False:"
+ },
+ {
+  "id": "M844",
+  "name": "SIG-A05 limit off by a factor of ten",
+  "file": "scripts/board_scans.py",
+  "old": "USB_SINK_BULK_MAX_F = 100e-6",
+  "new": "USB_SINK_BULK_MAX_F = 1000e-6"
+ },
+ {
+  "id": "M845",
+  "name": "SIG-A05 flags any net called VBUS without USB evidence",
+  "file": "scripts/board_scans.py",
+  "old": "    if not _has_usb_port(lint):\n        return\n",
+  "new": ""
+ },
+ {
+  "id": "M846",
+  "name": "SIG-A05 sums nets behind a limiter",
+  "file": "scripts/board_scans.py",
+  "old": "(VBUS|VUSB)\\d*$', re.I)",
+  "new": "(VBUS|VUSB)\\w*$', re.I)"
+ },
+ {
+  "id": "M847",
+  "name": "SIG-A05 only looks at the first capacitor",
+  "file": "scripts/board_scans.py",
+  "old": "total = sum(farads for _, farads in caps)",
+  "new": "total = sum(farads for _, farads in caps[:1])"
  }
 ]

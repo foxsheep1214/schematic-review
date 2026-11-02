@@ -9,12 +9,17 @@
 import re
 
 from checkers.netgraph import is_ground, is_rail, rail_voltage
-from part_words import CONNECTOR, IC, LED_RE, RESISTOR, TESTPOINT
+from decoupling import parse_capacitance
+from part_words import CAPACITOR, CONNECTOR, IC, LED_RE, RESISTOR, TESTPOINT
 from checkers.passive_stress import rated_voltage   # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
 REFDES_RE = re.compile(r'^(?!.*\?)[A-Za-z][A-Za-z0-9_/+-]*?\d+[A-Za-z]?$')   # USB-C1, PS2_KBD1, PGM/DBG1 are annotated
 I2C_LINE_RE = re.compile(r'^(SDA|SCL)\d*$')
+# 只认端口本身的 VBUS；限流器之后的网（VBUS_SW 等）不累加。
+USB_VBUS_NET_RE = re.compile(r'(^|[/_.:-])(VBUS|VUSB)\d*$', re.I)
+USB_SINK_BULK_MAX_F = 100e-6
+USB_PIN_RE = re.compile(r'^(VBUS|CC[12]|D[+-])$', re.I)
 
 
 def _named_rail(net):
@@ -174,6 +179,35 @@ def i2c_pullups(lint):
                      '否则补上拉（阻值按 SIG-C01）', refs[0], kind='CANDIDATE')
 
 
+def _caps_to_ground(lint, net):
+    """[(位号, 法拉或 None)]：直接从该网接到地的已装配电容。"""
+    return [(ref, parse_capacitance(lint.parts[ref].get('value')))
+            for ref, other in lint.graph.neighbors(net, {CAPACITOR}) if is_ground(other)]
+
+
+def _has_usb_port(lint):
+    """板上有 USB 器件或 USB 脚名。逆变器、电机板也把直流母线叫 VBUS，只凭网名不算 USB。"""
+    return (any(USB_PIN_RE.match(str(name).strip()) for name in lint.pinname.values())
+            or any('USB' in ' '.join(str(part.get(key, '')) for key in ('part', 'value', 'prim')).upper()
+                   for part in lint.parts.values() if not part.get('nc')))
+
+
+def usb_vbus_bulk(lint):
+    """SIG-A05：VBUS/VUSB 网直挂对地电容的 BOM 值合计超过 Sink 上限（G01-029）。"""
+    if not _has_usb_port(lint):
+        return
+    for net in sorted(lint.nets):
+        if net in lint.pseudo or not USB_VBUS_NET_RE.search(str(net)):
+            continue
+        caps = [(ref, farads) for ref, farads in _caps_to_ground(lint, net) if farads]
+        total = sum(farads for _, farads in caps)
+        if total > USB_SINK_BULK_MAX_F:
+            refs = [ref for ref, _ in caps]
+            lint.add('SIG-A05', 'VBUS 直挂体电容超过 Sink 上限',
+                     f'{net}: {",".join(refs)} 直挂合计 {total * 1e6:g}µF > 100µF（USB PD 表 4.7 注 1、Type-C 表 4-3）；'
+                     '端口作 Source 按表 4-2，有限浪涌电路可关闭，角色与限流按 SIG-C05/PWR-C13 核', refs[0], kind='CANDIDATE')
+
+
 def floating_inputs(lint):
     """NET-A07：声明为输入的引脚悬空或只在单节点网上。"""
     from lint import _pin_class      # 延迟取用：lint 导入本模块
@@ -220,4 +254,5 @@ def run(lint):
     capacitor_polarity(lint)
     led_current_limit(lint)
     i2c_pullups(lint)
+    usb_vbus_bulk(lint)
     floating_inputs(lint)

@@ -425,6 +425,8 @@ RULES = (
     Rule('SIG-A03', 'I²C 线无上拉',
          'SDA/SCL 网（≥2 节点、含 IC 脚）上没有任何接到非地网的已装配电阻；上拉可能由主机侧、片内'
          '（如 TXS 类电平转换器）或其他段提供，按需求与资料确认后关闭，阻值与上升时间另按 SIG-C01', 'lint', 'net'),
+    Rule('SIG-A05', 'VBUS 直挂体电容超过 Sink 上限',
+         '板上有 USB 器件或 USB 脚名时，网名为 VBUS/VUSB 的网上直接对地的已装配电容按 BOM 值合计超过 100 µF（USB PD 表 4.7 注 1、Type-C 表 4-3，G01-029）；不跨限流器累加；端口作 Sink 还是 Source（表 4-2）、前级是否限浪涌，以及非附着态 10 µF 上限由审查者按 SIG-C05/PWR-C13 核', 'lint', 'net'),
     Rule('SIG-E01', '必需上拉与串阻',
          '核对指定两网间电阻装配与等效阻值；电平/上升时间另行检查', 'plan', 'net'),
     Rule('SIG-E02', '差分电平兼容',
@@ -718,7 +720,7 @@ OBJECTIVE_RULES = {
                  'PWR-A05 PWR-E01 PWR-E02 PWR-E03 PWR-C01 PWR-C02 PWR-C03 PWR-C05 '
                  'PWR-C09 PWR-C10 PWR-C11 PWR-C14 PWR-C16 CLK-C01 DRV-C02 '
                  'REQ-C01 REQ-C02 PWR-C17 PWR-C18 PWR-C19 PWR-C21 PWR-C22 SIG-C11 ANA-C06').split()),
-    'G5': tuple(('PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
+    'G5': tuple(('PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-A05 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
                  'PRO-E02 PRO-C01 PRO-C02 PRO-C03 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01 '
                  'PRO-D04 PWR-C23 PWR-C25 PWR-C26 SIG-C18 REQ-D05 PRO-D05 PRO-D06 PRO-C04 PRO-C05 PRO-C06 PRO-C07 PRO-C08 PRO-C09 '
                  'PRO-C10 PRO-C11 PRO-C12 PRO-C13').split()),
@@ -823,6 +825,7 @@ BASIS = {
     'RST-T01': ('G03-022',),
     'RST-T03': ('G03-024', 'G03-030', 'G03-047', 'G05-062', 'G05-091'),
     'RST-T04': ('G04-010',),
+    'SIG-A05': ('G01-029',),
     'SIG-C01': ('G04-017', 'G04-018', 'G04-022'),
     'SIG-C03': ('G04-026', 'G04-027', 'G04-028', 'G04-032', 'G04-061', 'G04-064', 'G04-076'),
     'SIG-C04': ('G04-025', 'G04-031', 'G04-035', 'G04-067', 'G04-069'),
@@ -2171,6 +2174,7 @@ EXPLANATIONS = {
     'SIG-A01': _x('交流耦合发送端缺直流通路时工作点不成立，链路看似连通却无输出', '按实际制式确认发送端有直流偏置通路，或器件内部已提供即关闭', false_alarms='CML 等内部自带端接的输出；名称线索误判的非 PECL 信号'),
     'SIG-A02': _x('交流耦合后接收端没有偏置，共模漂移会让接收器无法判别', '接收端有偏置或端接，或器件内部自偏置有资料即关闭', false_alarms='接收器内部自偏置/内置端接，手册允许直接交流耦合'),
     'SIG-A03': _x('同一段 SDA/SCL 没有上拉，在其他段或片内可能有，也可能真的没有', '在主机侧、片内或其他段找到有资料的上拉即关闭；阻值归 SIG-C01', false_alarms='主控或电平转换器片内上拉；上拉在另一块板或另一段；只接测试点的配置口由夹具上拉'),
+    'SIG-A05': _x('每颗电容单看合理，合计却可能超限，插入瞬间拉垮对端 VBUS', '端口不作 Sink 或有资料可证的限浪涌即关闭；角色与限流归 SIG-C05', false_alarms='作 Source 的端口按表 4-2 判，不适用 100 µF；限流器后的电容网名不同，本规则不累加'),
     'SIG-E01': _x('接口要求的上拉或串阻缺失时，静态连通检查发现不了', '指定两网间有已装配电阻且等效阻值在要求范围即关闭', inputs='SIG-T04 的方向'),
     'SIG-E02': _x('差分对连通了，共模或摆幅不在接收范围时仍收不到或损伤输入', '两端保证范围下共模、摆幅和阈值都兼容即关闭；时序归 SIG-C09', inputs='SIG-T01/T03 的连接与端接'),
     'SIG-T01': _x('差分对两根都连通，P/N 互换或配错对时仍无法工作', '每对 P/N 两端语义一致、全链路连通即关闭；电平归 SIG-E02', inputs='DEV-D02 的脚义', false_alarms='CS_P/CS_N 等电流电压采样对是模拟测量，按 ANA 检查'),

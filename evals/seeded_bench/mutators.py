@@ -310,7 +310,7 @@ def usb_bulk(db):
                 and any(ng.is_ground(n) for _, n in pins)):
             out = copy.deepcopy(db)
             out['parts'][ref]['value'] = '1000uF 50V'
-            yield Mutation('D-USB-BULK', ('SIG-C05',), (ref,), (), ref + ' -> 1000uF', out)
+            yield Mutation('D-USB-BULK', ('SIG-A05', 'SIG-C05'), (ref,), (), ref + ' -> 1000uF', out)
 
 
 def isolation_bridge(db):

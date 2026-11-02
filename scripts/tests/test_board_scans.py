@@ -125,6 +125,44 @@ class I2cPullupTest(unittest.TestCase):
         self.assertEqual(subjects(scans(db, 'SIG-A03')), ['SCL', 'SDA'])
 
 
+class UsbVbusBulkTest(unittest.TestCase):
+    def vbus(self, net='VBUS', **caps):
+        return board(dict({'J1': 'USB_C'}, **caps),
+                     {net: ['J1.1'] + [ref + '.1' for ref in caps], 'GND': ['J1.2'] + [ref + '.2' for ref in caps]},
+                     {'J1.1': 'VBUS', 'J1.2': 'GND'})
+
+    def test_direct_bulk_over_100uf_is_a_candidate_with_the_sum(self):
+        hits = scans(self.vbus(C1='220uF'), 'SIG-A05')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('220', hits[0]['detail'])
+
+    def test_capacitors_add_up_on_the_net(self):
+        self.assertEqual(len(scans(self.vbus(C1='47uF', C2='47uF', C3='10uF'), 'SIG-A05')), 1)
+        self.assertEqual(scans(self.vbus(C1='47uF', C2='47uF'), 'SIG-A05'), [])
+
+    def test_exactly_100uf_passes(self):
+        self.assertEqual(scans(self.vbus(C1='100uF'), 'SIG-A05'), [])
+
+    def test_a_net_behind_a_limiter_is_not_summed(self):
+        self.assertEqual(scans(self.vbus('VBUS_SW', C1='220uF'), 'SIG-A05'), [])
+
+    def test_prefixed_port_net_counts(self):
+        self.assertEqual(len(scans(self.vbus('/USB/VUSB', C1='220uF'), 'SIG-A05')), 1)
+
+    def test_a_dc_bus_called_vbus_on_a_board_without_usb_is_not_usb(self):
+        db = board({'Q1': 'IRF540', 'C1': '220uF'}, {'VBUS': ['Q1.1', 'C1.1'], 'GND': ['Q1.2', 'C1.2']})
+        self.assertEqual(scans(db, 'SIG-A05'), [])
+
+    def test_usb_part_identity_is_enough_without_usb_pin_names(self):
+        db = board({'J1': 'USB_B', 'C1': '220uF'}, {'VBUS': ['J1.1', 'C1.1'], 'GND': ['J1.2', 'C1.2']})
+        self.assertEqual(len(scans(db, 'SIG-A05')), 1)
+
+    def test_unfitted_and_unreadable_capacitors_do_not_count(self):
+        db = self.vbus(C1='220uF', C2='fixme')
+        db['parts']['C1']['nc'] = True
+        self.assertEqual(scans(db, 'SIG-A05'), [])
+
+
 class FloatingInputTest(unittest.TestCase):
     def test_declared_input_pins_without_a_real_net(self):
         db = board({'U1': 'SOC'}, {'GND': ['U1.4'], 'LONE': ['U1.2'], 'BUS': ['U1.3', 'U1.5']},
