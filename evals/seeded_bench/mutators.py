@@ -280,8 +280,186 @@ def bom_ws(db):
         yield Mutation('D-BOM-WS', ('DOC-A03',), (ref,), (), 'value + trailing space', out)
 
 
+def i2c_value(db):
+    """G04-017/018: retain real pull-up topology, violate its resistance window.
+
+    10 Mohm cannot charge even 10 pF in the Standard-mode 1 us window;
+    1 ohm requires amperes at normal logic rails. Board budgets still need review.
+    """
+    for m in i2c_pu(db):
+        for defect, value in (('D-I2C-PU-HIGH', '10Meg'), ('D-I2C-PU-LOW', '1R')):
+            out = copy.deepcopy(db)
+            for ref in m.refs:
+                out['parts'][ref]['value'] = value
+            yield Mutation(defect, ('SIG-C01',), m.refs, m.nets,
+                           ','.join(m.refs) + ' -> ' + value, out)
+
+
+def usb_bulk(db):
+    """G01-029: enlarge a capacitor directly on a USB VBUS/VUSB net.
+
+    Deliberately does not mutate a capacitor behind an inrush limiter. Role and
+    external limiting are not in the cold db: each site remains a hypothesis.
+    """
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        pins = two_pins(g, ref)
+        if g.kind(ref) != pw.CAPACITOR or not pins or not fitted(db, ref):
+            continue
+        if (any(re.search(r'(^|[/_])(VBUS|VUSB)($|[_/])', n, re.I) for _, n in pins)
+                and any(ng.is_ground(n) for _, n in pins)):
+            out = copy.deepcopy(db)
+            out['parts'][ref]['value'] = '1000uF 50V'
+            yield Mutation('D-USB-BULK', ('SIG-C05',), (ref,), (), ref + ' -> 1000uF', out)
+
+
+def isolation_bridge(db):
+    """G04-040: bridge two distinct ground domains of a real isolator/opto.
+
+    Only optos or explicitly named digital isolator families with two ground
+    domains are eligible; a generic multi-ground IC is not an isolator.
+    """
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        part = db['parts'][ref]
+        identity = ' '.join(str(part.get(k, '')) for k in ('prim', 'part', 'value'))
+        isolator = g.kind(ref) == pw.OPTO or re.search(r'ADuM|ADM2483|ADM3251|CA-IS37', identity, re.I)
+        if not isolator or not fitted(db, ref):
+            continue
+        grounds = sorted({n for n in g.pins_of(ref).values() if ng.is_ground(n)})
+        if len(grounds) != 2:
+            continue
+        out = copy.deepcopy(db)
+        for node, net in list(out['pin2net'].items()):
+            if net == grounds[1]:
+                out['pin2net'][node] = grounds[0]
+        yield Mutation('D-ISO-BRIDGE', ('PRO-D02',), (ref,), tuple(grounds),
+                       'short ' + ' / '.join(grounds), rebuild(out))
+
+
+def crystal_load(db):
+    """G04-078: load a real passive crystal with 1 uF to ground.
+
+    Preserve the existing crystal and its oscillator wiring; only change the
+    existing load capacitors, never invent a clock source from its net name.
+    """
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        if g.kind(ref) != pw.CRYSTAL or not fitted(db, ref):
+            continue
+        nets = set(g.pins_of(ref).values())
+        caps = []
+        for cref in sorted(db['parts']):
+            pins = two_pins(g, cref)
+            if (g.kind(cref) == pw.CAPACITOR and pins and fitted(db, cref)
+                    and any(n in nets and not ng.is_ground(n) for _, n in pins)
+                    and any(ng.is_ground(n) for _, n in pins)):
+                caps.append(cref)
+        if caps:
+            out = copy.deepcopy(db)
+            for cref in caps:
+                out['parts'][cref]['value'] = '1uF'
+            yield Mutation('D-XTAL-LOAD', ('CLK-C01',), (ref, *caps), (),
+                           ','.join(caps) + ' -> 1uF', out)
+
+
+def regulator_cout(db):
+    """G03-003: remove all direct output capacitors of an identified LDO family.
+
+    Source pin name and family must both match. Remote/external capacitance and
+    the exact variant's minimum Cout remain human evidence, not cold-db facts.
+    """
+    g = graph(db)
+    for ref, part in sorted(db['parts'].items()):
+        identity = ' '.join(str(part.get(k, '')) for k in ('prim', 'part', 'value'))
+        if not fitted(db, ref) or not re.search(r'AMS1117|LM1117|AP2112|MCP1700|XC6206', identity, re.I):
+            continue
+        for pin, net in sorted(g.pins_of(ref).items()):
+            if not re.fullmatch(r'V?OUT', name(db, ref + '.' + pin), re.I):
+                continue
+            caps = []
+            for cref in sorted(db['parts']):
+                pins = two_pins(g, cref)
+                if (g.kind(cref) == pw.CAPACITOR and pins and fitted(db, cref)
+                        and net in {n for _, n in pins}
+                        and any(ng.is_ground(n) for _, n in pins)):
+                    caps.append(cref)
+            if caps:
+                out = db
+                for cref in caps:
+                    out = removed(out, cref)
+                yield Mutation('D-LDO-COUT', ('PWR-C04',), (ref, *caps), (net,),
+                               'remove output capacitors ' + ','.join(caps), out)
+
+
+def can_termination(db):
+    """G04-032: bridge actual transceiver CAN H/L pins, bypassing termination.
+
+    Corpus end resistors are switchable, so matching only a resistor directly
+    across named H/L nets would produce no sites. A wire short across the
+    transceiver's physical bus pins is unambiguous regardless of jumper state.
+    """
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        if g.kind(ref) != pw.IC or not fitted(db, ref):
+            continue
+        by_name = {name(db, ref + '.' + p).upper(): n for p, n in g.pins_of(ref).items()}
+        if not {'CANH', 'CANL'} <= set(by_name):
+            continue
+        high, low = by_name['CANH'], by_name['CANL']
+        if high == low:
+            continue
+        out = copy.deepcopy(db)
+        for node, net in list(out['pin2net'].items()):
+            if net == low:
+                out['pin2net'][node] = high
+        yield Mutation('D-CAN-TERM-SHORT', ('SIG-C03',), (ref,), (high, low),
+                       'wire short CAN H/L, bypass termination', rebuild(out))
+
+
+def crystal_shared(db):
+    """G04-082: duplicate a real oscillator IC, sharing the same passive crystal.
+
+    Clone all pins/metadata, so the extra oscillator is supplied and configured
+    as the original. Other shared outputs may also need review; the intended
+    counterexample is two active oscillator stages on one crystal.
+    """
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        if g.kind(ref) != pw.CRYSTAL or not fitted(db, ref):
+            continue
+        oscillator_nets = {n for n in g.pins_of(ref).values() if not ng.is_ground(n)}
+        if len(oscillator_nets) != 2:
+            continue
+        for ic in sorted(db['parts']):
+            if g.kind(ic) != pw.IC or not fitted(db, ic):
+                continue
+            clock_pins = {n for p, n in g.pins_of(ic).items()
+                          if re.fullmatch(r'XI|XO|XIN|XOUT|XTAL[12]|OSC_IN|OSC_OUT', name(db, ic + '.' + p), re.I)}
+            if not oscillator_nets <= clock_pins:
+                continue
+            new = ic + '_SEED'
+            if new in db['parts']:
+                continue
+            out = copy.deepcopy(db)
+            out['parts'][new] = copy.deepcopy(db['parts'][ic])
+            for key in ('pin2net', 'pinname', 'pintype', 'declared_pintype'):
+                for node, value in list(db.get(key, {}).items()):
+                    if node.split('.', 1)[0] == ic:
+                        out[key][new + '.' + node.split('.', 1)[1]] = value
+            if ic in out.get('ref2page', {}):
+                out['ref2page'][new] = out['ref2page'][ic]
+            out['no_connect_nodes'] = list(out.get('no_connect_nodes', [])) + [
+                new + '.' + node.split('.', 1)[1] for node in db.get('no_connect_nodes', [])
+                if node.split('.', 1)[0] == ic]
+            yield Mutation('D-XTAL-SHARED', ('CLK-C01',), (ref, ic, new), tuple(sorted(oscillator_nets)),
+                           'clone ' + ic + ' as ' + new + ' on the same crystal', rebuild(out))
+            break
+
+
 OPERATORS = (gnd_pin, rail_split, cap_pol, cap_vr, led_r, tvs_stub, en_float, flyback, opto, i2c_pu,
-             ref_anno, bom_ws)
+             ref_anno, bom_ws, i2c_value, usb_bulk, isolation_bridge, crystal_load,
+             regulator_cout, can_termination, crystal_shared)
 
 
 def mutations(db, per_operator=4):
