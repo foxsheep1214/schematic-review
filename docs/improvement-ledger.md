@@ -10,6 +10,16 @@ count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
+## 准则库 1.6.0：DC_24V 检查项 PWR-C27 与映射 (2026-11-02)
+
+同步共用层 1.6.0（344 条）。新增检查项 `PWR-C27`，核器件范围覆盖已声明的 24 V 输入窗，因为现有 `PWR-C17`、`PWR-C21` 写死了 −48 V 和军车 28 V 的数值。`BASIS` 映射 G01-051～054，加一条测试守住 `DC_24V` 不带 `PWR-C17`。
+第一步阅读量上限 +10 字节（170 800 → 170 810）：词表的 `DC_24V` 一行多了 `PWR-C27`。
+
+- Event: user:2026-11-02 (按建议全部入库)
+- Causes: rule_missing 1
+- Changed: references/shared/guideline-criteria.json, references/shared/shared-layer.md, scripts/catalog.py, references/check-catalog.md, references/review-vocabulary.md, references/architecture.md, scripts/tests/test_guideline_criteria.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2418 passed; mutation --changed: 34/34 killed at unit tier (contract tier 11 killed, 23 survived)
+
 ## 准则库 1.5.0：DC_24V 对外接口类型与 9 条准则放宽 (2026-11-02)
 
 同步共用层 1.5.0。`catalog.CIRCUIT_TYPES` 加 `DC_24V`，检查项取 `PWR-C18`、`PWR-C13`、`PRO-C01`、`PWR-T05`，不取只针对 −48 V 的 `PWR-C17`；进 `EXTERNAL_INTERFACE_TYPES`，有功能框架问句。重生成 check-catalog 与 review-vocabulary，bounding-table 无变化。
