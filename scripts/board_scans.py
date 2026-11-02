@@ -29,6 +29,8 @@ USB_SINK_BULK_MAX_F = 100e-6
 ISOLATOR_IDENTITY_RE = re.compile(r'ISOLATOR|ADUM\d|ADM2\d{3}|ADM3\d{3}|CA-?IS\d|\bISOW?\d{3}|\bSI8[4-9]\d|\bNSI\d', re.I)
 ISOLATOR_GROUND_PIN_RE = re.compile(r'^(?:GND|VSS)_?([12AB])$', re.I)
 CRYSTAL_LOAD_MAX_F = 100e-12
+# 多功能脚写成 PF0-OSC_IN 或 PB6/XTAL1 时只看其中的振荡功能名。
+OSCILLATOR_PIN_RE = re.compile(r'(?:^|[/\\\s,_-])(?:X(?:TAL)?_?(?:I|O|IN|OUT|1|2|P|N)|OSC_?(?:I|O|IN|OUT|1|2|P|N))(?:$|[/\\\s,_-])', re.I)
 CAN_PIN_RE = re.compile(r'^CAN_?([HL])$', re.I)
 CAN_SHORT_KOHM = 0.001
 USB_PIN_RE = re.compile(r'^(VBUS|CC[12]|D[+-])$', re.I)
@@ -357,6 +359,23 @@ def crystal_load(lint):
                      '按晶体准确料号的 CL 核，起振与频偏归 CLK-C01', ref, kind='CANDIDATE')
 
 
+def crystal_shared(lint):
+    """CLK-A02：晶体两端都接到两颗以上 IC 的振荡脚（G04-082）。"""
+    for ref, nets in _passive_crystals(lint):
+        on_both = []
+        for ic in sorted(lint.parts):
+            if lint.parts[ic].get('nc') or lint.graph.kind(ic) != IC:
+                continue
+            reached = {lint.pin2net.get(node) for node in _nodes(lint, ic)
+                       if OSCILLATOR_PIN_RE.search(str(lint.pinname.get(node, '')).strip())}
+            if set(nets) <= reached:
+                on_both.append(ic)
+        if len(on_both) >= 2:
+            lint.add('CLK-A02', '一颗晶体接两个振荡器',
+                     f'{ref}: 两端 {nets[0]}/{nets[1]} 都接 {",".join(on_both)} 的振荡脚，一颗无源晶体只能接一个振荡器'
+                     '（G04-082；TI SNLA387 Clock Source）；多器件共用时钟用有源振荡器或缓冲', ref)
+
+
 def ldo_output_capacitor(lint):
     """PWR-A07：线性稳压器的输出网上没有接地电容，经磁珠或电感也到不了（G03-003）。"""
     for ref, part in sorted(lint.parts.items()):
@@ -427,4 +446,5 @@ def run(lint):
     can_bus_short(lint)
     isolator_ground_bridge(lint)
     crystal_load(lint)
+    crystal_shared(lint)
     floating_inputs(lint)

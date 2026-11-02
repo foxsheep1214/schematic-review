@@ -300,6 +300,41 @@ class CrystalLoadTest(unittest.TestCase):
         self.assertEqual(scans(db, 'CLK-A01'), [])
 
 
+class CrystalSharedTest(unittest.TestCase):
+    def shared(self, u2=('XIN', 'XOUT'), u2_value='MCU'):
+        return board({'Y1': '16MHz', 'U1': 'MCU', 'U2': u2_value},
+                     {'XI': ['Y1.1', 'U1.3', 'U2.3'], 'XO': ['Y1.2', 'U1.4', 'U2.4'], 'GND': ['U1.2', 'U2.2']},
+                     {'U1.3': 'XIN', 'U1.4': 'XOUT', 'U2.3': u2[0], 'U2.4': u2[1]})
+
+    def test_two_oscillators_on_one_crystal_is_a_finding(self):
+        hits = scans(self.shared(), 'CLK-A02')
+        self.assertEqual([hit['kind'] for hit in hits], ['FINDING'])
+        self.assertIn('U1,U2', hits[0]['detail'])
+
+    def test_one_oscillator_passes(self):
+        db = board({'Y1': '16MHz', 'U1': 'MCU'}, {'XI': ['Y1.1', 'U1.3'], 'XO': ['Y1.2', 'U1.4']},
+                   {'U1.3': 'XIN', 'U1.4': 'XOUT'})
+        self.assertEqual(scans(db, 'CLK-A02'), [])
+
+    def test_a_clock_input_on_one_end_is_not_a_second_oscillator(self):
+        db = board({'Y1': '16MHz', 'U1': 'MCU', 'U2': 'MCU'},
+                   {'XI': ['Y1.1', 'U1.3'], 'XO': ['Y1.2', 'U1.4', 'U2.3']},
+                   {'U1.3': 'XIN', 'U1.4': 'XOUT', 'U2.3': 'XIN'})
+        self.assertEqual(scans(db, 'CLK-A02'), [])
+
+    def test_ordinary_pins_on_the_crystal_nets_are_not_oscillator_pins(self):
+        self.assertEqual(scans(self.shared(u2=('PA0', 'PA1')), 'CLK-A02'), [])
+
+    def test_pin_name_spellings(self):
+        for names in (('XTAL1', 'XTAL2'), ('XI', 'XO'), ('OSC_IN', 'OSC_OUT'), ('PF0-OSC_IN', 'PF1-OSC_OUT'), ('OSC1', 'OSC2')):
+            self.assertEqual(len(scans(self.shared(u2=names), 'CLK-A02')), 1, names)
+
+    def test_an_unfitted_second_ic_does_not_count(self):
+        db = self.shared()
+        db['parts']['U2']['nc'] = True
+        self.assertEqual(scans(db, 'CLK-A02'), [])
+
+
 class UsbVbusBulkTest(unittest.TestCase):
     def vbus(self, net='VBUS', **caps):
         return board(dict({'J1': 'USB_C'}, **caps),

@@ -5689,5 +5689,40 @@
   "file": "scripts/board_scans.py",
   "old": "        if not all(sides) or not all(farads for side in sides for _, farads in side):",
   "new": "        sides = [side or [('', 1e-3)] for side in sides]\n        if not all(farads for side in sides for _, farads in side):"
+ },
+ {
+  "id": "M878",
+  "name": "CLK-A02 shared crystal never reported",
+  "file": "scripts/board_scans.py",
+  "old": "        if len(on_both) >= 2:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M879",
+  "name": "CLK-A02 one oscillator counts as shared",
+  "file": "scripts/board_scans.py",
+  "old": "        if len(on_both) >= 2:",
+  "new": "        if len(on_both) >= 1:"
+ },
+ {
+  "id": "M880",
+  "name": "CLK-A02 one end is enough",
+  "file": "scripts/board_scans.py",
+  "old": "            if set(nets) <= reached:",
+  "new": "            if set(nets) & reached:"
+ },
+ {
+  "id": "M881",
+  "name": "CLK-A02 any pin counts as an oscillator pin",
+  "file": "scripts/board_scans.py",
+  "old": "                       if OSCILLATOR_PIN_RE.search(str(lint.pinname.get(node, '')).strip())}",
+  "new": "                       }"
+ },
+ {
+  "id": "M882",
+  "name": "CLK-A02 counts an unfitted IC",
+  "file": "scripts/board_scans.py",
+  "old": "            if lint.parts[ic].get('nc') or lint.graph.kind(ic) != IC:",
+  "new": "            if lint.graph.kind(ic) != IC:"
  }
 ]

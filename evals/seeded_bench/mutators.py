@@ -452,7 +452,7 @@ def crystal_shared(db):
             out['no_connect_nodes'] = list(out.get('no_connect_nodes', [])) + [
                 new + '.' + node.split('.', 1)[1] for node in db.get('no_connect_nodes', [])
                 if node.split('.', 1)[0] == ic]
-            yield Mutation('D-XTAL-SHARED', ('CLK-C01',), (ref, ic, new), tuple(sorted(oscillator_nets)),
+            yield Mutation('D-XTAL-SHARED', ('CLK-A02', 'CLK-C01'), (ref, ic, new), tuple(sorted(oscillator_nets)),
                            'clone ' + ic + ' as ' + new + ' on the same crystal', rebuild(out))
             break
 
