@@ -3664,15 +3664,15 @@
   "id": "M577",
   "name": "a TVS on an internal node is skipped like a zener",
   "file": "scripts/protective_clamps.py",
-  "old": "    if graph.kind(ref) == pw.ZENER and functional_clamp(graph, rails[0], intent):",
-  "new": "    if graph.kind(ref) in (pw.ZENER, pw.TVS) and functional_clamp(graph, rails[0], intent):"
+  "old": "        if graph.kind(ref) == pw.ZENER and functional_clamp(graph, live, intent):",
+  "new": "        if False and graph.kind(ref) == pw.ZENER and functional_clamp(graph, live, intent):"
  },
  {
   "id": "M578",
   "name": "a connector on the clamped node no longer makes the clamp protective",
   "file": "scripts/protective_clamps.py",
-  "old": "        if kind in (pw.CONNECTOR, pw.TESTPOINT):\n            return False",
-  "new": "        if False:\n            return False"
+  "old": "    if port_connectors(graph, net):\n        return False",
+  "new": "    if False:\n        return False"
  },
  {
   "id": "M579",
@@ -3853,8 +3853,8 @@
   "id": "M605",
   "name": "the clamp row does not name the protected pins",
   "file": "scripts/lint.py",
-  "old": "f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail, ref)}'",
-  "new": "f'型号提示={_fmt_v(clamp_volt(blob))}。'"
+  "old": " + ''.join(self._protected_pins_text(n, ref) for n in channel['nets']) +",
+  "new": " + '' +"
  },
  {
   "id": "M606",
@@ -4574,15 +4574,15 @@
   "id": "M716",
   "name": "the clamp scan reports under a rule that cannot carry a margin",
   "file": "scripts/lint.py",
-  "old": "            self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',",
-  "new": "            self.add('PRO-A01', '防护器件工作/击穿/钳位窗口待复核',"
+  "old": "                self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',",
+  "new": "                self.add('PRO-C02', '防护器件工作/击穿/钳位窗口待复核',"
  },
  {
   "id": "M717",
   "name": "an energy clamp across a switch node is taken for a protective clamp",
   "file": "scripts/protective_clamps.py",
-  "old": "    if switch_node(graph, rails[0], intent):",
-  "new": "    if False:"
+  "old": "        if any(switch_node(graph, n, intent) for n in window_nets):",
+  "new": "        if False:"
  },
  {
   "id": "M718",
@@ -6396,5 +6396,33 @@
   "file": "scripts/board_intent.py",
   "old": "('input_sha256', 'assemblies', 'devices') + tuple(extra)",
   "new": "('input_sha256', 'assemblies') + tuple(extra)"
+ },
+ {
+  "id": "M1003",
+  "name": "array channels collapse into one package",
+  "file": "scripts/protective_clamps.py",
+  "old": "    for group in groups:",
+  "new": "    for group in groups[:1]:"
+ },
+ {
+  "id": "M1004",
+  "name": "optional NC routing pads become channels",
+  "file": "scripts/protective_clamps.py",
+  "old": "(('1',), ('2',), ('4',), ('5',)), ('3', '8'), ('6', '7', '9', '10'),",
+  "new": "(('1',), ('2',), ('4',), ('5',), ('6',)), ('3', '8'), ('7', '9', '10'),"
+ },
+ {
+  "id": "M1005",
+  "name": "USB flow-through loses its far physical pin",
+  "file": "scripts/protective_clamps.py",
+  "old": "(('1', '6'), ('3', '4'), ('5',)), ('2',), (),",
+  "new": "(('1',), ('3',), ('5',)), ('2',), (),"
+ },
+ {
+  "id": "M1006",
+  "name": "verified TVS kind discarded without text keywords",
+  "file": "scripts/protective_clamps.py",
+  "old": "protective = graph.kind(ref) == pw.TVS or rule is not None",
+  "new": "protective = False"
  }
 ]

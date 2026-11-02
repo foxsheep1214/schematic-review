@@ -880,6 +880,41 @@
      "rule": "PRO-E02",
      "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U2 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /USB/UD+；通道 1-6 物理脚=['1', '6'] 网络=['/USB/UD+']，返回=['GND1']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U2 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /USB/UD-；通道 3-4 物理脚=['3', '4'] 网络=['/USB/UD-']，返回=['GND1']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U2 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 VBUS；通道 5 物理脚=['5'] 网络=['VBUS']，返回=['GND1']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D6 (SM712_SOT23 SM712 Diode:SM712_SOT23) 跨 /RS485/A0；通道 1 物理脚=['1'] 网络=['/RS485/A0']，返回=['GND2']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D6 (SM712_SOT23 SM712 Diode:SM712_SOT23) 跨 /RS485/B0；通道 2 物理脚=['2'] 网络=['/RS485/B0']，返回=['GND2']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D8 (SM712_SOT23 SM712 Diode:SM712_SOT23) 跨 /RS485/A3；通道 1 物理脚=['1'] 网络=['/RS485/A3']，返回=['GND2']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D8 (SM712_SOT23 SM712 Diode:SM712_SOT23) 跨 /RS485/B3；通道 2 物理脚=['2'] 网络=['/RS485/B3']，返回=['GND2']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
     }
    ],
    "known_false_alarms": [
@@ -1031,6 +1066,16 @@
      "rule": "NET-A01",
      "match": "unconnected-(J1-Pad4) <- J1.4 (DS1133-S60BPX，脚名 ?) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
      "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D3 (SM712_SOT23 SM712_SOT23 Diode:SM712_SOT23) 跨 Net-(D3-A1)；通道 1 物理脚=['1'] 网络=['Net-(D3-A1)']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D3 (SM712_SOT23 SM712_SOT23 Diode:SM712_SOT23) 跨 Net-(D3-A2)；通道 2 物理脚=['2'] 网络=['Net-(D3-A2)']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
     }
    ],
    "known_false_alarms": [],
@@ -1373,7 +1418,23 @@
    "id": "usb232r02",
    "category": "USB-UART (FT232)",
    "fixture": "fixtures/usb232r02.xml",
-   "expected": [],
+   "expected": [
+    {
+     "rule": "PRO-E02",
+     "match": "U1 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /D-；通道 1-6 物理脚=['1', '6'] 网络=['/D-', '/DN']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U1 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /D+；通道 3-4 物理脚=['3', '4'] 网络=['/D+', '/DP']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U1 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /VBUS；通道 5 物理脚=['5'] 网络=['/VBUS']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    }
+   ],
    "known_false_alarms": [],
    "fixed_false_alarms": [
     {
@@ -1771,6 +1832,31 @@
      "rule": "PWR-A02",
      "match": "U4.36 (REGIN，原生 power_in) <- GND",
      "why": "BQ76952 内部 LDO 输入 REGIN 接地：手册允许不用内部 LDO 时接 VSS，但需审查者按手册确认，作候选保留"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D3 (ESD5B5.0ST1G ESD5B5.0ST1G Diode:SZESD9B5.0ST5G) 跨 /ESP32-C3 MCU/USB_D-；轨名提示=无，型号提示=无。同网 IC 脚 U5.26(GPIO18/USB_D-) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D4 (ESD5B5.0ST1G ESD5B5.0ST1G Diode:SZESD9B5.0ST5G) 跨 /ESP32-C3 MCU/USB_D+；轨名提示=无，型号提示=无。同网 IC 脚 U5.27(GPIO19/USB_D+) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D12 (SMCJ70A SMCJ70A LibreSolar:D_Zener) 跨 /BAT-；通道 2 物理脚=['2'] 网络=['/BAT-']，返回=['/BAT+']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D8 (PESD2CANFD24V-TR PESD2CANFD Power_Protection:NUP2105L) 跨 /CAN_H；通道 2 物理脚=['2'] 网络=['/CAN_H']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D8 (PESD2CANFD24V-TR PESD2CANFD Power_Protection:NUP2105L) 跨 /CAN_L；通道 1 物理脚=['1'] 网络=['/CAN_L']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
     }
    ],
    "known_false_alarms": [

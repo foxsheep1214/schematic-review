@@ -794,17 +794,20 @@ class Lint:
             if value.get('nc'):
                 continue
             blob = protective_clamps.part_text(value)
-            rail = protective_clamps.protected_net(ref, value, self.pin2net, self.graph, self.intent)
-            if rail is None:
-                continue   # not a clamp, not across a net and ground, or a reference/level zener (DEV-C05 and the verdict)
-            self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',
-                     f'{ref} ({blob.strip()}) 跨 {rail}；轨名提示={_fmt_v(_volt(rail))}，'
-                     f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail, ref)}'
-                     'VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；'
-                     f'{protective_clamps.transient_source_text(self.graph, rail)}'
-                     '该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；'
-                     '该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。',
-                     ref, kind='CANDIDATE')
+            channels = protective_clamps.channels(ref, value, self.graph, self.intent)
+            for channel in channels:
+                rail = channel['nets'][0]
+                detailed = len(channels) > 1 or len(channel['pins']) > 1 or not any(ng.is_ground(n) for n in channel['return_nets'])
+                channel_text = (f"通道 {channel['channel']} 物理脚={channel['pins']} 网络={channel['nets']}，返回={channel['return_nets']}；依据 {channel['citation']}；"
+                                if detailed else '')
+                self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',
+                         f'{ref} ({blob.strip()}) 跨 {rail}；{channel_text}轨名提示={_fmt_v(_volt(rail))}，'
+                         f'型号提示={_fmt_v(clamp_volt(blob))}。' + ''.join(self._protected_pins_text(n, ref) for n in channel['nets']) +
+                         'VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；'
+                         f'{protective_clamps.transient_source_text(self.graph, rail)}'
+                         '该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；'
+                         '该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。',
+                         ref, kind='CANDIDATE', **({'clamp_channel': channel} if detailed else {}))
 
         # DOC-A01/DOC-A02 导出日志：错误中止与 No_connect 被忽略 —— 免费证据，别丢。
         # 提供了日志即执行扫描；kicad-cli 导出成功时日志本来就是空的，空日志表示零命中而不是未提供。

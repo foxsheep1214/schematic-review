@@ -771,6 +771,11 @@ def lint_check(finding):
     obj = {'lint_detail': str(finding.get('detail') or '')}
     if isinstance(finding.get('ref'), str) and finding['ref'].strip():
         obj['ref'] = finding['ref']
+    if finding.get('clamp_channel'):
+        channel = finding['clamp_channel']
+        obj.update(channel=channel['channel'], nodes=[finding['ref'] + '.' + p for p in channel['pins']],
+                   nets=channel['nets'], return_nodes=[finding['ref'] + '.' + p for p in channel['return_pins']],
+                   return_nets=channel['return_nets'], pinout_citation=channel['citation'])
     return {'id': lint_check_id(finding), 'rule': rule, 'method': catalog.method_of(rule),
             'domain': catalog.domain_of(rule), 'object': obj,
             'criterion': '%s：%s' % (finding.get('name') or catalog.title(rule), finding.get('detail') or ''),

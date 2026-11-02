@@ -27,33 +27,125 @@ def functional_clamp(graph, net, intent):
     also reaches a connector is protective and keeps the PRO-E02 line; a TVS part is protective wherever it sits."""
     if is_rail(net, intent):
         return False
+    if port_connectors(graph, net):
+        return False
     inside = False
     for node in graph.nodes_on(net):
         ref = node.partition('.')[0]
         kind = graph.kind(ref)
-        if kind in (pw.CONNECTOR, pw.TESTPOINT):
+        if kind == pw.TESTPOINT:
             return False
         if kind == pw.IC or (kind in (pw.MOSFET, pw.BJT) and graph.role(node) == 'gate'):
             inside = True
     return inside
 
 
+# Exact manufacturer physical-pin rules. Each tuple is one protected electrical
+# channel, not a short between channels or across NC feed-through layout pads.
+CHANNEL_RULES = (
+    (r'SP1001-04[JX]TG', (('1',), ('3',), ('4',), ('5',)), ('2',), (),
+     'Littelfuse SP1001 Rev GD 2024-07-10 p1 pinout / functional block diagram'),
+    (r'(?:PESD2USB5UV(?:-TR?)?|PESD5V0L2BT(?:,215)?|(?:SZ)?NUP2105L(?:T1G)?)',
+     (('1',), ('2',)), ('3',), (),
+     'Nexperia PESD2USB5UV-T 2020-09-09 p2; PESD5V0L2BT 2023-06-27 p2 Table2; onsemi NUP2105L/D p1'),
+    (r'(?:TPD4E05U06(?:QDQARQ1|-Q1)|CDDFN10-3324P)',
+     (('1',), ('2',), ('4',), ('5',)), ('3', '8'), ('6', '7', '9', '10'),
+     'TI SLVSCO7C p3 DQA pin functions; Bourns CDDFN10-3324P p2 Device Pinout'),
+    (r'TPD8S009(?:DSMR)?', tuple((str(p),) for p in (1, 3, 4, 6, 7, 9, 10, 12)),
+     ('2', '5', '8', '11'), ('14',), 'TI TPD8S009 SLVS816B p3 pin functions; p6 VCC is optional supply'),
+    (r'USBLC6-2SC6Y?', (('1', '6'), ('3', '4'), ('5',)), ('2',), (),
+     'ST USBLC6-2SC6 DocID11265 / USBLC6-2SC6Y DocID023201 Rev2 p1 Fig1; VBUS also protected'),
+    (r'SM3\.3H(?:-TP)?', (('1',), ('2',)), ('3',), (), 'MCC SM3.3H Rev3-3-12012020 p1 internal structure'),
+    (r'RESD1CANYFH(?:T116)?', (('1',), ('2',)), ('3',), (), 'ROHM RESD1CANYFH p1 internal circuit'),
+    (r'SP3003-02[JX]TG', (('4',), ('5',), ('3',)), ('2',), ('1',),
+     'Littelfuse SP3003 Rev GD 2022-11-30 p1 pinout/block diagram: 3=VCC clamp, 1=NC'),
+)
+
+
+def channels(ref, part, graph, intent=None):
+    """Protected channels with physical pins, returns and source. Unknown arrays stay unresolved.
+
+    An official complete table resolves arbitrary TVS arrays. A model rule only
+    applies to its exact identity; it never guesses from a generic package.
+    """
+    if not graph.is_fitted(ref):
+        return []
+    device = ((intent or {}).get('devices') or graph.db.get('devices') or {}).get(ref, {})
+    actual = graph.pins_of(ref)
+    identities = [device.get('mpn')] + [part.get(k) for k in ('part', 'value')]
+    rule = next((r for r in CHANNEL_RULES if any(re.fullmatch(r[0], str(i or ''), re.I) for i in identities)), None)
+    protective = graph.kind(ref) == pw.TVS or rule is not None
+    if not protective and not CLAMP_RE.search(part_text(part)):
+        return []
+    groups, returns, ignored, citation = None, (), (), ''
+    if rule:
+        _, groups, returns, ignored, citation = rule
+    elif protective and device.get('pinout_complete') and device.get('citation'):
+        pins = device.get('pins', {})
+        returns = tuple(p for p,s in pins.items() if s.get('role') == 'return')
+        ignored = tuple(p for p,s in pins.items() if s.get('role') in ('nc', 'absent'))
+        grouped = {}
+        for p,s in pins.items():
+            if p not in returns + ignored:
+                grouped.setdefault(s['name'], []).append(p)
+        if returns:
+            groups = tuple(tuple(ps) for ps in grouped.values())
+            citation = device['citation']
+    # Native physical I/O names can discover a TVS channel question; this is
+    # not manufacturer verification of an unconfirmed identity or parameters.
+    if groups is None and protective:
+        returns = tuple(p for p in actual if ng.is_ground(actual[p]))
+        grouped = {}
+        for p in actual:
+            name = graph.pinname.get(ref + '.' + p, '')
+            if p not in returns and re.fullmatch(r'(?:I/?O|D)\d+(?:[+-])?|K\d*|A\d+', name, re.I):
+                grouped.setdefault(name if re.match(r'(?:I/?O|D)', name, re.I) else p, []).append(p)
+        if returns and grouped:
+            groups = tuple(tuple(ps) for ps in grouped.values())
+            source = (graph.db.get('device_kinds') or {}).get(ref, {}).get('citation', '')
+            citation = f'native physical I/O names; TVS basis={graph.basis(ref)}; {source}; channel parameters require datasheet'
+    if groups is None:
+        ends = sorted(set(actual.values()) - graph.pseudo)
+        if len(ends) != 2:
+            return []
+        grounded = [e for e in ends if ng.is_ground(e)]
+        if not grounded and not protective:
+            return []
+        # A floating two-terminal TVS still has a differential working window;
+        # do not turn a rectifier's local negative rail into a trip threshold.
+        ret = grounded[0] if grounded else ends[0]
+        live = next(e for e in ends if e != ret)
+        if graph.kind(ref) == pw.ZENER and functional_clamp(graph, live, intent):
+            return []
+        returns = tuple(p for p in actual if actual[p] == ret)
+        groups = (tuple(p for p in actual if actual[p] == live),)
+        citation = 'native two-terminal clamp; differential return' if not grounded else 'native two-terminal clamp to ground'
+    out = []
+    for group in groups:
+        pins = sorted(set(group) & set(actual))
+        nets = sorted({actual[p] for p in pins} - graph.pseudo)
+        window_nets = nets + [actual[p] for p in returns if p in actual and not ng.is_ground(actual[p])]
+        if any(switch_node(graph, n, intent) for n in window_nets):
+            continue   # an energy clamp remains in the two-sided engineering window
+        # An unused channel with only a single open/NC endpoint is no live port.
+        nets = [n for n in nets if not (ng.is_auto_named(n) and str(n).rsplit('/', 1)[-1].startswith('unconnected-'))]
+        if not nets:
+            continue
+        return_pins = sorted(set(returns) & set(actual))
+        out.append({'channel': '-'.join(group), 'pins': pins, 'nets': nets,
+                    'return_pins': return_pins, 'return_nets': sorted({actual[p] for p in return_pins} - graph.pseudo),
+                    'nc_pins': sorted(set(ignored) & set(actual)), 'citation': citation,
+                    'gaps': [] if return_pins else ['clamp-return-pinout:' + ref]})
+    return out
+
+
 def protected_net(ref, part, pin2net, graph, intent):
-    """The non-ground net a protective clamp guards, or None: a clamp part (by its own text) fitted, with exactly two
-    nets of which one is ground, the other no switch node, and not a reference or level zener on an internal node."""
-    if part.get('nc') or not CLAMP_RE.search(part_text(part)):
-        return None
-    ends = sorted({net for pin, net in pin2net.items() if pin.partition('.')[0] == ref})
-    if len(ends) != 2 or not any(ng.is_ground(e) for e in ends):
-        return None
-    rails = [e for e in ends if not ng.is_ground(e)]
-    if not rails:
-        return None
-    if switch_node(graph, rails[0], intent):
-        return None   # an energy clamp across a switch node: PRO-C02 two-sided rows judge it
-    if graph.kind(ref) == pw.ZENER and functional_clamp(graph, rails[0], intent):
-        return None
-    return rails[0]
+    """Compatibility query for callers deciding whether PRO-C02 applies.
+
+    Enumeration uses channels(); a multi-channel package has no single net.
+    """
+    found = channels(ref, part, graph, intent)
+    return found[0]['nets'][0] if found else None
 
 
 def port_connectors(graph, net):
