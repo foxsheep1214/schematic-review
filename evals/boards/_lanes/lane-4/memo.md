@@ -87,3 +87,9 @@
 - V1=J3.S→U4.IN5电极，不能作电源；MountingHole封装DIN965不是工业DI；AFE模拟脚不是温度接口，单有源晶体接口不作双端CMOS比较。
 - 三端JP2的1-2/2-3不能用closed表达；unknown会污染无关电源/阻容检查。features不能重复声明已有circuits；显式NA后merge旧REQ-Q07会拒收，保留原计划用NA证据处置。
 - C13/C14各10p仅串联5p，CL18需要寄生13p，未锁寄生不判不起振；ADS正文20p与图22p保留差异。REQ-Q07 PASS只答覆盖，外部主机/电极/温度合同不伪装VENDOR_DATUM。
+
+- tonydefilippis--poepico：705项有记录，618未审结；52归因=6真/33误/1准则/2知识/10待人工，2覆盖漏报；FAIL/NO_GO，renderer退出2，交付执行记录。
+- 无表头POEPico.csv先只补5列名再read_bom：136贴装，6 DNP恰匹配；J2/Q12图内C24363903与BOM不同，别让错采购码绑定TR1手册。
+- U6 VDDCORE为内部稳压输出、PLL经FB2/3；U3 VCC来自Q10/L3专用buck，13条无源假报警。Cout图示值不是保证min；内部LDO PWR-C04对象仍漏。
+- +5V0含Micro-B VBUS直挂55µF并接PoE buck；按物理VBUS脚追入口，勿套PD/Type-C表。V1/V2正负是PoE极性线，不是差分数据。
+- AUX未用须接VSS；D1 SMAJ24A跨PoE已证失配。U4 /EN=VDD、EN=VSS确定shutdown/体二极管模式，但是否有意禁用要问设计者，不据此报实物必坏。
