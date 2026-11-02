@@ -96,3 +96,10 @@
 - intent.devices的EL817共同脚表未进入NetGraph，输出清单null使FEEDBACK-OPEN漏问；先修脚义数据流，再加输出电容故障包络种子，不编16V超压。
 - EE25骨架名不够证明绕组脚义；图示两次级各自同网先列需确认。1kV不等于Y、275VAC不等于X，0.5A保险与0.3A扼流圈不能直接判过载。
 - ST官网可读不等于本地完整PDF到位；Mouser可返1页Access Denied PDF须验标题。改devices后先重冷扫再merge；needs_human/schema15冲突及其余记录错误如实FAIL。
+
+## anthilla--anthc（2026-11-02）
+- MCP3464RT-E/NC的/NC是UQFN封装，不是DNP；以原生DNP和BOM区分，R65真不贴。原始db保留，修正分析副本再冷/热扫。
+- TPS54331 EN与TLV9054S SHDN允许浮空；只确认漏物理脚/采购封装错，勿报必不启动。CP2102N三脚同3V3可为合法旁路稳压。
+- PESD3V3L2BT公共脚是3，SM712亦需逐通道；整颗三网不能跳过PRO-E02。无EN LDO仍需PWR-D03启动充电+负载检查。
+- Ω串阻/RTS-DTR交叉发射极、boost储能L2、共享J3归属需人工追端；SS不是数字strap/救砖，VBUS检测不可取多源OR之后。
+- 893项/100根因归因（7/11/0/18/64）、漏项2；schema15扩展及其它记录错误如实FAIL/未打包，原生报告警示保留，完整证据只在缓存。
