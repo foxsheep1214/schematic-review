@@ -519,12 +519,27 @@ class Generator:
     def isolation(self):
         pairs = {}
         for barrier in self.domains['barriers']:
-            pairs.setdefault('/'.join(barrier['domains']), []).append(barrier)
+            pairs.setdefault('/'.join(barrier['domains']) if len(barrier['domains']) > 1 else barrier['ref'], []).append(barrier)
         for pair, barriers in sorted(pairs.items()):
             cid = 'ISOLATION-' + pair
             self.new(cid, 'ISOLATION', pair, pair, cross_cutting=True)
             for barrier in barriers:
-                self.add(cid, barrier['ref'], 'barrier', f'barrier:{barrier["kind"]} spans {pair}', 0)
+                evidence = f'barrier:{barrier["kind"]} spans {pair}'
+                if barrier.get('sides'):
+                    evidence += '; ' + barrier['citation'] + '; sides ' + repr([x['pins'] for x in barrier['sides']])
+                self.add(cid, barrier['ref'], 'barrier', evidence, 0)
+                sides = barrier.get('sides', [])
+                if len(sides) == 2 and all(s['nets'] for s in sides):
+                    for side in sides:
+                        for index, net in enumerate(side['nets']):
+                            self.candidates[cid]['nets'][f'{barrier["ref"]}:side{side["id"]}:{index}'] = net
+                    for connector in self.graph.parts:
+                        if self.graph.kind(connector) != pw.CONNECTOR or not self.fitted(connector):
+                            continue
+                        nets = set(self.graph.nets_of(connector))
+                        if all(nets & set(s['nets']) for s in sides):
+                            self.add(cid, connector, 'endpoint', f'barrier:{barrier["ref"]} connector spans both side nets; '
+                                     + barrier['citation'], 0)
 
     def chains(self):
         """Startup and protection chains: from an anchor's startup or protection pin outward, through two-terminal
@@ -761,6 +776,9 @@ class Generator:
             if load.get('id', '').endswith('UNRESOLVED'):
                 gaps.append({'kind': 'pin-roles', 'ref': load['ref'],
                              'need': f'intent.devices.{load["ref"]}: winding/pin roles from the datasheet'})
+        gaps += [{'kind': 'isolation-side-pinout', 'ref': b['ref'],
+                  'need': 'datasheet physical side pin groups or cited transformer windings; unresolved sides are not joined'}
+                 for b in self.domains['barriers'] if b.get('resolved') is False]
         gaps += self.role_gaps
         pages = self.db.get('ref2page') or {}
         candidates = []

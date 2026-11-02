@@ -454,7 +454,10 @@ class Lint:
             frontier, seen = [(n, 0)], {n}
             while frontier:
                 net, hops = frontier.pop()
-                for _, other in g.neighbors(net, kinds=PASSIVE_LINKS):
+                for link, other in g.neighbors(net, kinds=PASSIVE_LINKS):
+                    resistance = parse_resistor(self.parts.get(link, {}).get('value')) if g.kind(link) == pw.RESISTOR else None
+                    if g.kind(link) == pw.RESISTOR and (resistance is None or resistance['kohm'] > .001):
+                        continue     # finite bleed resistance is not an equipotential ground bond
                     if other in seen:
                         continue
                     seen.add(other)
@@ -490,8 +493,10 @@ class Lint:
             words = {t for x in list(island) + [self.pinname.get(x, '') for x in pins]
                      for t in re.split(r'[^A-Z0-9]+', str(x).upper())}
             cross = sorted(ref for ref in refs & main_refs if g.kind(ref) not in TWO_TERMINAL)
+            from checkers import isolation_sides
             isolators = [ref for ref in refs
-                         if g.kind(ref) in (OPTO, TRANSFORMER) or ISOLATOR_RE.search(blob(ref))]
+                         if isolation_sides.model(g, ref, self.intent) is not None
+                         or g.kind(ref) in (OPTO, TRANSFORMER) or ISOLATOR_RE.search(blob(ref))]
             if (not pins or isolators or words & {'SENSE', 'SNS', 'KELVIN'}
                     or any(g.kind(ref) == CONNECTOR for ref in refs)):
                 continue

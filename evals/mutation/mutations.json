@@ -5955,5 +5955,61 @@
   "file": "scripts/circuit_candidates.py",
   "old": "            if net in self.stops:\n                caps = self.ground_caps(net)      # a converter's input rail ends the input: its capacitors are the input's, whatever their value\n            if caps or net in self.stops:",
   "new": "            if hops and net in self.stops:\n                caps = self.ground_caps(net)\n            if caps or (hops and net in self.stops):"
+ },
+ {
+  "id": "M917",
+  "name": "isolation package unions both reference sides",
+  "file": "scripts/checkers/domains.py",
+  "old": "groups = [x['nets'] for x in side['sides']] if side['mechanism'] not in ('transformer', 'relay') else []",
+  "new": "groups = [graph.nets_of(ref)]"
+ },
+ {
+  "id": "M918",
+  "name": "megohm bleed merges domains",
+  "file": "scripts/checkers/domains.py",
+  "old": "value is None or value['kohm'] >= 1000",
+  "new": "value is None or value['kohm'] >= 1e9"
+ },
+ {
+  "id": "M919",
+  "name": "common-ground isolation objects disappear",
+  "file": "scripts/checkers/domains.py",
+  "old": "if len(touched) > 1 or ref in side_models:",
+  "new": "if len(touched) > 1:"
+ },
+ {
+  "id": "M920",
+  "name": "passive barrier gets digital isolation questions",
+  "file": "scripts/plan_circuits.py",
+  "old": "if passive_barrier and rule in",
+  "new": "if False and rule in"
+ },
+ {
+  "id": "M921",
+  "name": "AMC3311 loses its independent side model",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "r'AMC3311[A-Z0-9/-]*'",
+  "new": "r'NEVER3311[A-Z0-9/-]*'"
+ },
+ {
+  "id": "M922",
+  "name": "a ground net reference is no longer a domain alias",
+  "file": "scripts/checkers/domains.py",
+  "old": "derived != declared_label",
+  "new": "derived != declared"
+ },
+ {
+  "id": "M923",
+  "name": "duplicate ground leaves share a domain without a wire",
+  "file": "scripts/checkers/domains.py",
+  "old": "initial_labels.count(labels[net]) > 1",
+  "new": "False"
+ },
+ {
+  "id": "M924",
+  "name": "connector spanning both isolation sides loses endpoint coverage",
+  "file": "scripts/circuit_candidates.py",
+  "old": "if all(nets & set(s['nets']) for s in sides):",
+  "new": "if False:"
  }
 ]

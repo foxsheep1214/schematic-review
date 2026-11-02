@@ -12,7 +12,7 @@ import device_kinds
 import protective_clamps
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
-from checkers import powertree
+from checkers import powertree, isolation_sides
 from checkers.netgraph import RAIL_RE, NetGraph, is_analog_sense_pair, is_ground
 from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, COMMON_MODE_CHOKE, CONNECTOR, COUPLED_INDUCTOR, CRYSTAL, DIODE, FUSE, IC,
                         INDUCTOR, MOSFET, OPTO,
@@ -429,7 +429,17 @@ class CircuitPlanning:
             trigger = f'intent.circuits:{circuit["citation"]}'
             asked = {}   # rule -> (object ref, requires) for the rules whose precondition holds
             not_asked[circuit['id']] = []
+            side_models = [isolation_sides.model(graph, ref, self.kind_intent) for ref in refs] if kind.name == 'ISOLATION' else []
+            non_digital = {'transformer', 'ethernet_magnetics', 'isolated_dcdc', 'isolated_amplifier', 'relay'}
+            passive_barrier = bool(side_models) and any(m for m in side_models) and all(
+                (m is not None and m['mechanism'] in non_digital) or graph.kind(ref) in (CAPACITOR, RESISTOR)
+                for ref, m in zip(refs, side_models))
             for rule in kind.subjects:
+                if passive_barrier and rule in ('RST-T04', 'SIG-C09', 'SIG-C13', 'SIG-C17', 'PRO-C01'):
+                    not_asked[circuit['id']].append({'rule': rule, 'aspect': catalog.title(rule),
+                        'requires': 'active digital isolation or protection mechanism',
+                        'why': '被动变压器侧别只证明隔离对象；没有数字默认态/速率/CMTI或防护协调链'})
+                    continue
                 if not catalog.baseline_asks(rule, self.intent):
                     continue
                 requires = catalog.SUBJECT_REQUIRES.get((kind.name, rule))
