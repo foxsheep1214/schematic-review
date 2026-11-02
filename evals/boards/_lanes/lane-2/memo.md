@@ -23,3 +23,9 @@
 - Q1清单把R2→GND上的J2/J3当地驱动却漏U1.4 OUT*→R1；同时D1+C1误叫RCD，须先锁真实供入轨与栅极输出脚义。
 - 被动T1不能套数字隔离器默认态/码率/CMTI；5+6、7+8本就须并接，R3/R4=0ohm不构成短错绕组。M01是实际U1/Q1默认态对象/状态漏问，非已证烧毁。
 - T1只取到原厂p1网页文字、完整PDF403，AVAILABLE不等于全针图齐；needs_human原生仍不支持，保留FAIL（本板109项），不编工况/安全态过门禁。
+
+## rmingon--rs485-spy-injector（2026-11-02）
+- RS485候选states=[]：决定器可成功，lint却拒空状态；先保留失败链，再明确受限回退，不造需求加run；合并步先补CANDIDATE_STATES。
+- BSS138应用段MOSFET gate drivers会触发标题冲突；Q1.3漏极也被ESP32_EN网名当输入。先读G/D/S和四种RTS/DTR状态，3.3V不等于低于4.5V就失败。
+- Conn_02x08配SW_DIP_SPSTx08是内部拨码，不能当4个独立外口；ETH1–8无PHY，不是以太网；仍须留触点配对/允许拨码表缺口。
+- CH340 v3C p4允许未用I/O悬空；CC开路不能只补NC。10k/120ohm偏置19.68mV需结合外部偏置，不作全现场必错；needs_human/schema15冲突保留FAIL。
