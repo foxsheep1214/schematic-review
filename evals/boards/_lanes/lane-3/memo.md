@@ -64,3 +64,9 @@
 - Pico原厂p20有VBUS的R10/R1下拉，Q201无偏置是模组边界误报；Q1302 Ctrl驱动不应吸入全板38件RC snubber。Diodes厂名及STM32特性列表仍会误当角色标题。
 - C1306 25V对30V声称窗、Q1302 PNP链到NPN资料、DS1307 0x6F旧注释分开归因。RTC 5V焊桥未证、AMS1117陶瓷稳定及BJT 30V应力未知，别硬定缺陷；ADC复用脚/codec/G-S齐纳逐对象补查。
 - 无独立BOM时原生XML列可无损转CSV；strict缺U303.2/.4可手核A/Y但保留输入状态。schema15评估分类、局部条款/数值/对象范围不满足时原样FAIL，报告副本不是有效打包或准出。
+
+- 2026-11-02 s59mz--kicad-pmod_rs485：137项（133+补4）／25归因（1真、4误、0准则、3知识、17待确认）／3目标规则覆盖漏项；35PASS+6NA+2FAIL（同1根因）+94待判，门禁FAIL。
+- ADM2582E是隔离RS485且内置isoPower；单transceiver角色会漏ISOLATION/POWER_CONVERTER，domains还会误跨芯片短接两侧。不能换isolator丢总线，保持真实域并用rule_gaps补查。
+- U1.12对11/14只有C6=100n，10u的C8在两磁珠外，按Rev.H p17至少两颗并联旁路核；FB2在同一隔离侧合法。四只120为两串两并=120Ω，J2为本地终端帽，不是现场端口。
+- 自定义Pmod焊盘奇偶两列须读取footprint；J3/Tx与J4/Rx可能取对端视角，未给配对定义不硬判反接。旧Rev.0手册VCC8返回7的文字不能继承，当前Rev.H p8/p17为返回9；新版网页摘录不等于全文本地原件。
+- 两端LED空脚差集仍会被类型资料卡；名义3.3V不要冒充真实电源窗。schema15不容NEEDS_HUMAN/KNOWLEDGE_GAP及纯拓扑F1承载时如实FAIL，记录完整不等于电气审结或准出。
