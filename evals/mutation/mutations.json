@@ -5920,5 +5920,40 @@
   "file": "scripts/lint.py",
   "old": "if not ng.is_ground(n) and not pd_return:",
   "new": "if not ng.is_ground(n):"
+ },
+ {
+  "id": "M912",
+  "name": "declared relay switch again anchors converter",
+  "file": "scripts/circuit_candidates.py",
+  "old": "and self.converter_topology(switch):",
+  "new": ":"
+ },
+ {
+  "id": "M913",
+  "name": "rejected candidate retains members",
+  "file": "scripts/circuit_decisions.py",
+  "old": "                owner = next((k for k, m in members.items() if ref in m and decided.get(k) != 'reject'), None)",
+  "new": "                owner = next((k for k, m in members.items() if ref in m), None)"
+ },
+ {
+  "id": "M914",
+  "name": "shared input capacitor has no supply role",
+  "file": "scripts/circuit_candidates.py",
+  "old": "self.add(cid, cap, 'input_capacitor', f'input_capacitor: on {net} feeding {node}', 0)",
+  "new": "self.add(cid, cap, 'capacitor', f'input_capacitor: on {net} feeding {node}', 0)"
+ },
+ {
+  "id": "M915",
+  "name": "undeclared shared VIN no longer stops walks",
+  "file": "scripts/checkers/domains.py",
+  "old": "supplies = set(rails) | powertree.supply_candidates(graph, intent)",
+  "new": "supplies = set(rails)"
+ },
+ {
+  "id": "M916",
+  "name": "connector walks through its shared supply seed",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            if net in self.stops:\n                caps = self.ground_caps(net)      # a converter's input rail ends the input: its capacitors are the input's, whatever their value\n            if caps or net in self.stops:",
+  "new": "            if hops and net in self.stops:\n                caps = self.ground_caps(net)\n            if caps or (hops and net in self.stops):"
  }
 ]

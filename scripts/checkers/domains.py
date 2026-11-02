@@ -151,13 +151,14 @@ def rail_stops(graph, intent, grounds, anchors):
     tree = powertree.PowerTree(graph, intent)
     rails = (intent or {}).get('power_rails') or {}
     rails = rails if isinstance(rails, dict) else {}
+    supplies = set(rails) | powertree.supply_candidates(graph, intent)
     for net in sorted(graph.nets):
         if net in stops or net in graph.pseudo or tree.is_switch_node(net):
             continue
         if tree.rail_basis(net) == powertree.DRIVER:
             stops[net] = DRIVER
             continue
-        if net not in rails:
+        if net not in supplies:
             continue
         reached = set()
         for ref in graph.refs_on(net):

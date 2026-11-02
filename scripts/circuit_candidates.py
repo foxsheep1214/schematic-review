@@ -28,7 +28,7 @@ import part_words as pw
 import requirement_clarifications
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-10-28.1'   # a non-converter IC's switch without an inductive drain is no converter; R8: U406
+RULES_VERSION = '2026-11-02.2a'   # a non-converter IC's switch without an inductive drain is no converter; R8: U406
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -74,6 +74,20 @@ def best_claims(holders):
             ranks.setdefault(ref, []).append((rank, hid))
     return {ref: sorted({hid for rank, hid in entries if rank == min(r for r, _ in entries)})
             for ref, entries in ranks.items()}
+
+
+SUPPLY_CAP_ROLES = frozenset({'input_capacitor', 'output_capacitor', 'decoupling', 'storage_capacitor'})
+EXCLUSIVE_ROLES = frozenset({'switch', 'inductive'})
+
+
+def shared_supply_refs(candidates):
+    """Supply capacitors may be referenced without limit; one bookkeeping owner still answers device rows."""
+    return {m['ref'] for c in candidates for m in c['members'] if m.get('role') in SUPPLY_CAP_ROLES}
+
+
+def settle_supply_claims(winners, refs):
+    """Stable bookkeeping tie break, never a claim about capacitor sufficiency for each converter."""
+    return {ref: holders[:1] if ref in refs else holders for ref, holders in winners.items()}
 
 
 def _blob(part):
@@ -247,6 +261,21 @@ class Generator:
         return bool(net) and (net in self.winding_nets or any(
             self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net)))
 
+    def converter_topology(self, switch):
+        """An energy-storage switch with a controller/feedback, or a discrete zener-referenced linear regulator.
+        A declared role alone, relay coil or transistor feeding a load is insufficient."""
+        if self.inductive_drain(switch):
+            drivers = switch.get('drivers', [])
+            controller = any(self.graph.kind(str(d.get('node', '')).partition('.')[0]) == pw.IC for d in drivers)
+            feedback = any(self.matches(FEEDBACK_PIN_RE, node) for net in self.graph.nets_of(switch['ref'])
+                           for node in self.graph.nodes_on(net))
+            return controller or feedback
+        gate = switch.get('gate_net')
+        # A zener reference plus bias resistor is the feedback element of the source/emitter follower.
+        return bool(gate and self.graph.refs_on(gate) and any(
+            self.graph.kind(r) == pw.ZENER for r in self.graph.refs_on(gate)) and any(
+            self.graph.kind(r) == pw.RESISTOR for r in self.graph.refs_on(gate)))
+
     def prepare(self):
         """Which anchor owns which switch, which switches anchor themselves, and the nets every walk treats as
         circuit boundaries besides the rail stops (switch nodes, converter inputs, winding nets)."""
@@ -255,11 +284,13 @@ class Generator:
             if not self.fitted(switch['ref']):
                 continue
             owner = self.switch_anchor(switch)
+            if switch.get('role') == 'level_shifter':
+                continue
             if owner and self.anchors[owner] == 'pd_controller':
                 continue          # a port's VBUS switch belongs to the port
             if owner and self.anchors[owner] not in CONVERTER_ROLES and not self.inductive_drain(switch):
                 continue          # a supervisor's signal transistor (R8: TPS3700 → PNP Q406 → FAULT) is no converter
-            if owner is None and self.self_anchored(switch):
+            if owner is None and self.self_anchored(switch) and self.converter_topology(switch):
                 owner = switch['ref']
             if owner:
                 self.by_anchor.setdefault(owner, []).append(switch)
@@ -288,7 +319,10 @@ class Generator:
         for anchor in self.converter_anchors:
             cid = 'POWER_CONVERTER-' + anchor
             cand = self.candidates[cid]
-            self.add(cid, anchor, 'anchor', 'anchor:' + (self.anchors.get(anchor) or 'discrete switch nobody drives'), 0)
+            self.add(cid, anchor, 'anchor', 'anchor:' + (self.anchors.get(anchor) or 'converter topology'), 0)
+            for node, net in self.graph.named_pins(anchor, powertree.SUPPLY_IN_PIN_RE).items():
+                for cap in self.ground_caps(net):
+                    self.add(cid, cap, 'input_capacitor', f'input_capacitor: on {net} feeding {node}', 0)
             stops = set(self.stops)
             seeds = [(node, net) for node, net in self.anchor_seeds(anchor) if not self.chain_pin(node)]
             inductive = []
@@ -354,7 +388,7 @@ class Generator:
             self.driven_output_caps(cid, anchor)
             self.feedback_opto(cid, anchor)
             # a switch nobody with a role drives, sitting on one of this anchor's pin nets, is this circuit's (a latch, a level stage)
-            pin_nets = set(self.graph.pins_of(anchor).values()) - self.grounds
+            pin_nets = set(self.graph.pins_of(anchor).values()) - self.stops
             for switch in self.switches:
                 if switch['ref'] in owned or switch['ref'] == anchor or not self.fitted(switch['ref']):
                     continue
@@ -454,9 +488,9 @@ class Generator:
                 continue
             seen[net] = hops
             caps = [c for c in self.ground_caps(net) if (parse_capacitance(self.graph.parts[c].get('value')) or 0) >= STORAGE_FARAD]
-            if hops and net in self.stops:
+            if net in self.stops:
                 caps = self.ground_caps(net)      # a converter's input rail ends the input: its capacitors are the input's, whatever their value
-            if caps or (hops and net in self.stops):
+            if caps or net in self.stops:
                 for cap in caps:
                     members[cap] = (hops + 1, f'{path} -> {net} -> {cap}', 'storage_capacitor')
                 storage = storage or net
@@ -685,6 +719,8 @@ class Generator:
         """Mark each member owned or referenced; a part whose best claims tie is owned by no candidate and listed shared."""
         winners = best_claims({cid: [(ref, claim_rank(cand, m)) for ref, m in cand['members'].items()]
                                for cid, cand in self.candidates.items()})
+        winners = settle_supply_claims(winners, shared_supply_refs(
+            [{**c, 'members': list(c['members'].values())} for c in self.candidates.values()]))
         shared = []
         for ref, cids in sorted(winners.items()):
             for cid, cand in self.candidates.items():
@@ -733,6 +769,7 @@ class Generator:
             members = [dict(m) for _, m in sorted(cand['members'].items())]
             for m in members:
                 m.pop('hops', None)
+                m['nets'] = [n for n in self.graph.nets_of(m['ref']) if n not in self.graph.pseudo]
             candidates.append({**{k: v for k, v in cand.items() if k != 'members'}, 'members': members,
                                'pages': sorted({pages[m['ref']] for m in members if m['ref'] in pages})})
         return {

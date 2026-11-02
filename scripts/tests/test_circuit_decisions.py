@@ -250,7 +250,7 @@ class OwnershipTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertEqual(next(c for c in circuits if c['id'] == 'SENSE')['owned'], ['R14', 'R15', 'R5', 'R6', 'U4', 'U5'])
         split = {'candidate': 'POWER_CONVERTER-U7', 'decision': 'split', 'citation': 'U7 datasheet p12 Figure 9',
-                 'into': [{'id': 'BUCK-POWER', 'members': ['U7', 'L2', 'C10']}, {'id': 'BUCK-FB', 'members': ['R11', 'R12']}]}
+                 'into': [{'id': 'BUCK-POWER', 'members': ['U7', 'L2', 'C10', 'C3']}, {'id': 'BUCK-FB', 'members': ['R11', 'R12']}]}
         circuits, errors = cd.derive(self.candidates, accept_all(self.candidates, **{'POWER_CONVERTER-U7': split}))
         self.assertEqual(errors, [])
         parts = {c['id']: c['owned'] for c in circuits if c['id'].startswith('BUCK-')}
