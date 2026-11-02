@@ -93,3 +93,9 @@
 - D6经1k接J2的信号钳位不能按直接网归内部functional_clamp；复用port_connectors应出PRO-E02。CT/RESET合法add仍丢nets/anchors，ADC/复位0展开，优先修引用关系而非手补计划。
 - RF-BM-2652B1完整原厂PDF可从B1_20240823 URL取得（内页May2023），产品页误链B2；模组脚36有内部上拉，别套裸片RESET说明。AHT10是连接器、BT1是座，不能猜上拉、电芯或供入方向。
 - schema15保留pending并让覆盖FAIL；局部功能合格/资料不足0不是全板通过。NETLIST_FACT正则不收SW1.1'这类原生脚号；独立核XML/db，不改真实脚号去适配校验器。
+
+- neumi--fastlogic：194件/207网/627端点，XML/db一致、KiCad10.0.7 strict；19电路/55框架，937=934原生+3补问，77局部判/860待核；91归因=6真(4电气+2图面)+20误+6资料+59人工，4模型缺口，FAIL/NO_GO。
+- 源BOM在固定commit的production/bom.csv，稀疏检出不显示；read_bom丢Value须CSV独立对读。43个C前缀容量全None、41个R前缀阻值未解；R330/R120被作0.33/0.12Ω，按SKU消歧，别全局strip合法RKM。
+- STM32F407 VCAP49/73须各2.2µF且ESR<2Ω；W5500 RSVD23须接地，VBG18须浮空、RSVD38–42为NC；CP2102N VBUS需分压/等效限流，VREGIN/VDD各需4.7µF并0.1µF。PE0/1无ADC，意图未锁先留人工。
+- 共3V3不能把U13 PMODE43–45/U6 VREF+认成D18驱动；BSS138两侧上拉需低态合计(条件10k各侧约0.75mA)。本版PRO-C04与Y3 CLK-C01已有，漏项要核当前计划，别照搬旧memo。
+- schema15没有needs_human/未定合同状态；逐ID pending与55功能未完成旁账必须保留，原生资料不足0/4失败功能不代表全量55框架已审。报告valid=false仅诊断；p1可作定位而page1本身不被locator regex识别。
