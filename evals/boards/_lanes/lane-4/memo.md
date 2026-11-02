@@ -63,3 +63,9 @@
 - TI明确DECAY open=mixed、V3P3OUT为输出、MODE为运行微步选择、VCP→VM的1MΩ为原厂泄放；无脚FD1不是DEBUG、H1-H4不受电气应力。每个反证按物理脚，不泛化相邻器件。
 - CTS 73L2R20G是0.2Ω±2%/0.1W，不能借0603通用额定；约0.700A RMS只是额定边界，满端设定超过3A不是实际相电流。未知板输入不可拿芯片45V指控LED必超功耗。
 - Top50 G04-005绝限已由SIG-C08覆盖；SIG-C07漏项属G04-003/004扩展核对，勿错挂准则。C6普通采购约束通过不等于候选料已贴装；分号BOM保真转换，未闭条件不伪造厂家保证。
+
+- solderedelectronics--soldered-inkplate-6-motion-hardware-design：980项，89观察=4真/23误/0准则/2知识/60待确认（3真根因）；4覆盖漏报，925项未完成，valid=false/NO_GO，renderer拒绝，交未完成执行记录。
+- MCP73831输入C43=100n与输出C57=2u2分别低于4.7uF；输出条款仅电池断开，C56 DNP不可相加。charger VBAT要独立展开PWR-C04，别只匹配OUT；原始BOM优先于目读。
+- SN74LVC16244物理26/27输入NC是真，22/23输出NC合法；TPS651851 pad49=VN、DIS端直连允许。MC14093库全INPUT、TF座K前缀relay、FD进DEBUG需按物理脚撤回。
+- U15电源控制POR、K2/K35/PAD配电、电池分压→K35.103需补覆盖；I2C R47/R48=10k，未知频率/Cb不可把条件算例当实物缺陷。
+- 工具functions开放项key全局唯一；REQ-Q07让materialize派生，覆盖PASS不等于电气PASS；缺条款且未审完必须保留REVIEW_INCOMPLETE，不能为了渲染改EXTERNAL_DATA；R45/R46属SD，R50被STARTUP候选持有，跨电路引用不强抢add。
