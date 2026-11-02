@@ -17,3 +17,9 @@
 - I2S*_SDA不是I2C；整组LED通道/Q7B三脚NC不能当悬空输入。Si5351C p23/p25明确XA外部注入时XB留空，合法候选关闭不计误报。
 - 型号标题先于应用词：SN74LVC1G86的TVs不是TVS；资料分组按Value而非完整MPN时须保留后缀映射。网页摘录不等于本地完整PDF，同族XC6206不可擅换厂家。
 - 先核D13符号/0Ω料号冲突和MAX5865的VDD≤3.3V、OVDD≤VDD供电边界；3.333V名义值不能替代实际压降/模式界。schema15不容needs_human时保留FAIL，不假造厂家依赖。
+
+- 2026-11-02 solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design：191项／18根因（2真、5误、0准则、4知识、7待定）／2覆盖漏报；47PASS含4覆盖汇总、127待判，门禁FAIL。
+- BQ27441 BIN上拉只能到片内VDD；SDA/SCL/GPOUT推荐上拉≤3.6V，6V绝限不保证5V通信。JP1/JP2双桥与JP3默认接通须看PCB铜桥，JP4默认开路。
+- K4/K5 easyC不能因K前缀成继电器；U2双MOS信号翻译不是功率管。错误POWER_CONVERTER候选reject后add改归仍被占用挡住；I2C区域已有SIG-C08，不能重复计掉电主题漏报，不编辑候选过关。
+- fuel_gauge缺角色会使BAT/SRP/SRN的ADC量程被ANALOG_PIN资格漏掉；10mΩ对应±2.5A只是名义量程，BOM 1%与实际电流范围另核。
+- 分号BOM无损转CSV；普通C4/JP4不是控制器手册依赖。保留schema15对needs_human/知识缺口及纯拓扑条款的FAIL，报告原样副本不等于可打包交付。
