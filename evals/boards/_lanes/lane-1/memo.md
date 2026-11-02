@@ -123,3 +123,9 @@
 - 40106逻辑反相器无角色需add泵电路，不能套LDO稳定窗；12V理想全摆幅时飞跨C11–C16差压12至72V。两级100M/100nF慢极点52.36s，HT经C19耦到掉电U1输入应专问SIG-C08；源侧PRO-C04也要逐馈入支路。
 - XLS范围位号先展开，read_bom丢Value需独立对读；BOM五只电解47uF/63V，J1 Qty0=外壳自带非DNP。HEF40106BT与74HC14符号针序兼容，错误在SN74HC14资料链接；SpiritsKiCADLib不是SPI，H1/H2孔不是测试点。
 - 官方HEF完整PDF403但在线文字可核；text_extract仍被当PDF出NO_TEXT。schema15保留pending及功能分母，不伪造VENDOR_DATUM/PASS，原生资料不足0不代表全154项完成，报告valid=false仅诊断。
+
+- a2r-lab--crazyflie_fpga_deck：75件/543节点/324球对读零差异；394=390自动+4补问，82局部判/312逐ID待核，75归因=2真+52误+3知识+18人工，4计划漏问，FAIL/NO_GO。
+- U1.H10 VCCADC_0即使未用也不得接地（UG480 Table1-1）；未用Bank15/16/34/35全脚接地、VCCBATT接地及U2未用LDO接地各有原厂例外，不能整颗FPGA豁免PWR-A02。
+- TPS65023B的L1/L2/L3、VDCDCx、DCDCx_EN、VRTC须贯通正式端口模型；否则无源误报、C04/C06漏问，SCLK/SDAT内部I2C还漏SIG-C01。PRO-C04当前已覆盖J2/J3，别重复列漏报。
+- 三轨名义Cout76.05/74.64/128.32µF；22µF不是硬最大。LM3880 EN内部7µA+C31=470n合法，83.93ms只是典型；X1图C596959/BOM C496694/ASV链接冲突只证资料错。
+- CSV Designator/Comment须显式改列并独立对值；add并入可丢nets/anchor。schema15留312逐ID与18框架旁账，不用报告功能1/资料不足0冒充审完；UG480仅官方在线条款、Infineon完整PDF未取到。

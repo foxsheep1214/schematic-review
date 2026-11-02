@@ -1,0 +1,1481 @@
+[
+  {
+    "example": 1,
+    "criterion": "G01-018",
+    "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+    "sr_rules": [
+      "PWR-C17"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "唯一源接口为低压deck J2.9 VBUS，U2为低压buck；无-48V/交流入口、整流桥或市电保持机制。industrial_telecom基线不能自动创造这些供电场景。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 2,
+    "criterion": "G01-019",
+    "title": "−48 V 输入的工作电压范围与耐受范围",
+    "sr_rules": [
+      "PWR-C17"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "唯一源接口为低压deck J2.9 VBUS，U2为低压buck；无-48V/交流入口、整流桥或市电保持机制。industrial_telecom基线不能自动创造这些供电场景。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 3,
+    "criterion": "G01-020",
+    "title": "−48 V 输入 0.1 s 中断后自恢复",
+    "sr_rules": [
+      "PWR-C18"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "唯一源接口为低压deck J2.9 VBUS，U2为低压buck；无-48V/交流入口、整流桥或市电保持机制。industrial_telecom基线不能自动创造这些供电场景。",
+    "native_plan_ids": [
+      "PWR-C18.POWER-CONVERTER-U2-FAULT.C1",
+      "PWR-C18.POWER-CONVERTER-U2-RUN.C1",
+      "PWR-C18.POWER-CONVERTER-U2-STARTUP.C1"
+    ],
+    "miss": null
+  },
+  {
+    "example": 4,
+    "criterion": "G01-021",
+    "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+    "sr_rules": [
+      "PRO-C01"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "唯一源接口为低压deck J2.9 VBUS，U2为低压buck；无-48V/交流入口、整流桥或市电保持机制。industrial_telecom基线不能自动创造这些供电场景。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 5,
+    "criterion": "G01-022",
+    "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+    "sr_rules": [
+      "PWR-C19"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "唯一源接口为低压deck J2.9 VBUS，U2为低压buck；无-48V/交流入口、整流桥或市电保持机制。industrial_telecom基线不能自动创造这些供电场景。",
+    "native_plan_ids": [
+      "PWR-C19.BOARD"
+    ],
+    "miss": null
+  },
+  {
+    "example": 6,
+    "criterion": "G01-023",
+    "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+    "sr_rules": [
+      "PWR-C13"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "唯一源接口为低压deck J2.9 VBUS，U2为低压buck；无-48V/交流入口、整流桥或市电保持机制。industrial_telecom基线不能自动创造这些供电场景。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 7,
+    "criterion": "G01-024",
+    "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+    "sr_rules": [
+      "PWR-C18"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "唯一源接口为低压deck J2.9 VBUS，U2为低压buck；无-48V/交流入口、整流桥或市电保持机制。industrial_telecom基线不能自动创造这些供电场景。",
+    "native_plan_ids": [
+      "PWR-C18.POWER-CONVERTER-U2-FAULT.C1",
+      "PWR-C18.POWER-CONVERTER-U2-RUN.C1",
+      "PWR-C18.POWER-CONVERTER-U2-STARTUP.C1"
+    ],
+    "miss": null
+  },
+  {
+    "example": 8,
+    "criterion": "G01-025",
+    "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+    "sr_rules": [
+      "PWR-C18"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "唯一源接口为低压deck J2.9 VBUS，U2为低压buck；无-48V/交流入口、整流桥或市电保持机制。industrial_telecom基线不能自动创造这些供电场景。",
+    "native_plan_ids": [
+      "PWR-C18.POWER-CONVERTER-U2-FAULT.C1",
+      "PWR-C18.POWER-CONVERTER-U2-RUN.C1",
+      "PWR-C18.POWER-CONVERTER-U2-STARTUP.C1"
+    ],
+    "miss": null
+  },
+  {
+    "example": 9,
+    "criterion": "G01-026",
+    "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+    "sr_rules": [
+      "SIG-C05"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "J1/J2为Crazyflie deck排针，J3为JTAG；无USB连接器、USB数据或PD端点。VBUS网络名本身不证明USB Sink/Source，不套100uF、40ms或vSafe5V。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 10,
+    "criterion": "G01-027",
+    "title": "USB 可用电流按实际协商档取",
+    "sr_rules": [
+      "SIG-C05"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "J1/J2为Crazyflie deck排针，J3为JTAG；无USB连接器、USB数据或PD端点。VBUS网络名本身不证明USB Sink/Source，不套100uF、40ms或vSafe5V。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 11,
+    "criterion": "G01-029",
+    "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+    "sr_rules": [
+      "PWR-C13",
+      "SIG-C05"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "J1/J2为Crazyflie deck排针，J3为JTAG；无USB连接器、USB数据或PD端点。VBUS网络名本身不证明USB Sink/Source，不套100uF、40ms或vSafe5V。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 12,
+    "criterion": "G01-030",
+    "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+    "sr_rules": [
+      "SIG-D07"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "J1/J2为Crazyflie deck排针，J3为JTAG；无USB连接器、USB数据或PD端点。VBUS网络名本身不证明USB Sink/Source，不套100uF、40ms或vSafe5V。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 13,
+    "criterion": "G01-031",
+    "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+    "sr_rules": [
+      "SIG-C05"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "J1/J2为Crazyflie deck排针，J3为JTAG；无USB连接器、USB数据或PD端点。VBUS网络名本身不证明USB Sink/Source，不套100uF、40ms或vSafe5V。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 14,
+    "criterion": "G03-003",
+    "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+    "sr_rules": [
+      "PWR-C04"
+    ],
+    "status": "plan_miss_recovered",
+    "refs": [
+      "U2",
+      "L1",
+      "L2",
+      "L3",
+      "C26",
+      "C27",
+      "C28"
+    ],
+    "nets": [
+      "+1V0",
+      "+1V8",
+      "+3V3"
+    ],
+    "evidence": "三路内部补偿buck输出均有L/C，原生not_asked SWITCH_PIN漏C04；PWR-C09不是C04稳定窗口。已加PMIC-COUT，Ceff/ESR/负载未知故无已证电气漏检。",
+    "native_plan_ids": [],
+    "miss": "M01"
+  },
+  {
+    "example": 15,
+    "criterion": "G03-004",
+    "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+    "sr_rules": [
+      "PWR-C04"
+    ],
+    "status": "plan_miss_recovered",
+    "refs": [
+      "U2",
+      "L1",
+      "L2",
+      "L3",
+      "C26",
+      "C27",
+      "C28"
+    ],
+    "nets": [
+      "+1V0",
+      "+1V8",
+      "+3V3"
+    ],
+    "evidence": "三路内部补偿buck输出均有L/C，原生not_asked SWITCH_PIN漏C04；PWR-C09不是C04稳定窗口。已加PMIC-COUT，Ceff/ESR/负载未知故无已证电气漏检。",
+    "native_plan_ids": [],
+    "miss": "M01"
+  },
+  {
+    "example": 16,
+    "criterion": "G03-016",
+    "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+    "sr_rules": [
+      "DRV-C02"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "U2",
+      "L1",
+      "L2",
+      "L3"
+    ],
+    "nets": [
+      "/L1",
+      "/L2",
+      "/L3"
+    ],
+    "evidence": "板上无离散通路/防反MOSFET与栅源网络；L1..L3是PMIC内部同步buck储能电感，不是外部线性通路FET。内部器件工作资格仍归U2工作条件/保护条款。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 17,
+    "criterion": "G03-018",
+    "title": "变换器 UVLO 开启点低于输入窗下限",
+    "sr_rules": [
+      "PWR-C06"
+    ],
+    "status": "plan_miss_recovered",
+    "refs": [
+      "U2",
+      "R26",
+      "U4"
+    ],
+    "nets": [
+      "VBUS",
+      "/VCC"
+    ],
+    "evidence": "DCDCx_EN及内部UVLO应进入C06，原生not_asked PROTECTION_PART漏问；已加PMIC-UVLO。未知真实VBUS/线阻，尚不能确认阈值/滞回违反。",
+    "native_plan_ids": [],
+    "miss": "M02"
+  },
+  {
+    "example": 18,
+    "criterion": "G03-019",
+    "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+    "sr_rules": [
+      "PWR-C06"
+    ],
+    "status": "plan_miss_recovered",
+    "refs": [
+      "U2",
+      "R26",
+      "U4"
+    ],
+    "nets": [
+      "VBUS",
+      "/VCC"
+    ],
+    "evidence": "DCDCx_EN及内部UVLO应进入C06，原生not_asked PROTECTION_PART漏问；已加PMIC-UVLO。未知真实VBUS/线阻，尚不能确认阈值/滞回违反。",
+    "native_plan_ids": [],
+    "miss": "M02"
+  },
+  {
+    "example": 19,
+    "criterion": "G03-021",
+    "title": "软启动充电电流加启动期负载低于器件限流下限",
+    "sr_rules": [
+      "PWR-D03"
+    ],
+    "status": "plan_miss_recovered",
+    "refs": [
+      "U2",
+      "C26",
+      "C27",
+      "C28"
+    ],
+    "nets": [
+      "+1V0",
+      "+1V8",
+      "+3V3"
+    ],
+    "evidence": "400..1000us的5%-95%软启动及76.05/74.64/128.32uF名义容量构成机制；原生没有PWR-D03，已补PMIC-START-CURRENT。平均电容电流演示不作为瞬时峰值或限流保证。",
+    "native_plan_ids": [],
+    "miss": "M03"
+  },
+  {
+    "example": 20,
+    "criterion": "G03-025",
+    "title": "复位门限高于各负载最低工作电压，掉电先复位",
+    "sr_rules": [
+      "PWR-T04"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "U1",
+      "U2",
+      "R5"
+    ],
+    "nets": [
+      "/PROGRAM_B"
+    ],
+    "evidence": "PWR-T04.DRAWN.SUPERVISION-RAILS已问各轨监测；U1内部POR、U2RESPWRON未用、PROGRAM_B上拉已核。掉电斜率/复位意图未知；不是未问或缺监控器即硬错。",
+    "native_plan_ids": [
+      "PWR-T04.DRAWN.SUPERVISION-RAILS"
+    ],
+    "miss": null
+  },
+  {
+    "example": 21,
+    "criterion": "G03-028",
+    "title": "上电时序在极值时间下满足约束",
+    "sr_rules": [
+      "PWR-C24"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "U1",
+      "U2",
+      "U4",
+      "C31"
+    ],
+    "nets": [
+      "/En_1V",
+      "/En_1V8",
+      "/En_3V3"
+    ],
+    "evidence": "原生PWR-C24.POWER-CONVERTER-U2.C1已问（主体C1误选另归工具），U4FLAG1/2/3顺序实际连接明确。按极值时间与掉电/再启动检查尚待host源轨迹，不新增重复漏报。",
+    "native_plan_ids": [
+      "PWR-C24.POWER-CONVERTER-U2.C1"
+    ],
+    "miss": null
+  },
+  {
+    "example": 22,
+    "criterion": "G03-032",
+    "title": "稳压器反向电流在手册允许内或已阻断",
+    "sr_rules": [
+      "PWR-C05"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "U2",
+      "J3"
+    ],
+    "nets": [
+      "+3V3",
+      "VBUS"
+    ],
+    "evidence": "PWR-C05 startup/run/fault已问反流和预偏置。J3.1可能是参考也可能外供，必须锁定工具方向；未知状态不等于已证明反灌损坏。",
+    "native_plan_ids": [
+      "PWR-C05.POWER-CONVERTER-U2-FAULT.C1",
+      "PWR-C05.POWER-CONVERTER-U2-RUN.C1",
+      "PWR-C05.POWER-CONVERTER-U2-STARTUP.C1"
+    ],
+    "miss": null
+  },
+  {
+    "example": 23,
+    "criterion": "G03-037",
+    "title": "电解与钽电容不承受反压",
+    "sr_rules": [
+      "DEV-C01"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "C1",
+      "C15",
+      "C19",
+      "C22"
+    ],
+    "nets": [
+      "GND"
+    ],
+    "evidence": "本图C均为无极性Device:C及0402/0603封装，直接返回GND或EN到GND；没有串联极性电解/钽均压机制。准确采购档位/耐压另在DEV-C01/D04，不从符号推定实物已验收。",
+    "native_plan_ids": [
+      "DEV-C01.BOARD",
+      "DEV-C01.C1",
+      "DEV-C01.C10",
+      "DEV-C01.C11",
+      "DEV-C01.C12",
+      "DEV-C01.C13",
+      "DEV-C01.C14",
+      "DEV-C01.C15",
+      "DEV-C01.C16",
+      "DEV-C01.C17",
+      "DEV-C01.C18",
+      "DEV-C01.C19",
+      "DEV-C01.C20",
+      "DEV-C01.C21",
+      "DEV-C01.C22",
+      "DEV-C01.C23",
+      "DEV-C01.C24",
+      "DEV-C01.C25",
+      "DEV-C01.C26",
+      "DEV-C01.C27",
+      "DEV-C01.C28",
+      "DEV-C01.C29",
+      "DEV-C01.C3",
+      "DEV-C01.C30",
+      "DEV-C01.C31",
+      "DEV-C01.C32",
+      "DEV-C01.C33",
+      "DEV-C01.C34",
+      "DEV-C01.C4",
+      "DEV-C01.C5",
+      "DEV-C01.C6",
+      "DEV-C01.C7",
+      "DEV-C01.C8",
+      "DEV-C01.CLOCK-X1",
+      "DEV-C01.FPGA-CONFIG",
+      "DEV-C01.PIN.U1-P10",
+      "DEV-C01.PIN.U1-P12",
+      "DEV-C01.PIN.U1-P7",
+      "DEV-C01.PIN.U1-P8",
+      "DEV-C01.PIN.U2-11",
+      "DEV-C01.PIN.U2-28",
+      "DEV-C01.POWER-CONVERTER-U2",
+      "DEV-C01.R1",
+      "DEV-C01.R10",
+      "DEV-C01.R11",
+      "DEV-C01.R12",
+      "DEV-C01.R13",
+      "DEV-C01.R14",
+      "DEV-C01.R15",
+      "DEV-C01.R16",
+      "DEV-C01.R17",
+      "DEV-C01.R18",
+      "DEV-C01.R19",
+      "DEV-C01.R2",
+      "DEV-C01.R20",
+      "DEV-C01.R21",
+      "DEV-C01.R22",
+      "DEV-C01.R23",
+      "DEV-C01.R24",
+      "DEV-C01.R25",
+      "DEV-C01.R26",
+      "DEV-C01.R27",
+      "DEV-C01.R3",
+      "DEV-C01.R4",
+      "DEV-C01.R5",
+      "DEV-C01.R6",
+      "DEV-C01.R7",
+      "DEV-C01.R8",
+      "DEV-C01.R9",
+      "DEV-C01.SEQUENCER",
+      "DEV-C01.SPI-CONFIG"
+    ],
+    "miss": null
+  },
+  {
+    "example": 24,
+    "criterion": "G03-038",
+    "title": "电解与钽电容的直流加纹波峰值在降额内",
+    "sr_rules": [
+      "DEV-C01"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "C1",
+      "C15",
+      "C19",
+      "C22"
+    ],
+    "nets": [
+      "GND"
+    ],
+    "evidence": "本图C均为无极性Device:C及0402/0603封装，直接返回GND或EN到GND；没有串联极性电解/钽均压机制。准确采购档位/耐压另在DEV-C01/D04，不从符号推定实物已验收。",
+    "native_plan_ids": [
+      "DEV-C01.BOARD",
+      "DEV-C01.C1",
+      "DEV-C01.C10",
+      "DEV-C01.C11",
+      "DEV-C01.C12",
+      "DEV-C01.C13",
+      "DEV-C01.C14",
+      "DEV-C01.C15",
+      "DEV-C01.C16",
+      "DEV-C01.C17",
+      "DEV-C01.C18",
+      "DEV-C01.C19",
+      "DEV-C01.C20",
+      "DEV-C01.C21",
+      "DEV-C01.C22",
+      "DEV-C01.C23",
+      "DEV-C01.C24",
+      "DEV-C01.C25",
+      "DEV-C01.C26",
+      "DEV-C01.C27",
+      "DEV-C01.C28",
+      "DEV-C01.C29",
+      "DEV-C01.C3",
+      "DEV-C01.C30",
+      "DEV-C01.C31",
+      "DEV-C01.C32",
+      "DEV-C01.C33",
+      "DEV-C01.C34",
+      "DEV-C01.C4",
+      "DEV-C01.C5",
+      "DEV-C01.C6",
+      "DEV-C01.C7",
+      "DEV-C01.C8",
+      "DEV-C01.CLOCK-X1",
+      "DEV-C01.FPGA-CONFIG",
+      "DEV-C01.PIN.U1-P10",
+      "DEV-C01.PIN.U1-P12",
+      "DEV-C01.PIN.U1-P7",
+      "DEV-C01.PIN.U1-P8",
+      "DEV-C01.PIN.U2-11",
+      "DEV-C01.PIN.U2-28",
+      "DEV-C01.POWER-CONVERTER-U2",
+      "DEV-C01.R1",
+      "DEV-C01.R10",
+      "DEV-C01.R11",
+      "DEV-C01.R12",
+      "DEV-C01.R13",
+      "DEV-C01.R14",
+      "DEV-C01.R15",
+      "DEV-C01.R16",
+      "DEV-C01.R17",
+      "DEV-C01.R18",
+      "DEV-C01.R19",
+      "DEV-C01.R2",
+      "DEV-C01.R20",
+      "DEV-C01.R21",
+      "DEV-C01.R22",
+      "DEV-C01.R23",
+      "DEV-C01.R24",
+      "DEV-C01.R25",
+      "DEV-C01.R26",
+      "DEV-C01.R27",
+      "DEV-C01.R3",
+      "DEV-C01.R4",
+      "DEV-C01.R5",
+      "DEV-C01.R6",
+      "DEV-C01.R7",
+      "DEV-C01.R8",
+      "DEV-C01.R9",
+      "DEV-C01.SEQUENCER",
+      "DEV-C01.SPI-CONFIG"
+    ],
+    "miss": null
+  },
+  {
+    "example": 25,
+    "criterion": "G03-040",
+    "title": "串联使用的电解电容有均压措施",
+    "sr_rules": [
+      "DEV-C01"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "C1",
+      "C15",
+      "C19",
+      "C22"
+    ],
+    "nets": [
+      "GND"
+    ],
+    "evidence": "本图C均为无极性Device:C及0402/0603封装，直接返回GND或EN到GND；没有串联极性电解/钽均压机制。准确采购档位/耐压另在DEV-C01/D04，不从符号推定实物已验收。",
+    "native_plan_ids": [
+      "DEV-C01.BOARD",
+      "DEV-C01.C1",
+      "DEV-C01.C10",
+      "DEV-C01.C11",
+      "DEV-C01.C12",
+      "DEV-C01.C13",
+      "DEV-C01.C14",
+      "DEV-C01.C15",
+      "DEV-C01.C16",
+      "DEV-C01.C17",
+      "DEV-C01.C18",
+      "DEV-C01.C19",
+      "DEV-C01.C20",
+      "DEV-C01.C21",
+      "DEV-C01.C22",
+      "DEV-C01.C23",
+      "DEV-C01.C24",
+      "DEV-C01.C25",
+      "DEV-C01.C26",
+      "DEV-C01.C27",
+      "DEV-C01.C28",
+      "DEV-C01.C29",
+      "DEV-C01.C3",
+      "DEV-C01.C30",
+      "DEV-C01.C31",
+      "DEV-C01.C32",
+      "DEV-C01.C33",
+      "DEV-C01.C34",
+      "DEV-C01.C4",
+      "DEV-C01.C5",
+      "DEV-C01.C6",
+      "DEV-C01.C7",
+      "DEV-C01.C8",
+      "DEV-C01.CLOCK-X1",
+      "DEV-C01.FPGA-CONFIG",
+      "DEV-C01.PIN.U1-P10",
+      "DEV-C01.PIN.U1-P12",
+      "DEV-C01.PIN.U1-P7",
+      "DEV-C01.PIN.U1-P8",
+      "DEV-C01.PIN.U2-11",
+      "DEV-C01.PIN.U2-28",
+      "DEV-C01.POWER-CONVERTER-U2",
+      "DEV-C01.R1",
+      "DEV-C01.R10",
+      "DEV-C01.R11",
+      "DEV-C01.R12",
+      "DEV-C01.R13",
+      "DEV-C01.R14",
+      "DEV-C01.R15",
+      "DEV-C01.R16",
+      "DEV-C01.R17",
+      "DEV-C01.R18",
+      "DEV-C01.R19",
+      "DEV-C01.R2",
+      "DEV-C01.R20",
+      "DEV-C01.R21",
+      "DEV-C01.R22",
+      "DEV-C01.R23",
+      "DEV-C01.R24",
+      "DEV-C01.R25",
+      "DEV-C01.R26",
+      "DEV-C01.R27",
+      "DEV-C01.R3",
+      "DEV-C01.R4",
+      "DEV-C01.R5",
+      "DEV-C01.R6",
+      "DEV-C01.R7",
+      "DEV-C01.R8",
+      "DEV-C01.R9",
+      "DEV-C01.SEQUENCER",
+      "DEV-C01.SPI-CONFIG"
+    ],
+    "miss": null
+  },
+  {
+    "example": 26,
+    "criterion": "G04-005",
+    "title": "输入信号不超接收端绝对最大值",
+    "sr_rules": [
+      "SIG-C08"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "U1",
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "nets": [
+      "/SDA",
+      "/SCL",
+      "/MOSI",
+      "/TCK"
+    ],
+    "evidence": "原生SIG-C08逐J1/J2/J3以及跨电路接口已问掉电注入/绝限。内部PMIC I2C4k7路径计算另补C01，不把已有SIG-C08误报成全轮漏审。",
+    "native_plan_ids": [
+      "SIG-C08.EXT-J1.IO1",
+      "SIG-C08.EXT-J1.IO2",
+      "SIG-C08.EXT-J1.RX1",
+      "SIG-C08.EXT-J1.SCL",
+      "SIG-C08.EXT-J1.SDA",
+      "SIG-C08.EXT-J1.TX1",
+      "SIG-C08.EXT-J2.MISO",
+      "SIG-C08.EXT-J2.MOSI",
+      "SIG-C08.EXT-J2.RX2",
+      "SIG-C08.EXT-J2.SCK",
+      "SIG-C08.EXT-J2.TX2",
+      "SIG-C08.EXT-J2.VBUS",
+      "SIG-C08.EXT-J3.3V3",
+      "SIG-C08.EXT-J3.TCK",
+      "SIG-C08.EXT-J3.TDI",
+      "SIG-C08.EXT-J3.TDO",
+      "SIG-C08.EXT-J3.TMS",
+      "SIG-C08.I2C-5E438B6990F70D55B846.SDA",
+      "SIG-C08.I2C-A39E5B9695D6863E8385.SCL",
+      "SIG-C08.IF-CLOCK-X1-FPGA-CONFIG.CLK100MHZ",
+      "SIG-C08.IF-FPGA-CONFIG-POWER-CONVERTER-U2.SCLK-PWR",
+      "SIG-C08.IF-FPGA-CONFIG-POWER-CONVERTER-U2.SDAT-PWR",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.CCLK",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.NCS",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO0",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO1",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO2",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO3",
+      "SIG-C08.IF-POWER-CONVERTER-U2-SEQUENCER.EN-1V",
+      "SIG-C08.IF-POWER-CONVERTER-U2-SEQUENCER.EN-1V8",
+      "SIG-C08.IF-POWER-CONVERTER-U2-SEQUENCER.EN-3V3"
+    ],
+    "miss": null
+  },
+  {
+    "example": 27,
+    "criterion": "G04-007",
+    "title": "未上电接口承受正常或故障信号不损坏",
+    "sr_rules": [
+      "PRO-D04",
+      "SIG-C08"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "U1",
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "nets": [
+      "/SDA",
+      "/SCL",
+      "/MOSI",
+      "/TCK"
+    ],
+    "evidence": "原生SIG-C08逐J1/J2/J3以及跨电路接口已问掉电注入/绝限。内部PMIC I2C4k7路径计算另补C01，不把已有SIG-C08误报成全轮漏审。",
+    "native_plan_ids": [
+      "PRO-D04.J1",
+      "PRO-D04.J2",
+      "PRO-D04.J3",
+      "SIG-C08.EXT-J1.IO1",
+      "SIG-C08.EXT-J1.IO2",
+      "SIG-C08.EXT-J1.RX1",
+      "SIG-C08.EXT-J1.SCL",
+      "SIG-C08.EXT-J1.SDA",
+      "SIG-C08.EXT-J1.TX1",
+      "SIG-C08.EXT-J2.MISO",
+      "SIG-C08.EXT-J2.MOSI",
+      "SIG-C08.EXT-J2.RX2",
+      "SIG-C08.EXT-J2.SCK",
+      "SIG-C08.EXT-J2.TX2",
+      "SIG-C08.EXT-J2.VBUS",
+      "SIG-C08.EXT-J3.3V3",
+      "SIG-C08.EXT-J3.TCK",
+      "SIG-C08.EXT-J3.TDI",
+      "SIG-C08.EXT-J3.TDO",
+      "SIG-C08.EXT-J3.TMS",
+      "SIG-C08.I2C-5E438B6990F70D55B846.SDA",
+      "SIG-C08.I2C-A39E5B9695D6863E8385.SCL",
+      "SIG-C08.IF-CLOCK-X1-FPGA-CONFIG.CLK100MHZ",
+      "SIG-C08.IF-FPGA-CONFIG-POWER-CONVERTER-U2.SCLK-PWR",
+      "SIG-C08.IF-FPGA-CONFIG-POWER-CONVERTER-U2.SDAT-PWR",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.CCLK",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.NCS",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO0",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO1",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO2",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO3",
+      "SIG-C08.IF-POWER-CONVERTER-U2-SEQUENCER.EN-1V",
+      "SIG-C08.IF-POWER-CONVERTER-U2-SEQUENCER.EN-1V8",
+      "SIG-C08.IF-POWER-CONVERTER-U2-SEQUENCER.EN-3V3"
+    ],
+    "miss": null
+  },
+  {
+    "example": 28,
+    "criterion": "G04-009",
+    "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+    "sr_rules": [
+      "SIG-C08"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "U1",
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "nets": [
+      "/SDA",
+      "/SCL",
+      "/MOSI",
+      "/TCK"
+    ],
+    "evidence": "原生SIG-C08逐J1/J2/J3以及跨电路接口已问掉电注入/绝限。内部PMIC I2C4k7路径计算另补C01，不把已有SIG-C08误报成全轮漏审。",
+    "native_plan_ids": [
+      "SIG-C08.EXT-J1.IO1",
+      "SIG-C08.EXT-J1.IO2",
+      "SIG-C08.EXT-J1.RX1",
+      "SIG-C08.EXT-J1.SCL",
+      "SIG-C08.EXT-J1.SDA",
+      "SIG-C08.EXT-J1.TX1",
+      "SIG-C08.EXT-J2.MISO",
+      "SIG-C08.EXT-J2.MOSI",
+      "SIG-C08.EXT-J2.RX2",
+      "SIG-C08.EXT-J2.SCK",
+      "SIG-C08.EXT-J2.TX2",
+      "SIG-C08.EXT-J2.VBUS",
+      "SIG-C08.EXT-J3.3V3",
+      "SIG-C08.EXT-J3.TCK",
+      "SIG-C08.EXT-J3.TDI",
+      "SIG-C08.EXT-J3.TDO",
+      "SIG-C08.EXT-J3.TMS",
+      "SIG-C08.I2C-5E438B6990F70D55B846.SDA",
+      "SIG-C08.I2C-A39E5B9695D6863E8385.SCL",
+      "SIG-C08.IF-CLOCK-X1-FPGA-CONFIG.CLK100MHZ",
+      "SIG-C08.IF-FPGA-CONFIG-POWER-CONVERTER-U2.SCLK-PWR",
+      "SIG-C08.IF-FPGA-CONFIG-POWER-CONVERTER-U2.SDAT-PWR",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.CCLK",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.NCS",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO0",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO1",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO2",
+      "SIG-C08.IF-FPGA-CONFIG-SPI-CONFIG.SIO3",
+      "SIG-C08.IF-POWER-CONVERTER-U2-SEQUENCER.EN-1V",
+      "SIG-C08.IF-POWER-CONVERTER-U2-SEQUENCER.EN-1V8",
+      "SIG-C08.IF-POWER-CONVERTER-U2-SEQUENCER.EN-3V3"
+    ],
+    "miss": null
+  },
+  {
+    "example": 29,
+    "criterion": "G04-010",
+    "title": "上电和复位期间关键输出有确定状态",
+    "sr_rules": [
+      "RST-T04"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "U1",
+      "U4",
+      "C31",
+      "R18"
+    ],
+    "nets": [
+      "/En_seq",
+      "/En_1V"
+    ],
+    "evidence": "FPGA-CONFIG和SEQUENCER已有RST-T04 power-on/restart；PUDC_B直连高、EN有内部电流源+C31、FLAGS接EN且有100k上拉。实际外部host安全态和上电次序未知，保留待核。",
+    "native_plan_ids": [
+      "RST-T04.FPGA-CONFIG-POWER-ON.U1",
+      "RST-T04.FPGA-CONFIG-RESTART.U1",
+      "RST-T04.SEQUENCER-POWER-ON.U4",
+      "RST-T04.SEQUENCER-RESTART.U4"
+    ],
+    "miss": null
+  },
+  {
+    "example": 30,
+    "criterion": "G04-017",
+    "title": "I²C 上拉电阻不超上升时间决定的上限",
+    "sr_rules": [
+      "SIG-C01"
+    ],
+    "status": "plan_miss_recovered",
+    "refs": [
+      "U1",
+      "U2",
+      "R14",
+      "R15"
+    ],
+    "nets": [
+      "/SCLK_PWR",
+      "/SDAT_PWR"
+    ],
+    "evidence": "外部/SDA/SCL已问C01；内部/SCLK_PWR与/SDAT_PWR因非SCL/SDA拼法未进入拓扑，实际U2.30/.29各4k7上拉。已补PMIC-I2C-RC，Cb/模式/IOL保证待定。",
+    "native_plan_ids": [
+      "SIG-C01.I2C-5E438B6990F70D55B846.SDA",
+      "SIG-C01.I2C-A39E5B9695D6863E8385.SCL"
+    ],
+    "miss": "M04"
+  },
+  {
+    "example": 31,
+    "criterion": "G04-018",
+    "title": "I²C 上拉电阻不低于灌电流决定的下限",
+    "sr_rules": [
+      "SIG-C01"
+    ],
+    "status": "plan_miss_recovered",
+    "refs": [
+      "U1",
+      "U2",
+      "R14",
+      "R15"
+    ],
+    "nets": [
+      "/SCLK_PWR",
+      "/SDAT_PWR"
+    ],
+    "evidence": "外部/SDA/SCL已问C01；内部/SCLK_PWR与/SDAT_PWR因非SCL/SDA拼法未进入拓扑，实际U2.30/.29各4k7上拉。已补PMIC-I2C-RC，Cb/模式/IOL保证待定。",
+    "native_plan_ids": [
+      "SIG-C01.I2C-5E438B6990F70D55B846.SDA",
+      "SIG-C01.I2C-A39E5B9695D6863E8385.SCL"
+    ],
+    "miss": "M04"
+  },
+  {
+    "example": 32,
+    "criterion": "G04-032",
+    "title": "CAN 总线两端端接，总阻约 60 Ω",
+    "sr_rules": [
+      "SIG-C03"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "U1",
+      "U3"
+    ],
+    "nets": [],
+    "evidence": "无CAN收发器、CAN_H/L或CAN端接网络；数字SPI/I2C不套60ohm。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 33,
+    "criterion": "G04-040",
+    "title": "隔离接口两侧的供电和地不被无意短接",
+    "sr_rules": [
+      "PRO-D02"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "U1",
+      "U2"
+    ],
+    "nets": [
+      "GND"
+    ],
+    "evidence": "全板一个GND，无隔离器或隔离DC/DC；未用VCCO接地不构成跨隔离短接。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 34,
+    "criterion": "G04-041",
+    "title": "运放两个输入在最坏工况下不超共模范围",
+    "sr_rules": [
+      "ANA-C01"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "U4"
+    ],
+    "nets": [
+      "/En_seq"
+    ],
+    "evidence": "无外部运放/比较器模拟反馈输入；LM3880内置EN比较器是启动门限对象，已由RST-E01/RST-C02承接，不能套外部运放共模。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 35,
+    "criterion": "G04-054",
+    "title": "ADC 输入不超满量程和绝对最大值",
+    "sr_rules": [
+      "ANA-C03"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "U1"
+    ],
+    "nets": [
+      "GND"
+    ],
+    "evidence": "U1专用VP/VN与VREF均接地，没有用于外部测量的ADC输入分压；VCCADC错误已由PWR-A02/DEV-D05确认，属于专用脚供电接法，不冒充ADC满量程漏检。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 36,
+    "criterion": "G04-078",
+    "title": "晶振负载电容与晶振规定 CL 相符",
+    "sr_rules": [
+      "CLK-C01"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "X1",
+      "U1"
+    ],
+    "nets": [
+      "/CLK100MHZ"
+    ],
+    "evidence": "X1为4脚有源100MHz振荡器，OUT只接U1.P17 MRCC；无晶体两端/XI-XO和负载电容/多个Pierce有源回路。CLK-D01已问源的频率/电平；X1身份冲突另列真资料缺陷。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 37,
+    "criterion": "G04-079",
+    "title": "振荡器增益裕量足够起振",
+    "sr_rules": [
+      "CLK-C01"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "X1",
+      "U1"
+    ],
+    "nets": [
+      "/CLK100MHZ"
+    ],
+    "evidence": "X1为4脚有源100MHz振荡器，OUT只接U1.P17 MRCC；无晶体两端/XI-XO和负载电容/多个Pierce有源回路。CLK-D01已问源的频率/电平；X1身份冲突另列真资料缺陷。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 38,
+    "criterion": "G04-082",
+    "title": "一颗晶振只驱动一个器件",
+    "sr_rules": [
+      "CLK-C01"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "X1",
+      "U1"
+    ],
+    "nets": [
+      "/CLK100MHZ"
+    ],
+    "evidence": "X1为4脚有源100MHz振荡器，OUT只接U1.P17 MRCC；无晶体两端/XI-XO和负载电容/多个Pierce有源回路。CLK-D01已问源的频率/电平；X1身份冲突另列真资料缺陷。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 39,
+    "criterion": "G05-019",
+    "title": "每条配电支路在源侧有保护",
+    "sr_rules": [
+      "PRO-C04"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "J2",
+      "J3",
+      "R26"
+    ],
+    "nets": [
+      "VBUS",
+      "/VCC",
+      "+3V3"
+    ],
+    "evidence": "最终原生PRO-C04已有J2.9主支路、经R26的VCC支路及J3.1分支；逐源保护是host能力合同待核，当前没有计划漏问。",
+    "native_plan_ids": [
+      "PRO-C04.J2-9-R26.VCC",
+      "PRO-C04.J2-9.J2-9",
+      "PRO-C04.J3-1.J3-1"
+    ],
+    "miss": null
+  },
+  {
+    "example": 40,
+    "criterion": "G05-022",
+    "title": "过流动作点上限下通路器件与连接器不超额定",
+    "sr_rules": [
+      "DEV-C01",
+      "DEV-C04"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "U2",
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "DEV-C01逐器件与DEV-C04逐连接器已问；PMIC额定/限流与host故障电流和连接器实际资格不能互代。电流合同未给，尚无已证过流漏检。",
+    "native_plan_ids": [
+      "DEV-C01.BOARD",
+      "DEV-C01.C1",
+      "DEV-C01.C10",
+      "DEV-C01.C11",
+      "DEV-C01.C12",
+      "DEV-C01.C13",
+      "DEV-C01.C14",
+      "DEV-C01.C15",
+      "DEV-C01.C16",
+      "DEV-C01.C17",
+      "DEV-C01.C18",
+      "DEV-C01.C19",
+      "DEV-C01.C20",
+      "DEV-C01.C21",
+      "DEV-C01.C22",
+      "DEV-C01.C23",
+      "DEV-C01.C24",
+      "DEV-C01.C25",
+      "DEV-C01.C26",
+      "DEV-C01.C27",
+      "DEV-C01.C28",
+      "DEV-C01.C29",
+      "DEV-C01.C3",
+      "DEV-C01.C30",
+      "DEV-C01.C31",
+      "DEV-C01.C32",
+      "DEV-C01.C33",
+      "DEV-C01.C34",
+      "DEV-C01.C4",
+      "DEV-C01.C5",
+      "DEV-C01.C6",
+      "DEV-C01.C7",
+      "DEV-C01.C8",
+      "DEV-C01.CLOCK-X1",
+      "DEV-C01.FPGA-CONFIG",
+      "DEV-C01.PIN.U1-P10",
+      "DEV-C01.PIN.U1-P12",
+      "DEV-C01.PIN.U1-P7",
+      "DEV-C01.PIN.U1-P8",
+      "DEV-C01.PIN.U2-11",
+      "DEV-C01.PIN.U2-28",
+      "DEV-C01.POWER-CONVERTER-U2",
+      "DEV-C01.R1",
+      "DEV-C01.R10",
+      "DEV-C01.R11",
+      "DEV-C01.R12",
+      "DEV-C01.R13",
+      "DEV-C01.R14",
+      "DEV-C01.R15",
+      "DEV-C01.R16",
+      "DEV-C01.R17",
+      "DEV-C01.R18",
+      "DEV-C01.R19",
+      "DEV-C01.R2",
+      "DEV-C01.R20",
+      "DEV-C01.R21",
+      "DEV-C01.R22",
+      "DEV-C01.R23",
+      "DEV-C01.R24",
+      "DEV-C01.R25",
+      "DEV-C01.R26",
+      "DEV-C01.R27",
+      "DEV-C01.R3",
+      "DEV-C01.R4",
+      "DEV-C01.R5",
+      "DEV-C01.R6",
+      "DEV-C01.R7",
+      "DEV-C01.R8",
+      "DEV-C01.R9",
+      "DEV-C01.SEQUENCER",
+      "DEV-C01.SPI-CONFIG",
+      "DEV-C04.J1",
+      "DEV-C04.J2",
+      "DEV-C04.J3"
+    ],
+    "miss": null
+  },
+  {
+    "example": 41,
+    "criterion": "G05-025",
+    "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+    "sr_rules": [
+      "PRO-C05"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "无板上熔断器及离散通路FET时间电流/分断配合对象；上游源保护覆盖已由PRO-C04追问，不能凭不存在的F1要求板内TCC曲线。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 42,
+    "criterion": "G05-030",
+    "title": "TVS 工作电压不低于被钳节点最高工作电压",
+    "sr_rules": [
+      "PRO-E02"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "D1",
+      "D2",
+      "D3",
+      "J2"
+    ],
+    "nets": [
+      "VBUS",
+      "GND"
+    ],
+    "evidence": "全器件清单无TVS/齐纳/反向阻断前单向TVS，D1..D3是串阻LED；接口ESD/误接边界仍由PRO-D03/D04保留，不能伪造一个TVS钳位/反向短路缺陷。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 43,
+    "criterion": "G05-031",
+    "title": "TVS 钳位电压不超被保护器件绝对最大值",
+    "sr_rules": [
+      "PRO-E02"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "D1",
+      "D2",
+      "D3",
+      "J2"
+    ],
+    "nets": [
+      "VBUS",
+      "GND"
+    ],
+    "evidence": "全器件清单无TVS/齐纳/反向阻断前单向TVS，D1..D3是串阻LED；接口ESD/误接边界仍由PRO-D03/D04保留，不能伪造一个TVS钳位/反向短路缺陷。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 44,
+    "criterion": "G05-032",
+    "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+    "sr_rules": [
+      "PRO-E02"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "D1",
+      "D2",
+      "D3",
+      "J2"
+    ],
+    "nets": [
+      "VBUS",
+      "GND"
+    ],
+    "evidence": "全器件清单无TVS/齐纳/反向阻断前单向TVS，D1..D3是串阻LED；接口ESD/误接边界仍由PRO-D03/D04保留，不能伪造一个TVS钳位/反向短路缺陷。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 45,
+    "criterion": "G05-040",
+    "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+    "sr_rules": [
+      "DRV-C02"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "U2",
+      "L1",
+      "L2",
+      "L3"
+    ],
+    "nets": [
+      "/L1",
+      "/L2",
+      "/L3"
+    ],
+    "evidence": "板上无离散通路/防反MOSFET与栅源网络；L1..L3是PMIC内部同步buck储能电感，不是外部线性通路FET。内部器件工作资格仍归U2工作条件/保护条款。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 46,
+    "criterion": "G05-041",
+    "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+    "sr_rules": [
+      "DRV-C02"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "U2",
+      "L1",
+      "L2",
+      "L3"
+    ],
+    "nets": [
+      "/L1",
+      "/L2",
+      "/L3"
+    ],
+    "evidence": "板上无离散通路/防反MOSFET与栅源网络；L1..L3是PMIC内部同步buck储能电感，不是外部线性通路FET。内部器件工作资格仍归U2工作条件/保护条款。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 47,
+    "criterion": "G05-048",
+    "title": "熔断器分断能力不小于预期短路电流",
+    "sr_rules": [
+      "PRO-C01"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "J2",
+      "U2"
+    ],
+    "nets": [
+      "VBUS"
+    ],
+    "evidence": "无板上熔断器及离散通路FET时间电流/分断配合对象；上游源保护覆盖已由PRO-C04追问，不能凭不存在的F1要求板内TCC曲线。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 48,
+    "criterion": "G05-054",
+    "title": "每个对外电源接口的反接有明确处置",
+    "sr_rules": [
+      "PRO-D04",
+      "PWR-T05"
+    ],
+    "status": "covered_pending",
+    "refs": [
+      "J2",
+      "J3",
+      "U2"
+    ],
+    "nets": [
+      "VBUS",
+      "+3V3"
+    ],
+    "evidence": "PRO-D04逐J1/J2/J3已问故障和误接；J2.9直入VBUS，需平台防误插/反接合同和上游覆盖才能判。未给需求不直接判板缺防反。",
+    "native_plan_ids": [
+      "PRO-D04.J1",
+      "PRO-D04.J2",
+      "PRO-D04.J3"
+    ],
+    "miss": null
+  },
+  {
+    "example": 49,
+    "criterion": "G05-057",
+    "title": "反接阻断之前没有单向 TVS 造成源短路",
+    "sr_rules": [
+      "PWR-C26"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "D1",
+      "D2",
+      "D3",
+      "J2"
+    ],
+    "nets": [
+      "VBUS",
+      "GND"
+    ],
+    "evidence": "全器件清单无TVS/齐纳/反向阻断前单向TVS，D1..D3是串阻LED；接口ESD/误接边界仍由PRO-D03/D04保留，不能伪造一个TVS钳位/反向短路缺陷。",
+    "native_plan_ids": [],
+    "miss": null
+  },
+  {
+    "example": 50,
+    "criterion": "G05-087",
+    "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+    "sr_rules": [
+      "PWR-T05"
+    ],
+    "status": "not_applicable",
+    "refs": [
+      "U2",
+      "L1",
+      "L2",
+      "L3"
+    ],
+    "nets": [
+      "/L1",
+      "/L2",
+      "/L3"
+    ],
+    "evidence": "板上无离散通路/防反MOSFET与栅源网络；L1..L3是PMIC内部同步buck储能电感，不是外部线性通路FET。内部器件工作资格仍归U2工作条件/保护条款。",
+    "native_plan_ids": [],
+    "miss": null
+  }
+]

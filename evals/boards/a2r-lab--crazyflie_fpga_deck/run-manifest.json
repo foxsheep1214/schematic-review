@@ -1,0 +1,30 @@
+{
+  "cache": "/Users/skyfend/.cache/sr-boards/a2r-lab--crazyflie_fpga_deck/review",
+  "source": {
+    "repo": "A2R-Lab/Crazyflie_FPGA_Deck",
+    "commit": "a1405c1d2b0994ea3421352c03d7322ef676ebee",
+    "schematic": "Deck_FPGA.kicad_sch",
+    "license": "MIT"
+  },
+  "sr_commit": "ea50c4c2103ffee2d48dc62d03ad3025b38740fc",
+  "files": {
+    "db.json": "e40435ce337dff0bfb3228f7450095fc3b3cacb3ba6e51da5755bcb831d5a37e",
+    "intent.json": "8b2befc5d5df58c8767a2ef9dd4976a0331a2ca6dcada7a499fb73b1b69ce0a3",
+    "record/circuit-candidates.json": "02c620d947c395b704c0eed96561456752c9236dc17856dff1addee6b2573fad",
+    "datasheet-audit.json": "40dd5ca51c2bbf321fcbf608c5cc964a734dca03d1d9b9a1dca9206edd0ee4a9",
+    "review-plan.json": "318eff31f47c5a73438c98d4ccf2ac5c1301093f31ca878bfe7909296443965d",
+    "review-results.json": "bf3bdb2fa41b5bee4eb16517aabf178e93ec46c970feb16a03700360f8081fe4",
+    "pending-checks.json": "24e2f535a275e17d5121edb58f068aa06030079d7e7334e4083594962fd79434",
+    "pending-functions.json": "a9464410490c826927fb77b6cb8e05cfefdac4d710fb94fdb12515da110f0aad",
+    "item-review.json": "7f1460520b6d5cd1120dd3274f526d98f57f98fd5bcc50e917441d35cc1edf01",
+    "review-gate.json": "00726aee10a6e47e0f9aa29e9838cfb6867cb64a8f4cb2e1886baaf8ea1e6132",
+    "notes.json": "dcf71b3ab88bb80217d108df27dd98fd44d74782e2ae912dc81dbc6acfa75635",
+    "审查报告.md": "8c7ce47801d1e199a187872c13b56497b05dccee4b1b41c0a81fdcf4872f4b43"
+  },
+  "gate": {
+    "valid": false,
+    "release": "NO_GO",
+    "errors": 380
+  },
+  "report_copy_matches": true
+}
