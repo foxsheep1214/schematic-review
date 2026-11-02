@@ -21,3 +21,9 @@
 - TCXO经0Ω入TCXO且XTAL2经0Ω接地符合AT86RF215 p68；C3/R1 DNP别算负载。U2被Crystal封装误归无源晶体，器件审计还漏掉其准确手册。
 - 片内AVDD0/AVDD1/DVDD各1µF，p188允0.1–10µF，名义合窗不证明Ceff；输出稳定性、主机高阻默认态和外部信号掉电注入仍要专问。手册首页“3 female SMA connectors”描述评估板，别据全页识别成connector。
 - schema15仍不能表达needs_human/未定需求：逐项pending与逐功能范围单独保留，原生报告统计仅已判，勿把“资料不足0”作审完；不为有效门禁编开项或功能PASS。
+
+- sparkfun--sparkfun_gnssdo：353器件，30候选/70决定→37电路；8个CLOCK/ETHERNET/LEVEL_SHIFT空states阻断，824项仅诊断回退；83局部已判/741待核，21归因=2真+14误报工具+2知识+3人工，3分层漏问，门禁FAIL。
+- A.1/B.1/C.1/D.1是合法点号ref；用XML独立ref/pin核1151节点零归网差异，别按首个点拆。KSZ8041 pin2是内部1.8V输出；LTC4418 pin9 CAS是输出，不是输入-only。
+- U4 RMII未用TXD2/3（26/27）须接地，NC是已证接法偏离；AP7361C保证输出1A，1.5A是限流typ，图面Imax不得混用。输出LC不套DRV续流，PCA9306的200k VREF2/EN偏置不是缺供电。
+- USB主VBUS二极管/PTC支路名义107.8µF绕过OCXO软启动；PCA9306双侧2.2k低态条件合计3.409mA，最弱IOL仍要保证。三脚JP和pass-FET未入I2C模型是自动模型缺口，通用人工条款已存在，别夸成整轮漏检。
+- 隔离DC/DC不能把全部脚并查集合域；PoE返回与DC_IN回线分开。OCXO手册400Hz保持原文；LTC4418只有官方文本摘录时别声称完整PDF。schema15的pending要显式说明，资料不足0不代表741项审完。
