@@ -41,3 +41,9 @@
 - L401=U402.SW后的Buck输出电感，非5颗下游Buck的输入EMI滤波；4k7逻辑串阻不该裁断EN源。R101/R102各1MΩ经SHIELD仅2MΩ泄漏，不等于等势地，跨端口候选易过度持有；保留独立稳压级，不为过校验合并。
 - MCU PF13/PF14及PA/PB的ADC复用需显式资格；TVS3301/Z前缀要逐件PRO-E02。三颗晶体已有CLK-C01；合法MODE/SHDN/BOOT/JTAG候选核原厂后关闭，不算误报。PoDL PSE≠PoE PD，VDDUSB≠USB口。
 - schema15仅容VENDOR_DATUM/REVIEW_INCOMPLETE，评估needs_human/knowledge_gap及纯拓扑条款承载仍FAIL；空框图页不填虚构器件。全量派生对账成功与电气审结、格式有效、打包准出分别记。
+
+- 2026-11-02 solderedelectronics--i2c-multiplexer-tca9548a-breakout-hardware-design：344项／26归因（0真、2误、0准则、1知识、23待定）／3覆盖缺口；71PASS+26NA、247未定，门禁FAIL。
+- K前缀仍会把10个easyC当继电器：20条DRV钳位误派且40条端口专项漏掉；CLASSIFIED(reason)不能纠正已识别前缀，不能伪造继电器针表过关。
+- TCA9548A缺I2C switch角色导致候选为空；用有出处add建I2C/LEVEL_SHIFT，完整PW24针表独立摘录；补POR窗口按G02-022，别误挂Top50 G03-025/PWR-T04。
+- 下游16根无板载上拉不等于缺陷；10k±5%在400kHz的总Cb边界33.72pF，需计外接模块/选通并联。19个VCC供电脚共网，补PRO-C04但不机械要求每口保险丝；复位仅R4上拉，恢复可由外部电源循环。
+- PWR-C09无厂商量化容量窗可NA并核接法；REQ-C01不能因做过条件算例就PASS全工况。schema15评估分类及无条款功能如实FAIL，报告快照不是有效打包/准出。
