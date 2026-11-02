@@ -4,6 +4,7 @@ same shared layer, byte for byte (user 2026-10-31: 请开始执行这个方案; 
 """
 import copy
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -18,6 +19,11 @@ import guideline_criteria as g
 
 ASG = Path.home() / '.agents' / 'skills' / 'autonomous-schematic-generation'
 SHARED = g.SHARED_FILES
+
+
+def committed_bytes(repo, name):
+    """The file as committed at HEAD: another session's uncommitted edit in that checkout is not yet the shared layer."""
+    return subprocess.run(['git', '-C', str(repo), 'show', 'HEAD:' + name], check=True, capture_output=True).stdout
 
 
 def rule(rid='G04-001', **changes):
@@ -188,11 +194,21 @@ class GuidelineRulesTests(unittest.TestCase):
         mapped = {gid for rule in subjects for gid in catalog.BASIS[rule]}
         self.assertTrue({'G01-051', 'G01-052', 'G01-053', 'G01-054'} <= mapped)
 
-    @unittest.skipUnless((ASG / SHARED[1]).is_file(), 'autonomous-schematic-generation without the rule library')
+    @unittest.skipUnless((ASG / '.git').exists() and (ASG / SHARED[1]).is_file(),
+                         'autonomous-schematic-generation checkout without the rule library')
     def test_asg_holds_the_same_shared_layer(self):
         for name in SHARED:
-            self.assertEqual((ASG / name).read_bytes(), (ROOT / name).read_bytes(), name)
-        self.assertEqual(g.shared_digest(ASG), g.shared_digest())
+            self.assertEqual(committed_bytes(ASG, name), (ROOT / name).read_bytes(), name)
+
+    def test_the_asg_comparison_ignores_an_uncommitted_edit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            git = ['git', '-C', tmp, '-c', 'user.name=t', '-c', 'user.email=t@example.invalid']
+            subprocess.run(['git', 'init', '-q', tmp], check=True)
+            (Path(tmp) / 'f.json').write_bytes(b'committed')
+            subprocess.run(git + ['add', 'f.json'], check=True)
+            subprocess.run(git + ['commit', '-qm', 'x'], check=True)
+            (Path(tmp) / 'f.json').write_bytes(b'in progress')
+            self.assertEqual(committed_bytes(tmp, 'f.json'), b'committed')
 
 
 if __name__ == '__main__':

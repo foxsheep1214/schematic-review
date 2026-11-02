@@ -10,6 +10,16 @@ count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
+## ASG 共用层比对只看已提交内容；SNLA290 出处已核 (2026-11-02)
+
+`test_asg_holds_the_same_shared_layer` 读 ASG 工作副本，另一会话在那里改共用层还没提交时，这条会失败；变异门的基线也跟着失败，整轮都跑不了（当天出现两次）。改为比 ASG HEAD 的文件与本仓库的共用层，同步漂移仍然拦得住；去掉 `shared_digest` 比较，字节相同时它只是重复。
+CLK-A01 引用的 TI SNLA290 §7 已读原文：“8 pF ≤CLOAD ≤20 pF”，对象是 TI 以太网 PHY 的 25 MHz 晶体，规则文字准确，未改。
+
+- Event: user:2026-11-02 (先commit push到main，再把两个遗留项做了)
+- Causes: judgment 1
+- Changed: scripts/tests/test_guideline_criteria.py, docs/improvement-ledger.md
+- Gates: pytest 2478 passed; mutation --changed: 0 mutations on 2 changed files
+
 ## 8 类新种子的漏报补上自动扫描：种子命中 177→221 (2026-11-02)
 
 2026-11-02 新增的 8 类种子 44 个位点全部漏报：目标规则都是审查员判定的 C 规则，冷扫描没有对应判别。C/D 规则不由工具下结论，所以按 SIG-A03 的既有做法新增 7 条 A 规则，映射到同一批准则：SIG-A05（VBUS 体电容）、PWR-A07（LDO 无输出电容）、SIG-A04（I²C 上拉外包络）、SIG-A06（CAN H/L 短接）、PRO-A05（隔离器两地合并）、CLK-A01（晶体负载）、CLK-A02（晶体共用）；种子目标改为“新 A 规则或原 C 规则”。判据都是外包络，出处写在规则与 seeded_bench README，具体数值仍由审查员按 C 规则算。
