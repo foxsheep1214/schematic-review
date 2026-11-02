@@ -1,0 +1,4242 @@
+{
+ "baseline_commit": "7b2ce7d6f02f5cac1da5ed40ebbb781eed5ae549",
+ "branch": "boards-merge2a",
+ "comparison": [
+  {
+   "board": "pionixpublic--cb-eval-board",
+   "source_attribution_sha256": "bb62b369e8d18539388bff392c03f09b62c198ed6afb8eae00317d7a27b00ef4",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "true_defect": 0,
+    "false_alarm": 43,
+    "criterion_issue": 1,
+    "knowledge_gap": 73,
+    "needs_human": 58,
+    "misses": 3
+   },
+   "before": {
+    "board": "pionixpublic--cb-eval-board",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "34c1fe0fec35ab828462449b0761238f8fb98ffe71fb28280a72b53ee84a8179",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 4,
+      "PWR-A01": 4,
+      "PWR-A02": 2,
+      "PWR-A03": 1,
+      "RST-A01": 10,
+      "SIG-A03": 2,
+      "NET-A07": 4,
+      "RST-A02": 2
+     },
+     "lint": {
+      "NET-A01": 4,
+      "PWR-A01": 4,
+      "PWR-A02": 2,
+      "PWR-A03": 1,
+      "RST-A01": 10,
+      "SIG-A03": 2,
+      "NET-A07": 4,
+      "RST-A02": 2
+     }
+    },
+    "candidates": 24,
+    "members": 101,
+    "candidate_members": {
+     "ANALOG-U11": 9,
+     "ANALOG-U22": 2,
+     "ANALOG-U23": 2,
+     "ANALOG-U9": 9,
+     "POWER_CONVERTER-U6": 13,
+     "POWER_PROTECTION-U13": 2,
+     "POWER_PROTECTION-U14": 2,
+     "POWER_PROTECTION-U15": 2,
+     "POWER_PROTECTION-U16": 2,
+     "POWER_PROTECTION-U17": 2,
+     "POWER_PROTECTION-U18": 2,
+     "POWER_PROTECTION-U19": 2,
+     "POWER_PROTECTION-U20": 2,
+     "POWER_PROTECTION-U21": 2,
+     "STARTUP-U13.EN": 5,
+     "STARTUP-U14.EN": 5,
+     "STARTUP-U15.EN": 5,
+     "STARTUP-U16.EN": 5,
+     "STARTUP-U17.EN": 5,
+     "STARTUP-U18.EN": 5,
+     "STARTUP-U19.EN": 5,
+     "STARTUP-U20.EN": 5,
+     "STARTUP-U21.EN": 5,
+     "USB-J9": 3
+    },
+    "cold_total": 29,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "NET-A01",
+      "ref": "R82",
+      "detail": "Net-(U8A-T_JCLK/T_SWCLK) <- R82.2 (330)",
+      "attributions": [
+       "F005"
+      ]
+     },
+     {
+      "index": 1,
+      "rule": "NET-A01",
+      "ref": "R81",
+      "detail": "Net-(U8A-T_JTMS/T_SWDIO) <- R81.2 (330)",
+      "attributions": [
+       "F006"
+      ]
+     },
+     {
+      "index": 2,
+      "rule": "NET-A01",
+      "ref": "R80",
+      "detail": "Net-(U8A-T_VCP_RX) <- R80.2 (330)",
+      "attributions": [
+       "F004"
+      ]
+     },
+     {
+      "index": 3,
+      "rule": "NET-A01",
+      "ref": "R79",
+      "detail": "Net-(U8A-T_VCP_TX) <- R79.2 (330)",
+      "attributions": [
+       "F003"
+      ]
+     },
+     {
+      "index": 8,
+      "rule": "PWR-A02",
+      "ref": "U6",
+      "detail": "U6.1 (DCDC_OUT) <- Net-(U6-DCDC_OUT)",
+      "attributions": [
+       "F011",
+       "F012"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "PWR-A02",
+      "ref": "U6",
+      "detail": "U6.3 (HLDO_IN) <- Net-(U6-HLDO_IN)",
+      "attributions": [
+       "F011",
+       "F012"
+      ]
+     },
+     {
+      "index": 10,
+      "rule": "PWR-A03",
+      "ref": "U6",
+      "detail": "/ADCs/DC_ISO_GND ['C23.2', 'C24.2', 'C25.2', 'C26.2', 'C27.1', 'C28.2', 'FB1.1', 'U6.2'] 经已装配直流连接件到不了主地 GND；孤岛上 IC 地脚 ['U6.2', 'U6.7', 'U6.8']，无连接器、无已知隔离器件；跨域器件 ['U6']、条件返回器件 ['U6']：按引脚表和导通条件核回流，不要求跨隔离短接",
+      "attributions": [
+       "F013"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "RST-A01",
+      "ref": null,
+      "detail": "/Buttons, RGB LED/EMERGENCY_SHDN_IN: R9 上拉->+24V(24.0V) [优先]",
+      "attributions": [
+       "F036"
+      ]
+     },
+     {
+      "index": 23,
+      "rule": "NET-A07",
+      "ref": "H1",
+      "detail": "H1.1 -> unconnected-(H1-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F007"
+      ]
+     },
+     {
+      "index": 24,
+      "rule": "NET-A07",
+      "ref": "H2",
+      "detail": "H2.1 -> unconnected-(H2-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F008"
+      ]
+     },
+     {
+      "index": 25,
+      "rule": "NET-A07",
+      "ref": "H3",
+      "detail": "H3.1 -> unconnected-(H3-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F009"
+      ]
+     },
+     {
+      "index": 26,
+      "rule": "NET-A07",
+      "ref": "H4",
+      "detail": "H4.1 -> unconnected-(H4-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F010"
+      ]
+     }
+    ],
+    "plan_checks": 1555,
+    "domain_diagnostics": [
+     {
+      "code": "DOMAIN_MERGED",
+      "domains": [
+       "DC_ISO_GND",
+       "GND"
+      ],
+      "via": [
+       "U6"
+      ],
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "+24V",
+      "declared": "GND",
+      "derived": "DC_ISO_GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "+3.3V",
+      "declared": "GND",
+      "derived": "DC_ISO_GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "/30V > 3.3V Power Supply/CB_VCC",
+      "declared": "GND",
+      "derived": "DC_ISO_GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "/ADCs/2VREF",
+      "declared": "GND",
+      "derived": "DC_ISO_GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "Net-(U37-VCC)",
+      "declared": "GND",
+      "derived": "DC_ISO_GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "Net-(U6-DCDC_IN)",
+      "declared": "GND",
+      "derived": "DC_ISO_GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "Net-(U6-DCDC_OUT)",
+      "declared": "/ADCs/DC_ISO_GND",
+      "derived": "DC_ISO_GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "Net-(U6-HLDO_IN)",
+      "declared": "/ADCs/DC_ISO_GND",
+      "derived": "DC_ISO_GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "Net-(U6-HLDO_OUT)",
+      "declared": "/ADCs/DC_ISO_GND",
+      "derived": "DC_ISO_GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     }
+    ],
+    "merged_noninfo": 29
+   },
+   "after": {
+    "board": "pionixpublic--cb-eval-board",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "34c1fe0fec35ab828462449b0761238f8fb98ffe71fb28280a72b53ee84a8179",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 4,
+      "RST-A01": 10,
+      "SIG-A03": 2,
+      "NET-A07": 4,
+      "RST-A02": 2
+     },
+     "lint": {
+      "NET-A01": 4,
+      "RST-A01": 10,
+      "SIG-A03": 2,
+      "NET-A07": 4,
+      "RST-A02": 2
+     }
+    },
+    "candidates": 26,
+    "members": 117,
+    "candidate_members": {
+     "ANALOG-U11": 9,
+     "ANALOG-U22": 2,
+     "ANALOG-U23": 2,
+     "ANALOG-U9": 9,
+     "ISOLATION-DC_ISO_GND/GND": 1,
+     "ISOLATION-T1": 1,
+     "POWER_CONVERTER-U6": 27,
+     "POWER_PROTECTION-U13": 2,
+     "POWER_PROTECTION-U14": 2,
+     "POWER_PROTECTION-U15": 2,
+     "POWER_PROTECTION-U16": 2,
+     "POWER_PROTECTION-U17": 2,
+     "POWER_PROTECTION-U18": 2,
+     "POWER_PROTECTION-U19": 2,
+     "POWER_PROTECTION-U20": 2,
+     "POWER_PROTECTION-U21": 2,
+     "STARTUP-U13.EN": 5,
+     "STARTUP-U14.EN": 5,
+     "STARTUP-U15.EN": 5,
+     "STARTUP-U16.EN": 5,
+     "STARTUP-U17.EN": 5,
+     "STARTUP-U18.EN": 5,
+     "STARTUP-U19.EN": 5,
+     "STARTUP-U20.EN": 5,
+     "STARTUP-U21.EN": 5,
+     "USB-J9": 3
+    },
+    "cold_total": 22,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "NET-A01",
+      "ref": "R82",
+      "detail": "Net-(U8A-T_JCLK/T_SWCLK) <- R82.2 (330)",
+      "attributions": [
+       "F005"
+      ]
+     },
+     {
+      "index": 1,
+      "rule": "NET-A01",
+      "ref": "R81",
+      "detail": "Net-(U8A-T_JTMS/T_SWDIO) <- R81.2 (330)",
+      "attributions": [
+       "F006"
+      ]
+     },
+     {
+      "index": 2,
+      "rule": "NET-A01",
+      "ref": "R80",
+      "detail": "Net-(U8A-T_VCP_RX) <- R80.2 (330)",
+      "attributions": [
+       "F004"
+      ]
+     },
+     {
+      "index": 3,
+      "rule": "NET-A01",
+      "ref": "R79",
+      "detail": "Net-(U8A-T_VCP_TX) <- R79.2 (330)",
+      "attributions": [
+       "F003"
+      ]
+     },
+     {
+      "index": 4,
+      "rule": "RST-A01",
+      "ref": null,
+      "detail": "/Buttons, RGB LED/EMERGENCY_SHDN_IN: R9 上拉->+24V(24.0V) [优先]",
+      "attributions": [
+       "F036"
+      ]
+     },
+     {
+      "index": 16,
+      "rule": "NET-A07",
+      "ref": "H1",
+      "detail": "H1.1 -> unconnected-(H1-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F007"
+      ]
+     },
+     {
+      "index": 17,
+      "rule": "NET-A07",
+      "ref": "H2",
+      "detail": "H2.1 -> unconnected-(H2-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F008"
+      ]
+     },
+     {
+      "index": 18,
+      "rule": "NET-A07",
+      "ref": "H3",
+      "detail": "H3.1 -> unconnected-(H3-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F009"
+      ]
+     },
+     {
+      "index": 19,
+      "rule": "NET-A07",
+      "ref": "H4",
+      "detail": "H4.1 -> unconnected-(H4-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F010"
+      ]
+     }
+    ],
+    "plan_checks": 1539,
+    "domain_diagnostics": [],
+    "merged_noninfo": 22
+   }
+  },
+  {
+   "board": "greatscottgadgets--urti-mainboard",
+   "source_attribution_sha256": "c9540d474450809e3bb4db45e669e63c3c6e1d7b0b79fdd545adce2169c4bf54",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "true_defect": 0,
+    "false_alarm": 75,
+    "criterion_issue": 0,
+    "knowledge_gap": 41,
+    "needs_human": 403,
+    "misses": 2
+   },
+   "before": {
+    "board": "greatscottgadgets--urti-mainboard",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "34eb491abb39e5d445ed88cf04622d872f58e04e909c2532af5a67d81fac3107",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 2,
+      "PRO-E02": 2,
+      "NET-A07": 9,
+      "DRV-A03": 1
+     },
+     "lint": {
+      "NET-A01": 2,
+      "PRO-E02": 2,
+      "NET-A07": 9,
+      "DRV-A03": 1
+     }
+    },
+    "candidates": 13,
+    "members": 338,
+    "candidate_members": {
+     "DEBUG-BOARD": 24,
+     "POWER_CONVERTER-Q2": 177,
+     "POWER_CONVERTER-Q3": 27,
+     "POWER_CONVERTER-Q5": 28,
+     "POWER_CONVERTER-U24": 18,
+     "POWER_CONVERTER-U4": 9,
+     "POWER_CONVERTER-U5": 13,
+     "POWER_CONVERTER-U6": 8,
+     "POWER_CONVERTER-U7": 20,
+     "SPI-U10": 3,
+     "STARTUP-U24.EN": 2,
+     "STARTUP-U9.RESET": 2,
+     "USB-J1": 7
+    },
+    "cold_total": 14,
+    "known_cold_false_alarms": [
+     {
+      "index": 1,
+      "rule": "NET-A01",
+      "ref": "U4",
+      "detail": "Net-(U4-ADJ/NC) <- U4.3 (3V3REG)",
+      "attributions": [
+       "F002"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "NET-A07",
+      "ref": "U14",
+      "detail": "U14.28 -> unconnected-(U14-ADDR-Pad28): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "NET-A07",
+      "ref": "U8",
+      "detail": "U8.B5 -> unconnected-(U8-RFU/PSC-PadB5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F012"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "NET-A07",
+      "ref": "U8",
+      "detail": "U8.C5 -> unconnected-(U8-RFU/~{PSC}-PadC5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F013"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "DRV-A03",
+      "ref": "Q2",
+      "detail": "Q2（bjt，状态 as-built）：基极网 Net-(Q2A-B1) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+      "attributions": [
+       "F014"
+      ]
+     }
+    ],
+    "plan_checks": 1394,
+    "domain_diagnostics": [],
+    "merged_noninfo": 14
+   },
+   "after": {
+    "board": "greatscottgadgets--urti-mainboard",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "34eb491abb39e5d445ed88cf04622d872f58e04e909c2532af5a67d81fac3107",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 2,
+      "PRO-E02": 2,
+      "NET-A07": 9,
+      "DRV-A03": 1
+     },
+     "lint": {
+      "NET-A01": 2,
+      "PRO-E02": 2,
+      "NET-A07": 9,
+      "DRV-A03": 1
+     }
+    },
+    "candidates": 15,
+    "members": 179,
+    "candidate_members": {
+     "DEBUG-BOARD": 24,
+     "ISOLATION-T1": 1,
+     "ISOLATION-T2": 1,
+     "ISOLATION-T3": 1,
+     "ISOLATION-T4": 1,
+     "ISOLATION-T5": 1,
+     "POWER_CONVERTER-U24": 19,
+     "POWER_CONVERTER-U4": 5,
+     "POWER_CONVERTER-U5": 36,
+     "POWER_CONVERTER-U6": 31,
+     "POWER_CONVERTER-U7": 43,
+     "SPI-U10": 3,
+     "STARTUP-U24.EN": 2,
+     "STARTUP-U9.RESET": 2,
+     "USB-J1": 9
+    },
+    "cold_total": 14,
+    "known_cold_false_alarms": [
+     {
+      "index": 1,
+      "rule": "NET-A01",
+      "ref": "U4",
+      "detail": "Net-(U4-ADJ/NC) <- U4.3 (3V3REG)",
+      "attributions": [
+       "F002"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "NET-A07",
+      "ref": "U14",
+      "detail": "U14.28 -> unconnected-(U14-ADDR-Pad28): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "NET-A07",
+      "ref": "U8",
+      "detail": "U8.B5 -> unconnected-(U8-RFU/PSC-PadB5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F012"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "NET-A07",
+      "ref": "U8",
+      "detail": "U8.C5 -> unconnected-(U8-RFU/~{PSC}-PadC5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F013"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "DRV-A03",
+      "ref": "Q2",
+      "detail": "Q2（bjt，状态 as-built）：基极网 Net-(Q2A-B1) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+      "attributions": [
+       "F014"
+      ]
+     }
+    ],
+    "plan_checks": 1462,
+    "domain_diagnostics": [],
+    "merged_noninfo": 14
+   }
+  },
+  {
+   "board": "solderedelectronics--4-channel-relay-board-hardware-design",
+   "source_attribution_sha256": "5d759ae6c0b8d1e0274f0a8b5070b5d2e5a0eede09839f512aaf112c40f0e2c9",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "true_defect": 0,
+    "false_alarm": 8,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 17,
+    "misses": 2
+   },
+   "before": {
+    "board": "solderedelectronics--4-channel-relay-board-hardware-design",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "ba2386d25972db81c6ec1683b7bd59b4cbc6f8d1e3edf6b3635352caa11ade74",
+    "rules": {
+     "lint-cold": {
+      "NET-A04": 4
+     },
+     "lint": {
+      "NET-A04": 4
+     }
+    },
+    "candidates": 4,
+    "members": 60,
+    "candidate_members": {
+     "POWER_CONVERTER-Q1": 15,
+     "POWER_CONVERTER-Q2": 15,
+     "POWER_CONVERTER-Q3": 15,
+     "POWER_CONVERTER-Q4": 15
+    },
+    "cold_total": 4,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "NET-A04",
+      "ref": null,
+      "detail": "NC1: 2 个引脚被电气短接（该网带层次路径，系设计者所画，非工具伪网络）",
+      "attributions": [
+       "F01"
+      ]
+     },
+     {
+      "index": 1,
+      "rule": "NET-A04",
+      "ref": null,
+      "detail": "NC2: 2 个引脚被电气短接（该网带层次路径，系设计者所画，非工具伪网络）",
+      "attributions": [
+       "F02"
+      ]
+     },
+     {
+      "index": 2,
+      "rule": "NET-A04",
+      "ref": null,
+      "detail": "NC3: 2 个引脚被电气短接（该网带层次路径，系设计者所画，非工具伪网络）",
+      "attributions": [
+       "F03"
+      ]
+     },
+     {
+      "index": 3,
+      "rule": "NET-A04",
+      "ref": null,
+      "detail": "NC4: 2 个引脚被电气短接（该网带层次路径，系设计者所画，非工具伪网络）",
+      "attributions": [
+       "F04"
+      ]
+     }
+    ],
+    "plan_checks": 199,
+    "domain_diagnostics": [],
+    "merged_noninfo": 4
+   },
+   "after": {
+    "board": "solderedelectronics--4-channel-relay-board-hardware-design",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "ba2386d25972db81c6ec1683b7bd59b4cbc6f8d1e3edf6b3635352caa11ade74",
+    "rules": {
+     "lint-cold": {
+      "NET-A04": 4
+     },
+     "lint": {
+      "NET-A04": 4
+     }
+    },
+    "candidates": 8,
+    "members": 8,
+    "candidate_members": {
+     "ISOLATION-K2": 1,
+     "ISOLATION-K3": 1,
+     "ISOLATION-K6": 1,
+     "ISOLATION-K7": 1,
+     "ISOLATION-U1": 1,
+     "ISOLATION-U2": 1,
+     "ISOLATION-U3": 1,
+     "ISOLATION-U4": 1
+    },
+    "cold_total": 4,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "NET-A04",
+      "ref": null,
+      "detail": "NC1: 2 个引脚被电气短接（该网带层次路径，系设计者所画，非工具伪网络）",
+      "attributions": [
+       "F01"
+      ]
+     },
+     {
+      "index": 1,
+      "rule": "NET-A04",
+      "ref": null,
+      "detail": "NC2: 2 个引脚被电气短接（该网带层次路径，系设计者所画，非工具伪网络）",
+      "attributions": [
+       "F02"
+      ]
+     },
+     {
+      "index": 2,
+      "rule": "NET-A04",
+      "ref": null,
+      "detail": "NC3: 2 个引脚被电气短接（该网带层次路径，系设计者所画，非工具伪网络）",
+      "attributions": [
+       "F03"
+      ]
+     },
+     {
+      "index": 3,
+      "rule": "NET-A04",
+      "ref": null,
+      "detail": "NC4: 2 个引脚被电气短接（该网带层次路径，系设计者所画，非工具伪网络）",
+      "attributions": [
+       "F04"
+      ]
+     }
+    ],
+    "plan_checks": 303,
+    "domain_diagnostics": [],
+    "merged_noninfo": 4
+   }
+  },
+  {
+   "board": "antmicro--cm4-baseboard",
+   "source_attribution_sha256": "b2ad78492e8195bae7819fe6245aa3660c865f6a9e81c5b993b19e399a58e668",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "true_defect": 0,
+    "false_alarm": 40,
+    "criterion_issue": 0,
+    "knowledge_gap": 112,
+    "needs_human": 147,
+    "misses": 0
+   },
+   "before": {
+    "board": "antmicro--cm4-baseboard",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 1,
+     "hot-fallback": 0,
+     "merge": 0
+    },
+    "db_sha256": "46aadac59b206e395b079dc4a2148f027e593487c246eb20039d0325a3c546f4",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 9,
+      "PWR-A01": 7,
+      "PWR-A02": 5,
+      "PWR-A03": 1,
+      "NET-A06": 4,
+      "RST-A01": 4,
+      "PRO-E02": 13,
+      "NET-A07": 6
+     },
+     "lint": {
+      "NET-A01": 9,
+      "PWR-A01": 7,
+      "PWR-A02": 5,
+      "PWR-A03": 1,
+      "NET-A06": 4,
+      "RST-A01": 4,
+      "PRO-E02": 13,
+      "NET-A07": 6
+     }
+    },
+    "candidates": 31,
+    "members": 445,
+    "candidate_members": {
+     "DEBUG-BOARD": 62,
+     "LEVEL_SHIFT-U201": 3,
+     "LEVEL_SHIFT-U203": 3,
+     "LEVEL_SHIFT-U907": 2,
+     "POWER_CONVERTER-Q202": 18,
+     "POWER_CONVERTER-Q203": 18,
+     "POWER_CONVERTER-Q204": 18,
+     "POWER_CONVERTER-Q205": 18,
+     "POWER_CONVERTER-Q206": 32,
+     "POWER_CONVERTER-Q901": 6,
+     "POWER_CONVERTER-Q902": 11,
+     "POWER_CONVERTER-U301": 18,
+     "POWER_CONVERTER-U302": 18,
+     "POWER_CONVERTER-U303": 19,
+     "POWER_CONVERTER-U903": 7,
+     "POWER_PROTECTION-J401": 23,
+     "POWER_PROTECTION-J502": 20,
+     "POWER_PROTECTION-J601": 12,
+     "POWER_PROTECTION-J701": 21,
+     "POWER_PROTECTION-J702": 4,
+     "POWER_PROTECTION-J801": 46,
+     "POWER_PROTECTION-J802": 19,
+     "POWER_PROTECTION-Q301": 9,
+     "POWER_PROTECTION-Q302": 7,
+     "POWER_PROTECTION-Q303": 7,
+     "STARTUP-U302.EN": 3,
+     "STARTUP-U303.EN": 3,
+     "STARTUP-U303.PG": 3,
+     "STARTUP-U903.EN": 3,
+     "USB-J901": 7,
+     "USB-J902": 5
+    },
+    "cold_total": 49,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "NET-A01",
+      "ref": "J202",
+      "detail": "/Compute module/DSI0_C_N <- J202.69 (Socket_Hirose_DF40_2x50_DF40HC-3.0-100DS-0.4V)",
+      "attributions": [
+       "F001"
+      ]
+     },
+     {
+      "index": 1,
+      "rule": "NET-A01",
+      "ref": "J202",
+      "detail": "/Compute module/DSI0_C_P <- J202.71 (Socket_Hirose_DF40_2x50_DF40HC-3.0-100DS-0.4V)",
+      "attributions": [
+       "F002"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Ethernet/VDD (13节点): ['C401', 'C404', 'C405', 'C406', 'C407', 'D403']",
+      "attributions": [
+       "F004"
+      ]
+     },
+     {
+      "index": 10,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Supply/VCC_5V (3节点): ['C311', 'R315', 'U303']",
+      "attributions": [
+       "F005",
+       "F008",
+       "F009"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/USB/USB_1V2 (12节点): ['C912', 'C914', 'C916', 'C921', 'C923', 'C925']",
+      "attributions": [
+       "F006"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U801-TVDD_IN) (5节点): ['C807', 'C808', 'U801']",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U801-V_{DD(A)}) (5节点): ['C805', 'C806', 'U801']",
+      "attributions": [
+       "F011"
+      ]
+     },
+     {
+      "index": 14,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U801-V_{DD(HF)}) (2节点): ['TP803', 'U801']",
+      "attributions": [
+       "F012"
+      ]
+     },
+     {
+      "index": 16,
+      "rule": "PWR-A02",
+      "ref": "U303",
+      "detail": "U303.9 (VCC) <- /Supply/VCC_5V",
+      "attributions": [
+       "F015",
+       "F021",
+       "F022",
+       "F024",
+       "F025",
+       "F026",
+       "F027",
+       "F028",
+       "F029",
+       "F030",
+       "F031"
+      ]
+     },
+     {
+      "index": 17,
+      "rule": "PWR-A02",
+      "ref": "U401",
+      "detail": "U401.1 (VDD) <- /Ethernet/VDD",
+      "attributions": [
+       "F016",
+       "F017"
+      ]
+     },
+     {
+      "index": 18,
+      "rule": "PWR-A02",
+      "ref": "U403",
+      "detail": "U403.1 (VIN+) <- /Ethernet/VDD",
+      "attributions": [
+       "F016",
+       "F017"
+      ]
+     },
+     {
+      "index": 19,
+      "rule": "PWR-A02",
+      "ref": "U801",
+      "detail": "U801.25 (V_{DD(HF)}) <- Net-(U801-V_{DD(HF)})",
+      "attributions": [
+       "F019"
+      ]
+     },
+     {
+      "index": 20,
+      "rule": "PWR-A02",
+      "ref": "U905",
+      "detail": "U905.10 (VCORE) <- /USB/USB_1V2",
+      "attributions": [
+       "F023"
+      ]
+     },
+     {
+      "index": 21,
+      "rule": "PWR-A03",
+      "ref": "U401",
+      "detail": "/Ethernet/VSS ['C401.1', 'D403.2', 'FB402.2', 'R401.1', 'R402.1', 'R403.2', 'R404.1', 'R405.1'] 经已装配直流连接件到不了主地 GND；孤岛上 IC 地脚 ['U401.21', 'U401.4', 'U401.5']，无连接器、无已知隔离器件；跨域器件 []、条件返回器件 ['D403', 'U401']：按引脚表和导通条件核回流，不要求跨隔离短接",
+      "attributions": [
+       "F032"
+      ]
+     },
+     {
+      "index": 22,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "/Compute module/UART.1.RX: ['U203.8', 'U907.7']；开漏/三态等合法结构须逐条排除",
+      "attributions": [
+       "F033"
+      ]
+     },
+     {
+      "index": 23,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "/Compute module/UART.1.TX: ['U203.7', 'U907.8']；开漏/三态等合法结构须逐条排除",
+      "attributions": [
+       "F034"
+      ]
+     },
+     {
+      "index": 24,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "GND: ['U907.10', 'U907.2', 'U907.3', 'U907.9']；开漏/三态等合法结构须逐条排除",
+      "attributions": [
+       "F035"
+      ]
+     },
+     {
+      "index": 43,
+      "rule": "NET-A07",
+      "ref": "U303",
+      "detail": "U303.10 -> unconnected-(U303-SS/TR-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F054"
+      ]
+     },
+     {
+      "index": 44,
+      "rule": "NET-A07",
+      "ref": "U303",
+      "detail": "U303.4 -> unconnected-(U303-MODE-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F055"
+      ]
+     },
+     {
+      "index": 45,
+      "rule": "NET-A07",
+      "ref": "U303",
+      "detail": "U303.5 -> unconnected-(U303-FSEL-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F056"
+      ]
+     }
+    ],
+    "plan_checks": 1279,
+    "domain_diagnostics": [
+     {
+      "code": "DOMAIN_MERGED",
+      "domains": [
+       "GND",
+       "GNDD",
+       "VSS"
+      ],
+      "via": [
+       "U403"
+      ],
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_MERGED",
+      "domains": [
+       "GNDD",
+       "VSS"
+      ],
+      "via": [
+       "R414"
+      ],
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     }
+    ],
+    "merged_noninfo": 49
+   },
+   "after": {
+    "board": "antmicro--cm4-baseboard",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "46aadac59b206e395b079dc4a2148f027e593487c246eb20039d0325a3c546f4",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 9,
+      "PWR-A01": 7,
+      "PWR-A02": 5,
+      "PWR-A03": 1,
+      "NET-A06": 4,
+      "RST-A01": 4,
+      "PRO-E02": 13,
+      "NET-A07": 6
+     },
+     "lint": {
+      "NET-A01": 9,
+      "PWR-A01": 7,
+      "PWR-A02": 5,
+      "PWR-A03": 1,
+      "NET-A06": 4,
+      "RST-A01": 4,
+      "PRO-E02": 13,
+      "NET-A07": 6
+     }
+    },
+    "candidates": 18,
+    "members": 169,
+    "candidate_members": {
+     "DEBUG-BOARD": 62,
+     "ISOLATION-U402": 1,
+     "LEVEL_SHIFT-U201": 3,
+     "LEVEL_SHIFT-U203": 3,
+     "LEVEL_SHIFT-U907": 2,
+     "POWER_CONVERTER-U301": 12,
+     "POWER_CONVERTER-U302": 12,
+     "POWER_CONVERTER-U303": 14,
+     "POWER_CONVERTER-U903": 21,
+     "POWER_PROTECTION-Q301": 6,
+     "POWER_PROTECTION-Q302": 4,
+     "POWER_PROTECTION-Q303": 4,
+     "STARTUP-U302.EN": 3,
+     "STARTUP-U303.EN": 3,
+     "STARTUP-U303.PG": 3,
+     "STARTUP-U903.EN": 3,
+     "USB-J901": 7,
+     "USB-J902": 6
+    },
+    "cold_total": 49,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "NET-A01",
+      "ref": "J202",
+      "detail": "/Compute module/DSI0_C_N <- J202.69 (Socket_Hirose_DF40_2x50_DF40HC-3.0-100DS-0.4V)",
+      "attributions": [
+       "F001"
+      ]
+     },
+     {
+      "index": 1,
+      "rule": "NET-A01",
+      "ref": "J202",
+      "detail": "/Compute module/DSI0_C_P <- J202.71 (Socket_Hirose_DF40_2x50_DF40HC-3.0-100DS-0.4V)",
+      "attributions": [
+       "F002"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Ethernet/VDD (13节点): ['C401', 'C404', 'C405', 'C406', 'C407', 'D403']",
+      "attributions": [
+       "F004"
+      ]
+     },
+     {
+      "index": 10,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Supply/VCC_5V (3节点): ['C311', 'R315', 'U303']",
+      "attributions": [
+       "F005",
+       "F008",
+       "F009"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/USB/USB_1V2 (12节点): ['C912', 'C914', 'C916', 'C921', 'C923', 'C925']",
+      "attributions": [
+       "F006"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U801-TVDD_IN) (5节点): ['C807', 'C808', 'U801']",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U801-V_{DD(A)}) (5节点): ['C805', 'C806', 'U801']",
+      "attributions": [
+       "F011"
+      ]
+     },
+     {
+      "index": 14,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U801-V_{DD(HF)}) (2节点): ['TP803', 'U801']",
+      "attributions": [
+       "F012"
+      ]
+     },
+     {
+      "index": 16,
+      "rule": "PWR-A02",
+      "ref": "U303",
+      "detail": "U303.9 (VCC) <- /Supply/VCC_5V",
+      "attributions": [
+       "F015",
+       "F021",
+       "F022",
+       "F024",
+       "F025",
+       "F026",
+       "F027",
+       "F028",
+       "F029",
+       "F030",
+       "F031"
+      ]
+     },
+     {
+      "index": 17,
+      "rule": "PWR-A02",
+      "ref": "U401",
+      "detail": "U401.1 (VDD) <- /Ethernet/VDD",
+      "attributions": [
+       "F016",
+       "F017"
+      ]
+     },
+     {
+      "index": 18,
+      "rule": "PWR-A02",
+      "ref": "U403",
+      "detail": "U403.1 (VIN+) <- /Ethernet/VDD",
+      "attributions": [
+       "F016",
+       "F017"
+      ]
+     },
+     {
+      "index": 19,
+      "rule": "PWR-A02",
+      "ref": "U801",
+      "detail": "U801.25 (V_{DD(HF)}) <- Net-(U801-V_{DD(HF)})",
+      "attributions": [
+       "F019"
+      ]
+     },
+     {
+      "index": 20,
+      "rule": "PWR-A02",
+      "ref": "U905",
+      "detail": "U905.10 (VCORE) <- /USB/USB_1V2",
+      "attributions": [
+       "F023"
+      ]
+     },
+     {
+      "index": 21,
+      "rule": "PWR-A03",
+      "ref": "U401",
+      "detail": "/Ethernet/VSS ['C401.1', 'D403.2', 'FB402.2', 'R401.1', 'R402.1', 'R403.2', 'R404.1', 'R405.1'] 经已装配直流连接件到不了主地 GND；孤岛上 IC 地脚 ['U401.21', 'U401.4', 'U401.5']，无连接器、无已知隔离器件；跨域器件 []、条件返回器件 ['D403', 'U401']：按引脚表和导通条件核回流，不要求跨隔离短接",
+      "attributions": [
+       "F032"
+      ]
+     },
+     {
+      "index": 22,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "/Compute module/UART.1.RX: ['U203.8', 'U907.7']；开漏/三态等合法结构须逐条排除",
+      "attributions": [
+       "F033"
+      ]
+     },
+     {
+      "index": 23,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "/Compute module/UART.1.TX: ['U203.7', 'U907.8']；开漏/三态等合法结构须逐条排除",
+      "attributions": [
+       "F034"
+      ]
+     },
+     {
+      "index": 24,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "GND: ['U907.10', 'U907.2', 'U907.3', 'U907.9']；开漏/三态等合法结构须逐条排除",
+      "attributions": [
+       "F035"
+      ]
+     },
+     {
+      "index": 43,
+      "rule": "NET-A07",
+      "ref": "U303",
+      "detail": "U303.10 -> unconnected-(U303-SS/TR-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F054"
+      ]
+     },
+     {
+      "index": 44,
+      "rule": "NET-A07",
+      "ref": "U303",
+      "detail": "U303.4 -> unconnected-(U303-MODE-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F055"
+      ]
+     },
+     {
+      "index": 45,
+      "rule": "NET-A07",
+      "ref": "U303",
+      "detail": "U303.5 -> unconnected-(U303-FSEL-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F056"
+      ]
+     }
+    ],
+    "plan_checks": 1839,
+    "domain_diagnostics": [
+     {
+      "code": "DOMAIN_MERGED",
+      "domains": [
+       "GND",
+       "GNDD",
+       "VSS"
+      ],
+      "via": [
+       "U403"
+      ],
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_MERGED",
+      "domains": [
+       "GNDD",
+       "VSS"
+      ],
+      "via": [
+       "R414"
+      ],
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     }
+    ],
+    "merged_noninfo": 49
+   }
+  },
+  {
+   "board": "ben5049--switch-v4-hardware",
+   "source_attribution_sha256": "72b4ca5e65dec472329c90c66d27a293c5c8e4b78e72d55c568a3327a9a01dce",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "true_defect": 3,
+    "false_alarm": 31,
+    "criterion_issue": 0,
+    "knowledge_gap": 17,
+    "needs_human": 149,
+    "misses": 2
+   },
+   "before": {
+    "board": "ben5049--switch-v4-hardware",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "afb7f4d5af220f025b96dbc76c7d86347a6cc92f57dd3469c23278b10fec171c",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 7,
+      "NET-A02": 7,
+      "PWR-A01": 3,
+      "RST-A01": 6,
+      "PRO-E02": 2,
+      "NET-A07": 21,
+      "DRV-A01": 2,
+      "PWR-A05": 5,
+      "RST-A04": 6,
+      "RST-A03": 2
+     },
+     "lint": {
+      "NET-A01": 7,
+      "NET-A02": 7,
+      "PWR-A01": 3,
+      "RST-A01": 6,
+      "PRO-E02": 2,
+      "NET-A07": 21,
+      "DRV-A01": 2,
+      "PWR-A05": 5,
+      "RST-A04": 6,
+      "RST-A03": 2
+     }
+    },
+    "candidates": 41,
+    "members": 500,
+    "candidate_members": {
+     "CLOCK-U1201": 9,
+     "DEBUG-BOARD": 35,
+     "ETHERNET-U1601": 11,
+     "POWER_CONVERTER-Q2201": 34,
+     "POWER_CONVERTER-Q2202": 16,
+     "POWER_CONVERTER-U1301": 11,
+     "POWER_CONVERTER-U1401": 11,
+     "POWER_CONVERTER-U1501": 11,
+     "POWER_CONVERTER-U401": 2,
+     "POWER_CONVERTER-U402": 68,
+     "POWER_CONVERTER-U501": 48,
+     "POWER_CONVERTER-U502": 21,
+     "POWER_CONVERTER-U701": 11,
+     "POWER_CONVERTER-U703": 5,
+     "POWER_PROTECTION-J2401": 22,
+     "POWER_PROTECTION-J2402": 22,
+     "POWER_PROTECTION-J2403": 22,
+     "POWER_PROTECTION-J2404": 22,
+     "POWER_PROTECTION-J2405": 7,
+     "POWER_PROTECTION-J301": 9,
+     "POWER_PROTECTION-J601": 8,
+     "POWER_PROTECTION-U2201": 6,
+     "POWER_PROTECTION-U2202": 6,
+     "POWER_PROTECTION-U2302": 6,
+     "POWER_PROTECTION-U302": 1,
+     "POWER_PROTECTION-U302.OVP": 7,
+     "POWER_PROTECTION-U602": 1,
+     "POWER_PROTECTION-U602.OVP": 8,
+     "STARTUP-U1301.EN": 6,
+     "STARTUP-U1401.EN": 6,
+     "STARTUP-U1501.EN": 6,
+     "STARTUP-U1601.INH": 6,
+     "STARTUP-U2201.EN": 3,
+     "STARTUP-U2202.EN": 3,
+     "STARTUP-U2302.EN": 3,
+     "STARTUP-U2601.NRST": 3,
+     "STARTUP-U302.UVLO": 7,
+     "STARTUP-U402.EN_UVLO": 6,
+     "STARTUP-U402.PG": 2,
+     "STARTUP-U602.UVLO": 7,
+     "STARTUP-U703.EN": 2
+    },
+    "cold_total": 61,
+    "known_cold_false_alarms": [
+     {
+      "index": 1,
+      "rule": "NET-A01",
+      "ref": "U1601",
+      "detail": "/PHYs/10BASE-T1S PHY/WAKE_OUT <- U1601.17 (LAN8671C2-E_U3B)",
+      "attributions": [
+       "F004"
+      ]
+     },
+     {
+      "index": 5,
+      "rule": "NET-A01",
+      "ref": "U602",
+      "detail": "/Power/Power In (Isolated)/~{FLT} <- U602.22 (TPS26600RHFR)",
+      "attributions": [
+       "F008"
+      ]
+     },
+     {
+      "index": 6,
+      "rule": "NET-A01",
+      "ref": "U302",
+      "detail": "/Power/Power In/~{FLT} <- U302.22 (TPS26600RHFR)",
+      "attributions": [
+       "F009"
+      ]
+     },
+     {
+      "index": 7,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII0.RX_CLK(2节点) <-> /PHYs/xMII0.RX_CTL(3节点)",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 8,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII0.TX_CLK(2节点) <-> /PHYs/xMII0.TX_CTL(2节点)",
+      "attributions": [
+       "F011"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII1.RX_CLK(2节点) <-> /PHYs/xMII1.RX_CTL(3节点)",
+      "attributions": [
+       "F012"
+      ]
+     },
+     {
+      "index": 10,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII1.TX_CLK(2节点) <-> /PHYs/xMII1.TX_CTL(2节点)",
+      "attributions": [
+       "F013"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII2.RX_CLK(2节点) <-> /PHYs/xMII2.RX_CTL(3节点)",
+      "attributions": [
+       "F014"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII2.TX_CLK(2节点) <-> /PHYs/xMII2.TX_CTL(2节点)",
+      "attributions": [
+       "F015"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/Power/VIN_ISO_IMON(2节点) <-> /Power/VIN_ISO_VMON(3节点)",
+      "attributions": [
+       "F016"
+      ]
+     },
+     {
+      "index": 14,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Power/3V3 Regulators/VCC (2节点): ['C404', 'U402']",
+      "attributions": [
+       "F017"
+      ]
+     },
+     {
+      "index": 15,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Power/Regulators (Isolated)/BIAS (3节点): ['C703', 'U702']",
+      "attributions": [
+       "F018"
+      ]
+     },
+     {
+      "index": 16,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Primary MCU/VREF+ (3节点): ['C810', 'C811', 'U802']",
+      "attributions": [
+       "F019"
+      ]
+     },
+     {
+      "index": 46,
+      "rule": "DRV-A01",
+      "ref": "L1902",
+      "detail": "L1902（inductor，状态 as-drawn）: 开关节点 /CDNs & PoDL/1000BASE-T1 PoDL CDN 1/PWR+ 与 /CDNs & PoDL/MDI1_OUT.TRXP 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "attributions": [
+       "F040"
+      ]
+     },
+     {
+      "index": 47,
+      "rule": "DRV-A01",
+      "ref": "L2002",
+      "detail": "L2002（inductor，状态 as-drawn）: 开关节点 /CDNs & PoDL/1000BASE-T1 PoDL CDN 2/PWR+ 与 /CDNs & PoDL/MDI2_OUT.TRXP 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "attributions": [
+       "F041"
+      ]
+     },
+     {
+      "index": 48,
+      "rule": "PWR-A05",
+      "ref": "U1301",
+      "detail": "U1301（状态 as-drawn）：输入网 +3V3 经 L401 串联滤波，但未见 RC 阻尼支路或带 ESR 的体电容；负输入阻抗与滤波谐振的配合需按保证值核算",
+      "attributions": [
+       "F042"
+      ]
+     },
+     {
+      "index": 49,
+      "rule": "PWR-A05",
+      "ref": "U1401",
+      "detail": "U1401（状态 as-drawn）：输入网 +3V3 经 L401 串联滤波，但未见 RC 阻尼支路或带 ESR 的体电容；负输入阻抗与滤波谐振的配合需按保证值核算",
+      "attributions": [
+       "F043"
+      ]
+     },
+     {
+      "index": 50,
+      "rule": "PWR-A05",
+      "ref": "U1501",
+      "detail": "U1501（状态 as-drawn）：输入网 +3V3 经 L401 串联滤波，但未见 RC 阻尼支路或带 ESR 的体电容；负输入阻抗与滤波谐振的配合需按保证值核算",
+      "attributions": [
+       "F044"
+      ]
+     },
+     {
+      "index": 51,
+      "rule": "PWR-A05",
+      "ref": "U501",
+      "detail": "U501（状态 as-drawn）：输入网 +3V3 经 L401 串联滤波，但未见 RC 阻尼支路或带 ESR 的体电容；负输入阻抗与滤波谐振的配合需按保证值核算",
+      "attributions": [
+       "F045"
+      ]
+     },
+     {
+      "index": 52,
+      "rule": "PWR-A05",
+      "ref": "U502",
+      "detail": "U502（状态 as-drawn）：输入网 +3V3 经 L401 串联滤波，但未见 RC 阻尼支路或带 ESR 的体电容；负输入阻抗与滤波谐振的配合需按保证值核算",
+      "attributions": [
+       "F046"
+      ]
+     },
+     {
+      "index": 53,
+      "rule": "RST-A04",
+      "ref": "U2201",
+      "detail": "U2201（状态 as-drawn）：使能脚 U2201.3 所在网 /CDNs & PoDL/PoDL (2 Channels)/EN1 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "attributions": [
+       "F047"
+      ]
+     },
+     {
+      "index": 54,
+      "rule": "RST-A04",
+      "ref": "U2202",
+      "detail": "U2202（状态 as-drawn）：使能脚 U2202.3 所在网 /CDNs & PoDL/PoDL (2 Channels)/EN2 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "attributions": [
+       "F048"
+      ]
+     },
+     {
+      "index": 55,
+      "rule": "RST-A04",
+      "ref": "U2302",
+      "detail": "U2302（状态 as-drawn）：使能脚 U2302.3 所在网 /CDNs & PoDL/MPoE (1 Channel)/EN 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "attributions": [
+       "F049"
+      ]
+     },
+     {
+      "index": 60,
+      "rule": "RST-A04",
+      "ref": "U702",
+      "detail": "U702（状态 as-drawn）：使能脚 U702.2 所在网 +VIN_ISO 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "attributions": [
+       "F050"
+      ]
+     }
+    ],
+    "plan_checks": 1932,
+    "domain_diagnostics": [
+     {
+      "code": "DOMAIN_MERGED",
+      "domains": [
+       "GND1",
+       "GND2"
+      ],
+      "via": [
+       "R101"
+      ],
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     }
+    ],
+    "merged_noninfo": 61
+   },
+   "after": {
+    "board": "ben5049--switch-v4-hardware",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "afb7f4d5af220f025b96dbc76c7d86347a6cc92f57dd3469c23278b10fec171c",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 7,
+      "NET-A02": 7,
+      "PWR-A01": 3,
+      "RST-A01": 6,
+      "PRO-E02": 2,
+      "NET-A07": 21,
+      "DRV-A01": 2,
+      "RST-A04": 2,
+      "RST-A03": 2
+     },
+     "lint": {
+      "NET-A01": 7,
+      "NET-A02": 7,
+      "PWR-A01": 3,
+      "RST-A01": 6,
+      "PRO-E02": 2,
+      "NET-A07": 21,
+      "DRV-A01": 2,
+      "RST-A04": 2,
+      "RST-A03": 2
+     }
+    },
+    "candidates": 42,
+    "members": 767,
+    "candidate_members": {
+     "CLOCK-U1201": 9,
+     "DEBUG-BOARD": 35,
+     "ETHERNET-U1601": 11,
+     "ISOLATION-GND1/GND2": 4,
+     "ISOLATION-T1801": 1,
+     "ISOLATION-T1901": 1,
+     "ISOLATION-T2001": 1,
+     "ISOLATION-T2101": 1,
+     "POWER_CONVERTER-U1301": 75,
+     "POWER_CONVERTER-U1401": 75,
+     "POWER_CONVERTER-U1501": 75,
+     "POWER_CONVERTER-U401": 2,
+     "POWER_CONVERTER-U402": 71,
+     "POWER_CONVERTER-U501": 112,
+     "POWER_CONVERTER-U502": 85,
+     "POWER_CONVERTER-U701": 10,
+     "POWER_CONVERTER-U703": 12,
+     "POWER_PROTECTION-J2401": 21,
+     "POWER_PROTECTION-J2402": 21,
+     "POWER_PROTECTION-J2403": 20,
+     "POWER_PROTECTION-J2404": 20,
+     "POWER_PROTECTION-J2405": 7,
+     "POWER_PROTECTION-U2201": 7,
+     "POWER_PROTECTION-U2202": 7,
+     "POWER_PROTECTION-U2302": 7,
+     "POWER_PROTECTION-U302": 1,
+     "POWER_PROTECTION-U302.OVP": 7,
+     "POWER_PROTECTION-U602": 1,
+     "POWER_PROTECTION-U602.OVP": 8,
+     "STARTUP-U1301.EN": 6,
+     "STARTUP-U1401.EN": 6,
+     "STARTUP-U1501.EN": 6,
+     "STARTUP-U1601.INH": 6,
+     "STARTUP-U2201.EN": 3,
+     "STARTUP-U2202.EN": 3,
+     "STARTUP-U2302.EN": 3,
+     "STARTUP-U2601.NRST": 3,
+     "STARTUP-U302.UVLO": 7,
+     "STARTUP-U402.EN_UVLO": 6,
+     "STARTUP-U402.PG": 2,
+     "STARTUP-U602.UVLO": 7,
+     "STARTUP-U703.EN": 2
+    },
+    "cold_total": 52,
+    "known_cold_false_alarms": [
+     {
+      "index": 1,
+      "rule": "NET-A01",
+      "ref": "U1601",
+      "detail": "/PHYs/10BASE-T1S PHY/WAKE_OUT <- U1601.17 (LAN8671C2-E_U3B)",
+      "attributions": [
+       "F004"
+      ]
+     },
+     {
+      "index": 5,
+      "rule": "NET-A01",
+      "ref": "U602",
+      "detail": "/Power/Power In (Isolated)/~{FLT} <- U602.22 (TPS26600RHFR)",
+      "attributions": [
+       "F008"
+      ]
+     },
+     {
+      "index": 6,
+      "rule": "NET-A01",
+      "ref": "U302",
+      "detail": "/Power/Power In/~{FLT} <- U302.22 (TPS26600RHFR)",
+      "attributions": [
+       "F009"
+      ]
+     },
+     {
+      "index": 7,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII0.RX_CLK(2节点) <-> /PHYs/xMII0.RX_CTL(3节点)",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 8,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII0.TX_CLK(2节点) <-> /PHYs/xMII0.TX_CTL(2节点)",
+      "attributions": [
+       "F011"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII1.RX_CLK(2节点) <-> /PHYs/xMII1.RX_CTL(3节点)",
+      "attributions": [
+       "F012"
+      ]
+     },
+     {
+      "index": 10,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII1.TX_CLK(2节点) <-> /PHYs/xMII1.TX_CTL(2节点)",
+      "attributions": [
+       "F013"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII2.RX_CLK(2节点) <-> /PHYs/xMII2.RX_CTL(3节点)",
+      "attributions": [
+       "F014"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/PHYs/xMII2.TX_CLK(2节点) <-> /PHYs/xMII2.TX_CTL(2节点)",
+      "attributions": [
+       "F015"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/Power/VIN_ISO_IMON(2节点) <-> /Power/VIN_ISO_VMON(3节点)",
+      "attributions": [
+       "F016"
+      ]
+     },
+     {
+      "index": 14,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Power/3V3 Regulators/VCC (2节点): ['C404', 'U402']",
+      "attributions": [
+       "F017"
+      ]
+     },
+     {
+      "index": 15,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Power/Regulators (Isolated)/BIAS (3节点): ['C703', 'U702']",
+      "attributions": [
+       "F018"
+      ]
+     },
+     {
+      "index": 16,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "/Primary MCU/VREF+ (3节点): ['C810', 'C811', 'U802']",
+      "attributions": [
+       "F019"
+      ]
+     },
+     {
+      "index": 46,
+      "rule": "DRV-A01",
+      "ref": "L1902",
+      "detail": "L1902（inductor，状态 as-drawn）: 开关节点 /CDNs & PoDL/1000BASE-T1 PoDL CDN 1/PWR+ 与 /CDNs & PoDL/MDI1_OUT.TRXP 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "attributions": [
+       "F040"
+      ]
+     },
+     {
+      "index": 47,
+      "rule": "DRV-A01",
+      "ref": "L2002",
+      "detail": "L2002（inductor，状态 as-drawn）: 开关节点 /CDNs & PoDL/1000BASE-T1 PoDL CDN 2/PWR+ 与 /CDNs & PoDL/MDI2_OUT.TRXP 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "attributions": [
+       "F041"
+      ]
+     }
+    ],
+    "plan_checks": 1944,
+    "domain_diagnostics": [],
+    "merged_noninfo": 52
+   }
+  },
+  {
+   "board": "sparkfun--sparkfun_gnssdo",
+   "source_attribution_sha256": "2ffd1192eb97d8ff76060b1fbc2308d4832b6715327ab6c2c6833bd6f1a71e85",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "true_defect": 2,
+    "false_alarm": 14,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 3,
+    "misses": 3
+   },
+   "before": {
+    "board": "sparkfun--sparkfun_gnssdo",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "1f54ab60ef650c357a5ad330b8ad4a3e4a9e9922d882ce0ba1b51262e7e49f95",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 7,
+      "PWR-A01": 2,
+      "PWR-A02": 14,
+      "NET-A06": 1,
+      "RST-A01": 2,
+      "PRO-E02": 4,
+      "DOC-A04": 4,
+      "SIG-A05": 1,
+      "NET-A07": 15,
+      "DRV-A01": 2,
+      "RST-A04": 4
+     },
+     "lint": {
+      "NET-A01": 7,
+      "PWR-A01": 2,
+      "PWR-A02": 14,
+      "NET-A06": 1,
+      "RST-A01": 2,
+      "PRO-E02": 4,
+      "DOC-A04": 4,
+      "SIG-A05": 1,
+      "NET-A07": 15,
+      "DRV-A01": 2,
+      "RST-A04": 4
+     }
+    },
+    "candidates": 30,
+    "members": 243,
+    "candidate_members": {
+     "ANALOG-U17": 8,
+     "ANALOG-U20": 8,
+     "ANALOG-U23": 8,
+     "ANALOG-U24": 10,
+     "CLOCK-U13": 5,
+     "DEBUG-BOARD": 48,
+     "ETHERNET-U4": 19,
+     "ISOLATION-GND/GND-ISO": 2,
+     "LEVEL_SHIFT-U10": 6,
+     "LEVEL_SHIFT-U12": 3,
+     "LEVEL_SHIFT-U14": 2,
+     "LEVEL_SHIFT-U19": 5,
+     "LEVEL_SHIFT-U8": 2,
+     "LEVEL_SHIFT-U9": 5,
+     "POWER_CONVERTER-U11": 8,
+     "POWER_CONVERTER-U25": 8,
+     "POWER_CONVERTER-U5": 16,
+     "POWER_CONVERTER-U6": 3,
+     "POWER_PROTECTION-J1": 2,
+     "POWER_PROTECTION-J10": 4,
+     "POWER_PROTECTION-J3": 3,
+     "POWER_PROTECTION-J5": 12,
+     "POWER_PROTECTION-J6": 4,
+     "POWER_PROTECTION-J7": 3,
+     "POWER_PROTECTION-J8": 13,
+     "POWER_PROTECTION-J9": 14,
+     "STARTUP-U19.EN": 2,
+     "STARTUP-U4.RST": 2,
+     "USB-J2": 9,
+     "USB-J4": 9
+    },
+    "cold_total": 56,
+    "known_cold_false_alarms": [
+     {
+      "index": 8,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U4-VDDP_1.8) (3节点): ['C13', 'C14', 'U4']",
+      "attributions": [
+       "F03"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "PWR-A02",
+      "ref": "U10",
+      "detail": "U10.8 (VCCB) <- Net-(A.1-A)",
+      "attributions": [
+       "F02"
+      ]
+     },
+     {
+      "index": 10,
+      "rule": "PWR-A02",
+      "ref": "U11",
+      "detail": "U11.8 (VIN) <- VBUS：经跳线 JP6 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04",
+       "F05"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "PWR-A02",
+      "ref": "U12",
+      "detail": "U12.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F02",
+       "F05"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "PWR-A02",
+      "ref": "U13",
+      "detail": "U13.4 (VCC) <- 5V：经跳线 JP14 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04",
+       "F06"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "PWR-A02",
+      "ref": "U14",
+      "detail": "U14.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F02",
+       "F05"
+      ]
+     },
+     {
+      "index": 14,
+      "rule": "PWR-A02",
+      "ref": "U19",
+      "detail": "U19.7 (VREF2) <- Net-(U19-EN)",
+      "attributions": [
+       "F06"
+      ]
+     },
+     {
+      "index": 15,
+      "rule": "PWR-A02",
+      "ref": "U25",
+      "detail": "U25.1 (VIN) <- VBUS：经跳线 JP6 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04",
+       "F05"
+      ]
+     },
+     {
+      "index": 16,
+      "rule": "PWR-A02",
+      "ref": "U5",
+      "detail": "U5.8 (VIN) <- VBUS：经跳线 JP6 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04",
+       "F05"
+      ]
+     },
+     {
+      "index": 17,
+      "rule": "PWR-A02",
+      "ref": "U6",
+      "detail": "U6.1 (VIN+) <- Net-(D8-K)：经跳线 JP2 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04"
+      ]
+     },
+     {
+      "index": 18,
+      "rule": "PWR-A02",
+      "ref": "U6",
+      "detail": "U6.2 (VIN-) <- Net-(JP3-B)：经跳线 JP3 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04"
+      ]
+     },
+     {
+      "index": 19,
+      "rule": "PWR-A02",
+      "ref": "U7",
+      "detail": "U7.1 (VIN+) <- Net-(JP4-B)：经跳线 JP4 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04"
+      ]
+     },
+     {
+      "index": 20,
+      "rule": "PWR-A02",
+      "ref": "U7",
+      "detail": "U7.2 (VIN-) <- Net-(JP5-B)：经跳线 JP5 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04"
+      ]
+     },
+     {
+      "index": 21,
+      "rule": "PWR-A02",
+      "ref": "U8",
+      "detail": "U8.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F02",
+       "F05"
+      ]
+     },
+     {
+      "index": 22,
+      "rule": "PWR-A02",
+      "ref": "U9",
+      "detail": "U9.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F02",
+       "F05"
+      ]
+     },
+     {
+      "index": 23,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "CAS: ['U26.9', 'U27.18']",
+      "attributions": [
+       "F07"
+      ]
+     },
+     {
+      "index": 35,
+      "rule": "NET-A07",
+      "ref": "U2",
+      "detail": "U2.A10 -> unconnected-(U2-ONOFF-PadA10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F10"
+      ]
+     },
+     {
+      "index": 40,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.10 -> unconnected-(U3-~{DSR}-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 41,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.11 -> unconnected-(U3-~{RI}-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 42,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.12 -> unconnected-(U3-~{DCD}-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 43,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.15 -> unconnected-(U3-R232-Pad15): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 44,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.9 -> unconnected-(U3-~{CTS}-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 47,
+      "rule": "NET-A07",
+      "ref": "U6",
+      "detail": "U6.3 -> unconnected-(U6-CTRL-Pad3): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F14"
+      ]
+     },
+     {
+      "index": 48,
+      "rule": "NET-A07",
+      "ref": "U6",
+      "detail": "U6.5 -> unconnected-(U6-TRIM-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F14"
+      ]
+     },
+     {
+      "index": 49,
+      "rule": "NET-A07",
+      "ref": "U7",
+      "detail": "U7.7 -> unconnected-(U7-ADJ-Pad7): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F15"
+      ]
+     },
+     {
+      "index": 50,
+      "rule": "DRV-A01",
+      "ref": "L3",
+      "detail": "L3（inductor，状态 native）: 开关节点 VIN_DC 与 Net-(U6-VOUT+) 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "attributions": [
+       "F16"
+      ]
+     },
+     {
+      "index": 51,
+      "rule": "DRV-A01",
+      "ref": "L4",
+      "detail": "L4（inductor，状态 native）: 开关节点 VIN_POE 与 Net-(U7-VOUT+) 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "attributions": [
+       "F16"
+      ]
+     }
+    ],
+    "plan_checks": 1407,
+    "domain_diagnostics": [
+     {
+      "code": "DOMAIN_MERGED",
+      "domains": [
+       "GND",
+       "GND-ISO"
+      ],
+      "via": [
+       "U6"
+      ],
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_MERGED",
+      "domains": [
+       "GND",
+       "GND-ISO",
+       "POE_RETURN"
+      ],
+      "via": [
+       "U7"
+      ],
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "Net-(D8-K)",
+      "declared": "GND-ISO",
+      "derived": "GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     },
+     {
+      "code": "DOMAIN_CONFLICT",
+      "net": "Net-(JP4-B)",
+      "declared": "POE_RETURN",
+      "derived": "GND",
+      "detail": "参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表"
+     }
+    ],
+    "merged_noninfo": 56
+   },
+   "after": {
+    "board": "sparkfun--sparkfun_gnssdo",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "1f54ab60ef650c357a5ad330b8ad4a3e4a9e9922d882ce0ba1b51262e7e49f95",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 7,
+      "PWR-A01": 2,
+      "PWR-A02": 14,
+      "NET-A06": 1,
+      "RST-A01": 2,
+      "PRO-E02": 4,
+      "DOC-A04": 4,
+      "SIG-A05": 1,
+      "NET-A07": 15,
+      "DRV-A01": 2,
+      "RST-A04": 4
+     },
+     "lint": {
+      "NET-A01": 7,
+      "PWR-A01": 2,
+      "PWR-A02": 14,
+      "NET-A06": 1,
+      "RST-A01": 2,
+      "PRO-E02": 4,
+      "DOC-A04": 4,
+      "SIG-A05": 1,
+      "NET-A07": 15,
+      "DRV-A01": 2,
+      "RST-A04": 4
+     }
+    },
+    "candidates": 31,
+    "members": 256,
+    "candidate_members": {
+     "ANALOG-U17": 8,
+     "ANALOG-U20": 8,
+     "ANALOG-U23": 8,
+     "ANALOG-U24": 10,
+     "CLOCK-U13": 5,
+     "DEBUG-BOARD": 48,
+     "ETHERNET-U4": 19,
+     "ISOLATION-GND/GND-ISO": 3,
+     "ISOLATION-GND/GND-ISO/POE_RETURN": 1,
+     "ISOLATION-GND/POE_RETURN": 1,
+     "LEVEL_SHIFT-U10": 6,
+     "LEVEL_SHIFT-U12": 3,
+     "LEVEL_SHIFT-U14": 2,
+     "LEVEL_SHIFT-U19": 5,
+     "LEVEL_SHIFT-U8": 2,
+     "LEVEL_SHIFT-U9": 5,
+     "POWER_CONVERTER-U11": 12,
+     "POWER_CONVERTER-U25": 12,
+     "POWER_CONVERTER-U5": 20,
+     "POWER_CONVERTER-U6": 3,
+     "POWER_PROTECTION-J1": 2,
+     "POWER_PROTECTION-J10": 4,
+     "POWER_PROTECTION-J3": 3,
+     "POWER_PROTECTION-J5": 12,
+     "POWER_PROTECTION-J6": 4,
+     "POWER_PROTECTION-J7": 3,
+     "POWER_PROTECTION-J8": 13,
+     "POWER_PROTECTION-J9": 14,
+     "STARTUP-U4.RST": 2,
+     "USB-J2": 9,
+     "USB-J4": 9
+    },
+    "cold_total": 56,
+    "known_cold_false_alarms": [
+     {
+      "index": 8,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U4-VDDP_1.8) (3节点): ['C13', 'C14', 'U4']",
+      "attributions": [
+       "F03"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "PWR-A02",
+      "ref": "U10",
+      "detail": "U10.8 (VCCB) <- Net-(A.1-A)",
+      "attributions": [
+       "F02"
+      ]
+     },
+     {
+      "index": 10,
+      "rule": "PWR-A02",
+      "ref": "U11",
+      "detail": "U11.8 (VIN) <- VBUS：经跳线 JP6 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04",
+       "F05"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "PWR-A02",
+      "ref": "U12",
+      "detail": "U12.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F02",
+       "F05"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "PWR-A02",
+      "ref": "U13",
+      "detail": "U13.4 (VCC) <- 5V：经跳线 JP14 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04",
+       "F06"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "PWR-A02",
+      "ref": "U14",
+      "detail": "U14.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F02",
+       "F05"
+      ]
+     },
+     {
+      "index": 14,
+      "rule": "PWR-A02",
+      "ref": "U19",
+      "detail": "U19.7 (VREF2) <- Net-(U19-EN)",
+      "attributions": [
+       "F06"
+      ]
+     },
+     {
+      "index": 15,
+      "rule": "PWR-A02",
+      "ref": "U25",
+      "detail": "U25.1 (VIN) <- VBUS：经跳线 JP6 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04",
+       "F05"
+      ]
+     },
+     {
+      "index": 16,
+      "rule": "PWR-A02",
+      "ref": "U5",
+      "detail": "U5.8 (VIN) <- VBUS：经跳线 JP6 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04",
+       "F05"
+      ]
+     },
+     {
+      "index": 17,
+      "rule": "PWR-A02",
+      "ref": "U6",
+      "detail": "U6.1 (VIN+) <- Net-(D8-K)：经跳线 JP2 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04"
+      ]
+     },
+     {
+      "index": 18,
+      "rule": "PWR-A02",
+      "ref": "U6",
+      "detail": "U6.2 (VIN-) <- Net-(JP3-B)：经跳线 JP3 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04"
+      ]
+     },
+     {
+      "index": 19,
+      "rule": "PWR-A02",
+      "ref": "U7",
+      "detail": "U7.1 (VIN+) <- Net-(JP4-B)：经跳线 JP4 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04"
+      ]
+     },
+     {
+      "index": 20,
+      "rule": "PWR-A02",
+      "ref": "U7",
+      "detail": "U7.2 (VIN-) <- Net-(JP5-B)：经跳线 JP5 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F04"
+      ]
+     },
+     {
+      "index": 21,
+      "rule": "PWR-A02",
+      "ref": "U8",
+      "detail": "U8.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F02",
+       "F05"
+      ]
+     },
+     {
+      "index": 22,
+      "rule": "PWR-A02",
+      "ref": "U9",
+      "detail": "U9.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合",
+      "attributions": [
+       "F02",
+       "F05"
+      ]
+     },
+     {
+      "index": 23,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "CAS: ['U26.9', 'U27.18']",
+      "attributions": [
+       "F07"
+      ]
+     },
+     {
+      "index": 35,
+      "rule": "NET-A07",
+      "ref": "U2",
+      "detail": "U2.A10 -> unconnected-(U2-ONOFF-PadA10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F10"
+      ]
+     },
+     {
+      "index": 40,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.10 -> unconnected-(U3-~{DSR}-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 41,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.11 -> unconnected-(U3-~{RI}-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 42,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.12 -> unconnected-(U3-~{DCD}-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 43,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.15 -> unconnected-(U3-R232-Pad15): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 44,
+      "rule": "NET-A07",
+      "ref": "U3",
+      "detail": "U3.9 -> unconnected-(U3-~{CTS}-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F12"
+      ]
+     },
+     {
+      "index": 47,
+      "rule": "NET-A07",
+      "ref": "U6",
+      "detail": "U6.3 -> unconnected-(U6-CTRL-Pad3): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F14"
+      ]
+     },
+     {
+      "index": 48,
+      "rule": "NET-A07",
+      "ref": "U6",
+      "detail": "U6.5 -> unconnected-(U6-TRIM-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F14"
+      ]
+     },
+     {
+      "index": 49,
+      "rule": "NET-A07",
+      "ref": "U7",
+      "detail": "U7.7 -> unconnected-(U7-ADJ-Pad7): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F15"
+      ]
+     },
+     {
+      "index": 50,
+      "rule": "DRV-A01",
+      "ref": "L3",
+      "detail": "L3（inductor，状态 native）: 开关节点 VIN_DC 与 Net-(U6-VOUT+) 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "attributions": [
+       "F16"
+      ]
+     },
+     {
+      "index": 51,
+      "rule": "DRV-A01",
+      "ref": "L4",
+      "detail": "L4（inductor，状态 native）: 开关节点 VIN_POE 与 Net-(U7-VOUT+) 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "attributions": [
+       "F16"
+      ]
+     }
+    ],
+    "plan_checks": 1406,
+    "domain_diagnostics": [],
+    "merged_noninfo": 56
+   }
+  },
+  {
+   "board": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+   "source_attribution_sha256": "8e26696294b0fc6d0115c20bd1ba940b00b1f29a04f1cc0890af93c93dad55aa",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "true_defect": 2,
+    "false_alarm": 5,
+    "criterion_issue": 0,
+    "knowledge_gap": 4,
+    "needs_human": 7,
+    "misses": 2
+   },
+   "before": {
+    "board": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 1,
+     "hot-fallback": 0,
+     "merge": 0
+    },
+    "db_sha256": "c648cb6fdbf9a7dcf80162a3d910f1f85e9aa5044516647978083d9f41d9846c",
+    "rules": {
+     "lint-cold": {
+      "PWR-A01": 1,
+      "PWR-A02": 1
+     },
+     "lint": {
+      "PWR-A01": 1,
+      "PWR-A02": 1
+     }
+    },
+    "candidates": 2,
+    "members": 10,
+    "candidate_members": {
+     "POWER_CONVERTER-U3": 6,
+     "STARTUP-U3.EN": 4
+    },
+    "cold_total": 2,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U1-VDD) (2节点): ['C1', 'U1']",
+      "attributions": [
+       "F04"
+      ]
+     }
+    ],
+    "plan_checks": 143,
+    "domain_diagnostics": [],
+    "merged_noninfo": 2
+   },
+   "after": {
+    "board": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "c648cb6fdbf9a7dcf80162a3d910f1f85e9aa5044516647978083d9f41d9846c",
+    "rules": {
+     "lint-cold": {
+      "PWR-A01": 1,
+      "PWR-A02": 1
+     },
+     "lint": {
+      "PWR-A01": 1,
+      "PWR-A02": 1
+     }
+    },
+    "candidates": 4,
+    "members": 13,
+    "candidate_members": {
+     "ISOLATION-K4": 1,
+     "ISOLATION-K5": 1,
+     "POWER_CONVERTER-U3": 7,
+     "STARTUP-U3.EN": 4
+    },
+    "cold_total": 2,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "PWR-A01",
+      "ref": null,
+      "detail": "Net-(U1-VDD) (2节点): ['C1', 'U1']",
+      "attributions": [
+       "F04"
+      ]
+     }
+    ],
+    "plan_checks": 202,
+    "domain_diagnostics": [],
+    "merged_noninfo": 2
+   }
+  },
+  {
+   "board": "greatscottgadgets--hackrf-pro",
+   "source_attribution_sha256": "fd95ece17220f75d7e6d31d0927e05167c197af27a5341ee03b9007a3b1229f6",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "true_defect": 0,
+    "false_alarm": 11,
+    "criterion_issue": 0,
+    "knowledge_gap": 36,
+    "needs_human": 114,
+    "misses": 4
+   },
+   "before": {
+    "board": "greatscottgadgets--hackrf-pro",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "9d50da866d2d7277b64387b89d472b460472b1e6d63b2ee82249f0f7f1248214",
+    "rules": {
+     "lint-cold": {
+      "NET-A02": 1,
+      "RST-A01": 2,
+      "PRO-E02": 5,
+      "SIG-A03": 4,
+      "NET-A07": 17,
+      "DRV-A03": 1,
+      "PWR-A05": 1,
+      "SIG-A02": 2
+     },
+     "lint": {
+      "NET-A02": 1,
+      "RST-A01": 2,
+      "PRO-E02": 5,
+      "SIG-A03": 4,
+      "NET-A07": 17,
+      "DRV-A03": 1,
+      "PWR-A05": 1,
+      "SIG-A02": 2
+     }
+    },
+    "candidates": 21,
+    "members": 492,
+    "candidate_members": {
+     "CLOCK-U19": 20,
+     "DEBUG-BOARD": 65,
+     "POWER_CONVERTER-Q4": 9,
+     "POWER_CONVERTER-Q5": 6,
+     "POWER_CONVERTER-Q6": 37,
+     "POWER_CONVERTER-Q7": 3,
+     "POWER_CONVERTER-Q9": 179,
+     "POWER_CONVERTER-U21": 31,
+     "POWER_PROTECTION-P1": 3,
+     "POWER_PROTECTION-P2": 3,
+     "POWER_PROTECTION-P20": 13,
+     "POWER_PROTECTION-P22": 12,
+     "POWER_PROTECTION-P3": 8,
+     "POWER_PROTECTION-U24": 2,
+     "POWER_PROTECTION-U28": 2,
+     "SPI-U20": 1,
+     "STARTUP-U21.EN1": 4,
+     "STARTUP-U21.EN2": 2,
+     "STARTUP-U24.EN": 85,
+     "STARTUP-U28.EN": 2,
+     "USB-J1": 5
+    },
+    "cold_total": 33,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/Mixer/MIX_IN(2节点) <-> /Mixer/MIX_IN+(2节点)",
+      "attributions": [
+       "F001"
+      ]
+     },
+     {
+      "index": 8,
+      "rule": "SIG-A03",
+      "ref": "P22",
+      "detail": "/Microcontroller/I2C1_SCL: ['P22', 'U23'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "SIG-A03",
+      "ref": "P22",
+      "detail": "/Microcontroller/I2C1_SDA: ['P22', 'U23'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 10,
+      "rule": "SIG-A03",
+      "ref": "P28",
+      "detail": "/Microcontroller/I2S0_RX_SDA: ['P28', 'U23'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "attributions": [
+       "F009"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "SIG-A03",
+      "ref": "P22",
+      "detail": "/Microcontroller/I2S0_TX_SDA: ['P22', 'U23'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "NET-A07",
+      "ref": "D6",
+      "detail": "D6.1 -> unconnected-(D6-A1-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F011"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "NET-A07",
+      "ref": "D6",
+      "detail": "D6.2 -> unconnected-(D6-K1-Pad2): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F012"
+      ]
+     },
+     {
+      "index": 14,
+      "rule": "NET-A07",
+      "ref": "D8",
+      "detail": "D8.3 -> unconnected-(D8-A2-Pad3): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F013"
+      ]
+     },
+     {
+      "index": 15,
+      "rule": "NET-A07",
+      "ref": "D8",
+      "detail": "D8.4 -> unconnected-(D8-K2-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F014"
+      ]
+     },
+     {
+      "index": 16,
+      "rule": "NET-A07",
+      "ref": "Q7",
+      "detail": "Q7.5 -> unconnected-(Q7B-B2-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F015"
+      ]
+     }
+    ],
+    "plan_checks": 1644,
+    "domain_diagnostics": [],
+    "merged_noninfo": 33
+   },
+   "after": {
+    "board": "greatscottgadgets--hackrf-pro",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "9d50da866d2d7277b64387b89d472b460472b1e6d63b2ee82249f0f7f1248214",
+    "rules": {
+     "lint-cold": {
+      "NET-A02": 1,
+      "RST-A01": 2,
+      "PRO-E02": 5,
+      "SIG-A03": 4,
+      "NET-A07": 17,
+      "DRV-A03": 1,
+      "PWR-A05": 1,
+      "SIG-A02": 2
+     },
+     "lint": {
+      "NET-A02": 1,
+      "RST-A01": 2,
+      "PRO-E02": 5,
+      "SIG-A03": 4,
+      "NET-A07": 17,
+      "DRV-A03": 1,
+      "PWR-A05": 1,
+      "SIG-A02": 2
+     }
+    },
+    "candidates": 19,
+    "members": 304,
+    "candidate_members": {
+     "CLOCK-U19": 46,
+     "DEBUG-BOARD": 65,
+     "ISOLATION-T1": 1,
+     "ISOLATION-T2": 1,
+     "ISOLATION-T3": 1,
+     "ISOLATION-T4": 1,
+     "POWER_CONVERTER-U21": 32,
+     "POWER_PROTECTION-P1": 3,
+     "POWER_PROTECTION-P2": 3,
+     "POWER_PROTECTION-P20": 21,
+     "POWER_PROTECTION-P22": 19,
+     "POWER_PROTECTION-U24": 2,
+     "POWER_PROTECTION-U28": 2,
+     "SPI-U20": 1,
+     "STARTUP-U21.EN1": 8,
+     "STARTUP-U21.EN2": 2,
+     "STARTUP-U24.EN": 86,
+     "STARTUP-U28.EN": 2,
+     "USB-J1": 8
+    },
+    "cold_total": 33,
+    "known_cold_false_alarms": [
+     {
+      "index": 0,
+      "rule": "NET-A02",
+      "ref": null,
+      "detail": "/Mixer/MIX_IN(2节点) <-> /Mixer/MIX_IN+(2节点)",
+      "attributions": [
+       "F001"
+      ]
+     },
+     {
+      "index": 8,
+      "rule": "SIG-A03",
+      "ref": "P22",
+      "detail": "/Microcontroller/I2C1_SCL: ['P22', 'U23'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 9,
+      "rule": "SIG-A03",
+      "ref": "P22",
+      "detail": "/Microcontroller/I2C1_SDA: ['P22', 'U23'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 10,
+      "rule": "SIG-A03",
+      "ref": "P28",
+      "detail": "/Microcontroller/I2S0_RX_SDA: ['P28', 'U23'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "attributions": [
+       "F009"
+      ]
+     },
+     {
+      "index": 11,
+      "rule": "SIG-A03",
+      "ref": "P22",
+      "detail": "/Microcontroller/I2S0_TX_SDA: ['P22', 'U23'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "attributions": [
+       "F010"
+      ]
+     },
+     {
+      "index": 12,
+      "rule": "NET-A07",
+      "ref": "D6",
+      "detail": "D6.1 -> unconnected-(D6-A1-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F011"
+      ]
+     },
+     {
+      "index": 13,
+      "rule": "NET-A07",
+      "ref": "D6",
+      "detail": "D6.2 -> unconnected-(D6-K1-Pad2): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F012"
+      ]
+     },
+     {
+      "index": 14,
+      "rule": "NET-A07",
+      "ref": "D8",
+      "detail": "D8.3 -> unconnected-(D8-A2-Pad3): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F013"
+      ]
+     },
+     {
+      "index": 15,
+      "rule": "NET-A07",
+      "ref": "D8",
+      "detail": "D8.4 -> unconnected-(D8-K2-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F014"
+      ]
+     },
+     {
+      "index": 16,
+      "rule": "NET-A07",
+      "ref": "Q7",
+      "detail": "Q7.5 -> unconnected-(Q7B-B2-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "attributions": [
+       "F015"
+      ]
+     }
+    ],
+    "plan_checks": 1711,
+    "domain_diagnostics": [],
+    "merged_noninfo": 33
+   }
+  },
+  {
+   "board": "leonardoward--dpp-architecture-pcb",
+   "source_attribution_sha256": "b459f0d89fbeac0eb9f77341a62dba936d7a9398bdefbaa278c27abbdc0e83d1",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "true_defect": 0,
+    "false_alarm": 9,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 14,
+    "misses": 1
+   },
+   "before": {
+    "board": "leonardoward--dpp-architecture-pcb",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "fce33e1fc839a0629f3d195c66c0283eeba64aac26903745ccc9d4b69a5a5a46",
+    "rules": {
+     "lint-cold": {},
+     "lint": {}
+    },
+    "candidates": 3,
+    "members": 16,
+    "candidate_members": {
+     "ISOLATION-PRI/SEC": 1,
+     "POWER_CONVERTER-Q1": 12,
+     "POWER_CONVERTER-U1": 3
+    },
+    "cold_total": 0,
+    "known_cold_false_alarms": [],
+    "plan_checks": 109,
+    "domain_diagnostics": [],
+    "merged_noninfo": 0
+   },
+   "after": {
+    "board": "leonardoward--dpp-architecture-pcb",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "fce33e1fc839a0629f3d195c66c0283eeba64aac26903745ccc9d4b69a5a5a46",
+    "rules": {
+     "lint-cold": {},
+     "lint": {}
+    },
+    "candidates": 2,
+    "members": 10,
+    "candidate_members": {
+     "ISOLATION-PRI/SEC": 1,
+     "POWER_CONVERTER-U1": 9
+    },
+    "cold_total": 0,
+    "known_cold_false_alarms": [],
+    "plan_checks": 122,
+    "domain_diagnostics": [],
+    "merged_noninfo": 0
+   }
+  },
+  {
+   "board": "rmingon--chlinknet",
+   "source_attribution_sha256": "4983c08eb139de8a86c6cabfb321a089d6617250ade434cbda33d729ec7e3726",
+   "input_db_unchanged": true,
+   "lane_summary": {
+    "needs_human": 59,
+    "false_alarm": 19,
+    "true_defect": 2,
+    "knowledge_gap": 2,
+    "criterion_issue": 2,
+    "misses": 2
+   },
+   "before": {
+    "board": "rmingon--chlinknet",
+    "sut": "/private/tmp/codex-work/boards-merge2a/baseline-sr",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "6b5fbbacd6217aaea02342082ff31d6ee2372226fd85f22c799f253a1f9f1c75",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 45,
+      "NET-A06": 5,
+      "NET-A07": 5
+     },
+     "lint": {
+      "NET-A01": 45,
+      "NET-A06": 5,
+      "NET-A07": 5
+     }
+    },
+    "candidates": 2,
+    "members": 7,
+    "candidate_members": {
+     "POWER_CONVERTER-U3": 5,
+     "USB-J1": 2
+    },
+    "cold_total": 55,
+    "known_cold_false_alarms": [
+     {
+      "index": 45,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-R232-Pad15): ['U4.15']",
+      "attributions": [
+       "F046"
+      ]
+     },
+     {
+      "index": 46,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-~{CTS}-Pad9): ['U4.9']",
+      "attributions": [
+       "F047"
+      ]
+     },
+     {
+      "index": 47,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-~{DCD}-Pad12): ['U4.12']",
+      "attributions": [
+       "F048"
+      ]
+     },
+     {
+      "index": 48,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-~{DSR}-Pad10): ['U4.10']",
+      "attributions": [
+       "F049"
+      ]
+     },
+     {
+      "index": 49,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-~{RI}-Pad11): ['U4.11']",
+      "attributions": [
+       "F050"
+      ]
+     },
+     {
+      "index": 50,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.10 -> unconnected-(U4-~{DSR}-Pad10): 输入脚所在网只有该节点",
+      "attributions": [
+       "F051"
+      ]
+     },
+     {
+      "index": 51,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.11 -> unconnected-(U4-~{RI}-Pad11): 输入脚所在网只有该节点",
+      "attributions": [
+       "F052"
+      ]
+     },
+     {
+      "index": 52,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.12 -> unconnected-(U4-~{DCD}-Pad12): 输入脚所在网只有该节点",
+      "attributions": [
+       "F053"
+      ]
+     },
+     {
+      "index": 53,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.15 -> unconnected-(U4-R232-Pad15): 输入脚所在网只有该节点",
+      "attributions": [
+       "F054"
+      ]
+     },
+     {
+      "index": 54,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.9 -> unconnected-(U4-~{CTS}-Pad9): 输入脚所在网只有该节点",
+      "attributions": [
+       "F055"
+      ]
+     }
+    ],
+    "plan_checks": 244,
+    "domain_diagnostics": [],
+    "merged_noninfo": 55
+   },
+   "after": {
+    "board": "rmingon--chlinknet",
+    "sut": "/Users/skyfend/.agents/skills/.wt/sr-merge2a",
+    "stages": {
+     "cold": 0,
+     "candidates": 0,
+     "decisions": 0,
+     "candidate-scan": 0,
+     "merge": 0
+    },
+    "db_sha256": "6b5fbbacd6217aaea02342082ff31d6ee2372226fd85f22c799f253a1f9f1c75",
+    "rules": {
+     "lint-cold": {
+      "NET-A01": 45,
+      "NET-A06": 5,
+      "NET-A07": 5
+     },
+     "lint": {
+      "NET-A01": 45,
+      "NET-A06": 5,
+      "NET-A07": 5
+     }
+    },
+    "candidates": 3,
+    "members": 9,
+    "candidate_members": {
+     "ISOLATION-U1": 2,
+     "POWER_CONVERTER-U3": 5,
+     "USB-J1": 2
+    },
+    "cold_total": 55,
+    "known_cold_false_alarms": [
+     {
+      "index": 45,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-R232-Pad15): ['U4.15']",
+      "attributions": [
+       "F046"
+      ]
+     },
+     {
+      "index": 46,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-~{CTS}-Pad9): ['U4.9']",
+      "attributions": [
+       "F047"
+      ]
+     },
+     {
+      "index": 47,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-~{DCD}-Pad12): ['U4.12']",
+      "attributions": [
+       "F048"
+      ]
+     },
+     {
+      "index": 48,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-~{DSR}-Pad10): ['U4.10']",
+      "attributions": [
+       "F049"
+      ]
+     },
+     {
+      "index": 49,
+      "rule": "NET-A06",
+      "ref": null,
+      "detail": "unconnected-(U4-~{RI}-Pad11): ['U4.11']",
+      "attributions": [
+       "F050"
+      ]
+     },
+     {
+      "index": 50,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.10 -> unconnected-(U4-~{DSR}-Pad10): 输入脚所在网只有该节点",
+      "attributions": [
+       "F051"
+      ]
+     },
+     {
+      "index": 51,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.11 -> unconnected-(U4-~{RI}-Pad11): 输入脚所在网只有该节点",
+      "attributions": [
+       "F052"
+      ]
+     },
+     {
+      "index": 52,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.12 -> unconnected-(U4-~{DCD}-Pad12): 输入脚所在网只有该节点",
+      "attributions": [
+       "F053"
+      ]
+     },
+     {
+      "index": 53,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.15 -> unconnected-(U4-R232-Pad15): 输入脚所在网只有该节点",
+      "attributions": [
+       "F054"
+      ]
+     },
+     {
+      "index": 54,
+      "rule": "NET-A07",
+      "ref": "U4",
+      "detail": "U4.9 -> unconnected-(U4-~{CTS}-Pad9): 输入脚所在网只有该节点",
+      "attributions": [
+       "F055"
+      ]
+     }
+    ],
+    "plan_checks": 253,
+    "domain_diagnostics": [],
+    "merged_noninfo": 55
+   }
+  }
+ ],
+ "true_defect_preservation": [
+  {
+   "board": "ben5049--switch-v4-hardware",
+   "ref": "U302",
+   "kind": "MPN conflict preserved",
+   "value": "TPS26600RHFR",
+   "fields": {
+    "Height": "1",
+    "Mouser Part Number": "595-TPS26601RHFR",
+    "Mouser Price/Stock": "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS26601RHFR?qs=6BVwEky2YVyoesJQjfL0Lw%3D%3D",
+    "Manufacturer_Name": "Texas Instruments",
+    "Manufacturer_Part_Number": "TPS26601RHFR",
+    "IR (A)": "",
+    "IR 2 (A)": "",
+    "ISAT (A)": "",
+    "L1 (µH)": "",
+    "L2 (µH)": "",
+    "RDC1 max (Ω)": "",
+    "RDC1 typ (Ω)": "",
+    "RDC2 max (Ω)": "",
+    "RDC2 typ (Ω)": "",
+    "Type": "",
+    "Footprint": "project_footprints:QFN50P400X500X100-25N-D",
+    "Datasheet": "http://www.ti.com/lit/gpn/tps2660",
+    "Description": "60V 2A Industrial eFuse With Integrated Reverse-Input Polarity Protection, Auto-retry"
+   },
+   "identity_checks": [
+    "DEV-D01.U302"
+   ],
+   "board_bom_check": [
+    "DEV-D04.BOARD"
+   ]
+  },
+  {
+   "board": "ben5049--switch-v4-hardware",
+   "ref": "U602",
+   "kind": "MPN conflict preserved",
+   "value": "TPS26600RHFR",
+   "fields": {
+    "Height": "1",
+    "Mouser Part Number": "595-TPS26601RHFR",
+    "Mouser Price/Stock": "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS26601RHFR?qs=6BVwEky2YVyoesJQjfL0Lw%3D%3D",
+    "Manufacturer_Name": "Texas Instruments",
+    "Manufacturer_Part_Number": "TPS26601RHFR",
+    "IR (A)": "",
+    "IR 2 (A)": "",
+    "ISAT (A)": "",
+    "L1 (µH)": "",
+    "L2 (µH)": "",
+    "RDC1 max (Ω)": "",
+    "RDC1 typ (Ω)": "",
+    "RDC2 max (Ω)": "",
+    "RDC2 typ (Ω)": "",
+    "Type": "",
+    "Footprint": "project_footprints:QFN50P400X500X100-25N-D",
+    "Datasheet": "http://www.ti.com/lit/gpn/tps2660",
+    "Description": "60V 2A Industrial eFuse With Integrated Reverse-Input Polarity Protection, Auto-retry"
+   },
+   "identity_checks": [
+    "DEV-D01.U602"
+   ],
+   "board_bom_check": [
+    "DEV-D04.BOARD"
+   ]
+  },
+  {
+   "board": "ben5049--switch-v4-hardware",
+   "ref": "Z2201",
+   "kind": "MPN conflict preserved",
+   "value": "BZX884-C3V3,315",
+   "fields": {
+    "Height": "0.5",
+    "Mouser Part Number": "771-BZX884-C3V9315",
+    "Mouser Price/Stock": "https://www.mouser.co.uk/ProductDetail/Nexperia/BZX884-C3V9315?qs=me8TqzrmIYWAnhi4MFXkdw%3D%3D",
+    "Manufacturer_Name": "Nexperia",
+    "Manufacturer_Part_Number": "BZX884-C3V9,315",
+    "IR (A)": "",
+    "IR 2 (A)": "",
+    "ISAT (A)": "",
+    "L1 (µH)": "",
+    "L2 (µH)": "",
+    "RDC1 max (Ω)": "",
+    "RDC1 typ (Ω)": "",
+    "RDC2 max (Ω)": "",
+    "RDC2 typ (Ω)": "",
+    "Type": "",
+    "Footprint": "project_footprints:BZX884",
+    "Datasheet": "https://assets.nexperia.com/documents/data-sheet/BZX884_BC_SER.pdf",
+    "Description": "NEXPERIA - BZX884-C3V3,315 - Zener Single Diode, 3.3 V, 250 mW, DFN1006, 2 Pins, 150 C, Surface Mount"
+   },
+   "identity_checks": [
+    "DEV-D01.Z2201"
+   ],
+   "board_bom_check": [
+    "DEV-D04.BOARD"
+   ]
+  },
+  {
+   "board": "ben5049--switch-v4-hardware",
+   "ref": "Z2202",
+   "kind": "MPN conflict preserved",
+   "value": "BZX884-C3V3,315",
+   "fields": {
+    "Height": "0.5",
+    "Mouser Part Number": "771-BZX884-C3V9315",
+    "Mouser Price/Stock": "https://www.mouser.co.uk/ProductDetail/Nexperia/BZX884-C3V9315?qs=me8TqzrmIYWAnhi4MFXkdw%3D%3D",
+    "Manufacturer_Name": "Nexperia",
+    "Manufacturer_Part_Number": "BZX884-C3V9,315",
+    "IR (A)": "",
+    "IR 2 (A)": "",
+    "ISAT (A)": "",
+    "L1 (µH)": "",
+    "L2 (µH)": "",
+    "RDC1 max (Ω)": "",
+    "RDC1 typ (Ω)": "",
+    "RDC2 max (Ω)": "",
+    "RDC2 typ (Ω)": "",
+    "Type": "",
+    "Footprint": "project_footprints:BZX884",
+    "Datasheet": "https://assets.nexperia.com/documents/data-sheet/BZX884_BC_SER.pdf",
+    "Description": "NEXPERIA - BZX884-C3V3,315 - Zener Single Diode, 3.3 V, 250 mW, DFN1006, 2 Pins, 150 C, Surface Mount"
+   },
+   "identity_checks": [
+    "DEV-D01.Z2202"
+   ],
+   "board_bom_check": [
+    "DEV-D04.BOARD"
+   ]
+  },
+  {
+   "board": "ben5049--switch-v4-hardware",
+   "kind": "RMII duplex conflict remains locatable",
+   "rules": {
+    "U901": [
+     "SIG-D11.SWITCH-CORE-ACTIVE.U901",
+     "SIG-D11.SWITCH-CORE-IDLE.U901"
+    ],
+    "U1601": [
+     "SIG-D11.ETHERNET-U1601-ACTIVE.FL2101",
+     "SIG-D11.ETHERNET-U1601-IDLE.FL2101"
+    ]
+   },
+   "wires": {
+    "U901.G14": "/PHYs/xMII3.RX_CRS_DV",
+    "U901.K13": "/PHYs/xMII3.TX_EN",
+    "U901.K14": "/PHYs/xMII3_REF_CLK"
+   }
+  },
+  {
+   "board": "sparkfun--sparkfun_gnssdo",
+   "kind": "RMII unused input still reported",
+   "node": "U4.26",
+   "net": "unconnected-(U4-TXD2-Pad26)",
+   "findings": [
+    {
+     "rule": "NET-A07",
+     "name": "声明输入脚标为 No-Connect",
+     "detail": "U4.26 -> unconnected-(U4-TXD2-Pad26): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "kind": "CANDIDATE",
+     "page": 5,
+     "ref": "U4"
+    }
+   ]
+  },
+  {
+   "board": "sparkfun--sparkfun_gnssdo",
+   "kind": "RMII unused input still reported",
+   "node": "U4.27",
+   "net": "unconnected-(U4-TXD3-Pad27)",
+   "findings": [
+    {
+     "rule": "NET-A07",
+     "name": "声明输入脚标为 No-Connect",
+     "detail": "U4.27 -> unconnected-(U4-TXD3-Pad27): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "kind": "CANDIDATE",
+     "page": 5,
+     "ref": "U4"
+    }
+   ]
+  },
+  {
+   "board": "sparkfun--sparkfun_gnssdo",
+   "kind": "AP7361C 1.5A annotation versus 1A output remains visual review",
+   "refs": [
+    "U5",
+    "U11"
+   ],
+   "checks": [
+    "DOC-V02.BOARD"
+   ],
+   "source_pdf": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/schematic.pdf",
+   "sha256": "1ff4eb5ff83c4d0186749c8aca6827e40f3e35a685776a8d7a0051bc61bcb524",
+   "boundary": "manual drawing/datasheet conflict; no automatic 1A rating judgement added"
+  },
+  {
+   "board": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+   "kind": "BIN external pullup remains locatable",
+   "refs": [
+    "U1",
+    "R7",
+    "R5"
+   ],
+   "value": "1M8",
+   "nodes": {
+    "R7.1": "BIN",
+    "R7.2": "VSYS",
+    "R5.1": "GND",
+    "R5.2": "BIN",
+    "U1.10": "BIN"
+   },
+   "checks": [
+    "DEV-D05.U1"
+   ]
+  },
+  {
+   "board": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+   "kind": "5V I2C pullups remain locatable",
+   "nodes": {
+    "U1.1": "SDA5",
+    "U1.2": "SCL5",
+    "R2.1": "SCL_PULL5",
+    "R2.2": "SCL5",
+    "R3.1": "SDA5",
+    "R3.2": "SDA_PULL5",
+    "JP1.1": "SCL_PULL5",
+    "JP1.2": "5V",
+    "JP1.3": "SDA_PULL5"
+   },
+   "assemblies": [
+    {
+     "id": "source-default",
+     "citation": "固定源PCB JP1/JP2双F.Cu铜桥1-2/2-3，JP3单铜桥1-2；JP4无铜桥；BOM量>0为设计默认装配，不代表实物未改",
+     "population": {
+      "C1": true,
+      "C2": true,
+      "C3": true,
+      "C4": true,
+      "FD1": true,
+      "H1": true,
+      "H2": true,
+      "JP1": true,
+      "JP2": true,
+      "JP3": true,
+      "JP4": true,
+      "K1": true,
+      "K2": true,
+      "K3": true,
+      "K4": true,
+      "K5": true,
+      "K6": true,
+      "R1": true,
+      "R2": true,
+      "R3": true,
+      "R4": true,
+      "R5": true,
+      "R6": true,
+      "R7": true,
+      "R8": true,
+      "U1": true,
+      "U2": true,
+      "U3": true
+     },
+     "jumpers": {
+      "JP1": "closed",
+      "JP2": "closed",
+      "JP3": "closed",
+      "JP4": "open"
+     }
+    }
+   ],
+   "checks": [
+    "DEV-C05.U1"
+   ],
+   "boundary": "default double PCB bridge and 1.62–3.6V working range use original attributed evidence; no new automatic voltage-window verdict"
+  },
+  {
+   "board": "greatscottgadgets--hackrf-pro",
+   "kind": "protection reassignment recovered",
+   "ref": "Q4",
+   "reverse": [
+    "PWR-T05.GAP-INPUT-FET-REVERSE.GLOBAL",
+    "PWR-T05.REPLAY-Q4.Q4"
+   ],
+   "soa": [
+    "DRV-C02.GAP-INPUT-FET-SOA.GLOBAL",
+    "DRV-C02.Q4-NET-Q4-G.Q4-1",
+    "DRV-C02.REPLAY-Q4-FAULT.Q4",
+    "DRV-C02.REPLAY-Q4-RUN.Q4",
+    "DRV-C02.REPLAY-Q4-STARTUP.Q4"
+   ]
+  },
+  {
+   "board": "greatscottgadgets--hackrf-pro",
+   "kind": "protection reassignment recovered",
+   "ref": "Q5",
+   "reverse": [
+    "PWR-T05.GAP-INPUT-FET-REVERSE.GLOBAL",
+    "PWR-T05.REPLAY-Q5.Q5"
+   ],
+   "soa": [
+    "DRV-C02.GAP-INPUT-FET-SOA.GLOBAL",
+    "DRV-C02.Q5-NET-Q5-G.Q5-1",
+    "DRV-C02.REPLAY-Q5-FAULT.Q5",
+    "DRV-C02.REPLAY-Q5-RUN.Q5",
+    "DRV-C02.REPLAY-Q5-STARTUP.Q5"
+   ]
+  },
+  {
+   "board": "greatscottgadgets--hackrf-pro",
+   "kind": "U16 CRESET/CDONE still explicitly pointed by prior rule gap",
+   "checks": [
+    "RST-T04.GAP-FPGA-CRESET-DEFAULT.GLOBAL"
+   ],
+   "boundary": "normal STARTUP pin qualification is session 2B scope; this retained rule gap is not claimed as automatic recovery"
+  },
+  {
+   "all_boards_original_voltage_windows_and_assemblies_unchanged": true
+  }
+ ],
+ "manufacturer_sources": [
+  {
+   "path": "/Users/skyfend/.cache/sr-boards/pionixpublic--cb-eval-board/review/ds/amc3311.pdf",
+   "sha256": "de43869248e1e08b7bd3d71daa94ea61ba92546031fc2769b37f57d4b73ee400"
+  },
+  {
+   "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/REC15E.pdf",
+   "sha256": "2525241bed16503cb2ec26a26164534a557092c7e6fababab726de45da166809"
+  },
+  {
+   "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/DP5305.pdf",
+   "sha256": "4186db85995fe5cb44a7ea0fe2a345fcfab68e4f852ef4d8c517bbd31cdc72fa"
+  },
+  {
+   "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/datasheets/HY931147C.pdf",
+   "sha256": "664bfb41384c0b977fca3a12dda4b1e16620db5babe5321bc0a033f5891d9445"
+  }
+ ],
+ "attribution_inputs": [
+  {
+   "board": "antmicro--jetson-agx-thor-baseboard",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/antmicro--jetson-agx-thor-baseboard/findings.json",
+   "sha256": "a432378b1c56a0ab2800d7c265448a289088e2889bf350d5cda0fbcd455bcc62",
+   "checked_sha256": "a432378b1c56a0ab2800d7c265448a289088e2889bf350d5cda0fbcd455bcc62",
+   "unchanged": true
+  },
+  {
+   "board": "antmicro--poe-usb-c-pd-converter",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/antmicro--poe-usb-c-pd-converter/findings.json",
+   "sha256": "5c4790e8a7f5cb38381186461f0286e506a6910d4d950bad790771386b7a323f",
+   "checked_sha256": "ed795dca054647a9700f7288c416d5035fb5b7048eaeb0ffb6a9dfb32c5ac33f",
+   "unchanged": false
+  },
+  {
+   "board": "greatscottgadgets--amalthea-hardware",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/greatscottgadgets--amalthea-hardware/findings.json",
+   "sha256": "5310694774cf54e04799dcdad3556d9b22663a99d84f87bece713dfcdbaef26d",
+   "checked_sha256": "5310694774cf54e04799dcdad3556d9b22663a99d84f87bece713dfcdbaef26d",
+   "unchanged": true
+  },
+  {
+   "board": "groupgets--kimchi-micro",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/groupgets--kimchi-micro/findings.json",
+   "sha256": "f3c14e9de05f1d9fe625f692b67b6c24432faf1707822bb2fa85b0744010afe6",
+   "checked_sha256": "f3c14e9de05f1d9fe625f692b67b6c24432faf1707822bb2fa85b0744010afe6",
+   "unchanged": true
+  },
+  {
+   "board": "oresat--oresat-c3-hardware",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/oresat--oresat-c3-hardware/findings.json",
+   "sha256": "97888539abdee9a96d3286ecea58b7d343b8369851a522f3cdc77444c371ffec",
+   "checked_sha256": "97888539abdee9a96d3286ecea58b7d343b8369851a522f3cdc77444c371ffec",
+   "unchanged": true
+  },
+  {
+   "board": "solderedelectronics--breadboard-power-supply-board-hardware-design",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/solderedelectronics--breadboard-power-supply-board-hardware-design/findings.json",
+   "sha256": "aed2e005acc2a0d3d27a6f7d554f179d3454c34b4e95f5a9189eff7570706693",
+   "checked_sha256": "aed2e005acc2a0d3d27a6f7d554f179d3454c34b4e95f5a9189eff7570706693",
+   "unchanged": true
+  },
+  {
+   "board": "solderedelectronics--rs-485-transceiver-breakout-hardware-design",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/solderedelectronics--rs-485-transceiver-breakout-hardware-design/findings.json",
+   "sha256": "690142df9904bef9c6ef741936178921fe9d8c7b83ad7c87cbe3ce1d447d3f30",
+   "checked_sha256": "690142df9904bef9c6ef741936178921fe9d8c7b83ad7c87cbe3ce1d447d3f30",
+   "unchanged": true
+  },
+  {
+   "board": "sparkfun--sparkfun_gnssdo",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/sparkfun--sparkfun_gnssdo/findings.json",
+   "sha256": "2ffd1192eb97d8ff76060b1fbc2308d4832b6715327ab6c2c6833bd6f1a71e85",
+   "checked_sha256": "2ffd1192eb97d8ff76060b1fbc2308d4832b6715327ab6c2c6833bd6f1a71e85",
+   "unchanged": true
+  },
+  {
+   "board": "tinkerforge--evse-v2-bricklet",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/tinkerforge--evse-v2-bricklet/findings.json",
+   "sha256": "7d81e755d649b059184e90a7e3d0317c12a9dac40b7db0540f6eb855ac835528",
+   "checked_sha256": "7d81e755d649b059184e90a7e3d0317c12a9dac40b7db0540f6eb855ac835528",
+   "unchanged": true
+  },
+  {
+   "board": "vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project",
+   "lane": 1,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-1/evals/boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/findings.json",
+   "sha256": "bbc8ee645f138e6047dfbb7788adce067a4d6ea275c4e9fe3adf1f6afb1d96cc",
+   "checked_sha256": "bbc8ee645f138e6047dfbb7788adce067a4d6ea275c4e9fe3adf1f6afb1d96cc",
+   "unchanged": true
+  },
+  {
+   "board": "antmicro--cm4-baseboard",
+   "lane": 2,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/antmicro--cm4-baseboard/findings.json",
+   "sha256": "b2ad78492e8195bae7819fe6245aa3660c865f6a9e81c5b993b19e399a58e668",
+   "checked_sha256": "b2ad78492e8195bae7819fe6245aa3660c865f6a9e81c5b993b19e399a58e668",
+   "unchanged": true
+  },
+  {
+   "board": "antmicro--stm32h7-hdmi-board",
+   "lane": 2,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/antmicro--stm32h7-hdmi-board/findings.json",
+   "sha256": "e508fc208a934bd56576a0ccd081157967976f782425a2149d46bcbf080bec38",
+   "checked_sha256": "e508fc208a934bd56576a0ccd081157967976f782425a2149d46bcbf080bec38",
+   "unchanged": true
+  },
+  {
+   "board": "leonardoward--dpp-architecture-pcb",
+   "lane": 2,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/leonardoward--dpp-architecture-pcb/findings.json",
+   "sha256": "b459f0d89fbeac0eb9f77341a62dba936d7a9398bdefbaa278c27abbdc0e83d1",
+   "checked_sha256": "b459f0d89fbeac0eb9f77341a62dba936d7a9398bdefbaa278c27abbdc0e83d1",
+   "unchanged": true
+  },
+  {
+   "board": "mlab-modules--usbi2c01",
+   "lane": 2,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/mlab-modules--usbi2c01/findings.json",
+   "sha256": "cb88d3d27b3d667a28cdd4ae096237a42e8e60b91d67e13e0a83497f68e73838",
+   "checked_sha256": "cb88d3d27b3d667a28cdd4ae096237a42e8e60b91d67e13e0a83497f68e73838",
+   "unchanged": true
+  },
+  {
+   "board": "nabucasa--yellow",
+   "lane": 2,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/nabucasa--yellow/findings.json",
+   "sha256": "44a518e9b530d38ba3fb16584ff246e557c170224e821f38be186321f354fcea",
+   "checked_sha256": "44a518e9b530d38ba3fb16584ff246e557c170224e821f38be186321f354fcea",
+   "unchanged": true
+  },
+  {
+   "board": "pionixpublic--cb-eval-board",
+   "lane": 2,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/pionixpublic--cb-eval-board/findings.json",
+   "sha256": "bb62b369e8d18539388bff392c03f09b62c198ed6afb8eae00317d7a27b00ef4",
+   "checked_sha256": "bb62b369e8d18539388bff392c03f09b62c198ed6afb8eae00317d7a27b00ef4",
+   "unchanged": true
+  },
+  {
+   "board": "rmingon--rs485-spy-injector",
+   "lane": 2,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/rmingon--rs485-spy-injector/findings.json",
+   "sha256": "708f1e9b19dd8f6ae81605712add70b1ae3cfc2226deea691303e1983a9bcf79",
+   "checked_sha256": "708f1e9b19dd8f6ae81605712add70b1ae3cfc2226deea691303e1983a9bcf79",
+   "unchanged": true
+  },
+  {
+   "board": "solderedelectronics--connect-programmer-hardware-design",
+   "lane": 2,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/solderedelectronics--connect-programmer-hardware-design/findings.json",
+   "sha256": "e8870c10b630d93b144e452ad23c84ca126dfc43deec40451fb09552028885ab",
+   "checked_sha256": "e8870c10b630d93b144e452ad23c84ca126dfc43deec40451fb09552028885ab",
+   "unchanged": true
+  },
+  {
+   "board": "solderedelectronics--io-expander-mcp23017-breakout-hardware-design",
+   "lane": 2,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-2/evals/boards/solderedelectronics--io-expander-mcp23017-breakout-hardware-design/findings.json",
+   "sha256": "756ed4079a3e041568e6370224b7202d817cb26b93ddd06b5a611827132d8c3b",
+   "checked_sha256": "756ed4079a3e041568e6370224b7202d817cb26b93ddd06b5a611827132d8c3b",
+   "unchanged": true
+  },
+  {
+   "board": "antmicro--rdimm-ddr4-tester",
+   "lane": 3,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-3/evals/boards/antmicro--rdimm-ddr4-tester/findings.json",
+   "sha256": "9052d92ca6690489d6f76bfefc939ae22b64d14d1eacde73e2d0e87a68af000e",
+   "checked_sha256": "9052d92ca6690489d6f76bfefc939ae22b64d14d1eacde73e2d0e87a68af000e",
+   "unchanged": true
+  },
+  {
+   "board": "ben5049--switch-v4-hardware",
+   "lane": 3,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-3/evals/boards/ben5049--switch-v4-hardware/findings.json",
+   "sha256": "72b4ca5e65dec472329c90c66d27a293c5c8e4b78e72d55c568a3327a9a01dce",
+   "checked_sha256": "72b4ca5e65dec472329c90c66d27a293c5c8e4b78e72d55c568a3327a9a01dce",
+   "unchanged": true
+  },
+  {
+   "board": "greatscottgadgets--cynthion-hardware",
+   "lane": 3,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-3/evals/boards/greatscottgadgets--cynthion-hardware/findings.json",
+   "sha256": "8d90eb4a2ce6c4c772cde7257bb690134a3eb0c1391b09428d3244e40cacb372",
+   "checked_sha256": "8d90eb4a2ce6c4c772cde7257bb690134a3eb0c1391b09428d3244e40cacb372",
+   "unchanged": true
+  },
+  {
+   "board": "greatscottgadgets--hackrf-pro",
+   "lane": 3,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-3/evals/boards/greatscottgadgets--hackrf-pro/findings.json",
+   "sha256": "fd95ece17220f75d7e6d31d0927e05167c197af27a5341ee03b9007a3b1229f6",
+   "checked_sha256": "fd95ece17220f75d7e6d31d0927e05167c197af27a5341ee03b9007a3b1229f6",
+   "unchanged": true
+  },
+  {
+   "board": "solderedelectronics--1s-li-ion-battery-protection-hardware-design",
+   "lane": 3,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-3/evals/boards/solderedelectronics--1s-li-ion-battery-protection-hardware-design/findings.json",
+   "sha256": "9a3505a5e3b6cc6f6fc51c5379b9f0e07d1a89d69f470667a8f12d44cf700b2f",
+   "checked_sha256": "9a3505a5e3b6cc6f6fc51c5379b9f0e07d1a89d69f470667a8f12d44cf700b2f",
+   "unchanged": true
+  },
+  {
+   "board": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+   "lane": 3,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-3/evals/boards/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/findings.json",
+   "sha256": "8e26696294b0fc6d0115c20bd1ba940b00b1f29a04f1cc0890af93c93dad55aa",
+   "checked_sha256": "8e26696294b0fc6d0115c20bd1ba940b00b1f29a04f1cc0890af93c93dad55aa",
+   "unchanged": true
+  },
+  {
+   "board": "solderedelectronics--i2c-multiplexer-tca9548a-breakout-hardware-design",
+   "lane": 3,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-3/evals/boards/solderedelectronics--i2c-multiplexer-tca9548a-breakout-hardware-design/findings.json",
+   "sha256": "c8e030ea0df6f49ab969e246b378c3ba81b1a67b30ea4abae819f8612a36444c",
+   "checked_sha256": "c8e030ea0df6f49ab969e246b378c3ba81b1a67b30ea4abae819f8612a36444c",
+   "unchanged": true
+  },
+  {
+   "board": "theushen--eegfrontier",
+   "lane": 3,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-3/evals/boards/theushen--eegfrontier/findings.json",
+   "sha256": "64837dee1e7977709b02535e7795e21172e0b9d13d9308b9f8778775858f4378",
+   "checked_sha256": "64837dee1e7977709b02535e7795e21172e0b9d13d9308b9f8778775858f4378",
+   "unchanged": true
+  },
+  {
+   "board": "angelnu--lorawansensor",
+   "lane": 4,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-4/evals/boards/angelnu--lorawansensor/findings.json",
+   "sha256": "56a84b2774e4550f20e4c84d5b6058d088bfe98d39f06f8944621fba799b0022",
+   "checked_sha256": "56a84b2774e4550f20e4c84d5b6058d088bfe98d39f06f8944621fba799b0022",
+   "unchanged": true
+  },
+  {
+   "board": "antmicro--kria-k26-devboard",
+   "lane": 4,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-4/evals/boards/antmicro--kria-k26-devboard/findings.json",
+   "sha256": "5e60fbf227f3af7af1e8b8988d0e5a83fd61f8b8886e341e7e333d390a490441",
+   "checked_sha256": "5e60fbf227f3af7af1e8b8988d0e5a83fd61f8b8886e341e7e333d390a490441",
+   "unchanged": true
+  },
+  {
+   "board": "cellkeeper-bms--cellkeeper-hardware",
+   "lane": 4,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-4/evals/boards/cellkeeper-bms--cellkeeper-hardware/findings.json",
+   "sha256": "804f6a8d53c8f530cafac94dc8574e1fd986cd85567377deb185bac394fc5506",
+   "checked_sha256": "804f6a8d53c8f530cafac94dc8574e1fd986cd85567377deb185bac394fc5506",
+   "unchanged": true
+  },
+  {
+   "board": "greatscottgadgets--urti-mainboard",
+   "lane": 4,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-4/evals/boards/greatscottgadgets--urti-mainboard/findings.json",
+   "sha256": "c9540d474450809e3bb4db45e669e63c3c6e1d7b0b79fdd545adce2169c4bf54",
+   "checked_sha256": "c9540d474450809e3bb4db45e669e63c3c6e1d7b0b79fdd545adce2169c4bf54",
+   "unchanged": true
+  },
+  {
+   "board": "jasonsbeer--amiga-2000-eatx",
+   "lane": 4,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-4/evals/boards/jasonsbeer--amiga-2000-eatx/findings.json",
+   "sha256": "2f4a152b53433a7b7c4839ee991dee1ec39f3b1b0c441ac4051d6d9cf725ec24",
+   "checked_sha256": "2f4a152b53433a7b7c4839ee991dee1ec39f3b1b0c441ac4051d6d9cf725ec24",
+   "unchanged": true
+  },
+  {
+   "board": "rmingon--chlinknet",
+   "lane": 4,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-4/evals/boards/rmingon--chlinknet/findings.json",
+   "sha256": "4983c08eb139de8a86c6cabfb321a089d6617250ade434cbda33d729ec7e3726",
+   "checked_sha256": "4983c08eb139de8a86c6cabfb321a089d6617250ade434cbda33d729ec7e3726",
+   "unchanged": true
+  },
+  {
+   "board": "solderedelectronics--4-channel-relay-board-hardware-design",
+   "lane": 4,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-4/evals/boards/solderedelectronics--4-channel-relay-board-hardware-design/findings.json",
+   "sha256": "5d759ae6c0b8d1e0274f0a8b5070b5d2e5a0eede09839f512aaf112c40f0e2c9",
+   "checked_sha256": "5d759ae6c0b8d1e0274f0a8b5070b5d2e5a0eede09839f512aaf112c40f0e2c9",
+   "unchanged": true
+  },
+  {
+   "board": "solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design",
+   "lane": 4,
+   "path": "/Users/skyfend/.agents/skills/.wt/sr-lane-4/evals/boards/solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design/findings.json",
+   "sha256": "ba70a288f45cca6e88e60c2b353353964937986a3cbe91c464e28b08c60e41d6",
+   "checked_sha256": "ba70a288f45cca6e88e60c2b353353964937986a3cbe91c464e28b08c60e41d6",
+   "unchanged": true
+  }
+ ],
+ "evidence_root": "/Users/skyfend/.cache/sr-boards/_merge2a",
+ "count_boundary": "non-INFO cold rows and conservative same-rule physical-node/ref matches to prior false_alarm; unclassified rows are not truth",
+ "gates": {
+  "pytest": "2604 passed, 2 skipped",
+  "mutation_unit": {
+   "A": 32,
+   "B": 116,
+   "C": 53,
+   "new_ids": "M912-M938"
+  },
+  "seeded": {
+   "before": {
+    "sites": 254,
+    "auto": 225,
+    "errors": 0
+   },
+   "after": {
+    "sites": 254,
+    "auto": 225,
+    "errors": 0
+   },
+   "individual_records_compared": 254,
+   "auto_rule_regressions": [],
+   "before_sha256": "693dbafc77ebe65eb77554a835357cc3f3e01e491eadf9dfbe321a6fee2e9b66",
+   "after_sha256": "3cf1db2be5324d953d4c2e3c164e9346db19ca64f28759414ac27b096f78e082"
+  },
+  "typical": {
+   "DETECTED": 203,
+   "FIXED": 185,
+   "KNOWN_FALSE_ALARM": 14
+  },
+  "native": {
+   "MATCH": 195,
+   "KNOWN": 0,
+   "MISMATCH": 0
+  },
+  "detection_results_sha256": "121010c38e1446e51a352bd69ee1009c4874aa05ce76a5b75c30a71652f74b20"
+ },
+ "evidence_hashes": {
+  "after/antmicro--cm4-baseboard/candidates.json": "6919b9f33a66f407313b29e8a235f94973847eeb616d9d2e56304a71579821a5",
+  "after/antmicro--cm4-baseboard/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/antmicro--cm4-baseboard/decision-replay-notes.json": "0a390bc01404c2db5b6c5f7407b9af23412500ca6b4e7ff2f195020a3e343701",
+  "after/antmicro--cm4-baseboard/intent-cold.json": "805b8dca4d9c9474ee09db0cccb72775e5f795989210095a51b91c753de9a2f3",
+  "after/antmicro--cm4-baseboard/intent-input.json": "bbd461c91473e59931b0e3c41b81784c4d0d3f338cdd829bccf83f906a4d974a",
+  "after/antmicro--cm4-baseboard/intent.json": "087512756481ae54baab3757e9f63c5bfefb92a5790bcebcaa89f54f4e8cb61e",
+  "after/antmicro--cm4-baseboard/lint-candidates.json": "1f61b7ab237d7d70a492bead4f608a0be7f67ce0b68ba4aa1b8134e42e8b1aa9",
+  "after/antmicro--cm4-baseboard/lint-cold.json": "dec63be11937005ac61660208705356b8803b8e16394f765a78615519b021f29",
+  "after/antmicro--cm4-baseboard/lint.json": "5fead703411ec741f7e0cb83bb8a777a84405896a835ee374ecbca7ae36b849f",
+  "after/antmicro--cm4-baseboard/plan-candidates.json": "f522a42c1737419b63c6a7e07eb5411d43e67cc76fdf733309fa65d92644fe28",
+  "after/antmicro--cm4-baseboard/plan-cold.json": "f3f2d0ecd43992ad71ef52eb42db852dbe1436d74e27c78d6f687a160e62037e",
+  "after/antmicro--cm4-baseboard/plan.json": "2b22c649c6d9202ca87ec2feb4a17e632b0a60ee5a2628fdda72c4b040654973",
+  "after/antmicro--cm4-baseboard/rail-identity-replay.json": "61a0bdf4ae7c1a14cbc5235471931927acde5101174722ac4fd1ce29f81c11d5",
+  "after/antmicro--cm4-baseboard/summary.json": "d63c524be0c0fb506ea235eb034bed188c85db3eb2c3c83fef689c2454db67da",
+  "after/ben5049--switch-v4-hardware/candidates.json": "fff3939e1c4b78eb816e088797431bc091b514456eb2b2f002f41c3b834bd547",
+  "after/ben5049--switch-v4-hardware/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/ben5049--switch-v4-hardware/decision-replay-notes.json": "7660267bd6c55c8958bb85d6c8de1dd45ed59804c9ae4b3d65a65a1b53bed03c",
+  "after/ben5049--switch-v4-hardware/intent-cold.json": "869aa7ce9cdb1e5e1c370a19290a5c759956009222a0436ba3c4f9a69a41bbc9",
+  "after/ben5049--switch-v4-hardware/intent-input.json": "7076e0de04ed5d7883d841e7cb36d1129311d6d8f724afbbdcfc17402d2478b9",
+  "after/ben5049--switch-v4-hardware/intent.json": "22d7ca52e946376f24b5658ee01966496bdff9aa2530ce7bdcd9ebe8ad74ad11",
+  "after/ben5049--switch-v4-hardware/lint-candidates.json": "54eab6b7034dacc4f9279757b8f40ecd9e07344cc7617c38188c9d36a3bee39e",
+  "after/ben5049--switch-v4-hardware/lint-cold.json": "c38d86504e6bb71d92e3f665e9eb4ad791817f87445c29aaf4c6e449b1d2e7ac",
+  "after/ben5049--switch-v4-hardware/lint.json": "baf5ebc706ffbc6efd0a8086a0567da3972a05792320c068ccb93b151204792e",
+  "after/ben5049--switch-v4-hardware/plan-candidates.json": "d2ea84813bc22d62277408cf44f3ed16ed26fa35984b21ed7614da3ae1431771",
+  "after/ben5049--switch-v4-hardware/plan-cold.json": "018da984a0280a93a576898057a63a2a1200ff4cdc548aa1e81ddc55b19f343c",
+  "after/ben5049--switch-v4-hardware/plan.json": "35b2e780176d8aa6542e3b840336aac017c5d1294cab7d0c0ce9bb083ae05b6a",
+  "after/ben5049--switch-v4-hardware/rail-identity-replay.json": "5a39bab25c386507c01f811425ea8bcf02be646b975296d0e20c958401f20743",
+  "after/ben5049--switch-v4-hardware/summary.json": "9a7521a942ac4f1ff3384364707422979f3da0cb4011cd4946efa85e08e1ea11",
+  "after/comparison.json": "9debac4eb1a3ef9ec690cf2d4d852dff52e5ebe81fe179b1592498fae0ba0c58",
+  "after/gates/attribution-inputs.json": "8934560d026a2defa3d5b8f3bb122645a6e143219b3f42e53a2087035759b18a",
+  "after/gates/compare.py": "a65f0436cefd9ae16c9c888dfc7a156347fd73a376f509737a3532c29ca877d1",
+  "after/gates/migrate_replay.py": "646648e8fdd4e3f028661658317316e154880362169f748150e3a6fb7b29eef2",
+  "after/gates/mutation-a3.json": "f3f75c980d4cf112fd82bfaa6a5b4fdc249e390468c26f29ac0ccae7d2d0afe4",
+  "after/gates/mutation-b2.json": "6f51b5f91d14ddfbe7872b1bbb352469ba6231ae3e98ec33f6b2a5ea21da7007",
+  "after/gates/mutation-current.json": "b4f16fba6b03fddf8fd438adfacc4e2a2292c2873e1a6e52e9a1ff24a6bcbc3d",
+  "after/gates/native-results.json": "bd9cd135be850e44549bef3a3b4fabe0441d357cb9b4a0a502af8cfdcf791e9f",
+  "after/gates/replay.py": "a0592b890b34d220537decd249c83181685acfa4604ea181dec0d9f719a52cef",
+  "after/gates/true_defects.py": "de01e774c2a397e264a9bb8b1ec4eecfa311db92062ace4848ee274cb7f438ab",
+  "after/gates/typical-current.json": "146c14726f5e7fe02646c749de1c0cf3ef59bd5fec609c48465c999f97ff2b5b",
+  "after/greatscottgadgets--hackrf-pro/candidates.json": "c7900505a731d042fe706cce1727fb320da142410bb5fcaa8277eefa1719bc33",
+  "after/greatscottgadgets--hackrf-pro/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/greatscottgadgets--hackrf-pro/decision-replay-notes.json": "16727d2f53d023bdbe4688a0f64569bc460ef087e36e506562af77daf395597c",
+  "after/greatscottgadgets--hackrf-pro/intent-cold.json": "6b181ae3cf126cf302ac95c0a0ef2f4ee4793ffa5eba5aec119099f3530281e9",
+  "after/greatscottgadgets--hackrf-pro/intent-input.json": "93a2ef6f656675e8d63dd68b6b857059d524edca3f15727099c88bfb7482ab56",
+  "after/greatscottgadgets--hackrf-pro/intent.json": "2bcd25f2ab7dc23f2d659d97f83aeae6234e515b0b4aaa382f525db9e4503ed8",
+  "after/greatscottgadgets--hackrf-pro/lint-candidates.json": "967156b8d4fea7e86b1ae83babd2271bdca49844d494a1c93690c27a4438811f",
+  "after/greatscottgadgets--hackrf-pro/lint-cold.json": "21264230ed0a56e88f4f68bc676ca536ac868e72c2e65f324f94a3b05d7b9187",
+  "after/greatscottgadgets--hackrf-pro/lint.json": "51fc397ce24ce35336625d1ad5704dadee005f45578484f55dfe567a1ad529d4",
+  "after/greatscottgadgets--hackrf-pro/plan-candidates.json": "f2ca7a7b00eb6ccad1af99d02d84bd63f12aa2ab70abb32dc49c3b9f142a0c14",
+  "after/greatscottgadgets--hackrf-pro/plan-cold.json": "ccce9302889732b44b003c8fb47be68df6048ab3d8bbd86342db2a3a0932f24b",
+  "after/greatscottgadgets--hackrf-pro/plan.json": "cc21d8fa722b095def7e2437bf3f4ef7df8f287abc529db6211a2f83e0460d7f",
+  "after/greatscottgadgets--hackrf-pro/rail-identity-replay.json": "4d6fdfbe4673c8ec117124c22250eabb10980a54584f7a42378519f3222f062f",
+  "after/greatscottgadgets--hackrf-pro/summary.json": "f55d0cea7cf3b51e6f0f7c80e324d299f6620dea1fbf602ea0944d058c4fe7a1",
+  "after/greatscottgadgets--urti-mainboard/candidates.json": "2e9b0c5d58c0a37219baa7c599080e0d32a73b5f563621061e71004936e45129",
+  "after/greatscottgadgets--urti-mainboard/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/greatscottgadgets--urti-mainboard/decision-replay-notes.json": "933f027b8486e7d72dbbd0d77c1d11c41b1761a9e8ef7f40254f4ed0650ea44b",
+  "after/greatscottgadgets--urti-mainboard/intent-cold.json": "012b84f92895d2edb4450e6591088ca5fd1a7472d8557f7d662c84145eab1e29",
+  "after/greatscottgadgets--urti-mainboard/intent-input.json": "012b84f92895d2edb4450e6591088ca5fd1a7472d8557f7d662c84145eab1e29",
+  "after/greatscottgadgets--urti-mainboard/intent.json": "65f1e899be32be36e741d63cb54e595c335b56f1cea53b578b08cc44582e7952",
+  "after/greatscottgadgets--urti-mainboard/lint-candidates.json": "70a369270c6cbab6dd86b46ad790e7ab0b01dc4cdbb859cc07e2a2d34726fd6b",
+  "after/greatscottgadgets--urti-mainboard/lint-cold.json": "7fe1cff91f15136fe7dbc859aae8962de57a5551b091bd1339479396776c4d57",
+  "after/greatscottgadgets--urti-mainboard/lint.json": "f2889215f71d9378798488fcad577a6797017d276c2948fcc4f103fc2804cd0d",
+  "after/greatscottgadgets--urti-mainboard/plan-candidates.json": "8c5173632797641b4e37e277e169139f5e4f7aaf963dc2c11833998f2425a9d1",
+  "after/greatscottgadgets--urti-mainboard/plan-cold.json": "00d7d6ccb9ed98f981609595bb57f16ea0a7867d5ea4d49e5cf5f77649c413fb",
+  "after/greatscottgadgets--urti-mainboard/plan.json": "971b36b81e8e4ff8a82255d6ed7ac872a5d367738e94844e86a4fe15004bc8b2",
+  "after/greatscottgadgets--urti-mainboard/rail-identity-replay.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/greatscottgadgets--urti-mainboard/summary.json": "c3d6c1062c726752760ce4c0bbd1223e4089e53651df3d7ae30383d08b5c2d58",
+  "after/leonardoward--dpp-architecture-pcb/candidates.json": "aa79318c24e920bf42657d78cb730f1686054056202bd50fd82dd01584e4660e",
+  "after/leonardoward--dpp-architecture-pcb/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/leonardoward--dpp-architecture-pcb/decision-replay-notes.json": "99b6521df6200c26a0794e105ced2f02f466fd497d3fc535ef7e00c79bdc59bc",
+  "after/leonardoward--dpp-architecture-pcb/intent-cold.json": "7c996dcfbda23aaee8537cdca8fc3174db001b06853554e38be564abff45d8f6",
+  "after/leonardoward--dpp-architecture-pcb/intent-input.json": "7c996dcfbda23aaee8537cdca8fc3174db001b06853554e38be564abff45d8f6",
+  "after/leonardoward--dpp-architecture-pcb/intent.json": "009ad6e15be4a2cd71eba71655f1691a8154c1543270a97dc880bd98520ce69e",
+  "after/leonardoward--dpp-architecture-pcb/lint-candidates.json": "13fa36d9032a1c3fca996d86ee81f6688a9dc414559b026fc6c8d6ac9e4bd192",
+  "after/leonardoward--dpp-architecture-pcb/lint-cold.json": "e50d31828710d46adfa36a05bc533a0d20041548bf45e79be01325da544a4abd",
+  "after/leonardoward--dpp-architecture-pcb/lint.json": "13fa36d9032a1c3fca996d86ee81f6688a9dc414559b026fc6c8d6ac9e4bd192",
+  "after/leonardoward--dpp-architecture-pcb/plan-candidates.json": "210af45d3b190164234d21908d23f1a1e675c43ebbbe0d715a8cb06931988a04",
+  "after/leonardoward--dpp-architecture-pcb/plan-cold.json": "1e1ae568ff0c95e499234fd713f53bac58e3ac23ec84ba86f0d05be660910f9b",
+  "after/leonardoward--dpp-architecture-pcb/plan.json": "210af45d3b190164234d21908d23f1a1e675c43ebbbe0d715a8cb06931988a04",
+  "after/leonardoward--dpp-architecture-pcb/rail-identity-replay.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/leonardoward--dpp-architecture-pcb/summary.json": "d35762f634d9f3a92f83a678fe7b89ca9b38445727e13304a4887d6faab9f306",
+  "after/pionixpublic--cb-eval-board/candidates.json": "b686ea164232ee3f09932e2ee9cc2017d78f1f25f8e0043034554c7532ccb904",
+  "after/pionixpublic--cb-eval-board/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/pionixpublic--cb-eval-board/decision-replay-notes.json": "8dd6055645c116b5f104a090140a960d21d847c51b71a3fcaf97ebab3364b39f",
+  "after/pionixpublic--cb-eval-board/intent-cold.json": "6b1dfdb8ffdceda86f5ad913115b9028794b707cfb56e1e640805af9d400029b",
+  "after/pionixpublic--cb-eval-board/intent-input.json": "6b1dfdb8ffdceda86f5ad913115b9028794b707cfb56e1e640805af9d400029b",
+  "after/pionixpublic--cb-eval-board/intent.json": "d3bf136c3c91df7bbe2c60f891048b057aa9ed14489f36fbc703dadfa5ff91ec",
+  "after/pionixpublic--cb-eval-board/lint-candidates.json": "499944243eaf66e5a5e31c57241070434a04b9bfaabe100d040b2ec9070a9eb0",
+  "after/pionixpublic--cb-eval-board/lint-cold.json": "e904d73c049d70c65737ebf071dad0c6f7fa3316686012a2411791da1a7a1396",
+  "after/pionixpublic--cb-eval-board/lint.json": "86f7f4ebaec18bb19e1829a937641b5bf556bc69a26854ed59e8f737fd8c7fce",
+  "after/pionixpublic--cb-eval-board/plan-candidates.json": "baac49727e8d828ff06b622bc70e741d380465901dea807376fe5d994b2daba0",
+  "after/pionixpublic--cb-eval-board/plan-cold.json": "57a91242fd92417750a59e9b1ef63574474ddabd5533879ec987c10b1e81e55a",
+  "after/pionixpublic--cb-eval-board/plan.json": "9b84f6eb910efa65df00c4503515b282011a7590ea2d806ba68b72734cb5d5b4",
+  "after/pionixpublic--cb-eval-board/rail-identity-replay.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/pionixpublic--cb-eval-board/summary.json": "013e8cdc312e32a347d75c85233d7352053eec93df59d3177635464347b9c779",
+  "after/results.json": "9de6499fef8e85a91cb14689c89cf291e37d23e4d22db9a0ea03f0d786c493ef",
+  "after/rmingon--chlinknet/candidates.json": "394871dbe67d75e9e83a3334891e3a8003aa493b88bbbedabeb12502060266a4",
+  "after/rmingon--chlinknet/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/rmingon--chlinknet/decision-replay-notes.json": "f72f5feca44fefaa51e9ec0c03fa07f1186baceea0ec2da105455d998e9f8ffb",
+  "after/rmingon--chlinknet/intent-cold.json": "eb3863d8ea67bb79130023e782997ced9b7ce9d52d1069a4c51571fc01cd7ec5",
+  "after/rmingon--chlinknet/intent-input.json": "eb3863d8ea67bb79130023e782997ced9b7ce9d52d1069a4c51571fc01cd7ec5",
+  "after/rmingon--chlinknet/intent.json": "30f9e8197f9fe7d76a956477dcd917084dfe805010fe8ca7ad381ada96fa4357",
+  "after/rmingon--chlinknet/lint-candidates.json": "ef261ae67c9fb726b179fac96ff628e7630632f1bb5d50bd9d239615d87d973b",
+  "after/rmingon--chlinknet/lint-cold.json": "bb76c39e05e20344fcdf927b7d5018216dca64b94c55d829d05ac250373c2b24",
+  "after/rmingon--chlinknet/lint.json": "2fc990ddff41a47723cc442146b993464c2deab5a73c11ee1299b7891d86a320",
+  "after/rmingon--chlinknet/plan-candidates.json": "777fd1c8f08d750bf00970f0f14700965a24e5dd97cec57d4129a852dcbc1125",
+  "after/rmingon--chlinknet/plan-cold.json": "e74818ac9be3eb43631071be2711e9d38c5067a86668b71ccb83f37cadf4d579",
+  "after/rmingon--chlinknet/plan.json": "14cae9d9636be42fe8007a175ae38692fa7cce8ca0df28a19a4d8610de9e212e",
+  "after/rmingon--chlinknet/rail-identity-replay.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/rmingon--chlinknet/summary.json": "126c9627b9d20d9f4117a7726ef8fecf57af6b0c7f76e886257e3de9379570c9",
+  "after/seeded/individual-compare.json": "6371acb3ada0781f3aac38985ebec7e7aada3b76f4f25a722e041e37f34752fb",
+  "after/seeded/results.json": "3cf1db2be5324d953d4c2e3c164e9346db19ca64f28759414ac27b096f78e082",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/candidates.json": "cc910fe3cb8be86ce3c58925f6ab72aebeb2a9ed66f358cff73620853d14795f",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/decision-replay-notes.json": "e2b2054f6cf579b3b2a8653235b54aa03e68b637fa7cad37b43774fcd3038a0b",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/intent-cold.json": "ad487e1c2e5776592bfbe3108df4e5e1aa1fe56a6ad46616a97a87e938b55fb6",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/intent-input.json": "ad487e1c2e5776592bfbe3108df4e5e1aa1fe56a6ad46616a97a87e938b55fb6",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/intent.json": "a7952debbe39fb2ffbd2d51223a045777690265d729fd6e154f58787b3a4ea26",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/lint-candidates.json": "6f23a42e43e2196c577d3bc6aaf30301e127926d4c32b00371700a1e005db00f",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/lint-cold.json": "159717aa5c84d61521ff396faf96bb54932ed82c53842375cafd9d58847d72f1",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/lint.json": "6f23a42e43e2196c577d3bc6aaf30301e127926d4c32b00371700a1e005db00f",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/plan-candidates.json": "dc9b8066420cf708d5e27fb8f7d3deca6d66128ef0fc2712e28efc77371eec79",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/plan-cold.json": "e728b8bc0472ab9aa9dea6d21ed7dda40246e5e623914f829582efe902ea427c",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/plan.json": "dc9b8066420cf708d5e27fb8f7d3deca6d66128ef0fc2712e28efc77371eec79",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/rail-identity-replay.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/solderedelectronics--4-channel-relay-board-hardware-design/summary.json": "d527682b3cda2d1ab8196fea910a74a440faf1e7f552e9384346e6ad207ec257",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/candidates.json": "b747f0b652483fe109a903cdd8bf5ee075afa68bb1f9b9b8340c22cb9324a64d",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/decision-replay-notes.json": "1ebb5d182f1e8d194019b32e897ae34584f4aeb9ddba9bc7d99f1ba90d67fe51",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/intent-cold.json": "3561d15d82bcd12fe808be4e3562a33e4aa4ae557dcba21c45c8659f5babb252",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/intent-input.json": "3561d15d82bcd12fe808be4e3562a33e4aa4ae557dcba21c45c8659f5babb252",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/intent.json": "32e8fdc0818abce749fc78a1ae9dc6a8edcfa581596cff8735944cd049a92bde",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/lint-candidates.json": "8e0eeafacc79c4f998582f9ad4d651ecad53c6460135dc9f364b2833f74368f0",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/lint-cold.json": "a9dd52da3cf2d913c10bc66b1cd899a442c3343705d0ea51c305fcc762218742",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/lint.json": "0d5fdd48092eac6ec84075d02dc1d908f909f0438fea5e614a33b34e99fab7af",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/plan-candidates.json": "5a16cf8ffc8ec7902e276606df53f4b82a8a8c147daa6a0b150d97475d4cebc3",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/plan-cold.json": "33af166b5be5cdbf0e4675c5bb231258a92094544fa22db2dbf963b1066cce1d",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/plan.json": "a72fefb3241f65945bf502b457d51aaefcbb1d9e26429a38ff32b097fd1a39c3",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/rail-identity-replay.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design/summary.json": "993f865a24cb4018f8870c6e7c7a525a8753c4491809e13ef6715037aedb5a82",
+  "after/sparkfun--sparkfun_gnssdo/candidates.json": "ea76b371703b1ab1cade35712b116f4de8d6c184862c5a1a65566fb493ba9f7e",
+  "after/sparkfun--sparkfun_gnssdo/decision-replay-errors.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/sparkfun--sparkfun_gnssdo/decision-replay-notes.json": "6f769343c661de5e1872778086d46b864e20cafbd49545acf55437de6d2cee1a",
+  "after/sparkfun--sparkfun_gnssdo/intent-cold.json": "2f3a9671c270b733c429520be3cc96b91104e139e92d031a7aaa3d82779654ad",
+  "after/sparkfun--sparkfun_gnssdo/intent-input.json": "2f3a9671c270b733c429520be3cc96b91104e139e92d031a7aaa3d82779654ad",
+  "after/sparkfun--sparkfun_gnssdo/intent.json": "5b8b46d404bff6c431391fe82f78284b23849ab2fa9716cea3911b926e5b6dd8",
+  "after/sparkfun--sparkfun_gnssdo/lint-candidates.json": "1005c13b0ddd1f32abc901e3e89215bf0bf2b40bf2f42f5b82d5a77c30d31159",
+  "after/sparkfun--sparkfun_gnssdo/lint-cold.json": "79e2fb1cb742d4cd6ffd1a388b4d67f1dfde155dd4aea83422f189b308348d6c",
+  "after/sparkfun--sparkfun_gnssdo/lint.json": "5566b67c357dfbc8adb4bccec6a5c1c0aa60c68492d092bea58e05862794561d",
+  "after/sparkfun--sparkfun_gnssdo/plan-candidates.json": "0c3ed39f93334651ef1b4f0579f563df2af1f77ce7cfd461833de90a54692d26",
+  "after/sparkfun--sparkfun_gnssdo/plan-cold.json": "494b0904538377c8b6071f923f2a96e9656b8fafc04c9abfdba252b631041f29",
+  "after/sparkfun--sparkfun_gnssdo/plan.json": "7bb793db6a4ebacaf134ab88d6d4fb562c969301ff95fc5137a72a8bbb010eec",
+  "after/sparkfun--sparkfun_gnssdo/rail-identity-replay.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "after/sparkfun--sparkfun_gnssdo/summary.json": "d5143cebe87c8f1cb56eebcdabf4e3e281b3fee1327d27ff08ba995dcbdf0234",
+  "after/true-defect-preservation.json": "f676ddd3635bc3a322bbacf93f773502afb6a51c42f7999fb90a0d2037728c2d"
+ },
+ "changed_files": [
+  "docs/improvement-ledger.md",
+  "docs/proposals/boards-merge-2a-2026-11-02.json",
+  "docs/proposals/boards-merge-2a-2026-11-02.md",
+  "evals/detection/RESULTS.md",
+  "evals/kicad_replay_bench/README.md",
+  "evals/kicad_replay_bench/revisions/boards-merge2a-v1/cases.json",
+  "evals/kicad_replay_bench/revisions/boards-merge2a-v1/expected.json",
+  "evals/kicad_replay_bench/revisions/boards-merge2a-v1/manifest.json",
+  "evals/kicad_replay_bench/revisions/boards-merge2a-v1/sources.json",
+  "evals/kicad_replay_bench/run.py",
+  "evals/mutation/mutations.json",
+  "references/architecture.md",
+  "references/checker-conventions.md",
+  "references/intent-format.md",
+  "scripts/checkers/domains.py",
+  "scripts/checkers/inductive_load.py",
+  "scripts/checkers/input_filter.py",
+  "scripts/checkers/isolation_sides.py",
+  "scripts/checkers/netgraph.py",
+  "scripts/checkers/power_switch.py",
+  "scripts/checkers/power_up.py",
+  "scripts/checkers/powertree.py",
+  "scripts/circuit_candidates.py",
+  "scripts/circuit_decisions.py",
+  "scripts/lint.py",
+  "scripts/plan_circuits.py",
+  "scripts/solve_dividers.py",
+  "scripts/tests/test_boards_merge2a.py",
+  "scripts/tests/test_circuit_candidates.py",
+  "scripts/tests/test_circuit_decisions.py",
+  "scripts/tests/test_domains.py",
+  "scripts/tests/test_inductive_load.py",
+  "scripts/tests/test_isolation_sides.py",
+  "scripts/tests/test_render_and_pack.py",
+  "scripts/tests/test_source_paths.py"
+ ],
+ "implementation_commits": [
+  "1587346",
+  "ec350aa",
+  "af12641"
+ ]
+}

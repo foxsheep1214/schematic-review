@@ -9,6 +9,16 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+
+## 候选按角色持有与拒绝后重归、隔离器件两侧模型：合并步2A (2026-11-02)
+
+变换器需拓扑证据，共享供电截止且供电电容引用不限，reject即释放后可有据add；按厂家物理针表独立建立隔离两侧，MΩ泄放不并域，共地光耦与浮置干触点仍列隔离对象；驱动源≤10kΩ总串阻与≤1Ω等势分开，上游输出电感不套输入滤波。补重复的load_switch dropout、无源RF磁件续流与Bridged误认；保留真实储能开关反例。十板冷扫303→287、已归因冷扫误报113→101，15条错误域诊断消失；两板原候选决定失败恢复为十板完整五步成功。题列真缺陷保留或仍可定位，原db/电压窗/装配不变；未知侧别和2B定类/资格残留不冒充已闭环。详见提案及同名JSON。Causes按15个机制计数，非诊断条数；共用层、SKILL与2B指定文件未改。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: rule_not_enforced 5, knowledge_missing 1, knowledge_wrong 9
+- Changed: docs/improvement-ledger.md, docs/proposals/boards-merge-2a-2026-11-02.json, docs/proposals/boards-merge-2a-2026-11-02.md, evals/detection/RESULTS.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge2a-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge2a-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge2a-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge2a-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/mutations.json, references/architecture.md, references/checker-conventions.md, references/intent-format.md, scripts/checkers/domains.py, scripts/checkers/inductive_load.py, scripts/checkers/input_filter.py, scripts/checkers/isolation_sides.py, scripts/checkers/netgraph.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/powertree.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/lint.py, scripts/plan_circuits.py, scripts/solve_dividers.py, scripts/tests/test_boards_merge2a.py, scripts/tests/test_circuit_candidates.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_domains.py, scripts/tests/test_inductive_load.py, scripts/tests/test_isolation_sides.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_source_paths.py
+- Gates: pytest 2604 passed, 2 skipped; mutation --changed unit逐批32/32、116/116、53/53全杀（新增M912–M938）；seeded offline --boards-cache --compare 254位点/225自动/0错误，逐位点无退化；typical 203 DETECTED/185 FIXED/14 KNOWN_FALSE_ALARM/0未分类；KiCad replay 195/195（boards-merge2a-v1仅rf2伪输入滤波两项97→95）；detection RESULTS updated；真缺陷保留断言14条PASS；check_ledger PASS。
+
 ## 合并步 1 并入 main，流水线每板前自动并入 boards-program (2026-11-02)
 
 把 main（设计准则库 1.6.1、8 类种子的 A 规则）并进 `boards-program`：分支新增的 29 条变异与 main 撞号，重编为 M883–M911；检出表按合并后重生成。
