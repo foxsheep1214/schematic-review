@@ -45,3 +45,9 @@
 - Diodes品牌/Load Switch应用/PWM及同步整流描述误导U103/Q102/U106标题定类；kind_reason要有真实标题/端点依据。P102名Relay实为2针连接器，L101/L103的FB是串联滤波，不套线圈续流。
 - 对外SPI没有SIG-C08时要留掉电注入计划缺口；AC/DC模块L/N→V+/V-也要逐输入输出核隔离，不能只找GND1/GND2。RS485750Ω偏置单120Ω约0.244V，双120Ω约0.127V，未锁远端不判原板缺陷。
 - schema15无needs_human/未完成功能格式：53局部事实留checks，全部70功能保留pending，不写完整功能PASS。原生报告只有诊断效力；P111与MCU31脚号真墨迹重叠可判P2，C128/16MHz仅邻近不另判。
+
+- solderedelectronics--breadboard-power-supply-board-hardware-design：25件/24网；3候选+add→4电路/14框架/185项，39局部已判、146逐ID待核，FAIL/NO_GO；30归因=1资料真缺陷+13误报+3知识+13人工，Top50一处接口漏问。
+- DC_JACK的K2被K前缀误作relay，伪线圈/去耦/无驱动并漏EXT-K2；合并步先修强角色优先级，用J→K别名变异验证PRO-D04/DEV-C04覆盖，别把原板直接当已证电气缺陷种子。
+- Diodes页眉商标被识为diode；U2电路PWR-C04却anchor到邻接U1；机械触点不套半导体输入浮空，12V/VUSB电源边不套逻辑VIH/VIL，普通二极管不套eFuse。
+- U1符号1IN/2OUT/3G与自定义封装成套编号，几何支持右输出/中央GND，缺受控映射不判实物接错；U2仅SE5218缺3.3V后缀才是明确资料缺陷。C4名义2.2µF不证明p6有效≥1µF，USB-only须单核U1反灌。
+- strict因S1–S3十二触点缺名失败但XML/db70节点一致；分号CSV的Designation须显式转Value。schema15不支持needs_human/未判功能，旁账保留全部分母且门禁FAIL；DEV-D04非DOC前缀还不生成独立根因任务。
