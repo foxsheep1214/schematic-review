@@ -109,3 +109,10 @@
 - BQ低串数仍必须让VC1、VC2、VC16量实际电芯；未用TS3可浮空，CAN Vref亦可浮空，别把正确NC绘图提示都计误报。
 - 两脚无源晶体不问有源OE、片内ADC不问运放输出；22pF没有CL/ESR不能判匹配，一个本地120Ω也不能判整网端接缺陷。
 - J_PACK+1/J_PACK-1导致FN-EXT-J-PACK-1碰撞；原文4.7k ohm未解析及NEEDS_HUMAN/schema15冲突须保留。381项、30归因(5/4/1/1/19)、漏报0，FAIL未打包，完整证据仅在缓存。
+
+## fossasia--pslab-hardware（2026-11-02）
+- BOM `1/16W`会被bom_ratings斜线分段读成16W（27只、放大256倍）；SELECTED_PART_RATING注记又被DERIVED_ROW_KEPT丢掉，合并步首修这两处。
+- L3接boost SW不是输入滤波；Q2/Q3射极供±6V、U17以−9V为地反相，D1/D2是持续齐纳参考，勿套无源/TVS模板；200k EN到VIN是MT1470手册允许接法。
+- U16四脚三通道需PRO-E02逐通道；无EN/SS的U6/U21也要启动电流，PVS/PCS实际源输出还缺RST-T04默认态对象。NC的VSET/RSET有合法选项，R61=51k明确停用NTC。
+- 固定BOM175件，原图198含标识/孔/TP；C5/C23、R22、F1、PGA链接、Q额定均有字段冲突，不能择一当实贴。ABS07-166别套通用CL；一页Access Denied不计手册到位。
+- I2C顶层power_rails须显式同值写schema2 rails以免重建过期；914项/75归因(5/11/1/2/56)/3覆盖漏项。needs_human及派生限制保留FAIL，完整记录在外部缓存，未打包。
