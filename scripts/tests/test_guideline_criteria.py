@@ -180,6 +180,14 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertEqual(g.shared_versions()['library_version'], g.load()['library_version'])
         self.assertRegex(g.shared_label(), r'^共用层 [0-9a-f]{12}，设计准则库 \S+，降额 v\d+$')
 
+    def test_dc_24v_checks_its_declared_window_not_the_telecom_48v_one(self):
+        subjects = {t.name: t.subjects for t in catalog.CIRCUIT_TYPES}['DC_24V']
+        self.assertIn('PWR-C27', subjects)
+        self.assertNotIn('PWR-C17', subjects)
+        self.assertIn('DC_24V', catalog.EXTERNAL_INTERFACE_TYPES)
+        mapped = {gid for rule in subjects for gid in catalog.BASIS[rule]}
+        self.assertTrue({'G01-051', 'G01-052', 'G01-053', 'G01-054'} <= mapped)
+
     @unittest.skipUnless((ASG / SHARED[1]).is_file(), 'autonomous-schematic-generation without the rule library')
     def test_asg_holds_the_same_shared_layer(self):
         for name in SHARED:

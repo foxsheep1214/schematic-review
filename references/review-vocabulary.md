@@ -33,6 +33,7 @@
 | ISOLATION | 隔离 | PRO | PRO-D02、PRO-C01、PRO-C03、SIG-C13、SIG-C18、RST-T04、SIG-C09、SIG-C17 | requirements、datasheets | `ISOLAT\|(^\|_)ISO(_\|$)\|DIGITAL_ISO` |
 | DEBUG | 调试与烧录 | SIG | SIG-D06、SIG-C13、SIG-C18 | datasheets | `JTAG\|SWDIO\|SWCLK\|(^\|[:_-])(SWD\|TCK\|TMS\|TDI\|TDO\|TRST\w*)([:_-]\|$)\|(^\|[:_-])(DEBUG\|DBG)` |
 | DC_48V | −48 V 直流输入 | PWR | PWR-C17、PWR-C18、PWR-C13、PRO-C01 | requirements、datasheets | `(^\|[:_-])-?48V(_?RTN\|_?IN)?([:_-]\|$)\|VBAT_?48` |
+| DC_24V | 24 V 工业直流输入 | PWR | PWR-C27、PWR-C18、PWR-C13、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-])\+?24V(_?RTN\|_?IN)?([:_-]\|$)\|VIN_?24` |
 | AC_MAINS | 交流市电输入 | PWR | PWR-C18 | requirements、datasheets | `(^\|[:_-])(AC_?[LN]\|VAC\|MAINS)([:_-]\|$)` |
 | INDUSTRIAL_DI | 工业 24 V 数字输入 | SIG | SIG-C10 | requirements、datasheets | `(^\|[:_-])(DIN?\d+\|PLC_IN\d*)([:_-]\|$)` |
 | POE_PD | PoE 受电端 | PWR | SIG-C11、SIG-C12、PWR-C13、PWR-C23、PRO-C03 | requirements、datasheets | `POE\|(^\|[:_-])VPORT([:_-]\|$)` |
