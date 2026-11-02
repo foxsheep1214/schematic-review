@@ -52,3 +52,28 @@ def test_supply_trace_does_not_assume_large_or_unknown_resistor_is_wire(value):
 def test_supply_trace_stops_at_unfitted_shunt():
     assert PowerTree(NetGraph(supply_chain(dnp=True))).source_of('VDD') is None
 
+from lint import Lint
+from plan_review import build_review_plan
+from render_report import render_input_notes
+
+@pytest.mark.parametrize('fields,properties,expected',[
+ ('<field name="DNP">DNP</field>','',True),('<field name="DNP">yes</field>','',True),
+ ('<field name="不贴">不贴</field>','',True),('<field name="DNP">no</field>','',False),
+ ('<field name="DNP"></field>','',False),('', '<property name="DNP"/>',True),
+ ('','<property name="dnp" value="false"/>',False)])
+def test_native_dnp_marks(fields, properties, expected):
+    db=parse(netlist(comp('R1','Device','R','10k',fields=fields,properties=properties),net('LONE',('R1','1','','input'))))
+    assert db['parts']['R1']['nc'] is expected
+    if expected:
+        assert not [f for f in Lint(db).run() if f['rule'] in ('NET-A01','NET-A06','NET-A07','PWR-A02')]
+
+def test_dnp_series_resistor_not_a_clamp_path_or_input_node():
+    db=supply_chain(dnp=True)
+    db['pintype']['R1.1']='IN'
+    lint=Lint(db)
+    assert 'R1.1' not in lint.pin2net
+    assert '经 R1' not in lint._protected_pins_text('MID')
+    assert not lint.resistor_links('SOURCE')
+    assert not [f for f in lint.run() if f.get('ref')=='R1' and f['rule'].startswith(('NET-','PWR-'))]
+    plan=build_review_plan(db)
+    assert '未贴装器件 1 个，已排除。' in render_input_notes(plan)

@@ -183,7 +183,7 @@ def floating_inputs(lint):
         if _pin_class(types[node]) != 'IN':
             continue
         ref = node.partition('.')[0]
-        if lint.parts.get(ref, {}).get('nc'):
+        if not lint.graph.is_fitted(ref):
             continue
         net = lint.pin2net.get(node)
         declared_nc = node in no_connect or (net is not None and net in lint.pseudo)

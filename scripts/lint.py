@@ -195,6 +195,12 @@ class Lint:
         analysis = board_intent.with_verified_kinds(self.intent, datasheet_audit)   # datasheet-verified kinds
         analysis_db = board_intent.graph_db(db, analysis)
         self.graph = NetGraph(analysis_db)
+        # Electrical scans see the installed board; the original db remains intact for assembly audit.
+        self.nets = {net: active for net, nodes in self.nets.items()
+                     if (active := [node for node in nodes if self.graph.is_fitted(node.partition('.')[0])])}
+        self.pin2net = {node: net for node, net in self.pin2net.items() if self.graph.is_fitted(node.partition('.')[0])}
+        self.pinname = {node: name for node, name in self.pinname.items() if self.graph.is_fitted(node.partition('.')[0])}
+        self.pintype = {node: kind for node, kind in self.pintype.items() if self.graph.is_fitted(node.partition('.')[0])}
         self.powertree = PowerTree(self.graph, self.intent)
         self.inventories = {checker.id: checker.build(analysis_db, analysis) for checker in REGISTRY}
 
@@ -308,7 +314,7 @@ class Lint:
                 others.add(ref)
             if self.graph.kind(ref) == IC and self.graph.is_fitted(ref):
                 direct.append(f'{node}({self.graph.pinname.get(node) or "?"})')
-            elif self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2 and net in self.graph.nets_of(ref):
+            elif self.graph.is_fitted(ref) and self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2 and net in self.graph.nets_of(ref):
                 other = next(n for n in self.graph.nets_of(ref) if n != net)
                 for far in self.graph.nodes_on(other):
                     if self.graph.kind(far.partition('.')[0]) == IC and self.graph.is_fitted(far.partition('.')[0]):
@@ -533,7 +539,7 @@ class Lint:
         for node in sorted(set(pinname) | {k for k, t in native.items() if t == 'power_in'}):
             pn = pinname.get(node, '')
             ref = node.split('.')[0]
-            if self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT):
+            if not self.graph.is_fitted(ref) or self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT):
                 continue
             if not (SUPPLY_PIN_RE.match(pn) or native.get(node) == 'power_in') or BOOTSTRAP_PIN_RE.match(pn):
                 continue

@@ -576,6 +576,10 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.merge_previous_checks()
         self.attach_lint_findings()
         self.plan_system_frames()
+        unfitted = sorted(ref for ref, part in self.db.get('parts', {}).items() if part.get('nc'))
+        if unfitted:
+            self.diagnostics.append({'code': 'UNFITTED_PARTS', 'refs': unfitted,
+                                     'detail': '未贴装器件 %d 个，已排除' % len(unfitted)})
         for material in (self.datasheet_audit or {}).get('materials', []):
             if material.get('status') == 'NOT_FOUND':
                 self.diagnostics.append({

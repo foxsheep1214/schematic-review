@@ -1,0 +1,16 @@
+{
+ "revision": "boards-merge1-v1",
+ "parents": {
+  "revisions/native-fields-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/native-fields-v1/expected.json": "a37228bff78f8b581d2147f8e6340dcc02700d73f5a4cbfcddfe2676bd649bf9",
+  "revisions/native-fields-v1/rh-ad8495-thermocouple-pinmap.intent.json": "336e444c39444b7aa7817804d7536a25fbccffeaabeb4146e266868e01077de5",
+  "revisions/native-fields-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/native-fields-v1/manifest.json": "32a826263a313a2912823e8feef114590a6f38bd36b745721a2d82ad8446db9b"
+ },
+ "derived_files": {
+  "revisions/boards-merge1-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge1-v1/expected.json": "63df86393dd31bf561afb02d50143efea5a8a8b7586a618823ffef6cf4692ebd",
+  "revisions/boards-merge1-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3"
+ },
+ "scope": "合并步1：DNP后的真实贴装拓扑；历史字段/电气预期不改，只调整可解释的检查数。"
+}

@@ -5465,5 +5465,26 @@
   "file": "scripts/checkers/powertree.py",
   "old": "or (resistor and 0 <= resistor['kohm'] <= 0.001)",
   "new": "or (resistor and resistor['kohm'] == 0)"
+ },
+ {
+  "id": "M846",
+  "name": "unfitted nodes take part in electrical scans",
+  "file": "scripts/lint.py",
+  "old": "if self.graph.is_fitted(node.partition('.')[0])])",
+  "new": "if True])"
+ },
+ {
+  "id": "M847",
+  "name": "DNP fields are no longer assembly evidence",
+  "file": "scripts/parse_kicad.py",
+  "old": "or any(name.casefold() in ('dnp', '不贴') and str(mark).strip().casefold() in",
+  "new": "or any(False and str(mark).strip().casefold() in"
+ },
+ {
+  "id": "M848",
+  "name": "unfitted resistors reappear in protected pin paths",
+  "file": "scripts/lint.py",
+  "old": "elif self.graph.is_fitted(ref) and self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2",
+  "new": "elif self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2"
  }
 ]

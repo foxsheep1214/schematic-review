@@ -151,7 +151,11 @@ def _component(comp, libparts, pages):
         # Do not borrow the cached libpart's link when this declaration is empty.
         'datasheet': _text(comp.findtext('datasheet')),
         # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。
-        'nc': 'dnp' in properties or is_not_populated(lib, value),
+        'nc': (any(name.casefold() in ('dnp', '不贴') and str(mark).strip().casefold() not in ('0', 'false', 'no', 'n')
+                   for name, mark in properties.items())
+               or any(name.casefold() in ('dnp', '不贴') and str(mark).strip().casefold() in
+                      ('1', 'true', 'yes', 'y', 'x', 'dnp', '不贴') for name, mark in fields.items())
+               or is_not_populated(lib, value)),
     }
     # Ordinary literal-only symbols retain their existing db representation.
     # New native facts participate in the fingerprint only when actually present.
