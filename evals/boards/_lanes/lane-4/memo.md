@@ -105,3 +105,9 @@
 - DRV8353RS六GH/GL在自定义库全IN；p8/9真实O、p14/36内部150k ROFF。12条伪断驱与库类型真错误要并存；PWM正负是互补桥臂，不是差分对（9项）。
 - 源BOM与图：U4 G473/G431、J1五/六针、USB33/22Ω、shunt2/2.5mΩ、C39和电容封装冲突。东芝8物理脚在Custom封装合并成G1/D2/S3有据，不按脚数判错。
 - AP1117新版p6本地4.7uF；Cin0.3u/Cout1.3或2.2u偏离，D1/FB后电容不无模型相加。p2/p6 ESR冲突另留知识；相电压ADC与驱动内CSA需补ANA实例，75V/14A算例不冒充产品合同。
+
+- hirusha785--12v-5a-isolated-flyback-smps-kicad：131项（122+9补查），30观察=4真/16误/0准则/1知识/9待人工；80未终判，FAIL/valid=false/NO_GO，renderer退出2，交明确执行记录。
+- TOP227 DRAIN/CONTROL未认SW/FB，漏C04/C15/C06、反馈断开、RCD与PWR-D03；H电源焊盘误DEBUG又漏入口浪涌/外供保护/PRO-D04，别用接受假DEBUG消归属。
+- U3.2/R8.2只到D6.K未回OUT DC -是公共阳极2的接线错误；L2=3A串全5A输出；D1 KBL值配KBPC1实例封装是真冲突。TI LP=1K2A3REF、onsemi LP=1REF2A3K，资料矛盾不等于所有实贴接反。
+- 光耦官方针义已填devices仍未进匿名脚库存；普通PC817的5mA保证不能借PC8171的0.5mA。CONTROL到47uF隔68Ω，零直接容量清单≠缺去耦；R6跨LED，R7才串联。
+- optocouplers schema2/results15；全NA交流/模拟接口框架仍被F1索数值条款（2错误）。DIN0207不是工业DI，AC/DC正负不是差分；保留质量提示，勿为出报告改缺口类别。
