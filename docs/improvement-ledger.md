@@ -9,6 +9,16 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+
+## 工业/通信板卡设计准则 Top 50：正反例与种子实测 (2026-11-02)
+
+从 340 条准则中选全部 13 条 shall 和 37 条高后果 method/should，逐条给出具体电路、违反方式、BASIS 中的 SR 规则与证据定位；历史审计与真实审查机制只作优先级线索。新增 8 类种子，连同既有极性/耐压种子覆盖 10 条所选准则；自动漏报与计划指向分列，不把人工计算规则宣称为自动检查。本轮确认的准则均可构造电路或记录层面的反例，没有仅因抽象而建议退回 draft 的条目。Causes 按8类新增自动层未执行的准则机制与1项集中正反例知识缺口计数，不表示已修复8条检查器。共用层、SKILL.md、catalog.py 与 BASIS 未改。
+
+- Event: user:2026-11-02 (请安排这样的工作，并调用codex…)
+- Causes: rule_not_enforced 8, knowledge_missing 1
+- Changed: docs/proposals/criteria-top50-examples-2026-11-02.md, evals/seeded_bench/mutators.py, evals/seeded_bench/README.md, evals/seeded_bench/criteria-examples-2026-11-02.json, docs/improvement-ledger.md
+- Gates: pytest 2404 passed, 2 skipped; check_ledger PASS; mutation --changed: 0 mutations on 5 changed files; seeded offline: 247 sites, 177 auto, 0 errors; existing 203 records unchanged; historical D-CAP-VR gate remains 15 < 17 before and after
+
 ## 正式电路用语：共用规范规则改称设计准则（文件名、模块名、字段一起改） (2026-11-02)
 
 用户要求把“规则、模式、覆盖”改成正式电路名词，并选择连文件名和字段一起改。本技能涉及的是第一个：共用规范的单条可核对要求改称**设计准则**（原“规范规则/规则卡”），

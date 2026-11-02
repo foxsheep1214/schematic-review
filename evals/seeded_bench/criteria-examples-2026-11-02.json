@@ -1,0 +1,1645 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "scope": "32 offline corpus boards; cold lint + plan; not expert review",
+  "base_commit": "8c0ba9b882a70fb5cf20091a4436fb062cdc9e53",
+  "sha256": {
+    "references/shared/guideline-criteria.json": "9d2f6fc751c0bdc5cde2dd12f76906028d7abc0bb03db3cb00e5222ce55c8817",
+    "scripts/catalog.py": "1bf7802cbedf70661ced81b992e287c5d843e52ce7712e36aa7f90b0ff1df739",
+    "evals/seeded_bench/corpus.json": "191a704ebd11e0e16da56c8cafb8fd4f66ba933b05a80453ef1dd1814661a532",
+    "evals/seeded_bench/mutators.py": "574e6c7282c2d942ff5f7eaa1476955d51970d065bd0d910f2d539ce696f55a6"
+  },
+  "selected_criteria": {
+    "D-USB-BULK": "G01-029",
+    "D-LDO-COUT": "G03-003",
+    "D-CAP-POL": "G03-037",
+    "D-CAP-VR": "G03-038",
+    "D-I2C-PU-HIGH": "G04-017",
+    "D-I2C-PU-LOW": "G04-018",
+    "D-CAN-TERM-SHORT": "G04-032",
+    "D-ISO-BRIDGE": "G04-040",
+    "D-XTAL-LOAD": "G04-078",
+    "D-XTAL-SHARED": "G04-082"
+  },
+  "new_defects": [
+    "D-CAN-TERM-SHORT",
+    "D-I2C-PU-HIGH",
+    "D-I2C-PU-LOW",
+    "D-ISO-BRIDGE",
+    "D-LDO-COUT",
+    "D-USB-BULK",
+    "D-XTAL-LOAD",
+    "D-XTAL-SHARED"
+  ],
+  "original_summary": {
+    "D-BOM-WS": {
+      "sites": 32,
+      "boards": 32,
+      "auto": 32,
+      "any": 32,
+      "pointed": 32,
+      "errors": 0
+    },
+    "D-CAP-POL": {
+      "sites": 11,
+      "boards": 5,
+      "auto": 9,
+      "any": 9,
+      "pointed": 9,
+      "errors": 0
+    },
+    "D-CAP-VR": {
+      "sites": 17,
+      "boards": 9,
+      "auto": 15,
+      "any": 15,
+      "pointed": 16,
+      "errors": 0
+    },
+    "D-EN-FLOAT": {
+      "sites": 14,
+      "boards": 12,
+      "auto": 11,
+      "any": 14,
+      "pointed": 14,
+      "errors": 0
+    },
+    "D-FLY-MISS": {
+      "sites": 4,
+      "boards": 1,
+      "auto": 4,
+      "any": 4,
+      "pointed": 4,
+      "errors": 0
+    },
+    "D-FLY-REV": {
+      "sites": 4,
+      "boards": 1,
+      "auto": 4,
+      "any": 4,
+      "pointed": 4,
+      "errors": 0
+    },
+    "D-GND-PIN": {
+      "sites": 20,
+      "boards": 16,
+      "auto": 14,
+      "any": 20,
+      "pointed": 20,
+      "errors": 0
+    },
+    "D-I2C-PU": {
+      "sites": 13,
+      "boards": 7,
+      "auto": 9,
+      "any": 11,
+      "pointed": 12,
+      "errors": 0
+    },
+    "D-LED-R": {
+      "sites": 6,
+      "boards": 5,
+      "auto": 6,
+      "any": 6,
+      "pointed": 6,
+      "errors": 0
+    },
+    "D-RAIL-SPLIT": {
+      "sites": 43,
+      "boards": 26,
+      "auto": 34,
+      "any": 43,
+      "pointed": 43,
+      "errors": 0
+    },
+    "D-REF-ANNO": {
+      "sites": 32,
+      "boards": 32,
+      "auto": 32,
+      "any": 32,
+      "pointed": 32,
+      "errors": 0
+    },
+    "D-TVS-STUB": {
+      "sites": 7,
+      "boards": 3,
+      "auto": 7,
+      "any": 7,
+      "pointed": 7,
+      "errors": 0
+    }
+  },
+  "summary": {
+    "D-BOM-WS": {
+      "sites": 32,
+      "boards": 32,
+      "auto": 32,
+      "any": 32,
+      "pointed": 32,
+      "errors": 0
+    },
+    "D-CAN-TERM-SHORT": {
+      "sites": 2,
+      "boards": 2,
+      "auto": 0,
+      "any": 0,
+      "pointed": 2,
+      "errors": 0
+    },
+    "D-CAP-POL": {
+      "sites": 11,
+      "boards": 5,
+      "auto": 9,
+      "any": 9,
+      "pointed": 9,
+      "errors": 0
+    },
+    "D-CAP-VR": {
+      "sites": 17,
+      "boards": 9,
+      "auto": 15,
+      "any": 15,
+      "pointed": 16,
+      "errors": 0
+    },
+    "D-EN-FLOAT": {
+      "sites": 14,
+      "boards": 12,
+      "auto": 11,
+      "any": 14,
+      "pointed": 14,
+      "errors": 0
+    },
+    "D-FLY-MISS": {
+      "sites": 4,
+      "boards": 1,
+      "auto": 4,
+      "any": 4,
+      "pointed": 4,
+      "errors": 0
+    },
+    "D-FLY-REV": {
+      "sites": 4,
+      "boards": 1,
+      "auto": 4,
+      "any": 4,
+      "pointed": 4,
+      "errors": 0
+    },
+    "D-GND-PIN": {
+      "sites": 20,
+      "boards": 16,
+      "auto": 14,
+      "any": 20,
+      "pointed": 20,
+      "errors": 0
+    },
+    "D-I2C-PU": {
+      "sites": 13,
+      "boards": 7,
+      "auto": 9,
+      "any": 11,
+      "pointed": 12,
+      "errors": 0
+    },
+    "D-I2C-PU-HIGH": {
+      "sites": 13,
+      "boards": 7,
+      "auto": 0,
+      "any": 0,
+      "pointed": 12,
+      "errors": 0
+    },
+    "D-I2C-PU-LOW": {
+      "sites": 13,
+      "boards": 7,
+      "auto": 0,
+      "any": 6,
+      "pointed": 12,
+      "errors": 0
+    },
+    "D-ISO-BRIDGE": {
+      "sites": 4,
+      "boards": 1,
+      "auto": 0,
+      "any": 0,
+      "pointed": 4,
+      "errors": 0
+    },
+    "D-LDO-COUT": {
+      "sites": 1,
+      "boards": 1,
+      "auto": 0,
+      "any": 0,
+      "pointed": 1,
+      "errors": 0
+    },
+    "D-LED-R": {
+      "sites": 6,
+      "boards": 5,
+      "auto": 6,
+      "any": 6,
+      "pointed": 6,
+      "errors": 0
+    },
+    "D-RAIL-SPLIT": {
+      "sites": 43,
+      "boards": 26,
+      "auto": 34,
+      "any": 43,
+      "pointed": 43,
+      "errors": 0
+    },
+    "D-REF-ANNO": {
+      "sites": 32,
+      "boards": 32,
+      "auto": 32,
+      "any": 32,
+      "pointed": 32,
+      "errors": 0
+    },
+    "D-TVS-STUB": {
+      "sites": 7,
+      "boards": 3,
+      "auto": 7,
+      "any": 7,
+      "pointed": 7,
+      "errors": 0
+    },
+    "D-USB-BULK": {
+      "sites": 4,
+      "boards": 3,
+      "auto": 0,
+      "any": 0,
+      "pointed": 0,
+      "errors": 0
+    },
+    "D-XTAL-LOAD": {
+      "sites": 5,
+      "boards": 5,
+      "auto": 0,
+      "any": 0,
+      "pointed": 4,
+      "errors": 0
+    },
+    "D-XTAL-SHARED": {
+      "sites": 2,
+      "boards": 2,
+      "auto": 0,
+      "any": 2,
+      "pointed": 2,
+      "errors": 0
+    }
+  },
+  "existing_records_unchanged": true,
+  "records": [
+    {
+      "board": "tc-rp2040-stamp",
+      "defect": "D-XTAL-LOAD",
+      "site": "Y1+C14+C15",
+      "note": "C14,C15 -> 1uF",
+      "targets": [
+        "CLK-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-rp2040-stamp",
+      "defect": "D-LDO-COUT",
+      "site": "U2+C1+C10+C3+C4+C5+C7+C8++3V3",
+      "note": "remove output capacitors C1,C10,C3,C4,C5,C7,C8",
+      "targets": [
+        "PWR-C04"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C05",
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "PWR-C01",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-E02",
+        "PWR-T01",
+        "PWR-T03",
+        "RST-E01",
+        "RST-T01",
+        "RST-T03",
+        "SIG-D13"
+      ]
+    },
+    {
+      "board": "tc-rp2040-stamp",
+      "defect": "D-XTAL-SHARED",
+      "site": "Y1+U1+U1_SEED+Net-(U1-XIN)+Net-(U1-XOUT)",
+      "note": "clone U1 as U1_SEED on the same crystal",
+      "targets": [
+        "CLK-C01"
+      ],
+      "auto": [],
+      "other": [
+        "DOC-A04",
+        "NET-A06"
+      ],
+      "pointed": [
+        "DEV-C05",
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "DOC-A04",
+        "NET-A06",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03",
+        "SIG-D13"
+      ]
+    },
+    {
+      "board": "tc-esp32-c3-devkit-lipo",
+      "defect": "D-CAP-VR",
+      "site": "C1",
+      "note": "value + 4V on 5.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C04",
+        "DEV-D03",
+        "DEV-D05",
+        "DEV-E01",
+        "PRO-D03",
+        "PRO-D04",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03"
+      ]
+    },
+    {
+      "board": "tc-esp32-c3-devkit-lipo",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R18+/GPIO7\\I2C_SDA",
+      "note": "R18 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-esp32-c3-devkit-lipo",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R18+/GPIO7\\I2C_SDA",
+      "note": "R18 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-rvpc",
+      "defect": "D-CAP-VR",
+      "site": "C1",
+      "note": "value + 4V on 5.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-fusb302-breakout",
+      "defect": "D-CAP-VR",
+      "site": "C1",
+      "note": "value + 4V on 5.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-fusb302-breakout",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R2+/SCL",
+      "note": "R2 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-fusb302-breakout",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R2+/SCL",
+      "note": "R2 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-fusb302-breakout",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R1+/SDA",
+      "note": "R1 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-fusb302-breakout",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R1+/SDA",
+      "note": "R1 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-tps5430",
+      "defect": "D-CAP-POL",
+      "site": "C10",
+      "note": "swap C10.1/C10.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [
+        "DEV-A02"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-tps5430",
+      "defect": "D-CAP-POL",
+      "site": "C9",
+      "note": "swap C9.1/C9.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [
+        "DEV-A02"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-soldered-liion-charger",
+      "defect": "D-USB-BULK",
+      "site": "C1",
+      "note": "C1 -> 1000uF",
+      "targets": [
+        "SIG-C05"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-soldered-bq24295-charger",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R7+SCL_PULL3,3",
+      "note": "R7 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-soldered-bq24295-charger",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R7+SCL_PULL3,3",
+      "note": "R7 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-soldered-bq24295-charger",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R2+SDA_PULL3,3",
+      "note": "R2 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-soldered-bq24295-charger",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R2+SDA_PULL3,3",
+      "note": "R2 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-soldered-liion-charger-protection",
+      "defect": "D-USB-BULK",
+      "site": "C1",
+      "note": "C1 -> 1000uF",
+      "targets": [
+        "SIG-C05"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-piicodev-tmp117",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R3+/SCL",
+      "note": "R3 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-tmp117",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R3+/SCL",
+      "note": "R3 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [
+        "SIG-A03"
+      ],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-tmp117",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R4+R6+/SDA",
+      "note": "R4,R6 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-tmp117",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R4+R6+/SDA",
+      "note": "R4,R6 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [
+        "SIG-A03"
+      ],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-ens160",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R2+/SCL",
+      "note": "R2 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-ens160",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R2+/SCL",
+      "note": "R2 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [
+        "SIG-A03"
+      ],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-ens160",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R3+R5+/SDA",
+      "note": "R3,R5 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-ens160",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R3+R5+/SDA",
+      "note": "R3,R5 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [
+        "SIG-A03"
+      ],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-bme280-dspace",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R1+SCL",
+      "note": "R1 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-bme280-dspace",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R1+SCL",
+      "note": "R1 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-bme280-dspace",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R2+SDA",
+      "note": "R2 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-bme280-dspace",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R2+SDA",
+      "note": "R2 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-makerverse-motor-driver-2ch",
+      "defect": "D-CAP-POL",
+      "site": "C2",
+      "note": "swap C2.1/C2.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [
+        "DEV-A02"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-servo-driver",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R2+/SCL",
+      "note": "R2 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-servo-driver",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R2+/SCL",
+      "note": "R2 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [
+        "SIG-A03"
+      ],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-servo-driver",
+      "defect": "D-I2C-PU-HIGH",
+      "site": "R3+/SDA",
+      "note": "R3 -> 10Meg",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-piicodev-servo-driver",
+      "defect": "D-I2C-PU-LOW",
+      "site": "R3+/SDA",
+      "note": "R3 -> 1R",
+      "targets": [
+        "SIG-C01"
+      ],
+      "auto": [],
+      "other": [
+        "SIG-A03"
+      ],
+      "pointed": [
+        "DEV-C01",
+        "SIG-C01",
+        "SIG-C07",
+        "SIG-C08",
+        "SIG-C13",
+        "SIG-C15",
+        "SIG-D01",
+        "SIG-E01",
+        "SIG-T02"
+      ]
+    },
+    {
+      "board": "tc-esp32-4ch-relays",
+      "defect": "D-CAP-VR",
+      "site": "C1",
+      "note": "value + 4V on 5.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-esp32-4ch-relays",
+      "defect": "D-CAP-VR",
+      "site": "C4",
+      "note": "value + 4V on 5.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-CAP-POL",
+      "site": "C1",
+      "note": "swap C1.1/C1.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [
+        "DEV-A02"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-CAP-POL",
+      "site": "C2",
+      "note": "swap C2.1/C2.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [
+        "DEV-A02"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-CAP-POL",
+      "site": "C3",
+      "note": "swap C3.1/C3.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [
+        "DEV-A02"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-CAP-POL",
+      "site": "C4",
+      "note": "swap C4.1/C4.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [
+        "DEV-A02"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-USB-BULK",
+      "site": "C1",
+      "note": "C1 -> 1000uF",
+      "targets": [
+        "SIG-C05"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-USB-BULK",
+      "site": "C3",
+      "note": "C3 -> 1000uF",
+      "targets": [
+        "SIG-C05"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-ISO-BRIDGE",
+      "site": "U10+GND1+GND2",
+      "note": "short GND1 / GND2",
+      "targets": [
+        "PRO-D02"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C05",
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "PRO-E02",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03",
+        "SIG-D13"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-ISO-BRIDGE",
+      "site": "U11+GND1+GND2",
+      "note": "short GND1 / GND2",
+      "targets": [
+        "PRO-D02"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C05",
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "PRO-E02",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03",
+        "SIG-D13"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-ISO-BRIDGE",
+      "site": "U5+GND1+GND2",
+      "note": "short GND1 / GND2",
+      "targets": [
+        "PRO-D02"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C05",
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03",
+        "SIG-D13"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-ISO-BRIDGE",
+      "site": "U6+GND1+GND2",
+      "note": "short GND1 / GND2",
+      "targets": [
+        "PRO-D02"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C05",
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03",
+        "SIG-D13"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-XTAL-LOAD",
+      "site": "Y1+C10+C11",
+      "note": "C10,C11 -> 1uF",
+      "targets": [
+        "CLK-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-isolated-serial-adapter",
+      "defect": "D-XTAL-SHARED",
+      "site": "Y1+U3+U3_SEED+Net-(U3-XI)+Net-(U3-XO)",
+      "note": "clone U3 as U3_SEED on the same crystal",
+      "targets": [
+        "CLK-C01"
+      ],
+      "auto": [],
+      "other": [
+        "DOC-A04",
+        "NET-A06"
+      ],
+      "pointed": [
+        "DEV-C05",
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "DOC-A04",
+        "NET-A06",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03",
+        "SIG-D13"
+      ]
+    },
+    {
+      "board": "tc-mcp25625-breakout",
+      "defect": "D-XTAL-LOAD",
+      "site": "Y1+C3+C4",
+      "note": "C3,C4 -> 1uF",
+      "targets": [
+        "CLK-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-mcp25625-breakout",
+      "defect": "D-CAN-TERM-SHORT",
+      "site": "U1+/CANH+/CANL",
+      "note": "wire short CAN H/L, bypass termination",
+      "targets": [
+        "SIG-C03"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C05",
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "NET-A07",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03",
+        "SIG-D13"
+      ]
+    },
+    {
+      "board": "tc-soldered-can-mcp2518",
+      "defect": "D-CAP-VR",
+      "site": "C3",
+      "note": "value + 4V on 5.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01"
+      ]
+    },
+    {
+      "board": "tc-soldered-can-mcp2518",
+      "defect": "D-CAP-VR",
+      "site": "C6",
+      "note": "value + 4V on 5.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01"
+      ]
+    },
+    {
+      "board": "tc-soldered-can-mcp2518",
+      "defect": "D-XTAL-LOAD",
+      "site": "X1+C1+C2",
+      "note": "C1,C2 -> 1uF",
+      "targets": [
+        "CLK-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-soldered-can-mcp2518",
+      "defect": "D-CAN-TERM-SHORT",
+      "site": "U3+CANH+CANL",
+      "note": "wire short CAN H/L, bypass termination",
+      "targets": [
+        "SIG-C03"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "DEV-C05",
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03",
+        "SIG-D13"
+      ]
+    },
+    {
+      "board": "tc-lm386-amp",
+      "defect": "D-CAP-POL",
+      "site": "C2",
+      "note": "swap C2.1/C2.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-lm386-amp",
+      "defect": "D-CAP-POL",
+      "site": "C4",
+      "note": "swap C4.1/C4.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": []
+    },
+    {
+      "board": "tc-lm386-amp",
+      "defect": "D-CAP-VR",
+      "site": "C3",
+      "note": "value + 6.3V on 9.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01"
+      ]
+    },
+    {
+      "board": "tc-lm386-amp",
+      "defect": "D-CAP-VR",
+      "site": "C4",
+      "note": "value + 6.3V on 9.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-led-al8860",
+      "defect": "D-CAP-VR",
+      "site": "C2",
+      "note": "value + 6.3V on 36.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-led-al8860",
+      "defect": "D-CAP-VR",
+      "site": "C3",
+      "note": "value + 6.3V on 36.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-led-al8860",
+      "defect": "D-CAP-VR",
+      "site": "C4",
+      "note": "value + 6.3V on 36.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-led-lm3404",
+      "defect": "D-CAP-VR",
+      "site": "C1",
+      "note": "value + 6.3V on 36.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-led-lm3404",
+      "defect": "D-CAP-VR",
+      "site": "C2",
+      "note": "value + 6.3V on 36.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-led-lm3404",
+      "defect": "D-CAP-VR",
+      "site": "C3",
+      "note": "value + 6.3V on 36.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01",
+        "DEV-C01"
+      ]
+    },
+    {
+      "board": "tc-soldered-w5500",
+      "defect": "D-CAP-POL",
+      "site": "C1",
+      "note": "swap C1.1/C1.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [
+        "DEV-A02"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-soldered-w5500",
+      "defect": "D-CAP-POL",
+      "site": "C15",
+      "note": "swap C15.1/C15.2",
+      "targets": [
+        "DEV-A02"
+      ],
+      "auto": [
+        "DEV-A02"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A02"
+      ]
+    },
+    {
+      "board": "tc-soldered-w5500",
+      "defect": "D-XTAL-LOAD",
+      "site": "X1+C16+C17",
+      "note": "C16,C17 -> 1uF",
+      "targets": [
+        "CLK-C01"
+      ],
+      "auto": [],
+      "other": [],
+      "pointed": [
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-D02",
+        "PWR-T03"
+      ]
+    },
+    {
+      "board": "tc-usb232r02",
+      "defect": "D-CAP-VR",
+      "site": "C2",
+      "note": "value + 4V on 5.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01"
+      ]
+    },
+    {
+      "board": "tc-usb232r02",
+      "defect": "D-CAP-VR",
+      "site": "C4",
+      "note": "value + 4V on 5.0V",
+      "targets": [
+        "DEV-A01"
+      ],
+      "auto": [
+        "DEV-A01"
+      ],
+      "other": [],
+      "pointed": [
+        "DEV-A01"
+      ]
+    }
+  ],
+  "historical_gate": {
+    "baseline": "baseline-offline.json",
+    "status": "pre-existing failure",
+    "detail": "D-CAP-VR auto 15 < 17 before and after; no baseline modification"
+  }
+}
