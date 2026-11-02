@@ -56,3 +56,10 @@
 - C4 VPP是编程泵节点，5.25V供电簇封顶错误，手册窗口可到7.2V；VDD网名3.3V实际3.3–3.6V，LDO100mA含芯片与LED，外部预算另算。
 - SV1/SV3帽状态别猜；SDA/SCL无板内Rp也可能由外板供，GPIO复位默认输入须重配。BOM串接位号仅补分隔符后26/26；USB-B别套Type-C/PD限值。
 - add/add同持有的own不能指向无candidate_ids电路且nets为空；NEEDS_HUMAN/schema15等记录限制保留FAIL。58是归因数、7是覆盖漏项、已证硬故障0；完整台账在缓存，报告未打包。
+
+## newell--nixie-clock-esp32c3（2026-11-02）
+- README硬件许可优先核：本板MIT仅软件、硬件CERN-OHL-W2；根图没有power.kicad_sch的HV变换器，J6是外接HV。
+- 74HC595的SRCLR不能因NC就放行；C18/C19实际采购码100nF/50V/0805与470nF/1812/≥250V图注冲突，先核准确料号而非网名。
+- Q35是RGB level_shifter却生POWER_CONVERTER、供电旁路误成snubber；SW3 SolderWire封装不是独立连接器，BTL扬声器不是数据差分对。
+- R1/R2/R53的0 (1%)(NC)与nc=False并存要保留装配未知；input_sha256用board_intent.input_fingerprint；schema15终态不兼容如实FAIL，不造需求过门禁。
+- Top50已问的HVEN默认态/RST-T04不重复记漏报；4项是USB、LDO启动、外引支路、RGB掉电的计划覆盖遗漏，不是4个已证硬件故障。
