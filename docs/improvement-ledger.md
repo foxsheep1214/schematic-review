@@ -21,6 +21,7 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 - Event: user:2026-11-02 (把这些名词都改成正式的电路名词; 设计准则/典型电路/实现方案可以，改吧; 连文件名和字段一起改)
 - Causes: judgment 1
 - Changed: SKILL.md, evals/mutation/mutations.json, references/architecture.md, references/bounding-table.md, references/check-catalog.md, references/inputs-and-coverage.md, references/review-charter.md, references/shared/derating-rules.md, references/shared/guideline-criteria.json, references/shared/guideline-criteria.md, references/shared/shared-layer.md, references/wca-formulas.md, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/passive_stress.py, scripts/guideline_criteria.py, scripts/plan_review.py, scripts/render_report.py, scripts/tests/conftest.py, scripts/tests/test_commodity_floors.py, scripts/tests/test_derating_rules.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_guideline_plan.py, scripts/validate_review.py
+- Gates: pytest 2406; ASG pytest 1033; mutation --changed: 172 mutations on the changed files, all killed (the contract-tier column is report-only)
 
 ## 共用应力核对进共用层：scripts/stress_check.py (2026-11-02)
 
