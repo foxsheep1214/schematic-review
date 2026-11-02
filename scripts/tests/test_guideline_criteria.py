@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 
 import catalog
 import device_kinds
-import guideline_rules as g
+import guideline_criteria as g
 
 ASG = Path.home() / '.agents' / 'skills' / 'autonomous-schematic-generation'
 SHARED = g.SHARED_FILES
@@ -32,8 +32,8 @@ def rule(rid='G04-001', **changes):
 
 def bundle(*rules):
     base = copy.deepcopy(g.load())
-    base['rules'] = sorted(rules, key=lambda r: r['id'])
-    base['content_sha256'] = g.content_sha256(base['rules'])
+    base['criteria'] = sorted(rules, key=lambda r: r['id'])
+    base['content_sha256'] = g.content_sha256(base['criteria'])
     return base
 
 
@@ -82,7 +82,7 @@ class GuidelineRulesTests(unittest.TestCase):
             with self.subTest(words):
                 self.assertTrue(any(words in e for e in g.bundle_errors(bundle(card))), g.bundle_errors(bundle(card)))
         stale = bundle(rule())
-        stale['rules'][0]['title'] = '改了'
+        stale['criteria'][0]['title'] = '改了'
         self.assertIn('content_sha256 does not match the rules', g.bundle_errors(stale))
 
     def test_coverage_sorts_applicable_rules(self):
@@ -108,11 +108,11 @@ class GuidelineRulesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             spec = Path(tmp) / 'G04_信号与模拟链设计规范'
             spec.mkdir()
-            (spec / 'G04_规则登记.json').write_text(json.dumps(
-                {'spec': 'G04', 'version': '0.1', 'rules': [rule('G04-002'), rule('G04-001')]}), encoding='utf-8')
+            (spec / 'G04_准则登记.json').write_text(json.dumps(
+                {'spec': 'G04', 'version': '0.1', 'criteria': [rule('G04-002'), rule('G04-001')]}), encoding='utf-8')
             built = g.build(tmp, '0.1.0')
         self.assertEqual(g.bundle_errors(built), [])
-        self.assertEqual([r['id'] for r in built['rules']], ['G04-001', 'G04-002'])
+        self.assertEqual([r['id'] for r in built['criteria']], ['G04-001', 'G04-002'])
         self.assertEqual(built['specs'], {'G04': '0.1'})
 
     def test_engineering_values_are_gathered_checked_and_read(self):
@@ -121,8 +121,8 @@ class GuidelineRulesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             for spec, values, rules in (('G02', {'typical_band': value}, [cites]),
                                         ('G03', {'g03_budget_margin': dict(value, value=0)}, [])):
-                (Path(tmp) / ('%s_规则登记.json' % spec)).write_text(json.dumps(
-                    {'spec': spec, 'version': '1.1', 'rules': rules, 'engineering_values': values}), encoding='utf-8')
+                (Path(tmp) / ('%s_准则登记.json' % spec)).write_text(json.dumps(
+                    {'spec': spec, 'version': '1.1', 'criteria': rules, 'engineering_values': values}), encoding='utf-8')
             built = g.build(tmp, '1.0.0')
             self.assertEqual(g.bundle_errors(built), [])
             self.assertEqual(built['engineering_values']['typical_band']['spec'], 'G02')
@@ -134,10 +134,10 @@ class GuidelineRulesTests(unittest.TestCase):
             # a cited name the bundle does not hold, and one name defined by two specs
             missing = copy.deepcopy(built)
             del missing['engineering_values']['g03_budget_margin']
-            missing['content_sha256'] = g.content_sha256(missing['rules'], missing['engineering_values'])
+            missing['content_sha256'] = g.content_sha256(missing['criteria'], missing['engineering_values'])
             self.assertTrue(any('g03_budget_margin' in e for e in g.bundle_errors(missing)))
-            (Path(tmp) / 'G03_规则登记.json').write_text(json.dumps(
-                {'spec': 'G03', 'version': '1.1', 'rules': [], 'engineering_values': {'typical_band': value}}),
+            (Path(tmp) / 'G03_准则登记.json').write_text(json.dumps(
+                {'spec': 'G03', 'version': '1.1', 'criteria': [], 'engineering_values': {'typical_band': value}}),
                 encoding='utf-8')
             with self.assertRaises(ValueError):
                 g.build(tmp, '1.0.0')
@@ -146,12 +146,12 @@ class GuidelineRulesTests(unittest.TestCase):
         # user 2026-11-01: 一次做全 — no rule waits for a check. A rule triggered by circuit types is held by a check of
         # one of those types, or by a check that is not tied to a circuit type.
         library = g.load()
-        self.assertEqual(catalog.basis_errors({r['id'] for r in library['rules']}), [])
+        self.assertEqual(catalog.basis_errors({r['id'] for r in library['criteria']}), [])
         held = {}
         for check, targets in catalog.BASIS.items():
             for target in targets:
                 held.setdefault(target, []).append(check)
-        for card in library['rules']:
+        for card in library['criteria']:
             if card['status'] != 'active':
                 continue
             with self.subTest(card['id']):
@@ -169,16 +169,16 @@ class GuidelineRulesTests(unittest.TestCase):
         import skill_identity
         files = skill_identity.engineering_identity(ROOT)['files']
         self.assertTrue(set(SHARED) <= set(files), sorted(set(SHARED) - set(files)))
-        self.assertNotIn('guideline-rules.json', skill_identity.NON_RULE_REFS)
+        self.assertNotIn('guideline-criteria.json', skill_identity.NON_RULE_REFS)
 
     def test_the_shared_directory_holds_exactly_the_shared_files(self):
         # 2026-11-02 (user: 目录制): references/shared/ is the shared layer; a file there is shared or does not belong
         listed = {Path(n).name for n in SHARED if n.startswith('references/shared/')}
         self.assertEqual(sorted(p.name for p in g.SHARED_DIR.iterdir() if p.name != '__pycache__'), sorted(listed))
-        self.assertIn('scripts/guideline_rules.py', SHARED)
+        self.assertIn('scripts/guideline_criteria.py', SHARED)
         self.assertEqual(len(g.shared_digest()), 64)
         self.assertEqual(g.shared_versions()['library_version'], g.load()['library_version'])
-        self.assertRegex(g.shared_label(), r'^共用层 [0-9a-f]{12}，规则库 \S+，降额 v\d+$')
+        self.assertRegex(g.shared_label(), r'^共用层 [0-9a-f]{12}，设计准则库 \S+，降额 v\d+$')
 
     @unittest.skipUnless((ASG / SHARED[1]).is_file(), 'autonomous-schematic-generation without the rule library')
     def test_asg_holds_the_same_shared_layer(self):

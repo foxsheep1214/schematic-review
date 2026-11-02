@@ -7,14 +7,14 @@ conditional on the inputs the reviewer copied from the datasheet; it is not a ve
 import math
 
 import derating
-import guideline_rules
+import guideline_criteria
 import model_bounds
 from electrical_contract import finite
 
 SIDES = ('UPPER', 'LOWER')
-SOA_SEGMENTS = guideline_rules.engineering_value('soa_segment_share')   # decision B, G03 engineering value (from the derating spec, 2026-11-02)
-FORCED_BETA_K = guideline_rules.engineering_value('forced_beta_k')   # decision D
-TYPICAL_BAND = guideline_rules.engineering_value('typical_band')   # G9 ③
+SOA_SEGMENTS = guideline_criteria.engineering_value('soa_segment_share')   # decision B, G03 engineering value (from the derating spec, 2026-11-02)
+FORCED_BETA_K = guideline_criteria.engineering_value('forced_beta_k')   # decision D
+TYPICAL_BAND = guideline_criteria.engineering_value('typical_band')   # G9 ③
 KELVIN = 273.15
 
 

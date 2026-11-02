@@ -9,6 +9,19 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 正式电路用语：共用规范规则改称设计准则（文件名、模块名、字段一起改） (2026-11-02)
+
+用户要求把“规则、模式、覆盖”改成正式电路名词，并选择连文件名和字段一起改。本技能涉及的是第一个：共用规范的单条可核对要求改称**设计准则**（原“规范规则/规则卡”），
+其汇编改称**设计准则库**（原“规则库”）；SR 自己的审查规则（`PRO-C02` 一类，规则总表）名称不变，`catalog.BASIS` 现在读作“SR 规则 → 它核对的设计准则”。
+“覆盖”及其动词（核对准则）用户要求先缓，本轮不改。文件与标识符：`references/shared/guideline-rules.json/.md` → `guideline-criteria.json/.md`，
+`scripts/guideline_rules.py` → `guideline_criteria.py`（模块名、`$GUIDELINE_CRITERIA` 环境变量、`test_guideline_rules.py` → `test_guideline_criteria.py` 同改），
+汇编里的 `rules` 键 → `criteria`（设计准则库 1.4.1 重建，内容不变、`content_sha256` 变），报告标签“规则库 1.4.1”→“设计准则库 1.4.1”，
+`review-vocabulary.md`、`check-catalog.md`、`bounding-table.md` 重生成，变异库里指向这些行的模式同改。步骤 ③ 的阅读量记录 224 940 → 224 960（`bounding-table.md` 里“规则库”改“设计准则库”）。ASG 同日把“电路模式/做法”改为“典型电路/实现方案”，本技能只有 SKILL.md 一处提到。
+
+- Event: user:2026-11-02 (把这些名词都改成正式的电路名词; 设计准则/典型电路/实现方案可以，改吧; 连文件名和字段一起改)
+- Causes: judgment 1
+- Changed: SKILL.md, evals/mutation/mutations.json, references/architecture.md, references/bounding-table.md, references/check-catalog.md, references/inputs-and-coverage.md, references/review-charter.md, references/shared/derating-rules.md, references/shared/guideline-criteria.json, references/shared/guideline-criteria.md, references/shared/shared-layer.md, references/wca-formulas.md, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/passive_stress.py, scripts/guideline_criteria.py, scripts/plan_review.py, scripts/render_report.py, scripts/tests/conftest.py, scripts/tests/test_commodity_floors.py, scripts/tests/test_derating_rules.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_guideline_plan.py, scripts/validate_review.py
+
 ## 共用应力核对进共用层：scripts/stress_check.py (2026-11-02)
 
 应力核对的算数原来两边各写一份：SR `derating.py` 的 `derated_limit`/`margin_errors`/`implied_ratio` 与 ASG `audit_design_closure.py` 的 `derated_limit`/`implied_rule`，

@@ -1,5 +1,5 @@
 """The derating spec (I/II/III levels from T/CPSS 1013, GJB/Z 35 and T/CPSS 1006) is one file shared with
-autonomous-schematic-generation (references/shared, compared byte for byte by test_guideline_rules): every rule names
+autonomous-schematic-generation (references/shared, compared byte for byte by test_guideline_criteria): every rule names
 a device kind, a measure, a condition and a cited page, and the levels run from most to least derating (user 2026-10-27).
 """
 import json
@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 
 import device_kinds
-import guideline_rules
+import guideline_criteria
 
 REFS = ROOT / 'references'
 SPEC = json.loads((REFS / 'shared' / 'derating-rules.json').read_text(encoding='utf-8'))
@@ -59,16 +59,16 @@ class DeratingSpecTests(unittest.TestCase):
 
     def test_the_soa_segments_and_the_unset_level_come_from_the_rule_library(self):
         # 2026-10-29 (user: SOA 段系数并入降额规范；常规件 50% 预判门限删掉): the scripts hold no copy of these values;
-        # 2026-11-02 (user: 迁进规则库): every engineering value lives in the rule library, the derating table holds none
+        # 2026-11-02 (user: 迁进设计准则库): every engineering value lives in the rule library, the derating table holds none
         import bound_formulas
         self.assertNotIn('engineering_values', SPEC)
-        values = guideline_rules.load()['engineering_values']
+        values = guideline_criteria.load()['engineering_values']
         self.assertEqual(bound_formulas.SOA_SEGMENTS, values['soa_segment_share']['value'])
         self.assertEqual(values['soa_segment_share']['spec'], 'G03')
         self.assertEqual(values['unset_level']['spec'], 'G01')
-        # 2026-11-01 (user: 进规则库，本轮迁移): the G9 typical band and the forced-β k moved to G02 in the rule library
+        # 2026-11-01 (user: 进设计准则库，本轮迁移): the G9 typical band and the forced-β k moved to G02 in the rule library
         self.assertEqual((bound_formulas.TYPICAL_BAND, bound_formulas.FORCED_BETA_K),
-                         (guideline_rules.engineering_value('typical_band'), guideline_rules.engineering_value('forced_beta_k')))
+                         (guideline_criteria.engineering_value('typical_band'), guideline_criteria.engineering_value('forced_beta_k')))
         self.assertEqual(values['unset_level']['value'], 'I')
         source = (ROOT / 'scripts' / 'checkers' / 'passive_stress.py').read_text(encoding='utf-8')
         self.assertNotRegex(source, r'POWER_LIMIT|VOLTAGE_LIMIT|UNSET_POWER_SHARE')
@@ -78,7 +78,7 @@ class DeratingSpecTests(unittest.TestCase):
         # (Omron B3U 50 mA / 12 VDC) times the smaller of CONN and SW at each level
         rules = {r['id']: r['values'] for r in SPEC['rules']}
         text = (REFS / 'commodity-floors.md').read_text(encoding='utf-8')
-        switch = next(r for r in guideline_rules.commodity_floors()['contacts']['rows'] if 'B3U' in r['category'])   # shared floor, 2026-11-02
+        switch = next(r for r in guideline_criteria.commodity_floors()['contacts']['rows'] if 'B3U' in r['category'])   # shared floor, 2026-11-02
         for level in LEVELS:
             amps = switch['current_a'] * 1000 * min(rules['CONN-I'][level], rules['SW-R'][level])
             volts = switch['voltage_v'] * min(rules['CONN-V'][level], rules['SW-V'][level])

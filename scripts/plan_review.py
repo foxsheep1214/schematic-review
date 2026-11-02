@@ -12,7 +12,7 @@ from copy import deepcopy
 import board_intent
 import catalog
 import derating
-import guideline_rules
+import guideline_criteria
 from electrical_contract import (LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, engine_identity, finite,
                                  squeeze_words)
 from page_inventory import inventory as document_inventory
@@ -112,7 +112,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
         near = difflib.get_close_matches(str(key), sorted(INTENT_FIELDS), n=1)
         errors.append('intent.%s 不是 intent 的字段%s' % (key, '（是不是 %s？）' % near[0] if near else ''))
     errors.extend(derating.intent_errors(intent))
-    baselines = guideline_rules.load()['vocabulary']['baselines']
+    baselines = guideline_criteria.load()['vocabulary']['baselines']
     if 'guideline_baseline' in intent and intent['guideline_baseline'] not in baselines:
         errors.append('guideline_baseline 必须为 ' + '/'.join(baselines))
     if intent.get('review_mode') not in (None, 'first', 'revision'):
@@ -309,8 +309,8 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
 
 
 def guideline_section(checks, db, kind_intent, intent, library):
-    """共用规范规则的适用与覆盖（references/shared/guideline-rules.md）：电路类型取计划检查项上的，器件类别取网表已贴器件的，
-    基线取 intent.guideline_baseline（不写取默认）；计划里出现的 SR 规则按 catalog.BASIS 覆盖它映射的规范规则；
+    """共用设计准则的适用与覆盖（references/shared/guideline-criteria.md）：电路类型取计划检查项上的，器件类别取网表已贴器件的，
+    基线取 intent.guideline_baseline（不写取默认）；计划里出现的 SR 规则按 catalog.BASIS 覆盖它映射的设计准则；
     映射的 SR 规则这次没有展开的记 not_triggered（本板没有它的对象，或电路还没声明），根本没有映射的才是 uncovered。"""
     graph = NetGraph(board_intent.graph_db(db, kind_intent))
     kinds = sorted({graph.kind(ref) for ref in db.get('parts', {}) if graph.is_fitted(ref)}
@@ -321,7 +321,7 @@ def guideline_section(checks, db, kind_intent, intent, library):
     for rule in sorted({c['rule'] for c in checks}):
         for target in catalog.BASIS.get(rule, ()):
             cited.setdefault(target, []).append(rule)
-    found = guideline_rules.coverage(library, guideline_rules.select(library, baseline, circuits, kinds), cited)
+    found = guideline_criteria.coverage(library, guideline_criteria.select(library, baseline, circuits, kinds), cited)
     # 2026-11-01 joint test: a rule selected on the coarse circuit type whose check has no object here (no input filter,
     # a first review) is not SR's to add: only a rule no SR rule maps to is
     mapped = {}
@@ -329,7 +329,7 @@ def guideline_section(checks, db, kind_intent, intent, library):
         for target in targets:
             mapped.setdefault(target, []).append(rule)
     return {'library_version': found['library_version'], 'content_sha256': found['content_sha256'],
-            'shared_sha256': guideline_rules.shared_digest(),
+            'shared_sha256': guideline_criteria.shared_digest(),
             'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
             'external_interfaces': sorted(set(circuits) & set(catalog.EXTERNAL_INTERFACE_TYPES)),
             'applicable': found['applicable'], 'covered': found['covered'],
@@ -693,8 +693,8 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             plan['clarifications'] = records
         if isinstance(self.intent.get('derating'), dict):   # the level the stress margins are checked at (stress spec)
             plan['derating'] = dict(self.intent['derating'])
-        library = guideline_rules.load()
-        if library['rules']:   # the shared guideline rules this board triggers and which planned rules cover them
+        library = guideline_criteria.load()
+        if library['criteria']:   # the shared guideline rules this board triggers and which planned rules cover them
             plan['guidelines'] = guideline_section(self.checks, self.db, self.kind_intent, self.intent, library)
         deferred = [r['id'] for r in self.intent.get('requirements') or [] if r.get('status') == 'DEFERRED']
         if deferred:   # no checks; the report lists them under 本次不审的范围

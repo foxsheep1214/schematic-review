@@ -10,7 +10,7 @@ from pathlib import Path
 import sys
 import catalog
 import function_reading
-import guideline_rules
+import guideline_criteria
 import results_model
 from review_workflow import workflow, decision
 from review_quality import FREEZE_BLOCKING_CODES, refs_named, screen_quality
@@ -638,11 +638,11 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                     else "evidence gaps need individual grading before freeze"))
     errors.extend(e for e in derive_errors if e not in errors)   # the function checks above report most of them already
     guidelines = plan.get("guidelines")
-    library = guideline_rules.load()
-    if library["rules"] or guidelines is not None:   # the plan was built on the installed shared rule library
+    library = guideline_criteria.load()
+    if library["criteria"] or guidelines is not None:   # the plan was built on the installed shared rule library
         require(isinstance(guidelines, dict) and guidelines.get("content_sha256") == library["content_sha256"],
                 "plan guidelines were built on another shared rule library (or none): regenerate the plan")
-        require(isinstance(guidelines, dict) and guidelines.get("shared_sha256") == guideline_rules.shared_digest(),
+        require(isinstance(guidelines, dict) and guidelines.get("shared_sha256") == guideline_criteria.shared_digest(),
                 "plan guidelines were built on another shared layer (references/shared): regenerate the plan")
     release = release_for(errors, blockers, accepted)
     if "release" in report:

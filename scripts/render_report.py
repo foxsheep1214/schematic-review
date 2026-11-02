@@ -22,7 +22,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 import catalog
 import function_reading
-import guideline_rules
+import guideline_criteria
 import units
 from electrical_contract import text
 from review_functions import RESULT_MAX_CHARS, circuit_functions
@@ -737,23 +737,23 @@ def guideline_cards(plan):
     """The applicable shared guideline rules of the plan, read from the installed library (the gate checked that the
     plan was built on it); empty when the plan has none."""
     section = plan.get('guidelines') if isinstance(plan.get('guidelines'), dict) else {}
-    cards = {r['id']: r for r in guideline_rules.load()['rules']}
+    cards = {r['id']: r for r in guideline_criteria.load()['criteria']}
     return section, [cards[i] for i in section.get('applicable') or [] if i in cards]
 
 
 def render_guidelines(plan):
-    """共用规范规则覆盖（references/shared/guideline-rules.md）：本板适用的规范规则、出处、由哪些检查核对、在哪个阶段关闭。"""
+    """共用设计准则覆盖（references/shared/guideline-criteria.md）：本板适用的设计准则、出处、由哪些检查核对、在哪个阶段关闭。"""
     section, applicable = guideline_cards(plan)
     if not applicable:
         return []
-    out = ['## 共用规范规则覆盖', '',
-           '%s，产品基线 %s。适用的规范规则 %d 条；检查项这次没有展开的 %d 条是本板没有它的对象或电路还没声明；'
+    out = ['## 共用设计准则覆盖', '',
+           '%s，产品基线 %s。适用的设计准则 %d 条；检查项这次没有展开的 %d 条是本板没有它的对象或电路还没声明；'
            '没有对应检查项的 %d 条列在“对 SR 的反馈”，是 SR 待补的规则，不是设计缺陷。'
-           % (guideline_rules.shared_label(), section['baseline'], len(applicable), len(section.get('not_triggered') or {}),
+           % (guideline_criteria.shared_label(), section['baseline'], len(applicable), len(section.get('not_triggered') or {}),
               len(section.get('uncovered') or [])), '',
-           '| 规范规则 | 内容 | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
+           '| 设计准则 | 内容 | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
     if not section.get('external_interfaces'):   # 2026-11-01 (user decision 1): the interface rules never rest on a net name alone
-        out[2:2] = ['未声明对外接口：网名没有识别到、intent 也没有声明 %s，这些接口的规范规则没有选中。板上有的话写进 `intent.circuits` 后重新生成计划。'
+        out[2:2] = ['未声明对外接口：网名没有识别到、intent 也没有声明 %s，这些接口的设计准则没有选中。板上有的话写进 `intent.circuits` 后重新生成计划。'
                     % '、'.join(t.title for t in catalog.CIRCUIT_TYPES if t.name in catalog.EXTERNAL_INTERFACE_TYPES), '']
     for card in applicable:
         source = '；'.join('%s %s %s 第%s页' % (s['document'], s['edition'], s['clause'], s['page']) for s in card['source'])
@@ -1292,9 +1292,9 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     section, applicable = guideline_cards(plan)
     uncovered = [c for c in applicable if c['id'] in (section.get('uncovered') or [])]
     if uncovered:   # an applicable guideline rule no planned SR rule maps to (catalog.BASIS): SR's to add
-        sr += ['### 适用但还没有检查的共用规范规则', '',
-               '下面 %d 条规范规则本板适用，SR 规则总表里还没有检查映射到它们（catalog.BASIS），本次审查没有核对；'
-               '逐条补规则后记进改进台账。' % len(uncovered), '', '| 规范规则 | 内容 | 规则卡里的检查方法 |', '|---|---|---|']
+        sr += ['### 适用但还没有检查的共用设计准则', '',
+               '下面 %d 条设计准则本板适用，SR 规则总表里还没有检查映射到它们（catalog.BASIS），本次审查没有核对；'
+               '逐条补规则后记进改进台账。' % len(uncovered), '', '| 设计准则 | 内容 | 设计准则里的检查方法 |', '|---|---|---|']
         sr += ['| %s | %s | %s |' % (c['id'], cell(c['title']), cell(c['sr_check'])) for c in uncovered]
         sr.append('')
     sr += render_sr_feedback(notes.get('sr_feedback'))

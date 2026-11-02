@@ -1,5 +1,5 @@
 """The plan lists the shared guideline rules this board triggers and which planned SR rules cover them
-(references/shared/guideline-rules.md; user 2026-10-31: 请开始执行这个方案). An empty rule library leaves the plan as it was.
+(references/shared/guideline-criteria.md; user 2026-10-31: 请开始执行这个方案). An empty rule library leaves the plan as it was.
 """
 import sys
 import unittest
@@ -9,10 +9,10 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import catalog
-import guideline_rules
+import guideline_criteria
 import plan_review
 import render_report
-from test_guideline_rules import bundle, rule
+from test_guideline_criteria import bundle, rule
 from test_interface_rows import plan_for
 from test_validate_review import fixture
 from validate_review import fingerprint, validate_review
@@ -30,7 +30,7 @@ class GuidelinePlanTests(unittest.TestCase):
 
     def plan(self, basis=None):
         library = self.library()
-        with mock.patch.object(guideline_rules, 'load', lambda *args: library), \
+        with mock.patch.object(guideline_criteria, 'load', lambda *args: library), \
                 mock.patch.object(catalog, 'BASIS', basis or {}):
             return plan_for()
 
@@ -67,8 +67,8 @@ class GuidelinePlanTests(unittest.TestCase):
         self.assertFalse(any('guideline_baseline' in e for e in plan_review.validate_intent(intent)))
 
     def test_basis_names_registered_rules_and_library_rules(self):
-        library = guideline_rules.load(guideline_rules.BUNDLE_PATH)
-        self.assertEqual(catalog.basis_errors({r['id'] for r in library['rules']}), [])
+        library = guideline_criteria.load(guideline_criteria.BUNDLE_PATH)
+        self.assertEqual(catalog.basis_errors({r['id'] for r in library['criteria']}), [])
         self.assertEqual(len(catalog.basis_errors({'G01-001'}, {'NO-X01': ('G01-001',), 'DOC-Q01': ('G09-001',)})), 2)
 
 
@@ -76,7 +76,7 @@ class GuidelineGateAndReportTests(unittest.TestCase):
     def setUp(self):
         self.library = GuidelinePlanTests.library(None)
         self.section = {'library_version': '0.0.0', 'content_sha256': self.library['content_sha256'],
-                        'shared_sha256': guideline_rules.shared_digest(),
+                        'shared_sha256': guideline_criteria.shared_digest(),
                         'baseline': 'industrial_telecom', 'circuit_types': [], 'device_kinds': ['capacitor'],
                         'applicable': ['G01-001', 'G02-001'], 'covered': {'G01-001': ['DOC-Q01']},
                         'uncovered': ['G02-001'], 'downstream': ['G02-001']}
@@ -86,7 +86,7 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         if section is not None:
             plan['guidelines'] = section
         report['plan_digest'] = fingerprint(plan)
-        with mock.patch.object(guideline_rules, 'load', lambda *args: self.library):
+        with mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
             return validate_review(plan, report, db)
 
     def test_the_gate_wants_the_plan_built_on_the_installed_library(self):
@@ -106,16 +106,16 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         self.assertIsNone(result['guideline_coverage'])
 
     def test_the_report_lists_applicable_rules_and_sr_lists_the_uncovered(self):
-        with mock.patch.object(guideline_rules, 'load', lambda *args: self.library):
+        with mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
             lines = render_report.render_guidelines({'guidelines': self.section})
         text = '\n'.join(lines)
-        self.assertIn(guideline_rules.shared_label() + '，产品基线 industrial_telecom。', text)   # one label binds library and derating
+        self.assertIn(guideline_criteria.shared_label() + '，产品基线 industrial_telecom。', text)   # one label binds library and derating
         self.assertIn('| G01-001 | RS-485 共模范围 | TI SLLA272 C §2 第3页 | DOC-Q01 | 原理图 |', text)
         self.assertIn('| G02-001 | RS-485 共模范围 | TI SLLA272 C §2 第3页 | 未覆盖 | 样机 |', text)
         self.assertEqual(render_report.render_guidelines({}), [])
 
     def test_an_undeclared_external_interface_is_said_once_any_is_declared_it_is_not(self):
-        with mock.patch.object(guideline_rules, 'load', lambda *args: self.library):
+        with mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
             bare = '\n'.join(render_report.render_guidelines({'guidelines': self.section}))
             named = '\n'.join(render_report.render_guidelines(
                 {'guidelines': dict(self.section, external_interfaces=['POE_PD'])}))
@@ -127,10 +127,10 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         plan, report, db = fixture()
         plan['guidelines'] = self.section
         report['plan_digest'] = fingerprint(plan)
-        with mock.patch.object(guideline_rules, 'load', lambda *args: self.library):
+        with mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
             text = render_report.render(plan, report, validate_review(plan, report, db))
-        self.assertIn('<summary>共用规范规则覆盖</summary>', text)
-        uncovered = text[text.index('### 适用但还没有检查的共用规范规则'):]
+        self.assertIn('<summary>共用设计准则覆盖</summary>', text)
+        uncovered = text[text.index('### 适用但还没有检查的共用设计准则'):]
         self.assertIn('| G02-001 | RS-485 共模范围 | 核对收发器共模范围覆盖工况 |', uncovered)
         self.assertNotIn('| G01-001 |', uncovered.split('</details>')[0])
 

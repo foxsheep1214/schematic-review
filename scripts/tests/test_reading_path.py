@@ -35,7 +35,7 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ① +0.1 KB 2026-10-28: the start-pin precondition names DIS/UVLO and the rescue-channel precondition is its own.
 # ④ +0.5 KB 2026-10-28: standby power goes to the product test, and the bound-recorded-as-unboundable hint.
 # ① +1.3 KB 2026-11-01: the vocabulary names the 23 checks of rule library 1.2.0 (G04, G05 active).
-STEP_MAX_BYTES = {'①': 170_750, '②': 158_290, '③': 224_940, '④': 124_000, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths)
+STEP_MAX_BYTES = {'①': 170_750, '②': 158_290, '③': 224_960, '④': 124_000, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。
 
 
 def section(text, title):

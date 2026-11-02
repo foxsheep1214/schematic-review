@@ -10,10 +10,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 
-import guideline_rules
+import guideline_criteria
 from checkers import passive_stress
 
-FLOORS = guideline_rules.commodity_floors()
+FLOORS = guideline_criteria.commodity_floors()
 DOC = (ROOT / 'references' / 'commodity-floors.md').read_text(encoding='utf-8')
 EXPONENT = {'p': -12, 'n': -9, 'µ': -6, 'u': -6, 'm': -3, '': 0}
 
@@ -29,7 +29,7 @@ class CommodityFloorsTests(unittest.TestCase):
         self.assertEqual(passive_stress.RESISTOR_FLOORS, {p: (v['power_w_70c'], v['voltage_v']) for p, v in packages.items()})
         self.assertEqual(passive_stress.MLCC_ORDERABLE,
                          tuple((r['package'], r['max_f'], r['voltage_v'], r['part']) for r in FLOORS['mlcc_orderable']['rows']))
-        self.assertEqual(passive_stress.WEAKEST_SHARE, guideline_rules.engineering_value('weakest_share'))
+        self.assertEqual(passive_stress.WEAKEST_SHARE, guideline_criteria.engineering_value('weakest_share'))
 
     def test_the_chip_resistor_table_is_the_file(self):
         rows = re.findall(r'^\| (0\d{3}|1\d{3}|2\d{3}) \| (\S+ W) \| (\d+) V \|$', DOC, flags=re.M)

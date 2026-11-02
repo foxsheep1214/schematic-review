@@ -11,7 +11,7 @@
 import re
 
 import derating
-import guideline_rules
+import guideline_criteria
 from decoupling import parse_capacitance
 from solve_dividers import parse_resistor, parse_resistor_noted
 
@@ -22,7 +22,7 @@ from .base import Checker
 
 # 常规件最弱档从共用层读（references/shared/commodity-floors.json，2026-11-02；commodity-floors.md 的表与它逐项对应）：
 # 封装 -> (70 ℃ 最弱档功率 W, 最弱档最高工作电压 V)
-_FLOORS = guideline_rules.commodity_floors()
+_FLOORS = guideline_criteria.commodity_floors()
 RESISTOR_FLOORS = {p: (v['power_w_70c'], v['voltage_v']) for p, v in _FLOORS['chip_resistor']['packages'].items()}
 # 预判边界取降额规范的本级贴片电阻取值：功率 ≤ 最弱档 × RES-SMD-P、电压 ≤ 最弱档 × RES-SMD-V 判 PASS
 # （2026-10-29，用户：常规件 50% 预判门限不在降额规范里，删掉，按项目降额等级取；等级未定按规范工程取值 unset_level）。
@@ -30,7 +30,7 @@ RESISTOR_FLOORS = {p: (v['power_w_70c'], v['voltage_v']) for p, v in _FLOORS['ch
 # ASG 照此设计，SR 审核）：BOM 没写功率、最坏功耗又超过按已写字段能买到的最弱件（封装最弱档的一半，RG1005 0.032 W 反例）
 # 的降额值时，预判给 procurement_min_power_w = 应力 ÷ 本级 RES-SMD-P 取值（用户：BOM 最低额定按项目降额等级取值），
 # 门禁要求这一行写 bom_constraint 或判 FAIL（power_rating_errors）。
-WEAKEST_SHARE = guideline_rules.engineering_value('weakest_share')   # G02 engineering value (from here, 2026-11-02)
+WEAKEST_SHARE = guideline_criteria.engineering_value('weakest_share')   # G02 engineering value (from here, 2026-11-02)
 SMD_POWER_RULE, SMD_VOLTAGE_RULE = 'RES-SMD-P', 'RES-SMD-V'
 WATTS_RE = re.compile(r'(\d+(?:\.\d+)?)\s*(m?)W(?![A-Za-z])')
 DEFAULT_TOL = 0.05
@@ -517,7 +517,7 @@ def _proposal(entry):
         basis = _floor_basis(entry, power_w, voltage_v)
         if basis:
             calc['floor_basis'] = basis
-        level = entry.get('derating_level') or guideline_rules.engineering_value('unset_level')
+        level = entry.get('derating_level') or guideline_criteria.engineering_value('unset_level')
         unset = '' if entry.get('derating_level') else '（降额等级未定，按 %s 级）' % level
         share = derating.rules()[SMD_POWER_RULE]['values'][level]
         v_share = derating.rules()[SMD_VOLTAGE_RULE]['values'][level]

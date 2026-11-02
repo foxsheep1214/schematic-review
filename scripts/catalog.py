@@ -15,7 +15,7 @@ import re
 import sys
 from collections import OrderedDict, namedtuple
 
-import guideline_rules
+import guideline_criteria
 
 Domain = namedtuple('Domain', 'code name scope handoff')
 Method = namedtuple('Method', 'code name executor inputs output stage')
@@ -103,12 +103,12 @@ SCOPES = {
     'history': '改版基线',
 }
 
-_GUIDELINES = guideline_rules.load()
+_GUIDELINES = guideline_criteria.load()
 
 
 def _value(name):
-    """An engineering value from the shared rule library, the one place it is written (guideline-rules.md §7)."""
-    return guideline_rules.engineering_value(name, _GUIDELINES)
+    """An engineering value from the shared rule library, the one place it is written (guideline-criteria.md §7)."""
+    return guideline_criteria.engineering_value(name, _GUIDELINES)
 
 
 RULES = (
@@ -182,7 +182,7 @@ RULES = (
     Rule('DEV-C03', '精度器件选择',
          '分压、采样、ZQ 等精度要求由允许误差窗口与器件要求决定，不能默认 1% 即合格；'
          '按实际误差传递及适用角点核本项，不用无关热、载流或接口接受任务替代精度判据；'
-         '这些条件只有真实改变该误差窗口时才成为本项关闭依赖，其余另按适用规则核对', 'owned_parts', 'owned_parts'),
+         '这些条件只有真实改变该误差窗口时才成为本项关闭依赖，其余另按适用准则核对', 'owned_parts', 'owned_parts'),
     Rule('DEV-C04', '连接器载流',
          '按实际并针降额、接触电阻/均流、线缆与故障电流核连接器载流，不能按单针额定乘针数放行；'
          '额定取实际采购系列的资料，只有间距或泛称时不借用他厂系列额定或“通常”值放行，按范围未定处理；'
@@ -728,8 +728,8 @@ OBJECTIVE_RULES = {
 }
 
 
-# 共用规范依据（2026-10-31，用户：请开始执行这个方案）：SR 规则 → 它核对的共用规范规则（G0x-nnn，references/shared/guideline-rules.md）。
-# 计划里出现一条 SR 规则，就覆盖了它映射的规范规则。规范编号 G03-005 与上面的审查要点 G1–G7、
+# 共用规范依据（2026-10-31，用户：请开始执行这个方案）：SR 规则 → 它核对的共用设计准则（G0x-nnn，references/shared/guideline-criteria.md）。
+# 计划里出现一条 SR 规则，就覆盖了它映射的设计准则。规范编号 G03-005 与上面的审查要点 G1–G7、
 # 定界推法 G1–G6 格式不同，不要混写。
 def baseline_asks(rule_id, intent):
     """False for a rule that only one product baseline asks (BASELINE_RULES) on a board of another baseline."""
@@ -853,7 +853,7 @@ def basis_errors(guideline_ids, basis=None, rule_ids=None):
     rule_ids = {r.id for r in RULES} if rule_ids is None else rule_ids
     errors = ['BASIS 的键不是已登记的规则: ' + rule for rule in sorted(set(basis) - set(rule_ids))]
     for rule, targets in sorted(basis.items()):
-        errors.extend('BASIS %s 指向规则库里没有的规范规则 %s' % (rule, t) for t in targets if t not in guideline_ids)
+        errors.extend('BASIS %s 指向设计准则库里没有的设计准则 %s' % (rule, t) for t in targets if t not in guideline_ids)
     return errors
 
 
@@ -1428,7 +1428,7 @@ BOUND_METHODS = OrderedDict((m.code, m) for m in (
     BoundMethod('G9', '只有典型值：同类参数 min/max 比例、同系列保证范围或典型 ± typical_band（G02 工程取值）', '估算'),
     BoundMethod('G10', '厂家参考电路同接法：接法相同、本板负载不重于参考电路，引图号', '可判通过'),
     BoundMethod('G11', '厂家应用笔记的公式：按笔记给的公式和系数算，引笔记号与页', '估算'),
-    BoundMethod('SOA', '按持续时间选 25 °C 曲线，按开始壳温降额，按规则库工程取值 soa_segment_share 分段留余量', '保证最坏值'),
+    BoundMethod('SOA', '按持续时间选 25 °C 曲线，按开始壳温降额，按设计准则库工程取值 soa_segment_share 分段留余量', '保证最坏值'),
     BoundMethod('FORCED_BETA', '饱和开关按强制 β：IB ≥ IC /（hFE_min / forced_beta_k）（G02 工程取值）', '保证最坏值'),
 ))
 # 2026-10-27（用户：第二阶段按建议做）：推法是余量和开放项公开界限共用的唯一叫法（结果格式 15 停用 basis.derivation、
