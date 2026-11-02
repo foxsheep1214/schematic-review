@@ -80,7 +80,7 @@ def _identity_for(ref, part):
     from parse_kicad import MPN_FIELD
     for name, value in sorted((part.get('fields') or {}).items()):
         if MPN_FIELD.match(name) and _text(value):
-            return value.strip(), 'part' 
+            return value.strip(), 'part'
     display, explicit = part.get('value'), part.get('part')
     if (_parameter_value(display) and _text(explicit)
             and explicit.strip().upper() not in {'N/A', 'NA', 'NONE', 'TBD', 'UNKNOWN'}

@@ -128,6 +128,8 @@ def led_current_limit(lint):
 
 
 def _is_i2c_net(net):
+    if re.search(r'(?:^|[^A-Z0-9])I2S(?:[^A-Z0-9]|$)', str(net).upper()):
+        return False
     return any(I2C_LINE_RE.match(token) for token in re.split(r'[^A-Z0-9]+', str(net).upper()))
 
 

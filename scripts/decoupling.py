@@ -327,7 +327,8 @@ class Inventory:
         groups = []
         for ref, device in sorted(self.devices.items()):
             # A verified connector, bridge or transformer has no IC supply to bypass; an explicit entry still wins.
-            explicit_only = self.verified_kinds.get(ref, {}).get('kind') in NO_SUPPLY_KINDS
+            explicit_only = (self.verified_kinds.get(ref, {}).get('kind') in NO_SUPPLY_KINDS
+                             or self.kind(ref) in {'connector', 'testpoint'})
             by_net = defaultdict(list)
             for node in supply_pins(ref, device.get('pins')):
                 by_net[self.pin2net.get(node) or 'UNCONNECTED:' + node].append(node)

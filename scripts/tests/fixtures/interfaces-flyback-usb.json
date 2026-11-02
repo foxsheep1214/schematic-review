@@ -37,7 +37,7 @@
       }
      ],
      "net": "AC_L",
-     "power_node": null
+     "power_node": "ac-port-pin"
     },
     {
      "cross_supply": false,
@@ -200,7 +200,7 @@
       }
      ],
      "net": "VBUS",
-     "power_node": null
+     "power_node": "supply-pin"
     }
    ],
    "owners": [
@@ -359,7 +359,7 @@
       }
      ],
      "net": "VBUS",
-     "power_node": null
+     "power_node": "supply-pin"
     }
    ],
    "owners": [

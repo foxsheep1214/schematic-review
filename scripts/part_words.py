@@ -210,6 +210,8 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         return kind, 'datasheet'
     signature = pin_signature(pin_names)
     primitive = normalize(part.get('prim'))
+    if normalize(part.get('part')) == 'HY931147C':
+        return CONNECTOR, 'part-keyword'  # HanRun integrated magnetics RJ45, Rev.A/1 p1; not an active IC
     if pin_count == 2 and re.match(r'^(?:L|FB)\d', ref, re.I) and normalize(part.get('value')) == 'FB':
         return FERRITE, 'part-keyword'
     if re.fullmatch(r'SM\d+B-GHS-TB(?:\(LF\))?(?:\(SN\))?', normalize(part.get('part'))):
@@ -217,11 +219,13 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     # Placed functional symbols outrank a port label (a terminal named "Relay") or a package category.
     if re.search(r'(?:^|:)MOUNTINGHOLE(?:_PAD)?$|(?:^|:)FIDUCIAL(?:_|$)', primitive):
         return TESTPOINT, 'part-keyword'
-    if re.search(r'(?:^|:)OSCILLATOR(?::|_)|^OSCILLATOR:', primitive) or re.fullmatch(r'TCXO|VCTCXO|OCXO', normalize(part.get('value'))):
+    if primitive.startswith('OSCILLATOR:') or re.fullmatch(r'TCXO|VCTCXO|OCXO', normalize(part.get('value'))):
         return IC, 'part-keyword'
     if re.search(r'(?:^|:)SW_DIP_SPSTX?\d*', normalize(part.get('jedec'))):
         return SWITCH, 'part-keyword'
-    if re.search(r'(?:^|:)CONN_\d+(?:X\d+)?(?:_|$)|(?:^|:)EASYC(?:_|$)', primitive):
+    if re.fullmatch(r'(?:[^:]+:)?NOVA_PROGRAMMER_HEADER', primitive):
+        return CONNECTOR, 'part-keyword'
+    if re.search(r'(?:^|:)CONN_\d+(?:X\d+)?(?:_|$)|(?:^|:)EASYC(?:[-_]|$)', primitive):
         return CONNECTOR, 'part-keyword'
     blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim'))
     ic_ref = re.match(r'^(U|M|IC)\d', ref, re.I)
@@ -304,3 +308,34 @@ def unused_input_permission(db, node):
     if re.fullmatch(r'TPS5430(?:DDA[RT]?)?', model, re.I) and pin == '5' and 'ENA' in aliases:
         return 'TI TPS5430 SLVS632L p3 Table4-1 / p9 §6.3.3: ENA may float, internal 1.5Mohm pull-up'
     return None
+
+
+def usb_connector_type(part):
+    """Physical USB family from its own symbol/model, never from VBUS or a CC-less controller."""
+    text = ' '.join(str(part.get(k) or '') for k in ('part', 'prim', 'value'))
+    if re.fullmatch(r'U262-161N-4BVC11', str(part.get('part') or ''), re.I):
+        return 'Type-C'
+    if re.search(r'(?:USB[_ -]?C(?:_|\b)|TYPE[_ -]?C(?:_|\b))', text, re.I):
+        return 'Type-C'
+    if re.search(r'MICRO[_ -]?B[_ -]?USB|USB[_ -]?B[_ -]?MICRO', text, re.I):
+        return 'Micro-B'
+    if re.search(r'(?:^|[:\s])USB[_ -]?A(?:_|\b)', text, re.I):
+        return 'Type-A'
+    if re.search(r'(?:^|[:\s])USB[_ -]?B(?:_|\b)', text, re.I):
+        return 'Type-B'
+    return None
+
+
+def supply_pin_routes(part, pins):
+    """Backward source-search routes of exact multi-terminal identities; never short all terminals.
+
+    C_Feedthrough's placed symbol has through pins 1/2 and shunt pin 3. BAT54C (Nexperia 2022-07-01
+    p1 Table2, https://assets.nexperia.com/documents/data-sheet/BAT54C.pdf) is 1/2 anodes, 3 common cathode.
+    Caller still verifies population, grounds and the presence of each actual physical pin.
+    """
+    primitive = str(part.get('prim') or '').rsplit(':', 1)[-1]
+    if re.fullmatch(r'C_Feedthrough(?:_Small)?', primitive, re.I) and set(pins) == {'1', '2', '3'}:
+        return (('1', '2', 'feedthrough-symbol'), ('2', '1', 'feedthrough-symbol'))
+    if str(part.get('part') or '').upper() == 'BAT54C' and set(pins) == {'1', '2', '3'}:
+        return (('3', '1', 'BAT54C-p1-Table2'), ('3', '2', 'BAT54C-p1-Table2'))
+    return ()

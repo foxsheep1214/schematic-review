@@ -76,3 +76,11 @@ def test_pdf_title_geometry_ignores_footer_first_and_description_application_mec
     doc.save(p);doc.close()
     assert dk.cues(dk.title_text(str(p)))=={'motor_driver'}
     assert dk.candidates(str(p))[0]['kind']=='motor_driver'
+
+
+def test_custom_oscillator_package_name_is_not_an_active_source_identity():
+    # RDIMM tester Y2: exact passive ABM8G MPN; custom symbol/package says Oscillator_SMD.
+    p={'prim':'data-center-rdimm-ddr4-tester:Oscillator_SMD_12MHz_KX-7',
+       'part':'ABM8G-12.000MHZ-18-D2Y-T','value':'Oscillator_SMD_12MHz_KX-7'}
+    assert pw.classify('Y2',p,4,[('SH','2'),('SH','4')])[0]==pw.CRYSTAL
+    assert pw.classify('U2',{'prim':'Oscillator:FT5HN','value':'TCXO'},4)[0]==pw.IC

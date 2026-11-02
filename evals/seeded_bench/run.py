@@ -118,6 +118,8 @@ def evaluate(sut, boards):
                 rec['other'] = sorted({f['rule'] for f in new if f['rule'] not in m.targets})
                 rec['pointed'] = sorted({c['rule'] for c in checks if 'board' not in c.get('object', {})
                                          and located(json.dumps(c.get('object', {}), ensure_ascii=False), tokens)})
+                rec['planned_targets'] = sorted({c['rule'] for c in checks if c['rule'] in m.targets
+                                                 and located(json.dumps(c.get('object', {}), ensure_ascii=False), tokens)})
                 records.append(rec)
     return records, baselines
 
@@ -170,7 +172,7 @@ def main():
     ap.add_argument('--gate', type=Path, help='baseline.json: exit 1 if any defect type detects fewer sites')
     ap.add_argument('--sut', type=Path, default=HERE.parents[1], help='SR checkout under test')
     ap.add_argument('--out', type=Path, required=True)
-    ap.add_argument('--boards-cache', type=Path, help='append the four adjudicated boards, only their controlled pairs')
+    ap.add_argument('--boards-cache', type=Path, help='append the adjudicated merge-board controlled pairs')
     ap.add_argument('--compare', type=Path, help='earlier results.json to show auto-detection deltas')
     args = ap.parse_args()
     if not args.offline and not args.cache:
@@ -180,7 +182,9 @@ def main():
         boards = (offline_boards(dbdir) if args.offline
                   else json.loads((args.cache / 'manifest.json').read_text(encoding='utf-8')))
         if args.boards_cache:
-            manifest = json.loads((HERE / 'boards-merge1.json').read_text(encoding='utf-8'))
+            manifest = {'boards': []}
+            for name in ('boards-merge1.json', 'boards-merge2b.json'):
+                manifest['boards'].extend(json.loads((HERE / name).read_text(encoding='utf-8'))['boards'])
             from parse_kicad import build
             from parse_netlist import integrity_problems
             for item in manifest['boards']:

@@ -549,7 +549,7 @@
   "id": "M91",
   "name": "SIG-C08 asked on every interface net, not only where supplies differ",
   "file": "scripts/interfaces.py",
-  "old": "                    if entry['cross_supply']:",
+  "old": "                    if entry['cross_supply'] or (kind == 'EXTERNAL' and not entry.get('power_node') and not ng.is_ground(entry['net'])):",
   "new": "                    if True:"
  },
  {
@@ -5939,8 +5939,8 @@
   "id": "M962",
   "name": "easyC contacts revert to relay prefix",
   "file": "scripts/part_words.py",
-  "old": "(?:^|:)EASYC(?:_|$)",
-  "new": "(?:^|:)NOT_EASYC(?:_|$)"
+  "old": "(?:^|:)EASYC(?:[-_]|$)",
+  "new": "(?:^|:)NOT_EASYC(?:[-_]|$)"
  },
  {
   "id": "M963",
@@ -6060,5 +6060,145 @@
   "file": "scripts/checkers/inductive_load.py",
   "old": "if re.search(r'BALUN', identity, re.I) and kind in pw.WINDING_PAIRS:",
   "new": "if False:"
+ },
+ {
+  "id": "M980",
+  "name": "external peer supply unknown suppresses the injection question again",
+  "file": "scripts/interfaces.py",
+  "old": "if entry['cross_supply'] or (kind == 'EXTERNAL' and not entry.get('power_node') and not ng.is_ground(entry['net'])):",
+  "new": "if entry['cross_supply']:"
+ },
+ {
+  "id": "M981",
+  "name": "a port without a protection component gets no branch question",
+  "file": "scripts/interfaces.py",
+  "old": "                    row = self._ready_check('PRO-C04', {'interface': iid, 'ref': ref, 'node': node, 'net': net},",
+  "new": "                    row = self._ready_check('PRO-D04', {'interface': iid, 'ref': ref, 'node': node, 'net': net},"
+ },
+ {
+  "id": "M982",
+  "name": "ADC and current sense pins lose their individual injection and range questions",
+  "file": "scripts/plan_circuits.py",
+  "old": "if (sense or divider_hint) and net and net not in pseudo:",
+  "new": "if False:"
+ },
+ {
+  "id": "M983",
+  "name": "PMIC named outputs lose their own capacitor stability question",
+  "file": "scripts/plan_circuits.py",
+  "old": "            for node, net in sorted(outputs.items()):",
+  "new": "            for node, net in []:"
+ },
+ {
+  "id": "M984",
+  "name": "Type-A and Micro-B ports acquire Type-C CC questions",
+  "file": "scripts/catalog.py",
+  "old": "    ('USB', 'SIG-D04'): 'USB_CC',",
+  "new": ""
+ },
+ {
+  "id": "M985",
+  "name": "USB circuit fuse ownership suppresses protection coordination",
+  "file": "scripts/interfaces.py",
+  "old": "                    for fuse in sorted(fuses):",
+  "new": "                    for fuse in []:"
+ },
+ {
+  "id": "M986",
+  "name": "I2S SDA spelling becomes an I2C pullup net again",
+  "file": "scripts/board_scans.py",
+  "old": "    if re.search(r'(?:^|[^A-Z0-9])I2S(?:[^A-Z0-9]|$)', str(net).upper()):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M987",
+  "name": "power rails and I2S signals become I2C inventory seeds",
+  "file": "scripts/i2c_topology.py",
+  "old": "if net in self.pseudo or self.rail(net) or re.search(r'(?:^|[/_-])I2S(?:[/_-]|$)', net, re.I):",
+  "new": "if net in self.pseudo:"
+ },
+ {
+  "id": "M988",
+  "name": "dual diode common cathode interrupts upstream supply search",
+  "file": "scripts/part_words.py",
+  "old": "if str(part.get('part') or '').upper() == 'BAT54C' and set(pins) == {'1', '2', '3'}:",
+  "new": "if False:"
+ },
+ {
+  "id": "M989",
+  "name": "feedthrough capacitors no longer pass only their through terminals",
+  "file": "scripts/part_words.py",
+  "old": "if re.fullmatch(r'C_Feedthrough(?:_Small)?', primitive, re.I) and set(pins) == {'1', '2', '3'}:",
+  "new": "if False:"
+ },
+ {
+  "id": "M990",
+  "name": "TPS5430 PH output is still an input when the symbol is wrong",
+  "file": "scripts/checkers/powertree.py",
+  "old": "if (re.fullmatch(r'TPS5430(?:DDA[RT]?)?', str(part.get('part', '')), re.I)",
+  "new": "if (False and re.fullmatch(r'TPS5430(?:DDA[RT]?)?', str(part.get('part', '')), re.I)"
+ },
+ {
+  "id": "M991",
+  "name": "seed records lose their specifically planned target rules",
+  "file": "evals/seeded_bench/run.py",
+  "old": "if c['rule'] in m.targets",
+  "new": "if False"
+ },
+ {
+  "id": "M992",
+  "name": "the PMIC seed has no compliant nominal paired baseline",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "base['parts']['C113']['value'] = '22uF'",
+  "new": "base['parts']['C113']['value'] = '1uF'"
+ },
+ {
+  "id": "M993",
+  "name": "source-pin model knowledge applies to unrelated diode arrays",
+  "file": "scripts/part_words.py",
+  "old": "str(part.get('part') or '').upper() == 'BAT54C'",
+  "new": "str(part.get('part') or '').upper().startswith('BAT54')"
+ },
+ {
+  "id": "M994",
+  "name": "relay distribution branches collapse into a single port check",
+  "file": "scripts/interfaces.py",
+  "old": "                    for link, far in graph.neighbors(net, pw.PASSIVE_LINKS):",
+  "new": "                    for link, far in []:"
+ },
+ {
+  "id": "M995",
+  "name": "the actual easyC SMD connector reverts to relay classification",
+  "file": "scripts/part_words.py",
+  "old": "EASYC(?:[-_]|$)",
+  "new": "EASYC(?:_|$)"
+ },
+ {
+  "id": "M996",
+  "name": "a declared connector pin map recreates implicit IC bypass groups",
+  "file": "scripts/decoupling.py",
+  "old": "or self.kind(ref) in {'connector', 'testpoint'}",
+  "new": "or False"
+ },
+ {
+  "id": "M997",
+  "name": "HY931147C rectified PoE terminals become a data pair",
+  "file": "scripts/checkers/diff_levels.py",
+  "old": "if any(str(self.graph.parts[r].get('part', '')).upper() == 'HY931147C'",
+  "new": "if any(False and str(self.graph.parts[r].get('part', '')).upper() == 'HY931147C'"
+ },
+ {
+  "id": "M998",
+  "name": "custom passive crystal package name becomes an active oscillator",
+  "file": "scripts/part_words.py",
+  "old": "primitive.startswith('OSCILLATOR:')",
+  "new": "re.search(r'(?:^|:)OSCILLATOR(?::|_)|^OSCILLATOR:', primitive)"
+ },
+ {
+  "id": "M999",
+  "name": "PMIC output probe drops the actual orderable E2 MPN",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "r'BD71847A?MWV(?:-E2)?', model('U4')",
+  "new": "r'BD71847A?MWV', model('U4')"
  }
 ]

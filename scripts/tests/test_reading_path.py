@@ -37,7 +37,8 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ① +1.3 KB 2026-11-01: the vocabulary names the 23 checks of rule library 1.2.0 (G04, G05 active).
 # ① +50 B 2026-11-02: the regenerated vocabulary lists the new DC_24V circuit type (rule library 1.5.0).
 # ① +10 B 2026-11-02: the vocabulary's DC_24V row names the new check PWR-C27 (rule library 1.6.0).
-STEP_MAX_BYTES = {'①': 170_810, '②': 158_290, '③': 224_960, '④': 124_000, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。
+# ① +266 B 2026-11-02: three physical-mechanism qualification rows (USB CC, passive crystal, RTC backup); ledger merge2B.
+STEP_MAX_BYTES = {'①': 171_076, '②': 158_290, '③': 224_960, '④': 124_000, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。
 
 
 def section(text, title):
